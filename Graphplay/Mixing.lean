@@ -54,7 +54,7 @@ cell-uniform mixing speedups on the host.
 /-- A chiral signing of a weighted graph: a Hermitian matrix obtained from the
 adjacency by multiplying off-diagonal entries by phases consistent with the
 Hermitian constraint. -/
-structure ChiralSigning {V : Type u} [Fintype V] [DecidableEq V]
+structure ChiralMixingSigning {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) where
   signed : Matrix V V ℂ
   herm : signed.IsHermitian
@@ -77,10 +77,10 @@ def IsCellUniformMixing {V : Type u} [Fintype V] [DecidableEq V]
 /-- A chiral signing of the total bundle reduces to a chiral signing of the
 quotient if its off-diagonal `(x,y)` entries depend only on the cells of
 `x` and `y`. -/
-def ChiralSigning.ReducesToQuotient {V : Type u} [Fintype V] [DecidableEq V]
+def ChiralMixingSigning.ReducesToQuotient {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} (P : EquitablePartition G I)
-    (σ : ChiralSigning G) : Prop :=
+    (σ : ChiralMixingSigning G) : Prop :=
   ∀ (x x' y y' : V), P.cells x = P.cells x' → P.cells y = P.cells y' →
     σ.signed x y = σ.signed x' y'
 
@@ -99,7 +99,7 @@ theorem chiralMixingQuotient
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} (P : EquitablePartition G I)
-    (σ : ChiralSigning G) (hred : σ.ReducesToQuotient P)
+    (σ : ChiralMixingSigning G) (hred : σ.ReducesToQuotient P)
     (t : ℝ) :
     -- Hypothesis: the signed quotient mixes uniformly at time `t` (stated
     -- abstractly via a placeholder `True`).
@@ -114,7 +114,7 @@ theorem chiralAverageMixingQuotient
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} (P : EquitablePartition G I)
-    (σ : ChiralSigning G) (_hred : σ.ReducesToQuotient P) :
+    (σ : ChiralMixingSigning G) (_hred : σ.ReducesToQuotient P) :
     True →
     -- A cell-uniform average-mixing variant; spelled out below.
     (∀ i j : I,

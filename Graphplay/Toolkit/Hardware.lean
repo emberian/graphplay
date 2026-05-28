@@ -284,7 +284,7 @@ weights are computed by summing the original edge weights from any
 representative in the source cell to all members of the target cell; the
 equitable condition guarantees the result is independent of the chosen
 representative. -/
-noncomputable def EquitablePartition.quotientGraph
+noncomputable def EquitablePartition.quotientHWGraph
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
     (P : EquitablePartition G I) : WeightedGraph I := by
@@ -295,7 +295,7 @@ noncomputable def EquitablePartition.quotientGraph
 If `G` satisfies a hardware spec `H` under the embedding `embed`, and if `P`
 is an equitable partition of `G` into cells `I`, then there is an *induced
 embedding* `embed_quotient : I → ℝ²` (e.g. the centroid of each cell) under
-which the quotient graph `P.quotientGraph` satisfies the relaxed spec
+which the quotient graph `P.quotientHWGraph` satisfies the relaxed spec
 `H.quotient`.
 
 This is the slogan that "hardware constraints survive the
@@ -309,7 +309,7 @@ theorem WeightedGraph.satisfies_quotient
     {I : Type v} [Fintype I] [DecidableEq I]
     (P : EquitablePartition G I) :
     ∃ embed_quotient : I → ℝ × ℝ,
-      (P.quotientGraph).satisfies H.quotient embed_quotient := by
+      (P.quotientHWGraph).satisfies H.quotient embed_quotient := by
   sorry
 
 /-! ## Open questions / future work

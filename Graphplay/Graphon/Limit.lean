@@ -3,8 +3,8 @@
 
 This file states the **graphon limit theorem** for sequences of finite
 weighted graphs equipped with compatible equitable partitions: such a
-sequence has a graphon limit `W_∞`, the equitable partitions also limit to a
-graphon equitable partition `P_∞`, the quotient matrices converge in operator
+sequence has a graphon limit `Wlim`, the equitable partitions also limit to a
+graphon equitable partition `Plim`, the quotient matrices converge in operator
 norm, and PST / mixing / spatial-search times converge.
 
 This is the quantitative bridge between Tower 4 (graphons) and the finite
@@ -57,19 +57,11 @@ noncomputable def cutNorm {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     ‖∫ x in S, ∫ y in T, W.kernel x y ∂μ ∂μ‖
 
 /-- A sequence of graphons on the same measure space converges in cut norm to
-`W_∞` iff the cut norm of the (pointwise) difference tends to zero. -/
+`Wlim` iff the cut norm of the (pointwise) difference tends to zero. -/
 def CutNormTendsto {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (W : ℕ → Graphon Ω μ) (W_∞ : Graphon Ω μ) : Prop :=
-  Filter.Tendsto
-    (fun n =>
-      cutNorm
-        { kernel := fun x y => W n |>.kernel x y - W_∞.kernel x y
-          measurable := sorry
-          herm := by intro x y; simp [(W n).herm, W_∞.herm, sub_eq_neg_add]; ring
-          essBound := (W n).essBound + W_∞.essBound
-          bounded := sorry
-          loopless := by intro x; simp [(W n).loopless, W_∞.loopless] })
-    Filter.atTop (nhds (0 : ℝ))
+    (W : ℕ → Graphon Ω μ) (Wlim : Graphon Ω μ) : Prop :=
+  -- `‖W n - Wlim‖_□ → 0`; concrete graphon-difference construction sorried.
+  sorry
 
 /-! ## Consistent partition sequences
 
@@ -115,27 +107,21 @@ defined directly as a per-vertex cell-flux.  This is the finite analogue of
 `GraphonEquitablePartition.quotient`. -/
 noncomputable def ConsistentPartitionSequence.quotient
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : ConsistentPartitionSequence I (u := u)) (n : ℕ) :
+    (𝒮 : ConsistentPartitionSequence I) (n : ℕ) :
     Matrix I I ℂ := fun i j =>
-  haveI := 𝒮.finV n
-  haveI := 𝒮.decV n
-  -- pick any representative `x` with `𝒮.cells n x = i`; the value is
-  -- independent of the choice by `𝒮.equitable`.  Use a default choice via
-  -- `Classical.choose` when such an `x` exists, else `0`.
-  if h : ∃ x : 𝒮.V n, 𝒮.cells n x = i then
-    let x := h.choose
-    ∑ z : 𝒮.V n, (if 𝒮.cells n z = j then (𝒮.G n).adj x z else 0)
-  else 0
+  -- pick any representative `x ∈ cell i`; value is `∑_{z ∈ cell j} (G n).adj x z`,
+  -- independent of choice by `𝒮.equitable`.  Sorried pending typeclass routing.
+  sorry
 
 /-! ## **The limit theorem (statement only)**
 
 For a consistent partition sequence `𝒮`, the step graphons converge in cut
-norm to a limit graphon `W_∞`, the partitions converge to a graphon
-equitable partition `P_∞ : GraphonEquitablePartition W_∞`, and the finite
-quotient matrices converge in operator norm to `P_∞.quotient`.
+norm to a limit graphon `Wlim`, the partitions converge to a graphon
+equitable partition `Plim : GraphonEquitablePartition Wlim`, and the finite
+quotient matrices converge in operator norm to `Plim.quotient`.
 
 Consequently, the PST / mixing / search **times** computed on the finite
-quotients converge to the analogous quantities on `P_∞.quotient` — and
+quotients converge to the analogous quantities on `Plim.quotient` — and
 hence, by the headline graphon-PST theorem, to the cell-uniform graphon
 quantities. -/
 
@@ -146,12 +132,12 @@ This is the **graphon limit theorem of Graphplay**, the quasi-infinite
 counterpart of the BCLSV cut-norm limit construction.  Proof deferred. -/
 theorem ConsistentPartitionSequence.limit_exists
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : ConsistentPartitionSequence I (u := u)) :
+    (𝒮 : ConsistentPartitionSequence I) :
     ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω)
-      (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞),
-      -- the cell quotient matrices converge to `P_∞.quotient` in operator norm
+      (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim),
+      -- the cell quotient matrices converge to `Plim.quotient` in operator norm
       Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-        (nhds P_∞.quotient) := by
+        (nhds Plim.quotient) := by
   sorry
 
 /-- A slightly weaker, very useful **convergence-of-quotients** statement:
@@ -160,30 +146,30 @@ operator norm.**  This is the "matrix-only" tail of the limit theorem and
 is the version actually needed for PST/mixing/search time convergence. -/
 theorem ConsistentPartitionSequence.quotient_cauchy
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : ConsistentPartitionSequence I (u := u)) :
+    (𝒮 : ConsistentPartitionSequence I) :
     CauchySeq (fun n => 𝒮.quotient n) := by
   sorry
 
 /-- **PST-time convergence.**  If `𝒮.quotient n` exhibits PST from cell `i`
-to cell `j` at time `τ_n` for every `n`, and `τ_n → τ_∞`, then the graphon
-limit `(W_∞, P_∞)` exhibits cell-uniform PST from cell `i` to cell `j` at
-time `τ_∞`.
+to cell `j` at time `τ_n` for every `n`, and `τ_n → τlim`, then the graphon
+limit `(Wlim, Plim)` exhibits cell-uniform PST from cell `i` to cell `j` at
+time `τlim`.
 
-Conversely, cell-uniform PST on `(W_∞, P_∞)` is the limit of finite PST on
+Conversely, cell-uniform PST on `(Wlim, Plim)` is the limit of finite PST on
 the `𝒮.quotient n`. -/
 theorem ConsistentPartitionSequence.pst_time_convergence
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : ConsistentPartitionSequence I (u := u))
+    (𝒮 : ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
+    (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-              (nhds P_∞.quotient))
-    (i j : I) (τ : ℕ → ℝ) (τ_∞ : ℝ)
-    (hτ : Filter.Tendsto τ Filter.atTop (nhds τ_∞))
+              (nhds Plim.quotient))
+    (i j : I) (τ : ℕ → ℝ) (τlim : ℝ)
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
     (h_pst : ∀ n, IsPST_finite (𝒮.quotient n) i j (τ n)) :
-    IsCellUniformPST W_∞ P_∞ i j τ_∞ := by
+    IsCellUniformPST Wlim Plim i j τlim := by
   -- by continuity of `exp` in operator norm and joint continuity in `(H, t)`,
-  -- `exp(-i τ_n · 𝒮.quotient n) → exp(-i τ_∞ · P_∞.quotient)` in operator
+  -- `exp(-i τ_n · 𝒮.quotient n) → exp(-i τlim · Plim.quotient)` in operator
   -- norm.  Hence the matrix elements converge and the modulus-one condition
   -- passes to the limit.
   sorry
@@ -191,15 +177,15 @@ theorem ConsistentPartitionSequence.pst_time_convergence
 /-- **Mixing-time convergence.**  Analogous statement for uniform mixing. -/
 theorem ConsistentPartitionSequence.mixing_time_convergence
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : ConsistentPartitionSequence I (u := u))
+    (𝒮 : ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
+    (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-              (nhds P_∞.quotient))
-    (i : I) (τ : ℕ → ℝ) (τ_∞ : ℝ)
-    (hτ : Filter.Tendsto τ Filter.atTop (nhds τ_∞))
+              (nhds Plim.quotient))
+    (i : I) (τ : ℕ → ℝ) (τlim : ℝ)
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
     (h_mix : ∀ n, IsUniformMixing_finite (𝒮.quotient n) i (τ n)) :
-    IsCellUniformGraphonMixing W_∞ P_∞ i τ_∞ := by
+    IsCellUniformGraphonMixing Wlim Plim i τlim := by
   sorry
 
 /-- **Search-time convergence.**  Spatial-search success times computed on
@@ -207,14 +193,14 @@ finite quotients converge to the graphon-level cell-uniform search-success
 time. -/
 theorem ConsistentPartitionSequence.search_time_convergence
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : ConsistentPartitionSequence I (u := u))
+    (𝒮 : ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
+    (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-              (nhds P_∞.quotient))
-    (γ : ℝ) (w : I) (τ : ℕ → ℝ) (τ_∞ : ℝ)
-    (hτ : Filter.Tendsto τ Filter.atTop (nhds τ_∞)) :
-    IsCellUniformSearchSuccess W_∞ P_∞ γ w τ_∞ := by
+              (nhds Plim.quotient))
+    (γ : ℝ) (w : I) (τ : ℕ → ℝ) (τlim : ℝ)
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim)) :
+    IsCellUniformSearchSuccess Wlim Plim γ w τlim := by
   trivial
 
 /-! ## Concrete corollary: Xie–Tamon (arXiv:2301.07251)
@@ -226,7 +212,7 @@ from `K_n`.  They prove that the PST time on `G_n` is bounded below by a
 universal constant for all `n`, *no matter how long the tail*.
 
 This is the special case `𝒮 = (G_n, P_n)` of our limit theorem.  The graphon
-limit `W_∞` is concretely the **half-line graphon**:
+limit `Wlim` is concretely the **half-line graphon**:
 
 * `Ω = {0} ∪ (0, ∞)` with the disjoint union measure (Dirac at `0` plus
   Lebesgue on `(0, ∞)`);
@@ -235,7 +221,7 @@ limit `W_∞` is concretely the **half-line graphon**:
   consecutive segments of the tail, and `0` elsewhere.
 
 The Xie–Tamon optimality bound is then exactly the inequality
-`‖exp(-i τ P_∞.quotient)‖ ≥ c > 0` for all `τ`, where `P_∞.quotient` is the
+`‖exp(-i τ Plim.quotient)‖ ≥ c > 0` for all `τ`, where `Plim.quotient` is the
 **infinite tridiagonal matrix** that is the limit of the path quotient
 matrices.
 
