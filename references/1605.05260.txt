@@ -1,0 +1,2079 @@
+arXiv:1605.05260v1 [math.CO] 17 May 2016
+
+Quantum State Transfer in Coronas
+Ethan Ackelsberg∗
+Zachary Brehm†
+Ada Chan‡
+Joshua Mundinger§
+Christino Tamon¶
+September 17, 2018
+
+Abstract
+We study state transfer in quantum walk on graphs relative to the adjacency matrix.
+Our motivation is to understand how the addition of pendant subgraphs affect state
+transfer. For two graphs G and H, the Frucht-Harary corona product G◦H is obtained
+by taking |G| copies of the cone K1 +H and by connecting the conical vertices according
+to G. Our work explores conditions under which the corona G ◦ H exhibits state
+transfer. We also describe new families of graphs with state transfer based on the
+corona product. Some of these constructions provide a generalization of related known
+results.
+
+1
+
+Introduction
+
+Quantum walk is a natural generalization of classical random walk on graphs. It has received
+strong interest due to its important applications in quantum information and computation.
+Farhi and Gutmann [14] introduced quantum walk algorithms for solving search problems
+on graphs. In their framework, given a graph G with adjacency matrix A, the time-varying
+unitary matrix U(t) := e−itA defines a continuous-time quantum walk on G. Subsequently
+Childs et al. [7] showed that these algorithms may provide exponential speedup over classical
+probabilistic algorithms. The work by Farhi et al. [13] described an intriguing continuoustime quantum walk algorithm with nontrivial speedup for a concrete problem called Boolean
+formula evaluation.
+In quantum information, Bose [4] studied the problem of information transmission in
+quantum spin chains. Christandl et al. [9, 8] showed that this problem may be reduced to
+the following phenomenon in quantum walk. Given two vertices u and v in G, we say perfect
+state transfer occurs between u and v in G at time τ if the (u, v)-entry of U(τ ) has unit
+magnitude. It was quickly apparent that perfect state transfer is an exotic phenomenon.
+Godsil [19] proved that for every positive integer k there are only finitely many graphs of
+∗
+
+Division of Science, Mathematics, and Computing, Bard College at Simon’s Rock
+Department of Mathematics, SUNY Potsdam
+‡
+Department of Mathematics and Statistics, York University
+§
+Department of Mathematics and Statistics, Swarthmore College
+¶
+Department of Computer Science, Clarkson University
+†
+
+1
+
+maximum degree k which have perfect state transfer. Therefore, the following relaxation of
+this notion is often more useful to consider. The state transfer between u and v is called
+“pretty good” (see Godsil [18]) or “almost perfect” (see Vinet and Zhedanov [27]) if the
+(u, v)-entry of the unitary matrix U(t) can be made arbitrarily close to one.
+Christandl et al. [9, 8] observed that the path Pn on n vertices has antipodal perfect
+state transfer if and only if n = 2, 3. In a striking result, Godsil et al. [21] proved that Pn
+has antipodal pretty good state transfer if and only if n + 1 is a prime, twice a prime, or a
+power of two. This provides the first family of graphs with pretty good state transfer which
+correspond to the quantum spin chains originally studied by Bose.
+Shortly after, Fan and Godsil [12] studied a family of graphs obtained by taking two cones
+K1 +K m and then connecting the two conical vertices. They showed that these graphs, which
+are called double stars, have no perfect state transfer, but have pretty good state transfer
+between the two conical vertices if and only if 4m + 1 is a perfect square. These graphs
+provide the second family of graphs known to have pretty good state transfer.
+In this work, we provide new families of graphs with pretty good state transfer. Our
+constructions are based on a natural generalization of Fan and Godsil’s double stars. The
+corona product of an n-vertex graph G with another graph H, typically denoted G ◦ H,
+is obtained by taking n copies of the cone K1 + H and by connecting the conical vertices
+according to G. In a corona product G ◦ H, we sometimes call G the base graph and H the
+pendant graph. This graph product was introduced by Frucht and Harary [15] in their study
+of automorphism groups of graphs which are obtained by wreath products.
+We first observe that perfect state transfer on corona products is extremely rare. This
+is mainly due to the specific forms of the corona eigenvalues (which unsurprisingly resemble
+the eigenvalues of cones) coupled with the fact that periodicity is a necessary condition for
+perfect state transfer. Our negative results apply to corona families G ◦ H when H is either
+the empty or the complete graph, under suitable conditions on G. In a companion work [1],
+we observed an optimal negative result which holds for all H but in a Laplacian setting.
+Given that perfect state transfer is rare, our subsequent results mainly focus on pretty
+good state transfer. We prove that the family of graphs K2 ◦ Km , which are called barbell
+graphs (see Ghosh et al. [16]), admit pretty good state transfer for all m. Here, state transfer
+occurs between the two vertices of K2 . This is in contrast to the double stars K2 ◦ K m where
+pretty good state transfer requires number-theoretic conditions on m.
+We observe something curious for corona products when the base graph is complete. It is
+known that the complete graphs Kn , n ≥ 3, are periodic but have no perfect state transfer,
+and hence have no pretty good state transfer. We observe that although Kn ◦ K 2 has no
+pretty good state transfer, its minor variant (Kn K2 ) ◦ K 2 has pretty good state transfer
+for all but two values of n. Here, the state transfer occurs between the two vertices of K 2 .
+An immediate corollary is that (Kn + I) ◦ K 2 has pretty good state transfer, where Kn + I
+denotes the graph obtained by adding self-loops to each vertex of Kn . This provides another
+example where self-loops are useful for state transfer (see Casaccino et al. [6]).
+Our other results involve graphs of the form G ◦ K1 which are called thorny graphs (see
+Gutman [23]). We show that if G is a graph with perfect state transfer at time π/g, for some
+positive integer g, then G ◦ K1 has pretty good state transfer, provided that the adjacency
+matrix of G is nonsingular. On the other hand, if the adjacency matrix of G is singular, we
+derive the same result if G has perfect state transfer at time π/2. Taken together, this proves
+2
+
+that the thorny cube Qd ◦ K1 has pretty good state transfer for all d. This confirms some
+of the numerical observations of Makmal et al. [25] on embedded hypercubes albeit for the
+continuous-time setting (since their results were stated for discrete-time quantum walks).
+It turns out that perfect state transfer is not necessary for a thorny graph to have state
+transfer. Coutinho et al. [11] proved that the cocktail party graph nK2 has perfect state
+transfer if and only if n is even. We show that the thorny graph nK2 ◦ K1 has pretty good
+state transfer for all n. This observation holds in the Laplacian setting as well (see [1]).
+Returning to the double stars, we also observe that C2 ◦ K m has perfect state transfer
+whenever m+1 is an even square. Here, C2 is the digon (which is a multigraph on two vertices
+connected by two parallel edges). This shows that certain double stars are one additional
+edge away from having perfect state transfer. This is akin to using weighted edges on paths
+for perfect state transfer (see Christandl et al. [9]). Here, we merely use an integer weight
+in a non-unimodal weighting scheme on a path.
+
+2
+
+Preliminaries
+
+Given an undirected graph G = (V, E) on n vertices, the adjacency matrix of G is an n × n
+symmetric matrix A(G) where, for all vertices u and v, the (u, v) entry of A(G) is 1, if
+(u, v) ∈ E, and 0, otherwise. The spectrum of G, which we denote as Sp(G), is the set
+of distinct eigenvalues of A(G). We use ρ(G) to denote the spectral radius of G. By the
+spectral theorem, we may write
+X
+A(G) =
+λEλ (G)
+(1)
+λ∈Sp(G)
+
+where Eλ (G) is the eigenprojector (orthogonal projector onto an eigenspace) corresponding
+to eigenvalue λ.
+The eigenvalue support of a vertex u in G, denoted suppG (u), is the set of eigenvalues
+λ of G for which Eλ (G)eu 6= 0. Two vertices u and v of G are called strongly cospectral if
+Eλ (G)eu = ±Eλ (G)ev for each eigenvalue λ of G.
+A continuous-time quantum walk on G is defined by the time-varying unitary matrix
+U(t) = e−itA(G) . We say such a quantum walk has perfect state transfer between vertices u
+and v at time τ if
+eTv U(τ )eu = γ,
+(2)
+for some complex unimodular γ. We call γ the phase of the perfect state transfer. Note that
+U(t) is symmetric for all t. In the special case where perfect state transfer occurs with u = v,
+we say the quantum walk is periodic at vertex u. Moreover, if U(τ ) is a scalar multiple of
+the identity matrix, then the quantum walk is periodic.
+Given that perfect state transfer is rare, we consider the following relaxation of this
+phenomenon proposed by Godsil. The quantum walk on G has pretty good state transfer
+between u and v if for all ǫ > 0 there is a time τ so that
+e−iτ A(G) eu − γev < ǫ,
+for some complex unimodular γ.
+3
+
+(3)
+
+In what follows, we state some useful facts about state transfer on graphs. The following
+formulation by Coutinho (which summarized the most relevant facts) will be useful for our
+purposes.
+Theorem 2.1 (Coutinho [10], Theorem 2.4.4). Let G be a graph and let u, v be two vertices
+of G. Then there is perfect state transfer between u and v at time t with phase γ if and only
+if all of the following conditions hold.
+i) Vertices u and v are strongly cospectral.
+ii) There are integers a, ∆ where ∆ is square-free so that for each eigenvalue λ in suppG (u):
+√
+(a) λ = 12 (a + bλ ∆), for some integer bλ .
+√
+(b) eTu Eλ (G)ev is positive if and only if (ρ(G) − λ)/g ∆ is even, where
+
+
+ρ(G) − λ
+√
+: λ ∈ suppG (u)
+.
+(4)
+g := gcd
+∆
+Moreover, if the above conditions hold, then the following also hold.
+i) There is a minimum time of perfect state transfer between u and v given by
+π
+t0 := √ .
+g ∆
+
+(5)
+
+ii) The time of perfect state tranfer t is an odd multiple of t0 .
+iii) The phase of perfect state transfer is given by γ = e−itρ(G) .
+We state some strong properties proved by Godsil which relate perfect state transfer with
+periodicity in a fundamental way.
+Lemma 2.2 (Godsil [17]). If G has perfect state transfer between vertices u and v at time
+t, then G is periodic at u at time 2t.
+Theorem 2.3 (Godsil [19]). A graph G is periodic at vertex u if and only if either:
+i) all eigenvalues in suppG (u) are integers; or
+ii) there is a square-free integer
+√∆ and an integer a so that each eigenvalue λ in suppG (u)
+1
+is of the form λ = 2 (a + bλ ∆), for some integer bλ .
+We also state some necessary conditions for perfect state transfer and pretty good state
+transfer in terms of the automorphisms of G.
+Theorem 2.4 (Godsil [19]). Let G be a graph with perfect state transfer between vertices u
+and v. Then, for each automorphism τ ∈ Aut(G), τ (u) = u if and only if τ (v) = v.
+Theorem 2.5 (Godsil [20], Lemmas 7.4.1 and 9.1.4). Suppose G has pretty good state transfer between vertices u and v. Then u and v are strongly cospectral, and each automorphism
+fixing u must fix v.
+4
+
+In our analysis, we will need some tools from number theory. For example, we will need
+the following form of Kronecker’s approximation theorem.
+Theorem 2.6 (Kronecker’s Theorem: Hardy and Wright [24], Theorem 442). Let 1, λ1 , . . . , λm
+be linearly independent over Q. Let α1 , . . . , αm be arbitrary real numbers, and let N, ǫ be positive real numbers. Then there are integers ℓ > N and q1 , . . . , qm so that
+|ℓλk − qk − αk | < ǫ,
+
+(6)
+
+for each k = 1, . . . , m.
+For brevity, whenever we have an inequality of the form |α − β| < ǫ, for arbitrarily small
+ǫ, we will write instead α ≈ β and omit the explicit dependence on ǫ. For example, (6) will
+be represented as ℓλk − qk ≈ αk .
+In our applications of Kronecker’s Theorem, we will use the following lemma to identify
+sets of numbers which are linearly independent over the rationals.
+Lemma 2.7 (Newman and Flanders [26]). Let a1 , . . . , an be positive integers, coprime in
+pairs, no one of which is a perfect square. Then the 2n algebraic integers
+p e
+ej = 0, 1,
+(7)
+a11 . . . aenn ,
+are linearly independent over the field Q of rationals.
+
+Notation We describe some notation used throughout the rest of the paper.
+The all-one and all-zero vectors of dimension n are denoted j n , 0n , respectively. The
+m × n all-one matrix is denoted Jm,n or simply Jn if m = n. The identity matrix of size n
+is denoted In .
+For standard families of graphs, we use Kn for the complete graph on n vertices, Pn for
+the path on n vertices, and Qn for the n-dimensional cube. In what follows, let G and H
+be graphs. The complement of G is denoted G. The disjoint union of G and H is written
+as G ∪ H, while the disjoint union of n copies G is denoted nG. The Cartesian product of
+G and H is denoted GH. If G, H have n, m vertices, respectively, the adjacency matrix of
+GH is given by A(G) ⊗ Im + In ⊗ A(H). The join G + H of G and H is the graph G ∪ H.
+Further background on algebraic graph theory may be found in Godsil and Royle [22].
+
+3
+
+Corona of Graphs
+
+We define the Frucht-Harary corona product of two graphs (see [15]). Let G be a graph on
+the vertex set {v1 , . . . , vn } and H be a graph on the vertex set {1, . . . , m}. The latter is
+chosen for notational convenience. The corona G ◦ H is formed by taking the disjoint union
+of G and n copies of H and then adding an edge from each vertex of the jth copy of H to
+the vertex vj in G. Formally, the corona G ◦ H has the vertex set
+V (G ◦ H) = V (G) × ({0} ∪ V (H)) ,
+5
+
+(8)
+
+and the adjacency relation
+
+′
+′
+
+or
+w = w = 0 and (v, v ) ∈ E(G)
+′
+′
+((v, w), (v , w )) ∈ E(G ◦ H) ⇐⇒ v = v ′ and (w, w ′) ∈ E(H)
+or
+
+
+′
+′
+v = v and exactly one of w and w is 0.
+H
+
+H
+
+H
+
+(9)
+
+H
+
+G
+
+Figure 1: A corona G ◦ H.
+The adjacency matrix of G ◦ H where H has m vertices is given by
+
+
+0
+jTm
+T
+.
+A(G ◦ H) = A(G) ⊗ e0 e0 + In ⊗
+jm A(H)
+
+(10)
+
+The spectrum of G ◦ H when H is a k-regular graph is known and we state this in the
+following.
+Theorem 3.1 (Barik et al. [3]). Suppose that G is a graph and H is a k-regular graph on
+m vertices. Suppose G has eigenvalues λ0 > . . . > λp with multiplicities r0 , . . . , rp , and H
+has eigenvalues k = µ0 > µ1 > . . . > µq with multiplicities s0 , . . . , sq . Then G ◦ H has the
+following spectrum.
+i) k is an eigenvalue with multiplicity n(s0 − 1).
+ii) µj is an eigenvalue with multiplicity nsj for j = 1, . . . , q.
+p
+iii) 21 (λj + k ± (λj − k)2 + 4m) are eigenvalues each with multiplicity rj for j = 0, . . . , p.
+
+Theorem 3.1 gives the spectrum of G ◦ H when H is k-regular. We now provide the
+corresponding eigenprojectors which will be crucial in our subsequent analyses.
+Proposition 3.2. Let G be a graph on n vertices and let H be a k-regular graph on m
+vertices. Then the eigenprojectors of G ◦ H are given by the following.
+i) For each eigenvalue µ of H, let
+Eµ := In ⊗
+
+
+
+0
+0Tm
+0m Eµ (H) − δµ,k m1 Jm
+
+6
+
+
+
+.
+
+(11)
+
+ii) For each eigenvalue λ of G, define a pair of eigenvalues
+p
+λ + k ± (λ − k)2 + 4m
+λ± :=
+,
+2
+and let
+
+
+1
+(λ± − k)2 (λ± − k)j Tm
+Eλ± := Eλ (G) ⊗
+.
+Jm
+(λ± − k)2 + m (λ± − k)j m
+Then the spectral decomposition of the corona G ◦ H is given by
+X X
+X
+A(G ◦ H) =
+λ± Eλ± +
+µEµ .
+λ∈Sp(G) ±
+
+(12)
+
+(13)
+
+(14)
+
+µ∈Sp(H)
+
+Proof. Recall that the adjacency matrix of G ◦ H is given in (10).
+For an eigenvalue µ of H, let Bµ be an orthonormal basis of the µ-eigenspace that is
+orthogonal to j m . If H is a connected k-regular graph, then Bk is empty. Suppose µ has an
+eigenvalue multiplicity of r. Then the cardinality of Bµ is r if µ < k, and is r − 1 if µ = k.
+Moreover, µ is also an eigenvalue of G ◦ H since for each x ∈ Bµ and for every y in Cn , we
+have
+ 
+ 
+0
+0
+A(G ◦ H)y ⊗
+= µy ⊗
+.
+(15)
+x
+x
+An orthonormal basis for the µ-eigenspace of G ◦ H is given by
+
+ 
+
+0
+v⊗
+: v ∈ V (G), x ∈ Bµ .
+x
+
+(16)
+
+The cardinality of this set is nr if µ < k, and is n(r − 1) if µ = k. These match the
+multiplicities given in Theorem 3.1. Note that the eigenprojector of µ in H is given by
+( P
+†
+if µ < k
+x∈Bµ xx
+Eµ (H) =
+(17)
+P
+1
+†
+J
++
+xx
+if
+µ
+=
+k
+m
+x∈Bµ
+m
+
+Therefore, the eigenprojector of µ in G ◦ H is given by
+
+
+0
+0Tm
+.
+Eµ (G ◦ H) = In ⊗
+0m Eµ (H) − δµ,k m1 Jm
+
+(18)
+
+Next, for each eigenvalue λ of G with a corresponding (normalized) eigenvector x, we
+have
+
+
+
+
+
+λ± − k
+λ± − k
+(19)
+= λ± x ⊗
+A(G ◦ H) x ⊗
+jm
+jm
+
+provided that
+
+p
+λ + k ± (λ − k)2 + 4m
+(λ + k)2 + 4m − 4λk
+=
+.
+(20)
+λ± :=
+2
+2
+After normalizing the above eigenvectors, we see that the eigenprojectors of λ± are given by
+
+
+1
+(λ± − k)2 (λ± − k)j Tm
+Eλ± (G ◦ H) = Eλ (G) ⊗
+(21)
+Jm
+(λ± − k)2 + m (λ± − k)j m
+λ+k±
+
+p
+
+These provide the remaining 2n eigenvectors of G ◦ H.
+7
+
+For state transfer in G ◦ H, we need to analyze the elements of the transition matrix
+e−itA(G◦H) . We use Proposition 3.2 to derive a convenient form for our analysis.
+Proposition 3.3. Let G be a graph and let H be a k-regular graph on m vertices. For
+vertices v and v ′ of G, we have
+
+
+X
+(λ − k)
+−itA(G◦H)
+−it(λ+k)/2 T
+T
+i sin (tΛλ /2) .
+e(v,0) e
+e(v′ ,0) =
+e
+ev Eλ (G)ev′ cos (tΛλ /2) −
+Λλ
+λ∈Sp(G)
+
+(22)
+
+where Λλ =
+
+p
+
+(λ − k)2 + 4m.
+
+Proof. Let λ± = 21 (λ + k ± Λλ ). From Proposition 3.2, we get that
+eT(v,w) e−itA(G◦H) e(v′ ,w′) =
+
+X
+
+X
+
+e∓itΛλ /2 eTw Mλ± ew′
+
+−itµ
+
+eTw Eµ (H)ew′ −
+
+e−it(λ+k)/2 eTv Eλ (G)ev′
+
+±
+
+λ∈Sp(G)
+
++ δv,v′ (1 − δw,0 )(1 − δw′ ,0 )
+where
+
+X
+
+e
+
+µ∈Sp(H)
+
+
+
+!
+
+
+1
+δµ,k , (23)
+m
+
+
+
+1
+(λ± − k)2 (λ± − k)j Tm
+Mλ± =
+.
+Jm
+(λ± − k)2 + m (λ± − k)j m
+
+Therefore,
+
+eT(v,0) e−itA(G◦H) e(v′ ,0) =
+
+X
+
+e−it(λ+k)/2 eTv Eλ (G)ev′
+
+X
+±
+
+λ∈Sp(G)
+
+e∓itΛλ /2
+
+(λ± − k)2
+.
+(λ± − k)2 + m
+
+(24)
+
+(25)
+
+But, the inner summation in (25) simplifies to
+X
+
+e∓itΛλ /2
+
+±
+
+2
+
+(λ − k)
+(λ± − k)2
+i sin(tΛλ /2),
+= cos(tΛλ /2) −
+2
+(λ± − k) + m
+Λλ
+
++ m) = mΛ2λ and
+
+since
+
+Q
+
+4
+
+Perfect State Transfer
+
+± ((λ± − k)
+
+(26)
+
+Q
+
+± (λ± − k) = −m. This proves the claim.
+
+Lemma 2.2 shows that periodicity is a necessary condition for perfect state transfer. We show
+that there is no perfect state transfer in most coronas since their vertices are not periodic.
+
+4.1
+
+Conditions on Periodicity
+
+To investigate periodicity in a corona G ◦ H, the following lemma shows that it is sufficient
+to consider base vertices of the form (v, 0), where v is a vertex in G.
+Lemma 4.1. Let G be a graph and let H be a regular graph. If (v, w) is periodic in G ◦ H,
+then (v, 0) is periodic in G ◦ H.
+8
+
+Proof. The eigenvalue support of (v, 0) is contained within the eigenvalue support of (v, w),
+which is evident from the eigenprojectors given in Proposition 3.2.
+Theorem 2.3 provides necessary and sufficient conditions for periodicity. In the following,
+we show that periodicity in a corona places a strong condition on the eigenvalues of the base
+graph.
+Lemma 4.2. Suppose that G is a connected graph on at least two vertices and H is a kregular graph on m vertices. Then a vertex (v, 0) is periodic in G ◦ H if and only if there
+existspa positive square-free integer ∆ such that√for all eigenvalues λ ∈ suppG (v), both λ − k
+and (λ − k)2 + 4m are integer multiples of ∆. Moreover, if this holds, we have that ∆
+divides 2m.
+Proof. For each eigenvalue λ of G, let
+
+p
+1
+2
+λ± :=
+λ + k ± (λ − k) + 4m .
+2
+
+(27)
+
+By Proposition 3.2, the eigenvalue support of (v, 0) in G◦H is given by {λ± : λ ∈ suppG (v)}.
+If there is a positive square-free
+integer ∆ so that for each eigenvalue
+λ in the support of v
+p
+√
+in G, both λ − k and (λ − k)2 + 4m are integer multiples of ∆, then (v, 0) is periodic in
+G ◦ H, by Theorem 2.3. This shows sufficiency.
+Now for necessity. Suppose that (v, 0) is periodic in G ◦ H. By Theorem 2.3, either
+all eigenvalues in the support of (v, 0) in G ◦ H are integers or there is an integer a and a
+square-free integer
+∆ so that all eigenvalues in the support of (v, 0) in G ◦ H are of the form
+√
+λ = 12 (a + bλ ∆), for some integers bλ .
+If the eigenvalue support of (v, 0) is entirely integers,
+then for each eigenvalue λ in the
+p
+support of v, we conclude that λ + k = λ+ + λ− and (λ − k)2 + 4m = λ+ − λ− are integers.
+Now suppose there is an integer a and a square-free integer ∆ > 1 so that all eigenvalues
+λ± in the support of (v, 0) are of the form
+√
+1
+λ± = (a + b± ∆),
+2
+
+(28)
+
+where b± are integers (which depend on λ± ). Recall from the proof of Proposition 3.3 that
+(λ+ − k)(λ− − k) = −m. Thus,
+−m =
+
+√
+1
+1
+((a − 2k)2 + (b+ b− )∆) + (a − 2k)(b+ + b− ) ∆.
+4
+4
+
+(29)
+
+√
+Since ∆ is not an integer, either a − 2k or b+ + b− is zero. If b+ = −b− then we conclude
+that a = λ+ + λ− = λ + k. This implies that |suppG (v)| = 1 which contradicts that G is
+connected on √
+at least two vertices. Otherwise, we have a = 2k, from which we conclude that
+1
+λ± = k + 2 b± ∆. From the definition of λ± in (27), we have
+(λ+ − k) + (λ− − k) = λ − k,
+p
+(λ+ − k) − (λ− − k) = (λ − k)2 + 4m.
+9
+
+(30a)
+(30b)
+
+p
+Given the alternate form
+in
+(28),
+this
+also
+implies
+that
+λ
+−
+k
+and
+(λ − k)2 + 4m are half√
+integer multiples of ∆. Since their
+p squares are rational algebraic integers,√ their squares
+must be integers. Thus, λ − k and (λ − k)2 + 4m are integerpmultiples of ∆.
+2
+It remains
+√ to show that ∆ divides 2m. The condition that (λ − k) + 4m is an integer
+multiple of ∆ implies that
+r
+(λ − k)2 + 4m
+(31)
+∆
+is an integer. Furthermore, since ∆ divides (λ − k)2 , it must be that ∆ divides 4m. Since ∆
+is square-free, ∆ divides 2m.
+Remark
+√ 1. The conditions for periodicity at (v, w) in the corona G ◦ H imply that λ ∈
+k + Z ∆ for all λ in the eigenvalue support of v in G. In particular, v must be periodic in
+G.
+Remark 2. The eigenvalues of G need√not be integers for G ◦ H to have a periodic vertex.
+Consider
+P3 whose spectrum is {0, ± 2}. The eigenvalue support of the middle vertex is
+√
+vertex of P3 is √
+periodic in
+{± 2}. Thus we may√apply Lemma 4.2 to see that the middle
+√
+P3 ◦ K m if and only if 2 + 4m is an integral multiple of 2, i.e. if and only if 1 + 2m is
+an integer. Let us take the specific example of m = 4. If we
+denote the center vertex
+√ let v √
+of P3 , then the eigenvalue support of (v, 0) in P3 ◦ K 4 is {± 2, ±2 2}, so (v, 0) is periodic.
+
+Figure 2: The white vertex in P3 ◦ K 4 is periodic.
+The heart of our applications of Lemma 4.2 is the following. For the conditions of Lemma
+4.2 to be satisfied, it must be that 4m/∆ is a difference of squares. Since there are only
+finitely many pairs of squares whose difference is 4m/∆, this allows us to restrict possible
+values of λ − k in various ways. Our first application is to show that the eigenvalues in the
+support of a periodic vertex can not be too close together.
+Theorem 4.3. Let G be a graph and H be a k-regular graph on m ≥ 1 vertices. Suppose v
+is a vertex of G for which there are two distinct eigenvalues λ, µ ∈ suppG (v) such that
+√
+√
+|λ − k| − |µ − k| ∈ { ∆, 2 ∆}
+(32)
+for some square-free integer ∆. Then (v, w) is not periodic vertex in G ◦ H, for all w ∈
+V (H) ∪ {0}.
+Proof. By Lemma 4.1, it suffices to show (v, 0) is not periodic. Suppose towards contradiction
+that (v, 0) is periodic. By Lemma 4.2, there exists apsquare-free integer ∆ such that for each
+eigenvalue λ in the support of v, both λ − k and (λ − k)2 + 4m are integer multiples of
+√
+∆. We define
+o
+n
+1
+(33)
+σ := √ min |λ1 − k| − |λ2 − k| : λ1 , λ2 ∈ suppG (v) .
+∆
+10
+
+Let λ and µ be the eigenvalues in the support of v which achieve the above minimum. Now,
+define
+|λ − k|
+|µ − k|
+nλ := √
+,
+nµ := √
+,
+(34)
+∆
+∆
+and suppose that σ := nλ − nµ .
+By the assumption in (32), we have two cases to consider: σ = 1 and σ = 2.
+By Lemma 4.2, both n2λ + 4m/∆ and n2µ + 4m/∆ are squares. If we let
+p :=
+
+r
+
+4m
+n2µ +
+∆
+
+and q :=
+
+r
+
+n2λ +
+
+4m
+,
+∆
+
+(35)
+
+then
+q + p > nλ + nµ = 2nµ + σ
+
+and q 2 − p2 = (2nµ + σ)σ.
+
+(36)
+
+Hence q − p < σ which is impossible when σ = 1.
+When σ = 2, p and q have the same parity which contradicts 0 < q − p < 2.
+Corollary 4.4. Suppose G is a graph and H is a k-regular graph on m ≥ 1 vertices. Let
+v ∈ V (G) and suppose there are eigenvalues λ, µ ∈ suppG (v) such that 0 < |λ−k|−|µ−k| < 3.
+Then (v, w) is not periodic in G ◦ H for every w ∈ V (H) ∪ {0}.
+Proof. Suppose towards contradiction that (v, 0)
+√is periodic. Then by Lemma 4.2, we have
+that λ − k and µ − k are integer multiples of ∆, for some square-free integer ∆. Since
+0 < |λ − k| − |µ − k| < 3, we have
+√ √ √ √ √ √ √ √
+(37)
+|λ − k| − |µ − k| ∈ { 1, 2, 3, 2 1, 5, 6, 7, 2 2}.
+Note that Theorem 4.3 applies to all of these cases.
+We apply our machinery above to show that the corona products of certain distanceregular graphs with an arbitrary regular graph have no perfect state transfer. In particular,
+we show this for some families of distance-regular graphs which have perfect state transfer (see
+Coutinho et al. [11]). These examples confirm that perfect state transfer is highly sensitive
+to perturbations.
+Corollary 4.5. Let G be a graph from one of the following families:
+• d-cubes Qd , for d ≥ 2.
+• Cocktail party graphs nK2 , for n ≥ 2.
+• Halved 2d-cubes 12 Q2d , for d ≥ 1.
+Then the corona product G ◦ H, where H is a regular graph, has no perfect state transfer.
+Proof. The spectra of these graphs are well known (see Brouwer et al. [5]) and are given by:
+• Spec(Qd ) = {d − 2ℓ : 0 ≤ ℓ ≤ d}.
+• Spec(nK2 ) = {2n − 2, 0, −2}.
+11
+
+• Spec( 21 Q2d ) =
+
+ 2d
+2
+
+− 2ℓ(2d − ℓ) : 0 ≤ ℓ ≤ d .
+
+Since these graphs are distance-regular, every eigenvalue is in the support of every vertex.
+Moreover, the eigenvalues satisfy the conditions of Corollary 4.4. In particular, 2 − d and −d
+are always eigenvalues of the d-cube and the halved 2d-cube. Therefore, the corona of these
+graphs with an arbitrary regular graph do not have periodic vertices. Hence, by Lemma 2.2,
+they do not have perfect state transfer.
+
+4.2
+
+Corona with the Complete Graph
+
+The main result of this section is that there is no perfect state transfer on G ◦ Km when G
+is connected on at least two vertices. This is achieved by bounding the number of vertices
+in H for the corona product G ◦ H to have a periodic vertex.
+Lemma 4.6. Suppose that G is a graph and H is a k-regular graph on m ≥ 1 vertices. If
+(v, 0) is periodic in G ◦ H, then for all λ ∈ suppG (v) we have
+m ≥ |λ − k| + 1.
+
+(38)
+
+Proof. Suppose that (v, 0) is periodic in G◦H. By Lemma 4.2, there exists a positive squarefree integer ∆ such that for all λ ∈ suppG (v), both (λ − k)2 /∆ and ((λ − k)2 + 4m)/∆ are
+squares. Moreover, ∆ divides 2m, and therefore, these squares have the same parity. This
+yields the bound
+2 
+
+2
+
+
+|λ − k|
+|λ − k|
+|λ − k|
+4m
+√
+√
+√
++2 −
++1 .
+(39)
+=4
+≥
+∆
+∆
+∆
+∆
+After rearranging, we see that
+√
+m ≥ |λ − k| ∆ + ∆ ≥ |λ − k| + 1,
+
+(40)
+
+since ∆ ≥ 1.
+Theorem 4.7. Let G be a connected graph on at least 2 vertices. Then for all m ≥ 1, the
+corona product G ◦ Km has no periodic vertices, and, therefore, has no perfect state transfer.
+Proof. Suppose towards contradiction that the vertex (v, w) of G ◦ Km is periodic. If the
+eigenvalue support of v in G contains a negative eigenvalue λ, then λ − (m − 1) < 0. Thus,
+Lemma 4.6 yields
+m ≥ |λ − (m − 1)| + 1 = −λ + (m − 1) + 1 > m.
+So, it suffices to show that the support of v contains a negative eigenvalue.
+Since G has no loops, we have
+X
+eTv Aev =
+λeTv Eλ ev = 0.
+
+(41)
+
+(42)
+
+λ∈Sp G
+
+If v has no negative eigenvalue in its support, then Eλ ev = 0 for all λ 6= 0. In this case, Aev
+is the zero vector and G is not connected.
+12
+
+4.3
+
+Corona with the Empty Graph
+
+In this section, we show that the corona of any graph with K m , where m is one or a prime
+number, has no perfect state transfer. We will need the following spectral characterization
+of when a vertex is conical in a star graph.
+Lemma 4.8. Let v be a vertex in a connected graph G. If suppG (v) = {±λ}, for some
+λ > 0, then λ2 ∈ Z and v is the conical vertex of the star graph K1,λ2 .
+P
+Proof. Suppose that suppG (v) = {±λ}. If A = θ θEθ is the spectral decomposition of the
+adjacency matrix of G, then (Eλ + E−λ )ev = ev . Moreover, A2 ev = λ2 ev . Since A2 has
+integer entries, we observe that λ2 ∈ Z. This means that every walk of length 2 starting
+from v must return to v, i.e. that every neighbor of v has degree 1. The number of closed
+walks of length two from v is then exactly the degree of v, and thus we see that v is the
+center vertex of K1,λ2 .
+Lemma 4.9. K1,n ◦ K m has no perfect state transfer, for every n, m ≥ 1.
+Proof. The case for n = 1 is a result of Fan and Godsil [12]. For n = 2, that is, P3 ◦ K m ,
+we may apply Theorems 2.4 and 2.1 and Lemma 4.2 to rule out perfect state transfer. For
+n > 2 and m 6= 2, we may apply Theorems 2.4 and 2.1 to show no perfect state transfer
+exists.
+So, we consider K1,n ◦ K 2 where n > 2, and assume that it has perfect state transfer
+between vertices (v, 1) and (v, 2) where v is a vertex of K1,n . Note that perfect state transfer
+between other pairs of vertices are ruled out by Theorems 2.4 and 2.1. Thus, (v, 0) is a
+periodic vertex. By Lemma
+√ ∆ so that for each eigenvalue
+√ 4.2, there is a square-free integer
+2
+λ ∈ supp(v), both λ and λ + 8 are integer multiples of ∆. Moreover, ∆ divides 4 and
+thus ∆ ∈ {1, 2}.
+√
+If ∆ = 1, both λ and λ2 + 8 are integers for each eigenvalue λ ∈ supp(v). Thus,
+supp(v) = {±1}. By Lemma 4.8, v is a conical vertex of K1,1 . But, K1,1 ◦ K 2 has no perfect
+state transfer (see [12]). √
+√
+2 + 8 are integer multiples of
+If ∆ = 2, both
+λ
+and
+λ
+2 for each eigenvalue λ ∈ supp(v).
+√
+Suppose λ = ℓ 2 for some integer ℓ. Then, ℓ2 + 4 is a square which implies ℓ = 0. Thus,
+supp(v) = {0}. But, this implies v is an isolated vertex, which is a contradiction.
+Theorem 4.10. If G is a connected graph on at least two vertices and m is either 1 or a
+prime number, then G ◦ K m has no perfect state transfer.
+Proof. By Lemma 4.9, we may assume G is connected and is not a star. By Lemma 2.2, it
+suffices to show G ◦ K m has no periodic vertices for m ≥ 1. Suppose for contradiction that
+vertex (v, w) is periodic in G ◦ K m . Then by Lemma 4.1, (v, 0) is periodic. Since G 6= K1,n
+is connected, by Lemma 4.8, the eigenvalue support of v in G contains eigenvalues λ and µ
+such that |λ| 6= |µ|. Assume |µ|√
+< |λ|. By Lemma
+p 4.2, there must exist a square-free integer
+√
+2
+∆ dividing 2m such that λ, µ, λ + 4m, and µ2 + 4m are all integer multiples of ∆.
+We define the integers
+|λ|
+nλ := √ ,
+∆
+
+|µ|
+nµ := √ ,
+∆
+13
+
+ℓ :=
+
+2m
+.
+∆
+
+(43)
+
+p
+√
+√
+Since µ2 + 4m and λ2 + 4m are integer multiples of ∆, both n2µ + 2ℓ and n2λ + 2ℓ are
+perfect squares. So, let Nµ2 := n2µ + 2ℓ and Nλ2 := n2λ + 2ℓ. Therefore, we have four perfect
+squares: n2µ , Nµ2 , n2λ , and Nλ2 . Since |µ| < |λ|, we know nµ < nλ .
+If m = 1 or m = 2, then ℓ equals one, two or four and 2ℓ equals two, four or eight. First
+note that a difference of two squares is never two or four. For the last case, the only way for
+Nµ2 − n2µ = Nλ2 − n2λ = 8 is Nλ = Nµ = 3 and nµ = nλ = 1, contradicting nλ > nµ .
+Now, consider when m is an odd prime. Since a squarefree integer ∆ divides 2m, we
+have ℓ equals one, two, m or 2m. Or, equivalently, 2ℓ equals two, four, 2m or 4m. We may
+rule out the first two cases as before. Since Nµ2 − n2µ is even, Nµ and nµ share the same
+parity. If 2ℓ = 2m, then our odd prime m can be written as m = (Nµ − nµ )(Nµ + nµ )/2.
+This shows Nµ − nµ = 1 or that Nµ and nµ differ in parity, a contradiction. If 2ℓ = 4m, then
+m = 21 (Nµ − nµ ) 21 (Nµ + nµ ). This shows Nµ − nµ = 2, and furthermore, m = nµ + 1. But
+using the other difference of squares, we also have m = nλ + 1. This contradicts nλ > nµ .
+
+4.4
+
+Multigraphs
+
+Fan and Godsil [12] proved that the double star K2 ◦ K m has no perfect state transfer for
+all m. Here, we show that C2 ◦ K m has perfect state transfer for some m where C2 is the
+digon (a multigraph on two vertices which are connected by two parallel edges).
+This result follows from the next proposition. For a real number α, let K2 (α) denote the
+clique on two vertices whose edge has weight α. In what follows, we consider the weighted
+path K2 (α) ◦ K1 .
+α
+
+1
+(u, 0)
+
+1
+(v, 0)
+
+Figure 3: The weighted path K2 (α) ◦ K1 .
+Proposition 4.11. In K2 (α) ◦ K1 , perfect state transfer occurs between the vertices of K2
+if and only if
+2(2s + 1)
+α= p
+(2ℓ)2 − (2s + 1)2
+
+for some integers ℓ > s ≥ 0.
+
+In this case, perfect state transfer occurs at time t = π2
+
+p
+
+(44)
+
+(2ℓ)2 − (2s + 1)2 .
+
+Proof. Let u, v denote the vertices of K2 . The eigenvalues of K2 (α) are ±α with corresponding eigenprojectors E±α which satisfy eTu E±α ev = ± 12 . By Proposition 3.3, the transition
+element between (u, 0) and (v, 0) is given by
+ 
+ 
+
+
+
+
+t
+t
+t
+α
+t
+T
+−itA(K2 (α)◦K1 )
+e(u,0) e
+e(v,0) = −i sin
+cos
+α cos
+Λα − i
+α sin
+Λα , (45)
+2
+2
+Λα
+2
+2
+√
+where Λα := α2 + 4. Since |α/Λα| < 1, there is perfect state transfer at time t if and only
+if
+
+
+ 
+t
+t
+α cos
+Λα = 1.
+(46)
+sin
+2
+2
+14
+
+Equivalently, this gives the conditions
+t√ 2
+α + 4 = ℓπ,
+2
+
+and
+
+t
+α=
+2
+
+
+
+1
+π,
+s+
+2
+
+(47)
+
+for some integers ℓ > s ≥ 0. Hence perfect state transfer occurs at time t if and only if
+2(2s + 1)
+α= p
+.
+(2ℓ)2 − (2s + 1)2
+
+(48)
+
+v1
+
+u
+
+v
+
+u1
+
+u2
+v2
+
+Figure 4: For a positive integer r, C2 ◦ K 4r2 −1 has perfect state transfer between u and v,
+and C4 ◦ K 4r2 −1 has real perfect state transfer between {u1, u2 } and {v1 , v2 }.
+In a graph G = (V, E), for a subset U ⊆ P
+V of vertices, we denote the real uniform
+−1/2
+superposition of vertices in U as eU = |U|
+v∈U ev . We say G has real perfect state
+T −itA(G)
+transfer between two subsets U1 , U2 ⊆ V if |eU1 e
+eU2 | = 1.
+Theorem 4.12. For each positive integer r, the following hold.
+i) C2 ◦ K 4r2 −1 has perfect state transfer between the vertices of C2 at time π/2.
+ii) C4 ◦ K 4r2 −1 has real perfect state transfer between its two antipodal pairs of vertices at
+time π/2.
+Proof. We apply Proposition
+4.11 with s = 0 and ℓ = r for a positive integer r. This shows
+√
+2 − 1) ◦ K has perfect state transfer between the inner two vertices
+4r
+that P4 (r) := K2
+(2/
+1
+√
+at time τ = π2 4r 2 − 1. Hence there exists a unimodular complex number γ such that
+e−iτ A( P4 (r)) e(u,0) = γe(v,0) . If follows from
+
+A(P4 (r)) e−iτ A(P4 (r)) e(u,0) = e−iτ A(P4 (r)) A(P4 (r))e(u,0) = γA(P4 (r))e(v,0)
+
+(49)
+
+that perfect state transfer also occurs between the
+√ antipodal vertices.
+By multiplying all weights of this√graph by 4r 2 − 1, we obtain a weighted graph Gr
+whose adjacency matrix is A(Gr ) = 4r 2 − 1A(P4 (r)); see Figure 5. Note Gr has perfect
+state transfer at time π/2 between the two inner vertices.
+15
+
+√
+a
+
+√
+
+2
+
+4r 2 − 1
+u
+
+v
+
+4r 2 − 1
+b
+
+Figure 5: A family of weighted paths Gr , for positive integer r, with perfect state transfer
+(between u and v, and between a and b).
+Moreover, Gr is the quotient of both C2 ◦ K 4r2 −1 and C4 ◦ K 4r2 −1 under natural equitable partitions. Since perfect state transfer is closed under taking quotient and lifting (see Bachman
+et al. [2], Theorem 1), this completes both claims.
+Consider the family of weighted paths Gr given in Figure 5. The weighted path G1
+corresponds to the distance quotient of the cube Q3 (see also Figure 6). It is known that
+the distance quotients of the cube Qn provide a family of weighted paths with perfect state
+transfer. The weighting schemes of these weighted paths are unimodal
+(single peaked),
+p
+where the edge weight between the kth and (k + 1)th vertices is (k + 1)(n − k) for k =
+0, . . . , n − 1. In contrast, the weighted paths Gr , for r > 1, exhibit weighting schemes that
+are not unimodal.
+√
+
+3
+
+2
+
+√
+
+3
+
+Figure 6: Example: a quotient and a lift of the hypercube Q3 .
+
+5
+
+Pretty Good State Transfer
+
+5.1
+
+Barbell Graphs
+
+We consider the family of barbell graphs (see Ghosh et al. [16]) and show that they exhibit
+pretty good state transfer.
+
+Figure 7: K2 ◦ K7 has pretty good state transfer between vertices marked white.
+Theorem 5.1. K2 ◦ Km has pretty good state transfer between the vertices of K2 for all
+m ≥ 1.
+
+16
+
+Proof. Let u and v denote the vertices of K2 . The eigenvalues of K2 are ±1, with eTu E± (K2 )ev =
+±1/2. Let m ≥ 1 be given. We show there is pretty good state transfer between (u, 0) and
+(v, 0) in K2 ◦ Km .
+p
+In Proposition 3.3, we have Λ± = ((m − 1) ∓ 1)2 + 4m which are irrational for m ≥ 1.
+If Λ± are linearly independent over Q, by Kronecker’s Theorem, there are integers ℓ and r±
+such that
+ℓΛ± /2 − r± ≈ −Λ± /4.
+(50)
+This shows that
+
+(2ℓ + 1)πΛ± /2 ≈ 2πr± .
+
+(51)
+
+|e−i((m−1)±1)t/2 cos (tΛ± /2) | ≈ 1.
+
+(52)
+
+So, if we let t = (2ℓ + 1)π, then
+
+By Proposition 3.3, we get |eT(u,0) e−itA(G◦H) e(v,0) | ≈ 1.
+On the other hand, if Λ± are linearly √
+dependent over Q, then there are integers a√
+± and
+a square-free integer Θ so that Λ± = a± Θ. Since m2 + 4 is not a perfect square, Θ is
+irrational. By Kronecker’s Theorem, there are integers ℓ and q such that
+√
+√
+ℓ Θ/2 − q ≈ − Θ/4.
+(53)
+This shows that
+(2ℓ + 1)πΛ± /2 ≈ 2πa± q.
+
+(54)
+
+Similarly, if we let t = (2ℓ + 1)π, by Proposition 3.3, we get |eT(u,0) e−itA(G◦H) e(v,0) | ≈ 1.
+
+5.2
+
+Hairy Cliques
+
+By Theorem 4.10, we know that there is no perfect state transfer between (v, 1) and (v, 2)
+in G ◦ K 2 unless v is isolated in G. We show a stronger result that there is no pretty good
+state transfer when G is the complete graph.
+Let Kn + I denote the graph whose adjacency matrix is the all-one matrix Jn . That is,
+Kn + I is obtained from the complete graph by adding self-loops to each vertex. Although
+the quantum walks on Kn and on Kn + I are equivalent up to phase factors, we show that
+in contrast to Theorem 4.10 with Kn ◦ K 2 , the corona (Kn + I) ◦ K 2 has pretty good state
+transfer between the vertices of K 2 ,
+
+Figure 8: K8 ◦ K 2 has no pretty good state transfer, while (K8 + I) ◦ K 2 has pretty good
+state transfer between every two vertices of degree 1 at distance 2.
+17
+
+Theorem 5.2. For n ≥ 3, there is no pretty good state transfer in Kn ◦ K 2 .
+Proof. By Theorem 2.5, we may rule out pretty good state transfer from (v, 0) to (v, a) for
+a = 1, 2, and from (v, a) to (w, b) for a, b = 0, 1, 2 and v 6= w.
+Next, we rule out pretty good state transfer between (v, 1) and (v, 2) for each vertex v
+of Kn . By Proposition 3.3, we may write
+eT(v,1) e−itA(Kn ◦K 2 ) e(v,2) = (eT1 z0 )(zT0 e2 ) +
+
+X
+
+X e−itλ±
+
+λ∈Sp(Kn ) ±
+
+√
+
+eT Eλ (Kn )ev
+λ2± + 2 v
+
+(55)
+
+where λ± = 12 (λ ± λ2 + 8) and z0 = √12 (e1 − e2 ) is an eigenvector of 0 in K 2 orthogonal to
+the all-one eigenvector. After some straightforward algebraic manipulation, we get
+
+ 
+
+
+X e−itλ±
+t√ 2
+t√ 2
+e−iλt/2
+iλ
+sin
+cos
+=
+λ +8 + √
+λ +8 .
+(56)
+λ2± + 2
+2
+2
+2
+λ2 + 8
+±
+Therefore, the transition matrix element eT(v,1) e−itA(Kn ◦K 2 ) e(v,2) is equal to
+1 1
+− +
+2 2
+
+X
+
+−iλt/2
+
+e
+
+λ∈Sp(Kn )
+
+
+
+
+
+
+t√ 2
+t√ 2
+iλ
+cos
+sin
+λ +8 + √
+λ + 8 eTv Eλ (Kn )ev . (57)
+2
+2
+2
+λ +8
+
+
+Since the spectra of Kn is {(n − 1)(1) , (−1)(n−1) }, we see that
+eT(v,1) e−itA(Kn ◦K 2 ) e(v,2)
+
+(58)
+
+
+
+
+1 (n − 1)eit/2
+3t i
+e−i(n−1)t/2
+Λt i(n − 1)
+3t
+Λt
+= − +
+cos − sin
++
+cos
+(59)
++
+sin
+2
+2n
+2
+3
+2
+2n
+2
+Λ
+2
+p
+where Λ = (n − 1)2 + 8. By Lemma A.1, a necessary condition for pretty good state
+transfer between (v, 1) and (v, 2) is that
+cos
+
+t
+3t
+cos ≈ −1
+2
+2
+
+(60)
+
+which is impossible.
+Theorem 5.3. Let Kn + I denote the graph obtained by adding self-loop to each vertex of
+the complete graph Kn , where n ≥ 1. Then for n ≥ 2, there is pretty good state transfer in
+(Kn + I) ◦ K 2 between vertices (v, 1) and (v, 2), for each vertex v of Kn , where the vertices
+of K 2 are denoted by 1 and 2.
+Proof. The spectrum of Kn + I is given by {n, 0} with the same eigenspaces as Kn . Thus,
+the transition matrix element eT(v,1) e−itA((Kn +I)◦K 2 ) e(v,2) may be derived from (57) since
+Eλ+1 (Kn + I) = Eλ (Kn ). Also, each vertex of Kn + I has the full eigenvalue support.
+Similar to (57), sufficient conditions for pretty good state transfer are:
+
+
+t√
+cos
+8
+≈ −1,
+(61)
+2
+
+
+ 
+t√ 2
+t
+n +8
+≈ −1.
+(62)
+n cos
+cos
+2
+2
+18
+
+p
+√
+√
+Since n2 + 8 is irrational for n ≥ 2, both n/ 2 and (n2 + 8)/2 are linearly independent
+over Q. We consider two cases based on whether (n2 + 8)/2 is a perfect square or not.
+If (n2 + 8)/2 is not a perfect square, by Kronecker’s Theorem, there are integers r, s, and
+ℓ so that
+
+
+n
+n
+√
+−s ≈ − √ ,
+(63)
+r
+2 2
+4 2
+!
+r
+r
+1 n2 + 8
+1 1 n2 + 8
+r
+−ℓ ≈
+−
+.
+(64)
+2
+2
+2 4
+2
+√
+So,
+if
+we
+let
+t
+=
+(2r
++
+1)π/
+2, then the last equations are equivalent to tn/2 ≈ 2πs and
+√
+t n2 + 8/2 ≈ (2ℓ + 1)π. Therefore, (61) and (62) are satisfied and we have pretty good state
+transfer.
+Otherwise, if (n2 + 8)/2 is a perfect square, then both n and (n2 + 8)/2 must be even.
+So, let (n2 + 8)/2 = (2x)2 and n = 2y, for some integers x and y. Substituting for n, we get
+y 2 + 2 = 2x2 . Reasoning modulo 4, we see x must be odd, say, x = 2q + 1 for some integer
+q. First, we apply Kronecker’s Theorem to obtain the integers r, s to satisfy (63), and then
+we let ℓ = r(2q + 1) + q to obtain an exact solution to (64). As before, this satisfies (61) and
+(62). Hence, we have pretty good state transfer.
+We observe that (K1 + I) ◦ K 2 is periodic but has no pretty good state transfer. The
+eigenvalues of the corona (K1 + I) ◦ K 2 are 2, 0, and −1, which shows periodicity. However,
+there is no perfect state transfer, since that would require cos(t/2) cos(3t/2) = −1, which is
+impossible. Because there is no perfect state transfer and the graph is periodic, there can
+be no pretty good state transfer (see Fan and Godsil [12]).
+
+Figure 9: The graph (K8 K2 ) ◦ K 2 has pretty good state transfer.
+Theorem 5.4. For all n 6= 1, 3, the graph (Kn K2 ) ◦ K 2 has pretty good state transfer
+between the vertices of K 2 .
+Proof. The set of eigenvalues of Kn K2 is given by {n, n − 2, 0, −2}. Similar to the proof
+of Theorem 5.2, by Lemma A.1, for each λ ∈ Sp(Kn K2 ), we require that
+ 
+
+
+t
+t√ 2
+cos
+λ cos
+λ + 8 ≈ −1
+(65)
+2
+2
+19
+
+If n = 1 or 3, this is impossible since 1 is an eigenvalue.
+For all other n, we choose times of the form t = 4πℓ so that the first cosine is always 1
+and we simultaneously approximate
+√
+2
+p 2ℓ n + 8 ≈ 2r + 1,
+2ℓ (n − 2)2 +
+√8 ≈ 2s + 1,
+(66)
+4ℓ√2 ≈ 2p + 1,
+4ℓ 3 ≈ 2q + 1
+p
+√
+√ √
+for some integers ℓ, r, s, p, and q. If the set S = { n2 + 8, (n − 2)2 + 8, 3, 2, 1} is
+linearly independent over Q, then Kronecker’s Theorem yields an integer ℓ which satisfies
+(66).
+of the form
+p
+√ We will now consider when S is linearly dependent. First√note that a number
+2
+2
+m + 8 is rational only for m = ±1. Since n 6= 1, 3, both n + 8 and (n − 2)2 + 8 are
+irrational. By Lemma 2.7, we are interested in only three cases:
+ √
+
+a√2
+√
+(67)
+m2 + 8 = a 3
+
+ap ′ 2
+(m ) + 8
+b
+
+′
+for integers a and b, and
+m,
+− 2}.
+√
+√ m ∈ {n, n √
+√ distinct integers
+2
+2
+For the cases when m + 8 = a 2 or m + 8 = a 3, after squaring and viewing both
+sides modulo 4, we see that a must
+odd integer, so (66) can still be approximated.
+√be twice an p
+2
+Now consider the case when n + 8 and (n − 2)2 + 8 are linearly dependent. Again
+by Lemma 2.7, n2 + 8 and (n − 2)2 + 8 must have the same square-free part. Denote it by
+∆ so that the dependence relation can be expressed by
+
+n2 + 8 = a2 ∆,
+(n − 2)2 + 8 = b2 ∆.
+
+(68a)
+(68b)
+
+(a2 − b2 )∆ = 4(n − 1).
+
+(69)
+
+Subtracting the two equations:
+
+Because ∆ is square-free, a2 − b2 must be even and therefore divisible by 4. Let 4x = a2 − b2 .
+Then making the substitution n = x∆ + 1 into equation (68a) gives the equation
+x2 ∆2 + 2x∆ + 9 = a2 ∆.
+(70)
+√
+It follows that ∆ divides 9. We know that ∆ 6= 1, since n2 + 8 is irrational,
+and√
+since ∆ is
+√
+2
+square-free, it must be that ∆ = 3. This reduces to the case when m + 8 = a 3, which
+we have already handled. This completes the proof.
+
+5.3
+
+Thorny Graphs
+
+The corona product of a graph with K1 is called a thorny graph (see Gutman [23]).
+20
+
+Theorem 5.5. Let G be a graph and let u, v be two of its vertices. Suppose there is perfect
+state transfer between u and v at time t = π/g, for some positive integer g, and that 0 is not
+in the eigenvalue support of u. Then there is pretty good state transfer between (u, 0) and
+(v, 0) in G ◦ K1 .
+Proof. Let S be the eigenvalue support of u in G. By Theorem 2.1, if G has perfect state
+transfer at time π/g between the vertices u and v, for some integer g, all eigenvalues in S
+must be
+each eigenvalue λ in S, let cλ be the square-free part of λ2 + 4, so that
+√ integers. For
+√
+Λλ = λ2 + 4 = sλ cλ for some integers sλ . Since 0 is not in the eigenvalue support of u,
+then Λλ is irrational and cλ > 1 for each λ in S. By Lemma 2.7,
+√
+{ cλ : λ ∈ suppG (u)} ∪ {1}
+
+(71)
+
+is linearly independent over Q. Kronecker’s Theorem implies that there exist integers ℓ, qλ
+such that
+√
+cλ
+√
+ℓ cλ − qλ ≈ −
+.
+(72)
+2g
+Multiplying by 4sλ yields that
+
+
+2
+4ℓ +
+g
+
+
+
+Λλ ≈ 4qλ sλ .
+
+(73)
+
+Therefore, at t = (4ℓ + 2/g)π, we have cos(Λλ t/2) ≈ 1 for each λ in S. By Proposition 3.3,
+
+
+X
+λ
+T
+−itA(G◦K1 )
+−itλ/2
+sin(Λλ t/2) eTu Eλ (G)ev
+cos(Λλ t/2) − i
+e(u,0) e
+e(v,0) =
+e
+Λλ
+λ∈Sp(G)
+X
+π
+(74)
+≈
+e−i(2π)ℓλ e−i g λ eTu Eλ (G)ev
+λ∈Sp(G)
+
+= eTu e−i(π/g)A(G) ev ,
+
+because all the eigenvalues λ in the support of u are integers. Since G has perfect state
+transfer between u and v at time π/g, this completes the proof.
+When zero is in the eigenvalue support of u, we need a slightly stronger condition to get
+pretty good state transfer in G ◦ K1 .
+Theorem 5.6. Let G be a graph having zero as an eigenvalue. Suppose that G has perfect
+state transfer at time π/2 between vertices u and v. Then there is pretty good state transfer
+between (u, 0) and (v, 0) in the corona G ◦ K1 .
+√
+Proof. Similar to the proof of Theorem 5.5, for each λ ∈ suppG (u), we can write Λλ = sλ cλ
+where cλ is the square-free part of λ2 + 4 and sλ is an integer. Note that cλ = 1 if and only
+if λ = 0. The set
+√
+{ cλ : λ ∈ suppG (u), λ 6= 0} ∪ {1}
+(75)
+is linearly independent over Q.
+
+21
+
+For λ 6= 0, Kronecker’s Theorem implies that there exist integers l and qλ such that
+√
+cλ
+√
+1
++
+.
+(76)
+ℓ cλ − qλ ≈ −
+4
+2sλ
+At time t = (4ℓ + 1)π, we have cos(Λ0 t/2) = −1, and cos(Λλ t/2) ≈ −1 for λ 6= 0. By
+Proposition 3.3,
+
+
+X
+λ
+T
+−itA(G◦K1 )
+−itλ/2
+cos(Λλ t/2) − i
+e(u,0) e
+e(v,0) =
+e
+sin(Λλ t/2) eTu Eλ (G)ev
+Λλ
+λ∈Sp(G)
+X
+π
+(77)
+≈−
+e−i(2π)ℓλ e−i 2 λ eTu Eλ (G)ev
+λ∈Sp(G)
+
+= −eTu e−i(π/2)A(G) ev .
+
+Since G has perfect state transfer between u and v at time π/2, this completes the proof.
+In contrast to Corollary 4.5, the following shows that certain thorny distance-regular
+graphs have pretty good state transfer, but not perfect state transfer.
+Corollary 5.7. Let G be a graph from one of the following families:
+• d-cubes Qd , for d ≥ 2.
+• Cocktail party graphs nK2 when n is even.
+• Halved 2d-cubes 21 Q2d , for d ≥ 1.
+
+Then G ◦ K1 has pretty good state transfer between antipodal vertices in G.
+
+For a distance-regular graph G with diameter d, let Gℓ be a graph obtained from G by
+connecting two vertices u and v if they are at distance ℓ from each other, where ℓ ranges
+from 0 to d. It is customary to denote Aℓ (G) as the adjacency matrix of graph Gℓ . We say
+G is antipodal if Gd is a disjoint union of cliques of the same size; here, these cliques are
+called the antipodal classes or fibres of G.
+Lemma 5.8 (Coutinho et al. [11], Lemma 4.4). Let G be a distance-regular graph of diameter
+d with eigenvalues λ0 > λ1 >
+P.d. . > λd . Let the spectral decomposition of the adjacency matrix
+of G be given by A(G) = j=0 λj Ej (G). Suppose that G is antipodal with classes of size
+two. Then
+Ad (G)Ej (G) = (−1)j Ej (G).
+(78)
+
+Figure 10: Q4 ◦ K1 has PGST between the white vertices.
+22
+
+The following observation shows that it is not necessary for G to have perfect state
+transfer in order for G ◦ H to have pretty good state transfer.
+Theorem 5.9. Let n ≥ 3 be an odd integer, and let u and v be antipodal vertices of the
+cocktail party graph nK2 . Then there is pretty good state transfer between (u, 0) and (v, 0)
+in nK2 ◦ K1 .
+Proof. The eigenvalues of nK2 are λ0 = 2n − 2, λ1 = 0, and λ2 = −2. Since the cocktailparty graph is an antipodal distance-regular graph with fibers of size two, from Lemma 5.8,
+the eigenprojectors satisfy
+eTu Ej (nK2 )ev = (−1)j eTu Ej (nK2 )eu
+(79)
+q
+for j = 0, 1, 2. From Proposition 3.3, letting Λj =
+λ2j + 4, it suffices to approximate
+e−itλj /2 ≈ 1 and
+
+cos (Λj t/2) ≈ (−1)j+1 .
+
+(80)
+
+−itλj /2
+
+For all integers ℓ, at time t = 4πℓ, we have e
+=√
+1 and cos(Λ1 t/2) = 1. We will apply
+Kronecker’s Theorem to Λ0 and Λ2 . Note that Λ2 = 2 2 while
+p
+p
+(81)
+Λ0 = 4 + 4(n − 1)2 = 2 1 + (n − 1)2 ,
+and 1 + (n − 1)2 is always odd when n is odd. Let c0 denote the square-free part of Λ20 ; then,
+√
+Λ0 = 2s0 c0 for some odd integer s0 . Choose integers ℓ, q0 , and q2 such that
+√
+1
+ℓ c0 − q0 ≈ ,
+4
+√
+1
+ℓ 2 − q2 ≈ .
+4
+
+(82)
+(83)
+
+At time t = 4πℓ, we note tΛ0 /2 ≈ 4πq0 s0 + πs0 and tΛ2 /2 ≈ 4πq2 + π, implying that (80) is
+satisfied.
+
+Acknowledgments
+We thank Chris Godsil for helpful remarks on state transfer and Adi Makmal for discussions
+about embedded hypercubes. The research of E.A., Z.B., J.M., and C.T. was supported
+by NSF grant DMS-1262737 and NSA grant H98230-15-1-0044. Part of this work was done
+while C.T. was visiting Institut Henri Poincaré.
+
+References
+[1] E. Ackelsberg, Z. Brehm, A. Chan, J. Mundinger, and C. Tamon. Laplacian state
+transfer in coronas. quant-ph/1508.05458.
+[2] R. Bachman, E. Fredette, J. Fuller, M. Landry, M. Opperman, C. Tamon, and A. Tollefson. Perfect state transfer on quotient graphs. Quantum Information and Computation,
+12(3&4):293–313, 2012.
+23
+
+[3] S. Barik, S. Pati, and B. Sarma. The spectrum of the corona of two graphs. SIAM
+Journal on Discrete Mathematics, 21:47–56, 2007.
+[4] S. Bose. Quantum communication through an unmodulated spin chain. Physical Review
+Letters, 91(20):207901, 2003.
+[5] A. E. Brouwer, A. M. Cohen, and A. Neumaier. Distance-regular graphs. SpringerVerlag, 1989.
+[6] A. Casaccino, S. Lloyd, S. Mancini, and S. Severini. Quantum state transfer through a
+qubit network with energy shifts and fluctuations. International Journal of Quantum
+Information, 7(8):1417–1427, 2009.
+[7] A. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. Spielman. Exponential
+algorithmic speedup by a quantum walk. In Proceedings of the 35th ACM Symposium
+on Theory of Computing, pages 59–68, 2003.
+[8] M. Christandl, N. Datta, T. Dorlas, A. Ekert, A. Kay, and A. Landahl. Perfect transfer
+of arbitrary states in quantum spin networks. Physical Review A, 71:032312, Mar 2005.
+[9] M. Christandl, N. Datta, A. Ekert, and A. Landahl. Perfect state transfer in quantum
+spin networks. Physical Review Letters, 92:187902, 2004.
+[10] G. Coutinho. Quantum State Transfer in Graphs. PhD thesis, University of Waterloo,
+2014.
+[11] G. Coutinho, C. Godsil, K. Guo, and F. Vanhove. Perfect state transfer on distanceregular graphs and association schemes. Linear Algebra and its Applications, 478:108–
+130, 2015.
+[12] X. Fan and C. Godsil. Pretty good state transfer on double stars. Linear Algebra and
+Its Applications, 438(5):2346–2358, 2013.
+[13] E. Farhi, J. Goldstone, and S. Gutmann. A quantum algorithm for the hamiltonian
+NAND tree. Theory of Computing, 4(8):169–190, 2008.
+[14] E. Farhi and S. Gutmann. Quantum computation and decision trees. Physical Review
+A, 58:915–928, 1998.
+[15] R. Frucht and F. Harary. On the corona of two graphs. Aequationes Mathematicae,
+4(3):322–325, 1970.
+[16] A. Ghosh, S. Boyd, and A. Saberi. Minimizing effective resistance of a graph. SIAM
+Review, 50(1):37–66, 2008.
+[17] C. Godsil. Periodic graphs. Electronic Journal of Combinatorics, 18(1):P23, 2011.
+[18] C. Godsil. State transfer on graphs. Discrete Mathematics, 312(1):129–147, 2011.
+
+24
+
+[19] C. Godsil. When can perfect state transfer occur? Electronic Journal of Linear Algebra,
+23, 2012.
+[20] C. Godsil. Graph spectra and quantum walks, 2015.
+[21] C. Godsil, S. Kirkland, S. Severini, and J. Smith. Number-theoretic nature of communication in quantum spin systems. Physical Review Letters, 109(5):050502, 2012.
+[22] C. Godsil and G. Royle. Algebraic Graph Theory. Springer, 2001.
+[23] I. Gutman. Distance of thorny graphs.
+63(77):31–36, 1998.
+
+Publications de l’Institute Mathématique,
+
+[24] G. H. Hardy and E. M. Wright. An Introduction to the Theory of Numbers. Oxford
+University Press, fifth edition, 2000.
+[25] A. Makmal, M. Zhu, D. Manzano, M. Tiersch, and H. J. Briegel. Quantum walks on
+embedded hypercubes. Physical Review A, 90:022314, Aug 2014.
+[26] D. Newman and H. Flanders. Solution to problem 4797. American Mathematical
+Monthly, 67(2):188–189, 1960.
+[27] L. Vinet and A. Zhedanov. Almost perfect state transfer in quantum spin chains.
+Physical Review A, 86:052319, 2012.
+
+25
+
+A
+
+Auxiliary lemma
+
+Lemma A.1. Let z1 (t), z2 (t), . . . , zm (t) be complex-valued functions satisfying
+• z1 (t) ≡ 1 or z1 (t) ≡ −1.
+• for j = 2, . . . , m,
+
+zj (t) = eiαj t (cos(θj t) + i∆j sin(θj t)),
+
+(84)
+
+for some real-valued constants αj , θj and ∆j such that |∆j | < 1.
+Let (p1 , . . . , pm ) ∈ (0, 1)m be a probability distribution. Suppose for each ǫ > 0, there is a
+τ > 0 such that
+m
+X
+pj zj (τ ) > 1 − ǫ.
+(85)
+j=1
+
+There exists a constant M such that for ǫ < min{p1 , . . . , pm }/2 and for each j = 2, . . . , m
+√
+(86)
+|z1 (τ ) − cos(θj τ ) cos(αj τ )| < M ǫ.
+
+Proof. We write the functions zj (t) in polar forms as
+zj (t) = rj (t)eiβj (t)
+
+(87)
+
+for some real-valued function βj (t) where r1 (t) = 1 and
+q
+for j = 2, . . . , m.
+rj (t) = 1 + (∆2j − 1) sin2 (θj t),
+
+(88)
+
+Since |∆j | < 1, note 0 ≤ rj (t) ≤ 1 for j = 1, . . . , m.
+Using triangle inequality on (85), we get
+1−ǫ <
+
+m
+X
+k=1
+
+pk rk (τ ) ≤
+
+m
+X
+
+pk +pj (rj (τ )−1) = 1−pj +pj rj (τ ),
+
+for j = 1, . . . , m. (89)
+
+k=1
+
+Hence rj (τ ) > (pj − ǫ)/pj for j = 1, . . . , m. For the rest of the proof, we assume ǫ < p⋆ /2
+where p⋆ = min{p1 , . . . , pm }. As a result,
+rj (τ ) > 1 −
+
+ǫ
+1
+>
+pj
+2
+
+for j = 1, . . . , m.
+
+(90)
+
+Squaring the left-hand side of (85), we get from (87) and (90) that
+m
+X
+
+2
+
+pk zk (τ )
+
+=
+
+m
+X
+
+p2k rk (τ )2 + 2
+
+k=1
+
+k=1
+
+≤
+
+m
+X
+k=1
+
+X
+
+pk pℓ rk (τ )rℓ (τ ) cos(βk (τ ) − βℓ (τ ))
+
+(91)
+
++ 2p1 pj r1 (τ )rj (τ )[cos(β1 (τ ) − βj (τ )) − 1]
+
+(92)
+
+k<ℓ
+
+pk
+
+!2
+
+≤ 1 − 2p1 pj rj (τ )| cos(β1 (τ ) − βj (τ )) − 1|
+≤ 1 − p1 pj | cos(β1 (τ ) − βj (τ )) − 1|.
+26
+
+(93)
+(94)
+
+Since cos β1 (τ ) = z1 (τ ) ∈ {−1, +1}, we have
+
+| cos(β1 (τ ) − βj (τ )) − 1| = |z1 (τ ) cos βj (τ ) − 1| = | cos βj (τ ) − z1 (τ )|.
+
+(95)
+
+It follows from (85), (94) and (95) that, for j = 2, . . . , m,
+
+ǫ(2 − ǫ)
+.
+p1 pj
+
+(96)
+
+cos(αj τ ) cos(θj τ )
+∆j sin(αj τ ) sin(θj τ )
+.
+− z1 (τ ) −
+rj (τ )
+rj (τ )
+
+(97)
+
+| cos βj (τ ) − z1 (τ )| <
+From (84) and (87), we get
+| cos βj (τ ) − z1 (τ )| ≥
+Using (88), we get
+|sin(θj (τ )| =
+
+s
+
+1 − rj (τ )2
+.
+1 − ∆2j
+
+(98)
+
+Together with (90), we bound the second summand in (97) as follows:
+s
+1
+∆j sin(αj τ ) sin(θj τ )
+∆j
+≤ q
+−1
+2
+rj (τ )
+1 − ∆2j rj (τ )
+p
+(2pj − ǫ)ǫ
+∆j
+< q
+=: M ′ (j).
+(p
+−
+ǫ)
+2
+j
+1−∆
+
+(99)
+
+(100)
+
+j
+
+As a result, we get
+
+1
+cos(αj τ ) cos(θj τ ) − M ′ (j)
+rj (τ )
+
+
+1
+− 1 − M ′ (j)
+≥ |z1 (τ ) − cos(αj τ ) cos(θj τ )| −
+rj (τ )
+ǫ
+≥ |z1 (τ ) − cos(αj τ ) cos(θj τ )| −
+− M ′ (j)
+pj − ǫ
+
+| cos βj (τ ) − z1 (τ )| >
+
+z1 (τ ) −
+
+(101)
+(102)
+(103)
+
+It follows from (96) and (103) that
+
+|z1 (τ ) − cos(αj τ ) cos(θj τ )| <
+
+ǫ(2 − ǫ)
+ǫ
++
++ M ′ (j)
+p1 pj
+pj − ǫ
+
+√
+∆j
+ǫ(2 − ǫ) 2ǫ
+2 2ǫ
++
++q
+<
+p2⋆
+p⋆
+1 − ∆2 p⋆
+
+(104)
+(105)
+
+j
+
+since (pj − ǫ)/pj ≥ 1/2 by (90). Let
+
+
+√ 
+2
+2 2
+2
+∆j
+M = max
++
++q
+.
+2
+j  p⋆
+p⋆
+1 − ∆2 p⋆ 
+
+(106)
+
+j
+
+Then
+
+√
+|z1 (τ ) − cos(αj τ ) cos(θj τ )| < M ǫ.
+
+27
+
+(107)
+
+

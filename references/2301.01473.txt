@@ -1,0 +1,1981 @@
+State Transfer in Complex Quantum Walks
+
+arXiv:2301.01473v1 [math.CO] 4 Jan 2023
+
+Antonio Acuaviva1 , Ada Chan2 , Summer Eldridge3, Chris Godsil4, Matthew How-Chun-Lun5,
+Christino Tamon6 , Emily Wright7 , and Xiaohong Zhang8
+1
+
+Department of Mathematics, Universidad Complutense de Madrid
+2
+Department of Mathematics and Statistics, York University
+3
+Department of Mathematics, University of Toronto
+4
+Department of Combinatorics and Optimization, University of Waterloo
+5
+Department of Mathematics, McMaster University
+6
+Department of Computer Science, Clarkson University
+7
+Department of Mathematics, Queen’s University
+8
+Centre de recherches mathématiques, Université de Montréal
+January 5, 2023
+
+Abstract
+Given a graph with Hermitian adjacency matrix 𝐻, perfect state transfer occurs from vertex 𝑎 to vertex
+𝑏 if the (𝑏, 𝑎)-entry of the unitary matrix exp(−𝑖𝐻𝑡) has unit magnitude for some time 𝑡. This phenomenon
+is relevant for information transmission in quantum spin networks and is known to be monogamous under
+real symmetric matrices. We prove the following results:
+• For oriented graphs (whose nonzero weights are ±𝑖), the oriented 3-cycle and the oriented edge
+are the only graphs where perfect state transfer occurs between every pair of vertices. This settles
+a conjecture of Cameron et al. [1]. On the other hand, we construct an infinite family of oriented
+graphs with perfect state transfer between any pair of vertices on a subset of size four.
+• There are infinite families of Hermitian graphs with one-way perfect state transfer, where perfect
+state transfer occurs without periodicity. In contrast, perfect state transfer implies periodicity whenever the adjacency matrix has algebraic entries (see Godsil [2]).
+• There are infinite families with non-monogamous pretty good state transfer in rooted graph products. In particular, we generalize known results on double stars (due to Fan and Godsil [3]) and
+on paths with loops (due to Kempton, Lippner and Yau [4]). The latter extends the experimental
+observation of quantum transport (made by Zimborás et al. [5]) and shows non-monogamous pretty
+good state transfer can occur amongst distant vertices.
+
+1 Introduction
+Given a graph 𝑋 = (𝑉 , 𝐸) with adjacency matrix 𝐴, a continuous-time quantum walk on 𝑋 is defined by the
+time-dependent unitary matrix 𝑈 (𝑡) = 𝑒−𝑖𝐴𝑡 . This natural quantum generalization of continuous-time random walks is important for designing quantum algorithms. Childs et al. [6] showed that a continuous-time
+quantum walk algorithm provides an exponential time speedup for an explicit search problem on graphs.
+
+1
+
+Subsequently, Childs [7] showed that continuous-time quantum walk is a universal model of quantum computation.
+Our focus in this paper is motivated by Bose [8] who studied quantum communication via continuoustime quantum walk on graphs. We say that there is pretty good state transfer in a graph 𝑋 from vertex 𝑎 to
+‖
+vertex 𝑏 if for any 𝜖 > 0, there is a time 𝑡 so that ‖
+‖𝑈 (𝑡)𝑒𝑎 − 𝛾𝑒𝑏 ‖ ≤ 𝜖 where 𝛾 is a phase factor. Here, 𝑒𝑎
+denotes the unit vector with 1 at position 𝑎 and 0 elsewhere; similarly for 𝑒𝑏 . If 𝜖 = 0 is achievable, we say
+there is perfect state transfer in 𝑋 from 𝑎 to 𝑏 at time 𝑡.
+Kay [9] proved a monogamy property for perfect state transfer on graphs with real symmetric adjacency
+matrices: if there is perfect state transfer from 𝑎 to 𝑏 and from 𝑎 to 𝑐 then 𝑏 = 𝑐. In contrast, Cameron
+et al. [1] showed that there are oriented graphs (whose adjacency matrices are Hermitian with ±𝑖 nonzero
+entries) where state transfer occurs between every pair of vertices. This latter property is called universal
+state transfer. Their primary examples are oriented cycles of prime order with universal pretty good state
+transfer. A notable exception is the oriented 3-cycle which exhibits universal perfect state transfer.
+It was conjectured in [1] that the oriented 𝐾2 and 3-cycle are the only oriented graph with universal perfect
+state transfer. We prove their conjecture in this work. This confirms that universal perfect state transfer is
+an extremely rare phenomenon in oriented graphs. On the other hand, there are known infinite families of
+graphs with universal perfect state transfer but with adjacency matrices that are Hermitian matrices with no
+restriction on the entries (see Connelly et al. [10]). We call these Hermitian graphs.
+Godsil and Lato [11] proved a strong characterization of perfect state tranfer in oriented graphs and
+observed that perfect state transfer always implies periodicity (by the Gelfond-Schneider theorem). In fact,
+Godsil [2] had observed the latter property holds for any adjacency matrix with algebraic entries. Our next
+observation shows that the latter assumption is necessary to guarantee periodicity. We construct the first
+infinite family of Hermitian graphs with one-way perfect state transfer, where perfect state transfer occurs
+without periodicity. These examples also exhibit a one-time perfect state transfer property where perfect state
+transfer occurs at a single unique time (and never to repeat again).
+Godsil and Lato [11] also introduced a relaxation of universal perfect state transfer called multiple perfect
+state transfer. We say a graph 𝑋 has multiple state transfer on a subset 𝑆 ⊂ 𝑉 (𝑋) of vertices, with |𝑆| ≥ 3,
+if state transfer occurs between every pair of vertices of 𝑆. An explicit example of a 8-vertex circulant with
+multiple perfect state tranfer was given in [11], but it was not clear if there are more examples sharing the
+same properties. We construct the first infinite family of oriented graphs with multiple perfect state transfer
+(which contains the aforementioned 8-vertex circulant as a special case). This shows that, unlike universal
+perfect state transfer, multiple perfect state transfer is not an extremely rare phenomenon.
+It is known that perfect state transfer is closed under the Cartesian graph product. In this work, under mild
+assumptions, we show that multiple state transfer is closed under the rooted graph product (see Godsil and
+McKay [12]). First, we prove a complete characterization of pretty good state transfer on the rooted product
+of the oriented 3-cycle with stars 𝐾1,𝑚 . This generalizes a result of Fan and Godsil [3] on the double stars.
+Next, we consider rooted product with single-looped paths instead of stars. Let 𝑋 be a 𝑛-vertex circulant
+with universal perfect state transfer and let 𝑃𝑚𝛾 be a 𝑚-vertex path with a self-loop of weight 𝛾 at one of its
+endpoints. We prove that the rooted product 𝑋◦𝑃𝑚𝛾 has multiple pretty good state transfer between every
+pair of vertices with self-loop provided 𝛾 is transcendental. This generalizes a result of Kempton, Lippner
+and Yau [4] and shows the power of loops to facilitate multiple state transfer among distant vertices. In the
+special case when 𝑋 is the oriented 3-cycle, our result strengthens the experimental observations in Zimborás
+et al. [5] (with the help of self-loops).
+
+2
+
+2 Preliminary
+Given a graph 𝑋 and an associated Hermitian matrix 𝐻, the transition matrix of its continuous-time quantum
+walk is
+𝑈 (𝑡) = 𝑒−i𝑡𝐻 .
+We call 𝑋 a Hermitian graph if we do not assume any additional condition on the entries of 𝐻. For the
+special case where 𝑋 is an oriented graph, we use the Hermitian matrix 𝐻 defined as
+⎧i
+⎪
+𝐻𝑎,𝑏 = ⎨−i
+⎪0
+⎩
+
+if there is an arc from 𝑎 to 𝑏 in 𝑋,
+if there is an arc from 𝑏 to 𝑎 in 𝑋, and
+if there is no arc between 𝑎 and 𝑏 in 𝑋.
+
+Let 𝜃1 , … , 𝜃𝑑 be distinct eigenvalues of 𝐻. For 𝑟 = 1, … , 𝑑, let 𝐸𝑟 denote the orthogonal projection
+∑
+matrix onto the 𝜃𝑟 -eigenspace of 𝐻. Then 𝐸𝑟 𝐸𝑠 = 𝛿𝑟,𝑠 𝐸𝑟 and 𝑟 𝐸𝑟 = 𝐼. The spectral decomposition
+∑
+𝐻 = 𝑟 𝜃𝑟 𝐸𝑟 gives
+𝑑
+∑
+𝑒−i𝑡𝜃𝑟 𝐸𝑟 .
+𝑈 (𝑡) =
+𝑟=1
+
+∑
+Given a unit vector 𝑣 ∈ ℂ𝑛 , the system with initial state 𝑣 evolves to 𝑈 (𝑡)𝑣 = 𝑟 𝑒−𝑖𝑡𝜃𝑟 𝐸𝑟 𝑣 at time 𝑡. Therefore
+the pair (𝜃𝑟 , 𝐸𝑟 ) with 𝐸𝑟 𝑣 = 0 does not influence the state. We define the eigenvalue support of the vector
+𝑣 to be Φ𝑣 = {𝜃𝑟 ∶ 𝐸𝑟 𝑣 ≠ 0}. In the case 𝑣 = 𝑒𝑎 for some vertex 𝑎, we also call Φ𝑒𝑎 (Φ𝑎 for short) the
+eigenvalue support of 𝑎.
+Perfect state transfer from vertex 𝑎 to vertex 𝑏 occurs at time 𝜏 if
+𝑈 (𝜏)𝑒𝑎 = 𝛼𝑒𝑏 ,
+
+(1)
+
+for some phase factor 𝛼. If 𝑎 = 𝑏 then we say the quantum walk is periodic at 𝑎.
+Multiplying 𝐸𝑟 to both sides of Equation (1) gives
+𝑒−i𝜏𝜃𝑟 𝐸𝑟 𝑒𝑎 = 𝛼𝐸𝑟 𝑒𝑏 .
+
+(2)
+
+Hence, for 𝑟 = 1, … , 𝑑, there exists 𝑞𝑟 (𝑎, 𝑏) ∈ [0, 2𝜋) such that
+𝐸𝑟 𝑒𝑎 = 𝑒i𝑞𝑟 (𝑎,𝑏) 𝐸𝑟 𝑒𝑏 .
+
+(3)
+
+We say the vertices 𝑎 and 𝑏 are strongly cospectral when this condition is satisfied, and call 𝑞𝑟 (𝑎, 𝑏) the quarrel
+from 𝑎 to 𝑏 relative to the eigenvalue 𝜃𝑟 . Note that strongly cospectral vertices have the same eigenvalue
+support.
+We study perfect state transfer in oriented graphs and in Hermitian graphs in Sections 3 and 4. We give
+here a characterization of perfect state transfer in Hermitian graphs.
+Theorem 2.1. Perfect state transfer occurs from 𝑎 to 𝑏 in a Hermitian graph 𝑋 if and only if
+i. 𝑎 and 𝑏 are strongly cospectral vertices with quarrels 𝑞𝑟 (𝑎, 𝑏), for 𝜃𝑟 ∈ Φ𝑎 , and
+ii. for 𝜃𝑟 , 𝜃𝑠 , 𝜃ℎ , 𝜃𝓁 ∈ Φ𝑎 such that ℎ ≠ 𝓁, there exist integers 𝑚𝑟,𝑠 and 𝑚ℎ,𝓁 satisfying
+𝑞𝑟 (𝑎, 𝑏) − 𝑞𝑠 (𝑎, 𝑏) + 2𝑚𝑟,𝑠 𝜋
+𝜃𝑟 − 𝜃 𝑠
+.
+=
+𝜃ℎ − 𝜃 𝓁
+𝑞ℎ (𝑎, 𝑏) − 𝑞𝓁 (𝑎, 𝑏) + 2𝑚ℎ,𝓁 𝜋
+3
+
+Proof. From Equation (3), we see that perfect state transfer from 𝑎 to 𝑏 implies they are strongly cospectral.
+Suppose 𝑎 and 𝑏 are strongly cospectral with quarrel 𝑞𝑟 (𝑎, 𝑏), for 𝜃𝑟 ∈ Φ𝑎 (= Φ𝑏 ). Then Equation (1)
+holds if and only if for 𝜃𝑟 , 𝜃𝑠 ∈ Φ𝑎 ,
+𝛼 = 𝑒i(𝑞𝑟 (𝑎,𝑏)−𝜏𝜃𝑟 ) = 𝑒i(𝑞𝑠 (𝑎,𝑏)−𝜏𝜃𝑠 ) .
+This is equivalent to
+and
+
+(4)
+
+𝑒i𝜏 (𝜃𝑟 −𝜃𝑠 ) = 𝑒i(𝑞𝑟 (𝑎,𝑏)−𝑞𝑠 (𝑎,𝑏))
+(
+)
+𝜏 𝜃𝑟 − 𝜃𝑠 = 𝑞𝑟 (𝑎, 𝑏) − 𝑞𝑠 (𝑎, 𝑏) + 2𝑚𝑟,𝑠 𝜋,
+
+for some integer 𝑚𝑟,𝑠 . Condition (ii) follows immediately.
+We say the ratio condition on Φ𝑎 holds if
+𝜃𝑟 − 𝜃𝑠
+∈Q
+𝜃ℎ − 𝜃𝓁
+
+(5)
+
+for 𝜃𝑟 , 𝜃𝑠 , 𝜃ℎ , 𝜃𝓁 ∈ Φ𝑎 such that ℎ ≠ 𝓁.
+Theorem 2.2. In a Hermitian graph 𝑋, 𝑎 is periodic if and only if the ratio condition on Φ𝑎 holds.
+Proof. Note that 𝑞𝑟 (𝑎, 𝑎) = 0 for 𝜃𝑟 ∈ Φ𝑎 . The result follows immediately from Theorem 2.1.
+In Section 5, we consider a relaxation of perfect state transfer. A graph has pretty good state transfer
+from 𝑎 to 𝑏 if, for any 𝜀 > 0, there is a time 𝜏 satisfying
+|𝑈 (𝜏)𝑎,𝑏 | ≥ 1 − 𝜀.
+
+(6)
+
+Using the proof of Lemma 13.1 in [13], we conclude that if there is pretty good state transfer from 𝑎 to 𝑏
+then 𝑎 and 𝑏 are strongly cospectral. From
+𝑈 (𝑡)𝑎,𝑏 =
+
+𝑑
+∑
+
+𝑒−i𝑡𝜃𝑟 𝑒𝑇𝑎 𝐸𝑟 𝑒𝑏 =
+
+𝑑
+∑
+
+𝑒i(𝑞𝑟 (𝑎,𝑏)−𝑡𝜃𝑟 ) (𝐸𝑟 )𝑏,𝑏 ,
+
+𝑟=1
+
+𝑟=1
+
+we see that there is pretty good state transfer from 𝑎 to 𝑏 if and only if for any 𝜖 > 0, there exists 𝜏 > 0 and
+𝛿𝜖 ∈ R such that
+|𝜏𝜃𝑟 − 𝑞𝑟 (𝑎, 𝑏) − 𝛿𝜖 | < 𝜖 (mod 2𝜋), for 𝑟 ∈ Φ𝑎 .
+Theorem 2.3. (Kronecker [14]) Let 𝜃1 , … , 𝜃𝑑 and 𝑞1 , … , 𝑞𝑑 be arbitrary real numbers. For any 𝜖 > 0, the
+system of inequalities
+|𝜃𝑟 𝜏 − 𝑞𝑟 | < 𝜖 (mod 2𝜋), 𝑟 = 1, … , 𝑑
+admits a solution for 𝜏 if and only if, for all set of integers 𝑙1 , … , 𝑙𝑑 ,
+𝑙 1 𝜃1 + … + 𝑙 𝑑 𝜃𝑑 = 0
+implies
+𝑙1 𝑞1 + … + 𝑙𝑑 𝑞𝑑 = 0 (mod 2𝜋).
+4
+
+Theorem 2.4. Let 𝑋 be Hermitian graph with eigenvalues 𝜃1 , … , 𝜃𝑑 ∈ Φ𝑎 . Then 𝑋 has pretty good state
+transfer from 𝑎 to 𝑏 if and only if the following conditions hold.
+i. The vertices 𝑎 and 𝑏 are strongly cospectral with quarrels 𝑞𝑟 (𝑎, 𝑏), for 𝑟 = 1, … , 𝑑.
+∑
+ii. There exists 𝛿 ∈ R such that, for all integers 𝑙1 , … , 𝑙𝑑 satisfying 𝑑𝑟=1 𝑙𝑟 𝜃𝑟 = 0, we have
+𝑑
+∑
+(
+)
+𝑙𝑟 𝑞𝑟 (𝑎, 𝑏) + 𝛿 = 0 (mod 2𝜋).
+
+(7)
+
+𝑟=1
+
+Proof. The result follows from Proposition 4.01 of [15] and Theorem 2.3.
+Let 𝑆 be a set of vertices in 𝑋, we say multiple pretty good state transfer occurs on 𝑆 if there is pretty
+good state transfer between any two vertices in 𝑆. Section 5 gives two families of Hermitian graphs that have
+multiple pretty good state transfer.
+
+3 Perfect state transfer in oriented graphs
+For graphs with real symmetric adjacency matrix, Kay shows that perfect state transfer cannot happen from
+one vertex to two distinct vertices [9]. This monogamous behaviour does not hold in Hermitian graphs with
+non-real entries. A graph has multiple perfect state transfer on a set 𝑆 of at least three vertices if there is
+perfect state transfer between any two vertices in 𝑆. When 𝑆 = 𝑉 (𝑋), we say 𝑋 has universal perfect
+state transfer. Lemma 22 of [10] gives a construction of Hermitian circulants that admit universal perfect
+state transfer. The oriented 3-cycle is a special case of this construction. In the same paper, Cameron et
+al. conjecture that the oriented 𝐾2 and the oriented 𝐾3 are the only oriented graphs that can have universal
+perfect state transfer. We confirm this conjecture in Section 3.1.
+In [11], Godsil and Lato investigated multiple perfect state transfer in oriented graph where 𝑆 is a proper
+subset of 𝑉 (𝑋). They give an example of an oriented graph on eight vertices that admits multiple perfect
+state transfer on a set of four vertices. In Section 3.2, we extend their example to an infinite family of oriented
+graphs that have multiple perfect state transfer.
+
+3.1 Universal perfect state transfer
+In [1], Cameron et al. show that the oriented 𝐾2 and 𝐾3 with any orientation admit universal perfect state
+transfer. They give the following necessary conditions on the Hermitian graphs admitting universal perfect
+state transfer.
+Theorem 3.1. Let 𝐻 be the matrix associated with a Hermitian graph 𝑋 that admits universal perfect state
+transfer. Then the following holds:
+1. All eigenvalues of 𝐻 are simple.
+2. If 𝑃 is a unitary matrix diagonalizing 𝐻 then |𝑃𝑎,𝑏 | = √1 , for 𝑎, 𝑏 ∈ 𝑉 (𝑋).
+𝑛
+
+3. Every vertex in 𝑋 is periodic.
+
+5
+
+Suppose 𝑋 is an oriented graph on 𝑛 vertices that has universal perfect state transfer. Let 𝐻 be its
+associated Hermitian matrix with spectral decomposition
+𝐻=
+
+𝑛
+∑
+
+𝜃𝑟 𝐸 𝑟 .
+
+𝑟=1
+
+Then 𝐸𝑟 has rank one with constant diagonal entries 𝑛−1 . We see that 𝐻 2 has constant diagonal entries and
+the underlying (undirected) graph of 𝑋 is regular. Further,
+√ it follows from Theorem 6.1 of [11] that there
+exists a positive square-free integer Δ such that 𝜃𝑟 ∈ Z Δ, for 𝑟 = 1, … , 𝑛. Hence
+√
+min |𝜃𝑟 − 𝜃𝑠 | ≥ Δ.
+(8)
+𝑟≠𝑠
+
+We show in the following lemmas that an oriented graph with universal perfect state transfer can have at
+most eleven vertices.
+Lemma 3.2. Let 𝐻 be a Hermitian matrix of order 𝑛 with zero diagonal entries. Let 𝜃1 ≤ 𝜃2 ≤ ⋯ ≤ 𝜃𝑛 be
+the eigenvalues of 𝐻. Then
+𝑛
+∑
+(
+)2
+𝜃𝑟 − 𝜃𝑠 = 2𝑛 Tr(𝐻 2 ).
+𝑟,𝑠=1
+
+(
+)
+Proof. Observe that 𝜃𝑟 − 𝜃𝑠 is an eigenvalue of 𝐻 ⊗ 𝐼𝑛 − 𝐼𝑛 ⊗ 𝐻 , for 𝑟, 𝑠 = 1 … , 𝑛. Hence
+𝑛
+∑
+(
+
+𝜃𝑟 − 𝜃𝑠
+
+)2
+
+(
+)2
+(
+)
+= Tr 𝐻 ⊗ 𝐼𝑛 − 𝐼𝑛 ⊗ 𝐻 = Tr 𝐻 2 ⊗ 𝐼𝑛 + 𝐼𝑛 ⊗ 𝐻 2 − 2𝐻 ⊗ 𝐻 .
+
+𝑟,𝑠=1
+
+The result follows from Tr(𝐻 ⊗ 𝐻) = 0.
+Lemma 3.3. Let 𝑋 be an oriented graph on 𝑛 vertices and 𝑚 edges with eigenvalues 𝜃1 < ⋯ < 𝜃𝑛 . Let
+𝜎 = min𝑟≠𝑠 |𝜃𝑟 − 𝜃𝑠 |. Then
+𝑛(𝑛2 − 1)
+12
+𝜎2
+≤ 𝑚 and 𝜎 2 ≤
+.
+24
+𝑛+1
+Proof. It follows from the definition of 𝜎 that 𝜎|𝑟 − 𝑠| ≤ |𝜃𝑟 − 𝜃𝑠 |, and
+𝜎2
+
+𝑛
+∑
+
+(𝑟 − 𝑠)2 ≤
+
+𝑛
+∑
+(
+)2
+𝜃𝑟 − 𝜃𝑠 .
+𝑟,𝑠=1
+
+𝑟,𝑠=1
+
+The lower bound is
+( 𝑛 )2
+⎞
+∑
+𝑛2 (𝑛2 − 1)
+𝑟 ⎟ = 𝜎2
+𝑟 −2
+(𝑟 − 𝑠) = 𝜎 2𝑛
+𝜎
+.
+⎟
+⎜ 𝑟=1
+6
+𝑟=1
+𝑟,𝑠=1
+⎠
+⎝
+2
+
+𝑛
+∑
+
+2
+
+⎛
+
+2⎜
+
+𝑛
+∑
+
+2
+
+Applying Lemma 3.2 gives
+𝑛2 (𝑛2 − 1)
+≤ 2𝑛 Tr(𝐻 2 ) = 4𝑚𝑛.
+6
+()
+The second inequality in the lemma follows immediately from 𝑚 ≤ 𝑛2 .
+𝜎2
+
+6
+
+Corollary 3.4. Let 𝑋 be an oriented graph on 𝑛 vertices. If 𝑋 admits universal perfect state transfer then
+𝑛 ≤ 11. Further, if 𝑛 ≥ 6 then 𝑋 has integral eigenvalues.
+Proof. It follows from Equation (8) that 𝜎 2 ≥ Δ ≥ 1. The second inequality of Lemma 3.3 gives 𝑛 ≤ 11.
+When 𝑛 ≥ 6, we have 𝜎 2 < 2 which implies Δ = 1 and the eigenvalues of 𝑋 are integers.
+We are ready to rule out universal perfect state transfer in oriented graphs on more than three vertices.
+Theorem 3.5. The oriented 𝐾2 and 𝐾3 are the only oriented graphs admitting universal perfect state transfer.
+Proof. Suppose 𝑋 is an oriented graph on 𝑛 vertices that admits universal perfect state transfer. Then the
+underlying graph of 𝑋 is 𝑘-regular, for some integer 𝑘.
+√
+Let 𝜃1 < ⋯ < 𝜃𝑛 be the eigenvalues of the Hermitian matrix 𝐻 associated with 𝑋. Then 𝜃𝑟 ∈ Z Δ,
+for some positive square-free integer Δ. Since i𝐻 is a skew-symmetric matrix with entries ±1, we have
+𝜃𝑟 = −𝜃𝑛+1−𝑟
+
+for 𝑟 = 1, … , 𝑛.
+
+(9)
+
+Further, the characteristic polynomial of i𝐻 is equal to the characteristic polynomial of its underlying graph
+over Z2 .
+When 𝑛 = 4 or 5, 𝐶𝑛 and 𝐾𝑛 are the only regular graphs on 𝑛 vertices. An exhaustive search rules out
+oriented graphs on 4 or 5 vertices with spectrum satisying the above conditions.
+For 𝑛 ≥ 6, it follows from Lemma 3.3 and Corollary 3.4 that 𝜎 = min𝑟≠𝑠 |𝜃𝑟 − 𝜃𝑠 | = 1 and
+𝑛2 − 1
+≤ 𝑘 ≤ 𝑛 − 1.
+12
+Using this inequality together with the fact that 𝑘 is even when 𝑛 is odd, we narrow down to the following
+possibilities.
+𝑛
+𝑘
+
+6
+3, 4, 5
+
+7
+4, 6
+
+8
+6, 7
+
+9
+8
+
+10
+9
+
+11
+10
+
+Applying Equation (9) to Tr(𝐻 2 ) yields
+⌋
+⌊ 𝑛+1
+2
+
+∑
+
+𝑛𝑘 = 2
+
+𝜃𝑟2 .
+
+𝑟=1
+
+Direct computation returns integral solutions to this equation for only three cases:
+𝑛
+11
+7
+7
+
+𝑘
+10
+6
+4
+
+underlying graph
+𝐾11
+𝐾7
+𝐶7
+
+Possible spectrum of i𝐻
+0, ±i, ±2i, ±3i, ±4i, ±5i
+0, ±i, ±2i, ±4i
+0, ±i, ±2i, ±3i
+
+It is straightforward to check that for each case, the characteristic polynomial of the underlying graph is not
+equal to the polynomial with the roots listed in the table over Z2 .
+We conclude that there is no oriented graph on 𝑛 ≥ 4 vertices admitting universal perfect state transfer.
+
+7
+
+3.2 Multiple perfect state transfer
+In [11], Godsil and Lato relax the notion of universal perfect state transfer to multiple perfect state transfer
+on a subset of vertices in oriented graphs. Let
+⎡ 0 −i 0 i ⎤
+⎢ i 0 −i 0 ⎥
+𝐻 ⃖𝐶⃗ = ⎢
+⎥
+4
+⎢ 0 i 0 −i⎥
+⎣−i 0 i 0 ⎦
+be the Hermitian matrix of the directed 4-cycle. They show that the oriented graph with Hermitian matrix
+[
+[
+]
+]
+1 0
+0 i
+⊗ 𝐻 ⃖𝐶⃗ +
+⊗ 𝐽4
+0 1
+−i 0
+4
+has multiple perfect state transfer on a set of four vertices.
+Making use of this technical lemma from [16], we extend the above example to an infinite family of
+oriented graphs where multiple perfect state transfer occur.
+∑
+Lemma 3.6. Let 𝐴 and 𝐵 be Hermitian matrices where 𝐴 has spectral decomposition 𝐴 = 𝑟 𝜃𝑟 𝐸𝑟 . Then
+∑
+𝐸𝑟 ⊗ 𝑒−𝑖𝑡𝜃𝑟 𝐵 .
+𝑒−𝑖𝑡(𝐴⊗𝐵) =
+𝑟
+
+Lemma 3.7. Suppose 𝑋 is an oriented graph on 𝑛 vertices with associated Hermitian matrix 𝐻𝑋 , whose
+eigenvalues are odd integers. Let 𝑌 be the oriented graph with Hermitian matrix
+𝐻𝑌 = 𝐼𝑛 ⊗ 𝐻 ⃖𝐶⃗ + 𝐻𝑋 ⊗ 𝐽4 .
+4
+
+Then 𝑌 admits multiple perfect state transfer on the set {4ℎ+1, 4ℎ+2, 4ℎ+3, 4ℎ+4}, for ℎ = 0, 1, … , 𝑛−1.
+∑
+Proof. Let 𝐻𝑋 = 𝑟 𝜃𝑟 𝐸𝑟 be the spectral decomposition of 𝐻𝑋 . Since 𝐼𝑛 ⊗ 𝐻 ⃖𝐶⃗ and 𝐻𝑋 ⊗ 𝐽4 commute,
+4
+applying Lemma 3.6 gives
+(
+)
+)
+(
+(
+) ∑
+∑
+−i𝑡 𝐻 +𝜃𝑟 𝐽4
+−i𝑡𝐻
+𝐶
+𝐶
+⃗4
+⃗4
+𝐸 ⊗𝑒
+.
+𝐸 ⊗ 𝑒−i𝑡𝜃𝑟 𝐽4 =
+𝑒−i𝑡𝐻𝑌 = 𝐼 ⊗ 𝑒
+𝑟
+
+𝑟
+
+𝑛
+
+𝑟
+
+𝑟
+
+For odd integer 𝜃𝑟 , we have
+(
+−i 𝜋4 𝐻
+
+⃗𝐶 4
+
+𝑒
+
+Hence
+−i 𝜋4 𝐻𝑌
+
+𝑒
+
+)
++𝜃𝑟 𝐽4
+
+0⎤
+⎡ 0 −1 0
+⎢0
+0 −1 0 ⎥
+=⎢
+⎥.
+0
+0
+0
+−1
+⎥
+⎢
+⎣−1 0
+0
+0⎦
+
+0⎤
+⎡ 0 −1 0
+⎢0
+0 −1 0 ⎥
+,
+= 𝐼𝑛 ⊗ ⎢
+0
+0 −1⎥⎥
+⎢0
+⎣−1 0
+0
+0⎦
+
+and, for ℎ = 0, 1, … , 𝑛 − 1, the vertex 4ℎ + 1 has perfect state transfer to 4ℎ + 4, 4ℎ + 3 and 4ℎ + 2 at time
+𝜋 𝜋
+, and 3𝜋
+, respectively.
+4 2
+4
+8
+
+If 𝑋 is obtained by orienting all edges in the (2𝑚 + 1)-cube from one bipartition to the other bipartition,
+then its associated matrix has the form
+[
+]
+0
+i𝐵
+𝐻𝑋 =
+.
+−i𝐵 𝑇 0
+Then 𝐻𝑋 has the same spectrum as the adjacency matrix of the (undirected) (2𝑚 + 1)-cube, which consists
+of only odd integers. Lemma 3.7 gives an oriented graph admitting multiple perfect state transfer for integer
+𝑚 ≥ 0. When 𝑚 = 0, then 𝑌 is the oriented graph given in [11].
+
+4 Perfect state transfer in Hermitian graphs
+We focus on Hermitian graphs with algebraic entries in the first part of this section. In particular, we study
+the phase factors when perfect state transfer occurs in these graphs in Section 4.1.
+Suppose 𝑋 is a Hermitian graph with algebraic entries. By Theorem 6.1 of [2] and Theorem 2.2, if
+perfect state transfer from 𝑎 to 𝑏 occurs then the quantum walk on 𝑋 is periodic at both 𝑎 and 𝑏. Section 4.2
+gives examples of Hermitian graphs (with transcendental entries) in which perfect state transfer occurs from
+𝑎 to 𝑏 but 𝑎 and 𝑏 are not periodic.
+
+4.1 Phase factor
+We restrict our attention to Hermitian graphs with algebraic entries and extract information about the phase
+factor when perfect state transfer occurs.
+Let 𝐻 be an algebraic Hermitian matrix. Its characteristic polynomial has algebraic coefficients. Given
+∑
+spectral decomposition 𝐻 = 𝑟 𝜃𝑟 𝐸𝑟 , the eigenvalues 𝜃𝑟 ’s are algebraic so are the entries in 𝐸𝑟 .
+Theorem 4.1. Let 𝐻 be an algebraic matrix associated with a Hermitian graph with spectral decomposition
+∑
+𝐻 = 𝑟 𝜃𝑟 𝐸𝑟 . If perfect state transfer occurs from 𝑎 to 𝑏 with phase factor 𝛼, then 𝛼 is algebraic if and only
+if
+𝜃𝑟
+∈ Q,
+𝜃𝑠
+for 𝜃𝑟 , 𝜃𝑠 ∈ Φ𝑎 such that 𝜃𝑠 ≠ 0.
+Proof. Suppose perfect state transfer occurs from 𝑎 to 𝑏 at time 𝜏 with algebraic phase factor 𝛼. It follows
+from Equation (2) that 𝑒−i𝜏𝜃𝑟 is algebraic, for 𝜃𝑟 ∈ Φ𝑎 = Φ𝑏 . Applying the Gelfond-Schneider Theorem to
+( −i𝜏𝜃 ) 𝜃𝑟
+𝑒 𝑠 𝜃𝑠 = 𝑒−i𝜏𝜃𝑟 ,
+𝜃
+
+for 𝜃𝑟 , 𝜃𝑠 ∈ Φ𝑎 with 𝜃𝑠 ≠ 0, we conclude that 𝜃𝑟 is rational.
+𝑠
+
+𝜃
+
+Now suppose 𝜃𝑠 ∈ Q for 𝜃𝑟 , 𝜃𝑠 ∈ Φ𝑎 with 𝜃𝑠 ≠ 0. Let 𝑞𝑟 (𝑎, 𝑏) be the quarrels from 𝑎 to 𝑏 relative to
+𝑟
+
+𝜃𝑟 ∈ Φ𝑎 . It follows from Equation (3) that 𝑒i𝑞𝑟 (𝑎,𝑏) is algebraic. Applying Equation (4) yields
+(
+
+)
+
+𝜃𝑟
+−1
+
+𝛼 𝜃𝑠
+
+(
+) 𝜃𝑟
+(
+) 𝜃𝑟
+= 𝑒i(𝑞𝑠 (𝑎,𝑏)−𝜏𝜃𝑠 ) 𝜃𝑠 𝑒i(𝜏𝜃𝑟 −𝑞𝑟 (𝑎,𝑏)) = 𝑒i𝑞𝑠 (𝑎,𝑏) 𝜃𝑠 𝑒−i𝑞𝑟 (𝑎,𝑏) .
+
+The right-hand side is algebraic, so is 𝛼.
+
+9
+
+Theorem 4.2. Let 𝐻 be an algebraic matrix associated with a Hermitian graph with spectral decomposition
+∑
+𝐻 = 𝑟 𝜃𝑟 𝐸𝑟 . Suppose perfect state transfer occurs from 𝑎 to 𝑏 with phase factor 𝛼. If there exist integers
+𝑘𝑟 ’s satisfying
+∑
+∑
+𝑘𝑟 𝜃𝑟 = 0 and
+𝑘𝑟 ≠ 0
+𝑟∈Φ𝑎
+
+𝑟∈Φ𝑎
+
+then 𝛼 is algebraic.
+Proof. From Equation (4), we have
+𝛼
+
+∑
+
+𝑟∈Φ𝑎 𝑘𝑟
+
+−i𝜏
+
+=𝑒
+
+(∑
+
+𝑟∈Φ𝑎 𝑘𝑟 𝜃𝑟
+
+)
+
+∏(
+∏(
+)𝑘
+)𝑘
+𝑒i𝑞𝑟 (𝑎,𝑏) 𝑟 =
+𝑒i𝑞𝑟 (𝑎,𝑏) 𝑟 .
+𝑟∈Φ𝑎
+
+Since the right-hand side is algebraic and
+
+𝑟∈Φ𝑎
+
+∑
+
+𝑟∈Φ𝑎 𝑘𝑟 ≠ 0, we conclude that 𝛼 is algebraic.
+
+We apply the theorem to algebraic Hermitian graphs where Φ𝑎 contains all eigenvalues of 𝐻.
+Corollary 4.3. Let 𝐻 be an algebraic matrix associated with a Hermitian graph with zero diagonal entries.
+Suppose perfect state transfer occurs from 𝑎 to 𝑏 with phase factor 𝛼. If 𝑎 has full eigenvalue support then 𝛼
+is algebraic.
+Proof. Let 𝑘𝑟 be the multiplicity of 𝜃𝑟 , for 𝜃𝑟 ∈ Φ𝑎 . Since Φ𝑎 contains all eigenvalues of 𝐻, we have
+∑
+∑
+𝑟∈Φ𝑎 𝑘𝑟 equals the number of vertices. It follows from Theorem 4.2 that the
+𝑟∈Φ𝑎 𝑘𝑟 𝜃𝑟 = Tr(𝐻) = 0 and
+phase factor at perfect state transfer is algebraic.
+∑
+Given spectral decomposition of an algebraic Hermitian matrix 𝐻 = 𝑟 𝜃𝑟 𝐸𝑟 , if 𝐸𝑟 has constant diagonal
+then every vertex has full eigenvalue support. In particular, Corollary 4.3 applies to
+• the adjacency matrix of a walk regular graph,
+• an algebraic Hermitian matrix with zero diagonal that belongs to a Bose-Mesner algebra, and
+• Hermitian circulants with algebraic entries and zero diagonal.
+
+4.2 One-way perfect state transfer
+We saw at the beginning of Section 4 that if perfect state transfer occurs from 𝑎 to 𝑏 in an algebraic Hermitian
+graph then both 𝑎 and 𝑏 are periodic. In particular, there is perfect state transfer from 𝑏 back to 𝑎.
+We give a family of Hermitian graphs, with transcendental entries, that have perfect state transfer from
+𝑎 to 𝑏 but not periodic at 𝑎 nor 𝑏. In particular, they do not have perfect state transfer from 𝑏 to 𝑎.
+Theorem 4.4. There exist infintely many Hermitian graphs which admit perfect state transfer from 𝑎 to 𝑏 but
+are not periodic at 𝑎.
+Proof. Let 𝜆 be any real number such that 𝜆 ∉ Q𝜋. Define matrices
+1
+1 ⎤
+⎡1 1
+−1
+−1 ⎥
+1 ⎢1 1
+𝑃 = ⎢
+2 ⎢1 −1 𝑒i𝜆 −𝑒i𝜆 ⎥⎥
+⎣1 −1 −𝑒i𝜆 𝑒i𝜆 ⎦
+
+and
+
+10
+
+⎡0
+⎢0
+𝐷=⎢
+⎢0
+⎣0
+
+0
+𝜋
+0
+0
+
+0
+0 ⎤
+0
+0 ⎥
+.
+𝜆
+0 ⎥⎥
+0 𝜆 + 𝜋⎦
+
+Consider the Hermitian matrix
+0
+⎡
+𝜆
+⎢
+)
+(
+𝜋+𝜆
+𝐼4 − ⎢ 𝜋 2 𝑖𝜆
+𝐻 ∶= 𝑃 𝐷𝑃 −1 =
+⎢ (1 + 𝑒 )
+2
+⎢ 𝜋4
+⎣ 4 (1 − 𝑒𝑖𝜆 )
+
+𝜆
+2
+
+0
+𝜋
+(1 − 𝑒𝑖𝜆 )
+4
+𝜋
+(1 + 𝑒𝑖𝜆 )
+4
+
+𝜋
+(1 + 𝑒−𝑖𝜆 )
+4
+𝜋
+(1 − 𝑒−𝑖𝜆 )
+4
+
+0
+𝜆
+2
+
+𝜋
+(1 − 𝑒−𝑖𝜆 )⎤
+4
+𝜋
+(1 + 𝑒−𝑖𝜆 )⎥⎥
+4
+.
+𝜆
+⎥
+2
+⎥
+
+0
+
+⎦
+
+Let 𝜃1 = 0, 𝜃2 = 𝜋, 𝜃3 = 𝜆 and 𝜃4 = 𝜆 + 𝜋. All vertices have full eigenvalue support. Vertices 1 and
+3 are strongly cospectral with quarrels: 𝑞1 (3, 1) = 0, 𝑞2 (3, 1) = 𝜋, 𝑞3 (3, 1) = 𝜆, and 𝑞4 (3, 1) = 𝜆 + 𝜋. By
+Theorem 2.1, we have perfect state transfer from vertex 3 to 1 at time 𝜏 = 1 with phase factor 1. As 𝜆 is not
+a rational multiple of 𝜋, we have
+𝜃3 − 𝜃1
+𝜆
+= ∉ ℚ.
+𝜃2 − 𝜃1
+𝜋
+By Theorem 2.2, 𝐻 is not periodic at vertex 1 nor at vertex 3.
+Example 4.5. Consider the complex Hadamard matrix
+⎡1
+1
+1
+1
+𝑖
+𝑖
+𝑖
+𝑖 ⎤
+⎢ 1 −1
+𝑒𝑖𝜃
+−𝑒𝑖𝜃 −1 1
+−𝑒𝑖𝜃
+𝑒𝑖𝜃 ⎥
+⎢
+⎥
+1
+𝑒𝑖2𝜃
+𝑒𝑖2𝜃
+−𝑖 −𝑖 −𝑖𝑒𝑖2𝜃 −𝑖𝑒𝑖2𝜃 ⎥
+⎢1
+⎢ 1 −1 𝑒𝑖3𝜃
+−𝑒𝑖3𝜃 1 −1 𝑒𝑖3𝜃
+−𝑒𝑖3𝜃 ⎥
+𝑃 =⎢
+𝑖
+−𝑖
+−𝑖
+−1 −1
+1
+1 ⎥⎥
+⎢𝑖
+𝑖𝑒𝑖𝜃
+−𝑖𝑒𝑖𝜃
+𝑖 −𝑖 −𝑖𝑒𝑖𝜃
+𝑖𝑒𝑖𝜃 ⎥
+⎢−𝑖 𝑖
+𝑖2𝜃
+𝑖2𝜃
+𝑖2𝜃
+⎢𝑖
+𝑖 −𝑖𝑒
+−𝑖𝑒
+1
+1 −𝑒
+−𝑒𝑖2𝜃 ⎥
+⎢
+⎥
+𝑖3𝜃
+𝑖3𝜃
+𝑖3𝜃
+𝑖𝑒
+−𝑖𝑒
+−𝑖 𝑖
+𝑖𝑒
+−𝑖𝑒𝑖3𝜃 ⎦
+⎣−𝑖 𝑖
+(
+)
+𝜋
+3𝜋
+and diagonal matrix 𝐷 = diag 0, 𝜋, 𝜃, 𝜃 + 𝜋, 𝜋2 , 3𝜋
+. Then the Hermitian graph 𝑋 with
+,
+𝜃
++
+,
+𝜃
++
+2
+2
+2
+matrix 𝐻 = 𝑃 𝐷𝑃 −1 admit perfect state transfer from vertex 1 to 2 at 𝑡 = 1, from vertex 1 to 3 at 𝑡 = 2, from
+vertex 1 to 4 at 𝑡 = 3. Each vertex has full eigenvalue support, and if 𝜃 ∉ Q𝜋, then the ratio condition is not
+satisfied and 𝑋 is not periodic at any vertex.
+
+5 Multiple pretty good state transfer
+Theorem 4.4 shows that it is possible to have one-way perfect state transfer in Hermitian graph. We now
+show that pretty good state transfer in Hermitian graphs goes both ways.
+Lemma 5.1. If a Hermitian graph admits pretty good state transfer from 𝑎 to 𝑏, then it has pretty good state
+transfer from 𝑏 to 𝑎.
+Proof. Suppose 𝑈 (𝑡) is the transition matrix of a Hermitian graph that has pretty good state transfer from
+𝑎 to 𝑏. Then, for 𝜀 > 0, there exists a time 𝜏1 such that 𝑈 (𝜏1 )𝑒𝑎 = 𝛾1 𝑒𝑏 + 𝜌1 , for some phase factor 𝛾1 and
+vector 𝜌1 with ‖𝜌1 ‖ < 2𝜀 .
+As 𝑈 (𝑡) is almost periodic, there exists 𝜏2 > 𝜏1 such that 𝑈 (𝜏2 )𝑒𝑎 = 𝛾2 𝑒𝑎 + 𝜌2 , for some phase factor 𝛾2
+and some vector 𝜌2 with ‖𝜌2 ‖ < 2𝜀 . We have
+(
+)
+(
+)
+𝑈 (𝜏2 − 𝜏1 )𝑒𝑏 = 𝛾1 𝑈 (𝜏2 ) 𝑒𝑎 − 𝑈 (−𝜏1 )𝜌1 = 𝛾1 𝛾2 𝑒𝑎 + 𝜌2 − 𝑈 (𝜏2 − 𝜏1 )𝜌1 .
+11
+
+Hence
+‖𝑈 (𝜏2 − 𝜏1 )𝑒𝑏 − 𝛾1 𝛾2 𝑒𝑎 ‖ = ‖𝜌2 − 𝑈 (𝜏2 − 𝜏1 )𝜌1 ‖ ≤ ‖𝜌1 ‖ + ‖𝜌2 ‖ < 𝜀
+and there is pretty good state transfer from 𝑏 to 𝑎.
+In [5], Zimborás et al. assign a complex weight 𝑒i𝛽 to an edge in the following graph and use the weight
+to control the fidelity at 𝑏 and 𝑐 with initial state 𝑒𝑎 .
+𝑏
+𝑎
+
+𝑒i𝛽
+𝑐
+
+This graph can be viewed as the rooted product of the weighted 𝐾3 with a path. Given a graph 𝑋 on 𝑛 vertices
+and a rooted graph 𝑌 with root 𝑎. The rooted product of 𝑋 and 𝑌 , 𝑋◦𝑌 , is obtained by taking 𝑛 isomorphic
+copies of 𝑌 and identifying the 𝑗-th vertex of 𝑋 with the root of the 𝑗-th copy of 𝑌 . In this section, we give
+two families of rooted products that have multiple pretty good state transfer.
+
+5.1 Oriented 3-cycle rooted with a star
+In [3], Fan and Godsil show that the double star, the rooted product of 𝐾2 and 𝐾1,𝑚 , has pretty good state
+transfer between the two non-pendant vertices if and only if 4𝑚 + 1 is not a perfect square. Note that 𝐾2 is
+the only simple undirected graph with universal perfect state transfer. We extend their result to the rooted
+product of the oriented 3-cycle ⃖⃖
+𝐾⃗3 with 𝐾̂1,𝑚 , where 𝐾̂1,𝑚 denotes the star 𝐾1,𝑚 with the non-pendant vertex
+being its root.
+
+𝑎
+
+𝑐
+
+𝑏
+
+Lemma 5.2. Suppose 𝑎 and 𝑏 are strongly cospectral vertices in the Hermitian graph 𝑋 on 𝑛 ≥ 2 vertices.
+̂1,𝑚 .
+Then they are strongly cospectral in the rooted product 𝑋◦𝐾
+Proof. Let 𝐻𝑋 be the Hermitian matrix associated with 𝑋 with spectral decomposition 𝐻𝑋 =
+̂1,𝑚 is
+Then the matrix associated with the rooted product 𝑌 = 𝑋◦𝐾
+⎡1
+⎢0
+⎢
+𝐻𝑌 = ⎢⋮
+⎢0
+⎢0
+⎣
+
+0
+0
+⋮
+0
+0
+
+0
+0
+⋮
+0
+0
+
+⋯
+⋯
+⋱
+⋯
+⋯
+
+⎡0
+0⎤
+⎢1
+⎥
+0
+⎢
+⎥
+⋮⎥ ⊗ 𝐻𝑋 + ⎢⋮
+⎢1
+0⎥
+⎢1
+⎥
+0⎦
+⎣
+
+12
+
+1
+0
+⋮
+0
+0
+
+1
+0
+⋮
+0
+0
+
+⋯
+⋯
+⋱
+⋯
+⋯
+
+1⎤
+0⎥
+⎥
+⋮⎥ ⊗ 𝐼𝑛 .
+0⎥
+0⎥⎦
+
+∑𝑑
+
+𝑟=1 𝜃𝑟 𝐸𝑟 .
+
+For 𝑟 = 1, … , 𝑑, define
+𝜆±
+𝑟 =
+and
+
+𝜃𝑟 ±
+
+√
+𝜃𝑟2 + 4𝑚
+2
+
+2 𝜆± 𝜆±
+⎡(𝜆±
+𝑟)
+𝑟
+𝑟
+⎢ 𝜆±
+1
+1
+𝑟
+⎢
+1
+𝐹𝑟± = ±
+⋮ ⋮
+⎢ ⋮
+2
+(𝜆𝑟 ) + 𝑚 ⎢ 𝜆±
+1
+1
+𝑟
+⎢ 𝜆±
+1
+1
+⎣ 𝑟
+
+Define
+
+,
+⎤
+⋯ 𝜆±
+𝑟
+⋯ 1⎥
+⎥
+⋱ ⋮ ⎥ ⊗ 𝐸𝑟 .
+⋯ 1⎥
+⋯ 1 ⎥⎦
+
+⎤
+⎥ ⊗ 𝐼𝑛 .
+⎥
+1
+𝐼𝑚 − 𝑚 𝐽𝑚 ⎦
+
+⎡0
+𝐹0 = ⎢
+⎢
+⎣𝟎𝑚
+
+𝟎𝑚
+
+Then 𝐻𝑌 has spectral decomposition
+𝐻𝑌 = 0 ⋅ 𝐹0 +
+
+𝑑
+∑
+( +
+)
+−
+𝜆𝑟 ⋅ 𝐹𝑟+ + 𝜆−
+𝑟 ⋅ 𝐹𝑟 .
+
+(10)
+
+𝑟=1
+
+Note that the (1, 1)-block are indexed by the vertices in 𝑋 and the eigenvalue 0 is not in the support of 𝑎 nor
+𝑏. The result follows from the (1, 1)-block of 𝐹𝑟+ and 𝐹𝑟− being non-zero scalar multiple of 𝐸𝑟 .
+Corollary 5.3. Suppose 𝑋 is a Hermitian graph with universal perfect state transfer with spectrum Φ. Let
+̂1,𝑚 . Let
+𝑆 be the set of non-pendant vertices in 𝑋◦𝐾
+{
+Ψ=
+
+𝜃±
+
+√
+
+}
+𝜃 2 + 4𝑚 |
+|𝜃∈Φ .
+|
+2
+
+̂1,𝑚 has multiple pretty good state transfer on 𝑆.
+If Ψ is linearly independent over Q, then 𝑋◦𝐾
+Proof. For 𝑎, 𝑏 ∈ 𝑆, there is perfect state transfer between 𝑎 and 𝑏 in 𝑋, so 𝑎 and 𝑏 are strongly cospectral in
+̂1,𝑚 by Lemma 5.2. We see in Equation (10) that Ψ is the eigenvalue support of 𝑎 in the rooted product.
+𝑋◦𝐾
+̂1,𝑚 .
+It follows from Theorem 2.4 that pretty good state transfer occurs between 𝑎 and 𝑏 in 𝑋◦𝐾
+⃖⃖⃗3 which has spectral decomposition
+In the following result, we focus on 𝑋 = 𝐾
+𝑒−2𝜋i∕3 𝑒2𝜋i∕3 ⎤ √
+𝑒2𝜋i∕3 𝑒−2𝜋i∕3 ⎤
+⎡ 1
+⎡ 0 −i i ⎤
+√ 1⎡ 1
+1
+1
+2𝜋i∕3
+−2𝜋i∕3
+−2𝜋i∕3
+⎥ − 3 ⋅ ⎢𝑒
+⎢ i 0 −i⎥ = 0 ⋅ 𝐽 + 3 ⋅ ⎢ 𝑒
+1
+𝑒
+1
+𝑒2𝜋i∕3 ⎥ .
+⎥
+⎥
+⎢
+⎢
+⎥
+3 3
+3 ⎢ −2𝜋i∕3
+3
+𝑒2𝜋i∕3
+1 ⎦
+1 ⎦
+⎣𝑒
+⎣ 𝑒2𝜋i∕3 𝑒−2𝜋i∕3
+⎣−i i 0 ⎦
+⃖⃖⃗ are strongly cospectral. Let 𝑉 (𝐾
+⃖⃖⃗3 ) = {𝑎, 𝑏, 𝑐}. Then the eigenvalue support
+Hence any two vertices in 𝐾
+√3
+√
+̂1,𝑚 are 𝜆1 = 𝑚, 𝜆2 = − 𝑚,
+of 𝑎 in ⃖⃖
+𝐾⃗3 ◦𝐾
+√
+√
+3 + 3 + 4𝑚
+,
+𝜆3 =
+2
+
+√
+√
+3 − 3 + 4𝑚
+𝜆4 =
+,
+2
+
+√
+√
+− 3 + 3 + 4𝑚
+𝜆5 =
+2
+
+13
+
+and
+
+√
+√
+− 3 − 3 + 4𝑚
+𝜆6 =
+.
+2
+
+̂1,𝑚 are
+From Equation (10), the quarrels in ⃖⃖
+𝐾⃗3 ◦𝐾
+⎧0
+⎪
+𝑞𝑟 (𝑎, 𝑏) = ⎨ 2𝜋
+3
+⎪− 2𝜋
+⎩ 3
+
+if 𝑟 = 1, 2,
+if 𝑟 = 3, 4, and
+if 𝑟 = 5, 6.
+
+⃖⃖⃗3 ◦𝐾
+̂1,𝑚 admits multiple pretty good state transfer on the set {𝑎, 𝑏, 𝑐} of
+Theorem 5.4. The rooted product 𝐾
+non-pendant vertices if and only if one of the following holds.
+1. gcd(3, 𝑚) = 1.
+2. 𝑚 = 3𝑠, for some integer 𝑠 such that neither 𝑠 nor 4𝑠 + 1 are perfect square.
+3. 𝑚 = 27𝑘2 , for some integer 𝑘.
+4. 𝑚 = 27𝑘2 + 27𝑘 + 6, for some integer 𝑘.
+̂1,𝑚 has an automorphism that maps 𝑎 to 𝑏, 𝑏 to 𝑐 and 𝑐 to 𝑎, it is sufficient to prove that
+Proof. Since ⃖⃖
+𝐾⃗3 ◦𝐾
+there is pretty good state transfer from 𝑎 to 𝑏 in the rooted product.
+By Lemma 5.2, Condition (i) of Theorem 2.4 holds. For Condition (ii) of Theorem 2.4, we consider
+integers 𝑙1 , … , 𝑙6 satisfying
+6
+∑
+
+(
+)√
+𝑚+
+𝑙𝑟 𝜆𝑟 = 𝑙1 − 𝑙2
+
+𝑟=1
+
+(
+
+𝑙3 + 𝑙4 − 𝑙5 − 𝑙6
+2
+
+(
+)√
+)
+𝑙3 − 𝑙4 + 𝑙5 − 𝑙6 √
+3+
+3 + 4𝑚 = 0.
+2
+
+(11)
+
+√ √ √
+Case 1: If gcd(3, 𝑚) = 1 then the set { 3, 𝑚, 3 + 4𝑚} is linearly independent over Q. Equation (11)
+implies (𝑙3 + 𝑙4 − 𝑙5 − 𝑙6 )∕2 = 0 and
+6
+∑
+
+(
+) 2𝜋
+𝑙𝑟 𝑞𝑟 (𝑎, 𝑏) = 𝑙3 + 𝑙4 − 𝑙5 − 𝑙6
+=0
+3
+𝑟=1
+
+(mod 2𝜋).
+
+(12)
+
+Condition (ii) of Theorem 2.4 holds with 𝛿 = 0, so there is pretty good state transfer from 𝑎 to 𝑏 in
+⃖⃖⃗3 ◦𝐾
+̂1,𝑚 .
+𝐾
+Case 2: When 𝑚 = 3𝑠, Equation (11) becomes
+(
+) (
+)
+(
+)√
+𝑙3 + 𝑙4 − 𝑙5 − 𝑙6
+𝑙3 − 𝑙4 + 𝑙5 − 𝑙6 √
+𝑠+
+1 + 4𝑠 = 0.
+𝑙1 − 𝑙2
++
+2
+2
+√ √
+If 𝑠 and 4𝑠 + 1 are not perfect squares then {1, 𝑠, 1 + 4𝑠} is linearly independent over Q and
+Equation (11) implies Equation (12). Hence there is pretty good state transfer from 𝑎 to 𝑏.
+Case 3: Suppose 𝑚 = 3ℎ2 , for some integer ℎ. Then 4ℎ2 + 1 is not a perfect square, and Equation (11)
+becomes
+) (
+)
+(
+𝑙3 − 𝑙4 + 𝑙5 − 𝑙6 √ 2
+2ℎ(𝑙1 − 𝑙2 ) + 𝑙3 + 𝑙4 − 𝑙5 − 𝑙6
++
+4ℎ + 1 = 0,
+2
+2
+
+14
+
+which implies 𝑙3 + 𝑙4 − 𝑙5 − 𝑙6 = −2ℎ(𝑙1 − 𝑙2 ). If ℎ = 3𝑘, for some integer 𝑘, then Equation (12)
+holds and pretty good state transfer occurs from 𝑎 to 𝑏.
+Suppose ℎ is not divisible by 3. Equation (11) holds when 𝑙1 = 𝑙2 = 𝑙4 = 𝑙5 = 0 and 𝑙3 = 𝑙6 = 1.
+Since
+6
+∑
+(
+)
+𝑙𝑟 𝑞𝑟 (𝑎, 𝑏) + 𝛿 = 2𝛿,
+𝑟=1
+
+Equation (7) holds if and only if 𝛿 ∈ Z𝜋.
+Equation (11) also holds when 𝑙1 = 1, 𝑙2 = 𝑙3 = 𝑙4 = 0, 𝑙5 = 𝑙6 = ℎ, but
+6
+∑
+
+𝑙𝑟 (𝑞𝑟 (𝑎, 𝑏) + 𝛿) = −
+
+𝑟=1
+
+4ℎ𝜋
++ (2ℎ + 1)𝛿 ≠ 0 (mod 2𝜋)
+3
+
+when 𝛿 ∈ Z𝜋. We conclude that pretty good state transfer from 𝑎 to 𝑏 does not occur.
+Case 4: Suppose 𝑚 = 3𝑠 with 4𝑠 + 1 = ℎ2 , for some integer ℎ. Then 𝑠 is not a perfect square, and Equation (11) becomes
+√
+(𝑙 + 𝑙 − 𝑙 − 𝑙 ) + ℎ(𝑙3 − 𝑙4 + 𝑙5 − 𝑙6 )
+(𝑙1 − 𝑙2 ) 𝑠 + 3 4 5 6
+= 0,
+2
+which implies 𝑙3 + 𝑙4 − 𝑙5 − 𝑙6 = −ℎ(𝑙3 − 𝑙4 + 𝑙5 − 𝑙6 ). If ℎ is divisible by 3 then Equation (12)
+holds and pretty good state transfer occurs from 𝑎 to 𝑏. In this case, 𝑚 = 27𝑘2 + 27𝑘 + 6 if we write
+4𝑠 + 1 = 32 (2𝑘 + 1)2 .
+If ℎ is not divisible by 3, Equation (11) holds when 𝑙1 = 𝑙2 = 𝑙4 = 𝑙5 = 0, 𝑙3 = 𝑙6 = 1 and when
+𝑙1 = 𝑙2 = 0, 𝑙3 = 𝑙4 = ℎ, 𝑙5 = −1 and 𝑙6 = 1. Using the same argument as in the previous case, we
+see that there does not exist 𝛿 satisfying Equation (7) for both assignments for the 𝑙𝑗 ’s. We conclude
+that pretty good state transfer from 𝑎 to 𝑏 does not occur.
+
+5.2 Circulants rooted with a looped path
+In [4], Kempton et al. show that a path with a loop on each end-vertex with transcendental weight 𝛾 has
+pretty good state transfer between the two end-vertices. We use 𝑃𝑚𝛾 to denote the rooted path on vertices
+{1, 2, … , 𝑚} that has root 𝑚 and a loop on vertex 1 with weight 𝛾. Then the path of length 2𝑚 − 1 with a
+loop of weight 𝛾 on each end-vertex studied in [4] can be viewed as the rooted product of 𝐾2 with 𝑃𝑚𝛾 .
+𝛾
+
+1
+
+𝑚
+
+2
+
+Path 𝑃𝑚𝛾 rooted at 𝑚 with a loop at 1
+
+15
+
+We extend their result to the rooted product 𝑋◦𝑃𝑚𝛾 where 𝑋 is Hermitian circulant with rational eigenvalues that admits universal perfect state transfer. Orthogonal polynomials and field trace are the main tools
+used in this section. Please see Chapter 8 of [17] for the background of orthogonal polynomials, and see [4]
+and Chapter 14 of [18] for some basic facts on field trace.
+Suppose 𝑉 (𝑋) = {𝑥0 , 𝑥1 , … , 𝑥𝑛−1 }. Then we label the vertices of 𝑋◦𝑃𝑚𝛾 with the ordered pair (𝑥ℎ , 𝑗)
+denoting the 𝑗-th vertex on 𝑃𝑚𝛾 that is rooted at 𝑥ℎ in 𝑋, for ℎ = 0, 1, … , 𝑛 − 1 and 𝑗 = 1, … , 𝑚.
+𝛾
+(𝑥1 , 𝑚)
+
+𝛾
+(𝑥0 , 1)
+
+(𝑥1 , 2)
+
+(𝑥0 , 𝑚)
+
+(𝑥1 , 1)
+𝛾
+
+(𝑥0 , 2)
+(𝑥2 , 𝑚)
+
+(𝑥2 , 2)
+
+(𝑥2 , 1)
+
+The rooted product of ⃖⃖
+𝐾⃗3 with 𝑃𝑚𝛾
+Let 𝐻𝑋 be the matrix of the Hermitian circulant 𝑋 with universal perfect state transfer. It follows from
+Theorem 8 of [1] that the eigenvalues of 𝐻𝑋 are simple. Given distinct eigenvalues 𝜃0 , 𝜃1 , … , 𝜃𝑛−1 of 𝐻𝑋
+and the discrete Fourier matrix of order 𝑛
+⎡1
+1
+1
+⎢1
+𝜁
+𝜁2
+1 ⎢
+𝜁4
+𝐹𝑛 = √ ⎢1 𝜁 2
+𝑛 ⎢⋮
+⋮
+⋮
+⎢
+𝑛−1
+2(𝑛−1)
+𝜁
+⎣1 𝜁
+
+⋯
+1 ⎤
+⋯ 𝜁 𝑛−1 ⎥
+⎥
+⋯ 𝜁 2(𝑛−1) ⎥
+⋱
+⋮ ⎥
+2⎥
+(𝑛−1)
+⋯ 𝜁
+⎦
+
+where 𝜁 = 𝑒2𝜋i∕𝑛 , we can write
+⎡ 𝜃0 0
+⎢ 0 𝜃1
+𝐻𝑋 = 𝐹𝑛 ⎢
+⎢⋮ ⋮
+⎣0 0
+
+⋯
+0 ⎤
+⋯
+0 ⎥ ∗
+𝐹 .
+⋱
+⋮ ⎥⎥ 𝑛
+⋯ 𝜃𝑛−1 ⎦
+
+For 0 ≤ 𝑎, 𝑏 ≤ 𝑛 − 1, the vertices 𝑥𝑎 and 𝑥𝑏 are strongly cospectral with quarrel
+𝑞𝑗 (𝑥𝑎 , 𝑥𝑏 ) =
+
+2𝜋𝑗(𝑏 − 𝑎)
+,
+𝑛
+
+(13)
+
+for 𝑗 = 0, 1, … , 𝑛 − 1.
+Theorem 22 of [1] gives the following characterization of Hermitian circulants that have universal perfect
+state transfer.
+Theorem 5.5. Let 𝑋 be a Hermitian circulant on 𝑛 vertices with simple eigenvalues 𝜃0 , … , 𝜃𝑛−1 . Then 𝑋
+has universal perfect state transfer if and only if there exist 𝛼, 𝛽 ∈ R with 𝛽 > 0, 𝑐0 , … , 𝑐𝑛−1 ∈ Z and integer
+ℎ coprime with 𝑛 such that
+(
+)
+𝜃𝑗 = 𝛼 + 𝛽 𝑗ℎ + 𝑐𝑗 𝑛 ,
+for 𝑗 = 0, … , 𝑛 − 1.
+16
+
+To determine the spectrum of 𝑍 = 𝑋◦𝑃𝑚𝛾 , we consider the 𝑚 × 𝑚 Jacobi matrices
+⎡𝛾
+⎢1
+⎢
+0
+𝑇𝑗 ∶= ⎢
+⎢⋮
+⎢0
+⎢
+⎣0
+
+1
+0
+1
+⋮
+0
+0
+
+0
+1
+0
+⋮
+0
+0
+
+0 0⎤
+0 0⎥
+⎥
+0 0⎥
+,
+⋮ ⋮⎥
+0 1⎥
+⎥
+1 𝜃𝑗 ⎦
+
+⋯
+⋯
+⋯
+⋱
+⋯
+⋯
+
+for 𝑗 = 0, 1, … , 𝑛 − 1.
+
+(14)
+
+Let 𝜑𝑗,0 = 1 and let 𝜑𝑗,𝑟 (𝑡) be the characteristic polynomial of the 𝑟-th leading principal submatrix of 𝑇𝑗 , for
+𝑟 = 1, … , 𝑚. Then 𝜑𝑗,0 (𝑡), 𝜑𝑗,1 (𝑡), … , 𝜑𝑗,𝑚 (𝑡) is a sequence of orthogonal polynomials satisfying 𝜑𝑗,0 (𝑡) = 1,
+𝜑𝑗,1 (𝑡) = 𝑡 − 𝛾,
+𝜑𝑗,𝑟 (𝑡) = 𝑡 𝜑𝑗,𝑟−1 (𝑡) − 𝜑𝑗,𝑟−2 (𝑡)
+(15)
+for 𝑟 = 2, … , 𝑚 − 1, and
+
+(
+)
+𝜑𝑗,𝑚 (𝑡) = 𝑡 − 𝜃𝑗 𝜑𝑗,𝑚−1 (𝑡) − 𝜑𝑗,𝑚−2 (𝑡).
+
+(16)
+
+From Lemma 8.5.2 of [17], the roots 𝜆𝑗,1 , … , 𝜆𝑗,𝑚 of 𝜑𝑗,𝑚 (𝑡) = 0 are the eigenvalues of 𝑇𝑗 . Further,
+[
+]𝑇
+Φ𝑗,𝑠 = 1 𝜑𝑗,1 (𝜆𝑗,𝑠 ) … 𝜑𝑗,𝑚−1 (𝜆𝑗,𝑠 )
+is an eigenvector of 𝑇𝑗 corresponding to eigenvalue 𝜆𝑗,𝑠 , for 𝑠 = 1, … , 𝑚. It follows from Lemma 8.1.1 of
+[17] that the eigenvalues of 𝑇𝑗 are simple. It is also known that consecutive orthogonal polynomials do not
+have non-trivial common factor.
+The Hermitian matrix of 𝑍 is
+⎡0
+⎢0
+⎢
+𝐻𝑍 = ⎢⋮
+⎢0
+⎢0
+⎣
+
+0
+0
+⋮
+0
+0
+
+⋯
+⋯
+⋱
+⋯
+⋯
+
+0
+0
+⋮
+0
+0
+
+⎡𝛾
+0⎤
+⎢1
+⎥
+0
+⎢
+⎥
+⋮⎥ ⊗ 𝐻𝑋 + ⎢⋮
+⎢0
+0⎥
+⎢0
+⎥
+1⎦
+⎣
+
+1
+0
+⋮
+0
+0
+
+⋯
+⋯
+⋱
+⋯
+⋯
+
+0
+0
+⋮
+0
+1
+
+0⎤
+0⎥
+⎥
+⋮ ⎥ ⊗ 𝐼𝑛 .
+1⎥
+0⎥⎦
+
+(17)
+
+Since 𝐻𝑋 𝐹𝑛 𝑒𝑗 = 𝜃𝑗 𝐹𝑛 𝑒𝑗 , we have
+
+(
+)
+(
+)
+𝐻𝑍 Φ𝑗,𝑠 ⊗ 𝐹𝑛 𝑒𝑗 = 𝜆𝑗,𝑠 Φ𝑗,𝑠 ⊗ 𝐹𝑛 𝑒𝑗
+
+(18)
+
+for 𝑗 = 0, … , 𝑛 − 1 and 𝑠 = 1, … , 𝑚.
+Lemma 5.6. Let 𝑋 be a Hermitian circulant with distinct eigenvalues 𝜃0 , 𝜃1 , … , 𝜃𝑛 and let 𝐹𝑛 , 𝜆𝑗,𝑠 , and Φ𝑗,𝑠
+be defined as above. For 𝑗 = 0, … , 𝑛 − 1 and 𝑠 = 1, … , 𝑚, 𝜆𝑗,𝑠 is a simple eigenvalue of the Hermitian
+graph 𝑍 defined in Equation (17), with spectral decomposition
+𝐻𝑍 =
+
+𝑚
+𝑛−1 ∑
+∑
+𝑗=0 𝑠=1
+
+𝜆𝑗,𝑠
+
+1
+‖Φ𝑗,𝑠 ‖2
+
+(
+
+) (
+)
+Φ𝑗,𝑠 Φ∗𝑗,𝑠 ⊗ (𝐹𝑛 𝑒𝑗 )(𝐹𝑛 𝑒𝑗 )∗ .
+
+For 𝑥𝑎 , 𝑥𝑏 ∈ 𝑉 (𝑋) and ℎ = 1, … , 𝑚, the vertices (𝑥𝑎 , ℎ) and (𝑥𝑏 , ℎ) are strongly cospectral in 𝑍 with
+quarrel corresponding to eigenvalues 𝜆𝑗,𝑠 being
+(
+) 2𝜋𝑗(𝑏 − 𝑎)
+𝑞𝑗,𝑠 (𝑥𝑎 , ℎ), (𝑥𝑏 , ℎ) =
+,
+𝑛
+for 𝑗 = 0, … , 𝑛 − 1 and 𝑠 = 1, … , 𝑚.
+17
+
+Proof. It is sufficient to show that the eigenvalues 𝜆𝑗,𝑠 of 𝑍, for 𝑗 = 0, … , 𝑛−1 and 𝑠 = 1, … , 𝑚, are distinct.
+Supoose 𝜆𝑗1 ,𝑠1 = 𝜆𝑗2 ,𝑠2 . From Equation (15), we have
+(
+)
+(
+)
+𝜑𝑗1 ,𝑟 𝜆𝑗1 ,𝑠1 = 𝜑𝑗2 ,𝑟 𝜆𝑗2 ,𝑠2 ,
+(
+)
+(
+)
+for 𝑟 = 1, … , 𝑚 − 1. From Equation (16), 𝜑𝑗1 ,𝑚 𝜆𝑗1 ,𝑠1 = 𝜑𝑗2 ,𝑚 𝜆𝑗2 ,𝑠2 = 0 implies 𝜃𝑗1 = 𝜃𝑗2 and 𝑗1 = 𝑗2 .
+Since 𝜑𝑗1 ,𝑚 (𝑡) = 0 has 𝑚 distinct roots, we conclude that 𝑠1 = 𝑠2 .
+We get the quarrels of 𝑍 directly from Equations (18) and (13).
+For the rest of this section, we assume that 𝛾 is transcendental and 𝜃0 , 𝜃1 , … , 𝜃𝑛−1 ∈ Q as in Theorem 5.8.
+Applying Laplace expansion along the first two rows of 𝑇𝑗 in Equation (14) gives
+𝜑𝑗,𝑚 (𝑡) = (𝑡 − 𝛾)𝑔𝑛−1 (𝑡) − 𝑔𝑛−2 (𝑡),
+where 𝑔𝑛−1 (𝑡) is the characteristic polynomial of the (𝑛 − 1) × (𝑛 − 1) Jacobi matrix
+⎛ 𝜃𝑗
+⎜1
+⎜
+⎜⋮
+⎜0
+⎜0
+⎝
+
+1
+0
+⋮
+0
+0
+
+⋯
+⋯
+⋱
+⋯
+⋯
+
+0
+0
+⋮
+0
+1
+
+0⎞
+0⎟
+⎟
+⋮⎟ ,
+1⎟
+0⎟⎠
+
+and 𝑔𝑛−2 (𝑡) is the characteristic polynomial of its (𝑛 − 2)-th leading principal submatrix. Now 𝑔𝑛−1 (𝑡) and
+𝑔𝑛−2 (𝑡) are consecutive orthogonal polynomials, so they do not have any common factor of positive degree.
+Since 𝑔𝑛−1 (𝑡) and 𝑔𝑛−2 (𝑡) are rational polynomials and 𝛾 is transcendental, we conclude that 𝜑𝑗,𝑚 (𝑡) is irreducible over Q(𝛾). Then the splitting field 𝐹𝑗 of 𝜑𝑗,𝑚 (𝑡) is a Galois extension over Q(𝛾).
+Given a Galois extension 𝐸∕𝐾, we use Tr 𝐸∕𝐾 (𝜇) to denote the trace of 𝜇 from 𝐸 to 𝐾. Here are some
+properties of the trace map useful for the proof of Theorem 5.8.
+Theorem 5.7. Let 𝐸∕𝐾 be a Galois extension. The following properties hold.
+i. For 𝜇 ∈ 𝐸, Tr 𝐸∕𝐾 (𝜇) ∈ 𝐾.
+ii. For 𝜇 ∈ 𝐾, Tr 𝐸∕𝐾 (𝜇) = [𝐸 ∶ 𝐾]𝜇.
+iii. For 𝜇1 , 𝜇2 ∈ 𝐸, Tr 𝐸∕𝐾 (𝜇1 + 𝜇2 ) = Tr 𝐸∕𝐾 (𝜇1 ) + Tr 𝐸∕𝐾 (𝜇2 ).
+(
+)
+iv. If 𝐾 ⊂ 𝐹 ⊂ 𝐸 are extension fields, then Tr 𝐸∕𝐾 (𝜇) = Tr 𝐹 ∕𝐾 Tr 𝐸∕𝐹 (𝜇) .
+v. If the minimal polynomial of 𝜇 ∈ 𝐸 over 𝐾 is 𝑡𝑚 + 𝑎𝑚−1 𝑡𝑚−1 + ⋯ + 𝑐0 then
+Tr 𝐸∕𝐾 (𝜇) = −
+
+[𝐸 ∶ 𝐾]
+𝑎𝑚−1 .
+𝑚
+
+The eigenvalue 𝜆𝑗,𝑠 of 𝑋◦𝑃𝑚𝛾 has minimal polynomial 𝜑𝑗,𝑚 (𝑡) over Q(𝛾). Applying Property (v) to 𝜆𝑗,𝑠 ∈
+𝐹𝑗 , Equation (16) gives
+[𝐹𝑗 ∶ Q(𝛾)] (
+)
+Tr 𝐹𝑗 ∕Q(𝛾) (𝜆𝑗,𝑠 ) =
+𝛾 + 𝜃𝑗 .
+(19)
+𝑚
+Consider the smallest extension field 𝑀 of 𝐹𝑗 that contains 𝐹0 , … , 𝐹𝑛−1 . For 𝑗 = 0, … , 𝑛 − 1, 𝑀∕𝐹𝑗 is a
+Galois extension. It follows from Properties (ii) and (iv) and Equation (19) that
+[𝐹𝑗 ∶ Q(𝛾)] (
+) [𝑀 ∶ Q(𝛾)] (
+)
+(
+)
+𝛾 + 𝜃𝑗 =
+𝛾 + 𝜃𝑗 .
+Tr 𝑀∕Q(𝛾) (𝜆𝑗,𝑠 ) = Tr 𝐹𝑗 ∕Q(𝛾) [𝑀 ∶ 𝐹𝑗 ]𝜆𝑗,𝑠 = [𝑀 ∶ 𝐹𝑗 ]
+𝑚
+𝑚
+(20)
+18
+
+Theorem 5.8. Let 𝑋 be a Hermitian circulant on 𝑛 vertices that admits universal perfect state transfer with
+eigenvalues given in Theorem 5.5. If 𝜃0 , … , 𝜃𝑛−1 ∈ Q and 𝛾 is transcendental then, for any positive integer
+𝑚, the rooted product 𝑋◦𝑃𝑚𝛾 has multiple pretty good state transfer on the set {(𝑥0 , ℎ), (𝑥1 , ℎ), … , (𝑥𝑛−1 , ℎ)},
+for 1 ≤ ℎ ≤ 𝑚.
+Proof. For ℎ = 1, … , 𝑚, 𝑋◦𝑃𝑚𝛾 has an automorhism that maps (𝑥𝑎 , ℎ) to (𝑥𝑎+1 , ℎ), for 𝑎 ∈ Z𝑛 . It is sufficient
+to show that there is pretty good state transfer from (𝑥0 , ℎ) to (𝑥1 , ℎ). By Lemma 5.6, (𝑥0 , ℎ) and (𝑥1 , ℎ) are
+strongly cospectral with quarrels
+(
+) 2𝜋𝑗
+,
+𝑞𝑗,𝑠 (𝑥0 , ℎ), (𝑥1 , ℎ) =
+𝑛
+for 𝑗 = 0, … , 𝑛 − 1 and 𝑠 = 1, … , 𝑚.
+To show the Theorem 2.4 (ii) holds, consider integers 𝑙𝑗,𝑠 ’s satisfying
+𝑚
+𝑛−1 ∑
+∑
+
+𝑙𝑗,𝑠 𝜆𝑗,𝑠 = 0.
+
+(21)
+
+𝑗=0 𝑠=1
+
+We apply the trace from 𝑀 to Q(𝛾) to both sides. Applying Theorem 5.7 (iii) and Equation (20), Equation (21) implies
+)
+) 𝑛−1 ( 𝑚
+( 𝑛−1 𝑚
+𝑚
+𝑛−1 ∑
+∑
+∑
+∑∑
+∑
+𝑙𝑗,𝑠 = 0.
+𝜃𝑗
+𝑙𝑗,𝑠 +
+𝑙𝑗,𝑠 (𝛾 + 𝜃𝑗 ) = 𝛾
+𝑗=0 𝑠=1
+
+Since 𝛾 is transcendental and
+
+∑
+
+𝑗 𝜃𝑗
+
+(∑
+
+𝑠 𝑙𝑗,𝑠
+
+)
+
+𝑗=0
+
+𝑗=0 𝑠=1
+
+𝑠=1
+
+∈ Q, Equation (21) is equivalent to
+𝑛−1 𝑚
+∑
+∑
+
+𝑙𝑗,𝑠 = 0
+
+(22)
+
+𝑗=0 𝑠=1
+
+and
+
+𝑛−1
+∑
+
+𝜃𝑗
+
+𝑗=0
+
+(𝑚
+∑
+
+)
+𝑙𝑗,𝑠
+
+= 0.
+
+(23)
+
+𝑠=1
+
+Recall 𝜃𝑗 = 𝛼 + 𝛽(𝑗ℎ + 𝑐𝑗 𝑛) where gcd(ℎ, 𝑛) = 1. Equations (22) and (23) imply
+𝑛−1
+∑
+
+(𝑗ℎ + 𝑐𝑗 𝑛)
+
+(𝑚
+∑
+
+)
+𝑙𝑗,𝑠
+
+= 0.
+
+𝑠=1
+
+𝑗=0
+
+Since gcd(ℎ, 𝑛) = 1, we have
+𝑚
+𝑛−1 ∑
+∑
+𝑙𝑗,𝑠 = 0 (mod 𝑛).
+𝑗
+𝑗=0
+
+𝑠=1
+
+If Equations (22) and (23) hold then, for any 𝛿 ∈ R,
+)
+)
+(𝑛−1 𝑚
+( 𝑛−1 𝑚
+𝑚
+𝑛−1 ∑
+∑∑
+∑
+∑
+(
+(
+)
+) 2𝜋 ∑
+𝑙𝑗,𝑠 = 0
++𝛿
+𝑙
+𝑗
+𝑙𝑗,𝑠 𝑞𝑗,𝑠 (𝑥0 , ℎ), (𝑥1 , ℎ) + 𝛿 =
+𝑛 𝑗=0 𝑠=1 𝑗,𝑠
+𝑗=0 𝑠=1
+𝑗=0 𝑠=1
+By Theorem 2.4, pretty good state transfer occurs from (𝑥0 , ℎ) to (𝑥1 , ℎ), for ℎ = 1, … , 𝑚.
+19
+
+(mod 2𝜋).
+
+Remark 5.9.
+• Putting a transcendental weight 𝛾 on the loops is sufficient for 𝜑0,𝑚 (𝑡), … , 𝜑𝑛−1,𝑚 (𝑡) to be irreducible
+over Q(𝛾). Theorem 5.8 holds for irrational number 𝛾 as long as 𝜑0,𝑚 (𝑡), … , 𝜑𝑛−1,𝑚 (𝑡) are irreducible
+over Q(𝛾).
+• If we move the loops from the (𝑥𝑎 , 1) to (𝑥𝑎 , 𝑚), for 𝑎 = 0, … , 𝑛−1, then a similar argument shows that
+the resulting graph has multiple pretty good state transfer on the set {(𝑥0 , ℎ), (𝑥1 , ℎ), … , (𝑥𝑛−1 , ℎ)}, for
+ℎ = 1, … , 𝑚.
+
+Acknowledgements
+This project was completed under the 2021 Fields Undergraduate Summer Research Program which provided
+support for A. Acuaviva, S. Eldridge, M. How and E. Wright. C. Godsil gratefully acknowledges the support
+of the Natural Sciences and Engineering Council of Canada (NSERC) Grant No. RGPIN-9439. A. Chan is
+grateful for the support of the NSERC Grant No. RGPIN-2021-03609.
+
+References
+[1]
+
+S. Cameron, S. Fehrenbach, L. Granger, S. Shrestha, and C. Tamon, “Universal state transfer on graphs,”
+Linear Algebra and Its Applications, vol. 455, pp. 115–142, 2014.
+
+[2]
+
+C. Godsil, “Real state transfer,” arXiv1710:04042.
+
+[3]
+
+X. Fan and C. Godsil, “Pretty good state transfer on double stars,” Linear Algebra and Its Applications,
+vol. 438, pp. 2346–2358, 2013.
+
+[4]
+
+M. Kempton, G. Lippner, and S.-T. Yau, “Pretty good quantum state transfer in symmetric spin networks via magnetic field,” Quantum Inf. Process., vol. 16, no. 9, Paper No. 210, 23, 2017.
+
+[5]
+
+Z. Zimborás, M. Faccin, Z. Kádár, J. Whitfield, B. Lanyon, and J. Biamonte, “Quantum transport
+enchancement by time-reversal symmetry breaking,” Scientific Reports, vol. 3, p. 2361, 2013.
+
+[6]
+
+A. M. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. A. Spielman, “Exponential algorithmic speedup by a quantum walk,” Proceedings of the thirty-fifth ACM symposium on Theory of
+computing, 2003.
+
+[7]
+
+A. Childs, “Universal computation by quantum walk,” Physical Review Letters, vol. 102, p. 180 501,
+2009.
+
+[8]
+
+S. Bose, “Quantum communication through an unmodulated spin chain,” Physical Review Letters,
+vol. 91, 20 2003.
+
+[9]
+
+A. Kay, “Perfect, efficient state transfer and its application as a constructive tool,” International Journal of Quantum Information, vol. 8, pp. 641–676, 4 2011.
+
+[10]
+
+E. Connelly, N. Grammel, M. Kraut, L. Serazo, and C. Tamon, “Universality in perfect state transfer,”
+Linear Algebra and Its Applications, vol. 531, pp. 516–532, 2017.
+
+[11]
+
+C. Godsil and S. Lato, “Perfect state transfer on oriented graphs,” Linear Algebra and its Applications,
+vol. 604, pp. 278–292, 2020.
+
+20
+
+[12]
+
+C. Godsil and B. McKay, “A new graph product and its spectrum,” Bulletin of The Australian Mathematical Society, vol. 18, Feb. 1978.
+
+[13]
+
+C. Godsil, “State Transfer on Graphs,” Discrete Mathematics, vol. 312, pp. 123–147, 2012.
+
+[14]
+
+B. M. Levitan and V. V. Zhikov, Almost periodic functions and differential equations. Cambridge
+University Press, Cambridge-New York, 1982, pp. xi+211.
+
+[15]
+
+C. van Bommel, “quantum walks and pretty good state transfer on paths,” Ph.D. dissertation, University of Waterloo, 2019.
+
+[16]
+
+G. Coutinho and C. Godsil, “graph spectra and continuous quantum walks,” preprint.
+
+[17]
+
+C. Godsil, Algebraic Combinatorics. New York: Chapman & Hall, 1993, Chapman and Hall Mathematics Series.
+
+[18]
+
+D. S. Dummit and R. M. Foote, Abstract algebra, Third. John Wiley & Sons, Inc., Hoboken, NJ, 2004,
+pp. xii+932.
+
+21
+
+

@@ -1,0 +1,1670 @@
+Perfect State Transfer in Laplacian Quantum Walk
+Rachael Alvir∗
+
+Sophia Dever†
+
+arXiv:1409.5840v1 [quant-ph] 20 Sep 2014
+
+Christino Tamon¶
+
+Benjamin Lovitz‡
+
+Yan Xuk
+
+James Myer§
+
+Hanmeng Zhank
+
+September 23, 2014
+
+Abstract
+For a graph G and a related symmetric matrix M , the continuous-time quantum
+walk on G relative to M is defined as the unitary matrix U (t) = exp(−itM ), where
+t varies over the reals. Perfect state transfer occurs between vertices u and v at time
+τ if the (u, v)-entry of U (τ ) has unit magnitude. This paper studies quantum walks
+relative to graph Laplacians. Some main observations include the following closure
+properties for perfect state transfer:
+• If a n-vertex graph has perfect state transfer at time τ relative to the Laplacian,
+then so does its complement if nτ ∈ 2πZ. As a corollary, the double cone over
+any m-vertex graph has perfect state transfer relative to the Laplacian if and only
+if m ≡ 2 (mod 4). This was previously known for a double cone over a clique (S.
+Bose, A. Casaccino, S. Mancini, S. Severini, Int. J. Quant. Inf., 7:11, 2009).
+• If a graph G has perfect state transfer at time τ relative to the normalized Laplacian, then so does the weak product G × H if for any normalized Laplacian
+eigenvalues λ of G and µ of H, we have µ(λ − 1)τ ∈ 2πZ. As a corollary, a
+weak product of P3 with an even clique or an odd cube has perfect state transfer
+relative to the normalized Laplacian. It was known earlier that a weak product of
+a circulant with odd integer eigenvalues and an even cube or a Cartesian power
+of P3 has perfect state transfer relative to the adjacency matrix.
+As for negative results, no path with four vertices or more has antipodal perfect state
+transfer relative to the normalized Laplacian. This almost matches the state of affairs
+under the adjacency matrix (C. Godsil, Discrete Math., 312:1, 2011).
+Keywords: quantum walk, perfect state transfer. Laplacian (combinatorial, signless,
+normalized), equitable and almost-equitable partitions, join, weak product, line graph.
+∗
+
+Department of Mathematics and Statistics, Colorado Mesa University.
+Department of Mathematics, University of Texas at Austin.
+‡
+Mathematics Department, Bates College.
+§
+Department of Mathematics, SUNY Potsdam.
+¶
+Department of Computer Science, Clarkson University.
+k
+Department of Combinatorics and Optimization, University of Waterloo.
+†
+
+1
+
+1
+
+Introduction
+
+Given a graph G = (V, E), we may associate a matrix M with G. For example, in graph
+theory, common choices for M include the adjacency matrix A and the Laplacian D − A,
+where D is the diagonal degree matrix of G. On the other hand, in probability theory,
+natural choices for M include a simple random walk matrix P = AD −1 and a lazy random
+walk matrix W = 21 I + 21 P . If M is Hermitian, then we may define a continuous-time
+quantum walk on G relative to M as the time-dependent unitary matrix
+UG (t) = exp(−itM),
+
+(1)
+
+where t ∈ R. This definition is motivated by Schrödinger’s equation where M is viewed as
+the Hamiltonian of the underlying system. Continuous-time quantum walk on graphs is a
+useful method for designing efficient quantum algorithms (see Childs et al. [8] and Farhi et
+al. [14]) and is a universal model for quantum computation (see Childs [7]).
+In an early seminal work, Farhi and Gutmann [15] used the infinitesimal generator matrix to define their quantum walk. The latter matrix is a weighted Laplacian matrix used
+commonly to define a continuous-time random walk (see Grimmett and Stirzaker [24]). This
+Laplacian matrix provides arguably the most natural connection between the continuoustime classical random walk and its quantum counterpart. As pointed out by Bose et al. [5],
+from a physics viewpoint, the quantum walks relative to the adjacency and Laplacian matrices are intimately related to quantum spin chains in the XY and XYZ interaction models,
+respectively. The XYZ interaction model is also known as the isotropic Heisenberg model.
+The literature on graph Laplacians is vast and has a strong focus on the following three
+different Laplacians. The aforementioned standard (or combinatorial) Laplacian D − A is
+closely related to Laplace’s heat equation and has beautiful algorithmic applications (see
+Spielman [31]). The signless Laplacian D + A of a graph G shares a strong spectral correspondence with the line graph ℓ(G) through the incidence matrix of G. The normalized
+Laplacian L = D −1/2 (D − A)D −1/2 has an interesting connection to the Heat Kernel random
+walk which is defined as e−tL (see Chung’s monograph [11]). Since L = I − D −1/2 P D 1/2 ,
+where P is the simple random walk matrix, the normalized Laplacian is similar to I −P . But
+even though e−itL is a well-defined quantum walk, the “quantum walk” e−it(I−P ) is illegal
+since P might not be symmetric. The latter is related to the Heat Kernel random walk via
+an imaginary time transformation1 t ↔ it.
+A quantum walk on a graph G relative to a matrix M has perfect state transfer between
+vertices u and v at time τ if the (u, v)-entry of the unitary matrix U(τ ) has unit magnitude;
+that is:
+|hev |e−iτ M eu i| = 1.
+(2)
+The notion of state transfer was introduced by Bose [4] in the context of information transfer
+in quantum spin chains. In his work, Bose considered perfect state transfer in the XYZ model.
+This notion was further studied by Christandl et al. [10, 9] for paths and hypercubes in the
+XY (adjacency matrix) model. They observed that the n-cube has antipodal perfect state
+transfer at time π/2, for any n (which is counter-intuitive since the diameter of the n-cube
+1
+
+This is apparently a common technique in statistical and quantum physics. See [26, 25] for an application
+of this method to continuous-time random and quantum walks.
+
+2
+
+Graph family
+Qn
+Qn
+K2 + G4n−2
+K2 + G2n,n−1
+P3 × {K2n , Q2n−1 }
+Pn≥3 , Tn≥3
+Pn≥4
+
+PST time
+π/2
+nπ/2
+π/2
+√
+π/2 n
+(2n − 1)π
+∞
+∞
+
+Laplacian
+standard/signless
+normalized
+standard
+signless
+normalized
+standard/signless
+normalized
+
+Source
+Christandl et al. [9]
+Moore and Russell [28]
+this work
+this work
+this work
+Godsil [17], Coutinho and Liu [12]
+this work
+
+Figure 1: Summary of some results on Laplacian perfect state transfer (PST): a PST time
+of ∞ denotes no perfect state transfer; n ≥ 1 is a positive integer; Gn denotes any family of
+n-vertex graphs; Gn,k denotes any family of (n, k)-regular graphs; Pn , Tn , Kn denote a path,
+tree, and complete graph on n vertices, respectively; Qn is the n-dimensional hypercube.
+
+increases with n). In contrast, relative to the normalized Laplacian, the antipodal perfect
+state transfer time of the n-cube is nπ/2.
+Our main goal is to understand how these graph Laplacians affect state transfer on graphs
+and how they compare with the adjacency matrix model. For regular graphs, the quantum
+walks relative to the adjacency and Laplacian matrices are equivalent (up to irrelevant phase
+factors, time dilations, and time reversal). On bipartite graphs, the quantum walks relative
+to the standard and signless Laplacians are equivalent. So, our primary focus will be on
+irregular and/or nonbipartite graphs. We describe some of our results in what follows.
+For the standard Laplacian, we show that perfect state transfer is closed under complementation with some mild assumptions. As a corollary, we characterize perfect state transfer
+on double cones: K2 + H has perfect state transfer relative to the standard Laplacian if and
+only if |V (H)| ≡ 2 (mod 4). This generalizes a result of Bose et al. [5] where H is the complete graph. We also compare this to the XY model where the
+√ double cone has perfect state
+transfer if H is a (n, k)-regular graph, provided both k and k 2 + 8n are integers divisible
+by four and the largest powers of two which divide them are distinct (see Angeles-Canul et
+al. [2]). Thus, perfect state transfer on double cones is less complicated in the XYZ model
+compared to the XY model. In contrast, we also find double cones with perfect state transfer
+relative to the signless Laplacian, but not the standard Laplacian. In particular, we show
+K2 + H has perfect state transfer relative to the signless Laplacian if |V (H)| is even and
+it is densely regular (more precisely, regular with degree 21 |V (H)| − 1). Most of our proofs
+employ the machinery of quotient graphs under equitable and almost-equitable partitions.
+By exploiting the spectral connection between the signless Laplacian and line graphs,
+we show there is no perfect state transfer on a family of odd unicyclic graphs relative to
+the signless Laplacian. The latter family of graphs is obtained by attaching two pendant
+paths to a three-cycle. Our proof uses the idea of controllable subsets in graphs (see Godsil
+[19]). Using the same technique, we can also show there is no perfect state transfer on paths
+with five or more vertices relative to the signless (and standard, by switching equivalence)
+Laplacian. But, a better result (with optimal proof) is known to Godsil who showed that
+paths on at least three vertices have no perfect state transfer under the standard Laplacian.
+
+3
+
+Recently, Coutinho and Liu [12] improved this considerably and showed there is no perfect
+state transfer on trees with at least three vertices relative to the standard Laplacian.
+So, we know P3 has no perfect state transfer relative to the standard/signless Laplacians
+since it is a double cone over a single vertex (also, of course, from the results of Godsil,
+Coutinho and Liu mentioned above). Interestingly,
+√ P3 has perfect state transfer under the
+normalized Laplacian at time π (as opposed to π/ 2 in the XY model). We use this to show
+that a weak product of P3 with either an even clique or an odd cube has perfect state transfer
+relative to the normalized Laplacian. This is a consequence of another closure property: if G
+has perfect state transfer under the normalized Laplacian at time τ , then so does the weak
+product G × H provided that for any normalized Laplacian eigenvalues λ of G and µ of H,
+µ(λ − 1)τ is an integer multiple of 2π. In comparison, relative to the adjacency matrix, it is
+known that a weak product of a circulant which has odd integer eigenvalues with either Q2n
+or P3n , where n is a positive integer, has perfect state transfer (see Ge et al. [16]).
+Finally, we show that no path on four or more vertices has antipodal perfect state transfer
+relative to the normalized Laplacian. The proof is based on a reduction to even cycles in the
+adjacency matrix model. This almost matches the strong negative result for paths in the
+XY model, where there is no perfect state transfer between any pair of vertices (see Godsil
+[18]).
+We summarize some of the known results on Laplacian state transfer along with our
+contributions in Figure 1. A survey on state transfer from a graph-theoretic perspective is
+given by Godsil [18].
+
+2
+
+Preliminaries
+
+For a logical statement S, we use the Iversonian bracket [[S]] to denote 1 if S is true, and 0
+otherwise (see [23]). The n-dimensional all-one vector is denoted 1n . The identity matrix
+of order n is denoted In . The m × n all-one matrix is denoted Jm,n or simply Jn whenever
+m = n. We omit dimensions if the context is clear. For a matrix A, AT and A† denote its
+transpose and Hermitian transpose, respectively. The inner product of vectors ~u and ~v is
+denoted h~u|~vi. Given an index u, let eu denote the unit vector that is 1 at position u and
+zero elsewhere. We often consider the inner product hx|Ayi, and in the form of heu |Aev i, it
+is simply the (u, v)-entry of A.
+For two sets A, B of numbers, we denote their sum as A + B = {a + b : a ∈ A, b ∈ B},
+their product as AB = {ab : a ∈ A, b ∈ B}, and the scalar product of A with a constant c
+as cA = {ca : a ∈ A}.
+Let G = (V, E) be a graph that is simple, undirected, and (mostly) connected. Two
+vertices u and v are adjacent, or u ∼ v, if (u, v) ∈ E. The degree of a vertex P
+u ∈ V , which
+we denote deg(u), is the number of vertices adjacent to u; that is, deg(u) = v∈V [[u ∼ v]].
+A graph G is called (n, k)-regular if G has n vertices and each vertex has degree k. As is
+customary, we let Pn and Kn denote a path and a complete graph on n vertices, respectively,
+and Qn denote the n-dimensional hypercube.
+For a graph G = (V, E), its adjacency matrix A is defined as Au,v = [[(u, v) ∈ E]] and its
+diagonal degree matrix D is defined as Du,v = [[u = v]] deg(u). We focus on the following
+graph Laplacians. The standard Laplacian is given by L = D − A, the signless Laplacian by
+4
+
+u
+
+v
+
+u
+
+v
+
+u
+
+v
+
+Figure 2: Small examples of graphs with Laplacian perfect state transfer (between vertices
+marked white): (i) P3 = K2 +K1 has perfect state transfer at time π relative to the normalized
+Laplacian (but not the standard/signless Laplacian); (ii) K2 + K2 has perfect state transfer
+at time π/2 relative
+√ to the standard/signless Laplacians; (iii) K2 + 2K2 has perfect state
+transfer at time π/ 8 relative to the signless Laplacian (but not the standard Laplacian).
+
+Q = D + A, and the normalized Laplacian is L = I − D −1/2 AD −1/2 . For a matrix M related
+to a graph G, the M-spectrum of G, denoted SpecM (G), is the set of eigenvalues of M(G).
+The complement of a graph G, denoted G, is a graph whose vertex set is V (G) with edge
+set {(u, v) : (u, v) 6∈ E(G), u 6= v}. For two graphs G and H, their disjoint union G ∪ H is a
+graph whose vertex set is V (G) ∪ V (H) and edge set is E(G) ∪ E(H), respectively. Here, we
+assume V (G) and V (H) are disjoint sets. The join of G and H, denoted G + H, is defined as
+G+H = G ∪ H. We also consider products of G and H where the vertex set is V (G)×V (H)
+and the edge set is defined by an adjacency rule on the pairs (g1 , h1 ) and (g2 , h2 ):
+• weak product G × H: (g1 , h1 ) ∼ (g2 , h2 ) if g1 ∼ g2 and h1 ∼ h2 . The adjacency matrix
+is given by A(G × H) = A(G) ⊗ A(H).
+• Cartesian product G  H: (g1 , h1 ) ∼ (g2 , h2 ) if g1 ∼ g2 and h1 = h2 , or g1 = g2 and
+h1 ∼ h2 . The adjacency matrix is given by A(G  H) = A(G) ⊗ IH + IG ⊗ A(H).
+The line graph of a graph G, denoted2 ℓ(G), is a graph whose vertex set is E(G) where two
+edges are adjacent in ℓ(G) if they share a common vertex; that is, E(ℓ(G)) = {(e1 , e2 ) :
+e1 , e2 ∈ E(G), |e1 ∩ e2 | = 1}.
+A vertex partition π of a graph G = (V, E) given by V = V1 ∪ . . . ∪ Vm is called equitable
+if there are constants dj,k , for 1 ≤ j, k ≤ m, so that
+(∀j, k ∈ {1, . . . , m})(∀u ∈ Vj ) |N(u) ∩ Vk | = dj,k .
+
+(3)
+
+If condition (3) is only required to hold for j 6= k, the partition is called almost equitable.
+The (normalized) partition matrix P of π is given by
+P=
+
+X
+
+[[u ∈ Vk ]]
+p
+eu eTk
+|V
+|
+k
+u∈V,k∈[m]
+
+We state the following well-known properties of equitable partitions.
+2
+
+We follow a convention used by Mike Newman [29].
+
+5
+
+(4)
+
+Fact 1. (Godsil [18])
+S
+Let G = (V, E) be a graph with an equitable partition π given by V = m
+k=1 Vk with constants
+dj,k , for j, k = 1, . . . , m. Let P be the (normalized) partition matrix of π, where P T P = Im .
+Then:
+1. PP T = diag({J|Vk | : k ∈ [m]}) which commutes with A(G).
+2. A(G)P = PB, where B is a m × m matrix defined as
+p
+Bj,k = dj,k dk,j ,
+
+(5)
+
+where j, k = 1, . . . , m.
+
+Thus, B = A(G/π) is the adjacency matrix of the quotient graph G/π.
+We will need the following lemma which relates perfect state transfer in quantum walks
+on a graph and on its quotient under an equitable partition.
+Lemma 1. (Bachman et al. [3])
+Let G = (V, E) be a graph with equitable partition π. Suppose u, v ∈ V (G) belong to singleton
+partitions under π. Then,
+heu |e−itA(G) ev i = heπ(u) |e−itA(G/π) eπ(v) i.
+
+(6)
+
+Therefore, perfect state transfer occurs between u and v in G if and only if it occurs between
+π(u) and π(v) in G/π.
+Further background on algebraic graph theory can be found in Godsil and Royle [21].
+
+3
+
+Basic observations
+
+In this section, we state some basic facts about Laplacian quantum walk on graphs.
+Definition 1. (Equivalence under quantum walk)
+Given a graph G and two matrices M1 (G) and M2 (G) associated with G, the quantum walks
+based on M1 (G) and M2 (G) are equivalent if for every time t ∈ R, we have
+|heu |e−itM1 (G) ev i| = |heu |e−i(αt)M2 (G) ev i|,
+
+(7)
+
+for each u, v ∈ V (G) and for some α ∈ R.
+Here, we consider two quantum walks equivalent if their entry-wise complex magnitudes
+are the same at all times. The global phase factors (of the form eiθ for some real θ) may be
+safely ignored since they are undetectable by quantum measurements.
+
+6
+
+3.1
+
+Regular graphs
+
+Fact 2. For any regular graph G, the quantum walks based on the adjacency matrix, the
+standard and signless Laplacians, and the normalized Laplacian are all equivalent.
+Proof. Let G be a k-regular graph. The standard, signless and normalized Laplacians of G,
+respectively, are given by L(G) = kI − A(G), Q(G) = kI + A(G), and L(G) = I − k1 A(G).
+Therefore, their quantum walks are defined as
+exp(−itL(G)) = e−i(kt) exp(+itA(G))
+exp(−itQ(G)) = e−i(kt) exp(−itA(G))
+exp(−itL(G)) = e−it exp(i(t/k)A(G)),
+
+(8)
+(9)
+(10)
+
+which are all equivalent to e−itA(G) up to phase factors, time reversal and time dilations.
+
+3.2
+
+Bipartite graphs
+
+Fact 3. For any bipartite graph G, the quantum walks based on the standard and signless
+Laplacians are equivalent.
+Proof. If G is bipartite, then −A(G) = DA(G)D −1 for some nonsingular diagonal matrix
+D with ±1 entries along its diagonal (see Godsil and Royle [21], for example). This implies
+that Q(G) = DL(G)D −1 and, moreover, e−itQ(G) = De−itL(G) D −1 .
+
+3.3
+
+Cartesian products
+
+To construct infinite families of graphs with perfect state transfer in the XY model, the
+Cartesian product is a useful closure operator. The seminal works of Christandl et al. [10, 9]
+showed that both K2n and P3n have perfect state transfer (since each of K2 and P3 have
+such property). We state a similar observation for the standard/signless Laplacians.
+Fact 4. Let M denote the standard or signless Laplacian. Suppose G has perfect state
+transfer at time t between g1 and g2 relative to M. Suppose H has perfect state transfer at
+time t between h1 and h2 relative to M. Then, G  H has perfect state transfer at time t
+between (g1 , h1 ) and (g2 , h2 ) relative to M.
+Proof. Note that D(G  H) = D(G) ⊗ IH + IG ⊗ D(H). Thus, M(G  H) = M(G) ⊗ IH +
+IG ⊗ M(H). This shows that
+exp(−itM(G  H)) = e−itM (G) ⊗ e−itM (H) ,
+
+(11)
+
+which implies the claim.
+Later, we apply Fact 4 to some examples of graphs with Laplacian perfect state transfer.
+For example, Qn  (K2 + G) has perfect state transfer at time π/2 relative to the standard
+Laplacian, for any n-cube Qn and any graph G with |V (G)| ≡ 2 (mod 4) (see Corollary 4).
+See Figure 6.
+7
+
+α
+1
+
+1
+
+Figure 3: The weighted graph P3 (α): antipodal perfect state transfer occurs at time τ relative
+to the adjacency matrix if and only if cos(τ α/2) cos(τ ∆) = −1, where ∆2 = (α/2)2 + 2.
+
+3.4
+
+Three-vertex path
+
+We show that P3 has perfect state transfer relative to the normalized Laplacian.
+Fact 5. P3 has antipodal perfect state transfer relative to the normalized Laplacian at time
+π.
+Proof. Note that L(P3 ) = I − √12 A(P3 ) with eigenvalues λ = 0, 1, 2. Therefore, we have
+
+
+
+
+√
+1
+(12)
+e
+= exp −it I − √ A(P3 )
+= e−it ei(t/ 2)A(P3 ) .
+2
+√
+Since A(P3 ) has antipodal perfect state transfer at time π/ 2 (see Godsil [18]), P3 has
+antipodal perfect state transfer at time π relative to the normalized Laplacian.
+−itL(P3 )
+
+In what follows, we consider a path on three vertices with a weighted self-loop on the
+middle vertex. We describe a necessary and sufficient condition on the weight of the self-loop
+that yields antipodal perfect state transfer. This simple graph will be useful later when we
+analyze the double cone K2 + G on Laplacians.
+Fact 6. For a real number α ∈ R, let G(α) be a graph on the vertex set {0, 1, 2} with the
+following adjacency matrix:
+
+
+0 1 0
+A(G(α)) = 1 α 1
+(13)
+0 1 0
+
+Then, G(α) has antipodal perfect state transfer relative to the adjacency matrix at time τ if
+and only if
+e−iτ α/2 cos(∆τ ) = −1,
+(14)
+p
+where ∆ = (α/2)2 + 2.
+√
+Proof. Let α̃ = α/2 and ∆ = α̃2 + 2. The eigenvalues of A(G(α)) are λ0 = 0 and λ± =
+α̃ ± ∆. with the following corresponding eigenvectors:
+ 
+ 
+1
+1
+1
+1
+ λ± 
+z~0 = √  0  ,
+(15)
+z~± = p
+2 −1
+2∆(∆ ± α̃) 1
+where we have used 2 + λ2± = 2∆(∆ ± α̃).
+
+8
+
+Thus, the antipodal fidelity of the quantum walk e−itA(G(α)) is given by
+1 X e−itλ±
+1
+he2 |e−itA(G(α)) e0 i = − +
+2 2∆ ± (∆ ± α̃)
+
+ 
+
+1 e−itα̃
+α̃
+= − +
+cos(∆t) + i
+sin(∆t)
+2
+2
+∆
+
+(16)
+(17)
+
+Let g(α, t) = cos(∆t) + i(α̃/∆) sin(∆t). Note that |g(α, t)| = 1 if and only if ∆t ∈ Zπ, since
+α̃/∆ < 1.
+We show that there is a time τ so |he2 |e−iτ A(G(α)) e0 i| = 1 if and only if e−iτ α̃ cos(∆τ ) = −1.
+By inspecting (17), the condition is clearly sufficient. To show it is necessary, suppose there
+are τ, θ ∈ R so that he2 |e−iτ A(G(α)) e0 i = eiθ . From (17), we have
+1 1
+eiθ = − + e−iτ α̃ g(α, τ ).
+2 2
+
+(18)
+
+This implies that |g(α, τ )| = 1 (by taking the complex conjugate and multiplying). Note
+that if a convex combination of numbers of the form eiβk lies on the complex unit circle, then
+all βj are congruent modulo 2π. Hence, e−iτ α̃ cos(∆τ ) = −1.
+
+4
+
+Standard Laplacian
+
+4.1
+
+Complements
+
+We show that perfect state transfer relative to the Laplacian is closed under complementation. Relative to the adjacency matrix, this only holds for regular graphs.
+Theorem 2. If G is a graph with perfect state transfer between vertices u and v at time t
+relative to the standard Laplacian, where
+|V (G)|t ∈ 2πZ,
+
+(19)
+
+then G has perfect state transfer between vertices u and v at time t relative to the standard
+Laplacian.
+Proof. Let G be a graph on n vertices. The standard Laplacian of G is given by
+L(G) = [(n − 1)I − D(G)] − [J − I − A(G)] = nI − J − L(G).
+
+(20)
+
+Since L(G) commutes with J, we get
+e−itL(G) = e−int eitJ eitL(G) .
+By the spectral theorem, eitJ = eint J/n + I − J/n, which implies
+
+
+e−itL(G) = e−int (eint − 1) n1 J + I eitL(G) .
+
+Thus, if nt ∈ 2πZ, we obtain e−itL(G) = eitL(G) .
+9
+
+(21)
+
+(22)
+
+We show applications of Theorem 2 to perfect state transfer on graph joins and on double
+cones relative to the standard Laplacian.
+Corollary 3. Let G be a graph which has perfect state transfer between vertices u and v at
+time t relative to the standard Laplacian. For any graph H, the join G + H has perfect state
+transfer between vertices u and v at time t relative to the standard Laplacian provided
+t(|V (G)| + |V (H)|) ∈ 2πZ.
+
+(23)
+
+Proof. We note that G + H = G ∪ H and apply Theorem 2.
+Corollary 4. The join K2 + H has perfect state transfer at time π/2 between the vertices
+of K2 relative to the standard Laplacian if |V (H)| ≡ 2 (mod 4).
+Proof. We apply Corollary 3 with G = K2 which has perfect state transfer at time t = π/2.
+Thus, K2 +H has perfect state transfer if (2+|V (H)|)π/2 ∈ 2πZ, which proves the claim.
+Remark: Corollary 4 is a generalization of the main result due to Bose, Casaccino, Mancini
+and Severini [5] which studied Laplacian perfect state transfer in complete graphs with a
+missing edge. By viewing Kn \ e as a double cone and using closure under complementation
+for Laplacian perfect state transfer, we found a simpler proof for a more general result. Also,
+contrast Corollary 4 with a similar result in the adjacency matrix model due to AngelesCanul et al. [2]. They showed that perfect state transfer occurs on K2 + H under a more
+complicated number-theoretic conditions and only when H is regular.
+
+4.2
+
+Double cones
+
+In this section, we show a tighter version of Corollary 4 using the machinery of quotient
+graphs relative to almost equitable partitions. This provides a characterization of perfect
+state transfer on the double cones relative to the standard Laplacian. First, we state a
+symmetric quotient graph within the framework developed by Cardoso et al. [6].
+Fact 7. (based on Cardoso et al. [6])
+S
+Let G = (V, E) be a graph with an almost equitable partition π given by V = m
+k=1 Vk with
+constants dj,k , for 1 ≤ j < k ≤ m. Let P be the (normalized) partition matrix of π, where
+P T P = Im . Then:
+1. PP T = diag({J|Vk | : k ∈ [m]}) which commutes with L(G).
+2. L(G)P = PB, where B is a m × m matrix defined as
+ p
+− d d
+if j 6= k
+Bj,k = P j,k k,j
+d
+if j = k
+ℓ6=j j,ℓ
+where j, k = 1, . . . , m.
+
+Thus, B = L(G/π) is the standard Laplacian of the quotient graph G/π.
+10
+
+(24)
+
+Proof. Follows immediately from Cardoso et al. [6] via the normalized partition matrix.
+Using Fact 7, we provide the following tight version of Corollary 4.
+Corollary 5. The join K2 + H has perfect state transfer at time π/2 between the vertices
+of K2 relative to the standard Laplacian if and only if |V (H)| ≡ 2 (mod 4).
+Proof. Let G = K2 + H, where H is a n-vertex graph. By Fact 7, the Laplacian quotient B
+of G is given by
+
+
+√
+n
+0
+n
+−
+√
+√
+2
+−
+n
+B = − n
+(25)
+√
+0
+− n
+n
+
+In a quantum walk, up to phase factors, time reversal, and time dilations, B is equivalent to
+
+
+0
+1
+0
+−1
+(26)
+B̃ = √ (B − nI) = 1 √1n (n − 2) 1
+n
+0
+1
+0
+We apply Fact 6 with α = √1n (n − 2). Note also that α̃ = α/2 and ∆ =
+
+√
+
+α̃2 + 2. Thus,
+
+there is antipodal perfect state transfer using B̃ at time t if and only if
+cos(α̃t) cos(∆t) = −1.
+
+(27)
+
+This implies that α̃t, ∆t ∈ Zπ and α̃/∆ is a rational number p/q of distinct parities (either
+p is odd and q is even, or p is even and q is odd). But, note that
+n−2
+n−2
+α̃
+=p
+.
+=
+∆
+n+2
+(n − 2)2 + 8n
+
+(28)
+
+Since the parities of the numbers in the fraction p/q must be distinct, it is clear that n must
+be even and must satisfy n ≡ 2 (mod 4). By Lemma 1 (lifting), we obtain the claim on the
+double cone K2 + H.
+
+4.3
+
+Joins
+
+We revisit perfect state transfer on graph joins relative to the standard Laplacian and show
+a negative result on connected double cones.
+Fact 8. Let G and H be graphs on m and n vertices, respectively. For vertices u and v of
+G, the quantum walk on G + H relative to the standard Laplacian satisfies
+heu |e−itL(G+H) ev i = e−itn heu |e−itL(G) ev i +
+
+(e−it(m+n) − e−itn ) (1 − e−it(m+n) )
++
+.
+m
+m+n
+
+(29)
+
+Moreover, if perfect state transfer occurs between vertices u and v in G + H at time t relative
+to the standard Laplacian, then t(m + n) ∈ 2πZ.
+11
+
+Proof. Let the spectral decompositions of the standard Laplacians of G and H be
+L(G) =
+
+m−1
+X
+
+λk Ek ,
+
+L(H) =
+
+n−1
+X
+
+µℓ Fℓ .
+
+(30)
+
+ℓ=0
+
+k=0
+
+Then, the join G + H has the following spectral decomposition:
+
+
+ X
+
+n−1
+m−1
+X
+O O
+Ek O
+T
+T
+(31)
+(m + µℓ )
++
+(n + λk )
+L(G + H) = 0 · z0 z0 + (m + n)z1 z1 +
+O Fℓ
+O O
+ℓ=1
+
+k=1
+
+where
+1
+z0 = √
+1m+n ,
+m+n
+
+z1 = p
+
+1
+
+"
+
+n1m
+
+mn(m + n) −m1n
+
+#
+
+.
+
+(32)
+
+Using this, the quantum walk on G + H relative to the standard Laplacian is
+
+
+ X
+
+n−1
+m−1
+X
+Jm+n
+−it(m+µℓ ) O O
+−it(n+λk ) Ek O
+−it(m+n)
+T
+−itL(G+H)
+. (33)
+e
++
+e
++e
+z1 z1 +
+e
+=
+O Fℓ
+O O
+m+n
+ℓ=1
+
+k=1
+
+For the vertices u and v of G, we have
+
+
+m−1
+X
+1
+1
+1
+−itL(G+H)
+heu |e
+ev i =
+e−itλk heu |Ek ev i (34)
+e−it(m+n) + e−int
++
+−
+m+n
+m m+n
+k=1
+=
+
+(e−it(m+n) − e−itn ) (1 − e−it(m+n) )
++
++ e−itn heu |e−itL(G) ev i, (35)
+m
+m+n
+
+where we have used the fact E0 = Jm /m.
+To show the second claim, let y be a vertex of H. Then, by (33), we have
+heu |e−itL(G+H) ey i =
+
+1
+(1 − e−it(m+n) ).
+m+n
+
+(36)
+
+This expression is zero if perfect state transfer occurs between u and v in G + H. Therefore,
+e−it(m+n) = 1, which implies t(m + n) ∈ 2πZ.
+We show that connected double cones K2 + G have no perfect state transfer relative to
+the standard Laplacian, unlike its counterpart K2 + G.
+Corollary 6. For any graph G, there is no perfect state transfer on K2 + G between the two
+vertices of K2 relative to the standard Laplacian.
+Proof. Let G be a graph on n vertices. Suppose there is perfect state transfer on K2 + G at
+time t between the vertices u and v of K2 relative to the standard Laplacian. By Fact 8, we
+have
+
+
+1 −2it
+−itL(K2 )
+−itL(K2 +G)
+−itn
+heu |e
+ev i + (e
+heu |e
+ev i = e
+− 1) ,
+(37)
+2
+
+since e−it(2+n) = 1. But, note that heu |e−itL(K2 ) ev i = 21 (1 − e−2it ). So, the right-hand side of
+(37) is zero, which is a contradiction since we assume K2 + G has perfect state transfer at
+time t between u and v.
+12
+
+5
+
+Signless Laplacian
+
+5.1
+
+Double cones
+
+By Fact 3, the quantum walks relative to the Laplacians D ± A are equivalent for regular
+and/or bipartite graphs. We describe a family of graphs with perfect state transfer relative
+to the signless Laplacian D + A, but not under the standard Laplacian D − A. First, we
+state some facts about quotient graphs relative to the signless Laplacian.
+S
+Fact 9. Let G = (V, E) be a graph with an equitable partition π given by V = m
+k=1 Vk with
+constants dj,k , for j, k = 1, . . . , m. Let P be the (normalized) partition matrix of π, where
+P T P = Im . Then:
+1. PP T = diag({J|Vk | : k ∈ [m]}) which commutes with Q(G).
+2. Q(G)P = PB, where B is a m × m matrix defined as
+ p
+dj,k dk,j
+if j 6= k
+P
+Bj,k =
+2dj,j + ℓ6=j dj,ℓ if j = k
+
+(38)
+
+where j, k = 1, . . . , m.
+
+Thus, B = Q(G/π) is the signless Laplacian of the quotient graph G/π.
+Proof. To show that PP T commutes with Q(G), it suffices to show it commutes with D(G).
+Note that D(G) is a diagonal matrix over m blocks with the following form:
+( m
+)
+!
+X
+D(G) = diag
+dk,ℓ I|Vk | : k ∈ [m] .
+(39)
+ℓ=1
+
+Since PP T = diag({J|Vk | : k ∈ [m]}), it commutes with D(G) and hence with Q(G).
+Next, we show that Q(G)P = PB, where B is given by (38). If we let B = P T Q(G)P,
+hej |Bek i = hej |P T Q(G)Pek i
+X
+1
+heu |Q(G)ev i
+= p
+|Vj ||Vk | u∈Vj ,v∈Vk
+X
+1
+heu |(D(G) + A(G))ev i
+= p
+|Vj ||Vk | u∈Vj ,v∈Vk
+#
+"
+X
+p
+dj,ℓ + [[j 6= k]] dj,k dk,j .
+= [[j = k]] 2dj,j +
+
+(40)
+(41)
+(42)
+
+(43)
+
+ℓ6=j
+
+The above case for j 6= k follows from Fact 1.
+From B = P T Q(G)P, by multiplying both sides by P from the left, we get
+PB = PP T Q(G)P = Q(G)PP T P = Q(G)P,
+since PP T commutes with Q(G) and P T P = Im . This proves the second claim.
+13
+
+(44)
+
+Theorem 7. For an integer m ≥ 1, if H is a (2m, m − 1)-regular graph, then K 2 + H has
+perfect state transfer relative to the signless Laplacian.
+Proof. Let H be a (n, k)-regular graph and consider the double cone G = K 2 + H. By Fact
+9, the signless Laplacian quotient B of G is given by
+
+
+√
+n
+n
+0
+√
+√
+n
+B =  n 2k√+ 2
+(45)
+0
+n
+n
+√
+If k = (n − 2)/2, we have B = nI + nA(P3 ). Let a and b be the conical vertices of G (which
+are also the antipodal vertices of the quotient). Therefore,
+√
+
+heb |e−itB ea i = e−int heb |e−i( nt)A(P3 ) ea i,
+
+(46)
+
+which √
+implies that the signless Laplacian quotient of G has perfect state transfer at time
+t = π/ 2n.
+Using Lemma 1, we lift the perfect state transfer from the quotient to the original graph:
+heb |e−itQ(G) ea i = heb |P T e−itQ(G) Pea i = heb |e−itB ea i,
+
+(47)
+
+since e−itB = P T e−itQ(G) P. Finally, we set n = 2m to complete the proof.
+Example: For completeness, we describe a simple family {Gm } of (2m, m−1)-regular graphs,
+where the double cone K2 + Gm has perfect state transfer between the two conical vertices
+relative to the signless Laplacian (by Theorem 7). Each graph Gm is a circulant over Z2m
+with the following generating set:
+
+if m − 1 is even
+{±1, . . . , ± 12 (m − 1)}
+Sm =
+(48)
+{±1, . . . , ± 12 (m − 2)} ∪ {±m} if m − 1 is odd
+It is clear that the circulant Gm = Circ(Z2m , Sm ) is (2m, m − 1)-regular. Moreover, note that
+the double cone K2 + Gm has no perfect state transfer relative to the standard Laplacian,
+whenever 2m ≡ 0 (mod 4) (by Corollary 4).
+
+5.2
+
+Line graphs
+
+The (normalized) incidence matrix B of G is a n × m matrix defined as Bu,e = √12 [[u ∈ e]], for
+each vertex u ∈ V (G) and each edge e ∈ E(G). We state a well-known connection between
+the signless Laplacian and line graphs.
+Fact 10. For any graph G = (V, E) with (normalized) incidence matrix B, we have:
+(i) BBT = 12 Q, and is nonsingular if G is connected and nonbipartite.
+(ii) BT B = 12 A(ℓ(G)) + I, and is nonsingular if G is a tree.
+Proof. See Godsil and Royle [21], Theorem 8.2.1 for example.
+14
+
+We observe the following connections between the quantum walk on a graph G relative to
+the signless Laplacian and the quantum walk on the line graph ℓ(G) relative to the adjacency
+matrix. The third observation in Lemma 8 was suggested by Ada Chan.
+Lemma 8. Let G be a graph with (normalized) incidence matrix B. Then:
+a) BT e−itQ(G) = e−2it e−itA(ℓ(G)) BT .
+b) e−itQ(G) B = e−2it Be−itA(ℓ(G)) .
+c) BT e−itQ(G) B = e−2it e−itA(ℓ(G)) BT B.
+Proof. For the first identity, we have
+T −itQ(G)
+
+B e
+
+=B
+
+T
+
+∞
+X
+(−2it)k
+k=0
+
+k!
+
+T k
+
+(BB ) =
+
+∞
+X
+(−2it)k
+k=0
+
+k!
+
+T
+
+(BT B)k BT = e−2itB B BT ,
+
+(49)
+
+and apply 2BT B = A(ℓ(G)) + 2I to get the result. The proof of the second identity is similar.
+For the third identity, we have
+"∞
+#
+"∞
+#
+X (−2it)k
+X (−2it)k
+BT e−itQ(G) B = BT
+(50)
+(BBT )k B =
+(BT B)k BT B,
+k!
+k!
+k=0
+k=0
+and again apply 2BT B = A(ℓ(G)) + 2I.
+Theorem 9. Let G be a graph which has perfect state transfer at time t from a vertex u1
+of degree one to another vertex u2 relative to the signless Laplacian. Then, u2 must have
+degree one and the line graph ℓ(G) has perfect state transfer at time t between the unique
+edges incident to u1 and u2 relative to the adjacency matrix.
+Proof. Let B be the normalized incidence matrix of G. Suppose G has perfect state transfer
+from vertex u1 of degree one to another vertex u2 at time t relative to the signless Laplacian.
+Let e1 be the unique edge incident to u1 and let e2 be any edge incident to u2 . Say,
+e2 = (u2 , z), for some vertex z. By Lemma 8, we have
+e−2it e−itA(ℓ(G)) BT = BT e−itQ(G) .
+
+(51)
+
+Therefore, up to phase factors, we have
+√1 hee |e−itA(ℓ(G)) ee i
+2
+1
+2
+
+= hee2 |e−itA(ℓ(G)) BT eu1 i
+
+= hee2 |BT e−itQ(G) eu1 i
+= √12 heu2 + ez |e−itQ(G) eu1 i.
+
+(52)
+(53)
+(54)
+
+We have hez |e−itQ(G) eu1 i = 0 since |heu2 |e−itQ(G) eu1 i| = 1. Thus,
+hee2 |e−itA(ℓ(G)) ee1 i = heu2 |e−itQ(G) eu1 i,
+which completes the proof.
+15
+
+(55)
+
+We show that Theorem 9 may be used as a tool for showing the absence of perfect state
+transfer relative to the signless Laplacian in some graphs. It would be interesting if we can
+apply this similarly in the other direction.
+Corollary 10. For n ≥ 5, there is no antipodal perfect state transfer on Pn relative to the
+signless Laplacian.
+Proof. For n ≥ 5, suppose there is a time t so |he1 |e−itQ(Pn ) en i| = 1. By Theorem 9, since
+ℓ(Pn ) = Pn−1 , we have |hee1 |e−itA(Pn−1 ) een−1 i| = 1, where e1 and en−1 are the edges incident
+to vertices 1 and n, respectively. But, there is no perfect state transfer on paths Pm , for
+m ≥ 4 (see Christandl et al. [10]).
+Remark: A better version of Corollary 10 (with optimal proof) is due to Godsil who showed
+that there is no perfect state transfer on Pn , for n ≥ 3, relative to the standard Laplacian.
+So, a minor novelty of Corollary 10 is in using the spectral link between the unnormalized
+Laplacians and the adjacency matrix of the line graph. The latest breakthrough result by
+Coutinho and Liu [12] showed that Godsil’s result holds for trees with at least three vertices.
+
+5.3
+
+Odd unicyclic graphs
+
+We describe an application of Theorem 9 to nonbipartite graphs. To this end, we consider a
+family of graphs obtained from paths by adding a unique odd-cycle (here, we focus on the
+three-cycle C3 ). We show that this family of odd unicyclic graphs has no antipodal perfect
+state transfer relative to the signless Laplacian. Our proof exploits a connection between
+perfect state transfer and controllability described by Godsil [19, 20] (see also Godsil and
+Severini [22]).
+We formally define our family of odd unicyclic graphs. For an integer m ≥ 1, let Um be
+the graph obtained by attaching two pendant paths Pm+1 (with m edges) to a three-cycle C3
+(see Figure 5(a)). The line graph of Um is a graph which has two pendant paths Pm attached
+to the pair of vertices of degree two in the cone K1 + P4 .
+In what follows, we briefly describe the machinery of controllable subsets on graphs. Let
+G = (V, E) be a graph on n vertices with adjacency matrix A. For a subset of vertices
+S ⊆ V , the walk matrix WS on G with respect to S is defined as
+
+
+WS = eS AeS A2 eS . . . An−1 eS
+(56)
+
+where eS denotes the characteristic vector of S. We say that the pair (G, S) is controllable
+if WS has full rank. A vertex u of G is called controllable if (G, {u}) is controllable.
+The following theorems of Godsil on controllability and state transfer will prove useful.
+
+Theorem 11. (Godsil [20], Theorem 7.4)
+If G has perfect state transfer (relative to the adjacency matrix) between vertices u and v,
+then neither u nor v is controllable.
+Theorem 12. (Godsil [19])
+bS be a graph obtained
+Let G = (V, E) be a graph and S ⊆ V be a subset of vertices. Let G
+from G and a path with endpoints u and v (which may be identical) whereby we connect u to
+bS .
+all vertices in S. If (G, S) is controllable, then v is controllable in G
+16
+
+Figure 4: The odd unicyclic graph Um is obtained by attaching two pendant paths Pm+1 to
+a three-cycle C3 . The example shows U2 (on left) and its line graph ℓ(U2 ) (on right).
+
+A main ingredient of our proof is the next lemma on the controllability of K1 + P4 .
+c4 = K1 + P4 and let u and v be vertices of degree two in P
+c4 . For m ≥ 0,
+Lemma 13. Let P
+let Gm be the graph obtained by attaching a pendant path Pm+1 (see Figure 5(b)) to vertex v.
+Then, u is controllable in Gm if and only if m 6≡ 2 (mod 3).
+Proof. Let A be the adjacency matrix of Gm whose spectral decomposition is given by
+n
+X
+
+A=
+
+λℓ z~ℓ z~ℓ †
+
+(57)
+
+ℓ=1
+
+where {z~1 , . . . , z~n } is the set of orthonormal eigenvectors of A which satisfies A~
+zℓ = λℓ z~ℓ , for
+every ℓ = 1, . . . , n. Consider the walk matrix Wu relative to vertex u:
+Wu =
+
+n−1
+X
+
+Ak eu eTk
+
+(58)
+
+k=0
+
+The rank of Wu is equal to the cardinality of the set {ℓ : h~
+zℓ |eu i 6= 0}. To see this, note that
+Ak eu =
+
+n
+X
+ℓ=1
+
+λkℓ h~
+zℓ |eu i~
+zℓ ,
+
+(59)
+
+which shows that the columns of Wu is spanned by the vectors z~ℓ satisfying h~
+zℓ |eu i 6= 0.
+c
+In what follows, we label the vertices of P4 as {0, 1, 2, 3, 4} where 0 is the conical vertex,
+1 and 4 are the endpoints of P4 , 2 and 3 are the middle vertices with 2 adjacent to 1 and
+3 adjacent to 4. The vertices of the pendant path Pm+1 will be labeled consecutively as 4
+followed by 4 + k, for k = 1, . . . , m; see Figure 5(b). We show h~
+zℓ |e1 i = 0, for some ℓ, if and
+only if m ≡ 2 (mod 3).
+Suppose ~z is an eigenvector of A with eigenvalue λ where h~z |e1 i = 0. Assume,
+P without
+loss of generality, that h~z |e2 i = a, for some a 6= 0. Using the fact that λh~z|eu i = v∼u h~z |ev i
+and following the chain of implications, we obtain:
+h~z|e0 i = −a
+h~z|e3 i = (1 + λ)a
+h~z|e4 i = λ(1 + λ)a.
+17
+
+(60)
+(61)
+(62)
+
+0
+
+1
+
+2
+
+0
+
+3
+
+4
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+c4 is the cone K1 + P4
+Figure 5: Small graphs with controllable vertices: (a) The graph P
+c4 with a pendant path Pm+1 : vertex
+(vertex 1 is controllable; so is vertex 4). (b) The graph P
+1 is controllable if and only if m 6≡ 2 (mod 3) (see Lemma 13). The example shows m = 3.
+P
+Since λh~z |e0 i = 4k=1h~z |ek i, we have (1 + λ)(2 + λ) = 0, which implies λ = −1 or λ = −2.
+We consider these two cases separately.
+Case: λ = −1. We have h~z|e3 i = h~z |e4 i = 0. For k ≥ 0, this forces the three-step
+sequence along the pendant path:
+
+if k ≡ 0 (mod 3)
+ 0
++a if k ≡ 1 (mod 3)
+h~z |e4+k i =
+(63)
+
+−a if k ≡ 2 (mod 3)
+
+The last vertex on the pendant path must have index k ≡ 2 (mod 3) for the eigenvector ~z
+to be well-defined.
+Case: λ = −2. We have h~z|e3 i = −a and h~z |e4 i = 2a. For k ≥ 0, this forces the following
+pattern along the pendant path:
+h~z |e4+k i = (−1)k 2a,
+
+(64)
+
+which must continue indefinitely. Hence, such an eigenvector ~z does not exist.
+This proves the claim.
+We state our other corollary of Theorem 9 for the family of odd unicyclic of graphs Um .
+This provides a nonbipartite generalization of Corollary 10.
+Corollary 14. For m ≥ 1, the family of graphs Um has no antipodal perfect state transfer
+under the signless Laplacian whenever m 6≡ 0 (mod 3).
+c4 be the cone K1 + P4 and let u and v be the vertices of degree two in P
+c4 . Also,
+Proof. Let P
+let Gm denote the graph obtained by attaching to v a pendant path with m edges. Then,
+the line graph of Um , that is ℓ(Um ), is obtained from Gm by attaching to u a pendant path
+with m edges.
+To prove the claim, we show that ℓ(Um ) does not have antipodal perfect state transfer
+under the adjacency matrix and then apply Theorem 9. By Theorem 11, it suffices to show
+that the two “antipodal” vertices of minimum degree in ℓ(Um ) are controllable. By Lemma
+c4 are controllable. Using Theorem 12, we
+13, the two vertices of degree two in the cone P
+conclude that the unique vertex of degree one in Gm is controllable. Since vertex u in Gm is
+controllable (by Lemma 13 again), if we attach a pendant path with m edges to u, the other
+endpoint of this path is controllable by Theorem 12.
+18
+
+Remark: Our argument in Corollary 14 allows pendant paths of different lengths attached
+to a three-cycle provided the length of one of the paths is not divisible by three. It would be
+interesting to show a similar result to Corollary 14 for arbitrary odd unicyclic graphs. These
+graphs are interesting since BT B is nonsingular3 .
+
+6
+
+Normalized Laplacian
+
+A quantum walk on the hypercube Qn relative to the adjacency matrix has antipodal perfect
+state transfer at time π/2 for any n. This might contradict the postulate that the speed of
+light is constant. In contrast, a quantum walk on Qn relative to the normalized Laplacian
+has antipodal perfect state transfer at time nπ/2. Thus, the normalized Laplacian takes into
+account the diameter of the n-cube whereas the adjacency matrix does not. This motivates
+a closer study of quantum walks relative to normalized Laplacians.
+
+6.1
+
+Weak products
+
+We show that the weak product is a useful operation for constructing classes of graphs
+with perfect state transfer relative to the normalized Laplacian. First, we observe that the
+normalized Laplacian of a weak product G × H has a strong resemblance in form to the
+adjacency matrix of a strong product G ⊠ H.
+Fact 11. For graphs G and H, we have
+L(G × H) = L(G) ⊗ IH + IG ⊗ L(H) − L(G) ⊗ L(H).
+
+(65)
+
+Proof. Note that the degree matrix of G × H is given by D(G × H) = D(G) ⊗ D(H).
+The normalized Laplacian is (also) defined as L = I − A, where A = D −1/2 AD −1/2 is the
+normalized adjacency matrix. In our case, we have A(G × H) = A(G) ⊗ A(H). Therefore,
+L(G × H) = IG ⊗ IH − A(G) ⊗ A(H)
+= IG ⊗ IH − (IG − L(G)) ⊗ (IH − L(H))
+= L(G) ⊗ IH + IG ⊗ L(H) − L(G) ⊗ L(H).
+
+(66)
+(67)
+(68)
+
+This proves the claim.
+We apply Fact 11 to derive a useful form on the quantum walk on a weak product relative
+to the normalized Laplacian.
+Lemma 15. Let G andPH be graphs whose normalized
+Laplacians have spectral decomposiP
+tions given by L(G) = k λk Ek and L(H) = ℓ µℓ Fℓ . Then, the quantum walk on G × H
+relative to the normalized Laplacian is given by
+X
+exp [−it (λk + µℓ − λk µℓ )] Ek ⊗ Fℓ .
+(69)
+exp(−itL(G × H)) =
+k,ℓ
+
+3
+
+Doob [13] showed that −2 ∈ Spec(ℓ(G)) if and only if G contains an even cycle or two odd cycles in the
+same component.
+
+19
+
+Proof. Follows from Fact 11 since L(G×H) consists of three commuting matrices L(G)⊗IH ,
+IG ⊗ L(H), and L(G) ⊗ L(H).
+We show a closure property for perfect state transfer under weak products relative to the
+normalized Laplacian.
+Theorem 16. Let G be a graph with perfect state transfer between vertices g1 and g2 at time
+tG relative to the normalized Laplacian. Suppose that H is a graph where
+tG SpecL (H)(SpecL (G) − 1) ⊆ 2πZ.
+
+(70)
+
+Then, G × H has perfect state transfer between vertices (g1 , h) and (g2 , h) at time tG relative
+to the normalized Laplacian.
+P
+P
+Proof. Suppose L(G) = k λk Ek and L(H) = ℓ µℓ Fℓ are the spectral decompositions of
+the normalized Laplacians of G and H. By Lemma 15, we have
+X
+X
+he(g2 ,h2 ) |e−itL(G×H) e(g1 ,h1 ) i =
+e−itλk heg2 |Ek eg1 i
+e−itµℓ (1−λk ) heh2 |Fℓ eh1 i.
+(71)
+k
+
+ℓ
+
+Note we have used e(g,h) = eg ⊗ eh . Suppose at time tG , we have |heg2 |e−itG L(G) eg1 i| = 1.
+Since tG SpecL (H)(SpecL (G) − 1) ⊆ 2πZ, we have
+X
+X
+he(g2 ,h2 ) |e−itG L(G×H) e(g1 ,h1 ) i =
+e−itG λk heg2 |Ek eg1 i
+heh2 |Fℓ eh1 i
+(72)
+k
+
+ℓ
+
+−itG L(G)
+
+= heg2 |e
+
+eg1 iheh2 |eh1 i,
+
+(73)
+
+which proves the claim.
+Corollary 17. For any integer m ≥ 1, the weak product P3 × K2m has perfect state transfer
+at time t = (2m − 1)π relative to the normalized Laplacian.
+Proof. The normalized Laplacian spectrum of the clique K2m is given by
+
+
+1
+SpecL (K2m ) = 0, 1 +
+.
+(2m − 1)
+
+(74)
+
+Let tG = (2m − 1)π. By Fact 5, the spectrum of P3 is given by SpecL (P3 ) = {0, 1, 2} and it
+has perfect state transfer at time tG relative to the normalized Laplacian. Note that
+
+
+1
+(2m − 1)π × 0, 1 +
+× {0, 1, 2} ⊆ 2πZ.
+(75)
+(2m − 1)
+Thus, by Theorem 16, P3 ×K2m has perfect state transfer at time tG relative to the normalized
+Laplacian.
+Corollary 18. For any integer m ≥ 1, the weak product P3 ×Q2m−1 has perfect state transfer
+at time t = (2m − 1)π relative to the normalized Laplacian.
+20
+
+Figure 6: Some graph products with perfect state transfer (between vertices marked white):
+(a) the weak product P3 × K4 has perfect state transfer at time 3π relative to the normalized
+Laplacian. (b) the Cartesian product K2  (K2 + K2 ) has perfect state transfer at time π/2
+relative to the standard Laplacian.
+
+Proof. The normalized Laplacian spectrum of the cube Q2m−1 is given by
+
+
+2k
+: k = 0, . . . , 2m − 1 .
+SpecL (Q2m−1 ) =
+2m − 1
+
+(76)
+
+Let tG = (2m − 1)π. By Fact 5, the spectrum of P3 is given by SpecL (P3 ) = {0, 1, 2} and it
+has perfect state transfer at time tG relative to the normalized Laplacian. Note that
+
+
+2k
+(2m − 1)π ×
+: k = 0, . . . , 2m − 1 × {0, 1, 2} ⊆ 2πZ.
+(77)
+(2m − 1)
+
+Thus, by Theorem 16, P3 × Q2m−1 has perfect state transfer at time tG relative to the
+normalized Laplacian.
+We show another closure property for perfect state transfer under weak products relative
+to the normalized Laplacian.
+
+Theorem 19. Let G and H be graphs with perfect state transfer between vertices g1 , g2 and
+h1 , h2 , respectively, both at time τ relative to the normalized Laplacian. Suppose that
+τ SpecL (G) SpecL (H) ⊆ 2πZ.
+
+(78)
+
+Then, G ×H has perfect state transfer between vertices (g1 , h1 ) and (g2 , h2 ) at time τ relative
+to the normalized Laplacian.
+Proof. By Lemma 15, we have
+he(g2 ,h2 ) |e−itL(G×H) e(g1 ,h1 ) i =
+P
+
+X
+k
+
+e−itλk heg2 |Ek eg1 i
+P
+
+X
+ℓ
+
+eitλk µℓ e−itµℓ heh2 |Fℓ eh1 i.
+
+(79)
+
+where L(G) = k λk Ek and L(H) = ℓ µℓ Fℓ are the spectral decompositions of the normalized Laplacians of G and H. Since τ SpecL (G) SpecL (H) ⊆ 2πZ, we have
+X
+he(g2 ,h2 ) |e−iτ L(G×H) e(g1 ,h1 ) i =
+e−iτ λk heg2 |Ek eg1 iheh2 |e−iτ L(H) eh1 i
+(80)
+k
+
+which proves the claim.
+
+= heg2 |e−iτ L(G) eg1 iheh2 |e−iτ L(H) eh1 i,
+21
+
+(81)
+
+Remark: Examples of of graphs which are realizations of Theorem 19 have proved elusive.
+
+6.2
+
+Paths
+
+We show that paths of length at least four have no antipodal perfect state transfer relative to
+the normalized Laplacian. This nearly matches the situation in the adjacency matrix model
+(see Christandl et al. [10, 9] and Godsil [18]). We show a connection between paths under the
+normalized Laplacian and even cycles under the adjacency matrix. This connection seems
+well-known (see Aldous and Fill [1]), but we state a version useful for quantum walks.
+Lemma 20. Let n ≥ 2 be an integer. The path Pn has antipodal perfect state transfer relative
+to the normalized Laplacian if and only if the cycle C2(n−1) has antipodal perfect state transfer
+relative to the adjacency matrix.
+Proof. Let m = n − 1. Consider the cycle C2m with the vertex set {0, 1, . . . , 2m − 1} where
+vertex j is adjacent to vertex k whenever j − k ≡ ±1 (mod 2m). Let π be an equitable
+partition of C2m with m + 1 cells where V0 = {0}, Vm = {m}, and Vk = {k, 2m − k}, for
+k = 1, . . . , m − 1. Then, C2m /π is a weighted path P̃m+1 with adjacency matrix A(P̃m+1 )
+defined as:
+√
+hej |A(P̃m+1 )ek i = ( 2)[[β(j,k)]]hej |A(Pm+1 )ek i
+(82)
+where β(j, k) holds if either j or k is a boundary vertex in {0, m}. We note that
+A(P̃m+1 ) = 2D −1/2 A(Pm+1 )D −1/2 ,
+
+(83)
+
+where D is the degree matrix of Pm+1 . Therefore, we have
+L(Pm+1 ) = I − 21 A(C2m /π).
+
+(84)
+
+hem |e−itL(Pm+1 ) e0 i = e−it heVm |eitA(C2m /π) eV0 i = e−it hem |eitA(C2m ) e0 i,
+
+(85)
+
+This shows that
+
+where the last equality follows by lifting (see Lemma 1).
+We will need the following results for our main theorem in this section.
+Proposition 21. (Godsil, Corollary 8.2.2. in [17])
+If perfect state transfer occurs on a connected vertex-transitive graph G, then the eigenvalues
+of G are integers.
+Fact 12. (Olmstead, see Corollary 3.12 in Niven [30])
+If θ ∈ 2πQ, then the only rational values of cos(θ) are 0, ± 21 , ±1.
+Theorem 22. For n ≥ 4, there is no antipodal perfect state transfer on Pn relative to the
+normalized Laplacian.
+
+22
+
+Proof. Let n ≥ 4. By Lemma 20, if Pn has antipodal perfect state transfer relative to
+the normalized Laplacian, then C2(n−1) has antipodal perfect state transfer relative to the
+adjacency matrix. By Proposition 21, since C2(n−1) is connected and vertex-transitive, if it
+has perfect state transfer, then its eigenvalues must be integers. But the eigenvalues of the
+cycles C2(n−1) are given by {2 cos(2πk/2(n − 1)) : 0 ≤ k < 2(n − 1)}. By Fact 12, these are
+integers only at 0, ±1 which implies that k/(n − 1) ∈ Z/2. This implies that n = 2, 3, which
+is a contradiction.
+Remark: The application of Fact 12 in the proof of Theorem 22 followed similar ideas used
+by Godsil in the context of standard Laplacians (see [17]).
+
+7
+
+Conclusions
+
+In this work, we studied perfect state transfer in quantum walk relative to graph Laplacians.
+As pointed out by Bose, Casaccino, Mancini and Severini [5], a quantum walk relative to the
+standard Laplacian is related to quantum spin networks in the isotropic Heisenberg (XYZ
+interaction) model whereas a quantum walk with the adjacency matrix is connected to the
+XY model. In their seminal work, Farhi and Gutmann [15] used a weighted Laplacian matrix
+to define continuous-time quantum walks to underscore the close connection with continuoustime random walks. In the first work which introduced perfect state transfer, Bose [4] studied
+quantum spin chains in the XYZ (or “Laplacian”) model.
+Our main goal in this work is to understand perfect state transfer in quantum walks
+relative to the standard, signless and normalized Laplacians. Our focus was on irregular
+graphs (since all Laplacian quantum walks are equivalent otherwise) and nonbipartite graphs
+(since the standard/signless Laplacian quantum walks are equivalent otherwise). To the best
+of our knowledge, the signless and normalized Laplacians have not been studied extensively
+in the context of quantum walks. Although the signless Laplacian of a graph G has no
+clear “physical” motivation, it shares a strong spectral bond with the line graph ℓ(G). So,
+it provides a method for analyzing quantum walk on line graphs in the XY model. This
+is a direction which merits closer study. In contrast, the normalized Laplacian has a clear
+“physical” meaning, albeit in a more classical sense. It has been closely studied in connection
+with the Heat Kernel random walk in spectral graph theory (see Chung [11]) and in machine
+learning (see Kondor and Lafferty [27]).
+We observed a useful closure property relative to the standard Laplacian: complementation preserves perfect state transfer. Relative to the adjacency matrix (and perhaps the
+other two Laplacians), this property holds only for regular graphs. This closure property
+allowed us to characterize Laplacian perfect state transfer on double cones. In turn, we
+generalized a known result of Bose et al. [5] and found a much simpler proof. We also found
+families of double cones with perfect state transfer relative to the signless Laplacian, but not
+relative to the standard Laplacian. Our proofs relied on ideas from the theory of equitable
+and almost-equitable partitions.
+By exploiting the connection between signless Laplacians and line graphs, we showed
+some negative results for perfect state transfer relative to the signless Laplacian. Using a
+reduction to the adjacency matrix model, we observed that paths with five or more vertices
+23
+
+have no antipodal perfect state transfer relative to the signless Laplacian (also standard,
+by switching equivalence). But, a better negative result is known for paths (due to Godsil
+[17]) and, recently, for trees (due to Coutinho and Liu [12]). We applied our techniques to
+nonbipartite graphs and showed this for the simplest family of odd unicyclic graphs (two
+pendant paths attached to a three cycle). Our proof made heavy use of Godsil’s results on
+controllable subsets of graphs [19].
+A paradoxical lore of quantum walk on the n-cube relative to the adjacency matrix is
+that its (antipodal) perfect state transfer time is π/2, for any n. This striking statement
+seems to violate the constant speed of light postulate. In contrast, relative to the normalized
+Laplacian, the n-cube has antipodal perfect state transfer at time nπ/2. This example
+suggests that quantum walks relative to the normalized Laplacian might be closer to reality.
+Here, we proved another closure property for perfect state transfer but under the weak
+product. This is not too surprising given that the normalized Laplacian spectrum behaves
+well under weak product (and not under, say, Cartesian product). As a corollary, we showed
+that a weak product of P3 with either an even clique or odd cube has perfect state transfer. It
+is curious that P3 has perfect state transfer under the normalized Laplacian but not relative
+to the standard/signless Laplacians. To complete the picture, we showed that paths with
+four or more vertices do not have (antipodal) perfect state transfer under the normalized
+Laplacian. This almost matches the state of affairs under the adjacency matrix, where no
+perfect state transfer exists between any pair of vertices (see Godsil [18]). It is unclear if
+this stronger result holds relative to the normalized Laplacian.
+
+8
+
+Acknowledgments
+
+We would like to thank Ada Chan, Gabriel Coutinho, and Chris Godsil for their generous
+and helpful comments. The research of the first five authors was supported by NSF grant
+DMS-1262737 and NSA grant H98230-14-1-0141. The research of H.Z. is supported by a
+Graduate Student Fellowship at the University of Waterloo while working the guidance of
+Chris Godsil.
+
+References
+[1] D. Aldous and J. Fill. Reversible Markov Chains and Random Walks on Graphs. Monograph, 2002.
+[2] R.J. Angeles-Canul, R. Norton, M. Opperman, C. Paribello, M. Russell, and C. Tamon.
+Perfect state transfer, integral circulants and join of graphs. Quantum Information and
+Computation, 10(3&4):325–342, 2010.
+[3] R. Bachman, E. Fredette, J. Fuller, M. Landry, M. Opperman, C. Tamon, and A. Tollefson. Perfect state transfer on quotient graphs. Quantum Information and Computation,
+10(3&4):293–313, 2012.
+[4] S. Bose. Quantum communication through an unmodulated spin chain. Physical Review
+Letters, 91(20):207901, 2003.
+24
+
+[5] S. Bose, A. Casaccino, S. Mancini, and S. Severini. Communication in XYZ all-to-all
+quantum networks with a missing link. International Journal on Quantum Information,
+7(4):713–723, 2009.
+[6] D. Cardoso, C. Delorme, and P. Rama. Laplacian eigenvectors and eigenvalues and
+almost equitable partitions. European Journal of Combinatorics, 28(3):665–673, 2007.
+[7] A. Childs. Universal computation by quantum walk.
+102:180501, 2009.
+
+Physical Review Letters,
+
+[8] A. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. Spielman. Exponential algorithmic speedup by a quantum walk. In Proc. 35th ACM Symp. Theory of Computing,
+pages 59–68, 2003.
+[9] M. Christandl, N. Datta, T. Dorlas, A. Ekert, A. Kay, and A. Landahl. Perfect transfer
+of arbitrary states in quantum spin networks. Physical Review A, 71:032312, 2005.
+[10] M. Christandl, N. Datta, A. Ekert, and A. Landahl. Perfect state transfer in quantum
+spin networks. Physical Review Letters, 92:187902, 2004.
+[11] F.R.K. Chung. Spectral Graph Theory. American Mathematical Society, 1996.
+[12] G. Coutinho and H. Liu. No Laplacian Perfect State Transfer in Trees. arXiv:1408.2935
+[math.CO].
+[13] M. Doob. An interrelation between line graphs, eigenvalues, and matroids. Journal of
+Combinatorial Theory, Series B, 15:40–50, 1973.
+[14] E. Farhi, J. Goldstone, and S. Gutmann. A quantum algorithm for the hamiltonian
+NAND tree. Theory of Computing, 4(8):169–190, 2008.
+[15] E. Farhi and S. Gutmann. Quantum computation and decision trees. Physical Review
+A, 58:915–928, 1998.
+[16] Y. Ge, B. Greenberg, O. Perez, and C. Tamon. Perfect state transfer, graph products
+and equitable partitions. International Journal on Quantum Information, 9(3):823–842,
+2011.
+[17] C. Godsil. Graph spectra and quantum walks. manuscript (January 2014).
+[18] C. Godsil. State transfer on graphs. Discrete Mathematics, 312(1):129–147, 2011.
+[19] C. Godsil. Controllable Subsets in Graphs. Annals of Combinatorics, 16:733–744, 2012.
+[20] C. Godsil. When Can Perfect State Transfer Occur?
+Algebra, 23:877–890, 2012.
+
+Electronic Journal of Linear
+
+[21] C. Godsil and G. Royle. Algebraic Graph Theory. Springer, 2001.
+[22] C. Godsil and S. Severini. Control by quantum dynamics on graphs. Physical Review
+A, 81:052316, 2010.
+25
+
+[23] R. Graham, D. Knuth, and O. Patashnik. Concrete Mathematics. Addison-Wesley, 2nd
+edition, 1994.
+[24] G. Grimmett and D. Stirzaker. Probability and Random Processes. Oxford University
+Press, 1982.
+[25] A. Grünbaum, L. Vinet, and A. Zhedanov. Birth and death processes and quantum
+spin chains. J. Math. Phys., 54:062101, 2013.
+[26] Y. Ide and N. Konno. Continuous-time quantum walks on the threshold network model.
+Mathematical Structures in Computer Science, 20(6):1079–1090, 2010.
+[27] R.I. Kondor and J. Lafferty. Diffusion kernels on graphs and other discrete structures.
+In Proc. 19th International Conference on Machine Learning (ICML), pages 315–322,
+2002.
+[28] C. Moore and A. Russell. Quantum walks on the hypercube. In Proc. 6th Int. Workshop
+on Rand. and Approx. in Comp. Sci., volume 2483 of Lect. Notes in Comp. Sci., pages
+164–178. Springer, 2002.
+[29] M.W. Newman. The Laplacian Spectrum of Graphs. Master’s thesis, University of
+Manitoba, Winnipeg, Canada, 2000.
+[30] I. Niven. Irrational Numbers. The Mathematical Association of America, 1965.
+[31] D. Spielman. Spectral graph theory. In U. Naumann and O. Schenk, editors, Combinatorial Scientific Computing. Chapman and Hall/CRC, 2012.
+
+26
+
+

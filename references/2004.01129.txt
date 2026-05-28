@@ -1,0 +1,2841 @@
+arXiv:2004.01129v1 [math.CO] 2 Apr 2020
+
+Fundamentals of fractional revival in graphs
+Ada Chan∗1 , Gabriel Coutinho2, Whitney Drazen3 , Or Eisenberg4,
+Chris Godsil5, Gabor Lippner3, Mark Kempton6, Christino
+Tamon7, and Hanmeng Zhan1
+1
+
+Department of Mathematics and Statistics, York University
+
+2 Department of Computer Science, Universidade Federal de Minas Gerais
+3 Department of Mathematics, Northeastern University
+4 Department of Mathematics, Harvard University
+
+5 Department of Combinatorics and Optimization, University of Waterloo
+6 Department of Mathematics, Brigham Young University
+7 Department of Computer Science, Clarkson University
+
+April 3, 2020
+
+Abstract
+We develop a general spectral framework to analyze quantum fractional
+revival in quantum spin networks. In particular, we introduce generalizations of the notions of cospectral and strongly cospectral vertices to arbitrary
+subsets of vertices, and give various examples. This work resolves two open
+questions of Chan et. al. [“Quantum Fractional Revival on graphs". Discrete
+Applied Math, 269:86-98, 2019.]
+
+1 Introduction
+An important problem in quantum information theory is the transfer of a quantum
+state through a quantum spin network. The use of a quantum walk on a graph to
+analyze such information transfer was initiated by Bose [3], and carried further by
+∗ Corresponding author: ssachan@yorku.ca
+
+1
+
+Christandl et. al., among others [8, 9]. Comprehensive surveys have been given
+by Kay [18, 19]. Many tools from algebraic graph theory have found applications
+to this problem, and a survey of work in this area is given by Godsil [17].
+We study the single-excitation subspace of a spin network with uniform XX
+couplings. We denote the network by 𝑋, the set of vertices by 𝑉 (𝑋) and the set
+of edges by 𝐸(𝑋). The evolution of such a system is given by its Hamiltonian
+𝐻XX =
+
+∑
+1 ∑
+𝑎𝑖,𝑗 (X𝑖 X𝑗 + Y𝑖 Y𝑗 ) +
+𝑎𝑖,𝑖 ⋅ Z𝑖 ,
+2 (𝑖,𝑗)∈𝐸(𝑋)
+𝑖∈𝑉 (𝐺)
+
+where X𝑖 , Y𝑖 , Z𝑖 are the standard Pauli matrices. The ﬁrst sum corresponds to the XX
+couplings with coupling strength 𝑎𝑖,𝑗 and 𝑎𝑖,𝑖 represents the strength of a magnetic
+ﬁeld at node 𝑖. The restriction of this system to the single-excitation subspace leads
+to the unitary transition matrix
+𝑈 (𝑡) ∶= 𝑒−𝑖𝑡𝐴
+for 𝑡 ≥ 0, where 𝐴 = [𝑎𝑖,𝑗 ] is the (weighted) adjacency matrix of 𝑋. The matrix
+𝑈 (𝑡) represents a continuous-time quantum walk on the graph 𝑋.
+The principal question that has been studied in this area is that of perfect state
+transfer, namely when a quantum state can be transferred from node 𝑎 to 𝑏 with
+perfect ﬁdelity. This means
+|𝑈 (𝑡)𝑎,𝑏 | = 1.
+A generalization of perfect state transfer is a phenomenon called fractional
+revival in a graph. Let 𝑒𝑎 denote the characteristic vector for vertex 𝑎. For 𝐾 ⊂
+𝑉 (𝑋), we say 𝐾-fractional revival occurs in 𝑋 if there is some 𝑡 > 0 such that
+𝑈 (𝑡)𝑒𝑎 is supported only on 𝐾, for any 𝑎 ∈ 𝐾. Fractional revival in quantum spin
+networks has been studied in [7, 12, 13, 10, 6, 2]. Most of the literature on this
+topic concerns fractional revival between pairs of vertices (|𝐾| = 2).
+In this paper, we study 𝐾-fractional revival for subset 𝐾 of vertices of arbitrary
+size. We develop a theoretical spectral framework for studying fractional revival
+in graphs. We take many of the theoretical tools that have been developed in the
+study of perfect state transfer and generalize them appropriately to apply to fractional revival. Speciﬁcally, a critical necessary condition for perfect state transfer
+between two vertices 𝑎 and 𝑏 is that they be cospectral, that is, that 𝑋∖𝑎 and 𝑋∖𝑏
+have the same (adjacency) spectrum. In fact, a stronger condition, called strong
+cospectrality is necessary for perfect state transfer [17]. As a generalization, we
+develop the notions of decomposability and strongly fractional cospectrality, and
+2
+
+show that they are necessary conditions for fractional revival. In addition, we explore conditions on eigenvalues that are necessary for fractional revival, analogous
+to eigenvalue conditions needed for perfect state transfer.
+Chan et. al. [6] studied fractional revival between pairs of cospectral vertices.
+They posed as a signiﬁcant open question what conditions are necessary for fractional revival to occur between non-cospectral pairs. The spectral framework provided in this paper resolves this question. In addition, they posed the question of
+whether or not it is possible for three or more vertices to exhibit pairwise fractional
+revival or not. In other words, does fractional revival exhibit the “monogamy”
+property that is known (see [19]) to hold for perfect state transfer? We resolve this
+question by constructing graphs in which fractional revival occurs between every
+pair of vertices. Thus fractional revival is not “monogamous” like perfect state
+transfer. This demonstrates a fundamental diﬀerence between fractional revival
+and perfect state transfer.
+
+2 Preliminaries
+In this paper, 𝑋 is a connected graph on 𝑛 vertices and 𝐴 is its adjacency matrix.
+We allow 𝑋 to have loops and real weights on its edges. The continuous-time
+quantum walk of 𝑋 is given by the transition operator
+𝑈 (𝑡) = 𝑒−i𝑡𝐴 .
+Given the spectral decomposition
+𝐴=
+
+𝑑
+∑
+
+𝜃𝑟 𝐸𝑟 ,
+
+(1)
+
+𝑒−i𝑡𝜃𝑟 𝐸𝑟 .
+
+(2)
+
+𝑟=0
+
+we can write
+𝑈 (𝑡) =
+
+𝑑
+∑
+𝑟=0
+
+We call 𝐸𝑟 , the orthogonal projection onto the 𝜃𝑟 -eigenspace of 𝐴, a principal
+idempotent of 𝐴.
+Definition 2.1. A graph 𝑋 has fractional revival from vertex 𝑎 to 𝑏 at time 𝜏 if
+𝑈 (𝜏)𝑒𝑎 = 𝛼𝑒𝑎 + 𝛽𝑒𝑏 ,
+for some 𝛼, 𝛽 ∈ ℂ satisfying |𝛼|2 + |𝛽|2 = 1. If 𝛽 = 0, we further require that
+𝑈 (𝜏)𝑒𝑏 = 𝛾𝑒𝑏 for some 𝛾 ∈ ℂ with |𝛾| = 1.
+3
+
+If 𝛼 = 0 then perfect state transfer occurs from 𝑎 to 𝑏 at time 𝜏. If 𝛽 = 0 then 𝑋
+is periodic at 𝑎 and 𝑏 at time 𝜏. We say proper fractional revival occurs if 𝛼𝛽 ≠ 0.
+Without loss of generality, we assume 𝑎 and 𝑏 index the ﬁrst two columns and
+rows of 𝐴 and 𝑈 (𝑡). If there is fractional revival from 𝑎 to 𝑏 at time 𝜏, the ﬁrst
+[
+]𝑇
+column of 𝑈 (𝜏) is 𝛼, 𝛽, 0, … , 0 . Since 𝑈 (𝜏) is symmetric and unitary,
+[
+]
+𝐻 𝟎
+𝑈 (𝜏) =
+,
+𝟎 𝐻′
+where
+
+[
+
+𝛼
+𝛽
+𝐻=
+𝛽 −𝛼 𝛽
+
+]
+
+𝛽
+
+if 𝛽 ≠ 0 or
+
+[
+
+𝛼 0
+𝐻=
+0 𝛾
+
+]
+
+if 𝛽 = 0.
+Example 2.2. The cocktail party graph [5] has fractional revival between antipodal
+pairs of vertices at time 𝜏 = 𝑗𝜋𝑛 , for 𝑗 = 1, … , 𝑛, with
+[
+]
+𝑗(𝑛−1)𝜋
+cos( 𝑗(𝑛−1)𝜋
+)
+i
+sin(
+)
+𝑗𝜋
+𝑛
+𝑛
+𝑈 ( ) = 𝐼𝑛 ⊗
+.
+𝑗(𝑛−1)𝜋
+)
+cos(
+)
+i sin( 𝑗(𝑛−1)𝜋
+𝑛
+𝑛
+𝑛
+Observe that when fractional revival occurs from 𝑎 to 𝑏, the transition matrix
+has the block diagonal form
+[
+]
+𝐻 𝟎
+𝑈 (𝜏) =
+,
+𝟎 𝐻′
+with 𝐻 being a unitary matrix indexed by 𝑎 and 𝑏. In this paper, we study a generalization, called 𝐾-fractional revival, for some subset 𝐾 of vertices of arbitrary
+size, where the transition matrix at fractional revival time is block diagonal with
+one block being indexed by the vertices in 𝐾.
+The following example shows behavior pointing to possible generalization beyond the notion of 𝐾-fractional revival.
+Example 2.3. Let 𝑋𝑚 be the graph obtained from subdividing every edge in 𝐾1,𝑚 ,
+for 𝑚 ≥ 2.
+4
+
+0
+
+1
+
+𝑚+1
+
+⋮
+
+⋮
+
+𝑚
+
+2𝑚
+
+Let 𝐻𝑚 = 𝐼𝑚 − (1∕𝑚)𝐽𝑚 . The transition matrix, 𝑈 (𝑡), of 𝑋𝑚 is
+√
+
+⎡ 1+𝑚 cos(𝑡 𝑚+1)
+𝑚+1
+⎢
+⎢
+⎢ −i sin(𝑡√𝑚+1)
+⎢ √𝑚+1 𝟏𝑚
+⎢
+√
+⎢
+⎢ −1+cos(𝑡 𝑚+1) 𝟏𝑚
+⎣
+𝑚+1
+
+√
+−i sin(𝑡 𝑚+1) 𝑇
+√
+𝟏𝑚
+𝑚+1
+√
+( )
+cos(𝑡 𝑚+1)
+cos 𝑡 𝐻𝑚 +
+𝐽𝑚
+𝑚
+√
+( )
+−i sin 𝑡 𝐻𝑚 − i sin(𝑡√ 𝑚+1) 𝐽𝑚
+𝑚 𝑚+1
+
+√
+−1+cos(𝑡 𝑚+1) 𝑇
+𝟏𝑚
+𝑚+1
+
+⎤
+⎥
+⎥
+√
+( )
+⎥
+i sin(𝑡 𝑚+1)
+𝐽𝑚 ⎥ ,
+−i sin 𝑡 𝐻𝑚 − √
+𝑚 𝑚+1
+⎥
+√
+⎥
+( )
+𝑚+1)
+⎥
+cos 𝑡 𝐻𝑚 + 𝑚+cos(𝑡
+𝐽
+𝑚 ⎦
+𝑚(𝑚+1)
+
+where 𝟏𝑚 is the vector of all ones of length 𝑚 and 𝐽𝑚 is the 𝑚 × 𝑚 matrix of all
+ones.
+At time 𝜏 = √ 𝜋 , the support of 𝑈 (𝜏)𝑒0 consists of the vertex 0 and all the
+𝑚+1
+leaves but the transition matrix
+1−𝑚
+−2 𝑇
+𝟎𝑇𝑚
+𝟏
+⎤
+⎡ 1+𝑚
+𝑚+1 𝑚
+⎥
+⎢
+(
+) ⎥
+⎢
+𝜏)
+⎥
+𝐽𝑚
+−i sin 𝜏 𝐼𝑚 − 𝑚1 𝐽𝑚
+cos 𝜏𝐼𝑚 − (1+cos
+𝑈 (𝜏) = ⎢ 𝟎𝑚
+𝑚
+⎥
+⎢
+⎥
+⎢
+(
+)
+𝑚−1−(𝑚+1) cos 𝜏
+⎢ −2 𝟏 −i sin 𝜏 𝐼 − 1 𝐽
+cos 𝜏𝐼𝑚 +
+𝐽𝑚 ⎥⎦
+𝑚
+⎣ 𝑚+1 𝑚
+𝑚 𝑚
+𝑚(𝑚+1)
+
+is not block diagonal.
+
+3 𝐾-Fractional revival in graphs
+In this section, we generalize fractional revival between two vertices to fractional
+revival among all vertices of some arbitrary subset 𝐾 of vertices. That is, there
+exists a time 𝜏 such that 𝑈 (𝜏) is a block diagonal matrix with one of the blocks
+being indexed by the elements in 𝐾. Without loss of generality, we assume the top
+|𝐾| rows and the leftmost |𝐾| columns of 𝑈 (𝑡) are indexed by the elements of 𝐾.
+
+5
+
+Definition 3.1. Let 𝐾 ⊂ 𝑉 (𝑋). We say 𝑋 has 𝐾-fractional revival at time 𝜏 if,
+up to permuting rows and columns, the transition matrix 𝑈 (𝜏) has the following
+block structure
+]
+[
+𝐻 𝟎
+,
+𝟎 𝐻′
+for some |𝐾| × |𝐾| unitary matrix 𝐻.
+The deﬁnition includes the case where 𝐻 is a diagonal matrix, that is, every
+vertex in 𝐾 is periodic at time 𝜏. We say 𝑋 has proper 𝐾-fractional revival if 𝐻
+is not a diagonal matrix. Proper {𝑎, 𝑏}-fractional revival occurs in 𝑋 if and only
+if it admits proper fractional revival or perfect state transfer between 𝑎 and 𝑏.
+In [15], Godsil presents continuous-time quantum walk from the viewpoint of
+density matrices. Density matrices are positive semideﬁnite matrices with trace
+one. Given the density matrix 𝐷 as the initial state, the state of the walk at time 𝑡
+is
+𝑈 (𝑡)𝐷𝑈 (−𝑡).
+We say the state 𝐷 is periodic at time 𝜏 if 𝑈 (𝜏)𝐷𝑈 (−𝜏) = 𝐷.
+∑
+Proposition 3.2. Let 𝐾 ⊂ 𝑉 (𝑋) and 𝐷𝐾 = 𝑎∈𝐾 𝑒𝑎 𝑒𝑇𝑎 . Then 𝐾-fractional revival
+1
+occurs in 𝑋 at time 𝜏 > 0 if and only if the density matrix |𝐾|
+𝐷𝐾 is periodic at 𝜏.
+Proof. We have 𝐾-fractional revival in 𝑋 at time 𝜏 > 0 if and only if
+𝑈 (𝜏)𝐷𝐾 = 𝐷𝐾 𝑈 (𝜏),
+equivalently,
+
+)
+(
+1
+1
+𝐷𝐾 𝑈 (−𝜏) =
+𝐷 .
+𝑈 (𝜏)
+|𝐾|
+|𝐾| 𝐾
+
+1
+It follows from Equation (2) that |𝐾|
+𝐷𝐾 is periodic at time 𝜏 > 0 if and only
+if, for each 𝑟 and 𝑠,
+𝑒𝑖𝜏(𝜃𝑟 −𝜃𝑠 ) 𝐸𝑟 𝐷𝐾 𝐸𝑠 = 𝐸𝑟 𝐷𝐾 𝐸𝑠 .
+
+The eigenvalue support of the set 𝐾 is the set
+Φ𝐾 = {(𝜃𝑟 , 𝜃𝑠 ) ∶ 𝐸𝑟 𝐷𝐾 𝐸𝑠 ≠ 0}.
+For 𝐷𝐾 to be periodic at time 𝜏, we must have
+𝑒𝑖𝜏(𝜃𝑟 −𝜃𝑠 ) = 1,
+
+for (𝜃𝑟 , 𝜃𝑠 ) ∈ Φ𝐾 ,
+6
+
+which means that for any (𝜃𝑟 , 𝜃𝑠 ), (𝜃ℎ , 𝜃𝑘 ) ∈ Φ𝐾 with 𝜃ℎ ≠ 𝜃𝑘 , the ratio
+𝜃𝑟 − 𝜃𝑠
+𝜃ℎ − 𝜃𝑘
+must be rational.
+Theorem 5.5 and Corollary 5.6 of [15] give the following necessary condition
+of 𝐾-fractional revival when the weights of 𝑋 are integers,
+Theorem 3.3. Suppose 𝑋 has integer weights. If 𝐾-fractional revival occurs in 𝑋
+at time 𝜏 > √
+0 then there exists a square-free integer Δ such that 𝜃𝑟 −𝜃𝑠 is an integer
+multiple of Δ, for all (𝜃𝑟 , 𝜃𝑠 ) ∈ Φ𝐾 . Moreover, the first instance of 𝐾-fractional
+revival occurs at time at most 2𝜋.
+
+4 Constructions
+Graph products, whose adjacency matrices have natural block structures, are promising places to look for examples of 𝐾-fractional revival. In this section, we give
+examples of 𝐾-fractional revival using some common graph products. We use
+𝐴𝑋 and 𝑈𝑋 (𝑡) to denote the adjacency matrix and the transition operator of the
+quantum walk for the graph 𝑋, respectively.
+
+4.1 Cartesian product
+Given graphs 𝑋 and 𝑌 , we use 𝑋 𝑌 to denote their Cartesian product. Then
+𝑈𝑋 𝑌 (𝑡) = 𝑈𝑋 (𝑡) ⊗ 𝑈𝑌 (𝑡).
+In general, if 𝑋 is periodic at a vertex 𝑎 at time 𝜏 and 𝑈𝑌 (𝜏) is not a diagonal matrix,
+then 𝑋 𝑌 has proper 𝐾-fractional revival at time 𝜏 where 𝐾 = {𝑎}×𝑉 (𝑌 ). Please
+see Example 3.3 of [6] for an example of this construction.
+
+4.2 Direct product
+The direct product of 𝑋 and 𝑌 , denoted by 𝑋 × 𝑌 , has adjacency matrix 𝐴𝑋 ⊗ 𝐴𝑌 .
+∑𝑑
+By Lemma 4.2 of [11], given the spectral decomposition 𝐴𝑋 = 𝑟=0 𝜃𝑟 𝐸𝑟 ,
+𝑈𝑋×𝑌 (𝑡) =
+
+𝑑
+∑
+
+𝐸𝑟 ⊗ 𝑈𝑌 (𝜃𝑟 𝑡).
+
+𝑟=0
+
+7
+
+If there exists a non-diagonal matrix 𝐻 such that 𝑈𝑌 (𝜃𝑟 𝜏) = 𝐻, for every 𝜃𝑟 in the
+spectrum of 𝑋, then
+𝑈𝑋×𝑌 (𝜏) =
+
+𝑑
+∑
+
+𝐸𝑟 ⊗ 𝑈𝑌 (𝜃𝑟 𝜏) = 𝐼|𝑋| ⊗ 𝐻.
+
+𝑟=0
+
+(
+)
+In this case, 𝑋 × 𝑌 has proper {𝑎} × 𝑉 (𝑌 ) -fractional revival at time 𝜏, for any
+𝑎 ∈ 𝑉 (𝑋).
+Example 4.1. The line graph of the complete bipartite graph 𝐾𝑛,𝑛 has spectrum
+{2(𝑛 − 1), 𝑛 − 2, −2}, see [4]. Let 𝑋 be the line graph of the complete bipartite
+graph 𝐾16𝑚,16𝑚 . Let 𝑌 be the 𝑑-cube, which is the Cartesian product of 𝑑 copies of
+𝐾2 , and
+[
+]⊗𝑑
+cos 𝑡 −i sin 𝑡
+⊗𝑑
+𝑈𝑌 (𝑡) = 𝑈𝐾2 (𝑡) =
+.
+−i sin 𝑡 cos 𝑡
+It follows that
+(
+(
+𝜋)
+𝜋)
+= 𝑈𝑌 (16𝑚 − 2)
+= 𝑈𝑌 (−2)
+=
+𝑈𝑌 (32𝑚 − 2)
+8
+8
+8
+(
+
+𝜋)
+
+[ 1
+√
+i
+√
+
+2
+2
+
+i ]⊗𝑑
+√
+2
+.
+1
+√
+2
+
+(
+)
+The direct product 𝑋 × 𝑌 admits proper {𝑎} × 𝑉 (𝑌 ) -fractional revival at time
+𝜋∕8, for any 𝑎 ∈ 𝑉 (𝑋).
+
+4.3 Double cover
+Given two graphs, 𝑋 and 𝑌 , on the same vertex set 𝑉 , we use 𝑋 ⋉ 𝑌 to denote
+the graph on vertex set 𝑉 × {0, 1} with adjacency matrix
+[
+]
+𝐴𝑋 𝐴𝑌
+𝐴𝑋⋉𝑌 =
+.
+𝐴𝑌 𝐴𝑋
+When 𝐴𝑋 = 𝐽 − 𝐼 − 𝐴𝑌 , we have a double cover of the complete graph and 𝑋 ⋉ 𝑌
+is also called the switching graph of 𝑋.
+By Lemma 5.1 of [11],
+[
+]
+1 𝑒−i𝑡(𝐴𝑋 +𝐴𝑌 ) + 𝑒−i𝑡(𝐴𝑋 −𝐴𝑌 ) 𝑒−i𝑡(𝐴𝑋 +𝐴𝑌 ) − 𝑒−i𝑡(𝐴𝑋 −𝐴𝑌 )
+𝑈𝑋⋉𝑌 =
+2 𝑒−i𝑡(𝐴𝑋 +𝐴𝑌 ) − 𝑒−i𝑡(𝐴𝑋 −𝐴𝑌 ) 𝑒−i𝑡(𝐴𝑋 +𝐴𝑌 ) + 𝑒−i𝑡(𝐴𝑋 −𝐴𝑌 )
+8
+
+which is equal to
+[
+(
+)
+(
+)]
+1 𝑈𝑋 (𝑡) (𝑈𝑌 (𝑡) + 𝑈𝑌 (−𝑡)) 𝑈𝑋 (𝑡) (𝑈𝑌 (𝑡) − 𝑈𝑌 (−𝑡))
+𝑈𝑋⋉𝑌 =
+2 𝑈𝑋 (𝑡) 𝑈𝑌 (𝑡) − 𝑈𝑌 (−𝑡) 𝑈𝑋 (𝑡) 𝑈𝑌 (𝑡) + 𝑈𝑌 (−𝑡)
+if 𝐴𝑋 and 𝐴𝑌 commute. If there is a time 𝜏 when 𝑈𝑌 (𝜏) = 𝑈𝑌 (−𝜏), then 𝑋 ⋉ 𝑌
+has (𝑉 × {0})-fractional revival.
+Example 4.2. Let 𝑌 be the line graph of 𝐾𝑛,𝑛 for some odd 𝑛. We have
+𝑈𝑌 (𝜋) = 𝑈𝑌 (−𝜋) = 𝐼 − 2𝐸,
+where 𝐸 is the orthogonal projection onto the (𝑛 − 2)-eigenspace of 𝐴𝑌 . Let 𝑋 be
+the complement of 𝑌 . Since 𝑌 is regular, 𝐴(𝑋) and 𝐴(𝑌 ) commute and
+[
+]
+𝑈𝑋 ( 𝜋2 )𝑈𝑌 ( 𝜋2 )
+𝟎
+𝑈𝑋⋉𝑌 =
+.
+𝟎
+𝑈𝑋 ( 𝜋2 )𝑈𝑌 ( 𝜋2 )
+
+4.4 Join
+Let 𝑋 be a connected 𝑘-regular graph on 𝑛 vertices and 𝑌 be a connected ℎ-regular
+graph on 𝑚 vertices. The join of 𝑋 and 𝑌 is the graph, 𝑋 + 𝑌 , that has adjacency
+matrix
+[
+]
+𝐴𝑋 𝐽𝑛×𝑚
+𝐴𝑋+𝑌 =
+.
+𝐽𝑚×𝑛 𝐴𝑌
+Let
+𝐴𝑋 =
+
+𝑑1
+∑
+
+𝜆𝑟 𝑀𝑟
+
+and
+
+𝐴𝑌 =
+
+𝑑2
+∑
+
+𝜇 𝑠 𝑁𝑠
+
+𝑠=0
+
+𝑟=0
+
+be the spectral decomposition of 𝐴𝑋 and 𝐴𝑌 , respectively, with 𝜆0 = 𝑘, 𝑀0 = 1𝑛 𝐽𝑛 ,
+
+𝜇0 = ℎ and 𝑁0 = 𝑚1 𝐽𝑚 . Then 𝐴 has the spectral decomposition
+]
+[
+]
+∑
+𝑀𝑟 𝟎
+𝟎 𝟎
+𝐴𝑋+𝑌 =
+𝜆𝑟
++
+𝜇𝑠
++
+𝟎 𝟎
+𝟎 𝑁𝑠
+𝑟=1
+𝑠=1
+∑
+
+[
+
+⎡ 𝛼1 𝐽
+2
+𝑛
++ 𝜃1 ⎢ 𝛼𝛼11𝑛+𝑚
+⎢ 2 𝐽𝑚×𝑛
+⎣ 𝛼1 𝑛+𝑚
+2
+
+2
+⎡
+𝐽𝑛×𝑚⎤
+𝐽
+⎥ + 𝜃 ⎢ 𝛼22 𝑛+𝑚 𝑛
+2
+1
+⎢ 2𝛼2 𝐽𝑚×𝑛
+𝐽 ⎥
+𝛼12 𝑛+𝑚 𝑚 ⎦
+⎣ 𝛼2 𝑛+𝑚
+
+𝛼2
+
+𝛼1
+𝛼12 𝑛+𝑚
+
+9
+
+𝛼2
+𝐽 ⎤
+𝛼22 𝑛+𝑚 𝑛×𝑚 ⎥
+,
+1
+⎥
+𝐽
+2
+𝑚
+𝛼2 𝑛+𝑚
+⎦
+
+where 𝛼1 and 𝛼2 are roots of the quadratic polynomial 𝑛𝑥2 − (𝑘 − ℎ)𝑥 − 𝑚 = 0, and
+𝜃𝑗 = 𝑛𝛼𝑗 + ℎ, for 𝑗 = 1, 2. Then
+[
+]
+[
+]
+∑
+∑
+𝟎
+−i𝑡𝜇𝑠 𝟎
+−i𝑡𝜆𝑟 𝑀𝑟 𝟎
++
++
+𝑒
+𝑈𝑋+𝑌 (𝑡) =
+𝑒
+𝟎
+𝑁
+𝟎
+𝟎
+𝑠
+𝑠=1
+𝑟=1
+⎡ 𝛼1 𝐽
+−i𝑡𝜃1 ⎢ 𝛼12 𝑛+𝑚 𝑛
++𝑒
+⎢ 2𝛼1 𝐽𝑚×𝑛
+⎣ 𝛼1 𝑛+𝑚
+2
+
+When 𝜏 = 𝜃 2𝜋
+,
+−𝜃
+2
+
+1
+
+𝑒−i𝜏𝜃1
+
+⎡ 𝛼2 𝐽
+𝐽𝑛×𝑚⎤
+−i𝑡𝜃
+⎥ + 𝑒 2 ⎢ 𝛼22 𝑛+𝑚 𝑛
+1
+⎢ 2𝛼2 𝐽𝑚×𝑛
+𝐽 ⎥
+𝛼12 𝑛+𝑚 𝑚 ⎦
+⎣ 𝛼2 𝑛+𝑚
+
+𝛼2
+𝐽 ⎤
+𝛼22 𝑛+𝑚 𝑛×𝑚 ⎥
+.
+1
+⎥
+𝐽
+𝛼 2 𝑛+𝑚 𝑚 ⎦
+
+2
+
+𝛼1
+𝛼12 𝑛+𝑚
+
+2
+
+𝛼
+𝛼1
++ 𝑒−i𝜏𝜃2 2 2
+= 0,
+2
+𝛼1 𝑛 + 𝑚
+𝛼2 𝑛 + 𝑚
+
+so 𝑋 + 𝑌 has 𝑉 (𝑋)-fractional revival.
+
+4.5 Antipodal distance-regular 𝑟-fold cover of 𝐾𝑛
+A 𝑟-fold cover of 𝐾𝑛 is a graph 𝑋 in which every vertex of 𝐾𝑛 is replaced by a
+set of 𝑟 vertices, called a ﬁbre, with a perfect matching between any two ﬁbres.
+In this example, we consider antipodal distance regular 𝑟-fold cover of 𝐾𝑛 whose
+spectrum is determined by the parameters 𝑛, 𝑟 and the number, 𝑐, of common
+neighbours between two vertices at distance two. The eigenvalues of 𝑋 are
+√
+√
+𝛿 − 𝛿 2 + 4(𝑛 − 1)
+𝛿 + 𝛿 2 + 4(𝑛 − 1)
+, and 𝜃4 =
+,
+𝜃1 = 𝑛 − 1, 𝜃2 = −1, 𝜃3 =
+2
+2
+where 𝛿 = 𝑛 − 2 − 𝑟𝑐. The direct sum of the eigenspaces corresponding to 𝜃1 and
+𝜃2 consists of all vectors that are constant on the ﬁbres. If the rows and columns
+of the adjacency matrix 𝐴 of 𝑋 are arranged so that it has 𝑛 × 𝑛 blocks of size 𝑟 × 𝑟
+corresponding to the ﬁbres, then the principal idempotents of 𝐴 satisfy
+(
+1
+1 )
+𝐸1 + 𝐸2 = 𝐼𝑛 ⊗ 𝐽𝑟 and 𝐸3 + 𝐸4 = 𝐼𝑟𝑛 − (𝐸1 + 𝐸2 ) = 𝐼𝑛 ⊗ 𝐼𝑟 − 𝐽𝑟 .
+𝑟
+𝑟
+𝜋
+, we have
+When 𝛿 = 2, 𝑛 = 4𝑚2 and 𝜏 = 2𝑚
+𝜋i
+
+𝑒−i𝜃1 𝜏 = 𝑒−i𝜃2 𝜏 = 𝑒 2𝑚
+
+and
+
+𝑒−i𝜃3 𝜏 = 𝑒−i𝜃4 𝜏 = 𝑒
+
+(2𝑚−1)𝜋i
+2𝑚
+
+.
+
+(2𝑚+1)𝜋i
+2𝑚
+
+.
+
+𝜋
+Similarly, when 𝛿 = −2, 𝑛 = 4𝑚2 and 𝜏 = 2𝑚
+, we have
+𝜋i
+
+𝑒−i𝜃1 𝜏 = 𝑒−i𝜃2 𝜏 = 𝑒 2𝑚
+
+and
+10
+
+𝑒−i𝜃3 𝜏 = 𝑒−i𝜃4 𝜏 = 𝑒
+
+For both cases,
+(
+𝑒−i𝜃1 𝜏 − 𝑒−i𝜃3 𝜏 )
+𝑈 (𝜏) = 𝐼𝑛 ⊗ 𝑒−i𝜃3 𝜏 𝐼𝑟 +
+𝐽𝑟
+𝑟
+and 𝐾-fractional revival occurs in 𝑋, for each ﬁbre 𝐾.
+Please see [20] for the background and some constructions of distance regular
+antipodal covers of 𝐾𝑛 for which 𝛿 = ±2. Section 6.1 of [20] gives an example
+that has parameters 𝑛 = 36, 𝑟 = 3 and 𝑐 = 12, admitting 𝐾-fractional revival at
+time 𝜋6 .
+
+5 Commuting partitions and ratio condition
+In Section 4.5, we get 𝐾-fractional revival at time 𝜏 by partitioning the eigenspaces
+of 𝐴 into two classes such that
+• the sum of the 𝐸𝑟 ’s in each class has the desired block diagonal structure,
+and
+• 𝑒−i𝜏𝜃𝑟 = 𝑒−i𝜏𝜃𝑠 , for 𝑟 and 𝑠 in the same class of the partition.
+We see that the above approach works in general.
+Theorem 5.1. Let 𝐴 be the adjacency matrix of a weighted graph 𝑋 with spectral
+decomposition
+𝑑
+∑
+𝐴=
+𝜃𝑟 𝐸𝑟 .
+𝑟=0
+
+For 𝐾 ⊂ 𝑉 (𝑋), 𝐾-fractional revival occurs in 𝑋 at time 𝜏 if and only if there
+exists a partition 𝑃 of {0, 1, … , 𝑑} such that
+(∑
+)
+(∑
+)
+(i)
+𝑟∈𝐶 𝐸𝑟 , for each class 𝐶 of 𝑃 , and
+𝑟∈𝐶 𝐸𝑟 𝐷𝐾 = 𝐷𝐾
+(ii) 𝑒−i𝜏𝜃𝑟 = 𝑒−i𝜏𝜃𝑠 whenever 𝑟 and 𝑠 belong to the same class of 𝑃 .
+Proof. It is straightforward to see that if there exists a partition 𝑃 and a time 𝜏
+satisfying the above conditions, then 𝑈 (𝜏)𝐷𝐾 = 𝐷𝐾 𝑈 (𝜏) and 𝐾-fractional revival
+occurs.
+
+11
+
+Conversely, suppose 𝐾-fractional revival occurs at time 𝜏. Let 𝑃 be the partition of {0, 1, … , 𝑑} where 𝑟 and 𝑠 belong to the same class if and only if 𝑒−i𝜏𝜃𝑟 =
+𝑒−i𝜏𝜃𝑠 . For each class 𝐶 of 𝑃 , let 𝜆𝐶 = 𝑒−i𝜏𝜃𝑟 for some 𝑟 ∈ 𝐶. Then
+∑ (∑ )
+𝑈 (𝜏) =
+𝜆𝐶
+𝐸𝑟 .
+𝐶∈𝑃
+
+𝑟∈𝐶
+
+∑
+By Lagrange interpolation, we can express the matrix 𝑟∈𝐶 𝐸𝑟 as a polynomial
+in 𝑈 (𝜏), for each class 𝐶. Since 𝑈 (𝜏) commutes with 𝐷𝐾 , so does the matrix
+∑
+𝑟∈𝐶 𝐸𝑟 , for each class 𝐶, so (i) holds.
+∑
+Note that if 𝑃 has one class 𝐶 = {0, 1, … , 𝑑} then 𝑟∈𝐶 𝐸𝑟 = 𝐼𝑛 and Condition (i) holds for any subset 𝐾 of 𝑉 (𝑋). Hence the partition in Theorem 5.1 has
+at least two classes for proper 𝐾-fraction revival to occur.
+∑𝑑
+Definition 5.2. Given the spectral decomposition 𝐴 = 𝑟=0 𝜃𝑟 𝐸𝑟 , we say a partition 𝑃 of {0, 1, … , 𝑑} commutes with 𝐷𝐾 if
+(∑ )
+(∑ )
+𝐸𝑟 ,
+𝐸𝑟 𝐷𝐾 = 𝐷𝐾
+𝑟∈𝐶
+
+𝑟∈𝐶
+
+for each class 𝐶 of 𝑃 .
+Given two partitions 𝑃 and 𝑄 of {0, 1, … , 𝑑}, we say 𝑃 ≤ 𝑄 if 𝑃 is a reﬁnement of 𝑄, that is, every class of 𝑃 is a subset of some class of 𝑄. The meet of 𝑃
+and 𝑄, 𝑃 ∧ 𝑄, is the partition with classes being the non-empty intersections of
+the classes of 𝑃 and 𝑄. If 𝐶1 ∩ 𝐶2 is a class of 𝑃 ∧ 𝑄 then
+∑
+( ∑ )( ∑ )
+𝐸𝑟 =
+𝐸𝑟
+𝐸𝑠 .
+𝑟∈𝐶1 ∩𝐶2
+
+𝑟∈𝐶1
+
+𝑠∈𝐶2
+
+Hence if both 𝑃 and 𝑄 commute with 𝐷𝐾 then so does 𝑃 ∧ 𝑄. Consequently, there
+𝐾
+exists a unique minimal partition that commutes with 𝐷𝐾 , we use 𝑃𝑚𝑖𝑛
+to denote
+this partition.
+Theorem 5.3. Let 𝐴 be the adjacency matrix of a weighted graph 𝑋 with spectral
+∑𝑑
+decomposition 𝐴 = 𝑟=0 𝜃𝑟 𝐸𝑟 . Let 𝐾 ⊆ 𝑉 (𝑋) and consider the minimal partition
+∑
+𝐾
+𝑃𝑚𝑖𝑛
+= {𝐶1 , ..., 𝐶𝓁 } that commutes with 𝐷𝐾 . Let 𝐸𝐶𝑗 = 𝑟∈𝐶𝑗 𝐸𝑟 . Then
+|{𝑗 ∶ 𝐸𝐶𝑗 𝐷𝐾 ≠ 0}| ≤ |𝐾|.
+If equality holds, then, for all 𝑟, the columns of 𝐸𝑟 corresponding to vertices in 𝐾
+are parallel vectors.
+12
+
+𝐾
+Proof. For some 𝐶 ∈ 𝑃𝑚𝑖𝑛
+, note that 𝐷𝐾 𝐸𝐶 maps vectors to a subspace of dimension |𝐾|, determined by the entries corresponding to the vertices in 𝐾. This is a
+orthogonal projection, as 𝐷𝐾 and 𝐸𝐶 commute, and if 𝐶𝑖 ≠ 𝐶𝑗 , 𝐷𝐾 𝐸𝐶𝑖 𝐷𝐾 𝐸𝐶𝑗 = 0.
+Thus the images of 𝐷𝐾 𝐸𝐶𝑗 are all orthogonal subspaces, whence the inequality follows.
+When equality holds, it follows that if 𝐷𝐾 𝐸𝐶 ≠ 0, then 𝐷𝐾 𝐸𝐶 has rank one.
+Because
+∑
+𝐷𝐾 𝐸𝐶 =
+𝐷𝐾 𝐸𝑟 ,
+𝑟∈𝐶
+
+and the 𝐸𝑟 are projections onto orthogonal subspaces, it follows that each 𝐷𝐾 𝐸𝑟
+has rank one or zero, as we wanted to show.
+Let us now characterize when fractional revival happens with respect to an
+eigenvalue condition associated to the minimal commuting partition.
+Definition 5.4. The eigenvalues 𝜃0 , 𝜃1 , … , 𝜃𝑑 of 𝐴 satisfy the ratio condition with
+respect to a partition 𝑃 of {0, 1, … , 𝑑} if, for any 𝑟 and 𝑠 in the same class of 𝑃
+and distinct elements ℎ and 𝑘 in the same class of 𝑃 , the ratio
+𝜃𝑟 − 𝜃𝑠
+𝜃ℎ − 𝜃𝑘
+is rational.
+𝐾
+Here is a characterization of 𝐾-fractional revival in terms of 𝑃𝑚𝑖𝑛
+and the ratio
+condition. Note that the deﬁnition of 𝐾-fractional revival includes periodicity at
+all vertices in 𝐾.
+
+Theorem 5.5. Let 𝐴 be the adjacency matrix of a weighted graph 𝑋 with spectral
+decomposition
+𝑑
+∑
+𝐴=
+𝜃𝑟 𝐸𝑟 .
+𝑟=0
+
+For 𝐾 ⊂ 𝑉 (𝑋), 𝐾-fractional revival occurs in 𝑋 if and only if the eigenvalues of
+𝐾
+𝐴 satisfy the ratio condition with respect to 𝑃𝑚𝑖𝑛
+.
+Proof. There exists a time 𝜏 such that 𝑒−i𝜏𝜃𝑟 = 𝑒−i𝜏𝜃𝑠 , for all 𝑟 and 𝑠 in the same
+𝐾
+class of 𝑃𝑚𝑖𝑛
+, if and only if 𝜃0 , … , 𝜃𝑑 satisfy the ratio condition.
+
+13
+
+6 Minimum commuting partition
+𝐾
+In this section, we investigate the minimum partition, 𝑃𝑚𝑖𝑛
+, commuting with 𝐷𝐾
+as it plays an important role in the characterization of 𝐾-fractional revival in 𝑋.
+̃ to
+For matrix 𝑀 with rows and columns indexed by the vertices in 𝑋, we use 𝑀
+denote the submatrix of 𝑀 with rows and columns indexed by the elements of 𝐾.
+For a vector 𝑣 ∈ ℂ𝑉 (𝑋) , we use 𝑣̂ and 𝑣̌ to denote the restriction of 𝑣 to the elements
+in 𝐾 and the restriction of 𝑣 to the elements in 𝑉 (𝑋)∖𝐾, respectively.
+𝐾
+Suppose 𝑃𝑚𝑖𝑛
+= {𝐶1 , … , 𝐶𝑧}. For 𝑗 = 1, … , 𝑧, let
+
+𝐹𝑗 =
+
+∑
+
+𝐸𝑟 .
+
+𝑟∈𝐶𝑗
+𝐾
+It follows from the deﬁnition of 𝑃𝑚𝑖𝑛
+that
+
+[
+
+]
+𝐹̃𝑗 𝟎
+𝐹𝑗 =
+,
+𝟎 𝐹𝑗′
+for some (𝑛−|𝐾|)×(𝑛−|𝐾|) idempotent matrix 𝐹𝑗′ . The 𝐹𝑗 ’s satisfy
+𝐹𝑗 𝐹ℎ = 𝛿𝑗,ℎ 𝐹𝑗 ,
+and
+
+{
+𝐸𝑟
+𝐹𝑗 𝐸𝑟 = 𝐸𝑟 𝐹𝑗 =
+𝟎
+
+∑𝑧
+𝑗=1
+
+𝐹 𝑗 = 𝐼𝑛 ,
+
+∀ℎ, 𝑗,
+if 𝑟 ∈ 𝐶𝑗 ,
+otherwise.
+
+(3)
+
+Restricting to the set 𝐾 yields
+∑𝑧
+𝑗=1
+
+𝐹̃𝑗 = 𝐼|𝐾| ,
+
+̃ℎ = 𝛿𝑗,ℎ 𝐹̃𝑗 ,
+𝐹̃𝑗 𝐹
+and
+
+{
+̃
+̃𝑟 = 𝐸
+̃𝑟 𝐹̃𝑗 = 𝐸𝑟
+𝐹̃𝑗 𝐸
+𝟎
+
+(4)
+
+∀ℎ, 𝑗,
+
+(5)
+
+if 𝑟 ∈ 𝐶𝑗 ,
+otherwise.
+
+(6)
+
+̃𝑟 ≠ 𝟎.
+Proposition 6.1. Let 𝑟 ∈ 𝐶𝑗 . Then 𝐹̃𝑗 ≠ 𝟎 if and only if 𝐸
+Proof. Each principal idempotent 𝐸𝑟 is positive semideﬁnite, so there exists a matrix 𝐵𝑟 such that 𝐸𝑟 = 𝐵𝑟𝑇 𝐵𝑟 . So (𝐸𝑟 )𝑤,𝑤 ≥ 0, for 𝑤 ∈ 𝑉 (𝑋). If (𝐹𝑗 )𝑤,𝑤 = 0
+14
+
+then (𝐸𝑟 )𝑤,𝑤 = 0 and both 𝑒𝑇𝑤 𝐸𝑟 and 𝐸𝑟 𝑒𝑤 are zero vectors. Hence, 𝐹̃𝑗 = 𝟎 implies
+̃𝑟 = 𝟎.
+𝐸
+̃𝑟 = 𝟎 then the ﬁrst |𝐾| columns of 𝐵𝑟 are zero, and the ﬁrst |𝐾| rows and
+If 𝐸
+𝐾
+. As
+columns of 𝐸𝑟 are zero. In this case 𝐸𝑟 𝐷𝐾 = 𝐷𝐾 𝐸𝑟 and {𝑟} is a class of 𝑃𝑚𝑖𝑛
+̃
+̃
+a result, 𝐹𝑗 = 𝐸𝑟 = 𝟎.
+Proposition 6.2. Let 𝑋 be a connected graph with at least two non-zero 𝐹̃𝑗 ’s. Then
+all of the non-zero 𝐹̃𝑗 ’s are non-diagonal.
+Proof. If 𝐹̃𝑗 is a diagonal matrix then the Equation (5) implies that 𝐹̃𝑗 has only 0
+̃𝓁 s are positive
+or 1 in its diagonal entries. From Equation (4) and the fact that 𝐹
+̃𝓁 must have 0 diagonal entries, and thus an entire block
+semideﬁnite, any other 𝐹
+of 0s, corresponding to the diagonal entries of 𝐹̃𝑗 equal to 1.
+̃𝓁 )𝑎,𝑎 = 0 or (𝐹
+̃𝓁 )𝑏,𝑏 = 0. Thus all 𝐸
+̃𝑟 s are
+For any 𝑟 ∈ 𝐶𝓁 , (𝐸𝑟 )𝑎,𝑏 = 0 when (𝐹
+block diagonal matrices, up to permutation of rows and columns, with their blocks
+restricted either to rows and columns where 𝐹̃𝑗 has non-zero diagonal entries if
+𝑗 = 𝓁, or to rows and columns where 𝐹̃𝑗 has zero diagonal entries if 𝑗 ≠ 𝓁.
+̃𝑘 is a block diagonal matrix, for all 𝑘 ≥ 0, which implies that 𝑋 is not
+Hence 𝐴
+a connected graph.
+By Equation (4), if a graph has only one non-zero 𝐹̃𝑗 then 𝐹̃𝑗 = 𝐼|𝐾| . The
+following example is a connected graph with exactly one non-zero 𝐹̃𝑗 .
+Example 6.3. The graph 𝑋
+4
+1
+
+2
+
+3
+5
+
+has spectrum
+√
+√
+𝜃1 = 2 + 2,
+
+√
+√
+𝜃2 = − 2 + 2,
+
+√
+√
+𝜃4 = − 2 − 2,
+15
+
+and
+
+√
+𝜃3 =
+𝜃5 = 0.
+
+2−
+
+√
+2,
+
+𝐾
+Let 𝐾 = {1, 2, 3}. The partition 𝑃𝑚𝑖𝑛
+has two classes 𝐶1 = {1, 2, 3, 4} and 𝐶2 =
+{5}, with
+
+⎡1
+⎢0
+⎢
+𝐹1 = ⎢0
+⎢0
+⎢0
+⎣
+
+0
+1
+0
+0
+0
+
+0 0
+0⎤
+0 0
+0⎥
+⎥
+1 0
+0⎥
+0 0.5 0.5⎥
+0 0.5 0.5⎥⎦
+
+so
+
+and
+
+̃
+𝐹 1 = 𝐼3
+
+and
+
+⎡0
+⎢0
+⎢
+𝐹 2 = ⎢0
+⎢0
+⎢0
+⎣
+
+0
+0
+0
+0
+0
+
+0
+0
+0 ⎤
+0
+0
+0 ⎥
+⎥
+0
+0
+0 ⎥,
+0 0.5 −0.5⎥
+0 −0.5 0.5 ⎥⎦
+
+̃
+𝐹2 = 𝟎.
+
+𝐾
+Theorem 5.5 states that the ratio condition with respect to 𝑃𝑚𝑖𝑛
+must be satisﬁed
+if 𝐾-fractional revival occurs in 𝑋. We also see in Section 3, from the viewpoint
+of quantum walk on density matrices, that the condition
+
+𝜃𝑟 − 𝜃𝑠
+∈ ℚ,
+𝜃ℎ − 𝜃𝑘
+
+∀(𝜃𝑟 , 𝜃𝑠 ), (𝜃ℎ , 𝜃𝑘 ) ∈ Φ𝐾 where 𝜃ℎ ≠ 𝜃𝑘
+
+(7)
+
+is necessary for 𝐾-fractional revival. We now show that these two ratio conditions
+are equivalent.
+𝐾
+Lemma 6.4. If (𝜃𝑟 , 𝜃𝑠 ) ∈ Φ𝐾 then 𝑟 and 𝑠 belong to the same class, say 𝐶𝑗 , of 𝑃𝑚𝑖𝑛
+,
+where 𝐹̃𝑗 ≠ 𝟎.
+
+Proof. Suppose 𝑟 ∈ 𝐶ℎ and 𝑠 ∈ 𝐶𝑗 . Equations (3) and (5) give
+]
+[
+]
+̃ℎ 𝐹̃𝑗 𝟎
+𝐹̃𝑗 𝟎
+𝐹
+𝐸 = 𝛿ℎ,𝑗 𝐸𝑟
+𝐸.
+𝐸𝑟 𝐷𝐾 𝐸𝑠 = 𝐸𝑟 𝐹ℎ 𝐷𝐾 𝐹𝑗 𝐸𝑠 = 𝐸𝑟
+𝟎 𝟎 𝑠
+𝟎
+𝟎 𝑠
+[
+
+𝐾
+Lemma 6.5. For each class, 𝐶𝑗 , of 𝑃𝑚𝑖𝑛
+, there does not exist a partition 𝐶𝑗 =
+𝑆1 ∪ 𝑆2 such that
+
+𝐸𝑟 𝐷𝐾 𝐸𝑠 = 𝟎,
+
+for all 𝑟 ∈ 𝑆1 and 𝑠 ∈ 𝑆2 .
+
+𝐾
+Proof. Suppose there exists a class, 𝐶𝑗 , of 𝑃𝑚𝑖𝑛
+that has a partition 𝐶𝑗 = 𝑆1 ∪ 𝑆2
+satisfying
+𝐸𝑟 𝐷𝐾 𝐸𝑠 = 𝟎, for all 𝑟 ∈ 𝑆1 and 𝑠 ∈ 𝑆2 .
+
+16
+
+Let 𝑊1 =
+
+∑
+
+𝑟∈𝑆1 𝐸𝑟 and 𝑊2 =
+
+∑
+
+𝑠∈𝑆2 𝐸𝑠 . Then
+
+𝑊1 𝐷𝐾 𝑊2 = 𝟎.
+It follows from 𝐹𝑗 = 𝑊1 + 𝑊2 that
+(𝑊1 + 𝑊2 )𝐷𝐾 = 𝐷𝐾 (𝑊1 + 𝑊2 ).
+Multiplying 𝑊1 on the left gives
+𝑊1 𝐷𝐾 = 𝑊1 𝐷𝐾 𝑊1 .
+If we write 𝑊1 as
+
+[
+
+]
+̃1 𝐵
+𝑊
+,
+𝐵𝑇 𝐶
+
+𝐾
+then the above equation implies 𝐵 𝑇 𝐵 = 𝟎 and 𝑊1 𝐷𝐾 = 𝐷𝐾 𝑊1 . As 𝑃𝑚𝑖𝑛
+is the
+minimum partition commuting with 𝐷𝐾 , we conclude that 𝑊1 = 𝟎 and 𝑆1 =
+∅.
+
+Theorem 6.6. Let {𝜃0 , ..., 𝜃𝑑 } be the distinct eigenvalues of the graph. Given 𝐾 ⊆
+𝐾
+𝑉 (𝑋), recall the definitions of 𝑃𝑚𝑖𝑛
+and Φ𝐾 . The following are equivalent.
+(a) For all (𝜃𝑟 , 𝜃𝑠 ), (𝜃ℎ , 𝜃𝑘 ) ∈ Φ𝐾 , with 𝜃ℎ ≠ 𝜃𝑘 , it follows that
+𝜃𝑟 − 𝜃𝑠
+∈ ℚ.
+𝜃ℎ − 𝜃𝑘
+𝐾
+(b) For any 𝐶𝑗1 , 𝐶𝑗2 ∈ 𝑃𝑚𝑖𝑛
+, and for all 𝜃𝑟 , 𝜃𝑠 ∈ 𝐶𝑗1 and all 𝜃ℎ , 𝜃𝑘 ∈ 𝐶𝑗2 , with
+𝜃ℎ ≠ 𝜃𝑘 , it follows that
+𝜃𝑟 − 𝜃𝑠
+∈ ℚ.
+𝜃ℎ − 𝜃𝑘
+
+Proof. By Lemma 6.5, for distinct 𝑟 and 𝑠 in 𝐶𝑗1 , there exist distinct elements
+𝑟1 , … , 𝑟𝑚1 in 𝐶𝑗1 such that 𝑟1 = 𝑟, 𝑟𝑚1 = 𝑠 and
+(𝜃𝑟𝑖 , 𝜃𝑟𝑖+1 ) ∈ Φ𝐾 ,
+
+for 𝑖 = 1 … , 𝑚1 − 1.
+
+Similarly, for distinct ℎ and 𝑘 in 𝐶𝑗2 , there exist distinct elements ℎ1 , … , ℎ𝑚2 in 𝐶𝑗2
+such that ℎ1 = ℎ, ℎ𝑚2 = 𝑘 and
+(𝜃ℎ𝓁 , 𝜃ℎ𝓁+1 ) ∈ Φ𝐾 ,
+
+for 𝓁 = 1 … , 𝑚2 − 1.
+17
+
+Suppose condition (a) holds. Then, for 1 ≤ 𝑖 ≤ 𝑚1 − 1 and 1 ≤ 𝓁 ≤ 𝑚2 − 1,
+𝜃ℎ𝓁 − 𝜃ℎ𝓁+1
+𝜃𝑟𝑖 − 𝜃𝑟𝑖+1
+
+∈ ℚ.
+
+It follows that, for 1 ≤ 𝑖 ≤ 𝑚1 − 1, both
+𝜃ℎ − 𝜃𝑘
+=
+𝜃𝑟𝑖 − 𝜃𝑟𝑖+1
+
+∑𝑚2 −1
+𝓁=1
+
+(𝜃ℎ𝓁 − 𝜃ℎ𝓁+1 )
+
+𝜃𝑟𝑖 − 𝜃𝑟𝑖+1
+
+and
+
+𝜃𝑟𝑖 − 𝜃𝑟𝑖+1
+𝜃ℎ − 𝜃𝑘
+
+are rational. Consequently,
+𝜃𝑟 − 𝜃𝑠
+=
+𝜃ℎ − 𝜃𝑘
+
+∑𝑚1 −1
+𝑖=1
+
+(𝜃𝑟𝑖 − 𝜃𝑟𝑖+1 )
+
+𝜃ℎ − 𝜃𝑘
+
+∈ ℚ,
+
+and condition (b) holds.
+Conversely, by Lemma 6.4 and Proposition 6.1, condition (b) implies condition
+(a).
+Corollary 6.7. Suppose 𝑋 has integer weights. If 𝐾-fractional revival occurs in
+𝑋 at time 𝜏 > 0 then
+√ there exists a square-free integer Δ such that 𝜃𝑟 − 𝜃𝑠 is an
+𝐾
+.
+integer multiple of Δ, for all 𝑟 and 𝑠 in the same class of 𝑃𝑚𝑖𝑛
+Proof. It follows from Theorem 3.3 and Theorem 6.6.
+
+7 Block decomposition
+Suppose 𝐾-fractional revival occurs in 𝑋 at time 𝜏, then, up to permuting rows
+and columns,
+]
+[
+̃
+𝑈
+(𝜏) 𝟎
+,
+𝑈 (𝜏) =
+𝟎
+𝑈′
+for some (𝑛 − |𝐾|) × (𝑛 − |𝐾|) unitary matrix 𝑈 ′ .
+Let ⟨𝐴⟩ denote the ring of polynomials in 𝐴 over ℂ. Having a matrix in ⟨𝐴⟩
+with the desired block diagonal structure is a necessary condition of 𝐾-fractional
+revival in 𝑋.
+
+18
+
+Definition 7.1. We say 𝑋 is decomposable with respect to 𝐾 if ⟨𝐴⟩ contains a
+non-identity block diagonal matrix
+]
+[
+𝐻 𝟎
+𝟎 𝐻′
+where the rows and columns of 𝐻 are indexed by the elements of 𝐾.
+̃
+When proper 𝐾-fractional revival occurs at time 𝜏, then 𝑈
+(𝜏) is not a diagonal
+matrix. We say 𝑋 is properly decomposable with respect to 𝐾 if ⟨𝐴⟩ contains a
+matrix in the above block structure where 𝐻 is not diagonal.
+Theorem 7.2. A connected graph 𝑋 is properly decomposable with respect to 𝐾
+𝐾
+if and only if 𝑃𝑚𝑖𝑛
+has more than one class and at least two of 𝐹̃𝑗 ’s are non-zero.
+Proof. Suppose 𝑋 is connected with at least two non-zero 𝐹̃𝑗 ’s. It follows from
+̃1 is not a diagonal matrix. As
+Proposition 6.2 that, without loss of generality, 𝐹
+𝐹1 is a matrix in ⟨𝐴⟩ that commutes with 𝐷𝐾 , we conclude that 𝑋 is properly
+decomposable with respect to 𝐾.
+Conversely, by Equation (4), we can assume without loss of generality that
+̃
+𝐹1 = 𝐼|𝐾| and all other 𝐹̃𝑗 ’s are the zero matrix. Then each block diagonal matrix
+[
+
+𝐻 𝟎
+𝟎 𝐻′
+
+]
+
+in ⟨𝐴⟩ has 𝐻 ∈ span{𝐼|𝐾| }, so 𝑋 is not properly diagonalizable.
+Proposition 7.3. Let 𝐻 be a |𝐾| × |𝐾| matrix and 𝐻 ′ be an (𝑛 − |𝐾|) × (𝑛 − |𝐾|)
+matrix. Then the following are equivalent.
+i. The block diagonal matrix
+[
+
+]
+𝐻 𝟎
+∈ ⟨𝐴⟩.
+𝟎 𝐻′
+
+ii. For any eigenvector 𝑣 of 𝐴, there exists a real number 𝜆 such that 𝐻 𝑣̂ = 𝜆̂
+𝑣
+and 𝐻 ′ 𝑣̌ = 𝜆̌
+𝑣. (At most one of 𝑣̂ and 𝑣̌ can be the zero vector.)
+Proof. Since the eigenvectors of 𝐴 are eigenvectors of every matrix in ⟨𝐴⟩, (i)
+implies (ii).
+19
+
+Conversely, we assume (ii) holds. Let 𝑢 and 𝑣 eigenvectors of 𝐴 in the same
+eigenspace. If both 𝑢̂ and 𝑣̂ are non-zero, then any non-zero linear combination
+of 𝑢̂ and 𝑣̂ is an eigenvector of 𝐻. We conclude that 𝑢̂ and 𝑣̂ belong to the same
+eigenspace of 𝐻. Similarly, if both 𝑢̌ and 𝑣̌ are non-zero, then they belong to the
+same eigenspace of 𝐻 ′ .
+∑𝑑
+Given the spectral decomposition 𝐴 = 𝑟=0 𝜃𝑟 𝐸𝑟 , we deﬁne 𝜆𝑟 , for 𝑟 = 0, … , 𝑑,
+to be the real number satisfying
+̂
+̂
+𝐻 (𝐸
+𝑟 𝑒𝑎 ) = 𝜆𝑟 (𝐸𝑟 𝑒𝑎 ) and
+
+̌
+̌
+𝐻 ′ (𝐸
+𝑟 𝑒𝑎 ) = 𝜆𝑟 (𝐸𝑟 𝑒𝑎 ),
+
+∀𝑎 ∈ 𝑉 (𝑋).
+
+Suppose the list 𝜆0 , 𝜆1 , … , 𝜆𝑑 has 𝑧 distinct values 𝜇1 , … , 𝜇𝑧. For 𝑗 = 1, … , 𝑧, let
+𝑀𝑗 be the |𝐾| × |𝐾| orthogonal projection matrix onto the space
+}
+{
+̂
+𝑒
+)
+∶
+𝑎
+∈
+𝑉
+(𝑋)
+and
+𝜆
+=
+𝜇
+span (𝐸
+𝑟 𝑎
+𝑟
+𝑗 ,
+and let 𝑁𝑗 be the (𝑛 − |𝐾|) × (𝑛 − |𝐾|) orthogonal projection matrix onto the space
+}
+{
+̌
+span (𝐸𝑟 𝑒𝑎 ) ∶ 𝑎 ∈ 𝑉 (𝑋) and 𝜆𝑟 = 𝜇𝑗 .
+(Note that some of these 𝑀𝑗 ’s and 𝑁𝑗 ’s could be the zero matrix.) We have
+𝐻𝑀𝑗 = 𝜇𝑗 𝑀𝑗
+
+and
+
+𝐻 ′ 𝑁𝑗 = 𝜇 𝑗 𝑁𝑗 .
+
+For 𝑗 = 1, … , 𝑧, we have
+{
+]
+[
+𝐸𝑟
+𝑀𝑗 𝟎
+𝐸𝑟 =
+𝟎 𝑁𝑗
+𝟎
+
+if 𝜆𝑟 = 𝜇𝑗 ,
+otherwise.
+
+For 𝑟 = 0, … , 𝑑, if 𝜆𝑟 = 𝜇𝑗 then
+]
+[
+]
+[
+][
+𝑀𝑗 𝟎
+𝐻 𝟎
+𝐻 𝟎
+𝐸
+𝐸 =
+𝟎 𝑁𝑗 𝑟
+𝟎 𝐻′ 𝑟
+𝟎 𝐻′
+]
+[
+𝑀𝑗 𝟎
+𝐸
+= 𝜆𝑟
+𝟎 𝑁𝑗 𝑟
+= 𝜆𝑟 𝐸𝑟 .
+Consequently,
+
+[
+
+]
+𝑑
+∑
+𝐻 𝟎
+𝜆𝑟 𝐸𝑟 ∈ ⟨𝐴⟩.
+=
+𝟎 𝐻′
+𝑟=0
+
+20
+
+If 𝐾-fractional revival occurs in 𝑋 at time 𝜏, then 𝑈 (𝜏) is a block diagonal
+̃
+matrix in ⟨𝐴⟩ that commutes with all non-negative powers of 𝐴. Thus, 𝑈
+(𝜏) is a
+𝑘
+̃
+symmetric unitary matrix commuting with 𝐴 , for 𝑘 ≥ 0. We give a characterĩ𝑘 , for 𝑘 ≥ 0, which is
+zation of symmetric unitary matrices that commute with 𝐴
+used in Section 8.
+Lemma 7.4. A symmetric unitary matrix 𝐻 has an orthonormal basis of real
+eigenvectors.
+Proof. Since 𝐻 is symmetric, there exist real symmetric matrices 𝐴 and 𝐵 such
+that
+𝐻 = 𝐴 + i𝐵.
+Now 𝐻 ∗ = 𝐴 − i𝐵 and
+𝐼 = 𝐻 ∗ 𝐻 = (𝐴2 + 𝐵 2 ) + i(𝐴𝐵 − 𝐵𝐴)
+implies 𝐴𝐵 = 𝐵𝐴. Hence 𝐴 and 𝐵 are diagonalizable by the same set of real
+orthonormal eigenvectors, which are also eigenvectors of 𝐻.
+Proposition 7.5. Let 𝐻 be a |𝐾| × |𝐾| symmetric unitary matrix. The following
+statements are equivalent.
+̃𝑘 , for all 𝑘 ≥ 0.
+i. 𝐻 commutes with 𝐴
+̃𝑟 , for each principal idempotent 𝐸𝑟 of 𝐴.
+ii. 𝐻 commutes with 𝐸
+iii. 𝐴 has an orthogonormal basis of real eigenvectors 𝑣1 , … , 𝑣𝑛 such that, for
+𝑗 = 1, … , 𝑛, either 𝑣̂𝑗 = 𝟎 or it is an eigenvector of 𝐻.
+Proof. The statements (i) and (ii) are equivalent because 𝐴𝑘 is a linear combination
+of the 𝐸𝑟 ’s, and each 𝐸𝑟 is a polynomial in 𝐴.
+𝑇
+Statement (iii) implies 𝐻 commutes with 𝑣̂𝑗 𝑣̂𝑗 , for 𝑗 = 1, … , 𝑛. For each 𝑟,
+we can write
+∑
+𝐸𝑟 =
+𝑣𝑗 𝑣𝑇𝑗
+𝑗∶𝐴𝑣𝑗 =𝜃𝑟 𝑣𝑗
+
+and
+
+̃𝑟 =
+𝐸
+
+∑
+
+𝑇
+
+𝑣̂𝑗 𝑣̂𝑗 .
+
+𝑗∶𝐴𝑣𝑗 =𝜃𝑟 𝑣𝑗
+
+̃𝑟 , for all 𝑟 and (ii) holds.
+As a result, 𝐻 commutes with 𝐸
+21
+
+∑𝑧
+Assume Statement (ii) holds. Let 𝐻 = ℎ=1 𝜆ℎ 𝑀ℎ be the spectral decomposition of 𝐻. By Lemma 7.4, each 𝑀ℎ is real and symmetric. Since 𝑀ℎ is a
+̃𝑟 for all 𝑟.
+polynomial in 𝐻, it commutes with 𝐸
+For ℎ = 1, … , 𝑧, let 𝑉ℎ be the subspace of ℂ𝑉 (𝑋) spanned by
+{ [
+]
+}
+𝑀ℎ 𝑒𝑎
+𝐸𝑟
+∶ 𝑎 ∈ 𝐾, 𝑟 = 0, 1 … , 𝑑 .
+𝟎
+For ℎ ≠ 𝑙,
+
+]
+]
+[
+[
+𝑀ℎ 𝑒𝑏
+𝑀𝑙 𝑒𝑎
+̃𝑟 𝑀ℎ 𝑒𝑏
+⟩ = 𝑒𝑇𝑎 𝑀𝑙 𝐸
+, 𝐸𝑟
+⟨𝐸𝑟
+𝟎
+𝟎
+
+̃𝑟 and 𝑀𝑙 𝑀ℎ = 𝟎. We see that
+which is equal to zero since 𝑀ℎ commutes with 𝐸
+𝑉ℎ is orthogonal to 𝑉𝑙 whenever ℎ ≠ 𝑙.
+We choose a real orthonormal basis of 𝑉ℎ , for each ℎ, and extend from the
+union of these bases to a real orthonormal basis 𝑣1 , … , 𝑣𝑛 of ℂ𝑉 (𝑋) .
+If 𝑣𝑗 ∈ 𝑉ℎ and 𝑣̂𝑗 ≠ 𝟎 then
+{
+}
+̃
+𝑣̂𝑗 ∈ span 𝐸𝑟 𝑀ℎ 𝑒𝑎 ∶ 𝑎 ∈ 𝐾, 𝑟 = 0, 1 … , 𝑑 .
+̃𝑟 𝑀ℎ = 𝑀ℎ 𝐸
+̃𝑟 , for all 𝑟, 𝑣̂𝑗 lies in the column space of 𝑀ℎ and is an eigenvector
+As 𝐸
+of 𝐻.
+Suppose 𝑣𝑗 does not belong to 𝑉ℎ , for any ℎ. Then
+[ ]
+𝑀ℎ
+𝑇
+=𝟎
+𝑣𝑗 𝐸𝑟
+𝟎
+for all 𝑟 and ℎ. In particular,
+( 𝑑 𝑧
+] [ ]
+[ ])
+[
+∑∑
+𝐼|𝐾|
+𝑣̂
+𝑀ℎ
+𝑇
+𝑇
+𝟎 = 𝑣𝑗
+= 𝑗 .
+𝐸𝑟
+= 𝑣𝑗 𝐼𝑛
+𝟎
+𝟎
+𝟎
+𝑟=0 ℎ=1
+In this case, 𝑣̂𝑗 = 𝟎. We conclude that (ii) implies (iii).
+
+8 Fractionally cospectral vertices
+For the rest of this note, we focus on the decomposability of 𝑋 with respect to
+𝐾 = {𝑎, 𝑏} and revisit fractional revival between two vertices. We introduce the
+22
+
+notions of fractional cospectrality and strongly fractional cospectrality of two vertices, which can be viewed as a generalization of cospectrality and strongly cospectrality, respectively.
+Suppose 𝑋 is a connected graph with real weights that is properly decompos𝐾
+= {𝐶1 , … , 𝐶𝑧}, and
+able with respect to 𝐾 = {𝑎, 𝑏}. Let 𝑃𝑚𝑖𝑛
+𝐹𝑗 =
+
+∑
+
+𝐸𝑟 ,
+
+for 𝑗 = 1, … , 𝑧.
+
+𝑟∈𝐶𝑗
+
+By Theorem 5.3, Theorem 7.2 and Proposition 6.2, 𝑧 ≥ 2, 𝐹̃𝑗 = 0 for all but two
+̃1 and 𝐹
+̃2, are 2 × 2 rank one non-diagonal
+indices, and exactly two of the 𝐹̃𝑗 ’s, say 𝐹
+matrices which are projections onto orthogonal subspaces.
+Hence we assume, without loss of generality, that
+[ ]
+[ ]
+]
+]
+−𝑞 [
+𝑝 [
+̃
+̃
+−𝑞 𝑝 ,
+𝑝 𝑞
+𝐹1 =
+and 𝐹2 =
+𝑝
+𝑞
+for some non-zero real numbers 𝑝 and 𝑞 satisfying 𝑝2 + 𝑞 2 = 1.
+Theorem 8.1. Let 𝑋 be a graph with real weights. If 𝑋 is properly decomposable
+̃𝑟 ’s commute with each other.
+with respect to 𝐾 = {𝑎, 𝑏} then the 𝐸
+̃𝑟 = 𝟎 if and only if 𝑟 ∉ 𝐶1 ∪ 𝐶2 .
+Proof. We see in Proposition 6.1 that 𝐸
+{[ ]}
+𝑝
+̃
+For 𝑟 ∈ 𝐶1 , the column space of 𝐸𝑟 is a subspace of span
+. Then there
+𝑞
+exist 𝛼, 𝛼 ′ ∈ ℝ such that
+[
+]
+′
+𝛼𝑝
+𝛼
+𝑝
+̃𝑟 =
+𝐸
+.
+𝛼𝑞 𝛼 ′ 𝑞
+̃𝑟 is symmetric, we have 𝛼 ′ = 𝛼𝑞 and 𝐸
+̃𝑟 = 𝛼 𝐹
+̃. Similarly, if 𝑟 ∈ 𝐶2 , then
+Since 𝐸
+𝑝
+𝑝 1
+̃𝑟 = 𝛽 𝐹
+̃2 , for some 𝛽 ∈ ℝ.
+𝐸
+̃1 𝐹
+̃2 = 𝐹
+̃2 𝐹
+̃1 that the 𝐸
+̃𝑟 ’s commute with each other.
+If follows from 𝐹
+Perfect state transfer occurs only between strongly cospectral vertices, equivalently vertices that are cospectral and parallel [16]. Two vertices 𝑎 and 𝑏 are
+cospectral if and only if
+(𝐸𝑟 )𝑎,𝑎 = (𝐸𝑟 )𝑏,𝑏 ,
+
+for 𝑟 = 0, 1, … , 𝑑.
+
+23
+
+Thus, for each 𝑟 = 0, … , 𝑑, there exists real numbers 𝛼𝑟 and 𝛽𝑟 such that
+]
+[
+𝛼
+𝛽
+𝑟
+𝑟
+̃𝑟 =
+.
+𝐸
+𝛽𝑟 𝛼𝑟
+̃𝑟 ’s commute with each other.
+In this case, the 𝐸
+Motivated by Theorem 8.1 and the above necessary conditions on cospectral
+vertices, we now generalize the notion of cospectrality to fractionally cospectrality.
+Definition 8.2. Given a connected graph 𝑋 with real weights and the spectral
+∑𝑑
+decomposition, 𝐴 = 𝑟=0 𝜃𝑟 𝐸𝑟 , of 𝐴. Let 𝐾 = {𝑎, 𝑏} ⊂ 𝑉 (𝑋). We say 𝑎 is
+fractionally cospectral to 𝑏 in 𝑋 if
+̃ℎ = 𝐸
+̃𝑗 ,
+̃𝑗 𝐸
+̃ℎ 𝐸
+𝐸
+
+for 𝑗, ℎ = 0, … , 𝑑.
+
+Theorem 3.1 of [16] gives six equivalent statements to two vertices being
+cospectral. We now give the analogous characterizations for fractionally cospectral vertices in a connected graph.
+For a vertex 𝑎 in 𝑋, the walk matrix 𝑀𝑎 relative to the 𝑎 is deﬁned to be
+]
+[
+𝑀𝑎 = 𝑒𝑎 𝐴𝑒𝑎 𝐴2 𝑒𝑎 ⋯ 𝐴𝑛−1 𝑒𝑎 .
+Then (𝑀𝑎𝑇 𝑀𝑏 )𝑗,ℎ = 𝑒𝑇𝑎 𝐴𝑗+ℎ−2 𝑒𝑏 counts to number of walks of length (𝑗 + ℎ − 2)
+from 𝑎 to 𝑏, The walk generating function from 𝑎 to 𝑏 is the formal power series
+𝑊𝑎,𝑏 (𝑋, 𝑦) =
+
+∑
+
+(𝑒𝑇𝑎 𝐴𝑘 𝑒𝑏 )𝑦𝑘 = 𝑒𝑇𝑎 (𝐼 − 𝑦𝐴)−1 𝑒𝑏 =
+
+𝑑
+∑
+(𝐸𝑟 )𝑎,𝑏
+𝑟=0
+
+𝑘≥0
+
+1 − 𝜃𝑟 𝑦
+
+.
+
+(8)
+
+We use 𝜙(𝑋, 𝑦) to denote the characteristic polynomial of the adjacency matrix of
+𝑋. From Pages 30 and 52 of [14], we see that
+𝑊𝑎,𝑎 (𝑋, 𝑦) =
+
+𝑑
+∑
+(𝐸𝑟 )𝑎,𝑎
+𝑟=0
+
+1 − 𝑦𝜃𝑟
+
+= 𝑦−1
+
+𝜙(𝑋∖{𝑎}, 𝑦−1 )
+.
+𝜙(𝑋, 𝑦−1 )
+
+(9)
+
+∑𝑑
+Theorem 8.3. Let 𝑋 be a connected weighted graph and let 𝐴 = 𝑟=0 𝜃𝑟 𝐸𝑟 be the
+spectral decomposition of 𝐴. For vertices 𝑎 and 𝑏 in 𝑋, the following statements
+are equivalent.
+i. 𝑎 is fractionally cospectral to 𝑏.
+24
+
+ii. There exists an orthonormal basis 𝑣1 , … , 𝑣𝑛 of eigenvectors of 𝐴 and non-zero
+real numbers 𝑝 and 𝑞 such that either 𝑣𝑗 (𝑎) = 𝑞𝑝 𝑣𝑗 (𝑏) or 𝑣𝑗 (𝑎) = − 𝑞𝑝 𝑣𝑗 (𝑏), for
+𝑗 = 1, … , 𝑛.
+iii. For 𝑟 = 0, 1, … , 𝑑,
+(
+(𝐸𝑟 )𝑎,𝑎 − (𝐸𝑟 )𝑏,𝑏 =
+iv. For 𝑘 ≥ 0,
+
+(
+𝑘
+
+𝑘
+
+(𝐴 )𝑎,𝑎 − (𝐴 )𝑏,𝑏 =
+v. 𝑊𝑎,𝑎 (𝑋, 𝑦) − 𝑊𝑏,𝑏 (𝑋, 𝑦) =
+vi. 𝑀𝑎𝑇 𝑀𝑎 − 𝑀𝑏𝑇 𝑀𝑏 =
+
+(
+
+(
+
+𝑝
+− 𝑞𝑝
+𝑞
+
+𝑝
+− 𝑝𝑞
+𝑞
+
+)
+
+)
+
+𝑝 𝑞
+−
+𝑞 𝑝
+𝑝 𝑞
+−
+𝑞 𝑝
+
+)
+(𝐸𝑟 )𝑎,𝑏 .
+)
+(𝐴𝑘 )𝑎,𝑏 .
+
+𝑊𝑎,𝑏 (𝑋, 𝑦).
+
+𝑀𝑎𝑇 𝑀𝑏 .
+
+vii. 𝜙(𝑋∖{𝑎}, 𝑦)
+) √ 𝑦) =
+( − 𝜙(𝑋∖{𝑏},
+𝑞
+𝑝
+−𝑝
+𝜙(𝑋∖{𝑎}, 𝑦)𝜙(𝑋∖{𝑏}, 𝑦) − 𝜙(𝑋, 𝑥)𝜙(𝑋∖{𝑎, 𝑏}, 𝑦).
+𝑞
+viii. The ⟨𝐴⟩-modules generated by (𝑝𝑒𝑎 + 𝑞𝑒𝑏 ) and (−𝑞𝑒𝑎 + 𝑝𝑒𝑏 ) are orthogonal
+subspaces of ℂ𝑉 (𝑋) .
+In particular, if 𝑝 = ±𝑞 then 𝑎 and 𝑏 are cospectral.
+̃𝑟 ’s are
+Proof. Assume 𝑎 and 𝑏 are fractionally cospectral vertices in 𝑋. Since 𝐸
+commuting and symmetric, they have spectral decomposition
+̃𝑟 = 𝜆𝑟,1 𝑀1 + 𝜆𝑟,2 𝑀2 ,
+𝐸
+
+for 𝑟 = 0, 1, … , 𝑑.
+
+̃𝑟 ’s is not diagonal which implies 𝑀1
+Since 𝑋 is connected, at least one of the 𝐸
+and 𝑀2 = 𝐼2 − 𝑀1 are non-diagonal. There exist non-zero real numbers 𝑝 and 𝑞
+such that 𝑝2 + 𝑞 2 = 1, and
+[ ]
+[ ]
+]
+]
+𝑝 [
+−𝑞 [
+𝑝 𝑞
+−𝑞 𝑝 .
+𝑀1 =
+and 𝑀2 =
+𝑞
+𝑝
+̃𝑟 , for 𝑟 = 0, … , 𝑑, so applying Proposition 7.5
+Observe that 𝑀1 commutes with 𝐸
+to 𝐻 = 𝑀1 gives an orthonormal basis of real eigenvectors 𝑣1 , … , 𝑣𝑛 of 𝐴 such
+25
+
+that either 𝑣̂𝑗 = 𝟎 or 𝑣̂𝑗 is an eigenvector of 𝑀1 , for 𝑗 = 1, … , 𝑛. If 𝑣̂𝑗 ≠ 𝟎 then
+[
+]𝑇
+either 𝑀1 𝑣̂𝑗 = 1⋅ 𝑣̂𝑗 or 𝑀1 𝑣̂𝑗 = 0⋅ 𝑣̂𝑗 . The former case implies 𝑣̂𝑗 ∈ span{ 𝑝 𝑞 }
+[
+]𝑇
+while the latter implies 𝑣̂𝑗 ∈ span{ −𝑞 𝑝 }. As a result, (i) implies (ii).
+Suppose (ii) holds. Then for 𝑗 = 1, … , 𝑛, we have
+(
+)
+𝑝 𝑞
+𝑇
+𝑇
+𝑇
+(𝑣̂𝑗 𝑣̂𝑗 )𝑎,𝑎 − (𝑣̂𝑗 𝑣̂𝑗 )𝑏,𝑏 =
+−
+(𝑣̂𝑗 𝑣̂𝑗 )𝑎,𝑏 .
+𝑞 𝑝
+𝑇
+
+Statement (iii) follows from the fact that 𝐸𝑟 is the sum of (𝑣̂𝑗 𝑣̂𝑗 ) over the 𝑣𝑗 ’s in
+the 𝜃𝑟 -eigenspace of 𝐴.
+̃ℎ ̃
+̃ℎ
+Suppose (iii) holds. For ℎ, 𝑙 = 0, … , 𝑑, the diagonal entries of 𝐸
+𝐸𝑙 − ̃
+𝐸𝑙 𝐸
+are zero, and its oﬀ-diagonal entries are equal to
+(
+)
+(
+)
+(𝐸𝑙 )𝑎,𝑏 (𝐸ℎ )𝑎,𝑎 − (𝐸ℎ )𝑏,𝑏 − (𝐸ℎ )𝑎,𝑏 (𝐸𝑙 )𝑎,𝑎 − (𝐸𝑙 )𝑏,𝑏
+which is zero after applying (iii) to 𝐸ℎ and 𝐸𝑙 . Therefore (i) holds
+Statements (iii) and (iv) are equivalent because 𝐴𝑘 ∈ span{𝐸0 , … , 𝐸𝑑 }, for
+𝑘 ≥ 0, and 𝐸𝑟 is a polynomial in 𝐴, for 𝑟 = 0, … , 𝑑.
+It follows from Equation (8) that (iv) is equivalent to (v). The proof of Lemma 2.1
+of [16] shows the equivalence of (v) and (vi). The equivalence of (v) and (vii) follows from Equation (9) and Corollary 4.1.3 of [14].
+Statement (iii) holds if and only if
+⟨𝐸𝑟 (𝑝𝑒𝑎 + 𝑞𝑒𝑏 ), 𝐸𝑟 (−𝑞𝑒𝑎 + 𝑝𝑒𝑏 )⟩ = 0,
+
+for 𝑟 = 0, … , 𝑑,
+
+which is equivalent to (viii).
+Corollary 8.4. Suppose 𝑎 is fractionally cospectral to 𝑏 in a simple graph 𝑋 and
+one of the following conditions hold.
+i. 𝑎 is adjacent to 𝑏.
+ii. 𝑋 is bipartite, and the distance between 𝑎 and 𝑏 is odd.
+iii. 𝑎 and 𝑏 have the same degree and are at distance two in 𝑋.
+iv. 𝑋 is regular and connected.
+Then 𝑎 and 𝑏 are cospectral.
+26
+
+Proof. By Theorem 8.3 (iv), if there exists 𝑘 > 0 such that
+(𝐴𝑘 )𝑎,𝑎 − (𝐴𝑘 )𝑏,𝑏 = 0 and
+
+(𝐴𝑘 )𝑎,𝑏 ≠ 0,
+
+(10)
+
+then 𝑞𝑝 − 𝑞𝑝 = 0, and 𝑎 and 𝑏 are cospectral.
+For Condition (i), (10) holds for 𝑘 = 1. For Condition (ii), (10) holds when 𝑘
+is the distance of 𝑎 and 𝑏. For Condition (iii), (10) holds for 𝑘 = 2.
+1
+𝐽 . If follows from Theorem 8.3 (iii)
+For Condition (iv), one of the 𝐸𝑟 ’s is |𝑉 (𝑋)|
+𝑞
+𝑝
+that 𝑞 − 𝑝 = 0, and 𝑎 and 𝑏 are cospectral.
+
+9 Strongly fractionally cospectral vertices
+In a graph 𝑋, two vertices 𝑎 and 𝑏 are parallel if the column vectors 𝐸𝑟 𝑒𝑎 and 𝐸𝑟 𝑒𝑏
+are parallel, for 𝑟 = 0, 1, … , 𝑑. Further, if 𝐸𝑟 𝑒𝑎 = ±𝐸𝑟 𝑒𝑏 , for 𝑟 = 0, … , 𝑑, then
+we say 𝑎 and 𝑏 are strongly cospectral. Lemma 4.1 of [16] states that two vertices
+are strongly cospectral if and only if they are both cospectral and parallel. In this
+section, we show that 𝑎 and 𝑏 being fractionally cospectral and parallel is equivalent to 𝑋 being properly decomposable with respect to {𝑎, 𝑏}, which motivates
+Deﬁnition 9.2.
+Theorem 9.1. A connected weighted graph 𝑋 is properly decomposable with respect to 𝐾 = {𝑎, 𝑏} if and only if 𝑎 and 𝑏 are fractionally cospectral and parallel.
+Proof. Suppose 𝑋 is properly decomposable with respect to 𝐾 = {𝑎, 𝑏}. By Theorem 8.1, 𝑎 is fractionally cospectral to 𝑏, and by Theorem 5.3, Theorem 7.2 and
+Proposition 6.2, vertices 𝑎 and 𝑏 are parallel.
+̃𝑟 ’s commute with each other and there exists 𝜎𝑟 ∈ ℝ
+Conversely, assume the 𝐸
+such that
+𝐸𝑟 𝑒𝑎 = 𝜎𝑟 𝐸𝑟 𝑒𝑏 , for 𝑟 = 0, … , 𝑑.
+̃𝑟 ’s are simultaneously diagonalizable, there exists 2 × 2 orthogonal
+Since the 𝐸
+projection matrices 𝑀1 and 𝑀2 such that
+̃𝑟 = 𝜆𝑟,1 𝑀1 + 𝜆𝑟,2𝑀2 .
+𝐸
+̃𝑟 ) ≤ 1, at most one of 𝜆𝑟,1 and 𝜆𝑟,2 is non-zero for each 𝑟.
+As rank(𝐸
+Deﬁne 𝐶1 = {𝑟 ∶ 𝜆𝑟,1 ≠ 0}, 𝐶2 = {𝑟 ∶ 𝜆𝑟,2 ≠ 0} and 𝐶3 = {𝑟 ∶ 𝜆𝑟,1 = 𝜆𝑟,2 =
+0}. For 𝑗 = 1, 2, 3, let
+]
+[
+∑
+𝐹̃𝑗 𝐵𝑗𝑇
+𝐹𝑗 =
+.
+𝐸𝑟 =
+𝐵𝑗 𝐶𝑗
+𝑟∈𝐶
+𝑗
+
+27
+
+There exist 𝛽1 , 𝛽2 ∈ ℝ such that
+∑
+̃𝑟 = 𝛽𝑗 𝑀𝑗 ,
+𝐹̃𝑗 =
+𝐸
+
+for 𝑗 = 1, 2,
+
+𝑟∈𝐶𝑗
+
+and ̃
+𝐹3 = 𝟎.
+∑𝑑
+̃
+̃2 + ̃
+𝐸𝑟 ) = 𝐼2 , so
+Then ̃
+𝐹1 + 𝐹
+𝐹3 = (
+𝑟=0
+
+𝛽1 𝑀1 + 𝛽2 𝑀2 + 𝟎 = 𝐼2
+2
+which yields 𝛽1 = 𝛽2 = 1. Hence 𝐹̃𝑗 = 𝐹̃𝑗 , for 𝑗 = 1, 2, 3.
+For 𝑗 = 1, 2, 3, 𝐹𝑗2 = 𝐹𝑗 implies 𝐵𝑗𝑇 𝐵𝑗 = 𝟎. Therefore, 𝐵𝑗 = 𝟎 and 𝐹𝑗 𝐷𝐾 =
+̃1 is non-diaogonal and 𝑋 is properly decomposable
+𝐷𝐾 𝐹𝑗 . As 𝑋 is connected, 𝐹
+with respect to {𝑎, 𝑏}.
+
+Definition 9.2. We say 𝑎 is strongly fractionally cospectral to 𝑏 if 𝑋 is properly
+decomposable with respect to {𝑎, 𝑏}.
+Corollary 9.3. Let 𝑋 be a connected weighted graph. Let 𝐾 = {𝑎, 𝑏} ⊂ 𝑉 (𝑋)
+𝐾
+and 𝑃𝑚𝑖𝑛
+= {𝐶1 , … , 𝐶𝑧}. The following statements are equivalent.
+i. The vertices 𝑎 and 𝑏 are strongly fractionally cospectral in 𝑋 with
+[ ]
+[ ]
+]
+]
+𝑝 [
+−𝑞 [
+̃
+̃
+𝑝 𝑞
+−𝑞 𝑝 .
+𝐹1 =
+and 𝐹2 =
+𝑞
+𝑝
+for some non-zero 𝑝 and 𝑞 satisfying 𝑝2 + 𝑞 2 = 1.
+ii. For 𝑟 = 0, … , 𝑑,
+𝐸𝑟 𝑒𝑎 = 𝐸𝑟 𝑒𝑏 = 𝟎 if 𝑟 ∉ 𝐶1 ∪ 𝐶2
+{𝑝
+
+and
+𝐸𝑟 𝑒𝑎 =
+
+𝐸𝑒
+𝑞 𝑟 𝑏
+−𝑞
+𝐸𝑟 𝑒𝑏
+𝑝
+
+if 𝑟 ∈ 𝐶1 ,
+if 𝑟 ∈ 𝐶2 .
+
+iii. For any eigenvector 𝑣 of 𝐴, either 𝑣(𝑎) = 𝑝𝑞 𝑣(𝑏) or 𝑣(𝑎) = − 𝑝𝑞 𝑣(𝑏).
+We have 𝑝 = ±𝑞 when 𝑎 is strongly cospectral to 𝑏. In this case,
+∑
+∑
+𝑄=
+𝐸𝑟 −
+𝐸𝑠
+𝑟∈𝐶1
+
+𝑠∈𝐶2
+
+28
+
+is the orthogonal symmetry of 𝑋 mentioned in Theorem 11.2 of [16].
+Lemma 8.3 of [16] gives a characterization of parallel vertices in terms of characteristic polynomials of the graphs 𝑋 and 𝑋∖{𝑎, 𝑏}. We use this result to generalize the characterization of strongly cospectral vetices in Lemma 8.4 of [16] to
+strongly fractional cospectrality.
+Corollary 9.4. Distinct vertices 𝑎 and 𝑏 in 𝑋 are strongly fractionally cospectral
+if and only if they are fractionally cospectral and all poles of
+𝜙(𝑋∖{𝑎, 𝑏}, 𝑦)
+𝜙(𝑋, 𝑦)
+are simple.
+
+10 Fractional revival on two vertices
+In this section, we assume 𝑋 is a connected graph with integer weights. Suppose
+proper fractional revival occurs from 𝑎 to 𝑏 in 𝑋 at time 𝜏 > 0, that is,
+𝑈 (𝜏)𝑒𝑎 = 𝛼𝑒𝑎 + 𝛽𝑒𝑏 ,
+
+(11)
+
+for some non-zero complex numbers 𝛼 and 𝛽 satisfying |𝛼|2 + |𝛽|2 = 1.
+𝐾
+Let 𝑃𝑚𝑖𝑛
+= {𝐶1 , 𝐶2, … , 𝐶𝑧}. Since 𝑎 and 𝑏 are strongly fractionally cospectral,
+there exists non-zero real numbers 𝑝 and 𝑞 such that 𝑝2 + 𝑞 2 = 1 and, without loss
+of generality,
+[ ]
+[ ]
+[
+]
+[
+]
+𝑝
+̃1 =
+̃2 = −𝑞 −𝑞 𝑝 .
+𝑝 𝑞
+𝐹
+and 𝐹
+𝑞
+𝑝
+We have 𝐹̃𝑗 = 𝟎, for 𝑗 = 3, … , 𝑧. From the proof of Proposition 6.1, we see that
+|𝐶𝑗 | = 1, for 𝑗 = 3, … , 𝑧.
+Applying Corollary 9.3, Equation (11) holds if and only if
+{
+𝛼 + 𝑞𝑝 𝛽 if 𝑟 ∈ 𝐶1 ,
+−i𝜏𝜃𝑟
+𝑒
+=
+(12)
+𝛼 − 𝑞𝑝 𝛽 if 𝑟 ∈ 𝐶2
+which is equivalent to
+
+{
+0 (mod 2𝜋) if 𝑟, 𝑠 ∈ 𝐶1 or 𝑟, 𝑠 ∈ 𝐶2 ,
+𝜏(𝜃𝑠 − 𝜃𝑟 ) =
+𝜇 (mod 2𝜋) if 𝑟 ∈ 𝐶1 and 𝑠 ∈ 𝐶2 ,
+29
+
+)(
+)−1
+(
+. Note that
+for some real number 𝜇 satisfying 𝑒i𝜇 = 𝛼 + 𝑞𝑝 𝛽 𝛼 − 𝑝𝑞 𝛽
+|
+| |
+|
+|𝛼 + 𝑞 𝛽 | = |𝛼 − 𝑝 𝛽 | = 1
+|
+|
+|
+𝑝 | |
+𝑞 ||
+|
+is equivalent to
+
+𝛼 𝛼 𝑝 𝑞
++ = − .
+𝛽 𝛽
+𝑞 𝑝
+
+The results in [5] and Section 5 of [6] are restricted to fractional revival between
+strongly cospectral vertices. We are now ready to extend them to the general case.
+By Corollary 6.7, there exist a square-free integer Δ and reals 𝜌1 , 𝜌2 such that
+√
+𝜃ℎ = 𝜌1 + 𝜎ℎ Δ, for ℎ ∈ 𝐶1 , and
+√
+𝜃𝑗 = 𝜌2 + 𝜔𝑗 Δ, for 𝑗 ∈ 𝐶2 ,
+where 𝜎ℎ ’s and 𝜔𝑗 ’s are reals satisfying
+𝜎ℎ − 𝜎ℎ′ =
+
+𝜃𝑗 − 𝜃𝑗 ′
+𝜃ℎ − 𝜃ℎ′
+∈ ℤ and 𝜔𝑗 − 𝜔𝑗 ′ = √
+∈ ℤ,
+√
+Δ
+Δ
+
+for all ℎ, ℎ′ ∈ 𝐶1 and 𝑗, 𝑗 ′ ∈ 𝐶2 .
+Let
+{
+𝜃𝑟 − 𝜃𝑠
+𝑔 = gcd
+∶ 𝑟, 𝑠 ∈ 𝐶1
+√
+Δ
+
+}
+or 𝑟, 𝑠 ∈ 𝐶2
+
+.
+
+Then, for ℎ, ℎ′ ∈ 𝐶1 and 𝑗, 𝑗 ′ ∈ 𝐶2 ,
+𝜏(𝜃ℎ − 𝜃ℎ′ ) = 𝜏(𝜃𝑗 − 𝜃𝑗 ′ ) = 0 (mod 2𝜋)
+
+(13)
+
+if and only if
+2𝜋𝑘
+𝜏= √ ,
+𝑔 Δ
+
+for some integer 𝑘.
+
+Hence the only times fractional revival between 𝑎 and 𝑏 can occur are some integer
+√ .
+multiples of 2𝜋
+𝑔 Δ
+
+Proposition 10.1. Let 𝑎 and 𝑏 be strongly fractionally cospectral vertices in a
+connected graph 𝑋 with integer weights. Let 𝑔, Δ, 𝜌𝑖 ’s, 𝐶𝑖 ’s, 𝜎ℎ ’s and 𝜔𝑗 ’s be
+30
+
+√
+defined above. Proper fractional revival between 𝑎 and 𝑏 occurs at time 𝜏 = 2𝜋𝑘
+𝑔 Δ
+if and only if there exist ℎ ∈ 𝐶1 and 𝑗 ∈ 𝐶2 such that
+(
+√ )
+𝑘
+√ 𝜌2 − 𝜌1 + (𝜔𝑗 − 𝜎ℎ ) Δ ∉ ℤ.
+𝑔 Δ
+
+Proof. It follows from Equation (13) that, for all ℎ, ℎ′ ∈ 𝐶1 and 𝑗, 𝑗 ′ ∈ 𝐶2
+′
+
+𝑒−i𝜏ℎ = 𝑒−i𝜏ℎ
+
+′
+
+and 𝑒−i𝜏𝑗 = 𝑒−i𝜏𝑗 .
+
+Equation (12) holds if and only if
+𝛼=
+
+𝑒−i𝜏𝜃ℎ + 𝑒−i𝜏𝜃𝑗
+2
+
+and 𝛽 =
+
+𝑞 (𝑒−i𝜏𝜃ℎ − 𝑒−i𝜏𝜃𝑗 )
+,
+𝑝
+2
+
+for some ℎ ∈ 𝐶1 and 𝑗 ∈ 𝐶2 . Then 𝛽 ≠ 0 if and only if 𝑒i𝜏(𝜃𝑗 −𝜃ℎ ) ≠ 1. The latter
+holds if and only if
+(
+√ )
+𝑘
+Δ ∉ ℤ.
+𝜌
+−
+𝜌
++
+(𝜔
+−
+𝜎
+)
+√
+2
+1
+𝑗
+ℎ
+𝑔 Δ
+In this case, we have 𝑈 (𝜏)𝑒𝑎 = 𝛼𝑒𝑎 + 𝛽𝑒𝑏 with 𝛽 ≠ 0.
+Theorem 10.2. Let 𝑋 be a connected graph with integer weights and 𝑎, 𝑏 ∈ 𝑉 (𝑋).
+Proper fractional revival between 𝑎 and 𝑏 occurs in 𝑋 if and only if the following
+conditions hold.
+i. 𝑎 and 𝑏 are strongly fractionally cospectral vertices with 𝐶1 and 𝐶2 defined as
+above.
+ii. There exist a square-free integer Δ and real numbers 𝜌1 , 𝜌2 such that
+√
+𝜃ℎ = 𝜌1 + 𝜎ℎ Δ, for ℎ ∈ 𝐶1 , and
+√
+𝜃𝑗 = 𝜌2 + 𝜔𝑗 Δ, for 𝑗 ∈ 𝐶2 ,
+where 𝜎ℎ ’s and 𝜔𝑗 ’s are real numbers satisfying
+𝜎ℎ − 𝜎ℎ′ ∈ ℤ and 𝜔𝑗 − 𝜔𝑗 ′ ∈ ℤ,
+for all ℎ, ℎ′ ∈ 𝐶1 and 𝑗, 𝑗 ′ ∈ 𝐶2 .
+31
+
+𝜃 −𝜃
+
+𝑟
+𝑠
+iii. Let 𝑔 = gcd{ √
+∶ 𝑟, 𝑠 ∈ 𝐶1 or 𝑟, 𝑠 ∈ 𝐶2 }. There exist ℎ ∈ 𝐶1 and
+Δ
+𝑗 ∈ 𝐶2 such that
+(
+√ )
+𝑘
+√ 𝜌2 − 𝜌1 + (𝜔𝑗 − 𝜎ℎ ) Δ ∉ ℤ.
+𝑔 Δ
+
+√ is the minimum time proper fractional
+Moreover, if these conditions hold, 2𝜋
+𝑔 Δ
+revival between 𝑎 and 𝑏 occurs in 𝑋.
+
+11 Polygamy
+Perfect state transfer has the monogamous property in that a vertex cannot have
+perfect state transfer to two distinct vertices. In [6], the question of whether fractional revival exhibits the same monogamous property is raised. We answer this
+question in the negative by constructing weighted graphs that have fractional revival between every pair of vertices.
+We start with a normalized Hadamard matrix 𝐻 of order 𝑛, for some 𝑛 ≥ 4.
+We ﬁrst construct the Laplacian matrix of a connected weighted graph that has
+fractional revival from 𝑣0 to 𝑣𝑘 , for 𝑘 = 1, … , 𝑛 − 1. Let 𝑝1 , … , 𝑝𝑛−1 be distinct
+odd primes. For 𝑟 = 1, … , 𝑛 − 1, we use Chinese remainder theorem to ﬁnd the
+unique solution, 𝜆𝑟 , in [0, Π𝑛−1
+𝑝 ] for the following system of equations.
+𝑗=1 𝑗
+⎧𝑥 =
+⎪
+⎪𝑥 =
+⎨
+⎪⋮
+⎪𝑥 =
+⎩
+
+(1 − 𝐻1,𝑟 )∕2 (mod 𝑝1 )
+(1 − 𝐻2,𝑟 )∕2 (mod 𝑝2 )
+⋮
+(1 − 𝐻𝑛−1,𝑟 )∕2 (mod 𝑝𝑛−1 )
+
+(14)
+
+Let 𝜆0 = 0. For 𝑟 = 0, 1, … , 𝑛 − 1, let 𝑆𝑟 = {𝑗 ∶ 𝐻𝑗,𝑟 = 1}. Then
+𝜆𝑟 = 0 (mod Π𝑗∈𝑆𝑟 𝑝𝑗 )
+
+and 𝜆𝑟 = 1 (mod Πℎ∉𝑆𝑟 𝑝ℎ ).
+
+Since the columns of 𝐻 are distinct, so are the sets 𝑆0 , … , 𝑆𝑛−1. We conclude that
+𝜆0 , 𝜆1 , … , 𝜆𝑛−1 are distinct integers.
+Deﬁne 𝐷 to be the 𝑛×𝑛 diagonal matrix where 𝐷𝑟,𝑟 = 𝜆𝑟 , for 𝑟 = 0, 1, … , 𝑛−1,
+and
+1
+𝐿 = 𝐻𝐷𝐻 𝑇 .
+𝑛
+32
+
+Then 𝐿 is the Laplacian matrix of a Hadamard diagonalizable graph with 𝑛 distinct
+eigenvalues. Hence the principal idempotents of 𝐿 are
+1
+𝐸𝑟 = (𝐻𝑒𝑟 )(𝐻𝑒𝑟 )𝑇 ,
+𝑛
+and
+−i𝑡𝐿
+
+𝑈 (𝑡) = 𝑒
+
+=
+
+for 𝑟 = 0, … , 𝑛,
+𝑛−1
+∑
+
+𝑒−𝑖𝑡𝜆𝑟 𝐸𝑟 .
+
+𝑟=0
+
+As 𝐻 is normalized, 𝐸𝑟 𝑒0 = 1𝑛 𝐻𝑒𝑟 , and
+1
+𝑈 (𝑡)𝑒0 = 𝐻
+𝑛
+
+( 𝑛−1
+∑
+
+𝑈(
+
+𝑒−𝑖𝑡𝜆𝑟 𝑒𝑟
+
+.
+
+𝑟=0
+
+It follows from Equations (14) that
+{
+2𝜋𝜆
+1
+− 𝑝 𝑟i
+𝑒 𝑘 =
+− 2𝜋 i
+𝑒 𝑝𝑘
+Thus
+
+)
+
+if 𝐻𝑘,𝑟 = 1,
+if 𝐻𝑘,𝑟 = −1.
+
+(
+)
+− 2𝜋 i 1
+1
+1
+2𝜋
+)𝑒0 =
+𝐻 (1) (𝐻 𝑇 𝑒0 + 𝐻 𝑇 𝑒𝑘 ) + (𝑒 𝑝𝑘 ) (𝐻 𝑇 𝑒0 − 𝐻 𝑇 𝑒𝑘 )
+𝑝𝑘
+𝑛
+2
+2
+(
+(
+2𝜋 )
+2𝜋 )
+− i
+− i
+1
+1
+=
+1 + 𝑒 𝑝𝑘 𝑒0 +
+1 − 𝑒 𝑝𝑘 𝑒𝑘
+2
+2
+
+, for 𝑘 =
+and fractional revival occurs from vertex 𝑣0 to vertex 𝑣𝑘 at time 2𝜋
+𝑝𝑘
+1, … , 𝑝𝑛−1.
+When 𝐻 is the character table of ℤ𝑚2 , that is,
+[
+]⊗𝑚
+1 1
+𝐻=
+,
+1 −1
+𝐿 is the Laplacian matrix of a cubelike graph with vertex set ℤ𝑚2 . As a cubelike
+graph is vertex transitive, fractional revival occurs between any pair of vertices
+having the same diﬀerence as 𝑣0 − 𝑣𝑘 at time 2𝜋
+.
+𝑝𝑘
+It follows from Theorem 5 of [1] that 𝑋 is regular if its Laplacian matrix is
+diagonalizable by a Hadamard matrix. We conclude that the adjacency matrix of
+the cubelike graph constructed above also admits fractional revival between every
+pair of vertices.
+The outstanding question here is whether there exists a simple graph in which
+fractional revival is polygamous.
+33
+
+Example 11.1. Let
+1
+1⎤
+[
+]⊗2 ⎡1 1
+⎢1 −1 1 −1⎥
+1 1
+.
+𝐻=
+=⎢
+1 −1
+1 1 −1 −1⎥
+⎥
+⎢
+⎣1 −1 −1 1 ⎦
+The rows and columns of 𝐻 are indexed by vertices 𝑣0 = (0, 0), 𝑣1 = (1, 0),
+𝑣2 = (0, 1) and 𝑣3 = (1, 1), which are elements of ℤ22 .
+Let 𝑝1 = 3, 𝑝2 = 5, and 𝑝3 = 7. Solving Equations (14) gives 𝜆1 = 85, 𝜆2 = 36,
+𝜆3 = 91. Let
+−35 −10.5 −7.5 ⎤
+⎡ 53
+⎡0 0 0 0 ⎤
+⎢
+⎥
+⎢
+−35
+53
+−7.5 −10.5⎥
+0 85 0 0
+1
+.
+𝐻𝑇 = ⎢
+𝐿= 𝐻⎢
+⎥
+−10.5 −7.5
+53
+−35 ⎥
+4 ⎢0 0 36 0 ⎥
+⎥
+⎢
+⎣ −7.5 −10.5 −35
+⎣0 0 0 91⎦
+53 ⎦
+Then
+
+2𝜋
+
+2𝜋
+
+⎤
+⎡1 + 𝑒− 3 i 1 − 𝑒− 3 i
+0
+0
+2𝜋
+⎥
+⎢
+− 2𝜋
+i
+−
+i
+0
+0
+2𝜋
+1 ⎢1 − 𝑒 3 1 + 𝑒 3
+⎥,
+𝑈( ) =
+2𝜋
+2𝜋
+3
+2⎢
+0
+0
+1 + 𝑒− 3 i 1 − 𝑒− 3 i ⎥
+2𝜋
+⎢
+2𝜋 ⎥
+⎣
+0
+0
+1 − 𝑒− 3 i 1 + 𝑒− 3 i ⎦
+2𝜋
+
+2𝜋
+
+⎤
+⎡1 + 𝑒− 5 i
+0
+1 − 𝑒− 5 i
+0
+2𝜋
+⎥
+⎢
+−5i
+− 2𝜋
+i
+0
+1+𝑒
+0
+1−𝑒 5 ⎥
+2𝜋
+1
+𝑈( ) = ⎢
+,
+2𝜋
+2𝜋
+⎥
+5
+2 ⎢1 − 𝑒− 5 i
+0
+1 + 𝑒− 5 i
+0
+2𝜋
+2𝜋 ⎥
+⎢
+⎣
+0
+1 − 𝑒− 5 i
+0
+1 + 𝑒− 5 i ⎦
+and
+
+2𝜋
+
+2𝜋
+
+⎡1 + 𝑒− 7 i
+0
+0
+1 − 𝑒− 7 i ⎤
+2𝜋
+2𝜋
+⎥
+⎢
+0
+0
+1 + 𝑒− 7 i 1 − 𝑒− 7 i
+1⎢
+2𝜋
+⎥.
+𝑈( ) =
+− 2𝜋
+i
+− 2𝜋
+i
+⎥
+7
+2⎢
+7
+7
+0
+1−𝑒
+1+𝑒
+0
+2𝜋
+2𝜋 ⎥
+⎢
+⎣1 − 𝑒− 7 i
+0
+0
+1 + 𝑒− 7 i ⎦
+
+We see that fractional revival occurs between every pair of vertices.
+
+34
+
+12 Prescribed fractional revival
+We are now ready to construct a weighted graph 𝑋 on 𝑛 ≥ 4 vertices that has
+(proper) fractional revival between 𝑎 and 𝑏 at a given time 𝜏 = 2𝜋𝜉 and
+̃
+𝑈
+(𝜏) = 𝐻,
+for any given 2 × 2 non-diagonal symmetry unitary matrix 𝐻.
+Suppose 𝐻 has the spectral decomposition
+[ ]
+[ ]
+]
+]
+−𝑞 [
+𝑝 [
+−𝑞 𝑝 ,
+𝑝 𝑞 + 𝜆2
+𝐻 = 𝜆1
+𝑝
+𝑞
+for some non-zero real numbers 𝑝 and 𝑞 satisfying 𝑝2 + 𝑞 2 = 1, and for some
+distinct 𝜆1 , 𝜆2 ∈ ℂ.
+We ﬁrst choose the eigenvalues of 𝐴. Let 𝜃1 and 𝜃3 be real numbers satisfying
+𝑒−i𝜏𝜃1 = 𝜆1
+
+and
+
+𝑒−i𝜏𝜃3 = 𝜆2 .
+
+Then we pick non-zero integers 𝜎 and 𝜔 to deﬁne
+𝜃2 = 𝜃1 +
+
+𝜎
+𝜉
+
+and
+
+𝜃4 = 𝜃3 +
+
+𝜔
+𝜉
+
+(15)
+
+so that 𝜃1 , 𝜃2 , 𝜃3 , and 𝜃4 are all distinct. Finally, pick any 𝜃5 , … , 𝜃𝑛 ∈ ℝ that are
+distinct from 𝜃1 , … , 𝜃4.
+We now choose an orthonormal basis of real eigenvectors for 𝐴. Let 𝑢1 , … , 𝑢𝑛−2
+be an orthonormal basis of real vectors in ℂ𝑛−2 . Deﬁne the 𝑛 × 𝑛 orthogonal matrix
+𝑝
+
+⎡ √2
+⎢ 𝑞
+𝑃 = ⎢ √2
+⎢ √1 𝑢
+1
+⎣
+2
+
+−𝑝
+√
+2
+−𝑞
+√
+2
+1
+√ 𝑢1
+2
+
+−𝑞
+√
+2
+𝑝
+√
+2
+1
+√ 𝑢2
+2
+
+𝑞
+√
+
+2
+−𝑝
+√
+2
+1
+√ 𝑢2
+2
+
+0
+
+0
+
+0
+
+0
+
+𝑢3 𝑢4
+
+0 ⎤
+… 0 ⎥⎥ .
+… 𝑢𝑛−2 ⎥⎦
+…
+
+We deﬁne the adjacency matrix of 𝐴 to be
+𝐴 = 𝑃 𝐷𝑃 𝑇 ,
+where 𝐷 is the diagonal matrix with 𝐷𝑗,𝑗 = 𝜃𝑗 , for 𝑗 = 1, … , 𝑛.
+For 𝑗 = 1, … , 4, 𝜃𝑗 is distinct from all other eigenvalues of 𝐴, so
+𝐸𝑗 = 𝑃 𝑒𝑗 (𝑃 𝑒𝑗 )𝑇
+35
+
+{𝑎,𝑏}
+is a principal idempotent of 𝐴. It is straightforward to show that in 𝑃𝑚𝑖𝑛
+
+𝐶1 = {1, 2} and
+
+𝐶2 = {3, 4}.
+
+We see that Condition (ii) in Corollary 9.3 holds, and conclude that 𝑎 and 𝑏 are
+𝐾
+strongly fractionally cospectral in 𝑋. The ratio conditions with respect to 𝑃𝑚𝑖𝑛
+follows from Equation (15). By Theorem 5.5, 𝑋 admits proper fractional revival
+from 𝑎 to 𝑏 in 𝑋. Moreover
+[ 2
+]
+[ 2
+]
+𝑞
+−𝑝𝑞
+𝑝
+𝑝𝑞
+−i𝜏𝜃
+−i𝜏𝜃
+̃
+=𝐻
++𝑒 3
+𝑈
+(𝜏) = 𝑒 1
+−𝑝𝑞 𝑝2
+𝑝𝑞 𝑞 2
+and
+
+]
+[
+𝐻 𝟎
+,
+𝑈 (𝜏) =
+𝟎 𝐻′
+
+for some (𝑛 − 2) × (𝑛 − 2) matrix 𝐻 ′ .
+Example 12.1. We pick 𝜃1 , … , 𝜃4 as deﬁned above such that none of them is zero.
+Let 𝜃5 = … = 𝜃𝑛 = 0. For some 1 < 𝑚 < 𝑛 − 3, let
+]
+[
+]
+[
+1
+𝟎𝑚
+√ 𝟏𝑚
+𝑚
+𝑢1 =
+and 𝑢2 = √ 1 𝟏
+𝑛−2−𝑚
+𝟎
+𝑛−2−𝑚
+
+𝑛−2−𝑚
+
+and extend from {𝑢1 , 𝑢2 } to an orthonormal basis {𝑢1 , … , 𝑢𝑛−2} in ℂ𝑛−2 . Following
+the above construction, the graph 𝑋 with adjacency matrix
+⎡ (𝜃1 +𝜃2 )𝑝2 +(𝜃3 +𝜃4 )𝑞2
+2
+⎢
+⎢ (𝜃1 +𝜃2 −𝜃3 −𝜃4 )𝑝𝑞
+𝐴 = ⎢ 𝑝(𝜃 −𝜃2 )
+1
+2
+⎢
+√
+𝟏
+⎢ −𝑞(𝜃 2−𝜃 𝑚) 𝑚
+⎢ √ 3 4 𝟏𝑛−2−𝑚
+⎣ 2 𝑛−2−𝑚
+
+(𝜃1 +𝜃2 −𝜃3 −𝜃4 )𝑝𝑞
+2
+(𝜃1 +𝜃2 )𝑞 2 +(𝜃3 +𝜃4 )𝑝2
+2
+𝑞(𝜃1 −𝜃2 )
+√
+𝟏𝑚
+2 𝑚
+𝑝(𝜃3 −𝜃4 )
+√
+𝟏
+2 𝑛−2−𝑚 𝑛−2−𝑚
+
+𝑝(𝜃1 −𝜃2 ) 𝑇
+√
+𝟏𝑚
+2 𝑚
+𝑞(𝜃1 −𝜃2 ) 𝑇
+√
+𝟏𝑚
+2 𝑚
+𝜃1 +𝜃2
+𝐽𝑚
+2𝑚
+
+𝟎
+
+−𝑞(𝜃3 −𝜃4 ) 𝑇
+⎤
+√
+𝟏
+2 𝑛−2−𝑚 𝑛−2−𝑚 ⎥
+𝑝(𝜃3 −𝜃4 ) 𝑇
+⎥
+√
+𝟏
+2 𝑛−2−𝑚 𝑛−2−𝑚 ⎥
+
+⎥
+⎥
+𝜃3 +𝜃4
+⎥
+𝐽
+2(𝑛−2−𝑚) 𝑛−2−𝑚 ⎦
+𝟎
+
+̃
+has fractional revival between 𝑎 and 𝑏 at time 𝜏 with 𝑈
+(𝜏) = 𝐻.
+
+𝐾𝑚
+
+𝑎
+
+𝑏
+
+⋯⋯
+
+⋯⋯
+
+The underlying graph of 𝑋 in Example 12.1
+
+36
+
+𝐾𝑛−2−𝑚
+
+This method can be extended to 𝐾-fractional revival for |𝐾| ≥ 2. Given a
+time 𝜏 and a |𝐾| × |𝐾| non-diagonal symmetric unitary matrix 𝐻, we can always
+construct a weighted graph 𝑋 to have proper 𝐾-fractional revival at 𝜏 with the
+prescribed matrix 𝐻. It is only when we wish to impose additional structure on
+𝐴, such as having integer weights or being sparse, that diﬃculty arises.
+Acknowledgements G.L. was supported by NSF/DMS-1800738 and the Simons
+Foundation Collaboration Grant. O.E was supported by the Herchel Smith Harvard
+Undergraduate Research Program.
+We all acknowledge the support of Chris Godsil’s NSERC Accelerator Grant
+that funded the workshop Algebraic Graph Theory and Quantum Walks, where we
+all started to work on this project.
+
+References
+[1] S. Barik, S. Fallat, and S. Kirkland. On Hadamard diagonalizable graphs.
+Linear Algebra Appl., 435(8):1885–1902, 2011.
+[2] Pierre-Antoine Bernard, Ada Chan, Érika Loranger, Christino Tamon, and
+Luc Vinet. A graph with fractional revival. Physics Letters A, 382(5):259–
+264, 2018.
+[3] Sougato Bose. Quantum communication through an unmodulated spin chain.
+Physical Review Letters, 91(20):207901, Nov 2003.
+[4] Andries E. Brouwer and Willem H. Haemers. Spectra of Graphs. Universitext. Springer, New York, 2012.
+[5] Ada Chan, Gabriel Coutinho, Christino Tamon, Luc Vinet, and Hanmeng Zhan.
+Fractional revival and association schemes, July 2019.
+arXiv:1907.04729.
+[6] Ada Chan, Gabriel Coutinho, Christino Tamon, Luc Vinet, and Hanmeng
+Zhan. Quantum fractional revival on graphs. Discrete Appl. Math., 269:86–
+98, 2019.
+[7] Bing Chen, Z Song, and CP Sun. Fractional revivals of the quantum state in
+a tight-binding chain. Physical Review A, 75(1):012113, 2007.
+
+37
+
+[8] Matthias Christandl, Nilanjana Datta, Tony C Dorlas, Artur Ekert, Alastair
+Kay, and Andrew J Landahl. Perfect transfer of arbitrary states in quantum
+spin networks. Physical Review A, 71(3):32312, 2005.
+[9] Matthias Christandl, Nilanjana Datta, Artur Ekert, and Andrew J Landahl.
+Perfect state transfer in quantum spin networks. Physical Review Letters,
+92(18):187902, 2004.
+[10] Matthias Christandl, Luc Vinet, and Alexei Zhedanov. Analytic next-tonearest-neighbor XX models with perfect state transfer and fractional revival.
+Physical Review A, 96(3):032335, 2017.
+[11] Gabriel Coutinho and Chris D Godsil. Perfect state transfer in products and
+covers of graphs. Linear and Multilinear Algebra, 64(2):235–246, Apr. 2015.
+[12] Vincent X. Genest, Luc Vinet, and Alexei Zhedanov. Exact fractional revival
+in spin chains. Modern Phys. Lett. B, 30(26):1650315, 7, 2016.
+[13] Vincent X. Genest, Luc Vinet, and Alexei Zhedanov. Quantum spin chains
+with fractional revival. Annals of Physics, 371:348–367, aug 2016.
+[14] C. D. Godsil. Algebraic Combinatorics. Chapman and Hall Mathematics
+Series. Chapman & Hall, New York, 1993.
+[15] Chris Godsil. Real state transfer, Oct. 2017. arXiv:1710.04042.
+[16] Chris Godsil and Jamie Smith. Strongly cospectral vertices, Sept. 2017.
+arXiv:1709.07975.
+[17] Chris D Godsil. State transfer on graphs. Discrete Mathematics, 312(1):129–
+147, 2012.
+[18] Alastair Kay. Perfect, eﬃcient, state transfer and its application as a constructive tool. International Journal of Quantum Information, 8(04):641–676,
+2010.
+[19] Alastair Kay. Basics of perfect communication through quantum networks.
+Physical Review A, 84(2), 2011.
+[20] Mikhail Klin and Christian Pech. A new construction of antipodal distance
+regular covers of complete graphs through the use of Godsil-Hensel matrices.
+Ars Math. Contemp., 4(2):205–243, 2011.
+38
+
+

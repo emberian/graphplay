@@ -1,0 +1,1295 @@
+THE STRENGTH OF WEAK COUPLING
+
+arXiv:2512.08141v1 [quant-ph] 9 Dec 2025
+
+ALASTAIR KAY AND CHRISTINO TAMON
+
+Abstract. A paradoxical idea in quantum transport is that attaching weakly-coupled edges to a
+large base graph creates high-fidelity quantum state transfer. We provide a mathematical treatment
+that rigorously prove this folklore idea. Our proofs are elementary and build upon the FeshbachSchur method from perturbation theory. We also show the idea is effective in circumventing Anderson localization in spin chains and finding speedups in hitting times useful for quantum search.
+
+1. Introduction
+A continuous-time quantum walk on a graph G is a time-varying unitary matrix U (t) = exp(−itA)
+where A is the adjacency matrix of G. This framework is useful for developing quantum algorithms (see [16, 17]), which had culminated in a quantum walk algorithm with provable exponential
+speedup [9] (a guarantee missing in both Shor factoring and Grover search).
+For two vertices a, b of G with characteristic vectors ea , eb , let their fidelity function be fa,b (t) =
+|⟨eb , U (t)ea ⟩|. By Born’s rule, the probability of measuring b at time t given that the quantum walk
+starts at a is fa,b (t)2 . We say G has pretty good state transfer (PGST) from a to b if for any ϵ > 0
+there exists a time t0 so that fa,b (t0 ) ≥ 1 − ϵ (see [18, 36]); it is called perfect state transfer (PST)
+if ϵ = 0 is realizable. Quantum state transfer is fundamental to quantum communication as it can
+be used as a building block for protocols such as entanglement generation and state preparation
+(see [11, 12, 1, 21, 23]).
+Although PST/PGST are useful abstractions, there are several important obstacles in developing state transfer in practice. Arguably, PST is impossible to realize in real-world applications.
+Recently, due to experimental challenges in realistic scenarios, a stronger emphasis has been placed
+on high-fidelity state transfer (HFST) (see [8, 29, 30, 37, 14]). Here, for a small but fixed ϵ0 > 0,
+we ask for an efficient time t0 for which fa,b (t0 ) ≥ 1 − ϵ0 . This differs markedly from PGST as ϵ0 is
+not required to be arbitrarily close to 0 and time t0 must be a polynomial function in the relevant
+parameters (such as graph size or diameter or transfer distance). Here, the emphasis is on transfer
+time which is neither nondeterministic nor astronomical.
+We explore a paradoxical idea (called T.rex ) which attaches weakly-coupled pendant edges (or
+tiny arms) to a base graph (large body). This idea was studied by Wójcik et al. (see [38, 39]). Here,
+we describe a mathematical treatment of this idea using the Feshbach-Schur method in perturbation
+theory (see [22, 19]). Within this framework, we rigorously prove that high-fidelity quantum state
+transfer occurs. The advantage of using the Feshbach-Schur method is that it is elementary and it
+insulates asymptotic arguments (the bane of perturbation theory). We also prove that the transfer
+time of the T.rex scheme does not depend on the diameter. In contrast, methods based on strong
+potentials exhibit exponential scaling with the diameter (see [29, 30]).
+Another formidable obstacle for state transfer is Anderson localization (see [4, 26, 33]). By
+definition, localization is the absence of transport across a spin chain due to random diagonal
+perturbations. We show how the T.rex idea overcomes this obstacle by constructing a robust state
+transfer protocol which has high fidelity. Our protocol exploits nonsingularities of the underlying
+spin chains in a direct way along with the use of a few clean qubits.
+Date: December 10, 2025.
+1
+
+We also apply the T.rex idea to hitting times on graphs with consequences to quantum search.
+For the latter, we reimagine the vertex-located oracle (see [16]) as a pendant edge oracle. The
+search algorithm simply “pitches” a random pendant edge onto the graph and apply the T.rex walk.
+This reduces quantum search, viewed as reverse mixing, to a quantum hitting process (which is a
+standard technique in Markov chain theory [28]).
+As concluding remarks, the T.rex idea had already found two unexpected applications elsewhere:
+a simple matrix inversion quantum algorithm [25] and an optimal perfect state transfer protocol
+robust against timing sensitivities [24]. We anticipate further uses of the T.rex idea which we leave
+to future treks.
+2. Preliminaries
+We review notation and terminology used in this work. Let Matn (R) be the set of all n × n real
+matrices. We use 1n and Jn to denote the identity and all-one matrices of order n, respectively; we
+omit the subscript, whenever the dimensions are clear from context. The spectrum of A ∈ Matn (R)
+is denoted σ(A). In most cases, we will restrict ourselves to symmetric matrices, whose spectrum
+exists and whose eigenvalues are real.
+For an invertible matrix A ∈ Matn (R) with λmax (A) = max{|λ| : λ ∈ σ(A)} and λmin (A) =
+min{|λ| : λ ∈ σ(A)}, the condition number of A is defined as
+κ(A) = ∥A∥ A−1 =
+
+λmax (A)
+λmin (A)
+
+where ∥A∥ is the spectral norm of A (see [20], page 385). We shall assume ∥A∥ is bounded.
+For a matrix A ∈ Matn (R), the resolvent of A is given by
+R(ζ, A) = (ζ1 − A)−1 .
+
+(1)
+
+Its resolvent set ρ(A) is the set of all values ζ ∈ C for which ζ1 − A is invertible (and bounded);
+note that σ(A) = C \ ρ(A). We state two useful identities involving the resolvent.
+Lemma 2.1. (Teschl [35]) For matrices A, B ∈ Matn (R) and for ζ, µ ∈ C, we have
+R(ζ, A) − R(µ, A) = (µ − ζ)R(ζ, A)R(µ, A),
+
+ζ, µ ∈ ρ(A)
+
+(2)
+
+R(ζ, A) − R(ζ, B) = R(ζ, A)(A − B)R(ζ, B),
+
+ζ ∈ ρ(A) ∩ ρ(B).
+
+(3)
+
+For z ∈ C and a subset S ⊂ C, the distance of z to S is defined as d(z, S) = inf{|z − a| : a ∈ S}.
+Lemma 2.2. For a matrix A ∈ Matn (R) and a scalar ζ ̸∈ σ(A), we have ∥R(ζ, A)∥ = 1/d(ζ, σ(A)).
+Proof. Note (ζ1 − A)−1 = sup{|ζ − λ|−1 : λ ∈ σ(A)}. The latter equals to 1/ inf{|ζ − λ| : λ ∈
+σ(A)}, proving the claim.
+□
+For simplicity, we sometimes identify a projection operator P with its range Ran(P ).
+3. The Feshbach-Schur method
+Let H ∈ Matn (R) be a symmetric matrix and let P0 , P1 be a pair of orthogonal projections
+satisfying P0 + P1 = I. Clearly, H admits a block decomposition given by
+H = (P0 + P1 )H(P0 + P1 ) = P0 HP0 + P0 HP1 + P1 HP0 + P1 HP1 .
+Notation: Let Hj,k = Pj HPk , for j, k = 0, 1, denote the projected operators (acting on the full
+space). On the other hand, we let HPj denote Pj HPj when restricted to Ran(Pj ).
+To motivate the ensuing discussion, suppose we wish to solve the eigenvalue-eigenvector equation
+given by
+
+ 
+ 
+A0 A1
+ψ0
+ψ0
+=λ
+.
+(4)
+A2 A3
+ψ1
+ψ1
+2
+
+This implies
+A0 ψ0 + A1 ψ1 = λψ0
+A2 ψ0 + A3 ψ1 = λψ1 .
+The second equation yields
+ψ1 = (λ1 − A3 )−1 A2 ψ0
+
+(5)
+
+which we can substitute into the first to obtain
+
+A0 + A1 (λ1 − A3 )−1 A2 ψ0 = λψ0 .
+Notice this is related to Schur complementation.
+Based on these ideas, if we let
+F (λ) = [H + HP1 (λ1 − HP1 )−1 P1 H]P0 ,
+
+(6)
+
+we may reduce the eigenvalue-eigenvector problem Hψ = λψ to a fixed-point equation
+F (λ)ψ = λψ
+
+(7)
+
+provided λ1 − HP1 is invertible in Ran(P1 ). Solving for λ and ψ in Eq. (7), the resulting eigenvector
+of H is
+Ψ = Q(λ)ψ
+where
+Q(λ) = P0 + P1 (λ1 − HP1 )−1 P1 HP0 .
+From the notation, it will be clear from context whether the operator acts on the full or projected
+spaces.
+This reduction of the eigenvalue problem of H in Eq. (4) to a nonlinear problem involving F (λ)
+in Eq. (7) is known as the Feshbach-Schur method (see [15, 19, 34]).
+3.1. The T.rex Cometh. We focus on linear perturbation theory (see [22], page 72) where
+where δκ ≪ 1.
+
+H = H0 + δW,
+
+Here κ will be the condition number of the relevant base graph (see below). Let λ0 be an eigenvalue
+of H0 of multiplicity d, for d ≥ 2. Let P0 be the projection onto N0 = Null(λ0 1−H0 ) and P1 = 1−P0
+be the projection onto the orthogonal complement N0⊥ .
+The map F (λ) of H relative to P0 is defined as
+F (λ) := λ0 1 + δWP0 + δ 2 W01 (λ1 − HP1 )−1 W10 ,
+
+(8)
+
+under the assumption that λ1 − HP1 is invertible in Ran(P1 ).
+Theorem 3.1. (Gustafson-Sigal [19] and Dusson et al. [15])
+The map F (λ) satisfies
+HΨ = λΨ if and only if F (λ)ψ = λψ,
+
+for ψ ∈ Ran(P0 )
+
+(9)
+
+where vectors ψ and Ψ are related through
+Ψ = Q(λ)ψ
+
+and
+
+ψ = P0 Ψ
+
+(10)
+
+with
+Q(λ) = P0 + δP1 (λ1 − HP1 )−1 W10 .
+
+(11)
+
+Thus, Ψ = ψ + ψ ⊥ , for orthogonal ψ and ψ ⊥ , where
+ψ ⊥ = δP1 (λ1 − HP1 )−1 P1 W ψ
+3
+
+(12)
+
+Suppose ζk ∈ R and ψk ∈ Cn are fixed-point solutions of Eq. (9):
+F (ζk )ψk = ζk ψk ,
+
+for k = 1, . . . , d.
+
+Assumption A: The scalars ζk are distinct. In the parlance of perturbation theory, the degeneracy
+of λ0 is fully resolved.
+By Theorem 3.1, each ζk is an eigenvalue of H with eigenvector
+Ψk = ψk + ψk⊥ ,
+
+where ψk⊥ = δP1 R(ζk , (H11 )P1 )P1 W ψk .
+
+Lemma 3.2. (Gustafson and Sigal [19], page 138)
+Let λ be a fixed-point solution of F (λ). Then,
+λ = λ0 + δµ(δ) + O(δ 3 ),
+where µ(δ) ∈ σ(M ) with
+M = WP0 + δ[W01 R(λ0 , (H11 )P1 )W10 ]P0 .
+Theorem 3.2 can be applied to a more general setting than what is considered here (see [19] for
+further details).
+Assumption B: We make the following additional assumptions:
+(i) W acts trivially in the P0 and P1 subspaces.
+That is, W00 = W11 = 0. In effect, W connects the subspaces P0 and P1 .
+(ii) λ0 = 0.
+If not, we may always take the diagonal shift H0 − λ0 I.
+(iii) (H0 )P1 is (sufficiently) nonsingular or has good condition number.
+This implies that for a (small enough) κ, we have
+d(0, σ((H0 )P1 )) ≥ 1/κ.
+
+(13)
+
+But, in some cases, we can remove this assumption (see Section 5.1).
+Using the third assumption, by Theorem 2.2, we have
+∥R(0, (H0 )P1 )∥ ≤ κ.
+From Theorem 3.2, we have µ(δ) ≤ δκ which implies
+|λ| = O(δ 2 κ).
+
+(14)
+
+d(λ, σ((H0 )P1 )) ≥ d(0, σ((H0 )P1 )) − |λ|
+
+(15)
+
+Furthermore,
+≥ 1/κ − O(δ 2 κ).
+
+(16)
+
+d(λ, σ((H0 )P1 )) = Ω(1/κ).
+
+(17)
+
+As δκ ≪ 1, we see that
+3.2. Effective Hamiltonian. In what follows, let ε := δκ. To track our quantum walk within the
+subspace P0 , we use the effective Hamiltonian (defined below) which we will derive from the (full)
+perturbed Hamiltonian H.
+Assume that the spectral decomposition of H is given by
+H=
+
+d
+X
+
+ζk Ψ†k Ψk +
+
+k=1
+
+X
+
+θQθ
+
+θ
+
+where ζk are the d distinct eigenvalues (split off from the eigenvalue λ0 by perturbation) and θ
+represent the other eigenvalues (with eigenprojectors Qθ ). Furthermore, let
+Ψk = ψk + ψk⊥
+
+(k = 1, . . . , d)
+4
+
+where ψk ∈ P0 are the fixed-point solutions of the Feshbach map (see Theorem 3.1).
+Claim 3.1. For k = 1, . . . , d, ψk⊥ /∥ψk ∥ ≤ O(ε), whence ∥ψk ∥2 ≥ 1 − O(ε2 ) and ψk⊥
+
+2
+
+≤ O(ε2 ).
+
+Proof. First, we show ψk⊥ /∥ψk ∥ ≤ O(ε); that is, the length of ψk⊥ is negligible compared to the
+length of ψk . To see this, note
+∥ψk⊥ ∥ ≤ δ∥P1 R(ζk , H11 )P1 W ∥∥ψk ∥
+≤ δ∥R(ζk , P1 H0 P1 )∥∥ψk ∥,
+as ∥P1 ∥, ∥P1 W ∥ ≤ 1
+1
+≤δ
+∥ψk ∥,
+by Theorem 2.2
+d(ζk , σ(P1 H0 P1 ))
+≤ O(ε)∥ψk ∥,
+using Eq. (17).
+Now, we have 1 = ∥Ψk ∥2 = ∥ψk ∥2 + ∥ψk⊥ ∥2 ≤ (1 + O(ε2 ))∥ψk ∥2 .
+
+□
+
+Let ψ̃k = ψk /∥ψk ∥ be the state ψk normalized. We shall show {ψ̃k : k = 1 . . . , d} is a nearlyorthonormal basis for P0 .
+Claim 3.2. If k ̸= ℓ, ⟨ψ̃k , ψ̃ℓ ⟩ ≤ O(ε2 ).
+Proof. We have ⟨Ψk , ψk⊥ ⟩ = ψk⊥
+
+2
+
+≤ O(ε2 ) by Claim 3.1. Thus,
+
+⟨ψk , ψℓ ⟩ = ⟨Ψk − ψk⊥ , Ψℓ − ψℓ⊥ ⟩ = −⟨Ψk , ψℓ⊥ ⟩ − ⟨ψk⊥ , Ψℓ ⟩ + ⟨ψk⊥ , ψℓ⊥ ⟩ ≤ O(ε2 )
+because |⟨ψk⊥ , ψℓ⊥ ⟩| ≤ ψk⊥
+by Claim 3.1.
+
+ψℓ⊥ ≤ O(ε2 ), by Claim 3.1. Now, observe ∥ψk ∥2 ≥ 1 − O(ε2 ), again
+□
+
+Let V be a matrix whose kth column is the vector ψ̃k , k = 1, . . . , d. Consider the Gram matrix
+M = V † V whose entries are Mjk = ⟨ψ̃j , ψ̃k ⟩.
+Claim 3.3. If dε2 = o(1), span{ψ̃1 , . . . , ψ̃d } = P0 .
+Proof. By Claim 3.2, Mk,k = 1 and |Mj,k | ≤ O(ε2 ). If (d − 1)ε2 = o(1), M is strictly diagonally
+dominant and hence invertible (see [20], Theorem 6.1.10). Thus, M has rank n, and so does V . As
+each ψ̃k lies in P0 (which has dimension d), we are done.
+□
+P
+2
+Claim 3.4. For any normalized ψ ∈ P0 , ∥ θ Qθ ψ∥ ≤ O(dε2 ) for each θ.
+P
+Proof. By Claim 3.3, ψ = k ck ψ̃k , for some ck , or ψ = V c, where c is the vector whose kth entry
+is ck , k = 1, . . . , d. Note c ̸= 0 as ψ ∈ P0 . As ψ is normalized,
+1 = ∥ψ∥22 = c† V † V c = c† M c.
+But, M = I + A, where |Ajk | = O(ε2 ) for j ̸= k, and Ajj = 0, by Claim 3.2. Therefore,
+!
+† Ac
+c
+1 = c† M c = ∥c∥22 + c† Ac = ∥c∥22 1 +
+.
+∥c∥22
+By Rayleigh’s principle, the ratio c† Ac/∥c∥22 is bounded in absolute
+value
+by ∥A∥2 , which is O(dε2 ).
+√
+√
+P
+2
+Hence, ∥c∥2 = 1 − O(dε2 ). By Cauchy-Schwarz, k |ck | ≤ d∥c∥2 ≤ d.
+P
+P
+P
+P
+⊥ ≤
+Since Ψk = ψk + ψk⊥ and θ Qθ Ψk = 0, we have θ Qθ ψk = − θ Qθ ψk⊥ . But,
+θ Qθ ψ k
+P
+P
+ψk⊥ ≤ O(ε) by Claim 3.1, as θ Qθ is a projection operator. This shows ∥ θ Qθ ψk ∥ ≤ O(ε).
+Therefore,
+X
+X
+X
+√
+Qθ ψ ≤
+|ck |
+Qθ ψ̃k ≤ dO(ε).
+θ
+
+k
+
+θ
+
+P
+This shows ∥ θ Qθ ψ∥2 ≤ O(dε2 ).
+
+□
+5
+
+Claim 3.5. For any normalized states ψa , ψb ∈ P0 , we have |⟨ψb ,
+P
+P
+Proof. Let Q̃ = θ eiθ Qθ and note Q̃† Q̃ = θ Qθ . We have
+|⟨ψb , Q̃ψa ⟩|2 ≤ ∥ψb ∥2 Q̃ψa
+
+2
+
+iθ
+θ e Qθ ψa ⟩| ≤ O(
+
+P
+
+≤ ⟨ψa , Q̃† Q̃ψa ⟩ ≤ ⟨ψa ,
+
+X
+
+√
+
+dε).
+
+Qθ ψa ⟩.
+
+θ
+
+P
+P
+2
+2
+As
+θ Qθ is a projector, the last expression equals ∥ θ Qθ ψa ∥ which is at most O(dε ) by
+Claim 3.4.
+□
+To obtain an orthonormal basis, we apply Gram-Schmidt to the vectors ψ̃1 , . . . , ψ̃d . Suppose
+ρ1 , . . . , ρd are the resulting vectors (which span P0 ). Note that
+ρk = ψ̃k + Od (ε2 ).
+The notation Od (ε2 ) hides constant factors that depend on d; if d = O(1), this is simply O(ε2 ).
+The effective Hamiltonian h (relative to P0 ) is defined as
+h :=
+
+d
+X
+
+ζk ρ†k ρk .
+
+(18)
+
+k=1
+
+For two normalized states ϕa , ϕb ∈ P0 , we have
+−itH
+
+⟨ϕb , e
+
+d
+X
+
+ϕa ⟩ =
+
+k=1
+d
+X
+
+=
+
+e−itζk ⟨ϕb , Ψk ⟩⟨Ψk , ϕa ⟩ + ⟨ϕb ,
+
+X
+
+e−itθ Qθ ϕa ⟩
+
+(19)
+
+by Claim 3.5.
+
+(20)
+
+θ
+
+e−itζk ⟨ϕb , Ψk ⟩⟨Ψk , ϕa ⟩ + Od (ε),
+
+k=1
+
+Since ϕa ∈ P0 and Ψk = ψk + ψk⊥ , we get
+⟨Ψk , ϕa ⟩ = ⟨ψk , ϕa ⟩ = ∥ψk ∥⟨ψ̃k , ϕa ⟩
+and similarly for ϕb . Therefore,
+−itH
+
+⟨ϕb , e
+
+ϕa ⟩ =
+
+=
+
+d
+X
+k=1
+d
+X
+
+e−itζk ∥ψk ∥2 ⟨ϕb , ψ̃k ⟩⟨ψ̃k , ϕa ⟩ + Od (ε)
+
+(21)
+
+e−itζk ∥ψk ∥2 ⟨ϕb , ρk ⟩⟨ρk , ϕa ⟩ + Od (ε)
+
+(22)
+
+k=1
+
+= (1 − O(ε2 ))⟨ϕb , e−ith ϕa ⟩ + Od (ε)
+
+(23)
+
+as ∥ψk ∥2 = 1 − Ω(ε2 ) by Claim 3.1.
+So, if there is state transfer from ϕa to ϕb via h, then there is state transfer between the two
+states via H, or
+|⟨ϕb , e−itH ϕa ⟩| ≥ 1 − Od (ε).
+(24)
+The fidelity is arbitrarily close to 1 because ε = δκ = o(1).
+This shows state transfer on H can be reduced to a (smaller) state transfer on h. Unfortunately,
+the location of each perturbed eigenvalue ζk (relative to λ0 ) is only known asymptotically. Perfect
+(and pretty good) state transfer requires exact conditions on the eigenvalues and eigenprojectors
+(see [13]). We will show how to handle these problems for two-fold degeneracy.
+6
+
+4. Constructing High-fidelity State Transfer
+The following notion of high-fidelity state transfer is relevant to our results.
+Definition 1. (High-fidelity state transfer)
+Let G be a graph with adjacency matrix A(G). Let a, b be two vertices of G. We say G has highfidelity state transfer from a to b if for any ϵ ∈ (0, 1) there is an effectively computable time t = t(ϵ)
+so that
+| ⟨b| e−iA(G)t |a⟩ | ≥ 1 − ϵ.
+(25)
+In most cases, t(ϵ) is a polynomial function in 1/ϵ which may also depend on some properties of
+the underlying graph G (through A(G), say). We will adopt the convenient Dirac notation which
+is standard in quantum information. Thus, |α⟩ denotes a normalized column vector, while the row
+vector ⟨α| = |α⟩† denote its conjugate transpose. The dimensions will be clear from context. For
+δ > 0 and x ∈ R, let Bδ (x) denote the interval {y : |y − x| < δ}.
+Definition 2. (γ-cospectrality)
+Let G be a graph with a nonsingular adjacency matrix A. Two normalized vectors α, β ∈ CV (G) are
+γ-cospectral in G if there exists η > 0, with Bη (0) ⊂ ρ(G), so that
+| ⟨α| R(λ, A) |α⟩ − ⟨β| R(λ, A) |β⟩ | = γ0 | ⟨α| R(λ, A) |β⟩ |,
+
+for all λ ∈ Bη (0)
+
+for some γ0 ≤ γ.
+For a graph G, we use R(λ, G) in place of R(λ, A). Recall that we say two vertices a, b in G are
+cospectral if their walk counts match, that is, ⟨a| Ak |a⟩ = ⟨b| Ak |b⟩ for all integers k ≥ 1. It is known
+that cospectrality is a necessary condition for perfect (and pretty good) state transfer between a and
+b (see [13]). Our notion of γ-cospectrality is weaker than cospectrality, as ⟨α| Ak |α⟩ = ⟨β| Ak |β⟩,
+for k ≥ 0, implies ⟨α| R(λ, G) |α⟩ = ⟨β| R(λ, G) |β⟩, for λ ∈ ρ(G).
+We state our main result in this section.
+Theorem 4.1. Let G0 be a connected graph with adjacency matrix A, with ∥A∥ = 1, and condition
+number κ < ∞. Let G = G0 ∪ K 2 be a disjoint union with adjacency matrix H0 . Suppose |α⟩ , |β⟩
+are (2γ)-cospectral vectors in G0 and δ ∈ (0, 1) satisfy
+δκ ≪ 1
+
+(26)
+
+| ⟨α| A−1 |β⟩ | ≫ δ 2 κ3 .
+
+(27)
+
+and
+If a, b are the vertices of K 2 , let W = δ(|a⟩⟨α| + |α⟩⟨a| + |b⟩⟨β| + |β⟩⟨b|). Then,
+1 − o(1)
+| ⟨b| e−iτ (H0 +δW ) |a⟩ | = p
+− o(1)
+1 + γ2
+where
+
+
+τ =O
+
+1
+2
+δ | ⟨α| A−1 |β⟩ |
+
+(28)
+
+
+.
+
+(29)
+
+Proof. The adjacency matrix of the disjoint union G = G0 ∪ K 2 is H0 = O2 ⊕ A. The Hamiltonian
+H = H0 + δW encodes a weak coupling between the isolated vertices a, b and the base graph G0 .
+By Equation (26), d(0, σ(G0 )) ≥ 1/κ. Using Theorem 2.2 and Eq. (17), for all λ ̸∈ σ(G0 ) we
+obtain
+∥R(λ, G0 )∥ ≤ κ.
+(30)
+The two-dimensional 0-eigenspace of H0 is spanned by the characteristic vectors |a⟩ and |b⟩. Let
+P0 = |a⟩⟨a| + |b⟩⟨b| be the projection onto Null(H0 ) and P1 = I − P0 .
+7
+
+The effective Hamiltonian h = F (λ) (or the Feshbach-Schur map) is given by
+F (λ) = δ 2 W01 (λI − A)−1 W10
+= δ 2 (|a⟩⟨α| + |b⟩⟨β|)(λI − A)−1 (|α⟩⟨a| + |β⟩⟨b|)
+
+
+2 ⟨α| R(λ, G0 ) |α⟩ ⟨α| R(λ, G0 ) |β⟩
+,
+expressed in the {|a⟩ , |b⟩} basis.
+=δ
+⟨β| R(λ, G0 ) |α⟩ ⟨β| R(λ, G0 ) |β⟩
+The diagonal entries of F (λ) are equal to within 2ϵ due to (2ϵ)-cospectrality while the off-diagonal
+entries are equal since A(G0 ) is symmetric. Furthermore, by a diagonal scaling (which only introduces an irrelevant global phase factor) we may assume that
+
+
+γ 1
+2
+F (λ) = δ ω(λ)
+,
+where ω(λ) := | ⟨α| R(λ, G0 ) |β⟩ |.
+(31)
+1 −γ
+Up to the δ 2 ω(λ) factor, F (λ) = γZ + X, where X, Z are the Pauli matrices. Therefore,
+p
+
+p
+
+i
+e−it(γZ+X) = cos t 1 + γ 2 1 − p
+sin t 1 + γ 2 (γZ + X).
+1 + γ2
+Thus, if we take
+π 1
+τ=
+,
+2 δ 2 ω(λ)
+we get
+
+ p
+i
+⟨b| e−iτ F (λ) |a⟩ = − p
+sin τ 1 + γ 2 .
+1 + γ2
+As the exact location of λ is unknown, we use λ0 = 0 to approximate it. Notice that
+
+(32)
+
+(33)
+
+|ω(λ) − ω(0)| = | ⟨β| (R(λ, G0 ) − R(0, G0 )) |α⟩ |
+≤ ∥R(λ, G0 ) − R(0, G0 )∥,
+
+property of the norm
+
+= |λ|∥R(λ, G0 )∥∥R(0, G0 )∥,
+2
+
+= O(|λ|κ ),
+
+by the first resolvent formula
+
+as each resolvent is at most κ by Eq. (30).
+
+By an application of Theorem 3.2, we have |λ| ≤ δ 2 κ which further implies
+|ω(λ) − ω(0)| ≤ O(δ 2 κ3 ).
+
+(34)
+
+Thus, in Eq. (32), we take instead
+τ0 :=
+
+π 1
+.
+2 δ 2 ω(0)
+
+(35)
+
+Notice that
+τ0 = τ (1 + o(1))
+which follows from ω(λ)/ω(0) = 1 + o(1) because
+ω(λ)
+|ω(λ) − ω(0)|
+−1 =
+= o(1),
+ω(0)
+|ω(0)|
+by Eq. (34) and Eq. (27). Therefore, we have
+π
+
+1
+1
+| ⟨b| e−iτ h |a⟩ | = p
+sin
+(1 + o(1)) = p
+− o(1).
+2
+2
+1+γ
+1 + γ2
+
+(36)
+
+Combining this with Eq. (23), we get
+1 − o(1)
+| ⟨b| e−iτ H |a⟩ | ≥ p
+− o(1)
+1 + γ2
+which completes the proof since δκ ≪ 1.
+8
+
+□
+
+Figure 1. The power of weak coupling (T.rex effects) in quantum state transfer on
+Pn . Here, n = 55 as an example and we plot time t (on X axis) versus antipodal
+fidelity (on Y axis). Left: T.rex arms with strength δ = 0.05. Right: uniform
+couplings (fidelity did not reach 0.40; there is no PGST [18]).
+The explicit appearance of ⟨α| A−1 |β⟩ in Theorem 4.1 was the main inspiration behind the simple
+quantum algorithm for matrix inversion described in [25].
+We show an illustration of the T.rex effects for state transfer on the paths Pn in Fig. 1. For
+further examples and analyses, see Section 5.
+4.1. Weak coupling versus strong potential. For high-fidelity state transfer, we compare
+the T.rex method (weak edge couplings) with methods based on strong potential (large self-loop
+weights) (see [30, 29]). We restate the main results in Lippner and Shi [30]. Let G be a graph with
+maximum degree m and let a, b be a pair of vertices in G of distance d from each other and with
+cospectrality c (see Definition 2.6 in [30]). If we attach self-loops of weight Q to both a and b where
+16 1+β
+m
+ϵ1/α
+with α = min{2, c − d + 1} and β = max{1/2, d/(c − d + 1)}, then there is state transfer from a to
+b with fidelity at least 1 − ϵ (see Theorem 1.4 in [30]) in time t0 (see Theorem 1.6 in [30]) where
+Q>
+
+t0 < 2π(Q + m)d−1 .
+Here, state transfer time scales exponentially with the distance d (or diameter, in the worst case).
+Intuitively, this method increases the potential on a and b in such a way that the graph G becomes
+negligible (which facilitates state transfer) but at the expense of the distance (of the order O(1/ϵd )).
+In contrast, the state transfer time for the T.rex method depends mainly on the condition number
+of A(G). For example, for the Krawtchouk chain of length n, the condition number is O(n) and
+for the unweighted path Pn the condition number is O(n2 ). Thus, the state transfer time of our
+scheme is polynomial in the diameter.
+4.2. Transport in the Presence of Localization. Anderson [4] discovered a localization phenomenon in light propagating through randomly defective crystals. In random matrix theory, this
+is modeled by Jacobi matrices under random diagonal perturbations. The works of [26, 33] gave
+strong evidence that quantum state transfer on spin chains is adversely affected by such localization.
+Almeida et al. [3] had studied the T.rex method under a structured disorder model.
+9
+
+B
+
+ζ1
+
+ζ2
+
+...
+
+ζn−1
+
+ζn
+
+δ
+
+δ
+
+Figure 2. State transfer protocol robust against Anderson localization: the first
+and last two vertices (unshaded) are protected from noise while the middle vertices
+(shaded) are under the influence of Anderson localization. The control parameter
+B is used to ensure cospectrality.
+
+Our main result shows, at the cost of four protected vertices (see Fig. 2), there is a protocol
+for high-fidelity state transfer on spin chains robust against arbitrary (in particular, asymmetric)
+random diagonal perturbations.
+Theorem 4.2. Let H be a Jacobi matrix of order n + 2 with ∥H∥ = 1. Let D = diag(ζk )n+2
+k=1 be a
+diagonal matrix where ζ2 , . . . , ζn+1 are arbitrary random entries and with ζ1 = ζn+2 = 0. Let H1
+be a Jacobi matrix of order n + 4 obtained from H + D by attaching two pendant edges of weight δ
+each. Suppose a is the first vertex of H (or the second vertex of H1 ). Then, there exists B ∈ R so
+that high-fidelity quantum state transfer occurs on H1 + B |a⟩⟨a| between antipodal vertices of H1 .
+Proof. Let a and b be the first and the last vertices of H, respectively. We attach a self-loop of
+weight B to a. The cospectrality parameter (see Definition 2) is given by
+ϵ(B) =
+
+det(Ha,a ) − det(Hb,b )
+⟨a| H −1 |a⟩ − ⟨b| H −1 |b⟩
+=
+−1
+⟨a| H |b⟩
+det(Hb,a )
+
+where Hb,a denotes the matrix obtained from H by deleting row b and column a (see [20], Chapter
+Q
+0, Sections 3.1 and 8.4). If ω1 , . . . , ωn+1 are the edge weights of H, then det(Hb,a ) = n+1
+k=1 ωk .
+Then,
+n+1
+Y
+ϵ(B) = (
+wk )−1 (α + βB)
+k=1
+
+where α and β are functions of the unknown loop weights ζ1 , . . . , ζn and the known edge weights
+w1 , . . . , wn+1 . So, ϵ(B) is linear in B.
+For any given H, a value of B = −α/β exists that sets ϵ(B) = 0. Even if we don’t know all
+the parameters of H, using Theorem 4.1, we could perform a state transfer experiment on H to
+estimate ϵ(0) and ϵ(1), which allows us to recover α and β. This implies antipodal state transfer
+with fidelity of 1 − on (1) by Theorem 4.1.
+□
+In Fig. 3, we illustrate the efficacy of the state transfer protocol used in Theorem 4.2.
+5. Quantum Speedup for Hitting Times
+We consider a random walk on an undirected connected graph G which induces a finite irreducible
+and reversible Markov chain with stationary distribution π (see Aldous and Fill [2], Chapter 4).
+For a vertex b, let Tb denote the number of steps until the random walk reaches b for the first time.
+Let Ea [Tb ] denote the expected value of Tb when we start the random walk at vertex a. The average
+hitting time of G is defined as
+X
+τ0 =
+πa πb Ea [Tb ].
+(37)
+a,b
+10
+
+Figure 3. The T.rex protocol against Anderson localization on Pn . Here, n = 55
+where we plot time t (x-axis) versus antipodal fidelity (y-axis). Left: T.rex against
+Cauchy noise with parameter 0.06 (as in [26]) with δ = 0.002 and fidelity 0.9997.
+Right: T.rex against noise from U (−2, 2) with δ = 0.0067 and fidelity 0.992 (localization practically destroys antipodal quantum transport).
+The maximal mean commute time of G is defined as
+τ ⋆ = max(Ea [Tb ] + Eb [Ta ]).
+
+(38)
+
+a,b
+
+The values of τ ⋆ and τ0 for standard families of graphs are given in Table 1 (based on Chapter 5
+in [2]). We compare these classical notions of hitting times with the quantum hitting time obtained
+by attaching T.rex arms to vertices a and b of the graph G. For a fixed threshold ϱ, we let τQ be
+2 (t) ≥ ϱ.
+the minimum t so that the quantum walk satisfies fa,b
+In Table 1, we observe quantum speedups in τQ compared to τ ⋆ (and τ0 ) on certain families of
+graphs.
+Graph
+
+τ⋆
+
+τ0
+
+cycle
+path
+complete graph
+star
+barbell
+lollipop
+necklace
+d-cube (d = log2 N )
+dense regular graphs
+rook’s graph
+
+N2
+N2
+N
+N
+N3
+N3
+N2
+N
+N
+N
+
+N2
+N 3/2 δ −1
+N2
+N 3/2 δ −1
+√
+N
+N δ −1 ⋆
+N
+N δ −2 ⋆
+N 3 N 5/2 δ −1 or N δ −2
+N2
+N 3/2 δ −1
+N2
+N 3/2 δ −1
+N
+N
+√ log−1
+N
+N δ κ−1
+N
+N δ −2 ⋆
+
+τQ
+
+Table 1. Comparison of classical (τ ⋆ , τ0 ) and quantum hitting times using
+T.rex (τQ ) for various graphs of size N . The bounds are asymptotic in N . The
+coupling parameter δ is O(1) but small. ⋆ indicates that further speed enhancements are available if δ is increased beyond O(1).
+
+11
+
+5.1. Resonant tunneling. We describe resonant tunneling, a variation of the T.rex method, which
+works (under mild assumptions) for singular base graphs. Suppose the base graph G0 has an
+adjacency matrix H0 with zero as a simple eigenvalue and |ρ⟩ as its corresponding eigenvector.
+Consider the disjoint union G = G0 ∪ K 2 and suppose a and b are the vertices of the coclique K 2 ;
+here, the adjacency matrix of G is H = H0 ⊕ O2 .
+Choose two vertices α and β in G0 and attach the T.rex arms through the coupling W =
+|a⟩⟨α| + |α⟩⟨a| + |b⟩⟨β| + |β⟩⟨b|. Now, we consider the perturbed Hamiltonian
+H(δ) = H + δW.
+Let P0 = |a⟩⟨a| + |b⟩⟨b| + |ρ⟩⟨ρ| be the projection onto the zero eigenspace of H. Suppose P0 (δ) is
+the eigenprojector of H(δ) corresponding to P0 after perturbation. Let U be the direct rotation
+operator from P0 (δ) to P0 . This unitary operator is called the Schrieffer-Wolff transformation (see
+Bravyi et al. [6], Definition 3.1). In this framework, the effective Hamiltonian relative to P0 is given
+by
+h = P0 U (H + δW )U † P0 .
+(39)
+If δ is sufficiently small and the spectral gap between 0 and the other eigenvalues of H0 are large
+enough, then
+e−ith = U † e−it(H+δW ) U.
+provided the initial and target states of interest are both in P0 . This is because P0 (δ) is an invariant
+subspace of H + δW . Moreover, up to a first-order approximation of U , we get (see [6], Equation
+3.13)
+h = P0 HP0 + δP0 W P0 .
+(40)
+In our T.rex setting, under the {|a⟩ , |ρ⟩ , |b⟩} basis, we have
+
+
+0
+⟨α|ρ⟩
+0
+0
+⟨β|ρ⟩
+h = ϵ∆ ⟨α|ρ⟩
+0
+⟨β|ρ⟩
+0
+where ∆ = min{|λ| : λ ∈ Spec(G0 ), λ ̸= 0} (which is included so that the effective Hamiltonian has
+a bounded norm) and ϵ is a sufficiently small constant. Assuming ⟨α|ρ⟩ ̸= 0 and ⟨α|ρ⟩ = ⟨β|ρ⟩, we
+see that the quantum walk on h maps |a⟩ to |b⟩ in time
+π
+1
+√
+.
+2 ϵ∆| ⟨α|ρ⟩ |
+Remark: The Laplacian L = D − A of a connected undirected graph G of order N has zero as
+a simple eigenvalue
+the normalized all-one vector as eigenvector. Thus, resonant tunnelling
+√ with
+−1
+occurs in time O( N ϵ ∆−1 ) where ∆ = λ2 (G) is the algebraic connectivity of G.
+5.2. Examples. In this section, we analyze a subset of families of graphs (as listed in Table 1)
+and derive their quantum hitting times under the T.rex method. We omit the other families as the
+analyses are similar.
+5.2.1. Path. The path PN has vertex set {1, . . . , N } with edges (j, k) provided |j − k| = 1. The
+eigenvalues of PNqare λj = 2 cos(jπ/(N + 1)) (of multiplicity one) with eigenvector whose k-th
+
+entry is ⟨k|λj ⟩ = N 2+1 sin(jkπ/(N + 1)), where j, k = 1, . . . , N .
+p If N is odd, λk√= 0 for k = (N + 1)/2 and the zero-eigenvector |ρ⟩ satisfies and | ⟨1|ρ⟩ | =
+2/(N + 1) ∼ 1/ N . Moreover, ∆ = 2 sin(π/(N + 1)) ∼ 1/N as the closest eigenvalues to zero
+are λk±1 = 2 cos((k ± 1)π/(N
+ + 1)) = ∓2 sin(π/(N + 1)). By resonant tunneling, the quantum
+hitting time is O N 3/2 δ −1 . In [38], a quantum hitting time that scales linearly with N was
+claimed but we were unable to corroborate this.
+12
+
+5.2.2. Cycle. The cycle CN has ZN = {0, 1, . . . , N − 1} as its vertices and (k, k ± 1 (mod N )) as
+its edges. If N is even, where N = 2m for m even, then the quotient of CN (modulo an equitable
+partition)
+is a weighted path P̃m+1 of odd length (which differs from the unweighted path Pm+1 by
+√
+the 2 weights on the pendant edges). As the quantum walks on CN and on P̃m+1 are equivalent
+relative to end-to-end transfer,
+we may appeal to resonant tunneling for Pm+1 . So, the quantum
+
+3/2
+−1
+hitting time is O N δ
+.
+5.2.3. Clique. The complete graph (or clique) KN contains all edges (k, ℓ), whenever 1 ≤ k ̸= ℓ ≤
+N . The quotient of KN with cells {1}, {2, . . . , N − 1} and {N } is a weighted path given by
+√
+
+
+N −2 √ 0
+√ 0
+J =  N − 2 √N − 3
+(41)
+N − 2 .
+0
+N −2
+0
+√
+√
+The eigenvalues of J are approximately N − 2(c ± d), where c = 12 (N − 3)/ N − 2 and d =
+√
+√
+c2 + 2, and 0. The zero
+√ eigenvector |ρ⟩ satisfies | ⟨1|ρ⟩ | = 1/ 2. We apply resonant tunneling
+with ∆ ∼|c − d| ∼
+1/ N (after dividing by the spectral norm). Therefore, the quantum hitting
+√ −1 
+time is O N δ
+.
+5.2.4. Hypercube. The d-cube Qd has vertex set Zd2 (thus, N = 2d ) and contains edges of the form
+(α, α ⊕ ek ), for k = 1, . . . , d, where ⊕ denotes the bitwise exclusive OR operation. From Christandl
+et al. [11, 12], it is known that perfect state transfer occurs between antipodal vertices of Qd in time
+π
+2 log2 N (without the T.rex arms). This result was already known in the earlier work of Moore and
+Russell; see the appendix in [31]. We obtain the same O(log2 N ) bound by using T.rex arms.
+5.2.5. Rook’s graph. The rook’s graph is defined as the Cartesian product Km □Km (hence N =
+m2 ). It is a strongly regular graph whose eigenvalues are 2m − 2 (of multiplicity one), m − 2 (of
+multiplicity 2m − 2), and −2 (of multiplicity (m − 1)2 ). For vertices α = (1, 1) and β = (m, m), we
+get | ⟨β| A(Km □Km )−1 |α⟩ | ∼ 1/m2 . Hence, the quantum hitting time is O N δ −2 which shows
+no asymptotic speedup.
+5.2.6. Barbell. The barbell graph BN is obtained from the disjoint union 2KN ∪ PN by identifying
+the leaf vertices of PN with two vertices chosen from distinct cliques. Let α and β be two vertices
+from the two KN s that are not attached to the path PN . The barbell has a quotient structure (see
+Fig. 4) described by a weighted path of N + 4 vertices, whose adjacency matrix is a Jacobi matrix
+H given by
+√
+
+
+N −2 √ 0
+√ 0
+ N −2 N −3
+
+N −2
+
+
+√
+ 0
+
+N
+−
+2
+0
+1
+
+
+
+
+1
+0 1
+
+
+
+
+..
+..
+..
+.. ..
+..
+..
+..
+(42)
+H=
+
+.
+.
+.
+.
+.
+.
+.
+.
+
+
+
+
+1 0
+1
+
+
+√
+
+N −2 √ 0 
+1
+0
+
+
+√
+
+N − 2 √N − 3
+N − 2
+0
+N −2
+0
+To ensure bounded norm, we need to scale H by 1/N . Depending on the parity of N , we show a
+comparison of the two T.rex methods: resonant tunneling versus Feshbach-Schur.
+13
+
+b
+a
+
+b
+a
+
+c
+
+c
+
+c
+
+c
+
+a
+
+a
+
+Figure √
+4. The quotient structure of the barbell graph. The unnormalized barbell
+has a = N − 2, b = N − 3, and c = 1.
+
+Case 1: N is odd. Observe that N1 H has zero as a simple eigenvalue with eigenvector |ρ⟩ whose
+entries are given by
+q
+⟨k|ρ⟩ =
+
+⌊k/2⌋
+2
+N +5 × [[k is odd]] × (−1)
+
+(43)
+
+for k = 1, . . . , N + 4. This allows us to apply resonant tunneling. To estimate the spectral gap to
+the zero eigenvalue, note the cliques at the end of the barbell have similar structure to Eq. (41)
+which has distance κ ∼ 1/N to eigenvalue zero. But, the eigenvalues of the path PN , after scaling
+by 1/N , has gap 1/N 2 . This yields an effective Hamiltonian
+
+
+0
+⟨α|ρ⟩
+0
+δ
+0
+⟨β|ρ⟩ .
+(44)
+h = 2 ⟨α|ρ⟩
+N
+0
+⟨β|ρ⟩
+0
+p
+√
+As ⟨α|ρ⟩ = ⟨β|ρ⟩ = 2/(N + 5) ∼ 1/ N for α = 1 and β = N + 4 (by Eq. (43)), this gives a
+quantum hitting time of O(N 5/2 δ −1 ).
+Case 2: N is even. We apply the T.rex method using the Feshbach-Schur map. Consider the
+Jacobi matrix J, parametrized by a, b, and c, given by (see Fig. 4)
+
+
+0 a
+a b a
+
+
+
+ a 0 c
+
+
+
+c 0 c
+
+
+
+
+.
+.
+.
+.
+
+
+.
+.
+.
+.
+J = J(a, b, c) = 
+(45)
+.
+. .
+.
+
+
+
+0 c
+
+
+
+c 0 a 
+
+
+
+a b a
+a 0
+Recall J −1 = Adj(J)/ det(J), where Adj(J) is the adjugate of J (see [20], Section 0.8.2). Therefore,
+we have ⟨α| J −1 |β⟩ = det(Jβ,α )/ det(J), where Jβ,α is J with row β and column α removed. By
+direct calculation, we see that det(Jβ,α ) = a4 cN −1 and det(J) = ±a4 cN . Therefore,
+| ⟨α| J −1 |β⟩ | = c−1 .
+A similar calculation shows det(Jα,α ) = det(Jβ,β ) = a2 cN , which implies
+1
+| ⟨α| J −1 |α⟩ | = | ⟨β| J −1 |β⟩ | = 2 .
+a
+The effective Hamiltonian is thus given by
+
+
+
+
+δ 2 ⟨α| J −1 |α⟩ ⟨α| J −1 |β⟩
+δ 2 a−2 c−1
+h=
+=
+.
+κ ⟨β| J −1 |α⟩ ⟨β| J −1 |β⟩
+κ c−1 a−2
+
+(46)
+
+2
+After a diagonal shift (which can be done
+√ without loss of generality), we have h = (δ /cκ)X. For
+the normalized barbell, we have a = 1/ N , b = 1, c = 1/N . Furthermore, the normalized barbell
+14
+
+has condition number κ ∼ O(N 2 ). Thus, we obtain a quantum hitting time of O(N δ −2 ) (which is
+nearly optimal due to Lieb-Robinson bounds [7, 32]).
+5.3. Quantum Search on Edge. In quantum spatial search (see [16, 10]), given a graph G =
+(V, E) with adjacency matrix A, we ask if there is γ (global scaling) so that for any vertex α ∈ V
+(oracle location), we have τ (search time) such that
+| ⟨α| e−iτ (γA+|α⟩⟨α|) |ρ⟩ | ≥ 1 − ϵ
+where |ρ⟩ is the normalized Perron eigenvector of G. This captures an analog variant of Grover
+search on arbitrary graphs. The quadratic speedup requirement is expressed as τ = O(1/| ⟨α|ρ⟩ |).
+Typically, we require ϵ = o(1) but it can be relaxed to a bounded constant. In this framework,
+spatial search can be viewed as reverse mixing (as we transform |ρ⟩ to |α⟩) under the rank-one
+perturbation of A (induced by the oracle position).
+Imagine a new framework where the oracle, instead of being a strong potential located at a
+vertex, is now a pendant edge weakly coupled to G. To find this pendant edge (or oracle), we
+randomly place another pendant edge on the graph (which, in the vertex model, is the Random
+Target Lemma [28]). Next, we appeal to the T.rex argument to claim a high-fidelity state transfer
+between the two pendant edges. For families of vertex-transitive graphs, we may use the hitting
+times given in Table 1. In contrast, the same idea but with strong vertex potentials will run into
+the same issues as outlined in Section 4.1.
+6. Conclusions
+The T.rex idea is a paradoxical, yet powerful, method for solving quantum transport problems.
+We gave a mathematical treatment of the T.rex idea using the Feshbach-Schur method from perturbation theory [19]. A summary of our results and related open questions is given in the following:
+(1) An elementary and rigorous proof that the T.rex method yields high-fidelity state transfer.
+The requirements on the base graph is modest: it should have good condition number and
+its two vertices involved in the state transfer must be γ-cospectral. In contrast to perfect
+and pretty-good state transfer (see [13]), the latter condition is less stringent than strong
+cospectrality. Also, see [14] for a related work on peak state transfer.
+(2) The transfer time of the T.rex protocol does not depend directly on the diameter.
+In contrast, the transfer time of protocols based on strong potentials increase exponentially
+with the diameter (see [29, 30]). Is there a speed limit for high-fidelity state transfer?
+(3) A high-fidelity state transfer protocol robust against localization in spin chains.
+The key idea was to exploit nonsingularity of the underlying spin chains along with a few
+protected vertices. Our protocol was able to overcome arbitrary noise (while possibly trading
+off state transfer time), in sharp contrast to the negative results in [26].
+(4) A simple method to find speedups in hitting times.
+The versatility of the T.rex method was evident from the variety of graphs that were analyzed (thereby avoiding ad hoc methods). We then derived a quantum search algorithm to
+locate an oracle hiding as a pendant edge.
+To complement the above list, we mention other related results inspired by the T.rex paradigm:
+(5) A simpler matrix inversion quantum algorithm [25].
+This is based on attaching multiple T.rex arms to a nonsingular base graph.
+(6) An optimal PST protocol robust against timing sensitivities on spin chains [24].
+This exploits a link between weak couplings and the second derivative of the PST curve.
+We strongly suspect there are further uses of the T.rex method waiting to be unearthed.
+15
+
+Acknowledgments
+C.T. is supported by NSF grant OSI-2427020. We thank Ada Chan for bringing the Random
+Target Lemma to our attention and Sooyeong Kim for helpful discussions on the barbell graphs.
+
+References
+[1] C. Albanese, M. Christandl, N. Datta, A. Ekert, Mirror Inversion of Quantum States in Linear Registers, Physical
+Review Letters 93:230502, 2004.
+[2] D. Aldous, J. Fill, Reversible Markov Chains and Random Walk on Graphs, Unfinished monograph, recompiled
+2014, available at http://www.stat.berkeley.edu/$\sim$aldous/RWG/book.html.
+[3] G. Almeida, F. de Moura, M. Lyra, High-fidelity state transfer through long-range correlated disordered quantum
+channels, Physics Letters A 382:1335, 2018.
+[4] P. Anderson, Absence of Diffusion in Certain Random Lattice Models, Physical Review 109(5):1492-1505, 1958.
+[5] S. Bose, Quantum Communication through an Unmodulated Spin Chain, Physical Review Letters 91:207901,
+2003.
+[6] S. Bravyi, D. DiVincenzo, D. Loss, Schrieffer-Wolff transformations for quantum many-body systems, Annals of
+Physics 326:2793-2826, 2011.
+[7] S. Bravyi, M. Hastings, F. Verstraete, Lieb-Robinson Bounds and the Generation of Correlations and Topological
+Quantum Order, Physical Review Letters 97:050401, 2006.
+[8] X. Chen, R. Mereau, D. Feder, Asymptotically perfect efficient quantum state transfer across uniform chains with
+two impurities, Physical Review A 93:012343, 2016.
+[9] A. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. Spielman, Exponential Algorithmic Speedup by a
+Quantum Walk, Proceedings of the thirty-fifth annual ACM symposium on Theory of computing, p59-68, 2003.
+[10] A. Childs, J. Goldstone, Spatial search by quantum walk, Physical Review A 70:022314, 2003.
+[11] M. Christandl, N. Datta, A. Ekert, A. Landahl, Perfect State Transfer in Quantum Spin Networks, Physical
+Review Letters 92(18):187902, 2004.
+[12] M. Christandl, N. Datta, T. Dorlas, A. Ekert, A. Kay, A. Landahl, Perfect Transfer of Arbitrary States in
+Quantum Spin Networks, Physical Review A 71(3):032312, 2005.
+[13] G. Coutinho, C. Godsil, Graph Spectra and Continuous Quantum Walks, book draft.
+[14] G. Coutinho, K. Guo, V. Schmeits, Peak state transfer in continuous quantum walks, arxiv:2505.11986.
+[15] G. Dusson, I. Sigal, B. Stamm, The Feshbach-Schur Map and Perturbation Theory, Partial Differential Equations,
+Spectral Theory, and Mathematical Physics: The Ari Laptev Anniversary Volume, p65-88, EMS, 2021.
+[16] E. Farhi, S. Gutmann, Analog analogue of a digital quantum computation, Physical Review A 57(4):2403, 1998.
+[17] E. Farhi, S. Gutmann, Quantum Computation and Decision Trees, Physical Review A 58(2):915, 1998.
+[18] C. Godsil, S. Kirkland, S. Severini, J. Smith, Number-Theoretic Nature of Communication in Quantum Spin
+Systems, Physical Review Letters 109:050502, 2012.
+[19] S. Gustafson, I. Sigal, Mathematical Concepts of Quantum Mechanics, 3rd ed., Springer, 2020.
+[20] R. Horn, C. Johnson, Matrix Analysis, 2nd ed., Cambridge University Press, 2013.
+[21] P. Karbach, J. Stolze, Spin chains as perfect quantum state mirrors, Physical Review A 72:030301, 2005.
+[22] T. Kato, Perturbation Theory for Linear Operators, Springer, 1980.
+[23] A. Kay, A Review of Perfect State Transfer and its Application as a Constructive Tool, International Journal of
+Quantum Information 8:641, 2010.
+[24] A. Kay, S. Kim, C. Tamon, Optimising Perfect Quantum State Transfer for Timing Insensitivities,
+arxiv:2507.18872.
+[25] A. Kay, C. Tamon, Matrix Inversion by Quantum Walk, arxiv:2508.06611.
+[26] J.P. Keating, N. Linden, J.C.F. Matthews, A. Winter, Localization and its consequences for quantum walk
+algorithms and quantum communication, Physical Review A 76:012315, 2007.
+[27] J. Kempe, Discrete Quantum Walks Hit Exponentially Faster, Probability Theory and Related Fields 133:215235, 2005.
+[28] D. Levin, Y. Peres, E. Wilmer, Markov Chains and Mixing Times, American Mathematical Society, 2009.
+[29] G. Lippner, Y. Shi, Quantifying state transfer strength on graphs with involution, Quantum Information Processing 23:166, 2024.
+[30] G. Lippner, Y. Shi, Strong quantum state transfer on graphs via loop edges, Linear Algebra and Its Applications
+704:77-91, 2025.
+[31] C. Moore, A. Russell, Quantum walks on the Hypercube, Proc. 6th International Workshop on Randomization
+and Approximation Techniques in Computer Science (RANDOM 2002), 164-178, 2002.
+16
+
+[32] B. Nachtergaele, R. Sims, Lieb-Robinson Bounds in Quantum Many-Body Physics, “Entropy and the Quantum,”
+Robert Sims and Daniel Ueltschi (Eds), Contemporary Mathematics, volume 529, American Mathematical Society,
+p141-176, 2010.
+[33] R. Ronke, M. Estarellas, I. D’Amico, T. Spiller, T. Miyadera, Anderson localisation in spin chains for perfect
+state transfer, Eur. Phys. J. D 70:189, 2016.
+[34] J. Sjostrand, M. Zworski, Elementary Linear Algebra for Advanced Spectral Problems, Annales de L’Institut
+Fourier 57(7):2095-2141, 2007.
+[35] G. Teschl, Mathematical Methods in Quantum Mechanics, 2nd ed., American Mathematical Society, 2014.
+[36] L. Vinet, A. Zhedanov, Almost perfect state transfer in quantum spin chains, Physical Review A 86:052319,
+2012.
+[37] L. Vinet, A. Zhedanov, Quantum state transfer with sufficient fidelity, arxiv:2412.02321.
+[38] A. Wójcik, T. Luczak, P. Kurzyński, A. Grudka, T. Gdala, M. Bednarska, Unmodulated spin chains as universal
+quantum wires, Physical Review A 72:034303, 2005.
+[39] A. Wójcik, T. Luczak, P. Kurzyński, A. Grudka, T. Gdala, M. Bednarska, Multiuser quantum communication
+networks, Physical Review A, 75:022330, 2007.
+Department of Mathematics, Royal Holloway University of London, Egham, Surrey, TW20 0EX,
+UK.
+Email address: alastair.kay@rhul.ac.uk
+Department of Computer Science, Clarkson University, Potsdam, New York 13699, USA.
+Email address: ctamon@clarkson.edu
+
+17
+
+

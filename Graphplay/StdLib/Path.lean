@@ -149,6 +149,40 @@ theorem weightedPath_PST_modulus_eq_one (n : ℕ) (h : 1 ≤ n) :
 
 /-! ## Convenience aliases -/
 
+/-! ## Computable rational companions
+
+These are the same 0/1 (or rational-weighted) adjacency matrices as `Path`
+and `WeightedPath`, but valued in `ℚ` rather than `ℂ`, so that they are
+fully `#eval`-able.  They can be lifted to `ℂ` via `Matrix.map (algebraMap ℚ ℂ)`
+when needed.
+-/
+
+/-- Computable companion to `Path n`: the 0/1 adjacency matrix of the
+unweighted path on `Fin (n + 1)`, valued in `ℚ`. -/
+def Path.adjMatrixℚ (n : ℕ) : Matrix (Fin (n + 1)) (Fin (n + 1)) ℚ :=
+  fun k l =>
+    if (k.val + 1 = l.val) ∨ (l.val + 1 = k.val) then (1 : ℚ) else 0
+
+/-- Computable companion to `WeightedPath n J`: the engineered weighted
+adjacency matrix on `Fin (n + 1)` with rational weights `J : Fin n → ℚ`. -/
+def WeightedPath.adjMatrixℚ (n : ℕ) (J : Fin n → ℚ) :
+    Matrix (Fin (n + 1)) (Fin (n + 1)) ℚ :=
+  fun k l =>
+    if h : k.val + 1 = l.val then
+      J ⟨k.val, by have : k.val < n + 1 := k.isLt; omega⟩
+    else if h' : l.val + 1 = k.val then
+      J ⟨l.val, by have : l.val < n + 1 := l.isLt; omega⟩
+    else 0
+
+/-- Smoke test: `Path 4` has a `1` between vertex 0 and vertex 1. -/
+example : (Path.adjMatrixℚ 4) ⟨0, by decide⟩ ⟨1, by decide⟩ = 1 := by decide
+
+/-- Smoke test: `Path 4` is loopless (zero diagonal). -/
+example : Matrix.trace (Path.adjMatrixℚ 4) = 0 := by native_decide
+
+#eval (Path.adjMatrixℚ 4) ⟨0, by decide⟩ ⟨1, by decide⟩
+#eval Matrix.trace (Path.adjMatrixℚ 4)
+
 /-- The path on three vertices (`P_3` in graph-theory notation), the
 smallest unweighted graph that exhibits endpoint-to-endpoint PST. -/
 noncomputable def P3 : WeightedGraph (Fin 3) := Path 2

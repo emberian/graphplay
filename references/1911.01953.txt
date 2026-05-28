@@ -1,0 +1,1076 @@
+A Note on Quantum Markov Models
+Christino Tamon∗
+
+Weichen Xie†
+
+arXiv:1911.01953v1 [quant-ph] 5 Nov 2019
+
+November 6, 2019
+
+Abstract
+The study of Markov models is central to control theory and machine learning. A quantum
+analogue of partially observable Markov decision process was studied in (Barry, Barry, and
+Aaronson, Phys. Rev. A, 90, 2014). It was proved that goal-state reachability is undecidable in
+the quantum setting, whereas it is decidable classically. In contrast to this classical-to-quantum
+transition from decidable to undecidable, we observe that the problem of approximating the
+optimal policy which maximizes the average discounted reward over an infinite horizon remains
+decidable in the quantum setting. Given that most relevant problems related to Markov decision
+process are undecidable classically (which immediately implies undecidability in the quantum
+case), this provides one of the few examples where the quantum problem is tractable.
+
+1
+
+Introduction
+
+The study of Markov models is important to control theory and machine learning. In optimal
+control, it is relevant for the theory of sequential decision making under uncertainty. Seminal
+results in this area were proved by Blackwell [3], Sondik [12], and others (see [2]). In machine
+learning, it is central for studying the main problems in reinforcement learning, such as planning
+and optimization (see [10, 14]). The primary model used in both areas is the Markov decision
+process (partially observable or otherwise).
+For quantum computing, Markov models are useful for developing algorithms and for modeling
+the quantum phenomena observed in quantum systems. In the design of algorithms, several fundamental algorithms, such as Grover search, are based on quantization of Markov chain on graphs
+(see Szegedy [13]). Further generalizations to quantum Markov processes were studied in quantum
+information theory in the context of quantum channels (see [15]).
+In a recent work, Barry et al. [1] introduced a model of quantum observable Markov decision
+process. This is a natural quantum analogue of a partially observable Markov decision process,
+although it is a strict generalization of a belief Markov decision process. The latter is a commonly
+used full-information model to represent a partially observable Markov decision process. The main
+component used to define a quantum observable Markov decision process is a set of superoperators.
+Using standard machinery from quantum information (see [17, 18]), we recast the set of superoperators as composition of a conditional channel and a quantum instrument. We describe this in the
+context of quantum transducers.
+∗
+†
+
+Department of Computer Science, Clarkson University, Potsdam, NY, USA 13699. Email: ctamon@clarkson.edu.
+Department of Mathematics, Clarkson University, Potsdam, NY, USA 13699. Email: xiew@clarkson.edu.
+
+1
+
+Problem
+Reachability
+Perfect Reachability
+Non-Occurrence
+Perfect Non-Occurrence
+Policy-Existence
+Approximate Policy-Existence
+
+Classical
+no (Madani et al. [7])
+yes (folklore)
+no (Proposition 5.4)
+yes (Eisert et al. [5])
+no (Madani et al. [7])
+yes (Blackwell, Sondik [3, 12])
+
+Quantum
+no
+no (Barry et al. [1])
+no
+no (Eisert et al. [5])
+no
+yes (Theorem 6.8)
+
+Figure 1: (Un)Decidabilities of some problems related to partially or quantum observable Markov
+decision process. The yes/no entries indicate whether the problem is decidable or not.
+
+A finite transducer is a finite automata with output (see [6]). There are two standard models
+for transducers: the Moore machine and the Mealy machine. In the former model, the output
+is generated from the current state, while in the second model, the output is generated based on
+the action taken from the current state. Following in this classical vein, we describe models for
+quantum Moore and quantum Mealy machines, and we prove that they are equivalent. The proof
+of this equivalence relies on the decoupling of a superoperator into the composition of a conditional
+channel and a quantum instrument. In earlier works, Wiesner et al. [16] and Monras et al. [8] had
+also studied quantum transducers but in the context of stochastic generators.
+In [1], Barry et al. studied the goal-state perfect reachability problem (also called planning) for
+quantum observable Markov decision process. Here, the objective is to find a sequence of actions
+which will evolve the system from the initial state to a given target state, with probability one.
+Their main result is that this perfect planning problem is undecidable in the quantum setting,
+whereas the classical version is known to be decidable.
+Madani et al. [7] proved that most classical problems related to partially observable Markov
+decision process, such as planning and optimization, are undecidable. Since the quantum problems
+are generalizations of the classical ones, this immediately implies that the quantum problems are
+also undecidable. The list of these problems do not include the above perfect planning problem. So,
+Barry et al. [1] shows an interesting classical-to-quantum transition from decidable to undecidable.
+A similar phenomenon occurs for the perfect non-occurrence problem where we ask if there is an
+output sequence that will never be observed. This problem is decidable in the classical setting, but
+its quantum version (called the quantum measurement occurrence problem) was proved undecidable
+by Eisert et al. [5].
+The policy existence problem in an infinite horizon that are proved undecidable by Madani
+et al. [7] include the problems under the total reward, average reward, and discounted reward
+criteria. For approximating the optimal policy, the problems under the total and average reward
+criteria remain undecidable, but the problem under the discounted criteria is decidable. We focus
+on this latter problem and observe that the quantum analogue is still decidable. This is obtained
+by revisiting the work of Blackwell [3] on Markov decision process over Borel spaces. We also
+adapt some observations of Sondik [12] on the compact representation of the optimal policy to the
+quantum setting.
+We summarize the complexities of the problems related to Markov decision process in Figure 1.
+
+2
+
+2
+
+Preliminaries
+
+2.1
+
+Markov models
+
+Suppose S, Σ and ∆ are finite sets (of states, input actions, and output signals, respectively).
+Let {Pa : a ∈ Σ} be a collection of Markov chains with a common state space S, where each Pa
+is a |S| × |S| column-stochastic matrix. We view each column j of Pa as defining a conditional
+probability distribution Pa (i|j) over S, where i, j ∈ S. Let Q be a |∆| × |S| column-stochastic
+matrix. We view each column j of Q as defining a conditional probability distribution Q(b|j) over
+∆, where b ∈ ∆ and j ∈ S. Let p0 ∈ P(S) be an initial probability distribution over S. Suppose
+R is a bounded real-valued reward function over S and γ ∈ [0, 1) is a discount factor. The tuple
+M = (S, Σ, ∆, {Pa }, Q, R, p0 , γ) is called a partially observable Markov decision process (POMDP).
+There are several well-known Markov models that can be derived from the above. We obtain
+a Markov chain if Σ is a unary alphabet and R is trivial (say, the constant zero function), and we
+let ∆ = S and Q = I for the observed chain, or let ∆ be unary (and Q trivial) for the unobserved
+chain. We derive a Markov decision process (MDP) if ∆ = S and Q = I, and denote this simply as
+M = (S, Σ, {Pa }, R, p0 , γ). We get a hidden Markov model (HMM) if Σ is a unary alphabet and R
+is trivial, and denote this as M = (S, ∆, P, Q, p0 ).
+The random process induced by a partially observable Markov decision process is defined as
+follows. For a sequence (an ), where an ∈ Σ, we consider the sequence of pairs of random variables
+(Xn , Yn )∞
+n=0 , Xn ∈ S and Yn ∈ ∆, defined so that:
+P[X0 = i] = (p0 )i ,
+
+for i ∈ S
+for i, j ∈ S
+
+(2)
+
+for k ∈ ∆, j ∈ S
+
+(3)
+
+P[Xn+1 = i|Xn = j] = (Pan )ij ,
+P[Yn = k|Xn = j] = Qkj ,
+
+(1)
+
+n
+A policy is a sequence π = (πn )∞
+n=1 of maps, where πn+1 : P(S) × Hn → Σ and Hn : (∆ × Σ) × ∆
+is the history at time n, for each n = 0, 1, . . .. Thus, if hn = (y0 , a1 , . . . , yn−1 , an , yn ) is the history
+at time n, then an+1 = πn+1 (p0 , hn ) is the action taken, for all n. The value function of π is given
+by
+"∞
+#
+X
+(4)
+Vπ (p0 ) = E
+γ i R(Xi ) .
+i=0
+
+The expectation is taken over an infinite product probability space1 . The main objective is to
+compute the optimal value function V ? (p) = supπ Vπ (p), and to find π ? for which the maximum is
+achieved. A policy π = (πn ) is called stationary if there is a map f : P(S) × ∆ → Σ so that πn = f
+for all n.
+
+2.2
+
+Quantum information
+
+We briefly review some basic notation and background from quantum information (see Nielsen and
+Chuang [9], Watrous [17]). For a finite set X, let X = CX denote the complex Euclidean space
+spanned by the unit vectors {|ai : a ∈ X}. We will use the standard Dirac notation throughout. It
+will often be convenient to view X as a Hilbert space.
+1
+
+A brief discussion on the existence of this infinite probability space is given in Appendix A
+
+3
+
+Given complex Euclidean spaces X and Y, let L(X , Y) be the set of linear operators from X
+to Y. For an operator A ∈ L(X , Y), let A† denote the unique operator in L(Y, X ) for which
+hv, Aui = hA† v, ui for all u ∈ X and v ∈ Y. For brevity, we use L(X ) when X = Y. We say an
+operator A ∈ L(X ) is positive semidefinite if A = B † B for some B ∈ L(X ). The set of all positive
+semidefinite operators in L(X ) is denoted Pos(X ). A positive semidefinite operator A is called a
+density matrix if Tr(A) = 1. The set of all density matrices over X is denoted D(X ). These density
+matrices will provide a convenient representation for quantum states.
+Let T(X , Y) be the set of linear operators from L(X ) to L(Y). An operator S ∈ T(X , Y) is called
+positive if it maps a positive semidefinite A ∈ Pos(X ) to a positive semidefinite S(A) ∈ Pos(Y). An
+operator S ∈ T(X , Y) is called completely positive if S ⊗ IZ is positive for every auxiliary space Z.
+The set of all linear operators in T(X , Y) which are completely positive is denoted CP(X , Y). An
+operator S ∈ T(X , Y) is called trace preserving if Tr(S(A)) = Tr(A) for all A ∈ L(X ). The set of
+linear operators in T(X , Y) that are completely positive and trace preserving is denoted C(X , Y).
+Each element of C(X , Y) is called a quantum channel. These quantum channels will provide a
+representation of quantum operations.
+For a finite alphabet Σ, a conditional channel over Σ is a collection of channels {Φa ∈ C(X ) :
+a ∈ Σ}. The input to a conditional channel is a classical-quantum state |aiha| ⊗ ρ, where a ∈ Σ
+and ρ ∈ D(X ). First, the conditional channel prepares the following quantum state:
+Φ(ρ) =
+
+1 X
+|bihb| ⊗ Φb (ρ).
+|Σ|
+
+(5)
+
+b∈Σ
+
+It then applies the projection |aiha| ⊗ I and returns the second register.
+For a finite alphabet ∆, a quantum instrument
+Ω over ∆ is a collection {Ωb ∈ CP(X ) : b ∈ ∆}
+P
+of completely positive operators for which b∈∆ Ωb forms a channel. On input ρ ∈ D(X ), the
+instrument first prepares the following quantum state:
+X
+Ω(ρ) =
+|bihb| ⊗ Ωb (ρ).
+(6)
+b∈∆
+
+Note that Ω is a quantum channel. Then, the quantum instrument applies the measurement
+µ : ∆ → Pos(X ) where µ(b) = |bihb| ⊗ I, for each b ∈ ∆. Here, an element b ∈ ∆ is selected
+at random with probability p(b) = hµ(b), Ω(ρ)i = Tr(Ωb (ρ)) and, conditioned on the measurement
+outcome b was observed, the post-measurement
+state is Ωb (ρ)/ Tr(Ωb (ρ)) (otherwise, if the outcome
+P
+was not observed, the resulting state is b Ωb (ρ)).
+
+3
+
+Quantum Transducers
+
+A transducer is a finite automata with output (see Hopcroft and Ullman [6]). We consider two
+standard models of transducers, namely Moore and Mealy machines, and propose their natural
+quantum analogues. Then, we show that the two quantum models are equivalent.
+In this and subsequent sections, we assume S is a finite set of states, Σ is a finite set of input
+symbols, and ∆ is a finite set of output symbols. We also assume that S = CS is a complex
+Euclidean space associated with S.
+A quantum Moore machine is a tuple M = (S, Σ, ∆, Φ, Ω, ρ0 , Π) where Φ = {Φa ∈ C(S) : a ∈ Σ}
+is a conditional channel, Ω = {Ωb ∈ CP(S) : b ∈ ∆} is a quantum instrument, ρ0 is the initial
+4
+
+density matrix, and Π is an orthogonal projection (onto an accepting subspace). A single step of
+M is a composition of the transition map Φ followed by the output map Ω. If the current state of
+M is given by the density matrix ρ0 and the current input is a ∈ Σ, then M transforms ρ0 to the
+intermediate state ρ1 = Φa (ρ). Further, M applies the instrument Ω to ρ1 and generates an output
+b ∈ ∆ with probability Tr Ωb (ρ1 ). The final resulting state is ρ2 = Ω(ρ1 )/ Tr(Ω(ρ1 )).
+For input α = a1 . . . an ∈ Σ? and output β = b1 . . . bn ∈ ∆? , the probability that M on input α
+will output β is denoted pM (β; α), while the final resulting state of M is denoted ρM (α, β). The
+function computed by M on input α and output β is given by
+AccM (α, β) = Tr(ΠρM (α, β)).
+
+(7)
+
+This is the probability that the final state belongs to the accepting subspace. The function computed
+by M on input α is given by
+AccM (α) = Tr(ΠρM (α))
+(8)
+where
+ρM (α) =
+
+X
+
+pM (β; α)ρM (α, β).
+
+(9)
+
+β
+
+3.1 Fact. Let M = (S, Σ, ∆, Φ, Ω, ρ0 , Π) be a quantum Moore machine. For input α = a1 . . . an ∈
+Σ? and output β = b1 . . . bn ∈ ∆? , we have
+ρM (α, β) =
+
+Ωbn ◦ Φan ◦ . . . ◦ Ωb1 ◦ Φa1 (ρ0 )
+,
+pM (β; α)
+
+pM (β; α) = Tr(Ωbn ◦ Φan ◦ . . . ◦ Ωb1 ◦ Φa1 (ρ0 )). (10)
+
+Proof. We prove this by induction on the length n = |α| = |β|. For n = 1, the state after the
+conditional channel is ρ̃1 = Φa1 (ρ0 ). By the properties of the quantum instrument, the probability
+that M outputs b1 is given by
+pM (b1 ; a1 ) = Tr(Ωb1 (ρ̃1 )) = Tr(Ωb1 ◦ Φa1 (ρ0 ))
+
+(11)
+
+and the post-measured state of
+ρM (a1 , b1 ) =
+
+Ωb1 ◦ Φa1 (ρ0 )
+.
+pM (b1 ; a1 )
+
+(12)
+
+This proves the base case.
+Assume the claim holds for n ≥ 1. Suppose the input is α = a1 . . . an+1 and the output is
+β = b1 . . . bn+1 . Let ρn = ρM (a1 . . . an , b1 . . . bn ) and ρ̃n+1 = Φan+1 (ρn ). Then, the probability that
+M outputs bn+1 on input an+1 given that it has read input a1 . . . an and emitted output b1 . . . bn is
+Tr(Ωbn+1 (ρ̃n+1 )) = Tr(Ωbn+1 ◦ Φan+1 (ρn )) =
+
+Tr(Ωbn+1 ◦ Φan+1 ◦ . . . ◦ Ωb1 ◦ Φa1 (ρ0 ))
+pM (b1 . . . bn ; a1 . . . an )
+
+(13)
+
+where the last step follows from the inductive hypothesis. Therefore,
+pM (b1 . . . bn+1 ; a1 . . . an+1 ) = Tr(Ωbn+1 ◦ Φan+1 ◦ . . . ◦ Ωb1 ◦ Φa1 (ρ0 )).
+
+(14)
+
+The resulting quantum state is
+ρn+1 =
+
+Ωbn+1 ◦ Φan+1 (ρn )
+Ωbn+1 ◦ Φan+1 ◦ . . . ◦ Ωb1 ◦ Φa1 (ρ0 )
+=
+.
+Tr(Ωbn+1 ◦ Φan+1 (ρn ))
+Tr(Ωbn+1 ◦ Φan+1 ◦ . . . ◦ Ωb1 ◦ Φa1 (ρ0 ))
+
+This shows the claim holds for n + 1.
+5
+
+(15)
+
+A quantum Mealy machine is a tuple M = (S, Σ, ∆, Λ, ρ0 , Π) where Λ = {Λa : a ∈ Σ} is a set
+of quantum instruments over a common alphabet ∆, ρ0 is the initial density matrix, and Π is an
+orthogonal projection (onto an accepting subspace). Each quantum instrument Λa is a composition
+of a channel and a complete measurement over ∆. For notational convenience, we will identify this
+channel Λa as well (it becomes an instrument after the first register is measured; see Watrous [17]).
+More specifically, weP
+associate Λa with a collection {Λa,b : b ∈ ∆} ⊆ CP(S) of completely positive
+operators satisfying b∈∆ Λa,b ∈ C(S). Then, we define the channel
+Λa (ρ) =
+
+X
+
+|bihb| ⊗ Λa,b (ρ).
+
+(16)
+
+b∈∆
+
+Upon measuring the first register, the output is b with probability Tr(Λa,b (ρ)) and the postmeasurement state is Λa,b (ρ)/ Tr(Λa,b (ρ)). Thus, if the current state of M is ρ and the current
+input is a ∈ Σ, M applies Λa to ρ and generates output b ∈ ∆ according to the above process.
+For input α = a1 . . . an ∈ Σ? and output β = b1 . . . bn ∈ ∆? , the probability that M on input α
+will output β is denoted pM (β; α), while the final resulting state of M is denoted ρM (α, β). The
+function computed by M on input α with output β is given by
+AccM (α, β) = Tr(ΠρM (α, β)).
+
+(17)
+
+This is the probability that the final state belongs to the accepting subspace. The function computed
+by M on input α is given by
+AccM (α) = Tr(ΠρM (α))
+(18)
+where
+ρM (α) =
+
+X
+
+pM (β; α)ρM (α, β).
+
+(19)
+
+β
+
+3.2 Fact. Let M = (S, Σ, ∆, Λ, ρ0 , Π) be a quantum Mealy machine, where Λ = {Λa,b ∈ CP(S) :
+a ∈ Σ, b ∈ ∆} so that for each a ∈ Σ, the collection {Λa,b : b ∈ ∆} forms an instrument. Then, for
+any input α = a1 . . . an ∈ Σ? and output β = b1 . . . bn ∈ ∆? , we have
+ρM (α, β) =
+
+Λan ,bn ◦ . . . ◦ Λa1 ,b1 (ρ0 )
+,
+p(β; α)
+
+p(β; α) = Tr(Λan ,bn ◦ . . . ◦ Λa1 ,b1 (ρ0 )).
+
+(20)
+
+3.3 Definition. Let M1 be a quantum Moore machine and M2 be a quantum Mealy machine
+sharing the same input alphabet Σ and output alphabet ∆. We say M1 and M2 are equivalent
+if for all inputs α ∈ Σ? and outputs β ∈ ∆? , we have pM1 (β; α) = pM2 (β; α) and AccM1 (α, β) =
+AccM2 (α, β).
+In what follows, we show that the two models of quantum transducers are equivalent. The idea
+behind this is the decoupling of the set of quantum instruments in a quantum Mealy machine into
+a composition of a conditional channel and a shared quantum instrument in a quantum Moore
+machine (see Figure 2).
+3.4 Proposition. For any quantum Moore machine, there is an equivalent quantum Mealy machine.
+
+6
+
+ρt
+
+ρt+1
+
+Λa
+
+ρt
+
+signal b
+
+Φ
+
+Ω
+
+action a
+
+signal b
+
+ρt+1
+
+Figure 2: Decoupling a superoperator into composition of a conditional channel and a quantum
+instrument.
+
+Proof. Let M1 = (S, Σ, ∆, Φ, Ω, ρ0 , Π) be a quantum Moore machine. Consider a quantum Mealy
+machine M2 = (S, Σ, ∆, Λ, ρ0 , Π) where the collection of instruments Λ = {Λa,b : a ∈ Σ, b ∈ ∆} are
+defined as
+Λa,b = Ωb ◦ Φa .
+(21)
+Since both Φa and Ωb are completely positive, so is Λa,b . Note that for each a ∈ Σ, we have
+X
+X
+Λa,b = (
+Ωb ) ◦ Φa
+b∈∆
+
+(22)
+
+b∈∆
+
+is a channel since channels are closed under composition. Therefore, the following map Λa is also
+a channel:
+X
+X
+Λa (ρ) =
+|bihb| ⊗ Λa,b (ρ) =
+|bihb| ⊗ Ωb ◦ Φa (ρ).
+(23)
+b∈∆
+
+b∈∆
+
+This is the same state that is prepared by M1 before the measurement.
+By Facts 3.1 and 3.2, for all α ∈ Σ? and β ∈ ∆? , we have pM1 (β; α) = pM2 (β; α) and
+AccM1 (α, β) = AccM2 (α, β) (since the states agree).
+3.5 Proposition. For any quantum Mealy machine, there is an equivalent quantum Moore machine.
+Proof. Let M1 = (S,
+P Σ, ∆, Λ, ρ0 , Π) be a quantum Mealy machine where Λ = {Λa,b ∈ CP(S) : a ∈
+Σ, b ∈ ∆} so that b∈∆ Λa,b ∈ C(S), for each a ∈ Σ.
+Consider a quantum Moore machine M2 = (S, Σ, ∆, Φ, Ω, ρ0 , Π) defined as follows. We let Φa
+be a channel given by
+X
+Φa (ρ) =
+|bihb| ⊗ Λa,b (ρ)
+(24)
+b∈∆
+
+and let Ωb be a linear operator given by
+Ωb = |bihb| ⊗ I.
+(25)
+P
+Note that Ωb is completely positive and b∈∆ Ωb is the identity channel. Hence, {Ωb : b ∈ ∆}
+forms a quantum instrument.
+We see that
+(Ωb ◦ Φa )(ρ) = |bihb| ⊗ Λa,b (ρ)
+(26)
+and
+X
+b∈∆
+
+(Ωb ◦ Φa )(ρ) =
+
+X
+b∈∆
+
+7
+
+|bihb| ⊗ Λa,b (ρ)
+
+(27)
+
+This is the same state that is prepared by M1 before the measurement.
+By Facts 3.1 and 3.2, for all α ∈ Σ? and β ∈ ∆? , we have pM1 (β; α) = pM2 (β; α) and
+AccM1 (α, β) = AccM2 (α, β) (since the states agree).
+By combining Propositions 3.4 and 3.5, we have the following.
+3.6 Theorem. Quantum Mealy and Moore machines are equivalent.
+Remark: The classical transducers are special cases of the quantum transducers. For example, a
+Moore machine can be defined as a tuple M = (S, Σ, ∆, P, Q, s0 , F ) where P = {Pa : a ∈ Σ} is
+a set of Markov chains, Q = {Qs : s ∈ S} is a set of probability distributions over ∆, s0 is the
+initial state and F ⊂ S is a collection of accepting states. A Mealy machine is defined similarly
+except for one difference: the set Q is given by {Qs,a : s ∈ S, a ∈ Σ}, that is, each probability
+distribution depends on both the current state and the action taken. These differ slightly from the
+models defined in [6] in that we retain the notion of accepting states (which is standard for finite
+automata).
+Remark: Note that any Markov chain, hidden Markov model, or partially observable Markov decision process (and hence Markov decision process) can be simulated by a quantum Moore machine.
+Moreover, the decoupled structure of a quantum Moore machine allows us to either focus on the
+input side (conditional channel) or the output side (quantum instrument). Thus, it is easy to see
+that a quantum Moore machine can simulate any quantum Markov chain, any quantum automata
+[4], and any hidden quantum Markov model [16, 8].
+
+4
+
+Quantum observable Markov decision processes
+
+We consider the quantum observable Markov decision process defined by Barry et al. [1]. Let S be
+a finite set of states, Σ be a finite set of input symbols, and ∆ be a finite set of output symbols.
+Let S = CS be the complex Euclidean space associated with the set of states.
+4.1 Definition. (Eisert et al. [5], Barry et al. [1])
+Pm
+†
+A superoperator Λ is given by a set of Kraus operators {Kb ∈ L(S)}m
+b=1 Kb Kb = I. If
+b=1 where
+†
+Λ is applied to a density matrix ρ, then with probability pb = Tr(Kb ρKb ), the resulting state is
+Kb ρKb† /pb and the observation b is emitted.
+We note that a superoperator is a quantum instrument.
+4.2 Definition. (Barry et al. [1])
+A quantum observable Markov decision process (QOMDP) is a tuple M = (S, Σ, ∆, Λ, R, γ, ρ0 )
+where Λ = {Λa : a ∈ Σ} is a set of superoperators, R = {Ra : a ∈ Σ} is a set of operators, ρ0 ∈ S
+is the initial state, and γ ∈ [0, 1) is a discount factor. Moreover, we assume each superoperator Λa
+P
+is defined by the set of Kraus operators {Λa,b : b ∈ ∆} satisfying b∈∆ Λ†a,b Λa,b = I. The reward
+associated taking action a ∈ Σ from state ρ ∈ D(S) is given by R(ρ, a) = Tr(Ra ρ).
+The set of superoperators in Definition 4.2 functionally acts as a “conditional quantum instrument.” Using Theorem 3.6, we formalize this using conditional channel and quantum instrument
+(as defined in Watrous [17] and in Wilde [18]).
+8
+
+Remark: The reward operator R must be Hermitian since we require the rewards be real for the
+purpose of optimization.
+4.3 Fact. The reward R is a bounded real-valued function.
+Proof. Suppose S = CS where S is a set of d states. So, Ra is a d × d Hermitian matrix, for all
+a, and Tr(Ra ρ) ≤ dλmax (Ra ), where λmax (Ra ) is the maximum eigenvalue (in absolute value) of
+Ra .
+The next proposition shows we may assume without loss of generality that the reward function
+depends on the current state alone. We adopt this simplifying assumption from here on.
+4.4 Proposition. Let M1 = (S1 , Σ, ∆, Λ, {Ra }, ρ0 , γ) be a quantum observable Markov decision
+process where the reward is defined as R1 (ρ, a) = Tr(Ra ρ) for all ρ ∈ D(S1 ). There is an equivalent quantum observable Markov decision process M2 = (S2 , Σ, ∆, Γ, R, µ0 , γ) where the reward is
+defined as R2 (µ) = Tr(Rµ) for all µ ∈ D(S2 ).
+Proof. Suppose S1 is the underlying finite set of states of M1 . Let S2 = S1 × Σ. Since CS2 =
+CS1 ⊗ CΣ , we have S2 = S1 ⊗ CΣ . Let µ0 = ρ0 ⊗ |a0 iha0 |, for some arbitrary a0 ∈ Σ.
+Each quantum instrument Γa of Γ is assumed to act on product states and is defined as
+Γa (ρ ⊗ α) = Λa (ρ) ⊗ |aiha|.
+
+(28)
+
+So, Γa applies the quantum instrument Λa of Λ to its first component and applies the replacement
+channel α 7→ Tr(α)|aiha|
+P to its second component.
+We define R = b∈Σ Rb ⊗ |bihb|. Then, R2 (ρ ⊗ |aiha|) = Tr(Ra ρ ⊗ |aiha|) = R1 (ρ, a). So, if
+(ρn )∞
+of actions
+(an )∞
+the corresponding
+n=0 is the state trajectory of M1 with a sequence
+n=0
+
+
+
+P
+P , then
+∞
+i
+i
+trajectory of M2 is (ρn ⊗ |an ihan |)n=0 . Thus, E
+i γ R1 (ρi , ai ) = E
+i γ R2 (ρi ⊗ |ai ihai |) .
+Suppose M = (S, Σ, ∆, Λ, R, γ, ρ0 ) is a quantum observable Markov decision process. Given a
+sequence of actions α = a1 . . . an ∈ Σ? and a sequence of observations β = b1 . . . bn ∈ ∆? , we have
+ρM (α, β) =
+
+Λan ,bn . . . Λa1 ,b1 ρ0 Λ†a1 ,b1 . . . Λ†an ,bn
+pM (β; α)
+
+,
+
+pM (β; α) = Tr(Λan ,bn . . . Λa1 ,b1 ρ0 Λ†a1 ,b1 . . . Λ†an ,bn )
+
+(29)
+where ρM (α, β) is the state of M on input α and output β and pM (α, β) is the probability that M
+outputs β on input α.
+4.5 Definition. (Barry et al. [1])
+A goal quantum observable Markov decision process is a tuple M = (S, Σ, ∆, Λ, ρ0 , ρg ) where S,
+Σ, ∆, Λ, and ρ0 are as defined for quantum observable Markov decision process, and ρg is the goal
+state. The goal state is absorbing, that is, for all a ∈ Σ and b ∈ ∆, if pa,b = Tr(Λa,b ρg Λ†a,b ) > 0,
+then Λa,b ρg Λ†a,b /pa,b = ρg .
+4.6 Fact. For every goal quantum observable Markov decision process, there are equivalent quantum Mealy and quantum Moore machines.
+
+9
+
+Proof. (Sketch) We let the Mealy projector be a projection onto the one-dimensional subspace
+spanned by the unique goal state of the goal quantum observable Markov decision process. The
+equivalent quantum Moore machine is obtained from the quantum Mealy machine using Theorem
+3.6.
+Similar to Definition 4.5, we may also define a goal partially observable Markov decision process
+as M = (S, Σ, ∆, {Pa }, Q, s0 , sg ) where sg is an absorbing state for each Markov chain Pa , a ∈ Σ.
+Likewise, we can show that M is equivalent to a Moore machine. Note that the structure of a goal
+partially observable Markov decision process (used in, for example, Madani et al. [7]) is closer to
+the structure of a Moore machine than to a Mealy machine (see Hopcroft and Ullman [6], page
+42-43). This is due to the decoupled nature of the set P of Markov chains and the stochastic output
+function Q in a goal partially observable Markov decision process.
+
+5
+
+Complexity
+
+We explore some computational problems related to partially observable and quantum observable
+Markov decision processes. These include reachability (or planning) and occurrence problems.
+Reachability
+Instance: A Moore machine M = (S, Σ, ∆, {Pa }, Q, s0 , sg ), where sg ∈ S is an absorbing goal state,
+and a threshold τ ∈ [0, 1].
+Question: Is there α ∈ Σ? so that AccM (α) ≥ τ ?
+The above problem is called the plan-existence or probabilistic planning problem in [7].
+5.1 Theorem. (Madani, Hanks, and Condon [7], Theorem 3.7)
+Reachability is undecidable.
+In contrast, the reachability problem with τ = 1 is decidable (a proof was given in [1]).
+Quantum Reachability
+Instance: A quantum Moore machine M = (S, Σ, ∆, Φ, Ω, ρ0 , Π) and a threshold τ ∈ [0, 1].
+Question: Is there α ∈ Σ? so that AccM (α) ≥ τ ?
+5.2 Theorem. Quantum Reachability is undecidable.
+Proof. This follows from Theorem 5.1 since a quantum Moore machine can simulate a Moore
+machine.
+An alternative proof of Theorem 5.2 was also given by Wolf et al. [19].
+5.3 Theorem. (Barry, Barry, and Aaronson [1])
+Quantum Reachability with τ = 1 is undecidable.
+Blondel et al. [4] proved that the quantum reachability problem where the conditional channel
+consists of unitary channels with a trivial quantum instrument is decidable if and only if the
+threshold condition is a strict inequality.
+
+10
+
+In the occurrence problem, the goal is to determine if, in a partially observable Markov decision
+process, the probability of observing a sequence of output is less or equal to a given threshold.
+Informally, this asks if the output sequence is a rare anomaly.
+Non-Occurrence
+Instance: A Moore machine M = (S, Σ, ∆, {Pa }, Q, p0 ) and τ ∈ [0, 1].
+Question: Are there are α ∈ Σ? and β ∈ ∆? so that AccM (α, β) ≤ τ ?
+Although the following result is possibly folklore, for completeness, we provide a simple proof.
+5.4 Proposition. Non-Occurrence is undecidable.
+Proof. We reduce goal-state reachability to non-occurrence. Let M1 = (S1 , Σ, ∆1 , {Pa }, Q1 , p0 , sg )
+be a Moore machine and τ ∈ (0, 1) is a threshold. Recall that Pa (j, i) is the probability of the
+transition i to j under action a and Q1 (b, i) is the probability of output b from state i.
+Let M2 = (S2 , Σ, ∆2 , {P̃a }, Q2 , p0 , sg ) be a Moore machine where S2 = S1 ∪ {ŝ}, where ŝ 6∈ S1 ,
+and ∆2 = ∆1 ∪ {b̂}, where b̂ 6∈ ∆1 . For each a ∈ Σ, we let
+
+ Pa (j, i) if i, j ∈ S \ {sg }
+1
+if i ∈ {sg , ŝ} and j = ŝ
+P̃a (j, i) =
+(30)
+
+0
+otherwise.
+Let Q2 (b, i) = Q1 (b, i) if i ∈ S and b ∈ ∆1 , 1 if i = ŝ and b = ŝ, and 0 otherwise. We may set R
+and γ arbitrarily.
+We observe that M1 reaches its goal state sg with probability at least τ if and only if M2 outputs
+a string without b̂ with probability at most 1 − τ .
+Eisert et al. [5] showed that the classical Non-Occurrence problem with τ = 0 is decidable.
+Quantum Non-Occurrence
+Instance: A quantum Moore machine M = (S, Σ, ∆, Φ, Ω, ρ0 , Π), and τ ∈ [0, 1).
+Question: Are there are α ∈ Σ? and β ∈ ∆? so that AccM (α, β) ≤ τ ?
+5.5 Corollary. Quantum Non-Occurrence is undecidable.
+Proof. This follows from the undecidability of the classical problem (Proposition 5.4).
+For the special case when τ = 0, it is known the classical problem is decidable. But, in the
+quantum setting, we have the following result.
+5.6 Theorem. (Eisert, Müller, and Gogolin [5])
+Quantum Non-Occurrence with trivial conditional channel and τ = 0 is undecidable.
+
+6
+
+Policy Existence
+
+In a Markov decision process with finite action space, Blackwell [3] proved that there always exists
+an optimal policy that is deterministic and stationary. We describe Blackwell’s theorem along with
+relevant background.
+
+11
+
+6.1 Definition. Let X be a topological space. A collection of subsets of X is called a σ-algebra of
+X if it contains X and it is closed under complementation and countable unions. The smallest σalgebra of X which contains all open subsets of X is called the Borel σ-algebra of X . The elements
+of this Borel σ-algebra are called the Borel subsets of X . A Borel set is a Borel subset of a complete
+separable metric space. The set of all bounded real-valued functions over a Borel set S is denoted
+B(S).
+Let M = (S, A, P, R, p0 , γ) be a Markov decision process where S is a Borel set, A is a finite
+set of actions, P is a conditional probability distribution over S given S × A, R ∈ B(S) is a reward
+function, p0 ∈ S is the initial state, and γ ∈ [0, 1) is a discount factor.
+For a positive integer n, let Hn = (S × A)n−1 × S be the history at time n. A policy is a
+sequence π = (πn ) where πn is a conditional distribution over A given Hn . A policy π is Markov if
+each πn : S → A is a deterministic map. A policy π is stationary if for all n, πn = f , for some map
+f : S → A. The value of a policy π is given by
+"∞
+#
+X
+i
+Vπ (p0 ) = E
+γ R(Xi ) .
+(31)
+i=0
+
+The expectation is taken over a probability space which contains all infinite trajectories (see Appendix A). Here, (Xn )∞
+n=0 , Xn ∈ S, is the sequence of states induced by π. Note Vπ ∈ B(S). A
+?
+policy π is optimal if Vπ? ≥ Vπ for all policy π. In this case, we denote the optimal value as
+V ? = Vπ? .
+6.2 Theorem. (Blackwell [3], Theorem 5)
+Let M = (S, A, P, R, p0 , γ) be a Markov decision process (as defined above). Suppose the operator
+T : B(S) → B(S) is defined as T(V ) = supa∈A Ta (V ) where
+Ta (V )(p) = R(p) + γE[V (P (p, a))].
+
+(32)
+
+Then, T is γ-Lipschitz, that is, kT(U ) − T(V )k ≤ γkU − V k, so that (by the Banach fixed-point
+theorem) T has a unique fixed point V ? and kTn (V0 ) − V ? k ≤ γ n kV0 − V ? k, for all n and any
+V0 ∈ B(S).
+6.3 Theorem. (Blackwell [3])
+Let M = (S, A, {Pa }a∈A , R, p0 , γ) be a Markov decision process (as defined above). Then:
+(i) π is optimal if and only if Vπ = supa Ta (Vπ ) (see Theorem 6(f)).
+(ii) There is an optimal stationary policy for M (see Theorem 7(b)).
+Theorems 6.2 and 6.3 show that π ? is optimal if its value function V ? = Vπ? is a fixed point of
+T, that is, V ? = T(V ? ).
+In what follows, we apply Blackwell’s theorems to a quantum observable Markov decision process. Given that a quantum observable Markov decision process is a Markov decision process over
+the set of density matrices, it suffices to show that the latter forms a Borel space.
+6.4 Proposition. Let S be a complex Euclidean space over a finite set S. Then, the set D(S) of
+all density matrices over S is a Borel set.
+
+12
+
+Proof. Let d = |S|. Then, each element of D(S) is a unit trace, positive semidefinite matrix from
+Md (C). The latter is a complete separable metric space (with a norm induced by the inner product
+hA, Bi = Tr(A† B)). To show D(S) is Borel, it suffices to show it is closed. Let (ρn )∞
+n=0 be a
+convergent sequence in D(S) where ρn → η as n → ∞. We need to show η ∈ D(S). Since trace
+is linear, it is continuous; thus, Tr(lim ρn ) = lim Tr(ρn ) = 1. To show η  0, consider the map
+f (A) = Tr(Ax0 xT0 ) for some fixed but arbitrary x0 ∈ Cd . Since f is linear, it is continuous. Thus,
+f (lim ρn ) = lim f (ρn ). This shows that f (η) = xT0 ηx0 ≥ 0. Since x0 is arbitrary, this shows η  0.
+Thus, η ∈ D(S).
+6.5 Theorem. Let M = (S, Σ, ∆, Λ, R, ρ0 , γ) be a quantum observable Markov decision process.
+Then, there is an optimal stationary policy for M .
+Proof. Note this follows from Theorem 6.3 since S is a Borel set (by Proposition 6.4), Σ is finite, Λ
+induces a conditional probability distribution over S given S × Σ, and R is a bounded real-valued
+function.
+Under certain assumptions, the optimal value function has a compact representation as a piecewise linear and convex function over the probability simplex. This was originally observed by
+Sondik [12]. In the next theorem, we generalize this observation to the quantum setting.
+6.6 Theorem. Let M = (S, Σ, ∆, Φ, Ω, R, ρ0 , γ) be a quantum observable Markov decision process.
+Suppose T : B(S) → B(S) is an operator given by
+T(V )(ρ) = sup {R(ρ) + γE[V (Φa (ρ))]} .
+
+(33)
+
+a
+
+For any V0 ∈ B(S) and for any nonnegative integer n, Vn = Tn (V0 ) is a piecewise linear and convex
+function.
+P
+†
+Proof. Assume that the Kraus decomposition Φa (ρ) = i Kai ρKai
+, for each quantum channel Φa ,
+†
+a ∈ Σ. Also, assume that Ωb (ρ) = Lb ρLb , for each operator of the quantum instrument Ω. Suppose
+the reward function is given by R(ρ) = Tr(Rρ) = hR, ρi for some observable R. For brevity, we
+have identified the reward operator R with its observable. Note R is bounded since the underlying
+set of states is finite. Then, we have
+(
+
+)
+X
+Ωb ◦ Φa (ρ)
+T(V )(ρ) = sup hR, ρi + γ
+pb V
+.
+(34)
+pb
+a
+b
+
+Assume inductively that V is piecewise linear and convex. This yields
+(
+)
+X
+Ωb ◦ Φa (ρ)
+T(V )(ρ) = sup hR, ρi + γ
+pb suphRc ,
+i ,
+pb
+a
+c
+
+(35)
+
+b
+
+for some set of operators {Rc }. Now, using the Kraus forms of Φa and Ωb , we get
+(
+)
+X
+T(V )(ρ) = sup hR, ρi + γ
+suphR̃abc , ρi ,
+a
+
+b
+
+(36)
+
+c
+
+P † †
+where R̃abc = i Kai
+Lb Rc Lb Kai . This shows that T(V )(ρ) = supd hR̃d , ρi, for some collection of
+operators {R̃d }. Thus, if T is applied a finite number of times, the resulting V is piecewise linear
+(due to inner product) and convex (due to supremum).
+13
+
+Quantum Policy-Existence
+Instance: A quantum observable Markov decision process M and τ ∈ R.
+Question: Is there a policy π for M so that Vπ ≥ τ ?
+6.7 Theorem. Quantum Policy-Existence is undecidable.
+Proof. This holds since the corresponding classical problem is undecidable (see Madani et al. [7],
+Theorem 4.4).
+Quantum Approximate Optimal Policy
+Instance: A quantum observable Markov decision process M and  ∈ (0, 1).
+Question: Is there a policy π for M so that Vπ ≥ V ? − , where V ? is the optimal value?
+6.8 Theorem. Quantum Approximate Optimal Policy is decidable.
+Proof. (Sketch) We apply the standard analytic argument using Theorem 6.2. Choose an initial V0
+and repeat Vn+1 = T(Vn ), for n = 0, 1, . . ., until kVn+1 − Vn k ≤ (1 − γ)/γ. If this halts, we have
+kV ? − Vn+1 k ≤ kV ? − T(Vn+1 )k + kT(Vn+1 ) − Vn+1 k
+?
+
+= kT(V ) − T(Vn+1 )k + kT(Vn+1 ) − T(Vn )k
+?
+
+≤ γkV − Vn+1 k + γkVn+1 − Vn k,
+
+(37)
+(38)
+(39)
+
+which shows kVn+1 − V ? k ≤ . The iteration halts since T is a contraction with modulus γ:
+kVn+1 − Vn k = kT(Vn ) − T(Vn−1 )k ≤ γkVn − Vn−1 k,
+
+(40)
+
+which shows kVn+1 − Vn k ≤ γ n kT(V0 ) − V0 k. So, for n = O(ln 1 ) we have kVn+1 − V ? k ≤ . Finally,
+we can check kVn+1 − Vn k since the value function is a compact piecewise-linear and convex map
+(by Theorem 6.6).
+
+7
+
+Concluding remarks
+
+We may exploit the decoupled structure of our quantum Moore machine to introduce two classical
+channels (see Figure 3). The classical output channel transmits the output of the quantum instrument to the policy algorithm (or agent). The classical input channel transmits the action chosen
+by the policy to the quantum conditional channel.
+In this work, we assumed that these two channels are noiseless. In a more realistic case, one or
+both of these channels might be noisy. If the noise characteristics are known, these can be built
+into the quantum Markov process. We leave the unknown noise case for future work.
+
+Acknowledgments
+This material is based on research sponsored by Air Force Research Laboratory under agreement
+number FA8750-18-1-0104. The U.S. Government is authorized to reproduce and distribute reprints
+for Government purposes notwithstanding any copyright thereon. The views and conclusions contained herein are those of the authors and should not be interpreted as necessarily representing the
+official policies or endorsements, either expressed or implied, of Air Force Research Laboratory or
+the U.S. Government.
+14
+
+ρt
+
+Φ
+
+Ω
+
+Ci
+
+Co
+
+a
+
+π
+
+ρt+1
+
+b+ε
+
+Figure 3: One step in the life-cycle of a quantum Moore machine: Φ is a conditional channel, Ω is
+a quantum instrument, a ∈ A is an input action, b ∈ B is an output signal, π is the policy, and
+Ci , Co are classical (possibly noisy) input and output channels.
+
+References
+[1] J. Barry, D. Barry, S. Aaronson. “Quantum partially observable Markov decision processes.” Physical Review A 90:032311, 2014.
+[2] D. Bertsekas, S. Shreve. Stochastic Optimal Control: The Discrete-Time Case. Academic
+Press, 1978.
+[3] D. Blackwell. “Discounted Dynamic Programming.” Annals of Mathematical Statistics
+36:226-235, 1965.
+[4] V. Blondel, E. Jeandel, P. Koiran, N. Portier. “Decidable and Undecidable Problems
+about Quantum Automata.” SIAM J. Computing, 34(6):1464-1473, 2005.
+[5] J. Eisert, M. Müller, C. Gogolin. “Quantum measurement occurrence is undecidable.”
+Physical Review Letters 108:260501, 2012.
+[6] J. Hopcroft, J. Ullman. Introduction to Automata Theory, Languages, and Computation.
+Addison-Wesley, 1979.
+[7] O. Madani, S. Hanks, A. Condon. “On the undecidability of probabilistic planning and
+related stochastic optimization problems.” Artificial Intelligence 147:5-34, 2003.
+[8] A. Monras, A. Beige, K. Wiesner. “Hidden Quantum Markov Models and Non-Adaptive
+Read-Out of Many-Body States.” Appl. Math. Comp. Sciences 3:93, 2011.
+[9] M. Nielsen, I. Chuang. Quantum Information and Quantum Computation. Cambridge
+University Press, 2000.
+[10] S. Russell, P. Norvig. Artificial Intelligence: A Modern Approach, 3rd edition. Prentice
+Hall, 2010.
+[11] A. Shiryaev. Probability, second edition. Springer, 1996.
+[12] E.J. Sondik. “The Optimal Control of Partially Observable Markov Processes over the Infinite
+Horizon: Discounted Costs.” Operations Research 26(2): 282-304, 1978.
+
+15
+
+[13] M. Szegedy. “Quantum Speed-Up of Markov Chain Based Algorithms.” Proc. 45th Symposium
+on Foundations of Computer Science, 32-41, 2004.
+[14] R. Sutton, A. Barto. Reinforcement Learning: An Introduction, second edition. The MIT
+Press, 2018.
+[15] K. Temme, M. Kastoryano, M.B. Ruskai, M. Wolf, F. Verstraete. “The χ2 divergence and mixing times of quantum Markov processes.” Journal of the Mathematical
+Physics 51, 122201, 2010.
+[16] K. Wiesner, J. Crutchfield. “Computation in finitary stochastic and quantum processes.”
+Physica D, 237:1173-1195, 2008.
+[17] J. Watrous. The Theory of Quantum Information. Cambridge University Press, 2018.
+[18] M. Wilde. Quantum Information Theory, second edition. Cambridge University Press, 2017.
+[19] M. Wolf, T. Cubitt, D. Perez-Garcia. ”Are problems in quantum information theory
+(un)decidable?” arXiv:1111.5425 [quant-ph].
+
+16
+
+A
+
+Infinite product spaces
+
+Let S be a finite set of states and let S be a complex Euclidean space corresponding to S. Suppose
+we have a quantum observable Markov decision process M = (S, Σ, ∆, {Λa }a∈Σ , R, ρ0 , γ). Here, we
+view M equivalently as a Markov decision process M = (D(S), Σ, {Λa }a∈Σ , R, ρ0 , γ) whose state
+space is the set of density matrices D(S), where each Λa is a conditional probability distribution
+P (D(S)|D(S) × Σ) with support of size at most |∆|.
+Let π = (πn ) be a policy for M . Given M and π, consider an infinite sequence (ρn )∞
+n=0 where for
+each n the random variable ρn ∈ D(S) is distributed according to Λa (·|ρn−1 ), a = πn (ρn−1 ). This
+infinite sequence of random variables belongs to the probability space of all infinite trajectories.
+The latter exists due to the following theorem of Ionescu Tulcea.
+A.1 Theorem. (Ionescu Tulcea extension theorem (see [11], page 249))
+∞
+Let (Ω
+product, where
+Qn , Fn )n=1 be arbitrary measurable spaces and let (Ω, F) be their direct
+Ω = n Ωn and F is the smallest σ-algebra containing all the cylinder sets2 . Suppose that a
+probability measure P1 is given on (Ω1 , F1 ) and that for every set (ω1 , . . . , ωn ) ∈ Ω1 × . . . × Ωn ,
+for n ≥ 1, probability measures P (·|ω1 , . . . , ωn ) are given on (Ωn+1 , Fn+1 ). Suppose that for every
+B ∈ Fn+1 , the functions P (B|ω1 , . . . , ωn ) are Borel functions on (ω1 , . . . , ωn ) and let
+Z
+Z
+Z
+Pn (A1 × . . . × An ) =
+P1 (ω1 )
+P (dω2 |ω1 ) . . .
+P (dωn |ω1 , . . . , ωn−1 ), for Ai ∈ Fi , n ≥ 1.
+A1
+
+A2
+
+An
+
+(41)
+Then, there is a unique probability measure P on (Ω, F) so that
+P ({ω : ω1 ∈ A1 , . . . , ωn ∈ An }) = Pn (A1 × . . . × An ),
+
+for every n ≥ 1
+
+(42)
+
+and there is a random sequence X = (X1 (ω), X2 (ω), . . .) so that
+P ({ω : X1 (ω1 ) ∈ A1 , . . . , Xn (ω) ∈ An }) = Pn (A1 × . . . × An ),
+
+where Ai ∈ Fi .
+
+(43)
+
+Let (Ω, F, P ) be the unique probability space for the set of all infinite trajectories induced by
+the quantum Markov process (which exists due to Theorem A.1). The value function of policy π is
+given by
+"∞
+#
+X
+Vπ (ρ0 ) := E
+(44)
+γ i R(ρi )
+i=0
+
+where the expectation is taken with respect to the probability measure P .
+The next theorem of Lebesgue allows us to interchange the order of the expectation with the
+limiting process in (44).
+A.2 Theorem. (Lebesgue dominated convergence theorem (see [11], page 187))
+Let η, Z, Z1 , Z2 , . . . be random variables such that |Zn | < η, E[η] < ∞ and Zn → Z (almost surely).
+Then, E[|Z|] < ∞, E[Zn ] → E[Z] and E[|Zn − Z|] → 0, as n → ∞.
+By Theorem A.2, we have that
+"
+#
+" n
+#
+n
+X
+X
+E lim
+γ i R(ρi ) = lim E
+γ i R(ρi ) .
+n→∞
+
+i=0
+
+n→∞
+
+2
+
+(45)
+
+i=0
+
+These are sets that are trivial in all but a finitely many positions: Fn1 ,...,nk (B1 , . . . , Bk ) = {ω ∈ Ω : ωnj ∈ Bj , j =
+1, . . . , k}, where B1 ∈ F1 , . . . , Bk ∈ Fk .
+
+17
+
+B
+
+Example: Bloch transducer
+
+For a Pauli matrix A, let RA (θ) = exp(−iA/2) be the rotation matrix about the A axis (see [9],
+page 174). We have
+
+
+
+
+ −iθ/2
+
+cos 2θ
+−i sin 2θ
+cos 2θ − sin 2θ
+e
+0
+Rx (θ) =
+, Ry (θ) =
+, Rz (θ) =
+(46)
+−i sin 2θ
+sin 2θ
+cos 2θ
+cos 2θ
+0
+eiθ/2
+Let M = (D(S), {a1 , a2 }, {b−1 , b1 }, Φ, {Ωb±1 }, ρ0 , Π) be a quantum Moore machine, where S =
+span{|0i, |1i}, ρ0 = |+ih+| and Π is the projection onto the diagonal density matrices (probability
+simplex). The conditional channel Φ is given by the following two quantum channels:
+Φa1 (ρ) = 21 ρ + 12 Rx ( π3 )ρRx ( π3 )† ,
+
+Φa2 (ρ) = 12 ρ + 12 Ry ( π3 )ρRy ( π3 )† .
+
+The quantum instrument Ω is given by the two Kraus operators:
+±π †
+Ωb±1 (ρ) = 21 Rz ( ±π
+3 )ρRz ( 3 ) .
+
+Figure 4: Example: three steps in the life-cycle of a quantum transducer.
+
+18
+
+(47)
+
+

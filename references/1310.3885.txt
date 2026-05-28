@@ -1,0 +1,2119 @@
+Universal State Transfer on Graphs
+
+arXiv:1310.3885v1 [quant-ph] 15 Oct 2013
+
+Stephen Cameron∗
+Oliver Hennigh‡
+
+Shannon Fehrenbach†
+Leah Granger‡
+Sunrose Shrestha§
+Christino Tamon¶
+September 21, 2018
+
+Abstract
+A continuous-time quantum walk on a graph G is given by the unitary matrix
+U (t) = exp(−itA), where A is the Hermitian adjacency matrix of G. We say G has
+pretty good state transfer between vertices a and b if for any ǫ > 0, there is a time t,
+where the (a, b)-entry of U (t) satisfies |U (t)a,b | ≥ 1 − ǫ. This notion was introduced
+by Godsil (2011). The state transfer is perfect if the above holds for ǫ = 0. In this
+work, we study a natural extension of this notion called universal state transfer. Here,
+state transfer exists between every pair of vertices of the graph. We prove the following
+results about graphs with this stronger property:
+• Graphs with universal state transfer have distinct eigenvalues and flat eigenbasis
+(where each eigenvector has entries which are equal in magnitude).
+• The switching automorphism group of a graph with universal state transfer is
+abelian and its order divides the size of the graph. Moreover, if the state transfer
+is perfect, then the switching automorphism group is cyclic.
+• There is a family of prime-length cycles with complex weights which has universal
+pretty good state transfer. This provides a concrete example of an infinite family
+of graphs with the universal property.
+• There exists a class of graphs with real symmetric adjacency matrices which has
+universal pretty good state transfer. In contrast, Kay (2011) proved that no graph
+with real-valued adjacency matrix can have universal perfect state transfer.
+We also provide a spectral characterization of universal perfect state transfer graphs
+that are switching equivalent to circulants.
+Keywords: quantum walk, state transfer, Hermitian graphs, switching automorphisms.
+∗
+
+Department of Mathematics, College of William and Mary.
+Department of Mathematics, University of Wisconsin Oshkosh.
+‡
+Department of Mathematics, Clarkson University.
+§
+Department of Mathematics, Hamilton College.
+¶
+Department of Computer Science, Clarkson University. Contact author: tino@clarkson.edu.
+†
+
+1
+
+1
+
+Introduction
+
+The study of continuous-time quantum walk on graphs is important for several reasons.
+Originally, it was studied for developing new quantum algorithmic techniques. This led to
+the seminal results of Childs et al. [5] and of Farhi et al. [10]. The algorithms developed in
+[5, 10] are notable in that they provably beat the corresponding classical resource bounds.
+The main goal here is to develop applications for quantum walk algorithms which have the
+same impact as Shor’s quantum algorithm for factoring integers.
+Around the same time, Bose [2] studied the problem of quantum information transmission
+in quantum spin chains. As stated by Bose, this problem may be viewed as a continuoustime quantum walk on a path where perfect state transfer occurs between the two antipodal
+endpoints. Subsequently, Christandl et al. [7, 6] proved that perfect state transfer between
+antipodal points on a path with n vertices is only possible whenever n = 2 or 3. Despite
+this negative result, the problem of perfect state transfer on other finite graphs became
+an interesting question in both quantum information and algebraic graph theory. A recent
+survey in this area is given by Godsil [13].
+More recently, Childs [4] showed that quantum walk is a key ingredient in simulating
+universal quantum computation. Later, Underwood and Feder [21] showed how to use perfect
+state transfer as an alternative to the graph scattering methods used by Childs [4]. This
+underscores the importance of perfect state transfer in quantum walks.
+Several works have raised the difficulties in requiring the state transfer be perfect (for
+example, Anderson localization [19]). This led to the natural notion of pretty good state
+transfer which was introduced by Godsil [13]. In a recent breakthrough, Godsil, Kirkland,
+Severini and Smith [14] proved that some families of paths (whose lengths satisfy specific
+number-theoretic conditions) have pretty good state transfer. This is in contrast to the
+negative result of Christandl et al. [7, 6] and it confirmed some of the numerical observations
+made by Bose [2]. A further result on pretty good state transfer was given by Fan and Godsil
+[9] on the so-called double-star graphs.
+A fundamental observation by Kay [18] is that perfect state transfer between two nondisjoint pairs of vertices is impossible for graphs with real symmetric adjacency matrices. In
+this work, we study and exhibit graphs with complex Hermitian adjacency matrices which
+have universal state transfer. By universal, we mean that state transfer exists between
+every pair of vertices. Graphs with complex Hermitian adjacency matrices are also known
+as complex gain graphs – which are generalizations of signed graphs (see Zaslavsky [22]).
+For brevity, we will refer to these graphs as Hermitian graphs. As the main result of this
+work, we prove spectral and structural properties of Hermitian graphs with universal state
+transfer. We summarize these results in the following.
+For spectral properties, we show that if a graph has universal (pretty good or perfect)
+state transfer, then all of its eigenvalues must be simple. Moreover, we prove that each
+eigenvector of such a graph has entries which are all equal in magnitude. In other words,
+the eigenbasis of a graph with universal state transfer is flat (and therefore is type-II, since
+it is also unitary; see Chan and Godsil [3]). For structural properties, we show that the
+switching automorphism group of a graph with universal state transfer must be abelian and
+its order must divide the size of the graph. Moreover, if the state transfer is perfect, then
+the switching automorphism group is necessarily cyclic.
+2
+
+Next, we provide an explicit family of graphs with universal state transfer. For each prime
+p, we prove that the graph Cp obtained from a directed p-cycle with ±i weights has universal
+pretty good state transfer. Aside from the smallest case of C2 , the Hermitian 3-cycle C3 has
+universal perfect (not just pretty good) state transfer and was the original motivation for our
+study of universal state transfer. Our proof employed some the number-theoretic machinery
+used in Godsil et al. [14] (for example, Kronecker’s approximation theorem). By employing
+the same methods, we also show that the Cartesian bunkbed K2  Cp has universal pretty
+good state transfer for primes p ≥ 5.
+Given that our example above of prime-length cycles is a circulant family, we consider the
+question of universal state transfer on circulant graphs. Here, we prove a spectral characterization of circulants with universal perfect state transfer. More specifically, the eigenvalues
+of a n-vertex circulant with universal perfect state transfer must be a permutation of the
+integers modulo n under a linear bijection. By our earlier result, we know that the switching
+automorphism group of a universal perfect state transfer n-vertex graph is cyclic and its
+order must divide n. But, in the circulant case, we show that the order of this group must
+be exactly n.
+Finally, we give examples of graphs with real adjacency matrices with universal pretty good
+state transfer. This is in contrast to the aforementioned observation of Kay that universal
+perfect state transfer is impossible for such graphs. Our construction is based on another
+theorem from number theory (Lindemann’s theorem) and uses Hadamard matrices. Here,
+we exploit the fact that Hadamard matrices are real and flat.
+For other works which had studied graphs with complex Hermitian adjacency matrices,
+we refer the reader to Kay [18] (and some of the references therein) and to Zimborás et
+al. [23].
+
+2
+
+Preliminaries
+
+We state some notation used in the rest of the paper. For a logical statement S, we let
+the Iversonian [[S]] denote 1 if S is true, and 0 otherwise (see Graham et al. [16]). As
+is standard, Q denotes the rational numbers, Z denotes the integers, R denotes the real
+numbers, √
+and C denotes the complex numbers. Throughout the paper, we reserve i to
+represent −1. We also use T to denote the set of complex numbers with unit modulus;
+that is, T = {z ∈ C : |z| = 1}.
+The identity matrix is denoted as I. For an index k, we let |ki denote the unit vector
+that is 1 at position k and 0 elsewhere. The inner product of two vectors |ui, |vi ∈ Cn is
+denoted hu|vi. All norms used on vectors and matrices will be the standard 2-norms. The
+conjugate transpose of a matrix A is denoted A† .
+
+2.1
+
+Hermitian Graphs
+
+We are interested in graphs with Hermitian adjacency matrices. Let G be a graph over a
+vertex set V whose adjacency matrix A is Hermitian. Here, we view the edge set of G as
+given by E = {(u, v) ∈ V × V : Au,v 6= 0}. Since A is Hermitian, if (u, v) ∈ E then
+Av,u = A−1
+u,v = Au,v .
+3
+
+(1)
+
+In this sense, we are working with complex gain graphs (see Zaslavsky [22] and the references
+therein). For brevity, we refer to these as Hermitian graphs (since their adjacency matrices
+are Hermitian). In several places, we use the notation V (G), E(G) and A(G) to denote the
+vertex set, edge set and adjacency matrix of G, respectively.
+A monomial n×n matrix is a product of a permutation matrix Pφ , where φ is a permutation on n elements, and a complex diagonal matrix D of size n (see Davis [8]). The (j, k)-entry
+of the permutation matrix Pφ is given by (Pφ )j,k = [[j = φ(k)]], for each j, k ∈ {1, . . . , n}.
+We use the notation P̃φ = Pφ D to denote such a monomial matrix, where we intentionally
+suppress details about D since our focus is on the permutation action of φ (rather than the
+scaling by D). Any monomial matrix is a unitary matrix since
+(Pφ D)† = DPφT = (Pφ D)−1 .
+
+(2)
+
+Thus, the eigenvalues of a monomial matrix all lie in T. Also, note that monomial matrices
+are closed under multiplication since
+P̃φ1 P̃φ2 = (Pφ1 D1 )(Pφ2 D2 ) = Pφ1 Pφ2 D̂1 D2 = P̃φ1 φ2 ,
+
+(3)
+
+where the (j, j)-entry of D̂1 is equal to the (φ2 (j), φ2(j))-entry of D1 . Here, we use φ1 φ2
+to denote the composition of the permutations φ1 and φ2 . Since I is monomial, the set of
+monomial matrices form a group under multiplication.
+We say two Hermitian graphs G1 and G2 are switching isomorphic, or G1 ≃ G2 , if there
+is a monomial matrix P̃φ , where φ is a bijection φ : V (G2 ) → V (G1 ), with
+A(G2 ) = P̃φ† A(G1 )P̃φ . = (Pφ D)† A(G1 )(Pφ D).
+
+(4)
+
+We say G1 and G2 are switching equivalent, or G1 ∼ G2 , if they are switching isomorphic with
+Pφ = I. We say G1 and G2 are isomorphic, or G1 ∼
+= G2 , if they are switching isomorphic with
+D = I. The switching automorphism group SwAut(G) is the group of monomial matrices
+which commute with A(G):
+SwAut(G) = {P̃φ : A(G)P̃φ = P̃φ A(G)}.
+
+(5)
+
+Note that if Pφ D1 and Pφ D2 are both in SwAut(G), then D1 = γD2 , for some γ ∈ C.
+
+2.2
+
+Circulants
+
+A circulant graph is a graph whose adjacency matrix is circulant. An n × n circulant matrix
+C = Circ(a0 , . . . , an−1 ) defined by the sequence {ak } is given by
+
+
+a0
+a1 a2 . . . an−1
+an−1 a0 a1 . . . an−2 
+
+
+an−2 an−1 a0 . . . an−3 
+(6)
+C=
+.
+ ..
+.. 
+..
+..
+ .
+. 
+. ...
+.
+a1
+a2 a3 . . . a0
+4
+
+Let σ = (0 1 . . . n − 1) denote the n-cycle permutation whose permutation matrix is given
+by the circulant matrix Θn = Circ(0, 0, . . . , 0, 1):
+
+
+0 0 0 ... 0 1
+1 0 0 . . . 0 0
+
+
+
+
+Θn = 0 1 0 . . . 0 0
+(7)
+ .. .. .. .. .. .. 
+. . . . . .
+0 0 0 ... 1 0
+An alternate and useful characterization of circulants is that they are polynomials in Θn .
+For example, the circulant C in Equation (6) may be written as
+C=
+
+n−1
+X
+
+an−k Θkn .
+
+(8)
+
+k=0
+
+Let ωn = exp(2πi/n) be the principal nth root of unity. The
+√ Fourier matrix Fn of order n is a
+unitary matrix whose entries are given by hj|Fn |ki = ωnjk / n, for each j, k ∈ {0, 1, . . . , n−1}.
+For convenience, we often refer to the kth column of Fn as |Fk i. It is known that F
+diagonalizes any circulant C; that is, we have
+
+
+λ0 0 0 . . . 0
+0
+ 0 λ1 0 . . . 0
+0 
+
+
+ 0 0 λ2 . . . 0
+
+†
+0
+Fn CFn = 
+(9)
+
+ ..
+..
+..
+.. ..
+.. 
+.
+
+.
+.
+. .
+.
+0 0 0 . . . 0 λn−1
+By using Equation (9), we may derive the eigenvalues of the circulant C which are given by
+λk =
+
+n−1
+X
+
+aj ωnjk .
+
+(10)
+
+j=0
+
+More background on circulants may be found in Davis [8] and in Godsil and Royle [15].
+
+2.3
+
+Quantum walk
+
+Given a graph G = (V, E) with adjacency matrix A, a continuous-time quantum walk on G
+is defined by the time-dependent unitary matrix U(t) = e−itA , where t ∈ R. For two vertices
+a, b ∈ V , we say that G has pretty good state transfer from a to b if for any ǫ > 0, there is a
+time t so that
+ke−itA |ai − γ|bik < ǫ,
+(11)
+for some γ ∈ T. When the context is clear, we will use the convenient shorthand e−itA |ai ≈
+γ|bi to denote Equation (11). Alternatively, we may require |hb|e−itA |ai| ≥ 1 − ǫ in place of
+Equation (11).
+We say G has perfect state transfer from vertex a to vertex b at time t if
+|hb|e−itA |ai| = 1.
+5
+
+(12)
+
+A graph G is called periodic if there is perfect state transfer from a to itself, for every vertex
+a of G.
+Definition 1. A graph G has universal (pretty good or perfect) state transfer if it has (pretty
+good or perfect) state transfer between every pair of its vertices.
+
+3
+
+Small Graphs with Universal State Transfer
+
+Here, we provide small examples of graphs with universal (perfect and pretty good) state
+transfer. First, note that any Hermitian graph based on K2 has universal perfect state
+transfer. We may take, for example, graphs whose adjacency matrices are the standard
+Pauli X and Y matrices:
+
+
+
+
+0 −i
+0 1
+.
+(13)
+,
+Y =
+X=
+i 0
+1 0
+If K2 is a Hermitian graph with adjacency matrix Y , the quantum walk on this graph is
+
+
+ 
+
+
+e−it 1 −i
+eit 1 i
+cos(t) − sin(t)
+−itY
+e
+=
+(14)
++
+=
+sin(t) cos(t)
+2 i 1
+2 −i 1
+which shows that it has universal perfect state transfer, since each matrix entry can be made
+equal to 1.
+
+3.1
+
+Hermitian 3-Cycle
+
+Consider the Hermitian graph C3 (see Figure 1) whose adjacency matrix is
+
+
+0 −i i
+A(C3 ) =  i
+0 −i .
+(15)
+−i i
+0
+√
+√
+Let ω = e2πi/3 . Since C3 is a circulant, its eigenvalues are λ0 = 0, λ1 = 3 and λ2 = − 3.
+Thus, by the spectral decomposition, we have
+
+
+
+
+
+
+√
+√
+1 1 1
+1 ω ω
+1 ω ω
+−it 3
+it 3
+1
+e
+ω 1 ω  + e
+ω 1 ω 
+e−itA(C3 ) = 1 1 1 +
+(16)
+3
+3
+3
+1 1 1
+ω ω 1
+ω ω 1
+The quantum walk starting at 0 (without loss of generality) is given by
+
+
+√
+√
+√
+
+
+1 + e−it√3 + eit 3√
+3)
+1 + 2 cos(t
+√
+1
+ 1
+e−itA(C3 ) |0i = 1 + ωe−it√3 + ωeit√3  = 1 + 2 cos(t√3 − 2π/3)
+3
+3
+1 + 2 cos(t 3 + 2π/3)
+1 + ωe−it 3 + ωeit 3
+
+(17)
+
+√
+Thus, we √
+have perfect state transfer from 0 to 0√at time t = 2π/ 3, from 0 to 1 at time
+t = 8π/(3 3), and from 0 to 2 at time t = 4π/(3 3).
+6
+
+i
+
+2
+
+i
+
+01
+
+1
+i
+
+i
+
+i
+10
+
+0
+
+i
+
+00
+i
+
+i
+
+i
+11
+
+Figure 1: Hermitian graphs: (1) C3 has universal perfect state transfer; (2) K4 has universal
+pretty good state transfer. For each directed edge labeled with i, there is a backward edge
+labeled with −i (which are omitted for simplicity).
+
+3.2
+
+Hermitian 4-Clique
+
+Our second example is the Hermitian graph K4 (see Figure 1) which is a graph on the vertex
+set {0, 1}2 = {00, 01, 10, 11}. The adjacency matrix of this graph is given by:
+
+
+0 −i i
+i
+i
+0 −i i 
+ = I ⊗ Y − (Y ⊗ I + X ⊗ Y ).
+(18)
+A(K4 ) = 
+−i i
+0 −i
+−i −i i
+0
+A switching automorphisms of K4 is given by the following monomial matrix:
+
+
+ 
+
+0 1 0 0 −i 0 0 0
+0 i 0 0
+−i 0 0 0 1 0 0 0  0 i 0 0
+
+
+ 
+P̃(01)(23) = 
+ 0 0 0 i  = 0 0 0 1  0 0 −i 0
+0 0 0 i
+0 0 1 0
+0 0 −i 0
+
+(19)
+
+To analyze the quantum walk on K4 , we need the following lemma which might be of independent interest.
+Lemma 1. Let A and B be two anti-commuting square matrices, that is AB = −BA, which
+satisfies A2 + B 2 > 0. Then, we have
+√
+√
+A+B
+eit(A+B) = cos(t A2 + B 2 ) + i √
+sin(t A2 + B 2 ).
+(20)
+A2 + B 2
+Proof. Since AB + BA = 0, we have A2 and B 2 commute. This yields
+(A + B)2m = (A2 + B 2 )m
+(A + B)2m+1 = (A + B)(A2 + B 2 )m .
+
+(21)
+(22)
+
+Therefore, the exponential matrix eit(A+B) is given by
+∞
+X
+(it)2m
+
+e
+
+=
+
+2
+
+∞
+X
+(it)2m+1
+
+(A + B ) + (A + B)
+(A2 + B 2 )m
+(2m)!
+(2m
++
+1)!
+m=0
+m=0
+√
+√
+(A + B)
+= cos(t A2 + B 2 ) + i √
+sin(t A2 + B 2 )
+A2 + B 2
+This proves the claim.
+it(A+B)
+
+2 m
+
+7
+
+(23)
+(24)
+
+We apply Lemma 1 with A = Y ⊗ I and B = X ⊗ Y . Since A2 + B 2 = 2I, we have
+√
+√
+1
+eit(A+B) = cos(t 2)I + √ sin(t 2)(A + B)
+2
+√
+√
+√
+√
+
+2 cos(t 2) √
+0 √
+sin(t √2)
+sin(t√2)
+1 
+0√
+2 cos(t
+− sin(t √2)
+sin(t 2) 
+
+√ 2) √
+= √ 
+sin(t √2)
+2 cos(t 2) √
+0 √ 
+2  − sin(t√2)
+− sin(t 2) − sin(t 2)
+0
+2 cos(t 2)
+
+(25)
+
+(26)
+
+Also, note that I ⊗ Y commutes with both A and B. Given the tensor decomposition of
+A(K4 ), we will view the vertices of K4 as binary strings over {0, 1}2 . The quantum walk on
+K4 starting at vertex 00 is given by
+e−itA(K4 ) |00i = eit(A+B) e−it(I⊗Y ) |00i = eit(A+B) (I ⊗ e−itY )|00i
+= eit(A+B) (cos(t)|00i + sin(t)|01i).
+
+(27)
+(28)
+
+Using Equation (25), we see that
+√
+√
+e−itA(K4 ) |00i = cos(t) cos(t 2)|00i + sin(t) cos(t 2)|01i
+√
++ √12 (− cos(t) + sin(t)) sin(t 2)|10i
+√
++ √12 (− cos(t) − sin(t)) sin(t 2)|11i
+
+(29)
+(30)
+(31)
+
+√
+Since {1, 2} is linearly independent over the rationals, K4 has perfect state transfer from
+vertex 00 to
+For example,
+to reach vertex 11, we can arrange so that
+√ all other vertices.
+√
+√
+sin(t) ≈ 1/ 2, cos(t) ≈ 1/ 2 and sin(t 2) ≈ 1 simultaneously for some t. We will formalize
+this argument using Kronecker’s Theorem for several family of graphs in Theorem 19.
+
+4
+
+State Transfer on Graphs
+
+In this section, we prove that if a graph G has state transfer from a vertex a to a vertex φ(a)
+for some automorphism φ of G, then the unitary matrix e−itA(G) is equal to the permutation
+matrix Pφ up to scaling. This property was first observed by Godsil et al. [14] in the context
+of pretty good state transfer on paths. We generalize their observation to arbitrary graphs
+under some mild assumptions. First, we prove this for perfect state transfer since the proof
+is simpler and more direct.
+Theorem 2. Let G be a n-vertex graph with perfect state transfer from vertex a to vertex
+φ(a) at time t, for some switching automorphism P̃φ ∈ SwAut(G). Suppose that A(G) and
+P̃φ share a set {|z1 i, . . . , |zn i} of orthonormal eigenvectors which satisfies ha|zk i 6= 0, for
+each k. Then,
+e−itA(G) = γ P̃φ ,
+(32)
+for some γ ∈ T.
+
+8
+
+Proof. Let λ1 , . . . , λn be the eigenvalues of A(G). Given that P̃φ is a monomial matrix, we
+assume its eigenvalues are given by eθ1 , . . . , eθn , for some real numbers θk ∈ R. Since A(G)
+and P̃φ share the set {|z1 i, . . . , |zn i} of orthonormal eigenvectors, we have
+A(G) =
+
+n
+X
+k=1
+
+λk |zk ihzk |,
+
+P̃φ =
+
+n
+X
+k=1
+
+eiθk |zk ihzk |.
+
+(33)
+
+Since G has perfect state transfer from vertex a to vertex φ(a) at time t, we have
+1 = |ha|P̃φ† e−itA(G) |ai| =
+
+n
+X
+
+−i(tλk +θk )
+
+e
+
+k=1
+
+ha|zk ihzk |ai ≤
+
+n
+X
+k=1
+
+|ha|zk i|2 = 1,
+
+(34)
+
+P
+where the last equality holds since k |zk ihzk | = I. Thus, there is a real number α ∈ R so
+that e−i(tλk +θk ) = eiα , for each k = 1, . . . , n (see Lemma 26). Therefore, we have
+−itA(G)
+
+e
+
+=
+
+n
+X
+k=1
+
+−itλk
+
+e
+
+iα
+
+|zk ihzk | = e
+
+n
+X
+k=1
+
+eiθk |zk ihzk | = eiα P̃φ .
+
+(35)
+
+This proves the claim.
+Next, we generalize Theorem 2 for the case of pretty good state transfer.
+Theorem 3. Let G be a n-vertex graph with pretty good state transfer from vertex a to vertex
+φ(a), for some switching automorphism P̃φ ∈ SwAut(G). Suppose that A(G) and P̃φ share a
+set {|z1 i, . . . , |zn i} of orthonormal eigenvectors which satisfies ha|zk i 6= 0, for each k. Then,
+for each ǫ > 0 there is a time t ∈ R where
+ke−itA(G) − γ P̃φ k ≤ ǫ,
+
+(36)
+
+for some γ ∈ T.
+Proof. Suppose A(G) has eigenvalues λ1 , . . . , λn . Given that P̃φ is a monomial matrix,
+we assume its eigenvalues are given by eθ1 , . . . , eθn , for some real numbers θk ∈ R. Since
+A(G) and P̃φ share the set
+1 i, . . . , |zn i} of orthonormal eigenvectors, we have A(G) =
+P{|z
+P
+n
+n
+iθk
+k=1 e |zk ihzk |. Thus, we have
+k=1 λk |zk ihzk | and P̃φ =
+P̃φ† e−it̃A(G) =
+
+n
+X
+k=1
+
+e−i(t̃λk +θk ) |zk ihzk |.
+
+(37)
+
+Since G has pretty good state transfer from vertex a to vertex φ(a), for any ǫ̃ > 0, there is
+a time t̃ where
+ke−it̃A(G) |ai − γ P̃φ |aik < ǫ̃,
+(38)
+for some γ ∈ T. By using Equation (37) and the fact that P̃φ is unitary, we rewrite the
+left-hand side of Equation (38) as
+−it̃A(G)
+
+ke
+
+|ai − γ P̃φ |aik = k(P̃φ† e−it̃A(G) − γI)|aik =
+9
+
+n
+X
+k=1
+
+(e−i(t̃λk +θk ) − γ)hzk |ai|zk i .
+
+(39)
+
+Since {|z1 i, . . . , |zn i} is an orthonormal set, by combining Equations (38) and (39), we have
+n
+X
+
+2
+−i(t̃λk +θk )
+
+(e
+
+k=1
+
+− γ)hzk |ai|zk i
+
+=
+
+n
+X
+k=1
+
+|e−i(t̃λk +θk ) − γ|2 · |ha|zk i|2 < ǫ̃2 .
+
+Suppose that δ = mink {|ha|zk i|}, where 0 < δ ≤ 1. Then, we get
+ 2
+n
+X
+2
+ǫ̃
+−i(t̃λk +θk )
+.
+e
+−γ <
+δ
+k=1
+
+(40)
+
+(41)
+
+This allows us to obtain the following upper bound:
+kP̃φ† e−it̃A(G) − γIk =
+
+n
+X
+
+(e−i(t̃λk +θk ) − γ)|zk ihzk |
+
+(42)
+
+≤
+
+n
+X
+
+|e−i(t̃λk +θk ) − γ| · k|zk ihzk |k
+
+(43)
+
+≤
+
+n
+X
+
+|e−i(t̃λk +θk ) − γ|,
+
+since k|zk ihzk |k ≤ 1
+
+(44)
+
+by Cauchy-Schwarz on Equation (41).
+
+(45)
+
+≤
+
+k=1
+
+k=1
+
+k=1
+
+√
+
+ 
+ǫ̃
+,
+n
+δ
+
+We have used k|zk ihzk |k = max k(|zk ihzk |)|xik ≤ |hzk |xi| ≤ 1, where the maximum is taken
+over all unit-norm |xi.
+√
+So, given ǫ > 0, we choose ǫ̃ = δǫ/ n. Since G has pretty
+√ good state transfer from a
+to φ(a), there is a time t̃ so that ke−it̃A(G) |ai − γ P̃φ |aik < δǫ/ n = ǫ̃. From the derivation
+above, we get
+ke−it̃A(G) − γ P̃φ k = kP̃φ† e−it̃A(G) − γIk < ǫ.
+(46)
+This proves the claim.
+
+In [13], Godsil proved that if G is a vertex-transitive graph where perfect state transfer
+occurs between vertices a and b at time t, then e−itA(G) is a scalar multiple of a permutation
+matrix P , for which P |ai = |bi, where P is of order two with no fixed points and P lies in
+the center of the automorphism group of G. We generalize this observation to Hermitian
+graphs.
+Corollary 4. Suppose G has perfect state transfer from vertex a to vertex φ(a) at time t,
+for some switching automorphism P̃φ ∈ SwAut(G). Assume that A(G) and P̃φ share a set
+{|z1 i, . . . , |zn i} of orthonormal eigenvectors, where ha|zk i 6= 0, for each k. Then, G has
+perfect state transfer from vertex b to vertex φ(b) at time t, for each b ∈ V (G). Moreover,
+P̃φ is in the center of SwAut(G).
+Proof. Suppose G has perfect state transfer from a to φ(a) at time t, for some P̃φ ∈ SwAut(G).
+Assume A(G) and P̃φ share an eigenbasis for which vertex a has full eigenvector support.
+By Theorem 2, we have e−itA(G) = γ P̃φ , for some γ ∈ T. So, for each vertex b, we have
+e−itA(G) |bi = (γ P̃φ )|bi = γ|φ(b)i.
+10
+
+(47)
+
+Suppose A(G) =
+Thus, we have
+
+P
+
+k= λk Ek , where Ek is the eigenprojector corresponding to eigenvalue λk .
+
+e−itA(G) =
+
+X
+
+e−itλk Ek .
+
+(48)
+
+k
+
+Since each eigenprojector Ek is a polynomial in A(G) (see Godsil [11]), every switching
+automorphism P̃ψ ∈ SwAut(G) commutes with e−itA(G) (by definition P̃ψ commutes with
+A(G)). Since P̃φ is a scalar multiple of e−itA(G) , each P̃ψ commutes with P̃φ .
+Next, we prove the version of Corollary 4 for pretty good state transfer.
+Corollary 5. Suppose G has pretty good state transfer from vertex a to vertex φ(a), for some
+switching automorphism P̃φ ∈ SwAut(G). Assume A(G) and P̃φ share a set {|z1 i, . . . , |zn i}
+of orthonormal eigenvectors, where ha|zk i 6= 0, for each k. Then, G has pretty good state
+transfer from vertex b to vertex φ(b), for each b ∈ V (G). Moreover, P̃φ is in the center of
+SwAut(G).
+Proof. Let G be a graph with pretty good state transfer from a to φ(a), for some P̃φ ∈
+SwAut(G). Assume that A(G) and P̃φ share an eigenbasis where a has full support. By
+Theorem 3, for each ǫ > 0, there is a time t ∈ R so that ke−itA(G) − γPφ k < ǫ, for some
+γ ∈ T. Therefore, for each vertex b, we have
+ke−itA(G) |bi − γ|φ(b)ik = ke−itA(G) |bi − γ P̃φ |bik ≤ ke−itA(G) − γPφ kk|bik < ǫ,
+
+(49)
+
+since k|bik = 1. Thus, G has pretty good state transfer between vertices b and φ(b).
+Next, assume that t ∈ R satisfies ke−itA(G) − γ P̃φ k < ǫ/2, for some γ ∈ C. For any
+P̃ψ ∈ SwAut(G), we have
+kP̃ψ P̃φ − P̃φ P̃ψ k ≤ kP̃ψ (γ P̃φ ) − P̃ψ e−itA(G) k + ke−itA(G) P̃ψ − γ P̃φ P̃ψ k
+≤ kP̃ψ kkγ P̃φ − e−itA(G) k + ke−itA(G) − γ P̃φ kkP̃ψ k
+< ǫkP̃ψ k.
+
+(50)
+(51)
+(52)
+
+Since kP̃ψ k ≤ 1, we have kP̃ψ P̃φ − P̃φ P̃ψ k < ǫ, for any ǫ > 0. This implies that
+kP̃ψ P̃φ − P̃φ P̃ψ k = 0.
+
+(53)
+
+Therefore, P̃ψ P̃φ = P̃φ P̃ψ . Since P̃φ commutes with each element of SwAut(G), it is in the
+center of SwAut(G).
+As a corollary to both Theorems 3 and 2, we show that if a graph G has state transfer
+from vertex a to vertex b and there are two automorphisms that map a to b, then the two
+automorphisms are necessarily equal. This will be useful later in showing that a non-trivial
+switching automorphism of a universal state transfer graph has no fixed points.
+Corollary 6. Let G be a graph with (perfect or pretty good) state transfer from vertex a
+to vertex φ(a), for some switching automorphism φ ∈ SwAut(G). If ψ ∈ SwAut(G) is a
+switching automorphism for which ψ(a) = φ(a), then φ = ψ.
+
+11
+
+Proof. Suppose G has pretty good state transfer from a to φ(a) and that ψ(a) = φ(a). By
+Theorem 3, for any ǫ > 0, there is a time t ∈ R so that
+ǫ
+ǫ
+and ke−itA(G) − γ2 P̃ψ k < .
+(54)
+ke−itA(G) − γ1 P̃φ k <
+2
+2
+for some γ1 , γ2 ∈ T. Therefore, we have
+kγ1 P̃φ − γ2 P̃ψ k ≤ kγ1 P̃φ − e−itA(G) k + ke−itA(G) − γ2 P̃ψ k < ǫ.
+
+(55)
+
+This holds for any ǫ > 0 and thus P̃φ = γ P̃ψ , for some γ ∈ C. This implies φ = ψ.
+If G has perfect state transfer from a to φ(a) = ψ(a) at time t, then, by Theorem 2, we
+have e−itA(G) = γ1 P̃φ = γ2 P̃ψ . This implies φ = ψ.
+
+5
+
+Universal Pretty Good State Transfer
+
+Here, we consider graphs with universal pretty good state transfer property. We show strong
+spectral conditions on graphs with such universal property; namely, that each eigenvalue is
+simple and that each eigenvector has entries whose magnitudes are equal to each other. A
+n × n complex matrix B √
+flat if each entry of B has the same complex magnitude. That is,
+B is flat if |hj|B|ki| = 1/ n, for all j, k.
+Theorem 7. Let G be a Hermitian graph with universal pretty good state transfer. If U is
+a unitary matrix which diagonalizes A(G), then U is flat.
+Proof. Let G be a n-vertex Hermitian graph with universal pretty good state transfer. Sup†
+pose U is a unitary matrix whose kth column
+Pnis given by |zk i, where U A(G)U = Λ, for
+some Λ = diag(λ1 , . . . , λn ). Thus, A(G) = k=1 λk |zk ihzk |. Since G has universal pretty
+good state transfer, for each pair of vertices a, b, for any ǫ > 0, there is a time t ∈ R so that
+1 − ǫ ≤ |ha|e−itA(G) |bi|
+n
+X
+e−itλk ha|zk ihzk |bi ,
+=
+≤
+
+k=1
+n
+X
+k=1
+
+|ha|zk ihb|zk i|,
+
+(56)
+by spectral theorem
+
+by triangle inequality
+
+v
+v
+u n
+u n
+uX
+uX
+|ha|zk i|2 t
+|hb|zk i|2 ,
+≤ t
+k=1
+
+(58)
+
+(59)
+
+k=1
+
+= 1
+
+since |ha|zk i|2 = ha|zk ihzk |ai and
+small, we have
+
+by Cauchy-Schwarz
+
+(57)
+
+(60)
+
+Pn
+
+k=1 |zk ihzk | = I. Given that ǫ > 0 can be made arbitrarily
+n
+X
+k=1
+
+|ha|zk ihzk |bi| = 1.
+
+(61)
+
+Since this implies that we achieve equality in Cauchy-Schwarz, we get |ha|zk i| = |hb|zk i| for
+each k. Since a and b are arbitrary, this shows that U is flat.
+12
+
+The proof method used in Theorem 7 is originally due to Chris Godsil (who used a
+beautiful blend of triangle inequality (once) and Cauchy-Schwarz (twice) to analyze state
+transfer in quantum walk).
+Theorem 8. If G is a Hermitian graph with universal pretty good state transfer, then G has
+distinct eigenvalues.
+Proof. Let A(G) be the Hermitian adjacency matrix of a n-vertex graph G and let U be a
+unitary matrix that diagonalizes A(G). Suppose the columns of U are given by |z1 i, . . . , |zn i
+where |zk i is the eigenvector corresponding to eigenvalue λk . Thus, the (j, k)-entry of U is
+given by Uj,k = hj|zk i, for j, k = 1, . . . , n.
+√
+By Theorem 7, we know U is √
+flat. Thus, |hj|zk i| = 1/ n, for each j, k. √
+Without loss of
+iθk
+generality, we assume h1|zk i = 1/ n for each k. Otherwise, if h1|zk i = e / n, we may use
+the following unitary matrix Ũ = U diag({e−iθk }) as our eigenbasis instead. That is,
+
+
+e−iθ1
+0
+0 ...
+0
+ 0
+e−iθ2 0 . . .
+0 
+
+
+(62)
+Ũ = U  ..
+.. 
+..
+..
+ .
+. 
+. ...
+.
+0
+0
+0 . . . e−iθn .
+√
+This ensures that h1|zk i = 1/ n, for each k.
+Assume for contradiction that λ1 = λ2 . Consider the following two alternative eigenvectors of λ1 based on |z1 i and |z2 i:
+1
+|z− i = √ (|z1 i − |z2 i),
+2
+
+1
+|z+ i = √ (|z1 i + |z2 i),
+2
+
+(63)
+
+Note that |z+ i and |z− i are eigenvectors of A(G) associated with eigenvalue λ1 . Moreover,
+B = {|z+ i, |z− i} ∪ {|zk i : k = 3, . . . , n} forms an orthonormal set of eigenvectors of A(G).
+But the eigenbasis B is not flat, since
+√
+1
+2
+h1|z+ i = √ [h1|z1 i + h1|z2 i] = √ .
+(64)
+n
+2
+This contradicts Theorem 7 and proves the claim.
+Corollary 9. Let G be a graph with universal pretty good state transfer. Then, any matrix
+which commutes with A(G) is a polynomial in A(G).
+Proof. Suppose G is a graph with universal pretty good state transfer. Assume A(G) =
+P
+n
+k=1 λk Ek , where Ek is a rank-one eigenprojector corresponding to the distinct eigenvalues
+λk (by Theorem 8). Moreover, each eigenprojector Ek is a polynomial in A(G) (see Godsil
+[11]). So, for each k, let Ek = pk (A(G)), for a polynomial pk (x) ∈ R[x]
+Let B be a matrix which commutes with A(G). Since A(G) has distinct eigenvalues, each
+eigenspace of A(G) is a B-invariant subspace. Thus, we have
+B=
+
+n
+X
+k=1
+
+µk Ek =
+
+n
+X
+
+µk pk (A(G)),
+
+k=1
+
+where µk are the eigenvalues of B. This shows that B is a polynomial in A(G).
+13
+
+(65)
+
+Next, we consider the switching automorphism group of universal pretty good state
+transfer graphs. For such graphs, we show that the only switching automorphism that
+has fixed points is the trivial automorphism. This result will be useful in proving stronger
+properties on the structure of the switching automorphism group of these graphs.
+Lemma 10. Let G be a graph with universal pretty good state transfer. Then, every nontrivial switching automorphism φ ∈ SwAut(G) of G has no fixed point.
+Proof. Suppose that the switching automorphism φ has a fixed point at vertex a, that is,
+φ(a) = a. Since G has universal pretty good state transfer, G has pretty good state transfer
+from a to a. By Corollary 6, since the trivial automorphism id satisfies id (a) = a, we have
+φ = id .
+Using Lemma 10, we show that any two switching automorphisms of a graph with universal pretty good state transfer must commute with each other and the number of those
+switching automorphisms divides the order of the underlying graph.
+Theorem 11. Let G be a graph with universal pretty good state transfer. Then, the switching
+automorphism group SwAut(G) is abelian and its order divides |G|.
+Proof. For a switching automorphism P̃φ ∈ SwAut(G), let Fix(φ) = {a ∈ V : φ(a) = a} be
+the set of fixed points of φ. For a vertex a, let Orb(a) = {φ(a) : φ ∈ SwAut(G)} be the orbit
+of a under the action of SwAut(G). The set of orbits Orb(G) = {Orb(a) : a ∈ V } forms a
+partition of V . By Burnside’s Lemma, we get
+X
+| Fix(φ)|.
+(66)
+| Orb(G)| · | SwAut(G)| =
+φ
+
+By Lemma 10, we have | Fix(φ)| = n, if φ = id , and 0, otherwise; thus,
+This implies
+| Orb(G)| · | SwAut(G)| = n.
+
+P
+
+φ | Fix(φ)| = n.
+
+(67)
+
+This shows | SwAut(G)| divides n since the number of orbits is an integer.
+Next, we show that SwAut(G) is abelian. Consider two switching automorphisms
+P̃φ , P̃ψ ∈ SwAut(G). By definition, both commute with A(G), and by Corollary 9, both
+are polynomials in A(G). This shows P̃φ and P̃ψ commute.
+
+6
+
+Universal Perfect State Transfer
+
+In this section, we describe some properties of graphs which have universal perfect state
+transfer. Due to the more stringent requirement on state transfer, we are able to prove
+stronger properties on the structure of these graphs. First, we show that universal perfect
+state transfer graphs are periodic (in the strong sense).
+Lemma 12. Let G be a graph with universal perfect state transfer. Then, G is periodic.
+
+14
+
+Proof. Let A(G) be the Hermitian adjacency matrix of G. Since G has universal perfect
+state transfer, for each vertex a of G, there is a time t so that e−itA(G) |ai = γ|ai, for some
+γ ∈ C with |γ| = 1. By Theorem 2, using the trivial switching automorphism id (a) = a, we
+have
+e−itA(G) = αI,
+(68)
+since P̃id = αI for some α ∈ T. This shows that G is periodic.
+Using a result of Godsil [12], we note that the ratio of any two eigenvalues of a universal perfect state transfer graph must be rational, provided the denominator is not a zero
+eigenvalue.
+Corollary 13. Let G be a graph with universal perfect state transfer whose adjacency matrix
+A(G) satisfies Tr A(G) = 0. Then, for any eigenvalues λj 6= λk , with λk 6= 0, the ratio λj /λk
+is rational.
+Proof. This is an immediate corollary of Theorem 3.1 in Godsil [12].
+In the next theorem, we show that a universal perfect state transfer graph has a cyclic
+switching automorphism group. But, first we prove a useful lemma which shows that the set
+of times when the quantum walk “visits” the switching automorphism group of a universal
+perfect state transfer graph is not dense.
+Lemma 14. Let G be a graph with universal perfect state transfer. Then, the set
+n
+h
+io
+−itA(G)
+Γ = t ∈ R : (∃φ ∈ SwAut(G))(∃γ ∈ T) e
+= γ P̃φ
+
+(69)
+
+is a discrete additive subgroup of R.
+Proof. Let A be the adjacency matrix of G and let U(t) = e−itA . Since id ∈ SwAut(G), the
+set Tid = {t ∈ R : (∃γ ∈ T) U(t) = γI} is a subset of Γ. Godsil [13] showed that Tid is a
+discrete additive subgroup of R. It is additive since U(t1 + t2 ) = U(t1 )U(t2 ), for any times
+t1 , t2 . The argument for why it is discrete is as follows. If Tid is dense, then it contains a
+sequence {tk }∞
+k=0 where tk → 0 as k → ∞. Note that limk→∞ (U(tk ) − I)/tk exists and it
+equals U ′ (0) = −iA, since U(t) is differentiable. If U(tk ) = γk I, for γk ∈ T, the above limit
+−1
+is also equal to limk→∞ t−1
+k (γk − 1)I. But, ktk (γk − 1)I − (−iA)k is bounded away from 0 if
+A contains nonzero off-diagonal entries.
+We now show Tφ is discrete, for each φ ∈ SwAut(G). Since SwAut(G) is finite, there is a
+positive integer m so that P̃φm = αI, for some α ∈ T. Suppose, for contradiction, that Tφ is
+dense. Then, for any δ > 0, there is a time t ∈ (0, δ) so that U(t) = β P̃φ , for some β ∈ T.
+This shows that U(mt) = (αβ m )I, which implies that Tid is also dense. This contradiction
+shows that Tφ is discrete.
+Theorem 15. Let G be a graph with universal perfect state transfer. Then, the switching
+automorphism group SwAut(G) is cyclic.
+
+15
+
+Proof. Let G be a graph with universal perfect state transfer whose Hermitian adjacency
+matrix is A(G). In the proof, we use γ0 , γ1 , γ2 , . . . to represent complex numbers of unit
+modulus. We consider the set Γ of times where the quantum walk “visits” the switching
+automorphism group:
+n
+h
+io
+Γ = t ∈ R+ : (∃φ ∈ SwAut(G))(∃γ ∈ T) e−itA(G) = γ P̃φ .
+(70)
+By Lemma 14, Γ is a discrete subgroup of R and thus it has a least positive element. Let
+t⋆ = min Γ
+
+(71)
+⋆
+
+and let ϕ⋆ ∈ SwAut(G) be the switching automorphism for which e−it A(G) = γ0 P̃ϕ⋆ . We
+show that P̃ϕ⋆ generates SwAut(G).
+Note that if e−it1 A(G) = γ1 P̃ψ , for some P̃ψ ∈ SwAut(G), then t1 is necessarily an integer
+multiple of t⋆ . Otherwise, if mt⋆ < t1 < (m + 1)t⋆ , for some nonnegative integer m, then
+⋆
+
+⋆
+
+e−i(t1 −mt )A(G) = e−it1 A(G) [eit A(G) ]m
+= γ1 P̃ψ (γ0 P̃ϕ⋆ )m
+= (γ0m γ1 ) P̃ψ P̃(ϕ⋆ )m
+
+(72)
+(73)
+(74)
+
+= (γ0m γ1 γ2 ) P̃ψ(ϕ⋆ )m .
+
+(75)
+
+This contradicts the choice of t⋆ since 0 < t1 − mt⋆ < t⋆ .
+We show that for each P̃φ ∈ SwAut(G), there is a time t for which e−itA(G) = γ P̃φ , for
+some γ ∈ T. Fix a vertex a of G and let b = φ(a) with P̃φ |ai = γ3 |bi. Since G has universal
+perfect state transfer, there is a time t̃ where
+e−it̃A(G) |ai = γ4 |bi = (γ3−1 γ4 )P̃φ |ai.
+
+(76)
+
+By Theorem 2, we have e−it̃A(G) = γ P̃φ , for some γ ∈ T.
+Thus, for each P̃φ ∈ SwAut(G), there is a time t̃, where e−it̃A(G) = γ P̃φ and t̃ = mt⋆ , for
+some integer m ∈ Z and γ ∈ T. Therefore,
+⋆
+
+γ P̃φ = e−it̃A(G) = (e−it A(G) )m = γ0m P̃ϕm⋆ .
+
+(77)
+
+This implies φ = (ϕ⋆ )m which shows that SwAut(G) = hϕ⋆ i.
+By Theorem 11, the order of the switching automorphism group of a universal perfect
+state transfer graph must divide the order of the graph. The next theorem characterizes those
+graphs whose switching automorphism group has order equal to the order of the graph.
+Theorem 16. Let G be a n-vertex graph with universal perfect state transfer. Then,
+SwAut(G) is cyclic of order n if and only if G is switching isomorphic to a circulant.
+Proof. Assume that G is a graph with universal perfect state transfer whose adjacency matrix
+is the Hermitian matrix A(G).
+(=⇒) Suppose that the switching automorphism group SwAut(G) is cyclic of order n. Let
+ϕ⋆ be a switching automorphism that generates SwAut(G), that is, SwAut(G) = hϕ⋆ i. Since
+16
+
+i
+−i
+
+1
+i
+
+0
+−i
+
+−i
+2
+
+i
+4
+
+−i
+−i
+
+i
+
+3
+
+i
+
+Figure 2: The Hermitian Cp has universal pretty good state transfer, for each prime p.
+P̃ϕ⋆ has no fixed points (by Lemma 10) and has order n, its cycle structure is of a n-cycle.
+Without loss of generality, by reordering, we may assume that ϕ⋆ = (1 2 . . . n). Since
+Θ̃n = P̃ϕ⋆ ∈ SwAut(G), it commutes with A(G), and hence they share the same circulant
+eigenbasis. This shows that A(G) is a circulant up to switching equivalence.
+(⇐=) Suppose that G is switching isomorphic to a circulant. Thus, A(G) = P̃ † C P̃ for
+some circulant matrix C and monomial matrix P̃ . By Theorem 15, we know SwAut(G) is
+cyclic whose order divides n. Since any circulant matrix is a polynomial in Θn , suppose
+C = f (Θn ) for some polynomial f (x) ∈ C[x]. Consider the monomial matrix Q̃ = P̃ † Θn P̃ .
+Note that A(G) commutes with Q̃ since A(G) is a polynomial in Q̃:
+A(G) = P̃ † f (Θn )P̃ = f (P̃ † Θn P̃ ) = f (Q̃).
+
+(78)
+
+This implies that Q̃ is a switching automorphism of G. Note Q̃ is of order n, since Θ̃n is.
+So, the order of SwAut(G) is n since it has an element of order n.
+
+7
+
+Explicit Constructions
+
+Our goal in this section is to show infinite families of Hermitian graphs with universal pretty
+good state transfer. Given our earlier characterizations, it is not surprising that these families
+are based on complex circulants.
+Let Cn be a n-vertex Hermitian graph whose adjacency matrix is the following circulant
+matrix:
+
+
+0 −i 0 . . . 0 i
+i
+0 −i . . . 0 0 
+
+
+0
+
+i
+0
+.
+.
+.
+0
+0
+
+
+A(Cn ) =  ..
+(79)
+..
+..
+.. .. .. 
+ .
+
+.
+.
+.
+.
+.
+
+
+ 0 0 0 . . . 0 −i
+−i 0 0 . . . i 0
+
+We note that A(Cn ) = iΘn − iΘTn , where Θn = Circ(0, . . . , 0, 1) as defined in Section 2.
+We say that
+Pm a set of real numbers λ1 , . . . , λm is linearly independent over the rationals
+if whenever
+k=1 ak λk = 0, for rational numbers a1 , . . . , am ∈ Q, then ak = 0, for each
+k = 1, . . . , m. As in Godsil et al. [14], we apply Kronecker’s theorem from number theory.
+17
+
+The particular version of Kronecker’s theorem useful for our case is stated in the following
+(see Theorem 444 in Hardy and Wright [17]).
+Theorem 17. (Kronecker) Let λ1 , . . . , λm be linearly independent over Q. Let α1 , . . . , αm
+be arbitrary real numbers, and let T and ǫ be positive reals. Then, there is a real number
+t ∈ R and integers p1 , . . . , pm ∈ Z so that t > T and
+|tλk − αk − pk | < ǫ,
+
+(80)
+
+for each k = 1, . . . , m.
+The following proposition is a crucial ingredient of our main result in this section.
+Proposition 18. For any prime p > 2, the set of real numbers
+
+
+ 
+2πk
+: k = 1, . . . , (p − 1)/2
+sin
+p
+
+(81)
+
+is linearly independent over the rationals.
+Proof. For each integer k, we may express eikθ in two different ways:
+eikθ = (cos θ + i sin θ)k = cos(kθ) + i sin(kθ).
+Thus, we have sin(kθ) = Im(eikθ ). Therefore,
+k  
+X
+k
+sin(kθ) =
+[[j odd]](−1)(j−1)/2 (cos θ)k−j (sin θ)j
+j
+j=0
+=
+
+⌋
+⌊ k−1
+2
+
+X
+ℓ=0
+
+
+k
+(−1)ℓ (cos θ)k−(2ℓ+1) (sin θ)2ℓ+1 .
+2ℓ + 1
+
+(82)
+
+(83)
+
+(84)
+
+For our purposes, we let θ = 2π/p,
+p where p is an odd prime. For k odd, we may replace
+cos θ in the above equation with 1 − sin2 θ, and it shows that sin(2πk/p) is a polynomial
+in sin(2π/p) of degree at most k. For k even, we note that
+
+
+
+
+2π(p − k)
+2πk
+= − sin
+,
+(85)
+sin
+p
+p
+and now p − k is odd. In either case, we have that sin(2πk/p) is a polynomial in sin(2π/p) of
+degree at most max{k, p − k}. Note that max{k, p − k} ≤ p − 2 for each k = 1, . . . , (p − 1)/2.
+Suppose that the rational numbers a1 , . . . , a(p−1)/2 satisfy
+(p−1)/2
+
+X
+k=1
+
+ak sin
+
+
+
+2πk
+p
+
+
+
+= 0.
+
+(86)
+
+Since sin(2πk/p) may be written as fk (sin(2π/p)) where fk (x) is a polynomial of degree dk ,
+for dk ≤ p − 2, if ak 6= 0 for some collection of indices k, then
+  
+X
+2π
+ak fk sin
+= 0.
+(87)
+p
+k:a 6=0
+k
+
+18
+
+Note that the left-hand side is a polynomial of degree at most p−2 that vanishes at sin(2π/p).
+But, it is known that the minimal polynomial of sin(2π/p) is of degree p − 1 (see [1]).
+Therefore, we must have ak = 0 for all k = 1, . . . , (p − 1)/2.
+We are now ready to prove our main result about the family of graphs Cp .
+Theorem 19. For each prime p, the graph Cp has universal pretty good state transfer.
+Proof. Since Cp is a circulant, its eigenvalues are given by (see Equation (10)):
+
+
+2πk
+k
+−k
+,
+λk = −iωp + iωp = 2 sin
+p
+
+(88)
+
+for k = 0, . . . , p − 1, where ωp = exp(2πi/p). Let j be an arbitrary vertex of Cp . Then,
+−itA(Cp )
+
+hj|e
+
+|0i =
+
+p−1
+X
+
+p−1
+
+−itλk
+
+e
+
+k=0
+
+1 X −itλk jk
+hj|Fk ih|Fk i||0ii =
+e
+ωp ,
+p
+
+(89)
+
+k=0
+
+√
+where |Fk i is the kth circulant eigenvector which satisfies hj|Fk i = ωpjk / p. By using
+λp−k = −λk , which holds for k = 1, . . . , (p − 1)/2, we get
+
+
+(p−1)/2
+X
+
+1
+1+
+e−itλk ωpjk + eitλk ωp−jk 
+(90)
+hj|e−itA(Cp ) |0i =
+p
+k=1
+
+
+
+
+(p−1)/2
+X
+1
+2πjk 
+=
+1+
+(91)
+2 cos tλk −
+p
+p
+k=1
+By Proposition 18, the eigenvalues λk = sin(2πk/p), for k = 1, . . . , (p − 1)/2, are linearly
+independent over the rationals; thus, the numbers λk /2π are also linearly independent over
+Q. Therefore, by Theorem 17 (Kronecker’s Theorem), for any positive reals T and ǫ, there
+is a time t > T and integers mk ∈ Z so that
+ 
+λk
+jk
+ǫ
+2πjk
+t
+−
+− mk <
+⇐⇒ tλk −
+− 2πmk < ǫ,
+(92)
+2π
+p
+2π
+p
+for all k = 1, . . . , (p − 1)/2. We need to prove that for any δ > 0, there is a time t for which
+|hj|e−itA(Cp ) |0i| ≥ 1 − δ.
+So, let xk = tλk − 2πjk/p − 2πmk , for k = 1, . . . , (p − 1)/2, where we will view xk as
+a function of t. Since cos(x) is continuous, for any given δ > 0, there is a ǫ > 0 so that
+cos(xk ) > 1 − δ, whenever |xk | < ǫ. Here, Kronecker’s Theorem allows us to choose a time t
+so that |xk | < ǫ. Applying this to Equation (90), we get
+hj|e−itA(Cp ) |0i ≥
+
+1
+(1 + (p − 1)(1 − δ)) ≥ 1 − δ.
+p
+
+This shows that Cp has universal pretty good state transfer.
+19
+
+(93)
+
+We observe in the following corollary that arguments used to prove Theorem 19 also
+apply to a Cartesian bunkbed of Cp , for primes p ≥ 5. Recall that given two graphs G1
+and G2 , their Cartesian product G1  G2 is defined as the graph whose adjacency matrix is
+A(G1 ) ⊗ I + I ⊗ A(G2 ).
+Corollary 20. For each prime p ≥ 5, the graph K2  Cp has universal pretty good state
+transfer.
+Proof. For a prime p ≥ 5, let G denote the graph K2  Cp whose adjacency matrix is
+A(G) = A(K2 ) ⊗ Ip + I2 ⊗ A(Cp ).
+
+(94)
+
+Given that this is a sum of commuting matrices, we have
+e−itA(G) = e−it(A(K2 )⊗Ip ) e−it(I2 ⊗A(Cp )) = e−itA(K2 ) ⊗ e−itA(Cp ) .
+
+(95)
+
+By the proof of Theorem 19, the eigenvalues of Cp are defined by the values sin(2πk/p), for
+k = 1, . . . , (p − 1)/2. Since sin(2π/n) is rational if and only if n = 1, 2, 3, 4, or 6 (see [1]),
+the set
+Λ = {1} ∪ {sin(2πk/p) : 1 ≤ k ≤ (p − 1)/2)}
+(96)
+
+is linearly independent over the rationals.
+The quantum walk on G from (0, 0) to (b, j), for b ∈ {0, 1} and j ∈ Zp , is given by
+hb, j|e−itA(G) |0, 0i = hb, j|(e−itA(K2 ) ⊗ e−itA(Cp ) )|0, 0i
+= hb|e−itA(K2 ) |0i · hj|e−itA(Cp ) |0i.
+On the other hand, a quantum walk on K2 is given by
+
+
+
+cos(t)
+cos(t) −i sin(t)
+−itA(K2 )
+|0i =
+hb|e
+|0i = hb|
+−i sin(t)
+−i sin(t) cos(t)
+
+if b = 0
+if b = 1
+
+(97)
+(98)
+
+(99)
+
+Thus, if t ≈ (2Z + b)π/2, then |hb|e−itA(K2 ) |0i| ≈ 1.
+By Kronecker’s Theorem, since the set Λ is linearly independent over Q, for any ǫ > 0,
+there is a time t so that the following inequalities are simultaneously satisfied:
+t−
+
+(2 + b)π
+− 2πm0 < ǫ
+2
+
+2πjk
+− 2πmk < ǫ
+p
+where mk are integers, k = 0, 1, . . . , (p − 1)/2. Here, ǫ > 0 was chosen so that:
+tλk −
+
+(100)
+(101)
+
+(a) (cos(t)[[b = 0]] + sin(t)[[b = 1]]) > 1 − δ; and
+(b) cos(xk ) > 1 − δ, where xk = tλk − 2πjk/p − 2πmk , for k = 1, . . . , (p − 1)/2.
+
+By the proof of Theorem 19, condition (b) above ensures that |hj|e−itA(Cp ) |0i| > 1 − δ. Also,
+condition (a) guarantees that |hb|e−itA(K2 ) |0i| > 1 − δ. By Equation (97), we have
+|hb, j|e−itA(G) |0, 0i| ≥ (1 − δ)2 ≥ 1 − 2δ.
+This proves the claim.
+20
+
+(102)
+
+8
+
+Generalized Circulants
+
+We study universal state transfer on graphs that are switching equivalent to circulants. For
+this class of graphs, we provide a spectral characterization for universal perfect state transfer.
+But, first we prove a useful lemma that reduces universal perfect state transfer to perfect
+state transfer between certain pairs of vertices.
+Lemma 21. Let G be a n-vertex graph that is switching equivalent to a circulant. Then, G
+has universal perfect state transfer if and only if G has perfect state transfer from 0 to j, for
+some j ∈ {1, . . . , n − 1} which satisfies gcd(j, n) = 1.
+Proof. Suppose G is a graph on n vertices which satisfies A(G) = D † CD, where D is a
+diagonal matrix with unit modulus complex entries and C is a circulant matrix. We only
+need to prove the sufficient condition since the necessary condition follows by definition.
+Assume G has perfect state transfer from 0 to j, where gcd(j, n) = 1; that is,
+e−itA(G) |0i = γ|ji,
+
+(103)
+
+for some γ ∈ T. By Theorem 2, this implies that
+e−itA(G) = γ P̃σ ,
+
+(104)
+
+where σ is a permutation defined by σ(x) ≡ x + j (mod n). Thus, σ = (0 j 2j . . . (n − 1)j).
+Since gcd(j, n) = 1, there is an integer m so that mj ≡ 1 (mod n). This implies that
+σ m (0) = 1 and σ mk (0) = k, for any k. To show that G has universal perfect state transfer,
+it suffices to show that G has perfect state transfer from 0 to every other vertex, say k. We
+have
+(e−itA(G) )mk |0i = (γ P̃σ )mk |0i = γ ′ Pσmk |0i = γ ′ |ki
+(105)
+for some γ ′ ∈ T.
+
+We are now ready to prove the spectral characterization of universal perfect state transfer
+graphs that are switching equivalent to circulants.
+Theorem 22. Let G be a n-vertex graph that is switching equivalent to a circulant. Then,
+G has universal perfect state transfer if and only if each eigenvalue of G is of the form
+λk = α + β(jk + ck n),
+
+(106)
+
+where α, β ∈ R, with β > 0, j ∈ Z is relatively prime to n, and ck ∈ Z.
+Proof. Let G be a graph on n vertices that is switching equivalent to a circulant.
+√ Thus, G
+2πijk/n
+has the circulant eigenbasis {|Fk i : k = 0, . . . , n − 1}, where hj|Fk i = e
+/ n.
+We will make two simplifying assumptions on the eigenvalues of G without loss of generality. First, note if λk is an eigenvalue of A(G), then λk + α is an eigenvalue of A(G) + αI.
+This allows us to assume α = 0 in Equation (106), since this diagonal shift merely introduces
+an irrelevant phase factor in a quantum walk:
+e−it(A(G)−αI) = eiα e−itA(G) .
+21
+
+(107)
+
+Due to this invariance under diagonal shifts, we will also assume λ0 = 0. Second, note if
+λk is an eigenvalue of A(G), then βλk is an eigenvalue of βA(G). This allows us to assume
+β = 1 in Equation (106), since
+e−itβA(G) = e−i(tβ)A(G) ,
+
+(108)
+
+which shows that the time-scaling factor β can be absorbed into our time parameter.
+Using the above assumptions, the eigenvalues of G are of the form
+λk = jk + ck n,
+
+(109)
+
+where ck ∈ Z are integers and j ∈ Z is an integer with gcd(j, n) = 1.
+(=⇒) Suppose G has universal perfect state transfer. Thus, for any j with gcd(j, n) = 1,
+the graph G has perfect state transfer from 0 to j at some time tj . This implies
+|hj|e−itj A(G) |0i| =
+
+n−1
+X
+k=0
+
+n−1
+
+e−itj λk hj|Fk ihFk |0i =
+
+1 X −i(tj λk −2πjk/n)
+= 1.
+e
+n k=0
+
+(110)
+
+By Lemma 26, there is a real number θ ∈ R so that for each k, we have
+
+2πjk
+≡ θ (mod 2π).
+(111)
+n
+Due to invariance under time-scaling, we assume without loss of generality that tj = 2π/n.
+Therefore,
+2π
+2π
+(λk − jk) ≡
+(λℓ − jℓ) (mod 2π).
+(112)
+n
+n
+But since λ0 = 0, we get
+2π
+(λk − jk) ≡ 0 (mod 2π)
+(113)
+n
+Thus, λk = jk + nZ, for each k.
+tj λk −
+
+(⇐=) Suppose the eigenvalues of G are of the form λk = jk + ck n, where ck ∈ Z are
+integers and j ∈ Z is an integer with gcd(j, n) = 1. To show G has universal perfect state
+transfer, by Lemma 21, it suffices to show G has perfect state transfer from 0 to 1 at some
+time t. We have
+n−1
+n−1
+X
+1 X −i(tλk −2πk/n)
+−itA(G)
+−itλk
+h1|e
+|0i =
+e
+h1|Fk ihFk |0i =
+e
+.
+(114)
+n
+k=0
+k=0
+Using the assumed form of the eigenvalues λk , we get
+−itA(G)
+
+h1|e
+
+n−1
+n−1
+1 X −i(t(jk+ck n)−2πk/n)
+1 X −itck n −i(tj−2π/n) k
+|0i =
+e
+=
+e
+(e
+)
+n k=0
+n k=0
+
+(115)
+
+By letting t = 2πm/n, where m is an integer which satisfies jm ≡ 1 (mod n), we get
+n−1
+
+−itA(G)
+
+h1|e
+
+1 X −2πick m −2πi(jm−1)/n k
+e
+(e
+) = 1.
+|0i =
+n
+k=0
+
+This proves the claim.
+22
+
+(116)
+
+1 − e + e2 − e3
+1
+
+0
+
+1 + e − e2 + e3
+
+1 − e − e2 + e3
+
+1 + e − e2 − e3
+
+2
+
+1 − e − e2 + e3
+
+3
+1 − e + e2 − e3
+
+Figure 3: The smallest graph with real symmetric adjacency matrix which has universal
+pretty good state transfer. No graph with real symmetric adjacency matrix can have universal
+perfect state transfer (see Kay [18]).
+
+9
+
+Real Symmetric Graphs
+
+Kay [18] showed that universal perfect state transfer is not possible for graphs with real
+symmetric adjacency matrices. We state formally this important observation in the following.
+Theorem 23. (Kay [18]) Let G be a graph with real symmetric adjacency matrix. If G has
+perfect state transfer from vertex a to vertex b and also from vertex a to vertex c, then we
+have b = c.
+In contrast, we show that there are graphs with real symmetric adjacency matrices with
+universal pretty good state transfer. For our result, we appeal to a theorem of Lindemann
+from number theory (see Theorem 9.1 in Niven [20]).
+Theorem 24. (Lindemann) Given any distinct algebraic numbers α1 , . . . , αm , the values
+eα1 , . . . , eαm are linearly independent over the field of algebraic numbers.
+Theorem 25. There is a family of (weighted) graphs with universal pretty good state transfer
+whose adjacency matrices are real symmetric.
+Proof. For a positive integer n, let Hn be the Hadamard matrix (of Sylvester type) of order
+N = 2n which satisfies HnT Hn = 2n I. Recall that these Hadamard matrices may be defined
+23
+
+
+
+1 1
+. In what follows, we will
+recursively by Hn = H1 ⊗ Hn−1 , for n ≥ 2, with H1 =
+1 −1
+identify the set of integers {0, . . . , 2n − 1} with the set {0, 1}n of binary sequences of length
+n.
+For each z ∈ {0, 1}n , we choose αz = z be N distinct (algebraic) numbers. By Lindemann’s Theorem 24, the set {eαz : z ∈ {0, 1}n} is linearly independent over the rationals.
+Let Gn be a graph on N vertices whose adjacency matrix is given by
+
+
+exp(α0 )
+0
+0 ...
+0
+
+ 0
+exp(α1 ) 0 . . .
+0
+ T
+
+(117)
+A(Gn ) = Hn 
+ Hn .
+..
+..
+..
+..
+
+
+.
+. ...
+.
+.
+0
+0
+0 . . . exp(αN −1 )
+We show that Gn has universal pretty good state transfer. Let the eigenvalues of Gn be
+denoted λz = eαz and let the zth eigenvector be denoted |χiz (which is the zth column of
+Hn ). For each a ∈ {0, 1}n , we have
+n
+
+1 Y
+ha|χz i = √
+(−1)ak zk ,
+N k=1
+
+(118)
+
+where ak and zk represent the kth bits of a and z, respectively. Thus, for a given vertex
+a ∈ {0, 1}n of Gn , we get
+ha|e−itA(Gn ) |0n i =
+
+X
+
+z∈{0,1}n
+
+e−itλz ha|χz ihχz |0n i =
+
+1
+N
+
+X
+
+z∈{0,1}n
+
+e−itλz ha|χz i.
+
+(119)
+
+Since the eigenvalues λz ’s are linearly independent over the rationals, by Kronecker’s Theorem 17, for any ǫ > 0, there is a real number t ∈ R so that
+tλz − 2[[ha|χz i=1]] π − 2πpz < ǫ,
+
+(120)
+
+for some integers pz ∈ Z. Therefore, ha|e−itA(Gn ) |0n i ≈ 1 in Equation (119) since e−itλz ≈
+ha|χz i, for each z. This proves the claim.
+
+10
+
+Conclusions
+
+In this paper, we studied the problem of universal (pretty good or perfect) state transfer on
+graphs. This is a stronger and natural extension to the notion of pretty good and perfect
+state transfer which have been studied extensively in quantum walks on graphs. As our
+main contribution, we proved spectral and structural properties of graphs with universal
+state transfer and showed several infinite family of graphs with this property.
+We showed that if G is a n-vertex graphs with universal state transfer, then G has n
+distinct eigenvalues and its eigenbasis is flat. Furthermore, the switching automorphism
+group SwAut(G) is abelian and its order | SwAut(G)| must divide n. On the other hand, if
+the universal state transfer is perfect, then SwAut(G) is cyclic and that | SwAut(G)| = n if and
+24
+
+only if G is switching isomorphic to a circulant. For graphs which are switching equivalent
+to circulants, we proved a spectral characterization for universal perfect state transfer. Here,
+we showed that the eigenvalues of such a n-vertex graph must be the image of the integers
+modulo n under a linear bijection up to time-scaling and diagonal-shifting.
+We also described an infinite family of graphs (with Hermitian adjacency matrices) with
+universal pretty good state transfer. These graphs are obtained from directed prime-length
+cycles with ±i weights. Finally, we showed a family of graphs with real symmetric adjacency
+matrices that have universal pretty good state transfer. In contrast, as observed by Kay, no
+graphs with real symmetric adjacency matrices can have universal perfect state transfer.
+It would be interesting to find a family of graphs with universal perfect state transfer.
+Currently, the only known examples are K2 and C3 . Also, the graph K4 described in Section
+3 is the only known example of a universal pretty good state transfer graph that is not
+a circulant. It is unclear if there is a family of graphs with universal state transfer that
+generalizes K4 in a natural way. We leave these as open questions for future work.
+
+Acknowledgments
+The research was supported in part by the National Science Foundation grant DMS-1262737.
+We thank Chris Godsil for a great many helpful advice on graph spectra and quantum walks.
+
+References
+[1] S. Beslin and V. De Angelis. The minimal polynomials of sin(2π/p) and cos(2π/p).
+Mathematics Magazine, 77(2):146–149, 2004.
+[2] S. Bose. Quantum communication through an unmodulated spin chain. Physical Review
+Letters, 91(20):207901, 2003.
+[3] A. Chan and C. Godsil. Type-II Matrices and Combinatorial Structures. Combinatorica,
+30(1):1–24, 2010.
+[4] A. Childs. Universal computation by quantum walk.
+102:180501, 2009.
+
+Physical Review Letters,
+
+[5] A. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. Spielman. Exponential algorithmic speedup by a quantum walk. In Proc. 35th ACM Symp. Theory of Computing,
+pages 59–68, 2003.
+[6] M. Christandl, N. Datta, T. Dorlas, A. Ekert, A. Kay, and A. Landahl. Perfect transfer
+of arbitrary states in quantum spin networks. Physical Review A, 71:032312, 2005.
+[7] M. Christandl, N. Datta, A. Ekert, and A. Landahl. Perfect state transfer in quantum
+spin networks. Physical Review Letters, 92:187902, 2004.
+[8] P. Davis. Circulant Matrices. Chelsea, 1994.
+
+25
+
+[9] X. Fan and C. Godsil. Pretty good state transfer on double stars. Linear Algebra and
+Its Applications, 438(5):2346–2358, 2013.
+[10] E. Farhi, J. Goldstone, and S. Gutmann. A quantum algorithm for the hamiltonian
+NAND tree. Theory of Computing, 4(8):169–190, 2008.
+[11] C. Godsil. Algebraic Combinatorics. Chapman and Hall, 1993.
+[12] C. Godsil. Periodic graphs. Electronic Journal of Combinatorics, 18(1), 2011. Paper
+# 23.
+[13] C. Godsil. State transfer on graphs. Discrete Mathematics, 312(1):129–147, 2011.
+[14] C. Godsil, S. Kirkland, S. Severini, and J. Smith. Number-theoretic nature of communication in quantum spin systems. Physical Review Letters, 109:050502, 2012.
+[15] C. Godsil and G. Royle. Algebraic Graph Theory. Springer, 2001.
+[16] R. Graham, D. Knuth, and O. Patashnik. Concrete Mathematics. Addison-Wesley, 2nd
+edition, 1994.
+[17] G.H. Hardy and E.M. Wright. An Introduction to the Theory of Numbers. Oxford
+University Press, fifth edition, 1979.
+[18] A. Kay. The basics of perfect communication through quantum networks. Physical
+Review A, 84:022337, 2011.
+[19] J.P. Keating, N. Linden, J.C.F. Matthews, and A. Winter. Localication and its consequences for quantum walk algorithms and quantum communication. Physical Review
+A, 76(1):012315, 2007.
+[20] I. Niven. Irrational Numbers. The Mathematical Association of America, 1965.
+[21] M. Underwood and D. Feder. Universal quantum computation by discontinuous quantum walk. Physical Review A, 82:042304, 2010.
+[22] T. Zaslavsky. A mathematical bibliography of signed and gain graphs and allied areas.
+Electronic Journal of Combinatorics, Dynamic Surveys 8:1–346, 2012.
+[23] Z. Zimborás, M. Faccin, Z. Kádár, J. Whitfield, B. Lanyon, and J. Biamonte. Quantum
+transport enhancement by time-reversal symmetry breaking, 2012. quant-ph/1208.4049.
+
+26
+
+Appendix
+P
+Lemma 26. Let β1 , . . . , βn be a set of positivePreal numbers which satisfies nk=1 βk = 1.
+Let α1 , . . . , αn be a set of real numbers where | nk=1 eiαk βk | = 1. Then, there exists α ∈ R
+so that αk = α, for all k = 1, . . . , n.
+Proof. By squaring both identities, we get
+1=
+
+n
+X
+
+βk2 +
+
+k=1
+
+X
+
+1≤k<ℓ≤n
+
+i(αk −αℓ )
+
+2Re(e
+
+βk βℓ ) ≤
+
+n
+X
+k=1
+
+βk2 +
+
+X
+
+1≤k<ℓ≤n
+
+Since βk > 0, we have αk = αℓ , for each 1 ≤ k < ℓ ≤ n.
+
+27
+
+(121)
+
+X
+
+(122)
+
+1≤k<ℓ≤n
+
+Here, we use Re(z) ≤ |z|, which holds for any z ∈ C. Thus, we get
+X
+X
+Re(ei(αk −αℓ ) )βk βℓ =
+cos(αk − αℓ )βk βℓ =
+1≤k<ℓ≤n
+
+2βk βℓ = 1.
+
+1≤k<ℓ≤n
+
+βk βℓ .
+
+

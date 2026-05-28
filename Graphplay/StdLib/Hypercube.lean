@@ -122,6 +122,27 @@ theorem hypercube_averageUniformMixing (n : ℕ) (h : 1 ≤ n) :
   -- mixing at any time implies average uniform mixing.
   sorry
 
+/-! ## Computable rational companions -/
+
+/-- Computable companion to `Hypercube n`: the 0/1 adjacency matrix
+of the Boolean hypercube `Q_n` on `Fin (2^n)`, valued in `ℚ`. -/
+def Hypercube.adjMatrixℚ (n : ℕ) : Matrix (Fin (2^n)) (Fin (2^n)) ℚ :=
+  fun x y => if hammingDist n x y = 1 then (1 : ℚ) else 0
+
+/-- The number of edges of `Q_n`, closed form: `n * 2^(n-1)`.
+Computable.  (For `n = 0` we adopt the convention `0 * 2^0 = 0`,
+matching `Nat.sub` truncation.) -/
+def Hypercube.numEdges (n : ℕ) : ℕ := n * 2^(n-1)
+
+/-- Smoke test: `Q_3` has 8 vertices and 12 edges. -/
+example : Hypercube.numEdges 3 = 12 := by decide
+
+#eval Hypercube.numEdges 3
+#eval Hypercube.numEdges 4
+#eval (Hypercube.adjMatrixℚ 3) ⟨0, by decide⟩ ⟨1, by decide⟩
+#eval (Hypercube.adjMatrixℚ 3) ⟨0, by decide⟩ ⟨7, by decide⟩
+#eval Matrix.trace (Hypercube.adjMatrixℚ 3)
+
 /-! ## Convenience aliases -/
 
 /-- The 1-cube `Q_1 = K_2`. -/

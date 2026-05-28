@@ -198,16 +198,30 @@ structure TensorVertex
   /-- We only keep permutations (bijections of `Fin k`). -/
   perm_inj : Function.Injective perm
 
+/-- The bijection between `TensorVertex edge` and the subtype of
+`E × (Fin k → Fin k)` cut out by the injectivity predicate. -/
+def TensorVertex.equivSubtype
+    (edge : E → (Fin k → V)) :
+    TensorVertex (E := E) edge ≃
+      {p : E × (Fin k → Fin k) // Function.Injective p.2} where
+  toFun t := ⟨(t.edgeIdx, t.perm), t.perm_inj⟩
+  invFun p := { edgeIdx := p.1.1, perm := p.1.2, perm_inj := p.2 }
+  left_inv := by intro t; cases t; rfl
+  right_inv := by intro p; rcases p with ⟨⟨e, π⟩, h⟩; rfl
+
 instance tensorVertex_fintype
     (edge : E → (Fin k → V)) : Fintype (TensorVertex (E := E) edge) := by
-  -- Subtype of `E × (Fin k → Fin k)` with the injectivity predicate.
   classical
-  sorry
+  -- `Function.Injective` on a finite domain is decidable, so the subtype is a
+  -- `Fintype` and we transport along `TensorVertex.equivSubtype`.
+  exact Fintype.ofEquiv _ (TensorVertex.equivSubtype (E := E) edge).symm
 
 instance tensorVertex_decEq
     (edge : E → (Fin k → V)) : DecidableEq (TensorVertex (E := E) edge) := by
   classical
-  sorry
+  -- Decide via the subtype encoding: two `TensorVertex`'s are equal iff their
+  -- `(edgeIdx, perm)` pairs agree, both of which sit in decidable-equality types.
+  exact (TensorVertex.equivSubtype (E := E) edge).decidableEq
 
 /-- The tensor-walk adjacency: two `k`-tuples are adjacent iff they share
 `k-1` positions (and so differ by a transposition).  Hermitian, loopless. -/

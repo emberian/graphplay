@@ -1,0 +1,989 @@
+Non-uniform mixing of quantum walk on cycles
+
+arXiv:0708.2096v1 [quant-ph] 15 Aug 2007
+
+William Adamczak
+SUNY Albany
+Dillon Ethier
+Clarkson University
+
+Kevin Andrew
+Harvey Mudd College
+Peter Hernberg
+SUNY Potsdam
+
+Leon Bergen
+Swarthmore College
+Jennifer Lin
+Princeton University
+
+Christino Tamon∗
+Clarkson University
+October 23, 2018
+
+Abstract
+A classical lazy random walk on cycles is known to mix to the uniform distribution.
+In contrast, we show that a continuous-time quantum walk on cycles exhibit strong
+non-uniform mixing properties. Our results include the following:
+• The instantaneous distribution of a quantum walk on most even-length cycles is
+never uniform. More speciﬁcally, we prove that a quantum walk on a cycle Cn
+is not instantaneous uniform mixing, whenever n satisﬁes either: (a) n = 2u , for
+u ≥ 3; or (b) n = 2u q, for u ≥ 1 and q ≡ 3 (mod 4).
+
+• The average distribution of a quantum walk on any Abelian circulant graph is
+never uniform. As a corollary, the average distribution of a quantum walk on any
+standard circulant graph, such as the cycles, complete graphs, and even hypercubes, is never uniform. Nevertheless, we show that the average distribution of a
+quantum walk on the cycle Cn is O(1/n)-uniform.
+Keywords: Quantum walk, continuous-time, mixing, circulant.
+
+1
+
+Introduction
+
+Quantum walk on graphs is a non-trivial and interesting generalization of classical random
+walk on graphs. A mathematical theory of both had proved relevant to physics, computer
+science, and more recently, to quantum information. An excellent survey of quantum walk
+on graphs is given by Kendon [14]. In this work, we will focus on continuous-time unitary
+quantum walk on ﬁnite graphs. Our goal is to show strong non-uniform mixing properties
+of a continuous-time quantum walk on cycles and circulant graphs, which demonstrates a
+distinct behavior from a classical lazy random walk on the same graphs.
+A continuous-time quantum walk on a graph G = (V, E) is deﬁned using Schrödinger’s
+equation by treating the adjacency matrix of G as the Hamiltonian of the quantum system.
+∗
+
+Contact author: tino@clarkson.edu
+
+1
+
+•
+
+•
+
+?
+• ???
+
+??
+
+ •?? ???
+
+?
+
+??  ? •
+•
+??
+??
+??? ???
+
+?? ??  •
+•
+?? • 
+??
+
+?? 
+?
+•
+
+RR
+llll• RRR•,
+,,
+•l
+,,
+, 
+•
+•,
+,,
+
+,R
+
+• RRR lll•
+R•ll
+
+,?RR
+llll•,??RRR
+•,l?R,?,R?RRRlRl,,l,?l?l?•,,,
+ l, l? ?l R,RR??,
+lR,?lRlR ,, ??? ,, RlRl?,•
+•,?
+,,???R R,,RRll??l,l,
+,Rll?l?,l,lRRR?R?,
+• RRR??, lll•
+R•ll
+
+Figure 1: Some Abelian circulants and their quantum mixing properties. From left to right: (a)
+the smallest circulant K2 ; instantaneous and average uniform. (b) the 3-cube or Z32 -circulant;
+instantaneous but not average uniform (Moore and Russell [15]). (c) the cycle C8 or sparse Z8 circulant; not instantaneous uniform, but average (1/n)-uniform (this work). (d) the complete
+graph K8 or dense Z8 -circulant; neither instantaneous nor average (1/n)-uniform (Ahmadi et al.
+[2]).
+
+This treatment is standard in the physics literature (for example, see [11]), where G is
+commonly an inﬁnite low-dimensional lattice. This corresponds to a quantum analogue of
+the important investigations of classical random walks on Zd , for d ≥ 1, by Polya and others
+(see [10]).
+Yet, the case when G is a ﬁnite graph has only been analyzed recently due to its potential applications in developing eﬃcient quantum algorithms (see [12, 6]). An interesting
+mixing property of a continuous-time quantum walk on the hypercube graphs was observed
+by Moore and Russell [15]. They showed that a continuous-time quantum walk on the
+hypercube is instantaneous uniform mixing; that is, there are times when the probability
+distribution of the quantum walk, when measured, equals exactly the uniform distribution
+on the vertices of the hypercube. Although a classical random walk on the hypercube also
+mix to uniform, a quantum walk hits the uniform distribution asymptotically faster.
+Subsequent works showed that several other natural family of graphs do not share this
+uniform mixing property with the hypercube. For example, the complete graphs [2] and
+the Cayley graphs of the symmetric group [13] are known to be not instantaneous uniform
+mixing. But, there is a very natural class of graphs whose status remains open: the cycle
+graphs. Quantum walk on cycles had been studied in the discrete-time setting [1, 5]. It is
+also known that the evolution of continuous-time quantum walk on cycles can be expressed
+as a summation involving Bessel functions (see [11, 4]). Still, it is unknown if a continuoustime quantum walk on cycles has the uniform mixing property.
+In this work, we show that a continuous-time quantum walk on cycles exhibit strong
+non-uniform mixing property. First, we prove that on most even-length cycles the quantum
+walk is not instantaneous uniform mixing. The theorem applies to cycles whose lengths n
+are either a power of two, say, 2u , where u ≥ 3, or a product of a power of two and an
+odd number congruent to 3 modulo 4, that is, n = 2u q, where u ≥ 1 and q ≡ 3 (mod 4).
+Our proof exploits spectral symmetries of even-length cycles coupled with some numbertheoretic arguments. In a sense, our arguments only yield non-uniform mixing for half of
+the even lengths; a separate argument seems needed for the case when q ≡ 1 (mod 4).
+Second, we consider average mixing of quantum walk on cycles. The notion of average
+
+2
+
+mixing is a natural quantum generalization of stationary or limiting distributions in classical
+random walks on graphs. We prove a very general theorem stating that a continuoustime quantum walk on any Abelian group-theoretic circulant (deﬁned in [7]) is not average
+uniform mixing. Since the class of Abelian circulants include natural family of graphs such
+as the cycles, complete graphs, and even hypercubes, as a corollary, we obtain the same
+non-uniform average mixing property for a continuous-time quantum walk on cycles. But,
+we also show that, in a quantum walk on cycles, the average distribution is (1/n)-close to
+uniform (in total variation distance). This property is not true for the family of complete
+graphs.
+Our work exploits heavily the circulant structure and spectral properties of the underlying graphs. A more complete treatment of circulants and their beautiful theory is given
+by Davis [8] and Diaconis [9], while a diﬀerent aspect of quantum walk on circulant graphs
+is described by Saxena et al. [17].
+
+2
+
+Preliminaries
+
+For a logical statement S, let [[S]] denote the characteristic function of S which evaluates to
+1 if S is true, and to 0 if it is false.
+We consider only graphs G = (V, E) that are simple, undirected, and connected. Let
+AG be the adjacency matrix of G, where AG [j, k] = [[(j, k) ∈ E]]. A graph G is circulant if
+its adjacency matrix AG is circulant. A circulant matrix A is speciﬁed by its ﬁrst row, say
+[a0 , a1 , . . . , an−1 ], and is deﬁned as A[j, k] = ak−j (mod n) , where j, k ∈ Zn :
+
+
+a0 a1 . . . an−1
+an−1 a0 . . . an−2 
+
+
+A= .
+(1)
+..
+.. 
+ ..
+. ...
+. 
+a1
+
+a2 . . .
+
+a0
+
+Here Zn denotes the group of integers {0, . . . , n − 1} under addition modulo n. Note that
+a0 = 0, since our graphs are simple, and aj = an−j , since our graphs are undirected. Most
+known families of circulant graphs include the complete graphs and cycles (see Figure 1).
+All circulant graphs G are diagonalizable by the Fourier matrix F whose columns |Fk i
+√
+are deﬁned as hj|Fk i = ωnjk / n, where ωn = exp(2πi/n):
+
+
+1
+1
+1
+...
+1
+1 ωn
+. . . ωnn−1 
+ωn2
+
+
+2(n−1) 
+1 
+2
+4
+1
+ω
+ω
+.
+.
+.
+ω
+
+
+n
+n
+n
+F =√ 
+(2)
+n  ..
+..
+..
+.. 
+
+.
+.
+...
+. 
+.
+2(n−1)
+
+1 ωnn−1 ωn
+
+(n−1)2
+
+. . . ωn
+
+√
+In fact, we have F AF −1 = n · diag(F A0 ), for any circulant A, where A0 = A|0i is the
+ﬁrst column of A (see [8, 3]). This shows that the eigenvalues of A are given by
+λj =
+
+n−1
+X
+
+ak ωn−jk .
+
+k=0
+
+3
+
+(3)
+
+A continuous-time quantum walk on a graph G = (V, E) is deﬁned using the Schrödinger
+equation with the real symmetric matrix AG as the Hamiltonian (see Farhi and Gutmann
+[12]). A classical random walk on a d-regular graph G is sensitive to the choice of the
+1
+AG , for the lazy
+stochastic transition matrix: either d1 AG , for the simple walk, or 21 I + 2d
+walk. In our quantum walk, this choice is irrelevant since I and AG commute, which implies
+1
+1
+that e−it( 2 I+ 2d AG ) = e−it/2 e−i(t/2d)AG . The ﬁrst term e−it/2 is an irrelevant phase factor,
+while the second term involves a time shift t/2d that may also be ignored. Thus, we may
+assume that our stochastic transition matrix is simply AG . If |ψ(t)i ∈ C|V | is a timedependent amplitude vector on the vertices of G, then the evolution of the quantum walk
+is given by
+|ψ(t)i = e−itAG |ψ(0)i,
+(4)
+√
+where i = −1 and |ψ(0)i is the initial amplitude vector. The amplitude of the quantum
+walk of vertex j at time t is given by hj|ψ(t)i. The instantaneous probability of vertex j
+at time t is pj (t) = |hj|ψ(t)i|2 . Let Pt = hpj (t) : j ∈ V i be the instantaneous probability
+distribution of the quantum walk.
+The average probability of vertex j is deﬁned as
+Z
+1 T
+pj = lim
+pj (t) dt.
+(5)
+T →∞ T 0
+The average probability distribution of the quantum walk will be denoted P . This notion of
+average distribution (deﬁned in [1] for discrete-time quantum walks) is similar to the notion
+of a stationary distribution in classical random walks.
+Given two probability distributions P, Q on
+P a ﬁnite set S, the total variation distance
+between P and Q is deﬁned as ||P − Q|| =
+s∈S |P (s) − Q(s)|. Let U be the uniform
+distribution on the vertices V of G. For a given ε ≥ 0, we say that G is instantaneous
+ε-uniform mixing if there is a time t so that the total variation distance between Pt and U
+is at most ε, that is, ||Pt − U || ≤ ε. We also say that G is average ε-uniform mixing if the
+total variation distance between P and U is at most ε, that is, ||P − U || ≤ ε. Whenever
+ε = 0, we say that exact uniform mixing is achieved.
+For discrete-time quantum walk, Aharonov et al. [1] showed that a graph with distinct
+eigenvalues is potentially average uniform mixing. A continuous-time adaptation of this
+result is as follows. Suppose that G has eigenvalues λ0 ≥ . . . ≥ λn−1 with corresponding
+orthonormal eigenvectors |z0 i, . . . , |zn−1 i. The average probability of vertex ℓ is
+Z
+1 T
+|hℓ|e−itH |ψ(0)i|2 dt
+(6)
+P (ℓ) = lim
+T →∞ T 0
+Z
+n−1
+X
+1 T −it(λj −λk )
+=
+hzj |0ih0|zk ihℓ|zj ihzk |ℓi lim
+e
+dt.
+(7)
+T →∞ T 0
+j,k=0
+
+R
+1 T
+
+Since limT →∞ T
+
+0
+
+e−it∆ dt = [[∆ = 0]], this implies that
+P (ℓ) =
+
+n−1
+X
+
+hzj |0ih0|zk ihℓ|zj ihzk |ℓi[[λj = λk ]],
+
+j,k=0
+
+Moreover, if all eigenvalues are distinct, then P (ℓ) =
+4
+
+Pn−1
+
+2
+2
+j=0 |hℓ|zj i| |hzj |0i| .
+
+(8)
+
+3
+
+Non-uniform instantaneous mixing of even-length cycles
+
+In this section, we show that a continuous-time quantum walk on most even-length cycles
+Cn is not instantaneous uniform mixing. Using Equation (3), the eigenvalues of a cycle Cn
+are given by
+λk = 2 cos(2πk/n), k = 0, . . . , n − 1.
+(9)
+Note that λ0 = 2, λn−k = λk , for 1 ≤ k < n/2, and λn/2 = −2, when n is even. Let |ψn (t)i
+describe a continuous-time quantum walk on Cn starting at vertex 0. If A is the circulant
+adjacency matrix of Cn , then
+|ψn (t)i = e−iAt |0i = e−iAt
+
+n−1
+X
+k=0
+
+n−1
+
+1 X −iλk t
+1
+√ |Fk i = √
+e
+|Fk i.
+n
+n
+
+(10)
+
+k=0
+
+This shows that, for each j = 0, . . . , n − 1, we have
+hj|ψn (t)i =
+
+1 X −iλk t jk
+e
+ωn ,
+n
+
+(11)
+
+0≤k<n
+
+Fact 1 Let |ψn (t)i describe a continuous-time quantum walk on Cn , where n is even. Then,
+for any j = 0, . . . , n − 1, we have
+
+
+
+
+X
+1
+hj|ψn (t)i =
+e−2it + (−1)j e2it + 2
+e−iλk t cos(2πjk/n) .
+(12)
+
+n
+1≤k<n/2
+
+Proof Using the eigenvalue symmetry λk = λn−k , for 1 ≤ k < n/2, combined with
+Equation (11), yields the claim.
+
+The following lemma shows that some properties of a quantum walk on Cn can be
+deduced from a quantum walk on Cm , if m divides n. This reduction will be helful in
+analyzing a quantum walk on even-length cycles.
+Lemma 2 Let m, n > 0 be integers so that m|n. Then, for each 0 ≤ a < m we have
+X
+[[j ≡ a (mod m)]]hj|ψn (t)i = ha|ψm (t)i
+(13)
+0≤j<n
+
+Proof Using Equation (11), after switching summations, we get:
+X
+
+[[j ≡ a (mod m)]]hj|ψn (t)i =
+
+0≤j<n
+
+1 X −iλk t X
+[[j ≡ a (mod m)]] × ωnjk .
+e
+n
+0≤k<n
+
+(14)
+
+0≤j<n
+
+Rewriting the inner index j as mj̃ + a, as j̃ vary in 0 ≤ j̃ < n/m, we get (after renaming j̃
+back to j):
+1 X −iλk t
+e
+n
+0≤k<n
+
+X
+
+ωn(mj+a)k =
+
+1 X −iλk t ak
+e
+ωn
+n
+0≤k<n
+
+0≤j<n/m
+
+5
+
+X
+
+0≤j<n/m
+
+jk
+.
+ωn/m
+
+(15)
+
+Next, we note that
+
+Pn−1
+
+j
+j=0 ωn = n × [[k ≡ 0 (mod n)]]. This yields:
+
+1 X −iλk t ak
+1 X
+[[k ≡ 0 (mod n/m)]] × e−iλk t ωnak =
+e
+ωm ,
+m
+m
+0≤k<n
+
+(16)
+
+0≤k<m
+
+which equals ha|ψm (t)i.
+A quantum walk on C2 , which is a multigraph on two vertices with two distinct edges
+connecting the vertices, is given by:
+
+ 
+  
+
+
+
+
+1 −2it 1
+1
+cos(2t)
+0 2
+2it
+e
++e
+=
+.
+(17)
+|ψt i = exp −it
+|0i =
+1
+−1
+−i sin(2t)
+2 0
+2
+
+T
+Thus, we have Pt = cos2 (2t) sin2 (2t) . Applying the previous lemma to even-length
+cycles, a quantum walk on C2n behaves in a similar manner to a quantum walk on a 2-vertex
+cycle. More speciﬁcally, the sum of the amplitudes on the vertices with even (respectively,
+odd) indices in a quantum walk on C2n corresponds exactly to the amplitude of vertex 0
+(respectively, 1) in a quantum walk on C2 .
+Corollary 3 Let |ψn (t)i describe a continuous-time quantum walk on Cn , where n is even.
+Then,
+X
+X
+h2j|ψn (t)i = cos(2t),
+h2j + 1|ψn (t)i = −i sin(2t)
+(18)
+0≤j<n/2
+
+0≤j<n/2
+
+Proof Since n is even, apply Lemma 2 with m = 2.
+A further eigenvalue symmetry on even-length cycles yields a useful simpliﬁcation on
+the amplitude expression given by Fact 1.
+Lemma 4 Let |ψn (t)i describe a continuous-time quantum walk on Cn , where n is even.
+Then,
+
+
+
+
+X
+1
+(n)
+(n)
+εj,0 (t) + 2
+εj,k (t) cos(2πjk/n) ,
+(19)
+hj|ψn (t)i =
+
+n
+1≤k<n/4
+
+(n)
+
+where εj,k (t) = e−iλk t + (−1)j eiλk t .
+
+Proof Using Fact 1 and the eigenvalue symmetry λn/2−k = −λk , for 1 ≤ k < n/4, we
+obtain
+
+
+
+
+X
+1
+hj|ψn (t)i =
+e−2it + (−1)j e2it + 2
+e−iλk t cos(2πjk/n)
+(20)
+
+n
+1≤k<n/2
+
+
+
+X
+1  −2it
+=
+e
++ (−1)j e2it + 2
+(e−iλk t + (−1)j eiλk t ) cos(2πjk/n) (21)
+
+n
+1≤k<n/4
+
+6
+
+since cos(2πj(n/2 − k)/n) = (−1)j cos(2πjk/n).
+Using the previous lemma, we may deduce that the amplitude values on the vertices in
+a quantum walk on an even-length cycle are purely real or purely imaginary; moreover, this
+is completely determined by the parity of the vertex index.
+Corollary 5 Let |ψn (t)i describe a continuous-time quantum walk on Cn , where n is even.
+Then, hj|ψn (t)i is a real number, if j is even, and is an imaginary number, if j is odd.
+Proof Using Lemma 4, we note that e−iλk t + (−1)j eiλk t equals 2 cos(λk t), whenever j is
+even, and equals −2i sin(λk t), if j is odd.
+Next, we show a lemma which connects the sum of amplitudes on a pair of vertices in a
+quantum walk on C2n to the amplitude on a single vertex in a quantum walk on Cn . This
+lemma will be useful in deducing the type of amplitude expressions involved in a quantum
+walk on C2u , for some u ≥ 1.
+Lemma 6 Let |ψn (t)i describe a continuous-time quantum walk on Cn , where n is even.
+Then, for all 0 ≤ j < n, we have
+hj|ψ2n (t)i + hn − j|ψ2n (t)i = hj|ψn (t)i.
+
+(22)
+
+Proof Note that cos(2π(n − j)k/(2n)) = (−1)k cos(2πjk/(2n)). By Lemma 4, the sum
+hj|ψ2n (t)i + hn − j|ψ2n (t)i equals
+
+
+
+
+
+
+X
+2πjk
+1
+(2n)
+(2n)
+εj,0 (t) + 2
+[[k even]] cos
+εj,k (t)
+(23)
+
+n
+2n
+1≤k<n/2
+
+(2n)
+
+(n)
+
+Since εj,2k (t) = εj,k (t), we get
+
+1  (n)
+δ +2
+n  j,0
+
+X
+
+1≤k<n/4
+
+
+
+(n)
+cos(2πjk/n)εj,k (t) .
+
+
+(24)
+
+Again by Lemma 4, the last expression equals hj|ψn (t)i.
+
+Finally, we are ready to state and prove a theorem showing that a continuous-time
+quantum walk most even-length cycles is not instantaneous exactly uniform mixing. The
+proof uses several observations stated in the previous lemmas.
+Theorem 7 The family of cycles Cn is not instantaneous uniform mixing, where n satisfies
+either (a) n = 2u , where u ≥ 3; or (b) n = 2u q, where u ≥ 1 and q ≡ 3 (mod 4).
+Proof Assume that there is a time t for which |hj|ψ(t)i|2 = 1/n. By Corollary 5, we have
+that
+
+√
+±1/ n if j is even
+√
+(25)
+hj|ψ(t)i =
+±i/ n if j is odd
+7
+
+Also, we have
+cos(2t) =
+
+X
+
+h2j|ψ(t)i =
+
+0≤j<n/2
+
+n 1
+2k
+(n − 4k)
+√ −√ =
+√
+,
+2 n
+n
+2 n
+
+(26)
+
+where k is the number of j’s for which h2j|ψ(t)i is negative. Similarly, we have
+− i sin(2t) =
+
+(n − 4ℓ)
+√
+,
+2 n
+
+(27)
+
+where ℓ is the number of j’s for which h2j +1|ψ(t)i is negative. Since cos2 (2t)+sin2 (2t) = 1,
+we obtain
+(n − 4k)2 + (n − 4ℓ)2 = 4n.
+(28)
+Let ak = n − 4k and aℓ = n − 4ℓ. There are two cases to consider: one of ak or aℓ is zero,
+or both are non-zero.
+If one of them is zero, say ak = 0, then a2ℓ = 4n. If n = 2u q, where u ≥ 1 and q ≡ 3
+(mod 4), we have a contradiction since 2u q is not a square, if u is odd or q ≡ 3 (mod 4).
+Otherwise, u is even and q = 1, and, by repeated applications of Lemma 6, we observe that
+√
+h0|ψ8 (t)i = a/ n = a/2m , for some integers a, m ∈ Z. But, by Lemma 4, we have
+h0|ψ8 (t)i =
+
+√
+1
+1
+cos(2t) + cos( 2t).
+4
+2
+
+(29)
+
+Since cos(t) = 0 or sin(t) = 0 in this case, we must have t =√ k(π/2), for some k ∈ Z. But
+√
+cos(kπ/ 2) is not rational, for any integer k, since (ei(π/2) 2 )k is transcendental, by the
+Gelfond-Schneider1 theorem (see [16]).
+Next, we consider the case when both ak and aℓ are non-zero. If both terms are odd,
+then considering Equation (28), the left-hand size satisﬁes a2k + a2ℓ ≡ 2 (mod 4) whereas the
+right-hand side satisﬁes 4n ≡ 0 (mod 4); this is a contradiction. Otherwise, if both terms
+are even, then a factor of 4 can be removed from both sides of Equation (28). Continuing
+this process, we arrived at a case where either the right-hand side is q ≡ 3 (mod 4) or both
+ak and aℓ are odd. In either case, we arrive at a contradiction modulo 4.
+This completes the proof of the theorem.
+
+4
+
+Non-uniform average mixing on Abelian circulants
+
+Our main theorem in this section shows that the average distribution of a continuous-time
+quantum walk on any cycle, except for C2 , is never uniform. In fact, we prove a much
+stronger theorem stating that the average distribution of a continuous-time quantum walk
+on any G-circulant, for any Abelian group G (as deﬁned in [7]) is never uniform, except for
+C2 .
+Diaconis [7] described the following interesting group-theoretic generalization of circulants. Let G be a group of order n and let f : G → C be a class function of G (that is, it
+The Gelfond-Schneider theorem states that αβ is transcendental, if α and β are algebraic numbers with
+α 6= 0 and α 6= 1, and if β is not a real rational number.
+1
+
+8
+
+is constant on the conjugacy classes of G). Consider the matrix MGf deﬁned on G × G as
+MGf [s, t] = f (st−1 ). Note that with G being the cyclic group Zn of order n, we recover the
+standard circulant graphs, whereas with G = Zn2 , we obtain the hypercube graphs.
+Let ρ : G → GL(n, C) be a representation of G with dimension n. The Fourier transform
+of f at a representation ρ is deﬁned as
+X
+fˆ(ρ) =
+f (x)ρ(x).
+(30)
+x∈G
+
+As usual, Fourier inversion reconstructs f from its Fourier transform at all irreducible
+representations ρ1 , . . . , ρm of G with dimensions d1 , . . . , dm , respectively:
+m
+
+1 X
+dj T race(ρj (x−1 )fˆ(ρj )).
+f (x) =
+|G|
+
+(31)
+
+j=1
+
+For each irreducible representation ρj , we deﬁne a d2j × d2j block matrix Dj as Dj =
+P
+2
+diag(fˆ(ρj )). Next, let D = diag(D1 , . . . , Dh ) be a |G| × |G| matrix, since |G| = m
+j=1 dj .
+√
+dj
+Also, deﬁne the vector ψj of length d2j as ψj (x) = |G| hρj (x)[s, t] : 1 ≤ s, t ≤ dj i and
+the vector ψ(x) = hψj (x) : 1 ≤ j ≤ mi of length |G|. Finally, we deﬁne the matrix
+X = [ψ(x1 ) . . . ψ(xn )], where x1 , . . . , xn are the elements of G.
+Theorem 8 (Diaconis [7]) If f : G → C is a class function of a finite group G, then MGf is
+unitarily diagonalized by X , that is, MGf = X † DX , where, for each j = 1, . . . , m, we have
+Dj = λj Id2 , χj (x) = T race(ρj (x)) is the character of ρj at x, and the eigenvalue is
+j
+
+λj =
+
+1 X
+f (x)χj (x).
+dj
+
+(32)
+
+x∈G
+
+We are interested in applying Theorem 8 for an Abelian group G, where all of its group
+representations have dimension one. Our main result shows that the spectral gap of MGf ,
+for any Abelian group G, is zero. This shows that average uniform mixing is impossible.
+The Hadamard matrix Hn (of Sylvester type) is deﬁned recursively as:
+
+
+
+
+1 1
+Hn−1 Hn−1
+H2 =
+, and Hn =
+, n > 2.
+(33)
+1 −1
+Hn−1 −Hn−1
+We call graph G a Hadamard circulant if it is diagonalized by some Hadamard matrix Hn .
+Alternatively, these are G-circulant matrices for G = Zn2 . Although Equation (8) suggests
+that a graph with distinct eigenvalues diagonalized by Hadamard matrices might be average
+uniform mixing, the following lemma disproves this possibility.
+Lemma 9 Let G be a graph diagonalized by a Hadamard matrix Hn , for n > 2. Then G
+has spectral gap zero.
+
+9
+
+Q
+Proof Consider the characters of Zn2Pdeﬁned for each a ∈ Zn2 as χa (x) = nj=1 (1 − 2aj xj ).
+f (x)χa (x), where f : Zn2 → {0, 1} deﬁnes the
+From Equation (32), we get λa =
+x∈Zn
+2
+ﬁrst column of the adjacency matrix of G. Let |f | = {x 6= 0n : f (x) = 1}. Assume that
+|f | < 2n − 1, otherwise we get the complete graph which has only 2 distinct eigenvalues. If
+|f | is even, then λa ∈ {0, ±2, . . . , ±|f |}. Since the eigenvalues can take at most |f | + 1 < 2n
+values, by the pigeonhole principle, there exist two non-distinct eigenvalues. If |f | is odd,
+then λa ∈ {±1, ±3, . . . , ±|f |}. Similarly, the eigenvalues range on at most |f | < 2n − 1
+values, and again there exist two non-distinct eigenvalues.
+Theorem 10 For any Abelian group G, no G-circulant, except for C2 , is average uniform
+mixing.
+Proof Let G = Zn1 × . . . × Znk be an Abelian group. If all elements of G have order 2
+(except for the identity), we appeal to Lemma 9. Otherwise,
+ﬁx a ∈ G with order greater
+Q
+than 2. The character corresponding to a is χa (x) = kj=1 χaj (xj ). From Equation (32),
+λa =
+
+X
+
+f (x)χa (x) =
+
+x6=0
+
+X
+x6=0
+
+f (x)χ−a (−x) =
+
+X
+x6=0
+
+f (−x)χ−a (−x) = λ−a .
+
+(34)
+
+Thus, the spectral gap of MGf is zero. Finally, since G is Abelian, its characters are complex
+roots of unity; thus, applying Equation (8), we obtain the claim.
+The above theorem implies that the n-cube and the standard circulant graphs are not
+average uniform mixing, as stated in the following corollary.
+Corollary 11 No Zn2 -circulant and no Zn -circulant, except for C2 , is average uniform mixing.
+Next, we relax our requirement of exact uniform average mixing and allow mixing to be
+(1/n)-uniform. We observe that the cycle graphs and the complete graphs behave diﬀerently
+with respect to average near uniform mixing.
+Theorem 12 The cycle Cn is average (1/n)-uniform mixing.
+Proof Let ω = exp(2πi/n). Using Equation (8) for circulants, we have
+n−1
+
+1 X (j−k)ℓ
+1 X (j−k)ℓ
+1
+P (ℓ) = 2
+ω
+[[λj = λk ]].
+ω
+[[λj = λk ]] = + 2
+n
+n n
+
+(35)
+
+j6=k
+
+j,k=0
+
+P b
+A result of Diaconis and Shahshahani (see [9]) states that ||P − U || ≤ 41 ρ |P
+(ρ)|2 , where
+the sum is over non-trivial irreducible representations. The characters of Zn are given by
+χa (x) = ω ax , and thus, for a 6= 0,
+b (a) = X P (ℓ)χ (ℓ) = 1
+P
+a
+n2
+ℓ
+
+X
+
+j6=k: λj =λk
+
+10
+
+X
+ℓ
+
+ω (j−k+a)ℓ =
+
+1
+.
+n
+
+(36)
+
+The last equality holds because there is a unique pair (j, k) such that j − k + a = 0; this
+pair contributes n to the sum while the other pairs contribute 0 to the sum. Therefore,
+||P − U || ≤ (n − 1)/4n2 < 1/4n.
+In contrast, the average distribution of a quantum walk on the complete graphs Kn is
+not near uniform.
+Theorem 13 (Ahmadi et al. [2]) The complete graph Kn is not average (1/n)-uniform
+mixing.
+Proof As shown in [2], for ℓ 6= 0, we have P (ℓ) = 2/n2 , and P (0) = 1 − 2(n − 1)/n2 . Thus
+||P − U || = 2(1 − 1/n)(1 − 2/n) ≫ 1/n.
+
+5
+
+Conclusions
+
+In this work, we have shown that a continuous-time quantum walk on cycles exhibit strong
+non-classical mixing characteristics. First, we prove that a continuous-time quantum walk
+on most even-length cycles is not instantaneous uniform mixing. This partially settles a
+conjecture made in [2]. Second, we prove that a continuous-time quantum walk on any cycle
+is not average uniform mixing. The latter result is obtained as a corollary of a stronger
+theorem for a continuous-time quantum walk on any Abelian circulant graph. This class of
+graphs include the natural families of cycles, complete graphs, hypercubes, and others. In
+contrast, classical lazy random walks on the same graphs mix to the uniform distribution.
+We leave the case of the odd-length cycles as well as cycles of length 2u q, with u ≥ 1 and
+q ≡ 1 (mod 4), for future work. Also, we are curious to investigate if there is something
+interesting about the quantum mixing status of prime-length cycles. Finally, the only
+known class of graphs with instantaneous uniform mixing is the hypercube family, and the
+only graph known to be average uniform mixing is the connected two-vertex graph. It is
+conceivable that these are the two lone examples of uniform mixing in circulants.
+
+Acknowledgments
+This research was supported in part by the National Science Foundation grants DMS0097113, DMS-0646847, DMR-0121146 and also by the National Security Agency grant
+42642, while the authors were part of the Clarkson-Potsdam Research Experience for Undergraduates (REU) Summer program in Mathematics 2003 and 2007.
+
+References
+[1] Dorit Aharonov, Andris Ambainis, Julia Kempe, and Umesh Vazirani, ”Quantum
+Walks on Graphs,” Proc. 33rd ACM Annual Symposium on Theory of Computing
+(2001), 50-59.
+[2] Amir Ahmadi, Ryan Belk, Christino Tamon, and Carolyn Wendler, ”On Mixing of
+Continuous-Time Quantum Walks on Some Circulant Graphs,” Quantum Information
+and Computation 3 (2003), 611-618.
+11
+
+[3] Norman Biggs, Algebraic Graph Theory, 2nd edition, Cambridge University Press,
+1993.
+[4] Daniel ben-Avraham, Erik Bollt, and Christino Tamon, ”One-dimensional continuoustime quantum walks,” Quantum Information Processing 3 (2004), 295-308.
+[5] Malgorzata Bednarska, Andrzej Grudka, Pawel Kurzyński, Tomasz Luczak, Antoni
+Wójcik, ”Quantum walks on cycles,” Physics Letters A 317 (2003), 21-25.
+[6] Andrew M. Childs, Richard E. Cleve, Enrico Deotto, Edward Farhi, Sam Gutmann,
+and Daniel A. Spielman, ”Exponential algorithmic speedup by a quantum walk,”
+Proc. 35th Annual Symposium on the Theory of Computing (2003), 59-68.
+[7] Persi Diaconis, ”Patterned Matrices,” in Matrix Theory and Applications, Proceedings
+of Symposia in Applied Mathematics 40, American Mathematical Society (1990), 3758.
+[8] Philip J. Davis, Circulant Matrices, 2nd edition, Chelsea, 1994.
+[9] P. Diaconis, Group Representations in Probability and Statistics, Institute of Mathematical Statistics, 1988.
+[10] Peter G. Doyle and J. Laurie Snell, Random Walks and Electric Networks, The Mathematical Association of America, 1984.
+[11] Richard P. Feynman, Robert B. Leighton, and Matthew L. Sands, The Feynman
+Lectures on Physics, volume III, Addison-Wesley, 1965.
+[12] Edward Farhi and Sam Gutmann, ”Quantum computation and decision trees,” Physical Review A 58 (1998), 915-928.
+[13] Heath Gerhardt and John Watrous, ”Continuous-time quantum walks on the symmetric group,” in Proc. 7th Int. Workshop Randomization and Approximation in
+Computer Science, Lecture Notes in Computer Science 2764, Springer (2003), 290301.
+[14] Viv Kendon, ”Quantum walks on general graphs,” International Journal of Quantum
+Information 4:5 (2006), 791-805.
+[15] Cristopher Moore and Alexander Russell, ”Quantum Walks on the Hypercube,” in
+Proc. 6th Int. Workshop on Randomization and Approximation in Computer Science,
+Lecture Notes in Computer Science 2483, Springer (2002), 164-178.
+[16] Ivan Niven, Irrational Numbers, The Mathematical Association of America, 1985.
+[17] Nitin Saxena, Simone Severini, and Igor Shparlinski, ”Parameters of integral circulant
+graphs and periodic quantum dynamics,” International Journal of Quantum Information 5 (2007), 417-430.
+
+12
+
+

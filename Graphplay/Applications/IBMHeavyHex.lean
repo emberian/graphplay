@@ -139,10 +139,43 @@ inductive HeavyHexVertex (n m : ℕ) : Type
   | flag (u v : HoneyVertex n m) : HeavyHexVertex n m
 deriving DecidableEq
 
-instance (n m : ℕ) : Fintype (HeavyHexVertex n m) := by
-  -- Constructible as a `Sum` of `Fin (something)`; we defer the explicit
-  -- enumeration to a future pass.
-  sorry
+namespace HeavyHexVertex
+
+/-- The canonical encoding of a heavy-hex vertex as a sum
+`HoneyVertex ⊕ (HoneyVertex × HoneyVertex)`. -/
+def toSum {n m : ℕ} :
+    HeavyHexVertex n m → HoneyVertex n m ⊕ (HoneyVertex n m × HoneyVertex n m)
+  | .data v => Sum.inl v
+  | .flag u v => Sum.inr (u, v)
+
+/-- Inverse to `toSum`: rebuild a `HeavyHexVertex` from the sum encoding. -/
+def ofSum {n m : ℕ} :
+    HoneyVertex n m ⊕ (HoneyVertex n m × HoneyVertex n m) → HeavyHexVertex n m
+  | Sum.inl v => .data v
+  | Sum.inr (u, v) => .flag u v
+
+@[simp] theorem ofSum_toSum {n m : ℕ} (x : HeavyHexVertex n m) :
+    ofSum (toSum x) = x := by
+  cases x <;> rfl
+
+@[simp] theorem toSum_ofSum {n m : ℕ}
+    (x : HoneyVertex n m ⊕ (HoneyVertex n m × HoneyVertex n m)) :
+    toSum (ofSum x) = x := by
+  rcases x with v | ⟨u, v⟩ <;> rfl
+
+/-- `HeavyHexVertex n m ≃ HoneyVertex n m ⊕ (HoneyVertex n m × HoneyVertex n m)`. -/
+def equivSum {n m : ℕ} :
+    HeavyHexVertex n m ≃
+      HoneyVertex n m ⊕ (HoneyVertex n m × HoneyVertex n m) where
+  toFun := toSum
+  invFun := ofSum
+  left_inv := ofSum_toSum
+  right_inv := toSum_ofSum
+
+end HeavyHexVertex
+
+instance (n m : ℕ) : Fintype (HeavyHexVertex n m) :=
+  Fintype.ofEquiv _ HeavyHexVertex.equivSum.symm
 
 /-- Adjacency of heavy-hex: a `data u` is adjacent to a `flag a b` exactly
 when `u` is one of the two endpoints `a` or `b` of an honeycomb edge.

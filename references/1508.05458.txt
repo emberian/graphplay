@@ -1,0 +1,922 @@
+Laplacian State Transfer in Coronas
+
+arXiv:1508.05458v1 [quant-ph] 22 Aug 2015
+
+Ethan Ackelsberg∗
+
+Zachary Brehm†
+
+Ada Chan‡
+
+Joshua Mundinger§
+
+Christino Tamon¶
+October 26, 2018
+
+Abstract
+We prove that the corona product of two graphs has no Laplacian perfect state transfer
+whenever the first graph has at least two vertices. This complements a result of Coutinho and
+Liu who showed that no tree of size greater than two has Laplacian perfect state transfer. In
+contrast, we prove that the corona product of two graphs exhibits Laplacian pretty good state
+transfer, under some mild conditions. This provides the first known examples of families of
+graphs with Laplacian pretty good state transfer. Our result extends of the work of Fan and
+Godsil on double stars to the Laplacian setting. Moreover, we also show that the corona product
+of any cocktail party graph with a single vertex graph has Laplacian pretty good state transfer,
+even though odd cocktail party graphs have no perfect state transfer.
+
+1
+
+Introduction
+
+Given a graph G and a symmetric matrix M associated with G, the continuous-time quantum walk
+on G relative to M is given by the unitary matrix
+U (t) := exp(−itM ).
+
+(1)
+
+This notion was introduced by Farhi and Gutmann [11] as a paradigm to design efficient quantum
+algorithms. Physically, this also represents the evolution of a quantum spin system. This interesting
+connection was explored in the works of Bose [3] and Christandl et al. [6, 5]. Furthermore, as
+pointed out by Bose et al. [4], there are two different matrices M of interest. In the so-called XY
+model, M is the adjacency matrix of G; in the XYZ model, M is the Laplacian of G. For details on
+these physical models, see Bose et al. [4] for a derivation. Note that if G is regular, these quantum
+walks differ only by complex conjugation and a phase factor.
+From the physical standpoint, quantum walks relative to the adjacency matrix and the Laplacian
+are equally important. However, the current literature has focused mostly on quantum walks
+relative to the adjacency matrix. In this paper, we investigate continuous-time quantum walks
+relative to the Laplacian.
+We are interested in the phenomenon of state transfer, which models the routing of information
+between particles in the associated spin system. This was the original motivation of the work by
+∗
+
+Division of Science, Mathematics and Computing, Bard College at Simon’s Rock.
+Department of Mathematics, SUNY Potsdam.
+‡
+Department of Mathematics and Statistics, York University.
+§
+Department of Mathematics and Statistics, Swarthmore College.
+¶
+Department of Computer Science, Clarkson University.
+†
+
+1
+
+Bose [3]. A graph G is said to have perfect state transfer between vertices u and v if there is a time
+t such that
+|exp(−itM )uv |2 = 1.
+(2)
+
+Physically, this means that the probability of state transfer between vertices u and v is unity. We
+will refer to the matrix entry exp(−itM )uv as the transition element between the vertices u and v.
+There are several infinite families of graphs known to have perfect state transfer. This includes
+hypercubes [5], some families of distance-regular graphs [8], complete graphs with a missing edge
+[4], and some joins [1]. However, recently it has become clear that perfect state transfer is rare. In
+the adjacency matrix case, Godsil showed that there are at most finitely many graphs with a given
+maximum valency with perfect state transfer [14], while, in the Laplacian case, Coutinho and Liu
+showed that there is no perfect state transfer on trees with at least three vertices [9].
+Nevertheless, transmission of information in a quantum system may not occur perfectly, but
+rather with probability that is arbitrarily close to unity. We thus consider a relaxation. A graph
+G is said to have pretty good state transfer if for each ǫ > 0, there exists a time t such that
+|exp(−itM )uv |2 ≥ 1 − ǫ.
+
+(3)
+
+This notion was proposed by Godsil [13]. Relative to the adjacency matrix, pretty good state
+transfer was studied on paths [15] and double stars [10]. However, prior to this work, there are
+no known families of graphs with pretty good state transfer in Laplacian quantum walks. In this
+paper, we provide the first infinite families of graphs with Laplacian pretty good state transfer.
+Our families of graphs are constructed using the corona product of two graphs.
+The corona product was introduced by Frucht and Harary to construct a graph whose automorphism group is the wreath product of the automorphism groups of the component graphs [12].
+Quantum walks (in a discrete-time setting) on the corona of hypercubes and cliques were studied
+numerically by Makmal et al. [18]. In this work, we show that there is no perfect state transfer
+on coronas, continuing to support that perfect state transfer is rare. However, we show that given
+a graph G with perfect state transfer, the corona product of G with another graph H will have
+pretty good state transfer, subject to a condition on the number of vertices of H. As a corollary,
+we extend the work of Fan and Godsil on double stars [10] to the Laplacian, as well as construct an
+infinite family of coronas with pretty good state transfer where neither component of the product
+has any state transfer.
+For more information on algebraic graph theory, see Godsil and Royle [16], and for a survey on
+state transfer on graphs, see Godsil [13].
+
+2
+
+Preliminaries
+
+Let G be a graph with adjacency matrix A and diagonal degree matrix D. The Laplacian of G is
+defined as the matrix L := D − A. The unitary matrix
+U (t) := exp(−itL)
+
+(4)
+
+determines a continuous-time Laplacian quantum walk on G. We are interested in studying perfect
+state transfer and pretty good state transfer in such a quantum walk. If G has n vertices, we
+associate the vertices of G with coordinates in Cn , and let |ui denote the characteristic vector of
+the vertex u.
+A graph G has perfect state transfer between vertices u and v at time τ if there exists a complex
+number γ such that
+U (τ ) |ui = γ |vi .
+(5)
+2
+
+The complex number γ is called the phase of the perfect state transfer. Since U (t) is unitary for
+all t, the condition (5) is equivalent to |U (τ )uv |2 = 1. Since L is real symmetric, U (t) is symmetric,
+which shows that (5) is symmetric in u and v, that is, U (τ ) |vi = γ |ui.
+By the spectral theorem, L admits a decomposition
+L=
+
+d
+X
+
+λi Fλi ,
+
+(6)
+
+i=0
+
+where 0 = λ0 < λ1 < . . . < λd are the distinct eigenvalues of L and Fλi is the eigenprojector for
+P
+eigenvalue λi . Note that di=0 Fλi = I.
+We say two vertices u and v are strongly cospectral if, for every eigenvalue λ of G, we have
+Fλ |ui = ±Fλ |vi .
+
+(7)
+
+The eigenvalue support of a vertex v is the set of all eigenvalues λ of G such that Fλ |vi 6= 0.
+The following theorem states the known necessary and sufficient conditions for Laplacian perfect
+state transfer.
+Theorem 2.1 (Coutinho [7], Theorem 7.3.1). Let G be a graph, and let u and v be vertices in G.
+Let S be the eigenvalue support of u. Then, there is Laplacian perfect state transfer between u and
+v at time τ if and only if all of the following hold:
+(i) The vertices u and v are strongly cospectral;
+(ii) All eigenvalues in S are integers;
+(iii) For each λ ∈ S, hu| Fλ |vi is positive if and only if λ/ gcd(S) is even.
+Moreover, if these hold, there is a minimum time of perfect state transfer given by t0 := π/ gcd(S),
+and τ is an odd multiple of t0 .
+A graph G has pretty good state transfer between vertices u and v if for every ǫ > 0, there exists
+a time t and there exists a complex number γ such that
+kU (t) |ui − γ |vik < ǫ.
+
+(8)
+
+Since U (t) is unitary, this is equivalent to requiring that for each ǫ > 0, there exists a time t such
+that
+|U (t)uv |2 > 1 − ǫ.
+(9)
+As in Godsil et al. [15], our main tool for showing the existence of pretty good state transfer is
+Kronecker’s Approximation Theorem.
+Theorem 2.2 (Hardy and Wright [17], Theorem 442). Let 1, λ1 , . . . , λm be linearly independent
+over Q. Let α1 , . . . , αm be arbitrary real numbers, and let ǫ be a positive real number. Then, there
+is an integer ℓ and integers q1 , . . . , qm so that
+|ℓλk − αk − qk | < ǫ,
+for each k = 1, . . . , m.
+
+3
+
+(10)
+
+For brevity, whenever we have an equation of the form |α − β| < ǫ, we will write instead α ≈ β
+and omit the explicit dependence on ǫ. For example, (10) will be represented as ℓλk − qk ≈ αk .
+In our applications of Kronecker’s Theorem, we will use the following lemma to identify sets of
+numbers which are linearly independent over the rationals.
+√
+Lemma 2.3 (Richards [19]). The set { ∆ : ∆ is a square-free integer} is linearly independent over
+the set of rational numbers Q.
+Notation: Let |jm i denote the all-one vector with m components, and let Jm,n denote the m × n
+all-one matrix (or simply Jm if m = n). In cases where we need to specify the underlying graph,
+we will use a notation such as L(G) instead of L. Throughout this paper, the spectrum of G is the
+spectrum of its Laplacian L, denoted Sp(G), unless stated otherwise.
+
+3
+
+Corona of Graphs
+
+→
+−
+Let G be a graph on the vertex set V (G) = {v1 , . . . , vn } and let H = (H1 , . . . , Hn ) be an n-tuple
+→
+−
+of graphs. The (inhomogenous) corona G ◦ H is formed by taking the disjoint union of G and
+H1 , . . . , Hn and then adding an edge from each vertex in Hj to the vertex vj in G. Formally, the
+→
+−
+corona G ◦ H has the vertex set
+n
+
+[
+→
+−
+{(vj , w) : vj ∈ V (G), w ∈ V (Hj )}
+V (G ◦ H ) = {(v, 0) : v ∈ V (G)} ∪
+
+(11)
+
+j=1
+
+and the adjacency relation
+
+′
+
+w = w = 0 and vj ∼G vk ,
+(vj , w) ∼ (vk , w′ ) ⇐⇒ vj = vk and w ∼Hj w′ ,
+
+
+vj = vk and exactly one of w and w′ is 0.
+
+or
+or
+
+(12)
+
+For notational convenience, we will identify V (G) with {1, 2, . . . , n}, whereby we simply denote vℓ
+by ℓ.
+
+H1
+
+Hn−1
+
+H2
+
+Hn
+
+G
+→
+−
+→
+−
+Figure 1: An inhomogeneous corona G ◦ H where H = (H1 , . . . , Hn ).
+→
+−
+The adjacency matrix of the corona G ◦ H is given by
+n
+
+X
+→
+−
+|ℓihℓ| ⊗
+A(G ◦ H ) = A(G) ⊗ |0ih0| +
+ℓ=1
+
+→
+−
+Then, it follows that the Laplacian of G ◦ H is
+
+n
+
+
+
+0
+hjm |
+|jm i A(Hℓ )
+
+
+
+0
+− hjm |
+− |jm i L(Hℓ ) + I
+
+X
+→
+−
+L(G ◦ H ) = (L(G) + mI) ⊗ |0ih0| +
+|ℓihℓ| ⊗
+ℓ=1
+
+4
+
+
+
+.
+
+(13)
+
+
+
+.
+
+(14)
+
+→
+−
+The definition given by Frucht and Harary [12] coincides with when H is a constant sequence
+(H, . . . , H) for some graph H. We will denote such a corona with a constant sequence simply as
+G ◦ H. In this case, the spectrum of G ◦ H is known.
+Theorem 3.1 (Barik et al. [2], Theorem 3.2). Let G be a graph on n vertices and H be a graph
+on m vertices. Suppose G has spectrum 0 = λ0 < . . . < λp with multiplicities r0 , . . . , rp , and H has
+spectrum 0 = µ0 < µ1 < . . . < µq with multiplicities r0′ , . . . , rq′ . Then the (homogeneous) corona
+G ◦ H has the following spectrum:
+(a) 1 with multiplicity n(r0′ − 1);
+(b) µj + 1 with multiplicity nrj′ , for each j = 1, . . . , q;
+
+
+p
+(c) 12 λj + m + 1 ± (λj + m + 1)2 − 4λj with multiplicity rj , for each j = 1, . . . , p.
+
+In the following, we extend Theorem 3.1 by computing the eigenvalues and eigenprojectors of
+the inhomogenous corona G◦(H1 , . . . , Hn ) when the order |V (Hj )| is the same for each j = 1, . . . , n.
+
+→
+−
+Proposition 3.2. Let G be a graph on n vertices and H = (H1 , . . . , Hn ) be an n-tuple of graphs
+→
+−
+on m ≥ 1 vertices. Then the spectrum of G ◦ H is given by:
+(a) 1 is an eigenvalue, if there exists Hℓ that is disconnected, with the eigenprojector
+F1 =
+
+n
+X
+ℓ=1
+
+|ℓihℓ| ⊗
+
+
+
+
+
+0
+h0m |
+1
+Jm
+|0m i F0 (Hℓ ) − m
+
+.
+
+(15)
+
+1
+Note F0 (Hj ) = m
+Jm if and only if Hj is connected.
+
+(b) µ+1 is an eigenvalue, if there exists Hℓ that has a nonzero eigenvalue µ, with the eigenprojector
+Fµ+1 =
+
+n
+X
+ℓ=1
+
+|ℓihℓ| ⊗
+
+
+
+0
+h0m |
+|0m i Fµ (Hℓ )
+
+
+
+,
+
+(16)
+
+where we assume Fµ (Hℓ ) = 0 if µ is not an eigenvalue of Hℓ .
+p
+(c) λ± = 21 (m + λ + 1 ± (m + λ − 1)2 + 4m) are eigenvalues, for each eigenvalue λ of G, with
+eigenprojectors
+
+
+1
+(1 − λ± )2
+(1 − λ± ) hjm |
+Fλ (G) ⊗
+.
+(17)
+Fλ± =
+(1 − λ± ) |jm i
+Jm
+(1 − λ± )2 + m
+→
+−
+Therefore, the spectral decomposition of the Laplacian of the corona G ◦ H is given by
+X X
+X
+→
+−
+L(G ◦ H ) =
+λ± Fλ± +
+(µ + 1)Fµ+1 ,
+µ
+
+λ∈Sp(G) ±
+
+where the sum over µ is over all eigenvalues of the graphs Hℓ , for ℓ = 1, . . . , n.
+
+5
+
+(18)
+
+→
+−
+Proof. Let Hℓ be one of the graphs in the sequence H . Suppose |xi is a normalized eigenvector of
+L(Hℓ ) corresponding to eigenvalue µ, and that |xi is orthogonal to |jm i. Then,
+
+
+
+
+→
+−
+0
+0
+L(G ◦ H ) |ℓi ⊗
+= (µ + 1) |ℓi ⊗
+.
+(19)
+|xi
+|xi
+If Hℓ is disconnected, then L(Hℓ ) has eigenvectors with eigenvalue zero orthogonal to |jm i. In this
+→
+−
+case, 1 is an eigenvalue of L(G◦ H ) with the eigenprojector given in (15). For each eigenvalue µ 6= 0
+→
+−
+of L(Hℓ ) with eigenprojector Fµ (Hℓ ), µ + 1 is an eigenvalue of L(G ◦ H ) with the eigenprojector
+given in (16).
+→
+−
+Since |V (G)| = n, then (15) and (16) together give n(m − 1) eigenvectors of L(G ◦ H ). We construct the remaining 2n eigenvectors using the eigenvectors of L(G). Suppose |yi is an eigenvector
+of L(G) with eigenvalue λ. Then,
+
+
+
+
+→
+−
+1 − λ±
+1 − λ±
+L(G ◦ H ) |yi ⊗
+= λ± |yi ⊗
+(20)
+|jm i
+|jm i
+if and only if
+p
+(m + λ + 1)2 − 4λ
+m + λ + 1 ± (m + λ − 1)2 + 4m
+=
+.
+λ± =
+2
+2
+After normalizing, the eigenprojectors corresponding to eigenvalues λ± are given by (17).
+→
+−
+Note that when H = (H, . . . , H), Proposition 3.2 coincides with Theorem 3.1.
+m+λ+1±
+
+4
+
+p
+
+(21)
+
+Perfect State Transfer
+
+In the following theorem, we show that there is no perfect state transfer between any pair of vertices
+in the corona of two graphs whenever the first graph has at least two vertices. The proof relies on
+the fact that there are no integer eigenvalues in the support of any vertex.
+→
+−
+Theorem 4.1. Let G be a connected graph on n ≥ 2 vertices and H = (H1 , . . . , Hn ) be an n-tuple
+→
+−
+of graphs on m ≥ 1 vertices. Then there is no Laplacian perfect state transfer in G ◦ H .
+→
+−
+Proof. Let (v, w) be a vertex of G ◦ H . By Theorem 2.1, it suffices to find a non-integer eigenvalue
+in the support of (v, w). Since G is connected on at least two vertices, there exists a positive
+eigenvalue λ in the eigenvalue support of v. From Proposition 3.2, both
+
+p
+1
+λ± =
+m + λ + 1 ± (m + λ − 1)2 + 4m
+(22)
+2
+are in the eigenvalue support of (v, w). Suppose towards contradiction that both λ± are integers.
+Then both
+m + λ + 1 = λ+ + λ− ,
+
+(23)
+
+(m + λ − 1)2 + 4m = λ+ − λ−
+
+(24)
+
+(m + λ − 1)2 + 4m ≥ (m + λ + 1)2
+
+(25)
+
+p
+
+are integers, implying that λ is an integer. Further, (m + λ − 1)2 + 4m is a perfect square, but
+since 4m is even, the parity of this square must be the same as (m + λ − 1)2 . Since λ > 0, the least
+square greater than (m + λ − 1)2 with the same parity is (m + λ + 1)2 . This yields the bound
+which implies λ ≤ 0, a contradiction. Thus, one of λ± is not an integer.
+6
+
+5
+
+Pretty Good State Transfer
+
+Although Theorem 4.1 shows there is no perfect state transfer on coronas, we will show that there
+is pretty good state transfer, under some mild conditions. First, we state a useful form for the
+transition elements of a Laplacian quantum walk on coronas.
+→
+−
+Proposition 5.1. Let G be a graph on n vertices and let H = (H1 , . . . , Hn ) be an n-tuple of graphs
+on m ≥ 1 vertices. If u and v are vertices of G, then the transition element between vertices (u, 0)
+→
+−
+and (v, 0) in G ◦ H is given by
+→
+−
+hu, 0| exp(−itL(G ◦ H )) |v, 0i
+
+
+
+
+
+X
+t
+(m + λ − 1)
+t
+∆λ −
+i sin
+∆λ
+, (26)
+e−itλ/2 hu| Fλ (G) |vi cos
+= e−it(m+1)/2
+2
+∆λ
+2
+λ∈Sp(G)
+
+where ∆λ :=
+
+p
+
+(m + λ − 1)2 + 4m, for each eigenvalue λ of G.
+
+Proof. For each eigenvalue λ of L(G), recall
+λ± =
+
+1
+(m + λ + 1 ± ∆λ ) .
+2
+
+(27)
+
+By Proposition 3.2, the transition element between vertices (u, 0) and (v, 0) is given by
+−itL(G◦H)
+
+hu, 0| e
+
+|v, 0i =
+
+X
+
+−i(m+λ+1)t/2
+
+e
+
+λ∈Sp(G)
+
+hu| Fλ (G) |vi
+
+X
+±
+
+∓i∆λ t/2
+
+e
+
+
+
+(1 − λ± )2
+(1 − λ± )2 + m
+
+!
+
+.
+
+(28)
+
+Given the following identities hold:
+Y
+(1 − λ± ) = −m,
+
+(29a)
+
+±
+
+Y
+((1 − λ± )2 + m) = m∆2λ ,
+
+(29b)
+
+±
+
+we see that
+X
+
+∓i∆λ t/2
+
+e
+
+±
+
+
+
+(1 − λ± )2
+(1 − λ± )2 + m
+
+
+
+= cos
+
+
+
+
+
+
+t
+(m + λ − 1)
+t
+∆λ −
+i sin
+∆λ .
+2
+∆λ
+2
+
+(30)
+
+This proves the claim.
+→
+−
+The following theorem shows that if G has perfect state transfer, then G ◦ H has pretty good
+→
+−
+state transfer for infinite families of graphs H .
+→
+−
+Theorem 5.2. Let G be a graph on n vertices and H = (H1 , . . . , Hn ) be an n-tuple of graphs on
+m ≥ 1 vertices. Suppose G has perfect state transfer between vertices u and v, and let 2r be the
+greatest power of two dividing each element of the eigenvalue support of u. If 2r+1 divides m + 1,
+→
+−
+then there is pretty good state transfer between vertices (u, 0) and (v, 0) in G ◦ H .
+
+7
+
+Proof. Let S be the eigenvalue support of u in G. By Theorem 2.1, we know that the eigenvalues
+in S are integers. Further, if g is the greatest common divisor of all eigenvalues in the support
+of u, then perfect state transfer occurs at times that are odd multiples of π/g. Since g is an odd
+multiple of 2r , this implies that there is perfect state transfer in G at time π/2r . For any integer
+ℓ, we consider the transition element at times
+t = (4ℓ + 21−r )π.
+(31)
+p
+From Proposition 5.1, recall that ∆λ = (m + λ − 1)2 + 4m for each eigenvalue λ of G. We show
+that for times of the form (31) for specific choices of ℓ, we have
+cos(∆λ t/2) ≈ 1
+
+(32)
+
+for all eigenvalues λ in the support of u. Since 2r+1 divides m + 1, we observe that
+exp (−it(m + 1)/2) = 1.
+
+(33)
+
+If (32) holds, then by Proposition 5.1, at time t, we have
+→
+−
+
+hu, 0| e−itL(G◦ H ) |v, 0i ≈
+
+X
+
+λ∈Sp(G)
+
+exp(−itλ/2) hu| Fλ (G) |vi = hu| e−i(t/2)L(G) |vi .
+
+(34)
+
+Since t/2 ≡ π/2r (mod 2π), there is perfect state transfer in G between u and v at time t/2, which
+→
+−
+shows that (32) is sufficient for pretty good state transfer in G ◦ H .
+Note that ∆λ squares to an integer if λ is an integer. For each λ in the support of u, let cλ be
+√
+the square-free part of ∆2λ ; then ∆λ = sλ cλ for some integer sλ . From the proof of Theorem 4.1
+we may see that if m ≥ 1 and λ is a positive integer, then ∆λ is irrational; this implies that cλ > 1
+if λ > 0. By Lemma 2.3, the disjoint union
+√
+{1} ∪ { cλ : λ ∈ S, λ > 0}
+
+(35)
+
+is linearly independent over Q. By Kronecker’s Theorem, we may pick integers ℓ, qλ such that
+√
+cλ
+√
+ℓ cλ − qλ ≈ − r+1 .
+(36)
+2
+If cλ = cµ for two distinct eigenvalues λ and µ in the support of u, then qλ = qµ . Multiplying both
+sides of (36) by 4sλ yields
+(4ℓ + 21−r )∆λ ≈ 4sλ qλ .
+(37)
+Therefore, at t = (4ℓ + 21−r )π, we have cos(∆λ t/2) ≈ 1 for λ > 0. To take care of when λ = 0,
+note that cos(∆0 t/2) = cos((m + 1)t/2) = 1 from (33).
+
+Theorem 5.2 provides sufficient conditions for the existence of pretty good state transfer in
+→
+−
+→
+−
+G ◦ H for many sequences H of families of graphs. For example, consider the d-cube Qd . The
+d-cube has perfect state transfer at time π/2 (see Christandl et al. [6]). Thus, if m ≡ 3 (mod 4),
+→
+−
+then Qd ◦ H has pretty good state transfer. This provides a partial continuous-time analog to the
+results of Makmal et al. for discrete-time quantum walks on Qd ◦ H [18].
+
+8
+
+→
+−
+→
+−
+Figure 2: The graph G ◦ H where H is the sequence of non-isomorphic graphs on 3 vertices has
+pretty good state transfer between the white vertices and between the grey vertices.
+In what follows, we show a different way in which Kronecker’s Theorem may be applied in
+conjunction with Proposition 5.1.
+→
+−
+→
+−
+Theorem 5.3. Let H = (H1 , H2 ) be a pair of graphs on m ≥ 1 vertices. Then K2 ◦ H has pretty
+good state transfer between the vertices of K2 .
+Proof. Let u and v denote the vertices of K2 . The Laplacian of K2 has eigenvalues 0 and 2,
+and the corresponding eigenprojectors satisfy hu| F0 (K2 ) |vi = 1/2 and hu| F2 (K2 ) |vi = −1/2. By
+Proposition 5.1, it is sufficient to approximate the following system of equations:
+ p
+
+t
+−it(m+3)/2
+2
+e
+cos
+(m + 1) + 4m ≈ −1,
+(38)
+2
+
+
+t
+(m + 1) ≈ 1.
+(39)
+e−it(m+1)/2 cos
+2
+If t = 4πℓ for some integer ℓ, we note that
+exp(−it(m + 3)/2) = exp(−it(m + 1)/2) = cos(t(m + 1)/2) = 1.
+
+(40)
+
+Thus, it suffices to show that for t = 4πℓ, we have
+
+ p
+t
+2
+(41)
+cos
+(m + 1) + 4m ≈ −1.
+2
+p
+By the proof of Theorem 4.1, we note that ∆2 = (m + 1)2 + 4m is irrational for any positive
+integer m. By Kronecker’s Theorem, we may find integers ℓ and s such that
+∆2 ℓ − s ≈ 1/2.
+
+(42)
+
+This implies that 2πℓ∆2 ≈ 2πs + π, so t = 4πℓ gives cos(t∆2 /2) ≈ −1 as desired.
+Fan and Godsil [10] investigated pretty good state transfer on the double stars K2 ◦ K m relative
+to the adjacency matrix. They proved that pretty good state transfer relative to the adjacency
+occured if and only if 1 + 4m is not a perfect square. However, Theorem 5.3 shows that pretty
+good state transfer on double stars relative to the Laplacian occurs for all m, independent of any
+number-theoretic conditions on m. Theorem 5.3 also shows that P4 = K2 ◦ K1 has Laplacian pretty
+good state transfer, which was originally observed by Godsil.
+→
+−
+The following example shows that state transfer in G is not necessary for G ◦ H to have pretty
+good state transfer. Coutinho et al. [8] proved that the only distance-regular graph of diameter 2
+which admits perfect state transfer is nK2 for even n. We show that nK 2 ◦ K1 has pretty good
+state transfer for any n ≥ 2. First, we state a useful result about distance-regular graphs.
+9
+
+Figure 3: K2 ◦ K 6 has pretty good state transfer relative to the Laplacian (between the white
+vertices), but not relative to the adjacency matrix [10].
+Lemma 5.4 (Coutinho et al. [8], Lemma 4.4). Let G be a distance-regular graph with diameter d.
+Suppose G is antipodal with classes of size two and let θ0 > . . . > θd be the distinct eigenvalues of
+A(G) with corresponding eigenprojectors E0 , . . . , Ed . Then, for each j = 0, . . . , d, we have
+Ad Ej = (−1)j Ej .
+
+(43)
+
+Here, Ad is the adjacency matrix of a graph obtained from G by connecting vertices u and v if and
+only if they are at distance d.
+Theorem 5.5. Let G = nK2 be the cocktail party graph on 2n vertices for some positive integer
+n ≥ 2. Suppose that u and v are antipodal vertices of G. Then there is pretty good state transfer
+in G ◦ K1 between (u, 0) and (v, 0).
+Proof. The cocktail party graph is a distance-regular graph with diameter two and is antipodal
+with classes of size two. Let the eigenprojectors of A(G) be E0 , E1 and E2 . Since G is regular,
+these are also the eigenprojectors of the Laplacian L(G). The corresponding Laplacian eigenvalues
+are λ0 = 0, λ1 = 2n − 2, and λ2 = 2n.
+Let A2 be the adjacency matrix of the graph where u and v are adjacent if and only if they are
+antipodal in G. If u and v are antipodal vertices of G, then by Lemma 5.4,
+Ej = (−1)j A2 Ej
+
+(44)
+
+hu| Ej |vi = (−1)j hu| Ej |ui .
+
+(45)
+
+for j = 0, 1, 2, which implies that
+
+Using (26) in Proposition 5.1, we will pick times t such that e−itλj /2 = 1 and
+
+cos ∆λj t/2 ≈ (−1)j ,
+(46)
+q
+where ∆λj = λ2j + 4. Note by letting t = 4πℓ, we have e−itλj /2 = 1 for all eigenvalues λj and
+p
+√
+cos(∆λ0 t/2) = cos(t) = 1. Now ∆λ1 = 2 1 + (n − 1)2 and ∆λ2 = 2 1 + n2 . Neither of these
+are integers for n ≥ 2. Since one of 1 + n2 and 1 + (n − 1)2 is congruent to 2 mod 4 while the
+other is congruent to 1 mod 4, their square-free parts are distinct. Thus, by Lemma 2.3, the set
+{1, ∆λ1 , ∆λ2 } is linearly independent over Q. By Kronecker’s Theorem, there exist integers ℓ, q1 , q2
+such that
+ℓ∆λ1 − q1 ≈ 1/2,
+
+ℓ∆λ2 − q2 ≈ 0.
+This implies that, at t = 4πℓ, equation (46) is satisfied.
+
+10
+
+(47a)
+(47b)
+
+Figure 4: The graph 3K 2 ◦ K1 has pretty good state transfer (between the white vertices), while
+3K 2 does not have perfect state transfer.
+
+6
+
+Acknowledgments
+
+We thank Chris Godsil for valuable discussions about state transfer relative to the Laplacian. The
+research of E.A., Z.B., J.M., and C.T. was supported by NSF grant DMS-1262737 and NSA grant
+H98230-14-1-0141.
+
+References
+[1] R. Alvir, S. Dever, B. Lovitz, J. Myer, C. Tamon, Y. Xu, and H. Zhan. Perfect state transfer
+in Laplacian quantum walk. arXiv:1409.5840, 2014.
+[2] S. Barik, S. Pati, and B. Sarma. The spectrum of the corona of two graphs. SIAM Journal on
+Discrete Mathematics, 21:47–56, 2007.
+[3] S. Bose. Quantum communication through an unmodulated spin chain. Physical Review
+Letters, 91(20):207901, 2003.
+[4] S. Bose, A. Casaccino, S. Mancini, and S. Severini. Communication in XYZ all-to-all quantum
+networks with a missing link. International Journal of Quantum Information, 7:713–723, 2009.
+[5] M. Christandl, N. Datta, T. Dorlas, A. Ekert, A. Kay, and A. Landahl. Perfect transfer of
+arbitrary states in quantum spin networks. Physical Review A, 71:032312, 2005.
+[6] M. Christandl, N. Datta, A. Ekert, and A. Landahl. Perfect state transfer in quantum spin
+networks. Physical Review Letters, 92:187902, 2004.
+[7] G. Coutinho. Quantum State Transfer in Graphs. PhD thesis, University of Waterloo, 2014.
+[8] G. Coutinho, C. Godsil, K. Guo, and F. Vanhove. Perfect state transfer on distance-regular
+graphs and association schemes. Linear Algebra and Its Applications, 478:108–130, 2015.
+[9] G. Coutinho and H. Liu. No Laplacian perfect state transfer in trees. arXiv:1408.2935, 2014.
+[10] X. Fan and C. Godsil. Pretty good state transfer on double stars. Linear Algebra and Its
+Applications, 438:2346–2358, 2013.
+[11] E. Farhi and S. Gutmann. Quantum computation and decision trees. Physical Review A,
+58:915–928, 1998.
+[12] R. Frucht and F. Harary. On the corona of two graphs. Aequationes Mathematicae, 4(3):322–
+325, 1970.
+11
+
+[13] C. Godsil. State transfer on graphs. Discrete Mathematics, 312(1):129–147, 2011.
+[14] C. Godsil. When can perfect state transfer occur?
+23:877–890, 2012.
+
+Electronic Journal of Linear Algebra,
+
+[15] C. Godsil, S. Kirkland, S. Severini, and J. Smith. Number-theoretic nature of communication
+in quantum spin systems. Physical Review Letters, 109(5):050502, 2012.
+[16] C. Godsil and G. Royle. Algebraic Graph Theory. Springer, 2001.
+[17] G. H. Hardy and E. M. Wright. An Introduction to the Theory of Numbers. Oxford University
+Press, fifth edition, 2000.
+[18] A. Makmal, M. Zhu, D. Manzano, M. Tiersch, and H. J. Briegel. Quantum walks on embedded
+hypercubes. Physical Review A, 90:022314, 2014.
+[19] I. Richards. An application of Galois theory to elementary arithmetic. Advances in Mathematics, 13(3):268–273, 1974.
+
+12
+
+

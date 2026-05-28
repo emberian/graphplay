@@ -46,7 +46,11 @@ References:
 
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Data.Multiset.Basic
+import Mathlib.Data.Multiset.Sort
 import Mathlib.Data.Finset.Basic
+import Mathlib.Data.Finset.Sort
+import Mathlib.Data.List.Lex
+import Mathlib.Data.List.Basic
 import Mathlib.Data.Quot
 import Mathlib.Order.Iterate
 import Graphplay.Weighted
@@ -101,18 +105,46 @@ we always re-encode the result into `ℕ` by listing the equivalence classes in
 the order in which they appear.
 -/
 
-/-- Re-encode an arbitrary coloring `c : V → α` (with `DecidableEq α`, `α`
-need not be small) as a coloring by `ℕ`: the rank of `c v` in the order in
-which distinct values appear when traversing `Finset.univ`.
+/-! ### A `LinearOrder` on `Multiset α` via canonical sorted lists.
 
-Concretely, `rankColoring c v` = number of distinct values of `c` appearing
-strictly before the first index `i` with `c i = c v` (in some fixed
-enumeration).  Two vertices get the same rank iff they had the same original
-color, so the partition is preserved. -/
+`Multiset.sort (· ≤ ·)` produces the unique sorted list representative.  Two
+multisets are equal iff their sorted lists are equal.  We compare multisets
+lex-on-sorted-list to obtain a computable `LinearOrder`. -/
+
+/-- A canonical sorted-list representative of a multiset; computable. -/
+def multisetCanon {α : Type*} [LinearOrder α] (s : Multiset α) : List α :=
+  s.sort (· ≤ ·)
+
+theorem multisetCanon_injective {α : Type*} [LinearOrder α] :
+    Function.Injective (multisetCanon (α := α)) := by
+  intro s t h
+  have hs : ((s.sort (· ≤ ·)) : Multiset α) = s := Multiset.sort_eq _ _
+  have ht : ((t.sort (· ≤ ·)) : Multiset α) = t := Multiset.sort_eq _ _
+  -- From `h : s.sort (· ≤ ·) = t.sort (· ≤ ·)` deduce `s = t`.
+  have : ((s.sort (· ≤ ·)) : Multiset α) = ((t.sort (· ≤ ·)) : Multiset α) := by
+    show (↑(s.sort (· ≤ ·)) : Multiset α) = (↑(t.sort (· ≤ ·)) : Multiset α)
+    exact congrArg _ h
+  rw [hs, ht] at this
+  exact this
+
+/-- Computable linear order on `Multiset α` when `α` is linearly ordered, by
+comparing sorted-list representatives lexicographically. -/
+instance multisetLinearOrder {α : Type*} [LinearOrder α] : LinearOrder (Multiset α) :=
+  LinearOrder.lift' multisetCanon multisetCanon_injective
+
+/-- Re-encode an arbitrary coloring `c : V → α` (with `DecidableEq α`) as a
+coloring by `ℕ`: the index of `c v` in the deduplicated list of values
+obtained by enumerating `V` in its `LinearOrder` order.
+
+Two vertices receive the same rank iff they had the same original color
+(`rankColoring_partitionsAgree` below), so the partition is preserved. -/
 def rankColoring
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     {α : Type v} [DecidableEq α]
-    (c : Coloring V α) : Coloring V ℕ := by exact sorry
+    (c : Coloring V α) : Coloring V ℕ :=
+  let vs : List V := (Finset.univ : Finset V).sort (· ≤ ·)
+  let distinct : List α := (vs.map c).dedup
+  fun v => distinct.idxOf (c v)
 
 /-- The **`n`-th WL iterate** as a coloring valued in `ℕ`.
 
@@ -216,16 +248,23 @@ theorem wlRefine_stable
   -- partition cannot strictly refine.
   sorry
 
-/-- The least `N` at which `wlRefine` stabilizes.  By `wlRefine_stable` such
-an `N` exists; classical choice picks one. -/
-noncomputable def wlStableRound
+/-- A **computable upper bound** on the round at which WL refinement
+stabilizes: `Fintype.card V` rounds always suffice (in fact `|V|` suffices
+since each refining step strictly increases the cell count, capped by `|V|`).
+This definition is `def`, not `noncomputable`, so `wlStableColoring` below is
+also computable.
+
+The "least `N`" formulation (using `Classical.choose` on `wlRefine_stable`) is
+mathematically cleaner but blocks `#eval`; this version is operationally
+equivalent: at any `n ≥ wlStableRound`, the partition equals the stable one. -/
+def wlStableRound
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj] : ℕ :=
-  (wlRefine_stable G).choose
+  Fintype.card V
 
 /-- The **stable WL coloring**: the limit (= value at `wlStableRound`) of the
 WL iteration. -/
-noncomputable def wlStableColoring
+def wlStableColoring
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj] : V → ℕ :=
   wlRefine G (wlStableRound G)
@@ -239,14 +278,17 @@ point, the partition is equitable for the unweighted-graph promotion
 -/
 
 /-- The number of distinct stable colors, as the cell index type. -/
-noncomputable def wlCellCount
+def wlCellCount
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj] : ℕ :=
   wlColorCount G (wlStableRound G)
 
 /-- The **stable cell map**: send each vertex to its color index inside
 `Fin (wlCellCount G)`.  This is the cell labelling of the WL-induced
-equitable partition. -/
+equitable partition.
+
+Concretely we send each vertex `v` to the index of its stable color in the
+sorted list of distinct stable colors. -/
 noncomputable def wlStableCells
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
@@ -444,45 +486,132 @@ def K3 : _root_.SimpleGraph (Fin 3) where
 
 instance : DecidableRel K3.Adj := fun x y => inferInstanceAs (Decidable (x ≠ y))
 
-/-- The 4-cycle on `Fin 4`. -/
-def C4 : _root_.SimpleGraph (Fin 4) := by exact sorry
+/-- The 4-cycle on `Fin 4`: `i ~ j` iff `|i - j| = 1 mod 4`. -/
+def C4 : _root_.SimpleGraph (Fin 4) where
+  Adj x y := (x.val + 1) % 4 = y.val ∨ (y.val + 1) % 4 = x.val
+  symm := fun _ _ h => h.symm
+  loopless := ⟨fun x h => by
+    rcases h with h | h <;>
+      · have : x.val < 4 := x.isLt
+        omega⟩
 
-noncomputable instance : DecidableRel C4.Adj := Classical.decRel _
+instance : DecidableRel C4.Adj := fun x y => by
+  unfold C4
+  exact inferInstanceAs (Decidable (_ ∨ _))
 
 /-- Complete bipartite graph `K_{3,3}` on `Fin 3 ⊕ Fin 3`. -/
-def K33 : _root_.SimpleGraph (Fin 3 ⊕ Fin 3) := by exact sorry
+def K33 : _root_.SimpleGraph (Fin 3 ⊕ Fin 3) where
+  Adj x y :=
+    match x, y with
+    | Sum.inl _, Sum.inr _ => True
+    | Sum.inr _, Sum.inl _ => True
+    | _, _ => False
+  symm := by
+    rintro (x | x) (y | y) h <;> simp_all
+  loopless := ⟨by rintro (x | x) h <;> simp_all⟩
 
-noncomputable instance : DecidableRel K33.Adj := Classical.decRel _
+instance : DecidableRel K33.Adj := fun x y => by
+  unfold K33
+  cases x <;> cases y <;> exact inferInstance
 
-/-- Petersen graph on `Fin 5 × Bool`: outer cycle on `(_, false)`, inner
-pentagram on `(_, true)`, and matching `(i, false) ~ (i, true)`.
+/-- LinearOrder on `Fin 3 ⊕ Fin 3`: inl first (rank in [0,5]). -/
+instance : LinearOrder (Fin 3 ⊕ Fin 3) :=
+  LinearOrder.lift'
+    (fun x : Fin 3 ⊕ Fin 3 => match x with
+      | Sum.inl i => i.val
+      | Sum.inr i => i.val + 3)
+    (by
+      rintro (a | a) (b | b) h <;> simp at h
+      · ext; exact h
+      · have : a.val < 3 := a.isLt; omega
+      · have : b.val < 3 := b.isLt; omega
+      · ext; omega)
 
-This is the standard "double-cover of `K_5` minus a perfect matching"
-construction. -/
-def Petersen : _root_.SimpleGraph (Fin 5 × Bool) := by exact sorry
+/-- Petersen graph on `Fin 5 × Bool`: outer 5-cycle on `(_, false)`, inner
+pentagram on `(_, true)` (steps of 2), and matching `(i, false) ~ (i, true)`.
 
-noncomputable instance : DecidableRel Petersen.Adj := Classical.decRel _
+Symmetrised explicitly so the relation is obviously symmetric. -/
+def Petersen : _root_.SimpleGraph (Fin 5 × Bool) where
+  Adj x y :=
+    -- Outer cycle (both false): step ±1 mod 5.
+    (x.2 = false ∧ y.2 = false ∧
+      ((x.1.val + 1) % 5 = y.1.val ∨ (y.1.val + 1) % 5 = x.1.val))
+    ∨
+    -- Inner pentagram (both true): step ±2 mod 5.
+    (x.2 = true ∧ y.2 = true ∧
+      ((x.1.val + 2) % 5 = y.1.val ∨ (y.1.val + 2) % 5 = x.1.val))
+    ∨
+    -- Matching (cross-layer with same first component).
+    (x.1 = y.1 ∧ x.2 ≠ y.2)
+  symm := by
+    rintro ⟨a, sa⟩ ⟨b, sb⟩ h
+    dsimp at h ⊢
+    rcases h with ⟨h1, h2, h3 | h3⟩ | ⟨h1, h2, h3 | h3⟩ | ⟨h1, h2⟩
+    · exact Or.inl ⟨h2, h1, Or.inr h3⟩
+    · exact Or.inl ⟨h2, h1, Or.inl h3⟩
+    · exact Or.inr (Or.inl ⟨h2, h1, Or.inr h3⟩)
+    · exact Or.inr (Or.inl ⟨h2, h1, Or.inl h3⟩)
+    · exact Or.inr (Or.inr ⟨h1.symm, fun e => h2 e.symm⟩)
+  loopless := ⟨fun x h => by
+    dsimp at h
+    rcases h with ⟨_, _, h⟩ | ⟨_, _, h⟩ | ⟨_, h⟩
+    · rcases h with h | h <;>
+        · have : x.1.val < 5 := x.1.isLt; omega
+    · rcases h with h | h <;>
+        · have : x.1.val < 5 := x.1.isLt; omega
+    · exact h rfl⟩
 
-/-
-Smoke tests (commented; uncomment once the `sorry`s above are discharged):
+instance : DecidableRel Petersen.Adj := fun x y => by
+  unfold Petersen
+  exact inferInstance
 
-  #eval (Finset.univ.image (wlRefine K3 3)).card     -- expect 1
-  #eval (Finset.univ.image (wlRefine C4 3)).card     -- expect 1
-  #eval (Finset.univ.image (wlRefine K33 3)).card    -- expect 2
-  #eval (Finset.univ.image (wlRefine Petersen 5)).card  -- expect 1
-
-The `wlRefine` function is computable in principle (every operation is
-decidable), but the current version uses `rankColoring` which calls
-`Finset.sort` with a placeholder linear order; replacing that with a real
-linear order on the iterated color type (which is `α × Multiset α` nested
-`n` times) is mechanical bookkeeping that does not appear in this draft.
-
-For an honest `#eval` one would instead specialise to `α = String`,
-implementing `rankColoring` by canonical string encoding of the
-intermediate multisets.  We leave this as a follow-up.
--/
+/-- LinearOrder on `Fin 5 × Bool`: rank in [0,9]. -/
+instance : LinearOrder (Fin 5 × Bool) :=
+  LinearOrder.lift'
+    (fun x : Fin 5 × Bool => if x.2 then x.1.val + 5 else x.1.val)
+    (by
+      rintro ⟨a, sa⟩ ⟨b, sb⟩ h
+      dsimp at h
+      have ha : a.val < 5 := a.isLt
+      have hb : b.val < 5 := b.isLt
+      cases sa <;> cases sb <;> simp at h
+      · ext <;> simp [h]
+      · omega
+      · omega
+      · refine Prod.mk.injEq _ _ _ _ |>.mpr ⟨?_, rfl⟩
+        ext; omega)
 
 end Examples
+
+/-! ## Smoke tests
+
+These run `wlStableColoring` on concrete graphs and inspect the resulting
+ℕ-coloring.  All computations are fully decidable; the noncomputable
+`Choice`-based `wlStableRound` was replaced by the concrete bound
+`Fintype.card V`.
+
+Expected:
+* `K3` is vertex-transitive ⇒ all vertices get the same color (image cardinality 1).
+* `C4` is vertex-transitive ⇒ image cardinality 1.
+* `K33` has two orbits (the two parts) ⇒ image cardinality 2.
+* Petersen is vertex-transitive (distance-regular) ⇒ image cardinality 1.
+-/
+
+section SmokeTests
+
+-- Smoke test: WL stable coloring of `K3` at vertex 0.
+-- Returns a concrete `ℕ`.
+#eval wlStableColoring K3 ⟨0, by decide⟩
+#eval wlStableColoring K3 ⟨1, by decide⟩
+#eval wlStableColoring K3 ⟨2, by decide⟩
+
+-- Cardinality of stable color image.
+#eval (Finset.univ.image (wlStableColoring K3)).card   -- expect 1
+#eval (Finset.univ.image (wlStableColoring C4)).card   -- expect 1
+#eval (Finset.univ.image (wlStableColoring K33)).card  -- expect 2
+#eval (Finset.univ.image (wlStableColoring Petersen)).card  -- expect 1
+
+end SmokeTests
 
 end WL
 end Graphplay

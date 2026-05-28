@@ -1,0 +1,702 @@
+Mixing in Continuous Quantum Walks on Graphs
+Amir Ahmadi
+
+Ryan Belk
+
+Christino Tamon∗
+
+Carolyn Wendler
+
+arXiv:quant-ph/0209106v5 16 Apr 2003
+
+October 31, 2018
+
+Abstract
+Classical random walks on well-behaved graphs are rapidly mixing towards the uniform distribution.
+Moore and Russell showed that a continuous quantum walk on the hypercube is instantaneously uniform
+mixing. We show that the continuous-time quantum walks on other well-behaved graphs do not exhibit
+this uniform mixing. We prove that the only graphs amongst balanced complete multipartite graphs
+that have the instantaneous uniform mixing property are the complete graphs on two, three and four
+vertices, and the cycle graph on four vertices. Our proof exploits the circulant structure of these graphs.
+Furthermore, we conjecture that most complete cycles and Cayley graphs lack this mixing property as
+well.
+
+1 Introduction
+Two pervasive algorithmic ideas in quantum computation are Quantum Fourier Transform (QFT) and amplitude amplification (see [2]). Most subsequent progress in quantum computing owed much to these two
+beautiful ideas. But there are many problems whose characteristics matches neither the QFT nor the amplitude amplification mold (e.g., the Graph Isomorphism problem). This begs for new additional tools to be
+discovered.
+A natural way to discover new quantum algorithmic ideas is to adapt a classical one to the quantum
+model. An appealing well-studied classical idea in statistics and computer science is the method of random
+walks [3, 4]. Recently, the quantum analogue of classical random walks has been studied in a flurry of
+works [5, 6, 7, 8, 9, 10]. The works of Moore and Russell [9] and Kempe [10] showed faster bounds
+on instantaneous mixing and hitting times for discrete and continuous quantum walks on the hypercube
+(compared to the classical walk).
+The focus of this note is on the continuous-time quantum walk that was introduced by Farhi and Gutmann [5]. In a subsequent paper, Childs et al. [6] gave a simple example where the classical and (continuoustime) quantum walks exhibit a different behavior in hitting time statistics. The goal of this note is to show
+further qualitative differences (by elementary means) between the two models in their mixing time behaviors. A main result is that, on the natural class of complete and balanced complete multipartite graphs,
+only the complete graphs Kn on n = 2, 3, 4 vertices and the cycle graph of size four (i.e., K2,2 ) have the
+instantaneous uniform mixing property, i.e., there exists a time when the probability distribution function of
+the quantum walk is exactly the uniform distribution. This is distinctly different from the classical walk and
+from the discrete quantum walk. The proofs of these exploit heavily the circulant structure of these graphs.
+A recent work by Childs et al. [1] gave an interesting and powerful algorithmic application of continuous
+quantum walks.
+∗
+
+Contact email: tino@clarkson.edu
+
+1
+
+•11
+•
+
+•
+•
+
+11
+11
+11
+11
+
+•
+
+•??
+ ???
+
+??
+
+??
+
+??
+•
+•
+??
+
+??
+
+?? 
+?
+•
+
+•
+
+•
+
+•
+
+•
+
+Figure 1: The only balanced multipartite graphs with the continuous mixing property. From left to right:
+K2 , K3 = C3 , K4 , and K2,2 = C4 .
+
+2 Continuous-time quantum walks
+Continuous-time quantum walks was introduced by Farhi and Gutmann [5] (see also [6, 9]). Our treatment,
+though, follow closely the analysis of Moore and Russell [9] which we review next. Let G = (V, E) be a
+simple, undirected, connected, d-regular n-vertex graph. Let A be the adjacency matrix of G that is given
+as
+
+1 if (j, k) ∈ E
+(1)
+Ajk =
+0 otherwise
+We define the transition matrix H = d1 A (treated as the Hamiltonian of the quantum system). Let the initial
+amplitude wave function of the particle be |ψ0 i = |0i. The the amplitude wave function at time t, is given
+by Schrödinger’s equation, as
+d
+(2)
+iℏ |ψt i = H|ψt i.
+dt
+or (assuming from now on that ℏ = 1)
+|ψt i = e−iHt |ψ0 i.
+(3)
+This is similar to the model of a continuous-time Markov chain in the classical sense (see [11]). It is more
+natural to deal with the Laplacian of the graph, which is defined as L = A − D, where D is a diagonal
+matrix with entries Djj = deg(vj ). This is because we can view L as the generator matrix that describes an
+exponential distribution of waiting times at each vertex. But on d-regular graphs, D = d1 I, and since A and
+D commute, we get
+1
+(4)
+e−itL = e−it(A− d I) = e−it/d e−itA
+which introduces an irrelevant phase factor in the wave evolution.
+The probability that the particle is at vertex j at time t is given by
+Pt (j) = |hj|ψt i|2 .
+
+(5)
+
+Since H is Hermitian, the matrix Ut = e−iHt is unitary. If (λj , |zj i)j are the eigenvalue and eigenvector
+pairs of H, then (e−iλj t , |zj i)j are the eigenvalue and eigenvector pairs of Ut . Because H is symmetric,
+there is P
+an orthonormal set of eigenvectors, say {|zj i : j ∈ [n]} (i.e., H is unitarily diagonalizable). So, if
+|ψ0 i = j αj |zj i then
+X
+|ψt i =
+αj e−iλj t |zj i.
+(6)
+j
+
+Hence, in order to analyze the behavior of the quantum walk, we follow its wave-like patterns using the
+eigenvalues and eigenvectors of the unitary evolution Ut . To observe its classical behavior, we collapse the
+wave vector into a probability vector using Equation 5.
+
+2
+
+In the following, we define the notion of (instantaneous) uniform mixing property of quantum walks
+(defined earlier in [9, 10]).
+Definition 1 A graph G = (V, E) has the instantaneous uniform mixing property if there exists t ∈ R+ ,
+such that |ψt i of the continuous-time quantum walk on G satisfies Pt (j) = 1/|V |, for all j ∈ V .
+A random walk on G is called simple if the transition probability matrix is H = d1 A, where A is
+the adjacency matrix of the d-regular graph G. The walk is called lazy if, at each step, the walk stays
+at the current vertex with probability 21 and moves according to H with probability 12 . For continuoustime quantum walks, these two notions are equivalent modulo a time scaling. The argument is similar to
+Equation 4 by exploiting the commutativity of A and I that introduces an irrelevant phase factor in the
+amplitude expression.
+
+3 A simple example
+This section describes a single example that illustrates differences between classical (discrete and continuous) random walk and continuous-time quantum walk. The example concerns a random walk on K2 . Let
+the Pauli X matrix and the Hadamard matrix H be given as
+
+
+
+
+1 1 1
+0 1
+, H=√
+.
+(7)
+X=
+1 0
+2 1 −1
+The adjacency matrix of K2 is given by A = X. Since K2 is bipartite, a classical simple random walk
+starting at the first vertex will oscillate between the two states. So the simple random walk will never reach
+the uniform distribution. However, the lazy random walk, with transition matrix 21 (I + A), will converge to
+the uniform distribution after a single step.
+Let us consider a continuous-time walk with generator matrix
+
+
+−α β
+Q=
+.
+(8)
+α −β
+This is viewed as a two-state chain where a transition is made after a waiting time that is exponentially
+distributed with rates α and β from states 1 and 2, respectively (see [11], page 156). Note that Q has
+eigenvalues 0, −(α + β) with the following respective eigenvectors
+   
+β
+1
+,
+.
+(9)
+α
+−1
+Let P (t) be the matrix with entries pjk (t) = Pr(X(t) = k | X(0) = j) which describes the evolution of
+the continuous-time walk after t steps. It is known that
+d
+P (t) = QP (t)
+dt
+
+(10)
+
+which implies P (t) = etQ . Note that Q can be diagonalized using the following matrix B and its inverse:
+
+
+
+
+1
+α −β
+1 β
+−1
+.
+(11)
+B=
+, B =
+−1 α
+α+β 1 1
+3
+
+Therefore,
+ −t(α+β) 
+e
+0
+B −1
+= e =B
+0
+1
+
+ −t(α+β)
+1
+αe
++ β β(1 − e−t(α+β) )
+.
+=
+α + β α(1 − e−t(α+β) ) βe−t(α+β) + α
+tQ
+
+Pt
+
+So, the uniform distribution is reached in the limit if and only if α = β = 1.
+Finally, we consider the continuous-time quantum walk on K2 . The wave amplitude vector at time t is
+given by
+
+
+cos(t)
+−itA
+.
+(12)
+|ψt i = e
+|0i =
+−i sin(t)
+Thus, collapsing this wave vector to its probability form, the expression
+ 2 
+cos (t)
+Pt =
+sin2 (t)
+
+(13)
+
+is obtained which reaches the uniform distribution periodically at t = kπ + π/4, for k ∈ Z. So, the
+continuous-time quantum walk on K2 has the uniform mixing property. We will revisit this analysis under
+more general conditions in a subsequent section.
+
+4 Circulant Graphs
+A matrix A is circulant if its k-th row is obtained from the 0-th row by k consecutive right-rotations. A
+graph G is circulant if its adjacency matrix is a circulant matrix. Some examples of circulant graphs include
+complete graphs and full-cycles. An important property of circulant matrices is that they are (unitarily)
+diagonalizable by the Fourier matrix
+1
+(14)
+F = √ V (ω),
+n
+where ω = e2πi/n and V (ω) is the Vandermonde matrix given by
+
+
+1
+ 1
+
+
+V (ω) =  1
+ ..
+ .
+
+1
+ω
+ω2
+..
+.
+
+1
+ω2
+ω4
+..
+.
+
+
+... 1
+. . . ω n−1 
+
+. . . ω 2(n−1) 
+.
+
+..
+
+.
+
+(15)
+
+2
+
+1 ω n−1 ω 2(n−1) . . . ω (n−1)
+
+Let the j-th column vector of V (ω) be denoted by |ωj i, j = 0, . . . , n − 1. It is easy to verify that F is
+unitary, i.e., F −1 = F † , since the Vandermonde matrix obeys V (ω)−1 = V (ω −1 ).
+If C is a circulant matrix whose 0th column vector is |f i then
+F CF † = diag(V (ω)|f i).
+
+(16)
+
+This Equation 16 shows that the eigenvalues of a circulant matrix can be obtained by applying the Fourier
+transform F to the first column vector of C.
+
+4
+
+5 Classical versus quantum walks
+5.1 The complete graph Kn
+The adjacency matrix of Kn is A = Jn −In , where Jn is the all-one n×n matrix and In is the n×n identity
+1
+1
+A are 1 (once) and − n−1
+(n − 1 times). Using the orthonormal eigenvectors
+matrix. The eigenvalues of n−1
+P
+· 1
+|Fj i = √n |ωj i (the columns of the Fourier matrix F ), the initial amplitude vector is |ψ0 i = n1 j |ωj i. We
+get
+(
+
+
+−it(n−2)
+tn
+if j 6= 0
+− n2 e 2(n−1) sin 2(n−1)
+hj|ψt i =
+(17)
+1 −it
+it/(n−1)
++ (n − 1)e
+) if j = 0
+n (e
+Thus
+
+
+
+
+
+
+
+
+tn
+4
+sin2 2(n−1)
+.
+n2
+
+
+Pt (j) =
+4(n−1)
+tn
+2
+ 1−
+sin
+2(n−1)
+n2
+
+if j 6= 0
+
+(18)
+
+if j = 0
+
+Notice that to achieve uniformity, for all j 6= 0, Pt (0) = Pt (j) or
+
+
+tn
+4
+2
+sin
+= 1.
+n
+2(n − 1)
+
+(19)
+
+Uniformity is possible only if n = 2, 3, 4. In contrast, a classical walk never achieves uniform on K2 but
+converges to uniform for all Kn , n > 2. This is summarized in the following theorem.
+Theorem 1 No complete graph, except for K2 , K3 , and K4 , has the uniform mixing property under the
+continuous-time quantum model.
+
+5.2 The balanced complete multipartite graphs
+Let G be a complete a-partite graph where each partition has b > 1 vertices (the case b = 1 is the complete
+graph case). Let A be the normalized adjacency matrix of G. Note that A is given by
+A=
+
+1
+1
+Ka ⊗ Jb .
+a−1
+b
+
+(20)
+
+Using the circulant structure of both matrices, it is clear that the normalized eigenvalues of Ka are 1 (once)
+1
+(with multiplicity a − 1) and that the normalized eigenvalues of Jb are 1 (once) and 0 (with
+and − a−1
+2πi
+
+2πi
+
+multiplicity b − 1). Let α = e a be the principal a-th root of unity and let β = e b be the principal b-th
+root of unity. Both matrices have the columns of the Fourier matrix of dimensions a and b, respectively, as
+b−1
+their orthonormal set of eigenvectors. So let {|αj i}a−1
+j=0 and {|βk i}k=0 be the orthogonal sets of eigenvectors
+of Ka and Jb , respectively. Note that |α0 i = |1a i and |β0 i = |1b i.
+The eigenvalues of A is λ0 = 1 (once) with the all-one eigenvector
+|1a i ⊗ |1b i,
+
+(21)
+
+1
+(with multiplicity a − 1) with the eigenvectors (with lengths ab)
+λ1 = − a−1
+
+|αj i ⊗ |1b i, j = 1, 2, . . . , a − 1.
+5
+
+(22)
+
+and λ2 = 0 (with multiplicity a(b − 1)) with eigenvectors (with lengths ab)
+|αj i ⊗ |βk i, 1 ≤ j < a, 1 ≤ k < b.
+
+(23)
+
+Thus, the wave amplitude function |ψt i is given by
+
+
+b−1 X
+a−1
+a−1
+X
+it X
+1  −it
+e |1a i ⊗ |1b i + e a−1
+|ψt i =
+|αj i ⊗ |βk i
+|αj i ⊗ |1b i +
+ab
+
+(24)
+
+k=1 j=1
+
+j=1
+
+which equals to
+
+
+  Pb−1
+
+
+|ai − |1b i
+|1b i
+a k=1 |βk i
+ −|1b i  
+
+
+
+|0b i
+it 
+1 
+ −it  |1b i 
+ 
+
+|ψt i =
+e  ..  + e a−1 
++
+ .
+..
+..
+ab 
+
+ . 
+ 
+
+.
+.
+
+
+
+
+−|1b i
+
+|1b i
+
+The wave amplitude expressions are
+
+it
+1
+−it
+
+ ab (e + e a−1 (a − 1) + a(b − 1))
+it
+1
+−it + e a−1 (a − 1) − a)
+hj|ψt i =
+(e
+
+it
+ ab
+1
+−it − e a−1 )
+ab (e
+
+(25)
+
+|0b i
+
+if j = 0
+if 1 ≤ j < b
+
+(26)
+
+otherwise
+
+Forcing the uniformity on the last type, for j ≥ b, one obtains
+
+
+ta
+1
+4
+2
+sin
+= ,
+Pt (j) =
+2
+(ab)
+2(a − 1)
+ab
+
+(27)
+
+which yields the condition sin2 (ta/[2(a − 1)]) = ab
+4 or 1 ≤ ab ≤ 4. There are only three legal (integral)
+cases, namely, a = 1, b = 4 (or K4 ), a = b = 2 (or K2,2 ), and a = 4, b = 1 (or K4 ). The case for the empty
+graph K4 is obvious and we know from Theorem 1 that K4 has uniform mixing. For the case of K2,2 , the
+three amplitude expressions are 14 (eit + e−it + 2) = 12 (cos(t) + 1), 41 (eit + e−it − 2) = 12 (cos(t) − 1), and
+i
+2 sin(t). For t being odd multiples of π/2, their probability forms achieve uniformity. So K2,2 has uniform
+mixing.
+Theorem 2 No balanced complete multipartite graph, except for K2,2 , has the uniform mixing property
+under the continuous-time quantum walk model.
+
+6 Other graphs
+6.1 The complete cycle Cn
+The adjacency matrix A of Cn is given by
+
+
+0 1 0 ...
+ 1 0 1 ...
+
+
+A =  0 1 0 ...
+ .. .. .. ..
+ . . . .
+1 0 0 ...
+6
+
+
+0 1
+0 0 
+
+0 0 
+.
+.. 
+. 
+1 0
+
+(28)
+
+Let H = 12 A be the normalized adjacency matrix of the full-cycle Cn on n vertices. Let ωj = ω j = e2πij/n ,
+for j = 0, 1, . . . , n − 1. Using the properties of circulants, the eigenvalues of H is given by
+1
+λj = (ωj + ωjn−1 ) = cos(2πj/n).
+2
+
+(29)
+
+The wave equation gives us
+|ψt i = Ut |ψ0 i =
+
+n−1
+
+n−1
+
+j=0
+
+j=0
+
+1 X −iλj t
+1 X −it cos(2πj/n)
+Ut X
+|ωj i =
+e
+|ωj i =
+e
+|ωj i
+n
+n
+n
+j
+
+Then
+
+(30)
+
+n−1
+
+hk|ψt i =
+
+1 X −it cos(2πj/n) k
+e
+ωj .
+n
+
+(31)
+
+j=0
+
+This is a complicated nested exponential sum1 . Despite the fact that C3 (which is equivalent to K3 ) and C4
+(which is equivalent to K2,2 ) both have the uniform mixing property, the general case of Cn , n > 4, remains
+intractable.
+Conjecture 1 No complete cycle Cn , except for C3 , C4 , has the instantaneous uniform mixing property
+under the continuous-time quantum walk model.
+Note that Cn has the uniform mixing property in the discrete quantum walk model [8].
+
+6.2 The Cayley graph Sn
+Let Sn be the symmetric group on n elements (the group of all permutations on [n]) and let Tn be the set
+of transpositions on [n]. The Cayley graph Xn (Sn , Tn ) is defined
+on the vertex set Sn and (π, τ π) is an
+n
+edge, for all π ∈ Sn and τ ∈ Tn ; it is a bipartite, connected 2 -regular graph on n! vertices. Consider
+the simplest case of S3 with elements {e, (1 2), (1 3), (2 3), (1 2 3), (1 3 2)}. This Cayley graph on S3 is
+isomorphic to K3,3 . By Theorem 2, the continuous-time quantum walk on it is not uniform mixing. We
+have verified that the same is true of S4 .
+Claim 3 The Cayley graph of S4 is not instantaneously uniform mixing.
+We conjecture that this phenomenon holds for all n > 4.
+Conjecture 2 No Cayley graph Xn , except for X3 , has the instantaneous uniform mixing property under
+the continuous-time quantum walk model.
+It is likely that tools from group representations and characters might settle this question. This is because
+the characters of Sn yield information about the eigenvalues of the Cayley graph. Given this, one could
+build the set of orthonormal eigenvectors. Unfortunately, there is no known explicit formula that gives all
+the characters of Sn ; only estimates are known for the general case.
+1
+
+An alternative expression is hk|ψt i =
+
+P
+
+ν≡±k (mod N) (−i)
+
+ν
+
+7
+
+Jν (t), where Jν (t) is the Bessel function [12].
+
+Acknowledgements
+This work is supported in part by the National Science Foundation under grants DMR-0121146 and DMS0097113. We thank Pedro Tejada for discussions.
+
+References
+[1] A. Childs, E. Deotto, R. Cleve, E. Farhi, S. Gutmann, D. Spielman (2003), Exponential algorithmic
+speedup by quantum walk, to appear in Proceedings of the 35th Annual Symposium on Theory of
+Computing (STOC 2003).
+[2] I. Chuang and M. Nielsen (2000), Quantum Information and Quantum Computation, Cambridge
+University Press.
+[3] P. Diaconis (1988), Group Representations in Probability and Statistics, Institute of Mathematical
+Statistics.
+[4] R. Motwani and P. Raghavan (1995), Randomized Algorithms, Cambridge University Press.
+[5] E. Farhi and S. Gutmann (1998), Quantum computation and decision trees, Phys. Rev. A 58.
+[6] A. Childs, E. Farhi, and S. Gutmann (2002), An example of the difference between quantum and
+classical random walks, Quantum Information Processing 1, 35.
+[7] A. Ambainis, E. Bach, A. Nayak, A. Viswanath, and J. Watrous (2001), One-dimensional Quantum
+Walks, in Proceedings of the 33rd ACM Annual Symposium on Theory Computing (ACM Press), p.
+60.
+[8] D. Aharonov, A. Ambainis, J. Kempe, and U. Vazirani (2001), Quantum Walks on Graphs, in Proceedings of the 33rd ACM Annual Symposium on Theory Computing (ACM Press), p. 50.
+[9] C. Moore and A. Russell (2002), Quantum Walks on the Hypercube, in Proceedings of the 6th
+Int. Workshop on Randomization and Approximation in Computer Science (RANDOM’02). also
+in quant-ph/0104137.
+[10] J. Kempe (2002), Quantum Random Walks Hit Exponentially Faster, in quant-ph/0205083.
+[11] G.R. Grimmett and D.R. Stirzaker (1982), Probability and Random Processes, Oxford University
+Press.
+[12] D. ben-Avraham, E. Bollt, C. Tamon, notes.
+
+8
+
+

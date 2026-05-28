@@ -1,0 +1,1290 @@
+Universality in perfect state transfer
+arXiv:1701.04145v2 [quant-ph] 19 Jan 2017
+
+Erin Connelly∗
+
+Nathaniel Grammel†
+Michael Kraut‡
+Christino Tamon¶
+
+Luis Serazo§
+
+March 14, 2018
+
+Abstract
+A continuous-time quantum walk on a graph is a matrix-valued function exp(−iAt)
+over the reals, where A is the adjacency matrix of the graph. Such a quantum walk
+has universal perfect state transfer if for all vertices u, v, there is a time where the
+(v, u) entry of the matrix exponential has unit magnitude. We prove new characterizations of graphs with universal perfect state transfer. This extends results of Cameron
+et al. (Linear Algebra and Its Applications, 455:115-142, 2014). Also, we construct
+non-circulant families of graphs with universal perfect state transfer. All prior known
+constructions were circulants. Moreover, we prove that if a circulant, whose order is
+prime, prime squared, or a power of two, has universal perfect state transfer then its underlying graph must be complete. This is nearly tight since there are universal perfect
+state transfer circulants with non-prime-power order where some edges are missing.
+Keywords: Quantum walk, perfect state transfer, circulant, cyclotomic fields.
+
+1
+
+Introduction
+
+A continuous-time quantum walk on a graph is given by the one-parameter matrix-valued
+map U(t) = exp(−iAt), where A is the Hermitian adjacency matrix of the graph. This notion
+was introduced by Farhi and Guttman [6] to study quantum algorithms for search problems.
+Using this formulation, Bose [2] studied problems related to information transmission in
+quantum spin chains. In such a quantum walk, we say that there is perfect state transfer
+from vertex u to vertex v at time τ if the (v, u) entry of U(τ ) has unit magnitude.
+Kay [13] showed that if a graph, whose adjacency matrix is real symmetric, has perfect
+state transfer from u to v and also from u to w, then v must be equal to w. Cameron
+∗
+
+Department of Mathematics and Statistics, Haverford College.
+Department of Computer Science, NYU Polytechnic.
+‡
+Mathematics Department, University of California at Santa Cruz.
+§
+Mathematics and Statistics Department, Vassar College.
+¶
+Department of Computer Science, Clarkson University. Contact: tino@clarkson.edu
+†
+
+1
+
+et al. [3] showed that it is possible to violate this “monogamy” property in graphs with
+complex Hermitian adjacency matrices. They studied graphs with a universal property
+where perfect state transfer occurs between every pair of vertices. The smallest nontrivial
+example is the circulant Circ(0, −i, i). Some work related to universality in state transfer
+for quantum computing applications may be found in [14].
+We may view certain graphs with Hermitian adjacency matrices as gain graphs. These
+are graphs whose “directed” edges are labeled with elements from a group Γ. If the edge
+(u, v) is labeled with group element g ∈ Γ, then the reversed edge (v, u) is labeled with g −1 .
+If Γ is the circle group, we get the complex unit gain graphs (see Reff [16]). In our case, we
+simply require that edges in opposite directions have weights which are complex conjugates
+to each other.
+Our main goal is to characterize graphs with universal perfect state transfer. Cameron
+et al. [3] proved strong necessary conditions for graphs with the universal perfect state transfer property. They showed that such graphs must have distinct eigenvalues, their unitary
+diagonalizing matrices must be type-II (see Chan and Godsil [4]), and their switching automorphism group must be cyclic. A spectral characterization for circulants with the universal
+property was also proved in [3].
+In this work, we extend some of the observations from Cameron et al. [3]. More specifically, we prove new characterizations of graphs with universal perfect state transfer. The
+first characterization exploits the fact that the unitary diagonalizing matrix of the graph
+admits a canonical form. This allows us to show a tight connection between the spectra of
+the graph with the perfect state transfer times. Our second characterization is on circulants
+with the universal property. It involves the set of minimum times when perfect state transfer
+occur between pairs of vertices. We prove that these minimum times are equally spaced on
+the periodic time interval when perfect state transfer returns to the start vertex if and only
+if the graph is circulant. This complements the observation in [3] which characterizes the
+switching automorphism group of circulants with the universal property.
+Most of the examples studied in [3] were circulants whose nonzero weights are ±i. Here,
+we provide a construction of non-circulant graphs of composite order with the universal property. To the best of our knowledge, this is the first known example of such family of graphs.
+We show that these families are non-circulant by appealing to our second characterization
+above (based on spacings of the minimum perfect state transfer times).
+Finally, we provide a nearly tight characterization of circulants with the universal property in terms of the number of nonzero coefficients. We show that if a circulant has universal
+perfect state tranfer and its order is prime, square of a prime, or a power of two, then all
+of its off-diagonal coefficients must be nonzero. As a partial converse, we show an infinite
+family of circulants with universal perfect state transfer whose order is not a prime power
+and where some off-diagonal coefficients are zero.
+We conclude by studying universal perfect state transfer in complex unit gain graphs.
+The only known examples of complex unit gain graphs with the universal property are the
+circulants K2 and Circ(0, −i, i). We conjecture that this set is unique.
+For a recent survey and a comprehensive treatment of quantum walk on graphs, we refer
+
+2
+
+the interested reader to Godsil [8, 7].
+
+2
+
+Preliminaries
+
+A weighted graph G = (V, E, w) is defined by a vertex set V , an edge set E and a weight
+function w : E → C. If G has n vertices, we will often identify the vertex set with Z/nZ.
+The adjacency matrix A(G) of graph G is a n × n matrix defined as A(G)k,j = w(j, k) if
+(j, k) ∈ E, and A(G)k,j = 0 otherwise. A graph is Hermitian if its adjacency matrix is (see
+[11]).
+For complex numbers a0 , . . . , an−1 ∈ C, we let C = Circ(a0 , . . . , an−1 ) denote the circulant matrix of order n where Cjk = ak−j , for j, k ∈ Z/nZ. If C is Hermitian, note that a0
+must be real and an−j = aj , for j = 1, . . . , n − 1. It is known
+is diago√ that any circulant
+jk
+2πi/n
+nalized by the Fourier matrix Fn defined by hj|Fn |ki = ζn / n. Here, ζn = e
+denotes a
+primitive nth root of unity.
+We call a matrix flat if all of its entries have the same magnitude. A matrix is type-II
+if it is flat and unitary (see Chan and Godsil [4]). Note that the Fourier matrix is type-II.
+A monomial matrix is a product of a permutation matrix and an invertible diagonal matrix
+(see Davis [5]). Two matrices A and B are switching equivalent if MA = BM for some
+monomial matrix. The switching automorphism group of a graph G, denoted SwAut(G), is
+the group of all monomial matrices which commute with A(G). This generalizes the notion
+of an automorphism group of a graph.
+For more background on algebraic graph theory, see Godsil and Royle [12].
+
+3
+
+Basic properties
+
+The following result shows strong necessary conditions for graphs with universal perfect state
+transfer.
+Theorem 1. (Cameron et al. [3])
+Let G be a Hermitian graph with universal perfect state transfer. Then, the following hold:
+1. All eigenvalues of G are distinct.
+2. The adjacency matrix of G is unitarily diagonalized by a flat matrix.
+3. The switching automorphism group of G is cyclic whose order divides the size of G.
+We show some additional properties of graphs with universal perfect state transfer.
+Definition 1. Let G be a graph with universal perfect state transfer. For every pair of
+vertices v and w of G, we let Tv,w denote the set of times where perfect state transfer occurs
+from v to w. That is,
+Tv,w := {t ∈ R+ : |hw|e−iA(G)t |vi| = 1}.
+(1)
+3
+
+Fact 1. Let G be a graph with universal perfect state transfer. For each pair of vertices v
+and w, Tv,w is a discrete additive subgroup of R.
+Proof. See Godsil [7] or Cameron et al. [3].
+Since Tv,w is a discrete additive subgroup of the reals, it has a smallest element. We will
+denote the minimum element of the above set as tv,w := min Tv,w .
+Lemma 1. Let G be a graph with universal perfect state transfer and let u be a vertex of G.
+Then, for all vertices v 6= u, we have tu,v < tu,u .
+Proof. If tu,v > tu,u , let q be the largest integer for which qtu,u < tu,v . Then, t̂ = tu,v − qtu,u
+is an element of Tu,v which is smaller than tu,v .
+Lemma 2. Let G be a graph and let u be an arbitrary vertex of G. Then G has universal
+perfect state transfer if and only if perfect state transfer occurs from u to all vertices of G.
+Proof. It suffices to prove only one direction since the other direction is immediate. Suppose
+that perfect state transfer occurs from u to all vertices. By Lemma 1, the quantum walk
+starting at u visits all the other vertices before returning to u. If tu,v < tu,w then perfect
+state transfer occurs from v to w. But, there is also perfect state transfer from w to v since
+the quantum walk has perfect state transfer from w back to u (at time tu,u − tu,w ) and then
+from u to v (at time tu,v ). This proves that there is perfect state transfer between every pair
+of vertices.
+
+4
+
+Canonical flatness
+
+A flat unitary matrix is also called a type-II matrix (see [4]). We say that a type-II matrix
+is in canonical form if both its first row and its first column are the all-one vector.
+Lemma 3. Let G be a Hermitian graph on n vertices with universal perfect state tranfer.
+Then G is unitarily diagonalized by a type-II matrix X in canonical form:
+
+
+1
+1
+1
+...
+1
+1 eiα1,1
+eiα1,2 . . . eiα1,n−1 
+
+1 
+iα
+
+eiα2,2 . . . eiα2,n−1 
+(2)
+X = √ 1 e 2,1
+
+
+n  ..
+..
+..
+..
+.
+
+.
+.
+.
+iαn−1,1
+iαn−1,2
+iαn−1,n−1
+1 e
+e
+... e
+where αj,k ∈ [0, 2π).
+
+Proof. Suppose A is the Hermitian adjacency matrix of G that is unitarily diagonalized by
+Z. Then, AZ = ZΛ where Λ is a diagonal matrix of the eigenvalues of A. The columns of
+Z are the eigenvectors of A which we will denote as |z0 i, . . . , |zn−1 i. Let D be a diagonal
+matrix defined as Djj = 1/h0|zj i. Then, Z̃ = ZD is also a flat unitary which diagonalizes A
+4
+
+but with h0|z̃k i = 1, for each k = 0, . . . , n − 1. Next, consider a diagonal switching matrix S
+defined as Sjj = 1/hj|z̃0 i. Then, we have
+Ã = (S Z̃)Λ(S Z̃)−1 .
+
+(3)
+
+Note Ã = SAS −1 is switching equivalent to A. Since X = S Z̃ is a flat unitary matrix of the
+claimed form, we are done.
+Corollary 1. Let M be a flat unitary matrix in canonical form. Then, except for the first
+row and the first column, the row sums and the column sums of M are zero.
+Proof. Since the columns are orthonormal and the first column is the all-one vector, it is clear
+that the column sums must be zero. The row sums are zero since M T is unitary whenever
+M is.
+Using Lemma 3, we show a spectral characterization of graphs with universal perfect
+state transfer.
+Theorem 2. Let G be a n-vertex Hermitian graph with eigenvalues λ√0 , . . . , λn−1. Suppose
+G is diagonalized by a canonical type-II matrix X, where Xj,k = eiαj,k / n with αj,k ∈ [0, 2π)
+and αj,k = 0 if either j or k is zero. Then, G has universal perfect state transfer if and only
+if for each ℓ = 0, . . . , n − 1, there is tℓ ∈ R so that for all k = 1, . . . , n − 1, we have
+(λk − λ0 )tℓ = αℓ,k .
+
+(4)
+
+Proof. Let A be the Hermitian adjacency matrix of G. We denote the kth column of X as
+|λk i which is the eigenvector of A corresponding to eigenvalue λk . Thus,
+e
+
+−iAt
+
+=
+
+n−1
+X
+k=0
+
+e−iλk t |λk ihλk |.
+
+(5)
+
+(⇒) Assume G has universal perfect state transfer. Suppose that perfect state transfer from
+vertex 0 to vertex ℓ occurs at time tℓ ∈ R with phase eiθℓ . Then,
+hℓ|e
+
+−iAtℓ
+
+|0i =
+
+n−1
+X
+k=0
+
+n−1
+
+−iλk tℓ
+
+e
+
+1 X −iλk tℓ iαℓ,k
+hℓ|λk ihλk |0i =
+e
+e
+.
+n k=0
+
+(6)
+
+Moreover, we have
+#
+"
+n−1
+X
+1
+e−i(λk tℓ −αℓ,k ) .
+eiθℓ =
+e−iλ0 tℓ +
+n
+k=1
+
+(7)
+
+So, for each k = 1, . . . , n − 1, we have λk tℓ − αℓ,k = λ0 tℓ , which shows these conditions are
+necessary for universal perfect state transfer.
+5
+
+(⇐) Suppose that for each ℓ, there is a time tℓ so that for each k 6= 0,
+(λk − λ0 )tℓ = αℓ,k .
+
+(8)
+
+Then,
+n−1
+
+hℓ|e
+
+−iAtℓ
+
+1 X −iλk tℓ iαℓ,k
+e
+e
+= e−iλ0 tℓ .
+|0i =
+n k=0
+
+(9)
+
+This shows that there is perfect state transfer from 0 to ℓ. Therefore, there is perfect state
+transfer from 0 to all vertices. By Lemma 2, this shows there is perfect state transfer between
+every pair of vertices.
+
+5
+
+Circulants revisited
+
+Cameron et al. [3] showed the following result on the switching automorphism group of
+circulants with universal perfect state transfer.
+Theorem 3. (Cameron et al. [3])
+Let G be a graph with universal perfect state transfer. Then, G is switching isomorphic to a
+circulant if and only if SwAut(G) is cyclic of order n.
+In what follows, we provide new characterizations of circulants with universal perfect state
+transfer. The first one is based on the set of times when perfect state transfer occur. The
+second one is based on the explicit form of allowable weights.
+Recall that Tu,v is the set of times (positive real numbers) when perfect state transfer
+occur from vertex u to vertex v. Also, we denote tu,v as the smallest element of Tu,v .
+Theorem 4. Let G be a n-vertex graph with universal perfect state transfer. Assume that
+t0,k < t0,k+1 for all k = 1, . . . , n − 2 and that t0,1 = min{tk,k+1 : k ∈ Z/nZ}. Then, G is
+switching isomorphic to a circulant if and only if
+tk,k+1 = t0,1 ,
+
+(10)
+
+for all k ∈ Z/nZ.
+Proof. Let A be the adjacency matrix of G.
+(⇒) Suppose that G is switching isomorphic to a circulant. Consider the set of times
+when perfect state transfer occur in G:
+T = {t ∈ R+ : ∃j, k ∈ Z/nZ, |hk|e−iAt |ji| = 1}.
+
+(11)
+
+Since T is a discrete additive subgroup of R, it has a minimum. Without loss of generality,
+assume that t0,1 = min T . Thus,
+h1|e−iAt0,1 |0i = γ,
+(12)
+6
+
+for some γ ∈ T. By Theorem 3, SwAut(G) is cyclic of order n. We may assume that P̃ = Pφ D
+generates SwAut(G) where φ = (0 1 . . . n − 1) and D is a diagonal switching matrix. Since
+P̃ is a switching automorphism, P̃ −1AP̃ = A, which implies e−iAt = P̃ −1e−iAt P̃ . Therefore,
+h2|e−iAt0,1 |1i = γ̃h1|P̃ −1e−iAt0,1 P̃ |0i = γ̃h1|e−iAt0,1 |0i,
+
+(13)
+
+for some γ̃ ∈ T. So, perfect state transfer occurs from 1 to 2 at time t0,1 . By repeatedly
+using the same argument, we see that perfect state transfer occurs from k to k + 1 at time
+t0,1 , for k = 0, 1, . . . , n − 2.
+(⇐) Suppose tk,k+1 = t0,1 , for k ∈ Z/nZ. This implies that at time t0,1 perfect state
+transfer occurs from k to k + 1 (simultaneously) from k to k + 1 for each k ∈ Z/nZ. So,
+assume
+hk + 1|e−iAt0,1 |ki = γk ,
+(14)
+for some complex unit weight γk ∈ T. Thus,
+
+ 
+0 0 ...
+0
+γn−1
+0
+ γ0 0 . . .
+
+
+0
+0  1
+
+ 0 γ1 . . .
+
+−iAt0,1
+0
+0 
+e
+=
+ = 0
+ .. ..
+..
+..   ..
+ . . ...
+.
+.  .
+0
+
+0
+
+. . . γn−2
+
+0
+
+
+. . . 0 1 γ0 0
+
+. . . 0 0
+  0 γ1
+
+. . . 0 0
+0 0
+.. ..   .. ..
+. . . . .  . .
+0 0 ... 1 0
+0 0
+0
+0
+1
+..
+.
+
+...
+...
+...
+
+
+0
+0 
+
+0 
+,
+.. 
+. 
+
+(15)
+
+...
+. . . γn−1
+
+which shows that e−iAt0,1 is a monomial matrix. Since it commutes with A, it is a switching
+automorphism of G. Moreover, it generates SwAut(G). Thus, by Theorem 3, G is switching
+isomorphic to a circulant.
+
+Next we find explicit forms for the weights on circulants which have universal perfect
+state transfer. But, first we state a spectral characterization of circulants with universal
+perfect state transfer proved by Cameron et al. [3].
+Theorem 5. (Cameron et al. [3])
+Let G be a graph that is switching equivalent to a circulant. Then G has universal perfect
+state transfer if and only if for some integer q coprime with n, for real numbers α, β with
+β > 0, the eigenvalues of G are given by
+λk = α + β(qk + ck n),
+
+k = 0, 1, . . . , n − 1,
+
+(16)
+
+where ck are integers.
+Let A be the adjacency matrix of G. In Theorem 5, we may assume α = 0 by allowing
+a diagonal shift A + αI, which does not affect the quantum walk. Furthermore, we may
+assume β = 1 by allowing the time scaling β1 A, which does not affect perfect state transfer.
+Finally, we may multiply the adjacency matrix with the multiplicative inverse of q modulo
+n (to cancel the factor q in qk). In summary, we have the following.
+7
+
+Corollary 2. Let G be a graph that is switching equivalent to a circulant. Then G has
+universal perfect state transfer if and only if G is switching equivalent to a graph with eigenvalues
+λk = k + ck n,
+k = 0, 1, . . . , n − 1
+(17)
+where ck are integers.
+
+Next, we show a general form for the coefficients of a circulant which has universal perfect
+state transfer.
+Theorem 6. Let Circ(a0 , . . . , an−1 ) be a circulant with universal perfect state transfer.
+Then, we have
+n−1
+X
+1
+ck ζn−jk , j = 1, . . . , n − 1
+(18)
++
+aj = −j
+ζn − 1 k=0
+
+for integers ck , where k = 0, . . . , n − 1.
+
+Proof. Let G = Circ(a0 , . . . , an−1 ). By Corollary 2, the eigenvalues of G are of the form
+λk = k + ck n, for some integers ck , where k ∈ Z/nZ. Since circulants are diagonalized by
+the Fourier matrix (see Biggs [1]), the coefficients of G are given by
+n−1
+
+1X
+aj =
+λk ζn−jk ,
+n k=0
+
+j = 1, . . . , n − 1.
+
+(19)
+
+Using the assumed form of λk , we get
+
+n−1
+n−1
+n−1
+1 X −jk X
+1X
+−jk
+(k + ck n)ζn =
+kζ
++
+ck ζn−jk .
+aj =
+n k=0
+n k=0 n
+k=0
+Pn−2 Pk
+Pn−1 −jk
+Let U = k=0 kζn and L = k=1 ℓ=1 ζn−jℓ . Note that
+
+L + U = (n − 1)
+
+Now, we have
+L =
+
+n−2 X
+k
+X
+
+n−1
+X
+k=1
+
+ζn−jℓ =
+
+k=1 ℓ=1
+
+1
+= −j
+ζn − 1
+= 1−n−
+Thus, U = n/(ζn−j − 1). Therefore,
+
+ζn−jk = 1 − n.
+
+n−2
+X
+k=1
+
+n−1
+X
+k=2
+
+!
+−j(k+1)
+ζn
+−1
+ζn−j − 1
+!
+
+ζn−jk − (n − 2)ζn−j
+
+n
+
+.
+ζn−j − 1
+
+n−1
+X
+1
+aj = −j
+ck ζn−jk .
++
+ζn − 1 k=0
+
+8
+
+(20)
+
+(21)
+
+(22)
+(23)
+(24)
+
+(25)
+
+6
+
+Non-circulants with universal state transfer
+
+In this section, we show a construction of a family of non-circulant graphs with universal
+perfect state transfer. This provides the first known examples of non-circulant families with
+universal perfect state transfer.
+Theorem 7. Let n = ab be an integer where a ≥ b ≥ 2 are integers. Fix an integer β ≥ 2
+and for a positive integer d, let ϑd be a function which maps elements of Z/nZ to the positive
+integers defined as
+ϑd (x) := β⌊x/d⌋d + x mod d.
+(26)
+Let X be a n × n matrix whose (j, k)-entry is given by
+1 ϑ (j)ϑ (k)
+Xj,k = √ ζβna b .
+n
+
+(27)
+
+Then, X is type-II. Moreover, if G is the graph with eigenvalues {ϑb (k) : k = 0, 1, . . . , n − 1}
+whose adjacency matrix is unitarily diagonalized by X, then G has universal perfect state
+transfer.
+Proof. First, we show that X is type-II. It is clear that X is flat from its definition. So,
+it suffices to show that the columns of X form an orthonormal set. In what follows, for
+k, ℓ ∈ Z/nZ, let Qb (k, ℓ) = ⌊k/b⌋ − ⌊ℓ/b⌋ and Rb (k, ℓ) = k mod b − ℓ mod b. If Xk and Xℓ are
+the kth and ℓth columns of X, then
+n−1
+
+1 X Mb (k,ℓ)ϑa (j)
+ζ
+, where Mb (k, ℓ) = βQb (k, ℓ)b + Rb (k, ℓ)
+hXℓ |Xk i =
+n j=0 βn
+=
+
+a−1
+b−1
+1 X Mb (k,ℓ)r X aMb (k,ℓ) q
+ζβn
+ζn
+.
+n r=0
+q=0
+
+(28)
+
+(29)
+
+But, note that for any integer M 6= 0, provided ζbM 6= 1, we have
+b−1
+X
+
+(ζnaM )q =
+
+q=0
+
+ζnabM − 1
+= 0,
+ζnaM − 1
+
+(30)
+
+since ζnab = 1. So, if Rb (k, ℓ) 6= 0, then Mb (k, ℓ) 6= 0 (mod b), which implies hXℓ |Xk i = 0.
+On the other hand, if Rb (k, ℓ) = 0, then Qb (k, ℓ) 6= 0, for otherwise k = ℓ. Here, we have
+hXℓ |Xk i =
+
+a−1
+b−1
+1 X qβQb(k,ℓ) X Qb(k,ℓ) r
+ζ1
+ζa
+n q=0
+r=0
+
+Thus, hXℓ |Xk i = 0 also holds.
+9
+
+(31)
+
+Next, we show that G has universal perfect state transfer. If we let
+αj,k =
+
+2π
+ϑa (j)ϑb (k),
+βn
+
+(32)
+
+for j, k ∈ Z/nZ, then Xj,k = eiαj,k . For each j ∈ Z/nZ, let tj = (2π/βn)ϑa (j). Then,
+λk tj = αj,k
+
+(33)
+
+holds for all k ∈ Z/nZ, since λk = ϑb (k) and λ0 = 0. By Theorem 2, this shows that G has
+universal perfect state transfer.
+Finally, we show that G is not switching equivalent to a circulant. By Theorem 4, it
+suffices to show that tj+1 − tj are not all equal. From the definition of ϑa (j), we have
+2π
+2π
+t1 − t0 = βn
+whereas ta − ta−1 = βn
+((β − 1)a + 1).
+Example 1. For even k ≥ 2, let Gk be a graph of order 4 with eigenvalues {0, 1, k, k + 1}.
+Let X be the following unitary matrix (whose columns are the eigenvectors of Gk ):
+
+
+1
+1
+1
+1
+1
+eiπ
+eiπ(k+1)/k 
+eiπ/k
+
+X =
+(34)
+1
+eiπ
+eiπk
+eiπ 
+1 eiπ(k+1)/k eiπ(k+1)
+eiπ/k
+
+Let A = XΛX −1 , where Λ = diag(0, 1, k, k +1). be the adjacency matrix of Gk . By Theorem
+7, Gk has universal perfect state transfer.
+Note G6 is a non-circulant graph with universal perfect state transfer. The eigenvalues
+of G6 are {0, 1, 6, 7} and its adjacency matrix is
+
+
+3
+1
+3
+0
+(1 + e−iπ/6 )
+(1 − e−iπ/6 )
+2
+2
+2
+3
+1
+ 3 (1 + eiπ/6 )
+
+0
+(1 − eiπ/6 )
+2
+2
+2
+.
+A=
+(35)
+1
+3
+3
+−iπ/6
+−iπ/6
+
+(1 − e
+)
+0
+(1 + e
+)
+2
+2
+2
+1
+3
+3
+(1 − eiπ/6 )
+(1 + eiπ/6 )
+0
+2
+2
+2
+
+7
+
+Denseness
+
+In this section, we show that if a circulant has universal perfect state transfer, then all of its
+coefficients must be nonzero under certain conditions on the order.
+Definition 2. A circulant Circ(a0 , a1 , . . . , an−1 ) is called dense if aj 6= 0 for j = 1, . . . , n−1.
+Our main result in this section is the following.
+Theorem 8. Let G = Circ(a0 , . . . , an−1 ) be a circulant with universal perfect state transfer.
+If n is a prime, square of a prime, or a power of two, then G is dense.
+10
+
+We will divide the proof of the theorem into several lemmas. First, we consider the case
+when the order of the circulant is prime.
+Lemma 4. For a prime p, let Circ(a0 , . . . , ap−1 ) be a circulant with universal perfect state
+transfer. Then, aj 6= 0 for j = 1, . . . , p − 1.
+P
+−jk
+, we
+Proof. We may assume that λ0 = 0 (by a diagonal shift). Since aj = 1p p−1
+k=1 λk ζp
+j
+have that aj ∈ Q(ζp ). Note that {ζp : j = 1, . . . , p − 1} is a basis for the cyclotomic field
+extension Q(ζp )/Q. Thus, if aj = 0 for some j 6= 0, then λk = 0 for all k 6= 0. But, this is a
+contradiction to the assumed form of λk in (17).
+Second, we consider universal perfect state transfer in circulants whose order is the square
+of a prime.
+Lemma 5. Given a prime p, let n = p2 . For a circulant Circ(a0 , . . . , an−1 ), suppose aj ∈ Q
+for some j 6= 0. Then, ad = aj for d = gcd(j, n).
+Proof. Let j ∈ {1, . . . , n − 1} and d = gcd(j, n). Then, there is ℓ ∈ (Z/nZ)⋆ so that jℓ ≡ d
+(mod n). To see this, note jℓ ≡ d (mod n) is solvable since gcd(j, n) divides d. Moreover,
+gcd(ℓ, n) = 1 since gcd(ℓ, n/d) = 1 and gcd(ℓ, d) = 1. Here, we used the fact that n = p2 .
+Since Gal(Q(ζn )/Q) = (Z/nZ)⋆ , there
+a field automorphism φℓ of Q(ζn ) which fixes Q
+Pis
+n−1
+ℓ
+for which φℓ (ζn ) = ζn . Since aj = (1/n) k=0 λk ζn−jk , we have
+n−1
+n−1
+1X
+1X
+−ℓjk
+λk ζ n
+=
+λk ζn−dk = ad .
+φℓ (aj ) =
+n k=0
+n k=0
+
+(36)
+
+But, φℓ (aj ) = aj since aj ∈ Q. This shows aj = ad .
+
+Lemma 6. Let G = Circ(a0 , . . . , an−1 ) be a circulant of order n with universal perfect state
+transfer. If d is an odd divisor of n and n/d is prime, then ad 6= 0.
+Proof. Let p = n/d be prime. Then,
+
+where Λk = d1
+
+Pd−1
+
+p−1
+n−1
+1X
+1X
+−dk
+λk ζ n =
+Λk ζp−k ,
+ad =
+n k=0
+p k=0
+
+(37)
+
+ℓ=0 λk+ℓp . By Corollary 2, we have
+d−1
+
+p(d − 1)
+1X
+(k + ℓp + nZ) = k +
++ nZ.
+d ℓ=0
+2
+P
+−k
+Using this in (37) combined with the fact that p−1
+k=0 ζp = 0, we get
+
+p−1 
+p(d − 1)
+1X
+k+
+ad =
++ nZ ζp−k
+p k=0
+2
+Λk =
+
+(38)
+
+(39)
+
+p−1
+
+1 X −k
+=
+kζ .
+p k=1 p
+
+11
+
+(40)
+
+Since ζpk , for k = 1, . . . , p − 1, are linearly independent, we have ad 6= 0.
+For our next lemma, we will need the following fact about connectivity in circulants.
+Fact 2. (Meijer [15], Theorem 4.2)
+A circulant Circ(a0 , . . . , an−1 ) is connected if and only if gcd({j : aj 6= 0} ∪ {n}) = 1.
+Lemma 7. For a prime p, suppose n = p2 . Let G = Circ(a0 , . . . , an−1 ) be a circulant with
+universal perfect state transfer. Then, aj 6= 0 for all j 6= 0.
+Proof. Suppose aj = 0 for some j 6= 0. By Lemma 5, we have ad = 0 for d = gcd(j, n). Since
+n = p2 , we have two cases to consider: d = 1 or d = p. If a1 = 0, then G is not connected
+by Fact 2. If ap = 0, then this contradicts Lemma 6.
+Finally, we consider universal perfect state transfer in circulants whose order is a power
+of two. Here, we use the following result of Good in a crucial manner.
+Fact 3. (Good [10], Theorem 1)
+If m is a power of two, then {eiπr/m : r = 0, . . . , m − 1} is linearly independent over Q.
+Lemma 8. For a positive integer d, suppose n = 2d . Let G = Circ(a0 , . . . , an−1 ) be a
+circulant with universal perfect state transfer. Then, aj 6= 0 for all j = 1, . . . , n − 1.
+Proof. Given d ∈ Z+ , let n = 2d and m = 2d−1 . Recall that ζn = e2πi/n . We have
+n−1
+m−1
+1X
+1 X
+−jk
+aj =
+λk ζ n =
+Λℓ (j)(eiπ/m )−ℓ ,
+n k=0
+2m ℓ=0
+
+where
+Λℓ (j) =
+
+X
+
+k:jk≡ℓ
+
+λk −
+
+X
+
+λk
+
+(41)
+
+(42)
+
+k:jk≡m+ℓ
+
+By Fact 3, if aj = 0 then Λℓ (j) = 0 for all ℓ = 0, . . . , m − 1. We show that Λ0 6= 0.
+We consider the case when ℓ = 0. If j is odd, then the map fj (k) ≡ jk (mod n) is a
+bijection. Thus, Λ0 (j) = λ0 − λm ≡ m (mod n). Next, suppose j is even with j = 2e s where
+e ≥ 1 and s is odd. Then, the values k for which jk ≡ 0 (mod n) are given by r2d−e for
+r = 0, 1, . . . , 2e − 1. Also, the values k for which jk ≡ m (mod n) are given by (2r + 1)2d−e−1
+for r = 0, 1, . . . , 2e − 1. Therefore,
+Λ0 =
+
+e −1
+2X
+
+r=0
+
+(r2d−e − (2r + 1)2d−e−1) ≡ m
+
+(mod n).
+
+Thus, in both cases we have Λ0 6≡ 0 (mod n), which implies Λ0 6= 0.
+Proof. (of Theorem 8)
+Follows immediately from Lemmas 4, 7, and 8.
+12
+
+(43)
+
+7.1
+
+Non-dense circulants with universal state transfer
+
+We show a partial converse of Theorem 8 by constructing non-dense circulants with universal
+perfect state transfer whose orders are not prime powers. This observation uses the following
+fact about cyclotomic units.
+Fact 4. (Washington [17], Proposition 2.8)
+Suppose n is a positive integer which has at least two distinct prime factors. Then 1 − ζn is
+a unit of Z[ζn ]. Moreover,
+Y
+(1 − ζnj ) = 1.
+(44)
+0<j<n
+gcd(j,n)=1
+
+Note that Fact 4 also implies that 1 − ζnj is a unit of Z[ζn ] for every j with gcd(j, n) = 1.
+Proposition 1. For two distinct primes p and q, let n = pq. Let c0 , . . . , cn−1 be integers so
+n−1
+X
+
+ck ζn−k =
+
+k=0
+
+1
+.
+1 − ζn−1
+
+(45)
+
+Pn−1
+Let a0 = 0 and, for j = 1, . . . , n − 1, let aj = 1/(ζn−j − 1) + k=0
+ck ζn−jk . Then, G =
+Circ(a0 , . . . , an−1 ) is a non-dense circulant with universal perfect state transfer.
+Proof. By the choice of the integers ck in (45), a1 = an−1 = 0. This shows that G is not
+dense. Also, note that
+n−1
+n−1
+n−1
+X
+X
+X
+1
+ck .
+(46)
+−
+λ0 =
+aj =
+−j
+ζ
+−
+1
+n
+j=0
+j=1
+k=0
+Pn−1
+The other eigenvalues are given by λℓ = j=1 aj ζnjℓ , for ℓ 6= 0. By definition of aj ,
+!
+n−1
+n−1
+n−1
+n−1
+X
+X
+X
+X
+ζnjℓ
+1
+jℓ
+−jk
+ζn =
++
+ck ζ n
++ cℓ n −
+ck .
+(47)
+λℓ =
+ζn−j − 1 k=0
+ζ −j − 1
+j=1 n
+j=1
+k=0
+Using (46), we get
+n−1 jℓ
+X
+ζ −1
+
+n−1
+j(ℓ+1)
+X
+1 − ζn
+n
+λℓ =
++ cℓ n + λ0 = (n − 1) −
++ cℓ n + λ 0 .
+ζ −j − 1
+1 − ζnj
+j=1
+j=1 n
+
+(48)
+
+But, note that
+n−1
+j(ℓ+1)
+X
+1 − ζn
+j=1
+
+1 − ζnj
+
+=
+
+n−1 X
+ℓ
+X
+j=1 s=0
+
+ζnsj = n − 1 − ℓ.
+
+(49)
+
+This shows that λℓ = ℓ + cℓ n + λ0 , for ℓ = 1, . . . , n − 1. By Theorem 5, this shows G has
+universal perfect state transfer.
+13
+
+Here, we confirm that the underlying graph of G is connected. Since 1 − ζp−1 is not a unit
+of Z[ζp ], for any prime p, we have
+aq =
+
+n
+n−1
+X
+X
+1
+1
+−qk
+c
+ζ
+=
++
+ck ζp−k 6= 0.
++
+k n
+−q
+−1
+ζp − 1
+ζn − 1 k=0
+k=0
+
+(50)
+
+since ck are all integers. Similarly, ap 6= 0. Since gcd(p, q) = 1, Fact 2 implies G is connected.
+
+Example 2. We show a circulant G of order√ n = 6 with universal
+perfect state transfer
+√
+√
+1
+1
+1
+3
+3
+3
+2
+3
+4
+which is not
+dense.
+Here,
+we
+have
+ζ
+6 = 2 + i 2 , ζ6 = − 2 + i 2 , ζ6 = −1, ζ6 = − 2 − i 2 ,
+√
+ζ65 = 21 − i 23 . Note that
+a1 =
+
+5
+X
+1
+1
++ (1 − ζ6 ) = 0.
++
+ck ζ6−k = 5
+−1
+ζ6 − 1
+ζ6 − 1 k=0
+
+(51)
+
+So, in Theorem 6, we choose c0 = 1, c1 = c2 = c3 =P
+c4 = 0 and c5 = −1. The other
+coefficients can be computed using aj = 1/(ζ6−1 − 1) + 5k=0 ck ζ6−jk . By a straightforward
+computation, a0 = 52 , a2 = 1 − √i3 , a3 = 32 , a4 = 1 + √i3 and, of course, a5 = 0.
+Hence, the adjacency matrix of G is given by
+ 5
+
+3
+0
+1 − √i3
+1 + √i3
+0
+2
+2
+5
+3
+ 0
+0
+1 − √i3
+1 + √i3 
+2
+2
+
+
+1 + √i
+5
+3
+
+√i
+0
+1
+−
+0
+
+
+2
+2
+3
+(52)
+ 3 3
+.
+5
+√i 
+1 + √i3
+0
+1
+−
+0
+ 2
+2
+3
+
+
+3
+5
+1 − √i3
+1 + √i3
+0 
+0
+2
+2
+3
+5
+0
+1 − √i3
+0
+1 + √i3
+2
+2
+
+P
+The eigenvalues of G are given by λk = 5j=0 aj ζ6jk . We confirm the eigenvalue form in (17)
+that λℓ = ℓ+6cℓ , for ℓ = 0, 1, . . . , 5. It can be verified that λ0 = 6 = 0+6c0 , λ1 = 1 = 1+6c1 ,
+λ2 = 2 = 2 + 6c2 , λ3 = 3 = 3 + 6c3 , λ4 = 4 = 4 + 6c4 , and λ5 = −1 = 5 + 6c5 .
+
+8
+
+Property T
+
+In this concluding section, we consider universal perfect state transfer in complex unit gain
+graphs. First, we observe the following fact.
+Fact 5. Circ(0, −i, i) is the only graph on 3 vertices with universal perfect state transfer,
+up to switching equivalence.
+
+14
+
+Proof. Cameron et al. [3] showed that Circ(0, −i, i) has universal perfect state transfer.
+Hence, it suffices to show that any graph on 3 vertices with universal perfect state transfer
+must be a circulant.
+Let G be a graph with Hermitian adjacency matrix A. Suppose M is a type-II matrix of
+the form
+
+
+1 1
+1
+(53)
+M = 1 eiα eiβ 
+iβ
+iα
+1 e
+e
+
+which diagonalizes A. By Corollary 1, we have that 1 + eiα + eiβ = 0. This shows cos(α)
+√ +
+cos(β) = −1 and sin(α) + sin(β) = 0. This implies α = 2π/3 and β = 2α. Thus, M/ 3 is
+the Fourier matrix which diagonalizes any circulant matrix of order 3.
+
+Godsil [9] proved that for any constant k, there is only a finite number of (unweighted)
+graphs with maximum degree k with perfect state transfer. This shows that perfect state
+transfer is a rare phenomenon (in the absence of weights). This motivates our next conjecture.
+We say a graph has property T if all of the nonzero coefficients in its adjacency matrix
+are complex numbers with unit magnitude.
+Conjecture 1. Circ(0, −i, i) is the only circulant with property T which has universal
+perfect state transfer.
+
+Acknowledgments
+Research supported by NSF grant DMS-1262737. Part of this work was started while C.T.
+was visiting Institut Henri Poincaré (Centre Émile Borel) and University of Waterloo. This
+author would like to thank IHP and Chris Godsil for hospitality and support.
+
+References
+[1] N. Biggs. Algebraic Graph Theory. Cambridge University Press, 2nd edition, 1994.
+[2] S. Bose. Quantum communication through an unmodulated spin chain. Physical Review
+Letters 91(20):207901, 2003.
+[3] S. Cameron, S. Fehrenbach, L. Granger, O. Hennigh, S. Shrestha, C. Tamon. Universal
+State Transfer on Graphs. Linear Algebra and Its Applications 455:115-142, 2014.
+[4] A. Chan, C. Godsil. Type-II matrices and combinatorial structures. Combinatorica
+30(1):1-24, 2010.
+[5] P.J. Davis. Circulant Matrices. Wiley, 1979.
+[6] E. Farhi, S. Gutmann. Quantum computation and decision trees. Physical Review A
+58:915-928, 1998.
+15
+
+[7] C. Godsil. Graph Spectra and Quantum Walks. Manuscript, 2015.
+[8] C. Godsil. State transfer on graphs. Discrete Mathematics 312(6):129-147, 2012.
+[9] C. Godsil. When can perfect state transfer occur? Electronic Journal of Linear Algebra,
+Volume 23, 2012.
+[10] I.J. Good. Skew Circulants and the Theory of Numbers. Fibonacci Quarterly 24(1):4760, 1986.
+[11] K. Guo, B. Mohar. Hermitian adjacency matrices of digraphs and mixed graphs.
+arXiv:1505.01321.
+[12] C. Godsil, G. Royle. Algebraic Graph Theory. Springer, 2001.
+[13] A. Kay. The basics of perfect communication through quantum networks. Physical
+Review A 84:022337, 2011.
+[14] D. Lu, J. Biamonte, J. Li, H. Li, T. Johnson, V. Bergholm, M. Faccin, Z. Zimborás, R.
+Laflamme, J. Baugh, S. Lloyd. Chiral quantum walks. Physical Review A 93, 042302,
+2016.
+[15] P. Meijer. Connectivities and Diameters of Circulant Graphs. MSc. Thesis, Simon
+Fraser University, 1991.
+[16] N. Reff. Spectral properties of complex unit gain graphs. Linear Algebra and Its Applications 436:3165-3176. 2012.
+[17] L.C. Washington. Introduction to Cyclotomic Fields, second edition. Springer, 1997.
+
+16
+
+

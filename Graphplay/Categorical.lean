@@ -26,11 +26,13 @@ Almost every proof is `sorry`; the file is a categorical scaffold whose
 
 import Mathlib.CategoryTheory.Category.Basic
 import Mathlib.CategoryTheory.Functor.Basic
+import Mathlib.CategoryTheory.Functor.OfSequence
 import Mathlib.CategoryTheory.Limits.HasLimits
 import Mathlib.CategoryTheory.Limits.Shapes.Products
 import Mathlib.CategoryTheory.Limits.IsLimit
 import Mathlib.CategoryTheory.Limits.Preserves.Basic
 import Mathlib.CategoryTheory.Limits.Preserves.Filtered
+import Mathlib.CategoryTheory.Limits.Preserves.Limits
 import Mathlib.CategoryTheory.Filtered.Basic
 import Mathlib.CategoryTheory.Iso
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -415,25 +417,35 @@ structure WGraphChain : Type (u + 1) where
   obj : ℕ → WGraphObj.{u}
   inc : ∀ n, WGraphHom (obj n) (obj (n + 1))
 
-/-- The filtered colimit of a chain: vertex set is the colimit of the vertex
-sets (which is `obj 0` when all vertex types are shared, or `Sigma`-quotiented
-in general), with adjacency given by the *eventual* weight.
+/-- The chain `D` as an actual functor `ℕ ⥤ WGraph`, using Mathlib's
+`Functor.ofSequence`. -/
+noncomputable def WGraphChain.toFunctor (D : WGraphChain.{u}) :
+    CategoryTheory.Functor ℕ WGraphObj.{u} :=
+  CategoryTheory.Functor.ofSequence (X := D.obj) D.inc
 
-For the scaffold we declare this as an opaque target object and use it to state
-existence claims. -/
-noncomputable def chainColimit (D : WGraphChain.{u}) : WGraphObj.{u} :=
-  -- The actual definition is a filtered colimit in `WGraph`. For the scaffold,
-  -- pick the first object; the universal property is `sorry`.
-  D.obj 0
+/-- The filtered colimit of a chain in `WGraph`, defined as the Mathlib
+`colimit` of the corresponding `ℕ`-shaped diagram.
 
-/-- **The chain colimit is the colimit** — statement of the universal
-property. This corresponds to `UnionGraph.homBijection` in `Basic.lean` for the
-simple-graph case. -/
-theorem chainColimit_isColimit (D : WGraphChain.{u}) :
-    True := by
-  -- The precise statement would be a `Limits.IsColimit` over the diagram
-  -- `D.obj : ℕ ⥤ WGraph`. Deferred.
-  trivial
+This requires the `HasColimit` instance on the chain functor (filtered colimits
+of weighted graphs in general can outgrow the `Fintype` constraint on
+`WGraphObj`, so we leave this as a hypothesis to be supplied at use sites). -/
+noncomputable def chainColimit
+    (D : WGraphChain.{u}) [HasColimit D.toFunctor] : WGraphObj.{u} :=
+  colimit D.toFunctor
+
+/-- The colimit cocone of the chain functor. -/
+noncomputable def chainColimit.cocone
+    (D : WGraphChain.{u}) [HasColimit D.toFunctor] :
+    Cocone D.toFunctor :=
+  colimit.cocone D.toFunctor
+
+/-- **The chain colimit is the colimit** — the real `IsColimit` data, supplied
+by Mathlib's `colimit.isColimit`. This corresponds to `UnionGraph.homBijection`
+in `Basic.lean` for the simple-graph case. -/
+noncomputable def chainColimit_isColimit
+    (D : WGraphChain.{u}) [HasColimit D.toFunctor] :
+    IsColimit (chainColimit.cocone D) :=
+  colimit.isColimit D.toFunctor
 
 end WGraph
 
@@ -441,21 +453,39 @@ end WGraph
 
 namespace WGraph
 
+open CategoryTheory CategoryTheory.Limits
+
 /-- A cofiltered system: a sequence of objects and *bonding maps* going
 `obj (n+1) ⟶ obj n`. -/
 structure WGraphCochain : Type (u + 1) where
   obj : ℕ → WGraphObj.{u}
   bond : ∀ n, WGraphHom (obj (n + 1)) (obj n)
 
-/-- The cofiltered limit of a cochain. For the scaffold this is opaque. -/
-noncomputable def cochainLimit (D : WGraphCochain.{u}) : WGraphObj.{u} :=
-  D.obj 0
+/-- The cochain `D` as a functor `ℕᵒᵖ ⥤ WGraph`, using Mathlib's
+`Functor.ofOpSequence`. -/
+noncomputable def WGraphCochain.toFunctor (D : WGraphCochain.{u}) :
+    CategoryTheory.Functor ℕᵒᵖ WGraphObj.{u} :=
+  CategoryTheory.Functor.ofOpSequence (X := D.obj) D.bond
 
-/-- The cochain limit is a (cofiltered) limit — statement only. This
-corresponds to `InverseLimitGraph` in `Basic.lean`. -/
-theorem cochainLimit_isLimit (D : WGraphCochain.{u}) :
-    True := by
-  trivial
+/-- The cofiltered limit of a cochain, defined as the Mathlib `limit` of the
+corresponding `ℕᵒᵖ`-shaped diagram. -/
+noncomputable def cochainLimit
+    (D : WGraphCochain.{u}) [HasLimit D.toFunctor] : WGraphObj.{u} :=
+  limit D.toFunctor
+
+/-- The limit cone of the cochain functor. -/
+noncomputable def cochainLimit.cone
+    (D : WGraphCochain.{u}) [HasLimit D.toFunctor] :
+    Cone D.toFunctor :=
+  limit.cone D.toFunctor
+
+/-- **The cochain limit is a (cofiltered) limit** — the real `IsLimit` data,
+supplied by Mathlib's `limit.isLimit`. This corresponds to `InverseLimitGraph`
+in `Basic.lean`. -/
+noncomputable def cochainLimit_isLimit
+    (D : WGraphCochain.{u}) [HasLimit D.toFunctor] :
+    IsLimit (cochainLimit.cone D) :=
+  limit.isLimit D.toFunctor
 
 end WGraph
 
@@ -484,10 +514,18 @@ limit (e.g. taking a "long enough" tail of cells) commutes with quotienting
 out a partition, so no infinite tail can do strictly better than a finite
 truncation.
 
-Statement-only; proof deferred. -/
-theorem Quotient.preservesFilteredColimits :
+The cleanest semantic path: factor `Quotient` through the partition-data
+functor and the forgetful functor `Forget : WGraphP → WGraph`, both of which
+preserve filtered colimits. We provide the named typeclass instance with a
+sorry'd proof — the actual filtered-colimit-preservation calculation is the
+content of the headline Tower-5 theorem. -/
+instance Quotient.preservesFilteredColimits :
     Limits.PreservesFilteredColimits (Quotient.{u}) := by
-  sorry
+  refine ⟨fun J _ _ => ⟨fun {K} => ⟨fun {c} hc => ?_⟩⟩⟩
+  -- We need to produce an `IsColimit ((Quotient).mapCocone c)`. The actual
+  -- proof: the cell-quotient of a filtered colimit of partitioned weighted
+  -- graphs is the filtered colimit of cell-quotients. Deferred.
+  exact ⟨by sorry⟩
 
 /-- **Corollary (universal form of "no infinite tail beats optimality").**
 
@@ -497,15 +535,16 @@ canonically isomorphic to the colimit of the pointwise quotients.
 This is the categorical version of Xie–Tamon's result that taking an infinite
 tail of `K_n + path-n` cannot strictly improve over the best finite truncation:
 the partition quotient (which records the spectral content) commutes with the
-limiting procedure. -/
+limiting procedure.
+
+This is now a one-liner via Mathlib's `preservesColimitIso`, using the
+`Quotient.preservesFilteredColimits` instance above. -/
 noncomputable def quasi_infinite_limit
     {I : Type u} [Category.{u} I] [IsFiltered I]
     (D : Functor I WGraphPObj.{u})
     [HasColimit D] [HasColimit (D ⋙ Quotient.{u})] :
-    Quotient.{u}.obj (colimit D) ≅ colimit (D ⋙ Quotient.{u}) := by
-  -- A standard consequence of `preservesColimitsOfShape` applied to `D`;
-  -- using `Quotient.preservesFilteredColimits`. Deferred.
-  sorry
+    Quotient.{u}.obj (colimit D) ≅ colimit (D ⋙ Quotient.{u}) :=
+  preservesColimitIso (Quotient.{u}) D
 
 /-! ## 7. Lift theorem in categorical form.
 

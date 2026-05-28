@@ -1,0 +1,961 @@
+Matrix Inversion by Quantum Walk
+Alastair Kay∗
+Royal Holloway University of London, Egham, Surrey, TW20 0EX, UK
+
+Christino Tamon†
+Department of Computer Science, Clarkson University, Potsdam, New York, USA 13699-5815.
+(Dated: August 12, 2025)
+
+arXiv:2508.06611v1 [quant-ph] 8 Aug 2025
+
+The HHL algorithm for matrix inversion is a landmark algorithm in quantum computation. Its
+ability to produce a state |x⟩ that is the solution of Ax = b, given the input state |b⟩, is envisaged to
+have diverse applications. In this paper, we substantially simplify the algorithm, originally formed
+of a complex sequence of phase estimations, amplitude amplifications and Hamiltonian simulations,
+by replacing the phase estimations with a continuous time quantum walk. The key technique is the
+use of weak couplings to access the matrix inversion embedded in perturbation theory.
+
+The Harrow-Hassidim-Lloyd (HHL) algorithm [1] is
+one of the most celebrated results in quantum computing, marking a pivotal step toward quantum algorithms
+that outperform their classical counterparts. Intended
+to deliver a solution for systems of linear equations exponentially faster (subject to certain caveats), HHL is a
+fundamental element of quantum machine learning [2],
+solving differential equations [3–5], quantum data fitting
+[6], and quantum chemistry [7], and has also inspired
+exciting dequantization strategies [8] providing quantuminspired classical strategies with improved running times.
+Despite its vast potential, the original HHL algorithm is difficult to implement, comprising a complex
+sequence of phase estimations, amplitude amplifications
+and Hamiltonian simulations that are largely prohibitive
+for implementation on near-term, very limited, devices
+(aside from token attempts [9]). Improvements in asymptotic performance [10, 11] only exacerbate this. In this
+work, we present a streamlined variant, eliminating many
+of these costly components and simplifying the error analysis. Our new approach relies solely on Hamiltonian
+simulation, generating a quantum walk [12–14]. These
+have been invaluable in finding speed-ups in various contexts such as the glued-trees algorithm [15], including experimental implementation [16], and spatial search [17].
+Structural modifications of the simulated Hamiltonian directly control the error parameters.
+For a (possibly non-square) complex matrix A, the
+HHL algorithm [1] aims to tackle the problem of solving
+Ax = b. Such a proposition is impractical for a quantum
+computer as, even if one could prepare a state |x⟩, reading it out would require unreasonably long. Instead, it
+focusses simply on producing the normalised state |x⟩,
+having been provided with the state |b⟩. The algorithm
+is founded upon certain key assumptions, namely, the
+ability to prepare the initial state |b⟩ and the ability to
+efficiently implement a Hamiltonian evolution [18]. It
+also requires that the range of singular values of A is
+
+∗ alastair.kay@rhul.ac.uk
+† ctamon@clarkson.edu
+
+bounded between (non-zero) κ1 and 1, where κ is known
+as the condition number of the matrix A. We rely on
+the exact same assumptions. If we allow A to be any arbitrary matrix, [1] showed that the problem of creating
+|x⟩ is BQP-hard: at least as hard as any problem that
+is efficiently solvable on a quantum computer. However,
+the algorithm made the further assumption that A was
+sparse. This case has since been dequantized [8], giving
+an efficient classical variant provided assumptions about
+data access can be fulfilled. While the HHL algorithm
+readily generalises to allow the evaluation of an observable of any state |x⟩ = f (A) |b⟩, we focus entirely on
+the primary use case of f (y) = y −1 . Extensions, such
+as via linear combinations of unitaries [19] or the techniques from the quantum singular value transformation
+[20], will be possible, but we have no new development.
+Our main insight is that by taking a matrix H into
+which A is embedded with the promise that all the eigenvalues of H are at least κ1 away from 0, then if we couple
+this using a perturbation V to a new system of close to
+0 energy, i.e. H → H ⊕ H0 + V where ∥V ∥ ≪ κ1 , then we
+must analyse H0 under degenerate perturbation theory,
+finding that gaps open up relating to matrix elements of
+H −1 . Thus, H −1 determines the evolution of states initially supported on the H0 subsystem. The benefit of our
+approach is in the remarkable simplicity of implementation, removing the need for many repeated iterations of
+phase estimation. The basic version that we present first
+matches the asymptotic performance of the original version of the HHL algorithm. By introducing (mild) additional complexity in Section II, we can match more recent
+improvements in terms of the scaling with the condition
+number and the accuracy [10, 11].
+
+I.
+
+MAIN SYSTEM
+
+Imagine that we are given an A which we need
+to invert. This has a singular value decomposition
+{λn , |λn ⟩ , |ηn ⟩}, i.e. A |λn ⟩ = λn |ηn ⟩, and we are
+promised that A has a condition number of κ, meaning that λn κ > 1 for all n. We assume that A is sparse,
+
+2
+which will allow us to invoke a Hamiltonian simulation
+algorithm such as [21].
+Our aim is to solve the linear problem Ax = b: given
+a state |b⟩, we produce a normalised version of the state
+X 1
+|x⟩ =
+|λn ⟩ ⟨ηn |b⟩ .
+(1)
+λn
+n
+Since A may not be square, let alone Hermitian, it is
+necessary to embed it into a larger matrix for implementation as a Hamiltonian. We choose
+
+
+0 γ1 0 0
+γ1 0 A 0 
+H=
+0 A† 0 γ1
+0 0 γ1 0
+
+We choose γ such that λγn < κγ ≪ 1, allowing us to
+perform expansions for small λγn . In particular, 1 − λθnn =
+γ2
+1
+4 4
+2λ2n + O(γ κ ). We consider evolution over a time t ∼ γ ,
+
+meaning that we cannot expand terms like sin(θn t), but
+simply bound them by 1. However, we can expand
+
+
+
+λn
+γ
+θn tγ 2
+sin θn t 1 −
+≈
+≈
+.
+2
+θn
+λn
+λn
+Tracking the approximations more carefully, we have
+αn ∝
+
+
+γ
++ O γ 2 κ2 .
+λn
+
+where γ is a small parameter. H is readily implemented
+using simulation techniques such as [21] since its sparsity
+of only 1 greater than that of A.
+
+†
+The plan is to initialise a state ⟨b| 0 0 0 = |1⟩⊗|b⟩,
+evolve it under H for a suitable time t, and post-select
+on a state having arrived in the final subsystem,
+
+Of course, the state |ψ⟩ is not properly normalised,
+indicating that the protocol only succeeds with some
+(small) probability, and requires many repetitions. The
+norm of |ψ⟩ is bounded by O(γ). Thus, in the worst case,
+
+the measurement only succeeds with probability O γ 2 .
+The state we get on outcome, |ψ⟩, compared to the (normalised) target state |x⟩ satisfies
+
+|ψ⟩ = (⟨4| ⊗ 1)e−iHt (|1⟩ ⊗ |b⟩).
+
+∥ |x⟩ − |ψ⟩ ∥ ∼ γκ2 .
+
+A.
+
+Analysis
+
+In order to analyse the evolution of H, we decompose
+the Hamiltonian into a series of 4-dimensional subsystems
+spanned by the states
+
+Thus, we select γ = κδ2 to give us direct control of the
+accuracy δ, while also ensuring γκ ≪1. 
+4
+The protocol must be repeated O κδ2 times. However, as in [1], we can replace this measure and repeat
+protocol with amplitude amplification
+[22, 23] in order
+
+2
+
+1
+|n1± ⟩ = √ (|1⟩ |ηn ⟩ ± |4⟩ |λn ⟩)
+2
+1
+|n2± ⟩ = √ (|2⟩ |ηn ⟩ ± |3⟩ |λn ⟩) .
+2
+
+to run for only time O κ δT where T is the time required for the Hamiltonian simulation. This is the same
+accuracy, as a function of κ, as the original version of
+HHL [1, 10], although this has since been improved [10].
+
+The action of H on these states is closed, and is represented by a 4 × 4 matrix
+
+
+0 γ 0 0
+γ λn 0 0 
+= hn+ ⊕ hn− .
+hn = 
+0 0 0 γ 
+0 0 γ −λn
+We can now express our final evolution in terms of evolution under the different hn :
+X
+|ψ⟩ =
+|λn ⟩ ⟨ηn |b⟩ αn
+(2)
+
+δ
+
+δ
+√
+
+δ
+
+δ
+
+15
+
+√
+12
+
+√
+7
+
+15
+
+√
+12
+
+√
+7
+
+4
+
+n
+
+1
+αn = (⟨n1+ | e−ihn t |n1+ ⟩ − ⟨n1− | e−ihn t |n1− ⟩).
+2
+Comparing Eqs. (1) and (2), our target is simply to
+choose γ, t such that αn ∝ λ1n to leading order.
+q
+2
+If we take θn = λn 1 + λγ2 , then
+
+√
+δ
+
+δ
+
+δ
+
+δ
+
+n
+
+
+αn ∝
+
+
+
+
+
+
+λn
+λn
+1+
+sin θn t 1 −
+θn
+θn
+
+
+
+
+
+λn
+λn
+− 1−
+sin θn t 1 +
+. (3)
+θn
+θn
+
+Figure 1. Network of qubits coupled by an exchange coupling
+of the indicated strengths and implementing Ex. 1 within its
+single excitation subspace. The state |b⟩ is initialised across
+the open circles, and |x⟩ is received on the hatched circles.
+
+3
+The effective Hamiltonians
+
+
+Example 1
+
+
+0 γ 0
+hn± = γ 0 γ 
+0 γ ±λn
+
+We wish to solve the problem
+
+√ 
+√
+0
+0
+21
+√7 √0
+
+ 6 
+2 3 15 0
+0
+x = 
+
+
+√
+
+ 0 .
+ 0
+4
+√
+√15 √0
+35
+0
+0 2 3 7
+We set up the Hamiltonian and (normalized) initial
+state as specified [24], evolving the Hamiltonian for a
+time δ −1 and taking δ = 0.01 (κ = 1). Post-selecting
+on the final block, we get a state
+
+0.6117
+−0.00076
+|ψ⟩ = 
+.
+−0.0008 
+0.7911
+
+
+The renormalised version of the true answer is
+√  
+
+0.6124
+3
+
+
+1
+0   0 
+,
+≈
+|x⟩ = √ 
+0 
+8 √0 
+0.7906
+5
+achieving the anticipated O(δ) accuracy.
+This instance can be implemented using just four
+qubits, initialised as |00⟩ |b⟩ and arriving as |11⟩ |x⟩
+after post-selecting on the first two qubits being |11⟩.
+All the δ-strength terms are created by a single Pauli
+term δ1⊗X ⊗1⊗1. Alternatively, it maps to the single
+excitation subspace of a network of spins coupled using
+the exchange or Heisenberg coupling with a topology
+as depicted in Fig. 1 [25]. This may be particularly
+amenable to short-term realisation, either in photonic
+systems [26, 27] or superconducting ones [28].
+
+have eigenvectors of energy ∼ λn which are supported
+on state |n1± ⟩ with a strength reduced to order γ 2
+(Lemma 1). The low energy eigenvalues are of the form
+
+
+
+γ
++ O γ3 .
+γ ±1 ±
+2λn
+We choose to evolve for a time t = 2π/γ to ensure that
+the leading ±1 terms vanish. We now have that
+
+γ
+αn ∝
++ O γ 3 κ3 .
+λn
+The accuracy of the final normalised state is γ 2 κ3 ; select
+ing γ = δ/κ3/2 improves the run-time to O κ3/2 T /δ .
+Further refinements are possible: by extending H so
+that hn+ is an (R + 1) × (R + 1) matrix, the
+ effect of the
+high energy sector is suppressed to O γ 2R (Lemma 1).
+Furthermore, expansion of α for the low-energy sector
+retains only odd powers of x (see Lemma 3), and these
+coefficients are independent of λ. Thus, by selecting evolutions over multiple times, we can take a linear combina
+tion of unitaries [19] and cancel all errors up to O γ 2R .
+Accuracy ε only requires R ∼ log 1ε .
+
+Example 2
+In the specific case of Ex. 1, the Hamiltonian in Eq. (4)
+gives an evolution with an accuracy ∥ |ψ⟩ − |x⟩ ∥ =
+2 × 10−4 . This improves to 7 × 10−9 by choosing
+a
+
+linear combination that eliminates the O γ 3 term:
+!
+
+π
+2π
+2 4π 2 − 9 e−iH γ + (π 2 − 9)e−iH γ
+√
+|1⟩ ⊗ |b⟩ .
+405 − 306π 2 + 65π 4
+
+⟨6| ⊗ 1
+
+II.
+
+ENHANCED PERFORMANCE
+A.
+
+Errors in our protocol can be ascribed to two sources.
+In Eq. (3), the first term describes the evolution of a state
+initially supported on the low energy (∼ 0) eigenvectors,
+giving exactly the term we want at first order, but higher
+order terms (all odd) mark deviations. The second term
+describes the (small) probability of being found in a high
+energy (∼ λn ) eigenstate, with unwanted evolution. This
+second term is the leading order error, and is readily
+controlled by further extending the Hamiltonian,
+0 γ1 0 0 0 0
+γ1 0 γ1 0 0 0 
+
+
+ 0 γ1 0 A 0 0 
+H=
+.
+†
+ 0 0 A 0 γ1 0 
+ 0 0 0 γ1 0 γ1
+0 0 0 0 γ1 0
+
+
+High-Order Corrections by Design
+
+We believe that a more direct method can eliminate
+the complexities of a linear combination of unitaries.
+Conjecture 1. There exist coupling strengths {Jn }R
+n=1
+such that
+H=
+
+R
+X
+
+
+
+γJn |n⟩ ⟨n + 1| + |n + 1⟩ ⟨n| ⊗ 1N +
+
+n=1
+2R+1
+X
+
+
+
+γJ2R+2−n |n⟩ ⟨n + 1| + |n + 1⟩ ⟨n| ⊗ 1M
+
+
+
+n=R+2
+
+(4)
+
++ |R + 1⟩ ⟨R + 2| ⊗ A + |R + 2⟩ ⟨R + 1| ⊗ A†
+achieves an evolution
+
+(⟨2R + 2| ⊗ 1)e−iHt (|1⟩ ⊗ |b⟩) ∝ γ |x⟩ + O γ 2R κ2R .
+
+4
+R
+
+J1
+
+J2
+
+J3
+
+J4
+
+J5
+
+J6
+
+1
+any
+2
+0.5
+0.494159
+3 0.601912 0.798563 0.632067
+4 0.755581 0.971502 0.992613 0.713346
+5 0.843007 1.1131 1.25361 1.21606 0.83284
+6 0.914772 1.20074 1.38343 1.53701 1.4816 0.963929
+
+accuracy
+x2
+x4
+x6
+x7
+x9
+x9
+
+Table I. Parameters required for a given length R of block-wise extension so that, with fixed eigenvalues, the evolution yields
+a leading order term of x ∝ λ1 , with higher orders suppressed at time t = 2π/γ. The R = 1 case is the one we initially solved,
+and is limited by the effect of the high energy term, as are all the small R cases (accuracy increases by x2 with each increment
+of R), transitioning at R = 4 (accuracy increases by x2 for every second increment of R).
+
+In Appendix A, we set up the framework, and a simplifying restriction, for finding the coupling strengths. For
+R ≤ 6, the numerical solutions are given in Table I. We
+do not know whether a valid solution to the equations
+always exists, let alone the efficiency of its discovery.
+
+Example 3
+Take R = 3. We set up a Hamiltonian
+
+
+0 J1 1 0
+0
+0
+0
+0
+0
+J1 1 0 J2 1 0
+0
+0
+0
+0 
+
+
+0
+0
+0
+0 
+ 0 J2 1 0 J3 1
+
+
+0 J3 1 0 A/γ 0
+0
+0 
+ 0
+H =γ
+
+†
+0
+0 A /γ 0 J3 1 0
+0 
+ 0
+ 0
+0
+0
+0
+J3 1 0 J2 1 0 
+
+
+ 0
+0
+0
+0
+0 J2 1 0 J1 1
+0
+0
+0
+0
+0
+0 J1 1 0
+with coupling strengths specified in Table
+√ I. Using the
+basis |m+ ⟩ = (|m⟩ |ηn ⟩ + |9 − m⟩ |λn ⟩)/ 2, H decomposes into subspaces within which the coupling is h+ .
+The leading submatrix of h+ /γ is
+
+
+0 J1 0
+h̃ = J1 0 J2  ,
+0 J2 0
+designed to have eigenvalues 0, ±1. We find
+ 6
+γ
+γ
+αn = 0.869923i + O 6 .
+λ
+λ
+We thus have
+
+(⟨8| ⊗ 1)e−iH2π/γ (|1⟩ ⊗ |b⟩) ∝ |x⟩ + O γ 5 κ6 .
+Applied to the special case of Ex. 1 (see [24]), the final
+state |ψ⟩ satisfies ∥ |ψ⟩ − |x⟩ ∥ = 2.6 × 10−13 , demonstrating just how effectively this works. In terms of
+an experimental implementation, we simply update
+Fig. 1 by replacing each δ-strength coupling with a
+chain of three edges with couplings δ × {J1 , J2 , J3 }
+(δJ3 attaches to the bulk).
+Assuming that Conjecture 1 holds for any R, we
+
+
+achieve an overall accuracy O γ R κR+1 . To ensure that
+the simulation achieves an accuracy of at least ε, we require both that the Hamiltonian simulation needs an accuracy of ε/2 and the current protocol does as well, i.e.
+ε ∼ γ R κR+1 , which requires R ∼ log 1ε . As R becomes
+large, the κ dependence tends to the optimal [1, 10], and
+in terms of accuracy, we recover [11] although without
+the need for any phase estimation, linear combinations
+of unitaries etc.; just the simulation of a Hamiltonian
+evolution followed by amplitude amplification. In early,
+small-scale, experiments, we anticipate replacing the amplitude amplification with repeat-until-success measurements, which have a lower overhead. Thus, the entire
+experiment is just a Hamiltonian evolution.
+III.
+
+CONCLUSIONS
+
+In this paper, we have demonstrated a new version of
+the algorithm for matrix inversion. Without the need for
+phase estimation, it is far more direct that HHL. At its
+core is an implicit perturbative analysis of a weakly coupled system, whose effective Hamiltonian for a subspace
+close to energy 0 is approximately H −1 . The
+ simplest
+variant of this algorithm matches the O κ2 scaling of
+the original algorithm [1] while delivering a massive simplification of the implementation of the algorithm, making it vastly more realistic for short-term realisation on
+Noisy Intermediate Scale Quantum devices. With a mild
+increase in sophistication, we have also matched the best
+performance [10, 11] in terms of accuracy and condition
+number. However, we have left open the question (Conjecture 1) of whether the most direct version always has
+solutions that can be found efficiently.
+We have not investigated functions |x⟩ ∝ f (A) |b⟩ other
+than the inverse in this paper. Standard techniques such
+as linear combinations of unitaries [8, 29] will suffice, although it would be more satisfying if the function could
+be directly integrated into the evolution.
+
+ACKNOWLEDGMENTS
+
+C.T. is supported by NSF grant OSI-2427020.
+
+5
+
+[1] A. W. Harrow, A. Hassidim, and S. Lloyd, Quantum
+Algorithm for Linear Systems of Equations, Phys. Rev.
+Lett. 103, 150502 (2009).
+[2] P. Rebentrost, M. Mohseni, and S. Lloyd, Quantum support vector machine for big data classification, Phys. Rev.
+Lett. 113, 130503 (2014), arXiv:1307.0471 [quant-ph].
+[3] S. K. Leyton and T. J. Osborne, A quantum algorithm to solve nonlinear differential equations (2008),
+arXiv:0812.4423 [quant-ph].
+[4] D. W. Berry, High-order quantum algorithm for solving
+linear differential equations, J. Phys. A: Math. Theor.
+47, 105301 (2014), arXiv:1010.2745 [quant-ph].
+[5] A. Montanaro and S. Pallister, Quantum algorithms and
+the finite element method, Phys. Rev. A 93, 032324
+(2016), arXiv:1512.05903 [quant-ph].
+[6] N. Wiebe, D. Braun, and S. Lloyd, Quantum Data Fitting, Phys. Rev. Lett. 109, 050505 (2012).
+[7] N. Baskaran, A. S. Rawat, A. Jayashankar,
+D. Chakravarti, K. Sugisaki, S. Roy, S. B. Mandal, D. Mukherjee, and V. S. Prasannaa, Adapting
+the Harrow-Hassidim-Lloyd algorithm to quantum
+many-body theory, Phys. Rev. Res. 5, 043113 (2023).
+[8] N.-H. Chia, A. Gilyén, H.-H. Lin, S. Lloyd, E. Tang, and
+C. Wang, Quantum-Inspired Algorithms for Solving LowRank Linear Equation Systems with Logarithmic Dependence on the Dimension, in 31st International Symposium
+on Algorithms and Computation (ISAAC 2020), Leibniz
+International Proceedings in Informatics (LIPIcs), Vol.
+181, edited by Y. Cao, S.-W. Cheng, and M. Li (Schloss
+Dagstuhl – Leibniz-Zentrum für Informatik, Dagstuhl,
+Germany, 2020) pp. 47:1–47:17.
+[9] X.-D. Cai, C. Weedbrook, Z.-E. Su, M.-C. Chen, M. Gu,
+M.-J. Zhu, L. Li, N.-L. Liu, C.-Y. Lu, and J.-W. Pan,
+Experimental Quantum Computing to Solve Systems of
+Linear Equations, Phys. Rev. Lett. 110, 230501 (2013).
+[10] A. Ambainis, Variable time amplitude amplification and
+quantum algorithms for linear algebra problems, in 29th
+International Symposium on Theoretical Aspects of Computer Science (STACS 2012), Leibniz International Proceedings in Informatics (LIPIcs), Vol. 14, edited by
+C. Dürr and T. Wilke (Schloss Dagstuhl – LeibnizZentrum für Informatik, Dagstuhl, Germany, 2012) pp.
+636–647.
+[11] A. M. Childs, R. Kothari, and R. D. Somma, Quantum
+algorithm for systems of linear equations with exponentially improved dependence on precision, SIAM J. Comput. 46, 1920 (2017), arXiv:1511.02306 [quant-ph].
+[12] E. Farhi and S. Gutmann, Quantum Computation and
+Decision Trees, Phys. Rev. A 58, 915 (1998).
+[13] E. Farhi, J. Goldstone, and S. Gutmann, A Quantum
+Algorithm for the Hamiltonian NAND Tree, Theory of
+Computing 4, 169 (2008).
+[14] A. Ambainis, A. M. Childs, B. W. Reichardt, R. Spalek,
+and S. Zhang, Any AND-OR Formula of Size n can be
+Evaluated in time n1/2+o(1) on a Quantum Computer,
+in Proceedings of the 48th Annual IEEE Symposium on
+Foundations of Computer Science (IEEE Computer Society, 2007) pp. 363–372.
+[15] A. M. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann,
+and D. A. Spielman, Exponential algorithmic speedup by
+quantum walk, in Proceedings of the Thirty-Fifth Annual
+
+ACM Symposium on Theory of Computing (2003) pp.
+59–68, arXiv:quant-ph/0209131.
+[16] Z.-Y. Shi, H. Tang, Z. Feng, Y. Wang, Z.-M. Li, J. Gao,
+Y.-J. Chang, T.-Y. Wang, J.-P. Dou, Z.-Y. Zhang, Z.-Q.
+Jiao, W.-H. Zhou, and X.-M. Jin, Quantum fast hitting
+on glued trees mapped on a photonic chip, Optica, OPTICA 7, 613 (2020).
+[17] A. M. Childs and J. Goldstone, Spatial search by quantum walk, Phys. Rev. A 70, 022314 (2004).
+[18] S. Aaronson, Read the fine print, Nature Phys 11, 291
+(2015).
+[19] A. M. Childs and N. Wiebe, Hamiltonian Simulation Using Linear Combinations of Unitary Operations, QIC 12,
+10.26421/QIC12.11-12 (2012).
+[20] A. Gilyén, Y. Su, G. H. Low, and N. Wiebe, Quantum singular value transformation and beyond: Exponential improvements for quantum matrix arithmetics,
+in Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing (2019) pp. 193–204,
+arXiv:1806.01838 [quant-ph].
+[21] D. W. Berry, A. M. Childs, and R. Kothari, Hamiltonian simulation with nearly optimal dependence on all
+parameters, in 2015 IEEE 56th Annual Symposium on
+Foundations of Computer Science (2015) pp. 792–809,
+arXiv:1501.01715 [quant-ph].
+[22] L. K. Grover, Quantum Computers Can Search Rapidly
+by Using Almost Any Transformation, Phys. Rev. Lett.
+80, 4329 (1998).
+[23] G. Brassard, P. Hoyer, M. Mosca, and A. Tapp, Quantum
+Amplitude Amplification and Estimation, in Quantum
+Computation and Quantum Information, AMS Contemporary Mathematics, Vol. 305 (AMS, 2002) pp. 53–74,
+arXiv:quant-ph/0005055.
+[24] A. Kay and C. Tamon, HHL Code Examples (2025).
+[25] A. Kay, A Review of Perfect State Transfer and its Application as a Constructive Tool, Int. J. Quantum Inform.
+8, 641 (2010).
+[26] R. Keil, A. Szameit, F. Dreisow, M. Heinrich, S. Nolte,
+and A. Tünnermann, Photon correlations in twodimensional waveguide arrays and their classical estimate, Phys. Rev. A 81, 023834 (2010).
+[27] R. J. Chapman, M. Santandrea, Z. Huang, G. Corrielli,
+A. Crespi, M.-H. Yung, R. Osellame, and A. Peruzzo,
+Experimental perfect state transfer of an entangled photonic qubit, Nat. Commun. 7, 11339 (2016).
+[28] X. Li, Y. Ma, J. Han, T. Chen, Y. Xu, W. Cai, H. Wang,
+Y. P. Song, Z.-Y. Xue, Z.-q. Yin, and L. Sun, Perfect
+quantum state transfer in a superconducting qubit chain
+with parametrically tunable couplings, Phys. Rev. Applied 10, 054009 (2018), arXiv:1806.03886 [quant-ph].
+[29] A. M. Childs, D. Gosset, and Z. Webb, Universal computation by multi-particle quantum walk, Science 339, 791
+(2013), arXiv:1205.3782.
+[30] Although even powers of x in α(x) vanish, it helps computer packages to explicitly zero the O(1) term by fixing
+. This choice of spectrum has implications for ∥h̃∥,
+t = 2π
+γ
+which needs renormalising, and will therefore impact the
+evolution time of the Hamiltonian simulation.
+[31] T. Kato, Perturbation Theory for Linear Operators, Classics in Mathematics, Vol. 132 (Springer, Berlin, Heidelberg, 1995).
+
+6
+Appendix A: Partial Progress Towards Conjecture
+
+As before, we consider subspaces based on the singular
+value decomposition of A. We get an effective (R + 1) ×
+(R + 1) matrix
+
+0 J1
+ J1 0 J2
+
+
+
+J2 0
+J3
+
+
+
+h+ = γ 
+..
+..
+..
+
+
+.
+.
+.
+
+
+
+JR−1 0 JR 
+JR x1
+
+
+where x = λγ is the small parameter that we will be performing a series expansion about close to 0. We will
+actually concentrate on a reduced case where the spectrum of h̃, the principal submatrix of h+ /γ, is fixed
+(0, ±1, ±2, . . .) [30],
+ and consequently we only achieve an
+accuracy O γ R κR .
+Lemma 1. h+ has an eigenvector |λ⟩ with eigenvalue
+λ ∼ x1 . There exists a positive constant β that bounds
+the first element of the eigenvector by
+| ⟨1|λ⟩ | < β|x|R
+provided ∥h̃∥γκ ≪ 1.
+
+eigenvectors on a site at one end (an ). Moreover, for our
+chosen structure, aR−n = an
+R
+
+
+2
+0
+0 . . . 0 0 JR
+a1
+2
+0 R −1 0
+0 0 JR
+a2 
+2
+
+
+
+.
+..
+.. 
+
+0
+.
+0
+
+h+ ∼ 
+
+.
+
+ ..
+
+
+R
+2
+0
+0
+0 − 2 JR a1 
+1
+1
+1
+1 ... 1 1
+x
+2
+
+subject to the constraints
+X
+
+α=
+
+We rearrange this as
+⟨1|λL ⟩ = ⟨1| (λ1 − h̃)−1 |R⟩ .
+If we expand the inverse as a series in small ∥λh̃∥ , we have
+⟨1|λL ⟩ =
+
+k=0
+
+λk+1
+
+⟨1| h̃k |R⟩ .
+
+For values k < R − 1, ⟨1| h̃k |R⟩ = 0 due to the chosen
+tridiagonal structure. We can thus bound
+| ⟨1|λL ⟩ | ≤
+
+∞
+X
+k=R−1
+
+1
+λk+1
+
+∥h̃∥k =
+
+
+1
+⟨1| e−ih+ t |1⟩ − ⟨1| eih+ t |1⟩ .
+2
+
+Our goal, as before is to have the leading order proportional to x, but now to cancel as many higher order terms
+as possible.
+With this parametrisation in place, we can solve for the
+eigenvalues ϕn of h+ that are close to the initial eigenvalues of (0, ±1, ±2, . . .)γ as a series in x
+∞
+
+ϕn =
+
+X
+R
+βn,k xk .
++1−n+
+2
+k=1
+
+In practice, we only need the βn,k up to k = R (2R in
+the full case), which can be found iteratively.
+The structure of the matrix h+ has some immediate implications for the structure of the eigenvalues and
+eigenvectors. Specifically,
+
+h̃ |λL ⟩ + |R⟩ = λ |λL ⟩ .
+
+1
+
+an > 0.
+
+The amplitude that we want to approximate is
+
+Proof. The existence of the eigenvector is justified in perturbation theory by Kato 
+[31]. We try to solve for the
+|λL ⟩
+unnormalised vector |λ⟩ =
+,
+1
+
+∞
+X
+
+an = 1,
+
+n
+
+1 ∥h̃∥R−1
+.
+λR 1 − ∥h̃∥
+λ
+
+The larger system size, irrespective of the choice of couplings, suppresses the effects any the high energy terms
+2
+by an amount ⟨1|λL ⟩ ∼ x2R .
+In this case, our initial form of h+ is not so convenient.
+Instead, we perform a similarity transform, making use
+of the fact that a tridiagonal matrix is uniquely specified
+by its eigenvalues and the weight of the corresponding
+
+Lemma 2.
+βn,k = (−1)k+1 βR+1−n,k
+Proof. Consider h+ as a function of x, i.e. h+ (x). If we
+PR+1
+introduce the matrix D = n=1 (−1)n+1 |n⟩⟨n|, then
+h+ (x) = −Dh+ (−x)D.
+The existence of an eigenvector |ϕ(x)⟩ of eigenvalue ϕ(x)
+means that there is also an eigenvector D |ϕ(−x)⟩ of
+eigenvalue −ϕ(−x). In the eigenvalue, these signs flip
+the sign of all even powers of x. Similarly, bn (x) =
+2
+⟨R + 1|ϕn ⟩ = bR+1−n (−x).
+Consequently, many of the coefficients of α are 0.
+Lemma 3. α is an odd function of x.
+Proof. Let us write bn = C + xD and ηn = A + xB where
+A, B, C, D are even functions of x. We have bR+1−n =
+
+7
+C − xD and ϕR+1−n = −A + xB. The coefficient α is
+calculated by
+1X
+bn sin(tϕn ) + bR+1−n sin(tϕR+1−n )
+2 n
+X
+=
+C sin(xBt) cos(At) + xD sin(At) cos(xBt).
+
+α=
+
+where q(z) is the characteristic polynomial of h̃ (whose
+eigenvalues we already know, having fixed them at the
+start) and p′ (z) is the derivative of the characteristic
+polynomial of h+ .
+
+n
+
+Exactly one of each term in each product is odd, with the
+others being even. Hence, the overall function is odd.
+Note that given the eigenvaluesP
+ϕn , we can calculate
+the one additional eigenvalue x1 − n ϕn . This must be
+an odd function of x. We can also evaluate the bn as
+required for calculating α:
+bn ∝
+
+1
+p′ (ηn )q(ϕn )
+
+If we now find the expansion of α in terms of x, then
+there are terms x3 , x5 , . . . x2⌈R/2⌉+3 that can potentially
+be zeroed using the ⌈R/2⌉ + 1 parameters an and JR .
+Having control of the eigenvalues gives another ⌊R/2⌋
+parameters. By doing this separately for each power of
+x, the identity will work for all possible λ, the singular
+values of A. In Table I, we list some example values that
+work for modest system sizes.
+
+

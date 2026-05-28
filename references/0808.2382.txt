@@ -1,0 +1,1007 @@
+Mixing of Quantum Walks on Generalized Hypercubes
+
+arXiv:0808.2382v1 [quant-ph] 18 Aug 2008
+
+Ana Best
+McGill University
+
+Markus Kliegl
+Swarthmore College
+
+Shawn Mead-Gluchacki
+SUNY Potsdam
+
+Christino Tamon∗
+Clarkson University
+November 3, 2018
+
+Abstract
+We study continuous-time quantum walks on graphs which generalize the hypercube.
+The only known family of graphs whose quantum walk instantaneously mixes to uniform
+is the Hamming graphs with small arities. We show that quantum uniform mixing on
+the hypercube is robust under the addition of perfect matchings but not much else. Our
+specific results include:
+• The graph obtained by augmenting the hypercube with an additive matching
+x 7→ x ⊕ η is instantaneous uniform mixing whenever |η| is even, but with a slower
+mixing time. This strictly includes Moore-Russell’s result on the hypercube [11].
+• The class of Hamming graphs H(n, q) is not uniform mixing if and only if q ≥ 5.
+This is a tight characterization of quantum uniform mixing on Hamming graphs;
+previously, only the status of H(n, q) with q < 5 was known.
+• The bunkbed graph Bn (Af ) whose adjacency matrix is I ⊗ Qn + X ⊗ Af , where Af
+is a Zn2 -circulant matrix defined by a Boolean function f , is not uniform mixing
+if the Fourier transform of f has support of size smaller than 2n−1 . This explains
+why the hypercube is uniform mixing and why the join of two hypercubes is not.
+Our work exploits the rich spectral structure of the generalized hypercubes and relies
+heavily on Fourier analysis of group-circulants.
+Keywords: Quantum walk, continuous-time, mixing, group-circulant, hypercube.
+
+1
+
+Introduction
+
+Quantum walk on graphs is an important area of study in quantum information and computation for at least two reasons. The first is algorithmic; as a natural generalization of
+classical random walks, quantum walks offer an alternative paradigm to develop new quantum algorithms (see [4, 8]). The second reason is physical; quantum walks provide a potentially simpler method for implementing quantum computers. Although both arguments are
+arguably still being debated and investigated, research into the intrinsic properties of quantum walk continues to be an important step towards these algorithmic and physical goals.
+∗
+
+Contact author: tino@clarkson.edu
+
+1
+
+An excellent survey on quantum walks is given by Kendon [10]. In this paper, we focus on
+the continuous-time quantum walk on finite graphs and study its mixing properties.
+In their breakthrough paper [11], Moore and Russell showed that the continuous-time
+quantum walk on the hypercube is instantaneous uniform mixing; more importantly, it mixes
+faster than the classical walk. Most well-known graphs, however, do not exhibit quantum
+uniform mixing, as later results showed. These include graphs such as the complete graphs,
+the Cayley graphs of the symmetric group, and most even-length cycles (see [1, 9, 2]). In
+contrast, classical random walks are uniform mixing on most well-behaved graphs. This
+suggests that, unlike the classical case, uniform mixing is a rare phenomenon in quantum
+walks, and that the hypercube is an anomaly. We investigate if this quantum uniform
+mixing phenomenon still exists in some natural generalizations of the hypercube.
+First, we consider the standard hypercube augmented with perfect matchings defined by
+additive shifts x 7→ x⊕η, for η ∈ Zn2 . How destructive are these added matchings to uniform
+mixing on the hypercube? Surprisingly, we found that the resulting hypercube Qηn is still
+instantaneous uniform mixing whenever |η| is even, and, more interestingly, that it has a
+slower mixing time than the standard hypercube. Since the augmented matchings lower the
+diameter of the hypercube, this is yet another example of a counter-intuitive phenomenon
+in quantum walks. This shows that quantum uniform mixing on the hypercube is robust
+under additive matchings. For |η| odd, we discover that the quantum walk is uniform mixing
+provided it starts in the superposition √12 (|0n i + |ηi).
+Second, we study the class of Hamming graphs H(q, n) which are n-dimensional q-ary
+hypercubes (see Biggs [3]). Prior to this work, it was known that H(q, n) is quantum
+uniform mixing if q ∈ {2, 3, 4} (see [5]). We close this gap by showing that H(q, n) is not
+quantum uniform mixing if q ≥ 5, for any n. This gives a tight characterization of quantum
+uniform mixing on Hamming graphs.
+Third, we generalize the hypercube using its recursive construction by Cartesian products. The (n + 1)-dimensional hypercube Qn+1 is built by combining two n-dimensional
+hypercubes Qn by connecting their corresponding vertices. More formally, Qn+1 = Qn ⊕K2 ,
+where K2 is the complete graph on two vertices. The adjacency matrix of this Cartesian
+product is given by AQn+1 = I ⊗ AQn + X ⊗ I. So, the connection between the two copies
+of Qn is specified by the (second) identity matrix I. We explore the effect on quantum
+uniform mixing when this connection is varied.
+To this end, we consider the bunkbed graph Bn (Af ) whose adjacency matrix is I ⊗
+AQn + X ⊗ Af , where Af is a Zn2 -circulant defined by a Boolean function f over Zn2 (see
+Diaconis [6]). Much like a standard circulant matrix, the function f defines the first row of
+the matrix Af and the group operation of Zn2 determines the rest of the rows of Af . So, Af
+defines (and generalizes) the connection between the two hypercubes Qn . For example, the
+standard hypercube Qn = Bn−1 (I) has f (x) = δx,0n and the hypercube with an additive
+matching Qηn = Bn−1 (Af ) has f (x) = 1 whenever x = 0n or x = η̃, where η = 1 · η̃
+without loss of generality. Our main result is that Bn (Af ) is not uniform mixing whenever
+the Fourier transform of f has small support, that is, | supp(fˆ)| < 2n−1 . An immediate
+corollary shows that the graph-theoretic join of two hypercubes Qn + Qn is not uniform
+mixing. Unfortunately, the small Fourier support size is not a necessary condition since
+Bn (Qn ) is not uniform mixing even though | supp(fˆ)| ≥ 2n−1 .
+Our work exploits the rich spectral structure of the generalized hypercubes and relies
+2
+
+heavily on Fourier analysis of group-circulants. A more complete treatment of the latter
+may be found in Diaconis [6].
+We summarize the known status of quantum uniform mixing on graphs along with our
+contributions in Figure 1.
+
+2
+
+Preliminaries
+
+For a logical statement S, the Iversonian [[S]] is 1 if S is true, and 0 otherwise. Let Zm
+denote the additive group of integers {0, . . . , m − 1} P
+modulo m. For a, b ∈ Zn2 , let a ⊕ b
+denote the bit-wise exclusive OR of a and b, let a · b = nk=1 ak bk (mod 2) denote the inner
+product modulo 2, and let the Hamming weight |a| be the number of ones in a. We let
+ej ∈ Zn2 denote the unit vector that is 1 in position j and zero elsewhere. We use I and J
+to denote the identity and all-one matrices, respectively; we use X to denote the Pauli-σX
+matrix.
+The graphs G = (V, E) we study are finite, simple, undirected, and connected. The
+adjacency matrix AG of a graph G is defined as AG [u, v] = [[(u, v) ∈ E]]. In most cases, we
+also require G to be vertex-transitive, that is, for any a, b ∈ V , there is an automorphism
+π ∈ Aut(G) with π(a) = b. The Cartesian product G ⊕ H of graphs G and H is a graph
+whose adjacency matrix is I ⊗ AG + AH ⊗ I. Let Kn denote the complete graph on n
+vertices. Then, the binary n-dimensional hypercube Qn may be defined recursively as
+Qn = Qn−1 ⊕ K2 , for n ≥ 2, and Q1 = K2 . For more background on algebraic graph theory,
+we refer the reader to Biggs [3].
+Next, we describe group-theoretic circulant graphs and Fourier analysis on Zn2 [6]. Let G
+be a finite group of order m and let f : G → C be a class function over G (that is, f is constant
+on the conjugacy classes of G). Then, the m × m matrix defined by AGf [s, t] = f (ts−1 ) is
+called a G-circulant matrix defined by f . Moreover, AGf defines a G-circulant graph if f
+is a {0, 1}-valued function that satisfies f (e) = 0, where e is the identity element, and
+f (a−1 ) = f (a), for all a ∈ G. Here, the correspondence with Cayley graphs is recovered by
+letting the generator set be {a : f (a) = 1}. In this paper, we focus on the Abelian group
+G = Zn2 .
+Figure 1: Instantaneous Uniform Mixing on Various Graphs.
+Family of Graphs
+Hamming graph H(n, q), q ∈ {2, 3, 4}
+Complete multipartite graph
+Symmetric group
+Cycles
+Hamming graph H(n, q), q ≥ 5
+Bn (Af ), | supp(f )| ∈ {1, 2}
+Bn (Af ), | supp(fˆ)| < 2n−1
+a
+b
+
+Mixing
+Yes
+No
+No
+Noa
+No
+Yesb
+No
+
+Reference
+Moore-Russell [11], Carlson et al. [5]
+Ahmadi et al. [1]
+Gerhardt-Watrous [9]
+Adamczak et al. [2]
+this work
+Moore-Russell [11], this work
+this work
+
+This was proved for a subclass of even-length cycles
+For | supp(f )| = 2, we require supp(f ) = {0n , a} with |a| odd.
+
+3
+
+
+
+a
+b
+
+c
+
+d
+
+e
+
+f
+
+g
+h
+
+b
+a
+d
+c
+f
+e
+h
+g
+
+c
+d
+a
+b
+g
+h
+e
+f
+
+d
+c
+b
+a
+h
+g
+f
+e
+
+e
+f
+g
+h
+a
+b
+c
+d
+
+f
+e
+h
+g
+b
+a
+d
+c
+
+g
+h
+e
+f
+c
+d
+a
+b
+
+
+h
+g
+
+f
+
+e
+
+d
+
+c
+
+b
+
+(1)
+
+a
+
+Figure 2: Example of a Zn2 -circulant matrix: n = 3; the first row completely determines
+the matrix through the group operation of Zn2 . The hypercube requires b = c = e = 1 and
+a = d = f = g = h = 0.
+
+n , let f, g : Zn → C be arbitrary functions.
+For some basic facts of Fourier analysis over Z
+2
+2
+P
+The inner product of f, g is defined as hf, gi = x f (x)g⋆ (x). The group characters of Zn2
+are given by χa (x) = (−1)a·x , for a, x ∈ Zn2 , and they satisfy hχa , χb i = 2n [[a = b]]. With
+this, we can define the Fourier transform of f at a as
+X
+fˆ(a) = hf, χa i =
+f (x)χa (x)
+(2)
+x
+
+while the inverse Fourier transform is given by
+X
+fˆ(a)χa (x).
+f (x) = 2−n
+
+(3)
+
+a
+
+The support of f is supp(f ) = {x : f (x) 6= 0}; similarly, the support of fˆ is supp(fˆ) = {a :
+fˆ 6= 0}. The Convolution Theorem states that
+1
+fcg(a) = n
+2
+
+X
+b
+
+fˆ(b)ĝ(a ⊕ b).
+
+(4)
+
+If P : Zn2 → [0, 1] is a probability distribution, then P̂ (0n ) = 1. Moreover, P is the uniform
+distribution if and only if P̂ (a) = 0 for all a 6= 0n .
+If G = (V, E) is a graph with adjacency matrix A, let |ψ(t)i ∈ C|V | be a time-dependent
+amplitude vector over V . Then, the continuous-time quantum walk on G is defined using
+Schrödinger’s equation as
+|ψ(t)i = e−itA |ψ(0)i,
+(5)
+where |ψ(0)i is the initial amplitude vector (see [7]). The instantaneous probability of vertex
+v at time t is pv (t) = |hv|ψ(t)i|2 . We say G is instantaneous uniform mixing if there is a
+time t⋆ such that the quantum walk on G satisfies |hv|ψ(t⋆ )i|2 = 1/|V |, for all v ∈ V .
+
+4
+
+2.1
+
+Fourier Analysis of the Hypercube
+
+We briefly review the Fourier analysis for the hypercube Qn [11]. Since the adjacency
+matrix A of Qn is a Zn2 -circulant, its eigenvectors are the characters |χa i (expressed in ket
+notation) where hx|χa i = χa (x) = (−1)a·x , for a, x ∈ Zn2 . The first row of A is defined
+by a Boolean
+f (x) = [[|x| = 1]]. Thus, the eigenvalues of A are given
+P function f where
+P
+by λa = x f (x)χa (x) = nj=1 χa (ej ) = n − 2|a|. This follows from the theory of group
+circulants (see Diaconis [6]), but can also be verified directly. Since the hypercube is vertextransitive, we may assume
+that the start vertex is |0i (which corresponds to vertex 0n );
+P
+moreover, |0i = 2−n a |χa i.
+The
+quantum walk on Qn starting at |0i is given by |ψ(t)i = e−itA |0i =
+P
+2−n a e−itλa |χa i. Viewing time t as being fixed, we view the amplitude vector |ψ(t)i
+as a function of a ∈ Zn2 and redefine ψt (a) = ha|ψ(t)i. By Fourier inversion, we see that
+ψbt (a) = e−itλa . Since Pt (a) = |ha|ψ(t)i|2 = ψt⋆ (a)ψt (a), using the Convolution Theorem, we
+P
+c⋆ (a ⊕ b). Since ψbt ⋆ = ψ
+c⋆ , we obtain
+have Pbt (a) = 2−n b ψbt (b)ψ
+t
+t
+X
+1
+Pbt (a) = n
+exp(−it(λb − λa⊕b ))
+(6)
+2
+b
+
+To show that Pt is uniform, it suffices to show Pbt (a) = [[a = 0n ]]; which was proved by
+Moore and Russell [11].
+
+3
+
+Hypercube with Additive Matchings
+
+In the standard hypercube Qn , whose vertices are the elements of Zn2 , two vertices a, b are
+adjacent if a ⊕ b = ej , for some j; that is, a and b differ in exactly one coordinate. For
+η ∈ Zn2 , we define the (n + 1)-regular graph Qηn to be the graph obtained from Qn by adding
+the matching (a, a ⊕ η), for all a ∈ Zn2 .
+
+Figure 3: Example of Qηn hypercube: n = 3 and η = 111.
+Theorem 1 For n ≥ 2, a continuous-time quantum walk on Qηn is instantaneous uniform
+mixing if and only if |η| is even.
+
+Proof Let A be the scaled adjacency matrix of Qηn , where Aa,b = 1/(n + 1) if a ⊕ b ∈
+{e1 , . . . , en , η}, and Aa,b = 0 otherwise. Let A0 = {a | a · η = 0} and A1 = {a | a · η = 1}.
+Note a ⊕ b ∈ A0 if and only if a, b ∈ A0 or a, b ∈ A1 .
+5
+
+By the group-circulant structure of A, its eigenvalues are given by
+
+
+2kη (a)
+1
+a·η
+(n − 2|a| + (−1) ) = 1 −
+λa =
+n+1
+n+1
+
+(7)
+
+where kη (a) = |a| + [[a ∈ A1 ]]. We note that kη satisfies
+kη (a ⊕ b) − kη (b) = |a ⊕ b| − |b| + [[a ∈ A1 ]](−1)b·η
+P
+Since the quantum walk on Qηn is given by |ψ(t)i = 21n a e−itλa |χa i, we see that
+
+
+
+2kη (a)
+ψbt (a) = exp −it 1 −
+.
+n+1
+
+(8)
+
+(9)
+
+A similar analysis to Equation (6) yields
+Pbt (a) =
+
+
+
+1 X
+2it
+(kη (a ⊕ b) − kη (b)) .
+exp −
+2n
+n+1
+
+(10)
+
+b
+
+By Equation (8), we obtain
+(
+1
+i
+h
+P
+Pbt (a) =
+2it
+(|a ⊕ b| − |b| + [[a ∈ A1 ]](−1)b·η )
+2−n b exp − n+1
+
+if a = 0n
+otherwise
+
+(11)
+
+For a ∈ A0 , analysis similar to that in [11] shows that Pbt (a) is periodic in t with period
+(n + 1)π and that, up to periodicity, Pbt (a) = 0 only for t⋆1 = (n + 1) π4 and t⋆2 = (n + 1) 3π
+4 .
+η
+This shows that the only possible times at which Qn could possibly be uniform mixing are
+t⋆1 and t⋆2 . We will show for t = t⋆1 that we indeed have Pbt (a) = 0 for all a ∈ A1 if and only
+if |η| is even. The proof for t = t⋆2 works in exactly the same way.
+So assume that a ∈ A1 . Define
+ρa (b) = |a ⊕ b| − |b| + (−1)b·η .
+Observe that ρa (a ⊕ b) = −ρa (b). Using this symmetry,
+
+
+
+
+
+2it
+2it
+1 X1
+b
+ρa (b)) + exp −
+ρa (a ⊕ b)
+exp −
+Pt (a) =
+2n
+2
+n+1
+n+1
+b
+
+
+1 X
+2t
+=
+ρ
+(b)
+cos
+a
+2n
+n+1
+
+(12)
+
+(13)
+(14)
+
+b
+
+At t = t⋆1 , we have
+Pc
+t⋆1 (a) =
+
+X
+
+cos
+
+b
+
+π
+2
+
+
+ρa (b)
+
+(15)
+
+Let m be the number of overlaps of 1’s between a and b. Then
+|a ⊕ b| − |b| = |a| − 2m.
+6
+
+(16)
+
+Note that m is even if a · b = 0, and m is odd if a · b = 1. Using these facts, we see that
+
+
+π
+π
+X
+X
+pa (b)
+=
+(|a| − 2m + (−1)b·η )
+(17)
+cos
+cos
+2
+2
+b
+b
+π
+
+X
+=
+cos
+(|a| + (−1)b·η ) cos(mπ)
+(18)
+2
+b
+
+π
+X
+(|a| + (−1)b·η )
+(19)
+=
+(−1)a.b cos
+2
+b
+
+If |a| is even, the last expression is 0 and we are done. Therefore assume for the rest of the
+argument that |a| is odd. Then,
+
+
+
+π
+X
+X
+((−1)b·η − 1)
+(|a| + 1)
+a.b
+cos
+pa (b)
+=
++π
+(20)
+(−1) cos π
+2
+2
+2
+b
+b
+X
+|a|+1
+(21)
+=
+(−1)a.b (−1) 2 (−1)b·η
+b
+
+= (−1)
+
+|a|+1
+2
+
+X
+b
+
+= (−1)
+
+|a|+1
+2
+
+χb (a ⊕ η)
+
+[[a = η]] 2n
+
+(22)
+(23)
+
+Finally, notice that, since we are considering a ∈ A1 such that |a| is odd only, the case a = η
+will occur if and only if η ∈ A1 and |η| is odd. Since the condition η ∈ A1 is equivalent to
+|η| being odd, this proves the claim.
+Remark 1 This includes the Moore-Russell result in the following sense. For η = 0n ,
+the Theorem shows that Qηn is uniform mixing. If η = 0n , however, all we are doing is
+adding self-loops to the standard hypercube, which just amount to scaling time by the
+factor n/(n + 1). Hence this shows that the standard hypercube is uniform mixing.
+Remark 2 The case when |η| is odd is interesting as well. Namely, it is near uniform
+mixing in the following sense. If |η| is odd, taking the inverse Fourier transform of Pbt at
+time t⋆1 or t⋆2 yields
+
+[[a ∈ A0 ]] 2−n+1 if |η| ≡ 3 (mod 4)
+Pt (a) =
+(24)
+[[a ∈ A1 ]] 2−n+1 if |η| ≡ 1 (mod 4)
+That is, the probability distribution at these times is uniform on half of the vertices and
+zero on the other half. Moreover, it can be shown that if the quantum walk is started in
+the superposition |ψ(0)i = √12 (|0i + |ηi), then Pt is uniform at times t⋆1 and t⋆2 , just as in
+the case when |η| is even.
+
+4
+
+Hamming Graphs
+
+As defined in Biggs [3], the Hamming graph H(n, q) has vertex set V = {1, . . . , q}n , and
+two vertices are adjacent if they differ in exactly one coordinate. As such, Hamming graphs
+are a natural generalization of the hypercubes Qn (which are simply H(n, 2)).
+7
+
+Figure 4: Example of a Hamming graph: H(2, 3).
+
+We prove that most of these Hamming graphs are not instantaneous uniform mixing.
+Before we prove this result, however, we need a preliminary result about quantum walks on
+the Cartesian product of graphs, which in turn relies on the following Fact.
+Fact 2 A quantum walk on G ⊕ H starting on vertex (g, h) satisfies
+|ψG⊕H (t)i = |ψG (t)i ⊗ |ψH (t)i,
+
+(25)
+
+where ψG and ψH are quantum walks on G and H starting on vertices g and h, respectively.
+Proof The adjacency matrix of G ⊕ H is given by I ⊗ H + G ⊗ I. Since I ⊗ H and G ⊗ I
+commute, we have
+|ψG⊕H (t)i = e−it(I⊗H+G⊗I) |(g, h)iG⊕H
+−it(I⊗H) −it(G⊗I)
+
+= e
+
+e
+
+−itH
+
+= (I ⊗ e
+
+−itG
+
+= (e
+
+−itG
+
+)(e
+
+(|giG ⊗ |hiH )
+
+⊗ I)(|giG ⊗ |hiH )
+
+−itH
+
+|giG ) ⊗ (e
+
+= |ψG (t)i ⊗ |ψH (t)i.
+
+|hiH )
+
+(26)
+(27)
+(28)
+(29)
+(30)
+
+Here, it is convenient to look at the quantum walk on unnormalized adjacency matrices.
+This is permissible, since normalizing merely affects the time scaling. If kG and kH are the
+regularities of G and H, respectively, Fact 2 may be written as
+|ψG⊕H ((kG + kH )t)i = |ψG (kG t)i ⊗ |ψH (kH t)i
+
+(31)
+
+in the normalized case. Similar adjustments can be made throughout the rest of this paper.
+In quantum mechanics, the natural way to combine two systems is through the tensor
+product. The previous Fact suggests that the Cartesian graph product serves a similar role
+for quantum walks.
+The following Corollary is the key ingredient to proving our result about Hamming
+graphs. One direction of the Corollary was already proved in [5].
+Corollary 3 A quantum walk on G⊕H starting on vertex (g0 , h0 ) is instantaneous uniform
+mixing at time t⋆ if and only if quantum walks on G and H starting on vertices g0 and h0 ,
+respectively, are instantaneous uniform mixing at time t⋆ .
+8
+
+Proof Fact 2 shows that the amplitude at vertex (g, h) is given by
+(hg|G ⊗ hh|H )(|ψG (t)i ⊗ |ψH (t)i) = hg|ψG (t)ihh|ψH (t)i.
+
+(32)
+
+The probability at vertex (g, h) is therefore simply
+(g,h)
+
+PG⊕H (t) = PGg (t)PHh (t).
+
+(33)
+
+If PG and PH are uniform at time t⋆ , then clearly so is PG⊕H . If one of PG or PH is not
+uniform at time t⋆ , then neither is PG⊕H . For suppose, without loss of generality, that
+PGg1 6= PGg2 . Then for any nonzero PHh , we have
+(g ,h)
+
+(g ,h)
+
+2
+1
+,
+= PGg1 PHh 6= PGg2 PHh = PG⊕H
+PG⊕H
+
+(34)
+
+showing PG⊕H is indeed not uniform.
+With the help of Corollary 3, we may now easily prove our main Theorem of this section.
+Theorem 4 For all n ≥ 1, a continuous-time quantum walk on the Hamming graph H(n, q)
+is not instantaneous uniform mixing, unless q ≤ 4.
+Proof It is known that Kq is not uniform mixing unless q ≤ 4 [1]. The proof therefore
+follows immediately from noting that
+H(n, q) = Kq ⊕ · · · ⊕ Kq ,
+{z
+}
+|
+
+(35)
+
+n times
+
+and repeatedly applying Corollary 3.
+
+5
+
+Bunkbed Variants
+
+In this section, we shall view the hypercube Qn+1 as a bunkbed graph with adjacency
+matrix I ⊗ Qn + X ⊗ I. To this end, we consider a bunkbed operator Bn (A) defined by
+
+
+Qn A
+Bn (A) = I ⊗ Qn + X ⊗ A =
+(36)
+A Qn
+where A specifies the connection between the two copies of Qn . We investigate the effect of
+this connection matrix A on the quantum uniform mixing of Bn (A).
+by a Boolean function f : Zn2 →
+Let the connection graph A be a Zn2 -circulant defined
+P
+{0, 1}. The eigenvalues of A are given by λ(a) = x f (x)χa (x) = fˆ(a), for a ∈ Zn2 . For
+a ∈ Zn+1
+, we write a = a1 · ã, where a1 ∈ Z2 is the first bit of a and ã ∈ Zn2 consists of the
+2
+remaining bits of a. The eigenvalue λa of Bn (A) is given by
+λ(a) = λQn (ã) + (−1)a1 fˆ(ã),
+
+9
+
+(37)
+
+In what follows, let ∆ = λ(a ⊕ b) − λ(b) and ˜
+∆ = λ(ã ⊕ b̃) − λ(b̃). Using similar analysis to
+Equation (6), we obtain
+h
+
+n
+oi
+1 X
+Pbt (a) = n+1
+exp −it ˜
+(38)
+∆ + (−1)b1 (−1)a1 fˆ(ã ⊕ b̃) − fˆ(b̃)
+2
+b
+
+First, we show a simple proof for the hypercube using this bunkbed framework.
+Fact 5 (Moore-Russell [11]) For n ≥ 1, Qn+1 = Bn (I) is uniform mixing.
+
+Proof Since A = I, we have f (x) = [[x = 0n ]]; thus, fˆ(a) = 1, for all a. Using this in
+Equation (38), we get
+h
+
+i
+1 X
+˜ + (−1)b1 ((−1)a1 − 1) .
+Pbt (a) = n+1
+exp −it ∆
+(39)
+2
+b
+
+Therefore,
+
+Pbt (0 · ã) =
+
+Pbt (1 · ã) =
+
+1 X
+˜ = P̂t (ã)
+exp(−it∆)
+2n
+b̃
+h
+i
+1 X
+b1
+˜
+exp
+−it(
+∆
+−
+2(−1)
+)
+= cos(2t)P̂t (ã).
+2n+1
+
+(40)
+(41)
+
+b
+
+By induction, this shows that Pbt (a) = cos(2t)|a| . Thus, at t⋆ ≡ π/4, we have
+Pc
+t⋆ (a) = [[a = 0n ]], which proves that Pt⋆ is the uniform distribution.
+
+In the bunkbed framework, Qηn is given by Bn (Af ), where supp(f ) = {0n , η̃}; here, we
+assume without loss of generality that η = 1· η̃. Next, we show that the bunkbed framework
+is a natural setting for showing limits on uniform mixing.
+Theorem 6 For n ≥ 1, let G = Bn (Af ) be a bunkbed hypercube, where Af is a Zn2 -circulant
+defined by a Boolean function f : Zn2 → {0, 1}. Then, Bn (Af ) is not uniform mixing
+whenever | supp(fˆ)| < 2n−1 .
+Proof
+
+Note that
+
+h
+i
+i
+(42)
+λQn (ã ⊕ b̃) − λQn (b̃) + (−1)b1 (−1)a1 fˆ(ã ⊕ b̃) − fˆ(b̃)
+h
+i
+h
+i
+= λQn (ã ⊕ b̃) − λQn (b̃) − (−1)b1 fˆ(ã ⊕ b̃) + fˆ(b̃) ,
+if a1 = 1(43)
+
+λ(a ⊕ b) − λ(b) =
+
+h
+
+Thus, at a = 1 · 0n , we obtain
+Pbt (1 · 0n ) =
+=
+
+
+
+h
+i
+1 X
+b1 ˆ
+ˆ(b̃)t
+cos
+2
+f
+exp
+2it(−1)
+f
+(
+b̃)
+=
+2n+1
+2n
+b
+b̃
+
+
+
+X
+1  n 
+2 − | supp(fˆ)| −
+cos(2fˆ(b̃)t) .
+2n
+1
+
+X
+
+b̃∈supp(fˆ)
+
+When | supp(fˆ)| < 2n−1 , this is strictly positive, and so Pt cannot be uniform.
+10
+
+(44)
+
+(45)
+
+Remark 3 The condition | supp(fˆ)| < 2n−1 in Theorem 6 is tight. This is because for
+Qηn = Bn (Af ), where supp(f ) = {0n , η̃} with η = 1 · η̃, we have fˆ(a) = 1 + χa (η̃). This
+shows that | supp(fˆ)| = 2n−1 and, by Theorem 1, Qηn is uniform mixing.
+Corollary 7 For n ≥ 2, a continuous-time quantum walk on the join of two hypercubes
+Bn (J) = Qn + Qn is not instantaneous uniform mixing.
+Proof The connection matrix J is defined by the constant function f ≡ 1.
+fˆ(a) = [[a = 0n ]] and | supp(fˆ)| = 1. By Theorem 6, Bn (J) is not uniform mixing.
+
+Thus,
+
+Figure 5: Examples of hypercube bunkbeds: (a) B2 (J) = Q2 + Q2 . (b) B2 (Q2 ).
+The next result shows that | supp(fˆ)| < 2n−1 in Theorem 6 is not a necessary condition for
+Bn (Af ) to be non-uniform mixing.
+Theorem 8 For n ≥ 2, a continuous-time quantum walk on Bn (Qn ) is not instantaneous
+uniform mixing.
+Proof The adjacency matrix A of Bn (Qn ) is J2 ⊗ Qn . The eigenvectors of A are |χa i =
+|χa1 i⊗|χã i, with corresponding eigenvalues λ(a1 ·ã) = (1+(−1)a1 )λQn (ã). The amplitude of
+the quantum walk is given by ψt (a) = exp (−it(1 + (−1)a1 )λQn (ã)). Using the Convolution
+Theorem, we obtain for a = a1 · ã and b = b1 · b̃:
+h
+n
+oi
+1 X
+Pbt (a) = n+1
+exp −it (1 + (−1)a1 +b1 )λQn (ã ⊕ b̃) − (1 + (−1)b1 )λQn (b̃)
+(46)
+2
+b
+
+When a1 = 0, this yields
+
+Pbt (a) =
+=
+
+h
+
+i
+1 X
+1
+exp −2it λQn (ã ⊕ b̃) − λQn (b̃)
++ n+1
+2 2
+
+(47)
+
+b̃
+
+1 1
++ cos (2t)|ã| .
+2 2
+
+(48)
+
+For even |ã|, Pbt (a) 6= 0. Thus, Pt never equals the uniform distribution.
+Remark 4 For Bn (Qn ), we have f (x) = [[|x| = 1]] and hence fˆ(a) = n − 2|a|. Thus,
+√
+n
+|{a : fˆ(a) = 0}| = n/2
+∼ 2n / n which implies | supp(fˆ)| ≥ 2n−1 . This shows that the
+condition | supp(fˆ)| < 2n−1 in Theorem 6 is not a necessary condition.
+11
+
+6
+
+Conclusion
+
+In this paper, we have studied quantum uniform mixing on generalized hypercubes. Our
+first generalized hypercube is the bunkbed graph Bn (Af ), where Af is a Zn2 -circulant defined
+by a Boolean function f : Zn2 → {0, 1}. The second generalized hypercube we consider is
+the Hamming graph H(n, q) or q-ary hypercube. Following the work of Moore and Russell
+on the hypercube, our main goal is to characterize which of these generalized hypercubes
+are uniform mixing and which are not.
+Prior to this work, there was only one known collection of graphs that is instantaneous
+uniform mixing. This is the class of Hamming graphs H(n, q) with q ∈ {2, 3, 4} (see [11, 5]).
+To this collection, we have added Bn (Af ), where supp(f ) = {0n , a} with |a| odd. This shows
+that Bn (Af ) is uniform mixing if 0 < | supp(f )| ≤ 2 (with the aforementioned condition
+when | supp(f )| = 2); thus generalizing the result of Moore and Russell [11]. We also showed
+that if | supp(fˆ)| < 2n−1 , then Bn (Af ) is not uniform mixing. On the Hamming graphs,
+we have shown a tight characterization of quantum uniform mixing. Our main result states
+that H(n, q) is not uniform mixing if and only if q ≥ 5. This closes the gap left open from
+an earlier observation in [5].
+Unlike the Hamming graphs, the bunkbed framework does not yield a tight characterization, since a counterexample is supplied by Bn (Qn ). The Fourier techniques we employed
+do not seem powerful enough to prove a tight characterization based solely on the support
+sizes of f and fˆ. Also, we suspect that quantum uniform mixing on the hypercube Qn
+is robust under the addition of up to O(n) specific matchings. We leave these as open
+problems for future work.
+
+Acknowledgments
+This research was supported in part by the National Science Foundation grant DMS-0646847
+and also by the National Security Agency grant 42642.
+
+References
+[1] Amir Ahmadi, Ryan Belk, Christino Tamon, and Carolyn Wendler, “On Mixing of
+Continuous-Time Quantum Walks on Some Circulant Graphs,” Quantum Information
+and Computation 3(6):611-618, 2003.
+[2] William Adamczak, Kevin Andrew, Leon Bergen, Dillon Ethier, Peter Hernberg, Jennifer Lin, and Christino Tamon, ”Non-uniform mixing of quantum walk on cycles,”
+International Journal of Quantum Information 5(6):781-793, 2007.
+[3] Norman Biggs, Algebraic Graph Theory, 2nd edition, Cambridge University Press,
+1993.
+[4] Andrew M. Childs, Richard E. Cleve, Enrico Deotto, Edward Farhi, Sam Gutmann,
+and Daniel A. Spielman, ”Exponential algorithmic speedup by a quantum walk,”
+Proc. 35th Annual Symposium on the Theory of Computing (2003), 59-68.
+
+12
+
+[5] William Carlson, Allison Ford, Elizabeth Harris, Julian Rosen, Christino Tamon,
+and Kathleen Wrobel, ”Universal Mixing of Quantum Walk on Graphs,” Quantum
+Information and Computation 7(8):738-751, 2007.
+[6] Persi Diaconis, Group Representations in Probability and Statistics, Institute of Mathematical Statistics, 1988.
+[7] Edward Farhi and Sam Gutmann, ”Quantum computation and decision trees,” Physical Review A 58 (1998), 915-928.
+[8] Edward Farhi, Jeffrey Goldstone, and Sam Gutmann, ”A Quantum Algorithm for the
+Hamiltonian NAND Tree,” quant-ph/0702144.
+[9] Heath Gerhardt and John Watrous, “Continuous-time quantum walks on the symmetric group,” Proceedings of the 7th International Workshop on Randomization and
+Approximation Techniques in Computer Science, 2003.
+[10] Viv Kendon, ”Quantum walks on general graphs,” International Journal of Quantum
+Information 4:5 (2006), 791-805.
+[11] Cristopher Moore and Alexander Russell, “Quantum Walks on the Hypercube,” in
+Proc. 6th Int. Workshop on Randomization and Approximation in Computer Science,
+Lecture Notes in Computer Science 2483, Springer (2002), 164-178.
+
+13
+
+

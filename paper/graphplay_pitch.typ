@@ -43,9 +43,11 @@ Tamon-clique theorems fall out as immediate corollaries; dozens of
 tower. Hardware-aware quantum-walk design --- "given this chip, build this
 primitive" --- becomes a small finite optimization over a quotient matrix,
 with a Lean-checkable certificate of correctness. The Lean development
-covers Towers 1--5 and has scaffolded statements at Towers 6 and 7;
-roughly 120 sorries remain, most of them in dowsing-rod files whose
-*statements* are precise and load-bearing. We want collaborators.
+covers Towers 1--5 and has scaffolded statements at Towers 6 and 7; the
+library builds end-to-end and currently emits roughly *634 `sorry`
+warnings*, the bulk of which are in dowsing-rod files whose
+*statements* are precise and load-bearing while the proofs are
+deferred. We want collaborators.
 
 #heading("1. What is actually new")
 
@@ -102,8 +104,9 @@ finite-graph level (Godsil, Bachman--Tamon, Ide--Narimatsu). The
 the host category --- has never been written down. The *categorical
 filtered-colimit preservation* (Tower 5) that makes "quasi-infinite"
 quantum walks tractable is new. The *graphon-level* lift (Tower 4) that
-extends Bick--Sclosa (arXiv:2110.13686) from real dynamics to unitary
-CTQW is new. The *operator-system / quantum-graph* lift (Tower 3) that
+extends Gerlach--von der Gönna (arXiv:2110.13686, "Dynamical Systems on
+Graph Limits and their Symmetries", J. Dyn. Diff. Eq. 2023) from real
+dynamics to unitary CTQW is new. The *operator-system / quantum-graph* lift (Tower 3) that
 puts Bose--Mesner association schemes and Duan--Severini--Winter quantum
 graphs into the same skeleton is new. The mechanization in Lean 4 +
 Mathlib --- with named theorems, machine-checked proofs (where filled),
@@ -127,13 +130,20 @@ and (iii) of the Tower-2 single load-bearing theorem.
 
 #emph[Theorem (Xie--Tamon arXiv:2301.07251, as a Tower-2 + Tower-5
 corollary).] Let $G_n = K_n + P_n$ be the family of complete graphs with
-a path tail of length $n$. The partition $pi_n = \{K_n, $ path-end$, $
-path-interior$\}$ is equitable. The quotient matrix $A_(pi_n) slash pi_n$
-is a $3 times 3$ Hermitian matrix whose entries grow controllably in $n$;
-its spectral search optimum has a limit as $n -> infinity$ identified as
-the graphon limit `K + infinite-tail`. No spatial-search algorithm on
-$G_n$ beats the quotient optimum, for any $n$, and the optimum is
-realized at $n = infinity$ by the limit graphon.
+a path tail of length $n$, and let $a$ denote the unique attachment vertex
+where the path meets the clique. Following Xie--Tamon (arXiv:2301.07251),
+take $pi_n$ to be the *distance-from-attachment* partition: $\{a\}$ is one
+cell, the remaining $n - 1$ clique vertices form a second cell, and each
+path vertex at distance $d >= 1$ from $a$ is its own singleton cell. This
+partition is equitable and has $n + 1$ cells; the quotient matrix
+$A slash pi_n$ is a tridiagonal-with-corner Hermitian matrix of size
+$(n+1) times (n+1)$ whose entries are bounded independently of $n$ (the
+$\{a\}$-row picks up the clique-degree $n - 1$ on the diagonal block,
+all other entries are $0$ or $1$). Its spectral search optimum has a
+limit as $n -> infinity$ identified as the graphon limit
+`K + infinite-tail`. No spatial-search algorithm on $G_n$ beats the
+quotient optimum, for any $n$, and the optimum is realized at
+$n = infinity$ by the limit graphon.
 
 Again: published as a deep analytic result. In Graphplay it is the
 filtered colimit of the quotient diagram, plus the cell-uniform restriction
@@ -352,15 +362,23 @@ examples backing the claim it is the right question.
 
 #heading("7. Honest assessment")
 
-The Lean development is ~45 files, ~98% of which build green. There are
-approximately 120 high-value `sorry` holes --- the rest are scaffolding
-sorries in dowsing-rod files where the *statement* is the contribution,
-not the proof. Tower 1--2 are largely proven. Tower 3 has the
-operator-system upgrade and several genuine theorems, alongside the
-non-commutative coherent-algebra sorries. Tower 4 has clean statements
-and ~30% complete proofs of the graphon CTQW lift. Tower 5 has the
-filtered-colimit statement and a key theorem sorried. Towers 6--7 are
-honest scaffolds, awaiting Mathlib library development.
+The Lean development is ~45 files; the library builds end-to-end and
+emits roughly *634 `sorry`-warnings* at present. Of these, a small core
+of high-value holes carry the load-bearing analytic content; the
+remainder are scaffolding sorries in dowsing-rod files where the
+*statement* is the contribution, not the proof. Tower 1--2 *statements*
+are largely complete; the main lifting proofs --- `spectrum_subset`,
+`pst_lift`, `evolve_add` / `evolve_unitary`, and the `cellInflate`
+identities --- are sorried, while the *combinatorial* core (type
+definitions, bundle constructors, partition refinements, chiral signing
+preservation) is real and proven. Tower 3 has the operator-system
+upgrade landed at the level of definitions and statements, with the
+non-commutative coherent-algebra theorems sorried alongside several
+genuine small lemmas. Tower 4 has clean statements; the graphon CTQW
+lift is stated, with a partial proof skeleton in place but the analytic
+core sorried. Tower 5 has the filtered-colimit statement written; the
+key preservation theorem is sorried. Towers 6--7 are honest scaffolds,
+awaiting Mathlib library development.
 
 We need:
 

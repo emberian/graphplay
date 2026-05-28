@@ -1,0 +1,1261 @@
+arXiv:quant-ph/0509163v1 22 Sep 2005
+
+Mixing and Decoherence in Continuous-Time
+Quantum Walks on Cycles
+Leonid Fedichkin∗
+
+Dmitry Solenov†
+
+Christino Tamon‡
+
+August 7, 2018
+
+Abstract
+We prove analytical results showing that decoherence can be useful for mixing
+time in a continuous-time quantum walk on finite cycles. This complements the numerical observations by Kendon and Tregenna (Physical Review A 67 (2003), 042315)
+of a similar phenomenon for discrete-time quantum walks. Our analytical treatment of
+continuous-time quantum walks includes a continuous monitoring of all vertices that
+induces the decoherence process. We identify the dynamics of the probability distribution and observe how mixing times undergo the transition from quantum to classical
+behavior as our decoherence parameter grows from zero to infinity. Our results show
+that, for small rates of decoherence, the mixing time improves linearly with decoherence, whereas for large rates of decoherence, the mixing time deteriorates linearly
+towards the classical limit. In the middle region of decoherence rates, our numerical data confirms the existence of a unique optimal rate for which the mixing time is
+minimized.
+
+1 Introduction
+The study of quantum walks on graphs has gained considerable interest in quantum computation due to its potential as an algorithmic technique and as a more natural physical
+model for computation. As in the classical case, there are two important models of quantum walks, namely, the discrete-time walks [5, 22, 2, 4], and the continuous-time walks
+[11, 9, 8, 10]. Excellent surveys of both models of quantum walks are given in [18, 19]. In
+∗
+
+Center for Quantum Device Technology, Department of Physics, and Department of Electrical and Computer Engineering, Clarkson University, Potsdam, NY 13699–5721, USA. Email: leonid@clarkson.edu
+†
+Center for Quantum Device Technology and Department of Physics, Clarkson University, Potsdam, NY
+13699–5721, USA. Email: solenovd@clarkson.edu
+‡
+Department of Mathematics and Computer Science and Center for Quantum Device Technology, Clarkson University, Potsdam, NY 13699–5815, USA. Email: tino@clarkson.edu
+
+1
+
+this work, our focus will be on continuous-time quantum walks on graphs and its dynamics
+under decoherence.
+Some promising non-classical dynamics of continuous-time quantum walks were
+shown in [23, 20, 8]. In [23], Moore and Russell proved that the continuous-time quantum walk on the n-cube achieves (instantaneous) uniform mixing in time O(n), in contrast
+to the Ω(n log n) time needed in the classical random walk. Kempe [20] showed that the
+hitting time between two diametrically opposite vertices on the n-cube is nO(1) , as opposed
+to the well-known Ω(2n ) classical bound (related to the Ehrenfest urn model). In [8], an
+interesting algorithmic application of a continuous-time quantum walk on a specific blackbox search problem was given. This latter result relied on the exponentially fast hitting
+time of these quantum walks on path-collapsible graphs.
+Further investigations on mixing times for continuous-time quantum walks were given
+in [3, 15, 1]. These works prove non-uniform (average) mixing properties for complete
+multipartite graphs, group-theoretic circulant graphs, and the Cayley graph of the symmetric group. The latter graph was of considerable interest due to its potential connection to
+the Graph Isomorphism problem, although Gerhardt and Watrous’s result in [15] strongly
+discouraged natural approaches based on quantum walks. All of these cited works have
+focused on unitary quantum walks, where we have a closed quantum system without any
+interaction with its environment.
+A more realistic analysis of quantum walks that take into account the effects of decoherence was initiated by Kendon and Tregenna [21]. In that work, Kendon and Tregenna
+made a striking numerical observation that a small amount of decoherence can be useful to
+improve the mixing time of discrete quantum walks on cycles. In this paper, we provide
+an analytical counterpart to Kendon and Tregenna’s result for the continuous-time quantum walk on cycles. Thus showing that the Kendon-Tregenna phenomena is not merely an
+artifact of the discrete-time model, but suggests a fundamental property of decoherence in
+quantum walks. Recent realistic treatment for the hypercube was provided in a recent work
+by Alagić and Russell [6]. Developing algorithmic applications that exploit this positive
+effect of decoherence on quantum mixing time provides an interesting challenge for future
+research.
+In this work, we prove that Kendon and Tregenna’s observation holds in the continuoustime quantum walk model. Our analytical results show that decoherence can improve the
+mixing time in continuous-time quantum walk on cycles. We consider an analytical model
+due to Gurvitz [13] that incorporates the continuous monitoring of all vertices that induces
+the decoherence process. We identify the dynamics of probability distribution and observe
+how mixing times undergo transition from quantum to classical behavior as decoherence
+parameter grows from 0 to ∞. For small rates of decoherence, we observe that mixing
+times improve linearly with decoherence, whereas for large rates, mixing times deteriorate
+linearly towards the classical limit. In the middle region of decoherence rates, we give
+numerical data that confirms the existence of a unique optimal rate for which the mixing
+time is minimal.
+
+2
+
+2 Preliminaries
+Continuous-time quantum walks are well-studied in the physics literature (see, e.g., [12],
+Chapters 13 and 16), but mainly over constant-dimensional lattices. It was studied recently
+by Farhi, Gutmann, and Childs [11, 9] in the algorithmic context. Let G = (V, E) be an
+undirected graph with adjacency matrix AG . The Laplacian of G is defined as L = AG −D,
+where D is a diagonal matrix with Djj is the degree of vertex j 1 . If the time-dependent
+state of the quantum walk is |ψ(t)i, then, by the Schrödinger’s equation, we have
+iℏ
+
+d
+|ψ(t)i = L|ψ(t)i.
+dt
+
+(1)
+
+The solution of the above equation is |ψ(t)i = e−itL |ψ(0)i (assuming ℏ = 1).
+We consider the N-vertex cycle graph CN whose adjacency matrix A is a circulant
+matrix. The eigenvalues of A are λj = 2 cos(2πj/N) with corresponding eigenvectors
+|vj i, where hk|vj i = √1N exp(−2πijk/N), for j = 0, 1, . . . , N − 1. So, if the initial state
+of the quantum walk is |ψ(0)i = |0i, then |ψ(t)i = e−itL |0i. After decomposing |0i in
+terms of the eigenvectors |vj i, we get
+2it
+
+|ψ(t)i = e
+
+N −1
+
+1 X −itλj
+√
+e
+|vj i.
+N j=0
+
+(2)
+
+The scalar term e2it is an irrelevant phase factor which can be ignored.
+1
+
+0.9
+
+0.8
+
+0.7
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0
+
+0
+
+50
+
+100
+
+150
+
+200
+
+250
+
+300
+
+350
+
+400
+
+450
+
+500
+
+Figure 1: Continuous-time quantum walk on the cycle C5 . This is a plot of |ψ0 (t)|2 for
+t ∈ [0, 500]. It exhibits a short-term chaotic behavior and a long-term oscillatory behavior.
+If |ψ(t)i represents the state of the particle at time t, let Pj (t) = |hj|ψ(t)i|2 be the
+probability that the particle is at vertex j at time t. Let P (t) be the (instantaneous) probability distribution of the quantum walk on G. The average probability of vertex j over the
+1
+
+We have D = kI, if G is k-regular.
+
+3
+
+RT
+time interval [0, T ] is defined as by P j (T ) = T1 0 Pj (t) dt. Let P (T ) be the (average)
+probability distribution of the quantum walk on G over the time interval [0, T ].
+To define the notion of mixing times of continuous-time quantum walks, we use the
+total variation distance between distributions P and Q that is defined as ||P − Q|| =
+P
+s |P (s) − Q(s)|. For ε ≥ 0, the ε-mixing time Tmix (ε) of a continuous-time quantum walk is the minimum time T so that ||P (T ) − UG || ≤ ε, where UG is the uniform
+distribution over G, or
+(
+)
+N
+−1
+X
+1
+Pj (T ) −
+Tmix (ε) = min T :
+≤ε .
+(3)
+N
+j=0
+Gurvitz’s Model To analyze the decoherent continuous-time quantum walk on CN , we
+use an analytical model developed by Gurvitz [13, 14]. In this model, we consider the
+density matrix ρ(t) = |ψ(t)ihψ(t)| and study its evolution under a continuous monitoring
+of all vertices of Cn . Note that in this case, the probability distribution P (t) of the quantum
+walk is specified by the diagonal elements of ρ(t), that is, Pj (t) = ρj,j (t).
+The time-dependent non-unitary evolution of ρ(t) in the Gurvitz model is given by (see
+[26]):
+
+
+ρj,k+1 − ρj+1,k − ρj−1,k + ρj,k−1
+d
+− Γ (1 − δj,k ) ρj,k
+(4)
+ρj,k (t) = i
+dt
+4
+Our subsequent analysis will focus on the variable Sj,k defined as
+Sj,k = ik−j ρj,k
+
+(5)
+
+The above substitution reduces the system differential equations with complex coefficients
+into the following system with only real coefficients:
+1
+d
+Sj,k = (Sj,k+1 + Sj+1,k − Sj−1,k − Sj,k−1) − Γ (1 − δj,k ) Sj,k .
+(6)
+dt
+4
+Throughout the rest of this paper, we will focus on analyzing Equation (6) for various rates
+of Γ. One can note that, if Γ = 0, there is an exact mapping of the quantum walk on a cycle
+onto a classical random walk on a two-dimensional torus. If Γ 6= 0, there is still an exact
+mapping of the quantum walk on a cycle onto some classical dynamics on a directed toric
+graph. This observation may be useful in estimating quantum speedup in other systems.
+
+3 Small Decoherence
+We consider the decoherent continuous-time quantum walks when the decoherence rate Γ
+is small. More specifically, we consider the case when ΓN ≪ 1. First, we rewrite (6) as
+the perturbed linear operator equation
+d
+S(t) = (L + U) S(t),
+dt
+4
+
+(7)
+
+Figure 2: The classical recurrence on the 2-dimensional torus derived from a decoherent
+continuous-time quantum walk on the cycle.
+where the linear operators L and U are defined as
+(µ,ν)
+
+1
+(δα,µ δβ,ν−1 + δα,µ−1 δβ,ν − δα,µ δβ,ν+1 − δα,µ+1 δβ,ν )
+4
+= −Γδα,µ δβ,ν (1 − δα,β ) .
+
+L(α,β) =
+(µ,ν)
+
+U(α,β)
+
+(8)
+(9)
+
+(µ,ν)
+
+Here, we consider L as a N 2 × N 2 matrix where L(α,β) is the entry of L indexed by the row
+index (µ, ν) and the column index (α, β). We view U in a similar manner. The solution of
+(7) is given by S(t) = et(L+U) S(0), or
+N
+−1 
+
+X
+d
+(µ,ν)
+(µ,ν)
+Sα,β =
+L(α,β) + U(α,β) Sµ,ν ,
+dt
+µ,ν=0
+
+(10)
+
+where 0 ≤ α, β, µ, ν ≤ N − 1. The initial conditions are
+ρα,β (0) = Sα,β (0) = δα,0 δβ,0 .
+
+(11)
+
+Perturbation Theory We will use tools from the perturbation theory of linear operators
+(see [17, 16]). To analyze Equation (7), we find the eigenvalues and eigenvectors of L + U.
+Suppose that V is some eigenvector of L with eigenvalue λ, that is, LV = λV . Considering
+the perturbed eigenvalue equation
+(L + U)(V + Ṽ ) = (λ + λ̃) (V + Ṽ ),
+
+(12)
+
+we drop the second-order terms UṼ and λ̃Ṽ to obtain the first-order approximation
+U V + L Ṽ = λ̃V + λṼ .
+
+5
+
+(13)
+
+By taking the inner product of the above equation with V † , and since L is Hermitian, we
+see that the eigenvalue perturbation term λ̃ is defined as
+λ̃ = V † UV.
+
+(14)
+
+Let Eλ be an eigenspace corresponding to the eigenvalue
+λ and let {Vk : k ∈ I} be a
+P
+set of eigenvectors of L that spans Eλ . Let V = k∈I ck Vk be a unit vector in Eλ . Using
+Equation (13), we have
+X
+X
+ck V k ,
+(15)
+ck UVk = λ̃
+k∈I
+
+k∈I
+
+and after taking the inner product with Vj† , we get
+
+†
+k∈I ck Vj UVk = λ̃cj .
+
+P
+
+If the linear
+combination is uniform, that is cj = c, for all j, then the eigenvalue perturbation λ̃ is simply
+given by
+X †
+λ̃ =
+Vj UVk .
+(16)
+k∈I
+
+In the case when Eλ is one-dimensional or the matrix U is diagonal under all similarity
+actions Vj† UVk , for j, k ∈ I, the correction to the eigenvalues is given by the diagonal term
+λ̃ = V † UV . Otherwise, we need to solve the system described by det(Uλ − λ̃I) = 0.
+To analyze the equation S ′ (t) = (L + U)S(t), for which the solution is S(t) =
+exp[t(L + U)]S(0), we express S(0) as a linear combination of the eigenvectors of L + U,
+say {Vj + Ṽj }. In our case, the evolution of S(t) can be described using
+Pthe eigenvectors
+of L, since the contribution of the terms Ṽj are negligible. If S(0) = j cj Vj , where Vj
+are the eigenvectors of L, then
+X
+X
+cj V j .
+(17)
+S(t) =
+et(λ+λ̃)
+λ
+
+j∈Eλ
+
+Spectral Analysis The unperturbed linear operator L has eigenvalues
+
+
+
+
+π(m + n)
+π(m − n)
+λ(m,n) = i sin
+cos
+N
+N
+
+(18)
+
+with corresponding eigenvectors
+(m,n)
+V(µ,ν) =
+
+1
+exp
+N
+
+
+
+
+2πi
+(mµ + nν) .
+N
+
+(19)
+
+Thus, for 0 ≤ m, n ≤ N − 1, we have
+N
+−1
+X
+
+(µ,ν)
+
+(m,n)
+
+(m,n)
+
+L(α,β) V(µ,ν) = λ(m,n) V(α,β) .
+
+µ,ν=0
+
+6
+
+(20)
+
+To analyze the effects of U, we compute the similarity actions of the eigenvectors on U:
+′
+
+′
+
+U(m,n),(m′ ,n′ ) = (V (m,n) )† UV (m ,n )
+
+
+2πi
+Γ X
+′
+′
+(1 − δa,b ) exp
+[(m − m)a + (n − n)b]
+= − 2
+N
+N
+
+(21)
+(22)
+
+(a,b)
+
+= −Γ δm′ ,m δn′ ,n +
+
+Γ
+δ[(m′ −m)+(n′ −n)] (mod N ),0
+N
+
+(23)
+
+where 0 ≤ m, m′ , n, n′ ≤ N − 1.
+The eigenvalues λ(m,n) of L have the following important degeneracies:
+(a) Diagonal (m = n): λ(m,m) = i sin(2πm/N).
+Each of this eigenvalue has multiplicity 2, by the symmetries of the sine function.
+This degeneracy is absent in our case, since U is diagonal over the corresponding
+eigenvectors. For example, U(m,n),(N/2−m,N/2−m) = 0, for 0 < m < N/2.
+(b) Zero (m + n ≡ 0 (mod N)): λ(m,n) = 0.
+This degeneracy is absent in our case since the corresponding eigenvectors are not
+involved in the linear combination of the initial state S(0).
+(c) Off-diagonal (m 6= n): λ(m,n) = λ(n,m) .
+Since λ(m,n) = i [sin(2πm/N) + sin(2πm/N)], each of this eigenvalue has multiplicity at least 4, due to the symmetries of the sine function. In our case, the effective
+degeneracy of these eigenvalues are 2, again by a similar argument.
+By (23), the off-diagonal contribution is present if m+n ≡ m′ +n′ (mod N). Thus,
+λ(m,n) = λ(m′ ,n′) implies that cos(π(m − n)/N) = ± cos(π(m′ − n′ )/N), since
+sin(π(m + n)/N) = ± sin(π(m′ + n′ )/N). This implies that m − n = −(m′ − n′ )
+or |(m − n) − (m′ − n′ )| = N, since −(N − 1) ≤ m − n, m′ − n′ ≤ N − 1. In either
+case, we get m = n ± N/2 or m′ = n′ ± N/2. But, upon inspection, we note that U
+is diagonal over these combinations, except for the case when (m′ , n′ ) = (n, m).
+In what follows, we calculate the eigenvalue perturbation terms λ̃. For simple eigenvalues, these correction terms are given by the diagonal elements
+λ̃(m,n) = (V (m,n) )† U V (m,n) = −Γ
+
+(N − 1)
+,
+N
+
+(24)
+
+by Equation (23). For a degenerate eigenvalue λ(m,n) with multiplicity two, if V =
+c(V (m,n) + V (n,m) ), for some constant c, then λ̃(m,n) = (V (m,n) )† UV , and similarly for
+V (n,m) . Further calculations reveal that the eigenvalue perturbation λ̃(m,n) is
+λ̃(m,n) = (V (m,n) )† U V (m,n) + (V (m,n) )† U V (n,m) = −Γ
+again by Equation (23).
+7
+
+(N − 2)
+,
+N
+
+(25)
+
+Dynamics We are ready to describe the full solution to Equation (6). First, note that there
+δ
+0
+, that can be expressed as
+exists a trivial time-independent solution given by Sα,β
+(t) = α,β
+N
+the following linear combination of the eigenvectors of L:
+X 1
+S 0 (t) =
+(δm+n,0 + δm+n,N ) V (m,n) .
+(26)
+N
+(m,n)
+
+The particular solution will depend on the initial condition S(0), where Sα,β (0) = δα,0 δβ,0 .
+Note that we have
+X 1
+V (m,n) .
+(27)
+S(0) =
+N
+(m,n)
+
+Thus, the solution is of the form
+
+
+δα,β
+1 X
+2πi
+t(λ(m,n) +λ̃(m,n) )
+Sα,β (t) =
+(1−δ[m+n](mod N ),0 ) e
+exp
++ 2
+(mα + nβ) (28)
+N
+N
+N
+(m,n)
+
+The probability distribution of the continuous-time quantum walk is given by the diagonal
+terms Pj (t) = Sj,j (t), that is
+i
+h
+N−2
+N−1
+1
+1 X
+Pj (t) =
++ 2
+(1 − δm+n(mod N ),0 ) × δm,n e−Γ N t + (1 − δm,n )e−Γ N t
+N
+N
+(m,n)
+
+
+
+
+
+
+
+π(m − n)
+2πi
+π(m + n)
+cos
+exp
+(m + n)j
+× exp i sin
+N
+N
+N
+We calculate an upper bound on the ε-uniform mixing time Tmix (ε). For this, we define
+N −1
+
+1 X it sin(2πm/N ) mj
+e
+ωN ,
+Mj (t) =
+N m=0
+
+(29)
+
+where ωN = exp(2πi/N). Note that
+Mj2 (t/2) =
+
+N −1
+N −1
+1 X itλ(m,n) (m+n)j
+1 X itλ(m,m) 2mj
+e
+ωN
+e
+ωN
+, M2j (t) =
+N 2 m,n=0
+N m=0
+
+(30)
+
+Using these expressions, we have
+1
+Pj (t) −
+N
+
+−Γ N−2
+t
+N
+
+e−tΓ/N − 1
+Mj2 (t/2) +
+
+t
+−Γ N−2
+N
+
+e−tΓ/N − 1
+1+
+(1 − 2/N) .
+N
+
+≤ e
+
+≤ e
+
+N
+
+
+
+2 − (N mod 2)
+M2j (t) −
+N
+
+
+
+(31)
+(32)
+
+One can note that |Mj (t)| ≤ 1, and therefore,
+N
+−1
+X
+j=0
+
+Pj (t) −
+
+1
+N
+
+N−2
+
+≤ e−Γ N t (N + e−tΓ/N − 1).
+8
+
+(33)
+
+N−2
+
+Since e−tΓ/N ≤ 1, the above equation shows that Ne−Γ N t ≤ ε. This gives the mixing
+time bound of
+
+ 
+1
+2
+N
+Tmix (ε) <
+1+
+.
+(34)
+ln
+Γ
+ε
+N −2
+
+4 Large Decoherence
+We analyze the decoherent continuous-time quantum walks when the decoherence rate Γ
+is large, that is, when Γ ≫ 1. In our analysis, we will focus on diagonal sums of the matrix
+S(t) from (6). For k = 0, . . . , N − 1, we define the diagonal sum Dk as
+Dk =
+
+N
+−1
+X
+
+Sj, j+k (mod N ) ,
+
+(35)
+
+j=0
+
+where the indices are treated as integers modulo N. We note that
+d
+Dk = −Γ (1 − δk,0 ) Dk .
+dt
+
+(36)
+
+We refer to the diagonal D0 as major and the other diagonals as minor. Equation (36)
+suggests that the minor diagonal sums decay strongly with characteristic time of order
+1/Γ. By the initial conditions, the non-zero elements appear only along the major diagonal.
+From (6), it follows that the system will evolve initially in the following way. The elements
+on the two minor diagonals nearest to the major diagonal will deviate slightly away from
+zero due to nonconformity of classical probability distribution along the major diagonal.
+This process with a rate of order 1/4 will compete with a self-decay with rate of order
+Γ ≫ 1/4, thereby limiting the corresponding off-diagonal elements to small values of the
+order 1/Γ. A similar argument applies to elements on the other minor diagonals which
+will be kept very small compared to their neighbors that are closer to the major diagonal
+and will be of the order of 1/Γ2 , etc. By retaining only matrix elements that are of order
+of 1/Γ, we derive a truncated set of differential equations for the elements along the major
+and the two adjacent minor diagonals:
+1
+(Sj,j+1 + Sj+1,j − Sj−1,j − Sj,j−1) ,
+4
+1
+(Sj+1,j+1 − Sj,j ) − ΓSj,j+1,
+=
+4
+1
+(Sj,j − Sj−1,j−1) − ΓSj,j−1.
+=
+4
+
+′
+Sj,j
+=
+′
+Sj,j+1
+′
+Sj,j−1
+
+(37)
+(38)
+(39)
+
+To facilitate our subsequent analysis, we define
+aj = Sj,j ,
+
+dj = Sj,j+1 + Sj+1,j .
+
+9
+
+(40)
+
+Then, we observe that
+a′j =
+
+(dj − dj−1)
+,
+4
+
+d′j =
+
+(aj+1 − aj )
+− Γdj .
+2
+
+(41)
+
+The general solution of the above system of difference equations has the form
+aj
+
+N −1
+
+1 X
+{Ak,1 exp (−γk,0t) + Ak,2 exp (−γk,1 t)} ω jk
+=
+N k=0
+
+dj =
+
+N −1
+
+1 X
+{Dk,1 exp (−γk,0 t) + Dk,2 exp (−γk,1 t)} ω jk
+N
+
+(42)
+
+(43)
+
+k=0
+
+where ω = e2πi/N , and the exponents γk,0 and γk,1 are the quadratic roots of
+ 
+1 2 πk
+x(Γ − x) = sin
+.
+2
+N
+
+(44)
+
+Letting γk,0 < γk,1, we have
+γk,0
+γk,1
+
+ 
+ 
+πk
+1
+1
+2
++o
+,
+sin
+=
+2Γ
+N
+Γ
+ 
+ 
+1
+1
+πk
+2
+= Γ−
++o
+.
+sin
+2Γ
+N
+Γ
+
+(45)
+(46)
+
+By the initial conditions aj (0) = δj,0 and dj (0) = 0, for j = 0, . . . , N − 1. Thus,
+1
+πk
+sin2
+2
+Γ
+N
+
+(47)
+
+
+
+(48)
+
+Ak,0 ≃ 1, Ak,1 ≃ −
+and, for b = 0, 1, we have
+i
+Dk,b ≃ (−1)
+sin
+Γ
+b
+
+
+
+πk
+N
+
+exp
+
+
+
+
+iπk
+,
+N
+
+These equations show that the amplitudes of the elements along minor diagonals are reduced by an extra factor of Γ compared to the elements along the major diagonal. Summarizing, the solution of differential equation at large Γ has the form
+!
+N −1
+sin2 πk
+1 X
+N
+exp −
+t ω jk .
+(49)
+aj =
+N k=0
+2Γ
+Based on the above analysis, the full solution for S(t) is given by
+
+if j = k
+ aj
+dj /2 if |j − k| = 1
+Sj,k (t) =
+
+0
+otherwise
+10
+
+(50)
+
+It can be verified that S(t) is a solution to Equation (6) modulo terms of order o(1/Γ).
+The total variation distance between the uniform distribution and the probability distribution of the decoherent quantum walk on CN is given by
+!
+
+
+N
+−1
+N −1
+N
+−1
+X
+X
+sin2 πk
+1
+1 X
+2πijk
+1
+N
+=
+exp −
+−
+,
+(51)
+t exp
+aj (t) −
+N
+N
+2Γ
+N
+N
+j=0
+j=0
+k=0
+which simplifies to
+!
+
+
+N −1 N −1
+sin2 πk
+1
+1 X X
+2πkj
+N
+exp −
+aj (t) −
+=
+.
+t cos
+N
+N
+2Γ
+N
+j=0
+j=0 k=1
+
+N
+−1
+X
+
+(52)
+
+Lower bound A lower bound on the mixing time for large decoherence rate Γ can be
+derived as follows. Note that
+!
+N
+−1
+N −1
+X
+sin2 πk
+1
+1
+1 X
+N
+aj (t) −
+exp −
+≥ a0 (t) −
+=
+t ,
+(53)
+N
+N
+N
+2Γ
+j=0
+k=1
+
+
+sin2 Nπ
+2
+exp −
+t ,
+(54)
+≥
+N
+2Γ
+
+where the first inequality uses the term j = 0 only and the second inequality uses the terms
+k = 1, N − 1. This expression is monotone in t, and is a lower bound on the total variation
+distance. It reaches ε at time Tlower , when
+
+
+
+
+2Γ
+2
+2ΓN 2
+2
+Tlower =
+ln
+≃
+,
+(55)
+ln
+Nε
+π2
+Nε
+sin2 Nπ
+for large N ≫ 1.
+Upper bound An upper bound on the mixing time for large decoherence rate Γ can be
+derived as follows. Consider the following derivation:
+!
+
+
+N −1 N −1
+N
+−1
+X
+sin2 πk
+2πkj
+1 X X
+1
+N
+(56)
+exp −
+t cos
+=
+aj (t) −
+N
+N j=0
+2Γ
+N
+j=0
+k=1
+!
+N −1 N −1
+sin2 πk
+1 XX
+N
+≤
+exp −
+t ,
+(57)
+N j=0 k=1
+2Γ
+since | cos(x)| ≤ 1. The last expression is equal to
+!
+!
+⌊N/2⌋
+N
+−1
+2 πk
+X
+X
+sin2 πk
+sin
+N
+N
+exp −
+exp −
+t
+= 2
+t ,
+2Γ
+2Γ
+k=1
+k=1
+
+
+⌊N/2⌋
+X
+2k 2 t
+,
+exp −
+≤ 2
+ΓN 2
+k=1
+11
+
+(58)
+
+(59)
+
+where the last inequality is due to sin(x) > 2x/π, whenever 0 < x < π/2 (see Eq.
+4.3.79, [7]). Since k ≥ 1, we have k 2 ≥ k. Thus, we have
+N
+−1
+X
+
+1
+aj (t) −
+N
+j=0
+
+⌊N/2⌋
+
+
+
+2kt
+exp −
+< 2
+ΓN 2
+k=1
+X
+
+
+
+∞
+X
+
+
+
+2kt
+exp −
+< 2
+.
+ΓN 2
+k=1
+
+(60)
+
+The last expression is a geometric series that equals 2/[exp(2t/(ΓN 2 )) − 1]. This expression is monotone in t, and it is the upper bound for the total variation distance. It reaches ε
+value at time Tupper , when
+
+
+ΓN 2
+2+ε
+Tupper =
+.
+(61)
+ln
+2
+ε
+
+5 Conclusions
+In this work, we studied the average mixing times in a continuous-time quantum walk on
+the N-vertex cycle CN under decoherence. For this, we used an analytical model developed
+by S. Gurvitz [13]. We found two distinct dynamics of the quantum walk based on the rates
+of the decoherence parameter. For small decoherence rates, where ΓN ≪ 1, the mixing
+time is bounded as
+
+ 
+2
+N
+1
+1+
+.
+(62)
+ln
+Tmix <
+Γ
+ε
+N −2
+This bound shows that Tmix is inversely proportional to the decoherence rate Γ. For large
+decoherence rates Γ ≫ 1, the mixing times are bounded as
+
+
+
+
+ΓN 2
+ΓN 2
+2
+2+ε
+< Tmix <
+.
+(63)
+ln
+ln
+π2
+Nε
+2
+ε
+
+These bounds are show that Tmix is linearly proportional to the decoherence rate Γ, but is
+quadratically dependent on N. Note that the dependences on N of the mixing times exhibit
+the expected quantum to classical transition.
+These analytical results already point to the existence of an optimal decoherence rate
+for which the mixing time is minimum. Our additional numerical experiments (see Figure
+(3)) for Γ ∼ 1 confirmed that there is a unique optimal decoherence rate for which the
+mixing time is minimum. This provides a continuous-time analogue of the Kendon and
+Tregenna results in [21].
+
+Acknowledgments
+We thank Viv Kendon for her kind encouragements in our interests on decoherence in
+continuous-time quantum walks and Vladimir Privman for helpful discussion. This research was supported by the National Science Foundation grant DMR-0121146.
+12
+
+1800
+N=35
+N=30
+N=25
+N=20
+N=15
+N=10
+N=5
+
+1600
+
+1400
+
+1200
+
+tmix
+
+1000
+
+800
+
+600
+
+400
+
+200
+
+0
+
+0
+
+0.1
+
+0.2
+
+0.3
+
+0.4
+
+0.5
+Γ
+
+0.6
+
+0.7
+
+0.8
+
+0.9
+
+1
+
+Figure 3: The quantum to classical transition of mixing time in a continuous-time decoherent quantum walk on CN , for N = 5, 10, 15, 20, 25, 30, 35.
+
+References
+[1] William Adamczak, Kevin Andrew, Peter Hernberg, and Christino Tamon, ”A note
+on graphs resistant to quantum uniform mixing,” quant-ph/0308073.
+[2] Dorit Aharonov, Andris Ambainis, Julia Kempe, and Umesh Vazirani, ”Quantum
+Walks on Graphs,” Proceedings of 33rd ACM Symposium on Theory of Computing
+(2001), 50-59.
+[3] Amir Ahmadi, Ryan Belk, Christino Tamon, and Carolyn Wendler, ”On Mixing in
+Continuous-time Quantum Walks on Some Circulant Graphs,” Quantum Information
+and Computation 3 (2003), 611-618.
+[4] Andris Ambainis, Eric Bach, Ashwin Nayak, Ashvin Viswanath, and John Watrous,
+”One-dimensional Quantum Walks,” Proceedings of 33rd ACM Symposium on Theory
+of Computing (2001), 37-49.
+[5] Yakir Aharonov, Luiz Davidovich, and Nicim Zagury, ”Quantum Random Walks,”
+Physical Review Letters 48 (1993), 1687-1690.
+13
+
+[6] Gorjan Alagić and Alexander Russell, ”Decoherence in Quantum Walks on the Hypercube,” quant-ph/0501169.
+[7] Milton Abramowitz and Irene A. Stegun, Handbook of Mathematical Functions,
+Dover (1972).
+[8] Andrew M. Childs, Enrico Deotto, Richard E. Cleve, Edward Farhi, Samuel Gutmann,
+and Daniel A. Spielman, ”Exponential algorithmic speedup by quantum walk,” Proceedings of 35th ACM Symposium on Theory of Computing (2003), 59-68.
+[9] Andrew M. Childs, Edward Farhi, and Samuel Gutmann, ”An example of the difference between quantum and classical random walks,” Quantum Information Processing 1 (2002), 35.
+[10] Andrew M. Childs and Jeffrey Goldstone, ”Spatial search by quantum walk,”
+quant-ph/0306054.
+[11] Edward Farhi and Samuel Gutmann, ”Quantum computation and decision trees,”
+Physical Review A 58 (1998), 915-928.
+[12] Richard P. Feynman, Robert B. Leighton, and Matthew Sands, The Feynman Lectures
+on Physics, volume III, Addison-Wesley (1965).
+[13] Shmuel A. Gurvitz, ”Measurements with a noninvasive detector and dephasing mechanism,” Physical Review B 56 (1997), 15215.
+[14] Shmuel A. Gurvitz, Leonid Fedichkin, Dima Mozyrsky, and Gennady P. Berman,
+”Relaxation and Zeno effect in qubit measurements,” Physical Review Letters 91
+(2003), 066801.
+[15] Heath Gerhardt and John Watrous, ”Continuous-time quantum walks on the symmetric group,” Proceedings of the 7th Workshop on Randomization and Approximation
+Techniques in Computer Science, edited by Sanjeev Arora, Klaus Jansen, José D.P.
+Rolim, and Amit Sahai, Lecture Notes in Computer Science 2764, Springer (2003),
+290-301.
+[16] Roger A. Horn and Charles R. Johnson, Topics in Matrix Analysis, Cambridge University Press (1991).
+[17] Tosio Kato, Perturbation Theory for Linear Operators, Springer-Verlag (1966).
+[18] Viv Kendon, ”Quantum Walks on General Graphs,” quant-ph/0306140.
+[19] Julia Kempe, ”Quantum random walks – an introductory overview,” Contemporary
+Physics 44 (2003), 307-327.
+
+14
+
+[20] Julia Kempe, ”Quantum Random Walks Hit Exponentially Faster,” Proceedings of
+the 7th Workshop on Randomization and Approximation Techniques in Computer Science, edited by Sanjeev Arora, Klaus Jansen, José D.P. Rolim, and Amit Sahai, Lecture Notes in Computer Science 2764, Springer (2003), 354-369.
+[21] Viv Kendon and Ben Tregenna, ”Decoherence can be useful in quantum walks,” Physical Review A 67 (2003), 042315.
+[22] David A. Meyer, ”From quantum cellular automata to quantum lattice gases,” Journal
+of Statistical Physics 85 (1996), 551-574.
+[23] Cristopher Moore and Alexander Russell, ”Quantum Walks on the Hypercube,” Proceedings of the 6th Workshop on Randomization and Approximation Techniques in
+Computer Science, edited by José D.P. Rolim and Salil Vadhan, Lecture Notes in
+Computer Science 2483, Springer (2002), 164-178.
+[24] Michael Nielsen and Isaac Chuang, Quantum Computation and Quantum Information, Cambridge University Press (2000).
+[25] Leonid Fedichkin, Arkady Fedorov, and Vladimir Privman, ”Additivity of Decoherence Measures for Multiqubit Quantum Systems,” Physical Review A 328 (2004), 87.
+[26] Dmitry Solenov and Leonid Fedichkin, ”Continuous-Time Quantum Walks on a Cycle Graph,” quant-ph/0506096.
+
+15
+
+

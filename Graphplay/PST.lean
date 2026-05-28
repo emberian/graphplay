@@ -55,7 +55,9 @@ theorem EquitablePartition.pst_lift
     -- A weighted graph wrapper of `P.quotient` (Hermitian + loopless) is
     -- assumed packaged through the bundle theory; we state the property
     -- directly on the quotient matrix's `exp(-i τ ·)` for brevity.
-    ‖(NNReal.toReal 1 : ℂ)‖ = 1 → -- placeholder hypothesis: PST on quotient
+    -- PST on the quotient matrix at time τ: the Born-rule modulus of the
+    -- `(i,j)` entry of `exp(-i τ · P.quotient)` equals one.
+    ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.quotient)) i j‖ = 1 →
     IsCellUniformPST G P i j τ := by
   intro _hquot
   sorry

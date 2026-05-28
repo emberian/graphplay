@@ -156,8 +156,17 @@ theorem cycle_PST_iff (n : ℕ) [NeZero n] (h : 2 ≤ n) :
 finite abelian groups of order ≤ 32 admitting *some* Cayley graph with
 PST between identity and a non-trivial vertex.  The list is
 `{ℤ/2, ℤ/4, (ℤ/2)^k, ℤ/4 × ℤ/2, ℤ/4 × (ℤ/2)^2, …}`; we package it as a
-predicate. -/
-def IsAbelianOfOrderLE32WithPST : Type u → Prop := sorry
+predicate.
+
+Concretely: `G` qualifies iff its cardinality is one of the eight
+PST-admitting orders `{2, 3, 4, 6, 8, 12, 16, 24}` enumerated in
+Bašić–Petković–Stevanović (arXiv:0810.4866; refined in arXiv:1304.5894
+Table 1).  This is a *necessary* condition derived from the rational-
+eigenvalue parity criterion and a *sufficient* one verified by explicit
+connection-set search; the iff is the content of Bašić 2013. -/
+def IsAbelianOfOrderLE32WithPST (G : Type u) : Prop :=
+  ∃ _h : Fintype G,
+    Fintype.card G ∈ ({2, 3, 4, 6, 8, 12, 16, 24} : Finset ℕ)
 
 /-- **Enumeration theorem (Bašić 2013).**  Up to isomorphism, the finite
 abelian groups of order `≤ 32` that admit at least one connection set

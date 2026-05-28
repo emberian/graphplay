@@ -62,6 +62,7 @@ import Mathlib.CategoryTheory.Category.Basic
 import Mathlib.CategoryTheory.ConcreteCategory.Bundled
 import Mathlib.CategoryTheory.Functor.Basic
 import Mathlib.LinearAlgebra.TensorProduct.Matrix
+import Mathlib.Analysis.Complex.Order
 import Graphplay.QuantumGraph
 import Graphplay.Tower6
 import Graphplay.Dowsing.NonCommutativeCoherent
@@ -71,7 +72,7 @@ universe u v w
 
 namespace Graphplay
 
-open scoped Matrix Kronecker
+open scoped Matrix Kronecker ComplexOrder
 open CategoryTheory
 
 /-! ## 1. The operator-system structure -/
@@ -137,10 +138,10 @@ noncomputable def trivial (n : ℕ) : OperatorSystem n where
 
 /-- The **complete** operator system: all of `M_n(ℂ)`. Classical analogue:
 the complete graph. -/
-def complete (n : ℕ) : OperatorSystem n where
+noncomputable def complete (n : ℕ) : OperatorSystem n where
   carrier := ⊤
   one_mem := Submodule.mem_top
-  star_closed := by intro A _; trivial
+  star_closed := by intro A _; exact Submodule.mem_top
 
 end OperatorSystem
 
@@ -317,7 +318,7 @@ variable {n m k : ℕ} {S : OperatorSystem n} {T : OperatorSystem m}
   {U : OperatorSystem k}
 
 /-- The **identity** UCP map of an operator system. -/
-def id (S : OperatorSystem n) : UCPMap S S where
+noncomputable def id (S : OperatorSystem n) : UCPMap S S where
   toLinearMap := LinearMap.id
   map_mem := by intro A hA; exact hA
   map_one := by simp
@@ -327,7 +328,7 @@ def id (S : OperatorSystem n) : UCPMap S S where
 
 /-- **Composition** of UCP maps. UCP maps compose to UCP maps because
 complete positivity and unitality are preserved by composition. -/
-def comp (g : UCPMap T U) (f : UCPMap S T) : UCPMap S U where
+noncomputable def comp (g : UCPMap T U) (f : UCPMap S T) : UCPMap S U where
   toLinearMap := g.toLinearMap.comp f.toLinearMap
   map_mem := by
     intro A hA
@@ -374,19 +375,20 @@ def Hom (X Y : OpSysCat) : Type :=
   UCPMap X.sys Y.sys
 
 /-- The identity morphism on an `OpSysCat` object. -/
-def id' (X : OpSysCat) : Hom X X := UCPMap.id X.sys
+noncomputable def id' (X : OpSysCat) : Hom X X := UCPMap.id X.sys
 
 /-- Composition of `OpSysCat` morphisms. -/
-def comp' {X Y Z : OpSysCat} (f : Hom X Y) (g : Hom Y Z) : Hom X Z :=
+noncomputable def comp' {X Y Z : OpSysCat} (f : Hom X Y) (g : Hom Y Z) : Hom X Z :=
   UCPMap.comp g f
 
-instance instCategory : Category OpSysCat where
+noncomputable instance instCategory : Category OpSysCat where
   Hom := Hom
   id := id'
   comp := comp'
   id_comp := by
     intro X Y f
-    -- Reduces to `UCPMap.id_comp`.
+    -- Reduces to `UCPMap.id_comp`; the rewrite-through `comp'`/`id'` is a
+    -- definitional unfolding that lies outside this round.
     sorry
   comp_id := by
     intro X Y f
@@ -422,8 +424,8 @@ variable {n : ℕ}
 `*`-subalgebra of `M_n(ℂ)` containing the carrier of `S`. -/
 noncomputable def generatedStarAlgebra (S : OperatorSystem n) :
     StarSubalgebra ℂ (Matrix (Fin n) (Fin n) ℂ) := by
-  -- The carrier of `S` as a set, then `StarSubalgebra.adjoin`.
-  exact StarSubalgebra.adjoin ℂ (S.carrier : Set (Matrix (Fin n) (Fin n) ℂ))
+  -- The carrier of `S` as a set, then `StarAlgebra.adjoin`.
+  exact StarAlgebra.adjoin ℂ (S.carrier : Set (Matrix (Fin n) (Fin n) ℂ))
 
 /-- The operator system embeds in its generated `*`-algebra. -/
 theorem subset_generatedStarAlgebra (S : OperatorSystem n)
@@ -561,7 +563,7 @@ noncomputable def K_n_quantum (n : ℕ) : OperatorSystem n where
     Submodule.span ℂ
       ({(1 : Matrix (Fin n) (Fin n) ℂ)} ∪
         {M | ∃ i j : Fin n, i ≠ j ∧ M = Matrix.single i j (1 : ℂ)})
-  one_mem := Submodule.subset_span (by simp [Set.mem_union]; exact Or.inl rfl)
+  one_mem := Submodule.subset_span (by left; rfl)
   star_closed := by
     intro A hA
     -- `1ᴴ = 1` and `E_{ij}ᴴ = E_{ji}`; both lie in the span.
@@ -608,13 +610,13 @@ theorem UCPMap.stinespring_dilation
       (π : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ]
             Matrix (Fin n × Fin d) (Fin n × Fin d) ℂ),
       -- Isometry condition
-      (Vᴴ * V = (1 : Matrix (Fin m) (Fin m) ℂ)) ∧
+      (V * Matrix.conjTranspose V = (1 : Matrix (Fin m) (Fin m) ℂ)) ∧
       -- Multiplicativity of π on the generated *-algebra
       (∀ A B : Matrix (Fin n) (Fin n) ℂ,
         A ∈ S.generatedStarAlgebra → B ∈ S.generatedStarAlgebra →
         π (A * B) = π A * π B) ∧
       -- Dilation identity
-      (∀ A ∈ S, φ.toLinearMap A = V * π A * Vᴴ) := by
+      (∀ A ∈ S, φ.toLinearMap A = V * π A * Matrix.conjTranspose V) := by
   -- Standard finite-dimensional Stinespring (Paulsen Thm 4.1). The proof
   -- proceeds via the GNS-like construction on `M_n(ℂ) ⊗ ℂ^m` with the
   -- positive semi-definite form `⟨A ⊗ v, B ⊗ w⟩ := ⟨v, φ(A^† B) w⟩`.

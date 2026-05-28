@@ -1,0 +1,1790 @@
+arXiv:0909.0431v1 [quant-ph] 2 Sep 2009
+
+On quantum perfect state transfer in weighted join graphs
+Ricardo Javier Angeles-Canul∗
+
+Rachael M. Norton†
+
+Michael C. Opperman‡
+
+Christopher C. Paribello§
+
+Matthew C. Russell¶
+
+Christino Tamonk
+
+May 29, 2018
+
+Abstract
+We study perfect state transfer on quantum networks represented by weighted
+graphs. Our focus is on graphs constructed from the join and related graph operators. Some specific results we prove include:
+• The join of a weighted two-vertex graph with any regular graph has perfect state
+transfer. This generalizes a result of Casaccino et al. [9] where the regular graph
+is a complete graph or a complete graph with a missing link. In contrast, the
+half-join of a weighted two-vertex graph with any weighted regular graph has no
+perfect state transfer. This implies that adding weights in a complete bipartite
+graph do not help in achieving perfect state transfer.
+• A Hamming graph has perfect state transfer between each pair of its vertices. This
+is obtained using a closure property on weighted Cartesian products of perfect
+state transfer graphs. Moreover, on the hypercube, we show that perfect state
+transfer occurs between uniform superpositions on pairs of arbitrary subcubes.
+This generalizes results of Bernasconi et al. [5] and Moore and Russell [14].
+Our techniques rely heavily on the spectral properties of graphs built using the join and
+Cartesian product operators.
+Keywords: Perfect state transfer, quantum networks, weighted graphs, join.
+
+1
+
+Introduction
+
+Recently, the notion of perfect state transfer in quantum networks modeled by graphs has
+received considerable attention in quantum information [7, 8, 15, 5, 4, 6, 9]. A main goal
+in this line of research is to find and characterize graph structures which exhibit perfect
+∗
+
+Centro de Investigación en Matemáticas, Universidad Autónoma del Estado de Hidalgo, Pachuca, Hidalgo, Mexico. email: richywhitedragon@gmail.com
+†
+Dept. Mathematics, Bowdoin College, Brunswick, Maine, U.S.A. email: rnorton@bowdoin.edu
+‡
+Dept. Mathematics and Computer Science, Clarkson University, Potsdam, New York, U.S.A. email:
+oppermmc@clarkson.edu
+§
+Dept. Mathematics and Computer Science, Clarkson University, Potsdam, New York, U.S.A. email:
+paribecc@clarkson.edu
+¶
+Dept. Mathematics, Taylor University, Upland, Indiana, U.S.A. email: matthew russell@taylor.edu
+k
+Dept. Mathematics and Computer Science, Clarkson University, Potsdam, New York, U.S.A. email:
+tino@clarkson.edu. Corresponding author.
+
+1
+
+state transfer between pairs of vertices in the graph. This is a useful property of quantum
+networks since it facilitates information transfer between locations.
+We may conveniently view the perfect state transfer problem in the context of quantum
+walks on graphs [10, 12]. In this setting, the initial state of the quantum system is described
+by a unit vector on some initial vertex a. To achieve perfect transfer to a target vertex b
+at time t, the quantum walk amplitude of the system at time t on vertex b must be of unit
+magnitude. In other words, we require that |hb|e−itAG |ai| = 1, where AG is the adjacency
+matrix of the underlying graph G that describes the quantum network.
+Christandl et al. [7] observed that the Cartesian products of paths of length three (twolink hypercubes) admit perfect state transfer between antipodal vertices. They also noted
+that paths of length four or larger do not possess perfect state transfer unless their edges are
+weighted in a specific manner (see [8]). In fact, this weighting scheme corresponds closely to
+the hypercube structure. This crucially shows that edge weights can be useful in achieving
+perfect state transfer on graphs which are known not to possess the property.
+It is known that complete graphs do not have perfect state transfer. But surprisingly,
+Casaccino et al. [9] observed that adding weighted self-loops on two vertices in a complete
+graph helps create perfect state transfer between the two vertices. We generalize their
+observation by considering the join of a weighted two-vertex graph with an arbitrary regular
+graph. We prove that adding weights also helps for perfect state transfer in this more general
+case. On the other hand, we show that the half-join between a weighted two-vertex graph
+with a weighted self-join of an arbitrary regular graph, where each vertex of the two-vertex
+graph is connected to exactly half of the join graph, has no perfect state transfer for any
+set of weights. This implies that weights provably do not help in achieving perfect state
+transfer in a complete bipartite graphs. The full connection that is available in the standard
+join seems crucial in achieving perfect state transfer.
+Bernasconi et al. [5] gave a complete characterization of perfect state transfer on the
+hypercubes. They proved that perfect state transfer is possible at time t = π/2 between any
+pair of vertices. We will refer to this stronger property as universal perfect state transfer.
+Previously known results on perfect state transfer on other graphs, such as integral circulants
+[6] and two-link hypercubes [7], only allow perfect state transfer between antipodal vertices
+(which are vertices at maximum distance from each other). Recent results on integral
+circulants and other graphs (see [2]) have exhibited perfect state transfer between nonantipodal vertices, but most of these graphs still lack the universal perfect state transfer
+property.
+We show that weights are useful for universal perfect state transfer in the family of Hamming graphs, which is a generalization of the hypercube family. We prove this result by
+extending the observation of Christandl et al. [7] to perfect state transfer on weighted Cartesian products. For a weighted n-cube, we prove a stronger universal perfect state transfer
+property. We show that perfect state transfer occurs between uniform superpositions over
+two arbitrary subcubes of the n-cube. This generalizes the results of both Bernasconi et
+al. [5] mentioned above and also of Moore and Russell [14] on the uniform mixing of a
+quantum walk on the n-cube. We note that Bernasconi et al. [5] proved universal perfect
+state transfer on the n-cube by dynamically changing the underlying hypercubic structure
+of the graph. In contrast, our scheme is based on static weights which can be interpreted
+dynamically with time.
+2
+
+Note that if we allow zero edge weights then universal perfect state transfer becomes
+trivial. Assuming that the two source and target vertices are connected, find a path connecting them, assign the hypercubic weights to the edges on this path (as in Christandl et
+al. [7]) and zero weights to the other edges. This shows that universal perfect state transfer
+can be achieved if zero edge weights are allowed.
+Our work exploits the machinery developed in [2] and their extensions to weighted
+graphs. These include the join theorem for regular graphs and the closure property for
+Cartesian product of perfect state transfer graphs.
+
+2
+
+Preliminaries
+
+For a logical statement S, the Iversonian notation [[S]] is 1 if S is true and 0 otherwise (see
+Graham, Knuth and Patashnik [11]). As is standard, we use In and Jn to denote the n × n
+identity and all-one matrices, respectively; we drop the subscript n whenever the context is
+clear.
+The graphs G = (V, E) we study are finite, mostly simple, undirected, and connected.
+The adjacency matrix AG of a graph G is defined as AG [u, v] = [[(u, v) ∈ E]]. A graph
+G is called k-regular if each vertex has k adjacent neighbors. That is, the neighbor set
+{v ∈ V : (u, v) ∈ E} of u has cardinality k for each vertex u ∈ V . In most cases, we
+also require G to be vertex-transitive, that is, for any a, b ∈ V , there is an automorphism
+π ∈ Aut(G) with π(a) = b.
+e = (V, E, w), where w : E → R is
+In this paper, we also consider edge-weighted graphs G
+a function that assigns weights to edges. In the simplest case, we take an unweighted graph
+G = (V, E) and add self-loops with weight α to all vertices and assign a weight of β to all
+e β). Note that the adjacency matrix of G
+e is given by
+edges; we denote such a graph by G(α,
+αI + βAG . Unless otherwise stated, most of our weighted graphs will be of this form.
+We denote the complete graph on n vertices by Kn . The Cartesian product G ⊕ H
+of graphs G and H is a graph whose adjacency matrix is I ⊗ AH + AG ⊗ I (see Lovász
+[13], page 617). The binary n-dimensional hypercube Qn may be defined recursively as
+Qn = K2 ⊕ Qn−1 , for n ≥ 2, and Q1 = K2 . Similarly, the Hamming graph H(q, n) is
+defined as Kq⊕n ; this may be viewed as a q-ary n-dimensional hypercube.
+The join G + H of graphs G and H is defined as G + H = G ∪ H; that is, we take a
+copy of G and a copy of H and connect all vertices of G with all vertices of H (see [16]).
+We will also consider the weighted join G +ρ H where we assign a weight of ρ to the edges
+that connect G and H; more specifically, the adjacency matrix of G +ρ H is given by
+
+
+AG ρJ
+,
+(1)
+ρJ AH
+with the appropriate dimensions on the two all-one J matrices. A cone on a graph G is
+the graph K1 + G. Similarly, a connected double cone on a graph G is the graph K2 + G;
+similarly, a disconnected double cone is the graph K 2 + G. When G is the empty graph, the
+connected double-cone is simply the complete graph whereas the disconnected double-cone
+is the complete graph with a missing edge (see [4, 9]). On the other hand, a connected (or
+disconnected) double half-cone on a graph G is formed by taking K2 (or K 2 ) and G + G and
+3
+
+..
+...........................................................
+....... ....... ..............
+..........✈
+✈
+✟✟
+........ ❅❍
+
+µ ........ ........✈
+❍
+
+..
+....... ......
+........
+
+..
+✈.....
+µ ....... ..........❍
+
+η
+
+η
+
+❍
+❍❍
+❍✈
+✟
+✟
+✟
+.............. ✟
+✟
+µ ..... .....✈
+
+✟
+❅❍❍✟✟
+❍
+❅✟ ❍
+❍❍
+.......
+✟✟❅
+.... ........✈
+.
+✟
+❍.✈
+❅✈
+µ ... ......
+.......
+...........
+
+..............
+
+..............
+
+.
+................
+...................................................
+
+Figure 1: Weighted joins: (a) K2 + K1 (b) K2 + C4 . Perfect state transfer occurs between
+the weighted self-loop vertices. Without the self-loops and weights, there is no perfect state
+transfer (see [9]).
+
+connecting each vertex of the two-vertex graph to exactly one copy of G in the join G + G.
+When G is the empty graph, the double half-cone simply yields a complete bipartite graph.
+For more background on algebraic graph theory, we refer the reader to the monograph by
+Biggs [3].
+For a graph G = (V, E), let |ψ(t)i ∈ C|V | be a time-dependent amplitude vector over V .
+The continuous-time quantum walk on G is defined using Schrödinger’s equation as
+|ψ(t)i = e−itAG |ψ(0)i,
+
+(2)
+
+where |ψ(0)i is the initial amplitude vector (see [10]). Further background on quantum
+walks on graphs can be found in the survey by Kendon [12]. We say G has perfect state
+transfer (PST) from vertex a to vertex b at time t⋆ if
+⋆
+
+|hb|e−it AG |ai| = 1,
+
+(3)
+
+where |ai, |bi denote the unit vectors corresponding to the vertices a and b, respectively.
+The graph G has perfect state transfer if there exist distinct vertices a and b in G and a
+time t⋆ ∈ R+ so that (3) is true. We say that G has universal perfect state transfer if (3)
+occurs between all distinct pairs of vertices a and b of G.
+
+2.1
+
+Example: Triangle
+
+We begin by describing an explicit example of the role of weights for perfect state transfer
+in a triangle, or K3 , which is the complete graph on three vertices. The eigenvalues of K3
+are 2 (simple) and −1 (with multiplicity two) with eigenvectors |Fk i, where |Fk i are the
+√
+columns of the Fourier matrix, with hj|Fk i = ω3jk / 3, for j, k ∈ {0, 1, 2} (see Biggs [3]).
+The quantum walk on K3 yields
+( 2
+)
+X
+2
+(4)
+h1|e−itK3 |0i = h1|
+e−itλk |Fk ihFk | |0i = − ie−it/2 sin(3t/2).
+3
+k=0
+
+So, it is clear that there is no perfect state transfer on K3 (see [1, 9]). Now, consider
+adding self-loops on vertices 0 and 1 with weight µ and putting a weight of η on the edge
+4
+
+e 3 is
+connecting 0 and 1. The adjacency matrix of this weighted K
+
+
+µ η 1
+e
+
+K3 = η µ 1
+1 1 0
+
+(5)
+
+e 3 is given by the eigenvalues λ0 = µ−η and λ± = 2α± , where α± = 1 (δ±∆),
+The spectra of K
+4
+√
+δ = µ + η and ∆ = δ2 + 8, with corresponding orthonormal eigenvectors
+ 
+ 
+α±
+1
+1  
+1
+
+α± 
+|v0 i = √ −1 , |v± i = q
+(6)
+2
+2 0
+2α + 1 1
+±
+
+The perfect state transfer equation between the two vertices with weighted self-loops are
+given by
+ 
+
+
+
+ 
+1 −itδ itδ/2
+∆
+δ
+∆
+e3
+e2
+−itK
+−itK
+h1|e
+|0i = h1|e
+|0i + e
+t − i sin
+t − 1 , (7)
+e
+cos
+2
+2
+∆
+2
+e 2 is K
+e 2 (µ, η). Recall that the perfect state transfer h1|e−itK2 |0i on the (unweighted)
+where K
+e 2 has perfect state transfer at time t⋆ =
+K2 is given by −i sin(t). Thus, the weighted K
+(2Z + 1)π/2η, since the self-loop weight µ disappears into an irrelevant phase factor and the
+e 3 , it
+edge weight η translates into a time-scaling. So, to achieve perfect state transfer on K
+suffices to have
+
+
+
+
+∆
+δ
+π cos
+π = 1.
+(8)
+cos
+4η
+4η
+Equivalently, we require that:
+.
+
+1. A = δ/4η be an integer;
+.
+
+2. B = ∆/4η be an integer; and
+3. A ≡ B (mod 2) or that A and B have the same parity.
+From the first two conditions, we require that δ/∆ be a rational number p/q < 1 with
+gcd(p, q) = 1. Restating this last condition on p and q and simplifying, we get that
+r
+r
+8
+8
+δ = p
+,
+∆ = q
+.
+(9)
+q 2 − p2
+q 2 − p2
+So, we may choose
+
+r
+1
+8
+η =
+(10)
+2
+4 q − p2
+so that both δ/4η and ∆/4η are integers. Therefore, we choose odd integers p and q
+satisfying gcd(p, q) = 1; this will satisfy all three conditions stated above. This shows that
+there are infinitely many weights µ and η (via infinitely choices of odd integers p and q)
+e 3 . We generalize this example in our join theorem
+which allow perfect state transfer on K
+for arbitrary regular weighted graphs.
+This example complements a result of Casaccino et al. [9] which showed the power of
+weighted self-loops on complete graphs. Our analysis above shows that perfect state transfer
+is achieved through edge weights instead.
+5
+
+3
+
+Join of weighted regular graphs
+
+In this section, we prove that the existence of perfect state transfer in a join of two arbitrary
+regular weighted graphs can be reduced to perfect state transfer in one of the graphs. In
+fact, since we add weights to our graphs in a particular way, this is a reduction onto the
+unweighted version of one of the graphs. This allows us to analyze the double-cone on any
+regular graph; that is, the join of K2 with an arbitrary regular graph. The next theorem is
+a generalization of a similar join theorem given in [2].
+ej (µj , ηj ) be a kj -regular graph on nj vertices, where each
+Theorem 1 For j ∈ {1, 2}, let G
+vertex has a self-loop with weight µj and each edge has weight ηj . Also, for j ∈ {1, 2}, let
+κj = µj + ηj kj .
+
+(11)
+
+e1 . Let G = G
+e1 (µ1 , η1 ) + G
+e2 (µ2 , η2 ) be the join of
+Suppose that a and b are two vertices in G
+the weighted graphs. Then,
+
+ 
+ 
+
+
+ 
+δ
+∆t
+∆t
+e−itκ1
+−itAG
+itδ/2
+−itAG
+e
+1 |ai +
+e
+−i
+sin
+−1
+(12)
+cos
+|ai = hb|e
+hb|e
+n1
+2
+∆
+2
+√
+where δ = κ1 − κ2 and ∆ = δ2 + 4n1 n2 .
+ej , for j ∈ {1, 2}; that is, Gj =
+Proof Let Gj be the simple and unweighted version of G
+ej (0, 1). Whenever it is clear from context, we denote G
+ej (µj , ηj ) as simply G
+ej .
+G
+If λk and |uk i are the eigenvalues and eigenvectors of AG1 , for k = 0, . . . , n1 − 1, then
+(n −1
+)
+1
+X
+−itAG1
+−itλk
+|ai = hb|
+hb|e
+|ai.
+(13)
+|uk ihuk |e
+k=0
+
+Here, we assume |u0 i is the all-one eigenvector (that is orthogonal to the other eigenvectors) with eigenvalue λ0 = k1 . By the same token, let θℓ and |vℓ i be the eigenvalues and
+eigenvectors of AG2 , for ℓ = 0, . . . , n2 − 1. Also, let |v0 i be the all-one eigenvector (with
+eigenvalue θ0 = k2 ) which is orthogonal to the other eigenvectors |vℓ i, ℓ 6= 0.
+e1 + G
+e2 . Note that the adjacency matrix of G is
+Let G = G
+
+
+µ1 I + η1 AG1
+Jn1 ×n2
+.
+(14)
+AG =
+Jn2 ×n1
+µ2 I + η2 AG2
+Let δ = κ1 − κ2 , where κj = µj + ηj kj , for j ∈ {1, 2}. The eigenvalues and eigenvectors of
+AG are given by the following three sets:
+• For k = 1, . . . , n1 − 1, let |uk , 0n2 i be a column vector formed by concatenating the
+column vector |uk i with the zero vector of length n2 . Then, |uk , 0n2 i is an eigenvector
+ek = µ1 + η1 λk . Note that λ
+e0 = κ1 .
+with eigenvalue λ
+• For ℓ = 1, . . . , n2 − 1, let |0n1 , vℓ i be a column vector formed by concatenating the
+zero vector of length n1 with the column vector |vℓ i. Then, |0n1 , vℓ i is an eigenvector
+with eigenvalue θeℓ = µ2 + η2 θℓ .
+6
+
+• Let |±i = √1 |α± , 1n2 i be a column vector formed by concatenating the vector
+L±
+
+α± |1n1 i with the vector |1n2 i, where |1n1 i, |1n2 i denote the all-one vectors of length
+n1 , n2 , respectively. Then, |±i is an eigenvector with eigenvalue e
+λ± = n1 α± + κ2 .
+Here, we have
+α± =
+
+1
+(δ ± ∆),
+2n1
+
+∆2 = δ2 + 4n1 n2 ,
+
+L± = n1 (α± )2 + n2 ,
+
+(15)
+
+e1 and G
+e1 + G
+e2 ; their
+In what follows, we will abuse notation by using |ai, |bi for both G
+dimensions differ in both cases, although it will be clear from context which version is used.
+The quantum wave amplitude from a to b is given by
+)
+(n −1
+1
+X
+X α±
+√ |±i
+huk , 0n2 |ai|uk , 0n2 i +
+(16)
+hb|e−itAG |ai = hb|e−itAG
+L±
+±
+k=1
+(n −1
+)
+1
+X
+X α±
+e
+e
+√ e−itλ± |±i
+= hb|
+huk |aie−itλk |uk , 0n2 i +
+(17)
+L±
+±
+k=1
+
+=
+
+nX
+1 −1
+k=1
+
+e
+
+hb|uk ihuk |aie−itλk +
+
+X α2±
+
+e
+
+e−itλ± .
+
+(18)
+
+e−itκ1 X α2± −itλe±
++
+e
+n1
+L
+±
+±
+
+(19)
+
+L±
+±
+
+This shows that
+−itAG
+
+hb|e
+
+|ai = hb|
+
+(n −1
+1
+X
+k=0
+
+−itAG
+e
+
+= hb|e
+
+ek
+−itλ
+
+|uk ihuk |e
+
+1
+
+|ai +
+
+X α2±
+±
+
+L±
+
+)
+
+|ai −
+e
+
+e−itλ± −
+
+e−itκ1
+.
+n1
+
+(20)
+
+To analyze the second term next, we use the following identities whose correctness follows
+easily from the definitions of α± , L± , δ and ∆:
+α+ α− = −(n2 /n1 )
+
+α+ + α− = δ/n1
+
+L+ L− = (n2 /n1 )∆
+
+(21)
+(22)
+2
+
+2
+
+L+ + L− = ∆ /n1
+2
+
+(α± ) L∓ = (n2 /n1 )L±
+e± = (δ̂ ± ∆)/2
+λ
+
+where δ̂ = κ1 + κ2 . Therefore, the summand in (20) is given by
+
+ 
+ 
+ 
+X α2±
+1 −itδ̂/2
+∆t
+δ
+∆t
+e
+e−itλ± =
+e
+cos
+−i
+sin
+.
+L
+n
+2
+∆
+2
+±
+1
+±
+
+(23)
+(24)
+(25)
+(26)
+
+(27)
+
+This yields
+−itAG
+
+hb|e
+
+e−itκ1
+1 |ai +
+n1
+
+−itAG
+e
+
+|ai = hb|e
+
+
+ 
+ 
+
+
+ 
+δ
+∆t
+∆t
+itδ/2
+e
+−i
+sin
+−1
+cos
+2
+∆
+2
+7
+
+(28)
+
+which proves the claim.
+e 2 + G, for
+We describe several applications of Theorem 1 to the weighted double-cone K
+b
+any regular graph G. For notational simplicity, let K2 denote K2 if b = 1 and K 2 if b = 0.
+Remark: The next corollary complements the observation made by Casaccino et al. [9] on
+K2 + Km where each vertex of K2 has a weighted self-loop. They show that perfect state
+transfer occurs in this weighted graph in contrast to the unweighted version.
+Corollary 2 For any k-regular graph G on n vertices and any b ∈ {0, 1}, there exist weights
+e b (µ, η) + G has perfect state transfer between the two
+µ, η ∈ R+ so that the double-cone K
+2
+b
+e .
+vertices of K
+2
+
+e 1), where G(0,
+e 1) is simply the
+e b (µ, η) + G(0,
+Proof Consider the weighted double-cone K
+2
+b
+e (µ, η) has perfect state transfer for bηt⋆ = (2Z +
+unweighted graph G. We know that K
+2
+1)π/2. Note that when b = 0, the perfect state transfer time is ∞ or non-existent. Let
+δ = (µ + bη) − k and ∆2 = δ2 + 8n. By Theorem 1, it suffices to have
+
+
+
+
+
+
+
+
+∆
+∆ ⋆
+δ
+δ ⋆
+t cos
+t = cos
+π cos
+π = (−1)1−b .
+(29)
+cos
+2
+2
+4η
+4η
+So, we require that:
+.
+
+1. A = δ/4η be an integer;
+.
+
+2. B = ∆/4η be an integer; and
+3. [[A ≡ B (mod 2)]] = b; or that A and B have the same parity if and only if b = 1.
+From the first two conditions, we require that δ/∆ be a rational number p/q < 1 with
+gcd(p, q) = 1. Restating this last condition on p and q and simplifying, we get that
+r
+r
+8n
+8n
+δ = p
+,
+∆ = q
+.
+(30)
+q 2 − p2
+q 2 − p2
+So, we may choose
+1
+η =
+4
+
+r
+
+8n
+q 2 − p2
+
+(31)
+
+so that both δ/4η and ∆/4η are integers. Therefore, we choose integers p and q satisfying
+gcd(p, q) = 1 and [[p ≡ q (mod 2)]] = b; this will satisfy all three conditions stated above.
+Finally, we may choose µ = bη − k − δ to complete the weight parameters.
+
+3.1
+
+Double half-cones
+
+In this section, we consider graphs obtained by taking a half-join between K2 and G + G,
+for some arbitrary k-regular graph G, where each vertex of K2 is connected to only one
+copy of G in the join G + G. When G = K n , this half-join is obtained by selecting two
+8
+
+..
+....... .......
+........ ❅❍P
+
+µ ....... ........✈
+PP
+❍
+
+✈
+✈
+✏✈
+❍❍ ✟✟❅ ✏✏
+✟✟
+❅
+✟
+✏
+✟
+P
+❍❍✏ ✟
+❍❍P✟
+❅✏
+❅
+P
+✟
+✟
+P✏
+η ❅ ✟
+❍❍ ❅
+❍
+✏
+✟P
+✏
+❅P
+❅
+❍✟
+✟
+✏
+P
+❍P
+✏
+P
+............... ✟
+✟❍❍
+❍
+❅
+❅
+❍
+✟
+❅
+❅
+✟
+❅✈
+✏✏ ❅
+❍✈
+P✈
+µ ... ...✈
+... ...
+...........
+
+Figure 2: Weighted half-join between K2 and K3,3 . This is equivalent to adding weights to
+a connected pair of vertices in the complete bipartite graph K4,4 . There is no perfect state
+transfer between the two vertices with weighted self-loops.
+
+adjacent vertices in the complete bipartite graph Kn+1,n+1 . In contrast to complete graphs,
+we show that weights are not helpful in complete bipartite graphs for achieving perfect state
+transfer. In fact, we prove a stronger result where perfect state transfer still does not exist
+even if weights are added to some of the other sets of edges.
+Theorem 3 Let G be a k-regular graph on n vertices. Let G(µ, η; κ, τ, ρ; ε) be a graph
+e 2 (µ, η) and G(κ,
+e τ ) +ρ G(κ,
+e τ ) by connecting each vertex of K
+e 2 (µ, η) to
+obtained from K
+e τ ) in the weighted join G(κ,
+e τ ) +ρ G(κ,
+e τ ) and assigning a weight
+exactly one copy of G(κ,
+to ε to each of these connecting edges. Then, there are no non-zero real-valued weights µ,
+η, κ, τ , ρ or ε for which G(µ, η; κ, τ, ρ; ε) has perfect state transfer between the two vertices
+e 2 (µ, η).
+of K
+Remark: Note that if ε = 0, then we have perfect state transfer in G trivially.
+Proof The adjacency matrix of G is given by
+
+
+0Tn
+µ
+η
+ε1Tn
+
+ η
+ε1Tn
+µ
+0Tn
+
+AG = 
+
+ε1n 0n κIn + τ AG
+ρJn
+0n ε1n
+ρJn
+κIn + τ AG
+
+(32)
+
+where 0n and 1n denote the all-zero and all-one column vectors of dimension n, respectively.
+Suppose that AG |uj i = λj |uj i are the eigenvalues and eigenvectors of G, for 0 ≤ j ≤ n − 1,
+with |u0 i being the all-one eigenvector with λ0 = k. Then, the spectra of AG is given by
+the following sets:
+1. The eigenvectors |0, 0, 0n , uj i and |0, 0, uj , 0n i both share the eigenvalues κ + τ λj , for
+1 ≤ j ≤ n − 1.
+2. Let
+
+1
+α± = (δα ± ∆α ),
+2
+
+9
+
+(33)
+
+where δα = (µ + η) − (κ + τ k + ρn) and ∆2α = δα2 + 4ε2 n. Then, the two eigenvectors
+T
+1 
+|α± i = p α α± α± 1n 1n
+L±
+
+(34)
+
+have λ± = α± + (κ + τ k + ρn) as eigenvalues. Here Lα± = 2(α± )2 + 2n is the
+normalization constant.
+3. Let
+
+1
+(35)
+β± = (δβ ± ∆β ),
+2
+where δβ = (µ − η) − (κ + τ k − ρn) and ∆2β = δβ2 + 4ε2 n. Then, the two eigenvectors
+
+1 
+|β± i = q
+β± −β± 1n −1n
+Lβ±
+
+(36)
+
+have θ± = β± +(κ+τ k−ρn) as eigenvalues. Here Lβ± = 2(β± )2 +2n is the normalization
+constant.
+The following identities can be verified easily: for ξ ∈ {α, β}, we have
+Lξ+ Lξ− = 4n∆2ξ /ε2
+ξ+ ξ− = −n
+
+2 ξ
+ξ±
+L∓
+
+=
+
+nLξ±
+
+Using these, the quantum walk on G starting at a and ending at b is given by:
+) (
+(
+)
+2
+2
+X
+X
+−itθ± β±
+−itλ± α±
+−itAG
+e
+−
+e
+hb|e
+|ai =
+Lα±
+Lβ±
+±
+±
+
+(37)
+(38)
+(39)
+
+(40)
+
+After simplifications, we obtain
+−itAG
+
+hb|e
+
+|ai =
+−
+
+
+
+
+ 
+e−i(κ+τ k)t −i(ρn)t −iδα t/2
+∆α
+∆α
+δα
+e
+e
+t −i
+sin
+t
+cos
+2
+2
+∆α
+2
+
+
+
+
+
+∆β
+δβ
+∆β
+e−i(κ+τ k)t i(ρn)t −iδβ t/2
+e
+e
+t −i
+sin
+t
+cos
+2
+2
+∆β
+2
+
+(41)
+(42)
+
+Ignoring the irrelevant phase factor e−i(κ+τ k)t and noting that the damping factor δ/∆
+forces the sine term to vanish, we get
+
+
+
+
+
+
+
+
+δβ
+∆β
+e−i(ρn)t
+δα
+∆α
+ei(ρn)t
+−itAG
+|ai =
+hb|e
+cos
+t cos
+t −
+cos
+t cos
+t (43)
+2
+2
+2
+2
+2
+2
+⋆
+
+We choose t⋆ so that e−i(ρn)t = 1, which implies that t⋆ = 2Zπ/ρn. This simplifies the
+above expression to
+
+
+
+
+
+
+
+
+δβ ⋆
+∆β ⋆
+δα ⋆
+∆α ⋆
+1
+1
+−it⋆ AG
+cos
+t cos
+t − cos
+t cos
+t
+(44)
+hb|e
+|ai =
+2
+2
+2
+2
+2
+2
+10
+
+For simplicity, define
+Zα
+Zβ
+
+
+
+
+
+
+
+
+∆α
+δα ⋆
+∆α ⋆
+δα
+t cos
+t = cos
+π cos
+π
+= cos
+2
+2
+ρn
+ρn
+
+
+
+
+
+
+
+
+δβ ⋆
+∆β
+∆β ⋆
+δβ
+= cos
+t cos
+t = cos
+π cos
+π
+2
+2
+ρn
+ρn
+
+
+(45)
+(46)
+
+Let
+
+δβ
+δα
+e α = ∆α ,
+e β = ∆β .
+,
+Q
+Peβ =
+,
+Q
+(47)
+Peα =
+ρn
+ρn
+ρn
+ρn
+To achieve perfect state transfer, we require that Zα Zβ = −1. For example, if we require Zα = −1 and Zβ = 1, then it suffices to impose the following integrality and parity
+conditions:
+eα ∈ Z,
+Peα , Q
+eβ ∈ Z,
+Peβ , Q
+
+eα (mod 2)
+Peα 6≡ Q
+e β (mod 2).
+Peβ ≡ Q
+
+(48)
+(49)
+
+We will show that there is no ρ which can satisfy all the above conditions.
+Suppose that, for ξ ∈ {α, β}, we have
+pξ
+δξ
+=
+∈ Q,
+∆ξ
+qξ
+
+(50)
+
+where pξ and qξ are integers with gcd(pξ , qξ ) = 1; moreover, since ∆2ξ = δξ2 + 4ε2 n, we get
+s
+s
+4ε2 n
+4ε2 n
+,
+∆ξ = q ξ
+.
+(51)
+δξ = pξ
+2
+2
+2
+q ξ − pξ
+qξ − p2ξ
+e ξ , for ξ ∈ {α, β}. Letting Λ = 2ε/ρ√n, we have
+Consider Peξ and Q
+
+e ξ = qξ q Λ
+Q
+.
+qξ2 − p2ξ
+
+Λ
+,
+Peξ = pξ q
+qξ2 − p2ξ
+
+(52)
+
+e 2α (mod 2) is equivalent to Peα 6≡ Q
+eα (mod 2).
+Since Peα ≡ Peα2 (mod 2), we know Peα2 6≡ Q
+2
+2
+e
+e
+e
+e
+Likewise, Pβ ≡ Qβ (mod 2) is equivalent to Pβ ≡ Qβ (mod 2). This changes (52) to
+2
+
+2
+
+e2 = q2 Λ
+Q
+.
+ξ
+ξ 2
+qξ − p2ξ
+
+Λ
+,
+Peξ2 = p2ξ 2
+qξ − p2ξ
+
+(53)
+
+e ξ must be integers, then (q 2 − p2 ) | q 2 Λ2 and (q 2 − p2 ) | p2 Λ2 .
+Since we require that Peξ and Q
+ξ
+ξ
+ξ
+ξ
+ξ
+ξ
+However, gcd(pξ , qξ ) = 1 implies that gcd(p2ξ , qξ2 ) = 1. This gives us (qξ2 − p2ξ ) | Λ2 .
+Suppose now that p2β ≡ qβ2 (mod 2). Then qβ2 − p2β is even. This forces Λ2 to be even.
+e 2 (mod 2)
+Similarly, suppose p2 6≡ q 2 (mod 2). Then q 2 −p2 is odd. However, since Pe2 ≡ Q
+β
+
+β
+
+β
+
+and one of p2β ,qβ2 is odd, then Λ2 must be even.
+
+β
+
+β
+
+β
+
+e2 (mod 2).
+In both cases, Λ2 is even. Allowing p2α ≡ qα2 (mod 2) guarantees Peα2 ≡ Q
+α
+2
+2
+2
+2
+2
+e2 (mod 2).
+e
+Letting pα 6≡ qα (mod 2) gives us qα − pα to be odd. This again forces Pα ≡ Q
+α
+e2α (mod 2).
+Both instances contradict our given requirement that Peα2 6≡ Q
+11
+
+eα ,
+The case when we require that Zα = 1 and Zβ = −1, that is, where Peα is even and Q
+e
+e
+Pβ , Qβ are odd, may be treated similarly.
+
+Corollary 4 For any n ≥ 2, consider the complete bipartite graph Kn,n . Let a and b be
+two arbitrary adjacent vertices in Kn,n . Then, there are no self-loop weights µ on a and b
+and edge weight η on the edge (a, b) for which there is perfect state transfer from vertex a
+to vertex b in this weighted version of Kn,n .
+
+Proof We apply Theorem 3 with G = K n−1 set to the empty graph on n − 1 vertices, that
+is AG is the all-zero matrix and hence k = 0. Also, we set ε = 1, κ = 0 and τ is an arbitrary
+value. In the proof of Theorem 3, setting κ = 0 does not affect perfect state transfer since
+the term κ + kτ may be ignored due to its contribution as a global phase factor. Setting
+ε = 1 does not affect perfect state transfer since it is “factored out” through Λ. Thus, these
+specific setting of values do not affect the conclusions of Theorem 3.
+
+4
+
+Hamming graphs
+
+We show that the class of weighted Hamming graphs exhibit perfect state transfer between
+any two of its vertices. First, we prove the following closure result on Cartesian product of
+graphs. This is an adaptation of a similar theorem for the unweighted case (see [2]).
+Theorem 5 For j = 1, . . . , m, the graph Gj has perfect state transfer from aj to bj at
+L
+e
+time tj if and only if G = m
+j=1 Gj (µj , ηj ) has perfect state transfer from (a1 , . . . , am ) to
+⋆
+(b1 , . . . , bm ) at time t , whenever t⋆ = tj /ηj . This holds independently of the choice of the
+self-loop weights µj .
+Proof We prove the claim for m = 2. Suppose that the unweighted graph Gj has perfect
+e1 (µ1 , η1 ) ⊕
+state transfer from aj to bj at time t⋆j . Consider the quantum walk on the G
+e2 (µ2 , η2 ). For shorthand, we denote each graph simply as G
+ej :
+G
+−itAG
+e
+e ⊕G
+
+hb1 , b2 |e
+
+2
+
+1
+
+−it(I⊗AG
+e ) −it(AG
+e ⊗I)
+
+|a1 , a2 i = hb1 |hb2 |e
+
+2
+
+= hb1 |hb2 |(I ⊗ e
+−itAG
+e
+
+= hb1 |e
+
+e
+
+1
+
+−itAG
+e
+
+1
+
+−itAG
+e
+
+)(e
+
+2
+
+1
+
+−itAG
+e
+
+|a1 ihb2 |e
+
+2
+
+|a1 i|a2 i
+
+⊗ I)|a1 i|a2 i
+
+|a2 i.
+
+(54)
+
+(55)
+(56)
+
+Since A e
+G(µ,η) = µI + ηAG , we have
+hb|e−itAGe |ai = e−iµt hb|e−iηtAG |ai.
+
+(57)
+
+Therefore, the quantum walk on the weighted Cartesian product yields
+−itAG
+e ⊕G
+e
+
+hb1 , b2 |e
+
+1
+
+2
+
+|a1 , a2 i = e−i(µ1 +µ2 )t hb1 |e−iη1 tAG1 |a1 ihb2 |e−iη2 tAG2 |a2 i.
+
+(58)
+
+e1 ⊕ G
+e2 has perfect state transfer from (a1 , a2 ) to (b1 , b2 ) at time t if
+This shows that G
+and only if G1 has perfect state transfer from a1 to b1 at time η1 t and G2 has perfect
+state transfer from a2 to b2 at time η2 t. So, if the weights ηj satisfy ηj t⋆ = tj , for all j,
+e1 ⊕ G
+e2 has perfect state transfer at time t⋆ . The general claim follows by induction.
+then G
+12
+
+✈
+❅
+❅
+❅✈
+
+✈
+✈
+
+............................................
+..................
+............
+.....✈
+✈..........
+..✈
+......
+...
+...
+...
+...
+...
+...
+...
+.
+...
+...
+...
+...
+...
+...
+...
+...
+...
+... ............................................................
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+........✈ ....
+✈.. ...
+✈ ....
+.....
+.
+.
+..
+..
+..
+..
+..
+....
+.....
+....
+.
+.
+..
+..
+..
+...
+...
+... ...............................................................
+.
+.
+.
+.
+.
+............ ..
+.
+...........
+.✈
+...✈
+.....✈
+
+✈
+✈
+
+✈
+❅
+❅
+❅✈
+
+Figure 3: Hamming graphs: (a) H(2, 3) (b) H(3, 2). Perfect state transfer occurs between
+any pair of vertices with the help of weighted self-loops and edges.
+
+Theorem 6 The class e
+H(q, n) of weighted Hamming graphs has universal perfect state
+transfer at an arbitrarily chosen time.
+
+Proof Recall that H(q, n) = Kq⊕n . Let a = (a1 , . . . , an ) and b = (b1 , . . . , bn ) be two vertices
+e n). By Corollary 2, we know that K
+e q has perfect state transfer between any two
+of H(q,
+of its vertices for a suitable choice of weights. For each dimension j ∈ {1, . . . , n}, fix a
+e q(j) has perfect state transfer from aj to bj . Then, by Theorem 5,
+set of weights so that K
+Ln e (j)
+j=1 Kq has perfect state transfer from a to b.
+
+4.1
+
+Hypercubes
+
+In this section, we show that a weighted hypercube has universal perfect state transfer
+property. In fact, we prove a stronger statement as given in the next theorem. But first,
+we need to define a particular notion of uniform superposition over the n-cube.
+Fact 7 (Moore-Russell [14], Bernasconi et al. [5])
+The following facts are known about a quantum walk on the hypercube Qn at times t ∈
+{π/4, π/2}:
+√
+
+(−i)|a⊕b| / 2n if t = π/4
+−itQn
+(59)
+|ai =
+hb|e
+[[a ⊕ b = 1n ]]
+if t = π/2
+We say that a superposition |̺n i over Qn is in normal form if
+X
+1
+|̺n i = √
+(−i)|a| |ai.
+2n a∈{0,1}n
+
+(60)
+
+Note that |̺n i is the uniform superposition of a quantum walk on Qn from 0n at time π/4;
+that is, |̺n i = exp(−i(π/4)Qn )|0n i.
+Theorem 8 For any n ≥ 1, given any two distinct subcubes B1 and B2 of Qn , there is a
+set of edge weights w so that Qw
+n has perfect state transfer between uniform superpositions
+in normal form on B1 and B2 .
+13
+
+Proof First, we show that the hypercube Qn has perfect state transfer from any vertex to
+any subcube. Since Qn is vertex-transitive, it suffices to show perfect state transfer from
+vertex 0n to the subcube B = (1k 0ℓ ⋆m ), where m = n − k − ℓ. Define the adjacency matrix
+e n as
+of Q
+e n = Qk ⊗ I2n−k + 1 I2k+ℓ ⊗ Qm .
+(61)
+Q
+2
+which is a sum of two commuting matrices. Then, letting t⋆ = π/2, we have
+
+
+
+
+⋆
+e n |0k 0ℓ 0m i = h1k 0ℓ |h̺m | exp −i t I2k+ℓ ⊗ Qm |1k 0ℓ 0m i.
+h1k 0ℓ |h̺m | exp −it⋆ Q
+2
+
+(62)
+
+The equality and the fact that the last expression has unit magnitude follows from Fact 7.
+To show perfect state transfer between two arbitrary subcubes, note that we just
+⋆
+⋆e
+e
+showed that |Bi = e−it Qn |0n i. Thus, we also have |0n i = e−it (−Qn ) |Bi. This proves the
+claim.
+We recover the result of Bernasconi et al. [5], which we restate in the next corollary, via the
+use of explicit edge weights on the hypercube.
+Corollary 9 For any n ≥ 1, given any two distinct vertices a and b of the hypercube Qn ,
+there is a set of edge weights w so that Qw
+n has perfect state transfer from a to b at time
+⋆
+t = π/2.
+Remark: We note that Bernasconi et al. [5] proved universal perfect state transfer for
+the n-cube by dynamically changing the underlying hypercubic structure of the graph. In
+contrast, our scheme is based on using static weights which can be interpreted dynamically
+with time. In both schemes, it is possible to route information through a Hamiltonian path
+which visits each vertex once and exactly once. We believe that this Hamiltonian property
+might be of interest in further applications of perfect state transfer.
+
+5
+
+Conclusion
+
+We studied perfect state transfer on quantum networks represented by weighted graphs.
+Our goal was to understand the role of weights in achieving perfect state transfer in graphs.
+First, we proved a join theorem for weighted regular graphs and derived, as a corollary,
+that a weighted double-cone on any regular graph has perfect state transfer. This implies
+as a corollary a result of Casaccino et al. [9] where the regular graph is a complete graph.
+In contrast, we also showed that weights do not help in achieving perfect state transfer
+in complete bipartite graphs. This is obtained as part of a more general result on graphs
+constructed from a half-join of K2 and G + G, for an arbitrary regular graph G. We found
+it curious that the full join connection seemed crucial for weights to have a positive effect
+in achieving perfect state transfer. We leave the case of complete multipartite graphs and
+strongly regular graphs as an open question.
+Second, we observed that Hamming graphs have the universal perfect state transfer
+property. This is a stronger requirement that the standard perfect state transfer property
+where perfect state transfer must occur between any pair of vertices. Prior to this work,
+14
+
+✈
+✟✟❍❍
+❍❍
+✟✟
+❍✈
+✟
+✈
+✈
+❍
+✟
+❍❍✟✟❍❍✟✟
+❍
+✟✟❍❍✈
+❍✈
+✈
+✟
+✟✟ ❍
+✟
+❍
+✟
+❍
+✟
+❍❍
+✟
+✟
+❍✈
+
+√
+
+√
+√
+√
+
+✈
+
+✈
+
+✈
+
+✈
+
+3·1
+
+✈
+
+✈
+
+✈
+
+✈
+
+2·2
+
+✈
+
+✈
+
+✈
+
+✈
+
+1·3
+
+✈
+
+✈
+
+✈
+
+✈
+
+√
+
+6
+
+√
+
+√
+√
+
+√
+
+6
+10
+12
+12
+
+✈
+✈
+✈
+✈
+
+10
+
+Figure 4: Existence of universal near-perfect state transfer on any weighted graph. (a) Qn
+has vertex-to-vertex PST (Bernasconi et al. [5]) (b) Hypercubic-weighted Pn has end-to-end
+PST (Christandl et al. [7]) (c) Emulate the hypercubic weighting along any path between
+the source and target vertices while setting other weights to near zero.
+
+the only known family of graphs with universal perfect state transfer were the (unweighted)
+hypercubic graphs [5]. We proved our result on the Hamming graphs by showing a closure
+result for a weighted Cartesian product of perfect state tranfer graphs; even when the graph
+components have different perfect state transfer times. The unweighted version of this
+closure result, as shown in [2], requires a global common perfect state transfer time for all
+graphs in the Cartesian product. For the hypercubes, we showed a stronger universal perfect
+state transfer property, where perfect state transfer occurs between uniform superpositions
+of two arbitrary subcubes. We imposed a mild condition on the uniform superpositions
+which exhibit perfect state transfer.
+We remark that if zero weights are allowed, then universal perfect state transfer is trivial.
+Simply take any path connecting the two vertices and assign the hypercubic weights to the
+edges on the path (as in Christandl et al. [7]) and zero weights to all other edges. If zero
+weights are not allowed then we conjecture that near-perfect state transfer is possible by
+assigning weights that tend to zero (for the edges which require zero weights).
+
+Acknowledgments
+This research was supported in part by the National Science Foundation grant DMS-0646847
+and also by the National Security Agency grant H98230-09-1-0098.
+
+References
+[1] Amir Ahmadi, Ryan Belk, Christino Tamon, and Carolyn Wendler, “On Mixing in
+Continuous-Time Quantum Walks on Some Circulant Graphs,” Quantum Information
+and Computation 3(6):611-618, 2003.
+[2] Ricardo Javier Angeles-Canul, Rachael Norton, Michael Opperman, Christopher Paribello, Matthew Russell, Christino Tamon, “Perfect state transfer, integral circulants
+and join of graphs,” arXiv.org eprint quant-ph/0907.2148.
+
+15
+
+[3] Norman Biggs, Algebraic Graph Theory, 2nd edition, Cambridge University Press,
+1993.
+[4] Sougato Bose, Andrea Casaccino, Stefano Mancini, and Simone Severini, “Communication in XYZ All-to-All Quantum Networks with a Missing Link,” International
+Journal on Quantum Information 7(4):713-723, 2009.
+[5] Anna Bernasconi, Chris Godsil, and Simone Severini, “Quantum Networks on Cubelike Graphs,” Physical Review A 78, 052320, 2008.
+[6] Milan Bašić and Marko Petković, “Some classes of integral circulant graphs either
+allowing or not allowing perfect state transfer,” Applied Mathematics Letters, in press.
+[7] Matthias Christandl, Nilanjana Datta, Artur Ekert, Andrew Landahl, “Perfect state
+transfer in quantum spin networks,” Physical Review Letters 92, 187902, 2004.
+[8] Matthias Christandl, Nilanjana Datta, Tony Dorlas, Artur Ekert, Alastair Kay, Andrew Landahl, “Perfect transfer of arbitrary states in quantum spin networks,” Physical Review A 71, 032312, 2005.
+[9] Andrea Casaccino, Seth Lloyd, Stefano Mancini, Simone Severini, “Quantum state
+transfer through a qubit network with energy shifts and fluctuations,” arXiv.org eprint
+quant-ph/0904.4510.
+[10] Edward Farhi and Sam Gutmann, “Quantum computation and decision trees,” Physical Review A 58 (1998), 915-928.
+[11] Ronald L. Graham, Donald E. Knuth, Oren Patashnik, Concrete Mathematics, 2nd
+edition, Addison-Wesley, 1994.
+[12] Viv Kendon, “Quantum walks on general graphs,” International Journal of Quantum
+Information 4:5 (2006), 791-805.
+[13] László Lovász, Combinatorial Problems and Exercises, 2nd edition, American Mathematical Society, 2007.
+[14] Cristopher Moore and Alexander Russell, “Quantum Walks on the Hypercube,” in
+Proc. 6th Int. Workshop on Randomization and Approximation in Computer Science,
+Lecture Notes in Computer Science 2483, Springer (2002), 164-178.
+[15] Nitin Saxena, Simone Severini, and Igor Shparlinski, “Parameters of Integral Circulant Graphs and Periodic Quantum Dynamics,” International Journal of Quantum
+Information 5(3):417-430, 2007.
+[16] Allen J. Schwenk and Robin J. Wilson, “Eigenvalues of Graphs,” in Selected Topics
+in Graph Theory, Lowell W. Beineke and Robin J. Wilson (eds.), Academic Press
+(1978), 307-336.
+
+16
+
+

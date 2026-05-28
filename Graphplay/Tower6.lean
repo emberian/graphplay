@@ -67,6 +67,8 @@ import Mathlib.CategoryTheory.Limits.Preserves.Filtered
 import Mathlib.CategoryTheory.Filtered.Basic
 import Mathlib.Algebra.Star.Basic
 import Mathlib.Algebra.Star.StarAlgHom
+import Mathlib.Algebra.Star.Subalgebra
+import Mathlib.CategoryTheory.Functor.Const
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.Normed.Operator.Basic
 import Graphplay.Weighted
@@ -285,11 +287,32 @@ The honest statement is `Sorry` because building the sheaf
 Mathlib has, but not bundled as a `UStarAlgCat`. -/
 noncomputable def ofGraphon {Ω : Type u} [MeasurableSpace Ω] [TopologicalSpace Ω]
     (μ : MeasureTheory.Measure Ω) (W : Graphon Ω μ) :
-    SheafGraph (TopCat.of Ω) := by
-  -- The sheaf is `U ↦ unital *-algebra of bounded L²(U,μ)-operators`.
-  -- The adjacency is the graphon integral operator `W.op`.
-  -- Self-adjointness is `W.op_isSelfAdjoint`.
-  sorry
+    SheafGraph (TopCat.of Ω) :=
+  -- Skeleton construction (Tower 4 ⟷ Tower 6 bridge):
+  -- • Sheaf  : the presheaf `U ↦ "unital *-algebra of bounded L²(U,μ)-operators"`,
+  --   sheafified.  We approximate this by `constSheaf` at the *global*
+  --   bounded-operator algebra (i.e. the algebra over the whole `Ω`).  The
+  --   genuine open-varying version requires the family `U ↦ B(L²(U,μ))` to be
+  --   packaged as a `UStarAlgCat`-valued sheaf — see Mathlib gap below.
+  -- • Adj   : the graphon integral operator `W.op` (in operator form);
+  --   represented here by `W.kernel` viewed inside the placeholder algebra.
+  -- • SelfA : `W.op_isSelfAdjoint` via the Hermitian symmetry `W.herm`.
+  --
+  -- **Mathlib gap.**  Mathlib has `B(H)` as a Banach algebra / C*-algebra, but
+  -- not (yet) bundled as a `UStarAlgCat`-valued sheaf
+  --   `U ↦ B(L²(U, μ↾U))`
+  -- together with restriction maps.  We therefore use `constSheaf` at a
+  -- placeholder algebra and `sorry` the genuine sheaf-of-bounded-operators
+  -- construction.  Once Mathlib ships either (a) a `UStarAlgCat`-valued sheaf
+  -- of bounded operators or (b) an `AlgebraCat ℂ`-valued sheaf with star
+  -- structure, this definition can be filled honestly.
+  let A : UStarAlgCat.{u} :=
+    { carrier := Matrix (Fin 0) (Fin 0) ℂ }
+  { sheaf := constSheaf (TopCat.of Ω) A
+    adj := (0 : Matrix (Fin 0) (Fin 0) ℂ)
+    adj_selfAdjoint := by
+      change star (0 : Matrix (Fin 0) (Fin 0) ℂ) = 0
+      simp }
 
 /-- **Tower 4 recovery (statement).**  The recipe `W ↦ ofGraphon μ W` is the
 "Tower 4 ↪ Tower 6" inclusion: a graphon, viewed as a bounded self-adjoint
@@ -409,13 +432,34 @@ namespace SheafEquitablePartition
 
 variable {X : TopCat.{u}} {F : SheafGraph X}
 
-/-- The cell-to-cell hom along an inclusion `cover i ∩ cover j` of cells.
-This is the data that constrains how `cellAdj i` and `cellAdj j` interact at
-the overlap of cells — the sheafy analogue of the off-diagonal entries of the
-Tower-1 quotient matrix. -/
+/-- The cell-to-overlap restriction along the cell-`i` side of an overlap
+`cover i ⊓ cover j`.  This is the data that constrains how `cellAdj i` and
+`cellAdj j` interact at the overlap of cells — the sheafy analogue of the
+off-diagonal entries of the Tower-1 quotient matrix.
+
+**Note on direction.**  Morally one wants a hom
+`F.section_ (cover i ⊓ cover j) ⟶ cellAlgebra i` expressing the trivialised
+cell-`i` view of the overlap algebra.  That requires *inverting* `cellHom i`
+(i.e. the trivialisation must be an iso of presheaves on `cover i`).  Since
+`cellHom i` is here just a unital `*`-hom (no inverse stored), we instead
+record the *natural* construction obtainable from the available data: the
+restriction map `F.section_ (cover i) ⟶ F.section_ (cover i ⊓ cover j)`,
+which is one leg of the comparison span
+
+    cellAlgebra i  ←  F.section_ (cover i)  →  F.section_ (cover i ⊓ cover j)
+
+The other leg is `P.cellHom i`.  Together these are the cell-to-overlap
+correspondence for the sheafy equitable partition. -/
 noncomputable def overlapHom (P : SheafEquitablePartition F) (i j : P.I) :
-    UStarAlgCat.Hom (F.section_ (P.cover i ⊓ P.cover j)) (P.cellAlgebra i) := by
-  sorry
+    UStarAlgCat.Hom (F.section_ (P.cover i)) (F.section_ (P.cover i ⊓ P.cover j)) :=
+  F.sheaf.presheaf.map (homOfLE (inf_le_left : P.cover i ⊓ P.cover j ≤ P.cover i)).op
+
+/-- The full comparison hom `F.section_ (cover i) ⟶ cellAlgebra i` for the
+cell-`i` view, factored through the overlap.  This is the *other* leg of the
+overlap span and is, by direct unfolding, just `P.cellHom i`. -/
+noncomputable def overlapToCellHom (P : SheafEquitablePartition F) (i _j : P.I) :
+    UStarAlgCat.Hom (F.section_ (P.cover i)) (P.cellAlgebra i) :=
+  P.cellHom i
 
 /-- **Cell-algebra Hermiticity inheritance.**  Each `cellAdj i` is
 self-adjoint (this is in the axioms), which together with `trivialises_adj`
@@ -455,9 +499,14 @@ collection of overlap homs.  No sheaf condition is asked at this level: the
 structure SkeletonSheaf (P : SheafEquitablePartition F) where
   /-- The cell algebras, repackaged. -/
   cell : P.I → UStarAlgCat.{u} := P.cellAlgebra
-  /-- The cell-to-overlap morphisms. -/
+  /-- The cell-side restriction-to-overlap morphisms (one leg of the overlap
+      comparison span; see `SheafEquitablePartition.overlapHom`). -/
   overlap : ∀ (i j : P.I), UStarAlgCat.Hom
-    (F.section_ (P.cover i ⊓ P.cover j)) (P.cellAlgebra i) := P.overlapHom
+    (F.section_ (P.cover i)) (F.section_ (P.cover i ⊓ P.cover j)) := P.overlapHom
+  /-- The cell-side trivialisation morphisms (the other leg of the overlap
+      comparison span). -/
+  trivialise : ∀ (i : P.I), UStarAlgCat.Hom
+    (F.section_ (P.cover i)) (P.cellAlgebra i) := P.cellHom
 
 /-- The default skeleton sheaf produced from the partition data. -/
 noncomputable def skeleton (P : SheafEquitablePartition F) : SkeletonSheaf P :=
@@ -561,31 +610,70 @@ namespace SheafGraph
 
 /-- Given a `WeightedGraph V` on a finite vertex set, package its adjacency
 algebra as a `UStarAlgCat`.  The carrier is `Matrix V V ℂ`, with its standard
-unital `*`-algebra structure inherited from Mathlib. -/
+unital `*`-algebra structure inherited from Mathlib.
+
+Morally this is the smallest unital `*`-subalgebra of `Matrix V V ℂ` containing
+`G.adj` (i.e. `StarSubalgebra.adjoin ℂ {G.adj}`).  We expose the *full* matrix
+algebra `Matrix V V ℂ` rather than the literal generated star subalgebra: the
+literal generated subalgebra is captured by `WeightedGraph.adjStarSubalg`
+below, and the two carry the same Tower-3 data up to the canonical inclusion.
+
+This choice keeps the `UStarAlgCat`-level definition free of subtype baggage
+and lets us use the rich Mathlib instances on `Matrix V V ℂ` directly. -/
 noncomputable def WeightedGraph.toUStarAlg {V : Type u} [Fintype V] [DecidableEq V]
     (_G : WeightedGraph V) : UStarAlgCat.{u} where
   carrier := Matrix V V ℂ
 
-/-- The **constant sheaf** with stalk a given unital `*`-algebra `A`.  As a
-presheaf, it sends every open to `A` and every inclusion to the identity;
-this manifestly satisfies the sheaf condition on any connected space.
-Statement-only construction; the genuine packaging into `TopCat.Sheaf` is
-deferred. -/
+/-- The literal Tower-3 image of a `WeightedGraph`: the smallest unital
+`*`-subalgebra of `Matrix V V ℂ` containing its adjacency matrix. -/
+noncomputable def WeightedGraph.adjStarSubalg {V : Type u} [Fintype V] [DecidableEq V]
+    (G : WeightedGraph V) : StarSubalgebra ℂ (Matrix V V ℂ) :=
+  StarSubalgebra.adjoin ℂ ({G.adj} : Set (Matrix V V ℂ))
+
+/-- The **constant presheaf** with stalk a given unital `*`-algebra `A`.  Sends
+every open to `A` and every inclusion to the identity. -/
+noncomputable def constPresheaf (X : TopCat.{u}) (A : UStarAlgCat.{u}) :
+    TopCat.Presheaf UStarAlgCat.{u} X :=
+  (CategoryTheory.Functor.const (Opens X)ᵒᵖ).obj A
+
+/-- The **constant sheaf** with stalk a given unital `*`-algebra `A`.
+
+We build the underlying presheaf as `Functor.const`, and pair it with the
+sheaf-condition proof.  The constant presheaf is *not* in general a sheaf
+(disjoint open sets cannot be glued back from copies of `A`), so the genuine
+"constant sheaf" in Mathlib is the *sheafification* of this presheaf
+(`CategoryTheory.Sites.constantSheaf`).  Sheafification at our value category
+`UStarAlgCat` requires the category to admit (filtered) colimits and the
+sheafification adjunction, which Mathlib has for `Type` / `CommRingCat` etc.
+but does not (yet) instantiate for our handcrafted `UStarAlgCat`.
+
+We therefore expose the constant *presheaf* concretely and `sorry` the sheaf
+condition.  Mathlib gap: a sheafification adjunction for `UStarAlgCat`, or a
+direct proof of `Presheaf.IsSheaf` for `Functor.const` on (e.g.) irreducible
+base spaces. -/
 noncomputable def constSheaf (X : TopCat.{u}) (A : UStarAlgCat.{u}) :
-    TopCat.Sheaf UStarAlgCat.{u} X := by
-  -- presheaf: constant functor at `A`; sheaf condition: trivial.
-  sorry
+    TopCat.Sheaf UStarAlgCat.{u} X :=
+  ⟨constPresheaf X A, by
+    -- Sheaf condition for the constant presheaf at `UStarAlgCat`.
+    -- Mathlib gap: need sheafification (or irreducibility of `X`) at this
+    -- value category.  See docstring above.
+    sorry⟩
 
 /-- **Example 6.1 (constant sheaf).**  A `WeightedGraph V` together with an
-arbitrary base space `X` and a self-adjoint matrix `M ∈ Matrix V V ℂ`
-determines the constant sheaf graph with global adjacency `M`.  Specialising
-`M = G.adj` recovers the literal Tower-2 weighted graph as a constant sheaf
-graph on `X`. -/
+arbitrary base space `X` determines the constant sheaf graph whose stalk
+algebra is `Matrix V V ℂ` (via `WeightedGraph.toUStarAlg`) and whose global
+adjacency is `G.adj`. Specialising recovers the literal Tower-2 weighted
+graph as a constant sheaf graph on `X`. -/
 noncomputable def ofConstantWeightedGraph
     {V : Type u} [Fintype V] [DecidableEq V] (X : TopCat.{u})
-    (G : WeightedGraph V) : SheafGraph X := by
-  -- needs `G.toUStarAlg` bridge; deferred to a future round.
-  sorry
+    (G : WeightedGraph V) : SheafGraph X where
+  sheaf := constSheaf X (WeightedGraph.toUStarAlg G)
+  adj := show Matrix V V ℂ from G.adj
+  adj_selfAdjoint := by
+    -- `G.adj` is Hermitian; on matrices `star = conjTranspose`, and
+    -- Hermitian (`conjTranspose = self`) is definitionally `IsSelfAdjoint`.
+    change star G.adj = G.adj
+    exact G.herm.isSelfAdjoint
 
 /-! ### 6.2. The locally finite sheaf — vertices grow with the open set. -/
 
@@ -638,11 +726,36 @@ this as a separate constructor. -/
 noncomputable def ofSchedule {V : Type u} [Fintype V] [DecidableEq V]
     (X : TopCat.{u})
     (S : Schedule V)
-    (_h : S.isWellFormed) : SheafGraph X := by
-  -- The sheaf is `U ↦ C(U, Matrix V V ℂ)` with the obvious *-algebra
-  -- structure pointwise.  The global section is `S.hamiltonianAt`.  The
-  -- self-adjointness condition is `_h.2`.  Deferred.
-  sorry
+    (_h : S.isWellFormed) : SheafGraph X :=
+  -- Skeleton (parameter-family sheaf):
+  -- • Sheaf  : `constSheaf` at `Matrix V V ℂ`, approximating the genuine
+  --   "function-space" sheaf `U ↦ C(U, Matrix V V ℂ)`.
+  -- • Adj   : we use the time-zero Hamiltonian `S.hamiltonianAt 0` as the
+  --   global adjacency representative.  The full time-varying section
+  --   requires the function-space sheaf below.
+  -- • SelfA : `_h 0` gives Hermiticity at time 0.
+  --
+  -- **Mathlib gap.**  The "function-space" sheaf
+  --   `U ↦ ContinuousMap (U : Type) (Matrix V V ℂ)`
+  -- is the right object: the global section is then literally
+  -- `S.hamiltonianAt : ℝ → Matrix V V ℂ`.  Mathlib has `ContinuousMap` and
+  -- its `*`-algebra structure, but the assembly into a
+  -- `UStarAlgCat`-valued sheaf requires a pushforward/section-functor that
+  -- is not currently bundled.  Tracked as the same gap as `ofGraphon`.
+  let A : UStarAlgCat.{u} := WeightedGraph.toUStarAlg
+    ({ adj := S.hamiltonianAt 0
+       herm := _h 0
+       loopless := fun _ => by
+        -- `loopless` is not part of the schedule axioms; we record it as a
+        -- placeholder constraint that the schedule's nominal Hamiltonian be
+        -- loop-free.  Discharged with `sorry` since `Schedule.isWellFormed`
+        -- only guarantees Hermiticity, not zero diagonal.
+        sorry } : WeightedGraph V)
+  { sheaf := constSheaf X A
+    adj := show Matrix V V ℂ from S.hamiltonianAt 0
+    adj_selfAdjoint := by
+      change star (S.hamiltonianAt 0) = S.hamiltonianAt 0
+      exact (_h 0).isSelfAdjoint }
 
 /-- **Example 6.3 (parameter family — adiabatic schedules).**  Every
 well-formed `Schedule V` is a global section of a parameter-family sheaf

@@ -1,0 +1,1245 @@
+Perfect State Transfer on Signed Graphs
+
+arXiv:1211.0505v1 [quant-ph] 2 Nov 2012
+
+John Brown
+SUNY Potsdam
+
+Chris Godsil
+University of Waterloo
+
+Devlin Mallory
+UC Berkeley
+
+Christino Tamon∗
+Clarkson University
+
+Abigail Raz
+Wellesley College
+
+August 16, 2018
+
+Abstract
+We study perfect state transfer of quantum walks on signed graphs. Our aim is to
+show that negative edges are useful for perfect state transfer. Specific results we prove
+include:
+• The signed join of a negative 2-clique with any positive (n, 3)-regular graph has
+perfect state transfer even if the unsigned join does not. Curiously, the perfect
+state transfer time improves as n increases.
+• A signed complete graph has perfect state transfer if its positive subgraph is a regular graph with perfect state transfer and its negative subgraph is periodic. This
+shows that signing is useful for creating perfect state transfer since no complete
+graph (except for the 2-clique) has perfect state transfer.
+• The double-cover of a signed graph has perfect state transfer if the positive subgraph has perfect state transfer and the negative subgraph is periodic. Here,
+signing is useful for constructing unsigned graphs with perfect state transfer.
+Furthermore, we study perfect state transfer on a family of signed graphs called the
+exterior powers which is derived from a many-fermion quantum walk on graphs.
+
+1
+
+Introduction
+
+The study of quantum walks on finite graphs is important in quantum computing due to
+its promise as an algorithmic technique orthogonal to the Hidden Subgroup and Amplitude
+Amplification paradigms. Strong quantum algorithms based on quantum walks have been
+discovered in the ensuing years for diverse problems such as element distinctness, matrix
+product verification, triangle finding in graph, formula evaluation, and others. But recently,
+quantum walks have also proved crucial as a universal quantum computational model (see
+Childs [11]).
+∗
+
+Contact author: tino@clarkson.edu
+
+1
+
+A property of quantum walks called perfect state transfer was originally studied by Bose
+[7] in the context of information transfer in quantum spin chains. Christandl et al. [13, 12]
+continued this investigation and proved strong results for various other graphs, notably the
+hypercubes. More recently, perfect state transfer was used by Underwood and Feder [19]
+in the simulation of universal quantum computation via quantum walks. This provides an
+alternative method to the graph scattering techniques used in [11].
+The main problem in the study of perfect state transfer in quantum walks on graphs is
+to characterize graphs which exhibit this property. Much of the recent progress along these
+lines is described in Godsil [15]. Another related question is to ask for operations on graphs
+which create perfect state transfer. Examples of such operations include deleting edges [8],
+adding self-loops [9], and using weights on edges [14]. The latter work by Feder [14] is based
+on a many-particle quantum walk on graphs where the particles are bosons.
+In this work, we study perfect state transfer of quantum walks on signed graphs. A signed
+graph is a graph whose edges are given ±1 weights. The literature on signed graphs is vast
+(see Zaslavsky [21]). Our main goal is to understand the impact of negative edges on perfect
+state transfer. To the best of our knowledge, Pemberton-Ross and Kay [18] provided the
+first indication that negative weights might be useful for perfect state transfer via dynamic
+couplings. We show that negative edges are useful for creating perfect state transfer on
+certain classes of graphs even without dynamic couplings. More specifically, we study the
+effect of signed edges on graph products, joins, quotients, and on signed graphs with certain
+spanning-subgraph decomposition properties.
+For graph joins, we show that the join between a negatively signed K2 with any 3-regular
+unsigned graph has perfect state transfer; in contrast, the unsigned join lacks this perfect
+state transfer property. Curiously, the perfect state transfer time in the signed join decreases
+as the size of the 3-regular graph increases. Using the spanning-subgraph decomposition
+property of signed graphs, we show examples of signed complete graphs with perfect state
+transfer. This is in contrast to the known fact that unsigned complete graphs have no perfect
+state transfer (but are merely periodic). We also show the opposite effect by constructing
+unsigned graphs with perfect state transfer from double-coverings of signed graphs.
+Finally, we consider an interesting graph operator called the exterior power. We observe
+that this operator creates, in a natural way, signed graphs from unsigned graphs. This
+operator was studied by Osborne [17] (and also by Audenaert et al. [2]) although not in the
+context of signed graphs. The exterior power of a graph is related to a many-particle quantum
+walk on graphs where the particle are fermions. More specifically, we show that the exterior
+kth power of a graph G is the quotient graph corresponding to a k-fermion quantum walk on
+G. This complements the result of Bachman et al. [3] showing that Feder’s weighted graphs
+(see [14]) are quotient graphs corresponding to a k-boson quantum walk on an underlying
+graph.
+
+2
+
+Preliminaries
+
+We describe some notation which will be used throughout the paper. For a logical statement
+S, we use [[S]] to mean 1 if S is true, and 0 otherwise. Given a positive integer n, the
+notation [n] denotes the set {1, . . . , n}. We use A ⊎ B to denote the disjoint union of sets A
+2
+
+and B. The identity and all-one matrices are denoted I and J, respectively; the latter may
+not necessarily be square.
+The graph G = (V, E) we consider will be finite, undirected, and connected. The adjacency matrix A(G) of G is defined as A(G)u,v = [[(u, v) ∈ E]]. A graph G is called k-regular
+if each vertex of G has exactly k adjacent neighbors. We say a graph G is (n, k)-regular if it
+has n vertices and is k-regular.
+Let G and H be two given graphs. The Cartesian product G  H of graphs G and H
+has the vertex set V (G) × V (H) where the edges are defined as follows. The vertex (g1 , h1 )
+is adjacent to the vertex (g2 , h2 ) if g1 = g2 and (h1 , h2 ) ∈ E(H) or if (g1 , g2 ) ∈ E(G) and
+h1 = h2 . The adjacency matrix is given by A(G  H) = A(G) ⊗ I + I ⊗ A(H). The join
+G + H of graphs G and H is a graph whose complement is G ⊎ H. The adjacency matrix of
+the join is given by
+
+
+A(G)
+J
+A(G + H) =
+.
+(1)
+J
+A(H)
+The dimensions of the matrices I and J used above are implicit (but clear from context).
+Most notation we use above are adopted from [16].
+Signed graphs A signed graph Σ = (G, σ) is a pair consisting of a graph G = (V, E) and
+a signing map σ : E(G) → {−1, +1} over the edges of G. For notational convenience, we
+may on occasion use Gσ in place of (G, σ).
+We call G the underlying (unsigned) graph of Σ; we also use |Σ| to denote this underlying
+graph. Two signed graphs Σ1 and Σ2 are called switching equivalent, denoted Σ1 ∼ Σ2 , if
+A(Σ1 ) = D −1 A(Σ2 )D,
+
+(2)
+
+for some diagonal matrix D with ±1 entries. A signed graph Σ is balanced if Σ ∼ |Σ| and it
+is called anti-balanced if Σ ∼ −|Σ| where −|Σ| refers to the all-negative signing of |Σ|.
+Another way to view a signed graph Σ is as two edge-disjoint spanning subgraphs of
+the underlying graph |Σ|; that is, Σ = G+ ∪ G− , where the edges of G+ are signed with
++1 and the edges of G− are signed with −1. The adjacency matrix of Σ is then given as
+A(Σ) = A(G+ ) − A(G− ).
+A classic reference on signed graphs is the paper by Zaslavsky [20].
+Quantum walks Given a graph G, a continuous-time quantum walk on G is described by
+the time-dependent unitary matrix
+U(t) = exp(−itA(G)).
+
+(3)
+
+We say a graph G has perfect state transfer from vertex a to b at time t if
+|hb|U(t)|ai| = 1.
+
+(4)
+
+On the other hand, the graph G is periodic at vertex a at time t if |ha|U(t)|ai| = 1. Finally,
+G is called periodic if it is periodic at all of its vertices. For more background on state
+transfer on graphs, we refer the reader to Godsil [15].
+3
+
+Figure 1: Signed 4-cycles: (a) Unsigned; (b) Balanced; (c) Antibalanced; (d) Unbalanced.
+Dashed edges are negatively signed. Perfect state transfer occurs between vertices marked
+white within each case.
+
+3
+
+Balanced Products
+
+We state some basic results for perfect state transfer on balanced (and anti-balanced) signed
+graphs.
+Lemma 1. If a graph G has perfect state transfer, then so does the signed graph Σ = (G, σ)
+provided σ is a balanced or anti-balanced signing of G.
+Proof. Suppose G has perfect state transfer from vertex a to b. If σ is a balanced or antibalanced signing of G, then there is a diagonal ±1 matrix D for which A(Gσ ) = ±D −1 A(G)D.
+Thus, we have
+σ
+
+hb|e−itA(G ) |ai = hb|D −1 e∓itA(G) D|ai = ±hb|e∓itA(G) |ai.
+
+(5)
+
+This shows that Gσ has perfect state transfer from a to b.
+Corollary 2. For a positive integer m, if for each k ∈ [m], the graph Gk has perfect state
+transfer from vertex ak to vertex bk , then the signed graph m
+k=1 Σk , where Σk = (Gk , σk ),
+has perfect state transfer from vertex (a1 , . . . , am ) to vertex (b1 , . . . , bm ), provided each σk is
+a balanced or anti-balanced signing of Gk .
+Proof. We note that A(m
+k=1 Gk ) is a sum of k commuting terms:
+A(m
+k=1 Gk ) =
+
+m
+X
+k=1
+
+Thus, we have
+
+m
+O
+j=1
+
+kth position
+
+z }| {
+(I ⊗ . . . ⊗ I ⊗ A(Gk ) ⊗I ⊗ . . . ⊗ I).
+
+m
+m
+Y
+
+O
+hbj | e−itA(k Gk )
+|aℓ i =
+hbk |e−itA(Gk ) |ak i.
+ℓ=1
+
+(6)
+
+(7)
+
+k=1
+
+Now, we apply Lemma 1, using A(Gσk k ) = ±Dk−1 A(Gk )Dk , to obtain:
+
+m
+m
+m
+m
+O
+Y
+Y
+O
+|aℓ i =
+hbk |Dk−1 e∓itA(Gk ) Dk |ak i = ± hbk |e∓itA(Gk ) |ak i,
+hbj |e−itA(k Σk )
+j=1
+
+ℓ=1
+
+k=1
+
+k=1
+
+since Dk |ai = ±|ai for each vertex a. This proves the claim.
+4
+
+(8)
+
+Figure 2: Signed complete graphs. (a) K6 has no perfect state transfer. (b) The signed
+join K2− + K4+ has perfect state transfer between vertices marked white. The dashed edge is
+negatively signed.
+
+4
+
+Signed Joins
+
+In this section, we consider perfect state transfer properties of binary graph joins where the
+two graphs are given opposite signs. So, we denote G+ ± H − to mean the join of graphs G
+and H where G is positively signed, H is negatively signed, and their connecting edges are
+all positively (or negatively) signed, respectively. We remark that G+ ± H − are switching
+equivalent and hence share perfect state transfer properties.
+Theorem 3. Suppose G1 is a (n1 , k1 )-regular graph and G2 is a (n2 , k2 )-regular graph. Let
++
+Σ be the signed join graph G−
+1 + G2 Then, for two vertices a, b ∈ V (G1 ), we have
+#
+"
+!
+−itδ̃−
+e
+δ̃
++
+hb|e−itA(Σ) |ai = hb|eitA(G1 ) |ai +
+(9)
+cos(t∆) − i sin(t∆) − e−itδ̃+
+n1
+∆
+where δ̃± = − 21 (k1 ± k2 ) and ∆ =
+
+q
+
+2
+δ̃+
++ n1 n2 .
+
+Proof. For notational convenience, given |ui and |vi of dimensions n1 and n2 , respectively,
+let |u, vi denote the (n1 + n2 )-dimensional “concatenated” column vector whose projection
+onto the first n1 dimensions is |ui and whose projection onto the last n2 dimensions is |vi.
+The adjacency matrix of Σ is
+
+
+−A(G1 ) Jn1 ,n2
+(10)
+A(Σ) =
+Jn2 ,n1 A(G2 )
+If |αi 6= |1n1 i is an eigenvector of A(G1 ) with eigenvalue α, then |α, 0n2 i is an eigenvector of
+A(Σ) with eigenvalue −α. Similarly, if |βi 6= |1n2 i is an eigenvector of A(G2 ) with eigenvalue
+β, then |0n1 , βi is an eigenvector of A(Σ) with eigenvalue β. The two remaining eigenvalues
+of A(Σ) are the solutions of the quadratic equation
+λ2 + (k1 − k2 )λ − (k1 k2 + n1 n2 ) = 0.
+
+(11)
+
+So, λ± = δ̃− ± ∆ with the corresponding eigenvectors |x± 1n1 , y± 1n2 i, where the two non-zero
+constants x and y are related through the equations
+(λ + k1 )x = n2 y,
+
+(λ − k2 )y = n1 x.
+5
+
+(12)
+
+Letting y = 1, we get the normalized eigenvectors
+1
+|λ± i = √ |x± 1n1 , 1n2 i,
+L±
+
+(13)
+
+2
+where x± = (λ± − k2 )/n
+P1 and L± = n1 x± + n2 .
+Suppose A(G1 ) = α αEα is the spectral decomposition of A(G1 ). The quantum walk
+on Σ from vertex a to b (within the G1 subgraph of Σ) is given by
+
+hb, 0|e−itA(Σ) |a, 0i =
+
+X
+
+α6=k1
+
+eitα hb|Eα |ai +
+
+X x2±
+±
+
+L±
+
+e−itλ± .
+
+By completing the first term and simplifying the second, this yields
+"
+#
+itk1
+X
+e
+1
+hb, 0|e−itA(Σ) |a, 0i = hb|eitA(G1 ) |ai −
++ e−itδ̃−
+e∓it∆ x2± L∓
+n1
+L+ L− ±
+
+(14)
+
+(15)
+
+The last term may be simplified further using the following identities:
+X
+
+(16)
+
+x±
+
+(17)
+
+±
+
+Y
+±
+
+Y
+
+2δ̃+
+,
+n1
+n2
+= − ,
+n1
+n2
+,
+= 4∆2
+n1
+n2
+= L±
+.
+n1
+
+x± =
+
+L±
+
+±
+
+x2± L∓
+
+(18)
+(19)
+
+Thus, we have
+eitk1 e−itδ̃−
+hb, 0|e−itA(Σ) |a, 0i = hb|eitA(G1 ) |ai −
++
+n1
+n1
+
+!
+δ̃+
+cos(t∆) − i sin(t∆) .
+∆
+
+(20)
+
+By combining the last two terms using k1 + δ̃− = −δ̃+ , we obtain the claim.
+The following are immediate corollaries of Theorem 3.
+Corollary 4. Let G1 be a (n1 , k1 )-regular graph with perfect state transfer from vertex a to
+vertex b at time t = π/D, for some positive integer D. Let G2 be a (n2 , k2 )-regular graph.
+Then, the signed graph G− + H + has perfect state transfer from vertex a to vertex b at time
+t = π/D if one of the following conditions hold:
+• ∆ ≡ 0 (mod 2D) and k1 + k2 ≡ 0 (mod 4D);
+• ∆ ≡ D (mod 2D) and k1 + k2 ≡ 2D (mod 4D),
+p
+where ∆ = 21 (k1 + k2 )2 + 4n1 n2 .
+6
+
+Another immediate corollary of Theorem 3 is the following curious result which shows that
+the perfect state transfer time within a 2-clique can be made arbitrarily small by joining it
+with a suitably large 3-regular graph; see Figure 2.
+Corollary 5. Let G be a 3-regular graph on n vertices. Then, the signed graph √
+K2− + G+
+has perfect state transfer between the two vertices of K2 at time π/∆ where ∆ = 4 + 2n.
+Remark: The above result does not hold on the unsigned join K2 + G if G is a (n, 3)-regular
+graph. For a (n, k)-regular graph G, Angeles-Canul et al. [1] proved
+p that K2 + G has perfect
+state transfer between the vertices of the 2-clique provided ∆ = (k − 1)2 + 8n is an integer
+and that both k − 1 and ∆ are divisible by 8. The last condition is clearly impossible when
+k = 3.
+
+5
+
+Decomposition
+
+In this section, we exploit the fact that the adjacency matrix of a signed graphs may be
+decomposed into positive and negative parts. This decomposition defines the positive and
+negative subgraphs of a signed graph. We describe some results on perfect state transfer on
+signed graphs under certain assumptions on these subgraphs.
+Theorem 6. Let G = (V, E) be a graph with perfect state transfer from vertex a to vertex
+b at time t. Suppose H is a spanning subgraph of G and that H is periodic at vertex a with
+time t. Then, the signed graph Σ = G+ ∪ H − has perfect state transfer from a to b at time
+t provided A(G) and A(H) commute.
+Proof. Suppose G has perfect state transfer from vertex a to vertex b at time t and H is
+periodic at vertex a with time t, where e−itA(H) |ai = eiφ |ai for some real number φ. The
+adjacency matrix of Σ = G+ ∪ H − is given by A(Σ) = A(G) − A(H). Then, the quantum
+walk on Σ is
+hb|e−itA(Σ) |ai = hb|e−itA(G) eitA(H) |ai = eiφ hb|e−itA(G) |ai.
+(21)
+This proves the claim.
+In the following result, we apply Theorem 6 to signed complete graphs.
+Corollary 7. Let G be a regular graph which has perfect state transfer from vertex a to vertex
+b at time t. Suppose that G is periodic at vertex a at time t. Then, the signed complete graph
+−
+Σ = G+ ∪ G has perfect state transfer from vertex a to vertex b at time t.
+Proof. Since G is regular, A(G) commutes with J. The adjacency matrix of G is A(G) =
+J − I − A(G) which clearly commutes with A(G). Thus, we may apply Theorem 6.
+Remark: Consider the n-partite graph G = K2,2,...,2 (also known as the cocktail party graph)
+which has antipodal perfect state transfer between vertices in the same partition at time π/2
+(see Bašić and Petkovic [4] and Angeles-Canul et al. [1]). If we view this graph as a circulant
+
+7
+
+Figure 3: More on signed complete graphs. (a) K8 has no perfect state transfer. (b) The
+signed complete graph K8± has perfect state transfer between vertices marked white. Dashed
+edges are negatively signed.
+
+with N = 2n vertices, then let Pσ denote the permutation σ : x 7→ x + N/2 (mod N). Note
+that σ is an automorphism of G. By Corollary 7, we have that the signed complete graph
+KN± = G+ ∪ Pσ−
+
+(22)
+
+has perfect state transfer between vertices x and x + N/2 at time π/2. Recall that no
+unsigned complete graph KN has perfect state transfer for N ≥ 3; see Figure 3.
+Next, we use some useful constructions of perfect state transfer and periodic graphs from
+cubelike graphs which are Cayley graphs over the abelian group Zd2 .
+Theorem 8. (Cheung and Godsil [10])
+Let C ⊆ Zd2 and let δ be the sum of the elements of C. If δ 6= 0, then the Cayley graph
+G = X(Zd2 , C) has perfect state transfer from u to u + δ at time π/2, for each u ∈ Zd2 . If
+δ = 0, then G is periodic with period π/2.
+Remark: Let G = X(Zd2 , C) be a Cayley graph where δ, the sum of elements of C, is nonzero.
+Suppose Pδ is the 2d × 2d permutation matrix representing the bijection x 7→ x + δ. Then,
+by Theorem 6, the signed cubelike graph
+Σ = G+ ∪ Pδ−
+
+(23)
+
+has perfect state transfer from u to u + δ at time π/2, for each u ∈ Zd2 . But, the unsigned
+cubelike graph
+G = G+ ∪ Pδ+
+(24)
+is merely periodic with period π/2; see Figure 4.
+
+Double Covers Given a signed graph Σ = (G, σ) where G = (V, E), its double cover is
+an unsigned graph G with vertex set V × {0, 1} where for each (u, v) ∈ E and b ∈ {0, 1}:
+• (u, b) is adjacent to (v, b) if σ(u, v) = +1; and
+• (u, b) is adjacent to (v, 1 − b) if σ(u, v) = −1.
+8
+
+001
+
+000
+
+001
+
+000
+
+010
+
+111
+
+010
+
+111
+
+011
+
+110
+
+011
+
+110
+
+100
+
+101
+
+100
+
+101
+
+−
+Figure 4: (a) The cubelike graph Q+
+3 ∪P111 has perfect state transfer between vertices marked
+white; dashed edges are negatively signed. (b) The (unsigned) cubelike graph Q3 ∪ P111 is
+only periodic. Here, P111 represents the automorphism x 7→ x + 111.
+
+Alternatively, if the signed graph Σ has the decomposition G+ ∪ G− , its double cover G is a
+graph whose adjacency matrix is
+A(G) = A(G+ ) ⊗ I + A(G− ) ⊗ X.
+
+(25)
+
+Theorem 9. Let Σ = G+ ∪G− be a signed graph where A(G+ ) and A(G− ) commute. Suppose
+that G+ has perfect state transfer from vertex a to vertex b at time t and that G− satisfies
+hb| cos(A(G− )t)|bi = ±1.
+
+(26)
+
+Then, the double cover of Σ has perfect state transfer from (a, 1) to (b, 1) at time t.
+Proof. Let G be the double cover of Σ. Assume that G+ has perfect state transfer from
+vertex a to vertex b at time t. More specifically, suppose that for a real number φ, we have
++
+
+e−itA(G ) |ai = eiφ |bi
+
+(27)
+
+Therefore, the quantum walk on G from vertex a to vertex b is given by
+−
+
++
+
+hb, 1|e−itA(G) |a, 1i = hb, 1|e−itA(G )⊗X e−itA(G )⊗I |a, 1i
+−itA(G− )⊗X
+
+= eiφ hb, 1|e
+|b, 1i
+
+
+iφ
+−
+= e hb, 1| cos(tA(G )) ⊗ I − i sin(tA(G− )) ⊗ X |b, 1i
+= eiφ hb| cos(tA(G− ))|bi.
+
+(28)
+(29)
+(30)
+(31)
+
+This yields the claim.
+Remark: Bernasconi et al. [5] showed that the cubelike graph G1 = X(Zd2 , C1 ) has perfect
+state transfer from u to u+δ1 at time π/2, where δ1 is the sum of all elements of C1 , provided
+δ1 6= 0. When the sum of the generating elements is zero, Cheung and Godsil [10] proved
+that there are cubelike graphs G2 = X(Zd2 , C2 ) that have perfect state transfer at time π/4.
+They showed that the latter cubelike graphs correspond to self-orthogonal projective binary
+9
+
+codes that are even but not doubly even. Moreover, these cubelike graphs G2 are periodic
+at time π/2 and satisfy
+hu| exp(−itA(G2 ))|ui = e−iπ|C2 |/2 .
+(32)
+See Lemma 3.1 in [10] and the comments which followed it. So, G2 is periodic with period
+±1 provided |C2 | is even. Recall that the adjacency matrices of any two cubelike graphs
+commute since they share the same set of eigenvectors (namely, the columns of the Hadamard
+matrices). By Theorem 9, the double cover of the signed (multi)graph
+−
+Σ = G+
+1 ∪ G2
+
+(33)
+
+has perfect state transfer at time π/2 from u to u + δ1 for each u ∈ Zd2 .
+
+6
+
+Signed Quotients
+
+U
+Given a graph G = (V, E), a vertex partition π given by V = m
+k=1 Vk is called an equitable
+partition of G if for each j, k there are constants dj,k so that the number of neighbors in Vk
+of each vertex in Vj is dj,k ; this is independent of the choice of the vertex of Vj . That is, for
+each x ∈ Vj we have
+dj,k = |N(x) ∩ Vk |,
+(34)
+where N(x) = {y : (x, y) ∈ E} is the set of neighbors of x. When the context is clear, we
+use πj in place of Vj and π(u) to denote the partition which contains vertex u. The size of
+the equitable partition is denoted |π| = m. Let Pπ be the partition matrix of π defined as
+hx|Pπ |πk i = [[x ∈ πk ]]. It is more useful to work with the normalized partition matrix Qπ
+defined as:
+m
+X
+1
+p
+Qπ =
+Pπ |πk ihπk |.
+(35)
+|πk |
+k=1
+U
+For a signed graph Σ = G+ ∪ G− , we say a vertex partition π = m
+k=1 πk is equitable for Σ if
+−
+π is an equitable partition for both G+ and G− . We use d+
+and
+d
+j,k
+j,k to denote dj,k restricted
+±
++
+−
++
+−
+to G and G , respectively. Also, we let dj,k = dj,k − dj,k . Let A(Σ/π) be a symmetric
+m × m matrix with rows and columns indexed by the partitions of π and whose entries are
+defined by
+q
+d±
+j,k
+±
+hπj |A(Σ/π)|πk i = ±
+|d±
+(36)
+j,k dk,j |.
+|dj,k |
+Here, A(Σ/π) is the adjacency matrix of a weighted signed graph Σ/π (which we call the
+quotient of Σ modulo π).
+The next lemma generalizes a result for unsigned graphs (see Godsil [15]).
+Lemma 10. Let Σ = G+ ∪ G− be a signed graph and π be an equitable partition of Σ with
+a normalized partition matrix Qπ . Then:
+1. QTπ Qπ = I|π| .
+2. Qπ QTπ = diag(|πk |−1 J|πk | ).
+10
+
+3. Qπ QTπ commutes with A(Σ).
+4. A(Σ/π) = QTπ A(Σ)Qπ .
+Proof. The first two properties hold since the columns of Qπ are the normalized characteristic
+vectors of the partition matrix Pπ . The third property holds since for any a and b we have
+hb|A(Σ)Qπ QTπ |ai =
+
+X
+X
+1
+1
+hb|A(Σ)|ui =
+hv|A(Σ)|ai = hb|Qπ QTπ A(Σ)|ai.
+|π(a)|
+|π(b)|
+u∈π(a)
+
+v∈π(b)
+
+(37)
+
++
+
+−
+
+Given that π is equitable for both G and G , we have
+±
+d±
+j,k |πj | = dk,j |πk |.
+
+(38)
+
+Since A(Σ) = A(G+ ) − A(G− ), we have
+q
+d±
+hπj |PπT A(Σ)Pπ |πk i
+j,k
+T
+±
+p
+hπj |Qπ A(Σ)Qπ |πk i =
+=p
+= ± |d±
+j,k dk,j |,
+|πj ||πk |
+|πj ||πk |
+
+(39)
+
+where the sign is +1 if d±
+j,k > 0, and −1 otherwise. This proves property the last property.
+The following theorem generalizes a result in Bachman et al. [3] on the equivalence of perfect
+state transfer on unsigned graphs and their quotients. For completeness, we provide the proof
+which follows from Lemma 10.
+Theorem 11. Let Σ be a signed graph with an equitable partition π where vertices a and b
+belong to singleton cells. Then, for any time t
+hb| exp(−itA(Σ))|ai = hπ(b)| exp(−itA(Σ/π))|π(a)i.
+
+(40)
+
+Proof. Since A(Σ) commutes with QQT , we have (QQT A(Σ))k = A(Σ)k QQT for k ≥ 1.
+Given that a and b are in singleton cells, |π(a)i = QT |ai and |π(b)i = QT |bi. Thus, we have
+T
+
+hπ(b)|e−itA(Σ/π) |π(a)i = hπ(b)|e−itQ A(Σ)Q |π(a)i
+#
+"∞
+X (−it)k
+(QT A(Σ)Q)k QT |ai
+= hb|Q
+k!
+" ∞k=0
+#
+X (−it)k
+= hb|
+(QQT A(Σ))k QQT |ai
+k!
+k=0
+= hb|e−itA(Σ) QQT |ai,
+
+which proves the claim since QQT |ai = |ai because a belongs to a singleton cell.
+
+11
+
+(41)
+(42)
+(43)
+(44)
+
+7
+
+Many-Particle Quantum Walks
+
+In this section, we describe graph operators which arise naturally from k-particle quantum
+walk on an underlying graph G. These operators include symmetric powers, Cartesian
+quotients, and signed exterior powers.
+• The weighted Cartesian quotients were described by Feder [14] as a generalization of
+graphs studied by Christandl et al. [13, 12]. The construction in [14] is explicitly based
+on many-boson quantum walks on graphs. Subsequently, Bachman et al. [3] showed
+that these graphs G⊙k described by Feder are quotients of k-fold Cartesian product
+modulo a natural equitable partition.
+• The symmetric powers G{k} were studied by Audenaert et al. [2] in the context of graph
+isomorphism on strongly regular graphs. These graphs are equivalent to the k-tuple
+vertex graphs introduced by Zhu et al. [22] and were were later studied by Osborne
+[17] in connection with quantum spin networks. It can be shown that these graphs are
+based on many-particle quantum walks with hardcore bosons.
+V
+• The exterior powers k G and their perfect state transfer properties as signed graphs
+will be our main focus in this section. We formally define these graphs in the next
+section and connect them with many-fermion quantum walks.
+A common trait shared by these families of graphs is that they are derived from a k-fold
+Cartesian product Gk of an underlying graph G. The k-fold Cartesian product represents,
+in a natural way, a k-particle quantum walk on the graph G where the particles are distinguishable. Here, the edges of the Cartesian product represent scenarios where a single
+particle hops from its current vertex to a neighboring one. Since quantum particles are
+either fermions or bosons, this influences the resulting graph-theoretic construction in an
+interesting manner.
+In the fermionic regime, no two particle may occupy the same vertex due to the Pauli
+exclusion principle. Mathematically, this requires the removal of a “diagonal” set D consisting of all k-tuples with a repeated vertex. On the other hand, in the bosonic regime, the
+particles are allowed to occupy the same vertex. But in the so-called hardcore bosonic model,
+we are also required to remove the diagonal since these bosons are not allowed to occupy the
+same vertex although they lack the antisymmetric exchange property present in fermions.
+Since quantum particles are indistinguishable, the final step in these constructions “collapses” certain configurations of the particles in the k-fold Cartesian product. Mathematically, this simply involves a conjugation by either the symmetrizer (bosonic) or the antisymmetrizer (fermionic); more specifically, this is a projection to either the symmetric or
+anti-symmetric subspace of the underlying k-fold tensor product space (see Bhatia [6]).
+Therefore, the full construction of a graph G based on a k-particle quantum walk on G
+may be described via its adjacency matrix as:
+A(G) = Q† A(Gk \ D)Q.
+
+(45)
+
+In Equation (45), the matrix Q is the symmetrizer P∨ in the case of Cartesian quotients,
+the anti-symmetrizer P∧ in the case of exterior powers, or a hybrid in the case of symmetric
+12
+
+Graph
+weighted Cartesian quotients
+symmetric powers
+k-tuple vertex graphs
+signed exterior powers
+
+Notation
+G⊙k
+G{k}
+Uk (G)
+Vk
+G
+
+Particle
+bosonic
+hardcore bosonic
+fermionic
+
+Citation
+Feder [14], Bachman et al. [3]
+Audenaert et al. [2]
+Zhu et al. [22], Osborne [17]
+this work
+
+Figure 5: Graph operators from many-particle quantum walks on graphs.
+
+powers. Here, we borrow the notation P∨ and P∧ from Bhatia [6] (see also Audenaert et
+al. [2]). The diagonal set D is removed in all constructions except for Cartesian quotients;
+for exterior powers, this diagonal removal is implicitly done via the anti-symmetrizer P∧ .
+Overall, we will view G as a “quotient” of Gk modulo a suitable equitable partition.
+Cartesian quotients For a graph G on n vertices and a positive integer k, the Cartesian
+quotient G⊙k is a graph whose vertex set is the set of n-tuple of non-negative integers whose
+sum is k, that is,
+
+
+
+
+X
+⊙k
+V (G)
+V (G ) = a ∈ N
+:
+av = k ,
+(46)
+
+
+v∈V (G)
+
+and whose edges are the pairs (a, b) which satisfy
+
+(∃(u, v) ∈ E(G))[bu = au − 1 ∧ bv = av + 1 ∧ (∀w 6∈ {u, v})[aw = bw ]]
+(47)
+p
+with an edge weight of (au − 1)(av + 1). This construction corresponds to a k-boson
+quantum walk on G where the adjacency matrix of G⊙k is given by
+A(G⊙k ) = P∨† A(Gk )P∨ ,
+
+(48)
+
+and the resulting graph is weighted and unsigned. This class of graphs was studied by Feder
+[14] and then by Bachman et al. [3].
+Symmetric powers For a graph G on n vertices and a positive integer k where 1 ≤ k ≤ n,
+the symmetric kth power G{k} of G is a graph whose vertices are the k-subsets of V (G) and
+whose edges consist of pairs of k-subsets (A, B) for which A△B ∈ E(G). This construction
+corresponds to a k-hardcore boson quantum walk on G where bosons are not allowed to
+occupy the same vertex but without the fermionic antisymmetric exchange rule. Here, we
+have
+A(G{k} ) = (P (k) )† A(Gk \ D)P (k),
+(49)
+where P (k) is a “signless” variant of P∧ (see Audenaert et al. [2]) and D consists of k-tuples
+from V k which contain a repeated vertex. This class of unweighted and unsigned graphs was
+studied by Audenaert et al. [2] and also by Zhu et al. [22] and Osborne [17].
+
+13
+
+Exterior powers ForVa graph G on n vertices and a positive integer k where 1 ≤ k ≤ n,
+the exterior kth power k G is a graph whose vertices are the ordered k-subsets of V (G) and
+whose edges consist of pairs of ordered k-subsets (A, B) for which A△B ∈ E(G). Moreover,
+if π ∈ Sk is the unique permutation which yields Aπ(i) = Bi , for all i except for one j where
+(Aπ(j) , Bj ) ∈ E(G), then the edge (A, B) is assigned the sign sgn(π). This construction is
+based on a k-fermion quantum walk on G. Here, we have
+V
+A( k G) = P∧† A(Gk )P∧ ,
+(50)
+where P∧ implicitly removes a diagonal set consisting of k-tuples from V k with repeated
+vertices. The resulting graph is V
+signed. We remark that the graphs Uk (G) studied in [22, 17]
+are simply the exterior powers k G with
+Vk the signs ignored.
+We will define the exterior power
+G more formally in the following section.
+
+7.1
+
+Exterior Powers
+
+Given a graph G = (V, E) andVa positive integer k, where 1 ≤ k ≤ |V | − 1, the exterior kth
+power of G, which is denoted k G, is defined as follows. Suppose V = {v1 , . . . , vn } is the
+vertex set of G. We fix some (arbitrary) total ordering ≺ on V , say, v1 ≺ . . . ≺ vn . Let Vk
+be the k-subsets of V where each subset is ordered according to ≺. That is, we have
+ 
+V
+= {(u1, . . . , uk ) ∈ V k : u1 ≺ . . . ≺ uk }.
+(51)
+k
+
+The elements of Vk are often denoted as a “wedge” product u1 ∧ . . . ∧ uk , again under the
+condition that u1 ≺ .V
+. . ≺ uk . 
+V
+V
+V
+The vertex set of k G is Vk . The edge set of k G consists of pairs kj=1 uj and kj=1 vj
+for which there is a bijection π over [n] so that uπ(j) = vj for all j except at one index i where
+(u , v ) ∈ E(G); most importantly, the sign of this edge is defined to be sgn(π). Thus,
+
+Vkπ(i) i
+G is a signed graph on nk vertices. In summary, we have
+ 
+Vk
+V
+(52)
+V ( G) =
+k
+nV
+o
+V
+V
+E( k G) = ( kj=1 uj , kj=1 vj ) : (∃i)[(uπ(i) , vi ) ∈ E ∧ (∀j 6= i)[uπ(j) = vj ]]
+(53)
+Example: Let V = {a, b, c, d} be ordered as a ≺ b ≺ c ≺ d. Then,
+ 
+V
+= {a ∧ b, a ∧ c, a ∧ d, b ∧ c, b ∧ d, c ∧ d}.
+2
+
+(54)
+
+Suppose G is a 4-cycle defined
+V on V where a and d are not adjacent but are both adjacent to
+b and c; see Figure 6. Here, 2 G is a signed K2,4 with the bipartition given by {a ∧ d, b ∧ c}
+and {a ∧ b, a ∧ c, b ∧ d, c ∧ d}. All edges are positive except for the edges between a ∧ b and
+b ∧ c (since this requires a transposition to “align” the common vertex b) and between c ∧ d
+and b ∧ c (by a similar reasoning).
+14
+
+d
+
+b∧c
+c
+
+b
+
+a∧c
+
+a∧b
+
+a
+
+b∧d
+
+c∧d
+
+a∧d
+
+V
+Figure 6: (a) The four-cycle C4 ; (b) Its exterior square 2 C4 under the alphabetic vertex
+ordering a ≺ b ≺ c ≺ d. Dashed edges are negatively signed.
+V
+The algebraic view of k G will be more convenient for our purposes. For a permutation
+π ∈ Sk and a k-tuple u = (u1 , . . . , uk ), we denote π(u) to mean the element (uπ(1) , . . . , uπ(k) ).
+We consider the anti-symmetrizer operator Altn,k defined as
+Altn,k =
+v∈(
+
+X
+
+V
+k
+
+),π∈Sk
+
+sgn(π)
+√ |π(v)ihv|.
+k!
+
+(55)
+
+So, Altn,k is an injective map from the exterior vector space C( k ) to the tensor product space
+
+⊗k
+CV . For each v ∈ Vk , we have
+V
+
+Altn,k |vi =
+
+X sgn(π)
+√ |π(v)i.
+k!
+π∈Sk
+
+Moreover, AltTn,k is a surjective map from CV
+
+⊗k
+
+(56)
+
+V
+to C( k ) . For each u ∈ V ⊗k ,
+
+sgn(π)
+AltTn,k |ui = √ |vi,
+k!
+
+(57)
+
+
+where v ∈ Vk satisfies π(u) = v; here, π is the permutation that orders u according to the
+total order ≺. Next, we show that Altn,k defines a “signed” equitable partition on Gk . This
+V
+shows that k G is the quotient graph of Gk induced by Altn,k .
+
+Lemma 12. Let G be a graph on n vertices. For each positive integer k with 1 ≤ k ≤ n − 1:
+1. AltTn,k Altn,k = I(n) .
+k
+
+2. Altn,k AltTn,k commutes with A(Gk ).
+V
+3. A( k G) = AltTn,k A(Gk )Altn,k .
+
+Proof. The first property holds since the columns of Altn,k are normalized and form a vertex
+partition. For the second property, we note that for each a ∈ V ⊗k :
+Altn,k AltTn,k |ai =
+
+1 X
+sgn(π)Pπ |ai,
+k! π∈S
+k
+
+15
+
+(58)
+
+where Pπ denotes the permutation matrix which encodes the action of π on V ⊗k . Moreover,
+Pπ A(Gk ) = A(Gk )Pπ for each permutation π ∈ Sk . Therefore, for each a, b ∈ V ⊗k we have
+1 X
+sgn(π)ha|Pπ A(Gk )|bi
+k! π∈S
+k
+1 X
+=
+sgn(π)ha|A(Gk )Pπ |bi
+k! π∈S
+
+ha|Altn,k AltTn,k A(Gk )|bi =
+
+(59)
+(60)
+
+k
+
+= ha|A(Gk )Altn,k AltTn,k |bi.
+The third property holds since for each a, b ∈
+
+V
+k
+
+
+
+(61)
+
+we have
+
+1 X
+sgn(π1 ◦ π2 )hb|PπT1 A(Gk )Pπ2 |ai
+k! π ,π
+1 2
+1 X
+=
+sgn(π1 ◦ π2 )hb|A(Gk )Pπ1 ◦π2 |ai
+k! π ,π
+1 2
+X
+=
+sgn(π)hb|A(Gk )Pπ |ai.
+
+hb|AltTn,k A(Gk )Altn,k |ai =
+
+(62)
+(63)
+(64)
+
+π
+
+The last expression is either 0 or ±1 and agrees with the definition of adjacency on
+
+Vk
+
+G.
+
+Next, we show that if a graph G has k disjoint pairs of vertices with perfect state transfer,
+then so does the exterior kth power of G.
+Theorem 13. Let G be a graph with perfect state transfer at time t from vertex aj to vertex
+bj , for each j with 1 ≤ j ≤ k. Suppose that the collection {(aj , bj ) : 1 ≤ j ≤ k} are pairwise
+V
+V
+V
+disjoint. Then, k G has perfect state transfer from vertex kj=1 aj to vertex kj=1 bj .
+Proof. Let â =
+
+Vk
+
+j=1 aj and b̂ =
+
+Vk
+
+j=1 bj . The quantum walk on
+
+Vk
+
+G from â to b̂ is given by
+
+h
+i
+V
+k
+hb̂| exp −itA( k G) |âi = hb̂|AltTn,k e−itA(G ) Altn,k |âi
+(65)
+"
+#
+"
+#
+X
+1 X
+k
+sgn(π2 )|π2 (â)i (66)
+sgn(π1 )hπ1 (b̂)| e−itA(G )
+=
+k! π
+π2
+1
+1 X
+k
+sgn(π1 ◦ π2 )hπ1 (b̂)|e−itA(G ) |π2 (â)i
+(67)
+=
+k! π ,π
+1 2
+1 X
+k
+=
+hπ(b̂)|e−itA(G ) |π(â)i.
+(68)
+k! π
+This proves the claim.
+
+16
+
+Figure 7: Complete bipartite graphs. (a) The
+V2 unsigned K2,4 has perfect state transfer (since
+its quotient is P3 ). (b) The exterior square
+C4 has perfect state transfer (by Theorem 13)
+but on a different pair of vertices; dashed edges are negatively signed. Perfect state transfer
+occurs between vertices marked white within each case.
+
+8
+
+Conclusions
+
+In this work, we studied quantum walks on signed graphs. Our goal was to understand
+the effect of negatively signed edges on perfect state transfer. We explore this question in
+the cases of Cartesian products and graph joins. For the latter, we show that the join of
+a negative 2-clique with any 3-regular graph has perfect state transfer (unlike the unsigned
+join); moreover, the perfect state transfer time improves as the size of the 3-regular graph
+increases. Using the natural spanning-subgraph decomposition of signed graphs, we consider
+signed graphs obtained from regular graphs and their complements. This yields signed
+complete graphs which have perfect state transfer; in contrast, unsigned complete graphs
+do not exhibit perfect state transfer but are merely periodic. Most of our results show
+that signed graphs from multiple switching-equivalent classes of the same underlying graph
+may simultaneously have perfect state transfer. Finally, we consider a graph operator called
+exterior powers which had been studied elsewhere (but not in the context of signed graphs).
+We prove conditions for which the exterior power of a graph has perfect state transfer. These
+exterior powers of graph may be of independent interest especially in connection with many
+particle quantum walk on graphs.
+
+Acknowledgments
+The research was supported in part by the National Science Foundation grant DMS-1004531
+and also by the National Security Agency grant H98230-11-1-0206. We thank David Feder
+for helpful comments and for pointing out connection with the hardcore boson model.
+
+References
+[1] R.J. Angeles-Canul, R. Norton, M. Opperman, C. Paribello, M. Russell, and C. Tamon.
+Perfect state transfer, integral circulants and join of graphs. Quantum Information and
+Computation, 10(3&4):325–342, 2010.
+[2] K. Audenaert, C. Godsil, G. Royle, and T. Rudolph. Symmetric squares of graphs.
+Journal of Combinatorial Theory B, 97:74–90, 2007.
+17
+
+[3] R. Bachman, E. Fredette, J. Fuller, M. Landry, M. Opperman, C. Tamon, and A. Tollefson. Perfect state transfer on quotient graphs. Quantum Information and Computation,
+10(3&4):293–313, 2012.
+[4] M. Bašić and M. Petković. Some classes of integral circulant graphs either allowing
+or not allowing perfect state transfer. Applied Mathematics Letters, 22(10):1609–1615,
+2009.
+[5] A. Bernasconi, C. Godsil, and S. Severini. Quantum networks on cubelike graphs.
+Physical Review A, 78:052320, 2008.
+[6] R. Bhatia. Matrix Analysis. Springer-Verlag, 1997.
+[7] S. Bose. Quantum communication through an unmodulated spin chain. Physical Review
+Letters, 91(20):207901, 2003.
+[8] S. Bose, A. Casaccino, S. Mancini, and S. Severini. Communication in XYZ all-to-all
+quantum networks with a missing link. International Journal on Quantum Information,
+7(4):713–723, 2009.
+[9] A. Casaccino, S. Lloyd, S. Mancini, and S. Severini. Quantum state transfer through a
+qubit network with energy shifts and fluctuations. International Journal on Quantum
+Information, 7(8):1417–1427, 2009.
+[10] W.-C. Cheung and C. Godsil. Perfect state transfer on cubelike graphs. Linear Algebra
+and Its Applications, 435(10):2468–2474, 2011.
+[11] A. Childs. Universal computation by quantum walk.
+102:180501, 2009.
+
+Physical Review Letters,
+
+[12] M. Christandl, N. Datta, T. Dorlas, A. Ekert, A. Kay, and A. Landahl. Perfect transfer
+of arbitrary states in quantum spin networks. Physical Review A, 71:032312, 2005.
+[13] M. Christandl, N. Datta, A. Ekert, and A. Landahl. Perfect state transfer in quantum
+spin networks. Physical Review Letters, 92:187902, 2004.
+[14] D. Feder. Perfect quantum state transfer with spinor bosons on weighted graphs. Physical Review Letters, 97:180502, 2006.
+[15] C. Godsil. State transfer on graphs. Discrete Mathematics, 312(1):129–147, 2011.
+[16] C. Godsil and G. Royle. Algebraic Graph Theory. Springer, 2001.
+[17] T. Osborne. Statics and dynamics of quantum XY and Heisenberg systems on graphs.
+Physical Review B, 74:094411, 2006.
+[18] P. Pemberton-Ross and A. Kay. Perfect quantum routing in regular spin networks.
+Physical Review Letters, 106:020503, 2011.
+
+18
+
+[19] M. Underwood and D. Feder. Universal quantum computation by discontinuous quantum walk. Physical Review A, 82:042304, 2010.
+[20] T. Zaslavsky. Signed graphs. Discrete Applied Mathematics, 4:47–74, 1982.
+[21] T. Zaslavsky. A mathematical bibliography of signed and gain graphs and allied areas.
+Electronic Journal of Combinatorics, Dynamic Surveys 8:1–346, 2012.
+[22] B. Zhu, J. Liu, D. Lick, and Y. Alavi. n-tuple vertex graphs. Congressus Numerantium,
+89:97–106, 1992.
+
+19
+
+

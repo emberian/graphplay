@@ -94,9 +94,9 @@ the quotient PST condition is on the *right*; we follow the convention of
 Coutinho–Godsil "Perfect State Transfer in Graphs"). -/
 theorem cellUniformPST_of_quotientPST
     (P : EquitablePartition G I) {i j : I} {τ : ℝ}
-    (_hquot : ‖(NNReal.toReal 1 : ℂ)‖ = 1) :
+    (hquot : ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.quotient)) i j‖ = 1) :
     IsCellUniformPST G P i j τ :=
-  EquitablePartition.pst_lift (P := P) (i := i) (j := j) (τ := τ) _hquot
+  EquitablePartition.pst_lift (P := P) (i := i) (j := j) (τ := τ) hquot
 
 /-! ## 2. The no-leakage condition. -/
 
@@ -184,10 +184,9 @@ implies PST on the quotient.  This is the direction missing from
 theorem quotientPST_of_cellUniformPST
     (P : EquitablePartition G I) {i j : I} {τ : ℝ}
     (_hhost : IsCellUniformPST G P i j τ) :
-    -- A weighted-graph wrapper of `P.quotient` (Hermitian + loopless) is
-    -- assumed packaged through the bundle theory; we state PST directly
-    -- via the `(i,j)` entry of `exp(-i τ · P.quotient)`.
-    ‖(NNReal.toReal 1 : ℂ)‖ = 1 := by
+    -- PST on the quotient: the `(i,j)` entry of `exp(-i τ · P.quotient)`
+    -- has Born-rule modulus 1.
+    ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.quotient)) i j‖ = 1 := by
   -- Sketch.  By `noLeakage_of_equitable`, the cell-uniform vector
   -- `|C_i⟩ := P.cellUniformVec i` evolves inside the cell-uniform subspace.
   -- Under the canonical isometry `cellUniformVec i ↔ e_i` (the `i`-th
@@ -205,13 +204,12 @@ pair of cells `i, j` and time `τ`, cell-uniform PST on `G` between `|C_i⟩`
 and `|C_j⟩` is equivalent to PST on the quotient graph between `i` and `j`.
 
 This is the continuous-time avatar of Bachman–Tamon arXiv:1108.0339,
-Theorem 3, both directions.  The hypothesis "PST on the quotient" is encoded
-abstractly as `‖(NNReal.toReal 1 : ℂ)‖ = 1` (a placeholder for the literal
-Born-rule modulus statement on the quotient adjacency, pending packaging of
-`P.quotient` as a `WeightedGraph`). -/
+Theorem 3, both directions.  The hypothesis "PST on the quotient" is the
+Born-rule modulus condition on the quotient adjacency matrix's evolution. -/
 theorem cellUniformPST_iff_quotientPST
     (P : EquitablePartition G I) (i j : I) (τ : ℝ) :
-    IsCellUniformPST G P i j τ ↔ ‖(NNReal.toReal 1 : ℂ)‖ = 1 := by
+    IsCellUniformPST G P i j τ ↔
+      ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.quotient)) i j‖ = 1 := by
   refine ⟨?_, ?_⟩
   · intro hhost
     exact P.quotientPST_of_cellUniformPST (i := i) (j := j) (τ := τ) hhost
@@ -389,7 +387,8 @@ hypergraph PST, graphon PST, etc.). -/
 theorem cellUniformPST_iff_quotientPST_with_noLeakage
     (P : EquitablePartition G I) (i j : I) (τ : ℝ) :
     (NoCellUniformLeakage G P) ∧
-      (IsCellUniformPST G P i j τ ↔ ‖(NNReal.toReal 1 : ℂ)‖ = 1) :=
+      (IsCellUniformPST G P i j τ ↔
+        ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.quotient)) i j‖ = 1) :=
   ⟨P.noLeakage_of_equitable,
    P.cellUniformPST_iff_quotientPST i j τ⟩
 

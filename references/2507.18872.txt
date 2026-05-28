@@ -1,0 +1,1101 @@
+Optimising Perfect Quantum State Transfer for Timing Insensitivity
+Alastair Kay,1, ∗ Sooyeong Kim,2, † and Christino Tamon3, ‡
+2
+
+1
+Royal Holloway University of London, Egham, Surrey, TW20 0EX, UK
+Department of Mathematics and Statistics, University of Guelph, Guelph, ON, Canada N1G 2W1
+3
+Department of Computer Science, Clarkson University, Potsdam, New York, USA 13699-5815
+(Dated: July 28, 2025)
+
+arXiv:2507.18872v1 [quant-ph] 25 Jul 2025
+
+When studying the perfect transfer of a quantum state from one site to another, it is typically
+assumed that one can receive the arriving state at a specific instant in time, with perfect accuracy.
+Here, we study how sensitive perfect state transfer is to that timing. We design engineered spin
+chains which reduce their sensitivity, proving that this construction is asymptotically optimal. The
+same construction is applied to the task of creating superpositions, also known as fractional revival.
+
+Studies of perfect quantum state transfer (PST) [1–3]
+were originally motivated by a desire to simplify the act
+of moving quantum states around within a small quantum device, helping distant qubits to interact when only
+local interactions are available. Compared to the gate
+model’s sequence of swaps, state transfer can be significantly faster and less sensitive to timing errors. However, little has been done to optimise this insensitivity;
+it was asserted in [4, 5] that the original perfect transfer
+chain [2] was essentially optimal. This analysis was too
+naı̈ve, as we will show here. Since then, Kirkland [6] has
+provided tools to characterise the timing sensitivity, but
+does not address the optimisation problem. Other works
+[7, 8] have observed that it is possible to get very broad
+arrival peaks, although the method inherently introduces
+a massive cost that entirely precludes such schemes from
+practical consideration (the required time scales exponentially in the distance of transfer).
+In this paper, we design a family of perfect transfer N -qubit chains which are dependent upon an additional parameter γ. We prove that in the large γ limit,
+these chains are asymptotically optimal in the sense that
+they optimise the possible trade-off between state transfer time and arrival width, for any length of spin chain.
+We also show how this construction can be modified to
+allow the creation of a state superposed between opposite ends of the chain, a task known as fractional revival
+[4, 9–11], also with broad arrival characteristics. In comparison to the original perfect transfer chains, which have
+tightly peaked arrival statistics of the form sin2(N −1) (t),
+our new designs achieve, in the limit, sin6 (t) (or sin8 (t))
+for any even (or odd) chain length N of at least 4. Shorter
+perfect transfer chains are uniquely defined, so there is no
+optimisation to be performed. We leave largely open the
+question of chains with high fidelity transfer, faster than
+the fastest perfect transfer, with broad arrival width, except to numerically check the performance of some existing schemes. All detailed calculations are supported by
+examples, further details of which may be found in [12].
+
+∗ alastair.kay@rhul.ac.uk
+† sooyeong@uoguelph.ca
+‡ ctamon@clarkson.edu
+
+I.
+
+FIGURE OF MERIT
+
+In the task of state transfer on a N -qubit spin chain, a
+Hamiltonian H evolves an unknown quantum state, |ψ⟩,
+prepared on a single qubit A, aiming for that state to
+arrive at another site B after a fixed period of time t0 :
+⊗N −1
+
+e−iHt0 |ψ⟩A |0⟩
+
+= |0⟩
+
+⊗N −1
+
+|ψ⟩B .
+
+For an excitation preserving Hamiltonian,
+#
+"
+N
+X
+Zn = 0,
+H,
+n=1
+
+this problem is reduced to excitation transfer within an
+N -dimensional subspace on which the Hamiltonian is H0 :
+e−iH0 t0 |1⟩ = |N ⟩ .
+There is the possibility to include a phase in the arrival,
+but we will not unduly worry about that here.
+We restrict to a nearest-neighbour interaction such
+that H0 is a tridiagonal matrix, and we consider the fieldfree case of 0 on the diagonal. To achieve perfect transfer under these assumptions, the necessary and sufficient
+conditions are known [4]: the chain must be symmetric,
+i.e. SHS = H, where the symmetry operator is
+S=
+
+N
+X
+
+|N + 1 − n⟩ ⟨n| ,
+
+n=1
+
+and the spectrum, up to a scale factor tπ0 , has odd integer gaps between consecutive eigenvalues. Any such
+spectrum yields a perfect transfer chain – one just uses
+the Lanczos algorithm to rebuild the symmetric chain
+from the specified eigenvalues [4, 13, 14].
+In order to allow for imperfect transfer, whether this is
+due to an improperly designed H0 , error in manufacture,
+noise, or a timing imperfection, we need to quantify success. At a single moment in time, t, the state arriving
+at site B may be described by a density matrix ρ(t), and
+the corresponding figure of merit is the fidelity [1, 3, 4],
+p
+1 (1 + Fe (t))2
+F (t) = ⟨ψ| ρ(t) |ψ⟩ = +
+.
+3
+6
+
+2
+where Fe (t) is the fidelity of excitation transfer,
+Fe (t) = | ⟨N | e−iH0 t |1⟩ |2 .
+We are interested in how successful we are if timing
+goes a little bit wrong. To that end, we characterise the
+receiver’s operations by a function p(t), which specifies
+the probability that the state is received at time t. We
+imagine this p(t) to be a fixed function of the device and,
+whatever time one is aiming to receive the state at, t0 ,
+we receive the state at time t with probability p(t − t0 ).
+The natural figure of merit is the expected fidelity,
+Z ∞
+F̄ =
+F (t)p(t − t0 )dt
+0
+Z
+ p
+
+1 1 ∞
+p(t − t0 ) 2 Fe (t) + Fe (t) dt.
+= +
+2 6 0
+For simplicity, we consider the closely related quantity
+Z ∞
+F̃e =
+p(t − t0 )| ⟨N | e−iH0 t |1⟩ |dt.
+
+the spectrum {λn } of H0 , and the corresponding weights
+of the eigenvectors on the first/last site
+an = | ⟨1|λn ⟩ |2 = | ⟨N |λn ⟩ |2 .
+Given that
+
+F̃e =
+
+Z ∞
+
+p(δt) ⟨N | (e−iH0 t0 − iH0 δte−iH0 t0
+
+0
+
+−H02
+
+
+δt2 −iH0 t0
+e
++ O δt3 ) |1⟩ dt.
+2
+
+If we focus on perfect state transfer chains with a transfer
+time of t0 , then ⟨N | e−iH0 t0 = ⟨1|, and thus,
+Z ∞
+F̃e ≈
+0
+
+p(δt) 1 −
+
+δt2
+⟨1| H02 |1⟩ dt.
+2
+
+For a field-free Hamiltonian, ⟨1| H02 |1⟩ = J12 , the first
+(and last) coupling strength. In other words, to leading order, we should aim to minimise the first coupling
+strength. The symmetry between first and last coupling
+strengths means that we simultaneously optimise the departure and arrival characteristics.
+In order to ensure a fair comparison between different
+spin chains, we must impose some further constraints.
+Our aim is to find the best perfect state transfer chain for
+a given transfer distance (i.e. length of chain). We must
+impose a common maximum coupling strength Jmax .
+This already fixes that there is a single perfect transfer chain with the minimum possible transfer time tmin
+[15, 16], corresponding to the original perfect transfer
+chain [2]. Any other solution must be slower, and we are
+thus interested in the trade-off between transfer speed
+and insensitivity to timing errors.
+The original analysis due to Kay [4, 5] started from this
+approximation and decomposed the behaviour in terms of
+
+λ2n an ,
+
+n=1
+
+if it were possible to independently optimise {λn } and
+{an }, then you should centre the λn on 0 and give them
+as small a spread as possible, subject to the perfect state
+transfer condition that each eigenvalue is separated by at
+least tπ0 . This is achieved by the original chain, where all
+the gaps are exactly tπ0 . In fact,
+an ∝
+
+1
+,
+|q ′ (λn )|
+
+(1)
+
+where the characteristic polynomial of H0 is
+
+0
+
+While the function p(t) might vary from device to device, we generically expect it to be strongly peaked at
+t = 0. Hence, it makes sense to perform a small time
+expansion about this point:
+
+N
+X
+
+J12 =
+
+q(x) =
+
+N
+Y
+
+(x − λn ).
+
+n=1
+
+The fallacy of the argument is thus revealed; the an and
+the λn are not independent. This then begs the question, can one do any better? Perhaps by allowing greater
+separation of the λn , the corresponding
+P an can be made
+smaller (subject to the constraint n an = 1). This is
+exactly what we will achieve, once we have quantified
+what is the best that one could hope for.
+II.
+
+LIMITING BEHAVIOUR
+
+One key point of comparison is the original family
+perfect state transfer solutions [2, 3, 17], known as the
+Krawtchouk chains, which have coupling strengths
+p
+(2)
+Jn = J n(N − n).
+J is a scale factor. The excitation transfer fidelity is
+Fe = sin2(N −1) (Jt).
+
+(3)
+
+Given that these are the unique solution with the fastest
+possible perfect transfer [15, 16], they must be a limiting
+case. Indeed, for N = 2, 3, they are the unique solutions
+to perfect state transfer, and are certainly optimal in
+terms of the sensitivity to timing errors for those particular lengths. In the following subsection, we will prove
+that the N = 4, 5 cases are also optimal (i.e. have the
+smallest possible J1 for a fixed transfer time), while the
+primary purpose of the rest of the paper is to construct
+chains improve upon these ones at larger N .
+If a chain has perfect transfer at time t0 , then we know
+that by t0 , the initial state |1⟩ has evolved into an orthogonal state |N ⟩. The Mandelstam–Tamm theorem
+
+3
+[18] states that for an initial state |ψ⟩ to evolve into an
+orthogonal one, it must take a time at least
+
+using Eq. (1), where Γ allows us to renormalise such that:
+1=
+
+π
+q
+2
+2 ⟨ψ| H02 |ψ⟩ − ⟨ψ| H0 |ψ⟩
+
+2k
+X
+
+an
+
+n=1
+2k+1
+
+which, in the present case, is just 2Jπ1 . The Krawtchouk
+perfect
+chain, taking Jmax = 1, has J1 =
+ √ transfer
+
+O 1/ N , which already gives us a very small value of
+
+=
+
+2
+1 X (k+1) (k+1) 2
+)
+an
+(λ1
+− λ(k+1)
+n
+Γ n=2
+
+=
+
+1 (k+1) 2
+(k+1) 2
+(λ1
+− J1
+).
+Γ
+
+⟨N | H02 |N ⟩, but is far from saturating this limit, taking
+√
+time O(N ) rather than the limit of O N .
+
+Finally, we can work out the new coupling strength
+
+The Mandelstam-Tamm theorem was generalised in
+[19], giving us a statement
+
+2k+1
+2 (k+1) 2
+1 X (k+1) (k+1) 2
+2
+˜
+)λn
+a
+(λ1
+− λ(k+1)
+J1 =
+n
+Γ n=2 n
+
+Fe ≤ sin2 (J1 t).
+
+(k+1) 2 (k+1) 2
+J1
+J2
+(k+1) 2
+(k+1) 2
+= J1
+−
+< J1
+.
+
+This shows the optimal arrival function as a function of
+time, while also letting us handle the case where there is
+not perfect transfer during the evolution.
+
+A.
+
+Improved Bound
+
+The Mandelstam-Tamm theorem is quite effective, but
+applies in a very general setting. By imposing perfect
+transfer, a stronger limit can be found.
+Theorem 1. For a chain of odd (or even) length N ≥ 4
+with perfect excitation transfer in time t0 ,
+J12 ≥
+where α = 2 (or α =
+
+√
+
+Γ
+
+(k)
+
+It follows that J1
+
+Before we can prove this, we need a helpful result:
+Lemma 1. For k ≥ 1, let H (k) be the family of fieldfree tridiagonal matrices of size Nk (where Nk+1 = Nk +
+2 with N1 = 4 or 5) that exhibit perfect state transfer
+in time t0 and have the smallest possible first coupling
+(k)
+(k+1)
+(k)
+strength J1 . Then, it must be that J1
+> J1 .
+Proof. We can start with H (k+1) and use it to construct
+a new H̃ (k) which has perfect transfer and a value of
+(k+1)
+(k)
+J˜1 < J1
+. By definition, it must be that J1 ≤ J˜1 .
+
+(k+1) 2
+
+.
+
+Proof of Theorem 1. We now know that for a fixed perfect transfer time t0 , and a given chain length Nk ≥ 4,
+(1)
+(k)
+(1)
+J1 ≤ J1 . Our aim is to determine J1 .
+In the even length case, we could reduce all the way
+down to length 2, recovering the Mandelstam-Tamm
+limit. For a tighter bound, consider a length 4 chain
+with couplings {J1 , J2 , J1 }. This has eigenvalues
+
+
+q
+1
+±J2 ± 4J12 + J22 .
+2
+
+J12 =
+
+− λ2n )/Γ
+
+π2
+(4n2 − (2m + 1)2 ),
+4t20
+
+we pick n = 1, m = 0 to minimise J12 , conveying that
+√
+π 3
+(m)
+J1 ≥ J1 ≥
+.
+2t0
+In the case of odd N , we take a chain of length 5 with
+couplings {J1 , J2 , J2 , J1 }, which has eigenvalues
+q
+0, ±J1 , ± J12 + 2J22 .
+
+(k+1)
+
+To construct H̃ (k) , take the ordered eigenvalues λn
+(k+1)
+of H (k+1) , remove ±λ1
+from the spectrum, and find
+the corresponding symmetric chain.
+Such a chain certainly has PST in the time t0 because
+we have not altered the spacings of any of the remaining
+eigenvalues. What is its value of J12 ? We can write the
+first elements of the eigenvectors as
+(k+1)
+
+(k+1)
+
+There
+are therefore gaps in this system of size J2 and
+p
+4J12 + J22 − J2 , both of which must
+p be odd multiples of
+π
+.
+Thus,
+J
+=
+(2m
++
+1)π/t
+and
+4J12 + J22 = 2nπ/t0
+2
+0
+t0
+for non-negative integers n, m. Rearranging for J1 ,
+
+πα
+2t0
+
+3).
+
+an = an+1 (λ1
+
+≤ J˜1 < J1
+
+Since each consecutive gap is an odd multiple of tπ0 ,
+(k)
+
+J1
+
+≥ J1 = (2m + 1)
+
+π
+π
+≥ .
+t0
+t0
+
+Incidentally, this proves that the perfect state transfer
+chains of length 4,5 with the optimal value of ⟨1| H02 |1⟩
+are the Krawtchouk chains [2].
+
+4
+All other eigenvalues large
+with large gaps
+
+R evenly spaced
+eigenvalues
+
+Effective R vertex perfect
+Evolution transfer chain
+
+Figure 1. For a chain of length N , we engineer perfect transfer by choosing a spectrum with odd integer gaps (left). To
+achieve a broad arrival width, we choose a central core of
+R eigenvalues, and clear out the rest of them, making them
+large, and with large gaps. The end-to-end evolution is described by an effective length R perfect transfer chain.
+III.
+
+THE T-REX CONSTRUCTION
+
+We will now design spin chains of arbitrary length N
+with very broad arrival/departure characteristics which
+are sure to perform well for any reasonable function p(t).
+The cost, as expected, is in terms of the state transfer
+time. We refer to our method, depicted in Fig. 1, as the
+T-Rex as the net result is a chain with puny little arms
+at either end. We select a set of R eigenvalues (R and N
+should have the same parity), with uniform spacing, centred on 0, gap 1 (e.g. 0, ±1, ±2, . . .). We will then select
+the remaining N − R eigenvalues, symmetrically about
+0 and satisfying perfect state transfer conditions, but at
+much higher values, O(γ), each separated by O(γ) (e.g.
+5γ
+R
+± γ2 , ± 3γ
+2 , ± 2 , . . ., where γ ≫ 2 and γ is an odd integer). Having selected the target eigenvalues, an inverse
+eigenvalue problem for a symmetric tridiagonal system is
+easily solved [4, 13, 20]. The spectral structure is similar to that of [21], except that we actively retain a small
+number of eigenvalues close to 0.
+P
+The idea is that by Eq. (1) and normalisation,
+an =
+1, the first R eigenvectors have an of order 1, while the
+others, which we have cleared well away from the central
+region, are of O γ 1−R . At large γ, the effect of those
+large eigenvalues is negligible for an initial state |1⟩ =
+P
+√
+an |λn ⟩. The arrival statistics will be essentially be
+n
+the same as those for a Krawtchouk chain of length R,
+
+
+πt
+,
+Fe ≈ sin2(R−1)
+2t0
+improving over the Krawtchouk’s arrival profile, Eq. (3).
+Let us select a spectrum
+1 3 γ
+3γ
+± ,± ,± ,± ,
+2 2 2
+2
+
+Figure 2. Comparison of the excitation transfer fidelity for
+the T-Rex chain of length 8 (solid) with target arrival function
+(dashed). We chose to plot γ = 13 since, for larger values,
+the two curves were essentially indistinguishable.
+
+aiming to create a length 8 chain with
+t
+Fe ≈ sin6 .
+2
+Solving the inverse eigenvalue problem yields a chain
+with the following couplings (γ = 149)
+0.8729
+
+10.54
+
+128.0
+
+150
+
+128.0
+
+10.54
+
+0.8729
+
+In Fig. 2, we compare the evolution of the constructed
+T-Rex chain with the claimed sin6 functionality. The
+relevant code may be found in [12].
+As a first approximation, we can describe the couplings as deriving from three different elements.
+• The central N − R spins are coupled by a
+J = γ Krawtchouk chain Hc , accounting for the
+± γ2 , ± 3γ
+2 eigenvalues.
+• The two extremal couplings are the ends of a
+length R = 4 Krawtchouk chain.
+• The remaining two couplings, K, are
+K 2 ⟨1| Hc−1 |N − R⟩ =
+
+R
+.
+4
+
+The right-hand side is the central coupling
+strength of the length R Krawtchouk chain.
+These approximations predict the chain to be
+0.8660
+
+10.57
+
+129.0
+
+149
+
+129.0
+
+10.57
+
+0.8660
+
+By construction, the T-Rex chain is symmetric and has
+eigenvalues with odd integer gaps. It has perfect transfer
+at time t0 = π. We just need to assess how broad its
+arrival/departure peak is. We start by estimating the
+coupling strengths.
+
+-T
+am
+
+dN
+
+m
+
+Optimal
+PST Time
+
+m
+
+5
+
+M
+
+an
+de
+lst
+a
+
+nd
+
+b
+ed
+v
+o
+r
+
+for
+
+≥
+
+5
+
+od
+
+J12 = ⟨1| H02 |1⟩ ≈
+
+ou
+
+ √
+2
+2 R−1
+γ(N − R)
+
+(R ≥ 4) with a perfect transfer time of
+
+p
+
+Im
+
+After rescaling, we therefore achieve a value of
+
+t0 =
+Apollaro
+
+πγ(N − R)
+.
+4
+
+Thus, overall, we find
+√
+π R−1
+J1 t0 →
+2
+
+Figure 3. Comparison of Mandelstam-Tamm limit, and improvement of Theorem 1 to that achieved by embedding
+R = 5, 7, 9 (blue, orange, green) cases into a length 51 chain,
+with varying values of γ. The R = 5 case, in the large time
+limit, tends to the bound. See [12].
+
+in the large γ limit. For R = 4, this is asymptotically
+optimal according to Theorem 1. An equivalent calculation using Tr H02 S [16] gives the same result for odd N ,
+so that R = 5 is asymptotically optimal. We can see this
+realised in Fig. 3, where the R = 5 case tends towards
+the limiting behaviour.
+
+Starting at one end of the chain, we can evaluate
+X
+an λkn .
+⟨1| H0k |1⟩ = ⟨N | H0k |N ⟩ =
+n
+
+Provided k < R−1, the an λkn values of the large eigenval-
+
+ues vanish for large γ. The calculation, to a good approximation, is just that that one would perform for a PST
+chain of length R. The
+⌊ R−2
+ first
+2 ⌋ coupling strengths
+p
+1+2n−R
+are n(R − n)/2 + O γ 2
+(Eq. (2) with J = 12 ,
+determined by the choice of gap size). These extremal
+arms are a puny O(1) strength, compared to the central
+region, which we will now see are a strength O(γ).
+To 
+evaluate
+couplings, calculate
+P then+1central
+Tr H0k S =
+λkn progressively for increasing
+n (−1)
+k (some modification is required if N is odd [16]). These
+must be entirely dominated by the large γ terms for the
+length of an N − R qubit chain (where the next coupling
+would be reported to be 0, and hence the small terms
+have a chance to be impactful).
+We must rescale everything by the maximum coupling
+strength, and track the change to the transfer time, t0 →
+πJmax . We claim that the largest coupling strength is
+the central one; in the limit of large γ, the regime of our
+primary interest, this is certainly true as the couplings
+of the Krawtchouk chain increase monotonically towards
+the centre, but whether it changes at finite γ remains
+unclear. We can be exact about the central coupling (N
+even), following [15]. Specifically,
+X
+2JN/2 = Tr(H0 S) =
+λn (−1)n+1
+n
+N −R R
+N −R
+=γ
++ (−1) 2
+.
+2
+2
+
+This deviates from the crudely estimated approximation
+by only an amount R2 , which is small compared to γ.
+
+A.
+
+Smaller R
+
+Clearly, it is preferable to reach as small a value of R as
+possible. We have easily argued the behaviour for R ≥ 4,
+but wish to know more about the cases R = 2, 3.
+We can still numerically evaluate the coupling coefficients of our T-Rex system in the cases of R = 2, 3, we
+just don’t have the analytic backing. In these instances,
+indeed, we get evolution corresponding to sin2 and sin4
+which, in their respective size cases (even, odd length
+chains respectively) are clearly optimal in terms of the
+broad arrival width. However, due to the difficult interactions of the small/large terms, they do not saturate the
+⟨1| H02 |1⟩ approximation. Presumably there are enough
+high-frequency variations to adversely affect the interpretation of ⟨1| H02 |1⟩ even though, at longer timescales, we
+do not see these effects.
+Consider a symmetric chain of length 8 and spectrum
+±1, ±(1 + 2γ), ±(1 + 4γ), ±(1 + 6γ).
+For odd integer γ this has perfect transfer in a time
+t0 = π2 . Once rescaled so that the maximum coupling
+strength is 1, this yields a T-Rex chain (γ = 51):
+0.086
+
+0.866
+
+0.712
+
+1
+
+0.712
+
+0.866
+
+0.086
+
+In Fig. 4, we plot this case, chosen at an intermediate
+regime to emphasise why the ⟨1| H02 |1⟩ term fails. In
+the large γ limit, the sin2 behaviour emerges, but the
+transfer time is impacted. While the MandelstamTamm limit conveys that a transfer with this width
+could be implemented in a time as short as t0 = 18.3,
+this takes a factor O(γ) longer at t0 ≈ 320.
+
+Excitation Transfer Fidelity
+
+6
+
+Time
+
+Figure 4. A T-Rex system where R = 2 and N = 8. Although
+J12 = ⟨1| H02 |1⟩ is comparatively large, implying poor arrival,
+this is due to the thin peaks. As γ → ∞, these peaks vanish
+and the overall optimal sin2 dependence emerges.
+
+While the case of R = 2 suffers from a γ blow-up of the
+transfer time in achieving its sin2 behaviour, the R = 3
+case achieves the near-optimal sin4 behaviour with only
+an O(1) multiplier to the transfer time (observed numerically). To see why, imagine that the extremal couplings
+J1 = JN −1 ∼ γ1 are small, and are the only small ones. In
+the R = 2 case, an analysis at second order of degenerate
+perturbation theory (because the central chain does not
+have a 0 eigenvalue) conveys that there are two eigenvalues at approximately ±J12 , and so perfect transfer must
+take a time at least O J1−2 . On the other hand, when
+R = 3, the central chain is of odd length, and has a 0
+eigenvalue. The degenerate perturbation theory analysis
+proceeds at first order; there is a splitting O(J1 ) and so
+the evolution takes a time O J1−1 .
+
+IV.
+
+ROBUSTNESS TO PERTURBATIONS
+
+The focus of this work has been to has been to create a transfer system with a broad arrival peak. We
+have done this effectively by fusing two chains together;
+a short section (e.g. R = 4, 5) which is divided into two
+halves, becoming the puny arms of the T-Rex, attached
+at either end of a second chain, of much greater coupling
+strengths, mediating communication. Effectively, perfect
+state transfer is achieved on the short chain, almost entirely ignoring the second chain except for this mediation it creates. So, what happens if, when we manufacture this chain, the central section is a little bit wrong?
+Fig. 5 conveys that, numerically, the effect on the transfer
+would be minimal, yielding almost an order of magnitude
+improvement! This is in spite of the fact that the R = 4
+chain has over 20 times longer than the Krawtchouk chain
+to accumulate the adverse effects of the perturbation.
+
+Figure 5. Comparison of robustness to perturbations between
+Krawtchouk chain and an R = 4 T-Rex (γ = 21) for chains
+of length 50 with maximum coupling strength of 1. Perturbations are only applied to the central
+√ 45 couplings. Plotted
+values are the upper quartile of 1 − Fe after 10000 samples
+(independently chosen uniformly at random in the range ±δ,
+for perturbation strength δ), in order to represent the process
+of manufacturing multiple samples, testing them, and rejecting the worst. Smaller is better.
+
+V.
+
+ENCODED TRANSFER
+
+Another scenario in which the quality of transfer can
+be optimised is the use of encoding [22] (see also [23–27]).
+Here, we identify a set of vertices A on which a singleexcitation state can be encoded, and a set of sites B on
+which it is received. The optimal states for input and
+output at time t are the right- and left-singular vectors
+of the maximum singular value of the operator
+ΠB e−iH0 t ΠA
+P
+where ΠX = i∈X |i⟩⟨i|. This is easily modified to take
+into account timing inaccuracy since
+Z
+F̃e = p(t) ⟨ψdec | ΠB e−iH0 t ΠA |ψenc ⟩ dt.
+F̃e is optimised by selecting the singular vectors corresponding to the maximum singular value of the operator
+Z
+M = p(t)ΠB e−iH0 t ΠA dt.
+Computationally, it is easier to work with the approximation M̃ = −ΠB H02 e−iH0 t ΠA , but this presupposes that
+the encoding yields perfect transfer at the time t0 .
+When applied to the uniform chain [27, 28], this optimisation makes very little difference to the known analytic result for maximising the fidelity of transfer because
+the transferring wavepacket already has a very broad
+peak, and is only supported on the low-frequency eigenvectors (the linear part of the spectrum). Nevertheless,
+we can see that improvements are possible in other cases.
+
+7
+
+Increasing size of
+encoding region
+
+Figure 7. Fractional revival on a chain of length 11, using a
+T-Rex chain (blue) and the ideal sin8 behaviour (dashed).
+Figure 6. Arrival of a state through a length 51 perfect transfer chain with encoding/decoding regions of size (1, 3, 5, 7).
+VI.
+
+A.
+
+Case Study
+
+We shall take as a case study a perfect transfer chain of
+length N , and encoding and decoding regions of size M
+(odd) at opposite ends of the chain. Any initial state restricted to the encoding region A must transfer perfectly
+to the decoding region B in the perfect transfer time t0 .
+We are therefore free to pick the encoding to optimise
+the timing insensitivity. The optimal may be found by
+finding the smallest singular value of
+−M̃ = ΠA SH02 ΠA .
+We numerically plot some results in Fig. 6, observing
+how the arrival peak steadily broadens as we increase
+the size of the decoding region. An alternative approach,
+(which must be sub-optimal [29], but we find interesting
+for the connections it makes), is to consider the eigenvectors |λn ⟩ of H0 . Similar to the approach for achieving perfect transfer by encoding [25, 26], we find the
+state supported on the input site that is orthogonal to
+(M −1)/2
+{|λn ⟩ , |−λn ⟩}n=1
+. Since this encoding is no longer
+supported on the highest energy eigenvectors, the highest
+frequency components are eliminated, and the arrival/departure peak must be broadened. This strategy is effectively achieving the same as Lemma 1, except without
+physically changing the chain. Were we to apply it to
+the uniform chain, it would effectively be achieving the
+results of [30]. The advantages seem negligible, however
+– by increasing the size of the encoding region, you are
+decreasing the transfer distance and you are only improving the arrival/departure width to the same extent
+that shortening the chain to the transfer distance would
+achieve. On the other hand, the advantage of encoding is
+that it can be applied after manufacture, and can adapt
+to manufacturing imperfections.
+
+TIME INSENSITIVE FRACTIONAL
+REVIVAL
+
+In [4, 10], a conversion was given such that any odd
+length chain possessing perfect excitation transfer |1⟩ →
+|N ⟩ can be modified into one with fractional revival,
+|1⟩ → cos 2θ |1⟩ + sin θ |N ⟩ .
+All that needs to be changed is the central two coupling
+strengths are updated
+√
+J(N −1)/2 → J(N −1)/2 2 cos(θ),
+√
+J(N +1)/2 → J(N +1)/2 2 sin(θ).
+The rest are unchanged, as is the evolution time t0 . Using the T-Rex construction of Section III must realise a
+solution with an asymptotically optimal arrival profile.
+Consider a T-Rex perfect transfer chain with N = 9,
+R = 5, t0 = π2 and γ = 11. We only change the
+√
+central two couplings J5 = J6 into J˜5 = 2J5 cos π8
+√
+and J˜6 = 2J5 sin π8 .
+1.01
+
+2.04
+
+12.8
+
+18.7
+
+7.75
+
+12.8
+
+2.04
+
+1.01
+
+In time t0 , we now create the evolution
+1
+|1⟩ → √ (|1⟩ + |9⟩).
+2
+If we measure the probability of this state having arrived as a function of time, then close to the arrival
+time, the probability behaves like the optimal sin8 behaviour (away from this, there is some deviation because the initial state is not orthogonal to the target
+state). This evolution is depicted in Fig. 7.
+There is a second method for creating fractional revival
+chains [31]. In this case, we take the spectrum of a perfect
+state transfer chain. The eigenvalues are alternately associated with the symmetric and anti-symmetric subspaces.
+
+8
+In the perfect transfer time, both exhibit a perfect revival, with a relative phase of −1. If we shift the spectrum of the antisymmetric subspace relative to the symmetric one, both still exhibit perfect revivals, but with a
+different relative phase θ. This means that the state at
+this time is 21 ((|1⟩+|N ⟩)+eiθ (|1⟩−|N ⟩)) which is, again, a
+perfect revival. The T-Rex chains can be adapted in the
+same way, providing fractional revival chains with broad
+arrival/departure peaks that are asymptotically optimal
+for their insensitivity to timing errors. This construction
+is not limited by the parity of the chain length.
+VII.
+
+SUMMARY
+
+In this paper, we have resolved how insensitive a perfect state transfer chain can be made to timing errors.
+Unlike the original, naı̈ve, analysis, we achieve a broad
+arrival peak of the form Fe = sin6 (t) or sin8 (t) for any
+even or odd length of chain respectively. We have proven
+that this is asymptotically optimal by specialising the
+Mandelstam-Tamm bound to the specific circumstance
+of perfect state transfer. The resulting chains are also
+very robust against perturbations. We also applied the
+same T-Rex construction to fractional revivals. Examples of all of these may be found in [12].
+The limit at which we work moves the operating regime
+of these spins chains away from the useful working limit
+of the optimal perfect state transfer time. The optimal
+performance at these shorter times remains open, with a
+modest gap between the current best-known chains and
+
+[1] S. Bose, Quantum Communication through an Unmodulated Spin Chain, Phys. Rev. Lett. 91, 207901 (2003).
+[2] M. Christandl, N. Datta, A. Ekert, and A. J. Landahl,
+Perfect State Transfer in Quantum Spin Networks, Phys.
+Rev. Lett. 92, 187902 (2004).
+[3] M. Christandl, N. Datta, T. C. Dorlas, A. Ekert, A. Kay,
+and A. J. Landahl, Perfect transfer of arbitrary states in
+quantum spin networks, Phys. Rev. A 71, 032312 (2005).
+[4] A. Kay, A Review of Perfect State Transfer and its Application as a Constructive Tool, Int. J. Quantum Inform.
+8, 641 (2010).
+[5] A. Kay, Perfect state transfer: Beyond nearest-neighbor
+couplings, Phys. Rev. A 73, 032306 (2006).
+[6] S. Kirkland, Sensitivity analysis of perfect state transfer
+in quantum spin networks, Linear Algebra Appl. 472, 1
+(2015).
+[7] G. Lippner and Y. Shi, Quantifying State Transfer
+Strength on Graphs with Involution, Quantum Inf. Process. 23, 166 (2024).
+[8] G. Lippner and Y. Shi, Strong quantum state transfer
+on graphs via loop edges, Linear Algebra Appl. 704, 77
+(2025).
+[9] B. Chen, Z. Song, and C. P. Sun, Fractional revivals of
+quantum state in tight-binding chain, Phys. Rev. A 75,
+012113 (2007), arXiv:quant-ph/0603033.
+
+what the limit of Theorem 1 allows. Moreover, Theorem 1 does not cover the case of high fidelity transfer
+chains which to not achieve perfect transfer, but may
+achieve their transfer on shorter timescales, such as the
+Apollaro chain [32], or perhaps the chains that interpolate between uniform and PST [30]. While the Apollaro chain has a shorter arrival time, its arrival peak is
+thinner, so the net performance is worse, as indicated in
+Fig. 3. Perhaps these chains could be further designed
+to improve performance over the perfect transfer ones,
+whether by achieving a similar arrival profile at a shorter
+time, or better arrival profile at the same time. There
+is some potential for a reanalysis of [32]: if we define
+a sub-optimal target fidelity, then one can vary over the
+available parameters that all achieve this baseline fidelity,
+and find the one with the broadest arrival peak. We leave
+this, or other routes towards improved arrival profile for
+high fidelity transfer, for future investigation.
+The insights of the T-Rex construction are profound,
+and extend well beyond the present aim. In state transfer, we can also apply the ideas to uniform networks,
+while in algorithmic scenarios, the puny arms are remarkably effective in both quantum search and matrix
+inversion. These will be elucidated in future works.
+ACKNOWLEDGMENTS
+
+C.T. is supported by National Science Foundation
+grant OSI-2427020. We thank Ada Chan and PierreAntoine Bernard for helpful discussions.
+
+[10] L. Dai, Y. P. Feng, and L. C. Kwek, Engineering quantum
+cloning through maximal entanglement between boundary qubits in an open spin chain, J. Phys. A: Math.
+Theor. 43, 035302 (2010).
+[11] L. Banchi, E. Compagno, and S. Bose, Perfect wavepacket splitting and reconstruction in a one-dimensional
+lattice, Phys. Rev. A 91, 052323 (2015).
+[12] A. Kay, C. Tamon, and S. Kim, Time-Insensitive
+Perfect
+State
+Transfer
+Supporting
+Notebook,
+https://doi.org/10.17637/rh.29336069 (2025).
+[13] P. Karbach and J. Stolze, Spin chains as perfect quantum
+state mirrors, Phys. Rev. A 72, 030301(R) (2005).
+[14] G. M. L. Gladwell, The Inverse Mode Problem for
+Lumped-Mass Systems, Q J Mechanics Appl Math 39,
+297 (1986).
+[15] M.-H. Yung, Quantum speed limit for perfect state transfer in one dimension, Phys. Rev. A 74, 030303(R) (2006).
+[16] A. Kay, W. Xie, and C. Tamon, A Note on the Speed of
+Perfect State Transfer (2022), arXiv:1609.01854.
+[17] C. Albanese, M. Christandl, N. Datta, and A. Ekert,
+Mirror Inversion of Quantum States in Linear Registers,
+Phys. Rev. Lett. 93, 230502 (2004).
+[18] L. Mandelstam and Ig. Tamm, The Uncertainty Relation Between Energy and Time in Non-relativistic Quantum Mechanics, in Selected Papers, edited by I. E.
+
+9
+Tamm, B. M. Bolotovskii, V. Y. Frenkel, and R. Peierls
+(Springer, Berlin, Heidelberg, 1991) pp. 115–123.
+[19] J. Anandan and Y. Aharonov, Geometry of quantum evolution, Phys. Rev. Lett. 65, 1697 (1990).
+[20] G. M. L. Gladwell, ed., Inverse Problems in Vibration,
+Solid Mechanics and Its Applications, Vol. 119 (Kluwer,
+Dordrecht, 2005).
+[21] R. Bailey, S. Costa, M. Derevyagin, C. Findley, and
+K. Zuang, Hamiltonians that realize perfect quantum
+state transfer and early state exclusion, Quantum Inf.
+Process. 24, 51 (2025).
+[22] H. L. Haselgrove, Optimal state encoding for quantum
+walks and quantum communication over spin systems,
+Phys. Rev. A 72, 062326 (2005).
+[23] C. Keele and A. Kay, Combating the effects of disorder
+in quantum state transfer, Phys. Rev. A 105, 032612
+(2022).
+[24] C. Keele and A. Kay, Noise-reducing encoding strategies
+for spin chains, Phys. Rev. A 105, 032613 (2022).
+
+[25] A. Kay, Encoded State Transfer: Beyond the Uniform
+Chain (2022), arXiv:2207.12189 [quant-ph].
+[26] A. Kay, Incorporating Encoding into Quantum System
+Design (2022), arXiv:2207.01954 [quant-ph].
+[27] A. Kay, Interfacing with Hamiltonian dynamics, Phys.
+Rev. A 79, 042330 (2009).
+[28] T. J. Osborne and N. Linden, Propagation of quantum
+information through a spin system, Phys. Rev. A 69,
+052315 (2004).
+[29] The {an } for the eigenvectors that we remove are small,
+making
+contribution to the weighted averP a negligible
+age
+an λ2n , so removing them completely will be less
+effective than removing weight from some other terms.
+[30] L. Vinet and A. Zhedanov, Quantum state transfer with
+sufficient fidelity (2024), arXiv:2412.02321 [quant-ph].
+[31] V. X. Genest, L. Vinet, and A. Zhedanov, Quantum spin
+chains with fractional revival, Annals of Physics 371, 348
+(2016).
+[32] T. J. G. Apollaro, L. Banchi, A. Cuccoli, R. Vaia, and
+P. Verrucchi, Phys. Rev. A 85, 052319 (2012).
+
+

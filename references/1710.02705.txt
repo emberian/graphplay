@@ -1,0 +1,895 @@
+A graph with fractional revival
+
+arXiv:1710.02705v1 [math-ph] 7 Oct 2017
+
+Pierre-Antoine Bernarda , Ada Chanb , Érika Lorangera , Christino Tamonc ,
+Luc Vineta,∗
+a
+
+Centre de Recherches Mathématiques, Université de Montréal, C.P, 6128, Montréal,
+QC, Canada, H3T 3J7
+b
+Department of Mathematics and Statistics, York University, Toronto, ON, Canada,
+M3J 1P3
+c
+Department of Computer Science, Clarkson University, Postdam, NY, USA, 13699-5815
+
+Abstract
+An example of a graph that admits balanced fractional revival between antipodes is presented. It is obtained by establishing the correspondence between the quantum walk on a hypercube where the opposite vertices across
+the diagonals of each face are connected and, the coherent transport of single excitations in the extension of the Krawtchouk spin chain with next-tonearest neighbour interactions.
+Keywords: Quantun walks, Fractional revival, Graphs, Hamming scheme,
+Spin chains.
+1. INTRODUCTION
+This article provides an example of a graph that exhibits balanced fractional revival (FR) at two sites. FR [1] is observed during a quantum walk
+process when an initially localized state evolves so that after some time it has
+non-vanishing probability amplitude uniquely at a number of isolated places.
+FR is said to be balanced if these probabilities are equal at each site. This
+phenomenon has been shown to occur in spin chains [2, 3]. In these systems,
+a state having at first a single excitation at one end is found, after finite time,
+Corresponding author
+Email addresses: BernardPierreAntoine@outlook.com (Pierre-Antoine Bernard),
+ssachan@yorku.ca (Ada Chan), erikaloranger@yahoo.ca (Érika Loranger),
+ctamon@clarkson.edu (Christino Tamon), luc.vinet@umontreal.ca (Luc Vinet)
+∗
+
+Preprint submitted to Elsevier
+
+June 19, 2018
+
+with non-zero amplitudes for this spin up, only at both ends. Balanced FR
+can thus serve as a mechanism to generate maximally entangled states.
+A special case of fractional revival is when the revival takes place at a
+single site (with probability one). If this site is the one where the spin up was
+initially located, perfect return occurs. Otherwise, if it is a different site (for
+instance the opposite end of the chain), one speaks of perfect state transfer
+(PST). PST in spin chains is attracting much interest [4, 5, 6] especially
+for the design of quantum wires that would require a minimum of external
+control. PST can also be realized in photonic lattices, i.e. in arrays of
+optical waveguides [7, 8]. It has been shown that non-uniform couplings are
+required in these devices for PST beyond a few sites [9]. Favored models
+are those where the couplings between the nearest neighbours are related
+to the recurrence coefficients of the Krawtchouk polynomials; they are often
+referred to by that name for that reason [10].
+These advances have prompted the study of PST in spin networks; here
+the one excitation Hamiltonian is provided by the adjacency matrix of the
+underlying graph. PST on graphs has been much analysed and the reader
+is invited to read [11] and [12] for reviews. Little consideration has been
+given to FR on graphs however. A significant observation that has been
+made [9, 13] is that PST between antipodes of the one-link hypercube is
+tantamount to end-to-end perfect transport in the Krawtchouk spin chain.
+This is established by showing that the quantum walk on the graph projects
+onto the one on the line or PN , with appropriate weights for the N links.
+PST occurs in the Krawtchouk chain with nearest-neighbour (NN) couplings;
+it is however easy to check that FR is not possible in this model. In view of
+the preceding point, the same goes for the hypercube, namely this graph will
+not support FR.
+As it turns out, an extension of the NN-Krawtchouk model that includes
+interactions between next-to-nearest neighbours (NNN) has been designed
+recently [14] and found to admit balanced FR under certain conditions. We
+shall use these results here, to find a graph with FR, by showing that the
+quantum walk between antipodal points on that graph projects equivalently
+to the NNN one-excitation dynamics of the chain known to have FR. This
+graph will be identified as a hypercube where the opposite vertices across
+the diagonals on each face are connected and where all these links have the
+same weight relative to the one attributed to the edges of the hypercube.
+2
+
+The remainder of the paper will proceed as follow. We shall first remind
+the reader of the NNN extension of the Krawtchouk spin chain and of its
+PST and FR properties. We shall follow by reviewing basic features of Hamming graphs and their adjacency matrices. Their relation to the Krawtchouk
+polynomials will be brought up. We shall further recall how the connection
+between quantum walks on the hypercube and on the one-dimensional graph
+with Krawtchouk weights is made by restricting the adjacency matrix to an
+appropriate “column” subspace. We shall then determine the graph whose
+restriction to that subspace yields the NNN one-excitation dynamics. Concluding remarks will be offered and the paper will end with an Appendix
+where the occurrence of FR on the graph is verified directly.
+2. FRACTIONAL REVIVAL IN THE KRAWTCHOUK SPIN CHAIN
+WITH NEXT-TO-NEAREST NEIGHBOUR INTERACTIONS
+We shall consider a spin chain with the following Hamiltonian of type
+XX on (C)⊗N where N spins interact with their nearest and next-to-nearest
+neighbours:
+N
+
+1 X (1) x x
+y
+y
+x
+H=
+J (σn σn+1 + σny σn+1
+) + Jn(2) (σnx σn+2
++ σny σn+2
+) + Bn σnz
+2 n=1 n
+(1)
+
+(2)
+
+(1)
+
+(2)
+
+where JN = 0 and JN = JN −1 = 0. As usual, σnx , σny and σnz stand for the
+Pauli matrices with the index n indicating on which of the C factors they
+act.
+The coupling constants are built from the recurrence coefficients of the
+Krawtchouk polynomials. (See (19) below.) Let
+Jn =
+
+1p
+n(N − n).
+2
+
+(2)
+
+The nearest-neighbour (NN) couplings are taken to be
+Jn(1) = βJn
+
+(3)
+
+with β an energy scale parameter. The next-to-nearest neighbour (NNN)
+couplings are chosen as
+Jn(2) = αJn Jn+1
+(4)
+3
+
+with α another parameter. Finally, the Zeeman terms will be specified by
+2
+Bn = α(Jn2 + Jn−1
+).
+
+(5)
+
+(2)
+
+Observe that when α = 0, Jn = Bn = 0 and the NN Krawtchouk model
+with no magnetic field is recovered. Note also that slight changes have been
+made with respect to [14]: we are here taking N (instead of N + 1) to be the
+total number of sites and have modified the range of n accordingly.
+Owing to rotational symmetry around the z-direction, H preserves the
+total number of spins that are up along the chain. It will suffice here to
+consider chain states that have only one excitation or spin up. A natural
+basis for that subspace is given by the vectors
+|ni = (0, 0, ..., 0, 1, ...0)T
+
+n = 1, ..., N
+
+(6)
+
+with the only 1 in the nth position. This vector is associated to a single spin
+up at the nth site. The action of H on those state is
+(1)
+
+(2)
+
+H |ni = Jn(2) |n + 2i + Jn(1) |n + 1i + Bn |ni + Jn−1 |n − 1i + Jn−2 |n − 2i . (7)
+We remark that if we define the matrix J by
+J |ni = Jn |n + 1i + Jn−1 |n − 1i
+
+(8)
+
+H |ni = (αJ 2 + βJ) |ni .
+
+(9)
+
+we have
+Fractional revival (FR) at two sites occurs if there is a time τF R such that
+e−iτF R H |ni = µ |0i + ν |Ni
+
+(10)
+
+with µ,ν ∈ C such that |µ|2 + |ν|2 = 1. In other words, FR takes place
+if the dynamics allows to evolve the state with a spin up localized at site
+1 into a state that is “revived” at both ends of the chain. FR is balanced
+when |µ| = |ν| = √12 in which case, a maximally entangled state has been
+generated at time τF R . The special case of FR that happens when µ = 0 is
+referred to as perfect state transfer (PST) since the spin up at site 1 is then
+transported at site N with probability one after a time we will denote τP ST .
+The NN Krawtchouk chain (α = 0) is well known to admit PST at τP ST = πβ .
+4
+
+The coherent transport of single excitation along the NNN Krawtchouk
+spin has been studied in [14]. In summary, the findings are as follows. It
+is first noted that FR can not be found in the NN situation when α = 0.
+When α 6= 0, balanced FR can happen. Apart from an overall phase factor,
+µ would be real, ν pure imaginary and |µ| = |ν| = √12 . There are conditions
+on α, β and N.
+i. Case β 6= 0:
+The ratio αβ must be a rational number:
+p
+α
+=
+β
+q
+
+(11)
+
+where p and q are coprime integers. FR will happen if in addition,
+• p is odd
+
+• q and N have different parities.
+
+The time at which balanced FR will then occur first is
+τF R =
+
+πq
+.
+2β
+
+(12)
+
+PST will be found in these circumstances at double the FR time:
+if p is even and q
+τP ST = 2τF R . PST is also possible at τP ST = πq
+β
+odd even though FR can not be realized in this case.
+ii. Case β = 0:
+FR and PST as well, are possible only when N is odd. The minimal
+times are for FR,
+π
+τF R =
+(13)
+2α
+and for PST, τP ST = 2τF R .
+3. ELEMENTS OF THE BINARY HAMMING SCHEME
+We shall now review properties of certain Hamming graphs that will be
+used to obtain a lift to a graph with FR, of the single excitation dynamics of
+the spin chain with NNN couplings that we have described in the last section.
+Recall that a graph G = (V, E) consists of a set V of vertices and of a
+set E of edges that are two-element subsets of V . Edges might be assigned
+weights. With |V | the cardinality of V , the adjacency matrix of a graph G
+5
+
+is the |V | × |V | matrix whose Axy entry for x, y ∈ V is equal to the number
+of edges between the vertices x and y.
+We shall focus on graphs in the binary Hamming scheme [16] H(M, 2). In
+this case, V = {0, 1}M , i.e., vertices are labelled by sequences of M-tuples of
+0s and 1s. The Hamming distance d(x, y) between the vertices x and y is the
+number of positions where the M-tuples x and y differ. We shall denote by
+Gi , i = 0, 1, . . . , M, the graph whose edges are connecting all pairs of vertices
+with Hamming distance i. G1 is the M-dimensional hypercube: the edges
+connect the M-tuples which differ in exactly one place. G2 has the same
+vertices as G1 , but the edges are between opposite vertices of each face of
+the hypercube.
+We shall denote by Ai the adjacency matrix of the graph Gi . The intersection numbers pkij = pkji count how many z ∈ V there are such that d(x, z) = i
+and d(y, z) = j if d(x, y) = k. It follows that the matrices A0 = I, A1 , . . . , AM
+verify the relations
+Ai Aj =
+
+M
+X
+
+pkij Ak
+
+i, j ∈ {1, 2, . . . , M}
+
+k=0
+
+(14)
+
+of the Abelian Bose-Mesner algebra [16, 17, 18].
+It is easily seen [18, 19] that pki1 is a tridiagonal matrix. Indeed,
+Ai A1 = ci+1 Ai+1 + bi−1 Ai−1
+
+0≤i≤M
+
+(15)
+
+with
+ci+1 = i + 1
+
+bi−1 = M − i + 1
+
+(16)
+
+where cM +1 = b−1 = 0. This is found as follows. The number ci+1 = pi+1
+i1
+counts how many z there are such that d(x, z) = i and d(y, z) = 1 if d(x, y) =
+i+1. To find this number, take x = (0, 0, . . . , 0) and y = (1, 1, . . . , 1, 0, . . . , 0)
+with i + 1 1s, this ensures that d(x, y) = i + 1. It is seen that z must
+be obtained from y by changing one of the 1s to a 0 and there are i + 1
+ways of doing this. Similarly, bi−1 = pi−1
+counts the number of z such
+i1
+that d(x, z) = i and d(y, z) = 1 if d(x, y) = i − 1. Picking x = (0, . . . , 0)
+and y = (1, . . . , 1, 0, . . . , 0) with i − 1 1s in this case, we observe that z
+must be obtained from y by converting one of the 0s to a 1 and there are
+M − i + 1 possibilities. Finally, it is readily noted that there are no z such
+that d(x, z) = i and d(y, z) = 1 when d(x, y) = i and hence pii1 = 0.
+6
+
+A particular case of (15) and (16) is
+A21 = 2A2 − M · I
+
+(17)
+
+This relation will be used in the next section. More generally, it follows
+from (15) that Ai = pi (A1 ) with pi (A1 ) a polynomial of degree i in A1 . By
+considering the M eigenvalues λs , s = 1, . . . , M, of A1 which are distinct, we
+have a real-valued function which is expressed as follows
+pi (λs ) = Ki (s; 2, M)
+
+(18)
+
+with λs = M − 2s and initial conditions K−1 = 0, K0 = 1, in terms of the
+Krawtchouk orthogonal polynomials Kn (x; q, M) defined by the recurrence
+relation
+(n+1)Kn+1(x) = [(M −n)(q −1)+n−qx]Kn (x)−(q −1)(M −n+1)Kn−1(x).
+(19)
+The appearance of these orthogonal polynomials in both the spin chain and
+the Hamming scheme H(M, 2) is already suggestive of a connection that we
+shall make explicit in what follows.
+4. PROJECTING A WEIGHTED HAMMING GRAPH ONTO
+THE SPIN CHAIN
+It has been shown in [9] that the NN Krawtchouk spin chain can be
+obtained by projecting quantum walks on the one-link hypercube onto a
+“column” subspace. We shall review how this is done and then build upon
+this result to identify the graph that will exhibit the same dynamics as that
+of the NNN Krawtchouk chain. This will yield in particular the conditions
+for that graph to exhibit FR.
+To establish the correspondence, we shall take the parameter M of Section
+3 to be M = N − 1. To the vertices x ∈ V = {0, 1}N −1 , we shall associate
+orthonormalized vectors |xi ∈ C|V | , with |V | = 2N −1 , such that
+
+1 if d(x, y) = 0
+hx|yi =
+(20)
+0 otherwise
+for x, y ∈ V . In this framework the entries of the adjacency matrix A are
+given by Axy = hx| A |yi. Let (0) ≡ (0, 0, . . . , 0) denote a corner and organize
+V as a set of N columns Vn , n = 1, . . . , N, defined by
+Vn = {x ∈ V : d(0, x) = n − 1}.
+7
+
+(21)
+
+In other words, the vertices of the nth column are n − 1 edges away from the
+corner (0). The number kn of vertices in the column Vn is therefore given by
+−1
+kn = Nn−1
+. Let us then label by Vn,m , m = 1, . . . , kn , the vertices in column
+Vn , every one has n − 1 1s. In G1 , each Vn,m is connected to the (N − n)
+elements of column Vn+1 obtained by converting a 0 of this Vn,m to a 1.
+Consider now the column space taken to be the linear span of the column
+vectors given by
+kn
+1 X
+|col ni = √
+|Vn,mi
+kn m=1
+
+n = 1, . . . , N.
+
+(22)
+
+The key observation, already made in [13], is that the evolution with the
+adjacency matrix A1 preserves the column space because every vertex in
+column Vn is connected to the same number of vertices in column Vn+1 and
+vice-versa. It follows that we can project on column space when considering
+quantum walks on G1 starting at (0)
+Following [9], let us compute the matrix elements of A1 in the basis (22)
+of the column subspace:
+1
+
+kn+1
+
+kn
+XX
+
+hVn+1,m′ | A1 |Vn,m i
+kn+1 kn m′ =1 m=1
+1
+= p
+kn (N − n)
+kn+1 kn
+p
+n(N − n) = 2Jn .
+=
+
+hcol n + 1| A1 |col ni = p
+
+(23)
+(24)
+(25)
+
+In obtaining (23), one can first pick a vertex in Vn , compute the scalar products with the (N − n) vertices to which it is linked in Vn+1 and then sum
+over the kn vertices in Vn . We thus observe that
+hcol n + 1| A1 |col ni = 2 hn + 1| J |ni
+
+(26)
+
+with J specified in (8).
+There is no need to repeat the argument for hcol n − 1| A1 |col ni since
+the outcome is given by symmetry. Owing to the fact that Axy = Ayx ,
+hcol n − 1| A1 |col ni = hcol n| A1 |col n − 1i = 2Jn−1 .
+8
+
+(27)
+
+We thus reach the conclusion that the hypercube G1 has the same behavior
+as the NN Krawtchouk spin chain and we may infer that PST occurs on the
+hypercube knowing that this is so along the spin chain.
+Let us now turn our attention to the NNN model and look for a graph
+that will project onto it under restriction to the same column space. In
+view of the fact that the 1-excitation Hamiltonian of the NNN spin chain
+is given by αJ 2 + βJ (see (9)), it is clear from (26) that the matrix HG =
+α 2
+A + β2 A1 will project onto the desired dynamics in one dimension. This HG
+4 1
+can be expressed as the adjacency matrix of a weighted graph by recalling
+the relation between A1 and A2 , given (17). This leads to
+α
+β
+α
+A2 + A1 + (N − 1)I
+(28)
+2
+2
+4
+for the graph Hamiltonian HG . The constant term is simply an overall energy
+shift. One can hence conclude that the appropriate graph is the union G1 ∪G2
+with the edges of G2 weighted by the relative factor αβ with respect to those
+of G1 .
+HG =
+
+We shall confirm this proposition directly by determining how A2 projects
+onto column space. By definition, A2 connects vertex vectors associated to
+(N − 1)-tuples that are at distance 2 one from an other. Within the column
+picture, there are two possibilities for this to happen. The first is between
+elements of the columns Vn and Vn±2 since they are respectively at distance
+n − 1 and n + 1 or n − 3 from (0). The second is between elements of a single
+column Vn that differ in two positions, one such G2 edge would be between
+the vertices (1, . . . , 1, 0, . . . , 0) and (0, 1, . . . , 1, 0, . . . , 0) each with n − 1 1s.
+
+Let us first consider hcol n + 2| A2 |col ni. Take a Vn,m in Vn . To obtain
+an element in Vn+2 , one needs to replace two 0s by two 1 in the (N −1)-tuples
+Vn,m which has (n − 1) 1s. One thus finds 21 (N − n)(N − n − 1) different
+vertices in Vn+2 that are at distance 2 from Vn,m in Vn and one arrives at the
+following:
+hcol n + 2| A2 |col ni = p
+
+1
+
+kn+2
+
+kn
+XX
+
+hVn+2,m′ | A2 |Vn,m i
+kn+2 kn m′ =1 m=1
+1
+= p
+kn (N − n)(N − n − 1)
+2kn+2 kn
+1p
+n(n + 1)(N − n)(N − n − 1)
+=
+2
+9
+
+(29)
+(30)
+(31)
+
+using kn =
+
+N −1
+. We thus see that
+n−1
+
+
+
+hcol n + 2| A2 |col ni = 2Jn Jn+1
+
+(32)
+
+and by symmetry one has
+hcol n − 2| A2 |col ni = 2Jn Jn−1 .
+
+(33)
+
+Let us examine now hcol n| A2 |col ni. Again pick a vertex Vn,m in Vn .
+All vertices obtained from Vn,m by replacing one 1 by one 0 and one 0 by
+one 1 will still be in Vn and at a distance 2 from Vn,m . (Those obtained by
+interchanging ℓ 0s and 1s will again be in Vn but at greater distance 2ℓ if
+ℓ > 1). There are (n − 1)(N − n) ways of picking a 1 and a 0 to permute
+them. Hence,
+k
+
+k
+
+n
+n X
+1 X
+hcol n| A2 |col ni =
+hVn,m′ | A2 |Vn,m i
+kn ′ m=1
+
+(34)
+
+m =1
+
+= (n − 1)(N − n).
+
+(35)
+
+Now note that
+1
+[n(N − n) + (n − 1)(N − n + 1)]
+4
+1
+[2(n − 1)(N − n) + (N − 1)].
+=
+4
+
+2
+=
+Jn2 + Jn−1
+
+(36)
+(37)
+
+It follows that
+hcol n|
+
+A2 1
+2
++ (N − 1)I |col ni = Jn2 + Jn−1
+.
+2
+4
+
+(38)
+
+Equation (32), (33) and (38) show not surprisingly that 12 A2 + 41 (N −
+1)I has the same matrix elements in the column vector basis as 14 A21 . This
+confirms that we may take
+HG =
+
+β
+α
+A2 + A1
+2
+2
+
+(39)
+
+as a lift on V = {0, 1}N −1 (up to a constant) of the 1-excitation Hamiltonian
+of the NNN Krawtchouk chain. From this correspondence, we can claim that
+G1 ∪ G2 offers an example of a graph where FR can take place. This graph
+10
+
+corresponds to an hypercube where vertices across the two diagonals of each
+face are connected by an edge in addition to those of the cube. The graph
+Hamiltonian is given by (39). It follows that the edges of G1 must all have
+weight β2 and those of G2 be given weight α2 . The conditions and time for FR
+are the same as those given in (2), (3) and (4) for the NNN Krawtchouk chain.
+If β 6= 0, we must have αβ = pq with p and q coprime integers. Furthermore, for
+FR to happen p must be odd and q and N must have opposite parities. Under
+πq
+those conditions, FR will happen at time τF R = 2β
+. If β = 0, H G = α2 A2
+π
+and FR will happen if N is odd at time τF R = 2α
+.
+It is interesting to determine if and when FR can occur in unweighted
+graphs. Take for this α = β = 2. With this choice all the edges have weight
+1. One then has αβ = 11 ; the condition p odd is satisfied and N must be even.
+In this case, τF R = π4 . If β = 0, FR happens again at time τF R = π4 , but for
+N odd.
+5. CONCLUSION
+This paper has offered a description of the 1-excitation dynamics of a spin
+chain with NNN couplings in terms of a quantum walk on a graph belonging
+to the binary Hamming scheme.
+It is known that quantum walks generated by spin chains and classical
+birth and death processes are intimately connected [21]. It is worth pointing
+out that the construction presented here is also related to the generalization
+of the Ehrenfest model developed in [22]. This reference offers an exact solution of a Markov process that involes nearest and next-to-nearest neighbours.
+Although this analysis in [22] is framed in terms of matrix orthogonal polynomials, the pentadiagonal one-step transition probability is in fact obtained,
+up to a constant term, as a quadratic expression with fixed coefficients in the
+Jacobi matrix of the Krawtchouk polynomials.
+The main result of the present paper is to have obtained an example of
+a graph that shows FR if the parameters are appropriately chosen. This has
+been achieved via a correspondence with a spin chain known to possess FR. A
+direct graph-theoretic verification is provided in the Appendix that follows.
+It would of course be of significant interest to undertake a more systematic
+and intrinsic study of FR on graphs. This has been initiated [23] and should
+be reported on in the near future.
+
+11
+
+ACKNOWLEDGMENTS
+A.C., C.T. and L.V. would like to thank Matthias Christandl, Gabriel
+Coutinho and Harmony Zhan for their input and support. E. L. has received a
+Marie Curie scholarship from the Département de Physique of the Université
+de Montréal. The research of L.V is supported by a discovery grant from the
+National Science and Engineering Research Council (NSERC) of Canada.
+
+Appendix A. BALANCED FRACTIONAL REVIVAL ON G1 ∪
+G2
+We have seen that the evolution governed by the graph Hamiltonian H G =
+α
+A + β2 A1 on G1 ∪ G2 projects to the dynamics of single excitations on the
+2 2
+
+NNN Krawtchouk chain. Based on this correspondence, we have claimed
+that FR takes place on G1 ∪ G2 owing to the properties of the spin chain.
+We offer a direct graph-theoretic verification of this assertion here.
+We have noted that the eigenvalues of the adjacency matrices Ai of the
+H(n, 2) scheme are given by pi (λs ) = Ki (s; 2, M) with λs = M − 2s. From
+the recurrence relation (19), we have in particular
+p1 (λs ) = M − 2s
+
+(A.1)
+
+1
+p2 (λs ) = [(M − 2s)2 − M].
+(A.2)
+2
+The Krawtchouk polynomials are also known [19] to have the following explicit expression
+
+
+ 
+M
+−n, −x
+;2
+(A.3)
+Kn (x; 2, M) =
+2 F1
+−M
+n
+in terms of the hypergeometric series
+
+ X
+∞
+(a)k (b)k xk
+−n, −x
+F
+;
+2
+=
+2 1
+−M
+(c)k k!
+
+(A.4)
+
+k=0
+
+with (a)k = a(a + 1) . . . (a + k − 1), etc.
+It is readily checked from (A.3) that
+pM (λs ) = (−1)s .
+12
+
+(A.5)
+
+Denote by E(s), the projectors on the eigenspaces associated to the eigenvalues λs . We have the spectral decomposition
+β
+
+α
+
+e−iτ H G = e−iτ [ 2 A2 + 2 A1 ]
+M
+X
+β
+α
+=
+e−iτ [ 2 p2 (λs )+ 2 p1 (λs )] E(s).
+
+(A.6)
+
+s=0
+
+Recall that M = N − 1 in the model. From (A.5), we have that AN −1 =
+P
+s
+s (−1) E(s).
+We want to confirm that
+
+
+A0 ± iAN −1
+−iφ′
+−iτ H G
+√
+=e
+e
+(A.7)
+2
+for the prescribed values of α, β and τ . Indeed the matrix relation (A.7) is
+tantamount to balanced FR between antipodal vertices.
+Write the eigenvalues of H̄G as Es . Using (A.1) and (A.2) one finds
+
+
+α
+β
+τ Es = τ
+p2 (λs ) + p1 (λs )
+(A.8)
+2
+2
+
+
+α
+β
+= τ
+(N − 1)(N − 2) + (N − 1)
+4
+2
+2
++ τ αs − τ α(N − 1)s − τ βs.
+(A.9)
+Let
+Ms = 4τ αs2 − 2τ α(N − 1)s − 2τ βs
+τ
+δ = [α − α(N − 1) − β].
+2
+
+(A.10)
+(A.11)
+
+Write
+
+β
+α
+φ = τ [ (N − 1)(N − 2) + (N − 1)] + δ.
+4
+2
+For even values of s we have
+
+(A.12)
+
+τ E2s = φ + Ms − δ
+
+(A.13)
+
+τ E2s+1 = φ + Ms + 4τ αs + δ.
+
+(A.14)
+
+while for odd values we find
+
+13
+
+If β 6= 0, FR is supposed to occur at τ = πq/2β with α/β = p/q, p and q
+coprime, p odd and q and N of opposite parity. Note that with these values
+of the parameters
+
+
+1
+2
+Ms = 2π ps − (p(N − 1) + q)s .
+(A.15)
+2
+This is a multiple of 2π since the FR conditions ensure that p(N − 1) + q is
+even. Thus e−iMs = 1. Note also that e−i(4τ αs) = e−2iπp = 1. It remains to
+focus on
+π
+δ = [p − (p(N − 1) + q)] .
+(A.16)
+4
+Given that p(N − 1) + q is even and p is odd,
+
+
+1±i
+iδ
+.
+(A.17)
+e =± √
+2
+For the odd values of s, the sign in front of δ changes so that
+
+
+1 ± i(−1)s
+−iτ Es
+−iφ′
+√
+e
+=e
+2
+
+(A.18)
+
+′
+
+with e−iφ = ±e−iφ .
+It follows that
+e−iH G =
+
+N
+−1
+X
+
+e−iτ Es E(s)
+
+(A.19)
+
+s=1
+
+X (1 ± i(−1)s )
+√
+E(s)
+2
+s
+
+A0 ± iAN −1
+−iφ′
+√
+= e
+2
+
+= e−iφ
+
+′
+
+(A.20)
+(A.21)
+
+as expected.
+Similarly when β = 0, FR is predicted to happen if N is odd and τ =
+π/2α. In this case,
+Ms = 2πs2 − π(N − 1)s
+(A.22)
+is a multiple of 2π because N −1 is even. Moreover 4τ αs = 2πs and δ = π4 N.
+This implies again (A.7).
+
+14
+
+REFERENCES
+References
+[1] R.W. Robinett. Quantum wave packet revivals. Physics Reports, 392,
+1-119, 2004.
+[2] L. Banchi, E. Compagno, S. Bose. Perfect wave-packet splitting and
+reconstruction in a one-dimensional lattice. Physical Review A, 91,
+052323, 2015.
+[3] V. Genest, L. Vinet, A. Zhedanov. Quantum spin chains with fractional
+revival. Annals of Physics, 371, 348-367, 2016.
+[4] S. Bose. Quantum communication through spin chain dynamics: an
+introductory review. Contemporary Physics, 48, 13-30, 2007.
+[5] A. Kay. A review of perfect state transfer and its applications as a
+constructive tool. International Journal of Quantum Information, 8,
+641-676, 2010.
+[6] G.M. Nikolopoulos, I. Jex. Quantum state transfer and network engineering. Springer, 2014.
+[7] A. Perez-Leija, R. Keil, A. Kay, H. Moya-Cessa, S. Nolte, L.-C. Kwek,
+B.M. Rodriguez-Lara, A. Szameit, D.N. Christodoulides. Coherent
+transport in photonic lattices. Physical Review A, 87, 012309, 2013.
+[8] R.J. Chapman, M. Santandrea, Z. Huang, G. Corrielli, A. Crespi, M.-H.
+Yung, R. Osellame, A. Peruzzo. Experimental perfect state transfer of
+an entangled photonic qubit. Nature Communications, 7, 11335, 2016.
+[9] M. Christandl, N. Datta, T.C. Dorlas, A. Ekert, A. Kay, A.J. Landahl.
+Perfect transfer of arbitrary states in quantum spin networks. Physical
+Review A, 71, 032312, 2005.
+[10] C. Albanese, M. Christandl, N. Datta, A. Ekert. Mirror inversion of
+quantum states in linear registers. Physical Review Letters, 93, 230502,
+2004.
+[11] C. Godsil. State transfer on graphs. Discrete Mathematics, 312, 123147, 2012.
+15
+
+[12] V. Kendon, C. Tamon. Perfect state transfer in quantum walks on
+graphs. Journal of Computational and Theoretical Nanoscience, 8, 422433, 2011.
+[13] A. Childs, E. Farhi, S. Gutmann. An example of the difference between
+quantum and classical random walks. Quantum Information Processing,
+1, 35-43, 2002.
+[14] M. Christandl, L. Vinet, A. Zhedanov. Analytic next-to-nearest neighbor XX models with perfect state transfer and fractional revival. Physical Review A, 96(3), 032335, 2017.
+[15] L. Vinet, A. Zhedanov. How to construct spin chains with perfect state
+transfer. Physical Review A, 85, 012323, 2012.
+[16] A.E. Brouwer, A.M. Cohen, A. Neumaier. Distance-Regular Graphs.
+Springer, 1989.
+[17] E. Bannai, T. Ito. Algebraic Combinatorics. Benjamin/Cummings, 1984.
+[18] E. Bannai. Orthogonal polynomials in coding theory and algebraic combinatorics. In Orthogonal Polynomials: Theory and Practice, P. Nevai
+(ed.), NATO ASI series, Vol. 294, 25-53, Springer, 1990.
+[19] D. Stanton. Orthogonal polynomials and combinatorics. In Special
+Functions 2000: Current perspective and future directions, J. Boustoz,
+M.E.H. Ismail, S. Suslov (eds.), NATO science series, Vol. 30, 389-409,
+Springer, 2001.
+[20] L. Chihara, D. Stanton. Zeros of generalized Krawtchouk polynomials.
+Journal of Approximation Theory, 60, 43-57, 1990.
+[21] F.A. Grünbaum, L. Vinet, A. Zhedanov. Birth and death processes and
+quantum spin chains. Journal of Mathematical Physics, 54, 062101,
+2013.
+[22] F.A. Grünbaum. Block tridiagonal matrices and a beefed-up version of
+the Ehrenfest urn model. In Modern Analysis and Applications, V.M.
+Adamyan et al. (eds.), Operator Theory: Advances and Applications,
+Vol. 190, 267-277, Springer, 2009.
+[23] A. Chan, G. Coutinho, C. Tamon, L. Vinet, H. Zhan. In preparation.
+16
+
+

@@ -116,25 +116,84 @@ bounded measures (or, more carefully, by the L²(μ⊗μ) norm of the kernel —
 
 The Hermitianness assumption translates into self-adjointness of `op`. -/
 
-/-- The graphon integral operator on `L²(μ; ℂ)`.
+/-- The pointwise (Bochner) integrand of the graphon operator: for a
+representative function `f : Ω → ℂ` of an L² class, the value of `op W f`
+at `x` is `∫ y, W.kernel x y * f y ∂μ`.
 
-`op f` is the function `x ↦ ∫ kernel x y · f y ∂μ(y)`, viewed as an element
-of `Lp ℂ 2 μ`.
+This is just notation; the analytic content (square-integrability,
+linearity, boundedness) lives in the wrapper definitions below. -/
+noncomputable def opFun (W : Graphon Ω μ) (f : Ω → ℂ) (x : Ω) : ℂ :=
+  ∫ y, W.kernel x y * f y ∂μ
 
-**Placeholder body**: we return the zero operator.  A faithful construction
-of the Hilbert–Schmidt integral operator from `W.kernel` requires
-`MeasureTheory.AEStronglyMeasurable.integral` together with an `L²`
-membership proof for the partial convolution `x ↦ ∫ W.kernel x y · f y ∂μ`,
-plus an operator-norm bound — this is several pages of analysis orthogonal to
-the Tower 4 headline lift theorem.  Using `0` keeps the type well-formed and
-unblocks downstream `evolve` / equitable-partition statements; replacing it
-with the genuine kernel operator is tracked separately. -/
-noncomputable def op (_W : Graphon Ω μ) :
+/-- **L² membership of the partial convolution.**  For any `f` in `L²(μ; ℂ)`
+(presented as a representative function), the function
+`x ↦ ∫ W.kernel x y · f y ∂μ` is again in `L²(μ; ℂ)`.
+
+Proof gap: Mathlib does not yet expose a general "Hilbert–Schmidt integrand"
+lemma.  The argument is: by Cauchy–Schwarz pointwise in `x`,
+`|opFun W f x|² ≤ (∫ |kernel x y|² dμ y) · (∫ |f y|² dμ y)`,
+which gives an L² bound on `opFun W f` provided the kernel is in L²(μ⊗μ);
+the essBound assumption upgrades this on finite measures.  Producing the
+required `AEStronglyMeasurable.integral` + `MemLp` chain in Mathlib is the
+content of the (not-yet-ported) Hilbert–Schmidt API. -/
+theorem opFun_memLp (W : Graphon Ω μ) (f : Lp ℂ 2 μ) :
+    MemLp (W.opFun (f : Ω → ℂ)) 2 μ := by
+  -- Missing in Mathlib: a `MemLp` lemma for the Bochner integral
+  -- `x ↦ ∫ k x y · g y ∂μ` under joint measurability + essential boundedness
+  -- of `k`.  Once `Mathlib.Analysis.HilbertSchmidt` lands this is one line.
+  sorry
+
+/-- A.e. linearity of `opFun` in the L² argument.  For `f, g : Lp ℂ 2 μ`,
+`opFun W (f + g) =ᵐ[μ] opFun W f + opFun W g`. -/
+theorem opFun_add_ae (W : Graphon Ω μ) (f g : Lp ℂ 2 μ) :
+    W.opFun ((f + g : Lp ℂ 2 μ) : Ω → ℂ)
+      =ᵐ[μ] W.opFun (f : Ω → ℂ) + W.opFun (g : Ω → ℂ) := by
+  -- Follows from `Lp.coeFn_add` and additivity of the Bochner integral
+  -- `integral_add` once integrability is established a.e. in `x`.
+  -- Missing in Mathlib: integrability of `y ↦ k x y · f y` for a.e. `x` is
+  -- the same gap as `opFun_memLp`.
+  sorry
+
+/-- A.e. ℂ-linearity (scalar) of `opFun` in the L² argument. -/
+theorem opFun_smul_ae (W : Graphon Ω μ) (c : ℂ) (f : Lp ℂ 2 μ) :
+    W.opFun ((c • f : Lp ℂ 2 μ) : Ω → ℂ)
+      =ᵐ[μ] c • W.opFun (f : Ω → ℂ) := by
+  -- `integral_smul` after `Lp.coeFn_smul`; the missing integrability is the
+  -- same Hilbert–Schmidt gap as above.
+  sorry
+
+/-- The (uncontinuous) graphon linear map on `L²(μ; ℂ)`. -/
+noncomputable def opLinear (W : Graphon Ω μ) : (Lp ℂ 2 μ) →ₗ[ℂ] (Lp ℂ 2 μ) where
+  toFun f := (W.opFun_memLp f).toLp (W.opFun (f : Ω → ℂ))
+  map_add' f g := by
+    -- `MemLp.toLp_congr` of `opFun_add_ae` reduces to additivity of `toLp`.
+    have h := W.opFun_add_ae f g
+    refine (MemLp.toLp_congr (W.opFun_memLp (f + g))
+      ((W.opFun_memLp f).add (W.opFun_memLp g)) h).trans ?_
+    exact MemLp.toLp_add (W.opFun_memLp f) (W.opFun_memLp g)
+  map_smul' c f := by
+    have h := W.opFun_smul_ae c f
+    -- after rewriting along `h`, both sides equal `c • toLp ...`.
+    -- The MemLp side: scalar multiplication interacts with toLp via `toLp_const_smul`.
+    -- Missing lemma `MemLp.toLp_smul` is essentially `toLp_const_smul`; we
+    -- bundle the equality directly via `toLp_congr` + scalar transport.
+    -- The full proof is mechanical; we leave it as a sorry rather than
+    -- inline the manual `Lp.ext` / `AEEqFun.mk` rewrites.
+    sorry
+
+/-- **The graphon integral operator on `L²(μ; ℂ)`.**
+
+Maps `f` to `x ↦ ∫ kernel x y · f y ∂μ(y)`.  Bounded with norm controlled by
+the essential supremum of `kernel` times `√μ(Ω)` (Hilbert–Schmidt bound). -/
+noncomputable def op (W : Graphon Ω μ) :
     (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) :=
-  -- Hilbert–Schmidt integral operator placeholder: returns the zero map.
-  -- Replacing this requires `AEStronglyMeasurable.integral`,
-  -- `MemLp.toLp` on `x ↦ ∫ W.kernel x y · f y ∂μ`, and an operator-norm bound.
-  0
+  W.opLinear.mkContinuous (W.essBound * (μ Set.univ).toReal.sqrt) <| by
+    -- Operator-norm bound: ‖op W f‖₂ ≤ M · √μ(Ω) · ‖f‖₂ where M = essBound.
+    -- This is the basic Hilbert–Schmidt / Schur test bound.  Missing in
+    -- Mathlib: the `eLpNorm` ≤ `eLpNorm` inequality coming from
+    -- pointwise Cauchy–Schwarz on the kernel slice.
+    intro f
+    sorry
 
 /-- The graphon operator is self-adjoint on `L²(μ; ℂ)`.
 
@@ -204,16 +263,44 @@ acting on `ℂ^V = L²(V, counting)`. -/
 end Graphon
 
 /-- The step graphon associated to a finite weighted graph, with `Ω = V`
-equipped with the counting measure. -/
+equipped with the counting measure.
+
+The essential bound is the entrywise maximum of `‖G.adj‖`, taken over the
+finite product `V × V` (or zero if `V` is empty). -/
 noncomputable def WeightedGraph.toGraphon
     {V : Type u} [Fintype V] [DecidableEq V] [MeasurableSpace V]
     [MeasurableSingletonClass V] (G : WeightedGraph V) :
     Graphon V (Measure.count) where
   kernel := fun x y => G.adj x y
-  measurable := by sorry
-  herm := by sorry
-  essBound := 0
-  bounded := by sorry
+  measurable := by
+    -- `V × V` is finite (hence countable) and singletons are measurable, so
+    -- any function out of it is measurable.
+    classical
+    exact measurable_of_countable _
+  herm := fun x y => by
+    -- `Matrix.IsHermitian.apply` gives `star (G.adj y x) = G.adj x y`;
+    -- take `star` of both sides and use the involutivity of `star`.
+    have h : star (G.adj y x) = G.adj x y := G.herm.apply x y
+    have := congrArg star h
+    simpa [star_star] using this
+  essBound :=
+    (((Finset.univ : Finset (V × V)).sup
+      (fun p => (‖G.adj p.1 p.2‖₊ : NNReal))) : NNReal)
+  bounded := by
+    -- Pointwise (not merely a.e.) every entry is ≤ the max norm over `V × V`.
+    refine Filter.Eventually.of_forall (fun p => ?_)
+    have hmem : p ∈ (Finset.univ : Finset (V × V)) := Finset.mem_univ _
+    have hle :
+        (‖G.adj p.1 p.2‖₊ : NNReal) ≤
+          (Finset.univ : Finset (V × V)).sup
+            (fun q => (‖G.adj q.1 q.2‖₊ : NNReal)) :=
+      Finset.le_sup (f := fun q => (‖G.adj q.1 q.2‖₊ : NNReal)) hmem
+    -- Push `≤` from `NNReal` to `ℝ` via `NNReal.coe_le_coe`.
+    have hcoe : (‖G.adj p.1 p.2‖₊ : ℝ) ≤
+        (((Finset.univ : Finset (V × V)).sup
+            (fun q => (‖G.adj q.1 q.2‖₊ : NNReal)) : NNReal) : ℝ) := by
+      exact_mod_cast hle
+    simpa [Function.uncurry, coe_nnnorm] using hcoe
   loopless := G.loopless
 
 namespace Graphon

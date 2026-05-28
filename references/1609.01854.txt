@@ -1,0 +1,210 @@
+A Note on the Speed of Perfect State Transfer
+Alastair Kay
+Department of Mathematics, Royal Holloway University of London, Egham, Surrey, TW20 0EX, UK∗
+
+Weichen Xie
+
+Department of Mathematics, Clarkson University, Potsdam, New York, USA 13699-5815.†
+
+Christino Tamon
+
+arXiv:1609.01854v5 [quant-ph] 22 Sep 2022
+
+Department of Computer Science, Clarkson University, Potsdam, New York, USA 13699-5815.‡
+(Dated: September 23, 2022)
+In Phys. Rev. A 74, 030303 (2006), Yung showed that for a one-dimensional spin chain of length
+N and maximum coupling strength Jmax , the time t0 for a quantum state to transfer
+√ from one end
+of the chain to another is bounded by Jmax t0 ≥ πN/4 (even N ) and Jmax t0 ≥ π N 2 − 1/4 (odd
+N ). The proof for even N was elegant, but the proof for odd N was less so. This note provides a
+proof for the odd N case that is simpler, and more in keeping with the proof for the even case.
+
+The benefit of this simplified proof is that it can be
+used elsewhere. For example, in the study of speed limits
+for synthesising quantum states using identical Hamiltonian structures [1], where the phase conditions on the
+eigenvalues are slightly different, these differences are
+readily incorporated in the optimisation. Studies of fractional revival [2] are another option.
+A tridiagonal N ×N matrix with real diagonal elements
+Bn and positive off-diagonal elements Jn ,
+H=
+
+N
+X
+
+n=1
+
+Bn |ni hn| +
+
+N
+−1
+X
+n=1
+
+Jn (|ni hn + 1| + |n + 1i hn|) ,
+
+is capable of perfect transfer (e−iHt0 |1i = eiφ |N i) if and
+only if H is symmetric, meaning Bn = BN +1−n and Jn =
+JN −n , and the ordered eigenvalues λn > λn+1 satisfy
+e−iλn t0 = (−1)n+1 eiφ for some real parameters t0 (the
+transfer time) and φ [3]. The symmetry imposes that
+the eigenvectors satisfy S |λn i = (−1)n+1 |λn i where
+S=
+
+N
+X
+
+n=1
+
+|ni hN + 1 − n| .
+
+N/2
+
+2JN/2 =
+
+n=1
+
+λ2n−1 − λ2n .
+
+We know that λ2n−1 ≥ λ2n + tπ0 in order for it to satisfy
+the required phase property for the eigenvalues, so
+2Jmax ≥ 2JN/2 ≥
+
+N π
+,
+2 t0
+
+immediately yielding the claimed relation.
+N odd: This more involved case starts similarly,
+X
+X
+B(N +1)/2 = Tr(HS) =
+λ2n−1 −
+λ2n .
+n
+
+2
+2
+Tr(SH 2 ) = 4J(N
+−1)/2 + B(N +1)/2 =
+
+n
+
+X
+n
+
+λ22n−1 −
+
+X
+
+λ22n .
+
+n
+
+Let the vector λ = (λ1 , λ3 , . . . , λN , λ2 , . . . λN −1 ). Then
+we can express
+
+
+1(N +1)/2 − 1
+1
+T
+2
+=
+λ
+4J(N
+λ,
+−1)/2
+1
+−1(N −1)/2 − 1
+where 1 is the all-ones matrix of the appropriate size,
+sizes of the blocks being specified by the subscript of the
+1. However, there are many equivalent matrices (since,
+for example, λ1 λ2 appears in two terms). One such is
+
+
+−U 1 + U
+Ã = 2
+U −1 − U
+where U is the upper triangular component of 1 = 1+U +
+U T (of the appropriate size) – just evaluate 21 (Ã + ÃT ).
+Note that rows for terms λ2n−1 and λ2n are identical up
+to a sign, as are columns for λ2m and λ2m+1 . Hence
+2
+4J(N
+−1)/2 = 2
+
+N even: We repeat Yung’s proof [4]. If we calculate
+Tr(SH) for both the matrix directly, and for the eigenvector decomposition, we have
+X
+
+Next, we evaluate Tr(SH 2 )
+
+(N −1)/2
+
+(N −1)/2
+
+X
+
+X
+
+n=1
+
+(λ2n−1 −λ2n )
+
+m=n
+
+(λ2m −λ2m+1 ).
+
+Since λn − λn+1 ≥ tπ0 , we bound this by
+(N −1)/2
+π2 X
+2
+4J(N −1)/2 ≥ 2 2
+t0 n=1
+
+
+
+N +1
+−n
+2
+
+
+
+=
+
+π2 N 2 − 1
+.
+t20
+4
+
+This leaves the claimed result
+√
+π N2 − 1
+Jmax t0 ≥
+.
+4
+Acknowledgements: AK was supported by EPSRC
+grant EP/N035097/1.
+
+∗
+
+alastair.kay@rhul.ac.uk
+
+2
+†
+
+xiew@clarkson.edu
+tino@clarkson.edu
+[1] A. Kay, Generating Quantum States through Spin Chain
+Dynamics, New J. Phys. 19, 043019 (2017).
+[2] V. X. Genest,
+L. Vinet, and A. Zhedanov,
+Quantum spin chains with fractional
+revival,
+‡
+
+Annals of Physics 371, 348 (2016).
+[3] A. Kay, A Review of Perfect State Transfer and its Application as a Constructive Tool,
+Int. J. Quantum Inform. 8, 641 (2010).
+[4] M.-H. Yung, Quantum speed limit for perfect state transfer in one dimension, Phys. Rev. A 74, 030303(R) (2006).
+
+

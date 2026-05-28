@@ -1,0 +1,1354 @@
+arXiv:0907.2148v4 [quant-ph] 4 Sep 2009
+
+Perfect state transfer, integral circulants and join of graphs
+Ricardo Javier Angeles-Canul∗
+
+Rachael M. Norton†
+
+Michael C. Opperman‡
+
+Christopher C. Paribello§
+
+Matthew C. Russell¶
+
+Christino Tamonk
+
+October 26, 2018
+
+Abstract
+We propose new families of graphs which exhibit quantum perfect state transfer. Our
+constructions are based on the join operator on graphs, its circulant generalizations, and
+the Cartesian product of graphs. We build upon the results of Bašić et al. [5, 4] and
+construct new integral circulants and regular graphs with perfect state transfer. More
+specifically, we show that the integral circulant ICGn ({2, n/2b } ∪ Q) has perfect state
+transfer, where b ∈ {1, 2}, n is a multiple of 16 and Q is a subset of the odd divisors of
+n. Using the standard join of graphs, we also show a family of double-cone graphs which
+are non-periodic but exhibit perfect state transfer. This class of graphs is constructed
+by simply taking the join of the empty two-vertex graph with a specific class of regular
+graphs. This answers a question posed by Godsil [9].
+Keywords: Perfect state transfer, quantum networks, graph join, integral circulants.
+
+1
+
+Introduction
+
+In quantum information systems, the transfer of quantum states from one location to another is an important feature. The problem is to find an arrangement of n interacting qubits
+in a network which allows perfect transfer of any quantum state over various distances. The
+network is typically described by a graph where the vertices represent the location of the
+qubits and the edges represent the pairwise coupling of the qubits. The graph has two special vertices labeled a and b which represent the input (source) and output (target) qubits,
+respectively. In most cases of interest, it is required that perfect state transfer be achieved
+without dynamic control over the interactions between the qubits. These are the so-called
+permanently coupled (unmodulated) spin networks.
+∗
+
+Centro de Investigación en Matemáticas, Universidad Autónoma del Estado de Hidalgo, Pachuca, Hidalgo, Mexico. email: richywhitedragon@gmail.com
+†
+Dept. Mathematics, Bowdoin College, Brunswick, Maine, U.S.A. email: rnorton@bowdoin.edu
+‡
+Dept. Mathematics and Computer Science, Clarkson University, Potsdam, New York, U.S.A. email:
+oppermmc@clarkson.edu
+§
+Dept. Mathematics and Computer Science, Clarkson University, Potsdam, New York, U.S.A. email:
+paribecc@clarkson.edu
+¶
+Dept. Mathematics, Taylor University, Upland, Indiana, U.S.A. email: matthew russell@taylor.edu
+k
+Dept. Mathematics and Computer Science, Clarkson University, Potsdam, New York, U.S.A. email:
+tino@clarkson.edu. Corresponding author.
+
+1
+
+Figure 1: Small perfect state transfer graphs. From left to right: (a) K2 ; (b) P3 ; (c) C4 .
+
+We may view the perfect state transfer problem in the context of quantum walks on
+graphs [8, 11]. Here the initial state of the quantum system is described by the unit vector
+on vertex a. To achieve perfect transfer to vertex b at time t, the quantum walk amplitude
+of the system at time t on vertex b must be of unit magnitude. That is, to obtain perfect
+transfer or unit fidelity, we require
+|hb|e−itAG |ai| = 1,
+
+(1)
+
+where AG is the adjacency matrix of the underlying graph G. The main goal here is to
+characterize graph structures which allow such perfect state transfer.
+Christandl et al. [6] showed that the Cartesian products of paths of length two or three
+possess perfect state transfer between antipodal vertices – vertices at maximum distance
+from each other. They also noted that paths of length four or larger do not possess perfect
+state transfer if the edges are weighted equally. But, Christandl et al. [7] showed that a
+layered path-like graph of diameter n has perfect state transfer, for any n. More recently,
+Bernasconi et al. [3] gave a complete characterization for graphs from the hypercube family.
+They proved that perfect state transfer on the generalized n-cube is possible at time t = π/2
+between “antipodal” vertices. Here, “antipodal” depends on the particular sequence that
+defines the generalized n-cube.
+Saxena et al. [14], Tsomokos et al. [16], and Bašić et al. [5] studied perfect state transfer
+in integral circulant graphs. Tsomokos et al. [16] showed perfect state transfer in the class
+of cross polytope or cocktail party graphs. Bašić et al. [5] completely characterized perfect
+state transfer on unitary Cayley graphs which are equivalent to the integral circulants
+ICGn ({1}) whose arc lengths must be relatively prime to n. They proved that K2 and
+C4 are the only unitary Cayley graphs with perfect state transfer. Recently, Bašić and
+Petković [4] proved that the integral circulants ICGn ({1, n/4}) and ICGn ({1, n/2}), for n
+divisible by 8, have perfect state transfer. In the latter family of integral circulants, we have
+an example of graphs with perfect state transfer between non-antipodal vertices – vertices
+which are not at maximum distance from each other. This answers a question posed by
+Godsil [9]. In this paper, we construct new integral circulants with perfect state transfer
+by utilizing the join and Cartesian product of graphs.
+First, we generalize the graph join to an operation we call the circulant join G +C G
+between a circulant graph G and a Boolean circulant matrix C. This operation allows us
+to interpolate between the standard join G + G and the bunkbed (hypercube) operator
+K2 ⊕ G and, under certain conditions, will produce new circulant graphs. We recover
+the Cartesian product K2 ⊕ G by taking C = I, and the standard join G + G (where all
+edges between vertices from the distinct copies of G are present) by taking C = J (the
+all-one matrix). If G has perfect state transfer at time t⋆ , then so does G +C G at time
+2
+
+√
+t⋆ provided cos(t⋆ C T C) = ±I. Moreover, G +C G is a circulant graph whenever C is a
+palindrome circulant; that is, the sequence which defines C is a palindrome. This allows us to
+construct new families of circulants with perfect state transfer, namely, ICGn ({2, n/2b }∪Q),
+b ∈ {1, 2}, where n is divisible by 16 and Q is a subset of the odd divisors of n. This expands
+the class of known integral circulants which exhibit perfect state transfer.
+Next, we study graph operators that preserve perfect state transfer. A known example is
+the Cartesian product of graphs as observed by Christandl et al. [6] in the n-fold Cartesian
+products of paths of length two and three, namely, K2⊕n and P3⊕n . First, we note that
+this observation
+can be generalized to Cartesian products of different perfect state transfer
+L
+graphs k Gk assuming these graphs have the
+Psame perfect state transfer times. We also
+prove closure properties of the m-fold self-join m
+k=1 G of a graph G with itself. In part, this
+is one generalization of the standard join G+G we consider in this work. Using these results,
+we construct new graphs with perfect state transfer, such as G⊕m and G+m , where G is one
+of ICGn ({1, n/2b }) or ICG2n ({2, n/2b−1 } ∪ Q), where n is a multiple of 8, b ∈ {1, 2}, and
+Q is any subset of the odd divisors of n. These new graphs, however, are not necessarily
+circulants.
+Finally, we consider the join of two arbitrary regular graphs. Bose et al. [2] studied
+perfect state transfer on the complete graphs Km in the so-called XYZ interaction model.
+Here, the quantum walk evolves according to the Laplacian of the underlying graph instead
+of the adjacency matrix (the XY model). They show that, although Km does not have
+perfect state transfer, the double-cone K 2 + Km−2 does. The latter graph is obtained from
+Km by removing an edge, say (a, b), and perfect state transfer occurs between a and b. We
+study a generalization of their construction by considering the join G + H of two arbitrary
+regular graphs. We show that the existence of perfect state transfer on G+H can be reduced
+to its existence in G along with some additional conditions on the sizes and regularities of
+G and H. These conditions are independent of the internal structures of the graphs.
+Using this result, we construct a family of double-cone non-periodic graphs with perfect
+state transfer which answers a question posed by Godsil [9]. We also study the doublecone graphs K 2 + G, K2 + G, for any n-vertex k-regular graph G. We derive sufficient
+conditions on n and k which allow perfect state transfer between the two special vertices.
+This complements results found in [2] for the Laplacian model. Our constructions involving
+K2 + G also showed that perfect state transfer between non-antipodal vertices is possible.
+As in the case of ICGn ({1, n/2}), this answers Godsil’s other question [9].
+Our work heavily exploits the spectral properties of the underlying graphs and their
+matrices. It is also based on the number-theoretic tools used to characterize integral circulants. A more complete treatment of this beautiful connection between circulants, number
+theory and graph theory can be found in earlier works by So [13], Saxena et al. [14], and
+Bašić et al. [5, 4].
+
+2
+
+Preliminaries
+
+For a logical statement S, the Iversonian [[S]] is 1 if S is true and 0 otherwise. Let Zn
+denote the additive group of integers {0, . . . , n − 1} modulo n. We use I and J to denote
+the identity and all-one matrices, respectively; we use X to denote the Pauli-σX matrix.
+The graphs G = (V, E) we study are finite, simple, undirected, and connected. The
+3
+
+Figure 2: Integral circulants with perfect state transfer. From left to right: (a) ICG8 ({1, 2});
+(b) ICG8 ({1, 4}). Perfect state transfer occurs from x to x + 4 at time π/2 in both graphs
+(see [4]).
+
+adjacency matrix AG of a graph G is defined as AG [u, v] = [[(u, v) ∈ E]]. A graph is called
+integral if its adjacency matrix has only integer eigenvalues. A graph G is circulant if its
+adjacency matrix AG is circulant. A circulant matrix A is completely specified by its first
+row, say [a0 , a1 , . . . , an−1 ], and is defined as A[j, k] = ak−j (mod n) , where j, k ∈ Zn :
+
+
+a0
+
+an−1
+
+A= .
+ ..
+a1
+
+
+a1 . . . an−1
+a0 . . . an−2 
+
+..
+.. 
+. ...
+. 
+a2 . . . a0
+
+(2)
+
+Note that a0 = 0, since our graphs are simple, and aj = an−j , since our graphs are undirected. The best known families of circulant graphs include the complete graphs Kn and
+cycles Cn .
+Alternatively, a circulant graph G = (V, E) can be specified by a subset S ⊆ Zn , where
+(j, k) ∈ E if k − j ∈ S. Thus, S defines the set of edge distances between adjacent vertices.
+In this case, we write G = G(n, S). We will assume that S is closed under taking inverses,
+namely, if d ∈ S, then −d ∈ S. For a divisor d of n, let Gn (d) = {k : gcd(n, k) =
+d, 1 ≤Sk < n}. It was proved by So [13] that a circulant G(n, S) is integral if and only if
+S = d∈D Gn (d), for some subset D of Dn , where Dn = {d : d|n, 1 ≤ d < n} is the set
+of divisors of n. That is, a circulant is integral if its edge distances are elements of Gn (d),
+d ∈ D, for some subset D ⊆ Dn . We denote this family of integral circulants as ICGn (D)
+(following the notation used in [5]).
+All circulant graphs G are diagonalizable by the Fourier matrix F whose columns |Fk i
+√
+In fact, we have F AF † =
+are defined as hj|Fk i = ωnjk / n, where ωn = exp(2πi/n).
+√
+n · diag(F A0 ), for any circulant A, where A0 = A|0i is the first column of A. This shows
+that the eigenvalues of A are given by
+λj =
+
+n−1
+X
+
+an−k ωnjk .
+
+(3)
+
+k=0
+
+The Cartesian product G ⊕ H of graphs G and H is a graph whose adjacency matrix is
+I ⊗ AH + AG ⊗ I. The join G + H of graphs G and H is defined as G + H = G ∪ H; that is,
+4
+
+we 
+connect all vertices of G with all vertices of H. The adjacency matrix of G + H is given
+AG J
+by
+, with the appropriate dimensions on the two all-one J matrices. For more
+J AH
+background on algebraic graph theory, we refer the reader to the monographs by Biggs and
+by Godsil and Royle [1, 10] as well as to the survey article by Schwenk and Wilson [15].
+For a graph G = (V, E), let |ψ(t)i ∈ C|V | be a time-dependent amplitude vector over V .
+Then the continuous-time quantum walk on G is defined using Schrödinger’s equation as
+|ψ(t)i = e−itAG |ψ(0)i,
+
+(4)
+
+where |ψ(0)i is the initial amplitude vector (see [8]). Further background on quantum walks
+on graphs can be found in the survey by Kendon [11]. We say G has perfect state transfer
+from vertex a to vertex b at time t⋆ if
+⋆
+
+|hb|e−it AG |ai| = 1,
+
+(5)
+
+where |ai, |bi denote the unit vectors corresponding to the vertices a and b, respectively.
+The graph G has perfect state transfer if there exist vertices a and b in G and a time t⋆ so
+that (5) is true. Also, we call a graph G periodic if for any state |ψi, there is a time t⋆ so
+that |hψ|e−itAG |ψi| = 1.
+
+3
+
+Circulant Joins
+
+In this section, we describe a new graph operator which preserves perfect state transfer.
+For a n-vertex graph G and a n × n Boolean matrix C, define the circulant join G = G +C G
+as a graph whose adjacency matrix is
+
+
+AG C
+AG =
+.
+(6)
+C T AG
+That is, we take two copies of G and connect vertices from the corresponding copies using
+the matrix C. Here, we do not require that C be the adjacency matrix of a graph. This
+generalizes the join G + G = G +J G and the bunkbed K2 ⊕ G = G +I G. For these self-join
+constructions of a graph G with itself, where there are two copies of G, if u is a vertex of
+G, then we denote (u, s), s ∈ {0, 1}, as the vertex u in the s-th copy of G.
+Theorem 1 Let C be a n × n circulant matrix. If G is a n-vertex circulant graph with
+perfect state transfer from a to b at time t⋆ , then the circulant join G +C G has perfect state
+transfer from vertex (a, 0) to vertex (b, s), s ∈ {0, 1}, at time t⋆ provided that
+is
+h
+√
+√ i1−s h
+sin(t⋆ B)B −1/2 C T = ±I
+(7)
+cos(t⋆ B)
+
+where B = C T C, and B −1 exists whenever s = 1. Moreover, G +C G is a circulant graph if
+C is a palindrome circulant matrix, where cj = cn−1−j , for j = 0, . . . , n − 1.
+Proof Note that the adjacency matrix of G = G +C G can be rearranged as
+
+CA = C ⊗ |0ih1| + C T ⊗ |1ih0| + AG ⊗ I2 .
+5
+
+(8)
+
+It is clear that C and C T commute since they are both circulants. Next, observe that
+ k
+
+ℓ
+B ⊗ I2
+if ℓ = 2k
+(9)
+C ⊗ |0ih1| + C T ⊗ |1ih0| =
+B k C ⊗ |0ih1| + B k C T ⊗ |1ih0| if ℓ = 2k + 1
+
+In the above equation, notice that the even or odd powers vanish depending on s:
+h
+i
+hb|h0| B k C ⊗ |0ih1| + B k C T ⊗ |1ih0| |ai|0i = 0.
+
+(10)
+
+and
+
+hb|h1|B k ⊗ I2 |ai|0i = 0.
+
+(11)
+
+Thus, perfect state transfer in G can be reduced to perfect state transfer in G as follows:
+⋆
+
+⋆
+
+T
+
+⋆
+
+hb, s|e−it CA |a, 0i = hb|hs|e−it (C⊗|0ih1|+C ⊗|1ih0|) e−it (AG ⊗I2 ) |ai|0i
+−it⋆ (C⊗|0ih1|+C T ⊗|1ih0|)
+
+−it⋆ AG
+
+= hb|hs|e
+(e
+⊗ I2 )|ai|0i
+√
+
+⋆A
+⋆
+−it
+G |ai
+hb| cos(t B)e
+if s = 0
+√
+=
+⋆A
+−1/2
+T
+−it
+⋆
+G
+|ai if s = 1
+C e
+−ihb| sin(t B)B
+
+(12)
+(13)
+(14)
+
+This proves the first claim.
+To see that G is a circulant graph if C is a palindrome circulant matrix, we view the
+adjacency matrix CA as an “interweaving” of AG with C and C T as follows:
+
+
+a0
+hc0 i
+a1
+hc1 i
+a2
+hc2 i . . . an−1 hcn−1 i
+ [c0 ]
+a0
+[cn−1 ] a1 [cn−2 ] a2 . . . [c1 ]
+an−1 
+
+
+ an−1 hcn−1 i
+a0
+hc0 i
+a1
+hc1 i . . . an−2 hcn−2 i
+
+
+
+an−1
+[c0 ]
+a0 [cn−1 ] a1 . . . [c2 ]
+an−2 
+CA =  [c1 ]
+(15)
+
+ ..
+
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+ .
+.
+.
+.
+.
+.
+...
+.
+. 
+
+
+ a1
+hc1 i
+a2
+hc2 i
+a3
+hc3 i . . . a0
+hc0 i 
+[cn−1 ]
+a1
+[cn−2 ] a2 [cn−3 ] a3 . . . [c0 ]
+a0
+where AG = (aj ), C = (hcj i), and C T = ([cj ]). We have distinguished the elements of C
+and C T by using hci and [c], respectively. Now, applying cj = cn−1−j , for j = 0, . . . , n − 1,
+it is clear that the above is a circulant matrix; hence, G is a circulant graph.
+
+As corollaries to the above theorem, we show the conditions for which the hypercube
+Cartesian product and the join of a perfect state transfer graph with itself preserves the
+perfect state transfer property.
+Corollary 2 If G is an n-vertex circulant that has perfect state transfer from a to b at
+time t⋆ ∈ (2Z + 1) π2 , then the bunkbed K2 ⊕ G has perfect state transfer from (a, 0) to (b, 1),
+where (a, 0) denotes vertex a in the first copy of G and (b, 1) denotes vertex b in the second
+copy of G.
+Proof Since K2 ⊕ G = G +I G, the eigenvalues of the connection matrix are µk = 1 for all
+k. By Theorem 1, we require sin(t⋆ In ) = ±In for perfect state transfer. This is equivalent
+to sin(t⋆ ) = ±1 which is satisfied whenever t⋆ ∈ (2Z + 1) π2 .
+6
+
+Corollary 3 If G is an n-vertex circulant graph that has perfect state transfer from a to b
+at time t⋆ , then so does the circulant graph G + G provided nt⋆ ∈ 2πZ.
+Proof Since G + G = G +J G, by Theorem 1 we require cos(t⋆ Λ) = In , where
+Λ = diag(n, 0, . . . , 0). This is equivalent to requiring cos(nt⋆ ) = 1 which is satisfied when
+nt⋆ ∈ 2πZ.
+Remark: It can be shown that for n = 2u , where u ≥ 3, the only Boolean circulant matrices
+C that yield a circulant graph G +C G, for an n-vertex G, are the trivial matrices, namely,
+C ∈ {In , Jn , On }, where On is the n × n all-zero matrix. In the next theorem, we show that
+for n that is a multiple of 8, if n has a non-trivial odd divisor, then there exist integral
+circulant graphs ICG2n (D), for |D| ≥ 3, with perfect state transfer which are obtained
+from non-trivial circulant joins.
+Notation: For an integer m, let D m = {d : d|m, 1 ≤ d ≤ m} be the set of all divisors of m.
+Also, for an integer k and a set A ⊆ Z, we use kA to denote {ka : a ∈ A}.
+Theorem 4 Let n = 2u m, where u ≥ 3 and m ≥ 3 is an odd number. Suppose that
+G = ICGn (D), for D = {1, n/4} or D = {1, n/2}. For any subset Q ⊂ D m , there is a
+Boolean circulant matrix C 6∈ {In , Jn , On } so that
+G +C G = ICG2n (2D ∪ Q)
+
+(16)
+
+has perfect state transfer from 0 to n/2 in G at time t⋆ = π/2,
+Proof For q ∈ Q, let N (q) = {r ∈ D m : r/q is an odd prime }. Define, for j = 0, . . . , n − 1,
+cj (q) = [[2j + 1 ≡ 0 (mod q) ∧ ∀r ∈ N (q) : 2j + 1 6≡ 0 (mod r)]].
+(17)
+P
+Now let cj (Q) = q∈Q cj (q). Note that cj (q)’s are disjoint, since at most one index j will
+satisfy cj (q) = 1 for q ∈ Q. The Boolean circulant C is defined by the following first row
+C = [c0 (Q) . . . cn−1 (Q)].
+
+(18)
+
+To see that C is a palindrome, note that 2(n − 1 − j) + 1 ≡ 0 (mod q) is equivalent to
+2j + 1 ≡ 0 (mod q), for any q ∈ D m .
+Since the integral circulants ICGn ({1, n/2b }), b ∈ {1, 2}, have t⋆ = π/2 as the perfect
+state transfer time, we will show that cos(|λk |π/2) = 1, for all eigenvalues λk of C, k =
+0, . . . , n − 1. The eigenvalues of C are given by
+λk =
+
+n−1
+X
+
+cj (Q)ωn−jk =
+
+j=0
+
+ n −1
+q
+X X
+
+n−1
+XX
+
+cj (q)ωn−jk =
+
+X
+X n−1
+
+cj (q)ωn−jk
+
+(19)
+
+q∈Q j=0
+
+j=0 q∈Q
+n
+
+−1
+X rX
+
+
+
+
+ωn−(⌊q/2⌋+ℓq)k −
+ωn−(⌊r/2⌋+ℓr)k
+(20)
+
+
+q∈Q
+ℓ=0
+r∈N (q) ℓ=0
+
+
+
+X n
+X n
+=
+ωn−⌊q/2⌋k [[k ≡ 0 (mod n/q)]] −
+ωn−⌊r/2⌋k [[k ≡ 0 (mod n/r)]] (21)
+q
+
+r
+
+=
+
+q∈Q
+
+r∈N (q)
+
+7
+
+−⌊q/2⌋k
+
+Now, we consider the exponent in the term ωn
+, where k satisfies k ≡ 0 (mod n/q).
+Thus, there is an integer κ so that qk = κn or (2⌊q/2⌋ + 1)k = κn. Note that κ depends on
+k. After rearranging, we get −⌊q/2⌋k = k2 − κ n2 . Thus,
+ωn−⌊q/2⌋k = ωnk/2 (ωn−n/2 )κ = ωnk/2 (−1)κ .
+
+(22)
+
+λk ∈ ωnk/2 (−1)κ 2u Z.
+
+(23)
+
+Thus, we have
+It is clear now that cos(|λk |π/2) = cos(2πZ) = 1, for all k = 0, . . . , n − 1. So, by Theorem
+1, G +C G has perfect state transfer at time π/2.
+Now, we show that if G = ICGn (D), then G +C G = ICG2n (2D ∪ Q), where 2D =
+{2d : d ∈ D}. Let B be the circulant adjacency matrix of G +C G defined by the sequence
+[b0 , . . . , b2n−1 ]. From the “interweaving” property of B in (15), we know that for k ∈
+{0, . . . , 2n − 1}
+
+ak/2
+if k is even
+(24)
+bk =
+c⌊k/2⌋ if k is odd
+We consider two cases based on whether k is even or odd. For k odd, we have
+bk = c⌊k/2⌋
+
+(25)
+
+= [[∃q ∈ Q : 2⌊k/2⌋ + 1 ≡ 0 (mod q) ∧ ∀r ∈ N (q) : 2⌊k/2⌋ + 1 6≡ 0 (mod r)]] (26)
+
+= [[∃q ∈ Q : k ≡ 0 (mod q) ∧ ∀r ∈ N (q) : k 6≡ 0 (mod r)]]
+
+= [[∃q ∈ Q : gcd(k, 2n) = q]],
+
+(27)
+
+(28)
+
+whereas for k even, we have
+bk = ak/2 = [[gcd(k/2, n) ∈ D]] = [[gcd(k, 2n) ∈ 2D]].
+
+(29)
+
+This proves the claim by taking D = {1, n/4} or D = {1, n/2}.
+Corollary 5 For n = 2u , for u ≥ 3, the integral circulant graphs ICG2n ({1, 2, n/2}) and
+ICG2n ({1, 2, n}) have perfect state transfer from 0 to n at time t⋆ = π/2.
+Proof Take the self-joins of ICGn ({1, n/4}) and ICGn ({1, n/2}) which have perfect state
+transfer as shown by Bašić and Petković [4].
+In the next corollary, we consider the class of circulant permutation matrices C. These
+matrices are defined by specifying a unit vector (with a one in a single entry and zeros
+elsewhere) as their first row, and they satisfy C T C = I. We show that if G has perfect
+state transfer from a to b at time t⋆ , then so does G +C G from a in the first copy of G to
+Cb (image of vertex b under the permutation C) in the second copy of G at time t⋆ .
+Corollary 6 Let G be a n-vertex graph and let C be a n × n circulant permutation matrix.
+If G has perfect state transfer from vertex a to b at time t⋆ , then G +C G has perfect state
+transfer from vertex (a, 0) to (Cb, 1) at time t⋆ , where Cb is the image of vertex b under the
+permutation C.
+8
+
+Figure 3: Standard circulant joins on C4 . From left to right: (a) Cartesian bunkbed C4 +I C4 ;
+(b) Self-join C4 +J C4
+
+Proof Let G = G +C G. Since C is a permutation matrix, we have C T C = I. Applying
+(14) in the proof of Theorem 1, we get
+hb|h1|e−itAG |ai|0i = −ihb|C T e−itAG |ai.
+
+(30)
+
+which can be rearranged as hCb|h1|e−itAG |ai|0i = −ihb|e−itAG |ai.
+Remark: The above corollary shows that if there is perfect state transfer in G from vertex
+a to vertex b then there is perfect state transfer from (a, 0) to any vertex (c, 1) in G +C G.
+This is achieved by choosing a permutation matrix C so that Cb = c.
+
+4
+
+Cartesian Products and Self-Joins
+
+We show that a heterogeneous Cartesian product of perfect state transfer graphs has perfect
+state transfer. This generalizes the observations on the hypercube K2⊕n and the Cartesian
+product P3⊕n of paths of length three (see [6]).
+Theorem 7 For j =L
+1, . . . , m, the graph Gj has perfect state transfer from aj to bj at time
+t⋆ if and only if G = m
+j=1 Gj has perfect state transfer from (a1 , . . . , am ) to (b1 , . . . , bm ) at
+time t⋆ .
+Proof We prove the claim for m = 2. Then,
+hb1 , b2 |e−itAG1 ⊕G2 |a1 , a2 i = hb1 , b2 |e−it(I⊗AG2 +AG1 ⊗I) |a1 , a2 i
+−it(I⊗AG2 ) −it(AG1 ⊗I)
+
+= hb1 |hb2 |e
+
+e
+
+= hb1 |hb2 |(I ⊗ e
+−itAG1
+
+= hb1 |e
+
+−itAG1
+
+−itAG2
+
+)(e
+
+−itAG2
+
+|a1 ihb2 |e
+
+|a1 i|a2 i
+
+⊗ I)|a1 i|a2 i
+
+|a2 i.
+
+(31)
+(32)
+(33)
+(34)
+
+This shows that G1 ⊕ G2 has perfect state transfer from (a1 , a2 ) to (b1 , b2 ) at time t⋆
+if and only if G1 has perfect state transfer from a1 to b1 at time t⋆ and G2 has perfect state transfer from a2 to b2 at time t⋆ . The general claim follows easily by induction.
+
+9
+
+Lm
+Corollary 8 For any m and n so that n ≡ 0 (mod 8), the family of graphs
+k=1 Gk ,
+b
+b−1
+where Gk ∈ {ICGn ({1, n/2 }), ICG2n ({2, n/2 } ∪ Q)}, b ∈ {1, 2} and Q is a subset of the
+set of odd divisors of n, has perfect state transfer from vertex 0 to n/2 at time t⋆ = π/2.
+Proof Follows from Theorem 7, the results of Bašić et al. [4], and Theorem 1.
+We also show that the m-fold join of a perfect state transfer graph preserves
+perfect state
+Pm
++m
+transfer under certain conditions. Denote G
+as the m-fold self-join j=1 G.
+
+Theorem 9 Let G be an n-vertex regular graph. For m ≥ 1, the existence of perfect state
+transfer in G+m between vertices a and b (in the same copy of G) can be reduced to its
+existence in G as follows:
+#
+"
+itn − 1) + e−it(m−1)n − 1
+(m
+−
+1)(e
+h1n |e−itAG |ai,
+h0, b|e−itAG+m |0, ai = hb|e−itAG |ai +
+mn
+(35)
+where AG is the adjacency matrix of G and |1n i is the all-one column vector of length n.
+Proof The adjacency matrix of G+m is given by Im ⊗ AG + Km ⊗ Jn , where Km is the
+adjacency matrix of the complete graph on m vertices. First note that Jnℓ = nℓ−1 Jn , if
+ℓ ≥ 1, and Jn0 = In . Also, notice that AG commutes with Jn since G is a regular graph.
+Moreover, Km = Jm − Im . Thus, using the binomial theorem, we get
+ℓ
+Km
+=
+
+Therefore,
+−it(Km ⊗Jn )
+
+e
+
+o
+1 n
+(−1)ℓ (mIm − Jm ) + (m − 1)ℓ Jm .
+m
+
+∞
+X
+(−it)ℓ
+
+ℓ
+Km
+⊗ Jnℓ
+
+= Im ⊗ In +
+
+ℓ!
+
+=
+
+ℓ=0
+
+ℓ!
+
+= Im ⊗ In +
+= Im ⊗ In +
+
+(37)
+
+∞
+X
+(−it)ℓ
+ℓ=1
+∞
+X
+
+1
+n
+
+(36)
+
+ℓ
+Km
+⊗ Jnℓ
+
+(38)
+
+(−it)ℓ ℓ
+Km ⊗ (nℓ Jn )
+ℓ!
+
+ℓ=1
+itn
+(e − 1)
+
+mn
+
+(mIm − Jm ) ⊗ Jn +
+
+(39)
+(e−it(m−1)n − 1)
+Jm ⊗ Jn (40)
+mn
+
+We can now analyze the quantum walk amplitude from vertex a to b (in the same copy of
+G). We get
+h0, b|e−itAG+m |0, ai = h0|hb|e−it(Km ⊗Jn ) e−it(Im ⊗AG ) |0i|ai
+−it(Km ⊗Jn )
+
+= h0|hb|e
+
+−it(Km ⊗Jn )
+
+= h0|hb|e
+
+10
+
+(41)
+
+−itAG
+
+)|0i|ai
+
+(42)
+
+−itAG
+
+|ai)
+
+(43)
+
+(Im ⊗ e
+
+(|0i ⊗ e
+
+Expanding the second term using (40) and multiplying the two terms on the left, we get
+!
+(e−it(m−1)n − 1)
+(eitn − 1)
+(mh0| − h1m |) ⊗ h1n | +
+h1m | ⊗ h1n | (|0i ⊗ e−itAG |ai).
+h0|hb| +
+mn
+mn
+(44)
+Finally, combining this with the last term, we arrive at
+i
+1 h itn
+(45)
+(e − 1)(m − 1) + e−it(m−1)n − 1 h1n |e−itAG |ai,
+hb|e−itAG |ai +
+mn
+which proves the claim.
+
+Corollary 10 For any m ≥ 1 and n ≡ 0 (mod 8), the family of graphs G+m , where
+G ∈ {ICGn ({1, n/2b }), ICG2n ({2, n/2b−1 } ∪ Q)}, with n ≡ 0 (mod 8), b ∈ {1, 2}, and a
+subset Q of the odd divisors of n, has perfect state transfer between vertices 0 and n/2 (in
+the same copy of G).
+Proof By Theorem 9, to achieve perfect state transfer in G+m , it suffices to have perfect
+⋆
+state transfer in G at time t⋆ and have eit n = 1. By the results of Bašić et al. [4] and by
+Theorem 4, the integral circulant graphs stated in the claim have perfect state transfer
+from vertex 0 to vertex n/2 at time t⋆ = π/2. Therefore, it suffices to have n ∈ 4Z. Since
+n ≡ 0 (mod 8), this holds for any m.
+Corollary 11 For any m ≥ 1 and n ≥ 2, the family of graphs Q+m
+n , where Qn is the binary
+n-dimensional hypercube, has perfect state transfer between antipodal vertices in the same
+copy of Qn .
+Proof Bernasconi et al. [3] proved that Qn has perfect state transfer between its antipodal
+vertices at time t⋆ = π/2. Note that the number of vertices of Qn is N = 2n . Using
+⋆
+Theorem 9, it suffices to set eit N = 1 or N ≡ 0 (mod 4). This is always true since N = 2n ,
+with n ≥ 2.
+
+5
+
+Join of Regular Graphs
+
+We show that the existence of perfect state transfer in a join of two arbitrary regular graphs
+can be reduced to perfect state transfer in one of the graphs along with certain additional
+constraints on the sizes and degrees of the graphs. These conditions are independent of the
+internal structures of the graphs.
+Theorem 12 Let G be an m-vertex kG -regular graph and let H be an n-vertex kH -regular
+graph. Suppose that a and b are two vertices in G. Then,
+
+ 
+ 
+
+
+ 
+δ
+∆t
+e−itkG
+∆t
+−itAG
+−itAG+H
+itδ/2
+|ai +
+|ai = hb|e
+hb|e
+e
+−i
+sin
+− 1 (46)
+cos
+m
+2
+∆
+2
+√
+where δ = kG − kH and ∆ = δ2 + 4mn.
+11
+
+Proof Let a, b be two vertices of G. Then,
+(m−1
+)
+X
+hb|e−itAG |ai = hb|
+|uk ihuk |e−itλk |ai
+
+(47)
+
+k=0
+
+where λk and |uk i are the eigenvalues and eigenvectors of AG , for k = 0, . . . , m − 1. We
+assume |u0 i is the all-one eigenvector (that is orthogonal to the other eigenvectors) with
+eigenvalue λ0 = kG . By the same token, let κℓ and |vℓ i be the eigenvalues and eigenvectors
+of AH , for ℓ = 0, . . . , n − 1. Also, |v0 i is the all-one eigenvector (with eigenvalue κ0 = kH )
+which is orthogonal to the other eigenvectors |vℓ i, ℓ 6= 0.
+Let G = G + H. Note that the adjacency matrix of G is
+
+
+AG Jm×n
+AG =
+.
+(48)
+Jn×m AH
+Let δ = kG − kH . The eigenvalues and eigenvectors of AG are given by the three sets:
+• For k = 1, . . . , m − 1, let |uk , 0n i be a column vector formed by concatenating the
+column vector |uk i with the zero vector of length n. Then, |uk , 0n i is an eigenvector
+with eigenvalue λk .
+• For ℓ = 1, . . . , n − 1, let |0m , vℓ i be a column vector formed by concatenating the zero
+vector of length m with the column vector |vℓ i. Then, |0m , vℓ i is an eigenvector with
+eigenvalue κℓ .
+• Let |±i = √1 |α± , 1n i be a column vector formed by concatenating the vector α± |1m i
+L±
+
+with the vector |1n i, where |1m i, |1n i denote the all-one vectors of length m, n,
+respectively. Then, |±i is an eigenvector with eigenvalue λ± = kH + mα± . Here,
+α± =
+
+1
+(δ ± ∆),
+2m
+
+L± = m(α± )2 + n.
+
+(49)
+
+In what follows, we will abuse notation by using |ai, |bi for both G and G + H; their
+dimensions differ in both cases, although it will be clear from context which version is used.
+The quantum wave amplitude from a to b is given by
+(m−1
+)
+X
+X α±
+−itAG
+−itAG
+√ |±i
+huk , 0n |ai|uk , 0n i +
+hb|e
+|ai = hb|e
+(50)
+L±
+±
+k=1
+(m−1
+)
+X
+X α±
+−itλk
+−itλ±
+√ e
+huk |aie
+|uk , 0n i +
+= hb|
+|±i
+(51)
+L±
+±
+k=1
+
+=
+
+m−1
+X
+k=1
+
+= hb|
+
+hb|uk ihuk |aie−itλk +
+
+(m−1
+X
+k=0
+
+−itλk
+
+|uk ihuk |e
+
+= hb|e−itAG |ai +
+
+X α2±
+±
+
+L±
+
+12
+
+X α2±
+
+)
+
+e−itλ±
+
+(52)
+
+e−itkG X α2± −itλ±
++
+e
+m
+L
+±
+±
+
+(53)
+
+L±
+±
+
+|ai −
+
+e−itλ± −
+
+e−itkG
+.
+m
+
+(54)
+
+Figure 4: Double Cones. From left to right: (a) K 2 + C8 ; (b) K2 + C8 ; (c) Cocktail Party
+(hyperoctahedral).
+
+We analyze the second term next. Note that we have the following identities:
+α+ α− = −(n/m)
+
+(55)
+
+α+ + α− = δ/m
+
+L+ L− = (n/m)∆
+
+(56)
+2
+
+2
+
+L+ + L− = ∆ /m
+2
+
+(57)
+(58)
+
+(α± ) L∓ = (n/m)L±
+
+(59)
+
+λ± = (δ̂ ± ∆)/2
+
+(60)
+
+where δ̂ = kG + kH . Therefore, the summand in (54) is given by
+
+ 
+ 
+ 
+X α2±
+∆t
+δ
+∆t
+1 −itδ̂/2
+−itλ±
+e
+e
+=
+cos
+−i
+sin
+.
+L±
+m
+2
+∆
+2
+±
+
+(61)
+
+This yields
+−itAG
+
+hb|e
+
+−itAG
+
+|ai = hb|e
+
+e−itkG
+|ai +
+m
+
+
+ 
+ 
+
+  
+δ
+∆t
+∆t
+itδ/2
+e
+−i
+sin
+−1
+cos
+2
+∆
+2
+
+(62)
+
+which proves the claim.
+In what follows, we describe several applications of Theorem 12 to the double-cones K 2 + G
+and K2 + G and also to the construction of a family of non-periodic graphs with perfect
+state transfer. The existence of the latter family of graphs was one of the main questions
+posed by Godsil [9]. For a prime p, we denote Sp (n) to be the largest non-negative integer
+j so that pj |n.
+Corollary 13 For any k-regular graph G on n vertices,
+√ K 2 + G has perfect state transfer
+between the two non-adjacent vertices of K 2 if ∆ = k2 + 8n is an integer and k, ∆ ≡ 0
+(mod 4) with S2 (k) 6= S2 (∆).
+Proof Let G = K 2 + G. By Theorem 12, since there is no transfer between the two vertices
+of K 2 , we have
+
+ 
+ 
+
+
+ 
+k
+∆t
+1 −itk/2
+∆t
+−itAG
+hb|e
+|ai =
+e
++i
+sin
+−1 .
+(63)
+cos
+2
+2
+∆
+2
+13
+
+To achieve unit magnitude, it is necessary and sufficient to require cos(kt/2) cos(∆t/2) =
+−1. Note that setting k = 0 (i.e. G is the empty graph on n vertices) will result in this
+condition being satisfied for t = 2π/∆. This is, in a sense, a generalization of P3 , which has
+perfect state transfer [6].
+Otherwise, assume k = 2k0 k1 , where k1 is odd; and ∆ = 2d0 d1 , where d1 is odd. Since
+there is no transfer in K 2 , we may choose t ∈ Qπ and require that ∆ be an integer. It
+is clear that kt/2 and ∆t/2 must have opposite parities as multiples of π. This implies
+k0 6= d0 . If k0 > d0 , we have
+1
+4d0 2
+1
+(d − 4k0 −d0 k12 ).
+n = (∆2 − k2 ) = (4d0 d21 − 4k0 k12 ) =
+8
+8
+8 1
+
+(64)
+
+Since (d21 − 4k0 −d0 k12 ) is odd and n is an integer, 8 divides 4d0 which implies d0 ≥ 2 and
+k0 > 2. A similar argument when k0 < d0 shows that d0 > k0 ≥ 2. Thus, both k and ∆
+are multiples of 4.
+Remark: Using k ≡ 0 (mod 4), n = k + 2, ∆ = k + 4 satisfy the conditions of Corollary 13,
+and thus the graph G = K 2 +G has perfect state transfer. In this case, G can be represented
+by a type of circulant graph called a hyperoctahedral, or cocktail-party, graph [1] (see Figure
+4). These graphs are formed by removing n/2 + 1 disjoint edges from Kn+2 . This class
+of graphs, which is also called the class of cross polytope graphs, was also studied by
+Tsomokos et al. [16].
+Next, we answer a question of Godsil [9] (Section 10, question (b)) by constructing an
+infinite family of non-periodic graphs with the perfect state transfer property.
+Corollary 14 For ℓ ≥ 2, the family of double-cone graphs K 2 + (C2(2ℓ−1) ⊕ C2ℓ+1 ) is nonperiodic and has perfect state transfer.
+Proof Let G = C2(2ℓ−1) ⊕ C2ℓ+1 , for ℓ ≥ 2. Note that G is a k-regular graph with k = 4 and
+√
+n = 2(4ℓ2 − 1) vertices. Using the notation of Theorem 12, we have ∆ = k2 + 8n = 8ℓ.
+The eigenvalues of G are given by the sum of the eigenvalues of the two cycles:
+λ(G) = λ(C2(2ℓ−1) ) + λ(C2ℓ+1 ).
+
+(65)
+
+Recall that the eigenvalues of an n-cycle are given by 2 cos(2πk/n), for k = 0, . . . , n − 1.
+So, each cycle has 2 (its degree) as its largest eigenvalue. Thus, the sums of the cycle
+eigenvalues contain both integers and irrational numbers. For n = 5 and n ≥ 7, at least
+some of these values are irrational. This is because the only rational values of cos((a/b)π),
+for a, b ∈ Z, are {0, ±1/2, ±1} (see Corollary 3.12 in Niven [12]). Note that 2(2ℓ − 1) ≥ 5
+and 2ℓ + 1 ≥ 5 hold for ℓ ≥ 2, and that both expressions cannot equal 6.
+The eigenvalues of G = K 2 + G will then be all of the eigenvalues of G (except for 4),
+0, and λ± = 21 (4 ± 8ℓ) = 2 ± 4ℓ by (60). This means that G has a mixture of integral and
+irrational eigenvalues. By Lemma 4.1 in [9], the graph G is non-periodic. By Corollary 13,
+since ∆ = 8ℓ is an integer and S2 (k) 6= S2 (∆), we know that G has perfect state transfer.
+This proves the claim.
+
+14
+
+Remark: Taking ℓ = 2 in Corollary 14, we get G = K 2 + C5 ⊕ C6 . Again by Lemma 4.1 in
+[9], G is non-periodic since its eigenvalues contain both integers and irrational numbers. By
+Corollary 14, we know it has perfect state transfer although it violates the eigenvalue ratio
+condition (λk − λℓ )/(λr − λs ) ∈ Q, for λr 6= λs . This is in contrast to Theorem 2.1 in [9] and
+to the mirror-symmetric networks in Section III from [7]. Our double-cone construction is
+mirror-symmetric with respect to the two vertices of K 2 .
+Corollary 15 For any n-vertex k-regular graph G, let k̃ = k − p
+1. Then, K2 + G has perfect
+state transfer between the two adjacent vertices of K2 if ∆ = k̃2 + 8n is an integer and
+k̃, ∆ ≡ 0 (mod 8).
+Proof Let G = K2 + G. By Theorem 12, since there is perfect state transfer between the
+two vertices of K2 at time t⋆ = (2Z + 1) π2 , we have
+"
+(
+!
+)
+ ⋆ 
+ ⋆ #
+−it⋆
+⋆
+⋆
+e
+t
+∆
+t
+∆
+⋆
+k̃
+hb|e−it AG |ai = hb|e−it AG |ai +
+e−it k̃/2 cos
+sin
+−1 .
++i
+2
+2
+∆
+2
+(66)
+To achieve perfect state transfer in G, it suffices to require
+"
+(
+!
+)
+ ⋆ 
+ ⋆ #
+⋆
+t
+∆
+t
+∆
+e−it
+⋆
+k̃
+e−it k̃/2 cos
+sin
+−1 =0
+(67)
++i
+2
+2
+∆
+2
+or equivalently, cos(t⋆ k̃/2) cos(t⋆ ∆/2) = 1 with ∆ ∈ Z. Thus, it is sufficient to choose
+k̃, ∆ ≡ 0 (mod 8) given t⋆ ∈ (2Z + 1) π2 .
+Remark: The above corollaries complement the results of Bose et al. [2] on K2 + Km−2
+and K 2 + Km−2 in the XYZ (Laplacian) interaction model. They showed that Km has no
+perfect state transfer, but if we delete the edge (a, b) then there is perfect state transfer
+between a and b.
+
+6
+
+Conclusion
+
+In this work, we studied perfect state transfer on quantum networks represented by graphs in
+the XY (adjacency) interaction model. Prior to our work, the only unweighted graphs known
+to have perfect state transfer were the cube-like networks [3], the Cartesian product P3⊕n
+of paths of length three [6], the path-like layered graph of diameter n [7], and the integral
+circulant graphs ICGn ({1, n/2b }), for n ≡ 0 (mod 8) and b ∈ {1, 2} [4]. We described
+constructions of new families of graphs with perfect state transfer using graph operators
+which preserve this property. More specifically, we used the graph-theoretic join and its
+circulant generalizations as well as the Cartesian product. Most of our results involved a
+reduction argument from the larger graph structure to the individual graphs with respect
+to the perfect state transfer property.
+We generalized both the “hypercube” Cartesian product and the join graph operators
+by defining a so-called circulant join G +C G of two copies of a circulant graph G and connecting them using a circulant matrix C. This allowed us to interpolate between the above
+15
+
+two interesting constructions and produced a graph operator that preserves the circulant
+property. From this construction, we derived new families of circulant graphs with perfect
+state transfer, namely, ICGn ({2, n/2b } ∪ Q), b ∈ {1, 2}, where Q is a subset of the odd divisors of n. This expanded the class of circulant graphs known to have perfect state transfer
+(see [5, 4]).
+Then, we showed that the Cartesian product of different perfect state transfer graphs
+has perfect state transfer provided all of these graphs share the same transfer time. This
+generalized previous results for paths of length two and three [6]. For the n-fold self-join, we
+showed that the existence of perfect state transfer on G+n can be reduced to its existence
+in G along with other conditions. These observations allowed us to construct
+Lm new families
+of graphs with perfect state transfer, for example ICGn ({1, n/2})+m or
+k=1 Gk , where
+Gk is any of the known integral circulant and hypercubic graphs with perfect state transfer,
+for any integer m.
+Finally, we considered the join G+H of two arbitrary regular graphs. Again, we reduced
+the existence of perfect state transfer on G + H to its existence in G along with some
+conditions on the sizes and degrees of the two graphs. From this reduction, we constructed
+an interesting double-cone family of graphs K 2 + G which are non-periodic but with perfect
+state transfer. This answered one of the main questions posed in Godsil [9]. This also
+complemented results in Bose et al. [2] on perfect state transfer in the complete graphs Km
+with a missing edge. Their results were stated in the XYZ (Laplacian) model while our
+results hold in the XY (adjacency) model.
+It seems plausible
+that there is a characterization of perfect state transfer in integral
+S
+circulants G(n, d∈D Gn (d)), for any D, using the join operator. This will complement the
+characterization of unitary Cayley graphs where D = {1} [5]. It would also be interesting to
+consider perfect state transfer in weighted graphs (see [6]), especially on unweighted graphs
+which are known to lack the property. Finally, we find it curious that most of the graphs
+known with perfect state transfer achieve this at time t⋆ = (2Z + 1)π/2. This is true for
+the cube-like graphs [3] and for the integral circulants [4]. The lone exceptions are paths of
+length three [6] and the double-cones K 2 + G, for suitable chosen regular graphs G.
+
+Acknowledgments
+We thank Garry Bowlin for helpful comments on the circulant join construction. This
+research was supported in part by the National Science Foundation grant DMS-0646847
+and also by the National Security Agency grant H98230-09-1-0098.
+
+References
+[1] Norman Biggs, Algebraic Graph Theory, 2nd edition, Cambridge University Press,
+1993.
+[2] Sougato Bose, Andrea Casaccino, Stefano Mancini, and Simone Severini, “Communication in XYZ All-to-All Quantum Networks with a Missing Link,” International
+Journal on Quantum Information 7(4):713-723, 2009.
+
+16
+
+[3] Anna Bernasconi, Chris Godsil, and Simone Severini, “Quantum Networks on Cubelike Graphs,” Physical Review A 78, 052320, 2008.
+[4] Milan Bašić and Marko Petković, “Some classes of integral circulant graphs either
+allowing or not allowing perfect state transfer,” Applied Mathematics Letters, in press.
+[5] Milan Bašić, Marko Petković, and Dragan Stefanović, “Perfect state transfer in integral circulant graphs,” Applied Mathematics Letters 22(7):1117-1121, 2009.
+[6] Matthias Christandl, Nilanjana Datta, Artur Ekert, Andrew Landahl, “Perfect state
+transfer in quantum spin networks,” Physical Review Letters 92, 187902, 2004.
+[7] Matthias Christandl, Nilanjana Datta, Tony Dorlas, Artur Ekert, Alastair Kay, Andrew Landahl, “Perfect transfer of arbitrary states in quantum spin networks,” Physical Review A 71, 032312, 2005.
+[8] Edward Farhi and Sam Gutmann, “Quantum computation and decision trees,” Physical Review A 58 (1998), 915-928.
+[9] Chris Godsil, “Periodic Graphs,” math/08062074.
+[10] Chris Godsil and Gordon Royle, Algebraic Graph Theory, Springer, 2001.
+[11] Viv Kendon, “Quantum walks on general graphs,” International Journal of Quantum
+Information 4:5 (2006), 791-805.
+[12] Ivan Niven, Irrational Numbers, The Mathematical Association of America, 1965.
+[13] Wasin So, “Integral circulant graphs,” Discrete Mathematics 306:153-158, 2005.
+[14] Nitin Saxena, Simone Severini, and Igor Shparlinski, “Parameters of Integral Circulant Graphs and Periodic Quantum Dynamics,” International Journal of Quantum
+Information 5(3):417-430, 2007.
+[15] Allen J. Schwenk and Robin J. Wilson, “Eigenvalues of Graphs,” in Selected Topics
+in Graph Theory, Lowell W. Beineke and Robin J. Wilson (eds.), Academic Press
+(1978), 307-336.
+[16] Dimitris I. Tsomokos, Martin B. Plenio, Inés de Vega, and Susana F. Huelga, “State
+transfer in highly connected networks and a quantum Babinet principle,” Physical
+Review A 78 (2008), 062310.
+
+17
+
+
