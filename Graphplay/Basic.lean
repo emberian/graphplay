@@ -24,6 +24,10 @@ structure Hom {V : Type u} {W : Type v}
 
 infixr:25 " ⟶g " => Hom
 
+/-- The spanning-subgraph relation for graphs on the same vertex type. -/
+def SpanningSubgraph {V : Type u} (G H : SimpleGraph V) : Prop :=
+  ∀ {x y : V}, G.Adj x y -> H.Adj x y
+
 instance {V : Type u} {W : Type v} {G : SimpleGraph V} {H : SimpleGraph W} :
     CoeFun (G ⟶g H) (fun _ => V -> W) where
   coe f := f.toFun
@@ -74,6 +78,79 @@ theorem sigma_mk_ne {I : Type u} {C : I -> Type v} {i : I} {a b : C i}
 /-- A coloring by colors `C` is a homomorphism into the complete graph on `C`. -/
 abbrev Coloring {V : Type u} (G : SimpleGraph V) (C : Type v) : Type (max u v) :=
   G ⟶g Complete C
+
+/-- The edgeless graph on a vertex type. -/
+def EmptyGraph (V : Type u) : SimpleGraph V where
+  Adj _ _ := False
+  symm := by
+    intro _ _ h
+    cases h
+  irrefl := by
+    intro _ h
+    cases h
+
+/-- Pull back a template graph along a vertex label map.
+
+This is the greatest graph on `V` for which `label` is a homomorphism into the
+template `Q`.  Ordinary color completion is the special case `Q = Complete C`. -/
+def PullbackGraph {V : Type u} {T : Type v}
+    (Q : SimpleGraph T) (label : V -> T) : SimpleGraph V where
+  Adj x y := Q.Adj (label x) (label y)
+  symm := by
+    intro x y h
+    exact Q.symm h
+  irrefl := by
+    intro x h
+    exact Q.irrefl (label x) h
+
+def PullbackGraph.labeling {V : Type u} {T : Type v}
+    (Q : SimpleGraph T) (label : V -> T) :
+    PullbackGraph Q label ⟶g Q where
+  toFun := label
+  map_adj := by
+    intro x y h
+    exact h
+
+theorem PullbackGraph.adj_iff {V : Type u} {T : Type v}
+    (Q : SimpleGraph T) (label : V -> T) (x y : V) :
+    (PullbackGraph Q label).Adj x y ↔ Q.Adj (label x) (label y) :=
+  Iff.rfl
+
+/-- The template pullback is maximal among graphs whose chosen label map is a
+homomorphism into the template. -/
+theorem PullbackGraph.greatest {V : Type u} {T : Type v}
+    (Q : SimpleGraph T) (label : V -> T) {G : SimpleGraph V}
+    (hlabel : G ⟶g Q) (hsame : ∀ x, hlabel x = label x) :
+    SpanningSubgraph G (PullbackGraph Q label) := by
+  intro x y hxy
+  change Q.Adj (label x) (label y)
+  rw [← hsame x, ← hsame y]
+  exact hlabel.map_adj hxy
+
+/-- Simultaneous selected colorability: an edge is allowed exactly when every
+template constraint allows the corresponding pair of labels.  The index type is
+assumed inhabited so that irreflexivity follows from at least one constraint. -/
+def MultiPullbackGraph {A : Type u} [Inhabited A] {V : Type v}
+    {T : A -> Type w} (Q : ∀ a, SimpleGraph (T a))
+    (label : ∀ a, V -> T a) : SimpleGraph V where
+  Adj x y := ∀ a, (Q a).Adj (label a x) (label a y)
+  symm := by
+    intro x y h a
+    exact (Q a).symm (h a)
+  irrefl := by
+    intro x h
+    exact (Q default).irrefl (label default x) (h default)
+
+theorem MultiPullbackGraph.greatest {A : Type u} [Inhabited A] {V : Type v}
+    {T : A -> Type w} (Q : ∀ a, SimpleGraph (T a))
+    (label : ∀ a, V -> T a) {G : SimpleGraph V}
+    (hlabel : ∀ a, G ⟶g Q a)
+    (hsame : ∀ a x, hlabel a x = label a x) :
+    SpanningSubgraph G (MultiPullbackGraph Q label) := by
+  intro x y hxy a
+  change (Q a).Adj (label a x) (label a y)
+  rw [← hsame a x, ← hsame a y]
+  exact (hlabel a).map_adj hxy
 
 /-- The arbitrary indexed coproduct of a family of graphs.
 
@@ -192,6 +269,33 @@ def Coloring.toColorCompletion {V : Type u} {C : Type v} {G : SimpleGraph V}
     intro x y h
     exact color.map_adj h
 
+/-- The completion induced by `color` is itself colored by `color`. -/
+def ColorCompletion.coloring {V : Type u} {C : Type v} (color : V -> C) :
+    Coloring (ColorCompletion color) C where
+  toFun := color
+  map_adj := by
+    intro x y h
+    exact h
+
+/-- A coloring makes the original graph a spanning subgraph of its color
+completion. -/
+theorem Coloring.spanningSubgraph_colorCompletion {V : Type u} {C : Type v}
+    {G : SimpleGraph V} (color : Coloring G C) :
+    SpanningSubgraph G (ColorCompletion color.toFun) := by
+  intro x y h
+  exact color.map_adj h
+
+/-- The color completion is the greatest graph on the same vertices for which
+the specified vertex map is a coloring. -/
+theorem ColorCompletion.greatest {V : Type u} {C : Type v}
+    (color : V -> C) {G : SimpleGraph V}
+    (hcolor : Coloring G C) (hsame : ∀ x, hcolor x = color x) :
+    SpanningSubgraph G (ColorCompletion color) := by
+  intro x y hxy
+  change color x ≠ color y
+  rw [← hsame x, ← hsame y]
+  exact hcolor.map_adj hxy
+
 theorem ColorCompletion.adj_iff {V : Type u} {C : Type v}
     (color : V -> C) (x y : V) :
     (ColorCompletion color).Adj x y ↔ color x ≠ color y :=
@@ -213,6 +317,76 @@ theorem ColorCompletion.adj_of_ne_color {V : Type u} {C : Type v}
     (color : V -> C) {x y : V} (h : color x ≠ color y) :
     (ColorCompletion color).Adj x y :=
   h
+
+/-- A bag whose cross-fiber edges are engineered by a template graph on the bag
+index type. -/
+def TemplateJoin {I : Type u} (Q : SimpleGraph I) (V : I -> Type v) :
+    SimpleGraph (Sigma V) :=
+  PullbackGraph Q (fun x : Sigma V => x.1)
+
+def TemplateJoin.labeling {I : Type u} (Q : SimpleGraph I) (V : I -> Type v) :
+    TemplateJoin Q V ⟶g Q :=
+  PullbackGraph.labeling Q (fun x : Sigma V => x.1)
+
+theorem TemplateJoin.adj_iff {I : Type u} {V : I -> Type v}
+    (Q : SimpleGraph I) (x y : Sigma V) :
+    (TemplateJoin Q V).Adj x y ↔ Q.Adj x.1 y.1 :=
+  Iff.rfl
+
+theorem TemplateJoin.no_intra {I : Type u} {V : I -> Type v}
+    (Q : SimpleGraph I) {i : I} (x y : V i) :
+    ¬ (TemplateJoin Q V).Adj (Sigma.mk i x) (Sigma.mk i y) := by
+  intro h
+  exact Q.irrefl i h
+
+theorem TemplateJoin.cross {I : Type u} {V : I -> Type v}
+    {Q : SimpleGraph I} {i j : I} (hij : Q.Adj i j)
+    (x : V i) (y : V j) :
+    (TemplateJoin Q V).Adj (Sigma.mk i x) (Sigma.mk j y) :=
+  hij
+
+/-- The engineered join is maximal among graphs on the same bag whose tag map is
+a homomorphism into the chosen template. -/
+theorem TemplateJoin.greatest {I : Type u} {V : I -> Type v}
+    {Q : SimpleGraph I} {G : SimpleGraph (Sigma V)}
+    (hlabel : G ⟶g Q)
+    (hsame : ∀ x, hlabel x = x.1) :
+    SpanningSubgraph G (TemplateJoin Q V) :=
+  PullbackGraph.greatest Q (fun x : Sigma V => x.1) hlabel hsame
+
+/-- The complete join of a bag of vertex types: all cross-bag edges and no
+within-bag edges. -/
+def CompleteJoin {I : Type u} (V : I -> Type v) : SimpleGraph (Sigma V) :=
+  ColorCompletion (fun x : Sigma V => x.1)
+
+theorem CompleteJoin.adj_iff_tag_ne {I : Type u} {V : I -> Type v}
+    (x y : Sigma V) :
+    (CompleteJoin V).Adj x y ↔ x.1 ≠ y.1 :=
+  Iff.rfl
+
+theorem CompleteJoin.no_intra {I : Type u} {V : I -> Type v}
+    {i : I} (x y : V i) :
+    ¬ (CompleteJoin V).Adj (Sigma.mk i x) (Sigma.mk i y) := by
+  intro h
+  exact h rfl
+
+theorem CompleteJoin.cross {I : Type u} {V : I -> Type v}
+    {i j : I} (hij : i ≠ j) (x : V i) (y : V j) :
+    (CompleteJoin V).Adj (Sigma.mk i x) (Sigma.mk j y) :=
+  hij
+
+def CompleteJoin.coloring {I : Type u} {V : I -> Type v} :
+    Coloring (CompleteJoin V) I :=
+  ColorCompletion.coloring (fun x : Sigma V => x.1)
+
+/-- Any graph on a sigma-bag colored by its tag projection is a spanning subgraph
+of the complete join of the bag. -/
+theorem CompleteJoin.greatest {I : Type u} {V : I -> Type v}
+    {G : SimpleGraph (Sigma V)}
+    (hcolor : Coloring G I)
+    (hsame : ∀ x, hcolor x = x.1) :
+    SpanningSubgraph G (CompleteJoin V) :=
+  ColorCompletion.greatest (fun x : Sigma V => x.1) hcolor hsame
 
 /-- Increasing unions on one ambient vertex type.  This is a lightweight
 colimit-like construction for chains of graph approximants. -/

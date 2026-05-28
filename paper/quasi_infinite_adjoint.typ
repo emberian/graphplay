@@ -21,12 +21,16 @@ constructions.  The Lean development proves the coproduct universal property,
 propagation of heterogeneous colorings through a sigma-sum palette, a universal
 property for countable edge unions, inherited colorings for inverse limits, and a
 small obstruction theorem showing why a naive free colorable reflector fails.
+It then generalizes coloring to selected template pullbacks and simultaneous
+multicolor constraints.
 
 The addendum connects this machinery to quantum spatial search: the four-color
 theorem gives every finite planar graph a complete multipartite four-color
 completion. That completion is Laplacian integral, so the deterministic-search
 theorem of Li, Luo, Feng, and Li applies to the completion, though not
-automatically to the original planar graph.
+automatically to the original planar graph. More generally, equal-fiber joins
+over engineered regular templates inherit the template spectral ratio relevant
+to Grover-optimal CTQW search.
 
 #heading("Formal Setting")
 
@@ -122,6 +126,71 @@ two-colorable, so there is no homomorphism from the triangle into any
 Bool-colorable graph.  Thus an ordinary reflector with a unit $G -> L(G)$ into
 the full subcategory of two-colorable graphs cannot exist.
 
+#heading("The Better Adjoint-Shaped Object")
+
+The successful adjoint-shaped object is local over a chosen vertex-color map.
+Fix $c : V -> C$. Among all graph structures on $V$ for which $c$ is a coloring,
+there is a greatest one:
+
+$ K_c(x,y) <=> c(x) != c(y). $
+
+In other words, $K_c$ is the cofree or maximal graph compatible with the color
+map. If $G -> K_C$ is a coloring, then $G$ is a spanning subgraph of this
+completion. Lean verifies this as `ColorCompletion.greatest`.
+
+For a genuine bag $V = sum_(i in I) V_i$, the map $"tag"(i,a)=i$ gives
+
+$ "CompleteJoin"(V_i) = K_("tag"). $
+
+This graph has all cross-bag edges and no within-bag edges. Lean verifies:
+
+- `CompleteJoin.no_intra`: vertices in the same bag are never adjacent;
+- `CompleteJoin.cross`: vertices in different bags are always adjacent;
+- `CompleteJoin.greatest`: any graph colored by the tag projection is a
+  spanning subgraph of the complete join.
+
+So the quasi-infinite construction is not merely "take a bag". It is:
+
+$ "colored graph" -> "independent color fibers" -> "complete cross-fiber host". $
+
+The host is canonical once the coloring is fixed, and the index set can be
+arbitrary. For four-color planar graphs the index set is bounded by four; for
+the earlier speculative infinite construction, the fibers may be infinite while
+the color quotient remains finite.
+
+#heading("Engineered Colorability")
+
+The better generalization is to stop treating a palette as a complete graph.
+Let $Q$ be any graph on a type $T$ of engineered modes, and let
+$f : V -> T$ be a selected label map. Define
+
+$ f^* Q (x,y) <=> Q(f(x), f(y)). $
+
+Lean calls this `PullbackGraph Q f`. It is the greatest graph on $V$ for which
+the chosen label map is a homomorphism into $Q$. Ordinary color completion is
+the special case $Q = K_C$.
+
+For bags, this becomes an engineered join. Given fibers $V_i$ over template
+vertices $i in I$,
+
+$ "TemplateJoin"(Q,V)( (i,a), (j,b) ) <=> Q(i,j). $
+
+So a small template graph programs which bags are completely coupled. The old
+`CompleteJoin` is the special case where $Q$ is complete; a bipartite template,
+cycle template, hypercube template, expander template, or Laplacian-integral
+template gives a different engineered host. Lean verifies the no-intra-fiber
+rule, the cross-fiber rule, and maximality as `TemplateJoin.greatest`.
+
+Multicolorability is the intersection version. Given many templates $Q_a$ and
+many selected label maps $f_a : V -> T_a$, Lean defines `MultiPullbackGraph` by
+
+$ x "Adj" y <=> forall a, Q_a(f_a(x), f_a(y)). $
+
+This captures simultaneous constraints: planar color class, hardware zone,
+allowed long-range tunneling family, parity, oracle class, or any other selected
+coarse observable. The design problem changes from "is the graph colorable?" to
+"which quotient templates do we want the Hamiltonian support to factor through?"
+
 #heading("A.M.O.R.C. Addendum: Four-Color Search Envelope")
 
 The fetched spatial-search papers make the relevant graph invariant clear. In
@@ -131,8 +200,8 @@ $ H_G = - P_w - gamma A_G, $
 
 where $A_G$ is the adjacency matrix. Their optimality criterion is spectral: the
 largest adjacency eigenvector should be the uniform state and the rest of the
-normalized spectrum should be bounded away from it. King--Linnebacher--Orth--
-Rizzi--Morigi use a Laplacian search Hamiltonian
+normalized spectrum should be bounded away from it. King et al. use a Laplacian
+search Hamiltonian
 
 $ H_alpha = - gamma_0 L_alpha - P_w, $
 
@@ -205,6 +274,68 @@ Hamiltonian support with complete cross-color tunneling. This connects the
 four-color theorem to spatial search without claiming that the original planar
 graph is Grover-optimal or deterministic-search-ready.
 
+There is a stronger reduction hidden here. Let the color classes have sizes
+$n_1,...,n_r$, $r <= 4$, and let $e_v$ denote the standard basis state at
+vertex $v$. Define
+
+$ u_i = 1 / sqrt(n_i) sum_(v in V_i) e_v $
+
+as the normalized uniform state on color class $i$. The span of these $r$ states
+is invariant under both the adjacency and Laplacian of $K_c$. In this basis,
+
+$ A_(K_c) u_j = sum_(i != j) sqrt(n_i n_j) u_i. $
+
+Thus the unmarked walk on the complete color host collapses from $N$ dimensions
+to the weighted complete graph on the color bags.
+
+The same calculation works for an engineered template join. If $J =
+"TemplateJoin"(Q,V)$, then
+
+$ A_J u_j = sum_(i : Q(i,j)) sqrt(n_i n_j) u_i. $
+
+So the uniform-fiber sector is not merely small; it is the weighted adjacency
+matrix of the chosen template. If all fibers have the same size $m$, then this
+sector is exactly $m A_Q$. For a $d$-regular template $Q$, the full adjacency
+spectrum of the equal-fiber join consists of $m$ times the adjacency spectrum of
+$Q$, together with additional zero modes internal to the fibers. Therefore, if
+$Q$ has uniform principal eigenvector and all other adjacency eigenvalues satisfy
+$abs(lambda_i) <= c d$ for some $c < 1$, then the equal-fiber join satisfies the
+same spectral-ratio condition used by Chakraborty--Novo--Ambainis--Omar for
+Grover-optimal CTQW spatial search. The bag construction therefore gives a
+family of arbitrarily large search hosts controlled by a small engineered
+template.
+
+There is a parallel deterministic-search statement. If the fibers all have size
+$m$ and the template $Q$ is Laplacian integral, then the equal-fiber template
+join is Laplacian integral: the quotient Laplacian contributes $m$ times the
+Laplacian spectrum of $Q$, and the internal fiber-difference modes contribute
+integer eigenvalues $m d_i$. Thus Li--Luo--Feng--Li's deterministic-search
+theorem applies to equal-fiber joins over Laplacian-integral templates. Complete
+multipartite four-color completions are a special, more forgiving case where
+the fiber sizes need not be equal.
+
+For search with a single marked vertex $w in V_m$, refine the bag partition to
+
+$ {w}, quad V_m - {w}, quad V_i " for " i != m. $
+
+This refined partition is equitable for $K_c$. Consequently the search
+Hamiltonians
+
+$ - gamma A_(K_c) - P_w quad "and" quad - gamma L_(K_c) - P_w $
+
+preserve the span of the normalized cell states. Since $r <= 4$, a
+single-marked search on the four-color completion reduces to a Hamiltonian of
+dimension at most five. With an arbitrary marked set $M$, splitting each color
+bag into $V_i inter M$ and $V_i - M$ gives an invariant subspace of dimension at
+most eight.
+
+This is the more operational quantum link: four-coloring gives a bounded-sector
+Hamiltonian reduction. The graph may have arbitrarily many vertices, or arise as
+a countable/coherent limit of finite planar approximants, while the color-sector
+quotient remains bounded by four before marking and by eight after marking.
+That is the part that deserves the name quasi-infinite: the vertex space can
+grow without changing the color-sector control problem.
+
 The same observation gives a boundary condition for the long-range tunneling
 paper: if all nonzero long-range couplings are treated as edges, then the
 support graph is complete for $N > 4$, hence not planar and not four-colorable.
@@ -220,9 +351,14 @@ The verified construction is aggressive in size but conservative in claims:
 - heterogeneous and shared-palette color propagation;
 - a countable edge-union universal property;
 - inverse-limit thread graphs with projections and inherited colorings;
-- a formal obstruction to the naive colorable-reflector idea.
+- a formal obstruction to the naive colorable-reflector idea;
 - a four-color completion theorem connecting planar graphs to Laplacian
-  integral deterministic-search host graphs.
+  integral deterministic-search host graphs;
+- a maximal complete-join construction over color bags;
+- engineered template joins and multicolor pullback constraints;
+- a spectral-ratio inheritance theorem for equal-fiber template joins;
+- a bounded-dimensional equitable quotient for search Hamiltonians on the
+  four-color completion.
 
 This gives a precise mathematical home for a large part of the phrase
 "quasi-infinite adjoint": it is the coproduct/colimit/inverse-limit toolkit for
@@ -230,10 +366,11 @@ colorable graph components.  It does not yet construct graphs with a designed
 fractal dimension.  To do that honestly, the next layer would need a metric or
 growth structure on the approximants, then a verified dimension invariant.
 
-The A.M.O.R.C. addendum gives one concrete bridge to quantum spatial search:
-four-colorability provides a canonical class of Laplacian-integral completions
-for planar instances. The bridge is structural, not an optimality theorem for
-the original graph.
+The A.M.O.R.C. addendum gives a concrete bridge to quantum spatial search:
+four-colorability provides canonical Laplacian-integral completions for planar
+instances, and those completions have bounded-dimensional color-sector search
+quotients. The bridge is structural, not an optimality theorem for the original
+graph.
 
 #heading("Lean Artifact")
 

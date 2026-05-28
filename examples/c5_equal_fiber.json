@@ -1,0 +1,16 @@
+{
+  "name": "cycle C5 engineered template with equal fibers",
+  "template": {
+    "kind": "cycle",
+    "n": 5,
+    "prefix": ""
+  },
+  "fiber_size": 20,
+  "marked": {
+    "0": 1
+  },
+  "scan": {
+    "steps": 2400,
+    "t_max_factor": 5.0
+  }
+}

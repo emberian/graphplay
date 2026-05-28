@@ -1,0 +1,15 @@
+{
+  "name": "hypercube Q3 template with equal fibers",
+  "template": {
+    "kind": "hypercube",
+    "dim": 3
+  },
+  "fiber_size": 12,
+  "marked": {
+    "000": 1
+  },
+  "scan": {
+    "steps": 2200,
+    "t_max_factor": 5.0
+  }
+}

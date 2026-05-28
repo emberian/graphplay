@@ -1,0 +1,20 @@
+{
+  "name": "four-color completion with unequal color classes",
+  "template": {
+    "kind": "complete",
+    "vertices": ["red", "green", "blue", "yellow"]
+  },
+  "fibers": {
+    "red": 7,
+    "green": 13,
+    "blue": 19,
+    "yellow": 25
+  },
+  "marked": {
+    "blue": 1
+  },
+  "scan": {
+    "steps": 2000,
+    "t_max_factor": 4.0
+  }
+}

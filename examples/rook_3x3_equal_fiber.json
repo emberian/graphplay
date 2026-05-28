@@ -1,0 +1,24 @@
+{
+  "name": "rook 3x3 cartesian complete-template with equal fibers",
+  "template": {
+    "kind": "cartesian_product",
+    "left": {
+      "kind": "complete",
+      "n": 3,
+      "prefix": "r"
+    },
+    "right": {
+      "kind": "complete",
+      "n": 3,
+      "prefix": "c"
+    }
+  },
+  "fiber_size": 10,
+  "marked": {
+    "r0,c0": 1
+  },
+  "scan": {
+    "steps": 2200,
+    "t_max_factor": 5.0
+  }
+}

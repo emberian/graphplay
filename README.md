@@ -10,6 +10,13 @@ Lean 4 formalization of a conservative but nontrivial reading of the
 - a formal obstruction to a naive reflector into `C`-colorable graphs.
 - a four-color completion lemma connecting planar colorings to complete
   multipartite search host graphs.
+- a complete cross-bag join construction, maximal among graphs colored by the
+  bag tag projection.
+- engineered template pullbacks and simultaneous multicolor constraints.
+- engineered template joins, where a small quotient graph programs the allowed
+  complete cross-fiber couplings.
+- a bounded-dimensional equitable quotient argument for search Hamiltonians on
+  the four-color completion.
 
 Build the Lean artifact:
 
