@@ -1,0 +1,2349 @@
+Quantum walks on join graphs
+
+arXiv:2312.06906v1 [quant-ph] 12 Dec 2023
+
+Steve Kirkland,1 Hermie Monterde1
+December 13, 2023
+
+Abstract
+The join X _ Y of two graphs X and Y is the graph obtained by joining each vertex of X to each
+vertex of Y. We explore the behaviour of a continuous quantum walk on a weighted join graph having the adjacency matrix or Laplacian matrix as its associated Hamiltonian. We characterize strong
+cospectrality, periodicity and perfect state transfer (PST) in a join graph. We also determine conditions in which strong cospectrality, periodicity and PST are preserved in the join. Under certain
+conditions, we show that there are graphs with no PST that exhibits PST when joined by another
+graph. This suggests that the join operation is promising in producing new graphs with PST. Moreover, for a periodic vertex in X and X _ Y, we give an expression that relates its minimum periods
+ˇ in X and X _ Y. While the join
+ˇ operation need not preserve periodicity and PST, we show that
+ˇ|U M pX _ Y, tqu,v | ´ |U M pX, tqu,v |ˇ ď 2 for all vertices u and v of X, where U M pX _ Y, tq and
+|V pX q|
+U M pX, tq denote the transition matrices of X _ Y and X respectively relative to either the adjacency
+or Laplacian matrix. We demonstrate that the bound |V p2Xq| is tight for infinite families of graphs.
+
+Keywords: quantum walk, join graph, perfect state transfer, strong cospectrality, adjacency matrix, Laplacian matrix
+MSC2010 Classification: 05C50; 05C76; 05C22; 15A16; 15A18; 81P45;
+
+1 Introduction
+The graphs K2 , C4 P3 , and K4 ze are well-known examples of small graphs that admit adjacency or Laplacian perfect state transfer. Kirkland et al. noticed that in these small graphs, the vertices involved in perfect
+state transfer share the same neighbours, an observation that prompted them to examine state transfer between twins [KMP23]. However, it can also be observed that these small graphs are in fact join graphs.
+This motivates our investigation on quantum walks on graphs built using the join operation.
+The first infinite family of join graphs revealed to admit Laplacian perfect state transfer was Kn ze :“
+O2 _ Kn´2 (the complete graph on n vertices minus an edge) with n ” 0 (mod 4) [BCMS09]. Motivated by this result, Angeles-Canul et al. gave sufficient conditions for adjacency perfect state transfer to
+occur between the vertices of X P tO2 , K2 u in the unweighted graph X _ Y, where Y is a regular graph
+[ACNO` 10]. Such a graph is called a double cone on Y, and the vertices of X P tO2 , K2 u are called
+the apexes of the double cone. They also determined sufficient conditions such that adjacency perfect
+state transfer in X is preserved under joins of copies of X. In a subsequent paper, Angeles-Canul et al.
+investigated perfect state transfer in weighted join graphs, and found that the apexes of a double cone
+on a k-regular graph admit adjacency perfect state transfer by appropriate choice of weights of an edge
+1 Department of Mathematics, University of Manitoba, Winnipeg, MB, Canada R3T 2N2
+
+1
+
+between the apexes and/or loops on the apexes [ACNO` 09]. More recently, Kirkland et al. fully characterized unweighted double cones that admit adjacency perfect state transfer between apexes [KMP23].
+For the Laplacian case, Alvir et al. showed that the apexes of unweighted O2 _ Y admit perfect state
+transfer if and only if |VpYq| ” 2 (mod 4), while the apexes of unweighted K2 _ Y do not admit perfect state transfer [ADL` 16]. Joins have also been investigated in graphs with well-structured eigenbases
+[JKP` 17, MMP23], and in the contexts of fractional revival [Mon23a, CJL` 21], sedentariness [Mon23b]
+and strong cospectrality [Mon22].
+Despite its widespread presence in literature, state transfer on join graphs remains largely unexplored.
+In this paper, we provide a systematic study of quantum walks on weighted join graphs having the adjacency and Laplacian matrices as their associated Hamiltonian. In Section 3, we provide known results
+about transition matrices and eigenvalue supports of vertices in join graphs. In Section 4, we characterize
+periodic vertices in a join (Theorem 4), and determine the conditions in which periodicity of a vertex in X
+and X _ Y are equivalent (Corollaries 7 and 9). We also use the join operation to provide infinite families
+of graphs that are not integral (resp., Laplacian integral) whereby each member graph contains periodic
+vertices (Corollary 12). We devote Section 5 to finding a relationship between the minimum periods ρX
+and ρX_Y of a vertex that is periodic in both X and X _ Y, resp. (Theorems 14 and 15). We find that
+ρX_Y is a rational multiple of ρX , and if we add the extra hypothesis that X is disconnected, then ρX_Y is
+an integer multiple of ρX . Section 6 provides a characterization of strong cospectrality in joins (Theorem
+20). It turns out that strong cospectrality between two vertices of X in X _ Y requires strong cospectrality
+in X, except for the case when X is an empty graph on two vertices. In fact, for the unweighted case,
+strong cospectrality in X and X _ Y are equivalent with a few exceptions (Corollary 20). In Section 7, we
+characterize perfect state transfer in joins (Theorems 23 and 26). Unlike strong cospectrality, perfect state
+transfer between two vertices of X in X _ Y does not require perfect state transfer between them in X. This
+motivates us in Section 8 to determine necessary and sufficient conditions such that perfect state transfer
+in X is preserved in X _ Y (Corollaries 28 and 35), and in Section 9 to determine conditions such that
+perfect state transfer occurs in X _ Y given that it does not occur in X (Theorems 40 and 42, and Corollary
+46). In Section 10, we characterize strong cospectrality and PST in self-joins and iterated join graphs. The
+latter result generalizes a previously known characterization of perfect state transfer in threshold graphs.
+While
+the join operation does not preserve
+periodicity and PST in general, we show in Section 11 that
+ˇ
+ˇ
+ˇ|U M pX _ Y, tqu,v | ´ |U M pX, tqu,v |ˇ ď 2 for all t and for all vertices u and v of X (Corollaries 70 and
+|VpXq|
+72). Consequently, the behaviour of vertices in X in the quantum walk on X _ Y mimics the behaviour of
+the quantum walk on X as |VpXq| Ñ 8 (Corollary 73). We also show that this upper bound is tight for
+infinite families of graphs (Examples 75 and 76). Finally, open problems are presented in Section 12.
+
+2 Preliminaries
+Throughout, we assume that a graph X is weighted and undirected with possible loops but no multiple
+edges. We denote the vertex set of X by VpXq, and we allow the edges of X to have positive real weights.
+We say that X is simple if X has no loops, and X is unweighted if all edges of X have weight one. For
+u P VpXq, we denote the the characteristic vector of u as eu , which is a vector with a 1 on the entry
+indexed by u and zeros elsewhere. The all-ones vector of order n, the zero vector of order n, the m ˆ n
+all-ones matrix, and the n ˆ n identity matrix are denoted by 1n , 0n , Jm,n and In , respectively. If m “ n,
+then we write Jm,n as Jn , and if the context is clear, then we simply write these matrices as 1, 0, J and I,
+respectively. We also represent the transpose of the matrix H by H T , and the characteristic polynomial of
+H in the variable t by φpH, tq. Lastly, we denote the simple unweighted empty, cycle, complete, and path
+graphs on n vertices as On , Cn , Kn , and Pn , respectively. We also denote the hypercube on 2 p vertices by
+Q p , and the cocktail party graph on m vertices by CPpmq, where m is even.
+2
+
+The adjacency matrix ApXq of X is the matrix defined entrywise as
+#
+ωu,v , if u and v are adjacent
+ApXqu,v “
+0,
+otherwise,
+where ωu,v is the weight of the edge pu, vq.
+ř The degree matrix DpXq of X is the diagonal matrix of vertex
+degrees of X, where degpuq “ 2ωu,u ` j‰u ωu,j for each u P VpXq. The Laplacian matrix of X is the
+matrix LpXq “ DpXq ´ ApXq. We use MpXq to denote ApXq or LpXq. If the context is clear, then we
+write MpXq, ApXq, LpXq and DpXq resp. as M, A, L and D. We say that X is integral (resp., Laplacian
+integral) if all eigenvalues of ApXq (resp., LpXq) are integers. We say that X is weighted k-regular if
+degpuq ´ ωu,u is a constant k for each u P VpXq, i.e., the row sums of ApXq are a constant k. If X is
+simple, then X is weighted k-regular if and only if DpXq “ kI.
+A (continuous-time) quantum walk on X with respect to H is determined by the unitary matrix
+U H pX, tq “ eitH .
+
+(1)
+
+The matrix H is called the Hamiltonian of the quantum walk. Typically, H is taken to be A or L, but
+any Hermitian matrix H that respects the adjacencies of X works in general. Since M P tA, Lu is real
+symmetric, M admits a spectral decomposition
+ÿ
+M“
+λ j Ej ,
+(2)
+j
+
+where the λ j ’s are the distinct real eigenvalues of M and each Ej is the orthogonal projection matrix onto
+the eigenspace associated with λ j . If the eigenvalues are not indexed, then we also denote by Eλ the
+orthogonal projection matrix corresponding to the eigenvalue λ of M. Now, (2) allows us to write (1) as
+ÿ
+U M pX, tq “
+eitλ j Ej .
+j
+
+We say that perfect state transfer (PST) occurs between two vertices u and v if |U M pX, τqu,v | “ 1 for
+some time τ. The minimum τ ą 0 such that |U M pX, τqu,v | “ 1 is called the minimum PST time between
+u and v. We say that u is periodic if |U M pX, τqu,u | “ 1 for some time τ. The minimum τ ą 0 such
+that |U M pX, τqu,u | “ 1 is called the minimum period of u. These properties depend on the matrix M,
+so we sometimes say adjacency PST (resp., periodicity) when M “ A; similar language applies when
+M “ L. Further, if X is simple, weighted and k-regular, then UL pX, tq “ eitL “ eitpkI´Aq “ eitk e´itA “
+eitk U A pX, ´tq. Hence, |UL pX, τqu,v |2 “ |U A pX, τqu,v |2 for any u, v P VpXq, so the quantum walks on A
+and L exhibit the same state transfer properties.
+
+3 Joins
+The join X _ Y of weighted graphs X and Y is the graph obtained by joining every vertex of X with every
+vertex of Y with an edge of weight one. Unless otherwise stated, we make the following assumptions:
+• when dealing with M “ L, we take X and Y to be simple;
+• when dealing with M “ A, we take X and Y to be weighted k- and ℓ-regular resp. (possibly with
+loops).
+
+3
+
+Denote the transition matrices of X _ Y and X by U M pX _ Y, tq and U M pX, tq respectively. The
+transition matrix of a join with respect to L and A are known (see [ADL` 16, Fact 8] and [CG21, Lemma
+4.3.1], respectively). Throughout, m and n denote the number of vertices of X and Y, respectively.
+Lemma 1. If u, v P VpXq and w P VpYq, then
+
+and
+
+¯
+1 ´
+itpm`nq
+UL pX _ Y, tqu,w “
+1´e
+m`n
+
+(3)
+
+1
+neitpm`nq
+eitn
+`
+´
+.
+(4)
+m ` n mpm ` nq
+m
+? ˘
+`
+Lemma 2. Let D “ pk ´ ℓq2 ` 4mn and λ˘ “ 12 k ` ℓ ˘ D . If u, v P VpXq and w P VpYq, then
+UL pX _ Y, tqu,v “ eitn UL pX, tqu,v `
+
+1
+´
+`
+U A pX _ Y, tqu,w “ ? peitλ ´ eitλ q
+D
+
+and
+
+`
+
+(5)
+
+´
+
+eitλ pk ´ λ´ q eitλ pk ´ λ` q eitk
+?
+?
+U A pX _ Y, tqu,v “ U A pX, tqu,v `
+.
+´
+´
+m
+m D
+m D
+
+(6)
+
+The eigenvalue support of u with respect to M is the set
+σu pMq “ tλ j : Ej eu ‰ 0u.
+The following result determines the elements of the eigenvalue support of a vertex in a join graph. In what
+follows, σu pMpXqq and σu pMq denote the eigenvalue supports of vertex u in X and X _ Y, respectively.
+Lemma 3. Let u P VpXq, and define S :“ tλ ` n : λ P σu pLpXqqzt0uu.
+1. We have σu pLq “ S Y R, where R “ t0, m ` nu if X is connected and R “ t0, m ` n, nu
+otherwise.
+2. We have σu pAq “ σu pApXqqztku Y R, where R “ tλ˘ u if X is connected and R “ tλ˘ , ku
+otherwise.
+
+4 The ratio condition
+λ´θ
+P Q for all λ, θ, µ, η P S with
+A set S Ď R with at least two elements satisfies the ratio condition if µ´η
+µ ‰ η. A vertex u is periodic if and only if σu pMq satisfies the ratio condition [CG21, Corollary 8.3.1].
+Combining this fact with Lemma 3 yields a characterization of periodicity in joins.
+
+Theorem 4. Let X and Y be weighted graphs and u P VpXq.
+1. Vertex u is Laplacian periodic in X _ Y if and only if all eigenvalues in σu pLpXqq are rational.
+Moreover, if u is Laplacian periodic in X _ Y, then it is Laplacian periodic in X.
+`
+
+P Q for
+2. If X is connected (resp., disconnected), then u is adjacency periodic if and only if λ?´λ
+D
+?
+all λ P σu pApXqqztku (resp., λ P σu pApXqq). If we assume further that k, ℓ, D P Q, then u is
+adjacency periodic in X _ Y if and only if all eigenvalues in σu pApXqq are rational.
+The following example illustrates that the converse of the last statement in Theorem 4(1) does not hold.
+4
+
+Example 5. Consider X _ O1 , where X is a weighted K2 with positive edge weight η R Q. Then u P VpXq
+1`2η´0
+is periodic in X and σu pLq “ t0, 3, 1 ` 2ηu. Since 3´0 R Q, we get that u is not periodic in X _ O1 .
+If φpMpXq, tq P Zrts, then we obtain another characterization of periodicity [CG21, Corollary 7.6.2].
+Lemma 6. Let S be a set of real algebraic integers that is closed under taking algebraic conjugates.
+If S satisfies the ratio condition, then either (i) S Ď Z or (ii) each λ j in S is a quadratic integer of
+?
+the form λ j “ 21 pa ` b j ∆q, where a, b j , ∆ P Z and ∆ ą 1 is square-free. In particular, if X is a
+weighted graph with possible loops such that φpMpXq, tq P Zrts, then vertex
+? u is periodic in X if and
+only if either (i) or (ii) holds for S “ σu pMpXqq. In this case, ρ “ 2π{g ∆, where each λ j P σu pMq,
+?
+g “ gcdtpλ1 ´ λ j q{ ∆u and ∆ “ 1 if (i) holds.
+We now show that the converse of the last statement in Theorem 4(1) holds when φpLpXq, tq P Zrts.
+Corollary 7. If φpLpXq, tq P Zrts, then the following statements are equivalent.
+1. Vertex u is Laplacian periodic in X.
+2. Vertex u is Laplacian periodic in X _ Y for any simple positively weighted graph Y.
+3. The eigenvalues in σu pLpXqq are all integers.
+Proof. Lemma 3(1) and the ratio condition yields (3) implies (2). The second statement of Theorem 4(1)
+yields (2) implies (1). Lemma 6(i) and the fact that 0 P σu pLpXqq yield (1) implies (3).
+Next, we have the following result concerning the adjacency matrix in relation to Theorem 4(2).
+Corollary 8. Let u P VpXq, φpApXq, tq P Zrts and k, ℓ P Z. Consider D in Lemma 2.
+1. If X is connected, then u is adjacency periodic in X _ Y if and only if either:
+(a) The eigenvalues in σu pApXqq are all integers and D is a perfect square (so that λ˘ P Z). In
+this case, u is also adjacency periodic in X.
+?
+(b) Each λ j P σu pApXqqztku is a quadratic integer of the form 21 pk ` ℓ ` b j ∆q, where ∆ ą 1 is
+a
+a
+square-free, D{∆ P Z and D{∆ ą b j for each j. In this case, u is not periodic in X.
+
+2. If X is disconnected, then u is adjacency periodic in X _ Y if and only if condition (1a) holds.
+
+Proof. To prove (1), suppose X is connected. By Lemma 3(2), σu pAq “ σu pApXqqztku Y tλ˘ u, and u
+is periodic in X _ Y if and only if σu pAq satisfies the ratio condition. Since k P Z, the latter condition
+implies that σu pApXqqztku satisfies the ratio condition, and as φpApXq, tq P Zrts, we get two cases from
+?
+`
+Lemma 6. First, let σu pApXqqztku Ď Z. Since λ` “ 12 pk ` ℓ ` Dq, we get λ?´λ
+P Q if and only if
+D
+?
+D P Z. Combining this with Theorem 4(2) yields (1a). Next, suppose each λ j P σu pApXqqztku is of the
+´
+? ¯
+?
+?
+λ` ´λ
+form 12 pa ` b j ∆q so that λ` ´ λ j “ 12 pk ` ℓ ´ aq ` p D ´ b j ∆q . Then ?D j P Q if and only if
+a
+?
+k ` ℓ ´ a “ 0 and ∆{D P Q. Now, Perron-Frobenius
+Theorem yields λ` “ 21 pa ` Dq as the largest
+?
+?
+?
+?
+D
+ą
+∆.
+Since
+σ
+pAq
+satisfies
+the
+ratio
+condition,
+we
+get
+D
+“
+b
+∆
+eigenvalue of ApX _ Yq. Thus,
+u
+a
+for some integer b, and so D{∆ “ b ą b j for each j. This establishes (1b).
+To prove (2), suppose X is disconnected. In this case, k P σu pApXqq is an integer,
+? and so we apply
+Lemma 4(2) to conclude that u is periodic in X _ Y if and only if σu pApXqq Ď Z and D P Q.
+We now state an analogue of Corollary 7, which is an immediate consequence of Corollary 8.
+5
+
+Corollary 9. Let φpApX _ Yq, tq P Zrts and k, ℓ P Z. If u is adjacency periodic in X, then u is adjacency
+periodic in X _ Y if and only if D is a perfect square. Moreover, if D is a perfect square, then the following
+are equivalent.
+1. Vertex u is adjacency periodic in X.
+2. Vertex u is adjacency periodic in X _ Y for any weighted ℓ-regular graph Y.
+3. All eigenvalues in σu pApXqq are integers.
+Remark 10. For L, our assumption on X and Y implies that the join operation preserves periodicity, and
+periodicity in the join is inherited by the underlying graph. ?However, this does not hold for A given our
+assumption on X and Y. One can have σu pApXqq Ď Z but D R Z, and so u is periodic in X but not in
+X _ Y. Conversely, periodicity in X _ Y is not necessarily inherited by X by Corollary 4.
+We say that X is periodic if there is a τ ą 0 such that Upτq “ γI for some unit γ P C. Equivalently,
+each u P VpXq is periodic at time τ. We characterize periodic join graphs under mild conditions.
+Theorem 11. Let X and Y be weighted graphs and φpMpX _ Yq, tq P Zrts.
+1. If X and Y are simple, then X _ Y is Laplacian periodic if and only if X _ Y is Laplacian integral.
+2. If X and Y are regular, then X _ Y is adjacency periodic if and only if X _ Y is integral.
+Proof. Note that (1) follows from the ratio condition and the fact that LpX _ Yq is positive semidefinite
+with 0 as an eigenvalue. Next, let X and Y be k- and ℓ-regular. By way of contradiction,
+suppose each
+?
+1
+˘
+eigenvalue λ j of ApX _ Yq is a quadratic integer. Since λ “ 2 pk ` ℓ ˘ Dq is an eigenvalue of
+?
+ApX _ Yq, each λ j must be of the form 12 pk ` ℓ ` b j ∆q. Without loss of generality, let k ě ℓ ą 0. For
+?
+?
+each eigenvalue λ j ‰ ℓ of ApYq, we get λ j “ 12 pk ` ℓ ` b j ∆q ě ℓ ` 21 b j ∆ for all each j. Similarly,
+?
+λ j ě ℓ ´ 12 b j ∆ for all each j. Thus, λ j ą ℓ or λ j ą ℓ, which cannot happen because ℓ is the largest
+eigenvalue of ApYq by the Perron-Frobenius Theorem. Invoking Lemma 6 establishes (2).
+We close this section by providing infinite families of graphs that are not (Laplacian) integral but
+contain periodic vertices. The following result is immediate from Lemma 3 and the ratio condition.
+Corollary 12. Let X and Y be weighted graphs, and let u P VpXq.
+1. If X is Laplacian integral but Y is not, then X _ Y is not Laplacian integral, the eigenvalues in
+σu pLpXqq are all integers, and u is periodic in X _ Y.
+2. If X is integral but Y is not, then X _ Y is not integral. Moreover, if k, ℓ P Z and D in Lemma 2 is
+a perfect square, then the eigenvalues in σu pApXqq are all integers and u is periodic in X _ Y.
+
+5 Minimum periods
+Denote the minimum periods of u in X _ Y and X by ρX_Y and ρX respectively. Motivated by Corollaries
+7 and 9, we ask: if u P VpXq is periodic in X and X _ Y, then how are ρX_Y and ρX related? To answer
+this question, we state a result due to Kirkland et al. [KMP23, Theorem 4].
+Theorem 13. Let u and v be vertices in X, and suppose σu pMq “ tλ1 , . . . , λr u. If u is periodic, then
+λ ´λ
+p
+2πq
+ρ “ λ1 ´λ2 , where q “ lcmpq2 , . . . , qr q and each q j is a positive integer such that λ11´λ2j “ q jj for some
+integer p j satisfying gcdpp j , q j q “ 1. In particular, if r “ 2, then u is periodic with ρ “ λ12π
+´λ2 .
+6
+
+We now address our above question by finding a constant c ą 0 such that ρX_Y “ cρX .
+Theorem 14. Let u be a non-isolated and periodic vertex in X and X _ Y with σu pLpXqq “ tλ1 , . . . , λr , λr`1 u,
+where λr`1 “ 0. Let λr`2 :“ m and λr`3 :“ ´n.
+1. Suppose X is connected.
+´
+¯
+λ1 q
+p
+(a) If r “ 1, then ρX_Y “ λ1 `n
+ρX , where q is a positive integer such that λm`n
+“ q for some
+1 `n
+integer p with gcdpp, qq “ 1. In particular, if λ1 “ m, then q “ 1.
+¯
+´
+λ q
+(b) If r “ 2 and λ2 “ m, then ρX_Y “ q1 pλ11`nq ρX , where q is a positive integer defined in (a)
+and q1 is a positive integer such that m{λ1 “ p1 {q1 for some integer p1 with gcdpp1 , q1 q “ 1.
+
+(c) If r ě 2 and λ j ‰ m for each j P t1, . . . , ru, then
+ˆ
+˙
+qr`2 qr`3 gcdpR1 , qr`1 q
+ρX_Y “
+ρX ,
+qr`1 gcdpR1 , qr`2 q gcdpR2 , qr`3 q
+
+(7)
+
+where R1 “ lcmpq3 , . . . , qr q, R2 “ lcmpq2 , . . . , qr , qr`2 q, the q j ’s are positive integers such
+λ ´λ
+
+p
+
+that λ11´λ2j “ q jj for some integers p j with gcdpp j , q j q “ 1 and λ1 ą λ2 .
+
+(d) If r ě 3 and λr “ m, then (7) holds with R1 “ lcmpq3 , . . . , qr´1 q, R2 “ lcmpq3 , . . . , qr´1 , qr`2 q.
+2. Suppose X is disconnected.
+(a) If r “ 1, then ρX_Y “ qρX , where q “ lcmpq3 , q4 q and the q j ’s are positive integers such that
+λ1 ´λ j
+pj
+m
+λ1 ´λ2 “ q j for some p j with gcdpp j , q j q “ 1. In particular, if λ1 “ m, then q “ gcdpm,nq .
+
+(b) If r “ 2 and λ2 “ m, then ρX_Y “ pq{q4 qρX , where q “ lcmpq4 , q5 q and the q j ’s are positive
+integers such that
+
+pj
+λ1 ´λ j
+λ1 “ q j for some integers p j with gcdpp j , q j q “ 1.
+
+(c) If r ě 2 and λ j ‰ m for each j P t1, . . . , ru, then
+ρX_Y “
+
+ˆ
+
+qr`2 qr`3
+gcdpq, qr`2 q gcdpR, qr`3 q
+
+˙
+
+ρX ,
+
+(8)
+λ ´λ
+
+p
+
+where R “ lcmpq3 , . . . , qr`2 q, the q j ’s are positive integers such that λ11´λ2j “ q jj for some
+integers p j with gcdpp j , q j q “ 1 and λ1 ą λ2 . Further, the coefficient of ρX in (8) is an integer.
+
+(d) If r ě 3 and λr “ m, then
+
+ρX_Y “ pQ{qqρX ,
+
+(9)
+
+where q “ lcmpq3 , . . . , qr , qr`1 q, Q “ lcmpq3 , . . . , qr´1 , qr`1 , qr`2 , qr`3 q and the q j ’s are
+positive integers satisfying
+
+pj
+λ1 ´λ j
+λ1 “ q j and gcdpp j , q j q “ 1. In this case, Q{q is an integer.
+
+Proof. Let X be connected. By Lemma 3(1), σu pLq “ tλ1 ` n, . . . , λr ` nu Y tλr`2 ` n, λr`3 ` nu.
+Note that λ j ‰ λr`3 for each j P t1, . . . , ru. However, it is possible that λ j “ λr`2 “ m for some
+j P t1, . . . , ru. In this case, we may instead assume that λr “ m. We have the following cases.
+• Let r “ 1. Then σu pLpXqq “ tλ1 , 0u and σu pLq “ tλ1 ` n, m ` n, 0u, and so Theorem 13 yields
+ρX “ 2π{λ1 and ρX_Y “ 2πq{pλ1 ` nq, where q “ 1 whenever λ1 “ m.
+
+7
+
+• Let r “ 2 and λr “ m. Then σu pLq “ tλ1 ` n, m ` n, 0u, and so ρX_Y “ 2πq{pλ1 ` nq as in the
+previous case. Since σu pLpXqq “ tλ1 , m, 0u, Theorem 13 yields ρX “ 2πq1 {λ1 .
+• Let r ě 2 and λ j ‰ m for each j. As σu pLq “ tλ1 ` n, . . . , λr ` n, λr`2 ` n, λr`3 ` nu and u is
+periodic in X and X _ Y, Theorem 13 yields ρX “ 2πq{pλ1 ´ λ2 q and ρX_Y “ 2πQ{pλ1 ´ λ2 q,
+where q “ lcmpq3 , . . . , qr`1 q, Q “ lcmpq3 , . . . , qr , qr`2 , qr`3 q and λ1 ą λ2 . Since lcmpa, b, cq “
+R q
+ab
+lcmplcmpa, bq, cq and lcmpa, bq “ gcdpa,bq
+, we may write q “ gcdpR1 1r`1
+,q r`1 q and
+Q“
+
+R1 qr`2 qr`3
+“ qc,
+gcdpR1 , qr`2 q gcdpR2 , qr`3 q
+
+(10)
+
+where c is the coefficient of ρX in (7). This implies that ρX_Y “ cρX .
+• Let r ě 3 and λr “ m. Then σu pLq “ tλ1 ` n, . . . , λr´1 ` n, λr`2 , λr`3 u, and so the same argument in previous subcase yields (10) with R1 “ lcmpq3 , . . . , qr´1 q and R2 “ lcmpq3 , . . . , qr´1 , qr`2 q.
+Combining the above cases proves (1).
+Next, let X be disconnected. By Lemma 3(1), σu pLq “ tλ1 ` n, . . . , λr ` nu Y tλr`1 ` n, λr`2 `
+n, λr`3 ` nu. Moreover, the fact that u is a non-isolated vertex yields r ě 1. We have the following cases.
+• Let r “ 1. Then σu pLpXqq “ tλ1 , 0u and σu pLq “ tλ1 ` n, λ2 ` n, λ3 ` n, λ4 ` nu. By Theorem
+13, ρX “ 2π{λ1 and ρX_Y “ 2πq{λ1 . In particular, if λ1 “ m, then q1 “ q3 , and so q “ q4 .
+• Let r “ 2 and λr “ m. Then σu pLq “ tλ1 ` n, λ3 ` n, λ4 ` n, λ5 ` nu and σu pLpXqq “ tλ1 , m, 0u.
+2πq
+2πq1
+p1
+2πq
+By Theorem 13, we get ρX_Y “ λ1 ´λ3 “ λ1 and ρX “ λ1 , where p1 , q1 P Z such that λm1 “ q1 P
+p1
+
+p
+
+λ1 ´m
+1
+4
+Q and gcdpp1 , q1 q “ 1. Since q44 “ λλ11 ´λ
+´λ3 “ λ1 “ 1 ´ q1 , we get q4 “ q .
+
+• Let r ě 2 and λ j ‰ m for each j. Then σu pLq “ tλ1 ` n, . . . , λr ` n, λr`1 ` n, λr`2 ` n, λr`3 ` nu.
+By Theorem 13, ρX_Y “ 2πQ{pλ1 ´ λ2 q where Q “ lcmpq3 , . . . , qr`3 q and q j ’s are as defined in
+qq q r`3
+(1c). The same argument then yields Q “ gcdpq,qr`2r`2
+q gcdpR,q r`3 q “ qc, where q “ lcmpq3 , . . . , qr`1 q.
+• Let r ě 3 and λr “ m. Since σu pLq “ tλ1 ` n, . . . , λr´1 ` n, λr`1 ` n, λr`2 ` n, λr`3 ` nu, we
+p
+1 ´λ r
+“ λ1λ´m
+“ qrr and
+get ρX “ 2πq{λ1 and ρX_Y “ 2πQ{λ1 by Theorem 13. Now, since λλ1 ´λ
+r`1
+1
+pr`2
+λ1 ´λr
+λ1 ´m
+λ1 ´λr`2 “ λ1 “ q r`2 , we get qr “ qr`2 , and so Q “ lcmpq2 , . . . , qr`1 , qr`3 q. Thus, Q{q P Z.
+
+Combining the above cases proves (2).
+Using the same argument, we get an analogue of Theorem 14 for the adjacency case.
+Theorem 15. Let u be a non-isolated and periodic vertex in X and X _ Y with σu pApXqq “ tλ1 , . . . , λr , λr`1 u,
+where λr`1 “ k. Let λr`2 :“ λ´ and λr`3 :“ λ` , where λ˘ are defined in Lemma 2.
+1. Suppose X is connected.
+(a) Let r “ 1. Then ρX_Y “
+
+´
+
+qpk´λ1 q
+?
+D
+
+¯
+
+`
+
+p
+
+1
+ρX , where q is a positive integer such that λ ?´λ
+“ q for
+D
+
+some integer p with gcdpp, qq “ 1. In particular, if λ1 “ λ´ , then q “ 1.
+´
+¯
+pλ1 ´λ´ qq
+?
+(b) If r “ 2 and λ2 “ λ´ , then ρX_Y “
+ρX , where q is an integer in (1b) and q1 is a
+1
+q D
+p1
+
+1
+1 1
+1 ´k
+positive integer such that λλ´λ
+´ “ q1 P Q for some integer p with gcdpp , q q “ 1.
+1
+
+8
+
+(c) If r ě 2 and λ j ‰ λ´ for each j P t1, . . . , ru, then the conclusion in Theorem 14(1d) holds.
+
+(d) If r ě 3 and λr “ λ´ , then the conclusion in Theorem 14(1e) holds.
+2. Suppose X is disconnected.
+
+(a) Let r “ 1. Then ρX_Y “ qρX , where q “ lcmpq3 , q4 q and the q j ’s are positive integers such
+k´λ
+
+p
+
+that k´λ1j “ q jj for some p j with gcdpp j , q j q “ 1. In particular, if λ1 “ λ´ , then q “ q4 .
+
+(b) If r “ 2 and λ2 “ λ´ , then ρX_Y “ pq{q2 q ρX , where q “ lcmpq2 , q5 q, the q j ’s are positive
+k´λ
+
+p
+
+integers such that k´λ1j “ q jj for some integers p j with gcdpp j , q j q “ 1 and λ1 ą λ2 .
+
+(c) If r ě 2 and λ j ‰ λ´ for each j P t1, . . . , ru, then the conclusion in Theorem 14(2d) holds.
+
+(d) If r ě 3 and λr “ λ´ , then the conclusion in Theorem 14(2e) holds.
+
+Remark 16. The advantage of Theorems 14-15 is that they apply even if φpMpXq, tq R Zrts. We also
+mention that the constant c ą 0 such that ρX_Y “ cρX in Theorems 14-15 is always rational. In fact, c is
+an integer whenever (i) X is disconnected or (ii) X is connected and qr`1 “ 1 in Theorems 14-15(1c-d).
+
+m
+For the family of complete graphs, Theorem 14(1a) yields ρX_Y “ m`n
+ρX , where X “ Km and
+m
+Y “ Kn . Here, c “ m`n ă 1 is rational, and this holds for M P tA, Lu. We complement this observation
+by providing an infinite family of connected graphs X such that ρX_Y “ cρX for some integer c ě 1.
+
+Example 17. Suppose that m is even and let X “ K m2 , m2 . Since σu pLpXqq “ tm{2, m, 0u, each u P VpXq
+is periodic with ρX “ 4π{m. Consider X _ Y, where Y is a simple unweighted graph on n vertices.
+Applying Theorem 14(1b), we get ρX_Y “ cρX , where c “ m{2g and g “ gcdpm{2, nq. Since g divides
+m{2, we conclude that c is an integer.
+Example 18. Let X “ Km and Y be a simple unweighted ℓ-regular graph on n vertices. Each u?P VpXq
+is periodic with ρX “ 2π{m. By Lemma 3(2), σu pAq “ tλ˘ , ´1u, where λ˘ “ 12 pℓ ` m ´ 1 ˘ Dq. By
+Corollary 9, u periodic in X _ Y if and only if D “ pℓ ´ m ` 1q2 ` 4mn is a perfect square. Equivalently,
+n “ spℓ´m`s`1q
+for some integer s such that m divides spℓ ` s ` 1q. Thus, if u periodic in X _ Y, then
+m
+λ` ´p´1q
+ℓ`s`1
+“ ℓ´m`2s`1
+P Q, from which we get ρX_Y “ 2π{g, where g “ gcdpℓ ` s ` 1, s ´ mq. Hence
+λ` ´λ´
+ρX_Y “ pm{gqρX . Taking s “ 2m and 0 ď ℓ ď n ´ 2 yields g “ gcdpℓ ` 1, mq, and so m{g is an integer.
+
+6 Strong cospectrality
+We say that two vertices u and v in a weighted graph X are strongly cospectral if Ej eu “ ˘Ej ev for each
+j, in which case we define the sets
+`
+σuv
+pMq “ tλ j : Ej eu “ Ej ev ‰ 0u
+
+and
+
+´
+σuv
+pMq “ tλ j : Ej eu “ ´Ej ev ‰ 0u.
+
+(11)
+
+Equivalently, vertices u and v are strongly cospectral if for each j, either every eigenvector w associated
+with λ j satisfies wT eu “ wT ev or every eigenvector w associated with λ j satisfies wT eu “ ´wT ev .
+` pMq Y σ´ pMq, and u and v belong to
+If vertices u and v are strongly cospectral, then σu pMq “ σuv
+uv
+the same connected component of X (so neither of them is isolated). In order to avoid confusion, if u
+˘ pMpXqq and σ˘ pMq,
+and v are strongly cospectral in X and X _ Y, then we write the sets in (11) as σuv
+uv
+respectively.
+Strong cospectrality is a necessary condition for PST. Hence, in order to investigate PST in joins, we
+first need to characterize strong cospectrality. In what follows, we let On pkq denote the empty graph on n
+vertices with a loop of weight k on each vertex. If k “ 0, then we simply write On pkq as On .
+9
+
+Theorem 19. Let m ě 2 and u, v P VpXq with u ‰ v.
+1. Vertices u and v in X are Laplacian strongly cospectral in X _ Y if and only if either:
+´ pLpXqq. In this case,
+(a) Vertices u and v are Laplacian strongly cospectral in X and m R σuv
+`
+`
+σuv
+pLq “ tλ ` n : 0 ‰ λ P σuv
+pLpXqqu Y R
+
+and
+
+´
+´
+σuv
+pLq “ tµ ` n : µ P σuv
+pLpXqqu
+
+where R “ t0, m ` nu if X is connected and R “ t0, m ` n, nu otherwise.
+
+` pLq “ t0, n ` 2u and σ´ pLq “ tnu.
+(b) X “ O2 . In this case, σuv
+uv
+
+2. Vertices u and v in X are adjacency strongly cospectral in X _ Y if and only if either:
+´ pLpXqq. In this case,
+(a) Vertices u and v are adjacency strongly cospectral in X and λ˘ R σuv
+`
+`
+σuv
+pAq “ σuv
+pApXqqztku Y R
+
+and
+
+´
+´
+σuv
+pAq “ σuv
+pApXqq
+
+where R “ tλ˘ u if X is connected and R “ tλ˘ , ku otherwise.
+
+` pLq “ tλ˘ u and σ´ pLq “ tku.
+(b) X “ O2 pkq. In this case, σuv
+uv
+
+3. If w P VpYq, then vertices u and w are not strongly cospectral in X _ Y.
+Moreover, if (1a) or (2a) holds, then vertices u and v belong to the same connected component in X.
+Proof. Let λ and µ be nonzero eigenvalues of LpXq and LpYq with associated eigenvectors yλ and zµ ,
+respectively. Then 0, m ` n, λ ` n and µ ` n are eigenvalues of L with associated eigenvectors
+
+„
+
+„
+
+„
+0
+n1m
+yλ
+, and wµ “
+(12)
+1m`n , u “
+, vλ “
+0
+zµ
+´m1n
+respectively. Now, let u, v P VpXq. We have two cases.
+• Let u and v be non-isolated in X. From the form of vλ ’s in (12), strong cospectrality in X is
+required for strong cospectrality in X _ Y. Hence, we assume u and v are strongly cospectral in
+´ pLpXqq, then v is another eigenvector for m ` n. In this case, uT e “ uT e and
+X. If m P σuv
+m
+u
+v
+T
+T
+´ pLpXqq,
+vm eu “ ´vm ev , and so u and v are not strongly cospectral in X _ Y. However, if m R σuv
+` pLq and σ´ pLq in Theorem 19(1a) as desired.
+then u and v are strongly cospectral in X _ Y with σuv
+uv
+• Let u and v be isolated in X. Then v “ eu ´ ev is an eigenvector for L associated to the eigenvalue
+n. If X “ O2 , then [Mon22, Corollary 6.9(2)] yields the desired conclusion. However, if X has
+a connected component C other than tuu and tvu, then the vector w which is constant on each
+connected component of X and whose sum of all entries is 0 is also an eigenvector for L associated
+to the eigenvalue n. This vector satisfies wT eu “ wT ev , and since vT eu “ ´vT ev , we get that u and
+v are not strongly cospectral in X _ Y.
+Combining these cases proves (1). Next, let λ ‰ k and µ ‰ ℓ be eigenvalues of ApXq and LpYq respectively, with associated eigenvectors yλ and zµ . Then λ˘ , λ and µ are eigenvalues of A with associated
+eigenvectors
+
+„
+
+
+„
+„
+0
+yλ
+pk ´ λ¯ q1m
+, and wµ “
+(13)
+, vλ “
+u“
+0
+zµ
+m1n
+respectively. The same argument as the previous case yields the desired conclusion for (2). Finally, the
+form of the vλ ’s in (12-13) yields (3) and the last statement.
+10
+
+From Theorem 19(3), we assume henceforth that strongly cospectral vertices in X _ Y belong to X.
+Note that if X is unweighted. then m is an eigenvalue of LpXq if and only if X is a join. From (12),
+´ pLpZqq if and only if Z “ K . Combining this with Theorem 19 yields the next result.
+we get that m P σuv
+2
+Corollary 20. Let X be an unweighted graph with vertices u and v.
+1. Let X R tK2 , O2 u. Then u and v in X are Laplacian strongly cospectral in X _ Y if and only if they
+are in X.
+2. Let X ‰ O2 and suppose X _ Y is not a complete graph. Then u and v in X are adjacency strongly
+cospectral in X _ Y if and only if they are in X.
+Proof. Let X be unweighted. Then m is an eigenvalue of LpZq if and only if Z is a join. In particular,
+´ pLpZqq if and only if Z “ K by (12). Combining this with Theorem 19 yields (1). To prove (2),
+m P σuv
+2
+a
+note that λ´ “ 12 pk ` ℓ ´ pk ´ ℓq2 ` 4mnq “ ´1 if and only if m “ k ` 1 and n “ ℓ ` 1, i.e., X and
+Y are complete.
+Example 21. Consider X _ Y, where X P tKm , Om u. If m ě 3, then the vertices of X do not admit
+strongly cospectrality in X and X _ Y with respect to M P tA, Lu [Mon22, Corollary 3.10]. If m “ 2,
+then the following hold about the apexes u and v of the double cone X _ Y.
+1. By Theorem 19(1b-2b), u and v are Laplacian and adjacency strongly cospectral in O2 _ Y.
+´ pLpXqq, Theorem 19(1a) implies that u and v are not Laplacian strongly cospectral
+2. Since 2 P σuv
+in K2 _ Y for any graph Y. Since u and v are adjacency strongly cospectral in K2 , Corollary 20(2)
+implies that u and v are strongly cospectral in K2 _ Y if and only if Y is not a complete graph.
+
+7 Perfect state transfer
+To determine PST in joins, we make use of a characterization of PST due to Coutinho. Throughout, we
+denote the largest power of two that divides an integer a by ν2 paq. We also denote the minimum PST times
+between u and v in X and X _ Y by τX and τX_Y , respectively.
+Theorem 22. Let M be a real symmetric matrix such that φpM, tq P Zrts. Then vertices u and v in X
+admit perfect state transfer if and only if all of the following conditions hold.
+?
+1. Either (i) σu pMq Ď Z or (ii) each λ j P σu pMq is a quadratic integer of the form 12 pa ` b j ∆q for
+some integers a, b j and ∆, where ∆ ą 1 is square-free. Here, we let ∆ “ 1 whenever (i) holds.
+2. Vertices u and v are strongly cospectral in X.
+` pMq and µ, θ P σ´ pMq, we have ν
+3. For all λ, η P σuv
+2
+uv
+π
+Further, τX “ g?
+, where g “ gcd
+∆
+
+´!
+
+´
+
+)¯
+
+λ0
+?´λ : λ P σu pMq
+∆
+
+λ´η
+?
+∆
+
+¯
+
+ą ν2
+
+´
+
+λ´µ
+?
+∆
+
+¯
+
+“ ν2
+
+´
+
+λ´θ
+?
+∆
+
+` pMq.
+for some fixed λ0 P σuv
+
+¯
+.
+
+To characterize PST in joins, we now combine Theorem 22 with our results on periodicity and strong
+cospectrality in joins from Sections 4 and 6. Note that it suffices to consider the vertices of X in checking
+whether PST occurs in X _ Y by virtue of Theorem 19(3). We begin with the Laplacian case.
+
+11
+
+7.1 Laplacian case
+Theorem 23. Let m ě 2 and φpLpXq, tq P Zrts. Vertices u and v in X admit Laplacian perfect state
+transfer in X _ Y if and only if all of the following conditions hold.
+´ pLpXqq or (ii) X “ O .
+1. Either (i) u and v are Laplacian strongly cospectral in X and m R σuv
+2
+
+2. The eigenvalues in σu pLpXqq are all integers.
+3. One of the following conditions hold.
+` pLpXqq Y tmu and
+(a) X is connected and one of the following conditions hold for all 0 ‰ λ P σuv
+´ pLpXqq.
+µ, θ P σuv
+
+i. ν2 pλq ą ν2 pµq “ ν2 pθq and ν2 pnq ą ν2 pµq.
+ii. ν2 pµq ą ν2 pλq “ ν2 pnq.
+´
+´
+¯
+¯
+¯
+´
+µ`n
+ą ν2 2ν2 pnq “ ν2 2θ`n
+iii. ν2 pλq “ ν2 pµq “ ν2 pnq and ν2 2λ`n
+ν2 pnq
+ν2 pnq .
+
+(b) X ‰ O2 is disconnected and (ai) above holds. Here, u and v are in the same connected
+component in X.
+(c) X “ O2 and n ” 2 (mod 4).
+Further, τX_Y “ πg , where g “ gcd pT q, T “ S Y R and the sets S , R are given in Lemma 3.
+Proof. By Theorem 19(1) and Corollary 7, conditions (1) and (2) are equivalent resp. to strong cospectrality and periodicity of u and v in X _ Y. Combining this with Theorem 22, we get PST between u and v
+in X _ Y if and only if Theorem 22(3) holds. To establish (3a), suppose X is connected. From Theorem
+` pLq “ tλ ` n : 0 ‰ λ P σ` pLpXqqu Y t0, m ` nu and σ´ pLq “ σ´ pLpXqq. Theorem
+19(1a), we have σuv
+uv
+uv
+uv
+22(3) applied to u and v is equivalent to
+ν2 pλ ` nq ą ν2 pµ ` nq “ ν2 pθ ` nq
+
+(14)
+
+` pLpXqq Y tmu and µ, θ P σ´ pLpXqq. We have three cases.
+for all 0 ‰ λ P σuv
+uv
+` pLpXqq Y tmu and µ P σ´ pLpXqq. Since ν pλ ` nq ą
+• Let ν2 pλq ą ν2 pµq for some 0 ‰ λ P σuv
+2
+uv
+´ pLpXqq, in which case, ν pµ ` nq “
+ν2 pµ ` nq in (14), it must be that ν2 pnq ą ν2 pµq for each µ P σuv
+2
+´ pLpXqq. Hence,
+ν2 pµq. Now, for the equality in (14) to hold, we need ν2 pµq “ ν2 pθq for all µ, θ P σuv
+´ pLpXqq. Finally, if ν pµq ě ν pηq for some 0 ‰ η P σ` pLpXqq Y tmu,
+ν2 pλq ą ν2 pµq for all µ P σuv
+2
+2
+uv
+then ν2 pnq ą ν2 pηq, and so ν2 pη ` nq “ ν2 pηq ď ν2 pµq “ ν2 pµ ` nq, a contradiction to (14). Thus,
+our assumption in this case combined with (14) gives us ν2 pλq ą ν2 pµq “ ν2 pθq and ν2 pnq ą ν2 pµq
+` pLpXqq Y tmu and µ, θ P σ´ pLpXqq, which proves (3ai).
+for all 0 ‰ λ P σuv
+uv
+` pLpXqq Y tmu and µ P σ´ pLpXqq. If ν pλq ‰ ν pnq,
+• Let ν2 pµq ą ν2 pλq for some 0 ‰ λ P σuv
+2
+2
+uv
+then ν2 pµ ` nq ě ν2 pλ ` nq, a contradiction to (14). Hence, we must have ν2 pλq “ ν2 pnq for
+` pLpXqq Y tmu. Finally, if ν pnq ě ν pθq for some θ P σ´ pLpXqq, then we have
+each 0 ‰ λ P σuv
+2
+2
+uv
+ν2 pθ ` nq ‰ ν2 pnq “ ν2 pµ ` nq, which again contradicts (14). Thus, ν2 pµq ą ν2 pnq “ ν2 pλq for
+` pLpXqq Y tmu and θ P σ´ pLpXqq. This proves (3aii).
+all for some 0 ‰ λ P σuv
+uv
+` pLpXqq Y tmu and µ P σ´ pLpXqq. For the strict inequality
+• Let ν2 pµq “ ν2 pλq for some 0 ‰ λ P σuv
+uv
+` pLpXqq Y tmu and
+in (14) to hold, it is required that ν2 pµq “ ν2 pλq “ ν2 pnq for all 0 ‰ λ P σuv
+´ pLpXqq. From this, the conditions in (3aiii) are straightforward.
+µ P σuv
+
+12
+
+` pLpXqq by Theorem 19(1b),
+Combining these cases proves (3a). Now, if X is disconnected, then n P σuv
+´ pLpXqq.
+and so Theorem 22(3) holds if and only if (14) holds and ν2 pnq ą ν2 pµ ` nq for all µ P σuv
+Equivalently, (3ai) holds. This proves (3b). If X “ O2 , then Theorem 22(3) holds if and only if ν2 pn `
+2q ą ν2 pnq, i.e., n ” 2 (mod 4). This proves (3c). The minimum PST time follows from Theorem 22.
+´ pLpXqq in Theorem 23(1i).
+Remark 24. If X ‰ K2 is unweighted, then we may drop the condition m P σuv
+
+The following result is immediate from Theorem 23(3).
+Corollary 25. Let m ě 2 and φpLpXq, tq P Zrts. If m ` n is odd, then X _ Y has no Laplacian perfect
+state transfer. Moreover, if m or n is odd and X is either disconnected or admits Laplacian perfect state
+transfer, then X does not admit Laplacian perfect state transfer in X _ Y.
+
+7.2 Adjacency case
+Theorem 26. Let m ě 2, k, ℓ P Z and φpApXq, tq P Zrts. Vertices u and v in X admit adjacency perfect
+state transfer in X _ Y if and only if all of the following conditions hold.
+´ pLpXqq or (ii) X “ O pkq.
+1. Either (i) u and v are adjacency strongly cospectral in X and λ´ R σuv
+2
+
+2. One of the following conditions hold.
+(a) The eigenvalues in σu pApXqq are all integers and D is a perfect square.
+?
+(b) X is connected, each λ j P σu pApXqqztku is of the form 12 pk ` ℓ ` b j ∆q and λ˘ “ 21 pk ` ℓ ˘
+?
+b ∆q, where b j , b, ∆ are integers with b ą b j for each j and ∆ ą 1 is square-free.
+´
+´
+´
+¯
+¯
+¯
+λ´η
+λ´µ
+λ´θ
+` pApXqqztku Y R and µ, θ P σ´ pApXqq, ν
+?
+?
+?
+3. For all λ, η P σuv
+ą
+ν
+“
+ν
+,
+2
+2
+2
+uv
+∆
+∆
+∆
+where ∆ “ 1 whenever (2a) holds, R is given in Theorem 19(2).
+!
+)
+λ?
+π
+` pAqztku Y
+0 ´λ
+Further, τX_Y “ g?
+,
+where
+g
+“
+gcd
+p
+T
+q,
+T
+“
+:
+λ
+P
+σ
+pAqztku
+Y
+R
+and λ0 P σuv
+u
+∆
+∆
+R is fixed.
+Proof. This is a direct consequence of Theorems 8(2), 19(2) and 22.
+The next result can be viewed as an analogue of Corollary 25.
+Corollary 27. If k ` ℓ is odd in Theorem 26, then X _ Y has no adjacency perfect state transfer.
+Proof. If k ` ℓ “ λ` ` λ` is odd, then so is λ` ´ λ´ , a contradiction to Theorem 26(3).
+
+8 PST in X and X _ Y
+We now utilize our results from the previous section to determine when PST is preserved in the join.
+
+13
+
+8.1 Laplacian case
+Corollary 28. Let m ě 2 and φpLpXq, tq P Zrts. Suppose Laplacian perfect state transfer occurs
+between vertices u and v in X and τX “ πh . Then it occurs between u and v in X _ Y if and only if
+π
+´ pLpXqq and m, n ” 0 (mod 2α ), where α ą ν phq. In this case, τ
+m R σuv
+2
+X_Y “ g , where g “ gcdpT q,
+
+T is given in Theorem 23 and ν2 pgq “ ν2 phq. Moreover, if X is connected, then hg is rational. Otherwise,
+h
+g “ lcmph{h1 , h{h2 q is an odd integer where h1 “ gcdpm, hq and h2 “ gcdpn, hq.
+
+Proof. If PST occurs in X, then u and v are strongly cospectral in X and Theorem 23(2) holds. Hence,
+´ pLpXqq,
+PST occurs in X _ Y if and only if (1i) and (3ai) of Theorem 23 holds. Equivalently, m R σuv
+´ pLpXqq. As ν phq “ ν pµq “ ν pµ ` nq for all
+ν2 pmq ą ν2 pµq and ν2 pnq ą ν2 pµq for all µ P σuv
+2
+2
+2
+´
+µ P σuv pLpXqq, these conditions are equivalent to m, n ” 0 (mod 2α ), where α ą ν2 phq. The minimum
+PST time follows from Theorem 23.
+Corollary 29. Let X be an unweighted graph on m “ 2 p vertices. Then conditions (3aii-3aiii) of Theorem
+23 do not hold. If we add that Laplacian perfect state transfer occurs between vertices u and v in X, then:
+1. If p “ 1, then Laplacian perfect state transfer does not occur between u and v in K2 _ Y for any Y.
+2. If p ě 2, then Laplacian perfect state transfer occurs between u and v in X _ Y if and only if n ” 0
+(mod 2α ), where α ą ν2 pgq and πh is the minimum PST time between u and v in X.
+Proof. The assumption implies that each eigenvalue λ of LpXq is at most m. Thus, ν2 pλq ă ν2 pmq, and
+so conditions (3aii-iii) of Theorem 22 do not hold. Now, from Corollary 28, PST occurs between u and
+´ pLpXqq and n ” 0 (mod 2α ), where α ą ν phq. Thus, if p “ 1, then
+v in X _ Y if and only if m R σuv
+2
+Example 21(1) implies that u and v are not strongly cospectral in K2 _ Y, and so (1) holds. However, if
+´ pLpXqq, and so (2) holds.
+p ě 2, then m R σuv
+In Corollaries 28 and 29(2), the Y with the least number of vertices and edges that works is Y “ On ,
+where n “ 2ν2 pgq`1 . Next, combining Corollary 28 and Theorem 23(3ai) also yields the following result.
+Corollary 30. Let u and v be strongly cospectral vertices in X _ Y and σu pLpXqq Ď Z. If condition (3ai)
+of Theorem 23 holds, then Laplacian perfect state transfer occurs between u and v in X and X _ Y.
+From Theorem 23(3a), it is evident that PST in X _ Y does not necessarily yield PST in X. Thus, the
+above result can be viewed as a characterization of the equivalence of PST in a graph and its join.
+Using Corollary 28, we provide an infinite family of graphs such that X and X _ Y both have PST. Recall that a graph X is Hadamard diagonalizable if LpXq is diagonalizable by a Hadamard matrix [BFK11].
+Example 31. Let X be a Hadamard diagonalizable graph on m ě 4 vertices with PST between u and v.
+` pLpXqq and σ´ pLpXqq respectively consist of integers λ ” 0 and µ ” 2 (mod 4).
+From [JKP` 17], σuv
+uv
+Since m ” 0 (mod 4), Corollary 28 yields PST between u and v in X _ Y if and only if n ” 0 (mod 4).
+Our next result shows that for a graph X with PST between u and v, it is possible for PST to fail
+between u and v in X _ Y for any graph Y, yet occur in pX Y Zq _ Y for some graph Z.
+Corollary 32. Let m ě 2 and φpLpXq, tq P Zrts. If Laplacian perfect state transfer occurs between
+´ pLpXqq, then the following hold.
+vertices u and v in X with m P σuv
+1. For any graph Y, Laplacian perfect state transfer does not occur between u and v in X _ Y.
+´ pLpXqq. Then Laplacian perfect state transfer
+2. Let Z be a graph on r vertices such that m ` r R σuv
+occurs between u and v in pX Y Zq _ Y if and only if ν2 pnq ą ν2 pmq “ ν2 prq.
+
+14
+
+´ pLpXqq, u and v are not strongly cospectral in X _ Y by Theorem 19(1). We
+Proof. Since m P σuv
+´ pLpXqq, Corollary 28 implies that PST occurs between u and v in
+now prove (2). Since m ` r R σuv
+´ pLpXqq. Equivalently,
+X _ Y if and only if ν2 pm ` rq ą ν2 pmq and ν2 pnq ą ν2 pmq for all µ P σuv
+ν2 pnq ą ν2 pmq “ ν2 prq.
+
+In Corollary 32(2), the Z and Y with the least number of vertices and edges that work are Z “ Or and
+Y “ On respectively, where r “ 2ν2 pmq and r “ 2ν2 pmq`1 .
+
+Example 33. Let X “ K2 with vertices u and v. From Corollary 29(1), PST between u and v fails in
+´ pLpK qq for all r ě 1, Corollary 32 yields PST between u and
+K2 _ Y for any graph Y. Since r ` 2 R σuv
+2
+v in pK2 Y Zq _ Y if and only if ν2 pnq ą ν2 prq “ 1. In particular, we may take Z “ O2 and Y “ O4 .
+The following remark can be used to generate infinite families of weighted graphs X whereby PST
+occurs between u and v in X and pX Y Zq _ Y for some graph Z, but not in X _ Y for any graph Y.
+
+Remark 34. Let m ě 2 and φpLpXq, tq P Zrts. Suppose vertices u and v admit Laplacian PST in X, and
+´ pLpXqq. Let X 1 be the graph obtained by scaling all edge weights of
+suppose µ divides m for some µ P σuv
+m
+´
+X by a factor of µ . Then m P σuv pLpX 1 qq, and so PST does not occur between u and v in X 1 _ Y for any
+1
+graph Y by Corollary 32(1). But since m
+µ is an integer, we get φpLpX q, tq P Zrts, and so we may apply
+Corollary 32(2) to obtain a graph Z such that PST occurs between u and v in pX 1 Y Zq _ Y.
+
+8.2 Adjacency case
+In contrast with the Laplacian case in Corollary 32(2), it turns out that if X is regular and has adjacency
+PST between two vertices, then we can always choose a regular graph Y such that adjacency PST is
+preserved in X _ Y.
+Corollary 35. Let m ě 2, k, ℓ P Z and φpApXq, tq P Zrts. Suppose adjacency perfect state transfer
+occurs between vertices u and v in X and τX “ πh . Then it occurs between them in X _ Y if and only if
+´ pApXqq, and
+1. n “ spk´mℓ`sq for some integer s such that m divides spk ´ ℓ ` sq and ℓ ´ s R σuv
+
+´ pApXqq, ν psq ą ν pk ´ µq and ν pℓ ´ kq ą ν pk ´ µq.
+2. for all µ P σuv
+2
+2
+2
+2
+
+` pAqztku Y R is fixed
+In this case, τX_Y “ πg , where g “ gcdpT q, T is given in Theorem 26, λ0 P σuv
+
+and ν2 pgq “ ν2 phq. Moreover, if X is connected, hg is rational. Otherwise, gh “ lcmph{h1 , h{h2 q is an odd
+integer and h1 “ gcdpλ0 ´ λ` , hq and h2 “ gcdpλ0 ´ λ´ , hq.
+Proof. From Theorem 26, it follows that PST occurs between u and v in X _ Y if and only if
+´ pApXqq, and
+(a) D is a perfect square and λ´ R σuv
+
+` pApXqqztku Y S and µ, θ P σ´ pApXqq.
+(b) ν2 pλ˘ ´ ηq ą ν2 pλ˘ ´ µq “ ν2 pλ˘ ´ θq for all η P σuv
+uv
+?
+1
+2
+2
+˘
+By the choice of s in (1), D “ pk ´ ℓq ` 4mn “ pk ´ ℓ ` 2sq . Since λ “ 2 pk ` ℓ ˘ Dq, we get
+λ` “ k ` s and λ´ “ ℓ ´ s. Thus, (1) ensures that condition (a) above holds. Using the fact that X has
+PST between u and v, Theorem 22(3) yields
+
+ν2 pk ´ ηq ą ν2 pk ´ µq “ ν2 pk ´ θq
+
+(15)
+
+` pApXqqztku and µ, θ P σ´ pApXqq. Observe that for each λ P σ pApXqqztku, we can write
+for all η P σuv
+u
+uv
+λ` ´ λ “ pλ` ´ kq ` pk ´ λq “ s ` pk ´ λq. Similarly, λ´ ´ λ “ pℓ ´ s ´ kq ` pk ´ λq. Thus,
+
+ν2 pλ` ´ λq ě mintν2 psq, ν2 pk ´ λqu
+
+and
+
+ν2 pλ´ ´ λq ě mintν2 pℓ ´ s ´ kq, ν2 pk ´ λqu.
+
+We have the following cases.
+15
+
+(16)
+
+´ pApXqq. Then (15) implies that ν psq ą ν pk ´ µq for
+• Suppose ν2 psq ą ν2 pk ´ µq for some µ P σuv
+2
+2
+´ pApXqq, and combining this with (16) yields ν pλ` ´ µq “ ν pλ` ´ θq “ ν pk ´ µq.
+all µ P σuv
+2
+2
+2
+´ pApXqq, from which we get
+Moreover, (15) and (16) give us ν2 pλ` ´ ηq ą ν2 pk ´ µq for all µ P σuv
+` pApXqqztku and µ, θ P σ´ pApXqq.
+ν2 pλ` ´ ηq ą ν2 pλ` ´ µq “ ν2 pλ` ´ θq for all η P σuv
+uv
+´ pApXqq. Then one can check using (15) and (16) that
+• Suppose ν2 psq ď ν2 pk ´ µq for some µ P σuv
+`
+`
+ν2 pλ ´ ηq “ ν2 psq ď ν2 pλ ´ µq, a violation of condition (b).
+` pApXqqztku and µ, θ P σ´ pApXqq
+Consequently, ν2 pλ` ´ ηq ą ν2 pλ` ´ µq “ ν2 pλ` ´ θq for all η P σuv
+uv
+´
+if and only if ν2 psq ą ν2 pk ´ µq for all µ P σuv pApXqq. Using this fact and again arguing similarly
+as in the above two cases using (15) and (16) yields ν2 pλ` ´ ηq ą ν2 pλ` ´ µq “ ν2 pλ` ´ θq for all
+` pApXqqztku and µ, θ P σ´ pApXqq if and only if ν pℓ ´ kq ą ν pk ´ µq for all µ P σ´ pApXqq.
+η P σuv
+2
+2
+uv
+uv
+Thus, the assumption in (2) is equivalent to condition (b) above, which yields the desired conclusion.
+
+The following example illustrates Corollary 35.
+Example 36. Let X be a simple integer-weighted Hadamard diagonalizable graph on m ě 4 vertices with
+PST between vertices u and v. Then m ” 0 (mod 4) and X is p-regular for some integer p. From Example
+` pApXqq consists of integers p ´ λ, where λ ” 0 (mod 4), while σ´ pApXqq consists of integers
+31, σuv
+uv
+p ´ µ such that µ ” 2 (mod 4). Invoking Corollary 35(2), we get PST between u and v in X _ Y if and
+spp´ℓ`sq
+´ pApXqq and
+only if (i) n “
+, where s is an integer such that m divides spp ´ ℓ ` sq and ℓ ´ s R σuv
+m
+(ii) ν2 psq ě 2 and ν2 pℓ ´ pq ě 2. In particular, if X “ Q p , then we may take ℓ “ p and s “ 2pp`1q{2 a
+(i.e., n “ 2a) if p is odd and s “ 2 p{2 a (i.e., n “ a) otherwise, to get PST in both Q p and Q p _ Y.
+´ pApXqq in Corollary 35(1)
+Remark 37. If X “ K2 , then k “ ´µ “ 1, and so the condition ℓ ´ s R σuv
+is equivalent to ℓ ‰ n ´ 1, while the conditions ν2 psq ą 1 and ν2 pℓ ´ 1q ą 1 in Corollary 35(2) are
+equivalent to ν2 ps ´ 2q “ 1 and ν2 pℓ ` 3q ą 1. Thus, taking X “ K2 in Corollary 35 recovers a known
+characterization of PST in connected double cones [KMP23, Theorem 12(1)].
+
+Next, we have an analogue of Corollary 30, which determines when PST in X _ Y is inherited by X.
+Corollary 38. Let m ě 2, k, ℓ P Z and φpApXq, tq P Zrts.
+1. Let X be disconnected. If perfect state transfer occurs between vertices u and v in X _ Y, then it
+also occurs between them in X if and only if X ‰ O2 pkq for any k P Z.
+2. Suppose X is connected. If perfect state transfer occurs between vertices u and v in X _ Y, then
+perfect state transfer occurs between u and v in X if and only if both conditions below hold.
+(a) The eigenvalues in σu pApXqq are all integers and D is a perfect square.
+
+` pApXqqztku and µ, θ P σ´ pApXqq.
+(b) ν2 pk ´ ηq ą ν2 pk ´ µq “ ν2 pk ´ θq for any η P σuv
+uv
+
+9 PST in X _ Y but not in X
+In Corollary 28, we characterized graphs with PST that also admit PST in the join. In this section, our goal
+is to show that PST can be induced in the join despite the lack of PST in the underlying graph.
+
+16
+
+9.1 Laplacian case
+The following is immediate from Theorem 23.
+Corollary 39. Let m ě 2 and φpLpXq, tq P Zrts. Suppose u and v are strongly cospectral vertices in X
+with σu pLpXqq Ď Z. Then Laplacian perfect state transfer occurs between u and v in X _ Y but not in X
+´ pLpXqq, ν pmq “ ν pnq and either (i) Theorem 23(3aii-3aiii) holds or (ii) X “ O .
+if and only if m R σuv
+2
+2
+2
+´ pLpXqq consists of integers whose largest
+For strongly cospectral vertices in X whose elements in σuv
+` pLpXqq, Theorem 22 yields no PST between
+powers of two in their factorizations are larger than those in σuv
+them. Nonetheless, we show that Laplacian PST can be induced in X _ Y by appropriate choice of n. The
+following result follows directly from Corollary 39 and Theorem 23(3aii).
+
+Theorem 40. Let m ě 2 and φpLpXq, tq P Zrts. Suppose u and v are strongly cospectral vertices in
+` pLpXqq and µ P σ´ pLpXqq. Then
+X with σu pLq Ď Z such that the ν2 pµq ą ν2 pλq for all 0 ‰ λ P σuv
+uv
+´ pLpXqq, X is
+Laplacian perfect state transfer occurs between u and v in X _ Y if and only if m R σuv
+`
+connected and ν2 pλq “ ν2 pmq “ ν2 pnq for all 0 ‰ λ P σuv pLpXqq.
+Example 41. Let X “ CPpmq, where m ” 2 (mod 4). Then X is connected, pm ´ 2q-regular and any two
+` pLpXqq “ t0, mu and σ´ pLpXqq “
+non-adjacent vertices u and v in X are strongly cospectral with σuv
+uv
+tm ´ 2u. As ν2 pm ´ 2q ą ν2 pmq, Laplacian PST does not occur between u and v in X by Theorem 22(3).
+Applying Theorem 40, Laplacian PST occurs between u and v in X _ Y if and only if n ” 2 (mod 4). In
+particular, if we take n “ 2, then X _ Y “ CPpm ` 2q admits PST between any two non-adjacent vertices.
+For strongly cospectral vertices in X whose eigenvalue supports consist of integers with equal largest
+powers of two in their factorizations, Theorem 22 again yields no PST between them. Despite this fact, we
+show that under certain assumptions, Laplacian PST can be induced in X _ Y by appropriate choice of n.
+Theorem 42. Let m ě 2 and φpLpXq, tq P Zrts. Suppose u and v are strongly cospectral vertices in
+X with σu pLq Ď Z such that the ν2 pλq’s are equal for all λ P σu pLq, say to α. Write each 0 ‰ λr P
+` pLpXqq as λ “ 2α p2p ´ 1q and each µ P σ´ pLpXqq as µ “ 2α p2q ´ 1q for some p , q P Z.
+σuv
+r
+r
+s
+s
+s
+r s
+uv
+Then Laplacian perfect state transfer occurs between u and v in X _ Y if and only if X is connected,
+´ pLpXqq, ν pmq “ ν pnq “ α (so we may write m “ 2α p2y ´ 1q and n “ 2α p2z ` 1q for some
+m R σuv
+2
+2
+y, z P Z), and one of the following conditions below hold.
+1. All ν2 pqs q’s are equal, ν2 ppr q ą ν2 pqs q, and ν2 pyq ě ν2 pzq ě ν2 pqs q ` 1 for all r, s.
+2. All ν2 ppr q’s are equal and ν2 ppr q “ ν2 pyq “ ν2 pzq ă ν2 pqs q for all s.
+´
+´
+¯
+¯
+¯
+´
+q `z
+q `z
+p `z
+3. For any r, s, t, we have ν2 ppr q “ ν2 pqs q “ ν2 pyq “ ν2 pzq, ν2 2νr2 pzq ą ν2 2νs2 pzq “ ν2 2νt2 pzq
+´
+´
+¯
+¯
+y`z
+q `z
+and ν2 2ν2 pzq ą ν2 2νs2 pzq .
+
+Proof. Corollary 39 implies that PST occurs between u and v in X _ Y if and only if ν2 pmq “ ν2 pnq “ α
+and Theorem 23(3aii) holds. Let m “ 2α p2y ´ 1q and n “ 2α p2z ` 1q for some integers y, z. Note that
+m ` n “ 2α`1 py ` zq, λr ` n “ 2α`1 ppr ` zq and µs ` n “ 2α`1 pqs ` zq. If X is disconnected, then
+` pLpXqq. Now, Theorem 23(3aii) holds if and only if X is connected and
+n P σuv
+ν2 ppr ` zq ą ν2 pqs ` zq “ ν2 pqt ` zq
+
+and
+
+ν2 py ` zq ą ν2 pqs ` zq
+
+for any r, s, t. One can then proceed by cases similar to the proof of Theorem 23(2a).
+
+17
+
+(17)
+
+Remark 43. Let X be a simple unweighted graph with strongly cospectral vertices u and v such that
+σu pLq Ď Z. If X has an odd number of vertices and an odd number of spanning trees, then the matrix-tree
+theorem implies that all nonzero eigenvalues in σu pLq are odd. Thus, Theorem 42 applies with α “ 0.
+We illustrate Theorem 42 and Remark 43 using a simple example.
+` pLpXqq “ t0, 3u, σ´ pLpXqq “ t1u,
+Example 44. Let X “ P3 with end vertices u and v. Then σuv
+uv
+and so by Theorem 22(2), u and v does not admit Laplacian PST in X. Applying Theorem 42(1), we get
+Laplacian PST between u and v in X _ Y if and only if n ” 1 (mod 4). In particular, taking Y “ On
+yields X _ Y “ Kd ze with d ” 0 (mod 4), a graph known to have PST between non-adjacent vertices.
+
+We close this subsection with a result that determines all graphs with isolated vertices that exhibit
+Laplacian PST in the join. It is immediate from Theorems 19(1a) and 23(3c).
+Theorem 45. If u and v are two isolated vertices in X, then Laplacian perfect state transfer occurs
+between u and v in X _ Y if and only if X “ O2 and n ” 2 (mod 4).
+From Theorem 45, O2 is the only graph with isolated vertices that exhibits PST in the join. This
+coincides with a known characterization of Laplacian PST in double cones [ADL` 16, Corollary 4].
+
+9.2 Adjacency case
+For the adjacency case, we give one scenario where PST can be induced in X _ Y. The following is
+immediate from Theorems 22(3) and 26(3).
+Corollary 46. Let m ě 2, k, ℓ P Z and φpApXq, tq P Zrts. Suppose X is connected and vertices u and v
+are strongly cospectral in X such that σu pApXqq Ď Z and
+ν2 pλ ´ ηq ą ν2 pλ ´ µq “ ν2 pλ ´ θq ,
+
+(18)
+
+` pApXqqztku and µ, θ P σ´ pApXqq. If (18) does not hold whenever λ “ k, then
+for all λ, η P σuv
+uv
+
+1. adjacency perfect state transfer does not occur between u and v in X; and
+´ pApXqq,
+2. adjacency perfect state transfer occurs between u and v in X _ Y if and only if λ´ R σuv
+˘
+D is a perfect square and (18) also holds whenever λ P tλ u.
+
+Using Corollary 39, we generate an infinite family of graphs with no PST but which admit PST in the
+join.
+Example 47. Let m ě 6 and X “ CPpmq, where m ” 2 (mod 4). From Example 41, X is connected,
+pm ´ 2q-regular and PST does not occur between u and v in X by Corollary 46(1). Applying Corollary
+46(2), we get adjacency PST between u and v in X _ Y if and only if n “ zpm´ℓm´2`zq for some integer z
+such that m divides zpm ´ ℓ ´ 2 ` zq, ν2 pℓq ą ν2 pzq “ 1 and ℓ ´ z ‰ 0. The latter three conditions are
+equivalent to D being a perfect square, ν2 pλ` ´ λ´ q “ ν2 pλ´ ´ 0q “ 2 and λ´ ‰ 0, respectively. In
+particular, we may take ℓ “ 0 and z “ 2 to get n “ 2. In this case, X _ Y “ CPpm ` 2q which admits
+PST between any two non-adjacent vertices.
+We finish this section with an analogue of Theorem 45. It is immediate from Theorem 26.
+Theorem 48. If u and v are two isolated vertices in X, then adjacency perfect state transfer occurs
+between u and v in X _ Y if and only if X “ O2 pkq, D is a perfect square and ν2 pλ` ´ kq “ ν2 pλ´ ´ kq.
+18
+
+10 Families of joins
+We now determine quantum state transfer in self-joins and iterated join graphs.
+
+10.1 Self-joins
+Ž
+Denote the r-fold join of X with itself by X r :“ rj“1 X. The following characterizes periodicity in X r .
+It follows from Corollaries 7 and 9, and Theorem 11.
+Theorem 49. Let M P tA, Lu and φpMpXq, tq P Zrts. Vertex u is periodic in X if and only if it is periodic
+in X r for all r, if and only if σu pMpXqq Ď Z. Moreover, X is periodic if and only if X r is periodic for all
+r, if and only if X is (Laplacian) integral.
+Next, we characterize strong cospectrality in X r .
+Theorem 50. Suppose vertices u and v are strongly cospectral vertices in X with respect to M.
+´ pLpXqq, then u and v are Laplacian strongly cospectral in X r for all r ě 1 with
+1. If m R σuv
+`
+`
+pLpXqqzt0uu Y R
+σuv
+pLq “ tλ ` pr ´ 1qm : λ P σuv
+
+and
+
+´
+´
+pLq “ tµ ` pr ´ 1qm : µ P σuv
+pLpXqqu,
+σuv
+
+where R “ t0, rmu if X is connected and R “ t0, rm, pr ´ 1qmu otherwise. If we add that X ‰ K2
+is unweighted, then u and v are strongly cospectral in X r for all r ě 1.
+´ pApXqq, then u and v are adjacency strongly cospectral in X r for all r ě 1 with
+2. If k ´ m R σuv
+`
+`
+pApXqqztku Y R
+pAq “ σuv
+σuv
+
+and
+
+´
+´
+σuv
+pAq “ σuv
+pApXqq,
+
+where R “ tk ´ m, k ` pr ´ 1qmu if X is connected and R “ tk ´ m, k ` pr ´ 1qm, ku otherwise.
+Proof. Note that (1) follows from Theorem 19(1) and Remark 20. To prove (2), note that X r is pk ` pr ´
+1qmq-regular with rm vertices. Taking Y “ X r´1 , we get X r “ X _ Y and D “ ppk ` pr ´ 2qmq ´ kq2 `
+4pr ´ 1qm2 “ r2 m2 , and so λ´ “ k ´ m and λ` “ k ` pr ´ 1qm. Invoking Theorem 19(2) yields (2).
+Taking Y “ X r´1 in Theorem 23 yields a characterization of Laplacian PST in r-fold joins.
+Theorem 51. Let r, m ě 2 and φpLpXq, tq P Zrts. Vertices u and v in X admit Laplacian perfect state
+transfer in X r if and only if either:
+1. X “ O2 , in which case X r “ CPp2rq, where r is even.
+2. Vertices u and v belong to the same connected component of X and all of the conditions below hold.
+´ pLpXqq.
+(a) Vertices u and v are Laplacian strongly cospectral in X and m R σuv
+
+(b) The eigenvalues in σu pLpXqq are all integers.
+(c) One of the following conditions hold.
+
+` pLpXqq Y tmu
+i. X is connected and one of the following conditions hold for all 0 ‰ λ P σuv
+´ pLpXqq.
+and µ, θ P σuv
+A. ν2 pλq ą ν2 pµq “ ν2 pθq and r is any integer.
+B. ν2 pµq ą ν2 pλq and r is even.
+´
+´
+¯
+¯
+¯
+´
+µ`pr´1qm
+θ`pr´1qm
+ą
+ν
+“
+ν
+and r is even.
+C. ν2 pλq “ ν2 pµq, ν2 λ`pr´1qm
+2
+2
+2ν2 pmq
+2ν2 pmq
+2ν2 pmq
+
+19
+
+ii. X ‰ O2 is disconnected and (iA) above holds.
+If these conditions hold, then τX r “ πg , where g “ gcd pT q, T “ trmu Y tλ ´ m : λ P σu pLpXqqzt0uu if
+X is connected, and T “ tmu Y σu pLpXqqzt0u otherwise.
+Example 52. Let X “ P3 with end vertices u and v, and consider X r for any integer r. From Example 44,
+` pLpXqq “ t0, 3u, σ´ pLpXqq “ t1u and Laplacian PST does not occur in X. Since λ “ m “ 3 and
+σuv
+uv
+µ “ 1 are odd, we have ν2 pλ ` pr ´ 1qmq “ ν2 prq and ν2 pµ ` pr ´ 1qmq “ 1. By Theorem 51(2ci), PST
+occurs between u and v in X r if and only if r ” 0 (mod 4). In this case, P3r “ pO2 _ O1 qr “ CPp2rq _ Kr .
+Indeed, Theorem 51(1) yields PST in CPp2rq between non-adjacent vertices with minimum time π2 , and as
+r ” 0 (mod 4), Corollary 28 implies that this PST is preserved in CPp2rq _ Kr at the same time.
+Using Corollary 28, we characterize when Laplacian PST in preserved in self-joins.
+Corollary 53. Let m ě 2 and φpLpXq, tq P Zrts. Suppose Laplacian perfect state transfer occurs between
+´ pLpXqq and
+vertices u and v in X and τX “ πh . Then it occurs between them in X r if and only if m R σuv
+π
+α
+m ” 0 (mod 2 ), where α ą ν2 phq. In this case, τX r “ g , where g “ gcdpT q, T is given in Theorem 51
+h
+and ν2 pgq “ ν2 phq. Moreover, if X is connected, then hg is rational. Otherwise, gh “ gcdph,mq
+is odd.
+
+´ pLpXqq if X ‰ K is
+In Theorem 51(2a) and Corollary 53, we may drop the condition m R σuv
+2
+r´1
+unweighted. Taking Y “ X
+in Theorem 26 yields a characterization of adjacency PST in r-fold joins.
+
+Theorem 54. Let r, m ě 2, k P Z and φpApXq, tq P Zrts. If X is simple, then vertices u and v in X admit
+adjacency perfect state transfer in X r if and only if either:
+1. X “ O2 , in which case X r “ CPp2rq, where r is even.
+2. Vertices u and v belong to the same connected component of X and all of the conditions below hold.
+´ pLpXqq.
+(a) Vertices u and v are adjacency strongly cospectral in X and k ´ m R σuv
+
+(b) The eigenvalues in σu pApXqq are all integers.
+(c) One of the following conditions hold.
+
+` pApXqqztku
+i. X is connected and one of the following conditions hold for all 0 ‰ λ P σuv
+´
+and µ, θ P σuv pApXqq.
+A. ν2 pmq ą ν2 pk ´ µq, ν2 pk ´ λq ą ν2 pk ´ µq and r is any integer.
+B. ν2 pk ´ µq ą ν2 pmq “ ν2 pk ´ λq and r is even
+´
+´
+´
+¯
+¯
+¯
+k´m´µ
+k´m´θ
+C. ν2 pmq “ ν2 pk ´ ηq “ ν2 pk ´ µq, ν2 k´m´λ
+ą
+ν
+“
+ν
+and r
+2
+2
+ν
+pmq
+ν
+pmq
+ν
+pmq
+22 ¯
+22
+22
+´
+k´m´µ
+is an integer such that ν2 prq ą ν2 2ν2 pmq .
+
+ii. X ‰ O2 is disconnected and (iA) above holds.
+
+If these conditions hold, then τX r “ πg , where g “ gcd pT q, T “ trmu Y tk ´ m ´ λ : λ P σu pApXqqztkuu
+if X is connected and T “ tmu Y tk ´ λ : λ P σu pApXqqztkuu otherwise.
+` pApXqq “ tm ´ 2, ´2u,
+Example 55. Let X “ CPpmq, where m ” 2 (mod 4). From Example 41, σuv
+´
+σuv pApXqq “ t0u and adjacency PST does not occur between non-adjacent vertices u and v. If we let
+k “ m ´ 2, λ “ ´2 and µ “ 0, then ν2 pk ´ µq ą ν2 pmq “ ν2 pk ´ λq. By Theorem 54(2ciB), adjacency
+PST occurs between u and v in X r if and only if r is even. In this case, X r “ CPpmqr “ CPprmq. Since
+rm “ 2rpm{2q, we may also use Theorem 54(1) to conclude that X r has PST for all even r.
+
+20
+
+We also characterize when adjacency PST in preserved in self-joins using Corollary 35.
+Corollary 56. Let r, m ě 2, k P Z and φpApXq, tq P Zrts. Suppose X is simple and adjacency perfect
+state transfer occurs between vertices u and v in X and τX “ πh . Then it occurs between them in X r if
+´ pApXqq and ν pmq ą ν pk ´ µq for all µ P σ´ pApXqq. Here, τ r “ π , where
+and only if k ´ m R σuv
+2
+2
+X
+uv
+g
+g “ gcdpT q, T is given in Theorem 54 and ν2 pgq “ ν2 phq. Further, if X is connected, hg is rational.
+
+h
+Otherwise, gh “ gcdph,mq
+is odd.
+
+10.2 Iterated join graphs
+In this subsection, we characterize Laplacian strong cospectrality and PST in iterated join graphs.
+An iterated join graph is a weighted graph that is either of the form:
+(i) ppppXm1 _ Xm2 q Y Xm3 q _ Xm4 q . . .q _ Xm2k :“ ΓpXm1 , . . . , Xm2k q
+(ii) ppppXm1 Y Xm2 q _ Xm3 q Y Xm4 q . . .q _ Xm2k`1 :“ ΓpXm1 , . . . , Xm2k`1 q,
+where Xm1 , . . . , Xm2r are weighted graphs on m1 , . . . , m2r ě 1 vertices, respectively.
+If we take X j “ Om j for odd j and X j “ Km j otherwise, then ΓpOm1 , Km2 . . . , Km2k q is a connected
+threshold graph. ΓpKm1 , Om2 , . . . , Km2k`1 q is also a threshold graph, where X j “ Om j for even j and
+X j “ Km j otherwise. In fact, graphs of either form completely describe the class of connected threshold
+graphs [KS11]. Thus, iterated join graphs are generalizations of connected theshold graphs.
+Lemma 3 and the fact that the union preserves eigenvalue supports yield the following result which
+determines the eigenvalue support of each vertex in an iterated join graph.
+Proposition 57. The following hold.
+1. Let X “ ΓpXm1 , . . . , Xm2k q and suppose u P VpXm j q for some j P t1, . . . , 2ku. Define αh “
+řh
+řp2k´hq{2
+mh`2ℓ when h ‰ 2k and β 2k “ 0. The following hold.
+ℓ“1 m ℓ , β h “
+ℓ“1
+
+(a) If j is odd, then σu pLpXqq “ tλ ` β j´1 : λ P σu pLpXm j qqzt0uu Y tαh ` β h : j ď h ď
+2k is evenu Y R, where R “ t0u whenever j “ 1 and Xm1 is connected, and R “ t0, β j´1 u
+otherwise.
+(b) If j is even, then σu pLpXqq “ tλ ` α j´1 ` β j : λ P σu pLpXm j qqzt0uu Y tαh ` β h : j ď h ď
+2k is evenu Y R, where R “ t0u whenever X j is connected and R “ t0, α j´1 ` β j u otherwise.
+
+2. Let X “ ΓpXm1 , . . . , Xm2k`1 q and suppose u P VpXm j q for some j P t1, . . . , 2k ` 1u. Define
+ř
+řp2k`1´hq{2
+αh “ hℓ“1 mℓ , β h “ ℓ“1
+mh`2ℓ when h ‰ 2k ` 1 and β 2k`1 “ 0. The following hold.
+
+(a) If j “ 1, then σu pLpXqq “ tλ ` β1 : λ P σu pLpXm j qqzt0uu Y tαh`1 ` β h : 1 ď h ď
+2k ` 1 is oddu Y R, where R “ t0, β1 u.
+
+(b) If j ě 3 is odd, then σu pLpXqq “ tλ ` α j´1 ` β j : λ P σu pLpXm j qqzt0uu Y tαh ` β h : j ď
+h ď 2k ` 1 is oddu Y R, where R “ t0u if X is connected and R “ t0, α j´1 ` β j u otherwise.
+
+(c) If j is even, then σu pLpXqq “ tλ ` β j´1 : λ P σu pLpXm j qqzt0uu Y tαh ` β h : j ` 1 ď h ď
+2k ` 1 is oddu Y R, where R “ t0, β j´1 u.
+
+Using Proposition 57 and the same argument in the proof of Theorem 19 yield the following characterization of Laplacing strong cospectrality in iterated join graphs.
+
+21
+
+Theorem 58. Let X “ ΓpXm1 , . . . , Xm2k q and consider αh and β h in Proposition 57(1). Two vertices u
+and v of Xm j are Laplacian strongly cospectral in X if and only if one of the following conditions hold.
+1. j is odd and either:
+´ pLpX qq. In this case,
+(a) Vertices u and v are Laplacian strongly cospectral in Xm j and α j R σuv
+mj
+`
+`
+σuv pLq “ tλ ` β j´1 : λ P σuv pLpXm j qqzt0uu Y tαh ` β h : j ď h ď 2k is evenu Y R and
+´
+´ pLq “ tµ ` β
+σuv
+j´1 : µ P σuv pLpXm j qqu, where R is given in Proposition 57(1a).
+
+` pLq “ tα ` β : 1 ď h ď 2k is evenu Y t0u and σ´ pLq “ tβ u.
+(b) j “ 1 and Xm1 “ O2 with σuv
+0
+h
+h
+uv
+
+2. j is even and either:
+´ pLpX qq. In this case,
+(a) Vertices u and v are Laplacian strongly cospectral in Xm j and m j R σuv
+mj
+`
+` pLq “ tλ ` α
+σuv
+j´1 ` β j : λ P σuv pLpXm j qqzt0uu Y tα h ` β h : j ď h ď 2k is evenu Y R and
+´ pLq “ tµ ` α
+´
+σuv
+j´1 ` β j : µ P σuv pLpXm j qqu, where R is given in Proposition 57(1b).
+` pLq “ tα ` β : j ď h ď 2k is evenu Y t0u and σ´ pLq “ tα
+(b) Xm j “ O2 with σuv
+j´1 ` β j u.
+h
+h
+uv
+
+Theorem 59. Let X “ ΓpXm1 , . . . , Xm2k`1 q and consider αh , β h and R in Proposition 57(2). Two vertices
+u and v of Xm j are Laplacian strongly cospectral in X if and only if one of the following conditions hold.
+´ pLpX qq. In
+1. j “ 1, vertices u and v are Laplacian strongly cospectral in Xm1 and m1 ` m2 R σuv
+m1
+`
+`
+this case, σuv pLq “ tλ ` β 1 : λ P σuv pLpXm1 qqzt0uu Y tαh`1 ` β h : 1 ď h ď 2k ` 1 is oddu Y R
+´ pLq “ tµ ` β : µ P σ´ pLpX qqu, where R is given in Proposition 57(2a).
+and σuv
+m1
+1
+uv
+
+2. j ě 3 is odd and either:
+´ pLpX qq. In this case,
+(a) Vertices u and v are Laplacian strongly cospectral in Xm j and m j R σuv
+mj
+`
+`
+σuv pLq “ tλ ` α j´1 ` β j : λ P σuv pLpXm j qqzt0uu Y tαh ` β h : j ď h ď 2k ` 1 is oddu Y R
+´ pLq “ tµ ` α
+´
+and σuv
+j´1 ` β j : µ P σuv pLpXm j qqu, where R is given in Proposition 57(2b).
+` pLq “ tα ` β : j ď h ď 2k is oddu Y t0u and σ´ pLq “ tα
+(b) Xm j “ O2 with σuv
+j´1 ` β j u.
+h
+h
+uv
+
+´ pLpX qq. In this
+3. j is even, vertices u and v are Laplacian strongly cospectral in Xm j , and α j R σuv
+mj
+`
+`
+case, σuv pLq “ tλ ` β j´1 : λ P σuv pLpXm j qqzt0uu Y tαh ` β h : j ď h ď 2k ` 1 is oddu Y R and
+´
+´ pLq “ tµ ` β
+σuv
+j´1 : µ P σuv pLpXm j qqu, where R is given in Proposition 57(2c).
+
+Remark 60. From Theorems 58 and 59, a pair of strongly cospectral vertices in an iterated join graph
+belong to the same Xm j . Consequently, if u and v belong to Xm j and Xmℓ respectively, then PST cannot
+occur between them.
+Our next endeavour is to characterize PST in iterated join graphs, starting with those of the form
+ΓpXm1 , . . . , Xm2k q. We separate the cases when j is odd and j is even. The following result follows from
+combining Corollary 7, Theorem 58, the same argument in the proof of Theorem 23, and the fact that
+αh ` β h “ α j ` γh ` β j´1
+
+(19)
+
+for a fixed odd j and for all even j ď h ď 2k in Theorem 58(1) with γh “ 0 whenever h “ j ` 1 and
+γh “ m j`2 ` m j`4 ` `m j`6 . . . ` mh´1 otherwise, and
+αh ` β h “ α j´1 ` δh ` β j
+
+(20)
+
+for a fixed even j and for all even j ď h ď 2k in Theorem 58(2) with δh “ m j ` m j`1 ` m j`3 ` . . . ` mh´1 .
+22
+
+Theorem 61. Let X “ ΓpXm1 , . . . , Xm2k q, φpLpXq, tq P Zrts and m j ě 2 for some odd j. Consider αh
+and β h in Proposition 57(1) and γh in (19). Two vertices u and v in Xm j admit Laplacian perfect state
+transfer in X if and only if all of the following conditions hold.
+´ pLpX qq or (ii) j “ 1 and
+1. Either (i) u and v are Laplacian strongly cospectral in Xm j and α j R σuv
+mj
+X m 1 “ O2 .
+
+2. The eigenvalues in σu pLpXm j qq are all integers.
+3. One of the following conditions hold.
+` pLpX qqzt0u, µ, θ P
+(a) Xm j is connected and one of the following conditions hold for all λ P σuv
+mj
+´ pLpX qq and even j ď h ď 2k.
+σuv
+mj
+
+i. ν2 pβ j´1 q ą ν2 pµq “ ν2 pθq, ν2 pλq ą ν2 pµq and ν2 pα j ` γh q ą ν2 pµq.
+ii. ν2 pµq ą ν2 pβ j´1 q “ ν2 pλq “ ν2 pα j ` γh q.
+´
+´
+´
+¯
+¯
+¯
+λ`β j´1
+µ`β j´1
+θ`β j´1
+iii. ν2 pβ j´1 q “ ν2 pµq “ ν2 pλq “ ν2 pα j ` γh q, ν2 ν2 pβ j´1
+ą ν2 ν2 pβ j´1
+“ ν2 ν2 pβ j´1
+q
+q
+q
+2
+2
+2
+´
+´
+¯
+¯
+µ`β j´1
+α `β
+and ν2 ν2hpβ j´1h q ą ν2 ν2 pβ j´1
+.
+q
+2
+
+2
+
+(b) Xm j is disconnected and (ai) above holds.
+
+(c) j “ 1, Xm1 “ O2 and ν2 p2 ` γh ` β 0 q ą ν2 pβ0 q for each even 1 ď h ď 2k.
+Further, τX_Y “ πg , where g “ gcd pT q, where T “ σu pLpXqq is given in Proposition 57(1).
+Theorem 62. Let X “ ΓpXm1 , . . . , Xm2k q, φpLpXq, tq P Zrts and m j ě 2 for some even j. Consider αh
+and β h in Proposition 57(1) and δh in (20) Two vertices u and v in Xm j admit Laplacian perfect state
+transfer in X if and only if all of the following conditions hold.
+´ pLpX qq or (ii) X
+1. Either (i) u and v are Laplacian strongly cospectral in Xm j and m j R σuv
+mj
+m j “ O2 .
+
+2. The eigenvalues in σu pLpXm j qq are all integers.
+3. One of the following conditions hold.
+` pLpX qqzt0u, µ, θ P
+(a) Xm j is connected and one of the following conditions hold for all λ P σuv
+mj
+´
+σuv pLpXm j qq and even j ď h ď 2k.
+
+i. ν2 pα j´1 ` β j q ą ν2 pµq “ ν2 pθq, ν2 pλq ą ν2 pµq and ν2 pδh q ą ν2 pµq.
+ii. ν2 pµq ą ν2 pα j´1 ` β j q “ ν2 pλq “ ν2 pδh q.
+´
+´
+¯
+¯
+λ`α j´1 `β j
+µ`α j´1`β j
+iii. ν2 pα j´1 ` β j q “ ν2 pµq “ ν2 pλq “ ν2 pδh q, ν2 ν2 pα j´1
+ą
+ν
+“
+2
+`β j q
+ν pα
+`β q
+2¯
+2 2 j´1 j
+´
+´
+´
+¯
+¯
+θ`α `β j
+µ`α j´1 `β j
+α `β h
+ν2 ν2 pαj´1
+and ν2 ν2 pαhj´1`β
+ą ν2 ν2 pα j´1
+.
+`β j q
+j´1 `β j q
+jq
+2
+
+2
+
+2
+
+(b) Xm j is disconnected and (ai) above holds.
+
+(c) Xm j “ O2 and ν2 pα j´1 ` δh ` β j q ą ν2 pα j´1 ` β j q for each even j ď h ď 2k.
+Further, τX_Y “ πg , where g “ gcd pT q, where T “ σu pLpXqq is given in Proposition 57(1).
+Remark 63. We have the following.
+1. We obtain a characterization for PST between vertices in Xm j in the graph X “ ΓpXm1 , . . . , Xm2k`1 q
+whenever m j ě 2 for some even j ě 2 by replacing ‘even j ď h ď 2k’ with ‘odd j ď h ď 2k ` 1’ in
+Theorem 61.
+23
+
+2. We obtain a characterization for PST between vertices in Xm j in the graph X “ ΓpXm1 , . . . , Xm2k`1 q
+whenever m j ě 2 for some odd j ě 3 by replacing ‘even j ď h ď 2k’ with ‘odd j ď h ď 2k ` 1’ in
+Theorem 62.
+In order to complete our characterization of PST in iterated join graphs, it suffices to determine PST
+between vertices in Xm1 in the graph X “ ΓpXm1 , . . . , Xm2k`1 q by virtue of Remark 63. To do this, we
+combine Corollary 7, Theorem 58, the same argument in the proof of Theorem 23, and the fact that
+αh`1 ` β h “ φh ` β 1
+
+(21)
+
+for all odd 1 ď h ď 2k ` 1 in Theorem 59(1) for a fixed odd j with φh “ m1 ` m2 ` m4 ` m6 ` . . . ` mh´1 .
+Theorem 64. Let X “ ΓpXm1 , . . . , Xm2k`1 q, m1 ě 2 and φpLpXq, tq P Zrts. Consider αh and β h in
+Proposition 57(2) and φh in (21). Two vertices u and v in Xm1 admit Laplacian perfect state transfer in X
+if and only if all of the following conditions hold.
+´ pLpX qq.
+1. Vertices u and v are Laplacian strongly cospectral in Xm1 and m1 ` m2 R σuv
+m1
+
+2. The eigenvalues in σu pLpXm1 qq are all integers.
+3. One of the following conditions hold.
+` pLpX qqzt0u,
+(a) Xm1 is connected and one of the following conditions hold for all λ P σuv
+m1
+´
+µ, θ P σuv pLpXm1 qq and odd 1 ď h ď 2k ` 1.
+
+i. ν2 pβ1 q ą ν2 pµq “ ν2 pθq, ν2 pλq ą ν2 pµq and ν2 pφh q ą ν2 pµq.
+ii. ν2 pµq ą ν2 pβ1 q “ ν2 pλq “ ν2 pφh q.
+´
+´
+¯
+¯
+¯
+´
+µ`β 1
+θ`β 1
+λ`β 1
+iii. ν2 pβ1 q “ ν2 pµq “ ν2 pλq “ ν2 pφh q, ν2 2ν2 pβ1 q ą ν2 2ν2 pβ1 q “ ν2 2ν2 pβ1 q and
+´
+´
+¯
+¯
+α `β
+µ`β
+ν2 2νh2 pβ1hq ą ν2 2ν2 pβ11q .
+
+(b) Xm1 is disconnected and (ai) above holds.
+
+In both cases, u and v belong to the same component in Xm1 .
+Further, τX_Y “ πg , where g “ gcd pT q, where T “ σu pLpXqq is given in Proposition 57(2).
+´ pLpX qq
+Remark 65. If Xm j ‰ K2 is unweighted, then we may drop the condition m1 ` m2 P σuv
+m1
+´ pLpX qq in Theorems 58(1a) and 59(3), and the condition
+in Theorem 59(1), the condition α j R σuv
+mj
+´ pLpX qq in Theorems 58(2a) and 59(2a). The same applies to Theorems 61, 62 and 64.
+m j R σuv
+mj
+
+Remark 66. The conditions in Theorem 61(3c) are equivalent to m1 “ 2 and
+ν2 p2 ` β 0 q ą ν2 pβ0 q,
+
+ν2 p2 ` m3 ` β 0 q ą ν2 pβ0 q,
+
+...
+
+ν2 p2 ` m3 ` m5 ` . . . ` m2k´1 ` β 0 q ą ν2 pβ0 q.
+
+The first inequality above is equivalent to β0 ” 2 (mod 4), and the latter ones yield m j ” 0 (mod 4)
+for all odd j ě 3. Since X “ Z1 _ Xm2k for some disconnected graph Z1 , applying Theorem 23(3ab)
+yields ν2 pm2k q ą ν2 pβ0 q and ν2 pm1 ` m2 ` m4 ` . . . ` m2k´2 q ą ν2 pβ0 q. Now, Corollary 30 implies that
+PST also occurs between u and v in Z2 , where Z2 is the graph such that Z1 “ Z2 Y Xm2k´1 . The same
+argument applied k ´ 2 times yields ν2 pm j q ą ν2 pβ0 q for all even j ě 3 and PST between u and v in
+Zmk´2 “ O2 _ Xm2 . As β 0 ” 2 (mod 4), the former condition is equivalent to m j ” 0 (mod 4) for all even
+j ě 3, while the latter is equivalent to m2 ” 2 (mod 4) by virtue of Theorem 23(3c). These considerations
+imply that Theorem 61(3c) holds if and only if m1 “ 2, m2 ” 2 (mod 4) and m j ” 0 (mod 4) for all j ě 3.
+One can also check that Theorem 64 holds for Xm1 “ K2 if and only if m1 “ 2, m2 ” 2 (mod 4) and
+m j ” 0 (mod 4) for all j ě 3. In both cases, the minimum PST time is π2 .
+24
+
+Corollary 67. Let X be a connected threshold graph. Then Laplacian perfect state transfer occurs in X
+if and only if m1 “ 2, m2 ” 2 (mod 4) and m j ” 2 (mod 4) for all j ě 3. In this case, Laplacian perfect
+state transfer occurs between vertices u and v in Xm1 P tO2 , K2 u with minimum PST time is π2 .
+Proof. By assumption, X P tΓpOm1 , Km1 , . . . , Km2k q, ΓpKm1 , Om1 , . . . , Km2k`1 qu. First, suppose X “
+ΓpOm1 , Km1 , . . . , Km2k q. For two vertices u and v to be strongly cospectral in X, Theorem 19(3) implies
+that they both belong to Om j if j is odd or Km j if j is even. Hence, we have three cases.
+• Let j “ 1. Then vertices u and v of Om1 are strongly cospectral in X if and only if m1 “ 2.
+• Suppose j ě 3 is odd so that vertices u and v both belong to Om j . Then we can write X “ pppY Y
+Om j q _ Km j`1 q Y . . .q _ Km2k for some graph Y. Now, Theorem 19(1) and an inductive argument
+´ pLpX qq or
+implies that either (i) u and v are strongly cospectral in pY Y Xm j q _ Xm j`1 and m j R σuv
+j
+(ii) Y Y Xm j “ O2 . Since Y has at least one vertex, the latter case does not hold. Hence, it must be
+that u and v are strongly cospectral in pY Y Om j q _ Km j`1 . But this implies that u and v are strongly
+cospectral in Om j , which cannot happen since by Theorem 19, the only graph with isolated vertices
+that admit strong cospectrality in the join is O2 , which is not equal to Y Y Om j .
+• Suppose j ě 3 is even so that u and v belong to Km j . Then the same argument as the previous case
+´ pLpX qq. But this implies that
+implies that u and v are strongly cospectral in Y _ Km j and m j R σuv
+j
+´
+u and v are strongly cospectral in Km j , i.e., m j “ 2 P σuv pLpX j qq, which is a contradiction.
+Thus, in X “ ΓpOm1 , Km1 , . . . , Km2k q, only the vertices of Om1 admit strong cospectrality in X, in which
+case m1 “ 2. The same holds for X “ ΓpOm1 , Km1 , . . . , Km2k q. Cmbining this with Remark 66 completes
+the proof.
+
+11 Bounds
+From the previous sections, PST between u and w in X need not guarantee PST between u and v in
+X _ Y. The same can be said about periodicity of a vertex. Thus, we ask, if u, v P VpXq then how far
+can |U M pX _ Y, tqu,v | be from |U M pX, tqu,v | as t ranges over R? We answer this question by providing
+an upper bound for the absolute value of |U M pX _ Y, tqu,v | ´ |U M pX, tqu,v |. To do this, we define
+$ ´itn
+me
+` neitm ´ pm ` nq
+’
+’
+,
+if M “ L
+&
+mpm ` nq
+(22)
+α M ptq “
+`
+´
+’
+eitλ pk ´ λ´ q eitλ pk ´ λ` q eitk
+’
+%
+?
+?
+´
+´
+, if M “ A.
+m
+m D
+m D
+and
+
+TM “
+
+#
+
+t2jπ{g : j P Zu,
+´
+`
+tt P R : eitk “ eitλ “ eitλ u,
+
+if M “ L
+if M “ A,
+
+(23)
+
+where g “ gcdpm, nq and λ˘ are given in Lemma 2. If the context is clear, then we simply write as α M ptq
+and TM as αptq and T, respectively. If we add that k, ℓ P Z and ∆ in Lemma 2 is a perfect square, then we
+may write TA “ t2jπ{h : j P Zu, where h “ gcdpλ` ´ k, λ´ ´ kq.
+Combining (4) and (6) with (22) yields the following lemma.
+Lemma 68. We have α M ptq “ 0 if and only if t P TM . Moreover, for any u, v P VpXq and for all t,
+UL pX _ Y, tqu,v ´ eitn UL pX, tqu,v “ eitn α L ptq
+
+and
+25
+
+U A pX _ Y, tqu,v ´ U A pX, tqu,v “ α A ptq.
+
+11.1 Laplacian case
+Theorem 69. For all u, v P VpXq and for all t
+ˇ
+ˇ
+ˇ UL pX _ Y, tqu,v ´ eitn UL pX, tqu,v ˇ ď 2{m
+
+(24)
+
+with equality if and only if ν2 pmq “ ν2 pnq, in which case equality holds in (24) at time τ “ jπ{g, where j
+is any odd integer and g “ gcdpm, nq. Moreover, if equality holds in (24), then
+| UL pX _ Y, τqu,v ´ eiτn UL pX, τqu,v | “ UL pX _ Y, τqu,v ` UL pX, τqu,v “ 2{m.
+
+(25)
+
+Proof. Lemma 68 yields (24) with equality if and only if eiτm “ eiτn “ ´1 for some τ ą 0. Equivalently,
+ν2 pmq “ ν2 pnq, in which case τ “ jπ{g for some odd j. From this, (25) is immediate.
+Corollary 70. For all u, v P VpXq and for all t,
+ˇ
+ˇ
+ˇ
+ˇ
+ˇ |UL pX _ Y, tqu,v | ´ |UL pX, tqu,v | ˇ ď 2{m
+ˇ
+ˇ
+
+(26)
+
+with equality if and only if ν2 pmq “ ν2 pnq, UL pX, τqu,v P R and either UL pX, τqu,v ď 0 or UL pX, τqu,v ě
+2{m, in which case equality holds in (26) at time τ in Theorem 69.
+(25), we get ˇequality in (26) if and only
+Proof.
+Applying the triangle inequalityˇ to ˇ(24)
+ˇ yields (26). Using
+ˇ
+ˇ
+if ˇ |UL pX _ Y, τqu,v | ´ |UL pX, τqu,v | ˇ “ ˇ ˇ m2 ´ UL pX, τqu,v ˇ ´ |UL pX, τqu,v | ˇ “ m2 . Result follows.
+
+11.2 Adjacency case
+
+The following is an analogue of Theorem 69 for the adjacency case.
+Theorem 71. For all u, v P VpXq and for all t,
+ˇ
+ˇ
+ˇ U A pX _ Y, tqu,v ´ U A pX, tqu,v ˇ ď 2{m
+
+(27)
+
+Consequently, the following equation holds for all t
+ˇ
+ˇ `
+b
+ˇ eitλ pk ´ λ´ q eitλ´ pk ´ λ` q ˇ
+?
+1
+ˇ
+ˇ
+?
+?
+D ` ppk ´ ℓq2 ´ Dq sin2 pt D{2q.
+´
+ˇ“ ?
+ˇ
+ˇ m D
+ˇ
+m D
+m D
+
+(29)
+
+`
+
+´
+
+with equality if and only if there is a time τ ą 0 such that eiτλ “ eiτλ “ ´eiτk , in which case α A ptq “
+´2eiτk {m. If we add that k, ℓ P Z and ∆ in Lemma 2 is a perfect square, then the latter condition yields
+tk, λ˘ u Ď Z and ν2 pλ` ´ kq “ ν2 pλ´ ´ kq, in which case τ “ jπ{h, where h “ gcdpλ` ´ k, λ´ ´ kq
+and j is any odd.
+?
+Proof. Since λ˘ “ 12 pk ` ℓ ˘ Dq, one checks that
+?
+?
+´
+`
+´
+`
+eitλ pk ´ ℓ ` Dq eitλ pk ´ ℓ ´ Dq
+eitλ pk ´ λ´ q eitλ pk ´ λ` q
+?
+?
+?
+?
+´
+“
+´
+m D
+m D
+2m D
+2m D
+(28)
+ı
+?
+?
+1 ”?
+“ ?
+D cospt D{2q ` ipk ´ ℓq sinpt D{2q .
+m D
+
+Since
+D “ pk
+´ ℓq2 ` 4mn, we get that pk ´ ℓq2 ´ D “ ´4mn ă 0. Hence, (29) gives us
+ˇ
+ˇ ` mn ą 0 and
+ˇ eitλ pk´λ´ q eitλ´ pk´λ` q ˇ
+1
+ˇ
+ˇ
+ˇ m?D ´ m?D ˇ ď m . Combining this with (6) yields
+26
+
+ˇ
+ˇ
+ˇ
+ˇ ˇ eitλ` pk´λ´ q eitλ´ pk´λ` q ˇ 1
+2
+ˇU A pX _ Y, tqu,v ´ U A pX, tqu,v ˇ ď ˇ
+ˇ
+ˇ m? D ´ m?D ˇ ` m ď m
+
+which establishes (27). Using the first equality in (28), we can write (6) as
+U A pX _ Y, tqu,v ´ U A pX, tqu,v “ e
+
+itλ` pk´ℓ`
+
+?
+
+?
+
+Dq
+
+2m D
+
+´e
+
+itλ´ pk´ℓ´
+
+?
+
+?
+
+Dq
+
+2m D
+
+itk
+
+´ em .
+
+Thus, equality holds in (27) if and only if there is a time τ such that
+´
+
+`
+
+eiτλ “ eiτλ “ ´eiτk ,
+
+(30)
+
+itk
+
+in which case, U A pX _ Y, tqu,v ´ U A pX, tqu,v “ ´ 2em . This implies that tk, λ˘ u satisfies the ratio
+condition. Thus, if k, ℓ P Z and D is a perfect square, then Lemma 6 yields tk, λ˘ u Ď Z. Hence, (30)
+holds if and only if ν2 pλ` ´ kq “ ν2 pλ´ ´ kq, in which case τ “ jπ{g for any odd integer j.
+Corollary 72. For all u, v P VpXq and for all t,
+ˇ
+ˇ
+ˇ
+ˇ
+ˇ |U A pX _ Y, tqu,v | ´ |U A pX, tqu,v | ˇ ď 2{m
+ˇ
+ˇ
+
+(31)
+
+with equality if and only if the bound in (27) holds at time τ in Theorem 71, U A pX, τqu,v “ |U A pX, τqu,v |eiτk
+and |U A pX, τqu,v | ě 2{m.
+Proof. Again applying
+use of Theorem 71, we get equality
+ˇ triangle inequality to (27) yields (31). Making
+ˇ
+in (31) if and only if ˇ |U A pX, τqu,v ´ 2eiτk {m | ´ |U A pX, τqu,v | ˇ “ 2{m. Thus, our result is immediate.
+Combining Corollary 70 and 72 yields the following result.
+
+Corollary 73. Let M P tA, Lu. For all u, v P VpXq and for all t,
+ˇ
+ˇ
+ˇ
+ˇ
+ˇ |U M pX _ Y, tqu,v | ´ |U M pX, tqu,v | ˇ Ñ 0 as m Ñ 8.
+ˇ
+ˇ
+
+From Corollary 73, we find that for vertices in X, the state transfer properties of the quantum walk on
+X _ Y tend to mimic those of the quantum walk on X, as we increase the number of vertices of X.
+
+11.3 Tightness
+ˇ
+Defineˇ Fptqu,v :“ |U M pX _ Y, tqu,v | ´ |U M pX, tqu,v |. From Lemma 68, Fptqu,v “ ˇU M pX, tqu,v `
+α M ptqˇ ´ |U M pX, tqu,v |. for any u, v P VpXq. We now illustrate that the values of Fptqu,v can be zero,
+positive or negative.
+Lemma 74. The following are immediate from (23).
+
+1. If τ P TM then α M pτq “ 0, and so Fpτqu,v “ 0.
+2. If U M pX, τqu,v “ 0 for some τ P RzTM , then Fpτqu,v “ |α M pτq| ą 0. If X is disconnected and u
+and v are in different connected components, then U M pX, tqu,v “ 0 for all t P R, and so Fptqu,v ą 0
+for all t P RzTM .
+3. Let |U M pX, τqu,v | “ 1 for some τ P RzTM . Since α M ptq ‰ 0 and |U M pX _ Y, tqu,v | ď 1, we
+get Fpτqu,v ă 0. If u is isolated in X, then U M pX, tqu,u “ 1 for all t, and so Fptqu,u ă 0 for all
+t P RzTM .
+27
+
+We now use Lemma 74 to show that under mild conditions on m and n, if X has PST between u and v,
+then there are choices of t for which |Fptqu,v | “ 2{m. Thus, the bounds in Corollaries 70 and 72 are tight.
+Example 75. Suppose X exhibits Laplacian PST between u and v at π{2. Let τ “ rπ for any odd r
+so that UL pX, τ{2qu,v “ 1 and UL pX, τ{2qu,u “ 0. If ν2 pmq “ ν2 pnq “ 1, then we can write TL “
+tjπ{g1 : j P Zu, where g1 “ g{2 is odd. Hence, τ{2 P RzTL . In this case, α L pτ{2q “ ´ m2 , and so
+Fpτ{2qu,u “ ´Fpτ{2qu,v “ m2 .
+Example 76. Suppose X admits adjacency PST between u and v at π{2. Let k, ℓ P Z and ∆ be a perfect
+square so that, k, λ` and λ´ are integers. Let τ “ rπ for any odd r so that U A pX, τ{2qu,v “ eiτk{2 and
+U A pX, τ{2qu,u “ 0. If ν2 pλ` ´ kq “ 1 and ν2 pλ´ ´ kq “ 1, then we can write TA “ tjπ{h1 : j P Zu
+iτk{2
+where h1 “ h{2 is odd. Thus, τ{2 P RzTA , and so α A pτ{2q “ ´ 2e m , which yields Fpτ{2qu,u “
+´Fpτ{2qu,v “ m2 .
+One checks that disconnected double cones with PST at π2 satisfy the conditions in Examples 75 and
+76, and so they provide infinite families of graphs whereby the upper bound in Corollaries 70 and 72 is
+met.
+
+12 Future work
+In this paper, we investigated strong cospectrality, periodicity and perfect state transfer in join graphs, and
+characterized the conditions in which these properties are preserved or induced in a join. In order to inspire
+further systematic study of quantum walks on join graphs, we present some open questions.
+If X is a weighted join graph on an odd number of vertices and φpLpXq, tq P Zrts, then Corollary 25
+implies that Laplacian PST does not occur in X. This is also known to be true for unweighted graphs on
+n P t3, 5u vertices, which are not necessarily joins. This leads us to conjecture the following.
+Conjecture 77. If X is a simple connected unweighted graph on an odd number of vertices, then Laplacian
+perfect state transfer does not occur in X.
+We note however that if X is a weighted join graph with an odd number of vertices, then it is possible to
+get PST in X if we drop the condition that φpLpXq, tq P Zrts. Indeed, if X is a weighted K2 with vertices
+u and v joined by an edge of weight ba ą 0 where a ą 0 is odd and b ” 0 (mod 4), then φpLpXq, tq R Zrts,
+but one checks that X _ O1 is a weighted K3 with PST between u and v at time 2π
+3 .
+Next, observe
+that
+X
+is
+an
+induced
+subgraph
+of
+X
+_
+Y.
+In
+Corollaries
+70
+and
+72, we showed for M P
+ˇ
+ˇ
+ˇ
+ˇ
+tA, Lu that |U M pX _ Y, tqu,v | ´ |U M pX, tqu,v | ď f p|VpXq|q for all t, where f p|VpXq|q “ 2{|VpXq|,
+and this inequality is tight for infinite families. In general, if X is a subgraph
+of Z induced by W Ď VpZq
+ˇ
+ˇ
+with |W| ě 2, then for u, v P VpXq, we ask: what is an upper bound for ˇ|UˇM pZ, tqu,v | ´ |U M pX, tqu,v |ˇ inˇ
+terms of |W|? In particular, if X is either complete or empty, what is suptą0 ˇ|U M pZ, tqu,v |ˇ´ |U M pX, tqu,v |ˇ?
+73, we further ask: for which induced subgraphs X of Z does ˇ|U M pZ, tqu,v | ´
+In line with Corollary
+ˇ
+ˇ
+|U M pX, tqu,v | Ñ 0 for all t as |VpXq| Ñ 8?
+If X “ Km and Y is a graph on m vertices, then we have proof for M P tA, Lu that |U M pX _ Y, tqu,v | ´
+|U M pX, tqu,v | “ 0 if and only if t belongs to some countable set. Hence, we pose the question, are there
+families of graphs such that for some set T with positive measure, |U M pX _ Y, tqu,v | ´ |U M pX, tqu,v | “ 0
+for all t P T?
+Finally, one of the surprising results in this paper is that the join operation can induce PST in the
+resulting graph under mild conditions. Owing to the fact that adjacency PST is rare in unweighted graphs
+[God12, Corollary 10.2], it would be interesting to determine other graph operations that induce PST in
+28
+
+the resulting graph. In [BMP23, Theorem 12], the authors show that the blow-up operation exhibits this
+property for some families of graphs (such as the blow-up of two copies of K1,n ). However, under Cartesian
+products, PST between vertices pu, vq and pw, xq with pu, vq ‰ pw, xq requires that either (i) u and w, and
+v and x admit PST in the underlying graphs (ii) u and w admit PST and v “ x is periodic in the underlying
+graphs or (iii) u “ w is periodic and v and w admit PST in the underlying graphs. Hence, the Cartesian
+product cannot induce PST in the resulting graph.
+
+Acknowledgements
+H. Monterde is supported by the University of Manitoba Faculty of Science and Faculty of Graduate
+Studies. S. Kirkland is supported by NSERC Discovery Grant RGPIN-2019-05408.
+
+References
+[ACNO` 09] Ricardo Angeles-Canul, Rachael Norton, Michael Opperman, Christopher Paribello, Matthew Russell, and
+Christino Tamon, On quantum perfect state transfer in weighted join graphs, International Journal of Quantum
+Information 07 (2009), no. 08, 1429–1445. Ò2
+[ACNO` 10]
+
+, Perfect state transfer, integral circulants, and join of graphs, Quantum Information and Computation 10
+(2010), no. 3-4, 0325–0342. Ò1
+
+[ADL` 16] Rachael Alvir, Sophia Dever, Benjamin Lovitz, James Myer, Christino Tamon, Yan Xu, and Hanmeng Zhan, Perfect
+state transfer in Laplacian quantum walk, Journal of Algebraic Combinatorics 43 (2016), no. 4, 801–826. Ò2, 4, 18
+[BCMS09] Sougato Bose, Andrea Casaccino, Stefano Mancini, and Simone Severini, Communication in XYZ all-to-all quantum networks with a missing link, International Journal of Quantum Information 7 (2009), no. 4, 713–723. Ò1
+[BFK11] S. Barik, S. Fallat, and S. Kirkland, On Hadamard diagonalizable graphs, Linear Algebra and Its Applications 435
+(2011), no. 8. Ò14
+[BMP23] Bikash Bhattacharjya, Hermie Monterde, and Hiranmoy Pal, Quantum walks on blow-up graphs, 2023. Ò29
+[CG21] Gabriel Coutinho and Chris Godsil, Graph Spectra and Continuous Quantum Walks (2021), available at
+https://www.math.uwaterloo.ca/~cgodsil/quagmire/pdfs/GrfSpc3.pdf. Ò4, 5
+[CJL` 21] Ada Chan, Bobae Johnson, Mengzhen Liu, Malena Schmidt, Zhanghan Yin, and Hanmeng Zhan, Laplacian fractional revival on graphs, Electronic Journal of Combinatorics 28 (2021), no. 3. Ò2
+[God12] Chris Godsil, State transfer on graphs, Discrete Mathematics 312 (2012), no. 1, 129–147. Ò28
+[JKP` 17] Nathaniel Johnston, Steve Kirkland, Sarah Plosker, Rebecca Storey, and Xiaohong Zhang, Perfect quantum state
+transfer using Hadamard diagonalizable graphs, Linear Algebra and Its Applications 531 (2017), 375–398. Ò2, 14
+[KMP23] Steve Kirkland, Hermie Monterde, and Sarah Plosker, Quantum state transfer between twins in weighted graphs,
+Journal of Algebraic Combinatorics (2023). Ò1, 2, 6, 16
+[KS11] Steve Kirkland and Simone Severini, Spin-system dynamics and fault detection in threshold networks, Phys. Rev.
+A 83 (2011), 012310. Ò21
+[MMP23] Darian McLaren, Hermie Monterde, and Sarah Plosker, Weak hadamard matrices and weakly hadamard diagonalizable graphs, 2023. Ò2
+[Mon22] Hermie Monterde, Strong cospectrality and twin vertices in weighted graphs, Electronic Journal of Linear Algebra
+38 (2022), 494–518. Ò2, 10, 11
+[Mon23a]
+
+, Fractional revival between twin vertices, Linear Algebra and Its Applications 676 (2023). Ò2
+
+[Mon23b]
+
+, Sedentariness in quantum walks, Quantum Information Processing 22 (2023), no. 7. Ò2
+
+29
+
+

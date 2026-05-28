@@ -1,0 +1,1810 @@
+Of Shadows and Gaps in Spatial Search
+Ada Chan∗
+
+Chris Godsil†
+
+Christino Tamon‡
+
+Weichen Xie§
+
+arXiv:2204.04355v2 [quant-ph] 30 Aug 2022
+
+September 1, 2022
+
+Abstract
+Spatial search occurs in a connected graph if a continuous-time quantum
+walk on the adjacency matrix of the graph, suitably scaled, plus a rank-one
+perturbation induced by any vertex will unitarily map the principal eigenvector
+of the graph to the characteristic vector of the vertex. This phenomenon is a
+natural continuous-time analogue of Grover search. The spatial search is said to
+be optimal if it occurs with constant fidelity and in time inversely proportional
+to the shadow of the target vertex on the principal eigenvector. Extending a
+result of Chakraborty et al. (Physical Review A, 102:032214, 2020), we prove a
+simpler characterization of optimal spatial search. Based on this characterization,
+we observe that some families of distance-regular graphs, such as Hamming and
+Grassmann graphs, have optimal spatial search. We also show a matching lower
+bound on time for spatial search with constant fidelity, which extends a bound
+due to Farhi and Gutmann for perfect fidelity. Our elementary proofs employ
+standard tools, such as Weyl inequalities and Cauchy determinant formula.
+Keywords: Quantum walk, spatial search, spectral gap, perturbation.
+
+1
+
+Introduction
+
+In the seminal work [1], Grover described a quantum algorithm with a provable
+quadratic speedup for the ubiquitous search problem. It was realized later that his algorithm can be viewed as a discrete-time quantum walk on the complete graph [2, 3].
+In another fundamental work, Farhi and Gutmann [4] proposed a continuous-time
+analog of Grover search. Their work was generalized by Childs and Goldstone [5] to
+arbitrary graphs where the problem is known as spatial search.
+Suppose G is an undirected and connected graph on n verticesPwith normalized
+adjacency matrix A whose spectral decomposition is given by A = dr=1 θr Er , where
+1 = θ1 > θ2 > . . . > θd ≥ 0 and Er is the orthogonal projection onto the eigenspace
+∗
+
+Department of Mathematics and Statistics, York University.
+Department of Combinatorics and Optimization, University of Waterloo.
+‡
+Department of Computer Science, Clarkson University. Contact: tino@clarkson.edu.
+§
+Department of Mathematics, Clarkson University
+†
+
+1
+
+Figure 1: Grover search in continuous-time (see Farhi and Gutmann [4]): a
+continuous-time quantum walk with H = γA(Kn ) + ew eTw can perfectly transfer the
+√
+density matrix E1 = n1 Jn to the target state ew eTw , for some γ > 0, in time π2 n.
+Here, ew denote the unit vector associated to vertex w of the clique.
+
+corresponding to θr . We say G has optimal spatial search if for any vector w (which
+may correspond to the characteristic vector of a vertex of G), the continuous-time
+quantum walk
+ρ(t) = e−itH ρ(0)eitH
+with the time-independent Hamiltonian H = γA + ww† , for a scaling factor γ > 0,
+maps the density matrix ρ(0) = E1 to the target state ww† with a constant fidelity,
+that is,
+f (t) := Tr(ww† ρ(t)) = Ωn (1),
+in time t = On (1/1 ), where 1 = kE1 wk is the shadow of the target vertex on the
+principal eigenspace of G.
+Farhi and Gutmann [4] showed that the complete graphs have spatial search
+(which recovers Grover’s result in the continuous-time setting). They also proved
+√
+a time lower bound of Ωn ( n) for any continuous-time quantum algorithm with unit
+fidelity on vertex-transitive graphs. As our first result, we strengthen their time lower
+bound to Ωn (1/1 ) which holds for constant fidelity (instead of perfect). This lower
+bound justifies the requirement that the optimal time is On (1/1 ).
+Chakraborty et al. [6] observed a striking property: a constant spectral gap ∆2 is
+sufficient for optimal spatial search. Here, ∆2 = θ1 −θ2 is the distance between the two
+largest normalized eigenvalues of the graph. In particular, this implies that random
+graphs exhibit spatial search property almost surely. But, this does not explain why
+the n-cube has spatial search (studied by Childs and Goldstone [5]) since the spectral
+gap vanishes as n grows.
+Subsequently, Chakraborty et al. [7] improved the observation from [6] by showing
+a characterization of optimal spatial search under the assumption of
+1 
+
+S1 S2
+S3
+
+and 1 
+2
+
+p
+S2 ∆2 ,
+
+(1)
+
+P
+where Sk = dr=2 kEr wk2 (θ1 − θr )−k , for k = 1, 2, 3, are spectral parameters related
+to the graph G. Another crucial observation made in [7] is that S1 is the best choice
+for the scaling parameter γ. As stated in [7], the unconditional characterization of
+graphs with optimal spatial search is a longstanding open question.
+In this work, we improve the result of Chakraborty et al. [7] by showing a characterization of optimal spatial search under the simpler assumption
+p
+1  S1 ∆2 ,
+also under the choice of γ = S1 . We show that our assumption is asymptotically similar to the second condition in Equation (1) for the relevant ranges of interest. Our
+improvement is obtained through tighter estimates on the leading eigenvalue perturbations derived from a determinant formula of Cauchy. We also observe a critical
+condition (hidden in previous analyses) for the strict interlacing between pairs of the
+two largest eigenvalues of the matrices, before and after perturbation. For this, we
+explicitly require the second largest eigenvalue of the graph belong to the eigenvalue
+support of the target vertex, and then appeal to Weyl inequalities to provide strict
+interlacing.
+We then apply the characterization to provide new examples of graphs with optimal spatial search and to offer alternative proofs for existing families. For example,
+we observe that the Hamming graphs H(n, q), for any constant q, have optimal spatial
+search. As a special case, this include the binary n-cube H(n, 2) which was observed
+by Childs and Goldstone [5]. For another example, we observe that strongly regular
+graphs have optimal spatial search since they also have constant spectral gap. This
+confirms the observation of Janmark et al. [8] obtained using degenerate perturbation
+theory.
+For distance regular graphs with larger diameter, Wong [9] and then Tanaka et
+al. [10] proved that the Johnson graphs J(n, k), for constant k ≥ 3, have spatial search.
+Since the constant spectral gap condition holds for Johnson graphs, this provides an
+alternative and immediate proof that they have optimal spatial search. Moreover, we
+also observe that Grassmann graphs and, in fact, most bounded diameter distanceregular graphs with classical parameters have optimal spatial search (see Figure 2).
+Both of these are again consequences of the constant spectral gap condition.
+Our original motivation for this work was to understand obstructions to optimal
+spatial search. To this end, we found a collection of necessary conditions for spatial
+search which are largely based on techniques used in [7]. Aside from being a crucial
+ingredient for proving the tight characterization, these necessary conditions provide
+asymptotic explanations why certain families of graphs lack the spatial search property. For example, they can be used to show explicitly why cycles lack optimal spatial
+search – a well-known folklore result. These conditions can potentially be adapted to
+other classes such as a small Cartesian product of cycles.
+The proofs we employ are elementary as they only use basic tools from matrix
+theory which do not appeal to perturbative methods. We nevertheless adopt stan3
+
+dard asymptotic arguments commonly used in random graphs and complexity of
+algorithms.
+
+2
+
+Background
+
+We assume the standard inner product hv, wipover Cn . All vectors are assumed
+normalized under the 2-norm defined by kwk = hw, wi. The set of all n×n matrices
+with complex entries
+pis denoted Matn (C). As with vectors, we define the 2-norm of
+a matrix as kAk = hA, Ai, where hA, Bi = Tr(A† B) is the inner product between
+matrices. The spectrum Spec(A) of a matrix A is the set of its eigenvalues. In this
+work, we will focus primarily on Hermitian matrices whose eigenvalues are guaranteed
+to be real. We adopt the notation λi (A) to represent the ith largest eigenvalue of the
+matrix A. We call a Hermitian matrix normalized if its spectrum lies in [0, 1] and 1
+is a simple eigenvalue; so, in this case 1 = λ1 (A) > λ2 (A) ≥ . . . ≥ λn (A) ≥
+P0.
+In stating the spectral decomposition of a Hermitian matrix, say A = dr=1 θr Er ,
+we always assume the distinct eigenvalues are listed in decreasing order, that is,
+θ1 > θ2 > . . . > θd . Recall that Er is the orthogonal projection onto the
+P eigenspace
+corresponding to eigenvalue θr where Er is Hermitian with Er2 = Er , dr=1 Er = I,
+and Er Es = Er if r = s and is 0 otherwise. The eigenvalue support of a vector w ∈ Cn
+with respect to A is defined as
+SuppA (w) = {θr : kEr wk 6= 0},
+
+(2)
+
+which is the set of eigenvalues whose eigenspaces are not fully contained in the subspace w⊥ . For each positive integer k, we let
+Sk =
+
+d
+X
+kEr wk2
+.
+(θ1 − θr )k
+
+(3)
+
+r=2
+
+These are spectral parameters which will play an important role in characterizing
+optimal spatial search. They originally appeared in Childs and Goldstone [5]. Further
+background on matrix theory may be found in Horn and Johnson [11].
+Asymptotics We use the standard asymptotic notation to compare the relative
+order of magnitude of two sequences of numbers fn and gn depending on a parameter
+n → ∞. Our main source is Janson et al. [12]. We assume fn , gn > 0 for sufficiently
+large n. We write:
+• fn . gn or fn = On (gn ) as n → ∞ if there exist constants c, n0 > 0 such that
+fn ≤ cgn for n ≥ n0 .
+• fn & gn or fn = Ωn (gn ) as n → ∞ if there exist constants c, n0 > 0 such that
+fn ≥ cgn for n ≥ n0 .
+4
+
+• fn  gn or fn = Θn (gn ) as n → ∞ if fn = On (gn ) and fn = Ωn (gn ).
+• fn  gn or fn = on (gn ) if fn /gn → 0 as n → ∞.
+• fn  gn or fn = ωn (gn ) if gn /fn → 0 as n → ∞.
+• fn ∼ gn if fn /gn → 1 as n → ∞.
+We omit the expression “as n → ∞” when it is clear from context. Given that most
+results are asymptotic, we assume that n is sufficiently large without explicitly stating
+this.
+Our focus is on a family of graphs {Gn }∞
+n=1 instead of individual graphs, and
+hence most assertions are asymptotic in nature and will depend on n as it tends to
+∞. When it is clear, we simply write Gn for the family of graphs, and even simply
+G if n is understood from context. Given a graph G = (V, E) that is undirected,
+its adjacency matrix A(G) is a matrix whose (u, v)-entry is 1 if (u, v) ∈ E, and is 0
+otherwise. In this work, we will allow the adjacency matrix be a Hermitian matrix
+whose nonzero entries are complex valued, and will denote it as H(G). For example,
+this may include the case of signed graphs (±1 entries) or complex oriented graphs
+(±i entries).
+A continuous-time quantum walk on G with a Hermitian adjacency matrix H(G)
+is governed by the Schrödinger equation defined by
+ρ0 (t) = −i[H(G), ρ(t)]
+
+(4)
+
+where ρ(t) is a positive semidefinite matrix of unit trace (also called a density matrix).
+Here, [A, B] = AB − BA denotes the commutator of two matrices A, B ∈ Matn (C).
+The solution of the above equation is given by
+ρ(t) = e−itH(G) ρ(0)eitH(G) .
+We adopt the density matrix formulation of the Schrödinger evolution since it leads
+to simpler analyses overall (as global phase factors disappear, for example) and it can
+be easily generalized to more realistic settings. For more background on quantum
+information, please see Nielsen and Chuang [13]
+Given that spatial search is heavily influenced by the seminal work [1], in the rest
+of this paper we will call a graph with the optimal spatial search property Groverian.
+2.1 Definition Let {Gn } be a family of graphs with normalized adjacency matrix
+H(Gn ) where E1 is the orthogonal projection onto its principal eigenspace. We say
+Gn is γ-Groverian if for any w ∈ Cn with kE1 wk 6= 0, the density matrix evolution
+defined by
+ρ(t) = U (t)ρ(0)U (t)−1 ,
+with ρ(0) = E1 ,
+where U (t) = exp(−it(γH(Gn ) + ww† )), there is a time τ = On (1/ kE1 wk) so that
+the fidelity satisfies
+f (τ ) := Tr(ww† ρ(τ )) = Ωn (1).
+(5)
+5
+
+The family of graphs is Groverian if it is γ-Groverian for some γ > 0.
+The condition on time is the quadratic speedup requirement that is the hallmark
+signature of Grover search. This is because the probability of measuring w given the
+state E1 is kE1 wk2 , and hence generating w has a geometric time of 1/ kE1 wk2 .
+For a spatial search algorithm to be fully constructive, most previous works require
+the graphs be vertex transitive. This assumption was made in Farhi and Gutmann
+[4] and in Childs and Goldstone [5]. This guarantees that the choice of the scaling
+parameter γ and the time t in Definition 2.1 are not dependent on the vertex w. But,
+as pointed out by Meyer and Wong [14], we can also allow graphs whose automorphism
+group has a constant number of orbits. They observed that the search algorithm can
+simply check each orbit separately as most of the relevant spectral parameters are
+constant within each orbit∗ . Note that a vertex transitive graph has only a single
+orbit. In this work, we will place the same assumption on our graphs.
+Given that most of our statements hold for Hermitian matrices, we will view graphs
+largely through their Hermitian adjacency matrices. To that end, we fix a convenient
+terminology to capture a triplet of a Hermitian matrix, a unit norm vector and a
+positive scalar that will play a central role in all of our assertions.
+2.2 Assumption We call (H, w, γ) a tuplet if the following (notational) assumptions
+hold.
+(a) H ∈ MatP
+n (C) is a normalized Hermitian matrix whose spectral decomposition
+is H = r θr Er . Recall that as H is normalized, its eigenvalues lie in [0, 1]
+and 1 is a simple eigenvalue.
+(b) w ∈ Cn is a vector with unit norm which satisfies kE1 wk 6= 0 and kE1 wk =
+on (1). Whenever it is clear from context, we will use the abbreviated notation
+1 := kE1 wk.
+†
+(c) γ ∈ R is a positive scalar
+P whereby the perturbed matrix γH + ww has the
+spectral decomposition p ζp Fp .
+
+3
+
+Time Lower Bounds
+
+We motivate the condition on time in Definition 2.1. Farhi and Gutmann [4] proved
+√
+that spatial search with fidelity 1 on a vertex-transitive graph requires time Ωn ( n).
+We extend their result to show a time lower bound of Ωn (1/1 ) for constant fidelity
+√
+which applies to arbitrary graphs. Note that 1 = 1/ n for vertex-transitive graphs
+whenever w denote the characteristic vector of a vertex. This matching lower bound
+justifies the choice of the optimal time.
+∗
+
+A pertinent example given in [14] is the barbell graph obtained from connecting two disjoint
+cliques Kn by a single edge; this graph has two orbits with sizes 2 and 2n − 2, respectively.
+
+6
+
+3.1 Theorem Let (H, w, γ) be a tuplet where H is γ-Groverian at time τ . Then,
+τ = Ωn (1/1 ).
+Proof. The first part of the proof follows [4] but in the density matrix language. Let
+Hw = H0 + ww† , where H0 = γH. We compare two density matrix evolutions given
+by
+ρ0w (t) = −i[Hw , ρw (t)], ρ00 (t) = −i[H0 , ρ0 (t)]
+(6)
+with ρw (0) = ρ0 (0) = E1 . Note ρ0 (t) = E1 for all t. Assume for now that the fidelity
+is one or ρw (τ ) = ww† . We will remove this assumption later.
+The proof proceeds by analyzing bounds on kρw (t) − ρ0 (t)k2 . First, by taking
+derivative, we have
+d
+kρw (t) − ρ0 (t)k2 = −2hρw (t), ρ0 (t)i0 .
+dt
+From the product rule and Equation (6), we see that
+hρw (t), ρ0 (t)i0 = hρw (t), ρ00 (t)i + hρ0w (t), ρ0 (t)i
+= ih[Hw , ρw (t)], E1 i
+= ihw, [E1 , ρw (t)]wi.
+Now, notice that
+|hw, [E1 , ρw (t)]wi| ≤ 2|hw, E1 ρw (t)wi|, as |x† [A, B]x| ≤ 2|x† (AB)x|
+≤ 2 kE1 wk kρw (t)wk , since |ha, bi| ≤ kak kbk
+≤ 21 ,
+
+because kρw (t)wk ≤ 1.
+
+Putting these together, we get
+d
+kρw (t) − ρ0 (t)k2 ≤ 41 .
+dt
+By the Fundamental Theorem of Calculus, we obtain
+
+Z τ
+d
+2
+2
+kρw (t) − ρ0 (t)k dt ≤ 41 τ.
+kρw (τ ) − ρ0 (τ )k =
+dt
+0
+
+(7)
+
+Since ρw (τ ) = ww† , we have kρw (τ ) − ρ0 (τ )k2 = 2(1 − 21 ), and therefore
+1 − 21 ≤ 21 τ,
+which yields the lower bound τ = Ωn (1/1 ).
+2
+Finally, we remove the assumption ρw (τ ) = ww† . Suppose that ρw (τ ) − ww† ≤
+δ, for some δ ∈ (0, 1). Our strategy is to reduce this case to the former case by using
+the following inequality.
+7
+
+3.2 Fact (Triangle Inequality for Squared Norm) For matrices A, B, C ∈ Matn (C),
+kA − Ck2 ≤ 2 kA − Bk2 + 2 kB − Ck2 .
+Proof. Squaring the triangle inequality, we get
+kA − Ck2 ≤ kA − Bk2 + kB − Ck2 + 2 kA − Bk kB − Ck .
+Now, observe 0 ≤ (kA − Ck − kB − Ck)2 .
+Applying Fact 3.2, we see that
+2 kρw (τ ) − ρ0 (τ )k2 ≥ ww† − ρ0 (τ )
+
+2
+
+− 2 ρw (τ ) − ww†
+
+2
+
+≥ ww† − ρ0 (τ )
+
+2
+
+− 2δ.
+
+Thus, we have
+kρw (τ ) − ρ0 (τ )k2 ≥ (1 − 21 − δ)
+which can be combined with Equation (7) to obtain τ = Ωn (1/1 ).
+
+4
+
+Interlacing
+
+We review some relevant tools from matrix theory and prove a few preliminary results.
+
+4.1
+
+Weyl Inequalities
+
+A theorem of Weyl on eigenvalue interlacing is key to our analysis. Given that we
+restate the theorem slightly, we prove it for completeness.
+4.1 Lemma (Subspace intersection, Lemma 4.2.3 in [11])
+n
+Let W1 , . . . , Wk be
+Tksubspaces of C and let d = dim W1 + . . . + dim Wk − (k − 1)n. If
+d ≥ 1, then dim( i=1 Wi ) ≥ d. In particular, there is a unit vector in W1 ∩ . . . ∩ Wk .
+Proof. Note that dim(W1 ∩ W2 ) + dim(W1 + W2 ) = dim W1 + dim W2 , which implies
+dim(W1 ∩ W2 ) ≥ dim W1 + dim W2 − n. So, if dim W1 + dim W2 − n ≥ 1, then W1 ∩ W2
+contains a nonzero vector. The claim follows by induction.
+4.2 Theorem (Weyl Interlacing, restatement of Lemma 4.3.1 in [11])
+Let A, B be two n × n Hermitian matrices. For i = 1, . . . , n, we have
+λi (A + B) ≤ λi−j (A) + λj+1 (B),
+
+j = 0, . . . , i − 1
+
+(8)
+
+with equality if and only if there is v 6= 0 so that (A + B)v = λi (A + B)v, Av =
+λi−j (A)v, and Bv = λj+1 (B)v, and we have
+λi+j (A) + λn−j (B) ≤ λi (A + B),
+
+j = 0, . . . , n − i
+
+(9)
+
+with equality if and only if there is v 6= 0 so that (A + B)v = λi (A + B)v, Av =
+λi+j (A)v, and Bv = λn−j (B)v.
+8
+
+Proof. For i = 1, . . . , n, let zi , xi , and yi be orthonormal eigenvectors of A, B, and
+A + B, respectively, corresponding to their ith largest eigenvalues.
+We define W1 = span{zi−j , . . . , zn }, W2 = span{xj+1 , . . . , xn }, and W3 = span{y1 , . . . , yi }.
+Let d1 = dim W1 = n − i + j + 1, d2 = dim W2 = n − j, and d3 = dim W3 = i. Since
+dim(W1 ∩ W2 ∩ W3 ) = d1 + d2 + d3 − dim(W1 + W2 + W3 ) ≥ d1 + d2 + d3 − 2n = 1, the
+subspace W1 ∩W2 ∩W3 contains a nonzero vector v. For any nonzero v ∈ W1 ∩W2 ∩W3 ,
+we have
+λi (A + B) ≤ v † (A + B)v ≤ λi−j (A) + λj+1 (B), for j = 0, . . . , i − 1.
+
+(10)
+
+Equality is achieved for i, j if and only if there is a nonzero v ∈ W1 ∩ W2 ∩ W3 for
+which (A + B)v = λi (A + B)v, Av = λi−j (A)v, and Bv = λj+1 (B)v.
+For the second inequality, observe that λi (−A) = −λn−i+1 (A). Therefore,
+− λn−i+1 (A + B) = λi (−A − B) ≤ λi−j (−A) + λj+1 (−B) = −λn−i+j+1 (A) − λn−j (B)
+(11)
+which implies
+λn−i+j+1 (A) + λn−j (B) ≤ λn−i+1 (A + B).
+(12)
+Now, rename n − i + 1 to i and keep j (and hence n − i + j + 1 to i + j). This yields
+λi+j (A) + λn−j (B) ≤ λi (A + B), for j = 0, . . . , n − i.
+
+(13)
+
+Equality is achieved for i, j if and only if there is a nonzero v ∈ W1 ∩ W2 ∩ W3 for
+which (A + B)v = λi (A + B)v, Av = λi+j (A)v, and Bv = λn−j (B)v with W1 =
+span{z1 , . . . , zi+j }, W2 = span{x1 , . . . , xn−j }, and W3 = span{yi , . . . , yn }.
+4.3 Lemma (Strict Interlacing)
+n×n Hermitian matrix with
+P Let H be a normalized
+n
+spectral decomposition H = r θr Er . Let w ∈ C be a vector with unit norm where
+θ1 , θ2 ∈ SuppH (w). Then for any γ > 0, the two largest eigenvalues of γH + ww† are
+simple and they strictly interlace the two largest eigenvalues of γH.
+Proof. We apply Theorem 4.2 with A = γH and B = ww† . Note λ1 (H) = λ1 (ww† ) =
+1 are simple eigenvalues, and λj (ww† ) = 0 for j = 2, . . . , n. From Equation (9), with
+i = 1 and j = 0, we get
+λ1 (γH) + λn (ww† ) = λ1 (γH) ≤ λ1 (γH + ww† ).
+
+(14)
+
+Similarly, from Equation (8), with i = 2 and j = 1, we get
+λ2 (γH + ww† ) ≤ λ1 (γH) + λ2 (ww† ) = λ1 (γH).
+
+(15)
+
+Both of the inequalities above are strict since λ1 (H) is simple and E1 w 6= 0 implies
+ww† z1 6= 0 where z1 is the principal eigenvector with z1 z1 † = E1 .
+Next, we apply Theorem 4.2 with i = 2 and j = 0 in Equation (9), to get
+λ2 (γH) + λn (ww† ) = λ2 (γH) ≤ λ2 (γH + ww† ).
+9
+
+(16)
+
+Since θ2 ∈ SuppH (w), there exists an eigenvector z2 corresponding to λ2 (H) so that
+ww† z2 6= 0. For any nonzero vector v from the subspace W1 ∩W2 ∩W3 (as constructed
+in the proof of Theorem 4.2), with W1 = span{z1 , z2 }, we always have ww† z2 6= 0 and
+hence the inequality in Equation (16) is strict.
+
+4.2
+
+Cauchy’s Equality
+
+The next formula due to Cauchy can be derived from the determinant of bordered
+matrices (see [11]).
+4.4 Lemma (Cauchy) For any n × n matrix A, any vectors x, y ∈ Cn , we have
+det(A + xy † ) = det(A) + y † Adj(A)x.
+
+(17)
+
+Moreover, if A is nonsingular, then
+det(A + xy † ) = det(A)(1 + y † A−1 x).
+
+(18)
+
+We apply the above lemma to provide sharper estimates for the case when γ = S1
+on the locations of the two largest perturbed eigenvalues relative to the unperturbed
+principal eigenvalue.
+4.5 Proposition Let (H, w, S1 ) be a tuplet. Then
+p
+21 < ζ1 − S1 .
+S1 1 .
+
+(19)
+
+Moreover, if θ2 ∈ SuppH (w), then
+0 < S1 − ζ2 .
+
+p
+S1 1 .
+
+(20)
+
+Proof. Let H̃ = S1 H + ww† and ∆r = 1 − θr , for all r. Note that φ(H̃, t) = det((tI −
+S1 H) − ww† ). Applying Lemma 4.4 and assuming mr is the multiplicity of θr , we get
+φ(H̃, t) = det(tI − S1 H)(1 − w† (tI − S1 H)−1 w)
+!
+!
+X kEr wk2
+Y
+mr
+1−
+=
+(t − S1 θr )
+.
+(t
+−
+S
+θ
+)
+1
+r
+r
+r
+The bound ζ1 − S1 > 21 follows by verifying that φ(H̃, S1 + 21 ) is negative. Observe
+that if φ(H̃, S1 + β) > 0, then ζ1 − S1 ≤ β. We write the condition φ(H̃, S1 + β) > 0
+as
+X kEr wk2
+2 X kEr wk2
+1 >
+= 1+
+.
+S1 ∆r + β
+β
+S1 ∆r + β
+r
+r6=1
+
+−1
+Because
+P ∆r ≤ 1, 2for each r, it follows that (1 + β/S1 ) is an upper bound for the
+sum r6=1 kEr wk /(S1 ∆r + β). So, to satisfy the previous inequality, it suffices to
+require
+2
+1
+1 > 1+
+.
+β
+1 + β/S1
+
+10
+
+After straightforward calculations, we obtain β 2 − 21 β − S1 21 > 0. The roots of this
+quadratic equation are given by
+q
+1 2
+β± = (1 ± 41 + 4S1 21 ).
+2
+√
+The positive root is given by β+ = On ( S1 1 ), since 1  1, which proves Equation
+(19).
+We denote δ− = ζ2 − S1 . By Lemma 4.3, |δ− | > 0. Now, observe that if φ(H̃, S1 −
+β) > 0 then |δ− | ≤ β. As above, we write the condition φ(H̃, S1 − β) > 0 as
+1 <
+
+X kEr wk2
+
+2 X kEr wk2
+= − 1+
+.
+S1 ∆r − β
+β
+S1 ∆r − β
+
+r
+
+r6=1
+
+This yields
+X kEr wk2
+S1 ∆r
+
+r6=1
+
+1
+2
+> 1 + 1.
+1 − β/(S1 ∆r )
+β
+
+As ∆r ≤ 1, for r ≥ 2, we note that 1/(1 − β/S1 ) is a lower bound for the expression
+on the left-hand side. Therefore, we may require instead
+1
+2
+> 1+ 1
+1 − β/S1
+β
+which simplifies to β 2 + 21 β − S1 21
+polynomial is given by
+1
+β = (−21 +
+2
+
+> 0. The maximum root of the quadratic
+q
+p
+41 + 4S1 21 ) ∼
+S1 1
+
+which proves Equation (20).
+
+5
+
+Necessary Gaps
+
+We describe necessary conditions for graphs to be Groverian, but first we derive some
+useful preliminary observations. Our analysis borrows heavily ideas from Chakraborty
+et al. [7].
+We start by restating the machinery in [7] (specifically, Theorem 4) using our
+notation for the sake of consistency and to point out certain explicit assumptions
+that are required. Given a tuplet (H, w, γ), for each p, we have (γH + ww† )Fp = ζp Fp
+or
+ww† Fp = (ζp I − γH)Fp ,
+(21)
+which implies
+kFp wk2 w = (ζp I − γH)Fp w.
+11
+
+(22)
+
+If ζp 6∈ Spec(γH) holds, it clearly guarantees
+Fp w
+
+−1
+2 = (ζp I − γH) w,
+
+(23)
+
+X kEr wk2
+1
+=
+.
+(ζp − γθr )2
+kFp wk2
+r
+
+(24)
+
+kFp wk
+which further yields
+
+Moreover, Equation (23) yields an expression of unity
+1=
+
+d
+X
+kEr wk2
+
+ζp − γθr
+
+r=1
+
+.
+
+(25)
+
+Returning to Equation (22), after multiplying both sides by E1 , we derive
+kFp wk2 E1 w = (ζp − γ)E1 Fp w.
+
+(26)
+
+By Theorem 4.2, since kE1 wk 6= 0, we have strict interlacing where ζ2 < γ < ζ1 .
+Furthermore, γ 6= ζr , for all r = 1, . . . , n. This allows us to write
+E1 Fp w =
+
+kFp wk2
+E1 w,
+ζp − γ
+
+p = 1, . . . , m.
+
+(27)
+
+Now, analyzing the fidelity of the quantum walk with the Hamiltonian H̃ = γH +
+ww† , we get
+X
+f (t) = Tr(ww† e−itH̃ E1 eitH̃ ) =
+e−it(ζp −ζq ) w† Fp E1 Fq w.
+(28)
+p,q
+
+After expanding w† Fp E1 Fq w to (w† Fp E1 )(E1 Fq w) since E12 = E1 , we use Equation
+(27) to substitute E1 Fq w and (E1 Fp w)† to get
+f (t) =
+
+X
+
+e−itζp
+
+p
+
+kFp wk2 X itζq kFq wk2
+kE1 wk2
+e
+ζp − γ q
+ζq − γ
+
+since (w† E1 )(E1 w) = kE1 wk2 . Thus,
+f (t) =
+
+21
+
+X
+
+e
+
+−itζp kFp wk
+
+p
+
+2 2
+
+.
+
+(ζp − γ)
+
+(29)
+
+By triangle inequality, the above becomes
+f (t) ≤ 21
+
+X kFp wk2
+p
+
+12
+
+|ζp − γ|
+
+!2
+.
+
+(30)
+
+Finally, from Equation (29) at the time of origin t = 0, we get another expression of
+unity,
+kF1 wk2 X kFp wk2
+(31)
+1 =
+−
+ζ1 − γ
+γ − ζp
+p≥2
+
+since the first term kF1 wk2 /(ζ1 − γ) and the subsequent terms kFp wk2 /(ζp − γ), for
+p ≥ 2, differ in sign because ζ1 > γ > ζp . As |A−B| ≥ |A|−|B| by triangle inequality,
+the last equation immediately implies the following pair of inequalities:
+X kFp wk2
+p≥2
+
+γ − ζp
+
+≤
+
+kF1 wk2 X kFp wk2
+≤
++ 1.
+ζ1 − γ
+γ − ζp
+
+kF1 wk2
++ 1,
+ζ1 − γ
+
+(32)
+
+p≥2
+
+Using the above, we are ready to observe some necessary conditions for a graph
+G to be Groverian. In the next theorem, we show some conditions on 1 in relation
+to the eigenvalue gaps between the largest unperturbed eigenvalue of γH(G) and
+the perturbed eigenvalues ζm of γH(G) + ww† . In particular, for a graph G to be
+Groverian, 1 must be asymptotically equal to the first gap δ+ := ζ1 − γ, it must
+be asymptotically greater or equal to the second gap δ− := γ − ζ2 , and it must be
+asymptotically equal to some gap γ − ζp , for some p ≥ 2, but not necessarily the
+second gap. Recall that by strict interlacing, we know that γθ2 < ζ2 < γ < ζ1 , where
+θ2 is the second largest eigenvalue of H(G).
+The first two observations in the following theorem are implicit in the proof of
+Theorem 4 in [7] but it will be useful to restate them in our notation below. The
+third observation appears to be new.
+5.1 Theorem For a tuplet (H, w, γ), suppose one of the following conditions holds:
+(i) 1 6 ζ1 − γ (equivalently, 1  ζ1 − γ or 1  ζ1 − γ), or
+(ii) 1  γ − ζ2 , or
+(iii) γ − ζp−1  1  γ − ζp , for some p ≥ 3.
+Then, H is not γ-Groverian.
+Proof. We treat each condition as a separate case.
+Case (i): Denote δ+ := ζ1 − γ and assume that δ+ 6 1 . From Equation (30), we
+apply Equation (32) to obtain the following upper bound
+f (t) ≤
+
+21
+
+2 kF1 wk2
++1
+δ+
+
+!2
+
+13
+
+
+2
+1
+2
+= 2 kF1 wk + 1 ,
+δ+
+
+(33)
+
+which shows that fidelity goes to zero if 1  δ+ . For the opposite direction, apply
+Equation (24) with p = 1 to get
+d
+
+X kEr wk2
+1
+=
+.
+(ζ1 − γθr )2
+kF1 wk2
+r=1
+2 /2 .
+But, the sum is bounded from below by its first term, and so kF1 wk2 ≤ δ+
+1
+Returning to Equation (33) and using the preceding upper bound,
+2
+
+2δ+
+(34)
++ 1 ,
+f (t) ≤
+1
+
+which shows that fidelity goes to zero if δ+  1 .
+Case (ii): Let δ− := ζ2 − γ. We start with Equation (30) and use Equation (31) to
+rewrite a term in the upper bound as
+X kFp wk2
+p
+
+|γ − ζp |
+
+≤ 1+2
+
+X kFp wk2
+p≥2
+
+γ − ζp
+
+≤ 1+2
+
+(1 − kF1 wk2 )
+,
+|δ− |
+
+(35)
+
+since |δ− | ≤ γ − ζp for each p ≥ 2. Thus, we derive an upper bound on the fidelity,
+
+2
+21
+2
+f (t) ≤
+(1 − kF1 wk ) + 1 ,
+(36)
+|δ− |
+which shows that fidelity tends to zero if 1  |δ− |.
+Case (iii): Starting with Equation (21), after multiplying by E1 , we derive
+E1 ww† Fp = (ζp − γ)E1 Fp .
+Taking a product with itself but for index q, we get
+21 Fq ww† Fp = (ζq − γ)(ζp − γ)Fq E1 Fp .
+Upon taking the trace, this yields
+21 kFp wk2 = (ζp − γ)2 hFp , E1 i.
+By Equation (28), we have
+X
+X
+e−it(ζp −ζq ) w† Fp E1 Fq w =
+e−it(ζp −ζq )
+p,q
+
+p,q
+
+(37)
+
+1
+1
+kFp wk2 kFq wk2 ,
+(ζp − γ) (ζq − γ)
+
+where we have used Equation (27) twice (for both p and q). Now, note we may apply
+Equation (37) to “flip” one of the ratios as follows:
+X
+1 ζq − γ
+e−it(ζp −ζq )
+kFp wk2 hFq , E1 i.
+ζ
+−
+γ
+
+p
+1
+p,q
+This allows us to partition the sums around m based on whether 1  ζp − γ or
+1  ζp − γ. In all cases, the corresponding terms tend to 0 as n → ∞.
+14
+
+5.1
+
+Failure around S1
+
+We describe necessary conditions on γ relative to S1 . First, we show failure whenever
+γ is too large relative to S1 (which is an alternate restatement of the first half of
+Theorem 4 in [7]).
+5.2 Theorem For a tuplet (H, w, γ), if 1 S1  γ − S1 , then H is not γ-Groverian.
+Proof. Starting with Equation (25) with p = 1, we see
+1 =
+
+d
+X
+kEr wk2
+r=1
+
+ζ1 − γθr
+
+d
+
+X
+2
+kEr wk2
+2
+S1
+= 1 +
+≤ 1 + .
+δ+
+γ(1 − θr ) + δ+
+δ+
+γ
+r=2
+
+After minor rearrangements, we obtain
+
+
+γ
+S1
+2
+2
+δ+ ≤ 1
+= 1 1 +
+ 1 (1 + on (1))
+γ − S1
+γ − S1
+
+(38)
+
+which proves the claim by appealing to Theorem 5.1, case (i).
+Next, we show failure conditions when γ is centered around S1 . We will use this
+later to show that cycles are not Groverian.
+5.3 Theorem Let (H, w, γ) be a tuplet where there is a constant c > 0 so that
+kEr wk ≤ c1 , for all r ≥ 2. Let
+Iα = {r ≥ 2 : γ < α1 (1 − θr )−1 }.
+If γ = S1 (1 + on (1)) and |Iα | ≥ 2c2 , for some α ∈ (1, 2), then H is not γ-Groverian.
+Proof. By Theorem 5.1, it suffices to show δ+  1 , where δ+ = ζ1 − γ. Let ∆r =
+1 − θr . Our plan is to prove δ+ = On (α1 ) for the given α ∈ (1, 2). By Lemma 4.4, it
+is enough to show φ(H, γ + α1 ) > 0 or equivalently
+1 >
+
+d
+X
+kEr wk2
+r=1
+
+γ∆r + α1
+
++
+= 2−α
+1
+
+1 X kEr wk2
+.
+γ
+∆r + (α1 /γ)
+r≥2
+
+Let us focus on the last summation. After splitting the summation into two parts,
+we may bound each part from above as follows,
+X
+r≥2
+
+kEr wk2
+≤
+∆r + (α1 /γ)
+
+X
+r≥2:
+∆r <α
+1 /γ
+
+kEr wk2
++
+2∆r
+
+X
+r≥2:
+∆r ≥α
+1 /γ
+
+kEr wk2
+.
+∆r
+
+So, to prove the claim, it suffices to show that
+1 >
+
+1
+2−α
++
+1
+γ
+
+X kEr wk2
+r≥2
+
+∆r
+
+15
+
+1
+−
+2γ
+
+X
+r≥2:
+∆r <α
+1 /γ
+
+kEr wk2
+.
+∆r
+
+(39)
+
+Assume γ = S1 + β for some β = on (S1 ). Then, we require that
+
+
+2
+X
+kEr wk  1 X kEr wk2
+1
+1
+2−α
+
+−
+,
+1 > 1 +
+1 + (β/S1 ) S1
+∆r
+2γ
+∆r
+r≥2
+r≥2:
+{z
+}
+|
+γ<α
+1 /∆r
+
+(40)
+
+=1
+
+which is equivalent to
+1
+2γ
+
+X
+r≥2:
+γ<α
+1 /∆r
+
+kEr wk2
++ on (1) > 2−α
+.
+1
+∆r
+
+(41)
+
+Therefore, we may omit the on (1) term as it suffices to satisfy
+1
+2γ
+
+X
+r≥2:
+γ<α
+1 /∆r
+
+kEr wk2
+> 2−α
+1
+∆r
+
+or
+
+X
+r≥2:
+γ<α
+1 /∆r
+
+kEr wk2 α1
+> 2.
+γ∆r
+21
+
+If 1 ≤ c kEr wk, for all r ≥ 2, the claim follows as |Iα | ≥ 2c2 .
+
+5.2
+
+Near Perfect Fidelity
+
+When the fidelity is 1 − on (1), we show that the principal perturbed eigenspace must
+have a significant overlap with the subspace spanned by the principal eigenspace and
+the target state.
+5.4 Theorem Let (H, w, γ) be a tuplet. If H is γ-Groverian with fidelity 1 − on (1),
+then the principal eigenvector of γH + ww† is an equal superposition of w and the
+principal eigenvector of H, up to on (1) terms.
+Proof. Let z1 and y1 be the principal eigenvectors of H and γH + ww† , respectively.
+Thus, E1 = z1 z1† and F1 = y1 y1† . Starting with Equation (33) and then applying
+Equation (27) with p = 1, we get
+f (t) ≤ 4
+
+kF1 wk4
+kE1 wk2 = 4 kE1 F1 wk2 = 4|hy1 , z1 i|2 |hy1 , wi|2 .
+2
+δ+
+
+If f (t) = 1 − on (1), we obtain 1 − on (1) ≤ 2|hy1 , z1 i||hy1 , wi|. Since |hy1 , z1 i|2 +
+|hy1 , wi|2 ≤ 1 + on (1), we have 0 ≤ (|hy1 , z1 i| − |hy1 , wi|)2 = on (1), which proves the
+claim.
+
+16
+
+6
+
+Sufficient Gap
+
+In this section, we prove our optimal characterization of S1 -Groverian graphs under a
+simpler assumption. First, we justify that the choice of γ = S1 is almost best possible.
+By Equation (25) with p = 1, we have
+1=
+
+X kEr wk2
+X kEr wk2
+21
++
+ 1 +
+δ+
+δ+ + γ∆r
+δ+ + γ∆r
+r6=1
+
+r6=1
+
+as 1  δ+ is a necessary condition due to Theorem 5.1(i). Recall that fn  gn
+denotes that fn and gn are within constant factors of each other. Therefore,
+1 − 1 
+
+1 X kEr wk2
+1
+.
+γ
+∆r 1 + (1 /γ∆r )
+r6=1
+
+If γ &
+
+√
+
+S1 , since 1 
+
+√
+
+S1 ∆2 , we have 1 /γ∆r = on (1). This shows
+
+γ(1 − 1 ) 
+
+X kEr wk2
+r6=1
+
+∆r
+
+1
+= S1 (1 + on (1)).
+1 + (1 /γ∆r )
+
+As 1 = on (1), we have γ  S1 .
+The next theorem is our main characterization for optimal spatial search for γ =
+S1 .
+√
+6.1 Theorem Let (H, w, γ) be a tuplet where θ2 ∈ SuppH (w). If 1  S1 ∆2 ,
+then H is S1 -Groverian if and only if S2 /S12  1.
+Proof. By Lemma 4.3, we know that ζ1 and ζ2 are simple and ζ1 , ζ2 6∈ Spec(S1 H).
+Therefore, let y1 and y2 be their corresponding eigenvectors. Define δ+ = ζ1 − S1 and
+δ− = ζ2 − S1 . Also, let ∆r = 1 − θr . Using Equation (25) with p = 1, 2, we derive
+1 =
+
+d
+X
+kEr wk2
+r=1
+
+ζp − S1 θr
+
+d
+
+=
+
+X kEr wk2
+21
+1
++
+.
+δ±
+S1 ∆r 1 + δ± /(S1 ∆r )
+
+(42)
+
+r=2
+
+Note (1 + α)−1 = 1 − α + α2 (1 + α)−1 holds for all α 6= −1. Using α = δ± /(S1 ∆r ),
+after reorganizing and cancelling terms, we arrive at
+d
+21
+1 X kEr wk2 S1 ∆r
+=
+.
+2
+δ±
+S12 r=2 ∆2r δ± + S1 ∆r
+
+(43)
+
+Thus far, this is similar to the first portion of the proof of Theorem 2 in [7]. But,
+now we exploit the sharper estimates given by Proposition 4.5 which will considerably
+simplify the rest of our proof.
+17
+
+2 ∼ S /S 2 .
+6.2 Lemma 21 /δ±
+2
+1
+
+√
+√
+Proof. Proposition 4.5 shows that |δ± | = On ( S1 1 ), and as 1  S1 ∆2 , we get
+|δ± |  S1 ∆2 . Applying this to Equation (43) proves the claim.
+2 ∼ 1/ kF wk2 and 22 /δ 2 ∼ 1/ kF wk2 .
+6.3 Lemma 221 /δ+
+1
+2
+1 −
+
+Proof. We apply Equation (24) to ζ1 and ζ2 , and after some rearrangements, we get
+d
+1
+21
+1 X kEr wk2
+1
+(p = 1, 2).
+(44)
+2 = δ2 + S 2
+2
+2
+∆
+(1
++
+δ
+/(S
+kFp wk
+±
+1 ∆r ))
+r
+±
+1 r=2
+√
+Proposition
+4.5 shows that |δ± | = On ( S1 1 ), which combined with the assumption
+√
+1  S1 ∆2 yields |δ± |  S1 ∆2 . Applying this to Equation (44), we obtain
+
+1
+21
+S2
+221
+=
++
+(1
++
+o
+(1))
+∼
+n
+2
+2
+δ±
+S12
+δ±
+kFp wk2
+
+(p = 1, 2),
+
+(45)
+
+2 ∼ S /S 2 by Lemma 6.2.
+as 21 /δ±
+2
+1
+
+The use of density matrices simplifies the proof of the following result as most
+arguments involving phase factors are no longer necessary.
+√
+√
+6.4 Lemma If t = On ( S2 /S1 1 ), then f (t) = Ωn (S1 / S2 ).
+Proof. By Equation (26), we have E1 Fp w = kFp wk2 E1 w/(ζp − S1 ). For p = 1, 2,
+using Lemma 6.3 to replace kFp wk2 , we obtain
+kE1 Fp wk = kFp wk2
+
+1
+|δ± |
+∼
+.
+|δ± |
+21
+
+Let δ = (ζ1 − ζ2 )/2. Then, the fidelity is given by
+X
+f (t) = Tr(ww†
+e−it(ζp −ζq ) Fp E1 Fq )
+p,q
+
+=
+
+X
+
+=
+
+X
+
+−it(ζp −ζq )
+
+e
+
+hE1 Fp w, E1 Fq wi
+
+p,q
+
+p,q
+
+=
+
+e−it(ζp −ζq ) 21
+
+kFp wk2 kFq wk2
+ζp − S1 ζq − S1
+
+X
+kFp wk2 kFq wk2
+1
+δ2
+(1 − cos(2δt)) 2 + 21
+e−it(ζp −ζq )
+2
+S1 − ζp S1 − ζq
+1
+p,q6=1,2
+
+≥
+
+δ2
+21
+
+,
+
+by setting t = π2 δ −1 .
+
+Now, note that δ = 12 (δ+ + |δ− |)  1 .
+18
+
+(46)
+
+We have shown that if S12 /S2 = Θn (1) then H is S1 -Groverian. It remains to show
+the converse.
+6.5 Lemma If f (t) = Ωn (1), for some t = On (1/1 ), then S2 /S12 = Θn (1).
+2 by Lemma
+Proof. We prove the contrapositive. If S2 /S12 6 1, or equivalently, 21 6 δ+
+2 if and only if  
+6.2, then H is not Groverian by Theorem 5.1(i). Note 21  δ+
+1
+δ+ .
+
+Lemma 6.4 and 6.5 completes the proof of the theorem.
+Remarks. We now compare Theorem 6.1 in the context of the known results in
+[6, 7]. Notice that Theorem 6.1 implies the main result (Lemma 1) in Chakraborty
+et al. [6]. Their result requires the constant gap condition ∆2 = Ωn (1) which is a
+stronger assumption because of the following observation. In what follows, we denote
+2 = kE2 wk.
+6.6 Fact Suppose 1 = on (1). If ∆2 = Ωn (1), then S1 ∆2 = Θn (1).
+Proof. Note 22 + ∆2 (1 − 21 − 22 ) ≤ S1 ∆2 ≤ 1 − 21 . The upper bound S1 ∆2 =
+On (1) holds immediately. If 2 = on (1), then S1 ∆2 = Ωn (1) follows as ∆2 = Ωn (1).
+Otherwise, S1 ∆2 = Ωn (1) holds from 2 = Ωn (1).
+We also note the following relation between S1 and S2 (which can be compared
+to Lemma 5 in [7]).
+6.7 Fact S12 /S2 ≤ 1 − 21 .
+Proof. Consider a random variable Z where Z = 1/∆r with probability 2r /(1−21 ), for
+r = 2, . . . , d. Then, E[Z] = S1 /(1 − 21 ) and E[Z 2 ] = S2 /(1 − 21 ). Now, E[Z 2 ] ≥ E[Z]2
+since variance is always nonnegative.
+√
+Next, observe
+that S1 ≥ 1 − 21 . If S1 ≤ 1, then √
+both S1 and√ S1 are constant;
+√
+otherwise, S1 ≤ S1 . To summarize, it is clear that S1 . S1 . S2 .
+As for the main result in Chakraborty
+et al. [7], their theorem requires the assump√
+tion 1  S1 S2 /S3 and 1  S2 ∆2 . √In Theorem 6.1, we replace these two assumptions with a single √
+assumption 1  S1 ∆2 . The latter assumption is only slightly
+stronger than 1  S2 ∆2 since under the regime of interest, namely, S2 /S12 = Θn (1),
+they are asymptotically equivalent.
+
+7
+
+Examples
+
+We analyze some examples of well-known families of graphs (see Figure 2). In order
+to simplify the calculations, we normalize the matrices as H/ kHk which places the
+
+19
+
+eigenvalues in [−1, 1] (instead of [0, 1]). Since the two normalizations are equal up to
+a factor of 2, this will not affect our asymptotic conclusions.
+Graph Family
+Clique Kn
+Expander
+Strongly Regular Graph
+Hamming H(n, q)
+Johnson J(n, k)
+Grassmann Gq (n, k)
+Distance Regular Graph with
+classical parameters (d, q, α, β)
+Cycle Cn
+
+Groverian?
+Yes
+Yes
+Yes
+Yes
+Yes
+Yes
+Yes
+No
+
+1
+−1/2
+
+q −k(n−k)/2
+
+∆2
+1
+1
+1
+1/n
+1/k
+1 − 1/q
+
+S1
+1
+1
+1
+-
+
+Comment
+∆2 = 1
+∆2 = 1
+∆2√= 1
+1  S 1 ∆2
+∆2 = 1
+∆2 = 1
+
+p
+1/ |V (G)|
+n−1/2
+
+1 − 1/q + α/qβ
+n−2
+
+n
+
+∆2√= 1
+1 6 S1 ∆2
+
+n
+n−1/2
+n−1/2
+q −n/2
+n−k/2
+
+Figure 2: Examples of graph families and S1 -Groverian (or optimal spatial search)
+properties. Assume q, k, d are constants and α  β. The expressions involving 1 ,
+∆2 , and S1 are asymptotic in nature. Some entries are missing as they do not impact
+the property.
+
+Cliques The normalized eigenvalues of Kn are 1 (with multiplicity 1) and −1/(n−1)
+(with multiplicity n − 1). So, cliques are Groverian (in fact, with fidelity 1) since ∆2
+is constant. This was, of course, the original observation of Farhi and Gutmann [4].
+Expanders A graph G = (V, E) is called an (n, d, c)-expander if G has n vertices,
+maximum degree d, and for each set of vertices W of size |W | ≤ n/2, we have
+|N (W )| ≥ c|W |, where N (W ) is the set of vertices not in W but is adjacent to some
+vertex in W . Here, c is called the expansion which is required to be constant. It is
+known that if G is d-regular on n vertices, then it is a (n, d, ∆2 /2)-expander provided
+∆2 = Θn (1) (see [15]). So, expanders are Groverian since ∆2 is constant. This is the
+main observation of Chakraborty et al. [6].
+Strongly Regular Graphs A graph Gn is called strongly regular with parameter
+(n, k, a, c) if it is a k-regular on n vertices where every pair of adjacent vertices have a
+common neighbors and every pair of non-adjacent vertices have c common neighbors.
+Let θ1 > θ2 be the non-principal eigenvalues. Then, k − c = θ1 (−θ2 ), which implies
+θ1 = (k − c)/(−θ2 ). If Gn is primitive but not a conference graph, then −θ2 ≥ 2.
+Therefore, θ1 ≤ (k − c)/2 < k/2. This shows that ∆2 is constant. On the other
+√
+hand, if Gn is a conference graph then k = (n − 1)/2 and θ1 = ( n − 1)/2 which
+implies ∆2 = 1 − on (1). Thus, strongly regular graphs are Groverian. This provides
+an alternative proof of the result due to Janmark et al. [8].
+20
+
+Figure 3: Some distance-regular graphs that are Groverian: Hamming graphs H(n, q)
+and Grassmann graphs Gq (n, k), where q and k are constants. Left: Hamming graph
+H(3, 3). Right: Grassmann graph G2 (4, 2).
+
+Hamming graphs The Hamming graph H(n, q), with q is constant, has (Z/qZ)n as
+its vertices where two n-tuples are connected if they differ in exactly one dimension.
+As H(n,q) has q n vertices with eigenvalues θr = n(q − 1) − qr with multiplicity
+n/2
+mr = nr (q − 1)r , for r = 0, . . . , n, we have ∆2 = q/n(q − 1) ∼ 1/n and
+√ 1 = 1/q .
+Since S1 = Θn (1), the Hamming graph H(n, q) is Groverian as 1  S1 ∆2 . To see
+why S1 = Θn (1), notice that
+
+
+n  
+1 X n n(q − 1)
+1 X n+1
+r
+S1 = n
+(q − 1) ∼ n
+(q − 1)r  1.
+q
+r
+rq
+q r
+r+1
+r=0
+
+For the n-cube or H(n, 2), this was observed by Childs and Goldstone [5].
+Johnson graphs The Johnson graph J(n, k) has as its vertices the set of k-subsets
+
+of {1, . . . , n}, denoted [n]
+k , where two k-subsets A and B are connected if |A ∩ B| =
+k − 1. So, J(n, k) has nk vertices with eigenvalues θr = (k − r)(n − k − r) − r with
+q 
+
+
+n
+multiplicity mr = nr − r−1
+, for r = 0, . . . , k. Notice 1 = 1/ nk ∼ n−k/2 and
+∆2 =
+
+θ0 − θ1
+n
+1
+=
+∼
+θ0 − θk
+k(n − k + 1)
+k
+
+which is constant if k is. As ∆2 = Ωn (1), this shows that J(n, k), for k ≥ 3, is
+Groverian. This recovers the results of Wong [9] and Tanaka et al. [10].
+
+21
+
+Grassmann graphs The Grassmann graph Gq (n, k) has as its vertices the set of
+k-subspaces of the vector space Fnq where two k-subspaces A and B are connected if
+dim(A ∩ B) = k − 1. We assume n ≥ 2k. The number of vertices of Gq (n, k) is
+ 
+n
+N=
+∼ q k(n−k) .
+k q
+The eigenvalues are given by
+
+ 
+
+ 
+n−k−r
+r
+r+1 k − r
+θr = q
+−
+∼ q n−r−1
+1 q
+1
+1
+q
+q
+with multiplicity
+ 
+
+
+n
+n
+mr =
+−
+,
+r q
+r−1 q
+√
+for r = 0, . . . , k. Notice 1 = 1/ N and the normalized eigenvalue gap is
+∆2 = 1 −
+
+θ1
+1
+∼1− ,
+θ0
+q
+
+which is constant if q is. As ∆2 = Ωn (1), this shows that Gq (n, k), for k ≥ 2, is
+Groverian. Note k = 1 recovers the cliques.
+Distance-regular graphs with classical parameters The eigenvalues of distanceregular graphs with classical parameters (d, q, α, β) are given in Jurišić and Vidali [16]
+(see Lemma 2). In particular, θ0 = [d]q β and θ1 = [d − 1]q (β − α) − 1, which implies
+∆2 = 1 −
+
+[d − 1]q (β − α) − 1
+1 1α
+∼1− +
+[d]q β
+q qβ
+
+is constant provided α  β.
+Cycles The results from Section 5 can be used to prove that cycles are not Groverian. The normalized eigenvalues of Cn are given by θr = 21 (1 + cos(2π(r − 1)/n)),
+r = 1, . . . , n. Using cos(x) ∼ 1 − x2 /2, we have ∆r ∼ r2 /n2 , for small positive values
+√
+of r. Since Cn is a circulant, r ∼ 1/ n for all r = 1, . . . , n. Note that
+n−1
+
+Z π−2π/n
+
+r=1
+
+2π/n
+
+1X
+1
+S1 =
+∼2
+n
+1 − cos(2πr/n)
+
+dx
+= 2 cot(π/n) = Θn (n).
+1 − cos(x)
+
+Next, we show spatial search fails as γ ranges over all values.
+√
+√
+Case (i). γ = S1 + ωn ( n): Notice Theorem 5.2 applies since n = 1 S1  γ − S1 =
+√
+ωn ( n).
+22
+
+Figure 4: Sparsity is not a good indicator: for prime p, Cp is not Groverian, but
+Cp with the extra “matching” x 7→ x−1 (mod p) is Groverian (as it is an expander,
+see Vadhan [17]). Left: C13 . Right: the nonsimple 3-regular expander C13 plus the
+modular inverse matching.
+
+Case (ii). γ = S1 ± on (n): Here, Theorem 5.3 applies since α1 /∆r > S1 + β holds,
+for α ∈ (1, 2). With |β| = on (n), evidently n−α/2 × n2  cn ± on (n).
+Case (iii). γ = On (n): To apply Theorem 5.3, we rewrite Equation (39) as
+1
+2
+
+X
+r≥2:
+∆r <α
+1 /γ
+
+2r
++ S1 − γ,
+> γ2−α
+1
+∆r
+
+(47)
+
+√
+since γ > 0. Because γ = On (n), S1 = On (n), and 1 = 1/ n, the right-hand side is
+at most On (n). Next, we determine the set of indices r so that ∆r < α1 /γ which are
+included in the summation. The smallest the upper bound α1 /γ can be is 1/n1+α/2 .
+We have
+r2
+1
+∆r ∼ 2  1+α/2 , for r = On (1).
+n
+n
+Thus, if we restrict the indices for which r ≤ B, for a large enough constant B, we
+get
+B
+B
+X
+X
+X 2
+2r
+n−1
+r
+≥
+∼
+= Ωn (n).
+∆r
+∆r
+r2 n−2
+r≥2:
+∆r <α
+1 /γ
+
+r=2
+
+r=2
+
+Thus, Equation (47) is satisfied provided B is large enough; whence spatial search
+fails.
+
+23
+
+8
+
+Concluding remarks
+
+In this work, we proved a simpler characterization of graphs with the optimal spatial
+search property (therein called Groverian). This improves a previous characterization
+obtained by Chakraborty et al. [7]. We applied this characterization to recover known
+results about some families of Groverian graphs and also to find new families of
+Groverian graphs. Along the way, we also proved a lower bound for spatial search on
+arbitrary graphs for constant fidelity. This extends a known lower bound due to Farhi
+and Gutmann [4] which holds for vertex transitive graphs and for fidelity that is one.
+We also developed a family of necessary conditions for a graph to be Groverian. Our
+necessary conditions, which are built upon observations developed by Chakraborty et
+al. [7], can be applied to provide rigorous proofs to show why some families of graphs
+(for example, cycles) lack the spatial search property.
+We conclude with some open questions from the present work:
+1. Is the√Groverian property determined by spectra? Moreover, is the condition
+1  S1 ∆2 necessary for optimal characterization?
+2. Can a family of graphs be Groverian with non-constant S1 ? To the best of our
+knowledge, all families of graphs known to be Groverian satisfy S1 = Θn (1).
+3. When is the Groverian property (almost) periodic?
+4. How robust is the Groverian property against noise? Regev and Schiff [18] had
+ruled this out for the discrete-time case.
+
+Acknowledgments
+We thank Tom Wong for helpful comments and Andris Ambainis for answering our
+questions about [6]. C.T. and W.X. would also like to thank Warren Lord for his
+insightful comments. We also would like to thank the reviewers for their constructive
+comments which help improve the paper.
+
+References
+[1] L. Grover (1997), Quantum mechanics help in searching for a needle in a
+haystack, Physical Review Letters, 79:325.
+[2] A. Ambainis (2007), Quantum walk algorithm for element distinctness, SIAM
+J. Computing 37(1):210-239.
+[3] M. Szegedy (2004), Quantum speed-up for Markov chain based algorithms,
+Proc. 45th Ann. IEEE Foundations of Computer Science, 32-41.
+
+24
+
+[4] E. Farhi and S. Gutmann (1998), Analog analogue of a digital quantum computation, Physical Review A, 57(4):2403.
+[5] A. Childs and J. Goldstone (2004), Spatial search by quantum walk, Physical
+Review A, 70:022314.
+[6] S. Chakraborty, L. Novo, Y. Omar, and A. Ambainis (2016), Spatial search
+by quantum walk is optimal for almost all graphs, Physical Review Letters,
+116:100501.
+[7] S. Chakraborty, L. Novo, and J. Roland (2020), On the optimality of spatial
+search by continuous-time quantum walk, Physical Review A, 102:032214.
+[8] J. Janmark, D. Meyer, and T. Wong (2014), Global symmetry is not necessary
+for fast quantum search, Physical Review Letters, 112:210502.
+[9] T. Wong (2016), Quantum walk search on Johnson graphs, Journal of Physics
+A: Mathematical and Theoretical, 49(19):195303.
+[10] H. Tanaka, M. Sabri, and R. Portugal, Spatial search on Johnson graphs by
+continuous-time quantum walk. arXiv:2108.01992 [math.CO].
+[11] R. Horn and C. Johnson (2013), Matrix Analysis, Cambridge University Press,
+second edition.
+[12] S. Janson, T. Luczak, and A. Ruciński (2000), Random Graphs, Wiley and Sons.
+[13] M. Nielsen and I. Chuang (2000), Quantum Computation and Quantum Information, Cambridge University Press.
+[14] D. Meyer and T. Wong (2015), Connectivity is a Poor Indicator of Fast Quantum Search, Physical Review Letters, 114:110503.
+[15] N. Alon and J. Spencer (2011), The Probabilistic Method, Wiley and Sons, 3rd
+edition.
+[16] S. Jurišić and J. Vidali (2017), Restrictions on classical distance-regular graphs,
+Journal of Algebraic Combinatorics, 46:571–588.
+[17] S. Vadhan (2012), Pseudorandomness, Foundations and Trends in Theoretical
+Computer Science, Vol. 7, Nos. 1-3, 1-336.
+[18] O. Regev and L. Schiff (2008), Impossibility of a Quantum Speed-Up with a
+Faulty Oracle, Proc. 35th International Colloquium on Automata, Languages,
+and Programming, 773-781.
+
+25
+
+

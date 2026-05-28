@@ -1,0 +1,940 @@
+No Infinite Tail Beats Optimal Spatial Search
+Weichen Xie∗
+Department of Mathematics, Clarkson University, Potsdam, New York, USA 13699-5815
+
+Christino Tamon†
+
+arXiv:2301.07251v2 [quant-ph] 20 Jan 2023
+
+Department of Computer Science, Clarkson University, Potsdam, New York, USA 13699-5815
+(Dated: January 23, 2023)
+Farhi and Gutmann (Physical Review A, 57(4):2403, 1998) proved that a continuous-time analogue
+of Grover search (also called spatial search) is optimal on the complete graphs. We extend this
+result by showing that spatial search remains optimal in a complete graph even in the presence of
+an infinitely long path (or tail). If we view the latter as an external quantum system that has a
+limited but nontrivial interaction with our finite quantum system, this suggests that spatial search
+is robust against a coherent infinite one-dimensional probe. Moreover, we show that the search
+algorithm is oblivious in that it does not need to know whether the tail is present or not, and if so,
+where it is attached to.
+I.
+
+INTRODUCTION
+
+The celebrated quantum search algorithm of Grover
+[12] provides a provable quadratic speedup over any
+classical algorithm. Shortly thereafter, Farhi and Gutmann proposed an analogue analog of Grover’s algorithm [8]. They defined the Grover search algorithm via
+a continuous-time quantum walk on a complete graph
+where the oracle or target vertex is marked by a suitably weighted self-loop. Remarkably, the Farhi-Gutmann
+algorithm achieved perfect fidelity on complete graphs
+of any size. In contrast, this property does not hold
+for Grover search (viewed as a discrete-time quantum
+walk) as it is inherently a bounded-error probabilistic algorithm.
+This continuous-time search problem was later generalized by Childs and Goldstone [6] to arbitrary finite graphs
+where it is known as the spatial search problem. A collection of different families of finite graphs had been studied
+in this context; for example, see [4, 6, 9, 13, 19, 21]. But,
+to date, spatial search has not been studied on infinite
+graphs as it seems that the quantum walk will escape or
+diffuse to infinity before having a chance to localize on
+the marked vertex (or oracle). The goal of this work is
+to disabuse ourselves of this highly plausible intuition.
+We consider infinite graphs which are obtained by attaching an infinite path (or tail) to a finite graph. This
+family of graphs with tails was explored by Golinskii
+[11]. In this work, we view the finite graph as our operational quantum system for performing quantum search
+and the tail as an external (possibly, adversarial) infinitedimensional quantum system which interacts with our
+finite sytem in a coherent manner.
+The main question we explore in this work is: can spatial search still be performed optimally in the presence of
+an infinite-dimensional probe? We provide a positive answer to this question for complete graphs. This extends
+
+∗ xiew@clarkson.edu
+† tino@clarkson.edu
+
+the result of Farhi-Gutmann [8] to the infinite setting.
+Moreover, the quantum search algorithm is oblivious as
+it does not need to know whether the infinite-dimensional
+probe is present (or not) and where it is attached to (if
+present). Since we give our adversary the benefit of an
+infinite-dimensional quantum system, this serves only to
+strengthen the result.
+Our technique relies on the theory of Jacobi operators
+(see [7, 11]). The main idea is to decompose the adjacency operator A of our infinite graph using two pairwise
+orthogonal invariant subspaces (see Golinskii [11], Theorem 1.2) where the first one is finite-dimensional while
+the second one is infinite-dimensional. The next crucial observation is that spatial search takes place in the
+infinite-dimensional invariant subspace of A. Moreover,
+the action of A in this infinite-dimensional invariant subspace is given by a finite rank Jacobi matrix J. Finally,
+we show that the initial and target states of the spatial
+search are nearly confined in a two-dimensional subspace
+spanned by two bound states of J. This yields the claimed
+spatial search result. To the best of our knowledge, this
+is the first result which explores optimal spatial search
+on infinite graphs.
+As outlined above, our argument is the standard argument for showing optimal spatial search in the finite
+setting (see [3–5]). Namely, we show that the initial and
+target states are spanned by two distinct eigenvectors of
+the perturbed adjacency matrix. A contribution of this
+work is to show that this argument holds in the infinite
+setting via bound states of the reduced adjacency operator. We believe that this argument might be useful in
+other settings.
+Following a brief discussion of basic notation and terminology in Section II, we prove our main results in Sections III and IV. Then, we justify the optimality of our
+search algorithm in Section V. Finally, we conclude with
+some open questions in Section VI.
+
+2
+II.
+
+PRELIMINARIES
+
+We introduce the basic notation and terminology that
+we will use throughout. The set of all positive integers is
+denoted Z+ and the set of all complex numbers with unit
+modulus is denoted U (1). For vectors x, y where x = ζy,
+for some ζ ∈ U (1), we write x ≡ y. We adopt standard
+asymptotic notation: o(fn ) denotes any function gn so
+that gn /fn → 0, O(fn ) denotes functions gn for which
+gn /fn is bounded from above by a constant, and Ω(fn )
+denotes functions gn where gn /fn is bounded from below
+by a constant, where in each case n → ∞; see [20]. In
+our case, the asymptotic parameter n corresponds to the
+size of a finite graph.
+a. Graphs and operators. We study undirected and
+connected graphs G = (V, E) with vertex set V and edge
+set E, respectively. The adjacency matrix A of G is a
+symmetric matrix whose (i, j) entry is 1 if (i, j) ∈ E and
+0 otherwise. For a vertex u, let N (u) = {v ∈ V : (u, v) ∈
+E} denote the set of neighbors of u. The degree of vertex u, denoted deg(u), is the cardinality of N (u). The
+complete graph (or clique) on n vertices is denoted Kn .
+A rooted graph (G, r) is a graph G with a distinguished
+vertex r which we call the root. See [10] for further background on algebraic graph theory.
+We allow countably infinite graphs, in which case,
+V = Z+ (see [16]). For example, the infinite path P∞
+has edges which are consecutive positive integers; its adjacency matrix is known as the free Jacobi matrix (see
+[11]). Related to these graphs, we associate a complex
+separable Hilbert spacePH = `2 (V ) equipped with the
+inner product hx, yi = u∈V xu yu , for vectors x, y ∈ H.
+For `2 (V ), a standard basis is {eu : u ∈ V }, where eu
+is the unit vector corresponding to vertex u. An infinite
+graph G is locally finite if deg (u) < ∞ for all u ∈ V . For
+such a graph G, the adjacency operator A is a linear operator that maps the standard basis vector ev to the vector
+associated
+P with the neighboring vertices N (v); that is,
+Aev = u∈N (v) au,v eu , or simply au,v = heu , Aev i. Let
+deg (G) = sup{deg (u) : u ∈ V }. If deg(G) < ∞, then the
+adjacency operator A is a bounded self-adjoint operator
+(see [15]).
+The spectrum of a linear operator A is the set σ(A) of
+all complex numbers λ where λI − A is not invertible.
+For a bounded and self-adjoint operator A, its spectrum
+can be classified further into the point spectrum σp (A)
+and the continuous spectrum σc (A). The point spectrum
+consists of all eigenvalues λ ∈ C of A such that Ax =
+λx for some nonzero x ∈ `2 (V ). On the contrary, the
+values in σc (A) are not eigenvalues of A and have no
+corresponding eigenvectors in `2 (V ).
+The spectral theorem (see [1, 17]) states that for a
+bounded self-adjoint operator A on a complex Hilbert
+space H, there exists a unique resolution ofRthe identity E
+on the Borel subsets of σ(A) so that A = σ(A) λ dE(λ).
+Moreover,R if f is a bounded Borel function on σ(A), then
+f (A) = σ(A) f (λ) dE(λ). We also use a decomposi-
+
+tion induced by invariant subspaces (see [1], Theorem
+3, section 40) which states that if Wk (k = 1, 2, · · · , m)
+are pairwise
+Lmorthogonal invariant subspaces of A, that
+is, HP=
+k=1 Wk and AWk ⊂ Wk , for each k, then
+m
+A = k=1 Ak Pk , where Pk is the projection on Wk and
+Ak is the restriction of A to Wk .
+b. Spatial Search. A continuous-time quantum walk
+on an infinite graph G with bounded self-adjoint adjacency operator A is given by the unitary operator e−itA
+(acting on the Hilbert space `2 (V )). Our focus is on infinite graphs obtained from a finite connected rooted graph
+(G, r) by attaching an infinite path P∞ at the root vertex
+r; denote the resulting infinite graph as G = G(r, P∞ ).
+As we use {1, 2, . . . , n} to label the vertices of a finite
+rooted graph of order n, we take the liberty to designate
+the last vertex n as the root (without loss of generality).
+These are the graphs with tails studied by Golinskii [11].
+We say the infinite graph G = Gn (P∞ ) has optimal
+spatial search (adopting [4]) if there is a real γ > 0 so
+that for each vertex w of Gn , a continuous-time quantum
+walk on G with a self-loop on w of weight γ will unitarily
+map the principal eigenvector z1 of Gn to the unit vector
+ew with constant fidelity in time t = O(1/1 ), where
+1 = |hew , z1 i|. That is,
+hew , e−it(A+γPw ) z1 i = Ω(1),
+where A is the adjacency operator of G and Pw is the
+projection onto the subspace spanned by ew . It is customary to assume 1 = o(1) as otherwise we already have
+a constant overlap between the target state ew and the
+initial state z1 .
+III.
+
+INFINITE LOLLIPOP IS OPTIMAL
+
+For n ≥ 2, consider the infinite lollipop graph Ln =
+Kn (P∞ ). The vertices of the infinite path P∞ are labelled
+with n + 1, n + 2, . . .. To this lollipop graph Ln , we place
+a self-loop of weight γ at vertex 1 (the oracle or target
+vertex) and denote the resulting infinite graph as Ln (γ).
+Please see Figure 1.
+
+FIG. 1. Optimal spatial search on the infinite lollipop with
+the oracle hiding at vertex 1.
+
+The adjacency operator H of Ln (γ) is obviously a
+bounded self-adjoint linear operator on l2 (Z+ ). It can
+
+3
+be written as an infinite dimensional matrix under the
+standard basis {ej }∞
+j=1 as
+
+γ 1 ···
+1 0 · · ·
+. . .
+ . . ..
+. .
+
+H = 1 1 · · ·
+
+
+
+
+
+1
+1
+..
+.
+
+
+
+0 1
+1 0 1
+1 0 1
+.. .. ..
+. . .
+
+
+
+
+
+
+.
+
+
+
+
+
+the initial state z1 and the target state e1 of our spatial
+search problem both have non-negligible overlap with S.
+It follows from the preceding analysis that the operator
+H under the basis {ẽn−2 , ẽn−1 , . . .} is given by
+
+
+√
+n−2
+n−2
+γ
+ẽn−2 γ n−1 −1
+n−1
+√
+ √
+
+γ
+ẽn−1 γ n−2
+
+n−1
+n−2+
+n−1
+n−1
+
+
+√
+ẽn 
+b
+.
+n−1
+0
+1
+H=
+
+
+ẽn+1
+
+1
+0
+1
+
+
+..
+.. .. ..
+.
+. . .
+(4)
+
+Our goal is to prove the following infinite analogue of
+the Farhi-Gutmann result.
+Theorem 1. For γ = n + O(1), we have
+|he1 , e−itH z1 i| = Ω(1),
+Pn
+√
+for t = π/2 n, where z1 = n−1/2 j=1 ej .
+By a theorem of Golinskii ([11], Theorem 1.2), using
+a change of basis, H can be written in a block diagonal
+form. This new basis {ẽk }∞
+k=1 is defined as follows. Let
+ẽk = ek , k = n, n + 1, · · ·
+
+This symmetric tridiagonal matrix is an eventually-free
+or finite rank Jacobi matrix (see [11]) whose full spectrum can be computed via the so-called Jost solution
+(see [7], Appendix). The Jost solution is a vector y(x) =
+b
+(y1 (x), y2 (x), · · · )T that satisfies the eigen-equation of H
+with eigenvalue of the form x + x1 , namely,
+
+
+1
+b
+Hy(x) = x +
+y(x),
+(5)
+x
+and also the degree condition
+lim x−k yk (x) = 1.
+
+(1)
+
+k→∞
+
+Given the special form of b
+H, we can set
+
+and
+n−1
+X
+1
+ẽn−1 = √
+ej .
+n − 1 j=1
+
+yk (x) = xk , k = 3, 4, · · · ,
+(2)
+
+The next orthogonal basis vector is then given by
+ẽ0n−2 = H ẽn−1 − hẽn−1 , H ẽn−1 iẽn−1 − hẽn , H ẽn−1 iẽn .
+which, after normalization, yields
+1
+ẽn−2 = p
+((n − 1)e1 − ẽn−1 ).
+(n − 2)(n − 1)
+
+(3)
+
+We take the remaining basis vectors to be the nonprincipal columns of the Fourier matrix of order n − 2.
+In particular, the basis vector ẽk is defined as
+ẽk = √
+
+n−2
+X 2πi(j−1)k
+1
+e (n−2) ej
+n − 2 j=1
+
+
+
+
+
+(k = 1, . . . , n − 3).
+
+and use (5), to get the Jost polynomial
+r
+1 n−1 
+y0 (x) =
+· (2 − n)x4 + [(n − 3)γ + 4 − 2n)]x3
+γ n−2
+
++ [(n − 3)γ + 5 − 2n]x2 + [3 − n − γ] x + 1 . (7)
+In order to compute the eigenvalues of b
+H, we need the following spectral theorem for finite rank Jacobi operators.
+We will only need information about the point spectrum
+as will be clear soon.
+Theorem 2. ([11], p8) Let J be an eventually-free Jacobi
+matrix and y0 (x) be its Jost function. Then all roots
+of y0 (x) in the complex unit disk are real and simple,
+y0 (0) 6= 0. A real number λj is an eigenvalue of J if and
+only if
+λ j = xj +
+
+√
+
+n−2
+n−2
+Since H ẽn−2 = γ n−1
+− 1 ẽn−2 + γ n−1
+ẽn−1 , the sub-
+
+space S = span{ẽn−2 , ẽn−1 , · · · } is H-invariant. Under
+the new basis, the adjacency operator H becomes
+
+
+−In−2 O
+H=
+b
+O
+H
+As will be clear soon, it suffices for us to restrict our focus
+b which is the operator H restricted to
+on the operator H,
+the subspace S = span{ẽn−2 , ẽn−1 , · · · }. This is because
+
+(6)
+
+1
+,
+xj
+
+xj ∈ (−1, 1),
+
+y0 (xj ) = 0.
+
+By choosing γ = n + O(1), the roots of y0 (x) in the
+complex unit disk can be approximated consecutively.
+First note that there are four real roots for y0 (x) and two
+of them lie in the unit disk as indicated by the following
+table:
+Denote the two roots within the unit disk as x± =
+1
++
+δ± . Hence,
+n
+r
+ 
+n−2
+1
+1
+2
+2
+0=γ
+· y0 (x± ) = − + n2 δ±
++o
++ o(n2 δ±
+).
+n−1
+n
+n
+
+4
+x
+γ
+
+q
+
+n−2
+n−1
+
+1
+−∞
+−1
+1
++∞
+n
+1
+1
+· y0 −∞ γ +1 > 0 − n +O( n2 ) < 0 2nγ + O(n) > 0 −∞
+
+TABLE I. For γ = n + O(1) and sufficiently large n, there are
+4 sign changes of y0 (x).
+
+In order for the left-hand side to attain 0 exactly, for all
+n, at least the two highest order terms on the right-hand
+2
+side should cancel perfectly; that is, o( n1 ) = − n1 + n2 δ±
+which implies
+
+
+1
+1
+1
+x± = ± 3/2 + o
+.
+(8)
+n n
+n3/2
+
+IV.
+
+ORACLE AT THE EDGE OF INFINITY
+
+In this section, we show that even when the oracle
+is placed at the attachment vertex of the infinite path,
+spatial search remains optimal on Ln . See Figure 2.
+Together with Section III, this will show that the
+search algorithm is oblivious as it does not need to know
+if the external probe (tail) is present or not. This is because the two cases surprisingly require the same asymptotic time for optimal spatial search. The claim follows
+from a similar analysis as before.
+The adjacency operator of Ln (γ) is given as
+
+
+b are given by
+Therefore, the two distinct eigenvalues of H
+√
+(9)
+λ± = n ± n + O(1).
+The corresponding eigenvectors (or bound states) are
+given by y± = (y1 (x∓ ), y2 (x∓ ), . . .)T where the entries
+are defined by the Jost polynomials
+r
+ 
+1 n−1
+1
+1
+y1 (x∓ ) = ±
+·
++O
+,
+(10)
+γ n − 2 n3/2
+n3
+
+
+1
+1
+1
+2
+1
+y2 (x∓ ) = √
+·
+∓√
++O
+,
+n7/2
+n − 1 n2
+n − 1 n5/2
+(11)
+
+
+1
+k
+1
+yk (x∓ ) = k ∓ (2k+1)/2 + O
+, k = 3, 4, · · · .
+n
+nk+1
+n
+(12)
+Now, we are ready to prove Theorem
+1.
+q
+q
+1
+n−2
+ẽ
+First, note that both e1 =
+n−1 n−2 +
+n−1 ẽn−1
+and z1 = ẽn−1 are completely in the invariant subspace
+S. Thus, we can restrict our unitary evolution to S.
+Moreover, as e1 overlaps almost completely with ẽn−1 , it
+suffices to consider ẽn−1 as the target state. Hence, the
+fidelity can be further approximated as
+r
+
+
+n−2
+1
+b
+−itH
+−itH
+he1 , e
+e2 i + O
+,
+he1 , e
+z1 i ≥
+n−1
+n1/2
+where ek is a unit vector which is the k-th basis vector
+for the invariant subspace S = span{ẽn−2 , ẽn−1 , · · · }.
+Notice that
+hek , y+ ihy+ , ek i hek , y− ihy− , ek i
++
+= 1, k = 1, 2,
+n→∞
+hy+ , y+ i
+hy− , y− i
+lim
+
+that is, both the initial and the target states lie in
+the two-dimensional invariant subspace spanned by the
+eigenvectors y+ and y− . Thus, it again suffices to consider the fidelity in this subspace.
+Straightforward calculation shows that when γ = n +
+O(1), the fidelity satisfies |he1 , e−itH z1 i| = 1 + o(1) for
+π
+time t = 2√
+. If we normalize the adjacency matrix of
+n
+√
+Kn , we obtain O( n) time (matching Grover search).
+
+0 1 ···
+1 0 · · ·
+
+. . .
+ .. .. . .
+
+
+H = 1 1 · · ·
+
+
+
+
+
+
+
+
+1
+1
+..
+.
+γ 1
+1 0 1
+1 0 1
+.. .. ..
+. . .
+
+
+
+
+
+
+
+.
+
+
+
+
+
+
+First, we restrict our focus to the invariant subspace
+S
+z1 =
+q = span{ẽn−1
+q, ẽn , · · · } since en = ẽn ∈ S and
+Pn−1
+n−1
+1
+1
+√
+j=1 ej
+n ẽn−1 +
+n ẽn ∈ S, where ẽn−1 =
+n−1
+and ẽk = ek , k ≥ n. Under the new basis that spans S,
+the operator H is a rank-2 Jacobi matrix
+
+
+n−2
+√
+ẽn  n−1
+b =
+
+H
+ẽn+1
+
+..
+.
+ẽn−1
+
+√
+
+
+n−1
+
+
+γ
+1
+.
+
+1
+0
+1
+
+.. .. ..
+. . .
+
+(13)
+
+Hence, the following Jost polynomials are obtained:
+1
+· [−γx3 + (n − 2)(γ − 1)x2
+n−1
++ (2 − n − γ)x + 1],
+1
+y1 (x) = √
+· (x − γx2 ),
+n−1
+yk (x) = xk , k = 2, 3, · · · .
+y0 (x) = √
+
+(14)
+(15)
+(16)
+
+By choosing γ = n + O(1), we can compute the two
+distinct roots for y0 that is within the interval [−1, 1]
+1
+1
+x± = ± 3/2 + o
+n n
+
+
+
+1
+n3/2
+
+
+,
+
+(17)
+
+b
+which yields the corresponding eigenvalues for H
+λ± = n ±
+
+√
+
+n + O(1).
+
+(18)
+
+As shown previously, the corresponding eigenvectors are
+
+5
+defined by the values of Jost polynomials:
+
+
+1
+1
+1
+· 3/2 + O
+(19)
+y1 (x∓ ) = ± √
+n5/2
+n−1 n
+ 
+1
+2
+1
+y2 (x∓ ) = 2 ∓ 5/2 + O
+(20)
+n
+n3
+n
+
+
+1
+k
+1
+yk (x∓ ) = k ∓ (2k+1)/2 + O
+, k = 3, 4, · · · .
+n
+nk+1
+n
+(21)
+Following the same argument, we can see that for time
+π
+t = 2√
+, the fidelity satisfies |hen , e−itH z1 i| = 1 + o(1).
+n
+
+We call a time-dependent state ψ(t) ∈ `2 (Z+ ) exponentially decaying if there is a positive integer M so that
+for all m ≥ M we have |hem , ψ(t)i| = O(κm ), for some
+κ < 1, for all t.
+Proof. (of Theorem 3) Let Hw = H0 + γPw .
+It
+suffices to show the claim under the assumption
+2
+e−itHw β1 − ζew = o(1), since kβ1 − z1 k = o(1) and
+by using the triangle inequality for squared norm (see
+[18], eq. 18.5).
+Following [8], we compare two Schrödinger evolutions
+given by
+0
+ψw
+(t) = −iHw ψw (t),
+0
+ψ0 (t) = −iH0 ψ0 (t),
+
+ψw (0) = β1 ,
+ψ0 (0) = β1 .
+
+Note ψ0 (t) ≡ β1 , for all t, as β1 is an eigenstate of H0 .
+For simplicity, we assume that spatial search achieves
+perfect fidelity, namely, ψw (t0 ) ≡ ew . The general case
+is handled using triangle inequality for squared norm.
+2
+The key quantity is M (t) := kψw (t) − ψ0 (t)k . First,
+notice that
+M (t0 ) = 2(1 − Rehew , β1 i) ≥ 2(1 − 1 ).
+
+(22)
+
+0
+
+FIG. 2. Optimal spatial search still occurs on the infinite
+lollipop even if the oracle sits at gateway vertex n.
+
+V.
+
+OPTIMALITY
+
+We show that the time bound obtained in Theorem 1
+(and in Section IV) is optimal. To this end, we generalize an argument of Farhi and Gutmann [8] to a class of
+infinite graphs with tails.
+bn =
+For a finite graph Gn on n vertices, take the cone G
+K1 +Gn which is obtained by adding a new vertex (called
+the conical vertex) and connecting it to all vertices of Gn .
+Then, attach a tail to the conical vertex and denote this
+b n (P∞ ). Notice that we recover the
+infinite graph as G
+infinite lollipop when Gn is a clique.
+Theorem
+√ 3. Let Gn be a (n, d)-regular graph, where
+d = ω( n) for some δ > 0, and let H0 be the adjacency
+b n (P∞ ). Let z1 ∈ `2 being natural embedoperator of G
+ding of the principal eigenvector of Gn . Suppose there is
+a time t0 so that for some γ ∈ R and ζ ∈ U (1), and for
+a vertex w of Gn , we have
+e−it0 (H0 +γPw ) z1 − ζew
+
+Furthermore, we have M (t) = −2Rehψw (t), ψ0 (t)i0 .
+Given that the inner product is an infinite series, the
+existence of its derivative requires uniform convergence.
+As ψ0 (t) ≡ β1 is exponentially decaying (by virtue of being a Jost solution), we have |(ψw (t))m (β1 )m | ≤ |(β1 )m |
+and
+∞
+X
+X
+κM
+|(β1 )m | ≤ CM +
+κm = CM +
+<∞
+1−κ
+m=1
+m≥M
+
+for a constant CM . Thus, hψw (t), β1 i is uniformly convergent (see Titchmarsh [20], 1.11).
+0
+(t) =
+Since Hw is a finite-rank Jacobi matrix and ψw
+0
+−iHw ψw (t), we see that hψw (t), ψ0 (t)i is also uniformly
+convergent. This allows us to take the derivative of
+hψw (t), ψ0 (t)i by termwise differentiation (see Titchmarsh [20], 1.72), i.e.,
+0
+hψw (t), ψ0 (t)i0 = hψw (t), ψ00 (t)i+hψw
+(t), ψ0 (t)i
+= −ihψw (t), H0 ψ0 (t)i+ihHw ψw (t), ψ0 (t)i.
+
+So, we obtain
+M 0 (t) = 2γImhPw ψw (t), ψ0 (t)i ≤ 2γ kPw ψ0 (t)k .
+Thus, M 0 (t) ≤ 2γ1 , which further implies
+Z t0
+M (t0 ) =
+M 0 (t)dt ≤ 2γ1 t0 .
+0
+
+2
+
+= o(1).
+
+Then, γt0 = Ω(1/1 ), where 1 = |hew , z1 i|, provided
+1/γ1 ∈ o(1).
+The largest eigenvalue in σp (H0 ) has a unique bound
+eigenstate β1 which satisfies kβ1 − z1 k = o(1). This can
+be shown using similar techniques as in previous sections.
+
+By combining the lower and upper bounds on M (t0 ), we
+get γt0 ≥ (1 − 1 )/1 = Ω(1/1 ) as 1 = o(1).
+Theorem 3 justifies the optimal time 1/1 used to define spatial
+lollipop, we have
+√ search. For the infinite
+√
+1 = 1/ n, and thus, γt0 = Ω( n). Since the√search algorithm uses γ = n + O(1), we get t0 = Ω(1/ n), which
+matches the bound achieved by Theorem 1. Hence, the
+algorithm is optimal.
+
+6
+VI.
+
+CONCLUSION
+
+In this work, we proved optimal spatial search occurs
+on cliques even in the presence of an infinite path. This
+generalized a known result of Farhi and Gutmann [8] to
+the infinite setting. We view this as a first step in showing
+that optimal spatial search is robust against an adversary modeled as an infinite-dimensional external quantum probe. Interesting directions for future work include
+extending the result to multiple tails or to tails induced
+by more general Jacobi matrices and strengthening the
+lower bound to other families of infinite graphs.
+
+[1] N.I. Akhiezer and I.M. Glazman. Theory of linear operators in Hilbert space. Courier Corporation, 2013.
+[2] P.-A. Bernard, C. Tamon, L. Vinet, and W. Xie. Quantum state transfer in graphs with tails, 2022. arxiv:quantph/2211.14704.
+[3] S. Chakraborty, L. Novo, A. Ambainis, and Y. Omar.
+Spatial search by quantum walk is optimal for almost all
+graphs. Physical Review Letters, 116(3):100501, 2016.
+[4] S. Chakraborty, L. Novo, and J. Roland. Optimality of
+spatial search via continuous-time quantum walks. Physical Review A, 102(3):032214, 2020.
+[5] A. Chan, C. Godsil, C. Tamon, and W. Xie. Of shadows
+and gaps in spatial search. Quantum Information and
+Computation, 22(13& 14):1110–1131, 2022.
+[6] A. Childs and J. Goldstone. Spatial search by quantum
+walk. Physical Review A, 70:022314, 2004.
+[7] D. Damanik and B. Simon. Jost functions and Jost solutions for Jacobi matrices, II. Decay and Analyticity. International Mathematics Research Notices, 2006:19396,
+2006.
+[8] E. Farhi and S. Gutmann. Analog analogue of a digital
+quantum computation. Physical Review A, 57(4):2403,
+1998.
+[9] A. Glos and T. Wong. Optimal quantum walk search on
+Kronecker graphs with dominant or fixed regular initiators. Physical Review A, 98:062334, 2018.
+[10] C. Godsil and G. Royle. Algebraic Graph Theory.
+Springer, 2001.
+[11] L. Golinskii. Spectra of infinite graphs with tails. Linear
+and Multilinear Algebra, 64(11):2270–2296, 2016.
+
+Our work was motivated by a question posed in [2].
+We mention that discrete-time quantum walk on graphs
+with tails was studied in [14].
+
+ACKNOWLEDGMENTS
+
+Work started during the workshop “Graph Theory, Algebraic Combinatorics, and Mathematical Physics” at
+Centre de Recherches Mathématiques (CRM), Université de Montréal. C.T. would like to thank CRM for its
+hospitality and support during his sabbatical visit. W.X.
+was supported by NSF grant DMS-2212755. We thank
+Pierre-Antoine Bernard and Luc Vinet for discussions.
+
+[12] L. Grover. Quantum mechanics help in searching for a
+needle in a haystack. Physical Review Letters, 79:325,
+1997.
+[13] J. Janmark, D. Meyer, and T. Wong. Global symmetry
+is not necessary for fast quantum search. Physical Review
+Letters, 112:210502, 2014.
+[14] N. Konno, E. Segawa, and M. Štefaňák. Relation between
+quantum walks with tails and quantum walks with sinks
+on finite graphs, 2021. arxiv:math-ph/2105.03111.
+[15] B. Mohar. The spectrum of an infinite graph. Linear
+algebra and its applications, 48:245–256, 1982.
+[16] B. Mohar and W. Woess. A survey on spectra of infinite
+graphs. Bulletin of the London Mathematical Society,
+21(3):209–234, 1989.
+[17] W. Rudin. Functional Analysis. McGraw-Hill, 2nd edition, 1991.
+[18] S. Sternberg. A mathematical companion to quantum mechanics. Dover, 2019.
+[19] H. Tanaka, M. Sabri, and R. Portugal. Spatial search
+on Johnson graphs by continuous-time quantum walk.
+Quantum Information Processing, 21(74), 2022.
+[20] E.C. Titchmarsh. The Theory of Functions. Oxford University Press, 2nd edition, 1939.
+[21] T. Wong. Quantum walk search on Johnson graphs.
+Journal of Physics A: Mathematical and Theoretical,
+49(19):195303, 2016.
+
+

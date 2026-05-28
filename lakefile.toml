@@ -2,9 +2,17 @@ name = "graphplay"
 version = "0.1.0"
 defaultTargets = ["graphplay"]
 
+[[require]]
+name = "mathlib"
+path = "/Users/ember/src/mathlib4"
+
 [[lean_lib]]
 name = "Graphplay"
 
 [[lean_exe]]
 name = "graphplay"
 root = "Main"
+
+[[lean_exe]]
+name = "graphplay-toolkit"
+root = "Graphplay.Toolkit"

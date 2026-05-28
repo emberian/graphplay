@@ -1,0 +1,1813 @@
+Fractional Revival and Association Schemes
+arXiv:1907.04729v1 [math.CO] 10 Jul 2019
+
+Ada Chan
+Department of Mathematics and Statistics, York University, Toronto, ON, Canada
+ssachan@yorku.ca
+
+Gabriel Coutinho
+Department of Computer Science, Universidade Federal de Minas Gerais, Belo Horizonte, MG, Brazil
+gabriel@dcc.ufmg.br
+
+Christino Tamon
+Department of Computer Science, Clarkson University, Potsdam, NY, USA
+tino@clarkson.edu
+
+Luc Vinet & Hanmeng Zhan
+Centre de Recherches Mathématiques, Université de Montréal, Montréal, QC, Canada
+{vinet,zhanhanm}@crm.umontreal.ca
+
+July 11, 2019
+Abstract
+Fractional revival occurs between two vertices in a graph if a continuous-time quantum walk unitarily maps the characteristic vector of one vertex to a superposition of
+the characteristic vectors of the two vertices. This phenomenon is relevant in quantum
+information in particular for entanglement generation in spin networks. We study fractional revival in graphs whose adjacency matrices belong to the Bose-Mesner algebra of
+association schemes. A specific focus is a characterization of balanced fractional revival
+(which corresponds to maximal entanglement) in graphs that belong to the Hamming
+scheme. Our proofs exploit the intimate connections between algebraic combinatorics
+and orthogonal polynomials.
+Keywords: Quantum walk, association scheme, Bose-Mesner algebra, Hamming scheme,
+Krawtchouk polynomials.
+MSC: 05E30, 05C50. 33C05, 15A16, 81P40.
+
+1
+
+1
+
+Introduction
+
+Quantum walk on graphs is a fundamental area in quantum information and computation. In
+quantum computation, it provides a natural generalization of Grover’s celebrated algorithm
+to arbitrary graphs (see [19]). In quantum information, it is important for studying transport
+problems in quantum spin networks. This was initiated by Bose [2] in the context of perfect
+state transfer in quantum spin chains.
+A quantum transport problem that is relevant for entanglement generation is fractional
+revival. It is known that entanglement is a useful resource in quantum information theory
+with many applications (for example, the teleportation protocol). Fractional revival is also
+interesting since it captures both aspects of perfect state transfer and periodicity which are
+two well-known quantum transport phenomena (see Godsil [15]).
+Prior to our work, Genest et al. [14] and Christandl et al. [11] had analytically studied
+the fractional revival phenomenon in quantum spin chains. The graphs they studied may be
+viewed as weighted paths with (possibly) additional edges connecting vertices at distance two
+from each other. Based on techniques from orthogonal polynomials, they observed spectral
+conditions for fractional revival to occur in these weighted graphs.
+In this work, we study quantum fractional revival mainly on unweighted graphs. Our
+motivation is to understand the role of the underlying graph structure on fractional revival
+without the benefit of arbitrary real-valued weights. To this end, we study fractional revival
+from a graph-theoretic perspective and develop some algebraic machinery useful for analyzing
+this phenomenon. Other works with a similar focus include Bernard et al. [1] and our prior
+work [7].
+The main combinatorial object we focus on is an association scheme. An association
+scheme is a set of matrices that satisfy strong regularity relations, which allow for a fairly
+combinatorial treatment of their spectral properties. More details will be presented in Section
+3. We present a full characterization of when fractional revival occurs in a graph that belongs
+to an association scheme — a result that provides a way of easily and efficiently checking
+whether or when it occurs. Additionally, fractional revival in association schemes always
+features a partition of the vertex set of the graph into pairs of vertices, all of which exhibit
+fractional revival at the same time.
+Following our general description of fractional revival in association schemes, we make
+a connection to distance-regular graphs and orthogonal polynomials, which in turn leads to
+our treatment of fractional revival in graphs whose adjacency matrices belong to a special
+association scheme — the binary Hamming scheme H(n, 2). Our main result is a necessary
+and sufficient condition for balanced fractional revival to occur in this scheme. We then use
+this to provide constructions of explicit families of graphs with balanced fractional revival.
+Balanced fractional revival is a natural choice since it corresponds to the generation of maximally entangled states (which are crucial for many quantum information theory protocols).
+
+2
+
+2
+
+Preliminaries
+
+We review some background from algebraic graph theory (see Godsil and Royle [16]). A
+graph X is given by a set of its vertices V (X) and a set of it edges E(X). The adjacency
+matrix of X, which we denote by A(X), is a 01 matrix whose ab entry is 1 if ab ∈ E(X)
+and is 0 otherwise. For a vertex a ∈ V (X) where |V (X)| = n, we use ea to denote the unit
+(characteristic) vector of dimension n that is 1 at position indexed by a and is 0 elsewhere.
+For a graph X, the continuous-time quantum walk (or transition) matrix of X is given
+by
+U(t) = e−itA(X)
+(1)
+where t ranges over the reals. This was originally studied by Farhi and Gutmann [13] in the
+context of decision trees.
+Let a and b be two distinct vertices of X. We say that X admits fractional revival from
+a to b at time τ > 0 if for some α, β ∈ C, with β 6= 0 and |α|2 + |β|2 = 1, we have
+U(τ )ea = αea + βeb .
+
+(2)
+
+In this case, we also say (α, β)-revival occurs from a to b at time τ . By factoring a common
+unimodular phase factor, we may assume α is real. So, we say eiζ (α, β)-revival occurs
+where α and ζ √are real scalars and β is complex. The fractional revival is called balanced if
+|α| = |β| = 1/ 2. In this case, we may simply say balanced fractional revival occurs with
+phase ζ.
+We say X has (α, β)-revival if it has (α, β)-revival from every vertex at the same time.
+This holds if there is a permutation matrix T (with no fixed points) where for some time τ
+we have
+U(τ ) = αI + βT.
+(3)
+We define several other quantum transport properties. The graph X is called periodic at
+vertex a at time τ if β = 0 in (2). We say X has perfect state transfer from a to b at time τ
+if α = 0 in (2). See Godsil [15] for a survey of these notions.
+
+3
+
+Association Schemes
+
+A symmetric association scheme is a set of n×n symmetric 01-matrices {A0 , ..., Ad } satisfying
+the following properties:
+Pd
+(i)
+i=0 Ai = J, the all 1s matrix.
+(ii) The identity matrix is one of them, and we always assume A0 = I.
+
+(iii) Ai Aj is a linear combination of the matrices in the scheme, for all i and j.
+Each matrix in the association scheme is called a class of the scheme. As the classes are
+symmetric, property (iii) implies that they all commute. By taking products and linear
+3
+
+combinations, it follows that the matrices {A0 , ..., Ad } generate a commutative algebra of
+matrices, called the Bose-Mesner algebra of the scheme, which we denote by A. The association scheme always forms a basis for its Bose-Mesner algebra. This is an algebra of
+symmetric commuting matrices, thus it can be simultaneously diagonalized. The projectors onto the eigenspaces are also a basis for the algebra, therefore there are d + 1 of those,
+which we typically denote by {E0 , ..., Ed }. The Bose-Mesner algebra is closed under ordinary
+matrix product, and {E0 , ..., Ed } are the minimal idempotents. It is also closed under the
+entrywise product of matrices, and the association scheme {A0 , ..., Ad } is a basis of minimal
+idempotents for this product. Two square (d + 1) × (d + 1) matrices P and Q are typically
+defined in order to record the relationship between these two bases, as follows:
+P
+• for all i, Ai = dj=0 Pji Ej ; and
+• for all j, Ej = n1
+
+Pd
+
+i=0 Qij Ai .
+
+Note that P Q = nI. We refer the reader to [3] for a complete introduction to association
+schemes, and to [9] for an application of the concept related to quantum walks.
+For the result that follows, let X be a graph that belongs to an association scheme,
+which is to say, A = A(X) is a sum of some of the matrices in an association scheme. Thus
+A belongs to the Bose-Mesner algebra, and so does U(t), for any t. Hence it is a linear
+combination of matrices in the scheme, and this shall be sufficient for a fairly restricted
+description of when and how fractional revival can occur.
+3.1 Theorem. Let X be a graph with A = A(X) in the Bose-Mesner algebra of an association scheme {A0 , A1 , . . . , Ad } with minimal idempotents {E0 , E1 , . . . , Ed }. Suppose the
+eigenvalues of A are given by θ0 ≥ θ1 ≥ . . . ≥ θd .
+There are real scalars α, ζ and a complex scalar β so that the graph X has eiζ (α, β)
+fractional revival from a to b at time τ if and only if both the following conditions hold.
+(a) the unique class Aq of the scheme which is non-zero in the (a, b) entry is a permutation
+matrix of order 2 (and so its eigenvalues are ±1); and
+(b) for all r ∈ {1, ..., d}, if Aq Er = Er , then (θr − θ0 )τ ≡ 0 (mod 2π), and if Aq Er = −Er ,
+then
+(θr − θ0 )τ ≡ 2 cos−1 (α) (mod 2π)
+(4)
+Note that if the conditions hold, then fractional revival occurs between all pairs of vertices
+determined by Aq , as in fact,
+U(τ ) = eiζ (αI + βAq ).
+
+(5)
+
+Proof. We first show Condition (a) is necessary. Assume X has eiζ (α, β) fractional revival
+from a to b at time τ , where α ∈ R. Thus, U(τ )ea = eiζ (αe
+Pa d+ βeb ). Since U(τ ) belongs to
+the Bose-Mesner algebra of the scheme, we have U(τ ) = r=0 ηr Ar for some constants ηr
+4
+
+(which depend on τ ). Suppose Aq is the unique matrix in the scheme for which (Aq )b,a = 1.
+Thus, η0 = eiζ α, ηq = eiζ β, and ηℓ = 0 for ℓ 6= 0, q. This shows that
+U(τ ) = eiζ (αA0 + βAq ).
+
+(6)
+
+As Aq commutes with J, it is a symmetric matrix with row and column sums equal 1. Hence
+Aq is a permutation matrix of order 2.
+Now we assume Condition (a) holds. Fractional revival between a and b is equivalent to
+Equation (5),P
+which we now show to be equivalent to Condition (b).
+Let Aq = dr=0 σr Er . Again, observe that σr = ±1. We have
+U(τ ) = eiζ (αA0 + βAq ).
+
+(7)
+
+if and only if, for all r ∈ {0, ..., d},
+e−iθr τ = eiζ (α + βσr ).
+This is true because the idempotents {E0 , ..., Er } form a basis. Now, as |eiζ (α ± β)| = 1 and
+α ∈ R, we have β ∈ iR, and since |α|2 + |β|2 = 1, we may assume α = cos ϑ and β = i sin ϑ.
+Hence Equation (7) is equivalent to, for all r,
+e−iθr τ = eiζ eσr iϑ .
+Fixing −θ0 τ = ζ + ϑ (as σ0 = 1), the equation above, for each r 6= 0, is equivalent to
+(i) if σr = 1, then (θr − θ0 )τ ≡ 0 (mod 2π); and
+(ii) if σr = −1, then (θr − θ0 )τ ≡ 2ϑ (mod 2π),
+which is precisely Condition (b) of the statement.
+We can say a bit more. If there is fractional revival between two vertices in a graph in an
+association scheme, the result above says that there is a permutation matrix in the scheme
+that swaps these two vertices. Thus they are strongly cospectral (see [17, Theorem 11.2]).
+As a consequence, we can apply [7, Corollary 5.6], and because θ0 is always an integer if X
+is regular, we have the corollary below.
+3.2 Corollary. If fractional revival occurs in a graph X belonging to an association scheme
+at time τ , then all eigenvalues of X are integers, and τ is a rational multiple of π.
+This takes us immediately to the following characterization.
+3.3 Theorem. Let {A0 , ..., Ad } be an association scheme whose set of minimal idempotents
+is given by {E0 , ..., Ed }. Assume one of its classes isP
+a permutation matrix of order two,
+say Aq for some q, with spectral decomposition Aq = dr=0 σs Es . Let X be a graph in this
+scheme, with integer eigenvalues θ0 ≥ ... ≥ θd . Define
+
+d
+g = gcd (θ0 − θs ) s=1 .
+Then for all integers m ≥ 1 satisfying the properties
+5
+
+(i) {(θ0 − θs )/g}σs=−1 are all congruent to the same integer µ modulo m, and
+(ii) {(θ0 − θs )/g}σs=1 are all congruent to 0 modulo m,
+it follows that X admits eiζ (α, β) fractional revival at time τ = 2tπ/mg, for any integer t,
+where
+
+
+
+
+
+
+tµπ
+tµπ
+−2θ0 − µg
+, α = cos
+and β = i sin
+ζ = tπ
+mg
+m
+m
+
+Moreover, if fractional revival occurs at time τ , then there are integers m and µ such that
+(i) and (ii) above hold.
+
+Note that if µ 6= 0, then g · gcd(µ, m) divides θ0 − θs for s = 1, . . . , d, so we either have
+gcd(µ, m) = 1 or µ = 0. In particular, if µ = 0 in the theorem, it describes periodicity
+(and it always happens choosing the degenerate case m = 1 as, after all, the eigenvalues are
+integers). If µ = 1 and m = 2, the theorem describes perfect state transfer. For any other
+m, as long as µ 6= 0, we have fractional revival with both α and β different than 0. If m = 4
+and µ = ±1, we have balanced fractional revival.
+Proof. If m and µ exist satisfying properties (i) and (ii), then clearly Condition (b) of
+Theorem 3.1 is satisfied at τ , and parameters ζ (modulo 2π), α and β are determined. Now
+assume fractional revival occurs at a time τ , which, by Corollary 3.2, we may assume satisfies
+τ = (a/b)π for some (positive) integers a and b. We may further assume a < 2b, because a
+graph with integer eigenvalues is periodic at time 2π. Let m be the smallest integer so that
+for some integer t, the equality below holds
+a
+2t
+π=
+π.
+b
+mg
+We must show now that conditions (i) and (ii) hold for some µ. From Condition (b) of
+Theorem 3.1, for all s with σs = 1, we have
+(θ0 − θs )
+
+2t
+π≡0
+mg
+
+(mod 2π),
+
+and as t and m are coprime, this is equivalent to (θ0 − θr )/g ≡ 0 (mod m). Likewise, for all
+s with σs = −1, we have, for some ϑ,
+(θ0 − θs )
+
+2t
+π ≡ 2ϑ (mod 2π),
+mg
+
+and as t and m are coprime, this is equivalent to the existence of an integer µ with (θ0 −
+θs )/g ≡ µ (mod m).
+The conditions in Theorem 3.3 are quite descriptive, but we can do better in terms of
+providing an efficient way of checking whether fractional revival (or its variants) occur.
+
+6
+
+3.4 Lemma. Let {A0 , ..., Ad } be an association scheme whose set of minimal idempotents
+is given by {E0 , ..., Ed }. Assume one of its classes is a permutation matrix of order 2, say Aq
+P
+for some q, with spectral decomposition Aq = dr=0 σs Es . Let X be a graph in this scheme,
+with integer eigenvalues θ0 ≥ ... ≥ θd . Define
+
+d
+g = gcd (θ0 − θs ) s=1 .
+Let h be the integer satisfying
+
+
+hg = gcd (θr − θs ) σr =σs .
+
+Then a positive integer m satisfies Theorem 3.3 if and only if it divides h.
+Proof. The integer m satisfies the properties of Theorem 3.3 if and only if, for σs = σr ,
+θr − θs
+θ0 − θs θ0 − θr
+=
+−
+≡ 0 (mod m),
+g
+g
+g
+the last equivalence being true because either 0 − 0 ≡ 0 (mod m) or µ − µ ≡ 0 (mod m).
+This equation holds exactly when m divides h.
+3.5 Theorem. Let X be a graph in an association scheme containing a permutation matrix
+of order two. Let g and h be defined as in Lemma 3.4. Then
+(a) h = 1 if and only if the graph X does not admit fractional revival nor perfect state
+transfer.
+(b) h > 2 if and only if the graph X admits fractional revival that is different from perfect
+is the minimum time when fractional revival occurs in
+state transfer. In particular, 2π
+hg
+X
+(c) h is even if and only if the graph X admits perfect state transfer. In particular, when
+h = 2, X admits perfect state transfer but no other form of fractional revival.
+(d) h is doubly even if and only if the graph X admits balanced fractional revival.
+
+3.1
+
+Distance-Regular Graphs
+
+Association schemes can be constructed in several distinct ways. One of them comes from
+certain graphs and their distance matrices. If X is a graph, let Ak be the 01 symmetric matrix
+indexed by vertices with (i, j) entry equal to 1 if and only if vertex i is at distance k from
+vertex j. Note that A0 = I and A1 is simply the adjacency matrix. To a graph of diameter d
+we can associate the set {A0 , ..., Ad } of its distance matrices. Now in very few special cases,
+the set of distance matrices of a graph form an association scheme. When this happens, the
+graph is called distance-regular. See [3] for more background on distance-regular graphs.
+A distance-regular graph X is called primitive if each of the graphs Xk whose adjacency
+matrix coincide with the k-th distance matrix of X, Ak , are connected. If any of them is
+7
+
+disconnected, X is called imprimitive. If X is imprimitive and k-regular with k ≥ 3, then X
+is bipartite or Xd is a disjoint union of ℓ-cliques, for some ℓ. In the latter case, X is called
+antipodal, the cliques in Xd are called the fibres of X, and the fibre size is ℓ. (See Theorem
+4.2.1 in [3].)
+3.6 Proposition. Let X be a distance-regular graph of diameter d > 1. If X has (α, β)
+fractional revival from a to b at time τ , then
+UX (τ ) = αA0 + βAd ,
+
+(8)
+
+where Ad is the adjacency matrix of d2 K2 .
+Proof. By Theorem 3.1, we know that UX (τ ) = αA0 + βAq for some 1 ≤ q ≤ d, and that
+Aq is a permutation matrix of order two with no fixed points. By reasoning exactly as in [9,
+Theorem 4.1], it must be that q = d.
+If X is a distance-regular graph with corresponding distance matrices {A0 , ..., Ad }, it
+is not hard to see that there are polynomials p0 , ..., pd , with pk having degree k, so that
+pk (A1 ) = Ak . These polynomials are all orthogonal according to a standard choice of inner
+product, because the Schur product between Ai and Aj vanishes, that is, Ai ◦ Aj = 0,
+for i 6= j, and thus tr Ai Aj = 0. If X is antipodal with eigenvalues θ0 > ... > θd and
+corresponding projectors {E0 , ..., Ed }, and Ad is a permutation matrix of order 2, then [4,
+Proposition 11.6.2] tells us that
+d
+X
+Ad =
+(−1)r Er .
+r=0
+
+Along with the characterization in Theorem 3.5, this provides a very efficient and easy
+method to check whether a distance-regular graph (DRG) admits fractional revival (FR).
+We use PST to abbreviate perfect state transfer in the table below. We summarize the
+results for the families of distance-regular graphs studied in [9].
+
+8
+
+DRG
+
+spectrum
+
+g
+
+h
+
+µ
+
+nK2
+
+{2n − 2, 0, −2}
+
+2
+
+n
+
+n−1
+
+2-fold cover of Kn
+
+√
+
+√
+
+FR
+FR at kπ
+n , k = 1, . . . , n − 1
+PST at π2 iff n is even
+
+{n − 1, δ+2 ∆ , −1, δ−2 ∆ }
+
+δ=0
+
+2
+√
+n
+
+δ = −2
+
+1
+
+-
+
+no FR, no PST
+
+1
+
+no FR, PST at √πn
+
+n−2
+4
+n−2
+2
+
+FR at √πn , no PST
+
+2
+√
+
+√
+√
+
+n
+2
+
+δ = 2, n ≡ 4 (mod 8)
+
+4
+
+δ = 2, n ≡ 0 (mod 8)
+
+2
+
+√
+n
+
+n
+
+2
+
+1
+
+no FR, PST at nπ
+
+{n − 2j}nj=0
+
+d
+{ 2d
+2 − 2j(2d − j)}j=0
+
+2
+
+2
+
+1
+
+no FR, PST at π2
+
+2
+
+4
+
+2d − 1
+
+balanced FR at π4
+
+Johnson graph J(2n, n)
+
+{(n − j)2 − j}nj=0
+
+2
+
+1
+
+-
+
+no FR, no PST
+
+Doubled odd graph
+
+(−1)j (n + 1 − j),
+
+1
+
+1
+
+-
+
+no FR, no PST
+
+Hadamard graph
+of order n2
+n-cube
+halved 2d-cube
+
+on (2n + 1) points
+
+4
+
+{n2 , n, 0, −n, −n2 }
+
+FR at √πn , PST at π2
+
+PST at π2
+
+(j 6= n + 1)
+
+Hamming Scheme
+
+In this section, we focus on the Hamming scheme and provide characterization when balanced
+fractional revival occurs.
+Consider families of graphs whose vertices are the binary sequences of length n, where n ≥ 1.
+The graph Xr , for r = 0, . . . , n, has edges connecting all pairs of vertices with Hamming distance
+r. The graph X1 is also known as the n-cube. Let Ar = A(Xr ) be the adjacency matrix of Xr .
+This describes the well-known Hamming scheme H(n, 2). So, the Bose-Mesner algebra of H(n, 2)
+is spanned by the set of matrices A = {A0 , A1 , . . . , An }. Let {E0 , . . . , En } be the set of minimal
+idempotents of this scheme, where
+A1 Es = (n − 2s)Es
+
+and An Es = (−1)s Es ,
+
+for s = 0, . . . , n.
+
+Then, we have (see Stanton [21], Section 2)
+Ar =
+
+n
+X
+
+pr (s)Es ,
+
+r = 0, . . . , n.
+
+(9)
+
+s=0
+
+where pr (x) is the Krawtchouk polynomial of degree r. A more customary notation for the
+Krawtchouk polynomial is pr (x, q, n) which specifies the arity q and the dimension n. We suppress q since we focus exclusively on q = 2 and we will include n only if necessary.
+
+9
+
+It is known that (see Stanton [21], Equation (2.3a))
+
+ X
+
+ 
+
+∞
+a m bm x m
+n
+a, b
+−r, −s
+2 , where 2 F1
+x =
+pr (s) =
+.
+2 F1
+−n
+c
+r
+cm m!
+m=0
+
+(10)
+
+Here, 2 F1 is the Gaussian hypergeometric function and z m = z(z + 1) . . . (z + m − 1) is the m-th
+rising factorial power of z.
+We state some useful properties of the Krawtchouk polynomials.
+4.1 Proposition. For n ≥ 2, the Krawtchouk polynomials pr (s) satisfy:
+(i) (MacWilliams and Sloane [18], Chapter 5, Section 7, Theorem 15)
+For 0 ≤ r ≤ n,
+
+ 
+r
+X
+s
+h n−h
+(−2)
+pr (s) =
+s = 0, . . . , n.
+r−h
+h
+
+(11)
+
+h=0
+
+Therefore,
+
+
+
+n−1
+pr (1) − pr (0) = −2
+r−1
+
+.
+
+(12)
+
+(ii) (Chihara and Stanton [10], Proposition 2.1)
+For 1 ≤ r ≤ n,
+pr (s, n) − pr (s + 1, n) = 2pr−1 (s, n − 1),
+
+s = 0, . . . , n − 1.
+
+(13)
+
+pr (s, n) − pr (s + 2, n) = 4pr−1 (s, n − 2),
+
+s = 0, . . . , n − 2.
+
+(14)
+
+
+ 
+r−1
+X
+s
+h n−2−h
+(−2)
+pr (s) − pr (s + 2) = 4
+,
+r−1−h
+h
+
+s = 0, . . . , n − 2.
+
+(15)
+
+(iii) (Chihara and Stanton [10], Proposition 2.3)
+For 1 ≤ r ≤ n,
+
+Therefore,
+
+h=0
+
+From Theorem 3.5, we see that for a graph X with eigenvalue θ0 , . . . , θr , the parameters
+
+n
+gcd (θ0 − θs ) s=1
+
+and
+
+
+gcd (θr − θs ) σr =σs .
+
+play a role in characterizing fractional revival. If, in addition, X is a class of the binary Hamming
+scheme H(n, 2), then we can express these two parameters using the eigenvalues of the scheme.
+To simplify the computation in the following proof, we define pr (s, n) = 0 if r < 0 or r > n.
+We can then extend Equations (13) and (14) to any integer r.
+
+10
+
+4.2 Lemma.
+P Let A = Ar1 + · · · + Arℓ , where 0 < r1 < · · · < rℓ ≤ n, in H(n, 2). Suppose A 6= An
+and A = ns=0 θs Es , where E0 , . . . , En are the minimal idempotents of H(n, 2). Define
+
+n
+g = gcd (θ0 − θs ) s=1 ,
+and h to be the integer satisfying
+
+
+n−2
+hg = gcd (θs − θs+2 ) s=0 .
+
+Then
+
+ℓ
+o rℓ
+n X
+pri −j (0, n − j)
+g = gcd 2j
+,
+j=1
+
+i=1
+
+and
+n
+
+hg = gcd 2j+1
+
+′
+ℓ
+X
+
+i=1
+
+o rℓ′
+,
+pri −j (0, n − j − 1)
+j=1
+
+(
+ℓ
+where ℓ′ =
+ℓ−1
+
+if rℓ < n,
+if rℓ = n.
+
+In particular, g is even and divides 2rℓ , and hg is doubly even and divides 2rℓ′ +1 .
+Proof. First we have
+on−1
+n ℓ
+n
+X
+on−1
+= gcd
+g = gcd θs − θs+1
+.
+pri (s, n) − pri (s + 1, n)
+s=0
+
+s=0
+
+i=1
+
+Applying Equation (13) gives
+)
+( ℓ
+ℓ
+ℓ
+X
+X
+X
+pri −1 (n − 1, n − 1)
+pri −1 (1, n − 1), . . . , 2
+pri −1 (0, n − 1), 2
+g = gcd 2
+(
+
+= gcd 2
+
+i=1
+ℓ
+X
+i=1
+
+i=1
+
+i=1
+
+n
+
+pri −1 (0, n − 1), gcd 2
+
+ℓ
+X
+i=1
+
+)
+on−2
+.
+pri −1 (s, n − 1) − pri −1 (s + 1, n − 1)
+s=0
+
+Applying Equation (13) repeatedly gives
+)
+( ℓ
+ℓ
+on−2
+n X
+X
+pri −2 (s, n − 2)
+pri −1 (0, n − 1), gcd 22
+g = gcd 2
+(
+
+i=1
+ℓ
+X
+
+(
+
+ℓ
+X
+
+= gcd 2
+
+i=1
+
+s=0
+
+i=1
+
+ℓ
+X
+
+pri −1 (0, n − 1), 2
+
+ℓ
+X
+
+pri −2 (0, n − 2), gcd 2
+
+pri −1 (0, n − 1), 22
+
+ℓ
+X
+
+pri −2 (0, n − 2), · · · , 2rℓ −1
+
+2
+
+i=1
+
+n
+
+2
+
+i=1
+
+on−3
+pri −2 (s, n − 2) − pri −2 (s + 1, n − 2)
+s=0
+
+= ···
+= gcd 2
+
+i=1
+
+2rℓ gcd
+
+n ℓ
+X
+i=1
+
+i=1
+
+)
+on−rℓ
+.
+pri −rℓ (s, n − rℓ )
+s=0
+
+11
+
+ℓ
+X
+i=1
+
+pri −rℓ +1 (0, n − rℓ + 1),
+
+)
+
+Since pri −rℓ (s, n − rℓ ) = 0 for i = 1, . . . , ℓ − 1, and prℓ −rℓ (s, n − rℓ ) = p0 (s, n − rℓ ) = 1 for
+s = 0, 1, · · · , n − rℓ , the last equation reduces to
+)
+( ℓ
+ℓ
+ℓ
+X
+X
+X
+rℓ
+rℓ −1
+2
+pri −rℓ +1 (0, n − rℓ + 1), 2
+.
+pri −2 (0, n − 2), · · · , 2
+pri −1 (0, n − 1), 2
+g = gcd 2
+i=1
+
+i=1
+
+i=1
+
+In particular, 2 divides g and g divides 2rℓ .
+To compute hg, first observe that pn (s, n) = pn (s + 2, n), for s = 0, . . . , n − 2. Hence
+(
+ℓ′
+X
+
+ℓ
+if rℓ < n,
+′
+pri (s, n) − pri (s + 2, n) , where ℓ =
+θs − θs+2 =
+ℓ − 1 if rℓ = n.
+i=1
+By Equation (14), we have
+)
+( ℓ′
+ℓ′
+ℓ′
+X
+X
+X
+pri −1 (n − 2, n − 2)
+pri −1 (1, n − 2), · · · , 4
+pri −1 (0, n − 2), 4
+hg = gcd 4
+= gcd 22
+
+ℓ′
+X
+i=1
+
+i=1
+
+i=1
+
+i=1
+
+(
+
+n
+
+pri −1 (0, n − 2), gcd 22
+
+ℓ′
+X
+i=1
+
+)
+on−3
+.
+pri −1 (s, n − 2) − pri −1 (s + 1, n − 2)
+s=0
+
+Similar to the computation of g, we apply Equation (13) repeatedly to get
+ℓ′
+ℓ′
+ℓ′
+o
+n X
+X
+X
+rℓ′
+3
+2
+pri −rℓ′ +1 (0, n − rℓ′ ), 2rℓ′ +1 .
+pri −2 (0, n − 3), · · · , 2
+pri −1 (0, n − 2), 2
+hg = gcd 2
+i=1
+
+i=1
+
+i=1
+
+In particular, 4 divides hg and hg divides 2rℓ′ +1 .
+For a positive integer m, let α2 (m) denote the largest k such that 2k divides m. We now give
+formulas for g and hg in terms of binomial coefficients.
+4.3 Proposition. Let A = Ar1 + · · · + Arℓ , where 0 < r1 < · · · < rℓ ≤ n, in H(n, 2). If A 6= An
+then
+(
+)
+
+ℓ 
+X
+n−j
+log2 (g) = min j + α2 (
+) : j = 1, 2, · · · , rℓ ,
+ri − j
+i=1
+
+and
+
+)
+
+ℓ′ 
+X
+n−j −1
+log2 (hg) = min j + 1 + α2 (
+) : j = 1, 2, · · · , rℓ′ ,
+ri − j
+(
+
+where
+
+i=1
+
+(
+ℓ
+if rℓ < n,
+ℓ′ =
+ℓ − 1 if rℓ = n.
+
+Proof. The result follows since g and hg are powers of 2 and pr (0, n) =
+
+n
+r , for r = 0, 1, . . . , n.
+
+Using Theorem 3.5, we get the following characterization of simple graphs in H(n, 2) that have
+fractional revival and the minimum time fractional revival can occur.
+
+12
+
+4.4 Theorem. Let X = Xr1 ∪ · · · ∪ Xrℓ , where 0 < r1 < · · · < rℓ ≤ n, in H(n, 2), and
+(
+ℓ
+if rℓ < n,
+ℓ′ =
+ℓ − 1 if rℓ = n.
+Suppose X 6= Xn . Then X has fractional revival if and only if
+(
+)
+(
+)
+′
+
+ℓ
+ℓ 
+X n − j − 1 
+X
+n−j
+min j + α2 (
+) : j = 1, 2, · · · , rℓ′ ≥ min j + α2 (
+) : j = 1, 2, · · · , rℓ .
+ri − j
+ri − j
+i=1
+
+i=1
+
+Moreover, if equality holds, then X has perfect state transfer but no other form of fractional revival,
+and if strict inequality holds, then X has perfect state transfer, as well as balanced fractional
+revival.
+4.5 Theorem. Let X = Xr1 ∪ · · · ∪ Xrℓ , where 0 < r1 < · · · < rℓ ≤ n, in H(n, 2), and
+(
+ℓ
+if rℓ < n,
+′
+ℓ =
+ℓ − 1 if rℓ = n.
+Suppose X 6= Xn . If X has fractional revival at minimum time τ , then τ = π/2k for some positive
+integer k ≤ rℓ′ .
+Proof. From Theorem 3.5, 2π/hg is the minimum time when fractional revival occurs in X, and
+by Lemma 4.2, hg divides 2rℓ′ +1 .
+
+4.1
+
+The Importance of Being Balanced
+
+Balanced fractional revival is the most natural and relevant variant of fractional revival useful for
+generating maximally entangled states in quantum networks. In this section, we derive necessary
+and sufficient conditions for balanced fractional revival to occur in a union of graphs in H(n, 2).
+4.6 Proposition. Let X = Xr1 ∪ · · · ∪ Xrℓ , where 0 < r1 < · · · < rℓ ≤ n, in H(n, 2) Suppose
+X 6= Xn . Then X has eiζ (cos π/4, ±i sin π/4)-revival at time π/2k if and only if the following
+conditions hold.
+(i)
+
+ℓ 
+X
+n−1
+i=1
+
+(ii) For all j = 1, . . . , k − 1,
+
+ri − 1
+
+≡ ±2k−2
+
+
+ℓ 
+X
+n−1−j
+i=1
+
+ri − j
+
+(mod 2k ).
+
+(16)
+
+≡ 0 (mod 2k−j ).
+
+(17)
+
+(iii) The phase eiζ satisfies
+ζ+
+
+Pℓ
+
+n
+π
+i=1 ri π
+≡∓
+k
+2
+4
+
+13
+
+(mod 2π).
+
+(18)
+
+Proof. Let g and h be as defined in Lemma 4.2. Then both g and hg are powers of 2.
+Suppose X has eiζ (cos π/4, ±i sin π/4)-revival at time π/2k . Then by Theorem 4.5
+(
+ℓ
+if rℓ < n,
+k ≤ rℓ′ where ℓ′ =
+ℓ − 1 if rℓ = n.
+By Theorem 3.3, there exist integers m, t and µ such that
+π
+tµπ
+≡±
+m
+4
+
+(mod 2π),
+
+2tπ
+π
+= k
+mg
+2
+
+and
+
+gcd(µ, m) = 1.
+
+Hence m/t = 4, g = 2k−1 and, by Theorem 3.5, hg ≡ 0 (mod 2k+1 ).
+Since
+(
+(θ0 − θ1 ) + (θ1 − θ3 ) + · · · + (θs−2 − θs ) if s is odd,
+θ0 − θs =
+(θ0 − θ2 ) + · · · + (θs−2 − θs )
+if s is even,
+we have
+g = gcd(θ0 − θ1 , gh) = 2k−1 .
+Consequently,
+θ0 − θ1 = 2
+
+
+ℓ 
+X
+n−1
+i=1
+
+ri − 1
+
+≡ ±2k−1
+
+(mod 2k+1 )
+
+and Condition (i) holds.
+Condition (ii) follows directly from the expression of hg given in Lemma 4.2 and k ≤ rℓ′ .
+Condition (iii) comes from the expression of ζ given in Theorem 3.3.
+Conversely, if Conditions (i) to (iii) hold then g = 2k−1 , hg ≡ 0 (mod 2k+1 ) and
+θ0 − θ1
+≡µ
+g
+
+(mod 4) for some odd integer µ.
+
+Hence m = 4, t = 1 and µ satisfy Theorem 3.3.
+
+4.2
+
+Distance Graphs
+
+In this section, we focus on balanced fractional revival on a single distance graph in H(n, 2). In
+particular, we characterize all distance graphs Xr that admit balanced fractional revival at time
+π/4 and π/8, respectively, in terms of n and r.
+We first cite a useful result from number theory.
+4.7 Theorem. (Kummer; see Dickson [12], page 270)
+Let p be a prime. The largest integer k so that pk divides
+addition of n − m and m in base p representation.
+
+n
+m
+
+
+
+is the number of carries in the
+
+Recall that, for positive integer m, α2 (m) denotes the largest k such that 2k divides m. Let (m)2
+denote the binary representation of m. The next result gives a necessary condition for balanced
+fractional revival to occurs at Xr .
+4.8 Lemma. Let Xr be a connected graph in H(n, 2). If Xr has balanced fractional revival, then
+n is odd, and α2 (n − 1) = α2 (r − 1).
+
+14
+
+Proof. If Xr has balanced fractional revival, then by Proposition 4.6
+
+
+
+
+n−1
+n−2
+α2 (
+) = k − 2 and α2 (
+) ≥ k − 1, for some k ≤ r.
+r−1
+n−1
+First suppose n is even. Since Xr is connected, r is odd. Thus the last digit of (n − 1 − (r − 1))2 is
+1, while the last digit of (r − 1)2 is 0. Therefore, the number of carries when adding (n − r)2 with
+(r − 1)2 is equal to the number of carries when adding (n − r − 1)2 with (r − 1)2 . Thus,
+
+
+
+
+n−1
+n−2
+α2 (
+) = α2 (
+),
+r−1
+r−1
+and balanced fractional revival does not occur in Xr .
+To see α2 (n − 1) = α2 (r − 1), it suffices to show that α2 (n − 1 − (r − 1)) > α2 (r − 1). Suppose
+otherwise. Then there is an m < α2 (r − 1) such that the m-th digit of (n − 2 − (r − 1))2 is 1. It
+follows that the number of carries when adding (n − r − 1)2 with (r − 1)2 is less than or
+ equal to
+n−1
+the number of carries when adding (n − r)2 with (r − 1)2 , hence α2 ( n−2
+)
+≤
+α
+(
+2 r−1 ) and Xr
+r−1
+does not have balanced fractional revival.
+For balanced fractional revival times of π/4 and π/8, we obtain tight characterizations.
+4.9 Proposition. Xr is a connected graph in H(n, 2) with balanced fractional revival at time π/4
+if and only if the following hold.
+(i) n is odd, and n − 1 is not a power of 2.
+(ii) (r − 1)2 is obtained from (n − 1)2 by replacing some 1’s with 0’s, except at the α2 (n − 1)-th
+position.
+Proof. By Proposition 4.6, Xr has balanced fractional revival at time π/4 if and only if the following
+hold:
+
+(a) n−1
+r−1 is odd, and
+
+(b) n−2
+r−1 is even.
+
+Suppose Xr is a connected graph in H(n, 2) with fractional revival at time π/4. Then r is odd and
+r < n.
+To see (i), assume for a contradiction that n − 1 is a power of 2. Then (n − 1)2 has exactly one
+digit of 1, that is, the leading digit. By (a), for every ℓ such that the ℓ-th digit of (n − 1)2 is 0, the
+ℓ-th digit of (r − 1)2 must also be 0. Thus r = 1, which contradicts the fact that X1 does not have
+balanced fractional revival.
+Next we prove (ii). Clearly, α2 (n − 1) is the rightmost position at which (n − 1)2 is 1. We have
+(n − 1)2 = 1 · · · 100 · · · 0
+
+(n − 2)2 = 1 · · · 011 · · · 1
+
+Thus, for both (a) and (b) to hold, (r − 1)2 must be 1 at the α2 (n − 1)-th digit, and 0 wherever
+(n − 1)2 is 0.
+The converse statement follows from reversing the argument.
+
+15
+
+Recall that X1 has no fractional revival and X2 is not connected. In contrast, there are infinite
+many schemes where X3 has fractional revival, as a corollary to the above result.
+4.10 Corollary. For n ≡ 3 (mod 4), X3 ∈ H(n, 2) has balanced fractional revival at π/4.
+4.11 Lemma. Xr is a connected graph in H(n, 2) with balanced fractional revival at time π/8 if
+and only if the following hold.
+(i) n is odd.
+(ii) α2 (n − 1) = α2 (r − 1).
+
+(iii) n−1
+r−1 ≡ 2 (mod 4).
+
+Proof. By Proposition 4.6, Xr has balanced fractional revival at time π/8 if and only if
+
+(a) α2 ( n−1
+r−1 ) = 1,
+
+(b) α2 ( n−2
+r−1 ) ≥ 2,
+
+(c) α2 ( n−3
+r−2 ) ≥ 1.
+
+
+
+
+n−3
+n−2
+n−3
+Since n−3
+r−2 + r−1 = r−1 , (b) and (c) hold if and only if (b) and α2 ( r−1 ) ≥ 1. On the other
+hand, since n and r are odd, n − r − 1 is odd, so
+
+
+
+
+n−2
+n−3
+α2 (
+) = α2 (
+).
+r−1
+r−1
+Therefore, (a), (b) and (c) hold if and only if (a) and (b) hold.
+Finally, since
+
+ 
+ 
+
+n−2
+n−2
+n−1
++
+=
+,
+r−1
+r−2
+r−1
+
+(a) and (b) hold if and only if (a) holds and
+
+
+n−2
+α2 (
+) = 1.
+r−2
+Given that α2 (n − 1) = α2 (r − 1), (a) holds if and only if
+
+
+n−2
+α2 (
+) = 1.
+r−2
+
+Therefore (i), (ii) and (iii) are necessary and sufficient conditions for Xr to be connected and have
+balanced fractional revival at time π/8.
+4.12 Proposition. Xr is a connected graph in H(n, 2) with balanced fractional revival at time
+π/8 if and only if the following hold.
+(i) n is odd, and n − 1 6= 2a (2b − 1) for any non-negative integers a and b.
+(ii) (r − 1)2 is obtained from (n − 1)2 by
+
+16
+
+(a) keeping the j-th digit, for j = 0, 1, · · · , α2 (n − 1);
+
+(b) replacing exactly one substring “10” with “01”;
+(c) replacing some “1”s with “0”s.
+
+Proof. First recall that for positive integers a > b,
+ 
+a
+≡ 2 (mod 4)
+b
+if and only if there is exactly one carry, say to the ℓ-th position, when adding (a − b)2 and (b)2 .
+Note that this happens if and only if
+• the (ℓ − 1)-th digit of (a)2 is 0, the (ℓ − 1)-th digit of (b)2 is 1;
+• the ℓ-th digit of (a)2 is 1, the ℓ-th digit of (b)2 is 0;
+• (a)2 is larger than (b)2 at all other digits.
+If in addition, α2 (a) = α2 (b), then ℓ − 1 > α2 (a), so (a)2 cannot be a string of 1’s followed by a
+string of 0’s. Applying the above argument to a = n − 1 and b = r − 1 yields (i) and (ii).
+4.13 Corollary. For n ≡ 11 (mod 16), X7 ∈ H(n, 2) has balanced fractional revival at π/8.
+In what follows, we show that for every integer k ≥ 2, there are families of distance graphs
+which exhibit fractional revival at time π/2k in some binary Hamming scheme. This should not be
+interpreted to mean that fractional revival could be implemented increasingly faster by growing k;
+physically the transport time is also proportional to the inverse of the scaling factor of the adjacency
+matrix (the Hamiltonian) that must decrease with n to keep the energy bounded (see the remark
+in [11]). However, in order to focus on the combinatorial nature of our constructions, we opt to
+work with unnormalized matrices.
+4.14 Proposition. For k ≥ 4, let n = (2k−1 + 1)2k+2 + 3 and r = 2k+3 + 3. Then Xr ∈ H(n, 2)
+has balanced fractional revival at time π/2k .
+Proof. We first show that Condition (i) of Proposition 4.6 holds. By Kummer’s theorem, it suffices
+to show there are k − 2 carries generated in the binary addition of n − r and r − 1. We write the
+binary representations of the numbers:
+(n − 1)2 = 10k−3 0 · 10k 10
+k−3
+
+(r − 1)2 = 00
+
+k−3
+
+(n − r)2 = 01
+
+(20)
+
+k
+
+(21)
+
+1 · 00 10
+
+1 · 10 00
+
+Note there are exactly k − 2 carries in the binary addition of n − r and r − 1, and
+
+
+n−1
+≡ ±2k−2 (mod 2k ).
+r−1
+
+17
+
+(19)
+
+k
+
+To show that Condition (ii) of Proposition 4.6 holds, it suffices to show that there are at least
+k − j carries generated in the binary addition of n − r − 1 and r − j, for j = 1, . . . , k − 1. The
+binary representations of n − r − 1 and of r − 1, r − 2, and r − 3 are
+(n − r − 1)2 = 01k−3 1 · 01k 11
+k−3
+
+(r − 1)2 = 00
+
+k−3
+
+(r − 2)2 = 00
+
+k−3
+
+(r − 3)2 = 00
+
+(22)
+
+k
+
+(23)
+
+k
+
+(24)
+
+k
+
+(25)
+
+1 · 00 10
+
+1 · 00 01
+
+1 · 00 00
+
+Note that at least k − j carries are generated in the binary addition of n − r − 1 and r − j, where
+j = 1, 2, 3. Now, we consider the binary representations of n − r − 1 and of r − j, for j = 4, . . . , k − 1:
+(n − r − 1)2 = 01k−3 1 · 01k 11
+k−3
+
+(r − 4)2 = 00
+
+k
+
+0 · 11 11
+
+(26)
+(27)
+
+Note there are at least k + 2 carries in the binary addition of n − r − 1 and r − 4. Moreover, the
+number of ones in the binary representation of r − j decreases by at most one as j increases from
+4 to k − 1. Therefore, there are at least k + 2 − (j − 4) ≥ k − j carries generated in the binary
+addition of n − r − 1 and r − j, for j = 1, . . . , k − 1.
+So, by Proposition 4.6, Xr has fractional revival at time π/2k .
+
+4.3
+
+Consecutive Unions
+
+Now we proceed to construct consecutive unions of distance graphs that admit balanced fractional
+revival at time π/4.
+4.15 Proposition. For every r ≥ 2, let ℓ be the positive integer such that 2ℓ−1 < r ≤ 2ℓ . Then
+for n ≡ r + 1 (mod 2ℓ ), the consecutive union X1 ∪ X2 ∪ · · · ∪ Xr has balanced fractional revival at
+time π/4.
+Proof. By Proposition 4.6, it suffices to prove the following:
+
+Pr
+n−1
+(i)
+j=1 j−1 is odd, and
+
+Pr
+n−2
+(ii)
+j=1 j−1 is even.
+
+
+Let a and b be two positive integers with a ≥ b. From Theorem 4.7, we see that ab is even if
+and only if there is at least one i such that the i-th digit of (a)2 is 0 and the i-th digit of (b)2 is 1.
+c
+Thus, if c is an
+integer with 2c ≥ a, then for any positive integer d we have that a+2b d is even if
+
+and only if ab is even.
+Now, since n − 1 ≡ r (mod 2ℓ ), it follows that
+r
+r
+X n − 1 
+X r 
+≡
+≡ 1 (mod 2),
+j−1
+j−1
+and
+
+j=1
+
+j=1
+
+
+r 
+X
+n−2
+
+
+r 
+X
+r−1
+
+j=1
+
+j−1
+
+Hence conditions (i) and (ii) hold.
+
+≡
+
+j=1
+
+j−1
+
+18
+
+≡ 0 (mod 2).
+
+5
+
+Weighted Graphs
+
+In this section, we turn our attention to balanced fractional revival in graphs (possibly weighted)
+which lie in the span of the Hamming graphs. We first give a characterization of balanced fractional
+revival that occurs at time π/Ω.
+5.1 Proposition. For an integer n ≥ 2, let X be a graph whose adjacency matrix A is in the
+Bose-Mesner algebra of H(n, 2). Suppose the eigenvalues of A are θ0 , θ1 , . . . , θn . Then X has
+eiζ (cos π/4, ±i sin π/4)-revival at time π/Ω if and only if for some integers h, h0 , . . . , hn−2 , we have
+
+(28)
+θ0 − θ1 = h + 12 Ω
+θs − θs+2 = 2hs Ω,
+
+for s = 0, . . . , n − 2
+
+(29)
+
+and ζ + θ0 π/Ω ≡ ∓π/4 (mod 2π).
+P
+P
+Proof. LetP
+A = ns=0 θs Es where Es are the minimal idempotents of the scheme. Note A0 = s Es
+and An = s (−1)s Es . Suppose e−iAπ/Ω = eiζ (cos(π/4)A0 ± i sin(π/4)An ). Then, for s = 0, . . . , n,
+we have
+e−iθs π/Ω = eiζ (cos(π/4) ± i sin(π/4)(−1)s ).
+(30)
+For s = 0, we get ζ ≡ −θ0 π/Ω ∓ π/4 (mod 2π). We have
+e−i(θ0 −θ1 )π/Ω = ∓i
+and
+e−i(θs −θs+2 )π/Ω = 1,
+
+for s = 0, . . . , n − 2.
+
+So, there exist integers h, h0 , . . . , hn−2 satisfying
+
+θ0 − θ1 = h + 12 Ω
+θs − θs+2 = 2hs Ω,
+
+(31)
+for s = 0, . . . , n − 2.
+
+(32)
+
+This yields the claim.
+
+5.1
+
+Revisiting span{A1, A2}
+
+Fractional revival was first studied on weighted paths [14]. In [11] and [1], the authors constructed
+analytically examples with fractional revival in span{A1 , A2 } of the Hamming scheme. We rediscover some of their results in this section.
+The spectra of the Hamming
+ graphs X1 and X2 are given by the Krawtchouk polynomials
+p1 (s) = n − 2s and p2 (s) = n2 − 2s(n − 1) + 4 2s , respectively. Using Proposition 5.1, we may
+classify the values ω1 , ω2 for which the graph ω2 A2 + ω1 A1 has fractional revival. Recall that A1
+alone has no fractional revival [11]. We shall consider two cases based on whether ω1 is zero or not.
+First, we considerP
+the case when ω1 6= 0. Here, we may consider instead Ã = ωA2 + A1 , where
+ω = ω2 /ω1 . Let Ã = ns=0 θs Es with θs = ωp2 (s) + p1 (s). Note that
+θ0 − θ1 = 2(ω(n − 1) + 1)
+
+θs − θs+2
+
+
+= 4 ω(n − 2s − 2) + 1 .
+
+19
+
+(33)
+
+(34)
+
+By Proposition 5.1, for fractional revival to occur at time π/Ω, it suffices to require
+2(ω(n − 2s − 2) + 1) = ZΩ
+
+(35)
+
+2(ω(n − 1) + 1) = (Z + 21 )Ω.
+
+(36)
+
+Taking the difference of the last two equations, for each s, we have
+2(2s + 1)ω/Ω = Z + 21 .
+
+(37)
+
+This shows ω/Ω is rational. Moreover, 4ω/Ω must be an odd integer.
+5.2 Proposition. In H(n, 2), ωA2 + A1 has balanced fractional revival at time π/Ω if and only if
+4ω/Ω is an odd integer and 4/Ω is an integer that has the same parity as n.
+Proof. Let 4ω/Ω = 2m+1 for some integer m. If 4/Ω and n have the same parity, then 4(ω(n−1)+
+1)/Ω = 2h + 1 for some integer h. Then the integers h and hs = h − 2ms − s − m, s = 0, . . . , n − 2,
+satisfy the equations in Proposition 5.1.
+The converse follows from Equations (36) and (37).
+5.3 Corollary. Suppose ωA2 + A1 , for some ω 6= 0, has balanced fractional revival at time π/Ω.
+Then ω ∈ Q and π/Ω = qπ/4, for some q with the same parity as n.
+The following corollaries provide natural examples of signed (multi-)graphs in the Hamming
+scheme which exhibit fractional revival.
+5.4 Corollary. For any integer m, A2 ± 2A1 in the Bose-Mesner algebra of H(2m, 2) has balanced
+fractional revival at time π/4. (Also, 12 A2 ± A1 has balanced fractional revival at time π/2.)
+5.5 Corollary. For any integer m, A2 ±A1 in the Bose-Mesner algebra of H(2m+1, 2) has balanced
+fractional revival at time π/4.
+Finally, we consider ω2 A2 + ω1 A1 when ω1 = 0. The graph A2 ∈ H(n, 2) has two connected
+components, one with vertices of even weights while the other consists of vertices of odd weights.
+We call the component containing vertices with even weights the halved n-cube [3].
+5.6 Proposition. In H(n, 2), X2 has balanced fractional revival if and only if n is even. The time
+of balanced fractional revival is π/4.
+Proof. From Proposition 4.6, X2 has balanced fractional revival at time π/2k if and only if
+n − 1 ≡ ±2k−2
+
+(mod 2k ) and n − 2 ≡ 0 (mod 2k−1 ).
+
+These equations hold exactly when n is even and k = 2.
+When n is odd, each vertex a and its antipodal pair ā, (that is, the neighbour of a in Xn ) belong
+to different components of A2 ; thus, fractional revival does not occur. When n is even, fractional
+revival occurs on each connected component of A2 . (See Bernard et al. [1] for a similar treatment.)
+
+20
+
+5.2
+
+Larger Spans
+
+We consider balanced fractional revival on the larger spans involving the first four Hamming graphs,
+namely, span{A1 , A2 , A3 } and span{A1 , A2 , A3 , A4 }.
+5.7 Proposition. For n ≡ 3 (mod 4), the sum A1 + 12 A2 + 41 A3 in H(n, 2) has fractional revival
+at time π.
+
+Proof. By Corollary 4.10, it suffices to show that A1 and A2 are periodic at time π and π/2,
+respectively. Since
+p1 (s) = n − 2s
+and
+
+we see that 2 divides
+and 4 divides
+
+ 
+ 
+n
+s
+p2 (s) =
+− 2s(n − 1) + 4
+,
+2
+2
+
+n
+gcd p1 (s) − p1 (0) s=0 ,
+
+
+n
+gcd p2 (s) − p2 (0) s=0 .
+
+5.8 Proposition. For n ≡ 3 (mod 8), the sum A1 + 21 A2 + 14 A3 + 81 A4 in H(n, 2) has fractional
+revival at time π.
+Proof. From the previous result, it suffices to show that X4 is periodic at time π/8. Since
+
+ 
+4
+X
+s
+j n−j
+(−2)
+p4 (s) =
+,
+4−j
+j
+j=0
+
+we have
+
+
+
+
+ 
+ 
+ 
+n−1
+n−2 s
+s
+s
+p4 (s) − p4 (0) = −2
+s+4
+− 8(n − 3)
++ 16
+.
+3
+2
+2
+3
+4
+If n = 8m + 3, then
+
+
+
+
+n−2
+n−1
+(8m + 2)(8m + 1)(8m)
+, 4
+= 2(8m + 1)(8m), and 8(n − 3)
+2
+=
+2
+3
+3
+are all divisible by 16.
+
+6
+
+Conclusion
+
+The main achievement of this work is the characterization of graphs in association schemes admitting quantum fractional revival in terms of their spectra, and the discovery of several infinite
+families of graphs exhibiting quantum fractional revival. From the mathematical point of view, we
+are bridging the fields of algebraic graph theory, specifically what concerns association schemes and
+orthogonal polynomials, to elementary number theory and the study of certain periodic functions
+that arise naturally in quantum information. For quantum information theory, our findings may
+turn to be quite useful for entanglement generation procedures or other tasks that require a network
+of many interacting qubits to be put in a state with several pairs of maximally entangled qubits.
+Following the work in this paper, we raise the following questions:
+
+21
+
+(1) Study the more general notion of fractional revival among several vertices in association
+schemes. We are preparing an upcoming publication related to this topic.
+(2) Extend the results for the Hamming Scheme to other cubelike graphs.
+
+Acknowledgments
+The research of L.V. is supported by a discovery grant from the National Science and Engineering
+Research Council (NSERC) of Canada.
+
+References
+[1] P.-A. Bernard, A. Chan, É. Loranger, C. Tamon, L. Vinet. A graph with fractional
+revival. Physics Letters A, 382(5):259-264, 2018.
+[2] S. Bose. Quantum Communication through an Unmodulated Spin Chain. Physical Review
+Letters, 91(20):207901, 2003.
+[3] A.E. Brouwer, A.M. Cohen, A. Neumaier. Distance-Regular Graphs. Springer-Verlag,
+1989.
+[4] A.E. Brouwer and W.H. Haemers. Spectra of graphs. Universitext. Springer, New York, 2012.
+[5] J. Brown, C. Godsil, D. Mallory, A. Raz, C. Tamon. Perfect State Transfer on Signed
+Graphs. Quantum Information and Computation 13(5&6):511-530, 2013.
+[6] A. Chan. Complex Hadamard Matrices, Instantaneous Uniform Mixing and Cubes.
+arXiv:1305.5811 [math.co].
+[7] A. Chan, G. Coutinho, C. Tamon, L. Vinet, H. Zhan. Quantum Fractional Revival on
+Graphs. Discrete Applied Mathematics, doi:10.1016/j.dam.2018.12.017
+[8] T.X. Cai, A. Granville. On the residues of binomial coefficients and their products modulo
+prime powers. Acta Mathematica Sinica (English Series) 18(2):277-288, 2002.
+[9] G. Coutinho, C. Godsil, K. Guo, F. Vanhove. Perfect state transfer on distance regular
+graphs and association schemes. Linear Algebra and Its Applications, 478:108-130, 2015.
+[10] L. Chihara, D. Stanton. Zeros of generalized Krawtchouk polynomials. Journal of Approximation Theory 60(1):43-57, 1990.
+[11] M. Christandl, L. Vinet, A. Zhedanov. Analytic next-to-nearest-neighbor XX models
+with perfect state transfer and fractional revival. Physical Review A, 96(3), 032335, 2017.
+[12] L.E. Dickson. History of the Theory of Numbers, Volume 1: Divisibility and Primality.
+Chelsea, 1952.
+[13] E. Farhi, S. Gutmann. Quantum computation and decision trees. Physical Review A,
+58:915, 1998.
+
+22
+
+[14] V. Genest, L. Vinet, A. Zhedanov. Quantum spin chains with fractional revival. Annals
+of Physics 371:348-367, 2016.
+[15] C. Godsil. State Transfer on Graphs. Discrete Mathematics, 312, 123-147, 2012.
+[16] C. Godsil, G. Royle. Algebraic Graph Theory. Springer, 2001.
+[17] C. Godsil, J. Smith. Strongly Cospectral Vertices. arXiv:1709.07975 [math.co].
+[18] F.J. MacWilliams, N.J.A. Sloane. The Theory of Error-Correcting Codes. North-Holland,
+1977.
+[19] M. Nielsen, I. Chuang. Quantum Computation and Quantum Information. Cambridge
+University Press, 2000.
+[20] P.J. Pemberton-Ross, A. Kay. Perfect Quantum Routing in Regular Spin Networks. Physical Review Letters 106, 020503, 2011.
+[21] D. Stanton. Orthogonal polynomials and combinatorics. In Special Functions 2000: Current
+perspective and future directions, J. Boustoz, M.E.H. Ismail, S. Suslov (eds.), NATO science
+series, Vol. 30, 389-409, Springer, 2001.
+
+23
+
+

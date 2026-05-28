@@ -1,0 +1,2164 @@
+DYNAMICAL SYSTEMS ON GRAPH LIMITS
+AND THEIR SYMMETRIES
+
+CHRISTIAN BICK1,2,∗ , DAVIDE SCLOSA1,⋆
+
+arXiv:2110.13686v3 [math.DS] 26 Feb 2024
+
+1
+
+Department of Mathematics, Vrije Universiteit Amsterdam, De Boelelaan 1111,
+1081 HV Amsterdam, the Netherlands
+2
+Institute for Advanced Study, Technical University of Munich, Lichtenbergstraße
+2, 85748 Garching, Germany
+e-mail: ∗ c.bick@vu.nl; ⋆ d.sclosa@vu.nl
+Abstract. The collective dynamics of interacting dynamical units on a network
+crucially depends on the properties of the network structure. Rather than
+considering large but finite graphs to capture the network, one often resorts to
+graph limits and the dynamics thereon. We elucidate the symmetry properties
+of dynamical systems on graph limits—including graphons and graphops—and
+analyze how the symmetry shapes the dynamics, for example through invariant
+subspaces. In addition to traditional symmetries, dynamics on graph limits
+can support generalized noninvertible symmetries. Moreover, as asymmetric
+networks can have symmetric limits, we note that one can expect to see ghosts
+of symmetries in the dynamics of large but finite asymmetric networks.
+
+1. Introduction
+Synchronization and other collective phenomena of networks of interconnected
+dynamical systems are crucial in many systems in science and technology, ranging
+from interacting neural units to power grid networks [43,47]. The network structure
+is often captured by a graph: Each vertex is a dynamical system and two systems
+are coupled if they are connected by an edge. Thus, an essential question in
+network dynamical systems is how the network structure shapes the collective
+network dynamics. Classical dynamical systems tools are of limited use to answer
+this question as many relevant network dynamical systems have many nodes—e.g.,
+the human brain is a network of billions of individual cells. Thus, a common
+approach is to consider continuum limits, such as graphons [31] or graphops [3],
+and dynamics on these limit objects (see, e.g., [11, 12, 18, 25, 29, 35, 36]).
+In this paper we analyze the symmetry properties of graph limits and the
+implications for the network dynamics. Symmetries essentially shape the dynamics,
+for example, by inducing invariant subspaces [20] that may correspond to synchrony
+patterns [42], or facilitate the emergence of structurally stable heteroclinic cycles [50].
+First, we make the notion of symmetries rigorous for dynamics on graph limits; this
+leads to some technical challenges compared to the finite-dimensional setting as the
+dynamics have to be defined on appropriate spaces where the state of individual
+vertices might become irrelevant. Second, we compute the symmetry groups of
+several graphons and graphops appearing in the literature, including homogeneous
+1
+
+2
+
+CHRISTIAN BICK
+
+networks, multiple populations, and networks on manifolds. Third, we describe
+the corresponding effects on dynamics. Fourth, we give some consequences for
+large but finite-dimensional systems: As the limit object can have significantly
+more symmetries than any finite element of the converging sequence one can expect
+“ghosts” of symmetries of the limit object in large but finite network dynamical
+systems.
+Networks, graphs, and graph limits. A graph provides a natural mathematical abstraction of a network: Two vertices interact if there is an edge between
+them. Since many networks of interest have many vertices—e.g., the human brain
+mentioned above or the internet as a network of webpages connected by links—it
+is often convenient to consider the limit of large graphs. A graph sequence is called
+dense if the number of edges grows quadratically with respect to the number of
+vertices. The groundbreaking work by Szegedy and Lovász [31] introduces graphons
+as limits of dense graph sequences. Graphops have been later introduced to include
+both dense and sparse graph sequences [3].
+Graph automorphisms describe the symmetries of a graph: These are permutations of vertices that preserve the edges. Here we typically assume graphs to
+be finite, undirected, and simple and make it explicit when additional structure
+(e.g., weights) is present. In this context, the automorphism group of a cycle
+graph is a dihedral group and of a complete graph is the whole permutation group.
+While the notion of an automorphism can be extended to graphons as graph limits,
+there are some nuances that need to be taken into account [32]. By contrast,
+automorphisms—and thus the symmetries—of the more general class of graphops
+have rarely been considered.
+Dynamical systems and symmetries. Symmetries of a dynamical system are
+transformations of phase space that send trajectories to trajectories; see [20, 21]
+for an introduction to the subject. To fix some notation, let the flows (X, ΦX )
+and (Y, ΦY ) define dynamical systems. A map γ : X → Y maps trajectories to
+Y
+trajectories if for every x ∈ X and every t ∈ R we have γ(ΦX
+t (x)) = Φt (γ(x)).
+A symmetry γ of a dynamical system (X, Φ) is a bijection γ : X → X sending
+trajectories to trajectories: For every t ∈ R and every x ∈ X we have γ(Φt (x)) =
+Φt (γ(x)). Note that being a symmetry is the same as commuting with the flow.
+Notice that if γ is a symmetry then its inverse γ −1 is also a symmetry since
+γ −1 ◦ Φt = (Φ−t ◦ γ)−1 = Φt ◦ γ −1 and so the symmetries form a group. Typically
+one is interested in group of symmetries of a specific type, for example, due to
+the physical nature of the system. Symmetries give rise to dynamically invariant
+subspaces. It is a general fact that if two maps γ, ν : X → X commute with each
+other, then the fixed point set Fix(γ) is ν-invariant and the fixed point set Fix(ν)
+is γ-invariant. If γ is a symmetry, this implies that the fixed point set Fix(γ) is
+dynamically invariant.
+In the case of coupled dynamical systems on a graph, symmetries may be induced
+by the underlying combinatorial graph structure independently of the specific
+choice of coupling functions. Importantly, symmetry-induced invariant subspaces
+may correspond to synchrony patterns, where individual units have the same
+state. Thus, computing symmetry groups allows to understand the emergence of
+“cluster” dynamics [42]. Moreover, there has been further interest in symmetries of
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+3
+
+network dynamical systems due to symmetry breaking phenomena [6, 26]. However,
+symmetry considerations for network dynamical systems typically focus on finitedimensional systems. Elucidating the symmetries of network dynamical systems on
+graph limits as well as the implications for the dynamics remain underexplored.
+Main contributions. In this paper, we analyze the symmetry properties of graph
+limits, their implications for dynamics on such graph limits, and corresponding
+large- but finite-dimensional network dynamical systems.
+From the perspective of network structure alone, we focus on the automorphism
+group of graphons that are common in literature. These include constant graphons
+(Section 4.1), canonical embeddings of graphs on the unit interval (Proposition 4.10),
+and a class of graphons determined by distant-dependent coupling on manifolds
+(Theorem 5.2). For the latter, we highlight that the manifold itself is the natural
+choice to index the vertices rather than the traditional choice of indexing vertices
+by the unit interval. Specific examples we analyze are the spherical graphon
+(Section 5.5) and graphons on the torus (Section 5.3). We also introduce a notion
+of graphop automorphisms and analyze the automorphism group of the spherical
+graphop (Proposition 8.4).
+Automorphisms of the network structure induce symmetries for dynamics on
+the network. We generalize this observation from graphs to a general setting for
+dynamical systems on graphons (Corollary 3.13) and graphops (Lemma 8.2). As
+the dynamics on graph limits are typically infinite-dimensional, we consider the
+dynamics on graph limits as dynamics on L1 (J), where J is an appropriate index
+space. First, the general setup induces technical challenges: state of any given
+vertex (or pair of vertices) that define synchrony for dynamics on graphs becomes
+meaningless for typical dynamics on graph limits. Second, compared to their finitedimensional counterparts, dynamical systems on graph limits may have generalized
+symmetries that can be noninvertible. This is due to the existence of non-invertible
+measure preserving transformations, like the doubling map x 7→ 2x (mod 1) on the
+unit interval. Note that graphons that are equivalent as graph limits yield distinct
+dynamical systems. We show that while these may have wildly different symmetry
+groups they can be related to one another (Section 3.1).
+We subsequently apply our results to the study of graphon dynamical systems
+with relevant topologies, with a focus on dynamical phenomena that are due to
+symmetry. We show that dynamically invariant subspaces arise in two different
+ways, as a set of fixed points of a symmetry or as the image of the Koopman
+operator (Section 3.4). Cluster dynamics and multi-population structures are
+well-studied in finite networks and generalize to graphons, see Theorem 4.4 and
+Section 4.2. Moreover, we analyze systems with spherical symmetry (Figure 7),
+and multi-dimensional twisted states for coupled oscillators on a torus (Section 5.3).
+We also consider mean-field dynamics on graphons where the state of each node is
+represented by a probability measure: Using symmetries we show that dynamical
+systems on graphs [44], mean-field dynamics [30,48], multi-population mean fields [7],
+and dynamics on graphons [36] are all dynamically invariant subspaces of the system
+analyzed in [25].
+Finally, we return to large- but finite-dimensional dynamical systems and their
+relationship to dynamics on the graph limit. Note that convergent sequences of
+asymmetric graphs can have symmetric limit: For example, Erdős-Renyi random
+
+4
+
+CHRISTIAN BICK
+
+graphs are asymmetric with asymptotic probability 1 while they converge to the
+constant graphon, which has a large symmetry group. Thus, it is natural to expect
+that the dynamics on large (but finite) graphs will inherit dynamical features from
+the symmetric limit. We make this observation rigorous in Section 6 which explains
+our numerical findings in Figure 7.
+Structure of the paper. The paper is organized as follows. In Section 2 we
+set the stage by considering a class of dynamical systems on graphs and their
+symmetries. In the following Section 3, we generalize this class of dynamical
+systems to graphons and show that graphon automorphisms induce symmetries
+on the dynamics on the graphon. In Section 4 we exploit these results to analyze
+symmetries and invariant subspaces of dynamical systems with relevant network
+topologies, such as Kuramoto-type networks that consist of one (or more) coupled
+populations. In Section 5 we consider networks that arise when the dynamical units
+are placed on a manifold and coupling depends on the geodesic distance between
+two units on the manifold; with the geometric structure, choosing index spaces
+different from the unit interval becomes relevant. In Section 6, we compare the
+dynamics of finite systems with those of the infinite-dimensional limit. In Section 7
+we consider a first generalization to mean-field systems where the state of each
+units is a probability measure. Symmetry arguments allow to see relationship to
+other continuum limits. Finally, in Section 8 we consider symmetries of graphops
+and dynamical systems on graphops as a second generalization.
+Acknowledgments. The authors would like to thank C. Kuehn and Y. Zhao for
+helpful discussions, the anonymous referees for helpful comments, and the hospitality
+of the Institute of Advanced Study at the Technische Universität München (TUM–
+IAS), where part of the work was carried out. CB acknowledges support from the
+Engineering and Physical Sciences Research Council (EPSRC) through the grant
+EP/T013613/1 and a Hans Fischer Fellowship from TUM–IAS.
+2. Graph dynamical systems and their symmetries
+We first consider a class of network dynamical systems whose underlying network
+structure is determined by a graph. We typically consider finite, undirected, simple
+graphs and will simply refer to them as graphs—we will highlight if a graph comes
+with extra structure (e.g., weights). A graph isomorphism is a bijective map
+between the vertices preserving edges and non-edges. Intuitively, isomorphic graphs
+are the same up to relabeling. This section will set the stage for a generalization
+we will subsequently discuss: The main takeaway is that automorphisms of the
+underlying graph yield a group of symmetries of the dynamical system.
+2.1. Graph dynamical systems and transformations. To be concrete, let G
+be a graph with vertex set {1, . . . , n} and let (Ajk )j,k denote its adjacency matrix.
+Now suppose that the state of vertex j is uj ∈ R. For Lipschitz continuous
+functions f, g : R2 → R we consider the graph dynamical system where the
+state of node j evolves according to
+!
+n
+1X
+u̇j = f uj ,
+Ajk g(uj , uk ) ,
+j = 1, . . . , n.
+(1)
+n k=1
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+5
+
+Inspired by the neural networks literature we call f the activation function
+and g the coupling function. These function are understood to be fixed while
+we will change the graph G.
+Note that the vector field is Lipschitz continuous in u and therefore (1) defines a
+dynamical system on Rn . We denote by D(G) the dynamical system and by ΦG
+t (u)
+the corresponding flow. In this paper a dynamical system is the datum of a phase
+space together a the flow.
+Graph dynamical systems (1) include as special cases the linear diffusion equation,
+the replicator equation (with equal types), and the Kuramoto model of identical
+phase oscillators on a graph
+n
+
+1X
+u̇j =
+Ajk sin(uk − uj + α),
+n k=1
+
+j = 1, . . . , n.
+
+(2)
+
+We will come back to (2) to illustrate the results by numerical simulations.
+Isomorphic graphs support the same graph dynamical systems:
+Theorem 2.1. Let φ : G → H an isomorphism of graphs. Then the map
+φ∗ (v1 , . . . , vn ) = (vφ(1) , . . . , vφ(n) )
+is an isometry of Rn mapping trajectories of the graph dynamical system D(H)
+to trajectories of the graph dynamical system D(G). In particular, the following
+diagram is commutative:
+G
+
+φ
+
+H
+.
+
+D(G)
+
+φ∗
+
+D(H)
+
+Proof. Clearly φ∗ is an isometry. It remains to prove that φ∗ maps solutions to
+solutions. Let v a solution in D(H). Every vertex in H is the φ-image of a vertex
+of G and
+
+
+X
+
+v̇φ(j) = f vφ(j) ,
+g Hφ(j)k , vφ(j) , vk 
+k∈v(H)
+
+
+= f vφ(j) ,
+
+X
+
+
+
+g Hφ(j)φ(k) , vφ(j) , vφ(k) 
+
+k∈v(G)
+
+
+= f vφ(j) ,
+
+X
+
+
+
+g Gjk , vφ(j) , vφ(k)  .
+
+k∈v(G)
+
+We conclude that φ∗ v is a solution in D(G).
+
+□
+
+Corollary 2.2. If the graphs G and H are isomorphic, then the graph dynamical
+systems D(G) and D(H) are topologically conjugated.
+Remark 2.3. In the equivariant dynamical systems literature, the action is typically
+defined as φ∗ (u)j = uφ−1 (j) . We prefer not to do so, as we will also consider
+noninvertible maps φ in the following section.
+
+6
+
+CHRISTIAN BICK
+
+Theorem 2.1 shows that graph isomorphisms map trajectories to trajectories.
+Note that, in general, a graph homomorphism does not map trajectories to trajectories. For example, consider (2) on a connected graph G with more than one vertex,
+let v be a vertex and H be the graph with one vertex v and no edges. Then v has
+trivial dynamics in H and non-trivial dynamics in G. The embedding H → G does
+not correspond to a map between dynamical systems. In [15] the notion of graph
+dynamical system is different, but a similar analysis of these functorial aspects
+appear.
+2.2. Symmetries of graph dynamical systems and invariant subspaces.
+An immediate consequence of Theorem 2.1 is that graph automorphisms yield
+symmetries of the corresponding graph dynamical systems. This motivates the
+following definition:
+Definition 2.4. Let G be a graph with n vertices. Let φ : G → G an automorphism
+of the graph. The map φ∗ : Rn → Rn is an isometry of Rn and a symmetry of the
+dynamical system D(G). We call φ∗ a graph-induced symmetry.
+Note that when we talk about ‘graph automorphisms’ we refer to the symmetries
+of a graph as a combinatorial object. By contrast, the ‘graph-induced symmetries’
+are symmetries of dynamical systems induced by the properties of the underlying
+graph. The automorphism group of G and the group of graph-induced symmetries
+of D(G) are, by definition, isomorphic. We make a clear distinction as they act on
+different spaces, the set {1, . . . , n} and Rn , respectively.
+We remark that the graph-induced symmetry group can be arbitrarily complicated.
+Indeed, it is known that any finite group is the automorphism group of a graph [17].
+As an example, the role of graph automorphisms for the dynamics of symmetrically coupled phase oscillators (2) has been analyzed in [2].
+Graph dynamical system may have more symmetries than the graph-induced
+symmetries. For example, for every dynamical system (X, Φ) and every t ∈ R
+the map Φt is a symmetry. In the context of (1), extra symmetries can appear
+for particular choices of f and g. If f = 0 dynamics is trivial and any bijection
+of X is a symmetry. If g(u, v) = sin(u − v) the phase shift group of rotational
+symmetries appear [2]. Usually one is interested in symmetries within a specific
+group, for example linear transformations, homeomorphisms, or isometries. In this
+paper we focus on the symmetries given by the combinatorial structure, which are
+independent on the particular choice of f and g.
+Symmetries induce dynamically invariant subspaces. In the case of graph-induced
+symmetries, the subspaces are linear and given by equalities of coordinates—sets of
+this form are also called cluster or polydiagonal subspaces. Let φ be a graph
+automorphism. We have seen that φ∗ is a symmetry, and therefore the subspace
+Fix(φ∗ ) = {u ∈ Rn | uφ(1) = u1 , . . . , uφ(n) = un }
+
+(3)
+
+is dynamically invariant.
+If two vertices j, k have the same neighbors—such nodes are called twins—then
+the transposition interchanging j and k is a symmetry. Consequently, the cluster
+subspace {uj = uk } is dynamically invariant.
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+7
+
+3. Graphon dynamical systems and their symmetries
+We now introduce graphon dynamical systems as a generalization of graph
+dynamical systems and extend the statements in Section 2.2 to this larger class.
+Definition 3.1. Let J = (Ω, µ) be a probability space. A kernel is a symmetric
+measurable function W : Ω×Ω → R. A graphon (J, W ) is a symmetric measurable
+function W : Ω × Ω → [0, 1], that is, a kernel with range [0, 1].
+To lighten the exposition, we will often use Ω and J interchangeably. On the
+other hand, when integrating Ω with respect to two different probability measure,
+we will make the underlying space Ω explicit.
+The class of graph dynamical systems (1) considered in the previous section
+naturally generalize to graphons. We consider a system of interacting units labelled
+by J, where each unit x is associated to a state ux ∈ R.
+Definition 3.2. Let (J, W ) be a graphon. Let f, g : R2 → R be two Lipschitz
+continuous functions. We call graphon dynamical system the dynamical system
+in the ambient space L1 (J) induced by the evolution equation
+ Z
+
+u̇x = f ux , W (x, y)g(ux , uy )dµ(y) ,
+x ∈ J.
+(4)
+J
+
+Since functions in L1 (J) are identified up to sets of measure zero, equation (4)
+has to be understood in the following sense: For every t ∈ R the equation holds for
+almost every x ∈ J, that is, up to a nullset (which may depend on t). Lemma 3.7
+below shows that (4) actually defines a dynamical system in L1 (J).
+Kuramoto dynamics on a graph, introduced in the previous section, generalizes
+to a graphon as follows:
+Z
+u̇x = ω + W (x, y) sin(uy − ux + α) dµ(y).
+(5)
+J
+
+where ω, α ∈ R are parameters. We come back to this example in numerical
+simulations.
+We refer to J = (Ω, µ) as index space. In contrast to some previous approaches
+to dynamical systems on graphons [11, 12, 35], we consider graphons defined on a
+general probability space J rather than the unit interval J = I only. There are three
+reasons for this. First, some graphons have a natural underlying space J different
+from the unit interval, e.g., the unit square with uniform measure or a sphere with
+uniform measure. Although most of these J are standard probability spaces, and
+thus can be transformed into I by an invertible measure-preserving transformation,
+these transformations typically destroy regularity and symmetries, see the example
+of prefix attachment graphs [31, Figure 11.3] or the geodesic graphon on a torus of
+Figure 4 below. Second, we will see that interesting dynamically invariant subspaces
+on J can be understood by analyzing the dynamics on a different graphon, on
+another space J ′ , and studying the edge-preserving maps connecting J and J ′ .
+Third, allowing the index space J to be a discrete probability space provides a
+common framework for network dynamics on both finite graphs and graph limits.
+Note also that one key difference between graph dynamical systems and graphon
+dynamical system is that in the latter the vertex set is endowed with a (possibly
+non-uniform) probability measure. In terms of the dynamics, this means that
+
+8
+
+CHRISTIAN BICK
+
+some vertices may be more influential than others. Moreover, the kernel W , which
+generalizes the adjacency matrix of a graph, can assume non-integer values between
+0 and 1. One can think of a graphon (J, W ) and a (possibly infinite) vertex-weighted
+and edge-weighted graph.
+3.1. Graph limits, graphons, and equivalence. Graphons have been introduced
+as limit of convergent dense graph sequences; see [31] for details. Roughly speaking,
+a graph sequence is dense if the number of edges grows quadratically in the number
+of vertices. Convergence can be defined in terms of homomorphism densities
+(as we will not use this concept here, we refer to [31] for a definition): A dense
+graph sequence (Gn )n is convergent if for every finite graph F the sequence of
+homomorphism densities (t(F, Gn ))n is convergent. One of the main results of the
+theory is that for every convergent dense graph sequence there is a graphon (J, W )
+such that t(F, Gn ) converges to t(F, W ). It turns out that several (J, W ) are limit of
+the same graph sequence. Therefore, a suitable notion of isomorphism is necessary.
+Definition 3.3. Two graphons (J1 , W1 ) and (J2 , W2 ) are isomorphic up to
+nullsets if there is a measure preserving transformation φ : J1 → J2 which is
+invertible up to nullsets and satisfies W2 = W1φ almost everywhere, where we
+define W φ (x, y) = W (φ(x), φ(y)).
+This notion of isomorphism is the most relevant for our purposes since, as we
+will see, it preserves dynamics.
+Definition 3.4. Two graphons (J1 , W1 ) and (J2 , W2 ) are weakly isomorphic if
+they have the same homomorphism densities or, equivalently, if they are limit of
+the same graph sequence (again see [31]).
+Two graphons that are limit of the same graph sequence can lie on completely
+different probability space J. A consequence is that weakly isomorphic graphons
+may lead to wildly different graphon dynamical systems as we discuss further below.
+Example 3.5. For example, with probability 1 a sequence of Erdős-Renyi random
+graphs on n nodes converges to both the constant graphon W = 1/2 on J = I
+and the constant graphon W = 1/2 on the trivial probability space J = {1}
+with µ({1}) = 1; these graphons are weakly isomorphic but not isomorphic up
+to nullsets. As we will see in Section 4.1 the first one supports a rich infinitedimensional dynamical system, while the second one is one-dimensional.
+One of the contribution of this paper is clarifying the role of weak isomorphism
+in dynamics.
+Defining automorphisms for graphons involves some nuances. For φ : J → J
+write W φ (x, y) = W (φ(x), φ(y)) as in [31]. Requiring W φ (x, y) = W (x, y) for
+almost every x, y is not sufficient, as noted in [32]: The reason is that, being two
+measurable functions essentially the same up to nullsets, this definition would allow
+every permutation of a finite set of points to be an automorphism. For example,
+every graphon would have transitive automorphism group. Following [32] we define:
+Definition 3.6. Let (J, W ) be a graphon. A graphon automorphism is an
+invertible function φ : J → J satisfying
+(A1) the function φ is measure preserving;
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+9
+
+(A2) for every x ∈ J and for almost every y ∈ J we have W (φ(x), φ(y)) =
+W (x, y).
+We write Aut(J, W ) for the group of graphon automorphisms.
+Weakly isomorphic graphons can have wildly different automorphism groups. To
+address this fact, in [32] the authors define the automorphism group on a specific
+class of graphons, called twin-free graphons. Every graphon is weakly isomorphic
+to a twin-free graphon [31, Proposition 13.3] and the automorphism groups of
+twin-free graphons are somehow better behaved. Since weak isomorphisms do not
+preserve dynamics, we cannot restrict our analysis of automorphism groups to
+twin-free graphons, although they will play a central role in Section 4.
+3.2. Graphon dynamical systems. We now turn back to graphon dynamical
+systems (4) and their properties. First note that the dynamics is well-defined:
+Lemma 3.7. Equation (4) defines a dynamical system on L1 (J).
+Proof. Let Kf , Kg ≥ 0 be Lipschitz constants for the functions f, g with respect
+to the norm ∥(x, y)∥1 = |x| + |y|. Let F(u) denote the right hand side of (4). For
+every u, v ∈ L1 (J) we have
+
+
+Z
+Z
+∥F(u) − F(v)∥1 ≤ Kf |ux − vx | + Kg |ux − vx | + |uy − vy | dµ(y) dµ(x)
+J
+
+J
+
+≤ (Kf + 2Kf Kg ) ∥u − v∥1 .
+Therefore the operator F is Lipschitz continuous. By [8, Theorem 7.3] solutions
+exist and are unique for t ∈ [0, ∞). Let Φt : L1 (J) × [0, ∞) → L1 (J) denote the
+induced semiflow.
+Now consider a variation of (4) in which f has been replaced by −f . The
+same argument applies, giving another semiflow Ψt : L1 (J) × [0, ∞) → L1 (J).
+Now fix t ≥ 0. By differentiating, it is easy to see that for every s ∈ [0, t] the
+identity Φt−s (u) = Ψs (Φt (u)) holds. By taking s = t we have Ψt (Φt (u)) = u and
+similarly one can prove that Φt (Ψt (u)) = u. Therefore the semiflow Φ can be
+extended to a flow by defining Φt = Ψ−t for t < 0.
+□
+3.2.1. Examples of graphon dynamical systems. Recall that for a graphon (J, W ),
+we denote by D(J, W ) the graphon dynamical system and by ΦW
+t (u) the associated
+flow. Note that the dynamical system depends on the probability measure µ on
+the index space J as well as W . We give some examples.
+Example 3.8 (Dynamics on a graph). Let J be the set {1, . . . , n} endowed with
+uniform probability. Let {W (x, y) = Ax,y }x,y=1,...,n be the adjacency matrix of a
+graph. Then (4) reduces to the dynamical system on a graph given in equation (1):
+!
+n
+1X
+u̇x = f ux ,
+Ax,y g(ux , uy ) .
+(6)
+n y=1
+Example 3.9 (Canonical Embedding). Let A be the adjacency matrix of a graph
+with n vertices. The canonical embedding of the graph is a graphon on J = I.
+Divide I into n intervals, so that I 2 is divided into n2 squares. Define W (x, y) = Ak,j
+for x ∈ [(k − 1)/n, k/n], y ∈ [(j − 1)/n, j/n]. The function W associates 0, 1 to the
+squares according to the adjacency matrix of the graph, see Figure 1. The resulting
+
+10
+
+CHRISTIAN BICK
+
+graphon dynamical system is distinct from (6). However, we will see that if the
+initial condition is constant on the intervals [(k − 1)/n, k/n], k ∈ {1, . . . , n} then
+the resulting dynamics reduce to (6).
+
+Figure 1. This graphon has a block structure which is a canonical
+embedding on the unit interval of a finite graph with 5 vertices.
+Example 3.10 (Dynamics on a weighted graph). We now generalize the previous
+example to weighted graphs given by a edge-weight function W : {1, . . . , n}2 →
+[0, 1] on weighted vertices. The vertex weights are given by discrete probability
+distribution µ = (µx )x=1,...,n . The graphon dynamical system is
+!
+n
+X
+u̇x = f ux ,
+µy Wx,y g(ux , uy ) .
+y=1
+
+As a concrete example, the finite graphon
+3/10
+
+1
+
+1/2
+
+9/10
+
+1/5
+
+is associated to the system
+
+
+u̇1 = f (u1 , 1/2 · g(u1 , u2 ))
+u̇2 = f (u2 , 3/10 · g(u2 , u1 ) + 9/50 · g(u2 , u3 ))
+
+u̇ = f (u , 9/20 · g(u , u )).
+3
+3
+3
+2
+One can define a canonical embedding of a weighted graph with vertex weights by
+partitioning I into intervals of possibly different length.
+Example 3.11 (Countable graph). In this example we will see that graphons,
+although typically understood as limit objects for dense graphs, can represent
+dynamical systems on sparse infinite graphs, as long as some finiteness property is
+satisfied. Let J be a probability space on the set of natural numbers N. Let µ =
+(µk )k∈N denote the probability measure. For any graph G on N the infinite coupled
+system of differential equations
+!
+X
+u̇j = f uj ,
+µj Gj,k g(uj , uk )
+k∈N
+1
+
+defines a P
+dynamical system on L (J). An example is given in Figure 2. Notice that
+the sum j µj is finite (by definition, it is equal to 1); if the vertex weights would
+P
+satisfy j∈N µj = ∞, the above system would not be representable as a graphon
+system.
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+11
+
+•1/2
+•1/8
+
+•1/8
+
+•1/32
+···
+
+•1/32
+···
+
+···
+
+•1/32
+···
+
+•1/32
+
+···
+
+···
+
+···
+
+···
+
+Figure 2. Infinite binary tree.
+3.3. Symmetries of graphon dynamical systems. Theorem 2.1 shows that an
+isomorphism G → H between graphs corresponds to an isometry D(H) → D(G) of
+(any) associated graphon dynamical system. The main result of this section is to
+generalize the theorem to graphons. There is a key difference between graph and
+graphon dynamical systems: While isomorphism between graphs are necessarily
+invertible, for graphons they only need to be measure-preserving (but not necessarily
+invertible).
+For completeness, we recall some basic notions. Let J1 = (Ω1 , A1 , µ1 ) and J2 =
+(Ω2 , A2 , µ2 ) be two probability spaces. A measurable map is a map φ : Ω1 → Ω2
+such that the preimage of any measurable set is measurable: φ−1 (A) ∈ A1 for
+every A ∈ A2 . Every measurable map φ : J1 → J2 induces on J2 a probability,
+called the push forward of µ1 , defined by
+(φ#µ1 )(A) = µ1 (φ−1 (A)),
+
+A ∈ A2 .
+
+The fundamental property of the push forward is the change of variable formula [49,
+Lemma 1.2]: for every f ∈ L1 (J1 )
+Z
+Z
+f (φ(x))dµ1 (x) =
+f (x)d(φ#µ1 )(x).
+Ω1
+
+Ω2
+
+A measurable map φ : J1 → J2 is called measure preserving if φ#µ1 = µ2 .
+Equivalently, a measurable map φ is measure-preserving if and only if for every f ∈
+L1 (J1 )
+Z
+Z
+f (φ(x))dµ1 (x) =
+Ω1
+
+f (x)dµ2 (x).
+Ω2
+
+Notice that measure-preserving maps are not invertible in general. We are ready
+for the main result of the section:
+Theorem 3.12 (Correspondence Theorem). Let (J1 , W1 ) and (J2 , W2 ) be two
+graphons. Suppose that
+φ : J1 → J2
+is measure preserving and W1 = W2φ holds almost everywhere. Then
+φ∗ : L1 (J2 ) → L1 (J1 ),
+
+(φ∗ v)x = vφ(x)
+
+is an isometry mapping solutions to solutions. In particular, the following diagram
+is commutative:
+φ
+(J1 , W1 )
+(J2 , W2 )
+.
+D(J1 , W1 )
+
+φ∗
+
+D(J2 , W2 )
+
+12
+
+CHRISTIAN BICK
+
+Proof. Let dL1 (J) denote the distance in L1 (J). Let u, v ∈ L1 (J2 ). Since φ#µ1 = µ2 ,
+with the change of variable formula we obtain
+Z
+Z
+∗
+∗
+∗
+∗
+dL1 (J1 ) (φ u, φ v) =
+|φ u − φ v| dµ1 =
+|u − v| dµ2 = dL1 (J2 ) (u, v),
+J1
+
+J2
+
+∗
+
+and thus φ is an isometry. It remains to prove that φ∗ maps solutions to solutions.
+Let v be a solution of D(J2 , W2 ). Then for almost every x
+
+
+Z
+v̇φ(x) = f vφ(x) ,
+g(W2 (φ(x), y), vφ(x) , vy )dµ2 (y)
+J2
+
+
+Z
+= f vφ(x) ,
+g(W2 (φ(x), φ(y)), vφ(x) , vφ(y) )dµ1 (y)
+J1
+
+
+Z
+= f vφ(x) ,
+g(W1 (x, y), vφ(x) , vφ(y) )dµ1 (y) .
+J1
+∗
+
+Now define w = φ v, that is wx = vφ(x) for every x ∈ J2 . Then w ∈ L1 (J1 ) and by
+the calculation above for almost every x ∈ J1 we have
+ Z
+
+ẇx = f ux ,
+g(W1 (x, y), wx , wy )dµ1 (y) ,
+J1
+∗
+
+and therefore w = φ v is a solution of D(J1 , W1 ).
+
+□
+
+Since φ∗ is an isometry, it is injective and the image is closed. The isometry φ∗
+associated to a measure preserving transformation φ is known as Koopman operator.
+Notice that a map φ preserving adjacency W1 = W2φ does not map solutions to
+solutions in general. Preserving measure is a key hypothesis.
+As a corollary we obtain that graphons isomorphic up to nullsets support the
+same dynamical systems, generalizing the analogous result for graphs:
+Corollary 3.13. If the graphons (J1 , W1 ) and (J2 , W2 ) are isomorphic up to
+nullsets, then the dynamical systems D(J1 , W1 ) and D(J2 , W2 ) are isometric.
+Proof. Let ψ the inverse of φ. Since ψ is invertible and measure preserving, its
+inverse ψ is measure preserving. We conclude by noticing that ψ ∗ is the inverse
+of φ∗ .
+□
+Corollary 3.13 shows that the index space J can be replaced by any probability
+space isomorphic to J up to nullsets, without effectively changing the dynamics.
+This replacement however can change the regularity of W as a function.
+Recall that a graphon automorphism is a measure preserving map φ : J → J
+such that for every x we have W φ (x, y) = W (x, y) for almost every y. In particular Corollary 3.13 applies to graphon automorphisms, motivating the following
+definition:
+Definition 3.14. Let (J, W ) be a graphon. Let φ : J → J an automorphism of
+the graphon. The map φ∗ : L1 (J) → L1 (J) is an isometry and a symmetry of the
+graphon dynamical system D(J, W ). We call φ∗ a graphon-induced symmetry.
+By definition the graphon automorphisms of (J, W ) are in one-to-one correspondence with the graphon-induced symmetries of D(J, W ). We prefer to keep the
+notions separate to highlight the different action space, J and L1 (J) respectively.
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+13
+
+In later sections we will compute the automorphism group Aut(J, W ) of several
+graphons.
+Definition 3.15. Let (J1 , W1 ) and (J2 , W2 ) be two graphons. Suppose that φ :
+J1 → J2 is measure preserving and W1 = W2φ holds almost everywhere. Then we
+call φ∗ a generalized graphon-induced symmetry.
+3.4. Dynamically invariant subspaces and generalized symmetries. We
+now discuss two ways in which dynamically invariant subspaces can arise: as the
+fixed point set of a graphon symmetry, or as the image of a generalized symmetry.
+Let φ : J → J a graphon automorphism. By Corollary 3.13 the dual map φ∗ :
+1
+L (J) → L1 (J) is a symmetry of the graphon dynamical system. The set
+Fix(φ∗ ) = {u ∈ L1 (J) | u(φ(x)) = u(x) a.e.}
+
+(7)
+
+is a closed, dynamically invariant subspace of L1 (J). This is a generalization of
+dynamically invariant cluster subspaces on graphs (3).
+The second way is distinct and relates to the Koopman operator. Let φ be a
+map (J, W ) → (J ′ , W ′ ) preserving both measure and adjacency, as in Corollary 3.12.
+Then the dual map φ∗ : L1 (J ′ ) → L1 (J) is an isometry embedding the dynamical
+system D(J ′ , W ′ ) into the dynamical system D(J, W ). The set
+φ∗ (L1 (J ′ )) = {v ◦ φ | v ∈ L1 (J ′ )}
+
+(8)
+
+is a closed, dynamically invariant subspace of L1 (J).
+As a particular case, take J ′ = J and let φ : J → J be a non-invertible measure
+preserving transformation which preserves adjacency. Although not invertible the
+map φ∗ acts on L1 (J) as a symmetry of the dynamical system. A well known
+example of non-invertible measure-preserving transformation on the unit interval
+is the doubling map x 7→ 2x (mod 1). Non-invertible symmetries do not appear
+on graphs. Indeed if J = {1, . . . , n} with uniform probability then the measure
+preserving transformations are exactly the permutations.
+In the following sections we will analyze subsystems of the form (7) and (8). In
+some cases, these two approaches will lead to two alternative proofs of the same
+statement.
+4. Homogeneous coupling: twins yield clusters
+In this section we consider graphons that describe homogeneous coupling in the
+sense that there are ‘large’ sets of vertices with the same neighbors. Examples are
+cluster dynamics, all to all coupling and finitely many coupled populations.
+Definition 4.1. Let (J, W ) be a graphon. Two vertices x, x′ ∈ J are twins if
+the functions W (x, ·) = W (x′ , ·) are equal almost everywhere. More generally,
+let A ⊆ J be a measurable set. We say that the elements of A are twins if the
+map y 7→ W (x, y) from J to R is independent of x ∈ A. A graphon is twin-free if
+it contains no positive measure set of twin vertices.
+Definition 4.2. Let (J, W ) be a graphon. Two vertices x, x′ ∈ J are twins
+if W (x, y) = W (x′ , y) for almost every y ∈ J. More generally, the elements of a
+measurable set A ⊆ J are twins if for every x, x′ ∈ A we have W (x, y) = W (x′ , y)
+for almost every y ∈ J. A graphon is twin-free if it contains no positive measure
+set of twin vertices.
+
+14
+
+CHRISTIAN BICK
+
+Put differently, for a set of twins A the map y 7→ W (x, y), as a map J → R, is
+independent on x ∈ A.
+
+Figure 3. The connection strength between a vertex x ∈ [0, 1/5]
+and a vertex y ∈ (1/5, 1] depends on y but not on x.
+The twin relation is an equivalence relation. Moreover, the sets of the partition
+are measurable. The index space J is union of measurable sets of twins. For
+example, in the graphon of Figure 3 the interval [0, 1/5] is a set of twins; in this
+case the partition is formed by [0, 1/5] and the singletons {x} for 1/5 < x ≤ 1.
+Definition 4.3. Let A ⊆ J be a set of positive measure. The cluster subspace C(A) associated to A is the subset of functions u ∈ L1 (J) such that u is
+constant on A up to nullset.
+The following results, Theorem 4.4, shows that twin vertices starting synchronized
+remain synchronized over time. In the case of finite graphs one can prove this
+fact by comparing the evolution equations of a pair of twin vertices. The context
+of graphons poses some technical challenges. First, we cannot look at only two
+vertices at once: since functions in L1 are identified up to nullsets, for every
+fixed x, y ∈ L1 ([0, 1]) we have
+{u ∈ L1 ([0, 1]) | ux = uy } = L1 ([0, 1]).
+It is necessary to work with a set of twins A of positive measure at once, rather
+than individual pairs. Second, the evolution equation (4) holds for every t and
+almost every x ∈ J, that is, for every t there is a nullset Kt such that the equation
+holds for every x ∈ J \ Kt . However, we cannot fix a single
+S set of measure zero
+that works for all t: The set Kt depends on t, and the set t Kt can have positive
+measure.
+We give two proofs of Theorem 4.4, one in the general case and one in the
+special case of the unit interval J = I. The proofs are based on the two different
+applications (7) and (8) of the Correspondence Theorem 3.12, as announced in
+Section 3.4.
+Theorem 4.4. Let (J, W ) be a graphon and A ⊆ J a set of positive measure.
+Suppose that all the vertices in A are twins. Then the cluster subspace C(A) is
+(forward and backward) dynamically invariant.
+Proof. This first proof is based on [31, Proposition 13.3]. Let J = (Ω, A, µ). Let Ae
+be the sigma-algebra of those sets in A that do not separate any point of A.
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+15
+
+e the conditional expectation of the function W with
+f = E(W | Ae × A)
+Let W
+e Let Je = (Ω,
+e A,
+e µ̃) be the quotient probability space obtained by
+respect to Ae × A.
+identifying the elements of A and let φ : J → Je denote the projection.
+f φ = W almost everywhere, see [31,
+Then φ is measure preserving and satisfies W
+Proposition 13.3] for details. By the Correspondence Theorem 3.12 the map φ∗
+eW
+f ) isometrically into D(J, W ). The image φ(L1 (J))
+e is the subset
+embeds D(J,
+e These are
+of L1 (J) consisting of functions of the form v ◦ φ for some v ∈ L1 (J).
+exactly the functions constant on A up to nullset.
+□
+In the special case of the unit interval J = I we can give a somewhat simpler
+proof, based on ergodic transformations.
+Proof of Theorem 4.4 in the case J = I. The unit interval is an atomless standard
+probability space. Every measurable subset of a standard probability space is
+standard [22,45]. Therefore A endowed with the normalized measure is an atomless
+standard probability space. All atomless standard probability spaces are isomorphic
+up to nullset to the unit interval [24].
+In particular A supports an ergodic transformation γ : A → A. Define γ
+on I \ A as the identity map. A function in L1 (I) is γ-invariant if and only if its
+restriction on A is γ-invariant and, since γ is ergodic on A, if and only if it constant
+over A [49, Theorem 1.6].
+□
+Let us return to Figure 3. By Theorem 4.4 the set of functions constant
+over [0, 1/5] up to nullsets is dynamically invariant, that is, it is a cluster. On the
+other hand, notice that the set of functions constant over [1/5, 1] up to nullsets is
+not dynamically invariant.
+In Theorem 4.4 we reduce the space by identifying a set of twins. However,
+inspired by [31], one can identify all the set of twins in (J, W ), obtaining the twineW
+f ). The sigma-algebra and probability on the quotient are
+free quotient (J,
+constructed as in the first proof of Theorem 4.4. Dynamics on the twin-free quotient
+is given by:
+eW
+f ) the associated twin-free
+Proposition 4.5. Let (J, W ) be a graphon and (J,
+quotient. Then
+
+u ∈ L1 (J) | ux = uy for all twins x, y
+(9)
+is a closed, dynamically invariant subspace of J. The dynamics of D(J, W ) restricted
+eW
+f ).
+to (9) is isometric to the dynamics on the twin-free quotient D(J,
+e
+Proof. Apply the Correspondence Theorem 3.12 to the projection J → J.
+
+□
+
+This motivates the following definition:
+Definition 4.6. We call (9) the twin-sync subspace of D(J, W ).
+The twin-sync subspace is the subset in which any two twins share the same
+state. Proposition 4.5 shows that dynamics on the twin-sync subspace is the same
+as the dynamics on the twin-free quotient.
+Recall that graphons isomorphic up to nullsets lead to isometric graphon dynamical systems (Corollary 3.13) while, on the other hand, weakly isomorphic graphons
+may have wildly different graphon dynamical systems (Example 3.5). The following
+result explains the exact role of weak isomorphism in dynamics.
+
+16
+
+CHRISTIAN BICK
+
+It requires the technical hypothesis that the probability space J is standard.
+This however is not very restrictive, as most spaces considered in practice are
+standard: finite and countable discrete probability spaces, the unit interval with
+Lebesgue measure, any absolute continuous distribution on Rn , spheres and tori
+with uniform probability, the set of all continuous functions [0, ∞) → R with the
+Wiener measure.
+Corollary 4.7. Suppose that J1 and J2 are standard probability spaces. If the
+graphons (J1 , W1 ) and (J2 , W2 ) are weakly isomorphic, then the twin-sync subspaces
+of D(J1 , W1 ) and D(J2 , W2 ) have isometric dynamics.
+Proof. Since the graphons (J1 , W1 ) and (J2 , W2 ) are weakly isomorphic and every
+f1 )
+graphon is weakly isomorphic to its twin-free realization, then the graphons (Je1 , W
+f2 ) are also weakly isomorphic. Twin-free weakly isomorphic graphons
+and (Je2 , W
+on standard probability spaces are isomorphic up to nullset [31, Theorem 13.9]. By
+Corollary 3.13 graphons isomorphic up to nullset have isometric dynamics.
+□
+Remark 4.8. Roughly speaking, replacing a vertex by a set of twins and adjusting
+the measure accordingly leads to an equivalent graphon in the sense of graph limit
+theory (indeed, weakly isomorphic), which supports a different dynamic unless twins
+start synchronized. Corollary 4.7 shows that this is essentially the only difference
+between the notion of graphon equivalence in combinatorics and in dynamics.
+4.1. Identical all-to-all coupling: The constant graphon. Consider a constant
+graphon. In this case all vertices are twins. This has an immediate consequence
+for dynamics: By Theorem 4.4, for every positive-measure subset A the cluster
+subspace C(A) is dynamically invariant. In this section we analyze the symmetry
+group of the graphon dynamical system and understand further consequences for
+the dynamics.
+For the sake of example, we consider J = I and W = 1. The automorphism group
+of the graphon (I, 1) is the full group of measure preserving transformations Mp(I)
+of the unit interval I, which has been well studied as a topological group [16, 23, 39].
+In our context it is interesting to remark that every element of Mp(I) can be
+approximated by a permutation of a finite partition of I into intervals [27] (although
+the typical element of Mp(I) is not of this form [10]).
+By any means, the group Mp(I) is large. This leads to a large number of
+dynamically invariant subspaces (see Section 3.4). We describe some:
+Proposition 4.9. Consider the graphon dynamical system D(I, 1). The following
+subsets of L1 (I) are dynamically invariant:
+(i) For every measurable subset A ⊆ I, the cluster subspace C(A);
+(ii) For every measurable subsets A1 , . . . , An ⊆ I, the subspace
+n
+\
+C(Ak )
+k=1
+
+in which every Ak is cluster;
+(iii) The set of functions that are injective up to nullset;
+(iv) For every positive integer q, the set of almost everywhere (1/q)-periodic functions;
+(v) The set of functions satisfying the identity ux = u1−x almost everywhere.
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+17
+
+Proof. Part (i) is a particular case of Theorem 4.4. Part (ii) and part (iii) follow
+from part (i) and the fact that the set of dynamically invariant subsets is closed by
+intersection, union and complement.
+We prove (iv) in two ways. The transformation φ : x 7→ x + 1/q (mod 1) is
+invertible and measure preserving, thus a symmetry of the dynamical system by
+Corollary 3.13. The fixed point set Fix(φ∗ ) ⊆ L1 (I) is the set of (1/q)-periodic
+functions. Alternatively, consider the non-invertible measure preserving transformation φ : x 7→ qx (mod 1) and consider the image of the dual map φ∗ .
+We prove (v) in two ways. The transformation φ∗ : x 7→ 1 − x is invertible and
+measure preserving, thus a symmetry of the dynamical system by Corollary 3.13.
+The fixed point set Fix(φ∗ ) ⊆ L1 (I) is the set of functions satisfying ux = u1−x for
+almost every x ∈ I. Alternatively, consider the non-invertible measure preserving
+transformation φ mapping x 7→ 2x if x ≤ 1/2 and x 7→ 1 − 2x if x > 1/2 and
+consider the image of the dual map φ∗ .
+□
+By taking A = I in Proposition 4.9 (i) we obtain the twin-synch subspace of
+the system: Since all vertices are twins, dynamics reduces to the 1-dimensional
+ordinary differential equation
+u̇ = f (u, g(u, u)),
+
+u ∈ R.
+
+This describes the dynamics of the system as one giant cluster.
+Proposition 4.9 (ii) leads to the finite-dimensional system
+!
+n
+X
+u̇j = f uj ,
+g(uj , uk )µk ,
+j = 1, . . . , n
+y=1
+
+where 1, . . . , n are the labels of the subsets, (µk )k their measure and uj the state
+of the cluster. This describes multi-population cluster dynamics. Notice that
+if µ1 = · · · = µn then we obtain the graph dynamical system on a complete
+graph Kn , and that there are uncountably many ways of partitioning I into n sets
+of measure 1/n, thus uncountably many copies of D(Kn ) in D(I, 1).
+Proposition 4.9 (iv) leads to
+!
+Z 1/q
+u̇x = f ux , q
+g(ux , uy )dy ,
+x ∈ [0, 1/q].
+0
+
+By substituting qdy = dµ(y), the normalized Lebesgue measure on [0, 1/q], we
+see that this system is isometric to the full system D(I, 1). This shows that the
+dynamical system D(I, 1) contains infinitely many copies of itself.
+4.1.1. Canonical invariant region. Proposition 4.9 part (iii) generalizes an important
+property known for systems on complete graphs [1, 2]. Since in a complete graph
+any two vertices are twins, the states of two vertices can never cross each other over
+time. In particular, if the initial condition k 7→ uk (0) is injective, then k 7→ uk (t) is
+injective for every t. As a consequence, one can restrict dynamics to the canonical
+invariant region defined by u1 < u2 < . . . < un , see [1, 2]. Proposition 4.9
+part (iii) shows that, in the context of graphons, injectivity is preserved up to
+nullset.
+
+18
+
+CHRISTIAN BICK
+
+4.1.2. Large random graphs. For each positive integer n consider an Erdős-Renyi
+random graph with n vertices. The probability that an Erdős-Renyi random graph
+has a non-trivial automorphism goes to 0 as n goes to infinity [19, Corollary 2.3.3].
+On the other hand, with probability 1 the graph sequence converges to the constant
+graphon (I, 1/2), which has a large group of symmetries. Therefore, although the
+system on n vertices is non-symmetric, one can expect dynamics to resemble the
+symmetries of the limit for n large. In Section 6 we will prove that this is indeed
+the case.
+4.2. Coupled populations: Graphons with block structure. Consider a
+partition of J into finitely many measurable subsets J1 , . . . , Jn . In this section we
+suppose that the coupling between any two vertices x ∈ Jj and y ∈ Jk depends only
+on j and k, that is, for every k = 1, . . . , n the vertices in each Jk are all twins. This
+assumption models a family of n populations with homogeneous coupling within a
+population but not necessarily among the populations. The case n = 1 is covered
+in Section 4.1.
+For the sake of example, we consider J = I. Fix n > 1 and define Ik =
+[k − 1/n, k/n] for k = 1, . . . , n. Let G be a graph with n vertices and let Gj,k
+denote the adjacency matrix. Dynamics on G is given by
+!
+1X
+Gj,k g(uj , uk ) .
+(10)
+u̇k = f uk ,
+n j
+We now define a graphon WG on I by coupling the partition intervals according
+to G:
+X
+WG =
+Gj,k 1Ij ×Ik ,
+(11)
+j,k
+
+see Figure 1. Dynamics on WG are given by
+!
+Z
+X
+u̇x = f uk ,
+G(j, k)
+g(ux , uy )dy ,
+j
+
+if x ∈ Ik .
+
+(12)
+
+Ij
+
+The system
+(10) can be obtained from (12) by restricting dynamics to the subT
+space nk=1 C(Ik ) in which each Ik is cluster: One can show this directly from
+the equations or by applying the Correspondence Theorem 3.12 to the function I → {1, . . . , n} mapping each point x ∈ Ik to the label k of the interval
+it belongs to.
+The graph-induced symmetries of (10) are the automorphism of G. These extend naturally to graphon-induced symmetries as permutations of the partition
+intervals. However the graphon system (12) has additional symmetries. Indeed,
+every interval Ik supports its own group of invertible measure preserving transformations Mp(Ik ). Notice that the groups Mp(Ik ) are all isomorphic to Mp(I) as
+groups
+Q (but the isomorphism does not preserve the measure). Since Aut(G) acts
+on k Mp(Ik ) by exchanging the intervals, this formally gives the symmetry group
+the structure of the wreath product
+Y
+Mp(Ik ) ⋊ Aut(G) ∼
+= Mp(I) ≀ Aut(G).
+k
+
+We will see in Proposition 4.10 that, if the adjacency matrix of G is invertible,
+then this is indeed the full automorphism group of WG . In general the group can
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+19
+
+be larger. Graphs with invertible adjacency matrix are analyzed in [46]. If G
+contains twins, say j and k, then the adjacency matrix is not invertible and the
+automorphism is allowed to exchange mass between the intervals Ij and Ik .
+Proposition 4.10. Let G be a graph with invertible adjacency matrix. Then the
+automorphism group of WG is
+Y
+Mp(Ik ) ⋊ Aut(G).
+Aut(WG ) ∼
+=
+k
+
+Proof. It remains to be shown that every graphon automorphism is a composition
+of an interval permutation (corresponding to an automorphism of G) and measure
+preserving transformations of the intervals into themselves. To show this, observe
+that in general a measure preserving transformation of I transfers mass between
+the intervals (Ik )k . This transfer is represented by a Markov chain. More precisely,
+we will obtain a double stochastic matrix P . Under the stronger assumption that
+the transformation is an automorphism of WG , we will show that all the entries
+of P are either 0 or 1. That is, the transformation preserves the partition.
+Let (G(p, k))p,k denote the adjacency matrix associated to G. Fix x. By definition
+we have W (φ(x), φ(y)) = W (x, y) for almost every y. Suppose that x ∈ Ip
+and φ(x) ∈ Iq . By definition we obtain:
+G(p, k)1Ik ∩φ−1 (Ij ) (y) = G(q, j)1Ik ∩φ−1 (Ij ) (y).
+Define pkj = |Ik ∩ φ−1 (Ij )| /(1/n) and the matrix P = (pkj )k,j . Notice that P is
+double stochastic. Moreover, we have
+G(p, ·) = P G(q, ·)
+and
+P T G(p, ·) = G(q, ·).
+It follows that P P T and P T P act identically on the rows of the adjacency matrix
+of G. Since the adjacency matrix G is non-singular it follows that P P T = P T P is
+equal to the identity matrix. We conclude that that P is a permutation matrix.
+This shows that φ preserves the partition. Therefore it must be the composition
+of a permutation of the set of intervals and measure preserving transformations
+within each interval.
+□
+It is interesting to look at the dynamics on the invariant subspaces. Since each
+group Mp(I
+Q k ) contains an ergodic transformation, dynamics on the fixed point
+set Fix( k Mp(Ik )) is the same as the graph dynamics D(G).
+On the other hand, let us write j ∼ k if and only if j, k ∈ {1, . . . , n} belong to
+the same Aut(G)-orbit. Then the fixed point set of Aut(G) is the subset of L1 (I)
+of functions that repeat the same values on every intervals of the same orbit:
+n
+o
+1
+Fix(Aut(G)) = u ∈ L (I) u j +x = u k +x , ∀x ∈ [0, 1/n], ∀j ∼ k .
+n
+
+n
+
+In particular, if Aut(G) is transitive then the fixed point set is the subset of
+(1/n)-periodic functions and dynamics reduces to
+!
+Z 1/n
+u̇x = f ux , deg(G)
+g(ux , uy )dy ,
+x ∈ [0, 1/n],
+0
+
+20
+
+CHRISTIAN BICK
+
+where deg(G) is the degree common to every vertex of G. Up to isomorphism this
+is the same as dynamics on the constant graphon D(I, deg(G)/n). Intuitively, this
+means that if Aut(G) is transitive and all the populations start with the same
+initial conditions, then they evolve as just one population.
+5. Networks with distance-dependent coupling
+In this section we consider network dynamical systems that arise if the dynamical
+units are placed on a manifold and coupling depends on the distance of the units on
+the manifold. We refer to such a framework as geodesic coupling. The resulting
+graphons are known are geodesic graphons or geometric graphons [14]. This
+setup will lead to specific graphon dynamical systems where the graphon (J, W )
+reflects the “geometry” of the manifold.
+Graphon dynamical systems with geodesic coupling include a wide range of
+relevant systems. The classic example is distance-dependent coupling on a circle:
+Units are indexed by J = T (equipped with the standard metric and the uniform
+measure) and two units ux and uy , where x, y ∈ T, interact if and only if their
+distance d(x, y) is less or equal than some fixed constant δ. Note that if δ = π the
+circle T is all-to-all connected and if δ < π the neighborhood of a point x is an
+arc of length 2δ. Such distance-dependent interactions has been considered, for
+example, in [11,35] as the continuum limit of corresponding families of graphs [33,51].
+Indeed, geodesic coupling on the 2-dimensional and 3-dimensional torus has been
+extensively considered in the analysis of chimera states [34,40,41]. Geodesic coupling
+on the 2-dimensional sphere S 2 has been considered in graph limit theory [31], see
+Example 13.2 and Example 13.16.
+Graphon dynamical systems with geodesic coupling come with a natural choice for
+the index space J—the manifold over which the coupling is defined. With this index
+space, the kernel W will have a simple form determined by the coupling, reflecting
+any symmetries the space J may have. Thus, while fixing J = I is sufficient in
+graph limit theory [31], for graphon dynamical systems with geodesic coupling it can
+obscure geometric (symmetry) properties—especially if the topological structure
+has dimension larger than 1.
+As an example, consider a geodesic coupling graphon on J = T2 . The probability
+spaces I and T2 are isomorphic up to nullset. An explicit isomorphism is the
+measure preserving transformation I → T2 that separates odd and even digits of
+the binary expansion. Representing the graphon on J = I, however, hides the
+symmetries, see Figure 4.
+This section is organized as follows: First, we frame geodesic coupling in the
+context of graphons; second, we apply the graphon formalism in order to understand
+symmetries; third, we present numerical simulations for the 2-torus and the 2sphere. As a side product of our analysis we are able to explicitly compute the
+automorphism group of several geodesic graphons.
+5.1. Geodesic graphons. In order to frame geodesic coupling in the context of
+graphons, we require the notion of Hausdorff measure. Let J be a compact, connected d-dimensional manifold endowed with metric d and d-dimensional Hausdorff
+probability measure µ. If J is the unit circle T, the distance d(x, y) = ∡(x, y)
+is equal to the smaller angle (in radians) between x and y while the measure µ
+coincides with normalized Lebesgue measure inherited from the interval [0, 2π].
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+21
+
+.
+Figure 4. Representing a naturally 2-dimensional index space
+on the 1-dimensional unit interval can create complicated, fractallike pictures, which hide the underlying graphon symmetries. The
+graphon in this figure has automorphism group D4 ⋉ T2 .
+More generally, if J is the d-dimensional torus Td = Rd /Zd , metric and measure
+are inherited from Rd . If J is the unit 2-dimensional sphere S2 , the distance d is
+the arc length and µ is the spherical measure. The Hausdorff measure is defined
+from the metric. A consequence of this fact is that any isometry of the manifold is
+measure preserving.
+Fix δ > 0. The geodesic graphon Wδ : J × J → {0, 1} is defined as follows:
+(
+1, if d(x, y) ≤ δ
+Wδ (x, y) =
+0, otherwise.
+Notice that Wδ is a graphon: From the definition of Hausdorff measure it follows
+that Wδ is µ-measurable and clearly Wδ (x, y) = Wδ (y, x). The neighborhood of the
+vertex x ∈ J, in the sense of graphon adjacency, is the ball of radius δ centered
+at x.
+5.2. The automorphism group of geodesic graphons. Let Wδ be a geodesic
+graphon. An isometry is a bijection J → J preserving the metric d. By definition
+it follows that both µ and Wδ are preserved by isometry. In particular any isometry
+of J is a graphon automorphism of Wδ :
+Proposition 5.1. Let Iso(J) be the isometry group of J. For every δ ≥ 0 the
+inclusion Iso(J) ⊆ Aut(Wδ ) holds.
+In Theorem 5.2 we will prove that, for a certain class of manifolds, isometries are
+the only graphon automorphisms. This allows us to compute the automorphism
+group Aut(Wδ ) for J = Td and J = Sd , covering the cases considered in literature.
+For the proof of Theorem 5.2 to work, we need the following assumption: The
+volume of the intersection of two geodesic balls depends only on the distance between
+the centers and the radii. Spaces with this property have been characterized in [13].
+
+22
+
+CHRISTIAN BICK
+
+It turns out that under mild hypothesis they are the same as harmonic spaces.
+See [5] for equivalent definitions of harmonic space. Spheres and tori are harmonic
+spaces.
+Theorem 5.2. Suppose that J has the property that the volume of the intersection
+of two geodesic balls depends only on the distance between the centers and the radii.
+Then for every δ > 0 small enough the identity Iso(J) = Aut(Wδ ) holds.
+Proof. We need to prove that every graphon automorphism φ is an isometry. Let Bxδ
+denote the geodesic ball of center x and radius δ. For every x, y ∈ S 1 we have
+
+
+Bxδ ∩ Byδ = φ−1 φ Bxδ ∩ φ Byδ .
+Since φ preserves neighbors we have
+
+δ
+δ
+Bxδ ∩ Byδ = φ−1 Bφ(x)
+∩ Bφ(y)
+.
+Moreover, since φ preserves the measure we have
+
+
+δ
+δ
+µ Bxδ ∩ Byδ = µ Bφ(x)
+∩ Bφ(y)
+.
+By hypothesis the volume of the intersection of two geodesic balls depends only
+on the distance between the centers and the radii. Let mδ (λ) denote the measure
+of the intersection of two balls of radius δ and center distance λ. Notice that if δ is
+larger than the diameter of the space J, then mδ (λ) is constant in λ: any two balls
+of radius δ have intersection equal to the whole space J and mδ (λ) = 1 for every λ.
+On the other hand, for δ small enough the function λ 7→ mδ (λ) is decreasing and
+strictly decreasing if λ ∈ [0, 2δ]. We conclude that, for every δ small enough, we
+have d(x, y) = d(φ(x), φ(y)) for any two points x, y of distance d(x, y) ≤ 2δ.
+It remains to extend d(x, y) = d(φ(x), φ(y)) to points of arbitrary distance.
+To do so, choose a geodesic path between x and y, then divide the path in
+segments [xi , xi + 1] of length smaller than 2δ with x0 = x and xm = y. By
+triangular inequality we have
+X
+X
+d(φ(x), φ(y)) ≤
+d(φ(xi ), φ(xi+1 )) =
+d(xi , xi+1 ).
+i
+
+i
+
+Since we have chosen a geodesic path between x and y, the right hand side is
+equal to d(x, y). This proves d(φ(x), φ(y)) ≤ d(x, y) for every pair of points. Nonexpansive local isometry of a connected compact space to itself is an homeomorphism
+is a surjective map, and an isometry [9, Theorem 4.2].
+□
+5.3. Graphon on the torus. Consider the 2-dimensional torus T2 = R2 /Z2 ,
+endowed with metric and measure induced from R2 . Fix δ < 1 and consider the
+geodesic graphon Wδ . By Theorem 5.2 the automorphism group of Wδ is the same
+as the isometry group of the torus. With Dk denoting the dihedral group on k
+elements, it is well known that
+
+Iso T2 ∼
+= D4 ⋉ T2 .
+The component T2 is the group of translation of the torus, acting on itself. The
+dihedral group D4 is generated by the transformations (x, y) 7→ (−y, x) and (x, y) 7→
+(x, −y). Notice that D4 is the group of symmetries of the lattice Z2 ; taking the
+quotient with respect to a different lattice leads to a homeomorphic (but not
+isometric) torus, thus to a possibly different automorphism group.
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+23
+
+Figure 5. We simulate the evolution of an initial condition
+with symmetry (x, y) 7→ (−y, x) with respect to the coupling function g(ux , uy ) = sin(uy − ux + 1). The 2-dimensional torus is approximated by the graph C30 × C30 . In the picture, vertices are
+arranged in a square for visual purposes: vertices on opposite sides
+are understood to be connected. The pattern is preserved over time.
+More generally, consider the d-dimensional torus Td = Rd /Zd . By Theorem 5.2,
+for every δ small enough we have
+Aut(Wδ ) ∼
+= Iso(Zd ) ⋉ Td
+where Iso(Zd ) is the symmetry group of the lattice Zd . Notice that Iso(Zd ) is a
+finite group. As a consequence, we find some dynamically invariant subspaces. For
+every ϵ1 , . . . , ϵd ∈ {−1, +1} the subspace given by the equation
+u(x1 ,...,xd ) = u(ϵ1 x1 ,...,ϵd xd )
+is dynamically invariant. Indeed, notice that for every ϵ1 , . . . , ϵd ∈ {−1, +1} the
+map
+(x1 , . . . , xd ) 7→ (ϵ1 x1 , . . . , ϵd xd )
+is an isometry preserving the lattice Zd , thus an isometry of Td . Moreover, for
+every direction (y1 , . . . , yd ) ∈ Rd the subspace given by the equation
+u(x1 ,...,xd ) = u(x1 +sy1 ,...,xd +syd ) ,
+
+s ∈ R,
+
+is dynamically invariant. To show this, notice that {(sy1 , . . . , syd ) | s ∈ R} is a
+subgroup of Td .
+5.4. Multi-twisted states. We consider again geodesic coupling on the torus,
+now in the particular case of Kuramoto coupling. Kuramoto model on a cycle
+graph Cn supports a family of equilibria known as twisted states: For q ∈ Z the
+q-twisted state is (2qkπ/n)k=1,...,n . We will see that continuous analogues of the
+twisted states appear in geodesic graphons on tori of any dimension.
+For fixed δ let Wδ be the geodesic graphon on the d-dimensional torus Td with
+respect to the metric
+dTd (x, y) = max(dT (x1 , y1 ), . . . , dT (xd , yd ))
+
+24
+
+CHRISTIAN BICK
+
+Figure 6. Convergence to a (1, 3)-twisted state from a perturbed
+configuration in C30 × C30 . Vertices are arranged in a square for
+visual purposes.
+and the product measure µ induced from Rd . Consider the Kuramoto model
+on Td = (R/Z)d where the phase θx of x ∈ Td evolves according to
+Z
+θ̇x =
+Wδ (x, y) sin(θy − θx )dµ(y).
+(13)
+Td
+
+Proposition 5.3. For every vector of non-zero integers (q1 , . . . , qd ) the state
+θx = 2π(q1 x1 + · · · + qd xd ),
+
+x ∈ Td
+
+(14)
+
+is an equilibrium of (13). We call it (q1 , . . . , qd )-twisted state.
+Proof. Substituting the (q1 , . . . , qd )-twisted state into the evolution equation yields
+Z
+Wδ (x, y) sin(2π(q1 (y1 − x1 ) + · · · + qd (yd − xd ))) dµ(y)
+Td
+!
+d Z xk +δ
+Y
+=ℑ
+e2πqk i(yk −xk ) dyk
+k=1
+
+=ℑ
+
+xk −δ
+
+d
+Y
+sin(2πqk δ)
+k=1
+
+!
+
+πqk
+
+=0
+where ℑ denotes the imaginary part of a complex number.
+
+□
+
+5.5. Spherical graphon. For simplicity we restrict our analysis to the 2-dimensional
+sphere S 2 . In it convenient to think of S 2 embedded in R3 as the set of solutions
+of x2 + y 2 + z 2 = 1. By Theorem 5.2 we have
+Aut(Wδ ) ∼
+= O(3).
+The graphon Wδ with δ = π/2 is known as spherical graphon, see [31, Example
+13.2]. A “sparse” version of this graphon, known as spherical graphop, will be
+considered in Section 8.
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+25
+
+As a concrete example of symmetry-induced dynamically invariant subspace,
+consider the set of functions invariant under rotation along a fixed axis. Reduced
+dynamics can be represented as a graphon system parametrized by an interval, the
+rotation axis. Other examples are given by the finite subgroups of O(3), that is,
+the group of symmetries of the platonic solids.
+
+Figure 7. We consider the coupling sin(θy − θx + 1) on a graph G
+with 468 vertices, obtained by discretizing the sphere. Vertices are
+placed on parallel circles in number proportional to the radius. We
+start with an initial condition which depends on the latitude only.
+In the limit this would correspond to a solution with rotational
+symmetry along the north-south axis. Numerically we see that
+symmetry is approximatively preserved for some time, but breaks
+for t very large. This effect, caused by the fact that the graph G is
+not truly rotationally symmetric bot only approximatively, will be
+discussed in Section 6.
+6. Ghosts of Symmetries
+For a moment we return to graphs and graphons as combinatorial objects.
+If we consider a convergent family of graphs, then the automorphisms of each
+element may be starkly different from the automorphisms of the limit graphon;
+cf. [32]. For example, with high probability a large Erdős-Renyi random graph
+has no symmetries [19, Corollary 2.3.3] while the constant limit graphon has many
+(Section 4.1).
+Now turning to dynamics, a key reason to analyze dynamics on graphons is that
+they approximate the dynamics of large but finite graphs, which are much less
+analytically tractable. One can make this rigorous by proving explicit statements
+of how close the dynamics on finite graphs are to the dynamics on the limit object
+(at least for some finite time); see for example [11, 12, 25, 36, 38].
+Therefore, there are families of converging graphs supporting very few synchrony
+patterns (due to the lack of symmetries) but the dynamics on the limits have a lot
+(due to the many symmetries). But since the dynamics of finite and limit system
+
+26
+
+CHRISTIAN BICK
+
+are close, we know that even the finite, non-symmetric dynamical system can show
+finite-time synchronous behavior due to the dynamics of the limit object. So for
+finite graph dynamical systems we can see ghosts of symmetries of the limit
+graphon dynamical system: We observed this effect for Erdős-Renyi random graphs
+and for spherical graphs in Figure 7 and is related to the metastable dynamics
+observed in [37, Figure 5]. The important consequence is we should not be surprised
+if graph dynamical systems on large but highly non-symmetric graphs show finitetime synchronized dynamics—understanding the symmetries of the limit object is
+the key to this insight. The goal of this section is formalizing this observation.
+How well graph dynamics approximate the graphon limit dynamics depends on
+the choice of f and g. For concreteness we focus on Kuramoto dynamics
+Z
+u̇x = W (x, y) sin(uy − ux ) dµ(y)
+(15)
+J
+
+in line with previous investigations. In [36] the author assumes convergence
+of (J, W (n) ) to (J, W ) in L1 (J 2 ). Although this is convenient for the convergence of
+dynamics, it excludes several convergent graph sequences that are of interest here,
+like Erdős-Renyi random graphs. In order to include these cases, we will prove a
+stronger statement.
+Indeed, we will assume convergence in the weaker norm ∥ ∥∞→1 , which is
+equivalent to convergence in terms of homomorphism densities up to vertex relabeling [31, Theorem 11.59]. Indeed we show that the norm ∥ ∥∞→1 , which is
+strictly weaker than the L1 -norm, is actually sufficient to guarantee convergence of
+dynamics in the case of sine coupling. In the following theorem we prove ∥ ∥∞→1 continuity with respect to the graphon and ∥ ∥1 -continuity with respect to the
+initial condition:
+Theorem 6.1. Consider two graphons W, U on the same index space J and
+let ΦW , ΦU denote the flows induced by Kuramoto coupling (15) respectively. Let u(0),
+U
+v(0) ∈ L1 (J). Define u(t) = ΦW
+t (u) and v(t) = Φt (v). Then for every t ∈ R
+∥u(t) − v(t)∥1 ≤ (∥u(0) − v(0)∥1 + 2t ∥W − U ∥∞→1 ) e2t .
+Proof. For every s ∈ R and every x ∈ J we have
+u̇x (s) − v̇x (s) =
+Z
+(W (x, y) − U (x, y)) sin(uy (s) − ux (s))dy
+Z
+− U (x, y) (sin(vy (s) − vx (s)) − sin(uy (s) − ux (s))) dy.
+From the addition formula for sine it follows that (16b) is bounded by
+∥W − U ∥∞→1 ∥sin(u(s))∥∞ |cos(ux (s))|
++ ∥W − U ∥∞→1 ∥cos(u(s))∥∞ |sin(ux (s))|
+≤ 2 ∥W − U ∥∞→1 .
+On the other hand (16c) is bounded by
+|vy (s) − uy (s)| + |vx (s) − ux (s)| .
+
+(16a)
+(16b)
+(16c)
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+27
+
+Therefore, integrating (16a), (16b), and (16c) on J gives
+Z
+|u̇x (s) − v̇x (s)| dx ≤ 2 ∥W − U ∥∞→1 + 2 ∥u − v∥1 .
+Integrating with respect to time gives
+Z t
+2 ∥u(s) − v(s)∥1 ds.
+
+∥u(t) − v(t)∥1 ≤ ∥u(0) − v(0)∥1 + 2t ∥W − U ∥∞→1 +
+0
+
+Grönwall’s Lemma completes the proof.
+
+□
+
+Let (J, W (n) )n be a sequence of graphons which converges to (J, W ) in the infinity
+to one norm. Theorem 6.1 implies that, for every fixed t, the flow
+ΦtW
+
+(n)
+
+: L1 (J) → L1 (J)
+
+converges uniformly, as a map, to
+1
+1
+ΦW
+t : L (J) → L (J).
+
+Moreover, convergence is uniform in time if t is restricted to any compact interval [−T, +T ]. In particular:
+Corollary 6.2. Let (J, W (n) )n be a sequence of graphons which converges to (J, W )
+in the infinity to one norm. Let u(n) ∈ L1 (J) be a sequence of initial conditions
+converging to u ∈ L1 (J) in the L1 -norm. Then for every t ∈ R
+lim u(n) (t) − u(t) 1 = 0
+
+n→∞
+
+holds. Convergence is uniform in t on any compact interval [−T, +T ].
+Theorem 6.1 explains the almost symmetric dynamics of large systems whose
+limit is symmetric:
+Corollary 6.3 (The Ghost of Symmetries). Let (J, W ) be a graphon with automorphism φ and let u(t) ∈ D(J, W ) be a trajectory satisfying φ∗ (u(0)) = u(0).
+Let (J, W (n) )n be a sequence of graphons and u(n) (t) ∈ D(J, W (n) ) a sequence of
+trajectories such that
+lim W (n) − W ∞→1 = 0,
+
+n→∞
+
+lim u(n) (0) − u(0) 1 = 0.
+
+n→∞
+
+Then for every t ∈ R
+lim φ∗ (u(n) (t)) − u(n) (t) 1 = 0.
+
+n→∞
+
+Moreover, convergence is uniform in t on any compact interval [−T, +T ].
+Proof. By triangular inequality
+φ∗ (u(n) (t)) − u(n) (t) 1 ≤ φ∗ (u(n) (t)) − φ∗ (u(t)) 1 + φ∗ (u(t)) − u(n) (t) 1 .
+Consider the two terms in the right hand side. Since φ∗ is an isometry of L1 then
+the first one is equal to u(n) (t) − u(t) 1 . Since φ∗ is a symmetry of D(J, W ) then
+the second term is equal to u(n) (t) − u(t) 1 . Therefore
+φ∗ (u(n) (t)) − u(n) (t) 1 ≤ 2 u(n) (t) − u(t) 1 .
+Theorem 6.1 implies
+φ∗ (u(n) (t)) − u(n) (t) 1 ≤ 2
+
+
+u(n) (0) − u(0) 1 + 2t W (n) − W ∞→1 e2t . (17)
+
+28
+
+CHRISTIAN BICK
+
+Taking the limit concludes the proof.
+
+□
+
+Equation (17) shows how much the trajectory of an approximatively symmetric
+system can deviate from being symmetric for any fixed time. In particular it can
+be used to estimate the minimal time needed for a given large deviation from
+symmetry.
+Note that an additional step is needed to apply Corollary 6.3 to simulations. Indeed, in simulations we approximated the limit graphon dynamical system D(J, W ),
+defined on some continuum index space J, with a graph dynamical system D(G(n) )
+on a different index space, namely the discrete set {1, . . . , n}. In order to apply Corollary 6.3 one has to first embed every finite system in the same index
+space J where the limit is defined. There are many ways of doing so; if J = I
+the canonical embedding is one such way. If the graph sequence G(n) converges to
+the graphon (J, W ) in terms of homomorphism densities then it is always possible
+to represent G(n) as a graphon W (n) on J in a way that makes W (n) − W ∞→1
+converge to zero.
+Notice that the proof of Corollary 6.3 does not require φ to be invertible. In
+other words, one may also observe ghosts of generalized symmetries.
+7. Symmetries of Mean-Field Graphon Dynamical Systems
+In this section we consider generalizations of graphon dynamical systems in which
+states, instead of being real-valued, are measure-valued. So far, the state of x ∈ J
+was given by some number ux ∈ R. By contrast, mean-field transport equations
+describe not the evolution of points but rather general probability measures. Meanfield equations on convergent families of graphs have been introduced in [25];
+we will refer to these systems as mean-field graphon dynamical systems
+and make this precise below. We now generalize graphon-induced symmetries to
+such mean-field graphon systems. The main result of this section is to exploit
+symmetry arguments to show that mean-field graphon system contains a range of
+simpler systems that have been analyzed independent of one another literature. For
+concreteness, we follow [25] and restrict our analysis to the case of phase oscillators
+and assume J = I.
+We first take a step back and recall the notion of mean-field dynamics for a globally
+coupled Kuramoto oscillator network (2)—we refer to this as the corresponding
+mean-field dynamical system. Let T = R/Z be the 1-dimensional torus and
+let M be the set of Borel probabilities on T. Rather than tracking the state
+of each oscillators, the mean-field dynamical system describes the evolution of a
+measure µ ∈ M over time, given by
+µ(t) = Φ(t)#µ0
+where Φ is the flow on T induced by the differential equation
+Z
+u̇(t) = sin(v − u(t)) dµ(t)(v)
+
+(18)
+
+(19)
+
+T
+
+and # denotes the push-forward of measures. Together, equations (18) and (19)
+represent the mean-field dynamics of (2) on complete graphs as n → ∞.
+While in the mean-field dynamical system we only track the state distribution
+of all oscillators as a whole, in the graphon dynamical systems we consider the
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+29
+
+dynamics on the corresponding graph limit (the constant graphon on J = I).
+Indeed, the mean-field system can be obtained from the graphon dynamical system
+by forgetting the labels: To make this statement precise, let λ denote the Lebesgue
+measure on I, let W = 1 and consider a solution t 7→ u(t) of the graphon system
+Z
+u̇x (t) = W (x, y) sin(uy (t) − ux (t)) dλ(y).
+I
+
+Then the measure µ(t) = u(t)#λ is a solution of the mean-field system (18):
+Z
+Z
+sin(uy (t) − ux (t)) dλ(y) = sin(v − ux (t)) dµ(t)(v).
+I
+
+T
+
+The mean-field graphon dynamical system now combines the two aspects: It
+describes the evolution of a family of measures indexed by I, a measure-valued
+measurable function I → M. We can interpret the latter in two ways: First, as a
+graphon system with non-deterministic states; second, as infinitely many mean-field
+systems coupled through a graphon.
+Let MI denote the set of maps I → M such that the preimages of open sets
+are measurable. This space is endowed with a metric [25]. Fix a continuous
+map µ : R → MI , an index x ∈ I and a graphon W . For every t0 ∈ R and u0 ∈ T
+there exist a unique solution ux : R → T to the following initial value problem [25,
+Lemma 2.2]:
+(
+R
+R
+u̇x (t) = I W (x, y) T sin(v − ux (t)) dµ(y, t)(v) dy
+(20)
+ux (t0 ) = u0 .
+Let Φ(µ, x, t, •) denote the flow induced by the initial value problem. Notice that
+we have a flow for each choice of x.
+Definition 7.1. The mean-field graphon dynamical system is given by
+µ(x, t) = Φ(µ, x, t, •)#µ(x, 0)
+
+(21a)
+
+µ(x, 0) = µ0 (x)
+
+(21b)
+
+where Φ(µ, x, t, •) : T → T is the flow induced by (20) and µ0 ∈ MI . These
+equations are required to hold for every t ∈ R and almost every x ∈ I.
+Existence and uniqueness of the mean-field graphon system are proved in [25]
+for t ∈ [0, T ] and can be extended to t ∈ R as in Lemma 3.7.
+Graphon-induced symmetries act on the index space I and not on the state
+space. As a consequence, the graphon-induced invariant subspaces in the graphon
+system I → R and in the mean-field graphon system I → M are essentially the
+same, in the sense that they are given by the same equations. In the following
+theorem we prove that indeed graphon-induced symmetries extend to the mean-field
+graphon system.
+Theorem 7.2. Let γ : I → I be a measure-preserving transformation satisfying W γ = W . Then γ acts on MI by sending a measured-valued function µ : x 7→ µ(x) to the measure-valued function µ ◦ γ : x 7→ µ(γ(x)). The
+action is a symmetry of the mean-field graphon system.
+Proof. Let γ be as in the statement. The elements of MI are the maps I → M
+such that the preimages of open sets are measurable [25]. Fix µ ∈ MI and a
+
+30
+
+CHRISTIAN BICK
+
+measurable set A ⊆ M. Then (µ ◦ γ)−1 A is equal to the set γ −1 (µ−1 A). This
+set is measurable since µ−1 A is a measurable set and γ : I → I is a measurable
+function. This proves that µ ◦ γ ∈ MI .
+We now prove that γ is a symmetry of the dynamical system. Let µ(x, t) be
+a solution of (21) with initial value µ0 (x). We need to show that µ(γ(x), t) is a
+solution with initial value µ0 (γ(x)). The initial value condition is trivial. It remains
+to prove that (21a) is satisfied if µ(x, t), µ and µ(x, 0) are replaced by µ(γ(x), t),
+µ ◦ γ and µ(γ(x), 0) respectively. By definition
+µ(x, t) = Φ(µ, x, t, •)#µ(x, 0)
+holds for almost every x. Since γ is measure-preserving then
+µ(γ(x), t) = Φ(µ, γ(x), t, •)#µ(γ(x), 0)
+holds for almost every x as well. Since our goal is to prove that
+µ(γ(x), t) = Φ(µ ◦ γ, x, t, •)#µ(γ(x), 0),
+it remains to be shown that Φ(µ, γ(x), t, •) is equal to Φ(µ ◦ γ, x, t, •). We compare
+the equations defining these flows. Note that Φ(µ ◦ γ, x, t, •) is given by
+Z
+Z
+u̇(t) = W (x, y) D(v − u(t)) dµ(γ(y), t)(v) dy
+I
+
+T
+
+while Φ(µ, γ(x), t, •) is given by
+Z
+Z
+u̇(t) = W (γ(x), y) D(v − u(t)) dµ(y, t)(v) dy.
+I
+
+T
+
+The latter can be obtained from the former by replacing W (x, y) with W (γ(x), γ(y))
+and then γ(y) with y. Since W γ = W and γ is measure-preserving, then none of
+these operations change the right hand side.
+□
+We now return to constant coupling W = 1. Inspired by Section 4.1 we look at
+the cluster space
+{µ ∈ MI | x 7→ µ(x) is constant} ∼
+= M.
+This set is dynamically invariant and the mean-field graphon dynamics restricted
+to the set is the same as the mean-field dynamics (see F in Figure 8). Indeed,
+since W = 1 and y 7→ µ(y) is constant we have
+Z
+Z
+Z
+W (x, y) sin(v − u) dµ(y, t)(v) dy = sin(v − u) dµ(y, t)(v).
+I
+
+T
+
+T
+
+Mean-field graphon dynamics represents the evolution of infinitely many coupled
+mean-field populations. When all the populations start with the same initial
+condition—that is, they are synchronized as probability measures—it reduces to
+the evolution of just one population (see A in Figure 8).
+P
+Now consider a graphon with a block structure WG =
+j,k Gj,k 1Ij ×Ik as in
+Section 4.2 and the cluster space
+n
+\
+{µ ∈ MI | µ : Ik → M is constant} ∼
+= Mn
+k=1
+
+S
+associated to the partition I = nk=1 Ik . Each block evolves as a single mean-field
+system. Cluster dynamics represents the evolution of n measures coupled by the
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+31
+
+Figure 8. We sketch the inclusions of different network dynamical
+systems. We use cylinders I × T to represent the state space of the
+dynamical units in different limits. On the top-left, the mean-field
+limit, the interval I can be identified to a point (one population)
+whose state is described by one probability measure on T (whose
+support is represented in gray). The bottom-left generalizes this
+mean-field to more than one population. If the probability measures
+of the multi-population mean-field are Dirac, we recover the finite
+system, bottom-right. The top-right represents the graphon system.
+The most general mean-field graphon system, in the center, contains
+all the others as particular cases.
+graph G. This system is known as multi-population mean-field limit and has been
+analyzed in [7].
+We have seen how mean-field and multi-population mean field are dynamically
+invariant subspaces of the mean-field graphon system if the underlying graphon
+has certain symmetries. Now we see how the graphon system can also be seen
+as a dynamically invariant subset of the mean-field graphon system (see C in
+Figure 8). Intuitively, the graphon system is deterministic and the states can be
+interpreted as Dirac measures. If µ(x) = δu(x) is a Dirac measure for every x then
+the push-forward (21a) is a Dirac measure for every x and t and the flow Φ(δu , x, t, ·)
+of x reduces to the graphon evolution equation:
+Z
+Z
+Z
+W (x, y) sin(v − ux ) dµ(y, t)(v) dy = W (x, y) sin(uy − ux ) dy.
+I
+
+T
+
+I
+
+Figure 8 summarizes the inclusions of invariant subspaces of mean-field graphon
+dynamical systems.
+8. Symmetries of Graphops and Graphop Dynamical Systems
+Finally, we consider the symmetries and their implications for dynamical systems
+on graphops; see for example [29]. While graphons are natural limit objects for
+converging sequences of dense graphs, there are other notions of graph convergence
+such as Benjamini–Schramm convergence for sparse graph sequences [4]. Graphops
+
+32
+
+CHRISTIAN BICK
+
+interpret graph sequences and their limits as operators and provide a unifying
+framework for different notions of convergence [3]. We now consider a generalization
+of the graph dynamical system (1) to graphops—we refer to them as graphop
+dynamical systems—and analyze their symmetry properties.
+8.1. Graphop dynamical systems. Fix a probability space J = (Ω, A, µ). Recall
+that a graphon dynamical system (4) evolves according to
+ Z
+
+u̇x = f ux , W (x, y)g(ux , uy )dµ(y) .
+J
+
+We can interpret νx = W (x, ·)dµ as a measure that has a density W (x, ·) with
+respect to µ. What now determines the dynamics is the joint effect of graphon
+and measure rather than their individual effect. Intuitively, graphops generalize
+graphons by removing the hypothesis of having a density.
+A graphop is a self-adjoint, positive-preserving bounded operator L∞ (J) →
+L1 (J). Every graphop can be represented by a symmetric measure ν on the product
+space (Ω × Ω, A × A) [3, Theorem 6.3]. By using the disintegration theorem
+one obtains a family of measures {νx }x∈Ω , called fiber measures, that uniquely
+represent the graphon [3, Remark 6.4]. We call graphop dynamical system the
+dynamical system on L1 (J) induced by
+ Z
+
+u̇x = f ux , g(ux , uy )dνx (y) .
+Ω
+
+We propose the following definition of graphop automorphism:
+Definition 8.1. Let (νx )x∈Ω be a graphop on J = (Ω, A, µ). An automorphism
+of the graphop is a measurable bijection φ : (Ω, A) → (Ω, A) such that φ∗ : L1 (J) →
+L1 (J) and satisfying φ#νx = νφ(x) for every x.
+The identity φ#νx = νφ(x) is shorthand of two things: First, the map φ :
+(Ω, νx ) → (Ω, νφ(x) ) is measurable and, second, it is measure preserving. Notice
+that, as oppose to graphon automorphisms, we do not require φ : (Ω, µ) → (Ω, µ) to
+be measure-preserving. A consequence of this fact is that graphop symmetries are
+symmetries of graphop dynamical systems, but in general they are not isometries.
+Lemma 8.2. Let (νx )x∈Ω be a graphop on J = (Ω, A, µ). Let φ be a graphop
+automorphism. Then
+φ∗ : L1 (J) → L1 (J),
+
+u 7→ u ◦ φ
+
+is a symmetry of the graphop dynamical system. We call φ∗ a graphop-induced
+symmetry.
+Proof. Let u ∈ L1 (J). By definition of graphop automorphism and the change of
+variable formula we have
+
+
+Z
+f uφ(x) , g(uφ(x) , uy )dνφ(x) (y)
+Ω
+
+
+Z
+= f uφ(x) , g(uφ(x) , uy )d(φ#νx )(y)
+Ω
+
+
+Z
+= f uφ(x) , g(uφ(x) , uφ(y) )dνx (y) .
+Ω
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+33
+
+This shows that φ∗ maps solutions to solutions.
+
+□
+
+Every graphon is a graphop. In the following lemma we show that graphoninduced symmetries are graphop-induced symmetries, although we will see that
+the converse is false in general.
+Lemma 8.3. Let W be a graphon on J and {νx = W (x, ·)dµ}x∈J the associated
+graphop. Every graphon automorphism is a graphop automorphism. A graphop
+automorphism φ is a graphon automorphism if and only if it preserves µ. In particular, the graphop-induced symmetries are exactly the graphon-induced symmetries
+that are isometries of L1 (J).
+Proof. Let φ : J → J be an invertible measurable map. Fix x ∈ J. Notice that
+W (φ(x), φ(y)) = W (x, y)
+holds for almost every y ∈ J if and only if
+W (φ(x), y) = W (x, φ−1 (y))
+holds for almost every y ∈ J. Moreover, notice that φ is an automorphism of (νx )x
+if and only if for every x and every measurable function p we have
+Z
+Z
+p(φ(y))W (x, y)dµ(y) = p(y)W (φ(x), y)dµ(y)
+J
+
+J
+
+which is the same as
+Z
+Z
+−1
+p(y)W (x, φ (y))d(φ#µ)(y) = p(y)W (φ(x), y)dµ(y).
+J
+
+(22)
+
+J
+
+Therefore, if φ is a graphon automorphism then W (x, φ−1 (y)) = W (φ(x), y) for
+every x and almost every y. This implies φ#µ = µ and, by definition, that φ is a
+graphop automorphism.
+On the other hand, if a graphop automorphism φ preserves µ, then for every x
+and every measurable function p
+Z
+Z
+−1
+p(y)W (x, φ (y))dµ(y) = p(y)W (φ(x), y)dµ(y).
+J
+
+J
+φ
+
+This implies W (x, y) = W (x, y) for every x and almost every y. Therefore every
+measure-preserving graphop automorphism is a graphon automorphism.
+The last statement follows form the fact that a measurable map φ : J → J is
+measure-preserving if and only if φ∗ : L1 (J) → L1 (J) is an isometry.
+□
+In the context of graphon dynamical systems we have introduced the notion of
+generalized graphon-induced symmetry (Definition 3.15). These are not graphon
+automorphisms, as they are map between two graphons and are not necessarily
+invertible. One might do the same for graphop dynamical systems.
+8.2. Spherical graphop and other examples. We illustrate the results with two
+concrete examples. The first example highlights that graphop-induced symmetries
+can be richer than graphon symmetries: While graphon symmetries only take the
+structure of the kernel into account, graphop-induced symmetries combine kernel
+and index space that both determine the network dynamics. In the second example,
+we compute the symmetry group of the spherical graphop, a generalization of the
+spherical graphon in Section 5.5.
+
+34
+
+CHRISTIAN BICK
+
+Finite graphop. Consider a graphon W with four vertices a, b, c, d with probability
+measure µ = (2/9, 1/9, 4/9, 2/9) and two edges ab and cd with weights W (a, b) = 1
+and W (c, d) = 1/2:
+
+µ({a}) = 2/9,
+
+
+
+a
+c
+µ({b}) = 1/9,
+1/2
+1
+
+µ({c}) = 4/9,
+
+
+
+b
+d
+µ({d}) = 2/9.
+The only non-identical measure preserving transformation is the permutation
+interchanging a with d, which does not preserve adjacency. Therefore, the only
+graphon automorphism is the identity map. Direct computation shows that the
+fiber measures of the associated graphop are
+
+
+
+
+
+
+
+
+1
+2
+1
+2
+νa = 0, , 0, 0 , νb =
+, 0, 0, 0 , νc = 0, 0, 0,
+, νd = 0, 0, , 0 .
+9
+9
+9
+9
+Therefore, the permutation interchanging a with c and b with d is a graphop
+automorphism. Indeed, it is a symmetry of the associated dynamical system
+
+
+u̇a = f ua , 91 g(ua , ub )
+
+
+
+u̇ = f u , 2 g(u , u )
+b
+a
+b
+b 9
+
+1
+
+u̇c = f uc , 9 g(uc , ud )
+
+
+
+
+u̇d = f ud , 92 g(ud , uc ) .
+Spherical graphop. The spherical graphop is a typical example of graph limit of
+intermediate density, see [3, Figure 4] and [18, Example 5.4]. The spherical graphop
+is a sparse version of the spherical graphon we considered in Section 5.5. As
+for the spherical graphon, we compute the automorphism group and discuss the
+consequence for dynamics.
+Let J be the unit sphere S 2 = {x ∈ R3 | xT x = 1} endowed with uniform
+probability measure. For every x ∈ S 2 let νx be the uniform measure on the great
+circle {y ∈ S 2 | y T x = 0} orthogonal to x. The spherical graphop is given by
+the collection of fiber measures (νx )x∈S 2 .
+As one may expect, the spherical graphon and spherical graphop have the same
+automorphism group. But the proofs are quite different: While the graphon case
+involved geometric measure theory, for the graphop case we will use projective
+geometry and arguments in [28]. If automorphisms are assumed to be smooth
+(which is a consequence of the following result), an alternative proof using differential
+geometry can be given.
+Proposition 8.4. The automorphism group of the spherical graphop is the isometry
+group of the sphere O(3).
+Proof. Every orthogonal transformation is measurable and preserves adjacency,
+thus it is a graphop automorphism.
+Conversely, for an automorphism φ of the spherical graphop we have to show
+that φ ∈ O(3). The map φ is a bijective map S 2 → S 2 which maps orthogonal
+vectors to orthogonal vectors. In particular, φ preserves antipodal pairs. The
+quotient of S 2 with respect to the antipodal pair relation is canonically identified
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+35
+
+with the projective plane, the quotient of R3 with respect to the linear dependence
+relation. Therefore φ induces a bijection of the projective plane with itself.
+Since φ preserves orthogonality, then φ maps great circles to great circles. The
+great circles in S 2 corresponds to the projective lines in the projective plane.
+Therefore φ induces a bijection of the projective plane preserving collinearity. The
+Fundamental Theorem of Projective Geometry states that any such map is given
+by an invertible linear transformation T of R3 . The transformation T is uniquely
+determined up to scalar multiplication.
+Any linear transformation preserving orthogonality is a scalar multiple of an
+orthogonal transformation. Therefore φ = λT for some λ ̸= 0 and some orthogonal
+transformation T . Since φ maps S 2 to itself then |λ| = 1. We conclude that φ ∈
+O(3).
+□
+Dynamics on the spherical graphop, considered in [18, Example 5.4], has a group
+of symmetries O(3). For example, the space of functions invariant under rotation
+along a fixed axis is dynamically invariant. Reduced dynamics can be represented
+as a graphop system parametrized the invariant diameter.
+References
+[1] P. Ashwin, C. Bick, and O. Burylko, Identical phase oscillator networks: Bifurcations,
+symmetry and reversibility for generalized coupling, Frontiers in Applied Mathematics and
+Statistics, 2 (2016), p. 7.
+[2] P. Ashwin and J. W. Swift, The dynamics of n weakly coupled identical oscillators,
+Journal of Nonlinear Science, 2 (1992), pp. 69–108.
+[3] Á. Backhausz and B. Szegedy, Action convergence of operators and graphs, Canadian
+Journal of Mathematics, 74 (2022), pp. 72–121.
+[4] I. Benjamini and O. Schramm, Recurrence of distributional limits of finite planar graphs,
+in Selected Works of Oded Schramm, Springer, 2011, pp. 533–545.
+[5] J. Berndt, F. Tricerri, and L. Vanhecke, Generalized heisenberg groups, Generalized
+Heisenberg Groups and Damek-Ricci Harmonic Spaces, (1995), pp. 21–77.
+[6] C. Bick, Isotropy of Angular Frequencies and Weak Chimeras with Broken Symmetry,
+Journal of Nonlinear Science, 27 (2017), pp. 605–626.
+[7] C. Bick, T. Böhle, and C. Kuehn, Multi-population phase oscillator networks with
+higher-order interactions, Nonlinear Differential Equations and Applications NoDEA, 29
+(2022), pp. 1–41.
+[8] H. Brezis, Functional analysis, Sobolev spaces and partial differential equations, vol. 2,
+Springer, 2011.
+[9] A. Calka, On local isometries of finitely compact metric spaces, Pacific Journal of Mathematics, 103 (1982), pp. 337–345.
+[10] J. Chaika and D. Davis, The typical measure preserving transformation is not an interval
+exchange transformation, arXiv preprint arXiv:1812.10425, (2018).
+[11] H. Chiba and G. S. Medvedev, The mean field analysis of the Kuramoto model on graphs
+I. The mean field equation and transition point formulas, Discrete & Continuous Dynamical
+Systems - A, 39 (2019), pp. 131–155.
+[12]
+, The mean field analysis of the kuramoto model on graphs II. Asymptotic stability of
+the incoherent state, center manifold reduction, and bifurcations, Discrete & Continuous
+Dynamical Systems - A, 39 (2019), pp. 3897–3921.
+[13] B. Csikós and M. Horváth, On the volume of the intersection of two geodesic balls,
+Differential Geometry and its Applications, 29 (2011), pp. 567–576.
+[14] J.-F. Delmas, D. Dronnier, and P.-A. Zitt, An infinite-dimensional sis model, arXiv
+preprint arXiv:2006.08241, (2020).
+[15] L. DeVille and E. Lerman, Modular dynamical systems on networks, Journal of the
+European Mathematical Society, 17 (2015), pp. 2977–3013.
+
+36
+
+CHRISTIAN BICK
+
+[16] A. Fathi, Le groupe des transformations de [0, 1] qui préservent la mesure de lebesgue est
+un groupe simple, Israel Journal of Mathematics, 29 (1978), pp. 302–308.
+[17] R. Frucht, Herstellung von graphen mit vorgegebener abstrakter gruppe, Compositio Mathematica, 6 (1939), pp. 239–250.
+[18] M. A. Gkogkas and C. Kuehn, Graphop mean-field limits for kuramoto-type models,
+SIAM Journal on Applied Dynamical Systems, 21 (2022), pp. 248–283.
+[19] C. Godsil and G. F. Royle, Algebraic graph theory, vol. 207, Springer Science & Business
+Media, 2001.
+[20] M. Golubitsky and I. Stewart, The Symmetry Perspective, vol. 200 of Progress in
+Mathematics, Birkhäuser Verlag, Basel, 2002.
+[21] M. Golubitsky, I. Stewart, and D. G. Schaeffer, Singularities and Groups in
+Bifurcation Theory. Vol. II, Springer-Verlag, New York, 1988.
+[22] J. Haezendonck, Abstract lebesgue-rohlin spaces, Bull. Soc. Math. Belg, 25 (1973), pp. 243–
+258.
+[23] P. R. Halmos, Lectures on ergodic theory, Courier Dover Publications, 2017.
+[24] P. R. Halmos and J. von Neumann, Operator methods in classical mechanics, ii, Annals
+of Mathematics, (1942), pp. 332–350.
+[25] D. Kaliuzhnyi-Verbovetskyi and G. S. Medvedev, The mean field equation for the
+kuramoto model on graph sequences with non-lipschitz limit, SIAM Journal on Mathematical
+Analysis, 50 (2018), pp. 2441–2465.
+[26] F. P. Kemeth, S. W. Haugland, and K. Krischer, Symmetries of Chimera States,
+Physical Review Letters, 120 (2018), p. 214101.
+[27] P. Kloeden and J. Mustard, Constructing permutations that approximate lebesgue
+measure preserving dynamical systems under spatial discretization, International Journal of
+Bifurcation and Chaos, 7 (1997), pp. 401–406.
+[28] M. Kohan, Answer to “Can a continuous map S 2 → S 2 preserve orthogonality without being
+an isometry?”. https://math.stackexchange.com/questions/53499. Accessed: 2023-0118.
+[29] C. Kuehn, Network dynamics on graphops, New Journal of Physics, 22 (2020), p. 053030.
+[30] C. Lancellotti, On the Vlasov Limit for Systems of Nonlinearly Coupled Oscillators
+without Noise, Transport Theory and Statistical Physics, 34 (2005), pp. 523–535.
+[31] L. Lovász, Large networks and graph limits, vol. 60, American Mathematical Soc., 2012.
+[32] L. Lovász and B. Szegedy, The automorphism group of a graphon, Journal of Algebra,
+421 (2015), pp. 136–166.
+[33] J. Lu, X. Yu, G. Chen, and D. Cheng, Characterizing the synchronizability of small-world
+dynamical networks, IEEE Transactions on Circuits and Systems I: Regular Papers, 51 (2004),
+pp. 787–796.
+[34] Y. Maistrenko, O. Sudakov, O. Osiv, and V. Maistrenko, Chimera states in three
+dimensions, New Journal of Physics, 17 (2015), p. 073037.
+[35] G. S. Medvedev, Small-world networks of kuramoto oscillators, Physica D: Nonlinear
+Phenomena, 266 (2014), pp. 13–22.
+[36] G. S. Medvedev, The Nonlinear Heat Equation on Dense Graphs and Graph Limits, SIAM
+Journal on Mathematical Analysis, 46 (2014), pp. 2743–2766.
+[37] G. S. Medvedev and X. Tang, Stability of twisted states in the kuramoto model on cayley
+and random graphs, Journal of Nonlinear Science, 25 (2015), pp. 1169–1208.
+[38] G. S. Medvedev and J. D. Wright, Stability of Twisted States in the Continuum
+Kuramoto Model, SIAM Journal on Applied Dynamical Systems, 16 (2017), pp. 188–203.
+[39] N. T. Nhu, The group of measure preserving transformations of the unit interval is an
+absolute retract, Proceedings of the American Mathematical Society, (1990), pp. 515–522.
+[40] E. Omel’chenko and E. Knobloch, Chimerapedia: coherence–incoherence patterns in
+one, two and three dimensions, New Journal of Physics, 21 (2019), p. 093034.
+[41] M. J. Panaggio and D. M. Abrams, Chimera states on a flat torus, Physical review
+letters, 110 (2013), p. 094102.
+
+DYNAMICAL SYSTEMS ON GRAPH LIMITS AND THEIR SYMMETRIES
+
+37
+
+[42] L. M. Pecora, F. Sorrentino, A. M. Hagerstrom, T. E. Murphy, and R. Roy,
+Cluster synchronization and isolated desynchronization in complex networks with symmetries,
+Nature Communications, 5 (2014), p. 4079.
+[43] A. Pikovsky, M. Rosenblum, and J. Kurths, Synchronization: A Universal Concept in
+Nonlinear Sciences, Cambridge University Press, 2003.
+[44] F. A. Rodrigues, T. K. D. Peron, P. Ji, and J. Kurths, The Kuramoto model in
+complex networks, Physics Reports, 610 (2016), pp. 1–98.
+[45] V. A. Rokhlin, On the fundamental ideas of measure theory, Matematicheskii Sbornik, 67
+(1949), pp. 107–150.
+[46] I. Sciriha, A characterization of singular graphs, (2007).
+[47] S. H. Strogatz, Sync: The Emerging Science of Spontaneous Order, Penguin, 2004.
+[48] S. H. Strogatz and R. E. Mirollo, Stability of incoherence in a population of coupled
+oscillators, Journal of Statistical Physics, 63 (1991), pp. 613–635.
+[49] P. Walters, An introduction to ergodic theory, vol. 79, Springer Science & Business Media,
+2000.
+[50] O. Weinberger and P. Ashwin, From coupled networks of systems to networks of states
+in phase space, Discrete & Continuous Dynamical Systems - B, 23 (2018), pp. 2043–2063.
+[51] D. A. Wiley, S. H. Strogatz, and M. Girvan, The size of the sync basin, Chaos: An
+Interdisciplinary Journal of Nonlinear Science, 16 (2006), p. 015103.
+
+

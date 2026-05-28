@@ -1,0 +1,915 @@
+Uniform Mixing in Chiral Quantum Walks
+
+arXiv:2605.04414v2 [math.CO] 18 May 2026
+
+Luke Levine∗
+Jessy Jacob Mesapam∗
+Christino Tamon∗
+Gabriel Tucker∗
+
+Benjamin Mustico∗
+Hanmeng Zhan†
+
+May 19, 2026
+
+Abstract
+This paper studies uniform mixing in continuous-time quantum walks. We show
+that for some unitary signing σ, the complete graph Knσ has probabilistic uniform
+mixing. In contrast, Ahmadi et al. (2003) proved that no complete graph has uniform
+mixing except for K2 , K3 , and K4 . Our technique is based on a stopping rule for
+quantum walks which reduces global to local uniform mixing. As a corollary, we found
+an orientation of H(n, 4) that mixes to uniform faster than any other Hamming graphs,
+which improves a result of Godsil and Zhan (2019). We also show that there are infinite
+families of oriented circulants with average uniform mixing. This is a chiral violation of
+a No-Go theorem due to Godsil (2013) which states that no graph has average uniform
+mixing except for K2 .
+Keywords: quantum walk, uniform mixing, oriented graph, unitary signing.
+
+1
+
+Introduction
+
+Quantum walk on graphs is a natural quantum analogue of random walk on graphs. It has
+proved useful in developing quantum communication protocols (for example, entanglement
+generation) and quantum algorithms for important computational problems (for example,
+Grover search).
+Given a graph X with adjacency matrix A(X), the continuous-time quantum walk on
+X is given by the time-varying unitary matrix UX (t) = exp(−iA(X)t). The mixing matrix
+MX (t) is obtained from UX (t) by taking entry-wise squared norm (which is the quantum
+mechanical Born rule for the quantum to classical transition). In uniform mixing at time t,
+we require all entries of MX (t) to be the constant 1/n, where n is the number of vertices
+of X. This implies that if we measure the quantum walk at time t, then the corresponding
+probability distribution is uniform over the vertices of X.
+∗
+†
+
+Computer Science, Clarkson University. Email: {levinelj,mesapaj,musticbt,tino,tuckergs}@clarkson.edu.
+Computer Science, Worcester Polytechnic Institute. Email: hzhan@wpi.edu.
+
+1
+
+In their seminal result, Moore and Russell [20] initiated the study of uniform mixing in
+continuous-time quantum walks. They observed that a quantum walk on the n-cube exactly
+mixes to uniform at time π4 n. In contrast, a classical random walk on the n-cube requires
+Ω(n log n) to converge to the uniform distribution in the limit. This shows a quantum
+advantage for uniform mixing in both the quantitative (faster time) and qualitative (exact
+mixing versus mixing in the limit) aspects.
+Another motivation for exploring uniform mixing is provided by the W state (see [10, 5]).
+For three qubits, the W state is given by e100 + e010 + e001 . Here, e100 denote the tensor
+product e1 ⊗ e0 ⊗ e0 where e0 and e1 are the standard basis vectors of C2 . Note that this
+can be generalized to n qubits and is one of the target states for uniform mixing. This
+useful entangled quantum state has interesting applications for secure communication in
+quantum networks (such as anonymous transmission [17] and leader election [9]). In certain
+applications, the W state is known to be more robust compared to the well-known GHZ
+state e000 + e111 .
+It is known that classical random walks rapidly mix on the complete graphs. On the other
+hand, Ahmadi et al. [2] observed curiously that no complete graph Kn has uniform mixing
+except for K2 , K3 , and K4 . In this work, we show that for any Kn there is a unitary signing
+σ so that Knσ has uniform mixing in expected n3/2 time. Our result is based on a simple
+stopping rule which reduces uniform mixing to local uniform mixing. This is reminiscent
+of stopping rules for exact mixing in Markov chains (see [18]) and is inspired by a similar
+technique used in Xie et al. [24] (on anti-Zeno effects in perfect state transfer).
+As an implicit corollary, we √show there is an oriented Hamming graph H(n, 4) which
+has uniform mixing at time π/3 3. This is faster than the mixing times of any unoriented
+Hamming graphs, which include H(n, 2), H(n, 3), and H(n,
+√ 4), and the Cartesian product
+of K1,3 with itself (which has uniform mixing at time 2π/3 3).
+Graph family
+H(n, 2)
+H(n, 3)
+H(n, 4)
+(K1,3 )□n
+oriented H(n, 4)
+
+Mixing Time
+π/4
+2π/9
+π/4√
+2π/3√ 3
+π/3 3
+
+Reference
+Moore-Russell [20]
+folklore
+folklore
+Godsil-Zhan [14]
+this work
+
+Figure 1: Quantum uniform mixing times.
+Our speedup in mixing time is a simple consequence of the signing on K4 which improves
+the mixing profile of K1,3 . More specifically, the signing of K√4 allows us to treat any vertex
+as the conical vertex in K1,3 (where the mixing time is π/3 3).
+√ However, if we start at a
+pendant vertex in K1,3 , we incur a slower mixing time of 2π/3 3.
+For the second part of this work, we consider average mixing in quantum walks. The
+cX is the Cesaro limit of its mixing matrix, that is, the limit of
+average
+mixing matrix M
+RT
+1
+cX provides a
+MX (t)dt as T tends to infinity (see [1]). As this limit always exists, M
+T 0
+2
+
+long-term profile of the quantum walk on X. So, it is natural to ask which graphs X admit
+cX .
+uniform mixing for its M
+Unfortunately, Godsil [11] proved that K2 is the only graph with average uniform mixing.
+In contrast, we show that there are infinite families of oriented circulants with average uniform mixing. Recently, Sin [23] discovered examples of oriented non-abelian Cayley graphs
+with uniform mixing. Here, we show that no oriented non-abelian Cayley graphs have average uniform mixing. These results suggest an interesting interplay between chirality and
+group-theoretic properties of the underlying Cayley graphs.
+
+2
+
+Preliminaries
+
+We briefly summarize terminology from graph theory and matrix theory that will be used
+throughout. Our standard references are Godsil and Royle [12] and Horn and Johnson [16].
+We adopt the Iverson notation [[Φ]] for the characteristic function of a logical statement Φ.
+For any integer n ≥ 1, we let In and Jn denote the identity and all-one matrices of order
+n, respectively. The all-one vector is denoted 1n . Whenever the context is clear, we will
+omit the subscript n for simplicity. The unit vector ea satisfies ea (b) = [[a = b]].
+Given a simple undirected graph X, we denote its vertex set as V (X) and its edge set as
+E(X). The order of X refers to the number of vertices in X, namely |V (X)|. The adjacency
+matrix A(X) of X is usually defined as A(X)a,b = [[ab ∈ E(X)]].
+The complement of a graph X is a graph X whose vertex set is V (X) but with edge set
+given by E(X) = {ab : ab ̸∈ E(X)}. Note that A(X) = J − I − A(X). The join of two
+graphs X and Y , denoted X + Y , is obtained from disjoint union of X and Y by adding the
+edges (x, y) for all x ∈ X and y ∈ Y . The Cartesian product X□Y of X and Y is a graph
+whose vertex set is V (X) × V (Y ) where (x1 , y1 ) is adjacent to (x2 , y2 ) if either x1 = x2 and
+(y1 , y2 ) ∈ E(Y ), or, (x1 , x2 ) ∈ E(X) and y1 = y2 . The adjacency matrix of X□Y is given
+by A(X) ⊗ I + I ⊗ A(Y ).
+We use Kn to denote the complete graph of order n while K n denotes its complement.
+b The claw K1,n is the cone
+The cone of a graph X, which is K1 + X, will be denoted as X.
+of K n .
+A signing of X is a function σ : E(X) → C× defined on the edges of X. We denote the
+resulting “signed” graph as X σ with adjacency matrix A(X σ ) = σ(ab)[[ab ∈ E(X)]] which is
+required to be Hermitian. We call the signing σ unitary if |σ(ab)| = 1. If the range of σ is
+±i, we call X σ an oriented graph. An oriented graph whose underlying graph is Kn can be
+viewed as a tournament.
+Two signed graphs X σ1 and X σ2 obtained from the same underlying graph X is called
+switching equivalent, denoted X σ1 ∼
+= X σ2 , if there is a complex diagonal matrix D so that
+A(X σ2 ) = D† A(X σ1 )D.
+
+(1)
+
+⃗ 3 . That
+See Fig. 2 for an example of a signing on K4 which is switching equivalent to K1 + K
+
+3
+
+is,
+
+ 
+
+0 −i −i −i
+0 1 1 1
+ i 0 −i i  1 0 −i i 
+
+∼
+.
+=
+i i
+0 −i 1 i
+0 −i
+i −i i
+0
+1 −i i
+0
+
+2.1
+
+Quantum walks
+
+Given a graph X, let A(X) denote its adjacency matrix whose spectral decomposition is
+X
+A(X) =
+λr Er
+r
+
+where Er are the orthogonal projectors onto the λr -eigenspace. The continuous-time quantum walk on X is defined as the unitary matrix
+X
+e−iλr t Er
+UX (t) = exp(−itA(X)) =
+r
+
+where the second equality followed from the spectral theorem.
+We observe that quantum walks on switching equivalent graphs are similar. This holds
+as
+exp(−itA(X σ2 )) = D† exp(−itA(X σ1 ))D
+(2)
+by Eq. (1) and D† D = I.
+The mixing matrix of a quantum walk is given by
+MX (t) = UX (t) ◦ UX (t)
+where A ◦ B denotes the Schur product of matrices defined by (A ◦ B)jk = Ajk Bjk . Note
+that the (a, b)-entry of MX (t) encodes the probability of measuring b at time t when starting
+at a (according to the Born rule of quantum mechanics).
+Definition 1. A graph X of order n has uniform mixing at time t if MX (t) = n1 Jn . On the
+other hand, we say X has local uniform mixing from vertex a at time t if MX (t)ea = n1 1n .
+0 1 2 3 
+0 0 −i −i −i
+
+1
+ i 0 −i i .
+
+2 i i
+0 −i
+3 i −i i
+0
+
+0
+1
+
+3
+2
+
+⃗ 3.
+Figure 2: A unitary signing of K4 . This is switching equivalent to K1 + K
+
+4
+
+We state a useful property of uniform mixing under Cartesian graph products.
+Lemma 1. (Moore and Russell [20])
+If X has local uniform mixing from vertex a at time t and Y has local uniform mixing from
+vertex b at time t, then X□Y has local uniform mixing from vertex (a, b) at time t.
+Measured walks In our quantum walks, we allow partial measurements at a vertex.
+Formally, if a ∈ V (X), the partial measurement relative to vertex a is given by the set
+M = {P0 , P1 } of projection operators, where
+P1 = ea eTa
+
+P0 = I − ea eTa .
+
+If we apply the measurement operator M to a state ψ = ca ea +
+P
+2
+b̸=a |cb | = 1, then the outcome is
+
+1 with probability |ca |2
+Mψ 7→
+0 with probability 1 − |ca |2
+
+2
+b̸=a cb eb , where |ca | +
+
+P
+
+The corresponding post-measurement states for each outcome are given by
+(
+ea
+if outcome is 1,
+P
+√ 1 2 b̸=a cb eb if outcome is 0.
+1−|ca |
+
+For more information on quantum measurements, see Nielsen and Chuang [22] (page 87).
+
+2.2
+
+Quotients
+
+We summarize useful facts about equitable partitions F
+for Hermitian matrices (see Haemers
+[15]). Let A be a n × n Hermitian matrix and let π = m
+j=1 Vj be a partition of [n]. We call
+each Vj a cell of π. Let A[Vj , Vk ] be the submatrix of A whose rows are indexed by elements
+in Vj and whose columns are indexed by elements in Vk . Let nj = |Vj | denote the size of cell
+Vj .
+Definition 2. (Complex equitable partition) The partition π is called equitable if each submatrix A[Vj , Vk ] has a constant row sum and a constant column sum. That is, for each j, k,
+there are complex constants rjk , cjk ∈ C so that
+A[Vj , Vk ]1nk = rjk 1nj
+
+(constant row sum)
+
+(3)
+
+1Tnj A[Vj , Vk ] = cjk 1Tnk
+
+(constant column sum).
+
+(4)
+
+As A is Hermitian, rjk = ckj . In particular, this implies that rjj and cjj are both real.
+Let S be the normalized characteristic n × m matrix of the partition π where
+1
+Sjk = √ [[j ∈ Vk ]].
+nk
+As S is the matrix representation of π, we often refer to S as the equitable partition.
+5
+
+(5)
+
+Lemma 2. The characteristic matrix S satisfies the following:
+(i) S T S = Im .
+(ii) SS T is a block diagonal m × m matrix diag(D1 , . . . , Dm ), where Dj = n1j Jnj .
+(iii) [SS T , A] = 0.
+Proof. (i) This follows since the jth column of S is the normalized characteristic vector of
+Vj and the subsets Vj are disjoint. (ii) This holds since the outer product of the normalized
+characteristic vector of Vj is the normalized all-one matrix Bj = n1j Jnj . (iii) It suffices to show
+Bj commutes with A[Vj , Vj ] for each j. Note Bj A[Vj , Vj ] = cjj Jnj and A[Vj , Vj ]Bj = rjj Jnj .
+As rjj = cjj , we are done.
+The quotient matrix of A relative to π is the m × m matrix defined by
+B := S T AS.
+Claim 1. The quotient matrix B is a Hermitian m × m matrix whose jk-entry is given by
+q
+Bjk = |rjk ||cjk | eiΘ
+where Θ = Arg(rjk ) = Arg(cjk ).
+Proof. The jk-entry of B is given by
+Bjk = eTj (S T AS)ek = (Sej )T A(Sek ).
+Therefore, as Sej = √1nj 1nj and similarly for Sek , we have
+r
+r
+nk
+nj
+Bjk = cjk
+= rjk
+.
+nj
+nk
+This shows that rjk and cjk have the same principal argument, that is, Arg(rjk ) = Arg(cjk ),
+since nj and nk are both real. Also, since nj rjk = nk cjk , we have
+q
+Bjk = |rjk ||cjk | ei Arg(rjk ) .
+To show B is Hermitian, note that
+q
+q
+Bkj = |rkj ||ckj | ei Arg(rkj ) = |cjk ||rjk | e−i Arg(rjk ) = Bjk
+as rkj = rjk .
+Lemma 3. The quantum walk on B and the quantum walk on A are related as follows:
+e−iBt = S T e−iAt S.
+Moreover, if Vi = {u} and Vj = {v} are singleton cells, then
+⟨eVj , e−iBt eVi ⟩ = ⟨ev , e−iAt eu ⟩.
+Proof. The first claim holds since (S T AS)k = S T Ak S, for every k ≥ 0. The second claim
+follows from SeVi = eu and SeVj = ev .
+6
+
+3
+
+Conical reduction
+
+The following impossibility result for uniform mixing is known for cliques.
+Theorem 1. (Ahmadi et al. [2]) Kn has uniform mixing if and only if n = 2, 3, 4.
+In contrast to Theorem 1, we show that the complete graphs admit probabilistic1 uniform
+mixing (of Las Vegas type).
+Theorem 2. Let X be a graph of order n whose Hermitian adjacency matrix A has zero as
+b has uniform mixing in
+a simple eigenvalue with the corresponding eigenvector 1n . Then, X
+3/2
+expected n time.
+b is given by
+Proof. The adjacency matrix of X
+
+0
+b
+A(X) =
+
+1Tn
+
+
+
+1n A(X)
+
+√
+whose eigenvalues are ± n and θ ∈ Sp(A(X)) with corresponding eigenvectors
+
+
+ 
+1
+1
+0
+ψ± = √
+, ψθ =
+√1 1n
+±
+z
+θ
+2
+n
+where zθ is a normalized eigenvector of A(X) corresponding to a nonzero eigenvalue θ.
+In the quantum walk, the start vertex is either conical or not. If the start vertex is the
+conical vertex 0, then
+√
+
+
+√
+X e∓i nt
+cos( √nt)
+−iA( b
+X)t
+√ ψ± =
+e
+e0 =
+− √in sin( nt)1n
+2
+±
+1
+) ≈ 2√π n .
+which shows uniform mixing at t0 = √1n arccos( √n+1
+On the other hand, if the start vertex is not conical, say eu , then:
+√
+
+−iA( b
+X)t
+
+e
+
+X
+X ±e∓i nt
+√
+eu =
+ψ± +
+⟨eu , ψθ ⟩e−iθt ψθ .
+2n
+±
+θ̸=0
+
+This implies that the amplitude at the conical vertex is given by
+√
+
+b
+−iA(X)t
+
+⟨e0 , e
+
+X ±e∓i nt
+√
+i
+√
+eu ⟩ =
+= − √ sin( nt).
+2 n
+n
+±
+
+By √
+linearity, this extends to any normalized vector that is orthogonal to e0 . At time t1 =
+π/2 n, the quantum walk is at the conical vertex with probability 1/n. Thus, if we perform
+1
+
+In the theory of randomized algorithms, a Las Vegas algorithm is always correct but whose running time
+is a random variable, while a Monte Carlo algorithm has a bounded running time but might make mistakes.
+See Motwani and Raghavan’s excellent book [21].
+
+7
+
+a partial measurement {P0 = e0 eT0 , P1 = I − e0 eT0 }, the expected waiting time for the
+measurement to return P0 is n. Once the quantum walk arrives at the conical vertex, we
+appeal to the first case and will achieve uniform mixing after time t0 . Let T be the random
+variable for the total time until uniform mixing. Then,
+√
+π
+E[T ] = n × √ + t0 = O( n).
+2 n
+But, after scaling the adjacency matrix by n (so that it has bounded norm), we obtain a
+uniform mixing time of O(n3/2 ).
+The proof technique of Theorem 2 is based on Xie et al. [24] where a partial measurement
+was used to reduce perfect state transfer to fractional revival.
+
+Figure 3: The chiral ghost trick: K6 morphs into K1,5 .
+In contrast to Theorem 1, we have the following corollary of Theorem 2.
+Corollary 1. For any n ≥ 5, there is a unitary signing σ so that the complete graph Knσ
+has uniform mixing (in expected O(n3/2 ) time).
+Proof. Note Kn+1 = K1 + Kn . We consider two cases based on the parity of n ≥ 4.
+Case 1: n is odd. We use a circulant signing A = Circ(0, −i, i, −i, i, . . . , −i, i). Clearly,
+A1n = 0 and zero is a simple eigenvalue. So, Theorem 2 applies.
+Case 2: n is even We apply a unitary signing using all roots of unity. Let ω = e2πi/(2m+1) .
+For k = 1, . . . , m, let
+
+
+ 2k−1
+
+ 2k
+
+0 1
+ω
+ω 2k
+ω
+ω 2k−1
+B0 =
+, Bk =
+, B̃k =
+,
+1 0
+ω 2k ω 2k−1
+ω 2k−1 ω 2k
+Then, we consider the skew block circulant given by
+
+
+B0
+B1 B2 . . . Bm
+ B̃m B0 B1 . . . Bm−1 
+
+
+
+
+C = B̃m−1 B̃m B0 . . . Bm−2 
+ ..
+..
+..
+.. 
+ .
+.
+. ...
+. 
+B̃1
+B̃2 B̃3 . . . Bm−1
+8
+
+From its definition, the first two rows of C are orthogonal to the all-one vector as it contains
+the distinct entries 0, 1, ω, . . . , ω 2m . The second row was obtained from the first row by
+pairwise disjoint swaps within each 2 × 2 submatrix Bk . Each pair of subsequent rows is
+obtained by a permutation of the Bk , for k = 0, 1, . . . , m, and thus are also orthogonal to the
+†
+all-one vector. Finally, observe that C is Hermitian since B̃k = Bm−k+1
+, for k = 1, . . . , m.
+Hence, Theorem 2 also applies to this case.
+See Fig. 3 for an example of the signing used in Corollary 1.
+Example: For n = 7 and n = 8, the unitary signings used in the proof of Corollary 1 are
+given by
+
+
+
+
+0 1 ω ω2 ω3 ω4 ω5 ω6
+0 −i i −i i −i i
+ 1 0 ω2 ω ω4 ω3 ω6 ω5
+i
+
+
+ 6
+0
+−i
+i
+−i
+i
+−i
+
+
+ω ω 5 0 1 ω ω 2 ω 3 ω 4 
+−i i
+
+
+
+0 −i i −i i 
+
+ω 5 ω 6 1 0 ω 2 ω ω 4 ω 3 
+ i −i i
+
+
+0 −i i −i
+
+ , ω 4 ω 3 ω 6 ω 5 0 1 ω ω 2  .
+−i i −i i
+
+
+
+0 −i i 
+
+ω 3 ω 4 ω 5 ω 6 1 0 ω 2 ω 
+
+ 2
+ i −i i −i i
+0 −i
+ω ω ω 4 ω 3 ω 6 ω 5 0 1 
+−i i −i i −i i
+0
+ω ω2 ω3 ω4 ω5 ω6 1 0
+The first matrix is a ±i-circulant matrix whereas the second matrix is a block skew-circulant
+matrix whose entries are seventh roots of unity.
+The
+√ following result generalizes Zhan’s observation that K1,3 has uniform mixing at time
+2π/3 3 (see [14]).
+Corollary 2. For any n ≥ 1, K1,n has probabilistic uniform mixing in expected n3/2 time.
+b has probabilistic uniform mixing.
+Corollary 3. For any nonsingular Eulerian graph X, X
+Proof. An Eulerian graph has an Eulerian orientation which can be used to define a ±isigning of X. Now, we apply Theorem 2.
+Remark: If we allow self-loops and integer edge weights in graphs, then any connected graph
+has uniform mixing. The Laplacian of a graph X is defined as L(X) = D(X) − A(X), where
+D(X) is the diagonal degree matrix of X (where D(X)a,a is the degree of vertex a in X).
+Note L(X) is a weighted graph defined over X which contains self-loops.
+[ has probabilistic
+Corollary 4. For any connected graph X, the integer-weighted graph L(X)
+uniform mixing.
+
+4
+
+Chiral speedup
+
+b = K1 + X is also an oriented graph as the
+Given an oriented graph X, note that the cone X
+edges incident to the conical vertex can oriented with either +i (outgoing) or −i (incoming).
+9
+
+√
+Claim 2. There is a signing σ of K4 so that K4σ has uniform mixing at π/3 3.
+Proof. We sign K4 using σ as follows:
+
+
+
+0 −i −i −i
+ i 0 −i i 
+.
+A(K4σ ) = 
+i i
+0 −i
+i −i i
+0
+⃗ 3 (by a −i switching at the conical vertex).
+Observe that K4σ is switching equivalent to K1 + K
+⃗ 3 and K1,3 have the same quotient under an equitable partition which places
+But, K1 + K
+the conical vertex in a singleton cell. Thus, by Lemma
+3, their quantum walks are similar.
+√
+Now, recall that K1,3 has uniform mixing at π/3 3 starting at the conical vertex (see [14]).
+⃗ 3 has a switching automorphism that sends the conical vertex
+Finally, observe that K1 + K
+to any other vertex. This shows we have a global uniform mixing.
+√
+This is a speedup of Zhan’s observation that K1 +K 3 has uniform mixing at time 2π/3 3.
+Recall that the Hamming graph H(n, d) is defined as the n-fold Cartesian product of the
+complete graph Kd , namely, H(n, d) = (Kd )□n . It is called the Rook’s graph if n = 2 as it
+encodes all legal movements of a rook on a n × n chessboard.
+√
+Theorem 3. For n ≥ 1, there is a signed H(n, 4) with uniform mixing at time π/3 3.
+⃗ 3 . By Claim 2, K σ
+Proof. Let σ be a signing of√K4 so that K4σ is the oriented cone K1 + K
+4
+has uniform mixing at π/3 3. As H(n, 4) = (K4σ )□n and uniform mixing is closed under
+Cartesian product by Lemma 1, the claim follows.
+
+√
+Figure 4: A tale of√three uniform mixing times: (a) K4 at π/4. (b) K1,3 at 2π/3 3. (c)
+Oriented K4 at π/3 3.
+
+Among the Hamming graphs with uniform mixing, the oriented H(n, 4) in Theorem 3
+has the fastest uniform mixing time. In comparison, the uniform mixing times of H(n, 2)
+and H(n, 4) are π/4 while H(n, 3) is 2π/9.
+See Fig. 4 for graphs on four vertices with uniform mixing.
+
+10
+
+5
+
+Average mixing
+
+cX of a graph X is the Cesaro limit of its mixing matrix MX (t).
+The average mixing matrix M
+cX is given by
+That is, M
+Z
+1 T
+c
+MX (t)dt
+MX = lim
+T →∞ T 0
+Using the spectral theorem, we have that (see [11, 7])
+X
+cX =
+M
+Er ◦ E r .
+
+(6)
+
+r
+
+cX is a doubly stochastic matrix, it is a Markov chain constructed from taking the
+As M
+ergodic limit of a continuous-time quantum process UX (t).
+cX = 1 Jn .
+Definition 3. A graph X of order n has average uniform mixing if M
+n
+Godsil proved the following strong No-Go theorem for average uniform mixing on graphs.
+Theorem 4. (Godsil [11]) A graph X has average uniform mixing if and only if X = K2 .
+In stark contrast to Theorem 4, we show there are infinite families of oriented graphs
+with average uniform mixing.
+Theorem 5. Any (Z/nZ)-circulant with distinct eigenvalues has average uniform mixing.
+P
+Proof. Let X be a circulant of order n with adjacency matrix A(X) = n−1
+r=0 λr Er , where
+the eigenvalues λr are all distinct, and Er = |ζr ⟩⟨ζr | where |ζr ⟩ is the r-th column of the
+Fourier matrix whose j-th entry is ⟨j|ζr ⟩ = √1n ζnjr , for j, r = 0, 1, . . . , n − 1. Then,
+cX =
+M
+
+n−1
+X
+
+Er ◦ E r =
+
+n−1
+X
+1
+r=0
+
+r=0
+
+n
+
+J =
+2 n
+
+1
+Jn
+n
+
+as E r = E−r .
+Recall we call a graph oriented if its edges have {±i} weights.
+Corollary 5. The oriented odd-cycle has average uniform mixing.
+⃗ n of order n are λk = 2 sin(2πk/n), for k =
+Proof. The eigenvalues of an oriented cycle C
+⃗ n is a (Z/nZ)-circulant, we may
+0, 1, . . . , n − 1, which are all distinct when n is odd. As C
+apply Theorem 5.
+Next, we observe a family of oriented graphs with average uniform mixing for any order.
+Corollary 6. For any n ≥ 2, the oriented skew (Z/nZ)-circulant (corresponding to the
+transitive tournament) has average uniform mixing.
+11
+
+Figure 5: Oriented graphs with average uniform mixing: (a) Transitive tournament Tn . (b)
+⃗ 2n+1 .
+Oriented odd-cycle C
+
+Proof. AP
+skew-circulant matrix A whose first row is given by (a0 , a1 , . . . , an−1 ) can be written
+j
+as A = n−1
+j=0 aj P , where P maps ej to ej−1 , j = 1, . . . , n, and e0 to −en−1 . Let zk be
+√
+a normalized vector whose entries are given by eTj zk = eijkπ/n / n. The flat matrix Z
+whose k-th column is zk is a common eigenbasis for all skew-circulants (see Davis [8]). For
+the acyclic tournament A = (0, 1, 1, . . . , 1), the oriented B = −iA has eigenvalues λj =
+cot((2j + 1)π/2n), j = 0, 1, . . . , n − 1, which are all distinct. Thus, Theorem 5 applies.
+See Fig. 5 for small examples of circulants with average uniform mixing.
+A graph X has universal perfect state transfer if it has perfect state transfer between
+every pair of vertices; that is, for all a, b ∈ V (X), there is a time t so that |⟨a|e−iA(X)t |b⟩| = 1.
+Corollary 7. Any (Z/nZ)-circulant with universal perfect state transfer has average uniform
+mixing.
+Proof. Any graph with universal perfect state transfer must have distinct eigenvalues (see
+[6]). Now, apply Theorem 5.
+
+5.1
+
+Non-abelian No-Go theorem
+
+Next, we consider Cayley graphs of non-abelian groups. We will appeal to the continuoustime version of a result of Godsil and Zhan (see [13], Theorem 10.4).
+P
+Lemma 4. Given any graph X of order n with Hermitian adjacency matrix A = r λr Er ,
+we have
+d
+X
+cX ≥ 1
+Tr M
+m2k ≥ 1
+n k=1
+where mr is the multiplicity of λr . Moreover, equality is achieved if each Er has constant
+diagonal and each eigenvalue is simple.
+Proof. By Eq. (6), we have
+cX =
+Tr M
+
+X
+
+Tr(Er ◦ Er ) =
+
+r
+
+XX
+r
+
+12
+
+a
+
+|(Er )a,a |2 .
+
+Apply Cauchy-Schwarz on the inner sum to get
+X
+a
+
+But, Tr(Er ) =
+
+P
+
+1
+|(Er )a,a | ≥
+n
+2
+
+!2
+X
+(Er )a,a
+
+.
+
+a
+
+a (Er )a,a = mr , the multiplicity of eigenvalue λr . Therefore,
+
+cX ≥
+Tr M
+
+1 2
+m ≥ 1,
+n r
+
+where the last inequality follows by a standard optimization argument.
+cX = 1 Jn , then its trace achieves the lower bound of 1.
+If M
+n
+For an irreducible representation ρ of a finite group G, we let dρ be the degree (or
+dimension) of ρ.
+Theorem 6. (Babai [4])
+Let X = Γ(G, S) be a Cayley graph over a finite group G with a connection set S where
+S = S −1 (S is closed under taking inverses) and 1 ̸∈ S (X has no self-loops). Then,
+P
+1. A(X) = g∈S R(g) where R(g) is the left-regular representation of G.
+2. P
+There is a unitary matrix U so that U † A(X)U is a diagonal matrix with entries
+g∈S Rρ (g) (repeated dρ times) for each irreducible representation ρ of G.
+P
+3. The eigenvalues of A(X) are given by the eigenvalues of g∈S Rρ (g) (each repeated dρ
+times).
+Corollary 8. Let X = Γ(G, S) be the Cayley graph of a nonabelian finite group G with an
+inverse-closed connection set S which does not contain the identity. Then, X has no average
+uniform mixing.
+Proof. Any nonabelian finite group has an irreducible representation of degree larger than
+one. By Theorem 6, Γ(G, S) must have a repeated eigenvalue.
+
+6
+
+Conclusions
+
+In this work, we introduced a reduction from global to local uniform mixing using weak
+measurements. This is similar to the reduction from perfect state transfer to fractional revival
+(see [24]). It can also be viewed as a stopping rule for uniform mixing in quantum walks.
+We then combined this technique with unitary signing of graphs (see [3]). Using this signand-reduce technique, we show that there are oriented complete graphs with probabilistic
+(Las Vegas) uniform mixing. This complements the fact that no complete graph has uniform
+mixing (except K2 , K3 , K4 ).
+On the other hand, by unitary signing alone, we found families of oriented circulants with
+average uniform mixing which is a No-Go violation of Godsil’s theorem [11]. Here, chirality
+13
+
+helps construct oriented graphs with distinct eigenvalues in (Z/nZ)-circulants. But, we
+identified a barrier towards extending this to nonabelian groups (due to a basic fact from
+group representation).
+We conclude with a few questions for future explorations:
+(a) Are there high-diameter trees with probabilistic uniform mixing?
+(b) Is there a speed limit for uniform mixing? In particular, can the methods developed by
+Luby et al. [19] be used to optimized our Las Vegas algorithm?
+(c) Are there graphs with fast Monte Carlo uniform mixing? Here, we require algorithms
+with bounded running time but which achieves ϵ-uniform mixing for some negligible
+ϵ > 0.
+
+Acknowledgments
+We thank Ada Chan, Chris Godsil and Xiaohong Zhang for helpful discussions. This work
+is supported by NSF grants CCF-2348399 and OSI-2427020.
+
+References
+[1] D. Aharonov, A. Ambainis, J. Kempe, U. Vazirani, Quantum Walks on Graphs, Proceedings of the Annual ACM Symposium on the Theory of Computing (STOC), p50-59,
+2001.
+[2] A. Ahmadi, R. Belk, C. Tamon, C. Wendler, On Mixing in Continuous-time Quantum
+Walks on Some Circulant Graphs, Quantum Information and Computation 3(6):611-618,
+2003.
+[3] N. Alon, K. Zheng, Unitary signing and induced subgraphs of Cayley graphs of Zn2 ,
+Advances in Combinatorics, November 09, 2020.
+[4] L. Babai, Spectra of Cayley Graphs, Journal of Combinatorial Theory B 27:180-189,
+1979.
+[5] A. Cabello, Bell’s theorem with and without inequalities for the three-qubit GreenbergerHorne-Zeilinger and W states, Physical Review A 65:032108, 2002.
+[6] S. Cameron, S. Fehrenbach, L. Granger, O. Hennigh, S. Shrestha, C. Tamon, Universal
+State Transfer on Graphs, Linear Algebra and Its Applications 455:115-142, 2014.
+[7] G. Coutinho, C. Godsil, K. Guo, H. Zhan, A New Perspective on the Average Mixing
+Matrix, Electronic Journal of Combinatorics 25(4), #P4.14, 2018.
+[8] P. Davis, Circulant Matrices, second edition, Chelsea, 1994.
+14
+
+[9] E. D’Hondt, P. Panangaden, The computational power of the W and GHZ states, Quantum Information and Computation 6(2):173-183, 2006.
+[10] W. Dür, G. Vidal, J.I. Cirac, Three qubits can be entangled in two inequivalent ways,
+Physical Review A 62:062314, 2000.
+[11] C. Godsil, Average Mixing of Continuous Quantum Walks, Journal of Combinatorial
+Theory A 120:1649-1662, 2013.
+[12] C. Godsil, G. Royle, Algebraic Graph Theory, Springer, 2001.
+[13] C. Godsil, H. Zhan, Discrete-time Quantum Walks and Discrete Structures, J. Combinatorial Theory A 167:181-212, 2019.
+[14] C. Godsil, H. Zhan, Uniform Mixing on Cayley Graphs, Electronic Journal of Combinatorics 24, Issue 3, 2017.
+[15] W. Haemers, Interlacing Eigenvalues and Graphs, Linear Algebra and Its Applications
+227-228:593-616, 1995.
+[16] R. Horn, C. Johnson, Matrix Analysis, second edition, Cambridge University Press,
+2013.
+[17] V. Lipinska, G. Murta, S. Wehner, Anonymous transmission in a noisy quantum network
+using the W state, Physical Review A 98:052320, 2018.
+[18] L. Lovasz, P. Winkler, Exact Mixing in an Unknown Markov Chain, Electronic Journal
+of Combinatorics 2, 1995.
+[19] M. Luby, A. Sinclair, D. Zuckerman, Optimal speedup of Las Vegas algorithms, Information Processing Letters 47:173-180, 1993.
+[20] C. Moore, A. Russell, Quantum walks on the Hypercube, Proc. 6th International Workshop on Randomization and Approximation Techniques in Computer Science (RANDOM
+2002), 164-178, 2002.
+[21] R. Motwani, P. Raghavan, Randomized Algorithms, Cambridge University Press, 1995.
+[22] M. Nielsen, I. Chuang, Quantum Computation and Quantum Information, Cambridge
+University Press, 2000.
+[23] P. Sin, Uniform mixing in continuous-time quantum walks on oriented, nonabelian Cayley graphs, https://arxiv.org/abs/2510.08376.
+[24] W. Xie, A. Kay, C. Tamon, Breaking the Speed Limit of Perfect Quantum State Transfer, Physical Review A 108:012408, 2023.
+
+15
+
+

@@ -1,0 +1,1054 @@
+arXiv:2209.07688v1 [quant-ph] 16 Sep 2022
+
+Perfect state transfer, Equitable partition
+and
+Continuous-time quantum walk based search
+Yusuke Ide∗, Akihiro Narimatsu†
+
+Abstract
+In this paper, we consider a continuous-time quantum walk based
+search algorithm. We introduce equitable partition of the graph and perfect state transfer on it. By these two methods, we can calculate the
+success probability and the finding time of the search algorithm. In addition, we gave some examples of graphs that we can calculate the success
+probability and the finding time.
+
+Keywords: quantum walks, quantum search algorithms, perfect state
+transfer, equitable partition
+
+1
+
+Introduction
+
+The study of Quantum walks (QWs) has been paid much attention in the past
+two decades because of its applications [12–14, 17, 18, 21], especially in quantum
+information. The quantum search algorithm is one of the applications of QWs
+in quantum information [1–6, 16, 19].
+In the previous study [10], we proved that a graph partitioning method called
+equitable partition [9] for the given graph reduce the size of the problem of the
+search algorithm. Under equitable partition, vertices of a graph are clustered
+and identified by distance from the marked vertex and edge connection with
+other vertices. We should remark that the initial state of the search algorithm
+is uniform state. Although the initial state of the search algorithm is uniform,
+the difference of the numbers of vertices in each partition causes non-uniform
+effects for the uniform initial state.
+In this paper, we introduce perfect state transfer (PST) which is a state
+transfer phenomenon related to quantum walks. PST has been actively studied
+in mathematics [8, 15, 20] and physics [11]. In mathematics, there are many
+studies from the viewpoint of spectral graph theory and several properties are
+revealed [7]. For example, when PST from a vertex u to a vertex v at time τ
+occurs, PST from the vertex v to the vertex u at time τ also occurs. Considering
+∗ Department of Mathematics, College of Humanities and Sciences, Nihon University, Setagaya, Tokyo, 156-8550, Japan, E-mail: ide.yusuke@nihon-u.ac.jp
+† Center for Mathematical and Data Scienses, The University of Fukuchiyama,
+Fukuchiyama, Kyoto, 620-0886, Japan, E-mail: narimatsu-akihiro@fukuchiyama.ac.jp
+
+1
+
+this under equitable partition, we obtain our main result about quantum search
+algorithm. In addition, we propose some meaningful example of the theorem as
+follows. Let G = (V (G), E(G)) be a simple graph with its vertex set V (G) =
+{0, 1, . . . , N − 1} and edge set E(G) ⊂ V (G) × V (G). The matrix H G is defined
+in section 2.3, Eq.(4).
+Example 1.1. When H G is given by
+√
+ "
+1
+N −1
+= √N −1
+N −2
+
+
+1
+√ 0
+H G = |0ih0| +
+N −1
+N −2
+
+N −2
+
+#
+√
+N −1
+N −2
+,
+1
+
+we have the success probability of the search algorithm PN,T (0) at time
+√
+(N − 2)π
+T = √
+= O( N ) is
+2 N −1
+PN,T (0) = 1 −
+
+1
+.
+N
+
+This situation corresponds to the case where G is a complete graph, G0 =
+({0}, ∅) is a graph consists of the marked one vertex 0, G1 is a complete graph
+with N − 1 vertices and the partition (G0 , G1 ) is equitable partition of G.
+Example 1.2. When H G is given by
+√
+
+
+0 √
+(2k + 1) 2
+0 √
+1
+H G = |0ih0| +
+2 √ (2k + 1) 2
+(2k + 1) 2
+2
+0
+(2k + 1) 2
+2
+√
+
+
+(2k+1) 2
+1
+0 √
+2
+ (2k+1)√2
+(2k+1) 2  ,
+=
+
+1 √
+2
+2
+(2k+1) 2
+0
+1
+2
+
+where k is a positive integer, we have the success probability of the search algorithm PN,T (0) at time T = π,
+1
+PN,T (0) ≈ 1 − √ .
+N
+This situation corresponds to the case where G0 = ({0}, ∅) is a graph consists
+of the marked one vertex 0, G1 is a cycle graph with 2(2k + 1)2 vertices, G2 is
+a cycle graph with {2(2k + 1)2 }2 vertices.
+The rest of this paper is organized as follows: Section 2 is devoted to the
+definition of our model and the introduction of a related result. Section 3 gives
+our result and introduction of the examples. Section 4 summerizes our paper.
+
+2
+
+Preliminaries
+
+2.1
+
+Continuous-time quantum walk
+
+Let G = (V (G), E(G)) be a simple undirected graph without self-loops and
+multiple edges, with its vertex set V (G) = {0, 1, . . . , N −1} and edge set E(G) ⊂
+2
+
+V (G) × V (G). As an example, 
+for 
+the complete graph on N vertices KN ,
+N
+which is the simple graph with
+edges and the edge set is defined by
+2
+E(KN ) = {(j, k) : 0 ≤ j < k ≤ N − 1}. Continuous-time quantum walk
+(CTQW) is a unitary time evolution process on the graph with the Hilbert
+space,
+H = Span{|ji : j ∈ V (G)}.
+On this Hilbert space, we define the unitary time evolution operator of CTQW.
+We choose an N -dimensional Hermitian matrix MG with (MG )j,k 6= 0 when
+(j, k) ∈ E(G) and (MG )j,k = 0 when (j, k) ∈
+/ E(G). The component (MG )j,k is
+regarded as “the weight of the edge (j, k) ∈ E(G)”. One of the typical MG is
+the adjacency matrix
+(
+1 (j, k) ∈ E(G),
+(AG )j,k =
+0 otherwise.
+of the graph G.
+For the time t ≥ 0, we define the time evolution operator
+UMG (t) = exp(itMG ) =
+
+∞
+X
+(it)k
+k=0
+
+k!
+
+k
+MG
+,
+
+(1)
+
+of CTQW on G corresponding to MG . We should note that CTQW is a quantum
+dynamics determined by Schrödinger equation with its Hamiltonian MG . We
+set a vector |ΨN,0 i ∈ H(k|ΨN,0 ik = 1) as initial state. Then the time evolution
+is written by
+|ΨN,ti = UMG (t)|ΨN,0 i,
+for t ≥ 0. |ΨN,t i describes the probability amplitude at time t. We put the
+finding probability of the quantum walker on s ∈ V (G) at time t as
+PN,t (s) = |hs|ΨN,t i|2 .
+
+2.2
+
+(2)
+
+The quantum walk based search algorithm
+
+In this subsection, we consider CTQW based search on simple graph G =
+(V (G), E(G)) with V (G) = {0, 1, . . . , N − 1}. The Hermitian matrix HG for
+CTQW search on G is defined by
+HG = |wihw| + γAG ,
+where w ∈ V (G) is the marked vertex. Now we consider the CTQW on G with
+its time evolution operator UHG . The
+√ main task for CTQW search is finding a
+suitable γ ∈ R and a time T ≤ O( N ) such that we can attain
+PN,T (w) ≈ 1 (N → ∞),
+with the uniform initial state
+N −1
+
+1 X
+|ji.
+|Ψ0 i = √
+N j=0
+3
+
+2.3
+
+Equitable partition
+
+This subsection is a review of [10], section 4 and deals with a partition of the
+graph, called equitable partition for CTQW search. Without loss of generality,
+we assume that the marked vertex is 0 ∈ V (G). We consider the partition
+(G0 , G1 , . . . , GJ−1 ) of G = (V (G), E(G)) which satisfies the following 3 conditions:
+(1) V (G0 ) = {0}.
+SJ−1
+(2) V (G) = j=0 V (Gj ), V (Gj ) ∩ V (Gk ) = ∅(j 6= k).
+
+(3) For each 0 ≤ j, k ≤ J − 1, there exists a non-negative integer dj,k such
+that dj,k = |{w ∈ V (Gk ) : (v, w) ∈ E(G)}| for each v ∈ V (GJ ).
+
+We use the notation Gj ∼ Gk if dj,k 6= 0.
+The partition (G0 , G1 , . . . , GJ−1 ) of G = (V (G), E(G)) consists of J subgraphs. For each subgraph Gj is dj,j -regular graph. Especially, G0 consists of
+only the marked vertex 0 ∈ V (G)(d0,0 = 0), which is called the null graph. In
+addition, each of the vertices v ∈ V (Gj ) connected to the same number dj,k of
+the vertices in V (Gk ).
+From now on, we consider the CTQW search on simple and connected graph
+G with equitable partition (G0 , G1 , . . . , GJ−1 ) with nj = |V (Gj )| of G. We
+define the uniform states related to the partition as follows.
+1
+|ji = √
+nj
+
+X
+
+j∈V (Gj )
+
+|ji,
+
+for 0 ≤ j ≤ J − 1. By direct calculation, we have
+s
+s
+X
+X q
+nk dj,k
+nk
+|ki = dj,j |ji +
+|ki
+AG |ji = dj,j |ji +
+dk,j
+dk,j
+nj
+nj
+Gj ∼Gk
+Gj ∼Gk
+X q
+dj,k dk,j |ki
+= dj,j |ji +
+Gj ∼Gk
+
+X q
+=
+dj,k dk,j |ki,
+0≤J−1
+
+where nj dj,k = nk dk,j coming from simplicity of the graph. Here we define a
+J × J matrix AG as
+q
+(3)
+(AG )j,k = dj,k dk,j .
+When we define a J × J matrix H G as
+
+H G = diag(1, 0, . . . , 0) + γAG ,
+
+(4)
+
+the action of the Hermitian matrix HG is closed on the subspace Span{|ji : 0 ≤
+j ≤ J − 1} as follows.
+HG |ji = H G |ji,
+4
+
+J−1
+
+1 Xp
+for 0 ≤ j ≤ J − 1. We also have |Ψ0 i = √
+nj |ji ∈Span{|ji : 0 ≤ j ≤
+N
+j=0
+
+J − 1}. Then we obtain
+
+HG |Ψ0 i = H G
+
+!
+J−1
+1 Xp
+√
+nj |ji ,
+N
+j=0
+
+thus we have
+!
+J−1
+1 Xp
+exp(itHG )|Ψ0 i = exp(itH G ) √
+nj |ji .
+N
+
+(5)
+
+j=0
+
+2.4
+
+Perfect state transfer
+
+In this subsection, we consider PST related to MG . PST related to MG from a
+vertex j to a vertex k at time τ with phase λ occurs if and only if
+
+(6)
+UMG (τ ) k,j = λ,
+where j, k ∈ {0, 1, . . . , N − 1}, |λ| = 1. Combining Eq.(1) with Eq.(6) gives
+hj|ΨN,0 i = λhk|ΨN,τ i.
+Noting |λ| = 1, this equation implies that the state on a vertex j moves to a
+vertex k after time τ .
+Since MG be a Hermitian matrix, eigenvalues of MG and the each component of the corresponding eigenvectors can be real numbers. Let θ0 ≥ θ1 ≥
+· · · ≥ θN −1 be eigenvalues of MG and |v0 i, |v1 i, . . . , |vN −1 i be corresponding
+RN valued eigenvectors. Previous study [7, 8] revealed the following claim.
+Proposition 2.1. A necessary and sufficient condition that the time evolution
+operator must satisfy for perfect State Transfer between a vertex j and a vertex
+k at time τ with phase λ to occur is following three properties.
+(1) For all ℓ ∈ {0, . . . , N − 1}, eigenvalues θℓ and corresponding eigenvectors
+|vℓ i satisfy hvℓ |ji = ±hvℓ |ki.
+(2) If hvℓ |ji = hvℓ |ki, there exist n ∈ Z such that θ0 − θℓ = 2nπ.
+(3) If hvℓ |ji = −hvℓ |ki, there exist n ∈ Z such that θ0 − θℓ = (2n + 1)π.
+Under these conditions, λ = eiτ θ0 .
+Using this proposition, the three properties can be rewritten as given in
+appendix.
+
+3
+
+Result
+
+This section is devoted to our theorem and some examples refered in Section 1.
+
+5
+
+3.1
+
+Theorem
+
+Theorem 3.1. If perfect state transfer between vertex 0 and a vertex j at time
+τ with phase λ occurs for CTQW using H G , success probability of the search
+algorithm is given by
+PN,τ (0) =
+
+nj
+N
+
+.
+
+proof. We should note that the initial state |Ψ0 i can be written as
+J−1
+
+1 Xp
+|Ψ0 i = √
+nj |ji.
+N
+j=0
+
+Combining Eq.(2) with Eq.(5) gives
+PN,τ (0) = h0| exp(iτ HG )|Ψ0 i
+= h0| exp(iτ H G )
+
+2
+
+J−1
+X√
+k=0
+
+!2
+nk
+√ |ki
+.
+N
+
+Since perfect state transfer between 0 and j occur, we have
+r
+2
+2
+√
+nj
+nj
+nj
+.
+=
+PN,τ (0) = h0|λ √ |0i = λ
+N
+N
+N
+
+
+3.2
+
+Examples
+
+In this subsection, we consider examples 1.1. and 1.2., which are the examples
+of our theorem.
+Example 1.1. When H G is given by
+
+1
+√ 0
+H G = |0ih0| +
+N −1
+N −2
+
+√
+ "
+1
+N −1
+= √N −1
+N −2
+N −2
+
+#
+√
+N −1
+N −2
+,
+1
+
+we have the success probability of the search algorithm PN,T (0) at time
+√
+(N − 2)π
+T = √
+= O( N ) is
+2 N −1
+PN,T (0) = 1 −
+
+1
+.
+N
+
+This situation corresponds to the case where G is a complete graph, G0 =
+({0}, ∅) is a graph consists of the marked vertex 0, G1 is a complete graph
+with N − 1 vertices and the partition (G0 , G1 ) is equitable partition of G.
+proof. By Eqs.(3) and (4), we have γ = 1/(N − 2) and
+√
+
+
+ 
+p
+d0,1 d1,0
+d
+N −1
+0
+.
+AG = √
+= p 0,0
+d1,1
+d1,0 d0,1
+N −1 N −2
+6
+
+Since d0,0 = 0, we have |V (G0 )| = 1. Thus we get d0,1 = N −1, |V (G1 )| = N −1
+and G1 is a complete graph with N − 1 vertices. Then we obtain G is a complete
+graph with N vertices.
+Next we consider the success probability. Let θ± be eigenvalues of H G and
+|v± i be corresponding eigenvectors. By spectral decomposition, we have
+H G = θ+ |v+ ihv+ | + θ− |v− ihv− |
+ 
+ 
+
+1
+1 
+1 1 1 
+1
+√
+√
+√
+√ 1
+1 1 + θ−
+= θ+
+−1
+1
+2
+2
+2
+2
+
+
+
+
+θ+ 1 1
+θ− 1 −1
+=
++
+,
+2 1 1
+2 −1 1
+where
+θ± = 1 ±
+Then we obtain
+
+
+−1
+
+√
+N −1
+.
+N −2
+
+
+
+
+
+1 1 −1
+1 1 1
++ eitθ−
+eitH G = eitθ+
+2 1 1
+2 −1 1
+
+√
+
+√
+
+N −1
+N −1
+cos
+t
+i
+sin
+t
+N
+−2
+N
+−2
+
+√
+.
+√
+= eit 
+−1
+−1
+t
+cos NN−2
+t
+i sin NN−2
+
+√
+(N − 2)π
+= O( N ),
+Therefore when time T = √
+2 N −1
+
+√
+
+
+√
+
+N −1
+N −1
+T
+i
+sin
+T
+cos
+N −2
+√
+
+ √N −2   = eiT 0
+eiT H G = eiT 
+−1
+−1
+i
+i sin NN−2
+T
+cos NN−2
+T
+
+
+i
+.
+0
+
+(N − 2)π
+Thus PST occurs from 1 to 0 at time T = √
+. Then the finding proba2 N −1
+bility is given by
+PN,T (0) =
+
+N −1
+1
+n1
+=
+=1− .
+N
+N
+N
+
+
+Example 1.2. When H G is given by
+√
+
+
+0 √
+(2k + 1) 2
+0 √
+1
+H G = |0ih0| +
+(2k + 1) 2
+2 √ (2k + 1) 2
+2
+0
+(2k + 1) 2
+2
+√
+
+
+(2k+1) 2
+1
+0 √
+2
+ (2k+1)√2
+(2k+1) 2  ,
+=
+
+1 √
+2
+2
+(2k+1) 2
+1
+0
+2
+
+where k is a positive integer, we have the success probability of the search algorithm PN,T (0) at time T = π,
+1
+PN,T (0) ≈ 1 − √ .
+N
+7
+
+This situation corresponds to the case where G0 = ({0}, ∅) is a graph consists
+of the marked one vertex 0, G1 is a cycle graph with 2(2k + 1)2 vertices, G2 is
+a cycle graph with {2(2k + 1)2 }2 vertices.
+proof. By Eqs.(3) and (4), we have γ = 1/2 and
+√
+
+
+0 √
+0 √
+(2k + 1) 2
+AG = (2k + 1) 2
+2 √ (2k + 1) 2
+0
+(2k + 1) 2
+2
+p
+p
+
+
+d
+d0,1 d1,0
+d d
+p 0,2 2,0
+p 0,0
+d1,2 d2,1  .
+= pd1,0 d0,1 p d1,1
+d2,2
+d2,0 d0,2
+d2,1 d1,2
+
+There are some choices for each dj,k . We put
+
+
+d0,0
+d1,0
+d2,0
+
+d0,1
+d1,1
+d2,1
+
+ 
+d0,2
+0 2(2k + 1)2
+d1,2  = 1
+2
+0
+1
+d2,2
+
+
+0
+2(2k + 1)2  .
+2
+
+d0,0 = 0 implies that |V (G0 )| = 1, or in other words, G0 consists of only one
+marked vertex 0. By d1,1 = 2 and d2,2 = 2, G1 and G2 are 2-regular graph.
+We chose the cycle graph for G1 and G2 because the cycle graph is a well
+known example of 2-regular graphs. Since d0,1 = 2(2k + 1)2 and V (G0 ) =
+{0}, |V (G1 )| = 2(2k + 1)2 . Therefore, G1 is a cycle graph with 2(2k + 1)2
+vertices. d1,2 = 2(2k + 1)2 and d2,1 = 1, each vertex in G1 is connected to
+2(2k + 1)2 different vertices in G2 and each vertex in G2 is connected to 1
+vertex in G1 . Thus we obtain |V (G2 )| = {2(2k + 1)2 }2 and G2 is a cycle graph
+with {2(2k + 1)2 }2 vertices.
+Next we consider the success probability. Let θ0 , θ1 , θ2 be eigenvalues of H G
+and |v0 i, |v1 i, |v2 i be corresponding eigenvectors. By spectral decomposition,
+we obtain
+H G = θ0 |v0 ihv0 | + θ1 |v1 ihv1 | + θ2 |v2 ihv2 |
+ 
+ 
+1
+1
+
+
+√
+1   1 
+1 √  1 
+0 √ 1 0 −1
+= θ0
+2
+1
+2 1 + θ1 √
+2
+2
+2 −1
+2
+1
+
+
+1
+
+√
+√
+1
+1
++ θ2 − 2 1 − 2 1
+2
+2
+1
+√
+√
+
+
+
+
+
+2 √1
+1
+1
+− 2
+1 0 −1
+√
+√
+θ0 
+θ1 
+θ2 
+0 0 0 +
+=
+− 2
+2 √2
+2 +
+2
+√
+4
+2 −1 0 1
+4
+1
+2 1
+1
+− 2
+
+
+1
+√
+− 2 ,
+1
+
+where θ0 = 2(k + 1), θ1 = 1, θ2 = −2k, with k is a positive integer. Then we
+
+8
+
+obtain
+√
+
+
+
+1
+2 √1
+1 0
+√
+1
+1
+eiT H G = eiT θ0  2 √2
+2 + eiT θ1  0 0
+4
+2
+−1 0
+1
+2 1
+√
+
+
+1
+− 2
+1
+√
+√
+1
++ eiT θ2 − 2
+2
+−
+2 .
+√
+4
+1
+− 2
+1
+
+
+−1
+0
+1
+
+When T = π, we obtain
+
+√
+
+
+
+1
+2 √1
+1
+√
+1
+1
+eiπH G = eiπ2(k+1)  2 √2
+2 + eiπ·1  0
+4
+2
+−1
+1
+2 1
+√
+ 
+
+1
+− 2
+1
+0 0
+√
+√
+1
+ = 0 1
++ eiπ(−2k) − 2
+2
+−
+2
+√
+4
+1 0
+1
+− 2
+1
+
+
+0 −1
+0 0
+0 1
+
+1
+0 .
+0
+
+Thus PST occurs from 2 to 0 at time T = π. Then the finding probability is
+given by
+PN,π (0) =
+
+n2
+{2(2k + 1)2 }2
+1
+=
+≈1− √ .
+N
+{2(2k + 1)2 }2 + 2(2k + 1)2 + 1
+N
+
+
+When k = 1, Example 1.2. includes the case in [8].
+
+4
+
+Summary
+
+In this paper, we analyzed the continuous-time quantum walk based search
+algorithm. We obtained the success probability of the search algorithm by using
+PST on equitable partition of the graph. In addition, we proposed some graphs
+as examples of our theorem. One of the interesting future problem is to reduce
+the conditions of equitable partition.
+
+9
+
+A
+
+Appendix
+
+Let each component of the eigenvector of Hermitian matrix MG be
+
+
+|vℓ (0)|eθ̃ℓ (0)
+
+
+|vℓ (1)|eθ̃ℓ (1)
+
+
+
+.
+|vℓ i = 
+..
+
+
+
+.
+θ̃ℓ (N −1)
+|vℓ (N − 1)|e
+
+Corollary A.1. A necessary and sufficient condition that the time evolution
+operator must satisfy for PST from a vertex j to a vertex k at time τ to occur
+is following.
+(θ0 − θℓ )τ ≡ θ̃ℓ (k) − θ̃ℓ (j) − {θ̃0 (k) − θ̃0 (j)}.
+
+(mod 2π)
+
+proof. By Eq.(6), we have
+UMG (τ )|ji = λ|ki.
+By direct calculation, we get
+N
+−1
+X
+ℓ=0
+
+!
+
+eiτ θℓ |vℓ ihvℓ | |ji = λ
+
+N
+−1
+X
+ℓ=0
+
+!
+
+|vℓ ihvℓ | |ki,
+
+comparing each component of the left hand side with that of the right hand
+side, we obtain
+eiτ θℓ hvℓ |ji = λhvℓ |ki
+
+(for all ℓ = 0, . . . , N − 1),
+
+computing this, we have
+eiτ θℓ |vℓ (j)|e−iθ̃ℓ (j) = λ|vℓ (k)|e−iθ̃ℓ (k)
+Noting that |λ| = 1, we get
+(
+
+(for all ℓ = 0, . . . , N − 1).
+
+eiτ θℓ e−iθ̃ℓ (j) = λe−iθ̃ℓ (k)
+|vℓ (j)| = |vℓ (k)|.
+
+(7)
+
+λ = eiτ θ0 ei(θ̃0 (k)−θ̃0 (j))
+
+(8)
+
+When ℓ = 0, Eq.(7) gives
+
+Substituting Eq.(8) into Eq.(7), we obtain
+ei(θ̃ℓ (k)−θ̃ℓ (j)) = eiτ (θ0 −θℓ ) ei(θ̃0 (k)−θ̃0 (j))
+calculating this, we have
+ei{(θ̃ℓ (k)−θ̃ℓ (j))−(θ̃0 (k)−θ̃0 (j))} = eiτ (θ0 −θℓ ) .
+Thus we get
+(θ0 − θℓ )τ ≡ θ̃ℓ (k) − θ̃ℓ (j) − {θ̃0 (k) − θ̃0 (j)}.
+
+(mod 2π)
+
+
+10
+
+References
+[1] A. Ambainis, E. Bach, A. Nayak, A. Vishwanath, and J. Watrous, Onedimensional quantum walks, Proceedings of the 33rd Annual ACM Symposium on Theory of Computing, pp. 37-49, 2001.
+[2] A. Ambainis, J. Kempe, and A. Rivosh, Coins make quantum walks faster,
+Proceedings of the 16th ACM-SIAM Symposium on Discrete Algorithms,
+pp. 1099-1108, 2005.
+[3] S. Chakraborty, L. Novo, A. Ambainis, and Y. Omar, Spatial search by
+quantum walk is optimal for almost all graphs, Phys. Rev. Lett., vol. 116,
+100501, 2016.
+[4] A.M. Childs, Universal computation by quantumwalk, Phys. Rev. Lett.,
+vol. 102, 180501, 2009.
+[5] A.M. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D.A. Spielman, Exponential algorithmic speedup by quantum walk, Proceedings of
+the 35rd Annual ACM Symposium on Theory of Computing, pp. 59-68,
+2003.
+[6] A.M. Childs and J. Goldstone, Spatial search by quantum walk, Phys. Rev.,
+vol. A70, 022314, 2004.
+[7] G. Coutinho, Quantum State Transfer in Graphs. PhD Thesis, University
+of Waterloo, Waterloo, ON, Canada, 2014.
+[8] C. Godsil, State transfer on graphs, Discrete Math., 312, vol. 1, pp. 129-147,
+2012.
+[9] C. Godsil and G.F. Royle, Algebraic Graph Theory. Springer-Verlag, New
+York, 2001.
+[10] Y. Ide, Partition of graphs and quantum walk based search algorithms, Nonlinear Theory and Its Applications, IEICE, vol. 10, Issue 1, pp. 16-27, 2019.
+[11] A. Kay, Perfect, efficient, state transfer and its application as a constructive
+tool, International Journal of Quantum Information 8.04, pp.641-676, 2010.
+[12] J. Kempe, Quantum random walks - an introductory overview, Contemporary Physics, vol. 44, pp. 307-327, 2003.
+[13] V. Kendon, Decoherence in quantum walks - a review. Math. Struct, Comp.
+Sci., vol. 17, pp. 1169-1220, 2007.
+[14] N. Konno, Quantum walks, In: Quantum Potential Theory, U. Franz and
+M. Schürmann, Eds., Lecture Notes in Mathematics: vol. 1954, pp. 309452, Springer-Verlag, Heidelberg, 2008.
+[15] S. Kubota and E. Segawa, Perfect state transfer in Grover walks between
+states associated to vertices of a graph, Linear Algebla Appl., vol. 646, pp.
+238-251, 2022.
+
+11
+
+[16] N.B. Lovett, S. Cooper, M. Everitt, M. Trevers, and V. Kendon, Universal
+quantum computation using the discrete-time quantum walk, Phys. Rev.,
+vol. A 81, 042330, 2010.
+[17] K. Manouchehri and J.B. Wang, Physical Implementation of Quantum
+Walks, Springer-Verlag, Heidelberg, 2013.
+[18] R. Portugal, Quantum walks and search algorithms, Springer-Verlag, New
+York, 2013.
+[19] N. Shenvi, J. Kempe, and K.B. Whaley, Quantum random-walk search
+algorithm, Phys. Rev., vol. A 67, 052307, 2003.
+[20] H. Tanaka, M. Sabri, and R. Portugal, Spatial search on Johnson graphs by
+continuous-time quantum walk. Quantum Inf. Process., vol. 21, 74, 2022.
+[21] S.E. Venegas-Andraca, Quantum walks: A comprehensive review, Quant.
+Inform. Process., vol. 11, pp. 1015-1106, 2012.
+
+12
+
+

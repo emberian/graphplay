@@ -1,0 +1,1418 @@
+arXiv:2211.14704v1 [quant-ph] 27 Nov 2022
+
+Quantum state transfer in graphs with tails
+Pierre-Antoine Bernard1 , Christino Tamon2 , Luc Vinet1 ,
+and Weichen Xie3
+1
+
+Centre de Recherches Mathématiques, Université de Montréal
+2
+Department of Computer Science, Clarkson University
+3
+Department of Mathematics, Clarkson University
+November 29, 2022
+Abstract
+We consider quantum state transfer on ﬁnite graphs which are attached to inﬁnite paths. The ﬁnite graph represents an operational
+quantum system for performing useful quantum information tasks. In
+contrast, the inﬁnite paths represent external inﬁnite-dimensional systems which have limited (but nontrivial) interaction with the ﬁnite
+quantum system. We show that perfect state transfer can surprisingly
+still occur on the ﬁnite graph even in the presence of the inﬁnite tails.
+Our techniques are based on a decoupling theorem for eventually-free
+Jacobi matrices, equitable partitions, and standard Lie theoretic arguments. Through these methods, we rehabilitate the notion of a dark
+subspace which had been so far viewed in an unﬂattering light.
+
+1
+
+Introduction
+
+Continuous-time quantum walk on graphs has been fundamental to quantum
+information and computation. Bose [2] studied quantum communication
+protocols on quantum spin chains using continuous-time quantum walk (see
+the comprehensive survey by Kay [21]). On the algorithmic side, Farhi et
+al. [9] designed a quantum algorithm (with provable speedup) for a famous
+Boolean formula evaluation problem. A notable feature of their algorithm
+is that it employs continuous-time quantum walk on ﬁnite graphs which are
+attached to inﬁnite paths (or tails). This idea was used subsequently by
+Childs [4] to show that continuous-time quantum walk is a universal model
+for quantum computation.
+1
+
+In this work, we explore quantum state transfer (which was the original
+problem studied by Bose [2]) on ﬁnite graphs which are attached to inﬁnite
+paths (as considered by Farhi et al. [9]). We view the ﬁnite graph, on
+one hand, to represent our internal quantum system for performing basic
+quantum information tasks. On the other hand, we view the attached inﬁnite
+paths as a model of an external inﬁnite-dimensional quantum system which
+has limited (but potentially destructive) interaction with our system. The
+main question which we investigate here is if our quantum protocols can
+still work in the presence of this inﬁnite-dimensional system. We provide an
+aﬃrmative answer to this question.
+Our main result shows that, under modest conditions, if perfect state
+transfer occurs in a ﬁnite graph, then perfect state transfer can still occur
+in the ﬁnite graph even when inﬁnite paths are attached. The main technique we employ is based on a decoupling theorem for eventually-free Jacobi
+matrices as stated by Golinskii [17]. This technique shows that the notion
+of a dark subspace is useful as a tool to construct protected computational
+subspace. This is in contrast to previous works which tried to mitigate the
+existence of these dark subspaces [23].
+A second technique we use involves basic representation theory of the
+Lie algebra sl2 C. This allows us to construct perfect state transfer in the
+Cartesian square of Krawtchouk chains (or quotients of the n-cube) and the
+n-cube itself when both are attached to an inﬁnite tail. These constructions
+exhibit perfect state transfer between multiple pairs of quantum states on
+the same graph. Through these, we establish connections between the dark
+subspaces and the walk modules of the Terwilliger algebra of the n-cube (see
+[28]).
+Finally, we utilize the dual-rail encoding useful for heralded perfect state
+transfer in quantum spin chains (see [3, 21]). This method exploits the
+presence of an anti-symmetric subspace in our graphs with tails. We view
+this method in the context of a Cartesian product a perfect state transfer
+graph G with K2 . This allows us to protect any graph with perfect state
+transfer from an inﬁnite tail probe by simply “doubling” the ﬁnite graph.
+
+2
+
+Preliminaries
+
+We review some basic notation and terminology which will be used throughout. The set of integers is denoted Z while Z+ denotes the set of positive
+integers.
+The all-one n × m matrix is denoted Jn,m , for n, m ≥ 1; we simply use
+2
+
+Jn if n = m. The identity matrix of order n is denoted In . Whenever the
+dimensions are clear from context, we omit them for brevity. We use 1S to
+denote the characteristic vector of a subset S. The unit vectors are denoted
+ej or e(j) (with an implied dimension). The unit matrix Ej,k (which is ej eTk )
+is zero everywhere except at entry (j, k) where it is 1 (again with implied
+dimensions).
+We adopt standard asymptotic notation where on (fn ) denote functions
+gn for which gn /fn → 0, On (fn ) denote functions gn for which gn /fn is
+bounded from above by a constant, as n → ∞; see Janson et al. [20].
+
+2.1
+
+Graphs
+
+The graphs we study are mainly simple and undirected (unless stated otherwise). For a graph G, we denote its vertex and edge sets as V (G) and
+E(G), respectively. The adjacency matrix of G is a matrix A(G) whose
+(j, k) entry is 1 if (j, k) ∈ E(G) and 0 otherwise. The neighborhood of a
+vertex u in G is denoted NG (u) = {v ∈ V (G) : (u, v) ∈ E(G)}. The degree
+deg(u) of vertex u is the cardinality of NG (u). We use standard notation to
+denote common families of graphs: Kn for complete graphs (cliques), K n
+for the empty graphs (cocliques), Pn for paths, Qn for the binary n-cubes.
+See Godsil and Royle [16] for further background on graph theory.
+Given two graphs G and H, the join G + H is the graph obtained by
+taking a disjoint union of G and H and then adding all edges (g, h) for every
+g ∈ G and h ∈ H. The adjacency matrix of G + H is given by
+
+
+A(G) Jn,m
+A(G + H) =
+Jm,n A(H)
+where G has n vertices and H has m vertices. The cone of a graph G is
+b := K1 + G. By extension, the m-cone of G is given by K m + G.
+given by G
+The one-sum of two graphs G and H at a vertex u is obtained by identifying a vertex of G with a vertex of H; thus, V (G) ∩ V (H) = {u}. The
+adjacency matrix of this one-sum is given by
+
+
+0
+A(G \ u) 1NG (u)
+ 1TN (u)
+1TNH (u)  .
+0
+G
+0
+1NH (u) A(H \ u)
+Let G be a graph on n vertices and let Y = {Hi (ri ) : i = 1, . . . , n} be a
+collection of rooted graphs (where ri is a distinguished root vertex in Hi ).
+The rooted product of G with Y, denoted GY , is a graph obtained from the
+3
+
+one-sum of G with Hi by identifying vertex i of G with vertex ri in Hi , for
+each i = 1, . . . , n; see Godsil and McKay [14].
+Given a graphSG = (V, E), a vertex partition π = (Vj ) of G is called
+equitable if V = j Vj is a disjoint union, each induced subgraph G[Vj ]
+is dj -regular for some dj , and each induced bipartite subgraph G[Vj , Vk ]
+is (djk , dkj )-biregular for some djk and dkj . We call each Vj a cell of the
+equitable partition π. The partition matrix of π is given by Q = (quj ) where
+quj = 1{u∈Vj } · |Vj |−1/2 . Then, the quotient graph G/π is a weighted graph
+whose adjacency matrix is A(G/π) = Q† A(G)Q. For a ﬁxed vertex u of G,
+the equitable partition relative to u is an equitable partition π of G where
+{u} is a cell of π. In the case where A(G/π) is a symmetric tridiagonal
+matrix (or Jacobi matrix) we say π forms a distance partition relative to u.
+
+2.2
+
+Linear operators
+
+We will allow our graphs to be inﬁnite with a countable vertex set (see
+[24, 25, 15]). A main example is the inﬁnite path P∞ with Z+ as vertices
+and with edges connecting consecutive positive integers. The adjacency
+matrix of P∞ is the free Jacobi matrix J0 given by
+
+
+0 1
+1 0 1
+
+
+
+J0 =  1 0 1  .
+
+
+..
+.
+A Jacobi matrix J is called eventually-free if J0 can be obtained from J by
+the removal of the ﬁrst k rows and k columns, for some ﬁnite k. In this case,
+we also say J is an extension of J0 (see Golinskii [17]).
+Let {Gn } be a family of inﬁnite graphs where each Gn is parameterized
+by a ﬁnite subgraph of size n. As an example, consider the inﬁnite lollipop
+graph Ln which is the one-sum of the complete graph Kn with the inﬁnite
+path P∞ (see Figure 1). We say G is locally finite if deg(u) is ﬁnite for each
+u ∈ V . Let deg(G) = sup{deg(u) : u ∈ V }.
+2
+We consider the complex separable
+P Hilbert space ℓ (V )Vwhich is equipped
+with the inner product hx, yi = u∈V xu yu for x, y ∈ C and an induced
+p
+norm kxk2 = hx, xi. Recall ℓ2 (V ) consists of vectors x with kxk2 < ∞.
+A complete orthonormal system for ℓ2 (V ) is given by the standard basis
+{ev : v ∈ V }.
+P The adjacency matrix A of G is deﬁned on the basis vectors as Aev =
+u∈V au,v eu (the sum converges if G is locally ﬁnite); or, heu , Aev i = au,v . If
+4
+
+deg(G) < ∞, then the adjacency matrix A is a bounded self-adjoint operator
+(see Mohar and Woess [25]). We also say that the adjacency operator of G
+admits a matrix representation relative to the standard basis (see [1], section
+26).
+The spectrum σ(A) of A is the set of all λ ∈ C for which λI − A is
+not invertible. The point spectrum σp (A) is the set of all λ ∈ C for which
+λI − A is not one-to-one. Any element of σp (A) is called an eigenvalue of
+A. The continuous spectrum σc (A) is the set of all λ ∈ C for which λI − A
+is a one-to-one mapping of H onto a dense proper subspace of H. If A is
+bounded and self-adjoint, then σ(A) ⊂ R and σ(A) = σp (A) ∪ σc (A); that
+is, A has no residual spectrum. Our primary sources for functional analysis
+are [1, 27].
+Theorem 1. (Spectral theorem) If A is a bounded self-adjoint operator on a
+complex Hilbert space H, then there exists a unique resolution of the identity
+E on the Borel subsets of σ(A) which satisfies
+Z
+λ dE(λ).
+A=
+σ(A)
+
+Moreover, if f is a bounded Borel function on σ(A), then there is a linear
+operator f (A) where
+Z
+f (λ)dEx,y (λ)
+(1)
+hf (A)x, yi =
+σ(A)
+
+for every x, y ∈ H, where Ex,y (ω) = hE(ω)x, yi is a complex measure over
+the Borel subsets of σ(A).
+Based on (1), it is customary to adopt the notation
+Z
+f dE.
+f (A) =
+σ(A)
+
+It is often convenient to assume the resolution E of the identity is deﬁned
+over all Borel subsets of C by letting E(ω) = 0 if ω ∩ σ(A) = ∅.
+The following result is the basis of our main technique.
+Theorem 2. (see [1], Theorem 3, section 40) Let H be a complex separable
+Hilbert space and let A be a bounded self-adjoint operator on H. Let Wk
+(k = 1,
+L2,m. . . , m) be pairwise orthogonal invariant subspaces of A; that is,
+H =
+k=1 Wk and AWk ⊂ Wk , for every k. Let Pk be the projection
+5
+
+operator on Wk and Ak be the restriction of A to Wk . Then, for every
+ψ ∈ H, we have
+m
+X
+Ak Pk ψ.
+Aψ =
+k=1
+
+2.3
+
+Quantum walk
+
+Let G = (V, E) be an inﬁnite graph whose adjacency operator A is a bounded
+self-adjoint linear operator on ℓ2 (V ). A continuous-time quantum walk on
+G is given by the unitary operator
+Z
+−itA
+e−itλ dEλ .
+e
+=
+σ(A)
+
+We say that a graph G has perfect state transfer (adopting Bose [2]) between
+vertices u and v if there is a time τ so that
+|hev , e−iτ A eu i| = 1.
+A family {Gn } of graphs has asymptotically efficient perfect state transfer
+(see Chen et al. [8]) between vertices u and v if there is a time τ = nO(1) so
+that
+|hev , e−iτ A(Gn ) eu i| = 1 − on (1).
+
+3
+
+Conical illusion
+
+We begin by examining a small yet illustrative example of an inﬁnite graph.
+A vertex u in a graph Gn is called sedentary (see Godsil [13]) if for all time
+t, we have
+|heu , e−itA(Gn ) eu i| = 1 − on (1).
+It is known that the (ﬁnite) clique Kn is sedentary at any vertex. To see
+this, note that the spectral decomposition of A(Kn ) is given by A(Kn ) =
+(n − 1)J/n − (I − J/n), which shows that
+e−itA(Kn ) = e−it(n−1) J/n + eit (I − J/n).
+This immediately yields
+|heu , e−itA(Kn ) eu i| = |e−it(n−1) /n + eit (1 − 1/n)| = 1 − on (1).
+We show that the clique is still sedentary even in the presence of an inﬁnite
+tail (see Figure 1).
+6
+
+...
+
+Figure 1: The inﬁnite lollipop graph Ln . All shaded vertices are sedentary.
+
+Proposition 3. For n ≥ 2, let Ln be the infinite graph that is the one-sum
+of the clique Kn and the infinite path P∞ at vertex u. Then, any vertex
+v 6= u of Kn in Ln is sedentary.
+Proof. Following Golinskii [17], we label the vertices of Kn with 1, 2, . . . , n,
+where n is the attachment vertex, and the vertices of P∞ with the integers
+n + 1, n + 2, . . .. The adjacency matrix of Ln is a bounded self-adjoint
+operator in ℓ2 (Z+ ). Relative to the standard basis {ek : k ∈ Z+ }, we have
+
+
+A(Kn ) En,1
+A(Ln ) =
+E1,n
+J0
+where J0 is the free Jacobi matrix. Now, deﬁne a new basis {ẽk : k ∈ Z+ }
+where ẽk = ek , for k = n, n + 1, . . ., and
+ẽn−1 = √
+and
+ẽk = √
+
+n−1
+X
+1
+ek
+n − 1 k=1
+
+n−1
+X (j−1)k
+1
+ζ
+ej
+n − 1 j=1 n−1
+
+(k = 1, . . . , n − 2)
+
+where ζp = e2πi/p denotes the principal p-th root of unity. The action of
+A(Ln ) on the new basis is given by
+
+
+−In−2 O
+−1
+U A(Ln )U =
+O
+J˜0
+where J˜0 is an eventually-free Jacobi matrix (of rank two) given by
+√
+
+
+n
+−
+1
+O
+n
+−
+2
+√
+0
+eT1  .
+J˜0 =  n − 1
+O
+e1
+J0
+7
+
+(2)
+
+...
+...
+
+...
+...
+
+Figure 2: The join K m + Kn attached to multiple tails. All shaded vertices
+are still sedentary.
+
+Here, U is the unitary operator which maps ek to ẽk for every k = 1, 2, . . ..
+Thus, W0 = span{ẽ1 , . . . , ẽn−2 } and W∞ = span{ẽn−1 , ẽn , . . .} are orthogonal invariant subspaces which span the entire space.
+Finally, to see why any vertex j ∈ {1, . . . , n − 1} in Kn is sedentary,
+observe that
+n−2
+
+−itA(Ln )
+
+hej , e
+
+eit X
+ej i =
+|hej , ẽk i|2 + O
+n−1
+k=1
+
+
+
+1
+n−1
+
+
+
+,
+
+which shows |hej , e−itA(Ln ) ej i| = 1 − on (1) for all t.
+The next result shows that even with an arbitrary but ﬁnite number of
+inﬁnite tails the clique is still sedentary. But, we make a slight shift in our
+approach (which sheds light on the title of this section); see Figure 2.
+Theorem 4. Let n and m be positive integers where n ≥ 2 and m ≥ 1.
+Let H be the infinite graph obtained from the join K m + Kn by attaching
+separate infinite paths to each vertex of the coclique K m . Then, any vertex
+of the clique Kn is sedentary.
+Proof. The quotient of H is the clique Kn attached to a single inﬁnite path
+where each vertex of Kn is connected to the ﬁrst vertex of P∞ by an edge
+√
+of weight m. The proof now proceeds as in Proposition 3 without major
+changes.
+Observe that Proposition 3 is a corollary of Theorem 4 when m = 1.
+It seems curious to investigate sedentariness as it is the opposite of quantum state transfer. Yet, as we will see, the above results reveal a dark
+subspace which holds interesting properties.
+
+8
+
+4
+
+Dark subspace transport over cones
+
+We explore properties of a ﬁnite invariant subspace of graphs with tails.
+First, observe that the clique Kn is a cone over a smaller clique, that is,
+bn := K1 + Gn of an arbitrary
+Kn = K1 + Kn−1 . Now, we consider the cone G
+bn
+(n, d)-regular graph Gn . The following result shows that the one-sum of G
+with P∞ at the conical vertex inherits the state transfer properties of Gn .
+Theorem 5. Let Gn be a connected d-regular graph which admits efficient
+perfect state transfer between vertices u and v at time τ . Let H be the infinite
+bn and the infinite path P∞ at the
+graph that is the one-sum of the cone G
+conical vertex. Then, H has asymptotically efficient perfect state transfer
+between u and v at time τ .
+Proof. Suppose the adjacency matrix of Gn is diagonalized by the unitary
+matrix Z, that is, Z † A(Gn )Z = Λ, where Λ = diag(λ1 , . . . , λn ) is the diagonal matrix of the eigenvalues
+and the columns of Z are eigenvectors of
+P
+A(Gn ). Let A(Gn ) = nk=1 λk zk zk† with λn = d and zn = √1n 1n . Similar to
+Proposition 3, the adjacency matrix of H can be decomposed into
+
+
+
+
+Λ0 O
+Z O
+−1
+U A(H)U =
+,
+where U =
+.
+(3)
+O I
+O J˜0
+Here, U is the unitary change of basis transformation where ẽj = U ej ,
+j = 1, 2, . . ., shows the new basis vectors in terms of the standard basis
+vectors. By the deﬁnition of U , notice that ẽj = ej whenever j ≥ n+1. Also,
+Λ0 = diag(λ1 , . . . , λn−1 ) is a diagonal matrix containing all non-principal
+eigenvalues (with multiplicities) of Gn . The eventually-free Jacobi matrix
+J˜0 is given by
+
+
+√
+n O
+d
+√
+J˜0 =  n 0 eT1  .
+O
+e1 J0
+Let P denote the projection operator onto the subspace span{ẽj : j ≥ n}.
+From (3), we have
+
+
+
+Λ0 0
+−iτ A(H)
+hev , e
+eu i = hev , U exp −iτ
+U −1 eu i
+0 J˜0
+
+ −iτ Λ0
+e
+0
+U −1 eu i.
+= hev , U
+˜
+0
+e−iτ J0
+
+9
+
+...
+
+Figure 3: A cone over the cube Qn attached to an inﬁnite tail. Asymptotically eﬃcient perfect state transfer occurs between the shaded antipodal
+vertices with ﬁdelity 1 − O(1/2n ) at time (π/2)n.
+The last expression equals to
+hev ,
+
+n−1
+X
+j=1
+
+˜
+
+e−iτ λj zj zjT eu i + hev , U P e−iτ J0 P U −1 eu i.
+
+Therefore,
+−iτ A(H)
+
+hev , e
+
+eu i = hev ,
+
+n−1
+X
+j=1
+
+˜
+
+e−iτ λj zj zj† eu i + hev , zn ihzn , e−iτ J0 zn ihzn , eu i
+
+1
+e−iτ d
+˜
++ hzn |e−iτ J0 |zn i
+n
+n
+= hev , e−iτ A(Gn ) eu i + O(n−1 ).
+
+= hev , e−iτ A(Gn ) eu i −
+
+This shows |hev , e−iτ A(H) eu i| = 1 − on (1).
+Example 6. The one-sum of the cone of the n-cube with P∞ at the conical
+vertex has asymptotically efficient perfect state transfer between any pair
+of antipodal vertices of Qn (see Figure 3). The fidelity of state transfer is
+1 − O(1/2n ) at the usual time of (π/2)n.
+We remark that Theorem 5 allows for any other quantum state transfer
+tasks (such as, fractional revival) provided the initial and target states have
+negligible overlap with the principal eigenvector of the graph.
+
+10
+
+5
+
+Decoupling
+
+Proposition 3 oﬀers another useful insight. The eventually-free Jacobi matrix in the inﬁnite lollipop graph has the quotient of the clique as its leading
+principal submatrix. We generalize this to graphs with well-behaved quotients (for example, distance-regular graphs). Our primary goal is still to
+understand the structure of the underlying protected (dark) subspaces.
+Let G be a graph with adjacency matrix A and let v be one of its vertices.
+The walk matrix of G with respect to v is deﬁned as
+
+WG (v) = ev Aev A2 ev . . . An−1 ev .
+
+Thus, the columns of the walk matrix generate the Krylov subspace of A
+relative to the unit vector ev . The vertex v is called controllable if WG (v)
+has full rank (see Godsil [12]).
+The following result appeared in Golinskii [17]. We will provide an alternative proof which illuminates the structure of the dark (protected) subspace.
+Theorem 7. Let Gn be a connected graph and let v be one of its vertices.
+Let H be the infinite graph that is the one-sum of a finite graph Gn with the
+infinite path P∞ at vertex v. Then, there is an invertible matrix U so that
+
+
+ℑv 0
+−1
+U A(H)U =
+0 J˜0
+where dim(ℑv ) = n − rank(WGn (v)) and J˜0 is an eventually-free Jacobi
+matrix.
+Moreover, if Gn admits an equitable distance partition π relative to v so
+that A(Gn /π) is a Jacobi matrix, then the leading principal submatrix of J˜0
+is A(Gn /π).
+Proof. For brevity, let A = A(Gn ). First, we show that we can construct an
+extension J˜0 of the free Jacobi matrix J0 . We apply the Lanczos algorithm
+for tridiagonalizing a symmetric matrix starting with ev (see Horn and Johnson [19], 3.5P5, page 221). This algorithm will ﬁnd an orthonormal basis for
+the Krylov subspace K = {ev , Aev , . . . , An−1 ev }. Assume that m = dim K
+and let {ẽ0 , . . . , ẽm−1 } be an orthonormal basis of K, where ẽ0 = ev . Denote ẽ−1 as the unit vector corresponding to the unique neighbor of v on
+the inﬁnite path. Then,
+Aẽj = span{ẽj−1 , ẽj , ẽj+1 }
+11
+
+(j = 0, . . . , m − 2)
+
+and
+Aẽm−1 = span{ẽm−2 , ẽm−1 }.
+This shows that the subspace spanned by ẽ0 , . . . , ẽm−1 and the standard
+basis {ew : w ∈ V (P∞ )} for P∞ is an invariant subspace of H; moreover,
+the restriction of H on this subspace forms an extension J˜0 of J0 (because
+of the tridiagonal structure imposed by the Krylov subspace).
+It remains to show that the leading m × m principal submatrix of J˜0 is
+A(Gn /π). By our assumption on π, we may write A(Gn ) in a tridiagonal
+block form:
+
+
+A1 B1T
+B1 A2 B2T
+
+
+
+T
+
+
+B
+A
+B
+2
+3
+3
+
+
+A(Gn ) = 
+..
+.
+
+
+.
+
+
+
+Am−1 1NGn (v) 
+1TNG (v)
+0
+n
+
+Here, the last row and column correspond to vertex v. Notice that each Ai
+is the adjacency matrix of a regular subgraph of Gn and each Bi represents
+the incidence matrix between subgraphs Ai and Ai+1 , where Bi has constant
+row-sum and constant column-sum. Because of these properties, it is easy
+to see that the Lanczos algorithm, starting with ev (last row and column),
+will construct a basis {ẽ0 = ev , ẽ1 , . . . , ẽm−1 } so that the action of H on this
+basis is given by
+
+
+d1 d1,2
+d2,1 d2 d2,3
+
+
+
+
+
+d3,2 d3
+d3,4
+
+
+
+
+..
+
+
+.
+
+
+
+dm−1 1
+|N (v)| 0
+where di is the degree of regular subgraph G[Vi ] and di,j denotes the number
+of neighbors in Vj of each vertex in Vi . After a standard transformation,
+the previous matrix is equal to the adjacency matrix of the symmetrized
+quotient of Gn /π.
+We refer to the ﬁnite invariant subspace of H in Theorem 7 as the protected (or dark) subspace of H. Using the above theorem, we observe that a
+random graph oﬀers no protection.
+
+12
+
+Corollary 8. Let Gn = G(n, 1/2) be a random graph. Then, the one-sum
+bn = K1 + Gn with P∞ has no protected subspace almost surely.
+of G
+
+Proof. This follows since a random graph G(n, 1/2) is controllable relative
+to 1n almost surely (see O’Rourke and Touri [26]).
+
+6
+
+Dark subspace transport via equitable partitions
+
+Using Theorem 7, we explore the dark subspaces induced by regular subgraphs within the (equitable) distance partitions of graphs. Our goal is to
+show that state transfer occurs within each local subgraph under suitable
+conditions.
+Given a regular graph G, consider the graph Pm (G) obtained by connecting m disjoint copies of G in a series using the graph join operator. So,
+the adjacency matrix of this graph is Im ⊗ A(G) + A(Pm ) ⊗ J. We now
+generalize this series graph by allowing m (possibly distinct) regular graphs,
+G0 , G1 , . . . , Gm−1 and denote the resulting graph as Pm (G0 , . . . , Gm−1 ).
+Theorem 9. Let Gn = Pm ({u}, G1 , . . . , Gm−1 ) be a series graph. Let H be
+the infinite graph that is the one-sum of Gn and the infinite path P∞ at u. If
+there is Gj , j = 1, . . . , m − 1, with perfect state transfer between its vertices
+a and b at time τ , then H has asymptotic perfect state transfer between a
+and b at time τ .
+Proof. We prove the claim by induction on m. The base case of m = 2 is
+simply Theorem 5. Next, we prove the case for m = 3 (and leave the full
+inductive argument as a straightforward exercise). Let Gn = P3 ({u}, G1 , G2 )
+where Gi is a (ni , di )-regular graph. The adjacency matrix A of Gn is given
+by
+
+
+A2 J
+0
+A =  J A1 1V1  .
+0 1TV1
+0
+By Theorem 7, we know that
+A=
+
+
+
+
+
+ℑu O
+,
+O J˜0
+
+
+
+d
+√ 2
+where J˜0 =  n1 n2
+0
+
+
+n1 n2
+0
+√ 
+d
+n1
+√1
+n1
+0
+
+√
+
+Suppose z1 is an eigenvector of A1 corresponding to a non-principal eigenvalue λ1 (that is, λ1 < d1 ) and z2 is an eigenvector of A2 corresponding to
+
+13
+
+...
+
+Figure 4: A complex Hermitian clique K6 attached to the inﬁnite path
+P∞ . The shaded vertices have asymptotically eﬃcient universal perfect state
+tranfer (PST between every pair).
+
+a non-principal eigenvalue λ2 (that is, λ2 < d2 ). Then,
+ 
+ 
+0
+z2
+
+
+
+(λ1 − A) z1 = 0,
+(λ2 − A) 0  = 0.
+0
+0
+This implies that ℑu is block diagonal. Therefore, for some invertible matrix
+U , we have
+
+
+ℑ1 O O
+U −1 AU =  O ℑ2 O 
+O O J˜0
+So, asymptotic perfect state transfer occurs within each block (by a similar
+argument to Theorem 5).
+~ 3 be the complex oriented clique of order 3 whose adjaExample 10. Let K
+cency matrix is
+
+
+0 −i i
+i
+0 −i .
+(4)
+−i i
+0
+~ 3, K
+~ 3 ) (see Figure 4). By Theorem 9
+We consider the graph H = P3 (K1 , K
+and an observation in Cameron et al. [6], we may conclude that each local
+~ 3 has asymptotically efficient universal perfect state transfer.
+K
+
+7
+
+Perfect state transfer in a dark subspace
+
+In this section, we show that perfect state transfer (with unit ﬁdelity) can
+be engineered to occur in graphs with tails. Our techniques are primarily
+14
+
+1, 3
+2, 3
+3, 3
+
+1, 2
+2, 2
+
+3, 2
+
+...
+
+1, 1
+2, 1
+
+3, 1
+
+Figure 5: The fly-swatter graph: P322 attached to an inﬁnite tail. Perfect
+√
+state tranfer occurs between √12 (e1,2 −e2,1 ) and √12 (e2,3 −e3,2 ) at time π/ 2.
+
+based on the representation theory of the Lie algebra sl2 C and the dual-rail
+encoding scheme in spin chains.
+We recall that the Cartesian product of two graphs G1 and G2 , denoted
+G1 2G2 , is a graph with vertex set V (G1 ) × V (G2 ) where the pairs (a1 , a2 )
+and (b1 , b2 ) are adjacent if either a1 = b1 and (a2 , b2 ) ∈ E(G2 ) or (a1 , b1 ) ∈
+E(G1 ) and a2 = b2 . The adjacency matrix of G1 2G2 is given by A(G1 )⊗I +
+I ⊗ A(G2 ). If the two graphs are equal, we use G22 to denote the Cartesian
+square.
+
+7.1
+
+Walk modules
+
+The following example shows perfect pair state transfer (see Chen and Godsil
+[7]) on P322 in the presence of an inﬁnite tail.
+Example 11. Suppose the vertex set of P3 is {1, 2, 3} where 1 and 3 are
+the leaves. Let H be the one-sum of P322 and P∞ at vertex (1, 1) (see Figure
+5). Let ej,k denote ej ⊗ ek . We show there is perfect state
+√ transfer between
+the states √12 (e1,2 − e2,1 ) and √12 (e2,3 − e3,2 ) at time π/ 2. Consider a new
+basis for A(H). Let ẽk = ek , k ≥ 10, correspond to vertices of P∞ , and let
+ẽ1 = √13 (e1,3 − e2,2 + e3,1 )
+
+ẽ9 = e1,1
+ẽ8 = √12 (e1,2 + e2,1 )
+
+ẽ2 = √12 (e1,2 − e2,1 )
+
+ẽ3 = √12 (e1,3 − e3,1 )
+
+ẽ7 = √16 (e1,3 + 2e2,2 + e3,1 )
+
+ẽ4 = √12 (e2,3 − e3,2 )
+
+ẽ6 = √12 (e2,3 + e3,2 )
+ẽ5 = e3,3
+15
+
+be the basis vectors for the finite graph. The subspaces W0 = span{ẽ1 , ẽ2 , ẽ3 , ẽ4 }
+and W1 = span{ẽk : k ≥ 5} are orthogonal and invariant under A(H). Under this new basis, we have
+
+
+0
+
+
+1
+
+
+
+1
+A(H) = 
+ 1
+
+
+
+1
+˜
+J0
+where J˜0 is an eventually-free Jacobi matrix. As the action of A(H) on
+the invariant subspace spanned by {ẽ2 , ẽ3 , ẽ4 } is equivalent to the adjacency
+matrix of P√3 , it follows that perfect state transfer occurs between ẽ2 and ẽ4
+at time π/ 2.
+We now generalize the above example. For the n-cube Qn , let π denote
+the equitable partition whose cells correspond to the set of vertices with
+the same Hamming weight. The quotient graph Qn /π is a weighted path of
+length n + 1 (also known as the Krawtchouk chain; see Christandl et al. [5]).
+As we will use some basic Lie theoretic arguments, we brieﬂy recall some
+relevant terminology; see [18, 10] for more background on Lie theory. The
+Lie algebra sl2 C is the algebra of complex 2 × 2 traceless matrices that is
+equipped with a bracket1 operation [A, B] = AB − BA. A representation
+of sl2 C is a homomorphism ρ : sl2 C → End(V ) for some vector space V of
+ﬁnite dimension (here, End(V ) is equipped with the natural bracket).
+Theorem 12. For any integer n ≥ 2, let Hn be the infinite weighted graph
+that is the one-sum of the Cartesian square (Qn /π)22 and the infinite path
+P∞ at vertex (0n , 0n ). Then, there exist multiple perfect state transfer on
+Hn at time π/2.
+Proof. The Clebsch-Gordan decomposition (see [18], appendix C) states that
+if ρm is an irreducible representation of sl2 C of dimension m+1, then a tensor
+product of two irreducible representations can be decomposed into a direct
+sum of irreducible representations. In particular, for any n ≥ 1:
+ρn (M ) ⊗ I + I ⊗ ρn (M ) ∼
+=
+
+n
+M
+k=0
+
+ρ2n−2k (M ),
+
+∀M ∈ sl2 C.
+
+(5)
+
+1
+The Lie bracket is bilinear, anti-symmetric, and satisfies [A, [B, C]] + [B, [C, A]] +
+[C, [A, B]] = 0.
+
+16
+
+111
+
+110
+
+100
+
+101
+
+010
+
+011
+
+001
+
+...
+
+000
+
+Figure 6: The 3-cube attached to an inﬁnite tail. Perfect state tranfer occurs
+between √13 (e100 + ζe010 + ζ 2 e001 ) and √13 (e011 + ζe101 + ζ 2 e110 ) at time π/2,
+where ζ = exp(2πi/3) is the primitive cube root of unity.
+
+To use (5), we observe there exists M ∈ sl2 C where ρ(M ) ∼
+= A(Qm /π), for
+every m ≥ 2. Recall that a basis for sl2 C is given by
+
+
+
+
+
+
+0 1
+0 0
+1 0
+X=
+,
+Y =
+,
+H=
+.
+0 0
+1 0
+0 −1
+If we let M = X + Y , then ρ(M ) = ρ(X) + ρ(Y ). Under the basis of all
+eigenvectors of ρ(H), we have
+
+
+
+
+0 m
+0
+
+
+0 2(m − 1)
+1 0
+
+
+
+
+
+
+
+0
+3(m − 2)
+ 1 0
+
+
+
+ρ(Y ) = 
+,
+ρ(X)
+=
+
+
+.
+..
+
+
+
+
+..
+.
+
+
+
+
+.
+
+m
+1 0
+0
+This shows that ρ(M ) ∼
+= A(Qm /π) by a standard basis change. Hence,
+
+perfect state transfer occurs in each of the Krawtchouk chains in (5).
+
+Next, we show that the n-cube itself can be “immunized” against the
+inﬁnite tail. Recall that ζn = exp(2πi/n) is the primitive nth root of unity.
+It will be convenient to identify the vertices of the n-cube Qn with subsets
+of {1, 2, . . . , n}.
+
+Theorem 13. For integer n ≥ 2, let Hn be the infinite graph that is the
+one-sum of the n-cube Qn and the infinite path P∞ at vertex 0n . Then,
+perfect state transfer occurs in Hn between the states
+n
+
+1 X j−1
+√
+ζn e({j})
+n
+
+n
+
+and
+
+j=1
+
+1 X j−1
+√
+ζn e([n] \ {j})
+n
+j=1
+
+17
+
+at time π/2
+Proof. By Theorem 7, the inﬁnite invariant subspace of A = A(H) is the
+walk module U0 generated by e∅ (which corresponds to the vertex 0n ). Let
+Wd be the set of vertices of Qn of Hamming weight d. Thus,
+U0 = span{e(∅), Ae(∅), A2 e(∅), . . .}
+= span({e∅ , 1W1 , 1W2 , . . . , 1Wn } ∪ {eu : u ∈ V (P∞ )}).
+The action of A on U0 is given by the eventually-free Jacobi matrix
+
+
+0 n
+1 0 n − 1
+
+
+
+ 2
+
+0
+
+
+
+
+..
+..
+..
+
+
+.
+.
+.
+
+.
+A U0 = 
+
+0 1
+
+
+
+
+n
+0
+1
+
+
+
+1 0 1 . . .
+
+
+.. ..
+. .
+Next, consider a state supported on the singleton subsets of Qn which is
+deﬁned as
+n
+X
+ζnj−1 e({j}).
+ψ1 :=
+j=1
+
+and its walk module
+U1 = span{ψ1 , Aψ1 , A2 ψ1 , . . .}.
+It is clear that U1 is an invariant subspace of A and that U1 ⊂ U0⊥ . The
+latter follows as A is self-adjoint and ψ1 is orthogonal to 1W1 . We now show
+that dim(U1 ) = n − 1 and
+
+
+n−2
+1
+
+n−3
+
+
+
+
+2
+...
+
+
+A U1 ∼
+(6)
+= 
+.
+..
+
+
+.
+
+
+
+1
+n−2
+
+18
+
+To see this, consider the set {ψ1 , ψ2 , . . . , ψn−1 } of orthogonal basis vectors
+for U1 , where
+X
+X
+ψk =
+α(S)e(S), where α(S) =
+ζnj .
+j∈S
+
+S⊂[n]
+|S|=k
+
+Then, for k = 1, . . . , n − 2, we have
+hψk+1 , Aψk i = k
+
+hψk , Aψk+1 i = n − k,
+which shows (6). Thus, it follows A|U1 ∼
+= A(Qn−2 /π), where π is the equitable partition whose cells are the vertices with the same Hamming weight.
+Hence, perfect state transfer occurs in U1 from n−1/2 ψ1 to n−1/2 ψn−1 at
+time π/2 as antipodal perfect state transfer occurs in A(Qn−2 /π) at that
+time.
+In the proof of Theorem 13, the inﬁnite invariant subspace U0 is related to the primary module of the Terwilliger algebra of the n-cube (see
+Terwilliger [28], Deﬁnition 7.2). Our dark subspaces correspond to the irreducible modules orthogonal to this primary module.
+We oﬀer an alternative proof of Theorem 13 which emphasizes the underlying connection with the Lie algebra sl2 C.
+Theorem 14. For integer n ≥ 2, let Hn be the infinite graph that is the
+one-sum of the n-cube Qn and the infinite path P∞ at vertex 0n . Then,
+multiple perfect state transfer occur in Hn .
+Proof. Given the n-cube Qn , recall the standard lowering Ln and raising
+Rn operators on the lattice of subsets of {1, 2, . . . , n}. For subsets A, B ⊂
+{1, 2, . . . , n}, deﬁne (Ln )A,B = 1{|A|=|B|+1∧B⊂A} and Rn = (Ln )T . Now,
+let Hn = Rn Ln − Ln Rn . Notice that A(Qn ) = Ln + Rn . Inductively, it can
+be shown that
+[Rn , Ln ] = Hn ,
+
+[Hn , Rn ] = 2Rn ,
+
+[Hn , Ln ] = −2Ln .
+
+Thus, the homomorphism ρ : sl2 C → End(Vn ), with |Vn | = 2n , where
+ρ(H) = Hn , ρ(X) = Rn , and ρ(Y ) = Ln , is a representation of the Lie
+algebra sl2 C (where H, X, Y ∈ Mat2 (C) are the standard basis of sl2 C).
+This allows us to employ the following standard Lie theoretic argument (see
+[18, 10]).
+19
+
+The eigenvalues of Hn are λ = −n, −n + 2, . . . , n − 2, n. Let Wλ be the
+eigenspace of Hn corresponding to eigenvalue λ. By the properties of ρ as
+a representation of sl2 C, if z ∈ Wλ , then Rn z ∈ Wλ+2 (or 0 if λ = n) and
+Ln z ∈ Wλ−2 (or 0 if λ = −n). Now, let z be an eigenvector in the maximum
+eigenspace Wn . Consider the invariant subspace K0 spanned by the following
+set of orthogonal eigenvectors of Hn . Let zk = Lkn z, k = 0, 1, . . . , n, and set
+K0 = span{z, Ln z, L2n z, . . . , Lnn z}.
+By deﬁnition, the action of Ln on K0 is given by hzj , Ln zk i = 1{j=k+1} , while
+the action of Rn on K0 is given by hzj , Rn zk i = k(n−k)1{j=k−1} . Therefore,
+the action of Ln + Rn on K0 is similar to A(Qn /π) (a Krawtchouk chain of
+length n + 1). Next, we repeat the argument on K0⊥ to extract additional
+Krawtchouk chains. This shows that the entire space Vn can be decomposed
+into the invariant subspaces (or walk modules) as follows:
+M
+Vn =
+Kℓ .
+ℓ≥0
+
+As the action of Ln +Rn (or the adjacency operator of Qn ) on each invariant
+subspace Kℓ is similar to A(Qd /π), for some d ≤ n, perfect state transfer
+occur in all of these Krawtchouk chains.
+
+7.2
+
+Dual-Rail Encoding
+
+We describe a simple idea for constructing perfect state transfer in graphs
+with tails based on the dual-rail encoding in spin chains (see Burgarth and
+Bose [3], and Kay [21] for a relevant survey). Recall that the notation e(x)
+denotes the unit vector corresponding to vertex x.
+Theorem 15. Let G be a graph with perfect state transfer between vertices
+u and v at time τ . Let H be the rooted product P3Y where Y = {G0 , P∞ , G1 }
+with G0 and G1 represent two identical copies of G. Then, H has perfect
+state transfer between the states √12 (e(u0 ) − e(u1 )) and √12 (e(v0 ) − e(v1 )) at
+time τ , where u0 , v0 and u1 , v1 are vertices which correspond to the copies
+of u, v in G0 , G1 , respectively.
+Proof. Let (b, w) denote the vertices
+ in
+ the two copies
+  of G, where b ∈
+1
+0
+{0, 1} and w ∈ V (G). Let e0 =
+and e1 =
+be the standard
+0
+1
+two-dimensional unit vectors. We show there is perfect state transfer in H
+between the states √12 (e0 − e1 ) ⊗ e(u) and √12 (e0 − e1 ) ⊗ e(v) at time τ .
+20
+
+a4
+
+√
+
+3
+
+a3
+
+2
+
+a2
+
+√
+
+3
+
+a1
+
+...
+b4 √
+
+b3
+
+3
+
+2
+
+b2 √
+
+b1
+
+3
+
+en , P∞ , Q
+en } and Q
+en is a
+Figure 7: A rooted product P3Y where Y = {Q
+Krawtchouk chain (quotient of the n-cube). Perfect pair state tranfer occurs
+between √12 (e(a1 ) − e(b1 )) and √12 (e(an ) − e(bn )) at time π/2.
+{G ,P ,G }
+
+Let q0 be the middle vertex of P3 in the rooted product H = P3 0 ∞ 1 .
+Also, let r ∈ V (G) be the designated root vertex of G. Note that A(H) is
+given by
+
+
+A(G)
+O
+e(r)
+
+ O
+A(G) e(r)
+
+A(H) = 
+T
+T
+T
+e(r)
+e(r)
+0
+e1 
+e1 J0
+where the third row and column correspond to vertex q0 . Consider the
+subspaces W − and K deﬁned as
+
+
+1
+−
+W = span √ (e0 − e1 ) ⊗ e(w) : w ∈ V (G)
+2
+and
+K = span {A(H)m e(q0 ) : m = 0, 1, . . .} .
+
+Claim 16. W − is orthogonal to K.
+
+Proof. Let W + be a subspace deﬁned as
+
+
+1
++
+W = span √ (e0 + e1 ) ⊗ e(w) : w ∈ V (G) .
+2
+Suppose the vertex set of P∞ is denoted as {qn : n ≥ 0}. Let W ∞ be deﬁned
+as W ∞ = span{e(qn ) : n ≥ 0}. Notice that
+1
+A(H)e(q0 ) = e(q1 ) + √ (e0 + e1 ) ⊗ e(r).
+2
+Therefore, we see that
+K = W + + W ∞.
+21
+
+Each vector in W − is orthogonal to any vector in W + since √12 (e0 ± e1 ) form
+an orthogonal pair. Moreover, each vector in W − is orthogonal to any e(qn )
+since the vertices of G0 , G1 and P∞ are disjoint from each other.
+Claim 17. W − is an invariant subspace of A(H) and the action of A(H)
+restricted to W − is equivalent to A(G).
+Proof. The action of A(H) on √12 (e0 − e1 ) ⊗ e(w) is given by I2 ⊗ A(G)
+(by the structure of the rooted product H). This shows W − is an invariant
+subspace of A(H) and that the action of A(H) is equivalent to A(G).
+The above two claims show that for some unitary matrix U we have
+
+
+A(Gn )
+O
+−1
+U A(H)U =
+.
+O
+A(H)|K
+This shows that there is perfect state transfer between √12 (e0 − e1 ) ⊗ |ui and
+√1 (e0 − e1 ) ⊗ |vi at time τ .
+2
+
+We remark that the construction used in Theorem 15 applies also to the
+graph G2K2 whose adjacency matrix is I2 ⊗ A(G) + A(K2 ) ⊗ I (that is,
+trading the zero matrix for the identity matrix).
+
+8
+
+Conclusions
+
+This work was motivated by the following question: can state transfer occur
+in a ﬁnite graph which is connected to an inﬁnite graph? We show that
+the answer is aﬃrmative in graphs with tails. As such, our work was inﬂuenced by Golinskii [17] who studied the spectra of graphs with tails. More
+surprisingly, we found that perfect state transfer is possible in graphs with
+tails. Our main observation is that state transfer can occur in the ﬁnite invariant subspace obtained from the decoupling theorem for eventually-free
+Jacobi matrices. It would be interesting to investigate state transfer (or lack
+thereof) in the inﬁnite invariant subspace. In fact, it is possible to replace
+the inﬁnite tail with an arbitrary (but suitably deﬁned) ﬁnite graph. We
+leave this for future work.
+We conclude with the following open questions.
+1. The original motivation for this work is to investigate if spatial search
+works on inﬁnite graphs. Although this question remains open, the
+corresponding problem for discrete-time quantum walk was studied
+by Konno et al. [22].
+22
+
+2. Are there deeper connections lurking between the dark subspaces studied here and the non-primary modules of the Terwilliger algebra?
+b 1/2) has no dark subspace. But, what about
+3. Corollary 8 shows G(n,
+G(n, 1/2)?
+4. What information about the dark (protected) subspace is revealed by
+scattering (as employed by Farhi et al. [9])?
+
+Acknowledgments
+Work partly done while the authors were participants of the workshop
+“Graph Theory, Algebraic Combinatorics, and Mathematical Physics” at
+Centre de Recherches Mathématiques (CRM), Université de Montréal. C.T.
+would like to thank CRM for its hospitality and support during his sabbatical visit. W.X. was supported by NSF travel grant DMS-2212755. We thank
+Chris Godsil for helpful discussions.
+
+References
+[1] N.I. Akhiezer, I.M. Glazman. Theory of Linear Operators in Hilbert
+Space. Dover, 1993.
+[2] S. Bose. Quantum communication through an unmodulated spin chain.
+Physical Review Letters 91(20):207901, 2003.
+[3] D. Burgarth, S. Bose. Conclusive and arbitrarily perfect quantum
+state transfer using parallel spin chain channels. Physical Review A
+71:052315, 2005.
+[4] A. Childs. Universal Computation by Quantum Walk. Physical Review
+Letters 102:180501, 2009.
+[5] M. Christandl, N. Datta, T. Dorlas, A. Ekert, A. Kay, A. Landahl.
+Perfect state transfer of arbitrary states in quantum spin networks.
+Physical Review A 71:032312, 2005.
+[6] S. Cameron, S. Fehrenbach, L. Granger, O. Hennigh, S. Shreshtha, C.
+Tamon. Universal State Transfer on Graphs. Linear Algebra and Its
+Applications 455:115-142, 2014.
+
+23
+
+[7] Q. Chen, C. Godsil. Pair state transfer. Quantum Information Processing 19, 321, 2020.
+[8] X. Chen, R. Mereau, D. Feder. Asymptotically perfect eﬃcient quantum state transfer across uniform chains with two impurities. Physical
+Review A 93:012343, 2016.
+[9] E. Farhi, J. Goldstone, S. Gutmann. A Quantum Algorithm for the
+Hamiltonian NAND Tree. Theory of Computing 4, Article 8, p169-190,
+2008.
+[10] W. Fulton, J. Harris. Representation Theory: A First Course. Springer,
+1991.
+[11] C. Godsil. Association Schemes. unpublished notes, 2010.
+[12] C. Godsil. Controllable Subsets in Graphs. Annals of Combinatorics
+16:733-744, 2012.
+[13] C. Godsil. Sedentary quantum walks. arXiv:1710.11192 [math.CO].
+[14] C. Godsil, B. McKay. A new graph product and its spectrum. Bulletin
+of the Australian Mathematical Society 18:21-28, 1978.
+[15] C. Godsil, B. Mohar. Walk Generating Functions and Spectral Measures of Inﬁnite Graphs. Linear Algebra and Its Applications 107:191206, 1988.
+[16] C. Godsil, G. Royle. Algebraic Graph Theory. Springer, 2001.
+[17] L. Golinskii. Spectra of inﬁnite graphs with tails. Linear and Multilinear
+Algebra 64(11):2270-2296, 2016.
+[18] B. Hall. Lie Groups, Lie Algebras, and Representations, 2nd edition.
+Springer, 2015.
+[19] R. Horn, C. Johnson. Matrix Analysis, 2nd edition. Cambridge, 2013.
+[20] S. Janson, T. Luczak, and A. Ruciński. Random Graphs. Wiley, 2000.
+[21] A. Kay. Perfect, Eﬃcient, State Transfer and Its Applications as
+a Constructive Tool. International Journal of Quantum Information
+8(4):641-676, 2010.
+
+24
+
+[22] N. Konno, E. Segawa, M. Štefaňák. Relation between quantum
+walks with tails and quantum walks with sinks on ﬁnite graphs.
+arXiv:2105.03111 [math-ph].
+[23] T. Le, L. Donati, S. Severini, F. Caruso. How to suppress dark states
+in quantum networks and bio-engineered structures. Journal of Physics
+A: Mathematical and Theoretical 51(36):365306, 2018.
+[24] B. Mohar. The Spectrum of an Inﬁnite Graph. Linear Algebra and Its
+Applications 48:245-256, 1982.
+[25] B. Mohar, W. Woess. A Survey on Spectra of Inﬁnite Graphs. Bulletin
+of London Mathematical Society 21:209-234, 1989.
+[26] S. O’Rourke, B. Touri. On a Conjecture of Godsil Concerning Controllable Random Graphs. SIAM Journal on Control and Optimization
+54(6):3347-3378, 2016.
+[27] W. Rudin. Functional Analysis, 2nd edition. McGraw-Hill, 1991.
+[28] P. Terwilliger. Distance-regular graphs, the subconstituent algebra, and
+the Q-polynomial property. arXiv:2207.07747 [math.CO].
+
+25
+
+

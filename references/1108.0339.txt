@@ -1,0 +1,1611 @@
+arXiv:1108.0339v2 [quant-ph] 29 Dec 2011
+
+Perfect state transfer on quotient graphs
+Rachel Bachman
+Clarkson University
+
+Eric Fredette
+Clarkson University
+
+Jessica Fuller
+Seton Hall University
+
+Michael Landry
+UC Berkeley
+
+Michael Opperman
+Clarkson University
+
+Christino Tamon∗
+Clarkson University
+
+Andrew Tollefson
+University of Nevada at Reno
+October 23, 2018
+
+Abstract
+We prove new results on perfect state transfer of quantum walks on quotient graphs. Since a
+graph G has perfect state transfer if and only if its quotient G/π, under any equitable partition
+π, has perfect state transfer, we exhibit graphs with perfect state transfer between two vertices
+but which lack automorphism swapping them. This answers a question of Godsil (Discrete
+Mathematics 312(1):129-147, 2011). We also show that the Cartesian product of quotient
+graphs k Gk /πk is isomorphic to the quotient graph k Gk /π, for some equitable partition π.
+This provides an algebraic description of a construction due to Feder (Physical Review Letters
+97, 180502, 2006) which is based on many-boson quantum walk.
+Keywords: quantum walk, perfect state transfer, equitable partition, quotient graph.
+
+1
+
+Introduction
+
+Perfect state transfer in continuous-time quantum walk on graphs has received considerable attention in quantum information and computation. This is in large part due to its potential applications
+in quantum information transmission over networks and its role in quantum computation. Recently,
+continuing ideas developed by Childs [9], Underwood and Feder [31] used perfect state transfer to
+show that continuous-time quantum walk is a universal computational model. The notion of perfect
+state transfer was introduced by Bose [7] in the context of information transfer on linear spin-chains.
+His original scheme can be generalized to arbitrary graphs (as described by Albanese et al. and
+Christandl et al. [1, 12, 11]) which we briefly outline in the following.
+Given a weighted graph G on n vertices with adjacency matrix A(G), we imagine a collection
+of n qubits associated with each vertex of G and arranged so that their interaction is governed by
+a Hamiltonian
+HG which depends on the edge structure of G. Here, our collective Hilbert space
+N
+is u∈V C2 which is 2n -dimensional. Suppose an arbitrary one-qubit state |ψi = α0 |0i + α1 |1i is
+located at vertex a of G. Our goal is to move this state to vertex b. For simplicity, we depict a
+as the leftmost qubit whereas b is the rightmost qubit. The initial configuration has the qubit at
+vertex a be in state |ψi and the other qubits are in the |0i state, while the final configuration has
+∗
+
+Contact author: tino@clarkson.edu
+
+1
+
+the qubit at vertex b be in state |ψi with the other qubits being in the |0i state:
+|starti = |ψia ⊗ |0i ⊗ . . . ⊗ |0i ⊗ |0ib = α0 |00 . . . 00i + α1 |10 . . . 00i
+
+|finali = |0ia ⊗ |0i ⊗ . . . ⊗ |0i ⊗ |ψib = α0 |00 . . . 00i + α1 |00 . . . 01i.
+
+(1)
+(2)
+
+The main goal of perfect state transfer is to achieve, at some time t,
+|hfinal|e−itHG |starti| = 1.
+
+(3)
+
+Natural assumptions can be placed on HG which will allow us to view (3) as a continuous-time
+quantum walk on G.
+P
+For example, one typically assumes HG commutes with Z = u∈V Zu , where the latter operator
+counts the number of qubits in the |1i state1 . Note that the eigenvalues of Z are given by λk =
+−n + 2k, for k = 0, 1, . . . , n. Since |00 . . . 00i belongs to the zero eigenspace of HG , we may focus
+on the unitary evolution of |10 . . . 00i under e−itHG . The latter state belongs to the eigenspace Λ1
+of Z corresponding to the eigenvalue λ1 = −n + 2 (since it has exactly one qubit in the |1i state).
+Thus,
+(4)
+e−itHG (α0 |00 . . . 00i + α1 |10 . . . 00i) = α0 |00 . . . 00i + α1 e−itHG |10 . . . 00i.
+Since HG and Z commute, the eigenspace Λ1 is HG -invariant; this is because if |zi is an eigenvector
+of Z with eigenvalue λ, then so is HG |zi. Thus, the time evolution of exp(−itHG )|10 . . . 00i stays
+inside the eigenspace Λ1 . Moreover, we have the following basis states for Λ1 :
+|1i = |100 . . . 0i,
+
+|2i = |010 . . . 0i,
+
+...,
+
+|ni = |000 . . . 1i
+
+(5)
+
+which forms a natural correspondence with the vertices of G; thus, |ai = |1i and |bi = |ni.
+Furthermore, suppose HG agrees with A(G) on the subspace Λ1 where hv|HG |ui equals the weight
+ωu,v of the edge (u, v), for all u, v ∈ VP
+. Examples of HG satisfying these assumptions include
+the XY exchange Hamiltonian HG = 21 (u,v)∈E(G) ωu,v (Xu Xv + Yu Yv ), as well as the Heisenberg
+exchange (which is related to the Laplacian of G). This shows that the 2n -dimensional time
+evolution e−itHG |starti can be viewed as a n-dimensional time evolution e−itA(G) |ai since the
+former is confined to the single-excitation subspace Λ1 . Further background on these connections
+may be found in [7, 11, 28, 3].
+By the preceding arguments, we may study perfect state tranfer (3) as a continuous-time quantum walk on the graph G (see Farhi and Gutmann [14]). Thus, without loss of generality, we say a
+graph G = (V, E) has perfect state transfer (PST) from a to b at time t if
+|hb|e−itA(G) |ai| = 1,
+
+(6)
+
+where A(G) is the adjacency matrix of G (thus, focusing on the XY interaction model). This allows
+us to investigate mathematical properties of the graph G which enable such phenomena to occur.
+The reduction to quantum walk on graphs was a crucial element in the early works on perfect state
+transfer (see [7, 1, 12, 11]).
+Christandl et al. [12, 11] showed that taking an k-fold Cartesian graph product of either a 2path or a 3-path (that is, K2 or P3 ) with itself yields a high-diameter graph which has perfect state
+transfer. This follows since both K2 and P3 have antipodal perfect state transfer and because the
+Cartesian product operation preserves perfect state transfer. They also made a crucial connection
+1
+
+Here, Zu denotes an n-fold tensor product of identity matrices except at position u which has the Pauli Z matrix;
+the same convention applies to the other Pauli matrices.
+
+2
+
+Figure 1: The Cartesian product construction for perfect state transfer (PST): (a) K23 ; (b) P32
+(see Christandl et al. [11]). Antipodal PST occurs between vertices marked white.
+
+between hypercubes and weighted paths using the so-called path-collapsing argument2 . Christandl
+et al. [11] also observed that the n-path Pn , for n ≥ 4, has no antipodal perfect state transfer but
+a suitably weighted version of it has perfect state transfer. The weighting scheme on Pn is derived
+from a path-collapsed (n − 1)-cube.
+In an intriguing work, Feder [15] generalized the construction of the weighted paths with perfect
+state transfer described by Christandl et al. in [12, 11]. His construction used a many-boson
+quantum walk on a single primary graph. He showed that this induced a single-boson quantum
+walk on a secondary graph and that the secondary graph has perfect state transfer if the primary
+graph does. In this construction, the weighted path of length n is obtained from a (n − 1)-boson
+quantum walk on K2 .
+In algebraic graph theory, the main question is to find a characterization of graphs which exhibit
+perfect state transfer. Some progress on specific families of graphs were given by Bernasconi et al. [5]
+and by Cheung and Godsil [8] for hypercubic graphs and by Bašić and Petković [4] for circulant
+graphs. Although a general characterization remains beyond the reach of current methods, strong
+general results towards this goal were recently proved by Godsil [18, 19]. In one of his results,
+Godsil proved that a necessary condition for G to have perfect state transfer between vertices a
+and b is that they are cospectral, that is, the vertex-deleted subgraphs G\a and G\b are isomorphic.
+This intuitively suggests that the neighborhoods around a and b must look similar. In fact, prior to
+this work, all known examples of graphs with perfect state transfer between vertices a and b admit
+an automorphism which maps a to b. In [24], Kay proved that the latter property is necessary for
+paths, while in [18], Godsil asked if this necessary condition holds for any graph.
+Our goal in the present work is to explore the role of quotient graphs in perfect state transfer.
+Since quotient graphs naturally arise in the context of equitable partitions, we use this formalization to capture the idea behind path-collapsing arguments [12, 11, 10]. We argue that equitable
+partitions provide the most natural way to view these arguments since the resulting proofs are more
+transparent. Moreover, equitable partitions have been studied extensively in algebraic graph theory
+(see Godsil and McKay [20] and Godsil and Royle [21]) and have a well-established collection of
+results which we can build upon.
+A main observation we use throughout is the following statement which admits a simple proof:
+a graph G has perfect state transfer if and only if its quotient graph G/π modulo an equitable
+partition π has perfect state transfer. Although weaker forms of this statement had appeared in
+different guises before, we give a simple and direct proof using the machinery of equitable partitions.
+The necessary condition was used by Christandl et al. [12, 11] to establish that certain weighted
+paths have perfect state transfer (in contrast to its unweighted variants). Childs et al. [10] used
+2
+
+This argument was used earlier by Childs et al. [10] in the context of exponential algorithmic speedup for a graph
+search problem.
+
+3
+
+√
+
+√
+3
+3
+√
+√
+√ √
+4
+2 2
+4
+√ √
+√ √
+√
+√
+3
+1 2
+2 1
+3
+√
+
+√
+2
+√
+2
+
+1
+
+√
+2
+1
+
+√
+2
+
+√
+4
+4
+√
+√
+√ √
+6
+3 3
+6
+√ √
+√
+√
+√ √
+6
+2 4
+4 2
+6
+√
+√ √
+√ √
+√
+√ √
+4
+1 3
+2 2
+3 1
+4
+
+Figure 2: Feder’s weighted lattice PST graphs obtained from k-boson quantum walks on P3 with
+k = 2, 3, 4 (see Feder [15]). Equivalently, these are the quotient graphs P3k /π (see Theorem 8).
+Antipodal PST occurs between vertices marked white.
+
+the sufficient condition to analyze hitting times of specific graphs related to binary trees. We will
+use the backward implication of the equivalence to construct new perfect state transfer graphs. In
+our first application, we use this lifting property to construct a graph with perfect state transfer
+between two vertices but has no automorphism which maps one vertex to the other. This answers
+the aforementioned question posed by Godsil [18].
+Using equitable partitions, we also provide an algebraic framework to Feder’s construction. We
+prove that the secondary graph obtained from a k-boson quantum walk on a primary graph G is
+equivalent to a quotient of the k-fold Cartesian product of G, that is, Gk /π, for some equitable
+partition π. This equivalence is related to works by Audenaart et al. [3] on symmetric powers of
+graphs and by Osborne [28] on wedge product on graphs. Our work differs from [3] in that we
+preserve diagonal entries and from [28] in that we work in a symmetric vector space (rather than
+exterior vector space). A common thread in all these works is the use of algebraic graph theory to
+provide an explicit connection between many-particle and single-particle quantum walks. Another
+related work along the same lines was given in [32]. In our algebraic formalism, we employ a model
+of many-particle quantum walk used by Gamble et al. [16] and by Smith [29] in their works on
+graph isomorphism.
+Finally, we explore Feder’s construction when distinct primary graphs with commensurable
+perfect state transfer (or even periodic) times are used. We prove a composition theorem which
+shows partial commutativity between the Cartesian product and quotient operators. This mixed
+construction is akin to perfect state transfer graphs obtained using weak and lexicographic products
+(see Ge et al. [17]) and graph joins (see Angeles-Canul et al. [2]). We found new families of perfect
+state transfer graphs using cube-like graphs (which were studied by Bernasconi et al. [5] and by
+Cheung and Godsil [8]). The graphs derived from these cube-like graphs are different from weighted
+graphs obtained in Feder’s construction.
+Our proofs rely on basic ideas from algebraic graph theory and exploit spectral properties of
+the underlying graphs.
+
+2
+
+Preliminaries
+
+For a logical statement S, the expression [[S]] equals 1 if S is true and 0 otherwise. We use [n] to
+denote {1, 2, . . . , n}. The all-one m × n matrix is denoted by Jm,n ; we also use jn to denote the
+all-one n-dimensional column vector.
+The graph G = (V, E) we study are finite, undirected, and connected. The adjacency matrix
+A(G) of G is defined as A(G)u,v = [[(u, v) ∈ E]]. A graph G is called k-regular if each vertex
+4
+
+u of G has exactly k adjacent neighbors. We say a graph G is (n, k)-regular if it has n vertices
+and is k-regular. The distance d(a, b) between vertices a and b is the length of the shortest path
+connecting them. For weighted graphs G = (V, E, ω), where ω : E → R+ is the weight function on
+edges, we let A(G)u,v = ω(u, v) be the edge weight of (u, v).
+An automorphism τ of a graph G = (V, E) is a bijective map on the vertex set V that respects
+the edge relation E; that is, (u, v) ∈ E if and only if (τ (u), τ (v)) ∈ E. If P is a permutation matrix
+which represents an automorphism τ of G, then P commutes with A(G), or P A(G) = A(G)P . The
+automorphism group of G is denoted Aut(G).
+Standard graphs we consider include complete graphs Kn , paths Pn , and Cayley graphs. For
+a given group G and a subset S ⊆ G, the Cayley graph X(G, S) has the group G as its vertex set
+where two group elements g and h are adjacent if gh−1 ∈ S. For X(G, S) to be connected, we
+require S to be a generating set of G. If S is closed under taking inverses, that is, S −1 = S, then
+X(G, S) is undirected. An n-vertex circulant graph G is a Cayley graph X(Zn , S) of the cyclic
+group of order n. Known examples of circulants include complete graphs Kn and cycles Cn .
+The complement of a graph G = (V, E), denoted G, is a graph where u is adjacent to v if
+and only if (u, v) 6∈ E, for u 6= v. The Cartesian product G  H is a graph defined on the vertex
+set V (G) × V (H) where (g1 , h1 ) is adjacent to (g2 , h2 ) if either g1 = g2 and (h1 , h2 ) ∈ EH , or
+(g1 , g2 ) ∈ EG and h1 = h2 . The adjacency matrix of G  H is A(G) ⊗ I + I ⊗ A(H). The ndimensional hypercube (or n-cube) Qn is defined recursively as Q1 = K2 and Qn = K2  Qn−1 ,
+for n ≥ 2. Note Qn is simply the Cayley graph X(Zn2 , S), where S is the standard generating set
+for Zn2 .
+The join G + H is a graph defined on V (G) ∪ V (H) obtained by taking two disjoint copies of
+G and H and by connecting all vertices of G to all vertices of H. The cone of a graph G is defined
+as K1 + G whereas the double cone of G is given by K 2 + G.
+U
+A (vertex) partition π of a graph G = (V, E) given by V = m
+j=1 Vj is called equitable if the
+number of neighbors in Vk of any vertex in Vj is a constant dj,k , independent of the choice of that
+vertex (see [21]). We call each component Vj a partition or a cell of π. We say a graph G has an
+equitable distance partition π with respect to vertices a and b if both a and b belong to singleton
+cells. Further background on algebraic graph theory may be found in the standard monographs by
+Biggs [6] and by Godsil and Royle [21].
+Continuous-time quantum walk For a graph G = (V, E) with adjacency matrix A(G), a
+continuous-time quantum walk on G is defined through the time-dependent unitary matrix
+UG (t) = exp(−itA(G)).
+
+(7)
+
+This model was introduced by Farhi and Gutmann [14]. We say that G has perfect state transfer
+(PST) from vertex a to vertex b at time t if
+|hb|UG (t)|ai| = 1,
+
+(8)
+
+where |ai, |bi denote the unit vectors corresponding to the vertices a and b of G, respectively. The
+graph G has perfect state transfer if there exist vertices a and b in G and time t for which Equation
+(8) is true. We call a graph G periodic at vertex a if it has perfect state transfer from a to itself at
+some time t > 0. Further background on quantum walks and perfect state transfer may be found
+in the surveys [25, 26] and [24, 18, 30, 27].
+
+5
+
+2
+√
+
+2
+3
+
+π
+
+2
+√
+
+∼
+=
+
+
+
+√
+
+3
+
+3
+
+Figure 3: The cube-like graph X(Z3 , {100, 010, 001, 011}) (see Bernasconi et al. [5]). Its quotient
+graph is a Cartesian product of a perfect state transfer and a periodic graph (both at time π/2).
+
+3
+
+Equitable partitions and quotient graphs
+
+Christandl et al. [11] showed that certain weighted paths have perfect state transfer by appealing
+to a path-collapsing argument. Their argument is based on the fact that the n-cube Qn has perfect
+state transfer and it can be collapsed to a weighted path. So they deduce that weighted paths have
+perfect state transfer since the underlying n-cube Qn has this property. This argument was used
+in the opposite direction by Childs et al. [10] in the context of exponential algorithmic speedup
+of a quantum walk search algorithm. Here, they deduced properties of the underlying unweighted
+graphs based on properties of the weighted paths.
+A natural way to view this path-collapsing argument is via equitable partitions. The benefit of
+this is evident in the simple algebraic equivalence of perfect state transfer between a graph and its
+quotient. The notion of equitable partition was introduced by Godsil and McKay [20] in their work
+on walk-regular graphs. Our treatment here follows closely the ones given by Godsil and Royle [21]
+and by Godsil [19, 18].
+U
+Let G = (V, E) be a graph with an equitable partition π = m
+k=1 Vk into m cells. For each
+j, k ∈ [m], let dj,k be the number of neighbors in Vk of any vertex in Vj (which is independent of the
+choice of the vertex). The partition matrix P associated with π is defined as the |V |×m matrix where
+Px,k equals 1 if vertex x belongs to partition Vk , and equals 0 otherwise; that is, Px,k = [[x ∈ Vk ]].
+The quotient graph G/π defined in the literature is a weighted directed graph whose adjacency
+matrix is defined as B(G/π)j,k = dj,k . A fundamental fact here is that A(G)P = P B(G/π) (see
+[21], Lemma 9.3.1, page 196).
+We focus on quotient graphs which are undirected. So, we consider the normalized partition
+matrix Q defined as
+m
+X 1
+p
+P |kihk|.
+(9)
+Q=
+|Vk |
+k=1
+Note that Qx,k = |Vk |−1/2 Px,k , and so Q is simply P with each column normalized. Moreover,
+we still have the fundamental relation A(G)Q = QA(G/π), where A(G/π) is a symmetric matrix
+defined by
+p
+A(G/π)j,k = dj,k dk,j .
+(10)
+
+So, A(G/π) describes a weighted graph G/π which is an undirected quotient graph of G with respect
+to the equitable partition π. We state further useful properties of the partition matrix Q.
+Lemma 1 (Godsil [19, 18]) The following properties on Q hold:
+1. QT Q = Im
+6
+
+2. QQT = diag(|Vk |−1 J|Vk | )m
+k=1 .
+3. QQT commutes with A(G).
+4. A(G/π) = QT A(G)Q.
+The following theorem relates the perfect state transfer properties of a graph G and its quotient
+G/π with respect to an equitable distance partition π. A similar statement appeared in Ge et
+al. [17] but our proof here is simpler and more direct.
+Theorem 2 Let G = (V, E) be a graph with an equitable partition π where vertices a and b belong
+to singleton cells. Then, for any time t
+hb|e−itA(G) |ai = hπ(b)|e−itA(G/π) |π(a)i.
+
+(11)
+
+Therefore, G has perfect state transfer from a to b at time t if and only if G/π has perfect state
+transfer from π(a) to π(b) at time t.
+Proof Since A(G) commutes with QQT , we have (QQT A(G))k = A(G)k QQT for k ≥ 1. Given
+that a and b are in singleton cells, |π(a)i = QT |ai and |π(b)i = QT |bi. Thus, we have
+T
+
+hπ(b)|e−itA(G/π) |π(a)i = hπ(b)|e−itQ A(G)Q |π(a)i
+#
+"∞
+X (−it)k
+T
+k
+(Q A(G)Q) QT |ai
+= hb|Q
+k!
+k=0
+#
+"∞
+X (−it)k
+(QQT A(G))k QQT |ai,
+= hb|
+k!
+k=0
+−itA(G)
+
+= hb|e
+
+(12)
+(13)
+by regrouping
+
+QQT |ai,
+
+(14)
+(15)
+
+which proves the claim since QQT |ai = |ai because a belongs to a singleton cell.
+
+4
+
+Lifting graph constructions
+
+In this section, we focus on the backward implication of Theorem 2. This is a lifting theorem which
+states if a quotient graph G/π1 has perfect state transfer, for some equitable partition π1 , then the
+graph G itself must have perfect state transfer. This also implies that any quotient of G, say G/π2 ,
+for any other equitable partition π2 , has perfect state transfer. We use this property to construct
+new graphs with perfect state transfer.
+In [18], Godsil asked the following question: if a graph G has perfect state transfer between
+vertices a and b, does there exist an automorphism of G which maps a to b? We contrast this to
+Kay’s notion of a symmetry operator S on G which is a unitary operator satisfying SA(G) = A(G)S
+and S|ai = |bi. In this latter case, Kay [24] proved that such an operator S always exists; but
+Godsil’s question went further and asked if there always exists such an S which is also a graph
+automorphism of G. The question is interesting since, prior to this work, all known graphs with
+perfect state transfer exhibit this automorphism property.
+We answer Godsil’s question in the negative by constructing a perfect state transfer graph which
+lacks the requisite automorphism. Our construction proceeds by lifting a simple weighted 4-vertex
+path onto a glued double-cone graph. The latter graph was considered earlier in Ge et al. [17] but
+in a completely different context. We start with a simple observation.
+7
+
+α
+
+G1
+
+G2
+
+a
+1
+
+b
+
+G
+
+α
+
+a
+
+α
+
+G
+
+α
+
+√
+
+α
+
+√
+
+α
+
+√
+
+α
+
+√
+
+α
+
+√
+
+α
+
+√
+
+α
+
+1
+√
+
+2
+
+√
+
+2
+
+Figure 4: Lifting small PST paths: (i) P4 (a, b) and its lifted graph K1 + G1 ◦ G2 + K1 , where both
+√
+√
+connection between them is
+(b n)-regular; G1 and
+G1 and G2 are (n, a n)-regular graphs and the
+√
+√
+G2 need not be isomorphic. Here a = 2k2 / 4k2 − 1 and b = 2(k2 − 1)/ 4k2 − 1, or vice versa,
+with PST time t = π/2. (ii) General weighting on P5 (α) and two
+√ of its lifted graphs, where G is
+the empty graph and α = 4k2 − 1, k ≥ 1, with PST time t = π/ 2. Note k = 1 yields a quotient
+of the 4-cube Q4 .
+
+Fact 3 Let P4 (a, b) be a weighted path parametrized by edge-weights a and b (see Figure 4(i))
+whose adjacency matrix is:
+
+
+0 1 0 0
+1 a b 0
+
+A=
+(16)
+0 b a 1
+0 0 1 0
+q
+Let ∆± = 14 (a ± b)2 + 1. Then, P4 (a, b) has antipodal (vertex 1 to 4) perfect state transfer at
+time t if either
+(a) cos(t∆+ ) cos(t∆− ) = +1 and sin(tb/2) = ±1; or
+(b) cos(t∆+ ) cos(t∆− ) = −1 and cos(tb/2) = ±1.
+2 + 1. The eigenvalues of P (a, b) are given by α = k ± ∆
+Proof Let k± = 12 (a ± b) and ∆2± = k±
+4
+±
++
++
+and β± = k− ± ∆− with the following corresponding eigenvectors
+
+|α± i =
+
+T
+1 
+1 α± α± 1 ,
+M±
+
+|β± i =
+
+T
+1 
+1 β± −β± −1 ,
+N±
+
+(17)
+
+2 ) are normalization factors. Assuming the antipodal
+where M±2 = 2(1 + α2± ) and N±2 = 2(1 + β±
+vertices are u and v, we have:
+
+hv|e−itA |ui =
+
+X e−itα±
+±
+
+M±2
+
+8
+
+−
+
+X e−itβ±
+±
+
+N±2
+
+.
+
+(18)
+
+Since (M+ M− )2 = 16∆2+ and (N+ N− )2 = 16∆2− , we get
+X e−itα±
+±
+
+M±2
+
+X e−itβ±
+±
+
+N±2
+
+=
+=
+
+
+
+k+
+e−itk+
+sin(t∆+ )
+cos(t∆+ ) + i
+2
+∆+
+
+
+k−
+e−itk−
+sin(t∆− ) .
+cos(t∆− ) + i
+2
+∆−
+
+(19)
+(20)
+
+This proves the claim.
+The next theorem shows a construction of a family of graphs with perfect state transfer between
+antipodal vertices but which has no automorphism exchanging the two vertices.
+Theorem 4 For m ≥ 2, let n = 15 · 22(m−2) , a = 6 · 2m−2 , and b = 8 · 2m−2 . Let Gn be the family
+of graphs of the form K1 + An ◦ Bn + K1 , where An = Circ(n, {±(⌊n/2⌋ + 1), . . . , ±(⌊n/2⌋ + a/2)})
+and Bn = Circ(n, {±1, . . . , ±a/2}) are two non-isomorphic families of n-vertex a-regular circulant
+graphs, and the connection An ◦ Bn is given by a graph Cn which is an arbitrary n-vertex circulant
+of degree b. Thus, the adjacency matrix of Gn is given by:
+
+
+0
+0
+0 jTn
+jn An Cn 0 
+
+
+(21)
+ 0 CnT Bn jn 
+0
+0
+jTn 0
+
+Let an and bn be the antipodal vertices of Gn . Then Gn has perfect state transfer between an and
+bn but there is no automorphism τ ∈ Aut(Gn ) with τ (an ) = bn .
+Proof The graph Gn has a path-like structure with four layers where the two endpoint vertices
+have degree n each and the middle two “vertices” are a-regular graphs (given by An and Bn ) which
+are connected to each other through a b-regular structure (given by Cn ). Thus, its quotient graph is
+√
+a weighted P4 whose endpoint vertices are connected by edges of weight n to the middle vertices;
+and, the two middle vertices have self-loops with weight a each and are connected to each other
+with an edge of weight
+√ b; see
+√ Figure 4. After normalizing the outer two edges to unit weights, we
+∼
+get Gn /π = P4 (6/ 15, 8/ 15), where π is the equitable partition where the antipodal vertices
+belong to singleton cells.
+By Fact 3, the quotient graph Gn /π has antipodal perfect state transfer. Therefore, we know Gn
+has antipodal perfect state transfer by a lifting argument via Theorem 2. It remains to show that
+the graphs An and Bn used to construct Gn are nonisomorphic. This holds because Bn contains
+too many triangles whereas An has too few.
+A triangle in a circulant Circ(Zn , S) is given by d1 + d2 + d3 ≡ 0 (mod n) where d1 , d2 , d3
+belong to the generating set S. It is clear Bn has at least two triangles using d1 = d2 = ±1 and
+d3 = ∓2. For An , we first consider the case when m > 2 or when n is even. Each generator of An
+is of the form n/2 ± j, where j ∈ {1, . . . , a/2}. In this case, d1 + d2 + d3 ≡ n/2 + (j1 + j2 + j3 ) 6≡ 0
+(mod n), since j1 + j2 + j3 is at most 3a/2 or is at least −3a/2 and 3a/2 < n/2 by the choice of n
+and a. Finally, if m = 2, each vertex of An is contained in exactly one triangle, by inspection.
+Thus, Gn has no automorphism which maps an to bn (the two antipodal vertices of Gn ), since
+otherwise this automorphism will induce an isomorphism between An and Bn . This is because
+this automorphism must provide an isomorphism between the neighborhoods of an and of bn –
+which in our example are simply the graphs An and Bn , respectively. This is impossible since An
+9
+
+a0
+
+a14
+
+b0
+
+b14
+
+a1
+
+b2
+
+b13
+
+a2
+
+a13
+
+b1
+
+a12
+
+a3
+
+b12
+
+b3
+
+a11
+
+a4
+
+b11
+
+b4
+
+a10
+
+b10
+
+a5
+a9
+
+b9
+
+a6
+a8
+
+b5
+b6
+b8
+
+a7
+
+b7
+
+Figure 5: The graphs A2 and B2 used for K1 + A2 ◦ B2 + K1 in Theorem 4.
+
+and Bn are non-isomorphic.
+Our lifting technique can be applied to other families of small weighted paths.
+Fact 5 Let P5 (a, b) be a weighted path (see Figure 4(ii)) whose adjacency matrix is:
+
+
+0 a 0 0 0
+a 0 b 0 0 
+
+
+
+A=
+0
+b
+0
+b
+0
+
+
+ 0 0 b 0 a
+0 0 0 a 0
+
+(22)
+
+√
+√
+Let ∆ = a 1 + b2 . Then, P5 (a, b) has antipodal perfect state transfer
+√ at time t if a = 2,
+cos(at) = −1 and cos(∆t) = 1. Moreover, these conditions hold with b = 4k2 − 1, for k ≥ 1.
+Proof The eigenvalues of A are 0, ±a and ±∆ with the following corresponding eigenvectors:
+|0i =
+|a± i =
+|∆± i =
+
+1
+p
+
+2(1 + 1/b2 )
+
+
+T
+1 0 −a/b 0 1
+
+T
+1
+∓1 −1 0 +1 ±1
+2
+T
+1 
+1 ±∆/a ab ±∆/a 1
+2∆/a
+
+(23)
+(24)
+(25)
+
+√
+The choice of a = 2 is determined
+by the eigenvector form of |∆± i. We leave a as a variable
+√
+whenever possible but use a = 2 if it leads to simpler expressions. If the antipodal vertices are
+denoted u and v, we have
+hv|e−itA |ui =
+
+cos(at)
+cos(∆t)
+b2 + cos(∆t) cos(at)
+b2
+−
++
+=
+−
+.
+2(1 + b2 )
+2
+2(1 + b2 )
+2(b2 + 1)
+2
+
+10
+
+(26)
+
+To get perfect
+from u to v, it suffices to require cos(∆t)
+√ = 1 and cos(at) =√−1.
+√ state transfer √
+Since a = 2, we have t = π/ 2. The condition cos(∆t) = 1 with b = 4k2 − 1 and t = π/ 2 is
+equivalent to cos(2πk) = 1, which holds for any k ≥ 1.
+
+√ √
+Remark: Fact 5 shows that P5√
+( 2,√ 4k2 − 1), where k ≥ 1, is a family of perfect state transfer
+paths whose first member P5 ( 2, 3) is simply the quotient of the cube Q4 = K24 . Figure 4
+shows an example of two lifted graphs obtained from this family.
+
+5
+
+Quotient graph constructions
+
+Feder [15] described an intriguing construction of perfect state transfer graphs using many-boson
+quantum walks. First, we review the basic ideas of this construction, and then we describe its
+algebraic characterization using quotient graphs.
+Let G = (V, E) be a graph with perfect state transfer which we will call the primary graph. For a
+positive integer k, consider a process of k bosons performing a quantum walk on G. A configuration
+of these k bosons is given by a collection of numbers {nv : v ∈ V }, where nv represents the number
+of bosons located at vertex v, with 0 ≤ nv ≤ k. The sum of these numbers must be k, that is,
+P
+v∈V nv = k, since there is exactly k bosons at all times. So, a natural choice of basis states for
+the configurations of the k-boson quantum walk is |nu1 , nu2 , . . . , nun i, where V = {u1 , . . . , un } is
+the vertex set of G. The set of these basis states forms a vertex set inPa so-called secondary graph.
+In [15], Feder used a nearest-neighbor hopping Hamiltonian H = (u,v) a†u av , where au and a†u
+are the bosonic annihilation and creation operators.
+The interaction term between the two basis
+p
+states |nu , nv , nW i and |nu − 1, nv + 1, nW i is nu (nv + 1), where nu ≥ 1 and W = V \ {u, v}. We
+summarize this construction in the following.
+Definition 1 (Feder’s graph [15]) Let G = (V, E) be a graph and let k ≥ 1 be N
+a positive P
+integer. Let
+G = (V, E, ω) be a weighted graph whose vertex set V is the basis states |nV i = {|nu i p
+: u nu = k}
+and whose edge set E is the weighted pairs ω(|nu , nv , nW i, |nu − 1, nv + 1, nW i) = nu (nv + 1),
+assuming nu ≥ 1, where W = V \ {u, v}. We call G the secondary graph of G with k bosons,
+denoted by G⊙k .
+A nice property of Feder’s construction is that it generalizes the weighted paths of Christandl et
+al. [12, 11]. As noted earlier, the latter is based on a path-collapsing argument of the n-cube. This
+yields a weighted path Pn+1 on the vertex set {0, 1, . . . , n} where the edge weight of (j, j + 1) is
+p
+(j + 1)(n − j). In Feder’s notation, we have Pn+1 = K2 ⊙n . By recursion, this generated various
+infinite families of graphs with perfect state transfer, with connections to high-dimensional Platonic
+solids, such as parallelepipeds, hypertetrahedra, hyperoctahedra (see [15]).
+Algebraic characterization Our aim in this section is to cast Feder’s construction in an algebraic framework. Here, we adopt the explicit many-boson quantum walk model used by Gamble et
+al. [16] and Smith [29]. The Hamiltonian of the k-boson quantum walk in this model is given by
+
+
+X
+1
+Pα  A(Gk ),
+(27)
+HkB = − 
+k!
+σ∈Sk
+
+where Sk is the symmetric group of all permutations on k elements. Each permutation σ ∈ Sk
+induces the following natural group action on the elements of V k ,
+σ ◦ (x1 , x2 , . . . , xk ) = (xσ(1) , xσ(2) , . . . , xσ(k) ).
+11
+
+(28)
+
+π
+
+π
+√
+
+3
+
+√
+
+4
+
+√
+√
+
+√
+
+3
+
+2
+
+2
+
+1
+
+√
+
+2
+
+1
+
+√
+
+2
+
+Figure 6: The Cartesian product graphs K23 and P32 and their quotients under equitable partitions, whose cells are orbits of S3 and S2 acting on the respective vertex sets.
+
+We denote the latter simply as σ(x), whenever x = (x1 , . . . , xk ). So, the permutation matrix Pσ is
+an |V |k × |V |k matrix defined as:
+hx|Pσ |yi = [[y = σ(x)]].
+(29)
+
+The time evolution of the k-boson quantum walk is then given by UkB = e−itHkB . This description captures the intuition that each boson is performing a quantum walk on its own copy of
+the graph G but collectively they are performing a quantum walk on Gk . Next, we show that the
+symmetrization operator in Equation (27) induces an equitable partition on Gk .
+Lemma 6 Let G = (V, E) be a graph and k ≥ 1 be an integer. Then, the operator
+S=
+
+1 X
+Pσ ,
+k!
+
+(30)
+
+σ∈Sk
+
+which acts on the set V k , defines an equitable partition π of Gk . Moreover, S equals QQT , where
+Q is the normalized partition matrix of π.
+Remark: Osborne [28] considered a related operator which includes an alternating permutation
+sign in the summation. Both operators correspond to symmetrization or skew-symmetrization in
+a symmetric or exterior vector spaces, respectively (see [13], page 452).
+Proof Consider a vertex partition π =
+
+U
+
+k defined by the cells
+x Ox of the product graph G
+
+Ox = {y ∈ V k : ∃σ ∈ Sk , σ(x) = y}.
+
+(31)
+
+Each cell Ox is an orbit of Sk acting on the vertex set V (Gk ) = V k . To show π is equitable, let
+x and y be adjacent vertices in Gk . This implies that there is a unique index i for which xi is
+adjacent to yi in G and xj = yj for all other j 6= i (this can be shown using induction on k). Now,
+let S be the collection of indices where xi appears in x; note i ∈ S. Consider a permutation τ
+which swaps i with j ∈ S \ {i}. Then, x is also adjacent to τ (y); moreover, τ (y) ∈ Oy . Thus, x has
+|S| neighbors in Oy . Since x is an arbitrary element of Ox , every element in Ox has |S| neighbors
+in Oy . This shows π is equitable.
+12
+
+|22i
+2-boson
+
+|12i
+|20i
+
+|11i
+
+|10i
+
+|002i
+|21i
+|02i
+
+π
+
+|020i
+
+|01i
+|00i
+
+|011i
+|110i
+
+|101i
+
+|200i
+
+Figure 7: The 2-boson walk on P3 , its Cartesian product representation P32 , and the Feder diamond
+graph D6 = P3 ⊙2 ∼
+= P32 /π. Antipodal PST occur throughout between vertices marked white.
+
+From the definition of Pσ in Equation (29), we have:
+"
+#
+1 X
+1 X
+1
+1
+hx|
+Pσ |yi =
+[[y = σ(x)]] = | Stab(x)|[[y ∈ Ox ]] =
+[[y ∈ Ox ]]
+k! σ
+k! σ
+k!
+|Ox |
+
+(32)
+
+where Stab(x) = {σ ∈ Sk : σ(x) = x} is the stabilizer of x, which is the set of permutations which
+fix x. The last equality follows from |Ox || Stab(x)| = k!, since the size of the orbit of x is the index
+of the stabilizer subgroup of x (see Hungerford [22], Theorem 4.3, page 89). On the other hand,
+the partition matrix Q of π is defined as hx|Q|ji = |Vj |−1/2 [[x ∈ Vj ]]. Thus, we have
+hx|QQT |yi =
+This proves our second claim that S = QQT .
+
+1
+[[y ∈ Ox ]].
+|Ox |
+
+(33)
+
+By Lemma 6, the unitary evolution UkB of the k-boson quantum walk admits a simpler description.
+Lemma 7 (see [29]) The
+unitary evolution
+of the k-boson quantum walk on a graph G using the
+i
+h P
+1
+k
+Hamiltonian HkB = − k! σ∈Sk Pα A(G ), is given by
+"
+#
+1 X
+UkB =
+(34)
+Pσ (eitA(G) )⊗k .
+k! σ
+1 P
+Proof First, we note that ( d1 Jd )m = d1 Jd , for any d, m ≥ 1. Let S = k!
+σ Pσ be the “symmetrizing”
+operator defined in Equation (30). By Lemma 1 and Lemma 6, we have S = QQT and it is a block
+diagonal matrix containing all-one submatrices. The block diagonal property of S implies that
+Sm = S, for any m ≥ 1. Moreover, again by Lemma 1, S commutes with A(Gk ). Therefore,
+UkB = exp(−itHkB ) = exp(it SA(Gk ))
+∞
+X
+(it)m m
+S A(Gk )m ,
+since S commutes with A(Gk )
+=
+m!
+
+(35)
+(36)
+
+m=0
+
+= S exp(itA(Gk )),
+
+since Sm = S, for m ≥ 1
+
+(37)
+
+This proves the claim since exp(itA(Gk )) = (eitA(G) )⊗k .
+
+The next theorem describes our main algebraic characterization of Feder’s construction. We show
+that the graph G⊙k is a quotient graph of the k-fold Cartesian product Gk . Moreover, it shows if
+G has perfect state transfer, then so does G⊙k , which follows immediately from Theorem 2.
+13
+
+Theorem 8 Let G = (V, E) be a graph and k be a positive integer. Then,
+G⊙k ∼
+= Gk /π,
+
+(38)
+
+where π is an equitable partition of Gk defined by the cells Ox = {y : ∃σ ∈ Sk , σ(x) = y}.
+Moreover, if G has perfect state transfer then so does G⊙k , for any positive integer k.
+Proof Let G = (V, E) be the graph G⊙k described in Definition 1, where V is the set of |V |dimensional vectors whose entries are non-negative integers that sum to k. For x ∈ V k , let n[x] be
+a |V |-dimensional vector whose u-th entry, for u ∈ V , is given by
+n[x]u = |{i ∈ [k] : xi = u}|,
+
+(39)
+
+which is the number of occurrences of vertex u in x. Consider the map φ : V (Gk ) → V defined
+by φ(x) = n[x]. By definition of Ox , we have n[y] = n[x] for all y ∈ Ox . So, we may view φ as a
+mapping from V (Gk /π) to V.
+Next, we show that φ is a graph isomorphism between the quotient graph Gk /π and Feder’s
+graph G.pConsider two vertices Ox and Oy of the quotient graph Gk /π whose edge weight between
+them is dx,y dy,x . Here, dx,y is the number of neighbors in Oy that each vertex in Ox has and dy,x
+is the number of neighbors in Ox that each vertex in Oy has.
+Let φ(Ox ) = n[x] and φ(Oy ) = n[y]. If x and y are adjacent in the product graph Gk , then
+x and y differ in exactly one coordinate i, where xi and yi are adjacent in G, and agree in the
+other coordinates. Suppose xi = u and yi = v with u 6= v but u is adjacent to v in G. Then,
+n[y]u = n[x]u − 1 and n[y]v = n[x]v + 1. By Definition 1, the edge weight between n[x] and n[y] in
+G is given by
+p
+ω(n[x], n[y]) = n[x]u (n[x]v + 1)
+(40)
+which equals to
+
+ω(Ox , Oy ) =
+
+p
+
+dx,y dy,x ,
+
+(41)
+
+since dx,y = n[x]u (the number of ways to replace u with v) and dy,x = n[y]v + 1 (the number of
+ways to replace v with u). This shows that G⊙k ∼
+= Gk /π.
+The next theorem shows a composition theorem for Feder’s operator G⊙k . We will use this to
+describe a reduction method from one perfect state transfer graph to another by combining and
+alternating lifting and quotient operations.
+Theorem 9 For a given graph G and integers m1 , m2 ≥ 1, let π1 be an equitable partition of Gm1
+and let π2 be an equitable partition of (Gm1 /π1 )m2 . Then, there is an equitable partition π3 of
+G(m1 m2 ) where
+(Gm1 /π1 )m2 /π2 ∼
+(42)
+= G(m1 m2 ) /π3 .
+Proof Let Q1 and Q2 be the (normalized) partition matrices corresponding to π1 and π2 , respectively. The adjacency matrix of (Gm1 /π1 )m2 is given by
+k-th position
+
+m2
+}|
+{
+z
+X
+(I ⊗ . . . ⊗ QT1 A(Gm1 )Q1 ⊗ . . . I),
+k=1
+
+14
+
+(43)
+
+2
+√
+
+2
+√
+
+3
+
+3
+2
+
+√
+
+√
+
+3
+
+2
+
+3
+
+Figure 8: The perfect state transfer graph K2  (X(Z32 , {001, 010, 100, 011})/π), where the latter
+is a Cartesian product of K2 with a periodic graph.
+
+since A(Gm1 /π1 ) = QT1 A(Gm1 )Q1 . By expressing the identity matrices as QT1 Q1 and factoring
+it out from both sides, we get
+
+
+k-th position
+m
+z
+}|
+{
+2
+X
+
+2
+(QT1 )⊗m2  (I ⊗ . . . ⊗ A(Gm1 ) ⊗ . . . I) Q⊗m
+.
+(44)
+1
+k=1
+
+The last equation yields
+
+
+
+2 T
+2
+2 T
+2
+(Q⊗m
+) A(Gm1 )m2 Q⊗m
+= (Q⊗m
+) A(G(m1 m2 ) )Q⊗m
+.
+1
+1
+1
+1
+
+(45)
+
+Thus, the adjacency matrix of (Gm1 /π1 )m2 /π2 is given by
+
+2 T
+2
+) A(G(m1 m2 ) )Q⊗m
+Q2 ,
+QT2 (Q⊗m
+1
+1
+
+(46)
+
+2
+which proves the claim and shows π3 is defined by the partition matrix Q⊗m
+Q2 .
+1
+
+Remark: Using Theorem 9, the perfect state transfer graphs described in [15] arguably are all
+quotients of the n-cube derived using different equitable partitions. For example, the graph shown
+in Figure 7 is derived from the 4-cube since P32 /π1 ∼
+= K24 /π3 .
+= (K22 /π2 )2 /π1 ∼
+
+6
+
+Generalizations
+
+6.1
+
+Inhomogeneous products
+
+Note that Feder’s construction is based on taking the Cartesian product of a single perfect state
+transfer graph with itself followied by a quotient operation. Here, we extend this construction by
+using distinct perfect state transfer and periodic graphs in the product and by allowing the quotient
+operations to alternate with the product. But first, we show a composition theorem for this more
+general construction (similar to Theorem 9).
+Theorem 10 For n ∈ N and for each k ∈ [n], let Gk be a graph and πk be an associated equitable
+partition. Then, there is an equitable partition π so that
+nk=1 (Gk /πk ) = (nk=1 Gk )/π.
+N
+Moreover, if Qk is the partition matrix of πk , then nk=1 Qk is the partition matrix of π.
+15
+
+(47)
+
+Proof Let Qk be the normalized partition matrix of πk . The adjacency matrix of Gk /πk is defined
+by QTk A(Gk )Qk . Thus, the adjacency matrix of k (Gk /πk ) is
+n
+X
+k=1
+
+k-th position
+
+}|
+{
+z
+(I ⊗ . . . ⊗ QTk A(Gk )Qk ⊗ . . . ⊗ I).
+
+(48)
+
+Now, replace each I in the term above by QTj Qj if it is in position j 6= k. This gives us
+n
+X
+k=1
+
+k-th position
+
+}|
+{
+z
+(QT1 Q1 ⊗ . . . ⊗ QTk A(Gk )Qk ⊗ . . . ⊗ QTn Qn ).
+
+(49)
+
+Factoring the common terms QTk on the left and Qk on the right, we get
+n
+O
+k=1
+
+QTk
+
+! n
+X
+k=1
+
+k-th position
+
+(I ⊗ . . . ⊗
+
+This yields
+n
+O
+k=1
+
+which shows that Q =
+
+Nn
+
+Qk
+
+!T
+
+n
+z }| {
+O
+A(Gk ) ⊗ . . . ⊗ I)
+Qk
+k=1
+
+A(nk=1 Gk )
+
+n
+O
+
+Qk
+
+k=1
+
+!
+
+!
+
+.
+
+.
+
+(50)
+
+(51)
+
+k=1 Qk is the partition matrix of π.
+
+The following corollary extends Feder’s operator G⊙k which is based on a single graph G. Here,
+we take a product of different graphs Gk (and their quotients Gk /πk ) and allow both perfect state
+transfer and periodic graphs with commensurable times.
+Corollary 11 Let n ≥ 1 be an integer. For k ∈ [n], let Gk be a graph with perfect state transfer
+between vertices ak and bk at time t (Gk is periodic, if ak = bk ), where ak 6= bk for at least one k.
+Let πk be an equitable distance partition of Gk with respect to ak and bk . Then
+nk=1 (Gk /πk ) ∼
+= (nk=1 Gk )/π
+
+(52)
+
+has perfect state transfer between (a1 , . . . , an ) and (b1 , . . . , bn ) at time t. Here, π is an equitable
+partition of k Gk defined by the partition matrix ⊗k Qk , where Qk is the partition matrix of πk .
+We show an example of how to build new perfect state transfer graphs using Corollary 11. For
+this, we use the following powerful results on cube-like graphs proved by Bernasconi et al. [5] and
+by Cheung and Godsil [8].
+Theorem 12 (Bernasconi et al. [5] and Cheung-Godsil [8])
+P
+Let G = X(Zn2 , S) be the Cayley graph on Zn2 with generating set S and let ωS = a∈S a be the
+sum of the elements in S. Let M be the n × |S| matrix with elements of S as columns and whose
+row space is called the code of G. Also, let D be the greatest common divisor of the weights of the
+codewords of G. Then, the following holds:
+1. If ωS 6= 0, then G has perfect state transfer from 0 to ωS at time t = π/2.
+16
+
+G
+
+G
+
+π1
+G/π1
+
+“π3 ”
+G′
+
+π2
+
+π1
+
+G/π2
+
+G/π1 ∼
+= G′ /π2
+
+“π3 ”
+
+π2
+
+Figure 9: (i) Lift-and-quotient: if G/π1 has PST, then G has PST; which implies G/π2 has PST.
+So, G/π1 reduces to G/π2 via “π3 ”. (ii) Quotient-and-lift: if G has PST, then G/π1 has PST;
+which implies G′ has PST if G′ /π2 ∼
+= G/π1 . So, G reduces to G′ via “π3 ”.
+
+2. If ωS = 0, then G has perfect state transfer at time t = π/4 if and only if D = 2 and the code
+of G is self-orthogonal.
+n
+Remark: Let Gk = X(Z
+P 2 , Sk ) be any collection of cube-like graphs defined in Theorem 12, where
+at least one satisfies a∈Sk a 6= 0. This guarantees that at least one graphs has “antipodal” perfect
+state transfer at time π/2, while the others might be periodic at time π/2. By Corollary 11, we
+know k (Gk /πk ) ∼
+= (k Gk )/π has perfect state transfer, for any collection of equitable partitions
+{πk }. A simple example of this construction is given in Figure 8.
+
+6.2
+
+Reductions
+
+In this section, we describe reductions between perfect state transfer graphs obtained from alternating a lifting move (from a quotient graph G/π to a graph G, for an equitable partition π) and
+a quotient move (from the graph G to its quotient graph G/π, for a possibly different equitable
+partition). By interchanging the order of these two operations, we get a quotient-and-lift reduction
+or a lift-and-quotient reductions. We illustrate these two types of reductions in Figure 9.
+As a simple example, consider the diamond graph D6 from Figure 7. There is a lift-and-quotient
+reduction from D6 to P5 given by
+D6 ր G ց P5
+(53)
+√
+where G is the graph obtained from attaching two vertices onto K2,3 (each with edge weight 2).
+This reduction is depicted in Figure 10. Note we get PST on G for “free”. An alternate lift-andquotient reduction based on Theorem 9 is given by
+D6 = P32 /π1 ր (K22 /π2 )2 /π1 ∼
+= K24 /π3 ց P5
+
+(54)
+
+where here G is the 4-cube Q4 = K24 .
+Irreducible graphs Godsil’s question in [18] is closely related to an observation of Kay [23]
+that any weighted path with perfect state transfer must have mirror-symmetric weights. Given
+the construction described in Section 4, it is natural to ask if there is a class of graphs for which
+perfect state transfer implies the automorphism property. Let G = (V, E) be a graph with perfect
+state transfer between vertices a and b. For each vertex x ∈ V , let da (x) (respectively, db (x)) be
+the distance of x from a (respectively, b). To each vertex x, we assign the distance-pair da,b (x) =
+(da (x), db (x)) of x from both a and b. We say G is distance-minimal with respect to vertices a and b
+if each vertex has a unique distance-pair, that is, for x 6= y, we have da,b (x) 6= da,b (y). Alternatively,
+17
+
+√
+
+√
+
+2
+
+2
+
+π1
+√
+
+2
+
+2
+
+√
+
+1
+
+1
+
+√
+
+2
+
+√
+
+π2
+
+2
+
+“π3 ”
+
+√
+
+2
+
+√
+
+3
+
+√
+
+3
+
+√
+
+2
+
+Figure 10: The lift-and-quotient reduction: D6 = P32 /π is lifted to the top graph G (via the
+“inverse” of π1 ) whose “other” quotient is D6 /π3 . We infer G has PST for “free”.
+
+we say a graph G1 is reducible to G2 (with respect to vertices a and b) if there is a lift-and-quotient
+or a quotient-and-lift reduction from G1 to G2 which places vertices a and b in singleton cells, so
+that G2 has fewer vertices than G1 . We call a graph quotient-minimal if it is not reducible to
+any other graph. Let us call a graph minimal if it is either distance-minimal or quotient-minimal.
+Intuitively, if a graph is minimal, it can only have (if any) an automorphism switching a and b since
+the action of permuting vertices at the same distance from a or b have been ruled out.
+Conjecture 1 Let G be a graph with perfect state transfer between vertices a and b. If G is minimal
+with respect to a and b, then G has an automorphism τ ∈ Aut(G) so that τ (a) = b.
+
+7
+
+Conclusions
+
+In this work, we explored perfect state transfer in quantum walks using equitable partitions. Our
+main focus is on a strong equivalence of perfect state transfer between a graph and its quotients.
+Although weaker forms of this equivalence had appeared earlier, we gave a simple and most direct
+proof which yields a powerful two-way tool (taking lifts and quotients on graphs) to study perfect
+state transfer.
+In lifting, if a perfect state transfer graph is a quotient of another graph, then the parent graph
+also has perfect state transfer. We used this to construct graphs with perfect state transfer between
+two vertices but which lack automorphism swapping the vertices; hence, answering a question posed
+by Godsil in [18]. This question is relevant since, prior to this work, all known graphs with perfect
+state transfer admit the automorphism property.
+In a quotient move, if a graph has perfect state transfer graph, then so does its quotient. These
+quotient graphs are obtained by forming various equitable partitions of the original graph. We
+used this to describe Feder’s intriguing construction of PST graphs [15] based on many-boson
+quantum walks. By adopting an explicit model of k-boson quantum walk in [16, 29], we show that
+Feder’s graphs are quotients of a k-fold Cartesian product of PST graphs. The resulting graphs
+have perfect state transfer due to the equivalence theorem. This is related to works by Audenaart
+[3], by Osborne [28], and by Wieśniak and Markiewicz [32] which used algebraic graph theory to
+provide explicit connection between multiple and single excitation subspaces under various coupling
+schemes on graphs.
+
+18
+
+It would be interesting to find a property of graphs, for which any graph perfect state transfer
+graph with this property must admit an automorphism swapping the two perfect state transfer
+vertices. We leave this as an open question for future work.
+
+Acknowledgments
+The research was supported in part by the National Science Foundation grant DMS-1004531 and
+also by the National Security Agency grant H98230-11-1-0206. We thank David Feder for kindly
+describing his construction in [15], Chris Godsil for very helpful comments on quantum walks, Dani
+ben-Avraham for discussions on bosons, and the anonymous reviewers for constructive comments
+which improved the presentation of this paper.
+
+References
+[1] C. Albanese, M. Christandl, N. Datta, and A. Ekert. Mirror inversion of quantum states in
+linear registers. Physical Review Letters, 93:230502, 2004.
+[2] R.J. Angeles-Canul, R. Norton, M. Opperman, C. Paribello, M. Russell, and C. Tamon.
+Perfect state transfer, integral circulants and join of graphs. Quantum Information and
+Computation, 10(3&4):325–342, 2010.
+[3] K. Audenaart, C. Godsil, G. Royle, and T. Rudolph. Symmetric squares of graphs. Journal
+of Combinatorial Theory B, 97:74–90, 2007.
+[4] M. Bašić and M. Petković. Some classes of integral circulant graphs either allowing or not
+allowing perfect state transfer. Applied Mathematics Letters, 22(10):1609–1615, 2009.
+[5] A. Bernasconi, C. Godsil, and S. Severini. Quantum networks on cubelike graphs. Physical
+Review A, 78:052320, 2008.
+[6] N. Biggs. Algebraic Graph Theory. Cambridge University Press, second edition, 1993.
+[7] S. Bose. Quantum communication through an unmodulated spin chain. Physical Review
+Letters, 91(20):207901, 2003.
+[8] W.-C. Cheung and C. Godsil. Perfect state transfer on cubelike graphs. Linear Algebra and
+Its Applications, 435(10):2468–2474, 2011.
+[9] A. Childs. Universal computation by quantum walk. Physical Review Letters, 102:180501,
+2009.
+[10] A. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. Spielman. Exponential algorithmic speedup by a quantum walk. In Proc. 35th ACM Symp. Theory of Computing, pages
+59–68, 2003.
+[11] M. Christandl, N. Datta, T. Dorlas, A. Ekert, A. Kay, and A. Landahl. Perfect transfer of
+arbitrary states in quantum spin networks. Physical Review A, 71:032312, 2005.
+[12] M. Christandl, N. Datta, A. Ekert, and A. Landahl. Perfect state transfer in quantum spin
+networks. Physical Review Letters, 92:187902, 2004.
+
+19
+
+[13] D. Dummit and R. Foote. Abstract Algebra. John Wiley, 2004.
+[14] E. Farhi and S. Gutmann. Quantum computation and decision trees. Physical Review A,
+58:915–928, 1998.
+[15] D. Feder. Perfect quantum state transfer with spinor bosons on weighted graphs. Physical
+Review Letters, 97:180502, 2006.
+[16] J.K. Gamble, M. Friesen, D. Zhou, R. Joynt, and S.N. Coppersmith. Two-particle quantum
+walks applied to the graph isomorphism problem. Physical Review A, 81(5):052313, 2010.
+[17] Y. Ge, B. Greenberg, O. Perez, and C. Tamon. Perfect state transfer, graph products and
+equitable partitions. International Journal on Quantum Information, 9(3):823–842, 2011.
+[18] C. Godsil. State transfer on graphs. Discrete Mathematics 312(1):129-147, 2011.
+[19] C. Godsil. When can perfect state transfer occur? quant-ph/1011.0231.
+[20] C. Godsil and B. McKay. Feasibility conditions for the existence of walk-regular graphs.
+Linear Algebra and Its Applications, 30:51–61, 1980.
+[21] C. Godsil and G. Royle. Algebraic Graph Theory. Springer, 2001.
+[22] T. Hungerford. Algebra. Springer-Verlag, 1974.
+[23] A. Kay. Perfect, efficient, state transfer and its applications as a constructive tool. International Journal on Quantum Information, 8(4):641–676, 2009. quant-ph/0903.4274.
+[24] A. Kay. Basics of perfect communication through quantum networks. Physical Review A,
+84:022337, 2011.
+[25] J. Kempe. Quantum random walks – an introductory overview. Contemporary Physics,
+44(4):307–327, 2003.
+[26] V. M. Kendon. Quantum walks on general graphs. International Journal on Quantum
+Information, 4(5):791–805, 2006.
+[27] V. M. Kendon and C. Tamon. Perfect state transfer in quantum walks on graphs. Journal
+of Computational and Theoretical Nanoscience, 8(3):422–433, 2011.
+[28] T. Osborne. Statics and dynamics of quantum XY and Heisenberg systems on graphs. Physical
+Review B, 74:094411, 2006.
+[29] J. Smith. k-boson quantum walks do not distinguish arbitrary graphs. quant-ph/1004.0206.
+[30] D. Stevanović. Applications of graph spectra in quantum physics. In D. Cvetković and I. Gutman, editors, Selected Topics in Applications of Graph Spectra, pages 85–111. Mathematical
+Institute SANU, 2011.
+[31] M. Underwood and D. Feder. Universal quantum computation by discontinuous quantum
+walk. Physical Review A, 82:042304, 2010.
+[32] M. Wieśniak and M. Markiewicz. Finding traps in non-linear spin arrays. quant-ph/0911.3579.
+
+20
+
+

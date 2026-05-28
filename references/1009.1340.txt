@@ -1,0 +1,1396 @@
+Perfect state transfer, graph products and equitable partitions
+Yang Ge∗
+
+Benjamin Greenberg†
+
+Oscar Perez‡
+
+Christino Tamon§
+
+arXiv:1009.1340v1 [quant-ph] 7 Sep 2010
+
+October 24, 2018
+
+Abstract
+We describe new constructions of graphs which exhibit perfect state transfer on continuoustime quantum walks. Our constructions are based on variants of the double cones [8, 3, 2] and
+the Cartesian graph products (which includes the n-cube Qn ) [11]. Some of our results include:
+• If G is a graph with perfect state transfer at time tG , where tG Spec(G) ⊆ Zπ, and H
+is a circulant with odd eigenvalues, their weak product G × H has perfect state transfer.
+Also, if H is a regular graph with perfect state transfer at time tH and G is a graph
+where tH |VH | Spec(G) ⊆ 2Zπ, their lexicographic product G[H] has perfect state transfer.
+For example, these imply Q2n × H and G[Qn ] have perfect state transfer, whenever H is
+any circulant with odd eigenvalues and G is any integral graph, for integer n ≥ 2. These
+complement constructions of perfect state transfer graphs based on Cartesian products.
+• The double cone K 2 +G on any connected graph G, has perfect state transfer if the weights
+of the cone edges are proportional to the Perron eigenvector of G. This generalizes results
+for double cone on regular graphs studied in [8, 3, 2].
+• For an infinite family G of regular graphs, there is a circulant connection so the graph
+K1 + G ◦ G + K1 has perfect state transfer. In contrast, no perfect state transfer exists if a
+complete bipartite connection is used (even in the presence of weights) [2]. Moreover, we
+show that the cylindrical cone K1 + G + K n + G + K1 has no perfect state transfer, for
+any family G of regular graphs.
+
+We also describe a generalization of the path collapsing argument [10, 11], which reduces questions about perfect state transfer to simpler (weighted) multigraphs, for graphs with equitable
+distance partitions. Our proofs exploit elementary spectral properties of the underlying graphs.
+Keywords: perfect state transfer, quantum walk, graph product, equitable partition.
+
+1
+
+Introduction
+
+Recently, perfect state transfer in continuous-time quantum walks on graphs has received considerable attention. This is due to its potential applications for the transmission of quantum information
+over quantum networks. It was originally introduced by Bose [7] in the context of quantum walks on
+linear spin chains or paths. Another reason for this strong interest is due to the universal property
+∗
+
+Department of Mathematics, Harvard University.
+Department of Mathematics, Grinnell College.
+‡
+Centro de Investigación en Matemáticas, Universidad Autónoma del Estado de Hidalgo, Hidalgo, Mexico.
+§
+Department of Computer Science, Clarkson University. Contact author: tino@clarkson.edu
+†
+
+1
+
+Figure 1: The Cartesian product construction for perfect state transfer: (a) P2 ⊕ P2 ; (b) P3 ⊕ P3
+(see Christandl et al. [11]).
+
+of quantum walks as a computational model as outlined by Childs [9]. From a graph-theoretic perspective, the main question is whether there is a spectral characterization of graphs which exhibit
+perfect state transfer. Strong progress along these lines were given on highly structured graphs by
+Bernasconi et al. [5] for hypercubic graphs and by Bašić and Petković [4] for integral circulants.
+Nevertheless, a general characterization remains elusive (see Godsil [15]).
+Christandl et al. [12, 11] showed that the n-fold Cartesian product of the one-link P2 and twolink P3 graphs admit perfect state transfer. This is simply because P2 and P3 have end-to-end
+perfect state transfer and the Cartesian product operator preserves perfect state transfer. They
+also drew a crucial connection between hypercubic networks and weighted paths using the so-called
+path-collapsing argument. This argument was also used by Childs et al. [10] in the context of an
+exponential algoritmic speedup for a black-box graph search problem via continuous-time quantum
+walks. Christandl et al. [11] proved that, although the n-vertex path Pn , for n ≥ 4, has no endto-end perfect state transfer, a suitably weighted version of Pn has perfect state transfer (via a
+path-collapsing reduction from the n-cube Qn ). A somewhat critical ingredient of this reduction
+is that each layer of Qn is an empty graph. We generalize this argument to graphs which have
+equitable distance partitions (see Godsil and Royle [17]).
+Bose et al. [8] observed an interesting phenomena on the complete graph Kn . Although Kn does
+not exhibit perfect state transfer, they show that by removing an edge between any two vertices,
+perfect state transfer is created between them. Note that the graph we obtain from removing an
+edge from Kn is the double cone K 2 + Kn−2 (where G + H denotes the join of graphs G and H).
+This observation was generalized in Angeles-Canul et al. [3] where perfect state transfer was proved
+for double cones {K 2 , K2 } + G, where G is some regular graph (in place of complete graphs). The
+analyses on these double cones showed that perfect state transfer need not occur between antipodal
+vertices and that having integer eigenvalues is not a sufficient condition for perfect state transfer
+(which answered questions raised in [15]).
+Our goal in this work is to combine and extend both the Cartesian product and the double
+cone constructions. The Cartesian product construction (which combines graphs with perfect
+state transfer) has the advantage of producing large diameter graphs with antipodal perfect state
+transfer. In fact, this construction provides the best upper bound for the order-diameter problem;
+for a given d, let f (d) be the smallest size graph which has perfect state transfer between two
+vertices of√distance d. Then, the best known bounds are d ≤ f (d) ≤ αd , where α = 2, if d is odd,
+and α = 3, if d is even; here, the upper bounds are achieved by P2⊗n and P3⊗n . On the other
+hand, the double cone construction allows graphs whose quotients (modulo its equitable partition)
+contain cells which are not independent sets. This can potentially allow for a broader class of
+
+2
+
+Graph family
+{K 2 , K2 } + G
+{K 2 , K2 } + G̃
+Pn≥4
+K1 + G ◦ G + K1
+K1 + G + G + K1
+K1 + G + K n + G + K1
+Qn or P3⊕n
+{Q2n , P3⊕n } × ODD-CIRC
+INT[Qn≥2 ]
+
+PST
+yes
+yes∗
+no
+yes
+no∗
+no
+yes
+yes
+yes
+
+Construction
+join
+join
+path
+circulant half-join
+half-join
+join
+Cartesian product
+weak product
+lexicographic product
+
+Source
+[8, 3]
+this work
+[11]
+this work
+[2]
+this work
+[11]
+this work
+this work
+
+Figure 2: Summary of results on some graphs with perfect state transfer: n is a positive integer;
+G denotes some family of regular graphs; G̃ denotes an arbitrary connected graph; Pn is the path
+on n vertices; Qn is the n-dimensional cube; Kn is the complete graph on n vertices; ODD-CIRC
+is the class of circulant graphs with odd eigenvalues; INT is the class of integral graphs. Asterisks
+indicate results on weighted graphs.
+
+graphs with perfect state transfer (see Bose et al. [8] and Angeles-Canul et al. [3, 2]).
+In this work, we describe new constructions of families of graphs with perfect state transfer.
+First, we extend several of the double cone constructions and relax their diameter restrictions. We
+show that the double cone K 2 + G of an arbitrary connected graph G has perfect state transfer
+if we use edge weights proportional to the Perron eigenvector of G. This extends results given in
+[3] where G is required to be a regular graph. Then, we prove that the glued double cone graph
+K1 +G1 ◦G2 +K1 has perfect state transfer whenever G1 , G2 belongs to some class of regular graphs
+and if they are connected using some matrix C which commutes with the adjacency matrices of G1
+and G2 . In contrast, Angeles-Canul et al. [2] proved that K1 + G + G + K1 has no perfect state
+transfer, for any regular graph G, even if weights are allowed.
+For cones with larger diameter, we consider the graph K1 + G1 + H + G2 + K1 , where G1 , G2
+belong to the same class of regular graphs and H is another regular graph. This symmetry is a
+necessary condition for perfect state transfer as shown by Kay [18]. Nevertheless, in contrast to
+the previous positive results, we show there is no perfect state transfer whenever H is the empty
+graph. The 4-dimensional cube Q4 (which has perfect state transfer) is an example of such a graph
+but without the join (or complete bipartite) connection.
+Our other contribution involves constructions of perfect state transfer graphs using alternative
+graph products, namely the weak and lexicographic products. An interesting property of these
+products is that they can create perfect state transfer graphs by combining graphs with perfect
+state transfer and ones which lack the property. For example, we show that Q2n × K2m has perfect
+state transfer, for any integers n and m. Recall that the complete graph has no perfect state
+transfer (as observed by Bose et al. [8]). In comparison, the Cartesian product requires both of
+its graph arguments to have perfect state transfer (with the same perfect state transfer times).
+We also consider the lexicographic graph product (or graph composition) and its generalizations.
+Our generalized lexicographic product of G and H using a connection matrix (or graph) C is a
+graph whose adjacency matrix is AG ⊗ C + I ⊗ AH . Note we recover the Cartesian product by
+letting C = I and the standard lexicographic product by letting C = J. So, this generalization
+
+3
+
+interpolates between these two known graph products. For example, we show that G[Qn ] has
+perfect state transfer for any integral graph G and n ≥ 2.
+The proofs we employ exploit elementary spectral properties of the underlying graphs. Some of
+our results are summarized in Figure 2.
+
+2
+
+Preliminaries
+
+Let [n] denote the set {0, 1, . . . , n − 1}. For a tuple of binary numbers (a, b) ∈ {0, 1}2 \ {(0, 0)}, let
+Qa,b denote the set of rational numbers of the form p/q, with gcd(p, q) = 1, where p ≡ a (mod 2)
+and q ≡ b (mod 2). These denote rational numbers (in lowest terms) that are ratios of two odd
+integers or of an odd integer and an even integer, or vice versa. We denote the even and odd
+integers as 2Z and 2Z + 1, respectively.
+The graphs G = (V, E) we study are finite, simple, undirected, connected, and mostly unweighted. The adjacency matrix AG of a graph G is defined as AG [u, v] = 1 if (u, v) ∈ E and 0
+otherwise; we also use u ∼ v to mean u is adjacent to v. The spectrum Spec(G) of G is the set
+of eigenvalues of AG . The graph G is called integral if all of its eigenvalues are integers. A graph
+G = (V, E) is called k-regular if each vertex u ∈ V has exactly k adjacent neighbors. For integers
+n ≥ 1 and 0 ≤ k < n, let Gn,k be the set of all n-vertex k-regular graphs. The distance d(a, b)
+between vertices a and b is the length of the shortest path connecting them.
+Some standard graphs we consider include the complete graphs Kn , paths Pn , and circulants
+graphs. An n-vertex circulant graph G on is a graph whose adjacency matrix is an n × n circulant
+matrix; that is, there is a sequence (a0 , . . . , an−1 ) so that AG [j, k] = ak−j , where arithmetic on the
+indices is done modulo n. Alternatively, we may define a circulant graph G on [n] through a subset
+S ⊆ [n] where j is adjacent to k if and only if k − j ∈ S; we denote such a circulant as Circ(n, S).
+Known examples of circulants include the complete graphs Kn and cycles Cn .
+Let G and H be two graphs with adjacency matrices AG and AH , respectively. The complement
+of G = (V, E), denoted G = (V, E), is a graph where (u, v) ∈ E if and only if (u, v) 6∈ E, for u 6= v.
+Some relevant binary graph operations are defined in the following:
+• The Cartesian product G ⊕ H is a graph defined on V (G) × V (H) where (g1 , h1 ) is adjacent
+to (g2 , h2 ) if either g1 = g2 and (h1 , h2 ) ∈ EH , or (g1 , g2 ) ∈ EG and h1 = h2 . The adjacency
+matrix of G ⊕ H is AG ⊗ I + I ⊗ AH .
+• The weak product G × H is a graph defined on V (G) × V (H) where (g1 , h1 ) is adjacent to
+(g2 , h2 ) if (g1 , g2 ) ∈ EG and (h1 , h2 ) ∈ EH . The adjacency matrix of G × H is AG ⊗ AH .
+• The lexicographic product G[H] is a graph defined on V (G) × V (H) where (g1 , h1 ) is adjacent
+to (g2 , h2 ) if either (g1 , g2 ) ∈ EG or g1 = g2 and (h1 , h2 ) ∈ EH . The adjacency matrix of
+G[H] is AG ⊗ J + I ⊗ AH .
+• The join G + H is a graph defined on V (G) ∪ V (H) obtained by taking two disjoint copies of
+G and H and by connecting
+all vertices of G to all vertices of H. The adjacency matrix of
+
+AG J
+G + H is
+.
+J AH
+We assume appropriate dimensions on the identity I and all-one J matrices used above. The ndimensional hypercube Qn may be defined recursively as Q1 = K2 and Qn = K2 ⊕ Qn−1 , for n ≥ 2.
+4
+
+Figure 3: A cylindrical cone with an equitable distance partition: K1 + K3 ◦ K 2 ◦ K 2 ◦ K3 + K1 .
+The cone of a graph G is defined as K1 + G. The double cone of G is K 2 + G, whereas the connected
+double cone is K2 + G.
+U
+A partition π of a graph G = (V, E) given by V = m
+j=1 Vj is called equitable if the number of
+neighbors in Vk of a vertex u in Vj is a constant dj,k , independent of u (see [17, 16]). The quotient
+graph of G over π, denoted by G/π, is the directed graph with the m cells of π as its vertices and dj,k
+edges from the jth to the kth cells of π. The adjacency matrix of G/π is given by AG/π [j,Uk] = dj,k .
+A graph G has an equitable distance partition π with respect to a vertex a if π = m
+j=0 Vj is
+such that G/π is a path and Vj = {x ∈ V : d(x, a) = j} where V0 = {a}; typically, we also require
+that there is a vertex b, antipodal to a, so that Vm = {b}. We also call a graph a cylindrical cone
+(see Figure 3) if it has an equitable distance partition and is denoted K1 ◦ G1 ◦ . . . ◦ Gm ◦ K1 , where
+Gj are regular graphs and ◦ denote (semi-)regular bipartite connections (induced by the equitable
+partition π).
+Further background on algebraic graph theory may be found in the comprehensive texts of
+Biggs [6], Godsil and Royle [17], and Godsil [16].
+Next, we describe the continuous-time quantum walk as defined originally by Farhi and Gutmann [13]. For a graph G = (V, E), let |ψ(0)i ∈ C|V | be an initial amplitude vector of unit length.
+Using Schrödinger’s equation, the amplitude vector of the quantum walk at time t is
+|ψ(t)i = e−itAG |ψ(0)i.
+
+(1)
+
+Note since AG is Hermitian (in our case, symmetric), e−itAG is unitary (hence, an isometry). More
+detailed discussion of quantum walks on graphs can be found in the excellent surveys by Kempe
+[19] and Kendon [20]. The instantaneous probability of vertex a at time t is pa (t) = |ha|ψ(t)i|2 . We
+say G has perfect state transfer from vertex a to vertex b at time t if a continuous-time quantum
+walk on G from a to b has unit fidelity or
+|hb|e−itAG |ai| = 1,
+
+(2)
+
+where |ai, |bi denote the unit vectors corresponding to the vertices a and b, respectively. The graph
+G has perfect state transfer if there exist vertices a and b in G and time t so that (2) is true.
+
+3
+
+Graph products
+
+In this section, we describe constructions of perfect state transfer graphs using the weak and
+lexicographic products. These complement the well-known Cartesian product constructions [11].
+
+5
+
+Figure 4: Graph products with perfect state transfer: (a) the weak product K2 × K4m , for m ≥ 1
+(shown here with m = 1); (b) the lexicographic product (or composition) Km [Qn ] (shown here with
+m = n = 2).
+
+3.1
+
+Weak product
+
+An interesting property of the weak product graph operator is that it can create graphs with perfect
+state transfer by combining ones with perfect state transfer and ones which lack the property. In
+contrast, the Cartesian graph product can only create perfect state transfer graphs from ones which
+have the property. We start with the following simple observation.
+Fact 1 Let G be an n-vertex graph and H be an m-vertex graph whose eigenvalues and eigenvectors
+are given by AG |uk i = λk |uk i, for k ∈ [n], and AH |vℓ i = µℓ |vℓ i, for ℓ ∈ [m], respectively. Let
+g1 , g2 ∈ G and h1 , h2 ∈ H. Then, the fidelity of a quantum walk on their weak product G × H
+between (g1 , h1 ) and (g2 , h2 ) is given by
+)
+#
+(
+"
+X X
+hh2 |vℓ ihvℓ |h1 ie−itλk µℓ |uk ihuk | |g1 i.
+(3)
+hg2 , h2 |e−itAG×H |g1 , h1 i = hg2 |
+ℓ
+
+k
+
+Proof Recall that the adjacency matrix of AG×H is AG ⊗AH . Thus, the eigenvalues and eigenvectors
+of the weak product G × H are
+AG×H (|uk i ⊗ |vℓ i) = λk µℓ (|uk i ⊗ |vℓ i),
+
+where k ∈ [n] and ℓ ∈ [m].
+
+(4)
+
+So, the quantum walk on G × H from (g1 , h1 ) to (g2 , h2 ) is given by
+X
+hg2 , h2 |e−itAG×H |g1 , h1 i =
+hg2 |uk ihuk |g1 ihh2 |vℓ ihvℓ |h1 ie−itλk µℓ .
+
+(5)
+
+k,ℓ
+
+After rearranging summations, we obtain the claim.
+Proposition 2 Let G be a graph with perfect state transfer at time tG so that
+tG Spec(G) ⊆ Zπ.
+
+(6)
+
+Then, G × H has perfect state transfer if H is a circulant graph with odd eigenvalues.
+Proof Suppose G is an n-vertex graph whose eigenvalues and eigenvectors are given by AG |uk i =
+λk |uk i, for k ∈ [n]. Assume that G has perfect state transfer at time tG from vertex g1 to g2 . Also,
+suppose H be an m-vertex graph whose eigenvalues and eigenvevtors are given by AH |vℓ i = µℓ |vℓ i,
+6
+
+for ℓ ∈ [m]. In Equation (3), if H is circulant on m vertices, we have h0|vℓ ihvℓ |0i = 1/m. Moreover,
+if each eigenvalue of H is odd, say µℓ = 2mℓ + 1, with mℓ ∈ Z, then
+1 X
+(7)
+hg2 |uk ihuk |g1 ie−itG λk µℓ
+hg2 , 0| exp(−itG AG×H )|g1 , 0i =
+m
+k,ℓ
+
+X
+1 X
+=
+hg2 |uk ihuk |g1 i
+e−itG λk (2mℓ +1)
+m
+k
+ℓ
+X
+−itG λk
+=
+hg2 |uk ihuk |g1 ie
+, since tG λk ∈ Zπ .
+
+(8)
+(9)
+
+k
+
+The last expression equals to hg2 |e−itG AG |g1 i, by the spectral theorem. This proves the claim.
+Remark: Note Q2n has eigenvalues λk = 2n − 2k, √
+for k = 0, . . . , 2n, and perfect state transfer
+√ time
+t = π/2. Also, P3⊗n has eigenvalues from λk ∈ Z 2 and perfect state transfer time t = π/ 2. In
+both cases, we have tλk ∈ Zπ, for all k. Thus, by Proposition 2, we get that {Q2n , P3⊗n } × H has
+perfect state transfer for any circulant H with odd eigenvalues. For example, we may let H = Km
+be the complete graph of order m, for an even integer m.
+
+3.2
+
+Lexicographic products
+
+The generalized lexicographic product GC [H] between a graph G and two graphs H and C, with
+VH = VC , is a graph on VG × VH where (g1 , h1 ) is adjacent to (g2 , h2 ) if and only if either (g1 , g2 ) ∈
+EG and (h1 , h2 ) ∈ EC , or, g1 = g2 and (h1 , h2 ) ∈ EH . In terms of adjacency matrices, we have
+AGC [H] = AG ⊗ AC + I ⊗ AH .
+
+(10)
+
+We describe constructions of perfect state transfer graphs using generalized lexicographic products.
+Again, we start with the following simple observation.
+Fact 3 Let G be an n-vertex graph whose eigenvalues and eigenvectors are given by AG |uk i =
+λk |uk i, for k ∈ [n]. Let H and C be m-vertex graphs whose adjacency matrices commute, that is
+[AH , AC ] = 0, and whose eigenvalues and eigenvectors are given by AH |vℓ i = µℓ |vℓ i, and AC |vℓ i =
+γℓ |vℓ i, for ℓ ∈ [m], respectively. Suppose g1 , g2 ∈ G and h1 , h2 ∈ H. Then, the fidelity of a quantum
+walk on the generalized lexicographic product GC [H] between (g1 , h1 ) and (g2 , h2 ) is given by
+X
+X
+hg2 , h2 | exp(−itAGC [H] )|g1 , h1 i =
+hg2 |uk ihuk |g1 i
+hh2 |vℓ ihvℓ |h1 ie−it(λk γℓ +µℓ )
+(11)
+k
+
+ℓ
+
+Proof The eigenvalues and eigenvectors of GC [H] are given by
+AGC [H] (|uk i ⊗ |vℓ i) = (λk γℓ + µℓ )(|uk i ⊗ |vℓ i),
+
+k ∈ [n] and ℓ ∈ [m].
+
+So, the quantum walk on GC [H] from (g1 , h1 ) to (g2 , h2 ) is given by
+X
+hg2 , h2 |e−itAGC [H] |g1 , h1 i =
+hg2 |uk ihuk |g1 ihh2 |vℓ ihvℓ |h1 ie−it(λk γℓ +µℓ ) ,
+k,ℓ
+
+which proves the claim.
+
+7
+
+(12)
+
+(13)
+
+In the following, we show a closure property of perfect state transfer graphs using a generalized
+lexicographic product with the complete graph as a connection matrix. This is similar to the weak
+product construction from Proposition 2.
+Proposition 4 Let G and H be perfect state transfer graphs with a common time t. Assume H is
+a m-vertex graph which commutes with Km . Suppose that
+t|VH | Spec(G) ⊆ 2Zπ.
+
+(14)
+
+Then, the lexicographic product GKm [H] has perfect state transfer at time t.
+Proof Suppose G has perfect state transfer from g1 to g2 at time t, where g1 , g2 ∈ VG . Let the
+eigenvalues and eigenvectors of G be given by AG |uk i = λk |uk i, for k ∈ [n]. Also, suppose H is a
+circulant with perfect state transfer from h1 to h2 at time t, where h1 , h2 ∈ VH . Let the eigenvalues
+and eigenvectors of H be given by AH |vℓ i = µℓ |µℓ i, for ℓ ∈ [m]. Thus, Equation (11) becomes
+−itAGK
+
+[H]
+
+|g1 , h1 i
+(15)
+
+
+
+
+X
+X
+=
+hg2 |uk ihuk |g1 i e−it(λk (m−1)+µ0 ) hh2 |v0 ihv0 |h1 i +
+e−it(−λk +µℓ ) hh2 |vℓ ihvℓ |h1 i (16)
+
+
+
+hg2 , h2 |e
+
+m
+
+k
+
+ℓ6=0
+
+itAG
+
+= hg2 |e
+
+−itAH
+
+|g1 ihh2 |e
+
+|h1 i,
+
+(17)
+
+since e−it(m−1)λk = eitλk , for all k. This shows that GKm [H] has perfect state transfer from (g1 , h1 )
+to (g2 , h2 ) at time t.
+The standard lexicographic product G[H] is obtained when we let C = J in Equation (10). In this
+case, Equation (11) decouples nicely and we have a similar result to Proposition 4 but without
+requiring G to have perfect state transfer.
+Lemma 5 Let G be an arbitrary graph and let H be a regular graph with perfect state transfer
+at time tH from h1 to h2 , for h1 , h2 ∈ VH . Then, G[H] has perfect state transfer from (g, h1 ) to
+(g, h2 ), for any g ∈ VG , if
+tH |VH | Spec(G) ⊆ 2Zπ.
+(18)
+Proof If H is an m-vertex regular graph, then [AH , Jm ] = 0. The all-one matrix Jm has eigenvalues
+m (with multiplicity one) and 0 (with multiplicity m − 1). Thus, Equation (11) becomes
+hg, h2 |e−itH AG[H] |g, h1 i
+
+
+
+
+X
+X
+=
+hg|uk ihuk |gi e−itH (λk m+µ0 ) hh2 |v0 ihv0 |h1 i +
+e−itH µℓ hh2 |vℓ ihvℓ |h1 i
+
+
+k
+
+(20)
+
+ℓ6=0
+
+= hh2 |e−itH AH |h1 i,
+
+since e−itH mλk (G) = 1, for all k, and
+
+(19)
+
+P
+
+(21)
+
+k |uk ihuk | = I. This proves the claim.
+
+Remark: We will adopt the convention of scaling quantum walk time with respect to the size of the
+underlying graphs. Moore and Russell [22] proved that a continuous-time quantum walk on the
+n-cube Qn has a uniform mixing time of (2Z + 1) π4 n (which shows the time scaling with respect to
+the dimension of the n-cube). They used H = n1 AQn as their Hamiltonian – which is the probability
+transition matrix of the simple random walk on Qn .
+8
+
+Corollary 6 Suppose H is a kH -regular graph with perfect state transfer at time tH = π2 kH and
+G is an integral graph (all of its eigenvalues are integers). Then, G[H] has perfect state transfer
+provided kH |VH | Spec(G) ⊆ 4Z.
+Proof Apply Lemma 5 by noting that e−itH |VH |λk (G) = 1, since tH = π2 kH and λk (G)kH |VH | is
+divisible by 4, for all k.
+The n-cube Qn is a n-regular graph on 2n vertices which has perfect state transfer at time n π2 (with
+time scaling) (see [5]). Thus, for any integral graph G, the composition graph G[Qn ] has perfect
+state transfer if n ≥ 2.
+
+4
+
+Cones
+
+In this section, we explore some constructions of perfect state transfer graphs which generalize the
+double cones studied by Bose et al. [8] and Angeles-Canul et al. [3, 2]. The goal behind these
+constructions is to understand the types of intermediate graphs which allow perfect state transfer
+between the two antipodal vertices. For the double cones {K2 , K 2 } + Gn,k , the intermediate graphs
+are n-vertex k-regular graphs and sufficient conditions for perfect state transfer on n and k were
+derived in [3].
+Here, we consider more complex cones by allowing irregular graphs (on double cones), by
+increasing the number of intermediate layers, and by varying the connectivity structure (using
+semi-regular bipartite connections). We show new perfect state transfer graphs for irregular double
+cones and for double half-cones with circulant connections, and also prove negative results for longer
+diameter cones on join connections.
+
+4.1
+
+Irregular double cones
+
+We recall the Perron-Frobenius theory of nonnegative matrices. A matrix is called nonnegative
+if it has no negative entries. The spectral radius of a matrix A, denoted ρ(A), is the maximum
+eigenvalue of A (in absolute value). The Perron-Frobenius theorem for nonnegative matrices states
+that if A is a real nonnegative n×n matrix whose underlying directed graph G is strongly connected,
+then ρ = ρ(A) is a simple eigenvalue of A; moreover, the unique eigenvector corresponding to ρ has
+no zero entries and all entries have the same sign.
+In what follows, we denote K2b as the two-vertex graph which equals K2 if b = 1, and equals
+K 2 if b = 0.
+Theorem 7 Let G be any connected graph whose maximum (simple) eigenvalue is λ0 with a corresponding positive (normalized) eigenvector |x0 i. Consider the double cone G = K2b + G, for
+b ∈ {0, 1}, where the edges adjacent to the vertices of K2b , say A and B, are weighted proportional
+to α|x0 i. Then, the fidelity between A and B is given by
+
+
+
+
+λ−
+1 −itλ̃+
+0
+(22)
+e
+cos(t∆) + i 0 sin(t∆) − 1 ,
+hB|e−itAG |Ai =
+2
+∆
+q
+±
++
+2
+2
+where λ̃0 = (λ0 ± b)/2 and ∆ = (λ̃−
+0 ) + 2α . Thus, perfect state transfer is achieved if λ̃0 /∆ ∈
+Q0,1 ∪ Q1,0 .
+9
+
+Figure 5: Irregular weighted double cones have perfect state transfer: (a) K 2 + P3 ; (b) K 2 + P5 .
+
+Proof Let AG be the adjacency matrix of G. The adjacency matrix of G is
+
+
+0
+b
+αhx0 |
+AG =  b
+0
+αhx0 | .
+α|x0 i α|x0 i AG
+
+(23)
+
+For 1 ≤ k ≤ n − 1, let λk and |xk i be the other eigenvalues and eigenvectors of AG . Next, we define
+the following quantities:
+q
+λ0 ± b
+±
+2
+2
+, ∆ = (λ̃−
+λ± = λ̃+
+κ± = λ̃−
+(24)
+λ̃0 =
+0 ) + 2α ,
+0 ± ∆.
+0 ± ∆.
+2
+
+The eigenvalues of AG are given by λ0 = 0, λ± , and λk , 1 ≤ k ≤ n − 1, with corresponding
+eigenvectors
+
+
+
+
+
+
+α/κ±
++1
+0
+1 
+1
+α/κ±  , |zk i =  0 
+(25)
+|z0 i = √  −1  , |z± i =
+L±
+2 |0 i
+|x
+i
+|x
+i
+n
+0
+k
+where L2± = 2α2 /κ2± + 1. Note (κ± L± )2 = 2α2 + κ2± = 2∆(∆ ± λ̃−
+0 ). The fidelity between A and
+−itA
+G
+|Ai, is given by
+B, namely hB|e
+(
+)
++
+−
+−it(λ̃+
+X α2 e−itλ±
+0 +∆) + (∆ + λ̃ )e−it(λ̃0 −∆)
+)e
+1
+1 (∆ − λ̃−
+0
+0
+−
+=
+−1
+(26)
+2
+(κ
+L
+)
+2
+2
+2∆
+±
+±
+±
+"
+(
+#
+)
+−
++
+λ̃
+1
+e−itλ̃0 cos(t∆) + i 0 sin(t∆) − 1 .
+(27)
+=
+2
+∆
+
+For perfect state transfer to occur, it is sufficient to have λ̃+
+0 /∆ ∈ Q0,1 ∪ Q1,0 .
+Corollary 8 Let G be any connected graph whose maximum (simple) eigenvalue is λ0 with corresponding positive eigenvector |x0 i. Consider the double cone G = K 2 + G where the edges adjacent
+√
+to the two vertices of K 2 , say A and B, are weighted according to n|x0 i. Then, perfect state
+transfer exists from A to B if
+λ
+p 0
+∈ Q0,1 ∪ Q1,0 .
+(28)
+2
+λ0 + 8n
+p
+√
++
+2
+Proof In Theorem 7 with b = 0, let α = n and note λ̃±
+0 = λ0 /2. Thus, λ̃0 /∆ = λ0 / λ0 + 8n,
+which proves the claim.
+10
+
+p
+p
+Remark: Given n, we may choose λ0 = 8n/3 so the sufficient condition λ0 / λ20 + 8n = 1/2 is
+satisfied
+for perfect state transfer. Moreover, we can find a uniform edge weighting for G so that
+p
+8n/3 is a dominant eigenvalue. Thus, in the presence of weights, any double cone K 2 + G has
+perfect state transfer.
+
+4.2
+
+Glued double cones
+
+Analogous to the construction of glued-(binary)trees in Childs et al. [10], we consider gluing two
+double cones using a semi-regular bipartite connection to obtain a perfect state transfer graph. In
+contrast, gluing two double cones using the join (full bipartite) connection yields no perfect state
+transfer (even with weights) as proved in [2].
+Theorem 9 Let G ∈ Gn,k and let C be a symmetric Boolean matrix which commutespwith the
+adjacency matrix of G. Suppose that C|1n i = γ|1n i. Let k± = 12 (k ± γ) and ∆± = k± + n.
+Then, the graph G = K1 + G ◦ G + K1 , formed by taking two copies of K1 + G and connecting the
+copies of G using C, has perfect state transfer if ∆+ /∆− ∈ Q0,1 ∪ Q1,0 and at least one of γ/∆+
+or γ/∆− is in Q0,1 .
+Proof Suppose the eigenvalues and eigenvectors of G are λk and |vk i, respectively, where k = λ0 >
+λ1 ≥ . . . ≥ λn−1 . The adjacency matrix of G is given by
+
+
+0
+0
+h1n | h0n |
+ 0
+0
+h0n | h1n |
+.
+AG = 
+(29)
+|1n i |0n i AG
+C 
+|0n i |1n i C
+AG
+
+2 + n. Let α = k ± ∆ and β = k ± ∆ . The eigenvalues of
+Let k± = 12 (k ± γ) and ∆2± = k±
+±
++
++
+±
+−
+−
+AG are given by α± , β± , and ±λk , for k 6= 0, with corresponding eigenvectors:
+
+
+
+
+
+
+1
++1
+0
+
+
+
+
+
+1 
+1 1
+ , |β± i = 1  1 −1
+ , |λk i = √1  0  ,
+|α± i =
+(30)
+L±  n α± |1n i
+M± + n β± |1n i
+2  |vk i 
+1
+− n1 β± |1n i
+±|vk i
+n α± |1n i
+2 ) are the normalization constants. The quantum walks
+where L2± = n2 (n + α2± ) and M±2 = n2 (n + β±
+between involving the cone vertices, say A and B, are given by
+
+hB|e−itAG |Ai =
+hA|e−itAG |Ai =
+
+X e−itα±
+L2±
+
+−
+
+X e−itα±
+
++
+
+±
+
+±
+
+L2±
+
+X e−itβ±
+±
+
+M±2
+
+X e−itβ±
+±
+
+M±2
+
+(31)
+(32)
+
+−2
+At time t = 0, the second equation yields 1 = ± L−2
+± +
+± M± . To achieve perfect state transfer,
+it suffices to require
+e−itα± = +1, e−itβ± = −1, e−itγ/2 = ±1.
+(33)
+
+P
+
+P
+
+We may restate these conditions as ∆+ /∆− = Q0,1 ∪ Q1,0 and {γ/∆+ , γ/∆− } ∩ Q0,1 6= ∅.
+11
+
+Figure 6: Glued cones (a) K1 +G◦G+K1 has perfect state transfer, with (b) G = Circ(15, {1, 2, 4});
+(c) C = Circ(15, {1, 2, 4, 7}). The connection ◦ is defined by C.
+Remark: In Theorem 9, the result also holds if we replace G with two distinct graphs G1 and G2
+from the same family Gn.k .
+In the following corollary, we describe an explicit family of glued double cones which exhibit
+perfect state transfer. The construction uses a pair of circulant families of graphs (see Figure 6).
+Corollary 10 For a ≥ 2, let n = 15 × 22(a−2) , k = 3 × 2a−1 , and γ = 4 × 2a−1 . Consider two
+circulant graphs G = Circ(n, [k/2]) and C = Circ(n, [γ/2]). Then, the graph G = K1 + G ◦ G + K1
+has perfect state transfer, where the connection ◦ is specified by C.
+Proof Note we have k± = 12 (k ± γ) = 2a−2 (3 ± 4) and ∆± = 2a−2 ((3 ± 4)2 + 15) ∈ 2a−2 {8, 4}.
+Thus, ∆+ /∆− = 2 ∈ Q0,1 and γ/∆− = 2 ∈ Q0,1 , which satisfy the sufficiency conditions for perfect
+state transfer in Theorem 9.
+
+4.3
+
+Cylindrical cones
+
+In this section, we consider graphs of the form K1 + G1 + H + G2 + K1 , where G1 , G2 ∈ Gn,k and
+H ∈ Gm,ℓ . We show a negative result for perfect state transfer whenever H is the empty graph.
+This generalizes known negative results on P4 and K1 + G + G + K1 (see [11, 2]).
+Theorem 11 For any integers n, k, m where n ≥ 1, 0 ≤ k < n, and m ≥ 1, the graph K1 + G1 +
+K m + G2 + K1 has no perfect state transfer, whenever G1 , G2 ∈ Gn,k .
+Proof Let G be the graph K1 + G1 + H + G2 + K1 , where G1 , G2 ∈ Gn,k and H ∈ Gm,ℓ . Let AG1
+be the adjacency matrix of G1 with eigenvalues αr and eigenvectors |ur i; similarly, let AG2 be the
+adjacency matrix of G2 with eigenvalues βr and eigenvectors |vr i, for r ∈ [n]. Note k = α0 = β0
+are the simple maximum eigenvalues of both G1 and G2 . Let AH be the adjacency matrix of H
+with eigenvalues ρs and eigenvectors |ws i, where ℓ = ρ0 is the simple maximum eigenvalue of H.
+Thus, the adjacency matrix of G is given by
+
+
+0
+0
+h1n | h0n | h0n |
+ 0
+0
+h0n | h0n | h1n | 
+
+
+
+AG =  |1n i |0n i AG1 Jn,m On,n 
+(34)
+.
+|0m i |0m i Jm,n AH Jm,n 
+|0n i |1n i On,n Jn,m AG2
+12
+
+In our case, we have AH = Om,m is the zero m × m matrix and ℓ = 0.
+Let λ± be the roots of quadratic polynomial λ2 − kλ − n = 0; thus λ± = k̃ ± ∆, where k̃ = k/2
+and ∆2 = k̃2 + n. Consider roots of the cubic polynomial (µ − ℓ)(µ2 − kµ − (2m + 1)n) − 2ℓmn =
+0. For ℓ = 0, zero is a root of this cubic along with the two roots of the quadratic equation
+µ2 − kµ − (2m + 1)n = 0. Let µ± = k̃ ± Γ, where Γ2 = k̃2 + (2m + 1)n. The eigenvalues of AG are
+(1)
+(3)
+(2)
+given by λ± , µ± , 0, and λr , λr , for r 6= 0, and λs , for s 6= 0, with corresponding eigenvectors:
+
+
+
+
+
+
++1
+1
+1
+
+
+
+
+
+
+−1
+1
+1 1
+
+
+
+
+1
+1
+1 
+1
++ λ± |1n i , |µ± i =
+ µ± |1n i , |v0 i =
+ |0n i  ,
+(35)
+|λ± i =
+n
+n
+
+
+
+
+
+
+L± 
+M± 
+N
+
+
+
+|0n i
+2|1n i
+−1/m|1n i
+1
+− n1 λ± |1n i
+µ
+|1
+i
+|0n i
+n ± n
+and
+
+
+
+
+
+
+
+
+0
+0
+0
+ 0 
+ 0 
+ 0 
+
+
+
+
+
+
+(2)
+(3)
+
+
+
+
+ |0n i  ,
+|u
+i
+|0
+i
+|λ(1)
+i
+=
+,
+|λ
+i
+=
+,
+|λ
+i
+=
+r
+s
+r
+ r 
+ n 
+
+
+|0m i
+|ws i
+|0m i
+|0n i
+|0n i
+|vr i
+
+(36)
+
+where 1 ≤ r < n and 1 ≤ s < m. Here L± , M± and N are normalization factors. We have the
+following fidelities:
+hB|e−itAG |Ai = −
+hA|e−itAG |Ai =
+
+X e−itλ±
+L2±
+
+±
+
+X e−itλ±
+±
+
+L2±
+
++
+
++
+
+X e−itµ±
+M±2
+
+±
+
+X e−itµ±
+±
+
+M±2
+
++
+
+1
+N2
+
+(37)
+
+1
+.
+N2
+
+(38)
+
++
+
+At time t = 0, Equation (38) yields
+1=
+
+X 1
+
+2 +
+
+±
+
+L±
+
+X 1
+1
++ 2.
+2
+M± N
+±
+
+(39)
+
+So, to achieve perfect state transfer in Equation (37), we require that
+e−itλ± = −1, e−itµ± = +1.
+
+(40)
+
+This implies t(k̃ ± ∆) ∈ (2Z + 1)π and t(k̃ ± Γ) ∈ (2Z)π. We restate these conditions as
+k̃ ± ∆
+∈ Q1,0 .
+k̃ ∓ Γ
+
+k̃ ± ∆
+∈ Q1,0 ,
+k̃ ± Γ
+
+(41)
+
+Clearly it is necessary to have ∆, Γ ∈ Z, else the above quotients are not even rational.
+Observe that if both k̃ and n are odd, both quotients lie in Q1,1 . If k̃ is even and n is odd, the
+same is true. If k̃ is odd and n is even, then the numerator and denominator of at least one of the
+quotients must be congruent to 2 modulo 4, and so one lies in Q1,1 . If both k̃ and n are even, than
+
+13
+
+Figure 7: Cylindrical cones of diameter five with no perfect state transfer: (a) K1 + K3 + K1 +
+K3 + K1 ; (b) K1 + K3 + K 2 + K3 + K1 .
+
+we can divide the numerator and denominator of each quotient by 2 (clearly, then, 4 divides n as
+well), rewriting the conditions as:
+k̃′ ± ∆′
+∈ Q1,0 ,
+k̃′ ∓ Γ′
+
+k̃′ ± ∆′
+∈ Q1,0 ,
+k̃′ ± Γ′
+
+(42)
+
+where k̃′ = k̃/2, ∆′ = ∆/2, and Γ′ = Γ/2. Since this is in essence the same set of conditions as
+before, we argue by infinite descent that there can be no solutions of this form. Since we have ruled
+out all parity combinations for k̃ and n, there can be no solutions and no perfect state transfer in
+this case.
+
+5
+
+Equitable partitions
+
+The path-collapsing argument was used by Christandl et al. [11] to show that weighted paths have
+perfect state transfer. This follows because the (unweighted) n-dimensional hypercube Qn has
+perfect state transfer and it can be collapsed to a weighted path. On the other hand, this argument
+was used in the opposite direction by Childs et al. [10] to show that a continuous-time quantum
+walk on an unweighted layered graph has polynomial hitting time by observing its behavior on a
+corresponding weighted path.
+A natural way to view this reduction is by using equitable distance partitions and their quotient
+graphs (for example, see [16, 21]). But, most quotient graphs derived this way are directed and
+hence not suitable for quantum walks. The path-collapsing reduction offers a way to symmetrize
+these directed quotient graphs into undirected graphs. In what follows, we formalize and generalize
+this argument using the theory of equitable partitions (see Godsil [16]).
+U
+Lemma 12 Let G = (V, E) be a graph with an equitable distance partition π = m−1
+j=0 Vj with
+respect to vertices a and b. Then, the fidelity of a quantum walk on G between vertices a and b is
+equivalent to the fidelity of a quantum walk p
+on a symmetrized quotient graph G/π between π(a) = V0
+and π(b) = Vm−1 ; namely, if BG/π [j, k] = dj,k dk,j , for all j, k ∈ [m], then
+|hb|e−itAG |ai| = |hπ(b)|e−itBG/π |π(a)i|.
+
+(43)
+
+Proof For j, k ∈ [m], let dj,k be the number of vertices in Vk adjacent to each vertex x in Vj . Let P
+be the characteristic partition n × m matrix of π; namely, P [j, ℓ] = 1 if vertex j belongs to partition
+
+14
+
+Vℓ , and 0 otherwise. Suppose Q be the matrix P after we normalize each column; so QT Q = In .
+Then, we have
+AG Q = QBG/π ,
+(44)
+where
+BG/π [j, k] =
+
+p
+
+dj,k dk,j .
+
+(45)
+
+The matrix BG/π is defined implicitly in [11] through the columns of Q (viewed as basis states in
+a new graph)1 . The following spectral correspondences between AG and BG/π can be shown:
+• If AG |yi = λ|yi, then BG/π |xi = λ|xi, where |xi = QT |yi, provided QT |yi 6= 0.
+• If BG/π |xi = λ|xi, then AG |yi = λ|yi, where |yi = Q|xi.
+Suppose that E(AG ) = {|yk i : k ∈ [n]} is the (orthonormal) set of eigenvectors of AG ; similarly, let
+E(BG/π ) = {|xk i : k ∈ [m]} be the (orthonormal) set of eigenvectors of BG/π . Since π(a) = {a}
+and π(b) = {b} are singleton partitions, we have QT |ai = |π(a)i and QT |bi = |π(b)i. Thus, we have
+hπ(b)|e−itBG/π |π(a)i = hπ(b)|
+= hb|
+
+m−1
+X
+
+
+e−itλk |xk ihxk | |π(a)i
+
+(46)
+
+
+Q|xk ihxk |QT |ai
+
+(47)
+
+k=0
+m−1
+X
+−itλk
+
+e
+
+k=0
+−itAG
+
+= hb|e
+
+|ai.
+
+(48)
+
+The last step holds since the orthonormal eigenvectors of AG can be divided into two types: those
+that are constant on cells of π (the ones of the form |yk i = Q|xk i, for some eigenvector |xk i of
+BG/π ) and those that sum to zero on each cell of π. The eigenvectors of the latter type do not
+contribute to the quantum walk between the antipodal vertices a and b.
+Remark: Lemma 12 shows that the double cones K 2 + G, for regular graphs G ∈ Gn,k , which have
+diameter two, are equivalent (in the sense of the fidelity of quantum walks between the antipodal
+vertices) to a weighted P3 with adjacency matrix Ã1 (shown below).
+
+
+
+
+√
+√
+0
+n 0
+n 1
+0
+√
+√
+√
+√
+n Ã2 =  n k
+n
+Ã1 =  n k
+(49)
+√
+√
+n 0
+n 0
+0
+1
+
+The case of the connected double cone K2 + G, where G ∈ Gn,k , can also be shown to be equivalent
+to the weighted graph with adjacency matrix Ã2 (shown above). This simplifies the analyses on
+values of n and k which allows perfect state transfer (see [3]).
+In what follows, we use the generalized path-collapsing argument above to revisit (unweighted)
+graphs of diameter three and compare them to (weighted) paths of length four. Then, we compare
+a family of symmetrically weighted paths P4 (without self-loops) with a construction based on weak
+products. This symmetry restriction on the weights can be made without loss of generality; see
+Kay [18].
+1
+
+Note BG/π is different from AG/π (as defined in [16]), since BG/π is symmetric and represents an undirected
+weighted graph whereas AG/π represents a directed graph.
+
+15
+
+Lemma 13 Let P4 (γ; κ) denote a weighted path whose middle edge has weight γ while the other
+two edges
+phave unit weights and whose two internal vertices have self-loops with weight κ each. Let
+∆± = 12 (κ ± γ)2 + 4. Then, P4 (γ; κ) has perfect state transfer if:
+1. Case κ 6= 0: ∆+ /∆− ∈ Q0,1 ∪ Q1,0 and {γ/∆+ , γ/∆− } ∩ (Q0,1 ∪ Q1,1 ) 6= ∅; or
+
+2. Case κ = 0: {γ/∆+ , γ/∆− } ⊆ Q1,1 or {γ/∆+ , γ/∆− } ⊆ Q1,0 .
+2 + 1, and ∆2 = k 2 + 1. The adjacency matrix A of P (γ; κ),
+Proof Let k± = (κ ± γ)/2, ∆2+ = k+
+4
+−
+−
+whose eigenvalues are α± = k+ ± ∆+ and β± = k− ± ∆− , and its corresponding eigenvectors |α± i
+and |β± i are given by:
+
+ 
+
+
+
+0 1 0 0
+1
++1
+1 κ γ 0
+
+
+1 
+1 
+ 1 ,
+ −1  ,
+,
+A=
+|α
+i
+=
+|β
+i
+=
+(50)
+±
+±
+0 γ κ 1
+L± α± 
+M± +β± 
+0 0 1 0
+α±
+−β±
+
+where L2± = 4∆+ (∆+ ± k+ ) and M±2 = 4∆− (∆− ± k− ). The end-to-end fidelity of the quantum
+walk on P4 (γ; κ) is given by
+h3|e−itP4 (γ;κ) |0i =
+
+X e−itα±
+±
+
+L2±
+
+−
+
+X e−itβ±
+±
+
+M±2
+
+(51)
+
+P
+P
+At time t = 0, h0|e−itP4 (γ;κ) |0i equals ± 1/L2± + ± 1/M±2 = 1. Thus, to achieve unit fidelity
+when κ 6= 0, it suffices to have e−itγ/2 = ±1, cos(t∆+ ) = ±1, and cos(t∆− ) = ∓1 where t∆+ and
+t∆− differ in their parities (as a multiple of π) while tγ is of even parity. But, when κ = 0, and
+thus ∆+ = ∆− , it suffices to simply have tγ be of odd parity.
+Note Theorem 9 forms a special case of Lemma 13 when κ 6= 0. The fact that the analyses are
+equivalent follows from Lemma 12.
+Remark: Let P4 (γ) denote P4 (γ; 0); that is, a weighted path with no self-loops. In this case,
+∆+ = ∆− and a sufficient perfect state transfer condition is ∆+ /γ ∈ Q1,1 ∪ Q0,1 . So, P4 (γ) has
+end-to-end perfect state transfer if either:
+p
+• for odd integer K and even integer L, with L > K, we have γ = 2 K 2 /(L2 − K 2 ); or
+p
+• for odd integers K and L, with 2L > K, we have γ = 2 K 2 /(4L2 − K 2 ).
+
+The weak product K2 ×K4k , for k ≥ 1, has perfect state transfer if m is divisible by 4, by Proposition
+2 (see Figure√4(a)). The path collapsing argument shows K2 × K4k is equivalent to P4 (τ ) where
+τ = (4k −2)/ 4k − 1 > 1. Thus, for perfect state transfer, the weak product construction K2 ×K4k
+yields edge weights greater than 1, whereas P4 (γ) can yield edge weights smaller than 1 (with longer
+PST times). We are not aware of unweighted constructions which can emulate the latter property.
+
+16
+
+6
+
+Conclusions
+
+Using the Cartesian graph product, Christandl et al. [11] constructed two families of perfect state
+transfer graphs with large diameter, namely, Qn and P3⊕n . They also showed that weighted paths
+have perfect state transfer by a path-collapsing reduction from Qn . This argument was used
+specifically on graphs with equitable distance partitions whose cells are empty graphs. Our original
+motivation was to generalize the Cartesian product construction and extend the path-collapsing
+argument to larger classes of graphs.
+In this work, we described new families of graphs with perfect state transfer using the weak
+graph product and a generalized lexicographic product (which includes the Cartesian graph product
+as a special case). We also considered constructions involving double cones which allow the cell
+partitions to be non-empty graphs (unlike the Cartesian product graphs). Here, we prove perfect
+state transfer on double cones of irregular graphs and on double half-cones connected by circulants.
+These generalized results in [8, 3] on double cones of regular graphs and complement the negative
+result on double half-cones in [2]. Although these cone constructions involve small diameter graphs,
+they provided insights into which intermediate graphs allow antipodal perfect state transfer. Nonantipodal perfect state transfer can also be derived from certain cones (as shown in [3]).
+We also generalized the path-collapsing argument using the theory of equitable partitions. This
+can be used to show that certain weighted paths with self-loops have perfect state transfer. A
+possible interesting direction is to study random graphs with equitable distance partitions (as in
+the Anderson model [1]). A weighted path-collapsing argument would also be interesting since it
+can be used to analyze graphs produced in Feder’s intriguing construction [14]. The most elusive
+graph not covered by this framework is P3⊕n since none of the path-collapsing arguments apply.
+This is because the connections are irregular (see Figure 1(b)). We leave these as open questions.
+
+Acknowledgments
+The research was supported in part by the National Science Foundation grant DMS-1004531 and
+also by the National Security Agency grant H98230-09-1-0098. We thank Richard Cleve, David
+Feder, and Michael Underwood for their helpful comments on perfect state transfer.
+
+References
+[1] P. W. Anderson. Absence of diffusion in certain random lattices. Physical Review, 109(5):1492–
+1505, 1958.
+[2] R.J. Angeles-Canul, R. Norton, M. Opperman, C. Paribello, M. Russell, and C. Tamon. On
+quantum perfect state transfer on weighted join graphs. International Journal on Quantum
+Information, 7(8):1429–1445, 2009.
+[3] R.J. Angeles-Canul, R. Norton, M. Opperman, C. Paribello, M. Russell, and C. Tamon. Perfect
+state transfer, integral circulants and join of graphs. Quantum Information and Computation,
+10(3&4):325–342, 2010.
+[4] M. Bašić and M. Petković. Some classes of integral circulant graphs either allowing or not
+allowing perfect state transfer. Applied Mathematics Letters, 22(10):1609–1615, 2009.
+17
+
+[5] A. Bernasconi, C. Godsil, and S. Severini. Quantum networks on cubelike graphs. Physical
+Review A, 78:052320, 2008.
+[6] N. Biggs. Algebraic Graph Theory. Cambridge University Press, second edition, 1993.
+[7] S. Bose. Quantum communication through an unmodulated spin chain. Physical Review
+Letters, 91(20):207901, 2003.
+[8] S. Bose, A. Casaccino, S. Mancini, and S. Severini. Communication in xyz all-to-all quantum
+networks with a missing link. International Journal on Quantum Information, 7(4):713–723,
+2009.
+[9] A. Childs. Universal computation by quantum walk. Physical Review Letters, 102:180501,
+2009.
+[10] A. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann, and D. Spielman. Exponential algorithmic speedup by a quantum walk. In Proc. 35th ACM Symp. Theory of Computing, pages
+59–68, 2003.
+[11] M. Christandl, N. Datta, T. Dorlas, A. Ekert, A. Kay, and A. Landahl. Perfect transfer of
+arbitrary states in quantum spin networks. Physical Review A, 71:032312, 2005.
+[12] M. Christandl, N. Datta, A. Ekert, and A. Landahl. Perfect state transfer in quantum spin
+networks. Physical Review Letters, 92:187902, 2004.
+[13] E. Farhi and S. Gutmann. Quantum computation and decision trees. Physical Review A,
+58:915–928, 1998.
+[14] D. Feder. Perfect quantum state transfer with spinor bosons on weighted graphs. Physical
+Review Letters, 97:180502, 2006.
+[15] C. Godsil. Periodic graphs. math/08062074.
+[16] C. Godsil. Algebraic Combinatorics. Chapman and Hall, 1993.
+[17] C. Godsil and G. Royle. Algebraic Graph Theory. Springer, 2001.
+[18] A. Kay. A review of perfect state transfer and its applications as a constructive tool, 2009.
+quant-ph/0903.4274.
+[19] J. Kempe. Quantum random walks – an introductory overview. Contemporary Physics,
+44(4):307–327, 2003.
+[20] V. M. Kendon. Quantum walks on general graphs. International Journal on Quantum Information, 4(5):791–805, 2006.
+[21] H. Krovi and T. Brun. Quantum walks on quotient graphs. Physical Review A, 75:062332,
+2007. quant-ph/0701173v1.
+[22] C. Moore and A. Russell. Quantum walks on the hypercube. In Proc. 6th Int. Workshop on
+Rand. and Approx. in Comp. Sci., volume 2483 of Lect. Notes in Comp. Sci., pages 164–178.
+Springer, 2002.
+
+18
+
+

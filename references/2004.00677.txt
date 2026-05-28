@@ -1,0 +1,1587 @@
+1
+
+Subspace Decomposition for Graphon LQR:
+Applications to VLSNs of Harmonic Oscillators
+
+arXiv:2004.00677v2 [eess.SY] 15 Feb 2021
+
+Shuang Gao, Member, IEEE, and Peter E. Caines, Life Fellow, IEEE
+
+field) coupling [10]–[12], or patterned coupling [13]. However,
+the control of dynamical processes and agents on VLSNs
+still requires new theories, in particular those which generate
+scalable solutions.
+In a recent effort to solve control problems for very
+large-scale networks of linear dynamical systems, graphon
+control has been introduced to generate scalable approximate
+control solutions [1]–[3]. Dynamical systems coupled over
+networks of arbitrary sizes may be modelled by graphon
+dynamical control systems based on graphon theory [14]–
+[16] and infinite dimensional linear system theory [17], [18].
+Under this representation a limit graphon control problem is
+formulated based on the limit graphon (or an estimated graphon
+based upon given data) and an approximate solution to the
+original finite network control problem is then generated [3].
+Moreover, this graphon approximate control based on the limit
+graphon control solution applies to a set of network systems
+of arbitrary sizes in the associate convergence sequence [3].
+Since a limit graphon system is infinite dimensional in terms
+of the number of agents, an important issue in the graphon
+control methodology is the systematic generation of control
+laws for the corresponding infinite dimensional limit control
+problem.
+This article presents a study that provides solutions to a class
+of such problems based on invariant subspace decompositions,
+which generalizes the preliminary version based on eigenIndex Terms—Graphon, graphon control, optimal control,
+complex networks, large-scale systems, very large-scale networks. decompositions in [2]. By exploring a common invariant
+subspace, the original problem is decomposed into a network
+coupled LQR problem of finite dimension and a decoupled
+infinite dimensional LQR problem. Based on this decomposiI. I NTRODUCTION
+tion, centralized optimal solutions with low complexity and
+The study of very large-scale networks (VLSNs) of dynam- nodal collaborative optimal control solutions which employ the
+ical agents is motivated by systems such as smart grids, the projected (or aggregate) information of the states of all agents
+Internet of Things (IoT), 5G communications, the spread of and the information of the nodal state are established.
+epidemics, very large-scale robotic networks and biological
+The main contributions of this work include the following:
+neuronal networks, among others. Furthermore, research con- First, a solution method for a more general class of graphon
+cerning the control of dynamical systems on complex networks LQR problems than in [2] is established. More specifically, the
+typically involves the following: controllability [4], control coupling operators are only required by Assumption (A5) to
+energy [5], input node selection [6], low-complexity control share a common (finite dimensional) invariant subspace and do
+synthesis problems with simplified objective (e.g. consensus not need to share the same eigenfunctions as in [2], [19]. It is
+[7] or synchronization [8]), simplified control (e.g. pinning worth noting that although the graphon LQR problem in this
+control [6] and ensemble control [9]), low-rank (e.g. mean paper is infinite dimensional, the framework and the solution
+method apply to finite dimensional problems of arbitrary sizes
+*The preliminary version of this work was presented at the 58th IEEE
+since these are special cases of graphon LQR problems. Second,
+Conference on Decisions and Control, Nice, France, 2019.
+*This work is supported in part by NSERC (Canada), the U.S. ARL and
+the work in the paper demonstrates the powerful role of
+ARO grant W911NF1910110, and the AFOSR Grant FA9550-19-1-0138.
+Assumption (A5) in enabling low-complexity and scalable
+S. Gao, and Peter E. Caines are with the Department of Electrical and
+Computer Engineering, McGill University, Montreal, QC, Canada. Emails: solutions for linear quadratic regulation problems. Finally, a
+{sgao, peterc}@cim.mcgill.ca.
+new approximate control is introduced to generate control
+Abstract—Graphon control has been proposed and developed
+in [1]–[3] to approximately solve control problems for very largescale networks (VLSNs) of linear dynamical systems based on
+graphon limits. This paper provides a solution method based on
+invariant subspace decompositions for a class of graphon linear
+quadratic regulation (LQR) problems where the local dynamics
+share homogeneous parameters but the graphon couplings may
+be heterogeneous among the coupled agents. Graphon couplings
+in this paper appear in states, controls and costs, and these
+couplings may be represented by different graphons. By exploring
+a common invariant subspace of the couplings, the original
+problem is decomposed into a network coupled LQR problem
+of finite dimension and a decoupled infinite dimensional LQR
+problem. A centralized optimal solution, and a nodal collaborative optimal control solution where each agent computes its part
+of the optimal solution locally, are established. The application
+of these solutions to finite network LQR problems may be via (i)
+the graphon control methodology [3], or (ii) the representation of
+finite LQR problems as special cases of graphon LQR problems.
+The complexity of these solutions involves solving one nd × nd
+dimensional Riccati equation and one n × n Riccati equation,
+where n is the dimension of each nodal agent state and d is the
+dimension of the nontrivial common invariant subspace of the
+coupling operators, whereas a direct approach involves solving
+an nN × nN dimensional Riccati equation, where N is the size
+of the network. For situations where the graphon couplings do
+not admit exact low-rank representations, approximate control
+is developed based on low-rank approximations. Finally, an
+application to the regulation of harmonic oscillators coupled over
+large networks with uncertainties is demonstrated.
+
+2
+
+solutions to graphon LQR problems with general graphon
+couplings which are not necessarily low-rank, and it can be
+implemented directly on networks of finite sizes and allow for
+uncertainties in the coupling structures.
+
+II. G RAPHON LQR P ROBLEMS
+A. State space and operators
+Consider the space
+
+(L2 [0, 1])n , L2 [0, 1] × . . . × L2 [0, 1]
+The key idea for generating the low complexity solutions
+{z
+}
+|
+n
+is to decouple the original linear quadratic control problems
+and formulate equivalent problems of low complexity. The with the inner product defined as follows: for v, u ∈
+solution idea was used for linear quadratic mean-field control (L2 [0, 1])n ,
+problems in [11], [20] (where couplings are of rank one).
+Z 1
+n
+X
+This idea is further generalized and applied to the control of
+hu, vi ,
+hv(α), u(α)iRn dα =
+hvi , ui iL2 [0,1]
+(1)
+graphon and network coupled systems in [2], [19]. A related
+0
+i=1
+recent paper [21] discusses decoupling linear quadratic control
+2
+n
+problems based on state transformations to formulate equivalent where ui (·) ∈ L [0, 1] and u(·) (α) ∈ R with i ∈ {1, ..., n}
+problems and applies it to solve risk-sensitive linear quadratic and α ∈ [0, 1]. The corresponding induced norm is given by
+! 21
+mean-field control problems. Another closely related work
+Z 1
+ 12
+n
+X
+2
+2
+[13] studies linear control systems with a shared pattern (or kvk(L2 [0,1])n =
+kv(α)kRn dα
+.
+=
+kvi kL2 [0,1]
+0
+network) structure in state, input and output transformations
+i=1
+and the corresponding control synthesis problem.
+The space (L2 [0, 1])n with the above inner product is a
+This paper is organized as follows: Section II introduces Hilbert space.
+n
+Consider
+any v ∈
+graphon control systems, their relations to finite network
+n any D ∈ R and A ∈ 2Wc . For
+n
+2
+L
+[0,
+1]
+,
+the
+operator
+DA
+∈
+L
+L
+[0,
+1]
+is
+defined
+systems, and graphon LQR problems. Section III discusses the
+by
+the
+following
+linear
+operation
+invariant subspace of bounded linear operators. In Section IV,
+R
+
+the solution method for graphon LQR problems via invariant
+A(α, β)v1 (β)dβ
+[0,1]
+subspace decompositions are presented. Section V and Section
+
+
+..
+([DA]v)(α) = D 
+
+VI establish the properties of the optimal exact control and
+.
+R
+(2)
+the approximate control. Section VII presents the application
+A(α, β)vn (β)dβ
+[0,1]
+Z 1
+of the solution method to the regulation of coupled harmonic
+oscillators on graphs with uncertainties. Section VIII discusses
+=D
+A(α, β)v(β)dβ, ∀α ∈ [0, 1].
+0
+the complexity of the solution method and Section IX presents
+For the identity
+operator I, the operation of DI ∈
+topics for future work.
+n 
+L L2 [0, 1]
+is defined by
+Notation: R and R+ denote the set of all real numbers and
+
+
+v1 (α)
+that of all positive reals respectively. Bold face letters (e.g.
+
+
+A, B, u) are used to represent graphons, compact operators
+([DI]v)(α) = D  ...  = Dv(α), ∀α ∈ [0, 1]. (3)
+and functions. Blackboard bold letters (e.g. A, B) are used to
+vn (α)
+denote linear operators which are not necessarily compact. We
+|
+2
+2
+use A to denote the adjoint operator of A. Let I denote the Let L ([0, T ]; (L [0, 1])n ) denote the Hilbert space of equivaidentity operator for infinite dimensional Hilbert spaces and I lence classes of strongly measurable (in the Böchner sense [22,
+denote the identity matrix. We use h·, ·i and k · k to represent p.103]) mappings [0, T ] → (L2 [0, 1])n that are integrable with
+R
+1/2
+respectively inner product and norm. For any c ∈ R+ , let Wc norm kxkL2 ([0,T ];(L2 [0,1])n ) = ( T kx(·, s)k2 2
+.
+(L [0,1])n ds)
+0
+denote the set of all bounded symmetric measurable functions Based on the definitions of the operations in (2) and (3), the
+A : [0, 1]2 → [−c, c]. In this paper, an element in Wc is called kth (k ≥ 1) powers of DA and DI are respectively given by
+a “graphon”. Any A ∈ Wc can be interpreted as a linear
+(DA)k = Dk Ak and (DI)k = Dk Ik = Dk I. (4)
+operator from L2 [0, 1] to L2 [0, 1] (see e.g. [3]) and the same
+notation A is also used to represent the associated graphon
+Let A = [La I + Da A] with La , Da ∈ Rn×n and A ∈ Wc .
+operator. For a Hilbert space H, L(H) denotes the set of all Clearly, A is a bounded linear operator from L2 [0, 1]n to
+n
+bounded linear operators from H to H. Let ⊗ denote matrix
+L2 [0, 1] . Following [23], A is the infinitesimal generator of
+Kronecker product; more explicitly, the Kronecker product of
+the uniformly (hence strongly) continuous semigroup SA (t) ,
+P∞ k k
+A = [aij ] ∈ Rn×n and B = [bij ] ∈ Rm×m is given by
+eAt = k=0 t k!A , 0 ≤ t < ∞. Therefore, the initial value
+problem of the graphon differential equation
+n
+
+
+ẏt = Ayt , y0 ∈ L2 [0, 1] ,
+0 ≤ t < ∞,
+(5)
+a11 B . . . a1n B
+ ..
+
+.
+nm×nm
+.
+..  ∈ R
+..
+A⊗B = .
+.
+is well defined and has a solution given by yt = eAt y0 .
+an1 B . . . ann B
+Lemma 1 If n × n dimensional matrices La and Da commute,
+then
+Finally, let ⊕ denote direct sum.
+
+eAt = eLa It eDa At = eLa t eDa At ,
+
+∀t ∈ R, ∀A ∈ Wc .
+
+3
+
+The proof follows that of the matrix exponential case by
+replacing the definition of matrix exponentials by semigroups
+corresponding to bounded linear operators.
+For details on graphons, graphon operators, graphon spaces
+and the associated cut metric, readers are referred to [3], [16].
+
+PN
+[N]
+RnN be given by xt (ϑ) = i=1 1Pi (ϑ)xit , for all ϑ ∈ [0, 1].
+[N]
+Similarly define ut ∈ (L2 [0, 1])n that corresponds to ut ,
+| |
+|
+nN
+.
+[u1t , ..., uN
+t ] ∈R
+
+B. Linear graphon dynamical systems
+Definition 1 (Graphon Dynamical Systems) The graphon
+dynamical system model is given as follows:
+ẋt = Axt + But , t ∈ [0, T ],
+
+(6)
+
+with A = [La I+Da A] and B = [Lb I+Db B], where La , Lb , Da
+and Db are constant matrices of dimension
+n n × n, A and B are
+n
+graphons in Wc , and xt ∈ L2 [0, 1] and ut ∈ L2 [0, 1]
+are respectively the system state and the control input at time
+t. The system in (6) is denoted by (A; B)
+2
+Let C([0, T ]; (L2 [0, 1])n ) denote the set of continuous
+mappings from [0, T ] to (L2 [0, 1])n . A solution x ∈
+n
+L2 ([0, T ]; (L2 [0, 1])
+is called a mild solution of (6) if
+R t ) (t−s)A
+(t−a)A
+xt = e
+xa + a e
+Bus ds for all a ≤ t in [0, T ].
+Proposition 1 The system (A; B) in (6) has a unique mild
+solution x ∈ C([0, T ]; (L2 [0, 1])n ) for any x0 ∈ (L2 [0, 1])n
+and any u ∈ L2 ([0, T ]; (L2 [0, 1])n ).
+2
+P ROOF Since A generates a strongly continuous semigroup
+and B is a bounded linear operator on (L2 [0, 1])n , we obtain
+this result following [17, p.385].
+
+C. Relation to finite dimensional network systems
+Definition 2 (Network Systems) Consider a network of N
+agents with the following dynamics
+ẋit = La xit + Da zti + Lb uit + Db vti ,
+
+t ∈ [0, T ]
+
+(7)
+
+where xit ∈ Rn is the state of node i, uit ∈ Rn represents the
+control of node i, and La , Lb , Da , Db ∈ Rn×n are constant
+matrices shared by the agents; here the network coupling of
+states and that of controls are given by
+zti =
+
+N
+1 X
+
+N j=1
+
+aij xjt
+
+and
+
+vti =
+
+N
+1 X
+
+N j=1
+
+where |aij | ≤ c and |bij | ≤ c.
+
+bij ujt ,
+2
+
+Fig. 1.
+Random graphs generated from a stochastic block model
+[24], their step functions and the graphon limit. The underlying
+stochastic model is characterized by connection probabilities
+[0.25, 0.05, 0.02; 0.05, 0.35, 0.07; 0.02, 0.07, 0.4].
+
+Then the corresponding graphon dynamical system for the
+network system in (7) is given by
+[N]
+
+ẋt
+
+[N]
+
+= (La I + Da A[N] )xt
+
+t ∈ [0, T ],
+
+[N]
+
+[N]
+
+xt , ut
+
+[N]
+
++ (Lb I + Db B[N] )ut ,
+
+∈ (L2pwc [0, 1])n ,
+
+(8)
+
+where A[N] , B[N] ∈ Wc represent the corresponding graph (i.e.
+step function graphon) couplings and (L2pwc [0, 1])n represents
+the set of all piece-wise constant (over each element Pi of the
+uniform partition) functions in (L2 [0, 1])n .
+The trajectories of the graphon dynamical system in (8)
+correspond one-to-one to the trajectories of the network system
+in (7). Clearly (8) is a special case of the graphon dynamical
+system in (6). Therefore any (finite dimensional) network
+system of arbitrary size in (7) can be represented by the
+graphon dynamical system in (6). Moreover, the system in
+(6) can represent the limit system for a sequence of network
+systems represented in the form of (8) when the underlying
+step function graphon sequences convergence in the operator
+norm or L2 [0, 1]2 metric.
+D. Optimal control problem
+The control objective is to obtain the control law u ∈
+L2 ([0, T ]; (L2 [0, 1])n ) that minimizes the following cost
+Z T
+J(u) =
+(hxt , Qxt i + hut , ut i) dt + hxT , QT xT i, (9)
+0
+
+Note that problems with m control inputs (m < n) for the
+nodal dynamics in (7) can be considered by filling zeros into
+columns (with indices between m and n) of Lb and Db .
+Consider the uniform partition {P1 , . . . , PN } of [0, 1] with
+k
+P1 = [0, N1 ] and Pk = ( k−1
+N , N ] for 2 ≤ k ≤ N . Define the
+[N]
+step function graphon A
+associated with AN , [aij ] as
+A[N] (ϑ, ϕ) =
+
+N X
+N
+X
+
+1Pi (ϑ)1Pj (ϕ)aij ,
+
+(ϑ, ϕ) ∈ [0, 1]2 ,
+
+i=1 j=1
+
+where 1Pi (·) represents the indicator function, that is, 1Pi (ϑ) =
+1 if ϑ ∈ Pi and 1Pi (ϑ) = 0 if ϑ ∈
+/ Pi . Similarly, define B[N]
+based on BN , [bij ]. Let the piece-wise constant function
+| |
+|
+[N]
+xt ∈ (L2 [0, 1])n corresponding to xt , [x1t , ..., xN
+t ] ∈
+
+
+where Q, QT ∈ L (L2 [0, 1])n , subject to the system dynamics
+in (6). Consider the following assumption:
+(A1) The bounded linear operators Q and QT in
+L (L2 [0, 1])n are Hermitian and non-negative, that
+is, Q| = Q, Q|T = QT and for any v ∈ (L2 [0, 1])n ,
+hv, Qvi ≥ 0, hv, QT vi ≥ 0.
+The optimal control problem can be solved via dynamic
+programming which gives rise to the following Riccati equation:
+|
+
+|
+
+−Ṗ = A P + PA − PBB P + Q,
+
+P(T ) = QT .
+
+(10)
+
+Given the solution P to the Riccati equation, the optimal control
+u∗ , {u∗t , t ∈ [0, T ]} is given by
+|
+
+u∗t = −B P(t)x∗t ,
+
+t ∈ [0, T ]
+
+(11)
+
+4
+
+and moreover x∗ , {x∗t , t ∈ [0, T ]} is the solution to the
+closed loop equation
+
+|
+ẋt = A − BB P(t) xt , t ∈ [0, T ], x0 ∈ (L2 [0, 1])n . (12)
+See [17] for more details and notice that we reverse the time
+for the Riccati equation in [17].
+Proposition 2 ([17, Part IV]) Under the assumption (A1),
+there exists a unique solution to the Riccati equation (10)
+and furthermore there exists a unique optimal solution pair
+(u∗ , x∗ ) as given in (11) and (12).
+2
+In general for an infinite dimensional operator Riccati equation,
+there are different types of solutions (such as mild, weak, strict
+and classical solutions [17]). In this current formulation it can
+be verified that these different types of solutions are equivalent,
+and hence we don’t distinguish among them.
+III. I NVARIANT S UBSPACE
+Consider a Hilbert space H and let L(H) denote the set of
+bounded linear operators from H to H.
+Definition 3 (Invariant Subspace) An invariant subspace of
+a bounded linear operator T ∈ L(H) is defined as any subspace
+S ⊂ H such that
+∀x ∈ S,
+
+Tx ∈ S.
+
+Then the subspace S is said to be T-invariant.
+
+2
+
+By definition any subspace S ⊂ H is I-invariant.
+Consider a self-adjoint compact linear operator A = A| ∈
+L(H). An application of the spectral theorem [25, Chapter
+8, Theorem 7.3] implies that A has non-trivial invariant
+subspace. Any eigenspace of A (i.e. the space spanned by
+some eigenfunctions) is an invariant subspace of A. Let the
+Hilbert space H be decomposed by Siv and its orthogonal
+complement (Siv )⊥ as follows H = Siv ⊕ (Siv )⊥ , where Siv
+is an invariant subspace of A. By the orthogonal decomposition
+theorem, for any x ∈ H, there exists a unique decomposition
+x = xf + x̆ with xf ∈ Siv and x̆ ∈ (Siv )⊥ . We note that for
+any z ∈ (Siv )⊥ , Az ∈ (Siv )⊥ holds, since for any u ∈ Siv
+the following hold:
+
+where vif ∈ S ⊂ L2 [0, 1] and v̆i ∈ S ⊥ ⊂ L2 [0, 1]. We call this
+component-wise decomposition of v into (S)n and (S ⊥ )n and
+denote it by v = vf + v̆ where vf ∈ (S)n and v̆ ∈ (S ⊥ )n .
+Proposition 3 Let S ⊂ L2 [0, 1] be an invariant subspace of
+A ∈ Wc . Then both (S)n and (S ⊥ )n are [La I+Da A]-invariant,
+that is,
+∀v ∈ (S)n ,
+
+[La I + Da A]v ∈ (S)n ;
+
+∀v ∈ (S ⊥ )n ,
+
+[La I + Da A]v ∈ (S ⊥ )n .
+2
+
+(16)
+2
+
+n
+
+Furthermore, for any v ∈ (L [0, 1]) , the following decomposition holds
+hv,[La I + Da A]vi
+(17)
+= vf , [La I + Da A]vf + v̆, [La I + Da A]v̆ ,
+where v = vf + v̆, vf ∈ (S)n and v̆ ∈ (S ⊥ )n .
+P ROOF (16) is obtained by explicitly carrying out the calculations. (16) together with the fact that (S)n and (S ⊥ )n are
+also orthogonal to each other implies (17).
+
+IV. S OLUTION VIA S UBSPACE D ECOMPOSITION
+A. Dynamics and cost decomposition
+Consider the following assumptions:
+(A2) A ∈ Wc and B ∈ Wc share the same invariant
+subspace S ⊂ L2 ([0, 1]).
+(A3) Q = Lq I + Dq Q and QT = LqT I + DqT QT , where
+Lq , LqT , Dq , DqT ∈ Rn×n and Q, QT ∈ Wc ; Q and
+QT share the invariant subspaces S ⊂ L2 ([0, 1]).
+(A4) The invariant subspace S in (A2) and (A3) is the
+same.
+Denote the component-wise decomposition of xt ∈
+(L2 [0, 1])n as xt = x̆t + xft where x̆t ∈ (S ⊥ )n and xft ∈ (S)n .
+Similarly, define uft and ŭt .
+Lemma 2 Under the assumption (A2), the dynamics in (6)
+can be decoupled as follows:
+ẋft =[La I + Da A]xft + [Lb I + Db B]uft ,
+x̆˙ t =[La I + Da A]x̆t + [Lb I + Db B]ŭt .
+
+(18)
+(19)
+2
+
+P ROOF If (A2) holds, then both S and S ⊥ are the common
+invariant subspaces of A and B. Following Proposition 3, this
+This means that (Siv )⊥ is also an invariant subspace of A. implies that (S)n and (S ⊥ )n are both the common invariant
+Therefore the following property holds:
+subspaces of [La I + Da A] and [Lb I + Db B]. Furthermore,
+n
+(S)
+and (S ⊥ )n are orthogonal to each other, and the state
+hx, Axi = (xf + x̆), A(xf + x̆) = xf , Axf + x̆, Ax̆ .
+xt ∈ (L2 [0, 1])n and the control ut ∈ (L2 [0, 1])n both admit
+(14)
+unique component-wise decompositions into (S)n and (S ⊥ )n .
+The above property holds trivially for the identity operator I.
+These lead to the desired decomposition of the dynamics. 
+Let S ⊂ L2 [0, 1] be an invariant subspace of A ∈ Wc and
+consider the subspace of (L2 [0, 1])n denoted by
+Lemma 3 Under the assumption (A3), the cost in (9) can be
+decoupled as follows:
+n
+2
+n
+(S) , S × . . . × S ⊂ (L [0, 1]) .
+{z
+}
+|
+J(u) = JS (uf ) + JS ⊥ (ŭ),
+(20)
+n
+|
+
+hu, Azi = hA u, zi = hAu, zi = 0.
+
+(13)
+
+Clearly, by definition, (S ⊕ S ⊥ )n = (L2 [0, 1])n . Any v ∈
+(L2 [0, 1])n can be uniquely decomposed through its components as
+vi = vif + v̆i , ∀i ∈ {1, ..., n}
+(15)
+
+where
+JS (uf ) =
+
+Z T
+0
+
+
+hxft , Qxft i + huft , uft i dt + hxfT , QT xfT i
+(21)
+
+5
+
+Z T
+(hx̆t , Qx̆t i + hŭt , ŭt i) dt + hx̆T , QT x̆T i.
+
+JS ⊥ (ŭ) =
+0
+
+(22)
+
+Corollary 2 Under the assumptions (A3) and (A5), the cost
+in (9) can be decoupled as follows:
+J(u) = JS (uf ) + JS ⊥ (ŭ),
+
+2
+
+P ROOF Under the assumption (A3), an application of Proposition 3 yields
+hxt , Qxt i = hxft , Qxft i + hx̆t , Qx̆t i,
+hut , ut i = huft , uft i + hŭt , ŭt i,
+hxt , QT xt i = hxft , QT xft i + hx̆t , QT x̆t i.
+
+(25)
+
+where
+JS (uf ) =
+
+Z T
+
+
+hxft , Qxft i + huft , uft i dt + hxfT , QT xfT i,
+
+0
+
+(26)
+Z T
+JS ⊥ (ŭ) =
+
+The above separations hold for any t ∈ [0, T ] and hence we
+obtain the cost decomposition in (20).
+
+Under assumptions (A1)-(A4), the original problem can be
+decoupled as separate LQR problems in orthogonal subspaces,
+that is, the LQR problem defined by (18) and (21), and the
+LQR problem given by (19) and (22). These problems can be
+solved independently and each of them has a unique solution.
+
+0
+
+(hx̆t , [Lq I]x̆t i + hŭt , ŭt i) dt + hx̆T , [LqT I]x̆T i.
+(27)
+2
+
+C. Projection into a low-dimensional subspace
+Consider an arbitrary orthonormal basis {f1 . . . fd } for the
+low-dimensional subspace Sf ⊂ L2 [0, 1] of dimension d. Note
+that f1 . . . fd are not necessarily the eigenfunctions of the
+operator A, B, Q, or QT . For all `, k ∈ {1, . . . , d}, let
+
+B. Low-complexity solutions
+
+A`k , hAf` , fk i, B`k , hBf` , fk i,
+In certain situations, the above decoupling leads to simplifiQ`k , hQf` , fk i, QT`k , hQT f` , fk i.
+cations.
+(A5) (i) The common invariant subspace S in (A4) of the Denote f , {f1 , . . . , fd }. Consider the following projections
+underlying coupling operators A, B, Q, and QT is
+Projf (·) : (L2 [0, 1])n → Rnd ,
+finite-dimensional;
+Projf (·) : L((L2 [0, 1])n ) → Rnd×nd
+(ii) Furthermore, the underlying coupling operators A,
+B, Q, and QT admit exact low-rank representations into the subspace (S )n with S = span{f , . . . , f }. We use
+f
+f
+1
+d
+in S, that is, for any v̆ ∈ S ⊥ , Av̆ = 0, Bv̆ = 0, the same symbol Proj (·) for the projections of functions
+f
+Qv̆ = 0 and QT v̆ = 0.
+and operators as it will be clear which projection is used
+The smallest subspace S that satisfies (A5) is defined as the in the specific context. The projection operations are defined
+nontrivial common invariant subspace of operators A, B, Q as follows: for xt ∈ (L2 [0, 1])n and any DT ∈ L((L2 [0, 1])n )
+and QT .
+with T ∈ L(L2 [0, 1]) and D ∈ Rn :
+Assumption (A5) is satisfied in many cases. For instance,
+
+
+hf1 , Tf1 i . . . hfd , Tfd i
+in control or game problems with mean field couplings, the
+
+
+..
+..
+nd×nd
+..
+Projf (DT) , 
+,
+common invariant subspace is naturally S = span{1} where
+⊗D ∈R
+.
+.
+.
+2
+1 ∈ L [0, 1] with 1(α) = 1 for all α ∈ [0, 1], and hence
+hfd , Tf1 i . . . hfd , Tfd i
+(A5) is satisfied. A second example would be that where
+|
+| |
+p
+Projf (xt ) , xt = [xp1t , . . . , xpnt ] ∈ Rnd ,
+the underlying couplings may be multi-hop neighbourhood
+(28)
+couplings on a single network as illustrated in [2], [19] and the
+p
+p1
+pd |
+p`
+where
+x
+,
+[x
+,
+.
+.
+.
+,
+x
+]
+,
+x
+,
+hx
+,
+f
+i,
+i
+∈
+{1,
+...,
+n},
+it
+`
+it
+it
+it
+it
+underlying common invariant subspace is just the eigenspace
+2
+and
+x
+∈
+L
+[0,
+1]
+represents
+the
+ith
+function
+component
+of
+it
+of the coupling matrix. As another example, coupling matrices
+2
+n
+x
+∈
+(L
+[0,
+1])
+.
+According
+to
+this
+definition,
+we
+obtain
+t
+(or similarity matrices) in recommender systems [26] may be
+built upon certain low-dimensional feature space (or latent
+Projf (DI) = I ⊗ D,
+Projf (DA) = A ⊗ D,
+factors), which may naturally give rise to a common invariant
+Projf (DB) = B ⊗ D,
+Projf (DQ) = Q ⊗ D,
+(29)
+subspace.
+Projf (DQT ) = QT ⊗ D,
+For conditions and algorithms to identify common invariant
+subspaces of matrices and linear operators readers are referred for any D ∈ Rn×n .
+to [27]–[29] and the references therein.
+Lemma 4 If Sf , span{f1 , . . . , fd } forms an invariant subThe result below follows Lemma 2.
+space of A ∈ Wc , then for any D ∈ Rn×n and xt ∈
+Corollary 1 Under assumptions (A2) and (A5), the dynamics (L2 [0, 1])n , the following relations hold
+in (6) can be decoupled as follows:
+Projf (DAxt ) = Projf (DA)Projf (xt ) = (A ⊗ D)xpt ∈ Rnd ;
+f
+f
+f
+ẋt =[La I + Da A]xt + [Lb I + Db B]ut ,
+(23)
+⊥
+˙x̆t =[La I]x̆t + [Lb I]ŭt .
+(24) Moreover, if for any v ∈ Sf , Av = 0, then
+2
+
+An application of Lemma 3 yields the following result.
+
+|
+
+h[DA]xt , xt i = Projf (xt ) Projf (DA)Projf (xt )
+|
+
+= (xpt ) (A ⊗ D)xpt .
+
+2
+
+6
+
+For any v ∈ Rn and z ∈ L2 [0, 1], let vz ∈ (L2 [0, 1])n be
+defined as follows: for any α ∈ [0, 1], i ∈ {1, . . . , n},
+(vz)(α) = vz(α),
+
+(vz)i = vi z.
+
+(30)
+
+Let the ith component of x`t ∈ (L2 [0, 1])n be defined by
+x`it = hxit , f` if` = xp`
+it f` .
+Proposition 4 Under (A1)-(A5), the original problem defined
+by (6) and (9) can be transformed into the following equivalent
+problem
+ẋpt =(I ⊗ La + A ⊗ Da )xpt + (I ⊗ Lb + B ⊗ Db )upt , (31)
+x̆˙ γt =La x̆γt + Lb ŭγt , γ ∈ [0, 1],
+(32)
+with the following cost to be minimized
+Z T
+
+|
+|
+xpt (I ⊗ Lq + Q ⊗ Dq )xpt + upt upt dt
+JS (up ) =
+0
+
+|
+
++ xpT (I ⊗ LqT + QT ⊗ DqT )xpT ,
+(33)
+Z T
+
+|
+|
+|
+JS ⊥ (ŭγ ) =
+x̆γt Lq x̆γt + ŭγt ŭγt dt + x̆γT LqT x̆γT , (34)
+
+and the optimal control in the auxiliary direction is given by
+|
+
+γ
+ŭoγ
+t = −Lb πt x̆t ,
+
+∈ Rn , xpt , upt ∈ Rnd ,
+and the initial conditions are given by xp0 = Projf (x0 ) =
+Pd
+| |
+|
+[xp10 , . . . , xpn0 ] and x̆γ0 = xγ0 − `=1 xp`0 f` (γ).
+2
+
+P ROOF By performing Projf (·) on both sides of (23), we
+obtain (31). The same projection of (26) results in (33). The
+auxiliary problem defined by (24) and (27) is the same as
+the problem defined by (32) and (34) for almost all γ ∈ [0, 1],
+the definition of the dynamics is pointwise and JS ⊥ (ŭ) =
+Rsince
+1
+γ
+γ
+J
+⊥ (ŭ )dγ where JS ⊥ (ŭ ) ≥ 0 for each γ ∈ [0, 1], that
+S
+0
+is, JS ⊥ (ŭ) is the convex combination of all (non-negative)
+elements in {JS ⊥ (ŭγ ) : γ ∈ [0, 1]}.
+
+At this stage, the optimal control of an infinite network
+can be solved based on the optimal control solution to two
+decoupled LQR problems, where one requires solving a Riccati
+equation of dimension nd × nd and the other requires solving
+a Riccati equation of dimension n × n. We note that the system
+dynamics (32) of the auxiliary problem is infinite dimensional
+as γ takes values in the interval [0, 1].
+
+(37)
+2
+
+Each individual agent may compute its part of the optimal
+control solution locally and then solve the original optimal
+control problem collaboratively.
+Corollary 3 Under (A1)-(A5), the nodal collaborative optimal
+control solution to the original problem defined by (6) and (9)
+is given as follows: for almost all γ ∈ [0, 1],
+oγ
+uoγ
+t = ŭt +
+
+d
+X
+
+oγ
+op
+uop`
+t f` (γ) =: ŭt + f (γ) ◦ ut
+
+(38)
+
+`=1
+oγ
+where f (γ) = [f1 (γ), . . . , fd (γ)], uop
+t is given by (36) and ŭt
+is given by (37).
+2
+
+To implement the collaborative nodal optimal control, each
+agent needs to know the projection of states into the subspace,
+i.e. xpt = Projf (xft ). The projection represents certain aggregate
+information of the state in certain invariant subspace of the
+underlying graphon couplings. Agent γ ∈ [0, 1] can then
+compute x̆γt = xγt − f (γ) ◦ xpt together with the local state
+xγt ; the state information xpt , t ∈ [0, T ], may be precomputed
+based on the aggregate initial condition xp0 .
+For decentralized solutions in a competitive environment,
+readers are referred to the work on graphon mean field
+games [31].
+A. Illustrative Example
+Let A, B, Q and QT be given by the following: for all
+(x, y) ∈ [0, 1]2 ,
+A(x, y) = 2 cos(2π(x − y)) + sin(2π(x + y)),
+
+V. E XACT C ONTROL
+Theorem 1 Under (A1)-(A5), the optimal control for the
+original problem defined by (6) and (9) is unique and is given
+by
+d
+X
+op
+o
+uot = ŭot +
+uop`
+(35)
+t f` =: ŭt + f ◦ ut
+`=1
+
+where f = {f1 , . . . , fd },
+|
+
+op
+uop
+t = − (I ⊗ Lb + B ⊗ Db ) Πt xt ,
+|
+
+−Π̇t =(I ⊗ La + A ⊗ Da ) Πt + Πt (I ⊗ La + A ⊗ Da )
+|
+
+− Πt (I ⊗ Lb + B ⊗ Db )(I ⊗ Lb + B ⊗ Db ) Πt
++ (I ⊗ Lq + Q ⊗ Dq ),
+ΠT =I ⊗ LqT + QT ⊗ DqT ,
+
+πT = LqT .
+
+P ROOF We have two decoupled LQR problems: (i) the LQR
+problem defined by (31) and (33), and (ii) the LQR problem
+given by (32) and (34). By classical finite dimensional LQR
+[30], the optimal control law for each LQR problem is unique
+and is given by (36) and (37). Then recovering the unique
+decomposition of the control input into the component spaces
+(S ⊥ )n and (S)n as ut = ŭt +uft , we obtain the optimal control
+law in (35) for the original problem.
+
+
+0
+
+for almost all γ ∈ [0, 1] where x̆γt , ŭγt
+
+for almost all γ ∈ [0, 1],
+
+|
+|
+−π̇t = La πt + πt La − πt Lb Lb πt + Lq ,
+
+(36)
+
+B = cos(2π(x + y)),
+
+Q(x, y) = sin(2πx) sin(2πy), (39)
+
+QT (x, y) = cos(2πx) cos(2πy).
+√
+Consider a √
+subspace Sf = span{f1 , f2 } with f1 = 2 sin(2π·)
+and f2 = 2 cos(2π·) in L2 [0, 1]. Then Sf is an invariant
+subspace of A, B, Q and QT . Then projecting these operators
+into the subspace yields
+
+
+ 1
+
+1 12
+−2 0
+A = Projf (A) = 1
+, B = Projf (B) =
+1 ,
+1
+0
+2
+2
+1
+
+
+
+0 0
+0
+Q = Projf (Q) = 2
+, QT = Projf (QT ) =
+.
+0 0
+0 21
+Obviously, the projections of these coupling operators into
+(Sf )⊥ is zeros. Hence (A5) is satisfied. Let n = 1, La = 2,
+Lb = 1.2, Lq = Da = Db = Dq = DqT = 1 and LqT = 2.
+
+7
+
+(a) Projections and auxiliary signals of both state and control
+
+(b) Comparison between the exact control and the centralized optimal control
+
+Fig. 2. The term “projection-based" refers to the result generated from the method developed in Section V, while centralized optimal controls are generated by
+directly solving the problem with state space discretization. The differences between the trajectories generated based on these two different solution methods
+are mainly due to numerical approximations and are shown in the last row of (b). Following the projection-based solution, the trajectories for the projected
+dynamics and those for the auxiliary dynamics are respectively shown in the 1st and 2nd columns of (a).
+
+Following Proposition 4, the original LQR problem for the
+graphon dynamical system with dynamics in (6) and cost in
+(9) can be transformed into the LQR control problems defined
+by (31) & (33), and (32) & (34). Based on Corollary 3, the
+original problem is solved in the low dimensional subspace and
+each agent generate its control law and implements it locally.
+A simulation result is demonstrated in Fig. 2; it was
+carried out for a graphon dynamical system with step function
+approximation and state space discretization based on the
+uniform partition of size 40. Note that the step function system
+represents a network system consisting of 40 nodal agents
+where each agent is indexed by an interval of length 1/40
+in [0, 1]. The initial conditions for all agents are uniformly
+sampled from [−5, 5]. Each agent locally generates its control
+input according to Corollary 3, and solves one 2 × 2 Riccati
+equation and one scalar Riccati equation. As a comparison, the
+direct solution requires solving a Riccati equation of dimension
+40 × 40.
+VI. A PPROXIMATE C ONTROL
+If Assumption (A5)-(ii) is not satisfied, that is, A, B, Q
+and QT do not admit exact low-rank representations in
+some common invariant subspace, one may approximate these
+operators in some finite-dimensional subspace where their
+eigenvalues are significant, since these operators are (compact)
+Hilbert-Schmidt integral operators and have discrete spectrum
+with zero as the only accumulation point. More explicitly,
+since for a graphon A ∈ Wc , we have kAk2 < ∞ and hence
+the operator A is a compact operator according to [32, Chapter
+2, Proposition 4.7]. Therefore
+P∞ it has a countable spectral
+decomposition A(x, y) = i=1 λ` f` (x)f` (y), (x, y) ∈ [0, 1]2 ,
+where the convergence is in the L2 [0, 1]2 sense, {λ1 , λ2 , ....} is
+the set of eigenvalues (which are not necessarily distinct) with
+decreasing absolute values, and {f1 , f2 , ...} represents the set of
+the corresponding orthonormal eigenfunctions (i.e. kf` k2 = 1,
+and hf` , fk i = 0 if l 6= k). The only accumulation point of the
+eigenvalues is zero [16], that is, lim`→∞ λ` = 0.
+For two graphon operators AS and A, AS is called the
+equivalent linear operator of A in S if for all v ∈ S,
+
+Proj(Av) = Proj(AS v) and the range of AS lies in S. Let
+A = AS +AS ⊥ ∈ Wc where AS (resp. AS ⊥ ) is the equivalent
+linear operator of A in S (resp. S ⊥ ). Similarly define BS ,
+BS ⊥ ,QS , QS ⊥ ,QT S and QT S ⊥ .
+Following Lemma 2, the dynamics can be decoupled as
+ẋft =[La I + Da AS ]xft + [Lb I + Db BS ]uft ,
+x̆˙ t =[La I + Da AS ⊥ ]x̆t + [Lb I + Db BS ⊥ ]ŭt .
+
+(40)
+(41)
+
+Applying the control law in Theorem 1 will ignore the effect
+of AS ⊥ , BS ⊥ , QS ⊥ and QT S ⊥ . A special case of this type
+of approximation is explored and discussed in [2].
+To generate approximate control laws that ensure a faster
+rate of convergence for (41), a variant of the implementation
+in Theorem 1 can be considered.
+Approximate Control Implementation Consider the case
+where DqT > 0, Dq ≥ 0, Db L|b ≥ 0 and the real parts of all
+the eigenvalues of Da are non-negative. Assume the operator
+norms of AS ⊥ , BS ⊥ , QS ⊥ and QT S ⊥ are available for the
+computation of the control law. Then under (A1)-(A4) and
+(A5)-(i), the approximate control law is given by the following
+ut = ŭapp
++
+t
+
+d
+X
+
+app
+uopi
++ f ◦ uop
+t fi =: ŭt
+t
+
+(42)
+
+i=1
+
+where f = {f1 , . . . , fd }, uop
+is given by (36) and the
+t
+approximate control uapp
+in
+the
+auxiliary
+direction is given by
+t
+|
+
+γ
+ŭapp
+= −Lb πt x̆γt ,
+t
+
+for almost all γ ∈ [0, 1],
+|
+
+−π̇t = (La + Da kAS ⊥ kop ) πt + πt (La + Da kAS ⊥ kop )
+|
+
+|
+
+|
+
+− πt (Lb Lb − Db Lb kBS ⊥ kop − Lb Db kBS ⊥ kop )πt
++ Lq + Dq kQS ⊥ kop ,
+πT = LqT + DqT kQT S ⊥ kop .
+
+(43)
+
+The actual dynamics of the auxiliary system is given by (41).
+Since the operator norms of AS ⊥ , BS ⊥ , QS ⊥ and QT S ⊥ are
+
+8
+
+(a) Projections and auxiliary signals of both state and control
+under the projection-based approximate control
+
+(b) Comparison between the approximate control and the centralized optimal control
+
+Fig. 3. The term “projection-based approx" refers to the result generated from the method developed in Section VI, while “centralized optimal control or state”
+is generated by directly solving the LQR problem. In (a), the first column demonstrates the states and controls associated with projected dynamics under the
+approximate control, and the second column presents those associated the auxiliary dynamics under the approximate control. In (b), the first column illustrates
+the states and controls under the approximated control, the second column illustrates the states and controls under a direct solution of the LQR problem, and
+the last column presents the differences in trajectories under two control solutions. The approximate control cost is 2.376% higher than the optimal cost, and
+the maximum difference in state trajectories is 11.181% of the maximum state under the optimal control.
+
+available for the computation of the control law, an approximate
+cost in the auxiliary direction is given by the following form
+Z T
+J˜S ⊥ (ŭ) =
+{hx̆t , [(Lq + Dq kQS ⊥ kop )I]x̆t i + hŭt , ŭt i} dt
+0
+
++ hx̆T , [(LqT + DqT kQT S ⊥ kop )I]x̆T i.
+
+|
+
+(44)
+Observe that this cost is always greater than or equal to the
+actual cost in the auxiliary direction given by
+Z T
+JS ⊥ (ŭ) =
+{hx̆t , [Lq I + Dq QS ⊥ ]x̆t i + hŭt , ŭt i} dt
+(45)
+0
++ hx̆T , [LqT I + DqT QT S ⊥ ]x̆T i.
+That is, for all admissible control ŭ, J˜S ⊥ (ŭ) ≥ JS ⊥ (ŭ). The
+approximate control considered takes the special form
+|
+
+ŭapp
+= −[Lb πt I]x̆t .
+t
+
+than the closed-loop dynamics for (49), since the real parts of
+all the values in the spectrum of following difference operator
+
+
+|
+∆(t) , La I + Da AS ⊥ − Db Lb πt BS ⊥
+
+
+|
+− La I + kAS ⊥ kop Da I + Db Lb πt kBS ⊥ kop I
+
+(46)
+
+This then yields the closed-loop system dynamics
+|
+x̆˙ t = [La I + Da AS ⊥ ]x̆t + [Lb I + Db BS ⊥ ][−Lb πt I]x̆t .
+
+(47)
+Assuming π(·) is available (which comes from a Riccati
+equation to be formulated), by separating the control part,
+an equivalent closed-loop dynamics is given by
+
+
+|
+|
+x̆˙ t = La I + Da AS ⊥ − Db Lb πt BS ⊥ x̆t + [Lb πt I]ŭapp
+t ,
+(48)
+= −[L|b πt I]x̆t . The control solution in (43) solves
+where ŭapp
+t
+optimally the LQR problem with dynamics
+
+
+|
+x̆˙ t = La I + kAS ⊥ kop Da I + Db Lb πt kBS ⊥ kop I x̆t
+(49)
+|
++ [Lb πt I]ŭapp
+t ,
+and cost in (44). When the same control feedback gain is
+applied to the dynamics in (48), the close-loop dynamics
+(projected in the subspace S ⊥ ) converges to the origin faster
+
+=Da (AS ⊥ − kAS ⊥ kop I) − Db Lb πt (BS ⊥ + kBS ⊥ kop I)
+are always non-positive for all t ∈ [0, T ].
+When (A5)-(ii) also holds, this approximate control implementation recovers the exact optimal control in Theorem 1.
+Furthermore, an approximate collaborative control similar to
+that in Corollary 3 may be generated by simply replacing ŭoγ
+there with the approximate auxiliary control ŭapp γ in (43) for
+all γ ∈ [0, 1].
+A numerical illustration is shown in Fig. 3, where the underlying network (or graphon) couplings contain uncertainties
+and are generated from a stochastic block (graphon) model
+as in Fig. 1. These networks can be well approximated by
+low-rank models and there is usually a clear spectral gap
+between the most significant eigenvalues and the rest. The size
+of the network in the illustative example is 120. Based on lowrank approximations, the approximate control is generated
+and implemented. The parameters in the simulation are:
+La = 2, Lb = 1.2, LqT = 2, Lq = Da = Db = Dq = DqT = 1.
+The underlying network (or graphon) couplings A and B
+are generated from the stochastic block model in Fig. 1 and
+Q = QT = A. The subspace corresponding to the three
+most significant eigenvalues of A is considered. The operator
+norms kAS ⊥ kop = kQS ⊥ kop = kQT S ⊥ kop = 0.058 and
+kBS ⊥ kop = 0.076 are assumed available for the computation
+of the control law. The initial conditions for all agents are
+uniformly sampled from [−5, +5]. Each of the normalized
+eigenvectors associated with the three most significant eigenvalues of graphs in Fig. 1 contains roughly 3 block structures.
+The projected states in each direction correspond roughly to the
+weighted sums of the block averages of initial states. Therefore,
+
+9
+
+(a) Graphon approximate control and optimal control
+
+(b) Projection-based approximate control and optimal control
+
+Fig. 4. Graphon approximate control following [3] and projection-based approximate control following Section VI are applied to a network of 60 harmonic
+oscillators. The second columns in (a) and (b) denote the trajectories of state and control under the optimal control, and the last columns in (a) and (b) present
+the differences between trajectories under approximate control and those under optimal control. In (a), the L2 ([0, T ]; R120 ) norm of the state difference in the
+last column is 5.87% of that of the optimal state trajectory in the second column, and the approximate control cost is 0.461% higher than the optimal cost. In
+(b), the L2 ([0, T ]; R120 ) norm of the state difference is 14.82% of that of the optimal state trajectory, and the approximate control cost is 3.356% higher
+than the optimal cost.
+
+in this simulation example, the initial values of the subspace
+projected states are often small compared to the initial values
+of the actual states and the auxiliary states (see Fig. 3).
+VII. R EGULATING C OUPLED H ARMONIC O SCILLATORS
+Consider a very large-scale network of coupled harmonic
+oscillators
+
+
+
+
+N
+1 X
+0 1 i
+0 0 i
+j
+i
+ẋt = α
+x +
+aij xt + β
+u , (50)
+−1 0 t N
+0 1 t
+j=1
+where α, β ∈ R+ , xit , uit ∈ R2 . Here α represents the natural
+frequency of the harmonic oscillators, xit , [θti , ωti ]| is the
+state (which may represent, for instance, location and velocity)
+and the second component of uit represents the input force of
+the ith harmonic oscillator. The objective is to design a control
+law that minimizes the following cost with network couplings:
+N
+
+1 Xn
+J(u) =
+N i=1
+
+Z Th
+
+|
+|
+(xit − ηzti ) Q(xit − ηzti ) + (uit ) Ruit
+
+0
+
+|
+|
+˙
+− Π̆t = La Π̆t + Π̆t La − Π̆t Lb Lb Π̆t + Q,
+|
+
+− Π̇`t = (La + λ` I) Π`t
+|
+
+|
+
++ Π`t (La + λ` I) − Π`t Lb Lb Π`t + (1 − ηλ` )2 Q,
+Π̆T = QT ,
+
+Π`T = (1 − ηλ` )2 QT ,
+
+(52)
+
+1 ≤ ` ≤ d.
+
+Two alternatives for generating control laws are possible:
+(i) Following the graphon control methodology in [3], the
+limit graphon control in (51) can then be applied to
+systems on networks of arbitrary sizes in the convergence
+sequence;
+(ii) The projection-based approximate control solution given
+by (42) in Section VI provides an alternative to generate
+an approximate control for a finite network system.
+
+Numerical simulations based on (i) the graphon control
+i
+methodology
+in [3], and (ii) the projection-based approximate
+dt
+control implementation in Section VI, are presented in Fig. 4.
+For these simulations, we set the following parameters:
+
+o
+|
++ (xiT − ηzTi ) QT (xiT − ηzTi ) ,
+PN
+where zti = N1 j=1 aij xjt , Q, QT ≥ 0 and R > 0. Denote
+
+
+
+
+0 α
+0 0
+La =
+, Lb =
+.
+−α 0
+0 β
+
+Assume the underlying graph lies in a sequence of graphs
+which converges to some graphon limit, as depicted by the
+sequence of graphs shown in Fig. 1. One can then formulate
+the limit graphon LQR problem for systems distributed on
+the underlying graph. Adopting Assumptions (A1)-(A5), and
+based upon the subspace decompositions introduced above, the
+optimal control for the limit problem is given by
+"
+#
+d
+X
+|
+` `
+(51)
+ut (γ) = −Lb Π̆t x̆t (γ) +
+Πt xt (γ)
+`=1
+
+where γ ∈ [0, 1] represents a agent in the network with state
+xt (γ) ∈ R2 and control ut (γ) ∈ R2 , Π̆ and Π` are the
+solutions to the following matrix Riccati equations
+
+α = 10; β = 1.5; Q = I; QT = 2I; R = I; η = 3; N = 60.
+The time interval [0, T ] with T = 2 is discretized into 200
+time steps. The initial conditions for all agents are uniformly
+sampled from [−5, +5]. The couplings are represented by a
+graph in a convergent sequence generated from the stochastic
+block model as in Fig. 1. Note that the rank of the limit
+graphon (i.e., the step function graphon that corresponds to the
+block matrix) for the particular example is 3. The projectionbased approximate control method employs projections into the
+three most significant eigendirections. In addition, the residual
+operators used in the projection-based approximate control in
+Fig. 4(b) are AS ⊥ , BS ⊥ , QS ⊥ = QT S ⊥ = (I − ηAS ⊥ )2 −
+I with kAS ⊥ kop = 0.077, kBS ⊥ kop = 0, and kQS ⊥ kop =
+kQT S ⊥ kop = 0.472.
+
+10
+
+Each of the approximate solutions involves solving one 2 × 2
+Riccati equation and one 6 × 6 Riccati equation, which can
+be further decomposed into 4 decoupled Riccati equations
+of dimension 2 × 2 as in (52). The corresponding actual
+computation is more than 29 times faster than solving 120×120
+dimensional Riccati equation required by a direct solution in the
+simulation. The computation saving becomes more significant
+for network systems with larger sizes in the convergence
+sequence.
+VIII. D ISCUSSION
+LQR problems on VLSNs of arbitrary sizes can be approximately solved by low-complexity methods based on subspace
+decompositions of graphon dynamical systems in two ways:
+(i) Following the graphon control methodology proposed
+in [3], the control law for the limit graphon system is
+employed to generate approximate controls for network
+systems that are in a sequence that converges to the limit
+system [3] as illustrated in Fig. 4(a);
+(ii) Any finite network LQR problem interpreted as a
+special case of graphon LQR problem can be solved
+via a representation of the underlying graphons by step
+functions with N × N blocks where N is the size of
+the network following Section II-C. This is illustrated
+in Fig. 4(b) based on the projection-based approximate
+control in Section VI.
+Each of the alternative methods above involves solving two
+decoupled LQR problems where one requires solving a Riccati
+equation of dimension nd × nd and the other requires solving a
+Riccati equation of dimension n × n. As a comparison, a direct
+approach to the solution of LQR problems on networks with
+N agents requires solving a Riccati equation of dimension
+nN × nN . Since N ≥ d and in some cases N  d, the
+solution method may lead to significant computational savings
+depending upon the underlying network property. Furthermore,
+the method proposed here is potentially scalable since its
+complexity does not directly depend on the size of the network,
+as illustrated by the harmonic oscillator example in Section VII.
+IX. C ONCLUSION
+This article proposes solutions to a class of graphon LQR
+problems based on invariant subspace decompositions where
+the couplings appear in states, controls and cost, and these
+couplings may be represented by different graphons. Future
+directions of this line of research include the following: 1)
+the case with heterogeneous parameters for local dynamics,
+2) problems with nonlinear local dynamics, 3) the study of
+receding horizon control with quadratic cost based on graphon
+approximations and 4) the relation between graphon dynamical
+systems and systems described by partial differential equations.
+R EFERENCES
+[1] S. Gao and P. E. Caines, “The control of arbitrary size networks of linear
+systems via graphon limits: An initial investigation,” in Proceedings of
+the 56th IEEE Conference on Decision and Control (CDC), Melbourne,
+Australia, December 2017, pp. 1052–1057.
+
+[2] ——, “Optimal and approximate solutions to linear quadratic regulation
+of a class of graphon dynamical systems,” in Proceedings of the 58th IEEE
+Conference on Decision and Control (CDC), Nice, France, December
+2019, pp. 8359–8365.
+[3] ——, “Graphon control of large-scale networks of linear systems,” IEEE
+Transactions on Automatic Control, vol. 65, no. 10, pp. 4090–4105, 2020.
+[4] Y.-Y. Liu, J.-J. Slotine, and A.-L. Barabási, “Controllability of complex
+networks,” Nature, vol. 473, no. 7346, pp. 167–173, 2011.
+[5] F. Pasqualetti, S. Zampieri, and F. Bullo, “Controllability metrics,
+limitations and algorithms for complex networks,” IEEE Transactions
+on Control of Network Systems, vol. 1, no. 1, pp. 40–52, 2014.
+[6] G. Chen, “Pinning control and controllability of complex dynamical
+networks,” International Journal of Automation and Computing, vol. 14,
+no. 1, pp. 1–9, 2017.
+[7] R. Olfati-Saber, J. A. Fax, and R. M. Murray, “Consensus and cooperation
+in networked multi-agent systems,” Proceedings of the IEEE, vol. 95,
+no. 1, pp. 215–233, 2007.
+[8] A. Arenas, A. Díaz-Guilera, J. Kurths, Y. Moreno, and C. Zhou,
+“Synchronization in complex networks,” Physics Reports, vol. 469, no. 3,
+pp. 93–153, 2008.
+[9] J.-S. Li, “Ensemble control of finite-dimensional time-varying linear
+systems,” IEEE Transactions on Automatic Control, vol. 56, no. 2, pp.
+345–357, 2011.
+[10] J. Yong, “Linear-quadratic optimal control problems for mean-field
+stochastic differential equations,” SIAM journal on Control and Optimization, vol. 51, no. 4, pp. 2809–2838, 2013.
+[11] J. Arabneydi and A. Mahajan, “Linear quadratic mean field teams:
+Optimal and approximately optimal decentralized solutions,” arXiv
+preprint arXiv:1609.00056v2, 2017.
+[12] A. I. Zecevic and D. D. Siljak, “Global low-rank enhancement of
+decentralized control for large-scale systems,” vol. 50, no. 5, pp. 740–744,
+2005.
+[13] S. C. Hamilton and M. E. Broucke, “Patterned linear systems,” Automatica, vol. 48, no. 2, pp. 263–272, 2012.
+[14] C. Borgs, J. T. Chayes, L. Lovász, V. T. Sós, and K. Vesztergombi,
+“Convergent sequences of dense graphs i: Subgraph frequencies, metric
+properties and testing,” Advances in Mathematics, vol. 219, no. 6, pp.
+1801–1851, 2008.
+[15] ——, “Convergent sequences of dense graphs ii. multiway cuts and
+statistical physics,” Annals of Mathematics, vol. 176, no. 1, pp. 151–219,
+2012.
+[16] L. Lovász, Large Networks and Graph Limits. American Mathematical
+Soc., 2012, vol. 60.
+[17] A. Bensoussan, G. Da Prato, M. C. Delfour, and S. Mitter, Representation
+and Control of Infinite Dimensional Systems, 2nd ed. Springer Science
+& Business Media, 2007.
+[18] R. F. Curtain and H. Zwart, An Introduction to Infinite-Dimensional
+Linear Systems Theory. Springer Science & Business Media, 1995,
+vol. 21.
+[19] S. Gao and A. Mahajan, “Networked control of coupled subsystems:
+Spectral decomposition and low-dimensional solutions,” in Proceedings
+of the 58th IEEE Conference on Decision and Control (CDC), Nice,
+France, December 2019, pp. 4514–4520.
+[20] J. Arabneydi and A. Mahajan, “Team-optimal solution of finite number of
+mean-field coupled LQG subsystems,” in Proceedings of the 54th IEEE
+Conference on Decision and Control (CDC), Dec 2015, pp. 5308–5313.
+[21] J. Arabneydi and A. G. Aghdam, “Deep teams with risk-sensitive
+linear quadratic models: A gauge transformation,” arXiv preprint
+arXiv:1912.03951, 2019.
+[22] R. E. Showalter, Monotone operators in Banach space and nonlinear
+partial differential equations. American Mathematical Soc., 1997,
+vol. 49.
+[23] A. Pazy, Semigroups of Linear Operators and Applications to Partial
+Differential Equations, ser. Applied Mathematical Sciences. New York:
+Springer, 1983.
+[24] E. M. Airoldi, T. B. Costa, and S. H. Chan, “Stochastic blockmodel
+approximation of a graphon: Theory and consistent estimation,” in
+Advances in Neural Information Processing Systems, 2013, pp. 692–
+700.
+[25] F. Sauvigny, Partial Differential Equations 2: Functional Analytic
+Methods. Springer Science & Business Media, 2012.
+[26] C. C. Aggarwal et al., Recommender systems. Springer, 2016, vol. 1.
+[27] D. Arapura and C. Peterson, “The common invariant subspace problem:
+an approach via Gröbner bases,” Linear algebra and its applications,
+vol. 384, pp. 1–7, 2004.
+
+11
+
+[28] R. Drnovšek, “Common invariant subspaces for collections of operators,”
+Integral Equations and Operator Theory, vol. 39, no. 3, pp. 253–266,
+2001.
+[29] A. Jamiołkowski and G. Pastuszak, “Generalized shemesh criterion,
+common invariant subspaces and irreducible completely positive superoperators,” Linear and Multilinear Algebra, vol. 63, no. 2, pp. 314–325,
+2015.
+[30] D. Liberzon, Calculus of variations and optimal control theory: a concise
+introduction. Princeton University Press, 2011.
+[31] P. E. Caines and M. Huang, “Graphon mean field games and the
+GMFG equations: ε-Nash equilibria,” in Proceedings of the 58th IEEE
+Conference on Decision and Control (CDC), December 2019, pp. 286–
+292, arXiv:2008.10216.
+[32] J. B. Conway, A Course in Functional Analysis, 2nd ed. Springer-Verlag
+New York, 1990, vol. 96.
+
+
