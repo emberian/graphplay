@@ -131,7 +131,7 @@ where the template is `K_n` and the consistent partition sequence is the
 distance-from-`K_n` partition along an attaching infinite path. -/
 theorem ConsistentPartitionSequence.pst_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : Graphon.ConsistentPartitionSequence (u := u) I)
+    (𝒮 : Graphon.ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
@@ -150,7 +150,7 @@ uniform mixing.  The graphon-level cell-uniform mixing predicate is
 `Graphon.IsCellUniformGraphonMixing`. -/
 theorem ConsistentPartitionSequence.mixing_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : Graphon.ConsistentPartitionSequence (u := u) I)
+    (𝒮 : Graphon.ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
@@ -166,7 +166,7 @@ theorem ConsistentPartitionSequence.mixing_inherited
 finite quotients lift to graphon-level cell-uniform search-success times. -/
 theorem ConsistentPartitionSequence.search_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : Graphon.ConsistentPartitionSequence (u := u) I)
+    (𝒮 : Graphon.ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
@@ -415,7 +415,7 @@ sequence.**  Works for any finite template weighted graph `Q`. -/
 def template_cart_path
     {V_Q : Type u} [Fintype V_Q] [DecidableEq V_Q]
     (Q : WeightedGraph V_Q) :
-    Graphon.ConsistentPartitionSequence (u := u) CartProdIndex := by
+    Graphon.ConsistentPartitionSequence CartProdIndex := by
   sorry
 
 /-- Quotient stabilization for the general template-times-path family.
@@ -476,7 +476,7 @@ structure InversePartitionSequence
 /-- The stage-`n` quotient of an inverse partition sequence. -/
 noncomputable def InversePartitionSequence.quotient
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : InversePartitionSequence (u := u) I) (n : ℕ) :
+    (𝒮 : InversePartitionSequence I) (n : ℕ) :
     Matrix I I ℂ := fun i j =>
   haveI := 𝒮.finV n
   haveI := 𝒮.decV n
@@ -496,7 +496,7 @@ quotient (as opposed to limiting times in the filtered case).
 Statement-only. -/
 theorem InversePartitionSequence.pst_lifted
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : InversePartitionSequence (u := u) I) (i j : I) (τ : ℝ)
+    (𝒮 : InversePartitionSequence I) (i j : I) (τ : ℝ)
     (h_pst : ∀ n, Graphon.IsPST_finite (𝒮.quotient n) i j τ) :
     -- Placeholder for the inverse-limit cell-uniform PST predicate.
     True := by
@@ -521,7 +521,7 @@ limit-quotient evolution at the stage-`n` time `τ n` (compared to fidelity
 `(t, A) ↦ exp(-i t A)` is jointly continuous in operator norm). -/
 theorem ConsistentPartitionSequence.pst_rate_inheritance
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : Graphon.ConsistentPartitionSequence (u := u) I)
+    (𝒮 : Graphon.ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
     (r : ℕ → ℝ) (h_rate : ∀ n, ‖𝒮.quotient n - P_∞.quotient‖ ≤ r n)
@@ -547,7 +547,7 @@ stage-`n` quotient as an approximation to the limit at time `τ_∞` is
 `O(T / n^α)`. -/
 theorem ConsistentPartitionSequence.pst_rate_tradeoff
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : Graphon.ConsistentPartitionSequence (u := u) I)
+    (𝒮 : Graphon.ConsistentPartitionSequence I)
     (α T : ℝ) (hα : 0 < α) (hT : 0 < T) :
     -- Existential of the fidelity-error big-O bound; statement only.
     True := by
@@ -574,7 +574,7 @@ Conjecture (informal): in this regime PST on the limit is *generically
 impossible* because the formal generator has no bound states. -/
 theorem failure_mode_unbounded_spectrum
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : Graphon.ConsistentPartitionSequence (u := u) I)
+    (𝒮 : Graphon.ConsistentPartitionSequence I)
     (h_unbounded : ¬ ∃ M : ℝ, ∀ n, ‖𝒮.quotient n‖ ≤ M) :
     -- The master theorem hypothesis (convergence to a bounded
     -- `P_∞.quotient`) cannot be satisfied.
@@ -597,7 +597,7 @@ Conjecture (informal): the limit cell-uniform PST predicate is *false* when
 continuous measure (no point spectrum). -/
 theorem failure_mode_continuous_spectrum
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : Graphon.ConsistentPartitionSequence (u := u) I)
+    (𝒮 : Graphon.ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
     (h_cont : True /- placeholder: `P_∞.quotient` has purely continuous spectrum -/) :
@@ -617,7 +617,7 @@ fails for every `τ` (no PST in the limit), but for every `ε > 0` and every
 transfer* at time `τ` with fidelity `≥ 1 − ε`. -/
 theorem failure_mode_incoherent_times
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : Graphon.ConsistentPartitionSequence (u := u) I)
+    (𝒮 : Graphon.ConsistentPartitionSequence I)
     (τ : ℕ → ℝ)
     (h_div : ¬ ∃ τ_∞ : ℝ, Filter.Tendsto τ Filter.atTop (nhds τ_∞)) :
     True := by
@@ -644,7 +644,7 @@ phenomenon to the quasi-infinite regime. -/
 preserved under the embeddings. -/
 structure ChiralConsistentPartitionSequence
     (I : Type v) [Fintype I] [DecidableEq I]
-    extends Graphon.ConsistentPartitionSequence (u := u) I where
+    extends Graphon.ConsistentPartitionSequence I where
   /-- Per-stage signing. -/
   sign : ∀ n, ChiralSigning (V n)
   /-- The signings are consistent under the embeddings: pullback through
@@ -658,7 +658,7 @@ structure ChiralConsistentPartitionSequence
 /-- The **signed stage-`n` graph**. -/
 noncomputable def ChiralConsistentPartitionSequence.signedG
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : ChiralConsistentPartitionSequence (u := u) I) (n : ℕ) :
+    (𝒮 : ChiralConsistentPartitionSequence I) (n : ℕ) :
     haveI := 𝒮.toConsistentPartitionSequence.finV n
     haveI := 𝒮.toConsistentPartitionSequence.decV n
     WeightedGraph (𝒮.toConsistentPartitionSequence.V n) := by
@@ -673,7 +673,7 @@ inherits to the chiral limit graphon.
 This is the chiral version of `pst_inherited`. -/
 theorem ChiralConsistentPartitionSequence.pst_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : ChiralConsistentPartitionSequence (u := u) I)
+    (𝒮 : ChiralConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
     (i j : I) (τ : ℕ → ℝ) (τ_∞ : ℝ) :

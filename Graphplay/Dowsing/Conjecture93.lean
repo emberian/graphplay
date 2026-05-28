@@ -108,7 +108,7 @@ In the limit, this becomes the Bose-Mesner algebra of the limit graphon
 quotient (the conjecture asserts this coincides with the partition
 projector algebra). -/
 noncomputable def finiteAdjAlgebra
-    (𝒮 : ConsistentPartitionSequence I (u := u)) (n : ℕ) :
+    (𝒮 : ConsistentPartitionSequence I) (n : ℕ) :
     Submodule ℂ (Matrix (𝒮.V n) (𝒮.V n) ℂ) :=
   haveI := 𝒮.finV n
   haveI := 𝒮.decV n
@@ -123,7 +123,7 @@ matrices that are *constant on each cell-pair block*; equivalently, the
 image of the embedding `Matrix I I ℂ ↪ Matrix (𝒮.V n) (𝒮.V n) ℂ` that
 inflates a quotient matrix to a cell-uniform matrix on `V n`. -/
 noncomputable def partitionProjectorAlgebra
-    (𝒮 : ConsistentPartitionSequence I (u := u)) (n : ℕ) :
+    (𝒮 : ConsistentPartitionSequence I) (n : ℕ) :
     Submodule ℂ (Matrix (𝒮.V n) (𝒮.V n) ℂ) :=
   -- the linear span of all matrices that are cell-pair constant.
   Submodule.span ℂ
@@ -152,7 +152,7 @@ will use this predicate via `Chiral.chiral_mixing_optimization`.
 partition** if the limit theorem `ConsistentPartitionSequence.limit_exists`
 applies *and* the limit graphon equitable partition has the same fixed
 index type `I` (i.e. no cells merge or split in the limit). -/
-def admitsGraphonLimit (𝒮 : ConsistentPartitionSequence I (u := u)) : Prop :=
+def admitsGraphonLimit (𝒮 : ConsistentPartitionSequence I) : Prop :=
   ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω)
     (W_∞ : Graphon Ω μ)
     (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞),
@@ -169,7 +169,7 @@ We package the existence of a consistent cross-constant signing only;
 "strictly faster" is left as a placeholder `True` predicate in the same
 spirit as `Bundle.CellUniformMixing`. -/
 def admitsChiralSpeedupOnPartition
-    (𝒮 : ConsistentPartitionSequence I (u := u)) : Prop :=
+    (𝒮 : ConsistentPartitionSequence I) : Prop :=
   ∃ s : ∀ n, ChiralSigning (𝒮.V n),
     (∀ n, (s n).CrossConstant (𝒮.cells n)) ∧
     -- consistency: phases pull back along the embedding
@@ -195,13 +195,13 @@ care of the limit step.
 coherent algebra containing `(𝒮.G n).adj` equals the partition-projector
 algebra of `𝒮.cells n`. -/
 def algebraCoincidence
-    (𝒮 : ConsistentPartitionSequence I (u := u)) (n : ℕ) : Prop :=
+    (𝒮 : ConsistentPartitionSequence I) (n : ℕ) : Prop :=
   finiteAdjAlgebra 𝒮 n = partitionProjectorAlgebra 𝒮 n
 
 /-- The **(eventual) algebra-coincidence condition**: equality holds at
 all sufficiently large stages. -/
 def eventuallyAlgebraCoincidence
-    (𝒮 : ConsistentPartitionSequence I (u := u)) : Prop :=
+    (𝒮 : ConsistentPartitionSequence I) : Prop :=
   ∃ N, ∀ n ≥ N, algebraCoincidence 𝒮 n
 
 /-! ## 4. The conjecture, in two strengths
@@ -219,14 +219,14 @@ both a graphon limit on its partition and a *cross-constant* chiral
 speedup on the same partition iff its Bose-Mesner-style finite algebras
 coincide with the partition-projector algebras at all sufficiently large
 stages. -/
-def Conjecture93_weak (𝒮 : ConsistentPartitionSequence I (u := u)) : Prop :=
+def Conjecture93_weak (𝒮 : ConsistentPartitionSequence I) : Prop :=
   (admitsGraphonLimit 𝒮 ∧ admitsChiralSpeedupOnPartition 𝒮)
     ↔ eventuallyAlgebraCoincidence 𝒮
 
 /-- A *general* chiral signing speedup: existence of nontrivial unitary
 signings at every stage, *not necessarily cross-constant on the cells*. -/
 def admitsAnyChiralSpeedupOnPartition
-    (𝒮 : ConsistentPartitionSequence I (u := u)) : Prop :=
+    (𝒮 : ConsistentPartitionSequence I) : Prop :=
   ∃ s : ∀ n, ChiralSigning (𝒮.V n),
     (∃ n x y, (s n).σ x y ≠ 1) ∧
     True
@@ -235,7 +235,7 @@ def admitsAnyChiralSpeedupOnPartition
 cross-constant) unitary signing standing in for the chiral half. This is
 **not** equivalent to algebra coincidence in general — see the
 counterexample family below. -/
-def Conjecture93_strong (𝒮 : ConsistentPartitionSequence I (u := u)) : Prop :=
+def Conjecture93_strong (𝒮 : ConsistentPartitionSequence I) : Prop :=
   (admitsGraphonLimit 𝒮 ∧ admitsAnyChiralSpeedupOnPartition 𝒮)
     ↔ eventuallyAlgebraCoincidence 𝒮
 
@@ -246,7 +246,7 @@ This is the easier direction: a Bose-Mesner algebra acts diagonally
 across cells, so chiral signings respecting the partition descend to
 phase-multiplications on the quotient, which is the speedup mechanism. -/
 theorem conjecture93_weak_forward
-    (𝒮 : ConsistentPartitionSequence I (u := u)) :
+    (𝒮 : ConsistentPartitionSequence I) :
     eventuallyAlgebraCoincidence 𝒮 →
       admitsGraphonLimit 𝒮 ∧ admitsChiralSpeedupOnPartition 𝒮 := by
   sorry
@@ -261,14 +261,14 @@ constraint forces `(𝒮.G n).adj` to lie in a *commutative* subalgebra of
 limit then forces this subalgebra to be at most the partition-projector
 algebra. -/
 theorem conjecture93_weak_reverse
-    (𝒮 : ConsistentPartitionSequence I (u := u)) :
+    (𝒮 : ConsistentPartitionSequence I) :
     (admitsGraphonLimit 𝒮 ∧ admitsChiralSpeedupOnPartition 𝒮) →
       eventuallyAlgebraCoincidence 𝒮 := by
   sorry
 
 /-- Putting the two halves together. -/
 theorem conjecture93_weak_iff
-    (𝒮 : ConsistentPartitionSequence I (u := u)) :
+    (𝒮 : ConsistentPartitionSequence I) :
     Conjecture93_weak 𝒮 := by
   refine Iff.intro ?fwd ?rev
   · intro h
@@ -281,7 +281,7 @@ theorem conjecture93_weak_iff
 /-- **Corollary.** If `algebraCoincidence` holds at every stage, both
 halves of the conjecture hold. -/
 theorem both_halves_of_algebra_coincidence
-    (𝒮 : ConsistentPartitionSequence I (u := u))
+    (𝒮 : ConsistentPartitionSequence I)
     (h : ∀ n, algebraCoincidence 𝒮 n) :
     admitsGraphonLimit 𝒮 ∧ admitsChiralSpeedupOnPartition 𝒮 := by
   apply conjecture93_weak_forward
@@ -292,7 +292,7 @@ sequence that each `(𝒮.G n)` lies in the Bose-Mesner algebra of an
 association scheme **refining** the partition `𝒮.cells n`. Schemes are
 parametrized by `d n : ℕ`. -/
 def AssocSchemeUniform
-    (𝒮 : ConsistentPartitionSequence I (u := u)) : Prop :=
+    (𝒮 : ConsistentPartitionSequence I) : Prop :=
   ∀ n, ∃ d : ℕ,
     haveI := 𝒮.finV n
     haveI := 𝒮.decV n
@@ -303,7 +303,7 @@ algebra coincidence at every stage (Bose-Mesner = partition-projector
 when the scheme classes refine the partition), hence both halves of
 Conjecture 9.3 hold. -/
 theorem both_halves_of_assocSchemeUniform
-    (𝒮 : ConsistentPartitionSequence I (u := u))
+    (𝒮 : ConsistentPartitionSequence I)
     (_h : AssocSchemeUniform 𝒮) :
     admitsGraphonLimit 𝒮 ∧ admitsChiralSpeedupOnPartition 𝒮 := by
   -- Bose-Mesner of the refining scheme contains the adjacency and the
@@ -318,7 +318,7 @@ theorem both_halves_of_assocSchemeUniform
 `signedBy_preserves_equitable` does not apply: the signed graph need not
 have `P_n` as an equitable partition. -/
 theorem chiral_half_blocked_if_not_crossConstant
-    (𝒮 : ConsistentPartitionSequence I (u := u))
+    (𝒮 : ConsistentPartitionSequence I)
     (h : ¬ ∃ s : ∀ n, ChiralSigning (𝒮.V n),
          ∀ n, (s n).CrossConstant (𝒮.cells n)) :
     ¬ admitsChiralSpeedupOnPartition 𝒮 := by
@@ -328,7 +328,7 @@ theorem chiral_half_blocked_if_not_crossConstant
 /-- **Failure mode B (graphon half):** if the quotient matrices `𝒮.quotient n`
 do not converge in operator norm, the graphon half fails. -/
 theorem graphon_half_blocked_if_quotients_diverge
-    (𝒮 : ConsistentPartitionSequence I (u := u))
+    (𝒮 : ConsistentPartitionSequence I)
     (h : ¬ ∃ Q∞ : Matrix I I ℂ,
          Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds Q∞)) :
     ¬ admitsGraphonLimit 𝒮 := by
@@ -338,11 +338,11 @@ theorem graphon_half_blocked_if_quotients_diverge
 /-- **Failure mode C:** if the Bose-Mesner-style algebra strictly contains
 the partition-projector algebra at infinitely many stages, the right-hand
 side of the conjecture fails. -/
-def algebra_strictly_larger (𝒮 : ConsistentPartitionSequence I (u := u)) : Prop :=
+def algebra_strictly_larger (𝒮 : ConsistentPartitionSequence I) : Prop :=
   ∀ N, ∃ n ≥ N, partitionProjectorAlgebra 𝒮 n < finiteAdjAlgebra 𝒮 n
 
 theorem rhs_blocked_if_algebra_strictly_larger
-    (𝒮 : ConsistentPartitionSequence I (u := u))
+    (𝒮 : ConsistentPartitionSequence I)
     (h : algebra_strictly_larger 𝒮) :
     ¬ eventuallyAlgebraCoincidence 𝒮 := by
   intro ⟨N, hN⟩
@@ -354,12 +354,12 @@ theorem rhs_blocked_if_algebra_strictly_larger
 breaks the equitable partition, then no speedup-on-partition can exist
 because the proper analogue of `signedBy_preserves_equitable` fails. -/
 def every_nontrivial_signing_breaks_partition
-    (𝒮 : ConsistentPartitionSequence I (u := u)) : Prop :=
+    (𝒮 : ConsistentPartitionSequence I) : Prop :=
   ∀ n (s : ChiralSigning (𝒮.V n)),
     (∃ x y, s.σ x y ≠ 1) → ¬ s.CrossConstant (𝒮.cells n)
 
 theorem chiral_half_blocked_if_every_signing_breaks
-    (𝒮 : ConsistentPartitionSequence I (u := u))
+    (𝒮 : ConsistentPartitionSequence I)
     (h : every_nontrivial_signing_breaks_partition 𝒮) :
     ¬ admitsChiralSpeedupOnPartition 𝒮 := by
   intro ⟨s, hcc, _, ⟨n, x, y, hne⟩, _⟩
@@ -586,7 +586,7 @@ counterexample to the strong version (LHS holds, RHS fails) must use a
 then any witness to the LHS of the strong conjecture must use a unitary
 signing that is **not** cross-constant on the cells of `𝒮.cells n`. -/
 theorem strong_failure_requires_nonCrossConstant
-    (𝒮 : ConsistentPartitionSequence I (u := u))
+    (𝒮 : ConsistentPartitionSequence I)
     (h_weak : Conjecture93_weak 𝒮)
     (h_strong_fails : ¬ Conjecture93_strong 𝒮)
     (h_lhs_strong :

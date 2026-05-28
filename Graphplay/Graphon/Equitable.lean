@@ -122,8 +122,10 @@ theorem measurableSet_cell {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i : I) :
     MeasurableSet (P.cell i) := by
-  -- measurability follows from `P.measurable_cells` against the ⊤ MeasurableSpace on `I`
-  sorry
+  -- preimage of the singleton `{i}` under `P.cells`, which is measurable
+  -- w.r.t. the discrete MeasurableSpace on `I` (where every set is measurable).
+  unfold GraphonEquitablePartition.cell
+  exact P.measurable_cells (by trivial : @MeasurableSet I ⊤ {i})
 
 /-! ### The quotient adjacency matrix
 
@@ -201,16 +203,35 @@ variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 variable {W : Graphon Ω μ}
 
+/-- The **normalised cell indicator** `e_i ∈ L²(μ; ℂ)`:
+`e_i = (1/√μ(C_i)) · 1_{C_i}`.  Constructed by scaling Mathlib's
+`indicatorConstLp` on the cell `C_i` (which is measurable via
+`P.measurable_cells`) by the unit-normalising scalar
+`(√(P.cellMass i))⁻¹ : ℂ`. -/
+noncomputable def _root_.Graphplay.GraphonEquitablePartition.cellIndicator
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i : I) :
+    Lp ℂ 2 μ :=
+  -- measurability of the cell: `P.cells` is measurable w.r.t. the discrete
+  -- σ-algebra on `I`, so the singleton-preimage `P.cell i` is measurable.
+  -- Finiteness comes from `P.cell_finite`.  We then multiply the
+  -- indicator-Lp element by `(√(P.cellMass i))⁻¹` to obtain a unit vector.
+  ((Real.sqrt (P.cellMass i))⁻¹ : ℂ) •
+    MeasureTheory.indicatorConstLp 2
+      (P.measurableSet_cell i)
+      (ne_of_lt (P.cell_finite i)) (1 : ℂ)
+
 /-- The **cell-uniform subspace** of `L²(μ; ℂ)` for an equitable partition
-`P`: the closed subspace of functions that are a.e. constant on each cell. -/
+`P`: the `ℂ`-linear span of the normalised cell indicators `{e_i}_{i ∈ I}`
+in `L²(μ; ℂ)`.  (For a finite index type `I` the span is automatically closed,
+since finite-dimensional subspaces of normed spaces are closed.) -/
 noncomputable def _root_.Graphplay.GraphonEquitablePartition.cellUniformSubspace
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    Submodule ℂ (Lp ℂ 2 μ) := by
-  -- the closed subspace spanned by the indicator functions `1_{C_i}`
-  classical
-  exact sorry
+    Submodule ℂ (Lp ℂ 2 μ) :=
+  Submodule.span ℂ (Set.range P.cellIndicator)
 
 /-- The cell-uniform subspace is closed in `L²(μ; ℂ)`. -/
 theorem cellUniformSubspace_isClosed {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
@@ -218,18 +239,6 @@ theorem cellUniformSubspace_isClosed {Ω : Type u} [MeasurableSpace Ω] {μ : Me
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
     IsClosed (P.cellUniformSubspace : Set (Lp ℂ 2 μ)) := by
   sorry
-
-/-- The **normalised cell indicator** `e_i ∈ L²(μ; ℂ)`:
-`e_i = (1/√μ(C_i)) · 1_{C_i}`.  This is a unit vector in `L²(μ; ℂ)` and
-together with the other `e_j` (`j ∈ I`) forms an orthonormal basis of the
-cell-uniform subspace. -/
-noncomputable def _root_.Graphplay.GraphonEquitablePartition.cellIndicator
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
-    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i : I) :
-    Lp ℂ 2 μ := by
-  classical
-  exact sorry
 
 /-- The cell indicators are orthonormal: `⟨e_i, e_j⟩ = [i = j]`. -/
 theorem cellIndicator_orthonormal {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
@@ -239,18 +248,29 @@ theorem cellIndicator_orthonormal {Ω : Type u} [MeasurableSpace Ω] {μ : Measu
   sorry
 
 /-- The **cell-uniform isometry**: the unitary map
-`L²(I, counting; ℂ) → cellUniformSubspace ⊂ L²(μ; ℂ)`
-sending the `i`-th basis vector to the normalised cell indicator `e_i`.
+`L²(I, counting; ℂ) → L²(μ; ℂ)` sending the `i`-th basis vector to the
+normalised cell indicator `e_i`.  Concretely
+`v ↦ ∑ i, v i • P.cellIndicator i`.
 
-In Mathlib terms this is a `LinearIsometry` between `EuclideanSpace ℂ I` and
-the closed subspace `cellUniformSubspace`. -/
+The norm-preservation property `‖∑ v i • e_i‖² = ∑ |v i|²` is exactly
+orthonormality of `{e_i}`; we leave the proof as `sorry` since it depends
+on `cellIndicator_orthonormal` (also `sorry`-bodied here). -/
 noncomputable def _root_.Graphplay.GraphonEquitablePartition.cellUniformIsometry
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    EuclideanSpace ℂ I →ₗᵢ[ℂ] (Lp ℂ 2 μ) := by
-  classical
-  exact sorry
+    EuclideanSpace ℂ I →ₗᵢ[ℂ] (Lp ℂ 2 μ) where
+  toFun := fun v => ∑ i : I, v i • P.cellIndicator i
+  map_add' := by
+    intro v w
+    simp [Finset.sum_add_distrib, add_smul]
+  map_smul' := by
+    intro c v
+    simp [Finset.smul_sum, smul_smul]
+  norm_map' := by
+    -- Norm preservation follows from `cellIndicator_orthonormal`; left as
+    -- `sorry` until that orthonormality lemma is filled.
+    intro _; sorry
 
 /-- The image of the cell-uniform isometry is exactly the cell-uniform
 subspace. -/

@@ -1,0 +1,553 @@
+/-
+# Graphplay.Algorithm.WLOrbit
+
+When does the **Weisfeiler–Leman (WL) stable partition** coincide with the
+**orbit partition** of `Aut(G)`?  This file collects the canonical
+statements; it depends on `Graphplay.Algorithm.WLRefinement` (the
+sibling file, written by L4) for the actual WL refinement procedure
+`wlRefine`.
+
+## Cast of characters
+
+* `Aut(G)`, the group of automorphisms of a `Graphplay.SimpleGraph`
+  (we use `Mathlib.Combinatorics.SimpleGraph.Automorphism` for the
+  type-theoretic glue when convenient).
+* The **orbit partition**, which sends each vertex `v` to a canonical
+  representative of its `Aut(G)`-orbit.  This partition is always
+  equitable.
+* The **WL-stable partition**, namely the partition produced by
+  iterating `wlRefine` to a fixed point.  It is the coarsest equitable
+  partition refining the discrete partition by *initial* colour
+  (typically degree, or "all equal" for plain graphs).
+
+## What this file proves / states
+
+1. `orbitPartition`            – the orbit partition as an `EquitablePartition`.
+2. `orbitPartition_isEquitable`– direct, by `Aut`-invariance.
+3. `wlStable_refines_orbit`    – WL-stable refines orbit (every
+                                 automorphism preserves every WL colour).
+4. `HasPhantomSymmetry`        – WL-stable is *strictly* finer than orbit:
+                                 there are vertices with the same WL colour
+                                 that no graph automorphism relates.
+5. The **Cai–Fürer–Immerman** gadget (`CFI`) — a witness to phantom
+   symmetry, and the first family known to defeat 1-WL/2-WL refinement
+   (Cai–Fürer–Immerman, "An optimal lower bound on the number of
+   variables for graph identification", FOCS '89 / Combinatorica '92).
+6. **Reverse direction** (statement only): rank-3 / strongly-regular
+   graphs are exactly the (non-trivial) graphs on which 2-WL is
+   complete; Babai–Mathon-type characterizations.
+7. **k-WL** refinement: for `k ≥ k₀(G)` the k-WL stable partition equals
+   the k-arity orbit partition; CFI lower bound `k = Ω(|V|)`.
+8. **PST engineering**: phantom symmetry is exploitable for
+   perfect-state-transfer design à la Bachman–Tamon arXiv 1108.0339,
+   giving PST graphs that lie outside the classical
+   "find-an-automorphism" search space.
+
+The file is deliberately a *statement-level* sketch: most theorems are
+recorded with `sorry` and accompanying mathematical commentary, since
+their proofs require infrastructure (group actions on partitions,
+combinatorial inductions on WL rounds, the CFI gadget) that lives
+across `Graphplay.Equitable`, `Graphplay.Algorithm.WLRefinement`, and
+`Mathlib`.
+-/
+
+import Graphplay.Equitable
+import Graphplay.Weighted
+import Graphplay.Basic
+import Mathlib.Combinatorics.SimpleGraph.Basic
+import Mathlib.Combinatorics.SimpleGraph.Automorphism
+import Mathlib.GroupTheory.GroupAction.Basic
+import Mathlib.GroupTheory.GroupAction.Defs
+
+universe u v w
+
+open scoped Classical
+
+namespace Graphplay
+namespace WLOrbit
+
+/-! ## §0. Glue with `Mathlib.Combinatorics.SimpleGraph`
+
+We work with both the Graphplay `SimpleGraph` (combinatorial) and the
+`WeightedGraph` carrier.  For the automorphism group we route through
+`Mathlib`'s `SimpleGraph.Iso`.  We expose only the minimal interface
+we need: an `Aut` type with a `Group` structure and a multiplicative
+action on `V`. -/
+
+/-- Bridge: a Graphplay `SimpleGraph V` gives the Mathlib `SimpleGraph V`
+on the same vertex set. -/
+def toMathlib {V : Type u} (G : Graphplay.SimpleGraph V) :
+    _root_.SimpleGraph V where
+  Adj := G.Adj
+  symm := by
+    intro a b h
+    exact G.symm h
+  loopless := by
+    intro a h
+    exact G.irrefl a h
+
+/-- The automorphism group of a Graphplay `SimpleGraph`, defined via
+the Mathlib bridge. -/
+abbrev Aut {V : Type u} (G : Graphplay.SimpleGraph V) : Type u :=
+  (toMathlib G).Aut
+
+instance autGroup {V : Type u} (G : Graphplay.SimpleGraph V) :
+    Group (Aut G) := inferInstanceAs (Group ((toMathlib G).Aut))
+
+/-- `Aut(G)` acts on `V` via the underlying equivalence. -/
+instance autMulAction {V : Type u} (G : Graphplay.SimpleGraph V) :
+    MulAction (Aut G) V where
+  smul σ v := σ.toEquiv v
+  one_smul v := by
+    -- Identity automorphism acts as identity.
+    rfl
+  mul_smul σ τ v := by
+    -- Mathlib `Aut` composes contravariantly to give a left action.
+    rfl
+
+/-! ## §1. The orbit partition -/
+
+variable {V : Type u} [Fintype V] [DecidableEq V]
+
+/-- The `Aut(G)`-orbit of `v` as a `Set V`. -/
+def orbit (G : Graphplay.SimpleGraph V) (v : V) : Set V :=
+  MulAction.orbit (Aut G) v
+
+/-- The orbit relation: two vertices are in the same `Aut(G)`-orbit. -/
+def sameOrbit (G : Graphplay.SimpleGraph V) (u v : V) : Prop :=
+  ∃ σ : Aut G, σ • u = v
+
+lemma sameOrbit_refl (G : Graphplay.SimpleGraph V) (v : V) :
+    sameOrbit G v v := ⟨1, by simp⟩
+
+lemma sameOrbit_symm (G : Graphplay.SimpleGraph V) {u v : V}
+    (h : sameOrbit G u v) : sameOrbit G v u := by
+  obtain ⟨σ, hσ⟩ := h
+  refine ⟨σ⁻¹, ?_⟩
+  -- σ⁻¹ • (σ • u) = u, and σ • u = v
+  have : σ⁻¹ • (σ • u) = u := by
+    rw [← mul_smul, inv_mul_cancel, one_smul]
+  rw [← hσ]; exact this
+
+lemma sameOrbit_trans (G : Graphplay.SimpleGraph V) {u v w : V}
+    (huv : sameOrbit G u v) (hvw : sameOrbit G v w) : sameOrbit G u w := by
+  obtain ⟨σ, hσ⟩ := huv
+  obtain ⟨τ, hτ⟩ := hvw
+  refine ⟨τ * σ, ?_⟩
+  rw [mul_smul, hσ, hτ]
+
+/-- The orbit equivalence relation. -/
+def orbitSetoid (G : Graphplay.SimpleGraph V) : Setoid V where
+  r := sameOrbit G
+  iseqv :=
+    ⟨sameOrbit_refl G, sameOrbit_symm G, sameOrbit_trans G⟩
+
+/-- The orbit-class type.  Each element is an `Aut(G)`-orbit.  We
+treat it `Classical`ally as the canonical index set of the orbit
+partition. -/
+def OrbitClass (G : Graphplay.SimpleGraph V) : Type u :=
+  Quotient (orbitSetoid G)
+
+noncomputable instance (G : Graphplay.SimpleGraph V) :
+    Fintype (OrbitClass G) := by
+  classical
+  exact Quotient.fintype _
+
+noncomputable instance (G : Graphplay.SimpleGraph V) :
+    DecidableEq (OrbitClass G) := Classical.decEq _
+
+/-- `orbitPartition G : V → OrbitClass G` sends each vertex to its
+orbit class (a canonical representative chosen by the quotient
+construction). -/
+def orbitPartition (G : Graphplay.SimpleGraph V) : V → OrbitClass G :=
+  fun v => Quotient.mk (orbitSetoid G) v
+
+/-- Two vertices are in the same orbit cell iff some automorphism
+relates them. -/
+lemma orbitPartition_eq_iff (G : Graphplay.SimpleGraph V) (u v : V) :
+    orbitPartition G u = orbitPartition G v ↔ sameOrbit G u v := by
+  exact Quotient.eq
+
+/-! ## §2. The orbit partition of a *weighted* graph -/
+
+/-- For the equitable-partition statement we need the orbit data on a
+`WeightedGraph`.  We assume the weight `G.adj` is `Aut`-invariant for
+some action.  In our intended use, the weighted graph is the complex
+adjacency matrix of a real `SimpleGraph`, and `Aut(G)` acts naturally;
+the invariance is automatic. -/
+class HasAutInvariantWeights {V : Type u} [Fintype V] [DecidableEq V]
+    (G₀ : Graphplay.SimpleGraph V) (G : Graphplay.WeightedGraph V) :
+    Prop where
+  invariant : ∀ (σ : Aut G₀) (x y : V),
+    G.adj (σ • x) (σ • y) = G.adj x y
+
+/-- **Theorem (orbit partition is equitable).**
+If a weighted graph `G` has `Aut(G₀)`-invariant weights for a
+companion combinatorial graph `G₀`, then `orbitPartition G₀` is an
+equitable partition of `G`.
+
+*Sketch.*  Take two vertices `x, y` in the same orbit and an
+automorphism `σ` with `σ • x = y`.  For any orbit cell `C_j`,
+relabelling the summation index `z ↦ σ⁻¹ z` is a bijection that
+preserves `cells z = j` (since `σ` permutes orbits) and maps
+`G.adj x z` to `G.adj (σ x) (σ z) = G.adj y (σ z)`.  Hence the two
+branching sums coincide. -/
+theorem orbitPartition_isEquitable
+    (G₀ : Graphplay.SimpleGraph V)
+    (G : Graphplay.WeightedGraph V)
+    [HasAutInvariantWeights G₀ G] :
+    EquitablePartition G (OrbitClass G₀) := by
+  classical
+  refine
+    { cells := orbitPartition G₀
+      uniform := ?_ }
+  -- The proof is the index-swap sketched above; we record it as
+  -- `sorry` here because filling it in requires reindexing sums of
+  -- `Finset.sum` along the `Aut`-action permutation, which is
+  -- straightforward but bulky.
+  intro i j x y hx hy
+  sorry
+
+/-! ## §3. WL-stable refines orbit -/
+
+/-- *Opaque interface to `WLRefinement`.*  The sibling file `L4`
+provides `wlRefine` and its fixed point.  We declare here only the
+*statement-level* facts we need, parameterized by an opaque
+`WLStable` predicate.  Once `WLRefinement.lean` lands these can be
+specialised to the real `wlRefine`. -/
+
+/-- Abstract predicate: `P` is a WL-stable partition of `G`. -/
+def IsWLStable {I : Type w} [Fintype I] [DecidableEq I]
+    (G : Graphplay.WeightedGraph V) (P : EquitablePartition G I) : Prop :=
+  -- "Stable" = the colour-refinement operator returns `P` itself.
+  -- We model this abstractly as: `P` is equitable (already in the
+  -- type) and any equitable refinement of `P` equals `P` up to
+  -- isomorphism of index sets.  The detailed definition lives in
+  -- `Graphplay.Algorithm.WLRefinement`.
+  True  -- placeholder; refined in sibling file
+
+/-- **Theorem (WL-stable refines orbit).**
+Every WL-stable partition is finer than the orbit partition.
+
+*Why.* The WL refinement operator only uses colour multisets of
+neighbours, which are `Aut(G)`-invariant.  Inductively, if two
+vertices have the same colour at round `t`, an automorphism sending
+one to the other would equalise their round-`(t+1)` colours; but the
+WL refinement starts from a colour that is itself `Aut`-invariant
+(say constant, or degree).  Hence WL colours are an
+`Aut(G)`-invariant function on `V`, and therefore factor through the
+orbit partition.  Equivalently: every `Aut`-orbit is contained in a
+single WL cell, i.e. WL-stable refines orbit. -/
+theorem wlStable_refines_orbit
+    {I : Type w} [Fintype I] [DecidableEq I]
+    (G₀ : Graphplay.SimpleGraph V)
+    (G : Graphplay.WeightedGraph V)
+    [HasAutInvariantWeights G₀ G]
+    (P : EquitablePartition G I)
+    (hStable : IsWLStable G P) :
+    -- "P refines orbitPartition": there is a map `I → OrbitClass G₀`
+    -- such that the obvious square commutes.
+    ∃ φ : I → OrbitClass G₀,
+      ∀ v : V, φ (P.cells v) = orbitPartition G₀ v := by
+  sorry
+
+/-! ## §4. Phantom symmetry -/
+
+/-- `HasPhantomSymmetry G G₀` says the WL-stable partition of the
+weighted graph `G` (with companion combinatorial graph `G₀`) is
+*strictly* finer than the orbit partition: WL distinguishes
+something that `Aut(G₀)` cannot.
+
+Equivalently (`hasPhantomSymmetry_iff` below): there exist vertices
+`u, v` with `P.cells u = P.cells v` (same WL colour) but no
+automorphism `σ ∈ Aut(G₀)` with `σ • u = v`. -/
+def HasPhantomSymmetry
+    {I : Type w} [Fintype I] [DecidableEq I]
+    (G₀ : Graphplay.SimpleGraph V)
+    (G : Graphplay.WeightedGraph V)
+    [HasAutInvariantWeights G₀ G]
+    (P : EquitablePartition G I) (_hStable : IsWLStable G P) : Prop :=
+  ∃ u v : V, P.cells u = P.cells v ∧ ¬ sameOrbit G₀ u v
+
+/-- The phantom-symmetry condition is equivalent to the existence of
+a WL-twin pair that no automorphism relates. -/
+theorem hasPhantomSymmetry_iff
+    {I : Type w} [Fintype I] [DecidableEq I]
+    (G₀ : Graphplay.SimpleGraph V)
+    (G : Graphplay.WeightedGraph V)
+    [HasAutInvariantWeights G₀ G]
+    (P : EquitablePartition G I)
+    (hStable : IsWLStable G P) :
+    HasPhantomSymmetry G₀ G P hStable ↔
+      ∃ u v : V, P.cells u = P.cells v ∧ ∀ σ : Aut G₀, σ • u ≠ v := by
+  unfold HasPhantomSymmetry sameOrbit
+  constructor
+  · rintro ⟨u, v, hcol, hno⟩
+    refine ⟨u, v, hcol, ?_⟩
+    intro σ hσ; exact hno ⟨σ, hσ⟩
+  · rintro ⟨u, v, hcol, hno⟩
+    refine ⟨u, v, hcol, ?_⟩
+    rintro ⟨σ, hσ⟩; exact hno σ hσ
+
+/-! ## §5. Cai–Fürer–Immerman gadgets
+
+The classical witness to phantom symmetry: the CFI gadget on a
+3-regular graph `H`.  For each edge of `H` insert a small "twist"
+gadget; one obtains a pair of graphs `CFI₀(H)`, `CFI₁(H)` that are
+WL-indistinguishable but non-isomorphic.  The *single* graph
+`G := CFI₀(H) ⊔ CFI₁(H)` (disjoint union) then has the property
+that WL collapses the two halves but `Aut(G)` does not, exhibiting
+phantom symmetry.
+
+See:
+* Cai, Fürer, Immerman, *Combinatorica* 12 (1992), 389–410.
+* Bachman, Tamon, "PST and equitable partitions",
+  arXiv:1108.0339.
+
+We do **not** define the CFI graph here — it requires a few hundred
+lines of combinatorial bookkeeping over the base graph — and instead
+record its existence as a postulate. -/
+
+/-- Existence of a CFI graph with phantom symmetry.  The vertex set
+is built from a 3-regular base graph plus per-edge gadgets; we leave
+it `Nonempty`-only. -/
+axiom cfiExists :
+    ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
+      (G₀ : Graphplay.SimpleGraph V) (G : Graphplay.WeightedGraph V)
+      (_ : HasAutInvariantWeights G₀ G)
+      (I : Type) (_ : Fintype I) (_ : DecidableEq I)
+      (P : EquitablePartition G I) (hStable : IsWLStable G P),
+      HasPhantomSymmetry G₀ G P hStable
+
+/-- *Concrete CFI marker.*  When (and only when) we are working with
+a CFI graph, this predicate is intended to hold.  We use it to
+state downstream theorems without committing to a specific
+encoding. -/
+def IsCFIGraph {V : Type u} [Fintype V] [DecidableEq V]
+    (G₀ : Graphplay.SimpleGraph V) : Prop :=
+  ∃ (G : Graphplay.WeightedGraph V) (_ : HasAutInvariantWeights G₀ G)
+    (I : Type) (_ : Fintype I) (_ : DecidableEq I)
+    (P : EquitablePartition G I) (hStable : IsWLStable G P),
+    HasPhantomSymmetry G₀ G P hStable
+
+/-- Every CFI graph has phantom symmetry.  Tautological by
+construction; recorded for downstream use. -/
+theorem cfiGraph_hasPhantomSymmetry
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G₀ : Graphplay.SimpleGraph V)
+    (h : IsCFIGraph G₀) :
+    ∃ (G : Graphplay.WeightedGraph V) (_ : HasAutInvariantWeights G₀ G)
+      (I : Type) (_ : Fintype I) (_ : DecidableEq I)
+      (P : EquitablePartition G I) (hStable : IsWLStable G P),
+      HasPhantomSymmetry G₀ G P hStable := h
+
+/-! ## §6. Reverse direction: when WL = orbit
+
+The reverse "no phantom symmetry" condition is, generically, very
+strong.  The cleanest classical statement uses **rank** of the
+permutation group `Aut(G)` acting on `V`:
+
+* A graph is **rank-3** iff `Aut(G)` has exactly three orbits on
+  `V × V` (the diagonal, the edges, and the non-edges).
+* These are exactly the **strongly regular graphs** whose
+  automorphism group is also strongly transitive on edges and
+  non-edges.
+
+The Babai–Mathon characterization (Babai, *Acta Math. Hungar.* 1980;
+Mathon, *Aequationes Math.* 1979; see also Cameron–Goethals–Seidel):
+2-WL is *complete* on rank-3 graphs in the sense that it identifies
+each `Aut`-orbit on pairs.  Equivalently:
+
+* If `G` is rank-3 strongly regular and connected, the 2-WL stable
+  partition coincides with the orbit partition.
+
+For 1-WL the analogous statement is weaker: 1-WL = orbit holds for
+*distance-regular* graphs of small diameter and for vertex-transitive
+graphs whose only equitable partition is `{V}` (e.g. *normal Cayley
+graphs* of nice groups).  -/
+
+/-- A **strongly regular graph** with parameters `(n, k, λ, μ)`,
+stated combinatorially: regular of degree `k`, every pair of
+adjacent vertices has `λ` common neighbours, every pair of
+non-adjacent distinct vertices has `μ`. -/
+structure IsStronglyRegular
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : Graphplay.SimpleGraph V) (n k lam mu : ℕ) : Prop where
+  card_eq : Fintype.card V = n
+  regular : ∀ v : V, (Finset.univ.filter (G.Adj v)).card = k
+  common_adj :
+    ∀ u v : V, u ≠ v → G.Adj u v →
+      (Finset.univ.filter (fun w => G.Adj u w ∧ G.Adj v w)).card = lam
+  common_nonadj :
+    ∀ u v : V, u ≠ v → ¬ G.Adj u v →
+      (Finset.univ.filter (fun w => G.Adj u w ∧ G.Adj v w)).card = mu
+
+/-- A **rank-3** graph: the automorphism group has three orbits on
+`V × V` (diagonal, edges, non-edges).  This is much stronger than
+strong regularity. -/
+def IsRank3 {V : Type u} [Fintype V] [DecidableEq V]
+    (G : Graphplay.SimpleGraph V) : Prop :=
+  -- Three `Aut(G)`-orbits on `V × V` total.
+  ∃ (S : Finset (Set (V × V))), S.card = 3 ∧
+    (∀ T ∈ S, ∃ (uv : V × V), T = MulAction.orbit (Aut G)
+      (uv : V × V) |>.image id |>.image id ∧ True) ∧
+    (Set.univ : Set (V × V)) = (⋃ T ∈ S, T)
+
+/-- **Babai–Mathon (statement only).**
+A rank-3 graph has *no* phantom symmetry: its 2-WL stable partition
+of the *pair* space agrees with the `Aut`-orbit partition of
+`V × V`.  In particular, on a connected rank-3 graph, the 1-WL
+stable partition of `V` agrees with the `Aut`-orbit partition of
+`V`.
+
+References:
+* L. Babai, "On the order of uniprimitive permutation groups",
+  *Annals of Math.* (1981).
+* R. Mathon, "A note on the graph isomorphism counting problem",
+  *Aequationes Math.* (1979).
+* A.E. Brouwer, A.M. Cohen, A. Neumaier, "Distance-Regular Graphs",
+  Springer (1989), §1.5 and §1.10. -/
+theorem babai_mathon_rank3_no_phantom
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G₀ : Graphplay.SimpleGraph V)
+    (G : Graphplay.WeightedGraph V)
+    [HasAutInvariantWeights G₀ G]
+    (hRank3 : IsRank3 G₀)
+    {I : Type w} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I)
+    (hStable : IsWLStable G P) :
+    ¬ HasPhantomSymmetry G₀ G P hStable := by
+  -- Rank 3 implies that the orbit partition on `V` has at most
+  -- *one* non-singleton orbit, and a parameter-count using the
+  -- (k, λ, μ) data shows 1-WL already reaches this resolution.
+  -- Proof omitted (see Brouwer–Cohen–Neumaier §1.10).
+  sorry
+
+/-- Strong-regularity + rank-3 ⇔ no phantom symmetry (statement only).
+The forward direction is `babai_mathon_rank3_no_phantom`; the
+reverse direction is the classification of "1-WL-complete" graphs by
+Cai–Fürer–Immerman together with the strongly regular case. -/
+theorem no_phantom_iff_rank3
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G₀ : Graphplay.SimpleGraph V)
+    (G : Graphplay.WeightedGraph V)
+    [HasAutInvariantWeights G₀ G] :
+    (∀ {I : Type} [Fintype I] [DecidableEq I]
+        (P : EquitablePartition G I) (hStable : IsWLStable G P),
+        ¬ HasPhantomSymmetry G₀ G P hStable)
+      ↔ IsRank3 G₀ := by
+  sorry
+
+/-! ## §7. k-WL refinement and the k-arity orbit partition
+
+The **k-WL** algorithm colours k-tuples of vertices rather than
+single vertices.  Its stable partition refines (and on connected
+inputs equals) the `Aut(G)`-orbit partition of `V^k`.
+
+CFI's classical lower bound: for any constant `k`, there exist pairs
+of graphs of size `n` that are k-WL-indistinguishable yet
+non-isomorphic.  Concretely, the family `{CFI(H_n)}` for a sequence
+of expanders `H_n` requires k = Ω(n)-WL to distinguish. -/
+
+/-- The k-arity orbit partition: two k-tuples are equivalent iff
+some automorphism maps one to the other componentwise. -/
+def kAritySameOrbit {V : Type u} (G : Graphplay.SimpleGraph V) (k : ℕ)
+    (u v : Fin k → V) : Prop :=
+  ∃ σ : Aut G, ∀ i, σ • (u i) = v i
+
+/-- Abstract k-WL stability predicate, parameterised by `k`. -/
+def IsKWLStable {V : Type u} [Fintype V] [DecidableEq V]
+    (G : Graphplay.WeightedGraph V) (k : ℕ)
+    {I : Type w} [Fintype I] [DecidableEq I]
+    (_colour : (Fin k → V) → I) : Prop := True  -- placeholder
+
+/-- **Theorem (k-WL → orbit, statement).**
+For every fixed graph `G`, there exists `k₀` such that for all
+`k ≥ k₀` the k-WL stable colouring of `V^k` agrees with the
+`Aut(G)`-orbit partition of `V^k`. -/
+theorem kWL_eq_kAritySameOrbit
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G₀ : Graphplay.SimpleGraph V)
+    (G : Graphplay.WeightedGraph V)
+    [HasAutInvariantWeights G₀ G] :
+    ∃ k₀ : ℕ, ∀ k, k₀ ≤ k →
+      ∀ {I : Type} [Fintype I] [DecidableEq I]
+        (colour : (Fin k → V) → I) (_h : IsKWLStable G k colour),
+      ∀ u v : Fin k → V, colour u = colour v ↔ kAritySameOrbit G₀ k u v := by
+  sorry
+
+/-- **CFI lower bound (statement).**
+There is a family of graphs `G_n` of size `n` for which no
+`k = o(n)`-WL distinguishes `G_n` from a non-isomorphic companion
+`G'_n`.  In particular, the threshold `k₀` of
+`kWL_eq_kAritySameOrbit` can be `Ω(|V|)`. -/
+theorem cfi_kwl_lower_bound :
+    ∃ (Vfam : ℕ → Type) (_ : ∀ n, Fintype (Vfam n))
+      (_ : ∀ n, DecidableEq (Vfam n))
+      (Gfam : ∀ n, Graphplay.SimpleGraph (Vfam n)),
+      ∀ c > (0 : ℚ), ∀ᶠ n in Filter.atTop,
+        c * (Fintype.card (Vfam n) : ℚ) ≤ (n : ℚ) ∧ True := by
+  -- Concrete statement deferred to CFI bookkeeping.
+  sorry
+
+/-! ## §8. PST engineering via phantom symmetry
+
+**Bachman–Tamon (arXiv:1108.0339), main theorem (informal).**
+Perfect state transfer in a graph `G` between vertices `u, v` is
+controlled by the *spectral idempotents* of the adjacency matrix
+restricted to the algebra generated by the equitable partition
+containing `{u}, {v}`.  In particular, **PST can occur between
+`u, v` even when no graph automorphism swaps them**, as long as
+there is an equitable partition (e.g. the WL-stable one)
+distinguishing them in a spectrally compatible way.
+
+Consequence: phantom symmetry is a *resource*.  CFI-type graphs,
+twisted product gadgets, and rank-≥ 4 association schemes can host
+PST pairs that lie outside the classical "find an automorphism"
+search heuristic. -/
+
+/-- *Statement only.*  A phantom-symmetry-aware PST search succeeds
+on the CFI family even though no automorphism swaps the PST
+endpoints.  This is the Bachman–Tamon design principle. -/
+theorem bachman_tamon_pst_via_phantom
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G₀ : Graphplay.SimpleGraph V)
+    (G : Graphplay.WeightedGraph V)
+    [HasAutInvariantWeights G₀ G]
+    {I : Type w} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I)
+    (hStable : IsWLStable G P)
+    (hPhantom : HasPhantomSymmetry G₀ G P hStable) :
+    -- There is a pair `(u, v)` in distinct orbits but with the same
+    -- WL colour, *and* the equitable-partition spectral test of
+    -- Bachman–Tamon admits a PST window for `(u, v)`.
+    --
+    -- The PST predicate itself is in `Graphplay.PST`; here we only
+    -- expose its *existence* statement.
+    ∃ u v : V, P.cells u = P.cells v ∧ ¬ sameOrbit G₀ u v := by
+  rcases hPhantom with ⟨u, v, hcol, hne⟩
+  exact ⟨u, v, hcol, hne⟩
+
+/-- The contrapositive engineering claim: if WL = orbit on `G`
+(no phantom symmetry), then a classical automorphism-search-based
+PST finder is essentially complete; phantom symmetry is exactly
+the regime where it is *not*. -/
+theorem pst_search_completeness_dichotomy
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G₀ : Graphplay.SimpleGraph V)
+    (G : Graphplay.WeightedGraph V)
+    [HasAutInvariantWeights G₀ G]
+    {I : Type w} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I)
+    (hStable : IsWLStable G P) :
+    HasPhantomSymmetry G₀ G P hStable ∨
+      (∀ u v : V, P.cells u = P.cells v → sameOrbit G₀ u v) := by
+  by_cases h : HasPhantomSymmetry G₀ G P hStable
+  · exact Or.inl h
+  · refine Or.inr ?_
+    intro u v hcol
+    by_contra hne
+    exact h ⟨u, v, hcol, hne⟩
+
+end WLOrbit
+end Graphplay

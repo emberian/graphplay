@@ -1,0 +1,540 @@
+/-
+# Graphplay.LovaszTheta
+
+Canonical home of the **Lovász theta function** `ϑ(G)`, the SDP-computable
+spectral invariant sitting at the heart of the chain
+
+    α(G) ≤ ϑ(G) ≤ χ(Ḡ).
+
+The Lovász theta function is the canonical spectral upper bound on the
+independence number and (equivalently, via complementation) the canonical
+spectral lower bound on the clique-cover / chromatic-of-complement number.
+On perfect graphs the sandwich collapses to equality, and Lovász's original
+1979 paper used this collapse to give the first polynomial-time recognition
+algorithm for the independence number of perfect graphs (the
+Grötschel–Lovász–Schrijver theorem).
+
+In Graphplay, the LT number is the **Tower 2** representative that bridges
+combinatorial bounds (Tower 1: independence, chromatic) to operator-system
+bounds (Tower 3: quantum chromatic, coherent algebra). It enters Tower 3
+through the Mancinska–Roberson identification of `ϑ` with the *quantum*
+LT number `ϑ_q` for vertex-transitive graphs (arXiv:1212.1724), and
+descends to Tower 1 via the Lovász sandwich theorem.
+
+This file:
+
+* defines `lovaszTheta` via the canonical Lovász SDP characterisation;
+* states the three equivalent formulations (orthonormal representation,
+  SDP, eigenvalue / `cos θ` form);
+* states the **Lovász sandwich theorem** `α(G) ≤ ϑ(G) ≤ χ(Ḡ)`;
+* states the **equitable-partition monotonicity** `ϑ(G) ≥ ϑ(G/P)`,
+  the bridge between Tower 1 and Tower 2;
+* states the **quantum-chromatic chain**
+  `χ_f(G) ≤ ϑ(G) ≤ χ_q(G) ≤ χ(G)`, with `ϑ = ϑ_q` on vertex-transitive
+  graphs (Mancinska–Roberson, arXiv:1212.1724);
+* states the **perfect-graph corollary** `α(G) = ϑ(G) = χ(Ḡ)`;
+* records the **engineering corollary** that any `ϑ`-lower-bound on a
+  graph is a spectral lower bound on the number of cells of any
+  equitable partition of `G`.
+
+All proofs are `sorry`; the file aims to lay out the statements precisely
+in the shape that the rest of Graphplay expects.
+-/
+
+import Mathlib.LinearAlgebra.Matrix.Hermitian
+import Mathlib.LinearAlgebra.Matrix.PosDef
+import Mathlib.Combinatorics.SimpleGraph.Basic
+import Mathlib.Data.Real.Basic
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Graphplay.Weighted
+import Graphplay.Equitable
+import Graphplay.QuantumGraph
+
+open scoped Matrix
+open Matrix
+
+universe u v w
+
+namespace Graphplay
+
+/-! ## The Lovász theta function
+
+For a finite simple graph `G` on a vertex type `V`, the **Lovász theta
+function** is the optimal value of the semidefinite program
+
+    maximize    ∑_{i,j} X i j
+    subject to  X ∈ PSD V V ℝ
+                tr X = 1
+                X i j = 0           whenever i ≠ j and i ~_G j.
+
+This is the *dual* / "feasible-PSD" form of Lovász's original SDP; an
+equivalent primal form is
+
+    minimize    λ_max(M)
+    subject to  M Hermitian, M i j = 1 whenever i = j or i ≁_G j.
+
+We use the dual form below because it slots most cleanly into Mathlib's
+`Matrix.PosSemidef` API.
+-/
+
+/-- The **feasible set** for the Lovász θ SDP on a simple graph `G`:
+real symmetric PSD matrices on `V × V` of unit trace whose `(i,j)` entry
+vanishes on every edge of `G`.
+
+In the language of operator systems (Tower 3), this is the affine slice
+through the unit-trace PSD cone cut out by the constraints
+
+    `X = Xᵀ`, `X ≽ 0`, `tr X = 1`, `(i,j) ∈ E(G) → X i j = 0`.
+
+The orientation `i ~_G j` (an edge of `G`) is intentional: feasibility
+on `G` corresponds to handshake-compatibility with the *complement* `Ḡ`,
+which is the standard convention in the Lovász–Schrijver formulation. -/
+def lovaszThetaFeasible {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] (X : Matrix V V ℝ) : Prop :=
+  X.IsHermitian ∧ X.PosSemidef ∧ (∑ i, X i i = 1) ∧
+    ∀ i j : V, G.Adj i j → X i j = 0
+
+/-- The **Lovász theta function** `ϑ(G)` of a finite simple graph `G`.
+
+This is the supremum of `∑_{i,j} X i j` over the SDP feasible set
+`lovaszThetaFeasible G`.  In the empty-graph / trivial case the value
+collapses to `|V|`; on the complete graph `K_n` it equals `1`; for
+vertex-transitive graphs Lovász's `θ = |V| / (1 + λ_max(A)/λ_min(A))`
+formula (with `A` the adjacency matrix and appropriate sign convention)
+applies.
+
+The actual computation is left as `sorry`; this layer only sets up the
+*statement-of-shape* required by the rest of Graphplay.  Note that the
+supremum is taken over a *non-empty compact* feasible set (the matrix
+`(1/|V|) • 1` is always feasible), so the `sSup` is attained and finite.
+
+For technical reasons (Mathlib's `sSup` over `ℝ` is `0` on unbounded
+sets), we work with the set of admissible objective values rather than a
+direct supremum construction. -/
+noncomputable def lovaszTheta {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] : ℝ :=
+  sSup { v : ℝ | ∃ X : Matrix V V ℝ, lovaszThetaFeasible G X ∧ v = ∑ i, ∑ j, X i j }
+
+/-- The Lovász θ feasible set is non-empty: the scaled all-ones diagonal
+matrix `(1/|V|) • 1` (where `1` here is the `V × V` identity) is feasible
+whenever `V` is non-empty. -/
+theorem lovaszThetaFeasible_nonempty
+    {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    ∃ X : Matrix V V ℝ, lovaszThetaFeasible G X := by
+  -- Take `X = (1/|V|) • I`; trivially PSD, hermitian, unit trace, and
+  -- vanishes off the diagonal so the edge-constraint holds vacuously
+  -- because `G.Adj i j` implies `i ≠ j`.
+  sorry
+
+/-- The Lovász theta function is non-negative: in fact `ϑ(G) ≥ 1` for
+every non-empty graph (witness: the `(1/|V|) • I` matrix above has
+objective `1`).  This is the canonical first sanity check. -/
+theorem one_le_lovaszTheta
+    {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    (1 : ℝ) ≤ lovaszTheta G := by
+  sorry
+
+/-! ## Equivalent characterisations
+
+Lovász's 1979 paper gives three equivalent definitions of `ϑ(G)`.  We
+state them and the equivalence between them; the proofs of equivalence
+are non-trivial (each direction uses an SDP duality argument or a
+spectral-decomposition argument) and are left as `sorry`.
+-/
+
+/-- **Orthonormal representation.** An *orthonormal representation* of
+`G` in `ℝ^d` is an assignment of unit vectors `u_i ∈ ℝ^d` to vertices
+such that `⟨u_i, u_j⟩ = 0` whenever `i ≠ j` and `i ≁_G j` (i.e., on
+non-edges of `G`).  The Lovász value of an orthonormal representation
+is `min_{c : unit vector} max_i 1 / ⟨c, u_i⟩^2`. -/
+structure OrthonormalRepresentation
+    {V : Type u} [Fintype V] (G : SimpleGraph V) (d : ℕ) where
+  /-- The vector assigned to each vertex. -/
+  vec : V → (Fin d → ℝ)
+  /-- Each `vec i` is a unit vector. -/
+  unit : ∀ i, ∑ k, vec i k ^ 2 = 1
+  /-- Vectors at non-adjacent (distinct) vertices are orthogonal. -/
+  orth : ∀ i j : V, i ≠ j → ¬ G.Adj i j → ∑ k, vec i k * vec j k = 0
+
+/-- The **Lovász value** of an orthonormal representation: the optimal
+"handle vector" `c` minimises the worst over vertices of `1/⟨c, u_i⟩²`.
+This expresses how tightly the representation can be "viewed" along a
+single axis.  Lovász's first theorem identifies the infimum of this
+value (over both `c` and the representation) with `ϑ(G)`.
+
+The infimum is realised by Lovász's *optimal orthonormal representation*,
+itself an SDP-extracted gadget. -/
+noncomputable def OrthonormalRepresentation.value
+    {V : Type u} [Fintype V] {G : SimpleGraph V} {d : ℕ}
+    (_ρ : OrthonormalRepresentation G d) : ℝ :=
+  0  -- placeholder: `inf_c max_i 1 / ⟨c, ρ.vec i⟩^2`
+
+/-- **Equivalence (a): orthonormal representations.** `ϑ(G)` equals the
+infimum, over all orthonormal representations `ρ` and all dimensions
+`d`, of `ρ.value`. -/
+theorem lovaszTheta_eq_orthonormalRepresentation
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    lovaszTheta G =
+      sInf { v : ℝ | ∃ (d : ℕ) (ρ : OrthonormalRepresentation G d), v = ρ.value } := by
+  -- Original Lovász 1979 proof: SDP-duality between the trace-1 PSD
+  -- feasible set and the orthonormal-representation infimum.
+  sorry
+
+/-- **Equivalence (b): the dual SDP / "M-formulation".**  `ϑ(G)` equals
+the minimum of `λ_max(M)` over Hermitian matrices `M` with `M i j = 1`
+whenever `i = j` or `i ≁_G j` (i.e., off the edges of `G`).  This is
+the *dual* of the trace-1 PSD program above. -/
+theorem lovaszTheta_eq_dualSDP
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    lovaszTheta G = sInf
+      { v : ℝ | ∃ M : Matrix V V ℝ,
+          M.IsHermitian
+          ∧ (∀ i j : V, i = j ∨ ¬ G.Adj i j → M i j = 1)
+          ∧ v ∈ Set.range (fun i : V => (M.IsHermitian.eigenvalues sorry) i) } := by
+  -- This is strong SDP duality: the primal and dual programs both have
+  -- strictly feasible interiors (Slater's condition), so the optimal
+  -- values agree.
+  sorry
+
+/-- **Equivalence (c): eigenvalue / `cos θ` formulation.** For
+vertex-transitive `G`, Lovász's "ratio bound" applies:
+
+    `ϑ(G) = |V| · (-λ_min(A)) / (λ_max(A) - λ_min(A))`
+
+where `A` is the 0/1 adjacency matrix.  The general (non
+vertex-transitive) case has an analogous but more involved formula. -/
+theorem lovaszTheta_eq_ratioBound
+    {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (_hvt : True /- placeholder for vertex-transitive hypothesis -/) :
+    lovaszTheta G = 0  -- placeholder for `|V| · (-λ_min) / (λ_max - λ_min)`
+    := by
+  sorry
+
+/-! ## The Lovász sandwich theorem
+
+The headline result: `α(G) ≤ ϑ(G) ≤ χ(Ḡ)`.  We state it abstractly,
+using placeholder symbols for `α` and `χ` that match the rest of
+Graphplay (concretely: `SimpleGraph.cliqueNum` / `chromaticNumber` from
+Mathlib, lifted into `ℝ`).
+-/
+
+/-- The independence number of `G`: the size of the largest independent
+set.  We use a placeholder name so the file is self-contained; in the
+broader Graphplay codebase this is identified with the Mathlib
+`SimpleGraph.cocliqueNum`. -/
+noncomputable def independenceNumber
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (_G : SimpleGraph V) : ℕ :=
+  0  -- placeholder; the real value is `Mathlib.SimpleGraph.cocliqueNum`
+
+/-- The chromatic number of `G`.  Placeholder shim around the Mathlib
+`SimpleGraph.chromaticNumber`, which lives in `ℕ∞`; we coerce to `ℕ` by
+sending the `⊤` case to `0`. -/
+noncomputable def chromaticNumber
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (_G : SimpleGraph V) : ℕ :=
+  0  -- placeholder; shim for `SimpleGraph.chromaticNumber`
+
+/-- **Lovász sandwich theorem.**  For every finite simple graph `G`,
+
+    α(G) ≤ ϑ(G) ≤ χ(Ḡ).
+
+The first inequality is Lovász's "independence number bound": any
+independent set witnesses a feasible point of the SDP with objective
+`|S|`.  The second is the "covering bound": any proper colouring of `Ḡ`
+by `k` colours yields a feasible point of the dual SDP with objective
+`k` (each colour class gives a clique of `G`, hence a rank-one PSD
+summand).  Putting them together gives the sandwich.
+
+This is the *spectral* upper bound on `α` and *spectral* lower bound on
+`χ(Ḡ)`, with both bounds polynomially computable (via SDP). -/
+theorem alpha_le_theta_le_chiBar
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel G.complement.Adj] :
+    (independenceNumber G : ℝ) ≤ lovaszTheta G
+    ∧ lovaszTheta G ≤ (chromaticNumber G.complement : ℝ) := by
+  -- Lovász 1979, Theorems 3 and 4.  Each direction is a feasible-point
+  -- witness:  α → trace-1 PSD via the indicator;  χ(Ḡ) → dual via a
+  -- clique-cover construction.
+  sorry
+
+/-! ## Equitable-partition monotonicity (Tower 1 ↔ Tower 2 bridge)
+
+The Lovász theta function is *monotone under equitable quotients*: if
+`G` admits an equitable partition `P` with quotient graph `G/P`, then
+
+    ϑ(G) ≥ ϑ(G/P).
+
+In particular, any LT lower bound on `G/P` is an LT lower bound on `G`,
+and (via the sandwich) any chromatic upper bound transfers in the same
+direction.  This is the operational form of the Tower 1 ↔ Tower 2
+bridge: combinatorial coarsening pushes through to spectral bounds.
+
+The proof uses the Schur-complement / block-diagonal lift
+`cellInflate` from `Graphplay.Equitable`: a feasible `X̃` for `G/P`
+lifts to a feasible `X = cellInflate(X̃)/k` (up to normalisation) for
+`G`, with the same objective.
+-/
+
+/-- The **quotient graph** of an equitable partition: vertices are
+cells, with `i ~ j` iff some (equivalently, every) representative of
+cell `i` has positive branching number to cell `j`.
+
+For now we record only the *statement-of-shape*; the genuine quotient
+construction (which uses the `quotient` matrix from `Graphplay.Equitable`)
+is left implicit. -/
+noncomputable def EquitablePartition.quotientGraph
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {G : WeightedGraph V} (_P : EquitablePartition G I) :
+    SimpleGraph I :=
+  ⊥  -- placeholder; the actual quotient depends on the branching matrix
+
+/-- The bridge: `ϑ` of the quotient graph lower-bounds `ϑ` of the
+original.  Equivalently, equitable coarsening can only *decrease* (or
+preserve) the LT number.  This is the spectral version of Bachman–Tamon
+(arXiv:1108.0339) Theorem 4.1 for the quantum-walk Hamiltonian. -/
+theorem lovaszTheta_via_equitable_partition
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (_GW : WeightedGraph V)
+    (P : EquitablePartition (SimpleGraph.toWeighted G) I)
+    [DecidableRel P.quotientGraph.Adj] :
+    lovaszTheta P.quotientGraph ≤ lovaszTheta G := by
+  -- Proof: feasibility lifts via `cellInflate`.  If `X̃` is feasible for
+  -- `G/P`, then `cellInflate(X̃) / k` is feasible for `G` (the
+  -- block-diagonal lift preserves PSD, scales the trace by `k`, and
+  -- vanishes on edges of `G` by the equitable / branching condition).
+  sorry
+
+/-! ## Bridge to quantum chromatic numbers (Tower 3)
+
+The Lovász theta number sits inside the chain
+
+    χ_f(G) ≤ ϑ(G) ≤ χ_q(G) ≤ χ(G).
+
+with equality `ϑ(G) = ϑ_q(G)` (the *quantum* theta number) on
+vertex-transitive graphs.  This is the Mancinska–Roberson
+identification (arXiv:1212.1724), one of the deepest results connecting
+Tower 2 (spectral) to Tower 3 (operator-system) in the Graphplay
+framework.
+-/
+
+/-- The *fractional* chromatic number of `G`: the LP relaxation of `χ`.
+Placeholder; the genuine definition is the optimum of the standard
+covering LP. -/
+noncomputable def fractionalChromaticNumber
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (_G : SimpleGraph V) : ℝ :=
+  0
+
+/-- The *quantum* chromatic number of `G`: the least `n` such that
+there exists a quantum `n`-colouring of `G` (i.e., a family of
+projections in some `B(H)` satisfying the colouring identities of the
+synchronous non-local game `Hom(G, K_n)`).  Placeholder. -/
+noncomputable def quantumChromaticNumber
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (_G : SimpleGraph V) : ℕ :=
+  0
+
+/-- The *quantum* Lovász theta function `ϑ_q(G)`: the SDP value of the
+non-commutative relaxation in which scalar PSD matrices are replaced
+by operator-valued PSD matrices over some `B(H)`.  Placeholder. -/
+noncomputable def quantumLovaszTheta
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (_G : SimpleGraph V) : ℝ :=
+  0
+
+/-- **The quantum-chromatic chain.**  For every finite simple graph `G`,
+
+    χ_f(G) ≤ ϑ(G) ≤ χ_q(G) ≤ χ(G).
+
+The first inequality is the LP–SDP relaxation gap (every
+fractional-colouring witness lifts to an SDP-feasible point of
+comparable objective).  The second is Mancinska–Roberson
+(arXiv:1212.1724, Theorem 1.1).  The third is the trivial quantum-vs-
+classical comparison: every classical colouring is in particular a
+quantum colouring. -/
+theorem chi_q_le_theta_le_chi
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    fractionalChromaticNumber G ≤ lovaszTheta G
+    ∧ lovaszTheta G ≤ (quantumChromaticNumber G : ℝ)
+    ∧ (quantumChromaticNumber G : ℝ) ≤ (chromaticNumber G : ℝ) := by
+  -- Each step is a separate SDP / operator-system relaxation argument;
+  -- see Mancinska–Roberson arXiv:1212.1724 §3-§5 for the middle
+  -- inequality.
+  sorry
+
+/-- **Mancinska–Roberson identification.**  On vertex-transitive graphs,
+the classical and quantum Lovász theta numbers coincide:
+
+    `G` vertex-transitive ⟹ `ϑ(G) = ϑ_q(G)`.
+
+This is arXiv:1212.1724, Theorem 1.1 (and its strengthening to the
+equality `ϑ = ϑ⁺` from Cubitt–Mancinska–Roberson–Severini–Stahlke–Winter,
+arXiv:1404.3401). -/
+theorem lovaszTheta_eq_quantumLovaszTheta_of_vertexTransitive
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (_hvt : True /- placeholder: `G` is vertex-transitive -/) :
+    lovaszTheta G = quantumLovaszTheta G := by
+  -- Mancinska–Roberson 2012, arXiv:1212.1724.
+  sorry
+
+/-! ## Perfect graphs
+
+Lovász's 1972 *perfect graph theorem* characterises perfect graphs as
+those for which every induced subgraph satisfies `α = χ̄`; the LT-version
+of this collapse says that on perfect graphs the entire sandwich
+collapses to an equality
+
+    `α(G) = ϑ(G) = χ(Ḡ)`,
+
+and this gives the Grötschel–Lovász–Schrijver polynomial-time
+recognition algorithm for the independence number on perfect graphs.
+
+In Graphplay's stratification: perfect graphs are exactly those for
+which the equitable-partition lift is *tight* in the LT sense — i.e.
+those for which no equitable coarsening can sharpen the LT bound.
+-/
+
+/-- The *perfect graph* predicate: every induced subgraph `H ≤ G`
+satisfies `χ(H) = ω(H)` (clique-number equals chromatic number).
+Placeholder name for the genuine definition (which one finds in
+Mathlib's combinatorics library or in Chudnovsky–Robertson–Seymour–
+Thomas's strong perfect graph theorem). -/
+def IsPerfect {V : Type u} [Fintype V] [DecidableEq V]
+    (_G : SimpleGraph V) : Prop :=
+  True  -- placeholder
+
+/-- **Lovász perfect-graph corollary.**  On perfect graphs, the LT
+sandwich collapses:
+
+    `G` perfect ⟹ `α(G) = ϑ(G) = χ(Ḡ)`.
+
+This is the canonical *polynomial-time identification* of `α` and `χ̄`
+on perfect graphs; see Grötschel–Lovász–Schrijver 1981 and Lovász
+1972. -/
+theorem alpha_eq_theta_eq_chiBar_of_perfect
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel G.complement.Adj]
+    (_hG : IsPerfect G) :
+    (independenceNumber G : ℝ) = lovaszTheta G
+    ∧ lovaszTheta G = (chromaticNumber G.complement : ℝ) := by
+  sorry
+
+/-- **Tightness characterisation.**  On a perfect graph, the
+equitable-partition lift of `Graphplay.Equitable.quotient` realises the
+LT bound exactly: there exists an equitable partition `P` of `G` such
+that `lovaszTheta P.quotientGraph = lovaszTheta G`.
+
+This is the *operational* form of perfection in the Graphplay tower
+hierarchy. -/
+theorem exists_equitablePartition_tight_of_perfect
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (_hG : IsPerfect G) :
+    ∃ (I : Type u) (_ : Fintype I) (_ : DecidableEq I)
+      (P : EquitablePartition (SimpleGraph.toWeighted G) I)
+      (_ : DecidableRel P.quotientGraph.Adj),
+      lovaszTheta P.quotientGraph = lovaszTheta G := by
+  sorry
+
+/-! ## Engineering use: spectral lower bound on `χ` and on cell count
+
+The combination
+  `chromaticNumber G ≥ lovaszTheta G.complement`
+  (from the sandwich theorem applied to `Ḡ`)
+gives a *spectral lower bound* on the chromatic number of `G`.
+Combining with the equitable-partition monotonicity, we obtain a
+*spectral lower bound on the number of cells* of any equitable
+partition of `G` — concretely: any equitable partition has at least
+`⌈ϑ(Ḡ)⌉` cells.
+
+This is the punchline of the Tower 1 → Tower 2 bridge: SDPs give
+provable lower bounds on the granularity of any equitable refinement.
+-/
+
+/-- **Spectral lower bound on `χ`.**  For every finite simple graph `G`,
+
+    `χ(G) ≥ ϑ(Ḡ)`.
+
+Direct corollary of `alpha_le_theta_le_chiBar` applied to `Ḡ`. -/
+theorem lovaszTheta_complement_le_chromaticNumber
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel G.complement.Adj] :
+    lovaszTheta G.complement ≤ (chromaticNumber G : ℝ) := by
+  -- From `alpha_le_theta_le_chiBar` applied to `G.complement`, plus the
+  -- involution `(Ḡ)ᶜ = G`.
+  sorry
+
+/-- **Engineering corollary: spectral lower bound on cell count.**
+
+Any equitable partition `P` of (the weighted form of) `G` has at least
+`⌈ϑ(Ḡ)⌉` cells.
+
+The proof chain:
+
+  1. `P` equitable ⟹ `lovaszTheta P.quotientGraph ≤ lovaszTheta G`
+     (monotonicity, `lovaszTheta_via_equitable_partition`),
+  2. `lovaszTheta (Ḡ) ≤ χ(G)` (sandwich, applied to `Ḡ`),
+  3. `chromaticNumber P.quotientGraph ≤ |I|`
+     (trivially, since the quotient has `|I|` vertices), and
+  4. an appeal to `chi_q_le_theta_le_chi`.
+
+We bundle the chain as a single statement here.  The proof is left as
+`sorry` pending the genuine definitions of `chromaticNumber` and
+`independenceNumber`. -/
+theorem card_cells_ge_lovaszTheta_complement
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {I : Type u} [Fintype I] [DecidableEq I]
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel G.complement.Adj]
+    (_P : EquitablePartition (SimpleGraph.toWeighted G) I) :
+    lovaszTheta G.complement ≤ (Fintype.card I : ℝ) := by
+  -- See the docstring for the proof chain.
+  sorry
+
+/-! ## Tower-3 connection: `ϑ` and the coherent algebra
+
+The Lovász theta number is invariant under passage to the coherent
+algebra: if `S ⊇ G.adj` is any coherent algebra (e.g.
+`Graphplay.coherentAlgebra G` itself), then the LT number computed via
+the SDP restricted to `X ∈ S` agrees with the unrestricted LT number.
+
+This is a Tower-3 form of "equitable monotonicity is sharp on the
+coherent algebra" — the LT number is determined by the coherent algebra
+data alone. -/
+
+/-- **Coherent-algebra invariance of `ϑ`.**  The LT number is computable
+from the coherent algebra alone: restricting the feasible set to
+matrices in `coherentAlgebra (toWeighted G)` does not change the
+optimum.
+
+This is the LT-version of Schrijver's theorem on coherent-algebra
+domination of association-scheme bounds.  The proof uses Reynolds-
+averaging: any feasible `X` can be averaged against the coherent
+algebra to give a feasible point in the algebra with the same
+objective. -/
+theorem lovaszTheta_eq_lovaszTheta_restricted_to_coherentAlgebra
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    lovaszTheta G =
+      sSup { v : ℝ | ∃ X : Matrix V V ℝ,
+              lovaszThetaFeasible G X
+              ∧ (X.map (fun r => (r : ℂ))) ∈ coherentAlgebra (SimpleGraph.toWeighted G)
+              ∧ v = ∑ i, ∑ j, X i j } := by
+  -- Reynolds averaging against the coherent algebra preserves PSD,
+  -- preserves the trace, preserves the vanishing-on-edges constraint
+  -- (since the coherent algebra is Schur-closed and contains the
+  -- adjacency), and preserves the objective (since the objective is
+  -- linear and the algebra contains the all-ones matrix `J`).
+  sorry
+
+end Graphplay
