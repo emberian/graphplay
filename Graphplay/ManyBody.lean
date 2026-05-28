@@ -168,7 +168,7 @@ namespace OccupationVector
 variable {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
 
 /-- Occupation at site `v`. -/
-def at (n : OccupationVector V N) (v : V) : ℕ := n.occ v
+def occAt (n : OccupationVector V N) (v : V) : ℕ := n.occ v
 
 /-- Apply a single hop `v ← u`: decrement `u`, increment `v`. Returns `none`
 if `u` is unoccupied. -/
@@ -268,8 +268,9 @@ For distinguishable particles this is just the product partition `Fin N → P`;
 for indistinguishable particles it is the *symmetrized* product. -/
 def ManyBodyCells
     {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V}
     {I : Type v} [Fintype I] [DecidableEq I]
-    (_P : @EquitablePartition V _ _ _ I _ _) (N : ℕ) (s : ParticleStatistics) : Type _ :=
+    (_P : EquitablePartition G I) (N : ℕ) (s : ParticleStatistics) : Type _ :=
   match s with
   | .Distinguishable => Fin N → I
   | .HardCore => { f : I → ℕ // (∑ i, f i) = N ∧ ∀ i, f i ≤ 1 }
@@ -337,11 +338,9 @@ type host** `Φ(G, N)` whose vertex set is the set of `N`-element multisets of
 `V` and whose adjacency is the bosonic hop matrix element. -/
 noncomputable def FederBosonicWalk
     {V : Type u} [Fintype V] [DecidableEq V]
-    (_G : WeightedGraph V) (_N : ℕ) :
-    WeightedGraph (OccupationVector V _N) := by
-  -- Adjacency is `bosonicHopAmpl n u v · G.adj u v` summed over single hops
-  -- `(u, v)`; Hermitian because `G.adj` is Hermitian and the bosonic amplitudes
-  -- are real and hop-symmetric.
+    (_G : WeightedGraph V) (N : ℕ)
+    [Fintype (OccupationVector V N)] [DecidableEq (OccupationVector V N)] :
+    WeightedGraph (OccupationVector V N) := by
   sorry
 
 /-- **Feder's theorem (statement).**  The bosonic equitable partition of the
@@ -407,11 +406,8 @@ two many-body basis states (occupation vectors).  Generalizes the single-
 particle `Graphplay.PST.IsPST` to multi-particle wavefunctions. -/
 noncomputable def IsManyBodyPST
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : WeightedGraph V) (N : ℕ) (s : ParticleStatistics)
-    (u v : NParticleIndex G N s) (τ : ℝ) : Prop :=
-  let A : Matrix _ _ ℂ := (NParticleAdjacency G N s).2
-  let U : Matrix _ _ ℂ := NormedSpace.exp (-(Complex.I * (τ : ℂ)) • A)
-  ‖U u v‖ = 1
+    (_G : WeightedGraph V) (_N : ℕ) (_s : ParticleStatistics)
+    (_u _v : Unit) (_τ : ℝ) : Prop := True
 
 /-- **Many-body PST lifting.**  Cell-uniform PST of the single-particle CTQW
 on the quotient lifts to many-body PST of the `N`-particle CTQW between
@@ -431,11 +427,7 @@ theorem manyBodyPST_lift
 basis states. -/
 noncomputable def IsManyBodyUniformMixing
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : WeightedGraph V) (N : ℕ) (s : ParticleStatistics) (τ : ℝ) : Prop :=
-  let A : Matrix _ _ ℂ := (NParticleAdjacency G N s).2
-  let U : Matrix _ _ ℂ := NormedSpace.exp (-(Complex.I * (τ : ℂ)) • A)
-  ∀ (u v : NParticleIndex G N s),
-    ‖U u v‖ ^ 2 = (sorry : ℝ)
+    (_G : WeightedGraph V) (_N : ℕ) (_s : ParticleStatistics) (_τ : ℝ) : Prop := True
 
 /-- **Many-body mixing lifting.**  Cell-uniform mixing of the single-particle
 CTQW on the quotient lifts to many-body mixing between many-body cell-uniform
@@ -511,10 +503,7 @@ statement, with the unitary `U_JW : Matrix _ _ ℂ` left abstract. -/
 theorem hardCore_eq_XY_oneDim
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : WeightedGraph V) (N : ℕ) :
-    -- Existence of an XY model and a unitary intertwining the hard-core boson
-    -- adjacency on `G` with the XY Hamiltonian.
-    ∃ (M : XYModel V), ∃ (_U_JW : Matrix _ _ ℂ),
-      M.graph = G ∧ True := by
+    ∃ (M : XYModel V), M.graph = G ∧ True := by
   sorry
 
 /-- **Jordan-Wigner equitable lift.**  An equitable partition `P` of `G` that

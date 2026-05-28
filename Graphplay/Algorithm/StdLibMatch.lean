@@ -57,7 +57,7 @@ function. -/
 proof that adjacency is preserved.  When the proof is `sorry` we
 nonetheless retain the bijection itself, which is useful for plotting
 and certificate emission. -/
-structure VertexBijection (V W : Type u) [Fintype V] [Fintype W]
+structure VertexBijection (V : Type u) (W : Type v) [Fintype V] [Fintype W]
     [DecidableEq V] [DecidableEq W] where
   /-- The underlying bijection on vertex sets. -/
   toEquiv : V ≃ W
@@ -290,7 +290,7 @@ when only the spectral filter passes, we record only isospectrality. -/
 /-- Two weighted graphs are *isospectral* if their Hermitian spectra
 coincide as multisets. -/
 def Isospectral
-    {V W : Type u} [Fintype V] [Fintype W] [DecidableEq V] [DecidableEq W]
+    {V : Type u} {W : Type v} [Fintype V] [Fintype W] [DecidableEq V] [DecidableEq W]
     (G : WeightedGraph V) (H : WeightedGraph W) : Prop :=
   spectralFingerprint G = spectralFingerprint H
 

@@ -9,7 +9,7 @@
   #text(size: 12pt)[A Lean-Verified Spine for Quantum-Walk Search and Transfer, \
   with a Graphon Quasi-Infinite Limit] \
   #v(0.25em)
-  #text(size: 9.5pt)[Anti Mathematics Online Research Crew; Graphplay v2 draft]
+  #text(size: 9.5pt)[Graphplayers Crew; Graphplay v2 draft]
 ]
 
 #v(0.6em)
@@ -54,7 +54,7 @@ of spatial-search optimality is also spectral, and is cleaner on quotients
 [chan2022shadows]. Finally, optimality survives unbounded one-dimensional
 probes [xie2023tail].
 
-The previous version of this paper [amorc2025] reified a tiny slice of this
+The previous version of this paper [graphplay2025] reified a tiny slice of this
 program into a Lean 4 artifact and a Python compiler prototype, organized
 around the four-color completion of a planar graph. That version emphasized
 the role of a chosen color quotient: once a coloring is fixed there is a
@@ -155,7 +155,7 @@ The complete multipartite graph $K_(n_1, ..., n_r)$ has the color partition
 as an equitable partition, with quotient matrix
 $(A slash pi)_(j k) = n_k$ for $j != k$ and $0$ otherwise. The spectrum is
 the spectrum of this small matrix together with internal zero modes,
-recovering the calculation of [amorc2025].
+recovering the calculation of [graphplay2025].
 
 #heading("3. The Constructive Engine: Bundles and Their Corners")
 
@@ -176,13 +176,13 @@ Many earlier constructions are corners.
 
 #emph[Proposition 3.2 (corners).]
 + With $H_i = 0$ and $B_(i j) = 1$ on Q-edges, `Tot(Q, H, B)` is the
-  `TemplateJoin(Q, V)` of [amorc2025].
+  `TemplateJoin(Q, V)` of [graphplay2025].
 + With $Q = K_2$, fibers $H_1, H_2$ arbitrary, and $B_(1 2) = 1$ on a chosen
   product subset, one recovers Cartesian, lexicographic, strong, and
   tensor products as cases. The PST-product theorems of
   [ge2010products] fall out as Tower-2 corollaries.
 + With $Q = K_C$ on a color palette and $H_i = 0$, one recovers the color
-  completion `ColorCompletion c` of [amorc2025]; with $B_(i j) = 1$ this is
+  completion `ColorCompletion c` of [graphplay2025]; with $B_(i j) = 1$ this is
   complete multipartite.
 + With $Q$ a join graph in the sense of [kirkland2023join] and arbitrary
   fibers, one recovers their join construction; their PST-on-joins
@@ -330,7 +330,7 @@ graphons, converges in cut norm to the block-constant graphon $W_Q$ with
 cells of measure $1 slash r$ and value $Q_(j k)$ in block $(j, k)$. The
 quotient at every stage is $n dot Q$ (up to a renormalization that absorbs
 into the time parameter), and Theorem 5.5 gives the limit as the finite
-search problem on $Q$. The compiler examples of [amorc2025] are exactly the
+search problem on $Q$. The compiler examples of [graphplay2025] are exactly the
 finite stages of such a sequence.
 
 #heading("6. Tower 5: Categorical Framing")
@@ -358,7 +358,7 @@ Theorem 6.1 unifies several earlier observations.
 #emph[Corollary 6.2.]
 The quasi-infinite limit theorem (Theorem 5.5) is the Tower-4 instance of
 Theorem 6.1. The Tower-1 inverse-limit and edge-union universal properties
-of [amorc2025] are Tower-1 and Tower-0 instances. The "failed reflector"
+of [graphplay2025] are Tower-1 and Tower-0 instances. The "failed reflector"
 observation --- there is no left adjoint to "forget the coloring" --- is
 recovered as the statement that the underlying-graph functor *does not* have
 a colimit-preserving left adjoint; the relative left adjoint along a chosen
@@ -396,12 +396,12 @@ incidence matrix gives a Hermitian bipartite weighted graph on
 $V union.dot E(f^* T)$, and equitable partitions of this incidence graph
 recover the standard fractional/combinatorial CSP invariants. Lean:
 `Graphplay/Relational.lean`. For $k = 2$ this is the pullback graph of
-[amorc2025]; the $k > 2$ case appears not to have been treated through the
+[graphplay2025]; the $k > 2$ case appears not to have been treated through the
 equitable lens.
 
 #heading("8. Toolkit Vision: Search/Transfer Compiler with Certificates")
 
-The previous note [amorc2025] described a Python prototype
+The previous note [graphplay2025] described a Python prototype
 (`tools/search_compiler.py`) that takes a template and emits adjacency and
 Laplacian spectra, a CNO-style spectral-ratio diagnostic, and a
 quotient-Hamiltonian scan. With the spine in place we promote the prototype
@@ -427,7 +427,7 @@ Lean term is checked by `lake build` before deployment, giving a
 machine-verifiable bridge from a CSP-shaped engineering description to a
 quantum-walk schedule.
 
-The case studies of [amorc2025] (`rook_3x3_equal_fiber`,
+The case studies of [graphplay2025] (`rook_3x3_equal_fiber`,
 `cycle8_powerlaw_alpha1`, `torus_heawood7_equal_fiber`) are precisely
 equal-fiber bundles whose templates carry verifiable regularity certificates;
 they become end-to-end Lean-checked instances of the compiler.
@@ -439,7 +439,7 @@ $L^2$ symmetric-kernel assumption. The quotient spine survives when the
 operator commutes with the projection $Pi$; the graphon Theorem 5.5 should
 extend to graphops under mild compactness. Lean port open.
 
-*Surface topology.* The Heawood map-color completion of [amorc2025] is now
+*Surface topology.* The Heawood map-color completion of [graphplay2025] is now
 visible as the special bundle with $Q = K_(H(g))$. The surface algebraic-
 connectivity ceiling of Freitas [freitas2001heawood] becomes a Tower-2
 spectral budget on $Q$. A topology-aware bundle (where fibers carry a
@@ -528,6 +528,6 @@ neighbors):]
 - #emph[freitas2001heawood.] M. A. A. de Freitas.
   #link("https://arxiv.org/abs/math/0109191")[A Heawood-type result for the
   algebraic connectivity of graphs on surfaces], arXiv:math/0109191.
-- #emph[amorc2025.] AMORC.
-  #emph[A.M.O.R.C. Toolkit Note: Engineered Color Templates for Spatial
+- #emph[graphplay2025.] Graphplayers Crew
+  #emph[Toolkit Note: Engineered Color Templates for Spatial
   Search.] (Graphplay v1; this repository, `paper/quasi_infinite_adjoint.typ`.)

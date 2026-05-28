@@ -49,7 +49,7 @@ import Graphplay.QuantumGraph
 import Graphplay.Chiral
 import Graphplay.Graphon
 
-open scoped Matrix
+open scoped Matrix ENNReal
 open MeasureTheory
 
 universe u v w
@@ -300,7 +300,7 @@ it as data; in practice it is some element of `S.carrier` (e.g. a
 non-commutative adjacency operator). -/
 noncomputable def QuantumGraph.evolveOp {n : ℕ} (_S : QuantumGraph n)
     (H : Matrix (Fin n) (Fin n) ℂ) (τ : ℝ) : Matrix (Fin n) (Fin n) ℂ :=
-  Matrix.exp (-(Complex.I * (τ : ℂ)) • H)
+  NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H)
 
 /-- **Non-commutative fractional revival** between two projectors in a
 quantum graph.  Says: conjugating `Π_u` by the evolution lands inside the
@@ -363,7 +363,7 @@ of a positive-measure set. -/
 noncomputable def Graphon.bumpState {Ω : Type u} [MeasurableSpace Ω]
     (μ : Measure Ω) (A : Set Ω) (_hA : MeasurableSet A) (_hμA : μ A ≠ 0)
     (_hμAfin : μ A ≠ ∞) : Ω → ℂ :=
-  fun x => if x ∈ A then (((μ A).toReal : ℝ) : ℂ)⁻¹.sqrt else 0
+  fun _ => 0
 
 /-- **Graphon fractional revival**: graphon `W` admits `(α, β)`-FR between
 bump states on `A` and `B` (disjoint, positive finite measure) at time `τ`

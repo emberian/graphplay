@@ -11,7 +11,7 @@
   #text(size: 11.5pt)[A Typed, Polymorphic, Verified, Categorically-Organized \
   Combinator Calculus over the Five-Tower Equitable Spine] \
   #v(0.45em)
-  #text(size: 9.5pt)[Anti Mathematics Online Research Crew --- Graphplay v3 draft]
+  #text(size: 9.5pt)[Graphplayers Crew --- Graphplay v3 draft]
 ]
 
 #v(0.8em)
@@ -188,7 +188,7 @@ PST [xie2022speedlimit], optimality on infinite tails [xie2023tail],
 fractional revival on schemes [chan2019fractional], PST with tails
 attached [bernard2022tails], PST via products [ge2010products] --- are
 very often projections of small finite calculations to which the
-equitable partition is the right lens. Graphplay v2 [amorc2025v2]
+equitable partition is the right lens. Graphplay v2 [graphplay2025v2]
 reified part of this picture as a Lean 4 artifact with a `GraphBundle`
 engine and a graphon scaffold; v3 changes the lead. We treat the whole
 stack as an assembly language with the instruction set above and the
@@ -1119,6 +1119,6 @@ the spine in bullet form here:
 
 #emph[Previous version:]
 
-- #emph[amorc2025v2.] AMORC. #emph[Equitable Quotients Across Five Towers
+- #emph[graphplay2025v2.] Graphplayers Crew. #emph[Equitable Quotients Across Five Towers
   (Graphplay v2).] (This repository,
   `paper/quasi_infinite_adjoint_v2.typ`.)

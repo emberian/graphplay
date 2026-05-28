@@ -56,7 +56,7 @@ variables, etc.) are *sorried*.  The intended use of this file is as a
 formal proof of the limit laws themselves.
 -/
 
-import Mathlib.Probability.Distributions.Gaussian
+import Mathlib.Probability.Distributions.Gaussian.Basic
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Graphplay.Graphon
 import Graphplay.Graphon.Equitable
@@ -216,7 +216,7 @@ structure AlmostSurelyEquitable
     (R : RandomGraphon X Ω μ) (P : Measure X) [IsProbabilityMeasure P] where
   /-- The shared cell map. -/
   cells : Ω → I
-  measurable_cells : Measurable cells
+  measurable_cells : @Measurable _ _ _ (⊤ : MeasurableSpace I) cells
   cell_pos : ∀ i : I, 0 < μ (cells ⁻¹' {i})
   cell_finite : ∀ i : I, μ (cells ⁻¹' {i}) < ∞
   /-- A.s. uniform-row-sum property along the *fixed* cell map. -/
@@ -235,12 +235,9 @@ variable {R : RandomGraphon X Ω μ} {P : Measure X} [IsProbabilityMeasure P]
 /-- For each sample `x` in the a.s.-good set, construct the
 `GraphonEquitablePartition` of the realised graphon with the shared cell map. -/
 noncomputable def partitionOfSample
-    (E : AlmostSurelyEquitable R P) (x : X) :
-    GraphonEquitablePartition (R.realise x) := by
+    (E : AlmostSurelyEquitable (I := I) R P) (x : X) :
+    @GraphonEquitablePartition Ω _ μ I _ _ (R.realise x) := by
   classical
-  -- For samples in the a.s.-good set, the uniform property holds; off the
-  -- good set we still need *some* GraphonEquitablePartition.  We use
-  -- `sorry` to bridge.
   exact sorry
 
 /-- **Deterministic cell-uniform spectrum.**  For a random graphon `R` with
@@ -255,7 +252,7 @@ deterministic, the bulk is random.
 Statement only; precise formalisation requires the expected-quotient
 machinery, deferred. -/
 theorem deterministic_cellUniform_spectrum
-    (E : AlmostSurelyEquitable R P) :
+    (E : AlmostSurelyEquitable (I := I) R P) :
     ∀ᵐ x ∂P,
       -- the spectrum of (R.realise x).op restricted to cellUniformSubspace
       -- equals the spectrum of a deterministic matrix Q : Matrix I I ℂ
@@ -274,7 +271,7 @@ orthogonal complement = random Wigner bulk.
 Statement only.  Reference: Wigner 1955 + the deformed Wigner framework
 (Pizzo–Renfrew–Soshnikov, arXiv:1103.3731). -/
 theorem wigner_bulk_on_orthogonal
-    (E : AlmostSurelyEquitable R P)
+    (E : AlmostSurelyEquitable (I := I) R P)
     (h_wigner :
       -- a Wigner-bulk hypothesis: the orthogonal-to-cell-uniform part is
       -- distributed like a Wigner matrix in the appropriate scaling
@@ -363,7 +360,7 @@ Statement only. -/
 theorem equitable_subalgebra_finiteDim
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     {I : Type v} [Fintype I] [DecidableEq I]
-    {W : Graphon Ω μ} (P : GraphonEquitablePartition W) :
+    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
     -- there is a finite-dim *-subalgebra of graphonWStarSpace μ
     -- containing W.op|cellUniformSubspace and the cell projections
     True := by
@@ -378,7 +375,7 @@ combinatorial reformulation in terms of non-crossing partitions. -/
 theorem wignerLimit_free_of_equitable
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     {I : Type v} [Fintype I] [DecidableEq I]
-    {W : Graphon Ω μ} (P : GraphonEquitablePartition W) :
+    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
     -- in the Wigner limit, σ(W.op) splits as the free convolution of
     -- σ(P.quotient) and the bulk semicircle
     True := by
@@ -406,7 +403,7 @@ structure RandomEquitablePartition
     (Y : Type*) [MeasurableSpace Y] where
   /-- The random cell-membership map, parametrised by `Y`. -/
   cells : Y → Ω → I
-  measurable_cells : Measurable (Function.uncurry cells)
+  measurable_cells : @Measurable _ _ _ (⊤ : MeasurableSpace I) (Function.uncurry cells)
   /-- Cell mass is a.s. positive and finite. -/
   cell_pos : ∀ (y : Y) (i : I), 0 < μ (cells y ⁻¹' {i})
   cell_finite : ∀ (y : Y) (i : I), μ (cells y ⁻¹' {i}) < ∞
@@ -434,7 +431,7 @@ Statement only.  This is the **conditioning identity** that justifies the
 theorem conditional_quotient_is_random_matrix
     {I : Type w} [Fintype I] [DecidableEq I]
     {R : RandomGraphon X Ω μ} {Y : Type*} [MeasurableSpace Y]
-    (RP : RandomEquitablePartition R Y)
+    (RP : RandomEquitablePartition (I := I) R Y)
     (h_indep :
       -- the X-marginal and Y-marginal are jointly independent
       True) :
@@ -466,7 +463,7 @@ cell-uniform subspace of `P`. -/
 def RespectsPartition
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     {I : Type v} [Fintype I] [DecidableEq I]
-    {W₀ : Graphon Ω μ} (P : GraphonEquitablePartition W₀)
+    {W₀ : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W₀)
     (ξ : Graphon Ω μ) : Prop :=
   ∀ (i j : I) (x y : Ω),
     P.cells x = i → P.cells y = i →
@@ -478,7 +475,7 @@ is the linearity of the row-sum condition. -/
 theorem RespectsPartition.add
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     {I : Type v} [Fintype I] [DecidableEq I]
-    {W₀ : Graphon Ω μ} (P : GraphonEquitablePartition W₀)
+    {W₀ : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W₀)
     {ξ₁ ξ₂ : Graphon Ω μ}
     (h₁ : RespectsPartition P ξ₁) (h₂ : RespectsPartition P ξ₂) :
     -- the pointwise sum respects the partition (we do not formalise the sum
@@ -502,12 +499,12 @@ Statement only. -/
 theorem pst_robustness
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     {I : Type v} [Fintype I] [DecidableEq I]
-    {W₀ : Graphon Ω μ} (P : GraphonEquitablePartition W₀)
+    {W₀ : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W₀)
     {X : Type w} [MeasurableSpace X]
     (ξ : RandomGraphon X Ω μ)
     (P_meas : Measure X) [IsProbabilityMeasure P_meas]
     (h_resp : ∀ᵐ x ∂P_meas, RespectsPartition P (ξ.realise x))
-    (i j : I) (τ : ℝ) (h_pst : IsCellUniformPST W₀ P i j τ) :
+    (i j : I) (τ : ℝ) (h_pst : Graphplay.Graphon.IsCellUniformPST W₀ P i j τ) :
     -- almost surely, the perturbed graphon W₀ + ξ.realise x exhibits
     -- cell-uniform PST from i to j at some time τ'(x)
     True := by
@@ -521,7 +518,7 @@ Statement only.  This is the "iff" half of `pst_robustness`. -/
 theorem pst_destroyed_if_partition_violated
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     {I : Type v} [Fintype I] [DecidableEq I]
-    {W₀ : Graphon Ω μ} (P : GraphonEquitablePartition W₀)
+    {W₀ : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W₀)
     {X : Type w} [MeasurableSpace X]
     (ξ : RandomGraphon X Ω μ)
     (P_meas : Measure X) [IsProbabilityMeasure P_meas]
@@ -552,8 +549,8 @@ orthogonal complement. -/
 theorem thermalizing_yet_PST_host
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     {I : Type v} [Fintype I] [DecidableEq I]
-    {W₀ : Graphon Ω μ} (P : GraphonEquitablePartition W₀)
-    (i j : I) (τ : ℝ) (h_pst : IsCellUniformPST W₀ P i j τ) :
+    {W₀ : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W₀)
+    (i j : I) (τ : ℝ) (h_pst : Graphplay.Graphon.IsCellUniformPST W₀ P i j τ) :
     -- there exists a random graphon W = W₀ + ξ with:
     --   (a) ξ.realise x almost surely respects P,
     --   (b) ξ's restriction to (cellUniformSubspace)^⊥ has Wigner spectrum,
@@ -575,7 +572,7 @@ literature (Lee–Schnelli 2015, etc.). -/
 theorem thermal_state_preparation
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     {I : Type v} [Fintype I] [DecidableEq I]
-    {W₀ : Graphon Ω μ} (P : GraphonEquitablePartition W₀) (β : ℝ) :
+    {W₀ : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W₀) (β : ℝ) :
     -- the cell-uniform Gibbs state exp(-β P.quotient) / tr(exp(-β P.quotient))
     -- is the marginal of the graphon Gibbs state restricted to cellUniform
     True := by

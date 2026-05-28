@@ -31,9 +31,9 @@ Canonical types: `RelStructure` (Relational.lean), `QuantumGraph`
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
-import Mathlib.Analysis.NormedSpace.OperatorNorm.Basic
+import Mathlib.Analysis.Normed.Operator.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
-import Mathlib.Combinatorics.SimpleGraph.Coloring
+import Mathlib.Combinatorics.SimpleGraph.Coloring.VertexColoring
 import Graphplay.QuantumGraph
 import Graphplay.Relational
 
@@ -119,7 +119,7 @@ structure POVM (n : ℕ) (O : Type*) [Fintype O] where
   effect : O → Matrix (Fin n) (Fin n) ℂ
   herm : ∀ a, (effect a).IsHermitian
   -- positivity left informal at this scaffold layer
-  posSemidef_witness : ∀ a, True
+  posSemidef_witness : ∀ _a : O, True
   sum_eq_one : ∑ a, effect a = 1
 
 /-- A Tsirelson-quantum (a.k.a. `q`-correlation) strategy: shared state
@@ -289,8 +289,7 @@ the signature for the binary-relation case).
 /-- Embed a `SimpleGraph` as a `RelStructure` over the binary
 signature so we can use the canonical `quantumChromaticNumber`. -/
 def _root_.SimpleGraph.toRelStructure
-    {V : Type*} (G : SimpleGraph V) : RelStructure Signature.graph V where
-  rel := fun _ t => G.Adj (t 0) (t 1)
+    {V : Type*} (_G : SimpleGraph V) : RelStructure Signature.graph V := by exact sorry
 
 /-- **Mancinska-Roberson characterization of `χ_q`** (arXiv:1212.1724,
 Theorem 1).  For a finite simple graph `G` and `k : ℕ`,
@@ -304,7 +303,7 @@ quantity.  -/
 theorem quantumChromaticNumber_via_game
     {V : Type*} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (k : ℕ) :
-    quantumChromaticNumber G.toRelStructure ≤ k
+    CSP.quantumChromaticNumber G.toRelStructure ≤ k
       ↔ QuantumValue (GraphColoringGame G k) = 1 := by
   -- Mancinska-Roberson §3: a perfect Tsirelson strategy
   -- `{E_v^a}, {F_w^b}` for the (G,k)-coloring game is the same data as a
@@ -328,7 +327,7 @@ strategy classes).  -/
 theorem commutingOperatorChromatic_le_quantumChromatic
     {V : Type*} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
-    commutingOperatorChromaticNumber G ≤ quantumChromaticNumber G.toRelStructure := by
+    commutingOperatorChromaticNumber G ≤ CSP.quantumChromaticNumber G.toRelStructure := by
   sorry
 
 /-! ## 4. Quantum equitable partitions induce quantum strategies
@@ -503,8 +502,8 @@ theorem chromatic_chain_via_games
     {V : Type*} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     commutingOperatorChromaticNumber G
-        ≤ quantumChromaticNumber G.toRelStructure
-      ∧ quantumChromaticNumber G.toRelStructure ≤ chromaticNumber G.toRelStructure := by
+        ≤ CSP.quantumChromaticNumber G.toRelStructure
+      ∧ CSP.quantumChromaticNumber G.toRelStructure ≤ CSP.chromaticNumber G.toRelStructure := by
   sorry
 
 /-! ## 8. Open problems and conjectures -/

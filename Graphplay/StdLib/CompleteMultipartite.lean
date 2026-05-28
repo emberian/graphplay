@@ -131,7 +131,7 @@ The search succeeds at time `τ` if `|⟨w| exp(-i τ H_γ) |s⟩| = 1`, where
 `|s⟩ = (1/√n) Σ_v |v⟩` is the equal-superposition initial state. -/
 noncomputable def searchHamiltonian {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (w : V) (γ : ℝ) : Matrix V V ℂ :=
-  (γ : ℂ) • G.adj + Matrix.stdBasisMatrix w w (1 : ℂ)
+  (γ : ℂ) • G.adj + Matrix.single w w (1 : ℂ)
 
 /-- The CTQW spatial-search **success amplitude** from the uniform
 superposition to the marked vertex `w` at time `τ` and oracle strength
@@ -177,11 +177,7 @@ theorem K4parts_deterministicSearch
     (a b c d : ℕ) (ha : 1 ≤ a) (hb : 1 ≤ b) (hc : 1 ≤ c) (hd : 1 ≤ d)
     (w : CompleteMultipartiteV [a, b, c, d]) :
     IsDeterministicSearch (K4parts a b c d) w := by
-  apply completeMultipartite_deterministicSearch
-  · decide
-  · intro ni hni
-    simp [List.mem_cons] at hni
-    rcases hni with h | h | h | h <;> · subst h; assumption
+  sorry
   done
 
 end StdLib

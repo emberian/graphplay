@@ -153,7 +153,7 @@ variable {n : ℕ} {S : QuantumGraph n}
 
 /-- The "block at `(i, j)`" of a matrix `A` relative to the cell decomposition:
 `p_i · A · p_j`. -/
-def block (Q : QuantumEquitablePartition n S I)
+noncomputable def block (Q : QuantumEquitablePartition n S I)
     (A : Matrix (Fin n) (Fin n) ℂ) (i j : I) : Matrix (Fin n) (Fin n) ℂ :=
   Q.cells.p i * A * Q.cells.p j
 
@@ -247,14 +247,14 @@ For matrix indices we use `Fin n`. -/
 def IsPST_in {n : ℕ} (S : QuantumGraph n) (u v : Fin n) (τ : ℝ) : Prop :=
   ∃ H : Matrix (Fin n) (Fin n) ℂ,
     H ∈ S.carrier ∧ H.IsHermitian ∧
-    ‖(Matrix.exp (-(Complex.I * (τ : ℂ)) • H)) u v‖ = 1
+    ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H)) u v‖ = 1
 
 /-- **Quantum PST on the quotient matrix.**  We re-use the operator-system
 definition: PST on the quotient `M : Matrix I I ℂ` is PST in the *trivial*
 quantum graph spanned by `M`. -/
 def IsPST_on_quotient {I : Type v} [Fintype I] [DecidableEq I]
     (M : Matrix I I ℂ) (i j : I) (τ : ℝ) : Prop :=
-  ‖(Matrix.exp (-(Complex.I * (τ : ℂ)) • M)) i j‖ = 1
+  ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • M)) i j‖ = 1
 
 /-- **Cell-uniform PST inside a quantum graph.**  The non-commutative analogue
 of `IsCellUniformPST`: PST from the (normalized) cell-state `|C_i⟩ := pᵢ/√dᵢ`
@@ -271,7 +271,7 @@ noncomputable def IsCellUniformPST_in {n : ℕ} {I : Type v}
     (i j : I) (τ : ℝ) : Prop :=
   ∃ H : Matrix (Fin n) (Fin n) ℂ,
     H ∈ S.carrier ∧ H.IsHermitian ∧
-    let U := Matrix.exp (-(Complex.I * (τ : ℂ)) • H)
+    let U := NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H)
     let dᵢ : ℂ := (Q.cells.p i).trace
     let dⱼ : ℂ := (Q.cells.p j).trace
     ‖(Q.cells.p j * U * Q.cells.p i).trace /
@@ -370,7 +370,7 @@ theorem QuantumHom.dsw_retraction
 system of all `n × n` matrices with zero diagonal, together with the unit.
 This is `K_n` in the operator-system sense of Duan–Severini–Winter; its
 coherent algebra is all of `M_n(ℂ)`. -/
-def quantumKn (n : ℕ) : QuantumGraph n where
+noncomputable def quantumKn (n : ℕ) : QuantumGraph n where
   carrier := ⊤
   one_mem := trivial
   star_mem := by intro A _; trivial
@@ -476,7 +476,7 @@ noncomputable def WLRefine {n : ℕ} (S : QuantumGraph n) : QuantumGraph n := by
   exact S
 
 /-- The WL refinement forms an increasing chain of operator systems. -/
-def WLChain {n : ℕ} (S : QuantumGraph n) : ℕ → QuantumGraph n
+noncomputable def WLChain {n : ℕ} (S : QuantumGraph n) : ℕ → QuantumGraph n
   | 0 => S
   | k + 1 => WLRefine (WLChain S k)
 

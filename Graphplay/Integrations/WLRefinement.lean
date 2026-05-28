@@ -66,6 +66,7 @@ import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.QuantumGraph
 import Graphplay.Graphon
+import Graphplay.Graphon.Equitable
 import Graphplay.PST
 
 open scoped Matrix
@@ -111,7 +112,7 @@ a new colouring `c'` that distinguishes two vertices iff their old colour
 differed *or* their neighbour signatures differed. -/
 def refineStep (G : WeightedGraph V) {C : Type v} [DecidableEq C]
     (c : Colouring V C) : Colouring V (C × (V → C × ℂ)) :=
-  fun v => (c v, G.neighbourSignature c v)
+  fun v => (c v, neighbourSignature G c v)
 
 /-- Two vertices are **WL-equivalent** under a colouring `c` iff they receive
 the same colour. -/
@@ -122,12 +123,12 @@ collapses to the same equivalence relation. Stated coarsely: any two vertices
 that the refinement step distinguishes were already distinguished by `c`. -/
 def IsWLStable (G : WeightedGraph V) {C : Type v} [DecidableEq C]
     (c : Colouring V C) : Prop :=
-  ∀ u v : V, (G.refineStep c) u = (G.refineStep c) v ↔ c u = c v
+  ∀ u v : V, (refineStep G c) u = (refineStep G c) v ↔ c u = c v
 
 /-- **Existence of WL stable colourings.** On any finite weighted graph the
 iterated WL refinement reaches a fixed point in finitely many steps. -/
 theorem exists_WLStable (G : WeightedGraph V) :
-    ∃ (C : Type) (_ : DecidableEq C) (c : Colouring V C), G.IsWLStable c := by
+    ∃ (C : Type) (_ : DecidableEq C) (c : Colouring V C), IsWLStable G c := by
   -- The number of distinct colours is bounded above by `|V|`, and each step
   -- never coarsens the partition, so a fixed point is reached within `|V|`
   -- iterations.
@@ -135,15 +136,15 @@ theorem exists_WLStable (G : WeightedGraph V) :
 
 /-- The **1-WL stable partition** of `G`: the equivalence classes of any
 stable colouring. This is the *coarsest* equitable partition of `G`. -/
-noncomputable def stablePartitionIndex (G : WeightedGraph V) : Type := V
+def stablePartitionIndex (G : WeightedGraph V) : Type u := V
 -- (Placeholder: the *actual* WL-stable index type is the quotient of `V` by
 -- `colourEq` for a stable colouring.)
 
 /-- Anything that **WL-stably colours** the graph is also an equitable
 partition: i.e. WL refinement is a *fixed-point-finding algorithm* for the
 defining equation of `EquitablePartition`. -/
-theorem WLStable_isEquitable (G : WeightedGraph V) {C : Type v} [DecidableEq C]
-    [Fintype C] (c : Colouring V C) (hc : G.IsWLStable c) :
+def WLStable_isEquitable (G : WeightedGraph V) {C : Type v} [DecidableEq C]
+    [Fintype C] (c : Colouring V C) (hc : IsWLStable G c) :
     EquitablePartition G C where
   cells := c
   uniform := by
@@ -179,13 +180,13 @@ def kRefineStep (G : WeightedGraph V) {C : Type v} [DecidableEq C]
 def IsKWLStable (G : WeightedGraph V) {C : Type v} [DecidableEq C]
     (k : ℕ) (c : TupleColouring V k C) : Prop :=
   ∀ x y : Fin k → V,
-    (G.kRefineStep k c) x = (G.kRefineStep k c) y ↔ c x = c y
+    (kRefineStep G k c) x = (kRefineStep G k c) y ↔ c x = c y
 
 /-- **Existence of k-WL-stable colourings** (same argument as the 1-WL case:
 finite descent on the number of colour classes). -/
 theorem exists_KWLStable (G : WeightedGraph V) (k : ℕ) :
     ∃ (C : Type) (_ : DecidableEq C) (c : TupleColouring V k C),
-      G.IsKWLStable k c := by
+      IsKWLStable G k c := by
   sorry
 
 /-! ## 3. The WL chain refines
@@ -227,8 +228,8 @@ def stablePartition2 (G : WeightedGraph V) : V × V → V × V := id
 /-- The **cell-indicator matrices** of a partition of `V × V`: for each cell
 `R ⊆ V × V`, the matrix `A_R : V × V → ℂ` with `A_R x y = 1` iff `(x, y) ∈ R`
 and `0` otherwise. -/
-def cellIndicator {α : Type w} (R : V × V → α) (r : α) : Matrix V V ℂ :=
-  fun x y => if R (x, y) = r then 1 else 0
+noncomputable def cellIndicator {α : Type w} (R : V × V → α) (r : α) : Matrix V V ℂ :=
+  by classical exact fun x y => if R (x, y) = r then 1 else 0
 
 /-- **2-WL ↔ coherent algebra**: the ℂ-linear span of the cell-indicator
 matrices of the 2-WL stable partition equals `coherentAlgebra G`. -/
@@ -248,7 +249,7 @@ projector `Π_P` lies in the coherent algebra and commutes with `G.adj`. (Cf.
 Hole D4: `Graphplay.Dowsing.CoherentAlgebra`.) -/
 theorem oneWL_stable_is_coarsest_equitable (G : WeightedGraph V)
     {C : Type v} [DecidableEq C] [Fintype C] (c : Colouring V C)
-    (hc : G.IsWLStable c) :
+    (hc : IsWLStable G c) :
     -- Any equitable partition `Q` of `G` is refined by the WL stable
     -- partition induced by `c`: WL is the *coarsest* equitable partition.
     ∀ (Q : EquitablePartition G C),
@@ -372,7 +373,7 @@ share their WL stable colour and (ii) their eigenvalue supports agree. -/
 theorem pst_requires_WL_and_eigenSupport
     (G : WeightedGraph V) (u v : V)
     {C : Type v} [DecidableEq C] [Fintype C] (c : Colouring V C)
-    (hc : G.IsWLStable c) :
+    (hc : IsWLStable G c) :
     (∃ τ : ℝ, IsPST G u v τ) →
       (WLSameColour G c u v ∧ EigenvalueSupport G u = EigenvalueSupport G v) := by
   sorry
@@ -387,7 +388,7 @@ theorem phantom_symmetries_exist :
     ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G : WeightedGraph V) (u v : V)
       (C : Type) (_ : DecidableEq C) (_ : Fintype C) (c : Colouring V C),
-      G.IsWLStable c ∧ WLSameColour G c u v ∧
+      IsWLStable G c ∧ WLSameColour G c u v ∧
         EigenvalueSupport G u ≠ EigenvalueSupport G v := by
   sorry
 
@@ -406,7 +407,7 @@ it abstractly here.
 The fixed point is the **quantum coherent algebra**, sometimes called the
 *non-commutative coherent algebra* (see Hole D5,
 `Graphplay/Dowsing/NonCommutativeCoherent.lean`). -/
-def QuantumWLStable (G : WeightedGraph V) : Submodule ℂ (Matrix V V ℂ) :=
+noncomputable def QuantumWLStable (G : WeightedGraph V) : Submodule ℂ (Matrix V V ℂ) :=
   coherentAlgebra G
 -- Placeholder identification: in the *commutative* case the quantum WL stable
 -- algebra coincides with the classical coherent algebra. In general the

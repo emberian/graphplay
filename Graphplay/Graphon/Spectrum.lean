@@ -62,9 +62,9 @@ References for the spectral content:
 -/
 
 import Mathlib.MeasureTheory.Function.L2Space
-import Mathlib.Analysis.NormedSpace.Spectrum
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 import Graphplay.Graphon.Equitable
+import Graphplay.Graphon.PST
 
 open scoped MeasureTheory ENNReal Complex BigOperators
 open MeasureTheory

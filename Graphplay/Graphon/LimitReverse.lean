@@ -383,12 +383,7 @@ theorem no_equitable_partition_no_sequence
          -- `limit_exists` applied to `𝒮`.  We assert non-existence by
          -- contradiction with `hNoEP`.
          False) := by
-  intro 𝒮 hcontr
-  -- By the forward limit theorem, `𝒮` produces *some* equitable partition
-  -- `Plim` of *some* graphon `Wlim`.  If `Wlim = W` (under suitable
-  -- identification), this would give an EP of `W` with index `I`,
-  -- contradicting `hNoEP`.  Statement only.
-  exact hcontr (fun _ => hNoEP ⟨by sorry⟩)
+  sorry
 
 /-! ## 7. Categorical statement: Cauchy completion
 

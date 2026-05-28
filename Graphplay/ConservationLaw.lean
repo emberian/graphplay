@@ -325,12 +325,12 @@ conservation law:  each eigenspace of the reduced Hamiltonian is a
 sector with its own conserved quasi-momentum. -/
 theorem noether_per_eigenvalue
     (P : EquitablePartition G I) (lam : ℝ) :
-    ∃ (Πlam : Matrix V V ℂ),
-      Πlam.IsHermitian ∧
-      Πlam * Πlam = Πlam ∧
-      Πlam * G.adj = G.adj * Πlam ∧
-      ∀ v, Πlam.mulVec v ∈ P.cellUniformSubspace := by
-  -- Construct `Πlam` as the spectral projector of `P.quotient` at `λ`,
+    ∃ (Plam : Matrix V V ℂ),
+      Plam.IsHermitian ∧
+      Plam * Plam = Plam ∧
+      Plam * G.adj = G.adj * Plam ∧
+      ∀ v, Plam.mulVec v ∈ P.cellUniformSubspace := by
+  -- Construct `Plam` as the spectral projector of `P.quotient` at `λ`,
   -- inflated to `V × V` via the cell-uniform isometry.
   sorry
 

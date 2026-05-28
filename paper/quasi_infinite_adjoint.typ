@@ -1,14 +1,14 @@
-#set document(title: "A.M.O.R.C. Toolkit Note: Engineered Color Templates for Spatial Search")
+#set document(title: "Toolkit Note: Engineered Color Templates for Spatial Search")
 #set page(margin: 1in)
 #set text(size: 11pt)
 #set par(justify: true)
 
 #align(center)[
-  #text(size: 17pt, weight: "bold")[A.M.O.R.C. Toolkit Note] \
+  #text(size: 17pt, weight: "bold")[Toolkit Note] \
   #v(0.35em)
   #text(size: 12pt)[Engineered Color Templates for Spatial Search] \
   #v(0.25em)
-  #text(size: 9.5pt)[Anti Mathematics Online Research Crew; Lean core plus compiler prototype]
+  #text(size: 9.5pt)[Graphplayers Crew; Lean core plus compiler prototype]
 ]
 
 #v(0.6em)
@@ -488,7 +488,7 @@ colorable graph components.  It does not yet construct graphs with a designed
 fractal dimension.  To do that honestly, the next layer would need a metric or
 growth structure on the approximants, then a verified dimension invariant.
 
-The A.M.O.R.C. addendum gives a concrete bridge to quantum spatial search:
+The Toolkit addendum gives a concrete bridge to quantum spatial search:
 four-colorability provides canonical Laplacian-integral completions for planar
 instances, and those completions have bounded-dimensional color-sector search
 quotients. The bridge is structural, not an optimality theorem for the original

@@ -166,7 +166,7 @@ each other anyon type), then the topological sector partition
 This is the discrete shadow of the fact that the categorical sector
 decomposition of an anyon system commutes with the Hamiltonian — see
 Kitaev (2006), §10 (quantum-double model) and Levin-Wen (2005), §III. -/
-theorem anyonic_equitable_partition
+def anyonic_equitable_partition
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {A : Type v} [Fintype A] [DecidableEq A]
     {M : ModularData A} (D : AnyonDecoration G M)
@@ -306,7 +306,7 @@ def kleinBottleHeawood : ℕ := 6
 /-- **Genus-`g` count.**  The number of anyon types in the canonical
 "Heawood-envelope anyon system" is `h(g)`; this is a definition, not a
 theorem about any specific MTC. -/
-def numAnyons (g : ℕ) : ℕ := surfaceHeawood g
+noncomputable def numAnyons (g : ℕ) : ℕ := surfaceHeawood g
 
 /-! ## 6. Connection to Levin-Wen / Kitaev state-sum models
 

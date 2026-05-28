@@ -11,7 +11,7 @@
   #text(size: 11pt, style: "italic")[A formally-verified design framework for continuous-time
   quantum dynamics --- and a pitch for collaborators] \
   #v(0.5em)
-  #text(size: 9.5pt)[Anti Mathematics Online Research Crew --- pitch draft, May 2026]
+  #text(size: 9.5pt)[Graphplayers Crew --- pitch draft, May 2026]
 ]
 
 #v(0.8em)

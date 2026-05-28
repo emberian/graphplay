@@ -69,7 +69,7 @@ hypercube). -/
 def hypercubeOrigin (n : ℕ) : Fin (2^n) :=
   ⟨0, Nat.pos_of_ne_zero (by
     intro h
-    have : (2^n : ℕ) > 0 := Nat.pos_pow_of_pos n (by decide)
+    have : (2^n : ℕ) > 0 := Nat.two_pow_pos n
     omega)⟩
 
 /-- The all-ones bit-string in `Fin (2^n)` (the **antipode** of the origin
@@ -77,7 +77,7 @@ on the hypercube): the unique vertex at maximal Hamming distance `n` from
 the origin. -/
 def hypercubeAntipode (n : ℕ) : Fin (2^n) :=
   ⟨2^n - 1, by
-    have h2 : (2^n : ℕ) > 0 := Nat.pos_pow_of_pos n (by decide)
+    have h2 : (2^n : ℕ) > 0 := Nat.two_pow_pos n
     omega⟩
 
 /-! ## Perfect state transfer at the antipode -/

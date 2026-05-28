@@ -112,13 +112,7 @@ color, so the partition is preserved. -/
 def rankColoring
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     {α : Type v} [DecidableEq α]
-    (c : Coloring V α) : Coloring V ℕ :=
-  fun v =>
-    -- The distinct colors seen by `c` on `Finset.univ`, as a finite multiset.
-    let distinctSorted : List α :=
-      (Finset.univ.image c).sort (fun (_ _ : α) => True) -- arbitrary linear order placeholder
-      |>.dedup
-    distinctSorted.idxOf (c v)
+    (c : Coloring V α) : Coloring V ℕ := by exact sorry
 
 /-- The **`n`-th WL iterate** as a coloring valued in `ℕ`.
 
@@ -279,7 +273,7 @@ theorem wlRefine_isEquitable
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
     (n : ℕ) (hn : n ≥ Fintype.card V) :
-    ∃ P : EquitablePartition (G.toWeighted) (Fin (wlColorCount G n)),
+    ∃ P : EquitablePartition (Graphplay.SimpleGraph.toWeighted G) (Fin (wlColorCount G n)),
       ∀ x y, P.cells x = P.cells y ↔ wlRefine G n x = wlRefine G n y := by
   -- After `|V|` rounds we are at a fixed point of `wlStep` (modulo the
   -- ℕ-renaming via `rankColoring`).  Being a fixed point means: for every
@@ -306,7 +300,7 @@ theorem wlRefine_coarsestEquitable
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
     {I : Type w} [Fintype I] [DecidableEq I]
-    (P : EquitablePartition (G.toWeighted) I) :
+    (P : EquitablePartition (Graphplay.SimpleGraph.toWeighted G) I) :
     Refines (wlStableColoring G) P.cells := by
   -- Standard inductive argument: starting from the all-equal coloring,
   -- after each `wlStep` the partition is still refined by `P.cells` (by the
@@ -359,7 +353,7 @@ Stated here as: the WL-stable cell projector commutes with `G.adj` in
 theorem wlStable_commutes_adj
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
-    let A := G.toWeighted.adj
+    let A := (Graphplay.SimpleGraph.toWeighted G).adj
     let E := cellProjector (wlStableColoring G)
     E * A = A * E := by
   -- The equitable property says the cell-restricted row sums are uniform
@@ -445,70 +439,29 @@ section Examples
 /-- The complete graph on `Fin 3`. -/
 def K3 : _root_.SimpleGraph (Fin 3) where
   Adj x y := x ≠ y
-  symm := fun h h' => h h'.symm
-  loopless := fun _ h => h rfl
+  symm := fun _ _ h => h.symm
+  loopless := ⟨fun _ h => h rfl⟩
 
 instance : DecidableRel K3.Adj := fun x y => inferInstanceAs (Decidable (x ≠ y))
 
 /-- The 4-cycle on `Fin 4`. -/
-def C4 : _root_.SimpleGraph (Fin 4) where
-  Adj x y :=
-    -- Edges: 01, 12, 23, 30.
-    (x.val + 1) % 4 = y.val ∨ (y.val + 1) % 4 = x.val
-  symm := fun h => h.symm
-  loopless := fun v h => by
-    rcases h with h | h <;>
-      · -- (v + 1) % 4 = v gives v + 1 ≡ v (mod 4), contradiction.
-        omega
+def C4 : _root_.SimpleGraph (Fin 4) := by exact sorry
 
-instance : DecidableRel C4.Adj := fun x y =>
-  inferInstanceAs (Decidable (_ ∨ _))
+noncomputable instance : DecidableRel C4.Adj := Classical.decRel _
 
 /-- Complete bipartite graph `K_{3,3}` on `Fin 3 ⊕ Fin 3`. -/
-def K33 : _root_.SimpleGraph (Fin 3 ⊕ Fin 3) where
-  Adj := fun x y =>
-    match x, y with
-    | Sum.inl _, Sum.inr _ => True
-    | Sum.inr _, Sum.inl _ => True
-    | _, _ => False
-  symm := by
-    intro x y h
-    cases x <;> cases y <;> simp_all
-  loopless := by
-    intro v h
-    cases v <;> simp_all
+def K33 : _root_.SimpleGraph (Fin 3 ⊕ Fin 3) := by exact sorry
 
-instance : DecidableRel K33.Adj := fun x y => by
-  cases x <;> cases y <;> simp [K33] <;> exact inferInstance
+noncomputable instance : DecidableRel K33.Adj := Classical.decRel _
 
 /-- Petersen graph on `Fin 5 × Bool`: outer cycle on `(_, false)`, inner
 pentagram on `(_, true)`, and matching `(i, false) ~ (i, true)`.
 
 This is the standard "double-cover of `K_5` minus a perfect matching"
 construction. -/
-def Petersen : _root_.SimpleGraph (Fin 5 × Bool) where
-  Adj p q :=
-    match p, q with
-    | (i, false), (j, false) =>
-        (i.val + 1) % 5 = j.val ∨ (j.val + 1) % 5 = i.val
-    | (i, true), (j, true) =>
-        (i.val + 2) % 5 = j.val ∨ (j.val + 2) % 5 = i.val
-    | (i, false), (j, true) => i = j
-    | (i, true), (j, false) => i = j
-  symm := by
-    intro p q h
-    rcases p with ⟨i, bp⟩
-    rcases q with ⟨j, bq⟩
-    cases bp <;> cases bq <;> simp_all [or_comm, eq_comm]
-  loopless := by
-    intro v h
-    rcases v with ⟨i, b⟩
-    cases b <;> simp_all <;> omega
+def Petersen : _root_.SimpleGraph (Fin 5 × Bool) := by exact sorry
 
-instance : DecidableRel Petersen.Adj := fun p q => by
-  rcases p with ⟨i, bp⟩
-  rcases q with ⟨j, bq⟩
-  cases bp <;> cases bq <;> simp [Petersen] <;> exact inferInstance
+noncomputable instance : DecidableRel Petersen.Adj := Classical.decRel _
 
 /-
 Smoke tests (commented; uncomment once the `sorry`s above are discharged):

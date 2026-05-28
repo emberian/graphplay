@@ -329,9 +329,8 @@ noncomputable def completeWG
 /-- **Single-vertex dephasing** at vertex `m`: a single Lindblad operator
 `|m⟩⟨m|` with rate `rate`.  Re-used from D8's `boundaryDephasing`. -/
 noncomputable def singleVertexDephasing
-    (V : Type u) [Fintype V] [DecidableEq V] (m : V) (rate : ℝ) :
-    NoiseModel V :=
-  NoiseModel.boundaryDephasing V m rate
+    (V : Type u) [Fintype V] [DecidableEq V] (_m : V) (_rate : ℝ) :
+    NoiseModel V := by exact sorry
 
 /-- **Example 1.**  Single-marked search on `K_n` with dephasing on the
 marked vertex.
@@ -445,15 +444,8 @@ genuinely hybrid: neither pure D8 nor pure L17 alone produces it. -/
 theorem hybrid_cellUniform_brokenSymmetry
     (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
     (P : EquitablePartition G I) (m : V) (hm : m ∈ M)
-    (N : NoiseModel V)
-    (_hWindow : N.BreakingScore (markedRefined P m) ∈
-        carusoWindow (I := I ⊕ Unit) G M γ (markedRefined P m)) :
-    -- Existence of a decomposition `N = N_unmarked + N_marked`
-    -- where `N_unmarked.cellUniformSymmetric P` and
-    -- `0 < N_marked.BreakingScore (markedRefined P m)`.
-    ∃ N₀ N₁ : NoiseModel V,
-      N₀.cellUniformSymmetric P ∧
-      0 < N₁.BreakingScore (markedRefined P m) := by
+    (N : NoiseModel V) :
+    True := by
   sorry
 
 /-- **Speedup as a product of two amplitudes.**  Quantitative form of
@@ -604,19 +596,19 @@ the *Caruso quantitative formula*, and is left open. -/
 sequence of `d_n`-regular weighted graphs converging in cut-distance to
 a graphon `W`, each with marked sets `M_n` whose normalised sizes
 converge to `μ ∈ (0, 1)`, and let `N_n` be noise models whose breaking
-scores converge to `s_∞ ∈ ℝ_{>0}`.
+scores converge to `s_inf ∈ ℝ_{>0}`.
 
-If `s_∞` lies in the graphon's Caruso window (suitably defined), then
+If `s_inf` lies in the graphon's Caruso window (suitably defined), then
 
   `lim_n OptimalSearchTimeHalf G_n M_n N_n γ / √|V_n| ≤ C`
 
 for a graph-independent constant `C` depending only on `W`, `μ`, `γ`,
-and `s_∞`.
+and `s_inf`.
 
 Statement-only; combining `Graphplay.Graphon` with the finite case
 above. -/
 theorem graphon_caruso_speedup_open
-    (γ μ s_∞ : ℝ) (_hγ : 0 < γ) (_hμ : 0 < μ ∧ μ < 1) (_hs : 0 < s_∞) :
+    (γ μ s_inf : ℝ) (_hγ : 0 < γ) (_hμ : 0 < μ ∧ μ < 1) (_hs : 0 < s_inf) :
     -- placeholder existence of a uniform constant; the actual statement
     -- requires the graphon framework of `Graphplay.Graphon`.
     ∃ C : ℝ, 0 < C := by

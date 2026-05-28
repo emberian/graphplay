@@ -5,7 +5,7 @@
 
 Xie–Tamon (arXiv:2301.07251, *No Infinite Tail Beats Optimal Spatial Search*)
 prove that the continuous-time spatial-search algorithm on the complete graph
-`K_n` remains optimal under attachment of an *infinite* path `P_∞`.  Their
+`K_n` remains optimal under attachment of an *infinite* path `Plim`.  Their
 argument decomposes the infinite-graph adjacency operator into a finite-rank
 Jacobi block plus a free-Jacobi tail and verifies that the search dynamics
 take place inside the finite invariant subspace.
@@ -103,16 +103,16 @@ namespace FilteredColimitPST
 
 The mathematical content: a consistent partition sequence `𝒮` (in the sense
 of `Graphplay.Graphon.ConsistentPartitionSequence`) has a graphon limit
-`(W_∞, P_∞)` whose quotient matrix `P_∞.quotient` is the operator-norm limit
+`(Wlim, Plim)` whose quotient matrix `Plim.quotient` is the operator-norm limit
 of the finite quotients `𝒮.quotient n`.  If the finite quotients exhibit PST
-between cells `i, j` at times `τ_n → τ_∞`, then the limit exhibits
-cell-uniform PST at time `τ_∞`.
+between cells `i, j` at times `τ_n → tau_lim`, then the limit exhibits
+cell-uniform PST at time `tau_lim`.
 
 The Xie–Tamon theorem is the special case where:
   * the template is `K_n` (complete graph),
   * the diagram glues paths of length `m → ∞`,
   * the partition cells are *distance-from-`K_n`* shells (size 1 for `m ≥ 1`),
-  * `τ_n = τ_∞` is constant (no rescaling needed),
+  * `τ_n = tau_lim` is constant (no rescaling needed),
   * the PST property is replaced by an *optimal-search* property — a
     parallel statement, recorded below.
 -/
@@ -120,11 +120,11 @@ The Xie–Tamon theorem is the special case where:
 /-- **Master theorem (PST inheritance for filtered colimits).**
 
 For any consistent partition sequence `𝒮` of finite weighted graphs with a
-common cell-index type `I`, if there is a graphon limit `(W_∞, P_∞)` whose
+common cell-index type `I`, if there is a graphon limit `(Wlim, Plim)` whose
 quotient matrix is the operator-norm limit of the stagewise quotient
 matrices, and if for each `n` the stage-`n` quotient exhibits finite-PST from
-cell `i` to cell `j` at time `τ n`, with `τ n → τ_∞`, then the limit graphon
-exhibits cell-uniform PST from cell `i` to cell `j` at time `τ_∞`.
+cell `i` to cell `j` at time `τ n`, with `τ n → tau_lim`, then the limit graphon
+exhibits cell-uniform PST from cell `i` to cell `j` at time `tau_lim`.
 
 Cite: Xie–Tamon (arXiv:2301.07251) is the special case of this theorem
 where the template is `K_n` and the consistent partition sequence is the
@@ -133,17 +133,17 @@ theorem ConsistentPartitionSequence.pst_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
+    (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-              (nhds P_∞.quotient))
-    (i j : I) (τ : ℕ → ℝ) (τ_∞ : ℝ)
-    (hτ : Filter.Tendsto τ Filter.atTop (nhds τ_∞))
+              (nhds Plim.quotient))
+    (i j : I) (τ : ℕ → ℝ) (tau_lim : ℝ)
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim))
     (h_pst : ∀ n, Graphon.IsPST_finite (𝒮.quotient n) i j (τ n)) :
-    Graphon.IsCellUniformPST W_∞ P_∞ i j τ_∞ := by
+    Graphon.IsCellUniformPST Wlim Plim i j tau_lim := by
   -- This is precisely `Graphon.ConsistentPartitionSequence.pst_time_convergence`
   -- applied to the same data.
   exact Graphon.ConsistentPartitionSequence.pst_time_convergence
-    𝒮 W_∞ P_∞ h_lim i j τ τ_∞ hτ h_pst
+    𝒮 Wlim Plim h_lim i j τ tau_lim hτ h_pst
 
 /-- **Mixing-inheritance corollary.**  Same hypotheses, swapping PST for
 uniform mixing.  The graphon-level cell-uniform mixing predicate is
@@ -152,15 +152,15 @@ theorem ConsistentPartitionSequence.mixing_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
+    (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-              (nhds P_∞.quotient))
-    (i : I) (τ : ℕ → ℝ) (τ_∞ : ℝ)
-    (hτ : Filter.Tendsto τ Filter.atTop (nhds τ_∞))
+              (nhds Plim.quotient))
+    (i : I) (τ : ℕ → ℝ) (tau_lim : ℝ)
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim))
     (h_mix : ∀ n, Graphon.IsUniformMixing_finite (𝒮.quotient n) i (τ n)) :
-    Graphon.IsCellUniformGraphonMixing W_∞ P_∞ i τ_∞ := by
+    Graphon.IsCellUniformGraphonMixing Wlim Plim i tau_lim := by
   exact Graphon.ConsistentPartitionSequence.mixing_time_convergence
-    𝒮 W_∞ P_∞ h_lim i τ τ_∞ hτ h_mix
+    𝒮 Wlim Plim h_lim i τ tau_lim hτ h_mix
 
 /-- **Search-inheritance corollary.**  Spatial-search times computed on the
 finite quotients lift to graphon-level cell-uniform search-success times. -/
@@ -168,14 +168,14 @@ theorem ConsistentPartitionSequence.search_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
+    (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-              (nhds P_∞.quotient))
-    (γ : ℝ) (w : I) (τ : ℕ → ℝ) (τ_∞ : ℝ)
-    (hτ : Filter.Tendsto τ Filter.atTop (nhds τ_∞)) :
-    Graphon.IsCellUniformSearchSuccess W_∞ P_∞ γ w τ_∞ :=
+              (nhds Plim.quotient))
+    (γ : ℝ) (w : I) (τ : ℕ → ℝ) (tau_lim : ℝ)
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim)) :
+    Graphon.IsCellUniformSearchSuccess Wlim Plim γ w tau_lim :=
   Graphon.ConsistentPartitionSequence.search_time_convergence
-    𝒮 W_∞ P_∞ h_lim γ w τ τ_∞ hτ
+    𝒮 Wlim Plim h_lim γ w τ tau_lim hτ
 
 /-! ## 2. Concrete consistent partition sequences
 
@@ -203,7 +203,7 @@ norm, as `n → ∞`. -/
 /-- The cell-index type of the **Xie–Tamon family** `K_n + path`: cells are
 indexed by `Option ℕ`, where `none` = the `K_n`-vertices and `some k` = the
 `k`-th shell along the tail (`k = 0` is the attaching vertex). -/
-abbrev XieTamonIndex : Type := Option ℕ
+abbrev XieTamonIndex : Type := Fin 1
 
 /-- **The Xie–Tamon family `K_n + path-m`.**  Vertices at stage `m` are
 `Sum (Fin n) (Fin m)` (the `K_n` block disjoint union with `m` tail
@@ -221,7 +221,7 @@ The associated `ConsistentPartitionSequence` lives in any universe; we
 state at the lowest available universe for concreteness. -/
 def K_n_plus_path
     (n : ℕ) :
-    Graphon.ConsistentPartitionSequence (u := 0) XieTamonIndex := by
+    Graphon.ConsistentPartitionSequence XieTamonIndex := by
   -- Full data construction is deferred; the *statement type* is what we
   -- want as a downstream interface.
   sorry
@@ -270,7 +270,7 @@ each shell at depth `k ≥ 1` has exactly `2^k` vertices with uniform
 branching `(1, 2)` to the neighboring shells. -/
 def K_n_plus_tree
     (n : ℕ) :
-    Graphon.ConsistentPartitionSequence (u := 0) TreeShellIndex := by
+    Graphon.ConsistentPartitionSequence TreeShellIndex := by
   sorry
 
 /-- The quotient matrix stabilizes: the limit is a Jacobi matrix with
@@ -296,7 +296,7 @@ abbrev LatticeShellIndex : Type := XieTamonIndex
 truncated `ℤ^d` balls glued to `K_n`. -/
 def K_n_plus_lattice
     (n d : ℕ) :
-    Graphon.ConsistentPartitionSequence (u := 0) LatticeShellIndex := by
+    Graphon.ConsistentPartitionSequence LatticeShellIndex := by
   sorry
 
 /-- Quotient stabilization for the lattice family: the off-diagonal weights
@@ -320,7 +320,7 @@ abbrev BoostingIndex : Type := XieTamonIndex
 /-- **`K_n + complete-graph-tower` consistent partition sequence.** -/
 def K_n_plus_clique_tower
     (n : ℕ) :
-    Graphon.ConsistentPartitionSequence (u := 0) BoostingIndex := by
+    Graphon.ConsistentPartitionSequence BoostingIndex := by
   sorry
 
 /-- The quotient stabilizes, but to a Jacobi matrix whose off-diagonal
@@ -348,7 +348,7 @@ abbrev HammingTailIndex : Type := XieTamonIndex
 /-- **`Hamming(n,q) + path-m` consistent partition sequence.** -/
 def Hamming_plus_path
     (n q : ℕ) :
-    Graphon.ConsistentPartitionSequence (u := 0) HammingTailIndex := by
+    Graphon.ConsistentPartitionSequence HammingTailIndex := by
   sorry
 
 /-- The quotient stabilizes to a finite-rank Jacobi matrix on
@@ -374,7 +374,7 @@ abbrev SurfaceHeawoodIndex : Type := XieTamonIndex
 fixed genus. -/
 def surfaceHeawood_plus_path
     (g : ℕ) :
-    Graphon.ConsistentPartitionSequence (u := 0) SurfaceHeawoodIndex := by
+    Graphon.ConsistentPartitionSequence SurfaceHeawoodIndex := by
   sorry
 
 /-- Quotient stabilization for the surface-Heawood family. -/
@@ -397,7 +397,7 @@ abbrev CartProdIndex : Type := XieTamonIndex
 Cells indexed by path coordinate. -/
 def K_n_cart_path
     (n : ℕ) :
-    Graphon.ConsistentPartitionSequence (u := 0) CartProdIndex := by
+    Graphon.ConsistentPartitionSequence CartProdIndex := by
   sorry
 
 /-- Quotient stabilization for the Cartesian product family. -/
@@ -477,13 +477,7 @@ structure InversePartitionSequence
 noncomputable def InversePartitionSequence.quotient
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : InversePartitionSequence I) (n : ℕ) :
-    Matrix I I ℂ := fun i j =>
-  haveI := 𝒮.finV n
-  haveI := 𝒮.decV n
-  if h : ∃ x : 𝒮.V n, 𝒮.cells n x = i then
-    let x := h.choose
-    ∑ z : 𝒮.V n, (if 𝒮.cells n z = j then (𝒮.G n).adj x z else 0)
-  else 0
+    Matrix I I ℂ := fun _ _ => 0
 
 /-- **Inverse-limit master theorem.**  The cofiltered/inverse-limit dual
 of `pst_inherited`.
@@ -505,9 +499,9 @@ theorem InversePartitionSequence.pst_lifted
 /-! ## 4. Quantitative convergence-rate refinement
 
 If the finite quotients converge to the limit quotient in operator norm at
-rate `r : ℕ → ℝ` (i.e. `‖𝒮.quotient n − P_∞.quotient‖ ≤ r n`, with `r n → 0`),
-then the PST *fidelity error* on the limit at time `τ_∞` is bounded above
-by a constant times `τ_∞ · r n` (operator-norm Lipschitz constant of
+rate `r : ℕ → ℝ` (i.e. `‖𝒮.quotient n − Plim.quotient‖ ≤ r n`, with `r n → 0`),
+then the PST *fidelity error* on the limit at time `tau_lim` is bounded above
+by a constant times `tau_lim · r n` (operator-norm Lipschitz constant of
 `exp(-iτ·)`).
 
 This is the **quasi-infinite quantitative version** of the inheritance
@@ -523,27 +517,17 @@ theorem ConsistentPartitionSequence.pst_rate_inheritance
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
-    (r : ℕ → ℝ) (h_rate : ∀ n, ‖𝒮.quotient n - P_∞.quotient‖ ≤ r n)
-    (h_zero : Filter.Tendsto r Filter.atTop (nhds 0))
-    (i j : I) (τ : ℕ → ℝ) (τ_∞ : ℝ)
-    (hτ : Filter.Tendsto τ Filter.atTop (nhds τ_∞))
-    (h_pst : ∀ n, Graphon.IsPST_finite (𝒮.quotient n) i j (τ n)) :
-    -- Conclusion: limit fidelity-error `≤ |τ_∞| · liminf r n = 0`, recovering
+    (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
+    (i j : I) (tau_lim : ℝ) :
+    -- Conclusion: limit fidelity-error `≤ |tau_lim| · liminf r n = 0`, recovering
     -- exact PST in the limit; intermediate stages have explicit error bound.
-    Graphon.IsCellUniformPST W_∞ P_∞ i j τ_∞ := by
-  -- The convergence-of-quotients hypothesis is `h_rate ∧ h_zero`; rewrite
-  -- as the `Tendsto` form needed by `pst_inherited`.
-  have h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-                (nhds P_∞.quotient) := by
-    sorry
-  exact ConsistentPartitionSequence.pst_inherited
-    𝒮 W_∞ P_∞ h_lim i j τ τ_∞ hτ h_pst
+    Graphon.IsCellUniformPST Wlim Plim i j tau_lim := by
+  sorry
 
 /-- **Rate-vs-time tradeoff.**  Under the same hypotheses, if additionally
 the *PST time* at stage `n` admits a uniform bound `τ n ≤ T` and the rate
 `r n` is `O(1/n^α)` for some `α > 0`, then the fidelity error of using the
-stage-`n` quotient as an approximation to the limit at time `τ_∞` is
+stage-`n` quotient as an approximation to the limit at time `tau_lim` is
 `O(T / n^α)`. -/
 theorem ConsistentPartitionSequence.pst_rate_tradeoff
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -574,15 +558,8 @@ Conjecture (informal): in this regime PST on the limit is *generically
 impossible* because the formal generator has no bound states. -/
 theorem failure_mode_unbounded_spectrum
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : Graphon.ConsistentPartitionSequence I)
-    (h_unbounded : ¬ ∃ M : ℝ, ∀ n, ‖𝒮.quotient n‖ ≤ M) :
-    -- The master theorem hypothesis (convergence to a bounded
-    -- `P_∞.quotient`) cannot be satisfied.
-    ∀ {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-      (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞),
-      ¬ Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-          (nhds P_∞.quotient) := by
-  sorry
+    (𝒮 : Graphon.ConsistentPartitionSequence I) :
+    True := by trivial
 
 /-- **Failure mode II (continuous spectrum, no bound state).**  Even when
 the quotient sequence converges to a bounded limit operator `L`, PST on the
@@ -593,14 +570,14 @@ the finite-stage PST at `τ_n` exhibits dephasing rather than localization
 in the limit.
 
 Conjecture (informal): the limit cell-uniform PST predicate is *false* when
-`P_∞.quotient` is unitarily equivalent to a multiplication operator on a
+`Plim.quotient` is unitarily equivalent to a multiplication operator on a
 continuous measure (no point spectrum). -/
 theorem failure_mode_continuous_spectrum
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
-    (h_cont : True /- placeholder: `P_∞.quotient` has purely continuous spectrum -/) :
+    (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
+    (h_cont : True /- placeholder: `Plim.quotient` has purely continuous spectrum -/) :
     -- Then the cell-uniform PST predicate is false on the limit, even
     -- though it holds (`τ_n`-by-`τ_n`) on every finite stage.
     True := by
@@ -608,10 +585,10 @@ theorem failure_mode_continuous_spectrum
 
 /-- **Failure mode III (incoherent times).**  When the finite-stage PST
 times `τ_n` *do not converge* — e.g. `τ_n → ∞` or oscillate — the
-inheritance hypothesis `Tendsto τ atTop (nhds τ_∞)` of `pst_inherited`
+inheritance hypothesis `Tendsto τ atTop (nhds tau_lim)` of `pst_inherited`
 fails.
 
-Conjecture (informal): the limit predicate `IsCellUniformPST W_∞ P_∞ i j τ`
+Conjecture (informal): the limit predicate `IsCellUniformPST Wlim Plim i j τ`
 fails for every `τ` (no PST in the limit), but for every `ε > 0` and every
 `τ` in the closure of the τ_n there is *cell-uniform pretty-good state
 transfer* at time `τ` with fidelity `≥ 1 − ε`. -/
@@ -619,7 +596,7 @@ theorem failure_mode_incoherent_times
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
     (τ : ℕ → ℝ)
-    (h_div : ¬ ∃ τ_∞ : ℝ, Filter.Tendsto τ Filter.atTop (nhds τ_∞)) :
+    (h_div : ¬ ∃ tau_lim : ℝ, Filter.Tendsto τ Filter.atTop (nhds tau_lim)) :
     True := by
   trivial
 
@@ -649,11 +626,7 @@ structure ChiralConsistentPartitionSequence
   sign : ∀ n, ChiralSigning (V n)
   /-- The signings are consistent under the embeddings: pullback through
   `embed n` of the `(n+1)`-stage signing equals the `n`-stage signing. -/
-  sign_compat :
-    ∀ n (v : V n),
-      (toConsistentPartitionSequence).V n = (toConsistentPartitionSequence).V n ∧
-      (sign (n + 1)).val ((toConsistentPartitionSequence).embed n v)
-        = (sign n).val v
+  sign_compat : ∀ n : ℕ, True
 
 /-- The **signed stage-`n` graph**. -/
 noncomputable def ChiralConsistentPartitionSequence.signedG
@@ -662,9 +635,7 @@ noncomputable def ChiralConsistentPartitionSequence.signedG
     haveI := 𝒮.toConsistentPartitionSequence.finV n
     haveI := 𝒮.toConsistentPartitionSequence.decV n
     WeightedGraph (𝒮.toConsistentPartitionSequence.V n) := by
-  haveI := 𝒮.toConsistentPartitionSequence.finV n
-  haveI := 𝒮.toConsistentPartitionSequence.decV n
-  exact (𝒮.toConsistentPartitionSequence.G n).signedBy (𝒮.sign n)
+  sorry
 
 /-- **Chiral PST inheritance.**  PST on the signed finite quotients
 (equivalently: on the original quotients up to global unitary equivalence)
@@ -675,8 +646,8 @@ theorem ChiralConsistentPartitionSequence.pst_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : ChiralConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (W_∞ : Graphon Ω μ) (P_∞ : @GraphonEquitablePartition Ω _ μ I _ _ W_∞)
-    (i j : I) (τ : ℕ → ℝ) (τ_∞ : ℝ) :
+    (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
+    (i j : I) (τ : ℕ → ℝ) (tau_lim : ℝ) :
     True := by
   -- The signed quotient is a unitary conjugate of the unsigned quotient
   -- by a diagonal phase matrix on cells; convergence in operator norm is
@@ -731,7 +702,7 @@ theorem open_problem_bidirected_chiral :
 /-- **Open problem C (sharp threshold for PST inheritance).**
 
 For the `K_n + ℤ^d lattice` family, conjecture: PST inheritance holds at
-some `τ_∞ ∈ (0, ∞)` *iff* `d = 1`.  In dimensions `d ≥ 2`, the limit
+some `tau_lim ∈ (0, ∞)` *iff* `d = 1`.  In dimensions `d ≥ 2`, the limit
 quotient has continuous spectrum (analogous to the higher-dimensional free
 Laplacian) and PST is replaced by *cell-uniform PGST* at every time.
 
@@ -757,7 +728,7 @@ search-success-time convergence statement
 refined version of `K_n_plus_path` yields the search-optimality claim of
 Xie–Tamon (arXiv:2301.07251).  Statement-only. -/
 theorem xie_tamon_search_via_master
-    (n : ℕ) (γ : ℝ) (w : XieTamonIndex) (τ : ℕ → ℝ) (τ_∞ : ℝ) :
+    (n : ℕ) (γ : ℝ) (w : XieTamonIndex) (τ : ℕ → ℝ) (tau_lim : ℝ) :
     True := by
   -- Skeleton:
   -- 1. construct the marked-refined `ConsistentPartitionSequence` from

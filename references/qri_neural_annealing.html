@@ -1,0 +1,1333 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="profile" href="https://gmpg.org/xfn/11">
+
+	<title>Neural Annealing: Toward a Neural Theory of Everything &#8211; Opentheory.net</title>
+<meta name='robots' content='max-image-preview:large' />
+<link rel='dns-prefetch' href='//fonts.googleapis.com' />
+<link rel="alternate" type="application/rss+xml" title="Opentheory.net &raquo; Feed" href="https://opentheory.net/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Opentheory.net &raquo; Comments Feed" href="https://opentheory.net/comments/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Opentheory.net &raquo; Neural Annealing: Toward a Neural Theory of Everything Comments Feed" href="https://opentheory.net/2019/11/neural-annealing-toward-a-neural-theory-of-everything/feed/" />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://opentheory.net/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fopentheory.net%2F2019%2F11%2Fneural-annealing-toward-a-neural-theory-of-everything%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://opentheory.net/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fopentheory.net%2F2019%2F11%2Fneural-annealing-toward-a-neural-theory-of-everything%2F&#038;format=xml" />
+		<!-- This site uses the Google Analytics by MonsterInsights plugin v10.2.1 - Using Analytics tracking - https://www.monsterinsights.com/ -->
+		<!-- Note: MonsterInsights is not currently configured on this site. The site owner needs to authenticate with Google Analytics in the MonsterInsights settings panel. -->
+					<!-- No tracking code set -->
+				<!-- / Google Analytics by MonsterInsights -->
+		<style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="wp-emoji-styles-inline-css">
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+/*# sourceURL=wp-emoji-styles-inline-css */
+</style>
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style*=border-color]){border-style:solid}html :where([style*=border-top-color]){border-top-style:solid}html :where([style*=border-right-color]){border-right-style:solid}html :where([style*=border-bottom-color]){border-bottom-style:solid}html :where([style*=border-left-color]){border-left-style:solid}html :where([style*=border-width]){border-style:solid}html :where([style*=border-top-width]){border-top-style:solid}html :where([style*=border-right-width]){border-right-style:solid}html :where([style*=border-bottom-width]){border-bottom-style:solid}html :where([style*=border-left-width]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=/wp-includes/css/dist/block-library/common.min.css */
+</style>
+<style id="wp-block-image-inline-css">
+.wp-block-image>a,.wp-block-image>figure>a{display:inline-block}.wp-block-image img{box-sizing:border-box;height:auto;max-width:100%;vertical-align:bottom}@media not (prefers-reduced-motion){.wp-block-image img.hide{visibility:hidden}.wp-block-image img.show{animation:show-content-image .4s}}.wp-block-image[style*=border-radius] img,.wp-block-image[style*=border-radius]>a{border-radius:inherit}.wp-block-image.has-custom-border img{box-sizing:border-box}.wp-block-image.aligncenter{text-align:center}.wp-block-image.alignfull>a,.wp-block-image.alignwide>a{width:100%}.wp-block-image.alignfull img,.wp-block-image.alignwide img{height:auto;width:100%}.wp-block-image .aligncenter,.wp-block-image .alignleft,.wp-block-image .alignright,.wp-block-image.aligncenter,.wp-block-image.alignleft,.wp-block-image.alignright{display:table}.wp-block-image .aligncenter>figcaption,.wp-block-image .alignleft>figcaption,.wp-block-image .alignright>figcaption,.wp-block-image.aligncenter>figcaption,.wp-block-image.alignleft>figcaption,.wp-block-image.alignright>figcaption{caption-side:bottom;display:table-caption}.wp-block-image .alignleft{float:left;margin:.5em 1em .5em 0}.wp-block-image .alignright{float:right;margin:.5em 0 .5em 1em}.wp-block-image .aligncenter{margin-left:auto;margin-right:auto}.wp-block-image :where(figcaption){margin-bottom:1em;margin-top:.5em}.wp-block-image.is-style-circle-mask img{border-radius:9999px}@supports ((-webkit-mask-image:none) or (mask-image:none)) or (-webkit-mask-image:none){.wp-block-image.is-style-circle-mask img{border-radius:0;-webkit-mask-image:url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50"/></svg>');mask-image:url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50"/></svg>');mask-mode:alpha;-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:contain;mask-size:contain}}:root :where(.wp-block-image.is-style-rounded img,.wp-block-image .is-style-rounded img){border-radius:9999px}.wp-block-image figure{margin:0}.wp-lightbox-container{display:flex;flex-direction:column;position:relative}.wp-lightbox-container img{cursor:zoom-in}.wp-lightbox-container img:hover+button{opacity:1}.wp-lightbox-container button{align-items:center;backdrop-filter:blur(16px) saturate(180%);background-color:#5a5a5a40;border:none;border-radius:4px;cursor:zoom-in;display:flex;height:20px;justify-content:center;opacity:0;padding:0;position:absolute;right:16px;text-align:center;top:16px;width:20px;z-index:100}@media not (prefers-reduced-motion){.wp-lightbox-container button{transition:opacity .2s ease}}.wp-lightbox-container button:focus-visible{outline:3px auto #5a5a5a40;outline:3px auto -webkit-focus-ring-color;outline-offset:3px}.wp-lightbox-container button:hover{cursor:pointer;opacity:1}.wp-lightbox-container button:focus{opacity:1}.wp-lightbox-container button:focus,.wp-lightbox-container button:hover,.wp-lightbox-container button:not(:hover):not(:active):not(.has-background){background-color:#5a5a5a40;border:none}.wp-lightbox-overlay{box-sizing:border-box;cursor:zoom-out;height:100vh;left:0;overflow:hidden;position:fixed;top:0;visibility:hidden;width:100%;z-index:100000}.wp-lightbox-overlay .wp-lightbox-close-button{align-items:center;cursor:pointer;display:flex;font-family:inherit;gap:8px;justify-content:center;line-height:1;min-height:40px;min-width:40px;padding:0 4px;position:absolute;right:calc(env(safe-area-inset-right) + 16px);top:calc(env(safe-area-inset-top) + 16px);z-index:5000000}.wp-lightbox-overlay .wp-lightbox-close-button:focus,.wp-lightbox-overlay .wp-lightbox-close-button:hover,.wp-lightbox-overlay .wp-lightbox-close-button:not(:hover):not(:active):not(.has-background){background:none;border:none}.wp-lightbox-overlay .wp-lightbox-close-button:has(.wp-lightbox-close-text:not([hidden])) .wp-lightbox-close-icon svg{height:1em;width:1em}.wp-lightbox-overlay .wp-lightbox-close-icon svg{display:block}.wp-lightbox-overlay .wp-lightbox-navigation-button-next,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev{align-items:center;bottom:16px;cursor:pointer;display:flex;font-family:inherit;gap:4px;justify-content:center;line-height:1;min-height:40px;min-width:40px;padding:0 8px;position:absolute;z-index:2000002}.wp-lightbox-overlay .wp-lightbox-navigation-button-next[hidden],.wp-lightbox-overlay .wp-lightbox-navigation-button-prev[hidden]{display:none}@media (min-width:960px){.wp-lightbox-overlay .wp-lightbox-navigation-button-next,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev{bottom:50%;transform:translateY(-50%)}}.wp-lightbox-overlay .wp-lightbox-navigation-button-next:focus,.wp-lightbox-overlay .wp-lightbox-navigation-button-next:hover,.wp-lightbox-overlay .wp-lightbox-navigation-button-next:not(:hover):not(:active):not(.has-background),.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:focus,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:hover,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:not(:hover):not(:active):not(.has-background){background:none;border:none;padding:0 8px}.wp-lightbox-overlay .wp-lightbox-navigation-button-next:has(.wp-lightbox-navigation-text:not([hidden])) .wp-lightbox-navigation-icon svg,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:has(.wp-lightbox-navigation-text:not([hidden])) .wp-lightbox-navigation-icon svg{display:block;height:1.5em;width:1.5em}.wp-lightbox-overlay .wp-lightbox-navigation-button-prev{left:calc(env(safe-area-inset-left) + 16px)}.wp-lightbox-overlay .wp-lightbox-navigation-button-next{right:calc(env(safe-area-inset-right) + 16px)}.wp-lightbox-overlay .wp-lightbox-navigation-icon svg{vertical-align:middle}.wp-lightbox-overlay .lightbox-image-container{height:var(--wp--lightbox-container-height);left:50%;overflow:hidden;position:absolute;top:50%;transform:translate(-50%,-50%);transform-origin:top left;width:var(--wp--lightbox-container-width);z-index:2000001}.wp-lightbox-overlay .wp-block-image{align-items:center;box-sizing:border-box;display:flex;height:100%;justify-content:center;margin:0;position:relative;transform-origin:0 0;width:100%;z-index:3000000}.wp-lightbox-overlay .wp-block-image img{height:var(--wp--lightbox-image-height);min-height:var(--wp--lightbox-image-height);min-width:var(--wp--lightbox-image-width);width:var(--wp--lightbox-image-width)}.wp-lightbox-overlay .wp-block-image figcaption{display:none}.wp-lightbox-overlay button{background:none;border:none}.wp-lightbox-overlay .scrim{background-color:#fff;height:100%;opacity:.9;position:absolute;width:100%;z-index:2000000}.wp-lightbox-overlay.active{visibility:visible}@media not (prefers-reduced-motion){.wp-lightbox-overlay.active{animation:turn-on-visibility .25s both}.wp-lightbox-overlay.active img{animation:turn-on-visibility .35s both}.wp-lightbox-overlay.show-closing-animation:not(.active){animation:turn-off-visibility .35s both}.wp-lightbox-overlay.show-closing-animation:not(.active) img{animation:turn-off-visibility .25s both}.wp-lightbox-overlay.zoom.active{animation:none;opacity:1;visibility:visible}.wp-lightbox-overlay.zoom.active .lightbox-image-container{animation:lightbox-zoom-in .4s}.wp-lightbox-overlay.zoom.active .lightbox-image-container img{animation:none}.wp-lightbox-overlay.zoom.active .scrim{animation:turn-on-visibility .4s forwards}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active){animation:none}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active) .lightbox-image-container{animation:lightbox-zoom-out .4s}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active) .lightbox-image-container img{animation:none}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active) .scrim{animation:turn-off-visibility .4s forwards}}@keyframes show-content-image{0%{visibility:hidden}99%{visibility:hidden}to{visibility:visible}}@keyframes turn-on-visibility{0%{opacity:0}to{opacity:1}}@keyframes turn-off-visibility{0%{opacity:1;visibility:visible}99%{opacity:0;visibility:visible}to{opacity:0;visibility:hidden}}@keyframes lightbox-zoom-in{0%{transform:translate(calc((-100vw + var(--wp--lightbox-scrollbar-width))/2 + var(--wp--lightbox-initial-left-position)),calc(-50vh + var(--wp--lightbox-initial-top-position))) scale(var(--wp--lightbox-scale))}to{transform:translate(-50%,-50%) scale(1)}}@keyframes lightbox-zoom-out{0%{transform:translate(-50%,-50%) scale(1);visibility:visible}99%{visibility:visible}to{transform:translate(calc((-100vw + var(--wp--lightbox-scrollbar-width))/2 + var(--wp--lightbox-initial-left-position)),calc(-50vh + var(--wp--lightbox-initial-top-position))) scale(var(--wp--lightbox-scale));visibility:hidden}}
+/*# sourceURL=https://opentheory.net/wp-includes/blocks/image/style.min.css */
+</style>
+<style id="wp-block-list-inline-css">
+ol,ul{box-sizing:border-box}:root :where(.wp-block-list.has-background){padding:1.25em 2.375em}
+/*# sourceURL=https://opentheory.net/wp-includes/blocks/list/style.min.css */
+</style>
+<style id="wp-block-paragraph-inline-css">
+.is-small-text{font-size:.875em}.is-regular-text{font-size:1em}.is-large-text{font-size:2.25em}.is-larger-text{font-size:3em}.has-drop-cap:not(:focus):first-letter{float:left;font-size:8.4em;font-style:normal;font-weight:100;line-height:.68;margin:.05em .1em 0 0;text-transform:uppercase}body.rtl .has-drop-cap:not(:focus):first-letter{float:none;margin-left:.1em}p.has-drop-cap.has-background{overflow:hidden}:root :where(p.has-background){padding:1.25em 2.375em}:where(p.has-text-color:not(.has-link-color)) a{color:inherit}p.has-text-align-left[style*="writing-mode:vertical-lr"],p.has-text-align-right[style*="writing-mode:vertical-rl"]{rotate:180deg}
+/*# sourceURL=https://opentheory.net/wp-includes/blocks/paragraph/style.min.css */
+</style>
+<style id="wp-block-quote-inline-css">
+.wp-block-quote{box-sizing:border-box;overflow-wrap:break-word}.wp-block-quote.is-large:where(:not(.is-style-plain)),.wp-block-quote.is-style-large:where(:not(.is-style-plain)){margin-bottom:1em;padding:0 1em}.wp-block-quote.is-large:where(:not(.is-style-plain)) p,.wp-block-quote.is-style-large:where(:not(.is-style-plain)) p{font-size:1.5em;font-style:italic;line-height:1.6}.wp-block-quote.is-large:where(:not(.is-style-plain)) cite,.wp-block-quote.is-large:where(:not(.is-style-plain)) footer,.wp-block-quote.is-style-large:where(:not(.is-style-plain)) cite,.wp-block-quote.is-style-large:where(:not(.is-style-plain)) footer{font-size:1.125em;text-align:right}.wp-block-quote>cite{display:block}
+/*# sourceURL=https://opentheory.net/wp-includes/blocks/quote/style.min.css */
+</style>
+<style id="wp-block-separator-inline-css">
+@charset "UTF-8";.wp-block-separator{border:none;border-top:2px solid}:root :where(.wp-block-separator.is-style-dots){height:auto;line-height:1;text-align:center}:root :where(.wp-block-separator.is-style-dots):before{color:currentColor;content:"···";font-family:serif;font-size:1.5em;letter-spacing:2em;padding-left:2em}.wp-block-separator.is-style-dots{background:none!important;border:none!important}
+/*# sourceURL=https://opentheory.net/wp-includes/blocks/separator/style.min.css */
+</style>
+
+<style id="classic-theme-styles-inline-css">
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+/*# sourceURL=/wp-includes/css/classic-themes.min.css */
+</style>
+
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}:where(body) { margin: 0; }:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;font-style: inherit;font-weight: inherit;letter-spacing: inherit;line-height: inherit;padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link rel='stylesheet' id='contact-form-7-css' href='https://opentheory.net/wp-content/plugins/contact-form-7/includes/css/styles.css?ver=6.1.6' media='all' />
+<link rel='stylesheet' id='tabut-fontawesome-css' href='https://opentheory.net/wp-content/themes/tabut/assets/fontawesome/css/all.min.css?ver=5.8.1' media='all' />
+<link rel='stylesheet' id='bulma-css' href='https://opentheory.net/wp-content/themes/tabut/assets/bulma/bulma.css?ver=7.0' media='all' />
+<link rel='stylesheet' id='tabut-style-css' href='https://opentheory.net/wp-content/themes/tabut/style.css?ver=7.0' media='all' />
+<link rel='stylesheet' id='tabut_font_roboto-css' href='https://fonts.googleapis.com/css?family=Lato:400,400i,700,700i&#038;display=swap' media='all' />
+<link rel='stylesheet' id='tabut_font_source_sans_pro-css' href='https://fonts.googleapis.com/css?family=Source+Sans+Pro&#038;display=swap' media='all' />
+<link rel='stylesheet' id='cb_p6-css-main-css' href='https://opentheory.net/wp-content/plugins/patron-button-and-widgets-by-codebard/plugin/templates/default/style.css?ver=7.0' media='all' />
+<script id="jquery-core-js" src="https://opentheory.net/wp-includes/js/jquery/jquery.min.js?ver=3.7.1"></script>
+<script id="jquery-migrate-js" src="https://opentheory.net/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1"></script>
+<link rel="https://api.w.org/" href="https://opentheory.net/wp-json/" /><link rel="alternate" title="JSON" type="application/json" href="https://opentheory.net/wp-json/wp/v2/posts/1555" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://opentheory.net/xmlrpc.php?rsd" />
+<link rel="canonical" href="https://opentheory.net/2019/11/neural-annealing-toward-a-neural-theory-of-everything/" />
+<link rel='shortlink' href='https://opentheory.net/?p=1555' />
+
+<style type="text/css">
+#hero {
+	background-image: linear-gradient(to top, #000000b0 50%, transparent 80%), url('');
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-attachment: fixed;
+}
+#contact {
+	background-image: linear-gradient(to top, #000000b0 50%, transparent 80%),url('');
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-attachment: fixed;
+}
+
+#about .title,
+#services .title,
+#portfolio .title,
+#contact .contact-title .title {
+	color: ;
+}
+
+#about p,
+#services p,
+#services li,
+#services li,
+#portfolio p {
+	color: ;
+}
+
+.entry-title a {
+	color: ;
+}
+
+.entry-title a:hover {
+	color: ;
+}
+
+.entry-content,
+.entry-content h1,
+.entry-content h2,
+.entry-content h3,
+.entry-content h4,
+.entry-content h5,
+.entry-content h6,
+.entry-meta {
+	color: ;
+}
+
+.entry-meta a,
+.entry-content a {
+	color: ;
+}
+
+.entry-meta a:hover,
+.entry-content a:hover {
+	color: ;
+}
+
+</style>
+
+	<!-- All in one Favicon 4.8 --><link rel="icon" href="https://opentheory.net/wp-content/uploads/2011/08/O2t.png" type="image/png"/>
+</head>
+
+<body data-rsssl=1 class="wp-singular post-template-default single single-post postid-1555 single-format-standard wp-embed-responsive wp-theme-tabut no-sidebar">
+<div class="custom-container">
+<div id="page" class="site">
+	<a class="skip-link screen-reader-text" href="#content">Skip to content</a>
+
+	<header id="masthead" class="site-header">
+	<div class="container">
+
+
+	<nav id="site-navigation" class="navbar tabut-navigation" role="navigation" aria-label="main navigation">
+  <div class="brand">
+	
+	<div class="site-branding brand">
+									<a class="navbar-item is-size-4 fancy-font" href="https://opentheory.net/" rel="home">Opentheory.net</a>
+				</div><!-- .site-branding -->
+
+
+	<a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+	  <span aria-hidden="true"></span>
+	  <span aria-hidden="true"></span>
+	  <span aria-hidden="true"></span>
+	</a>
+  </div>
+
+  <div id="navbarBasicExample" class="navbar-menu">
+	<div class="navbar-end">
+		<div class="menu-opentheory-menu-container"><ul id="primary-menu" class="menu"><li id="menu-item-1374" class="menu-item menu-item-type-post_type menu-item-object-page current-menu-ancestor current-menu-parent current_page_parent current_page_ancestor menu-item-has-children menu-item-1374"><a href="https://opentheory.net/best-of/" class="navbar-item">Best of</a>
+<ul class="sub-menu">
+	<li id="menu-item-2009" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2009"><a href="https://opentheory.net/2023/06/new-whitepaper-qualia-formalism-and-a-symmetry-theory-of-valence/" class="navbar-item">Whitepaper: Qualia Formalism and a Symmetry Theory of Valence</a></li>
+	<li id="menu-item-2010" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2010"><a href="https://opentheory.net/2023/07/principles-of-vasocomputation-a-unification-of-buddhist-phenomenology-active-inference-and-physical-reflex-part-i/" class="navbar-item">Principles of Vasocomputation (Part I)</a></li>
+	<li id="menu-item-1687" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1687"><a href="https://opentheory.net/2021/07/a-primer-on-the-symmetry-theory-of-valence/" class="navbar-item">A Primer on the Symmetry Theory of Valence</a></li>
+	<li id="menu-item-2008" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2008"><a href="https://opentheory.net/2023/05/autism-as-a-disorder-of-dimensionality/" class="navbar-item">Autism as a Disorder of Dimensionality</a></li>
+	<li id="menu-item-1116" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1116"><a href="https://opentheory.net/principia-qualia/" class="navbar-item">Principia Qualia – my magnum opus</a></li>
+	<li id="menu-item-2007" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2007"><a href="https://opentheory.net/2022/04/it-from-bit-revisited/" class="navbar-item">It From Bit, Revisited</a></li>
+	<li id="menu-item-1378" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1378"><a href="https://opentheory.net/2018/08/a-future-for-neuroscience/" class="navbar-item">A Future for Neuroscience</a></li>
+	<li id="menu-item-1581" class="menu-item menu-item-type-post_type menu-item-object-post current-menu-item menu-item-1581"><a href="https://opentheory.net/2019/11/neural-annealing-toward-a-neural-theory-of-everything/" aria-current="page" class="navbar-item">Neural Annealing: Toward a Neural Theory of Everything</a></li>
+	<li id="menu-item-1379" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1379"><a href="https://opentheory.net/2017/10/rescuing-philosophy/" class="navbar-item">Rescuing Philosophy</a></li>
+	<li id="menu-item-1380" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1380"><a href="https://opentheory.net/2017/07/why-i-think-the-foundational-research-institute-should-rethink-its-approach/" class="navbar-item">Against Functionalism</a></li>
+	<li id="menu-item-2076" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2076"><a href="https://opentheory.net/2019/06/taking-monism-seriously/" class="navbar-item">Taking Monism Seriously</a></li>
+	<li id="menu-item-1408" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1408"><a href="https://opentheory.net/2018/12/the-neuroscience-of-meditation/" class="navbar-item">The Neuroscience of Meditation</a></li>
+	<li id="menu-item-2077" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2077"><a href="https://opentheory.net/2024/06/a-paradigm-for-ai-consciousness/" class="navbar-item">A Paradigm for AI Consciousness</a></li>
+</ul>
+</li>
+<li id="menu-item-167" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-167"><a href="https://opentheory.net/contact/" class="navbar-item">About/Contact</a></li>
+</ul></div>
+		
+	</div>
+  </div>
+</nav><!-- #site-navigation -->
+</div>
+	</header><!-- #masthead -->
+	<div id="content" class="site-content">
+<div id="primary" class="content-area">
+	<main id="main" class="site-main">
+	
+<article id="post-1555" class="post-1555 post type-post status-publish format-standard hentry category-uncategorized">
+				<div class="container">
+				<h1 class="entry-title is-size-2 has-text-centered">Neural Annealing: Toward a Neural Theory of Everything</h1>			</div>
+		 <!-- Portfolio Section Header Start -->
+			 <!-- Portfolio Section Header End -->
+	
+	<div class="entry-meta has-text-centered">
+	<span class="posted-on">Posted on <a href="https://opentheory.net/2019/11/neural-annealing-toward-a-neural-theory-of-everything/" rel="bookmark"><time class="entry-date published" datetime="2019-11-27T18:08:51-07:00">November 27, 2019</time><time class="updated" datetime="2023-05-22T05:13:10-07:00">May 22, 2023</time></a></span><span class="byline"> by <span class="author vcard"><a class="url fn n" href="https://opentheory.net/author/johnsonmx/">Michael Edward Johnson</a></span></span>		</div><!-- .entry-meta -->
+			<div class="columns is-centered">
+				<div CLASS="column .is-narrow-desktop is-8">
+					<div class="entry-content">
+						
+<p class="wp-block-paragraph">Michael Edward Johnson, 11-28-19; mike@opentheory.net</p>
+
+
+
+<p class="wp-block-paragraph">Context: follow-up to <a href="https://opentheory.net/2018/12/the-neuroscience-of-meditation/">The Neuroscience of Meditation</a> and <a href="https://opentheory.net/2018/08/a-future-for-neuroscience/#">A Future For Neuroscience</a>; a unification of (1) <em>the Entropic Brain </em>&amp; <em>REBUS</em> (Carhart-Harris et al. <a href="https://www.frontiersin.org/articles/10.3389/fnhum.2014.00020/full">2014</a>; <a href="https://www.ncbi.nlm.nih.gov/pubmed/29548884">2018</a>; <a href="http://pharmrev.aspetjournals.org/content/pharmrev/71/3/316.full.pdf">2019</a>), (2) <em>the Free Energy Principle</em> (Friston <a href="https://www.fil.ion.ucl.ac.uk/~karl/The%20free-energy%20principle%20A%20unified%20brain%20theory.pdf">2010</a>), (3) <em>Connectome-Specific Harmonic Waves</em> (Atasoy et al. <a href="https://www.nature.com/articles/ncomms10340">2016</a>; <a href="https://www.biorxiv.org/content/10.1101/162040v1">2017</a>), and (4) the <em>Symmetry Theory of Valence</em> (<a href="https://opentheory.net/PrincipiaQualia.pdf">Johnson 2016</a>).</p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">0. Introduction</span></strong></p>
+
+
+
+<p class="wp-block-paragraph"><em>Why is neuroscience so hard?</em></p>
+
+
+
+<p class="wp-block-paragraph">Part of the problem is that the brain is complicated. But we’ve also mostly been doing it wrong, trying to explain the brain using methods that couldn’t possibly generate insight about the things we care about.</p>
+
+
+
+<p class="wp-block-paragraph">In my writeup on <a href="https://opentheory.net/2019/03/intellectual-lineages/">intellectual lineages</a>, I suggest there’s a distinction between ‘old’ and ‘new’ neuroscience:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">Traditionally, neuroscience has been concerned with <em>cataloguing the brain</em>, e.g. collecting discrete observations about anatomy, observed cyclic patterns (EEG frequencies), and cell types and neurotransmitters, and trying to match these facts with functional stories. However, it’s increasingly clear that these sorts of neat stories about localized function are artifacts of the tools we’re using to look at the brain, not of the brain’s underlying computational structure.</p>
+
+
+
+<p class="wp-block-paragraph">What’s the alternative? Instead of centering our exploration on the sorts of raw data our tools are able to gather, we can approach the brain as a self-organizing system, something which uses a few core principles to both build and regulate itself. As such, if we can reverse-engineer these core principles and use what tools we have to <em>validate</em> these bottom-up models, we can both understand the internal logic of the brain’s algorithms — the how and why the brain does what it does — as well as find more elegant intervention points for altering it.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">That’s a big check to try to cash. What might this look like?</p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">I. Annealing metaphors for the brain</span></strong></p>
+
+
+
+<p class="wp-block-paragraph">In my post about the neuroscience of meditation, I talked about <em>simulated annealing</em>, a natural implication of Robin Carhart-Harris’s work on entropic disintegration in the brain:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">Annealing involves heating a metal above its recrystallization temperature, keeping it there for long enough for the microstructure of the metal to reach equilibrium, then slowly cooling it down, letting new patterns crystallize. This releases the internal stresses of the material, and is often used to restore ductility (plasticity and toughness) on metals that have been ‘cold-worked’ and have become very hard and brittle— in a sense, annealing is a ‘reset switch’ which allows metals to go back to a more pristine, natural state after being bent or stressed. I suspect this is a useful metaphor for brains, in that they can become hard and brittle over time with a build-up of internal stresses, and these stresses can be released by periodically entering high-energy states where a more natural neural microstructure can reemerge.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">In his work on the <a href="https://www.frontiersin.org/articles/10.3389/fnhum.2014.00020/full">entropic brain</a>, Carhart-Harris studies how psychedelics like LSD and psilocybin add enough energy (neural activity) to the brain that existing neural patterns are disrupted, much like how heating a metal disrupts its existing molecular bonds. Recently, Carhart-Harris and Friston have unified their frameworks under the <a href="http://pharmrev.aspetjournals.org/content/pharmrev/71/3/316.full.pdf">REBUS</a> (RElaxed Beliefs Under pSychedelics) model, which also imports the annealing metaphor for brains:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">The hypothesized flattening of the brain’s (variational free) energy landscape under psychedelics can be seen as analogous to the phenomenon of simulated annealing in computer science—which itself is analogous to annealing in metallurgy, whereby a system is heated (i.e., instantiated by increased neural excitability), such that it attains a state of heightened plasticity, in which the discovery of new energy minima (relatively stable places/trajectories for the system to visit/reside in for a period of time) is accelerated (Wang and Smith, 1998). Subsequently, as the drug is metabolized and the system cools, its dynamics begin to stabilize—and attractor basins begin to steepen again (Carhart-Harris et al., 2017). This process may result in the emergence of a new energy landscape with revised properties.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">It’s a powerful metaphor since it ties together and recontextualizes so many core neuroscience concepts: free energy landscapes, Bayesian modeling, the ‘handshake’ between bottom-up sense-data and top-down priors. For a general overview of the math, see Wikipedia on <a href="https://en.wikipedia.org/wiki/Simulated_annealing">simulated annealing</a>, <a href="https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm">Metropolis-Hastings algorithm</a>, <a href="https://en.wikipedia.org/wiki/Parallel_tempering">Parallel tempering</a>; for more on Carhart-Harris’s and Friston’s work, see <a href="https://slatestarcodex.com/2019/09/10/ssc-journal-club-relaxed-beliefs-under-psychedelics-and-the-anarchic-brain/">Scott Alexander</a>’s and <a href="https://qualiacomputing.com/2019/08/27/carhart-harris-friston-2019-rebus-and-the-anarchic-brain/">Milan Griffes</a>’ commentary. There seems to be some convergence on this metaphor: as Scott Alexander <a href="https://slatestarcodex.com/2019/09/10/ssc-journal-club-relaxed-beliefs-under-psychedelics-and-the-anarchic-brain/">noted</a>,</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">F&amp;CH aren’t the first people to discuss this theory of psychedelics. It’s been in the air for a couple of years now – and props to local bloggers at the Qualia Research Institute and Mad.Science.Blog for getting good explanations up before the parts had even all come together in journal articles. I’m especially interested in QRI’s theory that meditation has the same kind of annealing effect, which I think would explain a lot.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">The basics: how does annealing work?</span></p>
+
+
+
+<p class="wp-block-paragraph">Carhart-Harris’s and Friston’s model does many very clever things and is a substantial addition to the literature; I start from a similar frame but describe the process slightly differently. The following is my “Neural Annealing” model (based on my talk on the <a href="https://www.youtube.com/watch?v=nY9H5CK4GbE">Neuroscience of Meditation</a> in Thailand):</p>
+
+
+
+<ul class="wp-block-list">
+<li>First, energy (neural excitation, e.g. Free Energy from prediction errors) builds up in the brain, either gradually or suddenly, collecting disproportionately in the brain’s natural eigenmodes;</li>
+
+
+
+<li>This build-up of energy (rate of neural firing) crosses a metastability threshold and the brain enters a high-energy state, causing entropic disintegration (weakening previously ‘sticky’ attractors);</li>
+
+
+
+<li>The brain’s neurons self-organize into new multi-scale equilibria (attractors), aka implicit assumptions about reality’s structure and value weightings, which given present information should generate lower levels of prediction error than previous models (this is implicitly both a <em>resynchronization of internal predictive models with the environment</em>, and a <em>minimization of dissonance in connectome-specific harmonic waves</em>);&nbsp;</li>
+
+
+
+<li>The brain ‘cools’ (neural activity levels slowly return to normal), and parts of the new self-organized patterns remain and become part of the brain’s normal activity landscape;</li>
+
+
+
+<li>The cycle repeats, as the brain’s models become outdated and prediction errors start to build up again.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Any ‘emotionally intense’ experience that you need time to process most likely involves this <em>entropic disintegration-&gt;search-&gt;annealing</em> mechanism— this is what emotional processing <em>is</em>.</p>
+
+
+
+<p class="wp-block-paragraph">And I’d suggest that this is the <em>core dynamic of how the brain updates its structure</em>, the mechanism the brain uses to pay down its ‘technical debt’. In other words, entering high-energy states (i.e., intense emotional states which take some time to ‘process’) is how the brain releases structural stress and adapts to new developments. This process needs to happen on a regular basis to support healthy function, and if it doesn’t, psychological health degrades— In particular, mental flexibility &amp; emotional vibrancy go down — analogous to a drop in a metal’s ‘ductility’. People seem to have a strong subconscious drive toward entering these states and if they haven’t experienced a high-energy brain state in some time, they actively seek one out, even sometimes in destructive ways.</p>
+
+
+
+<p class="wp-block-paragraph">However, the brain spends most of its time in low-energy states, because they’re safer: systems in noisy environments need to limit their rate of updating. There are often <em>spikes</em> of energy in the brain, but these don’t tend to snowball into full high-energy states because the brain has many ‘energy sinks’ (inhibitory top-down predictive models) which soak up excess energy before entropic disintegration can occur.</p>
+
+
+
+<p class="wp-block-paragraph">But the brain can enter high-energy states if these energy sinks are:</p>
+
+
+
+<p class="wp-block-paragraph">(1) <span style="text-decoration: underline;">De-activated</span>, if certain evolved trigger conditions are present- e.g., death of a loved one, falling in love, good sex, social rejection, getting bitten by a weird animal, failing some important prediction. In these cases there seems to be some sort of adaptive gating mechanism that disables the typical energy sinks in order to allow entropic disintegration-&gt;search-&gt;annealing to happen.</p>
+
+
+
+<p class="wp-block-paragraph">(2) <span style="text-decoration: underline;">Overwhelmed</span>, if there’s an enormous magnitude of energy coming in, faster than the energy sinks can mop it up- e.g., watching a horror movie, direct brain stimulation, first day of school, being sleep deprived, military boot camp, cult indoctrinations, your wedding day.</p>
+
+
+
+<p class="wp-block-paragraph">(3) <span style="text-decoration: underline;">Avoided</span>, if <em>semantically-neutral energy</em> is applied to the system. Essentially, coherent energy which isn’t strongly linked to any cognitive, emotional, or sensory process will be partially illegible to most existing energy sinks, and so it can persist long enough to build up <em>–</em> basically ‘hacking’ the brain’s activity normalization system. (Hold that thought <em>–</em> this is the most interesting one. We’ll return to it later.)</p>
+
+
+
+<p class="wp-block-paragraph">This is the ‘view from 30,000 feet’ for how simulated annealing in the brain works. If you stopped reading here, you’d walk away with a reasonable toy model of the “Neural Annealing” framework.</p>
+
+
+
+<p class="wp-block-paragraph">But there’s a lot more to the model! The rest of this writeup is an iterative tour using Neural Annealing to explain meditation, trauma, love, depression, psychedelics, and effective therapy, with each section adding a variation on the core theme.</p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">Interlude: FEP, CSHW, and EBH/REBUS</span></strong></p>
+
+
+
+<p class="wp-block-paragraph">The following “Neural Annealing” framework is essentially a unification of Karl Friston’s Free Energy Principle (FEP), Selen Atasoy’s Connectome-Specific Harmonic Waves (CSHW), Robin Carhart-Harris’s Entropic Brain Hypothesis (EBH), and the Symmetry Theory of Valence (STV). Recently, Friston and Carhart-Harris have unified their respective paradigms with the <em>Relaxed Beliefs Under pSychedelics</em> (REBUS) model. I believe combining <em>all three</em> is exponentially more powerful, not only giving the <em>computational-level story </em>of REBUS, but also giving us a model for <em>how the brain may be physically implementing REBUS, and Bayesian updating in general</em>, with a correspondingly richer set of predictions.&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">First, here’s a quick recap: to paraphrase what I wrote <a href="https://opentheory.net/2018/06/seed-ontologies/">elsewhere</a>,</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">Karl Friston’s Free Energy Principle (FEP)</span> is the leading theory of self-organizing system dynamics, one which has (in various guises) pretty much taken neuroscience by storm. It argues that any self-organizing system which effectively resists disorder must (as its core organizing principle) minimize its free energy, that free energy is equivalent to surprise (in a Bayesian sense), and that this surprise-minimization drives basically all human behavior. This minimization of surprise revolves around Bayesian-type reasoning: the brain is always getting bottom-up sense data flowing in, more than it can handle. So it relies on top-down predictive models that attempt to sort through all this data so we can focus on the surprising stuff, the stuff that can’t be effortlessly predicted. The core of the FEP is the details of how this ‘handshake’ between bottom-up and top-down happens, and what can influence it. See <a href="https://www.researchgate.net/publication/41001209_Friston_KJ_The_free-energy_principle_a_unified_brain_theory_Nat_Rev_Neurosci_11_127-138">Friston’s primary work</a>; <a href="https://slatestarcodex.com/2018/03/04/god-help-us-lets-try-to-understand-friston-on-free-energy/">Scott Alexander’s attempt to distill it</a>. Related to (and sometimes used synonymously with) <a href="https://opentheory.net/wp-content/uploads/2018/06/Screen-Shot-2018-06-02-at-11.png">Active Inference, the Bayesian Brain, and Predictive Processing / Predictive Coding</a>.</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">Robin Carhart-Harris’s Entropic Brain Hypothesis (EBH)</span> is essentially an attempt to import key concepts such as entropy and self-organized criticality from statistical physics into neuroscience, in order to explain psychedelic phenomena. As I noted above, it suggests that certain conditions <em>such as </em>psychedelics can add enough energy to brain networks that they undergo ‘entropic disintegration’, and then self-organize into new equilibria. See <a href="https://www.ncbi.nlm.nih.gov/pubmed/29548884">Carhart-Harris 2018</a>.&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">Selen Atasoy’s Connectome-Specific Harmonic Waves (CSHW)</span> is a method for applying harmonic analysis to the brain: basically, it uses various forms of brain imaging to infer what the brain’s natural resonant frequencies (eigenmodes) are, and how much energy each of these frequencies have. The core workflow is three steps: first combine MRI and DTI to approximate a brain’s connectome, then with an empirically-derived wave propagation equation calculate what the natural harmonics are of this connectome, then estimate which power distribution between these harmonics would most accurately reconstruct the observed fMRI activity. This framework offers several notable things: (a) these connectome-specific harmonic waves (CSHWs) are natural Schelling points that the brain has probably self-organized around (and so are worth talking about); (b) a plausible mid-level bridge connecting bottom-up neural dynamics and high-level psychological phenomena, (c) something we can actually measure. CSHW is an empirical paradigm, which is very uncommon in theoretical neuroscience. Here’s a <a href="https://qualiacomputing.com/2017/06/18/connectome-specific-harmonic-waves-on-lsd/">transcript of Atasoy’s explanation</a>; I also wrote extensively about CSHW in <a href="https://opentheory.net/2018/08/a-future-for-neuroscience/#">A Future for Neuroscience</a>.</p>
+
+
+
+<p class="wp-block-paragraph">In short: each of these three paradigms is a description of how the brain self-organizes. Friston’s work understands the self-organization from a computational lens; Carhart-Harris an energetic lens; Atasoy a physical lens.</p>
+
+
+
+<p class="wp-block-paragraph">Finally, I’d offer two further pieces of background context:&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">The Symmetry Theory of Valence (STV)</span>, which hypothesizes that given a mathematical representation of an experience, the <em>symmetry</em> of this representation will encode how pleasant the experience is (<a href="https://opentheory.net/2016/11/principia-qualia/">Johnson 2016</a>). Gomez Emilsson hypothesizes that consonance between a brain’s connectome-specific harmonic waves (CSHWs) will be a reasonable proxy for this symmetry (<a href="https://qualiacomputing.com/2017/06/18/quantifying-bliss-talk-summary/">Gomez Emilsson 2017</a>).</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">Marr’s Three Levels</span>: as explained <a href="https://opentheory.net/2019/03/intellectual-lineages/">here</a>,&nbsp;</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph"><strong>David Marr</strong> is most famous for Marr’s Three Levels (along with Tomaso Poggio), which describe ”the three levels at which any machine carrying out an information-processing task must be understood:”</p>
+
+
+
+<p class="wp-block-paragraph">&gt;<em>Computational theory</em>: What is the goal of the computation, why is it appropriate, and what is the logic of the strategy by which it can be carried out?</p>
+
+
+
+<p class="wp-block-paragraph">&gt;<em>Representation and algorithm</em>: How can this computational theory be implemented? In particular, what is the representation for the input and output, and what is the algorithm for the transformation?</p>
+
+
+
+<p class="wp-block-paragraph">&gt;<em>Hardware implementation</em>: How can the representation and algorithm be realized physically? [Marr (1982), p. 25]</p>
+
+
+
+<p class="wp-block-paragraph">This framework <em>sounds</em> simple, but is remarkably important since arguably most of the confusion in neuroscience (and phenomenology research) comes from starting a sentence on one Marr-Poggio level and finishing it on another, and this framework lets people debug that confusion.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">Back to annealing <em>–</em></p>
+
+
+
+<p class="wp-block-paragraph">As noted, Carhart-Harris and Friston have unified their paradigms under REBUS by understanding prediction errors as the ‘energy’ parameter which drives disruption (entropic disintegration) in the brain’s networks. Over time, this drives an evolutionary search function which attempts to minimize these prediction errors. I think this is a very beautiful description of a very clever system, and one which allows us an opportunity to cross-validate each model, and jump between levels of description if we get ‘stuck’. But it’s still missing a story about physical implementation. <em>What is this ‘energy’</em>, <em>physically speaking?</em></p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">II. How meditation works: semantically-neutral annealing</span></strong></p>
+
+
+
+<p class="wp-block-paragraph">I believe that almost all techniques that intentionally ‘hack’ the brain’s annealing process share a common mechanism: a build-up of <em>semantically neutral energy</em>. “Semantically neutral energy” refers to neural activity which is not strongly associated with any specific cognitive or emotional process. As I note above, usually energy build-up is limited: once a perturbation of the system neatly falls into a pattern recognized by the brain’s predictive hierarchy, the neural activity propagating this pattern is dissipated. But if a pattern <em>never quite matches</em> anything, or takes advantage of implementation-level structure to persist, and especially if it’s getting continually reinforced by some external or internal dynamic it can persist long enough to build up. I think meditation is a perfect example of a process which adds semantically-neutral energy to the brain: effortful attention on excitatory bottom-up sense-data and attenuation of inhibitory top-down predictive models will naturally lead to a build-up of this ‘non-semantic’ energy in the brain. From <a href="https://opentheory.net/2018/12/the-neuroscience-of-meditation/">The Neuroscience of Meditation</a>:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">Furthermore, from what I gather from experienced meditators, <em>successfully entering meditative flow may be one of the most reliable ways to reach these high-energy brain states</em>. I.e., it’s <em>very common</em> for meditation to produce feelings of high intensity, at least in people able to actually enter meditative flow. Meditation also produces more ‘pure’ or ‘neutral’ high-energy states, ones that are free of the intentional content usually associated with intense experiences which may distort or limit the scope of the annealing process. So we can think of intermediate-to-advanced (‘successful flow-state’) meditation as a reheating process, whereby the brain enters a more plastic and neutral state, releases pent-up structural stresses, and recrystallizes into a more balanced, neutral configuration as it cools. Iterated many times, this will drive an evolutionary process and will produce a very different brain, one which is more unified &amp; anti-fragile, less <a href="https://qualiacomputing.com/2016/11/19/the-tyranny-of-the-intentional-object/">distorted toward intentionality</a>, and in general <em>structurally optimized against stress</em>.</p>
+
+
+
+<p class="wp-block-paragraph">An open question is <em>how </em>or <em>why</em> meditation produces high-energy brain states. There isn’t any consensus on this, but with a nod to the predictive coding framework, I’d offer that bottom-up sense-data is generally excitatory, adding energy to the system, whereas top-down predictive Bayesian models are generally inhibitory, functioning as ‘energy sinks’. And so by ‘noting and knowing’ our sensations before our top-down models activate, in a sense we’re diverting the ‘energy’ of our sensations away from its usual counterbalancing force. If we do this long enough and skillfully enough, this energy can build up and lead to ‘<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3909994/">entropic disintegration</a>’, essentially pushing enough energy into the system that existing attractors are disrupted and annealing can occur.&nbsp;</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">A natural question here is <em>what *is* this ‘semantically neutral energy’ exactly?</em> <em>–</em> an abstract answer here is “semantically neutral energy” can be thought of as an increase in brain activity which is (1) illegible to Marr’s semantic/computational level, but (2) coherent with regard to Marr’s algorithmic or implementational levels (another term for this might be ‘semantically-illegible energy’). But my concrete answer is that <em>semantically neutral energy is a build-up of energy in the brain’s natural resonances</em> — energy accumulating in CSHWs. And so it’s <em>this</em> that builds up during meditation, and <em>this</em> that starts a <em>semantically-neutral</em> <em>annealing</em> process which has a unique effect profile.</p>
+
+
+
+<p class="wp-block-paragraph">I think <em>semantically-neutral annealing</em> is the <em>best kind</em> of annealing for psychological health, because:&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">(1) By mostly avoiding energy sinks, the same entropic disintegration-&gt;search-&gt;annealing process can happen using less total energy, which is less disruptive to the fine details of the system;</p>
+
+
+
+<p class="wp-block-paragraph">(2) Since this energy is semantically-neutral, it doesn’t depend on or trigger as many semantic processes in the brain (which can have unpredictable effects), and likewise it doesn’t necessarily rely on anti-inductive ‘hacks’ to trick the predictive processing system, and these factors make it a more reliable and repeatable source of annealing;&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">(3) <em>Very very importantly: </em>similarly to how vibratory energy applied to a tuning fork quickly collapses to the natural resonant frequency of the tuning fork, I’m speculating that coherent, semantically-neutral energy added to the brain will naturally cluster in the brain’s natural <a href="https://opentheory.net/2018/08/a-future-for-neuroscience/">connectome harmonics</a>, which will thus drive an annealing process which strengthens a consonant subset of the brain’s natural harmonic resonances in the long-term— essentially ‘retuning the brain’ toward more resonant/flow states. For more details, see <a href="https://opentheory.net/2018/12/the-neuroscience-of-meditation/">The Neuroscience of Meditation</a>;</p>
+
+
+
+<p class="wp-block-paragraph">(4) Finally, this process should <em>feel really really good</em> and in the long-term, retune the mind to be more pleasant to inhabit. The <a href="https://opentheory.net/2017/04/stov-explain-like-im-5-edition/">Symmetry Theory of Valence</a> (STV) and Gomez Emilsson’s method of applying this to the brain (<a href="https://qualiacomputing.com/2017/06/18/quantifying-bliss-talk-summary/">CDNS</a>) suggests that harmony in the brain is <em>literally synonymous</em> with pleasure, and so processes which ‘deepen the grooves’ of core harmonic resonances will tend to boost the mind’s default hedonic level (likely helping significantly with neuroticism and emotional resilience).</p>
+
+
+
+<figure class="wp-block-image size-large"><img fetchpriority="high" decoding="async" width="1024" height="753" src="https://opentheory.net/wp-content/uploads/2019/11/Screen-Shot-2019-11-22-at-9.55.37-PM-1-1024x753.png" alt="" class="wp-image-1556" srcset="https://opentheory.net/wp-content/uploads/2019/11/Screen-Shot-2019-11-22-at-9.55.37-PM-1-1024x753.png 1024w, https://opentheory.net/wp-content/uploads/2019/11/Screen-Shot-2019-11-22-at-9.55.37-PM-1-300x221.png 300w, https://opentheory.net/wp-content/uploads/2019/11/Screen-Shot-2019-11-22-at-9.55.37-PM-1-768x565.png 768w, https://opentheory.net/wp-content/uploads/2019/11/Screen-Shot-2019-11-22-at-9.55.37-PM-1-1536x1130.png 1536w, https://opentheory.net/wp-content/uploads/2019/11/Screen-Shot-2019-11-22-at-9.55.37-PM-1-2048x1507.png 2048w" sizes="(max-width: 1024px) 100vw, 1024px" /></figure>
+
+
+
+<p class="wp-block-paragraph">I.e., Meditation is a remarkably clever technique which piggybacks on several of the brain’s core principles of self-organization: first, effortful attention on (excitatory) sense-data and inhibiting (inhibitory) predictive storytelling naturally pushes the brain into a high-energy state and makes it more malleable; this excess energy disproportionately collects in natural brain harmonics, and as the brain ‘cools’ from its high-energy state, these energized harmonics become ‘deeper’, leading to more psychological robustness. Less neuroticism and more flow. <em>I think this is where a large portion of the benefits of advanced meditation comes from.</em></p>
+
+
+
+<p class="wp-block-paragraph">Meditation isn’t the only method to induce build-up of semantically-neutral energy; the “Big Three” are:</p>
+
+
+
+<p class="wp-block-paragraph">&#8211; <strong>Meditation</strong>, which seems to work by both increasing excitatory sense-data and decreasing inhibitory top-down predictive models (energy sinks);</p>
+
+
+
+<p class="wp-block-paragraph">&#8211; <strong>Psychedelics</strong>, which intuitively may function by disabling existing energy sinks (or perhaps overloading them by increasing baseline firing rates or increasing the branching factor of neural activity).</p>
+
+
+
+<p class="wp-block-paragraph">&#8211; <strong>Music</strong>, a sensory input which seems to exist on the knife’s edge between exhibiting highly ordered patterns (some of which will hit natural connectome harmonics and so allow accumulation of energy through resonance) on one hand, and on the other hand not being <em>too</em> predictable (thus dodging most inhibitory top-down predictive models);</p>
+
+
+
+<p class="wp-block-paragraph">Hybrid approaches also exist: e.g. exercise, dance, sex, tantric practices, <a href="https://en.wikipedia.org/wiki/Eye_movement_desensitization_and_reprocessing">EMDR</a>, and breath work are essentially combinations of the rhythmic portion of music and the sensory portion of meditation. The fact that psychedelics reliably enhance the potency of each and every one of these practices is not a coincidence, but due to shared mechanism.[1]</p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">III. Depression as a disorder of annealing; bipolar depression doubly so</span></strong></p>
+
+
+
+<p class="wp-block-paragraph">To describe depression in one sentence: <em>“Depression is a self-reinforcing perturbation from the natural annealing cycle.”</em> There are two related aspects to this: (1) an inability to anneal normally, and (2) annealing abnormally (more specifically, annealing new attractor basins which are high in dissonance, or annealing a pathological change in energy parameter dynamics).</p>
+
+
+
+<p class="wp-block-paragraph">Most people have a simple model of depression as “being sad all the time” <em>–</em> but I think a two-factor model looking at <em>energy parameter</em> and <em>valence</em> offers a lot of clarity and predictive utility. Roughly speaking, this suggests parametrizing depression into three core types:</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">I. Depression with no high energy states</span>, characterized by a lack of annealing (emotional clarity and dynamism) in general;</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">II. Depression with high-energy negative states</span>, which over time anneals minds toward <em>suffering</em> and <em>hopelessness</em>;</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">III. Bipolar depression with high-energy positive &amp; negative states</span>, which over time anneals minds toward the <em>dramatic</em>.</p>
+
+
+
+<p class="wp-block-paragraph">These categories aren’t exclusive or static; too much time in one will increase the probability one may also fall into the others.&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">Not annealing frequently enough may be the most important ‘non-obvious’ cause of depression. Brains <em>–</em> especially younger ones, since they&#8217;re changing so much <em>–</em> <em>really do need to anneal regularly</em> to pay down their ‘technical debt’, and if they don’t, they grow brittle and neurotic. (Technical debt in the brain builds up as we twist our existing brain networks to accommodate new facts; this debt is ‘paid down’ when we enter high-energy states and let new brain networks which fit these constraints self-organize) The ‘annealing pressure’ also increases over time, and if a wholesome annealing opportunity fails to present itself, the brain will progressively lower its standards looking for <em>any</em> opportunity for annealing. Especially if done repeatedly, this can cause long-term damage to the brain’s attractor basin landscape. (We see this in negative coping strategies such as cutting, drama-seeking, and so on <em>–</em> if someone is engaging in such, they’ve probably annealed poorly, and also likely have few realistic opportunities for healthy annealing.) Many forms of entertainment we think of as palliatives in today’s society (e.g. movies, video games) may be weak-and-incomplete-but-still-nonzero drivers of annealing. Not as good as the real thing, but better than nothing if that’s your only option.</p>
+
+
+
+<p class="wp-block-paragraph">At the high-energy extreme, it seems likely and tragic that depression compounds itself by repeatedly causing intense negative emotion (high-energy states) which anneals the brain toward these patterns, and toward assigning salience on the set of problems and types of thoughts (attractor landscape) facing a depressed person — many of which are their own cause and would weaken if ignored. Relatedly, I suspect some CSHW- and music-theory-related math could be found describing how depression anneals what I would call a brain’s ‘connectome key signature’ (CKS) toward a ‘minor key’, an internal logic which feels tragic/hopeless (has fewer harmonious arrangements and progressions), which the brain then uses as building blocks for its reality.&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">Bipolar depression seems a little more strange; the extreme highs and lows may in aggregate produce crazier annealing patterns than just one or the other — essentially there’s a ‘tug of war’ between patterns annealed during each extreme, which prioritizes the survival of the class of patterns that exist during <em>both</em> extremely positive and extremely negative states. In practice, over time this anneals a mind’s stories toward the dramatic, and toward reducing the activation energy needed to flip the brain between major and minor keys (the psych literature calls this ‘kindling’). Each of these ‘key signature flips’ would itself release a great deal of pent-up energy, further driving the annealing process. As I note in <a href="https://opentheory.net/2018/08/a-future-for-neuroscience/">A Future for Neuroscience</a>:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">This is not to say our key signatures are completely static, however: an interesting thread to pull here may be that some brains seem to flip between a major key and a minor key, with these keys being local maximas of harmony. I suspect each is better at certain kinds of processing, and although parts of each can be compatible with the other, each has elements that present as defection to the internal logic of the other and so these attractors can be ‘sticky’. But there can also be a buildup of tension as one gathers information that is incompatible with one’s key signature, which gets progressively more difficult to maintain, and can lead to the sort of intensity of experience that drives an annealing-like process when the key signature flips. And in the case of repeated flips, the patterns which are compatible with both key signatures will be the most strongly reinforced.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">In some ways a bipolar brain may result in significant cognitive and creative advantages: perhaps the biggest is more access to high-energy states, which in the short term helps creativity by allowing more exploration and also steeper valence gradients to follow, and iterated over the long term allows significantly more optimization pressure on the subsystems that are repeatedly annealed. However this has corresponding epistemological downsides as noted above; fueling creative work with valence deltas is likely to ‘warp the engine’ over time, to paraphrase Shinzen. Friston’s notion that ‘systems maximizing long-term stability spend most of their time in a small number of states’ seems particularly relevant to mood disorders. (My colleague Andrés suggests this &#8216;bipolar effect profile&#8217; may be replicated by valence-enhancing drugs with a short duration and hangover, such as cocaine- this at least fits stereotypes.)</p>
+
+
+
+<p class="wp-block-paragraph">I find myself wondering if neuroticism can be thought of as ancient neural technology intended to <em>reduce annealing frequency</em> in the ancestral environment — essentially if we look into the brains of highly neurotic people, we might find strong energy sinks located around natural connectome harmonics which prevent semantically-neutral energy build-up. This likely contributes to certain forms of depression (and leads to pernicious feedback cycles — the less one anneals, the more neurotic one gets, the less able to reach high-energy states one becomes), but might also help prevent seizures or inappropriate updating/annealing, and may have frequency-dependent benefits. E.g., a group with 19 carefree annealers and 1 neurotic guardian will act more wisely than one with 20 carefree annealers or 20 neurotic guardians. The ‘neuroticism=energy sinks’ frame seems to suggest how to reduce neuroticism (anneal more often, especially semantically-neutral annealing), and also offer clues as to how neuroticism is implemented in the brain: we might look into the <a href="https://www.quantamagazine.org/mathematicians-tame-rogue-waves-lighting-up-future-of-leds-20170822/?fbclid=IwAR1wFHwPwELj8p18FhnZZ7P_YOCAk_Ro_Xb3oRSMd8IpU6o3195HD3neYUw">mathematics of Anderson localization</a> in the connectome: topological features that can &#8216;eat&#8217; waves.</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">Is sleep a natural annealing process?</span> If so, this could cleanly explain the connection between depression and chronic sleep disturbances — poor sleep as both a cause and effect of infrequent annealing. And it would indicate a treatment path: a restoration of normal annealing patterns may help improve both mood and sleep. I hold the following lightly, but we might model nREM as a &#8216;semantically-neutral&#8217; high-energy state (pumping power into harmonics to perform biological housekeeping tasks, perhaps breaking up brain plaques) and REM as &#8216;randomized annealing&#8217; as predictive models are switched back on, leading to both a semantic interpretation of this energy (dreaming) and the same sort of &#8216;neural search -&gt; annealing&#8217; consolidation and optimization process which happens after wakeful high-energy states. This would suggest that (1) nREM disruption might lead to primarily biological deficits, and REM disruption cognitive/emotional deficits, and that (2) if one anneals very regularly they may need somewhat less sleep, in particular REM.</p>
+
+
+
+<p class="wp-block-paragraph">From a review drawing parallels between sleep and jhana (intense meditative) states:&nbsp;</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">This paper is a preliminary report on the first detailed EEG study of jhana meditation, with findings radically different to studies of more familiar, less focused forms of meditation. While remaining highly alert and “present” in their subjective experience, a high proportion of subjects display “spindle” activity in their EEG, superficially similar to sleep spindles of stage 2 nREM sleep, while more-experienced subjects display high voltage slow-waves reminiscent, but significantly different, to the slow waves of deeper stage 4 nREM sleep, or even high-voltage delta coma. Some others show brief posterior spike-wave bursts, again similar, but with significant differences, to absence epilepsy. Some subjects also develop the ability to consciously evoke clonic seizure-like activity at will, under full control. (<a href="https://www.frontiersin.org/articles/10.3389/fnhum.2019.00178/full">Dennison 2019</a>)</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;"><strong>The ‘dead neuron’ model of neuroticism and depression:</strong><br></span></p>
+
+
+
+<p class="wp-block-paragraph">Deep learning models can exhibit ‘dead neurons’: neurons whose activation function gets ‘stuck’ on the on or off position, for instance when a sigmoid function gets too high or too low and its slope drops to almost zero. These ‘dead’ neurons can be nigh-impossible to ‘revive’ within the model, since it can be the case that their gradient (implicit sensitivity to input) is so shallow that there simply aren’t inputs that will nudge it in one or another direction.</p>
+
+
+
+<figure class="wp-block-image"><img decoding="async" src="https://lh5.googleusercontent.com/88xWEQqKFRfwHMpTm15tk0HygmdpbGKfYrid_-cSDFOs7orcth2E_n_q1RBaSGtTbIOJIlaWuAKE5JqgTaSla_1WAEiUuoe49UvvbrXL6ujaGO8_An26sJHOUP5FGQaxPsosucnb" alt=""/><figcaption class="wp-element-caption">Graphic: sigmoidal function. This loses sensitivity when values get too high or too low. Different activation functions can lose sensitivity (lead to ‘dead neurons’) under different scenarios- <a href="https://ml-cheatsheet.readthedocs.io/en/latest/activation_functions.html#relu">ReLU</a> is notorious for this.</figcaption></figure>
+
+
+
+<p class="wp-block-paragraph">These ‘dead’ neurons tend to cause lots of problems, since their “always-on” or “always off” signal tends to propagate through the network very strongly, causing later neurons in the chain to also exhibit less sensitivity to input. (Sometimes this process will cascade, sometimes not, much like malignant vs benign tumors.)&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">I suspect this might be a strong frame for understanding the ‘psychological cruft’ which builds up in brains, and how and why regular annealing is so healthy: over time, sensitive neurons can slide into this broken state, shifting from conditional values to the neurological equivalent of static 0s and 1s. In this case I would expect more neuroticism, less flexible thinking, lower emotional resilience, and worse epistemology from people who haven’t annealed recently: lots of all-or-nothing thinking. But by injecting lots of energy into the system, enough of the internal and external context of these neurons is shifted such that some of them may get ‘reset’ and regain their conditional processing state. At the very least, this self-reorganization process can allow these neurons to move to less-critical points in processing networks.&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">An idea related to this frame is that a core function of neural annealing is to maintain a smooth gradient of harmony in the brain (and mind) – to make it possible to “follow your joy” toward better outcomes. If this breaks down and you can’t “follow your joy”, consider putting yourself in a situation which could plausibly kickstart an annealing process (even if you don’t feel emotionally motivated to do so).&nbsp;</p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">IV. The nature of trauma and the implementation of the Bayesian Brain</span></strong></p>
+
+
+
+<p class="wp-block-paragraph">Trauma is one of the worst elements of the human condition. It’s easy enough to accumulate that we all have some, and it’s hard to get rid of. But <em>what is it?</em></p>
+
+
+
+<p class="wp-block-paragraph">Scott Alexander recently reviewed a core work in the PTSD literature, <a href="https://slatestarcodex.com/2019/11/12/book-review-the-body-keeps-the-score/"><em>The Body Keeps The Score</em></a>, and offers some context:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">The book stressed the variety of responses to PTSD. Some people get anxious. Some people get angry. But a lot of people, whatever their other symptoms, also go completely numb. They are probably still “having” “emotions” “under” “the” “surface”, but they have no perception of them. Sometimes this mental deficit is accompanied by equally surprising bodily deficits. Van der Kolk describes a study on stereoagnosia in PTSD patients: if blindfolded and given a small object (like a key), they are unable to recognize it by feel, even though this task is easy for healthy people. Sometimes this gets even more extreme, like the case of a massage therapy patient who did not realize they were being massaged until the therapist verbally acknowledged she had started.</p>
+
+
+
+<p class="wp-block-paragraph">The book is called <em>The Body Keeps The Score</em>, and it returns again and again to the idea of PTSD patients as disconnected from their bodies. The body sends a rich flow of information to the brain, which is part of what we mean when we say we “feel alive” or “feel like I’m in my body”. In PTSD, this flow gets interrupted. People feel “like nothing”. …</p>
+
+
+
+<p class="wp-block-paragraph">There’s some discussion of the neurobiology of all this, but it never really connects with the vividness of the anecdotes. A lot of stuff about how trauma causes the lizard brain to inappropriately activate in ways the rational brain can’t control, how your “smoke detector” can be set to overdrive, all backed up with the proper set of big words like “dorsolateral prefrontal cortex” – but none of it seemed to reach the point where I felt like I was making progress to a gears-level explanation. I felt like the level on which I wanted an explanation of PTSD, and the level at which van der Kolk was explaining PTSD, never really connected; I can’t put it any better than that. …</p>
+
+
+
+<p class="wp-block-paragraph">There are a <em>lot</em> of alternative treatments for PTSD. Neurofeedback, where you attach yourself to a machine that reads your brain waves and try to explore the effect your thoughts have on brain wave production until you are consciously able to manipulate your neural states. Internal family systems, where a therapist guides you through discovering “parts” of yourself (think a weak version of multiple personalities), and you talk to them, and figure out what they want, and make bargains with them where they get what they want and so stop causing mental illness. Eye movement directed reprocessing (alternative when the book was written, now basically establishment) where you move your eyes back and forth while talking about your trauma, and this seems to somehow help you process it better. Acupuncture. Massage. Yoga. …</p>
+
+
+
+<p class="wp-block-paragraph">Maybe the most consistent lesson from this book’s tour of successful alternative therapies – keeping with the theme of the title – is that it’s important for PTSD patients to get back in touch with their bodies. Massage therapy, yoga, and acupuncture addressed this directly, usually creating gentle, comfortable sensations that patients could take note of to gradually relax the absolute firewall between bodily sensation and conscious processing.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">The simple Neural Annealing take on trauma is that significant negative events can push the brain into a high-energy state filled with ‘trauma patterns’, and as the brain cools, some of these trauma patterns crystallize/anneal in a very durable form, which present as PTSD.</p>
+
+
+
+<p class="wp-block-paragraph">I think this is a <em>more useful</em> answer than what’s out there currently, offering straightforward intuitive answers for (1) what kinds of things are most likely to cause PTSD, (2) why PTSD is so ‘sticky’, and (3) an intuitive solution to PTSD: anneal over the bad patterns with better patterns.</p>
+
+
+
+<p class="wp-block-paragraph">But Scott’s description seems to point at something further: that there’s a disconnection happening with trauma. To address this, I propose the Neural Annealing model for how CSHW could <em>implement</em> the Bayesian Brain model of cognition. We’ll then circle back and discuss what might be going wrong during trauma.</p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph">Last year in <a href="https://opentheory.net/2018/08/a-future-for-neuroscience/#">A Future for Neuroscience</a>, I shared the frame that we could split CSHWs into high-frequency and low-frequency types, and perhaps say something about how they might serve different purposes in the Bayesian brain:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph"><strong>The mathematics of signal propagation and the nature of emotions</strong></p>
+
+
+
+<p class="wp-block-paragraph">High frequency harmonics will tend to stop at the boundaries of brain regions, and thus will be used more for fine-grained and very local information processing; low frequency harmonics will tend to travel longer distances, much as low frequency sounds travel better through walls. This paints a possible, and I think useful, picture of <em>what emotions fundamentally are</em>: semi-discrete conditional bundles of low(ish) frequency brain harmonics that essentially act as Bayesian priors for our limbic system. Change the harmonics, change the priors and thus the behavior. Panksepp’s seven core drives (play, panic/grief, fear, rage, seeking, lust, care) might be a decent first-pass approximation for the attractors in this system.&nbsp;</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">I would now add this roughly implies a <em>continuum</em> of CSHWs, with scale-free functional roles:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Region-specific harmonic waves (<strong>RSHWs</strong>) <em>–</em> high frequency resonances that implement the processing of cognitive particulars, and are localized to a specific brain region (much like how high-frequencies don’t travel through walls) <em>–</em> in theory quantifiable through simply applying Atasoy’s CSHW method to individual brain regions;</li>
+
+
+
+<li>Connectome-specific harmonic waves (<strong>CSHWs</strong>) <em>–</em> low-frequency connectome-wide resonances that act as Bayesian priors, carrying relatively simple ‘emotional-type’ information across the brain (I note Friston makes a similar connection in <a href="https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3000426">Waves of Prediction</a>);</li>
+
+
+
+<li>Sensorium-specific harmonic waves (<strong>SSHWs</strong>) <em>–</em> very-low-frequency waves that span not just the connectome, but the larger nervous system and parts of the body. These encode <em>somatic</em> information – in theory, we could infer sensorium eigenmodes by applying Atasoy’s method to not only the connectome, but the nervous system, adjusting for variable nerve-lengths, and validate against something like <a href="https://digest.bps.org.uk/2018/10/08/a-cartography-of-consciousness-researchers-map-where-subjective-feelings-are-located-in-the-body/">body-emotion maps</a>.[2][3]</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">These waves shade into each other – a ‘low-frequency thought’ shades into a ‘high-frequency emotion’, a ‘low-frequency emotion’ shades into somatic information. As we go further up in frequencies, these waves become more localized.</p>
+
+
+
+<p class="wp-block-paragraph">An interesting implication here is <em>we may essentially get Bayesian updating to naturally emerge from this typology</em>, through interactions between these various waves: essentially, I think it’s ‘injection-locking all the way down’. (<a href="https://en.wikipedia.org/wiki/Injection_locking">Injection-locking</a> is when harmonic oscillators (like CSHWs) essentially ‘sync up’ their periods and phases.) Specifically:</p>
+
+
+
+<p class="wp-block-paragraph">Low-frequency CSHWs carry priors, higher frequency RSHWs deal with particulars. Lower frequencies span the brain; higher frequencies resonate within more local regions of the brain — the higher the frequency of the wave, the smaller the region it tends to resonate in. The RSHWs in different regions can’t talk to each other directly, since (definitionally) these waves can’t travel across regional boundaries. But they <em>can</em> talk to each other indirectly, through interacting with low-frequency CSHWs. More specifically, I speculate that regions and CSHW-encoded priors interact through a <strong>power-weighted averaging between CSHWs and RSHWs</strong>, as mediated by the math of <a href="https://en.wikipedia.org/wiki/Injection_locking">injection-locking and injection-pulling</a>. This <strong>allows both functional partitioning and also global updating: </strong>regions get some isolation in order to perform their specialized computations, but they also get exposure to data about the overall Bayesian prior situation, aka what we call ‘emotional information’. I.e. Region A syncs up with CSHWs, which carry the information to Region B and sync up with the RSHWs there, and so on. Of note, there’s a delicate, power-weighted handshake between CSHWs and RSHWs: low-frequency harmonics (emotions / Bayesian priors) carry more power per harmonic (lower due to frequency, much higher due to amplitude) but there are many more high-frequency harmonics (sensory+cognitive particulars). Strong emotions like anger likely pump huge amounts of energy into CSHWs and upend this balance, forcing RSHWs to synchronize with CSHWs. We can think of this as sacrificing the delicate epistemology-harmonization handshake in favor of unity of processing and clarity of action — or put simply, forcing perception to match top-down expectations.</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">On entropic disintegration, search, and annealing in evolved harmonic systems:</span></p>
+
+
+
+<p class="wp-block-paragraph">The noisy, stochastic nature of brain activity, along with practical requirements for homeostasis, will lead to a strong optimization of the CSHW+RSHW configuration for local minima which are resistant to change. However, a large enough perturbation will push the system out of this basin (<strong>entropic disintegration</strong> step). The <strong>neural search</strong> step is essentially the system stochastically testing different harmonic configurations; the <strong>neural annealing</strong> step is the system ‘settling into’ a configuration as its top-down predictive models get sufficiently good at sopping up the excess energy in the system, essentially forming a new basin it will again take a large amount of perturbation to get out of. The strength of annealing can be thought of as the steepness of this basin, and also the <a href="https://en.wikipedia.org/wiki/Hebbian_theory">Hebbian reinforcement</a> of system attractors (“neurons that fire together, wire together”). Insofar as partitioning is possible in a broadly-coupled harmonic system, these perturbations will tend to be ‘local’ as the brain has strong incentives to preserve structure that doesn’t need updating.&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">Toward a generalized definition of trauma: a breakdown of information-propagation-via-injection-locking</span></p>
+
+
+
+<p class="wp-block-paragraph">I propose that sometimes the brain needs to rapidly halt information propagation across regions to prevent cascading system failure (a metaphor that comes to mind is an uncontrolled <a href="https://en.wikipedia.org/wiki/Prion">prion</a>-like change in the local key signature that ripples out from a traumatized region, progressively breaking <a href="https://slatestarcodex.com/2017/03/06/book-review-behavior-the-control-of-perception/">cybernetic</a> calibrations). I believe the brain uses two interlinked mechanisms to do this: (1) weakening CSHWs, thus weakening information propagation throughout the brain, and (2) arranging different brain regions into frequency regimes which make information transfer difficult between them (the <a href="https://www.ncbi.nlm.nih.gov/pubmed/20350536">golden mean</a> is the mathematically-optimal ratio for non-interaction). Once this happens, it can be very hard to reverse, since it forms a self-sustaining cycle: (1) causes (2) and (2) causes (1). <em><span style="text-decoration: underline;">We call this ‘trauma’.</span></em></p>
+
+
+
+<p class="wp-block-paragraph">Some predictions from this <em>–</em> I’d expect to see substantially less energy in low-frequency CSHWs after trauma, and substantially more energy in low-frequency CSHWs during both therapeutic psychedelic use (e.g. MDMA therapy) and during psychological integration work. Stretching a little, perhaps we could also apply Atasoy&#8217;s CSHW algorithm to <em>individual</em> brain regions and compare their spectrums (and those of CSHWs), to quantify the expected frequency-coupling between each region.[4] Possibly these two measures could be developed into a <em>causal quantitative metric for trauma</em>.</p>
+
+
+
+<p class="wp-block-paragraph">This generalized ‘breakdown of communication’ definition of trauma neatly fits with the story Scott tells about PTSD, where people&nbsp;</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">[A]re probably still “having” “emotions” “under” “the” “surface”, but they have no perception of them … PTSD patients as disconnected from their bodies. The body sends a rich flow of information to the brain, which is part of what we mean when we say we “feel alive” or “feel like I’m in my body”. In PTSD, this flow gets interrupted. People feel “like nothing”.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">It also fits with the therapies that seem to work: <a href="https://en.wikipedia.org/wiki/Eye_movement_desensitization_and_reprocessing">EMDR</a>, neurofeedback, Internal Family Systems (IFS), yoga, massage — the consistent thread that connects these is they all plausibly help restart and strengthen communication within the brain (which I hold is strongly mediated by CSHWs). Scott doesn’t mention music, but I’d expect it to be <em>surprisingly</em> effective at boosting emotional integration — and I’d expect the <em>most effective</em> music will have strong low-frequency rhythms.</p>
+
+
+
+<p class="wp-block-paragraph">This shades into novel types of therapeutic approaches: perhaps we could simply pump energy into lower-frequency bands (perhaps harmonic stimulation centered at ~3-6hz) to kickstart emotional integration.[5]</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">Sidenote on music:</span> The simple description I gave of music was&nbsp;</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">[A] sensory input which seems to exist on the knife’s edge between exhibiting highly ordered patterns (some of which will hit natural connectome harmonics and so allow accumulation of energy through resonance) on one hand, and on the other hand not being <em>too</em> predictable (thus dodging most inhibitory top-down predictive models).</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">Armed with the CSHW/RSHW distinction, we can give this a second pass. In short, I expect the above story to be true, but in a fractal way: music will be hitting both CSHWs and RSHWs. Naturally, different regions will have different sets of harmonics, which means simple tones are unlikely to produce much cross-regional resonance. Instead, the music which is the most effective at increasing the brain’s energy parameter will tie together and layer a diverse set of motifs, with two goals: (1) hitting as many connectome-specific *and* region-specific resonances as possible, and (2) entraining disparate regions and pulling them into sync <em>–</em> essentially using injection-locking to pull RKSs (Regional Key Signatures) into sync with each other and the CKS (Connectome Key Signature).</p>
+
+
+
+<p class="wp-block-paragraph">Could we quantify what the ‘perfect song’ would be, for a given connectome? Not exactly, since so much of music’s effects rely on getting through the brain’s predictive processing gauntlet and the state of this gauntlet isn’t well-captured by a static connectome, but we could possibly use this framework to design (potentially <em>much</em>) more evocative songs.</p>
+
+
+
+<p class="wp-block-paragraph">It’s also worth noting that better music <em>–</em> and <em>better ways to listen to music</em> <em>–</em> shade quickly into potential therapies for trauma under this model.&nbsp;</p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">V. On psychedelics:</span></strong></p>
+
+
+
+<p class="wp-block-paragraph">As noted above, Neural Annealing suggests a very simple model for understanding the effects of psychedelics: as substances which “may function by disabling existing energy sinks (or perhaps overloading them by increasing baseline firing rates or increasing the branching factor of neural activity),” dramatically increasing semantically-neutral energy. Psychedelics share a ‘characteristic feeling’ (and characteristic emotional aftereffects) with each other and with activities such as meditation, listening to music, EMDR, breath work, and so on, <em>because</em> all of these things increase the energy parameter of the brain. Psychedelics are particularly interesting because they do this so powerfully, effortlessly, and noisily (with the effects bleeding over into sensory modalities, not just accumulating in harmonics).</p>
+
+
+
+<p class="wp-block-paragraph">A full Neural Annealing model of psychedelics will have to wait a few more months as internal QRI discussion settles on a unified story. But a few preliminary notes:</p>
+
+
+
+<p class="wp-block-paragraph">First, we could define ‘psychedelics’ in a principled way, as <em>any substance, pattern, or process that produces semantically-neutral energy accumulation </em>– anything that disables, overloads, or avoids the brain’s energy normalization system. The implication here is interesting, that anything that adds semantically neutral energy into the brain should produce psychedelic effects, regardless of how this is done. E.g., even things like <em>modern art</em> may be classifiable as a psychedelic, insofar as it generates semantically-neutral energy (see <a href="https://qualiacomputing.com/2019/09/30/harmonic-society-3-4-art-as-state-space-exploration-and-energy-parameter-modulation/">Gomez Emilsson 2019</a>). But we should also note that current psychedelics are not necessarily perfect sources of ‘clean semantically-neutral energy’; they’re substances that happen to massively increase the energy parameter of the brain, with no guarantees about how ‘balanced’ this boost is. There may be better and more targeted methods to do this in the future. In the meantime, I would recommend modest caution with substances which involve a hangover after use, as negative valence or affective blunting during a critical window could ‘sour’ the annealing process with subtle long-term mood effects.[6]</p>
+
+
+
+<p class="wp-block-paragraph">As mentioned above, I’ve been thinking more and more that the core psychological changes driven by psychedelics are best understood in terms of the amount and &#8216;statistical flavor&#8217; of the semantically-neutral energy they add to the system. Or, as an alternate framing, psychedelics may be best understood as temporary disrupters of the brain’s natural energy sinks, each with a specific target or ‘flavor’ of disruption (or psychedelics may add to neural activity’s ‘branching factor’, which in turn will add a specific flavor to the energy). I also find myself wondering, all else being equal, whether psychedelic visuals actually are <em>inversely correlated</em> with annealing effects, since by diverting energy into the visual system (which plausibly has very effective energy sinks), there is less energy available to drive entropic disintegration.[7]</p>
+
+
+
+<p class="wp-block-paragraph">As I noted in <a href="https://opentheory.net/2018/08/a-future-for-neuroscience/#">A Future for Neuroscience</a>, another starting point for sorting through psychoactive drugs would be&nbsp;</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">[T]o parametrize the effects (and ‘phenomenological texture’) of all psychoactive drugs in terms of their effects on the consonance, dissonance, and noise of a brain, both in overall terms and within different frequency bands (<a href="https://qualiacomputing.com/2017/06/18/quantifying-bliss-talk-summary/">Gomez Emilsson 2017</a>).</p>
+
+
+
+<p class="wp-block-paragraph">In the long term, we’ll want to move upstream and predict <em>connectome-specific</em> effects of drugs <em>–</em> treating psychoactive substances as operators on neuroacoustic properties, which produce region-by-region changes in how waves propagate in the brain (and thus different people will respond differently to a drug, because these sorts of changes will generate different types of results across different connectomes). Essentially, this would involve evaluating how various drugs change the <em>internal parameters </em>of the CSHW model, instead of just the outputs. Moving upstream like this might be necessary to predict why e.g. some people respond well to a given SSRI, while others don’t (nobody has a clue how this works right now).</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">Possibly this would allow us to generate a principled typology of psychoactives, and also check for missing quadrants: psychoactives and psychedelics we haven’t discovered or created yet. (See also Andrés’s notion of parametrizing the ‘<a href="https://www.youtube.com/watch?v=loCBvaj4eSg&amp;feature=youtu.be&amp;t=2069">information vs energy trajectory</a>’ of a trip.) We can also think of anti-psychotic drugs as <em>anti-psychedelics</em>: substances that <em>rapidly decrease the energy parameter of the brain</em> (<a href="https://qualiacomputing.com/2019/09/30/harmonic-society-3-4-art-as-state-space-exploration-and-energy-parameter-modulation/">Gomez Emilsson 2019</a>). This arguably makes anti-psychotics more dangerous than commonly realized: the neural search process is complex and delicate, and an externally-forced, uneven rapid cooling process may warp the internal landscape of the brain in subtle but deleterious ways.  In theory, we could test this indirectly by evaluating the effects of anti-psychotics on sensory integration tasks in healthy controls – but as noted above, this may be an unethical experiment.</p>
+
+
+
+<p class="wp-block-paragraph">Another frame would be ‘psychedelics as full-spectrum resonance agents&#8217; <em>–</em> CSHWs are meant to substantially resonate during normal human operation (falling in love, orgasm, etc) <em>–</em> RSHWs are not. The perceptual and epistemological changes we sometimes see during psychedelics could be due to the fine logical machinery that usually deals with high-context sensory particulars (facts and logical inferences) starting to malfunction as its natural eigenmodes are activated. Like linking and rhythmically flipping all the bits in a memory register, ignoring what that register is &#8220;supposed to&#8221; compute. If psychedelic visuals are an example of RSHW resonance, <a href="https://www.medicalnewstoday.com/articles/320181.php">HPPD</a> may be an example of this RSHW resonance annealing into durable patterns.&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">On MDMA’s strangely powerful therapeutic effects</span>, I’d suggest MDMA shares the ‘<a href="https://www.frontiersin.org/articles/10.3389/fnint.2018.00054/full">basic psychedelic package</a>’ with substances like LSD and psilocybin (albeit a little weaker at common doses). Anything with this ‘baseline’ package significantly increases the energy parameter of the brain, which both allows escape from bad local minima and canalizes the brain’s core CSHWs, which both should be highly therapeutic. My intuition is MDMA <em>may also</em> have a particular effect on stochastic firing frequencies of neurons, and that this effect essentially acts as an emergent metronome – and this metronome will drive synchronicity between diverse brain regions. Given the presence of such a region-spanning ‘clean’ metronomic signal, brain regions that have partially ‘stopped talking to each other’ will re-establish integration, and some of this integration will persist while sober (or rather, some of the reasons for the lack of integration will have been negotiated away during the MDMA-driven integration). Plausibly this ‘emergent metronome’ effect may also underlie the particular phenomenological effects of 5-MeO-DMT as well, particularly in terms of sense of unity, high valence, and therapeutic potential.[8]&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">Somewhat poetic sidenote: on taking psychedelics:</span></p>
+
+
+
+<p class="wp-block-paragraph">In the abstract <em>–</em> I think psychedelics are more powerful, more dangerous, and more healing than commonly assumed.</p>
+
+
+
+<p class="wp-block-paragraph">But we don’t live in the abstract. The natural question for any given person is thus: <em>should I take them?</em></p>
+
+
+
+<p class="wp-block-paragraph">There’s no one-size-fits-all answer, and I recommend checking with local laws. But I can share a simple heuristic for who shouldn’t worry too much about the downsides of psychedelics and who should be very careful: <span style="text-decoration: underline;">do you trust your own aesthetic?</span></p>
+
+
+
+<p class="wp-block-paragraph">Psychedelics massively increase the ‘energy parameter&#8217; of the brain, so naturally there&#8217;s a large amount of very-high-dimensional exploration going on. There are countless &#8216;micro-choices&#8217; your brain makes as to how to anneal after this exploration: we can think of a person&#8217;s &#8216;aesthetic&#8217; as individual variance in these annealing choices. What the self-organizing system which is the brain&#8217;s subconscious finds beautiful in the moment and implicitly strives to save.</p>
+
+
+
+<p class="wp-block-paragraph">Sometimes, and in some people, we want the right things, we find the right things beautiful. Things that have a deep elegance and fit with everything about us and fit with how reality works. We just need enough energy parameter to get there. Psychedelics are a great way to get there.</p>
+
+
+
+<p class="wp-block-paragraph">Other times, we might not want the right things. Evolution is kind of a jerk, epistemologically speaking: it cares much more about genetic reproduction than it does about deep coherence and calibration with reality and such. Sometimes we&#8217;re at a functional local maxima, but we&#8217;re not pointed in the right direction globally, and frankly speaking our lack of a high energy parameter is our saving grace – our inability to directly muck up our emotional landscape. Insofar as this is true – and it will be more true at certain times than others, and in certain people than others, and perhaps in certain combinations of people than others – using psychedelics to crank the energy parameter is not good for a person. Our &#8216;Psychedelic Extrapolated Volition&#8217; (PEV) is not a healthy vector.[9]</p>
+
+
+
+<p class="wp-block-paragraph">The natural follow-up is, how do you know whether your PEV is positive or not?&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">Hard question, but probably good to ask your friends – group epistemology seems healthy in these cases. And in general it seems strongly preferable to err on the side of caution. You can always take that LSD tomorrow, or next week, or next year.</p>
+
+
+
+<p class="wp-block-paragraph">(But, don’t be too paranoid about one trip permanently breaking your brain, either. My guess is the annealing that tends to ‘stick’ is that which actually finds better local minima (thankfully) – if it’s an unsuccessful exploration I suspect the system can usually climb back to where it was (with some caveats).)</p>
+
+
+
+<p class="wp-block-paragraph">A separate factor is your current energy parameter and how psychedelics may increase this baseline: if you’re dragging on the bottom of your energetic attractor basins, maybe a little kick could be healthy. But if you’re already ‘high on life’ –&nbsp; consider skipping the LSD and MDMA. <span style="text-decoration: underline;">Increasing a high baseline can redline the system into exquisitely unbearable intensity.</span></p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">VI. Love and other types of Neural Annealing</span></strong></p>
+
+
+
+<p class="wp-block-paragraph">It’s important to note that most annealing doesn’t happen in a vacuum: just as “set and setting” matter quite a lot for psychedelics, and for emotional updating in general, the importance of <em>context</em> in the annealing model is hard to overstate. Much as holding a magnet close to iron as it cools can magnetize the metal, <span style="text-decoration: underline;">the intentional content present when entropic disintegration-&gt;annealing happens provides important constraints for which new patterns form</span>. I propose there are four general types of neural annealing:</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">A. Annealing to an object or event</span>. Annealing which is ‘pointed at’ something is by far the most common type. Some object, or event, or new insight makes itself known in a surprising or otherwise intensely salient way, and this pushes the brain into a high-energy state, kickstarting a self-organization process for accommodating the presence and significance of this new thing. This can involve intense positive emotion — a new romantic partner, the birth of your child, your wedding day. This sort of annealing can also be caused by trauma— getting bitten by a weird animal, social rejection, losing a close one. As I suggested in <a href="https://opentheory.net/2018/12/the-neuroscience-of-meditation/">The Neuroscience of Meditation</a>, neural annealing may offer a rather pithy description of love:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">Finally, to speculate a little about one of the deep mysteries of life, perhaps we can describe <strong><em>love</em></strong> as the result of a strong annealing process while under the influence of some pattern. I.e., evolution has primed us such that certain intentional objects (e.g. romantic partners) can trigger high-energy states where the brain smooths out its discontinuities/dissonances, such that <em>given the presence of that pattern</em> our brains are in harmony. This is obviously a two-edged sword: on one hand it heals and renews our ‘cold-worked’ brain circuits and unifies our minds, but also makes us <em>dependent</em>: the felt-sense of this intentional object becomes the key which unlocks this state. (I believe we can also anneal to <em>archetypes</em> instead of specific people.)</p>
+
+
+
+<p class="wp-block-paragraph">Annealing can produce durable patterns, but isn’t permanent; over time, discontinuities creep back in as the system gets ‘cold-worked’. To stay in love over the long-term, a couple will need to re-anneal in the felt-presence of each other on a regular basis. From my experience, some people have a natural psychological drive toward reflexive stability here: they see their partner as the source of goodness in their lives, so naturally they work hard to keep their mind aligned on valuing them. (It’s circular, but it works.) Whereas others are more self-reliant, exploratory, and restless, less prone toward these self-stable loops or annealing around external intentional objects in general. Whether or not, and within which precise contexts, someone’s annealing habits fall into this ‘reflexive stability attractor’ might explain much about e.g. attachment style, hedonic strategy, and aesthetic trajectory.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">Perhaps we can go further now, and hypothesize that ‘falling in love’ is a specific algorithm the brain runs, which is triggered by when the ‘felt sense’ of another person (a pattern distributed across RSHWs, CSHWs, and SSHWs) produces substantial systemic resonance. When this happens, and in the absence of warning signs (dissonance), a person will actively seek to fill their sensorium with this signal, which amplifies the systemic resonance (potentially to extreme levels) and further synchronizes priors and other regions into harmony with the original pattern. <em>As you fall in love, you literally anneal to your felt-sense of that person – you take their rhythm as yours, because your body judged it to be so</em>. A key which fit your connectome’s lock. This will naturally do two things: (1) fuzz boundaries between lovers, as patterns progressively synchronize, and (2) add a harmonic echo, or ‘warm consonant glow’ to all thoughts about the person. This latter phenomenon will feel nice, but also keep itself stable: the presence of this bundle of synchronized frequencies will stabilize (via injection-locking) many forms of drift – effectively preventing certain thoughts/perceptions. This may fade over time if not refreshed, but perhaps to completely ‘fall out of love’ the brain has to build a competing key signature elsewhere, e.g. in a golden mean ratio to this harmonic echo, and these rivalrous key signatures (implicitly Bayesian priors about what is real and what is good) battle it out. (Thanks to Andrés for discussion on competing key signatures.) This ‘de-annealing’ process <em>– </em>literally erasing someone’s patterns and rhythms from your body <em>– </em>can follow several trajectories, few of them pleasant, as the system renegotiates new (or old) equilibria.</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">B. Annealing to an ontology</span>. A much more general type of annealing is when the entropic disintegration-&gt;annealing process is pointed toward an <em>ontology</em>, and the brain reorganizes its internal structure (‘ontological contours’) to accommodate this new typology. This can happen implicitly and weakly, over the course of entropic disintegration-&gt;annealing to multiple separate ideas, or explicitly and strongly, for instance reading some book in college which completely reshapes one’s view of reality.</p>
+
+
+
+<p class="wp-block-paragraph">Any craftsman, any intellectual, any philosopher worth their salt is strongly annealed toward at least one nuanced ontology, and in fact much of the influence of the Great Philosophers can be found in how they’ve laid out their thoughts in a way that others can use as a <em>coherent annealing target</em>. What makes something a good annealing target? I’d offer it’s the presence of clear archetypes arranged in both a novel but ultimately cognitively efficient way. These archetypes can be thought of as a combination of nature (innate Jungian-type limbic resonances) and nurture (prior annealed patterns &amp; cultural reifications).</p>
+
+
+
+<p class="wp-block-paragraph">An important point here is that peoples’ conception of <em>where goodness comes from</em> is dependent upon their ontology; change the ontology, change the perceived nature of goodness itself! See e.g. <a href="https://qualiacomputing.com/2016/06/02/psychedelic-alignment-cascades/">John Lily’s discussion of the supra-self-metaprogrammer (SSMP)</a>. This frame-shift can also manifest at the extreme end of falling in love, where all the world’s goodness seems to come from your special person (a dangerous thing).</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">C. Social annealing</span>. A special hybrid of annealing to an ontology and to other people is <strong>social annealing</strong>, wherein a <em>group of people</em> undergoes the <em>‘entropic disintegration -&gt; neural search -&gt; annealing’</em> process together, within some shared context- a religious service, a sporting event, a retreat. This seems like the natural mechanism by which tribes are formed (loosely speaking, group synchronization of connectome-specific harmonic wave dynamics) and underlies many of our most sacred experiences. The power of social annealing is such that a religious experience that lacks it no longer feels like a religious experience- merely the mouthing of dogma. On the other hand, any group experience that <em>does</em> increase the group’s energy parameter and trigger annealing starts to take on a pseudo-religious frame- e.g. ecstatic dance, <a href="https://qualiacomputing.com/2019/07/30/ephemerisle-health-homeostasis-worldview-annealing-and-the-long-tails-of-serious-fun/">festivals</a>, protest marches, even concerts.&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">D. Semantically-neutral annealing</span>. Almost all neural annealing is <em>semantic annealing</em>, or <em>annealing toward some intentional object</em>. This process is pointed <em>at</em> something, often the thing that caused the entropic disintegration process in the first place, be it a person, an event, an idea, an ontology. But there’s nothing in the laws of neuroscience that implies annealing <em>has to</em> have an intentional object as a focus. As per Section II, I believe this is a particularly healthy form of annealing.</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">Toward a new psychology &amp; sociology?</span></p>
+
+
+
+<p class="wp-block-paragraph">Speculatively, we may be able to re-derive much of psychology and sociology from just the energy-parameter view of the brain: e.g.,</p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://www.pnas.org/content/114/30/7892">Gopnik 2017</a> suggests that different developmental windows may involve different implicit ‘heat parameters’ for simulated annealing, with young people having higher parameters. Speculatively, this may correspond to different ‘lived intensity of experience’ at different ages- young brains (and lifelong learners) might not only be <em>more</em> <em>plastic</em> than average, but actually having experience that is objectively <em>more visceral</em>. One way to frame this is that <em>being young is like microdosing on LSD all the time.</em> This could have interesting implications for ethics.</p>
+
+
+
+<p class="wp-block-paragraph">Most likely, there’s been significant recent sexual selection for a higher energy parameter, for several reasons:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Selecting for<a href="https://en.wikipedia.org/wiki/Neoteny_in_humans"> neoteny</a> plausibly also implicitly selects for an energy parameter that starts higher and/or decays less with age;</li>
+
+
+
+<li>A high energy parameter would be a good proxy for cognitive-emotional-behavioral dynamicism, perhaps the most strongly sexually-selected-for trait;</li>
+
+
+
+<li>A high energy parameter would be an honest signal of not being in a bad ‘iterated aesthetics’ attractor (otherwise they would have self-destructed previously).</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Psychology has various personality metrics, with the most widely used being the <a href="https://en.wikipedia.org/wiki/Big_Five_personality_traits">Big 5</a>, also known as OCEAN (Openness, Conscientiousness, Extroversion, Agreeableness, Neuroticism). One of the most interesting subfindings here is that we can still get reasonable predictive utility if we collapse these into a one-variable model: the <a href="https://www.sciencedirect.com/science/article/abs/pii/S0092656607000256">‘Big One’ personality factor</a>. Scoring high in this factor is ”associated with social desirability, emotionality, motivation, well-being, satisfaction with life, and self-esteem.” Scoring low is associated with depression, frailty, lack of emotionality, and so on. I wouldn’t be surprised if the ‘Big One’ simply tracks how frequently and deeply someone anneals.</p>
+
+
+
+<p class="wp-block-paragraph">Continuing the thread on Social Annealing, I think we can push into sociology with the Neural Annealing model too; <strong>to understand a society, we need to understand how and when annealing happens in that society</strong>. To gauge the wisdom of a society, look at how its decision-makers anneal; to gauge the cultural direction of a society, look at how its young people anneal. To understand the strongest social bonds of a society, look at the contexts in which group annealing happens.</p>
+
+
+
+<p class="wp-block-paragraph">This also suggests why drugs like alcohol and certain psychedelics are ritualistically celebrated in so many cultures: they allow social-annealing-on-demand, a key technology in building and maintaining social cohesion and coordination.</p>
+
+
+
+<p class="wp-block-paragraph">Likewise, we could envision a field of ‘<span style="text-decoration: underline;">social archeology</span>’ evaluating annealing patterns in the past: how often did peasants and nobles in the Middle Ages anneal? In what contexts did the annealing happen, and which institutions controlled them? Perhaps most political conflicts could be reinterpreted as conflicts over annealing.[10] And so on. My colleague Andrés has suggested that a good rule of thumb for identifying annealing (and making good movies) is that intuitively, annealing defines where you should actually point the camera if you were making a movie of a historical period, since where annealing is happening is where changes that &#8216;matter&#8217; are taking place: cognitive updates, decisions about how to feel, and so on.</p>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">On the effect of profession on emotional vibrancy</span>: It would be somewhat surprising if certain repeated computational tasks didn’t tend to push regions’ key signatures into being highly coupled (=intense emotions), whereas other classes of tasks push regions’ key signatures into fairly orthogonal configurations (=‘white noise’ as emotional state). A lifetime of dance or poetry might literally make you feel emotions more strongly; a lifetime of doing accounting might literally produce a segmented brain and affective blunting. From Darwin&#8217;s autobiography:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">I have said that in one respect my mind has changed during the last twenty or thirty years. Up to the age of thirty, or beyond it, poetry of many kinds, such as the works of Milton, Gray, Byron, Wordsworth, Coleridge, and Shelley, gave me great pleasure, and even as a schoolboy I took intense delight in Shakespeare, especially in the historical plays. I have also said that formerly pictures gave me considerable, and music very great delight. But now for many years I cannot endure to read a line of poetry: I have tried lately to read Shakespeare, and found it so intolerably dull that it nauseated me. I have also almost lost my taste for pictures or music. … I retain some taste for fine scenery, but it does not cause me the exquisite delight which it formerly did. …</p>
+
+
+
+<p class="wp-block-paragraph">This curious and lamentable loss of the higher aesthetic tastes is all the odder, as books on history, biographies, and travels (independently of any scientific facts which they may contain), and essays on all sorts of subjects interest me as much as ever they did. My mind seems to have become a kind of machine for grinding general laws out of large collections of facts, but why this should have caused the atrophy of that part of the brain alone, on which the higher tastes depend, I cannot conceive.&nbsp;</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">Reading this account, I find it plausible that Darwin repeatedly pushed (and annealed) his mind toward RSHW-driven &#8216;clockwork piecemeal integration’ interactions rather than CSHW/SSHW-driven global symmetry gradients, although Darwin’s age, sickness, and depression may have also contributed. A warning sign for us theorists and systematizers.</p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">Conclusion:</span></strong></p>
+
+
+
+<p class="wp-block-paragraph">Neural Annealing is a neuroscience paradigm which aims to find the optimal tradeoff between elegance and detail. It does this by identifying a level of abstraction which supports parallel description under three core principles of self-organization: physical self-organization (around connectome resonances), computational self-organization (around minimization of surprise), and energetic self-organization (around conditional entropic disintegration).</p>
+
+
+
+<p class="wp-block-paragraph">There is yet much work to be done: in particular, there are huge bodies of literature around receptor affinities, network topologies, regional anatomies and cell types, and so on. The promise of Neural Annealing is it’s not only a predictive and generative theory in its own right, but it provides a level of description by which to connect these disparate maps, and an extensible context to build on as we add more and more detail to the model.</p>
+
+
+
+<p class="wp-block-paragraph">Finally, we can ask: why does good neuroscience <em>matter</em>? I would offer the following.</p>
+
+
+
+<p class="wp-block-paragraph">The future could be much better than the present. <em>Much</em> better.</p>
+
+
+
+<p class="wp-block-paragraph">Material conditions are only very loosely coupled with well-being. If life is to be radically better in the future, it will be due to better neuroscience pointing out how we can be kinder to ourselves and others, and future neurotechnology changing the hedonic calculus of the human condition.</p>
+
+
+
+<p class="wp-block-paragraph">A unified theory of emotional updating, depression, trauma, meditation, and psychedelics may give us the tools to build a future that&#8217;s <em>substantially </em>better than the present. This has been my hope while writing this.</p>
+
+
+
+<p class="wp-block-paragraph"><em>Note: as of 5-17-22 I have stepped down from the board at QRI. I wish the organization well and will be pursuing my research elsewhere. I have made several minor edits in this document so as to speak only for myself and to reflect sole authorship.</em></p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">Endnotes:</span></strong></p>
+
+
+
+<p class="wp-block-paragraph">[1] The ‘semantically neutral energy’ model also suggests why transcranial magnetic stimulation (TMS) seems to <a href="https://www.mayoclinic.org/tests-procedures/transcranial-magnetic-stimulation/about/pac-20384625">help treat depression</a> – essentially, TMS injects a large amount of energy into the brain, and this energy (1) triggers some entropic disintegration, allowing escape from bad local minima, and (2) may <em>slightly</em> collect in the brain’s natural harmonics, which may help pull the brain out of dissonant equilibria. Note that this could be done <em>much more effectively</em>: instead of the present strategy of using a quick flash of unpatterned, pulsed TMS (e.g., 5 seconds @ 100hz) which overpowers the brain but quickly dissipates and likely doesn&#8217;t lead to a <em>significant</em> build-up in harmonics, we could instead try an entrainment approach via lower-power, rhythmic, continuous TMS, applied for longer durations (keeping the brain above its ‘recrystallization temperature’ for longer, allowing a fuller self-organization process), perhaps paired with music.</p>
+
+
+
+<p class="wp-block-paragraph">[2] Thanks to Andrés for the idea about somatic information, and the suggestion of sensorium as the label.</p>
+
+
+
+<p class="wp-block-paragraph">[3] I suspect that <em>muscle tension</em> could be a core mechanism for regulating SSHWs and perhaps CSHWs. Tensing muscles will strongly influence body resonance, and one’s body resonance configuration will likely have ripple effects on what sorts of frequencies persist in the brain. This suggests that traditions such as yoga are basically right when they posit a link between problems in muscles and problems in the mind: we may hold tension in one system in order to compensate for a problem in the other. Speculatively, this compensatory regulation may also be found <em>across</em> humans, especially in pair bonds: that tension in your back might in some literal way be an attempt to help your partner with their emotional regulation. This would suggest muscle tension should change significantly after a break-up. (Thanks to Emily Crotteau, Lena Selesneva, and Ivanna Evtukhova for pieces of the puzzle here.)</p>
+
+
+
+<p class="wp-block-paragraph">[4] My colleague Andrés suggests that &#8220;[A] more direct method, though perhaps more difficult, would be to look directly for the spectral signatures of injection locking — we&#8217;d predict you will see a seriously diminished degree of injection locking signatures on people who are heavily traumatized, and see it come back after MDMA therapy.&#8221;</p>
+
+
+
+<p class="wp-block-paragraph">[5] Perhaps we could model Persistent Non-Symbolic Experience (PNSE) as persistent partial injection locking of key regions by low frequency CSHWs: essentially this would involve entraining (and effectively partially disabling) the machinery that usually handles interpretation of certain particulars / cognitive interpretations. Perhaps highly neurotic or traumatized individuals with strong top-down control exhibit the opposite: essentially trying to entrain CSHWs to a specific region (with predictably poor results).</p>
+
+
+
+<p class="wp-block-paragraph">[6] My colleague Andres also recommends against “psychedelic substances that have as part of their activity profile a high level of body-load, such as nausea and cramps as these patterns might themselves become annealing targets (cf. compounds notorious for this, according to <a href="https://psychonautwiki.org/wiki/Body_load">PsychonautWiki</a> such as 2C-E, 2C-T-2, and 2C-P, are probably best avoided as therapeutic aids).”</p>
+
+
+
+<p class="wp-block-paragraph">[7] On psychedelic tolerance: if the semantically-neutral energy model of psychedelics proves out, we should also be open to subtle corollaries: e.g., to what extent is the temporary tolerance effect of psychedelics <em>biochemical</em> (depletion of some neurotransmitters, per the current story) and to what extent is it <em>information-theoretic</em> —associated with the release and depletion of systemic sources of Free Energy? I.e., there is potential energy of a sort liberated when the system finds a better local minima, and if the system has undergone strong annealing recently, there are fewer such ‘energetic free lunches’ around to help power the psychedelic effects. (Hypothesis held weakly, as my colleague Andrés points out there are psychedelics which do not trigger tolerance, such as N,N-DMT and 5-MeO-DMT.)</p>
+
+
+
+<p class="wp-block-paragraph">[8] HT to Steve Lehar for pointing at this <a href="https://qualiacomputing.com/2018/12/12/the-phenomenal-character-of-lsd-mdma-candy-flipping-according-to-cognitive-scientist-steve-lehar/">’nystagmus’ phenomenon</a> as being somehow linked to MDMA’s mood-lifting effect, and to Andrés for calling my attention to Lehar&#8217;s work and suggesting 5-MeO-DMT may also share this mechanism.</p>
+
+
+
+<p class="wp-block-paragraph">[9] This is a reference to Eliezer Yudkowsky’s “<a href="https://arbital.com/p/cev/">Coherent Extrapolated Volition</a>” (CEV) concept, which is an attempt to sketch a heuristic for how to use a radically-powerful optimization process (such as an AGI) safely. Essentially, CEV suggests we could aggregate all human preferences (volitions), find some way to merge them (make them ‘cohere’), then repeat (extrapolate), until we get to a self-stable loop. A ‘psychedelic extrapolated volition’ is a variation of this: if it becomes easier to change yourself on psychedelics, and then that person you turn into can change themselves into someone else, and so on, where do you end up? What generates a ‘positive vector’ here?</p>
+
+
+
+<p class="wp-block-paragraph">[10] This naturally and unfortunately makes the access to and contexts of social annealing an axis of cultural conflict: those who control these events control the emotional tone and contours of coordination of a society. Taking away healthy annealing contexts from your opponents and giving more social annealing opportunities to your people is a key (but also very dirty) way to ‘win’ the culture war. (Perhaps the opioid crisis, and the crack-cocaine crisis before it, could in some sense be exacerbated by a lack of healthier annealing opportunities.)</p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">Citation</span></strong></p>
+
+
+
+<p class="wp-block-paragraph">For attribution in academic contexts, please cite this work as:</p>
+
+
+
+<p class="wp-block-paragraph">Michael Edward Johnson, &#8220;Neural Annealing: Toward a Neural Theory of Everything&#8221;, https://opentheory.net/2019/11/neural-annealing-toward-a-neural-theory-of-everything/ , San Francisco (2019).</p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">Acknowledgements</span></strong></p>
+
+
+
+<p class="wp-block-paragraph">I’d like to thank Andrés Gómez Emilsson for many great conversations on annealing (and first <a href="https://qualiacomputing.com/2016/06/20/algorithmic-reduction-of-psychedelic-states/">calling my attention</a> to the term), energy sinks, and countless other topics, and careful feedback on a draft of this work (various drafts shared with QRI throughout the process); Robin Carhart-Harris and Karl Friston for a beautiful description of simulated annealing; Romeo Stevens for wide discussion about annealing &amp; ontologies; Adam Safron for introducing me to the depth of explanation afforded by predictive coding, pointing me toward injection locking, and many great conversations in general; Quintin Frerichs for his hard work toward making therapeutic applications of this theory real, and the rest of the QRI team for support and inspiration; QRI&#8217;s community and in particular our donors, for their generous support; Milan Griffes for careful feedback on a draft of this work; Alex Alekseyenko and James Dama for discussions about simulated annealing; Anthony Markwell for sharing the Buddhist Dhamma with me in such a thoughtful and generous way; Justin Mares for his constant curiosity and encouragement; my parents, for their endless love and patience; Lena Zaitseva and Lena Selesneva for their deep warmth and support; and especially Ivanna Evtukhova, who has made my life radically better and whose love, energy, and obsession with Buddhist enlightenment gave me reason to start.</p>
+
+
+
+<p class="wp-block-paragraph"><em>To my guardian angels.</em></p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><span style="text-decoration: underline;">Timeline</span>: most of this document written ~Feb-April 2019, as a continuation of <a href="https://opentheory.net/2018/08/a-future-for-neuroscience/#">The Neuroscience of Meditation</a> and <a href="https://www.youtube.com/watch?v=nY9H5CK4GbE">this talk</a>, and shared internally and with select reviewers; section dealing with trauma written July 2019. Document reordered for flow and polished in Oct-Nov and posted Thanksgiving 2019.</p>
+
+
+
+<hr class="wp-block-separator has-css-opacity"/>
+
+
+
+<p class="wp-block-paragraph"><strong><span style="text-decoration: underline;">Notable comments on this work</span></strong></p>
+
+
+
+<ol class="wp-block-list">
+<li>On the role of CSHWs and information processing &amp; bandwidth, <a href="https://www.lesswrong.com/posts/zcYJBTGYtcftxefz9/neural-annealing-toward-a-neural-theory-of-everything?commentId=oaSQapNfBueNnt5pS&amp;fbclid=IwAR0dpMyxz8rEnunCbLLYUh1l2CrjxRhNsQT1h_qdSgmOLDiVx5-G-auThTc">LessWrong user lsusr responding to the comment</a> that &#8220;The power distribution among harmonics carries very little information—dozens of bits, not the billions or trillions of bits that are needed for human-level understanding of the world. So what&#8217;s the relation between CSHW and biologically-useful computations?&#8221;:</li>
+</ol>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">This makes sense to me because I work full-time on the bleeding edge of applied AI, meditate, and have degree in physics where I taught the acoustical and energy-based models this theory is based upon. Without a solid foundation in all three of these fields this theory might seem less self-evident.</p>
+
+
+
+<p class="wp-block-paragraph">Hopefully this explanation can help you understand the theory behind the theory. First I&#8217;ll address points (1), (2) and (3). Then I&#8217;ll explain the bandwidth issue in more detail.</p>
+
+
+
+<p class="wp-block-paragraph">(1) While it&#8217;s true that these harmonic frequencies have less information bandwidth then synapses that doesn&#8217;t mean they don&#8217;t perform biologically-useful computations. High-bandwidth pattern matching is trivially easy to do with neural networks. The hardest part about neural networks is time series data. (I know this because I am a specialist in the&nbsp;<a href="http://www.snack.watch/">application</a>&nbsp;of machine learning algorithms to handle time-series inputs.) To simplify the situation right now, we [1] don&#8217;t know how to use neural networks to handle time series data [2] don&#8217;t know how to get different machine learning systems of any kind to work together&#8211;especially with regard to time series data. If CSHW can make any progress in this direction then that would be useful.</p>
+
+
+
+<p class="wp-block-paragraph">(1.1) You are correct that we need a traditional mass of neurons tuned via gradient descent in order to handle high-bandwidth information like our many nerves and to handle complex actions like muscle control. CSHW does not get in the way of these things. Rather CSHW is a simple, elegant way to coordinate many different sub-networks into a human brain. It&#8217;s not about &#8220;how&#8221; do you throw a baseball. It&#8217;s &#8220;when&#8221; do you throw a baseball. When different networks are out of phase with each other the inputs of one turn into static for the other, which is literally equivalent to tuning out a radio. In short, the purpose of CSHW is not to replace the massive information processing solved by neural networks. Instead, it&#8217;s purpose is to combine and separate neural networks, as applicable, in response to time-series inputs. It does this fractally, which is the only way to simplify a design to handle massive complexity in a biological system.</p>
+
+
+
+<p class="wp-block-paragraph">(1.2) All CSHW needs to do is to tell which networks should receive information from which other networks. High-frequency waves both propagate shorter distances and oscillate faster (have higher bandwidth) than low-frequency waves, so the information density and response speed gets higher where it needs to be higher (on smaller scales). Remember: the oscillations don&#8217;t have to transfer information. That&#8217;s performed by the traditionally-understood neuronal connections. The oscillations can bring different systems in and out of sync in a coordinated manner. This happens at a lower frequency than individual neuron firings and involves larger masses than individual neurons so the necessary bandwidth is much lower. Frequency space might just be a dozen bits long, but there&#8217;s three spacial dimensions based on actual physical space too.</p>
+
+
+
+<p class="wp-block-paragraph">(1.3) The low bandwidth of the harmonic frequencies explains an important puzzle about consciousness. You know how you can only keep 3-9 concepts in working memory at once? This could be a reflection of the low bandwidth of the low frequency waves.</p>
+
+
+
+<p class="wp-block-paragraph">(2) We have known neurons and evolution are capable of producing waves like this (especially the low frequency ones) for ages. The question neuroscience has been struggling with isn&#8217;t &#8220;can&#8221; neurons produce waves like this. It&#8217;s &#8220;why&#8221;.</p>
+
+
+
+<p class="wp-block-paragraph">(2.1) This theory describes observed behavior especially well once you compare the theory&#8217;s predictions to the observed brainwaves in advanced meditators. The brain scans of Tibetan yogis and the traditional subjective descriptions written by Zen masters match descriptions of the low frequency brain resonance predicted by this theory. So does a modern Vipassana manual, though it focuses on the high frequency end of the spectrum. This is 3/3 major Buddhist lineages.</p>
+
+
+
+<p class="wp-block-paragraph">(3) As Michael Edward Johnson (OP) mentioned in another comment, recent advancements in fMRIs have let us observe some of the phenomena described in CSHW.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">2. Nell Watson comments:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">I really love this post of&nbsp;<a href="https://www.facebook.com/johnsonmx?__tn__=%2CdK-R-R&amp;eid=ARB6wftRNHBZZyCFjNlIOMEVsxyWOS9MYsNXeFhFlsVP3bugJSY0qXYeaxA819byq27WBsnKvlGCi56I&amp;fref=mentions">Michael Edward Johnson</a>, which brings together concepts from Selen Atasoy, Karl Friston, Robin Carhart-Harris,&nbsp;<a href="https://www.facebook.com/algekalipso?__tn__=%2CdK-R-R&amp;eid=ARDJkD-MziRVxAQSCNoK6gJNK6iq5_EdwOxXG-msG1MUcXoQ0Mlo7surQx1GVr6o8HBi9JgrO_WKDEpb&amp;fref=mentions">Andres Gomez Emilsson</a>, and others.</p>
+
+
+
+<p class="wp-block-paragraph">The essay describes plausible mechanisms of how the brain can enter depressed states, and why interventions such as meditation or even psychedelics are often so useful.</p>
+
+
+
+<p class="wp-block-paragraph">Essentially, brains are an interface where sensory input meets with predictions. These predictions harden over time, and as circumstances change, they start to create errors. Errors in predictions can cause states of suffering.</p>
+
+
+
+<p class="wp-block-paragraph">Predictions tend to be reset when the brain to enters a high energy state. This may occur naturally during very strong emotion, such as a traumatic incident. A reset here might typically leave someone with post-traumatic emotional baggage, phobias, etc.&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">However, a high energy state can more benignly be found in things like really groovy music, transcendent lovemaking, and meditation. This means that such states of mind can reset ones trauma switches.</p>
+
+
+
+<p class="wp-block-paragraph">This theory fits in well with what we are learning about psychedelics greatly increasing the energy state of the mind, and why they can reset traumas and enable one to better deal with stressors.</p>
+
+
+
+<p class="wp-block-paragraph">We are on the verge of a whole new theory of how minds function, with far more sophisticated tools to heal them when things go wrong.</p>
+
+
+
+<p class="wp-block-paragraph">If we can apply such tools to enable people to let go of their faulty priors and trauma-induced triggers, then we have an opportunity to absolutely transform mental, emotional, and physical health within a generation.&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">We may already have the technology to help everyone in society to become contented, comfortable, and efficacious for the first time in history. That&#8217;s an astounding opportunity.&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">A society comprised of people who are truly mentally healthy will be like nothing we have ever known before. Every one of us could enjoy this within a generation.</p>
+
+
+
+<p class="wp-block-paragraph">Hell is other people, but so too is heaven.</p>
+</blockquote>
+						<footer class="entry-footer">
+							<span class="cat-links">Posted in <a href="https://opentheory.net/category/uncategorized/" rel="category tag">Uncategorized</a></span>						</footer><!-- .entry-footer -->
+					</div><!-- .entry-content -->
+				</div>
+			</div>
+				<!-- Blog page(home.php) start -->
+			<!-- Blog page(home.php) End -->
+
+<hr class="hr-text" data-content="&">
+</article><!-- #post-1555 -->
+			<div class="container">
+				
+	<nav class="navigation post-navigation" aria-label="Posts">
+		<h2 class="screen-reader-text">Post navigation</h2>
+		<div class="nav-links"><div class="nav-previous"><a href="https://opentheory.net/2019/10/state-of-the-qualia-fall-2019/" rel="prev">State of the Qualia, Fall 2019</a></div><div class="nav-next"><a href="https://opentheory.net/2021/02/shinzen-young-interview-stress-equanimity-sensory-clarity/" rel="next">Shinzen Young interview: stress, equanimity, &#038; sensory clarity</a></div></div>
+	</nav>			</div> 
+			
+<div id="comments" class="comments-area">
+<div class="container">
+			<h2 class="comments-title is-size-4">
+			10 thoughts on &ldquo;<span class="has-text-weight-bold">Neural Annealing: Toward a Neural Theory of Everything</span>&rdquo;		</h2><!-- .comments-title -->
+
+		
+		<ol class="comment-list">
+					<li id="comment-103201" class="pingback even thread-even depth-1">
+			<div class="comment-body">
+				Pingback: <a href="https://newsblogie.wordpress.com/2019/11/30/new-top-story-on-hacker-news-neural-annealing-toward-a-neural-theory-of-everything/" class="url" rel="ugc external nofollow">New top story on Hacker News: Neural Annealing: Toward a Neural Theory of Everything &#8211; News about world</a> 			</div>
+		</li><!-- #comment-## -->
+		<li id="comment-103202" class="pingback odd alt thread-odd thread-alt depth-1">
+			<div class="comment-body">
+				Pingback: <a href="https://protipsss.wordpress.com/2019/11/30/new-top-story-on-hacker-news-neural-annealing-toward-a-neural-theory-of-everything/" class="url" rel="ugc external nofollow">New top story on Hacker News: Neural Annealing: Toward a Neural Theory of Everything &#8211; protipsss</a> 			</div>
+		</li><!-- #comment-## -->
+		<li id="comment-103203" class="pingback even thread-even depth-1">
+			<div class="comment-body">
+				Pingback: <a href="https://indian215720559.wordpress.com/2019/11/30/new-top-story-on-hacker-news-neural-annealing-toward-a-neural-theory-of-everything/" class="url" rel="ugc external nofollow">New top story on Hacker News: Neural Annealing: Toward a Neural Theory of Everything &#8211; Golden News</a> 			</div>
+		</li><!-- #comment-## -->
+		<li id="comment-103204" class="pingback odd alt thread-odd thread-alt depth-1">
+			<div class="comment-body">
+				Pingback: <a href="https://latestnewsdesign.wordpress.com/2019/11/30/new-top-story-on-hacker-news-neural-annealing-toward-a-neural-theory-of-everything/" class="url" rel="ugc external nofollow">New top story on Hacker News: Neural Annealing: Toward a Neural Theory of Everything &#8211; Latest news</a> 			</div>
+		</li><!-- #comment-## -->
+		<li id="comment-103205" class="pingback even thread-even depth-1">
+			<div class="comment-body">
+				Pingback: <a href="https://ultimatenews1.wordpress.com/2019/11/30/new-top-story-on-hacker-news-neural-annealing-toward-a-neural-theory-of-everything/" class="url" rel="ugc external nofollow">New top story on Hacker News: Neural Annealing: Toward a Neural Theory of Everything &#8211; Ultimate News</a> 			</div>
+		</li><!-- #comment-## -->
+		<li id="comment-103206" class="pingback odd alt thread-odd thread-alt depth-1">
+			<div class="comment-body">
+				Pingback: <a href="https://outsidetheknow.wordpress.com/2019/11/30/new-top-story-on-hacker-news-neural-annealing-toward-a-neural-theory-of-everything/" class="url" rel="ugc external nofollow">New top story on Hacker News: Neural Annealing: Toward a Neural Theory of Everything &#8211; Outside The Know</a> 			</div>
+		</li><!-- #comment-## -->
+		<li id="comment-103207" class="pingback even thread-even depth-1">
+			<div class="comment-body">
+				Pingback: <a href="https://hckrnews.wordpress.com/2019/11/30/new-top-story-on-hacker-news-neural-annealing-toward-a-neural-theory-of-everything/" class="url" rel="ugc external nofollow">New top story on Hacker News: Neural Annealing: Toward a Neural Theory of Everything &#8211; Hckr News</a> 			</div>
+		</li><!-- #comment-## -->
+		<li id="comment-103208" class="pingback odd alt thread-odd thread-alt depth-1">
+			<div class="comment-body">
+				Pingback: <a href="https://hackernewsrobot.wordpress.com/2019/11/30/neural-annealing-toward-a-neural-theory-of-everything/" class="url" rel="ugc external nofollow">Neural Annealing: Toward a Neural Theory of Everything &#8211; Hacker News Robot</a> 			</div>
+		</li><!-- #comment-## -->
+		<li id="comment-103209" class="pingback even thread-even depth-1">
+			<div class="comment-body">
+				Pingback: <a href="https://javilopezg.com/tech-roundup-51/" class="url" rel="ugc external nofollow">Tech roundup 51: a journal published by a bot - Javi López G.</a> 			</div>
+		</li><!-- #comment-## -->
+		<li id="comment-103217" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-103217" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img alt='' src='https://secure.gravatar.com/avatar/1572c42258e273b13e9673e2d152c1a3d188f940602fb2174321078d0480a2e0?s=120&#038;d=mm&#038;r=g' srcset='https://secure.gravatar.com/avatar/1572c42258e273b13e9673e2d152c1a3d188f940602fb2174321078d0480a2e0?s=240&#038;d=mm&#038;r=g 2x' class='avatar avatar-120 photo' height='120' width='120' decoding='async'/>						<b class="fn">Tony Buffington</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://opentheory.net/2019/11/neural-annealing-toward-a-neural-theory-of-everything/#comment-103217"><time datetime="2019-12-01T10:20:21-07:00">December 1, 2019 at 10:20 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Thank you for this thoughtful, hopeful essay.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		</ol><!-- .comment-list -->
+
+					<p class="no-comments">Comments are closed.</p>
+			</div>
+</div><!-- #comments -->
+	</main><!-- #main -->
+</div><!-- #primary -->
+
+
+</div><!-- #content -->
+
+	<footer id="colophon" class="site-footer container has-text-left">
+		<div class="site-info">
+		<section class="section">
+			<p>
+				<a href="https://wordpress.org/">
+				Proudly powered by WordPress				</a> <span class="sep"> | </span>
+				Theme: Tabut by <a target="_blank" href="https://naveenkharwar.com" rel="nofollow" title="Naveen Kharwar">Naveen Kharwar</a>.			</p>
+		</section>
+		</div><!-- .site-info -->
+	</footer><!-- #colophon -->
+</div><!-- #page -->
+
+</div><!-- .container -->
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/tabut/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<script id="wp-hooks-js" src="https://opentheory.net/wp-includes/js/dist/hooks.min.js?ver=7496969728ca0f95732d"></script>
+<script id="wp-i18n-js" src="https://opentheory.net/wp-includes/js/dist/i18n.min.js?ver=781d11515ad3d91786ec"></script>
+<script id="wp-i18n-js-after">
+wp.i18n.setLocaleData( { 'text direction\u0004ltr': [ 'ltr' ] } );
+//# sourceURL=wp-i18n-js-after
+</script>
+<script id="swv-js" src="https://opentheory.net/wp-content/plugins/contact-form-7/includes/swv/js/index.js?ver=6.1.6"></script>
+<script id="contact-form-7-js-before">
+var wpcf7 = {
+    "api": {
+        "root": "https:\/\/opentheory.net\/wp-json\/",
+        "namespace": "contact-form-7\/v1"
+    }
+};
+//# sourceURL=contact-form-7-js-before
+</script>
+<script id="contact-form-7-js" src="https://opentheory.net/wp-content/plugins/contact-form-7/includes/js/index.js?ver=6.1.6"></script>
+<script id="tabut-deleteButton-js" src="https://opentheory.net/wp-content/themes/tabut/js/deleteButton.js"></script>
+<script id="tabut-navigation-js" src="https://opentheory.net/wp-content/themes/tabut/js/navigation.js?ver=20151215"></script>
+<script id="tabut-skip-link-focus-fix-js" src="https://opentheory.net/wp-content/themes/tabut/js/skip-link-focus-fix.js?ver=20151215"></script>
+<script id="wp-emoji-settings" type="application/json">
+{"baseUrl":"https://s.w.org/images/core/emoji/17.0.2/72x72/","ext":".png","svgUrl":"https://s.w.org/images/core/emoji/17.0.2/svg/","svgExt":".svg","source":{"concatemoji":"https://opentheory.net/wp-includes/js/wp-emoji-release.min.js?ver=7.0"}}
+</script>
+<script type="module">
+/*! This file is auto-generated */
+const a=JSON.parse(document.getElementById("wp-emoji-settings").textContent),o=(window._wpemojiSettings=a,"wpEmojiSettingsSupports"),s=["flag","emoji"];function i(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(o,JSON.stringify(t))}catch(e){}}function c(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0);const a=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);return t.every((e,t)=>e===a[t])}function p(e,t){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var n=e.getImageData(16,16,1,1);for(let e=0;e<n.data.length;e++)if(0!==n.data[e])return!1;return!0}function u(e,t,n,a){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\udde8\ud83c\uddf6","\ud83c\udde8\u200b\ud83c\uddf6")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!a(e,"\ud83e\u1fac8")}return!1}function f(e,t,n,a){let r;const o=(r="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):document.createElement("canvas")).getContext("2d",{willReadFrequently:!0}),s=(o.textBaseline="top",o.font="600 32px Arial",{});return e.forEach(e=>{s[e]=t(o,e,n,a)}),s}function r(e){var t=document.createElement("script");t.src=e,t.defer=!0,document.head.appendChild(t)}a.supports={everything:!0,everythingExceptFlag:!0},new Promise(t=>{let n=function(){try{var e=JSON.parse(sessionStorage.getItem(o));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(s),u.toString(),c.toString(),p.toString()].join(",")+"));",a=new Blob([e],{type:"text/javascript"});const r=new Worker(URL.createObjectURL(a),{name:"wpTestEmojiSupports"});return void(r.onmessage=e=>{i(n=e.data),r.terminate(),t(n)})}catch(e){}i(n=f(s,u,c,p))}t(n)}).then(e=>{for(const n in e)a.supports[n]=e[n],a.supports.everything=a.supports.everything&&a.supports[n],"flag"!==n&&(a.supports.everythingExceptFlag=a.supports.everythingExceptFlag&&a.supports[n]);var t;a.supports.everythingExceptFlag=a.supports.everythingExceptFlag&&!a.supports.flag,a.supports.everything||((t=a.source||{}).concatemoji?r(t.concatemoji):t.wpemoji&&t.twemoji&&(r(t.twemoji),r(t.wpemoji)))});
+//# sourceURL=https://opentheory.net/wp-includes/js/wp-emoji-loader.min.js
+</script>
+</body>
+</html>

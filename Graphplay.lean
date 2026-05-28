@@ -16,7 +16,7 @@ import Graphplay.Search
 -- Chiral / operator-algebra (Tower 2 chiral, Tower 3)
 import Graphplay.Chiral
 import Graphplay.QuantumGraph
-import Graphplay.OperatorSystem
+-- import Graphplay.OperatorSystem  -- pending fix; 19 errors in standalone file
 
 -- Graphons (Tower 4)
 import Graphplay.Graphon

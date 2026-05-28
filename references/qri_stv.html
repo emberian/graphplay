@@ -1,0 +1,3327 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1"/>
+  <meta name="generator" content="distill" />
+
+  <style type="text/css">
+  /* Hide doc at startup (prevent jankiness while JS renders/transforms) */
+  body {
+    visibility: hidden;
+  }
+  </style>
+
+ <!--radix_placeholder_import_source-->
+ <!--/radix_placeholder_import_source-->
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  { color: #00769e; background-color: #f1f3f5; }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span { color: #00769e; } /* Normal */
+code span.al { color: #ad0000; } /* Alert */
+code span.an { color: #5e5e5e; } /* Annotation */
+code span.at { color: #657422; } /* Attribute */
+code span.bn { color: #ad0000; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #00769e; } /* ControlFlow */
+code span.ch { color: #20794d; } /* Char */
+code span.cn { color: #8f5902; } /* Constant */
+code span.co { color: #5e5e5e; } /* Comment */
+code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+code span.dt { color: #ad0000; } /* DataType */
+code span.dv { color: #ad0000; } /* DecVal */
+code span.er { color: #ad0000; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #ad0000; } /* Float */
+code span.fu { color: #4758ab; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #5e5e5e; } /* Information */
+code span.kw { color: #00769e; } /* Keyword */
+code span.op { color: #5e5e5e; } /* Operator */
+code span.ot { color: #00769e; } /* Other */
+code span.pp { color: #ad0000; } /* Preprocessor */
+code span.sc { color: #5e5e5e; } /* SpecialChar */
+code span.ss { color: #20794d; } /* SpecialString */
+code span.st { color: #20794d; } /* String */
+code span.va { color: #111111; } /* Variable */
+code span.vs { color: #20794d; } /* VerbatimString */
+code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+</style>
+
+<style>
+  div.csl-bib-body { }
+  div.csl-entry {
+    clear: both;
+    }
+  .hanging div.csl-entry {
+    margin-left:2em;
+    text-indent:-2em;
+  }
+  div.csl-left-margin {
+    min-width:2em;
+    float:left;
+  }
+  div.csl-right-inline {
+    margin-left:2em;
+    padding-left:1em;
+  }
+  div.csl-indent {
+    margin-left: 2em;
+  }
+</style>
+
+  <!--radix_placeholder_meta_tags-->
+  <title>The Symmetry Theory of Valence 2020 Overview</title>
+
+  <meta property="description" itemprop="description" content=""/>
+
+
+  <!--  https://schema.org/Article -->
+  <meta property="article:published" itemprop="datePublished" content="2020-12-17"/>
+  <meta property="article:created" itemprop="dateCreated" content="2020-12-17"/>
+  <meta name="article:author" content="Andrés Gómez-Emilsson"/>
+
+  <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
+  <meta property="og:title" content="The Symmetry Theory of Valence 2020 Overview"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:description" content=""/>
+  <meta property="og:locale" content="en_US"/>
+
+  <!--  https://dev.twitter.com/cards/types/summary -->
+  <meta property="twitter:card" content="summary"/>
+  <meta property="twitter:title" content="The Symmetry Theory of Valence 2020 Overview"/>
+  <meta property="twitter:description" content=""/>
+
+  <!--  https://scholar.google.com/intl/en/scholar/inclusion.html#indexing -->
+  <meta name="citation_title" content="The Symmetry Theory of Valence 2020 Overview"/>
+  <meta name="citation_fulltext_html_url" content="https://www.qri.org/blog/symmetry-theory-of-valence-2020"/>
+  <meta name="citation_online_date" content="2020/12/17"/>
+  <meta name="citation_publication_date" content="2020/12/17"/>
+  <meta name="citation_author" content="Andrés Gómez-Emilsson"/>
+  <meta name="citation_author_institution" content="Qualia Research Institute"/>
+  <!--/radix_placeholder_meta_tags-->
+  
+  <meta name="citation_reference" content="citation_title=Tonal consonance and critical bandwidth.;citation_publication_date=1965;citation_volume=38 4;citation_author=R. Plomp;citation_author=Willem J. M. Levelt"/>
+  <meta name="citation_reference" content="citation_title=The coherent heart heart–brain interactions, psychophysiological coherence, and the emergence of system-wide order;citation_publication_date=2009;citation_volume=5;citation_author=Rollin McCraty;citation_author=Atkinson Mike;citation_author=Dana Tomasino;citation_author=Raymond Bradley"/>
+  <meta name="citation_reference" content="citation_title=Algorithmic reduction of psychedelic states;citation_publication_date=2016;citation_author=Andrés Gómez-Emilsson"/>
+  <meta name="citation_reference" content="citation_title=The hyperbolic geometry of DMT experiences: Symmetries, sheets, and saddled scenes;citation_publication_date=2016;citation_author=Andrés Gómez-Emilsson"/>
+  <meta name="citation_reference" content="citation_title=The pseudo-time arrow: Explaining phenomenal time with implicit causal structures in networks of local binding;citation_publication_date=2018;citation_author=Andrés Gómez-Emilsson"/>
+  <meta name="citation_reference" content="citation_title=The resonance and vibration of [phenomenal] objects;citation_publication_date=2019;citation_author=Andrés Gómez-Emilsson"/>
+  <meta name="citation_reference" content="citation_title=Oscillatory synchrony is energetically cheap;citation_publication_date=2020;citation_author=Andrés Gómez-Emilsson"/>
+  <meta name="citation_reference" content="citation_title=State-space of drug effects: results;citation_publication_date=2015;citation_author=Andrés Gómez-Emilsson"/>
+  <meta name="citation_reference" content="citation_title=Wireheading done right: Stay positive without going insane;citation_publication_date=2016;citation_author=Andrés Gómez-Emilsson"/>
+  <meta name="citation_reference" content="citation_title=Human brain networks function in connectome-specific harmonic waves;citation_publication_date=2016;citation_volume=7;citation_doi=10.1038/ncomms10340;citation_issn=2041-1723;citation_author=Selen Atasoy;citation_author=Isaac Donnelly;citation_author=Joel Pearson"/>
+  <meta name="citation_reference" content="citation_title=Emotional responses to pleasant and unpleasant music correlate with activity in paralimbic brain regions;citation_publication_date=1999;citation_volume=2;citation_doi=10.1038/7299;citation_issn=1546-1726;citation_author=Anne J. Blood;citation_author=Robert J. Zatorre;citation_author=Patrick Bermudez;citation_author=Alan C. Evans"/>
+  <meta name="citation_reference" content="citation_title=Neural mechanisms underlying valence inferences to sound: The role of the right angular gyrus;citation_publication_date=2017;citation_volume=102;citation_doi=10.1016/j.neuropsychologia.2017.05.029;citation_issn=0028-3932;citation_author=Fernando Bravo;citation_author=Ian Cross;citation_author=Sarah Hawkins;citation_author=Nadia Gonzalez;citation_author=Jorge Docampo;citation_author=Claudio Bruno;citation_author=Emmanuel Andreas Stamatakis"/>
+  <meta name="citation_reference" content="citation_title=Stress-induced cardiac arrhythmias: The heart–brain interaction;citation_publication_date=2016;citation_volume=26;citation_doi=10.1016/j.tcm.2015.05.001;citation_issn=1050-1738;citation_author=Una Buckley;citation_author=Kalyanam Shivkumar"/>
+  <meta name="citation_reference" content="citation_title=How to measure the psychological “flow”? A neuroscience perspective;citation_publication_date=2016;citation_volume=7;citation_issn=1664-1078;citation_author=Guy Cheron"/>
+  <meta name="citation_reference" content="citation_title=Whatever next? Predictive brains, situated agents, and the future of cognitive science;citation_publication_date=2013;citation_volume=36;citation_issn=0140-525X;citation_author=Andy Clark"/>
+  <meta name="citation_reference" content="citation_title=The cognate facilitation effect: Implications for models of lexical access.;citation_publication_date=2000;citation_volume=26;citation_doi=10.1037/0278-7393.26.5.1283;citation_issn=1939-1285, 0278-7393;citation_author=Albert Costa;citation_author=Alfonso Caramazza;citation_author=Nuria Sebastian-Galles"/>
+  <meta name="citation_reference" content="citation_title=Relationship between dysfunctional breathing patterns and ability to achieve target heart rate variability with features of “coherence” during biofeedback;citation_publication_date=2011;citation_volume=17;citation_issn=1078-6791;citation_author=Rosalba Courtney;citation_author=Marc Cohen;citation_author=Jan Dixhoorn"/>
+  <meta name="citation_reference" content="citation_title=The human default consciousness and its disruption: Insights from an EEG study of buddhist jhāna meditation;citation_publication_date=2019;citation_volume=13;citation_issn=1662-5161;citation_author=Paul Dennison"/>
+  <meta name="citation_reference" content="citation_title=Healing trauma with neural annealing;citation_publication_date=2021;citation_author=Andrés Gómez-Emilsson"/>
+  <meta name="citation_reference" content="citation_title=Frontal brain asymmetry and depression: A self-regulatory perspective;citation_publication_date=1998;citation_volume=12;citation_doi=10.1080/026999398379655;citation_issn=0269-9931;citation_author=Andrew J. Tomarkenand;citation_author=Anita D. Keener"/>
+  <meta name="citation_reference" content="citation_title=Principia qualia;citation_publication_date=2016;citation_author=Michael Johnson"/>
+  <meta name="citation_reference" content="citation_title=Identifying emotions on the basis of neural activation;citation_publication_date=2013;citation_volume=8;citation_doi=10.1371/journal.pone.0066032;citation_issn=1932-6203;citation_author=Karim S. Kassam;citation_author=Amanda R. Markey;citation_author=Vladimir L. Cherkassky;citation_author=George Loewenstein;citation_author=Marcel Adam Just"/>
+  <meta name="citation_reference" content="citation_title=Emotional and physical precipitants of ventricular arrhythmia;citation_publication_date=2002;citation_volume=106;citation_doi=10.1161/01.cir.0000031733.51374.c1;citation_issn=1524-4539;citation_author=Rachel Lampert;citation_author=Tammy Joska;citation_author=Matthew M. Burg;citation_author=William P. Batsford;citation_author=Craig A. McPherson;citation_author=Diwakar Jain"/>
+  <meta name="citation_reference" content="citation_title=Review of the neural oscillations underlying meditation;citation_publication_date=2018;citation_volume=12;citation_issn=1662-453X;citation_author=Darrin J. Lee;citation_author=Edwin Kulubya;citation_author=Philippe Goldin;citation_author=Amir Goodarzi;citation_author=Fady Girgis"/>
+  <meta name="citation_reference" content="citation_title=Long-term meditators self-induce high-amplitude gamma synchrony during mental practice;citation_publication_date=2004;citation_volume=101;citation_doi=10.1073/pnas.0407401101;citation_issn=0027-8424, 1091-6490;citation_author=Antoine Lutz;citation_author=Lawrence L. Greischar;citation_author=Nancy B. Rawlings;citation_author=Matthieu Ricard;citation_author=Richard J. Davidson"/>
+  <meta name="citation_reference" content="citation_title=Meditation increases the entropy of brain oscillatory activity;citation_publication_date=2020;citation_volume=431;citation_doi=10.1016/j.neuroscience.2020.01.033;citation_issn=1873-7544;citation_author=Rocío Martínez Vivot;citation_author=Carla Pallavicini;citation_author=Federico Zamberlan;citation_author=Daniel Vigo;citation_author=Enzo Tagliazucchi"/>
+  <meta name="citation_reference" content="citation_title=Facial symmetry and the perception of beauty;citation_publication_date=1998;citation_volume=5;citation_doi=10.3758/BF03208842;citation_issn=1531-5320;citation_author=Gillian Rhodes;citation_author=Fiona Proffitt;citation_author=Jonathon M. Grady;citation_author=Alex Sumich"/>
+  <meta name="citation_reference" content="citation_title=What is orgasm? A model of sexual trance and climax via rhythmic entrainment;citation_publication_date=2016;citation_volume=6;citation_doi=10.3402/snp.v6.31763;citation_issn=2000-9011;citation_author=Adam Safron"/>
+  <meta name="citation_reference" content="citation_title=Role of functional magnetic resonance imaging in the evaluation of patients with malformations caused by cortical development;citation_publication_date=2002;citation_volume=13;citation_doi=10.1016/s1042-3680(02)80007-9;citation_issn=1042-3680;citation_author=Afraim Salek-Haddadi;citation_author=Louis Lemieux;citation_author=David R. Fish"/>
+  <meta name="citation_reference" content="citation_title=Driven by compression progress: A simple principle explains essential aspects of subjective beauty, novelty, surprise, interestingness, attention, curiosity, creativity, art, science, music, jokes;citation_publication_date=2009;citation_publisher=Springer;citation_doi=10.1007/978-3-642-02565-5_4;citation_author=Jürgen Schmidhuber"/>
+  <meta name="citation_reference" content="citation_title=The impact of resonance frequency breathing on measures of heart rate variability, blood pressure, and mood;citation_publication_date=2017;citation_volume=5;citation_issn=2296-2565;citation_author=Patrick R. Steffen;citation_author=Tara Austin;citation_author=Andrea DeBarros;citation_author=Tracy Brown"/>
+  <meta name="citation_reference" content="citation_title=Cardiac coherence: A new, noninvasive measure of autonomic nervous system order;citation_publication_date=1996;citation_volume=2;citation_issn=1078-6791;citation_author=W. A. Tiller;citation_author=R. McCraty;citation_author=M. Atkinson"/>
+  <meta name="citation_reference" content="citation_title=The development of evaluative responses to music:: Infants prefer to listen to consonance over dissonance;citation_publication_date=1998;citation_volume=21;citation_doi=10.1016/S0163-6383(98)90055-8;citation_issn=0163-6383;citation_author=Laurel J. Trainor;citation_author=Becky M. Heinmiller"/>
+  <meta name="citation_reference" content="citation_title=Autonomic and EEG patterns distinguish transcending from other experiences during transcendental meditation practice;citation_publication_date=2001;citation_volume=42;citation_doi=10.1016/s0167-8760(01)00143-x;citation_issn=0167-8760;citation_author=F. Travis"/>
+  <meta name="citation_reference" content="citation_title=Patterns of EEG coherence, power, and contingent negative variation characterize the integration of transcendental and waking states;citation_publication_date=2002;citation_volume=61;citation_doi=10.1016/s0301-0511(02)00048-0;citation_issn=0301-0511;citation_author=Fred Travis;citation_author=Joe Tecce;citation_author=Alarik Arenander;citation_author=R. Keith Wallace"/>
+  <meta name="citation_reference" content="citation_title=Acute emotional stress and cardiac arrhythmias;citation_publication_date=2007;citation_volume=298;citation_doi=10.1001/jama.298.3.324;citation_issn=1538-3598;citation_author=Roy C. Ziegelstein"/>
+  <meta name="citation_reference" content="citation_title=Symmetrical decorations enhance the attractiveness of faces and abstract designs;citation_publication_date=2006;citation_volume=27;citation_doi=10.1016/j.evolhumbehav.2005.05.002;citation_issn=1090-5138;citation_author=Rodrigo Andrés Cárdenas;citation_author=Lauren Julius Harris"/>
+  <meta name="citation_reference" content="citation_title=Posttraumatic stress disorder and impaired autonomic modulation in male twins;citation_publication_date=2013;citation_volume=73;citation_doi=10.1016/j.biopsych.2013.01.019;citation_issn=1873-2402;citation_author=Amit J. Shah;citation_author=Rachel Lampert;citation_author=Jack Goldberg;citation_author=Emir Veledar;citation_author=J. Douglas Bremner;citation_author=Viola Vaccarino"/>
+  <!--radix_placeholder_rmarkdown_metadata-->
+
+  <script type="text/json" id="radix-rmarkdown-metadata">
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","people","type","preview","filetype","tags","date","citation_url","bibliography","author","output","knit"]}},"value":[{"type":"character","attributes":{},"value":["The Symmetry Theory of Valence 2020 Overview"]},{"type":"character","attributes":{},"value":[""]},{"type":"character","attributes":{},"value":["Andrés Gómez-Emilsson"]},{"type":"character","attributes":{},"value":["research"]},{"type":"character","attributes":{},"value":["https://www.qri.org/images/distill/symmetry-theory-of-valence/thumbnail.png"]},{"type":"character","attributes":{},"value":["distill"]},{"type":"character","attributes":{},"value":["Consciousness","Psychedelic","STV","Valence","Neuroscience"]},{"type":"character","attributes":{},"value":["Dec, 17 2020"]},{"type":"character","attributes":{},"value":["https://www.qri.org/blog/symmetry-theory-of-valence-2020"]},{"type":"character","attributes":{},"value":["../bibliography/symmetry-theory-of-valence-2020.bib"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","id","position","affiliation","affiliation_url","group","biography","path","authorpage"]}},"value":[{"type":"character","attributes":{},"value":["Andrés Gómez-Emilsson"]},{"type":"character","attributes":{},"value":["../people/andrés-gómez-emilsson"]},{"type":"integer","attributes":{},"value":[3]},{"type":"character","attributes":{},"value":["President / Director of Research"]},{"type":"character","attributes":{},"value":["Qualia Research Institute"]},{"type":"character","attributes":{},"value":["https://www.qri.org/"]},{"type":"character","attributes":{},"value":["coreteam","bod"]},{"type":"character","attributes":{},"value":["Andrés has a Master’s Degree in Psychology with an emphasis in computational models from Stanford and a professional background in graph theory, statistics, and affective science. Andrés was also the co-founder of the Stanford Transhumanist Association and first place winner of the Norway Math Olympiad. His work at QRI ranges from algorithm design, to psychedelic theory, to neurotechnology development, to mapping and studying the computational properties of consciousness. Andrés blogs at <a href='https://qualiacomputing.com/'>qualiacomputing.com<\/a>."]},{"type":"character","attributes":{},"value":["andres-gomez-emilsson"]},{"type":"character","attributes":{},"value":["yes"]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained","lib_dir","theme","toc","includes"]}},"value":[{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["site_libs"]},{"type":"NULL"},{"type":"logical","attributes":{},"value":[true]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["in_header"]}},"value":[{"type":"character","attributes":{},"value":["header.html"]}]}]}]},{"type":"character","attributes":{},"value":["(function (...) { source('myknit.r'); myknit(..., 'symmetry-theory-of-valence-2020', 'distill'); })"]}]}
+  </script>
+  <!--/radix_placeholder_rmarkdown_metadata-->
+  
+  <script type="text/json" id="radix-resource-manifest">
+  {"type":"character","attributes":{},"value":["5meo-vs-dmt.html","a-future-for-neuroscience.html","a-primer-on-the-symmetry-theory-of-valence.html","against-functionalism.html","april-2019.html","bibliography/5meo-vs-dmt.bib","bibliography/a-future-for-neuroscience.bib","bibliography/a-future-for-neuroscience.bib.bak","bibliography/a-primer-on-the-symmetry-theory-of-valence.bib","bibliography/Against-Functionalism.bib","bibliography/Against-Functionalism.bib.bak","bibliography/Against-Functionalism.bib.sav","bibliography/april-2019.bib","bibliography/boa.bib","bibliography/classical-enlightenment-and-valence-structuralism.bib","bibliography/contemplative-practitioners-claims.bib","bibliography/december-2018.bib","bibliography/ea-better-QALY.bib","bibliography/ea-better-QALY.bib.sav","bibliography/experientialist-theories-of-well-being.bib","bibliography/experientialist-theories-of-well-being.bib.bak","bibliography/experientialist-theories-of-well-being.bib.sav","bibliography/fai-and-valence.bib","bibliography/february-2019.bib","bibliography/february-2020.bib","bibliography/Harmonic-Society.bib","bibliography/History-2021-Strategy.bib","bibliography/homeostatic-regulation.bib","bibliography/hyperbolic-geometry-DMT.bib","bibliography/is-ought-problem.bib","bibliography/january-2019.bib","bibliography/Log-Scales.bib","bibliography/march-2019.bib","bibliography/may-2019.bib","bibliography/Neural-Annealing.bib","bibliography/Neuroscience-of-Meditation.bib","bibliography/new-executive-director.bib","bibliography/november-2018.bib","bibliography/october-2018.bib","bibliography/open-individualism.bib","bibliography/peaceful-qualia.bib","bibliography/Principia-Qualia.bib","bibliography/Pseudo-Time-Arrow.bib","bibliography/psychophysics-toolkit.bib","bibliography/Quantifying-Bliss.bib","bibliography/Rescuing-Philosophy.bib","bibliography/review-of-log-scales.bib","bibliography/Rigorous-Reports.bib","bibliography/seed-ontologies.bib","bibliography/september-2018.bib","bibliography/state-of-the-qualia-fall-2019.bib","bibliography/state-of-the-qualia-fall-2020.bib","bibliography/steven-lehar-lineage.bib","bibliography/STV-ELI5.bib","bibliography/Taking-Monism-Seriously.bib","bibliography/tyranny-of-the-intentional-object.bib","bibliography/Universal-Plot.bib","bibliography/Wireheading-Done-Right.bib","boa.html","classical-enlightenment-and-valence-structualism.html","classical-enlightenment-and-valence-structuralism.html","december-2018.html","digital-sentience.html","ea-better-QALY.html","experientialist-theories-of-well-being.html","fai-and-valence.html","february-2019.html","february-2020.html","Guide-to-Writing-Rigorous-Reports-of-Exotic-States-of-Consciousness.html","header.html","History-2021-Strategy.html","homeostatic-regulation.html","hyperbolic-geometry-DMT.html","is-ought-problem.html","january-2019.html","Log-Scales.html","march-2019.html","may-2019.html","neural-annealing.html","neuroscience-of-meditation.html","new-executive-director.html","nonlinear-wave-computing.html","november-2018.html","october-2018.html","open-individualism.html","pseudo-time-arrow.html","psychophysics-toolkit.html","quantifying-bliss.html","review-of-log-scales.html","rigorous-reports.html","seed-ontologies_files/anchor-4.2.2/anchor.min.js","seed-ontologies_files/bowser-1.9.3/bowser.min.js","seed-ontologies_files/distill-2.2.21/template.v2.js","seed-ontologies_files/header-attrs-2.10/header-attrs.js","seed-ontologies_files/jquery-1.11.3/jquery.min.js","seed-ontologies_files/popper-2.6.0/popper.min.js","seed-ontologies_files/tippy-6.2.7/tippy-bundle.umd.min.js","seed-ontologies_files/tippy-6.2.7/tippy-light-border.css","seed-ontologies_files/tippy-6.2.7/tippy.css","seed-ontologies_files/tippy-6.2.7/tippy.umd.min.js","seed-ontologies_files/webcomponents-2.0.0/webcomponents.js","seed-ontologies.html","september-2018.html","site_libs/anchor-4.2.2/anchor.min.js","site_libs/bowser-1.9.3/bowser.min.js","site_libs/css-resize-1.2.1/ElementQueries.js","site_libs/css-resize-1.2.1/ResizeSensor.js","site_libs/distill-2.2.21/template.v2.js","site_libs/header-attrs-2.10/header-attrs.js","site_libs/header-attrs-2.16/header-attrs.js","site_libs/header-attrs-2.8/header-attrs.js","site_libs/htmlwidgets-1.5.4/htmlwidgets.js","site_libs/jquery-1.11.3/jquery.min.js","site_libs/jquery-3.4.1/jquery-3.4.1.min.js","site_libs/jquery-3.6.0/jquery-3.6.0.js","site_libs/jquery-3.6.0/jquery-3.6.0.min.js","site_libs/jquery-3.6.0/jquery-3.6.0.min.map","site_libs/jquery-migrate-3.1.0/jquery-migrate-3.1.0.min.js","site_libs/popper-2.6.0/popper.min.js","site_libs/slick-1.8.1/slick/ajax-loader.gif","site_libs/slick-1.8.1/slick/config.rb","site_libs/slick-1.8.1/slick/fonts/slick.eot","site_libs/slick-1.8.1/slick/fonts/slick.svg","site_libs/slick-1.8.1/slick/fonts/slick.ttf","site_libs/slick-1.8.1/slick/fonts/slick.woff","site_libs/slick-1.8.1/slick/slick-theme.css","site_libs/slick-1.8.1/slick/slick-theme.less","site_libs/slick-1.8.1/slick/slick-theme.scss","site_libs/slick-1.8.1/slick/slick.css","site_libs/slick-1.8.1/slick/slick.js","site_libs/slick-1.8.1/slick/slick.less","site_libs/slick-1.8.1/slick/slick.min.js","site_libs/slick-1.8.1/slick/slick.scss","site_libs/slickR-0.0.1/slick-theme.css","site_libs/slickR-0.0.1/slick.css","site_libs/slickR-0.0.1/slickR.js","site_libs/tippy-6.2.7/tippy-bundle.umd.min.js","site_libs/tippy-6.2.7/tippy-light-border.css","site_libs/tippy-6.2.7/tippy.css","site_libs/tippy-6.2.7/tippy.umd.min.js","site_libs/webcomponents-2.0.0/webcomponents.js","state-of-the-qualia-fall-2019.html","state-of-the-qualia-fall-2020.html","steven-lehar-lineage.html","symmetry-theory-of-valence.html","taking-monism-seriously.html","tyranny-of-the-intentional-object.html","universal-plot.html","wireheading-done-right.html"]}
+  </script>
+  <!--radix_placeholder_navigation_in_header-->
+  <!--/radix_placeholder_navigation_in_header-->
+  <!--radix_placeholder_distill-->
+
+  <style type="text/css">
+
+  body {
+    background-color: white;
+  }
+
+  .pandoc-table {
+    width: 100%;
+  }
+
+  .pandoc-table>caption {
+    margin-bottom: 10px;
+  }
+
+  .pandoc-table th:not([align]) {
+    text-align: left;
+  }
+
+  .pagedtable-footer {
+    font-size: 15px;
+  }
+
+  d-byline .byline {
+    grid-template-columns: 2fr 2fr;
+  }
+
+  d-byline .byline h3 {
+    margin-block-start: 1.5em;
+  }
+
+  d-byline .byline .authors-affiliations h3 {
+    margin-block-start: 0.5em;
+  }
+
+  .authors-affiliations .orcid-id {
+    width: 16px;
+    height:16px;
+    margin-left: 4px;
+    margin-right: 4px;
+    vertical-align: middle;
+    padding-bottom: 2px;
+  }
+
+  d-title .dt-tags {
+    margin-top: 1em;
+    grid-column: text;
+  }
+
+  .dt-tags .dt-tag {
+    text-decoration: none;
+    display: inline-block;
+    color: rgba(0,0,0,0.6);
+    padding: 0em 0.4em;
+    margin-right: 0.5em;
+    margin-bottom: 0.4em;
+    font-size: 70%;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  d-article table.gt_table td,
+  d-article table.gt_table th {
+    border-bottom: none;
+  }
+
+  .html-widget {
+    margin-bottom: 2.0em;
+  }
+
+  .l-screen-inset {
+    padding-right: 16px;
+  }
+
+  .l-screen .caption {
+    margin-left: 10px;
+  }
+
+  .shaded {
+    background: rgb(247, 247, 247);
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .shaded .html-widget {
+    margin-bottom: 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .shaded .shaded-content {
+    background: white;
+  }
+
+  .text-output {
+    margin-top: 0;
+    line-height: 1.5em;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  d-article {
+    padding-top: 2.5rem;
+    padding-bottom: 30px;
+  }
+
+  d-appendix {
+    padding-top: 30px;
+  }
+
+  d-article>p>img {
+    width: 100%;
+  }
+
+  d-article h2 {
+    margin: 1rem 0 1.5rem 0;
+  }
+
+  d-article h3 {
+    margin-top: 1.5rem;
+  }
+
+  d-article iframe {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 2.0em;
+    width: 100%;
+  }
+
+  /* Tweak code blocks */
+
+  d-article div.sourceCode code,
+  d-article pre code {
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  }
+
+  d-article pre,
+  d-article div.sourceCode,
+  d-article div.sourceCode pre {
+    overflow: auto;
+  }
+
+  d-article div.sourceCode {
+    background-color: white;
+  }
+
+  d-article div.sourceCode pre {
+    padding-left: 10px;
+    font-size: 12px;
+    border-left: 2px solid rgba(0,0,0,0.1);
+  }
+
+  d-article pre {
+    font-size: 12px;
+    color: black;
+    background: none;
+    margin-top: 0;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+  }
+
+  d-article pre a {
+    border-bottom: none;
+  }
+
+  d-article pre a:hover {
+    border-bottom: none;
+    text-decoration: underline;
+  }
+
+  d-article details {
+    grid-column: text;
+    margin-bottom: 0.8em;
+  }
+
+  @media(min-width: 768px) {
+
+  d-article pre,
+  d-article div.sourceCode,
+  d-article div.sourceCode pre {
+    overflow: visible !important;
+  }
+
+  d-article div.sourceCode pre {
+    padding-left: 18px;
+    font-size: 14px;
+  }
+
+  d-article pre {
+    font-size: 14px;
+  }
+
+  }
+
+  figure img.external {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+    padding: 18px;
+    box-sizing: border-box;
+  }
+
+  /* CSS for d-contents */
+
+  .d-contents {
+    grid-column: text;
+    color: rgba(0,0,0,0.8);
+    font-size: 0.9em;
+    padding-bottom: 1em;
+    margin-bottom: 1em;
+    padding-bottom: 0.5em;
+    margin-bottom: 1em;
+    padding-left: 0.25em;
+    justify-self: start;
+  }
+
+  @media(min-width: 1000px) {
+    .d-contents.d-contents-float {
+      height: 0;
+      grid-column-start: 1;
+      grid-column-end: 4;
+      justify-self: center;
+      padding-right: 3em;
+      padding-left: 2em;
+    }
+  }
+
+  .d-contents nav h3 {
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 1em;
+  }
+
+  .d-contents li {
+    list-style-type: none
+  }
+
+  .d-contents nav > ul {
+    padding-left: 0;
+  }
+
+  .d-contents ul {
+    padding-left: 1em
+  }
+
+  .d-contents nav ul li {
+    margin-top: 0.6em;
+    margin-bottom: 0.2em;
+  }
+
+  .d-contents nav a {
+    font-size: 13px;
+    border-bottom: none;
+    text-decoration: none
+    color: rgba(0, 0, 0, 0.8);
+  }
+
+  .d-contents nav a:hover {
+    text-decoration: underline solid rgba(0, 0, 0, 0.6)
+  }
+
+  .d-contents nav > ul > li > a {
+    font-weight: 600;
+  }
+
+  .d-contents nav > ul > li > ul {
+    font-weight: inherit;
+  }
+
+  .d-contents nav > ul > li > ul > li {
+    margin-top: 0.2em;
+  }
+
+
+  .d-contents nav ul {
+    margin-top: 0;
+    margin-bottom: 0.25em;
+  }
+
+  .d-article-with-toc h2:nth-child(2) {
+    margin-top: 0;
+  }
+
+
+  /* Figure */
+
+  .figure {
+    position: relative;
+    margin-bottom: 2.5em;
+    margin-top: 1.5em;
+  }
+
+  .figure .caption {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+    line-height: 1.5em;
+  }
+
+  .figure img.external {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+    padding: 18px;
+    box-sizing: border-box;
+  }
+
+  .figure .caption a {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  .figure .caption b,
+  .figure .caption strong, {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 1.0);
+  }
+
+  /* Citations */
+
+  d-article .citation {
+    color: inherit;
+    cursor: inherit;
+  }
+
+  div.hanging-indent{
+    margin-left: 1em; text-indent: -1em;
+  }
+
+  /* Citation hover box */
+
+  .tippy-box[data-theme~=light-border] {
+    background-color: rgba(250, 250, 250, 0.95);
+  }
+
+  .tippy-content > p {
+    margin-bottom: 0;
+    padding: 2px;
+  }
+
+
+  /* Tweak 1000px media break to show more text */
+
+  @media(min-width: 1000px) {
+    .base-grid,
+    distill-header,
+    d-title,
+    d-abstract,
+    d-article,
+    d-appendix,
+    distill-appendix,
+    d-byline,
+    d-footnote-list,
+    d-citation-list,
+    distill-footer {
+      grid-template-columns: [screen-start] 1fr [page-start kicker-start] 80px [middle-start] 50px [text-start kicker-end] 65px 65px 65px 65px 65px 65px 65px 65px [text-end gutter-start] 65px [middle-end] 65px [page-end gutter-end] 1fr [screen-end];
+      grid-column-gap: 16px;
+    }
+
+    .grid {
+      grid-column-gap: 16px;
+    }
+
+    d-article {
+      font-size: 1.06rem;
+      line-height: 1.7em;
+    }
+    figure .caption, .figure .caption, figure figcaption {
+      font-size: 13px;
+    }
+  }
+
+  @media(min-width: 1180px) {
+    .base-grid,
+    distill-header,
+    d-title,
+    d-abstract,
+    d-article,
+    d-appendix,
+    distill-appendix,
+    d-byline,
+    d-footnote-list,
+    d-citation-list,
+    distill-footer {
+      grid-template-columns: [screen-start] 1fr [page-start kicker-start] 60px [middle-start] 60px [text-start kicker-end] 60px 60px 60px 60px 60px 60px 60px 60px [text-end gutter-start] 60px [middle-end] 60px [page-end gutter-end] 1fr [screen-end];
+      grid-column-gap: 32px;
+    }
+
+    .grid {
+      grid-column-gap: 32px;
+    }
+  }
+
+
+  /* Get the citation styles for the appendix (not auto-injected on render since
+     we do our own rendering of the citation appendix) */
+
+  d-appendix .citation-appendix,
+  .d-appendix .citation-appendix {
+    font-size: 11px;
+    line-height: 15px;
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+    padding-left: 18px;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: rgba(0, 0, 0, 0.02);
+    padding: 10px 18px;
+    border-radius: 3px;
+    color: rgba(150, 150, 150, 1);
+    overflow: hidden;
+    margin-top: -12px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* Include appendix styles here so they can be overridden */
+
+  d-appendix {
+    contain: layout style;
+    font-size: 0.8em;
+    line-height: 1.7em;
+    margin-top: 60px;
+    margin-bottom: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    color: rgba(0,0,0,0.5);
+    padding-top: 60px;
+    padding-bottom: 48px;
+  }
+
+  d-appendix h3 {
+    grid-column: page-start / text-start;
+    font-size: 15px;
+    font-weight: 500;
+    margin-top: 1em;
+    margin-bottom: 0;
+    color: rgba(0,0,0,0.65);
+  }
+
+  d-appendix h3 + * {
+    margin-top: 1em;
+  }
+
+  d-appendix ol {
+    padding: 0 0 0 15px;
+  }
+
+  @media (min-width: 768px) {
+    d-appendix ol {
+      padding: 0 0 0 30px;
+      margin-left: -30px;
+    }
+  }
+
+  d-appendix li {
+    margin-bottom: 1em;
+  }
+
+  d-appendix a {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  d-appendix > * {
+    grid-column: text;
+  }
+
+  d-appendix > d-footnote-list,
+  d-appendix > d-citation-list,
+  d-appendix > distill-appendix {
+    grid-column: screen;
+  }
+
+  /* Include footnote styles here so they can be overridden */
+
+  d-footnote-list {
+    contain: layout style;
+  }
+
+  d-footnote-list > * {
+    grid-column: text;
+  }
+
+  d-footnote-list a.footnote-backlink {
+    color: rgba(0,0,0,0.3);
+    padding-left: 0.5em;
+  }
+
+
+
+  /* Anchor.js */
+
+  .anchorjs-link {
+    /*transition: all .25s linear; */
+    text-decoration: none;
+    border-bottom: none;
+  }
+  *:hover > .anchorjs-link {
+    margin-left: -1.125em !important;
+    text-decoration: none;
+    border-bottom: none;
+  }
+
+  /* Social footer */
+
+  .social_footer {
+    margin-top: 30px;
+    margin-bottom: 0;
+    color: rgba(0,0,0,0.67);
+  }
+
+  .disqus-comments {
+    margin-right: 30px;
+  }
+
+  .disqus-comment-count {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+  }
+
+  #disqus_thread {
+    margin-top: 30px;
+  }
+
+  .article-sharing a {
+    border-bottom: none;
+    margin-right: 8px;
+  }
+
+  .article-sharing a:hover {
+    border-bottom: none;
+  }
+
+  .sidebar-section.subscribe {
+    font-size: 12px;
+    line-height: 1.6em;
+  }
+
+  .subscribe p {
+    margin-bottom: 0.5em;
+  }
+
+
+  .article-footer .subscribe {
+    font-size: 15px;
+    margin-top: 45px;
+  }
+
+
+  .sidebar-section.custom {
+    font-size: 12px;
+    line-height: 1.6em;
+  }
+
+  .custom p {
+    margin-bottom: 0.5em;
+  }
+
+  /* Styles for listing layout (hide title) */
+  .layout-listing d-title, .layout-listing .d-title {
+    display: none;
+  }
+
+  /* Styles for posts lists (not auto-injected) */
+
+
+  .posts-with-sidebar {
+    padding-left: 45px;
+    padding-right: 45px;
+  }
+
+  .posts-list .description h2,
+  .posts-list .description p {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .posts-list .description h2 {
+    font-weight: 700;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .posts-list h2.post-tag {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    padding-bottom: 12px;
+  }
+  .posts-list {
+    margin-top: 60px;
+    margin-bottom: 24px;
+  }
+
+  .posts-list .post-preview {
+    text-decoration: none;
+    overflow: hidden;
+    display: block;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 24px 0;
+  }
+
+  .post-preview-last {
+    border-bottom: none !important;
+  }
+
+  .posts-list .posts-list-caption {
+    grid-column: screen;
+    font-weight: 400;
+  }
+
+  .posts-list .post-preview h2 {
+    margin: 0 0 6px 0;
+    line-height: 1.2em;
+    font-style: normal;
+    font-size: 24px;
+  }
+
+  .posts-list .post-preview p {
+    margin: 0 0 12px 0;
+    line-height: 1.4em;
+    font-size: 16px;
+  }
+
+  .posts-list .post-preview .thumbnail {
+    box-sizing: border-box;
+    margin-bottom: 24px;
+    position: relative;
+    max-width: 500px;
+  }
+  .posts-list .post-preview img {
+    width: 100%;
+    display: block;
+  }
+
+  .posts-list .metadata {
+    font-size: 12px;
+    line-height: 1.4em;
+    margin-bottom: 18px;
+  }
+
+  .posts-list .metadata > * {
+    display: inline-block;
+  }
+
+  .posts-list .metadata .publishedDate {
+    margin-right: 2em;
+  }
+
+  .posts-list .metadata .dt-authors {
+    display: block;
+    margin-top: 0.3em;
+    margin-right: 2em;
+  }
+
+  .posts-list .dt-tags {
+    display: block;
+    line-height: 1em;
+  }
+
+  .posts-list .dt-tags .dt-tag {
+    display: inline-block;
+    color: rgba(0,0,0,0.6);
+    padding: 0.3em 0.4em;
+    margin-right: 0.2em;
+    margin-bottom: 0.4em;
+    font-size: 60%;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .posts-list img {
+    opacity: 1;
+  }
+
+  .posts-list img[data-src] {
+    opacity: 0;
+  }
+
+  .posts-more {
+    clear: both;
+  }
+
+
+  .posts-sidebar {
+    font-size: 16px;
+  }
+
+  .posts-sidebar h3 {
+    font-size: 16px;
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    font-weight: 400;
+    text-transform: uppercase;
+  }
+
+  .sidebar-section {
+    margin-bottom: 30px;
+  }
+
+  .categories ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .categories li {
+    color: rgba(0, 0, 0, 0.8);
+    margin-bottom: 0;
+  }
+
+  .categories li>a {
+    border-bottom: none;
+  }
+
+  .categories li>a:hover {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  }
+
+  .categories .active {
+    font-weight: 600;
+  }
+
+  .categories .category-count {
+    color: rgba(0, 0, 0, 0.4);
+  }
+
+
+  @media(min-width: 768px) {
+    .posts-list .post-preview h2 {
+      font-size: 26px;
+    }
+    .posts-list .post-preview .thumbnail {
+      float: right;
+      width: 30%;
+      margin-bottom: 0;
+    }
+    .posts-list .post-preview .description {
+      float: left;
+      width: 45%;
+    }
+    .posts-list .post-preview .metadata {
+      float: left;
+      width: 20%;
+      margin-top: 8px;
+    }
+    .posts-list .post-preview p {
+      margin: 0 0 12px 0;
+      line-height: 1.5em;
+      font-size: 16px;
+    }
+    .posts-with-sidebar .posts-list {
+      float: left;
+      width: 75%;
+    }
+    .posts-with-sidebar .posts-sidebar {
+      float: right;
+      width: 20%;
+      margin-top: 60px;
+      padding-top: 24px;
+      padding-bottom: 24px;
+    }
+  }
+
+
+  /* Improve display for browsers without grid (IE/Edge <= 15) */
+
+  .downlevel {
+    line-height: 1.6em;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+  }
+
+  .downlevel .d-title {
+    padding-top: 6rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .downlevel .d-title h1 {
+    font-size: 50px;
+    font-weight: 700;
+    line-height: 1.1em;
+    margin: 0 0 0.5rem;
+  }
+
+  .downlevel .d-title p {
+    font-weight: 300;
+    font-size: 1.2rem;
+    line-height: 1.55em;
+    margin-top: 0;
+  }
+
+  .downlevel .d-byline {
+    padding-top: 0.8em;
+    padding-bottom: 0.8em;
+    font-size: 0.8rem;
+    line-height: 1.8em;
+  }
+
+  .downlevel .section-separator {
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .downlevel .d-article {
+    font-size: 1.06rem;
+    line-height: 1.7em;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+  }
+
+
+  .downlevel .d-appendix {
+    padding-left: 0;
+    padding-right: 0;
+    max-width: none;
+    font-size: 0.8em;
+    line-height: 1.7em;
+    margin-bottom: 0;
+    color: rgba(0,0,0,0.5);
+    padding-top: 40px;
+    padding-bottom: 48px;
+  }
+
+  .downlevel .footnotes ol {
+    padding-left: 13px;
+  }
+
+  .downlevel .base-grid,
+  .downlevel .distill-header,
+  .downlevel .d-title,
+  .downlevel .d-abstract,
+  .downlevel .d-article,
+  .downlevel .d-appendix,
+  .downlevel .distill-appendix,
+  .downlevel .d-byline,
+  .downlevel .d-footnote-list,
+  .downlevel .d-citation-list,
+  .downlevel .distill-footer,
+  .downlevel .appendix-bottom,
+  .downlevel .posts-container {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
+  @media(min-width: 768px) {
+    .downlevel .base-grid,
+    .downlevel .distill-header,
+    .downlevel .d-title,
+    .downlevel .d-abstract,
+    .downlevel .d-article,
+    .downlevel .d-appendix,
+    .downlevel .distill-appendix,
+    .downlevel .d-byline,
+    .downlevel .d-footnote-list,
+    .downlevel .d-citation-list,
+    .downlevel .distill-footer,
+    .downlevel .appendix-bottom,
+    .downlevel .posts-container {
+    padding-left: 150px;
+    padding-right: 150px;
+    max-width: 900px;
+  }
+  }
+
+  .downlevel pre code {
+    display: block;
+    border-left: 2px solid rgba(0, 0, 0, .1);
+    padding: 0 0 0 20px;
+    font-size: 14px;
+  }
+
+  .downlevel code, .downlevel pre {
+    color: black;
+    background: none;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+  }
+
+  .downlevel .posts-list .post-preview {
+    color: inherit;
+  }
+
+
+
+  </style>
+
+  <script type="application/javascript">
+
+  function is_downlevel_browser() {
+    if (bowser.isUnsupportedBrowser({ msie: "12", msedge: "16"},
+                                   window.navigator.userAgent)) {
+      return true;
+    } else {
+      return window.load_distill_framework === undefined;
+    }
+  }
+
+  // show body when load is complete
+  function on_load_complete() {
+
+    // add anchors
+    if (window.anchors) {
+      window.anchors.options.placement = 'left';
+      window.anchors.add('d-article > h2, d-article > h3, d-article > h4, d-article > h5');
+    }
+
+
+    // set body to visible
+    document.body.style.visibility = 'visible';
+
+    // force redraw for leaflet widgets
+    if (window.HTMLWidgets) {
+      var maps = window.HTMLWidgets.findAll(".leaflet");
+      $.each(maps, function(i, el) {
+        var map = this.getMap();
+        map.invalidateSize();
+        map.eachLayer(function(layer) {
+          if (layer instanceof L.TileLayer)
+            layer.redraw();
+        });
+      });
+    }
+
+    // trigger 'shown' so htmlwidgets resize
+    $('d-article').trigger('shown');
+  }
+
+  function init_distill() {
+
+    init_common();
+
+    // create front matter
+    var front_matter = $('<d-front-matter></d-front-matter>');
+    $('#distill-front-matter').wrap(front_matter);
+
+    // create d-title
+    $('.d-title').changeElementType('d-title');
+
+    // create d-byline
+    var byline = $('<d-byline></d-byline>');
+    $('.d-byline').replaceWith(byline);
+
+    // create d-article
+    var article = $('<d-article></d-article>');
+    $('.d-article').wrap(article).children().unwrap();
+
+    // move posts container into article
+    $('.posts-container').appendTo($('d-article'));
+
+    // create d-appendix
+    $('.d-appendix').changeElementType('d-appendix');
+
+    // flag indicating that we have appendix items
+    var appendix = $('.appendix-bottom').children('h3').length > 0;
+
+    // replace footnotes with <d-footnote>
+    $('.footnote-ref').each(function(i, val) {
+      appendix = true;
+      var href = $(this).attr('href');
+      var id = href.replace('#', '');
+      var fn = $('#' + id);
+      var fn_p = $('#' + id + '>p');
+      fn_p.find('.footnote-back').remove();
+      var text = fn_p.html();
+      var dtfn = $('<d-footnote></d-footnote>');
+      dtfn.html(text);
+      $(this).replaceWith(dtfn);
+    });
+    // remove footnotes
+    $('.footnotes').remove();
+
+    // move refs into #references-listing
+    $('#references-listing').replaceWith($('#refs'));
+
+    $('h1.appendix, h2.appendix').each(function(i, val) {
+      $(this).changeElementType('h3');
+    });
+    $('h3.appendix').each(function(i, val) {
+      var id = $(this).attr('id');
+      $('.d-contents a[href="#' + id + '"]').parent().remove();
+      appendix = true;
+      $(this).nextUntil($('h1, h2, h3')).addBack().appendTo($('d-appendix'));
+    });
+
+    // show d-appendix if we have appendix content
+    $("d-appendix").css('display', appendix ? 'grid' : 'none');
+
+    // localize layout chunks to just output
+    $('.layout-chunk').each(function(i, val) {
+
+      // capture layout
+      var layout = $(this).attr('data-layout');
+
+      // apply layout to markdown level block elements
+      var elements = $(this).children().not('details, div.sourceCode, pre, script');
+      elements.each(function(i, el) {
+        var layout_div = $('<div class="' + layout + '"></div>');
+        if (layout_div.hasClass('shaded')) {
+          var shaded_content = $('<div class="shaded-content"></div>');
+          $(this).wrap(shaded_content);
+          $(this).parent().wrap(layout_div);
+        } else {
+          $(this).wrap(layout_div);
+        }
+      });
+
+
+      // unwrap the layout-chunk div
+      $(this).children().unwrap();
+    });
+
+    // remove code block used to force  highlighting css
+    $('.distill-force-highlighting-css').parent().remove();
+
+    // remove empty line numbers inserted by pandoc when using a
+    // custom syntax highlighting theme
+    $('code.sourceCode a:empty').remove();
+
+    // load distill framework
+    load_distill_framework();
+
+    // wait for window.distillRunlevel == 4 to do post processing
+    function distill_post_process() {
+
+      if (!window.distillRunlevel || window.distillRunlevel < 4)
+        return;
+
+      // hide author/affiliations entirely if we have no authors
+      var front_matter = JSON.parse($("#distill-front-matter").html());
+      var have_authors = front_matter.authors && front_matter.authors.length > 0;
+      if (!have_authors)
+        $('d-byline').addClass('hidden');
+
+      // article with toc class
+      $('.d-contents').parent().addClass('d-article-with-toc');
+
+      // strip links that point to #
+      $('.authors-affiliations').find('a[href="#"]').removeAttr('href');
+
+      // add orcid ids
+      $('.authors-affiliations').find('.author').each(function(i, el) {
+        var orcid_id = front_matter.authors[i].orcidID;
+        if (orcid_id) {
+          var a = $('<a></a>');
+          a.attr('href', 'https://orcid.org/' + orcid_id);
+          var img = $('<img></img>');
+          img.addClass('orcid-id');
+          img.attr('alt', 'ORCID ID');
+          img.attr('src','data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg==');
+          a.append(img);
+          $(this).append(a);
+        }
+      });
+
+      // hide elements of author/affiliations grid that have no value
+      function hide_byline_column(caption) {
+        $('d-byline').find('h3:contains("' + caption + '")').parent().css('visibility', 'hidden');
+      }
+
+      // affiliations
+      var have_affiliations = false;
+      for (var i = 0; i<front_matter.authors.length; ++i) {
+        var author = front_matter.authors[i];
+        if (author.affiliation !== "&nbsp;") {
+          have_affiliations = true;
+          break;
+        }
+      }
+      if (!have_affiliations)
+        $('d-byline').find('h3:contains("Affiliations")').css('visibility', 'hidden');
+
+      // published date
+      if (!front_matter.publishedDate)
+        hide_byline_column("Published");
+
+      // document object identifier
+      var doi = $('d-byline').find('h3:contains("DOI")');
+      var doi_p = doi.next().empty();
+      if (!front_matter.doi) {
+        // if we have a citation and valid citationText then link to that
+        if ($('#citation').length > 0 && front_matter.citationText) {
+          doi.html('Citation');
+          $('<a href="#citation"></a>')
+            .text(front_matter.citationText)
+            .appendTo(doi_p);
+        } else {
+          hide_byline_column("DOI");
+        }
+      } else {
+        $('<a></a>')
+           .attr('href', "https://doi.org/" + front_matter.doi)
+           .html(front_matter.doi)
+           .appendTo(doi_p);
+      }
+
+       // change plural form of authors/affiliations
+      if (front_matter.authors.length === 1) {
+        var grid = $('.authors-affiliations');
+        grid.children('h3:contains("Authors")').text('Author');
+        grid.children('h3:contains("Affiliations")').text('Affiliation');
+      }
+
+      // remove d-appendix and d-footnote-list local styles
+      $('d-appendix > style:first-child').remove();
+      $('d-footnote-list > style:first-child').remove();
+
+      // move appendix-bottom entries to the bottom
+      $('.appendix-bottom').appendTo('d-appendix').children().unwrap();
+      $('.appendix-bottom').remove();
+
+      // hoverable references
+      $('span.citation[data-cites]').each(function() {
+        if ($(this).children()[0].nodeName == "D-FOOTNOTE") {
+          var fn = $(this).children()[0]
+          $(this).html(fn.shadowRoot.querySelector("sup"))
+          $(this).id = fn.id
+          fn.remove()
+        }
+        var refs = $(this).attr('data-cites').split(" ");
+        var refHtml = refs.map(function(ref) {
+          return "<p>" + $('#ref-' + ref).html() + "</p>";
+        }).join("\n");
+        window.tippy(this, {
+          allowHTML: true,
+          content: refHtml,
+          maxWidth: 500,
+          interactive: true,
+          interactiveBorder: 10,
+          theme: 'light-border',
+          placement: 'bottom-start'
+        });
+      });
+
+      // fix footnotes in tables (#411)
+      // replacing broken distill.pub feature
+      $('table d-footnote').each(function() {
+        // we replace internal showAtNode methode which is triggered when hovering a footnote
+        this.hoverBox.showAtNode = function(node) {
+          // ported from https://github.com/distillpub/template/pull/105/files
+          calcOffset = function(elem) {
+              let x = elem.offsetLeft;
+              let y = elem.offsetTop;
+              // Traverse upwards until an `absolute` element is found or `elem`
+              // becomes null.
+              while (elem = elem.offsetParent && elem.style.position != 'absolute') {
+                  x += elem.offsetLeft;
+                  y += elem.offsetTop;
+              }
+
+              return { left: x, top: y };
+          }
+          // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop
+          const bbox = node.getBoundingClientRect();
+          const offset = calcOffset(node);
+          this.show([offset.left + bbox.width, offset.top + bbox.height]);
+        }
+      })
+
+      // clear polling timer
+      clearInterval(tid);
+
+      // show body now that everything is ready
+      on_load_complete();
+    }
+
+    var tid = setInterval(distill_post_process, 50);
+    distill_post_process();
+
+  }
+
+  function init_downlevel() {
+
+    init_common();
+
+     // insert hr after d-title
+    $('.d-title').after($('<hr class="section-separator"/>'));
+
+    // check if we have authors
+    var front_matter = JSON.parse($("#distill-front-matter").html());
+    var have_authors = front_matter.authors && front_matter.authors.length > 0;
+
+    // manage byline/border
+    if (!have_authors)
+      $('.d-byline').remove();
+    $('.d-byline').after($('<hr class="section-separator"/>'));
+    $('.d-byline a').remove();
+
+    // remove toc
+    $('.d-contents').remove();
+
+    // move appendix elements
+    $('h1.appendix, h2.appendix').each(function(i, val) {
+      $(this).changeElementType('h3');
+    });
+    $('h3.appendix').each(function(i, val) {
+      $(this).nextUntil($('h1, h2, h3')).addBack().appendTo($('.d-appendix'));
+    });
+
+
+    // inject headers into references and footnotes
+    var refs_header = $('<h3></h3>');
+    refs_header.text('References');
+    $('#refs').prepend(refs_header);
+
+    var footnotes_header = $('<h3></h3');
+    footnotes_header.text('Footnotes');
+    $('.footnotes').children('hr').first().replaceWith(footnotes_header);
+
+    // move appendix-bottom entries to the bottom
+    $('.appendix-bottom').appendTo('.d-appendix').children().unwrap();
+    $('.appendix-bottom').remove();
+
+    // remove appendix if it's empty
+    if ($('.d-appendix').children().length === 0)
+      $('.d-appendix').remove();
+
+    // prepend separator above appendix
+    $('.d-appendix').before($('<hr class="section-separator" style="clear: both"/>'));
+
+    // trim code
+    $('pre>code').each(function(i, val) {
+      $(this).html($.trim($(this).html()));
+    });
+
+    // move posts-container right before article
+    $('.posts-container').insertBefore($('.d-article'));
+
+    $('body').addClass('downlevel');
+
+    on_load_complete();
+  }
+
+
+  function init_common() {
+
+    // jquery plugin to change element types
+    (function($) {
+      $.fn.changeElementType = function(newType) {
+        var attrs = {};
+
+        $.each(this[0].attributes, function(idx, attr) {
+          attrs[attr.nodeName] = attr.nodeValue;
+        });
+
+        this.replaceWith(function() {
+          return $("<" + newType + "/>", attrs).append($(this).contents());
+        });
+      };
+    })(jQuery);
+
+    // prevent underline for linked images
+    $('a > img').parent().css({'border-bottom' : 'none'});
+
+    // mark non-body figures created by knitr chunks as 100% width
+    $('.layout-chunk').each(function(i, val) {
+      var figures = $(this).find('img, .html-widget');
+      // ignore leaflet img layers (#106)
+      figures = figures.filter(':not(img[class*="leaflet"])')
+      if ($(this).attr('data-layout') !== "l-body") {
+        figures.css('width', '100%');
+      } else {
+        figures.css('max-width', '100%');
+        figures.filter("[width]").each(function(i, val) {
+          var fig = $(this);
+          fig.css('width', fig.attr('width') + 'px');
+        });
+
+      }
+    });
+
+    // auto-append index.html to post-preview links in file: protocol
+    // and in rstudio ide preview
+    $('.post-preview').each(function(i, val) {
+      if (window.location.protocol === "file:")
+        $(this).attr('href', $(this).attr('href') + "index.html");
+    });
+
+    // get rid of index.html references in header
+    if (window.location.protocol !== "file:") {
+      $('.distill-site-header a[href]').each(function(i,val) {
+        $(this).attr('href', $(this).attr('href').replace(/^index[.]html/, "./"));
+      });
+    }
+
+    // add class to pandoc style tables
+    $('tr.header').parent('thead').parent('table').addClass('pandoc-table');
+    $('.kable-table').children('table').addClass('pandoc-table');
+
+    // add figcaption style to table captions
+    $('caption').parent('table').addClass("figcaption");
+
+    // initialize posts list
+    if (window.init_posts_list)
+      window.init_posts_list();
+
+    // implmement disqus comment link
+    $('.disqus-comment-count').click(function() {
+      window.headroom_prevent_pin = true;
+      $('#disqus_thread').toggleClass('hidden');
+      if (!$('#disqus_thread').hasClass('hidden')) {
+        var offset = $(this).offset();
+        $(window).resize();
+        $('html, body').animate({
+          scrollTop: offset.top - 35
+        });
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (is_downlevel_browser())
+      init_downlevel();
+    else
+      window.addEventListener('WebComponentsReady', init_distill);
+  });
+
+  </script>
+
+  <!--/radix_placeholder_distill-->
+  <script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
+  <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+  <script src="site_libs/popper-2.6.0/popper.min.js"></script>
+  <link href="site_libs/tippy-6.2.7/tippy.css" rel="stylesheet" />
+  <link href="site_libs/tippy-6.2.7/tippy-light-border.css" rel="stylesheet" />
+  <script src="site_libs/tippy-6.2.7/tippy.umd.min.js"></script>
+  <script src="site_libs/anchor-4.2.2/anchor.min.js"></script>
+  <script src="site_libs/bowser-1.9.3/bowser.min.js"></script>
+  <script src="site_libs/webcomponents-2.0.0/webcomponents.js"></script>
+  <script src="site_libs/distill-2.2.21/template.v2.js"></script>
+  <!--radix_placeholder_site_in_header-->
+  <!--/radix_placeholder_site_in_header-->
+  <link rel="shortcut icon" href="https://www.qri.org/favicon_io/favicon_io/favicon-32x32.png" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+
+
+<link rel="apple-touch-icon" sizes="180x180" href="/favicon_io/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon_io/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon_io/favicon-16x16.png">
+<link rel="manifest" href="/favicon_io/site.webmanifest"><meta name="twitter:image" content="https://qri.org/images/twitter-logo.webp" /></head>
+
+<body>
+
+<!--radix_placeholder_front_matter-->
+
+<script id="distill-front-matter" type="text/json">
+{"title":"The Symmetry Theory of Valence 2020 Overview","description":"","authors":[{"author":"Andrés Gómez-Emilsson","authorURL":"../people/andrés-gómez-emilsson","affiliation":"Qualia Research Institute","affiliationURL":"https://www.qri.org/","orcidID":""}],"publishedDate":"2020-12-17T00:00:00.000-07:00","citationText":"Gómez-Emilsson, 2020"}
+</script>
+
+<!--/radix_placeholder_front_matter-->
+<!--radix_placeholder_navigation_before_body-->
+<!--/radix_placeholder_navigation_before_body-->
+<!--radix_placeholder_site_before_body-->
+<!--/radix_placeholder_site_before_body-->
+
+<div class="d-title">
+<h1>The Symmetry Theory of Valence 2020 Overview</h1>
+<!--radix_placeholder_categories-->
+<!--/radix_placeholder_categories-->
+
+</div>
+
+<div class="d-byline">
+  Andrés Gómez-Emilsson ../people/andrés-gómez-emilsson (Qualia Research
+Institute)<a href="https://www.qri.org/"
+class="uri">https://www.qri.org/</a>
+  
+<br/>Dec, 17 2020
+</div>
+
+<div class="d-article">
+<div class="d-contents d-contents-float">
+<nav class="l-text toc figcaption" id="TOC">
+<h3>Contents</h3>
+<ul>
+<li><a href="#core-affect" id="toc-core-affect">Core Affect</a></li>
+<li><a href="#the-symmetry-theory-of-valence"
+id="toc-the-symmetry-theory-of-valence">The Symmetry Theory of
+Valence</a>
+<ul>
+<li><a href="#what-is-valence" id="toc-what-is-valence">What is
+Valence?</a></li>
+<li><a href="#bliss" id="toc-bliss">Bliss</a></li>
+<li><a href="#valence-vs.-healing-vs.-meaning"
+id="toc-valence-vs.-healing-vs.-meaning">Valence vs. Healing
+vs. Meaning</a></li>
+<li><a href="#a-factor-for-awakening" id="toc-a-factor-for-awakening">A
+Factor for Awakening</a></li>
+<li><a href="#recipe-vs.-review" id="toc-recipe-vs.-review">Recipe
+vs. Review</a></li>
+</ul></li>
+<li><a href="#information-and-valence"
+id="toc-information-and-valence">Information and Valence</a></li>
+<li><a href="#phenomenology" id="toc-phenomenology">Phenomenology</a>
+<ul>
+<li><a href="#healthy-skepticism-of-phenomenology"
+id="toc-healthy-skepticism-of-phenomenology">Healthy Skepticism of
+Phenomenology</a></li>
+<li><a href="#massage-vs.-bodily-pain"
+id="toc-massage-vs.-bodily-pain">Massage vs. Bodily Pain</a></li>
+</ul></li>
+<li><a href="#anxiety-vs.-relaxation"
+id="toc-anxiety-vs.-relaxation">Anxiety vs. Relaxation</a>
+<ul>
+<li><a href="#non-adaptedness-principle"
+id="toc-non-adaptedness-principle">Non-Adaptedness Principle</a></li>
+<li><a href="#exotic-valence" id="toc-exotic-valence">Exotic
+Valence</a></li>
+</ul></li>
+<li><a href="#symmetry-in-stimuli" id="toc-symmetry-in-stimuli">Symmetry
+in Stimuli</a>
+<ul>
+<li><a href="#auditory-harmony-and-rhythm"
+id="toc-auditory-harmony-and-rhythm">Auditory: Harmony and
+Rhythm</a></li>
+</ul></li>
+<li><a href="#endogenously-generated-symmetry"
+id="toc-endogenously-generated-symmetry">Endogenously Generated
+Symmetry</a></li>
+<li><a href="#symmetry-in-the-brain"
+id="toc-symmetry-in-the-brain">Symmetry in the Brain</a>
+<ul>
+<li><a href="#jhanas" id="toc-jhanas">Jhanas</a></li>
+<li><a href="#ketamine" id="toc-ketamine">Ketamine</a></li>
+<li><a href="#meo-dmt" id="toc-meo-dmt">5-MeO-DMT</a></li>
+</ul></li>
+<li><a href="#near-enemies" id="toc-near-enemies">Near
+“Enemies”</a></li>
+<li><a href="#counter-examples" id="toc-counter-examples">Counter
+Examples?</a></li>
+<li><a href="#possible-way-to-test-stv"
+id="toc-possible-way-to-test-stv">Possible Way to Test STV?</a>
+<ul>
+<li><a href="#the-steps-of-the-algorithm"
+id="toc-the-steps-of-the-algorithm">The Steps of the Algorithm</a></li>
+</ul></li>
+<li><a href="#testable-predictions"
+id="toc-testable-predictions">Testable Predictions</a>
+<ul>
+<li><a href="#ssris-as-symmetry-reducers"
+id="toc-ssris-as-symmetry-reducers">SSRIs as Symmetry Reducers</a></li>
+<li><a href="#psychedelics-as-symmetry-enchancers"
+id="toc-psychedelics-as-symmetry-enchancers">Psychedelics as Symmetry
+Enchancers</a></li>
+</ul></li>
+<li><a
+href="#the-future-of-mental-health-personalized-harmonic-re-tuning"
+id="toc-the-future-of-mental-health-personalized-harmonic-re-tuning">The
+Future of Mental Health: Personalized Harmonic Re-Tuning</a></li>
+<li><a href="#tags" id="toc-tags">Tags</a></li>
+</ul>
+</nav>
+</div>
+<h2 id="core-affect">Core Affect</h2>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-2.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>So, the Symmetry Theory of Valence. Just defining terms so that we’re
+all on the same page. There’s this thing called core <em>affect</em>
+which is basically what you get when you apply dimensionality reduction
+techniques to any one of many areas of psychology. There’s a
+surprisingly robust pair of dimensions that emerge in co-occurrences of
+words or even descriptions of behavior. These two axes, arousal and
+valence, seem to account for about 60% of the variance in terms of what
+information emotional words contain. And I mean, roughly speaking,
+arousal is the level of activation, how energetic you are, and valence
+is how good you feel. Most of what I’m going to be talking about is
+valence. That said, you need to also consider arousal in the picture to
+know what this is all about. Just a few examples: you have high arousal,
+high valence, so that would be kind of excitement and anticipation. But
+you also can have high energy, but not feeling really good, and that
+would be kind of anxiety or anger or irritation. Likewise, you have
+depression, which is low arousal, low valence, and serenity is peaceful,
+blissful calm, that would be low arousal, high valence.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-3.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>This is just one example of one of the ways in which you can recover
+these dimensions of valence and arousal. <a
+href="http://qualiacomputing.com/2015/06/09/state-space-of-drug-effects-results/">This</a><span
+class="citation" data-cites="Emilsson_2015">(<a
+href="#ref-Emilsson_2015" role="doc-biblioref">Gómez-Emilsson
+2015</a>)</span> was a little study we conducted years ago. We were
+studying people who have experiences with all kinds of substances
+online. We were giving them the survey, where they were going to
+describe a particular substance along something like 70 different
+dimensions. Then I conducted factor analysis on that data set.
+Interestingly, we have three core dimensions of valence or
+valence-related axes, which give you a sense of, okay, what is the space
+of possible effects that you can get from some substances. There were
+actually six dimensions that emerged, but three of them are
+valence-related:</p>
+<p>We have slow euphoria, which is equivalent to low arousal, high
+valence with top terms like <em>calming</em> and <em>relieving</em>. The
+negative predictors of it would be something like anxiety, producing
+<em>difficult bodily discomfort</em>. Fast euphoria is the sort of thing
+you get with stimulants, you know, <em>energizing</em>,
+<em>sociable</em>, the opposite of feeling <em>spaced out</em> and
+<em>confused</em>.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-4.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-5.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>The other axis that kind of emerged was this notion of spiritual
+euphoria. That’s the term I used back then. I also used the term
+<em>significance</em>, or <em>saliency</em> nowadays. Now I would
+actually use the term criticality for other reasons that we can go into.
+There’s this other kind of axis for how you can experience intense
+valence with substances, which is different from slow and fast euphoria,
+which would roughly correspond to the psychedelic space. And that, you
+know, gets marked with things such as <em>mystical</em>,
+<em>incredible</em>, <em>life changing</em>. The opposite of that is
+<em>trivial</em>, <em>self-centered</em>, or <em>irrelevant</em> or
+something like that. This is just to complete the cube. And, you know,
+in a sense…</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-6.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>This is just a kind of <em>change of basis</em>, where you still get,
+in a sense, the valence dimension emerging out of this dimensionality
+reduction analysis. If you were to apply just one dimension, you know,
+if you ask the factor analysis to just give you one factor, it is going
+to be the valence factor. That’s the axis that accounts for most of the
+variance for the effects of drugs.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/5_clusters_oval_curved_1-1.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>I’ve got to say that I absolutely acknowledge that emotions are far
+more complex and intricate than just valence and arousal. This is the
+result of my master’s thesis where we were analyzing this thing called
+<em>mood updates</em>, how people feel over time, day after day. I was
+computing the transition probabilities between emotions, and you can do
+cluster analysis here and finding attractors. You’ll see that there’s
+additional information. That said, we concluded that a big chunk of the
+additional information that is not valence and arousal is actually
+information about your <a
+href="https://qualiacomputing.com/2016/08/20/wireheading_done_right/"><em>trajectory
+in the valence arousal space</em></a><span class="citation"
+data-cites="Emilsson_2016">(<a href="#ref-Emilsson_2016"
+role="doc-biblioref">Gómez-Emilsson 2016b</a>)</span>. For example, we
+found there would be emotions that because of what they tell you about
+your emotional dynamics we called <em>gateway emotions</em>, like
+feeling <em>relieved</em> and feeling <em>hopeful</em>. These terms
+contain information that you were in a negative, kind of depressive
+attractor, and you’re moving towards the positive high arousal
+attractor. In essence, the terms we use for emotions give you not only
+information about where you are in the valence-arousal space but also
+what is your trajectory in that space. But in a sense, valence and
+arousal still account for a very, very big chunk of what an emotion is.
+Okay, so hopefully I’ve convinced you of the importance of valence, at
+least in this context.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-8.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<h2 id="the-symmetry-theory-of-valence">The Symmetry Theory of
+Valence</h2>
+<p>Now, let’s jump into the Symmetry Theory of Valence (STV). The
+overall hypotheses and the first explicit argument for it appeared in
+this really, really awesome work by my collaborator, Michael Johnson, <a
+href="https://opentheory.net/PrincipiaQualia.pdf"><em>Principia
+Qualia</em></a><span class="citation" data-cites="Johnson_2016">(<a
+href="#ref-Johnson_2016" role="doc-biblioref">Johnson 2016</a>)</span>.
+He has a really interesting skeleton of an argument that points to a lot
+of research threads that are really worth getting into. I highly
+recommend digging into this work.</p>
+<p>One of the things that it lays out is the kind of conceptual
+framework to make sense of what type of thing valence might be. I’ll
+just define a couple terms, which is, first <em>qualia formalism</em>.
+If there’s one thing at QRI we are married to, you could say, it would
+be qualia formalism. That is, for any conscious experience, there exists
+a mathematical object isomorphic to it. We can make an analogy here to
+something like electromagnetism where we used to have lightning, and
+electricity, and magnets, and all of that seemed sort of somehow thinly
+related. But, it turns out that there’s actually just four equations of
+electromagnetism that tie together all of that phenomena. And you can <a
+href="https://youtu.be/CzUf0QIIxxA">compare it to</a> something like
+élan vital, the <em>essence of life</em>. People used to think that
+maybe there is some kind of a substance that determines whether you’re
+alive or not. And we would say that, well, that kind of fell through,
+you know, in the end there is molecular complexity under more molecular
+complexity. There doesn’t seem to be such a thing as “life itself”. Life
+is not formalizable in the same way as electromagnetism is, but
+something that we would claim at QRI or we could even say something that
+we <em>assume</em> at QRI, because we believe it is a very generative
+frame, is that yes, there will be a set of deep mathematical structures
+to consciousness. In particular, if you expand this into other areas, we
+also think this is going to apply to valence: that there is going to be
+a deep and rich mathematical structure to valence, and that notion is
+called valence structuralism.</p>
+<p>In <em>Principia Qualia</em> by Mike Johnson, he has this argument
+for it, which I definitely recommend reading, especially if you have the
+aesthetic of a physicist. I think you’ll really like this work, because
+I think it’s really, really good in that sense. What I’m going to do now
+is try to give you a kind of intuition for it. And then the whole
+empirical argument.</p>
+<h3 id="what-is-valence">What is Valence?</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-10.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Importantly, there are a lot of theories of what valence is. Mike
+looked at the literature, did a very deep dive into it, and realized
+that they’re usually unsatisfactory, or at the very least, they don’t
+get at the true core of what an explanation for valence should be like.
+So basically, you have these accounts of, for example, valence sees how
+the brain represents value. Ultimately, that’s just a correlation. Value
+is a fuzzy abstraction. Some people think valence is the presence of
+opioids in the brain. But if you inject opioids in different parts of
+the brain, it doesn’t always feel good. It actually needs to be injected
+in a very narrow range of stripes in the pleasure centers, and
+otherwise, it just causes strange feelings or wanting, but it’s not the
+signature of valence itself. Or, for example, the pleasure centers. Just
+because you’re calling something “the pleasure center”, and it’s
+correlated with feeling good, it doesn’t mean you have an explanation.
+It’s not a very insightful, <em>illuminating</em>, account of
+valence.</p>
+<h3 id="bliss">Bliss</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-11.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>So what could it be? I’ll focus to a large extent on what we are
+going to call <em>bliss</em>, which is just very positive valence. What
+is that? What is very positive valence? What is the sense of ecstasy,
+bliss, intense happiness? There’s a lot of intuitions. Definitely a lot
+of people think it’s some kind of spiritual signal, and I wouldn’t want
+to convince you out of that view. But the truth is that there are a lot
+of different spiritualities, and they sometimes say contradictory
+things. So it’s kind of strange to expect that there’s this underlying
+universal spiritual signal that whenever you’re doing something
+<em>aligned with spirit</em>, you feel good. Because sometimes you can
+do something very different than somebody else and still have that
+feeling. Also, the idea that it is “merely” chemical reactions in the
+brain, again, is not a super satisfactory explanation… same as with
+pleasure centers, health, few prediction errors, etc. Well, and in the
+end, I add, yes, symmetry and consciousness, which is what I will be
+arguing.</p>
+<h3 id="valence-vs.-healing-vs.-meaning">Valence vs. Healing
+vs. Meaning</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-12.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>I also want to point out, and this is super important, that valence
+is not the same as <em>healing</em>, and it’s not the same as meaning.
+However, they’re correlated. I would also go as far as to say that
+<strong>high valence is necessary for healing and for meaning</strong>
+to a large extent. In a sense, you can have a lot of very high valence
+states that are actually very unhealthy for you. Just an example would
+be methamphetamine. It can feel great, but it’s unsustainable. To the
+extent that your nervous system is self-organizing around that high
+valence experience, it makes it kind of the center of your life. And,
+you know, it’s a dopamine releaser. It’s obviously unsustainable. You
+can’t actually do that long-term and expect good results. Whereas,
+something like meditation, or even psychedelics, because their tolerance
+mechanism is very, very different. You could say that, yeah, those might
+be high valence, highly meaningful, and also healing experiences.</p>
+<p>So I just want to say that, you know, high valence doesn’t entail
+healing. And that in that sense, you might say, “Okay, why are we so
+interested in this?”, but I would say that high valence is a necessary
+condition for deep healing. And I would even go as far as to say that,
+for a psychedelic experience to be deeply healing, it <em>has to involve
+high valence</em> in one context or another. Of course, you may end up
+processing a lot of very difficult emotions. But ideally, it would be
+something that basically allows you to heal those difficult emotions and
+transform them into a state of mind that has many more of the positive
+qualities.</p>
+<h3 id="a-factor-for-awakening">A Factor for Awakening</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-13.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>And more so, high valence, even according to the Buddha, is an
+important factor for awakening. Of the seven <a
+href="https://en.wikipedia.org/wiki/Seven_Factors_of_Awakening">factors
+for awakening</a>, I would actually say about five of them are very
+connected to valence. Mindfulness, joy, relaxation, concentration,
+equanimity; they are kind of different flavors of high valence. They’re
+different ways in which a very high valence experience can manifest. The
+Buddha says that these are important things. Even if you only care about
+awakening, enlightenment, you may also care about the mathematics of
+valence. It might point you in the right direction as well.</p>
+<h3 id="recipe-vs.-review">Recipe vs. Review</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-14.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>I’ll also mention, there’s a big difference between the
+<em>recipe</em> of a state of consciousness and what you might call the
+<em>review</em>, or the description, of that state of consciousness.
+I’ll make an analogy with cooking: if you have cooking instructions for
+how to make a cake, sometimes it’s very counterintuitive what the cake
+is going to taste based on those instructions. Like “add yeast” for
+example. A lot of things in the recipe you may not know exactly how are
+going to actually affect the result. So, the recipe may look very
+different from the review of the state. I would say that for a lot of
+meditation states, or even just general life advice, this idea of
+<em>don’t mindlessly chasing pleasure</em> or trying to satisfy all of
+your existing desires compulsively gives counter-intuitive results.
+Yeah, chasing pleasure compulsively is not going to result in a
+sustainable high valence. To some extent, a lot of meditation
+instructions tell you to neither approach nor withdraw from emotions to
+develop equanimity. Since you are not engaging with your emotions, it
+sounds like the result is a fully neutral experience, right? It sounds
+like it’s unrelated to valence, almost cutting out the valence. But I
+would say: that’s just the recipe. Those are the instructions for how
+you manage your attention in order to eventually change your brain to
+actually generate these very healthy, sustainable, high valence states.
+So I definitely want to overcome this prejudice of thinking that high
+valence is unrelated to spirituality. No, I think they’re actually very
+deeply, intimately connected.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-15.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Okay, so let’s go into the Symmetry Theory of Valence. I’ll just read
+these, but we will go into more depth into all of these. So, you know,
+we talked about <em>qualia formalism</em>, there is a mathematical
+object whose features are isomorphic to phenomenology. We believe that,
+yeah, harmony basically feels good because it’s symmetry <a
+href="https://qualiacomputing.com/2018/11/28/the-pseudo-time-arrow-explaining-phenomenal-time-with-implicit-causal-structures-in-networks-of-local-binding/">over
+time</a><span class="citation" data-cites="algekalipso_2018">(<a
+href="#ref-algekalipso_2018" role="doc-biblioref">Gómez-Emilsson
+2018</a>)</span>. And basically, there’s kind of this duality between
+<em>symmetry and space</em> and <em>synchrony in time</em>. We will go
+over pleasure centers. The way we explain pleasure centers in this
+theory is that they are kind of <em>tuning knobs</em> (this was first
+proposed in Principia Qualia). They are there these bridges that,
+basically, when they get activated, they enable global <a
+href="https://qualiacomputing.com/2020/12/05/oscillatory-synchrony-is-energetically-cheap/">large-scale
+synchrony in the brain</a><span class="citation"
+data-cites="algekalipso_2020">(<a href="#ref-algekalipso_2020"
+role="doc-biblioref">Gómez-Emilsson 2020</a>)</span>. This is something
+that ultimately is very testable. Because if you can activate the
+pleasure centers, or inhibit whole brain harmony, we predict that’s
+going to actually negate the positive valence effects of the pleasure
+centers. Likewise, if we can induce large scale harmony, without
+activating the pleasure centers, or maybe even inhibiting the pleasure
+centers, we expect that to be a high valence state. So, it’s a cool,
+testable interpretation of what pleasure centers even are.</p>
+<p>Boredom is kind of an anti symmetry mechanism. So that’s why even if
+you look at a cathedral or something like that, you’re not going to be
+happy forever. You’re going to be happy for a little bit. Because your
+brain realizes that you’re not learning anything, and adds kind of this
+dissonance in order to make you move on to something else. We are wired
+in such a way that what helps us reproduce symmetrifies our
+consciousness. So, it’s not that high calorie food in and of itself is
+symmetrical, it’s not that it in and of itself is pleasant. It’s more
+that the way our nervous system is programmed is such that when you eat
+high calorie food, it triggers high valence. And that triggered high
+valence is what would be symmetrical, not necessarily the chemicals that
+you’re eating.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-16.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Importantly, valence, we think, has these three dimensions, which is
+positive, neutral, and negative. And you can actually have highly mixed
+experiences. You can have experiences, I don’t know, an example is
+you’re at a concert, enjoying yourself, but also you have to go to the
+bathroom, and you just broke up with your boyfriend. You can have these
+very complex mixed valence experiences, where parts of your experience
+are very pleasant, parts are very distressing, parts of those are very
+neutral, and that’s fine. At the same time, it still kind of collapses
+into this ultimately, “Hey, are you having a good time or not?”.</p>
+<h2 id="information-and-valence">Information and Valence</h2>
+<p>And something that the Symmetry Theory of Valence would say, and this
+is a pretty interesting kind of relationship, and I’ll explain it in a
+couple slides. This is just to kind of put it out there in your head to
+bounce around as we go on, which is that we expect there to be a very,
+very intimate relationship between information content, and basically
+the range of valence that you have access to. So in brief, for very,
+very high valence states of consciousness, we expect those to have very
+close to zero information. Whereas, when you have this state that is
+close to pure white noise, we expect that to be basically zero valence.
+Hopefully, this will make more sense as we go along.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-18.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>These are just some illustrations of this principle. Actually, we
+expect that some of the most negative experiences out there will
+actually be pretty close to very, very highly symmetrical. I put this
+disjointed lattice at the bottom. And I would claim that something like
+a <em>bad 5-MeO-DMT experience</em> is actually something that is very
+regular, except for some strange disjoints, or imperfections, that cause
+profound dissonance. Whereas, if you’re in the pure noise kind of range,
+it all feels blah, it all feels really close to neutral.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-19.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>When we say the state of consciousness is highly symmetrical and
+such, you know, let’s say, 5-MeO-DMT, or jhanas, or something like that,
+we expect these to actually show up in many ways. If you look at the
+biorhythms, like heart rate and breathing, that’s going to show up,
+symmetry is going to show up in some ways, being a different kind of
+projection of the latent state. I mean, ultimately, the formalism, you
+know, this mathematical object corresponds to consciousness is not
+observable directly, at least not right now. So we have to kind of rely
+on these projections, these interpretations of what’s going on, these
+ways of getting at this unobservable, underlying state. And EEG,
+connectome harmonics, biorhythms, and so on, are different ways of
+getting at it. I’ll show you at least empirically that it’s all so far
+consistent with the Symmetry Theory of Valence.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-21.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Here’s kind of the big plan. All of these different projections of
+this underlying state. So we have basically this stimulus. These are
+kind of visualized also to give you an intuition. So there’s stimuli,
+basically more symmetrical stimuli with higher valence, then there’s the
+endogenous bodily state, you know, biorhythms, as well. The CNS State,
+the actual, okay, what’s going on in your brain, then the formalism, and
+then the phenomenology of valence. When you have high valence, we expect
+(and what we see is) that there’s symmetry all across the board, in each
+of these different ways of looking at the state of consciousness. In
+each of these <em>projections of the latent state</em>.</p>
+<h2 id="phenomenology">Phenomenology</h2>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-22.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>So I’ll go on and start with phenomenology. I know that phenomenology
+is such a tricky thing. It’s so difficult to do, right. It’s so
+difficult to do. You make a lot of mistakes in phenomenology, get
+confused, and become self-deceived. So I mean, hopefully, the
+observation I’ll relate to you is going to show you that at least we’re
+taking care of some of the failure modes of phenomenology.</p>
+<h3 id="healthy-skepticism-of-phenomenology">Healthy Skepticism of
+Phenomenology</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-23.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>So, first of all, we distinguish between <a
+href="https://qualiacomputing.com/2016/11/19/the-tyranny-of-the-intentional-object/">intentional
+content</a> and <a
+href="https://qualiacomputing.com/2016/06/20/algorithmic-reduction-of-psychedelic-states/">phenomenal
+character</a>. So, if you smoke DMT, and you experience, you know, you
+say something like “I saw a dragon with my own eyes” that doesn’t mean
+there was actually a mind-independent dragon out there. And, you know, I
+take seriously your report that you saw a dragon, but I don’t know how
+significant that is necessarily. On the other hand, if you describe “Oh,
+and by the way, the dragon had scales that had a symmetry group of
+what’s called the glide mirror symmetry group, and it had a <a
+href="https://qualiacomputing.com/2020/10/09/modeling-psychedelic-tracers-with-qris-psychophysics-toolkit-the-tracer-replication-tool/">17
+hertz strobing effect</a>“. Okay, yes, so we’re getting more into the
+phenomenal character. You’re actually describing what it felt like, not
+only what it was about. I would make the claim that these observations
+of symmetry being related to valence are about the <em>phenomenal
+character</em>. I don’t care that much about, you know, “What was the
+journey? What was the content of the experience?” I care more about what
+it felt like, what are the features of it, and what we observe is that
+there’s a deep connection here.</p>
+<h3 id="massage-vs.-bodily-pain">Massage vs. Bodily Pain</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-24.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>So I’ll just give you some examples. Basically, introspect. You know,
+the difference between massage and bodily pain. Massage is kind of this
+very, very pleasant, harmonious, tactile pattern throughout your body
+that gives you these very nice waves of pleasure, as opposed to bodily
+pain. Bodily pain, if you introspect on it, it’s almost kind of like
+there’s like pinch points and discontinuities and fragmentations and
+deformations in your sense of self and the continuity of your skin or
+your felt sense of your inner organs. Basically, I would make the claim
+that bodily pain always manifests in one way or another as a kind of
+symmetry breaking operation. Now, definitely keep this in mind if you
+ever have a pain again, hopefully not.</p>
+<h2 id="anxiety-vs.-relaxation">Anxiety vs. Relaxation</h2>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-25.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Also, let’s say anxiety versus relaxation. Anxiety, you could almost
+describe it as, constant prediction errors. “Oh, did my heart do
+something strange? Is my leg positioned properly?”. It’s a state of mind
+where all of these little imperfections bubble up to your awareness. I
+would say it’s interrupting the flow of your attention and creating
+these pinch points and deformations in the way you experience the world.
+As opposed to relaxation, where you’re almost kind of just completely
+melted into it. And it’s so regular, you can almost filter out most of
+your bodily sensations. And in that sense I would argue it has a very
+symmetrical quality.</p>
+<h3 id="non-adaptedness-principle">Non-Adaptedness Principle</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-26.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>There’s also this whole argument Mike brings up which is the
+phenomenology concerning non-adaptiveness, the <em>non-adaptiveness
+principle</em>, which is that basically, there’s a bunch of things out
+there that feel really good, but that weren’t in our evolutionary
+environment. Those are hints; we consider those hints that hey, if
+something wasn’t in the African savanna but feels great, it probably
+means that it’s kind of directly hacking into the patterns of valence
+somehow. We didn’t evolve to filter those out or to not get absorbed by
+them. And yeah, here are some examples, but I’ll go deeper into
+those.</p>
+<h3 id="exotic-valence">Exotic Valence</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-27.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Now, there’s also this exotic valence. Bodily pain, anxiety,
+relaxations: those would be examples of “normal valence”. It’s the
+valence that we’re all used to. But I would say that also in “strange
+valences”, like valences in weird states of consciousness, they also
+follow this pattern. That in some sense, symmetry explains their
+pleasantness. And I’ll give you some examples.</p>
+<h4 id="music-in-dreams">Music In Dreams</h4>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-28.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>So, <a
+href="https://qualiacomputing.com/2019/01/06/dream-music/"><em>dream
+music</em></a>. I’ve had the pleasure or displeasure, you could say, of
+having had a lot of sleep paralysis and lucid dreams, and this effect is
+something you can experience in either sleep paralysis or lucid dreams.
+If you’ve had a lucid dream, where you were making music, or you heard,
+you’re <a href="https://youtu.be/sQ1i_VYvtOs">hallucinating that there
+was a radio playing</a>, you will notice that, “Oh my gosh, the music
+can be beautiful, like… incredible”. And this music, maybe you have
+heard it before, maybe not. Maybe your brain is generating it on the
+fly. But it has a quality to it that is extraordinarily hedonic and
+pleasant. And I remember studying this on myself over many lucid
+dreaming experiences. At first, I thought, “Oh my gosh, my brain is just
+unlocking this ability to create awesome harmonies and melodies”. But
+then I ended up realizing that even if I just make a kind of an “om”,
+this meditation sound, even though that sound is extremely simple, the
+quality of the sound in the lucid dream is profound. I mean, it’s almost
+kind of a surround sound, like 360 surround sound, and stereoscopic and
+full of reverb and richness.</p>
+<p>I would claim that it’s actually because, during a dream state, your
+brain is more resonant. You can kind of enter into these very, very
+resonant attractors, and it’s that quality that makes the music so
+compelling, not the melody. If you transcribe the melody, the melody may
+not be very significant. It was how it sounded that was so profound in
+the music in the dream.</p>
+<h4 id="meditation">Meditation</h4>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-29.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Then you have meditation. Even these images, maybe, I don’t know if
+this is cheating, but representations of meditation, like high
+attainments, and so on, they usually come with these beautiful
+symmetries and whatnot. If you examine the phenomenology of jhanas, how
+they’re described, there seems to be kind of this projection of less and
+less information content in your experience. Going from having all of
+your attention concentrated in one point to then the experience of
+completely perfectly smooth, boundless space to then just pure
+consciousness, and then the experience of neither nothing nor something.
+In a sense, that’s kind of approaching the limit of zero information.
+And then people report these jhana experiences, they’re not pleasant in
+a conventional sense. It’s not like eating ice cream or something like
+that, but they’re still very, very high valence. They’re blissful, in an
+exotic way. But, I do want to point out that there’s this fascinating,
+strange relationship here between low information content and the
+blissfulness and the healing quality of the state.</p>
+<h4 id="psychedelics">Psychedelics</h4>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-30.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>And then there is exotic valence from psychedelics. I mean, again, I
+don’t want you to focus on the intentional content, what was the
+experience about. What you <a
+href="https://qualiacomputing.com/2020/12/12/on-the-medium-of-thought/">thought</a>,
+of course, can influence your valence, but it’s more about the
+phenomenal character. There’s this phenomena of tracers, you move your
+hand around, and you see copies laying around, and in a sense, it’s
+giving a temporal depth to your experience. It’s almost kind of adding a
+new dimension of time, where qualia can pile up. And usually, if the
+trip is good, you’ll notice that these <a
+href="https://qualiacomputing.com/2019/03/09/the-resonance-and-vibration-of-phenomenal-objects/">tracers
+are in a harmonic relationship</a><span class="citation"
+data-cites="algekalipso_2019">(<a href="#ref-algekalipso_2019"
+role="doc-biblioref">Gómez-Emilsson 2019</a>)</span> with each other.
+That is kind of the essence of what makes them feel so good.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-31.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Likewise, there’s a <a
+href="https://psychonautwiki.org/wiki/Symmetrical_texture_repetition">psychedelic
+texture repetition</a>. You stare at a piece of grass on LSD, and it
+starts to symmetrify. And I would totally say this is exotic valence
+because you ask the person, and they will say “the ground was
+symmetrifying, and I don’t know why, but it was awesome”. There was
+something really cool about it, and why would that be? Our
+interpretation here is that psychedelics are, in a sense, unlocking the
+valence capacity of your visual cortex. It’s kind of transforming your
+cortex into a pleasure machine, basically allowing it to exhibit these
+profound symmetries, and that is what actually is making them feel so
+compelling. People will struggle to explain “Why were the visuals cool?
+Why were they interesting?”. When it comes down to it, I think it is the
+symmetry.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-32.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Interestingly, these are called the wallpaper symmetry groups.
+There’s 17 possible ways of tessellating a two dimensional space. From
+subjective reports, we know that <a
+href="https://qualiacomputing.com/2016/06/20/algorithmic-reduction-of-psychedelic-states/">any
+of these can be experienced on a psychedelic</a><span class="citation"
+data-cites="algekalipso_2016a">(<a href="#ref-algekalipso_2016a"
+role="doc-biblioref">Gómez-Emilsson 2016a</a>)</span>. The ground, kind
+of chaotically, will arrive at one attractor of symmetry. It could be
+any of these 17, and they all feel great. They’re all extremely
+aesthetic and beautiful and blissful in one way or another. But it’s
+kind of a testament to just how general this effect is.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-33.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>I would make the claim, and this is obviously a strong claim, but it
+matters for something like therapy, psychedelic therapy. We recently saw
+this fascinating research on psilocybin for major depression, and that a
+lot of these effects are mediated by whether you had a mystical
+experience or not. I would say that if you did have a mystical
+experience, and it was healing, I would bet that while you were having
+that experience, the sense of space and time was basically extremely,
+extremely symmetrical. And here is kind of why it’s so confusing.
+Because you come back and you say, “Well, I saw Jesus”, and you think
+that you got healed because of Jesus. I don’t want to dissuade you from
+that view, but I would basically ask you “Okay, but when you experienced
+Jesus, what was the feeling of space and time?”. They might say
+something like, “Oh, it had a beautiful light. It had this beautiful
+harmony and rainbows”. And I’ll claim that if you introspect on them
+then that it’s actually the quality of phenomenal space and time that is
+healing and blissful. The meaning, the religious meaning, is something
+that is helping your mind basically concentrate on that space, and take
+it seriously as a way of propagating this negentropy in your nervous
+system.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-34.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Now, another place where this shows up super, super clearly,
+phenomenologically, is on DMT. I definitely recommend <a
+href="https://qualiacomputing.com/2016/12/12/the-hyperbolic-geometry-of-dmt-experiences/">this
+article we wrote</a><span class="citation"
+data-cites="algekalipso_2016b">(<a href="#ref-algekalipso_2016b"
+role="doc-biblioref">Gómez-Emilsson 2016c</a>)</span> that basically
+charts the DMT space. You can know a lot about where you are in the DMT
+space by describing what is your energy level on the one hand, and then
+what is the information content on the other. I would say DMT states
+that have close to zero information content would be kind of these
+geometric, perfectly repeating, symmetry groups, either 2D or 3D.
+Whereas, more chaotic states would be kind of in the middle. The energy
+level would be a matter of dose. The “height” you reach is very, very
+dose-dependent. But then the valence, I think it’s very, very dependent
+on actually where in the axis of information content you find yourself
+in.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-35.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Here again, there’s this diagram that the most blissful experiences
+you may have on DMT are going to be on these kinds of <a
+href="http://www.hyperbolichoneycombs.org/">honeycombs</a> and perfectly
+symmetrical patterns. The most unpleasant experiences are going to be
+just right next to those, they are going to be kind of dissonant
+honeycombs. Whereas you know, when you get to complex narratives, like
+<a
+href="https://qualiacomputing.com/2019/09/03/typical-nn-dmt-trip-progression-according-to-an-anonymous-reader/">machine
+elves and alien realms</a> and all of that stuff, those experiences
+would be very mixed in their valence. There’s both dissonance,
+consonance, symmetry, anti-symmetry; those are very complex
+experiences.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/image-1.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Now, the information content, we think of them as basically
+attractors in feedback systems. You may end up in a chaotic attractor,
+you may end up in a limit cycle or a fixed point. And that will
+determine how much information content the state has.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-37.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Interestingly, this also can be used to describe the <a
+href="https://qualiacomputing.com/2020/07/01/5-meo-dmt-vs-nn-dmt-the-9-lenses/">difference
+between DMT and 5-MeO-DMT</a>. We think DMT tends to have a lot more
+information content.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-38.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>So you have these very rich patterns, and I would say competing
+synchronies. On DMT, there’s all of these slightly different frequencies
+that are competing for your attention and creating a narrative out of
+that. That is like a very mixed experience; it is both blissful and
+distressing at the same time.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-40.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Whereas 5-MeO-DMT, which is described as far more powerful
+emotionally, tends to give you this sense of pure space, like the
+feeling of the insight into emptiness, the feeling of infinite boundless
+consciousness, very little information content. Yet, it’s so emotionally
+impactful to such an extreme extent.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-41.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Interestingly, I would say, the reports do come out that on
+5-MeO-DMT, you may have the best experience of your time, or you may
+have the worst experience of your life. It’s kind of bimodal. It’s
+either amazing or it’s extremely bad. Often, it starts out really bad
+and then it gets amazing. I would describe that in terms of kind of this
+<a href="https://qri.org/blog/neural-annealing">annealing
+process</a><span class="citation" data-cites="Emilsson_2021c">(<a
+href="#ref-Emilsson_2021c" role="doc-biblioref">Gómez-Emilsson
+2021</a>)</span> where it basically starts with dissonance, and, over
+time, things synchronize, and you do end up where all of your nervous
+system is entrained to the same frequency, and that feels very, very
+blissful. Whereas DMT is always kind of in this mixed state. It is very
+difficult for DMT to be pure negative or pure positive. It’s always this
+mixed state. So I would say, yeah, this is kind of the phenomenological
+case for the Symmetry Theory of Valence.</p>
+<p>I’m two thirds of the way through the presentation. I’m just gonna
+walk you through the empirical evidence. So we were talking about
+phenomenology; that’s one of the projections of this formalism and its
+symmetry. There’s symmetry in the formalism. It’s gonna manifest in some
+forms of phenomenological symmetry. Likewise, you know, if you use
+external stimuli in order to generate a state, like, let’s say, watching
+a movie, playing music, playing stroboscopic stimulation, there’s a lot
+of evidence that indicates that the symmetry of the stimuli is the
+leading factor for how pleasant or unpleasant the resulting state is. We
+have all of this research in vision.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-43.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>These are just some examples. It’s so stunning, right? Even if you
+know the effect, you still get the valence response. You go to a
+cathedral and think “Okay, I’m not gonna get high valence, I’m not going
+to get high valence”. You still get the response. It’s pretty automatic.
+As long as it has this rich, deep symmetry, oftentimes, it’s going to be
+very beautiful. There’s something very compelling about this.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-44.png">
+<figcaption aria-hidden="true">
+Just some random pictures to give you a sense of this.
+</figcaption>
+</figure>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-45.png">
+<figcaption aria-hidden="true">
+Why does this feel good? It really has very little to do with our
+ancestral environment.
+</figcaption>
+</figure>
+<h2 id="symmetry-in-stimuli">Symmetry in Stimuli</h2>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-46.png">
+<figcaption aria-hidden="true">
+<span class="citation" data-cites="Cardenas_Harris_2006">(<a href="#ref-Cardenas_Harris_2006"
+role="doc-biblioref">Cárdenas and
+Harris</a>)</span><span class="citation"
+data-cites="Rhodes_Proffitt_Grady_Sumich_1998">(<a
+href="#ref-Rhodes_Proffitt_Grady_Sumich_1998"
+role="doc-biblioref">Rhodes et al. 1998</a>)</span>
+</figcaption>
+</figure>
+<p>Anyway, this is such a robust effect that, with the symmetry of
+faces, for example, even face paint can be used to modify the valence.
+So, if you don’t have a perfectly symmetrical face, but you add
+symmetrical face paint with beautiful patterns, you’re going to be
+judged as more beautiful. It’s just such a strong effect, that it can
+actually modify your perception of how beautiful somebody is. Likewise,
+if you add asymmetrical patterns, you look less beautiful. Now, this, I
+wouldn’t say this is that strong of evidence because this actually does
+have an evolutionary reason. Symmetry in faces is a marker of mutational
+load. So I don’t put that much stock in, symmetry of faces being that
+relevant. But symmetry in other forms is where I think it’s so
+stunning.</p>
+<h3 id="auditory-harmony-and-rhythm">Auditory: Harmony and Rhythm</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-47.png">
+<figcaption aria-hidden="true">
+<span class="citation"
+data-cites="Bravo_Cross_Hawkins_Gonzalez_Docampo_Bruno_Stamatakis_2017">(<a
+href="#ref-Bravo_Cross_Hawkins_Gonzalez_Docampo_Bruno_Stamatakis_2017"
+role="doc-biblioref">Bravo
+et al. 2017</a>)</span><span class="citation"
+data-cites="Blood_Zatorre_Bermudez_Evans_1999">(<a
+href="#ref-Blood_Zatorre_Bermudez_Evans_1999" role="doc-biblioref">Blood
+et al. 1999</a>)</span><span class="citation"
+data-cites="Costa_Caramazza_Sebastian-Galles_2000">(<a href="#ref-Costa_Caramazza_Sebastian-Galles_2000"
+role="doc-biblioref">Costa, Caramazza, and
+Sebastian-Galles 2000</a>)</span><span class="citation"
+data-cites="Plomp1965TonalCA">(<a href="#ref-Plomp1965TonalCA"
+role="doc-biblioref">Plomp and Levelt 1965</a>)</span><span
+class="citation" data-cites="Trainor_Heinmiller_1998">(<a
+href="#ref-Trainor_Heinmiller_1998" role="doc-biblioref">Trainor and
+Heinmiller 1998</a>)</span>
+</figcaption>
+</figure>
+<p>You also see this in symmetry in audio, basically, regular rhythms.
+Harmony is the leading predictor for whether a sound is going to be
+pleasant or unpleasant.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-48.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>You know, this is Helmholtz’s big idea. He was the first one to
+figure out why playing two notes in a piano that are one semitone apart
+feels unpleasant. It’s because the harmonics are basically within what’s
+called the critical window. They generate beat patterns and the beat
+patterns can be described as basically symmetry breaking operations in
+the waveform. Those symmetry breaking operations, in essence, cause
+irritation. So basically, the more beating there is in sound, and the
+more beating across the spectrum, the more irritating and distracting
+and rough the sound is going to sound like. Whereas, when you have these
+harmonic relationships, you play one note, one piano note, and another
+at an octave of difference, the harmonics line up perfectly. Actually,
+the sound is very compressible because you don’t have this extra
+information of where all the other harmonics lie. They’re just the
+harmonic sequence. And that is universally described as a more pleasant
+sound.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-49.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>When you add up all the harmonics, you get these interesting curves.
+The height here is the amount of dissonance. When you have a
+relationship of one to two, basically an octave, you have zero
+dissonance, and that feels really good. Now, music is very complicated.
+We have to factor in the boredom mechanism. If you just play the same
+octave over and over, you get bored, and there’s an inner sense of
+restlessness and dissonance. But if you just hear it for the first time,
+then there’s a super, super strong relationship between symmetry and
+valence.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-50.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-52.png">
+<figcaption aria-hidden="true">
+These are just examples of a piano chord.
+</figcaption>
+</figure>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-52.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Dissonant sounds. I can send you a link to all of these sounds after
+the presentation<a href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a>], but I have some links for a
+SoundCloud account where you can kind of get convinced that “Oh gosh,
+these are actually really bad sounds”. It’s not that I’m saying they’re
+bad. If you ask 100 people, like 99% of people will say they’re
+awful.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-53.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Likewise, reverb basically symmetrifies any waveform. Reverb is
+almost kind of this hack that you take almost any dissonant sound and
+you add reverb to it and is going to sound a lot less bad, a lot less
+distracting, irritating, and so on. So this is comparing the sound of a
+baby crying, which by the way, like in our analysis, it shows that
+babies crying, it’s almost like their sound is optimized for dissonance.
+It’s almost kind of as dissonant as it gets for a sound made by a human.
+For good evolutionary reasons, it has to be distracting, and catch your
+attention, bring the desire to stop it. But you add reverb and to give
+you a sense, that’s like if the baby was in a huge cave, you get all
+these echoes averaging out the beat patterns. It sounds way better, way
+less distracting, probably not good from an evolutionary standpoint.
+But, it’s just a fascinating kind of transformation you can apply to any
+waveform.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-54.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>And here, I just want to illustrate that valence can happen across
+the spectrum. So I also have this file<a href="#fn2"
+class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>,
+and you’re welcome to listen to it after the presentation where you can
+have consonance anywhere in the spectrum, mixed in with dissonance
+anywhere in the spectrum, mixed in with noise anywhere in the spectrum.
+That ends up basically creating these very mixed states.</p>
+<p>So basically, when I say “Oh, I had a mixed experience, a mixed
+valence experience” that underdetermines what I experienced because we
+don’t know if the positive part was in the high frequencies or in the
+low frequencies. We don’t know that. That’s why the full picture of
+valence would also include the spectrum for positive, negative, and
+neutral valence. You can have high frequency pleasure, you can have low
+frequency pleasure, etc. So that kind of explains why there’s a
+tremendous diversity of possible mixed experiences even though
+ultimately they’d still come down to symmetry. Deep down, they can all
+still be explained with symmetry.</p>
+<h2 id="endogenously-generated-symmetry">Endogenously Generated
+Symmetry</h2>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-55.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Now, endogenously generated symmetry, this is <a
+href="https://www.heartmath.com/science/">fascinating research</a>. That
+when you have this “biorhythm coherence” you feel happier. And the way
+of computing biorhythm coherence is very related to musical consonance.
+Breathing entrained with heart rate variability is reported as giving
+rise to a just much, much better positive mood, and is one of the things
+that long-term meditation achieves. Meditation entrains these biorhythms
+and basically makes them interlock with one another. That is reported as
+giving rise to positive mood which is an interesting finding and very
+consistent with STV.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-56.png">
+<figcaption aria-hidden="true">
+<span class="citation"
+data-cites="Tiller_McCraty_Atkinson_1996">(<a href="#ref-Tiller_McCraty_Atkinson_1996"
+role="doc-biblioref">Tiller, McCraty, and Atkinson 1996</a>)</span><span class="citation"
+data-cites="Steffen_Austin_DeBarros_Brown_2017">(<a
+href="#ref-Steffen_Austin_DeBarros_Brown_2017"
+role="doc-biblioref">Steffen et al. 2017</a>)</span><span
+class="citation" data-cites="Courtney_Cohen_van_Dixhoorn_2011">(<a href="#ref-Courtney_Cohen_van_Dixhoorn_2011"
+role="doc-biblioref">Courtney,
+Cohen, and Dixhoorn 2011</a>)</span><span class="citation"
+data-cites="articlewew">(<a href="#ref-articlewew"
+role="doc-biblioref">McCraty et al. 2009</a>)</span>
+</figcaption>
+</figure>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-57.png">
+<figcaption aria-hidden="true">
+<span class="citation"
+data-cites="Shah_Lampert_Goldberg_Veledar_Bremner_Vaccarino_2013">(<a
+href="#ref-Shah_Lampert_Goldberg_Veledar_Bremner_Vaccarino_2013"
+role="doc-biblioref">Shah
+et al. 2013</a>)</span><span class="citation"
+data-cites="Buckley_Shivkumar_2016">(<a
+href="#ref-Buckley_Shivkumar_2016" role="doc-biblioref">Buckley and
+Shivkumar 2016</a>)</span><span class="citation"
+data-cites="Lampert_Joska_Burg_Batsford_McPherson_Jain_2002">(<a href="#ref-Lampert_Joska_Burg_Batsford_McPherson_Jain_2002"
+role="doc-biblioref">Lampert et
+al. 2002</a>)</span><span
+class="citation" data-cites="Ziegelstein_2007">(<a
+href="#ref-Ziegelstein_2007" role="doc-biblioref">Ziegelstein
+2007</a>)</span>
+</figcaption>
+</figure>
+<p>And you know, the heart palpitations. I mean, it’s similar to anxiety
+in that if you have like this usually regular metronome, and it’s
+failing, is generating these imperfections, that gives rise to
+unpleasant states of mind. I’m sure heart disease is terrible for your
+valence. Likewise, meditation is a wonderful tool for heart disease
+because it allows you to overcome those imperfections and still feel
+good despite the problem.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-58.png">
+<figcaption aria-hidden="true">
+<span class="citation" data-cites="Safron_2016">(<a
+href="#ref-Safron_2016" role="doc-biblioref">Safron 2016</a>)</span><span
+class="citation" data-cites="Cheron_2016">(<a href="#ref-Cheron_2016"
+role="doc-biblioref">Cheron 2016</a>)</span>
+</figcaption>
+</figure>
+<p>In terms of other endogenously generated symmetry, I will mention
+orgasm and flow. Orgasm is a powerful generator of endogenous resonance.
+It’s the entrainment of motor systems to near hallucinations, to
+synchronizing feedback processes across multiple functional networks.
+With an orgasm, there’s a deep, deep level of synchrony and symmetry
+across the nervous system. I highly recommend introspecting on this (not
+to get into your sex life or anything, though). I mean, it’s something
+you can actually pay attention to, and it becomes very obvious once you
+notice it.</p>
+<p>Likewise with flow, there’s this evidence that symmetry is deeply
+related to flow. Two physiological metrics for measuring flow are
+cortical muscular coherence and a degree of coupling between neural EEG
+waves and EMG oscillations of muscle activity. So, there’s also these
+interlocking patterns, lower information content, more symmetry. Yeah,
+it’s a strong predictor of flow. So like, hey, go figure flow is also
+symmetrical.</p>
+<h2 id="symmetry-in-the-brain">Symmetry in the Brain</h2>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-59.png">
+<figcaption aria-hidden="true">
+<span class="citation"
+data-cites="Lee_Kulubya_Goldin_Goodarzi_Girgis_2018">(<a
+href="#ref-Lee_Kulubya_Goldin_Goodarzi_Girgis_2018"
+role="doc-biblioref">Lee et al. 2018</a>)</span><span class="citation"
+data-cites="Vivot_Pallavicini_Zamberlan_Vigo_Tagliazucchi_2020">(<a
+href="#ref-Vivot_Pallavicini_Zamberlan_Vigo_Tagliazucchi_2020"
+role="doc-biblioref">Martínez Vivot et al. 2020</a>)</span><span
+class="citation"
+data-cites="Lutz_Greischar_Rawlings_Ricard_Davidson_2004">(<a href="#ref-Lutz_Greischar_Rawlings_Ricard_Davidson_2004"
+role="doc-biblioref">Lutz et al. 2004</a>)</span><span class="citation"
+data-cites="Travis_2001">(<a href="#ref-Travis_2001"
+role="doc-biblioref">F. Travis 2001</a>)</span><span class="citation"
+data-cites="Travis_Tecce_Arenander_Wallace_2002">(<a
+href="#ref-Travis_Tecce_Arenander_Wallace_2002"
+role="doc-biblioref">Fred Travis et al. 2002</a>)</span>
+</figcaption>
+</figure>
+<p>Okay, let’s get into the symmetry in the brain. So this is kind of
+the other projection you could take of the latent state. If you look at
+the central nervous system of high valence states, how does the valence
+show up? And, you know, meditation, like all over the place, basically
+pretty much any kind of meditation, if done for a long enough time,
+leads to some kind of <em>EEG coherence</em>. Whether it’s gamma
+coherence, delta coherence, or alpha coherence, depends on which kind of
+meditation you do. But they all generate some form of coherence, and
+coherence in EEG is intimately related with symmetry. I mean, basically,
+two signals are coherent when they’re both reflections of a shared
+signal through a reverb pattern, meaning that they’re encoding the same
+information just through a different filter, which is, again, deeply,
+deeply connected to symmetry.</p>
+<h3 id="jhanas">Jhanas</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-60.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Here’s a <a
+href="https://www.frontiersin.org/articles/10.3389/fnhum.2019.00178/full">fascinating
+study from 2019</a><span class="citation" data-cites="Dennison_2019">(<a
+href="#ref-Dennison_2019" role="doc-biblioref">Dennison 2019</a>)</span>
+that I recommend reading which to me was really stunning. It was
+stunning in just how clear the connection with the Symmetry Theory of
+Valence was. The study is about the EEG recordings of the first and
+second jhanas and the interesting patterns that emerged in them. One of
+them is this seizure-like activity. Now, seizure-like activity is three
+to five hertz, and it doesn’t have harmonic structure. I mean most
+seizures don’t have their harmonics together with them. But the type of
+seizure-like activity you see on jhanas does have harmonic structure.
+And the picture here is basically the Fourier transform of the
+independent components of the EEG recordings. You can see there’s a very
+clean 5.6 hertz signal, together with its harmonic of 11.23 hertz. This
+is kind of stunning. Why would this happen? And jhanas feel really
+blissful. Without the Symmetry Theory of Valence, this is just super
+surprising and strange. With the Symmetry Theory of Valence it’s like,
+“Oh, yeah, you’re, feeling a really great symmetrical attractor of your
+brain and sustaining it”. So that’s going to feel good.</p>
+<h3 id="ketamine">Ketamine</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-61.png">
+<figcaption aria-hidden="true">
+Even you know, ketamine showing high levels of a gamma coherence.
+</figcaption>
+</figure>
+<h3 id="meo-dmt">5-MeO-DMT</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-62.png">
+<figcaption aria-hidden="true">
+<span class="citation" data-cites="Tomarkenand_Keener_1998">(<a
+href="#ref-Tomarkenand_Keener_1998" role="doc-biblioref">J. Tomarkenand
+and Keener 1998</a>)</span>
+</figcaption>
+</figure>
+<p>For 5-MeO-DMT, the only dataset I’m aware of, of EEG and 5-MeO-DMT,
+shows <em>coherence across the spectrum</em>, not only gamma coherence,
+but also beta coherence, and especially delta coherence. Again, why on
+earth? The Symmetry Theory of Valence would explain this. It would say,
+“Yes, this is expected”. Other theories might struggle a bit. Now, I’ve
+got to say that just because you have high coherence doesn’t mean it’s
+going to be high valence. We expect also very negative valence could
+also be high coherence. Except that when you have total coherence, then
+we expect that to be always positive valence. Again, it’s going to have
+that relationship because you could still have a high average coherence,
+but have half of your channels coherent in a certain frequency and half
+of the other channels coherent in a slightly different frequency. That
+might actually maximize dissonance. So just average coherence is not
+enough. You also need to tell whether it’s in harmonic structure or
+not.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-63.png">
+<figcaption aria-hidden="true">
+<span class="citation"
+data-cites="Kassam_Markey_Cherkassky_Loewenstein_Just_2013">(<a
+href="#ref-Kassam_Markey_Cherkassky_Loewenstein_Just_2013"
+role="doc-biblioref">Kassam et al. 2013</a>)</span> Pleasure in the
+brain seems to be kind of this distributed effect that also from our
+point of view would mean it’s actually a whole brain phenomena.
+</figcaption>
+</figure>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-64.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>This is about what I was mentioning about the pleasure centers from
+our point of view. I mean, there’s this research of if you tried to
+synchronize clocks, and you tried to synchronize neurons, and you put
+them in a geometric grid. If it’s large enough, you’re <a
+href="https://qualiacomputing.com/2020/12/05/oscillatory-synchrony-is-energetically-cheap/">not
+going to usually get full scale synchrony</a>. You might have emergent
+patches of synchrony or traveling waves of synchrony. But if you also
+add these random connections across the network and reduce the synaptic
+path length, then you can unlock the ability for the entire network to
+enter synchrony. So we think of the pleasure centers as kind of these
+bridges that are, in a sense, lowering the average synaptic path length
+across your brain, and therefore enabling similar synchrony across the
+brain. And that’s the reason why we think the pleasure centers generally
+feel good when you activate them.</p>
+<h2 id="near-enemies">Near “Enemies”</h2>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-65.png">
+<figcaption aria-hidden="true">
+<span class="citation" data-cites="Clark_2013">(<a
+href="#ref-Clark_2013" role="doc-biblioref">Clark 2013</a>)</span><span
+class="citation" data-cites="Schmidhuber_2009">(<a
+href="#ref-Schmidhuber_2009" role="doc-biblioref">Schmidhuber
+2009</a>)</span><span class="citation"
+data-cites="Salek-Haddadi_Lemieux_Fish_2002">(<a
+href="#ref-Salek-Haddadi_Lemieux_Fish_2002"
+role="doc-biblioref">Salek-Haddadi, Lemieux, and Fish 2002</a>)</span>
+</figcaption>
+</figure>
+<p>Okay, getting to the end of the presentation. So I’ll just talk about
+a few near “enemies”. I put “enemies” in quotes, because we actually
+admire these people. They’re part of our <a
+href="https://qr.org/research-lineages">research lineages</a>. I think
+they’re a very, very key component of any good theory of consciousness.
+But I think when it comes to valence itself, there’s some explanations
+in the space that are really close to the Symmetry Theory of Valence,
+but they’re not exactly what we’re getting at. So there’s this whole
+account of computational efficiency. The brain likes computational
+efficiency, but in a sense, you still have to explain why the brain
+likes computational efficiency- what does this liking manifest as? We
+use this argument of “passing the bucket” which ideally your theory of
+valence should avoid. The theory should explain what valence itself is,
+not only <em>when it gets triggered</em>. These theories of
+computational efficiency, energy efficiency, we would claim, they’re
+telling you under what conditions positive valence gets triggered, but
+they don’t tell you <em>what positive valence itself is</em>. And that’s
+what the Symmetry Theory of Valence is getting at.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-66.png">
+<figcaption aria-hidden="true">
+So yeah, these are some of the issues with those, at least as complete
+theories.
+</figcaption>
+</figure>
+<h2 id="counter-examples">Counter Examples?</h2>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-67.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Finally, okay, counter examples. There’s this whole theory I
+recommend reading called <a
+href="https://opentheory.net/2019/11/neural-annealing-toward-a-neural-theory-of-everything/">Neural
+Annealing</a>. But even very neutral energy that neither has harmony or
+dissonance, can still give rise to very positive feelings because it can
+give rise to this annealing process. And that’s actually what we believe
+is going on with psychedelics. Psychedelics gives you what Mike would
+call semantically neutral energy. And that gives rise to basically this
+entropic disintegration, a term from Robin Carhart-Harris and the <a
+href="https://www.frontiersin.org/articles/10.3389/fnhum.2014.00020/full">entropic
+brain hypotheses</a>, which then gives rise to kind of this search, or
+self-reorganisation that basically will settle on these basins of
+symmetry. And it’s those that feel good, not the energy that feels good.
+It is the end result, the attractor that it takes you to.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-68.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>And this explains, I think, why even somebody can like hot sauce. Hot
+sauce is kind of this unpleasant stimuli, but it can lead to euphoria.
+It can lead to this heightened state of energy. If you introspect on the
+euphoria of hot sauce, it’s not the unpleasant pain in the mouth, it’s
+that it raises all of your energy, your entire amount of the intensity
+of your consciousness. You can then notice these resonant waves, and it
+is those resonant waves that feel good, not the hot sauce itself. So
+there’s this kind of a step that basically separates one from the
+other.</p>
+<h2 id="possible-way-to-test-stv">Possible Way to Test STV?</h2>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-69.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>I’ll just very quickly, briefly describe one way we’re trying to test
+the Symmetry Theory of Valence. It is not the only way to test it. I
+would even argue that, you know, the argument that I here presented is
+itself a potentially strong argument. But ideally, you know, we generate
+novel predictions. And this is one of them, which is that we basically
+expect that the very positive states of consciousness will have a
+harmonic relationship, basically a consonant relationship between the
+brain harmonics. Yeah, using the <a
+href="https://www.nature.com/articles/ncomms10340">work of Selen
+Atasoy</a><span class="citation"
+data-cites="Atasoy_Donnelly_Pearson_2016">(<a
+href="#ref-Atasoy_Donnelly_Pearson_2016" role="doc-biblioref">Atasoy,
+Donnelly, and Pearson 2016</a>)</span>.</p>
+<h3 id="the-steps-of-the-algorithm">The Steps of the Algorithm</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-70.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>This algorithm of quantifying the amount of consonance in brain
+harmonics, which is something we were working with, and hopefully will
+get resolved soon.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-71-1.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>We anticipate that, again, if this is true, the Symmetry Theory of
+Valence would be validated. If it’s not, it doesn’t invalidate it,
+because there’s many ways in which it can manifest. But when you have
+harmonics that are in a consonant relationship with each other, and
+those are the main drivers of your experience, we expect that to be
+pleasant.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-72.png">
+<figcaption aria-hidden="true">
+That is, euphoric.
+</figure>
+</figcaption>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-73.png">
+<figcaption aria-hidden="true">
+Whereas, when you have harmonics that are dissonant with each other,
+they generate these intense beating patterns. So we expect that to be
+described as unpleasant. Again, we don’t know, but we want to check if
+this is true.
+</figcaption>
+</figure>
+<h2 id="testable-predictions">Testable Predictions</h2>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-74.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-75.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Just a couple testable predictions based on this, which is that we
+expect psychedelics to enhance the range of valence. Basically,
+psychedelics enhance energy across the board. Just all of the harmonics
+have more energy. We expect that some of those combinations will be just
+very consonant and reported to be very pleasant, some of those will be
+very dissonant, reported to be unpleasant. Then SSRIs, there’s a lot of
+research on SSRIs and their blunting effects. They cut the extremes of
+valence. So, we expect when it comes to harmonics that the SSRIs will be
+more noisy, less consonant, less dissonant. MDMA, we expect it to be a
+stable attractor of a few resonant modes that are very consonant with
+each other. Stimulants would be kind of high frequency consonance.
+Opiates would be low frequency consonance. Again, this idea that you can
+be in a good state leaves underdetermined whether there are symmetries
+in the high frequencies or the low frequencies, and this would
+disentangle these types of mixed experiences.</p>
+<h3 id="ssris-as-symmetry-reducers">SSRIs as Symmetry Reducers</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-76.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>These are the last two or three slides which is kind of a case study
+which is SSRI’s. Roughly speaking, we interpret them as being <em>noise
+inducers</em> which is why things like orgasm on SSRIs are less intense.
+Crying is hard. I mean, crying itself is a kind of a dissonant and
+sometimes consonant, kind of resonant state. On SSRIs you feel kind of
+spaced out and music enjoyment goes down. So yeah, the way we think of
+SSRIs is that they’re almost kind of like listening to a white noise
+machine along your life, so it’s gonna cut off the extremes. It’s gonna
+blunt both very positive and very negative valence, and it’s gonna just
+kind of center you in neutral valence.</p>
+<h3 id="psychedelics-as-symmetry-enchancers">Psychedelics as Symmetry
+Enchancers</h3>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-77.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Whereas psychedelics, they basically kind of purify and intensify
+your harmonics. And in that sense, you get to have more pleasant and
+more unpleasant states and both extremes.</p>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-78.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>Just to remind you: introspect. I compel you, next time you’re on a
+psychedelic having a mystical experience, introspect on the quality of
+space and time. I suggest that you will probably be experiencing these
+kinds of beautiful ripples that are in a harmonic relationship to each
+other. Please email me if this is true or not true. But that’s the
+experience so far. And that’s the reason why this can feel so
+amazing.</p>
+<h2 id="the-future-of-mental-health-personalized-harmonic-re-tuning">The
+Future of Mental Health: Personalized Harmonic Re-Tuning</h2>
+<figure>
+<img  loading="lazy"  src="../../images/distill/symmetry-theory-of-valence/The-Symmetry-Theory-of-Valence-79.png">
+<figcaption aria-hidden="true">
+</figcaption>
+</figure>
+<p>The future of mental health, ideally, would be that we can identify,
+“what are the sources of dissonance in your nervous system?” and then
+find the shortest path to the smallest change possible that will give
+rise to sustainable consonance in your nervous system. Whether this is
+going to be with meditation, a psychedelic session, or yoga, or
+biofeedback will be person-specific. There’s probably a shortest path
+from a highly dissonant dysfunctional state to a sustainable consonant
+state for each person.</p>
+<p>And with that I just want to say thank you to other people in the
+team of QRI. And thank you, Robin, Shamil, and all of you guys for
+attending this presentation. And to the Centre for Psychedelic Research
+for hosting this presentation.</p>
+<p>Special Thanks to: Mike Johnson who initiated this research direction
+and has been deeply involved in it for years. To Andrew Zuckerman,
+Quintin Frerichs, Kenneth Shinozuka, Sean McGowan, Jeremy Hadfield, and
+Ross Tieman for their contributions to the current work this year. To <a
+href="https://qri.org/team">everyone in the team</a> for their help,
+support, and love. To Mackenzie Dion for editing an otter.ai
+transcription of the presentation for grammar and clarity. To our donors
+for their incredible help. And to you, dear reader. Thank you!</p>
+<h2 class="appendix" id="tags">Tags</h2>
+<p><a href='../tag/consciousness'>Consciousness</a>,
+<a href='../tag/psychedelic'>Psychedelic</a>,
+<a href='../tag/stv'>STV</a>, <a href='../tag/valence'>Valence</a>,
+<a href='../tag/neuroscience'>Neuroscience</a></p>
+<script src="/functionality.js"></script>
+<script>
+$(document).ready(function() {
+setDistillElements();
+});
+$(window).load(function() {
+setDistillStyling();
+});
+</script>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<div id="refs" class="references csl-bib-body hanging-indent"
+role="doc-bibliography">
+<div id="ref-Atasoy_Donnelly_Pearson_2016" class="csl-entry"
+role="doc-biblioentry">
+Atasoy, Selen, Isaac Donnelly, and Joel Pearson. 2016. <span>“Human
+Brain Networks Function in Connectome-Specific Harmonic Waves.”</span>
+<em>Nature Communications</em> 7 (1): 10340. <a
+href="https://doi.org/10.1038/ncomms10340">https://doi.org/10.1038/ncomms10340</a>.
+</div>
+<div id="ref-Blood_Zatorre_Bermudez_Evans_1999" class="csl-entry"
+role="doc-biblioentry">
+Blood, Anne J., Robert J. Zatorre, Patrick Bermudez, and Alan C. Evans.
+1999. <span>“Emotional Responses to Pleasant and Unpleasant Music
+Correlate with Activity in Paralimbic Brain Regions.”</span> <em>Nature
+Neuroscience</em> 2 (4): 382–87. <a
+href="https://doi.org/10.1038/7299">https://doi.org/10.1038/7299</a>.
+</div>
+<div id="ref-Bravo_Cross_Hawkins_Gonzalez_Docampo_Bruno_Stamatakis_2017"
+class="csl-entry" role="doc-biblioentry">
+Bravo, Fernando, Ian Cross, Sarah Hawkins, Nadia Gonzalez, Jorge
+Docampo, Claudio Bruno, and Emmanuel Andreas Stamatakis. 2017.
+<span>“Neural Mechanisms Underlying Valence Inferences to Sound: The
+Role of the Right Angular Gyrus.”</span> <em>Neuropsychologia</em> 102
+(July): 144–62. <a
+href="https://doi.org/10.1016/j.neuropsychologia.2017.05.029">https://doi.org/10.1016/j.neuropsychologia.2017.05.029</a>.
+</div>
+<div id="ref-Buckley_Shivkumar_2016" class="csl-entry"
+role="doc-biblioentry">
+Buckley, Una, and Kalyanam Shivkumar. 2016. <span>“Stress-Induced
+Cardiac Arrhythmias: The Heart–Brain Interaction.”</span> <em>Trends in
+Cardiovascular Medicine</em> 26 (1): 78–80. <a
+href="https://doi.org/10.1016/j.tcm.2015.05.001">https://doi.org/10.1016/j.tcm.2015.05.001</a>.
+</div>
+<div id="ref-Cardenas_Harris_2006" class="csl-entry"
+role="doc-biblioentry">
+Cárdenas, Rodrigo Andrés, and Lauren Julius Harris. 2006.
+<span>“Symmetrical Decorations Enhance the Attractiveness of Faces and
+Abstract Designs.”</span> <em>Evolution and Human Behavior</em> 27 (1):
+1–18. <a
+href="https://doi.org/10.1016/j.evolhumbehav.2005.05.002">https://doi.org/10.1016/j.evolhumbehav.2005.05.002</a>.
+</div>
+<div id="ref-Cheron_2016" class="csl-entry" role="doc-biblioentry">
+Cheron, Guy. 2016. <span>“How to Measure the Psychological
+<span>‘Flow’</span>? A Neuroscience Perspective.”</span> <em>Frontiers
+in Psychology</em> 7. <a
+href="https://www.frontiersin.org/articles/10.3389/fpsyg.2016.01823">https://www.frontiersin.org/articles/10.3389/fpsyg.2016.01823</a>.
+</div>
+<div id="ref-Clark_2013" class="csl-entry" role="doc-biblioentry">
+Clark, Andy. 2013. <span>“Whatever Next? Predictive Brains, Situated
+Agents, and the Future of Cognitive Science.”</span> <em>Behavioral and
+Brain Sciences</em> 36 (3): 181. <a
+href="https://www.academia.edu/2270569/Whatever_Next_Predictive_Brains_Situated_Agents_and_the_Future_of_Cognitive_Science">https://www.academia.edu/2270569/Whatever_Next_Predictive_Brains_Situated_Agents_and_the_Future_of_Cognitive_Science</a>.
+</div>
+<div id="ref-Costa_Caramazza_Sebastian-Galles_2000" class="csl-entry"
+role="doc-biblioentry">
+Costa, Albert, Alfonso Caramazza, and Nuria Sebastian-Galles. 2000.
+<span>“The Cognate Facilitation Effect: Implications for Models of
+Lexical Access.”</span> <em>Journal of Experimental Psychology:
+Learning, Memory, and Cognition</em> 26 (5): 1283–96. <a
+href="https://doi.org/10.1037/0278-7393.26.5.1283">https://doi.org/10.1037/0278-7393.26.5.1283</a>.
+</div>
+<div id="ref-Courtney_Cohen_van_Dixhoorn_2011" class="csl-entry"
+role="doc-biblioentry">
+Courtney, Rosalba, Marc Cohen, and Jan van Dixhoorn. 2011.
+<span>“Relationship Between Dysfunctional Breathing Patterns and Ability
+to Achieve Target Heart Rate Variability with Features of
+<span>‘Coherence’</span> During Biofeedback.”</span> <em>Alternative
+Therapies in Health and Medicine</em> 17 (3): 38–44.
+</div>
+<div id="ref-Dennison_2019" class="csl-entry" role="doc-biblioentry">
+Dennison, Paul. 2019. <span>“The Human Default Consciousness and Its
+Disruption: Insights from an EEG Study of Buddhist Jhāna
+Meditation.”</span> <em>Frontiers in Human Neuroscience</em> 13. <a
+href="https://www.frontiersin.org/articles/10.3389/fnhum.2019.00178">https://www.frontiersin.org/articles/10.3389/fnhum.2019.00178</a>.
+</div>
+<div id="ref-Emilsson_2015" class="csl-entry" role="doc-biblioentry">
+Gómez-Emilsson, Andrés. 2015. <span>“State-Space of Drug Effects:
+Results.”</span> <em>Qualia Computing</em>. <a
+href="https://qualiacomputing.com/2015/06/09/state-space-of-drug-effects-results/">https://qualiacomputing.com/2015/06/09/state-space-of-drug-effects-results/</a>.
+</div>
+<div id="ref-algekalipso_2016a" class="csl-entry"
+role="doc-biblioentry">
+———. 2016a. <span>“Algorithmic Reduction of Psychedelic States.”</span>
+<em>Qualia Computing</em>. <a
+href="https://qualiacomputing.com/2016/06/20/algorithmic-reduction-of-psychedelic-states/">https://qualiacomputing.com/2016/06/20/algorithmic-reduction-of-psychedelic-states/</a>.
+</div>
+<div id="ref-Emilsson_2016" class="csl-entry" role="doc-biblioentry">
+———. 2016b. <span>“Wireheading Done Right: Stay Positive Without Going
+Insane.”</span> <em>Qualia Computing</em>. <a
+href="https://qualiacomputing.com/2016/08/20/wireheading_done_right/">https://qualiacomputing.com/2016/08/20/wireheading_done_right/</a>.
+</div>
+<div id="ref-algekalipso_2016b" class="csl-entry"
+role="doc-biblioentry">
+———. 2016c. <span>“The Hyperbolic Geometry of DMT Experiences:
+Symmetries, Sheets, and Saddled Scenes.”</span> <em>Qualia
+Computing</em>. <a
+href="https://qualiacomputing.com/2016/12/12/the-hyperbolic-geometry-of-dmt-experiences/">https://qualiacomputing.com/2016/12/12/the-hyperbolic-geometry-of-dmt-experiences/</a>.
+</div>
+<div id="ref-algekalipso_2018" class="csl-entry" role="doc-biblioentry">
+———. 2018. <span>“The Pseudo-Time Arrow: Explaining Phenomenal Time with
+Implicit Causal Structures in Networks of Local Binding.”</span>
+<em>Qualia Computing</em>. <a
+href="https://qualiacomputing.com/2018/11/28/the-pseudo-time-arrow-explaining-phenomenal-time-with-implicit-causal-structures-in-networks-of-local-binding/">https://qualiacomputing.com/2018/11/28/the-pseudo-time-arrow-explaining-phenomenal-time-with-implicit-causal-structures-in-networks-of-local-binding/</a>.
+</div>
+<div id="ref-algekalipso_2019" class="csl-entry" role="doc-biblioentry">
+———. 2019. <span>“The Resonance and Vibration of [Phenomenal]
+Objects.”</span> <em>Qualia Computing</em>. <a
+href="https://qualiacomputing.com/2019/03/09/the-resonance-and-vibration-of-phenomenal-objects/">https://qualiacomputing.com/2019/03/09/the-resonance-and-vibration-of-phenomenal-objects/</a>.
+</div>
+<div id="ref-algekalipso_2020" class="csl-entry" role="doc-biblioentry">
+———. 2020. <span>“Oscillatory Synchrony Is Energetically Cheap.”</span>
+<em>Qualia Computing</em>. <a
+href="https://qualiacomputing.com/2020/12/05/oscillatory-synchrony-is-energetically-cheap/">https://qualiacomputing.com/2020/12/05/oscillatory-synchrony-is-energetically-cheap/</a>.
+</div>
+<div id="ref-Emilsson_2021c" class="csl-entry" role="doc-biblioentry">
+———. 2021. <span>“Healing Trauma with Neural Annealing,”</span> May. <a
+href="https://www.qri.org/blog/Neural-Annealing">https://www.qri.org/blog/Neural-Annealing</a>.
+</div>
+<div id="ref-Tomarkenand_Keener_1998" class="csl-entry"
+role="doc-biblioentry">
+J. Tomarkenand, Andrew, and Anita D. Keener. 1998. <span>“Frontal Brain
+Asymmetry and Depression: A Self-Regulatory Perspective.”</span>
+<em>Cognition and Emotion</em> 12 (3): 387–420. <a
+href="https://doi.org/10.1080/026999398379655">https://doi.org/10.1080/026999398379655</a>.
+</div>
+<div id="ref-Johnson_2016" class="csl-entry" role="doc-biblioentry">
+Johnson, Michael. 2016. <span>“Principia Qualia.”</span> Blog. <em>Open
+Theory</em>. <a
+href="https://opentheory.net/PrincipiaQualia.pdf">https://opentheory.net/PrincipiaQualia.pdf</a>.
+</div>
+<div id="ref-Kassam_Markey_Cherkassky_Loewenstein_Just_2013"
+class="csl-entry" role="doc-biblioentry">
+Kassam, Karim S., Amanda R. Markey, Vladimir L. Cherkassky, George
+Loewenstein, and Marcel Adam Just. 2013. <span>“Identifying Emotions on
+the Basis of Neural Activation.”</span> <em>PLOS ONE</em> 8 (6): e66032.
+<a
+href="https://doi.org/10.1371/journal.pone.0066032">https://doi.org/10.1371/journal.pone.0066032</a>.
+</div>
+<div id="ref-Lampert_Joska_Burg_Batsford_McPherson_Jain_2002"
+class="csl-entry" role="doc-biblioentry">
+Lampert, Rachel, Tammy Joska, Matthew M. Burg, William P. Batsford,
+Craig A. McPherson, and Diwakar Jain. 2002. <span>“Emotional and
+Physical Precipitants of Ventricular Arrhythmia.”</span>
+<em>Circulation</em> 106 (14): 1800–1805. <a
+href="https://doi.org/10.1161/01.cir.0000031733.51374.c1">https://doi.org/10.1161/01.cir.0000031733.51374.c1</a>.
+</div>
+<div id="ref-Lee_Kulubya_Goldin_Goodarzi_Girgis_2018" class="csl-entry"
+role="doc-biblioentry">
+Lee, Darrin J., Edwin Kulubya, Philippe Goldin, Amir Goodarzi, and Fady
+Girgis. 2018. <span>“Review of the Neural Oscillations Underlying
+Meditation.”</span> <em>Frontiers in Neuroscience</em> 12. <a
+href="https://www.frontiersin.org/articles/10.3389/fnins.2018.00178">https://www.frontiersin.org/articles/10.3389/fnins.2018.00178</a>.
+</div>
+<div id="ref-Lutz_Greischar_Rawlings_Ricard_Davidson_2004"
+class="csl-entry" role="doc-biblioentry">
+Lutz, Antoine, Lawrence L. Greischar, Nancy B. Rawlings, Matthieu
+Ricard, and Richard J. Davidson. 2004. <span>“Long-Term Meditators
+Self-Induce High-Amplitude Gamma Synchrony During Mental
+Practice.”</span> <em>Proceedings of the National Academy of
+Sciences</em> 101 (46): 16369–73. <a
+href="https://doi.org/10.1073/pnas.0407401101">https://doi.org/10.1073/pnas.0407401101</a>.
+</div>
+<div id="ref-Vivot_Pallavicini_Zamberlan_Vigo_Tagliazucchi_2020"
+class="csl-entry" role="doc-biblioentry">
+Martínez Vivot, Rocío, Carla Pallavicini, Federico Zamberlan, Daniel
+Vigo, and Enzo Tagliazucchi. 2020. <span>“Meditation Increases the
+Entropy of Brain Oscillatory Activity.”</span> <em>Neuroscience</em> 431
+(April): 40–51. <a
+href="https://doi.org/10.1016/j.neuroscience.2020.01.033">https://doi.org/10.1016/j.neuroscience.2020.01.033</a>.
+</div>
+<div id="ref-articlewew" class="csl-entry" role="doc-biblioentry">
+McCraty, Rollin, Atkinson Mike, Dana Tomasino, and Raymond Bradley.
+2009. <span>“The Coherent Heart Heart–Brain Interactions,
+Psychophysiological Coherence, and the Emergence of System-Wide
+Order.”</span> <em>Integral Review</em> 5 (December).
+</div>
+<div id="ref-Plomp1965TonalCA" class="csl-entry" role="doc-biblioentry">
+Plomp, R., and Willem J. M. Levelt. 1965. <span>“Tonal Consonance and
+Critical Bandwidth.”</span> <em>The Journal of the Acoustical Society of
+America</em> 38 4: 548–60.
+</div>
+<div id="ref-Rhodes_Proffitt_Grady_Sumich_1998" class="csl-entry"
+role="doc-biblioentry">
+Rhodes, Gillian, Fiona Proffitt, Jonathon M. Grady, and Alex Sumich.
+1998. <span>“Facial Symmetry and the Perception of Beauty.”</span>
+<em>Psychonomic Bulletin &amp; Review</em> 5 (4): 659–69. <a
+href="https://doi.org/10.3758/BF03208842">https://doi.org/10.3758/BF03208842</a>.
+</div>
+<div id="ref-Safron_2016" class="csl-entry" role="doc-biblioentry">
+Safron, Adam. 2016. <span>“What Is Orgasm? A Model of Sexual Trance and
+Climax via Rhythmic Entrainment.”</span> <em>Socioaffective Neuroscience
+&amp; Psychology</em> 6 (October): 10.3402/snp.v6.31763. <a
+href="https://doi.org/10.3402/snp.v6.31763">https://doi.org/10.3402/snp.v6.31763</a>.
+</div>
+<div id="ref-Salek-Haddadi_Lemieux_Fish_2002" class="csl-entry"
+role="doc-biblioentry">
+Salek-Haddadi, Afraim, Louis Lemieux, and David R. Fish. 2002.
+<span>“Role of Functional Magnetic Resonance Imaging in the Evaluation
+of Patients with Malformations Caused by Cortical Development.”</span>
+<em>Neurosurgery Clinics of North America</em> 13 (1): 63–69, viii. <a
+href="https://doi.org/10.1016/s1042-3680(02)80007-9">https://doi.org/10.1016/s1042-3680(02)80007-9</a>.
+</div>
+<div id="ref-Schmidhuber_2009" class="csl-entry" role="doc-biblioentry">
+Schmidhuber, Jürgen. 2009. <span>“Driven by Compression Progress: A
+Simple Principle Explains Essential Aspects of Subjective Beauty,
+Novelty, Surprise, Interestingness, Attention, Curiosity, Creativity,
+Art, Science, Music, Jokes.”</span> In <em>Anticipatory Behavior in
+Adaptive Learning Systems</em>, edited by Giovanni Pezzulo, Martin V.
+Butz, Olivier Sigaud, and Gianluca Baldassarre, 48–76. Lecture Notes in
+Computer Science. Berlin, Heidelberg: Springer. <a
+href="https://doi.org/10.1007/978-3-642-02565-5_4">https://doi.org/10.1007/978-3-642-02565-5_4</a>.
+</div>
+<div id="ref-Shah_Lampert_Goldberg_Veledar_Bremner_Vaccarino_2013"
+class="csl-entry" role="doc-biblioentry">
+Shah, Amit J., Rachel Lampert, Jack Goldberg, Emir Veledar, J. Douglas
+Bremner, and Viola Vaccarino. 2013. <span>“Posttraumatic Stress Disorder
+and Impaired Autonomic Modulation in Male Twins.”</span> <em>Biological
+Psychiatry</em> 73 (11): 1103–10. <a
+href="https://doi.org/10.1016/j.biopsych.2013.01.019">https://doi.org/10.1016/j.biopsych.2013.01.019</a>.
+</div>
+<div id="ref-Steffen_Austin_DeBarros_Brown_2017" class="csl-entry"
+role="doc-biblioentry">
+Steffen, Patrick R., Tara Austin, Andrea DeBarros, and Tracy Brown.
+2017. <span>“The Impact of Resonance Frequency Breathing on Measures of
+Heart Rate Variability, Blood Pressure, and Mood.”</span> <em>Frontiers
+in Public Health</em> 5. <a
+href="https://www.frontiersin.org/articles/10.3389/fpubh.2017.00222">https://www.frontiersin.org/articles/10.3389/fpubh.2017.00222</a>.
+</div>
+<div id="ref-Tiller_McCraty_Atkinson_1996" class="csl-entry"
+role="doc-biblioentry">
+Tiller, W. A., R. McCraty, and M. Atkinson. 1996. <span>“Cardiac
+Coherence: A New, Noninvasive Measure of Autonomic Nervous System
+Order.”</span> <em>Alternative Therapies in Health and Medicine</em> 2
+(1): 52–65.
+</div>
+<div id="ref-Trainor_Heinmiller_1998" class="csl-entry"
+role="doc-biblioentry">
+Trainor, Laurel J., and Becky M. Heinmiller. 1998. <span>“The
+Development of Evaluative Responses to Music:: Infants Prefer to Listen
+to Consonance over Dissonance.”</span> <em>Infant Behavior and
+Development</em> 21 (1): 77–88. <a
+href="https://doi.org/10.1016/S0163-6383(98)90055-8">https://doi.org/10.1016/S0163-6383(98)90055-8</a>.
+</div>
+<div id="ref-Travis_2001" class="csl-entry" role="doc-biblioentry">
+Travis, F. 2001. <span>“Autonomic and EEG Patterns Distinguish
+Transcending from Other Experiences During Transcendental Meditation
+Practice.”</span> <em>International Journal of Psychophysiology:
+Official Journal of the International Organization of
+Psychophysiology</em> 42 (1): 1–9. <a
+href="https://doi.org/10.1016/s0167-8760(01)00143-x">https://doi.org/10.1016/s0167-8760(01)00143-x</a>.
+</div>
+<div id="ref-Travis_Tecce_Arenander_Wallace_2002" class="csl-entry"
+role="doc-biblioentry">
+Travis, Fred, Joe Tecce, Alarik Arenander, and R. Keith Wallace. 2002.
+<span>“Patterns of EEG Coherence, Power, and Contingent Negative
+Variation Characterize the Integration of Transcendental and Waking
+States.”</span> <em>Biological Psychology</em> 61 (3): 293–319. <a
+href="https://doi.org/10.1016/s0301-0511(02)00048-0">https://doi.org/10.1016/s0301-0511(02)00048-0</a>.
+</div>
+<div id="ref-Ziegelstein_2007" class="csl-entry" role="doc-biblioentry">
+Ziegelstein, Roy C. 2007. <span>“Acute Emotional Stress and Cardiac
+Arrhythmias.”</span> <em>JAMA</em> 298 (3): 324–29. <a
+href="https://doi.org/10.1001/jama.298.3.324">https://doi.org/10.1001/jama.298.3.324</a>.
+</div>
+</div>
+<section class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p><a
+href="https://soundcloud.com/user-143546163/balboa-park-station">Bart
+Sounds</a>, <a
+href="https://soundcloud.com/user-143546163/baby-crying-sample">Baby
+Crying</a>, <a
+href="https://soundcloud.com/user-143546163/baby-crying-sample-reverb">Baby
+Crying w/ Reverb</a><a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p><a
+href="https://soundcloud.com/user-143546163/consonance-noise-dissonance-mixed-spectra">Consonance
+- Noise - Dissonance - Mixed Spectra</a><a href="#fnref2"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+<!--radix_placeholder_article_footer-->
+<!--/radix_placeholder_article_footer-->
+</div>
+
+<div class="d-appendix">
+</div>
+
+
+<!--radix_placeholder_site_after_body-->
+<!--/radix_placeholder_site_after_body-->
+<!--radix_placeholder_appendices-->
+<div class="appendix-bottom">
+<h3 id="references">References</h3>
+<div id="references-listing"></div>
+<h3 id="citation">Citation</h3>
+<p>For attribution, please cite this work as</p>
+<pre class="citation-appendix short">Gómez-Emilsson (2020, Dec. 17). The Symmetry Theory of Valence 2020 Overview. Retrieved from https://www.qri.org/blog/symmetry-theory-of-valence-2020</pre>
+<p>BibTeX citation</p>
+<pre class="citation-appendix long">@misc{gómez-emilsson2020the,
+  author = {Gómez-Emilsson, Andrés},
+  title = {The Symmetry Theory of Valence 2020 Overview},
+  url = {https://www.qri.org/blog/symmetry-theory-of-valence-2020},
+  year = {2020}
+}</pre>
+</div>
+<!--/radix_placeholder_appendices-->
+<!--radix_placeholder_navigation_after_body-->
+<!--/radix_placeholder_navigation_after_body-->
+
+<meta property='og:image' content='/images/hyperbolic.png'/></body>
+
+</html>

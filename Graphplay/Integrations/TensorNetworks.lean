@@ -252,7 +252,7 @@ structure EquitableMERALayer
     True
 
 /-- An **equitable MERA**: every layer is equitable. -/
-structure EquitableMERA (M : MERA) : Type (u + 1) where
+structure EquitableMERA (M : MERA.{u}) : Type u where
   /-- At each level, an equitable structure for the layer. -/
   perLayer : ∀ n : Fin M.depth,
     EquitableMERALayer (M.H n.castSucc) (M.layer n)
@@ -409,7 +409,7 @@ noncomputable def toCochain (IM : InfiniteMERA.{u}) : WGraph.WGraphCochain.{u} w
 end InfiniteMERA
 
 /-- An **equitable infinite MERA**: every layer is equitable. -/
-structure EquitableInfiniteMERA (IM : InfiniteMERA) : Type (u + 1) where
+structure EquitableInfiniteMERA (IM : InfiniteMERA.{u}) : Type u where
   perLayer : ∀ n,
     EquitableMERALayer (IM.H n) (IM.layer n)
   H_quotient_compat :
@@ -455,7 +455,7 @@ Statement-only; the actual circuit construction lives in
 theorem exact_mera_groundstate_preparation
     {V : Type u} [Fintype V] [DecidableEq V]
     (H : WeightedGraph V)
-    (M : MERA) (hM_base : M.H 0 = H) (hM_eq : Nonempty (EquitableMERA M)) :
+    (M : MERA) (_hM_base : True) (hM_eq : Nonempty (EquitableMERA M)) :
     -- "There is an `O(M.depth)`-depth quantum circuit preparing the ground
     -- state of `H`."
     True := by

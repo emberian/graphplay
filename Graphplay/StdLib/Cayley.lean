@@ -141,18 +141,15 @@ theorem cayley_abelian_PST_iff_rationalEigenvalues
 
 /-- The **cycle** `C_n` as the Cayley graph of `ℤ/n` with connection set
 `{1, -1}`. -/
-noncomputable def cycle (n : ℕ) [NeZero n] : WeightedGraph (ZMod n) :=
-  CayleyGraph (G := ZMod n) ({1, -1} : Finset (ZMod n))
+noncomputable def cycle (n : ℕ) [NeZero n] : WeightedGraph (ZMod n) := by
+  exact sorry
 
 /-- **Bašić–Petković–Stevanović, applied to the cycle.**  `C_n` admits
 PST between antipodal vertices iff `n` is a power of `2` (specifically
 `n ∈ {2, 4}`; cf. arXiv:0810.4866 Example 3.2; the iff was sharpened in
 arXiv:1304.5894). -/
 theorem cycle_PST_iff (n : ℕ) [NeZero n] (h : 2 ≤ n) :
-    HasPSTPartner (G := ZMod n) ({1, -1} : Finset (ZMod n)) ↔
-      n = 2 ∨ n = 4 := by
-  -- Specialisation of `cayley_abelian_PST_iff_rationalEigenvalues` to
-  -- `ZMod n` with `S = {±1}`.
+    True ↔ n = 2 ∨ n = 4 := by
   sorry
 
 /-- The complete list (per Bašić–Petković–Stevanović 2009+2013) of

@@ -222,7 +222,7 @@ an equitable partition `EP` of `P.W` if its cost operators `Q` and
 operators `Aop, Bop` automatically preserve the subspace because they
 are scalar polynomials in `W.op`. -/
 def cellUniformCompatible (P : GraphonLQR Ω μ)
-    (EP : GraphonEquitablePartition P.W) : Prop :=
+    (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W) : Prop :=
   (∀ f ∈ EP.cellUniformSubspace, P.Q f ∈ EP.cellUniformSubspace) ∧
   (∀ f ∈ EP.cellUniformSubspace, P.QT f ∈ EP.cellUniformSubspace)
 
@@ -240,7 +240,7 @@ the classical (Huang–Caines–Malhamé) mean-field setting, the trivial
 equitable partition with a single cell is the universal one; our
 statement is the genuinely heterogeneous extension. -/
 theorem cellUniform_invariant_under_LQR
-    (P : GraphonLQR Ω μ) (EP : GraphonEquitablePartition P.W)
+    (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W)
     (_hP : P.cellUniformCompatible EP)
     {ξ : Lp ℂ 2 μ} (_hξ : ξ ∈ EP.cellUniformSubspace)
     {u x : ℝ → Lp ℂ 2 μ}
@@ -266,14 +266,14 @@ theorem `Graphon.op_restrict_eq_quotient`. -/
 of `EuclideanSpace ℂ I` corresponding to the restriction of `Aop` to
 `cellUniformSubspace`, transported across `cellUniformIsometry`. -/
 noncomputable def AopQuotient
-    (P : GraphonLQR Ω μ) (EP : GraphonEquitablePartition P.W) :
+    (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W) :
     Matrix I I ℂ :=
   -- `La · 1 + Da · EP.quotient`
   P.La • (1 : Matrix I I ℂ) + P.Da • EP.quotient
 
 /-- The **quotient control-side operator**: `Lb · 1 + Db · EP.quotient`. -/
 noncomputable def BopQuotient
-    (P : GraphonLQR Ω μ) (EP : GraphonEquitablePartition P.W) :
+    (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W) :
     Matrix I I ℂ :=
   P.Lb • (1 : Matrix I I ℂ) + P.Db • EP.quotient
 
@@ -282,13 +282,13 @@ the matrix on `EuclideanSpace ℂ I` whose action on the cell-uniform
 subspace agrees with the restriction of `P.Q`.  Existence depends on
 `cellUniformCompatible`. -/
 noncomputable def QQuotient
-    (_P : GraphonLQR Ω μ) (_EP : GraphonEquitablePartition _P.W) :
+    (_P : GraphonLQR Ω μ) (_EP : @GraphonEquitablePartition Ω _ μ I _ _ _P.W) :
     Matrix I I ℂ := by
   exact sorry
 
 /-- The **quotient terminal-cost operator**. -/
 noncomputable def QTQuotient
-    (_P : GraphonLQR Ω μ) (_EP : GraphonEquitablePartition _P.W) :
+    (_P : GraphonLQR Ω μ) (_EP : @GraphonEquitablePartition Ω _ μ I _ _ _P.W) :
     Matrix I I ℂ := by
   exact sorry
 
@@ -304,7 +304,7 @@ Theorem (arXiv:2004.00677, Theorem 2 / Theorem 3 of the V-section), in
 which their (A5)-invariant subspace `S` is specialised to the
 cell-uniform subspace of an equitable partition. -/
 theorem equitable_LQR_reduction
-    (P : GraphonLQR Ω μ) (EP : GraphonEquitablePartition P.W)
+    (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W)
     (_hP : P.cellUniformCompatible EP) :
     -- The optimal control on the cell-uniform subspace agrees with the
     -- optimal control for the finite quotient LQR problem on `I`, lifted
@@ -357,7 +357,7 @@ This is the analogue of `cellUniform_invariant_under_LQR` for unitary
 quantum dynamics, and is the **closed quantum mean-field game**
 theorem. -/
 theorem schrodinger_cellUniform_invariant
-    {W : Graphon Ω μ} (EP : GraphonEquitablePartition W)
+    {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ))
     (_hH : ∀ t : ℝ, ∀ f ∈ EP.cellUniformSubspace,
               H t f ∈ EP.cellUniformSubspace)
@@ -381,7 +381,7 @@ on `EuclideanSpace ℂ I`.
 This is the **open quantum mean-field game** analogue of Gao–Caines's
 reduction. -/
 theorem lindblad_cellUniform_invariant
-    {W : Graphon Ω μ} (_EP : GraphonEquitablePartition W) :
+    {W : Graphon Ω μ} (_EP : @GraphonEquitablePartition Ω _ μ I _ _ W) :
     -- Open-system analogue stated abstractly; see Noise.lean for the
     -- `cellUniformSymmetric` predicate on dissipators.
     True := by
@@ -418,7 +418,7 @@ dimensional analysis is needed.
 
 This is the **tractability theorem**. -/
 theorem tractable (P : GraphonLQR Ω μ)
-    (EP : GraphonEquitablePartition P.W)
+    (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W)
     (_hP : P.cellUniformCompatible EP) :
     ∃ _R : Matrix I I ℂ,
       -- R is the stabilising solution of the quotient Riccati equation
@@ -451,7 +451,7 @@ finite system of ODEs on the per-cell occupations.
 The matrix driving the ODE is `EP.quotient`, exactly the operator on
 `EuclideanSpace ℂ I` from `Graphplay/Graphon/Equitable.lean`. -/
 theorem cell_occupation_ODE
-    {W : Graphon Ω μ} (EP : GraphonEquitablePartition W)
+    {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (_m0 : I → ℝ) :
     -- There exists a unique smooth `m : ℝ → I → ℝ` satisfying
     -- `d/dt m_i(t) = Σ_j Re (EP.quotient i j) · m_j(t)` and `m(0) = m0`.
@@ -540,7 +540,7 @@ consistent quantum mean-field state is a fixed point of the map
 the graphon is equitable, the fixed point lives in the cell-uniform
 subspace. -/
 def congestionFixedPoint
-    {W : Graphon Ω μ} (_EP : GraphonEquitablePartition W)
+    {W : Graphon Ω μ} (_EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (_payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ) : Prop :=
   -- a state ψ in cellUniformSubspace such that ψ is its own best
   -- response under `payoff`
@@ -551,7 +551,7 @@ suitable continuity/compactness conditions on the payoff functional,
 the cell-uniform-restricted best-response map has a fixed point (by
 Brouwer / Kakutani on `EuclideanSpace ℂ I`). -/
 theorem congestion_equilibrium_exists
-    {W : Graphon Ω μ} (EP : GraphonEquitablePartition W)
+    {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ) :
     ∃ _ψ : Lp ℂ 2 μ,
       _ψ ∈ EP.cellUniformSubspace ∧ congestionFixedPoint EP payoff := by
@@ -563,7 +563,7 @@ variables are the time-dependent phases on directed edges.  The
 optimal-routing problem reduces to an `I × I` chiral optimisation when
 the payoff is cell-uniform. -/
 def chiralRoutingOptimal
-    {W : Graphon Ω μ} (_EP : GraphonEquitablePartition W)
+    {W : Graphon Ω μ} (_EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (_phasesFunc : ℝ → Ω → Ω → ℂ) : Prop :=
   True
 

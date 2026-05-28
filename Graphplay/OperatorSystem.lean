@@ -59,7 +59,7 @@ import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.Algebra.Star.Basic
 import Mathlib.Algebra.Star.Subalgebra
 import Mathlib.CategoryTheory.Category.Basic
-import Mathlib.CategoryTheory.Category.Bundled
+import Mathlib.CategoryTheory.ConcreteCategory.Bundled
 import Mathlib.CategoryTheory.Functor.Basic
 import Mathlib.LinearAlgebra.TensorProduct.Matrix
 import Graphplay.QuantumGraph
@@ -88,7 +88,7 @@ structure OperatorSystem (n : ℕ) where
   /-- Operator systems are unital: the identity matrix lies in the carrier. -/
   one_mem : (1 : Matrix (Fin n) (Fin n) ℂ) ∈ carrier
   /-- Operator systems are `*`-closed: closed under conjugate transpose. -/
-  star_closed : ∀ A ∈ carrier, Aᴴ ∈ carrier
+  star_closed : ∀ A ∈ carrier, A.conjTranspose ∈ carrier
 
 namespace OperatorSystem
 
@@ -112,7 +112,7 @@ theorem star_mem (S : OperatorSystem n) {A : Matrix (Fin n) (Fin n) ℂ}
 /-- An element of an operator system is **self-adjoint** if it equals its
 conjugate transpose. The set of self-adjoint elements is a real subspace. -/
 def IsSelfAdjoint (S : OperatorSystem n) (A : Matrix (Fin n) (Fin n) ℂ) : Prop :=
-  A ∈ S ∧ Aᴴ = A
+  A ∈ S ∧ A.conjTranspose = A
 
 /-- An element of an operator system is **positive** if it is positive
 semi-definite *and* lies in the carrier. In the operator-system literature
@@ -164,7 +164,7 @@ def toOperatorSystem (S : QuantumGraph n) : OperatorSystem n where
   one_mem := S.one_mem
   star_closed := by
     intro A hA
-    -- `S.star_mem` provides exactly `Aᴴ ∈ carrier`.
+    -- `S.star_mem` provides exactly `A.conjTranspose ∈ carrier`.
     exact S.star_mem A hA
 
 end QuantumGraph
@@ -248,7 +248,7 @@ noncomputable def choiMatrix
     (φ : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ] Matrix (Fin m) (Fin m) ℂ) :
     Matrix (Fin n × Fin m) (Fin n × Fin m) ℂ :=
   fun ij kl =>
-    φ (Matrix.stdBasisMatrix ij.1 kl.1 (1 : ℂ)) ij.2 kl.2
+    φ (Matrix.single ij.1 kl.1 (1 : ℂ)) ij.2 kl.2
 
 /-- **Choi's theorem (1975)**: a linear map between matrix algebras is
 completely positive iff its Choi matrix is positive semi-definite. The
@@ -560,7 +560,7 @@ noncomputable def K_n_quantum (n : ℕ) : OperatorSystem n where
     -- Span of `1` together with all `E_{ij}` for `i ≠ j`.
     Submodule.span ℂ
       ({(1 : Matrix (Fin n) (Fin n) ℂ)} ∪
-        {M | ∃ i j : Fin n, i ≠ j ∧ M = Matrix.stdBasisMatrix i j (1 : ℂ)})
+        {M | ∃ i j : Fin n, i ≠ j ∧ M = Matrix.single i j (1 : ℂ)})
   one_mem := Submodule.subset_span (by simp [Set.mem_union]; exact Or.inl rfl)
   star_closed := by
     intro A hA

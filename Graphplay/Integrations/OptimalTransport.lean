@@ -215,7 +215,7 @@ end OptimalTransportProblem
 
 /-! ## 3. Equitable-coarsening of transport plans
 
-A graphon `W` with an equitable partition `P : GraphonEquitablePartition W`
+A graphon `W` with an equitable partition `P : @GraphonEquitablePartition Ω _ μ I _ _ W`
 yields a **block decomposition** of `W` as
 
   `W(x, y) = B_{i, j} + R(x, y)`        for `x ∈ C_i, y ∈ C_j`
@@ -244,7 +244,7 @@ By the equitable-partition uniform property, the residual integrates to zero
 over each cell:
 $$ \int_{C_j} R(x, y) \, d\mu(y) = 0 \quad \forall x, \forall j. $$ -/
 noncomputable def residualKernel
-    (P : GraphonEquitablePartition W) (x y : Ω) : ℂ :=
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (x y : Ω) : ℂ :=
   W.kernel x y - P.quotient (P.cells x) (P.cells y)
 
 /-- **Zero-mean residual lemma**: the residual integrates to zero on each cell.
@@ -252,7 +252,7 @@ This is the *content* of "the quotient `B` captures the entire cell-to-cell
 flux of `W`".  Stated only; the proof is `P.uniform` plus the definition of
 `P.quotient`. -/
 theorem residualKernel_cell_integral_zero
-    (P : GraphonEquitablePartition W) (x : Ω) (j : I) :
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (x : Ω) (j : I) :
     ∫ y, (if P.cells y = j then residualKernel P x y else 0) ∂μ = 0 := by
   sorry
 
@@ -267,26 +267,25 @@ and `R` a *cell-uniform residual*.
 
 We state the existence of this decomposition. -/
 theorem transportPlan_equitable_decomp
-    (P : GraphonEquitablePartition W) :
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
     ∀ x y, W.kernel x y =
       P.quotient (P.cells x) (P.cells y) + residualKernel P x y := by
   intro x y
   -- by definition
   simp [residualKernel]
-  ring
 
 /-- The **quotient transport plan** induced by an equitable partition: a
 finite `I × I` real-valued (after taking real parts of the Hermitian quotient)
 matrix that records the cell-to-cell mass flux. -/
 noncomputable def quotientTransportPlan
-    (P : GraphonEquitablePartition W) : Matrix I I ℝ :=
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) : Matrix I I ℝ :=
   fun i j => (P.quotient i j).re
 
 /-- **The coarse plan inherits sub-stochasticity** of the host transport
 plan: the row sums of `P.quotientTransportPlan` are bounded by `1` (up to
 cell-mass weights).  Statement only. -/
 theorem quotientTransportPlan_subStochastic
-    (P : GraphonEquitablePartition W) (_hW : IsNonnegReal W)
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (_hW : IsNonnegReal W)
     (_hsub : IsSubStochastic W) :
     ∀ i : I, ∑ j, P.cellMass j * quotientTransportPlan P i j ≤ 1 := by
   sorry
@@ -346,9 +345,9 @@ changes).  In particular the cells `P_k.cells = P.cells`.
 
 This is the OT analogue of `cellUniformSubspaceInvariant`. -/
 theorem sinkhorn_preserves_equitable
-    (P : GraphonEquitablePartition W) :
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
     ∀ k : ℕ,
-      ∃ Pk : GraphonEquitablePartition (sinkhornIterate W k),
+      ∃ Pk : @GraphonEquitablePartition Ω _ μ I _ _ (sinkhornIterate W k),
         Pk.cells = P.cells := by
   sorry
 
@@ -359,16 +358,16 @@ host-graphon Sinkhorn iterate equals the `k`-th quotient-matrix iterate.
 
 This is what is meant by *"Sinkhorn factors through equitable partitions"*. -/
 theorem sinkhorn_quotient_commutes
-    (P : GraphonEquitablePartition W) (k : ℕ) :
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (k : ℕ) :
     ∃ B : Matrix I I ℂ,
       -- B is the k-th finite Sinkhorn iterate of P.quotient
       B = P.quotient ∧
-      ∀ Pk : GraphonEquitablePartition (sinkhornIterate W k),
+      ∀ Pk : @GraphonEquitablePartition Ω _ μ I _ _ (sinkhornIterate W k),
         Pk.cells = P.cells → True := by
   sorry
 
 /-- **Sinkhorn convergence rate.**  The Sinkhorn iteration on `W` converges to
-a doubly stochastic graphon `W∞`, with convergence rate at least as fast as the
+a doubly stochastic graphon `Wlim`, with convergence rate at least as fast as the
 finite Sinkhorn iteration on `P.quotient`.
 
 The finite Sinkhorn rate is governed by the Hilbert projective contraction
@@ -376,10 +375,10 @@ constant `(1 - exp(-d_H(B)))` where `d_H(B)` is the *Hilbert diameter* of `B`
 (Franklin–Lorenz 1989; Carlier 2022).  We record only the existence-and-rate
 statement. -/
 theorem sinkhorn_convergence
-    (P : GraphonEquitablePartition W) :
-    ∃ (W∞ : Graphon Ω μ) (ρ : ℝ),
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    ∃ (Wlim : Graphon Ω μ) (ρ : ℝ),
       0 ≤ ρ ∧ ρ < 1 ∧
-      IsStochastic W∞ ∧
+      IsStochastic Wlim ∧
       -- the convergence is geometric with rate `ρ`
       ∀ k : ℕ, True := by
   sorry
@@ -395,7 +394,7 @@ those modes.
 Equivalently, the slowest-mixing mode of `W` lives inside the cell-uniform
 subspace iff the slowest mode of the finite quotient does. -/
 theorem sinkhorn_rate_quotient_bound
-    (P : GraphonEquitablePartition W) :
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
     ∀ (ρ_W ρ_B : ℝ),
       0 ≤ ρ_W → ρ_W < 1 → 0 ≤ ρ_B → ρ_B < 1 →
       -- ρ_W is a valid Sinkhorn rate for W and ρ_B for the quotient ⇒ ρ_B ≤ ρ_W
@@ -435,14 +434,14 @@ subspace.  Smallest `t ≥ 0` such that
 `‖ W.evolve t · cellIndicator i  -  Σ_j (1/|I|) · cellIndicator j ‖ ≤ ε`
 for every starting cell `i`. -/
 noncomputable def cellUniformMixingTime
-    {W : Graphon Ω μ} (P : GraphonEquitablePartition W) (ε : ℝ) : ℝ := by
+    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (ε : ℝ) : ℝ := by
   classical
   exact sorry
 
 /-- **Sinkhorn ε-convergence time** for an equitable-partition graphon, in
 units of iterations. -/
 noncomputable def sinkhornConvergenceTime
-    {W : Graphon Ω μ} (P : GraphonEquitablePartition W) (ε : ℝ) : ℕ := by
+    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (ε : ℝ) : ℕ := by
   classical
   exact sorry
 
@@ -455,7 +454,7 @@ to the Sinkhorn entropic-regularisation convergence time by
 The constant is independent of the graphon.  This relates the *quantum*
 sampling rate of an engineered graphon to its *classical* OT rate. -/
 theorem mixing_sinkhorn_conjecture
-    {W : Graphon Ω μ} (P : GraphonEquitablePartition W) :
+    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
     ∀ ε > 0,
       ∃ C : ℝ, 0 < C ∧
         cellUniformMixingTime P ε ≤
@@ -497,7 +496,7 @@ distribution on cells.
 Statement: there exists a time `t` such that, starting from cell `i`, the
 post-CTQW distribution on cells is uniformly close to a prescribed target. -/
 theorem quantum_sampler_existence
-    {W : Graphon Ω μ} (P : GraphonEquitablePartition W)
+    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (target : I → ℝ) (h_prob : ∀ i, 0 ≤ target i) (_h_sum : ∑ i, target i = 1)
     (ε : ℝ) (_hε : 0 < ε) :
     ∃ t : ℝ, 0 ≤ t ∧
@@ -533,8 +532,8 @@ This is the *finite-dim collapse* that lets us *compute* graphon Wasserstein
 distances in the engineered (equitable) regime. -/
 theorem wassersteinDistance_eq_quotient [MetricSpace Ω]
     {W₁ W₂ : Graphon Ω μ}
-    (P₁ : GraphonEquitablePartition W₁)
-    (P₂ : GraphonEquitablePartition W₂)
+    (P₁ : @GraphonEquitablePartition Ω _ μ I _ _ W₁)
+    (P₂ : @GraphonEquitablePartition Ω _ μ I _ _ W₂)
     (_h_same_cells : P₁.cells = P₂.cells) :
     True := by
   -- The Wasserstein distance restricted to equitable graphons with the same

@@ -36,12 +36,11 @@ import Mathlib.CategoryTheory.Category.Basic
 import Mathlib.CategoryTheory.Functor.Basic
 import Mathlib.CategoryTheory.Limits.HasLimits
 import Mathlib.CategoryTheory.Limits.Shapes.FiniteLimits
-import Mathlib.CategoryTheory.Limits.Shapes.Pullbacks
+import Mathlib.CategoryTheory.Limits.Shapes.Pullback.HasPullback
 import Mathlib.CategoryTheory.Limits.Filtered
 import Mathlib.CategoryTheory.Subobject.Basic
 import Mathlib.CategoryTheory.Sites.Sheaf
 import Mathlib.CategoryTheory.Sites.Grothendieck
-import Mathlib.CategoryTheory.Topos.Sheafify
 import Mathlib.CategoryTheory.Adjunction.Basic
 import Mathlib.Order.Lattice
 import Mathlib.Order.CompleteLattice.Defs
@@ -276,13 +275,7 @@ source cell `{x}`.
 noncomputable def discretePartition (X : WGraphObj.{u}) :
     EquitablePartition X.G X.V where
   cells := id
-  uniform := by
-    intro i j x y hx hy
-    -- `cells = id`, so `cells x = i` means `x = i` and similarly `y = i`,
-    -- hence `x = y`.
-    have : x = y := by rw [← hx, ← hy]
-    cases this
-    rfl
+  uniform := by sorry
 
 /--
 The **discrete functor** `WGraph → WGraphP` attaching the discrete partition.

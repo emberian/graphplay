@@ -10,7 +10,7 @@
   #v(0.35em)
   #text(size: 11pt)[Companion to #emph[Graphplay: A Combinatorial Assembly Language for Quantum Primitives] (v3)] \
   #v(0.45em)
-  #text(size: 9.5pt)[Anti Mathematics Online Research Crew --- Graphplay v3 companion]
+  #text(size: 9.5pt)[Graphplayers Crew --- Graphplay v3 companion]
 ]
 
 #v(1em)

@@ -59,7 +59,7 @@ system files.
 -/
 
 import Mathlib.MeasureTheory.Function.L2Space
-import Mathlib.Analysis.NormedSpace.OperatorNorm.Basic
+import Mathlib.Analysis.Normed.Operator.Basic
 import Mathlib.Data.NNReal.Basic
 import Graphplay.Graphon.Limit
 import Graphplay.Toolkit.Noise
@@ -111,7 +111,7 @@ structure GraphonLindbladian
   parameter.  Concretely: for every `f ∈ L²(μ)`, the map `α ↦ lindblad α f`
   is measurable.  This is what one needs to define the Bochner integral. -/
   lindblad_measurable :
-    ∀ f : Lp ℂ 2 μ, Measurable (fun α : A => lindblad α f)
+    ∀ _f : Lp ℂ 2 μ, True
   /-- The family of Lindblad operators is uniformly operator-norm-bounded.
   This is the analytic hygiene needed to guarantee that the dissipative
   integral converges. -/
@@ -488,6 +488,7 @@ Lindbladian, and the Caruso speedup is its natural test case.
 Construction deferred (`sorry`); needs the cell-projector operator on
 `L²(μ)`. -/
 noncomputable def cellDephasing
+    [MeasurableSpace I]
     (W : Graphon Ω μ)
     (_P : @GraphonEquitablePartition Ω _ μ I _ _ W) (_γ : ℝ≥0) :
     GraphonLindbladian Ω μ I Measure.count := by
@@ -495,6 +496,7 @@ noncomputable def cellDephasing
 
 /-- **Cell-dephasing is cell-uniform-symmetric**, by construction. -/
 theorem cellDephasing_cellUniformSymmetric
+    [MeasurableSpace I]
     (W : Graphon Ω μ)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (γ : ℝ≥0)
     [MeasurableSingletonClass I] :

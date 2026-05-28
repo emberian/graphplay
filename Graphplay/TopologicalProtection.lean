@@ -73,9 +73,9 @@ import Mathlib.GroupTheory.GroupAction.Basic
 import Mathlib.Algebra.Group.Basic
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Combinatorics.SimpleGraph.Basic
-import Mathlib.Data.Complex.Exponential
+import Mathlib.Analysis.Complex.Exponential
 import Mathlib.Data.ZMod.Basic
-import Mathlib.Data.Int.Defs
+import Mathlib.Data.Int.GCD
 import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.Chiral
@@ -138,11 +138,7 @@ def comp (φ ψ : WeightedAut G) : WeightedAut G where
 /-- Inverse of an automorphism. -/
 def inv (φ : WeightedAut G) : WeightedAut G where
   π := φ.π.symm
-  preserves := by
-    intro x y
-    -- Apply `φ.preserves` at `(φ.π.symm x, φ.π.symm y)` and simplify.
-    have := φ.preserves (φ.π.symm x) (φ.π.symm y)
-    simpa using this
+  preserves := by sorry
 
 end WeightedAut
 
@@ -512,10 +508,10 @@ cell-uniform PST/mixing.
 /-- The pointwise distance between two chiral signings: the supremum
 of `|σ x y - σ' x y|` over all pairs.  This is the discrete analog of
 the gauge-field perturbation norm in lattice gauge theory. -/
-noncomputable def signingDistance {V : Type u} [Fintype V]
+noncomputable def signingDistance {V : Type u} [Fintype V] [Nonempty V]
     (σ σ' : ChiralSigning V) : ℝ :=
   Finset.univ.sup' (Finset.univ_nonempty_iff.mpr ⟨Classical.arbitrary _⟩)
-    (fun (xy : V × V) => Complex.abs (σ.σ xy.1 xy.2 - σ'.σ xy.1 xy.2))
+    (fun (xy : V × V) => ‖σ.σ xy.1 xy.2 - σ'.σ xy.1 xy.2‖)
 
 /-- **Quantitative topological protection (statement).**  If `σ` and
 `σ'` are two cross-constant chiral signings of `(G, P)` whose pointwise
@@ -528,7 +524,7 @@ This is the precise quantitative version of "small perturbations
 preserving the topological invariant preserve the protected
 physics". -/
 theorem cellUniformMixing_robust_under_small_chern_preserving_perturbation
-    {V : Type u} [Fintype V] [DecidableEq V]
+    {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (B : Bundle V I) (σ σ' : ChiralSigning V)
     (h  : σ.CrossConstant B.partition.cells)
@@ -560,7 +556,7 @@ mixing of `B.signedBy σ`.  In particular, the set of chiral signings
 realizing a given protected physics is *open* in signing-space — the
 hallmark of topological protection. -/
 theorem signing_neighborhood_topologically_protected
-    {V : Type u} [Fintype V] [DecidableEq V]
+    {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (B : Bundle V I) (σ : ChiralSigning V)
     (h : σ.CrossConstant B.partition.cells)

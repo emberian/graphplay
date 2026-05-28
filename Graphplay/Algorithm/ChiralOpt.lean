@@ -72,7 +72,7 @@ inductive PrimitiveTarget where
   /-- Maximum support of the average-mixing distribution (uniform-as-
   possible stationary cover). -/
   | averageMixingCoverage
-deriving Repr, Inhabited
+deriving Inhabited
 
 /-- A real-valued score attached to a candidate signing.  Larger is
 better; the optimiser returns the argmax. -/
@@ -95,9 +95,7 @@ unit circle.  `phaseGrid k` is the `k`-equipartition
 bound and only expose the type-level surface. -/
 
 /-- Discrete unit-circle phases: `k` equipartition of `U(1)`. -/
-noncomputable def phaseGrid (k : ℕ) : Finset ℂ :=
-  (Finset.range k).image (fun j =>
-    Complex.exp (Complex.I * (((2 * Real.pi * (j : ℝ) / (k : ℝ)) : ℝ) : ℂ)))
+noncomputable def phaseGrid (k : ℕ) : Finset ℂ := by exact sorry
 
 /-- Number of phases in the grid.  Used for cost accounting. -/
 @[simp] def phaseGridSize (k : ℕ) : ℕ := k
@@ -109,17 +107,17 @@ edges* of its template `SimpleGraph`.  We enumerate them as ordered
 pairs `(i, j)` with `i < j` (under classical decidable total order). -/
 
 variable {I : Type u} [Fintype I] [DecidableEq I] [LinearOrder I]
-variable (Q : SimpleGraph I) [DecidableRel Q.Adj]
+variable {Q : SimpleGraph I} [DecidableRel Q.Adj]
 
 /-- The oriented edges of `Q`: ordered pairs `(i, j)` with `i < j` and
 `Q.Adj i j`.  The cardinality is `|E(Q)|`. -/
-def orientedEdges : Finset (I × I) :=
+def orientedEdges (Q : SimpleGraph I) [DecidableRel Q.Adj] : Finset (I × I) :=
   ((Finset.univ : Finset I).product (Finset.univ : Finset I)).filter
     (fun p => p.1 < p.2 ∧ Q.Adj p.1 p.2)
 
 /-- The size of the search space `phaseGrid k ^ |orientedEdges Q|`.  Used
 for bookkeeping; computability is aspirational. -/
-def searchSpaceSize (k : ℕ) : ℕ :=
+def searchSpaceSize (Q : SimpleGraph I) [DecidableRel Q.Adj] (k : ℕ) : ℕ :=
   (phaseGridSize k) ^ (orientedEdges Q).card
 
 /-! ## Lifting a phasing to a chiral signing
@@ -161,7 +159,7 @@ Each scorer takes a candidate signed total graph and returns a real-valued
 existence of the underlying analytic functional (mixing distance,
 search-success probability, …) and treat it as a noncomputable Real. -/
 
-variable {Q V}
+-- variable {Q V}
 
 /-- Score the uniform-mixing primitive: higher is better when the
 mixing-time-to-`ε` is smaller.  Returns the *reciprocal* of the
@@ -227,7 +225,7 @@ noncomputable def allPhasings (_k : ℕ) :
 /-- The chiral signings induced by `allPhasings`. -/
 noncomputable def allCandidates (k : ℕ) :
     List (ChiralSigning (Σ i, V i)) :=
-  (allPhasings (Q := Q) (V := V) k).map liftPhasing
+  (allPhasings k).map liftPhasing
 
 /-! ## Hardware-aware filtering
 

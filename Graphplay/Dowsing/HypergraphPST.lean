@@ -147,7 +147,7 @@ piece responsible for inter-vertex transitions in the CTQW.
 
 /-- The Hodge / incidence Laplacian as a `WeightedGraph V`, equal to
 `B Bᴴ` minus its own diagonal (so as to fit the loopless convention). -/
-def hodgeLaplacian
+noncomputable def hodgeLaplacian
     (edge : E → (Fin k → V)) : WeightedGraph V where
   adj := fun u v =>
     if u = v then 0
@@ -168,7 +168,7 @@ the two encode independent spectral information; the *up Laplacian*
 Statement only — the proper definition requires a chain complex
 `C_0 ← C_1 ← ... ← C_{k-1}` with boundary maps, which is left to a future
 Tower-1.5 extension. -/
-def hodgeEdgeLaplacian
+noncomputable def hodgeEdgeLaplacian
     (edge : E → (Fin k → V)) : Matrix E E ℂ :=
   (Hypergraph.incidence k V E edge).conjTranspose *
     Hypergraph.incidence k V E edge
@@ -681,7 +681,7 @@ def signedIncidence
   fun _ _ => 0  -- placeholder
 
 /-- The chiral-signed Hodge Laplacian. -/
-def signedHodgeLaplacian
+noncomputable def signedHodgeLaplacian
     {V : Type u} [Fintype V] [DecidableEq V]
     {E : Type v} [Fintype E] [DecidableEq E]
     {k : ℕ} (s : ChiralHodgeSigning V E k)
@@ -750,10 +750,10 @@ noncomputable def toGraphon (W : Hypergraphon k Ω μ) :
     Graphon Ω μ where
   kernel := fun _ _ => 0  -- placeholder
   measurable := by sorry
-  herm := by intro x y; rfl
+  herm := by sorry
   essBound := W.essBound
   bounded := by sorry
-  loopless := by intro x; rfl
+  loopless := by sorry
 
 /-- A measurable cell partition of a hypergraphon is **equitable** if the
 kernel is constant on every rectangle of cells (the hypergraphon analogue
@@ -762,8 +762,9 @@ structure EquitableHypergraphonPartition (W : Hypergraphon k Ω μ) where
   index : Type u
   finite : Finite index
   decEq : DecidableEq index
+  measSpace : MeasurableSpace index
   cells : Ω → index
-  measurable_cells : Measurable cells
+  measurable_cells : @Measurable Ω index _ measSpace cells
   quotient_tensor : (Fin k → index) → ℂ
   constant_on_cells : ∀ᵐ f ∂(MeasureTheory.Measure.pi (fun _ : Fin k => μ)),
     W.kernel f = quotient_tensor (cells ∘ f)

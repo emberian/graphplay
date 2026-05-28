@@ -72,7 +72,7 @@ We package `GraphBundle.fiberPartition` into the shape used by
 given regularity of each fiber and biregularity of every coupling. -/
 noncomputable def fiberEquitable
     (B : GraphBundle Q V)
-    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).IsRegular (d i))
+    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
       IsBiregular (B.coupling h) (α h) (β h)) :
@@ -84,7 +84,7 @@ noncomputable def fiberEquitable
 weighted graph on the index set `I` via `EquitablePartition.quotient`. -/
 noncomputable def fiberQuotient
     (B : GraphBundle Q V)
-    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).IsRegular (d i))
+    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
       IsBiregular (B.coupling h) (α h) (β h)) :
@@ -123,7 +123,7 @@ specializations to particular bundle templates and couplings; see §3.
 -/
 theorem pst_iff_quotient
     (B : GraphBundle Q V)
-    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).IsRegular (d i))
+    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
       IsBiregular (B.coupling h) (α h) (β h))
@@ -141,7 +141,7 @@ theorem pst_iff_quotient
 total bundle.  This is the direction used in synthesis. -/
 theorem cellUniformPST_of_quotient_pst
     (B : GraphBundle Q V)
-    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).IsRegular (d i))
+    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
       IsBiregular (B.coupling h) (α h) (β h))
@@ -154,7 +154,7 @@ theorem cellUniformPST_of_quotient_pst
 PST on the quotient. -/
 theorem quotient_pst_of_cellUniformPST
     (B : GraphBundle Q V)
-    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).IsRegular (d i))
+    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
       IsBiregular (B.coupling h) (α h) (β h))
@@ -183,7 +183,7 @@ Specialization of `pst_iff_quotient` to the bundle whose template is `G`
 identity on each template edge. -/
 theorem cartesianProduct_pst
     (G : WeightedGraph V) (H : WeightedGraph W)
-    {dH : ℂ} (hHreg : H.IsRegular dH)
+    {dH : ℂ} (hHreg : H.isRegular dH)
     (u₁ u₂ : V) (w : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (GraphBundle.cartesianProduct G H) (u₁, w) (u₂, w) τ := by
@@ -203,7 +203,7 @@ Specialization of `pst_iff_quotient` to the bundle whose template is `G`,
 fiber `H`, and coupling the all-ones matrix `J` on each `G`-edge. -/
 theorem lexProduct_pst
     (G : WeightedGraph V) (H : WeightedGraph W)
-    {dH : ℂ} (hHreg : H.IsRegular dH)
+    {dH : ℂ} (hHreg : H.isRegular dH)
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (GraphBundle.lexProduct G H) (u₁, w₁) (u₂, w₂) τ := by
@@ -233,7 +233,7 @@ This is the spectral form; the underlying combinatorial fact is the same
 bundle iff. -/
 theorem tensorProduct_pst
     (G : WeightedGraph V) (H : WeightedGraph W)
-    {dH : ℂ} (hHreg : H.IsRegular dH)
+    {dH : ℂ} (hHreg : H.isRegular dH)
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (tensorProduct G H) (u₁, w₁) (u₂, w₂) τ := by
@@ -249,7 +249,7 @@ preserves PST whenever both factors are regular and `G` has PST.  Not in
 GGPT (which only treats `□, ×, [·]`); covered by our master theorem. -/
 theorem strongProduct_pst
     (G : WeightedGraph V) (H : WeightedGraph W)
-    {dG dH : ℂ} (hGreg : G.IsRegular dG) (hHreg : H.IsRegular dH)
+    {dG dH : ℂ} (hGreg : G.isRegular dG) (hHreg : H.isRegular dH)
     (u₁ u₂ : V) (w : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (GraphBundle.strongProduct G H) (u₁, w) (u₂, w) τ := by
@@ -269,7 +269,7 @@ noncomputable def conormalProduct (G : WeightedGraph V) (H : WeightedGraph W) :
 /-- The conormal product preserves PST under bi-regularity. -/
 theorem conormalProduct_pst
     (G : WeightedGraph V) (H : WeightedGraph W)
-    {dG dH : ℂ} (hGreg : G.IsRegular dG) (hHreg : H.IsRegular dH)
+    {dG dH : ℂ} (hGreg : G.isRegular dG) (hHreg : H.isRegular dH)
     (u₁ u₂ : V) (w : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (conormalProduct G H) (u₁, w) (u₂, w) τ := by
@@ -286,7 +286,7 @@ noncomputable def disjunctiveProduct (G : WeightedGraph V) (H : WeightedGraph W)
 /-- The disjunctive product preserves PST under regularity hypotheses. -/
 theorem disjunctiveProduct_pst
     (G : WeightedGraph V) (H : WeightedGraph W)
-    {dG dH : ℂ} (hGreg : G.IsRegular dG) (hHreg : H.IsRegular dH)
+    {dG dH : ℂ} (hGreg : G.isRegular dG) (hHreg : H.isRegular dH)
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (disjunctiveProduct G H) (u₁, w₁) (u₂, w₂) τ := by
@@ -316,7 +316,7 @@ theorem templateJoin_pst_iff
     (i j : I) (τ : ℝ) :
     (∃ x : V i, ∃ y : V j,
         IsPST ((GraphBundle.ofTemplateJoin Q V).total) ⟨i, x⟩ ⟨j, y⟩ τ) ↔
-    IsPST (Q.toWeighted) i j (τ * n) := by
+    IsPST ((Graphplay.SimpleGraph.toWeighted Q)) i j (τ * n) := by
   -- The empty-fiber + all-ones-coupling bundle has biregular couplings
   -- of constant row sum `n`.  Master theorem.  The factor `n` enters
   -- via the row-sum rescaling between `quotient` and `Q`.
@@ -331,14 +331,14 @@ PST on the color completion to PST on `K_{|I|}` weighted by fiber size.
 -/
 theorem colorCompletion_pst_iff
     {V : Type u} [Fintype V] [DecidableEq V]
-    {J : Type v} [Fintype J] [DecidableEq J]
+    {J : Type v} [Fintype J] [DecidableEq J] [Nonempty J]
     (color : V → J)
     (hbal : ∀ j, (Finset.univ.filter fun v => color v = j).card =
                  (Finset.univ.filter fun v => color v = (Classical.arbitrary J)).card)
     (u v : V) (τ : ℝ) :
     IsPST (GraphBundle.colorCompletion color) u v τ ↔
     (color u = color v ∨
-     IsPST ((⊤ : SimpleGraph J).toWeighted) (color u) (color v) τ) := by
+     IsPST ((Graphplay.SimpleGraph.toWeighted (⊤ : SimpleGraph J))) (color u) (color v) τ) := by
   -- Within a single color class the marginal evolution is trivial
   -- (empty fiber); across color classes the master theorem reduces to
   -- the complete graph on `J`.  The `∨` accounts for the "stay in same
@@ -518,7 +518,7 @@ References: Banchi–Coutinho–Godsil–Severini "Pretty good state transfer
 in qubit chains" (2017), Coutinho thesis 2014. -/
 theorem open_pgst_iff_quotient
     (G : WeightedGraph V) (H : WeightedGraph W)
-    {dH : ℂ} (hHreg : H.IsRegular dH)
+    {dH : ℂ} (hHreg : H.isRegular dH)
     (u₁ u₂ : V) (w : W) :
     True := by
   trivial

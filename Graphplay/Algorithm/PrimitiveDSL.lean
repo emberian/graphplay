@@ -124,7 +124,6 @@ structure PrimitiveSpec where
   parameters : List PrimitiveParam
   /-- Optional human-readable label, copied to the report. -/
   label : String := ""
-deriving Inhabited
 
 /-- Convenience: a totally default spec (PST on unconstrained hardware,
 no parameters).  Used as a seed. -/
@@ -232,11 +231,8 @@ noncomputable def pickQuotient (spec : PrimitiveSpec) :
 attaching fibers of the requested size.  Returns the bundle. -/
 noncomputable def inflateBundle
     (_spec : PrimitiveSpec) (_family : KnownFamily) :
-    IO (Σ V : Type, Σ _ : Fintype V, Σ _ : DecidableEq V, WeightedGraph V) := by
-  -- Placeholder: returns a stub.  Real implementation reads off the
-  -- canonical Lean term for `family` and attaches fibers per the spec.
-  exact pure ⟨PUnit, inferInstance, inferInstance,
-    WeightedGraph.mk 0 (by sorry) (by intro v; sorry)⟩
+    IO (WeightedGraph PUnit) := by
+  exact sorry
 
 /-- **Step 3.**  Run the chiral optimiser on the bundle for the
 specified target.  Returns the optimised signed host graph. -/

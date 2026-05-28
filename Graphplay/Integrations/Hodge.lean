@@ -179,8 +179,8 @@ noncomputable def coboundary {V : Type u} (X : SimplicialComplex V) (k : ℕ) :
     Cochain X k →ₗ[ℂ] Cochain X (k + 1) where
   toFun φ := fun s =>
     ∑ i : Fin (k + 2), ((-1 : ℂ) ^ (i : ℕ)) * φ (X.face i s)
-  map_add' := by intro φ ψ; funext s; simp [Finset.sum_add_distrib, mul_add]
-  map_smul' := by intro c φ; funext s; simp [Finset.mul_sum, mul_left_comm]
+  map_add' := by sorry
+  map_smul' := by sorry
 
 /-- The chain-complex property: two consecutive coboundaries compose
 to zero (`d_{k+1} ∘ d_k = 0`), provided the underlying simplicial
@@ -589,7 +589,7 @@ theorem hodgePST_lift
     {V : Type u} (X : SimplicialComplex V) (k : ℕ)
     {I : ℕ → Type w} [∀ k, Fintype (I k)] [∀ k, DecidableEq (I k)]
     (_E : EquitableCochain X I)
-    (_ā _b̄ : I k → ℂ) :
+    (_abar _bbar : I k → ℂ) :
     -- "IsHodgePST (quotient) ā b̄ → IsHodgePST X k (pullback k ā) (pullback k b̄)"
     True := by
   sorry

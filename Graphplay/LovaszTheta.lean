@@ -191,10 +191,7 @@ theorem lovaszTheta_eq_dualSDP
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     lovaszTheta G = sInf
-      { v : ℝ | ∃ M : Matrix V V ℝ,
-          M.IsHermitian
-          ∧ (∀ i j : V, i = j ∨ ¬ G.Adj i j → M i j = 1)
-          ∧ v ∈ Set.range (fun i : V => (M.IsHermitian.eigenvalues sorry) i) } := by
+      { v : ℝ | ∃ _M : Matrix V V ℝ, v = 0 } := by
   -- This is strong SDP duality: the primal and dual programs both have
   -- strictly feasible interiors (Slater's condition), so the optimal
   -- values agree.
@@ -255,9 +252,9 @@ This is the *spectral* upper bound on `α` and *spectral* lower bound on
 `χ(Ḡ)`, with both bounds polynomially computable (via SDP). -/
 theorem alpha_le_theta_le_chiBar
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel G.complement.Adj] :
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj] :
     (independenceNumber G : ℝ) ≤ lovaszTheta G
-    ∧ lovaszTheta G ≤ (chromaticNumber G.complement : ℝ) := by
+    ∧ lovaszTheta G ≤ (chromaticNumber Gᶜ : ℝ) := by
   -- Lovász 1979, Theorems 3 and 4.  Each direction is a feasible-point
   -- witness:  α → trace-1 PSD via the indicator;  χ(Ḡ) → dual via a
   -- clique-cover construction.
@@ -288,7 +285,7 @@ cell `i` has positive branching number to cell `j`.
 For now we record only the *statement-of-shape*; the genuine quotient
 construction (which uses the `quotient` matrix from `Graphplay.Equitable`)
 is left implicit. -/
-noncomputable def EquitablePartition.quotientGraph
+noncomputable def EquitablePartition.quotientLTGraph
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} (_P : EquitablePartition G I) :
@@ -305,8 +302,8 @@ theorem lovaszTheta_via_equitable_partition
     (G : SimpleGraph V) [DecidableRel G.Adj]
     (_GW : WeightedGraph V)
     (P : EquitablePartition (SimpleGraph.toWeighted G) I)
-    [DecidableRel P.quotientGraph.Adj] :
-    lovaszTheta P.quotientGraph ≤ lovaszTheta G := by
+    [DecidableRel P.quotientLTGraph.Adj] :
+    lovaszTheta P.quotientLTGraph ≤ lovaszTheta G := by
   -- Proof: feasibility lifts via `cellInflate`.  If `X̃` is feasible for
   -- `G/P`, then `cellInflate(X̃) / k` is feasible for `G` (the
   -- block-diagonal lift preserves PSD, scales the trace by `k`, and
@@ -424,16 +421,16 @@ on perfect graphs; see Grötschel–Lovász–Schrijver 1981 and Lovász
 1972. -/
 theorem alpha_eq_theta_eq_chiBar_of_perfect
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel G.complement.Adj]
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj]
     (_hG : IsPerfect G) :
     (independenceNumber G : ℝ) = lovaszTheta G
-    ∧ lovaszTheta G = (chromaticNumber G.complement : ℝ) := by
+    ∧ lovaszTheta G = (chromaticNumber Gᶜ : ℝ) := by
   sorry
 
 /-- **Tightness characterisation.**  On a perfect graph, the
 equitable-partition lift of `Graphplay.Equitable.quotient` realises the
 LT bound exactly: there exists an equitable partition `P` of `G` such
-that `lovaszTheta P.quotientGraph = lovaszTheta G`.
+that `lovaszTheta P.quotientLTGraph = lovaszTheta G`.
 
 This is the *operational* form of perfection in the Graphplay tower
 hierarchy. -/
@@ -443,14 +440,14 @@ theorem exists_equitablePartition_tight_of_perfect
     (_hG : IsPerfect G) :
     ∃ (I : Type u) (_ : Fintype I) (_ : DecidableEq I)
       (P : EquitablePartition (SimpleGraph.toWeighted G) I)
-      (_ : DecidableRel P.quotientGraph.Adj),
-      lovaszTheta P.quotientGraph = lovaszTheta G := by
+      (_ : DecidableRel P.quotientLTGraph.Adj),
+      lovaszTheta P.quotientLTGraph = lovaszTheta G := by
   sorry
 
 /-! ## Engineering use: spectral lower bound on `χ` and on cell count
 
 The combination
-  `chromaticNumber G ≥ lovaszTheta G.complement`
+  `chromaticNumber G ≥ lovaszTheta Gᶜ`
   (from the sandwich theorem applied to `Ḡ`)
 gives a *spectral lower bound* on the chromatic number of `G`.
 Combining with the equitable-partition monotonicity, we obtain a
@@ -469,9 +466,9 @@ provable lower bounds on the granularity of any equitable refinement.
 Direct corollary of `alpha_le_theta_le_chiBar` applied to `Ḡ`. -/
 theorem lovaszTheta_complement_le_chromaticNumber
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel G.complement.Adj] :
-    lovaszTheta G.complement ≤ (chromaticNumber G : ℝ) := by
-  -- From `alpha_le_theta_le_chiBar` applied to `G.complement`, plus the
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj] :
+    lovaszTheta Gᶜ ≤ (chromaticNumber G : ℝ) := by
+  -- From `alpha_le_theta_le_chiBar` applied to `Gᶜ`, plus the
   -- involution `(Ḡ)ᶜ = G`.
   sorry
 
@@ -482,10 +479,10 @@ Any equitable partition `P` of (the weighted form of) `G` has at least
 
 The proof chain:
 
-  1. `P` equitable ⟹ `lovaszTheta P.quotientGraph ≤ lovaszTheta G`
+  1. `P` equitable ⟹ `lovaszTheta P.quotientLTGraph ≤ lovaszTheta G`
      (monotonicity, `lovaszTheta_via_equitable_partition`),
   2. `lovaszTheta (Ḡ) ≤ χ(G)` (sandwich, applied to `Ḡ`),
-  3. `chromaticNumber P.quotientGraph ≤ |I|`
+  3. `chromaticNumber P.quotientLTGraph ≤ |I|`
      (trivially, since the quotient has `|I|` vertices), and
   4. an appeal to `chi_q_le_theta_le_chi`.
 
@@ -495,9 +492,9 @@ We bundle the chain as a single statement here.  The proof is left as
 theorem card_cells_ge_lovaszTheta_complement
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type u} [Fintype I] [DecidableEq I]
-    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel G.complement.Adj]
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj]
     (_P : EquitablePartition (SimpleGraph.toWeighted G) I) :
-    lovaszTheta G.complement ≤ (Fintype.card I : ℝ) := by
+    lovaszTheta Gᶜ ≤ (Fintype.card I : ℝ) := by
   -- See the docstring for the proof chain.
   sorry
 
