@@ -1,0 +1,1332 @@
+Spatial search by quantum walk is optimal for almost all graphs
+Shantanav Chakraborty1,2,∗ , Leonardo Novo1,2,∗ , Andris Ambainis3 , and Yasser Omar1,2
+1
+
+Physics of Information and Quantum Technologies Group, Instituto de Telecomunicações, Portugal
+2
+Instituto Superior Técnico, Universidade de Lisboa, Portugal and
+3
+Faculty of Computing, University of Latvia
+
+(∗ both authors have equal contribution)
+
+arXiv:1508.01327v3 [quant-ph] 11 Mar 2016
+
+(Dated: 11th March, 2016)
+The problem of finding a marked node in a graph can be solved by the spatial search algorithm
+based on continuous-time quantum walks (CTQW). However, this algorithm is known to run in
+optimal time only for a handful of graphs. In this work, we prove that for Erdös-Renyi random
+graphs, i.e. graphs of n vertices where each edge exists with probability p, search by CTQW is almost
+surely optimal as long as p ≥ log3/2 (n)/n. Consequently, we show that quantum spatial search is
+in fact optimal for almost all graphs, meaning that the fraction of graphs of n vertices for which
+this optimality holds tends to one in the asymptotic limit. We obtain this result by proving that
+search is optimal on graphs where the ratio between the second largest and the largest eigenvalue is
+bounded by a constant smaller than 1. Finally, we show that we can extend our results on search to
+establish high fidelity quantum communication between two arbitrary nodes of a random network of
+interacting qubits, namely to perform quantum state transfer, as well as entanglement generation.
+Our work shows that quantum information tasks typically designed for structured systems retain
+performance in very disordered structures.
+PACS numbers: 03.67.Ac, 03.67.Lx, 03.67.Hk
+
+Quantum walks provide a natural framework for tackling
+the spatial search problem of finding a marked node in a
+graph of n vertices. In the original work of Childs and
+Goldstone [1], it was shown that continuous-time quantum walks can search on complete graphs, hypercubes
+√
+and lattices of dimension larger than four in O( n) time,
+which is optimal. More recently, new instances of graphs
+have been found where spatial search works optimally.
+These examples show that global symmetry, regularity
+and high connectivity are not necessary for the optimality of the algorithm [2–4]. However, it is not known how
+general is the class of graphs for which spatial search by
+quantum walk is optimal.
+Here we address the following question: If one picks at
+random a graph from the set of all graphs of n nodes,
+can one find a marked node in optimal time using quantum walks? We show that the answer is almost surely
+yes. Moreover, we adapt the spatial search algorithm
+to protocols, for state transfer and entanglement generation between arbitrary nodes of a network of interacting
+qubits, that work with high fidelity for almost all graphs,
+for large n (nodes and vertices are used interchangeably
+throughout the paper). Thus, besides showing that spatial search by quantum walk is optimal in a very general
+scenario, we also show that other important quantum information tasks, typically designed for ordered systems,
+can be accomplished efficiently in very disordered structures.
+We obtain our results by studying the spatial search
+problem in Erdös-Renyi random graphs, i.e. graphs of
+n vertices where an edge between any two vertices exists with probability p independently of all other edges,
+typically denoted as G(n, p) [5, 6]. Note that our approach is different from the quantum random networks
+
+of non-interacting qubits defined in [7], where two nodes
+are connected if they share a maximally entangled state,
+having in view long-distance quantum communication.
+Also, in Refs. [8, 9], the authors compare the dynamics
+of classical and quantum walks on Erdös-Renyi graphs
+and other complex networks, although with a different
+perspective from our work.
+In our work, we show that search is optimal on G(n, p)
+with probability that tends to one as n tends to infinity,
+as long as p ≥ log3/2 (n)/n. It can be demonstrated that
+when p = 1/2, G(n, 1/2) is a graph picked at random
+from the set of all graphs of n nodes in an unbiased way,
+i.e. each graph is picked with equal probability. This allows us to conclude that spatial search by quantum walk
+is optimal for almost all graphs from this set. To obtain
+this result, we prove a sufficient condition regarding the
+adjacency matrix of graphs where search is optimal: the
+eigenstate corresponding to its largest eigenvalue must be
+sufficiently delocalized and the ratio between the second
+largest and the largest eigenvalues must be bounded by
+a constant smaller than 1.
+This general result also allows us to prove that search
+is optimal for graphs sampled uniformly from the set of
+all regular graphs, also known as random regular graphs.
+Thus, this leads us to conclude that spatial search by
+quantum walk is optimal for almost all regular graphs.
+A sufficient condition for optimal quantum
+search – Let G be a graph with a set of vertices
+V = {1, . . . , n}. We consider the Hilbert space spanned
+by the localized quantum states at the vertices of the
+graph H = span{|1i , . . . , |ni}, and the following search
+Hamiltonian
+HG = − |wi hw| − γAG ,
+
+(1)
+
+2
+where |wi corresponds to the solution of the search problem, γ is a real number and AG is the adjacency matrix
+of a graph G [1]. We say that quantum search by continuous time quantum walk is optimal on a graph G if there
+is an initial state |ψ0 i, irrespective
+√ of w, and a value of
+γ such that after a time T = O( n) [10], the probability
+of finding the solution upon a measurement in the vertex basis is | hw|e−iHG t |ψ0 i |2 = O(1). The initial state
+|ψ0 i is usually chosen to be thePequal superposition
+of
+√
+n
+all vertices, i.e. the state |si = i=1 |ii / n, since it is
+not biased towards any vertex of the graph. We start
+by proving the following general lemma regarding the
+spectral properties of AG and the optimality of search:
+Lemma 1 Let H1 be a Hamiltonian with eigenvalues
+λ1 ≥ λ2 ≥ . . . ≥ λk (satisfying λ1 = 1 and |λi | ≤ c < 1
+for all i > 1) and eigenvectors |v1 i = |si, |v2 i , . . . , |vk i
+and let H2 = |wi hw| with |hw |si | = . For an appropriate choice of r = O(1), applying the Hamiltonian
+(1 + r)H1 + H2 to the starting state |v1 i = |si for time
+Θ(1/) results in a state |f i with |hw |f i |2 ≥ 1−c
+1+c − o(1).
+Proof: See Section I in Supplemental Material.
+A
+A
+Thus, if λA
+1 ≥ λ2 ≥ . . . ≥ λn are the eigenvalues of
+the adjacency matrix AG , we choose γ = 1/λA
+1 and consequently, H1 = γAG . If |si is an eigenstate of AG
+A
+corresponding
+√ to its largest eigenvalue λ1 , and since
+|hw |si | = 1/ n, we have that search is optimal as long
+A
+as λA
+2 /λ1 ≤ c < 1, following Lemma 1. We will see
+that Erdös-Renyi graphs and random regular graphs fulfil this property, leading to the conclusion that search
+is optimal for almost all graphs and also for almost all
+regular graphs (the latter is discussed in Section II of
+Supplemental Material).
+In fact, Lemma 1 implies that for any regular graph having a constant normalized algebraic connectivity, quantum search is optimal [11]. This is in contrast to Ref. [4]
+where two examples of regular graphs [12] with low normalized algebraic connectivity are given, such that quantum search is optimal on one and non-optimal on the
+other. This result showed that normalized algebraic connectivity is not a necessary condition for fast quantum
+search: when connectivity is low, search can be fast or
+slow depending on the graph. On the other hand, Lemma
+1 proves that high connectivity is indeed a sufficient condition.
+Quantum search on Erdös-Renyi random graphs
+– Let us consider a graph G(n) with a set of vertices V = {1, . . . , n}. We restrict ourselves to simple
+graphs, i.e. graphs which do not contain self-loops or multiple edges connecting the same pair of vertices. The
+maximum number of edges that a simple graph
+G(n)
+
+N
+can have is N = n2 . Thus, there are M
+graphs of
+M edges and the total number of (labelled) graphs is
+
+PN
+N
+N
+[13]. Now let us consider the random
+M =0 M = 2
+graph model G(n, p), a graph with n vertices where we
+have an edge between any two vertices with probability
+p, independently of all the other edges [5, 6, 14]. In this
+model, a graph G0 with M edges appears with proba-
+
+bility P {G(n, p) = G0 } = pM (1 − p)N −M . In particular, if we consider the case p = 1/2, each of the 2N
+graphs appears with equal probability P = 2−N . In
+their seminal papers, Erdös and Renyi introduced this
+model of random graphs and studied the probability of
+a random graph to possess a certain property Q [5, 6].
+They studied properties like connectedness of the graph,
+the probability that a certain subgraph is present, etc.
+They introduced the terminology stating that almost all
+graphs have a property Q if the probability that a random
+graph G(n, p) has Q goes to 1 as n → ∞. Equivalently, it
+can be stated that G(n, p) almost surely has property Q.
+Interestingly, certain properties of random graphs arise
+suddenly for a certain critical probability p = pc , where
+this probability depends typically on n. More precisely,
+if p(n) grows faster than pc (n), the probability that the
+random graph has property Q goes to 1 in the asymptotic limit, whereas if it grows slower than pc (n) it goes
+to 0. For example above the percolation threshold, i.e.
+when p > log(n)/n the graph is almost surely connected,
+whereas if p < log(n)/n the graph has almost surely isolated nodes.
+In this work, we are interested in the threshold value
+of p for which quantum search becomes optimal, i.e.
+√ a
+marked vertex from the graph can be found in O( n)
+time. We consider the search Hamiltonian in Eq. (1)
+for Erdös-Renyi random graphs HG(n,p) = − |wi hw| −
+γAG(n,p) . In order to apply Lemma 1 we need to know
+the largest eigenvalue of AG(n,p) , which we denote as λA
+1,
+its corresponding eigenstate |v1 i and the second largest
+eigenvalue of AG(n,p) denoted as λA
+2 . It was shown in
+Ref. [15] that the highest eigenvalue, λA
+1 is a random variable whose probability distribution converges to a Gaussian
+p distribution with mean np and standard deviation
+p(1 − p), as n → ∞. The corresponding
+√ Pn eigenstate,
+|v1 i tends almost surely to |si = 1/ n i=1 |ii. For a
+more detailed analysis of the convergence of |v1 i to |si,
+refer to Lemma 2 in Section III of Supplemental Material. It is also possible to obtain an upper bound on the
+second highest eigenvalue, λA
+2 from the results of Ref. [15]
+which applies to random symmetric matrices. In fact in
+Ref. [16], a tighter bound on λA
+2 is provided as n → ∞,
+given by
+√
+1/4
+λA
+log(n))
+(2)
+2 = 2 np + O((np)
+A
+We see that as long as p ≥ log4/3 (n)/n, the ratio λA
+2 /λ1
+is bounded by a constant. However, as can be seen in
+Section III of Supplemental Material, in order to ensure that |v1 i converges to |si, almost surely, we choose
+the critical value of probability for search to be optimal
+as p ≥ log3/2 (n)/n. In fact, in the asymptotic limit,
+A
+λA
+2 /λ1 → 0, and the eigenstates corresponding to the
+two lowest eigenvalues of HG(n,p) are
+
+|λ± i ≈
+
+|wi ± |sw̄ i
+√
+,
+2
+
+(3)
+
+where |sw̄ i is the equal superposition of all the vertices
+other than the solution state |wi. The probability of
+
+3
+success is
+Pw (t) = | hw| exp(−iHG(n,p) t)|si |2 = sin2
+
+
+
+
+t
+√ . (4)
+n
+
+To confirm these theoretical predictions we plot, on the
+left side of Fig. 1 a)-c), the approximate probability Pw (t)
+from Eq. (4) (in red) and the exact solution calculated numerically (in blue) for n = 1000 and p = 0.1, 0.01, 0.002.
+On the right side, we plot the spectrum of the respective
+Hamiltonians. We observe, as expected, that the larger
+the gap between the two lowest eigenvalues and the bulk
+of the spectrum, the better is the approximation given
+by Eq. (4) for the probability of success of search. As
+this gap disappears, close to the percolation threshold,
+the eigenstates corresponding to the two lowest eigenvalues do not follow Eq. (3) and will mix randomly with
+the subspace orthogonal to |wi and |sw̄ i. At this point,
+since we are close to the percolation threshold, the graph
+is expected to have some isolated components and the
+algorithm breaks (see Fig. 1 c)).
+So far we have made the choice γ = 1/λA
+1 , and assumed
+that we know the value of the random variable λA
+1 . In
+fact, its standard deviation is small enough so that it is
+sufficient to know its mean, which is equal to np, i.e we
+can choose γ = 1/(np), in order to prove that search
+is optimal almost surely. We prove this in Section IV
+of Supplemental Material, using tools of degenerate perturbation theory. These tools are also useful to design
+protocols for performing optimal state transfer and entanglement generation in Erdös-Renyi graphs, as will be
+explained subsequently.
+State transfer with high fidelity – Quantum state
+transfer in spin chains [17] and spin networks [18] has
+been proposed as a way to establish short-range quantum channels. The problem of what structures lead to
+high fidelity state transfer has been of wide interest [18–
+20]. Here we show that it is possible to transfer, with
+low control and high fidelity, a quantum state between
+two arbitrary non-adjacent nodes of a random network
+(namely, an Erdös-Renyi random graph). The Hamiltonian of a network of coupled spins, with an XX type
+interaction, conserves the number of excitations and so,
+in the single excitation subspace, the Hamiltonian is that
+of a single particle quantum walk on the same network.
+The graph G(n, p) can be perceived as a communication
+network where each node represents a party that transfers information to any of the other nodes. We assume
+that each party has access to a qubit and can control
+the local energy of the corresponding node. In order to
+transfer a state from node i to j, with fidelity that tends
+to 1 in the asymptotic limit, the strategy is the following:
+all qubits are initially in state |0i, which is an eigenstate
+of the network; the sender (corresponding to node i) and
+the receiver (corresponding to node j) can tune the respective site energies of |ii and |ji to −1, thereby making
+|ii, |ji and |si approximately degenerate. Finally, in order to transfer a qubit from i, the sender performs a local
+operation on her qubit to prepare |ψi = α |0i + β |1i. As
+
+(a)
+
+(b)
+
+(c)
+
+FIG. 1: Left side: probability of observing the solution calculated numerically (blue curve) compared to the prediction
+from Eq. (4) (red curve), obtained in the limit n → ∞, using
+degenerate perturbation theory. We fix the number of vertices
+n = 1000 and p = 0.1, 0.01 and 0.002 in a), b) and c), respectively. Right side: Spectrum of the search Hamiltonian for
+instances of random graphs that provide the dynamics represented on the left side. In red, the two lowest eigenvalues are
+shown in a) and b), which are clearly isolated from the rest
+of the spectrum shown in blue. In c) this does not happen
+since p is close to 1/n, which is the percolation threshold and
+thus the semicircle law is not valid. We see that, the larger
+the gap between the two lowest eigenvalues λ± and the rest
+of the spectrum, the better is the prediction from Eq. (4) for
+the probability of success. When the two lowest eigenvalues
+are not isolated, the probability of observing the solution is
+low and the algorithm does not provide speed-up with respect
+to classical search.
+
+long as p ≥ log3/2 (n)/n, the approximate dynamics of a
+quantum walk starting at |ii is obtained by diagonalizing
+the Hamiltonian
+0
+HG(n,p)
+= − |ii hi| − |ji hj| − |sij¯ i hsij¯ | − γA0G(n,p) (5)
+
+projected onto the approximately degenerate subspace
+spanned by {|ii , |sij¯ i , |ji} which is given by
+
+
+−1√
+0
+HG(n,p)
+= −1/ n
+0
+
+√
+−1/ n
+−1√
+−1/ n
+
+
+0√
+−1/ n ,
+−1
+
+(6)
+
+4
+√
+|bi)/ 2, which is a Bell state. Subsequently, other Bell
+states may be obtained by local operations. Furthermore,
+Alice and Bob can preserve their Bell state by tuning the
+local energies of their qubits to a value that is off-resonant
+with the other eigenvalues of the network.
+
+FIG. 2: Quantum state transfer in Erdös-Renyi random
+graph G(100, 0.2): using our protocol, the fidelity achieved
+for this network is 80%.
+
+√
+P
+with |sij¯ i = k6=i,j |ki / n − 2 and |sij¯ i ≈ |sī i ≈ |si,
+where we assume that i and j are non-adjacent vertices.
+Thus, the dynamics is approximately the same as that
+of end-to-end state transfer in a chain with three spins,
+where perfect state transfer is possible [20] and the component of the wave function at√ the receiver is approximatelyp| hj|U (t)|ii |2 = sin2 (t/ 2n). Hence, after time
+T = π n/2, the receiver gets |ψi with fidelity 1, in the
+limit n → ∞ (see Fig. 2 for an example with finite n).
+The receiver can preserve this state for future use by
+tuning the energy of node j, locally, to a value that is
+off-resonant with the rest of the network [21]. We conclude that high fidelity quantum state transfer can be
+achieved in almost all networks.
+Creating Bell pairs in a random network – In quantum communication networks, entanglement is an useful
+resource that can be used for various tasks such as teleportation, superdense coding, cryptographic protocols,
+etc [22]. Here, we present a protocol to entangle arbitrary nodes in a random network based on the search
+Hamiltonian. Imagine that Charlie at node |wi wants
+to entangle the qubits of Alice at node |ai and of Bob
+at node |bi. We assume that none of the nodes |wi , |ai
+and |bi are adjacent to each other. As before, γ is chosen to be 1/(np). In this case, the protocol is as follows: i) Alice, Bob and Charlie tune their respective site
+energies to −1,
+√ ii) Charlie tunes his nearest neighbour
+couplings to 2/dC , where dC is the degree of the node
+corresponding to Charlie, while the other couplings in
+the graph are γ = 1/np. This ensures that the Hamiltonian, projected onto the approximately
+degenerate
+sub√
+P
+space spanned by |wi, |swab i = k6=a,b,w |ki / n − 2 and
+√
+|sab i = (|ai + |bi)/ 2, is equal to
+p
+
+
+0
+−1
+− 2/n
+p
+p
+0
+HG(n,p)
+= − 2/n
+(7)
+−1
+− 2/n ,
+p
+0
+− 2/n
+−1
+in√the asymptotic limit [23]. Thus, after time T =
+π n/2, Alice and Bob share the state |sab i = (|ai +
+
+Discussion – We have shown that searching for a
+marked node in a graph using continuous-time quantum
+walks works optimally for almost all graphs. This means
+that, in terms of the structures on which it performs optimally, this approach to quantum spatial search is much
+more general than what has been shown before. Our result was obtained by proving that the algorithm is almost
+surely optimal for Erdös-Renyi random graphs G(n, p),
+as long as p ≥ log3/2 (n)/n.
+As pointed out in Ref. [1], the analog version of Grover’s
+algorithm of Ref. [10] can be seen as a quantum walk on
+the complete graph. Furthermore, Erdös-Renyi random
+graph G(n, p) can be obtained from the complete graph
+by randomly deleting edges with probability 1 − p. Thus,
+our result can also be interpreted as showing an inherent
+robustness of the analog version of Grover’s algorithm to
+edge loss. This implies that there is a large family of
+random Hamiltonians that can be employed to achieve
+optimal quantum search. Hence, our work paves the way
+to understanding how this randomness would translate
+to the circuit model of quantum search and whether this
+implies an inherent robustness of the (standard) Grover’s
+algorithm.
+Finally, we have shown that one can adapt the spatial
+search algorithm to design protocols for quantum state
+transfer and for entanglement generation between arbitrary nodes of a random network of interacting qubits.
+Our results show that quantum information tasks typically designed for structured systems retain performance
+in very disordered structures. These results could lead to
+further investigation on what kind of random structures
+appear naturally in physical systems (for example those
+appearing in Refs. [24, 25]) and whether they would offer
+a sufficient spectral gap to perform efficient and robust
+quantum information tasks. It would also be interesting to explore whether non-trivial quantum information
+tasks can be performed on other models of random networks such as scale-free networks [26].
+Acknowledgements – LN, SC and YO thank the support from Fundação para a Ciência e a Tecnologia (Portugal), namely through programmes PTDC/POPH/POCH
+and projects UID/EEA/50008/2013, IT/QuSim, ProQuNet, partially funded by EU FEDER, and from
+the EU FP7 projects LANDAUER (GA 318287)
+and PAPETS (GA 323901). Furthermore, LN and
+SC acknowledge the support from the DP-PMI and
+FCT (Portugal) through SFRH/BD/52241/2013 and
+SFRH/BD/52246/2013, respectively. AA thanks the
+support from ERC Advanced Grant MQC (320731), EU
+FP7 projects QALGO (600700) and RAQUEL (323970),
+and the Latvian State Research Programme NexIT
+Project No. 1.
+
+5
+SUPPLEMENTAL MATERIAL
+I. SUFFICIENT CONDITION FOR OPTIMAL
+QUANTUM SEARCH: PROOF OF LEMMA 1
+
+Proof:
+Let us
+|v1 i , |v2 i , . . . , |vk i:
+
+express
+
+|wi
+
+in
+
+the
+
+basis
+
+|wi = a1 |v1 i + a2 |v2 i + . . . + ak |vk i .
+
+(8)
+
+We rescale H1 by (1 + r)H1 − rI, where I is the identity
+matrix. With this replacement, |v1 i remains an eigenvector of H1 with an eigenvalue 1. The other eigenvalues
+change to λ0i = (1 + r)λi − r. Now, the expression
+k
+X
+
+a2i
+,
+1 − λi
+i=2
+
+(9)
+
+after rescaling H1 as mentioned before becomes
+k
+X
+
+k
+X
+a2i
+a2i
+=
+.
+1 − λ0i
+(1 + r)(1 − λi )
+i=2
+i=2
+
+(10)
+
+As |λi | ≤ c, we have
+k
+X
+
+where γ = hw |vi. Since we also have
+X
+H |vi = λ |vi =
+λbi |vi i ,
+
+(16)
+
+i
+
+we get that λbi = λi bi + γai which is equivalent
+P to bi =
+γ
+i ai bi gives
+λ−λi ai . Substituting this into γ = hw |vi =
+that
+X
+i
+
+a2i
+= 1.
+λ − λi
+
+(17)
+
+This is the condition for the eigenvalues λ. In each of
+intervals [λi , λi−1 ] for i = 2, . . . , k, the left hand side is
+strictly decreasing from +∞ to −∞ and in the interval
+[λ1 , +∞), the left hand side is strictly decreasing from
++∞ to 0. Therefore, each of these intervals contains one
+eigenvalue.
+We are interested in the two eigenvalues λ that are in
+[λ2 , λ1 ] and [λ1 , +∞). (We denote these eigenvalues by
+λ− and λ+ and the corresponding eigenvectors by |v− i
+and |v+ i.) We express these eigenvalues as λ = 1 + δ
+(where δ is positive for λ+ and negative for λ− ). By
+Taylor expansion, if δ is small, we have
+k
+X
+
+k
+X
+
+a2i
+a2i
+≤
+, and,
+(1 + r)(1 + c)
+(1 + r)(1 − λi )
+i=2
+i=2
+
+k
+X
+
+k
+X
+a2i
+a2i
+≤
+(1 + r)(1 − λi )
+(1 + r)(1 − c)
+i=2
+i=2
+
+So we choose an appropriate r ∈
+that
+
+c
+c
+[− 1+c
+, 1−c
+],
+
+k
+X
+
+k
+X
+a2i
+=
+a2i .
+1
+−
+λ
+i
+i=2
+i=2
+
+(11)
+
+(12)
+such
+
+k
+k
+X
+a21 X a2i
+a2i
++
+δ + O(δ 2 ) = 1.
+−
+2
+δ
+1
+−
+λ
+(1
+−
+λ
+)
+i
+i
+i=2
+i=2
+
+(13)
+
+is at least the right hand side. In the second case, the
+left hand side is at most the right hand side. After the
+replacement of H1 by (1 + r)H1 − rI, the new eigenvalues
+2c
+2c
+, 1+c
+].
+λ02 , . . . , λ0k are in the interval [− 1−c
+After we replace H1 + H2 by (1 + r)H1 + H2 − rI, we
+can omit the −rI term (since it only affects the phase of
+the state). To simplify the notation, we now refer to the
+Hamiltonian (1 + r)H1 as H1 and to new eigenvalues λ0i
+as λi .
+Let
+(14)
+
+k
+X
+a2i
+a21
+=
+δ + O(δ 2 ).
+2
+δ
+(1
+−
+λ
+)
+i
+i=2
+
+We write out the conditions for |vi to be an eigenvector
+of H1 + H2 with an eigenvalue λ. We have
+X
+H |vi = H1 |vi + H2 |vi =
+(bi λi + ai γ) |vi i
+(15)
+
+(20)
+
+which is satisfied for
+δ ≈ ± qP
+
+a1
+a2i
+k
+i=2 (1−λi )2
+
+.
+
+(21)
+
+Since a1 =  and the denominator is of the order Θ(1),
+the right hand side is Θ().
+We now consider the overlap hs |v+ i. We assume that
+|v+P
+i is normalized so that kv+ k = 1. This is equivalent
+to i b2i = 1 which, in turn, is equivalent to
+X
+i
+
+i
+
+(19)
+
+Since the second term on the left hand side is 1, this is
+equivalent to
+
+c
+and λ0i ≤ 0 for
+If |λi | ≤ c, then λ0i ≥ 0 for r = − 1+c
+c
+r = 1−c . In the first case, the left hand side of (13)
+
+|vi = b1 |v1 i + b2 |v2 i + . . . + bk |vk i .
+
+k
+k
+X a2
+X
+a2i
+a2i
+i
+δ + O(δ 2 ).
+=
+−
+2
+(1
++
+δ)
+−
+λ
+1
+−
+λ
+(1
+−
+λ
+)
+i
+i
+i
+i=2
+i=2
+i=2
+(18)
+Thus, the condition for eigenvalues becomes
+
+γ
+ai
+λ − λi
+
+2
+= 1.
+
+(22)
+
+a2i
+.
+(λ − λi )2
+
+(23)
+
+We can rewrite this as
+1
+=
+γ
+
+s
+X
+i
+
+6
+We now estimate the expression under the square root.
+We have
+v
+u
+k
+√ a1
+a2 X
+a2i
+1 u
+≈ 2
+≈ t 21 +
+(24)
+2
+γ
+δ
+(1
+−
+λ
+)
+δ
+i
+i=2
+with the first step following by approximating λ − λi =
+(1 + δ) − λi ≈ 1 − λi for i > 1 and the second step follows
+from (21).
+δ
+. Therefore,
+This means that γ ≈ √2a
+1
+
+hs |v+ i =
+
+γa1
+γa1
+1
+=
+≈√
+λ+ − 1
+δ
+2
+
+(25)
+
+and
+hs |v− i =
+
+γa1
+γa1
+1
+=−
+≈ −√ .
+λ− − 1
+δ
+2
+
+(26)
+
+Thus, |si can be approximated by √12 (|v+ i−|v− i). Evolvπ
+ing the Hamiltonian H1 + H2 for time 2δ
+= Θ( 1 ) transforms |si to
+1
+|f i ≈ √ (|v+ i + |v− i).
+2
+
+(27)
+
+1
+1
+hw |f i ≈ √ hw |v+ i + √ hw |v− i .
+2
+2
+
+(28)
+
+We have
+
+We now consider hw |v+ i = γ. By combining the first
+part of (24) with (21), we obtain that
+v
+u k
+X
+1 u
+a2i
+≈ t2
+.
+(29)
+γ
+(1 − λi )2
+i=2
+2c
+Because of (13) and λi ≤ 1+c
+, this is at most
+v
+s
+r
+u Pk
+2
+u
+1
+2(1 + c)
+t2 i=2 ai ≤ 2
+.
+2c
+2c =
+1−c
+1 − 1+c
+1 − 1+c
+
+q
+
+sampled uniformly from the set of all regular graphs of
+degree d. For these graphs, the largest eigenvalue is d,
+with the corresponding eigenvector, |si. Also in Ref. [27]
+it has been proven that the second largest eigenvalue is
+O(d3/4 ) for d ≥ 3, with high probability. This way, we
+A
+−1/4
+choose γ = 1/d and since λA
+) < 1, it fol2 /λ1 = O(d
+lows from Lemma 1 that quantum search is optimal. It is
+interesting to note that for lattices,
+√the lowest dimension
+for which search is possible in O( n) time is dimension
+five [1], which is a specific instance of a regular graph of
+degree ten. However, for random regular graphs search
+is optimal for degree three and larger.
+
+(30)
+
+III. CONVERGENCE OF THE EIGENSTATE
+CORRESPONDING TO THE MAXIMUM
+EIGENVALUE OF AN ERDÖS-RENYI RANDOM
+GRAPH
+
+Lemma 2 Let A be the adjacency matrix of the ErdösRenyi random graph G(n, p) with vertices 1, 2, ..., n.
+Let γA represent the adjacency matrix of G(n, p) with
+each
+Pn rescaled by γ = 1/np. Also let |si =
+√ entry
+(1/ n) i=1 |ii be the equal superposition of all nodes
+⊥
+such that |si = α |v1 i + β |v1 i , where |v1 i is the eigenvector corresponding to the highest eigenvalue, λ1 of γA.
+3/2
+Then, α ≥ 1 − o(1) almost surely for p ≥ log n n .
+Proof: First we observe that from Ref. [15] that the
+largest eigenvalue follows a Gaussianqdistribution with
+mean 1 and standard deviation n1 1−p
+p , i.e, λ1 ∼
+q
+√
+3/2
+1−p
+N (1, n1
+n/n, one
+p ). So if δ = 1/ n, for p ≥ log
+can show that
+h log3/4 n i
+1
+√
+,
+P r[λ1 ≥ 1 − δ] = 1 − erfc
+2
+2
+
+(32)
+
+√ R∞
+2
+where erfc[x] = (2/ π) x e−x /2 dx. As erfc[x] → 0 as
+n → ∞, we have
+λ1 ≥ 1 − δ,
+
+1−c
+2(1+c) .
+
+Therefore, γ = hw |v+ i ≥
+Similarly, hw |v− i ≥
+q
+1−c
+2(1+c) . Together with (28), this means that, up to the
+approximations that we made,
+r
+1−c
+hw |f i ≥
+.
+(31)
+1+c
+
+(33)
+
+almost surely.
+
+To prove this explicitly, we use the
+−x2
+√e 2
+, for x > 0. In our
+bound, erfc[x] ≤ √2π
+(x+ x +4/π)
+√
+case x = (log3/4 n)/ 2 and so, by using the inequality
+loga n ≥ a log n, for a > 1, we can show that
+erfc[x] ≤ O
+
+
+
+1
+
+
+
+
+
+n3/4 log3/4 n
+
+.
+
+(34)
+
+Thus,
+II.
+
+QUANTUM SEARCH ON RANDOM
+REGULAR GRAPHS
+
+A family of random graphs whose adjacency matrix has
+an O(1) gap between the largest and second largest eigenvalues are the d-random regular graphs, a random graph
+
+P r[λ1 ≥ 1 − δ] ≥ 1 − O
+
+
+
+1
+n3/4 log3/4 n
+
+
+
+.
+
+(35)
+
+Similarly, one can also obtain an upper bound λ1 ≤ 1+δ,
+almost surely.
+
+7
+Also, from Ref. [15, 16], we have,
+1
+||γ(A − E(A))|| ≤ (2 + (np)−1/4 log n) √ ,
+np
+
+(36)
+
+where E(X) denotes the expectation of random variable
+X and || || denotes the standard Euclidean norm.
+Let λi , j ≥ 2 be the rest of the spectrum of γA and let
+|vi i be the corresponding eigenvectors. From Eq. 36, it
+follows that
+X
+||λ1 |v1 i hv1 | +
+λi |vi i hvi | − |si hs| ||
+(37)
+i≥2
+
+1
+≤ (2 + (np)−1/4 log n) √
+np
+Now,
+
+
+λ1 |v1 i hv1 | +
+
+X
+
+
+λi |vi i hvi | − |si hs| |v1 i
+
+(38)
+
+(39)
+
+i≥2
+
+= λ1 |v1 i − α |si
+
+(40)
+⊥
+
+2
+
+= (λ1 − α ) |v1 i − αβ |v1 i .
+
+(41)
+
+So,
+
+
+X
+|| λ1 |v1 i hv1 | +
+λi |vi i hvi | − |si hs| |v1 i ||2
+
+(42)
+
+There is thus a significant gap in the spectrum between
+the first and second largest eigenvalues, with high probability. In order to make use of this separation between
+the largest eigenvalue and the rest of the spectrum, it
+will be helpful to write
+AG(n,p) = E |s0 i hs0 | + A0G(n,p)
+
+i≥2
+2 2
+
+where λi are eigenvalues of the adjacency matrix AG [28].
+In the limit of n → ∞ this approaches a continuous function. For a random graph G(n, p), as long as np → ∞,
+the spectral density is given by
+p
+p
+ 4np(1 − p) − λ2
+if |λ| < 2 np(1 − p)
+ρ(λ) =
+,
+2πnp(1 − p)
+
+0
+otherwise
+(48)
+known as the Wigner’s semicircle law. The highest eigenvalue, λ1 , of AG(n,p) is isolated from the bulk of the spectrum and follows a Gaussian
+p distribution with mean np
+and standard deviation p(1 − p), as n → ∞. From
+Section I, the corresponding
+eigenstate, |v1 i tends almost
+√ Pn
+surely to |si = 1/ n i=1 |ii. From Ref. [16], we obtain
+that the second highest eigenvalue, as n → ∞, is given
+by
+√
+λ2 = 2 np + O((np)1/4 log(n)).
+(49)
+
+2 2
+
+= (λ1 − α ) + α β .
+
+(43)
+
+From Eq. 37 and the Cauchy-Schwarz inequality, we obtain
+(2 + (np)−1/4 log n)2
+(λ1 − α ) ≤
+np
+−1/4
+(2 + (np)
+log n)
+=⇒ α2 ≥ λ1 −
+√
+np
+2 2
+
+=⇒ α ≥ α2 ≥ 1 − o(1),
+
+(44)
+(45)
+(46)
+
+3/2
+
+for p ≥ log n n , where the final expression for α follows
+from the fact that α ∈ [0, 1] and that λ1 ≥ 1 − δ.
+
+IV. PROOF OF OPTIMALITY OF SEARCH ON
+ERDÖS-RENYI RANDOM GRAPHS USING
+DEGENERATE PERTURBATION THEORY
+
+Here, we present an intuitive way to prove the optimality of search for Erdös-Renyi graphs, G(n, p), by using
+degenerate perturbation theory. This proof is instrumental in constructing protocols for optimal state transfer and entanglement generation in these random networks.
+The spectral density of a graph G is defined as
+n
+
+1X
+ρ(λ) =
+δ(λi − λ)
+n i=1
+
+(47)
+
+(50)
+
+where E → np, and |s0 i → |si as n → ∞. The search
+Hamiltonian then becomes
+HG(n,p) = − |wi hw| − γp E |s0 i hs0 | − γp A0G(n,p) .
+
+(51)
+
+We use |si as the initial state of the quantum algorithm and choose γp = 1/(np) so that, for large n, |si
+and |wi are approximately degenerate. The spectrum of
+γp A0G(n,p) follows the semi-circle law, where the radius of
+the semicircle is given by
+s
+p
+(1 − p)
+.
+(52)
+R = γp 2 np(1 − p) = 2
+np
+As long as np → ∞, the radius R → 0. This implies,
+for the whole range in which the semi-circle law is valid,
+that the radius R shrinks as np grows. Also from Section
+III, we know that as long as p ≥ log3/2 (n)/n,
+1
+1
+1 − √ ≤ γp λ1 ≤ 1 + √ ,
+n
+n
+
+(53)
+
+almost surely.
+One can show that the algorithm retains its optimality
+as long as this is the case. If
+− 1 − δ ≤ γp λ1 ≤ −1 + δ,
+
+(54)
+
+using degenerate perturbation theory, we obtain the
+ground and first excited states of HG(n,p) from its diagonalization in the 2-dimensional subspace spanned by
+
+8
+{|wi , |sw̄ i}, where |sw̄ i =
+eigenstates are
+
+Pn
+
+i6=w |ii /
+
+√
+
+n − 1.
+
+These
+
+p
+where
+δ 2 /4 + 1/n. Thus, as long as δ ∈
+√Ω =
+√
+[−1/ n,√1/ n], the running time of the algorithm is
+T = O( n).
+
+
+1 1
+√ |wi − µ |sw̄ i ,
+(55)
+κ
+n
+
+1
+1
+|λ− i ≈
+µ |wi + √ |sw̄ i
+(56)
+Thus, the gap between the lowest eigenvalue of
+κ
+n
+−γp A0G(n,p) and the second lowest eigenvalue of HG(n,p) ,
+p
+√
+Pn
+where |sw̄ i = i6=w |ii / n − 1, µ = δ/2 + δ 2 /4 + 1/n
+is γp (λ2 − λ1 ) = O(1) as long as p ≥ log3/2 (n)/n. The
+p
+2
+error obtained from this approximation is O(γp2 λ22 ), since
+and κ = µ + 1/n.
+γp λ2 is the largest eigenvalue of γp A0G(n,p) which we conThus, the probability of observing the marked vertex |wi
+sider as a perturbation. Note that the error of our
+is given by
+  approximation decreases as np increases. Thus, for a
+1
+Ωt fixed n, the higher the value of p, the lower is the error.
+Pw (t) = | hw| exp(−iHG(n,p) t)|si |2 =
+sin2
+,
+Again, for a fixed p, the error diminishes with increase in
+1 + N δ 2 /4
+2
+n.
+(57)
+|λ+ i ≈
+
+[1] Andrew M. Childs and Jeffrey Goldstone. Spatial search
+by quantum walk. Physical Review A, 70:022314, 2004.
+[2] Jonatan Janmark, David A. Meyer, and Thomas G.
+Wong. Global symmetry is unnecessary for fast quantum search. Physical Review Letters, 112:210502, 2014.
+[3] Leonardo Novo, Shantanav Chakraborty, Masoud
+Mohseni, Hartmut Neven, and Yasser Omar. Systematic dimensionality reduction for quantum walks: Optimal spatial search and transport on non-regular graphs.
+Scientific Reports, 5:13304, 2014.
+[4] David A. Meyer and Thomas G. Wong. Connectivity is
+a poor indicator of fast quantum search. Physical Review
+Letters, 114:110503, 2015.
+[5] Paul Erdős and Alfred Rényi. On random graphs. I. Publ.
+Math. Debrecen, 6:290–297, 1959.
+[6] Paul Erdős and Alfred Rényi. On the evolution of random
+graphs. Publications of the Mathematical Institute of the
+Hungarian Academy of Sciences, 5:17–61, 1960.
+[7] Sébastien Perseguers, Maciej Lewenstein, Antonio Acı́n,
+and J Ignacio Cirac. Quantum random networks. Nature
+Physics, 6(7):539–543, 2010.
+[8] Mauro Faccin, Tomi Johnson, Jacob Biamonte, Sabre
+Kais, and Piotr Migdal. Degree distribution in quantum
+walks on complex networks. Physical Review X, 3:041007,
+2013.
+[9] Mauro Faccin, Piotr Migdal, Tomi H. Johnson, Ville
+Bergholm, and Jacob D. Biamonte. Community detection in quantum complex networks. Physical Review X,
+4:041012, 2014.
+[10] Edward Farhi and Sam Gutmann. Analog analogue of
+a digital quantum computation. Physical Review A,
+57:2403, 1998.
+[11] Normalized algebraic connectivity is defined as the second largest eigenvalue of the symmetric normalized
+Laplacian defined as L0 = D−1/2 LD−1/2 , where L is the
+Laplacian of the graph, with D being a diagonal matrix
+where the ith diagonal entry is the degree of vertex i. In
+such a case we can define H1 = I − L0 .
+[12] One of them is almost regular with n − 2 vertices having
+degree n/2, while the other two having degree n/2 + 1.
+[13] Frank Harary and Edgar M Palmer. Graphical enumer-
+
+ation. Elsevier, 2014.
+[14] Béla Bollobás. Random graphs. Springer, 1998.
+[15] Zoltán Füredi and János Komlós. The eigenvalues of
+random symmetric matrices. Combinatorica, 1(3):233–
+241, 1981.
+[16] Van H. Vu. Spectral norm of random matrices. Combinatorica, 27(6):721–736, 2007.
+[17] Sougato Bose. Quantum communication through an
+unmodulated spin chain.
+Physical Review Letters,
+91:207901, 2003.
+[18] Matthias Christandl, Nilanjana Datta, Artur Ekert, and
+Andrew J. Landahl. Perfect state transfer in quantum
+spin networks. Physical Review Letters, 92:187902, 2004.
+[19] Sougato Bose, Andrea Casaccino, Stefano Mancini, and
+Simone Severini. Communication in xyz all-to-all quantum networks with a missing link. International Journal
+of Quantum Information, 7(04):713–723, 2009.
+[20] Vivien M Kendon and Christino Tamon. Perfect state
+transfer in quantum walks on graphs. Journal of Computational and Theoretical Nanoscience, 8:42, 2011.
+[21] The error in this analysis is in going up to only first order
+in degenerate perturbation theory.
+[22] Michael A Nielsen and Isaac L Chuang. Quantum computation and quantum information. Cambridge university
+press, 2010.
+√
+[23] The state |s−
+ab i = (|ai − |bi)/ 2 is also degenerate with
+−
+−
+these states since hsab |H|sab i ≈ −1. However, this state
+is decoupled from the dynamics because hswab |H|s−
+ab i ≈
+−1.
+[24] Masoud Mohseni, Alireza Shabani, Seth Lloyd, Yasser
+Omar, and Herschel Rabitz. Geometrical effects on energy transfer in disordered open quantum systems. The
+Journal of Chemical Physics, 138:204309, 2013.
+[25] Torsten Scholak, Fernando de Melo, Thomas Wellens,
+Florian Mintert, and Andreas Buchleitner. Efficient and
+coherent excitation transfer across disordered molecular
+networks. Phys. Rev. E, 83:021912, 2011.
+[26] Mark Newman. Networks: An introduction. Oxford University Press, 2010.
+[27] Andrei Broder and Eli Shamir. On the second eigenvalue
+of random regular graphs. In Foundations of Computer
+
+9
+Science, 1987., 28th Annual Symposium on, pages 286–
+294. IEEE, 1987.
+[28] Réka Albert and Albert-László Barabási. Statistical me-
+
+chanics of complex networks. Reviews of Modern Physics,
+74(1):47, 2002.
+
+

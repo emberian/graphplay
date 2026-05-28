@@ -1,0 +1,678 @@
+Quantum Inf Process manuscript No.
+(will be inserted by the editor)
+
+Faster Search by Lackadaisical Quantum Walk
+Thomas G. Wong
+
+arXiv:1706.06939v2 [quant-ph] 6 Feb 2018
+
+Received: date / Accepted: date
+
+Abstract In the typical model, a discrete-time coined quantum walk searching the√2D grid for a marked vertex achieves a success probability of O(1/ log N )
+in O( N log N ) steps,
+which with amplitude amplification yields an over√
+all runtime of O( N log N ). We show that making the quantum walk lackadaisical or lazy by adding a self-loop of weight 4/N to each vertex speeds
+up √the search, causing the success probability
+to reach a constant near 1 in
+√
+O( N log N ) steps, thus yielding an O( log N ) improvement over the typical,
+loopless algorithm. This improved runtime matches the best known quantum
+algorithms for this search problem. Our results are based on numerical simulations since the algorithm is not an instance of the abstract search algorithm.
+Keywords Quantum walk · Lackadaisical quantum walk · Spatial search
+PACS 03.67.-a, 05.40.Fb, 02.10.Ox
+
+1 Introduction
+Grover’s quantum√search algorithm [1] famously searches an unordered database
+of N items in O( N ) time, which is a quadratic improvement over the O(N )
+steps that a classical computer would need to take. Fifteen years ago, however, Benioff [2] noted that a quantum computer may lose this speedup when
+searching a spatial region since it takes time for a “quantum robot” to traverse
+the database.
+Since then, much work has explored how quickly quantum computers can
+search spatial regions, beginning with Aaronson and Ambainis [3], who gave a
+T. G. Wong
+Department of Computer Science, University of Texas at Austin, 2317 Speedway, Austin,
+Texas 78712, USA
+Currently at Department of Physics, Creighton University, 2500 California Plaza, Omaha,
+NE 68178, USA
+E-mail: thomaswong@creighton.edu
+
+2
+
+T. G. Wong
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+l
+
+Fig. 1 A 2D grid of N = 5 × 5 vertices with a self-loop of weight l at each vertex. The
+boundaries are periodic. A marked vertex is indicated by a double circle.
+
+recursive algorithm that searches the two-dimensional
+(2D) grid, or periodic
+√
+square lattice or torus, of N √
+vertices in O( N log2 N ) steps while achieving
+the full Grover speedup of O( N ) in higher-dimensional lattices. Another approach is using a continuous-time quantum walk, which Childs and
+√ Goldstone
+N log3/2 N )
+[4] showed searches
+no
+better
+than
+classical
+in
+2D
+and
+3D,
+in
+O(
+√
+in 4D, and in O( N ) in 5D or greater (see Table 1 of [5] for a detailed summary). Ambainis et al. [6] then showed that a discrete-time coined quantum
+walk
+the 2D grid in
+√ outperforms both of the previous algorithms, searching
+√
+O( N log N ) steps and higher-dimensional lattices in O( N ). Specifically, for
+the√2D grid, the probability at the marked vertex reaches O(1/ log N ) after
+O( N log N ) steps. Using amplitude amplification
+[7], this implies a search al√
+gorithm with an overall runtime of O( N log N ). Childs and Goldstone later
+matched these runtimes with a continuous-time quantum walk governed by
+the Dirac equation [8].
+In this paper, we investigate a simple modification to the discrete-time
+quantum walk search algorithm of Ambainis et al. [6] on the 2D grid, where
+we make the walker lazy or lackadaisical [9, 10]. We do this by giving each
+vertex of the 2D grid a self-loop of weight l, as illustrated in Fig. 1, so
+the walker has some probability of staying put. We perform a discrete-time
+coined quantum walk on this weighted graph while querying a Grover-type
+oracle that flips the sign of the amplitude at the marked vertex. Numerically,
+when l√= 4/N , the probability at the√marked vertex reaches a constant after O( N log N√) steps, which is an O( log N ) improvement over the loopless
+algorithm’s O( N log N ) [6].
+This indicates that a lackadaisical quantum walk is capable of giving speedups
+in the runtime scaling, not just speedups in the constant factor [9, 10], and it
+suggests that self-loops might be useful algorithmic tools in other quantum
+walk algorithms as well, not just those for searching.
+√ Note there are other
+approaches to achieving this improved runtime of O( N log N ), such as con-
+
+Faster Search by Lackadaisical Quantum Walk
+
+3
+
+trolling the walk with an ancilla qubit [11], searching a neighborhood [12],
+quantizing a semi-absorbing random walk [13], and using staggered quantum
+walks with Hamiltonians [14], but the simplicity of adding self-loops to a graph
+makes lackadaisical quantum walks an attractive alternative.
+In the next section, we describe the lackadaisical algorithm in detail and
+give numerical results. Then we describe why this algorithm is unamenable to
+the usual analytical method of the abstract search algorithm [6]. Finally, we
+end with concluding remarks.
+
+2 Search by Lackadaisical Quantum Walk
+In a quantum walk, the N vertices of a graph form a computational basis
+{|1i, |2i, . . . , |N i} for CN . A discrete-time quantum walk, however, also includes an additional coin degree of freedom encoding the directions in which
+a particle can hop [15, 16]. For the 2D grid with self-loops, as in Fig. 1, the
+directions are {|↑i, |↓i, |←i, |→i, | i}, and these form a computational basis
+for C5 . So the Hilbert space of the quantum walk is CN ⊗ C5 . For example,
+the state |2, →i denotes a particle at vertex 2 pointing to the right. The pure
+quantum walk (without searching) evolves by repeated applications of
+U = S · (IN ⊗ C),
+where
+C = 2|sc ihsc | − I5
+with
+|sc i = √
+
+
+√
+1 
+|↑i + |↓i + |←i + |→i + l| i
+4+l
+
+is the Grover diffusion coin for a weighted graph [10], and S is the flip-flop
+shift that causes a particle to hop and turn around [6]. The system begins in
+N
+
+1 X
+|vi ⊗ |sc i,
+|ψ0 i = √
+N v=1
+
+(1)
+
+which is a uniform distribution over the vertices (but not necessarily the directions). Note this is the unique eigenvector of the
+√ quantum walk operator U
+with eigenvalue 1, and it can be prepared in O( N ) steps without knowing
+the marked vertex.
+Now to search, we include a query to an oracle with each step of the
+quantum walk. Two choices for the oracle are common. The first is the “Grover
+oracle,” where the algorithm repeatedly applies
+U 0 = U · (Q ⊗ I5 ).
+
+(2)
+
+Here, Q = IN −2|wihw|, where |wi denotes the marked vertex. This oracle flips
+the sign at the marked vertex, irrespective of the coin state. U 0 is equivalent
+to applying C to unmarked vertices and −C to the marked vertex, followed
+
+4
+
+T. G. Wong
+
+Success Probability
+
+1
+l = 0.015
+
+0.8
+0.6
+
+l = 0.005
+
+0.4
+
+l = 0.1
+
+l=0
+
+0.2
+0
+
+0
+
+l = 0.2
+20
+
+40
+60
+Applications of U’
+
+80
+
+100
+
+80
+
+100
+
+(a)
+
+Success Probability
+
+1
+0.8
+0.6
+0.4
+l=0
+
+l = 20
+
+l=5
+
+0.2
+0
+
+0
+
+20
+
+40
+60
+Applications of U"
+(b)
+
+Fig. 2 Success probability as a function of time for search on the 2D grid of N = 16 × 16 =
+256 vertices with a self-loop of weight l at each vertex. (a) With the Grover oracle, the solid
+black curve is l = 0, the dashed red curve is l = 0.005, the dotted green curve is l = 0.015,
+the dot-dashed blue curve is l = 0.1, and the dot-dot-dashed orange curve is l = 0.2. (b)
+With the SKW oracle, the solid black curve is l = 0, the red dashed curve is l = 5, and the
+dotted green curve is l = 20.
+
+by the shift [6]. Another choice is the “SKW oracle” [17], where the algorithm
+applies
+U 00 = U · (I5N − 2|w, sc ihw, sc |).
+
+(3)
+
+Now the oracle term only exactly flips the sign at the marked vertex if the coin
+state is |sc i. U 00 is equivalent to applying C to unmarked vertices and −I5 to
+the marked vertex, followed by the shift [6]. It is also equivalent to search by
+Szegedy’s quantum walk [18, 19, 20].
+In Fig. 2, we simulate the search algorithm with each oracle for a grid of size
+N = 16 × 16 = 256 with various values of l. Figure 2a uses the Grover oracle
+(2), and when l = 0, this reproduces the loopless quantum walk of√[6], where
+the success probability reaches a value of O(1/ log N ) at time O( N log N ).
+As we increase l, the success probability improves, almost reaching 1 when
+l = 0.015. This probability is almost entirely contained in the marked vertex’s
+self-loop, so the algorithm “stores” success probability in the self-loop. As l
+
+Faster Search by Lackadaisical Quantum Walk
+
+5
+
+Success Probability
+
+1
+N = 256
+
+0.8
+
+N = 1024
+
+N = 4096
+
+0.6
+0.4
+0.2
+0
+
+0
+
+50
+
+100
+Applications of U’
+
+150
+
+200
+
+Fig. 3 Success probability as a function time for search with the Grover coin on the 2D
+grid of N vertices with a self-loop of weight l = 4/N at each vertex. The solid black curve
+is N = 16 × 16 = 256, the dashed red curve is N = 32 × 32 = 1024, and the dotted green
+curve is N = 64 × 64 = 4096.
+
+increases further, however, the success probability drops, so there is an optimal
+amount of “laziness” for which the success probability is maximized.
+Figure 2b uses the SKW oracle (3). Again with l = 0, this reproduces the
+loopless algorithm. Now as we increase l, the algorithm simply slows down.
+This lack of improvement is unsurprising, however, since U 00 is equivalent to
+applying −I5 to the marked vertex. Then the amplitude in the marked vertex’s
+self-loop simply alternates signs with each step, so the algorithm cannot store
+amplitude in the marked vertex’s self-loop.
+So let us focus on the quantum walk with the Grover coin (2). Note when
+N = 16 × 16 = 256, the optimal self-loop weight of roughly 0.015 is approximately 4/N . So in Fig. 3, we simulate search on grids of various sizes with
+l = 4/N . We see that in all cases, the success probability is near 1. Specifically, when N = 16 × 16 = 256, the success probability reaches its first peak
+of 0.975506 after 35 steps; when N = 32 × 32 = 1024, the its first peak is
+0.973669 after 77 steps; and when N = 64 × 64 = 4096, the success probability
+reaches its first peak of 0.975548 at 170 steps.
+We can similarly find the
+√ success probability’s first peak and the time it
+occurs for grids of length N = {16, 17, . . . , 128}. The complete data and
+the Python script used to simulate the quantum walk are available in this
+paper’s arXiv source. The peak success probability is shown in Fig. 4a, and
+it converges to a constant. The time to this peak, or runtime t∗ , is shown in
+Fig. 4b, and the fit
+p
+t∗ = 0.922466 N log N
+has a correlation coefficient of 0.999993, indicating that the fit is sound.
+Thus,
+√
+the numerical simulations
+suggest
+that
+the
+overall
+runtime
+is
+O(
+N
+log
+N ),
+√
+which
+is
+an
+O(
+log
+N
+)
+improvement
+over
+the
+typical,
+loopless
+algorithm’s
+√
+O( N log N ) in [6].
+
+T. G. Wong
+
+Peak in Success Probability
+
+6
+
+1
+0.99
+0.98
+0.97
+0.96
+
+0
+
+3000
+
+6000
+
+9000
+N
+
+12000
+
+15000
+
+18000
+
+12000
+
+15000
+
+18000
+
+(a)
+
+400
+
+Runtime
+
+300
+200
+100
+0
+
+0
+
+3000
+
+6000
+
+9000
+N
+(b)
+
+√
+Fig. 4 Search with the Grover coin on the 2D grid of N vertices, with
+N =
+{16, 17, . . . , 128}, by lackadaisical quantum walk with l = 4/N . (a) The value of the first
+peak in success probability. (b) The time to the first peak of success probability. The
+black dots are√the values from numerically simulating the walk. The red curve is the fit
+t∗ = 0.922466 N log N .
+
+3 Comparison with Abstract Search Algorithm
+The behavior of the typical, loopless algorithm was analytically determined using a framework known as the abstract search algorithm [6]. This framework
+has also been used to analyze several other quantum walk search algorithms
+[11, 21, 22]. Here, we review the abstract search algorithm [6] and its generalization by Tulsi [11] and show that our lackadaisical quantum walk with the
+Grover coin (2) does not fit into its framework.
+The abstract search algorithm repeatedly applies two operators
+U2 U1
+
+(4)
+
+with the following properties on two states |ψstart i and |ψgood i:
+– U1 flips the sign of |ψgood i and does nothing to states orthogonal to it.
+That is, U1 = I − 2|ψgood ihψgood |.
+– |ψstart i has real amplitudes and is the only 1-eigenvector of U2 . That is,
+U2 |ψstart i = |ψstart i.
+
+Faster Search by Lackadaisical Quantum Walk
+
+7
+
+– U2 is real (and unitary).
+Then the behavior of the algorithm can be determined by expanding |ψgood i
+in the eigenbasis of U2 . First, U2 has one eigenvalue 1, and we denote the
+corresponding eigenvector |Φ0 i. Second, U2 may have zero or more eigenvalues
+−1, and we denote the corresponding eigenvectors |Φk i. Finally, since U2 is
+real and unitary, its remaining eigenvalues come in pairs of complex conjugate
+numbers e±iθj , and we denote the corresponding eigenvectors Φ±
+j , where
+− ∗
+Φ+
+Φ
+.
+Then
+we
+can
+write
+the
+good
+state
+in
+this
+complete
+orthonormal
+=
+j
+j
+basis:
+X
+X
+
++
+− −
+|ψgood i = a0 |Φ0 i +
+ak |Φk i +
+a+
+.
+j Φj + aj Φj
+j
+
+k
+
+− ∗
+Since the good state is a real vector, a+
+j = (aj ) , and we can choose the phase
+±
++
+−
+of Φj so that aj = aj = aj . Then we have
+X
+X
+
+−
+|ψgood i = a0 |Φ0 i +
+ak |Φk i +
+aj Φ+
+.
+j + Φj
+j
+
+k
+
+Now we can use these coefficients (i.e., a0 , the ak ’s, and the aj ’s) to determine
+the behavior of the abstract search algorithm. Typically, the starting and good
+states are close to two other states, |wstart i and |wgood i, with respective overlaps
+
+
+!
+4 X
+a2j
+α4 X 2
+α
+
+
+−Θ
+ak ,
+|hψstart |wstart i| ≥ 1 − Θ
+a20 j (1 − cos θj )2
+a20
+k
+
+
+
+1
+|hψgood |wgood i| = Θ min  qP
+, 1 ,
+2 θj
+2
+j aj cot 4
+where
+
+
+
+
+
+α = Θ
+r
+
+a0
+P 2
+a2j
+1
+j 1−cos θj + 4
+k ak
+
+P
+
+
+.
+
+
+These two states are important because π/2α applications of U2 U1 drives the
+system from |wstart i to |wgood i. That is, |wgood i = (U2 U1 )π/2α |wstart i. This
+yields the runtime of the algorithm, and the previous overlaps with |ψstart i
+and |ψgood i give the success probability.
+Quantum walk search algorithms are framed as abstract search algorithms
+by first identifying the quantum walk operator U = S(IN ⊗ C) with U2 . U is
+real and unitary, and the starting state of the quantum walk |ψ0 i corresponds
+to |ψstart i since it is the unique 1-eigenvector of U . Now comparing (2) and
+(4), we would also like to identify (Q ⊗ I5 ) with U1 . Unfortunately, |ψgood i
+cannot exist with this identification. For example, if the marked vertex is |wi,
+then (Q ⊗ I5 ) flips the signs of both |w, ↑i and |w, i. These two states are
+
+8
+
+T. G. Wong
+
+orthogonal, so U1 should only flip the sign of one state and do nothing to
+the other. Therefore, our algorithm (2) is not amenable to the analysis of the
+abstract search algorithm.
+We note that search with the SKW oracle (3) is an instance of the abstract
+search algorithm since I5N − 2|w, sc ihw, sc | can be identified with U1 . Then
+|w, sc i is |ψgood i, and the oracle acts as the identity on all states orthogonal
+to this. Analyzing this algorithm is uninteresting, however, since the self-loops
+only slow down the walk, as we saw in Fig. 2b.
+4 Conclusion
+We have shown that the lackadaisical quantum walk, where a self-loop of
+weight l is added to each vertex of the graph, can achieve a scaling improvement when searching the 2D grid with the Grover oracle for a unique marked
+vertex when l = 4/N . At the marked vertex, the algorithm stores amplitude
+in the self-loop, allowing it to rise to a constant near 1 compared with the
+loopless algorithm’s O(1/ log N ). This eliminates the need for
+√ amplitude amN log N ), which
+plification,
+so
+the
+resulting
+algorithm
+has
+a
+runtime
+of
+O(
+√
+is an O( log N ) improvement over the typical, loopless algorithm. This algorithm cannot be formulated in the framework of the abstract search algorithm,
+and so it is not amenable to its analytical method. Further research includes
+analytically proving the runtime of the algorithm, and exploring whether other
+quantum walk algorithms can be sped up using lackadaisical quantum walks.
+Acknowledgements Thanks to Scott Aaronson for useful discussions. This work was supported by the U.S. Department of Defense Vannevar Bush Faculty Fellowship of Scott Aaronson.
+
+References
+1. Grover, L.K.: A fast quantum mechanical algorithm for database search. In: Proc. 28th
+Annual ACM Symp. Theory Comput., STOC ’96, pp. 212–219. ACM, New York, NY,
+USA (1996)
+2. Benioff, P.: Space searches with a quantum robot, volume 305 of Contemp. Math., pp.
+1–12. Amer. Math. Soc., Providence, RI (2002)
+3. Aaronson, S., Ambainis, A.: Quantum search of spatial regions. Theor. Comput. 1(4),
+47–79 (2005)
+4. Childs, A.M., Goldstone, J.: Spatial search by quantum walk. Phys. Rev. A 70, 022314
+(2004)
+5. Meyer, D.A., Wong, T.G.: Connectivity is a poor indicator of fast quantum search.
+Phys. Rev. Lett. 114, 110503 (2015)
+6. Ambainis, A., Kempe, J., Rivosh, A.: Coins make quantum walks faster. In: Proc.
+16th Annual ACM-SIAM Symp. Discrete Algorithms, SODA ’05, pp. 1099–1108. SIAM,
+Philadelphia, PA, USA (2005)
+7. Brassard, G., Høyer, P., Mosca, M., Tapp, A.: Quantum Amplitude Amplification and
+Estimation, volume 305 of Contemp. Math., pp. 53–74. Amer. Math. Soc., Providence,
+RI (2002)
+8. Childs, A.M., Goldstone, J.: Spatial search and the Dirac equation. Phys. Rev. A 70,
+042312 (2004)
+
+Faster Search by Lackadaisical Quantum Walk
+
+9
+
+9. Wong, T.G.: Grover search with lackadaisical quantum walks. J. Phys. A: Math. Theor.
+48(43), 435304 (2015)
+10. Wong, T.G.: Coined quantum walks on weighted graphs. arXiv:1703.10134 [quant-ph]
+(2017)
+11. Tulsi, A.: Faster quantum-walk algorithm for the two-dimensional spatial search. Phys.
+Rev. A 78, 012310 (2008)
+12. Ambainis, A., Bačkurs, A., Nahimovs, N., Ozols, R., Rivosh, A.: Search by quantum
+walks on two-dimensional grid without amplitude amplification. In: Proc. 7th Annual Conf. Theory of Quantum Computation, Communication, and Cryptography, TQC
+2012, pp. 87–97. Springer, Tokyo, Japan (2013)
+13. Krovi, H., Magniez, F., Ozols, M., Roland, J.: Quantum walks can find a marked element
+on any graph. Algorithmica 74(2), 851–907 (2016)
+14. Portugal, R., Fernandes, T.D.: Quantum search on the two-dimensional lattice using
+the staggered model with hamiltonians. Phys. Rev. A 95, 042341 (2017)
+15. Meyer, D.A.: From quantum cellular automata to quantum lattice gases. J. Stat. Phys.
+85(5-6), 551–574 (1996)
+16. Meyer, D.A.: On the absence of homogeneous scalar unitary cellular automata. Phys.
+Lett. A 223(5), 337 – 340 (1996)
+17. Shenvi, N., Kempe, J., Whaley, K.B.: Quantum random-walk search algorithm. Phys.
+Rev. A 67, 052307 (2003)
+18. Szegedy, M.: Quantum speed-up of Markov chain based algorithms. In: Proc. 45th Annual IEEE Symp. Found. Comput. Sci., FOCS ’04, pp. 32–41. IEEE Computer Society,
+Washington, DC, USA (2004)
+19. Magniez, F., Nayak, A., Richter, P.C., Santha, M.: On the hitting times of quantum
+versus random walks. Algorithmica 63(1), 91–116 (2012)
+20. Wong, T.G.: Equivalence of Szegedy’s and coined quantum walks. Quantum Inf. Process.
+16(9), 215 (2017)
+21. Abal, G., Donangelo, R., Marquezino, F.d.L., Portugal, R.: Spatial search on a honeycomb network. Math. Struct. Comput. Sci. 20(6), 999–1009 (2010)
+22. Marquezino, F.d.L., Portugal, R., Boettcher, S.: Spatial search algorithms on hanoi
+networks. Phys. Rev. A 87, 012329 (2013)
+
+

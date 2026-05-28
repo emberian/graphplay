@@ -1,0 +1,5145 @@
+Optimal spatial searches with long-range tunneling
+Emma C. King ,1 Moritz Linnebacher ,1 Peter P. Orth ,1 Matteo Rizzi ,2 and Giovanna Morigi
+
+1
+
+1 Theoretische Physik, Universität des Saarlandes, D-66123 Saarbrücken, Germany
+2 Institut für Theoretische Physik, Universität zu Köln, D-50937 Köln, Germany
+
+arXiv:2501.08148v2 [quant-ph] 13 Oct 2025
+
+(Dated: October 14, 2025)
+A quantum walk on a lattice is a paradigm of a quantum search in a database. The database qubit strings are
+the lattice sites, qubit rotations are tunneling events, and the target site is tagged by an energy shift. For quantum
+walks on a continuous time, the walker diffuses across the lattice and the search ends when it localizes√ at the
+target site. The search time 𝑇 can exhibit Grover’s optimal scaling with the lattice size 𝑁, namely, 𝑇 ∼ 𝑁, on
+an all-connected, complete lattice. For finite-range tunneling between sites, instead, Grover’s optimal scaling is
+warranted when the lattice is a hypercube of 𝑑 > 4 dimensions. Here, we show that Grover’s optimum can be
+reached in lower dimensions on lattices of long-range interacting particles, when the interaction strength scales
+algebraically with the distance 𝑟 as 1/𝑟 𝛼 and 0 < 𝛼 < 3𝑑/2. For 𝛼 < 𝑑 the dynamics mimics the one of a
+globally connected graph. For 𝑑 < 𝛼 < 𝑑 + 2, the quantum search on the graph can be mapped to a short-range
+model on a hypercube with spatial dimension 𝑑 𝑠 = 2𝑑/(𝛼 − 𝑑), indicating that the search is optimal for 𝑑 𝑠 > 4.
+Our work identifies an exact relation between criticality of long-range and short-range systems, it provides a
+quantitative demonstration of the resources that long-range interactions provide for quantum technologies, and
+indicates when existing experimental platforms can implement efficient analog quantum search algorithms.
+
+I.
+
+INTRODUCTION
+
+Grover’s quantum search algorithm is a paradigm of quantum computing advantage as it holds the promise of a quadratic
+speedup with respect to a classical search [1–3]. In fact, for
+an unstructured search the computational time
+√ scales with the
+number of entries 𝑁 of a database as 𝑇𝑄 ∼ 𝑁, which shall
+be compared with the classical counterpart, where 𝑇𝐶 ∼ 𝑁.
+The quantum algorithm thus ideally belongs to a more favorable time complexity class. The latter refers to the scaling
+of the time needed to run an algorithm with the size of the
+database, and is a central concept of complexity theory in
+computer science. Practical overheads of digital quantum circuits can severely reduce the advantage with respect to the
+classical counterpart [4]. In this context, analog quantum
+platforms—such as those leveraging continuous-time quantum
+walks—may exhibit reduced overhead and inherent resilience
+to certain types of noise, allowing one to fully exploit the
+speedup provided by quantum mechanics.
+The analog implementation of Grover’s quantum search in
+continuous time realizes a quantum walk on a complete graph,
+whose vertices are the elements of the database and in which
+the target state is tagged by an energy shift [5]. Starting from a
+uniform superposition of all the graph’s vertices, the dynamics
+localizes the
+√ walker in the target site over a computational
+time 𝑇 ∼ 𝑁. Global connectivity is a sufficient but not
+necessary condition: Grover’s optimal scaling can be achieved
+in strongly regular graphs [6–9], random graphs satisfying
+certain requirements on the edges’ probability distribution [10,
+11], and in spatial searches on hypercubes with dimension
+𝑑 > 4 and nearest-neighbor coupling between vertices [12, 13].
+In the latter case, hypercubes with 𝑑 < 4 fail to realize the
+Grover speedup.
+Spatial searches on hypercubes establish a direct connection
+between quantum search algorithms and dynamical localization on lattices, implemented in photonic architectures [14–16]
+and dipole traps [17–19]. The requirement of 𝑑 > 4 spatial
+
+dimensions, on the other hand, is a demanding condition. Yet,
+most physical implementations are based on particles whose
+interactions are longer-ranged and scale with the distance 𝑟 as
+1/𝑟 𝛼 with 𝛼 > 0 [20]. These systems can realize long-range
+𝑋𝑌 models, where a single excitation performs a quantum walk
+with the tunneling amplitude scaling as 1/𝑟 𝛼 [21, 22]. The
+resulting graph is all-connected, whereby the edge capacities
+decrease with the Euclidean distance between the connected
+vertices, as illustrated in Fig. 1. In abstract terms, the exponent
+𝛼 of the edges’ algebraically-decaying capacity interpolates
+between two very distinct limits of the time complexity of the
+spatial search: the nearest-neighbor case (𝛼 → ∞), where
+Grover speedup is found for hypercubes of dimension 𝑑 > 4,
+and the complete graph (𝛼 = 0), where the notion of spatial dimension is lost. Clarifying under which conditions long-range
+interacting systems are a resource for quantum algorithms, and
+what the intimate connection between graph connectivity and
+dimensionality is, would permit to assess the computational
+resources of these systems and to identify advantageous experimental implementations.
+In this work we show that simple arrays of long-range interacting atoms or molecules, in which interactions scale algebraically with the distance 𝑟 as 1/𝑟 𝛼 , can implement an
+
+FIG. 1. (a) Illustrative graphic of search on a cubic lattice (hypercube
+with 𝑑 = 3) with nearest-neighbor couplings (𝛼 → ∞). Target node
+is depicted in red. (b) Schematic of the power-law scaling of the
+connectivity of a single site 𝑖® in a two-dimensional cubic lattice.
+
+2
+optimal analog quantum search [23]. We identify the condition on the exponent 𝛼 and on the spatial dimension 𝑑, for
+which Grover optimal scaling can be realized. This is done by
+performing a formal mapping between a long-range quantum
+walk on a cubic lattice of dimension 𝑑 ≤ 3 and a short-range
+quantum walk on a lattice in spatial dimension 𝑑 𝑠 = 𝑑 𝑠 (𝑑, 𝛼),
+corresponding to the spectral dimension of the graph. In doing
+so, we also provide a formal demonstration of the role of the
+spectral dimension in connecting criticality of long-range systems with the corresponding short-range ones for a dynamics
+that is central to several quantum algorithms.
+
+II.
+
+SEARCH BY QUANTUM WALK IN CONTINUOUS
+TIME
+
+The database comprises 𝑁 sites on a 𝑑-dimensional hypercube, with vertices (nodes) identified in space by the 𝑑dimensional vector 𝑖® ≡ (𝑖1 , . . . , 𝑖 𝑑 ) with 𝑖 𝑗 = 1, . . . , 𝑛 and
+𝑛 = 𝑁 1/𝑑 . The states {|𝑖1 , . . . , 𝑖 𝑑 ⟩} form a basis of the Hilbert
+space of the single walker. Denoting by |𝑤⟩ the target state,
+the dynamics is governed by the dimensionless Hamiltonian
+𝐻ˆ 𝛼 = −𝛾0 𝐿 𝛼 − |𝑤⟩⟨𝑤| ,
+
+(1)
+
+with the Laplacian 𝐿 𝛼 encoding the graph’s properties. In
+the formulation of Ref. [5], the graph is complete. Correspondingly,
+√ the Laplacian is 𝐿 0 = 𝑁 |𝑠⟩⟨𝑠|, where |𝑠⟩ =
+Í
+®
+|
+𝑖
+⟩/
+𝑁 is the uniform superposition of all states of
+𝑖1 ,...,𝑖𝑛
+the database. Preparing the database in the extended state
+|𝑠⟩ reduces the dynamics to a two-dimensional
+√ Hilbert space,
+Í
+consisting of the state |𝑟⟩ = 𝑖1 ,...,𝑖𝑛 ≠𝑤 |𝑖®⟩/ 𝑁 − 1 and the localized state |𝑤⟩. In the reduced Hilbert
+space the eigenvalues
+√︁
+of 𝐻ˆ 𝛼 have an energy gap Δ𝐸 = 4𝛾0 (1 − 𝑁) + (𝛾0 𝑁 + 1) 2
+ˆ
+and the transfer amplitude at time 𝑡, 𝐴(𝑡) = ⟨𝑤|e−i 𝐻 𝛼 𝑡 |𝑠⟩, is
+a rotation in the two-dimensional subspace. We denote by 𝑇
+2
+the minimal time at which the fidelity 𝐹 (𝑇)
+√ = | 𝐴(𝑇)| reaches
+unity. This time scales as 𝑇 ∝ 1/Δ𝐸 = 𝑁/2 when 𝛾0 is set
+at the critical point 𝛾𝑐 = 1/𝑁 separating the extended ground
+state |𝑠⟩ from the localized ground state |𝑤⟩. Next, we address the open question of the conditions under which such a
+dramatic reduction in the dynamically explored Hilbert space
+dimension occurs in long-range tunneling models of arbitrary
+dimension 𝑑.
+
+A.
+
+Power-law tunneling
+
+1
+
+∑︁
+®
+
+
+®𝛼
+
+|𝑖 − 𝑗 |
+𝑖®≠ 𝑗®
+
+
+|®𝑖 ⟩⟨ 𝑗®| + H.c. − 𝜀 0 𝐼 ,
+
+𝐴(𝑡) =
+
+𝑁
+∑︁
+
+W𝑖 S𝑖∗ e−𝑖𝐸𝑖 𝑡 ≈
+
+𝑖=1
+
+∑︁
+
+W𝑖 S𝑖∗ e−𝑖𝐸𝑖 𝑡 ,
+
+(3)
+
+𝑖=0,1
+
+where W𝑖 = ⟨𝑤|𝜓𝑖 ⟩ and S𝑖 = ⟨𝑠|𝜓𝑖 ⟩ are the overlaps of the
+eigenstate |𝜓𝑖 ⟩ with the target and extended state, respectively.
+We now identify the conditions for which the sum in Eq. (3)
+can be reduced to the sole contribution of ground and first
+excited states.
+B.
+
+Conditions for reduction in Hilbert space
+
+Information about the scalar products W𝑖 and S𝑖 in Eq. (3)
+is extracted from the projections ⟨ 𝑗 | 𝐻ˆ 𝛼 |𝜓𝑖 ⟩ = 𝐸 𝑖 ⟨ 𝑗 |𝜓𝑖 ⟩. It
+is convenient to make use of the transcendental equation
+F𝛼 (𝐸 𝑖 ) = 1, whose roots are the eigenvalues 𝐸 𝑖 [12]. The
+transcendental equation is derived by recasting the timeindependent Schrödinger equation for the search Hamiltonian
+𝐻ˆ 𝛼 as
+|𝜓𝑖 ⟩ = W𝑖 (−𝛾0 𝐿 𝛼 − 𝐸 𝑖 ) −1 |𝑤⟩,
+and taking the projection onto |𝑤⟩ [25]. It reads
+F𝛼 (𝐸) =
+
+1 ∑︁
+1
+,
+𝑁
+® −𝐸
+𝛾0 E 𝛼 ( 𝑘)
+
+(4)
+
+𝑘® ∈BZ
+
+Í
+where E 𝛼 ( ®𝑘) = 𝑗®≠®0 cos( 𝑘® · 𝑗®)/| 𝑗®| 𝛼 −𝜀 0 are the eigenvalues of
+the Laplacian 𝐿 𝛼 and the sum runs over the first Brillouin zone.
+The expression for the overlap W𝑖 is found from the normalization condition ⟨𝜓𝑖 |𝜓𝑖 ⟩ = 1, giving |W𝑖 | 2 = 1/F ′ (𝐸 𝑖 ), with
+F𝛼′ (𝐸 𝑖 ) ≡ 𝑑F𝛼 (𝐸)/𝑑𝐸 | 𝐸=𝐸𝑖 . Moreover, |S𝑖 | 2 = |W𝑖 | 2 /𝑁 𝐸 𝑖2 ,
+and the probability amplitude takes the compact form
+
+Assume now that the Laplacian of Eq. (1) has the form
+𝐿𝛼 =
+
+but with edge capacities that decay algebraically with the Euclidean distance, as illustrated in Fig. 1(b). This family of
+graphs includes the complete graph in the limit 𝛼 → 0. In the
+opposite limit, 𝛼 → ∞, the corresponding graph is a hypercube with nearest-neighbor coupling in 𝑑 spatial dimensions:
+Grover’s optimum is reached for 𝑑 > 4 after setting 𝜀0 = 0
+and choosing 𝛾0 at the critical point of the phase transition
+between the extended ground state |𝑠⟩ and the localized state
+|𝑤⟩ [12].
+We now determine the time complexity class as a function
+of 𝛼 and 𝑁, namely, the scaling of the time 𝑇 with 𝑁 and 𝛼,
+where 𝑇 now is the time at which the transfer probability amplitude 𝐴(𝑇) reaches its first maximum [24]. For this purpose,
+we first generalize the derivation of Ref. [12] to power-law
+Laplacians (2). This is achieved by decomposing the transfer
+amplitude 𝐴(𝑡) using the eigenstates |𝜓𝑖 ⟩ of 𝐻ˆ 𝛼 at eigenvalue
+𝐸𝑖 :
+
+(2)
+
+with | . . . | the Euclidean norm of the vector, 𝛼 > 0 the tunneling power-law exponent, and 𝜀0 a real scalar, multiplying the
+identity 𝐼 and to be determined. With this Laplacian, Hamiltonian (1) generalizes the dynamics to all-connected graphs
+
+1 ∑︁
+1
+−𝑖𝐸𝑖 𝑡
+𝐴(𝑡) = √
+.
+′ (𝐸 ) 𝑒
+|𝐸
+|F
+𝑖
+𝑖
+𝛼
+𝑁 𝑖
+
+(5)
+
+The behavior of the transcendental function permits to identify the condition when the sum can be reduced to the first
+® for all
+two terms. We first assume that |𝐸 0 |, |𝐸 1 | ≪ 𝛾0 E 𝛼 ( 𝑘)
+
+3
+where the sum runs over the first Brillouin zone of the hypercube and E 𝛼 ( ®𝑘) are the eigenvalues of the Laplacian 𝐿 𝛼√(2).
+For 𝛾0 = 𝛾𝑐 the two lowest energies read 𝐸 1 = −𝐸 0 = 𝜒 𝛼 / 𝑁,
+where
+√︃
+( 𝛼)
+(9)
+𝜒 𝛼 = 𝑆1 / 𝑆2( 𝛼) ,
+Localized ground state
+
+with | 𝜒 𝛼 | ≤ 1. The transfer amplitude
+is approximated by the
+√
+expression 𝐴(𝑡) ≈ 𝜒√𝛼 sin( 𝜒 𝛼 𝑡/ 𝑁) and the first maximum
+is reached at 𝑇 ≈ 𝜋 𝑁/(2𝜒 𝛼 ) with fidelity 𝐹 (𝑇) = | 𝜒 𝛼 | 2 .
+Grover’s optimum is reached when 𝜒 𝛼 → 1.
+
+Extended ground state
+
+Í
+FIG. 2. Participation ratio 1/ 𝑗 |⟨ 𝑗 |𝜓0 ⟩| 4 for the ground state |𝜓0 ⟩
+vs 𝛾0 , with the critical value 𝛾0 = 𝛾𝑐 separating the extended from
+the localized ground state. Inset shows scalar products |S𝑖=0,1 | 2 and
+|W𝑖=0,1 | 2 and the energy gap 𝐸 1 − 𝐸 0 as a function of parameter 𝛾0 .
+We set 𝑑 = 1 and 𝛼 = 0.6; qualitatively similar results hold for other
+dimensions and tunneling exponents.
+
+𝑘® ≠ 0, namely, that there is an energy gap between the two
+lowest eigenvalues and the rest of the spectrum. This requires
+Í
+setting 𝜀 0 = 𝑗®≠®0 1/| 𝑗®| 𝛼 − E 𝛼 ( ®0). In order to find an expression for the overlaps, we perform the Taylor expansion of
+F (𝐸) and of its derivative:
+𝑆2( 𝛼)
+1
++
+,
+𝑁 𝐸 𝑖2
+𝛾02
+(6)
+Í
+with 𝑖 = 0, 1 and 𝑆ℓ( 𝛼) = ®𝑘≠®0 [E 𝛼 ( ®𝑘)] −ℓ /𝑁, Eq. (8). Using
+that the overlap |W𝑖 | 2 = 1/F ′ (𝐸 𝑖 ), then W0 ≈ W1 and S0 ≈
+S1 . Together with the truncated expression for F𝛼′ (𝐸 𝑖=0,1 ),
+this provides an equation connecting the two lowest energy
+eigenvalues:
+!
+!
+𝑆2( 𝛼)
+𝑆2( 𝛼)
+1
+1
+−𝐸 0
++ 2 + 𝐸1
++ 2 ≈ 0.
+(7)
+𝑁 𝐸 02
+𝛾0
+𝑁 𝐸 12
+𝛾0
+F𝛼 (𝐸 𝑖 ) ≈
+
+( 𝛼)
+𝑆 ( 𝛼)
+−1 𝑆1
++
++ 2 2 𝐸𝑖 ,
+𝑁 𝐸𝑖
+𝛾0
+𝛾0
+
+F𝛼′ (𝐸 𝑖 ) ≈
+
+√︃
+Solving for 𝛾0 gives 𝛾0 = 𝐸 0 𝐸 1 𝑁 𝑆2( 𝛼) . To make the expression explicit, one must insert the energies, which themselves
+depend on the parameter 𝛾0 . We extract the energies from the
+truncated form of transcendental
+equation F (𝐸) = 1 in Eq. (6):
+√︃
+
+
+( 𝛼)
+( 𝛼)
+𝐸 𝑖 = 𝛾0 / 2𝑆2
+𝛾0 − 𝑆1 ± (𝑆1( 𝛼) − 𝛾0 ) 2 + 4𝑆2( 𝛼) /𝑁 .
+Inserting this into the expression for 𝛾0 gives the trivial
+solution 𝛾0 = 0 and the critical value 𝛾0 = 𝛾𝑐 = 𝑆1( 𝛼) ,
+separating the extended from the localized ground state; see
+Fig. 2.
+This analysis shows that the sum in Eq. (3) can be reduced
+to the sole contribution of ground and first excited states, |𝜓0 ⟩
+Í
+®
+and |𝜓1 ⟩, respectively, after setting 𝜀 0 = ®𝑗 ≠0 1/| 𝑗®| 𝛼 − E 𝛼 ( 0)
+and 𝛾0 to the value 𝛾𝑐 = 𝑆1( 𝛼) . Here,
+𝑆ℓ( 𝛼) =
+
+∑︁
+® 0®
+𝑘≠
+
+® −ℓ /𝑁 ,
+[E 𝛼 ( 𝑘)]
+
+(8)
+
+C.
+
+Time complexity and spectral gap
+
+√
+The scaling 𝑇 ∼ 𝑁 is obtained when the two lowest energies are well separated from the rest of the spectrum. For the
+choice of parameters in which the ground state of the Laplacian
+is almost degenerate with the target state, this condition can be
+®
+reformulated as 𝐸 1 − 𝐸 0 ≪ 𝛿 𝛼 , where 𝛿 𝛼 = E 𝛼 ( 𝑘®1 ) − E 𝛼 ( 0)
+is the spectral gap of the Laplacian, namely, the energy difference between the Laplacian’s ground state and the first excited
+eigenstate at | 𝑘®1 | = 2𝜋/𝑁 1/𝑑 . The spectral gap is proportional to the algebraic connectivity 𝑎(𝐺) = E 𝛼 ( 𝑘®1 ) of the
+graph 𝐺 [26, 27], whose magnitude provides indications on
+the graph’s robustness. Increases of the algebraic connectivity
+have been linked to shorter characteristic path lengths between
+sites, resulting in faster propagation [28, 29]. Interestingly, the
+condition for the optimal search sets a lower bound on the
+spectral gap:
+√
+𝛿 𝛼 > 𝑐 𝛼/ 𝑁 ,
+(10)
+where 𝑐 𝛼 is√a positive constant and we have used that 𝐸 1 −
+𝐸 0 = 2𝜒 𝛼 / 𝑁 at the optimal value 𝛾0 = 𝛾𝑐 . We note that
+the same condition has been found for the optimal search in
+a random graph [30], suggesting that this is the necessary
+requirement that a generic graph shall satisfy for achieving
+Grover’s optimum.
+We now derive the asymptotic scaling of the spectral
+gap. In order to provide a scaling behavior with a welldefined thermodynamic limit, we analyze
+the rescaled gap
+√
+Δ 𝛼 = 𝛿 𝛼 /E 𝛼 ( 𝑘®max ) with | 𝑘®max | = 𝑑𝜋. This rescaling
+corresponds to the operation 𝐿 𝛼 → 𝐿 ′𝛼 = 𝐿 𝛼 /E 𝛼 ( 𝑘®max )
+and 𝛾0 → 𝛾0′ = 𝛾0 E 𝛼 ( 𝑘®max ), which does not change the
+Hamiltonian but now makes the rescaled bandwidth and critical value independent of 𝑁. In the rescaled framework,
+𝛾𝑐′ = 𝛾𝑐 E 𝛼 ( 𝑘®max ) is finite for 𝑁 → ∞ and is the critical
+point of the quantum phase transition separating the extended
+from the localized ground state. We restrict our analysis to
+spatial dimensions 𝑑 ≤ 4 and find that
+
+
+1 − C (𝑑) (𝛼)
+
+ (𝑑) 1
+
+Δ 𝛼 ≈ C2 (𝛼)𝑁 1− 𝛼/𝑑
+
+
+ C (𝑑) (𝛼)𝑁 −2/𝑑
+ 3
+
+𝛼 ∈ [0, 𝑑)
+𝛼 ∈ (𝑑, 𝑑 + 2)
+𝛼 ≥ 𝑑+2
+
+(11)
+
+(𝑑)
+with 𝛼-dependent constants C𝑖=1,2,3
+(𝛼) of order 1 and accurate
+𝛼/2
+up to a factor C ∈ [1, 𝑑 ]. The detailed derivation, including
+
+4
+limit, for 𝑁 → ∞, is displayed in Fig. 4(d) as a function of
+𝛼/𝑑. The value 𝛼𝑐 = 3𝑑/2 separates the regime at 𝛼 > 𝛼𝑐 ,
+where the search dynamics spans over a size of the Hilbert
+space with dimension of the order 𝑁, from the condensed
+regime at 𝛼 < 𝛼𝑐 , where the search occurs in the subspace
+consisting of the extended state |𝑠⟩ and the target state |𝑤⟩. As
+such, at 𝛼 = 𝛼𝑐 a phase transition occurs, separating regimes
+with different time complexities. This result applies to hypercubes with spatial dimension 𝑑 ≤ 4 and arbitrary sizes. It thus
+also encompasses the specific limit 𝑑 = 1, where it rigorously
+proves and generalizes conclusions drawn in Ref. [22] for finite
+one-dimensional chains.
+
+Grover speedup
+
+Suboptimal
+III.
+
+FIG. 3. Search optimality diagram illustrating the connection between
+the spatial dimension 𝑑 ∈ Z, in which the hypercube is embedded,
+and the power-law tunneling exponent 𝛼, and how it relates to the
+time complexity. The critical exponent 𝛼𝑐 = 3𝑑/2, represented by
+the white points, separates regimes in which we have optimal (𝑑 𝑠 > 4,
+light blue) and suboptimal (𝑑 𝑠 < 4, dark blue) quantum spatial search,
+distinguished by the critical spectral dimension 𝑑 𝑠 = 4.
+
+the explicit functional behavior of the coefficients, is relegated
+to Appendixes A and B. Three distinct cases emerge. (i)
+For 𝛼 < 𝑑, the gap Δ 𝛼 is independent of 𝑁. Therefore,
+condition (10) is satisfied for sufficiently large 𝑁. Using other
+words, for 𝛼 < 𝑑 the power-law tunneling becomes sufficiently
+long-ranged to mimic a globally connected graph. (ii) For
+𝛼 ∈ (𝑑, 𝑑 + 2) the spectral gap scales as 𝑁 1− 𝛼/𝑑 and the
+condition on optimality depends on the value that 𝛼 takes
+within the interval (𝑑, 𝑑 + 2). Finally, (iii) for 𝛼 > 𝑑 + 2 the
+spectral gap scales as 𝑁 −2/𝑑 and the quadratic speedup is
+provably lost. This includes the nearest-neighbor tunneling of
+Ref. [12] in the limiting case 𝛼 → ∞.
+Case (ii) is peculiar, since it identifies an additional exponent
+𝛼𝑐 = 3𝑑/2 separating
+√ the behavior of the gap: For 𝑑 + 2 > 𝛼 >
+𝛼𝑐 the quantity 𝛿 𝛼 𝑁 decreases with 𝑁, while for 𝛼𝑐 > 𝛼 > 𝑑
+it exhibits the opposite behavior (cf. Eq. (11)). Hence, at
+fixed dimension 𝑑 ≤ 4, when 𝛼 < 𝛼𝑐 , condition (10) holds
+asymptotically, and the Grover optimum is attainable. For
+𝛼 > 𝛼𝑐 , instead, the gap condition is violated, and the search
+time 𝑇 reverts to the suboptimal scaling.
+Equation (11) permits to establish an insightful connection
+between 𝛼 and 𝑑 in determining the time complexity of the
+quantum search, which we summarize in Fig. 3. This behavior is linked to the Lieb-Robinson bound, namely, with the
+maximal speed at which information can propagate across the
+lattice [31–33]. It proves that the critical exponent 𝛼𝑐 = 3𝑑/2
+is associated with a phase transition in the time complexity
+of the search problem. The order parameter is 𝜒 𝛼 , Eq. (9),
+its squared value is the fidelity, that quantifies the occupation
+of the two lower energy eigenstates and is reminiscent of the
+order parameter of Bose-Einstein condensation in interacting
+systems [34]. The dependence of 𝜒 𝛼 on 𝛼 and 𝑑 is reported
+in Fig. 4(a)–(c) for a range of values of 𝑁. The asymptotic
+
+SPECTRAL DIMENSION AND CRITICALITY
+
+We now focus on the regime where 𝛼 ∈ (𝑑, 𝑑 + 2) and
+perform a formal mapping of the long-range model of Eq. (1)
+to an effective short-range model with a higher dimension 𝐷
+that exhibits the same critical behavior. The existence of this
+kind of mapping has been conjectured in the context of criticality of long-range systems [20, 35, 36]. We now prove it
+for the extended-localized quantum phase transition of Hamiltonian (1). In order to proceed, it is convenient to introduce
+the concept of spectral dimension 𝑑 𝑠 ∈ R+ [37, 38], which
+characterizes a fictitious diffusion process on the search space.
+This quantity can be interpreted as the dimension perceived
+by the quantum walker and, as we now demonstrate, coincides
+with the effective dimension 𝐷 of an equivalent model that
+only includes nearest-neighbor couplings.
+The spectral dimension 𝑑 𝑠 can be extracted when the density of states scales as a power-law in the low-energy limit.
+®
+®
+Denoting by 𝜆 = E 𝛼 ( 𝑘)/E
+𝛼 ( 𝑘 max ) the rescaled eigenvalues,
+then for 𝜆 ≪ 1 the density of states scales as 𝜌(𝜆) ∼ 𝜆 𝛽 .
+The associated cumulative distribution 𝜌CD (𝜆) according to
+the relation is
+∫ 𝜆
+𝜌CD (𝜆) =
+dΛ 𝜌(Λ) ∼ 𝜆ds /2 ,
+0
+
+which defines the spectral dimension 𝑑 𝑠 = 2(𝛽 + 1). This
+connects the finite-size scaling of the gap with the spectral
+dimension: In fact, for a gap Δ that vanishes in the thermodynamic limit, 𝜌CD (Δ) = 1/𝑁 ∼ Δ𝑑𝑠 /2 . Assume now a nearestneighbor model. In this case, the gap vanishes as 𝑁 −2/𝐷 and
+𝜌CD (Δ) ∼ Δ𝐷/2 . This establishes a direct link between 𝐷
+and 𝑑 𝑠 , and thus between the universal critical behavior of
+the short-range and of the long-range model. In the regime
+𝛼 ∈ (𝑑, 𝑑 + 2), by means of the spectral gap scaling (11) we
+can extract the spectral dimension:
+𝑑𝑠 =
+
+2𝑑
+2𝑑
+=
+,
+𝛼−𝑑
+𝜎
+
+(12)
+
+with 𝜎 = 𝛼 − 𝑑. For 𝛼 ∈ (𝑑, 𝑑 + 2), the spectral dimension
+𝑑 𝑠 = 4 is the upper critical dimension of the long-range quantum walk. This identifies the critical exponent 𝛼 = 𝛼𝑐 = 3𝑑/2,
+such that for 𝛼 > 𝛼𝑐 at 𝛾𝑐 the ground state ceases to transition
+to a truly localized ground state.
+
+5
+
+0.9
+
+Optimal
+
+0.999
+
+Suboptimal
+0.9
+
+Suboptimal
+
+(d)
+
+(c)
+
+0.99
+
+0.999
+
+(b)
+
+0.99
+
+Suboptimal
+
+0.9
+
+0.99
+
+0.999
+
+(a)
+
+Optimal
+
+Optimal
+
+FIG. 4. Upper bound to the search fidelity: 𝜒 𝛼 as a function of the number of lattice sites 𝑁 and long-range tunneling exponent 𝛼 for
+(a) 𝑑 = 1, (b) 𝑑 = 2, and (c) 𝑑 = 3. Vertical lines correspond to 𝛼 = 𝑑 (solid) and 𝛼 = 𝛼𝑐 = 3𝑑/2 (dashed). Contours are shown for
+𝜒 𝛼 = 0.999, 0.99, 0.9. (d) Asymptotic behavior of 𝜒 𝛼 , Eq. (9), in the limit 𝑁 → ∞ as√︁a function of 𝛼/𝑑. In Appendix C we show that, for
+0 < 𝛼 < 𝑑, 𝜒 𝛼 = 1, while for 𝑑 < 𝛼 < 3𝑑/2 it decreases monotonically to zero as 𝜒 𝛼 = 3 − 2𝛼/𝑑/(2 − 𝛼/𝑑).
+
+Equation (12) provides a simple means to assess the time
+complexity of the quantum walk for lower-dimensional lattices,
+𝑑 ≤ 4. For algebraically-decaying interactions with exponent
+𝛼 ∈ (𝑑, 𝑑 + 2), the long-range model in 𝑑 dimensions can be
+mapped to a short-range model in 𝐷 = 𝑑 𝑠 dimensions. One
+can then use the predictions of Ref. [39] valid for continuous
+walks on a hypercube with short-range hopping, and Grover’s
+optimal search is achieved for 𝑑 𝑠 > 4. We note that in the
+limit 𝛼 → 𝑑 + the spectral dimension (12) diverges: In this
+limit, in fact, the power-law tunneling becomes sufficiently
+long-ranged to mimic a globally connected graph with 𝛼 = 0.
+In contrast, at 𝛼 = 𝑑 + 2 we obtain 𝑑 𝑠 = 𝑑, and the effective
+dimension 𝐷 reduces to the real spatial dimension 𝑑.
+
+IV.
+
+EXPERIMENTAL IMPLEMENTATIONS
+
+The relations of Sec. III have practical implications on identifying physical platforms for analog quantum searches. In fact,
+𝑋𝑌 Hamiltonians are simulated by arrays of Rydberg atoms
+[40, 41]. Spin models with long-range coupling coefficients
+are being realized in chains of trapped ions [42–44], as well
+as in ultracold atoms in optical cavities [45]. Individual atom
+addressing permits to ‘tag’ a target qubit and to perform local
+measurements [23, 44, 46, 47]. Our work demonstrates that
+these platforms can realize an efficient analog quantum search
+provided that the spatial dimensionality of the lattice satisfies
+the relation 𝛼 < 3𝑑/2 ≤ 6. For instance, Rydberg interactions
+(𝛼 = 6) [40, 46] might realize an efficient analog search provided that the lattice geometry has the same connectivity as a
+hypercube in four dimensions. Figure 4, moreover, suggests
+that a quantum advantage can be reached for databases of finite
+size. For dipolar interactions Grover’s time complexity can be
+reached in a simple-cubic lattice in three dimensions [48, 49],
+while any scalable Coulomb crystalline structure, from three
+dimensions down to the Coulomb chain [50, 51], can warrant
+Grover’s optimum. In light of the fact that in certain platforms
+the interaction exponent is tunable [44, 45], one could perform
+a constrained optimization of exponent and lattice dimensionality (12) taking into account the experimental overhead.
+
+V.
+
+OUTLOOK
+
+In this work, we have determined the time complexity of
+quantum searches on a lattice with long-range tunneling. We
+have considered tunneling amplitudes scaling with the distance 𝑟 as 1/𝑟 𝛼 and identified the relation between exponent
+𝛼 and dimensionality 𝑑 for which Grover optimal scaling is
+achieved, 𝛼 ≤ 3𝑑/2. We have focused here on lattices with
+cubic geometries, however, we anticipate the bound 𝑑 𝑠 = 4
+to apply more generally to other search spaces. The results
+could also be further extended to search on fractals, where it
+has been conjectured that the spectral dimension, as opposed
+to the fractal dimension, is the appropriate metric to quantify
+the search’s optimality [52–54].
+From a broader perspective, this study brings to the fore
+the tight connection between criticality and quantum search
+algorithms. A key concept is the spectral dimension 𝑑 𝑠 : The
+value 𝑑 𝑠 = 4 is the upper critical dimension of the localizedextended quantum phase transition and of the dynamical phase
+transition to the quadratic scaling of Grover’s optimum. The
+critical exponent 𝛼𝑐 = 3𝑑/2 separates an ergodic to a localized
+phase. Since the spectral dimension 𝑑 𝑠 has been conjectured to
+govern universality in non-homogeneous systems [36, 55, 56],
+this study can additionally offer valuable insights into search
+optimality on diverse structures. One interesting question is
+whether similar critical behavior appears in other complexity measures, such as Solomonoff Kolmogorov Chaitin (SKC)
+complexity, which quantifies the shortest algorithmic description of a problem [57–59]. A highly compressible search
+space with structured spectral properties (low SKC complexity) may correspond to more efficient quantum evolution and
+faster search times.
+These concepts could be key for other kinds of dynamics
+based on quantum searches, such as optimization problems
+like, for instance, active learning agents [60]. Our insights
+allows to quantitatively assess the resources that long-range
+interactions offer for quantum search algorithms, and might
+provide a key to determine the resource they can offer for
+quantum information processing and quantum technologies in
+general [20, 31].
+
+6
+ACKNOWLEDGMENTS
+
+E.C.K. and G.M. acknowledge helpful discussions with
+Markus Bläser on the algebraic connectivity of graphs and
+on time complexity of quantum algorithms. This work was
+funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation)—Project-ID 429529648-TRR306
+QuCoLiMa (“Quantum Cooperativity of Light and Matter”) and the QuantERA project “QNet: Quantum transport, metastability, and neuromorphic applications in Quantum
+Networks”—Project ID 532771420, by the German Ministry
+of Education and Research (BMBF) via the Project NiQ (Noise
+in Quantum Algorithms), and the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under
+Germany’s Excellence Strategy—EXC 2004/1-390534769—
+Cluster of Excellence ML4Q (“Matter and Light for Quantum
+Computing”). This research was supported in part by the National Science Foundation Grants No. NSF PHY-1748958 and
+No. NSF PHY-2309135 to the Kavli Institute for Theoretical
+Physics (KITP).
+
+DATA AVAILABILITY
+
+Some of the data that support the findings of this article
+are openly available [61]. All other data is such that it is
+interoperable and reusable.
+
+APPENDIX A: ASYMPTOTIC SCALING OF THE
+LAPLACIAN SPECTRAL GAP
+
+
+The asymptotic scaling of the spectral gap Δ 𝛼 = E 𝛼 ( 𝑘®1 ) −
+
+® /E 𝛼 ( 𝑘®max ) of the rescaled Laplacian is reported in
+E 𝛼 ( 0)
+Eq. (11). Here we provide analytic expressions for the
+(𝑑)
+prefactors C𝑖=1,2
+(𝛼) for 𝑑 = 1, . . . , 4, and compare the re® =
+sults with exact numeric data. First, note that E 𝛼 ( 𝑘)
+Í
+𝛼
+cos( 𝑘® · 𝑗®)/| 𝑗®| − 𝜀 0 is the eigenenergy of the Laplacian
+𝑗®≠®0
+Í
+𝐿 𝛼 in the unscaled framework, with 𝜀 0 = 𝑗®≠0 1/| 𝑗®| 𝛼 −E 𝛼 ( ®0)
+®
+a constant energy shift. The
+√ momentum vector 𝑘 max is defined
+by its magnitude | 𝑘®max | = 𝑑𝜋. It follows that
+𝛿𝛼
+Δ𝛼 =
+=
+E 𝛼 ( 𝑘®max )
+
+Í
+
+®
+
+®
+
+® 𝛼 − 𝜅0
+
+𝑗®≠0 cos( 𝑘 1 · 𝑗 )/| 𝑗 |
+
+E 𝛼 ( 𝑘®max )
+
+,
+
+text and describes the shortest distance between the two vertices. Since all norms in finite-dimensional spaces are equivalent, we can make a statement about the scaling and prefactor of the spectral gap independent of the norm that is chosen. To make this more concrete, using the Cauchy-Schwarz
+and Hölder’s inequality, we find the relation between 𝑝-norms
+as || 𝑥®|| 𝑝 ≤ || 𝑥®|| 𝑟 ≤ 𝑑 1/𝑟 −1/ 𝑝 || 𝑥®|| 𝑝 , 0 < 𝑟 < 𝑝. Therefore,
+√
+| 𝑗®| ≤ || 𝑗®|| 1 ≤ 𝑑| 𝑗®|, and the scaling of the spectral gap (A.1)
+is evidently unaffected by the choice of norm. We proceed
+(𝑑)
+by using the Manhattan norm. Constants C𝑖=1,2
+(𝛼) reported
+in Table II are accurate up to a factor C ∈ [1, 𝑑 𝛼/2 ] when
+implementing the Euclidean norm.
+In Table I we summarize the large-𝑁 asymptotic results for
+𝛿 𝛼 and E 𝛼 ( 𝑘®max ) of Eq. (A.1), with detailed derivations and
+numeric checks provided in Sec. B. With these results, we
+extract the scaling behavior with 𝑁 of the spectral gap. Two
+regimes need to be considered: 𝛼 < 𝑑 and 𝑑 < 𝛼 < 𝑑 + 2.
+For 𝛼 < 𝑑, both the numerator and denominator of Eq. (A.1)
+diverge in the limit 𝑁 → ∞. Applying l’Hôpital’s rule, we
+evaluate the 𝑁 → ∞ limit. Previously of an indeterminate
+form, the asymptotic limit of the spectral gap is converted into
+a limit that can be evaluated directly. This leads to explicit
+analytic expressions for the constants C1(𝑑) (𝛼) of the main
+text, all of which are independent of 𝑁, see Eqs. (A.15), (A.17),
+(A.19) and (A.21) of Table II.
+To extract the scaling in the regime 𝑑 < 𝛼 < 𝑑 +2 we require
+a different approach. Note that for 𝛼 > 𝑑 the term scaling as
+∼ 𝑁 1− 𝛼/𝑑 in 𝜅 0 asymptotically satisfies 𝑐𝑁 1− 𝛼/𝑑 ≪ 1, with 𝑐
+an 𝛼-dependent prefactor, as reported in Table I (see Eqs. (A.5),
+(A.8), (A.11), and (A.14)). Defining 𝑥 ≡ 𝑐𝑁 1− 𝛼/𝑑 , we expand
+the spectral gap (A.1) around 𝑥 = 0. Generically, the spectral
+𝑓 ( 𝛼, 𝑁 )
+gap (A.1) written in terms of 𝑥 takes the form Δ 𝛼 ≈ 𝑥+𝑥+𝑔(
+𝛼) ,
+with 𝑓 (𝛼, 𝑁) ∼ 𝑁 1− 𝛼/𝑑 and 𝑔(𝛼) simply an 𝛼-dependent
+constant. Performing now the small-𝑥 expansion, we obtain
+Δ𝛼 ≈
+
+𝑓
+(𝑔 − 𝑓 )
+𝑥 + O (𝑥 2 ) ,
++
+𝑔
+𝑔2
+
+(A.2)
+
+where the first term 𝑓 /𝑔 is the leading-order contribution.
+From Table I we insert the appropriate functions 𝑓 (𝛼, 𝑁) and
+𝑔(𝛼), leading to the asymptotic results for the spectral gap,
+Δ 𝛼 ≈ 𝑓 /𝑔. These results give the analytic expressions for the
+prefactors C2(𝑑) (𝛼) of the main text, see Eqs. (A.16), (A.18),
+(A.20) and (A.22) of Table II.
+
+(A.1)
+
+where 𝛿 𝛼 ≡ E 𝛼 ( 𝑘®1 ) − E 𝛼 ( ®0) and 𝜅0 ≡ 𝜀0 + E 𝛼 ( ®0). The
+scaling behavior of Δ 𝛼 is determined by analyzing the numerator and denominator of Eq. (A.1) independently. To make
+the calculations analytically tractable, we describe the distance between the hypercube graph vertices using the Man
+Í𝑑
+𝑝 1/ 𝑝 with 𝑝 = 1.
+hattan norm, a 𝑝-norm || 𝑥®|| 𝑝 =
+𝑖=1 |𝑥 𝑖 |
+This gives the length of the shortest path constrained to move
+along the graph’s edges (i.e. a “grid distance”), compared to
+the Euclidean norm | 𝑥®| ≡ || 𝑥®|| 2 which was used in the main
+
+To benchmark our analytic results for the spectral gap,
+see Table II, we perform comparisons with exact numeric
+results, refer to Figs. A.1–A.4. In all cases, subfigure (a)
+demonstrates the agreement between the analytic spectral gap
+Δ 𝛼 ≈ 1 − C1(𝑑) (𝛼) with 𝛼 ∈ [0, 𝑑) and the exact numeric
+results. Close to the transition point 𝛼 ≈ 𝑑, finite-size effects
+become apparent and the accuracy of our analytic approximations deteriorates. To recover the analytic behavior of the gap
+in the limits 𝛼 → 𝑑 + and 𝛼 → 𝑑 − , system sizes exceeding
+those that are numerically tractable would be required. In subfigure (b), we provide comparisons for the second asymptotic
+
+7
+
+TABLE I. Asymptotic scaling of the (unscaled) spectral gap 𝛿 𝛼 , the largest eigenenergy E 𝛼 ( 𝑘®max ) for normalization, and the energy shift
+𝜅0 ≡ 𝜀0 + E 𝛼 ( ®0). Results are reported for 𝑑 ∈ [1, 4] and 𝛼 < 𝑑 + 2 to leading-order in 𝑁, with sub-dominant contributions of order
+O (𝑁 1−1/𝑑− 𝛼/𝑑 ) being neglected. For compactness, we introduced the following 𝑁-independent function: K𝑛 (𝑧) ≡ 𝐸 𝑛 (𝑖𝜋𝑧) + 𝐸 𝑛 (−𝑖𝜋𝑧),
+where 𝐸 𝑛 (𝑥) is the exponential integral function. Note that 𝜁 (𝑠), Γ(𝑠) and 𝑝 𝐹𝑞 (𝑎; 𝑏; 𝑧) denote the Riemann 𝜁 function, Γ function and
+generalized hypergeometric function, respectively. For 𝛼 > 𝑑 + 2 the well-established asymptotic scaling of the gap 𝛿 𝛼 ∼ 𝑁 −2/𝑑 is recovered
+and is not reported in this table.
+Dimension 𝑑 = 1
+
+𝛼<3
+
+Unscaled spectral gap:
+𝛿 𝛼 ≈ −𝜅0 + 2𝜁 (𝛼) + 2 𝛼 𝜋 𝛼−1 sin
+Largest eigenenergy:
+
+2
+
+Γ(1 − 𝛼) 𝑁 1− 𝛼
+
+E 𝛼 (𝑘 max ) ≈ −𝜀0 + (22− 𝛼 − 2)𝜁 (𝛼)
+
+Constant energy shift:
+𝜅0 ≈ 2𝜁 (𝛼) +
+
+−2 𝛼 1− 𝛼
+𝑁
+𝛼−1
+
+Unscaled spectral gap:
+"
+𝛿 𝛼 ≈ −𝜅0 + 4𝜁 (𝛼 − 1) −
+
+
+
+2
+
+2 𝛼 1 𝐹2 2−2 𝛼 ; 12 , 4−2 𝛼 ; − 𝜋4
+(𝛼 − 2)(𝛼 − 1)
+
+
+
+#
+2K 𝛼−1 (2) − 2 𝛼−1 K 𝛼−1 (1) 1− 𝛼/2
++
+𝑁
+(𝛼 − 1)
+
+(A.8)
+
+𝛼 < 5 (𝛼 ≠ 1, 2)
+
+Unscaled spectral gap:
+"
+𝛿 𝛼 ≈ − 𝜅 0 + 4𝜁 (𝛼 − 2) + 2𝜁 (𝛼) + −
+
+
+
+2
+2 𝛼 1 𝐹2 3−2 𝛼 ; 12 , 5−2 𝛼 ; − 𝜋4
+(𝛼 − 3)(𝛼 − 2)(𝛼 − 1)
+#
+2 𝛼 K 𝛼−2 (1) − 4K 𝛼−2 (2) − 2 𝛼−1 33− 𝛼 K 𝛼−2 (3) 1− 𝛼/3
+𝑁
++
+(𝛼 − 2)(𝛼 − 1)
+
+E 𝛼 ( 𝑘®max ) ≈ −𝜀0 + (25− 𝛼 − 4)𝜁 (𝛼 − 2) + (22− 𝛼 − 2)𝜁 (𝛼)
+
+Constant energy shift:
+𝜅 0 ≈ 4𝜁 (𝛼 − 2) + 2𝜁 (𝛼) −
+
+31− 𝛼 (9(2 𝛼 ) − 8(3 𝛼 ) + 6 𝛼 ) 1− 𝛼/3
+𝑁
+(𝛼 − 3)(𝛼 − 2)(𝛼 − 1)
+
+(A.9)
+
+(A.10)
+
+(A.11)
+
+𝛼 < 6 (𝛼 ≠ 1, 2, 3)
+
+Dimension 𝑑 = 4
+
+
+
+2
+" 𝛼
+2 1 𝐹2 4−2 𝛼 ; 12 , 6−2 𝛼 ; − 𝜋4
+8
+16
+𝛿 𝛼 ≈ − 𝜅 0 + 𝜁 (𝛼 − 3) +
+𝜁 (𝛼 − 1) −
+3
+3
+(𝛼 − 4)(𝛼 − 3)(𝛼 − 2)(𝛼 − 1)
+#
+3 · 2 𝛼−1 K 𝛼−3 (1) − 2 𝛼 34− 𝛼 K 𝛼−3 (3) − 27− 𝛼 K 𝛼−3 (4) 1− 𝛼/4
+−
+𝑁
+(𝛼 − 3)(𝛼 − 2)(𝛼 − 1)
+
+
+1  7− 𝛼
+1
+2
+− 23 𝜁 (𝛼 − 3) + 26− 𝛼 − 24 𝜁 (𝛼 − 1)
+3
+3
+
+4 −26− 𝛼 + 2 𝛼 + 2 𝛼 34− 𝛼 − 24 1− 𝛼/4
+8
+16
+𝜅0 ≈ 𝜁 (𝛼 − 3) +
+𝜁 (𝛼 − 1) −
+𝑁
+3
+3
+(𝛼 − 4)(𝛼 − 3)(𝛼 − 2)(𝛼 − 1)
+E 𝛼 ( 𝑘®max ) ≈ −𝜀0 +
+
+Constant energy shift:
+
+(A.6)
+
+4 − 2 𝛼+1
+𝑁 1− 𝛼/2
+(𝛼 − 2)(𝛼 − 1)
+
+Dimension 𝑑 = 3
+
+Largest eigenenergy:
+
+(A.5)
+
+(A.7)
+
+𝜅0 ≈ 4𝜁 (𝛼 − 1) +
+
+Unscaled spectral gap:
+
+(A.4)
+
+E 𝛼 ( 𝑘®max ) ≈ −𝜀0 + (24− 𝛼 − 4)𝜁 (𝛼 − 1)
+
+Constant energy shift:
+
+Largest eigenenergy:
+
+(A.3)
+
+𝛼 < 4 (𝛼 ≠ 1)
+
+Dimension 𝑑 = 2
+
+Largest eigenenergy:
+
+ 𝜋𝛼 
+
+(A.12)
+
+(A.13)
+
+(A.14)
+
+8
+(𝑑)
+TABLE II. Analytic expressions for the constants C𝑖=1,2
+(𝛼) appearing in the asymptotic scaling of the spectral gap: Δ 𝛼 ≈ 1 − C1(𝑑) (𝛼), 𝛼 ∈
+
+[0, 𝑑), and Δ 𝛼 ≈ C2(𝑑) (𝛼)𝑁 1− 𝛼/𝑑 , 𝛼 ∈ (𝑑, 𝑑 + 2); see Eq. (11) of the main text. For compactness, we introduced the following 𝑁independent functions: ℎ(𝛼) = (22− 𝛼 − 4)𝜁 (𝛼), 𝑓 (𝛼) = (24− 𝛼 − 8)𝜁 (𝛼 − 1), 𝑔(𝛼) = (25− 𝛼 − 8)𝜁 (𝛼 − 2) + (22− 𝛼 − 4)𝜁 (𝛼), 𝑗 (𝛼) =
+−3−1 24− 𝛼 ((2 𝛼 − 8) 𝜁 (𝛼 − 3) + 2 (2 𝛼 − 2) 𝜁 (𝛼 − 1)), and K𝑛 (𝑧) ≡ 𝐸 𝑛 (𝑖𝜋𝑧) + 𝐸 𝑛 (−𝑖𝜋𝑧), where 𝜁 (𝑠) is the Riemann 𝜁 function and 𝐸 𝑛 (𝑥) is
+the exponential integral function. The notation Γ(𝑠) and 𝑝 𝐹𝑞 (𝑎; 𝑏; 𝑧) is used to denote the Γ function and generalized hypergeometric function,
+(𝑑)
+respectively. Constants C𝑖=1,2
+(𝛼) are exact (asymptotically) for 𝑑 = 1, and accurate up to a factor C ∈ [1, 𝑑 𝛼/2 ] for 𝑑 = 2, 3, 4.
+Dimension 𝑑 = 1
+
+Dimension 𝑑 = 1
+
+𝛼<1
+
+C1(1) (𝛼) = (1 − 𝛼)𝜋 𝛼−1 sin
+
+Dimension 𝑑 = 2
+
+1 𝐹2
+
+
+
+
+
+C2(1) (𝛼) =
+
+2 𝛼 𝜋 𝛼−1 (𝛼 − 1) sin(𝜋𝛼/2)Γ(1 − 𝛼) + 2 𝛼
+ℎ(𝛼) (𝛼 − 1)
+
+
+C2(2) (𝛼) =
+(A.17)
+
+
+
+(A.16)
+
+2<𝛼<4
+
+3<𝛼<5
+
+
+
+2
+"
+2 𝛼 1 𝐹2 3−2 𝛼 ; 12 , 5−2 𝛼 ; − 𝜋4
+1
+C2(3) (𝛼) =
+−
+𝑔(𝛼)
+(𝛼 − 3)(𝛼 − 2)(𝛼 − 1)
+
+
+− (𝛼 − 3)
+
+2 𝛼+1 K 𝛼−2 (1) − 8K 𝛼−2 (2) − 2 𝛼 33− 𝛼 K 𝛼−2 (3)
+
+6 32− 𝛼 2 𝛼 + 2 𝛼 − 8
+(A.19)
+
+2 𝛼 K 𝛼−2 (1) − 4K 𝛼−2 (2) − 2 𝛼−1 33− 𝛼 K 𝛼−2 (3)
+(𝛼 − 2)(𝛼 − 1)
+#
+1−
+𝛼
+𝛼
+3
+(9(2 ) − 8(3 𝛼 ) + 6 𝛼 )
++
+(𝛼 − 3)(𝛼 − 2)(𝛼 − 1)
+(A.20)
++
+
+Dimension 𝑑 = 4
+
+𝛼<4
+
+
+
+2
+2−2 1 𝐹2 4−2 𝛼 ; 12 , 6−2 𝛼 ; − 𝜋4
+
+−3 2 𝛼+3 + 4 𝛼 − 64 4− 𝛼 + 34− 𝛼
+3 4 𝛼 (𝛼 − 4) (K 𝛼−3 (1) − 54 3− 𝛼 K 𝛼−3 (3))
+
+−
+8 −3 2 𝛼+3 + 4 𝛼 − 43 + 34− 𝛼 4 𝛼
+
+
+
+"
+1
+2 𝛼+1 − 4
+2K 𝛼−1 (2) − 2 𝛼−1 K 𝛼−1 (1)
+−
+𝑓 (𝛼) (𝛼 − 2)(𝛼 − 1)
+(𝛼 − 1)
+
+
+2 #
+2 𝛼 1 𝐹2 2−2 𝛼 ; 12 , 4−2 𝛼 ; − 𝜋4
+−
+(𝛼 − 2)(𝛼 − 1)
+(A.18)
+
+Dimension 𝑑 = 3
+
+𝜋2
+3− 𝛼 1 5− 𝛼
+2 ; 2, 2 ;− 4
+
+3 32− 𝛼 − 23− 𝛼 + 1
+
+Dimension 𝑑 = 4
+
+C1(4) (𝛼) =
+
+2− 𝛼 1 4− 𝛼
+𝜋2
+2 ; 2, 2 ;− 4
+
+𝛼<3
+
+1 𝐹2
+
+×
+
+(A.15)
+
+Dimension 𝑑 = 2
+
+2 − 22− 𝛼
+(𝛼 − 2)K 𝛼−1 (2) (𝛼 − 2)K 𝛼−1 (1)
+−
++
+2 − 2𝛼
+23− 𝛼 − 4
+
+Dimension 𝑑 = 3
+
+C1(3) (𝛼) =
+
+2
+
+Γ(1 − 𝛼)
+
+𝛼<2
+
+
+C1(2) (𝛼) =
+
+ 𝜋𝛼 
+
+1<𝛼<3
+
+C2(4) (𝛼) =
+
+4<𝛼<6
+
+
+
+2
+"
+2 𝛼 1 𝐹2 4−2 𝛼 ; 21 , 6−2 𝛼 ; − 𝜋4
+1
+−
+𝑗 (𝛼)
+(𝛼 − 4)(𝛼 − 3)(𝛼 − 2)(𝛼 − 1)
+
+28 (𝛼 − 4)K 𝛼−3 (4)
+
++
+8 −3 2 𝛼+3 + 4 𝛼 − 43 + 34− 𝛼 4 𝛼
+
+3 2 𝛼−1 K 𝛼−3 (1)
+(𝛼 − 3)(𝛼 − 2)(𝛼 − 1)
+6− 𝛼 (81 4 𝛼 K 𝛼−3 (3) + 128 3 𝛼 K 𝛼−3 (4))
+−
+(𝛼 − 3)(𝛼 − 2)(𝛼 − 1)
+#
+6−
+𝛼
+4 −2
++ 2 𝛼 + 2 𝛼 34− 𝛼 − 24
++
+(𝛼 − 4)(𝛼 − 3)(𝛼 − 2)(𝛼 − 1)
+
+regime, 𝛼 ∈ (𝑑, 𝑑 + 2). Overall, good agreement is observed
+between analytic and numeric results. As before, toward the
+edges of this region in 𝛼 we observe deviations from the analytic predictions. We expect these errors to decrease with
+
+increasing 𝑁, see subfigures (c). Figures A.1–A.4 indicate
+that the asymptotic results of the main text, together with the
+constants of Table II, provide a realistic, quantitative description of Δ 𝛼 in the large-𝑁 limit.
+
+(A.21)
+
++
+
+(A.22)
+
+9
+
+(a)
+
+(b)
+
+(c)
+
+FIG. A.1. Spectral gap Δ 𝛼 of a one-dimensional hypercube as a function of (a) the power-law exponent 𝛼 ∈ [0, 1), (b) the power-law exponent
+𝛼 ∈ (1, 3), and (c) the system size 𝑁, i.e. the number of vertices in the hypercube graph. Data points correspond to exact numeric results, while
+(1)
+solid curves represent the asymptotic results in Eq. (11), with the constants C𝑖=1,2
+defined in Table II, see Eqs. (A.15) and (A.16).
+
+(a)
+
+(b)
+
+(c)
+
+FIG. A.2. Spectral gap Δ 𝛼 of a two-dimensional hypercubic lattice as a function of (a) the power-law exponent 𝛼 ∈ [0, 2), (b) the power-law
+exponent 𝛼 ∈ (2, 4), and (c) the system size 𝑛 = 𝑁 1/2 , i.e. the number of vertices along each dimension in the hypercube graph. Data points
+(2)
+correspond to exact numeric results, while solid curves represent the asymptotic results in Eq. (11) of the main text, with the constants C𝑖=1,2
+defined in Table II, see Eqs. (A.17) and (A.18).
+
+(a)
+
+(b)
+
+(c)
+
+FIG. A.3. Spectral gap Δ 𝛼 of a three-dimensional hypercube as a function of (a) the power-law exponent 𝛼 ∈ [0, 3), (b) the power-law exponent
+𝛼 ∈ (3, 5), and (c) the system size 𝑛 = 𝑁 1/3 , i.e. the number of vertices along each dimension in the hypercube graph. Data points correspond
+(3)
+to exact numeric results, while solid curves represent the asymptotic results in Eq. (11) of the main text, with the constants C𝑖=1,2
+defined in
+Table II, see Eqs. (A.19) and (A.20).
+
+(a)
+
+(b)
+
+(c)
+
+FIG. A.4. Spectral gap Δ 𝛼 of a four-dimensional hypercube as a function of (a) the power-law exponent 𝛼 ∈ [0, 4), (b) the power-law exponent
+𝛼 ∈ (4, 6), and (c) the system size 𝑛 = 𝑁 1/4 , i.e. the number of vertices along each dimension in the hypercube graph. Data points correspond
+(3)
+to exact numeric results, while solid curves represent the asymptotic results in Eq. (11) of the main text, with the constants C𝑖=1,2
+defined in
+Table II, see Eqs. (A.21) and (A.22).
+
+10
+APPENDIX B: DETAILED DERIVATIONS OF 𝛿 𝛼 AND E 𝛼 ( 𝑘®max )
+
+Here, we provide in-depth calculations of the spectral gap scaling with 𝑁, see Sec. A for the final results. For clarity, we
+separate the computations according to the hypercubic lattice dimension, with each subsection, B 1–B 4, containing derivations
+for the constant energy shift 𝜅0 , the unscaled spectral gap 𝛿 𝛼 , and the eigenenergy E 𝛼 ( 𝑘®max ) with the largest magnitude. For
+our analysis we assume, without loss of generality, that lattices comprise an even number of sites in each dimension,
+Í such that
+−𝜂
+𝑛 = 𝑁 1/𝑑 ∈ {2𝑥 | 𝑥 ∈ N}, and we drop the 𝛼 subscript for convenience. Moreover, the Hurwitz 𝜁 function 𝜁 (𝜂, 𝑥) = ∞
+𝑛=0 (𝑛+𝑥)
+for Re(𝜂) > 1, and extended by analytic continuation to other 𝜂 ≠ 1, will be of central importance [62]. For future reference, we
+state its large-𝑥 asymptotic series expansion here [63]:
+𝜁 (𝜂, 𝑥) ∼
+
+𝑥 − 𝜂 𝑥 1− 𝜂
++
++ O (𝑥 −1− 𝜂 ) ,
+2
+𝜂−1
+
+(B.1)
+
+where 𝜂 ≠ 1 and 𝑥 ≫ 1. Finally, note that we use the Manhattan norm in all the derivations of this section. Refer to Sec. A for a
+detailed discussion on this matter.
+1.
+
+One-dimensional hypercube (𝑑 = 1)
+
+Constant energy shift. The energy shift 𝜅 0 is expressed as
+𝜅0 =
+
+𝑁 /2
+∑︁
+
+| 𝑗 |− 𝛼 = 2
+
+𝑗=− 𝑁 /2+1;
+𝑗≠0
+
+𝑁 /2
+∑︁
+𝑗=1
+
+𝑗 −𝛼 −
+
+
+
+𝑁
+2
+
+−𝛼
+
+( 𝛼)
+− 2𝛼 𝑁 − 𝛼 ,
+= 2𝐻 𝑁
+/2
+
+(B.2)
+
+Í𝑁
+(𝑟 )
+where 𝐻 𝑁
+= 𝑖=1
+1/𝑖 𝑟 is the harmonic number of order 𝑟 [62]. For 𝛼 ≠ 1, the harmonic number in Eq. (B.2) can be
+recast in terms of the Hurwitz and Riemann 𝜁 functions, leading to 𝜅0 = 2𝜁 (𝛼) − 2𝜁 (𝛼, 𝑁/2 + 1) − 2 𝛼 𝑁 − 𝛼 . Asymptotically
+𝜁 (𝛼, 𝑁/2 + 1) ≈ 𝜁 (𝛼, 𝑁/2), and we use the series expansion of the Hurwitz 𝜁 function, Eq. (B.1), to extract the asymptotic
+behavior of 𝜅0 to leading order:
+2𝛼
+𝑁 1− 𝛼 + O (𝑁 − 𝛼 ) .
+(B.3)
+𝛼−1
+For 𝛼 > 1, the 𝑁-dependent terms decay as a power-law, approaching zero for large 𝑁, and 𝜅 0 thus tends toward the real scalar
+value 2𝜁 (𝛼). In contrast, for 𝛼 < 1, 𝜅0 will scale as ∼ 𝑁 1− 𝛼 . This behavior is depicted in Fig. B.1(a), together with the absolute
+percentage deviation (APD) of approximation (B.3).
+𝜅0 ≈ 2𝜁 (𝛼) −
+
+Scaling of 𝜹 and E( 𝒌® max ). A rigorous treatment of 𝛿 and E ( 𝑘®max ) is provided in the Supplementary Material of Ref. [22].
+Following their approach, we recover the asymptotic expressions to leading-order as
+∞
+ 𝜋𝛼 
+∑︁
+𝜁 (𝛼 − 2 𝑗)
+𝛿 ≈ −𝜅0 + 2𝜁 (𝛼) + 2 𝛼 𝜋 𝛼−1 sin
+Γ(1 − 𝛼)𝑁 1− 𝛼 + 2
+(2𝜋𝑖) 2 𝑗 𝑁 −2 𝑗 , E ( 𝑘®max ) ≈ −𝜀0 + (22− 𝛼 − 2)𝜁 (𝛼) , (B.4)
+2
+(2
+𝑗)!
+𝑗=1
+provided 𝑁 ≫ 1. The accuracy of these expressions is assessed through a comparison to exact numeric results, see Fig. B.1.
+
+(a)
+
+(b)
+
+(c)
+
+FIG. B.1. (a) Comparison of the exact numeric value (solid curve) of 𝜅 0 (B.2) with the asymptotic result (B.3) (dashed). Inset shows the
+absolute percentage deviation, APD = 100 × |(E − A)/E|, of the asymptotic result 𝐴 from the exact result 𝐸 as a function of 𝛼. We set 𝑁 = 100.
+(b) Scaling of the spectral gap 𝛿 (B.4) (solid curves) with 𝑁, and a comparison to exact numeric results (data points). (c) A comparison between
+analytic (B.4) (solid curves) and exact numeric results (data points) for E ( 𝑘®max ). In both (b) and (c) dashed horizontal lines represent the case
+of nearest-neighbor hopping (𝛼 → ∞).
+
+11
+2.
+
+Two-dimensional hypercube (𝑑 = 2)
+
+Constant energy shift. For the two-dimensional hypercubic lattice, 𝜅 0 is defined as
+𝜅0 =
+
+∑︁
+
+1/|| 𝑗®|| 1𝛼 =
+
+𝑛/2
+∑︁
+
+(| 𝑗 1 | + | 𝑗 2 |) − 𝛼 ,
+
+(B.5)
+
+𝑗1 , 𝑗2 =−𝑛/2+1;
+| 𝑗1 |+| 𝑗2 |≠0
+
+𝑗®≠®0
+
+where || . . . || 1 denotes the Manhattan norm (geodesic/shortest-path distance), 𝑛 = 𝑁 1/𝑑 and 𝑗® ≡ ( 𝑗 1 , 𝑗2 ). Equation (B.5) can be
+recast into the following equivalent form:
+𝑛/2−1
+∑︁ 
+
+
+
+𝜅0 = 1 + 21+𝛼 (𝑛 − 1) 𝑛 − 𝛼 +
+4 𝑗 1− 𝛼 + 4 𝑗 (𝑛 − 𝑗) − 𝛼 ,
+
+(B.6)
+
+𝑗=1
+
+which is amenable to an asymptotic analysis. The leading-order contribution of the first term is O (𝑛1− 𝛼 ). To understand the
+limiting behavior of the second term of Eq. (B.6) as 𝑛 → ∞, we express the summations in terms of the Hurwitz 𝜁 function
+𝜁 (𝜂, 𝑥), and then use the asymptotic series expansion of Eq. (B.1). After some algebra, we obtain
+𝑛/2−1
+∑︁
+
+4 𝑗 1− 𝛼 = 4
+
+𝑗=1
+
+∞
+∑︁
+
+𝑗 1− 𝛼 −4
+
+𝑗=1
+
+𝑛/2−1
+∑︁
+𝑗=1
+
+∞
+∑︁
+
+( 𝑗 +𝑛/2) 1− 𝛼 = 4𝜁 (𝛼 −1) −4𝜁 (𝛼 −1, 𝑛/2) ≈ 4𝜁 (𝛼 −1) −2 𝛼 𝑛1− 𝛼 −
+
+𝑗=0
+
+4 𝑗 (𝑛 − 𝑗) − 𝛼 = 4
+
+𝑛−1
+∑︁
+𝑗=𝑛/2+1
+
+
+
+2 𝛼 2− 𝛼
+𝑛
++ O (𝑛 − 𝛼 ) , (B.7)
+𝛼−2
+
+
+i
+h 
+
+i
+h  𝑛
+
+𝑛
+𝑛 𝑗 − 𝛼 − 𝑗 1− 𝛼 = 4𝑛 𝜁 𝛼, + 1 − 𝜁 (𝛼, 𝑛) − 4 𝜁 𝛼 − 1, + 1 − 𝜁 (𝛼 − 1, 𝑛)
+2
+2
+≈ 2 𝛼 𝑛1− 𝛼 +
+
+(B.8)
+
+2 𝛼 (𝛼 − 3) + 4 2− 𝛼
+𝑛
++ O (𝑛 − 𝛼 ) .
+(𝛼 − 2) (𝛼 − 1)
+
+Substituting the results of Eqs. (B.7) and (B.8) into Eq. (B.6) leads to
+𝜅 0 ≈ 4𝜁 (𝛼 − 1) +
+
+4 − 2 𝛼+1
+𝑛2− 𝛼 + O (𝑛1− 𝛼 ) .
+(𝛼 − 2) (𝛼 − 1)
+
+(B.9)
+
+As observed for the one-dimensional case in Sec. B 1, there are two important regimes: (i) When 𝛼 < 2, the 𝑛-dependent term
+dominates such that 𝜅 0 ∼ 𝑛2− 𝛼 , and (ii) for 𝛼 > 2, 𝜅0 is approximated by the real constant 4𝜁 (𝛼 − 1). Due to the suppression
+of contributions from the terms scaling as ∼ 𝑛 𝑥 , 𝑥 < 0, this approximation improves as 𝑛 becomes larger. The accuracy of the
+asymptotic result (B.9) is assessed in Fig. B.2(a).
+Scaling of 𝜹 and E( 𝒌® max ). By definition, the unscaled spectral gap is
+𝛿 = −𝜅0 +
+
+∑︁
+
+cos( 𝑘®1 · 𝑗®)/|| 𝑗®|| 1𝛼 = −𝜅0 +
+
+𝑗®≠0®
+
+(a)
+
+𝑛/2
+∑︁
+
+(| 𝑗1 | + | 𝑗 2 |) − 𝛼 cos (2𝜋 𝑗 1 /𝑛) ,
+
+(B.10)
+
+𝑗1 , 𝑗2 =−𝑛/2+1;
+| 𝑗1 |+| 𝑗2 |≠0
+
+(b)
+
+(c)
+
+FIG. B.2. (a) Comparison of the exact numeric value (solid curve) of 𝜅 0 (B.5) with the asymptotic result (B.9) (dashed). Inset shows the
+absolute percentage deviation, APD = 100 × |(E − A)/E|, of the asymptotic result 𝐴 from the exact result 𝐸 as a function of 𝛼. We set
+𝑛 = 𝑁 1/𝑑 = 40. (b) Scaling of the spectral gap 𝛿 (A.6) (solid curves) with 𝑛, and a comparison to exact numeric results (data points). (c) A
+comparison between analytic (A.7) (solid curves) and exact numeric results (data points) for E ( 𝑘®max ). In both (b) and (c) dashed horizontal
+lines represent the case of nearest-neighbor hopping (𝛼 → ∞).
+
+12
+which can be written in the equivalent form:
+𝛿 = −𝜅0 + 4
+
+𝑛/2
+𝑛/2 
+𝑛/2
+𝑛/2
+𝑛/2
+−𝛼
+∑︁
+∑︁
+∑︁
+∑︁
+∑︁
+𝑛
+cos (2𝜋 𝑗1 /𝑛)
+cos (2𝜋 𝑗1 /𝑛)
+cos (2𝜋 𝑗1 /𝑛)
+−𝛼
++
+2
+𝑗
++
+2
+−
++
+𝑗
++
+𝛼
+2
+2
+𝛼
+𝛼
+(
+𝑗
++
+𝑗
+)
+2
+|
+𝑗
+|
+| 𝑗 1 | + 𝑛2
+1
+2
+1
+𝑗2 =1
+𝑗2 =1
+𝑗1 , 𝑗2 =1
+𝑗 =−𝑛/2+1;
+𝑗 =−𝑛/2+1;
+1
+
+1
+
+𝑗1 ≠0
+
+≈ −𝜅0 + 4𝜁 (𝛼) + 4
+
+𝑛/2
+∑︁
+
+𝑗1 ≠0
+
+cos (2𝜋 𝑗1 /𝑛) ( 𝑗 1 + 𝑗 2 ) − 𝛼 + O (𝑛1− 𝛼 ) .
+
+(B.11)
+
+𝑗1 , 𝑗2 =1
+
+|
+
+{z
+
+}
+
+(∗)
+
+Simplification was performed by noting that the final two terms, treated in the one-dimensional case, give 2𝜁 (𝛼) and terms of
+order 𝑛1− 𝛼 . Now, focussing on the term denoted by (∗) in Eq. (B.11), we recast the summation exactly as
+(∗) = 4
+
+𝑛/2
+∑︁
+
+cos (2𝜋 𝑗1 /𝑛) ( 𝑗 1 + 𝑗 2 ) − 𝛼 = 4
+
+𝑗1 , 𝑗2 =1
+
+𝑛/2
+∑︁
+
+cos (2𝜋 𝑗1 /𝑛) [𝜁 (𝛼, 𝑗 1 + 1) − 𝜁 (𝛼, 𝑗1 + 𝑛/2 + 1)] .
+
+(B.12)
+
+𝑗1 =1
+
+To evaluate the finite sum (B.12) containing the Hurwitz 𝜁 functions, we approximate it in terms of an integral and subsequently
+use the machinery of calculus to extract the asymptotic result. For this purpose, we implement the Euler–Maclaurin formula
+𝑏
+∑︁
+𝑘=𝑎+1
+
+∫ 𝑏
+𝑓 (𝑘) =
+
+𝑓 (𝑥) 𝑑𝑥 +
+𝑎
+
+⌊∑︁
+𝑝/2⌋
+
+1
+𝐵2𝑘  (2𝑘−1)
+[ 𝑓 (𝑎) − 𝑓 (𝑏)] +
+𝑓
+(𝑏) − 𝑓 (2𝑘−1) (𝑎) + 𝑅 𝑝 ,
+2
+(2𝑘)!
+𝑘=1
+
+(B.13)
+
+where 𝑎, 𝑏 are natural numbers and 𝑓 : R → R is a continuous function for real 𝑘 ∈ [𝑎, 𝑏]. Provided 𝑓 (𝑘) is 𝑝 times continuously
+differentiable on the interval [𝑎, 𝑏] for 𝑝 ∈ Z+ , the difference between the summation and integral depends on terms containing
+the 𝑘-th Bernoulli number, 𝐵 𝑘 , as well as the error term 𝑅 𝑝 . Disregarding the error terms, which we later numerically show to
+have negligible impact on the final results, see Fig. B.2(b), the summation of (B.12) is approximated as
+∫ 𝑛/2
+∫ 𝑛/2
+(∗) ≈ 4𝜁 (𝛼 − 1) − 4𝜁 (𝛼) + 4
+𝑑𝑥 cos(2𝜋𝑥/𝑛)𝜁 (𝛼, 𝑥 + 1) − 4
+𝑑𝑥 cos(2𝜋𝑥/𝑛)𝜁 (𝛼, 𝑥 + 𝑛/2 + 1) .
+(B.14)
+0
+
+0
+
+Performing a change of variable 𝑥 → 𝑛𝑦/2, followed by a series expansion of the Hurwitz 𝜁 function (B.1), Eq. (B.14) simplifies
+to
+
+∫ 1
+∫ 1
+2𝛼
+1− 𝛼
+1− 𝛼
+(∗) ≈ 4𝜁 (𝛼 − 1) − 4𝜁 (𝛼) +
+𝑑𝑦 cos(𝜋𝑦) 𝑦
+−
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 1)
+𝑛2− 𝛼 + O (𝑛1− 𝛼 ) ,
+(B.15)
+𝛼−1 0
+0
+where only leading-order terms are explicitly written. The integrals (B.15) can be computed analytically, and written in terms of
+the generalized hypergeometric function 𝑝 𝐹𝑞 (𝑎; 𝑏; 𝑧) [62] and the exponential integral function 𝐸 𝑛 (𝑥) [62] as
+
+
+𝛼 1
+𝛼
+𝜋2
+∫ 1
+1 𝐹2 1 − 2 ; 2 , 2 − 2 ; − 4
+𝑑𝑦 cos(𝜋𝑦) 𝑦 1− 𝛼 = −
+, for 𝛼 < 2 ,
+(B.16)
+𝛼−2
+0
+∫ 1
+
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 1) 1− 𝛼 = −
+
+0
+
+
+1
+𝐸 𝛼−1 (−𝑖𝜋) + 𝐸 𝛼−1 (𝑖𝜋) − 22− 𝛼 {𝐸 𝛼−1 (−2𝑖𝜋) + 𝐸 𝛼−1 (2𝑖𝜋)} .
+2
+
+(B.17)
+
+For the first integral we require 𝛼 < 2 to ensure convergence. This restriction on the range of 𝛼 is not problematic, since the
+O (𝑛2− 𝛼 ) term of Eq. (B.15), to which the integrals are a prefactor, is asymptotically suppressed when 𝛼 > 2 and the term (∗)
+tends to the constant 4𝜁 (𝛼 − 1) − 4𝜁 (𝛼). Thus, in the regime where the O (𝑛2− 𝛼 ) term is dominant, the integral is guaranteed
+to converge. Finally, Eq. (B.15), together with the intregrals (B.16) and (B.17), is substituted back into Eq. (B.11) to give the
+scaling of 𝛿, see Eq. (A.6). This asymptotic result is in close agreement with exact numeric results for large 𝑛, see Fig. B.2(b).
+To determine the scaling of E ( 𝑘®max ), we start with the definition
+E ( 𝑘®max ) = −𝜀0 +
+
+∑︁
+®𝑗 ≠0®
+
+cos( 𝑘®max · 𝑗®)/|| 𝑗®|| 1𝛼 = −𝜀0 +
+
+𝑛/2
+∑︁
+
+(| 𝑗1 | + | 𝑗 2 |) − 𝛼 cos (𝜋 𝑗1 + 𝜋 𝑗 2 ) .
+
+𝑗1 , 𝑗2 =−𝑛/2+1;
+| 𝑗1 |+| 𝑗2 |≠0
+
+(B.18)
+
+13
+Since 𝑗1 + 𝑗2 ∈ Z, we perform the replacement cos (𝜋 𝑗1 + 𝜋 𝑗 2 ) → (−1) 𝑗1 + 𝑗2 and shift the summation indices such that the
+absolute values may be dropped. After some algebra, we arrive at
+E ( 𝑘®max ) = −𝜀0 +
+
+𝑛/2
+∑︁
+
+𝑗1 + 𝑗2
+
+(−1)
+
+( 𝑗1 + 𝑗2 )
+
+−𝛼
+
++2
+
+𝑗1 , 𝑗2 =0;
+𝑗1 + 𝑗2 ≠0
+
+𝑛/2 𝑛/2−1
+∑︁
+∑︁
+
+(−1)
+
+𝑗1 − 𝑗2
+
+( 𝑗1 + 𝑗2 )
+
+−𝛼
+
+𝑗1 =0 𝑗2 =1
+
++
+
+𝑛/2−1
+∑︁
+
+(−1) 𝑗1 + 𝑗2 ( 𝑗 1 + 𝑗 2 ) − 𝛼 .
+
+(B.19)
+
+𝑗1 , 𝑗2 =1
+
+The second term of Eq. (B.19) can be recast in terms of two summations, each running over a single summation index:
+𝑛/2
+∑︁
+
+(−1) 𝑗1 + 𝑗2 ( 𝑗1 + 𝑗2 ) − 𝛼 =
+
+𝑗1 , 𝑗2 =0;
+𝑗1 + 𝑗2 ≠0
+
+𝑛/2
+∑︁
+
+𝑗 − 𝛼 (−1) 𝑗 ( 𝑗 +1) +
+
+𝑗=1
+
+𝑛/2
+∑︁
+
+(𝑛− 𝑗 +1) − 𝛼 (−1) 𝑛− 𝑗+1 𝑗 ≈ (22− 𝛼 −1)𝜁 (𝛼−1) + (21− 𝛼 −1)𝜁 (𝛼) , (B.20)
+
+𝑗=1
+
+where the final step assumes 𝑛 ≫ 1. The third term (B.19) can be treated similarly. To leading-order, we find
+2
+
+𝑛/2 𝑛/2−1
+∑︁
+∑︁ (−1) 𝑗1 − 𝑗2
+
+𝑛/2−1
+∑︁
+
+( 𝑗1 + 𝑗2 )
+
+𝑗=1
+
+𝑗1 =0 𝑗2 =1
+
+=2
+𝛼
+
+𝑗 − 𝛼 (−1) 𝑗 𝑗 + 2
+
+ 𝛼
+𝑛/2−1
+𝑛
+
+∑︁
+2
+(𝑛 − 𝑗) − 𝛼 (−1) 𝑛− 𝑗 𝑗
+(−1) 𝑛/2
+−1 +2
+𝑛
+2
+𝑗=1
+
+𝑛−1
+
+
+∑︁
+= (23− 𝛼 − 2)𝜁 (𝛼 − 1) + (−1) 𝑛/2 2 𝛼 𝑛1− 𝛼 − 21+𝛼 𝑛 − 𝛼 + 2
+
+𝑗 − 𝛼 (−1) 𝑗 (𝑛 − 𝑗)
+
+(B.21)
+
+𝑗=𝑛/2+1
+
+≈ (23− 𝛼 − 2)𝜁 (𝛼 − 1) + O (𝑛1− 𝛼 ) ,
+
+(B.22)
+
+where the second term of line (B.21) is sub-leading-order, and the third term is negligible when 𝑛 is large. The latter statement
+can be verified by writing the summation explicitly in terms of Hurwitz 𝜁 functions, 𝜁 (𝜂, 𝑥), yielding
+𝑛−1
+∑︁
+
+ 
+
+ 
+
+
+
+
+𝑖 𝜋𝑛
+𝑛 1
+𝑛
+𝑛
+𝑛 1
+2
+2
+𝑗 (−1) (𝑛 − 𝑗) = 2 𝑖 𝜁 𝛼 − 1, +
+− 𝜁 𝛼 − 1, + 1 + 𝑒
+𝜁 𝛼 − 1,
+− 𝜁 𝛼 − 1, +
+4 2
+4
+2
+2 2
+𝑗=𝑛/2+1
+
+
+
+
+
+𝑛  𝑛 𝑛
+𝑛 1
+𝑛
+𝑛 1
+𝑛  𝑛
+− 𝜁 𝛼,
++ 𝜁 𝛼, +
+− 𝜁 𝛼, +
++ 𝜁 𝛼, + 1 .
+(B.23)
+2
+2
+2
+2 2
+2
+4 2
+2
+4
+
+
+
+Now, note that 𝑛/4 + 1/2 ≈ 𝑛/4 + 1 and 𝑛/2 ≈ 𝑛/2 + 1/2 for large 𝑛. This implies that, asymptotically, 𝜁 𝜂, 𝑛4 + 12 ≈ 𝜁 𝜂, 𝑛4 + 1
+
+
+
+and 𝜁 𝜂, 𝑛2 ≈ 𝜁 𝜂, 𝑛2 + 12 for both 𝜂 = 𝛼 and 𝜂 = 𝛼 − 1, and the entire summation tends to zero in large-𝑛 limit. Determining
+the asymptotic behavior of the final term of Eq. (B.19) follows the procedure taken in Eq. (B.20). We simply state the result as
+−𝛼
+
+2− 𝛼 𝑛
+
+𝑗
+
+𝑛/2−1
+∑︁
+
+(−1) 𝑗1 + 𝑗2 ( 𝑗1 + 𝑗 2 ) − 𝛼 ≈ (22− 𝛼 − 1)𝜁 (𝛼 − 1) − (21− 𝛼 − 1)𝜁 (𝛼) .
+
+(B.24)
+
+𝑗1 , 𝑗2 =1
+
+Substituting Eqs. (B.20), (B.22) and (B.24) into Eq. (B.19), we recover the asymptotic result (A.7), provided in Table I. Figure
+B.2(c) provides an assessment of the accuracy of this asymptotic result for 𝜀 0 = 0 and a range of 𝛼 values.
+3.
+
+Three-dimensional hypercube (𝑑 = 3)
+
+Constant energy shift. In hypercubic lattices of three dimensions, 𝜅0 may be treated via an expansion into a series of
+summations, followed by various approximations and simplifications. Recalling that || . . . || 1 denotes the Manhattan norm,
+𝑛 = 𝑁 1/3 and 𝑗® ≡ ( 𝑗1 , 𝑗2 , 𝑗3 ), the definition of the energy 𝜅 0 leads to
+𝜅0 =
+
+∑︁
+𝑗®≠®0
+
+1/|| 𝑗®|| 1𝛼 =
+
+𝑛/2
+∑︁
+
+(| 𝑗 1 | + | 𝑗 2 | + | 𝑗 3 |) − 𝛼 = 8
+
+𝑛/2−1
+∑︁
+
+( 𝑗 1 + 𝑗 2 + 𝑗 3 ) − 𝛼 + 12
+
+𝑗1 , 𝑗2 , 𝑗3 =1
+
+𝑗1 , 𝑗2 , 𝑗3 =−𝑛/2+1;
+| 𝑗1 |+| 𝑗2 |+| 𝑗3 |≠0
+
++6
+
+𝑛/2−1
+∑︁
+𝑗1 =1
+
+( 𝑗 1 + 𝑛) − 𝛼 + 12
+
+𝑛/2−1 
+∑︁
+
+𝑗1 + 𝑗2 +
+
+𝑗1 , 𝑗2 =1
+𝑛/2−1
+∑︁ 
+𝑗1 =1
+
+𝑗1 +
+
+𝑛/2−1
+∑︁
+𝑛 −𝛼
+( 𝑗1 + 𝑗2 ) − 𝛼
++ 12
+2
+𝑗 , 𝑗 =1
+1
+
+2
+
+𝑛/2−1
+∑︁
+𝑛 −𝛼
+( 𝑗1 ) − 𝛼 + O (𝑛 − 𝛼 ) .
++6
+2
+𝑗 =1
+1
+
+(B.25)
+
+14
+We proceed by performing an asymptotic expansion of each term in Eq. (B.25) independently, after which we combine the results
+to obtain the scaling of 𝜅0 (A.11). Starting with the first term in (B.25), we reformulate the triple summation over indices 𝑗 1 , 𝑗2
+and 𝑗3 as a collection of summations with single indices:
+8
+
+𝑛/2−1
+∑︁
+
+( 𝑗1 + 𝑗2 + 𝑗3 ) − 𝛼 = 4
+
+𝑗1 , 𝑗2 , 𝑗3 =1
+
+𝑛/2+1
+∑︁
+
+( 𝑗 − 1) ( 𝑗 − 2) 𝑗 − 𝛼 +
+
+𝑗=1
+
+|
+
+𝑛/2+𝑛/4
+∑︁
+
+} |
+
+{z
+
+(𝑎)
+
++4
+
+𝑗=1
+
+|
+
+
+−8 𝑗 2 + 12 𝑗𝑛 − 3𝑛(𝑛 + 2) + 8 𝑗 − 𝛼
+
+(B.26)
+
+𝑗=𝑛/2+2
+
+{z
+𝑛/2−1
+∑︁
+
+
+
+}
+
+(𝑐)
+
+
+ − 𝛼 𝑛/2+𝑛/4−3
+ −𝛼
+∑︁ 
+ 3𝑛
+3𝑛
+2
+− 𝑗 −2
++
+6(2 𝑗 + 3)𝑛 − 8( 𝑗 + 1) ( 𝑗 + 3) − 3𝑛
+− 𝑗 −2
+.
+𝑗 ( 𝑗 + 1)
+2
+2
+𝑗=𝑛/2
+{z
+} |
+{z
+}
+
+
+(𝑏)
+
+(𝑑)
+
+Note that the summation upper bounds in (𝑐) and (𝑑) contain the fraction 𝑛/4. For convenience, we hereafter assume that
+mod (𝑛, 4) = 0, where mod is the standard modulo operation giving the remainder on division of 𝑛 by 4. In the limit of large 𝑛,
+our results apply to lattices with any number of sites. Now, terms (𝑎) and (𝑐) can be rewritten exactly in terms of the difference
+of infinite sums, giving expressions in terms of the Hurwitz 𝜁 function 𝜁 (𝜂, 𝑥) and Riemann 𝜁 function 𝜁 (𝜂). After some algebra,
+these terms exhibit the following asymptotic behavior:
+h 
+
+
+
+ 𝑛
+
+i
+𝑛
+𝑛
+(𝑎) = −4 𝜁 𝛼 − 2, + 2 − 3𝜁 𝛼 − 1, + 2 + 2𝜁 𝛼, + 2 − 𝜁 (𝛼 − 2) + 3𝜁 (𝛼 − 1) − 2𝜁 (𝛼)
+2
+2
+2
+𝛼 (3𝛼 − 7)
+2
+2 𝛼−1 (𝛼 − 8) 2− 𝛼 2 𝛼−1 3− 𝛼
+≈ 4𝜁 (𝛼 − 2) − 12𝜁 (𝛼 − 1) + 8𝜁 (𝛼) − 2 𝛼+2 𝑛 − 𝛼 +
+𝑛1− 𝛼 −
+𝑛
+−
+𝑛
++ O (𝑛 −1− 𝛼 ) ,
+𝛼−1
+𝛼−2
+𝛼−3
+(B.27)
+
+
+
+
+
+
+
+
+𝑛
+3𝑛
+𝑛
+3𝑛
+(𝑐) = −8𝜁 𝛼 − 2, + 2 + 8𝜁 𝛼 − 2,
++ 1 + 12𝑛𝜁 𝛼 − 1, + 2 − 12𝑛𝜁 𝛼 − 1,
++1
+2
+4
+2
+4
+ 
+
+
+
+𝑛
+3𝑛
+− (3𝑛(𝑛 + 2) − 8) 𝜁 𝛼, + 2 − 𝜁 𝛼,
++1
+2
+4
+ 𝛼
+2
+[3 2 𝛼 (𝛼 − 3) + 3 𝛼 (7 − 3𝛼)]
+3
+2 𝛼−2 3− 𝛼 (3 2 𝛼 − 2 3 𝛼 ) (𝛼 − 7) 2− 𝛼
+≈ 2 𝛼+2 3− 𝛼 (3 𝛼 − 2 𝛼 ) 𝑛 − 𝛼 +
+𝑛1− 𝛼 −
+𝑛
+𝛼−1
+𝛼−1
+2 𝛼−3 3− 𝛼 [4 3 𝛼 (𝛼 − 4) (𝛼 + 1) − 9 2 𝛼 (𝛼 − 5)𝛼] 3− 𝛼
++
+𝑛
++ O (𝑛 −1− 𝛼 ) .
+(B.28)
+(𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+To
+(𝑑) of Eq. (B.26) we shift the summation indices, such that the denominator undergoes the transformation
+ 3𝑛evaluate terms
+ − 𝛼 (𝑏) and
+− 𝛼 . In their new form, summations (𝑏) and (𝑑) can be written as the differences of the Hurwitz 𝜁 function
+−
+𝑗
+−
+2
+−→
+𝑗
+2
+infinite summations. Applying this, we find the asymptotic expansions
+3𝑛/2−3
+∑︁
+
+
+
+
+
+3𝑛
+3𝑛
+(2 𝑗 − 3𝑛 + 2) (2 𝑗 − 3𝑛 + 4) 𝑗 − 𝛼 = −4𝜁 𝛼 − 2,
+− 2 + 4𝜁 (𝛼 − 2, 𝑛 − 1) + 12(𝑛 − 1)𝜁 𝛼 − 1,
+−2
+2
+2
+𝑗=𝑛−1
+
+
+
+3𝑛
+−2
+− 12(𝑛 − 1)𝜁 (𝛼 − 1, 𝑛 − 1) + (3𝑛 − 4) (3𝑛 − 2) 𝜁 (𝛼, 𝑛 − 1) − 𝜁 𝛼,
+2
+ 𝛼
+
+ 𝛼
+
+−
+𝛼
+𝛼+2
+−
+𝛼
+𝛼+1
+3
+3 (3𝛼 − 11) + 3 2
+3
+3 (𝛼 − 10) (𝛼 − 5) − 27 2
+𝑛1− 𝛼 +
+𝑛2− 𝛼
+≈ 22 3− 𝛼 (3 𝛼 − 2 𝛼 ) 𝑛 − 𝛼 −
+𝛼−1
+2(𝛼 − 2) (𝛼 − 1)
+3− 𝛼 (3 𝛼 ((𝛼 − 9)𝛼 + 26) − 27 2 𝛼 ) 3− 𝛼
++
+𝑛
++ O (𝑛 −1− 𝛼 ) ,
+(B.29)
+(𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+
+(𝑏) =
+
+𝑛−2
+∑︁
+
+
+
+
+
+
+3𝑛
+3𝑛
+(𝑑) =
+−8 𝑗 + 12 𝑗𝑛 − 3𝑛(𝑛 + 2) + 8 𝑗
+= −8𝜁 𝛼 − 2,
++ 1 + 8𝜁 (𝛼 − 2, 𝑛 − 1) + 12𝑛𝜁 𝛼 − 1,
++1
+4
+4
+𝑗=3𝑛/4+1
+ 
+
+
+3𝑛
+− 12𝑛𝜁 (𝛼 − 1, 𝑛 − 1) − (3𝑛(𝑛 + 2) − 8) 𝜁 𝛼,
++ 1 − 𝜁 (𝛼, 𝑛 − 1)
+4
+3− 𝛼 [3 𝛼 (3𝛼 − 11) − 3 4 𝛼 (𝛼 − 3)] 1− 𝛼 3− 𝛼 [3 4 𝛼 (𝛼 − 7) − 2 3 𝛼 (𝛼 − 13)] 2− 𝛼
+≈ 22 3− 𝛼 (4 𝛼 − 3 𝛼 ) 𝑛 − 𝛼 +
+𝑛
++
+𝑛
+𝛼−1
+4(𝛼 − 1)
+
+
+2
+
+
+
+−𝛼
+
+15
+
+
+3− 𝛼 9 4 𝛼 (𝛼 − 5)𝛼 − 8 3 𝛼 (𝛼2 − 9𝛼 + 2) 3− 𝛼
++
+𝑛
++ O (𝑛 −1− 𝛼 ) .
+8(𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+
+(B.30)
+
+Combing the results of Eqs. (B.27)–(B.30), we arrive at an asymptotic expression for the first term of Eq. (B.25):
+8
+
+𝑛/2−1
+∑︁
+
+( 𝑗1 + 𝑗 2 + 𝑗 3 ) − 𝛼 ≈ 4𝜁 (𝛼 − 2) − 12𝜁 (𝛼 − 1) + 8𝜁 (𝛼) −
+
+𝑗1 , 𝑗2 , 𝑗3 =1
+
+31− 𝛼 (9 2 𝛼 − 8 3 𝛼 + 6 𝛼 ) 3− 𝛼
+𝑛
++ O (𝑛2− 𝛼 ) ,
+(𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+
+(B.31)
+
+where we keep only leading-order terms in 𝑛 and constants. Determining the large-𝑛 behavior of the remaining terms in Eq. (B.25)
+is more straightforward. For the second term we find
+12
+
+𝑛/2−1
+∑︁ 
+𝑗1 , 𝑗2 =1
+
+−𝛼
+𝑛/2
+𝑛/2−2
+
+∑︁
+∑︁  3𝑛
+𝑛 −𝛼
+𝑛 −𝛼
+( 𝑗 − 1) 𝑗 +
+𝑗
+− 𝑗 −1
+𝑗1 + 𝑗2 +
+= 12
++ 12
+2
+2
+2
+𝑗=1
+𝑗=1
+ 
+ 
+
+
+
+
+3𝑛
+3𝑛
+3𝑛
+= 12 𝜁 𝛼 − 1,
+𝜁 𝛼,
+− 1 − 𝜁 (𝛼 − 1, 𝑛 + 1) + 1 −
+− 1 − 𝜁 (𝛼, 𝑛 + 1)
+2
+2
+2
+h  𝑛
+i
+
+1
+𝑛
+𝛼 −𝛼
+− 𝜁 (𝛼 − 1, 𝑛 + 1) − (𝑛 + 2) 𝜁 𝛼,
+− 𝜁 (𝛼, 𝑛 + 1)
++2 𝑛 + 𝜁 𝛼 − 1,
+2
+2
+2
+≈−
+
+2 𝛼+1 31− 𝛼 (3 𝛼 − 3) 1− 𝛼 31− 𝛼 (9 2 𝛼 − 8 3 𝛼 + 6 𝛼 ) 2− 𝛼
+𝑛
++ O (𝑛 − 𝛼 ) .
+𝑛
++
+(𝛼 − 2) (𝛼 − 1)
+𝛼−1
+
+(B.32)
+
+Since the leading-order contribution scales as ∼ 𝑛3− 𝛼 , see Eq. (B.31), the result above indicates that the contribution of the
+second term to 𝜅0 , see Eq. (B.25), is negligible for 𝑛 ≫ 1. We can determine the asymptotic behavior of the third term in
+Eq. (B.25) following a similar sequence of steps:
+12
+
+𝑛/2−1
+∑︁
+
+( 𝑗1 + 𝑗2 )
+
+−𝛼
+
+𝑗1 , 𝑗2 =1
+
+= 12
+
+𝑛/2
+∑︁
+
+( 𝑗 − 1) 𝑗
+
+−𝛼
+
+𝑗=1
+
+h
+
++ 12
+
+𝑛−2
+∑︁
+
+(𝑛 − 𝑗 − 1) 𝑗 − 𝛼
+
+𝑗=𝑛/2+1
+
+
+
+
+ 𝑛
+
+i
+𝑛
+= −12 2𝜁 𝛼 − 1, + 1 − 𝜁 (𝛼 − 1, 𝑛 − 1) − 𝑛𝜁 𝛼, + 1 + (𝑛 − 1)𝜁 (𝛼, 𝑛 − 1) − 𝜁 (𝛼 − 1) + 𝜁 (𝛼)
+2
+2
+12 1− 𝛼
+6 (2 𝛼 − 2)
+≈ 12𝜁 (𝛼 − 1) − 12𝜁 (𝛼) +
+𝑛
++
+𝑛2− 𝛼 + O (𝑛 − 𝛼 ) .
+(B.33)
+𝛼−1
+(𝛼 − 2) (𝛼 − 1)
+Crucially, the expansion contains two 𝑛-independent terms, which will contribute to the value of 𝜅 0 when 𝛼 > 3. The dominant 𝑛dependent term in the expansion scales as ∼ 𝑛2− 𝛼 , inferring that the contribution will be sub-leading-order in the final expansion.
+The final three terms in (B.25) can each be directly reformulated in terms of the difference of two appropriate infinite sums. This
+allows us to express the summations in terms of the well-known Hurwitz 𝜁 function, and expand using the asymptotic result of
+Eq. (B.1), as before. The calculations are summarized below:
+−𝛼
+
+
+∞
+∞ 
+∑︁
+∑︁
+6
+6
+3𝑛
+3𝑛
+31− 𝛼 (2 3 𝛼 − 3 2 𝛼 ) 𝑛1− 𝛼
+=
+−
+6
++ O (𝑛 − 𝛼 ) ,
+𝑗
++
+=
+6𝜁
+(𝛼,
+𝑛
++
+1)
+−
+6𝜁
+𝛼,
+≈
+1
+𝛼
+𝛼
+(
+(
+𝑗
++
+𝑛)
+𝑗
++
+𝑛
++
+1)
+2
+2
+𝛼
+−
+1
+1
+1
+𝑗 =1
+𝑗 =0
+𝑗 =0
+
+𝑛/2−1
+∑︁
+1
+
+1
+
+1
+
+(B.34)
+
+
+𝑛/2−1
+∞
+∞ 
+ − 𝛼 ∑︁
+h  𝑛
+
+i 6 (2 𝛼 − 2)
+∑︁ 
+
+ ∑︁
+𝑛 −𝛼
+𝑛
+( 𝑗1 + 𝑛) − 𝛼  = 12 𝜁 𝛼, + 1 − 𝜁 (𝛼, 𝑛) ≈
+12
+𝑗1 +
+= 12 
+𝑗1 + + 1
+−
+𝑛1− 𝛼 + O (𝑛 − 𝛼 ) ,
+2
+2
+2
+𝛼
+−
+1
+
+
+𝑗1 =1
+𝑗1 =0
+
+ 𝑗1 =0
+(B.35)
+6
+
+𝑛/2−1
+∑︁
+𝑗1 =1
+
+( 𝑗1 ) − 𝛼 = 6
+
+∞
+∑︁
+𝑗1 =1
+
+( 𝑗1 ) − 𝛼 − 6
+
+∞ 
+∑︁
+𝑗1 =0
+
+𝑗1 +
+
+ 𝑛
+𝑛 −𝛼
+6 2 𝛼−1 1− 𝛼
+= 6𝜁 (𝛼) − 6𝜁 𝛼,
+≈ 6𝜁 (𝛼) −
+𝑛
++ O (𝑛 − 𝛼 ) .
+2
+2
+𝛼−1
+
+(B.36)
+
+The scaling 𝑛1− 𝛼 is sub-leading-order in all of the above expressions. We therefore disregard these subdominant contributions
+in the full expansion of 𝜅 0 where the leading-order contribution scales as ∼ 𝑛3− 𝛼 . Finally, combining Eqs. (B.31)–(B.36), the
+energy 𝜅0 (B.25) takes the form
+𝜅 0 ≈ 4𝜁 (𝛼 − 2) + 2𝜁 (𝛼) −
+
+31− 𝛼 (9 2 𝛼 − 8 3 𝛼 + 6 𝛼 ) 3− 𝛼
+𝑛
++ O (𝑛2− 𝛼 ) ,
+(𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+
+(B.37)
+
+16
+as reported in Table I. For 𝛼 < 3, 𝜅0 ∼ 𝑛3− 𝛼 , meanwhile 𝜅 0 is well-approximated by the 𝛼-dependent constant 4𝜁 (𝛼 − 2) + 2𝜁 (𝛼)
+in the regime 𝛼 > 3. Figure B.3(a) provides an indication of how well the asymptotics of Eq. (B.37) describe 𝜅0 , even for
+comparatively small 𝑛.
+Scaling of 𝜹 and E( 𝒌® max ). For three spatial dimensions, the (unnormalized) spectral gap is given by
+𝛿 = −𝜅0 +
+
+∑︁
+
+𝑛/2
+∑︁
+
+cos( 𝑘®1 · 𝑗®)/|| 𝑗®|| 1𝛼 = −𝜅0 +
+
+(| 𝑗1 | + | 𝑗 2 | + | 𝑗 3 |) − 𝛼 cos (2𝜋 𝑗 1 /𝑛) .
+
+(B.38)
+
+𝑗1 , 𝑗2 , 𝑗3 =−𝑛/2+1;
+| 𝑗1 |+| 𝑗2 |+| 𝑗3 |≠0
+
+𝑗®≠®0
+
+Omitting intermediate steps, we shift the summation indices in Eq. (B.38) such that 𝑗 𝑖 ∈ Z > 0 for 𝑖 = 1, 2, 3, leading to
+𝑛/2−1
+∑︁
+
+𝛿 = −𝜅0 + 12𝜁 (𝛼 − 1) − 6𝜁 (𝛼) + 8
+
+cos(2𝜋 𝑗 1 /𝑛) ( 𝑗 1 + 𝑗 2 + 𝑗 3 ) − 𝛼 + O (𝑛2− 𝛼 ) .
+
+(B.39)
+
+𝑗1 , 𝑗2 , 𝑗3 =1
+
+|
+
+{z
+
+}
+
+(∗)
+
+A complete understanding of the scaling requires an asymptotic analysis of the term denoted by (∗). Since the argument of the
+cosine is independent of 𝑗 𝑖=2,3 , we can compute
+𝑛/2−1
+∑︁
+
+( 𝑗1 + 𝑗2 + 𝑗3 )
+
+−𝛼
+
+=
+
+𝑛/2
+∑︁
+
+𝑗2 , 𝑗3 =1
+
+( 𝑗 − 1) ( 𝑗 + 𝑗1 )
+
+𝑗=1
+
+−𝛼
+
++
+
+𝑛/2−2
+∑︁
+
+𝑗 (𝑛 − 1 − 𝑗 + 𝑗 1 ) − 𝛼
+
+𝑗=1
+
+
+
+𝑛
+= 𝜁 (𝛼 − 1, 𝑗 1 + 2) − ( 𝑗1 + 1)𝜁 (𝛼, 𝑗 1 + 2) − 2𝜁 𝛼 − 1, 𝑗 1 + + 1 + 𝜁 (𝛼 − 1, 𝑗1 + 𝑛 − 1)
+2
+
+
+𝑛
+(B.40)
++ (2 𝑗 1 + 𝑛)𝜁 𝛼, 𝑗1 + + 1 − ( 𝑗 1 + 𝑛 − 1)𝜁 (𝛼, 𝑗1 + 𝑛 − 1) .
+2
+Evidently, Eqs. (B.39) and (B.40) lead to
+(∗) = 8
+
+𝑛/2−1
+∑︁
+
+
+cos
+
+𝑗1 =1
+
+2𝜋 𝑗1
+𝑛
+
+
+
+
+
+𝑛
+𝜁 (𝛼 − 1, 𝑗1 + 2) − ( 𝑗1 + 1)𝜁 (𝛼, 𝑗 1 + 2) − 2𝜁 𝛼 − 1, 𝑗 1 + + 1 + 𝜁 (𝛼 − 1, 𝑗1 + 𝑛 − 1)
+2
+
+
+
+𝑛
++ (2 𝑗 1 + 𝑛)𝜁 𝛼, 𝑗1 + + 1 − ( 𝑗 1 + 𝑛 − 1)𝜁 (𝛼, 𝑗1 + 𝑛 − 1) .
+(B.41)
+2
+
+The scaling analysis is identical for each term of the above expression, therefore we simply state the steps, followed by the results
+for the six terms. As in the two-dimensional case, see Sec. B 2, we first approximate the summation by an integral using the
+Euler-Maclaurin formula (B.13). Disregarding the error terms, we perform a change of variable 𝑗1 → 𝑛𝑦/2, followed by the
+Hurwitz 𝜁 series expansion (B.1). With some algebra, we obtain the six asymptotic results, written to leading-order in 𝑛:
+8
+
+𝑛/2−1
+∑︁
+
+
+cos
+
+𝑗1 =1
+
+−8
+
+𝑛/2−1
+∑︁
+
+
+cos
+
+𝑗1 =1
+
+
+∫ 1
+
+2𝜋 𝑗1
+2𝛼
+𝜁 (𝛼 − 1, 𝑗1 + 2) ∼ 8𝜁 (𝛼 − 2) − 8𝜁 (𝛼 − 1) +
+𝑑𝑦 cos(𝜋𝑦) 𝑦 2− 𝛼 𝑛3− 𝛼 ,
+𝑛
+𝛼−2 0
+
+(B.42a)
+
+
+∫ 1
+
+2𝜋 𝑗1
+2𝛼
+( 𝑗 1 + 1)𝜁 (𝛼, 𝑗 1 + 2) ∼ −4𝜁 (𝛼 − 2) − 4𝜁 (𝛼 − 1) + 8𝜁 (𝛼) −
+𝑑𝑦 cos(𝜋𝑦) 𝑦 2− 𝛼 𝑛3− 𝛼 ,
+𝑛
+𝛼−1 0
+(B.42b)
+
+𝑛/2−1
+∑︁
+
+−16
+
+
+
+𝑛/2−1
+∑︁
+
+
+∫ 1
+
+2𝜋 𝑗1
+2𝛼
+𝜁 (𝛼 − 1, 𝑗1 + 𝑛 − 1) ∼
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 2) 2− 𝛼 𝑛3− 𝛼 ,
+𝑛
+𝛼−2 0
+
+(B.42d)
+
+
+∫ 1
+
+
+
+2𝜋 𝑗1
+𝑛
+2 𝛼+1
+(2 𝑗 1 + 𝑛)𝜁 𝛼, 𝑗1 + + 1 ∼
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 1) 2− 𝛼 𝑛3− 𝛼 ,
+𝑛
+2
+𝛼−1 0
+
+(B.42e)
+
+𝑛/2−1
+∑︁
+
+𝑗1 =1
+
+
+cos
+
+
+
+2𝜋 𝑗1
+𝑛
+2
+𝜁 𝛼 − 1, 𝑗 1 + + 1 ∼ −
+𝑛
+2
+𝛼−2
+
+
+
+(B.42c)
+
+𝑗1 =1
+
+8
+
+
+𝛼+1 ∫ 1
+
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 1) 2− 𝛼 𝑛3− 𝛼 ,
+
+cos
+
+𝑗1 =1
+
+8
+
+
+
+
+cos
+
+0
+
+17
+
+(a)
+
+(b)
+
+(c)
+
+FIG. B.3. (a) Comparison of the exact numeric value (solid curve) of 𝜅0 (B.25) with the asymptotic result (B.37) (dashed). Inset shows the
+absolute percentage deviation, APD = 100 × |(E − A)/E|, of the asymptotic result 𝐴 from the exact result 𝐸 as a function of 𝛼. We set
+𝑛 = 𝑁 1/3 = 32. (b) Scaling of the spectral gap 𝛿 (A.9) (solid curves) with 𝑛, and a comparison to exact numeric results (data points). (c) A
+comparison between analytic (A.10) (solid curves) and exact numeric results (data points) for E ( 𝑘®max ). In both (b) and (c) dashed horizontal
+lines represent the case of nearest-neighbor hopping (𝛼 → ∞).
+
+𝑛/2−1
+∑︁
+
+
+
+∫ 1
+2𝛼
+2𝜋 𝑗1
+2− 𝛼
+𝑛3− 𝛼 .
+cos
+( 𝑗 1 + 𝑛 − 1)𝜁 (𝛼, 𝑗1 + 𝑛 − 1) ∼ −
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 2)
+−8
+𝑛
+𝛼
+−
+1
+0
+𝑗 =1
+
+(B.42f)
+
+The integrals (B.42), contributing to the 𝛼-dependent prefactors of the O (𝑛3− 𝛼 ) terms, are computed exactly, with
+
+
+3
+𝛼 1 5
+𝛼
+𝜋2
+∫ 1
+1 𝐹2 2 − 2 ; 2 , 2 − 2 ; − 4
+𝑑𝑦 cos(𝜋𝑦) 𝑦 2− 𝛼 = −
+, for 𝛼 < 3 ,
+𝛼−3
+0
+∫ 1
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 1) 2− 𝛼 = −2−1 K 𝛼−2 (1) + 22− 𝛼 K 𝛼−2 (2) ,
+
+(B.43a)
+
+
+
+1
+
+(B.43b)
+
+0
+
+∫ 1
+
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 2) 2− 𝛼 = 22− 𝛼 K 𝛼−2 (2) − 2−1 33− 𝛼 K 𝛼−2 (3) .
+
+(B.43c)
+
+0
+
+Here we use the compact notation K𝑛 (𝑧) ≡ 𝐸 𝑛 (𝑖𝜋𝑧) + 𝐸 𝑛 (−𝑖𝜋𝑧), with 𝐸 𝑛 (±𝑖𝜋𝑧) the exponential integral function [62].
+Substituting the asymptotic results (B.42), together with the prefactors (B.43), into Eq. (B.41) leads to
+
+
+2
+" 𝛼
+#
+2 1 𝐹2 3−2 𝛼 ; 12 , 5−2 𝛼 ; − 𝜋4
+2 𝛼 K 𝛼−2 (1) − 4K 𝛼−2 (2) − 2 𝛼−1 33− 𝛼 K 𝛼−2 (3) 3− 𝛼
+(∗) ≈ 4𝜁 (𝛼 − 2) − 12𝜁 (𝛼 − 1) + 8𝜁 (𝛼) −
+𝑛
+.
+−
+(𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+(𝛼 − 2) (𝛼 − 1)
+(B.44)
+Finally, by replacing the term denoted by (∗) in Eq. (B.39) by the above expression, we determine the scaling of the spectral gap,
+see Eq. (A.9). Refer to Fig. B.3(b) for a comparison of this asymptotic result (A.9) to exact numeric results.
+The final quantity to evaluate is E ( 𝑘®max ). We start from the definition
+E ( 𝑘®max ) = −𝜀0 +
+
+∑︁
+
+cos( 𝑘®max · 𝑗®)/|| 𝑗®|| 1𝛼 = −𝜀0 +
+
+𝑛/2
+∑︁
+
+(| 𝑗1 | + | 𝑗 2 | + | 𝑗 3 |) − 𝛼 cos (𝜋 𝑗1 + 𝜋 𝑗 2 + 𝜋 𝑗 3 ) .
+
+(B.45)
+
+𝑗1 , 𝑗2 , 𝑗3 =−𝑛/2+1;
+| 𝑗1 |+| 𝑗2 |+| 𝑗3 |≠0
+
+𝑗®≠®0
+
+Noting that cos (𝜋 𝑗 1 + 𝜋 𝑗 2 + 𝜋 𝑗 3 ) = (−1) 𝑗1 + 𝑗2 + 𝑗3 for 𝑗1 + 𝑗 2 + 𝑗 3 ∈ Z, we expand Eq. (B.45):
+E ( 𝑘®max ) = − 𝜀 0 +
+
+𝑛/2
+∑︁
+
+( 𝑗1 + 𝑗2 + 𝑗3 )
+𝑗1 , 𝑗2 , 𝑗3 =0;
+𝑗1 + 𝑗2 + 𝑗3 ≠0
+
++3
+
+𝑛/2
+∑︁
+
+𝑛/2−1
+∑︁
+
+−𝛼
+
+(−1)
+
+𝑗1 + 𝑗2 + 𝑗3
+
++
+
+𝑛/2−1
+∑︁
+
+( 𝑗 1 + 𝑗 2 + 𝑗 3 ) − 𝛼 (−1) 𝑗1 + 𝑗2 + 𝑗3
+
+( 𝑗 1 + 𝑗 2 + 𝑗 3 ) − 𝛼 (−1) 𝑗1 + 𝑗2 − 𝑗3 + 3
+
+𝑗1 , 𝑗2 =0 𝑗3 =1
+
+|
+
+(B.46)
+
+𝑗1 , 𝑗2 , 𝑗3 =1
+𝑛/2 ∑︁
+𝑛/2−1
+∑︁
+
+( 𝑗 1 + 𝑗 2 + 𝑗 3 ) − 𝛼 (−1) 𝑗1 − 𝑗2 − 𝑗3 .
+
+𝑗1 =0 𝑗2 , 𝑗3 =1
+
+{z
+A
+
+}
+
+18
+To analytically extract the scaling, we express the first and second term of Eq. (B.46) as a series of summations that contain only
+a single summation index. An identical strategy is implemented in the treatment of two-dimensional hypercubic lattices, see
+Sec. B 2. We obtain
+𝑛/2
+∑︁
+
+( 𝑗 1 + 𝑗 2 + 𝑗 3 ) − 𝛼 (−1) 𝑗1 + 𝑗2 + 𝑗3 =
+
+𝑗1 , 𝑗2 , 𝑗3 =0;
+𝑗1 + 𝑗2 + 𝑗3 ≠0
+
+𝑛/2
+∑︁
+1
+
+2
+
+𝑥=1
+
++
+
+(−1) 𝑥 (𝑥 2 + 3𝑥 + 2)𝑥 − 𝛼 +
+
+𝑛/2−1
+∑︁
+
+
+(−1)
+
+𝑛/2+𝑥
+
+𝑥=1
+
+
+−𝛼
+1
+3𝑛
+(−1) 3𝑛/2−𝑥+1 𝑥(𝑥 + 1)
+−𝑥+1
+2
+2
+𝑥=1
+
+𝑛/2+1
+∑︁
+
+
+−𝛼
+𝑛
+1
+𝑛
+−𝑥 + 𝑥 + (𝑛 + 2) (𝑛 + 4)
++𝑥
+,
+2
+8
+2
+2
+
+(B.47)
+
+and similarly for the second term of Eq. (B.46). From the more transparent structure of Eq. (B.47), it is possible to derive the
+asymptotic results
+𝑛/2
+∑︁
+
+
+
+
+1
+3
+1− 𝛼
+−
+𝜁 (𝛼 − 2) + 3 2
+−
+𝜁 (𝛼 − 1) + (21− 𝛼 − 1)𝜁 (𝛼) ,
+2
+2
+
+(B.48)
+
+
+
+
+
+𝑛/2−1
+∑︁
+1
+3
+−𝛼
+𝑗1 + 𝑗2 + 𝑗3
+2− 𝛼
+1− 𝛼
+( 𝑗 1 + 𝑗 2 + 𝑗 3 ) (−1)
+≈ 2
+𝜁 (𝛼 − 2) − 3 2
+𝜁 (𝛼 − 1) + (21− 𝛼 − 1)𝜁 (𝛼) .
+−
+−
+2
+2
+𝑗 , 𝑗 , 𝑗 =1
+
+(B.49)
+
+( 𝑗1 + 𝑗2 + 𝑗3 )
+𝑗1 , 𝑗2 , 𝑗3 =0;
+𝑗1 + 𝑗2 + 𝑗3 ≠0
+
+1
+
+2
+
+−𝛼
+
+(−1)
+
+𝑗1 + 𝑗2 + 𝑗3
+
+
+
+2− 𝛼
+
+≈ 2
+
+3
+
+In fact, this asymptotic behavior comes solely from the first term of (B.47), since the other terms tend toward zero for an
+increasing number of lattice sites 𝑛. See, for example, the calculation of Eq. (B.23) for the two-dimensional lattice and the
+discussion thereof. Now, we reformulate the final two terms of Eq. (B.46), denoted by A, as
+A=
+
+𝑛/2−1
+𝑛/2
+3 ∑︁ − 𝛼
+3 ∑︁ − 𝛼
+𝑥 (−1) 𝑥 𝑥(𝑥 + 1) +
+𝑥 (−1) 𝑥 𝑥(𝑥 − 1) + 𝐶 ,
+2 𝑥=1
+2 𝑥=1
+
+(B.50)
+
+where 𝐶 → 0 for large 𝑛. As a result, A can be approximated by
+A ≈ −3 2− 𝛼 [(2 𝛼 − 8) 𝜁 (𝛼 − 2) + 𝑖 𝑛 (𝑎 + 𝑏)] ,
+(B.51)
+
+
+
+
+
+
+with 𝑎 = 2𝜁 𝛼 − 2, 𝑛4 − 4𝜁 𝛼 − 2, 𝑛4 + 21 + 2𝜁 𝛼 − 2, 𝑛4 + 1 and 𝑏 = 𝜁 𝛼 − 1, 𝑛4 − 𝜁 𝛼 − 1, 𝑛4 + 1 . As argued in Sec. B 2,
+for very large 𝑛, we have that 𝑛/4 ≈ 𝑛/4 + 1/2 ≈ 𝑛/4 + 1. Asymptotically, the second term of Eq. (B.51) then goes to zero, such
+that A ≈ (3 23− 𝛼 − 3)𝜁 (𝛼 − 2). Substituting the asymptotic results (B.48), (B.49) and A into the expression (B.46) for E ( 𝑘®max ),
+we get
+E ( 𝑘®max ) ≈ −𝜀0 + (25− 𝛼 − 4)𝜁 (𝛼 − 2) + (22− 𝛼 − 2)𝜁 (𝛼) .
+
+(B.52)
+
+In Fig. B.3(c) we demonstrate that this asymptotic result (B.52) captures the true behavior of the largest eigenenergy well.
+
+4.
+
+Four-dimensional hypercube (𝑑 = 4)
+
+Constant energy shift. From the definition of 𝜅 0 we write
+𝜅0 =
+
+∑︁
+𝑗®≠0®
+
+1/|| 𝑗®|| 1𝛼 =
+
+𝑛/2
+∑︁
+
+𝑛/2−1
+∑︁
+
+(| 𝑗1 | + | 𝑗 2 | + | 𝑗 3 | + | 𝑗 4 |) − 𝛼 = 16
+
+𝑗1 , 𝑗2 , 𝑗3 , 𝑗4 =−𝑛/2+1;
+| 𝑗1 |+| 𝑗2 |+| 𝑗3 |+| 𝑗4 |≠0
+
+𝑗1 , 𝑗2 , 𝑗3 , 𝑗4 =1
+
++ 32
+
+𝑛/2−1
+∑︁
+
++ 24
+
+𝑗1 , 𝑗2 =1
+
+𝑗1 + 𝑗2 + 𝑗3 +
+
+𝑗1 , 𝑗2 , 𝑗3 =1
+
+( 𝑗 1 + 𝑗 2 + 𝑗 3 ) − 𝛼 + 48
+
+𝑗1 , 𝑗2 , 𝑗3 =1
+𝑛/2−1
+∑︁
+
+𝑛/2−1 
+∑︁
+
+( 𝑗1 + 𝑗 2 + 𝑗 3 + 𝑗 4 ) − 𝛼 + 32
+
+( 𝑗 1 + 𝑗 2 ) − 𝛼 + 24
+
+𝑛/2−1
+∑︁ 
+𝑗1 , 𝑗2 =1
+
+𝑛/2−1
+∑︁
+𝑗1 , 𝑗2 =1
+
+𝑗1 + 𝑗2 +
+
+𝑛 −𝛼
+2
+
+𝑛 −𝛼
+2
+
+( 𝑗1 + 𝑗 2 + 𝑛) − 𝛼 + 8
+
+𝑛/2−1
+∑︁ 
+𝑗1 =1
+
+𝑗1 +
+
+3𝑛
+2
+
+−𝛼
+
+19
+
++ 24
+
+𝑛/2−1
+∑︁
+
+( 𝑗 1 + 𝑛) − 𝛼 + 24
+
+𝑛/2−1
+∑︁ 
+
+𝑗1 =1
+
+𝑗1 +
+
+𝑗1 =1
+
+𝑛/2−1
+∑︁
+𝑛 −𝛼
+( 𝑗 1 ) − 𝛼 + O (𝑛 − 𝛼 ) ,
++8
+2
+𝑗 =1
+1
+
+(B.53)
+where || . . . || 1 denotes the Manhattan norm, 𝑛 = 𝑁 1/4 is the number of sites in each dimension and 𝑗® ≡ ( 𝑗1 , 𝑗2 , 𝑗3 , 𝑗4 ). The
+expansion (B.53) can be treated on a term-by-term basis. Hereafter, we assume 𝑛 ≥ 14 for convenience. This does not impact
+on the validity of the asymptotic result, since we are only interested in the scaling behavior at large 𝑛. With this assumption, we
+expand the first term of Eq. (B.53):
+" 𝑛/2+2
+𝑛/2−1
+∑︁ ( 𝑗 − 3) ( 𝑗 − 2) ( 𝑗 − 1) ∑︁
+𝑗 ( 𝑗 + 1) ( 𝑗 + 2)
+16
+for n≥14
++
+=
+16
+𝛼
+𝛼
+( 𝑗 + 𝑗2 + 𝑗3 + 𝑗4 )
+6𝑗
+6(− 𝑗 + 2𝑛 − 3) 𝛼
+𝑗1 , 𝑗2 , 𝑗3 , 1
+𝑗=1
+𝑗=1
+𝑗4 =1
+|
+{z
+} |
+{z
+}
+𝑛/2−1
+∑︁
+
+(𝑎)
+𝑛/2−2
+
+
+
+1 ∑︁
++
+2 𝑗=1
+|
+
+− 𝑗3 + 𝑗2
+
+𝑛
+2 −4
+
+
+
++𝑗
+
+ 2
+𝑛
+4
+
+−3
+𝛼
+𝑗 + 𝑛2 + 2
+{z
+(𝑐)
+
+
+
+𝑛
++ 24
+
+(B.54)
+
+(𝑏)
+
+𝑛2 − 4
+
+
+
+𝑛/2−3
+
+1 ∑︁
++
+2 𝑗=1
+
+} |
+
+
+
+− 𝑗3 + 𝑗2
+
+
+ #
+𝑛
+− 3 + 24
+𝑛2 − 4
+.
+𝛼
+
+−
+2
+− 𝑗 + 3𝑛
+2
+{z
+}
+
+𝑛
+2 −4
+
+
+
++𝑗
+
+ 2
+𝑛
+4
+
+(𝑑)
+
+After some manipulation, terms (𝑎)–(𝑑) can be rewritten exactly in terms of the differences of infinite sums. These infinite sums
+have the structure of either the Hurwitz 𝜁 function 𝜁 (𝜂, 𝑥) or the Riemann 𝜁 function 𝜁 (𝜂), offering further simplification. The
+asymptotic behavior is then extracted by applying the series expansion of Eq. (B.1). After some algebra, term (𝑎) of Eq. (B.54)
+exhibits the following asymptotic behavior:
+ 
+
+ 1 
+ 11 
+
+ 𝑛
+ 1
+𝑛
+𝑛
+𝑛
+11
+(𝑎) = 𝜁 𝛼 − 2, + 3 − 𝜁 𝛼 − 3, + 3 − 𝜁 𝛼 − 1, + 3 + 𝜁 𝛼, + 3 + 𝜁 (𝛼 − 3) − 𝜁 (𝛼 − 2) + 𝜁 (𝛼 − 1) − 𝜁 (𝛼)
+2
+6
+2
+6
+2
+2
+6
+6
+≈
+
+𝜁 (𝛼 − 3)
+11𝜁 (𝛼 − 1)
+2 𝛼−3 (23 − 11𝛼) 1− 𝛼 2 𝛼−3 (3𝛼 − 17) 2− 𝛼
+− 𝜁 (𝛼 − 2) +
+− 𝜁 (𝛼) +
+𝑛
++
+𝑛
+6
+6
+3(𝛼 − 1)
+3(𝛼 − 2)
+2 𝛼−5 4− 𝛼
+2 𝛼−5 (𝛼 − 15) 3− 𝛼
+𝑛
+−
+𝑛
++ O (𝑛 − 𝛼 ) .
+−
+3(𝛼 − 3)
+3(𝛼 − 4)
+
+(B.55)
+
+Similarly, we determine the asymptotics of the remaining three terms as
+2𝑛−4
+∑︁
+
+(− 𝑗 + 2𝑛 − 3) (− 𝑗 + 2𝑛 − 2) (− 𝑗 + 2𝑛 − 1) − 𝛼
+𝑗
+6
+𝑗=3𝑛/2−2
+
+
+
+ 
+
+
+1
+3𝑛
+3𝑛
+=
+− 𝜁 𝛼 − 3,
+− 2 + 𝜁 (𝛼 − 3, 2𝑛 − 3) + 6(𝑛 − 1) 𝜁 𝛼 − 2,
+− 2 − 𝜁 (𝛼 − 2, 2𝑛 − 3)
+6
+2
+2
+ 
+
+
+ 
+
+
+3𝑛
+3𝑛
+− (12(𝑛 − 2)𝑛 + 11) 𝜁 𝛼 − 1,
+− 2 − 𝜁 (𝛼 − 1, 2𝑛 − 3) + 2(𝑛 − 1) (2𝑛 − 3) (2𝑛 − 1) 𝜁 𝛼,
+− 2 − 𝜁 (𝛼, 2𝑛 − 3)
+2
+2
+ 𝛼
+
+−
+𝛼−3
+−
+𝛼−1
+𝛼+1
+−
+𝛼−3
+−
+𝛼−1
+𝛼
+𝛼
+2
+3
+4 (11𝛼 − 47) + 16 3
+[176 3 − 3 4 ({𝛼 − 14}𝛼 + 57)] 2− 𝛼
+2
+3
+≈
+𝑛1− 𝛼 +
+𝑛
+𝛼−1
+(𝛼 − 2) (𝛼 − 1)
+ 𝛼
+
+4 (𝛼{(𝛼 − 42)𝛼 + 407} − 1518) + 512 3 𝛼+1 3− 𝛼 [4 𝛼 (𝛼{(𝛼 − 18)𝛼 + 143} − 510) + 512 3 𝛼 ] 4− 𝛼
++
+𝑛
++
+𝑛
++ O (𝑛 − 𝛼 ) ,
+2 𝛼+5 3 𝛼+1 (𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+2 𝛼+5 3 𝛼 (𝛼 − 4) (𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+(B.56)
+
+(𝑏) =
+
+𝑛
+∑︁
+
+ 2
+
+ 
+3  𝑛
+
+2 𝑛 
+
+𝑛
+𝑛
+𝑛
+𝑛
+−3 𝑗 − −2 − 𝑗 − −2 +
+−4 𝑗 − −2 +
+𝑛2 − 4
+4
+2
+2
+2
+2
+24
+𝑗=𝑛/2+3
+h
+
+
+i
+h
+
+
+i
+1
+𝑛
+𝑛
+𝜁 (𝛼 − 3, 𝑛 + 1) − 𝜁 𝛼 − 3, + 3 + (𝑛 + 1) 𝜁 𝛼 − 2, + 3 − 𝜁 (𝛼 − 2, 𝑛 + 1)
+=
+2
+2
+2
+h 
+
+i
+h  𝑛
+
+i
+1
+𝑛
+1
+− (𝑛(𝑛 + 4) − 1) 𝜁 𝛼 − 1, + 3 − 𝜁 (𝛼 − 1, 𝑛 + 1) +
+(𝑛(𝑛 + 2) (𝑛 + 4) − 12) 𝜁 𝛼, + 3 − 𝜁 (𝛼, 𝑛 + 1)
+2
+2
+12
+2
+
+(𝑐) =
+
+1 −𝛼
+𝑗
+2
+
+20
+[(11 2 𝛼 − 14) 𝛼 − 23 2 𝛼 + 38] 1− 𝛼 [2 𝛼 (𝛼((𝛼 − 18)𝛼 + 47) + 18) − 4(𝛼 − 5) ((𝛼 − 13)𝛼 + 6)] 3− 𝛼
+𝑛
++
+𝑛
+24(𝛼 − 1)
+96(𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+ 2
+
+6𝛼 − 46𝛼 − 2 𝛼 (𝛼 − 5) (3𝛼 − 5) + 56 2− 𝛼 [−8(𝛼 − 7) (𝛼 − 2)𝛼 + 2 𝛼 (𝛼 − 5) ((𝛼 − 1)𝛼 + 6) + 96] 4− 𝛼
++
+𝑛
++
+𝑛
++ O (𝑛 − 𝛼 ) ,
+24(𝛼 − 2) (𝛼 − 1)
+96(𝛼 − 4) (𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+(B.57)
+
+≈
+
+3𝑛/2−3
+∑︁
+1
+
+"
+
+#
+ 
+3 
+2
+
+
+3𝑛
+3𝑛
+3𝑛
+𝑛
+𝑛  2
+(𝑑) =
+𝑗
+−𝑗 +
+− 2 − −𝑗 +
+−2 +
+− 4 −𝑗 +
+−2 +
+𝑛 −4
+2
+2
+2
+2
+2
+24
+𝑗=𝑛+1
+
+
+
+
+
+
+3𝑛
+1
+3𝑛
+𝜁 (𝛼 − 3, 𝑛 + 1) − 𝜁 𝛼 − 3,
+=
+− 2 − (2𝑛 − 1) 𝜁 (𝛼 − 2, 𝑛 + 1) − 𝜁 𝛼 − 2,
+−2
+2
+2
+2
+
+
+
+
+
+
+3𝑛
+3𝑛
+(𝑛(𝑛(11𝑛 − 6) − 20) + 12)
+(𝑛 − 1) (5𝑛 + 1)
+𝜁 (𝛼 − 1, 𝑛 + 1) − 𝜁 𝛼 − 1,
+𝜁 (𝛼, 𝑛 + 1) − 𝜁 𝛼,
+−2 −
+−2
++
+2
+2
+12
+2
+≈
+
+−𝛼
+
+𝑛2
+−3
+4
+
+
+
+3− 𝛼−1 [2 3 𝛼 (7𝛼 − 19) + 2 𝛼 (47 − 11𝛼)] 1− 𝛼 3− 𝛼−1 [3 2 𝛼 (𝛼 − 11) (𝛼 − 3) − 2 3 𝛼 (𝛼 − 5) (3𝛼 − 8)] 2− 𝛼
+𝑛
++
+𝑛
+8(𝛼 − 1)
+8(𝛼 − 2) (𝛼 − 1)
+3− 𝛼−1 [4 3 𝛼 (𝛼 − 5) ((𝛼 − 13)𝛼 + 6) + 2 𝛼 (222 − 𝛼((𝛼 − 42)𝛼 + 407))] 3− 𝛼
++
+𝑛
+32(𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+3− 𝛼−1 [8 3 𝛼 ((𝛼 − 7) (𝛼 − 2)𝛼 + 60) − 3 2 𝛼 (𝛼((𝛼 − 18)𝛼 + 143) + 138)] 4− 𝛼
+𝑛
++ O (𝑛 − 𝛼 ) .
++
+32(𝛼 − 4) (𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+
+(B.58)
+
+Combining the results of Eqs. (B.55)–(B.58) up to O (𝑛3− 𝛼 ), which is the first sub-leading-order contribution to 𝜅0 when 𝑑 = 4,
+we find
+
+
+𝑛/2−1
+∑︁
+3 𝛼 −3 2 𝛼+3 + 4 𝛼 − 64 + 81 4 𝛼
+− 𝛼 8𝜁 (𝛼 − 3) + 88𝜁 (𝛼 − 1)
+− 16(𝜁 (𝛼 − 2) + 𝜁 (𝛼)) − 𝛼−2 𝛼
+𝑛4− 𝛼 .
+16
+( 𝑗1 + 𝑗2 + 𝑗3 + 𝑗4 ) ≈
+3
+2
+3
+(𝛼
+−
+4)
+(𝛼
+−
+3)
+(𝛼
+−
+2)
+(𝛼
+−
+1)
+𝑗 , 𝑗 , 𝑗 , 𝑗 =1
+1
+
+2
+
+3
+
+4
+
+(B.59)
+Moreover, it can be checked that the second term appearing in Eq. (B.53) is O (𝑛3− 𝛼 ) and has no constants, i.e. no 𝑛-independent
+terms. Therefore, its contribution can immediately be neglected in our asymptotic analysis. For the third term, see Eq. (B.53),
+we already derived the asymptotic expression in Sec. B 3. We therefore multiply Eq. (B.31) by 4 to obtain
+𝑛/2−1
+∑︁
+
+32
+
+( 𝑗 1 + 𝑗 2 + 𝑗 3 ) − 𝛼 ≈ 16𝜁 (𝛼 − 2) − 48𝜁 (𝛼 − 1) + 32𝜁 (𝛼) −
+
+𝑗1 , 𝑗2 , 𝑗3 =1
+
+22 31− 𝛼 (9 2 𝛼 − 8 3 𝛼 + 6 𝛼 ) 3− 𝛼
+𝑛
++ O (𝑛2− 𝛼 ) .
+(𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+
+(B.60)
+
+Likewise, the large-𝑛 asymptotic behavior of the fourth and fifth terms of Eq. (B.53) is determined by Eqs. (B.32) and (B.33), up
+to a constant prefactor. We simply state the results below, refering the reader back to Eqs. (B.32) and (B.33) for further details:
+48
+
+𝑛/2−1
+∑︁ 
+
+𝑗1 + 𝑗2 +
+
+𝑗1 , 𝑗2 =1
+
+24
+
+𝑛/2−1
+∑︁
+
+2 𝛼+3 31− 𝛼 (3 𝛼 − 3) 1− 𝛼 22 31− 𝛼 (9 2 𝛼 − 8 3 𝛼 + 6 𝛼 ) 2− 𝛼
+𝑛 −𝛼
+𝑛
++ O (𝑛 − 𝛼 ) ,
+≈−
+𝑛
++
+(𝛼 − 2) (𝛼 − 1)
+2
+𝛼−1
+
+( 𝑗1 + 𝑗 2 ) − 𝛼 ≈ 24𝜁 (𝛼 − 1) − 24𝜁 (𝛼) +
+
+𝑗1 , 𝑗2 =1
+
+24 1− 𝛼
+12 (2 𝛼 − 2) 2− 𝛼
+𝑛
++
+𝑛
++ O (𝑛 − 𝛼 ) .
+𝛼−1
+(𝛼 − 2) (𝛼 − 1)
+
+(B.61)
+
+(B.62)
+
+In Eq. (B.53) the sixth term can be treated similarly, such that
+24
+
+𝑛/2−1
+∑︁
+
+( 𝑗 1 + 𝑗 2 + 𝑛) − 𝛼 = 24
+
+𝑗1 , 𝑗2 =1
+
+
+
+( 𝑗 − 1) ( 𝑗 + 𝑛) − 𝛼 + 24
+
+𝑗=1
+
+
+
+= 24 3𝑛 𝜁 𝛼,
+≈−
+
+𝑛/2
+∑︁
+
+
+
+
+
+𝑛/2−2
+∑︁
+
+𝑗 (2𝑛 − 𝑗 − 1) − 𝛼
+
+𝑗=1
+
+
+
+3𝑛
+3𝑛
++ 1 − 2𝜁 𝛼 − 1,
++ 1 + 𝜁 (𝛼 − 1, 𝑛) + 𝜁 (𝛼 − 1, 2𝑛 − 1) − (𝑛 + 1) 𝜁 (𝛼, 𝑛) + (1 − 2𝑛) 𝜁 (𝛼, 2𝑛 − 1) + 𝑛 − 𝛼
+2
+2
+
+3 23− 𝛼 (2 𝛼 − 2) 1− 𝛼 22− 𝛼 31− 𝛼 [2 3 𝛼 (2 𝛼 + 4) − 9 4 𝛼 ] 2− 𝛼
+𝑛
++
+𝑛
++ O (𝑛 − 𝛼 ) .
+𝛼−1
+(𝛼 − 2) (𝛼 − 1)
+
+
+
+(B.63)
+
+21
+
+(a)
+
+(b)
+
+(c)
+
+FIG. B.4. (a) Comparison of the exact numeric value (solid curve) of 𝜅0 (B.53) with the asymptotic result (B.65) (dashed). Inset shows the
+absolute percentage deviation, APD = 100 × |(E − A)/E|, of the asymptotic result 𝐴 from the exact result 𝐸 as a function of 𝛼. We set
+𝑛 = 𝑁 1/4 = 20. (b) Scaling of the spectral gap 𝛿 (A.12) (solid curves) with 𝑛, and a comparison to exact numeric results (data points). (c) A
+comparison between analytic (A.13) (solid curves) and exact numeric results (data points) for E ( 𝑘®max ). In both (b) and (c) dashed horizontal
+lines represent the case of nearest-neighbor hopping (𝛼 → ∞).
+
+Note that the leading-order term of Eq. (B.63) is sub-leading-order in the context of the full energy 𝜅0 , thus making a negligible
+contribution to 𝜅 0 in the large-𝑛 limit. Finally, we combine the last four terms of 𝜅 0 (B.53), for which the scaling follows directly
+from the steps provided in Eqs. (B.34)–(B.36) of Sec. B 3, leading to
+𝑛/2−1
+∑︁ 
+
+−𝛼
+
+𝑛/2−1
+∑︁
+𝑛 −𝛼
+( 𝑗1 ) − 𝛼
++8
+2
+𝑗1 =1
+𝑗1 =1
+𝑗1 =1
+𝑗1 =1
+
+
+ 𝛼
+
+
+
+
+
+
+
+(−2 3 𝛼 − 3 4 𝛼 + 12 𝛼 ) 1− 𝛼
+2
+3𝑛
+𝑛
+( 𝛼)
+−𝛼
++ 3𝜁 𝛼, + 1 − 𝜁 (𝛼, 2𝑛) − 𝛼 + 3 𝑛
+≈ 8 𝜁 (𝛼) +
+𝑛
+= 8 𝐻𝑛/2−1 − 2𝜁 𝛼,
++ O (𝑛 − 𝛼 ) ,
+2
+2
+3
+6 𝛼 (𝛼 − 1)
+(B.64)
+
+Last 4 terms: 8
+
+𝑗1 +
+
+3𝑛
+2
+
++ 24
+
+𝑛/2−1
+∑︁
+
+( 𝑗 1 + 𝑛) − 𝛼 + 24
+
+𝑛/2−1
+∑︁ 
+
+𝑗1 +
+
+where only the 𝛼-dependent constant, 8𝜁 (𝛼), will enter in the final asymptotic expansion of 𝜅0 . Using Eqs. (B.59), (B.60),
+(B.62), and (B.64), we obtain, for large 𝑛,
+
+4 −26− 𝛼 + 2 𝛼 + 2 𝛼 34− 𝛼 − 24 4− 𝛼
+16
+8
+𝑛
++ O (𝑛3− 𝛼 ) .
+(B.65)
+𝜅 0 ≈ 𝜁 (𝛼 − 3) + 𝜁 (𝛼 − 1) −
+3
+3
+(𝛼 − 4) (𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+As observed in Secs. B 1–B 3, 𝛼 = 𝑑 separates two asymptotic regimes, each with distinct behavior. In the 𝛼 < 4 regime,
+𝜅 0 ∼ 𝑛4− 𝛼 . However, when 𝛼 > 4, 𝜅0 is approximated by an 𝛼-dependent constant 83 𝜁 (𝛼 − 3) + 16
+3 𝜁 (𝛼 − 1), which naturally
+becomes more accurate with increasing 𝑛 due to the suppression of sub-leading-order terms scaling as ∼ 𝑛 𝑥− 𝛼 , 𝑥 < 4. For an
+illustration of the accuracy of the asymptotic result (B.65), refer to Fig. B.4(a).
+Scaling of 𝜹 and E( 𝒌® max ). The (unnormalized) spectral gap is expressed as
+𝛿 = −𝜅0 +
+
+∑︁
+
+cos( 𝑘®1 · 𝑗®)/|| 𝑗®|| 1𝛼 = −𝜅0 +
+
+𝑛/2
+∑︁
+
+(| 𝑗 1 | + | 𝑗 2 | + | 𝑗 3 | + | 𝑗 4 |) − 𝛼 cos (2𝜋 𝑗1 /𝑛) .
+
+(B.66)
+
+𝑗1 , 𝑗2 , 𝑗3 , 𝑗4 =−𝑛/2+1;
+| 𝑗1 |+| 𝑗2 |+| 𝑗3 |+| 𝑗4 |≠0
+
+®𝑗 ≠0®
+
+Following the same approach as in Sections B 2 and B 3, we recast the gap (B.66) in a form that only accounts for constants and
+leading-order contributions in 𝑛:
+𝛿 = −𝜅0 + 16𝜁 (𝛼 − 2) − 24𝜁 (𝛼 − 1) + 16𝜁 (𝛼) + 16
+
+𝑛/2−1
+∑︁
+
+cos(2𝜋 𝑗 1 /𝑛) ( 𝑗 1 + 𝑗 2 + 𝑗 3 + 𝑗 4 ) − 𝛼 +O (𝑛3− 𝛼 ) .
+
+(B.67)
+
+𝑗1 , 𝑗2 , 𝑗3 , 𝑗4 =1
+
+|
+
+{z
+
+}
+
+(∗)
+
+The quadruple summation, denoted by (∗) (B.67), is simplified by evaluating the summations with indices 𝑗 𝑖=2,3,4 , whereby
+8
+
+𝑛/2−1
+∑︁
+𝑗2 , 𝑗3 , 𝑗4 =1
+
+( 𝑗1 + 𝑗2 + 𝑗3 + 𝑗4 ) − 𝛼 = 4
+
+𝑛/2+1
+∑︁
+𝑗=1
+
+( 𝑗 − 2) ( 𝑗 − 1) ( 𝑗 + 𝑗 1 ) − 𝛼 +
+
+3𝑛/4
+∑︁
+𝑗=𝑛/2+2
+
+
+
+
+−8 𝑗 2 + 12 𝑗𝑛 − 3𝑛(𝑛 + 2) + 8 ( 𝑗 + 𝑗 1 ) − 𝛼
+
+22
+
++
+
+
+3𝑛/4−3
+∑︁
+𝑗=𝑛/2
+
+
+𝑛/2−1
+∑︁
+6𝑛(2 𝑗 + 3) − 8( 𝑗 + 1) ( 𝑗 + 3) − 3𝑛2
+𝑗 ( 𝑗 + 1)
++4
+
+𝛼
+
+𝛼 .
+3𝑛
+− 𝑗 + 𝑗1 + 2 − 2
+− 𝑗 + 𝑗 1 + 3𝑛
+−
+2
+𝑗=1
+2
+
+(B.68)
+
+Exploiting this representation (B.68) in terms of single-index summations, we express each summation as the difference of infinite
+sums. After some manipulation and shifting of indices, the infinite summations evaluate to Hurwitz zeta functions 𝜁 (𝜂, 𝑥) and
+Eq. (B.68) reduces to
+
+8
+
+𝑛/2−1
+∑︁
+
+( 𝑗1 + 𝑗 2 + 𝑗 3 + 𝑗 4 ) − 𝛼 = 4𝜁 (𝛼 − 2, 𝑗 1 + 1) − 4(2 𝑗1 + 3)𝜁 (𝛼 − 1, 𝑗1 + 1) + 4( 𝑗1 + 1) ( 𝑗 1 + 2)𝜁 (𝛼, 𝑗 1 + 1)
+
+𝑗2 , 𝑗3 , 𝑗4 =1
+
+
+
+
+𝑛
+3𝑛
+− 12𝜁 𝛼 − 2, 𝑗 1 + + 2 − 4𝜁 𝛼 − 2, 𝑗 1 +
+− 2 + 12𝜁 (𝛼 − 2, 𝑗1 + 𝑛 − 1)
+2
+2
+
+
+
+
+3𝑛
+𝑛
+−2
++ 12(2 𝑗 1 + 𝑛 + 1)𝜁 𝛼 − 1, 𝑗 1 + + 2 + 4(2 𝑗 1 + 3𝑛 − 3)𝜁 𝛼 − 1, 𝑗 1 +
+2
+2
+
+
+𝑛
+− 12(2 𝑗 1 + 2𝑛 − 1)𝜁 (𝛼 − 1, 𝑗 1 + 𝑛 − 1) − 3(2 𝑗 1 + 𝑛) (2 𝑗 1 + 𝑛 + 2)𝜁 𝛼, 𝑗1 + + 2
+2
+
+
+3𝑛
++ (2 𝑗 1 + 3𝑛 − 2) (−2 𝑗1 − 3𝑛 + 4)𝜁 𝛼, 𝑗1 +
+− 2 + 12( 𝑗 1 + 𝑛 − 1) ( 𝑗1 + 𝑛)𝜁 (𝛼, 𝑗 1 + 𝑛 − 1) .
+2
+
+
+(B.69)
+
+Inserting this result into Eq. (B.67), we now extract the asymptotic behavior of the term labeled by (∗). This involves computing
+the twelve terms independently, and later combining the results. For transparency, we state the leading-order behavior with 𝑛
+for each term below. The approach is identical to that implemented in the preceding sections: Approximate the summations
+by integrals and perform a change of variable, followed by a large-𝑛 expansion of the Hurwitz 𝜁 function (B.1). Refer to
+Eqs. (B.70a)–(B.70l) for the final results.
+
+8
+
+𝑛/2−1
+∑︁
+
+
+cos
+
+𝑗1 =1
+
+−8
+
+𝑛/2−1
+∑︁
+
+
+cos
+
+𝑗1 =1
+
+8
+
+𝑛/2−1
+∑︁
+
+
+cos
+
+𝑗1 =1
+
+
+∫ 1
+
+2 𝛼−1
+2𝜋 𝑗1
+𝑑𝑦 cos(𝜋𝑦) 𝑦 3− 𝛼 𝑛4− 𝛼 ,
+𝜁 (𝛼 − 2, 𝑗1 + 1) ≈ 8𝜁 (𝛼 − 3) − 8𝜁 (𝛼 − 2) +
+𝑛
+(𝛼 − 3) 0
+
+(B.70a)
+
+
+
+∫ 1
+2𝛼
+2𝜋 𝑗1
+𝑑𝑦 cos(𝜋𝑦) 𝑦 3− 𝛼 𝑛4− 𝛼 ,
+(2 𝑗 1 + 3)𝜁 (𝛼 − 1, 𝑗1 + 1) ≈ 8 (3𝜁 (𝛼 − 1) − 𝜁 (𝛼 − 3) − 2𝜁 (𝛼 − 2)) −
+𝑛
+𝛼−2 0
+
+
+
+
+
+
+
+𝛼−1 ∫ 1
+
+𝜁 (𝛼 − 3)
+2𝜋 𝑗 1 ( 𝑗 1 + 1) ( 𝑗 1 + 2)
+2𝜁 (𝛼 − 1)
+2
+≈8
++ 𝜁 (𝛼 − 2) +
+− 2𝜁 (𝛼) +
+𝑛
+3
+3
+𝛼−1
+[𝜁 (𝛼, 𝑗 1 + 1)] −1
+
+(B.70b)
+
+3− 𝛼
+𝑑𝑦 cos(𝜋𝑦) 𝑦
+𝑛4− 𝛼 ,
+
+0
+
+(B.70c)
+−24
+
+𝑛/2−1
+∑︁
+
+
+cos
+
+𝑗1 =1
+
+−8
+
+𝑛/2−1
+∑︁
+
+
+cos
+
+𝑗1 =1
+𝑛/2−1
+∑︁
+
+ 
+∫ 1
+
+
+2𝜋 𝑗 1
+𝑛
+3 2 𝛼−1
+𝜁 𝛼 − 2, 𝑗 1 + + 2 ≈ −
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 1) 3− 𝛼 𝑛4− 𝛼 ,
+𝑛
+2
+𝛼−3
+0
+
+(B.70d)
+
+ 
+
+∫ 1
+
+3𝑛
+2 𝛼−1
+2𝜋 𝑗 1
+𝜁 𝛼 − 2, 𝑗 1 +
+−2 ≈−
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 3) 3− 𝛼 𝑛4− 𝛼 ,
+𝑛
+2
+𝛼−3 0
+
+(B.70e)
+
+
+∫ 1
+
+2𝜋 𝑗 1
+3 2 𝛼−1
+3− 𝛼
+24
+cos
+𝜁 (𝛼 − 2, 𝑗1 + 𝑛 − 1) ≈
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 2)
+𝑛4− 𝛼 ,
+𝑛
+𝛼−3
+0
+𝑗 =1
+
+
+(B.70f)
+
+1
+
+𝑛/2−1
+∑︁
+
+
+∫ 1
+
+
+
+2𝜋 𝑗 1
+𝑛
+3 2𝛼
+3− 𝛼
+24
+cos
+(2 𝑗 1 + 𝑛 + 1)𝜁 𝛼 − 1, 𝑗 1 + + 2 ≈
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 1)
+𝑛4− 𝛼 ,
+𝑛
+2
+𝛼
+−
+2
+0
+𝑗 =1
+
+
+(B.70g)
+
+1
+
+8
+
+𝑛/2−1
+∑︁
+
+
+cos
+
+𝑗1 =1
+
+−24
+
+𝑛/2−1
+∑︁
+𝑗1 =1
+
+
+cos
+
+
+
+
+∫ 1
+
+2𝜋 𝑗 1
+3𝑛
+2𝛼
+(2 𝑗 1 + 3𝑛 − 3)𝜁 𝛼 − 1, 𝑗 1 +
+−2 ≈
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 3) 3− 𝛼 𝑛4− 𝛼 ,
+𝑛
+2
+𝛼−2 0
+
+(B.70h)
+
+
+∫ 1
+
+2𝜋 𝑗 1
+3 2𝛼
+(2 𝑗 1 + 2𝑛 − 1)𝜁 (𝛼 − 1, 𝑗 1 + 𝑛 − 1) ≈ −
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 2) 3− 𝛼 𝑛4− 𝛼 ,
+𝑛
+𝛼−2 0
+
+(B.70i)
+
+23
+
+−6
+
+𝑛/2−1
+∑︁
+
+
+cos
+
+𝑗1 =1
+
+2
+
+𝑛/2−1
+∑︁
+
+
+cos
+
+𝑗1 =1
+
+
+
+∫ 1
+
+
+𝑛
+3 2 𝛼−1
+2𝜋 𝑗 1
+(2 𝑗 1 + 𝑛) (2 𝑗 1 + 𝑛 + 2)𝜁 𝛼, 𝑗1 + + 2 ≈ −
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 1) 3− 𝛼 𝑛4− 𝛼 ,
+𝑛
+2
+𝛼−1
+0
+
+(B.70j)
+
+
+
+
+
+∫ 1
+2𝜋 𝑗 1
+3𝑛
+2 𝛼−1
+(2 𝑗 1 + 3𝑛 − 2) (−2 𝑗1 − 3𝑛 + 4)𝜁 𝛼, 𝑗1 +
+−2 ≈−
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 3) 3− 𝛼 𝑛4− 𝛼 ,
+𝑛
+2
+𝛼−1 0
+(B.70k)
+
+24
+
+𝑛/2−1
+∑︁
+𝑗1 =1
+
+
+cos
+
+
+𝛼−1 ∫ 1
+
+
+
+2𝜋 𝑗 1
+32
+( 𝑗1 + 𝑛 − 1) ( 𝑗1 + 𝑛)𝜁 (𝛼, 𝑗 1 + 𝑛 − 1) ≈
+𝑛
+𝛼−1
+
+
+
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 2) 3− 𝛼 𝑛4− 𝛼 .
+
+(B.70l)
+
+0
+
+In the asymptotic results, see Eqs. (B.70a)–(B.70l), there are several integrals, all contributing to the 𝛼-dependent prefactors of
+the terms scaling as ∼ 𝑛4− 𝛼 . These have analytic solutions, and are given by
+
+
+𝛼 1
+𝛼
+𝜋2
+∫ 1
+1 𝐹2 2 − 2 ; 2 , 3 − 2 ; − 4
+𝑑𝑦 cos(𝜋𝑦) 𝑦 3− 𝛼 = −
+, for 𝛼 < 4 ,
+(B.71a)
+𝛼−4
+0
+∫ 1
+1
+(B.71b)
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 1) 3− 𝛼 = − K 𝛼−3 (1) + 23− 𝛼 K 𝛼−3 (2) ,
+2
+0
+∫ 1
+34− 𝛼
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 2) 3− 𝛼 = 23− 𝛼 K 𝛼−3 (2) −
+K 𝛼−3 (3) ,
+(B.71c)
+2
+0
+∫ 1
+1
+𝑑𝑦 cos(𝜋𝑦) (𝑦 + 3) 3− 𝛼 = 27−2𝛼 K 𝛼−3 (4) − 34− 𝛼 K 𝛼−3 (3) ,
+(B.71d)
+2
+0
+with 1 𝐹2 the generalized hypergeometric function and K𝑛 (𝑧) ≡ 𝐸 𝑛 (𝑖𝜋𝑧) + 𝐸 𝑛 (−𝑖𝜋𝑧), with 𝐸 𝑛 (±𝑖𝜋𝑧) denoting the exponential
+integral function, introduced to compactify notation. Combining Eqs. (B.70a)–(B.70l) with the explicit solutions (B.71) of the
+integrals, we obtain a simplified expression for the (∗) term (B.67), leading to the spectral gap scaling
+"
+−1
+4− 𝛼 K
+7−2𝛼 K
+8𝜁 (𝛼 − 3) 16𝜁 (𝛼 − 1)
+𝛼−3 (3) − 2
+𝛼−3 (4)
+𝛼 3 2 K 𝛼−3 (1) − 3
+𝛿 ≈ −𝜅0 +
++
++2
+3
+3
+(𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+ #
+
+𝛼
+𝜋2
+𝛼 1
+1 𝐹2 2 − 2 ; 2 , 3 − 2 ; − 4
+𝑛4− 𝛼 .
+(B.72)
+−
+(𝛼 − 4) (𝛼 − 3) (𝛼 − 2) (𝛼 − 1)
+Result (B.72) accurately approximates the unscaled spectral gap 𝛿 when the number of lattice sites 𝑛 along each spatial dimension
+is sufficiently large, see Fig. B.4(b).
+To normalize the spectral gap, we need to analyze the scaling of E ( 𝑘®max ). Starting from the definition
+E ( 𝑘®max ) = −𝜀0 +
+
+∑︁
+
+cos( 𝑘®max · 𝑗®)/|| 𝑗®|| 1𝛼 = −𝜀0 +
+
+𝑛/2
+∑︁
+
+(| 𝑗1 | + | 𝑗 2 | + | 𝑗 3 | + | 𝑗 4 |) − 𝛼 cos (𝜋 𝑗 1 + 𝜋 𝑗 2 + 𝜋 𝑗 3 + 𝜋 𝑗 4 ) ,
+
+(B.73)
+
+𝑗1 , 𝑗2 , 𝑗3 , 𝑗4 =−𝑛/2+1;
+| 𝑗1 |+| 𝑗2 |+| 𝑗3 |+| 𝑗4 |≠0
+
+𝑗®≠®0
+
+the cosine may be replaced by (−1) ℓ , where ℓ = 𝑗1 + 𝑗2 + 𝑗3 + 𝑗4 for compactness, since ℓ ∈ Z. Then, upon expanding the
+quadruple summation and shifting the summation indices, we have
+E ( 𝑘®max ) = −𝜀0 +
+
+𝑛/2
+𝑛/2−1
+𝑛/2
+𝑛/2−1
+𝑛/2
+𝑛/2−1
+𝑛/2
+𝑛/2−1
+∑︁ ∑︁
+∑︁
+∑︁ ∑︁
+∑︁ ∑︁
+∑︁
+−𝛼
+ℓ
+−𝛼
+ℓ
+−𝛼
+ℓ
+−𝛼
+ℓ
+ℓ (−1) + 4
+ℓ (−1) + 6
+ℓ (−1) + 4
+ℓ (−1) +
+ℓ − 𝛼 (−1) ℓ .
+
+𝑗1 , 𝑗2 , 𝑗3 , 𝑗4 =0;
+ℓ≠0
+
+|
+
+{z
+(1)
+
+𝑗1 =1 𝑗2 , 𝑗3 ,
+𝑗4 =0
+
+} |
+
+{z
+(2)
+
+𝑗1 , 𝑗2 =1 𝑗3 , 𝑗4 =0
+
+|
+}
+
+{z
+(3)
+
+𝑗1 , 𝑗2 , 𝑗4 =0
+𝑗3 =1
+
+}
+|
+
+{z
+(4)
+
+𝑗1 , 𝑗2 ,
+𝑗3 , 𝑗4 =1
+
+} |
+
+{z
+
+}
+
+(5)
+
+(B.74)
+The asymptotic scaling of the five terms, labeled (1)–(5), can now be extracted by writing the quadruple summations as a series
+of single summations. In fact, in each expansion, only one term is non-negligible in the large-𝑛 limit. Collectively representing
+terms with a negligible contribution by C𝑖 , with 𝑖 = 1, 2, 3, 4, 5 corresponding to term (𝑖) in Eq. (B.74), we write the single
+summations that contribute significantly to E ( 𝑘®max ) as
+(1) =
+
+𝑛/2
+
+
+1 ∑︁
+(−1) 𝑥 𝑥 3 + 6𝑥 2 + 11𝑥 + 6 𝑥 − 𝛼 + C1
+6 𝑥=1
+
+24
+
+
+
+
+11 21− 𝛼 − 2−1
+23− 𝛼 − 2−1
+3− 𝛼
+𝜁 (𝛼 − 3) + (2
+− 1)𝜁 (𝛼 − 2) +
+𝜁 (𝛼 − 1) + 21− 𝛼 − 1 𝜁 (𝛼) ,
+≈
+3
+3
+𝑛/2−1
+
+
+
+
+
+∑︁
+1 5− 𝛼
+2
+1  4− 𝛼
+(−1) 𝑥 (𝑥 + 1) (𝑥 + 2)𝑥 1− 𝛼 + C2 ≈
+(2) =
+2
+− 2 𝜁 (𝛼 − 3) + 24− 𝛼 − 2 𝜁 (𝛼 − 2) +
+2
+− 22 𝜁 (𝛼 − 1) ,
+3 𝑥=1
+3
+3
+(3) =
+
+𝑛/2
+∑︁
+
+
+
+
+
+(−1) 𝑥 (𝑥 − 1) (𝑥 + 1)𝑥 1− 𝛼 + C3 ≈ 24− 𝛼 − 1 𝜁 (𝛼 − 3) − 22− 𝛼 − 1 𝜁 (𝛼 − 1) ,
+
+𝑥=1
+
+(4) =
+
+𝑛/2+1
+
+
+
+
+2 ∑︁
+1  5− 𝛼
+1  4− 𝛼
+(−1) 𝑥 (𝑥 − 1) (𝑥 − 2)𝑥 1− 𝛼 + C4 ≈
+2
+− 2 𝜁 (𝛼 − 3) − 24− 𝛼 − 2 𝜁 (𝛼 − 2) +
+2
+− 22 𝜁 (𝛼 − 1) ,
+3 𝑥=1
+3
+3
+𝑛/2+2
+
+1 ∑︁
+(5) =
+(−1) 𝑥 (𝑥 − 3) (𝑥 − 2) (𝑥 − 1)𝑥 − 𝛼 + C5
+6 𝑥=1
+
+
+
+
+
+
+1  3− 𝛼
+11  1− 𝛼
+≈
+2
+− 2−1 𝜁 (𝛼 − 3) − 23− 𝛼 − 1 𝜁 (𝛼 − 2) +
+2
+− 2−1 𝜁 (𝛼 − 1) − 21− 𝛼 − 1 𝜁 (𝛼) .
+3
+3
+
+(B.75)
+
+Substituting the asymptotic results (B.75) into expression (B.74), we observe that, to leading-order in 𝑛, E ( 𝑘®max ) scales as
+E ( 𝑘®max ) ≈ −𝜀0 +
+
+
+
+1  6− 𝛼
+1  7− 𝛼
+2
+− 23 𝜁 (𝛼 − 3) +
+2
+− 24 𝜁 (𝛼 − 1) .
+3
+3
+
+(B.76)
+
+Figure B.4(c) shows that this asymptotic result (B.76) provides a reliable description of the behavior of the Laplacian’s largest
+eigenvalue, E ( 𝑘®max ).
+
+APPENDIX C: MAGNITUDE OF THE SEARCH FIDELITY
+
+Here we further discuss the asymptotic behavior of the order parameter 𝜒 𝛼 in the thermodynamic limit 𝑁 → ∞, which in turn
+determines the magnitude of the search fidelity, 𝐹 (𝑇) = | 𝜒 𝛼 | 2 . By definition, we have
+√︃
+𝜒 𝛼 = 𝑆1( 𝛼) / 𝑆2( 𝛼) ,
+
+with
+
+𝑆ℓ( 𝛼) =
+
+1 ∑︁
+® −ℓ ,
+[E 𝛼 ( 𝑘)]
+𝑁
+
+(C.1)
+
+® 0®
+𝑘≠
+
+where E 𝛼 ( ®𝑘) are the eigenvalues of the Laplacian 𝐿 𝛼 . Noting that the hypercubic lattices are regular graphs with vertices of the
+same degree, we can set the energy shift 𝜀0 = 0 without loss of generality; see main text Eq. (2). With this, the energies take the
+® = Í ® ® cos( 𝑘® · 𝑗®)/| 𝑗®| 𝛼 , where | 𝑗®| denotes the Euclidean norm. To proceed, we consider 𝜒 𝛼 (C.1) for two regimes
+form E 𝛼 ( 𝑘)
+𝑗 ≠0
+of the long-range tunneling exponent: (i) 0 ≤ 𝛼 < 𝑑, see Sec. C 1, and (ii) 𝑑 < 𝛼 < 3𝑑/2, see Sec. C 2.
+
+1.
+
+Regime (i): 0 ≤ 𝛼 < 𝑑
+
+For strongly long-range tunneling, with exponent 𝛼 ∈ [0, 𝑑), the dominant contribution to the summation 𝑆ℓ( 𝛼) (C.1) comes
+® at low momentum values. Since 𝑘® = 0® is explicitly excluded, the main contribution will come
+from the eigenvalues E 𝛼 ( 𝑘)
+from the second smallest eigenvalue, i.e. the spectral gap 𝛿 𝛼 . The remaining eigenvalues scale with the lattice size 𝑁, hence
+® tend to zero in the limit 𝑁 → ∞ for ℓ > 0. Consequently, we may write
+the corresponding terms of 𝑆ℓ( 𝛼) , scaling as 1/E 𝛼 ( 𝑘),
+∫
+( 𝛼)
+𝑆ℓ ≈ 21𝜋 BZ d 𝑘® 𝛿 −ℓ
+𝑐 ℓ , containing contributions from the larger Laplacian eigenvalues, tends to zero for
+𝛼 + 𝑐 ℓ , where the term√︁
+/
+𝑁 → ∞. It follows directly that 𝜒 𝛼 ≈ 𝛿 −1
+𝛿 −2
+𝛼 = 1.
+𝛼
+
+2.
+
+Regime (ii): 𝑑 < 𝛼 < 3𝑑/2
+
+® around 𝑘® = 0,
+®
+The behavior of 𝜒 𝛼 (C.1) strongly depends on the momentum-dependence
+of the Laplacian eigenvalues E 𝛼 ( 𝑘)
+∫
+Í
+®
+which we extract by approximating the summations by integrals, ®𝑗 → d 𝑗 , with the integration extending over the entire space,
+
+25
+® Considering each lattice dimension 𝑑 ≤ 4 independently, we perform an appropriate coorindate
+excluding the origin 𝑗® = 0.
+transformation and derive the following leading-order results:
+(
+® 𝛼−𝑑 ,
+𝛼 ∈ (𝑑, 𝑑 + 2)
+® ∝ |𝑘 |
+E 𝛼 ( 𝑘)
+.
+(C.2)
+2
+®
+|𝑘 | ,
+𝛼 > 𝑑+2
+Detailed calculations are provided in the itemized list below.
+∫∞
+(i) In one dimension E 𝛼 (𝑘) ≈ 1 d 𝑗 𝑗 − 𝛼 cos 𝑘 𝑗. For 𝛼 > 0 and 𝑘 ∈ R the integral evaluates to
+∫ ∞
+
+
+d 𝑗 𝑗 − 𝛼 cos 𝑘 𝑗 =
+
+1 𝐹2
+
+1
+𝛼 1 3
+𝛼
+𝑘2
+2 − 2 ; 2, 2 − 2 ; − 4
+
+
+
+𝛼−1
+
+1
+
++ sin
+
+ 𝜋𝛼 
+2
+
+Γ(1 − 𝛼)|𝑘 | 𝛼−1 ,
+
+(C.3)
+
+with 𝑝 𝐹𝑞 (𝑎; 𝑏; 𝑧) the generalized hypergeometric function and Γ the Γ function. Expanding in powers of the momentum
+𝑘, we find the leading-order behavior of the dispersion relation
+(
+
+sin 𝜋2𝛼 Γ(1 − 𝛼)|𝑘 | 𝛼−1 ,
+𝛼 ∈ (1, 3)
+.
+(C.4)
+E 𝛼 (𝑘) ∝
+1
+𝑘2 ,
+𝛼>3
+− 2( 𝛼−3)
+∫
+∫
+® ≈ ∞ d 𝑗 1 ∞ d 𝑗 2 ( 𝑗 2 + 𝑗 2 ) − 𝛼/2 cos( 𝑗 1 𝑘 1 +
+(ii) For two spatial dimensions, the eigenenergies can be approximated as E 𝛼 ( 𝑘)
+1
+2
+0
+0
+𝑗2 𝑘 2 ), where we require | 𝑗®| ≠ 0. The latter requirement is included
+explicitly
+later.
+Converting
+to
+polar
+coordinates, the
+√︃
+2
+2
+®
+area element transforms as d 𝑗1 d 𝑗 2 = 𝑟d𝑟d𝜃 with 𝑟 = | 𝑗 | = 𝑗 1 + 𝑗 2 and 𝜃 = arctan( 𝑗2 / 𝑗 1 ), and we find the integral
+∫∞
+∫𝜋
+d𝑟 𝑟 1− 𝛼 0 d𝜃 cos(𝑟 𝑘 cos(𝜃 − 𝜃 𝑘 )) where 𝑘 ≡ | 𝑘® | and 𝜃 𝑘 = arctan(𝑘 2 /𝑘 1 ) is the angle providing the direction of
+1
+the momentum vector ®𝑘. To∫evaluate the∫ angular part of the integral, we perform the change of variable 𝜃 → 𝜃 ′ + 𝜃 𝑘 ,
+∞
+𝜋
+yielding the simplified form 1 d𝑟 𝑟 1− 𝛼 0 d𝜃 ′ cos(𝑟 𝑘 cos(𝜃 ′ )). The cosine term cos(𝑟 𝑘 cos(𝜃 ′ )) can be rewritten using
+Í
+𝑛
+𝑖𝑛 𝜃 with 𝐽 (𝑧) the 𝑛-th Bessel function
+the Jacobi–Anger expansion. In its most generic form, 𝑒 𝑖𝑧 cos( 𝜃 ) ≡ +∞
+𝑛
+𝑛=−∞ 𝑖 𝐽𝑛 (𝑧)𝑒
+of the first kind, giving a convenient expansion of exponentials
+of
+trigonometric
+functions
+in
+the basis of their harmonics.
+Í
+𝑛
+We use the real-valued variation cos(𝑧 cos(𝜃)) ≡ 𝐽0 (𝑧) + 2 ∞
+𝑛=1 (−1) 𝐽2𝑛 (𝑧) cos(2𝑛𝜃). The angular integral is now easily
+evaluated, leaving only the integral over the radial part:
+
+
+
+𝛼
+𝑘2
+𝛼
+∫ ∞
+1 𝐹2 1 − 2 ; 1, 2 − 2 ; − 4
+©
+2− 𝛼 𝛼 Γ − 𝛼2 |𝑘 | 𝛼−2 ª
+1− 𝛼
+®
+­
+
+−
+(C.5)
+𝜋
+d𝑟 𝑟
+𝐽0 (𝑟 𝑘) = 𝜋 ­
+®
+𝛼−2
+Γ 𝛼2
+1
+¬
+«
+for 𝑘 > 0, 𝑘 ∈ R and 𝛼 > 1/2. Performing a series expansion around 𝑘 = 0, we obtain, to leading order in 𝑘,
+( − 𝛼−1
+2
+𝜋 𝛼Γ (− 𝛼/2)
+|𝑘 | 𝛼−2 ,
+𝛼 ∈ (2, 4)
+Γ( 𝛼/2)
+® ∝ −
+E 𝛼 ( 𝑘)
+.
+𝜋
+2
+𝛼>4
+− 8( 𝛼−4) 𝑘 ,
+
+(C.6)
+
+(iii) For 𝑑 = 3 a similar procedure may be followed. After approximating the summation over 𝑗® by an integral, we convert
+to spherical coordinates, with the volume element expressed as d 𝑗® = 𝑟 2 sin 𝜃 d𝑟 d𝜃 d𝜙, 𝑟 = | 𝑗®|, such that E 𝛼 ( ®𝑘) ≈
+∫ 2𝜋
+∫∞
+∫𝜋
+d𝑟 𝑟 2− 𝛼 0 d𝜃 cos(𝑘𝑟 cos 𝜃) sin 𝜃 0 d𝜙. Due to the system being isotropic, we assumed 𝑘® is aligned along the 𝑧-axis,
+1
+for simplification of the angular integrals. The azimuthal integral evaluates to 2𝜋, while the angular integral is
+∫allowing
+𝜋
+d𝜃
+cos(𝑘𝑟
+cos 𝜃) sin 𝜃 = sin(𝑘𝑟)/𝑘𝑟. Substituting this result, we compute the radial component as
+0
+
+
+∫ ∞
+d𝑟
+1
+
+sin(𝑘𝑟) 2− 𝛼
+𝑟
+=
+𝑘𝑟
+
+1 𝐹2
+
+3
+𝛼 3 5
+𝛼
+𝑘2
+2 − 2 ; 2, 2 − 2 ; − 4
+
+𝛼−3
+
+
++ sin
+
+ 𝜋𝛼 
+2
+
+Γ(2 − 𝛼)|𝑘 | 𝛼−3
+
+for 𝑘 ∈ R and 𝛼 > 1. A series expansion then yields the leading-order behavior of the Laplacian eigenenergies:
+(
+
+𝛼 ∈ (3, 5)
+2𝜋 sin 𝜋2𝛼 Γ(2 − 𝛼)|𝑘 | 𝛼−3 ,
+®
+E 𝛼 ( 𝑘) ∝
+.
+𝜋
+2
+− 3( 𝛼−5) 𝑘 ,
+𝛼>5
+
+(C.7)
+
+(C.8)
+
+26
+(iv) In four spatial dimensions, we approximate the eigenenergy summation by an integral and then transform to hyperspherical coordinates,
+with
+𝑑 𝑗® = 𝑟 3 sin2 𝜃 𝑑𝑟 𝑑𝜃 𝑑𝜙1 𝑑𝜙2 . After simplification we obtain
+∫∞
+∫ 𝜋 the volume element
+2
+E 𝛼 ( ®𝑘) ≈ 4𝜋 1 d𝑟 𝑟 3− 𝛼 0 d𝜃 cos(𝑘𝑟 cos 𝜃) sin 𝜃. The remaining angular integral can be evaluated explicitly, giv∫𝜋
+ing 0 d𝜃 cos(𝑘𝑟 cos 𝜃) sin2 𝜃 = 𝜋𝐽1 (𝑘𝑟)/(𝑘𝑟) with 𝐽𝑛 (𝑧) the Bessel function of the first kind. Inserting this result into
+the radial integral leads to
+!
+
+∫ ∞
+
+2
+𝛼  24− 𝛼 |𝑘 | 𝛼−4
+𝛼
+𝑘
+𝐽1 (𝑘𝑟) 3− 𝛼
+𝛼
+2
+2
+
+𝑟
+= 𝜋 Γ 2−
+(C.9)
+d𝑟
+− 1 𝐹˜2 2 − ; 2, 3 − ; −
+4𝜋
+𝑘𝑟
+2
+2
+2
+4
+Γ 𝛼2
+1
+for 𝑘 > 0, 𝑘 ∈ R and 𝛼 > 1.5, and where 1 𝐹˜2 is the regularized generalized hypergeometric function and Γ is the Γ
+function, as before. The leading-order behavior of the eigenvalues is then extracted as
+® ∝
+E 𝛼 ( 𝑘)
+
+
+𝜋 2 24− 𝛼 Γ ( 2− 𝛼2 )
+
+
+
+|𝑘 | 𝛼−4 ,
+Γ ( 𝛼2 )
+
+𝜋2
+ − 4( 𝛼−6)
+𝑘2 ,
+
+
+𝛼 ∈ (4, 6)
+.
+
+(C.10)
+
+𝛼>6
+
+Combining the results for all spatial dimensions 𝑑 ∈ [1, 4], we obtain Eq. (C.2).
+The next step involves computing 𝑆ℓ(𝑎) . Since we are working in the thermodynamic limit, we approximate the discrete
+momentum space by a continuum:
+∫
+1
+( 𝛼)
+d 𝑘® | 𝑘® | − ( 𝛼−𝑑)ℓ , 𝛼 ∈ (𝑑, 𝑑 + 2) .
+(C.11)
+𝑆ℓ ≈
+2𝜋 BZ
+The prefactors coming from the eigenenergy approximation,
+Eqs. (C.4), (C.6), (C.8) and (C.10) and summarized in Eq. (C.2), do
+√︃
+
+not contribute to the ratio of interest 𝜒 𝛼 = 𝑆1( 𝛼) / 𝑆2( 𝛼) and are therefore neglected. Notice now that the integrand (C.11) depends
+® allowing for the transformation to spherical coordinates in 𝑑 dimensions,
+solely on the magnitude of the momentum vector 𝑘,
+𝑑−1
+®
+®
+| 𝑘 | = 𝑟 and d 𝑘 = Ω𝑑 𝑟 d𝑟, with Ω𝑑 the surface area of the unit sphere in 𝑑 dimensions. Collecting the global prefactors and
+denoting it by 𝑐 𝑑 , we evaluate the integral:
+𝑆ℓ( 𝛼) ≈
+
+𝑐𝑑
+.
+𝑑 + ℓ(𝑑 − 𝛼)
+
+(C.12)
+
+The convergence criterion is Re[𝑑 + ℓ(𝑑 − 𝛼)] > 0. For the cases we√︃consider, the largest value of ℓ is ℓ = 2. This implies that
+
+the integral 𝑆2( 𝛼) diverges for 𝛼 > 3𝑑/2. The value of 𝜒 𝛼 = 𝑆1( 𝛼) / 𝑆2( 𝛼) in the regime 𝛼 > 3𝑑/2 is therefore determined by
+√︃
+the rate of divergence of 𝑆2( 𝛼) compared to 𝑆1( 𝛼) . More precisely, we find that 𝜒 𝛼 → 0. Instead, in the regime 𝛼 ∈ (𝑑, 3𝑑/2),
+Eq. (C.12) leads to
+√︁
+𝑆1( 𝛼)
+3 − 2𝛼/𝑑
+√
+𝜒 𝛼 = √︃
+≈ 𝑐𝑑
+,
+2
+− 𝛼/𝑑
+𝑆2( 𝛼)
+
+(C.13)
+
+exhibiting the behavior of Fig. 3(d) of the main text, where 𝜒 𝛼 acts as an order parameter and decreases monotonically to zero
+for 𝑑 < 𝛼 < 3𝑑/2. The coefficient 𝑐 𝑑 can be determined numerically.
+
+[1] L. K. Grover, A fast quantum mechanical algorithm for database
+search, in Proc. Twenty-Eighth Annu. ACM Symp. Theory Comput. - STOC 96 (ACM Press, Philadelphia, Pennsylvania, United
+States, 1996) pp. 212–219.
+[2] L. K. Grover, Quantum Mechanics Helps in Searching for a
+Needle in a Haystack, Phys. Rev. Lett. 79, 325 (1997).
+[3] C. Zalka, Grover’s quantum searching algorithm is optimal,
+Phys. Rev. A 60, 2746 (1999).
+[4] J. Preskill, Quantum computing in the nisq era and beyond,
+Quantum 2, 79 (2018).
+
+[5] E. Farhi and S. Gutmann, Analog analogue of a digital quantum
+computation, Phys. Rev. A 57, 2403 (1998).
+[6] D. A. Meyer and T. G. Wong, Connectivity is a Poor Indicator
+of Fast Quantum Search, Phys. Rev. Lett. 114, 110503 (2015).
+[7] J. Janmark, D. A. Meyer, and T. G. Wong, Global Symmetry
+is Unnecessary for Fast Quantum Search, Phys. Rev. Lett. 112,
+210502 (2014).
+[8] M. Cattaneo, M. A. C. Rossi, M. G. A. Paris, and S. Maniscalco,
+Quantum spatial search on graphs subject to dynamical noise,
+Phys. Rev. A 98, 052347 (2018).
+
+27
+[9] T. G. Wong, K. Wünscher, J. Lockhart, and S. Severini, Quantum
+walk search on Kronecker graphs, Phys. Rev. A 98, 012338
+(2018).
+[10] S. Chakraborty, L. Novo, A. Ambainis, and Y. Omar, Spatial
+Search by Quantum Walk is Optimal for Almost all Graphs,
+Phys. Rev. Lett. 116, 100501 (2016).
+[11] S. Chakraborty, L. Novo, S. Di Giorgio, and Y. Omar, Optimal
+Quantum Spatial Search on Random Temporal Networks, Phys.
+Rev. Lett. 119, 220503 (2017).
+[12] A. M. Childs and J. Goldstone, Spatial search by quantum walk,
+Phys. Rev. A 70, 022314 (2004).
+[13] S. Aaronson and A. Ambainis, Quantum search of spatial regions, in 44th Annu. IEEE Symp. Found. Comput. Sci. 2003
+Proc. (IEEE Computer. Soc, Cambridge, MA, USA, 2003) pp.
+200–209.
+[14] A. Schreiber, K. N. Cassemiro, V. Potoček, A. Gábris, I. Jex, and
+Ch. Silberhorn, Decoherence and Disorder in Quantum Walks:
+From Ballistic Spread to Localization, Phys. Rev. Lett. 106,
+180403 (2011).
+[15] T. Nitsche, F. Elster, J. Novotný, A. Gábris, I. Jex, S. Barkhofen,
+and C. Silberhorn, Quantum walks with dynamical control:
+graph engineering, initial state preparation and state transfer,
+New Journal of Physics 18, 063017 (2016).
+[16] M. Gräfe and A. Szameit, Integrated photonic quantum walks,
+Journal of Physics B: Atomic, Molecular and Optical Physics
+53, 073001 (2020).
+[17] M. Karski, L. Förster, J.-M. Choi, A. Steffen, W. Alt,
+D. Meschede, and A. Widera, Quantum walk in position space
+with single optically trapped atoms, Science 325, 174–177
+(2009).
+[18] P. M. Preiss, R. Ma, M. E. Tai, A. Lukin, M. Rispoli, P. Zupancic, Y. Lahini, R. Islam, and M. Greiner, Strongly correlated
+quantum walks in optical lattices, Science 347, 1229 (2015).
+[19] A. W. Young, W. J. Eckner, N. Schine, A. M. Childs, and
+A. M. Kaufman, Tweezer-programmable 2d quantum walks in
+a hubbard-regime lattice, Science 377, 885–889 (2022).
+[20] N. Defenu, T. Donner, T. Macrı̀, G. Pagano, S. Ruffo, and
+A. Trombettoni, Long-range interacting quantum systems, Rev.
+Mod. Phys. 95, 035002 (2023).
+[21] M. C. Tran, A. Y. Guo, A. Deshpande, A. Lucas, and A. V.
+Gorshkov, Optimal State Transfer and Entanglement Generation
+in Power-Law Interacting Systems, Phys. Rev. X 11, 031016
+(2021).
+[22] D. Lewis, A. Benhemou, N. Feinstein, L. Banchi, and S. Bose,
+Optimal Quantum Spatial Search with One-Dimensional LongRange Interactions, Phys. Rev. Lett. 126, 240502 (2021).
+[23] G. Anikeeva, O. Marković, V. Borish, J. A. Hines, S. V. Rajagopal, E. S. Cooper, A. Periwal, A. Safavi-Naeini, E. J. Davis,
+and M. Schleier-Smith, Number Partitioning With Grover’s Algorithm in Central Spin Systems, PRX Quantum 2, 020319
+(2021).
+[24] We do not consider the scaling with the error 𝜖 with which the
+fidelity may deviate from unity. See Ref. [30] for a discussion.
+[25] It can be shown that (−𝛾0 𝐿 𝛼 − 𝐸 𝑖 ) is invertible, and that states
+with ⟨𝑤|𝜓𝑖 ⟩ = 0 can be safely neglected since they do not
+contribute to the fidelity.
+[26] M. Fiedler, Algebraic connectivity of graphs, Czechoslov. Math.
+23, 298 (1973).
+[27] S. Hoory, N. Linial, and A. Wigderson, Expander graphs and
+their applications, Bull. Amer. Math. Soc. 43, 439 (2006).
+[28] F. R. K. Chung, Spectral graph theory, in CBMS Regional Conference Series in Mathematics, Vol. 92 (American Mathematical
+Society (AMS), 1997) p. 212.
+[29] A. P. Millán, R. Ghorbanchian, N. Defenu, F. Battiston, and
+
+G. Bianconi, Local topological moves determine global diffusion properties of hyperbolic higher-order networks, Phys. Rev.
+E 104, 054302 (2021).
+[30] S. Chakraborty, L. Novo, and J. Roland, Optimality of spatial
+search via continuous-time quantum walks, Phys. Rev. A 102,
+032214 (2020).
+[31] A. Deshpande, B. Fefferman, M. C. Tran, M. Foss-Feig, and
+A. V. Gorshkov, Dynamical Phase Transitions in Sampling Complexity, Phys. Rev. Lett. 121, 030501 (2018).
+[32] E. H. Lieb and D. W. Robinson, The finite group velocity of
+quantum spin systems, Commun. Math. Phys. 28, 251 (1972).
+[33] M. C. Tran, C.-F. Chen, A. Ehrenberg, A. Y. Guo, A. Deshpande,
+Y. Hong, Z.-X. Gong, A. V. Gorshkov, and A. Lucas, Hierarchy
+of Linear Light Cones with Long-Range Interactions, Phys. Rev.
+X 10, 031009 (2020).
+[34] O. Penrose and L. Onsager, Bose-einstein condensation and
+liquid helium, Phys. Rev. 104, 576 (1956).
+[35] M. C. Angelini, G. Parisi, and F. Ricci-Tersenghi, Relations
+between short-range and long-range ising models, Phys. Rev. E
+89, 062120 (2014).
+[36] G. Bighin, T. Enss, and N. Defenu, Universal scaling in real
+dimension, Nat Commun 15, 4207 (2024).
+[37] S. Alexander and R. Orbach, Density of states on fractals :
+“fractons”, J. Phyique Lett. 43, 625 (1982).
+[38] R. Burioni and D. Cassi, Universal Properties of Spectral Dimension, Phys. Rev. Lett. 76, 1091 (1996).
+[39] A. M. Childs and Y. Ge, Spatial search by continuous-time
+quantum walks on crystal lattices, Phys. Rev. A 89, 052337
+(2014).
+[40] M. Morgado and S. Whitlock, Quantum simulation and computing with rydberg-interacting qubits, AVS Quantum Science
+3, 023501 (2021).
+[41] D. Bluvstein, H. Levine, G. Semeghini, T. T. Wang, S. Ebadi,
+M. Kalinowski, A. Keesling, N. Maskara, H. Pichler, M. Greiner,
+V. Vuletić, and M. D. Lukin, A quantum processor based on
+coherent transport of entangled atom arrays, Nature 604, 451
+(2022).
+[42] P. Richerme, Z.-X. Gong, A. Lee, C. Senko, J. Smith, M. FossFeig, S. Michalakis, A. V. Gorshkov, and C. Monroe, Non-local
+propagation of correlations in quantum systems with long-range
+interactions, Nature (London) 511, 198 (2014).
+[43] P. Jurcevic, B. P. Lanyon, P. Hauke, C. Hempel, P. Zoller,
+R. Blatt, and C. F. Roos, Quasiparticle engineering and entanglement propagation in a quantum many-body system, Nature
+(London) 511, 202 (2014).
+[44] C. Monroe, W. C. Campbell, L.-M. Duan, Z.-X. Gong, A. V.
+Gorshkov, P. W. Hess, R. Islam, K. Kim, N. M. Linke, G. Pagano,
+P. Richerme, C. Senko, and N. Y. Yao, Programmable quantum
+simulations of spin systems with trapped ions, Rev. Mod. Phys.
+93, 025001 (2021).
+[45] A. Periwal, E. S. Cooper, P. Kunkel, J. F. Wienand, E. J. Davis,
+and M. Schleier-Smith, Programmable interactions and emergent geometry in an array of atom clouds, Nature 600, 630
+(2021).
+[46] D. Bluvstein, S. J. Evered, A. A. Geim, S. H. Li, H. Zhou,
+T. Manovitz, S. Ebadi, M. Cain, M. Kalinowski, D. Hangleiter,
+J. P. Bonilla Ataides, N. Maskara, I. Cong, X. Gao,
+P. Sales Rodriguez, T. Karolyshyn, G. Semeghini, M. J. Gullans, M. Greiner, V. Vuletić, and M. D. Lukin, Logical quantum
+processor based on reconfigurable atom arrays, Nature 626, 58
+(2024).
+[47] R. Tao, M. Ammenwerth, F. Gyger, I. Bloch, and J. Zeiher,
+High-fidelity detection of large-scale atom arrays in an optical
+lattice, Phys. Rev. Lett. 133, 013401 (2024).
+
+28
+[48] S. Baier, M. J. Mark, D. Petter, K. Aikawa, L. Chomaz, Z. Cai,
+M. Baranov, P. Zoller, and F. Ferlaino, Extended Bose-Hubbard
+models with ultracold magnetic atoms, Science 352, 201 (2016).
+[49] L. Chomaz, I. Ferrier-Barbut, F. Ferlaino, B. Laburthe-Tolra,
+B. L. Lev, and T. Pfau, Dipolar physics: a review of experiments
+with magnetic quantum gases, Reports on Progress in Physics
+86, 026401 (2022).
+[50] D. H. E. Dubin and T. M. O’Neil, Trapped nonneutral plasmas,
+liquids, and crystals (the thermal equilibrium states), Rev. Mod.
+Phys. 71, 87 (1999).
+[51] J. G. Bohnet, B. C. Sawyer, J. W. Britton, M. L. Wall, A. M. Rey,
+M. Foss-Feig, and J. J. Bollinger, Quantum spin dynamics and
+entanglement generation with hundreds of trapped ions, Science
+352, 1297 (2016).
+[52] E. Agliari, A. Blumen, and O. Mülken, Quantum-walk approach
+to searching on fractal structures, Phys. Rev. A 82, 012305
+(2010).
+[53] R. Sato, T. Nikuni, and S. Watabe, Scaling hypothesis of a spatial
+search on fractal lattices using a quantum walk, Phys. Rev. A
+101, 022312 (2020).
+[54] A. Patel and K. S. Raghunathan, Search on a fractal lattice using
+a quantum random walk, Phys. Rev. A 86, 012332 (2012).
+[55] D. Cassi, Phase transitions and random walks on graphs: A
+generalization of the mermin-wagner theorem to disordered lat-
+
+tices, fractals, and other discrete structures, Phys. Rev. Lett. 68,
+3631 (1992).
+[56] S. Wu and Z. R. Yang, On the role of spectral dimension in
+determining phase transition, J. Phys. A: Math. Gen. 28, 6161
+(1995).
+[57] R. J. Solomonoff, A Formal Theory of Inductive Inference. Part
+I & II, Information and Control 7, 1 (1964).
+[58] A. N. Kolmogorov, Three Approaches to the Quantitative Definition of Information, Int. J. Comput. Math. 2, 157 (1968).
+[59] G. J. Chaitin, On the Length of Programs for Computing Finite
+Binary Sequences: statistical considerations, J. ACM 16, 145
+(1969).
+[60] G. D. Paparo, V. Dunjko, A. Makmal, M. A. Martin-Delgado,
+and H. J. Briegel, Quantum Speedup for Active Learning Agents,
+Phys. Rev. X 4, 031002 (2014).
+[61] E. C. King, M. Linnebacher, P. P. Orth, M. Rizzi, and G. Morigi,
+Data generation for fidelity of spatial search on cubic geometries
+with long-range tunneling, Zenodo 10.5281/zenodo.14745546
+(2025).
+[62] I. Gradshteyn and I. Ryzhik, Table of Integrals, Series, and
+Products (Elsevier Academic Press, 2014).
+[63] G. Nemes, Error bounds for the asymptotic expansion of the
+hurwitz zeta function, Proc. R. Soc. A. 473, 20170363 (2017).
+
+

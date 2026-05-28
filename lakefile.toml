@@ -1,0 +1,10 @@
+name = "graphplay"
+version = "0.1.0"
+defaultTargets = ["graphplay"]
+
+[[lean_lib]]
+name = "Graphplay"
+
+[[lean_exe]]
+name = "graphplay"
+root = "Main"

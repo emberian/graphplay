@@ -1,0 +1,1196 @@
+Deterministic quantum search on all Laplacian integral graphs
+Guanzhong Li,1, ∗ Jingquan Luo,1, ∗ Shiguang Feng,1 and Lvzhou Li1, 2, †
+
+arXiv:2506.21108v1 [quant-ph] 26 Jun 2025
+
+1
+Institute of Quantum Computing and and Software,
+School of Computer Science and Engineering, Sun Yat-sen University, Guangzhou 510006, China
+2
+Quantum Science Center of Guangdong-Hong Kong-Macao Greater Bay Area, Shenzhen, 518045, China
+(Dated: June 27, 2025)
+
+Searching for an unknown marked vertex on a given graph (also known as spatial search) is an
+extensively discussed topic in the area of quantum algorithms, with a plethora of results based on
+different quantum walk models and targeting various types of graphs. Most of these algorithms have
+a non-zero probability of failure. In recent years, there have been some efforts to design quantum
+spatial search algorithms with 100% success probability. However, these works either only work
+for very special graphs or only for the case where there is only one marked vertex. In this work,
+we propose a different and elegant approach to quantum spatial search, obtaining deterministic
+quantum search algorithms that can find a marked vertex with certainty on any Laplacian integral
+graph with any predetermined proportion of marked vertices. Thus, this work discovers the largest
+class of graphs so far that allow deterministic quantum search, making it easy to design deterministic
+quantum search algorithms for many graphs, including the different graphs discussed in previous
+works, in a unified framework.
+
+I.
+
+INTRODUCTION
+
+Quantum walk, the analogy to classical random walk,
+is a widely adopted paradigm to design quantum algorithms for various problems, such as spatial search [1–
+7], element distinctness [8], matrix product verification [9], triangle finding [10], group commutativity [11],
+the welded-tree problem [12], the hidden flat of centers
+problem [13], and so on. There are two types of quantum
+walks: the continuous-time quantum walk (CTQW) and
+the discrete-time quantum walk (DTQW). CTQW is relatively simple, and mainly involves simulating a Hamiltonian H that encodes the structure of the graph. DTQW
+is more diverse, ranging from the earliest and simplest
+coined quantum walk [14, 15] to various Markov chain
+based frameworks [5, 16–19].
+As one of the most important algorithmic applications of quantum walks, spatial search is the fundamental problem of finding a marked vertex on a given graph.
+Quantum algorithms for spatial search on generic graphs
+have been designed via DTQW [3, 5] and CTQW [4], providing a general quadratic speedup compared with classical search algorithms. Besides these elegant results, a
+large body of research on quantum spatial search algorithms focuses on specific graphs [1, 2, 6, 20–27],
+aiming
+√
+at designing a quantum algorithm with O( N ) cost for
+a given graph with N vertices. However, all these algorithms are probabilistic and have a non-zero probability
+of failure.
+Deterministic spatial search on graphs, i.e. finding
+a marked vertex with probability 100%, has been less
+studied until recently. Deterministic quantum search algorithms were proposed for complete bipartite graphs
+
+∗ co-first authors
+† lilvzh@mail.sysu.edu.cn
+
+based on CTQW [28] and DTQW [29], and for complete identity interdependent networks (CIINs) [30] and
+star graphs [31] based on alternating quantum walks [32].
+The significance of designing deterministic quantum algorithms lies not only in theoretically proving that the
+success probability can essentially be 100% without sacrificing quantum speedup, but also in experimentally improving the success rate when the algorithm is implemented on a real quantum computer.
+The research on designing deterministic quantum algorithms can be referred to as derandomization of quantum algorithms, that is, the process of turning probabilistic quantum algorithms into deterministic ones while
+maintaining the original speedup. In addition to deterministic spatial search on graphs, there are also some
+other quantum algorithms that have been derandomized,
+such as deterministic quantum algorithms for Grover
+search [33–36], Simon’s problem [37] (and its generalization [38]), the element distinctness problem [39], triangle
+finding [40] and the welded tree problem [41].
+In an impressive recent work by Wang et al. [7], a novel
+and universal approach was proposed for designing deterministic quantum search algorithms on various Laplacian
+integral graph1 that is also vertex-transitive, such as (see
+Appendix A for their definitions): Johnson graphs, Hamming graphs, Kneser graphs, Grassmann graphs, Rook
+graphs with CIIN being a special case, Complete-square
+graphs and star graphs. Their algorithm also works for
+complete bipartite graphs which are neither Laplacian
+integral nor vertex-transitive, and thus it unifies all the
+previous results on deterministic spatial search and provides new results on more graphs.
+Despite being a general result, the deterministic quantum search algorithm by Wang et al. [7] based on alter-
+
+1 The spectrum of the graph’s Laplacian matrix consists entirely
+
+of integers.
+
+2
+nating quantum walks has some shortcomings:
+√
+1. The algorithm’s complexity is O(2dL N ) (see Theorem 2) and it is related to the depth dL of the
+graph Laplacian (see Definition 1), which may depend on N , as we will see later on some graphs.
+√
+Thus, the complexity can be greater than O( N )
+and therefore not optimal in certain cases.
+2. Only one marked vertex is allowed on the graph,
+and the algorithm fails when dealing with multiple
+marked vertices.
+3. The graph has to be vertex-transitive, which limits the applicability of the algorithm. We will
+later present an interesting type of Laplacian integral graphs that are not vertex-transitive and
+2dL = O(N ).
+In this paper, we overcome all the above limitations
+by proposing a quantum search algorithm that can find
+a marked vertex with certainty on any Laplacian integral graphs with any number of marked vertices. Our
+algorithm is based on the recently proposed controlled
+intermittent quantum walk (CIQW) model [42], which
+generalizes alternating quantum walks [32] by replacing
+its CTQW with controlled-CTQW (see Section II B for
+the definition of CIQW). Specifically, we obtain the following result.
+Theorem 1. For any Laplacian integral graph, a CIQWbased quantum algorithm can find a marked vertex with
+certainty in total evolution time O( √1ε ) and query complexity O( √1ε ), where ε is the proportion of marked vertices known in advance.
+To showcase the advantage of our result, we present
+three types of Laplacian integral graphs for which our
+algorithm outperforms the algorithm given by Wang et
+al. [7]:
+• The antiregular connected graphs AN that have the
+following properties [43]: (i) AN are the only (under
+graph isomorphism) connected graphs with N ≥ 2
+vertices, such that the cardinality of the set of its
+vertex degrees is N − 1 and the duplicated degree
+is ⌊N/2⌋; (ii) AN can be constructed iteratively
+starting from A2 = K2 as shown in Fig. 1; and (iii)
+The Laplacian eigenvalues of AN are {0, 1, · · · , n}\
+{⌊(N + 1)/2⌋}. Thus, AN are not vertex-transitive
+by (i) so that their algorithm is not applicable, and
+the depth of AN are dL = O(log(N )) by (iii).
+• The Johnson graph J(n, k) with k = n2/3 , which
+is used in the quantum walk based algorithm for
+element distinctness [8]. The Laplacian eigenvalues
+of it are i(n + 1 − i) for i ∈ {0, 1, · · · , n2/3 }, and
+numerical simulation shows that 2dL = Θ(n2/3 ).
+• The hypercube H(n, 2) that is the Hamming graph
+H(d, q) with d = n and q = 2. The Laplacian
+
+eigenvalues of it for i ∈ {0, 1, · · · , n}, and thus dL =
+log(n).
+We summarize the costs of our algorithm and the algorithm from [7] on the three types of graphs in Table I.
+TABLE I. Comparison of the costs of the previous algorithm
+and our algorithm on some specific graphs.
+Graphs
+AN
+J(n, n2/3 )
+H(n, 2)
+
+Vertices
+N
+
+n
+N = n2/3
+N = 2n
+
+Wang et al. [7]
+-a √
+n2/3
+√ N
+n N
+
+Theorem
+1
+p
+b
+N/M
+p
+pN/M
+N/M
+
+a The algorithm is not applicable for A
+
+N , since AN are not
+vertex-transitive.
+b M is the number of marked vertices, and the algorithm in [7]
+only works for M = 1.
+
+A.
+
+Related work
+
+In a recent work by Wang et al. [7], a succinct algorithmic framework via alternating quantum walks was
+presented, unifying quantum spatial search, state transfer, and uniform sampling on a large class of graphs.
+The alternating quantum walks model [32] can be seen
+as a mixtuire of CTQW and DTQW, and it interleaves
+CTQW eiHt with oracle queries eiθΠM , where H encodes
+the structure of the graph and the Laplacian matrix or
+the adjacency matrix is commonly used, and ΠM is the
+projection onto the subspace spanned by all the marked
+vertices. We assume the initial state |π⟩, i.e. the uniform superposition of all the vertices, is provided, and
+the system evolves as follows:
+⃗ =
+|⃗t, θ⟩
+
+p
+Y
+
+k=1
+
+eiHtk eiθk ΠM |π⟩ .
+
+(1)
+
+The goal is to choose the appropriate parameters p, t⃗, θ⃗
+⃗ ∥ is close to 1.
+such that ∥ΠM |⃗t, θ⟩
+Applying their framework to quantum spatial search,
+Wang et al. [7] obtained the following result.
+Theorem 2 (Theorem 4 of Ref. [7]). Let G = (V, E)
+be a vertex-transitive graph with N vertices whose Laplacian matrix L has only integer eigenvalues and
+√ |π⟩ =
+P
+dL
+√1
+|v⟩.
+There
+is
+an
+integer
+p
+∈
+O(2
+N ) and
+v∈V
+N
+real numbers γ, θj , tj ∈ [0, 2π) (j ∈ {1, 2, . . . , p}), such
+that the following equation holds for all m ∈ V :
+|π⟩ = e−iγ
+
+p
+Y
+
+j=1
+
+e−iθj |m⟩⟨m| e−iLtj |m⟩.
+
+(2)
+
+By reversing the above process, they obtained deterministic quantum spatial search on Laplacian integral
+graphs that are also vertex-transitive and have a single
+
+3
+2
+
+1
+1
+
+1
+
+2
+
+2
+
+1
+A2
+
+2
+
+4
+
+3
+
+A3
+
+5
+
+2
+
+2
+
+3
+
+3
+
+4
+
+2
+1
+
+1
+
+A4
+
+A5
+
+3
+
+5
+
+6
+4
+
+3
+
+1
+
+1
+
+3
+
+A6
+
+···
+
+···
+
+A7
+
+FIG. 1. Iterative construction of the first few antiregular connected graphs. The number beside each vertex denotes its degree.
+For N ≥ 2, the graph AN +1 can be obtained from AN by adding a new vertex, and connecting it to all vertices with degree
+greater than ⌊N/2⌋ and to one of the two vertices with the same degree ⌊N/2⌋, as shown by the dashed lines.
+
+marked vertex m ∈ V . The positive integer dL in Theorem 2 is the depth of the Laplacian integral graph defined
+below, and it can be as large as the number of distinct
+eigenvalues of L and as small as one.
+Definition 1. For a Laplacian integral graph, let Λ0 :=
+{λ1 , . . . , λN } be its eigenvalues. For k ≥ 0, recursively
+define Λk+1 and Λk+1 by
+λ
+even},
+gcd(Λk )
+λ
+Λk+1 = {λ ∈ Λk :
+odd}.
+gcd(Λk )
+Λk+1 = {λ ∈ Λk :
+
+(3)
+(4)
+
+Then dL is the least k such that Λk contains only 0.
+This paper is organized as follows. Section II introduces some background on spatial search and reviews
+the CIQW model. We then present our algorithm in
+Section III, with an overview given in Section III A and
+a proof of the algorithm’s correctness and the claimed
+complexity shown in Section III B. An analysis of the
+gate complexity is also discussed in Section III C. Finally,
+Section IV summarizes our work.
+II.
+
+PRELIMINARIES
+
+In this paper, we only consider simple undirected connected graphs, where “simple” means the graph has no
+loops or multiple edges between any two vertices. Let
+G = (V, E) be a graph where V is the vertex set and E
+is the edge set. The Laplacian matrix of G is L = D − A,
+where D is the diagonal matrix with Djj = deg(j), the
+degree of vertex j, and A is the {0, 1} adjacency matrix
+of G, where Aij = 1 if and only if (i, j) ∈ E. In other
+words, the entries Li,j of L is given by
+
+
+if i ̸= j and (i, j) ∈ E,
+−1,
+Li,j = 0,
+(5)
+if i ̸= j and (i, j) ∈
+/ E,
+
+deg(j), if i = j.
+
+The Laplacian L of a simple undirected graph G is
+a symmetric matrix, and L is diagonalizable. Its spectrum has the following nice properties: (i) All the eigenvalues of L are non-negative and bounded above by
+
+N := |V | [44]. (ii) 0 is a simple eigenvalue (i.e. with
+multiplicity one) of L if G is connected, and the corresponding eigenvector
+P is the uniform superposition of all
+vertices |π⟩ := √1N v∈V |v⟩ [45].
+A.
+
+Spatial Search
+
+Spatial search is the problem of finding an unknown
+marked vertex on a given graph G. When designing algorithms for this problem, it is generally assumed that
+there is an oracle checking whether a given vertex is the
+marked one, and the algorithm should invoke this oracle
+as few as possible. In quantum computing, the standard
+oracle works as follows:
+OM |b⟩ |v⟩ = |b ⊕ f (v)⟩ |v⟩ ,
+
+(6)
+
+where b ∈ {0, 1}, v ∈ V (G), and the Boolean function
+f (v) = 1 iff v is in the marked set M . In this paper, we
+will use the general oracle eiθΠM which works as:
+(
+eiθ |v⟩ , if v ∈ M ;
+iθΠM
+e
+|v⟩ =
+(7)
+|v⟩ ,
+if v ∈
+/ M.
+The general oracle can be implemented with two invocations of the standard oracle OM as shown in Fig. 2.
+
+|0⟩
+
+Rz (θ)
+OM
+
+Rz (−θ)
+OM
+
+|0⟩
+
+|v⟩
+FIG. 2.
+Quantum circuit implementation of the general
+oracle eiθΠM (Eq. (7)) using the standard oracle OM (Eq. (6))
+and single qubit rotation Rz (θ) = diag(e−iθ/2 , eiθ/2 ).
+
+Quantum algorithms for spatial search are usually
+based on quantum walks. The number of invocations
+of the oracle is defined as the query complexity of the
+algorithm. In addition, the circuit cost to implement the
+quantum walk is also concerned, which in general is proportional to the walk time. Thus, one should optimize
+the query complexity and the walk time when designing
+a quantum walk-based search algorithm.
+
+4
+B.
+
+Controlled intermittent quantum walks
+
+Suppose a graph G has the Laplacian matrix L. The
+controlled intermittent quantum walk (CIQW) on G has
+the state space K ⊗ H, where K consisting of s qubits
+denotes the ancillary space that stores the control signal,
+and H = span{|v⟩ : v ∈ V (G)} spanned by all vertices of
+graph G is the walking space. A CIQW (with m intermittent steps), denoted by W , is defined as follows:
+W :=
+
+m
+Y
+
+
+(Uj ⊗ I) · Λs (eiLtj ) · (U0 ⊗ I),
+
+exactly the phase shift eiβ|π⟩⟨π| around the initial state
+|π⟩ using CIQW.
+For Laplacian integral graphs, we will set k =
+O(log(λN )) in Fig. 3. This allows us to use phase estimation on eiLt to distinguish exactly the zero eigenvalue of L from others, so as to construct a perfect phase
+shift eiβ|π⟩⟨π| of |π⟩. As a result, we can use any of the
+deterministic quantum search schemes [33–36] to find
+a marked vertex with certainty, provided the number of
+marked vertices is known in advance. The details are
+shown below.
+
+(8)
+
+j=1
+
+where Uj for j ∈ {0, 1, . . . , m} are unitary operators
+changing thePcontrol signal in the ancillary space K, and
+Λs (eiLtj ) = l |l⟩ ⟨l| ⊗ eilLtj denotes the controlled unitary transformation that applies (eiLtj )l to H, controlled
+by l ∈ {0, 1, . .Q
+. , 2s − 1} in the ancillary space K. We use
+m
+the notation j=1 Aj := Am Am−1 · · · A1 (rather than
+A1 A2 · · · Am ), since H consists of column vectors and
+the rightmost A1 is applied first. An illustration of the
+CIQW W is shown in Fig. 3.
+As shown in Fig. 3, a CIQW performs a controlled
+CTQW Λs (eiLt1 ) for a period of time under a certain
+control signal generated by U0 , then adjusts the control
+signal by U1 and performs a controlled CTQW Λs (eiLt2 )
+for another period of time under the new control signal,
+repeating the operation in this way. The main cost of
+implementing CIQW W comes from the implementation
+of eiLtj . According to results on Hamiltonian simulation
+(Appendix B), the circuit cost of simulating eiHt is linear
+in the evolution time t. 2
+
+III. DETERMINISTIC SEARCH ON
+LAPLACIAN INTEGRAL GRAPHS
+A.
+
+Algorithm overview
+
+Given a graph with Laplacian matrix L and a marked
+set M , our CIQW-based algorithm starts from the initial
+state |π⟩, the uniform superposition of all the vertices,
+and then performs the CIQW and the oracle eiπΠM alternately. The oracle eiαΠM multiplies a relative phase of
+eiα to vertices |v⟩ in M . An illustration of our algorithm
+is shown in Fig. 4.
+The main idea is to mimic Grover’s search algorithms,
+or more precisely, to implement the generalized Grover’s
+iteration G(α, β) = eiβ|π⟩⟨π| · eiαΠM . As the oracle eiαΠM
+is already provided by Eq. (7), the key is to implement
+
+2 The unitary transformation Λ (eiLtj ) can be implemented with
+s
+iLtj 2j
+
+k successive calls to the controlled CTQW c-e
+= |0⟩ ⟨0| ⊗
+j
+I + |1⟩ ⟨1| ⊗ eiLtj 2 for j ∈ {0, 1, . . . , k − 1}, and thus the total
+evolution time is Tj := tj · (20 + 21 + · · · + 2s−1 ) = (2s − 1)tj .
+
+B.
+
+Proof of Theorem 1
+
+In this subsection, we prove Theorem 1. Our CIQWbased deterministic spatial search algorithm for Laplacian integral graph is shown in Algorithm 1.
+Algorithm 1: Deterministic quantum search on
+Laplacian integral graphs based on CIQW
+1. Prepare P
+the uniform superposition of all vertices
+|π⟩ = √1N v∈V |v⟩.
+√
+2. Repeat the following two steps for k = O(1/ ϵ)
+times, with parameters α, β, k set by Lemma 1.
+(a) Perform a CIQW (Fig. 3) with m = 2
+intermittent steps and s = ⌈log(λN )⌉ ancillary
+qubits to implement exactly the relative phase
+shift eiβ|π⟩⟨π| as shown in Fig. 5.
+(b) Invoke the oracle eiαΠM shown in Fig. 2.
+3. Measure the walking space.
+
+We first show that the quantum circuit shown in Fig. 5
+implements exactly the relative phase shift of the state
+|π⟩, i.e.
+eiβ|π⟩⟨π| = I − (1 − eiβ ) |π⟩ ⟨π| ,
+
+(9)
+
+by applying quantum phase estimation (QPE) [46] to
+eiLt .
+Suppose the eigenvalues of the graph Laplacian L are
+0 = λ1 < λ2 ≤ · · · ≤ λN ≤ N , with corresponding
+eigenvectors |ψ0 ⟩ = |π⟩ , |ψ1 ⟩ , . . . , |ψN −1 ⟩. Let s be the
+smallest integer such that 2s > λN (i.e. s = ⌈log(λN +
+1)⌉) and set
+t0 :=
+
+π
+2s−1
+
+.
+
+(10)
+
+Then the eigenvalues of U := eit0 L are {2π λ2sk : k =
+1, · · · , N }, where λk ∈ {0, 1, · · · , 2s − 1}. Note that
+|ψk ⟩ is an eigenvector of U with corresponding eigenλk
+phase θ = 2π λ2sk , i.e. U |ψk ⟩ = e2πi 2s |ψk ⟩. A quick
+review of QPE (as shown by the box in Fig. 5) is presented below. After applying H ⊗s ⊗ I to |0s ⟩ |ψk ⟩,
+P2s −1
+we obtain √12s j=0 |j⟩ |ψk ⟩. By the binary representation j = js−1 2s−1 + · · · + j1 21 + j0 20 , where
+
+5
+
+ancillary space
+
+U0
+
+walking space
+
+Λs
+
+U1
+
+eiLt1
+
+Λs
+
+...
+
+eiLt2
+
+...
+
+Um−1
+
+Λs
+
+Um
+
+eiLtm
+
+FIG. 3. Illustration of a CIQW
+P W with s ancillary qubits and m intermittent steps. The dumbbell-shaped gates denote the
+controlled CTQW Λs (eiLtj ) = l |l⟩ ⟨l| ⊗ eilLtj .
+
+|π⟩
+
+
+√ 
+π
+2 arcsin sin( 4k+2
+)/ ε ∈ (0, π) and the iteration num-
+
+...
+
+|0s ⟩
+
+W1
+eiα1 ΠM
+
+π √
+ber k > kopt , where kopt = 4 arcsin
+− 12 . Then a marked
+ε
+element can be found exactly:
+
+Wk
+...
+
+eiαk ΠM
+
+⟨M | G(α, α)k |π⟩ = 1,
+
+FIG. 4. Illustration of our CIQW-based algorithm.
+
+√
+where |M ⟩ := ΠM |π⟩ / ϵ.
+
+ji ∈ {0, 1} for i ∈ {0, 1, · · · , s − 1}, we know that
+i
+the controlled-U 2 operations implement the transformation |j⟩ |ψk ⟩ 7→ |j⟩ U j |ψk ⟩, and thus we obtain
+P2s −1 2πi jλsk
+√1
+2
+|j⟩ |ψk ⟩. Note that the state in the
+j=0 e
+2s
+first s qubits is exactly QFT2s |λk ⟩. Thus, by applying
+to the
+the inverse quantum Fourier transform QFT2−1
+s
+first s qubits, we obtain |λk ⟩.
+Since the eigenvalues λk for k = 1, 2, . . . , N of the
+graph Laplacian L have been obtained exactly, we can
+now add a relative phase shift of eiβ to the eigenvector
+|ψ0 ⟩ = |π⟩ with eigenvalue λ1 = 0, by applying a (s − 1)zero-controlled eiβ |0⟩ ⟨0|+|1⟩ ⟨1| gate to the first s qubits.
+Finally, by reversing the phase estimation process to set
+the first s qubits back to zero, we have successfully implemented eiβ|π⟩⟨π| .
+The controlled CTQW c-eiLt is called for 2s =
+2⌈log(λN + 1)⌉ < 2⌈log(N + 1)⌉ times, and the total
+evolution time is
+T := 2t0 (2s−1 + · · · + 2 + 1)
+1
+= 4π(1 − s ) < 4π.
+2
+
+Since eiβ|π⟩⟨π| and eiαΠM are implemented by
+Step 2.(a) and Step 2.(b) of Algorithm 1 respectively,
+Step 3 will obtain a marked vertex with certainty by
+Lemma 1. This proves the correctness of Algorithm 1.
+We now calculate the total cost as follows. Recall that
+the operator eiβ|π⟩⟨π| can be implemented using 2s =
+O(log(N )) controlled CTQW c-eiLt and with evolution
+time T < 4π. We set the√iteration number of G(α, β)
+to be k = ⌈kopt ⌉ = O(1/ ε). In total, the controlled
+CTQW c-eiLt is called for
+
+
+log(N )
+√
+O
+(15)
+ε
+
+(11)
+
+times, and the total evolution time T ′ and the number k
+of invocation to the general oracle operator eiαΠM are as
+follows:
+
+
+
+
+1
+1
+T ′ = kT = O √ , k = O √ .
+(16)
+ε
+ε
+
+(12)
+
+This proves Theorem 1.
+
+To achieve deterministic search on Laplacian integral
+graphs, we will use deterministic Grover search algorithms. There are at least three schemes to achieve
+this [33–35]. But the following scheme due to Long [35]
+is most concise, as it uses only one parameter α in the
+generalized Grover’s iteration G(α, β). An illustration of
+Long’s deterministic Grover search is shown in Fig. 6.
+Lemma 1 ([35]). Denote by
+G(α, β) := eiβ|π⟩⟨π| · eiαΠM
+
+(14)
+
+(13)
+
+the generalized Grover’s iteration, where eiβ|π⟩⟨π| adds
+a relative phase shift of eiβ to the initial state |π⟩, and
+eiαΠM adds a relative phase shift of eiα to all the marked
+elements. Suppose the proportion of marked elements
+ε = ∥ΠM |π⟩ ∥2 is known in advance. Let α = β =
+
+C.
+
+Gate complexity
+
+We first show that the total number of elementary
+gates used in Algorithm 1 apart from the CTQW eiLt is
+2
+O( log √(λε N ) ). From Fig. 5, the dominating cost of implementing eiβ|π⟩⟨π| comes from the quantum Fourier trans2
+2
+form QFT−1
+2s , which costs O(s ) = O(log (λN )) elementary gates at most, and the (s − 1)-controlled gate can
+be decomposed into O(s) elementary
+gates [47]. Since
+√
+eiβ|π⟩⟨π| is called for k = O(1/ ε) times, the total number of elementary gates apart from implementing the
+CTQW eiLt is
+O
+
+
+
+log2 (λN )
+√
+ε
+
+
+
+.
+
+(17)
+
+6
+QPE
+H
+
+...
+
+H
+
+..
+
+.
+QFT−1
+2s
+
+s
+
+|0 ⟩
+
+H
+
+...
+
+H
+
+...
+
+s−1
+
+|ψ⟩
+
+ei2
+
+t0 L
+
+...
+
+X
+
+X
+
+X
+
+X
+
+X
+
+X
+
+
+ei2t0 L
+
+eiβ
+0
+
+0
+1
+
+|0s ⟩
+QPE†
+
+
+
+eit0 L
+
+FIG. 5. Quantum circuit implementation of eiβ|π⟩⟨π| , where s = ⌈log(λN + 1)⌉ and t0 = π/2s+1 .
+
+repeat k times
+|π⟩
+
+eiαΠM
+
+eiα|π⟩⟨π|
+
+...
+
+|M ⟩
+
+values (e.g., cycle graphs, Möbius ladder graphs), efficient
+quantum circuits for CTQW can be constructed [51].
+Ref. [52] discussed how to implement CTQW on general
+graphs based on graph decomposition.
+
+FIG. 6. Illustration of the deterministic Grover search by
+Lemma 1.
+
+The gate complexity of our algorithm is dominated by
+the implementation of eiLt . A trivial way of implementing eiLt is by using product formulas and decomposing
+L into Pauli strings, and it costs O(λN tN 4 log(N )) elementary gates as shown by Corollary 1 in Appendix B.
+Substituting the total evolution time into the aforemen
+4
+)
+tioned formula, the gate complexity is O λN N √log(N
+ε
+for Laplacian integral graphs.
+When there is an efficient quantum circuit for CTQW
+on graphs, the gate complexity can be significantly reduced. By efficient we mean the CTQW eiLt can be
+implemented with gate complexity O(poly(log(N ))) independent of t. In this case, we are concerned with the
+number of calls to eiLt instead of the total evolution time
+)
+√
+T . We have shown that this number is equal to O( log(N
+)
+ε
+(Eq. (15)). Thus, we have the following result:
+Theorem 3. When the CTQW eiLt on a graph G with
+Laplacian L can be implemented with gate complexity
+O(poly log(N )) independent of
+in Theo t, the algorithm
+
+rem 1 has gate complexity O
+
+poly(log(N ))
+√
+ε
+
+IV.
+
+CONCLUSION AND DISCUSSION
+
+In this paper, we have addressed the deterministic spatial search problem, and proposed a generic algorithm
+based on the recently proposed controlled intermittent
+quantum walk (CIQW) model. Our algorithm can find
+with certainty a marked vertex on any Laplacian integral graphs in total evolution time O( √1ε ) and with query
+complexity O( √1ε ) as long as the proportion of marked
+vertices ε is known in advance. This improves previous
+result [7] based on alternating quantum walks, as their
+algorithm has worse complexities on certain graphs, only
+works for a single marked vertex, and requires additionally the graph to be vertex transitive. We also give an
+analysis of the gate complexities of our algorithm, which
+are dominated by the quantum circuit implementation
+for the CTQW eiLt . It will be interesting to discover
+more classes of graphs on which the CTQW eiLt has efficient quantum circuit implementation.
+
+.
+
+Efficient quantum circuit implementations for CTQW
+have been demonstrated across various graph classes,
+such as commuting graphs and Cartesian products of
+graphs [48]. Notably, certain graph classes, including
+complete bipartite graphs, complete graphs [49, 50] and
+star graphs [31, 49], can be efficiently implemented using
+diagonalization techniques. Additionally, a specific set
+of circulant graphs can be efficiently implemented, leveraging the quantum Fourier transform [51]. For circulant
+graphs with 2n vertices possessing O(poly(n)) non-zero
+eigenvalues or efficiently characterizable distinct eigen-
+
+ACKNOWLEDGMENTS
+
+This work was supported by the National Key Research and Development Program of China (Grant
+No.2024YFB4504004), the National Natural Science
+Foundation of China (Grant No. 92465202, 62272492,
+12447107), the Guangdong Provincial Quantum Science Strategic Initiative (Grant No. GDZX2303007,
+GDZX2403001), the Guangzhou Science and Technology
+Program (Grant No. 2024A04J4892).
+
+7
+Appendix A: Laplacian integral graphs
+
+A graph whose spectrum of its Laplacian consists entirely of integers is called a Laplacian integral graph 3 .
+In general, the problem of characterizing Laplacian integral graphs seems to be very difficult, and there are many
+results on the finding of particular classes of Laplacian
+integral graphs [44, 53–57]. We list below some examples of Laplacian integral graphs, all of which allows for
+deterministic spatial search by Theorem 1.
+1. Complete graph Kn . This graph has n vertices,
+and each vertex is connected to the other n − 1
+vertices. The Laplacian eigenvalues are 0 and n
+with corresponding multiplicities 1 and (n − 1).
+2. Johnson graph J(n, k) [58]. The vertex set consists
+of all subset S of [n] := {1, 2, . . . , n} with size k,
+and two vertices S, S ′ are adjacent if and only if
+|S ∩ S ′ | = k − 1. The Laplacian eigenvalues are
+i(n + 1 − i) for i ∈ {0, 1, . . . , min(k,
+n− k)}, with
+
+n
+corresponding multiplicities ni − i−1
+. We define
+
+n
+=
+0.
+−1
+
+3. Kneser graph K(n, k) [58]. The vertex set consists of all subset S of [n] := {1, 2, . . . , n} with size
+k < n/2, and two vertices S, S ′ are adjacent if and
+only if S ∩ S ′ = ∅. The Laplacian eigenvalues are
+n−k
+−(−1)i n−k−i
+for i ∈ {0, 1, . . . , k}, with cork
+k−i
+
+
+n
+responding multiplicities ni − i−1
+.
+
+4. Hamming graph H(d, q) [58]. The vertex set consists of all d-tuples (x1 , . . . , xd ) ∈ [q]d , and two vertices x, x′ are adjacent if and only if they differ in
+exactly one coordinate. The Laplacian eigenvalues
+are qi for i ∈{0, 1, . . . , d}, with corresponding multiplicities di (q − i)i . Note that the hypercube is
+H(n, 2).
+5. Grassmann graph Gq (n, k) [59]. The vertex set consists of all k-dimensional subspaces of Fnq , the ndimensional space over the finite field Fq , and two
+vertices A, B are adjacent if and only if dim(A ∩
+
+n
+−1)···(q n−m+1 −1)
+B) = k − 1. There are nk q := (q (q
+m −1)···(q−1)
+vertices in total, and all the vertices have the same
+k
+−1
+degree q[k]q [n−k]q , where [k]q := qq−1
+. The Laplai+1
+cian eigenvalues are q[k]q [n − k]q − q [k − i]q [n −
+k − i]q + [i]q for i ∈ {0, 1, . . . , 
+min(k, n− k)}, with
+n
+corresponding multiplicities ni − i−1
+.
+3 Note
+
+that there are no Laplacian ‘rational’ graphs.
+This is because if the eigenvalue of a graph is rational, then it is necessarily an integer, see https:
+//math.stackexchange.com/questions/2936232
+and
+https://math.stackexchange.com/questions/3123348.
+
+6. Rook graph R(m, n) [32]. It is the Cartesian product Km □Kn of the m-vertex complete graph Km
+and the n-vertex complete graph Kn . Specifically,
+there are mn vertices in total: V = {(u, v) : u ∈
+V (Km ), v ∈ V (Kn )}, and two vertices (u, v) and
+(u′ , v ′ ) are adjacent if and only if either u = u′ and
+(v, v ′ ) ∈ E(Kn ); or v = v ′ and (u, u′ ) ∈ E(Km ).
+All the vertices have the same degree (m + n − 2).
+The Laplacian eigenvalues are 0, n, m, (n+m), with
+corresponding multiplicities 1, (n−1), (m−1), (m−
+1)(n − 1). Note that the 2n-vertex complete identity interdependent network (CIIN) is equivalent to
+the Rook graph R(2, n) [30].
+7. Complete-square graph Kn □Q2 [32]. It is the
+Cartesian product of an n-vertex complete graph
+Kn with a square graph Q2 . All the vertices have
+the same degree (n + 1). The Laplacian eigenvalues are 0, 2, 4, n, (n + 2), (n + 4) with corresponding
+multiplicities 1, 2, 1, (n − 1), 2(n − 1), (n − 1).
+8. Cocktail-party graph CP (n) [54]. The vertex set
+is V = {(u, b) : u ∈ [n], b = 0, 1}, and each vertex
+(u, b) is connected to all the other (2n − 2) vertices except the vertex (u, 1 − b). The Laplacian
+eigenvalues are 0, (2n − 2), 2n with corresponding
+multiplicities 1, n, (n − 1).
+9. Complete k-partite graph Kn/k,n/k,...,n/k [54]. The
+n vertices are equally divided into k classes, and
+each vertex v is connected to the other (n − n/k)
+vertices that are not in the same class as v. The
+Laplacian eigenvalues are 0, (n − n/k), n with corresponding multiplicities 1, (n − k), (k − 1).
+10. Star graph K1,n [54]. It is a tree with one node
+having degree n and the other n vertices having
+degree 1. The Laplacian eigenvalues are 0, 1, (n+1)
+with corresponding multiplicities 1, (n − 1), 1.
+Appendix B: Hamiltonian Simulation
+
+Product formulas method [60] for the problem of
+Hamiltonian simulation is commonly used to simulate
+the evolution
+e−iHt when Hamiltonian has the form
+Pm
+H = j=1 Hj , where each Hj can be efficiently simulated for arbitrary evolution time t′ . Then the evolution
+e−iHt ′can be approximated by a product of exponentials
+e−iHj t within error ϵ. The upper bound of the number
+of exponentials required is given in Ref. [61], as shown in
+the following Theorem 4.
+Theorem 4 ([61], Theorem 1).PIn order to simulate the
+m
+Hamiltonian of the form H = j=1 Hj for time t by a
+′
+product of exponentials e−iHj t within error ϵ, the number
+of exponentials Nexp is bounded by
+Nexp ≤ 2m2 52k ∥H∥t(m∥H∥t/ϵ)1/2k ,
+
+(B1)
+
+8
+for ϵ ≤ 1 ≤ 2m5k−1 ∥H∥t, where ∥H∥ denotes the spectral
+norm of H, and k is an arbitrary positive integer.
+The total gate count of quantum circuit Ũ is upper
+bounded by Nexp × maxj C(Hj ), where C(Hj ) is the cost
+′
+required to implement exponential e−iHj t . In the worst
+case, every Hamiltonian H ∈ CN ×N can be decomposed
+into m = N 2 Pauli strings Hj ∈ {I, X, Y, Z}⊗n , assum′
+ing for simplicity N = 2n . Since each e−iHj t can be
+simulated with C(Hj ) = O(n) = O(log(N )) elementary
+gates, and k is an arbitrary positive integer, we have the
+
+[1] A. Ambainis, J. Kempe, and A. Rivosh, Coins make
+quantum walks faster, in Proceedings of the Sixteenth
+Annual ACM-SIAM Symposium on Discrete Algorithms,
+SODA ’05 (Society for Industrial and Applied Mathematics, USA, 2005) p. 1099–1108.
+[2] A. M. Childs and J. Goldstone, Spatial search by quantum walk, Phys. Rev. A 70, 022314 (2004).
+[3] A. Ambainis, A. Gilyén, S. Jeffery, and M. Kokainis,
+Quadratic speedup for finding marked vertices by quantum walks, in Proceedings of the 52nd Annual ACM
+SIGACT Symposium on Theory of Computing, STOC
+2020 (Association for Computing Machinery, New York,
+NY, USA, 2020) p. 412–424.
+[4] S. Apers, S. Chakraborty, L. Novo, and J. Roland,
+Quadratic speedup for spatial search by continuous-time
+quantum walk, Phys. Rev. Lett. 129, 160502 (2022).
+[5] S. Apers, A. Gilyén, and S. Jeffery, A Unified Framework of Quantum Walk Search, in 38th International
+Symposium on Theoretical Aspects of Computer Science
+(STACS 2021), Leibniz International Proceedings in Informatics (LIPIcs), Vol. 187, edited by M. Bläser and
+B. Monmege (Schloss Dagstuhl – Leibniz-Zentrum für
+Informatik, Dagstuhl, Germany, 2021) pp. 6:1–6:13.
+[6] Y. Xu, D. Zhang, and L. Li, Robust quantum walk search
+without knowing the number of marked vertices, Phys.
+Rev. A 106, 052207 (2022).
+[7] Q. Wang, Y. Jiang, S. Feng, and L. Li, Unifying quantum
+spatial search, state transfer, and uniform sampling on
+graphs, Phys. Rev. A 111, 042608 (2025).
+[8] A. Ambainis, Quantum walk algorithm for element distinctness, in 45th Annual IEEE Symposium on Foundations of Computer Science (2004) pp. 22–31.
+[9] H. Buhrman and R. Špalek, Quantum verification of matrix products, in Proceedings of the Seventeenth Annual
+ACM-SIAM Symposium on Discrete Algorithm, SODA
+’06 (Society for Industrial and Applied Mathematics,
+USA, 2006) p. 880–889.
+[10] F. Magniez, M. Santha, and M. Szegedy, Quantum algorithms for the triangle problem, SIAM J. Comput. 37,
+413 (2007).
+[11] F. Magniez and A. Nayak, Quantum complexity of testing group commutativity, Algorithmica 48, 221 (2007).
+[12] A. M. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann,
+and D. A. Spielman, Exponential algorithmic speedup by
+a quantum walk, in Proceedings of the Thirty-Fifth Annual ACM Symposium on Theory of Computing, STOC
+’03 (Association for Computing Machinery, New York,
+
+following corollary of Theorem 4.
+Corollary 1. In order to simulate the CTQW eiLt for
+time t within constant error, the number of elementary
+gates is bounded by
+C(eiLt ) = O(λN tN 4 log(N )),
+
+(B2)
+
+where λN is the largest eigenvalue of the graph Laplacian
+L.
+
+NY, USA, 2003) p. 59–68.
+[13] A. M. Childs, L. J. Schulman, and U. V. Vazirani, Quantum algorithms for hidden nonlinear structures, in 48th
+Annual IEEE Symposium on Foundations of Computer
+Science (FOCS’07) (2007) pp. 395–404.
+[14] A. Ambainis, E. Bach, A. Nayak, A. Vishwanath, and
+J. Watrous, One-dimensional quantum walks, in Proceedings of the 33rd ACM Symposium on Theory of Computing (2001) pp. 37–49.
+[15] D. Aharonov, A. Ambainis, J. Kempe, and U. V. Vazirani, Quantum walks on graphs, in Proceedings of the
+33rd ACM Symposium on Theory of Computing (2001)
+pp. 50–59.
+[16] M. Szegedy, Quantum speed-up of markov chain based
+algorithms, in 45th Annual IEEE Symposium on Foundations of Computer Science (2004) pp. 32–41.
+[17] F. Magniez, A. Nayak, J. Roland, and M. Santha, Search
+via quantum walk, SIAM Journal on Computing 40, 142
+(2011).
+[18] A. Belovs, Quantum walks and electric networks (2013),
+arXiv:1302.3143 [quant-ph].
+[19] H. Krovi, F. Magniez, M. Ozols, and J. Roland, Quantum
+walks can find a marked element on any graph, Algorithmica 74, 851 (2016).
+[20] B. Hein and G. Tanner, Quantum search algorithms on
+the hypercube, Journal of Physics A: Mathematical and
+Theoretical 42, 085303 (2009).
+[21] J. Janmark, D. A. Meyer, and T. G. Wong, Global symmetry is unnecessary for fast quantum search, Phys. Rev.
+Lett. 112, 210502 (2014).
+[22] M. L. Rhodes and T. G. Wong, Quantum walk search on
+the complete bipartite graph, Phys. Rev. A 99, 032301
+(2019).
+[23] P. Philipp, L. Tarrataca, and S. Boettcher, Continuoustime quantum search on balanced trees, Phys. Rev. A 93,
+032305 (2016).
+[24] H. Tanaka, M. Sabri, and R. Portugal, Spatial search on
+johnson graphs by continuous-time quantum walk, Quantum Information Processing 21, 74 (2022).
+[25] H. Tanaka, M. Sabri, and R. Portugal, Spatial search on
+johnson graphs by discrete-time quantum walk, Journal
+of Physics A: Mathematical and Theoretical 55, 255304
+(2022).
+[26] A. Chan, C. D. Godsil, C. Tamon, and W. Xie, Of shadows and gaps in spatial search, Quantum Inf. Comput.
+22, 1110 (2022).
+[27] S. Chakraborty, L. Novo, A. Ambainis, and Y. Omar,
+
+9
+Spatial search by quantum walk is optimal for almost all
+graphs, Phys. Rev. Lett. 116, 100501 (2016).
+[28] H. Lin and Y. Shang, Deterministic Search on Complete
+Bipartite Graphs by Continuous Time Quantum Walk
+(2024), arXiv:2404.01640v2, 2404.01640.
+[29] F. Peng, M. Li, and X. Sun, Deterministic discrete-time
+quantum walk search on complete bipartite graphs, Phys.
+Rev. Res. 6, 033042 (2024).
+[30] S. Marsh and J. B. Wang, Deterministic spatial search using alternating quantum walks, Phys. Rev. A 104, 022216
+(2021).
+[31] D. Qu, S. Marsh, K. Wang, L. Xiao, J. Wang, and P. Xue,
+Deterministic search on star graphs via quantum walks,
+Phys. Rev. Lett. 128, 050501 (2022).
+[32] S. Marsh and J. B. Wang, A framework for optimal quantum spatial search using alternating phase-walks, Quantum Science and Technology 6, 045029 (2021).
+[33] G. Brassard, P. Hoyer, M. Mosca, and A. Tapp, Quantum
+amplitude amplification and estimation, Contemporary
+Mathematics 305, 53 (2002).
+[34] P. Hoyer, On arbitrary phases in quantum amplitude amplification, Physical Review A 62 (2000).
+[35] G. L. Long, Grover algorithm with zero theoretical failure
+rate, Phys. Rev. A 64, 022307 (2001).
+[36] G. Li and L. Li, Deterministic quantum search with adjustable parameters: Implementations and applications,
+Information and Computation 292, 105042 (2023).
+[37] G. Brassard and P. Hoyer, An exact quantum
+polynomial-time algorithm for simon’s problem, in Proceedings of the Fifth Israeli Symposium on Theory of
+Computing and Systems (1997) pp. 12–23.
+[38] Z. Ye, Y. Huang, L. Li, and Y. Wang, Query complexity
+of generalized simon’s problem, Information and Computation 281, 104790 (2021).
+[39] G. Li and L. Li, Optimal deterministic quantum algorithm for the promised element distinctness problem,
+Theoretical Computer Science 999, 114551 (2024).
+[40] G. Li and L. Li, Derandomization of quantum algorithm
+for triangle finding, Information and Computation 304,
+105295 (2025).
+[41] G. Li, L. Li, and J. Luo, Recovering the original simplicity: succinct and deterministic quantum algorithm
+for the welded tree problem, in Proceedings of the 2024
+Annual ACM-SIAM Symposium on Discrete Algorithms
+(SODA), pp. 2454–2480.
+[42] G. Li, L. Li, and J. Luo, Quantum phase discrimination
+with applications to quantum search on graphs (2025),
+arXiv:2504.15194, 2504.15194.
+[43] A. Ali, A survey of antiregular graphs, Contrib. Math 1,
+67 (2020).
+[44] S. M. Fallat, S. J. Kirkland, J. J. Molitierno, and M. Neumann, On graphs whose laplacian matrices have distinct
+integer eigenvalues, Journal of Graph Theory 50, 162
+(2005).
+[45] R. Grone, R. Merris, and V. S. Sunder, The Laplacian
+Spectrum of a Graph, SIAM Journal on Matrix Analysis
+
+and Applications 11, 218 (1990).
+[46] A. Y. Kitaev, Quantum measurements and the abelian
+stabilizer problem (1995), arXiv:quant-ph/9511026
+[quant-ph].
+[47] M. A. Nielsen and I. L. Chuang, Quantum Computation
+and Quantum Information: 10th Anniversary Edition
+(Cambridge University Press, 2010).
+[48] T. Loke and J. B. Wang, Efficient quantum circuits for
+continuous-time quantum walks on composite graphs,
+Journal of Physics A: Mathematical and Theoretical 50,
+055303 (2017).
+[49] X.-P. Xu, Exact analytical results for quantum walks
+on star graphs, Journal of Physics A: Mathematical and
+Theoretical 42, 115205 (2009).
+[50] A. M. Childs, On the relationship between continuousand discrete-time quantum walk, Communications in
+Mathematical Physics 294, 581 (2010).
+[51] X. Qiang, T. Loke, A. Montanaro, K. Aungskunsiri,
+X. Zhou, J. L. O’Brien, J. B. Wang, and J. C. Matthews,
+Efficient quantum walk on a quantum processor, Nature
+communications 7, 11511 (2016).
+[52] Z. Chen, G. Li, and L. Li, Implementation of a
+continuous-time quantum walk on a sparse graph, Phys.
+Rev. A 110, 052215 (2024).
+[53] R. Merris, Degree maximal graphs are laplacian integral,
+Linear Algebra and its Applications 199, 381 (1994), special Issue Honoring Ingram Olkin.
+[54] K. Balińska, D. Cvetković, Z. Radosavljević, S. Simić,
+and D. Stevanović, A survey on integral graphs, Publikacije Elektrotehničkog fakulteta. Serija Matematika ,
+42 (2002).
+[55] L. S. de Lima, N. M. Maia de Abreu, C. S. Oliveira,
+and M. A. Alvarez de Freitas, Laplacian integral graphs
+in s(a,b), Linear Algebra and its Applications 423, 136
+(2007), special Issue devoted to papers presented at the
+Aveiro Workshop on Graph Spectra.
+[56] R. Grone and R. Merris, Indecomposable laplacian integral graphs, Linear Algebra and its Applications 428,
+1565 (2008).
+[57] R. R. Del-Vecchio and A. A. Jones, Laplacian integrality
+in p4-sparse and p4-extendible graphs, Applied Mathematics and Computation 330, 307 (2018).
+[58] A. E. Brouwer and W. H. Haemers, Distance-regular
+graphs, in Spectra of Graphs (Springer New York, New
+York, NY, 2012) pp. 177–185.
+[59] A. E. Brouwer, A. M. Cohen, and A. Neumaier, The
+families of graphs with classical parameters, in DistanceRegular Graphs (Springer Berlin Heidelberg, Berlin, Heidelberg, 1989) pp. 255–293.
+[60] S. Lloyd, Universal quantum simulators, Science 273,
+1073 (1996).
+[61] D. W. Berry, G. Ahokas, R. Cleve, and B. C. Sanders, Efficient quantum algorithms for simulating sparse hamiltonians, Communications in Mathematical Physics 270,
+359 (2007).
+
+
