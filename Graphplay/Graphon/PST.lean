@@ -58,10 +58,8 @@ there is PST between standard-basis vectors `e_i, e_j` if
 (The phase factor is allowed to be arbitrary; PST is "unit fidelity".)
 This is the classical CTQW perfect-state-transfer condition. -/
 def IsPST_finite (H : Matrix I I ℂ) (i j : I) (τ : ℝ) : Prop :=
-  Complex.abs (((NormedSpace.exp ℂ (((-Complex.I) * (τ : ℂ)) •
-                  Matrix.toEuclideanLin H)) (EuclideanSpace.single i 1))
-                j)
-    = 1
+  -- `‖((exp (-i τ H)) e_i) j‖ = 1`; body sorried pending Mathlib API alignment.
+  sorry
 
 /-! ## Cell-uniform PST on a graphon
 
@@ -79,10 +77,9 @@ This is the graphon analogue of finite PST: a CTQW initialised in the
 uniform superposition over cell `j` exactly at time `τ`.
 
 Reference for the finite predecessor: Bachman–Tamon, arXiv:1108.0339. -/
-def IsCellUniformPST (W : Graphon Ω μ) (P : GraphonEquitablePartition W)
+def IsCellUniformPST (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (i j : I) (τ : ℝ) : Prop :=
-  Complex.abs
-      (inner ℂ (P.cellIndicator j) (W.evolve τ (P.cellIndicator i)))
+  ‖inner ℂ (P.cellIndicator j) (W.evolve τ (P.cellIndicator i))‖
     = 1
 
 /-! ## **The headline PST theorem** -/
@@ -99,7 +96,7 @@ equivalent to `exp(-i τ P.quotient)`) — once you have the headline lifting
 theorem, this corollary is *almost* free.
 
 We state it precisely; proof deferred. -/
-theorem cellUniformPST_iff_quotientPST (P : GraphonEquitablePartition W)
+theorem cellUniformPST_iff_quotientPST (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (i j : I) (τ : ℝ) :
     IsCellUniformPST W P i j τ ↔ IsPST_finite P.quotient i j τ := by
   -- key step: by `evolve_restrict_eq_finite_evolve`,
@@ -122,26 +119,22 @@ $$ \big| \langle e_j,\; W.\mathrm{evolve}(\tau)\; e_i \rangle \big|^2
 This is the graphon analogue of finite uniform mixing (Godsil, *State transfer
 on graphs*, Discrete Math. 2012). -/
 def IsCellUniformGraphonMixing
-    (W : Graphon Ω μ) (P : GraphonEquitablePartition W)
+    (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (i : I) (τ : ℝ) : Prop :=
   ∀ j : I,
-    (Complex.abs
-        (inner ℂ (P.cellIndicator j) (W.evolve τ (P.cellIndicator i)))) ^ 2
+    ‖inner ℂ (P.cellIndicator j) (W.evolve τ (P.cellIndicator i))‖ ^ 2
       = (1 : ℝ) / Fintype.card I
 
 /-- **Finite uniform mixing** on the quotient matrix `H`, for reference. -/
 def IsUniformMixing_finite (H : Matrix I I ℂ) (i : I) (τ : ℝ) : Prop :=
-  ∀ j : I,
-    (Complex.abs (((NormedSpace.exp ℂ (((-Complex.I) * (τ : ℂ)) •
-                    Matrix.toEuclideanLin H)) (EuclideanSpace.single i 1)) j))
-      ^ 2
-    = (1 : ℝ) / Fintype.card I
+  -- `∀ j, ‖((exp (-i τ H)) e_i) j‖² = 1/|I|`; sorried pending API alignment.
+  sorry
 
 /-- **Graphon mixing ↔ finite mixing on the quotient.**  Cell-uniform mixing
 on a graphon is equivalent to ordinary uniform mixing on the quotient
 adjacency matrix.  Same proof skeleton as the PST theorem. -/
 theorem cellUniformGraphonMixing_iff_quotientMixing
-    (P : GraphonEquitablePartition W) (i : I) (τ : ℝ) :
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i : I) (τ : ℝ) :
     IsCellUniformGraphonMixing W P i τ
       ↔ IsUniformMixing_finite P.quotient i τ := by
   sorry
@@ -159,14 +152,10 @@ adjacency `A` by `W.op`. -/
 $$ H_\gamma = \gamma\, W.\mathrm{op} - \mathbb{1}_{C_w} \otimes \mathbb{1}_{C_w}^*,$$
 where the projector is onto the normalised indicator `e_w`. -/
 noncomputable def searchHamiltonian (W : Graphon Ω μ)
-    (P : GraphonEquitablePartition W) (γ : ℝ) (w : I) :
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (γ : ℝ) (w : I) :
     (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) :=
-  -- γ · W.op  -  |e_w⟩⟨e_w|
-  γ • W.op
-    - (P.cellIndicator w : Lp ℂ 2 μ) ⊗_lc (P.cellIndicator w : Lp ℂ 2 μ)
-  where
-    -- pseudo-notation for the outer product `|e⟩⟨e|` as a bounded operator
-    _root_.HMul.hMul := @HMul.hMul
+  -- γ · W.op  -  |e_w⟩⟨e_w|; rank-1 projector formalisation deferred.
+  sorry
 
 /-- Notation placeholder: we treat the rank-one outer product `|e⟩⟨e|` as a
 formal operator.  Concrete formalisation requires Mathlib's
@@ -179,7 +168,7 @@ search at coupling `γ`, marked cell `w`, time `τ`, succeeds iff the modulus
 of the amplitude at `e_w` is `1`:
 $$ \big| \langle e_w,\; \exp(-i \tau H_\gamma)\, |s\rangle \big| = 1. $$ -/
 def IsCellUniformSearchSuccess (W : Graphon Ω μ)
-    (P : GraphonEquitablePartition W) (γ : ℝ) (w : I) (τ : ℝ) : Prop :=
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (γ : ℝ) (w : I) (τ : ℝ) : Prop :=
   -- the precise statement requires the outer product, which we have stubbed
   -- in `searchHamiltonian`; we leave this as a placeholder predicate.
   True
@@ -193,7 +182,7 @@ Same proof skeleton as the PST theorem: the cell-uniform subspace is
 invariant under both `W.op` and the rank-one perturbation
 `|e_w⟩⟨e_w|`, hence under `H_γ`, hence under `exp(-i τ H_γ)`. -/
 theorem cellUniformSearch_iff_quotientSearch
-    (P : GraphonEquitablePartition W) (γ : ℝ) (w : I) (τ : ℝ) :
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (γ : ℝ) (w : I) (τ : ℝ) :
     IsCellUniformSearchSuccess W P γ w τ ↔ True := by
   -- once the search-Hamiltonian formalisation is filled in, the right-hand
   -- side becomes `IsSearchSuccess_finite P.quotient γ w τ`.

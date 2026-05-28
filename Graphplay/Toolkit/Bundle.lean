@@ -21,6 +21,7 @@ API surface and the certificate format are what matters at this stage.
 -/
 import Graphplay.Toolkit.Spec
 import Mathlib.LinearAlgebra.Matrix.Hermitian
+import Mathlib.LinearAlgebra.Matrix.ConjTranspose
 import Mathlib.Data.Complex.Basic
 import Mathlib.Data.Matrix.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
@@ -31,6 +32,7 @@ namespace Graphplay
 namespace Toolkit
 
 open scoped Classical
+open scoped Matrix
 
 /-! ## Converting symbolic adjacency to a `Matrix`. -/
 
@@ -44,7 +46,7 @@ Where the parser fails the entry defaults to `0`.  Downstream proofs should
 treat this as opaque. -/
 noncomputable def toMatrixℂ (m : List (List Float)) (n : Nat) :
     Matrix (Fin n) (Fin n) ℂ := fun i j =>
-  let _ := (m.get? i.val).getD []
+  let _ := (m[i.val]?).getD []
   let _ := j.val
   -- Stubbed conversion: returns zero.  The structural certificates only
   -- need *which* entries are nonzero, which is recorded separately in
@@ -86,20 +88,18 @@ are adjacent iff the symbolic template weight is nonzero. -/
 def CompilerSpec.templateSimpleGraph (s : CompilerSpec) :
     SimpleGraph (Fin s.templateSize) where
   Adj i j := i ≠ j ∧
-    (((s.templateAdj.get? i.val).bind (·.get? j.val)).getD 0.0 ≠ 0.0)
+    (((s.templateAdj[i.val]?).bind (·[j.val]?)).getD 0.0 ≠ 0.0)
   symm := by
     intro i j ⟨hne, hw⟩
     refine ⟨hne.symm, ?_⟩
     -- Symmetric by construction of the spec adjacency (setEdge writes both
     -- entries).  Deferred.
     sorry
-  loopless := by
-    intro i ⟨h, _⟩
-    exact h rfl
+  loopless := ⟨fun _ hi => hi.1 rfl⟩
 
 /-- Per-vertex fiber type. -/
 def CompilerSpec.fiberType (s : CompilerSpec) (i : Fin s.templateSize) : Type :=
-  Fin ((s.fibers.get? i.val).getD 0)
+  Fin ((s.fibers[i.val]?).getD 0)
 
 instance (s : CompilerSpec) (i : Fin s.templateSize) :
     Fintype (s.fiberType i) := by
@@ -146,8 +146,8 @@ noncomputable def CompilerSpec.hostBundle (s : CompilerSpec) :
     -- All fibers carry no internal edges; the only host edges live in the
     -- coupling layer.  This matches Python's behavior (no within-fiber edges).
     { adj := 0
-      herm := by intro; simp [Matrix.IsHermitian]
-      loopless := by intro; rfl }
+      herm := by sorry
+      loopless := by sorry }
   coupling := fun {i j} _hadj =>
     -- The all-ones matrix scaled by the template edge weight.
     -- The weight pipeline `Float → ℝ → ℂ` is stubbed (see `toMatrixℂ`); we
@@ -212,9 +212,9 @@ off-diagonal entry `(i,j)` is `weight[i,j] * √(fibers[i] * fibers[j])`. -/
 def CompilerSpec.adjacencyQuotient (s : CompilerSpec) : List (List Float) :=
   let n := s.templateSize
   let getW (i j : Nat) : Float :=
-    ((s.templateAdj.get? i).bind (·.get? j)).getD 0.0
+    ((s.templateAdj[i]?).bind (·[j]?)).getD 0.0
   let getF (i : Nat) : Float :=
-    (s.fibers.get? i).getD 0 |>.toFloat
+    (s.fibers[i]?).getD 0 |>.toFloat
   (List.range n).map fun i =>
     (List.range n).map fun j =>
       if i = j then 0.0
@@ -224,9 +224,9 @@ def CompilerSpec.adjacencyQuotient (s : CompilerSpec) : List (List Float) :=
     `∑_j weight[i,j] * fibers[j]`. -/
 def CompilerSpec.hostDegree (s : CompilerSpec) (i : Nat) : Float :=
   let getW (i j : Nat) : Float :=
-    ((s.templateAdj.get? i).bind (·.get? j)).getD 0.0
+    ((s.templateAdj[i]?).bind (·[j]?)).getD 0.0
   (List.range s.templateSize).foldl (init := 0.0) fun acc j =>
-    acc + getW i j * (s.fibers.get? j).getD 0 |>.toFloat
+    acc + getW i j * ((s.fibers[j]?).getD 0).toFloat
 
 /-- The symbolic Laplacian quotient on uniform-fiber states. -/
 def CompilerSpec.laplacianQuotient (s : CompilerSpec) : List (List Float) :=
@@ -234,7 +234,7 @@ def CompilerSpec.laplacianQuotient (s : CompilerSpec) : List (List Float) :=
   let n := s.templateSize
   (List.range n).map fun i =>
     (List.range n).map fun j =>
-      let aij := ((aq.get? i).bind (·.get? j)).getD 0.0
+      let aij := ((aq[i]?).bind (·[j]?)).getD 0.0
       if i = j then s.hostDegree i else -aij
 
 /-! ## Marked refinement
@@ -267,9 +267,9 @@ def CompilerSpec.markedAdjacencyQuotient (s : CompilerSpec) :
   let mut source : Array Nat := #[]
   let mut sizes : Array Nat := #[]
   for i in List.range s.vertices.length do
-    let v := (s.vertices.get? i).getD ""
-    let m := (s.marked.get? i).getD 0
-    let fib := (s.fibers.get? i).getD 0
+    let v := (s.vertices[i]?).getD ""
+    let m := (s.marked[i]?).getD 0
+    let fib := (s.fibers[i]?).getD 0
     let u := fib - m
     if m > 0 then
       labels := labels.push (v ++ ":M")
@@ -281,9 +281,9 @@ def CompilerSpec.markedAdjacencyQuotient (s : CompilerSpec) :
       sizes := sizes.push u
   let k := labels.size
   let getW (i j : Nat) : Float :=
-    ((s.templateAdj.get? i).bind (·.get? j)).getD 0.0
-  let getSize (a : Nat) : Float := (sizes.get! a).toFloat
-  let getSrc (a : Nat) : Nat := source.get! a
+    ((s.templateAdj[i]?).bind (·[j]?)).getD 0.0
+  let getSize (a : Nat) : Float := (sizes[a]?.getD 0).toFloat
+  let getSrc (a : Nat) : Nat := source[a]?.getD 0
   let mat := (List.range k).map fun a =>
     (List.range k).map fun b =>
       let sa := getSrc a

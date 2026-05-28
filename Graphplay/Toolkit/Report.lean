@@ -124,9 +124,9 @@ def renderHost (s : CompilerSpec) : String :=
     for i in List.range n_template do
       for j in List.range n_template do
         if i < j then
-          let w := ((s.templateAdj.get? i).bind (·.get? j)).getD 0.0
-          let fi : Float := ((s.fibers.get? i).getD 0).toFloat
-          let fj : Float := ((s.fibers.get? j).getD 0).toFloat
+          let w := ((s.templateAdj[i]?).bind (·[j]?)).getD 0.0
+          let fi : Float := ((s.fibers[i]?).getD 0).toFloat
+          let fj : Float := ((s.fibers[j]?).getD 0).toFloat
           acc := acc + w * fi * fj
     pure acc
   let fmtDict (xs : List (String × Nat)) : String :=
@@ -151,7 +151,7 @@ def renderTemplateDiagnostics (s : CompilerSpec) : String :=
   let n := s.templateSize
   let degrees := (List.range n).map fun i =>
     (List.range n).foldl (init := 0.0) fun acc j =>
-      acc + ((s.templateAdj.get? i).bind (·.get? j)).getD 0.0
+      acc + ((s.templateAdj[i]?).bind (·[j]?)).getD 0.0
   let regularCert := s.regularityCert
   let templateLaplacian := Id.run do
     let mut acc := List.range n |>.map fun _ => List.range n |>.map fun _ => (0.0 : Float)
@@ -159,9 +159,9 @@ def renderTemplateDiagnostics (s : CompilerSpec) : String :=
     for i in List.range n do
       let mut row : List Float := []
       for j in List.range n do
-        let w := ((s.templateAdj.get? i).bind (·.get? j)).getD 0.0
+        let w := ((s.templateAdj[i]?).bind (·[j]?)).getD 0.0
         if i = j then
-          row := row.append [(degrees.get? i).getD 0.0]
+          row := row.append [(degrees[i]?).getD 0.0]
         else
           row := row.append [-w]
       acc := acc.set i row
@@ -234,8 +234,8 @@ def renderMarkedQuotient (s : CompilerSpec) : String :=
     | none => suggestGammaAdjacency s
   let hMat := (labels.length |> List.range).map fun i =>
     (labels.length |> List.range).map fun j =>
-      let aij := ((mat.get? i).bind (·.get? j)).getD 0.0
-      let labi := (labels.get? i).getD ""
+      let aij := ((mat[i]?).bind (·[j]?)).getD 0.0
+      let labi := (labels[i]?).getD ""
       let projI : Float := if labi.endsWith ":M" then 1.0 else 0.0
       let diag : Float := if i = j then -projI else 0.0
       diag - γscalar * aij
