@@ -419,7 +419,7 @@ The Hermitian condition follows from `(B Bᴴ)ᴴ = B Bᴴ`; looplessness
 (`L v v = 0`) requires that the diagonal of `D` exactly cancel the
 diagonal of `B Bᴴ`, which holds for the standard normalisations of the
 incidence matrix.  Both are `sorry` in this scaffold. -/
-def laplacian
+noncomputable def laplacian
     (E : Type _) [Fintype E] [DecidableEq E]
     (edge : E → (Fin k → V)) :
     WeightedGraph V where

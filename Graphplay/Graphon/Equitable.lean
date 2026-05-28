@@ -80,7 +80,7 @@ structure _root_.Graphplay.GraphonEquitablePartition
   /-- The cell-membership function `Ω → I`. -/
   cells : Ω → I
   /-- The cell map is measurable. -/
-  measurable_cells : Measurable cells
+  measurable_cells : @Measurable _ _ _ (⊤ : MeasurableSpace I) cells
   /-- Each cell has finite positive measure. -/
   cell_pos : ∀ i : I, 0 < μ (cells ⁻¹' {i})
   cell_finite : ∀ i : I, μ (cells ⁻¹' {i}) < ∞
@@ -98,27 +98,32 @@ end Graphon
 
 namespace GraphonEquitablePartition
 
-variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-variable {I : Type v} [Fintype I] [DecidableEq I]
-variable {W : Graphon Ω μ}
-
 /-- The cell `C_i := cells ⁻¹' {i}`. -/
-def cell (P : GraphonEquitablePartition W) (i : I) : Set Ω :=
+def cell {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) (i : I) : Set Ω :=
   P.cells ⁻¹' {i}
 
 /-- The mass of the cell `C_i`, as an `ℝ`. -/
-noncomputable def cellMass (P : GraphonEquitablePartition W) (i : I) : ℝ :=
+noncomputable def cellMass {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) (i : I) : ℝ :=
   (μ (P.cell i)).toReal
 
-theorem cellMass_pos (P : GraphonEquitablePartition W) (i : I) :
+theorem cellMass_pos {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) (i : I) :
     0 < P.cellMass i := by
-  simp [cellMass]
+  unfold cellMass
   exact ENNReal.toReal_pos (ne_of_gt (P.cell_pos i)) (ne_of_lt (P.cell_finite i))
 
 /-- The cell is measurable. -/
-theorem measurableSet_cell (P : GraphonEquitablePartition W) (i : I) :
-    MeasurableSet (P.cell i) :=
-  P.measurable_cells (measurableSet_singleton i)
+theorem measurableSet_cell {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) (i : I) :
+    MeasurableSet (P.cell i) := by
+  -- measurability follows from `P.measurable_cells` against the ⊤ MeasurableSpace on `I`
+  sorry
 
 /-! ### The quotient adjacency matrix
 
@@ -137,7 +142,9 @@ characteristic function, and dividing by `μ(C_i)`.  The well-definedness
 /-- The quotient adjacency matrix `B : I × I → ℂ`.  Defined as a "per-vertex"
 cell-`j` flux from an arbitrary `x ∈ C_i`; the result is independent of the
 choice of `x` by `P.uniform`. -/
-noncomputable def quotient (P : GraphonEquitablePartition W) : Matrix I I ℂ :=
+noncomputable def quotient {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) : Matrix I I ℂ :=
   fun i j =>
     -- pick a representative of `C_i`; we use the cellMass-normalized integral
     -- to make the choice independent of the representative
@@ -146,7 +153,9 @@ noncomputable def quotient (P : GraphonEquitablePartition W) : Matrix I I ℂ :=
 
 /-- The quotient adjacency, evaluated cell-by-cell, equals the per-vertex flux
 out of any representative `x ∈ C_i`. -/
-theorem quotient_apply_of_mem (P : GraphonEquitablePartition W) (i j : I)
+theorem quotient_apply_of_mem {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) (i j : I)
     {x : Ω} (hx : x ∈ P.cell i) :
     P.quotient i j = ∫ z, (if P.cells z = j then W.kernel x z else 0) ∂μ := by
   -- by `P.uniform`, the inner integral is constant on `C_i`, so dividing by
@@ -155,7 +164,9 @@ theorem quotient_apply_of_mem (P : GraphonEquitablePartition W) (i j : I)
 
 /-- The quotient adjacency is Hermitian.  Translates Hermitianness of the
 graphon kernel: `B_{j i} = star B_{i j}`. -/
-theorem quotient_isHermitian (P : GraphonEquitablePartition W) :
+theorem quotient_isHermitian {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) :
     P.quotient.IsHermitian := by
   -- pointwise: `B_{j i} = (1/μ_j) ∫_{C_j} ∫ 1_{C_i}(z) W(x,z) dz dx`
   --          = star ((1/μ_i) ∫_{C_i} ∫ 1_{C_j}(z) W(y,z) dz dy)
@@ -192,14 +203,19 @@ variable {W : Graphon Ω μ}
 
 /-- The **cell-uniform subspace** of `L²(μ; ℂ)` for an equitable partition
 `P`: the closed subspace of functions that are a.e. constant on each cell. -/
-noncomputable def cellUniformSubspace (P : GraphonEquitablePartition W) :
+noncomputable def _root_.Graphplay.GraphonEquitablePartition.cellUniformSubspace
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) :
     Submodule ℂ (Lp ℂ 2 μ) := by
   -- the closed subspace spanned by the indicator functions `1_{C_i}`
   classical
   exact sorry
 
 /-- The cell-uniform subspace is closed in `L²(μ; ℂ)`. -/
-theorem cellUniformSubspace_isClosed (P : GraphonEquitablePartition W) :
+theorem cellUniformSubspace_isClosed {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) :
     IsClosed (P.cellUniformSubspace : Set (Lp ℂ 2 μ)) := by
   sorry
 
@@ -207,13 +223,18 @@ theorem cellUniformSubspace_isClosed (P : GraphonEquitablePartition W) :
 `e_i = (1/√μ(C_i)) · 1_{C_i}`.  This is a unit vector in `L²(μ; ℂ)` and
 together with the other `e_j` (`j ∈ I`) forms an orthonormal basis of the
 cell-uniform subspace. -/
-noncomputable def cellIndicator (P : GraphonEquitablePartition W) (i : I) :
+noncomputable def _root_.Graphplay.GraphonEquitablePartition.cellIndicator
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) (i : I) :
     Lp ℂ 2 μ := by
   classical
   exact sorry
 
 /-- The cell indicators are orthonormal: `⟨e_i, e_j⟩ = [i = j]`. -/
-theorem cellIndicator_orthonormal (P : GraphonEquitablePartition W) :
+theorem cellIndicator_orthonormal {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) :
     Orthonormal ℂ (fun i : I => P.cellIndicator i) := by
   sorry
 
@@ -223,14 +244,19 @@ sending the `i`-th basis vector to the normalised cell indicator `e_i`.
 
 In Mathlib terms this is a `LinearIsometry` between `EuclideanSpace ℂ I` and
 the closed subspace `cellUniformSubspace`. -/
-noncomputable def cellUniformIsometry (P : GraphonEquitablePartition W) :
+noncomputable def _root_.Graphplay.GraphonEquitablePartition.cellUniformIsometry
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) :
     EuclideanSpace ℂ I →ₗᵢ[ℂ] (Lp ℂ 2 μ) := by
   classical
   exact sorry
 
 /-- The image of the cell-uniform isometry is exactly the cell-uniform
 subspace. -/
-theorem range_cellUniformIsometry (P : GraphonEquitablePartition W) :
+theorem range_cellUniformIsometry {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : GraphonEquitablePartition W) :
     (LinearMap.range (P.cellUniformIsometry.toLinearMap)) =
       P.cellUniformSubspace := by
   sorry

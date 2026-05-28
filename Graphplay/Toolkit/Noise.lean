@@ -26,7 +26,7 @@ time, and so reduces to a noisy evolution of the quotient.
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Topology.MetricSpace.Basic
-import Mathlib.Data.Complex.Exponential
+import Mathlib.Analysis.Complex.Exponential
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.NNReal.Basic
@@ -128,7 +128,7 @@ projector. -/
 def Matrix.preservesCellUniform
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
-    (P : EquitablePartition G I) (M : Matrix V V ℂ) : Prop :=
+    (M : Matrix V V ℂ) (P : EquitablePartition G I) : Prop :=
   ∀ ψ : V → ℂ, (∀ x y : V, P.cells x = P.cells y → ψ x = ψ y) →
     ∀ x y : V, P.cells x = P.cells y → (M.mulVec ψ) x = (M.mulVec ψ) y
 
@@ -140,7 +140,7 @@ def NoiseModel.cellUniformSymmetric
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
     (N : NoiseModel V) (P : EquitablePartition G I) : Prop :=
-  ∀ L ∈ N.lindblad_operators, L.preservesCellUniform P
+  ∀ L ∈ N.lindblad_operators, Matrix.preservesCellUniform L P
 
 /-! ## Quotient noise model
 
@@ -198,7 +198,7 @@ theorem cellUniform_preserved
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
     {P : EquitablePartition G I}
-    {H : Matrix V V ℂ} (hH : H.preservesCellUniform P)
+    {H : Matrix V V ℂ} (hH : Matrix.preservesCellUniform H P)
     {N : NoiseModel V} (hN : N.cellUniformSymmetric P)
     (ρ₀ : Matrix V V ℂ) (t : ℝ) :
     -- the evolved density matrix is supported in the cell-uniform subspace
@@ -226,7 +226,7 @@ noncomputable def NoiseModel.symmetryScore
     (fun L =>
       -- `L.preservesCellUniform P` is a `Prop`; we erase to a placeholder.
       -- a real implementation would package this as a `Decidable` instance.
-      Classical.propDecidable (L.preservesCellUniform P) |>.decide)
+      Classical.propDecidable (Matrix.preservesCellUniform L P) |>.decide)
     |>.card
 
 /-- **Optimal-resilience design statement (deferred).**

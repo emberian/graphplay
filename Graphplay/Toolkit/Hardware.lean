@@ -34,7 +34,7 @@ vocabulary, not proving theorems.
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Topology.MetricSpace.Basic
-import Mathlib.Data.Complex.Exponential
+import Mathlib.Analysis.Complex.Exponential
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Finset.Basic

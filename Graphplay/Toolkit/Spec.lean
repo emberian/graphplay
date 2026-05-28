@@ -49,10 +49,9 @@ def IsRegular (G : WeightedGraph V) (d : ℂ) : Prop :=
 def empty (V : Type u) [Fintype V] [DecidableEq V] : WeightedGraph V where
   adj := 0
   herm := by
-    intro
     simp [Matrix.IsHermitian]
   loopless := by
-    intro
+    intro _
     rfl
 
 end WeightedGraph
@@ -172,9 +171,9 @@ def setEdge (m : List (List Float)) (i j : Nat) (w : Float) : List (List Float) 
 def zeroMatrix (n : Nat) : List (List Float) :=
   (List.range n).map (fun _ => (List.range n).map (fun _ => (0.0 : Float)))
 
-/-- Default-named vertices for size-`n` templates: `prefix0, prefix1, …`. -/
-def defaultNames (prefix : String) (n : Nat) : List String :=
-  (List.range n).map (fun i => prefix ++ toString i)
+/-- Default-named vertices for size-`n` templates: `pre0, pre1, …`. -/
+def defaultNames (pre : String) (n : Nat) : List String :=
+  (List.range n).map (fun i => pre ++ toString i)
 
 /-- Minimum of `(j - i) mod n` and `(i - j) mod n` — the cyclic distance. -/
 def cyclicDist (n i j : Nat) : Nat :=
@@ -259,9 +258,9 @@ partial def buildTemplate : TemplateExpr → TemplateData
     let n := vs.length
     let m := (List.range n).map fun i =>
       (List.range n).map fun j =>
-        let curr := ((base.get? i).bind (·.get? j)).getD 0.0
+        let curr := ((base[i]?).bind (fun r => r[j]?)).getD 0.0
         if i = j then 0.0
-        else if curr = 0.0 then w
+        else if curr == 0.0 then w
         else 0.0
     (vs, m)
   | .cartesianProduct l r =>
@@ -270,20 +269,20 @@ partial def buildTemplate : TemplateExpr → TemplateData
     let nL := vsL.length
     let nR := vsR.length
     let n := nL * nR
-    let vs : List String := (vsL.bind fun a => vsR.map fun b => a ++ "," ++ b)
+    let vs : List String := (vsL.flatMap fun a => vsR.map fun b => a ++ "," ++ b)
     -- left tensor I_R
     let m := (List.range nL).foldl (init := zeroMatrix n) fun acc ai =>
       (List.range nL).foldl (init := acc) fun acc aj =>
-        let w := ((mL.get? ai).bind (·.get? aj)).getD 0.0
-        if w = 0.0 then acc
+        let w := ((mL[ai]?).bind (fun r => r[aj]?)).getD 0.0
+        if w == 0.0 then acc
         else (List.range nR).foldl (init := acc) fun acc b =>
           setEdge acc (ai * nR + b) (aj * nR + b) w
     -- I_L tensor right
     let m := (List.range nL).foldl (init := m) fun acc a =>
       (List.range nR).foldl (init := acc) fun acc bi =>
         (List.range nR).foldl (init := acc) fun acc bj =>
-          let w := ((mR.get? bi).bind (·.get? bj)).getD 0.0
-          if w = 0.0 then acc
+          let w := ((mR[bi]?).bind (fun r => r[bj]?)).getD 0.0
+          if w == 0.0 then acc
           else setEdge acc (a * nR + bi) (a * nR + bj) w
     (vs, m)
   | .surfaceHeawood input w =>
@@ -317,7 +316,7 @@ numerically (`approxRegular`) and emitting a sorry-marked claim. -/
 
 /-- Sum of row `i` of the symbolic adjacency. -/
 def rowSum (m : List (List Float)) (i : Nat) : Float :=
-  ((m.get? i).getD []).foldl (· + ·) 0.0
+  ((m[i]?).getD []).foldl (· + ·) 0.0
 
 /-- Returns `some d` if every row sum equals `d` to floating-point tolerance,
 else `none`.  Tolerance is fixed at `1e-9`. -/
@@ -388,8 +387,8 @@ def namedVertices (j : Json) : Except String (List String) := do
     xs.toList.mapM (·.getStr?)
   | .error _ =>
     let n ← jsonNat? (← j.getObjVal? "n")
-    let prefix := (j.getObjValAs? String "prefix").toOption.getD "v"
-    pure (defaultNames prefix n)
+    let pre := (j.getObjValAs? String "prefix").toOption.getD "v"
+    pure (defaultNames pre n)
 
 /-- Optional weight field: returns `1.0` when absent. -/
 def optWeight (j : Json) : Except String Float :=

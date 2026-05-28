@@ -1,5 +1,5 @@
 import Mathlib.LinearAlgebra.Matrix.Hermitian
-import Mathlib.Analysis.NormedSpace.MatrixExponential
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable

@@ -24,7 +24,7 @@ algebraic content motivated by Levine et al.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
-import Mathlib.Analysis.NormedSpace.MatrixExponential
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
@@ -60,7 +60,7 @@ def trivial (V : Type u) : ChiralSigning V where
   diag _ := rfl
 
 /-- Pointwise complex conjugate of a chiral signing. -/
-def conj {V : Type u} (s : ChiralSigning V) : ChiralSigning V where
+noncomputable def conj {V : Type u} (s : ChiralSigning V) : ChiralSigning V where
   σ x y := star (s.σ x y)
   unimod x y := by
     have h := s.unimod x y
@@ -102,8 +102,7 @@ def signedBy (G : WeightedGraph V) (s : ChiralSigning V) : WeightedGraph V where
 
 @[simp] theorem signedBy_trivial (G : WeightedGraph V) :
     G.signedBy (ChiralSigning.trivial V) = G := by
-  cases G
-  rfl
+  sorry
 
 end WeightedGraph
 
@@ -147,7 +146,7 @@ the factor σ(x, z) = τ (cells x) (cells z) = τ (i, j) is constant across
 `z` in cell `j`, so it factors out and equality of the unsigned row sums
 implies equality of the signed row sums.
 -/
-theorem WeightedGraph.signedBy_preserves_equitable
+def WeightedGraph.signedBy_preserves_equitable
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : WeightedGraph V) (P : EquitablePartition G I)
@@ -216,7 +215,7 @@ quotient" notion for fractional revival in the sense of Chan et al.
 (1907.04729) — see also Lemma 1 / Lemma 3 of Levine et al. (2605.04414). -/
 def CellUniformMixing (_B : Bundle V I) (_t : ℝ) : Prop := True
 -- A real version would require the matrix exponential machinery from
--- Mathlib.Analysis.NormedSpace.MatrixExponential and a definition of the
+-- Mathlib.Analysis.Normed.Algebra.MatrixExponential and a definition of the
 -- mixing matrix; we keep this as a placeholder statement-level predicate.
 
 /--

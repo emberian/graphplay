@@ -1,5 +1,5 @@
 import Mathlib.LinearAlgebra.Matrix.Hermitian
-import Mathlib.Analysis.NormedSpace.MatrixExponential
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
@@ -27,7 +27,7 @@ structure GraphBundle {I : Type u} [Fintype I] [DecidableEq I]
   fiber : ∀ i, WeightedGraph (V i)
   coupling : ∀ {i j : I}, Q.Adj i j → Matrix (V i) (V j) ℂ
   hermCompat : ∀ {i j : I} (h : Q.Adj i j),
-    coupling (Q.symm h) = (coupling h)ᴴ
+    coupling (Q.symm h) = Matrix.conjTranspose (coupling h)
 
 namespace GraphBundle
 
@@ -44,7 +44,8 @@ noncomputable def total (B : GraphBundle Q V) : WeightedGraph (Σ i, V i) where
       (B.fiber x.1).adj x.2 (hxy ▸ y.2)
     else
       -- inter-fiber: use the coupling if the template edge exists, else 0
-      if hadj : Q.Adj x.1 y.1 then B.coupling hadj x.2 y.2 else 0
+      by classical exact
+        if hadj : Q.Adj x.1 y.1 then B.coupling hadj x.2 y.2 else 0
   herm := by
     -- Hermitian by `hermCompat` on the off-diagonals and `(fiber i).herm` on the
     -- diagonal blocks.  Deferred to a future proof pass.
@@ -134,8 +135,8 @@ def IsBiregular {V W : Type*} [Fintype V] [Fintype W]
 /-- **Fiber-partition theorem.**  If every fiber of a graph bundle is regular
 and every coupling is biregular, then the assignment of each vertex to its
 fiber index is an equitable partition of the total bundle. -/
-theorem fiberPartition (B : GraphBundle Q V)
-    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).IsRegular (d i))
+def fiberPartition (B : GraphBundle Q V)
+    (d : I → ℂ) (hfib : ∀ i, GraphBundle.WeightedGraph.IsRegular (B.fiber i) (d i))
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
       IsBiregular (B.coupling h) (α h) (β h)) :

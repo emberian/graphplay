@@ -35,7 +35,7 @@ Motivating references:
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Topology.MetricSpace.Basic
-import Mathlib.Data.Complex.Exponential
+import Mathlib.Analysis.Complex.Exponential
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Finset.Basic
 import Graphplay.Weighted
@@ -91,7 +91,7 @@ def staticSchedule
 in `steps` slices, over duration `duration`.  Each slice is half-and-half:
 the first half applies `H₁`, the second half `H₂`.  This is the simplest
 first-order Trotter splitting; higher-order variants are obvious extensions. -/
-def trotterSchedule
+noncomputable def trotterSchedule
     {V : Type u} [Fintype V] [DecidableEq V]
     (H₁ H₂ : Matrix V V ℂ) (steps : ℕ) (duration : ℝ) : Schedule V where
   endpoints := (0, duration)
@@ -120,7 +120,7 @@ def magneticFluxSchedule
 /-- A linear adiabatic interpolation between two Hamiltonians.  At `t = t₀`
 the schedule equals `H_initial`; at `t = t₁` it equals `H_final`; in between
 it is a convex combination by `s := (t - t₀) / (t₁ - t₀)`. -/
-def linearAdiabatic
+noncomputable def linearAdiabatic
     {V : Type u} [Fintype V] [DecidableEq V]
     (H_initial H_final : Matrix V V ℂ) (t₀ t₁ : ℝ) : Schedule V where
   endpoints := (t₀, t₁)
@@ -141,7 +141,7 @@ subspace (the span of indicator vectors per cell). -/
 def Matrix.preservesCellUniform'
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
-    (P : EquitablePartition G I) (M : Matrix V V ℂ) : Prop :=
+    (M : Matrix V V ℂ) (P : EquitablePartition G I) : Prop :=
   ∀ ψ : V → ℂ, (∀ x y : V, P.cells x = P.cells y → ψ x = ψ y) →
     ∀ x y : V, P.cells x = P.cells y → (M.mulVec ψ) x = (M.mulVec ψ) y
 
@@ -151,7 +151,7 @@ def Schedule.cellUniformInvariant
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
     (S : Schedule V) (P : EquitablePartition G I) : Prop :=
-  ∀ t : ℝ, (S.hamiltonianAt t).preservesCellUniform' P
+  ∀ t : ℝ, Matrix.preservesCellUniform' (S.hamiltonianAt t) P
 
 /-! ## Quotient schedule
 

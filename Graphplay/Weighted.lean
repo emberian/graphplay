@@ -53,7 +53,7 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
 
 /-- The continuous-time quantum walk: `U(t) = exp(-i t A)`. -/
 noncomputable def evolve (G : WeightedGraph V) (t : ℝ) : Matrix V V ℂ :=
-  Matrix.exp (-(Complex.I * (t : ℂ)) • G.adj)
+  NormedSpace.exp (-(Complex.I * (t : ℂ)) • G.adj)
 
 /-- The trace of a `WeightedGraph` adjacency matrix is zero (no loops). -/
 theorem trace_eq_zero (G : WeightedGraph V) : G.adj.trace = 0 := by
@@ -78,7 +78,7 @@ theorem spectrum_subset_real (G : WeightedGraph V) :
 
 /-- Weighted **row sum** at vertex `v`: the total signed weight of edges out
 of `v`.  For an ordinary (0/1) graph this is the usual vertex degree. -/
-def degree (G : WeightedGraph V) (v : V) : ℂ :=
+noncomputable def degree (G : WeightedGraph V) (v : V) : ℂ :=
   ∑ w, G.adj v w
 
 /-- A weighted graph is **regular** of degree `d` if every vertex has the same
@@ -93,9 +93,9 @@ theorem isRegular_iff_mulVec_one (G : WeightedGraph V) (d : ℂ) :
   unfold isRegular degree
   constructor
   · intro h v
-    simpa [Matrix.mulVec, Matrix.dotProduct] using h v
+    simpa [Matrix.mulVec, dotProduct] using h v
   · intro h v
-    simpa [Matrix.mulVec, Matrix.dotProduct] using h v
+    simpa [Matrix.mulVec, dotProduct] using h v
 
 /-- For a weighted graph, the regularity eigenvalue is automatically real. -/
 theorem isRegular_eigenvalue_real (G : WeightedGraph V) (d : ℂ)
@@ -112,9 +112,7 @@ theorem isRegular_eigenvalue_real (G : WeightedGraph V) (d : ℂ)
 /-- `evolve` at time zero is the identity. -/
 theorem evolve_zero (G : WeightedGraph V) : G.evolve 0 = (1 : Matrix V V ℂ) := by
   unfold evolve
-  simp [Matrix.exp]
-  -- `Matrix.exp 0 = 1` lives in Mathlib; the smul collapses by `Complex.ofReal_zero`.
-  sorry
+  simp [NormedSpace.exp_zero]
 
 /-- The negative time evolution is the inverse of the positive: this is the
 core "unitarity" identity `U(-t) = U(t)⁻¹`. -/
@@ -182,11 +180,11 @@ noncomputable def toWeighted
     -- and symmetric.
     unfold Matrix.IsHermitian
     ext i j
-    simp [Matrix.adjMatrix_apply, _root_.SimpleGraph.adj_comm]
-    by_cases h : G.Adj j i <;> simp [h]
+    by_cases h : G.Adj j i <;>
+      simp [_root_.SimpleGraph.adjMatrix_apply, _root_.SimpleGraph.adj_comm, h]
   loopless := by
     intro v
-    simp [Matrix.adjMatrix_apply, G.loopless]
+    simp [_root_.SimpleGraph.adjMatrix_apply, G.loopless]
 
 /-- The bridge sends an unweighted regular graph to a weighted regular graph
 with the same (real, hence complex-coerced) degree. -/

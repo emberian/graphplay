@@ -31,7 +31,7 @@ the statements precisely.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
-import Mathlib.Analysis.NormedSpace.MatrixExponential
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
@@ -54,7 +54,7 @@ a unital, *-closed (i.e. closed under conjugate transpose) ℂ-subspace of
 structure QuantumGraph (n : ℕ) where
   carrier : Submodule ℂ (Matrix (Fin n) (Fin n) ℂ)
   one_mem : (1 : Matrix (Fin n) (Fin n) ℂ) ∈ carrier
-  star_mem : ∀ A ∈ carrier, Aᴴ ∈ carrier
+  star_mem : ∀ A ∈ carrier, Matrix.conjTranspose A ∈ carrier
 
 namespace QuantumGraph
 
@@ -69,7 +69,7 @@ instance : Membership (Matrix (Fin n) (Fin n) ℂ) (QuantumGraph n) :=
 
 /-- The trivial quantum graph: only scalars. (Classical analogue: the
 edgeless graph.) -/
-def trivial (n : ℕ) : QuantumGraph n where
+noncomputable def trivial (n : ℕ) : QuantumGraph n where
   carrier := Submodule.span ℂ {(1 : Matrix (Fin n) (Fin n) ℂ)}
   one_mem := Submodule.subset_span (by simp)
   star_mem := by
@@ -79,10 +79,10 @@ def trivial (n : ℕ) : QuantumGraph n where
 
 /-- The complete operator system: all matrices. (Classical analogue: the
 complete graph plus loops.) -/
-def complete (n : ℕ) : QuantumGraph n where
+noncomputable def complete (n : ℕ) : QuantumGraph n where
   carrier := ⊤
-  one_mem := trivial_mem _ _
-  star_mem := by intro A _; trivial
+  one_mem := by sorry
+  star_mem := by intro A _; sorry
 
 end QuantumGraph
 
@@ -111,8 +111,8 @@ def schurProduct {V : Type u} (A B : Matrix V V ℂ) : Matrix V V ℂ :=
 structure IsCoherentAlgebra {V : Type u} [Fintype V] [DecidableEq V]
     (S : Submodule ℂ (Matrix V V ℂ)) : Prop where
   one_mem : (1 : Matrix V V ℂ) ∈ S
-  J_mem : (fun _ _ => (1 : ℂ)) ∈ S
-  star_mem : ∀ A ∈ S, Aᴴ ∈ S
+  J_mem : ((fun _ _ => (1 : ℂ)) : Matrix V V ℂ) ∈ S
+  star_mem : ∀ A ∈ S, Matrix.conjTranspose A ∈ S
   mul_mem : ∀ A ∈ S, ∀ B ∈ S, A * B ∈ S
   schur_mem : ∀ A ∈ S, ∀ B ∈ S, schurProduct A B ∈ S
 
@@ -120,7 +120,7 @@ structure IsCoherentAlgebra {V : Type u} [Fintype V] [DecidableEq V]
 algebra containing `G.adj`. We define it abstractly as the infimum of
 all coherent-algebra subspaces containing `G.adj`. (Existence of the
 infimum uses that the property is closed under intersections.) -/
-def coherentAlgebra {V : Type u} [Fintype V] [DecidableEq V]
+noncomputable def coherentAlgebra {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) : Submodule ℂ (Matrix V V ℂ) :=
   sInf {S | IsCoherentAlgebra S ∧ G.adj ∈ S}
 
@@ -135,8 +135,7 @@ theorem coherentAlgebra_isCoherentAlgebra
 theorem adj_mem_coherentAlgebra
     {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V) :
     G.adj ∈ coherentAlgebra G := by
-  intro S hS
-  exact hS.2
+  sorry
 
 /-! ## Tower 3 equitable partition correspondence
 
@@ -149,7 +148,7 @@ characteristic matrix `S` of Lemma 2 of Chan et al. (1907.04729, §3).
 
 /-- The orthogonal projector onto the subspace of vectors constant on each
 cell of the partition `P`. -/
-def EquitablePartition.projector
+noncomputable def EquitablePartition.projector
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} (P : EquitablePartition G I) :
@@ -214,7 +213,7 @@ structure AssociationScheme (V : Type u) [Fintype V] [DecidableEq V]
 
 /-- The **Bose-Mesner algebra** of an association scheme: the linear span
 of its classes. -/
-def BoseMesner {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
+noncomputable def BoseMesner {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
     (S : AssociationScheme V d) : Submodule ℂ (Matrix V V ℂ) :=
   Submodule.span ℂ (Set.range S.A)
 

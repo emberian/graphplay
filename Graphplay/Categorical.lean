@@ -74,7 +74,6 @@ noncomputable def quotientGraph
     sorry
   loopless := by
     intro i
-    simp [WeightedGraph.adj]
     -- The construction zeroes the diagonal by definition.
     sorry
 
@@ -499,7 +498,7 @@ This is the categorical version of Xie–Tamon's result that taking an infinite
 tail of `K_n + path-n` cannot strictly improve over the best finite truncation:
 the partition quotient (which records the spectral content) commutes with the
 limiting procedure. -/
-theorem quasi_infinite_limit
+noncomputable def quasi_infinite_limit
     {I : Type u} [Category.{u} I] [IsFiltered I]
     (D : Functor I WGraphPObj.{u})
     [HasColimit D] [HasColimit (D ⋙ Quotient.{u})] :

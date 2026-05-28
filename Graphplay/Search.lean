@@ -1,5 +1,5 @@
 import Mathlib.LinearAlgebra.Matrix.Hermitian
-import Mathlib.Analysis.NormedSpace.MatrixExponential
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
@@ -126,7 +126,7 @@ theorem search_infinite_tail
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : WeightedGraph V) (M : Finset V) (γ τ : ℝ)
     (P : ℕ → EquitablePartition G I)
-    (hopt : ∀ n, IsOptimalSearch G M γ τ) :
+    (hopt : ∀ _n : ℕ, IsOptimalSearch G M γ τ) :
     -- The colimit witness is just the original witness because the host graph
     -- is finite; the content of Xie–Tamon is the unbounded-tail version,
     -- whose statement requires an `InverseLimit`/`UnionGraph` extension and

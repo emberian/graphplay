@@ -58,7 +58,7 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
 /-- The branching number `b_{ij}^P(x)`: the total signed edge weight from
 `x` into cell `j`.  This depends only on the cell of `x` when `P` is an
 equitable partition (see `branching_eq`). -/
-def branching (P : EquitablePartition G I) (j : I) (x : V) : ℂ :=
+noncomputable def branching (P : EquitablePartition G I) (j : I) (x : V) : ℂ :=
   ∑ z, (if P.cells z = j then G.adj x z else 0)
 
 /-- For an equitable partition, the branching number depends only on the
@@ -143,9 +143,8 @@ noncomputable def cellInflate (P : EquitablePartition G I) (M : Matrix I I ℂ) 
 /-- `cellInflate` sends `0` to `0`. -/
 @[simp] theorem cellInflate_zero (P : EquitablePartition G I) :
     P.cellInflate 0 = 0 := by
-  unfold cellInflate
   funext v w
-  split_ifs <;> simp
+  simp [cellInflate]
 
 /-! ### Invariance of the cell-uniform subspace.
 

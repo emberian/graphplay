@@ -1,0 +1,631 @@
+Breaking the Speed Limit for Perfect Quantum State Transfer
+Weichen Xie
+Department of Mathematics, Clarkson University, Potsdam, New York, USA 13699-5815.∗
+
+Alastair Kay
+
+Department of Mathematics, Royal Holloway University of London, Egham, Surrey, TW20 0EX, UK.†
+
+Christino Tamon
+
+arXiv:2209.08160v1 [quant-ph] 16 Sep 2022
+
+Department of Computer Science, Clarkson University, Potsdam, New York, USA 13699-5815.‡
+(Dated: September 20, 2022)
+We describe a protocol for perfectly transferring a quantum state from one party to another under
+the dynamics of a fixed, engineered Hamiltonian. Our protocol combines the concepts of fractional
+revival, dual rail encoding, and a rare glimpse of the anti-Zeno effect. Remarkably, the transfer
+happens faster than the speed limit for perfect quantum state transfer [1, 2].
+
+I.
+
+INTRODUCTION
+
+The current generations of quantum computers are extremely promising. They are at the cusp of proving quantum advantage [3, 4], although they are not yet capable of
+implementing arbitrary algorithms of useful sizes. Critical to their performance is the ability to perform as many
+operations as possible before the inevitable decoherenceinduced limits are reached. Theoretically, it is crucial to
+understand the ultimate bounds – how long must we take
+to perform a specific operation, and can such a bound be
+saturated? For example, in the protocol of perfect state
+transfer, introduced in [5, 6], there is a speed limit for
+the protocol: there cannot exist a solution that takes less
+than a certain time [1, 2]. Hence, the solution in [6] is
+optimal, operating at twice the speed of the consecutive
+swap gates that would be specified in the gate model.
+Even more interesting are the conditions under which
+any no-go theorem is proved and whether, by relaxing any
+of them, the no-go result can be violated. State transfer, for example, imposes perfect transfer, and requires
+no time control of the system Hamiltonian. Relaxing either one permits protocols that may still be of practical
+relevance, but acting faster [7–9]. This is crucial for our
+fledgling quantum computers.
+Another potential loophole, that we investigate in this
+paper, is the assumption of unitarity and, consequently,
+deterministic arrival. The anti-Zeno effect suggests the
+possibility that repeated measurement at appropriate
+times could speed up the evolution [10]. We will demonstrate a protocol, taking inspiration from the heralded,
+non-deterministic arrival protocols of [11–13], improving
+them for the specific purpose of use with an engineered
+spin chain. This will allow us to demonstrate a violation
+of the speed limit thanks to the anti-Zeno effect. The
+protocol becomes particularly elegant if the engineered
+
+∗ Email: xiew@clarkson.edu
+† Email: alastair.kay@rhul.ac.uk
+‡ Email: ctamon@clarkson.edu
+
+chains that we choose exhibit fractional revival [14, 15],
+introduced in Section II. The main protocol is detailed in
+Section III, where we introduce a monorail encoding, i.e.
+unlike [11, 12] which required a dual-rail encoding across
+two parallel spins chains, we only need a single chain.
+Also, should our state fail to arrive, it is like a complete
+reset of the protocol, which is computationally far easier than the repeated updates and recalculations required
+in [11, 12]. In Section IV, we shall prove that the analytic solutions of [16] saturate an equivalent speed limit
+for fractional revival, and are hence the optimal choice.
+We show that, for even length chains, they yield a state
+transfer protocol whose expected arrival time is less than
+the fastest possible perfect state transfer time. The advantage is subtle, however, as illustrated by the fact that
+there is no advantage in the case of odd chain length.
+II.
+
+FRACTIONAL REVIVALS
+
+Let H be the Hamiltonian of an N -qubit spin chain,
+H=
+
+N −1
+N
+1X
+1 X
+Jn (Xn Xn+1 + Yn Yn+1 ) −
+Bn Z n ,
+2 n=1
+2 n=1
+
+where Zn denotes application of the Pauli-Z matrix on
+qubit n. The standard concept of perfect state transfer,
+as introduced in [5, 6, 15], involves a unitary evolution
+of an unknown single-qubit state |ψi from one end of the
+chain to the other,
+
+
+e−iHτ |ψi ⊗ |0i = |0i ⊗ e−iZφ/2 |ψi
+
+in the state transfer time τ , up to a corrective phase
+⊗(N −1)
+rotation by angle φ. Here, we denote |0i = |0i
+⊗(n−1)
+⊗(N −n)
+|1i |0i
+. The representation of
+and |ni = |0i
+H in the basis {|ni}N
+n=1 is denoted by H1 , and is an N ×N
+tridiagonal matrix with ordered eigenvalues λn > λn+1 .
+It is well-known (see [1, 2]) that on any N -qubit spin
+chain, there is a speed limit to the transfer:
+r
+1
+π
+(1)
+N 2 − (1 − (−1)N )
+Jmax τ ≥
+4
+2
+
+2
+where Jmax = maxn |Jn | is the maximum coupling
+strength [17].
+Suppose our spin chain has a fractional revival (FR).
+More specifically, if we can write the evolution as
+e−iHτ0 |1i = cos θ |1i + sin θeiφ |N i ,
+
+(2)
+
+up to a global phase, we say that H has a θ-revival between 1 and N at time τ0 . The phase φ is irrelevant to
+our study (it will typically be − π2 , and will always be
+known, so that it can be compensated for). For such a
+revival, the state does not transfer, but gets entangled
+between extremal sites:
+
+In the case of FR on a symmetric chain, we can be more
+explicit about the phases. A symmetric chain divides into
+symmetric and anti-symmetric subspaces. These have
+eigenvalues {λ2n−1 } and {λ2n } respectively. The initial
+state |1i and its θ-revival
+are both supported only on the
+√
+state (|1i + |N i)/ 2 in the symmetric subspace. Hence,
+within that subspace, we must have a perfect revival of
+that state (which, in fact, means a perfect revival of all
+symmetric states), up to a global phase. The same also
+holds for the antisymmetric space. Thus, the only relevant parameter is the relative phase between these two
+perfect revivals, which we call 2θ. We have
+
+|ψi |0i −→ cos θ |ψi |0i + sin θ |0i e−iZφ/2 |ψi .
+
+1
+1
+√ (|1i + |N i) 7→ √ (|1i + |N i)
+2
+2
+i2θ
+1
+e
+√ (|1i − |N i) 7→ √ (|1i − |N i).
+2
+2
+
+Fractional revival chains have some key properties that
+will be of use to us. In particular, Eq. (2) implies that
+
+We immediately learn that for a symmetric FR chain,
+
+
+
+
+
+e−iHτ0 |ni = cos θ |ni + sin θeiφ |N + 1 − ni
+
+(3)
+
+for any n 6= N2+1 . To see this, observe, for example, that
+|2i = (H |1i − B1 |1i)/J1 such that
+
+|1i 7→ cos θ |1i − i sin θ |N i ,
+
+|N i 7→ cos θ |N i − i sin θ |1i
+(4)
+
+up to a global phase.
+III.
+
+ALL ABOARD THE MONORAIL
+
+1
+We now come to the key part of our protocol. This
+(H − B1 1)e−iHτ0 |1i
+J1
+has many aspects in common with [11–13], which used
+1
+a dual rail encoding – an encoding of the qubit entirely
+(H − B1 1)(cos θ |1i + sin θeiφ |N i)
+=
+J1
+within the single-excitation subspace, but split across two
+
+spin chains. Here, we will use the same encoding
+iφ JN −1
+BN −B1
+|N i parallel
+.
+= cos θ |2i + sin θe
+J1 |N − 1i +
+J1
+procedure, but on a single rail. Specifically, we take our
+unknown single-qubit state |ψi = α |0i+β |1i, and encode
+Since this output must be orthogonal to the output of
+it as α |2i + β |1i.
+the evolution Eq. (2), and must also be normalised, we
+We place this state on the chain, wait the time τ0 , and
+see that B1 = BN and J1 = JN −1 .
+test to see if the single excitation has arrived without
+Indeed, following through the consequences of this arlooking at the state itself. As in [11, 12], the key to this
+gument shows that if the chain length, N , is even, then
+working is that the arrival amplitude for 1 → N and 2 →
+the chain must be symmetric. If N is odd, it is either
+N − 1 should be equal. By construction, Eq. (3), an FR
+a symmetric chain, or the central two coupling strengths
+chain at the time τ0 has this property. If the excitation
+J(N ±1)/2 could be asymmetric.
+has arrived, the state has successfully transferred.
+e−iHτ0 |2i =
+
+measure
+
+e−iHτ0 (α |2i + β |1i) = cos θ(α |2i + β |1i) + sin θeiφ (α |N − 1i + β |N i) −−−−−−−→
+
+If the excitation is not present, due to the properties of
+FR, we know it must be back at the start, and the protocol can just repeat. Repetition until success completes
+after an expected time
+E(Jmax T ) = Jmax τ0
+
+∞
+X
+
+n=1
+
+n cos2n−2 θ sin2 θ =
+
+Jmax τ0
+.
+sin2 θ
+
+Since the success of each repetition is independent, one
+
+
+
+α |N − 1i + β |N i p = sin2 θ
+p = cos2 θ
+α |2i + β |1i
+
+can apply Chernoff bounds to show that the need for
+many repetitions vanishes exponentially.
+The full protocol is summarised in Fig. 1. Including
+the encoding steps, we have
+1. Prepare an arbitrary single-qubit state |ψi in the
+first qubit of the chain.
+2. Apply a controlled-not gate on the first two qubits
+
+3
+|ψi
+
+which should be compared to the perfect transfer speed
+limit of Eq. (1). At our chosen value of θc ,
+
+|0i
+
+2θc
+E[Jmax T ]
+1−ǫ
+=
+=
+Jmax τmin
+cos2 πǫ
+π sin2 θc
+2
+
+|0i
+FR
+
+|0i
+|0i
+
+1
+
+|0i
+
+|ψi
+
+where θc = π2 (1 − ǫ). This is evidently smaller than 1 for
+ǫ < 21 , which is certainly true for θ = θc and N > 2.
+A.
+
+Figure 1. PST spin-chain with heralded anti-Zeno effect. If 0
+is measured, we simply wait for the next FR cycle; otherwise
+the state |ψi has arrived.
+
+(with the first qubit being the control, and applying
+the target operation if the control qubit is in |0i).
+3. Evolve the FR chain up to its revival time τ0 .
+
+We will now justify that the chain we have used, defined by Eq. (5), yields the smallest possible value of
+Jmax τ0 for any given θ. This proof strongly parallels the
+speed limit proof of [1]. Since N is even, the chain is
+symmetric, and the evolution is given by Eq. (4). Since
+the symmetric subspace has perfect revivals in time τ0 ,
+its eigenvalues must satisfy λ1 − λ2n−1 = 2π
+τ0 kn for some
+integer kn . Similarly, the antisymmetric subspace must
+2θ
+′
+satisfy λ1 − λ2n = 2π
+τ0 kn + τ0 , in order to get the correct
+relative phase. Most critically for us,
+
+4. Apply the standard cnot gate on the last two
+qubits (with the last qubit being the control).
+5. Measure the second last qubit in the Z basis.
+
+Fastest Possible FR
+
+λ2n−1 − λ2n ≥
+
+2θ
+.
+τ0
+
+(6)
+
+The matrix H1 has a symmetry SH1 S = H1 where
+
+6. If the measurement result is 1, halt (as state |ψi has
+arrived on the last qubit). Otherwise, repeat from
+step 3 (as the state is the same as it was then).
+
+S=
+
+N
+X
+
+n=1
+
+|ni hN + 1 − n| .
+
+Now,
+IV.
+
+SPIN CHAIN
+
+2Jmax ≥ 2JN/2 = Tr(H1 S) =
+
+In this section, we show that the Hamiltonian constructed by Genest et al. in Section 6 of [16] for a chain
+with even N has an expected transfer time that is lower
+than any deterministic N -qubit spin chain with the same
+maximum coupling strength (edge weight). The parameters that give a θ-revival at time τ0 = π/2 are, in our
+indexing convention,
+Jn =
+
+s
+
+2
+
+n(N − n)((N − 2n)2 − 4θ
+π2 )
+,
+(N − 1 − 2n)(N + 1 − 2n)
+
+Bn = 0
+
+(5)
+
+We will be particularly interested in
+r
+π
+3
+θc =
+1− 2
+,
+2
+N −1
+which is extremely close to possessing perfect state transfer (θ = π2 ). This choice fixes that Jmax = JN/2±1 =
+JN/2 = θc N/π.
+If T is the arrival time of the state (which is a geometric
+random variable), the expected transport time is
+π θN 1
+Nθ
+E[Jmax T ] =
+=
+,
+2
+2 π sin θ
+2 sin2 θ
+
+X
+n
+
+λ2n−1 − λ2n ≥
+
+N 2θ
+2 τ0
+
+by Eq. (6). We conclude that
+Jmax τ0 ≥
+
+Nθ
+.
+2
+
+This is exactly the value that we achieved above. Hence,
+the solution from [16] is optimal for any given θc ≤ θ ≤
+π − θc . This recovers the previously known results for
+perfect state transfer when θ = π/2 [1, 6, 15].
+In addition to the solution for even chain lengths, [16]
+gives an equivalent solution for odd chain lengths. This
+works within our protocol (as does any chain with FR),
+but does not provide any speed advantage over state
+transfer. Moreover, following [2], one can prove that this
+is also the fastest symmetric chain with a given FR angle
+between the chain ends. One simply replaces the bounds
+π
+2(π − θ)
+−→ λ2n − λ2n+1 ≥
+τ
+τ0
+2θ
+π
+.
+λ2n−1 − λ2n ≥ −→ λ2n−1 − λ2n ≥
+τ
+τ0
+λ2n − λ2n+1 ≥
+
+We conclude that
+p
+(N 2 − 1)θ(π − θ)
+Jmax τ0 ≥
+,
+2
+
+4
+which is saturated by the solution in [16] for any θ such
+that the largest coupling is the central one.
+When N is odd, solutions are not required to be symmetric. In the asymmetric case, a chain with a θ-revival is
+symmetric apart
+strengths
+√
+√ from the middle two coupling
+J(N −1)/2 = 2J cos η and J(N +1)/2 = 2J sin η. H1 is
+similar to H ′ = U H1 U † with
+U=
+
+N +1
+2
+
+(N −1)/2
+
+X
+
+sin
+
+n=1
+
++ cos
+
+
+
+π
+
+π
+4
+
+4
+
+N +1
++
+2
+
+
+− η (|nihn| − |N + 1 − nihN + 1 − n|)
+
+
+− η (|N + 1 − ni hn| + |ni hN + 1 − n|).
+
+H ′ is a symmetric chain with central coupling J, and all
+other parameters equal to those of H1 . The evolution of
+the two are related by
+′
+
+e−iH1 τ0 |1i = U † e−iH τ0 U |1i .
+These can only be equal if H ′ possesses FR by some angle
+θ′ . Thus, the right-hand side is entirely known thanks to
+Eq. (4). Hence, the two FR angles are related by
+sin θ = sin(2η) sin θ′ .
+The expected state transfer time can then be evaluated
+relative to that of the symmetric chain,
+ √2 cos η
+√
+
+ √sin2 2η Jmax = √2J cos η
+′
+2 sin η
+E[Jmax T ] = E[Jmax
+T ′] ×
+Jmax = 2J sin η
+2
+
+ sin1 2η
+otherwise
+2
+sin 2η
+
+any deterministic perfect state transfer chain with the
+same maximum coupling strength.
+The speedup that we achieve is miniscule, only reducing the state transfer time from τ by an amount O(τ /N 2 ),
+at the cost of non-deterministic arrival. If we account
+fully for the time required for the decoding operation
+before measurement, this outweighs the speedup! Nevertheless, our point is that the speed limit can be broken thanks to the anti-Zeno effect. The FR provides a
+particularly elegant method allowing us to compress the
+dual-rail encoding onto a single chain, and also yielding
+information about what state the chain is reset to in the
+case of failure. Its disadvantage is that, after a failure,
+the state is reset such that it has to travel the full length
+of the chain again before the next possible arrival, which
+is why the use of FR for values of θ far from perfect
+state transfer is impractical. There may be other systems which are more efficient from this perspective, and
+yield greater advantages.
+There are several useful properties that are built in
+to the protocol. While we have dealt with the specific
+case that the rest of the chain is initialised as |0i, our
+encoding is exactly that used to tolerate any initial state
+[15, 18], and hence this carries over immediately so long
+as the sites N and N −1 are prepared in |0i. Equally, if we
+have more information to transport, such as a qutrit, one
+simply uses a superposition over the states {|1i , |2i , |3i},
+and detects arrival by looking for the presence of a |1i on
+the final three sites. This requires a minimal update to
+our encoding/decoding procedures.
+
+ACKNOWLEDGMENTS
+
+′
+In all these cases, E[Jmax T ] > E[Jmax
+T ′ ] – the symmetric
+
+solution has the best expected transfer time, which we
+have already shown cannot break the speed limit.
+V.
+
+CONCLUSIONS
+
+In this work, we have constructed a probabilistic protocol for perfect state transfer with provable speedup over
+
+[1] M.-H.
+Yung,
+Quantum
+speed
+limit
+for
+perfect
+state
+transfer
+in
+one
+dimension,
+Phys. Rev. A 74, 030303(R) (2006).
+[2] A. Kay, A Note on the Speed of Perfect State Transfer,
+arXiv (2016), arXiv:1609.01854.
+[3] F. Arute and others, Quantum supremacy using a programmable superconducting processor,
+Nature 574, 505 (2019).
+[4] H.-S. Zhong and others, Quantum computational advantage using photons, Science 370, 1460 (2020).
+
+Work done while the authors were attending the
+workshop “Graph Theory, Algebraic Combinatorics,
+and Mathematical Physics” at Centre de Recherches
+Mathématiques (CRM), Université de Montréal. C.T.
+would like to thank CRM for its hospitality and support
+during his sabbatical visit. W.X. was supported by NSF
+travel grant DMS-2212755. We thank Luc Vinet and Ada
+Chan for helpful discussions.
+
+[5] S. Bose, Quantum Communication through an Unmodulated Spin Chain, Phys. Rev. Lett. 91, 207901 (2003).
+[6] M. Christandl, N. Datta, A. Ekert, and A. J. Landahl, Perfect State Transfer in Quantum Spin Networks,
+Phys. Rev. Lett. 92, 187902 (2004).
+[7] T. J. G. Apollaro, L. Banchi, A. Cuccoli, R. Vaia,
+and P. Verrucchi, 99%-fidelity ballistic quantumstate transfer through long uniform channels,
+Phys. Rev. A 85, 052319 (2012).
+[8] A. Kay, Incorporating Encoding into Quantum System Design
+(2022), arXiv:2207.01954 [quant-ph].
+
+5
+[9] M. Murphy, S. Montangero, V. Giovannetti, and
+T. Calarco, Communication at the quantum speed limit
+along a spin chain, Phys. Rev. A 82, 022318 (2010).
+[10] P. M. Harrington, J. T. Monroe, and K. W.
+Murch,
+Quantum
+Zeno
+Effects
+from
+Measurement
+Controlled
+Qubit-Bath
+Interactions,
+Phys. Rev. Lett. 118, 240401 (2017).
+[11] D. Burgarth and S. Bose, Conclusive and arbitrarily perfect quantum state transfer using parallel
+spin chain channels, Phys. Rev. A 71, 052315 (2005),
+arXiv:quant-ph/0406112.
+[12] D. Burgarth and S. Bose, Perfect quantum state
+transfer with randomly coupled quantum chains,
+New J. Phys. 7, 135 (2005).
+[13] D. Burgarth, V. Giovannetti, and S. Bose, Efficient and perfect state transfer in quantum chains,
+J. Phys. A: Math. Gen. 38, 6793 (2005).
+[14] L. Dai, Y. P. Feng, and L. C. Kwek, Engineering quantum cloning through maximal entanglement
+
+between boundary qubits in an open spin chain,
+J. Phys. A: Math. Theor. 43, 035302 (2010).
+[15] A. Kay, A Review of Perfect State Transfer
+and its Application as a Constructive Tool,
+Int. J. Quantum Inform. 8, 641 (2010).
+[16] V. X. Genest, L. Vinet, and A. Zhedanov,
+Quantum spin chains with fractional revival,
+Annals of Physics 371, 348 (2016).
+[17] Evaluating the speed limit using Jmax τ removes any
+ambiguity arising from the fact that for any H that
+achieves transfer in time τ , γH achieves transfer in time
+τ (γ) = τ /γ.
+[18] C. Albanese, M. Christandl, N. Datta, and A. Ekert,
+Mirror Inversion of Quantum States in Linear Registers,
+Phys. Rev. Lett. 93, 230502 (2004).
+
+

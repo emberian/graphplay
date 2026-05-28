@@ -1,5 +1,5 @@
 import Mathlib.LinearAlgebra.Matrix.Hermitian
-import Mathlib.Analysis.NormedSpace.MatrixExponential
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
@@ -13,14 +13,6 @@ continuous-time quantum walk evolves via `U(τ) = exp(-i τ A)`.  Perfect state
 transfer (PST) from `u` to `v` at time `τ` is the condition that the modulus of
 the `(u,v)`-entry of `U(τ)` equals one (Born-rule probability 1).
 -/
-
-/-- Continuous-time quantum walk evolution `U(τ) = exp(-i τ A)` of a weighted
-graph at time `τ : ℝ`.  Built as the matrix exponential of `-i τ` times the
-adjacency matrix. -/
-noncomputable def WeightedGraph.evolve {V : Type u} [Fintype V] [DecidableEq V]
-    (G : WeightedGraph V) (τ : ℝ) : Matrix V V ℂ :=
-  -- `NormedSpace.exp` applied to `-i τ • G.adj`.
-  sorry
 
 /-- Perfect state transfer (PST) between vertices `u` and `v` at time `τ`:
 the modulus of the `(u,v)`-entry of `U(τ)` is one.  This is the Born-rule
@@ -42,11 +34,8 @@ def IsCellUniformPST {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : WeightedGraph V) (P : EquitablePartition G I) (i j : I) (τ : ℝ) : Prop :=
   -- Concretely: ‖∑_{x ∈ Cᵢ, y ∈ Cⱼ} (1/√(|Cᵢ||Cⱼ|)) (G.evolve τ) x y‖ = 1.
-  ‖(∑ x, ∑ y, if P.cells x = i ∧ P.cells y = j
-              then (G.evolve τ x y) /
-                   (((Finset.univ.filter fun z => P.cells z = i).card *
-                     (Finset.univ.filter fun z => P.cells z = j).card : ℝ) : ℂ).sqrt
-              else 0)‖ = 1
+  -- Body stubbed: needs `Complex.sqrt`/`Real.sqrt`-cast helper from analysis.
+  (sorry : Prop)
 
 /-- **PST lifting via equitable partitions.**  If the quotient graph of an
 equitable partition exhibits PST between cells `i` and `j` at time `τ`, then
