@@ -1,28 +1,27 @@
-#set document(title: "An A.M.O.R.C. Note on Quasi-Infinite Graph Color Bags")
+#set document(title: "A.M.O.R.C. Toolkit Note: Engineered Color Templates for Spatial Search")
 #set page(margin: 1in)
 #set text(size: 11pt)
 #set par(justify: true)
 
 #align(center)[
-  #text(size: 17pt, weight: "bold")[An A.M.O.R.C. Note on Quasi-Infinite Graph Color Bags] \
+  #text(size: 17pt, weight: "bold")[A.M.O.R.C. Toolkit Note] \
   #v(0.35em)
-  #text(size: 10pt)[Lean-verified graph constructions and a four-color search envelope]
+  #text(size: 12pt)[Engineered Color Templates for Spatial Search] \
+  #v(0.25em)
+  #text(size: 9.5pt)[Anti Mathematics Online Research Crew; Lean core plus compiler prototype]
 ]
 
 #v(0.6em)
 
 #heading("Abstract")
 
-We formalize a conservative reading of the phrase "quasi-infinite adjoint" for
-simple graphs. The useful construction is not a reflector into colorable graphs.
-Instead, it is an arbitrary indexed coproduct of graph factors, with countable
-edge unions and inverse-limit thread graphs as complementary infinite
-constructions.  The Lean development proves the coproduct universal property,
-propagation of heterogeneous colorings through a sigma-sum palette, a universal
-property for countable edge unions, inherited colorings for inverse limits, and a
-small obstruction theorem showing why a naive free colorable reflector fails.
-It then generalizes coloring to selected template pullbacks and simultaneous
-multicolor constraints.
+This note turns the improvised phrase "quasi-infinite adjoint" into a small
+toolkit for graph-engineered spatial search. The global reflector into colorable
+graphs fails, but a useful local replacement exists: once a label map or quotient
+template is selected, there is a greatest graph compatible with it. The Lean
+development verifies indexed graph bags, countable edge unions, inverse-limit
+thread graphs, color completions, template pullbacks, engineered template joins,
+and simultaneous multicolor constraints.
 
 The addendum connects this machinery to quantum spatial search: the four-color
 theorem gives every finite planar graph a complete multipartite four-color
@@ -31,6 +30,11 @@ theorem of Li, Luo, Feng, and Li applies to the completion, though not
 automatically to the original planar graph. More generally, equal-fiber joins
 over engineered regular templates inherit the template spectral ratio relevant
 to Grover-optimal CTQW search.
+
+#figure(
+  image("assets/pipeline.svg", width: 100%),
+  caption: [Compiler-shaped view of the construction.]
+)
 
 #heading("Formal Setting")
 
@@ -126,7 +130,7 @@ two-colorable, so there is no homomorphism from the triangle into any
 Bool-colorable graph.  Thus an ordinary reflector with a unit $G -> L(G)$ into
 the full subcategory of two-colorable graphs cannot exist.
 
-#heading("The Better Adjoint-Shaped Object")
+#heading("Local Completion")
 
 The successful adjoint-shaped object is local over a chosen vertex-color map.
 Fix $c : V -> C$. Among all graph structures on $V$ for which $c$ is a coloring,
@@ -191,7 +195,12 @@ allowed long-range tunneling family, parity, oracle class, or any other selected
 coarse observable. The design problem changes from "is the graph colorable?" to
 "which quotient templates do we want the Hamiltonian support to factor through?"
 
-#heading("A.M.O.R.C. Addendum: Four-Color Search Envelope")
+#figure(
+  image("assets/templates.svg", width: 100%),
+  caption: [Three views: ordinary four-color completion, a non-complete engineered template, and a fiber blowup.]
+)
+
+#heading("Spatial Search Link")
 
 The fetched spatial-search papers make the relevant graph invariant clear. In
 the Chakraborty--Novo--Ambainis--Omar CTQW model, the search Hamiltonian is
@@ -343,9 +352,45 @@ So four-color structure is a finite-range or thresholded-support invariant; it
 does not survive an all-positive long-range completion except as a chosen
 decomposition of the original planar skeleton.
 
-#heading("What Was Actually Obtained")
+#heading("Compiler Prototype")
 
-The verified construction is aggressive in size but conservative in claims:
+The repository includes a small prototype compiler, `tools/search_compiler.py`.
+It takes a JSON description of an engineered template, fiber sizes, and marked
+counts. It emits:
+
+- the template adjacency and Laplacian spectra;
+- a CNO-style spectral-ratio diagnostic for regular templates;
+- the exact uniform-fiber quotient matrices;
+- the refined marked-cell quotient;
+- an exploratory CTQW scan on the quotient Hamiltonian.
+
+The compiler accepts explicit edge lists and constructors for complete graphs,
+cycles, paths, complete bipartite graphs, hypercubes, complements, and Cartesian
+products. This is the first step toward a search-problem compiler: the user
+chooses quotient observables and coupling templates, while the tool builds the
+maximal compatible host and analyzes the small quotient Hamiltonian.
+
+#table(
+  columns: 5,
+  [example], [template], [host], [ratio], [best adj. scan],
+  [`k4_equal_fiber`], [complete $K_4$], [$64$], [$0.333$], [$0.994$],
+  [`c5_equal_fiber`], [cycle $C_5$], [$100$], [$0.809$], [$0.991$],
+  [`rook_3x3_equal_fiber`], [$K_3 square K_3$], [$90$], [$0.500$], [$0.990$],
+  [`hypercube_q3_equal_fiber`], [$Q_3$], [$96$], [$1.000$], [$0.987$],
+  [`four_color_unequal`], [unequal $K_4$ fibers], [$64$], [n/a], [$0.989$],
+)
+
+These scans are not proofs of optimality. They are triage: they identify
+templates whose quotient dynamics look promising, and they separate theorem
+routes. Equal-fiber regular templates can use the adjacency spectral-ratio
+route. Laplacian-integral templates can use the deterministic-search route.
+Unequal complete multipartite color completions retain Laplacian integrality but
+fall outside the simplest regular-template criterion.
+
+#heading("Current Contents")
+
+The verified construction is modest in claims but now has several reusable
+pieces:
 
 - arbitrary indexed coproducts of graph factors;
 - heterogeneous and shared-palette color propagation;

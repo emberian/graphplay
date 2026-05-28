@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="250" viewBox="0 0 980 250">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#28323c"/>
+    </marker>
+    <style>
+      text { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #17202a; }
+      .box { fill: #f7f8fa; stroke: #28323c; stroke-width: 2; rx: 8; }
+      .accent { fill: #e8f2f0; stroke: #1f6f64; }
+      .small { font-size: 17px; }
+      .title { font-size: 21px; font-weight: 700; }
+      .arrow { stroke: #28323c; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="box" x="20" y="58" width="165" height="110"/>
+  <text class="title" x="102.5" y="100" text-anchor="middle">instance</text>
+  <text class="small" x="102.5" y="130" text-anchor="middle">vertices V</text>
+  <text class="small" x="102.5" y="154" text-anchor="middle">oracle M</text>
+
+  <path class="arrow" d="M195 113 H262"/>
+
+  <rect class="box accent" x="272" y="42" width="175" height="142"/>
+  <text class="title" x="359.5" y="84" text-anchor="middle">labels</text>
+  <text class="small" x="359.5" y="114" text-anchor="middle">f : V -> T</text>
+  <text class="small" x="359.5" y="140" text-anchor="middle">fibers Vᵢ</text>
+  <text class="small" x="359.5" y="166" text-anchor="middle">marked split</text>
+
+  <path class="arrow" d="M457 113 H524"/>
+
+  <rect class="box" x="534" y="42" width="190" height="142"/>
+  <text class="title" x="629" y="82" text-anchor="middle">template Q</text>
+  <text class="small" x="629" y="112" text-anchor="middle">allowed modes</text>
+  <text class="small" x="629" y="138" text-anchor="middle">PullbackGraph</text>
+  <text class="small" x="629" y="164" text-anchor="middle">TemplateJoin</text>
+
+  <path class="arrow" d="M734 113 H801"/>
+
+  <rect class="box accent" x="811" y="42" width="150" height="142"/>
+  <text class="title" x="886" y="82" text-anchor="middle">quotient</text>
+  <text class="small" x="886" y="112" text-anchor="middle">small H</text>
+  <text class="small" x="886" y="138" text-anchor="middle">spectra</text>
+  <text class="small" x="886" y="164" text-anchor="middle">CTQW scan</text>
+
+  <text class="small" x="490" y="226" text-anchor="middle">Compiler path: pick coarse observables, build the maximal compatible host, search on the equitable quotient.</text>
+</svg>
