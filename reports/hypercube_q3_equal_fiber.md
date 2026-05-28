@@ -1,5 +1,13 @@
 # Search Compiler Report: hypercube Q3 template with equal fibers
 
+## Problem
+
+- domain: binary address-space search
+- task: find a marked address sector in a three-bit mode quotient
+- encoding: each binary address labels a fiber; template edges flip one bit
+- compiler goal: compare hypercube-style locality with stronger expander-like templates
+- proof route: Laplacian integral, but the adjacency spectral-ratio check fails because the bipartite template has ratio 1
+
 ## Host
 
 - template vertices: 8

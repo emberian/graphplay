@@ -1,5 +1,12 @@
 {
   "name": "cycle C5 engineered template with equal fibers",
+  "problem": {
+    "domain": "minimal cyclic mode fabric",
+    "task": "locate a marked mode in a five-sector cyclic host",
+    "encoding": "each sector is a fiber and the quotient only couples neighboring sectors",
+    "compiler_goal": "small non-complete engineered template sanity check",
+    "proof_route": "regular equal-fiber template passes the adjacency spectral-ratio route"
+  },
   "template": {
     "kind": "cycle",
     "n": 5,

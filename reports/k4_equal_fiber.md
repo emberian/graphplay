@@ -1,5 +1,13 @@
 # Search Compiler Report: four-color K4 template with equal fibers
 
+## Problem
+
+- domain: planar interaction skeleton
+- task: search for one marked site after four-color decomposition
+- encoding: four color classes become equal fibers over a K4 template
+- compiler goal: baseline complete color-host search quotient
+- proof route: regular equal-fiber complete template satisfies both spectral-ratio and Laplacian-integral routes
+
 ## Host
 
 - template vertices: 4

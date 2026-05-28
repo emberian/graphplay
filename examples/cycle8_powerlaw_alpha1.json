@@ -1,0 +1,25 @@
+{
+  "name": "cycle C8 power-law template alpha=1",
+  "problem": {
+    "domain": "long-range tunneling memory ring",
+    "task": "find a marked memory sector on an eight-zone ring with power-law couplings",
+    "encoding": "each sector is a fiber; template weights decay with cyclic distance as 1/r",
+    "compiler_goal": "test whether long-range weights improve the quotient spectral ratio over a sparse cycle",
+    "proof_route": "regular weighted template passes the adjacency spectral-ratio route but is not Laplacian integral"
+  },
+  "template": {
+    "kind": "cycle_power_law",
+    "n": 8,
+    "prefix": "p",
+    "alpha": 1.0
+  },
+  "fiber_size": 10,
+  "marked": {
+    "p0": 1
+  },
+  "scan": {
+    "steps": 2600,
+    "t_max_factor": 5.0,
+    "gamma_factors": [0.0625, 0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
+  }
+}

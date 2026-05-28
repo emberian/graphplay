@@ -36,6 +36,7 @@ TOL = 1e-8
 @dataclass(frozen=True)
 class Spec:
     name: str
+    problem: dict[str, Any]
     vertices: list[str]
     weights: np.ndarray
     fibers: np.ndarray
@@ -67,6 +68,7 @@ def parse_spec(path: Path) -> Spec:
     scan = raw.get("scan", {})
     return Spec(
         name=str(raw.get("name", path.stem)),
+        problem=dict(raw.get("problem", {})),
         vertices=vertices,
         weights=weights,
         fibers=fibers,
@@ -101,6 +103,17 @@ def build_template(template: dict[str, Any]) -> tuple[list[str], np.ndarray]:
         for i in range(n):
             add_edge(weights, i, (i + 1) % n, float(template.get("weight", 1.0)))
         return vertices, weights
+    if kind == "cycle_power_law":
+        vertices = named_vertices(template)
+        n = len(vertices)
+        alpha = float(template["alpha"])
+        scale = float(template.get("scale", 1.0))
+        weights = empty_weights(n)
+        for i in range(n):
+            for j in range(i + 1, n):
+                dist = min((j - i) % n, (i - j) % n)
+                add_edge(weights, i, j, scale / (dist**alpha))
+        return vertices, weights
     if kind == "path":
         vertices = named_vertices(template)
         weights = empty_weights(len(vertices))
@@ -132,6 +145,12 @@ def build_template(template: dict[str, Any]) -> tuple[list[str], np.ndarray]:
                 if i < j:
                     add_edge(weights, i, j, weight)
         return vertices, weights
+    if kind == "surface_heawood":
+        colors = heawood_number(template)
+        vertices = [f"c{i}" for i in range(colors)]
+        weights = np.ones((colors, colors), dtype=float)
+        np.fill_diagonal(weights, 0.0)
+        return vertices, weights * float(template.get("weight", 1.0))
     if kind == "cartesian_product":
         left_vertices, left_weights = build_template(template["left"])
         right_vertices, right_weights = build_template(template["right"])
@@ -155,6 +174,34 @@ def build_template(template: dict[str, Any]) -> tuple[list[str], np.ndarray]:
         weights = np.where(np.eye(len(vertices), dtype=bool), 0.0, np.where(base == 0, weight, 0.0))
         return vertices, weights
     raise ValueError(f"unknown template kind: {kind!r}")
+
+
+def heawood_number(template: dict[str, Any]) -> int:
+    """Return the standard surface color upper bound as a complete template size."""
+    if "colors" in template:
+        return int(template["colors"])
+    if "orientable_genus" in template:
+        g = int(template["orientable_genus"])
+        if g < 0:
+            raise ValueError("orientable_genus must be nonnegative")
+        return int(math.floor((7.0 + math.sqrt(1.0 + 48.0 * g)) / 2.0))
+    if "nonorientable_genus" in template:
+        k = int(template["nonorientable_genus"])
+        if k < 1:
+            raise ValueError("nonorientable_genus must be positive")
+        if k == 2 and bool(template.get("klein_bottle_exception", True)):
+            return 6
+        return int(math.floor((7.0 + math.sqrt(1.0 + 24.0 * k)) / 2.0))
+    if "euler_genus" in template:
+        eps = int(template["euler_genus"])
+        if eps < 0:
+            raise ValueError("euler_genus must be nonnegative")
+        if eps == 0:
+            return 4
+        if eps == 2 and bool(template.get("klein_bottle_exception", False)):
+            return 6
+        return int(math.floor((7.0 + math.sqrt(1.0 + 24.0 * eps)) / 2.0))
+    raise ValueError("surface_heawood needs orientable_genus, nonorientable_genus, euler_genus, or colors")
 
 
 def named_vertices(template: dict[str, Any]) -> list[str]:
@@ -396,6 +443,13 @@ def compile_report(spec: Spec) -> str:
     lines: list[str] = []
     lines.append(f"# Search Compiler Report: {spec.name}")
     lines.append("")
+    if spec.problem:
+        lines.append("## Problem")
+        lines.append("")
+        for key in ["domain", "task", "encoding", "compiler_goal", "proof_route"]:
+            if key in spec.problem:
+                lines.append(f"- {key.replace('_', ' ')}: {spec.problem[key]}")
+        lines.append("")
     lines.append("## Host")
     lines.append("")
     lines.append(f"- template vertices: {len(spec.vertices)}")

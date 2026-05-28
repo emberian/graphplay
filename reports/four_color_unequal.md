@@ -1,5 +1,13 @@
 # Search Compiler Report: four-color completion with unequal color classes
 
+## Problem
+
+- domain: unbalanced planar decomposition
+- task: search after a four-coloring with uneven color-class sizes
+- encoding: color classes become unequal fibers over K4
+- compiler goal: test what survives when equal-fiber regularity is lost
+- proof route: Laplacian-integral complete multipartite route remains available; simple adjacency spectral-ratio route does not
+
 ## Host
 
 - template vertices: 4

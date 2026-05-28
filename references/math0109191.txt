@@ -1,0 +1,760 @@
+arXiv:math/0109191v1 [math.CO] 24 Sep 2001
+
+A HEAWOOD–TYPE RESULT FOR THE ALGEBRAIC
+CONNECTIVITY OF GRAPHS ON SURFACES
+PEDRO FREITAS
+Abstract. We prove that the algebraic connectivity a(G) of a graph embedded on a nonplanar surface satisfies a Heawood–type result. More precisely, it
+is shown that the algebraic connectivity of a surface S, defined as the supremum of a(G) over all graphs that can be embedded in S, is equal to the
+chromatic number of S. Furthermore, and with the possible exception of the
+Klein bottle, we prove that this bound is attained only in the case of the
+maximal complete graph that can be embedded in S. In the planar case, we
+show that, at least for some classes of graphs which include the set of regular
+graphs, a(G) is less than or equal to four. As an application of these results
+and techniques, we obtain a lower bound for the genus of Ramanujan graphs.
+We also present some bounds for the asymptotic behaviour of a(G) for
+certain classes of graphs as the number of vertices goes to infinity.
+
+1. Introduction
+In recent years, there has been some work relating the spectral radius of the
+adjacency matrix of a graph, r(G), to its genus – see [EZ, Ho1, Ho2]. The idea
+behind these results is to combine an appropriate estimate for r(G) in terms of the
+number of vertices and edges of the graph, with a direct consequence of Euler’s
+formula giving an upper bound for the number of edges of a graph embedded in a
+surface S. This allows the derivation of a bound for r(G) in terms on the number
+of vertices of G and the genus of S.
+In the continuous case there is also a relation between the eigenvalues of a certain
+differential operator and the genus of that surface. More precisely, there exist upper
+bounds for the first nontrivial eigenvalue of the Laplace-Beltrami operator on a
+surface in terms of its genus. The first of these results was obtained by Hersch
+for the case of the sphere [He], and this was later generalized by Yang and Yau to
+orientable surfaces of genus γ:
+Theorem 1.1. [YY] Let S be an orientable surface of genus γ and let λ denote
+the first nontrivial eigenvalue of the Laplace–Beltrami operator on S. Then
+λ≤
+
+8π(1 + γ)
+,
+A(S)
+
+where A(S) denotes the area of S.
+Note that in the case of general manifolds of dimension greater than two, it is
+known that no such results are possible [U].
+Date: August 18, 2021.
+Key words and phrases. Algebraic connectivity, Heawood numbers, genus of a graph.
+Partially supported by FCT, Portugal.
+1
+
+2
+
+PEDRO FREITAS
+
+These results suggest the derivation of similar bounds for the first nontrivial
+eigenvalue of the Laplacian operator defined on graphs. This quantity is related to
+the connectivity of a graph G, and was thus christened the algebraic connectivity
+of G, a(G), by Fiedler [F].
+The main purpose of this paper is to study the maximum possible value of
+a(G) for a graph which can be embedded on a surface of genus γ. It turns out
+that this value is equal to the Heawood number which appears in graph colouring
+problems [GT, RY, WB]. Our main result is that for surfaces of positive genus
+this maximum possible value is given by the algebraic connectivity of the maximal
+complete graph that is possible to embed on such a surface and that, with the
+possible exception of the Klein bottle, this value is attained only for this graph – see
+Section 3 for details. An immediate consequence is that the algebraic connectivity
+of a graph of genus γ is bounded from above by the chromatic number of Sγ . In a
+sense, this is a surprising result since the algebraic connectivity and the chromatic
+number are not intimately related in general – see Section 6.
+As in the case of map colouring problems, the techniques used to prove the result
+in the case of positive genus do not apply to the case of the sphere, and so this
+remains an open problem. We are, however, able to obtain some results under some
+restrictions which include the case of planar regular graphs. These are presented
+in Sections 4 and 5.
+In Section 7 we show how the results of the paper can be used to obtain estimates
+for the genus of some graphs. In particular, we apply this to the case of Ramanujan
+graphs.
+These results show that the maximum value of the algebraic connectivity on
+a given surface is attained for a finite number of vertices. However, it is also of
+interest to know how a(G) behaves as the number of vertices becomes large. A first
+step in this direction is done in Section 8 where we consider the supremum of the
+algebraic connectivity of certain classes of graphs on a surface of fixed genus as the
+number of vertices goes to infinity.
+Finally, in Section 9 we consider some open problems and present some conjectures.
+2. Preliminaries
+2.1. Notation. We begin by reviewing some concepts from graph theory that will
+be used in what follows. Let G be a simple n−vertex graph (n ≥ 3), that is,
+a graph with n vertices and no loops nor multiple edges, and denote the sets of
+vertices and edges by V and E, respectively. We also denote the number of edges,
+|E|, by e. The degree di of a vertex is the number of edges having that vertex as
+one end, and the smallest and the largest of these numbers will be denoted by dmin
+and dmax , respectively. The vertex connectivity v(G) is defined as the minimal
+number of vertices whose removal (together with their adjacent edges) results in a
+disconnected graph. The girth of a graph is the length of the shortest cycle in the
+graph.
+The adjacency matrix A of a graph G is defined by
+n
+
+A = {aij }i,j=1
+where aij equals one if there is an edge connecting vertices i and j, and zero
+otherwise.
+
+ALGEBRAIC CONNECTIVITY OF GRAPHS ON SURFACES
+
+3
+
+The Laplacian of a graph is defined to be the matrix L = D − A, where D is
+the diagonal matrix diag(d1 , . . . , dn ). For some basic properties of this and related
+operators see, for instance, [Ch, CdV, F]. The eigenvalues of the Laplacian will be
+denoted by
+0 = λ1 ≤ λ2 ≤ . . . λn .
+
+The second eigenvalue λ2 is normally denoted by a(G), and is called the algebraic
+connectivity of the graph.
+As far as we are aware, the best bounds for a(G) depending only on the number
+of vertices and of edges of a graph remain those given by Fiedler in [F]. The bound
+from that paper which will be of interest here is contained in the following
+Theorem 2.1. [F] Let G be a simple, connected, n−vertex graph with e edges and
+which is not complete. Then
+2e
+a(G) ≤ v(G) ≤ dmin ≤ .
+n
+2.2. Graphs on surfaces. In what follows a surface S is a compact connected
+2−manifold. From the classification of surfaces, we have that S is either homeomorphic to a sphere with h handles in the orientable case, or to the connected sum
+of k projective planes in the non–orientable case. In this context, it is usual to
+denote the former by Sh and the latter by Nk . The genus γ(S) of a surface S is
+defined to be 1 − χ(S)/2, where χ(Sh ) = 2 − 2h and χ(Nk ) = 2 − k is the Euler
+characteristic of the surface. Whenever a statement applies in both the orientable
+and non–orientable cases, we shall refer to the surface of genus γ by Sγ , without
+stating explicitly which case is being considered.
+An important aspect of topological graph theory is the study of whether or not it
+is possible to embed a graph in a given surface. We say that there is an embedding
+of a graph G in a surface S, if there exist a one–to–one mapping of V onto a set of
+n distinct points in S, and a mapping from E to disjoint open arcs in S, such that
+no point in the image of V is contained in the image of an edge, and the image of
+an edge joining two vertices is an arc joining the corresponding images – see [WB]
+for this and other related concepts. If a graph G is embedded in a surface S, then
+the set S \ G consists of a collection of connected components which are called the
+faces of G. If all the faces of an embedding are homeomorphic to an open disk
+the graph is said to be cellularly embedded in S, and the embedding is called a
+2−cell embedding. The orientable (non–orientable) genus of a graph is defined to
+be the smallest possible genus of an orientable (resp. non–orientable) surface where
+G is embeddable. We shall refer to the orientable Euler characteristic of a graph
+as the Euler characteristic of the orientable surface corresponding to the genus of
+the graph, and similarly for the non–orientable Euler characteristic. Where there
+is no danger of confusion, or when a result applies in both cases, we shall refer only
+to the genus or to the Euler characteristic of a graph, without stating explicitly
+whether it refers to the orientable or non–orientable case.
+The chromatic number of a surface S, κ(S), is the maximum chromatic number
+of all graphs which can be embedded in S. In an analogous way, we define the
+algebraic connectivity of a surface as
+A(S) = sup a(G),
+G∈G(S)
+
+where G(S) is the set of all graphs that can be embedded in S.
+
+4
+
+PEDRO FREITAS
+
+Another question of interest is the study of the asymptotic behaviour of a(G) for
+families of graphs embedded in a surface as the number of vertices goes to infinity.
+Given an infinite family F of graphs embeddable on a surface S we define the
+asymptotic algebraic connectivity of S by
+
+
+∞
+AF (S) := sup lim sup a(Gn ) ,
+n→∞
+
+where Gn ∈ F , |Gn | = n, and the supremum is taken over all possible such sequences – when F = G(S), we omit the subscript and write A∞ (S).
+2.3. Auxiliary results. The basic result that allows us to relate the algebraic connectivity of a graph embedded in a surface to its genus is the following consequence
+of Euler’s formula:
+Theorem 2.2. Let G be a simple, connected, n−vertex graph with e edges and
+girth g(≥ 3). If G is embeddable in a surface S with characteristic χ, then
+g
+[n − χ] .
+e≤
+g−2
+
+For a proof see, for instance, [WB].
+Combining this with Theorem 2.1 yields the following result, which will be used
+in the sequel.
+Corollary 2.3. Let G be a non–complete graph of Euler characteristic χ. Then
+2g n − χ
+a(G) ≤
+.
+g−2 n
+
+We will also need a relation between the vertex connectivity of a graph and its
+genus. This is given by the following theorem, due to Cook.
+Theorem 2.4. [Co] Let G be a graph of nonpositive Euler characteristic χ. Then
+$
+%
+p
+5 + 49 − 24χ
+v(G) ≤ C(Sγ ) :=
+.
+2
+As mentioned in [PZ], this still holds in the case of the projective plane (non–
+orientable genus one). Cook has improved this result when G does not contain
+triangles. Here we shall only make use of this in the planar case.
+Theorem 2.5. [Co] Let G be a planar graph of girth g. Then
+
+ 5 if g = 3,
+3 if g = 4, 5,
+v(G) ≤
+
+2 if g ≥ 6.
+
+Finally, let S be a surface of genus γ. Then the maximal complete graph of genus
+γ, which we denote by K γ , is the complete graph on the largest possible number
+of vertices that can be embedded in S.
+A theorem of Ringel and Youngs gives the orientable genus of complete graphs.
+Theorem 2.6. [RY] The orientable genus of the complete graph Kp (p ≥ 3) is
+given by
+
+
+(p − 3)(p − 4)
+.
+γ(Kp ) =
+12
+
+ALGEBRAIC CONNECTIVITY OF GRAPHS ON SURFACES
+
+5
+
+In the case of non–orientable genus, the corresponding result is due to Ringel.
+Theorem 2.7. [R] The non–orientable genus of the complete graph Kp (p ≥ 3) is
+given by
+
+
+(p − 3)(p − 4)
+,
+γ(Kp ) =
+6
+with the exception of K7 for which we have γ(K7 ) = 3.
+3. A Heawood–type result for the algebraic connectivity
+The main theorem of the paper is the following
+Theorem 3.1. Let G be a graph of genus γ and nonpositive Euler characteristic
+χ. Then a(G) ≤ a(K γ ). More precisely, and with the exception of the Klein bottle
+(non–orientable genus two), we have that
+$
+%
+p
+7 + 49 − 24χ
+γ
+a(G) ≤ a(K ) = H(S) :=
+,
+2
+with equality if and only if G = K γ
+In the case of the Klein bottle, we have that a(G) ≤ a(K γ ) = a(K6 ) = 6 <
+H(S) = 7.
+For planar graphs, a(G) ≤ 5.
+The number H(S) is Heawood’s number for the surface S, and is related to the
+chromatic number of a surface – see [GT], for instance. As was pointed out in the
+Introduction, there is a great similarity between this result and the corresponding
+result for the colouring of graphs known as the Heawood map–colouring problem.
+In fact, a straightforward corollary to this theorem is that the algebraic connectivity
+of a graph of genus γ is bounded from above by the chromatic number κ(Sγ ).
+Corollary 3.2. Let G be a nonplanar graph of genus γ. Then a(G) ≤ κ(Sγ ).
+Furthermore, if G 6= K γ then a(G) ≤ a(K γ ) − 1, except possibly in the case of the
+Klein bottle.
+In terms of the algebraic connectivity of a surface, this may be stated as follows.
+Corollary 3.3. For any surface S of positive genus γ we have that
+γ
+
+A(S) = κ(S).
+
+Furthermore, if G 6= K is a graph embedded on a surface S, then a(G) ≤ A(S)−1,
+except possibly in the case of the Klein bottle.
+Proof of Theorem 3.1. Combining Theorem 2.4 with Fiedler’s bound we have that
+for a nonplanar orientable graph G
+a(G) ≤ v(G) ≤ C(S) = H(S) − 1.
+On the other hand, we have from Theorem 2.6 that for each value of γ the complete
+graph KH(S) , can be embedded in Sγ . Since KH(S) = H(S), we have that for
+noncomplete graphs
+a(G) ≤ C(S) = H(S) − 1 = a(KH(S) ) − 1,
+which proves the result, as well as the second part of Corollary 3.2.
+
+6
+
+PEDRO FREITAS
+
+In the planar case the maximum possible vertex connectivity is five, and thus
+a(G) ≤ 5.
+In the non–orientable case, and for γ larger than two, we proceed in a similar
+way to obtain the result for noncomplete graphs, now using Theorem 2.7.
+For the projective plane (γ = 1), the result follows in the same way by using the
+fact that Theorem 2.4 extends to this case, and that the maximal complete graph
+is now K6 .
+In the case of the Klein bottle (γ = 2), we have that the maximal complete
+graph that can be embedded there is K6 . From Theorem 2.4 we obtain that for
+noncomplete graphs a(G) ≤ v(G) ≤ C(2) = 6 = a(K6 ), proving the result in this
+case.
+4. Planar graphs
+We will begin by obtaining some bounds on the algebraic connectivity which
+apply to general graphs. The main argument which will be used is a bound based on
+a test function similar to that used in the proof of Cheeger’s inequality – see [CdV],
+for instance. The idea is that it should be possible to improve on bounds based
+on v(G) in cases where there are clusters of vertices for which a sufficient large
+number of the edges join vertices within the cluster. In order to do this, we need
+the following definition.
+Definition 4.1. Let G be a graph and H be a proper nonempty subset of V (G),
+formed by the vertices yi , i = 1, . . . , m. The degree of the subset H, is defined as
+m 
+
+X
+di − d˜i ,
+d(H) =
+i
+
+where d˜i is the number of edges joining two vertices yi and yj , 1 ≤ i, j ≤ m.
+
+Lemma 4.2. Let G be a graph on n vertices and let H be a proper nonempty subset
+of V (G) with m vertices and degree d(H). Then
+a(G) ≤
+
+d(H)n
+.
+m(n − m)
+
+Proof. By the variational formulation for the eigenvalues of G, we have that
+X
+2
+[f (x) − f (y)]
+(4.1)
+
+a(G) ≤
+
+x∼y
+
+X
+
+f 2 (x)
+
+,
+
+x∈G
+
+for all f such that
+n
+X
+
+f (xi ) = 0,
+
+i=1
+
+and where x ∼ y denotes that the vertices x and y are adjacent. Let f : V → R be
+defined by
+ n
+m − 1, x ∈ H
+f (x) =
+−1,
+x ∈ G \ H.
+
+ALGEBRAIC CONNECTIVITY OF GRAPHS ON SURFACES
+
+7
+
+We then have that f is orthogonal to the vector with all entries equal to 1, and
+thus, by (4.1), it follows that
+
+a(G) ≤
+=
+
+=
+
+ n 2
+d(H)
+2m
+n
+−1 +n−m
+m
+m
+d(H)n2
+ 2
+
+n
+m2
+−n
+m
+d(H)n
+.
+m(n − m)
+
+Theorem 4.3. Let G be a planar graph with dmax smaller than or equal to five.
+Then a(G) ≤ 4.
+Proof. If G does not have a triangle, then by Theorem 2.5 a(G) ≤ 3. Assume thus
+that G has a triangle T . Then d(T ) ≤ 3 × 5 − 6 = 9 and hence, from Lemma 4.2,
+it follows that
+a(G) ≤
+
+3n
+.
+n−3
+
+We thus have that a(G) > 4 implies n < 12. On the other hand, for a planar graph
+to have a(G) greater than four, it must have dmin equal to five. Since dmax is less
+than or equal to five, from Theorem 2.2,
+n
+X
+i=1
+
+di = 5n = 2e ≤ 6(n − 2),
+
+and we obtain that for this to happen the graph must have at least twelve vertices.
+
+5. Regular graphs
+Since for planar graphs dmin is less than or equal to five, Theorem 4.3 implies
+that for planar regular graphs a(G) is less than or equal to four. We shall now
+consider the restriction to some particular cases of regular graphs.
+We begin by obtaining a general bound for regular graphs (not necessarilly planar) of a given girth.
+Theorem 5.1. Let G be a regular graph of girth g smaller than n and Euler characteristic χ. Then
+a(G) ≤
+
+
+gχ 
+2n
+2−
+.
+(n − g)(g − 2)
+n
+
+8
+
+PEDRO FREITAS
+
+Proof. Take H in Lemma 4.2 to correspond to the cycle Cg . Then d(H) = g(d − 2)
+and
+(d − 2)n
+a(G) ≤
+n−g
+e − 1 n
+= 2 n
+n−g
+
+
+g (n − χ)
+n
+≤ 2 g−2
+−
+1
+n
+n−g
+=
+
+
+
+gχ
+2
+n
+2
+−
+n
+n − g.
+g−2
+
+Note that for a fixed girth and sufficiently large n this is better than Corollary 2.3
+which is obtained from Fiedler’s bound.
+In the case of planar graphs χ equals two and this bound takes the following
+simple form.
+Corollary 5.2. Let G be a regular planar graph of girth g smaller than n. Then
+4
+a(G) ≤
+.
+g−2
+When the girth is equal to n, we have the case of 2−regular graphs (the cycle Cg )
+for which it is easy to see that, with the exception of K3 , the algebraic connectivity
+is always less than or equal to two, this value being attained for the cycle C4 . A
+similar result holds for planar cubic graphs.
+Theorem 5.3. Every planar cubic graph other than K4 has
+a(G) ≤ 2.
+Proof. If the girth g is larger than or equal to four, the result follows from the
+bound in Corollary 5.2. Assume thus that g equals three. Then G has a triangle
+and proceeding as in the proof of Theorem 4.2 but now using the fact that the
+degree is three, we obtain that
+n
+.
+a(G) ≤
+n−3
+This will be greater than two provided that n is less than 6. Since we are interested
+in cubic graphs, the case of n equal to five is excluded and the only cubic graph
+when n equals four is K4 .
+The result is sharp, in the sense that the bound is attained by both the 3−prism
+and the cube graphs.
+6. Algebraic connectivity and chromatic numbers
+In general, and without any further assumptions, we cannot expect a deep relation between a(G) and κ(G), in the sense that there exist graphs for which
+a(G) < κ(G) (any connected graph with a(G) less than two), graphs for which
+a(G) = κ(G) (complete graphs), and graphs for which a(G) > κ(G) (any complete
+bipartite graph Kp,q with p and q both greater than two). However, it is possible
+to prove the following
+
+ALGEBRAIC CONNECTIVITY OF GRAPHS ON SURFACES
+
+9
+
+Theorem 6.1. Let G be a noncomplete graph on n vertices and with chromatic
+number κ(G). Then
+
+
+n
+.
+a(G) ≤ n −
+κ(G)
+Proof. The graph G can be divided into subsets Xi , i = 1, . . . , κ(G), such that
+there are no edges connecting vertices within each set Xi . This means that the
+complementary graph of G, Gc , contains the complete graphs Kni , where ni =
+|Xi |, i = 1, . . . κ(G). We also have that at least one of the numbers ni is greater
+than ⌈n/κ(s)⌉ and, since G is not complete, greater than one. Hence
+
+
+n
+λn (Gc ) ≥
+,
+κ(G)
+from which the result follows, since a(G) ≤ n − λn (Gc ).
+In the special case of bichromatic graphs of a given Euler characteristic it is
+possible to improve on this result.
+Theorem 6.2. If G is a graph on n vertices with κ(G) = 2 and Euler characteristic
+χ, then
+a(G) ≤ 4
+
+n−χ
+.
+n
+
+Proof. Since G is bichromatic, its girth must be greater than three. The result now
+follows from Corollary 2.3.
+As a consequence, we obtain that bichromatic planar graphs satisfy a(G) < 4.
+However, in this case it is possible to obtain a better bound using Theorem 2.5
+Theorem 6.3. If G is a bichromatic planar graph, then a(G) ≤ 3.
+Proof. It follows as before but now using Theorem 2.5 instead of Corollary 2.3.
+It is, of course, also possible to use the results in [Co] for the case of general
+orientable genus and where the graph’s girth is greater than or equal to four to
+obtain further bounds for bichromatic graphs. However, these will not be as good
+as those in Theorem 6.2, at least for γ larger than one and sufficiently large n.
+In general, bichromatic graphs can have an arbitrarilly high algebraic connectivity, as can be seen from the case of the complete bipartite graph Kp,q , for which
+κ(Kp,q ) equals two, while a(Kp,q ) = min{p, q}. Note that when p equals q this
+gives equality in the case of Theorem 6.1.
+On the other hand, it is also possible to keep a(G) bounded while making the
+chromatic number as large as desired. To see this, consider the graph G obtained
+from Kn by adding a vertex which is connected to one single vertex in Kn , that is,
+G = (Kn−1 ∪{x})+̇K1 . The spectrum of this graph is given by (0, 1, n, . . . , n, n+1)
+(and thus a(G) = 1), while its chromatic number grows with n.
+These two examples show that unless we impose an extra restriction such as
+fixing the genus of the graph, we should not expect a close relation between the
+algebraic connectivity and the chromatic number of a graph.
+
+10
+
+PEDRO FREITAS
+
+7. A lower bound for the genus of Ramanujan graphs
+It is possible to use the bounds in Corollary 3.2 to obtain estimates for the genus
+of a given graph, provided one has a lower bound for a(G) – this is actually just a
+consequence from the fact that a(G) is less than or equal to C(S). Here we apply
+this to the case of Ramanujan graphs – see [Ch, LPS].
+Theorem 7.1. Let G be a Ramanujan graph on n vertices and of degree d, with
+9 ≤ d 6= n − 1. Then its orientable genus satisfies
+'
+&
+√
+(2d − 4 d − 1 − 5)2 − 1
+.
+γ≥
+48
+Proof. The algebraic connectivity of a Ramanujan graph satisfies (see [Ch], page
+97, for instance)
+√
+a(G) ≥ d − 2 d − 1.
+
+Since by Corollary 3.2 the algebraic connectivity of a noncomplete graph which can
+be embedded on a surface S satisfies
+it follows that
+
+a(G) ≤ a(K γ ) − 1 = H(S) − 1 = C(S),
+p
+√
+49 − 24χ ≥ 2d − 4 d − 1 − 5.
+
+From this we see that if d is smaller than 9 then nothing can be concluded, while
+for d greater than or equal to 9 we obtain the desired result.
+A similar result can be obtained for the case of the nonorientable genus in the
+same way, except that then one has to consider the exceptional case of genus two
+separately.
+8. Asymptotic behaviour of a(G)
+From Corollary 3.2 we have that the algebraic connectivity of a graph embedded
+in a surface S is bounded from above independently of the number of vertices
+of the graph and, in fact, if S is neither the sphere nor the Klein bottle, then
+A∞ (S) ≤ A(S) − 1. A better bound for A∞ (S) is given by Corollary 2.3 which
+yields that A∞ (S) is less than or equal to 6, independently of S.
+On the other hand, by considering the sequence of (planar) double wheel graphs,
+that is, Gn = Cn +̇2K1 , for which
+a(Gn ) = min {a(Cn ) + 2, a(2K1 ) + n} = min {4 − 2 cos(2π/n), n} ,
+
+we obtain that A∞ (S) is greater than or equal to two and so we have that
+2 ≤ A∞ (S) ≤ 6.
+
+We shall now restrict our attention to certain classes of graphs. An immediate
+consequence of Theorem 5.1 is a bound for the asymptotic connectivity of regular
+graphs with a given fixed girth g.
+Theorem 8.1. Let Gr,g (S) be the set of all regular graphs with girth equal to a
+fixed number g that can be embedded in a given surface S. Then
+4
+.
+A∞
+Gr,g (S) ≤
+g−2
+
+ALGEBRAIC CONNECTIVITY OF GRAPHS ON SURFACES
+
+11
+
+Note that the dependence of the bound in Theorem 5.1 is not monotonic in g and
+so we cannot obtain directly a uniform bound which would allow us to conclude
+that the asymptotic connectivity of regular graphs is less than or equal to four.
+However, it is possible to prove this combining Theorem 5.1 with Corollary 2.3.
+Theorem 8.2. Let Gr (S) be the set of all regular graphs that can be embedded in
+S. Then
+A∞
+Gr (S) ≤ 4.
+Proof. If g is equal to three, Theorem 5.1 gives that
+
+
+3χ
+4n − 6χ
+2n
+2−
+=
+.
+a(G) ≤
+n−3
+n
+n−3
+
+On the other hand, if the girth is larger than three, then by Corollary 2.3 it follows
+that
+4(n − χ)
+.
+a(G) ≤
+n
+Since both bounds converge to four as n goes to infinity, the result follows.
+
+Combining this with a bound of Alon and Boppana, we obtain the following bound
+for the specific case of d−regular graphs for a fixed integer d.
+Corollary 8.3. For a given integer d greater than or equal to two, let G d (S) denote
+the set of d−regular graphs that can be embedded in S. We have that
+
+√
+d − 2 d − 1, d ≤ 10
+A∞
+(S)
+≤
+d
+G
+4,
+d > 10.
+Proof. From a result by Alon and Boppana quoted in [A] – see also [Ch] –, we have
+that for a d−regular graph
+√
+a(G) ≤ d − 2 d − 1 + O(logd n)−1 ,
+√
+from which it follows that A∞
+G d (S) ≤ d − 2 d − 1. This is smaller than four for d
+smaller then or equal to 10. For d larger than 10, we use the bound from Theorem 8.2.
+9. Discussion
+As in the proof of Theorem 4.3, we see that for a(G) to be greater than four then
+a planar graph must have at least twelve vertices, since this is a condition for the
+minimum degree of a planar graph to be equal to five. We thus have that a(G) ≤ 4
+both when n is smaller than twelve or when dmax is smaller than or equal to five.
+Both this and the similarity with colouring problems suggest that part of Theorem 3.1 extends to planar graphs, that is, that the maximal algebraic connectivity
+of a planar graph is four, the algebraic connectivity of K4 , but we haven’t been able
+to prove it. However, if that is the case, then the maximal algebraic connectivity
+will not be uniquely attained in this case, since the octahedron (the join of 2K1
+with the cycle on four vertices, 2K1 +̇C4 ), has as its spectrum (0, 4, 4, 4, 6, 6). We
+have the following conjecture
+Conjecture 1. If G is a planar graph, then a(G) ≤ 4, with equality if and only if
+G = K4 or G = 2K1 +̇C4 . Furthermore, if G is neither of these graphs, then a(G)
+is less than or equal to three.
+
+12
+
+PEDRO FREITAS
+
+Regarding chromatic numbers, note that κ(2K1 +̇C4 ) is three, and so it is possible to have a planar graph whose chromatic number is three while its algebraic
+connectivity equals four, although if the conjecture above holds, then this will be
+the only graph for which this will happen.
+As we have seen, for bichromatic planar graphs we must have that a(G) can be
+at most three. In fact, we conjecture that this value can be improved.
+Conjecture 2. Every planar bichromatic graph has a(G) ≤ 2.
+In the case of the Klein bottle, and since it is possible to have equality between
+C(N2 ) and a(K6 ), we have not been able to prove that equality holds only for the
+complete graph K6 . However, we believe this to be the case.
+Conjecture 3. For the Klein bottle (the non–orientable case of genus two), a(G)
+is 6 if and only if G = K6 .
+Finally, regarding the upper bound for the asymptotic algebraic connectivity in
+the general case, we remark that this is most likely far from being optimal, since
+we have used methods which are based mainly on local properties of graphs. We
+conjecture that the value of the asymptotic algebraic connectivity in the general
+case is independent of the (fixed) surface S, and that it will in fact be equal to two,
+the algebraic connectivity of the double wheel graph.
+Conjecture 4. A∞ (S) ≡ 2.
+References
+[A]
+[Ch]
+[CdV]
+[Co]
+[EZ]
+[F]
+[GT]
+[He]
+[Ho1]
+[Ho2]
+[LPS]
+[PZ]
+[R]
+[RY]
+[U]
+[WB]
+
+N. Alon, Eigenvalues and expanders, Combinatorica 6 (1986), 83–96.
+F. R. K. Chung, “Spectral graph theory”, CBMS Regional Conference Series in Mathematics, 92, A.M.S., Providence, RI, 1997.
+Y. Colin de Verdière, Spectres de graphes, Cours Spécialisés, Société Mathématique de
+France, Paris, 1998.
+R. J. Cook, Heawood’s theorem and connectivity, Mathematika 20 (1973), 201–207.
+M. N. Ellingham and X. Zha, The spectral radius of graphs on surfaces, J. Combin. Theory
+Ser. B 78 (2000), 45–56.
+M. Fiedler, Algebraic connectivity of graphs, Czechoslovak Math. J. 23 (98) (1973),
+298–305.
+J. L. Gross and T. W. Tucker, “Topological graph theory”, John Wiley & Sons, New
+York, 1987.
+J. Hersch, Quatre propriétés isopérimétriques de membranes sphériques homogènes, C.R.
+Acad. Sci.Paris Sér. A-B 270 (1970), A1645–A1648.
+Y. Hong, Upper bounds of the spectral radius of graphs in terms of genus, J. Combin.
+Theory Ser. B 74 (1998), 153–159.
+Y. Hong, On the spectral radius and the genus of graphs, J. Combin. Theory Ser. B 65
+(1995), 262–268.
+A. Lubotzky, R, Phillips and P. Sarnak, Ramanujan graphs, Combinatorica 8 (1988),
+261-277.
+M. D. Plummer and X. Zha, On the connectivity of graphs embedded in surfaces, J.
+Combin. Theory Ser. B 72 (1998), 208–228.
+G. Ringel, Bestimmung der Maximalzahl der Nachbargebiete auf nichtorientierbaren
+Flächen, Math. Ann. 127 (1954), 181–214.
+G. Ringel and J. W. T. Youngs, Solution of the Heawood map-coloring problem, Proc.
+Nat. Acad. Sci. U.S.A. 60 (1968), 438–445.
+H. Urakawa, On the least positive eigenvalue of the Laplacian for compact group manifolds, J. Math. Soc. Japan 31 (1979), 209–226.
+A. T. White and L. W. Beineke, Topological graph theory, in “Selected topics in graph
+theory”, L.W. Beineke and R.J. Wilson, eds., 15–50, Academic Press, New York, 1978.
+
+ALGEBRAIC CONNECTIVITY OF GRAPHS ON SURFACES
+
+[YY]
+
+13
+
+P. C. Yang and S.-T. Yau, Eigenvalues of the Laplacian of compact Riemannian surfaces
+and minimal submanifolds, Ann. Scuola Norm. Sup. Pisa 7 (1980), 55–63.
+
+Departamento de Matemática, Instituto Superior Técnico, Av.Rovisco Pais, 1049-001
+Lisboa, Portugal.
+E-mail address: pfreitas@math.ist.utl.pt
+
+

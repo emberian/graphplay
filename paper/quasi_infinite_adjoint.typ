@@ -263,6 +263,48 @@ identity homomorphism $G -> K_c$, and the same-color/different-color lemmas
 prove the complete multipartite edge rule. The Laplacian spectrum calculation is
 ordinary linear algebra and is not yet mechanized in this repository.
 
+#heading("Beyond Planarity")
+
+Planarity is only the genus-zero case. If a graph embeds on an orientable
+surface of genus $g$, the Heawood map-color theorem gives the color bound
+
+$ H(g) = floor((7 + sqrt(1 + 48 g)) / 2). $
+
+For nonorientable genus $k$, the corresponding bound is
+
+$ H_N(k) = floor((7 + sqrt(1 + 24 k)) / 2), $
+
+with the usual Klein-bottle exception, where six colors suffice although the
+formula gives seven. Thus every graph embedded on such a surface admits the same
+kind of complete multipartite envelope, but with $H(g)$ or $H_N(k)$ bags instead
+of four.
+
+This gives a direct topological generalization:
+
+$ "surface embedding" -> "Heawood color map" -> K_H " completion" -> "small quotient". $
+
+For example, a toroidal graph has a seven-color envelope. The compiler exposes
+this as `surface_heawood`; the example `torus_heawood7_equal_fiber.json` builds
+the corresponding $K_7$ template join.
+
+There is also a more quantum-native surface link. Freitas proves a Heawood-type
+result for algebraic connectivity: for a nonplanar surface $S$, the supremum of
+the algebraic connectivity over graphs embeddable in $S$ is the chromatic number
+of the surface, with the known Klein-bottle caveat. Since the long-range
+tunneling paper treats algebraic connectivity/spectral gap as a search resource,
+surface topology can be read as a spectral-gap budget, not only as a coloring
+bound.
+
+So nonplanar topology gives two knobs:
+
+- a color/template upper bound, via Heawood;
+- a spectral-gap ceiling, via algebraic connectivity on surfaces.
+
+The toolkit direction is to stop asking only whether a graph is planar. Instead,
+ask which surface or coarse topology is available, choose a quotient template
+compatible with that topology, then engineer a fiber blowup whose quotient
+spectrum satisfies the desired search criterion.
+
 #heading("Hamiltonian Reading")
 
 After ordering vertices by color classes, the adjacency matrix of a planar
@@ -365,10 +407,11 @@ counts. It emits:
 - an exploratory CTQW scan on the quotient Hamiltonian.
 
 The compiler accepts explicit edge lists and constructors for complete graphs,
-cycles, paths, complete bipartite graphs, hypercubes, complements, and Cartesian
-products. This is the first step toward a search-problem compiler: the user
-chooses quotient observables and coupling templates, while the tool builds the
-maximal compatible host and analyzes the small quotient Hamiltonian.
+cycles, paths, complete bipartite graphs, hypercubes, complements, Cartesian
+products, Heawood surface envelopes, and cycle power-law templates. This is the
+first step toward a search-problem compiler: the user chooses quotient
+observables and coupling templates, while the tool builds the maximal compatible
+host and analyzes the small quotient Hamiltonian.
 
 #table(
   columns: 5,
@@ -377,6 +420,8 @@ maximal compatible host and analyzes the small quotient Hamiltonian.
   [`c5_equal_fiber`], [cycle $C_5$], [$100$], [$0.809$], [$0.991$],
   [`rook_3x3_equal_fiber`], [$K_3 square K_3$], [$90$], [$0.500$], [$0.990$],
   [`hypercube_q3_equal_fiber`], [$Q_3$], [$96$], [$1.000$], [$0.987$],
+  [`torus_heawood7_equal_fiber`], [surface $K_7$], [$56$], [$0.167$], [$0.995$],
+  [`cycle8_powerlaw_alpha1`], [weighted $C_8$ long range], [$80$], [$0.362$], [$0.995$],
   [`four_color_unequal`], [unequal $K_4$ fibers], [$64$], [n/a], [$0.989$],
 )
 
@@ -386,6 +431,37 @@ routes. Equal-fiber regular templates can use the adjacency spectral-ratio
 route. Laplacian-integral templates can use the deterministic-search route.
 Unequal complete multipartite color completions retain Laplacian integrality but
 fall outside the simplest regular-template criterion.
+
+#heading("End-to-End Examples")
+
+The examples are deliberately small, but each is a complete compiler pass from
+an applied search task to quotient diagnostics.
+
+#figure(
+  image("assets/case_studies.svg", width: 100%),
+  caption: [Three small applied compiler examples. Yellow nodes indicate the marked quotient cell.]
+)
+
+#emph[Modular quantum processor calibration.]
+The `rook_3x3_equal_fiber` instance models a 3-by-3 row/column interaction
+fabric. Each tile is blown up to a fiber of possible physical variants, and the
+search task is to locate one faulty module. The rook template is regular,
+Laplacian integral, and has spectral ratio $0.5$; the quotient CTQW scan reaches
+marked probability about $0.990$.
+
+#emph[Long-range tunneling memory ring.]
+The `cycle8_powerlaw_alpha1` instance models eight memory sectors arranged on a
+ring with all-to-all cyclic couplings decaying as $1/r$. The weighted template is
+regular and has spectral ratio about $0.362$, substantially better than the
+sparse $C_8$ template. This is a tiny version of the long-range-tunneling design
+question: tune the coupling law on the quotient, then blow it up into a larger
+host.
+
+#emph[Surface-embedded interaction fabric.]
+The `torus_heawood7_equal_fiber` instance uses the Heawood seven-color envelope
+for toroidal embeddings. It compiles surface topology into a $K_7$ template, then
+blows up each color sector. The complete template is regular, Laplacian integral,
+and strongly separated spectrally, with ratio about $0.167$.
 
 #heading("Current Contents")
 
@@ -403,7 +479,8 @@ pieces:
 - engineered template joins and multicolor pullback constraints;
 - a spectral-ratio inheritance theorem for equal-fiber template joins;
 - a bounded-dimensional equitable quotient for search Hamiltonians on the
-  four-color completion.
+  four-color completion;
+- surface-Heawood and power-law coupling constructors in the compiler prototype.
 
 This gives a precise mathematical home for a large part of the phrase
 "quasi-infinite adjoint": it is the coproduct/colimit/inverse-limit toolkit for
@@ -416,6 +493,14 @@ four-colorability provides canonical Laplacian-integral completions for planar
 instances, and those completions have bounded-dimensional color-sector search
 quotients. The bridge is structural, not an optimality theorem for the original
 graph.
+
+The next generalization is relational rather than graph-only. A graph template
+is a binary constraint. A full compiler should admit higher-arity CSP templates,
+phase labels, weighted couplings, hardware locality constraints, noise models,
+and oracle promise classes. In that setting "colorability" becomes one example
+of a selected quotient relation, and the useful question becomes: which quotient
+relations preserve a low-dimensional invariant search sector while still giving
+large, resilient physical hosts?
 
 #heading("Lean Artifact")
 
@@ -435,3 +520,5 @@ It builds with Lean 4.30.0 using:
 - Sadowski. #link("https://arxiv.org/abs/1406.0339")[Quantum spatial search on planar networks], arXiv:1406.0339.
 - Wong. #link("https://arxiv.org/abs/1706.06939")[Faster Search by Lackadaisical Quantum Walk], arXiv:1706.06939.
 - Weisstein. #link("https://mathworld.wolfram.com/Four-ColorTheorem.html")[Four-Color Theorem], MathWorld.
+- Weisstein. #link("https://mathworld.wolfram.com/MapColoring.html")[Map Coloring], MathWorld.
+- Freitas. #link("https://arxiv.org/abs/math/0109191")[A Heawood-type result for the algebraic connectivity of graphs on surfaces], arXiv:math/0109191.

@@ -1,0 +1,22 @@
+{
+  "name": "torus Heawood-7 surface envelope with equal fibers",
+  "problem": {
+    "domain": "surface-embedded interaction fabric",
+    "task": "compile a nonplanar toroidal interaction skeleton into a bounded color-sector search host",
+    "encoding": "Heawood's torus bound gives a seven-color complete template; each color is a physical fiber",
+    "compiler_goal": "use surface genus as a color and spectral-gap budget",
+    "proof_route": "complete K7 template is regular, Laplacian integral, and has strong spectral-ratio separation"
+  },
+  "template": {
+    "kind": "surface_heawood",
+    "orientable_genus": 1
+  },
+  "fiber_size": 8,
+  "marked": {
+    "c0": 1
+  },
+  "scan": {
+    "steps": 2200,
+    "t_max_factor": 4.5
+  }
+}

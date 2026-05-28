@@ -1,5 +1,12 @@
 {
   "name": "four-color K4 template with equal fibers",
+  "problem": {
+    "domain": "planar interaction skeleton",
+    "task": "search for one marked site after four-color decomposition",
+    "encoding": "four color classes become equal fibers over a K4 template",
+    "compiler_goal": "baseline complete color-host search quotient",
+    "proof_route": "regular equal-fiber complete template satisfies both spectral-ratio and Laplacian-integral routes"
+  },
   "template": {
     "kind": "complete",
     "vertices": ["red", "green", "blue", "yellow"]

@@ -1,5 +1,13 @@
 # Search Compiler Report: cycle C5 engineered template with equal fibers
 
+## Problem
+
+- domain: minimal cyclic mode fabric
+- task: locate a marked mode in a five-sector cyclic host
+- encoding: each sector is a fiber and the quotient only couples neighboring sectors
+- compiler goal: small non-complete engineered template sanity check
+- proof route: regular equal-fiber template passes the adjacency spectral-ratio route
+
 ## Host
 
 - template vertices: 5

@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="360" viewBox="0 0 980 360">
+  <defs>
+    <style>
+      text { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #17202a; }
+      .panel { fill: #fbfbfc; stroke: #c7cdd4; stroke-width: 1.5; rx: 9; }
+      .title { font-size: 20px; font-weight: 700; }
+      .small { font-size: 14.5px; }
+      .metric { font-size: 15px; font-weight: 650; fill: #1f6f64; }
+      .edge { stroke: #34495e; stroke-width: 2.6; }
+      .weak { stroke: #6b7c8d; stroke-width: 1.5; opacity: 0.55; }
+      .node { fill: #f7f8fa; stroke: #1f2d3a; stroke-width: 2; }
+      .mark { fill: #f7d774; stroke: #8a6d00; stroke-width: 2; }
+    </style>
+  </defs>
+
+  <rect class="panel" x="20" y="24" width="300" height="310"/>
+  <text class="title" x="170" y="58" text-anchor="middle">processor calibration</text>
+  <text class="small" x="170" y="84" text-anchor="middle">rook K₃ □ K₃ quotient</text>
+  <g transform="translate(80,112)">
+    <line class="edge" x1="0" y1="0" x2="140" y2="0"/>
+    <line class="edge" x1="0" y1="55" x2="140" y2="55"/>
+    <line class="edge" x1="0" y1="110" x2="140" y2="110"/>
+    <line class="edge" x1="0" y1="0" x2="0" y2="110"/>
+    <line class="edge" x1="70" y1="0" x2="70" y2="110"/>
+    <line class="edge" x1="140" y1="0" x2="140" y2="110"/>
+    <circle class="mark" cx="0" cy="0" r="13"/>
+    <circle class="node" cx="70" cy="0" r="13"/>
+    <circle class="node" cx="140" cy="0" r="13"/>
+    <circle class="node" cx="0" cy="55" r="13"/>
+    <circle class="node" cx="70" cy="55" r="13"/>
+    <circle class="node" cx="140" cy="55" r="13"/>
+    <circle class="node" cx="0" cy="110" r="13"/>
+    <circle class="node" cx="70" cy="110" r="13"/>
+    <circle class="node" cx="140" cy="110" r="13"/>
+  </g>
+  <text class="metric" x="170" y="270" text-anchor="middle">ratio 0.500; scan 0.990</text>
+  <text class="small" x="170" y="296" text-anchor="middle">regular + Laplacian integral</text>
+
+  <rect class="panel" x="340" y="24" width="300" height="310"/>
+  <text class="title" x="490" y="58" text-anchor="middle">long-range memory ring</text>
+  <text class="small" x="490" y="84" text-anchor="middle">C₈ power-law α = 1</text>
+  <g transform="translate(490,170)">
+    <line class="edge" x1="0" y1="-70" x2="49" y2="-49"/>
+    <line class="edge" x1="49" y1="-49" x2="70" y2="0"/>
+    <line class="edge" x1="70" y1="0" x2="49" y2="49"/>
+    <line class="edge" x1="49" y1="49" x2="0" y2="70"/>
+    <line class="edge" x1="0" y1="70" x2="-49" y2="49"/>
+    <line class="edge" x1="-49" y1="49" x2="-70" y2="0"/>
+    <line class="edge" x1="-70" y1="0" x2="-49" y2="-49"/>
+    <line class="edge" x1="-49" y1="-49" x2="0" y2="-70"/>
+    <line class="weak" x1="0" y1="-70" x2="0" y2="70"/>
+    <line class="weak" x1="-70" y1="0" x2="70" y2="0"/>
+    <line class="weak" x1="-49" y1="-49" x2="49" y2="49"/>
+    <line class="weak" x1="49" y1="-49" x2="-49" y2="49"/>
+    <circle class="mark" cx="0" cy="-70" r="12"/>
+    <circle class="node" cx="49" cy="-49" r="12"/>
+    <circle class="node" cx="70" cy="0" r="12"/>
+    <circle class="node" cx="49" cy="49" r="12"/>
+    <circle class="node" cx="0" cy="70" r="12"/>
+    <circle class="node" cx="-49" cy="49" r="12"/>
+    <circle class="node" cx="-70" cy="0" r="12"/>
+    <circle class="node" cx="-49" cy="-49" r="12"/>
+  </g>
+  <text class="metric" x="490" y="270" text-anchor="middle">ratio 0.362; scan 0.995</text>
+  <text class="small" x="490" y="296" text-anchor="middle">weighted regular quotient</text>
+
+  <rect class="panel" x="660" y="24" width="300" height="310"/>
+  <text class="title" x="810" y="58" text-anchor="middle">surface envelope</text>
+  <text class="small" x="810" y="84" text-anchor="middle">torus Heawood K₇</text>
+  <g transform="translate(810,172)">
+    <ellipse class="weak" cx="0" cy="0" rx="92" ry="58"/>
+    <ellipse class="weak" cx="0" cy="0" rx="35" ry="58"/>
+    <line class="edge" x1="0" y1="-78" x2="68" y2="-31"/>
+    <line class="edge" x1="68" y1="-31" x2="84" y2="38"/>
+    <line class="edge" x1="84" y1="38" x2="0" y2="78"/>
+    <line class="edge" x1="0" y1="78" x2="-84" y2="38"/>
+    <line class="edge" x1="-84" y1="38" x2="-68" y2="-31"/>
+    <line class="edge" x1="-68" y1="-31" x2="0" y2="-78"/>
+    <line class="edge" x1="0" y1="-78" x2="0" y2="78"/>
+    <circle class="mark" cx="0" cy="-78" r="12"/>
+    <circle class="node" cx="68" cy="-31" r="12"/>
+    <circle class="node" cx="84" cy="38" r="12"/>
+    <circle class="node" cx="0" cy="78" r="12"/>
+    <circle class="node" cx="-84" cy="38" r="12"/>
+    <circle class="node" cx="-68" cy="-31" r="12"/>
+    <circle class="node" cx="0" cy="0" r="12"/>
+  </g>
+  <text class="metric" x="810" y="270" text-anchor="middle">ratio 0.167; scan 0.995</text>
+  <text class="small" x="810" y="296" text-anchor="middle">Heawood color envelope</text>
+</svg>

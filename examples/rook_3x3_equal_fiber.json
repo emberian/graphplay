@@ -1,5 +1,12 @@
 {
   "name": "rook 3x3 cartesian complete-template with equal fibers",
+  "problem": {
+    "domain": "modular quantum processor calibration",
+    "task": "locate one faulty module in a 3x3 row/column interaction fabric",
+    "encoding": "each row-column tile is a fiber of physical variants; the rook template couples modules sharing a row or column",
+    "compiler_goal": "keep the physical host large while reducing the marked search to a rook-template quotient",
+    "proof_route": "regular equal-fiber template passes the adjacency spectral-ratio route and is Laplacian integral"
+  },
   "template": {
     "kind": "cartesian_product",
     "left": {

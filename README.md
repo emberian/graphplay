@@ -57,5 +57,7 @@ Template constructors currently supported by the compiler:
 - `hypercube`
 - `complement`
 - `cartesian_product`
+- `surface_heawood`
+- `cycle_power_law`
 
 Fetched paper PDFs and extracted text live in `references/`.
