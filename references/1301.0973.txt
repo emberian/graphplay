@@ -1,0 +1,1009 @@
+Which Exterior Powers are Balanced?
+
+arXiv:1301.0973v1 [math.CO] 6 Jan 2013
+
+Devlin Mallory∗
+
+Abigail Raz†
+Christino Tamon‡
+Thomas Zaslavsky§
+November 20, 2018
+
+Abstract
+A signed graph is a graph whose edges are given ±1 weights. In such a graph,
+the sign of a cycle is the product of the signs of its edges. A signed graph is called
+balanced if its adjacency matrix is similar to the adjacency matrix of an unsigned
+graph via conjugation by a diagonal ±1 matrix. For a signed
+graph Σ on n vertices,
+Vk
+Σ whose adjacency matrix
+its exterior kth power, where k = 1, . . . , n − 1, is a graph
+is given by
+V
+A( k Σ) = P∧† A(Σk )P∧ ,
+
+where P∧ is the projector onto the anti-symmetric subspace of the k-fold tensor product
+space (Cn )⊗k and Σk is the k-fold Cartesian product of Σ with itself. The exterior
+power creates a signed graph V
+from any graph, even unsigned. We prove sufficient and
+necessary conditions so that k Σ is balanced. For k = 1, . . . , n − 2, the condition is
+that either Σ is a signed path or Σ is a signed cycle that is balanced for odd k or is
+unbalanced for even k; for k = n − 1, the condition is that each even cycle in Σ is
+positive and each odd cycle in Σ is negative.
+Keyword: signed graphs, exterior powers, quotient graphs.
+
+1
+
+Introduction
+
+We are interested in graph operators which arise from taking the quotient of a Cartesian
+product of an underlying graph with itself. More specifically, such operators are defined on a
+graph G = (V, E) after applying the following three steps. First, we take the k-fold Cartesian
+product of G with itself, namely Gk . Note that the vertex set of Gk is the set of k-tuples
+V k . For the second (possibly optional) step, we remove from V k (via vertex deletions) the
+set D consisting of all k-tuples of vertices which contain a repeated vertex. We denote the
+∗
+
+Department of Mathematics, University of California at Berkeley.
+Department of Mathematics, Wellesley College.
+‡
+Department of Computer Science, Clarkson University. Contact author: tino@clarkson.edu
+§
+Department of Mathematics, Binghamton University.
+†
+
+1
+
+resulting graph as Gk \ D. Finally, we conjugate the adjacency matrix of Gk \ D with an
+invertible operator Q. If we call the resulting graph G, then
+A(G) = Q† A(Gk \ D)Q.
+
+(1)
+
+For cases of interest, Q will either be the symmetrizer P∨ or the anti-symmetrizer P∧ which
+are projection operators onto the symmetric and anti-symmetric subspaces of the k-fold
+tensor product space V ⊗k (see Bhatia [3]).
+For example, Audenaert, Godsil, Royle and Rudolph [2] studied the symmetric powers
+G{k} of a graph G which is defined as
+A(G{k} ) = P̃ † A(Gk \ D)P̃ ,
+
+(2)
+
+where P̃ is a “hybrid” of P∨ and P∧ . These graphs were studied in the context of the
+graph isomorphism problem on strongly regular graphs. They are equivalent to the so-called
+k-tuple vertex graphs, introduced by Zhu, Liu, Dick and Alavi [10], which generalizes the
+well-known double vertex graphs (see Alavi, Behzad, Erdös, and Lick [1]). Subsequently,
+these k-tuple vertex graphs were studied by Osborne [8] in the framework of spin networks
+in quantum information.
+V
+The main focus of this work is on the exterior powers k G of a graph G defined as
+V
+A( k G) = P∧† A(Gk )P∧ .
+(3)
+V
+We will show that k G is a signed graph whose edges have ±1 weights. Moreover, this
+also holds if the underlying graph is a signed graph Σ = (G, σ) where σ is the ±1-valued
+edge-signing function.
+Our main observation is the following characterization of balanced exterior powers.
+V
+Theorem 1. Let Σ be a signed graph on n vertices. Then, k Σ is balanced if and only if:
+
+• for k = 2, . . . , n − 2:
+Either (i) Σ is a signed path; or (ii) Σ is a signed cycle that is balanced when k is odd
+k and unbalanced when k is even.
+• for k = n − 1:
+Each even cycle in Σ is positive and each odd cycle is negative.
+
+The proof of the first part of theVabove theorem is based on a forbidden subgraph property.
+Namely, if the exterior kth power k Σ is balanced, then Σ may not contain the claw K1,3 as
+a subgraph, for k = 1, . . . , n − 2. In this case, Σ is either a signed path or it is a signed cycle
+which is balanced for odd k and unbalanced for even k. The case when k = n − 1 requires a
+separate argument.
+As a corollary, we also obtain a characterization
+of unsigned graphs G whose exterior kth
+Vk
+power is balanced. For 2 ≤ k ≤ n − 2,
+G is balanced V
+if and only if G is a path or G is a
+cycle and k is odd. For the boundary case of k = n − 1, n−1 G is balanced if and only if G
+is bipartite.
+We remark that both the symmetric and exterior powers are closely related to the study
+of many-particle quantum walk on graphs in quantum information (see [4]).
+2
+
+2
+
+Preliminaries
+
+We state some notation which we use in the remainder of this paper. For a logical statement
+S, we let [[S]] be 1 if S is true, and 0 otherwise. Given a positive integer n, we use [n]
+to denote the set {1, 2, . . . , n}. For two sets A and B, we let A△B denote the symmetric
+difference of A and B; that is, A△B = (A \ B) ∪ (B \ A).
+The graphs G we study here are finite, mostly simple, undirected and connected. The
+vertex set of G will be denoted V (G) and its edge set E(G). The adjacency matrix A(G)
+of G is defined as A(G)u,v = [[(u, v) ∈ E(G)]]. For two graphs G and H with adjacency
+matrices A(G) and A(H), respectively, their Cartesian product G  H is a graph defined
+on the vertex set V (G) × V (H) where (g1 , h1 ) is adjacent to (g2 , h2 ) if either g1 = g2 and
+(h1 , h2 ) ∈ EH , or (g1 , g2) ∈ EG and h1 = h2 . The adjacency matrix of this Cartesian product
+is given by A(G  H) = A(G) ⊗ I + I ⊗ A(H). Here, A ⊗ B denotes the tensor product of
+matrices A and B.
+Standard graphs we consider include the complete graphs Kn , paths Pn , cycles Cn , bipartite graphs, and the hypercubes Qn .
+U
+A vertex partition π of a graph G = (V, E) given by V = m
+j=1 Vj is equitable if each vertex
+u in Vj is adjacent to dj,k vertices in Vk , where this constant is independent of the choice of
+vertex u (see Godsil [5]). Each component Vj is called a cell of the equitable partition π.
+Here, |π| = m is the size of π – which is the number of cells in π. The (normalized)
+partition
+p
+matrix Q of π is a |V | × |π| matrix whose entries are Q[i, j] = [[i ∈ Vj ]]/ |Vj |. The quotient
+graph G/π of G modulo the equitable partition π is an undirected weighted
+p graph whose
+vertices are the cells of π and whose edges (Vj , Vk ) are given the weights dj,k dk,j .
+Fact 2. (Godsil [5]) Let G = (V, E) be a graph and let π be an equitable partition with
+partition matrix Q. The following properties hold:
+1. QT Q = I.
+2. QQT commutes with A(G).
+3. A(G/π) = QT A(G)Q.
+More background on algebraic graph theory may be found in Godsil and Royle [6].
+
+2.1
+
+Signed graphs
+
+A signed graph Σ = (G, σ) is a pair consisting of a graph G = (V, E) and a signing map
+σ : E(G) → {−1, +1} over the edges of G. We call G the underlying (unsigned) graph of Σ;
+we also use |Σ| to denote this underlying graph.
+The sign of a cycle in a signed graph is the product of all the signs of its edges. A signed
+graph is called balanced if all of its cycles are positive. Similarly, it is called anti-balanced if
+all of its odd cycles are negative and all of its even cycles are positive.
+Fact 3. (Harary [7]) A signed graph is balanced if and only if there is a bipartition in which
+all crossing edges are negative and all non-crossing edges are positive.
+
+3
+
+Given a signed graph Σ, switching around a vertex u ∈ V (Σ) means flipping the signs of
+all edges adjacent to u. Similarly, switching around a subset U ⊆ V (Σ) means flipping the
+signs of all edges crossing the cut (U, U c ), that is, edges of the form (v, w), where v ∈ U and
+w ∈ U c.
+Fact 4. A signed graph is balanced (respectively, anti-balanced) if and only if there is a subset
+U for which switching around U results in all edges being positive (respectively, negative).
+Switching has a nice algebraic description as conjugation by a diagonal matrix with ±1
+entries. Two signed graphs Σ1 and Σ2 are called switching equivalent, denoted Σ1 ∼ Σ2 , if
+A(Σ1 ) = D −1 A(Σ2 )D for some diagonal matrix D with ±1 entries. Thus, a signed graph Σ
+is balanced if Σ ∼ |Σ| and it is anti-balanced if −Σ ∼ |Σ| (that is, −Σ is balanced).
+More basic facts about signed graphs may be found in Zaslavsky [9].
+
+3
+
+Exterior Powers
+
+V
+Let G be a graph on n vertices. We first define the exterior kth power k G, for 1 ≤ k ≤ n−1,
+in a combinatorial fashion. An equivalent algebraic formulation will follow thereafter. Our
+treatment follows closely the description given by Osborne [8] (see also [2]).
+We fix an arbitrary total ordering ≺ on the vertex set V of G. Consider a k-tuple u ∈ V k ,
+say u = (u1 , . . . , uk ), whose elements are distinct and are ordered with respect to ≺, that is,
+u1 ≺ . . . ≺ uk . We adopt the somewhat standard
+ “wedge” product notation to denote such
+V
+an ordered k-tuple as u = u1 ∧ . . . ∧ uk . Let k denote the set of all such ordered k-tuples.
+That is:
+ 
+V
+= {u1 ∧ . . . ∧ uk : u1 , . . . , uk ∈ V, u1 ≺ . . . ≺ uk } .
+(4)
+k
+Again, we stress that u1 ∧ u2 ∧ . . . ∧ uk is notation for the k-tuple (u1, . . . , uk ) whose elements
+are distinct and are given
+order (with respect to ≺).
+
+V in ascending
+V
+The vertex set of k G is Vk and its edges are defined so two vertices u = kj=1 uj and
+V
+v = kj=1 vj are adjacent if there is a bijection π over [k] where uπ(j) = vj for all j ∈ {1, . . . , k}
+
+except at one index i where (uπ(i) , vi ) ∈ E(G). Thus, for u, v ∈ Vk , we have
+V
+(u, v) ∈ E( k G) iff (∃i)[(uπ(i) , vi ) ∈ E(G) and (∀j 6= i)[uπ(j) = vj ]].
+(5)
+V
+Here, we say that the permutation π connects the vertices u and v. We make k G into a
+signed graph by assigning the value sgn(π) to the above edge (u, v).
+Example: Consider a 4-cycle on V = {a, b, c, d} with edges E = {(a, b), (b, c), (c, d), (a, d)}.
+With the ordering a ≺ b ≺ c ≺ d, we have V2 = {a ∧ b, a ∧ c, a ∧ d, b ∧ c, b ∧ d, c ∧ d}. Then,
+V2
+C4 is the signed bipartite graph K2,4 with partition {a∧d, b∧c} and {a∧b, a∧c, b∧d, c∧d}.
+All edges are positive except for the ones connecting b ∧ c with both a ∧ b and c ∧ d. See
+Figure 1.
+V
+Our further interest will be on the exterior power k Σ of a signed graph Σ = (G, σ).
+This is a strict generalization of the case for unsigned graphs. In this general case, the sign
+4
+
+d
+−
+c
+
+b
+
+a∧c
+
+a∧b
+
++
+a
+
+b∧c
++
+
++
+
++
+
++
+
+−
+b∧d
+
+c∧d
+
++
+
+a∧d
+
+Figure 1: The 4-cycle and its exterior square
+
+V2
+
+C4 .
+
+V
+of the edge connecting u, v in k Σ is the product of the sign of the permutation π that
+connects u and v, and the sign of the only adjacent pair (uπ(i) , vi ) in Σ, for i which satisfies
+V
+Equation (5); that is, the sign of the edge (u, v) in k Σ is
+σ ′ (u, v) = sgn(π) × σ(uπ(i) , vi ),
+
+(6)
+
+where (uπ(i) , vi ) ∈ E(G) and uπ(j) = vj for all j 6= i. Here, we have used σ ′ to denote the
+V
+signing function for the exterior power k Σ.
+
+Remark: A gain graph Φ = (G, X, ϕ) is a triple consisting of a graph G = (V, E), a group
+X, and
+edges of G, that is, ϕ : E(G) → X. In our case, we may
+Vka gain function ϕ overVthe
+k
+treat
+G as a gain graph Φ( G, Sk , ϕ) over the symmetric group Sk , where ϕ assigns the
+permutation π that connects u and v to the edge (u, v).
+Algebraic
+Vk framework Next, we describe an algebraic framework for the exterior kth
+power
+G. Much of the machinery below will be familiar from multilinear algebra (see
+Bhatia [3]).
+Let G = (V, E) be a graph on n vertices and let k be a positive integer where 1 ≤ k ≤ n−1.
+We consider the vector space W = CV of dimension n where we use the vertex set V to
+index the n-dimensional space. For each vertex u ∈ V , we let e(u) represent the unit vector
+that is 1 at position u and 0 elsewhere. So, the vertex set of G gives us a basis for the
+vectorN
+space W via the set {e(u) : u ∈ V }. Next, we consider the k-fold tensor product
+space k W and index this nk -dimensional space using the k-tuples of V k . To
+Nkthis end, for
+k
+a k-tuple u = (u1 , . . . , uk ) ∈ V , we define the unit vector e(u) (this time in
+W ) as
+
+e(u) = e(u1 ) ⊗ e(u2 ) ⊗ . . . ⊗ e(uk ).
+(7)
+Nk
+Moreover, the k-fold tensor product space
+W is spanned by all such unit vectors. For
+a permutation π ∈ Sk and a k-tuple u = (u1 , . . . , uk ), the action of π on u is defined as
+π(u) = (uπ(1) , . . . , uπ(k)). In a natural way, we may extend this to define the action of π on
+the unit vector e(u) as
+π(e(u)) = e(π(u)) = e(uπ(1) ) ⊗ e(uπ(2) ) ⊗ . . . ⊗ e(uπ(k) ).
+
+(8)
+
+As before, we fix an arbitrary total ordering on the vertex set V , say v1 ≺ v2 ≺ . . . ≺ vn .
+Then, we consider the set of ordered k-tuple of distinct elements of V , which is usually
+5
+
+written as “wedge” products:
+ 
+V
+= {u1 ∧ u2 ∧ . . . ∧ uk : u1 ≺ u2 ≺ . . . ≺ uk , where u1, . . . , uk ∈ V } .
+k
+
+(9)
+
+Here, u1 ∧ u2 ∧ . . . ∧ uk V
+is notation for the k-tuple (uN
+u2 ≺ . . . ≺ uk .
+1 , u2 , . . . , uk ) where u1 ≺ 
+k
+k
+V
+The exterior power
+W is a vector subspace of
+W and we will use k to index this
+
+Vk
+V
+n
+-dimensional space. Thus, we may identify
+W with C( k ) in the same way we identify
+k
+Nk
+V
+k
+W with CV . The exterior power k W is spanned by the “wedge” vectors
+
+e(u1 ∧ u2 ∧ . . . ∧ uk ) = [[u1 ≺ u2 ≺ . . . ≺ uk ]] e(u1 ) ⊗ e(u2 ) ⊗ . . . ⊗ e(uk ).
+(10)
+Nk
+Vk
+A nice way to view the connection between
+W
+and
+W is via the anti-symmetrizer
+
+n
+k
+An,k defined as the following n × k matrix:
+1
+An,k = √
+k!
+
+X
+
+sgn(π)e(π(v))e(v)†.
+
+(11)
+
+v∈(Vk ),π∈Sk
+
+V
+In what follows, we show the role of An,k in defining the exterior kth power k G, for a
+V
+graph G. As a consequence, we note that k G is a signed quotient of the k-fold Cartesian
+product of G modulo a natural equitable partition.
+Lemma 5. Let G be a graph on n vertices and k be an integer where 1 ≤ k ≤ n − 1. The
+following properties hold:
+1. ATn,k An,k = I(n) .
+k
+
+2. An,k ATn,k commutes with A(Gk ).
+V
+3. A( k G) = ATn,k A(Gk ) An,k .
+
+Proof. See [4].
+
+V
+We note that Lemma 5 is similar to Fact 2. So from the third property above, k G may be
+viewed as the “quotient” of Gk modulo an equitable partition π induced by An,k ; that is,
+Vk
+G = Gk /π.
+
+4
+
+Basic Properties
+
+We start with the simplest fact about the exterior kth power: cases when k = 1 and k = n.
+V
+V
+Fact 6. For any n-vertex signed graph Σ, we have 1 Σ = Σ, and n Σ = K1 .
+
+Proof. Follows immediately from the definitions.
+
+6
+
+V
+Next, we show that theVexterior power k G is well-defined up to switching equivalence;
+that is, the signed graph k G we obtain is independent
+of the choice of ordering on the
+Vk
+vertex set
+G without fear of ambiguity. To this
+V V of G. This allows us to simply state
+end, let k≺ G denote the signed graph obtained from ordering V according to ≺.
+
+Fact
+Let G = (V, E) be a graph. For any two total orderings ≺ and ≺′ over V , we have
+Vk 7. V
+k
+≺′ G.
+≺G ∼
+
+′
+Proof. The total ordering ≺ determines the map A≺
+n,k . Let ≺ be a total ordering which
+differs from ≺ by a transposition on two vertices u and v. In a similar manner, the total
+′
+. Define a diagonal matrix Duv with
+ordering ≺′ determines its own anti-symmetrizer A≺
+n,k
+
+V
+±1 entries where, for each a ∈ k , its (a, a)-entry is
+
+−1 if u ∈ a and v ∈ a
+†
+e(a) Duv e(a) =
+(12)
++1 otherwise
+
+The two anti-symmetrizers of ≺ and ≺′ are connected by Duv as follows:
+′
+
+≺
+A≺
+n,k = An,k Duv .
+
+This shows that
+A(
+
+Vk
+
+≺ G are switching equivalent to
+
+Vk
+
+≺′ G)
+
+′
+
+′
+
+≺
+T
+k
+= (A≺
+n,k ) A(G ) An,k
+
+=
+=
+
+Vk
+
+(13)
+
+≺′ G since
+
+≺
+T
+k
+T
+by Equation (13)
+Duv
+(A≺
+n,k ) A(G ) An,k Duv ,
+V
+−1
+T
+−1
+Duv
+A( k≺ G)Duv , since Duv
+= Duv
+.
+
+(14)
+(15)
+(16)
+
+In general, if ≺ and ≺′ are related by a permutation σ, we may apply induction on the
+number of transpositions that form σ.
+The next fact
+Vkshows that there is a mirror-symmetric isomorphism in the sequence of
+exterior powers
+G.
+V
+Vn−k
+Fact 8. Let G be a graph on n vertices and let 1 ≤ k ≤ n − 1. Then, | k G| ∼
+G|.
+=|
+
+
+V
+Proof. The map τ from Vk to n−k
+defined as τ (u) = V (G) \ u is the claimed isomorphism.
+Vk
+If u is adjacent to v in |
+G|, then u△v = {a, b} for some vertices a and b with (a,
+b) ∈ E(G).
+Vn−k
+Since (V (G) \ u)△(V (G) \ v) = u△v, this implies τ (u) is adjacent to τ (v) in |
+G|. The
+converse follows in a similar fashion.
+Remark: Fact 8 was also described in Osborne [8]; we provide its proof for completeness. A
+similar mirror-symmetry condition is also known for Johnson graphs (see Godsil and Royle
+[6]).
+Next, we show that the exterior power, as a graph operator on signed graphs, preserves
+switching equivalence.
+Fact 9. V
+Let Σ1 and Σ2 be two signed graphs on n vertices satisfying Σ1 ∼ Σ2 . Then,
+V
+k
+Σ1 ∼ k Σ2 for each positive integer k with 1 ≤ k ≤ n − 1.
+7
+
+Proof. If Σ1 ∼ Σ2 , then there is a diagonal n × n matrix D with ±1 entries so that A(Σ2 ) =
+k
+⊗k
+k
+⊗k
+DA(Σ1 )D. This implies
+. Let D̂ be a diagonal matrix with ±1
+ A(Σ2 ) = D A(Σ1 V )D
+
+n
+entries of dimension k where, for each u ∈ k , its (u, u)-entry is defined as
+†
+
+e(u) D̂e(u) =
+
+k
+Y
+
+e(uj )† De(uj ),
+
+(17)
+
+j=1
+
+which depends on the product of the diagonal entries of D. We note that
+An,k D̂ = D ⊗k An,k .
+
+(18)
+
+Σ2 ) = ATn,k A(Σ2k ) An,k
+
+(19)
+
+Therefore, we have
+A(
+
+which proves the claim.
+
+Vk
+
+⊗k
+An,k
+= ATn,k D ⊗k A(Σk
+1 )D
+
+(20)
+
+= D̂ ATn,k A(Σk
+1 ) An,k D̂
+Vk
+= D̂A( Σ1 )D̂,
+
+(21)
+(22)
+
+In the following, we consider the k-fold Cartesian product graph Gk minus its “diagonal”
+(which are the k-tuples containing a repeated element), but without the conjugation (or
+quotient)
+action. We relate this to the gain graphs and signed graphs corresponding to
+Vk
+G. Note that there is a natural way to convert a gain graph over the symmetric group
+into a signed graph – simply take the sign of the permutations which label the edges of the
+gain graph.
+But, first we recall some definitions about covers of gain graphs. Let Φ = (G, X, ϕ) be
+a gain graph on a graph G = (V, E) and a group X with the group-valued edge-signing
+function ϕ : E → X. The graph C is called a |X|-cover of Φ if the adjacency matrix of C is
+given by
+X
+A(C) =
+A(Gg ) ⊗ Pg .
+(23)
+g∈X
+
+g
+
+Here, G is the subgraph of G induced by edges which are signed with g ∈ X; that is,
+Gg = (V, E g ) where E g = {e ∈ E : ϕ(e) = g}. Also, Pg is the |X|-dimensional permutation
+matrix induced by g; its entries are given by Pg [a, b] = [[a = gb]], for group elements a, b ∈ X.
+Fact 10. Let G = (V, E) be a graph on n vertices and let V
+k be a positive integer 1 ≤ k < n.
+T
+k
+Then, G \ ker(An,k ) is a |Sk |-cover of the gain graph Φ( k G, Sk , ϕ).
+V
+Proof. Let C be the |Sk |-cover of Φ( k G, Sk , ϕ). Each vertex of C is of the form (u, π) where
+u ∈ Vk and π ∈ Sk . Let D = ker(ATn,k ) and consider the map φ : C → Gk \ D defined as
+φ(u, π) = π(u). We claim that φ is an isomorphism between C and Gk \ D. Suppose (u, π)
+and (v, τ ) is adjacent in C. This implies u and v are adjacent in G∧k and τ = π ◦ ϕ(u, v).
+Therefore,
+is adjacent to τ (v) = ϕ(u, v)(π(v)) in Gk \ D from the definition of the gain
+Vπ(u)
+k
+graph Φ( G, Sk , ϕ).
+8
+
+Corollary 11. Let G be a graph with at least three vertices
+and let D = {a ⊗ a : a ∈ V (G)}.
+V
+Then, G2 \ D is a double-cover of the signed graph 2 G.
+
+5
+
+Unsigned Graphs
+
+To provide an illustration of upcoming techniques we used for signed graphs, we examine
+the exterior powers of some well-known unsigned families of graphs, such as, cliques, paths,
+cycles, and hypercubes.
+
+5.1
+
+Cliques
+
+Given positive integers n ≥ k ≥ ℓ ≥ 1, the graph J(n, k, ℓ) has vertices which are k-element
+subsets of [n] and edges between two subsets if their intersection is of size ℓ (see Godsil and
+Royle [6]). The family of graphs J(n, k, k − 1) is known as the Johnson graphs.
+Kn | ∼
+= J(n, k, k−1).
+V
+Proof. Since any two distinct vertices of Kn are adjacent, the exterior power k Kn has each
+k-subset A of V adjacent to every other k-subset B of V provided |A△B| = 2. This is
+exactly the definition of the Johnson graphs J(n, k, k − 1).
+
+Fact 12. For positive integers n and k where 1 ≤ k ≤ n−1, we have |
+
+Vk
+
+The above fact also appeared in [8]; we include its proof for completeness.
+
+5.2
+
+Paths
+
+Fact 13. For positive integers n and k where 1 ≤ k ≤ n − 1, the exterior power of a path
+V
+k
+Pn is always balanced.
+
+Proof. Let the vertex set of Pn be V = {a0 , . . . , an−1 } with ai is adjacent to aj whenever
+i−j = ±1 except that a0 is only connected to a1 and an−1 is only connected to an−2 . By Fact
+7, we may use the ordering ai ≺ aj whenever i < j. Consider an arbitrary cycle of length ℓ in
+
+Vk
+Pn that is given by the sequence of vertices w1 , . . . , wℓ , where wi ∈ Vk . The permutation
+that connects wi and wi+1 is always the identity permutation since wi △wi+1 = {aj , aj+1} for
+V
+some j. Thus, the sign of all edges in k Pn is always positive.
+
+5.3
+
+Cycles
+
+Fact 14. For positive integers n and k where 1 ≤ k ≤ n − 1, the exterior power of a cycle
+V
+k
+Cn is balanced if and only if k is odd.
+
+Proof. Let the vertex set of Cn be V = {a0 , . . . , an−1 } with ai is adjacent to aj whenever
+i−j ≡ ±1 (mod n). By Fact 7, we may use the ordering ai ≺ aj whenever i < j. Consider an
+Vk
+arbitrary
+cycle
+of
+length
+ℓ
+in
+Cn that is given by the sequence of vertices w1 , . . . , wℓ , where
+
+wi ∈ Vk . The permutation that connects wi and wi+1 is a k-cycle if wi △wi+1 = {a0 , an−1 },
+otherwise it is the
+Vkidentity permutation. Since a k-cycle has a negative sign whenever k is
+even, this shows
+Cn is balanced if and only if k is odd.
+9
+
+We will later generalize Facts 13 and 14 for signed graphs in Section 6.
+
+5.4
+
+Hypercubes
+
+Fact 15. Let n ≥ 3 V
+be a positive integer and let k be an V
+integer where 1 ≤ k ≤ N − 1
+and N = 2n . Then, k Qn is a signed bipartite graph and k Qn is unbalanced except for
+k = 1, N − 1.
+V
+Proof. To see that | k Qn | is bipartite, note that we may identify the vertices of Qn with
+the set V = {0, 1}n of binary strings of length n. There is a natural bipartition of V into
+V = W0 ⊎ W1 according to the Hamming weight of the strings, where W0 and W1 are the
+binary strings with even and odd Hamming weight, respectively. Let Vℓ be the collection of
+k-subsets of V which
+W1 . Then, we
+Vk contain ℓ elements from W0Uand k − ℓ elements from U
+have a bipartition
+Qn = V0 ⊎ V1 where V0 = {Vℓ : ℓ even} and V1 = {Vℓ : ℓ odd}.
+Note, each vertex inVV0 is connected to only vertices from V1 , and vice versa.
+By Lemma 16, k Qn is unbalanced, for k 6= 1, N − 1, since Qn contains the claw K1,3
+V
+V
+as a subgraph whenever n ≥ 3. Note 1 Qn = Qn is trivially balanced and N −1 Qn is
+balanced since Qn is bipartite (see Corollary 20).
+
+6
+
+Balanced Characterization
+
+Vk
+In this section, we characterizeVthose signed
+graphs
+Σ
+for
+which
+Σ is balanced; that is,
+Vk
+k
+signed graphs Σ which satisfy
+Σ∼|
+Σ|. Our main result is Theorem
+1, but first we
+Vk
+prove several preliminary lemmas. The next lemma shows that if
+Σ is balanced, then
+|Σ| does not contain the claw K1,3 as a subgraph; this holds if k is strictly smaller than
+|V (Σ)| − 1.
+V
+Lemma 16. Let Σ be a signed graph on n vertices. If K1,3 is a subgraph of |Σ|, then k Σ
+is not balanced, for 2 ≤ k ≤ n − 2.
+Proof. Let Σ = (G, σ) be a signed graph where G = (V, E) contains K1,3 as a subgraph.
+By switching around the center of the claw, we may assume that the subgraph K1,3 is all
+positive. Suppose the vertices of the claw is V1 = {a, b, c, d}, where a is the center of the
+claw, and that V = V1 ⊎ V2 , where V2 is the set of vertices of G that is not part of the claw.
+By Fact 7, we may assume a total ordering on V which starts with the vertices of V1 followed
+by the vertices of V2 (in some arbitrary order):
+a ≺ b ≺ c ≺ d ≺ ...
+V
+Consider the cycle on six vertices in k K1,3 defined by the following sequence:
+
+a ∧ b ∧ Ω, b ∧ c ∧ Ω, a ∧ c ∧ Ω, c ∧ d ∧ Ω, a ∧ d ∧ Ω, b ∧ d ∧ Ω,
+
+(24)
+
+(25)
+
+where Ω is the wedge product of some arbitrary k − 2 elements from V2 . Note the above
+sequence induces a negative C6 (see Figure 2).
+
+10
+
+b
+a
+
+b∧c
+c
+
+a∧b
+
+d
+
++
+
+a∧c
+
+−
+
+−
+
+−
+
++
+
+c∧d
+
++
+
+b∧d
+
+a∧d
+
+Figure 2: The claw K1,3 and its exterior square which is a negative C6 .
+
+Next, we show that the exterior kth power of signed cycles are balanced provided the
+cycle is balanced and k is odd or it is unbalanced and k is even. Note, this implies that the
+exterior kth power of signed paths are always balanced.
+Lemma
+Vk17. Let Σ be a signed cycle with n vertices and let k be an integer with 1 ≤ k ≤ n−1.
+Then,
+Σ is balanced if and only if either (i) Σ is balanced and k is odd; or (ii) Σ is
+unbalanced and k is even.
+Proof. Let Σ = (Cn , σ) be a signed cycle. If Σ is unbalanced, then it has an odd number
+of negative edges. Since two adjacent negative edges can be switched to positive edges
+and switching may move any negative edge along the cycle, we may assume that there is
+exactly one negative edge on Σ. If Σ is balanced, we may assume (by switching) that it
+has no negative edges. So, Σ either has no (if balanced) or exactly one negative edge (if
+unbalanced).
+We assume without loss of generality that the vertices of Cn is V = {u0, u1 , . . . , un−1}
+where ui is adjacent to uj if i − j ≡ ±1 (mod n) and so that (u0 , un−1) is the unique
+negative edge if Σ is not balanced. By Fact 7, we may assume that the ordering on V is
+u0 ≺ u1 ≺ . . . ≺ un−1 .
+
+V
+Consider an arbitrary cycle Γ in k Σ given by the sequence w1 , w2 , . . . , wℓ ∈ Vk .
+The permutation that connects wi and wi+1 , which we will denote πwi ,wi+1 , is a k-cycle
+′
+if wi △wi+1 = {u0 , un−1
+Vk }, and is the identity permutation otherwise. Let σ denote the edge
+Σ. Thus, the sign of the edge (wi , wi+1 ) is given by
+signing function on
+σ ′ (wi , wi+1 ) = σ(wi △wi+1 ) sgn(πwi ,wi+1 )
+
+(−1)[[Σ unbalanced]] sgn(k-cycle)
+=
+(+1) sgn(id)
+
+(26)
+
+if wi △wi+1 = {u0, wn−1 }
+if wi △wi+1 6= {u0, wn−1 }
+
+(27)
+
+Since sgn(k-cycle) = (−1)k−1 , the sign of each edge (wi , wi+1 ) of Γ is positive
+Vk if Σ is unbalanced and k is even or if Σ is balanced and k is odd. Thus, each cycle Γ in
+Σ is a positive
+if and only if Σ is unbalanced and k is even or Σ is balanced and k is odd.
+Lemma 18. Let Σ be a signed path on n vertices. Then,
+k with 1 ≤ k ≤ n − 1.
+
+11
+
+Vk
+
+Σ is balanced for each integer
+
+Proof. Note that Σ is balanced since |Σ| is a path so Vwe may assume that all edges are
+positive.
+already proves the case for k = 1, since 1 Σ = Σ, and for k = n − 1, since
+Vn−1 This
+|
+Σ| ∼
+the cases 2 ≤ k ≤ n − 2, we appeal to the proof of Lemma 17. In an
+= |Σ|. For V
+arbitrary cycle Γ in k Σ, the permutation connecting adjacent vertices in Γ is always the
+identity permutation. That is, we never encounter the case where the symmetric difference
+between
+V adjacent vertices is the two endpoints of the path Σ. This shows that any such cycle
+Γ in k Σ is always positive.
+Next, we characterize the (n − 1)th exterior power of n-vertex signed graphs. In this
+case, we show that only balanced signed bipartite graphs have a balanced (n − 1)th exterior
+power.
+V
+Lemma 19. Let Σ be a signed graph on n vertices. The exterior power n−1 Σ is balanced
+if and only if each odd cycle in Σ is negative and each even cycle in Σ is positive.
+Proof.
+ Let Σ = (G, σ) be a signed graph where G = (V, E) and |V | = n. Suppose θ :
+V
+→ V is the natural bijection between V and its (n − 1)-subsets defined as follows. For
+n−1
+a subset A ⊆ V with |A| = n − 1, we let θ(A) = a where V
+\ {a} = A.
+Vn−1
+Consider an arbitrary
+cycle Γ of length ℓ in
+Σ given by the sequence
+
+V
+w0 , w1 , . . . , wℓ−1 ∈ n−1
+. We identify Γ with another cycle θ(Γ) in Σ defined by the sequence
+θ(w0 ), θ(w1 ), . . . , θ(wℓ−1) ∈ V.
+(28)
+By Fact 7, we may assume an ordering on V which starts with vertices in θ(Γ) followed by
+the other vertices (in some arbitrary order):
+θ(w0 ) ≺ θ(w1 ) ≺ . . . ≺ θ(wℓ−1 ) ≺ . . .
+
+(29)
+
+By switching, we may assume that θ(Γ) has zero or exactly one negative edge, depending on
+whether θ(Γ) is a positive or negative cycle. Moreover, without loss of generality, we may
+assume that that the negative edge, if it exists, be the edge connecting θ(w0 ) and θ(wℓ−1 ).
+That is,
+σ(θ(wi ), θ(wi+1 )) = +1, for i = 0, . . . , ℓ − 2
+
+−1 if θ(Γ) is a negative cycle
+σ(θ(w0 ), θ(wℓ−1 )) =
++1 otherwise
+We use σ ′ (wi , wi+1) to denote the sign of edge (wi , wi+1) in
+
+Vn−1
+
+σ ′ (wi , wi+1 ) = σ(θ(wi ), θ(wi+1)).
+
+(30)
+(31)
+
+Σ. Note that
+(32)
+
+V
+Let πwi ,wi+1 denote the permutation that connects the vertices wi and wi+1 in n−1 Σ. By
+our choice of the ordering given above, the identity permutation connects (wi , wi+1 ), for
+0 ≤ i ≤ ℓ − 2, and an (ℓ − 1)-cycle connects (w0 , wℓ−1). Therefore, the sign of the cycle Γ is
+
+12
+
+given by
+′
+
+′
+
+σ (Γ) = σ (w0 , wℓ−1 ) sgn(πw0 ,wℓ−1 )
+
+ℓ−2
+Y
+
+σ ′ (wi , wi+1 ) sgn(πwi ,wi+1 )
+
+(33)
+
+i=0
+
+= σ(θ(w0 ), θ(wℓ−1 )) sgn(πw0 ,wℓ−1 )
+
+ℓ−2
+Y
+
+σ(θ(wi ), θ(wi+1 )) sgn(πwi ,wi+1 )
+
+(34)
+
+i=0
+
+= (−1)[[θ(Γ) negative]] sgn((ℓ − 1)-cycle).
+
+(35)
+
+The last expression equals +1 if and only if each odd cycle in Σ is negative and each even
+cycle in Σ is positive. This proves the claim.
+Finally, we are ready to put the pieces
+Vk together and prove our main characterization of
+signed graphs Σ whose exterior power
+Σ is balanced.
+Proof. (of Theorem 1)
+The first part follows from Lemmas 16, 18, and 17. The second part is a restatement of
+Lemma 19.
+The next corollary of Theorem 1 yields a similar characterization for unsigned graphs.
+V
+Corollary 20. Let G be a graph on n vertices. Then, k G is balanced if and only if:
+• for k = 1, . . . , n − 2: G is a path or G is a cycle and k is odd.
+• for k = n − 1: G is bipartite.
+
+Acknowledgments
+The research was supported in part by the National Science Foundation grant DMS-1004531
+and also by the National Security Agency grant H98230-11-1-0206. We thank Chris Godsil
+for helpful comments on the symmetric powers of graphs.
+
+References
+[1] Y. Alavi, M. Behzad, P. Erdös, and D. Lick. Double vertex graphs. Journal of Combinatorics, Information and System Sciences, 16(1):37–50, 1991.
+[2] K. Audenaert, C. Godsil, G. Royle, and T. Rudolph. Symmetric squares of graphs.
+Journal of Combinatorial Theory B, 97:74–90, 2007.
+[3] R. Bhatia. Matrix Analysis. Springer-Verlag, 1997.
+[4] J. Brown, C. Godsil, D. Mallory, A. Raz, and C. Tamon. Perfect state transfer on signed
+graphs. quant-ph/1211.0505.
+13
+
+[5] C. Godsil. State transfer on graphs. Discrete Mathematics, 312(1):129–147, 2011.
+[6] C. Godsil and G. Royle. Algebraic Graph Theory. Springer, 2001.
+[7] F. Harary. On the notion of balance of a signed graph. Michigan Mathematical Journal,
+2(2):143–146, 1953.
+[8] T. Osborne. Statics and dynamics of quantum XY and Heisenberg systems on graphs.
+Physical Review B, 74:094411, 2006.
+[9] T. Zaslavsky. Signed graphs. Discrete Applied Mathematics, 4:47–74, 1982.
+[10] B. Zhu, J. Liu, D. Lick, and Y. Alavi. n-tuple vertex graphs. Congressus Numerantium,
+89:97–106, 1992.
+
+14
+
+

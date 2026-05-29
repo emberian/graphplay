@@ -1,0 +1,1321 @@
+arXiv:quant-ph/0509059v1 8 Sep 2005
+
+Mixing of Quantum Walk on Circulant Bunkbeds∗
+Peter Lo
+St. Mary’s College
+
+Siddharth Rajaram
+Middlebury College
+
+Diana Schepens
+Houghton College
+
+Daniel Sullivan
+Swarthmore College
+
+Christino Tamon†
+Clarkson University
+
+Jeffrey Ward
+Clarkson University
+
+June 8, 2018
+
+Abstract
+We give new observations on the mixing dynamics of a continuous-time quantum
+walk on circulants and their bunkbed extensions. These bunkbeds are defined through
+two standard graph operators: the join G + H and the Cartesian product G ⊕ H of
+graphs G and H. Our results include the following:
+• The quantum walk is average uniform mixing on circulants with bounded eigenvalue multiplicity. This extends a known fact about the cycles Cn .
+• Explicit analysis of the probability distribution of the quantum walk on the join
+of circulants. This explains why complete partite graphs are not average uniform
+mixing, using the fact Kn = K1 + Kn−1 and Kn,...,n = K n + . . . + K n .
+• The quantum walk on the Cartesian product of a m-vertex path Pm and a circulant
+G, namely, Pm ⊕ G, is average uniform mixing if G is. This highlights a difference
+between circulants and the hypercubes Qn = P2 ⊕ Qn−1 .
+
+Our proofs employ purely elementary arguments based on the spectra of the graphs.
+
+Keywords: Quantum walks, Circulant graphs, Average mixing, Join, Cartesian product.
+
+1
+
+Introduction
+
+The study of continuous-time quantum walks on graphs has important potential applications
+in quantum computation [15]. First, as an algorithmic technique, it was used to devise
+efficient quantum search algorithms with considerable speedup over classical algorithms [7].
+Second, it may provide a simpler physical implementation of a quantum computer, given
+that there is an abundance of physical processes that simulate quantum walk on graphs
+[9]. In the physics literature, continuous-time quantum walks is mainly studied over infinite
+constant-dimensional lattices, such as the one-dimensional line (see [10], Chapters 13,16).
+On the other hand, the study of random walks on general graphs is a topic of broad interest
+in the mathematics and computer science community [6, 13].
+∗
+†
+
+Supported in part by NSF grants DMR-0121146 and DMS-0353050.
+Contact author: tino@clarkson.edu
+
+1
+
+In this paper, we study the mixing dynamics of continuous-time quantum walks on circulant graphs. More particularly, we consider the average or limiting probability distribution
+of a quantum walk. This notion was introduced in [1] and is the quantum analogue of a
+stationary distribution of classical random walks. On the circulant graphs, our goal was
+to characterize the graphs for which the continuous-time quantum walk reaches (almost)
+uniform average probability distribution. It was previously known that cycles are near uniform mixing, whereas the complete graphs and hypercubes are not (see [2, 14]). Our other
+goal in this paper is to discover graph theoretic structures that may explain this polarized
+phenomena.
+First, we show that circulants with bounded eigenvalue multiplicity are almost uniform
+mixing. This generalization explains why cycles are uniform mixing. Second, we consider
+bunkbed graphs constructed using the join and the Cartesian product operators. By analyzing the join of two circulants, we observe an interesting mixing phenomena on the cone
+K1 + G of a circulant G, that is dependent on the density of G. If the quantum walk starts
+on K1 , a dense graph G repels the probability away from the copy of G. This explains why
+the limiting distribution of a quantum walk on the complete graph is not near the uniform
+distribution. We extend this investigation to the homogeneous join of circulants, namely,
+G + . . . + G, for a circulant G. We show that this bunkbed graph is uniform mixing if G is
+uniform mixing and the join is over a constant number of copies of G. A corollary of this
+transference property explains the non-uniform mixing of the complete multipartite graphs
+K n + . . . + K n.
+We also analyze bunkbed graphs obtained from the Cartesian product Pm ⊕ G of a
+path Pm and a circulant G. On this bunkbed structure, we observe another transference
+property: the quantum walk on Pm ⊕ G is uniform mixing if it is uniform mixing on G and
+the path is of constant size. This highlights a striking difference with the hypercube Qn ,
+since the hypercube is also a bunkbed Qn = P2 ⊕ Qn−1 , but it is known that they are not
+uniform mixing [14]. It is interesting to note that both classes of graphs are group-theoretic
+circulants (see [8]), since our circulants are the Zn -circulants while hypercubes are the
+(Z2 )n -circulants. This suggests a group theoretic investigation into the mixing phenomena
+of generalized circulants, which we leave for future work.
+In this paper, we focus exclusively on continuous-time quantum walks. We refer the
+reader to [12] for a survey of other models of quantum walks. As a final remark, we
+mention that most of the graphs we consider have the standard stationary distributions in
+the classical random walks where the limiting probability of a vertex is proportional to its
+degree [4].
+
+2
+
+Preliminaries
+
+We consider simple, undirected graphs that are connected, and mostly regular. For a graph
+G = (V, E), let AG be the adjacency matrix of G, where AG [j, k] = [[(j, k) ∈ E]]. Here and
+throughout, we will use [[Ψ]] to denote the characteristic function of a logical statement Ψ,
+that is, 1 if Ψ is true, and 0 if it is false. The set of eigenvalues of AG is denoted Sp(G), and
+the (algebraic) multiplicity of an eigenvalue λ is denoted m(λ). The spectral type τ (G) of
+a graph G is the number of distinct eigenvalues of the adjacency matrix AG of G. We will
+denote the maximum (algebraic) multiplicity of any eigenvalue of graph G by µ(G). Some
+2
+
+•
+
+•
+
+•
+
+•
+•
+
+•
+
+,?RR
+llll• ,??RRR
+•,lR, RRR ,,l?l?l•,,
+
+R
+lll• RRRR,
+•,
+,,
+ 
+,
+•
+•,,
+
+,,
+
+,R
+• RRR lll•
+R•ll
+l
+•l
+
+•
+
+•
+
+ , lRlRl,RR??,,
+,,RR?R?,
+,?lll,l,l
+•,? ,
+, l•
+?
+,
+
+,, ?? , l ll,l, l
+,Rl l?l?,l,l  ,
+• RRR??, lll•
+Rll
+•
+
+l•?,R?RR
+,?Rl,?lRlRl ,,,??lR?lR•,,
+•
+R l
+
+ ,??lRlRl,R??,
+,?lll,l,l ???,R,RR?R?,,
+•,? ,  ? , lll•
+,,??? ,, l?l?l,,
+,Rll?l?,l,l  ??,
+• RRR??, lll•
+Rll
+•
+
+Figure 1: Examples of circulants of order 8. From left to right: (i) the empty graph K 8 .
+(ii) the cycle C8 . (iii) a strongly-regular circulant: clique minus a perfect matching. (iv)
+the complete graph K8 .
+of the families of graphs that we will consider include the complete multipartite graphs
+(m)
+Kn , where there are m partitions with a partition size of n, the cycles Cn and paths Pn ,
+and the hypercubes Qn . Relevant background on graphs and their spectral properties can
+be found in [5].
+A graph G is called circulant if its adjacency matrix AG is circulant. A circulant matrix
+A is specified by its first row, say (a0 , a1 , . . . , an−1 ), and is defined as Aj,k = ak−j (mod n) ,
+where j, k ∈ Zn . Here Zn denotes the group of integers {0, . . . , n − 1} under addition
+modulo n. Note that a0 = 0, since our graphs are simple, and aj = an−j , since our graphs
+are undirected. Connectivity is guaranteed if the greatest common divisor of n and all
+indices k, for which ak = 1, is one. Alternatively, a circulant graph G = (V, E) can be
+specified by a subset S ⊆ Zn , where (j, k) ∈ E if k − j ∈ S. In this case, we write G = hSi.
+We will assume that S is closed under taking inverses, namely, if d ∈ S, then −d ∈ S.
+Figure 1 contains some examples of circulant graphs.
+It is known that circulant graphs G are diagonalizable by the Fourier matrix F defined
+as Fj,k = n−1/2 ωnjk , where ωn = exp(2πi/n). In fact, the eigenvalues of AG are
+λj =
+
+n−1
+X
+k=1
+
+ak ω
+
+jk
+
+=
+
+⌊(n−1)/2⌋
+
+X
+k=1
+
+2 cos
+
+
+
+2πjk
+n
+
+
+
++ [[n even]] an/2 (−1)j .
+
+(1)
+
+A continuous-time quantum walk on a graph G = (V, E) is defined using the Schrödinger
+equation with the real symmetric matrix AG as the Hamiltonian (see [7]). If |ψ(t)i ∈ C|V | is
+a time-dependent amplitude vector on the vertices of G, then the evolution of the quantum
+walk is given by
+(2)
+|ψ(t)i = e−itAG |ψ(0)i,
+√
+where i = −1 and |ψ(0)i is the initial amplitude vector. We usually assume that |ψ(0)i is
+a unit vector, with hx|ψ(0)i = [[x = 0]], for some vertex 0. The amplitude of the quantum
+walk on vertex j at time t is given by ψj (t) = hj|ψ(t)i, while the probability of being on
+vertex j at time t is pj (t) = |ψj (t)|2 . The average (or limiting) probability of being on
+vertex j is defined as
+Z
+1 T
+pj (t) dt.
+(3)
+pj = lim
+T →∞ T 0
+This notion appeared in [1] in the context of discrete-time quantum walks. The limiting
+probability distribution of the quantum walk will be denoted P .
+3
+
+RR
+llll• RRR•,
+,
+•l???
+??  ,,
+,
+, 
+??
+•,
+•
+,,  ??? 
+?
+
+,R
+?
+• RRR lll•
+Rll
+
+n•8O8OOO
+nn
+88 O•&
+_________
+
+•&n& n
+
+8 &
+
+
+88 &
+ &&
+ 8&
+•8O 8OO&&&
+nn8•&
+88&OOO nnn 
+8&_nn_n_On_O_O 
+•
+•
+
+•
+
+Figure 2: Some circulants with bounded eigenvalue multiplicity. From left to right: (i) the
+wheel V8 : a cycle plus a perfect matching. (ii) a double-loop circulant h±1, ±2i of order 7.
+Definition 1 (Average Uniform Mixing)
+The average mixing of a continuous-time quantum walk on a graph G = (V, E) is called
+uniform if pj = O(1/|V |), for each vertex j of G.
+Remark Note that in the above definition, we only require that each limiting probability be
+linearly proportional to the uniform probability value. This is less stringent than requiring
+that the quantum walk achieves exactly uniform probability distribution (see [3, 2]). When
+the graph G is not regular, the limiting probability distribution P may depend on the
+initial state |ψ(0)i. We will specify carefully the effect of the initial states in these cases,
+but suppress this dependence for vertex-transitive graphs.
+
+3
+
+Mixing and Bounded Multiplicities
+
+Theorem 1 Let G be a circulant graph. If µ(G) is bounded, then the continuous-time
+quantum walk on G is average uniform mixing.
+Proof
+adjacency matrix
+of G. Since |0i =
+Pn−1
+Pn−1 1Let n be the order of G and let A be the
+−itλk |F i. This
+√ |Fk i, if |ψ(0)i = |0i, we have |ψ(t)i = e−itA |ψ(0)i = √1
+k
+k=0 e
+k=0 n
+n
+1 Pn−1 −itλk jk
+yields hj|ψ(t)i = n k=0 e
+ω . Thus,
+pj (t) =
+
+1 X −it(λk −λℓ ) j(k−ℓ)
+1
+1 X −it(λk −λℓ ) j(k−ℓ)
++
+e
+ω
+=
+e
+ω
+.
+n2
+n n2
+k,ℓ
+
+(4)
+
+k6=ℓ
+
+Using the above, the average (limiting) probabilities are
+
+
+
+
+1 X
+m(λ)
+1 µ(G)
+1
+≤ 2
+≤
+pj −
+.
+n
+n
+n
+2
+2
+
+(5)
+
+λ∈Sp(A)
+
+So, if µ(G) = O(1), we have uniform mixing.
+Theorem 2 The continuous-time quantum walk on a constant-degree n-vertex circulant of
+the form h1, n/k1 , . . . , n/kd i, where, for each j = 1, . . . , d, kj is a constant which divides n,
+is average uniform mixing.
+Proof
+
+The eigenvalues of G are given by
+λj = 2 cos
+
+
+
+2πj
+n
+
+
+
++2
+
+d
+X
+ℓ=1
+
+4
+
+cos
+
+
+
+2πj
+kℓ
+
+
+
+,
+
+(6)
+
+P
+Q
+for j = 1, . . . , n − 1. Since the sum dℓ=1 cos(2πj/kℓ ) can have at most dℓ=1 kℓ = O(1)
+distinct values, each eigenvalue must have a constant multiplicity. By Theorem 1, we have
+the claimed result.
+Corollary 3 The continuous-time quantum walk on the 3-regular circulant ”wheel” Vn =
+h1, n/2i of even order n is uniform mixing.
+
+4
+
+Mixing on Join Bunkbeds
+
+In this section, we study a circulant bunkbed structure obtained by the join of circulants.
+Formally, the join G + H of two graphs G and H is defined as to satisfy G + H = G ∪ H
+(see [16]). It is easy to see that this is a graph obtained by connecting each vertex of G to
+each vertex of H, while maintaining the internal structures of G and H. For a graph G,
+the cone of G will denote the graph K1 + G.
+Lemma 4 Let G and H be circulants of degrees k and ℓ, respectively. Suppose that the
+eigenvalues of G and H are k = µ0 > µ1 ≥ . . . ≥ µ|G|−1 and ℓ = ν0 > ν1 ≥ . . . ≥ ν|H|−1 ,
+respectively. Then, the eigenvalues and (orthonormal) eigenvectors of G + H are found in
+three separate sets {hµa , |zaG ii : 1 ≤ a ≤ |G| − 1}, {hνb , |zbH ii : 1 ≤ b ≤ |H| − 1}, and
+{hλ± , |z± ii}, where, for x = 0, . . . , |G||H| − 1, we have
+1
+ax
+p
+ω|G|
+[[x ∈ G]], a = 1, . . . , |G| − 1
+(7)
+|G|
+1
+bx
+hx|zbH i = p
+ω|H|
+[[x ∈ H]], b = 1, . . . , |H| − 1
+(8)
+|H|
+1
+(β± )[[x∈H]] ,
+(9)
+hx|z± i =
+L±
+q
+2 , and λ are the roots of λ2 − (k + ℓ)λ −
+where β± = (λ± − k)/|H|, L± = |G| + |H|β±
+±
+(|G||H| − kℓ) = 0.
+hx|zaG i =
+
+Proof Note that the adjacency matrix of G + H is given by
+
+
+AG
+J|G|×|H|
+A=
+J|H|×|G|
+AH
+
+(10)
+
+It is easy to see that |zaG i are eigenvectors of A with eigenvalues µa , for a = 1, . . . , |G| − 1,
+and |zbH i are eigenvectors of A with eigenvalues νb , for b = 1, . . . , |H|−1. The last two eigen
+T
+vectors are obtained by noting that the eigenvectors have the form a . . . a b . . . b .
+This gives the equations ka + √
+b|H| = λa and ℓb + a|G| = λb, whose solutions yield the
+1
+2
+eigenvalues λ± = 2 ((k + ℓ) ± ∆), where ∆ = (k − ℓ)2 + 4|G||H|, and eigenvectors with
+a = 1 and b = (λ± − k)/|H|.
+Theorem 5 Suppose that G and H are circulants
+of degrees k and ℓ, respectively. Let
+√
+2
+2
+∆ = (k − ℓ) + 4|G||H| and λ± = 1/2[(k + ℓ) ± ∆]. Consider a continuous-time quantum
+5
+
+walk on G + H starting at some vertex of G. Let px (G) denote the limiting probability of
+x ∈ G over the subgraph G. Assume that
+λ− 6∈ (Sp(G) \ {k}) ∪ (Sp(H) \ {ℓ}).
+
+(11)
+
+Then, the limiting probabilities of the vertices of G + H are
+
+
+
+
+2|H|
+1
+1
+2
+1
+−
+[[x ∈ H]]
++
+[[x ∈ G]] +
+px (G + H) =
+px (G) −
+|G|
+|G| |G|
+∆
+∆
+
+(12)
+
+Proof Let the initial state be |ψ(0)i = |0i where the quantum walk starts at a vertex of G.
+By Lemma 4, we have
+|G|−1
+X 1
+1 X G
+|za i +
+|ψ(0)i = p
+|z± i,
+L±
+|G| a=1
+±
+
+and, thus,
+
+(13)
+
+|G|−1
+X e−itλ±
+1 X −itµa G
+|za i +
+e
+|z± i.
+|ψ(t)i = p
+L±
+|G| a=1
+±
+
+(14)
+
+The amplitude on vertex x at time t is given by
+
+|G|−1
+1 X −itµa ax X e−itλ± [[x∈H]]
+hx|ψ(t)i =
+e
+ω|G| +
+,
+β
+|G| a=1
+L2± ±
+±
+
+(15)
+
+where β± = (λ± − k)/|H|, and we obtain
+1
+px = lim
+T →∞ T
+
+Z T
+0
+
+X
+1
++
+dt |hx|ψ(t)i|2 = px (G) −
+|G|
+±
+
+[[x∈H]]
+
+β±
+L2±
+
+!2
+
+,
+
+(16)
+
+where px (G) is the limiting probability on the subgraph G. After some calculations, we get
+X  1 2
+±
+
+L2±
+
+1
+=
+|G|
+
+
+
+1
+2|H|
+−
+|G|
+∆
+
+which completes the stated claim.
+
+
+
+,
+
+X  β± 2
+±
+
+L2±
+
+=
+
+2
+,
+∆
+
+(17)
+
+The single theorem above implies the following various known and new facts about mixing
+on the family of complete and related graphs. First, we obtain a perfect uniform mixing
+behavior on K2 , but not on Kn , for n > 2.
+Corollary 6 The continuous-time quantum walk on K2 is average exactly uniform mixing.
+Proof By Theorem 5, we have |G| = |H| = 1 and k = ℓ = 0. Thus, ∆ = 4, and therefore,
+p0 = p1 = 1/2.
+Corollary 7 [2] The continuous-time quantum walk on Kn is not average uniform mixing,
+as n → ∞.
+6
+
+Proof By Theorem 5, we have Kn = K1 + Kn−1 . We have |G| = 1, |H| = n − 1, k = 0, and
+ℓ = n−1. Then, ∆ = (n−1)2 +4n, with p0 = 1−2n/∆ ∼ 1 and pj = 2/∆ ∼ 0, as n → ∞.
+Next, we consider the cone of circulants. The following corollary provides a simple explanation why Kn is not average uniform mixing, for large n; it is because Kn is a cone of a
+dense circulant.
+Corollary 8 The continuous-time quantum walk on the cone of any circulant C, namely,
+K1 + C, is not average uniform mixing.
+Proof Let C be a ℓ-regular circulant of order n. By Theorem 5, we have |G| = 1, |H| = n,
+k = 0. Then, p0 = 1 − (1/2)[1/(1 + (ℓ/2)2 /n)]. Thus, p0 = Ω(1), regardless of ℓ.
+Homogeneous Joins of Circulants Consider the unbounded m-fold homogeneous join
+of a circulant G, namely, G(+m) = G + . . . + G, where there are m terms in the summation.
+The following theorem shows that the uniform mixing property of G transfers into its
+unbounded homogeneous join if m is a constant.
+Theorem 9 Let G be a circulant of order n.P
+Let m ≥ 2 is a constant and n > 2λ0 (G). In
+the continuous-time quantum walk, G(+m) = m
+ℓ=1 G is average uniform mixing if G is.
+P
+Proof The adjacency matrix of G(+m) = m
+ℓ=1 G is given by
+A = Im ⊗ G + Km ⊗ Jn ,
+
+(18)
+
+where Im is the m × m identity matrix, Km is a complete graph on m vertices, and Jn is
+the n × n all-one matrix. Since G is a circulant, both summands share the same set of the
+following orthonormal eigenvectors
+n
+o
+(m)
+(n)
+|Fj,k i = |Fj i ⊗ |Fk i : 0 ≤ j ≤ m − 1, 0 ≤ k ≤ n − 1 ,
+(19)
+(m)
+
+(n)
+
+where |Fj i denotes the j-th column of the m × m Fourier matrix, and similary for |Fk i.
+Let λk (G), for 0 ≤ k ≤ n−1, be the eigenvalues of G in descending order. The corresponding
+eigenvalues of G(+m) are given by
+
+ λ0 (G) + (m − 1)n if j = k = 0
+λj,k =
+λ (G) − n
+if j 6= 0 and k = 0
+(20)
+ 0
+λk (G)
+if j, k 6= 0
+P
+Pn−1
+√
+If |ψ(0)i = |0i ⊗ |0i then |ψ(0)i = 1/ mn m−1
+j=0
+k=0 |Fj,k i. Thus,
+m n−1
+
+1 X X −itλj,k
+|ψ(t)i = √
+|Fj,k i.
+e
+mn
+
+(21)
+
+j=0 k=0
+
+Thus, for x ∈ Zm and y ∈ Zn , we have
+m n−1
+
+1 X X −itλj,k
+exp
+e
+ψx,y (t) = hx, y|ψ(t)i =
+mn
+j=0 k=0
+
+7
+
+
+
+2πijx
+m
+
+
+
+exp
+
+
+
+2πiky
+n
+
+
+
+.
+
+(22)
+
+Note that the three types of eigenvalues of G(+m) are mutually distinct, since
+λ0 (G) − n < λk (G) < λ0 (G) + (m − 1)n.
+
+(23)
+
+Therefore, we have
+1
+1
+px,y −
+≤
+mn
+(mn)2
+
+
+
+m−1
+2
+
+
+
+
+
+µ(G)
+1+n
+2
+
+
+
+=O
+
+
+
+µ2 (G)
+mn
+
+
+
+,
+
+(24)
+
+since m is a constant.
+The above theorem also explains why the complete graph KN is not uniform mixing, since
+KN can be viewed as a homogeneous m-fold join of KN/m , for some constant m that divides
+N . The theorem also implies the following claim about the multipartite complete graphs.
+(m)
+
+Corollary 10 The continuous-time quantum walk on the complete multipartite graph Kn
+is not average uniform mixing if m ≥ 2 is a constant.
+
+Proof Since a continuous-time quantum walk is not average uniform mixing on the empty
+(m)
+graph K n and Kn = K n + . . . + K n , we have our claim.
+
+5
+
+Mixing on Cartesian Bunkbeds
+
+In this section, we consider a circulant bunkbed structure obtained by the Cartesian product
+P2 ⊕ C, where C is a circulant graph.
+Lemma 11 Let G be a circulant of degree d and order n, whose eigenvalues are d = µ0 >
+µ1 ≥ . . . ≥ λn−1 . Then, the eigenvalues of P2 ⊕ G are λ±
+j = µj ± 1 with the following
+(orthonormal) set of eigenvectors
+|zj± i = |±i ⊗ |zj i,
+
+(25)
+
+p
+where |±i = √12 (|0i ± |1i) and hx|zj i = (1/ |G|)ω jx , for j, x ∈ [n], with ω = e2πi/n .
+
+Proof Note that the adjacency matrix of P2 ⊕ G is given by P2 ⊗ In + I2 ⊗ AG . Since P2
+is a circulant, both P2 ⊗ In and I2 ⊗ AG are simultaneously diagonalizable by |zj± i. This
+implies the stated claim on the spectra of P2 ⊕ G.
+
+Theorem 12 Let G be a circulant of order n. In the continuous-time quantum walk, P2 ⊕G
+is average uniform mixing if G is.
+Proof Assume that |ψ(0)i = |0i ⊗ |0i. Thus, |ψ(0)i =
+
+P
+
+±
+
+P 1
+√1 |±i ⊗
+√
+j n |zj i, and
+2
+
+1 X −itλ±
+j |±i ⊗ |z i.
+|ψ(t)i = e−itA |ψ(0)i = √
+e
+j
+2n ±,j
+
+8
+
+(26)
+
+R
+lll• RRRR,
+•,
+  ll•RRR ,,,
+RR, •
+•,, •lll
+•, 
+,,
+,
+,,
+,  ,•RR
+
+•
+l
+•,
+R
+l •
+,, RR•lll 
+,R
+
+• RRR lll•
+R•ll
+l
+•l
+
+l•(15RRR
+l
+(4JND(4DlJNlNl  (15( 1515 RpRptz•,%%,
+•
+J ( t
+
+lq•RRR
+lqlqlql hhRhR•,,
+•q
+u
+
+u
+q
+hh
+,,
+uqhuquhqhhhhh
+u
+q
+,
+h
+u
+q
+h
+M
+V
+I
+u
+h
+q
+,
+
+V
+•I
+MIMVMVV•,V
+•
+IIMIM,,VVVV
+
+IMI,MM VVVVV 
+•RRM
+RMRRM llll•
+•l
+
+DN p5z
+ ((4gp4g4DlJpDglpJN•DpN7WRtz7NRW(pt(zRNtW1zN151W55 %%,,,
+%,1DgS
+g
+l ^^^^^
+(
+
+g
+zDD(`R`RN1n•`W,kd%W%`dkz•
+p
+l
+^^^^^
+ZZDS•7Ppl`S
+•%,1
+7PS`7z((P`SzP4Sz`4S4P`kn`7
+kn(7D7knDk1,z%
+%%,,11DD
+k
+z
+D(7nkD(7knn4SP4SPz((SP(z7SP7DzSD1,1D,1,%%
+,Wkdz`d%zk`,z5RNn1k`1Rnk`
+
+D
+z
+^^^^^
+`lp•gZZgS•
+^^^^^
+(`7`D`z`4 `l(
+•, %W•W5N1WR
+,,%% 55N1W1zRt(N(zWRptN7•zpNlgJDNlgpJDplJD4gp4g4(( 
+,%pRtz zptzpt5p511((  NNJDNJD4(
+• RRR551(  lll•
+R•ll
+
+p•UUUUU0
+ppp
+•0
+00
+•p
+0
+
+•
+U
+•00 pppp• UUUU•0 
+0•0p
+00
+ 0U
+p• 00
+0 • UUpU•U•UpUppp •
+UU•0 
+•0 ppp
+0•0p
+00
+0
+0
+ •UU
+•
+p
+UUU pppp 0•
+0
+U
+•
+•
+•0 pppp UUU•0 
+0•0p
+00
+0
+  0•UU
+•
+p
+UUUpppp 0•
+0
+•
+•0
+
+00
+
+0U
+• UUUU pppp•
+•p
+
+Figure 3: Examples of circulant bunkbeds. (a) The double bunkbed: P2 ⊕ C8 . (b) The Join
+bunkbed: C8 + C8 . (c) The Cone: K1 + C8 . (d) The Cartesian bunkbed: P4 ⊕ C8 .
+This implies that
+hb, x|ψ(t)i =
+=
+=
+=
+
+1 X −it(λj ±1)
+√
+e
+hb|±ihx|zj i
+2n ±,j
+1 X −it(λj ±1)
+e
+(±1)b ω jx
+2n
+±,j
+X
+X
+1
+e−it(±1) (±1)b
+e−itλj ω jx
+n
+±
+j
+1 X −itλj jx
+e
+ω [(1 − b) cos(t) + b(−i sin(t))]
+n
+
+(27)
+(28)
+(29)
+(30)
+
+j
+
+Let pb,x (t) = |hb, x|ψ(t)i|2 . Thus,
+pb,x (t) =
+
+1 X
+[(1 − b) cos2 (t) + b sin2 (t)]e−it(λj −λk ) ω (j−k)x .
+n2
+
+(31)
+
+j,k
+
+Note that p0,x (t) + p1,x (t) = px (t), where px (t) is the (instantaneous) probability on vertex
+x at time t of a quantum walk on G alone. Then,
+Z
+1
+1 X (j−k)x
+1 T
+cos2 (t)e−it(λj −λk ) dt = px ,
+ω
+lim
+p0,x = 2
+(32)
+T →∞ T 0
+n
+2
+j,k
+
+RT
+since limT →∞ T1 0 cos2 (t)e−it∆ dt = 12 [[∆ = 0]]. Similarly, we obtain p1,x = 12 px . This
+yields the claim.
+Corollary 13 The continuous-time quantum walk on a Cartesian bunkbed P2 ⊕ G, where
+G is a d-degree circulant of the form h1, n/k1 , . . . , n/kd−1 i, where d and k1 , . . . , kd−1 are
+constants, is average uniform mixing.
+
+9
+
+Circulant Cylinders To extend our Cartesian bunkbeds over paths with more than two
+vertices, we provide, for completeness, an analysis of the quantum walk on paths. This
+problem is well-known in the physics literature, but is normally done on the infinite paths
+using different techniques [10]. The eigenvalues λj and eigenvectors |Qj i of the path Pm
+(see [17]), for j = 1, . . . , m, are defined as
+
+
+jπ
+(33)
+λj = 2 cos
+m+1
+
+
+jxπ
+1
+hx|Qj i = p
+sin
+, x = 1, . . . , m
+(34)
+m+1
+(m + 1)/2
+
+If the quantum walk starts with the initial state |ψ(0)i = |1i, where the basis states are
+|1i, . . . , |mi, then Thus, we have
+|ψ(t)i =
+
+m
+X
+j=1
+
+e−itλj
+p
+
+(m + 1)/2
+
+sin
+
+
+
+jπ
+m+1
+
+
+
+|Qj i.
+
+(35)
+
+Since Pm has m distinct eigenvalues, the limiting probabilities are given by
+m
+
+X
+4
+sin2
+px =
+(m + 1)2
+j=1
+
+Note that, since
+
+Rπ
+
+
+
+jπ
+m+1
+
+
+
+sin
+
+2
+
+
+
+jxπ
+m+1
+
+
+
+.
+
+(36)
+
+2
+0 sin (t)dt = π/2, we get an upper bound of
+
+px ≤
+≤
+≤
+
+
+
+m
+X
+4
+jπ
+2
+sin
+(m + 1)2
+m+1
+j=1
+Z π
+
+4
+π
+2
+sin (t) dt +
+(m + 1)π
+(m + 1)
+0
+ 
+1
+4
+2
++
+=O
+,
+2
+(m + 1) (m + 1)
+m
+
+(37)
+(38)
+(39)
+
+which implies that the quantum walk on Pm is average uniform mixing.
+The eigenvalues of a circulant cylinder T = Pm ⊕ G, where G is a circulant of order n,
+are given by
+λj,k = µj + νk ,
+where 1 ≤ j ≤ m, 0 ≤ k ≤ n − 1,
+(40)
+where µj = 2 cos(jπ/(m + 1)) and νk are the eigenvalues of Pm and G, respectively. Since
+the adjacency matrix of T is defined as Pm ⊗ In + Im ⊗ G, the eigenvectors of T are
+|Tj,k i = |Qj i ⊗ |Fk i,
+
+where 1 ≤ j ≤ m, 0 ≤ k ≤ n − 1,
+
+(41)
+
+where |Qj i and q
+|Fj i are the
+of Pm and the circulant G, respectively.
+Recall
+
+ eigenvectors
+
+
+
+that hx|Qj i =
+0 ≤ k, y ≤ n − 1.
+
+2
+m+1 sin
+
+jxπ
+m+1
+
+, for 1 ≤ j, x ≤ m, and hy|Fk i = √1n exp
+
+10
+
+2πiky
+n
+
+, for
+
+If the initial state is |ψ(0)i = |1i ⊗ |0i, we have
+|ψ(0)i =
+
+m
+X
+j=1
+
+n−1
+X
+hFk |0i|Fk i.
+hQj |1i|Qj i ⊗
+
+(42)
+
+k=0
+
+The adjacency matrix of Pm ⊕G is given by A = Pm ⊗In +Im ⊗G, where the two summands
+commute with each other. Thus, e−itA = e−it(Pm ⊗In ) e−it(Im ⊗G) , and
+|ψ(t)i =
+
+m
+X
+j=1
+
+−itµj
+
+hQj |1ie
+
+|Qj i ⊗
+
+n−1
+X
+k=0
+
+hFk |0ie−itνk |Fk i.
+
+(43)
+
+The amplitudes of |ψ(t)i at vertex x on the path Pm and vertex y within the circulant G is
+given by
+hx, y|ψ(t)i =
+
+m
+X
+j=1
+
+e−itµj hx|Qj ihQj |1i
+
+n−1
+X
+k=0
+
+e−itνk hy|Fk ihFk |0i
+
+(44)
+
+Corollary 14 Let G be a Cartesian product Pm ⊕C, where C is a circulant of order n. The
+continuous-time quantum walk on G is uniform mixing if m is constant or n is constant.
+
+6
+
+Conclusions
+
+It was known that a continuous-time quantum walk is uniform average mixing on the cycles
+Cn , but is not uniform average mixing on the complete graphs Kn and on the hypercubes
+Qn . Our goal in this work was to provide a graph-theoretic explanation for this polarized
+phenomena.
+First, we extend the phenomenon of the cycles, by showing that uniform mixing is
+achieved on circulants with bounded eigenvalue multiplicity. We also gave other explicit examples of circulants meeting this criteria. Second, we consider two graph-theoretic bunkbed
+structures over circulants in order to study the non-uniform mixing on Kn and Qn . Our
+analysis on the join bunkbed sheds some light on the non-uniform mixing of the complete
+multipartite graphs (which includes Kn ). Our analysis of the Cartesian bunkbed of circulants highlights a difference between the Zn -circulants and the (Z2 )n -circulants (see [8]).
+We leave a similar investigation of general group-theoretic circulants and Cayley graphs for
+future work (see [11]).
+
+References
+[1] Dorit Aharonov, Andris Ambainis, Julia Kempe, and Umesh Vazirani, ”Quantum
+Walks on Graphs,” Proc. 33rd ACM Annual Symposium on Theory of Computing
+(2001), 50-59.
+[2] William Adamczak, Kevin Andrew, Peter Hernberg, and Christino Tamon, ”A note
+on graphs resistant to quantum mixing,” quant-ph/0308073.
+11
+
+[3] Amir Ahmadi, Ryan Belk, Christino Tamon, and Carolyn Wendler, ”On Mixing of
+Continuous-Time Quantum Walks on Some Circulant Graphs,” Quantum Information
+and Computation 3 (2003), 611-618.
+[4] David Aldous and James Allen Fill, Reversible Markov Chains and Random Walks on
+Graphs, book draft at http://stat-www.berkeley.edu/users/aldous/RWG/book.html.
+[5] Norman Biggs, Algebraic Graph Theory, 2nd edition, Cambridge University Press,
+1993.
+[6] Béla Bollobás, Modern Graph Theory, Springer, 1998.
+[7] Andrew M. Childs, Richard Cleve, Enrico Deotto, Edward Farhi, Sam Gutmann, and
+Daniel A. Spielman, ”Exponential algorithmic speedup by a quantum walk,” Proc.
+35th Annual Symposium on the Theory of Computing (2003), 59-68.
+[8] Persi Diaconis, ”Patterned Matrices,” in Matrix Theory and Applications, Proceedings
+of Symposia in Applied Mathematics 40, American Mathematical Society (1990), 3758.
+[9] Wolfgang Dür, Robert Raussendorf, Vivien M. Kendon, Hans J. Briegel, ”Quantum
+walks in optical lattices,” Physical Review A 66 (2002), 052319.
+[10] Richard P. Feynman, Robert B. Leighton, Matthew L. Sands, The Feynman Lectures
+on Physics, volume III, Addison-Wesley, 1965.
+[11] Heath Gerhardt and John Watrous, ”Continuous-time quantum walks on the symmetric group,” in Proc. 7th Int. Workshop Randomization and Approximation in
+Computer Science, Lecture Notes in Computer Science 2764, Springer (2003), 290301.
+[12] Vivien M. Kendon, ”Quantum walks on general graphs,” quant-ph/0306140.
+[13] László Lovász, ”Random Walks on Graphs: A Survey,” in Combinatorics: Paul Erdös
+is Eighty, volume 2, Bolyai Society of Mathematical Studies (1993), 1-46.
+[14] Cristopher Moore and Alexander Russell, ”Quantum Walks on the Hypercube,” in
+Proc. 6th Int. Workshop on Randomization and Approximation in Computer Science,
+Lecture Notes in Computer Science 2483, Springer (2002), 164-178.
+[15] Michael A. Nielsen and Isaac L. Chuang, Quantum Computation and Quantum Information, Cambridge University Press, 2000.
+[16] Allen J. Schwenk and Robin J. Wilson, ”Eigenvalues of Graphs,” in Selected Topics
+in Graph Theory, Lowell W. Beineke and Robin J. Wilson (eds.), Academic Press
+(1978), 307-336.
+[17] Frank Spitzer, Principles of Random Walk, 2nd edition, Springer, 1976.
+
+12
+
+

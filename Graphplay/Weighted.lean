@@ -72,9 +72,9 @@ image of the real eigenvalues — packaged form of Mathlib's
 `Matrix.IsHermitian.spectrum_real_eq_range_eigenvalues`. -/
 theorem spectrum_subset_real (G : WeightedGraph V) :
     spectrum ℂ G.adj = (fun (r : ℝ) => (r : ℂ)) '' Set.range G.herm.eigenvalues := by
-  -- Follows from `IsHermitian.spectrum_eq_image_range`, modulo a coercion;
-  -- requires the Mathlib lemma to be in scope.
-  sorry
+  -- Follows from `IsHermitian.spectrum_eq_image_range`, modulo a coercion.
+  rw [G.herm.spectrum_eq_image_range]
+  rfl
 
 /-- Weighted **row sum** at vertex `v`: the total signed weight of edges out
 of `v`.  For an ordinary (0/1) graph this is the usual vertex degree. -/
@@ -101,11 +101,38 @@ theorem isRegular_iff_mulVec_one (G : WeightedGraph V) (d : ℂ) :
 theorem isRegular_eigenvalue_real (G : WeightedGraph V) (d : ℂ)
     (h : G.isRegular d) (hV : Nonempty V) : d.im = 0 := by
   -- `d = degree v` for any `v`; the column sum of a Hermitian matrix is the
-  -- complex conjugate of the row sum, so the sum-of-row-and-column-sums is
-  -- self-conjugate and equals `2 d` real-coeffwise.  Hermitian-with-zero-diag
-  -- forces the row sum to be self-conjugate.  Proof left as `sorry` for
-  -- brevity.
-  sorry
+  -- complex conjugate of the row sum.  Summing row sums and column sums over all
+  -- vertices gives `card • d` on one side and `card • conj d` on the other
+  -- (after a `Finset.sum_comm`).  Since `V` is nonempty, `d = conj d`, so `d`
+  -- is real.
+  have hcard : 0 < Fintype.card V := Fintype.card_pos
+  -- Total weight as a sum of row sums equals `card • d`.
+  have hrow : ∑ v, ∑ w, G.adj v w = (Fintype.card V : ℂ) * d := by
+    have hd : ∀ v, ∑ w, G.adj v w = d := fun v => h v
+    simp [hd, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  -- Each column sum equals the conjugate of `d`, by Hermiticity and regularity.
+  have hcolconj : ∀ w, ∑ v, G.adj v w = (starRingEnd ℂ) d := by
+    intro w
+    have hsum : ∑ v, G.adj w v = d := h w
+    have hpt : ∀ v, G.adj v w = (starRingEnd ℂ) (G.adj w v) := by
+      intro v
+      rw [starRingEnd_apply]
+      exact (G.herm.apply v w).symm
+    calc ∑ v, G.adj v w = ∑ v, (starRingEnd ℂ) (G.adj w v) :=
+            Finset.sum_congr rfl (fun v _ => hpt v)
+      _ = (starRingEnd ℂ) (∑ v, G.adj w v) := (map_sum (starRingEnd ℂ) _ _).symm
+      _ = (starRingEnd ℂ) d := by rw [hsum]
+  -- Summing column sums over all `w` gives `card • conj d`.
+  have hcol : ∑ v, ∑ w, G.adj v w = (Fintype.card V : ℂ) * (starRingEnd ℂ) d := by
+    rw [Finset.sum_comm]
+    simp [hcolconj, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  -- Therefore `card • d = card • conj d`.
+  have hconj : (Fintype.card V : ℂ) * d = (Fintype.card V : ℂ) * (starRingEnd ℂ) d := by
+    rw [← hrow, hcol]
+  -- Conclude `d = conj d`, hence `d.im = 0`.
+  have hcne : (Fintype.card V : ℂ) ≠ 0 := by exact_mod_cast hcard.ne'
+  have hdeq : d = (starRingEnd ℂ) d := mul_left_cancel₀ hcne hconj
+  exact Complex.conj_eq_iff_im.mp hdeq.symm
 
 /-! ### Properties of the continuous-time quantum walk. -/
 
@@ -120,14 +147,23 @@ theorem evolve_neg (G : WeightedGraph V) (t : ℝ) :
     G.evolve (-t) = (G.evolve t)⁻¹ := by
   unfold evolve
   -- `-(-(I * t)) = (I * t)` and `Matrix.exp_neg` from Mathlib.
-  sorry
+  rw [← Matrix.exp_neg]
+  congr 1
+  push_cast
+  module
 
 /-- The semigroup law: `U(s + t) = U(s) · U(t)`. -/
 theorem evolve_add (G : WeightedGraph V) (s t : ℝ) :
     G.evolve (s + t) = G.evolve s * G.evolve t := by
   -- Two scalar multiples of the same matrix commute; combine with
   -- `Matrix.exp_add_of_commute`.
-  sorry
+  unfold evolve
+  have hcomm : Commute (-(Complex.I * (s : ℂ)) • G.adj) (-(Complex.I * (t : ℂ)) • G.adj) :=
+    ((Commute.refl G.adj).smul_left _).smul_right _
+  rw [← Matrix.exp_add_of_commute _ _ hcomm]
+  congr 1
+  push_cast
+  module
 
 /-- Each `evolve t` is the conjugate-transpose of `evolve (-t)`.  Together
 with `evolve_neg` this is unitarity. -/
@@ -135,7 +171,16 @@ theorem evolve_conjTranspose (G : WeightedGraph V) (t : ℝ) :
     (G.evolve t)ᴴ = G.evolve (-t) := by
   unfold evolve
   -- `(-iA)ᴴ = i Aᴴ = i A` for Hermitian A; combine with `Matrix.exp_conjTranspose`.
-  sorry
+  rw [← Matrix.exp_conjTranspose]
+  congr 1
+  rw [Matrix.conjTranspose_smul, G.herm.eq]
+  congr 1
+  have : (starRingEnd ℂ) (-(Complex.I * (t : ℂ))) = -(Complex.I * ((-t : ℝ) : ℂ)) := by
+    push_cast
+    rw [map_neg, map_mul, Complex.conj_I, Complex.conj_ofReal]
+    ring
+  simp only [starRingEnd_apply] at this ⊢
+  rw [this]
 
 /-- **Unitarity** of the evolution operator: `U(t)ᴴ * U(t) = 1`. -/
 theorem evolve_unitary (G : WeightedGraph V) (t : ℝ) :
@@ -181,10 +226,10 @@ noncomputable def toWeighted
     unfold Matrix.IsHermitian
     ext i j
     by_cases h : G.Adj j i <;>
-      simp [_root_.SimpleGraph.adjMatrix_apply, _root_.SimpleGraph.adj_comm, h]
+      simp [_root_.SimpleGraph.adjMatrix_apply, _root_.SimpleGraph.adj_comm]
   loopless := by
     intro v
-    simp [_root_.SimpleGraph.adjMatrix_apply, G.loopless]
+    simp [_root_.SimpleGraph.adjMatrix_apply]
 
 /-- The bridge sends an unweighted regular graph to a weighted regular graph
 with the same (real, hence complex-coerced) degree. -/
@@ -194,7 +239,11 @@ theorem toWeighted_isRegular (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
   intro v
   unfold Graphplay.WeightedGraph.degree toWeighted
   -- `∑ w, adjMatrix ℂ v w = (G.neighborFinset v).card`.
-  sorry
+  have : ∑ w, (G.adjMatrix ℂ) v w = ∑ u ∈ G.neighborFinset v, (1 : ℂ) := by
+    rw [← G.adjMatrix_mulVec_apply v (fun _ => (1 : ℂ))]
+    simp [Matrix.mulVec, dotProduct]
+  rw [this]
+  simp [hreg v]
 
 end SimpleGraph
 

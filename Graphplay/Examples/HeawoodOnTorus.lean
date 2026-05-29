@@ -91,11 +91,11 @@ def ρ_perm : Equiv.Perm D where
   -- Inverse via 5-fold iteration (length-6 cycles): a clean computable inverse.
   invFun := fun x => ρ_fun (ρ_fun (ρ_fun (ρ_fun (ρ_fun x))))
   left_inv := by
-    -- Deferred: requires showing `ρ_fun^6 = id` on every dart, which is a
-    -- finite case analysis over 42 darts.
-    intro x; sorry
+    -- ρ_fun has order 6 on each vertex's 6 darts; applying it 6 times = id.
+    -- Finite case analysis over the 42 darts.
+    decide
   right_inv := by
-    intro x; sorry
+    decide
 
 /-- The Heawood combinatorial map: `K_7` on the torus. -/
 def heawoodMap : CombinatorialMap V D where

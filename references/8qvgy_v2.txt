@@ -1,0 +1,1031 @@
+Traces of the Other – Are DMT Entities Real?
+DMT Phenomenology in the Framework of Conscious Realism
+Andrew R. Gallimore1,2† Niﬀe Hermansson3
+1.
+2.
+3.
+4.
+†
+
+Donald D. Hoﬀman3,4
+
+Okinawa Institute of Science and Technology (OIST), Okinawa, Japan.
+Noonautics.
+The Trace Institute.
+University of California, Irvine.
+
+andrew.gallimore@oist.jp
+
+Abstract.
+Encounters with apparently autonomous and intelligent non-human entities are a striking and recurrent feature of high-dose N,N-dimethyltryptamine (DMT) experiences.
+Such encounters are typically interpreted as complex hallucinations derived from internally generated brain activity, although many features of the DMT state remain a
+challenge to explain within the standard neuroscientiﬁc paradigm. Here, we explore an
+alternative hypothesis grounded in the conscious realism framework, in which reality
+consists of interacting conscious agents and perception functions as a species-speciﬁc
+interface rather than a veridical representation of an objective world. Crucially, the
+space of conscious agents we can normally perceive and interact with represents only a
+thin slice of the agent network that comprises the totality of reality and is partly determined by representational limits set by the qualia kernel that governs transitions between experiential states.
+We propose that DMT induces a profound perturbation of our perceptual interface, expanding the accessible region of experience space and allowing consciousness to reach
+regions with entirely diﬀerent dynamical regimes under the qualia kernel. Under such
+conditions, normally imperceptible agents may inﬂuence experience, leaving perceptible
+“traces” in its dynamics that can be rendered as stable, coherent, and meaningful
+structure and experienced as the abundantly populated, inordinately complex alternate
+worlds typical of the DMT state. This framework enables us to distinguish between internally generated hallucinations and experiences exhibiting structured, stable, and
+causally eﬃcacious dynamics consistent with interactions with normally imperceptible
+conscious agents.Rather than asserting the reality of DMT entities, we draw on the
+phenomenology of the DMT state, models of psychedelic brain dynamics, and the formalism of conscious agent theory to derive testable predictions and propose experimental paradigms to assess whether DMT experiences can be constrained by external
+variables or exhibit non-trivial intersubjective correlations. The outcome of such experiments may have profound implications for our understanding of perception, consciousness, and the structure of reality.
+
+1
+
+Introduction.
+
+For most in the modern West, the idea that we live in a mechanistic and material world
+built from physical components is accepted as an obvious and undeniable fact. Although
+materialist ontologies can be traced back to ancient atomism (e.g., Democritus, Epicurus,
+and Lucretius), it was in early modern Europe that this paradigm became ﬁrmly established, as spiritual and mystical descriptions of nature were progressively excluded from
+scientiﬁc discussion and matter planted ﬁrmly at the ground of reality. By the nineteenth
+and twentieth centuries, materialism (or physicalism) had come to dominate Western
+scientiﬁc thought, with physical matter and energy regarded as primary and consciousness typically treated as an emergent phenomenon, in principle reducible to underlying
+physical, neural, or functional processes [1-3].
+But this view certainly isn’t universal across all human cultures: If you look to indigenous animistic and shamanistic cultures, Hindu and Buddhist cosmologies, Daoism, and
+even mystical sects within Islam, Judaism, and Christianity, you won’t ﬁnd an inert,
+rule-governed super-galactic machine but a living, intentional cosmos permeated by gods,
+spirits, and other discarnate non-human intelligences [4-7]. Naturally, such magical and
+mystical beliefs have been roundly rejected by Western materialism, as visions, voices,
+and other encounters with normally unseen discarnate beings are summarily dismissed
+as mere hallucination and the symptoms of a mind gone awry.
+Yet despite more than two centuries of commitment to this materialist model of reality,
+the central problem it introduced remains unresolved. While the neuroscientiﬁc literature
+is ﬁlled with systematic correlations between conscious experience and brain activity, it
+has failed to explain how or why subjective conscious experience should arise from objective physical processes [8, 9]. This diﬃculty, now widely known as the Hard Problem
+of consciousness, suggests that the assumption of matter’s ontological primacy may itself
+have been a critical misstep in the history of science.
+In response, a growing number of contemporary theories reverse this foundational
+assumption by treating consciousness, rather than matter, as fundamental. Giulio Tononi’s Integrated Information Theory (IIT), for example, proposes that consciousness is
+identical to a system’s intrinsic causal structure and, as such, is not emergent from
+physical substrates so much as realized wherever a system’s integrated information is
+non-zero [10, 11]. More radically, the theory of conscious realism, the framework discussed in this paper, abandons the assumption of mind-independent physical objects
+altogether, proposing instead that reality is composed entirely of interacting conscious
+agents [12] ]. That is, the world consists of (and only of) conscious agents and it is this
+network of conscious agents that gives rise to the experience of space, time, and the
+objects within it. The question then is not “How does consciousness emerge from physical
+matter?” but, rather, “How does the experience of the physical world and its laws, as we
+humans know them, arise from the interaction of conscious agents?” In this model, the
+
+world we perceive is not fundamental, but more like a user interface that presents a
+simpliﬁed, species-speciﬁc model of the underlying conscious agent network [13, 14]. Our
+perceptions, in this view, are akin to icons on a desktop – they carry information useful
+for survival, but they do not faithfully depict the true causal structure of reality.
+This interface theory of perception is bolstered by evolutionary models showing that
+natural selection tends to favour ﬁtness over truth. Previous work in evolutionary game
+theory has demonstrated that perceptual systems tuned purely to objective truth are
+routinely outcompeted by those tuned to ﬁtness payoﬀs [14], and theoretical models have
+shown that, as the complexity of the environment grows, the probability that veridical
+perceptions are favoured by evolution approaches zero [15, 16]. In short, our perceptions
+evolved to guide adaptive behaviours, not to reveal truth. As such, it’s entirely plausible
+that what we take for the “physical world” is merely a species-speciﬁc adaptive representation. Space-time itself may be just one data format or “headset” for conscious agents
+– one that humans happen to use [17]. Indeed, many physicists are now abandoning the
+assumption that space-time is fundamental. For example, candidate approaches to quantum gravity suggest that space-time breaks down as a valid description of reality at very
+small scales or high energies, while novel frameworks in fundamental physics increasingly
+lean towards the possibility that space-time is emergent [18, 19].
+If we accept, as a working hypothesis, that consciousness (in the form of interacting
+conscious agents) is fundamental and that the world we perceive is a mere interface, an
+obvious question arises: Can we see beyond the interface? Our ordinary perceptions only
+show us a tiny, ﬁltered slice of reality, populated by those agents that were relevant to
+our evolutionary ancestors. Conscious realism predicts that there could exist countless
+other conscious agents – potentially of arbitrarily high complexity or completely unfamiliar form – that we normally do not perceive at all [20]. We might expect that these
+“hidden” agents do not appear as ordinary objects (or living creatures) in our 3D spacetime world because their properties cannot be represented within the constraints of our
+human sensory interface. The central hypothesis explored in this paper is that certain
+alterations of consciousness represent perturbations of the interface that enable it to
+represent structures and dynamics that are informative of the conscious agent network
+but normally lie beyond its representational reach. In particular, we propose that the
+powerful naturally-occurring psychedelic N,N-dimethyltryptamine (DMT) may transiently transform the human perceptual interface in such a way that normally “invisible”
+conscious agents become perceivable.
+This hypothesis is motivated by striking phenomenological reports from DMT users:
+Unlike other classic psychedelics, such as LSD and psilocybin, DMT, at suﬃciently high
+doses, induces a complete transformation of the subjective world: Users commonly describe being transported to what appears to be a fully autonomous alternate reality
+populated by a panoply of apparently extremely intelligent, non-human entities [21-25].
+
+The standard view in neuroscience is that these experiences are merely particularly elaborate hallucinations. However, as we will discuss, the DMT state possesses a number of
+characteristics that challenge this assumption. As such, we present this alternative hypothesis as consistent with a consciousness-ﬁrst ontology, and articulate clear experimental predictions that could falsify (or lend credence to) the notion that some DMTinduced encounters should be treated as perceptions of “other” consciousnesses.
+
+2
+
+The Conscious Realism Model.
+
+Within the conscious realism formalism [17, 20, 26], a conscious agent (CA) has just four
+assumed properties: qualia, choice, action, and a sequencing of qualia. The possible experiences – qualia – of a CA are represented by a measurable space, (X, 𝒳) (a set X
+together with a sigma-algebra on the set. i.e. a collection of subsets of X satisfying certain
+closure properties) since, at a minimum, we must speak of the probability that a CA has
+some experience and a measurable space is a minimal formalism that allows this. Likewise, the possible actions of a CA and the possible states of the world the CA interacts
+with (including itself) are represented by measurable spaces, (G, 𝒢) and (W, 𝒲), respectively.
+A key intuition is that, within this formalism of conscious agent theory, consciousness
+involves three processes: perception, decision, and action. In the process of perception, a
+CA interacts with the world and, as a consequence, has conscious experiences. In the
+process of decision, a CA chooses what actions to take based on the conscious experiences
+it has. In the process of action, the CA interacts with the world in light of that decision
+and aﬀects the state of the world (the network of CAs). These inﬂuences are modelled
+as Markov kernels: If we assume a ﬁnite countable set of states, the perception kernel,
+P, is a (Markov) transition matrix that describes the probability that, for all x ∈ X, a
+CA transitions to qualia state, x, given a particular state of the world, w. The decision
+kernel, D, similarly describes the probability that a CA chooses action, g, given a particular qualia state, x. And the action kernel, A, describes the probability that the world
+(the network of CAs) transitions to state, w, given the action of the CA, g.
+So, overall, we can represent a CA by a 7-tuple:
+CA = 1(X, 𝒳), (G, 𝒢), (W, 𝒲), P, D, A, N5
+where (X, 𝒳) is a measurable space of qualia, (G, 𝒢) is a measurable space of actions,
+(W, 𝒲) is a measurable space constituting the set of states of the collection of the network of all CAs, N is an integer that counts the sequence of experiences, and
+P: W × 𝒳 → [0,1]
+D: X × 𝒢 → [0,1]
+A: G × 𝒲 → [0,1]
+
+are Markov kernels.
+For a conscious agent (CA), we deﬁne the qualia kernel Q as the composition of its
+decision, action, and perception kernels:
+Q = DAP: X × 𝒳 → [0,1].
+Again assuming a ﬁnite set of discrete countable states, Q(e,e’) is simply the probability that, given the current state, e, the next state will be e’. In other words, Q is a
+Markov kernel describing the transition probabilities between experience states. The
+triple (X, 𝒳, Q) (i.e. the measurable space of experiences together with the qualia kernel
+dynamics) thus describes the evolution of the agent’s subjective experience.
+
+A central concept within this model is that of perception between agents. What does
+it mean for one agent to perceive another agent? Let agent A have experience space X! ,
+qualia kernel Q ! = D! A! P! , and perception kernel P! : W → X! . Let agent B be deﬁned
+in the same way, with experience space X" , qualia kernel Q " = D" A" P" , and action kernel
+A" : G" → W. Now, we can ask: What does it mean for A to “perceive” B?
+Agent A does not have direct access to the experience space X" of agent B. Instead,
+any inﬂuence of B on A must be mediated through the world. Speciﬁcally, the experiences of B drive its decisions via D" , which in turn generate actions in G" . These actions
+alter the world via A" , and the resulting world states give rise – through the perception
+kernel P! – to probability distributions over states in X! . Thus, the only channel through
+which A can “perceive” B is:
+
+X" D" → G" A" → W P! → X!
+
+We can use kernel composition to deﬁne the eﬀective channel:
+Φ ∶= P! A" D"
+as the induced Markov kernel from X" to X! . For each x" ∈ X" , Φ(x" ,⋅) is a probability
+measure on X! that gives the conditional distribution of the next experience for A given
+that the current experience for B is x" (i.e. resulting from B’s decision and action dynamics followed by A’s perception). Thus, Φ speciﬁes how states of B probabilistically
+inﬂuence the experiences of A (if at all), rather than deﬁning a deterministic mapping
+between their experience spaces. As such, if A’s perception kernel P! is sensitive to some
+subset of the world states inﬂuenced by B’s actions, then the dynamics of B can inﬂuence
+the dynamics of A.
+
+Formally, this relationship can be captured by the notion of a trace. Let S ⊆ X! denote
+the subset of states in X! that have a nonzero probability of being the next experience
+for A under the induced channel Φ: = P! A" D" . The dynamics on S, together with their
+induced transition structure, deﬁne a trace kernel on S, obtained by restricting attention
+to these states and incorporating transitions through states outside S. (S is a trace induced by Q " and represents the set of states within X! that are possible under the
+inﬂuence – mediated through the channel Φ – of the actions of B). That is, it describes
+the eﬀective evolution of those aspects of B’s dynamics that contribute to the dynamics
+of A’s experience via its perception kernel. This does not imply that A has direct access
+to B’s internal structure or dynamics, nor even that B’s dynamics are identiﬁable or
+representable as such, but simply that A’s experience may exhibit statistical eﬀects that
+are inﬂuenced by B’s behaviour. In short, A perceives B when the actions of B have an
+impact on the updates of A’s experience.
+Crucially, the fact that B performs actions on the world does not in itself imply that
+those actions will inﬂuence the experience of A. P! is itself constrained: it is only responsive to a subset of world states in W, and if there is no overlap between the world states
+inﬂuenced by B’s actions and those to which P! is sensitive, then B has no inﬂuence on
+the dynamics of A’s experience. Although B continues to perform actions on the world,
+none of its eﬀects propagate through P! to inﬂuence A’s experience. As far as A’s experience dynamics are concerned, B plays no role. Or, in short, B is imperceptible to A.
+More generally, since the perception kernel is sensitive only to a subset of possible world
+states, by assumption, no agent has access to the full structure of the underlying agent
+network. Rather, each agent learns or evolves to selectively respond to a restricted range
+of inﬂuences while ﬁltering out the others. In this sense, a conscious agent’s experience
+may be shaped by only a limited subset of the broader network of agents that comprise
+reality.
+Furthermore, even if there is overlap between the world states aﬀected by B’s actions
+and those to which P! is sensitive, the presence of this inﬂuence does not guarantee or
+even imply that A will have any particular type of experience. The possible content of
+A’s interface is speciﬁc to A itself and, although B’s actions on the world might inﬂuence
+A’s experience, the experiences of A and the transitions between them are determined
+entirely by A’s experience space and qualia kernel. We can’t, for example, make the
+claim that just because B is a conscious agent that inﬂuences A’s experiences, that B
+will somehow be represented in A’s interface as some kind of “agent” or indeed as any
+kind of recognisable structure. In fact, in the conscious realism framework, the distinction
+between “agents” and “non-agents” (e.g. inanimate objects) does not correspond to a
+fundamental ontological diﬀerence (since reality consists of and only of conscious agents).
+Rather, it reﬂects diﬀerences in how patterns of inﬂuence from other conscious agents
+are organized within an agent’s experience. Since all aspects of the interface are
+
+generated by the agent’s experience space and qualia kernel, what appears as “agentic”
+corresponds to patterns of dynamics within the interface that give rise to some qualia of
+encountering another agent. There is no single minimal, necessary, condition for this.
+Diﬀerent constellations of patterns can give rise to such qualia: visual form, motion,
+voice, intentionality, resistance, responsiveness, felt presence, informational content, and
+so on. Note that this, necessarily, includes the experience of encountering and interacting
+with another human being or animal, but also completely diﬀerent experiences, such as
+talking to an LLM passing the Turing test, or simply "feeling a presence". And, of course,
+hallucinations (such as the "internally generated" experience of talking with a deceased
+relative) are also represented as agentic dynamics in the interface. By contrast, “nonagentic” dynamics correspond to patterns that are more tightly constrained, lower-dimensional, or more directly coupled to the surrounding experience, and which do not
+exhibit the same degree of apparent independence or internal variability and would include all types of qualia that are not perceived as agents.
+Overall, whether the inﬂuence of another conscious agent gives rise to agentic or nonagentic dynamics depends not only on that agent’s underlying dynamics, but also on the
+structure of the observer’s perception channel, experience space, and qualia kernel. As
+such, the same underlying agent may give rise to agentic dynamics in one observer’s
+experience and non-agentic or even entirely incoherent dynamics in another’s, reﬂecting
+diﬀerences in how the trace of its inﬂuence is organized and stabilized within each observer’s interface. There is never any direct mapping between the structure and dynamics
+of an agent and how its trace is represented in the interface of another agent.
+
+3
+
+Evolution of the Interface.
+
+Within the conscious realism framework and under the ﬁtness-beats-truth theorem
+[14], evolution is understood not as a process that shapes perceptual systems to accurately represent an objective, mind-independent world, but rather as one that tunes
+the dynamics of conscious agents to maximise ﬁtness. In this view, ﬁtness refers to the
+capacity of an agent to survive and reproduce within the network of interacting agents,
+and perceptual experiences are shaped to guide adaptive behaviour rather than to reﬂect underlying reality [16, 27]. The perception and qualia kernels of an agent are thus
+sculpted to encode information that is useful for action, not information that is veridical, while simultaneously limiting the region of the agent’s experience space that is
+typically explored under its dynamics. As a result, an agent’s experiential interface can
+be understood as a species-speciﬁc, ﬁtness-optimised system that both ﬁlters and
+transforms the underlying dynamics of other agents and restricts the range of experiential states that are eﬀectively accessible, thereby shaping a structured domain of experience that supports adaptive interaction with a limited subset of the broader agent
+network.
+
+In Markovian terms, this corresponds to the dynamics being concentrated within a
+subset of the experience space that is commonly visited and exhibits stable, recurrent
+behaviour under the qualia kernel. Under typical conditions, the agent’s experience remains within this region, giving rise to a structured and apparently shared subset of
+experience that may be understood as a Consensus Reality Space (CRS) across similarly
+structured agents. If the experience space is imagined as a vast landscape of possible
+states, the CRS can be viewed as a basin of attraction that both limits which experiences
+are typically reached and shapes which inﬂuences from other agents are able to register
+within the interface.
+Notably, conscious realism suggests that the structure of space-time itself is an emergent property of qualia space dynamics. Recent work by Hoﬀman et al. has conjectured
+that the 3+1-dimensional world we experience is not a fundamental feature of objective
+reality but merely a coordinatization of our interface; the format of experience that
+evolution has landed upon for tracking and interacting with the kinds of conscious agent
+dynamics that mattered for survival [20]. Three spatial dimensions might, for example,
+be just enough to represent the complexity, structure, and dynamical inﬂuences of the
+conscious agents we need to perceive and interact with, without wasting resources on
+unnecessary complexity and dimensionality. Naturally, this dramatically limits the kinds
+of conscious agents that can be perceived and rendered in our interface. The obvious
+question then is, what would it take for a human observer, with a restricted experience
+space and qualia kernel dynamics, to perceive conscious agent dynamics that are not
+normally represented within our interface?
+An important aspect of the conscious realism model is that it allows us to meaningfully characterize and compare the structure and dynamics of conscious agents. Agents
+may diﬀer not only in the number of experiential states they can occupy, but also in the
+pattern of adjacencies and dependencies among those states determined by the qualia
+kernel. Some agents may have relatively sparse and locally organized adjacency structures, so that changes in experience unfold through limited, sequential transitions. Others may be deﬁned by much denser or more globally constrained adjacency relations, in
+which many experiential states are mutually adjacent and transitions depend on relations
+across large portions of the state space at once, rather than on a small number of local
+features. Crucially, there is no upper bound on the size of the state space of a Markov
+process, and even for a ﬁxed ﬁnite state space there are an uncountably inﬁnite number
+of distinct transition kernels and, as such, an inﬁnite variety of possible distinct conscious
+agents. In fact, for a conscious agent with an experience space consisting of n distinct
+states, the set of all possible Markovian transition structures on those states can be
+represented as an n(n − 1)-dimensional geometric object known as the Markov polytope
+M# [28]. Each point in this polytope corresponds to a distinct Markov kernel, specifying
+a complete set of probabilistic transition rules between experiential states. Even for
+modest values of n, the space of possible transition structures is already vast (even for
+
+an experience space with just ten states, the Markov polytope is a 90-dimensional object
+with ten billion vertices, with each point within the polytope corresponding to a fundamentally diﬀerent way in which experience could evolve over time). In this sense, the
+Markov polytope captures an astronomically rich family of possible experiential dynamics, emphasizing that the framework permits an enormous diversity of conscious agents
+even before any additional structure or constraints are imposed.
+As such, reality may consist of a practically inﬁnite number of conscious agents exhibiting an incomprehensibly vast variety of dynamical structures. The overwhelming
+majority of these would be entirely imperceptible to us, not because of spatial separation
+or concealment, but because we normally occupy a region of the broader experience
+space landscape with associated qualia and perception kernel structures that have been
+sculpted to perceive and represent traces of a thin slice of the conscious agent network.
+Most conscious agents perform actions on the world that do not give rise to states to
+which our perception channel is sensitive. And even when such inﬂuence is present, it
+need not give rise to coherent or intelligible patterns within human experience. If the
+dynamics induced by such agents are not well supported by the structure of our experience space and qualia kernel (for example, by requiring richer dependencies, higherdimensional relations, or alternative transition structure than our interface can support),
+then their inﬂuence may fail to appear as stable or interpretable patterns, and may
+instead be ﬁltered out, transformed, or rendered as noise or other non-agentic dynamics.
+In this sense, there likely exist a vast number of conscious agents whose inﬂuence either
+does not register in our experience at all, or whose actions induce dynamics within our
+experience space that exceed the range of patterns that our interface can sustain as
+coherent structure. Importantly, however, this should not be understood as implying
+that there exists a more complete or “truer” form of experience prior to this ﬁltering:
+the world state itself is not directly accessible, and there is no canonical or “correct” way
+of representing it. Rather, the perceptual interface both constrains and constructs experience, selectively highlighting, organizing, and in some cases enriching aspects of the
+underlying dynamics of the conscious agent network in forms suited to the agent.
+However, there is no reason to assume that the perceptual and dynamical constraints
+imposed by our qualia and perception kernels within the CRS should apply outside of
+it. Whereas the applied qualia and perception kernels shaped by evolutionary pressures
+determine the range and types of conscious agents we can perceive within the CRS,
+absent such pressures within the broader experience space the range of perceivable agents
+might be entirely diﬀerent and may give rise to patterns of inﬂuence that do not simply
+extend those found in consensus reality, but instead reﬂect entirely diﬀerent regimes of
+dynamical structure. As such, perceiving normally imperceptible conscious agents might
+be as simple as applying a robust perturbation of our experience space to reach out of
+the CRS and open up states and dynamics such that a normally imperceptible agent’s
+
+inﬂuence on our experience space can be rendered as stable, coherent, and meaningful
+structure that would normally be beyond our representational reach.
+To use an analogy: If you open a JPEG ﬁle on your computer using a photo app, you
+will be presented with an image that immediately makes sense. If you open the same ﬁle
+using a word processor app, you’re likely to be greeted by an entirely incomprehensible
+mess of letters, numbers, and other exotic symbols. Both apps are using the same data
+encoded in the ﬁle but how they represent this data is entirely diﬀerent. The photo app
+doesn’t generate a more accurate or true representation of the ﬁle data, but it does
+render the data in a form that is obviously more meaningful to a human observer. In an
+analogous manner, while we can never have access to the internal dynamics of another
+agent, the ability of our interface to represent the “data” received via our perception
+channel in a meaningful form is determined by the structure of our experience space,
+qualia kernel dynamics, and our perception kernel. For example, a data structure that
+could usefully be represented as a 5-dimensional object cannot be rendered as such in
+the human interface and might be ignored or treated as noise. In order to form a coherent
+and meaningful representation of such data, the human mind might need to enter an
+extraordinarily unusual state in which, for example, its standard 3+1-dimensional perceptual interface is replaced by a higher-dimensional or non-Euclidean format. During
+such an altered state, the forms and content comprising the person’s experience would
+radically transform, reﬂecting the structure of the previously hidden agent’s inﬂuence on
+the experience space of the observer.
+
+4
+
+Traces of the Other.
+
+There are many examples of systems in which a suﬃciently robust perturbation (such
+as an increase in an energy parameter) causes an eﬀective expansion of the accessible
+state space, as new states or degrees of freedom become dynamically accessible: liquid–
+gas phase transitions [29, 30]; activation of rotational and vibrational modes in molecules
+[31]; the activation of higher-energy degrees of freedom in particle physics [32]; and the
+ﬂattening of the energy landscape with increasing ‘temperature’ in recurrent neural networks [33, 34]. Likewise, multiple human studies have revealed that psychedelics, by
+stimulating a subset of neurons in the deeper layers of the cortex, dramatically increase
+the entropy of cortical activity and induce a more ﬂuid “hot” state in which the cortex
+explores an increased repertoire of states and generally exhibits higher levels of neural
+complexity [35-42]. The subjective eﬀects of psychedelics comport well with the observed
+eﬀects on neural activity, indicating that the experience space is nudged into a more
+ﬂuid and dynamically exploratory state outside of the CRS that at least hints at the
+kinds of dynamic complexity that might be required to support traces of normally imperceptible conscious agents. However, at usual dose levels at least, most psychedelic
+users rarely report encounters that might be construed as the perception of otherwise
+undetectable conscious agents. It’s plausible that a more profound restructuring of the
+
+experience space might be required to allow it to support traces of dynamics that are
+exotic when compared to those normally encountered in consensus reality, and perhaps
+higher-dimensional geometric and topological structures of conscious agents with unusual
+Markovian dynamics. Naturally, such a profound perturbation of our experience space
+wouldn’t simply cause otherwise hidden conscious agents to “pop up” as supplementary
+icons in our interface, but would likely entail an almost complete restructuring of the
+content, dynamics, and ﬂow of conscious experience itself – a complete replacement of
+the normal interface with one that transcends the usual topological and geometric structures imposed by our standard 3+1D interface. One such candidate molecule that does
+appear to induce such a perturbation of our experience space is the naturally-occurring
+psychedelic, N,N-dimethyltryptamine, DMT.
+DMT is set apart from the other classical
+psychedelics, such as LSD and psilocybin, in
+that, when vaporised or injected, it rapidly and
+reliably induces a state in which users report
+being completely immersed in a bizarre, often
+bewildering “alternate reality” that feels just as
+real as (and often more real than) ordinary waking life [21-24, 43]. Users commonly describe entering otherworldly landscapes replete with inordinately complex, fractal visuals, and impossible higher-dimensional geometries. And, notably, these alternate worlds are often populated
+with a variety of apparently highly intelligent non-human entities. A large-scale analysis
+of 3,778 DMT trip reports found that entity encounters were reported in about 45% of
+experiences, often involving beings described as humanoid, alien, or spiritual in nature
+(commonly described as “machine elves,” insectoid or reptilian creatures, deities, jesters,
+etc.) [44]. Other studies report similar entity prevalences [22], although one naturalistic
+setting study reported non-human entity encounters in 72% of subjects [45]. Many of
+these entities are reported to behave autonomously and to communicate with the experiencer (through language or telepathy), sometimes imparting information or lessons.
+Remarkably, across thousands of reports, certain motifs repeat: entering a tunnel or
+portal; arriving in a “waiting room” or hyper-technological chamber; meeting a guiding
+or “pedagogical” being; experiencing a sense of higher-dimensional space; and witnessing
+scenes of advanced technology or alien architecture.
+The standard explanation for these experiences is that they’re a particularly elaborate
+form of hallucination or perhaps related to dream visions [46]. Evolutionary neurobiology
+suggests that the human brain possesses innate cognitive modules for detecting agency,
+faces, and social presence [47, 48]. It has been hypothesised that these modules might
+start generating imagery of autonomous beings when top-down control of perception is
+
+loosened (as in psychedelic states) [49]. Indeed, Timmermann and others have hypothesized that DMT suppresses high-level priors and the default mode network in the brain,
+leading to a ﬂood of unconstrained bottom-up signalling (especially from the medial
+temporal lobe, where memory, emotion, and face/object recognition reside) [50, 51]. This
+could produce fully realized “entity” experiences by essentially allowing the brain’s pattern detectors to impute agency and form to random neural noise.
+However, similar loosening of top-down control occurs during dream sleep and in
+certain psychotic conditions [52-54]. In both states, neuroimaging studies implicate medial temporal and higher-order visual networks as key contributors to internally generated visual imagery [53-55]. Dreams, in particular, tend to be continuations of the normal
+waking world, with the brain drawing on learned and stored object models when rendering dream environments, which are generally populated by humans and animals encountered in everyday life [56-59]. Likewise, the hallucinations of psychotic patients tend to
+be “similar to real visual perceptions, as most of them are normal sized, solid, and
+anchored in external space,” and, as in dreams, the majority of hallucinated characters
+are “normal-sized, normal-appearing people.”[60, 61] This pattern is unsurprising since,
+within the materialist framework at least, the brain’s innate cognitive modules evolved
+to detect and model other humans and animals encountered in the ancestral environment,
+and human neurodevelopment involves learning to construct a subjective world as a
+model of that environment and its inhabitants. Consistent with this, evidence from
+dream research in children suggests that the brain’s ability to construct a coherent subjective world and its occupants in the absence of sensory input is not fully innate, but
+develops gradually from infancy through adolescence [62, 63]. Accordingly, when freed
+from top-down constraints, it is entirely expected that spontaneously generated visual
+imagery would predominantly consist of humans and other familiar animals.
+Strikingly, however, humans – by far the most commonly encountered organism in the
+natural waking environment – are only rarely encountered in the DMT state (<5%) [44,
+45, 64], which tend to be populated by beings that are not only neither human nor
+animal, but far transcend the human in their complexity and behaviour. It remains a
+challenge to explain how and why, when perturbed by DMT, the human brain should so
+consistently generate imagery of apparently intelligent beings that often have absolutely
+no obvious referent in the human environment, inhabiting entirely alien worlds of staggering structural, dynamical, and narrative complexity that bear no relationship whatsoever to the normal waking world or to human experience, either now or at any time in
+our evolutionary history. So, whilst the standard hallucination explanation must remain
+as the default, most parsimonious explanation for DMT’s eﬀects, considering and empirically testing alternative hypotheses concerning the underlying structure and origin of
+these experiences is both warranted and scientiﬁcally tractable.
+
+Our working hypothesis is that some DMT entities might correspond to traces of
+conscious agents with Markovian dynamics that are, compared to consensus reality,
+highly unusual or exotic and, as such, are normally imperceptible but which can be
+perceived when DMT alters the structure and dynamics of our interface, allowing human
+consciousness to reach areas of the experience space landscape outside of the CRS where
+some aspects of the evolved constraints imposed by our qualia and perception kernels no
+longer apply. We hypothesise that, in these states, the qualia kernel may become capable
+of representing traces of normally imperceptible conscious agent dynamics as stable,
+coherent, meaningful, and agentic forms. Indeed, psychedelics, including DMT, appear
+to induce a ﬂattening of the cortical state space landscape, reducing the energetic barrier
+for transition between cortical states and allowing the cortex to reach and explore novel
+states not available during normal waking consciousness [41, 65]. Although we cannot
+assume a direct mapping between cortical dynamics observed in neuroimaging data and
+the eﬀects on conscious agent dynamics, such data does represent, in some aspect at
+least, the way that some of the eﬀects of DMT are represented in the interface and
+comports with the idea that, under the inﬂuence of DMT, consciousness is able to reach
+regions of the experience space landscape where the perception of otherwise imperceptible conscious agents becomes possible. And, indeed, certain patterns in DMT reports
+align with what one might predict when a human-level conscious agent observes and
+interacts with conscious agents that live in and manipulate an entirely diﬀerent experiential manifold than we do:
+4.1
+
+Higher-Dimensional Phenomenology.
+
+Many DMT users report explicit experiences of extra spatial dimensions or non-Euclidean geometry, describing the space as “more than 3D” or “hyperdimensional.” For example, one report recounts, “There were way, way more directions in space to look at than
+there should have been… More than three dimensions”[66]. Another user reports, “They
+[the entities] occupied the fourth spatial dimension, yet I could only perceive them
+through my understanding of three-dimensional space… as if I was viewing a tesseract
+rotating in 4D.[67]” These descriptions of a perceptual space expanding or warping in
+dimensionality are exactly the kind of eﬀect we’d expect if the mind is interfacing with
+dynamics that don’t ﬁt into a Euclidean 3D ﬁeld.
+Andrés Gómez-Emilsson of the Qualia Research Institute (QRI), an independent
+think tank devoted to studying and formally describing the structure and quality of
+conscious experience, has proposed a complementary account in which DMT drives consciousness into a regime of extreme energetic excitation, allowing phenomenal space to
+reorganize in ways that are not available in ordinary experience [68, 69]. In this model,
+a moment of experience can be understood as a distribution of a ﬁnite “energy” across
+perceptual and cognitive features, which is continuously redistributed over time. Under
+ordinary conditions, phenomenal space reﬂects a balance between the rate at which the
+
+mind detects symmetries and relational structure, and the rate at which such structure
+decays. Psychedelics, and DMT in particular, are proposed to signiﬁcantly slow this
+decay while increasing the sensitivity to relational structure, allowing patterns to accumulate faster than they can be dissipated. As a result, the internal dynamics of experience begin to exceed what can be stably represented within a three-dimensional geometry,
+and phenomenal space reorganizes into forms characterized by non-Euclidean curvature,
+higher-dimensional symmetries, and increasingly complex relational structure. The result
+is a regime in which experiential objects can exhibit coherence and stability despite
+possessing relational properties that cannot be faithfully represented within three dimensions. Interpreted through the conscious realism framework, this suggests that the
+DMT user’s consciousness has been pushed into a region of experience space outside of
+the CRS that supports representations and transition dynamics that are normally inaccessible in human experience [70, 71].
+4.2
+
+Extreme Complexity and “Otherness”.
+
+If DMT allows us to perceive conscious agents with entirely diﬀerent Markovian dynamics to our own consciousness, we might expect them to appear (compared to normal
+human or animal behaviour) bewilderingly complex and entirely alien. The subjective
+impression might be as if witnessing a supremely advanced technology or intelligence,
+far beyond human capabilities. Indeed, many entity encounters on DMT involve beings
+who manufacture or manipulate impossibly complex objects in front of the user, as if to
+demonstrate their abilities. One such report describes an entity “materializing the most
+complex and impossible shapes…transferring as much mathematical and geometric
+knowledge as fast as possible… I was getting the feeling that this information was basic
+knowledge in their world, like us teaching our toddlers squares, circles, and triangles.”
+Another account speaks of “a liquid mind ecology of staggering and alien complexity
+[with] geometries transcending what is even vaguely feasible in this three-dimensional
+mundane world… Crowding and cramming themselves into my ﬁeld of vision were thousands upon thousands of beings of every imaginable sort and many that were completely
+unimaginable… The primordial intelligence being manifest before me was palpable, undeniable, transcendently amazing… It was like being entertained by the 76,000-piece orchestra of an alien civilization in whose classical music each note is not merely a musical
+tone, but an entire world, each just as intricate and nuanced as our own.”[72]
+These descriptions align with the idea that the operations performed by these entities
+appear miraculous only because we observe them from our low-dimensional perspective.
+Analogously, a Flatlander seeing a 3D being perform a simple rotation might be baﬄed
+by the shape’s apparent changes. In our case, operations that are trivial for an agent in
+a higher-dimensional or higher-complexity experiential space might look to us like godlike feats. For example, the amplituhedron is a geometric object deﬁned in a high-dimensional abstract space entirely outside ordinary spacetime, yet it encodes the full
+
+complexity of particle scattering processes that appear extraordinarily complicated when
+computed using traditional spacetime-based methods [73]. From our low-dimensional
+perspective, the scattering process seems exceedingly complex; from the higher-dimensional perspective, it’s elegant and simple. Analogously, DMT entities might not be “super-intelligent” in a human IQ sense; they might simply be operating in a higher-dimensional experiential space, performing operations that are trivial from their own perspective but exquisitely complex from ours.
+Our model speciﬁcally does not assume that these agents possess extraordinary human-like intellect but that they may have dynamical skills (such as manipulating complex multi-dimensional visual forms) that transcend those of any human. For example,
+Gómez-Emilsson reports the rapid and error-free colouring of extremely complex, dynamically changing surfaces such that no adjacent regions share the same colour – a
+process closely related to the four-colour problem, but applied to highly complex, nonEuclidean, and often hyperbolic surfaces [74]. For humans, solving such problems is a
+slow and cognitively demanding process, becoming intractable as the surface grows or
+departs from Euclidean geometry. However, in the DMT state, Gómez-Emilsson describes entities colouring surfaces almost instantaneously and repeatedly, as if implementing a form of parallel, constraint-satisfying computation far exceeding the capabilities of even the brightest of humans, in exquisite command of the exotic geometric and
+topological structure of the space they occupy.
+Another frequently reported “trick” of DMT entities is the ability to simultaneously
+change every aspect of their form (colour, shape, movement, etc.) in a coordinated manner without losing coherence. Human mental imagery struggles to keep track of even a
+single aspect of a single object (we normally serialize changes). But entities are reported
+to, for example, split into dozens of smaller entities and then recombine, or undergo
+rapid metamorphosis while still clearly being the same entity. This suggests a global
+coherence to their form that might correspond to an underlying structure with many
+degrees of freedom orchestrated together – again consistent with a conscious agent with
+highly unusual Markovian dynamics.
+4.3
+
+Independent Agency and Interaction.
+
+If DMT does indeed allow us to perceive and interact with normally imperceptible conscious agents, we would expect the entities to exhibit behaviours or provide information
+consistent with such an interaction. DMT users regularly describe entities that seem
+entirely autonomous, in that their behaviour is impossible to predict or anticipate, endlessly surprising, and entirely outside of the user’s control. Many users report being
+“taught” by entities, which often takes the form of bewilderingly complex visual performances (such as manifesting complex high-dimensional objects) or “downloads” of vast
+amounts of highly complex information [75]. There are also anecdotal accounts of multiple individuals encountering the same entity in separate DMT sessions. If such shared
+
+encounters are genuine traces of the same conscious agent(s), then there should indeed
+be correlated aspects of their form and behaviour. Of course, anecdotes are just that,
+but such reports will motivate our proposed experimental studies later.
+It is important to emphasize that the connections drawn above between DMT phenomenology and the conscious realism framework are suggestive rather than conclusive.
+Our task, therefore, is to develop experimental approaches that can distinguish between
+diﬀerent classes of experience, in particular between those that exhibit the characteristics
+of interaction with other agents and those that do not. In standard neuroscientiﬁc terms,
+a hallucination is typically deﬁned as a perception that is not appropriately coupled to
+sensory inputs. More broadly, all perceptions are constructed by the brain, which does
+not have direct access to an external world, but veridical perceptions are those that are
+adaptively connected to environmental structure, whereas hallucinations are not. Within
+conscious realism, all perceptions arise from interactions with other conscious agents,
+and this includes what are ordinarily termed hallucinations. However, this does not preclude the use of empirical methods to distinguish between diﬀerent types of experiential
+dynamics within the interface.
+Recall that an agent 𝐴 is said to perceive agent 𝐵 when the actions of 𝐵, mediated
+through the channel Φ: = 𝑃$ 𝐴% 𝐷% , inﬂuence the updates of 𝐴’s experience. In such cases,
+a subset 𝑆 ⊆ 𝑋$ of 𝐴’s experience space supports a trace of 𝐵’s dynamics, and the resulting transition structure on 𝑆 reﬂects the inﬂuence of 𝐵’s behaviour. As such, if an entity
+encounter in the DMT state corresponds to a trace of a conscious agent that is normally
+imperceptible (as hypothesised), we should be able to detect evidence of this inﬂuence,
+which might include some subset of the following: an entity’s ability to introduce novel
+or unanticipated structure into experience; persistence or coherence over time; behaviour
+that is not trivially reducible to the subject’s prior expectations or intentions; and the
+capacity to inﬂuence other elements of the experiential interface, potentially including
+other agents. In addition, such encounters may exhibit some degree of intersubjective
+correspondence across observers. Note that this deﬁnition of a “real” entity encounter
+mirrors how we might ordinarily distinguish veridical perception from hallucination
+within standard physicalist frameworks. In both cases, the key criteria for establishing
+veridicality are the presence of structured, stable, and causally eﬃcacious dynamics that
+are not reducible to the subject’s internal processes, and which exhibit some degree of
+independence and intersubjective consistency. The diﬀerence, therefore, lies not in the
+criteria used to identify such experiences, nor in the experimental paradigms required to
+study them, but in the theoretical interpretation of what these features signify. In the
+CAT framework, they are understood in terms of traces of other agents’ dynamics within
+the subject’s experience, rather than in terms of correspondence with an objective physical world.
+
+The next section proposes several experimental approaches, inspired by the conscious
+agent theory (CAT) framework, to test the nature of DMT entities. This kind of research
+has recently been rendered more feasible by the development of techniques that can
+extend the DMT trip from a few minutes to an hour or longer. The extended-state DMT
+(DMTx) technique, ﬁrst proposed by Gallimore and Strassman [76], employs targetcontrolled intravenous infusion to establish and maintain a stable brain DMT concentration over time. The technique has already been shown to be safe, eﬀective, and tolerable, with stable psychedelic eﬀects maintained for up to 120 minutes in a research
+setting [77-79]. This extended format gives the subject time to explore, observe, and even
+conduct tasks in the DMT state in a way that the standard trip doesn’t allow. With the
+ability to pause and resume the experience by modulating the infusion rate, DMTx oﬀers
+a degree of experimental control unprecedented in psychedelic research. The standard
+approach to studying the phenomenology of DMT hasn’t really changed from the earliest
+studies in the mid-20th century to the present day: Administer the drug to a volunteer
+(often selected only on the basis of them having had some prior experience with psychedelics) and then, immediately following their experience, prompt them to report their
+experiences using a combination of questionnaires and free verbal or written accounts
+[23]. We ought, instead, to be sending mathematicians to analyse the apparent nonEuclidean structure, symmetry groups, and invariant features of the space; linguists and
+semioticians to study the structured language, symbolic systems, and apparent grammars used by the entities and embedded in the environment; anthropologists and comparative mythologists to identify recurring motifs, archetypal forms, and cross-cultural
+regularities; computer scientists and complexity theorists, physicists, phenomenologists
+and philosophers of mind. The DMTx technique will also be indispensable in conducting
+experiments aimed at rigorously testing the hypothesis that the DMT space and its
+occupants aren’t merely scientiﬁcally interesting, but that this molecule allows our perceptual systems to support and render traces of normally imperceptible conscious agents.
+An important aspect of the conscious realism formalism is that the experience of any
+conscious agent at a given point in time is represented as a point in a space of possible
+experiences. Each point in this space represents one full moment of experience for the
+agent in question. As an example, we assume that, for a human being experiencing
+something like waking consensus reality with their eyes open, a moment of experience
+will include their current visual experience, inferred 3D object representations, some
+audio qualia, some conceptual interpretation of experience (potentially represented as
+words and images), emotional content (likely including both primitives such as physical
+tensions, as well as some interpretive layers and reactions), mental imagery, and so on.
+In a given parametrization, this can, for example, be thought of as a very long string of
+numbers encoding the current conﬁguration of qualia in the repertoire of the agent. As
+such, an exhaustive representation of a single moment of experience, let alone a path
+through experience space, is a complex object deﬁned by a very large number of
+
+parameters. We therefore expect that it will rarely, if ever, be useful to work with anything like an exhaustive or fully general state space.
+Instead, for any given experiment utilizing the Conscious Realism framework under
+CAT, part of what goes into deﬁning the experimental protocol is the construction of a
+tractable state-space representation capable of capturing the phenomena of interest and
+producing measurable observables. These might include, for example, speciﬁc properties
+of statements that the subject makes about their experience; overlaps between descriptions of experience across subjects; numerical responses, or, in some cases, perhaps even
+neuroimaging results. In other words, the formalism is not applied by attempting to
+model the totality of experience in full detail, but by selecting an experimentally relevant
+representation of experience that is rich enough to capture the structure of the phenomenon of interest while still allowing mathematically precise analysis and empirical comparison.
+
+5
+
+Proposed Experimental Research Programs.
+
+Rather than a single decisive experiment, we suggest a number of complementary experimental paradigms designed to test whether DMT experiences exhibit signatures that
+are diﬃcult to reconcile with entirely hallucinatory perceptions. These naturally fall into
+two classes: experiments involving a single subject, and experiments involving multiple
+subjects.
+5.1
+
+Single-subject experiments.
+
+Single-subject paradigms are designed to test whether features of a DMT experience are
+systematically constrained by variables outside the subject’s own cognitive and perceptual processes (and, as such, may represent the inﬂuence of normally imperceptible conscious agents). These experiments are designed to be conducted in well-controlled settings using the extended-state DMT infusion technique (DMTx) to allow suﬃcient interaction time.
+One class of experiments examines whether an entity encountered during a DMT
+experience can reliably track or respond to an external variable unknown to the subject.
+The variable may be randomly generated, time-varying, and blinded to both subject and
+experimenter during the session. The key question is whether aspects of the experience
+(visual features, behaviours attributed to an entity, or reported changes over time) show
+statistically signiﬁcant correspondence with the hidden variable beyond what would be
+expected by chance. For example, since the DMT state is a characteristically visual and
+intensely colourful experience, a pair of colours might be chosen as a binary variable. A
+computer, isolated in a separate room from both the subject and experimenters, randomly switches between two states (a blue and a yellow screen, for example). If an entity
+is external and cooperative, it may be able to express a stable blue/yellow modulation
+
+that tracks the hidden variable. Standard controls such as randomization, blinding, preregistration of analysis criteria, and comparison with control conditions (e.g., imagination or other psychedelic states) are also essential.
+A major limitation of this kind of experiment is that it requires the active cooperation
+of the entity, which is obviously not guaranteed. This is where selective recruiting would
+be invaluable: There are many anecdotal reports of individuals who claim to regularly
+interact with the same entity, even to the point of developing a relationship with the
+entity over many months or longer. Such subjects would be ideal candidates for this kind
+of experiment without compromising its scientiﬁc validity. The experiment also relies on
+the assumption that the entity would have access to the external variable. However, this
+limitation can be obviated using another subject (discussed in the following section).
+A second class of single-subject experiments focuses not on information transfer, but
+on the structure of the experience itself. Since entities encountered in the DMT state are
+often described as exhibiting remarkable coherence, agency, or apparent intelligence, it’s
+also natural to ask whether they might display abilities that exceed those of humans.
+For example, Rodriguez [80] suggested that DMT entities could be asked to perform
+mathematical operations (such as ﬁnding the prime factors of large integers) that humans cannot carry out mentally. However, such symbolic and sequential reasoning tasks
+primarily test how eﬀectively a human subject can use their own cognitive machinery.
+Our model does not predict that DMT entities are more intelligent in the familiar human
+sense, but rather that they may instantiate dynamical processes beyond those normally
+accessible to human consciousness. As such, the relevant question is not “Are you
+smart?”, but “What kinds of dynamical structures can you stably instantiate and control?” From this perspective, the appropriate tests are not diﬃcult symbolic problems,
+but probes of an entity’s ability to instantiate, maintain, and transform globally constrained, high-dimensional visual or geometric structures whose coherence requires transition dynamics far richer than those supported by ordinary human cognition. Such tests
+might include:
+Global constraint satisfaction: Can an entity colour a complex surface so that no
+adjacent regions share the same colour (as described by Gomez-Emilsson)?
+Stability across simultaneous transformations: Can a DMT entity remain coherent
+and identiﬁable while undergoing multiple independent visual changes (such as shape,
+colour, motion, or topology) at the same time, rather than handling them sequentially
+or collapsing into incoherence?
+Long-range temporal coherence: Can a DMT entity initiate a structured visual process
+(such as constructing a complex geometric structure), allow it to be interrupted and
+displaced by unrelated experiences, and later resume or complete it without any explicit
+reminder or cue from the subject?
+
+Obviously, rather than simply recruiting DMT users with substantial experience interacting with entities, these kinds of tests would certainly require individuals who also
+possess substantial mathematical knowledge and experience. And, of course, we’d be
+relying on the subjective reports of the subjects to determine whether or not a particular
+task has been completed successfully by the entity (this highlights why we’re proposing
+a number of complementary experimental paradigms rather than reaching for a single
+decisive experiment).
+5.2
+
+Multiple-subject experiments.
+
+Whereas single-subject experiments test for external constraint on an individual experience, multi-subject paradigms test for shared structure across experiences. In these experiments, multiple subjects (isolated from one another) undergo DMT sessions under
+identical conditions. Their reports are later analyzed for correlations, shared features, or
+structured correspondences beyond what would be expected by chance. The aim is not
+to establish identical experiences, but to test whether independent subjects exhibit nontrivial convergence in reported entities, environments, or informational content. Again,
+selective recruiting would likely improve the chances of success: Couples who claim to
+have shared experiences, particularly if it involves interacting with the same entity, might
+be recruited to test for correlations between individual experiences. Such experimental
+set ups might include information deposit and retrieval, in which one of the subjects
+deposits information into the DMT space, such as by communicating a randomly generated word or multiple-digit integer to an entity, which is subsequently retrieved from the
+entity by the other subject.
+As with single-subject paradigms, methodological safeguards such as blinding, standardized reporting frameworks, and preregistered analysis criteria are essential. Across all
+paradigms, careful attention must be paid to expectation eﬀects, experimenter bias, and
+the interpretive ﬂexibility of retrospective reports. Null results are informative, and positive results would require cautious interpretation. The goal of these proposed programs
+is not to presuppose any particular metaphysical conclusion, but to clarify which features
+of DMT experiences can be systematically constrained, correlated, or reproduced, and
+which cannot.
+
+6
+
+Conclusion.
+
+It is a direct consequence of the conscious realism formalism that the space of possible
+conscious agents likely vastly exceeds the subset accessible to ordinary human perception.
+Since perception, within this framework, is an interface shaped by evolutionary pressures
+rather than a transparent window onto objective reality, there is no reason to assume
+that the agents and dynamics most relevant to human survival exhaust the space of what
+exists. The question, then, is not whether such agents could exist in principle, but under
+what conditions traces of their dynamics might become accessible to human experience.
+
+The DMT state represents an unusually robust and reproducible perturbation of the
+human perceptual interface that reliably produces experiences of exquisitely complex,
+coherently structured environments, and apparently autonomous entities. While the
+standard hallucination explanation remains most widely held, it struggles to explain how
+and why the human brain, when perturbed by DMT, so reliably induces such phenomenology that is so complex and coherent and yet, in many ways, entirely disjoint from
+normal human experience. Conscious realism provides an alternative interpretive framework in which such experiences could, in principle, be understood as traces of other
+conscious agents whose internal dynamics exceed those ordinarily representable within
+human experience. Importantly, this interpretation does not depend on attributing human-like intelligence to DMT entities, but instead on diﬀerences in the structure and
+complexity of their underlying experiential dynamics, which can be articulated formally
+using the language of Markovian dynamics. By framing “alienness” in terms of adjacency
+structure, transition dependencies, and representational limits, we can set aside culturally speciﬁc and often poorly deﬁned concepts, such as “plant spirits” or “trans-dimensional beings”, and instead ground the discussion in a precise mathematical framework.
+As such, the central question is no longer simply whether DMT entities are “real”, but
+whether the human perceptual interface is capable, even temporarily, of perceiving normally imperceptible conscious agents and hosting traces of conscious-agent dynamics
+that normally lie beyond its representational reach.
+Crucially, the perspective developed here is not insulated from experimental scrutiny.
+The possibility that DMT experiences might be systematically constrained by variables
+external to the subject, or might exhibit nontrivial structure across individuals, leads
+naturally to experimental paradigms that are both falsiﬁable and methodologically sound.
+Negative results would strongly constrain external-agent interpretations, while positive
+results could have far-reaching implications for our understanding of perception, consciousness, and, perhaps even, reality itself. With the recent development and validation
+of the extended-state DMT infusion technique, DMTx, such investigations are now feasible.
+Ultimately, our purpose here is not to claim that DMT entities represent external
+conscious agents, but to show that, given a formal theory in which consciousness is
+fundamental, such a possibility can be coherently formulated and experimentally investigated. Whether this line of inquiry ultimately reinforces the standard hallucination
+model or forces us to consider a more radical revision of our assumptions remains an
+open question. What matters, from a scientiﬁc perspective, is that the question can be
+asked precisely, tested rigorously, and approached with both openness and restraint.
+
+7
+
+Acknowledgements.
+
+This work was partially funded by the 501(c)(3) non-proﬁt Noonautics
+(Noonautics.org)
+
+1.
+Sedley D. Atomism, ancient. In E N Zalta (Ed), The Stanford Encyclopedia of
+Philosophy (Winter 2018 ed) Stanford University. 2018
+2.
+Zanotti G. Consciousness, Neuroscience, and Physicalism: Pessimism About
+Optimistic Induction. Acta Analytica 2022 38:2. 2022-02-17;38(2). doi: 10.1007/s12136022-00512-5.
+3.
+Jylkkä J, Railo H. Consciousness as a concrete physical phenomenon.
+Consciousness and Cognition. 2019;74. doi: 10.1016/j.concog.2019.102779.
+4.
+Dolan M. Hinduism and Cosmology in India. 2021. doi: 10.1007/978-3-03076511-8_7.
+5.
+Eliade M. Shamanism: Archaic Techniques of Ecstasy (Bollingen Series).
+Princeton: Princetion University Press; 2004.
+6.
+de Castro EV. Cosmological Deixis and Amerindian Perspectivism. The Journal
+of the Royal Anthropological Institute. 1998;4(3):469-88. doi: 10.2307/3034157.
+7.
+Sadakata A, Nakamura H. Buddhist Cosmology: Philosophy and Origins.
+Tokyo: Kosei Publishing Co.; 1997.
+8.
+Chalmers DJ. Facing Up to the Problem of Consciousness. The Character of
+Consciousness. 2010/10/07. doi: 10.1093/acprof:oso/9780195311105.003.0001.
+9.
+Chalmers DJ. The puzzle of conscious experience. Sci Am. 1995;273(6):80-6.
+doi: 10.1038/scientiﬁcamerican1295-80. PubMed PMID: 8525350.
+10.
+Tononi G. Consciousness as Integrated Information: a Provisional Manifesto.
+Biological Bulletin. 2008;215(3):216-42. PubMed PMID: WOS:000262021400003.
+11.
+Tononi G. Integrated information theory of consciousness: an updated account.
+Archives Italiennes De Biologie. 2012;150(2-3):56-90. PubMed PMID:
+WOS:000312480900004.
+12.
+Hoﬀman DD, Prakash C, Prentner R. Fusions of Consciousness. Entropy
+(Basel). 2023;25(1). Epub 20230109. doi: 10.3390/e25010129. PubMed PMID:
+36673270; PubMed Central PMCID: PMCPMC9858210.
+13.
+Prentner R, Hoﬀman DD. Interfacing consciousness. Front Psychol.
+2024;15:1429376. Epub 20240715. doi: 10.3389/fpsyg.2024.1429376. PubMed PMID:
+39077200; PubMed Central PMCID: PMCPMC11284140.
+14.
+Hoﬀman DD, Singh M, Prakash C. The Interface Theory of Perception.
+Psychon Bull Rev. 2015;22(6):1480-506. doi: 10.3758/s13423-015-0890-8. PubMed
+PMID: 26384988.
+
+15.
+Prakash C, Fields C, Hoﬀman DD, Prentner R, Singh M. Fact, Fiction, and
+Fitness. Entropy (Basel). 2020;22(5). Epub 20200430. doi: 10.3390/e22050514. PubMed
+PMID: 33286286; PubMed Central PMCID: PMCPMC7517005.
+16.
+Prakash C, Stephens KD, Hoﬀman DD, Singh M, Fields C. Fitness Beats Truth
+in the Evolution of Perception. Acta Biotheor. 2021;69(3):319-41. Epub 20201124. doi:
+10.1007/s10441-020-09400-0. PubMed PMID: 33231784.
+17.
+Prakash C, Prakash C. On Invention of Structure in the World: Interfaces and
+Conscious Agents. Foundations of Science 2019 25:1. 2019-01-24;25(1). doi:
+10.1007/s10699-019-09579-7.
+18.
+Seiberg N. Emergent Spacetime. The Quantum Structure of Space and Time.
+p. 163-213.
+19.
+Ashtekar A, Bianchi E. A short review of loop quantum gravity. Rep Prog
+Phys. 2021;84(4). Epub 20210331. doi: 10.1088/1361-6633/abed91. PubMed PMID:
+33691292.
+20.
+Hoﬀman D, Prakash C, Chattopadhyay S. Traces of Consciousness. 2024. doi:
+10.20944/preprints202410.1305.v1.
+21.
+Gallimore AR. Building Alien Worlds - The Neuropsychological and
+Evolutionary Implications of the Astonishing Psychoactive Eﬀects of N,NDimethyltryptamine (DMT). Journal of Scientiﬁc Exploration. 2013;27(3):455-503.
+22.
+Strassman R. DMT - The Spirit Molecule. 1st ed. Vermont: Park Street Press;
+2001.
+23.
+Strassman R. The varieties of the DMT experience. In: Strassman R, editor.
+Inner Paths to Outer Space. 1st ed. Vermont: Park Street Press; 2008. p. 51-80.
+24.
+Strassman RJ. Human psychopharmacology of N,N-dimethyltryptamine.
+Behavioural Brain Research. 1995;73(1-2):121-4. doi: 10.1016/0166-4328(96)00081-2.
+PubMed PMID: BCI:BCI199698654316.
+25.
+Luke D. Discarnate entities and dimethyltryptamine (DMT):
+Psychopharmacology, phenomenology and ontology. Journal of the Society for
+Psychical Research. 2011;75:26-42.
+26.
+Fields C, Hoﬀman DD, Prakash C, Singh M. Conscious agent networks: Formal
+analysis and application to cognition. Cognitive Systems Research. 2018/01/01;47. doi:
+10.1016/j.cogsys.2017.10.003.
+27.
+Hoﬀman DD. Did we evolve to see reality, or are spacetime and objects just our
+user interface? Ann N Y Acad Sci. 2019;1458(1):65-9. Epub 20190808. doi:
+10.1111/nyas.14222. PubMed PMID: 31396967.
+28.
+Golin MJ, Patupat AJL. The Markov-Chain Polytope with Applications.
+2024/01/21. doi: 10.48550/arXiv.2401.11622.
+29.
+Swendsen RH. Phase Transitions. An Introduction to Statistical Mechanics and
+Thermodynamics. 2019/12/10. doi: 10.1093/oso/9780198853237.003.0017.
+30.
+Thouless DJ, Thouless DJ. Introduction to Phase Transitions and Critical
+Phenomena. Physics Bulletin. 1972-04-01;23(4). doi: 10.1088/0031-9112/23/4/018.
+
+31.
+Atkins P, Paula Jd, Keeler J, Atkins P, Paula Jd, Keeler J. Molecular partition
+functions. Atkins’ Physical Chemistry. 2022. doi:
+10.1093/hesc/9780198847816.003.0069.
+32.
+Georgi H, Georgi H. Eﬀective Field Theory. Annual Review of Nuclear and
+Particle Science. 1993/12/01;43(Volume 43, 1993). doi:
+10.1146/annurev.ns.43.120193.001233.
+33.
+Ackley DH, Hinton GE, Sejnowski TJ. A learning algorithm for boltzmann
+machines. Cognitive Science. 1985/01/01;9(1). doi: 10.1016/S0364-0213(85)80012-4.
+34.
+Kirkpatrick S, Gelatt CD, Vecchi MP. (1983) S. Kirkpatrick, C. D. Gelatt, Jr.,
+and M. P. Vecchi, "Optimization by simulated annealing," Science 220: 671-680.
+Neurocomputing, Volume 1. 1988/4/07. doi: 10.7551/mitpress/4943.003.0034.
+35.
+Carhart-Harris RL, Leech R, Hellyer PJ, Shanahan M, Feilding A, Tagliazucchi
+E, et al. The entropic brain: a theory of conscious states informed by neuroimaging
+research with psychedelic drugs. Frontiers in Human Neuroscience. 2014;8:22. doi:
+10.3389/fnhum.2014.00020. PubMed PMID: WOS:000330638800001.
+36.
+Atasoy S, Roseman L, Kaelen M, Kringelbach ML, Deco G, Carhart-Harris RL.
+Connectome-harmonic decomposition of human brain activity reveals dynamical
+repertoire re-organization under LSD. Sci Rep. 2017;7:18. doi: 10.1038/s41598-01717546-0. PubMed PMID: WOS:000418250800046.
+37.
+Carhart-Harris RL, Erritzoe D, Williams T, Stone JM, Reed LJ, Colasanti A, et
+al. Neural correlates of the psychedelic state as determined by fMRI studies with
+psilocybin. Proceedings of the National Academy of Sciences of the United States of
+America. 2012;109(6):2138-43. doi: 10.1073/pnas.1119598109. PubMed PMID:
+WOS:000299925000068.
+38.
+Carhart-Harris RL, Muthukumaraswamy S, Roseman L, Kaelen M, Droog W,
+Murphy K, et al. Neural correlates of the LSD experience revealed by multimodal
+neuroimaging. Proceedings of the National Academy of Sciences. 2016. doi:
+10.1073/pnas.1518377113.
+39.
+Muthukumaraswamy SD, Carhart-Harris RL, Moran RJ, Brookes MJ, Williams
+TM, Errtizoe D, et al. Broadband Cortical Desynchronization Underlies the Human
+Psychedelic State. Journal of Neuroscience. 2013;33(38):15171-83. doi:
+10.1523/jneurosci.2063-13.2013. PubMed PMID: WOS:000324586500023.
+40.
+Roseman L, Leech R, Feilding A, Nutt DJ, Carhart-Harris RL. The eﬀects of
+psilocybin and MDMA on between-network resting state functional connectivity in
+healthy volunteers. Frontiers in human neuroscience. 2014;8:204. doi:
+10.3389/fnhum.2014.00204. PubMed PMID: MEDLINE:24904346.
+41.
+Singleton SP, Luppi AI, Carhart-Harris RL, Cruzat J, Roseman L, Nutt DJ, et
+al. Receptor-informed network control theory links LSD and psilocybin to a ﬂattening
+of the brain's control energy landscape. Nat Commun. 2022;13(1):5812. Epub
+20221003. doi: 10.1038/s41467-022-33578-1. PubMed PMID: 36192411; PubMed
+Central PMCID: PMCPMC9530221.
+
+42.
+Tagliazucchi E, Carhart-Harris R, Leech R, Nutt D, Chialvo DR. Enhanced
+Repertoire of Brain Dynamical States During the Psychedelic Experience. Human
+Brain Mapping. 2014. doi: 10.1002/hbm.22562.
+43.
+Gallimore AR, Luke DP. DMT research from 1956 to the edge of time. In: King
+D, Luke D, Sessa B, Adams C, Tollan A, editors. Neurotransmissions – An Anthology
+of Essays on Psychedelics from Breaking Convention. 1st ed: Strange Attractor Press;
+2015.
+44.
+Lawrence DW, Carhart-Harris R, Griﬃths R, Timmermann C, Lawrence DW,
+Carhart-Harris R, et al. Phenomenology and content of the inhaled N, Ndimethyltryptamine (N, N-DMT) experience. Scientiﬁc Reports 2022 12:1. 2022-0524;12(1). doi: 10.1038/s41598-022-11999-8.
+45.
+Michael P, Luke D, Robinson O. An Encounter With the Other: A Thematic
+and Content Analysis of DMT Experiences From a Naturalistic Field Study. Frontiers
+in Psychology. 2021;12. doi: 10.3389/fpsyg.2021.720717.
+46.
+Carhart-Harris R, Nutt D. Was it a vision or a waking dream? Frontiers in
+Psychology. 2014;5. doi: 10.3389/fpsyg.2014.00255.
+47.
+Barrett JL. Exploring the natural foundations of religion. Trends in Cognitive
+Sciences. 2000/01/01;4(1). doi: 10.1016/S1364-6613(99)01419-9.
+48.
+Dunbar RI. The social brain hypothesis and its implications for social evolution
+- PubMed. Annals of human biology. 2009;36(5). doi: 10.1080/03014460902960289.
+49.
+Carhart-Harris RL, Friston KJ. REBUS and the Anarchic Brain: Toward a
+Uniﬁed Model of the Brain Action of Psychedelics - PubMed. Pharmacological reviews.
+2019;71(3). doi: 10.1124/pr.118.017160.
+50.
+Timmermann C, Roseman L, Schartner M, Milliere R, Williams LTJ, Erritzoe
+D, et al. Neural correlates of the DMT experience assessed with multivariate EEG. Sci
+Rep. 2019;9(1):16324. Epub 20191119. doi: 10.1038/s41598-019-51974-4. PubMed
+PMID: 31745107; PubMed Central PMCID: PMCPMC6864083.
+51.
+Alamia A, Timmermann C, Nutt DJ, VanRullen R, Carhart-Harris RL. DMT
+alters cortical travelling waves. eLife. 2020;9. Epub 20201012. doi: 10.7554/eLife.59784.
+PubMed PMID: 33043883; PubMed Central PMCID: PMCPMC7577737.
+52.
+Sterzer P, Adams RA, Fletcher P, Frith C, Lawrie SM, Muckli L, et al. The
+Predictive Coding Account of Psychosis. Biological Psychiatry. 2018/11/01;84(9). doi:
+10.1016/j.biopsych.2018.05.015.
+53.
+Allen P, Larøi F, McGuire PK, Aleman A. The hallucinating brain: A review of
+structural and functional neuroimaging studies of hallucinations. Neuroscience &
+Biobehavioral Reviews. 2008/01/01;32(1). doi: 10.1016/j.neubiorev.2007.07.012.
+54.
+Miyauchi S, Misaki M, Kan S, Fukunaga T, Koike T, Miyauchi S, et al. Human
+brain activity time-locked to rapid eye movements during REM sleep. Experimental
+Brain Research 2008 192:4. 2008-10-02;192(4). doi: 10.1007/s00221-008-1579-2.
+
+55.
+Lefebvre S, Demeulemeester M, Leroy A, Delmaire C, Lopes R, Pins D, et al.
+Network dynamics during the diﬀerent stages of hallucinations in schizophrenia PubMed. Human brain mapping. 2016;37(7). doi: 10.1002/hbm.23197.
+56.
+A R. The reinterpretation of dreams: an evolutionary hypothesis of the function
+of dreaming. The Behavioral and brain sciences. 2000 Dec;23(6). doi:
+10.1017/s0140525x00004015.
+57.
+Valli K, Revonsuo A, Pälkäs O, Ismail K, Ali K, Punamäki R. The threat
+simulation theory of the evolutionary function of dreaming: Evidence from dreams of
+traumatized children. Consciousness and cognition. 2005 Mar;14(1). doi:
+10.1016/S1053-8100(03)00019-9.
+58.
+Schredl M, Hofmann F. Continuity between waking activities and dream
+activities. Consciousness and Cognition. 2003;12(2):298-308. doi: 10.1016/s10538100(02)00072-7. PubMed PMID: WOS:000183227200009.
+59.
+Tuominen J, Stenberg T, Revonsuo A, Valli K. Social contents in dreams: An
+empirical test of the Social Simulation Theory. Consciousness and Cognition.
+2019/03/01;69. doi: 10.1016/j.concog.2019.01.017.
+60.
+Goodwin DW, Rosenthal R. Clinical Signiﬁcance of Hallucinations in
+Psychiatric Disorders. Archives of General Psychiatry. 1971/01/01;24(1). doi:
+10.1001/archpsyc.1971.01750070078011.
+61.
+van Ommen MM, van Laar T, Renken R, Cornelissen FW, Bruggeman R.
+Visual Hallucinations in Psychosis: The Curious Absence of the Primary Visual
+Cortex. Schizophrenia Bulletin. 2023/02/24;49(Supplement_1). doi:
+10.1093/schbul/sbac140.
+62.
+Foulkes D. Children's Dreaming and the Development of Consciousness:
+Harvard University Press; 1999.
+63.
+Foulkes D, Larson JD, Swanson EM, Rardin M. TWO STUDIES OF
+CHILDHOOD DREAMING. American Journal of Orthopsychiatry. 1969/07/01;39(4).
+doi: 10.1111/j.1939-0025.1969.tb02457.x.
+64.
+Alan K Davis JMC, Eric G Weaver,Ethan S Hurwitz,Matthew W
+Johnson,Roland R Griﬃths. Survey of entity encounter experiences occasioned by
+inhaled N,N-dimethyltryptamine: Phenomenology, interpretation, and enduring eﬀects.
+Journal of Psychopharmacology. 2020;34(9). doi: 10.1177/0269881120916143.
+65.
+Singleton SP, Timmermann C, Luppi AI, Eckernäs E, Roseman L, CarhartHarris RL, et al. Network control energy reductions under DMT relate to serotonin
+receptors, signal diversity, and subjective experience. Commun Biol. 2025;8(1):631.
+Epub 20250418. doi: 10.1038/s42003-025-08078-9. PubMed PMID: 40251353; PubMed
+Central PMCID: PMCPMC12008288.
+66.
+Myconub. 8th Dimensional Hell/Hyperslap Experience from 20mg Dabbed.
+Reddit; 2018.
+67.
+Consplice. DMT & Lorazepam-Smiling at Hell. Reddit; 2017.
+
+68.
+Gomez-Emilsson A. DMT Entities Decoded by Coupled Oscillators 2025.
+Available from: https://youtu.be/gi08eVU_-f8?si=OthjzLRzF9zy7QYa.
+69.
+Gómez-Emilsson A. The Hyperbolic Geometry of DMT Experiences:
+Symmetries, Sheets, and Saddled Scenes 2016. Available from:
+https://www.qri.org/blog/hyperbolic-geometry-DMT.
+70.
+Gómez-Emilsson A. Algorithmic Reduction of Psychedelic States. Qualia
+Computing, 20 June 2016 2016. Available from:
+https://qualiacomputing.com/2016/06/20/algorithmic-reduction-of-psychedelic-states/.
+71.
+Gomez-Emilsson A. The Theory of Neural Annealing. Presentation at The Stoa,
+7 June 2021 2021. Available from: https://www.youtube.com/watch?v=ndjbeF4EqRs.
+72.
+Otherworldly Bewilderness: An Experience with DMT (exp1851) [Internet].
+2000. Available from: erowid.org/exp/1851.
+73.
+Arkani-Hamed N, Bai Y, Lam T, Arkani-Hamed N, Bai Y, Lam T. Positive
+geometries and canonical forms. Journal of High Energy Physics 2017 2017:11. 201711-08;2017(11). doi: 10.1007/JHEP11(2017)039.
+74.
+Gonthier G. Formal Proof—The Four- Color Theorem. Notices of the AMS.
+2008;55(11):1382-93.
+75.
+Gallimore AR. Death by Astonishment: Confronting the Mystery of the World’s
+Strangest Drug. 1st ed. New York: St. Martin’s Press; 2025.
+76.
+Gallimore AR, Strassman RJ. A Model for the Application of Target-Controlled
+Intravenous Infusion for a Prolonged Immersive DMT Psychedelic Experience.
+Frontiers in Pharmacology. 2016;7:11. doi: 10.3389/fphar.2016.00211. PubMed PMID:
+WOS:000379571400002.
+77.
+Luan LX, Eckernäs E, Ashton M, Rosas FE, Uthaug MV, Bartha A, et al.
+Psychological and physiological eﬀects of extended DMT. Journal of
+Psychopharmacology. 2024-1;38(1). doi: 10.1177/02698811231196877.
+78.
+Erne L, Vogt SB, Müller L, Nuraj A, Becker A, Klaiber A, et al. Acute dosedependent eﬀects and self-guided titration of continuous N,N-dimethyltryptamine
+infusions in a double-blind placebo-controlled study in healthy participants.
+Neuropsychopharmacology 2024 50:6. 2024-12-19;50(6). doi: 10.1038/s41386-024-020418.
+79.
+Vogt SB, Ley L, Erne L, Straumann I, Becker AM, Klaiber A, et al. Acute
+eﬀects of intravenous DMT in a randomized placebo-controlled study in healthy
+participants. Translational Psychiatry 2023 13:1. 2023-05-23;13(1). doi:
+10.1038/s41398-023-02477-4.
+80.
+Rodriguez MA. A methodology for studying various interpretations of the N,Ndimethyltryptamine-induced alternate reality. Journal of Scientiﬁc Exploration.
+2007;21(1):67-84.
+
+

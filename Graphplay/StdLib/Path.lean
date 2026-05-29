@@ -51,11 +51,15 @@ noncomputable def Path (n : ℕ) : WeightedGraph (Fin (n + 1)) where
   adj := fun k l =>
     if (k.val + 1 = l.val) ∨ (l.val + 1 = k.val) then (1 : ℂ) else 0
   herm := by
-    -- Symmetric real-valued matrix is Hermitian; deferred to a proof pass.
-    sorry
+    -- Symmetric real-valued (0/1) matrix is Hermitian: `star` fixes the
+    -- real entries `0,1`, and the defining disjunction is symmetric in `k,l`.
+    refine Matrix.IsHermitian.ext (fun k l => ?_)
+    by_cases h : (k.val + 1 = l.val) ∨ (l.val + 1 = k.val)
+    · rw [if_pos h, if_pos (Or.symm h)]; simp
+    · rw [if_neg h, if_neg (fun hc => h (Or.symm hc))]; simp
   loopless := by
     intro v
-    simp [Nat.succ_ne_self]
+    simp
 
 /-- The PST time `τ_n` for the unweighted path `Path n` between its two
 endpoints, when PST is possible.  We use the Christandl–Datta–Ekert–Landahl
@@ -107,12 +111,22 @@ noncomputable def WeightedPath (n : ℕ) (J : Fin n → ℝ) :
           omega⟩ : ℝ) : ℂ)
     else 0
   herm := by
-    -- Real-symmetric ⇒ Hermitian.
-    sorry
+    -- Real-symmetric ⇒ Hermitian: the entry at `(k,l)` and `(l,k)` are equal
+    -- real numbers (`J⟨·⟩` or `0`), and `star` fixes real values.
+    refine Matrix.IsHermitian.ext (fun k l => ?_)
+    by_cases h1 : k.val + 1 = l.val
+    · -- `k+1 = l`: both entries equal `J⟨k⟩`.
+      have hne : ¬ l.val + 1 = k.val := by omega
+      rw [dif_pos h1, dif_neg hne, dif_pos h1]; simp
+    · by_cases h2 : l.val + 1 = k.val
+      · -- `l+1 = k`: both entries equal `J⟨l⟩`.
+        rw [dif_pos h2, dif_neg h1, dif_pos h2]; simp
+      · -- neither: both entries are `0`.
+        rw [dif_neg h2, dif_neg h1, dif_neg h1, dif_neg h2]; simp
   loopless := by
     intro v
     -- `v.val + 1 = v.val` is impossible; `v.val + 1 = v.val` likewise.
-    simp [Nat.succ_ne_self]
+    simp
 
 /-- The **Christandl–Landahl–Werner couplings**:
 `J_k = √(k · (n + 1 - k))` for `1 ≤ k ≤ n`.  Equivalently, in the `Fin n`

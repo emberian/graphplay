@@ -431,7 +431,7 @@ alone supports.
   Are DMT Entities Real? DMT Phenomenology in the Framework of Conscious
   Realism.* PsyArXiv preprint `8qvgy`, v2, 2026.
   `https://osf.io/preprints/psyarxiv/8qvgy_v2`. Local copy:
-  `references/psyarxiv_8qvgy.pdf`.
+  `references/8qvgy_v2.pdf`; extracted text: `references/8qvgy_v2.txt`.
 - Gómez-Emilsson, A. *The Hyperbolic Geometry of DMT Experiences:
   Symmetries, Sheets, and Saddled Scenes.* QRI blog, 2016-12-12.
   `https://www.qri.org/blog/hyperbolic-geometry-DMT`. Local copy:

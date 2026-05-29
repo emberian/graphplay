@@ -89,8 +89,8 @@ noncomputable def fiberQuotient
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
       IsBiregular (B.coupling h) (α h) (β h)) :
     WeightedGraph I where
-  adj := (B.fiberEquitable d hfib α β hcouple).quotient
-  herm := (B.fiberEquitable d hfib α β hcouple).quotient_isHermitian
+  adj := (B.fiberEquitable d hfib α β hcouple).symmQuotient
+  herm := (B.fiberEquitable d hfib α β hcouple).symmQuotient_isHermitian
   loopless := by
     -- Diagonal entry of the quotient on cell `i` is the regularity degree
     -- `d i` of the fiber.  The "loopless" axiom of a `WeightedGraph` would
@@ -395,8 +395,8 @@ theorem cartesianProduct_quotient_naturality
     ∃ (φ : Matrix (I × J) (I × J) ℂ),
       (productPartition G H P P').quotient = φ ∧
       φ = (GraphBundle.cartesianProduct
-            ⟨P.quotient, P.quotient_isHermitian, by sorry⟩
-            ⟨P'.quotient, P'.quotient_isHermitian, by sorry⟩).adj := by
+            ⟨P.symmQuotient, P.symmQuotient_isHermitian, by sorry⟩
+            ⟨P'.symmQuotient, P'.symmQuotient_isHermitian, by sorry⟩).adj := by
   -- The two `WeightedGraph` wrappers around `P.quotient`, `P'.quotient`
   -- need to absorb the diagonal in the same way as `fiberQuotient.loopless`;
   -- modulo that, the naturality is a direct computation:

@@ -169,6 +169,54 @@ question of Godsil.
 circulants. Notable: the "non-periodic yet PST" example here is later
 extended by 2301.01473 to the Hermitian setting.
 
+### arXiv:quant-ph/0509059 — Mixing of QW on Circulant Bunkbeds (2005)
+*Lo, Rajaram, Schepens, Sullivan, Tamon, Ward.* New mixing-dynamics
+observations for CTQW on circulants and bunkbed extensions defined via
+join G+H and Cartesian product G⊕H; identifies regimes where joins inherit
+uniform-mixing behaviour from their summands and where Cartesian products
+fail.
+**What this adds to graphplay:** Concrete join/Cartesian-product mixing
+lemmas underpinning Tower 3 product constructions. Literature context for
+`Graphplay/Products/` (no current sorry directly closed).
+
+## Chiral / signed-graph algebra
+
+### arXiv:1301.0973 — Which Exterior Powers Are Balanced? (2013)
+*Mallory, Raz, Tamon, Zaslavsky.* Characterises which exterior powers
+∧^k Σ of a signed graph Σ are balanced (i.e. diagonally similar to an
+unsigned adjacency): for k = 1, balanced iff Σ is balanced; for 2 ≤ k ≤
+n−2, balanced iff Σ is *antibalanced or balanced*; gives the full sign-
+group / cycle-sign analysis.
+**What this adds to graphplay:** Direct chiral predecessor and the
+exterior-power balance theorem behind Tower 2's many-fermion signed-
+unsigned bridge (currently encoded informally in the spine outline). The
+"k = 2 dichotomy" is what underlies our `ChiralBundlePST.lean` lift from
+single-particle to two-fermion PST — this paper is the literature anchor
+for that move and a candidate sorry-killer for the balance-condition
+hypothesis there.
+
+## Universal / instantaneous mixing
+
+### arXiv:quant-ph/0608044 — Universal Mixing of QW on Graphs (2006)
+*Carlson, Ford, Harris, Rosen, Tamon, Wrobel.* Defines universal mixing
+(every probability distribution on V(G) is visited by the CTQW) and
+proves: the complete graph K_n is universal mixing; star graphs K_{1,n}
+are universal mixing iff n ≥ 2; gives weighted constructions and
+obstructions.
+**What this adds to graphplay:** The "universal mixing" companion to
+1310.3885's universal *state transfer*. Literature context for any future
+"chiral universal mixing" extension; not a current sorry-killer.
+
+### arXiv:quant-ph/0308073 — Graphs Resistant to QW Uniform Mixing (2003)
+*Adamczak, Andrew, Hernberg, Tamon.* Complete graphs K_n are neither
+instantaneous nor average uniform mixing (except K_2, K_3, K_4); a wider
+infinite circulant family is resistant to uniform mixing; complements the
+Moore–Russell n-cube positive result.
+**What this adds to graphplay:** Foundational negative result paired with
+0209106 — together they bracket the regime in which Tower 2's chiral
+machinery is genuinely *needed* to recover uniform mixing on graphs where
+the unsigned walk fails. Background bibliography for chiral mixing.
+
 ## Decoherence / open systems
 
 ### arXiv:quant-ph/0509163 — Mixing and Decoherence in CTQW on Cycles (2005)

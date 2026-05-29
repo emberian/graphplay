@@ -49,6 +49,21 @@ binary strings of length `n`. -/
 def hammingDist (n : ℕ) (x y : Fin (2^n)) : ℕ :=
   (Finset.univ.filter (fun i : Fin n => bitOf n x i ≠ bitOf n y i)).card
 
+/-- The Hamming distance is symmetric. -/
+theorem hammingDist_comm (n : ℕ) (x y : Fin (2^n)) :
+    hammingDist n x y = hammingDist n y x := by
+  unfold hammingDist
+  congr 1
+  apply Finset.filter_congr
+  intro i _
+  simp [ne_comm]
+
+/-- The Hamming distance from a vertex to itself is `0`. -/
+@[simp] theorem hammingDist_self (n : ℕ) (x : Fin (2^n)) :
+    hammingDist n x x = 0 := by
+  unfold hammingDist
+  simp
+
 /-- The **Boolean hypercube** `Q_n` as a weighted graph on `Fin (2^n)`:
 adjacency is `1` between strings of Hamming distance `1`, and `0`
 otherwise.  Equivalently, the Cayley graph of `(ℤ/2)^n` with respect to
@@ -58,11 +73,18 @@ noncomputable def Hypercube (n : ℕ) : WeightedGraph (Fin (2^n)) where
   herm := by
     -- `hammingDist` is symmetric ⇒ adjacency matrix is real-symmetric ⇒
     -- Hermitian.
-    sorry
+    refine Matrix.IsHermitian.ext (fun x y => ?_)
+    show star (if hammingDist n y x = 1 then (1 : ℂ) else 0)
+        = if hammingDist n x y = 1 then (1 : ℂ) else 0
+    rw [hammingDist_comm n y x]
+    by_cases h : hammingDist n x y = 1
+    · rw [if_pos h]; simp
+    · rw [if_neg h]; simp
   loopless := by
     intro v
     -- `hammingDist v v = 0 ≠ 1`.
-    sorry
+    rw [hammingDist_self]
+    simp
 
 /-- The all-zeros bit-string in `Fin (2^n)` (the **base point** of the
 hypercube). -/

@@ -1,6 +1,10 @@
 -- This module is the root of the `Graphplay` library.
 -- See `paper/graphplay_pitch.typ` and `README.md` for orientation.
 
+-- Upstream-bound infrastructure staging (PR-ready, Mathlib-general)
+import Graphplay.ForMathlib.Basic
+import Graphplay.ForMathlib.HilbertSchmidt
+
 -- Core spine (Towers 1-2)
 import Graphplay.Basic
 import Graphplay.Weighted
@@ -35,6 +39,15 @@ import Graphplay.Categorical.Topos
 import Graphplay.Tower6
 import Graphplay.Tower7
 
+-- Computable substrate + surface embeddings + demo
+import Graphplay.Computable
+import Graphplay.Computable.Float
+import Graphplay.CombinatorialMap
+import Graphplay.Examples.Torus
+import Graphplay.Examples.KleinBottle
+import Graphplay.Examples.HeawoodOnTorus
+import Graphplay.Demo
+
 -- k-ary relational
 import Graphplay.Relational
 
@@ -56,6 +69,7 @@ import Graphplay.PST.QuotientIff
 -- Algorithms (γ-loops L4, L6 + β)
 import Graphplay.Algorithm.WLRefinement
 import Graphplay.Algorithm.WLOrbit
+import Graphplay.Algorithm.Coloring
 import Graphplay.Algorithm.ChiralOpt
 import Graphplay.Algorithm.StdLibMatch
 import Graphplay.Algorithm.PrimitiveDSL
@@ -66,6 +80,8 @@ import Graphplay.StdLib.Hypercube
 import Graphplay.StdLib.Hamming
 import Graphplay.StdLib.Cayley
 import Graphplay.StdLib.CompleteMultipartite
+import Graphplay.StdLib.Cycle
+import Graphplay.StdLib.Computable
 
 -- Dowsing-rod theorems (open Tamon-corpus extensions)
 import Graphplay.Dowsing.ChiralBundlePST

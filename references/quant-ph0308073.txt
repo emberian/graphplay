@@ -1,0 +1,772 @@
+A note on graphs resistant to quantum uniform mixing
+
+arXiv:quant-ph/0308073v1 13 Aug 2003
+
+William Adamczak
+
+Kevin Andrew
+
+Peter Hernberg
+
+Christino Tamon∗
+
+Abstract
+Continuous-time quantum walks on graphs is a generalization of continuous-time Markov chains on
+discrete structures. Moore and Russell proved that the continuous-time quantum walk on the n-cube
+is instantaneous exactly uniform mixing but has no average mixing property. On complete (circulant)
+graphs Kn , the continuous-time quantum walk is neither instantaneous (except for n = 2, 3, 4) nor
+average uniform mixing (except for n = 2). We explore two natural group-theoretic generalizations of
+the n-cube as a G-circulant and as a bunkbed G ⋊ Z2 , where G is a finite group. Analyses of these
+classes suggest that the n-cube might be special in having instantaneous uniform mixing and that nonuniform average mixing is pervasive, i.e., no memoryless property for the average limiting distribution;
+an implication of these graphs having zero spectral gap. But on the bunkbeds, we note a memoryless
+property with respect to the two partitions. We also analyze average mixing on complete paths, where
+the spectral gaps are nonzero.
+
+1 Introduction
+In quantum information processing, a quantum analogue of classical random walks has been the focus of
+study in a sequence of works [9, 6, 4, 1, 13, 12]. There are two interesting variants of this quantum analogue
+of random walks on graphs. The first variant is the discrete quantum walk model studied originally by Ambainis et al. [4] and Aharonov et al. [1]. Many similarities have been shown between classical and quantum
+walks in this discrete setting. On the other hand, a quantum variant of continuous-time Markov chains, introduced by Farhi and Gutmann [9], has shown more differences in classical versus quantum behavior. This
+was exploited beautifully in a recent work by Childs et al. [5] where an exponential computational speedup
+was achieved via continuous-time quantum walks.
+An earlier work by Moore and Russell [13] studied continuous-time quantum walk on the n-cube. They
+proved that there are times when the probability distribution corresponding to the quantum walk is exactly
+uniform. This property is called instantaneous exact uniform mixing. In [2], it is shown that this property is
+not shared by some circulant graphs, notably the large complete graphs Kn (except for K2 , K3 , and K4 ).
+Recently, Gerhardt and Watrous [10] proved that the non-uniform mixing also afflicts the important Cayley
+graphs of the symmetric groups Sn (except for the trivial case of S2 ).
+The focus of this note is on continuous-time quantum walk on graphs that are generalizations of the
+circulants and the n-cube. Our goal is to understand better the continuous-time quantum mixing behavior
+on these highly symmetric graphs. The two natural group-theoretic generalizations are as follows. Given a
+group G, a matrix MG is called a G-circulant [8] if MG [g, h] = f (gh−1 ), for some function f : G → C.
+When G = Zn , we get the usual circulant graphs, and when G = Zn2 , we get the n-cube. The characters of
+G are helpful in analyzing the spectra of MG whenever f is a class function, i.e., a function constant on the
+conjugacy classes of G.
+∗
+
+Contact author: tino@clarkson.edu
+
+1
+
+The second generalization arises from groups that are semidirect products G⋊Z2 , where G is an arbitrary
+group. We recover the n-cube by letting G = Z2n−1 . Also, certain Cayley graphs of the dihedral group
+Dn = Zn ⋊ Z2 and the symmetric group Sn = An ⋊ Z2 fall under this category. We use the term bunkbed to
+describe a Cayley graph consisting of two isomorphic copies of a graph connected by parallel edges. Not all
+interesting Cayley graphs can be viewed in this way; the natural Cayley graph of the symmetric group under
+a generating set that are transpositions does not fall under this example. In another setting, an interesting
+connection between semidirect products on groups and expansion properties of graphs was studied by Alon
+et al. [3]. The term bunkbed was coined by Häggstrom in connection with stochastic (physical) processes
+on product graphs [11].
+Not many graphs are known to have average uniform mixing. An argument given in [1] showed that a
+graph with distinct eigenvalues has average uniform mixing under mild assumptions on its eigenvectors. In
+particular, if the adjacency matrix of the graph is diagonalized by either the Fourier or Hadamard matrices,
+then average uniform mixing holds. The graphs diagonalized by the Fourier and Hadamard matrices are
+the circulant and the hypercubic graphs, respectively. Some elementary observations show that any Abelian
+circulants, which include the aforementioned graphs, do not have distinct eigenvalues, except for the smallest one, i.e., K2 . In fact, the analysis on the average probability of the starting vertex suggests that the
+continuous-time quantum walk exhibit a memory of its initial conditions. More specifically, the average
+probability of the starting vertex is larger than most of the other vertices. Subsequently, we analyze the total
+variation distance from uniformity of the average distributions arising from continuous-time quantum walks
+on some circulants.
+In the analysis of bunkbed graphs, we note a memoryless property with respect to the two isomorphic
+copies in the bunkbed (a trait inherited seemingly from K2 ). In the special case of the dihedral group Dn ,
+the bunkbed is obtained as a Cayley graph using a minimal generating set; other alternatives for the Cayley
+graphs include the cycle, the complete bipartite graph (obtained using a conjugacy generating set) and the
+trivial complete graph. None of these admit average uniform mixing by a reduction to circulants or a simple
+analysis on the bunkbed.
+Finally, we consider a natural class of graphs with distinct eigenvalues, namely the complete paths. Although these graphs distinct eigenvalues, they exhibit non-classical average mixing, i.e., the average limiting
+probability of the continuous-time quantum walk does not equal the classical stationary distribution (which
+is not the uniform distribution). In a role reversal from the circulant phenomena, the average probability of
+the starting vertex is smaller than what is classically expected.
+
+2 Continuous-time quantum walks
+A model of continuous-time quantum walk on graphs was introduced by Farhi and Gutmann [9] (see also
+[6, 13]). Let G = (V, E) be a simple, undirected, connected n-vertex graph; we focus only on graphs with
+these properties. Let H be the adjacency matrix of G defined as H[j, k] = [[(j, k) ∈ E]], for j, k ∈ [n],
+where [[S]] is 1 if the statement S is true, and 0 if it is false. The amplitude wave function |ψ(t)i at time t
+obeys the Schrödinger’s equation
+d
+(1)
+iℏ |ψ(t)i = H|ψ(t)i
+dt
+or (assuming from now on ℏ = 1) |ψ(t)i = e−iHt |ψ(0)i. Assuming the particle starts at vertex 0, the initial
+wave function is |ψ(0)i = |0i. The probability that the particle is at vertex j at time t is given by
+Pt (j) = |hj|ψ(t)i|2 .
+2
+
+(2)
+
+The average probability that the particle is at vertex j is given by
+1
+P (j) = lim
+T →∞ T
+
+Z T
+
+Pt (j)dt.
+
+(3)
+
+0
+
+Let Spec(H) be the spectrum of H, i.e., the set of all eigenvalues λ0 ≥ . . . ≥ λn−1 of H. The spectral
+gap is defined as τ (H) = minj6=k |λj − λk |; this is non-zero if and only if all eigenvalues are distinct.
+Since H is Hermitian, Ut = e−iHt is unitary. Moreover H and Ut share the same orthonormal eigenvectors. If hλj , |zj iij∈[n] are the eigenvalue and eigenvector
+pairs of H, then he−iλj t , |zj iij∈[n] are the
+P
+eigenvalue and eigenvector pairs of Ut . So, if |ψ(0)i = j∈[n] hzj |0i|zj i, then
+n−1
+X
+
+|ψ(t)i = e−iHt
+
+j=0
+
+hzj |0i|zj i =
+
+n−1
+X
+j=0
+
+hzj |0ie−iλj t |zj i.
+
+(4)
+
+Given two probability distributions
+P, Q on a finite set S, the total variation distance between P and Q
+P
+is defined as ||P − Q|| =
+|P
+(s) − Q(s)|. We now define the two relevant notions of mixing in
+s∈S
+continuous-time quantum walks on graphs.
+Definition 1 (instantaneous and average mixing in continuous-time quantum walks [13, 1])
+Let G = (V, E) be a graph and let U be the uniform distribution on the vertices of G. Let Pt and P be the
+instantaneous and average probability distributions of a continuous-time quantum walk on G. For ǫ ≥ 0,
+• G has instantaneous ǫ-uniform mixing if there exists t ∈ R+ when ||Pt − U || ≤ ǫ.
+• G has average ǫ-uniform mixing if ||P − U || ≤ ǫ.
+G has average classical mixing if the average probability P equals the stationary distribution of a classical
+discrete lazy random walk on G, i.e., the walk 12 I + 21 A, where A is the transition probability matrix of G.
+Next, we state a result from [1] showing that a graph with distinct eigenvalues is likely to exhibit average
+uniform mixing. Their result was stated for the discrete quantum walk model, but is easily adapted to the
+continuous-time model.
+Lemma 1 (Aharonov, Ambainis, Kempe, Vazirani [1])
+Let G = (V, E) be a simple, n-vertex connected, undirected graph with adjacency matrix H, whose
+eigenvalues are λ0 ≥ . . . ≥ λn−1 with corresponding orthonormal eigenvectors |z0 i, . . . , |zn−1 i. In a
+continuous-time quantum walk on G starting at vertex 0, the average probability of vertex ℓ is
+P (ℓ) =
+
+n−1
+X
+
+hzj |0ih0|zk ihℓ|zj ihzk |ℓi[[λj = λk ]].
+
+(5)
+
+j,k=0
+
+Moreover, if all eigenvalues are distinct, then P (ℓ) =
+
+Pn−1
+
+2
+2
+j=0 |hℓ|zj i| |hzj |0i| .
+
+Proof The average probability of observing the particle at vertex ℓ is
+1
+T →∞ T
+
+P (ℓ) = lim
+
+Z T
+0
+
+|hℓ|e−itH |ψ(0)i|2 dt =
+
+n−1
+X
+
+1
+T →∞ T
+
+hzj |0ih0|zk ihℓ|zj ihzk |ℓi lim
+
+j,k=0
+
+3
+
+Z T
+0
+
+e−it(λj −λk ) dt. (6)
+
+Since limT →∞ T1
+
+RT
+0
+
+e−it∆ dt = [[∆ = 0]], this yields the claim.
+
+So, if all eigenvalues are distinct, then average uniform mixing is achieved, under mild conditions on
+the eigenvectors. In particular, there is hope if the graph is diagonalized by the Fourier or Hadamard matrix;
+however, these graphs do not have distinct eigenvalues, as we observe later. Nevertheless, Aharonov et al.
+[1] proved that discrete quantum walks on odd cycles are average uniform mixing.
+
+3 Group-theoretic circulants
+Diaconis [8] described a beautiful group-theoretic generalization of circulants. Let G be a group of order
+n and let f : G → C be a function defined over G. Consider the matrix MGf defined on G × G as
+MGf [s, t] = f (st−1 ). Modulo the choice of f , G = Zn yields the standard circulants and G = Z2 × . . . × Z2
+yields the hypercubic graphs (which includes the n-cube as a special case).
+Let ρ : G → GL(n, C) be a representation1 of G with dimension n. The Fourier transform of f at ρ is
+X
+fˆ(ρ) =
+f (x)ρ(x).
+(7)
+x∈G
+
+Fourier inversion reconstructs f from its Fourier transform at all irreducible representations ρ1 , . . . , ρh of G
+with dimensions d1 , . . . , dh , respectively:
+h
+
+f (x) =
+
+1 X
+dj T r(ρj (x−1 )fˆ(ρj )).
+|G|
+
+(8)
+
+j=1
+
+For each irreducible representation ρj , let Dj = diag(fˆ(ρj )) be a d2j × d2j block matrix. Now let D =
+p
+diag(D1 , . . . , Dh ). Define the vector ψj of length d2j as ψj (x) = ( dj /|G|)(ρj (x)[s, t])1≤s,t≤dj and the
+vector ψ(x) = (ψj (x))hj=1 of length |G|.
+If f : G → C is a class function over the group G = {x1 , . . . , xN }, i.e., f is constant on the conjugacy
+classes of G, then, MGf is unitarily diagonalized by Ψ = (ψ(x1 ), . . . , ψ(xN )), i.e.,
+MGf = Ψ† DΨ,
+
+(9)
+
+where, for j ∈ [n], Dj = λj Id2 , χj (x) = T r(ρj (x)) is the character of ρj at x, and the eigenvalue is
+j
+
+λj =
+
+1 X
+f (x)χj (x).
+dj
+
+(10)
+
+x∈G
+
+From the above, if a group G contains a representation of dimension greater than 1, then the matrix MGf ,
+for some class function f , has non-distinct eigenvalues. For Abelian groups, where all representations are
+of dimension 1, all eigenvalues of MGf are not guaranteed to be distinct, as we observe next.
+1
+
+See Serre [14] for an excellent source on group representation theory.
+
+4
+
+3.1 Abelian circulants and average uniform mixing
+
+
+
+
+
+1 1
+Hn−1 Hn−1
+Given the Hadamard matrix H2 =
+be the Hadamard
+of order 2, let Hn =
+1 −1
+Hn−1 −Hn−1
+matrix of order n > 2 defined recursively in terms the Hadamard matrix of order n − 1. We call graph G a
+Hadamard circulant if it is diagonalized by some Hadamard matrix Hn . Alternatively, these are G-circulant
+matrices for G = Z2 × . . . × Z2 . The following result was a main result in [13].
+Theorem 2 (Moore, Russell [13])
+The continuous-time quantum walk on the n-cube is instantaneous exactly uniform for times t = k π4 n, for
+odd positive integers k. Also, there is ǫ > 0 such that no ǫ-average mixing exists.
+Equation (5) of Aharonov et al. suggests that a graph with distinct eigenvalues diagonalized by Hadamard
+matrices has average uniform mixing; but these graphs have spectral gap zero.
+Lemma 3 Let G be a graph diagonalized by Hn , for n > 2. Then G has spectral gap zero.
+Qn
+n defined for each a ∈ Zn as χ (x) =
+Proof Consider the characters
+of
+Z
+a
+2
+2
+j=1 (1 − 2aj xj ). From
+P
+n
+Equation (10), we get λa = x∈Zn f (x)χa (x), where f : Z2 → {0, 1} defines the first column of the
+2
+adjacency matrix of G. Let |f | = {x 6= 0n : f (x) = 1}. Assume that |f | < 2n − 1, otherwise we get
+the complete graph which has only 2 distinct eigenvalues. If |f | is even, then λa ∈ {0, ±2, . . . , ±|f |}.
+Since the eigenvalues can take at most |f | + 1 < 2n values, by the pigeonhole principle, there exist two
+non-distinct eigenvalues. If |f | is odd, then λa ∈ {±1, ±3, . . . , ±|f |}. Similarly, the eigenvalues range on
+at most |f | < 2n − 1 values, and again there exist two non-distinct eigenvalues.
+Theorem 4 For Abelian G, no G-circulant, except for K2 , is average uniform mixing.
+
+Proof Let G = Zn1 × . . . × Znk be an Abelian group. If all elements of G have order 2 (except for
+the identity), we appeal to Lemma
+Q 3. Otherwise, fix a ∈ G with order greater than 2. The character
+corresponding to a is χa (x) = kj=1 χaj (xj ). From Equation (10),
+λa =
+
+X
+x6=0
+
+f (x)χa (x) =
+
+X
+
+f (x)χ−a (−x) =
+
+x6=0
+
+X
+
+f (−x)χ−a (−x) = λ−a .
+
+(11)
+
+x6=0
+
+Thus, the spectral gap of MGf is zero. Finally, since G is Abelian, its characters are complex roots of unity;
+thus, applying Lemma 1, we obtain the claim.
+The above theorem implies that the n-cube and the standard circulant graphs are not average uniform mixing,
+as summarized in the following corollaries. Recall that Moore and Russell [13] proved a stronger nonuniform mixing on the n-cube.
+Corollary 5 No Zn2 -circulant and no Zn -circulant, except for K2 , is average uniform mixing.
+
+3.2 Zn -circulants and average almost uniform mixing
+Next we consider average almost uniform mixing of circulants. We observe that the complete cycle and the
+complete graphs form opposite extremes in behavior with respect to average almost uniform mixing.
+5
+
+Theorem 6 The complete cycle Cn is average (1/n)-uniform mixing.
+
+Proof Let ω = exp(2πi/n). Using Equation (5), we have
+n−1
+
+P (ℓ) =
+
+1 X (j−k)ℓ
+1
+1 X (j−k)ℓ
+ω
+[[λj = λk ]].
+ω
+[[λj = λk ]] = + 2
+2
+n
+n n
+
+(12)
+
+j6=k
+
+j,k=0
+
+P b
+A result of Diaconis and Shahshahani (see [7]; also [13]) states ||P − U || ≤ 41 ρ |P
+(ρ)|2 , where the sum
+is over nontrivial irreducible representations. The characters of Zn are given by χa (x) = ω ax , and thus, for
+a 6= 0,
+X
+X
+1
+b (a) = X P (ℓ)χ (ℓ) = 1
+(13)
+P
+ω (j−k+a)ℓ = .
+a
+n2
+n
+ℓ
+
+j6=k: λj =λk
+
+ℓ
+
+The last equality is because there is a unique pair (j, k) such that j − k + a = 0; this pair contributes n to
+the sum while the other pairs contribute 0 to the sum. Therefore, ||P − U || ≤ (n − 1)/4n2 < 1/4n.
+Theorem 7 (Ahmadi et al. [2]) The complete graph Kn is not average (1/nO(1) )-uniform mixing.
+
+Proof As shown in [2], for ℓ 6= 0, we have P (ℓ) = 2/n2 , and P (0) = 1 − 2(n − 1)/n2 . Thus
+||P − U || = 2(1 − 1/n)(1 − 2/n) ∼ 2.
+Borrowing a terminology from spectral graph theory, a graph G is called type k if it has k distinct eigenvalues. The complete graph Kn is type 2, whereas the complete cycle Cn is type 1 + ⌊n/2⌋. Consider
+a random Zn -circulant C(n, 1/2), where we set f (0) = 0, and for j ∈ {1, . . . , ⌊n/2⌋}, we choose
+f (j) = f (n − j) to be independent Bernoulli random {0, 1}-variables. The expected eigenvalues of
+C(n, 1/2) satisfy E[λ0 ] = ⌊n/2⌋, and E[λj ] = − 12 , for j 6= 0. By standard concentration bounds, the
+values λj , for j 6= 0, are concentrated around its mean (and median). So, the average type of a random
+circulant is near Kn . A detailed analysis on the type spectra of random Zn -circulants would be helpful.
+Conjecture 1 Almost all Abelian circulants are not average (1/nO(1) )-uniform mixing.
+
+4 Group-theoretic bunkbeds
+Given a group G and a set S ⊆ G, a Cayley graph Γ(G, S) is defined on the vertex set V = G and edge
+set E = {(g, h) : ∃s ∈ S h = gs}. The graph Γ(G, S) is undirected if S is closed under taking inverses,
+i.e., for all s ∈ S, s−1 ∈ S, and is connected if S is a generating set, i.e., G = hSi. Some additional
+requirements might be placed on S, for example, S must be a minimal generating set, i.e., for any s ∈ S,
+hS \ {s}i 6= G, or S must be a conjugacy class (see [10]).
+Definition 2 (Bunkbed graph)
+Let G be a group that is a semidirect product A ⋊ Z2 , where A = hgj : j ∈ [k]i is a group generated by
+k generators {g1 , . . . , gk }. Suppose the relations a2 = e, agj a−1 ∈ {gj−1 , gj }, hold for each j ∈ [k]. If
+S = {a} ∪ {gj , gj−1 : j ∈ [k]}, then the Cayley graph Γ(G, S) is called a (group-theoretic) bunkbed of G.
+
+6
+
+The vertex set of a bunkbed G = A ⋊ Z2 is VG = {0, 1} × VA , where VA is the vertex set of the
+Cayley graph GA of A. The bunkbed G consists of two isomorphic copies of GA connected by parallel
+edges. Let Pt (b, ℓ) be the probability of observing the particle at vertex (b, ℓ) at time t, where b ∈ {0, 1} and
+ℓ ∈ VA ; the corresponding average probability is denoted P (b, ℓ). We consider also the conditional average
+probability P b (ℓ) over the two partitions, for each b ∈ {0, 1}.
+Theorem 8 In a continuous-time quantum walk on the bunkbed G = A ⋊ Z2 , we have P 0 ≡ P 1 .
+
+Proof Let An be the adjacency matrix of the Γ(A, hgj : j ∈ [k]i) with n vertices. The adjacency matrix of
+G is H = I2 ⊗ An + X2 ⊗ In , where Ik is the k × k identity matrix and X2 is the Pauli X matrix. If |z0 i
+and |z1 i are the common eigenvectors of I2 and X2 (both being circulants), and |αj i are the eigenvectors of
+An with eigenvalues λj , j ∈ [n], then, assuming the continuous-time quantum walk starts at vertex (0, 0n ),
+|ψ(t)i = e−iHt |0i|0n i = e−iHt
+=
+
+1
+n
+XX
+
+1
+X n
+X
+b=0 j=0
+
+hzb |0ihαj |0n i|zb i|αj i
+
+hzb |0ihαj |0n ie−it(I2 ⊗An ) e−it(X2 ⊗In ) |zb i|αj i, since I2 ⊗ An and X2 ⊗ In commute
+
+b=0 j=0
+n
+X
+−it
+
+= e
+
+j=0
+
+hz0 |0ihαj |0n ie−itλj |z0 i|αj i + eit
+
+n
+X
+hz1 |0ihαj |0n ie−itλj |z1 i|αj i
+j=0
+
+√
+Since hz0 |0i = hz1 |0i = 1/ 2, we have
+
+n
+ X
+1
+√ e−it |z0 i + eit |z1 i ⊗
+hαj |0n ie−itλj |αj i
+2
+j=0
+
+|ψ(t)i =
+
+n
+X
+hαj |0n ie−itλj |αj i.
+= (cos(t)|0i − i sin(t)|1i) ⊗
+j=0
+
+For b ∈ {0, 1} and ℓ ∈ [n], the probability of observing the particle at vertex (b, ℓ) at time t is
+2
+
+2
+
+Pt (b, ℓ) = [(1 − b) cos (t) + b sin (t)]
+Given that limT →∞ T1
+for ℓ ∈ [n],
+
+RT
+0
+
+n−1
+X
+
+j,k=0
+
+e−it(λj −λk ) hαj |0n ih0n |αk ihℓ|αj ihαk |ℓi.
+
+e−it∆ = [[∆ = 0]] and limT →∞ T1
+
+P (0, ℓ) = P (1, ℓ) =
+
+n
+
+RT
+0
+
+cos2 (t)dt = limT →∞ T1
+
+1 X
+hαj |0n ih0n |αk ihℓ|αj ihαk |ℓi[[λj = λk ]].
+2
+
+RT
+0
+
+(14)
+
+sin2 (t)dt = 12 ,
+(15)
+
+j,k=0
+
+We conjecture that no Abelian bunkbed, except for K2 , is average uniform mixing.
+Conjecture 2 For Abelian G, no G-bunkbed, i.e., G ⋊ Z2 , except for K2 , is average uniform mixing.
+A graph G = A ⋊ Z2 is called a circulant bunkbed if A is a circulant graph. The only known circulant
+bunkbeds with instantaneous uniform mixing are the n-cube and K4 ⋊ Z2 ⋊ . . . ⋊ Z2 (given that K4 also
+mixes uniformly at multiples of π/4; see [2]). It seems plausible that these are the only ones.
+7
+
+4.1 Dihedral groups
+Let Dn = Zn ⋊ Z2 be the dihedral group of order 2n defined by two generators a and b where Dn =
+ha, b : an = b2 = 1, bab = a−1 i. The Cayley graph G = Γ(Dn , S = {b, a, a−1 } is a bunkbed graph with
+two isomorphic cycles Cn joined by parallel edges. If S = {b, ab}, then G is the complete cycle C2n of
+length 2n. Both choices of S are minimal but neither are conjugacy classes. Some non-minimal choices of
+S include the trivial S = Dn and the conjugacy class S = {b, ab, a2 b, . . . , an−1 b} (only for n even) which
+yield the complete graph K2n and the complete bipartite graph Kn,n , respectively. None of these produce
+graphs with average uniform mixing for the continuous-time quantum walk.
+On Abelian groups G, a class function f may assign arbitrary values to elements of G. On groups of the
+f
+form G ⋊ Z2 , we ask if a Boolean class function could induce a bunkbed graph through MG⋊Z
+. A negative
+2
+answer would show a limitation of the group circulant method in analyzing bunkbeds.
+
+5 Average mixing on paths
+We consider a rare natural class of graphs with distinct eigenvalues – the complete paths Pn of order n ≥ 2.
+A classical discrete lazy random walk on Pn has a stationary distribution π defined as π(0) = π(n − 1) =
+1/2(n − 1), and π(j) = 1/(n − 1), for 1 ≤ j ≤ n − 2.
+Theorem 9 No complete path, except for K2 , is average classical mixing.
+
+Proof The complete spectrum of Pn is given by Spitzer [15]. For j ∈ [n], the eigenvalue λj of Pn and its
+eigenvector |vj i are given by
+r
+
+
+
+
+j+1
+2
+j+1
+π , hℓ|vj i =
+sin
+π(ℓ + 1) .
+(16)
+λj = cos
+n+1
+n+1
+n+1
+Note
+−itPn
+
+Pt (0) = |h0|e
+
+X
+4
+|0i| =
+sin2
+2
+(n + 1)
+2
+
+j,k
+
+
+
+
+
+
+j+1
+2 k+1
+π sin
+π e−it(λj −λk ) .
+n+1
+n+1
+
+(17)
+
+Since all eigenvalues of Pn are distinct, the average probability of the starting vertex 0 is
+Z
+1 T
+|h0|e−itPn |0i|2
+P (0) = lim
+T →∞ T 0
+
+
+
+
+Z
+X
+4
+j +1
+1 T −it(λj −λk )
+2 k+1
+2
+=
+π
+sin
+π
+lim
+sin
+e
+T →∞ T 0
+(n + 1)2
+n+1
+n+1
+j,k
+
+
+X
+j +1
+4
+4
+π
+sin
+=
+(n + 1)2
+n+1
+j
+
+≤
+since
+
+R
+
+3π
+4
+,
+2
+(n + 1) 8
+
+3
+1
+sin4 (x)dx = − 41 sin3 (t) cos(t) + 3t
+8 − 16 sin(2t) + C. This implies that P (0) < 2(n−1) , for n > 5.
+
+Given that P (0) = 1/2(n − 1), if n = 2, and P (0) > 1/2(n − 1), if n = 3, 4, 5, we have the claim.
+We were unable to determine yet if Pn is average ǫ-classical mixing.
+8
+
+Acknowledgments
+This work is supported in part by NSF DMR-0121146 and (REU) DMS-0097113. We thank P. Høyer for
+helpful discussions in the early stages of this research. Part of this work was done while C. T. visited the
+University of Calgary; he is grateful for the kind hospitality of R. Cleve, P. Høyer, and J. Watrous.
+
+References
+[1] D. Aharonov, A. Ambainis, J. Kempe, and U. Vazirani (2001), Quantum Walks on Graphs, in Proc.
+33rd ACM Ann. Symp. Theory of Computing (ACM Press), 50-59.
+[2] A. Ahmadi, R. Belk, C. Tamon, C. Wendler (2002), Mixing in continuous quantum walk on graphs,
+quant-ph/0209106.
+[3] N. Alon, A. Lubotzky, A. Wigderson (2001), Semi-direct product in groups and Zig-zag product in
+graphs: Connections and applications, in Proc. 42nd IEEE Ann. Symp. Foundations of Computer
+Science (IEEE Society), 630-637.
+[4] A. Ambainis, E. Bach, A. Nayak, A. Viswanath, and J. Watrous (2001), One-dimensional Quantum
+Walks, in Proc. 33rd ACM Ann. Symp. Theory of Computing (ACM Press), 60-69.
+[5] A. Childs, E. Deotto, R. Cleve, E. Farhi, S. Gutmann, D. Spielman (2003), Exponential algorithmic
+speedup by quantum walk, in Proc. 35th ACM Ann. Symp. Theory of Computing (ACM Press),
+59-68.
+[6] A. Childs, E. Farhi, and S. Gutmann (2002), An example of the difference between quantum and
+classical random walks, Quantum Information Processing 1, 35.
+[7] P. Diaconis (1988), Group Representations in Probability and Statistics, Institute of Mathematical
+Statistics.
+[8] P. Diaconis (1990), Patterned Matrices, in Matrix Theory and Applications, Proceedings of Symposia
+in Applied Mathematics, Volume 40, American Mathematical Society, 37-58.
+[9] E. Farhi and S. Gutmann (1998), Quantum computation and decision trees, Phys. Rev. A 58.
+[10] H. Gerhardt and J. Watrous (2003), Continuous-time quantum walks on the symmetric group, in
+quant-ph/0305182. To appear in RANDOM’03.
+[11] O. Häggstrom (2003), Probability on bunkbed graphs, in Formal Power Series and Algebraic Combinatorics (FPSAC 2003), K. Eriksson and S. Linusson, eds. (Linköpings universiteit), 19-27.
+[12] J. Kempe (2003), Quantum Random Walks Hit Exponentially Faster, in quant-ph/0205083. To appear
+in RANDOM’03.
+[13] C. Moore and A. Russell (2002), Quantum Walks on the Hypercube, in Proc. 6th Int. Workshop
+Randomization and Approximation in Computer Science (RANDOM’02). Also in quant-ph/0104137.
+[14] J.-P. Serre (1977), Linear Representations of Finite Groups, Springer.
+[15] F. Spitzer (1976), Principles of Random Walk, 2nd ed., Springer.
+
+9
+
+•
+
+•
+
+•??
+ ???
+
+?
+
+ •?? ???
+?
+
+?
+•
+??  ?? •
+?
+?
+??? ???
+
+
+?
+?
+
+•?
+?? ?• •
+??
+
+?? 
+?
+•
+
+R
+lll• RRRR,
+•,
+,,
+ 
+,
+•,,
+•
+,,
+,R
+
+• RRR lll•
+R•ll
+l
+•l
+
+l•,?R?RR
+,l?R,?lRlRl ,,,??lR?Rl•,,
+•
+R l
+
+ ,??lRlRl,R??,
+,?lRll,l,l ???,R,RR?R?,,
+•,?RRR,  ? , lll•
+,,??? R,,RRlR?l?l,,
+,Rll?l?,l,l RR?R?,
+• RRR??, lll•
+Rll
+•
+
+Figure 1: Some Abelian circulants and their quantum mixing characteristics. From left to right: (a) the
+smallest circulant K2 ; instantaneous and average uniform. (b) the (Z2 × Z2 × Z2 )-circulant, i.e., 3-cube;
+instantaneous but not average uniform. (c) the cycle Z8 -circulant, i.e., C8 ; unknown instantaneous behavior,
+but average (1/nO(1) )-uniform. (d) the complete Z8 -circulant, i.e., K8 ; neither instantaneous nor average
+(1/nO(1) )-uniform.
+
+10
+
+
