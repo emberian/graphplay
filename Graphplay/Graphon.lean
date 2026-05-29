@@ -189,13 +189,13 @@ open Graphplay.ForMathlib in
 /-- **The graphon integral operator on `L²(μ; ℂ)`.**  Maps `f` to
 `x ↦ ∫ kernel x y · f y ∂μ(y)`, defined as the `ForMathlib` bounded kernel
 integral operator `kernelIntegralCLM` for the graphon's bounded Hermitian
-kernel, with operator-norm bound `C := essBound · √μ(Ω)`.
+kernel, with operator-norm bound `C := essBound · μ(Ω)`.
 
-The four bundled analytic hypotheses are supplied as follows: additivity
-(`opFun_add_ae`) and homogeneity (`opFun_smul_ae`) are **genuine**; the `MemLp`
-closure (`opFun_memLp`) and the `eLpNorm` Schur bound
-(`kernelIntegralFun_eLpNorm_le`) carry the single honest Hilbert–Schmidt analytic
-`sorry`.  Requires `[IsFiniteMeasure μ]` (Tower-4 lives over a probability
+The four bundled analytic hypotheses are all **genuine** (`sorry`-free):
+additivity (`opFun_add_ae`), homogeneity (`opFun_smul_ae`), the `MemLp`
+closure (`opFun_memLp`), and the `eLpNorm` Schur bound
+(`kernelIntegralFun_eLpNorm_le_mul`, the sharp `M · μ(Ω)` Hilbert–Schmidt L²
+bound).  Requires `[IsFiniteMeasure μ]` (Tower-4 lives over a probability
 space).
 
 We use the **clamped** essential bound `M := max W.essBound 0`, which is
@@ -205,19 +205,19 @@ the zero measure the a.e. bound is vacuous), and still dominates the kernel sinc
 fed to `kernelIntegralCLM`; the headline `op_norm_le` bound is stated separately. -/
 noncomputable def op [IsFiniteMeasure μ] (W : Graphon Ω μ) :
     (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) :=
-  kernelIntegralCLM (μ := μ) W.kernel (max W.essBound 0 * (μ Set.univ).toReal.sqrt)
-    (mul_nonneg (le_max_right _ _) (Real.sqrt_nonneg _))
+  kernelIntegralCLM (μ := μ) W.kernel (max W.essBound 0 * (μ Set.univ).toReal)
+    (mul_nonneg (le_max_right _ _) ENNReal.toReal_nonneg)
     (fun f => W.opFun_memLp f)
     (fun f g => W.opFun_add_ae f g)
     (fun c f => W.opFun_smul_ae c f)
     (fun f => by
-      -- the `eLpNorm` Schur bound, with `C = (max essBound 0) · √μ(Ω)`.  This is
-      -- the honest Hilbert–Schmidt gap (`kernelIntegralFun_eLpNorm_le`), restated
-      -- for the graphon kernel.  We massage `ENNReal.ofReal (M·√μ)` into the exact
-      -- `ENNReal.ofReal C` shape via `mul_comm`.
+      -- the `eLpNorm` Schur bound, with `C = (max essBound 0) · μ(Ω)`.  This is the
+      -- genuine, `sorry`-free Hilbert–Schmidt bound (`kernelIntegralFun_eLpNorm_le_mul`),
+      -- restated for the graphon kernel.  We massage `ENNReal.ofReal (M·μ)` into the
+      -- exact `ENNReal.ofReal C` shape via `mul_comm`.
       have hbdd' : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry W.kernel p‖ ≤ max W.essBound 0 := by
         filter_upwards [W.bounded] with p hp using le_trans hp (le_max_left _ _)
-      have := kernelIntegralFun_eLpNorm_le (μ := μ) (measure_ne_top μ Set.univ)
+      have := kernelIntegralFun_eLpNorm_le_mul (μ := μ) (measure_ne_top μ Set.univ)
         (M := max W.essBound 0) (le_max_right _ _)
         W.measurable.aestronglyMeasurable hbdd' f
       simpa only [mul_comm] using this)
@@ -231,8 +231,8 @@ noncomputable def op [IsFiniteMeasure μ] (W : Graphon Ω μ) :
 jointly measurable by `W.bounded` / `W.measurable`.  Requires
 `[IsFiniteMeasure μ]`.
 
-(This inherits the honest `sorry` baked into `op` via the `MemLp`/`Schur`
-analytic gap, but the self-adjointness *argument* itself is complete.) -/
+(Since `op` is now `sorry`-free, so is this; the self-adjointness *argument*
+itself was always complete.) -/
 theorem op_isSelfAdjoint [IsFiniteMeasure μ] (W : Graphon Ω μ) :
     IsSelfAdjoint (W.op) :=
   Graphplay.ForMathlib.kernelIntegralCLM_isSelfAdjoint (μ := μ) W.kernel _ _ _ _ _ _

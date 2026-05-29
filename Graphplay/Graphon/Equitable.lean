@@ -53,6 +53,7 @@ degenerate (we restate this as the hypothesis `cells_finite_pos`).
 -/
 
 import Graphplay.Graphon
+import Mathlib.Analysis.CStarAlgebra.Matrix
 
 open scoped MeasureTheory ENNReal Complex BigOperators
 open MeasureTheory
@@ -954,19 +955,18 @@ theorem exp_intertwine {F G : Type*}
     | succ k ih =>
       intro w
       rw [pow_succ, pow_succ, ContinuousLinearMap.mul_apply, ContinuousLinearMap.mul_apply,
-        ih w, h ((T ^ k) w)]
+        h w, ih (T w)]
   -- `exp S` is the sum of `(n!)⁻¹ • S^n`; evaluate both `exp`-series at `B v` / `v`
   -- through the continuous evaluation maps, then push `B` through the `F`-side sum.
   have hSsum := NormedSpace.exp_series_hasSum_exp' (𝕂 := ℂ) S
   have hTsum := NormedSpace.exp_series_hasSum_exp' (𝕂 := ℂ) T
-  -- Evaluate the operator-valued sums at the respective vectors.
-  have hSeval : HasSum (fun n => ((n ! : ℂ)⁻¹ • (S ^ n)) (B v)) ((NormedSpace.exp S) (B v)) :=
-    (ContinuousLinearMap.apply ℂ G (B v)).hasSum hSsum
-  have hTeval : HasSum (fun n => B (((n ! : ℂ)⁻¹ • (T ^ n)) v)) (B ((NormedSpace.exp T) v)) :=
-    B.hasSum ((ContinuousLinearMap.apply ℂ F v).hasSum hTsum)
+  -- Evaluate the operator-valued sums at the respective vectors (continuous eval map),
+  -- then push the continuous linear `B` through the `F`-side sum.
+  have hSeval := (ContinuousLinearMap.apply ℂ G (B v)).hasSum hSsum
+  have hTeval := B.hasSum ((ContinuousLinearMap.apply ℂ F v).hasSum hTsum)
+  simp only [ContinuousLinearMap.apply_apply] at hSeval hTeval
   -- The two summand families agree termwise: `((n!)⁻¹ • S^n)(B v) = B ((n!)⁻¹ • T^n v)`.
-  refine HasSum.unique hSeval (hSeval.unique ?_ ▸ hTeval)
-  refine HasSum.congr hTeval (fun n => ?_)
+  refine hSeval.unique (hTeval.congr_fun (fun n => ?_))
   rw [ContinuousLinearMap.smul_apply, ContinuousLinearMap.smul_apply, hpow n v, map_smul]
 
 /-- **Evolution corollary.**  The graphon CTQW restricted to the cell-uniform
@@ -1001,37 +1001,44 @@ theorem evolve_restrict_eq_finite_evolve [IsFiniteMeasure μ]
     show (((-(Complex.I * (t : ℂ))) • W.op)) (P.cellUniformIsometry w)
       = P.cellUniformIsometry (T w)
     rw [ContinuousLinearMap.smul_apply, Graphon.op_restrict_eq_quotient P w]
-    -- `(-iτ) • B (toEuclideanLin Q̃ w) = B (toEuclideanCLM ((-iτ)•Q̃) w)`.
-    rw [← map_smul]
-    congr 1
-    show (-(Complex.I * (t : ℂ))) • (Matrix.toEuclideanLin P.symmQuotient) w = T w
-    rw [hT, Matrix.coe_toEuclideanCLM_eq_toEuclideanLin, ← map_smul, ← LinearMap.map_smul]
-    congr 1
-    rw [Matrix.toEuclideanLin_apply, Matrix.toEuclideanLin_apply]
-    simp only [Matrix.smul_mulVec_assoc]
+    -- `T w = toEuclideanCLM ((-iτ)•Q̃) w = toEuclideanLin ((-iτ)•Q̃) w
+    --      = (-iτ) • toEuclideanLin Q̃ w`, so `B (T w) = (-iτ) • B (toEuclideanLin Q̃ w)`.
+    have hTw : T w = (-(Complex.I * (t : ℂ))) • (Matrix.toEuclideanLin P.symmQuotient) w := by
+      have hcoe : T w = (Matrix.toEuclideanLin ((-(Complex.I * (t : ℂ))) • P.symmQuotient)) w := by
+        rw [hT]; rfl
+      rw [hcoe, map_smul, LinearMap.smul_apply]
+    rw [hTw, map_smul]
   -- Now propagate through `exp` and identify `exp T` with `toEuclideanCLM (exp matrix)`.
   have key := exp_intertwine B (((-(Complex.I * (t : ℂ))) • W.op)) T hinter v
-  rw [Graphon.evolve, hB, LinearIsometry.coe_toContinuousLinearMap] at key ⊢
-  rw [show ((-Complex.I) * (t : ℂ)) • W.op = (-(Complex.I * (t : ℂ))) • W.op by
-        rw [neg_mul, neg_smul, neg_smul, neg_mul], key]
+  -- Normalise the LHS: `W.evolve t (B v) = exp ((-(I·t))•W.op) (B v)`.
+  have hLHS : W.evolve t (P.cellUniformIsometry v)
+      = (NormedSpace.exp ((-(Complex.I * (t : ℂ))) • W.op)) (B v) := by
+    rw [Graphon.evolve, hB, LinearIsometry.coe_toContinuousLinearMap,
+      show ((-Complex.I) * (t : ℂ)) • W.op = (-(Complex.I * (t : ℂ))) • W.op by
+        rw [neg_mul]]
+  rw [hLHS, key, hB, LinearIsometry.coe_toContinuousLinearMap]
   congr 1
-  -- `exp T v = exp (toEuclideanCLM ((-iτ)•Q̃)) v = toEuclideanCLM (exp ((-iτ)•Q̃)) v`,
-  -- and `toEuclideanCLM = toEuclideanLin` on a vector.
-  rw [hT]
-  rw [show (NormedSpace.exp (Matrix.toEuclideanCLM (𝕜 := ℂ)
-          ((-(Complex.I * (t : ℂ))) • P.symmQuotient)))
-        = Matrix.toEuclideanCLM (𝕜 := ℂ)
-          (NormedSpace.exp ((-(Complex.I * (t : ℂ))) • P.symmQuotient)) from ?_]
-  · rw [Matrix.coe_toEuclideanCLM_eq_toEuclideanLin]
-    congr 2
-    rw [neg_smul, neg_smul, neg_mul, neg_neg, ← neg_smul]
-    congr 1
-    rw [neg_mul]
-  · -- `toEuclideanCLM` is a continuous star-algebra equiv, so it commutes with `exp`.
+  -- `exp T v = exp (toEuclideanCLM ((-(I·t))•Q̃)) v = toEuclideanCLM (exp ((-(I·t))•Q̃)) v`,
+  -- and `toEuclideanCLM = toEuclideanLin` on a vector; finally match the scalar shape.
+  set e := Matrix.toEuclideanCLM (𝕜 := ℂ) (n := I) with he
+  have hmapexp : NormedSpace.exp T
+      = e (NormedSpace.exp ((-(Complex.I * (t : ℂ))) • P.symmQuotient)) := by
+    -- Equip `Matrix I I ℂ` with the L2-operator `NormedRing`/`NormedAlgebra ℚ` (whose
+    -- topology is *defeq* to the default product topology by `replaceTopology`, so the
+    -- matrix `exp` here is the same term as in the goal).  `toEuclideanCLM` is then a
+    -- continuous ring equiv, so it commutes with `exp` via `NormedSpace.map_exp`.
     let _ : NormedAlgebra ℚ (EuclideanSpace ℂ I →L[ℂ] EuclideanSpace ℂ I) :=
       .restrictScalars ℚ ℂ _
-    exact (map_exp (Matrix.toEuclideanCLM (𝕜 := ℂ)).toAlgEquiv.toRingEquiv
-      (Matrix.toEuclideanCLM (𝕜 := ℂ)).toContinuousAlgEquiv.continuous _).symm
+    let _ : NormedRing (Matrix I I ℂ) := Matrix.instL2OpNormedRing
+    let _ : NormedAlgebra ℂ (Matrix I I ℂ) := Matrix.instL2OpNormedAlgebra
+    let _ : NormedAlgebra ℚ (Matrix I I ℂ) := .restrictScalars ℚ ℂ _
+    rw [hT, he]
+    have hcont : Continuous ⇑e.toAlgEquiv.toRingEquiv :=
+      e.toAlgEquiv.toLinearMap.continuous_of_finiteDimensional
+    exact (NormedSpace.map_exp e.toAlgEquiv.toRingEquiv hcont _).symm
+  rw [hmapexp]
+  -- `toEuclideanCLM A v = toEuclideanLin A v` (defeq on a vector).
+  rfl
 
 end Graphon
 

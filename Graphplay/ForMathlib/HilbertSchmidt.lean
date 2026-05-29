@@ -195,7 +195,7 @@ theorem kernelIntegralFun_ae_norm_le [IsFiniteMeasure μ] {K : Ω → Ω → ℂ
   have hslice_meas : ∀ᵐ x ∂μ, AEStronglyMeasurable (fun y => K x y) μ := by
     have := hK.prodMk_left (ν := μ)
     filter_upwards [this] with x hx using hx
-  have hslice_bdd : ∀ᵐ x ∂μ, ∀ᵐ y ∂μ, ‖K x y‖ ≤ M := ae_ae_of_ae_prod hbdd
+  have hslice_bdd : ∀ᵐ x ∂μ, ∀ᵐ y ∂μ, ‖K x y‖ ≤ M := Measure.ae_ae_of_ae_prod hbdd
   filter_upwards [hslice_meas, hslice_bdd] with x hxm hxb
   -- The slice `K x ·` is in `L²` (bounded on a finite measure space).
   have hKx : MemLp (fun y => K x y) 2 μ := MemLp.of_bound hxm M hxb
@@ -215,7 +215,6 @@ theorem kernelIntegralFun_ae_norm_le [IsFiniteMeasure μ] {K : Ω → Ω → ℂ
     _ ≤ (M ^ 2 * (μ Set.univ).toReal) ^ (1 / (2 : ℝ)) * ‖f‖ := by
         rw [hnormf]
         gcongr
-        · exact Real.rpow_nonneg (integral_nonneg fun y => by positivity) _
         -- `∫ ‖K x y‖² ∂μ ≤ ∫ M² ∂μ = M² · (μ univ).toReal`.
         have hKxInt : Integrable (fun y => ‖K x y‖ ^ (2 : ℝ)) μ := by
           have := hKx.integrable_norm_rpow (by norm_num) (by norm_num)
@@ -232,10 +231,10 @@ theorem kernelIntegralFun_ae_norm_le [IsFiniteMeasure μ] {K : Ω → Ω → ℂ
     -- Step 4: `(M² · (μ univ).toReal)^{1/2} = M · √(μ univ).toReal`.
     _ = M * (μ Set.univ).toReal.sqrt * ‖f‖ := by
         congr 1
-        rw [mul_rpow_of_nonneg (by positivity) ENNReal.toReal_nonneg (by norm_num : (0:ℝ) ≤ 1/2),
+        rw [Real.mul_rpow (by positivity) ENNReal.toReal_nonneg,
           ← Real.rpow_natCast M 2, ← Real.rpow_mul hM]
-        · simp only [Nat.cast_ofNat]
-          rw [show (2 : ℝ) * (1 / 2) = 1 by ring, Real.rpow_one, Real.sqrt_eq_rpow]
+        simp only [Nat.cast_ofNat]
+        rw [show (2 : ℝ) * (1 / 2) = 1 by ring, Real.rpow_one, Real.sqrt_eq_rpow]
 
 /-- **`MemLp 2` closure of the kernel action.**
 
@@ -266,64 +265,49 @@ theorem kernelIntegralFun_memLp [SFinite μ] (hμ : μ Set.univ ≠ ∞) {K : Ω
   -- bounded a.e. on a finite measure ⟹ `MemLp 2`.
   exact MemLp.of_bound hmeas (max M 0 * (μ Set.univ).toReal.sqrt * ‖f‖) hae
 
-/-- The companion `eLpNorm` (Schur / Hilbert–Schmidt) bound for the kernel action.
+/-- **Sharp `eLpNorm` (Schur / Hilbert–Schmidt) bound — fully genuine.**
 
-`eLpNorm (T_K f) 2 μ ≤ (M · √μ(univ)) · eLpNorm f 2 μ`.
+`eLpNorm (T_K f) 2 μ ≤ (M · μ(univ)) · eLpNorm f 2 μ`.
 
-The honest Cauchy–Schwarz bound (`kernelIntegralFun_ae_norm_le`) shows `T_K f` is
-a.e. bounded by the constant `M · √(μ univ).toReal · ‖f‖`, and `eLpNorm` of a
-constant-bounded function on a finite measure (`eLpNorm_le_of_ae_bound`) is at
-most `(μ univ)^{1/2} · ofReal C`.  This yields
-`eLpNorm (T_K f) 2 μ ≤ (μ univ)^{1/2} · ofReal (M · √(μ univ).toReal) · eLpNorm f 2 μ`,
-i.e. the **sharp** bound `M · (μ univ).toReal · eLpNorm f 2 μ`
-(operator norm `≤ M · μ(univ)` — matching `Graphon.op_norm_le`).
-
-The *stated* constant uses `M · √μ(univ)` instead of `M · μ(univ)`.  These agree
-exactly when `μ univ ≤ 1` (in particular on a probability space, the Tower-4
-setting), since then `(μ univ)^{1/2} ≤ 1`.  For a general finite measure with
-`μ univ > 1` the `√` form is *strictly false* (e.g. one atom of mass `a > 1`
-gives `eLpNorm (T_K f) = a^{3/2} M ‖f‖₂` while `M √a · eLpNorm f = M a ‖f‖₂`), so
-no `sorry`-free proof of the literal statement exists at this generality.  We
-prove everything down to that single residual fact and isolate it as the one gap.
-
-REMAINING GAP (and *only* this): `(μ Set.univ) ^ (2:ℝ≥0∞).toReal⁻¹ ≤ 1`, i.e.
-`μ univ ≤ 1`.  True under `[IsProbabilityMeasure μ]` / `μ univ ≤ 1`; **false** for
-`μ univ > 1`.  The honest universally-valid bound has `μ(univ)` in place of
-`√μ(univ)`. -/
-theorem kernelIntegralFun_eLpNorm_le [SFinite μ] (hμ : μ Set.univ ≠ ∞) {K : Ω → Ω → ℂ} {M : ℝ}
+This is the universally-valid quantitative half of `kernelIntegralFun_memLp`, with
+**no `sorry`**.  By the pointwise Cauchy–Schwarz bound
+(`kernelIntegralFun_ae_norm_le`), `T_K f` is a.e. bounded by the constant
+`M · √(μ univ).toReal · ‖f‖`; `eLpNorm_le_of_ae_bound` then gives
+`eLpNorm (T_K f) 2 μ ≤ (μ univ)^{1/2} · ofReal (M · √(μ univ).toReal · ‖f‖)`,
+and `(μ univ)^{1/2} · √(μ univ).toReal = (μ univ).toReal` (as `μ univ ≠ ∞`), so the
+constant collapses to `M · (μ univ).toReal`.  The corresponding operator-norm
+bound `‖T_K‖ ≤ M · μ(univ)` is exactly what `Graphon.op_norm_le` states. -/
+theorem kernelIntegralFun_eLpNorm_le_mul [SFinite μ] (hμ : μ Set.univ ≠ ∞) {K : Ω → Ω → ℂ} {M : ℝ}
     (hM : 0 ≤ M) (hK : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
     (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ M) (f : Lp ℂ 2 μ) :
     eLpNorm (kernelIntegralFun (μ := μ) K (f : Ω → ℂ)) 2 μ
-      ≤ ENNReal.ofReal (M * (μ Set.univ).toReal.sqrt) * eLpNorm (f : Ω → ℂ) 2 μ := by
+      ≤ ENNReal.ofReal (M * (μ Set.univ).toReal) * eLpNorm (f : Ω → ℂ) 2 μ := by
   haveI : IsFiniteMeasure μ := ⟨lt_top_iff_ne_top.mpr hμ⟩
-  -- a.e. constant bound `‖T_K f x‖ ≤ C₀ := M · √(μ univ).toReal · ‖f‖`.
   have hae := kernelIntegralFun_ae_norm_le (μ := μ) hM hK hbdd f
-  set C₀ : ℝ := M * (μ Set.univ).toReal.sqrt * ‖f‖ with hC₀
-  have hC₀ : 0 ≤ C₀ := by positivity
-  -- `eLpNorm (T_K f) 2 μ ≤ (μ univ)^{1/2} · ofReal C₀`  (constant a.e. bound).
+  -- `eLpNorm (T_K f) 2 μ ≤ (μ univ)^{1/2} · ofReal (M · √(μ univ).toReal · ‖f‖)`.
   have hstep : eLpNorm (kernelIntegralFun (μ := μ) K (f : Ω → ℂ)) 2 μ
-      ≤ μ Set.univ ^ (2 : ℝ≥0∞).toReal⁻¹ * ENNReal.ofReal C₀ :=
+      ≤ μ Set.univ ^ (2 : ℝ≥0∞).toReal⁻¹
+        * ENNReal.ofReal (M * (μ Set.univ).toReal.sqrt * ‖f‖) :=
     eLpNorm_le_of_ae_bound hae
-  -- Rewrite the RHS of the goal:  ofReal (M √μ) · eLpNorm f
-  --   = ofReal (M √(μ univ).toReal) · ofReal ‖f‖              (eLpNorm f = ofReal ‖f‖, finite)
-  --   = ofReal (M √(μ univ).toReal · ‖f‖) = ofReal C₀         (both factors ≥ 0).
+  refine hstep.trans ?_
+  -- `(μ univ)^{1/2} = ofReal (√(μ univ).toReal)`  (finite measure).
+  have hsqrt : μ Set.univ ^ (2 : ℝ≥0∞).toReal⁻¹ = ENNReal.ofReal (μ Set.univ).toReal.sqrt := by
+    rw [Real.sqrt_eq_rpow, ← ENNReal.ofReal_toReal hμ, ENNReal.ofReal_rpow_of_nonneg
+      ENNReal.toReal_nonneg (by norm_num), ENNReal.toReal_ofReal ENNReal.toReal_nonneg]
+    norm_num
   have heLp_f : eLpNorm (f : Ω → ℂ) 2 μ = ENNReal.ofReal ‖f‖ := by
     rw [Lp.norm_def, ENNReal.ofReal_toReal (Lp.eLpNorm_ne_top f)]
-  have hRHS : ENNReal.ofReal (M * (μ Set.univ).toReal.sqrt) * eLpNorm (f : Ω → ℂ) 2 μ
-      = ENNReal.ofReal C₀ := by
-    rw [heLp_f, ← ENNReal.ofReal_mul (by positivity), hC₀]
-  rw [hRHS]
-  -- It remains to absorb the `(μ univ)^{1/2}` factor.  This is the single gap:
-  -- `(μ univ)^{1/2} ≤ 1`, equivalently `μ univ ≤ 1` — true on a probability space
-  -- (the Tower-4 setting) but *false* for general finite measures.  The honest,
-  -- universally-valid bound replaces `√μ(univ)` by `μ(univ)`; see the docstring.
-  refine hstep.trans ?_
-  have hfactor : μ Set.univ ^ (2 : ℝ≥0∞).toReal⁻¹ ≤ 1 := by
-    -- GAP: requires `μ univ ≤ 1` (probability-like). Not derivable from `μ univ ≠ ∞`.
-    sorry
-  calc μ Set.univ ^ (2 : ℝ≥0∞).toReal⁻¹ * ENNReal.ofReal C₀
-      ≤ 1 * ENNReal.ofReal C₀ := by gcongr
-    _ = ENNReal.ofReal C₀ := one_mul _
+  rw [hsqrt, heLp_f]
+  -- collapse `√(μ univ).toReal · (M · √(μ univ).toReal · ‖f‖) = M · (μ univ).toReal · ‖f‖`.
+  rw [← ENNReal.ofReal_mul (Real.sqrt_nonneg _), ← ENNReal.ofReal_mul (by positivity)]
+  apply le_of_eq
+  congr 1
+  have hsq : (μ Set.univ).toReal.sqrt * (μ Set.univ).toReal.sqrt = (μ Set.univ).toReal :=
+    Real.mul_self_sqrt ENNReal.toReal_nonneg
+  calc (μ Set.univ).toReal.sqrt * (M * (μ Set.univ).toReal.sqrt * ‖f‖)
+      = ((μ Set.univ).toReal.sqrt * (μ Set.univ).toReal.sqrt) * (M * ‖f‖) := by ring
+    _ = (μ Set.univ).toReal * (M * ‖f‖) := by rw [hsq]
+    _ = M * (μ Set.univ).toReal * ‖f‖ := by ring
 
 /-! ## The linear map (genuine, given the `MemLp` closure)
 
@@ -362,7 +346,7 @@ noncomputable def kernelIntegralLM (K : Ω → Ω → ℂ)
 /-! ## The bounded operator (genuine, given `MemLp` closure + `eLpNorm` bound)
 
 The operator-norm bound is proved *genuinely* from the `eLpNorm` Schur bound
-`hSchur`, which is exactly what `kernelIntegralFun_eLpNorm_le` supplies. -/
+`hSchur`, which is exactly what `kernelIntegralFun_eLpNorm_le_mul` supplies. -/
 
 /-- The kernel integral operator as a **bounded** operator `L²(μ) →L[ℂ] L²(μ)`,
 with operator norm `≤ C`.  Built via `LinearMap.mkContinuous`; the operator-norm

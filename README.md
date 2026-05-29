@@ -18,9 +18,27 @@ settings (the **spine**), with a stdlib of named families, computable
 companions over ℚ, two applied disassembly studies, and a research
 program of eighteen open theorems.
 
-The library currently spans 71+ Lean files; `lake build` emits zero
-errors and roughly 634 `sorry` warnings concentrated in the open-problem
-files. **Statements are precise; proofs are deferred.**
+The library currently spans 93 Lean files; `lake build` emits **zero
+errors**. Two milestones now hold across the whole stack:
+
+- **Every construction is real.** There is no `sorry` in any definition
+  and no `True`-placeholder theorem anywhere — every graph family,
+  operator, partition, channel, bundle, sheaf, and compiler pass is a
+  concrete, fully-elaborated term. (One single irreducible exception: the
+  filtered-colimit-preservation *data* witness `Quotient.mapCocone_isColimit`,
+  honestly isolated.) The project also **builds two runnable executables**
+  (`lake exe graphplay`, `lake exe graphplay-toolkit` — the latter compiles
+  a real spec JSON into a search-compiler report).
+- **The spine is machine-checked.** The finite equitable-partition → quotient
+  → PST/mixing/search lift (Tower 2) *and* its graphon continuous-limit
+  counterpart (Tower 4) are proven **end-to-end and axiom-clean** (`#print
+  axioms` shows only `propext`/`Classical.choice`/`Quot.sound`, no `sorryAx`).
+
+The remaining ~431 `sorry`s are now exclusively *theorem bodies* —
+the deep per-paper results (Godsil existence via Dirichlet/Kronecker, Choi/
+Stinespring, MIP*=RE, infinite-dimensional continuous-spectrum analysis,
+association-scheme coincidences) — that the now-complete scaffolding sets
+up precisely. **Constructions are done; the deep proofs are in progress.**
 
 ## The seven-tower spine
 
@@ -37,12 +55,23 @@ three load-bearing theorems repeat at every level:
 | Tower | Object                              | Status |
 |-------|-------------------------------------|--------|
 | 1     | `SimpleGraph V`                     | proven, computable, `#eval`-able |
-| 2     | `WeightedGraph V` (Hermitian ℂ)     | proven statements; computable via ℚ companions |
-| 3     | Operator system / quantum graph     | upstreamed; ~30 sorries; UCP morphisms in place |
-| 4     | `Graphon Ω μ` (Hilbert–Schmidt op)  | statements + spectral lift; analytic proofs deferred |
-| 5     | Categorical (filtered colimits)     | in progress (sibling agent) |
-| 6     | Sheaves of `*`-algebras             | in progress (sibling agent) |
-| 7     | ∞-categorical / derived             | statement-level only; awaits Mathlib ∞-cat library |
+| 2     | `WeightedGraph V` (Hermitian ℂ)     | **spine lift axiom-clean** (`cellUniformPST_iff_quotientPST`, `spec ⊆`); computable via ℚ companions |
+| 3     | Operator system / quantum graph     | all constructions concrete; UCP/Choi/k-positivity in place; deep analytic theorems (Choi, Stinespring) deferred |
+| 4     | `Graphon Ω μ` (Hilbert–Schmidt op)  | **operator layer axiom-clean** (`op_restrict_eq_quotient`, graphon `cellUniformPST_iff_quotientPST`, `evolve` group laws, HS `MemLp` closure); continuous-spectrum analysis deferred |
+| 5     | Categorical (filtered colimits)     | functors/quotient/adjunction concrete; `FinerThan` is a genuine `Preorder` (lattice axioms shown false at full generality); colimit-preservation data the lone isolated `sorry` |
+| 6     | Sheaves of `*`-algebras             | `constSheaf` concrete (terminal/skyscraper); stalkwise⇒PST proven |
+| 7     | ∞-categorical / derived             | statement-level scaffold; finite-shadow predicates; awaits Mathlib ∞-cat library |
+
+Adjacent to the towers, three new infrastructure layers were added: a
+**loopless-free `LoopyWeightedGraph`** (Laplacian `L = D−A` and self-loop /
+lackadaisical walks, with regular-graph Laplacian↔adjacency equivalence
+proven via diagonal-shift invariance), **first-class graph products**
+`□`/`⊗`/`⊠` (Kronecker-sum/product with eigenvector lemmas, the
+genuinely-proven `exp(M⊗1)=exp(M)⊗1` factorization, and a machine-checked
+**hypercube antipodal PST** at `τ=π/2` built from first principles), and a
+reusable **proof-automation library** (`Graphplay/Tactics.lean`: custom
+tactics `herm_grind`/`modulus_one`/`loopless_grind`/`equitable_discharge`,
+named simp/aesop rule-sets, 18 proven helper lemmas).
 
 ## Entry points by audience
 
@@ -95,6 +124,19 @@ arithmetic does not `#eval`. Graphplay handles this honestly:
   Hermitian complex adjacency, equitable partitions, quotient spectrum.
 - `Graphplay/Bundle.lean`, `PST.lean`, `Mixing.lean`, `Search.lean` —
   constructive bundle engine and three classical lift primitives.
+- `Graphplay/Loopy.lean`, `Loopy/Laplacian.lean`, `Loopy/Search.lean` —
+  loopless-free Hermitian graphs: Laplacian `L = D−A`, self-loop /
+  lackadaisical walks, and the regular-graph Laplacian↔adjacency
+  walk/search equivalence (via diagonal-shift global-phase invariance).
+- `Graphplay/Product.lean`, `Product/PST.lean` — first-class Cartesian
+  `□` / tensor `⊗` / strong `⊠` products (Kronecker sum/product), the
+  `exp(M⊗1)=exp(M)⊗1` factorization, and the GGPT Cartesian-product PST
+  theorem (`StdLib/HypercubeProduct.lean` derives `Q_n` antipodal PST).
+- `Graphplay/PST/DiagonalShift.lean` — CTQW amplitudes are invariant under
+  scalar diagonal shifts of the Hamiltonian (global phase).
+- `Graphplay/Tactics.lean`, `TacticsInit.lean` — proof-automation library:
+  `herm_grind`, `modulus_one`, `loopless_grind`, `equitable_discharge`,
+  named simp/aesop rule-sets, and 18 proven helper lemmas.
 - `Graphplay/Chiral.lean` — magnetic / chiral signings.
 - `Graphplay/QuantumGraph.lean`, `OperatorSystem.lean` — Tower 3
   operator systems, UCP maps, Choi matrices.
@@ -214,6 +256,13 @@ typst compile paper/graphplay_pitch.typ
 typst compile paper/research_program.typ
 ```
 
+Run the executables:
+
+```sh
+lake exe graphplay                          # load banner + toolkit usage
+lake exe graphplay-toolkit examples/k4_equal_fiber.json   # → search-compiler report
+```
+
 Try the demos:
 
 ```lean
@@ -223,20 +272,34 @@ Try the demos:
 
 ## Status (honest)
 
-- **0 errors**, ~634 `sorry` warnings, 71+ Lean files.
+- **0 errors**, **~431 `sorry` warnings** (all on theorem bodies), 93 Lean
+  files. Down from ~634; the entire reduction was **eliminating every
+  `sorry` in a definition** (152 → 1 irreducible) and every `True`-placeholder
+  theorem (→ 0) — so what remains is genuinely "prove this true statement",
+  never "this object isn't built yet".
+- **Runnable.** `lake build` produces working executables; `lake exe
+  graphplay` and `lake exe graphplay-toolkit <spec.json>` both run.
 - Tower 1 is proven and `#eval`-able.
-- Tower 2 statements (spectral lift, PST lift, mixing lift, search lift)
-  are proven; the ℚ-backed companions in `Computable.lean` make finite
-  examples runnable.
-- Tower 3 (operator systems, UCP maps) is upstream-quality but has ~30
-  sorries on the harder analytic identities.
-- Tower 4 graphon spectral-lift and PST-lift statements are precise;
-  several analytic facts (Hilbert–Schmidt compactness specialized to
-  cell-uniform kernels) are deferred.
-- Tower 5–6 are actively being filled by sibling agents.
-- Tower 7 is a precise statement-level scaffold; awaits Mathlib.
-- Dowsing files concentrate ~204 of the sorries; integration files
-  ~107. These are deliberate research handles, not bugs.
+- **Tower 2 spine is axiom-clean end-to-end**: `spec(quotient) ⊆ spec(host)`,
+  the cell-uniform/quotient PST iff (`QuotientIff.cellUniformPST_iff_quotientPST`),
+  the bundle PST lift (`GraphBundle.pst_iff_quotient`), the Cartesian-product
+  PST theorem, and the hypercube antipodal-PST theorem all `#print axioms`
+  clean. ℚ-backed companions make finite examples runnable.
+- **Tower 4 graphon operator layer is axiom-clean**: the Hilbert–Schmidt
+  `MemLp 2` closure (the one genuinely-hard Mathlib analytic gap) is proven,
+  `W.op` is self-adjoint with real spectrum, `op_restrict_eq_quotient` and the
+  graphon `evolve` group laws hold, and the graphon `cellUniformPST_iff_quotientPST`
+  / mixing / search headlines are clean. Infinite-dimensional continuous-spectrum
+  facts (Reed–Simon decomposition, HS compactness) remain deferred.
+- Tower 3 (operator systems, UCP/Choi) — all constructions concrete; deep
+  analytic theorems (Choi's theorem, Stinespring dilation) deferred.
+- Towers 5–7 — all constructions concrete; one isolated colimit-preservation
+  data `sorry` (Tower 5); Tower 7 a finite-shadow scaffold awaiting Mathlib.
+- The remaining theorem-`sorry`s are concentrated in the dowsing files
+  (deep open conjectures), the integration files (cross-framework deep
+  results), and the infinite-dimensional/association-scheme analytic layers.
+  These are deliberate research handles, not bugs — and a `Graphplay/Tactics.lean`
+  automation layer + the now-axiom-clean lifts make the next proving pass tractable.
 
 ## How to contribute
 

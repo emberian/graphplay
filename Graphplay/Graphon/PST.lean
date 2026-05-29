@@ -16,7 +16,7 @@ In this file we:
   is equivalent to finite-graph PST on the quotient matrix `P.quotient`;
 * state the analogous theorems for **uniform mixing** and **spatial search**.
 
-The headline theorem (statement only, `sorry` proof) is
+The headline theorem (now genuinely proved) is
 `Graphon.cellUniformPST_iff_quotientPST`.
 
 References:
@@ -86,34 +86,30 @@ def IsCellUniformPST (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ
   ‖inner ℂ (P.cellIndicator j) (W.evolve τ (P.cellIndicator i))‖
     = 1
 
-/-! ## The evolve-level intertwining (the one named honest gap)
+/-! ## The evolve-level intertwining (now genuinely closed)
 
-The op-level lift `Graphon.op_restrict_eq_quotient` is now **genuinely closed**.
-The headline PST/mixing iffs need its *exponential* upgrade: that `W.evolve τ`
-(`= NormedSpace.exp ((-iτ)·W.op)`) restricted to the cell-uniform subspace is the
-finite CTQW driven by `exp((-iτ)·symmQuotient)`.  Abstractly this is "intertwining
-propagates through `exp`": from `W.op ∘ B = B ∘ (toEuclideanLin symmQuotient)`
-(`op_restrict_eq_quotient`, with `B = cellUniformIsometry`) one wants
+The op-level lift `Graphon.op_restrict_eq_quotient` is **genuinely closed**, and so
+is its *exponential* upgrade: that `W.evolve τ` (`= NormedSpace.exp ((-iτ)·W.op)`)
+restricted to the cell-uniform subspace is the finite CTQW driven by
+`exp((-iτ)·symmQuotient)`.  Abstractly this is "intertwining propagates through
+`exp`": from `W.op ∘ B = B ∘ (toEuclideanLin symmQuotient)`
+(`op_restrict_eq_quotient`, with `B = cellUniformIsometry`) one gets
 `exp(W.op) ∘ B = B ∘ exp(toEuclideanLin symmQuotient)`.
 
-This is the **single honest gap** below.  It is blocked by the sorried
-`NormedSpace.exp`-on-CLM API in `Graphplay/Graphon.lean` (`evolve_zero`,
-`evolve_add`, `evolve_isUnitary` are all honest sorries): without a usable series
-/ functional-calculus interface for `exp` on the operator `W.op`, the propagation
-of the (proven) op-level intertwining through `exp` cannot be discharged.  We
-isolate it as the **named lemma `evolve_cellUniformIsometry_eq`** and honest-`sorry`
-exactly that; everything downstream of it is genuine. -/
+This is now discharged by `Graphon.exp_intertwine` (the generic `exp`-propagation
+of an operator intertwining through a bounded `B`, proved via the `exp` power
+series and `HasSum.mapL`), using the now-closed `NormedSpace.exp`-on-CLM group
+laws in `Graphplay/Graphon.lean` (`evolve_zero`, `evolve_add`, `evolve_isUnitary`).
+Everything downstream is genuine. -/
 
-/-- **(Named honest gap.)**  Exponential upgrade of `op_restrict_eq_quotient`:
+/-- **Exponential upgrade of `op_restrict_eq_quotient`** (genuinely closed):
 `W.evolve τ` restricted to the cell-uniform subspace is unitarily equivalent
 (via `cellUniformIsometry`) to the finite CTQW `exp((-iτ)·symmQuotient)`.
 
-Genuinely this is `exp`-propagation of the **proven** op-level intertwining
-`Graphon.op_restrict_eq_quotient`
-(`W.op ∘ B = B ∘ toEuclideanLin symmQuotient`).  It is blocked **only** by the
-sorried `NormedSpace.exp`-on-CLM interface in `Graphplay/Graphon.lean` (the
-`evolve_*` group laws).  This is the precise, isolated `sorry`; all PST/mixing
-headlines below are derived from it without further gaps. -/
+This is `exp`-propagation of the **proven** op-level intertwining
+`Graphon.op_restrict_eq_quotient` (`W.op ∘ B = B ∘ toEuclideanLin symmQuotient`),
+established by `Graphon.evolve_restrict_eq_finite_evolve` / `Graphon.exp_intertwine`.
+All PST/mixing/search headlines below are derived from it without gaps. -/
 theorem _root_.Graphplay.GraphonEquitablePartition.evolve_cellUniformIsometry_eq
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (τ : ℝ) (v : EuclideanSpace ℂ I) :
@@ -121,9 +117,12 @@ theorem _root_.Graphplay.GraphonEquitablePartition.evolve_cellUniformIsometry_eq
       P.cellUniformIsometry
         ((Matrix.toEuclideanCLM (𝕜 := ℂ)
           (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient))) v) := by
-  -- `exp`-propagation of the proven `op_restrict_eq_quotient`; blocked solely by the
-  -- sorried `NormedSpace.exp`-on-CLM interface (`Graphon.evolve_*`).  Honest gap.
-  sorry
+  -- This is exactly `evolve_restrict_eq_finite_evolve` (proven genuinely by
+  -- `exp`-propagation of `op_restrict_eq_quotient`), modulo the defeq coercion
+  -- `toEuclideanCLM A v = toEuclideanLin A v`.
+  rw [Graphon.evolve_restrict_eq_finite_evolve P τ v]
+  -- `toEuclideanLin A v = toEuclideanCLM A v` (the CLM coerces to the linear map).
+  congr 1
 
 /-- **Matrix-element identity (genuine, modulo the named gap).**  The cell-uniform
 matrix element of `W.evolve τ` is exactly the `(j,i)` entry of the finite matrix
@@ -184,11 +183,12 @@ is unitarily equivalent to `exp(-i τ · P.symmQuotient)`) — once that headlin
 lifting corollary is available, this is *almost* free: read off the modulus of
 the `(j,i)` matrix element on each side.
 
-**Honest `sorry`.**  The supporting restriction lift
-`Graphon.evolve_restrict_eq_finite_evolve` is currently a deferred placeholder
-(`True`), and the operator-level lift `Graphon.op_restrict_eq_quotient` is itself
-an open `sorry`.  Until one of those is genuinely closed, this iff cannot be
-discharged; the statement is now correctly routed to `symmQuotient`. -/
+**Genuinely closed.**  The supporting restriction lift
+`Graphon.evolve_restrict_eq_finite_evolve` and the operator-level lift
+`Graphon.op_restrict_eq_quotient` are both proved, so this iff is discharged by
+reading off the modulus of the `(j,i)` matrix element on each side (via
+`evolve_cellIndicator_matrixElement`); routed to the spectrum-sharing
+`symmQuotient`. -/
 theorem cellUniformPST_iff_quotientPST (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (i j : I) (τ : ℝ) :
     IsCellUniformPST W P i j τ ↔ IsPST_finite P.symmQuotient i j τ := by
@@ -234,9 +234,9 @@ the raw `P.quotient`; see `cellUniformPST_iff_quotientPST` and
 `symmQuotient_isHermitian`).  Same proof skeleton as the PST theorem, via the same
 `Graphon.evolve_restrict_eq_finite_evolve` lift.
 
-**Honest `sorry`** for the same reason as `cellUniformPST_iff_quotientPST`: the
-supporting restriction lift is not yet genuinely available; the statement is now
-correctly routed to `symmQuotient`. -/
+**Genuinely closed** for the same reason as `cellUniformPST_iff_quotientPST`: the
+supporting restriction lift is proved, so the per-cell amplitudes coincide
+entrywise (`evolve_cellIndicator_matrixElement`); routed to `symmQuotient`. -/
 theorem cellUniformGraphonMixing_iff_quotientMixing
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i : I) (τ : ℝ) :
     IsCellUniformGraphonMixing W P i τ
@@ -327,15 +327,61 @@ under both `W.op` (`cellUniformSubspaceInvariant`) and the rank-one perturbation
 `finiteSearchHamiltonian P.symmQuotient γ w`, matching the uniform superposition
 and the marked indicator entrywise.
 
-**Honest `sorry`.**  This requires the `exp`-propagation lift
-`evolve_cellUniformIsometry_eq` (the single named gap) extended to the rank-one
-perturbation; until the `NormedSpace.exp`-on-CLM interface in
-`Graphplay/Graphon.lean` is genuinely closed it cannot be discharged.  The
-statement is now concrete on both sides (no `True`). -/
+Genuine, now that the `NormedSpace.exp`-on-CLM interface (`Graphon.evolve_*`) and
+the `exp`-propagation lemma `Graphon.exp_intertwine` are closed: the search
+Hamiltonian intertwines with the finite one through `cellUniformIsometry`
+(`op_restrict_eq_quotient` for the `γ•W.op` term, and isometry-preservation of the
+inner product for the rank-one `|e_w⟩⟨e_w|` term), so `exp_intertwine` carries the
+evolution over, and the marked-cell amplitude matches entrywise. -/
 theorem cellUniformSearch_iff_quotientSearch
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (γ : ℝ) (w : I) (τ : ℝ) :
     IsCellUniformSearchSuccess W P γ w τ ↔ IsSearchSuccess_finite P.symmQuotient γ w τ := by
-  sorry
+  unfold IsCellUniformSearchSuccess IsSearchSuccess_finite
+  set B : EuclideanSpace ℂ I →L[ℂ] (Lp ℂ 2 μ) := P.cellUniformIsometry.toContinuousLinearMap
+    with hB
+  -- `e_k = B (E_k)` for the standard basis vector `E_k`.
+  have heB : ∀ k : I, P.cellIndicator k = B (EuclideanSpace.single k (1 : ℂ)) := by
+    intro k
+    rw [hB, LinearIsometry.coe_toContinuousLinearMap]
+    show P.cellIndicator k = ∑ l : I, (EuclideanSpace.single k (1 : ℂ)) l • P.cellIndicator l
+    rw [Finset.sum_eq_single k]
+    · rw [EuclideanSpace.single_apply, if_pos rfl, one_smul]
+    · intro l _ hlk; rw [EuclideanSpace.single_apply, if_neg hlk, zero_smul]
+    · intro hk; exact absurd (Finset.mem_univ k) hk
+  -- Op-level intertwining of the search Hamiltonians: `H_γ ∘ B = B ∘ H_γ^{fin}`.
+  have hHinter : ∀ v : EuclideanSpace ℂ I,
+      searchHamiltonian W P γ w (B v) = B (finiteSearchHamiltonian P.symmQuotient γ w v) := by
+    intro v
+    rw [searchHamiltonian_apply]
+    show (γ : ℂ) • W.op (B v) - (inner ℂ (P.cellIndicator w) (B v)) • P.cellIndicator w
+      = B (((γ : ℂ) • (Matrix.toEuclideanCLM (𝕜 := ℂ) P.symmQuotient)) v
+            - (inner ℂ (EuclideanSpace.single w (1 : ℂ)) v) • EuclideanSpace.single w (1 : ℂ))
+    rw [map_sub, map_smul]
+    congr 1
+    · -- adjacency term: `γ • W.op (B v) = B (γ • toEuclideanCLM Q̃ v)`.
+      rw [hB, LinearIsometry.coe_toContinuousLinearMap,
+        Graphon.op_restrict_eq_quotient P v, ContinuousLinearMap.smul_apply, map_smul]
+      rfl
+    · -- rank-one term: `⟨e_w, B v⟩ • e_w = ⟨E_w, v⟩ • B E_w`, with `e_w = B E_w`.
+      rw [heB w]
+      -- Goal: `⟨B E_w, B v⟩ • B E_w = ⟨E_w, v⟩ • B E_w`; inner products match (isometry).
+      congr 1
+      rw [hB, LinearIsometry.coe_toContinuousLinearMap, P.cellUniformIsometry.inner_map_map]
+  -- Scale by `-(I·τ)` to intertwine the generators, then propagate through `exp`.
+  have hSinter : ∀ v : EuclideanSpace ℂ I,
+      (-(Complex.I * (τ : ℂ)) • searchHamiltonian W P γ w) (B v)
+        = B ((-(Complex.I * (τ : ℂ)) • finiteSearchHamiltonian P.symmQuotient γ w) v) := by
+    intro v
+    rw [ContinuousLinearMap.smul_apply, ContinuousLinearMap.smul_apply, hHinter v, map_smul]
+  -- The uniform superposition over cells is `B` of the uniform superposition over `I`.
+  have hsuper : (((Fintype.card I : ℝ).sqrt)⁻¹ : ℂ) • ∑ j : I, P.cellIndicator j
+      = B ((((Fintype.card I : ℝ).sqrt)⁻¹ : ℂ) • ∑ j : I, EuclideanSpace.single j (1 : ℂ)) := by
+    rw [map_smul, map_sum]
+    congr 1
+    exact Finset.sum_congr rfl (fun j _ => heB j)
+  -- Propagate the evolution through `exp_intertwine`, then read off the `e_w`/`E_w` overlap.
+  rw [hsuper, Graphon.exp_intertwine B _ _ hSinter, heB w]
+  rw [hB, LinearIsometry.coe_toContinuousLinearMap, P.cellUniformIsometry.inner_map_map]
 
 /-! ## Summary: the lift in one line
 
