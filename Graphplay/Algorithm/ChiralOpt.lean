@@ -94,8 +94,14 @@ unit circle.  `phaseGrid k` is the `k`-equipartition
 `O(1/k)` in the smoothness of the figure of merit; we sorry the error
 bound and only expose the type-level surface. -/
 
-/-- Discrete unit-circle phases: `k` equipartition of `U(1)`. -/
-noncomputable def phaseGrid (k : ℕ) : Finset ℂ := by exact sorry
+/-- Discrete unit-circle phases: `k` equipartition of `U(1)`, namely the
+`k`-th roots of unity `{exp(2πi·j/k) : 0 ≤ j < k}`.  Built as the image
+of `Finset.range k` under `j ↦ exp(2πi·j/k)`. -/
+noncomputable def phaseGrid (k : ℕ) : Finset ℂ := by
+  classical
+  exact Finset.image
+    (fun j : ℕ => Complex.exp (2 * Real.pi * Complex.I * (j : ℂ) / (k : ℂ)))
+    (Finset.range k)
 
 /-- Number of phases in the grid.  Used for cost accounting. -/
 @[simp] def phaseGridSize (k : ℕ) : ℕ := k
@@ -135,20 +141,67 @@ and `herm` are deferred (`sorry`). -/
 variable {V : I → Type v}
   [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
 
+/-- Normalize a complex number onto the unit circle: `z / ‖z‖`, with the
+fallback value `1` when `z = 0`.  This guarantees a unit-modulus output
+regardless of the input, which lets `liftPhasing` produce a genuine
+`ChiralSigning` (whose `σ` must be unimodular) from *any* phasing `f`. -/
+noncomputable def unitNormalize (z : ℂ) : ℂ :=
+  if z = 0 then 1 else z / (‖z‖ : ℂ)
+
+/-- The normalized value always has modulus `1`. -/
+@[simp] theorem norm_unitNormalize (z : ℂ) : ‖unitNormalize z‖ = 1 := by
+  unfold unitNormalize
+  by_cases h : z = 0
+  · rw [if_pos h, norm_one]
+  · rw [if_neg h, norm_div]
+    have hz : ‖z‖ ≠ 0 := by simpa [norm_eq_zero] using h
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg z),
+      div_self hz]
+
+/-- Conjugation commutes with normalization. -/
+theorem star_unitNormalize (z : ℂ) : star (unitNormalize z) = unitNormalize (star z) := by
+  unfold unitNormalize
+  by_cases h : z = 0
+  · simp [h]
+  · have h' : star z ≠ 0 := by simpa using h
+    rw [if_neg h, if_neg h', star_div₀]
+    congr 1
+    rw [RCLike.star_def, Complex.conj_ofReal, Complex.norm_conj]
+
 /-- Lift an oriented-edge phasing to a chiral signing of the bundle's
-total vertex type.  Phases on out-of-template pairs default to `1`. -/
+total vertex type.  Each off-diagonal pair `(x, y)` with `x.1 < y.1`
+gets the *unit-normalized* phase `unitNormalize (f (x.1, y.1))`, and the
+swapped pair gets its conjugate; intra-fiber pairs (and out-of-template
+pairs) default to `1`.  Normalization makes `σ` unimodular for *any* `f`,
+so the construction is total and sorry-free. -/
 noncomputable def liftPhasing
     (f : (I × I) → ℂ) : ChiralSigning (Σ i, V i) where
   σ x y :=
-    if h : x.1 = y.1 then 1
-    else if x.1 < y.1 then f (x.1, y.1)
-    else star (f (y.1, x.1))
+    if x.1 = y.1 then 1
+    else if x.1 < y.1 then unitNormalize (f (x.1, y.1))
+    else star (unitNormalize (f (y.1, x.1)))
   unimod x y := by
-    -- Each branch is unit modulus; `f` should be valued on the unit circle,
-    -- which we enforce via the search loop and not at the type level.
-    sorry
+    -- Each branch is unit modulus: `1`, a normalized phase, or its conjugate.
+    by_cases h : x.1 = y.1
+    · simp [h]
+    · rw [if_neg h]
+      by_cases hlt : x.1 < y.1
+      · rw [if_pos hlt]; exact norm_unitNormalize _
+      · rw [if_neg hlt, norm_star]; exact norm_unitNormalize _
   herm x y := by
-    sorry
+    -- σ(y, x) = star (σ(x, y)).  Trichotomy on `x.1` vs `y.1`.
+    by_cases h : x.1 = y.1
+    · rw [if_pos h.symm, if_pos h, star_one]
+    · have h' : ¬ y.1 = x.1 := fun e => h e.symm
+      rw [if_neg h, if_neg h']
+      rcases lt_trichotomy x.1 y.1 with hlt | heq | hgt
+      · -- x.1 < y.1: σ x y = N(f(x,y)); σ y x = star (N(f(x,y)))
+        have hnlt : ¬ y.1 < x.1 := not_lt.mpr (le_of_lt hlt)
+        rw [if_pos hlt, if_neg hnlt]
+      · exact absurd heq h
+      · -- y.1 < x.1: σ x y = star (N(f(y,x))); σ y x = N(f(y,x))
+        have hnlt : ¬ x.1 < y.1 := not_lt.mpr (le_of_lt hgt)
+        rw [if_neg hnlt, if_pos hgt, star_star]
   diag x := by
     simp
 

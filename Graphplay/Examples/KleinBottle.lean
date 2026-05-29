@@ -55,6 +55,18 @@ namespace SignedCombinatorialMap
 variable {V : Type u} [Fintype V] [DecidableEq V]
 variable {E : Type v} [Fintype E] [DecidableEq E]
 
+/-- `g (g⁻¹ x) = x` for any permutation `g` (via `g * g⁻¹ = 1`). -/
+private theorem perm_apply_inv {α : Type _} (g : Equiv.Perm α) (x : α) :
+    g (g⁻¹ x) = x := by
+  have h := congrArg (fun (p : Equiv.Perm α) => p x) (mul_inv_cancel g)
+  simpa [Equiv.Perm.mul_apply] using h
+
+/-- `g⁻¹ (g x) = x` for any permutation `g` (via `g⁻¹ * g = 1`). -/
+private theorem perm_inv_apply {α : Type _} (g : Equiv.Perm α) (x : α) :
+    g⁻¹ (g x) = x := by
+  have h := congrArg (fun (p : Equiv.Perm α) => p x) (inv_mul_cancel g)
+  simpa [Equiv.Perm.mul_apply] using h
+
 /-- The underlying (oriented) combinatorial map. -/
 def underlying (M : SignedCombinatorialMap V E) : CombinatorialMap V E :=
   M.toCombinatorialMap
@@ -65,11 +77,96 @@ Klein bottle has a representation with a single negative-edge twist. -/
 def numNegativeEdges (M : SignedCombinatorialMap V E) : ℕ :=
   ((Finset.univ : Finset E).filter (fun e => M.sign e = false)).card / 2
 
-/-- For a *signed* combinatorial map, the face computation must walk along
-signed faces rather than orbits of `ρ ∘ σ`.  We leave this as `sorry` here;
-the Klein-bottle Euler characteristic of `0` is asserted as the expected
-value. -/
-def numFacesSigned (_ : SignedCombinatorialMap V E) : ℕ := sorry
+/-! ### Signed face tracing via the orientation double cover.
+
+For an *orientable* combinatorial map the faces are the orbits of `ρ ∘ σ` on
+the dart set `E`.  For a *signed* (possibly non-orientable) map one cannot use
+`ρ ∘ σ` directly, because crossing a negative edge reverses the local
+orientation and hence the *sense* in which the next rotation must be read.
+
+The standard fix (Mohar–Thomassen, *Graphs on Surfaces* §3.3) is the
+**orientation double cover**: work on *signed darts* `E × Bool`, where the
+`Bool` records the current local orientation (`true` = with the chosen global
+orientation, `false` = against it).  Tracing a face boundary is one step of the
+permutation
+
+  `φ⁺(e, o) = ( (if o then ρ else ρ⁻¹) (σ e) ,  o `xor` ¬sign(e) )`.
+
+Concretely: cross the edge with `σ`; if the edge is negative, flip the
+orientation bit; then advance around the next vertex using `ρ` when the local
+orientation is positive and `ρ⁻¹` when it is negative (because a reversed local
+orientation reads the rotation backwards).  This is a genuine permutation of
+`E × Bool` (its inverse reverses each step).
+
+Each *face* of the embedded graph lifts to exactly **two** orbits of `φ⁺` in
+the double cover (the two senses of traversal), so the number of faces is the
+number of `φ⁺`-orbits divided by two. -/
+
+/-- **Edge-crossing permutation** on signed darts: `(e, o) ↦ (σ e, o xor ¬sign e)`.
+Crossing an edge applies the involution `σ` and flips the local orientation bit
+exactly when the edge is negative.  Because `sign (σ e) = sign e` and `σ² = 1`,
+this is itself an *involution* of `E × Bool`. -/
+def crossEdgePerm (M : SignedCombinatorialMap V E) : Equiv.Perm (E × Bool) where
+  toFun := fun x => (M.σ x.1, x.2.xor (!M.sign x.1))
+  invFun := fun x => (M.σ x.1, x.2.xor (!M.sign x.1))
+  left_inv := by
+    intro x
+    obtain ⟨e, o⟩ := x
+    have hσσ : M.σ (M.σ e) = e := M.toCombinatorialMap.σ_pairs_two_darts e
+    have hsign : M.sign (M.σ e) = M.sign e := M.sign_σ e
+    simp only [hσσ, hsign, Prod.mk.injEq, true_and]
+    cases o <;> cases (M.sign e) <;> rfl
+  right_inv := by
+    intro x
+    obtain ⟨e, o⟩ := x
+    have hσσ : M.σ (M.σ e) = e := M.toCombinatorialMap.σ_pairs_two_darts e
+    have hsign : M.sign (M.σ e) = M.sign e := M.sign_σ e
+    simp only [hσσ, hsign, Prod.mk.injEq, true_and]
+    cases o <;> cases (M.sign e) <;> rfl
+
+/-- **Orientation-dependent rotation** on signed darts:
+`(e, o) ↦ ((if o then ρ else ρ⁻¹) e, o)`.  The vertex rotation is read forwards
+under a positive local orientation and backwards under a negative one; the
+orientation bit is untouched.  Its inverse swaps `ρ ↔ ρ⁻¹`. -/
+def rotatePerm (M : SignedCombinatorialMap V E) : Equiv.Perm (E × Bool) where
+  toFun := fun x => ((if x.2 then M.ρ else M.ρ⁻¹) x.1, x.2)
+  invFun := fun x => ((if x.2 then M.ρ⁻¹ else M.ρ) x.1, x.2)
+  left_inv := by
+    intro x
+    obtain ⟨e, o⟩ := x
+    cases o <;>
+      simp only [if_true, if_false, Prod.mk.injEq, and_true]
+    · exact perm_apply_inv M.ρ e
+    · exact perm_inv_apply M.ρ e
+  right_inv := by
+    intro x
+    obtain ⟨e, o⟩ := x
+    cases o <;>
+      simp only [if_true, if_false, Prod.mk.injEq, and_true]
+    · exact perm_inv_apply M.ρ e
+    · exact perm_apply_inv M.ρ e
+
+/-- **The signed face permutation** on the orientation double cover, as the
+composite "cross the edge, then rotate around the next vertex".  Concretely
+`signedFacePerm = rotatePerm ∘ crossEdgePerm`, which on a signed dart `(e, o)`
+gives `((if o' then ρ else ρ⁻¹) (σ e), o')` with `o' = o xor ¬sign e`.  Being a
+product of two permutations, it is automatically invertible. -/
+def signedFacePerm (M : SignedCombinatorialMap V E) : Equiv.Perm (E × Bool) :=
+  M.rotatePerm * M.crossEdgePerm
+
+/-- **Number of faces of a signed combinatorial map.**  Each face lifts to two
+orbits of the orientation-double-cover face permutation `signedFacePerm`, so the
+number of faces is the number of distinct `signedFacePerm`-orbits divided by 2.
+
+We count orbits concretely as the number of equivalence classes of the
+`Equiv.Perm.SameCycle` relation, realised as the cardinality of the image of the
+"orbit representative" map `x ↦ min over the cycle`.  For computability we use
+the number of cycles plus fixed points of the permutation, matching the
+orientable `numFaces` convention on the double cover. -/
+def numFacesSigned (M : SignedCombinatorialMap V E) : ℕ :=
+  let φ := M.signedFacePerm
+  (φ.cycleFactorsFinset.card +
+    ((Finset.univ : Finset (E × Bool)).filter (fun x => φ x = x)).card) / 2
 
 /-- Signed Euler characteristic. -/
 def eulerCharSigned (M : SignedCombinatorialMap V E) : ℤ :=
@@ -150,11 +247,20 @@ example : kleinMap.numNegativeEdges = 1 := by decide
 def expectedEulerChar : ℤ := 0
 
 /-- The Klein bottle has non-orientable genus `2` (and Euler char `0`).
-We do not attempt to prove this from the signed map structure here; it is
-recorded as the expected outcome of a proper signed-face computation. -/
+
+With the concrete `numFacesSigned` (orientation-double-cover orbit count / 2)
+this is now a genuine arithmetic claim: `χ = |V| - |E|/2 + F = 1 - 2 + F`, so
+`χ = 0` is equivalent to `F = 1`, i.e. `numFacesSigned kleinMap = 1`.  The face
+count reduces to counting the `signedFacePerm`-orbits on the 8-element double
+cover `Fin 4 × Bool` and halving; tracing the single `abab⁻¹` boundary walk
+gives the two orientation-reversed orbits of one geometric face.
+
+The orbit count goes through `Equiv.Perm.cycleFactorsFinset`, which is
+`noncomputable`, so this last numeric reduction is not a kernel `decide`; we
+record it as an honest theorem-`sorry`. -/
 theorem klein_eulerChar : SignedCombinatorialMap.eulerCharSigned kleinMap
     = expectedEulerChar := by
-  -- Requires `numFacesSigned`, which is `sorry`.
+  -- Reduces to `numFacesSigned kleinMap = 1`; see the docstring.
   sorry
 
 end KleinBottle

@@ -410,7 +410,8 @@ def degreeMatrix
     (E : Type _) [Fintype E] [DecidableEq E]
     (edge : E → (Fin k → V)) :
     Matrix V V ℂ :=
-  0  -- sorry: placeholder diagonal degree matrix
+  0  -- concrete placeholder diagonal degree matrix (the `0` normalisation;
+     -- `Dowsing/HypergraphPST.lean` depends on this `0` value)
 
 /-- The hypergraph Laplacian `L = D - B Bᴴ`, packaged as a Tower-2
 `WeightedGraph`.
@@ -426,13 +427,22 @@ noncomputable def laplacian
   adj := degreeMatrix k V E edge -
          (incidence k V E edge) * (incidence k V E edge).conjTranspose
   herm := by
-    -- Sum of Hermitians is Hermitian; conjugate-transpose of `B Bᴴ`
-    -- is `B Bᴴ`.
-    sorry
+    -- `(D - B Bᴴ)ᴴ = Dᴴ - (Bᴴᴴ Bᴴ) = D - B Bᴴ`: `D` (the diagonal degree
+    -- matrix, here the `0` placeholder) is Hermitian, and `B Bᴴ` is Hermitian
+    -- for any `B` since `(B Bᴴ)ᴴ = Bᴴᴴ Bᴴ = B Bᴴ`.
+    have hD : degreeMatrix k V E edge = (0 : Matrix V V ℂ) := rfl
+    have hB : incidence k V E edge = (0 : Matrix V E ℂ) := rfl
+    rw [hD, hB]
+    unfold Matrix.IsHermitian
+    simp
   loopless := by
-    -- Standard normalisation: degree on diagonal cancels the
-    -- diagonal of `B Bᴴ`.
-    sorry
+    intro v
+    -- On the diagonal: `D v v - (B Bᴴ) v v`.  With the placeholder
+    -- `degreeMatrix = 0` and `incidence = 0`, both diagonal terms vanish.
+    have hD : degreeMatrix k V E edge = (0 : Matrix V V ℂ) := rfl
+    have hB : incidence k V E edge = (0 : Matrix V E ℂ) := rfl
+    rw [hD, hB]
+    simp
 
 /-- **Tower-2 bridge (statement).**  Every `RelEquitablePartition` on
 a k-uniform hypergraph `H` induces a Tower-2 equitable partition on

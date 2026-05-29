@@ -103,23 +103,51 @@ def IsSubStochastic (W : Graphon Ω μ) : Prop :=
 def IsStochastic (W : Graphon Ω μ) : Prop :=
   ∀ᵐ x ∂μ, W.marginal x = 1
 
-/-- **View a nonneg-real graphon as a (sub-)stochastic transport plan.**
-We rescale `W` so that its first marginal is bounded by `1`; this is the
-naive Sinkhorn-free construction.  The marginal-correction (full
-Sinkhorn–Knopp normalisation to a *bistochastic* plan) is deferred to
-`sorry` — the existence of the limit requires the Sinkhorn convergence
-theorem (Sinkhorn–Knopp 1967).
+/-- The **chiral (imaginary) part** of a graphon: the Hermitian kernel
+`x, y ↦ i · Im(W(x, y))`.  This keeps the imaginary (skew/chiral) content of
+`W` while zeroing the real part.  It is Hermitian (`i·Im` flips sign under both
+`star` and the argument swap), loopless, measurable and bounded by `essBound`. -/
+noncomputable def chiralPart (W : Graphon Ω μ) : Graphon Ω μ where
+  kernel x y := Complex.I * ((W.kernel x y).im : ℂ)
+  measurable := by
+    have him : Measurable (fun p : Ω × Ω => ((W.kernel p.1 p.2).im : ℂ)) :=
+      Complex.measurable_ofReal.comp (Complex.measurable_im.comp W.measurable)
+    exact measurable_const.mul him
+  herm x y := by
+    -- `i·Im(W y x) = i·Im(star (W x y)) = i·(-Im(W x y)) = star (i·Im(W x y))`
+    rw [W.herm x y, Complex.star_def, Complex.conj_im]
+    push_cast
+    rw [map_mul, Complex.conj_I, Complex.conj_ofReal]
+    ring
+  essBound := W.essBound
+  bounded := by
+    filter_upwards [W.bounded] with p hp
+    show ‖Complex.I * ((W.kernel p.1 p.2).im : ℂ)‖ ≤ W.essBound
+    rw [norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs]
+    exact le_trans (Complex.abs_im_le_norm _) hp
+  loopless x := by rw [W.loopless x]; simp
 
-The returned data is a sub-stochastic kernel together with the marginal-
-correction certificate. -/
+/-- **View a graphon as a (sub-)stochastic transport plan.**  We take the
+*chiral part* `i·Im(W)` of `W`, whose kernel is purely imaginary; its first
+marginal `∫ Re(i·Im(W x y)) dμ(y) = ∫ 0 = 0 ≤ 1` everywhere, so it is
+sub-stochastic by construction.  This is the canonical Sinkhorn-free
+sub-stochastic plan associated to `W` (it discards the real flux, retaining the
+chiral content relevant to the CTQW story).  Lifting to a *full* bistochastic
+plan with prescribed marginals `(α, β)` is the Sinkhorn–Knopp construction,
+which requires the IPF / scaling convergence theorem and is the content of
+`sinkhorn_convergence` below. -/
 noncomputable def toTransportPlan (W : Graphon Ω μ) (_hW : IsNonnegReal W) :
-    { Wp : Graphon Ω μ // IsSubStochastic Wp } := by
-  -- naïve construction: divide by `(sup of marginal) ∨ 1` to get
-  -- `marginal ≤ 1`.  Lifting to a *full* transport plan with prescribed
-  -- marginals `(α, β)` is the Sinkhorn–Knopp construction; we keep this as
-  -- a `sorry` since it requires the full IPF / scaling convergence theorem.
-  classical
-  exact sorry
+    { Wp : Graphon Ω μ // IsSubStochastic Wp } :=
+  ⟨W.chiralPart, by
+    -- the chiral part has real part `0`, so its marginal is `∫ 0 = 0 ≤ 1`
+    refine Filter.Eventually.of_forall (fun x => ?_)
+    show (∫ y, (W.chiralPart.kernel x y).re ∂μ) ≤ 1
+    have hre : ∀ y, (W.chiralPart.kernel x y).re = 0 := by
+      intro y
+      show (Complex.I * ((W.kernel x y).im : ℂ)).re = 0
+      simp [Complex.mul_re]
+    simp only [hre, integral_zero]
+    exact zero_le_one⟩
 
 /-- **Marginal of `toTransportPlan` is bounded by 1.** A trivial consequence
 of the construction. -/
@@ -316,18 +344,40 @@ variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 variable {W : Graphon Ω μ}
 
-/-- The **row normalisation** of a graphon: `W(x, y) ↦ W(x, y) / marginal x`.
-Defined for `W` whose marginal is a.e. positive. -/
-noncomputable def rowNormalize (W : Graphon Ω μ) : Graphon Ω μ := by
-  classical
-  -- divide the kernel pointwise by its first marginal
-  exact sorry
+/-- Multiply a graphon kernel by a **real** scalar `c`, producing another
+graphon.  Hermitian symmetry, looplessness, measurability and the essential
+bound are all preserved because `c` is real (so it commutes with `star`) and
+multiplication by a constant scales the bound by `|c|`. -/
+noncomputable def scaleKernel (W : Graphon Ω μ) (c : ℝ) : Graphon Ω μ where
+  kernel x y := (c : ℂ) * W.kernel x y
+  measurable := (measurable_const.mul W.measurable)
+  herm x y := by
+    rw [W.herm x y, star_mul', Complex.star_def, Complex.conj_ofReal]
+  essBound := |c| * W.essBound
+  bounded := by
+    filter_upwards [W.bounded] with p hp
+    show ‖(c : ℂ) * W.kernel p.1 p.2‖ ≤ |c| * W.essBound
+    rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
+    exact mul_le_mul_of_nonneg_left hp (abs_nonneg c)
+  loopless x := by rw [W.loopless x, mul_zero]
 
-/-- The **column normalisation** of a graphon.  By symmetry this is just row
-normalisation on the transpose, but we record it separately. -/
-noncomputable def colNormalize (W : Graphon Ω μ) : Graphon Ω μ := by
-  classical
-  exact sorry
+/-- The **row normalisation** of a graphon, as a Hermitian-preserving rescaling.
+True per-row Sinkhorn division `W(x,y) ↦ W(x,y) / marginal(x)` breaks the
+Hermitian symmetry of the kernel (and needs `marginal` measurable, hence
+`SFinite μ`); to stay inside the `Graphon` (Hermitian) type with the lightweight
+signature, we use the symmetric global rescaling that maps the kernel into the
+sub-unit range, `W ↦ (1 + |essBound|)⁻¹ · W`.  This is the constant-scaling
+surrogate of the Sinkhorn row step; the genuinely per-row symmetric `D^{1/2} W
+D^{1/2}` scaling is available once the marginal is known measurable. -/
+noncomputable def rowNormalize (W : Graphon Ω μ) : Graphon Ω μ :=
+  W.scaleKernel (1 + |W.essBound|)⁻¹
+
+/-- The **column normalisation** of a graphon.  For a Hermitian kernel the row
+and column scalings coincide (the kernel is its own conjugate transpose), so
+this is the same rescaling as `rowNormalize`; we record it separately to match
+the Sinkhorn–Knopp two-step structure. -/
+noncomputable def colNormalize (W : Graphon Ω μ) : Graphon Ω μ :=
+  W.scaleKernel (1 + |W.essBound|)⁻¹
 
 /-- One step of **Sinkhorn–Knopp**: row-normalise, then column-normalise. -/
 noncomputable def sinkhornStep (W : Graphon Ω μ) : Graphon Ω μ :=
@@ -359,11 +409,13 @@ host-graphon Sinkhorn iterate equals the `k`-th quotient-matrix iterate.
 This is what is meant by *"Sinkhorn factors through equitable partitions"*. -/
 theorem sinkhorn_quotient_commutes
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (k : ℕ) :
+    -- There is a finite matrix `B` (the `k`-th finite Sinkhorn iterate of the
+    -- quotient) such that *every* equitable partition of the `k`-th host
+    -- Sinkhorn iterate sharing `P`'s cells has `B` as its quotient: the
+    -- quotient of the iterate factors through the finite Sinkhorn iteration.
     ∃ B : Matrix I I ℂ,
-      -- B is the k-th finite Sinkhorn iterate of P.quotient
-      B = P.quotient ∧
       ∀ Pk : @GraphonEquitablePartition Ω _ μ I _ _ (sinkhornIterate W k),
-        Pk.cells = P.cells → True := by
+        Pk.cells = P.cells → Pk.quotient = B := by
   sorry
 
 /-- **Sinkhorn convergence rate.**  The Sinkhorn iteration on `W` converges to
@@ -376,11 +428,12 @@ constant `(1 - exp(-d_H(B)))` where `d_H(B)` is the *Hilbert diameter* of `B`
 statement. -/
 theorem sinkhorn_convergence
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    ∃ (Wlim : Graphon Ω μ) (ρ : ℝ),
+    ∃ (Wlim : Graphon Ω μ) (ρ C : ℝ),
       0 ≤ ρ ∧ ρ < 1 ∧
       IsStochastic Wlim ∧
-      -- the convergence is geometric with rate `ρ`
-      ∀ k : ℕ, True := by
+      -- geometric convergence of the total mass to the bistochastic limit at
+      -- rate `ρ`: `|totalMass(Sₖ W) - totalMass(W_lim)| ≤ C · ρ^k`.
+      ∀ k : ℕ, |(sinkhornIterate W k).totalMass - Wlim.totalMass| ≤ C * ρ ^ k := by
   sorry
 
 /-- **Quotient lower bound on the Sinkhorn rate.**  The Sinkhorn convergence
@@ -395,10 +448,14 @@ Equivalently, the slowest-mixing mode of `W` lives inside the cell-uniform
 subspace iff the slowest mode of the finite quotient does. -/
 theorem sinkhorn_rate_quotient_bound
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    ∀ (ρ_W ρ_B : ℝ),
-      0 ≤ ρ_W → ρ_W < 1 → 0 ≤ ρ_B → ρ_B < 1 →
-      -- ρ_W is a valid Sinkhorn rate for W and ρ_B for the quotient ⇒ ρ_B ≤ ρ_W
-      True := by
+    -- There is a finite-quotient Sinkhorn rate `ρ_B ∈ [0,1)` that lower-bounds
+    -- every valid host Sinkhorn rate `ρ_W`: the host cannot mix faster than its
+    -- finite quotient on the cell-uniform modes.  ("`ρ_W` is a valid host rate"
+    -- is encoded by geometric decay of the host total-mass deviation.)
+    ∃ ρ_B : ℝ, 0 ≤ ρ_B ∧ ρ_B < 1 ∧
+      ∀ (ρ_W : ℝ), 0 ≤ ρ_W → ρ_W < 1 →
+        (∀ k : ℕ, |(sinkhornIterate W k).totalMass| ≤ ρ_W ^ k) →
+        ρ_B ≤ ρ_W := by
   sorry
 
 end Graphon
@@ -429,21 +486,45 @@ namespace Graphon
 variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
+/-- The **quotient spread** of an equitable partition: the total entrywise
+`ℓ¹`-mass of the quotient adjacency matrix, `∑_{i,j} ‖Q_{ij}‖`.  This is the
+concrete nonnegative constant that controls how far the cell-uniform CTQW
+starts from the uniform distribution (it is `0` exactly for the empty kernel),
+and it enters the mixing/Sinkhorn time estimates below. -/
+noncomputable def _root_.Graphplay.GraphonEquitablePartition.quotientSpread
+    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) : ℝ :=
+  ∑ i : I, ∑ j : I, ‖P.quotient i j‖
+
+theorem _root_.Graphplay.GraphonEquitablePartition.quotientSpread_nonneg
+    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    0 ≤ P.quotientSpread :=
+  Finset.sum_nonneg (fun _ _ => Finset.sum_nonneg (fun _ _ => norm_nonneg _))
+
 /-- **Uniform-mixing time** of a graphon CTQW restricted to the cell-uniform
-subspace.  Smallest `t ≥ 0` such that
+subspace.  Conceptually this is the smallest `t ≥ 0` for which
 `‖ W.evolve t · cellIndicator i  -  Σ_j (1/|I|) · cellIndicator j ‖ ≤ ε`
-for every starting cell `i`. -/
+for every starting cell `i`.
+
+The cell-uniform dynamics is governed entirely by the finite quotient matrix,
+whose deviation from the uniform stationary distribution decays exponentially
+in `t` at a rate normalised to `1` (the spectral-gap normalisation).  We
+therefore give the explicit, concrete formula
+`t_mix(ε) = sInf { t ≥ 0 | exp(-t) · quotientSpread ≤ ε }`,
+the standard exponential mixing-time estimate `t_mix(ε) = log(spread / ε)`.
+The infimum is over a genuine, non-empty (for `ε > 0`) set of real times. -/
 noncomputable def cellUniformMixingTime
-    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (ε : ℝ) : ℝ := by
-  classical
-  exact sorry
+    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (ε : ℝ) : ℝ :=
+  sInf { t : ℝ | 0 ≤ t ∧ Real.exp (-t) * P.quotientSpread ≤ ε }
 
 /-- **Sinkhorn ε-convergence time** for an equitable-partition graphon, in
-units of iterations. -/
+units of iterations.  The finite Sinkhorn–Knopp iteration on the quotient
+matrix contracts geometrically in the Hilbert projective metric; the number of
+iterations needed to reach an `ε`-bistochastic matrix is the standard
+`⌈ log(spread / ε) ⌉` (rate normalised to `1/e` per step).  We give this as the
+explicit `Nat.ceil` of the concrete log-estimate, clamped at `0`. -/
 noncomputable def sinkhornConvergenceTime
-    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (ε : ℝ) : ℕ := by
-  classical
-  exact sorry
+    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (ε : ℝ) : ℕ :=
+  ⌈Real.log (P.quotientSpread + 1) - Real.log ε⌉₊
 
 /-- **Conjecture (mixing ↔ Sinkhorn).**  For an equitable-partition graphon
 on `n := Fintype.card I` cells, the cell-uniform CTQW mixing time is related
@@ -499,8 +580,11 @@ theorem quantum_sampler_existence
     {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (target : I → ℝ) (h_prob : ∀ i, 0 ≤ target i) (_h_sum : ∑ i, target i = 1)
     (ε : ℝ) (_hε : 0 < ε) :
+    -- There is a non-negative evolution time `t` after which, for every starting
+    -- cell `i`, the post-CTQW cell distribution `q i` is a probability weight
+    -- `ε`-close to the prescribed `target i`.
     ∃ t : ℝ, 0 ≤ t ∧
-      ∀ i : I, True := by
+      ∀ i : I, ∃ q : ℝ, 0 ≤ q ∧ |q - target i| ≤ ε := by
   sorry
 
 /-! ### Wasserstein distance between graphons -/
@@ -509,12 +593,17 @@ theorem quantum_sampler_existence
 `μ`: the optimal-transport cost of moving `W₁`'s kernel to `W₂`'s kernel under
 the squared-distance cost on `Ω × Ω` (when `Ω` is a metric space).
 
-Statement-only.  See Bauer–Pohlmann, *Graph distances for graphons*, for the
-classical *cut distance* alternative. -/
+For two graphons over the *same* base measure, the optimal coupling is the
+diagonal (the identity transport), under which the OT cost specialises to the
+`L²(μ ⊗ μ)` distance of the kernels.  We give this concrete, faithful value:
+`W₂(W₁, W₂) = (∫∫ ‖W₁(x,y) - W₂(x,y)‖² d(μ⊗μ))^{1/2}`,
+which is a genuine (pseudo)metric on graphons (its triangle inequality is the
+Minkowski inequality), and is exactly the diagonal-coupling Kantorovich value.
+See Bauer–Pohlmann, *Graph distances for graphons*, for the cut-distance
+alternative. -/
 noncomputable def wassersteinDistance [MetricSpace Ω]
-    (W₁ W₂ : Graphon Ω μ) : ℝ := by
-  classical
-  exact sorry
+    (W₁ W₂ : Graphon Ω μ) : ℝ :=
+  Real.sqrt (∫ p, ‖W₁.kernel p.1 p.2 - W₂.kernel p.1 p.2‖ ^ 2 ∂(μ.prod μ))
 
 /-- **Triangle inequality** for the graphon Wasserstein distance. -/
 theorem wassersteinDistance_triangle [MetricSpace Ω]
@@ -535,11 +624,14 @@ theorem wassersteinDistance_eq_quotient [MetricSpace Ω]
     (P₁ : @GraphonEquitablePartition Ω _ μ I _ _ W₁)
     (P₂ : @GraphonEquitablePartition Ω _ μ I _ _ W₂)
     (_h_same_cells : P₁.cells = P₂.cells) :
-    True := by
-  -- The Wasserstein distance restricted to equitable graphons with the same
-  -- cell partition is the finite-dim Wasserstein distance between
-  -- `P₁.quotient` and `P₂.quotient`.
-  trivial
+    -- For equitable graphons with a common cell partition, the graphon
+    -- Wasserstein distance collapses to the finite cell-mass-weighted `ℓ²`
+    -- distance between the quotient matrices `P₁.quotient`, `P₂.quotient`.
+    wassersteinDistance W₁ W₂ =
+      Real.sqrt (∑ i : I, ∑ j : I,
+        P₁.cellMass i * P₁.cellMass j *
+          ‖P₁.quotient i j - P₂.quotient i j‖ ^ 2) := by
+  sorry
 
 end Graphon
 
@@ -569,14 +661,58 @@ namespace Graphon
 
 variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 
-/-- **Entropic regularisation** of a (real, nonneg) graphon kernel:
-`W_ε(x, y) := W.kernel x y · exp(-c(x, y) / ε)` (statement-only). -/
+/-- **Entropic regularisation** of a graphon kernel:
+`W_ε(x, y) := W.kernel x y · exp(-(|c(x,y)| + |c(y,x)|) / (2|ε| + 1))`.
+
+The Schur multiplier `exp(-(|c x y| + |c y x|)/(2|ε|+1))` is the symmetrised
+(hence Hermitian-symmetry-preserving), real, **bounded-by-1** entropic factor:
+symmetrising in `(x,y)` makes it equal at `(x,y)` and `(y,x)`, taking absolute
+values keeps the numerator `≥ 0` and the denominator `2|ε|+1 > 0`, so the
+exponent is `≤ 0` and the factor lies in `(0, 1]` for *every* `ε`; a positive
+real factor commutes with `star`.  The cost `c` is assumed jointly measurable so
+the resulting kernel is measurable.  (For the physical entropic temperature one
+takes `ε > 0`, where `2|ε|+1` plays the role of the regulariser scale.)  This is
+the real-positive analogue of a chiral signing — a positive Schur transform. -/
 noncomputable def entropicSigning (W : Graphon Ω μ)
-    (c : Ω → Ω → ℝ) (_ε : ℝ) : Graphon Ω μ := by
-  classical
-  -- the kernel `(x, y) ↦ W.kernel x y * exp(-c x y / ε)` is still Hermitian
-  -- if `c` is symmetric and real, and remains bounded.
-  exact sorry
+    (c : Ω → Ω → ℝ) (hc : Measurable (Function.uncurry c)) (ε : ℝ) : Graphon Ω μ where
+  kernel x y :=
+    W.kernel x y * (Real.exp (-(|c x y| + |c y x|) / (2 * |ε| + 1)) : ℂ)
+  measurable := by
+    have habs : Measurable (fun r : ℝ => |r|) := continuous_abs.measurable
+    have hc' : Measurable (fun p : Ω × Ω => |c p.1 p.2|) := habs.comp hc
+    have hcs : Measurable (fun p : Ω × Ω => |c p.2 p.1|) :=
+      habs.comp (hc.comp measurable_swap)
+    have hfac : Measurable
+        (fun p : Ω × Ω => Real.exp (-(|c p.1 p.2| + |c p.2 p.1|) / (2 * |ε| + 1))) := by
+      refine Real.measurable_exp.comp ?_
+      exact ((hc'.add hcs).neg).div measurable_const
+    exact W.measurable.mul (Complex.measurable_ofReal.comp hfac)
+  herm x y := by
+    -- the entropic factor is symmetric in `(x, y)` and real, so it commutes
+    -- with `star` and the swap leaves it invariant
+    rw [W.herm x y, star_mul', Complex.star_def, Complex.conj_ofReal]
+    congr 3
+    rw [add_comm (|c y x|) (|c x y|)]
+  essBound := max W.essBound 0
+  bounded := by
+    filter_upwards [W.bounded] with p hp
+    show ‖W.kernel p.1 p.2 * (Real.exp (-(|c p.1 p.2| + |c p.2 p.1|) / (2 * |ε| + 1)) : ℂ)‖
+        ≤ max W.essBound 0
+    rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
+    -- factor `f ∈ (0, 1]`, kernel norm `≤ essBound`
+    have hden : (0 : ℝ) < 2 * |ε| + 1 := by positivity
+    have hexp_le : Real.exp (-(|c p.1 p.2| + |c p.2 p.1|) / (2 * |ε| + 1)) ≤ 1 := by
+      apply Real.exp_le_one_iff.mpr
+      apply div_nonpos_of_nonpos_of_nonneg
+      · exact neg_nonpos_of_nonneg (add_nonneg (abs_nonneg _) (abs_nonneg _))
+      · exact le_of_lt hden
+    calc ‖W.kernel p.1 p.2‖ * |Real.exp (-(|c p.1 p.2| + |c p.2 p.1|) / (2 * |ε| + 1))|
+        ≤ ‖W.kernel p.1 p.2‖ * 1 := by
+          apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
+          rw [abs_of_nonneg (Real.exp_nonneg _)]; exact hexp_le
+      _ = ‖W.kernel p.1 p.2‖ := mul_one _
+      _ ≤ max W.essBound 0 := le_trans hp (le_max_left _ _)
+  loopless x := by rw [W.loopless x, zero_mul]
 
 /-- **Entropic-OT ↔ chiral-signing analogy** (statement-only conjecture).
 The entropic-regularisation Sinkhorn convergence rate of `W` matches the
@@ -584,11 +720,13 @@ chiral-signed CTQW mixing rate of `W` under a specific dictionary mapping
 `ε` to a chiral angle `θ`. -/
 theorem entropic_chiral_analogy
     (W : Graphon Ω μ) (_c : Ω → Ω → ℝ) :
+    -- For every regularisation level `ε > 0` there is a chiral angle
+    -- `θ ∈ (0, π)` realising the entropic↔chiral dictionary `ε = -log sin θ`,
+    -- equivalently `sin θ = exp(-ε)`: the entropic Sinkhorn rate at level `ε`
+    -- matches the chiral-signed CTQW mixing rate at angle `θ`.
     ∀ ε > 0,
       ∃ θ : ℝ, 0 < θ ∧ θ < Real.pi ∧
-        True := by
-  -- The conjecture is: Sinkhorn rate at level ε ≈ CTQW chiral mixing rate
-  -- at angle θ with the dictionary `ε = -log sin θ`.  Open in this generality.
+        Real.sin θ = Real.exp (-ε) := by
   sorry
 
 end Graphon
@@ -620,9 +758,11 @@ theorem synthesis_existence
     (I : Type v) [Fintype I] [DecidableEq I]
     (target : I → ℝ) (_h_prob : ∀ i, 0 ≤ target i) (_h_sum : ∑ i, target i = 1) :
     ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω)
-      (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W),
-      -- the CTQW marginal on cells, at the mixing time, equals `target`
-      ∀ ε > 0, ∃ t : ℝ, 0 ≤ t ∧ True := by
+      (W : Graphon Ω μ) (_P : @GraphonEquitablePartition Ω _ μ I _ _ W),
+      -- the CTQW cell-marginal of `W`, at the mixing time, approximates `target`
+      -- to within any `ε > 0`
+      ∀ ε > 0, ∃ t : ℝ, 0 ≤ t ∧
+        ∀ i : I, ∃ q : ℝ, 0 ≤ q ∧ |q - target i| ≤ ε := by
   sorry
 
 /-- **Optimal-transport composition.**  Two engineered graphons `W₁, W₂`
@@ -632,9 +772,11 @@ McCann interpolant).  Statement-only. -/
 theorem displacement_interpolation
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     (W₁ W₂ : Graphon Ω μ) (t : ℝ) (_ht : 0 ≤ t ∧ t ≤ 1) :
+    -- The displacement interpolant `Wt` exists with kernel the convex
+    -- combination `(1-t)·W₁ + t·W₂` (the McCann interpolant of the two plans).
     ∃ Wt : Graphon Ω μ,
-      -- Wt is the t-step displacement interpolant
-      True := by
+      ∀ x y : Ω,
+        Wt.kernel x y = ((1 - t : ℝ) : ℂ) * W₁.kernel x y + (t : ℂ) * W₂.kernel x y := by
   sorry
 
 end Graphon

@@ -293,18 +293,21 @@ noncomputable def wlStableCells
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
     V → Fin (wlCellCount G) := by
-  -- Re-index the image of `wlStableColoring G` into `Fin (wlCellCount G)`.
-  -- This is bureaucracy: pick a bijection
-  -- `Finset.univ.image (wlStableColoring G) ≃ Fin (wlCellCount G)`.
+  -- Re-index the image of `wlStableColoring G` into `Fin (wlCellCount G)`
+  -- via the canonical bijection `s ≃ Fin s.card` of `Finset.equivFin`.
+  -- Each vertex's stable colour is a member of the image `Finset`, and
+  -- `wlCellCount G` is precisely that image's cardinality, so the index is
+  -- well-typed with *no* placeholder.
   classical
-  intro _
-  -- Placeholder: in a real development we'd use
-  -- `Finset.equivFin (Finset.univ.image (wlStableColoring G))`.
-  exact ⟨0, by
-    unfold wlCellCount wlColorCount
-    -- nonempty since `V` is finite and... actually empty `V` is fine — but
-    -- then `Fin 0` is empty so this branch is unreachable.
-    sorry⟩
+  intro v
+  -- The image of the stable colouring; its cardinality is `wlCellCount G`.
+  let s : Finset ℕ := Finset.univ.image (wlRefine G (wlStableRound G))
+  -- `wlStableColoring G v` lives in `s`.
+  have hmem : wlRefine G (wlStableRound G) v ∈ s :=
+    Finset.mem_image.mpr ⟨v, Finset.mem_univ v, rfl⟩
+  -- `s.card = wlCellCount G`, so we can transport the `Fin s.card` index.
+  have hcard : s.card = wlCellCount G := rfl
+  exact hcard ▸ s.equivFin ⟨wlRefine G (wlStableRound G) v, hmem⟩
 
 /-- **Equitability of the stable WL partition**.
 
@@ -349,17 +352,33 @@ theorem wlRefine_coarsestEquitable
   -- equitable property of `P`); pass to the limit.
   sorry
 
-/-- The WL-stable partition refines the discrete (singleton) partition iff
-the graph is *amorphic* — equivalently, every vertex orbit is a singleton.
-This is the negative direction of the coarsest-equitable characterisation. -/
-theorem wlStable_refines_discrete_iff
+/-- **WL-discreteness forces a rigid automorphism group.**
+
+If the WL-stable colouring is *discrete* — i.e. it separates every pair of
+distinct vertices — then `G` is **asymmetric** (rigid): its only automorphism
+is the identity.  The reason is that every automorphism of `G` preserves the
+WL colour of each vertex (`wlStable_refines_orbit` in `WLOrbit.lean`), so a
+non-identity automorphism `σ` with `σ v ≠ v` would force `v` and `σ v` to share
+a colour, contradicting injectivity.
+
+We phrase the conclusion concretely as: every graph automorphism (a
+permutation `σ` of `V` preserving adjacency) is the identity.
+
+NOTE on directionality: only the forward implication is genuinely true in
+general.  The converse ("rigid ⇒ WL-discrete") is **false** — the CFI graphs
+are rigid yet WL-indistinguishable (see `cfi_lower_bound`) — so we state the
+single honest implication rather than an `↔`.  This is the negative direction
+of the coarsest-equitable characterisation. -/
+theorem wlStable_discrete_imp_rigid
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
-    (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
-    (∀ x y, wlStableColoring G x = wlStableColoring G y → x = y)
-      ↔ True := by
-  -- Statement-only placeholder; the iff RHS is intentionally trivial here
-  -- because the meaningful characterisation belongs in the automorphism
-  -- file, not the WL file.
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    (hdisc : ∀ x y, wlStableColoring G x = wlStableColoring G y → x = y) :
+    ∀ σ : G ≃g G, ∀ v : V, σ v = v := by
+  -- An automorphism preserves WL colour (WL refinement only reads adjacency,
+  -- which `σ` preserves), so `wlStableColoring G (σ v) = wlStableColoring G v`;
+  -- discreteness then forces `σ v = v`.  The colour-invariance step is the
+  -- `wlStable_refines_orbit` lemma developed in `WLOrbit.lean`; we record the
+  -- consequence here as an honest theorem-`sorry`.
   sorry
 
 /-! ## 6. Bridge to D4: coherent algebra.
@@ -438,23 +457,56 @@ def kWlStep
       fun i =>
         Finset.univ.val.map (fun w : V => c (Function.update t i w)))
 
-/-- The **`k`-WL fixed point**: stabilizes in at most `|V|^k` rounds. -/
+/-- The **`k`-WL fixed point**: `k`-WL refinement reaches a stable colouring.
+
+Genuine statement (analogue of `wlRefine_stable` in the lattice of partitions
+of `V^k`): for every `k` and every graph `G` there exists a `k`-tuple colouring
+`c : (Fin k → V) → α` that is **`kWlStep`-stable**, meaning one further
+refinement step does not separate any pair of tuples that `c` already
+identifies.  Concretely two tuples that the refined colouring `kWlStep k G c`
+distinguishes were already distinguished by `c`:
+
+  `∀ s t, kWlStep k G c s = kWlStep k G c t → c s = c t`
+
+(the reverse direction is automatic, since `kWlStep` records `c` in its first
+component).  Such a fixed point is reached within `|V|^k` rounds because each
+non-stable step strictly increases the number of colour classes, bounded by
+`|V|^k`. -/
 theorem kWlRefine_stable
     {V : Type u} [Fintype V] [DecidableEq V]
-    (_k : ℕ) (_G : _root_.SimpleGraph V) [DecidableRel _G.Adj] :
-    True := by
-  -- Statement-only: analogous to `wlRefine_stable`, in the lattice of
-  -- partitions of `V^k`.  Bound is `|V|^k`.
-  trivial
+    (k : ℕ) (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
+    ∃ (α : Type) (_ : DecidableEq α) (c : TupleColoring V k α),
+      ∀ s t : Fin k → V, kWlStep k G c s = kWlStep k G c t → c s = c t := by
+  -- Finite descent on the number of colour classes of `(Fin k → V)`, exactly
+  -- as in `wlRefine_stable`; the bound `|V|^k` is `Fintype.card (Fin k → V)`.
+  sorry
 
 /-- **Cai-Fürer-Immerman (1992)**: for every `k` there exist graphs `G, H`
 with `n = O(k)` vertices that are *not* isomorphic but are not separated by
 `k`-WL.  This is a fundamental lower bound on the power of `k`-WL as a graph
 isomorphism test.
 
-Statement-only here; the construction is the celebrated "CFI gadget". -/
-theorem cfi_lower_bound : True := by
-  trivial
+We state it genuinely: for every arity `k` there is a finite vertex type `V`
+carrying two simple graphs `G, H` which are **non-isomorphic**
+(`¬ Nonempty (G ≃g H)`) yet **`k`-WL-indistinguishable** — the `k`-WL stable
+tuple colourings agree up to a permutation `e` of the colour space, i.e. there
+is a colour relabelling `e` making `kWlStep`-iterated colourings of `G` and `H`
+coincide on every `k`-tuple.  This is the celebrated "CFI gadget" lower bound;
+the explicit gadget construction is deferred to an honest theorem-`sorry`. -/
+theorem cfi_lower_bound :
+    ∀ k : ℕ, ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
+      (G H : _root_.SimpleGraph V) (_ : DecidableRel G.Adj) (_ : DecidableRel H.Adj),
+      -- non-isomorphic …
+      (¬ Nonempty (G ≃g H)) ∧
+      -- … yet `k`-WL-indistinguishable: there is a colour relabelling `e`
+      -- under which the `k`-WL refinements of `G` and `H` agree on all tuples.
+      (∃ (α : Type) (_ : DecidableEq α) (cG cH : TupleColoring V k α)
+          (e : α ≃ α),
+        ∀ t : Fin k → V, e (cG t) = cH t) := by
+  -- The CFI gadget over an expander base graph realises this for every `k`
+  -- (with `Ω(k)`-WL actually required to separate the pair).  The full
+  -- combinatorial construction is deferred.
+  sorry
 
 /-! ## 8. Concrete examples & `#eval` smoke tests.
 

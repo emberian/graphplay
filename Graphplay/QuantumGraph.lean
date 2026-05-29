@@ -67,6 +67,24 @@ def Mem (S : QuantumGraph n) (A : Matrix (Fin n) (Fin n) ℂ) : Prop :=
 instance : Membership (Matrix (Fin n) (Fin n) ℂ) (QuantumGraph n) :=
   ⟨QuantumGraph.Mem⟩
 
+/-- A `ℂ`-span of a set whose every generator has its conjugate transpose
+back in the span is itself closed under conjugate transpose. The proof is by
+`span_induction`, using that `(·)ᴴ` is conjugate-linear and the span is closed
+under arbitrary scalar multiples. -/
+theorem conjTranspose_mem_span_of_generators {ι : Type*}
+    {s : Set (Matrix ι ι ℂ)}
+    (hs : ∀ g ∈ s, Matrix.conjTranspose g ∈ Submodule.span ℂ s)
+    {A : Matrix ι ι ℂ} (hA : A ∈ Submodule.span ℂ s) :
+    Matrix.conjTranspose A ∈ Submodule.span ℂ s := by
+  induction hA using Submodule.span_induction with
+  | mem x hx => exact hs x hx
+  | zero => simpa using Submodule.zero_mem _
+  | add x y _ _ hx hy =>
+      rw [Matrix.conjTranspose_add]; exact Submodule.add_mem _ hx hy
+  | smul a x _ hx =>
+      rw [Matrix.conjTranspose_smul]
+      exact Submodule.smul_mem _ _ hx
+
 /-- The trivial quantum graph: only scalars. (Classical analogue: the
 edgeless graph.) -/
 noncomputable def trivial (n : ℕ) : QuantumGraph n where
@@ -74,15 +92,20 @@ noncomputable def trivial (n : ℕ) : QuantumGraph n where
   one_mem := Submodule.subset_span (by simp)
   star_mem := by
     intro A hA
-    -- The span of a single self-adjoint element (1) is closed under star.
-    sorry
+    -- The span of the single self-adjoint element `1` is closed under `star`.
+    refine conjTranspose_mem_span_of_generators ?_ hA
+    intro g hg
+    rw [Set.mem_singleton_iff] at hg
+    subst hg
+    rw [Matrix.conjTranspose_one]
+    exact Submodule.subset_span (by simp)
 
 /-- The complete operator system: all matrices. (Classical analogue: the
 complete graph plus loops.) -/
 noncomputable def complete (n : ℕ) : QuantumGraph n where
   carrier := ⊤
-  one_mem := by sorry
-  star_mem := by intro A _; sorry
+  one_mem := Submodule.mem_top
+  star_mem := by intro A _; exact Submodule.mem_top
 
 end QuantumGraph
 

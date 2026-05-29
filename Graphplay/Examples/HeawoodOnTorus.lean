@@ -142,8 +142,29 @@ example : Graphplay.GraphBundle.Heawood 1 = 7 := by
   unfold Graphplay.GraphBundle.Heawood
   sorry
 
-/-- The chromatic number of `K_n` is `n`; in particular `χ(K_7) = 7`. -/
-example : True := trivial
+/-- **The underlying graph of the Heawood map is the complete graph `K_7`.**
+
+The Heawood rotation system is an embedding of `K_7`: any two distinct vertices
+`u ≠ v` are joined by an edge.  Concretely, the dart `⟨(u, v), hne⟩` has
+`vert = u` and its `σ`-partner `⟨(v, u), …⟩` has `vert = v`, so `u` and `v` are
+adjacent in `toSimpleGraph`.  Hence `heawoodMap.toSimpleGraph = ⊤`.
+
+This is the combinatorial fact behind the Heawood bound being *tight* on the
+torus: `K_7` is `7`-chromatic, embeds here on the genus-1 surface, and no graph
+of higher chromatic number embeds on the torus (Ringel's Map Color Theorem). -/
+theorem heawood_toSimpleGraph_eq_top :
+    heawoodMap.toSimpleGraph = (⊤ : SimpleGraph V) := by
+  ext u v
+  simp only [SimpleGraph.top_adj]
+  constructor
+  · -- Adjacency in `toSimpleGraph` includes `u ≠ v` by definition.
+    rintro ⟨hne, _⟩
+    exact hne
+  · -- Conversely, distinct `u, v` are joined by the dart `(u, v)`.
+    intro hne
+    refine ⟨hne, ⟨(u, v), hne⟩, rfl, ?_⟩
+    -- `vert (σ e) = (σ_fun e).val.1 = e.val.2 = v`.
+    rfl
 
 end HeawoodOnTorus
 end Examples

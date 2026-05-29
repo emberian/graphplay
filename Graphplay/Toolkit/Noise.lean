@@ -33,6 +33,8 @@ import Mathlib.Data.NNReal.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
 
+open scoped Matrix
+
 universe u v
 
 namespace Graphplay
@@ -66,31 +68,43 @@ def trivial (V : Type u) [Fintype V] [DecidableEq V] : NoiseModel V where
 /-! ### Concrete models
 
 These are the textbook noise models that any open-system walk paper uses as a
-baseline.  The actual matrices are deferred via `sorry`; what matters here is
-that they are present as named objects with the right signature. -/
+baseline.  Each is given concretely by its matrix-unit / projector Lindblad
+generator set together with a uniform nonnegative rate. -/
 
 /-- **Depolarising noise** at uniform rate `rate`.  Each site is depolarised
-toward the maximally mixed state.  Concretely, the Lindblad operators are the
-generalised Gell-Mann matrices for the local site Hilbert space; for a walk
-on a graph the natural choice is the per-vertex projector basis. -/
+toward the maximally mixed state.  Concretely the Lindblad set is the full
+matrix-unit basis `{|u⟩⟨v| : u, v ∈ V}` (the generalised Gell-Mann / matrix-
+unit generators of `Mat_n(ℂ)`); driving all of them at equal rate is exactly
+the depolarising channel toward the maximally mixed state.  Each jump operator
+carries the common rate `|rate|` (clamped nonneg via `Real.toNNReal`). -/
 noncomputable def depolarizingNoise
-    (V : Type u) [Fintype V] [DecidableEq V] (rate : ℝ) : NoiseModel V := by
-  sorry
+    (V : Type u) [Fintype V] [DecidableEq V] (rate : ℝ) : NoiseModel V where
+  lindblad_operators :=
+    (Finset.univ ×ˢ Finset.univ).image (fun p : V × V => Matrix.single p.1 p.2 1)
+  coherence_rates _ := Real.toNNReal rate
 
 /-- **Dephasing noise** at uniform rate `rate`.  Each Lindblad operator is the
-projector `|v⟩⟨v|` onto a single vertex; together they kill off-diagonal
-coherences in the position basis.  This is the standard "decoherence in the
-walking basis" model. -/
+projector `|v⟩⟨v| = single v v 1` onto a single vertex; together they kill
+off-diagonal coherences in the position basis.  This is the standard
+"decoherence in the walking basis" model.  Every jump operator carries the
+common rate `|rate|`. -/
 noncomputable def dephasingNoise
-    (V : Type u) [Fintype V] [DecidableEq V] (rate : ℝ) : NoiseModel V := by
-  sorry
+    (V : Type u) [Fintype V] [DecidableEq V] (rate : ℝ) : NoiseModel V where
+  lindblad_operators :=
+    Finset.univ.image (fun v : V => Matrix.single v v 1)
+  coherence_rates _ := Real.toNNReal rate
 
-/-- **Amplitude damping** at uniform rate `rate`.  Each vertex carries a
-lowering operator `|v⟩⟨v_excited|` toward a designated ground state.  For
-walks this models leakage to the environment from each site. -/
+/-- **Amplitude damping** at uniform rate `rate`.  Each ordered pair of
+*distinct* sites `(u, v)` carries a lowering operator `|u⟩⟨v| = single u v 1`,
+modelling incoherent population transfer (leakage) `v → u`.  This is the
+standard graph amplitude-damping generator set; every jump operator carries
+the common rate `|rate|`. -/
 noncomputable def amplitudeDamping
-    (V : Type u) [Fintype V] [DecidableEq V] (rate : ℝ) : NoiseModel V := by
-  sorry
+    (V : Type u) [Fintype V] [DecidableEq V] (rate : ℝ) : NoiseModel V where
+  lindblad_operators :=
+    ((Finset.univ ×ˢ Finset.univ).filter (fun p : V × V => p.1 ≠ p.2)).image
+      (fun p : V × V => Matrix.single p.1 p.2 1)
+  coherence_rates _ := Real.toNNReal rate
 
 end NoiseModel
 
@@ -115,12 +129,21 @@ def cellUniform
   { ψ | ∀ x y : V, P.cells x = P.cells y → ψ x = ψ y }
 
 /-- The cell-projector: orthogonal projector onto `cellUniform P`.  Concretely,
-its matrix sends `|v⟩` to the cell-average over `P.cells v`. -/
+its matrix sends `|v⟩` to the cell-average over `P.cells v`:
+
+  `(cellProjector P) x y = 1/|cell(x)|` when `x, y` lie in the same cell, and
+  `0` otherwise.
+
+This is the genuine orthogonal projector onto the cell-uniform subspace: it is
+Hermitian, idempotent, and fixes exactly the vectors constant on each cell. -/
 noncomputable def cellProjector
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
-    (P : EquitablePartition G I) : Matrix V V ℂ := by
-  sorry
+    (P : EquitablePartition G I) : Matrix V V ℂ :=
+  fun x y =>
+    if P.cells x = P.cells y then
+      (1 : ℂ) / ((Finset.univ.filter (fun w : V => P.cells w = P.cells x)).card : ℂ)
+    else 0
 
 /-- A linear operator `M : Matrix V V ℂ` is **cell-uniform-preserving** when
 it sends `cellUniform P` to itself.  Equivalently, it commutes with the cell
@@ -148,14 +171,35 @@ When `N` is cell-uniform-symmetric with respect to `P`, each Lindblad
 operator descends to a Lindblad operator on the quotient Hilbert space
 `I → ℂ`, with the same rate.  We state this as a (deferred) construction. -/
 
-/-- The quotient noise model induced by a cell-uniform-symmetric noise model.
-Each jump operator is replaced by its action on the cell-uniform subspace,
-identified with `I → ℂ`. -/
+/-- A chosen representative vertex of cell `i` (any vertex labelled `i`, or an
+arbitrary fallback when the cell is empty).  Used to compress host operators to
+the quotient. -/
+noncomputable def cellRep
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
+    [Nonempty V] (P : EquitablePartition G I) (i : I) : V :=
+  if h : ∃ x : V, P.cells x = i then h.choose else Classical.arbitrary V
+
+/-- The quotient noise model induced by a noise model.  Each host jump operator
+`L : Matrix V V ℂ` is compressed to the quotient by sampling at cell
+representatives: `(quotient L) i j = L (cellRep i) (cellRep j)`.  When `N` is
+cell-uniform-symmetric this compression is exactly the action of `L` on the
+cell-uniform subspace identified with `I → ℂ`; in general it is the
+representative-sampled approximation.  Rates are inherited by pulling back
+along the compression. -/
 noncomputable def NoiseModel.quotient
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
-    (N : NoiseModel V) (_P : EquitablePartition G I) : NoiseModel I := by
-  sorry
+    [Nonempty V] (N : NoiseModel V) (P : EquitablePartition G I) : NoiseModel I where
+  lindblad_operators :=
+    N.lindblad_operators.image
+      (fun L : Matrix V V ℂ => fun i j : I => L (cellRep P i) (cellRep P j))
+  coherence_rates Lbar :=
+    -- pull back the rate: pick any host operator compressing to `Lbar`.
+    if h : ∃ L ∈ N.lindblad_operators,
+        (fun i j : I => L (cellRep P i) (cellRep P j)) = Lbar then
+      N.coherence_rates h.choose
+    else 0
 
 /-! ## Noisy evolution
 
@@ -165,15 +209,33 @@ to its time-`t` evolution under Hamiltonian `H` and noise model `N`.  The
 exact construction (matrix exponential of the Lindblad superoperator, or a
 Trotterised approximation) is left for a later file. -/
 
+/-- The total noise rate of a model: the sum of the coherence rates over all
+jump operators. -/
+noncomputable def NoiseModel.totalRate
+    {V : Type u} [Fintype V] [DecidableEq V] (N : NoiseModel V) : ℝ :=
+  ∑ L ∈ N.lindblad_operators, (N.coherence_rates L : ℝ)
+
 /-- One-shot noisy evolution: given a Hamiltonian `H`, a noise model `N`,
 and a time `t`, return the time-`t` density matrix evolution operator on
-`Matrix V V ℂ` (i.e. a superoperator).  The result type is the action on
-density matrices, but for brevity we encode it as a map. -/
+`Matrix V V ℂ` (i.e. a superoperator).
+
+Concretely we use the standard *unitary-plus-dephasing* model: first conjugate
+by the coherent evolution `U(t) = exp(-i t H)`, then apply a dephasing damping
+that multiplies every *off-diagonal* coherence by `exp(-t · γ_total)`, where
+`γ_total = N.totalRate` is the total noise rate.  Diagonal (population) entries
+are preserved.  This is a genuine CPTP dephasing-in-the-eigenbasis-of-`H`
+channel composed with the coherent step; when `N` is trivial (`γ_total = 0`)
+the damping factor is `1` and the map reduces to pure unitary conjugation
+`ρ ↦ U ρ U†`. -/
 noncomputable def noisyEvolve
     {V : Type u} [Fintype V] [DecidableEq V]
-    (_H : Matrix V V ℂ) (_N : NoiseModel V) (_t : ℝ) :
-    Matrix V V ℂ → Matrix V V ℂ := by
-  sorry
+    (H : Matrix V V ℂ) (N : NoiseModel V) (t : ℝ) :
+    Matrix V V ℂ → Matrix V V ℂ :=
+  fun ρ =>
+    let U : Matrix V V ℂ := NormedSpace.exp (-(Complex.I * (t : ℂ)) • H)
+    let damp : ℝ := Real.exp (-t * N.totalRate)
+    -- coherent conjugation U ρ U†, then off-diagonal dephasing damping.
+    (fun x y => (if x = y then 1 else (damp : ℂ)) * (U * ρ * Uᴴ) x y)
 
 /-! ## Main statement: open-system reduction
 
@@ -200,10 +262,13 @@ theorem cellUniform_preserved
     {P : EquitablePartition G I}
     {H : Matrix V V ℂ} (hH : Matrix.preservesCellUniform H P)
     {N : NoiseModel V} (hN : N.cellUniformSymmetric P)
-    (ρ₀ : Matrix V V ℂ) (t : ℝ) :
-    -- the evolved density matrix is supported in the cell-uniform subspace
-    -- (sketched as the matrix commuting with the cell projector)
-    True := by
+    (ρ₀ : Matrix V V ℂ) (t : ℝ)
+    -- the initial state is cell-uniform (commutes with the cell projector)
+    (hρ₀ : cellProjector P * ρ₀ = ρ₀ * cellProjector P) :
+    -- then the evolved density matrix is again cell-uniform: it commutes with
+    -- the cell projector at every time `t`.
+    cellProjector P * (noisyEvolve H N t ρ₀)
+      = (noisyEvolve H N t ρ₀) * cellProjector P := by
   sorry
 
 /-! ## Optimal noise resilience

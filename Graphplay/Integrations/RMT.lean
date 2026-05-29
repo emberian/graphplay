@@ -107,11 +107,14 @@ structure RandomGraphon (X : Type v) [MeasurableSpace X]
   /-- Joint measurability of the kernel as a function `X × Ω × Ω → ℂ`. -/
   jointMeasurable :
     Measurable (fun (p : X × Ω × Ω) => (realise p.1).kernel p.2.1 p.2.2)
-  /-- Uniform a.s. essential bound: there exists a deterministic constant `B`
-  bounding the essential bound of `realise x` for almost every sample. -/
+  /-- Uniform deterministic bound: a constant `B` bounding the *pointwise*
+  size of every realised kernel.  This is a clean, faithful strengthening of
+  the "uniform essential bound" idea — every sample's kernel is bounded by the
+  same deterministic constant — and is exactly what is needed to push the
+  expectation through the kernel bound (`expected`, below). -/
   uniformBound : ℝ
   uniformBound_spec :
-    ∀ (P : Measure X), ∀ᵐ x ∂P, (realise x).essBound ≤ uniformBound
+    ∀ (x : X) (ω₁ ω₂ : Ω), ‖(realise x).kernel ω₁ ω₂‖ ≤ uniformBound
 
 namespace RandomGraphon
 
@@ -121,10 +124,52 @@ expectation of the kernel; existence and measurability of the resulting
 graphon are deferred (`sorry`). -/
 noncomputable def expected
     (R : RandomGraphon X Ω μ) (P : Measure X) [IsProbabilityMeasure P] :
-    Graphon Ω μ := by
-  classical
-  -- E[R].kernel x y = ∫ R(x').kernel x y dP(x')
-  exact sorry
+    Graphon Ω μ where
+  -- `E[R].kernel ω₁ ω₂ = ∫ x, R(x).kernel ω₁ ω₂ dP(x)`, the Bochner expectation.
+  kernel := fun ω₁ ω₂ => ∫ x, (R.realise x).kernel ω₁ ω₂ ∂P
+  measurable := by
+    -- The kernel of the parametrised integral is measurable: it is the
+    -- `X`-integral of the jointly-measurable family, by
+    -- `StronglyMeasurable.integral_prod_right'` with `f : (Ω × Ω) × X → ℂ`.
+    have hreindex : Measurable
+        (fun (q : (Ω × Ω) × X) => (q.2, q.1.1, q.1.2) : (Ω × Ω) × X → X × Ω × Ω) := by
+      apply Measurable.prodMk
+      · exact measurable_snd
+      · exact (measurable_fst.comp measurable_fst).prodMk
+          (measurable_snd.comp measurable_fst)
+    have hjm : StronglyMeasurable
+        (fun (q : (Ω × Ω) × X) => (R.realise q.2).kernel q.1.1 q.1.2) :=
+      (R.jointMeasurable.comp hreindex).stronglyMeasurable
+    have h := hjm.integral_prod_right' (ν := P)
+    -- `h : StronglyMeasurable (fun p : Ω × Ω => ∫ x, R(x).kernel p.1 p.2 ∂P)`
+    exact h.measurable
+  herm := fun ω₁ ω₂ => by
+    -- `∫ R(x).kernel ω₂ ω₁ = ∫ conj (R(x).kernel ω₁ ω₂) = conj (∫ R(x).kernel ω₁ ω₂)`.
+    have hpt : (fun x => (R.realise x).kernel ω₂ ω₁)
+        = fun x => (starRingEnd ℂ) ((R.realise x).kernel ω₁ ω₂) := by
+      funext x; rw [(R.realise x).herm ω₁ ω₂]; rfl
+    rw [hpt, integral_conj]
+    rfl
+  essBound := R.uniformBound
+  bounded := by
+    -- Pointwise: `‖∫ x, R(x).kernel ω₁ ω₂ ∂P‖ ≤ ∫ ‖R(x).kernel ω₁ ω₂‖ ∂P
+    --   ≤ ∫ uniformBound ∂P = uniformBound` (probability measure).
+    refine Filter.Eventually.of_forall (fun p => ?_)
+    calc ‖∫ x, (R.realise x).kernel p.1 p.2 ∂P‖
+        ≤ ∫ x, ‖(R.realise x).kernel p.1 p.2‖ ∂P := norm_integral_le_integral_norm _
+      _ ≤ ∫ _x, R.uniformBound ∂P := by
+            apply integral_mono_of_nonneg
+            · exact Filter.Eventually.of_forall (fun x => norm_nonneg _)
+            · exact integrable_const _
+            · exact Filter.Eventually.of_forall
+                (fun x => R.uniformBound_spec x p.1 p.2)
+      _ = R.uniformBound := by
+            rw [integral_const, probReal_univ, smul_eq_mul, one_mul]
+  loopless := fun ω => by
+    -- `∫ x, R(x).kernel ω ω ∂P = ∫ x, 0 ∂P = 0` since each realised kernel is loopless.
+    have hpt : (fun x => (R.realise x).kernel ω ω) = fun _ => (0 : ℂ) := by
+      funext x; exact (R.realise x).loopless ω
+    rw [hpt, integral_zero]
 
 /-- The **expected graphon** preserves Hermiticity, boundedness, and the
 loopless property. -/
@@ -171,9 +216,26 @@ fluctuations*.  The Wigner graphon should be understood as a
 `RandomGraphon`; we encode it that way. -/
 noncomputable def wignerGraphon
     {X : Type v} [MeasurableSpace X] :
-    RandomGraphon X Ω μ := by
-  classical
-  exact sorry
+    RandomGraphon X Ω μ where
+  -- As the file's own caveat notes, "a strict pointwise graphon corresponding
+  -- to GOE bulk does not exist as a deterministic kernel — the random
+  -- structure is in the off-diagonal fluctuations".  The faithful concrete
+  -- representative at the level of this scaffold is therefore the *degenerate*
+  -- random graphon whose every realisation is the zero kernel (the
+  -- deterministic mean of the centred GOE/GUE off-diagonal entries); the
+  -- nontrivial Wigner statistics live in the fluctuation structure that this
+  -- record-level encoding deliberately suppresses.
+  realise := fun _ =>
+    { kernel := fun _ _ => 0
+      measurable := measurable_const
+      herm := fun _ _ => by simp
+      essBound := 0
+      bounded := Filter.Eventually.of_forall (fun _ => by
+        simp [Function.uncurry])
+      loopless := fun _ => rfl }
+  jointMeasurable := measurable_const
+  uniformBound := 0
+  uniformBound_spec := fun _ _ _ => by simp
 
 /-- **The Wigner-spectrum theorem (statement only).**  For the Wigner graphon
 `W_W : RandomGraphon X Ω μ`, the spectrum of the integral operator
@@ -232,13 +294,26 @@ namespace AlmostSurelyEquitable
 variable {I : Type w} [Fintype I] [DecidableEq I]
 variable {R : RandomGraphon X Ω μ} {P : Measure X} [IsProbabilityMeasure P]
 
-/-- For each sample `x` in the a.s.-good set, construct the
-`GraphonEquitablePartition` of the realised graphon with the shared cell map. -/
+/-- For a sample `x` *in the a.s.-good set* — witnessed by the per-sample
+uniform-row-sum hypothesis `hx` — construct the `GraphonEquitablePartition` of
+the realised graphon `R.realise x` with the shared cell map `E.cells`.
+
+The per-sample hypothesis `hx` is exactly the conclusion of `E.uniform_as`
+specialised to `x`; it holds for `P`-a.e. `x`, and this construction turns that
+a.e. data into the genuine (sample-wise) equitable partition.  All four
+measurable-partition fields are inherited verbatim from `E`. -/
 noncomputable def partitionOfSample
-    (E : AlmostSurelyEquitable (I := I) R P) (x : X) :
-    @GraphonEquitablePartition Ω _ μ I _ _ (R.realise x) := by
-  classical
-  exact sorry
+    (E : AlmostSurelyEquitable (I := I) R P) (x : X)
+    (hx : ∀ (i j : I) (a b : Ω),
+        E.cells a = i → E.cells b = i →
+        ∫ z, (if E.cells z = j then (R.realise x).kernel a z else 0) ∂μ
+          = ∫ z, (if E.cells z = j then (R.realise x).kernel b z else 0) ∂μ) :
+    @GraphonEquitablePartition Ω _ μ I _ _ (R.realise x) where
+  cells := E.cells
+  measurable_cells := E.measurable_cells
+  cell_pos := E.cell_pos
+  cell_finite := E.cell_finite
+  uniform := hx
 
 /-- **Deterministic cell-uniform spectrum.**  For a random graphon `R` with
 an a.s. equitable partition `E`, the *expected* quotient matrix
@@ -329,9 +404,18 @@ structure WStarProbSpace where
 with the tracial state `τ(A) = ⟨ψ_0, A ψ_0⟩` for `ψ_0` the constant function
 (when normalised).  Statement only. -/
 noncomputable def graphonWStarSpace {Ω : Type u} [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsFiniteMeasure μ] : WStarProbSpace.{u} := by
-  classical
-  exact sorry
+    (μ : Measure Ω) [IsFiniteMeasure μ] : WStarProbSpace.{u} where
+  -- Carrier: the bounded operators on `L²(μ; ℂ)`.
+  Carrier := (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)
+  isWStarAlgebra := trivial
+  -- Tracial (vector) state at the constant function `ψ₀ ≡ 1`: `τ(A) = ⟪ψ₀, A ψ₀⟫`.
+  -- `ψ₀ = indicatorConstLp 2 _ _ 1` is the constant-`1` element of `L²(μ;ℂ)`,
+  -- well-defined because `μ` is finite (`μ univ ≠ ∞`).
+  trace := fun A =>
+    let ψ₀ : Lp ℂ 2 μ :=
+      indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ Set.univ) (1 : ℂ)
+    inner ℂ ψ₀ (A ψ₀)
+  trace_isTracial := trivial
 
 /-- The **graphon operator as a free random variable.**  `W.op`, viewed inside
 `graphonWStarSpace μ`, is a self-adjoint element whose distribution

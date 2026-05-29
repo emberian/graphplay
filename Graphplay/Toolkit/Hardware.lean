@@ -27,8 +27,9 @@ The references that motivate this file are:
 The headline statement is `WeightedGraph.satisfies_quotient`: hardware
 constraints survive the equitable-partition lift.  This says, informally,
 *"if you can build the big graph, you can build the quotient on the cell
-indices"*.  All proofs are deferred via `sorry`; we are laying out a
-vocabulary, not proving theorems.
+indices"*.  The `quotientHWGraph` construction is concrete (built from the
+Hermitian symmetric quotient); the geometric/topological *theorems* are deferred
+via honest theorem-level `sorry`, as we are primarily laying out a vocabulary.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -279,16 +280,31 @@ def HardwareSpec.quotient (H : HardwareSpec) : HardwareSpec where
   allowedPhaseSet := H.allowedPhaseSet
   requiredRegularity := none
 
-/-- The quotient weighted graph induced by an equitable partition.  Edge
-weights are computed by summing the original edge weights from any
-representative in the source cell to all members of the target cell; the
-equitable condition guarantees the result is independent of the chosen
-representative. -/
+/-- The quotient weighted graph induced by an equitable partition.  Its
+off-diagonal `(i, j)` entry is the *symmetric* (Hermitian) quotient weight
+`P.symmQuotient i j = √|C_i| · Q i j / √|C_j|` — the cell-to-cell coupling read
+off in the orthonormal cell-uniform basis, which the equitable condition makes
+independent of the chosen representative.  The diagonal is forced to `0`:
+within-cell edges become self-loops on the quotient, and the `WeightedGraph`
+model is loopless (the self-loop ledger is tracked separately; see the
+`Self-loop ledger` open question below).
+
+Concrete and `sorry`-free: Hermiticity off the diagonal comes from
+`symmQuotient_isHermitian`, and the diagonal is zero by construction. -/
 noncomputable def EquitablePartition.quotientHWGraph
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
-    (P : EquitablePartition G I) : WeightedGraph I := by
-  sorry
+    (P : EquitablePartition G I) : WeightedGraph I where
+  adj := Matrix.of fun i j => if i = j then 0 else P.symmQuotient i j
+  herm := by
+    ext i j
+    simp only [Matrix.conjTranspose_apply, Matrix.of_apply]
+    by_cases h : j = i
+    · subst h; simp
+    · rw [if_neg h, if_neg (fun hc => h hc.symm)]
+      -- `star (symmQuotient j i) = symmQuotient i j` from Hermiticity.
+      exact congrFun (congrFun P.symmQuotient_isHermitian i) j
+  loopless := by intro i; simp [Matrix.of_apply]
 
 /-- **Engineering reduction theorem.**
 

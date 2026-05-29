@@ -138,7 +138,7 @@ def cmPowerIteration (M : List (List Float)) (iters : Nat := 64) :
   let lam := cmDotF v (cmApplyF M v)
   (lam, v)
 
-/-- **Stub.**  Full QR-with-shifts eigenvalue decomposition.
+/-! ### Stub: full QR-with-shifts eigenvalue decomposition
 
 ```
 def cmQrEigenvalues (M : List (List Float)) (iters : Nat) :
@@ -148,7 +148,6 @@ def cmQrEigenvalues (M : List (List Float)) (iters : Nat) :
 Properly implementing this requires Householder reflectors, Wilkinson
 shifts, and deflation — best left to a dedicated numerics layer.  The
 expected signature is recorded above for future implementers. -/
-example : True := trivial
 
 /-! ## Smoke tests (uncomment to `#eval`)
 

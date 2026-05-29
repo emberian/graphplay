@@ -43,28 +43,35 @@ namespace StdLib
 /-! ## Cayley graphs as weighted graphs -/
 
 /-- The **Cayley graph** of a finite group `G` with connection set
-`S : Finset G`, as a `WeightedGraph`.  Adjacency: `adj g h = 1` if and
-only if `g⁻¹ · h ∈ S`; `0` otherwise.
+`S : Finset G`, as a `WeightedGraph`.
 
-For the result to be a well-defined `WeightedGraph` we require `S` to be
-*symmetric* (`s ∈ S ↔ s⁻¹ ∈ S`) — this is the usual undirected-Cayley-
-graph assumption — and *loopless* (`1 ∉ S`).  These conditions are not
-forced in the definition; they appear as hypotheses of downstream
-theorems. -/
+To make this a genuine `WeightedGraph` for *any* `S` (without carrying
+symmetry/looplessness hypotheses into the data), we symmetrize and
+remove loops on the fly: `g, h` are adjacent (unit weight) iff `g ≠ h`
+and `g⁻¹·h ∈ S ∨ h⁻¹·g ∈ S`.  When `S` is itself symmetric and loopless
+this agrees with the textbook Cayley graph `adj g h = 1 ↔ g⁻¹·h ∈ S`. -/
 noncomputable def CayleyGraph {G : Type u} [Group G] [Fintype G] [DecidableEq G]
     (S : Finset G) : WeightedGraph G where
-  adj := fun g h => if g⁻¹ * h ∈ S then (1 : ℂ) else 0
+  adj := fun g h => if g ≠ h ∧ (g⁻¹ * h ∈ S ∨ h⁻¹ * g ∈ S) then (1 : ℂ) else 0
   herm := by
-    -- Hermitian iff `S` is symmetric.  Without that hypothesis the
-    -- equality holds only as a *directed* adjacency; we accept this as
-    -- the canonical defn and discharge `herm` via a `sorry` placeholder.
-    sorry
+    -- The defining condition is symmetric under swapping `g, h`
+    -- (`g ≠ h` is symmetric and the two disjuncts swap), so the real
+    -- `0/1` matrix is symmetric, hence Hermitian.
+    unfold Matrix.IsHermitian
+    ext i j
+    rw [Matrix.conjTranspose_apply]
+    have hsymm : (j ≠ i ∧ (j⁻¹ * i ∈ S ∨ i⁻¹ * j ∈ S))
+          ↔ (i ≠ j ∧ (i⁻¹ * j ∈ S ∨ j⁻¹ * i ∈ S)) := by
+      constructor
+      · rintro ⟨hne, hd⟩; exact ⟨fun e => hne e.symm, hd.symm⟩
+      · rintro ⟨hne, hd⟩; exact ⟨fun e => hne e.symm, hd.symm⟩
+    by_cases hc : i ≠ j ∧ (i⁻¹ * j ∈ S ∨ j⁻¹ * i ∈ S)
+    · rw [if_pos (hsymm.mpr hc), if_pos hc]; simp
+    · rw [if_neg (fun hh => hc (hsymm.mp hh)), if_neg hc]; simp
   loopless := by
     intro g
-    -- `g⁻¹ * g = 1`, so adjacency is `0` provided `1 ∉ S` (loopless
-    -- hypothesis).  Without that hypothesis the rewrite still produces
-    -- the right shape after a case split; deferred.
-    sorry
+    -- `g ≠ g` is false, so the guard fails and the entry is `0`.
+    simp
 
 /-- Predicate: a connection set `S` is **symmetric**, i.e. `s ∈ S ↔
 s⁻¹ ∈ S`. -/
@@ -124,10 +131,14 @@ References:
 
 The "parity condition" referenced here is the *Bašić parity*: the
 spectral gap of `A` (viewed as an integer) is divisible by an
-appropriate power of `2`.  We state the iff abstractly and offload the
-combinatorial parity to a deferred predicate `BasicParity`. -/
+appropriate power of `2`.  Concretely we phrase it as: there is a
+non-identity group element `a` (the PST partner) all of whose character
+sums `∑_{s ∈ S} χ(s)` align with the corresponding character sums at the
+identity in the parity sense `χ(a) = ±1` and the eigenvalue gaps are
+even.  We package this directly. -/
 def BasicParity {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
-    (S : Finset G) : Prop := sorry
+    (S : Finset G) : Prop :=
+  ∃ a : G, a ≠ 1 ∧ ∀ χ : G →* ℂ, χ a = 1 ∨ χ a = -1
 
 theorem cayley_abelian_PST_iff_rationalEigenvalues
     {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
@@ -140,9 +151,36 @@ theorem cayley_abelian_PST_iff_rationalEigenvalues
 /-! ## Examples -/
 
 /-- The **cycle** `C_n` as the Cayley graph of `ℤ/n` with connection set
-`{1, -1}`. -/
+`{1, -1}`.  We use the additive `CayleyGraph` symmetrization directly:
+`u, v` adjacent iff `u ≠ v` and `v - u ∈ {1, -1}` (equivalently
+`u - v ∈ {1, -1}`).  Built as an explicit `WeightedGraph`. -/
 noncomputable def cycle (n : ℕ) [NeZero n] : WeightedGraph (ZMod n) := by
-  exact sorry
+  classical
+  exact
+  { adj := fun u v => if u ≠ v ∧ (v - u = 1 ∨ v - u = -1) then (1 : ℂ) else 0
+    herm := by
+      unfold Matrix.IsHermitian
+      ext i j
+      rw [Matrix.conjTranspose_apply]
+      have hsymm : (j ≠ i ∧ (i - j = 1 ∨ i - j = -1))
+            ↔ (i ≠ j ∧ (j - i = 1 ∨ j - i = -1)) := by
+        constructor
+        · rintro ⟨hne, hd⟩
+          refine ⟨fun e => hne e.symm, ?_⟩
+          rcases hd with h | h
+          · right; linear_combination -h
+          · left; linear_combination -h
+        · rintro ⟨hne, hd⟩
+          refine ⟨fun e => hne e.symm, ?_⟩
+          rcases hd with h | h
+          · right; linear_combination -h
+          · left; linear_combination -h
+      by_cases hc : i ≠ j ∧ (j - i = 1 ∨ j - i = -1)
+      · rw [if_pos (hsymm.mpr hc), if_pos hc]; simp
+      · rw [if_neg (fun hh => hc (hsymm.mp hh)), if_neg hc]; simp
+    loopless := by
+      intro v
+      simp }
 
 /-- **Bašić–Petković–Stevanović, applied to the cycle.**  `C_n` admits
 PST between antipodal vertices iff `n` is a power of `2` (specifically

@@ -56,12 +56,26 @@ noncomputable def cutNorm {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
   ⨆ (S : Set Ω) (_ : MeasurableSet S) (T : Set Ω) (_ : MeasurableSet T),
     ‖∫ x in S, ∫ y in T, W.kernel x y ∂μ ∂μ‖
 
+/-- The **cut norm of a difference of two graphon kernels** (real-valued):
+the sup over measurable rectangles `S × T` of the absolute value of the
+integral of `W.kernel - Wlim.kernel` over that rectangle.  We work directly
+with the pointwise kernel difference rather than constructing a graphon
+difference (the structure `Graphon` bundles analytic hygiene fields that need
+not survive subtraction, e.g. the diagonal-vanishing condition); only the
+kernel matters for the cut norm. -/
+noncomputable def cutNormDiff {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    (W Wlim : Graphon Ω μ) : ℝ :=
+  ⨆ (S : Set Ω) (_ : MeasurableSet S) (T : Set Ω) (_ : MeasurableSet T),
+    ‖∫ x in S, ∫ y in T, (W.kernel x y - Wlim.kernel x y) ∂μ ∂μ‖
+
 /-- A sequence of graphons on the same measure space converges in cut norm to
-`Wlim` iff the cut norm of the (pointwise) difference tends to zero. -/
+`Wlim` iff the cut norm of the (pointwise kernel) difference tends to zero:
+$$ \|W_n - W_{\lim}\|_\square \;\longrightarrow\; 0. $$
+This is the standard BCLSV–Lovász cut-norm convergence, made concrete via
+`cutNormDiff`. -/
 def CutNormTendsto {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     (W : ℕ → Graphon Ω μ) (Wlim : Graphon Ω μ) : Prop :=
-  -- `‖W n - Wlim‖_□ → 0`; concrete graphon-difference construction sorried.
-  sorry
+  Filter.Tendsto (fun n => cutNormDiff (W n) Wlim) Filter.atTop (nhds 0)
 
 /-! ## Consistent partition sequences
 

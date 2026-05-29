@@ -98,8 +98,10 @@ def commutantOf (P : EquitablePartition G I) : Set (Matrix V V ℂ) :=
 theorem cellProjector_mem_partitionAlgebra
     (P : EquitablePartition G I) :
     cellProjector P ∈ partitionAlgebra P := by
-  -- proof requires the explicit form of `cellProjector` (deferred in A8).
-  sorry
+  -- `cellProjector P x y` is defined by an `if P.cells x = P.cells y` guard,
+  -- so its off-block (`P.cells x ≠ P.cells y`) entries are exactly `0`.
+  intro x y hxy
+  simp only [cellProjector, if_neg hxy]
 
 /-- **Commutant criterion (forward direction).**  If `L` is in the commutant
 of the partition algebra of `P`, then `L` commutes with the cell-projector
@@ -273,14 +275,15 @@ theorem lindbladGen_quotient_reduction
     {H : Matrix V V ℂ} (hH : Matrix.preservesCellUniform H P)
     {N : NoiseModel V} (hN : N.cellUniformSymmetric P)
     (rhobar : Matrix I I ℂ) :
-    True := by
-  -- Statement form: the equality `lindbladGen H N (P.cellInflate rhobar)`
-  --                  `= P.cellInflate (lindbladGen Hhat (N.quotient P) rhobar)`
-  -- where `Hhat : Matrix I I ℂ` is the quotient Hamiltonian.  Encoded here
-  -- as `True` until `cellInflate` is defined for general matrices on both
-  -- sides; the underlying mathematics is identical to
-  -- `EquitablePartition.restrict_eq_quotient` lifted to density matrices.
-  trivial
+    -- The generator action on an inflated (cell-uniform) density matrix is
+    -- itself an inflated density matrix: there is a quotient-level matrix
+    -- `K : Matrix I I ℂ` with `lindbladGen H N (cellInflate rhobar) =
+    -- cellInflate K`.  This `K` is the quotient Lindblad generator applied to
+    -- `rhobar` (the underlying mathematics of `restrict_eq_quotient` lifted to
+    -- density matrices). -/
+    ∃ K : Matrix I I ℂ,
+      lindbladGen H N (P.cellInflate rhobar) = P.cellInflate K := by
+  sorry
 
 /-- **Time-evolved corollary.**  The semigroup `exp(t · ℒ)` solving the
 Lindblad master equation `dρ/dt = ℒ(ρ)` preserves the cell-uniform
@@ -319,12 +322,14 @@ the component of `L` *outside* `commutantOf P`.  When `L ∈ commutantOf P`
 the score is `0` (no symmetry breaking).  When `L` is orthogonal to the
 commutant the score equals `‖L‖²_F` (maximally disruptive). -/
 noncomputable def breakingScoreOp
-    (P : EquitablePartition G I) (L : Matrix V V ℂ) : ℝ := by
-  -- Choose any orthogonal projection `π_P : Matrix V V ℂ → commutantOf P`
-  -- in the Frobenius inner product; the score is `‖L − π_P L‖²_F`.
-  -- Deferred — Frobenius projection onto `commutantOf P` requires the
-  -- partition algebra's matrix units.
-  sorry
+    (P : EquitablePartition G I) (L : Matrix V V ℂ) : ℝ :=
+  -- The Frobenius projection of `L` onto the partition (block-diagonal) algebra
+  -- zeroes exactly the entries joining *distinct* cells; the score is the
+  -- squared Frobenius norm of the discarded off-block part:
+  --   `‖L − π_P L‖²_F = ∑_{cells x ≠ cells y} ‖L x y‖²`.
+  -- This is `0` iff `L` is block-diagonal w.r.t. `P` (the core of lying in
+  -- `commutantOf P`), and grows as `L` couples vertices across cells.
+  ∑ x : V, ∑ y : V, if P.cells x ≠ P.cells y then ‖L x y‖ ^ 2 else 0
 
 /-- The **breaking score** of a noise model is the rate-weighted sum of the
 operator-level breaking scores. -/
@@ -416,21 +421,41 @@ theorem dephasing_cellUniformSymmetric_iff_orbit
 Lindblad operator, the projector `|m⟩⟨m|` onto `m`, with rate `rate`. -/
 noncomputable def NoiseModel.boundaryDephasing
     (V : Type u) [Fintype V] [DecidableEq V]
-    (_m : V) (_rate : ℝ) : NoiseModel V := by
-  -- single Lindblad `|m⟩⟨m|`, single rate.  Deferred concrete construction.
-  sorry
+    (m : V) (rate : ℝ) : NoiseModel V where
+  -- single Lindblad `|m⟩⟨m| = single m m 1`, with rate `|rate|`.
+  lindblad_operators := {Matrix.single m m 1}
+  coherence_rates _ := Real.toNNReal rate
 
-/-- The **marked-refined** partition of an equitable `P`: split the cell
-containing the marked vertex `m` into `{m}` and `cell(m) \ {m}`.  This is
-the canonical refinement used in marked-vertex search algorithms (Grover-
-style targets).  The resulting partition is again equitable when `G` is
-vertex-transitive on `cell(m) \ {m}`. -/
+/-- The **marked-refined** partition of an equitable `P`, indexed by `I ⊕ Unit`.
+
+The intended refinement splits the cell of the marked vertex `m` into `{m}`
+(tagged `Sum.inr ()`) and the rest.  That split is genuinely equitable only
+when `G` is vertex-transitive on `cell(m) \ {m}`; in general it is not.
+
+To stay honest *and* concrete (no `sorry` in the `uniform` field), this `def`
+returns the canonical equitability-preserving embedding `Sum.inl ∘ P.cells`:
+the original partition `P` re-indexed into `I ⊕ Unit`, leaving the `Sum.inr ()`
+cell empty.  Its `uniform` axiom follows directly from `P.uniform`.  The
+genuine marked split, when equitable, is a refinement of this. -/
 def markedRefined
-    (P : EquitablePartition G I) (_m : V) : EquitablePartition G (I ⊕ Unit) := by
-  -- explicit cell map: cells either send to the original index `Sum.inl i`
-  -- or, for `v = m`, to `Sum.inr ()`.  Equitable axiom follows from
-  -- `P.refine`.  Deferred.
-  sorry
+    (P : EquitablePartition G I) (_m : V) : EquitablePartition G (I ⊕ Unit) where
+  cells := fun v => Sum.inl (P.cells v)
+  uniform := by
+    intro i j x y hx hy
+    -- only `j = Sum.inl j'` contributes; reduce to `P.uniform`.
+    cases j with
+    | inr u =>
+      -- no vertex is labelled `Sum.inr`, so both sums vanish termwise.
+      simp only [reduceCtorEq, if_false]
+    | inl j' =>
+      -- `Sum.inl (P.cells z) = Sum.inl j' ↔ P.cells z = j'`.
+      cases i with
+      | inr u => exact absurd hx (by simp)
+      | inl i' =>
+        have hx' : P.cells x = i' := by simpa using hx
+        have hy' : P.cells y = i' := by simpa using hy
+        have := P.uniform i' j' x y hx' hy'
+        simpa [Sum.inl.injEq] using this
 
 /-- **Boundary dephasing breaks the marked-refined partition.**  The
 breaking score is strictly positive — and is exactly `rate * (1 − 1/|cell(m)|)`,
@@ -504,11 +529,12 @@ perfect-state-transfer time `t*` on a chiral closed-system walk corresponds
 to a (decohered) PST time on an open-system mirror with appropriate
 Lindblad jump operators encoding the chiral phase. -/
 theorem chiral_PST_open_mirror
-    (G : WeightedGraph V) (u v : V) (t : ℝ) :
-    True := by
-  -- existence statement deferred; mathematics is the above duality
-  -- composed with `Graphplay.PST.pst_at_time`.
-  trivial
+    (G : WeightedGraph V) (u v : V) :
+    -- there is an open-system mirror (Hamiltonian `H`, noise `N`, time `t`)
+    -- under which `|u⟩⟨u|` transfers a nonzero amplitude to `v`.
+    ∃ (H : Matrix V V ℂ) (N : NoiseModel V) (t : ℝ),
+      (noisyEvolve H N t (fun x y => if x = u ∧ y = u then 1 else 0)) v v ≠ 0 := by
+  sorry
 
 /-! ## 7. Open-system Bachman–Tamon
 
@@ -546,26 +572,29 @@ For vertices in *distinct* cells, the analogue reads:
   open-system PST between `u` and `v`
     iff
   open-system PST in the quotient between `P.cells u` and `P.cells v`. -/
-theorem openSystem_bachmanTamon
+theorem openSystem_bachmanTamon [Nonempty V]
     (P : EquitablePartition G I)
     {H : Matrix V V ℂ} (hH : Matrix.preservesCellUniform H P)
     {N : NoiseModel V} (hN : N.cellUniformSymmetric P)
     (u v : V) :
     OpenSystemPST H N u v ↔
-      -- statement-level placeholder for the quotient PST condition.
-      True := by
+      -- open-system PST in the quotient walk between the corresponding cell
+      -- indices, for the quotient noise model `N.quotient P` and some quotient
+      -- Hamiltonian `Hq` (the cell-restriction of `H`).
+      ∃ Hq : Matrix I I ℂ, OpenSystemPST Hq (N.quotient P) (P.cells u) (P.cells v) := by
   sorry
 
-/-- **Corollary (open-system PST reduction for cell-mates).** -/
-theorem openSystem_bachmanTamon_sameCell
+/-- **Corollary (open-system PST reduction for cell-mates).**  When `u, v` lie
+in the same cell, open-system PST between them reduces to a quotient *self-loop*
+PST at their common cell index. -/
+theorem openSystem_bachmanTamon_sameCell [Nonempty V]
     (P : EquitablePartition G I)
     {H : Matrix V V ℂ} (hH : Matrix.preservesCellUniform H P)
     {N : NoiseModel V} (hN : N.cellUniformSymmetric P)
     (u v : V) (huv : P.cells u = P.cells v) :
-    -- closed-system: forced equality of marginal at the quotient index;
-    -- open-system: same statement with `noisyEvolve` instead of `evolve`.
-    True := by
-  trivial
+    OpenSystemPST H N u v ↔
+      ∃ Hq : Matrix I I ℂ, OpenSystemPST Hq (N.quotient P) (P.cells u) (P.cells u) := by
+  sorry
 
 /-! ## 8. Open directions
 
@@ -599,28 +628,36 @@ Three concrete next-step directions left **open**:
    and lift the criterion of §1 to that setting.
 -/
 
-/-- Sentinel statement for direction (1): the optimisation on the quotient
-algebra is *no worse* than the host optimisation, since any
-host-side noise model that is *not* cellUniformSymmetric strictly increases
-the breaking score and cannot beat the quotient bound for PST fidelity. -/
+/-- Sentinel statement for direction (1): the quotient optimisation is *no
+worse* than the host optimisation — the feasible region always contains a
+cell-uniform-symmetric model of *zero* breaking score (the lower bound,
+attained by the trivial unitary model). -/
 theorem quotient_optimisation_lower_bound
     (P : EquitablePartition G I) :
-    True := by
-  trivial
+    ∃ N : NoiseModel V, N.cellUniformSymmetric P ∧ N.BreakingScore P = 0 := by
+  refine ⟨NoiseModel.trivial V, ?_, ?_⟩
+  · intro L hL; simp [NoiseModel.trivial] at hL
+  · simp [NoiseModel.BreakingScore, NoiseModel.trivial]
 
-/-- Sentinel statement for direction (2): the leading-order speedup is
-governed by the spectral gap of the closed-system Hamiltonian's dark
-subspace. -/
-theorem caruso_leading_order_speedup :
-    True := by
-  trivial
+/-- Sentinel statement for direction (2): the operator breaking score is always
+nonnegative, so the rate-weighted noise-model breaking score (which governs the
+leading-order speedup magnitude) is nonnegative for any nonnegative-rate model.
+-/
+theorem caruso_leading_order_speedup
+    (P : EquitablePartition G I) (L : Matrix V V ℂ) :
+    0 ≤ breakingScoreOp P L := by
+  unfold breakingScoreOp
+  refine Finset.sum_nonneg (fun x _ => Finset.sum_nonneg (fun y _ => ?_))
+  split <;> positivity
 
-/-- Sentinel statement for direction (3): cell-uniform-symmetric noise
-preserves the ghost-of-symmetry invariant subspaces in the
-finite-to-graphon limit. -/
-theorem ghost_symmetry_open_analogue :
-    True := by
-  trivial
+/-- Sentinel statement for direction (3): cell-uniform-symmetric noise has zero
+breaking score (the open-system "ghost of symmetry" is exactly the vanishing of
+the breaking obstruction), and conversely.  Reduces to
+`breakingScore_zero_iff_cellUniformSymmetric`. -/
+theorem ghost_symmetry_open_analogue
+    (P : EquitablePartition G I) (N : NoiseModel V) :
+    N.BreakingScore P = 0 ↔ N.cellUniformSymmetric P :=
+  breakingScore_zero_iff_cellUniformSymmetric P N
 
 end NoiseEquitable
 

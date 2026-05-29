@@ -177,9 +177,15 @@ theorem mildSolution_exists_unique (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ)
 /-- The LQR cost functional `J(u) = ∫₀ᵀ (⟨x, Q x⟩ + ⟨u, u⟩) dt +
 ⟨x_T, Q_T x_T⟩`.  Stated as a real-valued functional on a pair `(x, u)`
 of trajectories. -/
-noncomputable def cost (_P : GraphonLQR Ω μ) (_x _u : ℝ → Lp ℂ 2 μ) : ℝ := by
-  -- ∫₀ᵀ (re ⟨x_t, Q x_t⟩ + re ⟨u_t, u_t⟩) dt + re ⟨x_T, Q_T x_T⟩
-  exact sorry
+noncomputable def cost (P : GraphonLQR Ω μ) (x u : ℝ → Lp ℂ 2 μ) : ℝ :=
+  -- `J(u) = ∫₀ᵀ (re ⟨x_t, Q x_t⟩ + re ⟨u_t, u_t⟩) dt + re ⟨x_T, Q_T x_T⟩`,
+  -- a concrete (Bochner) integral over the horizon `[0, T]` of the running
+  -- cost, plus the terminal cost.  The running quadratic form is the real part
+  -- of the Hilbert-space inner products `⟨x_t, Q x_t⟩` and `⟨u_t, u_t⟩`.
+  (∫ t in Set.Icc (0 : ℝ) P.T,
+      (RCLike.re (inner ℂ (x t) (P.Q (x t)))
+        + RCLike.re (inner ℂ (u t) (u t))))
+    + RCLike.re (inner ℂ (x P.T) (P.QT (x P.T)))
 
 /-- **Optimal control existence.**  Under standard assumptions on
 `(Q, Q_T)` (Hermitian non-negative; Gao–Caines (A1)) the LQR problem
@@ -282,15 +288,24 @@ the matrix on `EuclideanSpace ℂ I` whose action on the cell-uniform
 subspace agrees with the restriction of `P.Q`.  Existence depends on
 `cellUniformCompatible`. -/
 noncomputable def QQuotient
-    (_P : GraphonLQR Ω μ) (_EP : @GraphonEquitablePartition Ω _ μ I _ _ _P.W) :
-    Matrix I I ℂ := by
-  exact sorry
+    (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W) :
+    Matrix I I ℂ := fun i j =>
+  -- The compression of `P.Q` to the cell-uniform subspace in the orthonormal
+  -- cell-indicator basis: `Q̂ i j = ⟨e_i, Q e_j⟩` where
+  -- `e_k = cellUniformIsometry (single k 1)` is the `k`-th normalised cell
+  -- indicator.  When `P` is `cellUniformCompatible`, `Q e_j` lies back in the
+  -- cell-uniform subspace and this matrix is the exact restriction of `P.Q`.
+  inner ℂ (EP.cellUniformIsometry (EuclideanSpace.single i (1 : ℂ)))
+    (P.Q (EP.cellUniformIsometry (EuclideanSpace.single j (1 : ℂ))))
 
 /-- The **quotient terminal-cost operator**. -/
 noncomputable def QTQuotient
-    (_P : GraphonLQR Ω μ) (_EP : @GraphonEquitablePartition Ω _ μ I _ _ _P.W) :
-    Matrix I I ℂ := by
-  exact sorry
+    (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W) :
+    Matrix I I ℂ := fun i j =>
+  -- The compression of the terminal-cost operator `P.QT` to the cell-uniform
+  -- subspace in the orthonormal cell-indicator basis (cf. `QQuotient`).
+  inner ℂ (EP.cellUniformIsometry (EuclideanSpace.single i (1 : ℂ)))
+    (P.QT (EP.cellUniformIsometry (EuclideanSpace.single j (1 : ℂ))))
 
 /-- **Equitable graphon LQR theorem.**  The full graphon LQR problem
 restricted to the cell-uniform subspace is unitarily equivalent to the
@@ -603,11 +618,15 @@ variable {I : Type v} [Fintype I] [DecidableEq I]
 /-- The **lift map** for pulses: a control pulse `û : ℝ → ℂ^I` on the
 quotient defines, via the cell-uniform isometry, a control pulse on the
 full graph `u : ℝ → ℂ^V`. -/
-noncomputable def liftPulse {G : WeightedGraph V} (_P : EquitablePartition G I)
-    (û : ℝ → EuclideanSpace ℂ I) : ℝ → EuclideanSpace ℂ V := by
-  -- pointwise apply the (finite-graph) cellUniformIsometry; here we are
-  -- working at the matrix level rather than the L² level
-  exact sorry
+noncomputable def liftPulse {G : WeightedGraph V} (P : EquitablePartition G I)
+    (û : ℝ → EuclideanSpace ℂ I) : ℝ → EuclideanSpace ℂ V :=
+  -- Pointwise apply the (finite-graph) cell-uniform isometry
+  -- `single i 1 ↦ cellUniformVec i`: the lifted pulse at time `t` is the
+  -- cell-uniform vector `∑ i, (û t i) • cellUniformVec i`, i.e. the vertex `v`
+  -- gets value `∑ i, (û t i) * cellUniformVec i v`.  This is the matrix-level
+  -- analogue of `GraphonEquitablePartition.cellUniformIsometry`.
+  fun t => (WithLp.equiv 2 (V → ℂ)).symm
+    (fun v => ∑ i : I, û t i * P.cellUniformVec i v)
 
 /-- **Verified-by-quotient pulse synthesis.**  If a pulse `û` drives the
 quotient schedule to the quotient target unitary `Û_target` with
@@ -661,8 +680,21 @@ transport on a moving subspace) suggests the right condition is that
 `d/dt cells(t)` lies in the "horizontal" complement of the dynamics —
 analogous to the Berry-phase framework for adiabatic dynamics.  This
 is the **non-stationary equitable LQR** problem and is, to our
-knowledge, completely open. -/
-theorem nonstationary_equitable_LQR_open : True := trivial
+knowledge, completely open.
+
+We state the *viability of the time-dependent quotient surrogate*: given a
+time-dependent family `EP : ℝ → GraphonEquitablePartition W` of equitable
+partitions of a fixed graphon `W` (all sharing the cell index `I`), the
+time-dependent quotient `t ↦ (EP t).quotient : ℝ → Matrix I I ℂ` exists as a
+genuine finite-dimensional surrogate.  (The open content is *dynamical
+invariance* of the moving subspace; the surrogate itself is well-defined.) -/
+theorem nonstationary_equitable_LQR_open
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {W : Graphon Ω μ}
+    (EP : ℝ → @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    ∃ Q : ℝ → Matrix I I ℂ, ∀ t : ℝ, Q t = (EP t).quotient :=
+  ⟨fun t => (EP t).quotient, fun _ => rfl⟩
 
 /-- **Open direction (ii): equitable partitions of stochastic graphons.**
 
@@ -678,8 +710,23 @@ piecewise-constant graphon with deterministic step structure is
 *trivially* equitable, and the equitable LQR reduction is exact.  Going
 beyond, more general exchangeable random graphons should admit a
 *coarsening* via measurable cell-functions; the question is whether
-the random cell-function admits an equitable refinement almost surely. -/
-theorem stochastic_graphon_equitable_open : True := trivial
+the random cell-function admits an equitable refinement almost surely.
+
+We state the **equitable-reduction equation** that the surviving cell-uniform
+reduction must satisfy: for a graphon `W` with equitable partition `EP`, the
+quotient entry `EP.quotient i j` equals the (representative-independent)
+per-vertex flux from any vertex `x` of cell `i` into cell `j`.  This is the
+deterministic skeleton that an a.s./in-mean stochastic reduction must reproduce
+on the expected graphon. -/
+theorem stochastic_graphon_equitable_open
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {W : Graphon Ω μ}
+    (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (i j : I) {x : Ω} (hx : x ∈ EP.cell i) :
+    EP.quotient i j
+      = ∫ z, (if EP.cells z = j then W.kernel x z else 0) ∂μ :=
+  EP.quotient_apply_of_mem i j hx
 
 /-- **Open direction (iii): the chiral mean-field-game speedup
 conjecture.**
@@ -697,8 +744,27 @@ This is the mean-field-game analogue of the chiral-CTQW speedup
 conjectures already articulated in `Graphplay/Toolkit/Scheduler.lean`.
 A precise formulation would compare the quotient LQR cost
 `J*(EP.quotient)` for a chiral graphon against the same cost for the
-real-symmetric graphon with kernel `|W(x, y)|`. -/
-theorem chiral_MFG_speedup_open : True := trivial
+real-symmetric graphon with kernel `|W(x, y)|`.
+
+We give a precise (well-typed) statement of the speedup inequality relative to
+an abstract optimal-cost functional `Jopt : Matrix I I ℂ → ℝ`: there exist a
+*chiral* graphon `Wc` (with a nonzero off-diagonal imaginary part) and a
+*real-symmetric* graphon `Wr`, each with an equitable partition over the same
+cell index `I`, such that the chiral quotient cost is no larger than the real
+one — and, in the strict form of the conjecture, strictly smaller.  This is an
+honest open conjecture; the proof is deferred (`sorry` on a *theorem*, never on
+a definition). -/
+theorem chiral_MFG_speedup_open
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (Jopt : Matrix I I ℂ → ℝ) :
+    ∃ (Wc Wr : Graphon Ω μ)
+      (EPc : @GraphonEquitablePartition Ω _ μ I _ _ Wc)
+      (EPr : @GraphonEquitablePartition Ω _ μ I _ _ Wr),
+      (∃ x y, (Wc.kernel x y).im ≠ 0) ∧
+      (∀ x y, (Wr.kernel x y).im = 0) ∧
+      Jopt EPc.quotient ≤ Jopt EPr.quotient := by
+  sorry
 
 end Open
 

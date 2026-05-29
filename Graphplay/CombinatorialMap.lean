@@ -244,9 +244,25 @@ noncomputable def ofPerVertexRotations
         simp [hv]
       right_inv := by
         intro e
-        -- Symmetric reasoning via support of inverse — vertex is preserved
-        -- under `rotations (vert e)⁻¹` and the round-trip cancels.
-        sorry }
+        show (rotations (vert ((rotations (vert e))⁻¹ e))) ((rotations (vert e))⁻¹ e) = e
+        -- Let `e' = (rotations (vert e))⁻¹ e`.  We first show `vert e' = vert e`:
+        -- either `e' = e` (then immediate), or `rotations (vert e)` moves `e'`
+        -- (it sends `e'` to `e ≠ e'`), so by `h_rot_supp`, `vert e' = vert e`.
+        -- `g (g⁻¹ x) = x` for any permutation `g`, via `g * g⁻¹ = 1`.
+        have cancel : ∀ (g : Equiv.Perm E) (x : E), g (g⁻¹ x) = x := by
+          intro g x
+          have h := congrArg (fun (p : Equiv.Perm E) => p x) (mul_inv_cancel g)
+          simpa [Equiv.Perm.mul_apply] using h
+        have hv : vert ((rotations (vert e))⁻¹ e) = vert e := by
+          by_cases h : (rotations (vert e))⁻¹ e = e
+          · rw [h]
+          · refine h_rot_supp (vert e) _ ?_
+            -- `rotations (vert e)` sends `e'` to `e`, and `e ≠ e'`.
+            rw [cancel]
+            exact fun heq => h heq.symm
+        -- With `vert e' = vert e`, the outer rotation cancels the inverse.
+        rw [hv]
+        exact cancel (rotations (vert e)) e }
   { σ := σ
     ρ := ρ
     σ_involutive := hσ_inv

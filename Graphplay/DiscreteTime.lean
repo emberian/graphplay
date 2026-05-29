@@ -162,9 +162,11 @@ def conditionalShift (port : C × V → V) :
 /-- The **Grover coin** on coin space `C`: the rank-one reflection through
 the uniform superposition.  Concretely
 `Grover := (2/|C|) · J − I`,
-where `J` is the all-ones matrix on `C`. -/
+where `J` is the all-ones matrix on `C`.  Entrywise, the `(p, q)` entry is
+`2/|C| − δ_{pq}`. -/
 noncomputable def groverCoin (C : Type w) [Fintype C] [DecidableEq C] :
-    Matrix C C ℂ := by exact sorry
+    Matrix C C ℂ :=
+  fun p q => (2 / (Fintype.card C : ℂ)) - (if p = q then 1 else 0)
 
 /-- Tensor product of a coin on `C` with the identity on `V`. -/
 def coinTensorI (coin : Matrix C C ℂ) (V : Type u) [Fintype V] [DecidableEq V] :

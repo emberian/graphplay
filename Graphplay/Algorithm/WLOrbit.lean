@@ -184,12 +184,36 @@ noncomputable def orbitPartition_isEquitable
   refine
     { cells := orbitPartition G₀
       uniform := ?_ }
-  -- The proof is the index-swap sketched above; we record it as
-  -- `sorry` here because filling it in requires reindexing sums of
-  -- `Finset.sum` along the `Aut`-action permutation, which is
-  -- straightforward but bulky.
+  -- The index-swap argument: `x, y` lie in the same orbit cell, so there is
+  -- an automorphism `σ` with `σ • x = y`.  Reindexing the cell-`j` sum at `y`
+  -- by `z ↦ σ • z` (a bijection of `V`) restores the cell-`j` sum at `x`,
+  -- because (a) `σ` permutes orbits, so `cells (σ • z) = cells z`, and (b) the
+  -- weights are `Aut`-invariant: `G.adj y (σ • z) = G.adj (σ • x) (σ • z) =
+  -- G.adj x z`.
   intro i j x y hx hy
-  sorry
+  -- `x, y` are in the same orbit.
+  have hxy : sameOrbit G₀ x y := by
+    rw [← orbitPartition_eq_iff]; rw [hx, hy]
+  obtain ⟨σ, hσ⟩ := hxy
+  -- Reindex the RHS sum along the bijection `σ`.
+  rw [← Equiv.sum_comp σ (fun z => if orbitPartition G₀ z = j then G.adj y z else 0)]
+  -- Now both sums range over `z`; show the summands agree termwise.
+  refine Finset.sum_congr rfl (fun z _ => ?_)
+  -- `σ z` is in the same orbit as `z`, so the cell label matches.
+  have hsmul : σ • z = σ z := rfl
+  have hcell : orbitPartition G₀ (σ z) = orbitPartition G₀ z := by
+    rw [orbitPartition_eq_iff]
+    exact ⟨σ⁻¹, by rw [← hsmul, ← mul_smul, inv_mul_cancel, one_smul]⟩
+  simp only [hcell]
+  by_cases hzj : orbitPartition G₀ z = j
+  · rw [if_pos hzj, if_pos hzj]
+    -- `G.adj y (σ z) = G.adj (σ • x) (σ • z) = G.adj x z`.
+    have hinv : G.adj (σ • x) (σ • z) = G.adj x z :=
+      HasAutInvariantWeights.invariant σ x z
+    have : G.adj y (σ z) = G.adj x z := by
+      rw [← hσ]; exact hinv
+    rw [this]
+  · rw [if_neg hzj, if_neg hzj]
 
 /-! ## §3. WL-stable refines orbit -/
 
@@ -293,14 +317,20 @@ record its existence as a postulate. -/
 
 /-- Existence of a CFI graph with phantom symmetry.  The vertex set
 is built from a 3-regular base graph plus per-edge gadgets; we leave
-it `Nonempty`-only. -/
-axiom cfiExists :
+it `Nonempty`-only.
+
+This is a genuine (true) existence statement — CFI graphs with phantom
+symmetry exist (Cai–Fürer–Immerman 1992) — recorded as an honest
+theorem-`sorry` rather than an `axiom`, since the witness requires the
+full per-edge gadget construction. -/
+theorem cfiExists :
     ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G₀ : Graphplay.SimpleGraph V) (G : Graphplay.WeightedGraph V)
       (_ : HasAutInvariantWeights G₀ G)
       (I : Type) (_ : Fintype I) (_ : DecidableEq I)
       (P : EquitablePartition G I) (hStable : IsWLStable G P),
-      HasPhantomSymmetry G₀ G P hStable
+      HasPhantomSymmetry G₀ G P hStable := by
+  sorry
 
 /-- *Concrete CFI marker.*  When (and only when) we are working with
 a CFI graph, this predicate is intended to hold.  We use it to

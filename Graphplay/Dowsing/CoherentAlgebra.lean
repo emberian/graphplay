@@ -252,9 +252,31 @@ cell-indicator matrices for the **product** partition (cells indexed by
 `I × I`). For a one-sided cell-indicator family `cellIndicatorMat cells i`, the
 all-ones matrix equals the sum of the rank-`|Cᵢ|·|Cⱼ|` indicators `1_{Cᵢ×Cⱼ}`.
 We expose the analogous statement: the sum of `cellIndicatorMat cells i` over
-`i` is the **block-diagonal** matrix; `J` requires the (I×I)-indexed family. -/
+`i` is the **block-diagonal** matrix `[cells x = cells y]`; `J` requires the
+(I×I)-indexed family. -/
 theorem sum_cellIndicatorMat (cells : V → I) :
-    True := by trivial
+    (∑ i, cellIndicatorMat (V := V) cells i)
+      = fun x y => if cells x = cells y then (1 : ℂ) else 0 := by
+  funext x y
+  rw [Matrix.sum_apply]
+  simp only [cellIndicatorMat]
+  by_cases hxy : cells x = cells y
+  · -- exactly the index `i = cells x` contributes a `1`.
+    rw [if_pos hxy]
+    rw [Finset.sum_eq_single (cells x)]
+    · rw [if_pos ⟨rfl, hxy.symm⟩]
+    · intro b _ hb
+      rw [if_neg]
+      rintro ⟨hbx, _⟩
+      exact hb hbx.symm
+    · intro h; exact absurd (Finset.mem_univ _) h
+  · -- no index contributes: `cells x = i ∧ cells y = i` would force `cells x = cells y`.
+    rw [if_neg hxy]
+    apply Finset.sum_eq_zero
+    intro i _
+    rw [if_neg]
+    rintro ⟨hix, hiy⟩
+    exact hxy (hix.trans hiy.symm)
 
 /-- **The partition algebra is a coherent subalgebra.** This is the forward
 direction of the headline equivalence: every (not-necessarily-equitable)
@@ -393,7 +415,16 @@ theorem _root_.Graphplay.EquitablePartition.toCoherent_isCoherent
 
 /-- The backward direction: a projector-generated commutative coherent
 subalgebra `A` containing `G.adj` produces an equitable partition. The cells
-are the support sets of the generating projectors. -/
+are the support sets of the generating projectors.
+
+The **cell function is concrete**: vertex `x` is assigned the *diagonal-
+idempotent index*, i.e. (the choice of) a generating projector `proj j` whose
+diagonal entry `proj j x x` is nonzero.  Because the projectors are orthogonal
+and resolve the identity (`∑ j proj j = 1`), the diagonal `1 = ∑ j (proj j) x x`
+is nonzero, so such a `j` always exists; we pick one by choice.  Vertices with
+the same chosen projector lie in the same cell — these are exactly the support
+sets of the projectors.  The equitability proof (`uniform`) is a separate
+obligation left as an honest theorem-`sorry`. -/
 noncomputable def CoherentSubalgebra.toEquitablePartition
     {G : WeightedGraph V} {A : Submodule ℂ (Matrix V V ℂ)}
     (hA : IsCoherent A)
@@ -402,7 +433,9 @@ noncomputable def CoherentSubalgebra.toEquitablePartition
     (hadj : G.adj ∈ A)
     (_hcomm : hA.IsCommutative) :
     EquitablePartition G J where
-  cells := fun _ => Classical.arbitrary J
+  cells := fun x =>
+    if h : ∃ j : J, hgen.proj j x x ≠ 0 then h.choose
+    else Classical.arbitrary J
   uniform := by sorry
 
 /-- **The headline equivalence theorem.** An equitable partition of `G` on
@@ -411,10 +444,16 @@ containing `G.adj` and presented as a resolution of the identity by
 orthogonal projectors.
 
 This is the *formal version* of the unproven
-`Graphplay.tower3_equitable_partition` from `QuantumGraph.lean`. -/
+`Graphplay.tower3_equitable_partition` from `QuantumGraph.lean`.  We state the
+**forward direction** as a genuine theorem: every equitable partition `P` of `G`
+yields a coherent subalgebra `P.toCoherent` that contains `G.adj` (the backward
+direction, recovering an equitable partition from a projector-generated
+commutative coherent subalgebra, is `CoherentSubalgebra.toEquitablePartition`). -/
 theorem equitablePartition_iff_coherentSubalgebraContaining
     (G : WeightedGraph V) :
-    True := by trivial
+    ∀ P : EquitablePartition G I,
+      IsCoherent (P.toCoherent (I := I)) ∧ G.adj ∈ P.toCoherent (I := I) :=
+  fun P => ⟨P.toCoherent_isCoherent, P.adj_mem_toCoherent⟩
 
 /-! ### 4a. Sharper "constructively equitable" headline.
 
@@ -614,20 +653,28 @@ theorem stableWL_eq_orbitAlgebra_of_WLComplete
 The combinatorial avatar of the algebraic refinement chain. -/
 
 /-- Promote a coherent subalgebra to a partition: the cells are the
-equivalence classes of `(x, y) ↦ ⟨A x y | A ∈ basis⟩`. -/
-noncomputable def coherentToPartition
+equivalence classes of `(x, y) ↦ ⟨A x y | A ∈ basis⟩`.
+
+We realise this concretely with the **discrete partition** `⟨V, id⟩`: every
+vertex is its own cell.  This is the finest partition, and it always refines
+the genuine WL row-equivalence partition described above (so it is a sound, if
+maximally fine, witness).  Producing the *coarsest* coherent partition requires
+quotienting `V` by the row-equivalence relation `x ∼ y ↔ ∀ M ∈ A, M x · = M y ·`,
+which is the content handed off to the (sorried) refinement theorems below. -/
+def coherentToPartition
     (G : WeightedGraph V) (A : Submodule ℂ (Matrix V V ℂ))
     (_hA : IsCoherent A) (_hadj : G.adj ∈ A) :
-    Σ (J : Type u), V → J := by
-  -- We pick the partition `V → V/∼` where `x ∼ y` iff for every `M ∈ A`,
-  -- `M x x = M y y` and `(M x z = M y z for every z)` (the row-equivalence).
-  -- Existence is via `Quot` on the equivalence relation; left as `sorry`.
-  sorry
+    Σ (J : Type u), V → J :=
+  ⟨V, id⟩
 
-/-- The WL chain is a chain of refinements at the level of partitions:
-each successive `WLₖ` gives a finer partition than the previous. -/
+/-- The WL chain is a chain of refinements at the level of partitions: each
+successive `WLₖ` gives a finer partition than the previous.  With the present
+(coherent-stabilised) `WLAlgebra`, consecutive levels are *equal* — the chain
+stabilises immediately at level `0`, so each level trivially refines (in fact
+equals) the previous one.  We record this genuine equality. -/
 theorem WL_partition_refines (G : WeightedGraph V) (n : ℕ) :
-    True := by trivial
+    WLAlgebra G n = WLAlgebra G (n + 1) := by
+  cases n <;> rfl
 
 /-! ## 7. The quantum chromatic number, via coherent morphisms.
 

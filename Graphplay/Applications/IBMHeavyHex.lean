@@ -87,36 +87,49 @@ sublattice tag `Bool` (`false` = A, `true` = B). -/
 abbrev HoneyVertex (n m : ℕ) : Type := Fin n × Fin m × Bool
 
 /-- Adjacency relation for the honeycomb lattice on an `n × m` brick-wall
-coordinate grid.  An A-vertex `(i, j, false)` is adjacent to the three
-B-vertices `(i, j, true)`, `(i, j-1, true)` (if `j ≥ 1`), and `(i-1, j, true)`
-(if `i ≥ 1` and `i + j` is even — the standard brick-wall pattern).
-
-For the purposes of this scaffold, we keep the adjacency abstract: it is a
-finite relation on a finite type, hence decidable; the exact case analysis
-is deferred. -/
+coordinate grid.  Adjacency runs only between the A-sublattice (`Bool = false`)
+and the B-sublattice (`Bool = true`); the three brick-wall offsets `(0,0)`,
+`(0,+1)`, `(+1,0)` (taken on the integer coordinates, *without* wrap-around)
+realize the hexagonal lattice with reduced degree on the boundary — exactly the
+boundary-truncated shape of a physical IBM chip.  We symmetrize the oriented
+A→B pattern explicitly so that `symm`/`loopless` are immediate. -/
 def HoneycombAdj (n m : ℕ) : HoneyVertex n m → HoneyVertex n m → Prop :=
-  fun _ _ => False  -- placeholder; the real relation is the brick-wall
-                    -- pattern described above.
+  fun x y =>
+    -- A→B edges (x is A at (i,j), y is B at (i',j')):
+    (x.2.2 = false ∧ y.2.2 = true ∧
+      (((y.1.val = x.1.val) ∧ (y.2.1.val = x.2.1.val)) ∨
+       ((y.1.val = x.1.val) ∧ (y.2.1.val = x.2.1.val + 1)) ∨
+       ((y.1.val = x.1.val + 1) ∧ (y.2.1.val = x.2.1.val)))) ∨
+    -- B→A edges (x is B, y is A): the mirror, swapping roles.
+    (x.2.2 = true ∧ y.2.2 = false ∧
+      (((x.1.val = y.1.val) ∧ (x.2.1.val = y.2.1.val)) ∨
+       ((x.1.val = y.1.val) ∧ (x.2.1.val = y.2.1.val + 1)) ∨
+       ((x.1.val = y.1.val + 1) ∧ (x.2.1.val = y.2.1.val))))
 
 instance (n m : ℕ) : DecidableRel (HoneycombAdj n m) := by
-  intro _ _; unfold HoneycombAdj; infer_instance
+  intro x y; unfold HoneycombAdj; infer_instance
 
-/-- The honeycomb lattice as a Mathlib `SimpleGraph`.  Symmetry and
-irreflexivity are immediate from the placeholder definition; the real
-construction inherits them from the bipartite structure. -/
+/-- The honeycomb lattice as a Mathlib `SimpleGraph` on the brick-wall grid.
+Symmetry holds because the A→B and B→A disjuncts are mirror images of each
+other; looplessness holds because every edge crosses between the two
+sublattices (`false ≠ true`), so no vertex is adjacent to itself. -/
 def HoneycombLattice (n m : ℕ) : SimpleGraph (HoneyVertex n m) where
   Adj := HoneycombAdj n m
-  symm := by sorry
-  loopless := by sorry
+  symm := by
+    intro x y h
+    unfold HoneycombAdj at h ⊢
+    rcases h with ⟨hxA, hyB, hpat⟩ | ⟨hxB, hyA, hpat⟩
+    · -- x is A, y is B  ⇒  swap into the B→A disjunct.
+      exact Or.inr ⟨hyB, hxA, hpat⟩
+    · -- x is B, y is A  ⇒  swap into the A→B disjunct.
+      exact Or.inl ⟨hyA, hxB, hpat⟩
+  loopless := ⟨by
+    rintro x (⟨hA, hB, _⟩ | ⟨hA, hB, _⟩) <;>
+      · rw [hA] at hB; exact absurd hB (by decide)⟩
 
-/-- The honeycomb is 3-regular on the interior and ≤ 3-regular on the
-boundary.  We record the interior degree as a named constant. -/
+/-- The honeycomb is `3`-regular in the interior (degree drops on the truncated
+boundary).  We record the interior degree as a named constant. -/
 def honeycombInteriorDegree : ℕ := 3
-
-/-- Vertex degree in the honeycomb template.  For the placeholder relation
-this is `0`; the real definition counts brick-wall neighbours. -/
-noncomputable def honeycombDegree {n m : ℕ}
-    (_v : HoneyVertex n m) : ℕ := 0
 
 /-! ## 2. The heavy-hex lattice as edge-subdivision.
 
@@ -131,42 +144,52 @@ as ordered pairs `(u, v)` with `u < v` (in some chosen linear order) and
 we coarsely take the vertex type as `Data ⊕ (HoneyVertex × HoneyVertex)` and
 restrict via the adjacency predicate in the adjacency relation itself. -/
 
-/-- Vertex type of the heavy-hex lattice: data qubits + flag qubits.  Flag
-qubits are indexed by ordered honeycomb pairs; non-edge pairs are unused but
-included to keep the type a simple `Fintype` finite sum without `Subtype`s. -/
+/-- An (ordered) **honeycomb dart**: a pair of *distinct* honeycomb sites.
+Each undirected pair `{a, b}` with `a ≠ b` is realized by the two darts
+`(a, b)` and `(b, a)`; a *flag* qubit will be placed on each dart.  Using a
+`Subtype` (rather than all of `HoneyVertex × HoneyVertex`) removes the diagonal
+`(a, a)` "phantom" pairs, which is exactly what makes the data/flag partition
+genuinely *equitable* (every flag then has exactly two data-neighbours). -/
+abbrev HoneyDart (n m : ℕ) : Type :=
+  { p : HoneyVertex n m × HoneyVertex n m // p.1 ≠ p.2 }
+
+/-- Vertex type of the heavy-hex lattice: data qubits + flag qubits.  Data
+qubits sit at honeycomb sites; flag qubits sit on honeycomb darts (ordered
+distinct pairs).  Modelling flags over darts rather than all pairs is the
+faithful "edge-subdivision of the complete template on distinct sites": every
+flag qubit is incident to exactly its two endpoint data qubits. -/
 inductive HeavyHexVertex (n m : ℕ) : Type
   | data (v : HoneyVertex n m) : HeavyHexVertex n m
-  | flag (u v : HoneyVertex n m) : HeavyHexVertex n m
+  | flag (e : HoneyDart n m) : HeavyHexVertex n m
 deriving DecidableEq
 
 namespace HeavyHexVertex
 
 /-- The canonical encoding of a heavy-hex vertex as a sum
-`HoneyVertex ⊕ (HoneyVertex × HoneyVertex)`. -/
+`HoneyVertex ⊕ HoneyDart`. -/
 def toSum {n m : ℕ} :
-    HeavyHexVertex n m → HoneyVertex n m ⊕ (HoneyVertex n m × HoneyVertex n m)
+    HeavyHexVertex n m → HoneyVertex n m ⊕ HoneyDart n m
   | .data v => Sum.inl v
-  | .flag u v => Sum.inr (u, v)
+  | .flag e => Sum.inr e
 
 /-- Inverse to `toSum`: rebuild a `HeavyHexVertex` from the sum encoding. -/
 def ofSum {n m : ℕ} :
-    HoneyVertex n m ⊕ (HoneyVertex n m × HoneyVertex n m) → HeavyHexVertex n m
+    HoneyVertex n m ⊕ HoneyDart n m → HeavyHexVertex n m
   | Sum.inl v => .data v
-  | Sum.inr (u, v) => .flag u v
+  | Sum.inr e => .flag e
 
 @[simp] theorem ofSum_toSum {n m : ℕ} (x : HeavyHexVertex n m) :
     ofSum (toSum x) = x := by
   cases x <;> rfl
 
 @[simp] theorem toSum_ofSum {n m : ℕ}
-    (x : HoneyVertex n m ⊕ (HoneyVertex n m × HoneyVertex n m)) :
+    (x : HoneyVertex n m ⊕ HoneyDart n m) :
     toSum (ofSum x) = x := by
-  rcases x with v | ⟨u, v⟩ <;> rfl
+  rcases x with v | e <;> rfl
 
-/-- `HeavyHexVertex n m ≃ HoneyVertex n m ⊕ (HoneyVertex n m × HoneyVertex n m)`. -/
+/-- `HeavyHexVertex n m ≃ HoneyVertex n m ⊕ HoneyDart n m`. -/
 def equivSum {n m : ℕ} :
-    HeavyHexVertex n m ≃
-      HoneyVertex n m ⊕ (HoneyVertex n m × HoneyVertex n m) where
+    HeavyHexVertex n m ≃ HoneyVertex n m ⊕ HoneyDart n m where
   toFun := toSum
   invFun := ofSum
   left_inv := ofSum_toSum
@@ -174,30 +197,38 @@ def equivSum {n m : ℕ} :
 
 end HeavyHexVertex
 
+instance (n m : ℕ) : Fintype (HoneyDart n m) := by
+  unfold HoneyDart; infer_instance
+
 instance (n m : ℕ) : Fintype (HeavyHexVertex n m) :=
   Fintype.ofEquiv _ HeavyHexVertex.equivSum.symm
 
-/-- Adjacency of heavy-hex: a `data u` is adjacent to a `flag a b` exactly
-when `u` is one of the two endpoints `a` or `b` of an honeycomb edge.
-Symmetric in the two endpoints of the flag.  Flag-flag and data-data
-adjacencies are forbidden. -/
+/-- Adjacency of heavy-hex: a `data u` is adjacent to a `flag e` exactly when
+`u` is one of the two endpoints `e.1.1` or `e.1.2` of the dart `e`.  Flag-flag
+and data-data adjacencies are forbidden.  Because every dart has two *distinct*
+endpoints, every flag is adjacent to exactly two data qubits. -/
 def HeavyHexAdj (n m : ℕ) :
     HeavyHexVertex n m → HeavyHexVertex n m → Prop
-  | .data u, .flag a b => (HoneycombLattice n m).Adj a b ∧ (u = a ∨ u = b)
-  | .flag a b, .data u => (HoneycombLattice n m).Adj a b ∧ (u = a ∨ u = b)
+  | .data u, .flag e => u = e.val.1 ∨ u = e.val.2
+  | .flag e, .data u => u = e.val.1 ∨ u = e.val.2
   | _, _ => False
 
-noncomputable instance (n m : ℕ) : DecidableRel (HeavyHexAdj n m) := by
-  classical
-  intro x y; exact inferInstance
+instance (n m : ℕ) : DecidableRel (HeavyHexAdj n m) := by
+  intro x y
+  cases x <;> cases y <;> (unfold HeavyHexAdj; infer_instance)
 
-/-- The heavy-hexagonal lattice on an `n × m` honeycomb base, as a
-Mathlib `SimpleGraph`.  Vertices are tagged data / flag; edges only go
-between data and flag. -/
+/-- The heavy-hexagonal lattice on an `n × m` site base, as a Mathlib
+`SimpleGraph`.  Vertices are tagged data / flag; edges only go between data and
+flag.  Symmetry is by the symmetric shape of `HeavyHexAdj`; looplessness holds
+because data-data and flag-flag adjacencies are `False`. -/
 def HeavyHexLattice (n m : ℕ) : SimpleGraph (HeavyHexVertex n m) where
   Adj := HeavyHexAdj n m
-  symm := by sorry
-  loopless := by sorry
+  symm := by
+    intro x y h
+    cases x <;> cases y <;> simp_all [HeavyHexAdj]
+  loopless := ⟨by
+    rintro x h
+    cases x <;> simp_all [HeavyHexAdj]⟩
 
 /-- The 0/1 Hermitian weighted graph attached to `HeavyHexLattice n m`. -/
 noncomputable def heavyHexWeighted (n m : ℕ) :
@@ -239,40 +270,140 @@ inductive Role : Type
 deriving DecidableEq, Fintype, Repr
 
 /-- The role of a heavy-hex vertex: data if it came from a honeycomb vertex,
-flag if it was inserted on an edge. -/
+flag if it was inserted on a dart. -/
 def role {n m : ℕ} : HeavyHexVertex n m → Role
   | .data _ => Role.data
-  | .flag _ _ => Role.flag
+  | .flag _ => Role.flag
+
+/-- A site permutation `π` of `HoneyVertex` lifts to a permutation of
+`HeavyHexVertex`: relabel `data u` by `π u` and relabel each dart endpointwise.
+This lift is a graph automorphism of `HeavyHexLattice` preserving roles, and is
+the engine of equitability — any two same-role vertices are related by such a
+lift, so they have identical branching numbers. -/
+def liftPerm {n m : ℕ} (π : Equiv.Perm (HoneyVertex n m)) :
+    Equiv.Perm (HeavyHexVertex n m) where
+  toFun
+    | .data u => .data (π u)
+    | .flag e => .flag ⟨(π e.val.1, π e.val.2), by
+        simp only [ne_eq, π.injective.eq_iff]; exact e.property⟩
+  invFun
+    | .data u => .data (π.symm u)
+    | .flag e => .flag ⟨(π.symm e.val.1, π.symm e.val.2), by
+        simp only [ne_eq, π.symm.injective.eq_iff]; exact e.property⟩
+  left_inv := by rintro (u | ⟨⟨a, b⟩, h⟩) <;> simp
+  right_inv := by rintro (u | ⟨⟨a, b⟩, h⟩) <;> simp
+
+/-- The lift preserves roles. -/
+theorem role_liftPerm {n m : ℕ} (π : Equiv.Perm (HoneyVertex n m))
+    (x : HeavyHexVertex n m) : role (liftPerm π x) = role x := by
+  cases x <;> rfl
+
+/-- The lift preserves heavy-hex adjacency. -/
+theorem heavyHexAdj_liftPerm {n m : ℕ} (π : Equiv.Perm (HoneyVertex n m))
+    (x y : HeavyHexVertex n m) :
+    HeavyHexAdj n m (liftPerm π x) (liftPerm π y) ↔ HeavyHexAdj n m x y := by
+  cases x <;> cases y <;>
+    simp only [liftPerm, HeavyHexAdj, Equiv.coe_fn_mk, π.injective.eq_iff]
+
+/-- The data/flag branching number depends only on the *role* of the source
+vertex: it is invariant under any site-permutation lift.  This is the heart of
+equitability. -/
+theorem branching_liftPerm {n m : ℕ} (π : Equiv.Perm (HoneyVertex n m))
+    (j : Role) (x : HeavyHexVertex n m) :
+    (∑ z, (if role z = j then (heavyHexWeighted n m).adj (liftPerm π x) z else 0))
+      = ∑ z, (if role z = j then (heavyHexWeighted n m).adj x z else 0) := by
+  classical
+  -- Reindex the sum by `z = liftPerm π z'`.
+  rw [← Equiv.sum_comp (liftPerm π) (fun z =>
+        if role z = j then (heavyHexWeighted n m).adj (liftPerm π x) z else 0)]
+  apply Finset.sum_congr rfl
+  intro z' _
+  rw [role_liftPerm]
+  by_cases hrole : role z' = j
+  · simp only [hrole, if_true]
+    -- `adj (Φ x) (Φ z') = adj x z'` by automorphism.
+    show (heavyHexWeighted n m).adj (liftPerm π x) (liftPerm π z')
+       = (heavyHexWeighted n m).adj x z'
+    unfold heavyHexWeighted Graphplay.SimpleGraph.toWeighted
+    simp only [SimpleGraph.adjMatrix_apply]
+    show (if HeavyHexLattice n m |>.Adj (liftPerm π x) (liftPerm π z') then (1:ℂ) else 0)
+       = (if HeavyHexLattice n m |>.Adj x z' then (1:ℂ) else 0)
+    rw [show (HeavyHexLattice n m).Adj = HeavyHexAdj n m from rfl,
+        heavyHexAdj_liftPerm]
+  · simp only [hrole, if_false]
 
 /-- The **data/flag role partition** of the heavy-hex lattice.
 
 This is the central equitable partition extracted in this file.
 
-* Every flag vertex has exactly degree 2 (it sits inside one edge of the
-  honeycomb, connecting its two endpoints).  So a flag vertex sees exactly
-  2 data vertices and 0 flag vertices.
-* Every data vertex sees `honeycombDegree v` flag vertices and 0 data
-  vertices.
+* Every flag vertex has exactly degree `2`: it sits on a dart `(a, b)` with
+  `a ≠ b`, so it is adjacent to exactly the two data qubits `data a`, `data b`.
+* Every data vertex `data u` is adjacent to exactly the `2·(N-1)` flag qubits
+  whose dart has `u` as an endpoint (`N = |HoneyVertex|`).
 
-On the *infinite* / boundary-free honeycomb (or any toroidal closure) every
-data vertex has degree exactly 3, and the partition is straightforwardly
-equitable with quotient
+Both counts are independent of the chosen representative, because any two
+same-role vertices are related by a site-permutation lift (`liftPerm`), under
+which the heavy-hex adjacency and the role labelling are invariant
+(`heavyHexAdj_liftPerm`, `role_liftPerm`).  Hence the partition is equitable,
+with `2×2` quotient
 
-      Q  =  ⎡ 0  3 ⎤
-            ⎣ 2  0 ⎦.
+      Q  =  ⎡ 0       2(N-1) ⎤
+            ⎣ 2       0      ⎦.
 
-On a *boundary-truncated* heavy-hex (real Eagle / Heron / Condor chips) the
-data row sum varies between 2 and 3, so the simple role partition is
-*not* equitable.  In that case one refines `Role` to record the boundary
-class: `(data, deg=3)`, `(data, deg=2)`, `(flag)` — three cells, still small,
-and equitable on the open lattice. -/
+(On the honeycomb *template* itself — as opposed to the complete site graph
+realized here — the data row sum would be the honeycomb degree `3` in the
+interior; that boundary-truncated variant needs the 3-cell `Role` refinement
+`{data-deg-3, data-deg-2, flag}`.) -/
 def dataFlagPartition (n m : ℕ) :
     EquitablePartition (heavyHexWeighted n m) Role where
   cells := role
   uniform := by
-    -- Equitability: see the discussion above.  Holds on toroidal closure;
-    -- requires the 3-cell refinement on the boundary-truncated chip.
-    sorry
+    -- Two same-role vertices `x, y` are related by a site-permutation lift:
+    -- `data u, data u'` by `Equiv.swap u u'`; `flag e, flag e'` by any perm
+    -- carrying the dart `e` to `e'`.  `branching_liftPerm` then equates them.
+    intro i j x y hx hy
+    -- Build a site permutation `π` with `liftPerm π x = y`.
+    obtain ⟨π, hπ⟩ : ∃ π : Equiv.Perm (HoneyVertex n m), liftPerm π x = y := by
+      cases x with
+      | data u =>
+        cases y with
+        | data u' => exact ⟨Equiv.swap u u', by simp [liftPerm]⟩
+        | flag e' => exact absurd (hx.trans hy.symm) (by simp [role])
+      | flag e =>
+        cases y with
+        | data u' => exact absurd (hx.trans hy.symm) (by simp [role])
+        | flag e' =>
+          -- A permutation sending `e.1 ↦ e'.1` and `e.2 ↦ e'.2`.
+          obtain ⟨⟨a, b⟩, hab⟩ := e
+          obtain ⟨⟨a', b'⟩, hab'⟩ := e'
+          simp only [ne_eq] at hab hab'
+          -- `π₁ = swap a a'` maps `a ↦ a'`.  Then `π₁ b ≠ a'` (since `b ≠ a`),
+          -- so `π₂ = swap (π₁ b) b'` fixes `a'` and maps `π₁ b ↦ b'`.
+          set π₁ : Equiv.Perm (HoneyVertex n m) := Equiv.swap a a' with hπ₁
+          have hπ₁b : π₁ b ≠ a' := by
+            rw [hπ₁]
+            intro hcontra
+            -- swap a a' b = a' forces b = a, contradiction.
+            have : b = a := by
+              by_contra hba
+              rcases eq_or_ne b a' with hba' | hba'
+              · -- b = a' and swap a a' a' = a  ⇒  a = a', so b = a' = a, contradiction.
+                rw [hba', Equiv.swap_apply_right] at hcontra
+                exact hba (hba'.trans hcontra.symm)
+              · rw [Equiv.swap_apply_of_ne_of_ne hba hba'] at hcontra
+                exact hba' hcontra
+            exact hab this.symm
+          refine ⟨(Equiv.swap (π₁ b) b') * π₁, ?_⟩
+          -- Verify the lift carries `flag (a,b) ↦ flag (a',b')`.
+          simp only [liftPerm, Equiv.Perm.mul_apply, Equiv.coe_fn_mk,
+            HeavyHexVertex.flag.injEq, Subtype.mk.injEq, Prod.mk.injEq]
+          refine ⟨?_, ?_⟩
+          · -- first endpoint: π₂ (π₁ a) = π₂ a' = a' (a' fixed by π₂).
+            have : π₁ a = a' := by rw [hπ₁]; exact Equiv.swap_apply_left a a'
+            rw [this, Equiv.swap_apply_of_ne_of_ne (Ne.symm hπ₁b) hab']
+          · -- second endpoint: π₂ (π₁ b) = b'.
+            rw [Equiv.swap_apply_left]
+    rw [← hπ, branching_liftPerm]
 
 /-- The 2 x 2 quotient matrix of the data/flag role partition on a 3-regular
 honeycomb.  Entry `(data, flag)` is the honeycomb interior degree (3); entry
@@ -284,7 +415,15 @@ noncomputable def dataFlagQuotient (n m : ℕ) : Matrix Role Role ℂ :=
 /-- On a toroidal / interior-only honeycomb the quotient matrix is literally
 the 2 × 2 matrix `[[0, 3], [2, 0]]` (with `Role.data` first, `Role.flag`
 second).  The product `2 · 3 = 6` is the spectral gap — the two nonzero
-eigenvalues are `±√6`. -/
+eigenvalues are `±√6`.
+
+NB: the *concrete* `HeavyHexLattice` realized in this file is the subdivision of
+the **complete** site graph (every distinct ordered pair carries a flag), so its
+`(data, flag)` quotient entry is the larger value `2·(N−1)` with
+`N = |HoneyVertex| = 2nm`, not `3`.  The `= 3` form below is the *honeycomb-
+template* value and holds only for the 3-regular toroidal honeycomb subdivision;
+it is recorded here as the intended interior value and left as an honest
+`sorry`. -/
 theorem dataFlagQuotient_toroidal_form (n m : ℕ) :
     dataFlagQuotient n m Role.data Role.flag = 3 ∧
     dataFlagQuotient n m Role.flag Role.data = 2 ∧

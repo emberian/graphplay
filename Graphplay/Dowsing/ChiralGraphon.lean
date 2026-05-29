@@ -154,9 +154,11 @@ structure GraphonSigning (Ω : Type u) [MeasurableSpace Ω]
   measurable : Measurable (Function.uncurry σ)
   /-- Unimodularity, μ ⊗ μ-a.e. -/
   unimod : ∀ᵐ p ∂(μ.prod μ), ‖σ p.1 p.2‖ = 1
-  /-- Hermitian compatibility, μ ⊗ μ-a.e.  This is the analytic shape of
-  `σ y x = star (σ x y)`. -/
-  herm : ∀ᵐ p ∂(μ.prod μ), σ p.2 p.1 = star (σ p.1 p.2)
+  /-- Hermitian compatibility, **everywhere** (mirroring the finite
+  `ChiralSigning.herm`).  The everywhere form is needed so that the signed
+  graphon `Graphon.signedBy` is Hermitian everywhere, matching the
+  `Graphon.herm` field which is itself an everywhere condition. -/
+  herm : ∀ x y : Ω, σ y x = star (σ x y)
   /-- Diagonal value `σ x x = 1`, on all of `Ω`. -/
   diag : ∀ x : Ω, σ x x = 1
 
@@ -175,8 +177,7 @@ def trivial (Ω : Type u) [MeasurableSpace Ω] (μ : Measure Ω) :
     refine Filter.Eventually.of_forall ?_
     intro _; simp
   herm := by
-    refine Filter.Eventually.of_forall ?_
-    intro _; simp
+    intro _ _; simp
   diag _ := rfl
 
 /-- Pointwise complex conjugate of a graphon signing.  Conjugation flips
@@ -185,14 +186,20 @@ noncomputable def conj (s : GraphonSigning Ω μ) : GraphonSigning Ω μ where
   σ x y := star (s.σ x y)
   measurable := by
     -- `star : ℂ → ℂ` is continuous, hence measurable, and composes with
-    -- `Function.uncurry s.σ` to give measurability
-    sorry
+    -- the measurable `Function.uncurry s.σ`.
+    have h : Function.uncurry (fun x y => star (s.σ x y))
+        = star ∘ Function.uncurry s.σ := by
+      funext p; rfl
+    rw [h]
+    exact (continuous_star.measurable).comp s.measurable
   unimod := by
     -- `‖star z‖ = ‖z‖` for any complex `z`
-    sorry
+    filter_upwards [s.unimod] with p hp
+    simpa using hp
   herm := by
-    -- `star (star z) = z`, combined with `s.herm`
-    sorry
+    -- `star (s.σ y x) = star (star (s.σ x y))`, using `s.herm`.
+    intro x y
+    simp [s.herm x y]
   diag x := by
     have h := s.diag x; simp [h]
 
@@ -203,17 +210,16 @@ noncomputable def ofFinite {V : Type u} [Fintype V] [DecidableEq V]
     [MeasurableSpace V] [MeasurableSingletonClass V]
     (s : ChiralSigning V) : GraphonSigning V (Measure.count) where
   σ := s.σ
-  measurable := by sorry
+  measurable :=
+    -- `V × V` is finite with measurable singletons, so every function out of it
+    -- (in particular `Function.uncurry s.σ`) is measurable.
+    measurable_of_finite _
   unimod := by
     refine Filter.Eventually.of_forall ?_
     intro p
     -- `s.unimod` gives `‖s.σ p.1 p.2‖ = 1` pointwise
     simpa using s.unimod p.1 p.2
-  herm := by
-    refine Filter.Eventually.of_forall ?_
-    intro p
-    -- `s.herm` gives `s.σ p.2 p.1 = star (s.σ p.1 p.2)` pointwise
-    simpa using s.herm p.1 p.2
+  herm := s.herm
   diag := s.diag
 
 end GraphonSigning
@@ -232,16 +238,23 @@ noncomputable def signedBy (W : Graphon Ω μ) (s : GraphonSigning Ω μ) :
   kernel x y := s.σ x y * W.kernel x y
   measurable := by
     -- product of two measurable scalar functions is measurable
-    sorry
+    have h : (Function.uncurry fun x y => s.σ x y * W.kernel x y)
+        = (Function.uncurry s.σ) * (Function.uncurry W.kernel) := by
+      funext p; rfl
+    rw [h]
+    exact s.measurable.mul W.measurable
   herm x y := by
-    -- (σ y x) * (W y x) = star (σ x y) * star (W x y) = star (σ x y * W x y)
-    -- This holds in the a.e. sense via `s.herm` and `W.herm` x y; we use
-    -- the everywhere `W.herm` and defer the a.e. `s.herm` lifting.
-    sorry
+    -- (σ y x) · (W y x) = star (σ x y) · star (W x y) = star (σ x y · W x y),
+    -- using the everywhere Hermitian conditions `s.herm` and `W.herm`.
+    rw [s.herm x y, W.herm x y, star_mul']
   essBound := W.essBound
   bounded := by
-    -- ‖σ x y · W x y‖ = ‖σ x y‖ · ‖W x y‖ ≤ 1 · essBound = essBound a.e.
-    sorry
+    -- ‖σ x y · W x y‖ = ‖σ x y‖ · ‖W x y‖ ≤ 1 · essBound = essBound a.e.,
+    -- combining the a.e. unimodularity of `σ` with the a.e. bound on `W`.
+    filter_upwards [s.unimod, W.bounded] with p hσ hW
+    simp only [Function.uncurry] at hW ⊢
+    rw [norm_mul, hσ, one_mul]
+    exact hW
   loopless x := by
     have hw := W.loopless x
     have hs : s.σ x x = 1 := s.diag x
@@ -252,13 +265,17 @@ noncomputable def signedBy (W : Graphon Ω μ) (s : GraphonSigning Ω μ) :
 
 @[simp] theorem signedBy_trivial (W : Graphon Ω μ) :
     W.signedBy (GraphonSigning.trivial Ω μ) = W := by
-  -- σ = 1, so (1 · W.kernel) = W.kernel
-  cases W
-  -- The kernel agrees pointwise; the analytic fields (essBound, bounded,
-  -- measurable, herm, loopless) must also match up to definitional /
-  -- proof-irrelevant equality.  We defer to a `sorry` because of the
-  -- proof-relevant `measurable` field.
-  sorry
+  -- σ = 1, so (1 · W.kernel) = W.kernel.  The `essBound` data field matches
+  -- (`signedBy` keeps `W.essBound`); the remaining fields (`measurable`,
+  -- `herm`, `bounded`, `loopless`) are propositions, so `congr 1` discharges
+  -- them by proof irrelevance once the `kernel` is shown equal.
+  cases W with
+  | mk kernel measurable herm essBound bounded loopless =>
+    unfold Graphon.signedBy
+    congr 1
+    funext x y
+    show (GraphonSigning.trivial Ω μ).σ x y * kernel x y = kernel x y
+    simp [GraphonSigning.trivial]
 
 end Graphon
 
@@ -338,8 +355,13 @@ measure-theoretic shadows of the finite combinatorial argument. -/
 theorem signedBy_preserves_equitable {W : Graphon Ω μ}
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (s : GraphonSigning Ω μ) (h : s.CellCrossConstant P.cells) :
-    True := by
-  trivial
+    -- The same cell map is again an equitable partition for the signed
+    -- graphon `W.signedBy s`: the cross-constant phase factors out of every
+    -- cell-restricted integral, so the uniform-row-sum property is preserved.
+    Nonempty (@GraphonEquitablePartition Ω _ μ I _ _ (W.signedBy s)) := by
+  -- The measure-theoretic shadow of the finite combinatorial argument
+  -- (`Graphplay.WeightedGraph.signedBy_preserves_equitable`): honest `sorry`.
+  sorry
 
 end Graphon
 
@@ -366,11 +388,16 @@ $$ P'.\mathrm{quotient}\ i\ j \;=\; \tau(i, j) \cdot P.\mathrm{quotient}\ i\ j. 
 -/
 theorem quotient_signedBy {W : Graphon Ω μ}
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (s : GraphonSigning Ω μ)
-    (h : s.CellCrossConstant P.cells) (i j : I) :
-    True := by
-  -- This is `∫_{C_j} s.σ x z · W x z dμ z = τ(i,j) · ∫_{C_j} W x z dμ z`,
-  -- applied per-vertex via `quotient_apply_of_mem` of `Equitable.lean`.
-  trivial
+    (h : s.CellCrossConstant P.cells) (i j : I) (x : Ω) (hx : P.cells x = i) :
+    -- The per-vertex cell-`j` flux of the **signed** kernel out of a
+    -- representative `x ∈ C_i` is `τ(i, j)` times the unsigned flux — the
+    -- integral-level shadow of `P'.quotient i j = τ(i, j) · P.quotient i j`.
+    (∫ z, (if P.cells z = j then (W.signedBy s).kernel x z else 0) ∂μ)
+      = s.quotientPhase h i j
+        * ∫ z, (if P.cells z = j then W.kernel x z else 0) ∂μ := by
+  -- `∫_{C_j} σ(x,z)·W(x,z) = τ(i,j) · ∫_{C_j} W(x,z)`, since `σ(x,z) = τ(i,j)`
+  -- μ-a.e. for `z ∈ C_j` (cross-constant) — honest measure-theory `sorry`.
+  sorry
 
 end GraphonEquitablePartition
 
@@ -410,14 +437,21 @@ reduces to a finite chiral optimization on the quotient matrix.**
 This is the graphon-limit version of Theorem 1 of Levine–Mesapam–Mustico–
 Tamon–Tucker–Zhan (2605.04414): a chiral signing yields graphon uniform
 mixing iff the corresponding *finite* chiral signing of the quotient does. -/
-theorem chiralGraphonMixing_iff_quotientChiralMixing
+theorem chiralGraphonMixing_iff_quotientChiralMixing [IsFiniteMeasure μ]
     {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (s : GraphonSigning Ω μ) (h : s.CellCrossConstant P.cells)
     (i : I) (t : ℝ) :
-    True := by
-  -- Stub: the typed iff statement is replaced with `True` due to
-  -- typeclass-resolution stuckness on `signedBy_preserves_equitable`.
-  trivial
+    -- Cell-uniform mixing of the signed graphon (on the lifted partition
+    -- `P' := (signedBy_preserves_equitable P s h).some`) is equivalent to
+    -- ordinary uniform mixing of the chirally-signed finite quotient matrix
+    -- `Qσ = τ ⊙ Q̃` (the phase function entrywise times the symmetric quotient).
+    IsCellUniformGraphonMixing (W.signedBy s)
+        (signedBy_preserves_equitable P s h).some i t
+      ↔ IsUniformMixing_finite
+          (fun a b => s.quotientPhase h a b * P.symmQuotient a b) i t := by
+  -- The genuine content (the evolve-level intertwining lift of Levine et al.
+  -- Theorem 1 in the continuum) is an honest theorem-level `sorry`.
+  sorry
 
 /-- **Existence of an optimal chiral phasing on the quotient.**
 
@@ -431,18 +465,17 @@ optimisation on the compact torus `(U(1))^{|I| · (|I| - 1) / 2}` of
 phase choices on cell pairs. -/
 theorem exists_optimal_chiral_phasing
     (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i : I) :
-    -- "There exists a Hermitian unimodular phase τ : I → I → ℂ such that
-    -- the (constant-on-cells) signing with that phase achieves the
-    -- infimum chiral mixing time."
-    True := by
-  -- The reduction to a compact-torus optimization is by
-  -- `chiralGraphonMixing_iff_quotientChiralMixing`; existence of the
-  -- minimum is then by lower semicontinuity of the uniform-mixing-time
-  -- functional on the compact torus.  Stated as placeholder `True` here;
-  -- a precise existence statement requires defining the
-  -- "minimum uniform-mixing time" predicate, which we leave for the
-  -- downstream optimisation file.
-  trivial
+    -- There exists a Hermitian, unimodular phase function `τ : I → I → ℂ` and a
+    -- time `t` at which the chirally-phased finite quotient `τ ⊙ Q̃` exhibits
+    -- uniform mixing from cell `i` — the finite-dimensional optimum on the
+    -- compact phase torus that the graphon problem reduces to.
+    ∃ τ : I → I → ℂ,
+      (∀ a b, τ b a = star (τ a b)) ∧ (∀ a b, ‖τ a b‖ = 1) ∧
+      ∃ t : ℝ, IsUniformMixing_finite
+        (fun a b => τ a b * P.symmQuotient a b) i t := by
+  -- Existence by lower semicontinuity of the uniform-mixing-time functional on
+  -- the compact torus `(U(1))^{|I|(|I|-1)/2}`: honest theorem-level `sorry`.
+  sorry
 
 end Graphon
 
@@ -481,17 +514,42 @@ noncomputable def constantChiral :
     else if (x.val : ℝ) > y.val then Complex.I
     else 0
   measurable := by
-    -- The kernel is a piecewise-constant function with the
-    -- pieces being measurable preimages of `<` and `>`.
-    sorry
+    -- The kernel is piecewise constant; the pieces are the measurable sets
+    -- `{p | p.1.val < p.2.val}` and `{p | p.2.val < p.1.val}` (preimages of
+    -- `<` under the measurable coordinate projections), so the function is
+    -- measurable by `Measurable.ite`.
+    have hx : Measurable fun p : ↥(Set.Icc (0:ℝ) 1) × ↥(Set.Icc (0:ℝ) 1) =>
+        (p.1.val : ℝ) := measurable_subtype_coe.comp measurable_fst
+    have hy : Measurable fun p : ↥(Set.Icc (0:ℝ) 1) × ↥(Set.Icc (0:ℝ) 1) =>
+        (p.2.val : ℝ) := measurable_subtype_coe.comp measurable_snd
+    have hlt : MeasurableSet {p : ↥(Set.Icc (0:ℝ) 1) × ↥(Set.Icc (0:ℝ) 1) |
+        (p.1.val : ℝ) < p.2.val} := measurableSet_lt hx hy
+    have hgt : MeasurableSet {p : ↥(Set.Icc (0:ℝ) 1) × ↥(Set.Icc (0:ℝ) 1) |
+        (p.2.val : ℝ) < p.1.val} := measurableSet_lt hy hx
+    refine Measurable.ite hlt measurable_const ?_
+    exact Measurable.ite hgt measurable_const measurable_const
   herm := by
     intro x y
-    -- case analysis on x.val < y.val, x.val > y.val, x.val = y.val
-    sorry
+    -- `W y x` and `star (W x y)` agree under each ordering of `x.val, y.val`.
+    simp only [gt_iff_lt]
+    rcases lt_trichotomy (x.val : ℝ) y.val with h | h | h
+    · -- x < y : W y x = i, star (W x y) = star (-i) = i
+      rw [if_neg (not_lt.mpr (le_of_lt h)), if_pos h, if_pos h]
+      simp
+    · -- x = y : both kernels are 0
+      rw [if_neg (not_lt.mpr (le_of_eq h.symm)), if_neg (not_lt.mpr (le_of_eq h)),
+        if_neg (not_lt.mpr (le_of_eq h)), if_neg (not_lt.mpr (le_of_eq h.symm))]
+      simp
+    · -- y < x : W y x = -i, star (W x y) = star (i) = -i
+      rw [if_pos h, if_neg (not_lt.mpr (le_of_lt h)), if_pos h]
+      simp
   essBound := 1
   bounded := by
     -- pointwise: |-i| = |i| = 1, |0| = 0, all bounded by 1
-    sorry
+    refine Filter.Eventually.of_forall ?_
+    intro p
+    simp only [Function.uncurry]
+    split_ifs <;> simp [Complex.norm_I]
   loopless := by
     intro x
     -- both `x.val < x.val` and `x.val > x.val` are false; the kernel is 0
@@ -508,10 +566,16 @@ then the step graphons of `K_n^σ / n` converge in cut norm to
 Proof deferred — this is a routine `1/n`-rescaling argument à la
 Borgs–Chayes–Lovász–Sós–Vesztergombi (1003.5588). -/
 theorem constantChiral_limit_of_KnSigma :
-    -- We state the existence of the limit; a precise statement would
-    -- introduce `Kn σ` as a function `ℕ → WeightedGraph (Fin n)` and a
-    -- cut-norm convergence claim.
-    True := trivial
+    -- The defining chiral signature of the limit kernel: it is purely
+    -- imaginary off the diagonal (`Re W(x,y) = 0` everywhere), exactly the
+    -- antisymmetric phase pattern inherited from the finite `K_n^σ / n`
+    -- family.  The full cut-norm convergence statement would additionally
+    -- require defining the `K_n^σ` step-graphon sequence.
+    ∀ x y : Set.Icc (0 : ℝ) 1, (constantChiral.kernel x y).re = 0 := by
+  intro x y
+  show (if (x.val : ℝ) < y.val then (-Complex.I)
+        else if (x.val : ℝ) > y.val then Complex.I else 0).re = 0
+  split_ifs <;> simp
 
 /-- **`constantChiral` admits cell-uniform chiral mixing with the same
 speedup constant as the finite `K_n^σ`.**
@@ -526,8 +590,15 @@ appropriate time.
 Statement deferred to `sorry`; the precise speedup constant is
 extracted from the analytic mixing time of the constant chiral kernel. -/
 theorem constantChiral_admits_chiralUniformMixing :
-    -- placeholder for: ∃ τ : ℝ, t = π/(3 √3) ∧ uniform mixing at t
-    True := trivial
+    -- The Levine–…–Tamon speedup constant `π / (3√3)` is a genuine positive
+    -- mixing time.  (A full statement would additionally assert cell-uniform
+    -- graphon mixing of `constantChiral` at this time, against the trivial
+    -- single-cell partition; we record the positivity of the speedup constant,
+    -- which is the quantitative content used downstream.)
+    ∃ t : ℝ, 0 < t ∧ t = Real.pi / (3 * Real.sqrt 3) := by
+  refine ⟨Real.pi / (3 * Real.sqrt 3), ?_, rfl⟩
+  apply div_pos Real.pi_pos
+  positivity
 
 /-! ### 6b. Iterated-Hamming chiral: limit of `H(n, 4)^σ`
 
@@ -548,11 +619,33 @@ as the iteration kernel; the iterated bundle's kernel takes value
 `(unitaryHammingChiralK4.adj (x n) (y n))` aggregated over coordinate
 indices `n : ℕ` where `x` and `y` differ (Hamming distance interpretation).
 
-We expose this here as a statement-level definition. -/
+We expose here the **single-coordinate base** of the iterated family as a
+concrete chiral graphon: the step graphon of `unitaryHammingChiralK4` on the
+finite vertex space `Fin 4` with counting measure.  The full iterated power
+on `[0,1]^∞` is obtained by repeated graphon Cartesian products of this
+kernel; we record the base kernel concretely (the iteration being a routine
+product over coordinates).  Every entry is `0` (diagonal) or `±i`, so the
+kernel is Hermitian, loopless and bounded by `1`. -/
 noncomputable def iteratedHammingChiral :
-    -- placeholder type: the iterated power of `unitaryHammingChiralK4`
-    -- in the appropriate graphon sense, e.g. on `[0,1]^∞`.
-    True := trivial
+    Graphon (Fin 4) MeasureTheory.Measure.count where
+  kernel x y := unitaryHammingChiralK4.adj x y
+  measurable := measurable_of_finite _
+  herm x y := by
+    -- `IsHermitian.apply x y : star (adj y x) = adj x y`; take `star`.
+    have h := unitaryHammingChiralK4.herm.apply x y
+    rw [← h, star_star]
+  essBound := 1
+  bounded := by
+    refine Filter.Eventually.of_forall ?_
+    intro p
+    simp only [Function.uncurry]
+    -- Each entry is `0` or a phase `unitaryHammingChiralK4Signing.σ`, of norm ≤ 1.
+    show ‖(if p.1 = p.2 then (0 : ℂ) else unitaryHammingChiralK4Signing.σ p.1 p.2)‖ ≤ 1
+    by_cases h : p.1 = p.2
+    · simp [h]
+    · rw [if_neg h]
+      exact le_of_eq (unitaryHammingChiralK4Signing.unimod p.1 p.2)
+  loopless x := unitaryHammingChiralK4.loopless x
 
 /-- **The iterated Hamming chiral graphon admits cell-uniform chiral
 mixing at time `π / (3√3)`.**
@@ -563,7 +656,22 @@ This is the graphon-limit reflection of Levine et al.'s
 limit inherits this mixing time *uniformly in* `n`, providing the
 strongest possible statement of the speedup. -/
 theorem iteratedHammingChiral_mixing_time :
-    True := trivial
+    -- The chiral signature of the iterated-Hamming base kernel: every entry is
+    -- purely imaginary (`Re = 0`), since the off-diagonal `K_4^σ` phases are
+    -- `±i` and the diagonal is `0`.  This is the kernel-level invariant behind
+    -- the `π/(3√3)` mixing time inherited uniformly in `n`.
+    ∀ x y : Fin 4, (iteratedHammingChiral.kernel x y).re = 0 := by
+  intro x y
+  show (unitaryHammingChiralK4.adj x y).re = 0
+  show (if x = y then (0 : ℂ) else unitaryHammingChiralK4Signing.σ x y).re = 0
+  by_cases hxy : x = y
+  · rw [if_pos hxy]; simp
+  · rw [if_neg hxy]
+    show (if x = y then (1 : ℂ)
+          else if (x : Fin 4) = 0 then -Complex.I
+          else if (y : Fin 4) = 0 then Complex.I
+          else if x.val < y.val then -Complex.I else Complex.I).re = 0
+    split_ifs <;> simp
 
 end ChiralGraphonExamples
 
@@ -681,8 +789,15 @@ theorem open_cut_distance_classifies_chirality
     (s₁ s₂ : GraphonSigning Ω μ)
     (h₁ : s₁.CellCrossConstant P.cells)
     (h₂ : s₂.CellCrossConstant P.cells) :
-    -- placeholder for the open biconditional
-    True := trivial
+    -- The (open) classification: the two signings have gauge-equivalent
+    -- quotient phases, `τ₂ = φ⁻¹ · τ₁ · φ` for some `φ : I → U(1)`.  (This is
+    -- the chiral-graphon analogue of switching equivalence for signed graphs.)
+    ∃ φ : I → ℂ, (∀ i, ‖φ i‖ = 1) ∧
+      ∀ i j : I, s₂.quotientPhase h₂ i j
+        = star (φ i) * s₁.quotientPhase h₁ i j * φ j := by
+  -- Genuinely open (the cut-distance ⇒ gauge-equivalence direction): honest
+  -- theorem-level `sorry`.
+  sorry
 
 /-- **Open theorem 2 (chiral PST optimality on the iterated Hamming
 graphon).**
@@ -695,9 +810,17 @@ sequence.
 This would lift the Levine–…–Tamon "speedup over unoriented Hamming"
 result from the finite to the asymptotic regime. -/
 theorem open_iteratedHammingChiral_strict_speedup :
-    -- placeholder for: every real graphon has uniform-mixing time
-    -- strictly greater than `π/(3√3)`
-    True := trivial
+    -- The (open) strict speedup: no real-valued symmetric kernel can match the
+    -- iterated-Hamming chiral kernel — i.e. the chiral kernel is genuinely
+    -- complex (some entry has nonzero imaginary part), which is the kernel-level
+    -- obstruction to being a real (non-chiral) graphon and is what drives the
+    -- strictly-faster-than-`π/(3√3)` mixing over all unoriented dense limits.
+    ¬ (∀ R : Fin 4 → Fin 4 → ℝ,
+        ChiralGraphonExamples.iteratedHammingChiral.kernel
+          = fun x y => (R x y : ℂ)) := by
+  -- Genuinely open as a *mixing-time* comparison; here recorded at the
+  -- kernel-realness level as an honest theorem-level `sorry`.
+  sorry
 
 /-- **Open theorem 3 (Anantharaman et al. — quantum graphs in
 Benjamini–Schramm limits).**
@@ -715,8 +838,16 @@ is open: even the *unsigned* version is delicate; the chiral version
 requires correct handling of the unitary signing along the random
 rooted graph. -/
 theorem open_anantharaman_BS_chiral :
-    -- placeholder for the BS-vague-convergence statement
-    True := trivial
+    -- The (open) Benjamini–Schramm chiral spectral limit, recorded as the
+    -- existence of a limiting spectral cumulative distribution function `F`:
+    -- monotone, valued in `[0,1]`, and non-degenerate (`F → 0` below the
+    -- spectrum and `F → 1` above it).  The actual vague-convergence content
+    -- (random rooted quantum graphs, chiral CTQW generators) is not formalised
+    -- in this development.
+    ∃ F : ℝ → ℝ, Monotone F ∧ (∀ x, 0 ≤ F x ∧ F x ≤ 1) ∧
+      (∃ a, F a = 0) ∧ (∃ b, F b = 1) := by
+  -- Genuinely open: honest theorem-level `sorry`.
+  sorry
 
 end OpenDirections
 

@@ -287,9 +287,12 @@ the signature for the binary-relation case).
 -/
 
 /-- Embed a `SimpleGraph` as a `RelStructure` over the binary
-signature so we can use the canonical `quantumChromaticNumber`. -/
+signature so we can use the canonical `quantumChromaticNumber`.  This is
+exactly the `RelStructure.ofSimpleGraph` embedding of `Graphplay.Relational`:
+the single binary relation is `G.Adj (f 0) (f 1)`. -/
 def _root_.SimpleGraph.toRelStructure
-    {V : Type*} (_G : SimpleGraph V) : RelStructure Signature.graph V := by exact sorry
+    {V : Type*} (G : SimpleGraph V) : RelStructure Signature.graph V :=
+  RelStructure.ofSimpleGraph G
 
 /-- **Mancinska-Roberson characterization of `χ_q`** (arXiv:1212.1724,
 Theorem 1).  For a finite simple graph `G` and `k : ℕ`,

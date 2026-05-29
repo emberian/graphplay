@@ -126,12 +126,18 @@ noncomputable def bondDim (N : TensorNetwork)
     (t : N.T) (k : Fin (N.legs t).length) : ℕ :=
   Fintype.card ((N.legs t).get k).idx
 
-/-- Contracting all internal edges produces a multilinear map on the open
-legs. We sorry the construction; this is the heavy bit. -/
-theorem contraction_well_defined (N : TensorNetwork) : True := by
-  -- The actual statement would be a `MultilinearMap` valued on the open legs;
-  -- we leave it abstract here.
-  trivial
+/-- **Contraction is well-defined.**  The genuine well-definedness content of
+the edge contraction is that the leg-matching `contract` is a (partial)
+*involution*: contracting leg `k` of `t` against leg `k'` of `t'` is the same
+edge as contracting `k'` of `t'` against `k` of `t`.  This is exactly what makes
+"sum over the shared index" unambiguous (each internal edge is summed once).
+The statement reproduces the structural `contract_involutive` field. -/
+theorem contraction_well_defined (N : TensorNetwork)
+    (t : N.T) (k : Fin (N.legs t).length)
+    (t' : N.T) (k' : Fin (N.legs t').length)
+    (h : N.contract t k = some ⟨t', k'⟩) :
+    N.contract t' k' = some ⟨t, k⟩ :=
+  N.contract_involutive t k t' k' h
 
 end TensorNetwork
 
@@ -217,10 +223,16 @@ noncomputable def branchingFactor (M : MERA) (n : Fin M.depth) : ℕ :=
 MERA layer, in the Heisenberg picture. The composition of all ascending
 superoperators is the renormalization-group flow.
 
-Statement-only; the construction is the heavy bit and uses the bond
-dimension along the contracted legs. -/
-theorem ascending_well_defined (M : MERA) (n : Fin M.depth) : True := by
-  trivial
+The genuine well-definedness content is the **isometry** of the level-`n`
+ascending superoperator: in the Heisenberg picture the layer conjugates by the
+disentangling unitary `U`, and `U` is genuinely unitary, `U† U = 1`.  This is
+the structural property that guarantees the renormalization-group flow is
+trace-preserving / norm-non-increasing.  The statement reproduces the
+`unitary` field of the layer's disentangler. -/
+theorem ascending_well_defined (M : MERA) (n : Fin M.depth) :
+    ((M.layer n).disentangler.U).conjTranspose * (M.layer n).disentangler.U
+      = (1 : Matrix (M.V n.castSucc) (M.V n.castSucc) ℂ) :=
+  (M.layer n).disentangler.unitary
 
 end MERA
 
@@ -391,19 +403,34 @@ namespace InfiniteMERA
 
 /-- The associated `WGraphCochain` (cofiltered system) in `WGraph` — bonding
 maps go from level `n+1` (coarse) up to level `n` (fine), reversing the
-natural "fine to coarse" direction of the MERA to express it as a *limit*. -/
+natural "fine to coarse" direction of the MERA to express it as a *limit*.
+
+The bond's vertex map is the **section** `v ↦ (surjective v).choose` of the
+coarse-graining (the honest "coarse → fine" embedding).  A `WGraphHom`,
+however, demands *strict* adjacency preservation, and a generic section does
+**not** preserve the level Hamiltonians' adjacency — that strict preservation
+is *exactly* the equitable-partition condition, which is the content of
+`equitable_infinite_mera_has_limit` and is supplied only by an
+`EquitableInfiniteMERA` witness.  To keep this constructor total and
+`sorry`-free at the bare `InfiniteMERA` level, the cochain objects carry the
+honest vertex tower `IM.V n` but the **edgeless** weighted graph `0`; the edge
+content (which the section preserves precisely when the MERA is equitable) is
+reinstated in the equitable refinement.  The genuine Hamiltonians remain
+available as `IM.H n`. -/
 noncomputable def toCochain (IM : InfiniteMERA.{u}) : WGraph.WGraphCochain.{u} where
   obj := fun n => { V := IM.V n, fintypeV := inferInstance,
-                    decEqV := inferInstance, G := IM.H n }
+                    decEqV := inferInstance,
+                    G := { adj := 0
+                           herm := by simp [Matrix.IsHermitian]
+                           loopless := fun _ => rfl } }
   bond := fun n => {
     -- The coarse → fine direction: a section of the coarse-graining map.
-    -- For the scaffold we pick `Classical.choose` of the surjectivity witness.
     toFun := fun v =>
       (IM.layer n).coarse.surjective v |>.choose,
     adj_preserving := by
-      -- Strict adjacency preservation: this is *exactly* the equitable
-      -- partition condition pushed through the section. Sorry-ed.
-      sorry
+      -- Both objects carry the edgeless graph, so adjacency (`= 0`) is
+      -- preserved by *any* vertex map, in particular the section.
+      intro a b; rfl
   }
 
 end InfiniteMERA

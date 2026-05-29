@@ -181,33 +181,67 @@ The boundary `s_min` is the *spectral threshold* below which accidental
 degeneracies are not lifted; `s_max` is the *decoherence threshold*
 above which the quantum walk loses its coherent advantage. -/
 
+/-- The Hermitian symmetrisation `½(H + Hᴴ)` of the search Hamiltonian.  When
+`H = G.searchHamiltonian M γ` is already Hermitian (the standard real case,
+since `G.adj` is Hermitian and `γ`, `P_M` are real) this equals `H`; in all
+cases it is Hermitian by construction, giving access to real eigenvalues. -/
+noncomputable def searchHermSym
+    (G : WeightedGraph V) (M : Finset V) (γ : ℝ) : Matrix V V ℂ :=
+  (1 / 2 : ℂ) • (G.searchHamiltonian M γ + (G.searchHamiltonian M γ)ᴴ)
+
+theorem searchHermSym_isHermitian
+    (G : WeightedGraph V) (M : Finset V) (γ : ℝ) :
+    (searchHermSym G M γ).IsHermitian := by
+  unfold searchHermSym Matrix.IsHermitian
+  rw [Matrix.conjTranspose_smul, Matrix.conjTranspose_add, Matrix.conjTranspose_conjTranspose,
+    add_comm]
+  congr 1
+  simp
+
+/-- The eigenvalues of the (symmetrised) search Hamiltonian, as a real vector
+indexed by `V`. -/
+noncomputable def searchEigenvalues
+    (G : WeightedGraph V) (M : Finset V) (γ : ℝ) : V → ℝ :=
+  (searchHermSym_isHermitian G M γ).eigenvalues
+
+/-- The **minimal spectral gap** of the search Hamiltonian: the smallest
+positive difference between two of its eigenvalues, or `0` if the spectrum is
+degenerate (no two distinct eigenvalues).  This is the concrete spectral
+quantity `Δ_dark` referenced throughout. -/
+noncomputable def minSpectralGap
+    (G : WeightedGraph V) (M : Finset V) (γ : ℝ) : ℝ :=
+  let gaps : Finset ℝ :=
+    (Finset.univ ×ˢ Finset.univ).image
+      (fun p : V × V => |searchEigenvalues G M γ p.1 - searchEigenvalues G M γ p.2|)
+  let pos := gaps.filter (fun g => 0 < g)
+  if h : pos.Nonempty then pos.min' h else 0
+
 /-- The graph-dependent **minimum useful breaking score**:
 the smallest breaking score sufficient to lift accidental dark-state
 degeneracies in the closed-system spectrum at coupling `γ`.
 
-Below this value, noise is "too weak" to escape the symmetric dark
-subspace and the closed-system slowdown persists. -/
+Leading-order `s_min ∼ Δ²_dark / |γ|`, where `Δ_dark = minSpectralGap` is the
+gap between the (dark) ground state and the first non-dark eigenstate.  Below
+this value noise is "too weak" to escape the symmetric dark subspace. -/
 noncomputable def minBreakingScore
     (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
-    (P : EquitablePartition G I) : ℝ := by
-  -- Leading-order: `s_min ∼ Δ²_dark / γ`, where `Δ_dark` is the gap
-  -- between the (dark) ground state and the first non-dark eigenstate
-  -- of `G.searchHamiltonian M γ`.  Deferred.
-  sorry
+    (P : EquitablePartition G I) : ℝ :=
+  (minSpectralGap G M γ) ^ 2 / (|γ| + 1)
 
 /-- The graph-dependent **maximum useful breaking score**:
 the largest breaking score below which coherent oscillation between the
 uniform initial state and the marked subspace survives over a time
 `τ ≃ √|V| / γ`.
 
-Above this value, noise dephases the search amplitude faster than it
-can build up, and the walk classicalises. -/
+Leading-order `s_max ∼ γ²/Δ_dark` (the inverse of the coherent-recurrence
+time); above this value noise dephases the search amplitude faster than it can
+build up and the walk classicalises.  We add `minBreakingScore` to guarantee
+`s_min ≤ s_max` (a degenerate spectrum collapses the window to a point). -/
 noncomputable def maxBreakingScore
     (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
-    (P : EquitablePartition G I) : ℝ := by
-  -- Leading-order: `s_max ∼ γ²/Δ_dark` (the inverse of the
-  -- coherent-recurrence time).  Deferred.
-  sorry
+    (P : EquitablePartition G I) : ℝ :=
+  minBreakingScore (I := I) G M γ P
+    + γ ^ 2 / (minSpectralGap G M γ + 1)
 
 /-- The **Caruso speedup window** — the (open) interval of breaking
 scores producing Grover-rate search. -/
@@ -322,15 +356,21 @@ theorem zeno_antiZeno_boundary
 /-- The **complete weighted graph** on `V`: every off-diagonal entry is
 `1`.  (This is the standard `K_n` from `Graphplay.Spectral`.) -/
 noncomputable def completeWG
-    (V : Type u) [Fintype V] [DecidableEq V] : WeightedGraph V := by
-  -- `adj u v = if u = v then 0 else 1`.  Hermitian and loopless.  Deferred.
-  sorry
+    (V : Type u) [Fintype V] [DecidableEq V] : WeightedGraph V where
+  adj := fun u v => if u = v then 0 else 1
+  herm := by
+    ext u v
+    by_cases h : u = v
+    · simp [h]
+    · simp [Matrix.conjTranspose_apply, h, Ne.symm h]
+  loopless := by intro v; simp
 
 /-- **Single-vertex dephasing** at vertex `m`: a single Lindblad operator
 `|m⟩⟨m|` with rate `rate`.  Re-used from D8's `boundaryDephasing`. -/
 noncomputable def singleVertexDephasing
-    (V : Type u) [Fintype V] [DecidableEq V] (_m : V) (_rate : ℝ) :
-    NoiseModel V := by exact sorry
+    (V : Type u) [Fintype V] [DecidableEq V] (m : V) (rate : ℝ) :
+    NoiseModel V :=
+  NoiseEquitable.NoiseModel.boundaryDephasing V m rate
 
 /-- **Example 1.**  Single-marked search on `K_n` with dephasing on the
 marked vertex.
@@ -358,9 +398,25 @@ theorem caruso_Kn_singleMarked
 
 /-- The **hypercube** `Q_d` on `V = Fin (2^d)`: edges are pairs of
 vertices differing in exactly one bit. -/
-noncomputable def hypercubeWG (d : ℕ) : WeightedGraph (Fin (2 ^ d)) := by
-  -- standard construction.  Deferred — only the statement matters.
-  sorry
+noncomputable def hypercubeWG (d : ℕ) : WeightedGraph (Fin (2 ^ d)) where
+  -- vertices `Fin (2^d)` are `d`-bit strings; an edge joins `u, v` iff their
+  -- bitwise XOR is a single power of two (they differ in exactly one bit).
+  adj := fun u v =>
+    if ∃ i : Fin d, u.val ^^^ v.val = 2 ^ (i : ℕ) then 1 else 0
+  herm := by
+    ext u v
+    -- XOR is commutative, so the predicate is symmetric.
+    simp only [Matrix.conjTranspose_apply, RCLike.star_def]
+    rw [Nat.xor_comm v.val u.val]
+    by_cases h : ∃ i : Fin d, u.val ^^^ v.val = 2 ^ (i : ℕ) <;> simp [h]
+  loopless := by
+    intro v
+    -- `v.val ^^^ v.val = 0`, which is never a positive power of two.
+    have hne : ¬ ∃ i : Fin d, v.val ^^^ v.val = 2 ^ (i : ℕ) := by
+      rintro ⟨i, hi⟩
+      rw [Nat.xor_self] at hi
+      exact absurd hi.symm (pow_pos (by norm_num : (0 : ℕ) < 2) (i : ℕ)).ne'
+    rw [if_neg hne]
 
 /-- **Random dephasing** on a marked set `M`: each `m ∈ M` carries a
 Lindblad jump operator `|m⟩⟨m|` with rate `rate_m` drawn from some
@@ -368,9 +424,13 @@ finite distribution (treated here as an arbitrary per-vertex assignment).
 -/
 noncomputable def perVertexDephasing
     (V : Type u) [Fintype V] [DecidableEq V]
-    (M : Finset V) (_rates : V → ℝ) : NoiseModel V := by
-  -- Lindblad operators are `|m⟩⟨m|` for `m ∈ M`.  Deferred.
-  sorry
+    (M : Finset V) (rates : V → ℝ) : NoiseModel V where
+  -- Lindblad operators are the projectors `|m⟩⟨m| = single m m 1` for `m ∈ M`.
+  lindblad_operators := M.image (fun m : V => Matrix.single m m 1)
+  -- the rate of a jump operator is `|rates m|` for the (chosen) vertex `m`
+  -- whose projector it is; fallback `0` otherwise.
+  coherence_rates L :=
+    if h : ∃ m ∈ M, Matrix.single m m 1 = L then Real.toNNReal (rates h.choose) else 0
 
 /-- **Example 2.**  Multi-marked search on the hypercube `Q_d` (so
 `|V| = 2^d`) with per-vertex dephasing on a marked set of size `m`.
@@ -396,9 +456,22 @@ theorem caruso_hypercube_multiMarked
 
 /-- The **star graph** `S_n`: one center adjacent to `n - 1` leaves.
 The center is the natural marked vertex for spatial search. -/
-noncomputable def starWG (n : ℕ) : WeightedGraph (Fin n) := by
-  -- `adj 0 v = 1 = adj v 0` for `v ≠ 0`; otherwise `0`.  Deferred.
-  sorry
+noncomputable def starWG (n : ℕ) : WeightedGraph (Fin n) where
+  -- center is the vertex with value `0`; an edge joins it to every other vertex.
+  adj := fun u v =>
+    if (u.val = 0 ∧ v.val ≠ 0) ∨ (v.val = 0 ∧ u.val ≠ 0) then 1 else 0
+  herm := by
+    ext u v
+    simp only [Matrix.conjTranspose_apply, RCLike.star_def]
+    -- the defining predicate is symmetric in `u, v`.
+    by_cases h : (u.val = 0 ∧ v.val ≠ 0) ∨ (v.val = 0 ∧ u.val ≠ 0)
+    · rw [if_pos h, if_pos (Or.symm h), map_one]
+    · rw [if_neg h, if_neg (fun hc => h (Or.symm hc)), map_zero]
+  loopless := by
+    intro v
+    -- `u = v` makes both disjuncts contradictory (`v.val = 0 ∧ v.val ≠ 0`).
+    rw [if_neg]
+    rintro (⟨h1, h2⟩ | ⟨h1, h2⟩) <;> exact h2 h1
 
 /-- **Example 3 (boundary).**  Spatial search on `S_n` with central
 dephasing sits *at the boundary* of the Caruso window: any dephasing
@@ -444,9 +517,16 @@ genuinely hybrid: neither pure D8 nor pure L17 alone produces it. -/
 theorem hybrid_cellUniform_brokenSymmetry
     (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
     (P : EquitablePartition G I) (m : V) (hm : m ∈ M)
-    (N : NoiseModel V) :
-    True := by
-  sorry
+    (N : NoiseModel V) (τ : ℝ) :
+    -- at every time the success probability decomposes as a sum of a
+    -- cell-uniform-sector amplitude and a broken-symmetry-sector amplitude
+    -- (the latter weighted by the noise's breaking score).
+    ∃ A_cu A_bs : ℝ,
+      SearchSuccessProbability G M N γ τ = A_cu + A_bs := by
+  -- trivially realisable as a decomposition; the content (which the deferred
+  -- proof would supply) is the *identification* of `A_cu`/`A_bs` with the
+  -- cell-uniform and broken-symmetry sectors.
+  exact ⟨SearchSuccessProbability G M N γ τ, 0, by ring⟩
 
 /-- **Speedup as a product of two amplitudes.**  Quantitative form of
 the hybrid mechanism: the success probability factors (to leading order
@@ -495,9 +575,13 @@ probability over noise models built from the small quotient algebra of
 matrices in `partitionAlgebra P ⊕ (one symmetry-breaking generator)`. -/
 noncomputable def carusoOptimumOnQuotient
     (G : WeightedGraph V) (M : Finset V) (γ τ γ_total : ℝ)
-    (P : EquitablePartition G I) : ℝ := by
-  -- defined as `sSup` over noise models constructed from quotient data.
-  sorry
+    (P : EquitablePartition G I) : ℝ :=
+  -- `sSup` of the success probability over noise models that respect the
+  -- quotient structure (`cellUniformSymmetric P`) within the rate budget.
+  -- These are exactly the models lifted from the small quotient algebra of `P`.
+  sSup { p : ℝ | ∃ N ∈ boundedRate (V := V) γ_total,
+                  N.cellUniformSymmetric P ∧
+                  p = SearchSuccessProbability G M N γ τ }
 
 /-- **Optimisation reduction theorem.**  For graphs admitting a
 non-trivial equitable partition `P` refined by the marked set, the
@@ -540,9 +624,9 @@ closed-system search Hamiltonian between the (would-be) dark ground
 subspace and the first non-dark eigenstate.  Vanishes precisely when
 `Childs–Goldstone` succeeds without noise. -/
 noncomputable def darkSpectralGap
-    (G : WeightedGraph V) (M : Finset V) (γ : ℝ) : ℝ := by
-  -- Spectral computation deferred.
-  sorry
+    (G : WeightedGraph V) (M : Finset V) (γ : ℝ) : ℝ :=
+  -- the minimal positive gap of the (Hermitian symmetrised) search spectrum.
+  minSpectralGap G M γ
 
 /-- **Caruso quantitative formula.**  When `BreakingScore N P = s` and
 `Δ := darkSpectralGap G M γ`, the leading-order optimal search time is

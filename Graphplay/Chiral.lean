@@ -102,7 +102,17 @@ def signedBy (G : WeightedGraph V) (s : ChiralSigning V) : WeightedGraph V where
 
 @[simp] theorem signedBy_trivial (G : WeightedGraph V) :
     G.signedBy (ChiralSigning.trivial V) = G := by
-  sorry
+  -- `WeightedGraph` is an extensionality-by-`adj` structure (the other two
+  -- fields are propositions).  The trivial signing multiplies every entry by
+  -- `1`, leaving `adj` unchanged; the propositional fields agree by proof
+  -- irrelevance, which `congr 1` discharges after matching `adj`.
+  cases G with
+  | mk adj herm loopless =>
+    unfold WeightedGraph.signedBy
+    congr 1
+    funext x y
+    show (ChiralSigning.trivial V).σ x y * adj x y = adj x y
+    simp [ChiralSigning.trivial]
 
 end WeightedGraph
 
@@ -212,11 +222,17 @@ def signedBy (B : Bundle V I) (s : ChiralSigning V)
 two vertices in the same cell have equal squared transition amplitudes to
 every target vertex. This is the appropriate "uniform mixing relative to a
 quotient" notion for fractional revival in the sense of Chan et al.
-(1907.04729) — see also Lemma 1 / Lemma 3 of Levine et al. (2605.04414). -/
-def CellUniformMixing (_B : Bundle V I) (_t : ℝ) : Prop := True
--- A real version would require the matrix exponential machinery from
--- Mathlib.Analysis.Normed.Algebra.MatrixExponential and a definition of the
--- mixing matrix; we keep this as a placeholder statement-level predicate.
+(1907.04729) — see also Lemma 1 / Lemma 3 of Levine et al. (2605.04414).
+
+Concretely, for the continuous-time quantum walk `U(t) = exp(-i t A)` on the
+bundle's adjacency matrix, two vertices `x, x'` in the same cell are required
+to have equal transition modulus `‖U(t) y x‖ = ‖U(t) y x'‖` into every target
+vertex `y`.  This is exactly the condition that makes the cell-uniform
+superposition a well-defined dynamical object (the modulus profile only
+depends on the source cell). -/
+def CellUniformMixing (B : Bundle V I) (t : ℝ) : Prop :=
+  ∀ (x x' : V), B.partition.cells x = B.partition.cells x' →
+    ∀ y : V, ‖B.graph.evolve t y x‖ = ‖B.graph.evolve t y x'‖
 
 /--
 **Chiral PST/mixing optimization theorem (statement).**
@@ -243,10 +259,19 @@ theorem chiral_mixing_optimization
     (B : Bundle V I) (s : ChiralSigning V)
     (h : s.CrossConstant B.partition.cells) (t : ℝ) :
     (B.signedBy s h).CellUniformMixing t ↔
-      -- "quotient phasing achieves cell-uniform mixing of the quotient"
-      True := by
-  -- Placeholder: real content lives in QuantumGraph.lean (Tower 3) plus the
-  -- characteristic-isometry intertwining from Lemma 2 of Levine et al.
+      -- "the chirally-signed quotient `Q̃ = D^{1/2} Q D^{-1/2}` achieves
+      -- cell-uniform mixing": the quotient evolution
+      -- `exp(-i t Q̃)` has equal-modulus column entries, i.e. every two
+      -- quotient vertices `k, k'` send the same modulus into each `l`.
+      (∀ k k' l : I,
+        ‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) •
+            (B.signedBy s h).partition.symmQuotient)) l k‖
+          = ‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) •
+            (B.signedBy s h).partition.symmQuotient)) l k'‖) := by
+  -- The real content (the characteristic-isometry intertwining
+  -- `S^* U(t) S = U_quot(t)` of Lemma 2 of Levine et al., combined with the
+  -- equitable-preservation lemma `signedBy_preserves_equitable`) is deferred:
+  -- this is an honest theorem-level `sorry`.
   sorry
 
 end Bundle
@@ -284,17 +309,40 @@ def unitaryHammingChiralK4Signing : ChiralSigning (Fin 4) where
     else Complex.I
   unimod := by
     intro x y
-    by_cases hxy : x = y
-    · simp [hxy]
-    · -- All non-diagonal phases are ±i, which are unimodular.
-      sorry
+    -- All values are `1` (diagonal) or `±i`, each of norm `1`.
+    split_ifs <;> simp [Complex.norm_I]
   herm := by
     -- σ(y, x) = star σ(x, y): swapping x and y flips the sign in our
-    -- case analysis, which is precisely star on {i, -i}.
+    -- case analysis, which is precisely `star` on `{i, -i}`.
     intro x y
     by_cases hxy : x = y
     · subst hxy; simp
-    · sorry
+    · -- `x ≠ y`, so `y ≠ x`.
+      have hyx : ¬ y = x := fun h => hxy h.symm
+      simp only [if_neg hxy, if_neg hyx]
+      -- Case on whether either coordinate is `0`, then on the order.
+      by_cases hx0 : (x : Fin 4) = 0
+      · -- `x = 0`, hence `y ≠ 0`. LHS branch for `σ y x` hits `y ≠ 0, x = 0 ⇒ i`.
+        have hy0 : ¬ (y : Fin 4) = 0 := fun h => hxy (hx0.trans h.symm)
+        simp only [if_neg hy0, if_pos hx0]
+        -- σ x y = -i, σ y x = i = star(-i)
+        simp
+      · by_cases hy0 : (y : Fin 4) = 0
+        · -- `y = 0`, `x ≠ 0`: σ x y = i, σ y x = -i = star(i).
+          simp only [if_neg hx0, if_pos hy0]
+          simp
+        · -- Neither is `0`: order decides the sign.
+          simp only [if_neg hx0, if_neg hy0]
+          rcases lt_trichotomy x.val y.val with h | h | h
+          · -- x < y: σ x y = -i; σ y x has ¬(y<x) ⇒ i = star(-i).
+            have hnot : ¬ y.val < x.val := Nat.not_lt.mpr (Nat.le_of_lt h)
+            simp only [if_pos h, if_neg hnot]
+            simp
+          · exact absurd (Fin.ext h) hxy
+          · -- y < x: σ x y = i (¬x<y); σ y x = -i = star(i).
+            have hnot : ¬ x.val < y.val := Nat.not_lt.mpr (Nat.le_of_lt h)
+            simp only [if_neg hnot, if_pos h]
+            simp
   diag x := by simp
 
 /-- The chiral K_4 from Levine et al. (2605.04414, Fig. 2): the
@@ -306,8 +354,17 @@ def unitaryHammingChiralK4 : WeightedGraph (Fin 4) where
     if x = y then (0 : ℂ)
     else unitaryHammingChiralK4Signing.σ x y
   herm := by
-    -- Hermitian: the off-diagonal part equals the signing, which is Hermitian.
-    sorry
+    -- Hermitian: the off-diagonal part equals the signing, which is Hermitian;
+    -- the diagonal is `0`.
+    refine Matrix.IsHermitian.ext ?_
+    intro i j
+    show star (if j = i then (0 : ℂ) else unitaryHammingChiralK4Signing.σ j i)
+      = if i = j then 0 else unitaryHammingChiralK4Signing.σ i j
+    by_cases hij : i = j
+    · subst hij; simp
+    · have hji : ¬ j = i := fun h => hij h.symm
+      rw [if_neg hji, if_neg hij, unitaryHammingChiralK4Signing.herm i j,
+        star_star]
   loopless v := by simp
 
 end Graphplay

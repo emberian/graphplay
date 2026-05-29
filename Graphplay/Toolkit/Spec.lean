@@ -594,14 +594,17 @@ relies on.  Where we cannot prove the fact in Lean today, we expose a
 
 /-- Structural certificate of regularity for a template.  `none` means we have
 no structural proof; report code should fall back to numerical inference
-(`approxRegular`). -/
+(`approxRegular`).
+
+This is a pure-data record: it records the symbolic common weighted degree.
+The *genuine* correctness obligation — that every row of the symbolic
+adjacency sums to `degree` — is stated separately as `CompilerSpec.IsRowRegular`
+and discharged (where possible) by `CompilerSpec.regularityCert_sound`.  We
+keep the certificate data and its proof obligation apart so that
+`regularityCert` stays a total, `sorry`-free definition. -/
 structure RegularityCert where
   /-- The symbolic common weighted degree. -/
   degree : Float
-  /-- A proof skeleton.  In the current draft this is a `sorry`; in a later
-  pass it should be a `(∀ i, ∑_j adj i j = degree)` style statement on the
-  matrix `Matrix (Fin n) (Fin n) ℂ` derived from `templateAdj`. -/
-  proof : True := trivial
 
 /-- Extract a regularity certificate, preferring the structural inference
 when available, otherwise probing the numerical row sums. -/
@@ -611,6 +614,32 @@ def CompilerSpec.regularityCert (s : CompilerSpec) : Option RegularityCert :=
   | none => match approxRegular s.templateAdj with
     | some d => some { degree := d }
     | none => none
+
+/-- The **genuine regularity proposition** the certificate witnesses: every row
+of the symbolic template adjacency sums to a single common value `d`.  This is
+the `Float`-level analogue of `WeightedGraph.IsRegular` on the symbolic
+`templateAdj`; it is the honest content the `RegularityCert.degree` field
+abbreviates.  (We phrase it as "all row sums agree" rather than "= d" so that
+the statement does not depend on the numerical representation of `d`.) -/
+def CompilerSpec.IsRowRegular (s : CompilerSpec) (d : Float) : Prop :=
+  ∀ i : Nat, i < s.templateSize → rowSum s.templateAdj i = d
+
+/-- **Soundness of the regularity certificate.**  Whenever `regularityCert`
+returns a certificate with degree `d`, the symbolic template adjacency really
+is row-regular of degree `d` (every row sums to `d`).
+
+This is the genuine correctness obligation that the old `proof : True` field
+stood in for.  A full proof requires reasoning about the `buildTemplate`
+constructors (for the structural branch) and about `Float` row-sum arithmetic
+(for the `approxRegular` branch); both are deferred, so this is an honest
+theorem-level `sorry`, *not* a placeholder in any definition's data. -/
+theorem CompilerSpec.regularityCert_sound (s : CompilerSpec) (c : RegularityCert)
+    (h : s.regularityCert = some c) :
+    s.IsRowRegular c.degree := by
+  -- The structural branch follows from the symmetry/constructor invariants of
+  -- `buildTemplate`; the `approxRegular` branch follows from its row-sum check
+  -- (modulo the `1e-9` tolerance being exact).  Deferred.
+  sorry
 
 end Toolkit
 

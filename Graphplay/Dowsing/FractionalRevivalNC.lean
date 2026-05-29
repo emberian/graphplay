@@ -48,6 +48,7 @@ import Graphplay.PST
 import Graphplay.QuantumGraph
 import Graphplay.Chiral
 import Graphplay.Graphon
+import Graphplay.Product
 
 open scoped Matrix ENNReal
 open MeasureTheory
@@ -359,11 +360,13 @@ sequences `(Gₙ, uₙ, vₙ, τₙ, αₙ, βₙ)` of finite FR systems converg
 norm to `(W, A, B, τ, α, β)` produce a graphon-FR at the limit. -/
 
 /-- A **bump state** on a measure space `(Ω, μ)`: the normalised indicator
-of a positive-measure set. -/
+`μ(A)^{-1/2} · 1_A` of a positive finite-measure set `A`.  Concretely it takes
+the value `1 / √(μ A)` (with `μ A` converted to a real number) on `A` and `0`
+off `A`; the normalisation makes it a unit vector in `L²(μ)`. -/
 noncomputable def Graphon.bumpState {Ω : Type u} [MeasurableSpace Ω]
     (μ : Measure Ω) (A : Set Ω) (_hA : MeasurableSet A) (_hμA : μ A ≠ 0)
     (_hμAfin : μ A ≠ ∞) : Ω → ℂ :=
-  fun _ => 0
+  Set.indicator A (fun _ => ((1 : ℂ) / (Real.sqrt (μ A).toReal : ℂ)))
 
 /-- **Graphon fractional revival**: graphon `W` admits `(α, β)`-FR between
 bump states on `A` and `B` (disjoint, positive finite measure) at time `τ`
@@ -427,25 +430,40 @@ The Cartesian product `Cₙ □ Cₘ` famously admits balanced FR between
 "antipodal" pairs when `n` and `m` are both even (specialising the
 Chan et al. results to the Hamming-2 / cycle case). -/
 
-/-- The cycle graph `C_n` as a `WeightedGraph` on `Fin n`.  (Placeholder
-adjacency: the usual `i ↔ i ± 1 (mod n)` matrix.) -/
-noncomputable def cycleGraph (n : ℕ) : WeightedGraph (Fin n) where
+/-- The cycle graph `C_n` as a `WeightedGraph` on `Fin n`: the usual
+`i ↔ i ± 1 (mod n)` adjacency, with self-loops explicitly excluded (the `i ≠ j`
+guard makes the graph loopless for every `n`, including the degenerate `n ≤ 2`
+cases where `i+1 ≡ i`). -/
+def cycleGraph (n : ℕ) : WeightedGraph (Fin n) where
   adj := fun i j =>
-    if (i.val + 1) % n = j.val ∨ (j.val + 1) % n = i.val then 1 else 0
+    if i ≠ j ∧ ((i.val + 1) % n = j.val ∨ (j.val + 1) % n = i.val) then 1 else 0
   herm := by
-    -- symmetric 01 matrix
-    sorry
+    -- The 0/1 adjacency is symmetric: the guard is symmetric in `i, j`.
+    refine Matrix.IsHermitian.ext ?_
+    intro i j
+    show star (if j ≠ i ∧ ((j.val + 1) % n = i.val ∨ (i.val + 1) % n = j.val) then (1:ℂ) else 0)
+      = if i ≠ j ∧ ((i.val + 1) % n = j.val ∨ (j.val + 1) % n = i.val) then (1:ℂ) else 0
+    have hguard : (j ≠ i ∧ ((j.val + 1) % n = i.val ∨ (i.val + 1) % n = j.val))
+        ↔ (i ≠ j ∧ ((i.val + 1) % n = j.val ∨ (j.val + 1) % n = i.val)) := by
+      constructor
+      · rintro ⟨hne, hd⟩; exact ⟨fun e => hne e.symm, Or.symm hd⟩
+      · rintro ⟨hne, hd⟩; exact ⟨fun e => hne e.symm, Or.symm hd⟩
+    by_cases h : j ≠ i ∧ ((j.val + 1) % n = i.val ∨ (i.val + 1) % n = j.val)
+    · rw [if_pos h, if_pos (hguard.mp h), star_one]
+    · rw [if_neg h, if_neg (fun c => h (hguard.mpr c)), star_zero]
   loopless := by
     intro v
-    -- a vertex is not adjacent to itself in a cycle when n ≥ 3
-    sorry
+    -- The `i ≠ j` guard fails on the diagonal, so every diagonal entry is `0`.
+    show (if v ≠ v ∧ _ then (1:ℂ) else 0) = 0
+    rw [if_neg]
+    rintro ⟨hne, _⟩
+    exact hne rfl
 
 /-- The Cartesian product of two cycles, viewed as a `WeightedGraph` on
-`Fin n × Fin m`. -/
-noncomputable def cycleProduct (n m : ℕ) : WeightedGraph (Fin n × Fin m) :=
-  -- Cartesian product of `cycleGraph n` and `cycleGraph m`, via
-  -- `GraphBundle.cartesianProduct` (file `Bundle.lean`).
-  sorry
+`Fin n × Fin m`, via the first-class `WeightedGraph.cartesianProduct`
+(Kronecker sum `A ⊗ I + I ⊗ B`) from `Graphplay.Product`. -/
+def cycleProduct (n m : ℕ) : WeightedGraph (Fin n × Fin m) :=
+  WeightedGraph.cartesianProduct (cycleGraph n) (cycleGraph m)
 
 /-- **FR on `Cₙ □ Cₘ` (Tamon-clique example).**  For even `n, m`, the graph
 `cycleProduct n m` admits balanced FR `(1/√2, ±i/√2)` between any antipodal
@@ -461,11 +479,37 @@ theorem cycleProduct_fr (n m : ℕ) (hn : 2 ≤ n) (hm : 2 ≤ m)
 
 /-! ### 4.2 The Hamming scheme `H(n, q)` -/
 
-/-- The Hamming graph `H(n, q)`: vertices are `Fin q^n` strings, two
-strings are adjacent iff they differ in exactly one coordinate.
-(Placeholder.) -/
-noncomputable def hammingGraph (n q : ℕ) : WeightedGraph (Fin n → Fin q) :=
-  sorry
+/-- The Hamming distance between two strings `x, y : Fin n → Fin q`: the number
+of coordinates at which they differ. -/
+def hammingDist {n q : ℕ} (x y : Fin n → Fin q) : ℕ :=
+  (Finset.univ.filter (fun i : Fin n => x i ≠ y i)).card
+
+/-- The Hamming graph `H(n, q)`: vertices are length-`n` strings over `Fin q`,
+two strings adjacent iff they differ in exactly one coordinate (Hamming
+distance `1`).  The 0/1 adjacency is symmetric (distance is symmetric) and
+loopless (a vertex has distance `0` to itself). -/
+def hammingGraph (n q : ℕ) : WeightedGraph (Fin n → Fin q) where
+  adj := fun x y => if hammingDist x y = 1 then 1 else 0
+  herm := by
+    refine Matrix.IsHermitian.ext ?_
+    intro x y
+    show star (if hammingDist y x = 1 then (1:ℂ) else 0)
+      = if hammingDist x y = 1 then (1:ℂ) else 0
+    have hsymm : hammingDist y x = hammingDist x y := by
+      unfold hammingDist
+      congr 1
+      ext i
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+      exact ⟨fun h => fun e => h e.symm, fun h => fun e => h e.symm⟩
+    rw [hsymm]
+    by_cases h : hammingDist x y = 1 <;> simp [h]
+  loopless := by
+    intro x
+    have hzero : hammingDist x x = 0 := by
+      unfold hammingDist
+      simp
+    show (if hammingDist x x = 1 then (1:ℂ) else 0) = 0
+    rw [hzero]; simp
 
 /-- **FR on the Hamming scheme** (1907.04729 §4–5, especially Theorem 5.1
 for the binary case `q = 2`).  Balanced fractional revival
@@ -502,12 +546,13 @@ of writing — is whether such signings yield non-trivial FR coefficients.
 We record both the definition of `K_n^σ` FR (specialising `IsFR`) and the
 conjecture itself. -/
 
-/-- The chirally-signed `K_n^σ` viewed as a weighted graph: the usual
-`K_n` weighted-adjacency multiplied entrywise by a `ChiralSigning`. -/
+/-- The chirally-signed `K_n^σ` viewed as a weighted graph: the complete graph
+`K_n = (⊤ : SimpleGraph (Fin n))` promoted to a `WeightedGraph` via
+`SimpleGraph.toWeighted`, then signed entrywise by the `ChiralSigning s`
+(`WeightedGraph.signedBy` from `Graphplay.Chiral`). -/
 noncomputable def chiralKn (n : ℕ) (s : ChiralSigning (Fin n)) :
     WeightedGraph (Fin n) :=
-  -- `K_n.toWeighted.signedBy s`, with `K_n` the complete graph on `Fin n`.
-  sorry
+  (SimpleGraph.toWeighted (⊤ : SimpleGraph (Fin n))).signedBy s
 
 /-- **Conjecture (chiral FR).**  For every `n ≥ 3` there exists a chiral
 signing `s : ChiralSigning (Fin n)` such that `chiralKn n s` admits

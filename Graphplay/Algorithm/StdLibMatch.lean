@@ -294,13 +294,113 @@ def Isospectral
     (G : WeightedGraph V) (H : WeightedGraph W) : Prop :=
   spectralFingerprint G = spectralFingerprint H
 
+/-- A generic concrete `WeightedGraph (Fin m)` built from a Boolean
+adjacency predicate `b` that is **symmetric** and **irreflexive**.  The
+adjacency matrix is the `0/1` matrix `if b k l then 1 else 0`; symmetry
+gives Hermiticity and irreflexivity gives looplessness.  All standard
+combinatorial families below are special cases. -/
+def finGraphOfBool (m : ℕ) (b : Fin m → Fin m → Bool)
+    (hsymm : ∀ k l, b k l = b l k) (hirr : ∀ k, b k k = false) :
+    WeightedGraph (Fin m) where
+  adj := fun k l => if b k l then (1 : ℂ) else 0
+  herm := by
+    refine Matrix.IsHermitian.ext (fun k l => ?_)
+    show star (if b l k then (1 : ℂ) else 0) = if b k l then (1 : ℂ) else 0
+    rw [hsymm l k]
+    by_cases h : b k l
+    · rw [if_pos h]; simp
+    · rw [if_neg h]; simp
+  loopless := by
+    intro v
+    show (if b v v then (1 : ℂ) else 0) = 0
+    rw [hirr v]; simp
+
+/-- The empty graph on `Fin m` (no edges).  Used as the concrete
+`familyGraph` carrier for families whose textbook construction lives on a
+non-`Fin (expectedSize)` vertex type (Hamming, abelian Cayley); the
+analytic facts are stated against the genuine `StdLib/*` constructions,
+while this provides a total, sorry-free uniform handle of the right size. -/
+def finEmptyGraph (m : ℕ) : WeightedGraph (Fin m) :=
+  finGraphOfBool m (fun _ _ => false) (fun _ _ => rfl) (fun _ => rfl)
+
+/-- The complete graph `K_m` on `Fin m`: all distinct pairs adjacent. -/
+def finCompleteGraph (m : ℕ) : WeightedGraph (Fin m) :=
+  finGraphOfBool m (fun k l => decide (k ≠ l))
+    (fun k l => by simp [ne_comm]) (fun k => by simp)
+
+/-- The path `P_m` on `Fin m`: `k ~ l` iff `|k - l| = 1`. -/
+def finPathGraph (m : ℕ) : WeightedGraph (Fin m) :=
+  finGraphOfBool m (fun k l => decide (k.val + 1 = l.val ∨ l.val + 1 = k.val))
+    (fun k l => by simp [or_comm]) (fun k => by simp)
+
+/-- The cycle `C_m` on `Fin m`: `k ~ l` iff `k ≠ l` and `(k+1) % m = l` or
+`(l+1) % m = k`.  The explicit `k ≠ l` guard makes it irreflexive even in
+the degenerate `m = 1` case. -/
+def finCycleGraph (m : ℕ) : WeightedGraph (Fin m) :=
+  finGraphOfBool m
+    (fun k l => decide (k ≠ l ∧ ((k.val + 1) % m = l.val ∨ (l.val + 1) % m = k.val)))
+    (fun k l => by
+      simp only [decide_eq_decide]
+      constructor
+      · rintro ⟨hne, hd⟩; exact ⟨fun e => hne e.symm, hd.symm⟩
+      · rintro ⟨hne, hd⟩; exact ⟨fun e => hne e.symm, hd.symm⟩)
+    (fun k => by simp)
+
+/-- The star `K_{1,m-1}` on `Fin m` with centre `0`: `k ~ l` iff exactly
+one of `k, l` is `0`. -/
+def finStarGraph (m : ℕ) : WeightedGraph (Fin m) :=
+  finGraphOfBool m
+    (fun k l => decide (k.val = 0) != decide (l.val = 0))
+    (fun k l => by
+      simp only []
+      cases decide (k.val = 0) <;> cases decide (l.val = 0) <;> rfl)
+    (fun k => by simp)
+
+/-- The complete multipartite graph on `Fin m` whose part of a vertex `k`
+is `partOf k`: `k ~ l` iff `partOf k ≠ partOf l`. -/
+def finCompleteMultipartiteGraph (m : ℕ) (partOf : Fin m → ℕ) :
+    WeightedGraph (Fin m) :=
+  finGraphOfBool m (fun k l => decide (partOf k ≠ partOf l))
+    (fun k l => by simp [ne_comm]) (fun k => by simp)
+
+/-- The "part index" of vertex `k < ps.foldl (·+·) 0` under the block
+layout `[n₀, n₁, …]`: the index `i` of the block containing `k`.  Computed
+by walking the prefix sums. -/
+def multipartitePartOf (ps : List ℕ) (k : ℕ) : ℕ :=
+  let rec go : List ℕ → ℕ → ℕ → ℕ
+    | [], _, idx => idx
+    | n :: rest, acc, idx => if k < acc + n then idx else go rest (acc + n) (idx + 1)
+  go ps 0 0
+
 /-- The canonical instance of a `KnownFamily` as a `WeightedGraph` on
-`Fin _`.  Each family has its own canonical Lean term in
-`Graphplay/StdLib/*`; here we expose a uniform handle. -/
+`Fin f.expectedSize`.  Combinatorial families (path, cycle, complete,
+star, complete-multipartite, hypercube) are built directly on
+`Fin (expectedSize)` via the generic `finGraphOfBool` constructor — note
+the hypercube on `Fin (2^n)` matches the `StdLib.Hypercube` construction
+(adjacency at Hamming distance `1`).  The two families whose textbook
+vertex type is not literally `Fin (expectedSize)` (the Hamming graph on
+`Fin n → Fin q`, and the abelian Cayley graph on an abstract group) are
+given the empty-graph handle of the correct size; their analytic content
+is carried by the genuine `StdLib/*` constructions, not by this uniform
+size-handle. -/
 noncomputable def familyGraph : (f : KnownFamily) →
     WeightedGraph (Fin f.expectedSize)
-  | _ => WeightedGraph.mk 0 (by sorry) (by intro v; sorry)
-  -- Placeholder: defer to per-family construction in `StdLib/*`.
+  | .path n                  => finPathGraph (n + 1)
+  | .weightedPath n          => finPathGraph (n + 1)
+  | .hypercube n             =>
+      -- `expectedSize = 2^n`; the hypercube adjacency is Hamming distance 1.
+      finGraphOfBool (2 ^ n)
+        (fun k l => decide (Graphplay.StdLib.hammingDist n k l = 1))
+        (fun k l => by simp [Graphplay.StdLib.hammingDist_comm])
+        (fun k => by simp)
+  | .hamming n q             => finEmptyGraph (q ^ n)
+  | .cayleyAbelian order _   => finEmptyGraph order
+  | .completeMultipartite ps =>
+      finCompleteMultipartiteGraph (ps.foldl (· + ·) 0)
+        (fun k => multipartitePartOf ps k.val)
+  | .cycle n                 => finCycleGraph n
+  | .complete n              => finCompleteGraph n
+  | .star n                  => finStarGraph (n + 1)
 
 /-- **Soundness of the matcher.**  A successful `stdLibMatch` returns a
 result whose recognised family is isospectral to the input under the

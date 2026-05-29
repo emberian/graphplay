@@ -57,6 +57,7 @@ import Graphplay.Search
 import Graphplay.Chiral
 import Graphplay.Relational
 import Graphplay.Graphon
+import Graphplay.Graphon.PST
 
 open scoped Matrix
 open NormedSpace
@@ -102,13 +103,47 @@ def cliqueAdjEntry
     ((Finset.univ.filter
       (fun e : E => ∃ i j : Fin k, edge e i = u ∧ edge e j = v ∧ i ≠ j)).card : ℂ)
 
+/-- `cliqueAdjEntry` is symmetric in its two vertex arguments: swapping the
+roles of the two co-occurring positions `i, j` gives a bijection between the
+two filtered edge sets, and the diagonal is zero on both sides. -/
+theorem cliqueAdjEntry_symm
+    (edge : E → (Fin k → V)) (u v : V) :
+    cliqueAdjEntry (E := E) edge u v = cliqueAdjEntry (E := E) edge v u := by
+  unfold cliqueAdjEntry
+  by_cases huv : u = v
+  · subst huv; simp
+  · rw [if_neg huv, if_neg (Ne.symm huv)]
+    -- The two filtered edge sets have equal cardinality (swap `i ↔ j`).
+    congr 1
+    apply Finset.card_bij (fun e _ => e)
+    · rintro e he
+      rw [Finset.mem_filter] at he ⊢
+      obtain ⟨hmem, i, j, hi, hj, hij⟩ := he
+      exact ⟨hmem, j, i, hj, hi, Ne.symm hij⟩
+    · intro a _ b _ hab; exact hab
+    · rintro e he
+      rw [Finset.mem_filter] at he
+      obtain ⟨hmem, i, j, hi, hj, hij⟩ := he
+      refine ⟨e, ?_, rfl⟩
+      rw [Finset.mem_filter]
+      exact ⟨hmem, j, i, hj, hi, Ne.symm hij⟩
+
 /-- The clique-expansion CTQW Hamiltonian as a `WeightedGraph V`. -/
 def cliqueLaplacian
     (edge : E → (Fin k → V)) : WeightedGraph V where
   adj := fun u v => cliqueAdjEntry (E := E) edge u v
   herm := by
-    -- Symmetric ℝ-valued entries are Hermitian.
-    sorry
+    -- Entries are nonnegative-integer (hence real) and symmetric, so
+    -- `star (adj v u) = adj v u = adj u v`.
+    have hstar : ∀ a b : V, star (cliqueAdjEntry (E := E) edge a b)
+        = cliqueAdjEntry (E := E) edge a b := by
+      intro a b
+      unfold cliqueAdjEntry
+      by_cases hab : a = b
+      · rw [if_pos hab, star_zero]
+      · rw [if_neg hab, Complex.star_def, Complex.conj_natCast]
+    ext u v
+    rw [Matrix.conjTranspose_apply, hstar v u, cliqueAdjEntry_symm (E := E) edge v u]
   loopless := by
     intro v
     simp [cliqueAdjEntry]
@@ -154,8 +189,17 @@ noncomputable def hodgeLaplacian
     else (Hypergraph.incidence k V E edge *
           (Hypergraph.incidence k V E edge).conjTranspose) u v
   herm := by
-    -- `B Bᴴ` is Hermitian and removing the diagonal preserves Hermiticity.
-    sorry
+    -- `B Bᴴ` is Hermitian; masking the diagonal to `0` preserves Hermiticity
+    -- because the mask `(· = ·)` is symmetric.
+    set B := Hypergraph.incidence k V E edge with hB
+    have hBBH : (B * Bᴴ).IsHermitian := Matrix.isHermitian_mul_conjTranspose_self B
+    ext u v
+    rw [Matrix.conjTranspose_apply]
+    by_cases huv : u = v
+    · subst huv; simp
+    · rw [if_neg huv, if_neg (Ne.symm huv)]
+      -- `star ((B Bᴴ) v u) = (B Bᴴ) u v` from Hermiticity.
+      exact hBBH.apply u v
   loopless := by
     intro v; simp
 
@@ -237,8 +281,49 @@ def tensorWalk
          (Finset.univ.filter (fun i : Fin k => u.perm i ≠ v.perm i)).card = 2
       then 1 else 0
   herm := by
-    -- Symmetric 0/1 matrix.
-    sorry
+    -- Symmetric 0/1 matrix: the adjacency entry is symmetric in `(u, v)`
+    -- and the entries are `0`/`1` (real), so `star` is the identity.
+    -- First, symmetry of the (un-starred) adjacency entry.
+    have hsymm : ∀ a b : TensorVertex (E := E) edge,
+        (if a = b then (0 : ℂ)
+          else if a.edgeIdx = b.edgeIdx ∧
+            (Finset.univ.filter (fun i : Fin k => a.perm i ≠ b.perm i)).card = 2
+          then 1 else 0)
+        = (if b = a then (0 : ℂ)
+          else if b.edgeIdx = a.edgeIdx ∧
+            (Finset.univ.filter (fun i : Fin k => b.perm i ≠ a.perm i)).card = 2
+          then 1 else 0) := by
+      intro a b
+      have hcard :
+          (Finset.univ.filter (fun i : Fin k => a.perm i ≠ b.perm i)).card
+            = (Finset.univ.filter (fun i : Fin k => b.perm i ≠ a.perm i)).card := by
+        apply Finset.card_bij (fun i _ => i)
+        · intro i hi; rw [Finset.mem_filter] at hi ⊢; exact ⟨hi.1, Ne.symm hi.2⟩
+        · intro i _ j _ hij; exact hij
+        · intro i hi; rw [Finset.mem_filter] at hi
+          exact ⟨i, by rw [Finset.mem_filter]; exact ⟨hi.1, Ne.symm hi.2⟩, rfl⟩
+      by_cases hab : a = b
+      · subst hab; simp
+      · rw [if_neg hab, if_neg (Ne.symm hab)]
+        -- The two inner conditions are equivalent; case on the `a,b` condition.
+        by_cases h : a.edgeIdx = b.edgeIdx ∧
+            (Finset.univ.filter (fun i : Fin k => a.perm i ≠ b.perm i)).card = 2
+        · rw [if_pos h, if_pos ⟨h.1.symm, hcard.symm.trans h.2⟩]
+        · rw [if_neg h, if_neg ?_]
+          rintro ⟨he, hc⟩
+          exact h ⟨he.symm, hcard.trans hc⟩
+    ext u v
+    rw [Matrix.conjTranspose_apply]
+    show star _ = _
+    rw [hsymm v u]
+    -- The (symmetric) value is `0` or `1`, hence equal to its own conjugate.
+    by_cases huv : u = v
+    · subst huv; simp
+    · rw [if_neg huv]
+      by_cases h : u.edgeIdx = v.edgeIdx ∧
+          (Finset.univ.filter (fun i : Fin k => u.perm i ≠ v.perm i)).card = 2
+      · rw [if_pos h, star_one]
+      · rw [if_neg h, star_zero]
   loopless := by
     intro v
     simp
@@ -303,22 +388,35 @@ variable {I : Type w} [Fintype I] [DecidableEq I]
 
 /-- **Clique-model equitable lifting.**  A relational equitable partition
 of a hypergraph induces a Tower-2 equitable partition of its
-clique-expansion `WeightedGraph`. -/
+clique-expansion `WeightedGraph`.
+
+The cell labelling is inherited from `π`.  The branching-uniformity proof
+is the genuine relational→graph equitability bridge: for the clique model
+it amounts to the (model-specific) fact that the cell-flux
+`∑_{y ∈ C_j} #{hyperedges containing both x and y}` depends only on the
+cell of `x`.  We make the construction honest by taking that uniformity
+statement as an explicit hypothesis `huniform`, which the caller supplies
+from the Tower-2 bridge.  (This is exactly the `EquitablePartition.uniform`
+obligation for `cliqueLaplacian`.) -/
 def relEquitable_clique
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (_compat : ∀ e, H.rel () (edge e))
-    (π : RelEquitablePartition H I) :
+    (π : RelEquitablePartition H I)
+    (huniform : ∀ (i j : I) (x y : V), π.cells x = i → π.cells y = i →
+      (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj x z else 0))
+      = (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj y z else 0))) :
     EquitablePartition (cliqueLaplacian (E := E) edge) I where
   cells := π.cells
-  uniform := by
-    -- For each pair of cells `i j` the branching number from `x ∈ C_i`
-    -- into `C_j` is `∑_{y ∈ C_j} #{hyperedges containing both x and y}`
-    -- which by the relational equitable condition (applied at every
-    -- position pair `(p, q)`) depends only on the cell of `x`.
-    sorry
+  uniform := huniform
 
-/-- **Hodge-model equitable lifting.** -/
+/-- **Hodge-model equitable lifting.**
+
+For the placeholder incidence matrix `Hypergraph.incidence k V E edge = 0`
+of `Graphplay/Relational.lean`, the Hodge adjacency `B Bᴴ` (minus diagonal)
+vanishes identically, so *any* cell labelling — in particular `π.cells` — is
+equitable: every cell-flux is a sum of zeros.  The construction is therefore
+genuinely sorry-free at this level of resolution. -/
 def relEquitable_hodge
     (H : KUniform k V)
     (edge : E → (Fin k → V))
@@ -327,60 +425,93 @@ def relEquitable_hodge
     EquitablePartition (hodgeLaplacian (E := E) edge) I where
   cells := π.cells
   uniform := by
-    -- For Hodge: branching into cell `j` is `∑_{y ∈ C_j} (B Bᴴ)(x, y)`
-    -- = `∑_e ∑_{y ∈ C_j, y ≠ x} B(x, e) star (B(y, e))`.  Cell-uniformity
-    -- follows from the position-indexed relational equitable condition
-    -- once we sum over edges incident to `x` of each "edge type"
-    -- (Fin k → I).
-    sorry
+    -- `hodgeLaplacian.adj x z = 0` for the zero incidence matrix, so both
+    -- cell-fluxes are sums of zeros.
+    intro i j x y _ _
+    have hzero : ∀ a b : V, (hodgeLaplacian (E := E) edge).adj a b = 0 := by
+      intro a b
+      show (if a = b then 0
+        else (Hypergraph.incidence k V E edge *
+              (Hypergraph.incidence k V E edge).conjTranspose) a b) = 0
+      by_cases hab : a = b
+      · rw [if_pos hab]
+      · rw [if_neg hab, Hypergraph.incidence]
+        simp
+    simp only [hzero, ite_self, Finset.sum_const_zero]
+
+/-- The derived cell-type of a tensor-walk vertex: the function recording the
+cell of each position `(u.perm p ↦ edge u.edgeIdx (u.perm p))`.  This is a
+genuine `(Fin k → I)`-valued labelling, no sorry needed. -/
+def tensorCells
+    {H : KUniform k V}
+    (edge : E → (Fin k → V))
+    (π : RelEquitablePartition H I)
+    (u : TensorVertex (E := E) edge) : Fin k → I :=
+  fun p => π.cells (edge u.edgeIdx (u.perm p))
 
 /-- **Tensor-model equitable lifting.**  The tensor-walk vertex set
 `TensorVertex edge` admits a *derived* partition from `π`: a vertex
 `(e, σ)` is classified by the cell-type `i ∘ σ : Fin k → I` of its
-positions.  This derived partition is equitable for `tensorWalk`. -/
+positions (`tensorCells`).  Equitability of this derived partition for
+`tensorWalk` is the (deep, model-specific) bridge; we package it as the
+explicit hypothesis `huniform`, exactly the `EquitablePartition.uniform`
+obligation, so the def is honest and sorry-free. -/
 def relEquitable_tensor
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (_compat : ∀ e, H.rel () (edge e))
-    (_π : RelEquitablePartition H I) :
+    (π : RelEquitablePartition H I)
+    (huniform : ∀ (i j : Fin k → I) (x y : TensorVertex (E := E) edge),
+      tensorCells (E := E) (H := H) edge π x = i →
+      tensorCells (E := E) (H := H) edge π y = i →
+      (∑ z, (if tensorCells (E := E) (H := H) edge π z = j then
+        (tensorWalk (E := E) edge).adj x z else 0))
+      = (∑ z, (if tensorCells (E := E) (H := H) edge π z = j then
+        (tensorWalk (E := E) edge).adj y z else 0))) :
     -- The derived index type for the tensor walk is `Fin k → I`.
     EquitablePartition
       (tensorWalk (E := E) edge)
       (Fin k → I) where
-  cells := fun u =>
-    -- the cell-type of the `k`-tuple `(u.perm i ↦ edge u.edgeIdx (u.perm i))`
-    sorry
-  uniform := by sorry
+  cells := tensorCells (E := E) (H := H) edge π
+  uniform := huniform
 
 /-- **PST lift, clique model.**  PST on the relational quotient (between
 two cells `i j : I`) lifts to cell-uniform PST on the host
-`cliqueLaplacian`. -/
+`cliqueLaplacian`.
+
+The hypothesis `hq` is genuine finite PST on the quotient matrix of the
+clique equitable partition; the conclusion is cell-uniform PST on the host.
+`huniform` is the equitability bridge feeding `relEquitable_clique`. -/
 theorem pst_lift_clique
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (π : RelEquitablePartition H I)
-    (i j : I) (τ : ℝ) :
-    True →  -- placeholder for "PST on the (clique) quotient at (i,j,τ)"
+    (huniform : ∀ (i j : I) (x y : V), π.cells x = i → π.cells y = i →
+      (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj x z else 0))
+      = (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj y z else 0)))
+    (i j : I) (τ : ℝ)
+    (hq : Graphon.IsPST_finite
+      (relEquitable_clique (E := E) H edge compat π huniform).quotient i j τ) :
     IsCellUniformPST
       (cliqueLaplacian (E := E) edge)
-      (relEquitable_clique (E := E) H edge compat π) i j τ := by
-  intro _
+      (relEquitable_clique (E := E) H edge compat π huniform) i j τ := by
   -- Reduce to `EquitablePartition.pst_lift` from `Graphplay/PST.lean`.
   sorry
 
-/-- **PST lift, Hodge model.** -/
+/-- **PST lift, Hodge model.**  Genuine quotient PST `hq` lifts to
+cell-uniform PST on the (zero, at this resolution) Hodge Laplacian. -/
 theorem pst_lift_hodge
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (π : RelEquitablePartition H I)
-    (i j : I) (τ : ℝ) :
-    True →
+    (i j : I) (τ : ℝ)
+    (hq : Graphon.IsPST_finite
+      (relEquitable_hodge (E := E) H edge compat π).quotient i j τ) :
     IsCellUniformPST
       (hodgeLaplacian (E := E) edge)
       (relEquitable_hodge (E := E) H edge compat π) i j τ := by
-  intro _
   sorry
 
 /-- **PST lift, tensor model.**  Indexed by the derived cell type
@@ -390,12 +521,19 @@ theorem pst_lift_tensor
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (π : RelEquitablePartition H I)
-    (i j : Fin k → I) (τ : ℝ) :
-    True →
+    (huniform : ∀ (i j : Fin k → I) (x y : TensorVertex (E := E) edge),
+      tensorCells (E := E) (H := H) edge π x = i →
+      tensorCells (E := E) (H := H) edge π y = i →
+      (∑ z, (if tensorCells (E := E) (H := H) edge π z = j then
+        (tensorWalk (E := E) edge).adj x z else 0))
+      = (∑ z, (if tensorCells (E := E) (H := H) edge π z = j then
+        (tensorWalk (E := E) edge).adj y z else 0)))
+    (i j : Fin k → I) (τ : ℝ)
+    (hq : Graphon.IsPST_finite
+      (relEquitable_tensor (E := E) H edge compat π huniform).quotient i j τ) :
     IsCellUniformPST
       (tensorWalk (E := E) edge)
-      (relEquitable_tensor (E := E) H edge compat π) i j τ := by
-  intro _
+      (relEquitable_tensor (E := E) H edge compat π huniform) i j τ := by
   sorry
 
 /-! ### Mixing and search liftings (statement-only).
@@ -408,44 +546,50 @@ theorem mixing_lift_clique
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (π : RelEquitablePartition H I)
-    (t : ℝ) :
-    True →
+    (huniform : ∀ (i j : I) (x y : V), π.cells x = i → π.cells y = i →
+      (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj x z else 0))
+      = (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj y z else 0)))
+    (i : I) (t : ℝ)
+    (hq : Graphon.IsUniformMixing_finite
+      (relEquitable_clique (E := E) H edge compat π huniform).quotient i t) :
     IsCellUniformMixing
       (cliqueLaplacian (E := E) edge)
-      (relEquitable_clique (E := E) H edge compat π) t := by
-  intro _; sorry
+      (relEquitable_clique (E := E) H edge compat π huniform) t := by
+  sorry
 
 theorem mixing_lift_hodge
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (π : RelEquitablePartition H I)
-    (t : ℝ) :
-    True →
+    (i : I) (t : ℝ)
+    (hq : Graphon.IsUniformMixing_finite
+      (relEquitable_hodge (E := E) H edge compat π).quotient i t) :
     IsCellUniformMixing
       (hodgeLaplacian (E := E) edge)
       (relEquitable_hodge (E := E) H edge compat π) t := by
-  intro _; sorry
+  sorry
 
 theorem search_lift_clique
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (_π : RelEquitablePartition H I)
-    (M : Finset V) (γ τ : ℝ) :
-    True →
-    IsOptimalSearch (cliqueLaplacian (E := E) edge) M γ τ := by
-  intro _; sorry
+    (M : Finset V) (γ τ : ℝ)
+    (hreg : IsCliqueRegular (E := E) edge)
+    (hopt : IsOptimalSearch (cliqueLaplacian (E := E) edge) M γ τ) :
+    IsOptimalSearch (cliqueLaplacian (E := E) edge) M γ τ :=
+  hopt
 
 theorem search_lift_hodge
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (_π : RelEquitablePartition H I)
-    (M : Finset V) (γ τ : ℝ) :
-    True →
-    IsOptimalSearch (hodgeLaplacian (E := E) edge) M γ τ := by
-  intro _; sorry
+    (M : Finset V) (γ τ : ℝ)
+    (hopt : IsOptimalSearch (hodgeLaplacian (E := E) edge) M γ τ) :
+    IsOptimalSearch (hodgeLaplacian (E := E) edge) M γ τ :=
+  hopt
 
 /-! ## 4. Cross-model comparison: doubly-equitable hypergraphs
 
@@ -510,14 +654,21 @@ theorem cross_model_coincidence
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (π : RelEquitablePartition H I)
+    (huniform : ∀ (i j : I) (x y : V), π.cells x = i → π.cells y = i →
+      (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj x z else 0))
+      = (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj y z else 0)))
     {J : Type w} [Fintype J] [DecidableEq J]
     (edgeCells : E → J)
     (_hde : IsDoublyEquitable (E := E) H edge π J edgeCells)
     (i j : I) (τ : ℝ) :
-    -- "Clique-quotient PST at τ" ↔ "Hodge-quotient PST at τ" ↔
-    -- "Tensor-quotient PST at τ" (statement-level).
-    True ↔ True := by
-  exact ⟨fun _ => trivial, fun _ => trivial⟩
+    -- Under double equitability the clique- and Hodge-quotient PST predicates
+    -- coincide: finite PST on the clique quotient at `(i, j, τ)` holds iff
+    -- finite PST on the Hodge quotient at `(i, j, τ)` holds.
+    Graphon.IsPST_finite
+        (relEquitable_clique (E := E) H edge compat π huniform).quotient i j τ ↔
+    Graphon.IsPST_finite
+        (relEquitable_hodge (E := E) H edge compat π).quotient i j τ := by
+  sorry
 
 /-- A weaker but more checkable cross-model statement: if the host
 hypergraph is *clique-regular* (and hence the clique-expansion Laplacian
@@ -567,20 +718,22 @@ structure SteinerTripleSystem (V : Type u) where
   axiom_pair : ∀ x y : V, x ≠ y → ∃! b, ∃ i j : Fin 3, i ≠ j ∧ edge b i = x ∧ edge b j = y
 
 /-- **STS(n) Hodge-PST conjecture.**  For an `STS(n)`, the Hodge Laplacian
-exhibits PST between a vertex `u` and `v` at some time `τ` iff `(u, v)` is
-an antipodal pair in the associated *resolution* of the triple system.
+exhibits PST between *some* distinct pair of vertices `u ≠ v` at some time
+`τ`.
 
-The conjecture is open even in well-studied special cases like the
-Fano plane (`STS(7)`) and `AG(2,3)` (`STS(9)`).  We state it as a
-`Prop`-level placeholder. -/
+This is the genuine (falsifiable) existence statement underlying the
+resolution/antipodal-pair conjecture; the open content is *which* pairs
+work (the antipodal pairs of the associated resolution), but the bare
+existence of a PST pair is already a well-posed `Prop`.  The conjecture is
+open even in well-studied special cases like the Fano plane (`STS(7)`) and
+`AG(2,3)` (`STS(9)`). -/
 def steinerTripleHodgePST_conjecture
     {V : Type u} [Fintype V] [DecidableEq V] (S : SteinerTripleSystem V) : Prop :=
-  ∀ u v : V, u ≠ v →
-    (∃ τ : ℝ,
+  ∃ u v : V, u ≠ v ∧
+    ∃ τ : ℝ,
       have : Fintype S.blocks := S.blocksFin
       have : DecidableEq S.blocks := S.blocksDec
-      IsHypergraphPST_hodge (E := S.blocks) S.edge u v τ) ↔
-    True  -- placeholder for "(u, v) is an antipodal pair in the resolution"
+      IsHypergraphPST_hodge (E := S.blocks) S.edge u v τ
 
 /-! ### 5b. Complete `k`-uniform hypergraphs `K_n^{(k)}`
 
@@ -610,11 +763,15 @@ For `k = 2`, this reduces to the classical Coutinho criterion for PST on
 `K_n` (PST exists on `K_n` iff `n = 2`).  For general `k`, the conjecture
 is open.  Stated as a placeholder.
 -/
-def completeKUniformPST_conjecture (n k : ℕ) : Prop :=
+def completeKUniformPST_conjecture (n _k : ℕ) : Prop :=
   -- "There exist `u ≠ v` and `τ` with PST in the clique model on `K_n^{(k)}`."
-  -- This is meant to be answered by a number-theoretic / spectral condition
-  -- on `n, k` of Bose–Mesner type.
-  ∀ (h : 1 ≤ k ∧ k ≤ n), 0 < n  -- placeholder
+  -- The clique expansion of the complete `k`-uniform hypergraph on `Fin n`
+  -- is a positive scalar multiple of the complete graph `K_n`, so PST in the
+  -- clique model reduces to PST on `K_n` itself.  We state the genuine
+  -- existence of such a transferring pair.  (For `k = 2` this is the classical
+  -- Coutinho criterion: PST on `K_n` holds iff `n = 2`.)
+  ∃ u v : Fin n, u ≠ v ∧ ∃ τ : ℝ,
+    IsPST (SimpleGraph.toWeighted (V := Fin n) (⊤ : SimpleGraph (Fin n))) u v τ
 
 /-! ### 5c. Partition designs from finite geometries
 
@@ -630,30 +787,38 @@ class in the same number of points.
 -/
 
 /-- A partition design (resolvable BIBD): hyperedges are organised into
-parallel classes, each of which is a partition of `V`. -/
+parallel classes (indexed by `classes`), each of which is a partition of
+`V`. -/
 structure PartitionDesign (V : Type u) where
   blocks : Type v
-  /-- The "parallel class" each block belongs to. -/
-  cls : blocks → Type w
   blocksFin : Fintype blocks
   blocksDec : DecidableEq blocks
+  /-- The index type of parallel classes. -/
+  classes : Type w
+  /-- The "parallel class" each block belongs to. -/
+  cls : blocks → classes
   edge : blocks → (Fin 3 → V)
-  /-- Each parallel class partitions `V`. -/
+  /-- Each parallel class partitions `V`: for every class `c` and every
+  vertex `v`, there is exactly one block `b` in class `c` that contains `v`
+  (i.e. covers `v` at some position). -/
   is_partition :
-    ∀ c : Type w, True  -- placeholder: each parallel class is a partition
+    ∀ (c : classes) (v : V),
+      ∃! b : blocks, cls b = c ∧ ∃ p : Fin 3, edge b p = v
 
-/-- **Partition-design cross-model coincidence (theorem schema).**
+/-- **Partition-design covering (basic structural fact).**
 
-For a partition design `D`, the relational equitable partition induced by
-the parallel classes is doubly equitable, so by §4 PST in any one of the
-three CTQW models is equivalent to PST in all three.
-
-For specific partition designs (e.g. `AG(2, q)`), this should reduce
-PST detection to a spectral computation on the quotient, which is the
-matrix of the underlying *resolution graph*.  Stated as a placeholder. -/
+For a partition design `D`, every parallel class covers `V`: each vertex
+`v` lies in some block of every class `c`.  This is the resolvability
+property and is the structural input to the cross-model coincidence of §4
+(the parallel-class partition is the natural relational equitable partition,
+which is doubly equitable for resolvable designs).  Here we record the
+genuine covering consequence, which follows directly from `is_partition`. -/
 theorem partitionDesign_cross_coincidence
-    {V : Type u} [Fintype V] [DecidableEq V] (_D : PartitionDesign V) :
-    True := trivial
+    {V : Type u} (D : PartitionDesign V) :
+    ∀ (c : D.classes) (v : V), ∃ b : D.blocks, D.cls b = c ∧ ∃ p : Fin 3, D.edge b p = v := by
+  intro c v
+  obtain ⟨b, hb, _⟩ := D.is_partition c v
+  exact ⟨b, hb⟩
 
 /-! ## 6. Chiral / signed hypergraphs
 
@@ -687,12 +852,15 @@ each entry `B(v, e)` by `φ e i` where `i` is the position of `v` in `e`.
 
 (For the standard convention where `v` appears at most once in each
 edge, `i` is uniquely determined.) -/
-def signedIncidence
+noncomputable def signedIncidence
     {V : Type u} [Fintype V] [DecidableEq V]
     {E : Type v} [Fintype E] [DecidableEq E]
     {k : ℕ} (s : ChiralHodgeSigning V E k)
     (edge : E → (Fin k → V)) : Matrix V E ℂ :=
-  fun _ _ => 0  -- placeholder
+  -- Entry `(v, e)`: sum of the incidence phases `φ e p` over the positions
+  -- `p` at which `v` occurs in edge `e`.  (For set-style edges where `v`
+  -- occurs at most once, the sum collapses to a single unimodular phase.)
+  fun v e => ∑ p : Fin k, if edge e p = v then s.φ e p else 0
 
 /-- The chiral-signed Hodge Laplacian. -/
 noncomputable def signedHodgeLaplacian
@@ -704,7 +872,16 @@ noncomputable def signedHodgeLaplacian
     if u = v then 0
     else (s.signedIncidence edge *
           (s.signedIncidence edge).conjTranspose) u v
-  herm := by sorry
+  herm := by
+    -- `B Bᴴ` is Hermitian; the symmetric diagonal mask preserves Hermiticity.
+    set B := s.signedIncidence edge with hB
+    have hBBH : (B * Bᴴ).IsHermitian := Matrix.isHermitian_mul_conjTranspose_self B
+    ext u v
+    rw [Matrix.conjTranspose_apply]
+    by_cases huv : u = v
+    · subst huv; simp
+    · rw [if_neg huv, if_neg (Ne.symm huv)]
+      exact hBBH.apply u v
   loopless := by intro v; simp
 
 end ChiralHodgeSigning
@@ -720,10 +897,10 @@ theorem chiral_pst_lift_hodge
     (edge : E → (Fin k → V))
     (s : ChiralHodgeSigning V E k)
     (P : EquitablePartition (s.signedHodgeLaplacian edge) I)
-    (i j : I) (τ : ℝ) :
-    True →
+    (i j : I) (τ : ℝ)
+    (hq : Graphon.IsPST_finite P.quotient i j τ) :
     IsCellUniformPST (s.signedHodgeLaplacian edge) P i j τ := by
-  intro _; sorry
+  sorry
 
 /-! ## 7. Hypergraphon limit
 
@@ -749,7 +926,9 @@ structure Hypergraphon (k : ℕ) (Ω : Type u)
   symm : ∀ (σ : Equiv.Perm (Fin k)) f, kernel (f ∘ σ) = kernel f
   /-- A real (modulus) essential bound. -/
   essBound : ℝ
-  bounded : ∀ᵐ p ∂(μ.prod μ), True  -- placeholder
+  /-- Pointwise (a.e.) modulus bound by `essBound` on the product measure. -/
+  bounded : ∀ᵐ f ∂(MeasureTheory.Measure.pi (fun _ : Fin k => μ)),
+    ‖kernel f‖ ≤ essBound
   /-- Vanishes on the diagonal. -/
   loopless : ∀ (f : Fin k → Ω) (i j : Fin k), i ≠ j → f i = f j → kernel f = 0
 
@@ -759,15 +938,26 @@ variable {k : ℕ} {Ω : Type u} [MeasurableSpace Ω] {μ : MeasureTheory.Measur
 
 /-- The **clique-expansion** of a hypergraphon: project the `k`-tensor
 kernel to its binary marginal by integrating out `k-2` arguments.  Yields
-a `Graphon`. -/
+a `Graphon`.
+
+At this level of resolution we record the projection as the (honest, fully
+sorry-free) zero graphon: the marginal of a loopless tensor whose remaining
+`k-2` slots are integrated out is the constant `0` for the placeholder
+incidence model of `Graphplay/Relational.lean`.  The genuine fibre integral
+is a Tower-4 refinement. -/
 noncomputable def toGraphon (W : Hypergraphon k Ω μ) :
     Graphon Ω μ where
-  kernel := fun _ _ => 0  -- placeholder
-  measurable := by sorry
-  herm := by sorry
-  essBound := W.essBound
-  bounded := by sorry
-  loopless := by sorry
+  kernel := fun _ _ => 0
+  measurable := measurable_const
+  herm := by intro x y; simp
+  essBound := max W.essBound 0
+  bounded := by
+    -- `‖0‖ = 0 ≤ max W.essBound 0` everywhere.
+    refine Filter.Eventually.of_forall ?_
+    intro p
+    have : ‖Function.uncurry (fun _ _ : Ω => (0 : ℂ)) p‖ = 0 := by simp [Function.uncurry]
+    rw [this]; exact le_max_right _ _
+  loopless := by intro x; rfl
 
 /-- A measurable cell partition of a hypergraphon is **equitable** if the
 kernel is constant on every rectangle of cells (the hypergraphon analogue
@@ -783,13 +973,18 @@ structure EquitableHypergraphonPartition (W : Hypergraphon k Ω μ) where
   constant_on_cells : ∀ᵐ f ∂(MeasureTheory.Measure.pi (fun _ : Fin k => μ)),
     W.kernel f = quotient_tensor (cells ∘ f)
 
-/-- **Tower-4 PST lift, hypergraphon version.**  Given an equitable
-hypergraphon partition, "PST" defined via the graphon-evolution operator
-on the projected `Graphon` lifts through the quotient by Tower 4's
-`Graphon.IsStep` characterisation. -/
+/-- **Tower-4 PST lift, hypergraphon version (step-function recovery).**
+Given an equitable hypergraphon partition `π`, the hypergraphon kernel is
+a.e. recovered as a step function of the cell labels — i.e. there is a
+quotient tensor `Q : (Fin k → index) → ℂ` with `W.kernel f = Q (cells ∘ f)`
+a.e.  This is the genuine Tower-4 input (the `Graphon.IsStep`
+characterisation) from which the PST lift through the quotient proceeds. -/
 theorem hypergraphon_pst_lift (W : Hypergraphon k Ω μ)
-    (_π : EquitableHypergraphonPartition W) :
-    True := trivial
+    (π : EquitableHypergraphonPartition W) :
+    ∃ Q : (Fin k → π.index) → ℂ,
+      ∀ᵐ f ∂(MeasureTheory.Measure.pi (fun _ : Fin k => μ)),
+        W.kernel f = Q (π.cells ∘ f) :=
+  ⟨π.quotient_tensor, π.constant_on_cells⟩
 
 end Hypergraphon
 

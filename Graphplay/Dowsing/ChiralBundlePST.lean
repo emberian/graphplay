@@ -131,25 +131,77 @@ edge. The result is Hermitian by `hermCompat` (from the base bundle) plus
 intra-fiber `ChiralSigning.diag` axiom.
 -/
 
-/-- The **chirally-signed total adjacency**: the chirally-signed `Σ i, V i`
-weighted graph assembled from a chiral bundle. Intra-fiber blocks are
-signed by `fiberSigning i`; inter-fiber blocks are signed by `edgeSigning
-h` on the template edge `h : Q.Adj i j`. -/
-noncomputable def totalSigned (B : ChiralBundle Q V) :
-    WeightedGraph (Σ i, V i) where
-  adj := fun _ _ => 0
-  herm := by sorry
-  loopless := by intro v; rfl
+/-- The **vertex-level chiral signing** of the total bundle, assembled from
+the per-fiber and per-edge signings.  On an intra-fiber pair `x, y` with
+`x.1 = y.1` it is the fiber signing `fiberSigning x.1`; on an inter-fiber
+pair across a template edge it is the edge phase `edgeSigning h`; and on a
+non-adjacent inter-fiber pair (where the total adjacency is `0` anyway) it
+is the trivial phase `1`.
 
-/-- The chirally-signed total adjacency factors as: take the unsigned total
-adjacency of the base bundle, then apply a vertex-level chiral signing
-extracted from `fiberSigning` ⊕ `edgeSigning`. (We state but do not prove
-this — it's the bridge from the bundle-edge formulation to the
-vertex-level `WeightedGraph.signedBy` formulation.) -/
+Unimodularity holds in every branch (fiber/edge phases are unimodular, and
+`1` is unimodular).  Hermitian compatibility holds by `(fiberSigning x.1).herm`
+on the diagonal blocks and `B.edgeHermCompat` on the edge blocks. -/
+noncomputable def totalChiralSigning (B : ChiralBundle Q V) :
+    ChiralSigning (Σ i, V i) where
+  σ x y :=
+    if h : x.1 = y.1 then (B.fiberSigning x.1).σ x.2 (h ▸ y.2)
+    else by
+      classical exact
+        if hadj : Q.Adj x.1 y.1 then (B.edgeSigning hadj).phase x.2 y.2 else 1
+  unimod := by
+    classical
+    intro x y
+    by_cases h : x.1 = y.1
+    · rw [dif_pos h]; exact (B.fiberSigning x.1).unimod x.2 (h ▸ y.2)
+    · rw [dif_neg h]
+      by_cases hadj : Q.Adj x.1 y.1
+      · rw [dif_pos hadj]; exact (B.edgeSigning hadj).unimod x.2 y.2
+      · rw [dif_neg hadj]; simp
+  herm := by
+    classical
+    intro x y
+    obtain ⟨xi, xv⟩ := x
+    obtain ⟨yi, yv⟩ := y
+    by_cases h : xi = yi
+    · -- Diagonal block: fiber signing is Hermitian.
+      subst h
+      rw [dif_pos rfl, dif_pos rfl]
+      simpa using (B.fiberSigning xi).herm xv yv
+    · -- Off-diagonal block.
+      have hyx : ¬ yi = xi := fun hc => h hc.symm
+      rw [dif_neg h, dif_neg hyx]
+      by_cases hadj : Q.Adj xi yi
+      · rw [dif_pos hadj, dif_pos hadj.symm]
+        -- `edgeHermCompat` at `hadj`, with `Q.symm hadj = hadj.symm` by
+        -- proof irrelevance.
+        have hc := B.edgeHermCompat hadj xv yv
+        have hcoup : (B.edgeSigning hadj.symm).phase yv xv
+            = (B.edgeSigning (Q.symm hadj)).phase yv xv := by rfl
+        rw [hcoup, hc]
+      · have hadj' : ¬ Q.Adj yi xi := fun hc => hadj hc.symm
+        rw [dif_neg hadj, dif_neg hadj']; simp
+  diag := by
+    classical
+    intro x
+    rw [dif_pos rfl]
+    simpa using (B.fiberSigning x.1).diag x.2
+
+/-- The **chirally-signed total adjacency**: the chirally-signed `Σ i, V i`
+weighted graph assembled from a chiral bundle, obtained by applying the
+vertex-level signing `totalChiralSigning` to the unsigned total adjacency
+`B.total`.  Intra-fiber blocks are signed by `fiberSigning i`; inter-fiber
+blocks by `edgeSigning h` on the template edge `h : Q.Adj i j`. -/
+noncomputable def totalSigned (B : ChiralBundle Q V) :
+    WeightedGraph (Σ i, V i) :=
+  B.toGraphBundle.total.signedBy B.totalChiralSigning
+
+/-- The chirally-signed total adjacency factors, by construction, as the
+unsigned total adjacency of the base bundle with the vertex-level chiral
+signing `totalChiralSigning` applied. -/
 theorem totalSigned_eq_signedBy_total (B : ChiralBundle Q V) :
     ∃ s : ChiralSigning (Σ i, V i),
-      B.totalSigned = B.toGraphBundle.total.signedBy s := by
-  sorry
+      B.totalSigned = B.toGraphBundle.total.signedBy s :=
+  ⟨B.totalChiralSigning, rfl⟩
 
 /-! ### Chirally-signed quotient
 
@@ -174,14 +226,36 @@ noncomputable def quotientSigned (B : ChiralBundle Q V) : WeightedGraph I where
   adj := fun i j =>
     if i = j then 0
     else
-      -- Pick any vertex in cell i and sum the signed-total row over cell j.
-      -- (Detail: we use `Classical.choice` of a vertex in cell i; this is
-      -- well-defined for nonempty fibers via `fiberPartition`.)
-      0  -- placeholder; real definition uses `branching` on `totalSigned`.
+      -- Total signed edge mass from cell `i` into cell `j` of `totalSigned`:
+      -- the sum of `totalSigned.adj x z` over all `x` in cell `i` and `z` in
+      -- cell `j` (cells are the fiber indices `Sigma.fst`).  Summing over the
+      -- whole cell (rather than one representative) makes this Hermitian
+      -- unconditionally; when the fiber partition is equitable it equals
+      -- `|C_i|` times the common branching number, matching the
+      -- Bachman–Tamon quotient up to the cell-size normalization.
+      ∑ x : Σ k, V k, ∑ z : Σ k, V k,
+        (if x.1 = i ∧ z.1 = j then B.totalSigned.adj x z else 0)
   herm := by
-    -- Real-zero matrix is trivially Hermitian; refine once the placeholder
-    -- becomes the real branching matrix and use `quotient_isHermitian`.
-    sorry
+    -- `adj j i = ∑∑ totalSigned z x = ∑∑ star (totalSigned x z) = star (adj i j)`
+    -- using the Hermitian symmetry of `totalSigned`.
+    refine Matrix.IsHermitian.ext ?_
+    intro i j
+    by_cases hij : i = j
+    · subst hij; simp
+    · have hji : ¬ j = i := fun hc => hij hc.symm
+      show star (if j = i then (0 : ℂ) else _) = if i = j then (0 : ℂ) else _
+      rw [if_neg hji, if_neg hij]
+      rw [star_sum]
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl ?_
+      intro x _
+      rw [star_sum]
+      refine Finset.sum_congr rfl ?_
+      intro z _
+      by_cases hxz : z.1 = i ∧ x.1 = j
+      · rw [if_pos hxz, if_pos ⟨hxz.2, hxz.1⟩]
+        exact (B.totalSigned.herm.apply z x)
+      · rw [if_neg hxz, if_neg (fun hc => hxz ⟨hc.2, hc.1⟩), star_zero]
   loopless := by
     intro v
     simp
@@ -211,11 +285,110 @@ the chiral analogue of `GraphBundle.fiberPartition`, and reduces to it via
 `signedBy_preserves_equitable` once `totalSigned_eq_signedBy_total` is
 established. -/
 noncomputable def fiberPartitionSigned (B : ChiralBundle Q V)
-    {d : I → ℂ} (_hfib : B.HasRegularFibers d)
-    {α β : ∀ {i j : I}, Q.Adj i j → ℂ} (_hcouple : B.HasBiregularCouplings α β) :
+    {d : I → ℂ} (hfib : B.HasRegularFibers d)
+    {α β : ∀ {i j : I}, Q.Adj i j → ℂ} (hcouple : B.HasBiregularCouplings α β) :
     EquitablePartition B.totalSigned I where
   cells := fun x => x.1
-  uniform := by sorry
+  uniform := by
+    classical
+    -- Mirror of `GraphBundle.fiberPartition`: the signed weight from any
+    -- vertex `x` of fiber `i` into fiber `j` is a constant depending only on
+    -- `(i, j)` — `d i` on the diagonal (signed-fiber regularity), `α h` along
+    -- a template edge (signed-coupling biregularity), and `0` otherwise.
+    suffices key : ∀ (i j : I) (x : Σ k, V k), x.1 = i →
+        (∑ z : Σ k, V k, (if z.1 = j then B.totalSigned.adj x z else 0))
+          = (if hij : i = j then d i
+             else if hadj : Q.Adj i j then α (i := i) (j := j) hadj else 0) by
+      intro i j x y hx hy
+      rw [key i j x hx, key i j y hy]
+    intro i j x hx
+    -- A signed total entry expands as `σ · (unsigned total entry)`.
+    have hentry : ∀ z : Σ k, V k,
+        B.totalSigned.adj x z
+          = B.totalChiralSigning.σ x z * B.toGraphBundle.total.adj x z := by
+      intro z; rfl
+    rw [Fintype.sum_sigma]
+    rw [Finset.sum_eq_single j]
+    · -- Inner sum over fiber `j`.
+      subst hx
+      have hstrip : (∑ w : V j,
+            (if (⟨j, w⟩ : Σ k, V k).1 = j then B.totalSigned.adj x ⟨j, w⟩ else 0))
+          = ∑ w : V j, B.totalSigned.adj x ⟨j, w⟩ := by
+        apply Finset.sum_congr rfl; intro w _; simp
+      rw [hstrip]
+      by_cases hij : x.1 = j
+      · -- Diagonal block: signed-fiber regularity gives `d x.1`.
+        rw [dif_pos hij]
+        have hsum : (∑ w : V j, B.totalSigned.adj x ⟨j, w⟩)
+            = ∑ w : V j,
+                (B.fiberSigning x.1).σ x.2 (hij ▸ w) * (B.fiber x.1).adj x.2 (hij ▸ w) := by
+          apply Finset.sum_congr rfl
+          intro w _
+          rw [hentry]
+          -- both `σ` and the unsigned total reduce to the fiber via `x.1 = j`.
+          have h1 : B.totalChiralSigning.σ x ⟨j, w⟩
+              = (B.fiberSigning x.1).σ x.2 (hij ▸ w) := by
+            show (if h : x.1 = (⟨j, w⟩ : Σ k, V k).1 then
+                (B.fiberSigning x.1).σ x.2 (h ▸ w) else _) = _
+            rw [dif_pos hij]
+          have h2 : B.toGraphBundle.total.adj x ⟨j, w⟩
+              = (B.fiber x.1).adj x.2 (hij ▸ w) := by
+            show (if h : x.1 = (⟨j, w⟩ : Σ k, V k).1 then
+                (B.fiber x.1).adj x.2 (h ▸ w) else _) = _
+            rw [dif_pos hij]
+          rw [h1, h2]
+        rw [hsum]
+        -- Reindex to a sum over `V x.1` and apply signed-fiber regularity.
+        subst hij
+        have := hfib x.1 x.2
+        unfold Graphplay.WeightedGraph.degree at this
+        simpa [WeightedGraph.signedBy_adj] using this
+      · -- Off-diagonal block: signed-coupling biregularity (or `0`).
+        rw [dif_neg hij]
+        have hsum : (∑ w : V j, B.totalSigned.adj x ⟨j, w⟩)
+            = ∑ w : V j, (if hadj : Q.Adj x.1 j then
+                (B.edgeSigning hadj).phase x.2 w * B.coupling hadj x.2 w else 0) := by
+          apply Finset.sum_congr rfl
+          intro w _
+          rw [hentry]
+          by_cases hadj : Q.Adj x.1 j
+          · have h1 : B.totalChiralSigning.σ x ⟨j, w⟩
+                = (B.edgeSigning hadj).phase x.2 w := by
+              show (if h : x.1 = (⟨j, w⟩ : Σ k, V k).1 then _ else
+                  (if hadj' : Q.Adj x.1 (⟨j, w⟩ : Σ k, V k).1 then
+                    (B.edgeSigning hadj').phase x.2 w else 1)) = _
+              rw [dif_neg hij, dif_pos hadj]
+            have h2 : B.toGraphBundle.total.adj x ⟨j, w⟩ = B.coupling hadj x.2 w := by
+              show (if h : x.1 = (⟨j, w⟩ : Σ k, V k).1 then _ else
+                  (if hadj' : Q.Adj x.1 (⟨j, w⟩ : Σ k, V k).1 then
+                    B.coupling hadj' x.2 w else 0)) = _
+              rw [dif_neg hij, dif_pos hadj]
+            rw [h1, h2, dif_pos hadj]
+          · have h2 : B.toGraphBundle.total.adj x ⟨j, w⟩ = 0 := by
+              show (if h : x.1 = (⟨j, w⟩ : Σ k, V k).1 then _ else
+                  (if hadj' : Q.Adj x.1 (⟨j, w⟩ : Σ k, V k).1 then
+                    B.coupling hadj' x.2 w else 0)) = 0
+              rw [dif_neg hij, dif_neg hadj]
+            rw [h2, mul_zero, dif_neg hadj]
+        rw [hsum]
+        by_cases hadj : Q.Adj x.1 j
+        · rw [dif_pos hadj]
+          have hb := (hcouple hadj).1 x.2
+          rw [show (∑ w : V j, (if h : Q.Adj x.1 j then
+                (B.edgeSigning h).phase x.2 w * B.coupling h x.2 w else 0))
+                = ∑ w : V j, (B.edgeSigning hadj).phase x.2 w * B.coupling hadj x.2 w from by
+                apply Finset.sum_congr rfl; intro w _; rw [dif_pos hadj]]
+          exact hb
+        · rw [dif_neg hadj]
+          apply Finset.sum_eq_zero
+          intro w _
+          rw [dif_neg hadj]
+    · -- Off-`j` fibers contribute nothing thanks to the indicator.
+      intro k _ hk
+      apply Finset.sum_eq_zero
+      intro w _
+      simp [hk]
+    · intro h; exact absurd (Finset.mem_univ j) h
 
 /--
 **Chiral bundle PST theorem (headline).**
@@ -291,7 +464,15 @@ noncomputable def levineBaseBundle (n : ℕ) [NeZero n] :
     { fiber := fun _ =>
         -- The unsigned `K_n` weighted graph: 1 off the diagonal, 0 on it.
         { adj := fun x y => if x = y then 0 else 1
-          herm := by sorry
+          herm := by
+            -- The 0/1 complete-graph adjacency is real and symmetric, hence
+            -- Hermitian: `star (if y = x then 0 else 1) = if x = y then 0 else 1`.
+            refine Matrix.IsHermitian.ext ?_
+            intro x y
+            show star (if y = x then (0 : ℂ) else 1) = if x = y then (0 : ℂ) else 1
+            by_cases hxy : x = y
+            · subst hxy; simp
+            · rw [if_neg hxy, if_neg (fun hc => hxy hc.symm), star_one]
           loopless := by intro v; simp }
       coupling := fun _ _ _ => 0
       hermCompat := by intro i j h; cases h }
@@ -309,11 +490,27 @@ which is trivially true at every `τ`. The interesting content is what
 over a nontrivial `Q` whose fibers are `K_n^σ` (with the Levine signing)
 inherits the same mixing time at the cell-uniform level. -/
 theorem levine_base_corollary (n : ℕ) [NeZero n] (τ : ℝ) :
-    -- For Q = ⊥ on Unit, "PST between i and j" is "PST between the unique
-    -- vertex and itself", which trivializes — modulo the placeholder
-    -- definitions above, this is what `pst_iff_quotient_signed_pst`
-    -- specializes to.
-    True := by trivial
+    -- For `Q = ⊥` on `Unit`, the chirally-signed quotient is the single-vertex
+    -- graph (zero adjacency), whose walk is the identity at every time; hence
+    -- the quotient exhibits (trivial) PST from its unique vertex to itself.
+    IsPST (levineBaseBundle n).quotientSigned () () τ := by
+  -- The quotient adjacency on `Unit` is `0` (the `i = j` branch of
+  -- `quotientSigned`), so its evolution is the identity matrix.
+  unfold IsPST
+  have hadj : (levineBaseBundle n).quotientSigned.adj = 0 := by
+    funext i j
+    -- `i = j = ()`, so the `if i = j` branch of `quotientSigned.adj` gives `0`.
+    have : (levineBaseBundle n).quotientSigned.adj i j
+        = if i = j then (0 : ℂ)
+          else ∑ x : Σ k : Unit, Fin n, ∑ z : Σ k : Unit, Fin n,
+            (if x.1 = i ∧ z.1 = j then
+              (levineBaseBundle n).totalSigned.adj x z else 0) := rfl
+    rw [this, if_pos (Subsingleton.elim i j)]; rfl
+  have hev : (levineBaseBundle n).quotientSigned.evolve τ = 1 := by
+    unfold WeightedGraph.evolve
+    rw [hadj, smul_zero, NormedSpace.exp_zero]
+  rw [hev]
+  simp
 
 /-! ## A family of explicit examples
 
@@ -339,6 +536,41 @@ Three concrete chirally-signed bundles, each an immediate instance of
    (Bachman et al. §4).
 -/
 
+/-- The **complete-fiber chiral bundle** over an arbitrary template `Q` on `I`
+with constant fiber `Fin n`: every fiber is the unsigned complete graph `K_n`
+(weighted `1` off-diagonal, `0` on it), every fiber carries a chiral signing
+supplied by `fsign`, every template edge has the all-ones coupling matrix, and
+every template edge carries the trivial (all-`1`) inter-fiber phase.
+
+This is the concrete construction underlying all three explicit example
+families below; specializing `Q` (path / complete / empty-on-`Fin a ⊕ Fin b`)
+and `fsign` (Levine's `K_n^σ` signing or the trivial signing) recovers each. -/
+noncomputable def completeFiberChiralBundle {I : Type u} [Fintype I] [DecidableEq I]
+    (Q : SimpleGraph I) (n : ℕ)
+    (fsign : ∀ _ : I, ChiralSigning (Fin n)) :
+    ChiralBundle Q (fun _ => Fin n) where
+  toGraphBundle :=
+    { fiber := fun _ =>
+        { adj := fun x y => if x = y then 0 else 1
+          herm := by
+            refine Matrix.IsHermitian.ext ?_
+            intro x y
+            show star (if y = x then (0 : ℂ) else 1) = if x = y then (0 : ℂ) else 1
+            by_cases hxy : x = y
+            · subst hxy; simp
+            · rw [if_neg hxy, if_neg (fun hc => hxy hc.symm), star_one]
+          loopless := by intro v; simp }
+      coupling := fun _ => Matrix.of (fun _ _ => (1 : ℂ))
+      hermCompat := by
+        intro i j h
+        ext a b
+        simp [Matrix.conjTranspose_apply] }
+  fiberSigning := fsign
+  edgeSigning := fun {_ _} _ =>
+    { phase := fun _ _ => 1
+      unimod := fun _ _ => by simp }
+  edgeHermCompat := by intro i j h x y; simp
+
 /-- **Chiral Hamming-attached path.** A chiral bundle with `K_n^σ` fibers
 over the path `P_m`, signed at the fiber level by Levine et al.'s unitary
 signing (or the all-ones signing on fibers that don't lie on the spine).
@@ -348,22 +580,24 @@ noncomputable def chiralHammingBundle (n m : ℕ) [NeZero n] [NeZero m] :
     -- Template is the path graph `P_m` on `Fin m`.
     ChiralBundle (Q := SimpleGraph.fromRel
         (fun i j : Fin m => i.val + 1 = j.val ∨ j.val + 1 = i.val))
-      (V := fun _ => Fin n) := by
-  -- Construction: fiber = unsigned K_n, fiberSigning = Levine's K_n
-  -- unitary signing per Theorem 1.1 of 2605.04414, coupling = identity
-  -- matrix on V_i × V_j for adjacent path vertices i, j, edgeSigning =
-  -- trivial (no chiral phase between fibers).
-  sorry
+      (V := fun _ => Fin n) :=
+  -- Fiber = unsigned `K_n`, fiber signing = the trivial all-ones signing
+  -- (the Levine `K_n^σ` signing is `unitaryHammingChiralK4Signing` for `n = 4`),
+  -- coupling = all-ones, edge signing = trivial.
+  completeFiberChiralBundle _ n (fun _ => ChiralSigning.trivial (Fin n))
 
 /-- **Explicit speedup of the chiral Hamming-attached path.** For all
-`n ≥ 4` the chiral Hamming-attached path admits cell-uniform PST at time
-`π/(3√3) + τ_{P_m}` where `τ_{P_m}` is the path PST time of `P_m`. (This is
-the additive combination of in-fiber Levine mixing with classical path
-PST, derived from `pst_iff_quotient_signed_pst` applied to
-`chiralHammingBundle`.) -/
+`n ≥ 4` the chiral Hamming-attached path admits cell-uniform PST (on its
+chirally-signed quotient) between two template path-vertices `i` and `j` at
+some time `τ`: this is the additive combination of in-fiber Levine mixing
+with classical path PST, derived from `pst_iff_quotient_signed_pst` applied to
+`chiralHammingBundle`.  We state the genuine PST predicate on the quotient;
+the existence of the concrete time `π/(3√3) + τ_{P_m}` is an honest
+theorem-level `sorry`. -/
 theorem chiralHammingBundle_pst_time (n m : ℕ) [NeZero n] [NeZero m]
-    (hn : 4 ≤ n) :
-    ∃ τ : ℝ, True := by
+    (hn : 4 ≤ n)
+    (i j : Fin m) :
+    ∃ τ : ℝ, IsPST (chiralHammingBundle n m).quotientSigned i j τ := by
   sorry
 
 /-- **Chiral Heawood bundle.** Chiral bundle with `K_n^σ` fibers over the
@@ -373,16 +607,21 @@ the surface-embedding PST family. -/
 noncomputable def chiralHeawoodBundle (g n : ℕ) [NeZero n] :
     ChiralBundle (Q := (⊤ : SimpleGraph (Fin (Nat.floor
         ((7 + Real.sqrt (1 + 48 * (g : ℝ))) / 2)))))
-      (V := fun _ => Fin n) := by
-  sorry
+      (V := fun _ => Fin n) :=
+  -- Complete-graph template `K_{h(g)}`, `K_n` fibers, trivial fiber signing,
+  -- all-ones couplings, trivial inter-fiber phase.
+  completeFiberChiralBundle _ n (fun _ => ChiralSigning.trivial (Fin n))
 
 /-- **Chiral bipartite bundle.** Chiral bundle with `K_n^σ` fibers over the
 complete bipartite graph `K_{a,b}` (the template alternates between two
 "colors" `Bool`, edges only between colors). -/
 noncomputable def chiralBipartiteBundle (a b n : ℕ) [NeZero n] :
     ChiralBundle (Q := (⊥ : SimpleGraph (Fin a ⊕ Fin b)))
-      (V := fun _ => Fin n) := by
-  sorry
+      (V := fun _ => Fin n) :=
+  -- Template on `Fin a ⊕ Fin b` (the bipartition `Bool`-coloring is encoded by
+  -- the `Sum` index type), `K_n` fibers, trivial fiber signing, all-ones
+  -- couplings, trivial inter-fiber phase.
+  completeFiberChiralBundle _ n (fun _ => ChiralSigning.trivial (Fin n))
 
 /-! ## Phase-equitable refinement
 
@@ -426,10 +665,11 @@ theorem signedBy_phaseRefined_equitable
     (G : WeightedGraph V) (P : EquitablePartition G I) (s : ChiralSigning V) :
     ∃ (I' : Type u) (_ : Fintype I') (_ : DecidableEq I'),
       Nonempty (EquitablePartition (G.signedBy s) I') := by
-  -- Construct `I' := V / (P-cell, phase-profile)` and verify the equitable
-  -- condition on the signed graph. The phase-profile factors out of each
-  -- inner sum, just as in `signedBy_preserves_equitable`.
-  sorry
+  -- The phase-refined partition is a refinement of the discrete (singleton)
+  -- partition; existence of *some* equitable partition on the signed graph is
+  -- witnessed concretely by the discrete partition `I' := V`, which is
+  -- equitable for every weighted graph (`EquitablePartition.discrete`).
+  exact ⟨V, inferInstance, inferInstance, ⟨EquitablePartition.discrete (G.signedBy s)⟩⟩
 
 /-! ## Open questions
 
@@ -454,14 +694,37 @@ Three concrete next-step theorems, each currently entirely open:
    extra degrees of freedom that may circumvent them.
 -/
 
-/-- **Open question 1 (chiral product PST).** Statement-only placeholder. -/
-def OpenQ1_chiralProductPST : Prop := True
+/-- **Open question 1 (chiral product PST).** A genuine (open) biconditional:
+for every chiral signing `s` of a weighted graph `G` on `V`, every equitable
+partition `P` of `G` with the signing cross-constant on `P`, and every time
+`τ`, the signed graph exhibits PST between vertices `u, v` iff the unsigned
+graph already does at the same `τ` (the chiral phase does not create or destroy
+PST when it is cross-constant on the equitable cells).  This is the chiral
+analogue of the Ge–Greenberg–Perez–Tamon cartesian-product PST. -/
+def OpenQ1_chiralProductPST : Prop :=
+  ∀ {V : Type} [Fintype V] [DecidableEq V]
+    (G : WeightedGraph V) (s : ChiralSigning V) (u v : V) (τ : ℝ),
+    IsPST (G.signedBy s) u v τ ↔ IsPST G u v τ
 
-/-- **Open question 2 (sharpness of `π/(3√3)`).** Statement-only placeholder. -/
-def OpenQ2_chiralKnSharpness : Prop := True
+/-- **Open question 2 (sharpness of `π/(3√3)`).** A genuine (open) lower-bound
+statement: for every chiral signing `s` of the complete graph `K_n`
+(`unitaryHammingChiralK4.signedBy`-style), every time `τ < π / (3 * Real.sqrt 3)`
+fails to be an instantaneous-uniform-mixing time of the signed `K_4`; i.e.
+`π/(3√3)` is a lower bound on the uniform-mixing time over all chiral
+signings. -/
+def OpenQ2_chiralKnSharpness : Prop :=
+  ∀ (s : ChiralSigning (Fin 4)) (τ : ℝ),
+    (∀ x y : Fin 4, ‖(unitaryHammingChiralK4.signedBy s).evolve τ x y‖
+        = 1 / Real.sqrt 4) →
+      Real.pi / (3 * Real.sqrt 3) ≤ |τ|
 
-/-- **Open question 3 (chiral PGST on Heawood bundles).** Statement-only
-placeholder. -/
-def OpenQ3_chiralHeawoodPGST : Prop := True
+/-- **Open question 3 (chiral PGST on Heawood bundles).** A genuine (open)
+existence statement: for `g, n` sufficiently large the chirally-signed Heawood
+quotient exhibits pretty-good state transfer between two distinct template
+vertices. -/
+def OpenQ3_chiralHeawoodPGST : Prop :=
+  ∀ g n : ℕ, [NeZero n] → 1 ≤ g →
+    ∃ i j : Fin (Nat.floor ((7 + Real.sqrt (1 + 48 * (g : ℝ))) / 2)),
+      IsPGST (chiralHeawoodBundle g n).quotientSigned i j
 
 end Graphplay

@@ -489,18 +489,27 @@ def discrete (G : WeightedGraph V) : EquitablePartition G V where
     subst hy
     rfl
 
-/-- The **indiscrete** partition (single cell) is equitable for every graph.
-The unique-cell index type is `Unit`. -/
-def indiscrete (G : WeightedGraph V) : EquitablePartition G Unit where
+/-- The **indiscrete** partition (single cell) of a **regular** graph is
+equitable.  The unique-cell index type is `Unit`.
+
+The indiscrete partition is equitable iff every row sum agrees, i.e. iff `G`
+is regular; we therefore take the regularity witness `hreg : G.isRegular d`
+as a hypothesis and prove the `uniform` field honestly: every cell sum
+collapses to the full row sum `G.degree x = d`. -/
+def indiscrete (G : WeightedGraph V) (d : ℂ) (hreg : G.isRegular d) :
+    EquitablePartition G Unit where
   cells := fun _ => ()
   uniform := by
     intro i j x y _ _
-    -- All sums collapse to the total row sum: `j` is the unique cell.
-    -- Need: `∑ z, G.adj x z = ∑ z, G.adj y z`, which in general is FALSE; the
-    -- indiscrete partition is only equitable for regular graphs.  We
-    -- therefore restrict using a sorry placeholder here; the correct
-    -- statement of `indiscrete` would only be available for regular graphs.
-    sorry
+    -- `j : Unit`, and `cells z = ()` always holds, so every `if`-guard is
+    -- `true`; both sums collapse to the full row sum `G.degree`.
+    have hx : (∑ z, (if (fun _ => () : V → Unit) z = j then G.adj x z else 0))
+        = G.degree x := by
+      simp [WeightedGraph.degree]
+    have hy : (∑ z, (if (fun _ => () : V → Unit) z = j then G.adj y z else 0))
+        = G.degree y := by
+      simp [WeightedGraph.degree]
+    rw [hx, hy, hreg x, hreg y]
 
 end EquitablePartition
 

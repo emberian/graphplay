@@ -263,13 +263,23 @@ where the projector is onto the normalised indicator `e_w`. -/
 noncomputable def searchHamiltonian (W : Graphon Ω μ)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (γ : ℝ) (w : I) :
     (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) :=
-  -- γ · W.op  -  |e_w⟩⟨e_w|; rank-1 projector formalisation deferred.
-  sorry
+  -- `γ • W.op  -  |e_w⟩⟨e_w|`.  The rank-one projector `|e_w⟩⟨e_w|` onto the
+  -- normalised cell indicator `e_w = P.cellIndicator w` is built concretely as
+  -- the composite `toSpanSingleton ℂ e_w ∘L innerSL ℂ e_w`, i.e. the map
+  -- `f ↦ ⟨e_w, f⟩ • e_w`.  Since `‖e_w‖ = 1` (`cellIndicator_orthonormal`), this
+  -- is an honest orthogonal projector onto the line `ℂ·e_w`.
+  (γ : ℂ) • W.op -
+    (ContinuousLinearMap.toSpanSingleton ℂ (P.cellIndicator w)) ∘L
+      (innerSL ℂ (P.cellIndicator w))
 
-/-- Notation placeholder: we treat the rank-one outer product `|e⟩⟨e|` as a
-formal operator.  Concrete formalisation requires Mathlib's
-`ContinuousLinearMap.toSpanSingleton` and tweaks; deferred. -/
-example : True := trivial
+/-- The rank-one projector `|e_w⟩⟨e_w|` underlying `searchHamiltonian` acts as
+`f ↦ ⟨e_w, f⟩ • e_w`.  This unfolds the concrete `toSpanSingleton ∘ innerSL`
+construction. -/
+@[simp] theorem searchHamiltonian_apply (W : Graphon Ω μ)
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (γ : ℝ) (w : I) (f : Lp ℂ 2 μ) :
+    searchHamiltonian W P γ w f
+      = (γ : ℂ) • W.op f - (inner ℂ (P.cellIndicator w) f) • P.cellIndicator w := by
+  rfl
 
 /-- **Cell-uniform spatial search success.**  Starting from the uniform
 superposition `|s⟩ = (1/√|I|) Σ_j e_j` over all cells, the graphon spatial
@@ -278,24 +288,54 @@ of the amplitude at `e_w` is `1`:
 $$ \big| \langle e_w,\; \exp(-i \tau H_\gamma)\, |s\rangle \big| = 1. $$ -/
 def IsCellUniformSearchSuccess (W : Graphon Ω μ)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (γ : ℝ) (w : I) (τ : ℝ) : Prop :=
-  -- the precise statement requires the outer product, which we have stubbed
-  -- in `searchHamiltonian`; we leave this as a placeholder predicate.
-  True
+  -- Uniform superposition over the cells `|s⟩ = (1/√|I|) Σ_j e_j`, evolved by
+  -- the search Hamiltonian `exp(-iτ H_γ)`, has unit overlap with the marked
+  -- cell indicator `e_w`.  Concrete now that `searchHamiltonian` is honest.
+  ‖inner ℂ (P.cellIndicator w)
+      (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • searchHamiltonian W P γ w)
+        ((((Fintype.card I : ℝ).sqrt)⁻¹ : ℂ) • ∑ j : I, P.cellIndicator j))‖ = 1
 
-/-- **Graphon search ↔ finite search on the quotient.**  Spatial search on
-the graphon is equivalent to spatial search on the quotient matrix
-`P.quotient` with the same coupling `γ`, marked vertex `w` (corresponding to
-the marked cell), and time `τ`.
+/-- **Finite spatial-search Hamiltonian** on a Hermitian matrix `H`:
+`H_γ = γ • H - |E_w⟩⟨E_w|`, the Childs–Goldstone search operator with marked
+vertex `w` and coupling `γ`, acting on `EuclideanSpace ℂ I`.  The rank-one
+projector `|E_w⟩⟨E_w|` is built from the standard basis vector via
+`toSpanSingleton ∘ innerSL`. -/
+noncomputable def finiteSearchHamiltonian (H : Matrix I I ℂ) (γ : ℝ) (w : I) :
+    EuclideanSpace ℂ I →L[ℂ] EuclideanSpace ℂ I :=
+  (γ : ℂ) • (Matrix.toEuclideanCLM (𝕜 := ℂ) H) -
+    (ContinuousLinearMap.toSpanSingleton ℂ (EuclideanSpace.single w (1 : ℂ))) ∘L
+      (innerSL ℂ (EuclideanSpace.single w (1 : ℂ)))
 
-Same proof skeleton as the PST theorem: the cell-uniform subspace is
-invariant under both `W.op` and the rank-one perturbation
-`|e_w⟩⟨e_w|`, hence under `H_γ`, hence under `exp(-i τ H_γ)`. -/
+/-- **Finite spatial-search success** on a Hermitian matrix `H`: starting from
+the uniform superposition `|s⟩ = (1/√|I|) Σ_j E_j`, the search Hamiltonian
+`exp(-iτ H_γ)` has unit overlap with the marked basis vector `E_w`. -/
+def IsSearchSuccess_finite (H : Matrix I I ℂ) (γ : ℝ) (w : I) (τ : ℝ) : Prop :=
+  ‖inner ℂ (EuclideanSpace.single w (1 : ℂ))
+      (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • finiteSearchHamiltonian H γ w)
+        ((((Fintype.card I : ℝ).sqrt)⁻¹ : ℂ) •
+          ∑ j : I, EuclideanSpace.single j (1 : ℂ)))‖ = 1
+
+/-- **Graphon search ↔ finite search on the symmetric quotient.**  Spatial
+search on the graphon is equivalent to spatial search on the **symmetric**
+quotient matrix `P.symmQuotient` with the same coupling `γ`, marked vertex `w`
+(corresponding to the marked cell), and time `τ`.
+
+The skeleton mirrors the PST theorem: the cell-uniform subspace is invariant
+under both `W.op` (`cellUniformSubspaceInvariant`) and the rank-one perturbation
+`|e_w⟩⟨e_w|` (since `e_w` lies in that subspace), hence under `H_γ`, hence under
+`exp(-iτ H_γ)`; on that subspace `cellUniformIsometry` carries `H_γ` to the finite
+`finiteSearchHamiltonian P.symmQuotient γ w`, matching the uniform superposition
+and the marked indicator entrywise.
+
+**Honest `sorry`.**  This requires the `exp`-propagation lift
+`evolve_cellUniformIsometry_eq` (the single named gap) extended to the rank-one
+perturbation; until the `NormedSpace.exp`-on-CLM interface in
+`Graphplay/Graphon.lean` is genuinely closed it cannot be discharged.  The
+statement is now concrete on both sides (no `True`). -/
 theorem cellUniformSearch_iff_quotientSearch
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (γ : ℝ) (w : I) (τ : ℝ) :
-    IsCellUniformSearchSuccess W P γ w τ ↔ True := by
-  -- once the search-Hamiltonian formalisation is filled in, the right-hand
-  -- side becomes `IsSearchSuccess_finite P.quotient γ w τ`.
-  trivial
+    IsCellUniformSearchSuccess W P γ w τ ↔ IsSearchSuccess_finite P.symmQuotient γ w τ := by
+  sorry
 
 /-! ## Summary: the lift in one line
 

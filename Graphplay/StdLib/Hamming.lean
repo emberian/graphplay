@@ -49,6 +49,21 @@ alphabet of size `q`. -/
 def hammingDistFn {n q : ℕ} (x y : Fin n → Fin q) : ℕ :=
   (Finset.univ.filter (fun i : Fin n => x i ≠ y i)).card
 
+/-- The Hamming distance is symmetric. -/
+theorem hammingDistFn_comm {n q : ℕ} (x y : Fin n → Fin q) :
+    hammingDistFn x y = hammingDistFn y x := by
+  unfold hammingDistFn
+  congr 1
+  apply Finset.filter_congr
+  intro i _
+  simp [ne_comm]
+
+/-- The Hamming distance from a string to itself is `0`. -/
+@[simp] theorem hammingDistFn_self {n q : ℕ} (x : Fin n → Fin q) :
+    hammingDistFn x x = 0 := by
+  unfold hammingDistFn
+  simp
+
 /-- The **Hamming graph** `H(n, q)` on the vertex set `Fin n → Fin q` of
 length-`n` strings over a `q`-ary alphabet: edges connect strings at
 Hamming distance exactly `1`.
@@ -61,12 +76,19 @@ noncomputable def Hamming (n q : ℕ) [Fintype (Fin n → Fin q)]
     WeightedGraph (Fin n → Fin q) where
   adj := fun x y => if hammingDistFn x y = 1 then (1 : ℂ) else 0
   herm := by
-    -- Real-symmetric (Hamming distance is symmetric).
-    sorry
+    -- Real-symmetric (Hamming distance is symmetric) ⇒ Hermitian.
+    refine Matrix.IsHermitian.ext (fun x y => ?_)
+    show star (if hammingDistFn y x = 1 then (1 : ℂ) else 0)
+        = if hammingDistFn x y = 1 then (1 : ℂ) else 0
+    rw [hammingDistFn_comm y x]
+    by_cases h : hammingDistFn x y = 1
+    · rw [if_pos h]; simp
+    · rw [if_neg h]; simp
   loopless := by
     intro v
-    -- `hammingDistFn v v = 0`.
-    sorry
+    -- `hammingDistFn v v = 0 ≠ 1`.
+    rw [hammingDistFn_self]
+    simp
 
 /-! ## Krawtchouk eigenvalues -/
 

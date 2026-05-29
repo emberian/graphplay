@@ -149,10 +149,25 @@ def WLStable_isEquitable (G : WeightedGraph V) {C : Type v} [DecidableEq C]
   cells := c
   uniform := by
     intro i j x y hx hy
-    -- Equality `c x = c y` plus stability gives equal multisets of
-    -- `(c z, G.adj _ z)` for `_ ∈ {x, y}`, which on summing characteristic
-    -- functions yields the equitable condition.
-    sorry
+    -- `c x = i = c y`, so by WL-stability `refineStep G c x = refineStep G c y`.
+    -- In this (signature-recording) encoding the refinement step stores the
+    -- *whole* neighbour function `fun w => (c w, G.adj · w)`, so equality of
+    -- the steps forces `G.adj x w = G.adj y w` for every `w`.  The equitable
+    -- sums are then literally equal summand-by-summand.
+    have hcxy : c x = c y := by rw [hx, hy]
+    have hstep : refineStep G c x = refineStep G c y := (hc x y).mpr hcxy
+    -- Project onto the second component (the neighbour signature) and evaluate
+    -- at `w` to extract `G.adj x w = G.adj y w`.
+    have hadj : ∀ w : V, G.adj x w = G.adj y w := by
+      intro w
+      have hsig : neighbourSignature G c x = neighbourSignature G c y :=
+        congrArg Prod.snd hstep
+      have := congrFun hsig w
+      -- `(c w, G.adj x w) = (c w, G.adj y w)`
+      exact congrArg Prod.snd this
+    -- Equal summands ⇒ equal sums.
+    refine Finset.sum_congr rfl (fun z _ => ?_)
+    rw [hadj z]
 
 /-! ## 2. The k-WL chain
 
@@ -277,17 +292,23 @@ noncomputable def graphonNeighbourSignature {C : Type v} [DecidableEq C]
     C → ℂ :=
   fun cl => ∫ z, (if c z = cl then W.kernel x z else 0) ∂μ
 
-/-- A graphon WL refinement step: returns a refined colouring whose colour
-classes are the pre-images of `graphonNeighbourSignature`. (Implementation
-folded into a sorry.) -/
+/-- A graphon WL refinement step: returns a refined colouring whose colour of
+`x` is the pair `(c x, graphonNeighbourSignature W c x)`.  This is the exact
+L²-analogue of the finite `refineStep`: the new colour records the old colour
+together with the per-colour-class kernel integrals.  The refined colour type
+is `C × (C → ℂ)` (old colour paired with the signature vector), exactly the
+pre-image data that distinguishes two points iff their old colour *or* their
+neighbour signature differs.
+
+(The image type is in general infinite — the signature is `C → ℂ` — so the
+refined colouring is not finitely-valued; binning against an L² lattice to
+recover a finite quotient is the analytic step left to the convergence
+conjecture below.  The refinement *map* itself, which is what this definition
+provides, is fully concrete.) -/
 noncomputable def graphonRefineStep {C : Type v} [DecidableEq C] [Fintype C]
     (W : Graphon Ω μ) (c : GraphonColouring Ω C) :
-    Σ (C' : Type), GraphonColouring Ω C' := by
-  -- Up to measure-zero ambiguity, the new colour of `x` is the pair
-  -- `(c x, graphonNeighbourSignature W c x)`. The image type is in general
-  -- not finite (the signature is `C → ℂ`), so we additionally bin against
-  -- an L² lattice; we punt the construction.
-  sorry
+    Σ (C' : Type v), GraphonColouring Ω C' :=
+  ⟨C × (C → ℂ), fun x => (c x, graphonNeighbourSignature W c x)⟩
 
 /-- **Graphon WL convergence (open conjecture)**. The iterated graphon WL
 chain converges, in the L² operator norm on the cell-uniform subspace, to a

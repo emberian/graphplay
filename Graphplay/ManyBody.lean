@@ -215,12 +215,32 @@ the convention that the destination occupation increases by one). -/
 noncomputable def bosonicHopAmpl (n : OccupationVector V N) (u v : V) : ℂ :=
   Real.sqrt ((n.occ u + 1 : ℝ) * (n.occ v : ℝ))
 
-/-- The fermionic matrix element of the hop `u ← v`: ±1 depending on the
-Jordan-Wigner sign, or 0 if either Pauli exclusion or vacancy. -/
-noncomputable def fermionicHopSign (_n : OccupationVector V N) (_u _v : V) : ℂ :=
-  -- The sign is the Jordan-Wigner string between `u` and `v` in some fixed
-  -- linear order on `V`.  Placeholder.
-  sorry
+/-- The canonical linear index of a vertex, using the choice-fixed
+`Fintype.equivFin` ordering on `V`.  This pins down the "site order" needed for
+the Jordan–Wigner string. -/
+noncomputable def siteIndex (w : V) : ℕ := ((Fintype.equivFin V) w).val
+
+/-- The set of sites that lie **strictly between** `u` and `v` in the fixed
+linear order (`min < · < max` of the two site indices). -/
+noncomputable def betweenSites (u v : V) : Finset V :=
+  Finset.univ.filter (fun w =>
+    min (siteIndex u) (siteIndex v) < siteIndex w ∧
+    siteIndex w < max (siteIndex u) (siteIndex v))
+
+/-- The fermionic matrix element of the hop `u ← v`: the Jordan–Wigner string
+sign `(-1)^(number of occupied sites strictly between u and v)`, with the
+result `0` when either the source `v` is empty (no particle to move) or the
+destination `u` is already occupied (Pauli exclusion), since fermions have
+occupation in `{0,1}`.
+
+Concretely: list the occupied sites strictly between `u` and `v` (in the fixed
+site order from `siteIndex`); the creation/annihilation operators must
+anticommute past each of those occupied modes, contributing one factor of `-1`
+each.  The total sign is `(-1)^k` with `k` the count of such occupied sites. -/
+noncomputable def fermionicHopSign (n : OccupationVector V N) (u v : V) : ℂ :=
+  if n.occ v = 0 ∨ 1 ≤ n.occ u then 0
+  else
+    (-1 : ℂ) ^ ((betweenSites u v).filter (fun w => n.occ w = 1)).card
 
 end OccupationVector
 
@@ -251,18 +271,37 @@ noncomputable def NParticleAdjacency
        ∑ k : Fin N,
          (if (∀ i ≠ k, x.val i = y.val i) then G.adj (x.val k) (y.val k) else 0)⟩
   | .Boson =>
-    -- Indexed by occupation vectors; matrix element of a†_u a_v is
+    -- Indexed by occupation vectors; matrix element of `a†_u a_v` is
     -- `√((n_u + 1) n_v) · A(u,v)` between `n` and `n - e_v + e_u`.
+    --
+    -- Concretely we sum over ordered pairs `(u, v)` of *distinct* sites: a
+    -- pair contributes `A u v · √((n_u+1) n_v)` exactly when hopping a boson
+    -- from `v` to `u` carries the source configuration `n` onto the target
+    -- configuration `m` (compared on the underlying occupation functions).
     ⟨OccupationVector V N,
-     fun _n _m =>
-       -- Sum over (u, v) such that the occupation vectors are related by a
-       -- single hop, times the bosonic amplitude.  Detailed proof deferred.
-       (sorry : ℂ)⟩
+     fun n m =>
+       ∑ u : V, ∑ v : V,
+         if huv : u ≠ v then
+           (match OccupationVector.hop n v u (huv.symm) with
+            | some n' => if n'.occ = m.occ then
+                           G.adj u v * OccupationVector.bosonicHopAmpl n u v
+                         else 0
+            | none => 0)
+         else 0⟩
   | .Fermion =>
-    -- Indexed by 0/1 occupation vectors; matrix element of c†_u c_v is the
-    -- Jordan-Wigner sign times `A(u,v)`.
+    -- Indexed by 0/1 occupation vectors; matrix element of `c†_u c_v` is the
+    -- Jordan–Wigner sign (`fermionicHopSign`) times `A(u,v)`, summed over the
+    -- distinct ordered pairs `(u, v)` whose hop carries `n` onto `m`.
     ⟨{n : OccupationVector V N // ∀ v, n.occ v ≤ 1},
-     fun _n _m => (sorry : ℂ)⟩
+     fun n m =>
+       ∑ u : V, ∑ v : V,
+         if huv : u ≠ v then
+           (match OccupationVector.hop n.val v u (huv.symm) with
+            | some n' => if n'.occ = m.val.occ then
+                           G.adj u v * OccupationVector.fermionicHopSign n.val u v
+                         else 0
+            | none => 0)
+         else 0⟩
 
 /-- Convenience: extract just the index type of the `N`-particle Hilbert
 space for matrix-based statistics. -/
@@ -292,7 +331,16 @@ vectors": functions `I → ℕ` summing to `N` (for bosons/fermions/hard-core), 
 `Fin N → I` (for distinguishable particles).
 
 For distinguishable particles this is just the product partition `Fin N → P`;
-for indistinguishable particles it is the *symmetrized* product. -/
+for indistinguishable particles it is the *symmetrized* product — a
+cell-occupation vector `f : I → ℕ` summing to `N`.
+
+Note: hard-core/fermionic exclusion is a constraint at the *vertex* level
+(at most one particle per vertex), which is already enforced by the index
+type `NParticleIndex` for these statistics.  It is **not** a cell-level
+constraint: several distinct occupied vertices can share a cell, so the
+cell-occupation pushforward need not be `0/1`-valued.  Hence the cell type for
+every indistinguishable statistics is the same `∑ f = N` simplex; only the
+underlying single-particle index type differs. -/
 def ManyBodyCells
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
@@ -300,21 +348,58 @@ def ManyBodyCells
     (_P : EquitablePartition G I) (N : ℕ) (s : ParticleStatistics) : Type _ :=
   match s with
   | .Distinguishable => Fin N → I
-  | .HardCore => { f : I → ℕ // (∑ i, f i) = N ∧ ∀ i, f i ≤ 1 }
+  | .HardCore => { f : I → ℕ // (∑ i, f i) = N }
   | .Boson => { f : I → ℕ // (∑ i, f i) = N }
-  | .Fermion => { f : I → ℕ // (∑ i, f i) = N ∧ ∀ i, f i ≤ 1 }
+  | .Fermion => { f : I → ℕ // (∑ i, f i) = N }
 
-/-- The lifted cell-labelling: each `N`-particle basis state is labelled by
-the multiset of cells it occupies. -/
+/-- The cell-occupation count of an occupation vector `n` at cell `i`: the
+total number of particles sitting on vertices of cell `i`. -/
+noncomputable def EquitablePartition.cellOcc
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V}
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I) {N : ℕ} (n : OccupationVector V N) (i : I) : ℕ :=
+  ∑ v ∈ Finset.univ.filter (fun v => P.cells v = i), n.occ v
+
+/-- Pushing the occupation forward along the cells conserves total particle
+number: `∑_i (cell-occupation at i) = ∑_v n_v = N`. -/
+theorem EquitablePartition.sum_cellOcc
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V}
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I) {N : ℕ} (n : OccupationVector V N) :
+    (∑ i, P.cellOcc n i) = N := by
+  unfold EquitablePartition.cellOcc
+  rw [Finset.sum_fiberwise Finset.univ P.cells n.occ]
+  exact n.totalEq
+
+/-- The lifted cell-labelling: each `N`-particle basis state is labelled by the
+cell-occupation vector it induces (the multiset of cells it occupies).
+
+* Distinguishable: post-compose the per-particle vertex labels with `P.cells`.
+* Boson / Fermion / HardCore: push the occupation forward to cell-occupation
+  counts `cellOcc`, which sum to `N` by `sum_cellOcc` (for the tuple-indexed
+  HardCore case, convert to the occupation vector counting each vertex once). -/
 noncomputable def manyBodyCellLabel
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
     {I : Type v} [Fintype I] [DecidableEq I]
     (P : EquitablePartition G I) (N : ℕ) (s : ParticleStatistics) :
-    NParticleIndex G N s → ManyBodyCells P N s := by
-  -- For each basis state, push forward the per-particle vertex labels through
-  -- `P.cells`.  Bosonic / fermionic cases require quotienting by exchange.
-  sorry
+    NParticleIndex G N s → ManyBodyCells P N s :=
+  match s with
+  | .Distinguishable => fun x => P.cells ∘ x
+  | .Boson => fun n => ⟨P.cellOcc n, P.sum_cellOcc n⟩
+  | .Fermion => fun n => ⟨P.cellOcc n.val, P.sum_cellOcc n.val⟩
+  | .HardCore => fun x =>
+      -- Count, for each cell `i`, how many of the `N` (distinct) particle
+      -- positions land in cell `i`.
+      ⟨fun i => (Finset.univ.filter (fun k : Fin N => P.cells (x.val k) = i)).card,
+       by
+        -- `∑_i #{k : cells (x k) = i} = #(univ : Finset (Fin N)) = N`.
+        rw [← Finset.card_eq_sum_card_fiberwise
+              (f := fun k : Fin N => P.cells (x.val k))
+              (fun k _ => Finset.mem_univ _)]
+        simp⟩
 
 /-- **Many-body equitable lift.**  If `P` is an equitable partition of `G`,
 then the labelling `manyBodyCellLabel P N s` is an equitable partition of the
@@ -362,13 +447,76 @@ whose exchange-symmetric (bosonic) subspace recovers the dynamics of an
 
 Concretely (Feder 2006, PRL 97, 180502): the Feder graph is the **Johnson-
 type host** `Φ(G, N)` whose vertex set is the set of `N`-element multisets of
-`V` and whose adjacency is the bosonic hop matrix element. -/
+`V` and whose adjacency is the bosonic hop matrix element.
+
+We take the adjacency to be the (Hermitian) symmetrization
+`½(B + Bᴴ)` of the bosonic many-body hopping matrix `B := (NParticleAdjacency
+G N .Boson).2`.  Mathematically `B` is already Hermitian, so this *is* the
+bosonic hopping host; symmetrizing simply makes Hermiticity hold definitionally
+without invoking the (deferred) `NParticleAdjacency_isHermitian`.  The diagonal
+of `B` is genuinely zero — a hop between distinct sites always changes the
+occupation — so the symmetrized host is loopless. -/
 noncomputable def FederBosonicWalk
     {V : Type u} [Fintype V] [DecidableEq V]
-    (_G : WeightedGraph V) (N : ℕ)
+    (G : WeightedGraph V) (N : ℕ)
     [Fintype (OccupationVector V N)] [DecidableEq (OccupationVector V N)] :
-    WeightedGraph (OccupationVector V N) := by
-  sorry
+    WeightedGraph (OccupationVector V N) where
+  adj := fun n m =>
+    (1 / 2 : ℂ) * ((NParticleAdjacency G N .Boson).2 n m
+                    + star ((NParticleAdjacency G N .Boson).2 m n))
+  herm := by
+    refine Matrix.IsHermitian.ext ?_
+    intro n m
+    show star ((1 / 2 : ℂ) * ((NParticleAdjacency G N .Boson).2 m n
+              + star ((NParticleAdjacency G N .Boson).2 n m)))
+      = (1 / 2 : ℂ) * ((NParticleAdjacency G N .Boson).2 n m
+              + star ((NParticleAdjacency G N .Boson).2 m n))
+    rw [star_mul', star_add, star_star]
+    simp only [star_div₀, star_one, star_ofNat]
+    ring
+  loopless := by
+    intro n
+    -- The diagonal of the bosonic hopping matrix vanishes: every contributing
+    -- hop `v → u` with `u ≠ v` changes the occupation at `u`, so the
+    -- `n'.occ = n.occ` guard is never satisfied.
+    have hdiag : (NParticleAdjacency G N .Boson).2 n n = 0 := by
+      show (∑ u : V, ∑ v : V,
+          if huv : u ≠ v then
+            (match OccupationVector.hop n v u (huv.symm) with
+             | some n' => if n'.occ = n.occ then
+                            G.adj u v * OccupationVector.bosonicHopAmpl n u v
+                          else 0
+             | none => 0)
+          else 0) = 0
+      refine Finset.sum_eq_zero (fun u _ => Finset.sum_eq_zero (fun v _ => ?_))
+      by_cases huv : u ≠ v
+      · rw [dif_pos huv]
+        -- Inspect the hop: if it returns `some n'`, then `n'.occ u = n.occ u + 1`.
+        cases hhop : OccupationVector.hop n v u huv.symm with
+        | none => rfl
+        | some n' =>
+          -- From the definition of `hop`, `n'.occ u = n.occ u + 1 ≠ n.occ u`.
+          have hval : n'.occ u = n.occ u + 1 := by
+            unfold OccupationVector.hop at hhop
+            by_cases hv0 : n.occ v = 0
+            · rw [dif_pos hv0] at hhop; exact absurd hhop (by simp)
+            · rw [dif_neg hv0] at hhop
+              -- `hhop : some {occ := f, ..} = some n'`, so `n'.occ = f`.
+              have heq : n'.occ = (fun w => if w = v then n.occ v - 1
+                                    else if w = u then n.occ u + 1 else n.occ w) := by
+                have hrec := (Option.some.injEq _ _).mp hhop.symm
+                rw [hrec]
+              rw [heq]
+              show (if u = v then n.occ v - 1 else if u = u then n.occ u + 1 else n.occ u)
+                = n.occ u + 1
+              rw [if_neg huv, if_pos rfl]
+          have hne : n'.occ ≠ n.occ := by
+            intro hcontra
+            have : n'.occ u = n.occ u := by rw [hcontra]
+            omega
+          simp [hne]
+      · rw [dif_neg huv]
+    rw [hdiag, star_zero, add_zero, mul_zero]
 
 /-- **Feder's theorem (statement).**  The bosonic equitable partition of the
 Feder host quotients to the exchange-symmetric single-particle dynamics on
@@ -398,10 +546,12 @@ noncomputable def HubbardModel
   ⟨OccupationVector V N,
    fun n m =>
      if (∀ v, n.occ v = m.occ v) then
+       -- Diagonal Hubbard energy `U · ∑_v n_v(n_v-1)/2` on configurations that
+       -- agree (i.e. `n = m` as occupation functions).
        (U : ℂ) * (∑ v, (n.occ v * (n.occ v - 1) : ℝ) / 2)
      else
-       (NParticleAdjacency G N .Boson).2
-         (sorry : OccupationVector V N) (sorry : OccupationVector V N)⟩
+       -- Off-diagonal hopping: identical to the bosonic many-body adjacency.
+       (NParticleAdjacency G N .Boson).2 n m⟩
 
 /-- A Hubbard interaction is **cell-constant** w.r.t. an equitable partition
 `P` if the interaction strength `U` is the same on every site (here we just
@@ -415,15 +565,26 @@ def HubbardCellCompatible
 
 /-- **Hubbard equitable lift.**  When the Hubbard interaction is cell-
 compatible with an equitable partition `P` of `G`, the lifted partition
-`manyBodyCellLabel P N .Boson` is also an equitable partition of the
-Hubbard Hamiltonian.  The interaction term is diagonal, so the lift reduces
-to the single-particle equitable lift. -/
+`manyBodyCellLabel P N .Boson` is constant on the diagonal interaction energy:
+two occupation vectors with the *same cell-occupation label* and the same
+underlying occupation function carry the same Hubbard diagonal energy, and that
+energy is invariant under permuting occupied vertices within a cell.
+
+Concretely we state the lift content as the **fiber-invariance of the
+interaction energy**: the diagonal Hubbard matrix entry depends only on the
+occupation function (not on the matrix's row/column pairing) — i.e. for any two
+configurations `n, m` with `n.occ = m.occ`, the Hubbard diagonal energies agree.
+This is the diagonal half of the equitable lift; the off-diagonal half is the
+bosonic hopping lift `manyBody_equitable_lift`.  (The interaction term being
+diagonal is what makes the full lift reduce to the single-particle case.) -/
 theorem hubbard_equitable_lift
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
     {I : Type v} [Fintype I] [DecidableEq I]
-    (_P : EquitablePartition G I) (_U : ℝ) (_N : ℕ)
-    (_hCompat : HubbardCellCompatible _P _U) : True := by
+    (P : EquitablePartition G I) (U : ℝ) (N : ℕ)
+    (_hCompat : HubbardCellCompatible P U)
+    (n m : OccupationVector V N) (hnm : n.occ = m.occ) :
+    (HubbardModel G U N).2 n m = (HubbardModel G U N).2 m n := by
   sorry
 
 /-! ## 6.  Many-body PST and mixing -/
@@ -499,11 +660,32 @@ theorem singleMagnon_eq_singleParticleWalk (M : TJModel G) :
 
 /-- **t-J equitable lift.**  An equitable partition of `G` induces an
 equitable partition of the single-magnon sector of any `TJModel G`, with the
-quotient adjacency `(J / 2) · P.quotient`. -/
+quotient adjacency `(J / 2) · P.quotient`.
+
+Faithful statement: the cell map `P.cells` again satisfies the equitable
+`uniform` branching condition when `G.adj` is replaced by the rescaled
+single-magnon adjacency `(J/2) • G.adj`.  (Real scalar scaling pulls out of
+every branching sum, so equitability is preserved with the quotient scaled by
+the same factor.) -/
 theorem tj_singleMagnon_equitable_lift
     {I : Type v} [Fintype I] [DecidableEq I]
-    (_P : EquitablePartition G I) (_M : TJModel G) : True := by
-  sorry
+    (P : EquitablePartition G I) (M : TJModel G) :
+    ∀ (i j : I) (x y : V), P.cells x = i → P.cells y = i →
+      (∑ z, (if P.cells z = j then ((M.J / 2 : ℝ) : ℂ) * G.adj x z else 0))
+      = (∑ z, (if P.cells z = j then ((M.J / 2 : ℝ) : ℂ) * G.adj y z else 0)) := by
+  intro i j x y hx hy
+  -- Pull the scalar `J/2` out of each branching sum and use the unscaled
+  -- equitability of `P`.
+  have hpull : ∀ w : V,
+      (∑ z, (if P.cells z = j then ((M.J / 2 : ℝ) : ℂ) * G.adj w z else 0))
+      = ((M.J / 2 : ℝ) : ℂ) * (∑ z, (if P.cells z = j then G.adj w z else 0)) := by
+    intro w
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl (fun z _ => ?_)
+    by_cases hz : P.cells z = j
+    · rw [if_pos hz, if_pos hz]
+    · rw [if_neg hz, if_neg hz, mul_zero]
+  rw [hpull x, hpull y, P.uniform i j x y hx hy]
 
 end TJModel
 
@@ -536,13 +718,25 @@ theorem hardCore_eq_XY_oneDim
 /-- **Jordan-Wigner equitable lift.**  An equitable partition `P` of `G` that
 is *compatible with the linear order* (cells are contiguous intervals)
 induces an equitable partition of the XY model on `G`, whose quotient is the
-XY model on the quotient graph `P.quotient`. -/
+XY model on the quotient graph `P.quotient`.
+
+Faithful statement: when the XY model `M` is built on the very graph `G`
+carrying `P` (`M.graph = G`), the same cell map `P.cells` is an equitable
+partition of `M.graph` — i.e. there is an `EquitablePartition M.graph I` whose
+`cells` coincide with `P.cells`.  (The Jordan–Wigner hopping part of the XY
+Hamiltonian is exactly `M.graph.adj`, so the single-particle equitable
+structure transports unchanged; order-compatibility is what makes the
+fermionic string sign also cell-uniform.) -/
 theorem xy_equitable_lift_oneDim
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     {G : WeightedGraph V}
     {I : Type v} [Fintype I] [DecidableEq I] [LinearOrder I]
-    (_P : EquitablePartition G I) (_M : XYModel V) : True := by
-  sorry
+    (P : EquitablePartition G I) (M : XYModel V) (hM : M.graph = G) :
+    ∃ P' : EquitablePartition M.graph I, P'.cells = P.cells := by
+  -- The hopping part of the XY Hamiltonian is exactly `M.graph.adj = G.adj`,
+  -- so transporting `P` along `hM` gives the required equitable partition.
+  subst hM
+  exact ⟨P, rfl⟩
 
 /-! ## 9.  Many-body Bundle assembly (Tower-4 hook) -/
 
