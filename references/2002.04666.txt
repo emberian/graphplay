@@ -1,0 +1,702 @@
+arXiv:2002.04666v2 [math.CO] 24 Jun 2020
+
+Perfect State Transfer on Oriented Graphs
+Chris Godsil and Sabrina Lato
+June 26, 2020
+Abstract
+Quantum walks on undirected graphs have been studied using symmetric matrices, such as the adjacency or Laplacian matrix, and many
+results about perfect state transfer are known. We extend some of
+those results to oriented graphs. We also study the phenomena, unique
+to oriented graphs, of multiple state transfer, where there is a set of
+vertices such that perfect state transfer occurs between every pair in
+that set. We give a characterization of multiple state transfer, and a
+new example of a graph where it occurs.
+
+1
+
+Introduction
+
+A continuous quantum walk on a graph is defined by taking some Hermitian
+matrix H and considering the time-dependent unitary matrix
+U(t) = exp(−itH).
+We call U the transition matrix of the walk. In most previous work, H is
+chosen to be the adjacency matrix or the Laplacian matrix of an undirected
+graph.
+Cameron et al [1] considered oriented graphs where every edge is given a
+unique direction. We take the adjacency matrix of an oriented graph to be
+the matrix A with rows and columns indexed by the vertices of the graph,
+and Aa,b equal to 1 if the the edge {a, b} is oriented from a to b, equal to −1
+if the the edge {a, b} is oriented from a to b, and equal to zero if a and b are
+not adjacent. Consequently A is skew symmetric. If A is a skew symmetric
+matrix, then iA is Hermitian and so
+U(t) = exp(−it(iA)) = exp(tA)
+1
+
+is the transition matrix of a continuous quantum walk. Although U(t) is
+real and orthogonal, this defines a continuous quantum walk, not a classical
+random walk.
+Let ea denote the characteristic vector for the vertex a. We say that
+perfect state transfer occurs from vertex a to vertex b if there is some time
+τ ∈ R and some complex phase factor λ with norm one such that
+U(τ )ea = λeb .
+This definition matches that used for unoriented graphs. Our goal in this
+paper is to characterize the case where perfect state transfer occurs on an
+oriented graph. For undirected graphs (with the adjacency matrix or the
+Laplacian as Hamiltonian), Kay [9] showed that for any vertex a in a graph,
+there is most one vertex b such that we have perfect state transfer from a to
+b. Cameron et al gave two examples of oriented graphs with what they called
+universal state transfer, oriented graphs such that for each pair of vertices a
+and b, there was perfect state transfer from a to b at some time. Here we
+provide an oriented graph on eight vertices with a subset C of four vertices,
+such that there is perfect state transfer between any pair of vertices in C.
+We call this multiple state transfer.
+
+2
+
+Basic Properties of Quantum Walks
+
+Skew symmetric matrices have some convenient properties, which are standard results from linear algebra and can be found in texts such as Zhang [11].
+Among them, the eigenvalues have no real part and are symmetric about the
+real axis. Skew symmetric matrices are also normal, and therefore admit a
+spectral decomposition as described (for example) in Godsil and Royle [7].
+That is, for any skew symmetric matrix A with distinct eigenvalues θ0 , . . . , θd
+we may write
+d
+X
+A=
+θr Er
+r=0
+
+where the spectral idempotents Er represent projection into the θr -eigenspace.
+These spectral idempotents are Hermitian, positive semidefinite, pairwise
+orthogonal, and sum to the identity. For the skew symmetric case, we have
+the further useful property that if θr is an eigenvalue with spectral idempotent
+Er , then −θr is an eigenvalue with spectral idempotent Er .
+2
+
+Using spectral decomposition, any function f that converges on the spectrum of A can be written
+f (A) =
+
+d
+X
+
+f (θr )Er .
+
+r=0
+
+In particular,
+U(t) =
+
+d
+X
+
+etθr Er .
+
+r=0
+
+Details and proofs of these facts are given for symmetric matrices in [7] and
+for skew symmetric matrices in [10].
+We note that U(t) is real and that
+U(t) = U(t)−1 = U(−t).
+For unoriented graphs, little is known about the phase factor. All examples of perfect state transfer have a root of unity as the phase factor, but it
+is not known whether this is always true [4]. For oriented graphs, we know
+something much stronger.
+2.1 Lemma. Let X be an oriented graph with perfect state transfer. Then
+the phase factor is ±1.
+Proof. Suppose there is perfect state transfer from a to b. Then we have
+some time τ and some phase factor λ such that U(t)ea = λeb ; since U(t), ea
+and eb are real it follows that λ is real. As |λ| = 1, the lemma follows.
+
+In subsequent computations with perfect state transfer, we will use ǫa,b
+to denote the phase factor, i.e., if there is perfect state transfer from a to b,
+then we write U(t)ea = ǫa,b U(t)eb .
+
+3
+
+Switching Automorphisms
+
+An automorphism of a graph with adjacency matrix A can be viewed as a
+permutation matrix P such that
+A = P T AP.
+A monomial matrix is the product of a permutation matrix with a diagonal matrix. For our purposes, the diagonal matrix will always have entries
+3
+
+±1. Note that if P̃ is such a monomial matrix, then P̃ T P̃ = I. A graph X
+has a switching automorphism if there exists a monomial matrix P̃ such that
+A = P̃ T AP̃ .
+We have defined switching automorphisms to be matrices (acting on
+CV (X) ), but if a ∈ V (X) and P̃ is a switching, we will sometimes use P̃ a
+to denote the vertex such that eP̃ a = P̃ ea .
+Cameron et al [1] studied the switching automorphism group of graphs
+with universal state transfer. We will go in a different direction, and characterize when perfect state transfer can occur from vertex a to P̃ a for some
+switching automorphism P̃ . The first point to note is that switching automorphisms preserve the quantum walk.
+3.1 Lemma. Let X be an oriented graph with switching automorphism P̃
+and transition matrix U(t). Then
+U(t) = P̃ T U(t)P̃ .
+Proof. Since P̃ commutes with A, it commutes with U = exp(tA).
+This is particularly relevant when there is a switching automorphism
+along with perfect state transfer.
+3.2 Corollary. Let X be an oriented graph with switching automorphism
+P̃ . If X has perfect state transfer from vertex a to vertex b at time τ, then
+there is perfect state transfer from P̃ a to P̃ b at the same time τ.
+Proof. Since there is perfect state transfer,
+U(τ )ea = ±eb .
+By Lemma 3.1,
+P̃ T U(τ )P̃ ea = ±eb ,
+so
+U(τ )P̃ ea = ±P̃ eb
+and there is perfect state transfer from P̃ a to P̃ b at time τ.
+
+4
+
+0
+
+1
+
+2
+
+Figure 1: One orientation of the complete graph on 3 vertices
+3.3 Corollary. Let X be an oriented graph with switching automorphism P̃
+such that there is perfect state transfer from vertex a to vertex P̃ a at time τ.
+Then for any positive integer n there is perfect state transfer from a to P̃ n a
+at time nτ .
+Proof. We will prove this by induction. The base case when k = 1 is true
+by definition, so let k be a positive integer such that there is perfect state
+transfer from a to P̃ k a at time kτ . Then
+U((k + 1))τ )ea = U(τ )U(kτ )ea .
+By the inductive hypothesis there is perfect state transfer from a to P̃ k a at
+time kτ and thus
+U(τ )U(kτ )ea = ±U(τ )P̃ k ea .
+
+Since P̃ k is a switching automorphism, by Corollary 3.2 there is perfect state
+transfer from P̃ k a to P̃ k+1a at time τ and therefore
+±U(τ )P̃ k ea = ±P̃ k+1ea .
+Thus there is perfect state transfer from a to P̃ k+1a at time (k + 1)τ .
+
+4
+
+Multiple State Transfer
+
+Kay [9] showed that if a real symmetric matrix has perfect state transfer
+from a to some other vertex b, it cannot have perfect state transfer from a
+to any vertex other than a. This is not the case with oriented graphs, as the
+5
+
+0
+
+3
+
+6
+
+5
+
+2
+
+1
+
+4
+
+7
+
+Figure 2: A New Example of Multiple State Transfer
+complete graph on three vertices oriented as in Figure 1 has perfect state
+√ and from vertex 0 to 1 at time
+transfer from vertex 0 to vertex 1 at time 32π
+3
+4π
+√ .
+3 3
+Cameron et al [1] studied graphs like this with universal state transfer,
+where there is perfect state transfer between every pair of vertices, although
+the only known examples are K2 and K3 . Connelly et al [2] conjectured
+that these were in fact the only examples of unweighted oriented graphs with
+universal state transfer.
+We will consider the more general case of multiple state transfer, where
+there is a subset of vertices such that every pair of vertices in that subset has
+perfect state transfer between them, and are particularly interested in the
+non-trivial cases where multiple state transfer occurs between three or more
+vertices. The oriented K3 is still an example of graphs with multiple state
+transfer, but it is not the only one.
+The graph in Figure 2 has multiple state transfer on the set of vertices
+{0, 1, 6, 7} . In both this example and in the oriented K3 , there is a switching
+automorphism permuting the vertices involved in multiple state transfer. In
+this case, determining when multiple state transfer occurs simplifies to determining when perfect state transfer occurs between two vertices determined
+by the automorphism.
+4.1 Lemma. Let X be an oriented graph with switching automorphism P̃
+6
+
+of order n. If perfect state transfer occurs from vertex a to vertex P̃ a, then
+there is multiple state transfer on
+n
+o
+n−1
+a, P̃ a, . . . , P̃
+a .
+Proof. Let P̃ k a, P̃ ℓ a be two vertices in the set. By Corollary 3.3, perfect
+state transfer occurs from a to P̃ k a at time kτ and from a to P̃ ℓ a at time ℓτ .
+Then
+U((ℓ − k)τ )P̃ k ea = U(ℓτ )U(−kτ )P̃ k ea
+= ±U(ℓτ )ea
+= ±P̃ ℓ ea .
+
+Thus there is perfect state transfer from P̃ k a to P̃ ℓ a and, since k and ℓ
+were arbitrary, there is multiple state transfer on the set.
+For a switching automorphism P̃ and a vertex a, we may adapt the tools
+used to study perfect state transfer on unoriented graphs to develop a characterization for when perfect state transfer occurs from a to P̃ a. This allows
+us to come up with a characterization of multiple state transfer on the image
+under a switching automorphism.
+
+5
+
+Cospectrality
+
+Let a be a vertex. We define the eigenvalue support at a, denoted Φa , to be
+the set
+{θr : Er ea 6= 0} .
+
+Two vertices a and b are strongly cospectral if for each spectral idempotent
+Er with θr ∈ Φa , there exists some complex number αr with |αr | = 1 such
+that
+Er ea = αr Er eb .
+
+More details about strongly cospectral vertices can be found in Godsil and
+Smith [8]. For unoriented graphs, the entries of the spectral idempotents
+will be real and thus α = ±1. Additionally, if there is perfect state transfer
+between two vertices, they are strongly cospectral and strong cospectrality
+is one of several necessary and sufficient conditions for perfect state transfer
+to occur, as shown by Coutinho in Chapter 2 of his thesis [3].
+7
+
+5.1 Lemma. Let X be an oriented graph with vertices a and b. If there is
+perfect state transfer from a to b, then a and b are strongly cospectral.
+Proof. Suppose there is perfect state transfer from a to b at time τ. Then for
+all eigenvalues θr , we may define the corresponding αr to be either e−τ θr or
+−e−τ θr depending on whether the phase factor is plus or minus one.
+Because there is perfect state transfer from a to b, we know that
+X
+X
+eτ θr Er ea = ±
+Er eb ,
+r
+
+r
+
+or equivalently, for all r,
+eτ θr Er ea = ±Er eb .
+By multiplying by e−τ θr we get
+Er ea = ±e−τ θr Er eb = αr Er eb ,
+and therefore a and b are strongly cospectral.
+If we have perfect state transfer from a to b, it follows from the discussion
+above that there is a real number qr (a, b) such that
+−1 ≤ qr (a, b) ≤ 1
+and
+Er ea = eiπqr (a,b) Er eb .
+We refer to qr (a, b) as the quarrel from a to b (relative to the eigenvalue θr .)
+5.2 Lemma. Let X be an oriented graph with switching automorphism P̃ .
+If vertices a and P̃ a are strongly cospectral then, for any positive integer n,
+vertices a and P̃ n a are strongly cospectral, and
+n
+
+eiπqr (a,P̃ a) = eiπnqr (a,P̃ a) .
+Proof. We will prove this by induction. When n = 1, we have
+Er ea = eiπqr (a,b) Er P̃ ea ,
+
+8
+
+k
+which is the definition. Let k be apositive
+ integer such that a and P̃ a are
+strongly cospectral, and let q = qr a, P̃ a . Then
+
+Er ea = eiπkq Er P̃ k ea
+ k
+= eiπkq P̃ k P̃ T Er P̃ k ea
+= eiπkq P̃ k Er ea
+
+= eiπ(k+1)q P̃ k Er P̃ ea
+ k
+= eiπ(k+1)q P̃ k Er P̃ T P̃ k+1 ea
+= eiπ(k+1)q Er P̃ k+1ea .
+
+Note that
+eTa Er ea = eiπ(k+1)q eTa Er P̃ k+1ea
+is a positive real number, and thus
+eiπqr (a,P̃
+
+) = eiπ(k+1)q
+
+k+1 a
+
+and therefore a and P̃ k+1a are strongly cospectral with the desired condition
+on the quarrel.
+We now offer a first characterization of when there will be perfect state
+transfer between two vertices. This characterization applies for all graphs,
+and is an oriented analogue of Theorem 2.4.2 in [3].
+5.3 Theorem. Let X be an oriented graph with vertices a and b. There is
+perfect state transfer from a to b if and only if:
+(i) Vertices a and b are strongly cospectral.
+(ii) There exists some τ ∈ R such that, for all θr ∈ Φa ,
+qr (a, b) +
+
+iτ θr
+π
+
+is always an even integer or always an odd integer.
+Proof. By Lemma 5.1, we may assume a and b are strongly cospectral and
+show that perfect state transfer from a to b occurs if and only if (ii) holds.
+9
+
+Perfect state transfer occurs if and only if there exists some τ ∈ R and some
+phase factor ±1 such that
+eτ θr Er ea = ±Er eb = eiπqr (a,b) Er ea .
+If the phase factor is 1, this is equivalent to saying that for all θr ∈ Φa ,
+eτ θr −iπqr (a,b) = 1,
+or there exists some integer kr such that
+τ θr − iπqr (a, b) = 2kr iπ.
+Multiplying through by πi shows us that perfect state transfer occurs at time
+τ with phase factor 1 if and only if
+iτ θr
++ qr (a, b)
+π
+is always an even integer.
+Similarly, if the phase factor is −1, then perfect state from a to b at time
+τ is equivalent to saying that for all θr ∈ Φa , there exists some integer kr
+such that
+τ θr − iπqr (a, b) = (2kr + 1) iπ,
+or equivalently
+iτ θr
++ qr (a, b)
+π
+is always an odd integer.
+This provides us with a first characterization, which applies for all oriented graphs. However, it relies upon knowing at what time perfect state
+transfer occurs. In order to deal with this, we consider a closely related but
+easier to characterize property of quantum walks.
+
+6
+
+Periodicity
+
+A vertex a in an oriented graph is periodic if there is a time σ such that
+U(σ)ea = ±ea . (For general graphs, a vertex is periodic if there is time σ
+and a complex scalar γ with norm 1 such that U(σ)ea = γea , further if there
+10
+
+is perfect state transfer from a to b, then both vertices a and b are periodic.
+For more detail, see [6].)
+For oriented graphs with a switching automorphism of order n taking a
+to b and perfect state transfer from a to b at time τ , Corollary 3.3 gives a
+proof that the vertex a will be periodic at time nτ.
+Periodicity is a simpler property than perfect state transfer, and it is
+much easier to characterize for both oriented and unoriented graphs. For unoriented graphs, Godsil [5] characterized graphs with periodic vertices based
+only on the elements of the eigenvalue support. Here, we prove a similar, but
+simpler characterization for oriented graphs.
+6.1 Theorem. Let X be a connected oriented graph with at least two vertices. Then the following are equivalent:
+(i) The vertex a is periodic.
+(ii) For all r, s with θr , θs ∈ Φa and θs 6= 0, the ratio θθrs is rational.
+(iii) There exists a √
+square-free positive integer ∆ such that all eigenvalues
+in Φa are in Z( −∆).
+Proof. Suppose that a is a periodic vertex. This is equivalent to saying that
+for all θr ∈ Φa ,
+eτ θr Er ea = ±Er ea .
+
+In particular, for any θr , θs ∈ Φa where θs 6= 0, this means that eτ θr =
+e
+= ±1, and therefore τ θr and τ θs are both integer multiples of iπ. It
+follows that
+θr
+τ θr
+=
+∈ Q.
+θs
+τ θs
+τ θs
+
+Next, suppose that for all r, s with θr ∈ Φa and θs 6= 0, the ratio θθrs is
+rational. Since X is connected, we know that
+X
+θr Er ea = Aea 6= 0,
+r
+
+and in particular there must be some θ0 6= 0 in Φa . For all θr ∈ Φa , we know
+there exists some rational number mr such that θr = mr θ0 and thus
+Y
+Y
+|Φ |
+mr .
+θr = θ0 a
+θr ∈Φa
+
+θr ∈Φa
+
+11
+
+The eigenvalue support is closed under algebraic conjugates, so any automorphism of the splitting field of the characteristic polynomial of the adjacency matrix fixes
+Y
+θr .
+θr ∈Φa
+
+|Φ |
+
+It follows from field theory that θ0 a ∈ Q, and we may let d be the
+minimal integer such that θ0d ∈ Q. Then θ0 has conjugate eigenvalues that
+differ by dth roots of unity and, since the eigenvalues of skew symmetric
+matrices have no real part, d ≤ 2 and θ02 ∈ Q. Because θ0 is an eigenvalue of
+a matrix with integer entries and therefore an algebraic integer, and rational
+algebraic integers are integers, we have in fact that θ02 √
+∈ Z. Letting ∆ be the
+2
+largest square-free integer dividing θ0 , we write θ0 = a −∆ for some integer
+a.
+Then for any θr ∈ Φa , we have
+√
+θr = amr −∆
+and
+θr2 = −(amr )2 ∆ ∈ Z.
+Since ∆ is square-free, it must
+√ be the case that amr ∈ Z, and therefore all
+eigenvalues in Φa are in Z( −∆).
+Finally, suppose that there exists
+√ a square-free positive integer ∆ such
+that all eigenvalues in Φa are in Z( −∆). Then
+X 2πθ
+X
+2π
+√ r
+e ∆ Er ea =
+U( √ )ea =
+Er ea = ea ,
+∆
+r
+θr ∈Φa
+and so a is periodic.
+From this characterization, we see that the eigenvalues are sufficient to
+determine when a vertex is periodic. They can also tell us the minimum
+period, or the first time that a vertex is periodic.
+6.2 Lemma. Let X be a connected oriented graph with periodic vertex
+a, and √
+let ∆ be the square-free positive integer such that for all θr ∈ Φa ,
+θr ∈ Z −∆ . Assume
+
+
+
+θr
+√
+g = gcd
+.
+−∆ θr ∈Φa
+12
+
+Then if the phase factor of a is −1, the minimum period is
+π
+√
+
+g ∆
+and if the phase factor is 1, the minimum period is
+2π
+√
+g ∆
+Proof. Suppose the minimum period is σ with phase factor −1. Then for all
+θr ∈ Φa
+eσθr = −1
+so
+σθr = iπkr
+for some odd integer kr . But θr is an imaginary quadratic integer, and so the
+smallest that σ can be is g√π∆ .
+Similarly, if the minimum period σ has phase factor 1 then for all θr ∈ Φa
+eσθr = 1
+so
+σθr = 2iπkr
+2π
+.
+for some integer kr , so the smallest that σ can be is g√
+∆
+
+7
+
+Characterization
+
+Using our earlier characterization and what we know about periodicity, we
+can come up with a better characterization of when a vertex has perfect state
+transfer to its image under a switching automorphism, similar to Theorem
+2.4.4 for nonoriented graphs [3]. This gives a characterization of when multiple state transfer can occur that relies only the spectral decomposition of
+the graph, a given switching automorphism, and a vertex in the graph.
+7.1 Theorem. Let X be an oriented graph with vertex a, and let P̃ be a
+switching automorphism of order n. Then there is multiple state transfer on
+the set {a, P̃ a, . . . , P̃ n−1a} if and only if:
+13
+
+(i) Vertices a and P̃ a are strongly cospectral.
+(ii) Vertex a is periodic.
+(iii) Let
+g = gcd
+
+
+
+Then either
+
+θ
+√ r
+−∆
+
+
+
+θr ∈Φa
+
+
+
+.
+
+(a) Vertex a has periodic phase factor −1 and there exists an integer
+m < n relatively prime to n such that
+θ
+√r
++ mqr (a, P̃ a)
+ng −∆
+is always an odd integer or always an even integer for all θr ∈ Φa .
+
+(b) Vertex a has periodic phase factor 1 and there exists an integer
+m < n relatively prime to n such that
+2θr
+√
++ mqr (a, P̃ a)
+ng −∆
+
+is always an odd integer or always an even integer for all θr ∈ Φa .
+Proof. If there is multiple state transfer, there is necessarily perfect state
+transfer from a to P̃ a. Then by Lemma 5.1 and Lemma 6.1 the first two
+conditions hold, so we may assume them and prove that multiple state transfer occurs on the set if and only if (iii) holds. Since a is periodic, it can
+either have phase factor −1 or 1. Letting σ denote the minimum period, by
+Lemma 6.2, (iii) is equivalent to saying that for some m
+σθr
++ mqr (a, P̃ a)
+πni
+is always an even integer or always an odd integer.
+Suppose (iii) holds. By Lemma 5.2, vertices a and P̃ m a are strongly
+cospectral and there exists some integer k such that
+qr (a, P̃ m a) = mqr (a, P̃ a) − 2k.
+Then
+
+σθr
+σθr
++ mqr (a, P̃ a) =
+− 2k + qr (a, P̃ m a)
+πni
+πni
+14
+
+is always an even integer or always an odd integer, so by Theorem 5.3 there
+σ
+is perfect state transfer from a and P̃ m a at nπ
+. Then by Lemma 4.1, since
+m is relatively prime to n there is multiple state transfer on the set
+{a, P̃ m a, . . . , P̃ m(n−1) a} = {a, P̃ a, . . . , P̃ n−1a.}
+Conversely, suppose that multiple state transfer occurs on this set and for
+1 ≤ i ≤ n − 1 let τi be the first time that perfect state transfer occurs from
+a to P̃ i a. Note that these will all be distinct times strictly less than σ and
+that therefore nτi is a distinct period for each i. Every period is an integer
+multiples of the minimum period, therefore nτi is some integer multiple of σ,
+and thus the set of minimal perfect state transfer times from a are
+nz σ
+zn−1 σ o
+1
+,...,
+n
+n
+where z1 , . . . , zn−1 are n − 1 distinct integers between 1 and n − 1. Therefore
+there must be some m such that τm = nσ . Since σ is the minimum period,
+m must be relatively prime to n or else P̃ m would be a nontrivial switching
+automorphism of order m′ < m and thereforem m′ τm would be a period
+strictly less than σ.
+By Lemma 5.2, vertices a and P̃ m a are strongly cospectral and there
+exists some integer k such that
+qr (a, P̃ m a) = 2k + mqr (a, P̃ a).
+Therefore by Theorem 5.3, for all θr ∈ Φa
+qr (a, P̃ m ) +
+
+iσθr
+iτm θr
+= mqr (a, b) + 2k +
+π
+nπ
+
+is always an even integer or always an odd integer, and thus multiple state
+transfer implies (iii).
+
+8
+
+Further Questions
+
+The characterization in Theorem 7.1 applies whenever there is perfect state
+transfer and a switching automorphism between two vertices. In this case,
+the time for perfect state transfer will be a rational multiple of the minimum
+15
+
+0
+
+3
+
+4
+
+1
+
+2
+
+Figure 3: Perfect state transfer occurs at an irrational multiple of the period
+period, which is itself a rational multiple of √π∆ . However, this is not the
+only situation under which perfect state transfer can occur. The graph in
+Figure 3 has no switching automorphism between vertices 3 and 4, since the
+other three vertices are oriented towards vertex 3 in the same way that they
+are oriented towards vertex 4, but there is a single edge oriented from vertex
+3 to vertex 4. However, Theorem 5.3 can be used to verify that perfect state
+transfer occurs from vertex 3 to vertex 4 at time
+
+π − arccos 34
+√
+,
+7
+
+but arccos 34 is not a rational multiple of π [10]. This example raises several
+questions:
+• Is it possible to improve the characterization in Theorem 5.3 so that it
+does not depend on the time τ while still having it apply to all graphs?
+• What is the relationship between the period and the first time to perfect state transfer if a graph does not have a switching automorphism
+between the vertices involved in perfect state transfer?
+• Are there examples of multiple state transfer that do not arise from
+switching automorphisms?
+
+16
+
+References
+[1] Cameron, S., Fehrenbach, S., Granger, L., Hennigh, O.,
+Shrestha, S., and Tamon, C. Universal state transfer on graphs.
+Linear Algebra and Its Applications 455 (2014), 115–142.
+[2] Connelly, E., Grammel, N., Kraut, M., Serazo, L., and Tamon, C. Universality in perfect state transfer. Linear Algebra Appl.
+531 (2017), 516–532.
+[3] Coutinho, G. Quantum State Transfer in Graphs. PhD thesis, University of Waterloo, 2014.
+[4] Coutinho, G., and Godsil, C. Continuous Quantum Walks. In
+preparation.
+[5] Godsil, C. When can perfect state transfer occur?, 2010.
+[6] Godsil,
+C.
+Real
+https://arxiv.org/abs/1710.04042.
+
+state
+
+transfer,
+
+2017.
+
+[7] Godsil, C., and Royle, G. Algebraic Graph Theory. Springer-Verlag,
+2001.
+[8] Godsil, C., and Smith, J. Strongly cospectral vertices, 2017.
+https://arxiv.org/abs/1709.07975.
+[9] Kay, A. The basics of perfect communication through quantum networks. Physical Review A 84 (2011).
+[10] Lato, S. Quantum Walks on Oriented Graphs, 2019. Masters Thesis.
+[11] Zhang, F. Matrix Theory, second ed. Universitext. Springer, New
+York, 2011. Basic results and techniques.
+
+17
+
+

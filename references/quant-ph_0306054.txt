@@ -1,0 +1,2169 @@
+MIT-CTP #3384
+
+Spatial search by quantum walk
+Andrew M. Childs∗ and Jeffrey Goldstone†
+
+arXiv:quant-ph/0306054v2 25 Aug 2004
+
+Center for Theoretical Physics
+Massachusetts Institute of Technology
+Cambridge, MA 02139, USA
+Grover’s quantum search algorithm provides a way to speed up combinatorial search, but is not
+directly applicable to searching a physical database. Nevertheless, Aaronson and Ambainis √
+showed
+N for
+that a database of N items laid
+out
+in
+d
+spatial
+dimensions
+can
+be
+searched
+in
+time
+of
+order
+√
+d > 2, and in time of order N poly(log N ) for d = 2. We consider an alternative search algorithm
+based on a continuous time quantum walk on a graph. The case of the complete graph gives the
+continuous time search√ algorithm of Farhi and Gutmann, and other previously known results √
+can
+be used to show that N speedup can also be achieved on the hypercube. We show that full N
+speedup can be achieved on a d-dimensional
+periodic lattice for d > 4. In d = 4, the quantum walk
+√
+search algorithm takes time of order N poly(log N ), and in d < 4, the algorithm does not provide
+substantial speedup.
+
+I.
+
+INTRODUCTION
+
+Grover’s quantum search algorithm [1] is one of the
+main applications of quantum computation. Given a
+black box function f (x) : {1, . . . , N } → {0, 1} satisfying
+
+0 x 6= w
+f (x) =
+(1)
+1 x = w,
+Grover’s algorithm can find the value of w using of order
+√
+N queries, which is optimal [2]. On the other hand, no
+classical algorithm can do better than exhaustive search,
+which takes of order N queries. Therefore Grover’s algorithm can be used to speed up brute force combinatorial
+search. It can also be used as a subroutine in a variety
+of other quantum algorithms.
+Grover’s algorithm is sometimes described as a way
+√ to
+search an unsorted database of N items in time O( N ).
+But the algorithm as originally proposed is not designed
+to search a physical database. Suppose we had N items
+stored in a d-dimensional physical space, and that these
+items could be explored in superposition by a quantum
+computer making local moves (a “quantum robot” [3]).
+Naively, it would seem that each step of the Grover algorithm should take time of order N 1/d , since this
+√ is the
+time required to cross the database. Performing N iter1
+1
+ations, we find that the search takes time of order N 2 + d ,
+so no speedup is achieved in d = 2, and full speedup is
+achieved only in the limit of large d.
+However, it is possible to do better than this naive approach suggests. In [4], Aaronson and Ambainis present a
+model of query complexity on graphs. Within this model,
+they give a recursive
+√ algorithm for the search problem
+that achieves full N speedup
+√ for a d ≥ 3 dimensional
+lattice, and runs in time N log2 N in d = 2. (It is
+obvious that no algorithm can get speedup in d = 1.)
+
+∗ amchilds@mit.edu
+† goldston@mit.edu
+
+In this paper we approach the spatial search problem
+using quantum walks. Since random walks are commonly
+used in classical algorithms, it is natural to consider a
+quantum analogue of a classical random walk as an algorithmic tool. Here we consider the continuous time quantum walk [5]. On certain graphs, this quantum walk can
+yield exponentially faster hitting times than its classical
+counterpart [5, 6]. Indeed, a recent result shows that the
+continuous time quantum walk can solve a certain black
+box problem exponentially faster than any classical algorithm [7].
+Quantum walks provide a natural framework for the
+spatial search problem because the graph can be used
+to model the locality of the database. We present a
+simple quantum walk search algorithm that can be applied to any graph. Our algorithm could be implemented
+within the model of [4], but is actually much simpler because it uses no auxiliary storage space. For the case
+of the complete graph, the resulting algorithm is simply
+the continuous time search algorithm of Farhi and Gutmann [8]. On the hypercube, previous results can be
+used to show that the algorithm also provides quadratic
+speedup [9, 10]. However, in both of these cases, the
+graph is highly connected. Here, we consider the case of
+a d-dimensional cubic periodic lattice,
+where d is fixed
+√
+independent of N . We
+find
+full
+N
+speedup
+in d > 4
+√
+and running time O( N log3/2 N ) in d = 4. In d < 4, we
+find that quadratic speedup is impossible, so the continuous time quantum walk algorithm is never faster than
+the Aaronson-Ambainis algorithm.
+We note that it is also possible to construct a quantum analogue of a discrete time random walk [11, 12]
+(although the walk cannot take place directly on the vertices of the graph [13]). This type of walk has been used
+to construct a fast search algorithm on the hypercube
+[14], and more recently, on a d-dimensional lattice with
+d ≥ 2 [15]. The latter result outperforms our continuoustime walk algorithm for d = 2, 3, 4. However, similar
+performance can be achieved by a modification of the
+continuous-time algorithm [16].
+This paper is organized as follows. In Section II we
+
+2
+review the continuous time quantum walk and show how
+it can be used to approach the search problem. In Section
+III we review the results in the high dimensional cases
+(the complete graph and the hypercube), casting them
+in the language of continuous time quantum walks. In
+Section IV we present the results for finite dimensional
+lattices, and in Section V, we conclude with a discussion
+of our results.
+
+II.
+
+QUANTUM WALK
+
+The continuous time quantum walk on a graph is defined in direct analogy to a continuous time classical random walk [5]. Given an undirected graph G with N vertices and no self loops, we define the adjacency matrix
+
+1 (j, k) ∈ G
+Ajk =
+(2)
+0 otherwise
+which describes the connectivity of G. In terms of this
+matrix, we can also define the Laplacian L = A − D,
+where D is the diagonal matrix with Djj = deg(j), the
+degree of vertex j. The continuous time random walk on
+G is a Markov process with a fixed probability per unit
+time γ of jumping to an adjacent vertex. In other words,
+the probability of jumping to any connected vertex in
+a time ǫ is γǫ (in the limit ǫ → 0). This walk can be
+described by the first-order, linear differential equation
+dpj (t)
+=γ
+dt
+
+X
+
+Ljk pk (t) ,
+
+(3)
+
+k
+
+where pj (t) is the probability of being at vertex j at time
+t. Since the columns of L sum to zero, probability is
+conserved.
+The continuous time quantum walk on a graph takes
+place in an N -dimensional Hilbert space spanned by
+states |ji, where j is a vertex in G. In terms of these
+basis states, we can write a general state |ψ(t)i in terms
+of the N complex amplitudes qj (t) = hj|ψ(t)i. If the
+Hamiltonian is H, then the dynamics of the system are
+determined by the Schrödinger equation,1
+i
+
+dqj (t) X
+=
+Hjk qk (t) .
+dt
+
+(4)
+
+k
+
+Note the similarity between (3) and (4). The continuous
+time quantum walk is defined by simply letting H =
+−γL.2 Then the only difference between (3) and (4) is
+
+a factor of i, which nevertheless can result in radically
+different behavior.
+As an aside, we note that the Laplacian does not
+provide the only possible Hamiltonian
+for a quantum
+P
+walk. Whereas (3) requires j Ljk = 0 to be a valid
+probability-conserving classical Markov process, (4) requires H = H † to be a valid unitary quantum process.
+Therefore we could also choose, for example, H = −γA.
+All of the graphs we consider in this paper are regular
+(i.e., deg(j) is independent of j), so these two choices
+give rise to the same quantum dynamics. However, for
+non-regular graphs the two choices will give different results.
+To approach the Grover problem with a quantum walk,
+we need to modify the Hamiltonian so that the vertex w
+is special. Following [8], we introduce the oracle Hamiltonian3
+Hw = −|wihw|
+
+(5)
+
+which has energy zero for all states except |wi, which is
+the ground state, with energy −1. Solving the Grover
+problem is equivalent to finding the ground state of this
+Hamiltonian. In this paper we assume that this Hamiltonian is given, and we want to use it for as little time
+as possible to find the value of w. Note that this Hamiltonian could be simulated in the circuit model using the
+standard Grover oracle
+Uw |ji = (−1)δjw |ji .
+
+(6)
+
+However, in this paper we focus on the continuous time
+description.
+To construct an algorithm with the locality of a particular graph G, we consider the time-independent Hamiltonian
+H = −γL + Hw = −γL − |wihw|
+
+(7)
+
+where L is the Laplacian of G. We begin in a uniform
+superposition over all vertices of the graph,
+1 X
+|si = √
+|ji ,
+N j
+
+(8)
+
+and run the quantum walk for time T . We then measure in the vertex basis. Our objective is to choose the
+parameter γ so that the success probability |hw|ψ(T )i|2
+is as close to 1 as possible for as small a T as possible.
+Note that the coefficient of Hw is held fixed at 1 to make
+the problem fair (e.g., so that evolution for time T could
+be simulated with O(T ) queries of the standard Grover
+oracle (6)).
+
+1 We have chosen units in which h̄ = 1.
+2 Here
+
+the sign is chosen so that the Hamiltonian is positive
+semidefinite. We have defined L = A − D so that for a lattice, L is a discrete approximation to the continuum operator
+∇2 . A free particle in the continuum has the positive semidefinite Hamiltonian H = −∇2 (in appropriate units).
+
+3 More precisely, we should use H
+
+w = −ω|wihw| where ω is a fixed
+parameter with units of inverse time. However, we choose units
+in which ω = 1. In these units, γ is a dimensionless parameter.
+
+PSfrag repla ements
+
+3
+1
+One might ask why we should expect this algorithm to
+give a substantial success probability for some values of
+0:9
+γ, T . We motivate this possibility in terms of the specjhwj 0 ij2
+jhsj 0 ij2
+0
+:
+8
+trum of H. Note that regardless of the graph, |si is the
+ground state of the Laplacian, with L|si = 0. As γ → ∞,
+0:7
+the contribution of Hw to H is negligible, so the ground
+0:6
+state of H is close to |si. On the other hand, as γ → 0,
+the contribution of L to H disappears, so the ground 0:05
+0:5
+state of H is close to |wi. Furthermore, since |si is nearly 0:15
+E1 E0
+orthogonal to |wi, degenerate perturbation theory shows 0:25 0:4
+that the first excited state of H will be close to |si as 0:35
+γ → 0 for large N . We might expect that over some in- 0:45 0:3
+termediate range of γ, the ground state will switch from
+0:2
+jhsj 1 ij2
+jhwj 1 ij2
+|wi to |si, and could have substantial overlap on both for
+0:1
+a certain range of γ. If the first excited state also has
+substantial overlap on both |wi and |si at such values of
+0
+0:5
+1:5
+0
+1
+2
+γ, then the Hamiltonian will drive transitions between
+N
+the two states, and thus will rotate the state from |si
+to a state with substantial overlap with |wi in a time of
+FIG. 1: Energy gap and overlaps for the complete graph with
+order 1/(E1 − E0 ), where E0 is the ground state energy
+N = 1024.
+and E1 is the first excited state energy.
+Indeed, we will see that this is a good description of
+the algorithm if the dimension of the graph is sufficiently
+Therefore we consider the Hamiltonian
+high. The simplest example is the complete graph (the
+“analog analogue” of the Grover algorithm [8]) which can
+H = −γN |sihs| − |wihw| .
+(10)
+be thought of roughly as having dimension proportional
+to N . A similar picture holds for the (log N )-dimensional
+Since this Hamiltonian acts nontrivially only on a twohypercube. When we consider a d-dimensional lattice
+dimensional subspace, it is straightforward to compute
+with d independent of N , we will see that the state |si
+its spectrum exactly for any value of γ. For γN ≪ 1,
+still switches from ground state to first excited state at
+the ground state is close to |wi, and for γN ≫ 1, the
+some critical value of γ. However, the |wi state does not
+ground state is close to |si. In fact, for large N , there is
+have substantial overlap on the ground and first excited
+a sharp change in the ground state from |wi to |si as γN
+states unless d > 4, so the algorithm will not work for
+is varied from slightly less than 1 to slightly greater than
+d < 4 (and d = 4 will be a marginal case).
+1. Correspondingly, the gap between the ground and first
+excited state energies is smallest for γN ∼ 1, as shown
+in Figure 1. At γN = 1, for N large, the eigenstates are
+√1 (|wi ± |si) (up to terms of order N −1/2 ), with a gap
+III. HIGH DIMENSIONS
+2 √
+of 2/ N .√Thus the walk rotates the state from |si to |wi
+in time π N /2.
+In this section, we describe the quantum walk algorithm on “high dimensional” graphs, namely the complete graph and the hypercube. These cases have been
+B. Hypercube
+analyzed in previous works [8–10]. Here, we reinterpret
+them as quantum walk algorithms, which provides motivation for the case of a lattice in d spatial dimensions.
+Now consider the n-dimensional hypercube with N =
+2n vertices. The vertices of the graph are labeled by n-bit
+strings, and two vertices are connected if and only if they
+differ in a single bit. Therefore the adjacency matrix can
+A. Complete graph
+be written as
+
+Letting L be the Laplacian of the complete graph, we
+find exactly the continuous time search algorithm proposed in [8]. Adding a multiple of the identity matrix to
+the Laplacian gives
+
+1 ···
+ .. . .
+L + N I = N |sihs| =  .
+.
+
+
+1
+..  .
+.
+
+1 ··· 1
+
+(9)
+
+A=
+
+n
+X
+
+σx(j)
+
+(11)
+
+j=1
+
+(j)
+
+where σx is the Pauli sigma x operator on the jth bit.
+In this case, we again find a sharp transition in the
+eigenstates at a certain critical value of γ, as shown in
+Figure 2. The Hamiltonian can be analyzed using essentially the same method we will apply in the next section,
+
+g repla ements
+
+4
+2
+1
+0:9
+
+jhsj 0 ij2
+jhsj 1 ij2
+
+jhwj 0 ij2
+
+0:8
+0:7
+0:6
+0:05 0:5
+0:15
+0:25 0:4
+0:35
+0:45 0:3
+1:5
+0:2
+
+jhwj 1 ij2
+E1
+
+E0
+
+0:1
+0
+
+0:1
+
+0:2
+
+0:3
+
+0:4
+
+0:5
+
+subspace of the two lowest energy states. Therefore, if
+the algorithm starting in the state |si is to work at all,
+it must work essentially in a two dimensional subspace.
+In the rest of this section, we will make this picture
+quantitative. We begin with some general techniques
+for analyzing the spectrum of H using knowledge of the
+spectrum of the graph. We then show the existence of a
+phase transition in γ, and we show that for any d, the
+algorithm fails if γ is not close to a certain critical value.
+Next we consider what happens when γ is close to its
+critical value. In d > 4, we show that the algorithm
+√ gives
+a success probability of order 1 in time of order N , and
+in d = 4, we find √
+a success probability of order 1/ log N
+in time of order N log N . Finally, we investigate the
+critical point in d < 4 and show that the algorithm does
+not provide substantial speedup.
+A.
+
+FIG. 2: Energy gap and overlaps for the hypercube with N =
+210 = 1024.
+
+together with facts about spin operators. The energy gap
+is analyzed in Section 4.2 of [9], and the energy eigenstates are analyzed in Appendix B of [10]. The critical
+value of γ is
+n  
+2
+1 X n 1
+= + O(n−2 ) ,
+(12)
+γ= n
+2 r=1 r r
+n
+at which the energy gap is
+2
+√ [1 + O(n−1 )]
+N
+
+(13)
+
+and the ground and first excited states are √12 (|wi ± |si)
+up to terms
+√ of order 1/n. Again, we find that after a time
+of order N , the probability of finding w is of order 1.
+
+Preliminaries
+
+In this section, we show how the spectrum of H can be
+understood in terms of the spectrum of L. An eigenvector
+of H, denoted |ψa i, with eigenvalue Ea , satisfies
+H|ψa i = (−γL − |wihw|)|ψa i = Ea |ψa i ,
+
+(14)
+
+i.e.,
+(−γL − Ea )|ψa i = |wihw|ψa i .
+
+(15)
+
+The state |ψa i is normalized, so |hψa |ψa i|2 = 1. Define
+Ra = |hw|ψa i|2
+
+(16)
+
+and choose the phase of |ψa i so that
+p
+hw|ψa i = Ra .
+
+(17)
+
+We wish to calculate the amplitude for success,
+X
+hw|e−iHt |si =
+hw|ψa ihψa |sie−iEa t ,
+
+(18)
+
+a
+
+IV.
+
+FINITE DIMENSIONS
+
+Having seen that the algorithm works in two cases
+where the dimension of the graph grows with N , we now
+consider the case of a d dimensional cubic periodic lattice, where d is fixed independent of N . The minimum
+gap and overlaps of |si, |wi with the ground and first excited states are shown in Figure 3 for d = 2, 3, 4, 5 and
+N ≈ 1000. In all of these plots, there is a critical value of
+γ where the energy gap is a minimum, and in the vicinity
+of this value, the state |si changes from being the first
+excited state to being the ground state. In large enough
+d, the |wi state changes from being the ground state to
+having large overlap on the first excited state in the same
+region of γ. However, for smaller d, the range of γ over
+which the change occurs is wider, and the overlap of the
+|wi state on the lowest two eigenstates is smaller. Note
+that in all cases, |si is supported almost entirely on the
+
+so we only need those |ψa i with Ra > 0.
+L is the Laplacian of a lattice in d dimensions, periodic
+in each direction with period N 1/d , with a total of N vertices. Each vertex of the lattice corresponds to a basis
+state |xi, where x is a d-component vector with components xj ∈ {0, 1, . . . , N 1/d − 1}. The eigenvectors of −L
+are |φ(k)i with
+1
+hx|φ(k)i = √ eik·x ,
+N
+
+(19)
+
+where
+2πmj
+N 1/d
+
+0, ±1, . . . , ± 21 (N 1/d − 1)
+mj =
+0, ±1, . . . , ± 21 (N 1/d − 2), + 21 N 1/d
+kj =
+
+(20)
+N 1/d odd
+N 1/d even,
+(21)
+
+PSfrag repla ements
+
+5
+2
+1
+
+2
+
+0 :9
+
+0 :7
+
+E1
+
+1
+
+E0
+
+F (E )
+
+0 :4
+0:35
+0:45 0:3
+1 :5
+0 :2
+
+1:5
+
+jhwj 1 ij2
+
+0 :6
+0 :5
+
+PSfrag repla ements
+
+jhsj 0 ij2
+jhsj 1 ij2
+
+jhwj 0 ij2
+
+0 :8
+
+0:5
+
+0
+
+PSfrag repla ements 0:1
+0
+0
+
+0:05
+
+0:15
+
+0 :1
+
+0:25
+
+0 :2
+
+0:5
+
+2
+1
+
+1:5
+
+0 :9
+
+jhwj 0 ij
+
+0 :8
+
+jhsj 0 ij2
+jhsj 1 ij2
+
+2
+
+0 :7
+0 :6
+0 :5
+0 :4
+
+E0
+
+PSfrag repla ements 0:1
+0
+0
+
+0:05
+
+0 :1
+
+0 :2
+
+0:15
+
+0:25
+
+0 :3
+
+1
+0 :9
+
+jhwj 0 ij2
+
+0 :7
+
+jhsj 1 ij2
+
+0 :6
+0 :5
+0 :4
+1 :5
+PSfrag repla ements
+
+jhwj 1 ij2
+
+0 :2
+
+8
+
+10
+
+12
+
+(22)
+
+(γE(k) − Ea )hφ(k)|ψa i 6= 0
+
+(23)
+
+j=1
+
+Consistency with (17) then gives the eigenvalue condition
+0:05
+
+0 :1
+
+0:15
+
+0:25
+
+0 :2
+
+0 :3
+
+0:35
+
+0 :4
+
+0:45
+
+1
+
+hw|
+
+1
+|wi = 1 .
+−γL − Ea
+
+(25)
+
+Using (19), this can be expressed as
+
+0 :9
+0 :8
+
+jhsj 1 ij
+
+0 :7
+
+jhsj 0 ij2
+
+2
+
+F (Ea ) = 1 ,
+
+F (E) =
+
+1 X
+1
+.
+N
+γE(k) − E
+
+(26)
+
+k
+
+0 :6
+
+jhwj 0 ij2
+E1
+
+E0
+
+jhwj 1 ij2
+
+0 :1
+0
+0
+
+6
+
+and the corresponding eigenvalues are
+
+
+d
+X
+cos (kj ) .
+E(k) = 2 d −
+
+0 :1
+
+0:05 0:5
+0:15
+0:25 0:4
+0:35
+0:45 0:3
+1 :5
+0 :2
+
+4
+
+for any k. We can therefore rewrite (15), using (17), as
+√
+Ra
+|ψa i =
+|wi .
+(24)
+−γL − Ea
+
+E0
+
+0 :3
+
+0
+0
+2
+
+E1
+
+2
+
+0
+
+Since hφ(k)|wi 6= 0, from (15) we have
+
+jhsj 0 ij2
+
+0 :8
+
+2
+
+FIG. 4: The function F (E) for a d = 2 dimensional periodic
+lattice with N = 16 vertices, at γ = 1.
+
+0:35
+0:45 0:3
+1 :5
+0 :2
+
+2
+
+4
+
+E
+
+jhwj 1 ij2
+E1
+
+1
+
+0 :2
+
+0 :4
+
+0 :6
+
+0 :8
+
+1
+
+FIG. 3: Energy gap and overlaps for d-dimensional lattices
+with N ≈ 1000. From top to bottom, d = 5, N = 45 = 1024;
+d = 4, N = 64 = 1296; d = 3, N = 103 = 1000; d = 2,
+N = 322 = 1024.
+
+A typical function F (E) is shown in Figure 4. This
+function has poles where E = γE(k). For E 6= γE(k),
+(26) shows that F ′ (E) > 0, so there is an eigenvalue of
+H between every adjacent pair of eigenvalues of −γL.
+Since F (E) → 0 as E → ±∞, there is also one negative eigenvalue of H (corresponding to the ground state).
+Note that in the case shown in Figure 4, the eigenvalues
+E = 2, 4, 6 of −γL have degeneracies 4, 6, 4 because of the
+symmetry of the lattice. It follows that there are 3, 5, 3
+eigenvectors of H with eigenvalues Ea = 2, 4, 6, all with
+hw|ψa i = 0 and thus not relevant to our purpose. These
+11 eigenvectors, together with the 5 relevant ones, make
+up the necessary total of 16.
+
+6
+d
+3
+4
+5
+6
+7
+8
+9
+10
+
+The normalization condition on |ψa i gives
+Ra hw|
+
+1
+|wi = 1 ,
+(−γL − Ea )2
+
+(27)
+
+1
+.
+F ′ (Ea )
+
+(28)
+
+i.e.
+Ra =
+
+We also need the overlap of |ψa i with |si. Since L|si = 0,
+from (24) we have
+√
+Ra
+hs|wi ,
+(29)
+hs|ψa i = −
+Ea
+so that
+1
+1
+|hs|ψa i|2 =
+.
+2
+N Ea F ′ (Ea )
+
+(30)
+
+Using (18), (24), and (25),
+hw|e
+
+−iHt
+
+1 X e−iEa t
+.
+|si = − √
+N a Ea F ′ (Ea )
+
+(31)
+
+a
+
+1
+= −1 .
+Ea F ′ (Ea )
+
+1 X
+1
+.
+N
+[E(k)]j
+
+E(k) ≈ k 2 =
+
+(32)
+
+(33)
+
+If d > 2j, then Sj,d can be approximated by an integral
+as4
+(34)
+
+where
+1
+Ij,d =
+(2π)d
+
+Z π
+
+dd k
+.
+j
+−π [E(k)]
+
+(2πm)2
+N 2/d
+
+Sj,d ∼ cj,d N d −1
+
+(38)
+
+where
+cj,d =
+
+X 1
+1
+.
+2j
+(2π)
+(m2 )j
+
+(39)
+
+m6=0
+
+Here the sum is over all values of the d-component vector
+of integers m other than m = 0, and converges for large
+m2 . Numerically, we find
+c2,2 = 0.00664 ,
+
+c2,3 = 0.0265 .
+
+(40)
+
+In the borderline case d = 2j, Ij,d diverges logarithmically at k 2 small and cj,d diverges logarithmically at m2
+large. In this case
+Sj,2j =
+
+(35)
+
+The condition d > 2j is necessary for Ij,d to converge at
+k = 0. The numerical values of I1,d and I2,d for d ≤ 10
+are given in Table I. Note that Ij,d can also be calculated
+using the formula [17]
+Z ∞
+1
+αj−1 e−α
+Ij,d =
+[I0 (α/d)]d
+(36)
+dα
+(2d)j 0
+(j − 1)!
+
+(37)
+
+(where we have used the notation k 2 = k12 + · · · + kd2 ).
+Then
+2j
+
+k6=0
+
+Sj,d = Ij,d + o(1)
+
+0.0184
+0.0105
+0.00697
+0.00504
+0.00383
+0.00301
+
+where I0 is a modified Bessel function of the first kind.
+On the other hand, if d < 2j, then Sj,d can be well
+approximated by the contribution from values of k small
+enough that E(k) is approximately
+
+We will see that the spectrum of H depends significantly on the behavior of the sums
+Sj,d =
+
+I2,d
+
+TABLE I: Numerical values of the convergent integrals. The
+result for I1,3 is given exactly in [18]; the rest were computed
+numerically.
+
+At t = 0, this gives the sum rule
+X
+
+I1,d
+0.253
+0.155
+0.116
+0.0931
+0.0781
+0.0674
+0.0593
+0.0530
+
+1
+ln N + O(1) .
+(4π)j j!
+
+(41)
+
+We will need
+1
+ln N + A + O(N −1 )
+4π
+1
+ln N + O(1)
+S2,4 =
+32π 2
+S1,2 =
+
+(42)
+(43)
+
+where A = 0.0488 (the case j = 1, d = 2 is treated in
+greater detail in [19]).
+B.
+
+Phase transition
+
+4 The
+
+little-o
+notation
+f (N )
+=
+o(g(N ))
+means
+limN→∞ f (N )/g(N ) = 0. In contrast, the more familiar
+big-O notation f (N ) = O(g(N )) means there exist constants
+c, N0 such that for all N ≥ N0 , |f (N )| ≤ c |g(N )|.
+
+In this section, we show that the overlap of the state |si
+on the ground or first excited state of H exhibits a phase
+
+7
+transition at a critical value of γ for any dimension d. In
+fact, away from the critical value, |si is approximately an
+eigenstate of H, so Schrödinger evolution according to H
+does not change the state very much. In the next section,
+we will show that the algorithm indeed fails away from
+the critical value of γ, and in the following sections we
+will consider what happens near the critical point.
+For γ larger than the critical value (which will be determined below), the ground state energy is very close to
+0. This can be seen as follows. The eigenvalue condition
+(26) for the ground state energy E0 , which is negative,
+gives
+1 X
+1
+1
++
+1 = F (E0 ) =
+N |E0 | N
+γE(k) + |E0 |
+
+(44)
+
+k6=0
+
+<
+
+1
+1 X 1
++
+N |E0 | N
+γE(k)
+
+1
+This shows that if γ > ( 4π
++ ǫ) ln N , then 1 − |hs|ψ0 i|2 ≤
+2
+1/(ǫ ln N ) , which approaches zero as N → ∞.
+Similarly, for d > 2 and for γ < I1,d , the first excited
+state |ψ1 i, with energy E1 > 0, is essentially |si. Here
+we find
+1 X
+1
+1
++
+(54)
+1 = F (E1 ) = −
+N E1
+N
+γE(k) − E1
+k6=0
+
+1
+1 X 1
+>−
++
+N E1
+N
+γE(k)
+≈−
+
+1
+I1,d
++
+,
+N E1
+γ
+
+E1 <
+
+(45)
+(46)
+
+where in the last line we have assumed d > 2. In this
+case, for γ > I1,d (which will turn out to be the critical
+value), up to small terms,
+|E0 | <
+
+γ
+1
+.
+N γ − I1,d
+
+Using (30), we have
+h
+i−1
+X
+|hs|ψ0 i|2 = 1 + E02
+(γE(k) + |E0 |)−2
+
+(47)
+
+> 1 +
+>1−
+
+−1
+
+1 
+E02 X
+2
+γ
+[E(k)]2
+k6=0
+
+E02 X
+1
+.
+γ2
+[E(k)]2
+
+(49)
+
+
+
+d>4
+ O(N −1 )
+1
+2
+−1
+1 − |hs|ψ1 i| <
+×
+O(N log N ) d = 4
+(I1,d − γ)2 
+ O(N −2/3 )
+d = 3.
+(58)
+We see that γ = I1,d is the critical point. In d = 2
+we can apply similar reasoning to obtain that for γ <
+1
+4π ln N + A,
+1 − |hs|ψ1 i|2 <
+
+1
+
+× O(1) .
+1
+ln N − γ)2
+( 4π
+
+(59)
+
+C.
+
+Failure of the algorithm away from the critical
+point
+
+(50)
+
+Inserting the behavior of S2,d from (33), (38), and (41)
+and using the bound (47), we find
+
+
+d>4
+ O(N −1 )
+1
+2
+−1
+1 − |hs|ψ0 i| <
+×
+O(N
+log
+N
+)
+d
+=4
+(γ − I1,d )2 
+ O(N −2/3 )
+d = 3.
+(51)
+This shows that if γ = I1,d + ǫ for any ǫ > 0, then 1 −
+|hs|ψ0 i|2 approaches zero as N → ∞.
+If d = 2, then I1,2 is logarithmically divergent, but using (42) in (45) we can apply a similar argument when1
+ln N + A, in which case we have
+ever γ > 4π
+1
+γ
+1
+N γ − 4π
+ln N − A
+
+(57)
+
+1
+In this case γ = 4π
+ln N + A is the critical point.
+
+k6=0
+
+|E0 | <
+
+γ
+1
+.
+N I1,d − γ
+
+Again applying (30), we find
+
+(48)
+
+k6=0
+
+
+
+(56)
+
+so that, up to small terms,
+
+k6=0
+
+1
+I1,d
+≈
++
+N |E0 |
+γ
+
+(55)
+
+k6=0
+
+(52)
+
+In this section we will show that the algorithm fails
+away from the critical point, regardless of dimension.
+The results (51) and (58) are actually sufficient to show
+that away from the critical point in d > 4, the algorithm
+can be no better than classical search, but we will give a
+different argument for consistency of presentation.
+First we consider the regime where γ is larger than the
+critical value. In the previous section, we saw that in
+this case, the ground state energy E0 is small. This is
+sufficient to imply that the success probability is small
+at all times. Combining (31) and (32), we see that the
+amplitude at an arbitrary time must satisfy
+
+
+2
+1
+−iHt
+−1
+(60)
+|hw|e
+|si| ≤ √
+N |E0 |F ′ (E0 )
+2
+≤ √
+.
+(61)
+N |E0 |F ′ (E0 )
+Furthermore it is clear from the definition of F (E) that
+
+and
+1 − |hs|ψ0 i|2 <
+
+1
+× O(1) .
+1
+ln N − A)2
+(γ − 4π
+
+(53)
+
+F ′ (E0 ) ≥
+
+1
+,
+N E02
+
+(62)
+
+8
+so
+√
+|hw|e−iHt |si| ≤ 2 N |E0 | .
+
+(63)
+
+Using (47), we find that for d > 2,
+2
+γ
+|hw|e−iHt |si| ≤ √
+.
+γ
+−
+I1,d
+N
+
+(64)
+
+This shows that if γ = I1,d + ǫ for any ǫ > 0, the success
+probability is never more than a constant factor larger
+than its initial value, no matter how long we run the
+algorithm. If d = 2, then I1,2 is logarithmically divergent,
+but using (52) we find
+γ
+2
+|hw|e−iHt |si| ≤ √
+.
+1
+N γ − 4π ln N − A
+
+(65)
+
+1
++ ǫ) ln N
+This shows that the algorithm fails if γ > ( 4π
+for any ǫ > 0.
+Now we consider the case where γ is smaller than the
+critical value. For d > 4 and E < 0, we have
+Z
+1
+dd k
+F (E) ≈
+(66)
+(2π)d
+γE(k) + |E|
+Z
+Z
+1
+dd k
+|E|
+dd k
+=
+−
+d
+d
+(2π)
+γE(k) (2π)
+γE(k)[γE(k) + |E|]
+(67)
+Z
+d
+|E|
+d k
+I1,d
+(68)
+− 2
+>
+γ
+γ (2π)d
+[E(k)]2
+I2,d
+I1,d
+(69)
+− 2 |E| .
+=
+γ
+γ
+
+Using the fact that F (E0 ) = 1, this shows that
+|E0 | >
+
+γ(I1,d − γ)
+.
+I2,d
+
+c|E|1−ǫ
+I1,4
+,
+−
+γ
+γ 2−ǫ
+
+(76)
+
+|E0 | > c′ γ(I1,d − γ)1/(1−ǫ)
+
+(77)
+
+F (E) >
+so that
+
+for some c′ > 0, and therefore
+2
+1
+.
+|hw|e−iHt |si| < √
+′
+N c γ(I1,4 − γ)1/(1+ǫ)
+
+(70)
+
+(71)
+
+A similar argument can be used for d = 3, 4. With
+d = 4, we have
+Z
+1
+d4 k
+F (E) ≈
+(72)
+(2π)4
+γE(k) + |E|
+Z
+Z
+1
+|E|
+d4 k
+d4 k
+=
+−
+(2π)4
+γE(k) (2π)4
+γE(k)[γE(k) + |E|]
+(73)
+Z 2π
+|E|
+I1,4
+k dk
+(74)
+−
+>
+4γ
+γ
+32γ 0 π2 k 2 + |E|
+
+
+I1,4
+16γ
+π 2 |E|
+,
+(75)
+=
+ln 1 +
+−
+γ
+256γ 2
+|E|
+
+(78)
+
+With d = 3, we have
+Z
+d3 k
+1
+(79)
+3
+(2π)
+γE(k) + |E|
+Z
+Z
+1
+d3 k
+|E|
+d3 k
+=
+−
+3
+3
+(2π)
+γE(k) (2π)
+γE(k)[γE(k) + |E|]
+(80)
+Z ∞
+|E|
+dk
+I1,3
+−
+>
+(81)
+γ
+8γ 0 π4γ2 k 2 + |E|
+π2 p
+I1,3
+|E|
+(82)
+−
+=
+γ
+32γ 3/2
+
+F (E) ≈
+
+where in the third line we have again used E(k) ≥ π42 k 2 .
+In this case we find
+|E0 | >
+
+From (16) and (28), it is clear that F ′ (E) > 1, so using
+(61) gives
+1
+2I2,d
+|hw|e−iHt |si| < √
+.
+γ(I
+N
+1,d − γ)
+
+where the third line follows because cos k ≤ 1 − 2(k/π)2
+for |k| ≤ π, which implies E(k) ≥ π42 k 2 . We have also
+used the fact that k 2 ≤ dπ 2 to place an upper limit on
+the integral. This shows that for any ǫ > 0 (with ǫ ≤ 1),
+there exists a c > 0 such that
+
+1024
+γ(I1,3 − γ)2
+π4
+
+(83)
+
+which shows that
+1
+2π 4
+|hs|e−iHt |wi| < √
+.
+N 1024γ(I1,3 − γ)2
+
+(84)
+
+Finally, with d = 2 we use a different argument. Here
+we have
+Z
+1
+d2 k
+F ′ (E) ≈
+(85)
+(2π)2
+[γE(k) + |E|]2
+Z π
+k dk
+1
+(86)
+>
+2
+2π 0 (γk + |E|)2
+π
+(87)
+=
+4|E|(|E| + π 2 γ)
+where the second line follows since cos k ≥ 1− 12 k 2 , which
+implies E(k) ≤ k 2 . In the second line we have also used
+the fact that the entire disk |k| ≤ π is included in the
+region of integration. Equation (87) shows that
+|E|F ′ (E) >
+
+π
+,
+4(|E| + π 2 γ)
+
+(88)
+
+9
+so that
+1 8(|E0 | + π 2 γ)
+,
+(89)
+|hw|e−iHt |si| < √
+π
+N
+√
+√
+which is O(1/ N ) for γ = O(1), and O((log N )/ N ) for
+1
+ln N + A.
+any γ < 4π
+The arguments for the case where γ is smaller than
+the critical value can be made tighter by a more refined
+analysis. For example, by considering the behavior of
+F ′ (E), one can give a bound whose dependence on I1,d −γ
+is linear for all d > 2, not just for d > 4. Futhermore,
+the careful reader will note that our bounds for d > 2 all
+become useless as γ → 0, but it is easy to see that the
+algorithm cannot be successful for small values of γ.
+Altogether, we see that the algorithm cannot work any
+better than classical search if γ is not chosen close to its
+critical value. It remains to investigate what happens
+near the critical point.
+D.
+
+The critical point in d ≥ 4
+
+In this section we investigate the region of the critical
+point in the cases where the algorithm provides speedup.
+First we consider the case d > 4. Separating out the
+k = 0 term in (26), we have
+F (E) = −
+
+1
+1 X
+1
++
+.
+NE
+N
+γE(k) − E
+
+(90)
+
+k6=0
+
+If |E| ≪ γE(k) for all k 6= 0, then for large N , we can
+Taylor expand the second term to obtain
+F (E) ≈ −
+
+1
+E
+1
++ I1,d + 2 I2,d
+NE
+γ
+γ
+
+the first excited state is small, since as can be seen using
+(32) we have
+1
+1 X
+−√
+E
+F
+N Ea >E1 a ′ (Ea )
+
+
+1
+1
+1
+√
+.
++
+=
+1+
+E0 F ′ (E0 ) E1 F ′ (E1 )
+N
+
+√
+Using (93) and (94), we see that the O( N ) contributions from 1/E0 F ′ (E0 ) and 1/E1 F ′ (E1 ) cancel, so the
+right hand side of (95) is o(1). Thus, using (31), we find
+|hw|e
+
+−iHt
+
+I1,d
+|si| ≈ p
+sin
+I2,d
+
+I1,d t
+p
+I2,d N
+
+!
+
+.
+
+(96)
+
+p
+The success probability is of order 1 at t = I2,d N/I1,d .
+Straightforward analysis shows that a similar condition
+holds so long as γ = I1,d ± O(N −1/2 ), exactly the width
+of the region that cannot be excluded based on the arguments of Section IV C.
+In d = 4, I2,d does not converge, so the result is modified slightly. In this case (91) holds with I2,d replaced by
+1
+32π 2 ln N , so the ground and first excited state energies
+are given by
+E0 ≈ − q
+
+I1,4
+1
+32π 2 N ln N
+
+,
+
+E1 ≈ + q
+
+I1,4
+1
+32π 2 N ln N
+
+, (97)
+
+and we find
+F ′ (E0 ) ≈ F ′ (E1 ) ≈
+
+(91)
+
+which gives
+
+(95)
+
+ln N
+2 .
+16π 2 I1,4
+
+(98)
+
+Therefore
+1
+I2,d
+F ′ (E) ≈
++ 2 .
+2
+NE
+γ
+
+(92)
+
+The critical point corresponds to the condition γ = I1,d .
+At this point, setting (91) equal to 1 gives two eigenvalues,
+I1,d
+E0 ≈ − p
+,
+I2,d N
+
+I1,d
+E1 ≈ + p
+,
+I2,d N
+
+(93)
+
+which correspond to the ground and first excited state,
+with a gap of order N −1/2 . Since E(k) ≈ (2π)2 N −2/d
+for m2 = 1, we see that the assumption E0 , E1 ≪ γE(k)
+holds for all k 6= 0. Furthermore, for the ground and first
+excited states at γ = I1,d , (92) gives
+F ′ (E0 ) ≈ F ′ (E1 ) ≈
+
+2I2,d
+.
+2
+I1,d
+
+|hw|e−iHt |si| ≈ q
+
+I1,4
+1
+32π 2 ln N
+
+
+
+sin  q
+
+I1,4 t
+1
+32π 2 N ln N
+
+
+
+ ,
+
+(99)
+√
+which shows that running for a time of order N log N
+gives a success probability of order 1/ log N . Using
+O(log N ) repetitions to boost the success
+√ probability
+close to 1, we find a total run time O( N log3/2 N ).5
+One can show
+p that similar conditions hold so long as
+γ = I1,4 ± O( (log N )/N ).
+For d < 4, the expansion (91) fails to find states whose
+energies satisfy E ≪ γE(k). Indeed, we will see in the
+next section that the algorithm provides no substantial
+speedup in these cases.
+
+(94)
+
+Now we want to use (31) to compute the time evolution
+of the algorithm. The contribution from all states above
+
+5 In
+
+fact, we could improve the run time of the algorithm to
+√
+O( N log N ) using amplitude amplification [20].
+
+10
+E.
+
+The critical point in d < 4
+
+To handle the case d < 4, we rearrange the eigenvalue
+condition to extract the O(1) contribution to F (E):
+F (E) = −
+
+1 X 1
+1 X
+E
+1
++
++
+.
+NE N
+γE(k) N
+γE(k)[γE(k) − E]
+k6=0
+
+Thus the time required to find w using classical repetition
+of the evolution for time t is of order
+√
+N
+t
+≥
+(109)
+|hw|e−iHt |si|2
+|hw|e−iHt |si|
+≥
+
+k6=0
+
+(100)
+In d = 3, we can replace the middle term by I1,3 /γ
+for large N . To explore the neighborhood of the critical
+point in d = 3, we introduce rescaled variables a, x via
+γ = I1,3 +
+
+a
+N 1/3
+
+(101)
+
+2
+
+4π I1,3
+E=
+x.
+N 2/3
+
+(102)
+
+Since the sum in the third term of (100) only gets significant contributions from small energies, we use (37) to
+give the approximation
+2
+
+2
+
+4π I1,3 m
+,
+γE(k) ≈
+N 2/3
+
+(103)
+
+and we can analyze the sum using the same techniques
+we applied to calculate Sj,d in the case d < 2j. Then we
+have, for large N ,
+G3 (x) − a
+F (E) ≈ 1 +
+I1,3 N 1/3
+
+(104)
+
+(106)
+
+Therefore the success probability is small no matter how
+long we run the algorithm. This fact is sufficient to imply that the algorithm cannot produce full square root
+speedup. Taking the time derivative of (31), we see that
+d
+d
+1
+|hw|e−iHt |si| ≤
+hw|e−iHt |si| ≤ √ ,
+dt
+dt
+N
+
+(107)
+
+which implies that
+√
+t ≥ |hw|e−iHt |si| N .
+
+1
+ln N + A + a
+4π
+2π ln N
+x.
+E=
+N
+γ=
+
+(111)
+(112)
+
+In this case, we find
+F (E) ≈ 1 +
+
+G2 (x) − a
+,
+1
+4π ln N
+
+(113)
+
+where G2 (x) is defined as in (105), but with m having two
+components instead of three. Again we find a solution
+x0 < 0 that is independent of N , and applying (63) gives
+|hw|e−iHt |si| ≤
+
+4π|x0 | ln N
+√
+.
+N
+
+(114)
+
+|hw|e−iHt |si|2
+
+≥
+
+N
+,
+4π|x0 | log N
+
+(115)
+
+so the algorithm also fails near the critical point in d = 2.
+
+Here the sum is over all integer values of m, as in (39),
+and similarly converges for large m2 . The eigenvalue condition in terms of x is G3 (x) = a, which has one negative solution x0 . Since G3 (x) is independent of N , x0
+is independent of N , and the ground state energy E0 is
+proportional to N −2/3 .
+As we saw in Section IV C, a very small ground state
+energy implies that the success probability is small at all
+times. Using (63), we find
+8π 2 I1,3 |x0 |
+.
+N 1/6
+
+regardless of t. In other words, the algorithm cannot
+produce full speedup.
+Similar considerations hold in the case d = 2. In this
+1
+ln N +A, so we choose
+case, the critical point is at γ = 4π
+
+t
+(105)
+
+m6=0
+
+|hw|e−iHt |si| ≤
+
+(110)
+
+(Note that we could have reached a similar conclusion
+using (89).) Using (109), we find
+
+where
+
+
+1 X
+1
+x
+.
+G3 (x) =
+−
+4π 2
+m2 (m2 − x) x
+
+N 2/3
+8π 2 I1,3 |x0 |
+
+(108)
+
+V.
+
+DISCUSSION
+
+In this paper we have presented a general approach
+to the Grover problem using a continuous time quantum
+walk on a graph. We showed that quadratic speedup can
+be achieved if the graph is a lattice of sufficiently high
+dimension (d > 4). Although we had originally hoped
+to find a fast algorithm in d = 2, we found that our
+approach does not offer substantial speedup in this case.
+Our algorithm begins in the state |si, which is delocalized over the entire graph. One might demand instead
+that we start at a particular vertex of the graph. However, it is clear that |si can be prepared from a localized
+state using O(N 1/d ) local operations. In fact, we could
+also prepare |si by running the quantum walk search algorithm backward from a known localized state for the
+same amount of time it would take to find |wi starting
+from |si.
+The quantum walk search algorithm is related to a
+search algorithm using quantum computation by adiabatic evolution. Adiabatic quantum computation is a
+
+11
+way of solving minimization problems by keeping the
+quantum computer near the ground state of a timevarying Hamiltonian [9]. In the adiabatic version of the
+search algorithm, the quantum computer is prepared in
+the state |si (the ground state of H with γ large), and γ
+is slowly lowered from a large value to 0. If γ is changed
+sufficiently slowly, then the adiabatic theorem ensures
+that the quantum computer ends up near the final ground
+state |wi, thus solving the problem. The time required to
+achieve a success probability of order 1 is inversely proportional to the square of the gap between the ground
+and first excited state energies. On the complete graph,
+the fact that the gap is only small (of order N −1/2 ) for
+a narrow range of γ (of order N −1/2 ) means
+that γ can
+√
+be changed in such a way that time O( N ) is sufficient
+to solve the problem [21, 22]. Since the gap has similar
+behavior for the hypercube and for d-dimensional lattices with d > 4, quadratic speedup can also be achieved
+adiabatically
+in these cases. In d = 4pthe gap is of order
+√
+1/ N log N for a range of γ of order (log N )/N , so the
+√
+run time is again O( N log3/2 N ). In d < 4, no speedup
+can be achieved adiabatically.
+Yet another way to solve the Grover problem uses a
+sequence of measurements of H. For any adiabatic algorithm, there is a related algorithm that uses only a
+sequence of measurements to remain in the ground state
+of a slowly changing Hamiltonian [10]. The case of a
+hypercube was presented in [10], and our present results
+show that this algorithm can also be used when the graph
+is a lattice with d > 4. However, to realize the measurement dynamically, the Hamiltonian H must be coupled
+
+to a pointer variable, which must be represented using
+auxiliary space.
+Although the quantum walk algorithm does not perform as well as the Aaronson-Ambainis algorithm in
+d = 2, 3, 4, it does have certain advantages. The quantum walk algorithm uses simple, time-independent dynamics rather than a recursive procedure. Furthermore,
+the quantum walk algorithm uses only a single basis state
+for each vertex of the graph, whereas the algorithm of [4]
+needs substantial auxiliary space.
+The actual complexity of the search problem in d = 2
+remains an open question. It would be interesting either to improve on the algorithms of [15, 16] or to
+prove a lower bound showing that full speedup cannot
+be achieved.
+
+[1] L. K. Grover, Quantum mechanics helps in searching for
+a needle in a haystack, Phys. Rev. Lett. 79, 325 (1997).
+[2] C. H. Bennett, E. Bernstein, G. Brassard, and U. Vazirani, Strengths and weaknesses of quantum computing,
+quant-ph/9701001, SIAM J. Comput. 26, 1510 (1997).
+[3] P. Benioff, Space searches with a quantum robot, quantph/0003006, in Quantum Computation and Information,
+eds. S. J. Lomonaco and H. E. Brandt (AMS, 2002).
+[4] S. Aaronson and A. Ambainis, Quantum search of spatial
+regions, quant-ph/0303041, Proc. 44th IEEE Symposium
+on Foundations of Computer Science, 200 (2003).
+[5] E. Farhi and S. Gutmann, Quantum computation and
+decision trees, quant-ph/9706062, Phys. Rev. A 58, 915
+(1998).
+[6] A. M. Childs, E. Farhi, and S. Gutmann, An example
+of the difference between quantum and classical random
+walks, quant-ph/0103020, Quantum Information Processing 1, 35 (2002).
+[7] A. M. Childs, R. Cleve, E. Deotto, E. Farhi, S. Gutmann,
+and D. A. Spielman, Exponential algorithmic speedup by
+quantum walk, quant-ph/0209131, Proc. 35th ACM Symposium on Theory of Computing, 59 (2003).
+[8] E. Farhi and S. Gutmann, Analog analogue of a digital
+quantum computation, quant-ph/9612026, Phys. Rev. A
+57, 2403 (1998).
+
+[9] E. Farhi, J. Goldstone, S. Gutmann, and M. Sipser,
+Quantum computation by adiabatic evolution, quantph/0001106.
+[10] A. M. Childs, E. Deotto, E. Farhi, J. Goldstone, S.
+Gutmann, and A. J. Landahl, Quantum search by measurement, quant-ph/0204013, Phys. Rev. A 66, 032314
+(2002).
+[11] D. Aharonov, A. Ambainis, J. Kempe, and U. Vazirani,
+Quantum walks on graphs, quant-ph/0012090, Proc. 33rd
+ACM Symposium on Theory of Computing, 50 (2001).
+[12] A. Ambainis, E. Bach, A. Nayak, A. Vishwanath, and
+J. Watrous, One-dimensional quantum walks, Proc. 33rd
+ACM Symposium on Theory of Computing, 37 (2001).
+[13] D. A. Meyer, On the absence of homogeneous scalar unitary cellular automata, quant-ph/9604011, Phys. Lett. A
+223, 337 (1996).
+[14] N. Shenvi, J. Kempe, and K. B. Whaley, A quantum
+random walk search algorithm, quant-ph/0210064, Phys.
+Rev. A 67, 052307 (2003).
+[15] A. Ambainis, J. Kempe, and A. Rivosh, Coins make
+quantum walks faster, quant-ph/0402107.
+[16] A. M. Childs and J. Goldstone, Spatial search and the
+Dirac equation, quant-ph/0405120, to appear in Phys.
+Rev. A.
+[17] E. W. Montroll, Random walks in multidimensional
+
+Acknowledgments
+
+We thank Scott Aaronson for discussing his results on
+quantum search of spatial regions and for encouraging
+us to pursue a quantum walk approach. We also thank
+Edward Farhi and Sam Gutmann for numerous helpful discussions. AMC received support from the Fannie
+and John Hertz Foundation. This work was also supported in part by the Cambridge–MIT Institute, by the
+Department of Energy under cooperative research agreement DE-FC02-94ER40818, and by the National Security Agency and Advanced Research and Development
+Activity under Army Research Office contract DAAD1901-1-0656.
+
+12
+spaces, especially on periodic lattices, J. Soc. Indust.
+Appl. Math. 4, 241 (1956).
+[18] G. N. Watson, Three triple integrals, Quart. J. Math.
+Oxford Scr. 10, 266 (1939).
+[19] E. W. Montroll, Random walks on lattices. III. Calculation of first-passage times with applications to exciton
+trapping on photosynthetic units, J. Math. Phys. 10, 753
+(1969).
+[20] G. Brassard, P. Høyer, M. Mosca, and A. Tapp,
+Quantum amplitude amplification and estimation, quant-
+
+ph/0005055, in Quantum Computation and Information,
+eds. S. J. Lomonaco and H. E. Brandt (AMS, 2002).
+[21] J. Roland and N. J. Cerf, Quantum search by local adiabatic evolution, quant-ph/0107015, Phys. Rev. A 65,
+042308 (2002).
+[22] W. van Dam, M. Mosca, and U. Vazirani, How powerful
+is adiabatic quantum computation?, quant-ph/0206003,
+Proc. 42nd Symposium on Foundations of Computer Science, 279 (2001).
+
+

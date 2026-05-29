@@ -1,0 +1,1216 @@
+arXiv:2411.09157v1 [math.CO] 14 Nov 2024
+
+Quotient graphs and stochastic matrices
+Frederico Cançado∗, Gabriel Coutinho†
+November 15, 2024
+
+Abstract
+Whenever graphs admit equitable partitions, their quotient graphs
+highlight the structure evidenced by the partition. It is therefore very
+natural to ask what can be said about two graphs that have the same
+quotient according to certain equitable partitions. This question has been
+connected to the theory of fractional isomorphisms and covers of graphs
+in well-known results that we briefly survey in this paper. We then depart
+to develop theory of what happens when the two graphs have the same
+symmetrized quotient, proving a structural result connecting this with the
+existence of certain doubly stochastic matrices. We apply this theorem
+to derive a new characterization of when two graphs have the same combinatorial quotient, and we also study graphs with weighted vertices and
+the related concept of pseudo-equitable partitions. Our results connect
+to known old and recent results, and are naturally applicable to study
+quantum walks.
+
+1
+
+Introduction
+
+Let G and H be graphs on the same number of vertices, with adjacency matrices
+AG and AH . The linear programming relaxation of the graph isomorphism
+problem consists of searching for a matrix M so that
+AG M = M AH
+
+and M is doubly stochastic.
+
+(1)
+
+Note that if M is required to have integer entries, then any such M is a permutation matrix, and therefore describes an isomorphism between G and H. We
+say the graphs G and H are fractionally isomorphic if there exists a matrix M
+satisfying (1).
+A well-known theorem [20, Chapter 6] provides equivalent characterizations
+of fractionally isomorphic graphs.
+Theorem 1 (Theorem 6.5.1 in [20]). For two graphs G and H on the same
+number of vertices, the following are equivalent.
+∗ frederico.cancado@dcc.ufmg.br.
+† gabriel@dcc.ufmg.br.
+
+1
+
+(i) They are fractionally isomorphic, that is, there is a doubly-stochastic matrix M such that AG M = M AH .
+(ii) G and H have some common equitable partition.
+(iii) G and H have in common the coarsest equitable partition.
+(iv) D(G) = D(H).
+The equivalence between (i) and (ii) was proved in [19], and we explain it
+in details below. We overview the remaining items along with other details in
+Section 1.1.
+Given a partition π = {C1 , . . . , Ck } of the vertex set of graph, let P denote
+its characteristic matrix, that is, the 01 matrix with rows indexed by vertices
+and k columns, each equal to 1Ci , the indicator vector of the set Ci .
+The partition π is called equitable if the colspace of P is AG -invariant.
+Equivalently (see [12]), π is equitable if for any v ∈ Ci , the number of neighbours
+of v in Cj depends only on i and j, thus denoted simply by pij . The directed
+graph with the k cells of π as its vertices and an arc of weight pij from vertex
+Ci to Cj is denoted by G/π, and is referred to as the quotient graph of G by π.
+Note that if π is equitable, then (see [13, Chapter 9]).
+AG P = P AG/π
+
+and AG/π = (P T P )−1 (P T AG P ).
+
+A third equivalent definition comes from the notion of symmetrized quotient
+graph, which is key to our paper. Given the characteristic matrix P , let Pe
+denote the matrix obtained from P upon normalizing its columns, that is,
+Pe = P (P T P )−1/2 .
+
+g to be the weighted (unidirected) graph whose adjacency matrix
+We define G/π
+is given by
+e and thus AG Pe = Pe A g ,
+eT
+(2)
+AG/π
+g = P AG P ,
+G/π
+
+so it follows that π is equitable if and only if AG commutes with Pe Pe T (again,
+see [12, Lemma 1.1]).
+G=
+
+G/π =
+
+1
+
+2
+
+1
+
+√
+2
+
+g =
+G/π
+1
+
+Figure 1: Example of a graph G with an equitable partition π (white and black
+vertices), the quotient graph, and the symmetrized quotient graph.
+
+2
+
+Equitable partitions and graph quotients were likely studied for the first
+time in [21]. We briefly mention two recent applications of graph quotients to
+completely different fields: the combinatorial quotient graphs, for instance, have
+been applied to facilitate the solution of linear programs in [14]; and the symmetrized quotients have been used to study perfect state transfer — a quantum
+walk phenomenon with applications in quantum computing [5, 16].
+To say that two graphs G and H have a common equitable partition, in the
+sense of Theorem 1, is to say that there are equitable partitions of G and H
+with characteristic matrices P and Q respectively so that
+P T P = QT Q,
+
+and P T AG P = QT AH Q.
+
+(Note that we need not worry about using equality rather than some isomorphism sign, as the columns of each partition matrix may be freely reordered).
+Naturally the first condition implies both graphs have the same number of vertices, and together they imply that the quotient graphs are isomorphic.
+Note that both conditions imply that AG/π = AH/σ , but the converse is not
+necessarily true. A further observation is that
+AG/π = AH/σ =⇒ AG/π
+g = AH/σ
+g,
+as the procedure to symmetrize a matrix by diagonal similarity yields a unique
+solution. We examine this latter property and we provide an equivalent condition that goes in spirit of the equivalence between (i) and (ii) in Theorem 1.
+Our first main result is the following:
+Theorem 2. Let G and H be graphs with adjacency matrices AG and AH .
+There are equitable partitions π in G and σ in H with equal symmetrized quotient
+g = H/σ,
+g if, and only if, there is a nonnegative matrix M
+graphs, that is G/π
+satisfying:
+(i) Both M M T and M T M are doubly stochastic.
+
+(ii) AG M = M AH .
+This Theorem is proved in Section 2. We also present here in the introduction, in Section 1.2, an application of this theorem to the study of quantum
+walks in graphs.
+In Section 3 we focus on the problem of what can be said about graphs
+and equitable partitions so that AG/π = AH/σ . We prove that this condition
+is equivalent to both graphs admitting the same quotient by their coarsest equitable partition. This is done upon examining how the structure of the set
+of equitable partitions behaves when successive quotients are taken. While it
+is plausible that the specialist in the topic of equitable partitions will find the
+results of this section natural or familiar, we have not been able to locate them
+in the literature, so we state them in this paper as original contributions. We
+appreciate of course any indication to a suitable reference. We also verify that
+techniques based on the work in [14] provide another equivalent condition to
+3
+
+AG/π = AH/σ , along the lines of condition (i) in Theorem 1, thus we enrich the
+known Theorem 5 with two extra equivalent characterizations.
+Lastly, and on the topic of weighted graphs, we discuss what has been called
+pseudo-equitable partitions (concept first introduced in [10] and recently studied
+in [1,2] in connection with eigenvalue bounds, though in a sense more restricted
+than ours). Given G, we say that a partition π with matrix P is pseudo-equitable
+if there is a diagonal matrix D of positive vertex weights u so that the colspace of
+P is (AD)-invariant. We denote the quotient graph by G/(u, π). This has been
+particularly useful to generalize the fact that the trivial partition with only one
+class is equitable if and only if the graph is regular. By putting D = Diag(u),
+where u is the Perron-eigenvector of G, it follows that the trivial partition with
+only one class is pseudo-equitable for all graphs. Going further, note now that
+any two graphs with the same largest eigenvalue will be pseudo-fractionallyisomorphic. More details come in Section 5.
+The main results in Section 5 come from analysing the well known results
+that transform certain matrices into doubly stochastic matrices by diagonal
+conjugation (see [4, 22]) in conjunction to our analysis of equitable partitions.
+There we show the following theorem.
+Theorem 3. Suppose that G and H are positive-weighted graphs with adjacency
+matrices AG and AH respectively. The following are equivalent:
+(i) There is a nonnegative matrix M such that the connected components of
+the graph ZM with adjacency matrix
+
+
+M
+MT
+are complete bipartite graphs, and AG M = M AH ;
+(ii) there are pseudo-equitable partitions (u, π) and (w, σ) of G and H respectively such that AG/(u,π)
+^ .
+^ = AH/(w,σ)
+If the conditions hold true, the connected components of M are in bijection
+with pairs of cells of the equitable partitions of each graph.
+As a consequence of the previous result, we have a fairly useful description
+of all pairs of pseudo-equitable partitions from two distinct graphs that admit
+the same symmetrized quotient.
+We point out that if AG and AH have the same largest eigenvalue, then both
+conditions of the previous theorem are always satisfied for the partition with
+only one part.
+
+1.1
+
+Equivalent characterizations of fractional isomorphism
+and other notions of similar equitable partitions
+
+Let π, σ be two partitions of a graph. We say that σ is coarser than π, and
+denote by π ≤ σ, when each cell of π is contained in some cell of σ. In this case,
+4
+
+we can also say that π is finer than σ. Given two partitions, π, σ, there is the
+finest partition coarser than both, which is said to be π join σ and is denoted
+by π ∨ σ. Likewise, π ∧ σ denotes the meet, that is, the coarsest partition finer
+than both. Equitable partitions form a lattice:
+Proposition 4 (see [19]). Suppose π, σ are equitable partitions of X. Then
+π ∨ σ and π ∧ σ are equitable partitions.
+Moreover, all graphs have the finest equitable partition, which is the trivial
+one (each cell is a singleton), and joining all equitable partitions will give us the
+coarsest equitable partition, which is unique. The equivalence between (i) and
+(iii) in Theorem 1 was proved in [23]. Symbols D(G) and D(H) in item (iv)
+in Theorem 1 refer to encodings of all partial outputs of the well-known color
+refinement algorithm (equivalent to the 1-dimensional Weisfeiler-Leman [24]),
+and its equivalence to (iii) is quite straightforward (see [17]).
+Assume G and H are graphs and π and σ are their coarsest equitable partitions, respectively, so that G/π ≃ H/σ. In [17, Section 3], three equivalent
+conditions to this were presented, all based on the notion of a graph cover.
+A (possibly infinite) graph Γ covers G via maps γV : V (Γ) → V (G) and
+γE : E(Γ) → E(G) if
+• u ∈ e in Γ implies γV (u) ∈ γE (e) in G,
+• both maps γV and γE are onto,
+• γE is locally one-to-one, that is, γE is a bijection between the sets of edges
+{e ∈ E(Γ) : u ∈ e} and {e ∈ E(G) : γV (u) ∈ e}.
+The graph Γ is called a cover of G. It is straightforward to notice that a
+connected graph G has a unique tree that covers it, called the universal cover,
+and unless G is itself a tree, this universal cover is an infinite graph (for instance:
+if G is a cycle, the universal cover is the infinite path in which all vertices have
+degree 2).
+Theorem 5 (see [17], Section 3). If G and H are graphs, then the following
+are equivalent:
+(i) G and H share a common finite cover.
+(ii) G and H have the same universal cover.
+(iii) G and H share a common (possibly infinite) cover.
+(iv) If π and σ are the coarsest equitable partitions of G and H respectively,
+then G/π ≃ H/σ.
+Our work in Section 3 provides an equivalent condition to these:
+Theorem 6. Two graphs G and H admit coarsest equitable partitions π and σ
+so that G/π ≃ H/σ if and only if there is a nonnegative nonzero matrix M with
+constant row sum and constant column sum such that AG M = M AH .
+5
+
+1.2
+
+Application to quantum walks
+
+A continuous-time quantum walk on a graph G is the map U that takes nonnegative real numbers t and returns a symmetric unitary matrix, as
+U (t) = exp(itAG ).
+There is a very large literature on the topic, and as this is not the main theme of
+this paper, we will simply refer to the survey [8] and references therein. A major
+problem in this field is to find graphs G so that for some t, an off diagonal entry
+U (t) has absolute value 1. In this case, G is said to admit perfect state transfer.
+The connection between this and equitable partitions was first studied in [11],
+and we summarize what is of our interest as follows. Say π is an equitable
+partition of G with partition matrix P , and denote A = AG and B = AG/π
+g.
+Recall that B is symmetric as in (2). Then, as exp(itA) is a polynomial in A,
+APe = Pe B =⇒ exp(itA)Pe = Pe exp(itB),
+
+whence if two classes of π are singletons, corresponding to vertices u and v, the
+equation above says that | exp(itA)uv | = 1 if, and only if, | exp(itB){u}{v} | = 1.
+Thus, if any two graphs admit the same symmetrized quotient B with the two
+vertices as singletons, as above, then perfect state transfer in one implies it in
+the other. Bottom line: understanding the combinatorics of pairs of graphs that
+admit the same symmetrized quotient might lead to new ways of constructing
+examples of perfect state transfer, perhaps allowing for optimizing the size of the
+graph, as was shown in limited settings in [7, 16], and discussed more lengthily
+in [18].
+
+2
+
+Symmetrized quotient
+
+Our goal in this section is to prove Theorem 2. Again, this has been motivated
+by the equivalence between (i) and (ii) in Theorem 1. We start with definitions,
+and standard lemma (see [20, Chapter 6].
+A square matrix M is called decomposable if, for some permutation matrices
+P and Q, we have
+
+
+A 0
+PMQ =
+,
+0 B
+where A, B are square matrices. If M is not decomposable, then it is called
+indecomposable. It is quite straightforward to realize that for any square matrix
+M , there is a permutation matrix P so that P T M P is a block matrix, each of
+its blocks indecomposable.
+A square matrix M is called reducible if, for some permutation matrix P ,
+we have
+
+
+A C
+PMPT =
+,
+0 B
+
+6
+
+where A, B are square matrices, and C is of appropriate dimension. If M is
+not reducible, then it is called irreducible, and if P M is irreducible for all
+permutation matrices P , we say that M is strongly irreducible.
+Lemma 7 (see [20], Proposition 6.2.1). If M is doubly stochastic and indecomposable, then M is strongly irreducible.
+This will be useful to us when applied together with the celebrated PerronFrobenius theorem.
+Theorem 8 (see for instance [15], Chapter 8). Let M be an irreducible, nonnegative matrix. Then among all eigenvalues of M with maximum absolute
+value, there is one which is positive and its multiplicity is one. This eigenvalue
+has an associated eigenvector that is entry-wise positive. Further, eigenvectors
+associated with other eigenvalues are not nonnegative.
+Recall from Section 1 that if π is an equitable partition and S denotes its
+g denotes the symmetric weighted graph
+normalized partition matrix, then G/π
+whose adjacency matrix is given by
+T
+AG/π
+g = S AG S.
+
+We restate Theorem 2 for convenience.
+Theorem 2. Let G and H be graphs with adjacency matrices A = AG and B =
+AH . There are equitable partitions π in G and σ in H with equal symmetrized
+g ≃ H/σ,
+g if, and only if, there is a nonnegative
+quotient graphs, that is G/π
+matrix M satisfying:
+(i) Both M M T and M T M are doubly stochastic.
+
+(ii) AM = M B.
+Proof. First we prove that if G and H have equal symmetrized quotients, then
+conditions (i) and (ii) hold. This is quite straightforward.
+Let S and T be normalized matrices related to equitable partitions of G and
+H, respectively, satisfying the equation
+S T AS = T T BT.
+Recalling that S T S = T T T = I, and that A commutes with SS T and B commutes with T T T (as stated right after (2)), it follows that
+A(ST T ) = (ST T )B
+The matrix M = ST T is nonnegative, as both S and T are nonnegative, and
+ST T (ST T )T = S(T T T )S T = SS T ,
+(ST T )T ST T = T (S T S)T T = T T T,
+7
+
+which are readily seen to be both doubly-stochastic.
+Moving on to the converse, suppose a matrix M satisfying conditions (i) and
+(ii) exists. In this case, M M T commutes with A since
+AM M T = M BM T = (M BM T )T = M M T A.
+From Lemma 7, there exists some permutation P such that
+
+
+S1
+
+
+S2
+
+
+
+
+T
+T
+S
+3
+P (M M )P = 
+,
+
+
+.
+..
+
+
+Sk
+
+where Sr is irreducible for all r. Let us denote
+
+A11 A12 . . .
+A21 A22 . . .
+
+P T AP = 
+..
+
+.
+Ak1
+
+Ak2
+
+...
+
+
+A1k
+A2k 
+
+,
+
+Akk
+
+with the same block sizes as P T (M M T )P . The equation AM M T = M M T A is
+equivalent to
+Sr Ars = Ars Ss
+∀r, s.
+Multiplying by 1 we get
+
+Sr Ars 1 = Ars Ss 1,
+Sr Ars 1 = Ars 1,
+
+and because Sr is irreducible, by the Perron-Frobenius Theorem we have that
+Ars 1 = c1, which means that these blocks correspond to a partition π of V (G)
+which is equitable (this previous argument is essentially equivalent to the implication (i) to (ii) from Theorem 1, and we reference [20, Section 6] for a detailed
+exposition).
+Let us denote π = {C1 , . . . , Ck }, each Ci ⊆ V (G). By an analogous argument, the partition of M T M into indecomposable blocks induces an equitable
+partition σ of H, say σ = {D1 , . . . , Dm }, Di ⊆ V (H).
+In π, we will have that a and b are in the same cell if, and only if, they are in
+some irreducible block of M M T , that is, (M M T )ℓa,b 6= 0 for some ℓ. Let us say
+this cell is Cr , and denote by 1r its indicator vector. We will show that M T 1r
+corresponds in some way to a cell of σ.
+• M T 1r is supported in one cell of σ.
+We suppose that a and b are in the support of M T 1r and prove that
+(M T M )ℓa,b 6= 0 for some ℓ. The support is non-empty, for M M T 1r 6= 0.
+
+8
+
+Using its decomposition in blocks, each 1-eigenvector v satisfies
+
+
+S1
+
+
+S2
+
+
+
+ T
+S
+3
+P
+ P v = v,
+
+
+.
+.
+
+
+.
+Sk
+
+from where each block of P T v is an eigenvector of Ss . As Ss is indecomposable (and doubly-stochastic), by Perron-Frobenius, we must have
+that v is constant in these blocks. Hence, {1s }s forms aPbasis for the
+1-eigenspace of M M T and the related eigenprojector is
+αs 1s 1T
+s , for
+−2
+αs = k1s k > 0.
+P
+P
+Let f (x) =
+cℓ xℓ be such that f (M M T ) =
+αs 1s 1T
+s . If a and b are
+T
+not in the same indecomposable block of M M , then ((M T M )ℓ )a,b = 0
+for any ℓ > 0, whence
+X
+
+0=
+cℓ (M T M )ℓ+1
+a,b
+X
+ 
+
+T
+T ℓ
+= M
+cℓ (M M ) M
+a,b
+ 
+X
+
+T
+T
+= M
+αs 1s 1s M
+a,b
+
+M
+≥ αr M T 1r 1T
+r
+a,b
+= αr (M T 1r )a (M T 1r )b
+> 0,
+a contradiction. Hence, we may conclude that both a and b belong to the
+same cell within the equitable partition of B associated with M T M .
+• M T 1r is constant on each cell of σ.
+Let η : {1, . . . , k} → {1, . . . , m} defined by having Dη(r) be the cell of σ
+that contains the support of M T 1r . We denote the indicator vector of
+Dη(r) , which is in RV (H) , by 1η(r) .
+Considering the expression (M T M )(M T 1r ) = M T (M M T 1r ) = M T 1r , we
+observe that M T 1r is an eigenvector of M T M , just like 1η(r) , and both
+are nonzero only on the entries corresponding to the submatrix of M T M
+with entries in Dη(r) , which is irreducible. Therefore M T 1r is parallel to
+1η(r) by the Perron-Frobenius theorem.
+We shall now demonstrate that the function η establishes an isomorphism
+g and g
+between G/π
+H/σ.
+P
+Since
+1r = 1 and M T 1 is supported on all entries (if M T has a row
+equal to zero, then M T M would not be doubly-stochastic), and since M T is
+9
+
+nonnegative, it follows that all cells of the equitable partitions are covered by
+{1η(r) }r , or, in others words, η is onto.
+Also, η is one-to-one, since:
+
+1η(r) = 1η(s) =⇒ M T 1r k M T 1s =⇒ M M T1r k M M T1s =⇒ r = s.
+In particular k = m.
+At last, we shall prove that η is a graph isomorphism. We begin by noting
+that
+T
+T
+kM T 1r k2 = 1T
+r (M M 1r ) = 1r 1r ,
+from where
+
+1η(r)
+M T 1r
+p
+=q
+1Tr 1r
+
+1Tη(r) 1η(r)
+
+.
+
+Thus, a direct calculation gives us
+
+q
+
+1Tη(r)
+
+1Tη(r) 1η(r)
+
+or, likewise
+
+1η(s)
+1T
+1s
+= p r M BM T p
+T
+T
+1r 1r
+1Ts 1s
+1η(s) 1η(s)
+
+Bq
+
+1T
+1s
+AM M T p
+T
+1r 1r
+1Ts 1s
+1T
+1s
+= p r Ap
+1Tr 1r
+1Ts 1s
+= p r
+
+(AG/π
+g )η(r)η(s) .
+g )rs = (AH/σ
+which completes the proof that η is an isomorphism.
+Corollary 9. Let G and H be graphs with adjacency matrices A = AG and
+B = AH . Assume there is a nonnegative matrix M satisfying:
+(i) Both M M T and M T M are doubly stochastic.
+(ii) AM = M B.
+Consider the graph ZM whose adjacency matrix is the support of
+
+
+M
+.
+MT
+Let π = {C1 , . . . , Ck } and σ = {D1 , . . . , Dk } be the equitable partitions as in
+Theorem 2. Then ZM is a bipartite graph with k connected components, each
+equal to Cr ∪ Dr , for r ∈ {1, . . . , k}.
+
+10
+
+Proof. We observe that two vertices a, b ∈ V (G) are in the same cell if and only
+if there is some ℓ for which (M M T )ℓa,b 6= 0. This is equivalent to having some
+(even) path between a and b in the graph ZM . Likewise for if these are vertices
+in V (H).
+To see that vertices in Cr are connected to vertices in Dr , let 1r be the
+indicator vector of Cr in RV (G) . Note that M T 1r is parallel to the indicator
+vector of Dr , both nonzero, thus some entry M T whose row corresponds to a
+vertex of Dr and column corresponds to a vertex of Cr is nonzero. In other
+words, Cr ∪ Dr belong to the same connected component.
+
+3
+
+Different notions of common quotients
+
+Theorems 1,5 and 2 describe equivalent conditions to three relations between
+graphs G and H, namely
+(A) There are equitable partitions π and σ of G and H respectively, with partition matrices P and S, so that
+P TP = S TS
+
+and P T AG P = S T AH S.
+
+(This is the condition used in Theorem 1.)
+(B) There are equitable partitions π and σ of G and H respectively, with partition matrices P and S, so that
+(P T P )−1 P T AG P = (S T S)−1 S T AH S.
+(This is the condition used in Theorem 5.)
+(C) There are equitable partitions π and σ of G and H respectively, with normalized partition matrices Pe and e
+S, so that
+fT AH S.
+e
+PfT AG Pe = S
+
+(This is the condition used in Theorem 2.)
+
+The attentive reader will have noticed that while Theorem 5 speaks about the
+coarsest equitable partitions, we have stated relation (B) with no such restriction. This is fine because of the following result, which should not be surprising
+but we could not find a reference to it.
+Recall the lattice of equitable partitions introduced in Section 1.1, which
+we denote by Π(G). If σ ∈ Π(G), we denote its characteristic matrix by Pσ ,
+and Dσ = (PσT Pσ )−1 . Because a partition corresponds to a partition matrix, we
+might abuse the notation and say that P ∈ Π(G) if P = Pπ , when π ∈ Π(G).
+Proposition 10. Let G be a graph on n vertices. Let σ ∈ Π(G). Define the
+function
+ϕ : {π ∈ Π(G) : σ ≤ π} → Π(G/σ),
+
+π 7→ Dσ PσT Pπ .
+
+11
+
+Then ϕ is an order-preserving bijection. If S ∈ Π(G/σ), its inverse is given by
+ϕ−1 (S) = Pσ S,
+and we also have
+(G/σ)/ϕ(π) ≃ G/π.
+Proof. Fix some π ∈ Π(G). The fact that Dσ PσT Pπ is a partition matrix of
+V (G/σ) follows immediately — it is the partition induced by π on the classes
+of σ. To see that it is an equitable partition, we proceed as follows:
+AG/σ (Dσ PσT Pπ ) = (Dσ PσT Pσ )AG/σ (Dσ PσT Pπ )
+
+(3)
+
+= (Dσ PσT )APσ (Dσ PσT Pπ )
+= (Dσ PσT )APπ
+
+(4)
+
+= (Dσ PσT Pπ )AG/π
+
+(6)
+
+(5)
+
+where (3) follows from Dσ PσT Pσ = I; (4) from the fact that σ is an equitable
+partition, thus APσ = Pσ AG/σ ; (5) because Pσ Dσ PσT is an orthogonal projection
+and the columns of Pπ are in its range; and (6) because π is an equitable partition
+of G.
+To see that ϕ is one-to-one, a simple calculation gives us
+Dσ PσT Pπ = Dσ PσT Pν =⇒ Pσ Dσ PσT Pπ = Pσ Dσ PσT Pν =⇒ Pπ = Pν .
+For each S that is a partition matrix of an equitable partition of G/σ, we
+have AG/σ S = SC for some C. Applying Pσ we get
+Pσ AG/σ S = Pσ SC =⇒ AG Pσ S = Pσ SC.
+As each line of Pσ has only one nonzero entry, we can also conclude that Pσ S is a
+matrix of 0’s and 1’s. Thus, it is an equitable partition of G. As Dm uPσT Pσ S =
+S, the image of Pσ S is indeed S, as we wanted.
+Finally, we note that π ≤ ν if and only if rng Pπ ⊇ rng Pν , and as the
+composition of functions preserves the inclusion of their range, we conclude
+that ϕ preserves order.
+As a consequence, it follows that the quotient graph by the coarsest equitable partition of G coincides with the quotient graph by the coarsest equitable
+partition of any of its quotients graphs by other equitable partitions. We may
+therefore add one extra equivalent condition to the formulation of Theorem 5,
+justifying the phrasing of Condition (B). Motivated partly by the work in [14],
+we provide a third characterization after the lemma.
+Lemma 11. Let G, H be graphs with equitable partitions π and σ and ϕ : Cr 7→
+Dr a map between the cells of π and σ. Then ϕ induces an isomorphism from
+g to H/σ
+g and
+G/π to H/σ if and only if ϕ induces an isomorphism from G/π
+there is some constant λ for which |Cr | = λ|Dr |.
+12
+
+Proof. First off, recall that if G/π and H/σ are isomorphic, then we may assume
+AG/π = AH/σ , and because there is only one way to symmetrize these matrices
+g and
+by diagonal similarity, it follows that A g = A g , so it follows that G/π
+G/π
+
+H/σ
+
+g are isomorphic.
+H/σ
+g ≃ H/σ
+g is equivalent to having a convenient indexing
+We observe that G/π
+which satisfies
+N (Cr , Cs )
+N (Dr , Ds )
+p
+= p
+∀r, s;
+|Cr ||Cs |
+|Dr ||Ds |
+
+which is also equivalent to
+N (Cr , Cs )
+=
+|Cr |
+Recalling that
+
+!
+p
+p
+|Dr |
+|Cs | N (Dr , Ds )
+p
+·p
+|Dr |
+|Cr |
+|Ds |
+(AG/π )r,s =
+
+∀r, s.
+
+N (Cr , Cs )
+,
+|Cr |
+
+we have an isomorphism in the non-symmetrized quotient if and only if
+p
+p
+|Dr |
+|Cs |
+p
+·p
+=1
+∀r, s;
+|Cr |
+|Ds |
+
+which is equivalent to the desired condition.
+
+Now, we can enunciate and prove the following:
+Theorem 12. If G and H are graphs, then the following are equivalent:
+(i) If π and σ are the coarsest equitable partitions of G and H respectively,
+then G/π ≃ H/σ.
+(ii) There are equitable partitions π and σ of G and H respectively such that
+G/π ≃ H/σ.
+(iii) There is a nonnegative and nonzero matrix M with constant row sum and
+constant column sum such that AG M = M AH .
+Proof. As shown in Proposition 10, the first two conditions are equivalent.
+We start by proving (iii) =⇒ (ii). Normalizing M , we may assume that
+M M T and M T M are doubly stochastic. Applying Theorem 2, it follows that
+g ≃ H/σ,
+g for the equitable partitions π, σ induced by M .
+G/π
+Let 1Cr be the indicator of Cr . By the argument in the proof of Theorem
+2, we have M 1Cr parallel to the indicator vector of the cell isomorphic to Cr
+in the partition σ of H, which we will denote by Dr . As M 1 is a multiple of 1,
+and the vectors M 1Cr have disjoint support, then for each r, M 1Cr must be a
+multiple of 1Dr by a factor that is independent of r. Hence, using the previous
+lemma we obtain the result.
+13
+
+For the converse, recall that AG PeSeT = Pe SeT AH , where Pe, Se are the normalized matrices of π, σ. A simple calculation gives us that
+X
+(Pe SeT 1)k =
+Pek,r Ser,s
+r,s
+
+=p
+=
+
+s
+
+X
+
+1
+p
+,
+|Cr | s∈Dr |Dr |
+1
+
+where k ∈ Cr ,
+
+|Dr |
+|Cr |
+
+= γ.
+The existence of a value of γ independent of r follows from the lemma above.
+An analogous argument shows that Pe SeT is column stochastic.
+Coming back to the conditions in the beginning of this section, note the
+obvious implication (A) =⇒ (B) =⇒ (C). None of them is an equivalence,
+and we show below a large class of examples satisfying only condition (C).
+
+2
+
+In general, it is easy to see that Kr,s and Kr′ ,s′ have a common symmetrized
+quotient if rs = r′ s′ , and naturally if r 6= r′ it cannot be that they admit the
+same combinatorial quotient.
+While Conditions (A) and (B) are clearly equivalence relations, Condition
+(C) is not, as the following example shows:
+
+√
+2
+
+1
+
+1
+
+In which the first graph is related to the second, and the second to the third
+but the first and last one are not related.
+Lemma 13 (see for instance Theorem 6.2.4 in [20]). If S and T are doubly
+stochastic matrices and v = Su and u = T v, then v = P u, for some permutation
+matrix P .
+
+14
+
+4
+
+Pseudo-equitable partitions — a linear algebra characterization
+
+The concept of a pseudo-equitable partition was likely introduced in [10], and
+has been recently studied in [2] (see references therein for other works on the
+topic). Essentially a partition is pseudo-equitable if there is a positive vertex
+weighting that makes it equitable. In most cases, it turns out that this vertex
+weighting is given by the eigenvector corresponding to the largest eigenvalue
+(the Perron-eigenvector, as it is sometimes called), but in this section we allow
+for any positive weighting.
+Let w ∈ RV+ be a vector with all positive entries, and let Dw = Diag(w)
+be the diagonal matrix whose diagonal entries correspond to w. We say that a
+partition π of V (G) is pseudo-equitable with respect to w if the column space
+of Dw Pπ is AG -invariant, or better yet, if there is a matrix B such that
+AG (Dw Pπ ) = (Dw Pπ )B.
+It is immediate to note that an equivalent way of seeing this is to consider that
+−1
+π is equitable for the weighted graph Dw
+AG Dw . We say that the matrix B is
+the adjacency matrix of the quotient graph G/(w, π), that is, B = AG/(w,π) .
+We are particularly invested in scenarios where two graphs admit the same
+quotient graph, but perhaps one of them by means of a pseudo-equitable partition.
+
+Figure 2: Example of two graphs that admit the same quotient graph with
+respect to the classes with the same horizontal coordinate. However for the
+graph on the right hand side it is necessary to use a pseudo-equitable partition
+whose vector of weights assigns 1 to all white vertices, and 2 to the black vertex.
+One application comes from quantum walks, as discussed in Section 1.1. The
+graph on the left hand side in Figure 2 admits perfect state transfer because it
+is a cartesian power of P2 , and therefore its symmetrized quotient graph also
+does. Because the graph on the right hand side admits the same quotient, it
+also admits perfect state transfer (see [6, Section 5]).
+In the next section we will characterize when two graphs admit the same
+symmetrized quotient with respect to pseudo-equitable partitions, but let us
+first show a theorem that associates to pseudo-equitable partitions very natural
+objects.
+We need the following lemma, whose proof can be found in [3].
+15
+
+Lemma 14. An orthogonal projection matrix P has nonnegative entries if and
+only if rng P has an orthonormal basis with only nonnegative vectors.
+For the next theorem, it will be convenient to assume all pseudo-equitable
+partitions are presented with weight vectors that have been normalized in each
+class of the partition (this is without loss of any generality). We denote by Π̂(G)
+the set of all pairs of the form (w, π) where π is a pseudo-equitable partitions
+of G with weight vector w, and w is normalized in each class of π.
+Let P(G) denote the set of all orthogonal projection matrices with nonnegative entries that satisfy the following two properties
+(A) If M ∈ P(G), then there is a positive vector u in its range.
+(B) M commutes with AG .
+Note that if M ∈ P(G), we may decompose it into irreducible blocks. Each block
+has rank 1 and contains a unique positive eigenvector to the eigenvalue 1, as a
+consequence of the Perron-Frobenius theorem (Theorem 8). The vector which
+is the sum of the normalized Perron eigenvectors of each irreducible block is
+positive and belongs to the range of M . We call it the special positive eigenvector
+of M .
+Given (w, π) ∈ Π̂(G), we let Pπ denote its (unweighted) characteristic matrix, and P(w,π) = Dw Pπ its weighted characteristic matrix. Note that its
+columns are already normalized. Then we denote by S(w,π) the projection onto
+the column space of P(w,π) , that is
+T
+S(w,π) = P(w,π) P(w,π)
+= Dw Pπ PπT Dw .
+
+(7)
+
+With that, we can relate projectors and pseudo-equitable partitions by the following theorem.
+Theorem 15. Let G be a graph. The following function is a bijection
+ϕ : Π̂(G) → P(G),
+(w, π) 7→ S(w,π) .
+Then, if π and σ are pseudo-equitable partitions with respect to the same weight
+vector w, now dropped from the subscripts for clarity, it follows that:
+(i) π ≤ σ ⇐⇒ Sπ  Sσ ⇐⇒ rng Sπ ⊇ rng Sσ ,
+(ii) Sπ∨σ is the orthogonal projection onto rng Sπ ∩ rng Sσ .
+Proof. Given (w, π), the matrix S(w,π) is a nonnegative orthogonal projection
+by definition, and it commutes with AG due to an argument analogous to [12,
+Lemma 1.1] and shown in [1, Lemma 3.1] for when w is the Perron-eigenvector.
+Equation (7) gives an immediate way to verify that w is an eigenvector of S(w,π) ,
+and in fact it is going to be the special positive eigenvector of S(w,π) .
+Given two elements of Π̂(G), if they correspond to different partitions, then
+clearly their images under ϕ are different. If the partitions are equal but the
+16
+
+weight vectors are different, the unicity of the special positive eigenvector implies
+that their images will be different. Thus ϕ is injective.
+Now, let P ∈ P(G) be arbitrary. Using Lemma 14, we have an orthonormal
+basis ζr of nonnegative vectors for rng P . As ζr are nonnegative, we must have
+for r 6= s that supp ζr ∩ supp ζs = ∅ to ensure orthogonality, and because there
+is at least one positive eigenvector of P , the supports of the ζr correspond to
+a decomposition of P into irreducible blocks. The sum of the ζr is the special
+positive eigenvector of P , which we call u. Thus we conclude that P = S(u,π) ,
+where π is the partition into {supp ζr }r . The fact that π is pseudo-equitable with
+weighting u follows from the fact that P and A commute (again, see [12, Lemma
+1.1] or [1, Lemma 3.1]).
+Fix w and assume (w, π) and (w, σ) are pseudo-equitable. We drop w from
+the subscripts for clarity.
+Condition (i) follows from the fact that π ≤ σ if and only if col Pπ ⊇ col Pσ ,
+combined with the property rng Sπ = col Pπ , and that Sπ and Sσ are projections.
+Based on (i), we can conclude that rng Sπ∨σ is the largest vector space which
+is contained in both rng Sπ and rng Sσ , and whose projector is also in P(G).
+The projector onto rng Sπ ∩ rng Sσ is indeed in P(G) since it is the limit of
+nonnegative operators that commute with A: let S = limn (Sπ Sσ Sπ )n — it
+indeed exists and is a projector, as all entries of the Jordan matrix of Sπ Sσ Sπ
+converge to zero, except the ones in the diagonal. It is self-adjoint as it is the
+limit of self-adjoint operators, and rng S = rng Sπ ∩ rng Sσ because as Sπ Sσ Sπ
+is a contraction, the fix points of the convergent are the same as the fixed points
+of Sπ Sσ Sπ , which are rng Sπ ∩ rng Sσ .
+
+5
+
+Characterizing pseudo-equitable partitions
+
+In this section, we present an analysis of when it is possible to use the technology
+from Theorem 2 to understand pseudo-equitable partitions.
+Given graphs G and H, suppose that for some nonzero nonnegative matrix
+M we have AG M = M AH . Is there a weighting of these graphs that result in
+pseudo-equitable partitions whose quotients are the same? It turns out that this
+is the case provided there are diagonal matrices D, E such that DM E 2 M T D
+and EM T D2 M E are doubly stochastic. Are these always available?
+We will use a well-known theorem (see for instance [22]) in our result. Beforehand, a definition. We say that an n × n matrix M has total support if for
+each nonzero entry Ma,b we have some permutation σ ∈ Sn such that σa = b
+and for each r, Mr,σr 6= 0.
+Theorem 16 (from [22]). Given a nonnegative square matrix M , there are
+diagonal matrices D, E with positive nonzero entries such that DM E is doubly
+stochastic if and only if M has total support. Moreover, the matrix DM E is
+unique; and D, E are also unique up to scalar multiplication if and only if M is
+fully indecomposable.
+
+17
+
+The following result can be found in [9].
+Corollary 17. Given a symmetric matrix M with total support, we have a
+unique diagonal matrix D with positive nonzero entries such that DM D is doubly stochastic.
+We now start by describing which conditions on M we need in order to apply
+the theorem. We will from now on suppose that M is k × l and call Rr the rth
+row-vector of M and Cr the rth column-vector.
+Lemma 18. Given a matrix M we have that M M T has total support if and
+only if M has no null rows. Moreover, in this case, M DM T also has total
+support for any positive diagonal matrix D.
+Proof. We start by observing that
+(M M T )a,b 6= 0 ⇐⇒ Ra 6⊥ Rb .
+If M M T has total support, then it is immediate from the definition that no row
+of M M T is zero, thus M has no null rows.
+For the converse, we have that if (M M T )a,b 6= 0 then for σ = (ab) we have
+Ra 6⊥ Rb by hypothesis and Rx 6⊥ Rx since Rx 6= 0.
+Putting D in the product M DM T does not change the orthogonality relations, whence the result is still valid.
+Theorem 19. Let M be a k × l nonnegative matrix which possesses no null row
+or column, and such that for permutations matrices P, Q we have
+
+
+M1
+
+
+M2
+
+
+M =P
+ Q,
+.
+..
+
+
+Mp
+where Mr has positive entries.
+Then, there is a k × k positive diagonal D and a l × l positive diagonal E
+such that for N := DM E, both N N T and N T N are doubly stochastic.
+
+Proof. We will use Corollary 17 to recursively find matrices that satisfy partially
+what we wanted. Then, we will examine the sub-sequences of these matrices
+and conclude that there is one of them that converges, by Bolzano-Weierstrass.
+The limit will be the matrices we wanted.
+By Lemma 18 and Corollary 17, there is a k × k diagonal D1 , for which
+D1 M M T D1 is doubly stochastic. Applying this again, there is a l × l diagonal
+E1 for which E1 M T D12 M E1 is doubly stochastic. An induction argument gives
+us Di , Ei for which
+(8)
+Di+1 M Ei2 M T Di+1 1 = 1;
+Ei M T Di2 M Ei 1 = 1.
+
+18
+
+(9)
+
+For each indecomposable block Mr Equation (8) and Equation (9) still hold,
+with Mr replacing M and the appropriate diagonal block of Ds and Es replacing
+the whole diagonal. So we can prove the result for each block independently
+and conclude that it is valid for the whole matrix M . For the sake of simplicity,
+we will maintain the notation and suppose that M has only positive entries.
+Denoting di,x := (Di )x,x and ei,y := (Ei )y,y , Equation 9 is equivalent to
+ei,b
+
+m X
+n
+X
+
+Mx,b d2i,x Mx,y ei,y = 1;
+
+b = 1, 2, . . . , l.
+
+x=1 y=1
+
+We will now prove that each sequence di,x , ei,y is bounded above and below
+by nonzero constants, which implies that Di , Ei converge for some sub-sequence
+to a positive diagonal.
+Equation (9) gives us that
+ei,b = P
+
+1
+1
+≤ 2
+2
+2 e ,
+di,a Ma,b
+i,b
+x,y Mx,b di,x Mx,y ei,y
+
+from where, calling M := maxx,y {Mx,y } and m := minx,y {Mx,y }, we have:
+di,x ei,y ≤
+
+1
+,
+m
+
+∀x, y.
+
+(10)
+
+Equation (9) and inequality (11) imply
+ei,b = P
+
+1
+ml
+≥ 2P
+.
+2 M
+e
+M
+d
+M
+x,y
+i,y
+x,b
+i,x
+x,y
+x di,x
+
+(11)
+
+Taking sub-sequences we may suppose that all di,x , ei,y either converge (possibly to zero) or go to infinity. Inequality (10) assures us that if some di,x goes
+to infinity then all ei,y go to zero; and if some ei,y goes to infinity then all di,x
+go to zero.
+Inequality (11) implies that if some ei,y goes to zero then some di,x goes to
+infinity.
+Thus, if no di,x or ei,y goes to zero, then no sequence goes to infinity and
+we are done. Suppose otherwise. We have now two cases: for some x, di,x → 0
+or there is y for which ei,y → 0. We will consider the latter. Equation (9), will
+imply, by the above argument, that ei,y → 0 for all y.
+Taking sub-sequences we can suppose that each of the following limits exists:
+ei,y′
+→ Ly′ ,y ∈ [0, ∞].
+ei,y
+We will denote by y ≪ y ′ when Ly′ ,y = ∞. This relation is transitive and
+anti-symmetrical, hence is a partial order on the values of y, and we have some
+maximal element, which we will call c.
+Now, call Ẽi := e−1
+i,c Ei and D̃i := ei,c Di . As all ei,y → 0, by taking some
+sub-sequence, we can suppose that
+ei+1,c
+→ 0.
+ei,c
+19
+
+By Equation (8) we conclude that
+D̃i+1 M Ẽi2 M T D̃i+1 1 =
+and
+
+
+
+ei+1,c
+ei,c
+
+2
+
+1;
+
+Ẽi M T D̃i2 M Ẽi 1 = 1.
+
+As Equation (9) is still valid, and Ẽc,c = 1, we will have that no entry of
+Ẽi goes to zero. Also, since y 6≪ c for all y, we have (Ẽi )y,y 6→ ∞. Whence,
+Ẽi → Ẽ, for some sub-sequence. As Ẽi M T D̃i converges (for some sub-sequence)
+due to Inequality (10) and the fact that Ec,c = 1, we have D̃i → D̃. This implies
+D̃M Ẽ 2 M T D̃1 = 0, which contradicts ẼM T D̃M 2 Ẽ 1 = 1.
+The case di,x → 0 for some x is analogous. We change the role of di,x and
+ei,y in Inequality (11) and use Equation (8) instead of Equation (9), and the
+argument follows similarly.
+The theorem below follows immediately.
+Theorem 20. Suppose that G and H are positive-weighted graphs. The following are equivalent
+(i) There is a nonzero nonnegative matrix M such that the graph ZM with
+adjacency matrix
+
+
+M
+MT
+
+has as connected components complete bipartite graphs, and AG M = M AH ;
+
+(ii) there are pseudo-equitable partitions (u, π) and (w, σ) of G and H respectively such that AG/(u,π
+^ ) = AH/(w,σ)
+^ .
+1
+
+In the case (i) =⇒ (ii), the classes and isomorphism are defined by the connected components of ZM .
+
+6
+
+Open problems
+
+There exist polynomial time algorithms to decide whether two graphs are fractionally isomorphic and whether two graphs admit isomorphic quotients with
+respect to their coarsest equitable partitions. An obvious question is whether
+there is an efficient algorithm to decide with two graphs admit isomorphic symmetrized quotients.
+Our original motivation to look at symmetrized quotients is the connection
+with quantum walks shown in Section 1.2. The main problem we would like to
+solve is that of finding the smallest graph whose symmetrized quotient matrix is
+a given one. We warn this is a hard problem, as evidenced by the efforts in [16].
+Fractional isomorphism can be characterized by means of tree homomorphism count. Is there an analogous theory for isomorphic quotients (combinatorial or symmetrized)?
+20
+
+Acknowledgements
+Authors thank Thomás J. Spier, Chris Godsil and Aida Abiad for conversations
+about the topic of this paper.
+Frederico Cançado acknowledges support from CAPES. Gabriel Coutinho
+acknowledges support from CNPq and FAPEMIG.
+
+References
+[1] Aida Abiad. A characterization of weight-regular partitions of graphs. Electronic Notes in Discrete Mathematics, 68:293–298, 2018.
+[2] Aida Abiad, Christopher Hojny, and Sjanne Zeijlemaker. Characterizing
+and computing weight-equitable partitions of graphs. Linear Algebra and
+its Applications, 645:30–51, 2022.
+[3] Daniel Brosch and Etienne de Klerk. Jordan symmetry reduction for conic
+optimization over the doubly nonnegative cone: theory and software. Optimization Methods and Software, 37(6):2001–2020, 2022.
+[4] Richard A Brualdi, Seymour V Parter, and Hans Schneider. The diagonal
+equivalence of a nonnegative matrix to a stochastic matrix. Journal of
+Mathematical Analysis and Applications, 16(1):31–50, 1966.
+[5] Matthias Christandl, Nilanjana Datta, Tony C. Dorlas, Artur Ekert, Alastair Kay, and Andrew J. Landahl. Perfect transfer of arbitrary states in
+quantum spin networks. Phys. Rev. A, 71:032312, Mar 2005.
+[6] Gabriel Coutinho. Spectrally extremal vertices, strong cospectrality, and
+state transfer. The Electronic Journal of Combinatorics, pages P1–46, 2016.
+[7] Gabriel Coutinho. Quantum walks and the size of the graph. Discrete
+Mathematics, 342(10):2765–2769, 2019.
+[8] Gabriel Coutinho and Chris Godsil. Continuous-time quantum walks in
+graphs. The Bulletin of the International Linear Algebra Society, page 5,
+2018.
+[9] Judit Csima and Biswa Nath Datta. The DAD theorem for symmetric nonnegative matrices. Journal of Combinatorial Theory, Series A, 12(1):147–
+152, 1972.
+[10] M.A. Fiol, E. Garriga, and J.L.A. Yebra. Locally pseudo-distance-regular
+graphs. Journal of Combinatorial Theory, Series B, 68(2):179–205, 1996.
+[11] Yang Ge, Benjamin Greenberg, Oscar Perez, and Christino Tamon. Perfect state transfer, graph products and equitable partitions. International
+Journal of Quantum Information, 9(03):823–842, 2011.
+
+21
+
+[12] C.D. Godsil. Compact graphs and equitable partitions. Linear Algebra and
+its Applications, 255(1):259–266, 1997.
+[13] Chris Godsil and Gordon F Royle. Algebraic graph theory, volume 207.
+Springer Science & Business Media, 2001.
+[14] Martin Grohe, Kristian Kersting, Martin Mladenov, and Erkal Selman.
+Dimension reduction via colour refinement. In Algorithms-ESA 2014: 22th
+Annual European Symposium, Wroclaw, Poland, September 8-10, 2014.
+Proceedings 21, pages 505–516. Springer, 2014.
+[15] Roger A Horn and Charles R Johnson. Matrix analysis. Cambridge university press, 2012.
+[16] Alastair Kay. The perfect state transfer graph limbo. arXiv preprint
+arXiv:1808.00696, 2018.
+[17] Frank Thomson Leighton. Finite common coverings of graphs. Journal of
+Combinatorial Theory, Series B, 33(3):231–238, 1982.
+[18] Frederico Cançado Pereira. Exploring quantum walks: weighted paths and
+quotient graphs unveiled. Master’s thesis, Universidade Federal de Minas
+Gerais, 2023.
+[19] Motakuri V Ramana, Edward R Scheinerman, and Daniel Ullman. Fractional isomorphism of graphs. Discrete Mathematics, 132(1-3):247–265,
+1994.
+[20] Edward R Scheinerman and Daniel H Ullman. Fractional graph theory: a
+rational approach to the theory of graphs. Courier Corporation, 2013.
+[21] Allen J Schwenk. Computing the characteristic polynomial of a graph.
+In Graphs and Combinatorics: Proceedings of the Capital Conference on
+Graph Theory and Combinatorics at the George Washington University
+June 18–22, 1973, pages 153–162. Springer, 2006.
+[22] Richard Sinkhorn and Paul Knopp. Concerning nonnegative matrices and
+doubly stochastic matrices. Pacific Journal of Mathematics, 21(2):343–348,
+1967.
+[23] Gottfried Tinhofer. Graph isomorphism and theorems of Birkhoff-type.
+Computing, 36(4):285–300, 1986.
+[24] Boris Weisfeiler and Andrei Leman. The reduction of a graph to canonical
+form and the algebra which appears therein. nti, Series, 2(9):12–16, 1968.
+
+22
+
+Gabriel Coutinho
+Dept. of Computer Science
+Universidade Federal de Minas Gerais, Brazil
+E-mail address: gabriel@dcc.ufmg.br
+Frederico Cançado
+Dept. of Computer Science
+Universidade Federal de Minas Gerais, Brazil
+E-mail address: frederico.cancado@dcc.ufmg.br
+
+23
+
+

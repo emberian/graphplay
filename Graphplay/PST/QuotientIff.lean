@@ -94,9 +94,10 @@ the quotient PST condition is on the *right*; we follow the convention of
 Coutinho–Godsil "Perfect State Transfer in Graphs"). -/
 theorem cellUniformPST_of_quotientPST
     (P : EquitablePartition G I) {i j : I} {τ : ℝ}
-    (hquot : ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.quotient)) i j‖ = 1) :
+    (hne : ∀ k, P.cellCard k ≠ 0)
+    (hquot : ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) j i‖ = 1) :
     IsCellUniformPST G P i j τ :=
-  EquitablePartition.pst_lift (P := P) (i := i) (j := j) (τ := τ) hquot
+  EquitablePartition.pst_lift (P := P) (i := i) (j := j) (τ := τ) hne hquot
 
 /-! ## 2. The no-leakage condition. -/
 
@@ -171,10 +172,49 @@ to invariance under every analytic function of `A`, in particular
 theorem noLeakage_of_equitable (P : EquitablePartition G I) :
     NoCellUniformLeakage G P := by
   intro τ v hv
-  -- `G.evolve τ = exp(-i τ G.adj)`; expand as a power series and use
-  -- `cellUniformSubspace_invariant` on each term, then closedness of the
-  -- subspace under the series limit (finite-dimensional, so automatic).
-  sorry
+  -- `cellUniformSubspace = span ℂ (range cellUniformVec)`.  Work by span
+  -- induction on `v`; on a generator `cellUniformVec i = B *ᵥ (Pi.single i 1)`,
+  -- the exponential intertwining `evolve τ * B = B * exp(s • Q̃)` shows
+  -- `(evolve τ) *ᵥ (B *ᵥ w) = B *ᵥ (exp(s • Q̃) *ᵥ w)`, which is a cell-uniform
+  -- combination — hence back in the subspace.
+  set s : ℂ := -(Complex.I * (τ : ℂ)) with hs
+  have hev : G.evolve τ = NormedSpace.exp (s • G.adj) := rfl
+  -- The exponential intertwining at this `s`.
+  have hEB : G.evolve τ * P.cellEmbed
+      = P.cellEmbed * NormedSpace.exp (s • P.symmQuotient) := by
+    rw [hev]; exact P.exp_smul_adj_mul_cellEmbed s
+  -- For any quotient-side `w`, `(evolve τ) *ᵥ (B *ᵥ w)` lands in the subspace.
+  have key : ∀ w : I → ℂ,
+      (G.evolve τ).mulVec (P.cellEmbed.mulVec w) ∈ P.cellUniformSubspace := by
+    intro w
+    rw [Matrix.mulVec_mulVec, hEB, ← Matrix.mulVec_mulVec, P.cellEmbed_mulVec]
+    -- The result is `∑ i, (exp(s•Q̃) *ᵥ w) i • cellUniformVec i`, in the span.
+    rw [show (fun v => ∑ i,
+            (NormedSpace.exp (s • P.symmQuotient)).mulVec w i * P.cellUniformVec i v)
+          = ∑ i, (NormedSpace.exp (s • P.symmQuotient)).mulVec w i
+                  • P.cellUniformVec i by
+      funext v; simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul]]
+    refine Submodule.sum_mem _ (fun i _ => ?_)
+    exact Submodule.smul_mem _ _
+      (Submodule.subset_span ⟨i, rfl⟩)
+  -- Span induction: every `v ∈ cellUniformSubspace` is closed under `evolve τ`.
+  refine Submodule.span_induction
+    (p := fun v _ => (G.evolve τ).mulVec v ∈ P.cellUniformSubspace) ?_ ?_ ?_ ?_ hv
+  · rintro x ⟨i, rfl⟩
+    -- `cellUniformVec i = B *ᵥ (Pi.single i 1)`.
+    have : P.cellUniformVec i = P.cellEmbed.mulVec (Pi.single i 1) := by
+      rw [P.cellEmbed_mulVec]
+      funext v
+      rw [Finset.sum_eq_single i]
+      · rw [Pi.single_eq_same, one_mul]
+      · intro b _ hb; rw [Pi.single_eq_of_ne hb, zero_mul]
+      · intro h; exact absurd (Finset.mem_univ i) h
+    rw [this]; exact key _
+  · simpa using Submodule.zero_mem _
+  · intro x y _ _ hx hy
+    rw [Matrix.mulVec_add]; exact Submodule.add_mem _ hx hy
+  · intro a x _ hx
+    rw [Matrix.mulVec_smul]; exact Submodule.smul_mem _ _ hx
 
 /-! ## 4. The reverse implication and the full iff. -/
 
@@ -183,21 +223,30 @@ implies PST on the quotient.  This is the direction missing from
 `Graphplay/PST.lean`. -/
 theorem quotientPST_of_cellUniformPST
     (P : EquitablePartition G I) {i j : I} {τ : ℝ}
-    (_hhost : IsCellUniformPST G P i j τ) :
-    -- PST on the quotient: the `(i,j)` entry of `exp(-i τ · P.quotient)`
-    -- has Born-rule modulus 1.
-    ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.quotient)) i j‖ = 1 := by
-  -- Sketch.  By `noLeakage_of_equitable`, the cell-uniform vector
-  -- `|C_i⟩ := P.cellUniformVec i` evolves inside the cell-uniform subspace.
-  -- Under the canonical isometry `cellUniformVec i ↔ e_i` (the `i`-th
-  -- standard basis vector in `I → ℂ`), the restriction of `G.adj` to the
-  -- cell-uniform subspace is `P.quotient` (`restrict_eq_quotient`).
-  -- Therefore the restriction of `G.evolve τ` is `exp(-i τ P.quotient)`, and
-  -- the `(i,j)` entry of `G.evolve τ` (taken with respect to the
-  -- cell-uniform basis) equals the `(i,j)` entry of `exp(-i τ P.quotient)`.
-  -- The host cell-uniform PST hypothesis says this latter quantity has
-  -- modulus 1, i.e. PST on the quotient.
-  sorry
+    (hne : ∀ k, P.cellCard k ≠ 0)
+    (hhost : IsCellUniformPST G P i j τ) :
+    -- PST on the (symmetric) quotient: the `(j,i)` entry of
+    -- `exp(-i τ · P.symmQuotient)` has Born-rule modulus 1 — matching the
+    -- `pst_lift` convention (`Bᴴ·evolve·B = exp(-iτ Q̃)`, entry `j i`).
+    ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) j i‖ = 1 := by
+  -- Mirror of `pst_lift`, run in reverse.  The cell-uniform matrix element of
+  -- `G.evolve τ` equals `(Bᴴ · evolve τ · B) j i = exp(s • Q̃) j i` via
+  -- `cellUniform_matrixElement` and the exponential intertwining; the host PST
+  -- hypothesis `IsCellUniformPST` says that quantity has modulus 1.
+  set s : ℂ := -(Complex.I * (τ : ℂ)) with hs
+  have hev : G.evolve τ = NormedSpace.exp (s • G.adj) := rfl
+  have hEB : G.evolve τ * P.cellEmbed
+      = P.cellEmbed * NormedSpace.exp (s • P.symmQuotient) := by
+    rw [hev]; exact P.exp_smul_adj_mul_cellEmbed s
+  have hBEB : P.cellEmbedᴴ * G.evolve τ * P.cellEmbed
+      = NormedSpace.exp (s • P.symmQuotient) := by
+    rw [Matrix.mul_assoc, hEB, ← Matrix.mul_assoc,
+      P.cellEmbed_conjTranspose_mul_cellEmbed hne, Matrix.one_mul]
+  -- Unfold the host hypothesis and rewrite via the matrix-element identity.
+  unfold IsCellUniformPST at hhost
+  rw [P.cellUniform_matrixElement (G.evolve τ) i j, hBEB,
+    show s • P.symmQuotient = -(Complex.I * (τ : ℂ)) • P.symmQuotient from rfl] at hhost
+  exact hhost
 
 /-- **The full Bachman–Tamon iff.**  For any equitable partition `P` and any
 pair of cells `i, j` and time `τ`, cell-uniform PST on `G` between `|C_i⟩`
@@ -207,14 +256,14 @@ This is the continuous-time avatar of Bachman–Tamon arXiv:1108.0339,
 Theorem 3, both directions.  The hypothesis "PST on the quotient" is the
 Born-rule modulus condition on the quotient adjacency matrix's evolution. -/
 theorem cellUniformPST_iff_quotientPST
-    (P : EquitablePartition G I) (i j : I) (τ : ℝ) :
+    (P : EquitablePartition G I) (hne : ∀ k, P.cellCard k ≠ 0) (i j : I) (τ : ℝ) :
     IsCellUniformPST G P i j τ ↔
-      ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.quotient)) i j‖ = 1 := by
+      ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) j i‖ = 1 := by
   refine ⟨?_, ?_⟩
   · intro hhost
-    exact P.quotientPST_of_cellUniformPST (i := i) (j := j) (τ := τ) hhost
+    exact P.quotientPST_of_cellUniformPST (i := i) (j := j) (τ := τ) hne hhost
   · intro hquot
-    exact P.cellUniformPST_of_quotientPST (i := i) (j := j) (τ := τ) hquot
+    exact P.cellUniformPST_of_quotientPST (i := i) (j := j) (τ := τ) hne hquot
 
 /-! ## 5. Strong-cospectrality reformulation.
 
@@ -385,12 +434,12 @@ condition: when `P` is equitable, `IsCellUniformPST` and quotient PST coincide
 This is the form most useful for downstream consumers (chiral bundle PST,
 hypergraph PST, graphon PST, etc.). -/
 theorem cellUniformPST_iff_quotientPST_with_noLeakage
-    (P : EquitablePartition G I) (i j : I) (τ : ℝ) :
+    (P : EquitablePartition G I) (hne : ∀ k, P.cellCard k ≠ 0) (i j : I) (τ : ℝ) :
     (NoCellUniformLeakage G P) ∧
       (IsCellUniformPST G P i j τ ↔
-        ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.quotient)) i j‖ = 1) :=
+        ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) j i‖ = 1) :=
   ⟨P.noLeakage_of_equitable,
-   P.cellUniformPST_iff_quotientPST i j τ⟩
+   P.cellUniformPST_iff_quotientPST hne i j τ⟩
 
 end EquitablePartition
 end Graphplay

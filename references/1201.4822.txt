@@ -1,0 +1,725 @@
+Number-Theoretic Nature of Communication in Quantum Spin Systems
+Chris Godsil,1 Stephen Kirkland,2 Simone Severini,3 and Jamie Smith4
+1
+2
+
+Combinatorics & Optimization, University of Waterloo, N2L 3G1 Waterloo, Canada
+Hamilton Institute, National University of Ireland, Maynooth, County Kildare, Ireland
+3
+Department of Computer Science, and Department of Physics & Astronomy,
+University College London, WC1E 6BT London, United Kingdom
+4
+Institute for Quantum Computing, and Combinatorics & Optimization,
+University of Waterloo, N2L 3G1 Waterloo, Canada
+
+arXiv:1201.4822v2 [quant-ph] 11 Aug 2012
+
+(Dated: 24 June 2012)
+
+Abstract
+The last decade has witnessed substantial interest in protocols for transferring information on networks of quantum mechanical
+objects. A variety of control methods and network topologies have been proposed, on the basis that transfer with perfect fidelity
+— i.e. deterministic and without information loss — is impossible through unmodulated spin chains with more than a few
+particles. Solving the original problem formulated by Bose [Phys. Rev. Lett. 91, 207901 (2003)], we determine the exact
+number of qubits in unmodulated chains (with XY Hamiltonian) that permit the transfer with fidelity arbitrarily close to 1, a
+phenomenon called pretty good state transfer. We prove that this happens if and only if the number of nodes is n = p − 1, 2p − 1,
+where p is a prime, or n = 2m − 1. The result highlights the potential of quantum spin system dynamics for reinterpreting
+questions about the arithmetic structure of integers, and, in this case, primality.
+
+is “yes”, we say that there is pretty good state transfer
+(PGST ). While Bose [3] verified that the fidelity could
+be remarkably high even for rather long chains, the notion of PGST was formally isolated in [10] as a relaxation
+of PST. We give, in the present Letter, a complete characterization of the parameters for which there is PGST.
+Our findings can be combined into the following simplesounding statement:
+Theorem. – A uniformly coupled chain of n particles with
+XY Hamiltonian has PGST if and only if n = p − 1 or
+2p − 1, where p is a prime, or if n = 2m − 1.
+The significance of the result is twofold. From the
+physical point of view, it is valuable that we rigorously
+describe a phenomenon with applications to the study of
+quantum nanodevices [9]. In fact, the related observations obtained up to now are either numerical or fragmented. The message conveyed by the notion of PGST
+is that an unknown qubit state can be transferred with
+arbitrarily large fidelity between the end nodes of “long”
+chains, whenever the waiting time is not an issue. From
+the mathematical point of view, we highlight properties
+of quantum interference as a consequence of numbertheoretic constraints. The appearance of prime numbers
+in the theorem indicates a connection between the occurrence of PGST in chains of a given length and primality
+testing. This suggests a potential application of quantum
+dynamics on graphs for reinterpreting number-theoretic
+problems, when the problem description is encoded in
+the parameters of the system.
+It is well established that the dynamics of a single excitation in networks of spins with unmodulated couplings
+is a continuous-time quantum walk on the unweighted
+graph modeling the network. Hence, our result can also
+be reinterpreted in the language of continuous-time quantum walks: it describes the maximum hitting probability
+between antipodal vertices induced by a one-dimensional
+
+Introduction. — Since the pioneering work by Bose
+[3], quantum channels implemented by spin systems have
+been interpreted as wires for the transmission of possibly unknown qubit states. Motivated by the perspective
+of designing quantum buses and nanodevices, a vigorous
+effort has delineated the field of quantum spin systems
+engineering [4]. In this context, one of the desirable tasks
+is to transfer the state of a particle into another one with
+maximum fidelity; when the fidelity is 1, we have perfect
+state transfer (PST ), a notion originally introduced in
+[7]. Given an inherent difficulty in the manipulation of
+coherent quantum mechanical objects, the most appealing set up for state transfer employs a time-independent
+Hamiltonian and no interaction with the system except
+at initialisation and read-out. If we do not use ad hoc
+coupling schemes and control protocols (see [14]; also the
+recent [23] and the references therein), a spin chain (1D
+magnet), with a Heisenberg XY Hamiltonian, exhibits
+PST only between 2 and 3 qubits [7]. This is a negative result because such a chain is arguably the quantum
+wire obtainable with the smallest amount of physical and
+technological resources.
+On the basis of sufficient conditions for PST, this fact
+fueled a mathematically challenging classification programme aimed to identify PST in general network topologies [11]. The k-dimensional hypercube (with n = 2k
+qubits) has the best known performance in terms of the
+distance travelled by a single excitation: PST occurs between antipodal nodes at (network) distance k. However,
+for practical purposes, it is natural to study whether a
+minimalist structure like the chain (with n qubits) can
+still be usefully employed. In particular, even if we already know that there is no PST for n ≥ 4 we may
+still ask the following question: given n and an ε > 0,
+does there exist t such that the fidelity at time t between
+qubits 1 and n is larger than 1 − ε? When the answer
+1
+
+quantum walk. Walks of this type have been studied
+in great detail [16]. This analogy prompts us to disregard the original spin system setup and to work with
+a single n-level system. The realisation and simulation
+of this quantum device is the centre of several discussions [21]. It is remarkable that at a wider level, state
+transfer can be seen as the simplest model in a family of
+processes for quantum transport: for example, the population transfer of n-level systems [22], after including
+the role of the environment, the transport of energy in
+organic molecules [20], and a closely related mathematical setting describes state transfer in chains of harmonic
+oscillators coupled with beam-splitter interactions [19].
+Finally, the experimental implementation of the Heisenberg XY chain has been proposed in schemes including
+cold-atom optical lattices and superconducting circuits
+[2].
+PGST. – The Hamiltonian governing the evolution of
+the system acts on the Hilbert space H ∼
+= C21 ⊗ · · · ⊗
+2
+Cn . If we do not include external static potentials, the
+Hamiltonian is
+
+tem of U (t) and on the application of standard numbertheoretic tools, especially Kronecker’s theorem on Diophantine approximation. We begin by considering a general property of PGST and basic facts about bipartite
+graphs. We then use relations on the eigenvalues with a
+detailed case-by-case treatment.
+For any two vertices u and v of a graph,
+U (t)|ui − γ|vi = γU (t)(γ −1 |ui − U (−t)|vi);
+here γ −1 I−U (−t) is the Hermitian adjoint of γ −1 I−U (t).
+Since U (t) is unitary and kγk = 1, we see that
+kU (t)|ui − γ|vik = kU (t)|vi − γ|uik.
+So, if we have PGST from u to v, we also have it from v
+to u.
+A graph X is bipartite if there is a bipartition of the
+set of nodes such that the links connect only nodes in
+different parts. Suppose X is bipartite and let D be a
+diagonal matrix such that Du,u is 1 or −1, accordingy
+as u is in one or the other part of the bipartition. Then
+DAD = −A, and if U (t)|ui ≈ γ|vi,
+
+n−1
+X
+
+y
+x
+b =1
+Ju σux σu+1
++ σuy σu+1
+,
+H
+2 u=1
+
+γD|vi ≈ DU (t)D D|ui = U (−t)D|ui.
+But |ui and |vi are eigenvectors for D with eigenvalues
+1 or −1; the eigenvalues are equal if and only if u and v
+are in the same part. So there is a sign factor σu,v and
+γ|vi ≈ σu,v U (−t)|ui. Accordingly, U (t)|vi ≈ γ −1 σu,v |ui.
+By the above, U (t)|vi ≈ γ|vi, and we conclude that
+γ ≈ γ −1 σu,v . Hence, γ ≈ ±1 if u and v are in the same
+part, and γ ≈ ±i if they are not. (For PST this observation is due to Kay [4].) Let F denote the permutation
+matrix of order n × n such that F |ri = |n + 1 − ri for
+all r. Let E1 , . . . , En be the idempotents in the spectral
+decomposition of the path Pn (i.e.,
+Pn of its adjacency matrix). We can then write F = r=1 (−1)r−1 Er . If we
+have PGST at time t then U (t) ≈ γF and, therefore,
+
+where σuw (w ∈ {x, y, z}) is a Pauli matrix on C2u and
+Ju is the coupling strength between the particles u and
+u + 1. By virtue of the Jordan-Wigner transform [17],
+the free evolution for a time t of a single excitation
+originally located at site |ui ∈ {|1i, ..., |ni} is given by
+eiHt |ui = U (t)|ui, where Hu,v = Ju if v = u + 1 or
+u = v + 1, and Hu,v = 0, otherwise. The n × n real
+symmetric matrix H is the Hamiltonian restricted to the
+single excitation sector. PST occurs between 1 and n
+if there is a t ∈ R+ such that |hn|U (t)|1i| = 1, i.e.,
+the channel has maximum fidelity, PGST occurs between
+1 and n if for every ǫ > 0 there is t ∈ R+ such that
+|hn|U (t)|1i| > 1 − ǫ. Analytical solutions for coupling design able to achieve PST for any n have been presented
+in previous works (see [23]). Abstractly, a chain of length
+n is modeled by a network called an n-path and denoted
+by Pn . The links representing the particle-particle interactions are {1, 2}, {2, 3}, ..., {n − 1, n}. When the chosen
+couplings are uniform (w.l.o.g., Ju = 1), the Hamiltonian
+H is the adjacency matrix of the n-path. (Recall that the
+adjacency matrix of a graph has ij-th entry 1 if there is a
+link between the nodes i and j; 0, otherwise.) We know
+from [10] that there is PGST in P4 and P5 .
+We shall first prove the theorem. Next, we present
+some details about the cases when there is no PGST. In
+particular, we will give an explicit upper bound on the
+fidelity in a special case. In Appendix 3, we discuss PGST
+between internal nodes, by considering a link between
+state transfer and control theory on networks (see [6]).
+Proof of the theorem. — The proof of the theorem is
+based on a direct linear-algebraic analysis of the eigensys-
+
+1 = det U (t) ≈ γ n det(F ) = γ n (−1)⌊n/2⌋ .
+This yields three cases: (1) if n ≡ 1 mod 4 then
+(−1)⌊n/2⌋ = 1 and γ ≈ 1; (2) if n ≡ 3 mod 4 then
+(−1)⌊n/2⌋ = −1 and γ ≈ −1; (3) if n is even then
+in = (−1)n/2 and γ ≈ ±i. It is well known that the
+eigenvalues θr of Pn are given by θr = 2 cos[πr/(n + 1)].
+We start with the positive results. If PGST occurs then
+U (t) gets arbitrarily close to γF . This means that eiθr t ≈
+(−1)r−1 γ for r = 1, . . . , n. Set m = ⌊n/2⌋. Assume
+γ = ±1 if n is odd and ±i if n is even.
+First, we prove that for the path Pn , if eiθr t ≈
+(−1)r−1 γ, for r = 1, . . . , m, then eiθr t ≈ (−1)r−1 γ, for all
+r = 1, ..., n, and, hence, U (t) ≈ γF . To see this, assume
+eiθr t ≈ (−1)r−1 γ. Since n-paths are bipartite, θn+1−r =
+θr , and, therefore, eiθn+1−r t = e−iθr t ≈ (−1)r−1 γ −1 . For
+PGST, we need (−1)n−r γ = (−1)r−1 γ −1 , or, equivalently, γ 2 = (−1)n−1 . As this holds for our choice of
+2
+
+8
+
+γ, we are done. Since θr = 2 cos[πr/(n + 1)] we have that
+θr is a polynomial with rational coefficients of degree r
+in θ1 . We also set θ0 = 2. It follows that the numbers
+θ0 , . . . , θd are linearly independent over Q if and only if
+the degree of the algebraic integer θ1 is greater than d.
+This provides us with the necessary tools to prove the
+first part of the theorem: if n = p − 1 or 2p − 1, where
+p is prime, or if n = 2m − 1 then we have PGST on Pn .
+If α ∈ C we use use Q(α) to denote the field obtained
+by adjoining α to Q. If F is a subfield of Q(α), then
+Q(α) is a vector space over F; its dimension is the index
+of F in Q(α). (For details see, e.g., [13], Chap. 5.) Let
+θ = 2 cos[π/(n+1)] and set ζ = eiπ/(n+1) . Then θ ∈ Q(ζ)
+and ζ is a root of the quadratic x2 − xθ + 1. So the index
+of Q(θ) in Q(ζ) is at most two. If n ≥ 3 though, θ is
+real and ζ is not. Thus, the index is exactly two. The
+degree of ζ is φ(2n + 2), where φ is Euler’s function, and
+therefore, the degree of θ is φ(2n + 2)/2. If n = p − 1,
+2p−1, or 2m −1, where p is a prime, we have, respectively
+
+æ
+
+6
+
+à
+
+2
+æ
+æ
+
+2
+
+(−1)r (θmr+1 − θmr+2 )
+p−1
+
++
+
+r=1
+
+4
+
+5
+
+6
+
+7
+
+chains of length 2 ≤ n ≤ 7. The parameters to be considered for numerics are n and ǫ. Indeed, the waiting time
+depends also on the tolerance ε being close to one. The
+log plot suggests that for a fixed ε there is a behaviour
+that is linear in n.
+It is a corollary of the theorem that there is PGST on
+Pn if and only if its positive eigenvalues are linearly independent over the rationals. A proof of some cases when
+there is PGST can be constructed with the use of facts
+about linear independence of roots of unity discussed by
+Conway and Jones (in particular Theorems 1 and 7) and
+by Watkins and Zeitlin [8]. The crucial observation for
+PGST is indeed the linear independence (over the rationals) of the numbers cos[πj/n + 1] for certain choices of
+j.
+Bounding fidelity. — We have seen that there are
+many cases in which there is no PGST for Pn . We outline now a general technique for proving upper bounds on
+the fidelity whenever this happens. Algebraic graph theory is again the natural toolbox to employ. The spectral
+decomposition
+of the adjacency matrix of a graph X is
+P
+A = r θr Er . Two vertices u and v of X are cospectral
+if, for each r, the projections Er |ui and Er |vi have the
+same length. We say they are strongly cospectral if, for
+each r, we have Er |ui = ±Er |vi. In [10], it is shown that
+if we have PGST (or PST) from u to v then u and v are
+strongly cospectral. If the eigenvalues of A are simple,
+two vertices are strongly cospectral
+P if and only if they are
+cospectral. Assume U (t)u,v = r (Er )u,v eiθr t . Define ǫr
+by the requirement that (Er )u,v = ǫr (Er )u,u . (For paths,
+ǫr = (−1)r−1 .) Then U (t)u,v is a convex combination of
+the norm one complex numbers ǫr eitθr . For PGST to occur, these numbers must all be approximately equal. We
+can see this by applying the triangle inequality,
+X
+X
+|U (t)u,v | ≤
+|(Er )u,v | =
+|(Er )u,u | = 1.
+
+p−1
+
+2
+X
+
+3
+
+FIG. 1: Logarithm of the earliest points in which the fidelity
+is strictly greater than 0.99 for 2 ≤ n ≤ 7. The numbers have
+been obtained by plotting |U (t)1,n | (n = 2, ..., 7) and then by
+analysing sections of the curves. Clearly 0.99 is an arbitrary
+choice. Notice the jumps between the pairs (2, 3), (4, 5), (6, 7).
+Because PGST depends on the positive eigenvalues of Pn ,
+this phenomenon may be explained by the fact that ⌊n/2⌋ =
+⌊(n + 1)/2⌋, for n even.
+
+Finally, in each of these three cases the positive eigenvalues of Pn are linearly independent over Q. Next, let
+δ equal 0, 12 , 14 , or 43 , accordingly γ equals 1, −1, i, −i, respectively. For each r = 1, . . . , m, let αr = 12 if r is
+even and αr = 0 if r is odd. By Kronecker’s theorem
+(see [12]), for any ǫ, T > 0 there is a tǫ > T , and integers pr , r = 1, . . . , m, such that tǫ θ2r − pr − αr − δ < ǫ.
+It follows that as ǫ → 0, eiπtǫ θr → (−1)r−1 γ, with
+r = 1, . . . , n, so that we have PGST. Let us now focus
+on the negative cases: if n = mp − 1, where p is odd
+and m ≥ 3, then PGST does not occur on Pn . Suppose
+n + 1 = mp, where p is odd. After some algebra (see
+Appendix 1), we obtain the following equation:
+
+r=1
+
+æ
+æ
+
+φ[2(n + 1)]/2 = 2m−1 .
+
+(θ1 − θ2 ) +
+
+à
+
+4
+
+φ(2n + 2) = φ(2p) = φ(p) = p − 1,
+φ(2n + 2)/2 = φ(4p)/2 = φ(p) = p − 1,
+
+2
+X
+
+æ
+
+(−1)r (θmr−1 − θmr−2 ) = 0.
+
+Denote the three terms on the left by D, E, and F , respectively. If we have PGST, then there is a sequence
+of times (tk )k≥0 such that eiθr tk → (−1)r−1 γ, and so
+ei(θs −θs+1 )tk → −1. Therefore, eiDtk → −1, while eiEtk
+and eiEtk both tend to 1 or to −1. Thus, ei(D+E+F )tk →
+−1, which is impossible, since D + E + F = 0. It is not
+difficult to verify that the cases considered above include
+all integers. This ends the proof of the theorem. A corollary is that if 2 ≤ n ≤ 10, we have always PGST, except
+in the case n = 8.
+Fig. 1 gives the smallest times needed to achieve a
+relatively large fidelity (> 0.99 and, thus, ǫ = 0.01) for
+
+r
+
+r
+
+In particular, PGST cannot happen if there is some set
+3
+
+S of eigenvalue indices such that
+X
+
+r∈S
+
+(Er )u,u −
+
+X
+
+Acknowledgments. — We thank Sougato Bose, Xiaoxia
+Fan, Alastair Kay, Avinash Kolli, Mike Pepper, Tommaso Tufarelli, and Sanju Velani for useful conversation and interest in this work. We thank the anonymous referees for their comments and suggestions. C.
+G. and J. S. acknowledge support from NSERC; S. K.
+from the Science Foundation Ireland (under Grant No.
+SFI/07/SK/I1216b); S. S. from the Royal Society.
+
+(Er )u,v eiθr t
+
+r∈S
+
+is bounded away from zero (for all t). With a direct analysis of this expression, we can rule out PGST explicitly
+when n = 3k + 2 and k is even. (The details are in Appendix 2.) We leave open the challenge of finding explicit
+bounds on the fidelity in the remaining cases. The proof
+technique outlined here can be potentially extended to
+other network topologies.
+Conclusions. — By solving an open problem about
+quantum transport [3], we have highlighted numbertheoretic properties of quantum communication in spin
+chains. We have studied general properties of PGST. We
+have given necessary and sufficient mathematical conditions for PGST to occur on XY spin chains with uniform
+couplings.
+The physical intuition paralleling the mathematical result suggests that the spin wave can reach the end of the
+chain with an arbitrary high peak only when the number
+of particles does not permit significant constructive interference. In this case, the trajectory of the amplitude
+(in a fixed time interval) suggests an intriguing analogy
+with chaotic dynamics that remains to be explored.
+Deciding whether there is PGST is computationally
+equivalent to primality testing, a task that is performed
+efficiently with the AKS test [1]. Experimental detection
+of PGST would correspond to a natural algorithm for primality. Its complexity would be determined via bounds
+on the time required by physical evolution (or its simulation) and on resources for tomography and sequential
+measurements.
+We have outlined a technique for quantifying maximum fidelity when there is no PGST. Some cases remain
+with no complete answer. We have shown how notions
+of network control theory can be applied to study communication in spin systems. Exploring PGST in general
+networks beyond the n-path requires similar methods,
+but it is a challenging task. It is valuable to observe that
+we have considered a system without spatial disorder; its
+behaviour does not exhibit effects due to Anderson localization. Numerics in [5] indicated that the fidelity of this
+system tends to be robust when a relatively small amount
+of disorder is introduced in the couplings. On the other
+side, it was shown in [15] that the speed of propagation of
+coherent walks is suppressed exponentially in the amount
+of imperfection.
+We have left open the development of a comprehensive
+theory of PGST. Such a theory is important to obtain a
+fuller understanding of transport in networks of quantum
+mechanical particles, either engineered or found in nature. Experimental tests based on photonic waveguides
+are currently investigated. (See [18] for background on
+such schemes.)
+
+[1] M. Agrawal, N. Kayal, and N. Saxena, Ann. of Math. (2)
+160 (2004), no. 2, 781-793.
+[2] I. Bloch, Nature 453, 1016 (2008); J. Majer, et al., Nature 449, 443 (2007).
+[3] S. Bose, Phys. Rev. Lett. 91, 207901 (2003).
+[4] S. Bose, Contemp. Phys., Vol. 48 (1), pp. 13–30, 2007;
+A. Kay, Phys. Rev. A 84, 022337 (2011); V. M. Kendon
+and C. Tamon, J. Comput. Theor. Nanosci., 8(3):422433, 2011.
+[5] D. Burgarth, S. Bose, New J. Phys. 7 135 (2005).
+[6] D. Burgarth, D. D’Alessandro, L. Hogben, S. Severini,
+and M. Young, arXiv:1111.1475v1 [quant-ph]; C. Godsil
+and S. Severini, Phys. Rev. A 81, 052316 (2010).
+[7] M. Christandl, et al., Phys. Rev. Lett. 92, 187902 (2004).
+[8] J. H. Conway and A. J. Jones, Acta Arith. 30 (1976), 229240; W. Watkins and J. Zeitlin, Amer. Math. Monthly,
+100(5):471–474, May 1993.
+[9] D. DiVincenzo, et al., Nature 408, 339 (2000).
+[10] C. Godsil, Discrete Math. 312(1): 129-147 (2012).
+[11] C. Godsil, arXiv:1011.0231v2 [math.CO]; N. Saxena, S.
+Severini, and I. Shparlinski, Int. J. Quantum Inf. 5, 417
+(2007).
+[12] G. H. Hardy and E. M. Wright, An Introduction to the
+Theory of Numbers (Oxford University Press, Oxford,
+2008), 6th ed.
+[13] I. N. Herstein, Topics in Algebra, Wiley (New York),
+1975.
+[14] A. Kay, Int. J. Quantum Inf. 8, 641 (2010).
+[15] J. P. Keating, et al., Phys. Rev. A 76, 012315 (2007).
+[16] N. Konno, Phys. Rev. E, 72, 026113 (2005); P. L. Knight,
+E. Roldán, and J. E. Sipe, Phys. Rev. A 68, 020301(R)
+(2003).
+[17] E. Lieb, F. Wu, Phys. Rev. Lett. 20 (1968), 1445-1448.
+[18] H. B. Perets, et al., Phys. Rev. Lett. 100, 170506 (2008).
+[19] M. B. Plenio, J. Hartley, and J. Eisert, New J. Phys. 6,
+36 (2004).
+[20] P. Rebentrost, et al., New J. Phys. 11, 033003 (2009).
+[21] H. Schmitz, et al., Phys. Rev. Lett. 103, 090504 (2009).
+[22] B. Shore, Acta Phys. Slovaca 58, 243 (2008).
+[23] Y. Wang, F. Shuang, and H. Rabitz, Phys. Rev. A 84,
+012307 (2011).
+
+4
+
+P
+Since r ar = 1, if |h(t)| ≈ 1 then the summands in this
+expression must be approximately equal. Consider the
+sum
+
+Appendix 1 – In the proof of the theorem, suppose
+n + 1 = mp, where p is odd. Then
+(p−1)/2
+
+X
+
+1+2
+
+a1 eiθ1 t + (−1)k−1 ak eiθk t
+
+(−1)r cos (πr/p) = 0.
+
++ (−1)k+1 ak+2 eiθk+2 t + (−1)n an eiθn t .
+
+r=1
+
+If we multiply this by cos (π/ (n + 1)), we get
+
+cos
+
+
+
+For PGST to occur, its absolute value must be close to
+a1 + ak + ak+2 + an . We can simplify a little by working
+with
+
+p−1
+ X
+2
+π
++
+(−1)r
+n+1
+r=1
+ 
+
+
+
+π(mr + 1)
+π(mr − 1)
+cos
++ cos
+= 0,
+n+1
+n+1
+
+a1 + (−1)k−1 ak ei(θk −θ1 )t
++ (−1)k+1 ak+2 ei(θk+2 −θ1 )t + (−1)n an ei(θn −θ1 )t ;
+which has the same absolute value. We aim to show that
+the real part of this sum is bounded away from a1 + ak +
+ak+2 + an . We note that θn = −θ1 , an = a1 , and each of
+a1 , ak , ak+2 , an is positive.
+When k is even, we can write the real part of this sum
+as
+
+which yields the following relations on eigenvalues:
+p−1
+
+p−1
+
+θx +
+
+2
+X
+
+(−1)r θmr+x +
+
+r=1
+
+2
+X
+
+(−1)r θmr−x = 0,
+
+r=1
+
+a1 − ak cos[(θk − θ1 )t]
+− ak+2 cos[(θk+2 − θ1 )t] − a1 cos(2θ1 t).
+
+with x = 1, 2. The equation with x = 2 is obtained if we
+multiply by cos (2π/(n + 1)) the equation with x = 1. If
+we subtract these equations, we have
+
+Since θ1 = θk + θk+2 , this is equal to
+a1 − ak cos(θk+2 t)
+− ak+2 cos(θk t) − a1 cos[2(θk + θk+2 )t].
+
+p−1
+
+(θ1 − θ2 ) +
+
+2
+X
+
+r=1
+
+r
+
+(−1) (θmr+1 − θmr+2 )
+
+When
+
+p−1
+
++
+
+2
+X
+
+r=1
+
+r
+
+(−1) (θmr−1 − θmr−2 ) = 0.
+
+we have
+−1/2 ≤ sin(θk+2 t), sin(θk t) ≤ 1/2.
+
+Appendix 2 – We have outlined a general technique for
+bounding fidelity. We know that there is no PGST when
+n = 3k + 2 and k is even. This is the case considered
+here. There is no PGST if there exists some set S of
+eigenvalue indices such that the expression
+X
+
+r∈S
+
+(Er )u,u −
+
+X
+
+Whence
+cos[(θk + θk+2 )t] ≥ (3/4 − 1/4) = 1/2
+and so
+cos[2(θk + θk+2 )t] ≥ −1/2.
+
+(Er )u,v eiθr t
+
+Consequently,
+
+r∈S
+
+a1 − ak cos(θk+2 t) − ak+2 cos(θk t)
+− a1 cos[2(θk + θk+2 )t]
+√
+≤ 3a1 /2 + (ak + ak+2 ) 3/2
+√
+= 2a1 + ak + ak+2 − (a1 + (2 − 3)ak
+√
++ (2 − 3)ak+2 )/2.
+√
+On the other hand, if cos(θk+2 t) ≥ 3/2 then
+
+is bounded away from zero (for all t). In this case, θ1 =
+θk + θk+2 . Define
+h(t) =
+
+X
+
+(Er )1,n eiθr t .
+
+r
+
+Here,
+(Er )1,n = (−1)r−1 (Er )1,1 ,
+where (Er )1,1 ≥ 0 and
+h(t) in the form
+
+P
+
+h(t) =
+
+X
+
+√
+cos(θk+2 t), cos(θk t) ≤ − 3/2,
+
+a1 − ak cos(θk+2 t) − ak+2 cos(θk t)
+− a1 cos[2(θk + θk+2 )t]
+√
+≤ 2a1 + 3ak /2 + ak+2 + a1
+
+r (Er )1,1 = 1. So, we can rewrite
+
+= 2a1 + ak + ak+2
+√
+− (2 − 3)ak /2.
+
+ar (−1)r−1 eiθr t .
+
+r
+
+5
+
+It follows that if cos(θk t) ≥
+upper bound:
+
+√
+
+3/2 then we have an explicit
+
+are equal. Consequently, the distance from k to an end
+vertex equals the distance from ℓ to the antipodal end
+vertex.
+By the A-module generated by a vector, we mean the
+smallest A-invariant subspace that contains the vector.
+If |ℓi lies in the A-module generated by |ki and we have
+PGST from k to n + 1 − k, then we have PGST from ℓ
+to n + 1 − ℓ.
+Suppose
+
+√
+3)ak+2 /2.
+
+2a1 + ak + ak+2 − (2 −
+
+This rules out PGST when n = 3k + 2 and k is even.
+Appendix 3 – Through this work we have studied
+PGST between the extremities of a chain. For practical purposes it may be useful to have PGST between
+particles corresponding to internal nodes. We discuss an
+argument for showing that if there is PGST between internal nodes then there is PGST between the extremities.
+In doing so, we appeal to algebraic techniques from quantum control theory of spin systems (Ref. [6]). Given a
+graph X with set of vertices V and adjacency matrix A,
+let z be the characteristic vector of some set S ⊆ V . We
+define and denote by
+n−1
+
+Wz = [z|Az|...|A
+
+U (t)|ki ≈ γ|n + 1 − ki.
+Because |ℓi lies in the A-module generated by |ki, there
+is a polynomial f such that
+|ℓi = f (A)|ki.
+Then
+
+z]
+
+U (t)|ℓi = U (t)f (A)|ki = f (A)U (t)|ki ≈ γf (A)en+1−k .
+
+≥0
+
+an n × n matrix with entries in Z . The matrix Wz is
+called the walk matrix of X with respect to S. The pair
+(X, z) is said to be controllable if the matrix Wz is invertible (i.e., det(Wz ) 6= 0). The set-up is a graph-theoretic
+analogue of the famous Kalman rank condition in control
+T
+theory: the matrices eiAs and eizz t (s, t ∈ R+ ) from a
+controllable pair generate a dense subgroup of the unitary group U (n) (n ≥ 2).
+A closed walk is a sequence of vertices, with consecutive vertices adjacent, that starts and ends at the same
+vertex. If we have PGST on Pn from k to ℓ then the
+vertices k and ℓ are cospectral, so then k + ℓ = n + 1 and
+the generating functions for closed walks at k and at ℓ
+
+If Φ is the ‘flip’ automorphism on the path, then Φ
+commutes with A and so
+f (A)|n + 1 − ki = f (A)Φ|ki =
+Φf (A)|ki = Φ|ℓi = |n + 1 − ℓi.
+
+If n + 1 is a prime, then all vertices i give a controllable
+pair (Pn , i), and so PGST between any pair of vertices
+implies PGST between end vertices. If n + 1 = 2p where
+p is prime and k 6= 2, p, then PGST from k to n + 1 − k
+implies PGST between the end vertices. If k = p then k
+is the central vertex and PGST cannot occur at k. We
+leave open the case n = 2m + 1.
+
+6
+
+

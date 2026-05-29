@@ -1,0 +1,872 @@
+arXiv:2206.02995v1 [math.CO] 7 Jun 2022
+
+Strong cospectrality in trees
+Gabriel Coutinho∗
+
+Emanuel Juliano
+
+Thomás Jung Spier
+
+June 8, 2022
+Abstract
+We prove that no tree contains a set of three vertices which are
+pairwise strongly cospectral. This answers a question raised by Godsil
+and Smith in 2017.
+
+Keywords strongly cospectral vertices ; trees ; continued fractions
+
+1
+
+Introduction
+
+Let G be a finite simple graph and A its adjacency matrix. A continuous-time
+quantum walk can be defined having G as an underlying graph, and in certain
+models where no external interference exists, all properties of the walk are
+determined by the spectrum of A. A desirable property for a quantum walk
+is that at certain times the quantum state input at a vertex is transferred
+to another — if this occurs with probability 1, then it is called perfect state
+transfer, and if it occurs with probability close to 1, it is called pretty good
+state transfer.
+In both cases, a necessary condition is that the two vertices involved are
+so that their projections onto the eigenspaces of the graph are either equal or
+minus each other, in which case the vertices will
+Pbe called strongly cospectral.
+Precisely, if a and b are vertices of G and A = r θr Er is the spectral decomposition of A, then a and b are strongly cospectral if Er ea = ±Er eb , for all r,
+where ea stands for the characteristic vector of the vertex a.
+Strongly cospectral vertices have been extensively studied in [4] and we do
+not aim to survey all results therein. However, it is enlightening to realize that
+if two vertices are strongly cospectral, then they are cospectral in conventional
+usage of the term, meaning, the graphs obtained upon the removal of each are
+going to have the same spectrum. Cospectral vertices have been studied for
+∗
+
+gabriel@dcc.ufmg.br — remaining affiliations in the end of the manuscript.
+
+1
+
+a long time, and in the context of trees, they are a key piece in Schwenk’s [9]
+seminal paper.
+Two vertices a and b in G are similar if there is an automorphism of the
+graph that maps a to b. This automorphism, restricted to G \ a, implies that
+G \ a ≃ G \ b, and if the latter isomorphism exists even when no automorphism
+of G maps a to b, we say that a and b are pseudo-similar. Again, these concepts
+have been around for some time, see for instance [8, 6]. It is immediate to note
+that similar and pseudosimilar vertices are cospectral, so it is natural to wonder
+what is their connection to the concept of strong cospectrality. It is perhaps
+natural to expect that similar vertices are strongly cospectral but this is false
+— for instance, no pair of vertices in Kn with n ≥ 3 is strongly cospectral. In
+fact, if a and b are strongly cospectral and there is an automorphism that fixes
+a, then it must also fix b. This suggests that strong cospectrality captures a
+sort of regularity or symmetry that must distinguish the pair of vertices from
+the remaining vertices of the graph.
+Naturally at this point one gets suspicious of the fact that in a given graph
+there cannot be a set of three or more vertices which are pairwise strongly
+cospectral. This suspicion is further reinforced by the fact that perfect state
+transfer, the quantum property inspiring the definition of strong cospectrality,
+is indeed monogamous (see [7]): no three vertices in a given graph can be
+involved in perfect state transfer with each other. Yet, there are graphs with
+three or more vertices pairwise strongly cospectral. The easiest examples are
+vertices of smallest degree in cartesian powers of paths of different lenght, so
+as long they have simple eigenvalues. With simple eigevalues, cospectrality is
+equivalent to strong cospectrality (see [4]), it is enough to simply check that
+the number of closed walks of fixed length around the vertices is constant for
+all of them.
+So why bother with trees? First, there is special interest in understanding
+quantum walks in trees (see for instance [2]) because trees model quantum
+systems which are likely cheaper and easier to build. Unfortunately, there is
+no known example of perfect state transfer in tress with more than 3 vertices,
+and this may as well be a consequence of the fact that strong cospectrality
+in trees is not as common as it is for other graphs. In fact, our result is
+the first to display a disparity: even though there are graphs with arbitrarily
+large sets of pairwise strongly cospectral vertices, no such set will exist in
+a tree. Second, trees seem to behave differently than graphs when it comes
+to cospectrality. A famous example is the fact that almost all trees have
+a cospectral mate [9], whereas the opposite is widely believed to be true for
+graphs in general (a conjecture due to W. Haemers). Our result shows that one
+further aspect of this difference, and therefore hopefully serves as inspiration
+2
+
+for future investigations.
+Third, and most importantly, the question on whether there are trees with
+three or more vertices pairwise strongly cospectral was asked by Godsil and
+Smith [4]. We answer it fully in the negative.
+In Section 2 we introduce the basic facts and notation used throughout the
+paper. In Section 3, we state a key lemma and prove our main result. Section
+4 is dedicated to prove the key lemma.
+
+2
+
+Graph spectra and polynomials
+
+In this paper, we will denote by φG the characteristic polynomial of the graph
+G in the variable t. If θ0 , θ1 , . . . , θd are the distinct eigenvalues of the adjacency
+matrix A of G, then we denote by Er the orthogonal projection onto the θr eigenspace.
+Two vertices i and j of the graph G are called cospectral if φG\i = φG\j .
+Using walk generating functions, it is possible to write the entries of Er in
+terms of these polynomials, as follows:
+(Er )i,i =
+
+(t − θr )φG\i
+,
+φG
+t=θr
+
+(1)
+
+whereas this is well defined as θr is a pole of order at most 1 in φG\i /φG (see
+[5, 1]). From this, it follows that i and j are cospectral if and only if, for every
+r in {0, 1, . . . , d}, (Er )i,i = (Er )j,j .
+If, moreover, Er ei = ±Er ej for every r in {0, 1, . . . , d}, then i and j are
+strongly cospectral. It is easy to verify that this is equivalent to requiring that
+they are cospectral and that (Er )i,i = ±(Er )i,j for every r in {0, 1, . . . , d}.
+Walk generating functions also provide the following expression
+p
+(t − θr ) φG\i φG\j − φG φG\{i,j}
+(2)
+(Er )i,j =
+φG
+t=θr
+and so we obtain the following result:
+Theorem 1 (Corollary 8.4 in [4]). Vertices i and j of a graph G are strongly
+cospectral if and only if φG\i = φG\j and all poles of φG\{i,j} /φG are simple.
+Note that as a consequence, if i and j are in distinct connected components
+of the graph G, then i and j are not strongly cospectral.
+At first sight, the expression within the square root in (2) is not clearly a
+perfect square, but in fact it is, and given by the following expression:
+3
+
+Lemma 2 (Lemma 2.1 in [5]). Let i and j be vertices in the graph G. Then,
+!2
+φG\i φG\j − φG\{i,j} φG =
+
+X
+
+φG\P
+
+,
+
+P :i→j
+
+where the sum is over all the paths from i to j.
+Our proof will require manipulating ratios of characteristic polynomials of
+a graph and its vertex deleted subgraphs, and for that end, we have found it
+more convenient to introduce the following notation. Given a graph G and
+vertex i, have
+φG
+(3)
+αiG = G\i .
+φ
+We end this section establishing a description of the graph of this rational
+function.
+Lemma 3 (Theorem 1.5
+P in [5] ).G\iLet G be a graph. Then, the derivative of
+G
+G 0
+φ is given by (φ ) = i∈V (G) φ .
+Lemma 4. Let i be a vertex in the graph G. Then, (αiG )0 (t) ≥ 1 for every t
+that is not a pole of αiG . In particular, αiG (t) has only simple zeros and poles,
+and is increasing and surjective on each of its branches.
+Proof. Naturally, all zeros and poles of αiG are real. By taking the derivative
+in (3) and by Lemmas 3 and 2, it follows that
+!2
+P
+G\P
+X
+φ
+P
+:i→j
+(αiG )0 = 1 +
+.
+φG\i
+j∈V (G\i)
+
+This implies that (αiG )0 (t) ≥ 1 for every t that is not a zero of φG\i . It
+follows by continuity that (αiG )0 (t) ≥ 1 for every t that is not a pole of αiG . As
+a consequence, αiG is increasing and surjective in each of its branches and all
+of its zeros are simple.
+Since deg(φG ) = deg(φG\i ) + 1, the number of zeros of αiG is one more than
+the number of poles counted with multiplicity of αiG . But in each branch,
+because αiG is increasing, there can only be one zero of αiG . Putting this all
+together, it follows that all the poles of αiG are also simple.
+
+4
+
+Figure 1: Representation of the tree T with vertices i, j and k on the same
+path.
+
+3
+
+Main result
+
+The result we prove in this section is that no tree has three (or more) pairwise strongly cospectral vertices. First, we show that if such a set of pairwise
+strongly cospectral vertices exist, then there must be a cut vertex whose removal separates all three of them in different connected components. In fact,
+note that it is enough to assume they are pairwise cospectral.
+Lemma 5. If three vertices in a tree are pairwise cospectral, then they do not
+lie on a path.
+Proof. Let T be a tree as in Figure 1, where the vertices i, j and k are on the
+same path. We will prove that j cannot be cospectral to both i and k.
+Let θ1 (G) be the largest eigenvalue of the adjacency matrix of the graph
+G. As j is a cut-vertex, it follows that θ1 (T \ j) = max{θ1 (Ti ), θ1 (Tj ), θ1 (Tk )}.
+But since θ1 (H) < θ1 (G) for every proper subgraph H of a connected graph
+G (as a consequence of the Perron-Frobenius Theorem, see [3, Chapter 8]), we
+have θ1 (Ti ) < θ1 (T \ k); θ1 (Tj ) < θ1 (T \ i), θ1 (T \ k); θ1 (Tk ) < θ1 (T \ i).
+Thus θ1 (T \ j) < max{θ1 (T \ i), θ1 (T \ k)}, and therefore j cannot be
+cospectral to both i and k.
+Next, we state a main technical lemma, which we will prove in the next
+section.
+Lemma 6. Assume vertices i, j and k are pairwise strongly cospectral in a
+graph G, and that there exists v so that each i, j and k lie in a different
+5
+
+G\v
+
+component of G \ v. Thus, for any θ ∈ R, if αi
+G\v
+αk (θ) 6= 0.
+
+G\v
+
+(θ) = 0, then αj
+
+(θ) =
+
+The last lemma describes a situation that is not possible.
+Theorem 7. Let G be a graph with three pairwise cospectral vertices i, j and
+k, and assume that there is a cut-vertex v such that these cospectral vertices are
+in distinct connected components of G \ v. Then, one of the pairs of cospectral
+vertices is not strongly cospectral.
+Proof. Assume, by contradiction, that the vertices i, j and k are pairwise
+strongly cospectral.
+First, note by the Lemma 4 that if θ is a sufficiently large negative number,
+G\v
+G\v
+G\v
+then αi (θ), αj (θ) and αk (θ) are all negative. On the other hand, if θ
+G\v
+G\v
+G\v
+is a sufficiently large positive number, then αi (θ), αj (θ) and αk (θ) are
+all positive. Let τ be the smallest real number so that at least one of them is
+equal to zero, and λ the largest real number so that at least one is equal to
+zero.
+G\v
+G\v
+G\v
+Observe also by Lemma 4 that αi , αj and αk are increasing and
+continuous in each branch. Finally, note that by Lemma 6 it cannot happen
+G\v
+G\v
+G\v
+that two terms among αi (θ), αj (θ) and αk (θ) are simultaneously equal
+to 0.
+Thus, it must be that between τ and λ there is at least one real number θ
+G\v
+G\v
+G\v
+for which among αi (θ), αj (θ) and αk (θ) there is a negative number, a
+positive number and a 0. But this contradicts Lemma 6.
+So the vertices i, j and k cannot be pairwise strongly cospectral.
+This leads to the promised result.
+Corollary 8. There is no tree with three pairwise strongly cospectral vertices.
+Proof. By Lemma 5, if these vertices exist, then it must be so that there is
+another vertex of the tree whose removal puts each in a different component.
+By Theorem 7, this is not possible.
+It is possible to give a statement analogous to Theorem 7 for matching
+polynomials, but in this case the definition of strong cospectrality should be
+given by the analogous statement for matching polynomials of Theorem 1.
+The proof in this case will follow similarly, with the exception that Lemmas 3
+and 2 are replaced by [5, Theorem 1.1] and [5, Lemma 4.1], respectively.
+In the next section, we work on the proof of Lemma 6.
+
+6
+
+4
+
+Proof of the key lemma
+
+4.1
+
+Properties of the α’s
+
+We start this section writing the definition of strongly cospectral vertices in
+terms of the α’s defined in (3).
+Lemma 9. Let i and j be distinct vertices in the graph G. Then, i and j are
+strongly cospectral if, and only if, αiG = αjG and αiG (θ) = αjG (θ) 6= 0 whenever
+G\j
+G\i
+αi (θ) = 0 or αj (θ) = 0.
+Proof. Our proof proceeds via Theorem 1. Observe that φG\i = φG\j if, and
+φG\{i,j}
+only if, αiG = αjG . We claim that
+has a double pole at θ if, and only
+φG
+G\i
+G\j
+if, αiG (θ), αjG (θ), αi (θ), αj (θ) are all equal to zero. In order to see this,
+simply notice that,
+φG\{i,j}
+1
+1
+=
+,
+=
+G\i
+G\j
+G
+G
+G
+φ
+αi αj
+αj αi
+G\j
+
+and αiG , αjG , αi
+
+G\i
+
+and αj
+
+have simple zeros by the Lemma 4.
+
+In what follows in order to work with the rational functions αiG for vertex
+deleted subgraphs we make use of a technique called contraction. This technique is inspired by the theory of continued fractions and has also been used
+in the context of matching polynomials [10].
+For distinct vertices i and j in a graph G denote by,
+!2
+P
+G\P
+φ
+P
+:i→j
+.
+λG
+ij := −
+φG\{i,j}
+From here onwards, if q(x) is a rational function, then if write q(θ) = ∞
+we simply mean that θ is a pole of q(x).
+G
+G
+G
+Observe that λG
+ij = λji , and that either λij (θ) = ∞ or λij (θ) < 0, for
+every real number θ. Note also that λG
+ij has double zeros and poles. It is an
+immediate consequence of Lemma 2 that,
+G\j
+
+αiG = αi
+
++
+
+λG
+ij
+
+G\i
+
+and αjG = αj
+G\i
+
++
+
+αj
+
+In this case we have the following useful observation.
+G\j
+
+G
+Lemma 10. If λG
+ij (θ) = 0, then αi (θ) = αi
+
+7
+
+(θ).
+
+λG
+ij
+G\j
+
+αi
+
+.
+
+(4)
+
+G\i
+
+Proof. Note that λG
+has simple
+ij has double zeros, while, by Lemma 4, αj
+G
+λ
+ij
+(θ) = 0, which in turn implies
+zeros. It follows that if λG
+ij (θ) = 0, then
+G\i
+αj
+G\j
+αiG (θ) = αi (θ).
+G\i
+
+G\j
+
+Our next result shows that, more generally, given αj (θ), αi (θ) and
+G
+λij (θ) 6= ∞, we can compute αiG (θ) and αjG (θ). In the statement of the next
+result we use the following conventions. For every C in R ∪ {∞}, C0 = 0 and
+C
+∞ + C = C + ∞ = ∞; if C 6= ∞, then ∞
+= 0; if C ∈
+/ {0, ∞}, then C0 = ∞.
+Lemma 11. If λG
+ij (θ) 6= ∞, then, assuming the above conventions,
+G\j
+αiG (θ) = αi (θ) +
+
+λG
+ij (θ)
+G\i
+
+.
+
+αj (θ)
+G\j
+
+G
+Proof. If λG
+(θ), and
+ij (θ) = 0, then, by Lemma 10, it holds that αi (θ) = αi
+because the zeros of the λ’s are double and the zeros of the α’s are simple, the
+equality follows.
+Therefore, assume that λG
+ij (θ) is in (−∞, 0). In this case, the result follows
+G\j
+G\i
+immediately, except when αi (θ) = ∞ and αj (θ) = 0.
+Assume we are in this last situation, then we claim that αiG (θ) = ∞. To
+see this, observe that, by Lemma 4, for every ε > 0 sufficiently small it holds
+G\i
+G\i
+G\j
+G\j
+that αi (θ − ε) > 0 > αi (θ + ε) and αj (θ − ) < 0 < αj (θ + ε).
+G\i
+G\j
+G
+and λG
+Then, since αiG = αi +λG
+ij is negative, we obtain αi (θ−ε) >
+ij /αj
+0 > αiG (θ + ε) for every  > 0 sufficiently small. It follows by Lemma 4 that
+αiG (θ) = ∞.
+
+In case λG
+ij (θ) = ∞ we can still obtain some information.
+G\j
+
+Lemma 12. If λG
+ij (θ) = ∞, then αi
+G
+αj (θ) = ∞, then αiG (θ) = ∞.
+
+G\i
+
+(θ) = αj (θ) = ∞. If, in addition,
+
+Proof. First, by (4), we have
+G\j
+
+λG
+ij = αi
+
+G\i
+
+(−αj
+
+G\i
+
+G\j
+
++ αiG ) = αj (−αi
+
++ αjG ).
+
+G\j
+
+G\j
+
+G
+G
+Now, notice that λG
+and αi have simple
+ij has double poles, while αi , αj , αi
+poles by the Lemma 4. Thus, due to these last expressions for λG
+ij , it follows
+G\j
+G\i
+that λG
+(θ) = αj (θ) = ∞. This proves the
+ij (θ) = ∞ can only happen if αi
+first part of the statement.
+
+8
+
+For the second part of the statement, observe that,
+G\i
+
+αiG αj
+
+=
+
+φG
+φG\{i,j}
+
+G\j
+
+= αjG αi
+
+.
+
+G\i
+
+It follows that if, in addition, αjG (θ) = ∞, then αiG αj has a double pole at θ,
+which implies that αiG (θ) = ∞, proving the second part of the statement.
+
+4.2
+
+The proof of Lemma 6
+
+In this subsection, we assume the graph G has the property that there exists a
+vertex v such that the vertices i, j and k are in distinct connected components
+of G \ v.
+On Figure 2 there is a representation of a graph with this property.
+
+Figure 2: A representation of a graph G such that the vertices i, j and k are
+in distinct connected components of G \ v.
+Our proof of Lemma 6 will follow from conditions imposed by the pairwise
+G\v
+G\v
+G\v
+strong cospectrality of i, j and k on αi , αj and αk .
+Observe that, since i, j and k are in distinct connected components of G\v,
+G\v
+G\{v,j}
+G\{v,j,k}
+G\j
+G\{j,k}
+αi = αi
+= αi
+and λG
+= λiv
+, and similar identities
+iv = λiv
+by changing the roles of i, j and k. In what follows, we make heavy use of
+these facts without further mention.
+9
+
+G\v
+
+G
+Lemma 13. If λG
+iv (θ) = 0, then αi (θ) = αi
+
+G\j
+
+(θ) = αi
+
+(θ).
+
+Proof. First, note that,
+G\v
+αiG = αi +
+
+λG
+G\j
+G\{j,v}
+iv
+and αi = αi
++ G\{j,i}
+.
+G\i
+αv
+αv
+λG
+iv
+
+G\v
+
+As a consequence, by Lemma 10, αiG (θ) = αi
+G\{j,v}
+G\v
+but it also follows that αi
+(θ) = αi (θ).
+
+G\j
+
+(θ) and αi
+
+G\{j,v}
+
+(θ) = αi
+
+(θ),
+
+This last result has the following crucial corollary for strongly cospectral
+vertices.
+G\v
+
+Corollary 14. If vertices i and j are strongly cospectral and αi
+then λG
+iv (θ) 6= 0.
+
+(θ) = 0,
+
+G\j
+
+Proof. Assume otherwise, then, by Lemma 13, both αiG (θ) and αi
+G\v
+equal to αi (θ) = 0, which is impossible by Lemma 9.
+
+(θ) are
+
+The next results develop the consequences of the conclusion of Corollary 14.
+G\v
+
+Lemma 15. If αi
+
+(θ) = 0 and λG
+iv (θ) 6= 0, then,
+αvG (θ) = αvG\j (θ) = αvG\{j,k} (θ) = ∞.
+
+Proof. First, note that λG
+iv (θ) 6= ∞ because if this was not the case then, by
+G\v
+Lemma 12, αi (θ) = ∞, which is impossible.
+Then, note that,
+G\i
+
+αvG = αv
+G\j
+
+αv
+
+G\{j,i}
+
+= αv
+
+G\{j,k}
+
+αv
+
+G\v
+
++ λG
+iv /αi
+
+G\{j,v}
+
++ λG
+iv /αi
+
+G\{j,k,i}
+
+= αv
+
+,
+,
+
+G\{j,k,v}
+
++ λG
+iv /αi
+
+.
+
+G\{j,k,v}
+
+G\{j,v}
+
+G\v
+
+But we also have that αi
+(θ) = αi
+(θ) = αi (θ) = 0. It follows
+G\j
+G\{j,k}
+G
+from Lemma 11 that αv (θ) = αv (θ) = αv
+(θ) = ∞.
+The next proposition presents the main consequence from the conclusion
+of Corollary 14, from which more consequences will follow with the hypothesis
+of strong cospectrality of j and k.
+G\v
+
+Lemma 16. If αi
+
+(θ) = 0 and λG
+iv (θ) 6= 0, then,
+G\v
+
+αjG (θ) = αj
+
+G\k
+
+(θ) = αj
+
+10
+
+(θ).
+
+G\v
+
+Proof. If λG
+(θ) = ∞. But by Lemma 15
+jv (θ) = ∞, then Lemma 12 implies αj
+G\k
+G
+we also have αv (θ) = αv (θ) = ∞, from which follows by the second part of
+G\v
+G\k
+Lemma 12 that αjG (θ) = αj (θ) = ∞. It follows that, αjG (θ) = αj (θ) =
+G\k
+αj (θ) = ∞, as we wanted.
+Now, assume that λG
+jv (θ) 6= ∞. Observe that,
+G\v
+
+αjG = αj
+
++
+
+λG
+jv
+
+,
+G\j
+
+αv
+
+G\k
+
+αj
+G\j
+
+G\{k,v}
+
+= αj
+
++
+
+λG
+jv
+G\{k,j}
+
+.
+
+αv
+
+G\{j,k}
+
+But by Lemma 15 we also have αv (θ) = αv
+(θ) = ∞. It then follows by
+G\v
+G\k
+G\{k,v}
+G\v
+G
+Lemma 11 that, αj (θ) = αj (θ) and αj (θ) = αj
+(θ) = αj (θ), which
+finishes the proof.
+If the vertices j and k are cospectral, this last result has the following
+corollary.
+G\v
+
+Corollary 17. If αi (θ) = 0 and λG
+iv (θ) 6= 0, and j and k are cospectral,
+then,
+G\v
+G\j
+G\v
+G\k
+αj (θ) = αj (θ) = αjG (θ) = αkG (θ) = αk (θ) = αk (θ).
+Furthermore, if j and k are strongly cospectral, then this common value is
+different than zero.
+G\k
+
+G\v
+
+G\v
+
+Proof. By Lemma 16, αjG (θ) = αj (θ) = αj (θ) and αkG (θ) = αk (θ) =
+G\j
+αk (θ). But j and k are cospectral, so αjG (θ) = αkG (θ). This proves the first
+part of the statement.
+Now, if j and k are strongly cospectral, then the common value of these
+quantities cannot be zero. To see this, observe that if this were not the case,
+G\k
+then in particular αjG (θ) = αj (θ) = 0, which is impossible by Lemma 9.
+As a consequence we are ready to prove the key lemma.
+Lemma 6. Assume vertices i, j and k are pairwise strongly cospectral in a
+graph G, and that there exists v so that each i, j and k lie in a different
+G\v
+G\v
+component of G \ v. Thus, for any θ ∈ R, if αi (θ) = 0, then αj (θ) =
+G\v
+αk (θ) 6= 0.
+Proof. Note that by the Corollary 14, as i and j are strongly cospectral, it
+follows that λG
+iv (θ) 6= 0. But then by the Corollary 17, as j and k are strongly
+G\v
+G\v
+cospectral, it follows that αj (θ) = αk (θ) 6= 0.
+
+11
+
+Acknowledgements
+Emanuel Juliano acknowledges the scholarship FAPEMIG/PROBIC. Authors
+thank Chris Godsil for bringing up the question that motivated this paper.
+
+References
+[1] Gabriel Coutinho, Chris Godsil, Emanuel Juliano, and Christopher M
+van Bommel. Quantum walks do not like bridges. arXiv preprint
+arXiv:2112.03374, 2021.
+[2] Gabriel Coutinho and Henry Liu. No laplacian perfect state transfer in
+trees. SIAM Journal on Discrete Mathematics, 29:2179–2188, 11 2015.
+[3] Chris Godsil and Gordon Royle. Algebraic Graph Theory. Springer-Verlag,
+2001.
+[4] Chris Godsil and Jamie Smith.
+preprint arXiv:1709.07975, 2017.
+
+Strongly cospectral vertices.
+
+arXiv
+
+[5] Chris D Godsil. Algebraic Combinatorics. Chapman & Hall, 1993.
+[6] Chris D Godsil and William L Kocay. Graphs with three mutually pseudosimilar vertices. Journal of Combinatorial Theory, Series B, 35(3):240–
+246, 1983.
+[7] Alastair Kay. Basics of perfect communication through quantum networks. Physical Review A, 84(2):022337, 2011.
+[8] Robert J Kimble Jr, Allen J Schwenk, and Paul K Stockmeyer. Pseudosimilar vertices in a graph. Journal of Graph Theory, 5(2):171–181,
+1981.
+[9] Allen J Schwenk. Almost all trees are cospectral. New directions in the
+theory of graphs, pages 275–307, 1973.
+[10] Thomás Jung Spier. A refined gallai-edmonds structure theorem for
+weighted matching polynomials. arXiv preprint arXiv:2006.15215, 2020.
+
+12
+
+Gabriel Coutinho
+Dept. of Computer Science
+Universidade Federal de Minas Gerais, Brazil
+E-mail address: gabriel@dcc.ufmg.br
+Emanuel Juliano
+Dept. of Computer Science
+Universidade Federal de Minas Gerais, Brazil
+E-mail address: emanuelsilva@dcc.ufmg.br
+Thomás Jung Spier
+Dept. of Computer Science
+Universidade Federal de Minas Gerais, Brazil
+E-mail address: thomasjung@dcc.ufmg.br
+
+13
+
+

@@ -1,0 +1,992 @@
+arXiv:1709.03591v1 [math.CO] 11 Sep 2017
+
+A New Perspective on the
+Average Mixing Matrix
+Gabriel Coutinho∗, Chris Godsil†, Krystal Guo‡§, Hanmeng Zhan†
+October 5, 2018
+
+Abstract
+We consider the continuous-time quantum walk defined on the adjacency matrix of a graph. At each instant, the walk defines a mixing
+matrix which is doubly-stochastic. The average of the mixing matrices contains relevant information about the quantum walk and about
+the graph. We show that it is the matrix of transformation of the
+orthogonal projection onto the commutant algebra of the adjacency
+matrix, restricted to diagonal matrices. Using this formulation of the
+average mixing matrix, we find connections between its rank and automorphisms of the graph.
+
+1
+
+Introduction
+
+Let X be a graph. We are interested in continuous quantum walks on X,
+which we will define now. The states of the walk are represented by density
+matrices, positive semidefinite matrices with rows and columns indexed by
+the vertex set V (X) of X, and having trace 1. If A is the adjacency matrix
+of X, we define the transition matrix U(t) of the walk by
+U(t) = exp(itA).
+∗
+
+Universidade Federal de Minas Gerais, Belo Horizonte, Brazil. gabriel@dcc.ufmg.br
+University of Waterloo, Waterloo, Canada. {cgodsil,h3zhan}@uwaterloo.ca
+‡
+Université libre de Bruxelles, Brussels, Belgium. guo.krystal@gmail.com
+§
+This work was done when K. Guo was a postdoctoral fellow at the University of
+Waterloo.
+†
+
+1
+
+The continuous-time quantum walk is an important object of study in quantum computing since it is an universal computational primitive [4]. They
+were first studied in [6]. Since then, many aspects of quantum walks have
+been studied, including state transfer [11, 7, 5, 13], uniform mixing [3, 9, 1]
+and average mixing [8, 2]. We note that U(t) is unitary and symmetric. If
+the initial state of the system is given by a density matrix D, then the state
+of the system at time t is
+U(t)DU(−t).
+We note that we do not have direct access to states, all that experiment
+provides is the value of expressions of the form
+tr(DPr )
+P
+where P1 , . . . , Pn are positive semidefinite matrices such that
+r Pr = I.
+Because of this we find ourselves using the trace inner product on Matm×n (C):
+hM, Ni = tr(M T N).
+Unlike classical random walks on a connected graph, a continuous quantum walk does not reach a steady state. Thus, if the eigenvalues of X are
+integers (e.g., if X is the complete graph Kn ) then U(t) is a periodic function
+c of X provides a useful
+of t. The focus of this paper, the mixing matrix M
+substitute for a steady state.
+c. The first is to introduce
+There are two convenient ways to define M
+what we call the mixing matrices M(t) of the walk, given by
+M(t) = U(t) ◦ U(t).
+(Here we use M ◦ N to denote the Schur or element-wise product of two
+matrices of the same order.) Since U(t) is unitary and symmetric, we see that
+M(t) is symmetric non-negative matrix with each row and column summing
+to one. We can now define
+Z
+1 T
+c
+M = lim
+M(t) dt.
+(1)
+T →∞ T 0
+
+To see that this definition makes sense, we recall that since A is real and
+symmetric, it has a spectral decomposition
+X
+A=
+θr Er
+r
+
+2
+
+where θr runs over the distinct eigenvalues of A and Er is the matrix that
+represents orthogonal projection onto the θr -eigenspace of A. Given this we
+also have
+X
+U(t) =
+eitθr Er
+r
+
+and, as U(t) = U(−t),
+M(t) =
+
+X
+
+eit(θr −θs ) Er ◦ Es .
+
+r,s
+
+It follows that the limit on the right side of (1) is exists and is equal to
+X
+Er◦2 ,
+r
+
+that is, the limit is the sum of the Schur squares of the spectral idempotents
+of A.
+We consider one example. The spectral idempotents of the complete
+graph Kn are
+1
+1
+J, I − J,
+n
+n
+(with corresponding eigenvalues n − 1 and −1) and hence its average mixing
+matrix is
+
+
+2
+2
+I + 2 J.
+1−
+n
+n
+For large n, this is very close to I. This is unexpected, but we are dealing
+with quantum physics, where the unexpected is not uncommon.
+If A ∈ Matn×n (R), its commutant Comm(A) is the set of matrices that
+commute with A. This is an object of some combinatorial interest—the
+permutation matrices in Comm(A) are the automorphisms of A. The first
+c is the matrix
+main result of this paper is that, relative to a natural basis, M
+that represents the restriction to the diagonal matrices of the orthogonal
+projection from Matn×n (R) onto Comm(A). We then use this connection to
+investigate the relations between properties of the graph X and the rank of
+c.
+M
+
+3
+
+2
+
+Projection onto the commutant of the adjacency matrix
+
+Let A be a n × n real symmetric matrix with columns and rows indexed by
+elements of a set V . We denote by Matn×n (R) the set of n × n matrices with
+entries in R. Let the spectral decomposition of A be given as follows:
+d
+X
+
+θr Er ,
+
+r=1
+
+where θ1 , . . . , θm are the distinct eigenvalues of A and Er is the projection
+matrix onto the θr eigenspace of A. We denote by Comm(A) the set of all
+real matrices which commute with A.
+2.1 Lemma. If the eigenvalues θ1 , . . . , θd of A have
+Pmultiplicities m1 , . . . , md
+respectively, them the dimension of Comm(A) is r m2r .
+
+Proof. When A is diagonal, this is immediate. Since A is similar to a diagonal
+matrix, the lemma follows.
+We consider a map Ψ : Rn×n → Comm(A) such that
+Ψ(M) =
+
+d
+X
+
+Er MEr ,
+
+r=0
+
+for M ∈ Rn×n . We see that Ψ is an endomorphism of Rn×n .
+2.2 Lemma. The following are true:
+(i) Ψ is idempotent.
+(ii) The image of Ψ is equal to Comm(A).
+(iii) Ψ is self-adjoint; that is hM, Ψ(N)i = hΨ(M), Ni.
+Proof. Since Er2 = Er and Er Es = 0 if r 6= s, it is immediate that Ψ2 (M) =
+Ψ(M) for any matrix M. As
+AEr MEr = θr Er MEr = Er MEr A
+
+4
+
+we see that Ψ(M) ∈ Comm(A) for any M. Each idempotent Er is a polynomial in A and consequently if N Comm(A), then
+X
+X
+X
+X
+Ψ(N) =
+Er NEr =
+NEr2 =
+NEr = N
+Er = NI = N.
+r
+
+r
+
+r
+
+r
+
+Hence each element of Comm(A) lies in the image of Ψ and therefore im(Ψ) =
+Comm(A).
+Finally
+hM, Er NEr i = tr(M T Er NEr ) = tr(Er M T Er N) = hEr MEr , Ni,
+from which it follows that Ψ is self-adjoint.
+2.3 Corollary. The map Ψ is the orthogonal projection of the n × n real
+matrices onto Comm(A).
+Proof. This is immediate from the fact that Ψ is idempotent and selfadjoint—but we simply note that for any two n × n matrices M and N
+hΨ(M), N − Ψ(N)i = hM, Ψ(N − Ψ(N))i = hM, Ψ(N) − Ψ2 (N)i = 0.
+The following is a standard fact in linear algebra, see e.g., [10, Lemma
+4.3.1].
+2.4 Lemma. For B, C, N ∈ Rn×n , we have that
+vec(CNB T ) = (B ⊗ C) vec(N).
+From this we see that, relative
+to the standard basis of Matn×n (R), the
+P
+matrix that
+Ψ is r Er ⊗ Er . (Since tr(Er ) = mr it follows that
+P represents
+2
+tr(Ψ) = r mr ; since P is idempotent tr(P ) = rk(P ) and thus we have a
+second proof of Lemma 2.1.)
+
+3
+
+Average states
+
+Recall that a state D is a positive semidefinite matrix with trace 1. If D is
+the initial state of a continuous quantum walk, then the state D(t) at time
+t is
+D(t) = U(t)DU(−t).
+5
+
+Using the spectral decomposition of U(t), we have
+X
+eit(θr −θs ) Er DEs
+D(t) =
+r,s
+
+whence
+
+1
+lim
+T →∞ T
+
+Z T
+
+D(t) dt =
+
+0
+
+X
+
+Er DEr .
+
+r
+
+We call this limit (or sum) an average state and denote it by Ψ(D). We see
+at once that Ψ(D) is equal to the orthogonal projection of D onto Comm(A).
+Since D is positive semidefinite and the idempotents Er are symmetric,
+we see that Ψ(D) is a positive semidefinite matrix. As
+X
+X
+X
+tr(Ψ(D)) =
+tr(Er DEr ) =
+tr(DEr2 ) =
+tr(DEr ) = tr(D)
+r
+
+r
+
+r
+
+we also see that Ψ(D) is a density matrix.
+In the context of quantum walks on graphs, there is a natural class of
+density matrices we will focus on. If a ∈ V (X), let ea denote the standard
+basis vector of CV (X) indexed by a and define Da = ea eT . Then certainly Da
+is a density matrix, moreover rk(Da ) = 1 and Da2 = Da . (Physicists refer to
+a density matrix with rank 1 as a pure state.)
+The following theorem gives one reason why average states are of interest.
+3.1 Theorem. Let X be a graph. The average mixing matrix is the Gram
+matrix of the average states Ψ(Da ) for a in V (X).
+Proof. Our claim is that, if a, b ∈ V (X), then
+
+Now
+
+c)a,b .
+hΨ(Da ), Ψ(Db )i = (M
+Ψ(Da )Ψ(Db ) =
+
+X
+
+Er Da Er
+
+r
+
+and so
+tr(Ψ(Da )Ψ(Db )) =
+
+X
+
+Es Db Es
+
+s
+
+X
+
+tr(Er Da Er Db Er ).
+
+r
+
+Further
+Er Da Er Db Er = Er ea eTa Er eb eTb Er = (Er )a,b Er ea eTb Er
+6
+
+and therefore
+tr(Ψ(Da )Ψ(Db )) =
+
+X
+
+(Er )a,b (Er )b,a =
+
+r
+
+X
+
+(Er◦2 )a,b
+
+r
+
+and the theorem follows.
+3.2 Corollary. The dimension of the space spanned by the average state
+c
+Ψ(Da ) for a ∈ V (X) is equal to rk(M).
+3.3 Corollary. The average mixing matrix is completely positive semidefinite.
+
+4
+
+Diagonal matrices in the commutant
+
+In this section, we consider the restriction of Ψ to the set of n × n diagonal
+matrices. Let D be the set of n × n diagonal matrices. The standard basis
+of D is given by {Da }a∈V where Da := ea eTa .
+The map that sends a matrix M to Ψ(M) ◦ I is a linear map from
+Matn×n (R) into the space D of diagonal matrices. We denote the restriction of this map to D by Φ; it is evidently an endomorphism of D.
+4.1 Lemma. Relative to the standard basis {Da }a∈V of D, the matrix that
+c. Hence rk(M
+c) = dim(Φ(D)).
+represents Φ is M
+Proof. The entries of the matrix representing Ψ are given by the the inner
+products hDa , Ψ(Db )i for vertices a and b of X. We have
+X
+hDa , Ψ(Db )i =
+tr(Da Er Db Er )
+r
+
+and
+tr(Da Er Db Er ) = tr(ea eTa Er eb eTb Er ) = (Er )a,b (Er )b,a = (Er◦2 )a,b .
+Hence
+
+ca,b .
+hDa , Ψ(Db)i = M
+
+4.2 Lemma. If D is diagonal, then Ψ(D) = 0 if and only if I ◦ Ψ(D) = 0.
+7
+
+Proof. Since ker(Ψ) = Comm(A)⊥ , we see that Ψ(D) = 0 if and only if
+M ∈ Comm(D)⊥ . Note that if D is diagonal, then
+hD, Ni = hD, I ◦ Ni
+Assume D is diagonal and I ◦ Ψ(D) = 0. Then for each vertex a of X,
+we have
+0 = hDa , I ◦ Ψ(D)i = hDa , Ψ(D)i = hΨ(Da ), Ψ(D)i
+and so Ψ(D) is orthogonal to each matrix Ψ(Da ). Since Ψ(D) lies in the
+span of the matrices Ψ(Da ), we conclude that Ψ(D) = 0.
+Let A0 denote the set of matrices in Comm(A) with all diagonal entries
+equal to 0; that is
+A0 = {N ∈ Comm(A) : N ◦ I = 0}.
+Observe that A0 is always non-empty, since A ∈ A0 . Also I ∈ Ψ(D), and
+therefore the direct sum decomposition in our next result is always nontrivial.
+4.3 Lemma. Comm(A) = Ψ(D) ⊕ A0 .
+Proof. If M ∈ A0 , then Ψ(M) = M and so
+hΨ(Da ), Mi = hDa , Ψ(M)i = hDa , Mi = tr(ea eTa M) = Ma,a .
+Accordingly M is orthogonal to each matrix Ψ(Da ) for a in V (X) if and only
+if M ◦ I = 0.
+
+5
+
+The rank of some average mixing matrices
+
+There are a number of graph invariants that can be constructed from the
+average mixing matrix. In this section we focus on rk( c
+M). From [8] we know
+c) = 1, then X is K1 or K2 .
+that if rk(M
+Our first two results concern graphs with only simple eigenvalues; we note
+that almost all graphs have this property [12].
+5.1 Lemma. Assume X is a graph with simple eigenvalues on n vertices.
+c ≤ n − 1. Further, if X is regular and n ≥ 4, then
+If n ≥ 2, then rk(M)
+c) ≤ n − 3.
+rk(M
+8
+
+Proof. Since the eigenvalues of X are simple, dim(Comm(A)) = n and since
+A ∈ A0 , it follows from Lemma 4.3 that dim(Ψ(D)) ≤ n − 1.
+Suppose X is regular with valency k. Then the matrices A, J − I and
+2
+A − kI all lie in A0 . If these matrices are linearly dependent, the minimal
+polynomial of A has degree at most two and hence A has at most two eigenvalues. Since X has n distinct eigenvalues, the minimal polynomial of A over
+1⊥ has degree n − 1. Thus n − 1 ≤ 2, which contradicts our assumption that
+n ≥ 4.
+Table 1 shows the number of graphs on n vertices whose mixing matrices
+have given ranks. The only regular graph with simple eigenvalues on up to
+8 vertices is K2 , so the data for regular graphs is not included in this table.
+Instead, we count cubic graphs with simple eigenvalues on 10 to 18 vertices,
+as presented in Table 2.
+5.2 Lemma. Assume X is a graph on n vertices with only simple eigenvalues.
+c) ≤ ⌊(n + 1)/2⌋.
+If X is bipartite, then rk(M
+
+Proof. Note that Ak ∈ A0 if and only if k is odd, and for all k < n, these
+matrices are independent. Hence dim A0 ≥ ⌊n/2⌋, and the result follows
+from Lemmas 4.1 and 4.3.
+
+Table 3 shows the number of bipartite graphs on n vertices whose mixing
+matrices have given ranks.
+5.3 Lemma. Let S be a proper subset of the vertices of the graph X, and
+assume that for each vertex a in S, there is an automorphism of X with a
+c) ≥ |S| + 1.
+as its only fixed point. Then rk(M
+
+Proof. We identify the automorphism group of X with the set of permutation
+matrices that lie in Comm(A). If a ∈ S, let Pa be the automorphism of X
+with a as its only fixed point. From Lemma 4.3, for each Pa , there is a
+matrix in Ψ(D) with the same diagonal. These matrices and the identity
+matrix form a set of linearly independent matrices in Ψ(D).
+If X is a Cayley graph for an abelian group of odd order, then since the
+map that sends each group element to its inverse gives rise to an automorphism of the Cayley graph with 1 as its only fixed point, it follows that each
+c
+vertex is the unique fixed point of an automorphism of X. This implies M
+must be invertible in this case. One easy consequence is that the average
+mixing matrix of a cycle is invertible (although this is also an a consequence
+of results in [8]).
+9
+
+n
+3
+3
+4
+4
+4
+5
+5
+5
+6
+6
+6
+6
+6
+7
+7
+7
+7
+7
+8
+8
+8
+8
+8
+8
+8
+
+c)
+rk(M
+2
+3
+2
+3
+4
+3
+4
+5
+2
+3
+4
+5
+6
+3
+4
+5
+6
+7
+2
+3
+4
+5
+6
+7
+8
+
+# graphs
+1
+1
+3
+1
+2
+11
+6
+4
+2
+27
+32
+35
+16
+6
+189
+240
+352
+66
+3
+39
+466
+1360
+2523
+5781
+945
+
+# simple eigenvalues
+1
+0
+2
+1
+0
+8
+3
+0
+2
+12
+21
+19
+0
+5
+121
+158
+255
+0
+3
+25
+236
+776
+1492
+4787
+0
+
+c).
+Table 1: Number of graphs with given rk(M
+
+10
+
+n
+10
+10
+10
+10
+10
+12
+12
+12
+12
+12
+12
+12
+12
+12
+12
+14
+14
+14
+14
+14
+14
+14
+14
+14
+14
+14
+
+c)
+rk(M
+3
+5
+6
+7
+10
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+
+# cubic
+graphs
+2
+8
+5
+1
+3
+1
+3
+8
+11
+18
+14
+14
+11
+2
+3
+13
+19
+30
+82
+97
+66
+62
+117
+18
+3
+2
+
+n
+
+# simple
+eigenvalues
+2
+1
+3
+0
+0
+0
+0
+3
+2
+6
+4
+3
+0
+0
+0
+12
+12
+7
+37
+65
+37
+45
+101
+0
+0
+0
+
+16
+16
+16
+16
+16
+16
+16
+16
+16
+16
+16
+16
+16
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+
+c)
+rk(M
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+
+# cubic
+graphs
+4
+45
+58
+122
+252
+393
+359
+311
+684
+1365
+366
+77
+24
+48
+147
+226
+414
+1268
+1785
+1865
+1264
+1940
+7254
+19302
+4763
+643
+382
+
+# simple
+eigenvalues
+3
+29
+11
+49
+112
+220
+144
+141
+464
+1008
+0
+0
+0
+45
+59
+78
+152
+724
+982
+842
+539
+1146
+5819
+16060
+0
+0
+0
+
+c).
+Table 2: Number of cubic graphs with given rk(M
+
+11
+
+n
+3
+3
+4
+4
+4
+5
+5
+5
+6
+6
+6
+6
+6
+7
+7
+7
+7
+7
+8
+8
+8
+8
+8
+8
+8
+
+c)
+rk(M
+2
+3
+2
+3
+4
+3
+4
+5
+2
+3
+4
+5
+6
+3
+4
+5
+6
+7
+2
+3
+4
+5
+6
+7
+8
+
+# bipartite graphs
+1
+0
+2
+0
+1
+3
+1
+1
+1
+6
+4
+4
+2
+0
+23
+3
+1
+3
+1
+5
+43
+51
+50
+21
+11
+
+# simple eigenvalues
+1
+0
+1
+0
+0
+3
+0
+0
+1
+3
+0
+0
+0
+0
+20
+0
+0
+0
+1
+2
+24
+0
+0
+0
+0
+
+Table 3: Number of bipartite graphs with given rk( c
+M).
+
+12
+
+Some of our numerical data indicates that for most graphs on n vertices
+with simple eigenvalues, the average mixing matrix has rank n − 1. In view
+of Theorem 4.3, this implies that, for these graphs, dim A0 = 1. Therefore
+any matrix that commutes with A and has zero diagonal must be a scalar
+multiple of A. The following corollary is an immediate consequence.
+5.4 Corollary. Suppose X is a connected graph with at least three vertices.
+c) = n−1, then any automorphism
+If all eigenvalues of X are simple and rk(M
+of X has fixed points.
+
+6
+
+Open problems
+
+As the theory of the average mixing matrix is relatively new, there are many
+interesting problems one can ask. We discuss a few below.
+One interesting question about the average mixing matrix concerns the
+non-negative rank of the average mixing matrix. The non-negative rank
+of a non-negative n × n matrix A is the least number k, such that there
+are k matrices {Mr }kr=1 of rank 1 with non-negative entries, such that A =
+P
+k
+r=1 Mr . If X is a graph on n > 1 vertices with simple eigenvalues, Lemma
+c has rank at most n − 1. One can ask when the non-negative
+5.1 gives that M
+c
+rank of M is equal to n.
+c as the average probability
+We may interpret the (v, v) diagonal entry of M
+of measuring at vertex v, after starting at vertex v. Thus questions about
+c are very natural. In particular, it is interesting to ask how
+the trace of M
+c Following in the vein of the
+graph invariants correspond to the trace of M.
+c determines
+questions about rank and trace, one can ask if the spectrum of M
+any graph properties. This gives rise to many natural questions about the
+average mixing matrix.
+
+References
+[1] William Adamczak, Kevin Andrew, Leon Bergen, Dillon Ethier, Peter
+Hernberg, Jennifer Lin, and Christino Tamon. Non-Uniform Mixing Of
+Quantum Walk On Cycles. International Journal Of Quantum Information, 05(06):781–793, 2007.
+
+13
+
+[2] William Adamczak, Kevin Andrew, Peter Hernberg, and Christino Tamon. A note on graphs resistant to quantum uniform mixing. ArXiv
+e-prints, page 9, 08 2003.
+[3] Ada Chan. Complex Hadamard Matrices, Instantaneous Uniform Mixing and Cubes. ArXiv e-prints, 2013.
+[4] Andrew M Childs. Universal computation by quantum walk. Physical
+Review Letters, 102(18):4,180501, 2009.
+[5] G. Coutinho, C. Godsil, K. Guo, and F. Vanhove. Perfect state transfer
+on distance-regular graphs and association schemes. Linear Algebra and
+its Applications, 478:108 – 130, 2015.
+[6] Edward Farhi and Sam Gutmann. Quantum computation and decision
+trees. Physical Review A, 58(2):915–928, 1998.
+[7] Chris D Godsil. State transfer on graphs.
+312(1):129–147, 2012.
+
+Discrete Mathematics,
+
+[8] Chris D Godsil. Average mixing of continuous quantum walks. Journal
+of Combinatorial Theory, Series A, 120(7):1649–1662, 2013.
+[9] Chris D Godsil, Natalie Mullin, and Aidan Roy. Uniform Mixing and
+Association Schemes. ArXiv e-prints, 2013.
+[10] Roger A Horn and Charles R Johnson. Topics in matrix analysis. Cambridge university press, 1991.
+[11] Alastair Kay. Perfect, efficient, state transfer and its application as
+a constructive tool. International Journal of Quantum Information,
+8(04):641–676, 2010.
+[12] Terence Tao and Van Vu. Random matrices have simple spectrum.
+Combinatorica, 37(3):539–553, 06 2017.
+[13] Luc Vinet and Alexei Zhedanov. How to construct spin chains with
+perfect state transfer. Physical Review A, 85(1):12323, 2012.
+
+14
+
+

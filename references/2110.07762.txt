@@ -1,0 +1,1300 @@
+arXiv:2110.07762v2 [math.CO] 13 Jun 2022
+
+Fractional revival on non-cospectral vertices
+Chris Godsil*, Xiaohong Zhang
+University of Waterloo
+June 14, 2022
+
+Abstract
+Perfect state transfer and fractional revival can be used to move information between pairs of vertices in a quantum network. While perfect
+state transfer has received a lot of attention, fractional revival is newer
+and less studied. One problem is to determine the differences between
+perfect state transfer and fractional revival. If perfect state transfer occurs
+between two vertices in a graph, the vertices must be cospectral. Further
+if there is perfect state transfer between vertices a and b in a graph, there
+cannot be perfect state transfer from a to any other vertex. No examples
+of unweighted graphs with fractional revival between non-cospectral vertices were known; here we give an infinite family of such graphs. No examples of unweighted graphs where the pairs involved in fractional revival
+overlapped were known; we give examples of such graphs as well.
+Keywords: Quantum walks, Spectral graph theory, Fractional revival, Subset transfer
+MSC: 05C50, 15A16, 81P45
+
+1 Introduction
+One important problem in quantum computing is to provide ways to transfer
+information from one part of network of qubits to another. The issue is complicated by the fact that it is not possible to copy a quantum state.
+* Research supported by Natural Sciences and Engineering Research Council of Canada,
+
+Grant No. RGPIN-9439
+
+1
+
+One approach to this is based on continuous quantum walks, as we now
+explain. Here we are given a network of n qubits, specified by a graph X with
+adjacency matrix A. Given A we define the transition matrix U (t ) at time t by
+U (t ) = exp(i t A).
+These matrices are unitary and act on a quantum system whose states are represented by positive semidefinite matrices of size n × n and trace 1 (so-called
+density matrices ). If the initial state is given by D, the state of the system at
+time t is U (t )DU (−t ). This system is known as continuous quantum walk. (For
+more information, see [8, 9, 13–15].) We use e a to denote the standard basis vector indexed by the vertex a in X and set D a equal to e a e aT . We have perfect state
+transfer from vertices a to vertex b at time t if D b = U (t )D aU (−t ); if this happens then the state of the b-qubit at time t is equal to the state of the a-qubit at
+time zero.
+Perfect state transfer takes place between vertices at distance d in the d cube, as shown by Christandl et al. [7]. Subsequent work yielded further examples [1, 6, 9], but it also revealed that perfect state transfer is rare: there are
+only finitely many connected graphs with maximum valency k that admit perfect state transfer [15]. Because of this, various extensions of the concept have
+been studied. Our concern in this paper is with fractional revival. We say that
+fractional revival occurs on the pair of vertices {a, b} at time t , if
+U (t )(D a + D b )U (−t ) = D a + D b .
+
+(1.1)
+
+That is equivalent to say that U (t )a,c = U (t )b,c = 0 for any c 6= a, b (or U (t ) is
+permutation-similar to a 2 × 2 block diagonal matrix, with one diagonal block
+indexed by a, b). If fractional revival occurs on {a, b} and U (t )D a U (−t ) 6= D a
+(equivalently, U (t )a,b 6= 0), then we say that proper fractional revival occurs on
+{a, b}. It includes U (t )D a U (−t ) = D b , that is, when there is perfect state transfer
+from a to b, as a special case.
+A number of papers [2, 4, 5, 10, 11] have investigated fractional revival, providing examples and developing the theory. We discuss the contributions of
+this paper. There are two important properties of perfect state transfer:
+(a) If there is perfect state transfer on X from a to b, then the vertex-deleted
+subgraphs X \a and X \b are cospectral (we say that a and b are cospectral
+vertices in X ) [15].
+(b) If there is perfect state transfer from a to a second vertex, this vertex is
+unique [17]. (This is known as monogamy of perfect state transfer.)
+2
+
+Prior to our work, in all examples of proper fractional revival the two vertices involved were cospectral. We provide an infinite family of examples where this is
+not the case. Similarly, monogamy held in all known examples. We provide examples of graphs with vertices a, b, c such that proper fractional revival occurs
+on {a, b} and {a, c}. (Chan et al.[4] constructed examples of weighted graphs
+where monogamy fails.)
+Some of the tools we use are new. In particular we introduce the concept
+of support graphs, graphs on eigenvalues of an underlying graph, and we also
+make use of matrix algebras associated to induced subgraphs (induced algebras).
+
+2 Preliminaries
+In this section, we associate a graph to a density matrix with respect to an underlying graph X , introduce a matrix algebra, and review some necessary conditions and a characterization for proper fractional revival to occur.
+
+2.1 Support graph
+Let X be a graph on n vertices with adjacency matrix A and consider quantum walks on X . Assume A has exactly m distinct eigenvalues θ1 , . . . , θm , with
+E 1 , . . . , E m being the corresponding projection matrices to the eigenspaces. Then
+P
+Pm i tθr
+A= m
+E r . Let
+r =1 θr E r is the spectral decomposition of A, and U (t ) = r =1 e
+a, b ∈ V (X ). If (E r )a,a = (E r )b,b for all r , then a and b are cospectral (this is
+equivalent to the subgraphs X \a and X \b being cospectral). If E r e a and E r e b
+are parallel vectors for each r , then we say a and b are parallel.
+Let D be a density matrix of size n. The eigenvalue support of D is the set
+ΦD = {(θr , θs ) : E r DE s 6= 0}. As E s DE r = (E r DE s )∗ , we know that (θs , θr ) ∈ ΦD if
+and only if (θr , θs ) ∈ ΦD . We define the support graph of D (with respect to X )
+to be the graph that has the distinct eigenvalues {θ1 , . . . , θm } of A as its vertices,
+with vertices θr and θs adjacent if (θr , θs ) ∈ ΦD . If E r DE s 6= 0, then neither E r D =
+0 nor E s D = 0, and so E r DE r 6= 0 and E s DE s 6= 0, i.e., (θr , θr ) ∈ ΦD and (θs , θs ) ∈
+ΦD . Therefore this graph will normally have loops (any vertex on an edge is on
+a loop).
+Let F be the splitting field of the characteristic polynomial of A over Q, that
+is, F = Q(θ1 , . . . , θm ). Denote the Galois group of F over Q by Γ. For any matrix
+M ∈ Matn×n (F ) and σ ∈ Γ, let M σ denote the matrix obtained by applying σ to
+3
+
+each entry of M. Let θr be any eigenvalue of A, then θrσ is an algebraic conjugate
+of θr and is an eigenvalue of A. In fact,
+AE rσ = (AE r )σ = θrσ E rσ .
+Therefore, θrσ is also a vertex of the support graph. Now let D be a rational state,
+that is, all the entries of D are rational numbers. For any two vertices θr , θs of
+the support graph and any σ ∈ Γ, E rσ DE sσ = (E r DE s )σ . Therefore E rσ DE sσ 6= 0 if
+and only if E r DE s 6= 0. Hence in the support graph, (θr , θs ) is an edge if and only
+if (θrσ , θsσ ) is one; Γ acts as a group of automorphisms of the support graph of a
+rational state D. When D = D a = e a e aT , the eigenvalue support of D is {(θr , θs ) :
+E r e a 6= 0 and E s e a 6= 0}, which is usually equivalently defined as {θr : E r e a 6= 0}.
+Let D 1 and D 2 be two density matrices of size n. If U (t )D 1U (−t ) = D 2 for
+some t > 0, then we say there is perfect state transfer from D 1 to D 2 at time t .
+If U (t )D 1U (−t ) = D 1 for some t > 0, then we say D 1 is periodic at time t . Note
+that D 1 is periodic at time t if and only if U (t ) and D 1 commute and that fractional revival on {a, b} at time t is equivalent to the state 12 (D a + D b ) being periodic at time t . Since unitarily similar matrices have the same trace, sometimes
+we represent a state with a positive semidefinite matrix instead of normalizing
+it to a density matrix (scale the matrix to one of trace 1), which does not change
+the analysis.
+If D is periodic at time τ, then
+X
+D = U (τ)DU (−τ) = e i τ(θr −θs ) E r DE s
+r,s
+
+and if we multiply on the left by E r and on the right by E s , we get
+E r DE s = e i τ(θr −θs ) E r DE s .
+
+We conclude that if (θr , θs ) ∈ ΦD , then e i τθr = e i τθs . Therefore if D is periodic at
+time τ, the function e i τz is constant on the vertices in a connected component
+of the support graph.
+For S ⊆ V (X ), define D S to be the diagonal matrix with (a, a)-entry equal to 1
+1
+) is
+if a ∈ S and equal to 0 otherwise. Note that D S (again, we ignore the factor |S|
+a rational state. If D S is periodic (sometimes we say S is periodic for simplicity),
+then its eigenvalue support has a special form:
+2.1 Theorem. [14] Let X be a simple graph and D be a rational state. If D is
+periodic relative to the continuous quantum walk on X at time τ, then there is
+a square-free integer ∆ such that θrp−θs ∈ Z for all (θr , θs ) in the support of D .
+∆
+
+4
+
+Let D be a periodic rational state. The above Theorem tells us that there
+exists a square-free integer ∆ such that for any two vertices θr , θs in the same
+connected
+component of the support graph of D, θr − θs is an integer multiple
+p
+of ∆. In particular, when D = D a + D b is periodic, we have a necessary condition on ΦD for fractional revival on {a, b} to occur, as shown in Theorem 2.8.
+
+2.2 Induced algebra
+Now assume without loss of generality that S = {1, 2, . . . , k} is periodic at time τ:
+U (τ)D S = D S U (τ). Then U (τ) has form
+µ
+¶
+U0 0
+,
+0 U1
+where U0 is k × k and
+
+D S U (τ)D S =
+
+Now
+
+µ
+¶
+U0 0
+.
+0 0
+
+(D S U (τ)D S )(D S E r D S ) = D S U (τ)E r D S = e i τθr D S E r D S
+
+(2.1)
+
+and similarly (D S E r D S )(D S U (τ)D S ) = e i τθr D S E r D S ; it follows that D S U (τ)D S
+and D S E r D S commute.
+As before, let X be a connected graph on n vertices with adjacency matrix
+P
+A= m
+r =1 θr E r . Let M be a matrix indexed by V (X ). For a subset S of V (X ),
+denote the submatrix of M with rows and columns indexed by elements of S
+by MS,S . The induced adjacency algebra of X on S [8] is the matrix algebra
+generated by the matrices
+(E r )S,S ,
+
+r = 1, . . ., m.
+
+Denote it by A (S) and note that it is isomorphic to the algebra generated by the
+n × n matrices D S E r D S , r = 1, . . ., m, and (2.1) is equivalent to
+U0 (E r )S,S = e i τθr (E r )S,S .
+
+(2.2)
+
+Therefore (2.2) implies the following:
+2.2 Lemma. If the subset S of V (X ) is periodic relative to the continuous quantum walk on X at time τ, then U (τ)S,S belongs to the center of A (S), the induced
+algebra generated by (E r )S,S .
+5
+
+If M is a matrix with all eigenvalues being simple, then any matrix that commutes with M is a polynomial in M.
+2.3 Corollary. Assume S is a subset of V (X ) that is periodic relative to the continuous quantum walk on X at time τ. If the eigenvalues of U (τ)S,S are distinct,
+then the induced algebra A (S) is commutative.
+Now consider the case when D S is periodic for S = {1, 2}. If U0 is a diagonal
+but not a scalar matrix, then the eigenvalues of U0 are distinct and therefore
+P
+(E r )S,S is diagonal. It follows that (A k )1,2 = r θrk (E r )1,2 = 0 for all positive integer k, and therefore X is not connected, a contradiction. Hence if non-proper
+fractional revival occurs on {1, 2} at time τ, then U0 is a scalar matrix and so we
+have simultaneous periodicity at vertices 1 and 2 with the same phase factor.
+When proper fractional revival occurs, the eigenvalues of U0 are distinct (the
+only 2 × 2 diagonalizable matrix with repeated eigenvalues is a scalar matrix),
+and we obtain another necessary condition for fractional revival.
+2.4 Lemma. [4] If proper fractional revival occurs on S = {a, b}, then the induced
+algebra A (S) is commutative.
+As mentioned, prior to this work, in all examples of fractional revival the
+two vertices involved, say a and b, were cospectral, a condition stronger than
+requiring the induced adjacency algebra A ({a, b}) to be commutative. Similarly to cospectrality of vertices a, b [16], commutativity of the induced algebra
+A ({a, b}) has some equivalent combinatorial descriptions.
+P
+2.5 Theorem. [4] Let X be a connected graph and let A = r θr E r be the spectral
+decomposition of A . For vertices a, b in X , the following are equivalent:
+
+(a) The induced algebra A ({a, b}) is commutative,
+(b) there exists some γ such that (E r )a,a − (E r )b,b = γ(E r )a,b for all r ,
+(c) There exists some γ such that (A k )a,a − (A k )b,b = γ(A k )a,b for all positive
+integer k ,
+(d) For some γ
+q
+φ(X \a, t ) − φ(X \b, t ) = γ φ(X \a, t )φ(X \b, t ) − φ(X , t )φ(X \{a, b}, t ),
+6
+
+where for S ⊆ V (X ), X \S denotes the induced subgraph of X on S and φ(X \S)
+denotes the characteristic polynomial of the adjacency matrix A(X \S). The
+value of γ is the same in each case, and is rational. We see that γ = 0 if and only
+if a and b are cospectral. If any of the above condition holds, vertices a and b
+are said to be fractionally cospectral
+[4].
+p
+We use ψa,b (X , t ) to denote φ(X \a, t )φ(X \b, t ) − φ(X , t )φ(X \{a, b}, t ) (even
+if A ({a, b}) is not commutative).
+Theorem 2.5 implies that if a and b satisfy certain relations or if X is of certain type, then the commutativity of the induced algebra A ({a, b}) implies that
+a and b are cospectral.
+2.6 Corollary. [4] Let X be a simple graph and a, b ∈ V (X ). Assume the induced
+adjacency algebra A ({a, b}) is commutative. If one of the following conditions
+holds, then a and b are cospectral:
+• a is adjacent to b
+• X is bipartite, and the distance between a and b is odd
+• a and b are of the same degree and are at distance two in X
+• X is a connected regular graph
+Now we derive one more necessary condition for proper fractional revival
+to occur. Recall that when proper fractional revival occurs on S = {a, b} at time
+τ, the two eigenvalues of U0 are both simple. Equation (2.2) implies that for
+each r , the non-zero columns of (E r )S,S are eigenvectors of U (τ)S,S associated
+to eigenvalue e i τθr , therefore
+¡ (E r )¢S,S has rank at most 1 and vertices a and b are
+parallel. In fact, from det (E r )S,S = (E r )a,a (E r )b,b − (E r )a,b (E r )b,a and (E r )a,b =
+〈E r e a , E r e b 〉 (where 〈, 〉 denotes the inner product of vectors), we know that
+det(E r )S,S = 0 if and only if
+〈E r e a , E r e a 〉〈E r e b , E r e b 〉 = |〈E r e a , E r e b 〉|2 ,
+which holds if and only if E r e a and E r e b are parallel. Since it holds for all r ,
+vertices a and b are parallel.
+We have obtained three
+p necessary conditions for proper fractional revival
+to occur: θr − θs = m r,s ∆ for (θr , θs ) ∈ ΦD S (Theorem 2.1), commutativity of
+A (S) (Corollary 2.3), and parallelity of vertices a and b. To get a deeper description of the eigenvalue support of D S , we explore the above information further.
+7
+
+Assume that λ1 and λ2 are the two distinct eigenvalues of U0 , x is a unit eigenvector associated to eigenvalue λ1 , and that y is a unit eigenvector associated
+to λ2 . Then for each r , either (E r )S,S = αr xx ∗ if e i τθr = λ1 or (E r )S,S = αr y y ∗ if
+e i τθr = λ2 , for some nonnegative number αr , as (E r )S,S is positive semidefinite
+of rank at most 1. Since (E r )S,S is a real matrix, the two eigenvectors x and y can
+be chosen to be real. Therefore 〈x, y〉 = 0, as real eigenvectors associated to distinct eigenvalues of a complex symmetric matrix are orthogonal. Therefore for
+any two eigenvalues θr and θs of A, either e i τθr = e i τθs and (E r )S,S and (E s )S,S
+are scalar multiple of each other, or e i τθr 6= e i τθs and (E r )S,S (E s )S,S = 0. Together
+with the fact (θr , θs ) ∈ ΦD S if and only if (E r )S,S (E s )S,S 6= 0, this implies:
+2.7 Lemma. If proper fractional revival occurs on {a, b} in a graph X , then the
+support graph of D {a,b} has two components isomorphic to complete graphs
+with loops, and the remaining components are isolated vertices (loopless).
+In fact, the two nontrivial components of the support graph can be determined by the sign of (E r )a,b . Note that neither x nor y has zero entries. For
+otherwise x T y = 0 implies that {x, y} = {[1 0]T , [0 1]T }, contradicting proper fractional revival occurs on {a, b}. Therefore either x or y has its two components
+· ¸
+p
+both positive or both negative. Without loss of generality, assume x =
+with
+q
+· ¸
+−q
+2
+2
+pq > 0 and p + q = 1, then y = ±
+. Therefore for some non-negative intep
+ger αr ,
+¸
+¸
+· 2
+· 2
+q
+−pq
+p
+pq
+,
+, or (E r )S,S = αr
+(E r )S,S = αr
+−pq p 2
+pq q 2
+depending on whether e i τθr = λ1 or e i τθr = λ2 . Furthermore, the scalar γ in
+p
+q
+Theorem 2.5 satisfies γ = q − p .
+Let C + be the set of indices r such that (E r )a,b > 0, and let C − be the set of indices r such that (E r )a,b < 0. Then C + and C − correspond to the two nontrivial
+components of the support graph of D {a,b} . Furthermore,
+X
+X
+αr e i tθr y y T
+αr e i tθr xx T +
+U0 =
+r ∈C −
+
+r ∈C +
+
+P
+P
+implies that r ∈C + αr = r ∈C − αr = 1, as the eigenvalues of a unitary matrix are
+numbers on the unit circle. Therefore
+¸
+¸
+· 2
+· 2
+q
+−pq
+pq
+i τθs
+i τθr p
+.
+(2.3)
++e
+U0 = e
+−pq p 2
+pq q 2
+8
+
+p
+These three conditions (θr − θs = m r,s ∆ for (θr , θs ) ∈ ΦD S , commutativity of
+A (S), and parallelity of vertices a and b) plus one more condition (that ensures
+the fractional revival is proper, that is, e i τθr 6= e i τθs ) in fact form a characterization of when proper fractional revival occurs on a graph.
+P
+2.8 Theorem. [4] Let X be a connected graph with adjacency matrix A = r θr E r .
+Proper fractional revival occurs on {a, b} in X if and only if the following conditions hold.
+
+(a) a and b are parallel
+(b) The induced algebra on {a, b} is commutative
+(c) Let C + be the set of indices r such that (E r )a,b > 0, and let C − be the set of
+indices r such that (E r )a,b < 0. Then there exist a square-free integer ∆ such
+that
+p
+θ j = ρ j ∆, for j ∈ C + , and
+p
+θℓ = ωℓ ∆, for ℓ ∈ C − ,
+where ρ j ’s and ωℓ ’s are real numbers satisfying
+ρ j − ρ j ′ ∈ Z and ωℓ − ωℓ′ ∈ Z
+
+for all j , j ′ ∈ C + and ℓ, ℓ′ ∈ C − .
+n
+o
+θr −θs
++
+−
+p
+(d) Let g = gcd
+: r, s ∈ C , or r, s ∈ C . There exists j ∈ C + and ℓ ∈ C −
+∆
+such that
+ρ j − ωℓ
+∉ Z.
+g
+Moreover, if these conditions hold, then
+
+2π
+p is the minimum time for proper
+g ∆
+
+fractional revival to occur on {a, b} in X . Note that fractional revival on {a, b}
+occurs if and only if conditions (a), (b) and (c) hold.
+
+2.3 Equitable partition
+We review about equitable partitions of a graph [12]. Let X be a graph on n vertices. Let P = {C 1 , . . . ,C k } be a partition of V (X ) = {1, . . . , n}. The characteristic
+9
+
+matrix P of P is an n × k matrix with p j ℓ = 1 if j ∈ C ℓ and p j ℓ = 0 otherwise.
+The normalized characteristic matrix of the partition P is
+1
+1
+P̂ = P diag( p
+).
+,··· , p
+|C k |
+|C 1 |
+Note that P̂ T P̂ = I k and P̂ P̂ T is the orthogonal projection onto the subspace
+of Rn consisting of vectors that are constant on cells of P . A partition P =
+{C 1 , . . . ,C k } is equitable if for any j , ℓ, the number of neighbors which a vertex
+in C j has in C ℓ is independent of the choice of vertex in C j . Denote this fixed
+number of neighbors as c j ℓ . Given an equitable partition P = {C 1 , . . . ,C k } of a
+graph X , a weighted graph can be associated to it. Let X
+/P be the weighted
+graph with the cells of P as its vertices, with the edge between C j and C ℓ of
+p
+weight c j ℓ cℓj (if C j ℓ = 0 then C j and C ℓ are not adjacent). X
+/P is called the
+symmetrized quotient graph of X with respect to P .
+Eigenvectors of A(X ) and of A( X
+/P ) are related.
+
+2.9 Lemma. [12] Let P be an equitable partition of the graph X with k cells.
+Assume P̂ is the normalized characteristic matrix of P . Then
+
+/P )x = θx , then A(X )P̂ x = θ P̂ x .
+(a) If A( X
+
+(b) If A(X )y = θy , then A( X
+/P )P̂ T y = θ P̂ T y
+
+
+Given an orthonormal basis x1, . . . , xk of Rk that consists of eigenvectors of A( X
+/P ),
+part (a) of the above lemma tells us that P̂ x1 , . . . , P̂ xk is a list of orthonormal
+eigenvectors of A(X ):
+〈P̂ x j , P̂ xℓ 〉 = 〈x j , P̂ T P̂ xℓ 〉 = 〈x j , I k xℓ 〉 = δ j ,ℓ .
+
+We can further extend the list to an orthonormal basis of Rn consisting of eigenvectors of A(X ), say P̂ x1 , . . . , P̂ xk , y k+1 , . . . , y n . Then for any j ∈ {k + 1, . . . , n}, we
+have P̂ T y j = 0. In fact 〈P̂ T y j , xℓ 〉 = 〈y j , P̂ xℓ 〉 = 0 for all ℓ ∈ {1, . . . , k} implies that
+P̂ T y j lies in the orthogonal complement of Span{x1 , . . . , xk }, which is {0}.
+
+3 Stellar Fusion
+Let a, k and c be positive integers. Let X = X (a, k, c) denote the graph obtained
+by taking a copy of the star K 1,a+k and a copy of the star K 1,c+k and merging k
+10
+
+vertices of degree one from the first star with k vertices of degree one from the
+second. In this section we only consider graphs of such type.
+Let P be a partition of V (X ), where the two centers of the two stars, denoted
+by 0 and 1, respectively, are both singletons of P , the k common neighbours
+of 0 and 1 form a cell, the remaining a neighbours of 0 form a cell, and the
+c remaining neighbours of vertex 1 form a cell, as shown in Figure 1. This is
+a
+
+c
+
+k
+0
+
+..
+.
+
+1
+
+..
+.
+
+..
+.
+
+Figure 1: Graph X = X (a, k, c) obtained from two stars with parameters a, k and
+c, and an equitable partition of it
+
+an equitable partition, and the corresponding symmetrized quotient graph is a
+weighted path on 5 vertices, as shown in Figure 2, which we denote by X̂ .
+p
+u1
+
+p
+k
+
+p
+k
+
+a
+0
+
+u2
+
+p
+c
+u3
+
+1
+
+Figure 2: the symmetrized quotient graph X̂ of X with respect to partition P
+
+3.1 Lemma. For any positive integers a, k, c , vertices 0 and 1 are parallel and the
+induced algebra of X = X (a, k, c) on {0, 1} is commutative. Moreover, if C + and
+C − are
+asqin Theorem
+2.8 and
+= 2k + aq
++ c and¾σ = 4k 2 + (a − c)2 , then
+½ defined
+¾
+½ µq
+q
+C+ = −
+
+p
+µ+ σ
+,
+2
+
+p
+µ+ σ
+2
+
+and C − = −
+
+p
+µ− σ
+,
+2
+
+p
+µ− σ
+2
+
+.
+
+Proof. Let X̂ be the symmetrized quotient graph of X with respect to the above
+equitable partition P . Let µ = 2k + a + c and σ = 4k 2 + (a − c)2 . Then the eigen-
+
+11
+
+values of X̂ are
+θ1 = 0,
+s
+
+p
+µ− σ
+θ2 = −
+,
+2
+s
+p
+µ+ σ
+θ4 = −
+,
+2
+
+s
+
+p
+µ− σ
+θ3 =
+,
+2
+s
+p
+µ+ σ
+θ5 =
+.
+2
+
+(3.1)
+
+with corresponding eigenvectors (with vertices ordered as u 1 , 0, u 2 , 1, u 3 )
+p
+·p
+¸T
+c
+c
+v 1 = p , 0, − p , 0, 1
+a
+k
+ p
+ p
+p p 
+p p 
+c a−a 3/2 + a σ
+c a−a 3/2 + a σ
+p
+p
+−
+−
+ p p2k c p 
+ p p 2k c p 
+
+ µ− σ(c−a+ σ) 
+σ) 
+− µ− pσ(c−a+
+
+
+
+p p
+p
+
+
+
+
+2 2k c p
+2 2k cp
+
+
+
+ −2k+c−a+
+σ
+σ
+−2k+c−a+
+v2 =  −
+ , v3 =  −
+,
+p
+p
+
+
+
+
+kc
+p2 p
+p2 kc
+p
+
+
+
+
+µ− σ
+µ− σ
+
+
+
+
+p
+− p
+
+
+
+
+2c
+2c
+1
+1
+
+
+
+p
+p
+p p
+p p 
+c a−a 3/2 − a σ
+c a−a 3/2 − a σ
+p
+p
+−
+−
+ p p 2k c p 
+ p p 2k c p 
+
+
+
+σ) 
+σ) 
+− µ+ σp(−c+a+
+ µ+ σp(−c+a+
+
+p
+p
+
+
+
+
+2 2k cp
+2 2k c p
+
+
+
+
+σ
+σ
+−2k+c−a−
+−2k+c−a−
+v4 =  −
+ , v5 =  −
+.
+p
+p
+
+
+
+
+kc
+p2 p
+p2 kc
+p
+
+
+
+
+µ+
+σ
+µ+
+σ
+
+
+
+
+p
+− p
+
+
+
+
+2c
+2c
+1
+1
+
+(3.2)
+
+As the characterization of proper fractional revival in Theorem 2.8 is for unweighted graphs (in fact it works for integer weighted graphs but not for all
+weighted graphs), we now use Lemma 2.9 and the comments below it to further get eigenvector information of A(X ). First let P̂ be the normalized characteristic matrix of the equitable partition P and for j = 1, . . . 5 let (θ j , v j ) be
+an eigenpair of A( X̂ ) as above with v j s scaled to have norm 1. Then u j =
+P̂ v j is an eigenvector of A(X ) associated to θ j , j = 1, . . . , 5. Now assume that
+u 1 , . . . , u 5 , u 6 , . . . , u a+k+c+2 is an orthonormal basis of Ra+k+c+2 consisting of eigenvectors of A(X ). For j = 6, . . . , a + k + c + 2, the eigenvector u j is associated to
+eigenvalue 0 (as rk(A(X )) = 4), and its components on each cell of P sum up
+12
+
+to 0 (as P̂ T u j = 0). Therefore the components of u j corresponding to vertices
+0 and 1 are both 0, as the two vertices are singletons of the partition. Since
+u 1 = P v 1 also has the two corresponding components 0, vertex 0 and vertex 1
+have the same eigenvalue support, and the support is Φ = {θ2 , θ3 , θ4 , θ5 }. Furthermore, as θ2 , θ3 , θ4 and θ5 are all simple eigenvalues of A(X ), we know that
+vertex 0 and vertex 1 are parallel and orthogonal projection onto the eigenspace
+associated to θ j of A(X ) is E j = u j u Tj = P̂ v j v Tj P̂ T for j = 2, 3, 4, 5. Now observe
+(E )
+
+−(E )
+
+0,0
+r 1,1
+that r (E
+is a fixed number for r = 2, 3, 4, 5; by Theorem 2.5, the induced
+r )0,1
+algebra A ({0, 1}) is commutative. Since (E j )0,1 > 0 for j = 4, 5 and (E j )0,1 < 0 for
+j = 2, 3, we have C + = {θ4 , θ5 } and C − = {θ2 , θ3 }.
+
+For a rational number x, let |x|2 denote the 2-adic norm of x.
+3.2 Lemma. Let X = X (a, k, c) and let θ3 and θ5 be the two eigenvalues of X as
+given in (3.1). Then X admits fractional revival on {0, 1} if and only if θ32 and θ52
+are both integers with the same
+part ∆ and further proper fractional
+¯ ¯
+¯ ¯square-free
+¯ pθ5 ¯
+¯ pθ3 ¯
+revival occurs if and only if ¯ ¯ 6= ¯ ¯ .
+∆ 2
+
+∆ 2
+
+Proof. From Lemma 3.1 we know that the induced algebra A ({0, 1}) is commutative and vertices 0 and 1 are parallel with the same eigenvalue support
+C + ∪ C − , where C + = {θ5 , θ4 = −θ5 } and C − = {θ3 , θ2 = −θ3 }. Conditionp(c) in
+Theorem 2.8 is equivalent to both 2θ3 and 2θ5 being integer multiples of ∆ for
+some square-free integer ∆, which holds if and only if
+θ3
+θ5
+p ∈ Z, p ∈ Z.
+∆
+∆
+p
+In fact, for j = 3, 5, there exists an integer m j such that 2θ j = m j ∆ if and only
+if 4θ 2j = m 2j ∆, if and only if θ 2j = m 2j ∆/4. As θ j is an algebraic integer and m 2j ∆/4
+
+is a rational number, we conclude that θ 2j = m 2j ∆/4 is an integer. Since ∆ is
+
+square-free, we know m 2j is an even integer, hence m j is an even integer and θ j
+p
+is an integer multiple of ∆. Now assume that
+p
+p
+θ3 = α ∆, θ5 = β ∆
+
+for some integers α and β. Since fractional revival occurs if and only if condition (a), (b) and (c) of Theorem 2.8 hold, we have proved the first claim. For
+proper fractional revival to occur, we just need to show that condition (d ) in
+13
+
+Theorem 2.8 holds if and only if the multiplicities of 2 as a factor of α and β are
+different. With the notation of Theorem 2.8
+½
+¾
+θr − θ s
++
+−
+g = gcd
+: r, s ∈ C , or r, s ∈ C
+p
+∆
+½
+¾
+θ3 − θ2 θ5 − θ4
+= gcd
+, p
+p
+∆
+∆
+©
+ª
+= 2 gcd α, β
+ρ −ω
+
+α−β
+
+and 3 g 5 = 2gcd{α,β} , which is not an integer if and only if the multiplicities of 2
+as a factor in α and β are distinct, that is, |α|2 6= |β|2 . In this case, the minimum
+π p
+time for proper fractional revival to occur is τ =
+.
+gcd{α,β} ∆
+
+Recall that a graph X is said to be periodic if there is a time t such that D a is
+periodic at time t for all a ∈ V (X ).
+3.3 Corollary. If X (a, k, c) admits fractional revival between vertices
+p 1,ª
+© p 0 and
+2π
+p
+then X is periodic with minimum period t =
+, where g = gcd θ3 / ∆, θ5 / ∆ .
+g ∆
+
+Proof. From Corollary 3.3 of [13], we know that a graph X with adjacency
+P
+matrix Ap
+= m
+r =1 θr E r is periodic if and only if all its eigenvalues are integer multiples of ∆ for a square-free integer ∆ (∆ = 1 if all the
+p eigenvalues are integers);
+in this case the minimum
+period
+for
+X
+is
+t
+=
+(2π)/(g
+∆), where g is the greatest
+p
+common divisor of {θr / ∆ }r =1,...,m .
+The graph X (a, k, c) has exactly 5 distinct eigenvalues as shown in (3.1), with
+θ2 , θ3 = −θ2 , θ4 , θ5 = −θ4 all simple, and θ1 = 0. Now the result follows from
+Lemma 3.2.
+3.4 Corollary. If proper fractional revival occurs on {0, 1} in X = X (a, k, c) at
+time τ, then it also occurs at (2 j + 1)τ for all positive integer j , and X is periodic at 2 j τ for all positive integer j .
+
+Proof. From Lemma 3.2 and Corollary 3.3, we know that the
+p minimum time
+for fractional revival on {0, 1} to p
+occur in X (a, k, c) is©τ = p
+(π)/(g p∆) ªand the©miniª
+mum period is t = 2τ = (2π)/(g ∆), where g = gcd θ3 / ∆, θ5 / ∆ = gcd α, β .
+Both U (τ) and U (2τ) are block diagonal, with U (2τ){0,1},{0,1} being a scalar matrix, therefore U (2 j τ) is block diagonal with the 2×2 block being a scalar matrix,
+and U ((2 j + 1)τ) is block diagonal with the 2 × 2 block not a scalar matrix.
+14
+
+Note that there exist parameters a, k, c such that the graph X (a, k, c) is periodic, but does not admit proper fractional revival.
+3.5 Example. Let X 1 = X (1, 4, 1), then θ3 = 1 and θ5 = 5. Therefore |θ3 |2 = |θ5 |2 =
+1. So X is periodic but does not admit proper fractional revival, by Lemma 3.2
+and Corollary 3.3. Similarly, X 2 = X (1, 16, 25) is also such a graph, with θ3 = 3
+and θ5 = 7.
+3.6 Corollary. X (a, k, c) admits proper fractional revival if and only if there exist
+integers α, β with |α|2 6= |β|2 and an square-free integer ∆, such that
+∆(β2 − α2 ) =
+2
+
+p
+
+4k 2 + (a − c)2 ,
+
+2
+
+∆(α + β ) = 2k + a + c.
+
+(3.3)
+(3.4)
+
+Proof. From Lemma 3.2 we know that X admits proper fractional revival on
+{0, 1} if and only if
+
+and
+
+p
+1
+θ32 = (2k + a + c − 4k 2 + (a − c)2 ) = α2 ∆
+2
+
+(3.5)
+
+p
+1
+θ52 = (2k + a + c + 4k 2 + (a − c)2 ) = β2 ∆
+(3.6)
+2
+for some integers α, β and ∆, with ∆ square-free, and |α|2 6= |β|2 .
+The result follows as equations (3.5) and (3.6) are equivalent to (3.3) and
+(3.4).
+Now we show that there are triples (a, k, c) such that X (a, k, c) admits proper
+fractional revival.
+3.7 Theorem. There exist graphs which admit proper fractional revival between
+non-cospectral vertices, and there are infinitely many such graphs.
+
+Proof. We prove the result by showing that there are infinitely many positive integer triples (a, k, c) such that proper fractional revival on {0, 1} occurs
+in X (a, k, c) with vertices 0 and 1 non-cospectral.
+Note that vertices 0 and 1 are non-cospectral in X (a, k, c) if and only if a 6= c.
+Without loss of generality, assume a < c. Now we make use of Corollary 3.6. Let
+p be a prime such that p ≡ 1 (mod 4), then by Fermat’s Theorem on sums of
+two squares, p = f 2 + g 2 for some positive integers f > g . Now we pick integers
+15
+
+∆ (square-free) and α < β, such that |α|2 6= |β|2 and p|∆(β2 − α2 ). Let d be the
+integer satisfying ∆(β2 − α2 ) = pd = ( f 2 + g 2 )d . Then the triple (a, k, c) with
+k = f gd
+
+∆(β2 + α2 ) + ( f 2 − g 2 )d
+− f g d = ∆α2 + f d ( f − g )
+2
+∆(β2 + α2 ) − ( f 2 − g 2 )d
+a=
+− f g d = ∆α2 − g d ( f − g )
+2
+
+c=
+
+is a set of integer solutions of equations (3.5) and (3.6). If further
+β p
+< 2+1
+α
+π
+, then there is proper frac∆ gcd{α,β}
+
+then a, k, c are all positive integers. Let τ = p
+
+tional revival on {0, 1} at time τ. There are infinitely many such graphs, as we
+have infinitely many choices for p, ∆, α, β.
+In particular, let p = 5, then f = 2 and g = 1. If we let
+
+• let ∆ = 5, then we can pick any positive integer α and β = 2α. In this case,
+a = 2α2 , k = 6α2 and c = 11α2 .
+• let β = 3 and α = 2, then we can pick any square free integer ∆. In this
+case, a = 3∆, k = 2∆ and c = 6∆.
+• let β = 6 and α = 4, then we can pick any square free integer ∆. In this
+case, a = 12∆, k = 8∆ and c = 24∆.
+• let β = 8 and α = 7, then we can pick any square free integer ∆. In this
+case, a = 46∆, k = 6∆ and c = 55∆.
+3.8 Example. Graph X (3, 2, 6) in Figure 3 admits proper fractional revival between (non-cospectral)
+time π. Other examples
+pinclude:
+p vertices 0 and 1 atp
+X (6, 3, 14)
+at
+t
+=
+π/
+2,
+X
+(6,
+4,
+12)
+at
+t
+=
+π/
+2,
+X
+(9,
+6,
+18)
+at
+t
+=
+π/
+3, X (2, 6, 11)
+p
+at t = π/ 5, X (2, 6, 28) at t = π/2.
+3.9 Remark. When k = 1, (3.3) implies that 4 is the difference of two nonzero
+integer squares (if a 6= c) or that 2 = ∆(β2 − α2 ) with ∆, α, β ∈ Z (if a = c). But
+there are no such integer pairs. Therefore, tree graphs in this family do not
+admit proper fractional revival.
+16
+
+0
+
+1
+
+Figure 3: A graph with proper fractional revival between non-cospectral vertices 0 and 1
+
+Nevertheless, there is an infinite family of trees that admits proper fractional
+revival between cospectral vertices: Let X be the graph obtained by connecting
+the two centers of two copies of the star K 1,a . Label the two centers vertices
+0 and 1, respectively. Then X admits proper fractional revival on {0, 1} at time
+t = p 2π .
+4a+1
+
+3.1 Commutative algebra
+In Lemma 3.1, we show that for the graph X = X (a, k, c) the induced algebra
+on {0, 1} is commutative by using the spectral decomposition of A(X ) and ver(E )0,0 −(E r )1,1
+ifying that r (E
+is independent of r (given that θr lies in the eigenvalue
+r )0,1
+support of the vertex 0). As a computational technique, this has serious difficulties because the entries of E r will be floating point numbers. We show how to
+carry out this computation in exact arithmetic, using the polynomial condition
+in Theorem 2.5(d).
+The characteristic polynomial of X (a, k, c) is:
+t a+k+c−2 (t 4 − (a + 2k + c)t 2 + ak + ck + ac).
+Recall that the vertex of degree a + k is denoted by 0, and the vertex of degree
+c + k is denoted by 1. The characteristic polynomials of X \0 and X \1 are, respectively,
+t a+k+c−1 (t 2 − c − k), t a+k+c−1 (t 2 − a − k).
+Finally
+φ(X \{0, 1}, t ) = t a+k+c ,
+
+ψ0,1 (X , t ) = kt a+k+c−1 .
+
+We see that φ(X \0, t ) − φ(X \1, t ) = a−c
+k ψ0,1 (X , t ), therefore by Theorem 2.5,
+the induced algebra of X on {0, 1} is commutative.
+17
+
+From
+¡
+¢
+adj(t I − A) b,a
+X (E r )a,b
+¡
+¢
+¡
+¢
+(t I − A)−1 a,b =
+and (t I − A)−1 a,b =
+,
+φ(X , t )
+r t − θr
+
+we get that for each r ,
+
+·
+¸
+t − θr φ(X \0, t ) ψ0,1 (X , t )
+(E r ){0,1},{0,1} = lim
+t→θr φ(X , t ) ψ0,1 (X , t ) φ(X \1, t )
+Note that (E r )1,1 is the coefficient of 1/(t − θr ) in the partial fraction expansion
+φ(X\1,t)
+of φ(X ,t) , and the other entries have similar expressions.
+By way of example, for the triple (3, 2, 6),
+µ
+¶
+1
+1
+4
+4
+1
+φ(X \0, t )
+=
++
++
++
+φ(X , t )
+10 t − 3 t − 2 t + 2 t + 3
+µ
+¶
+ψ0,1 (t )
+2
+1
+1
+1
+1
+=
+−
+−
++
+φ(X , t ) 10 t − 3 t − 2 t + 2 t + 3
+µ
+¶
+1
+1
+1
+4
+4
+φ(X \1, t )
+.
+=
++
++
++
+φ(X , t )
+10 t − 3 t − 2 t + 2 t + 3
+The eigenvalues of X , as denoted in (3.1), are θ1 = 0, θ2 = −2, θ3 = 2, θ4 = −3, θ5 =
+3, and
+·
+¸
+·
+¸
+1 4 −2
+1 1 2
+(E 2 ){0,1},{0,1} = (E 3 ){0,1},{0,1} =
+,
+(E 4 ){0,1},{0,1} = (E 5 ){0,1},{0,1} =
+.
+10 −2 1
+10 2 4
+For any positive integer m, we get exactly the same matrices for the triples
+(3m, 2m, 6m), and so all graphs in this family admit proper fractional revival.
+
+4 No balanced fractional revival on {0, 1} in X (a, k, c)
+Again, let a ≤ c, here we consider whether balanced fractional revival on {0, 1}
+could occur in
+p X (a, k, c), that is, whether there is a time τ such that |U (τ)0,0 | =
+|U (τ)0,1 | = 1/ 2. Let X be a simple connected graph. Assume proper fractional
+revival occurs on {1, 2} at time τ in X . Then U (τ){1,2},{1,2} is unitary. Take θ1 ∈
+C + , θ2 ∈ C − , then by equation (2.3)
+U (τ){1,2},{1,2} = e
+
+i τθ1
+
+·
+
+¸
+p 2 + e i τθ q 2 pq(1 − e i τθ )
+,
+pq(1 − e i τθ ) q 2 + e i τθ p 2
+18
+
+for some positive numbers p ≥ q with p 2 + q 2 = 1, where θ = θ2 − θ1 .
+Now, balanced fractional revival occurs at time τ if and only if 12 = |pq(1 −
+e i τθ )|2 = 2p 2 q 2 (1 − cos(τθ)), which implies that
+cos(τθ) = 1 −
+=
+
+1
+4p 2 q 2
+
+4p 2 q 2 − (p 2 + q 2 )2
+4p 2 q 2
+
+( as p 2 + q 2 = 1)
+
+(p 2 − q 2 )2
+4p 2 q 2
+1 p q
+= − ( − )2 ∈ Q,
+4 q p
+=−
+
+(4.1)
+p
+
+q
+
+where the rationality comes from the fact that (E r )1,1 − (E r )2,2 = ( q − p )(E r )1,2
+p
+
+q
+
+for each r , and therefore q − p is the rational scalar γ in Theorem 2.5.
+Now assume that X is also periodic at vertices 1, 2, say at time τ1 . Then
+i τ1 θ1
+e
+= e i τ1θ2 , that is e i τ1 θ = 1, or equivalently, τ1 θ = 2kπ for some integer k.
+Assume that the minimum time when proper fractional revival occurs on {1, 2}
+is τ0 , then τ = r τ0 and τ1 = r 1 τ0 for some r, r 1 ∈ Z. Therefore ττ1 ∈ Q, and τθ is a
+rational multiple of π, with cos(τθ) ∈ Q, which implies that cos(τθ) ∈ {0, − 21 , −1}
+p
+as cos(τθ) ≤ 0. But equation (4.1) in fact tells us that − cos(τθ) ∈ Q. Therefore
+cos(τθ) ∈ {0, −1}.
+p
+q
+If cos(τθ) = 0, then γ = q − p = 0 and vertices 1 and 2 are cospectral. It can
+be shown that X admits perfect state transfer between 1 and 2 at time 2τ in this
+case [5].
+If cos(τθ) = −1, then e i τθ = −1, e i 2τθ = 1 and X is periodic at vertices 1, 2 at
+p
+q
+time 2τ. In this case, γ = q − p = 2, that is, (A k1,1 − A k2,2 ) = 2A k1,2 for any positive
+p
+p
+integer k. In fact, q = 1 + 2 in this case. The achieved results are summarized
+in the following lemma.
+
+4.1 Lemma. Assume that graph X admits balanced fractional revival on {a, b} at
+time τ and non-proper fractional revival on {a, b} at time t . Then either vertices
+a and b are cospectral and X admits perfect state transfer between them at
+time 2τ, or a and b are non-cospectral and X is periodic at them at time 2τ. In
+the second case, (A k )a,a − A kb,b = 2A ka,b for all nonnegative integer k , that is, the
+scalar γ in Theorem 2.5 satisfies γ = 2.
+4.2 Corollary. X (a, k, c) does not admit balanced fractional revival on {0, 1} for
+any positive integers a, k, c .
+19
+
+Proof. From Lemma 4.1 we know that
+p if balanced fractional revival occurs
+p
+p
+between vertices 0 and 1, then q = 1+ 2 ∉ Q. From equation (3.2) we know q =
+p
+−c+a− 4k 2 +(a−c)2
+, which is a rational number by Corollary 3.6, a contradiction.
+2k
+
+5 Fractional revival is polygamous
+Let X be a graph. If there is perfect state transfer from a to b and from a to
+c, then b = c. For fractional revival, weighted graphs where there is proper
+fractional revival on {a, b} and on {a, c} with a, b, c distinct vertices of X were
+constructed [4], but no unweighted graph examples were known. Here we construct unweighted graphs where there is proper fractional revival on {a, b} and
+on {a, c} for b 6= c.
+Assume that X is a graph on m vertices with adjacency matrix A(X ), and Y
+is a graph on n vertices with adjacency matrix A(Y ). Their Cartesian product
+X Y is the graph with adjacency matrix A(X Y ) = I m ⊗ A(Y ) + A(X ) ⊗ I n , and
+the transition matrix of continuous time quantum walk on X Y at time τ is
+U X Y (τ) = U X (τ) ⊗UY (τ).
+
+(5.1)
+
+Therefore if there is a time t such that X is periodic at vertex x1 and graph Y
+admits proper fractional revival on {y 1 , y 2 }, then X Y admits proper fractional
+revival on {(x1 , y 1 ), (x1 , y 2 )} at time t . Now we take X to be K 2 , which is periodic
+at integer multiples of π, admits perfect state transfer at odd integer multiples
+of π/2, and admits proper fractional revival at all other time. By (5.1) we know
+that if for some positive integer ℓ we can find a graph Y that admits proper
+π
+fractional revival on {a, b} at time τ = 2ℓ+1
+and is periodic at vertices a, b at
+time 2τ, then K 2 Y admits fractional revival between vertices (0, a) and (1, a)
+at time 2τ, and admits proper fractional revival on (0, a) and (0, b) at time t =
+π = (2ℓ + 1)τ.
+Corollary 3.4 tells us that if proper fractional revival occurs on {0, 1} at time τ
+in X (a, k, c), then it also occurs at time (2 j +1)τ, and X (a, k, c) is periodic at vertices 0 and 1 at time 2 j τ for any positive integer j . The graph X 1 = X (16, 36, 37)
+admits fractional revival between vertex 0 and 1 at π5 , the graph X 2 = X (10, 30, 55)
+admits fractional revival at π5 , and the graph X 3 = X (27, 18, 54) admits fractional
+revival at time π3 . In fact there are infinitely many such graphs.
+5.1 Theorem. There are infinitely many unweighted graphs where the fractional
+revival pairs overlap (fractional revival is polygamous).
+20
+
+Proof. We show that there are infinitely many graphs in the family X = X (a, k, c)
+π
+such that X admits fractional revival at time 2ℓ+1
+for some integer ℓ. Let p be
+a prime such that p ≡ 1 (mod 4). Then p = f 2 + g 2 for some f > g by Fermat’s
+theorem. Let r be any positive integer. Then the graph X (a, k, c) with
+a = p 2 r 2 − g p(2r + 1)( f − g ), k = f g p(2r + 1), c = p 2 r 2 + f p(2r + 1)( f − g )
+admits proper fractional revival at time τ = πp . By the argument before the theorem, we know that K 2  X admits proper fractional revival with overlapping
+pairs.
+
+6 Further questions
+We showed in Corollary 4.2 that balanced fractional revival does not occur in
+X (a, k, c), the only class of graphs known where proper fractional revival occur between non-cospectral vertices. Apart from looking for other families, we
+wonder:
+6.1 Question. Is there a tree T where there is proper fractional revival between
+two non-cospectral vertices a and b?
+6.2 Question. Can balanced fractional revival occur between non-cospectral vertices?
+Assume proper fractional revival occurs on {a, b}. Then there exists a squarefree integer ∆ such that θrp−θs ∈ Z for any θr , θs ∈ C + or any θr , θs ∈ C − . If further
+∆
+
+a and b are cospectral, then the two sets C + and C − are both closed under taking algebraic conjugates, and therefore there
+exists a square-free integer ∆ and
+p
+p
++
+
+−
+
+integers a + , a − , b r such that θr = a +b2r ∆ for any θr ∈ C +, and θs = a +b2r ∆
+for any θs ∈ C − [5]. When proper fractional revival occurs on X (a, k, c), the
+eigenvalues in the support are quadratic integers as in the cospectral case. Are
+there unweighted graphs with proper fractional revival such that C + and C −
+are not closed under taking algebraic conjugates (then it occurs between noncospectral vertices), or
+6.3 Question. Is there a graph X with proper fractional revival on {a, b} such that
+eigenvalues in the support of a are not integers or quadratic integers? Vertices a
+and b must be noncospectral in X if it happens.
+21
+
+References
+[1] M. Bašić, Characterization of quantum circulant networks having perfect state transfer,
+Quantum Inf. Process. 12 (2013), no. 1, 345–364.
+[2] P.-A. Bernard, A. Chan, É. Loranger, C. Tamon, and L. Vinet, A graph with fractional revival,
+Phys. Lett. A 382 (2018), no. 5, 259–264.
+[3] L. C. Brown, W. J. Martin, and D. Wright, Continuous time quantum walks on graphs: group
+state transfer (2021), available at 2103.08837.
+[4] A. Chan, G. Coutinho, W. Drazen, O. Eisenberg, C. Godsil, G. Lippner, M. Kempton, C.
+Tamon, and H. Zhan, Fundamentals of fractional revival in graphs (2020), available at
+arXiv:2004.01129[math.CO].
+[5] A. Chan, G. Coutinho, C. Tamon, L. Vinet, and H. Zhan, Quantum fractional revival on
+graphs, Discrete Appl. Math. 269 (2019), 86–98.
+[6] W.-C. Cheung and C. Godsil, Perfect state transfer in cubelike graphs, Linear Algebra Appl.
+435 (2011), no. 10, 2468–2474.
+[7] M. Christandl, N. Datta, T. C. Dorlas, A. Ekert, A. Kay, and A. J. Landahl, Perfect transfer of
+arbitrary states in quantum spin networks, Phys. Rev. A 71 (2005), 032312.
+[8] G. Coutinho and C. Godsil, Graph spectra and continuous quantum walks, Lecture notes
+(2021).
+[9] G. Coutinho, C. Godsil, K. Guo, and F. Vanhove, Perfect state transfer on distance-regular
+graphs and association schemes, Linear Algebra Appl. 478 (2015), 108–130.
+[10] V. X. Genest, L. Vinet, and A. Zhedanov, Exact fractional revival in spin chains, Modern
+Phys. Lett. B 30 (2016), no. 26, 1650315, 7.
+[11] V. X. Genest, L. Vinet, and A. Zhedanov, Quantum spin chains with fractional revival, Ann.
+Physics 371 (2016), 348–367.
+[12] C. D. Godsil, Algebraic Combinatorics, Chapman and Hall Mathematics Series, Chapman
+& Hall, New York, 1993.
+[13] C. Godsil, Periodic graphs, Electron. J. Combin. 18 (2011), no. 1, Paper 23, 15.
+[14] C. Godsil, Real state transfer (2017), available at 1710.04042.
+[15] C. Godsil, State transfer on graphs, Discrete Math. 312 (2012), no. 1, 129–147.
+[16] C. Godsil and J. Smith, Strongly cospectral vertices (2017), available at 1709.07975.
+[17] A. Kay, Basics of perfect communication through quantum networks, Phys. Rev. A 84 (2011),
+022337.
+
+22
+
+

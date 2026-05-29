@@ -8,14 +8,20 @@ import Graphplay.ForMathlib.HilbertSchmidt
 -- Core spine (Towers 1-2)
 import Graphplay.Basic
 import Graphplay.Weighted
+import Graphplay.Loopy
+import Graphplay.Loopy.Laplacian
 import Graphplay.Equitable
 import Graphplay.Spectral
 
 -- Constructive engine + primitives
+import Graphplay.Product
+import Graphplay.Product.PST
 import Graphplay.Bundle
 import Graphplay.PST
 import Graphplay.Mixing
 import Graphplay.Search
+import Graphplay.Search.CNO
+import Graphplay.Loopy.Search
 
 -- Chiral / operator-algebra (Tower 2 chiral, Tower 3)
 import Graphplay.Chiral
@@ -65,6 +71,7 @@ import Graphplay.DiscreteTime
 import Graphplay.PST.Cospectrality
 import Graphplay.PST.GodsilRatio
 import Graphplay.PST.QuotientIff
+import Graphplay.PST.DiagonalShift
 
 -- Algorithms (γ-loops L4, L6 + β)
 import Graphplay.Algorithm.WLRefinement
@@ -77,6 +84,7 @@ import Graphplay.Algorithm.PrimitiveDSL
 -- Stdlib of known PST/mixing families
 import Graphplay.StdLib.Path
 import Graphplay.StdLib.Hypercube
+import Graphplay.StdLib.HypercubeProduct
 import Graphplay.StdLib.Hamming
 import Graphplay.StdLib.Cayley
 import Graphplay.StdLib.CompleteMultipartite

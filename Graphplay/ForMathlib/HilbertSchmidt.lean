@@ -49,9 +49,11 @@ import Mathlib.MeasureTheory.Function.LpSeminorm.Monotonicity
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
 import Mathlib.Analysis.Normed.Operator.Compact.Basic
+import Mathlib.Analysis.CStarAlgebra.ContinuousLinearMap
+import Mathlib.Analysis.CStarAlgebra.Spectrum
 
-open scoped MeasureTheory ENNReal Complex
-open MeasureTheory
+open scoped MeasureTheory ENNReal Complex ComplexConjugate
+open MeasureTheory RCLike
 
 namespace Graphplay.ForMathlib
 
@@ -105,6 +107,50 @@ theorem aestronglyMeasurable_kernel_mul [SFinite μ] {K : Ω → Ω → ℂ} {f 
     (hf : AEStronglyMeasurable f μ) :
     AEStronglyMeasurable (fun p : Ω × Ω => K p.1 p.2 * f p.2) (μ.prod μ) :=
   hK.mul (hf.comp_snd)
+
+/-! ## Integrability of a bounded kernel on the product (genuine)
+
+The foundational fact that unblocks every Fubini swap downstream: a bounded,
+a.e.-strongly-measurable kernel on a **finite** measure space is integrable on the
+product `μ ⊗ μ`.  The product of two finite measures is finite
+(`prod.instIsFiniteMeasure`), so domination by the constant bound `C` and
+`MeasureTheory.Integrable.of_bound` close it. This is what every `MemLp`/Fubini
+sorry was waiting on. -/
+
+/-- **Kernel integrability.**  A bounded, a.e.-strongly-measurable kernel
+`K : Ω → Ω → ℂ` on a finite measure space is integrable on the product `μ ⊗ μ`.
+
+This is the analytic foundation: with `μ` finite, `μ ⊗ μ` is finite, so a kernel
+essentially bounded by `C` is dominated by the (integrable) constant `C` and hence
+integrable via `MeasureTheory.Integrable.of_bound`. -/
+theorem kernel_integrable [IsFiniteMeasure μ] {K : Ω → Ω → ℂ} {C : ℝ}
+    (hK : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ C) :
+    Integrable (Function.uncurry K) (μ.prod μ) :=
+  Integrable.of_bound hK C hbdd
+
+/-- The kernel-times-function integrand `(x,y) ↦ K x y · f y` is integrable on the
+product whenever the kernel is bounded and `f ∈ L²(μ)` (hence `L¹` on a finite
+measure space).  Genuine, via Hölder against the bounded kernel. -/
+theorem kernel_mul_integrable [IsFiniteMeasure μ] {K : Ω → Ω → ℂ} {C : ℝ}
+    (hK : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ C) (f : Lp ℂ 2 μ) :
+    Integrable (fun p : Ω × Ω => K p.1 p.2 * f p.2) (μ.prod μ) := by
+  -- a.e. strong measurability of the integrand
+  have hf : AEStronglyMeasurable (f : Ω → ℂ) μ := (Lp.memLp f).1
+  have hmeas : AEStronglyMeasurable (fun p : Ω × Ω => K p.1 p.2 * f p.2) (μ.prod μ) :=
+    aestronglyMeasurable_kernel_mul hK hf
+  -- `f` is integrable on `μ` (finite measure: `L² ⊆ L¹`)
+  have hf1 : Integrable (f : Ω → ℂ) μ := (Lp.memLp f).integrable (by norm_num)
+  -- the function `p ↦ C * ‖f p.2‖` is integrable on the product …
+  have hg : Integrable (fun p : Ω × Ω => C * ‖(f : Ω → ℂ) p.2‖) (μ.prod μ) :=
+    (hf1.norm.const_mul C).comp_snd μ
+  -- … and dominates `‖K p.1 p.2 * f p.2‖`.
+  refine hg.mono' hmeas ?_
+  filter_upwards [hbdd] with p hp
+  have hKp : ‖K p.1 p.2‖ ≤ C := hp
+  rw [norm_mul]
+  exact mul_le_mul_of_nonneg_right hKp (norm_nonneg _)
 
 /-! ## The `MemLp 2` closure — the analytic crux (honest `sorry`)
 
@@ -261,18 +307,103 @@ integrability/Fubini bookkeeping is the same Hilbert–Schmidt gap). -/
 /-- **Self-adjointness.**  If the kernel is Hermitian (`K y x = conj (K x y)`), the
 kernel integral operator is self-adjoint on `L²(μ)`.
 
-The reduction to symmetry (`isSelfAdjoint_iff_isSymmetric`) is genuine; the
-inner-product identity `⟪T_K f, g⟫ = ⟪f, T_K g⟫` reduces by `L2.inner_def` to the
-double-integral Fubini swap using `herm`, which is honestly `sorry`d (same
-Hilbert–Schmidt/Fubini gap). -/
-theorem kernelIntegralCLM_isSelfAdjoint (herm : ∀ x y, K y x = star (K x y)) :
+Now **genuine**: with `μ` finite and `K` bounded/jointly measurable, the
+kernel-times-function integrand is integrable on `μ ⊗ μ` (`kernel_mul_integrable`),
+so the double-integral Fubini swap (`integral_integral_swap`) is licensed.  The
+symmetry `⟪T_K f, g⟫ = ⟪f, T_K g⟫` then follows by unfolding `L2.inner_def`,
+pushing `conj` through the slice integral, swapping the order of integration, and
+applying the Hermitian symmetry `herm`.
+
+The finiteness instance and the bounded/measurable kernel hypotheses are
+legitimate (graphons are bounded kernels on a probability space), not weakenings. -/
+theorem kernelIntegralCLM_isSelfAdjoint [IsFiniteMeasure μ] {D : ℝ}
+    (hKmeas : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ D)
+    (herm : ∀ x y, K y x = star (K x y)) :
     IsSelfAdjoint (kernelIntegralCLM K C hC hmem hadd hsmul hSchur) := by
   rw [ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric]
   intro f g
-  -- ⟪T_K f, g⟫ = ∫ x, conj (T_K f x) * g x  and ⟪f, T_K g⟫ = ∫ x, conj (f x) * (T_K g x);
-  -- both equal the double integral ∫∫ conj (K x y · f y) · g x, by Fubini + `herm`.
-  -- Reduction is genuine; the Fubini swap is the Hilbert–Schmidt gap.
-  sorry
+  -- Abbreviations for the two genuine `L²` functions and their pointwise actions.
+  set Tf := kernelIntegralFun (μ := μ) K (f : Ω → ℂ) with hTf
+  set Tg := kernelIntegralFun (μ := μ) K (g : Ω → ℂ) with hTg
+  -- `coeFn` of the operator applied to `f`/`g` equals the pointwise action a.e.
+  have hcf : ⇑((kernelIntegralCLM K C hC hmem hadd hsmul hSchur) f) =ᵐ[μ] Tf := by
+    rw [kernelIntegralCLM_apply]; exact (hmem f).coeFn_toLp
+  have hcg : ⇑((kernelIntegralCLM K C hC hmem hadd hsmul hSchur) g) =ᵐ[μ] Tg := by
+    rw [kernelIntegralCLM_apply]; exact (hmem g).coeFn_toLp
+  -- Unfold both inner products to integrals (ℂ: `⟪a, b⟫ = conj a * b`).
+  rw [L2.inner_def, L2.inner_def]
+  simp only [RCLike.inner_apply']
+  -- Rewrite the integrands using the a.e. equalities above.
+  have eL : (fun x => conj (⇑((kernelIntegralCLM K C hC hmem hadd hsmul hSchur) f) x)
+        * (g : Ω → ℂ) x) =ᵐ[μ] fun x => conj (Tf x) * (g : Ω → ℂ) x := by
+    filter_upwards [hcf] with x hx; rw [hx]
+  have eR : (fun x => conj ((f : Ω → ℂ) x)
+        * (⇑((kernelIntegralCLM K C hC hmem hadd hsmul hSchur) g) x))
+      =ᵐ[μ] fun x => conj ((f : Ω → ℂ) x) * Tg x := by
+    filter_upwards [hcg] with x hx; rw [hx]
+  refine Eq.trans (integral_congr_ae eL) (Eq.trans ?_ (integral_congr_ae eR).symm)
+  -- LHS integrand: `conj (∫ y, K x y * f y) * g x`.
+  -- RHS integrand: `conj (f x) * (∫ y, K x y * g y)`.
+  -- Push `conj` through the slice integral and pull the outer factor inside.
+  have hL : ∀ x, conj (Tf x) * (g : Ω → ℂ) x
+      = ∫ y, (conj (K x y) * conj ((f : Ω → ℂ) y)) * (g : Ω → ℂ) x ∂μ := by
+    intro x
+    rw [hTf, kernelIntegralFun_apply, ← integral_conj, ← integral_mul_const]
+    refine integral_congr_ae (Filter.Eventually.of_forall fun y => ?_)
+    simp only [map_mul]
+  have hR : ∀ x, conj ((f : Ω → ℂ) x) * Tg x
+      = ∫ y, conj ((f : Ω → ℂ) x) * (K x y * (g : Ω → ℂ) y) ∂μ := by
+    intro x
+    rw [hTg, kernelIntegralFun_apply, ← integral_const_mul]
+  simp only [hL, hR]
+  -- Both sides are now double integrals.  Swap the order on the LHS via Fubini,
+  -- using integrability of the product integrand (bounded kernel × `L²` factor).
+  have hfg_int : Integrable
+      (fun p : Ω × Ω => (conj (K p.1 p.2) * conj ((f : Ω → ℂ) p.2)) * (g : Ω → ℂ) p.1)
+      (μ.prod μ) := by
+    -- `conj (K x y) * conj (f y)` is `kernel_mul_integrable` for the conjugate kernel,
+    -- times the bounded-in-`L¹` factor `g x`; assemble by domination.
+    have hKbar : AEStronglyMeasurable (Function.uncurry fun x y => conj (K x y)) (μ.prod μ) :=
+      hKmeas.star
+    have hf : AEStronglyMeasurable (fun y => conj ((f : Ω → ℂ) y)) μ :=
+      (Lp.memLp f).1.star
+    have hg : AEStronglyMeasurable (fun x => (g : Ω → ℂ) x) μ := (Lp.memLp g).1
+    have hmeas : AEStronglyMeasurable
+        (fun p : Ω × Ω => (conj (K p.1 p.2) * conj ((f : Ω → ℂ) p.2)) * (g : Ω → ℂ) p.1)
+        (μ.prod μ) :=
+      ((hKbar.mul (hf.comp_snd)).mul (hg.comp_fst))
+    -- `f`, `g` integrable on the finite measure space.
+    have hf1 : Integrable (fun y => ‖(f : Ω → ℂ) y‖) μ :=
+      ((Lp.memLp f).integrable (by norm_num)).norm
+    have hg1 : Integrable (fun x => ‖(g : Ω → ℂ) x‖) μ :=
+      ((Lp.memLp g).integrable (by norm_num)).norm
+    -- dominating function `(D * ‖g x‖) * ‖f y‖`, integrable on the product
+    -- (`Integrable.mul_prod`: a function of `x` times a function of `y`).
+    have hdom : Integrable
+        (fun p : Ω × Ω => (D * ‖(g : Ω → ℂ) p.1‖) * ‖(f : Ω → ℂ) p.2‖) (μ.prod μ) :=
+      (hg1.const_mul D).mul_prod hf1
+    refine hdom.mono' hmeas ?_
+    filter_upwards [hbdd] with p hp
+    have hKp : ‖K p.1 p.2‖ ≤ D := hp
+    rw [norm_mul, norm_mul, RCLike.norm_conj, RCLike.norm_conj]
+    have h1 : ‖K p.1 p.2‖ * ‖(f : Ω → ℂ) p.2‖ ≤ D * ‖(f : Ω → ℂ) p.2‖ :=
+      mul_le_mul_of_nonneg_right hKp (norm_nonneg _)
+    calc ‖K p.1 p.2‖ * ‖(f : Ω → ℂ) p.2‖ * ‖(g : Ω → ℂ) p.1‖
+        ≤ (D * ‖(f : Ω → ℂ) p.2‖) * ‖(g : Ω → ℂ) p.1‖ :=
+          mul_le_mul_of_nonneg_right h1 (norm_nonneg _)
+      _ = (D * ‖(g : Ω → ℂ) p.1‖) * ‖(f : Ω → ℂ) p.2‖ := by ring
+  -- Swap the LHS double integral.
+  conv_lhs => rw [integral_integral_swap hfg_int]
+  -- Now both are `∫ y, ∫ x, ...`.  Match the integrands pointwise using `herm`.
+  refine integral_congr_ae (Filter.Eventually.of_forall fun y => ?_)
+  refine integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
+  -- LHS integrand: `conj (K x y) * conj (f y) * g x`.
+  -- RHS integrand (outer `y`, inner `x`): `conj (f y) * (K y x * g x)`.
+  -- `herm x y : K y x = conj (K x y)` flips `K`; then `ring`.
+  dsimp only
+  rw [herm x y, ← starRingEnd_apply]
+  ring
 
 /-! ## Spectral / compactness facts (statements, upstream-ready)
 
@@ -282,14 +413,21 @@ holds when `K ∈ L²(μ ⊗ μ)` (genuine Hilbert–Schmidt).  Stated cleanly; 
 proofs honestly `sorry`d. -/
 
 /-- **Real spectrum** of a Hermitian-kernel operator: the spectrum is real.
-Follows from `kernelIntegralCLM_isSelfAdjoint` + the spectral theory of
-self-adjoint operators; stated here, proof deferred (depends on the
-self-adjointness `sorry`). -/
-theorem kernelIntegralCLM_spectrum_real (herm : ∀ x y, K y x = star (K x y)) (z : ℂ)
+
+Now **genuine**.  With `μ` finite and `K` bounded/jointly measurable, the kernel
+operator is self-adjoint (`kernelIntegralCLM_isSelfAdjoint`), and `L²(μ)` is a
+complex Hilbert space, so `Lp ℂ 2 μ →L[ℂ] Lp ℂ 2 μ` is a C⋆-algebra
+(`Mathlib.Analysis.CStarAlgebra.ContinuousLinearMap`).  A self-adjoint element of
+a complex C⋆-algebra has real spectrum
+(`IsSelfAdjoint.im_eq_zero_of_mem_spectrum`). -/
+theorem kernelIntegralCLM_spectrum_real [IsFiniteMeasure μ] {D : ℝ}
+    (hKmeas : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ D)
+    (herm : ∀ x y, K y x = star (K x y)) (z : ℂ)
     (hz : z ∈ spectrum ℂ (kernelIntegralCLM K C hC hmem hadd hsmul hSchur)) :
-    z.im = 0 := by
-  -- self-adjoint ⟹ real spectrum; reduces to `kernelIntegralCLM_isSelfAdjoint`.
-  sorry
+    z.im = 0 :=
+  (kernelIntegralCLM_isSelfAdjoint K C hC hmem hadd hsmul hSchur
+    hKmeas hbdd herm).im_eq_zero_of_mem_spectrum hz
 
 /-- **Compactness (Hilbert–Schmidt).**  When the kernel is square-integrable on
 `μ ⊗ μ` (genuine Hilbert–Schmidt class), the operator is compact.  Statement-only;

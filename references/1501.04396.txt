@@ -1,0 +1,764 @@
+arXiv:1501.04396v3 [math.CO] 22 May 2018
+
+Perfect state transfer in products and covers of
+graphs
+G. Coutinho∗†, C. Godsil∗
+October 12, 2018
+
+Abstract
+A continuous-time quantum walk on a graph X is represented by
+the complex matrix exp(−itA), where A is the adjacency matrix of
+X and t is a non-negative time. If the graph models a network of
+interacting qubits, transfer of state among such qubits throughout
+time can be formalized as the action of the continuous-time quantum
+walk operator in the characteristic vectors of the vertices.
+Here we are concerned with the problem of determining which
+graphs admit a perfect transfer of state. More specifically, we will
+study graphs whose adjacency matrix is a sum of tensor products of
+01-matrices, focusing on the case where a graph is the tensor product
+of two other graphs. As a result, we will construct many new examples
+of perfect state transfer.
+
+1
+
+Introduction
+
+We model a network of interacting qubits by a simple and undirected graph,
+and we address the problem of when such a network admits a transfer of
+quantum state between two sites without a loss of information. We call this
+phenomenon perfect state transfer.
+∗
+Department of Combinatorics and Optimization, University
+{gcoutinho, cgodsil}@uwaterloo.ca
+†
+Supported by Capes Foundation, Ministry of Education, Brazil.
+
+1
+
+of
+
+Waterloo,
+
+Perfect state transfer is a relatively rare phenomenon. In [12], Godsil
+proved that there are only finitely many connected graphs with maximum
+valency k in which perfect state transfer can occur.
+The main achievement of this paper is the construction of many new
+examples of simple graphs admitting perfect state transfer. These examples
+are obtained by examining certain graph products. In fact, we introduce a
+general framework in which perfect state transfer in graph products can be
+studied.
+To the best of our knowledge, the following list contains a summary of
+which simple graphs are known to admit perfect state transfer. To highlight the importance of our findings, we point out that we are significantly
+increasing the quantity of known examples of perfect state transfer.
+1. Paths P2 and P3 between vertices of degree 1, but no other Pn for n ≥ 4
+(see [7]).
+2. Certain cubelike graphs, fully characterized in [4] and [6].
+3. Certain circulant graphs, fully characterized in [16] and [3].
+4. Certain graphs admitting an equitable partition whose quotient is a
+weighted path. Among those, all hypercubes and cartesian powers of
+P3 (see [7]) and some distance-regular graphs (see preprint in [9]).
+5. Bipartite doubles of certain graphs belonging to association schemes
+(see preprint in [9]).
+6. Joins of the form K2 + G or K2 + G, where G is any regular graph with
+certain specified orders and degrees (see [1]).
+7. Iterated self-joins of regular graphs admitting perfect state transfer for
+certain choices of the parameters (see [1]).
+8. Certain circulant joins of circulant graphs (see [1]).
+9. Graphs obtained from lifting on certain weighted paths on four vertices
+(see [2]).
+10. Some graphs which are the products of other graphs. Determined in
+[8] for the cartesian product. Some examples involving other products
+of graphs were constructed in [11] and [15].
+2
+
+In this paper, we almost fully characterize when a tensor product of two
+graphs X and Y admits perfect state transfer. As a corollary of our work,
+will show that under certain mild integrality conditions on the eigenvalues
+of the graphs, if X admits perfect state transfer and the power of two in the
+factorization of the integer parts of the eigenvalues of Y is constant, then
+X k × Y admits perfect state transfer for an infinite number of values of k.
+For instance, Y can be a star or any graph with odd integer eigenvalues.
+We will also apply our methods to determine when switching graphs admit
+perfect state transfer. Here again we will construct a new infinite family of
+graphs admitting perfect state transfer.
+All of the results in this paper and an elementary introduction to the
+topic of perfect state transfer can be found in [10, PhD Thesis].
+
+2
+
+Definitions and basic results
+
+Let X be a (simple and undirected) graph and consider its adjacency matrix
+A = A(X). For every non-negative real number t, we denote UA (t) = exp(itA),
+thus
+X (it)k
+UA (t) =
+Ak .
+k!
+k≥0
+
+We omit the subscript A whenever the context is clear. Because A is symmetric, U(t) is a unitary operator.
+We say that a graph X admits perfect state transfer at time τ from vertex
+u to a distinct vertex v if
+U(τ )eu = λev
+
+where eu and ev are the characteristic vectors of the vertices u and v and λ
+is a complex number of absolute value 1, called the phase. Note that |λ| = 1
+because U(t) is unitary for all t. Note also that perfect state transfer from u
+to v implies perfect state transfer from v to u. For this reason, we might refer
+to uv-perfect state transfer in a graph X. We also say that X is periodic at
+u at time τ 6= 0 if
+U(τ )eu = λeu
+for some λ ∈ C. Note that if X admits uv-perfect state transfer at time τ ,
+then X is periodic at both u and v at time 2τ .
+Suppose that the adjacency matrix A of a graph has distinct eigenvalues
+θ0 > θ1 > ... > θd . The matrix A is real and symmetric, so it is orthogonally
+3
+
+diagonalizable and therefore admits a spectral decomposition
+A=
+
+d
+X
+
+θr Er
+
+r=0
+
+into a linear combination of orthogonal projectors. Given a graph X and a
+vertex u ∈ V (X) with characteristic vector eu , the eigenvalue support of u,
+to be denoted by Φu , is defined as the set of eigenvalues of X such that the
+projection of eu into the corresponding eigenspace is a non-zero vector. Let
+v be another vertex. If, for all r ∈ {0, ..., d}, it follows that Er eu = ±Er ev ,
+we say that u and v are strongly cospectral vertices. Note that if u and v are
+strongly cospectral, then Φu = Φv , and in this case, let us define Φ+
+uv as the
+set of eigenvalues θr in Φu and such that Er eu = Er ev , and Φ−
+as
+the
+set of
+uv
+eigenvalues θr in Φu and such that Er eu = −Er ev .
+The set up above allows us to translate the phenomenon of perfect state
+transfer into conditions that depend uniquely on the spectral decomposition
+of A. Note that even though the ideas in the theorem below have been used in
+previous works to characterize perfect state transfer in various classes graphs,
+we do not know of any published paper in which this theorem appears with
+this level of generality. For a detailed proof, please check [10].
+2.1 Theorem. Let X be a graph with vertices u and v and distinct eigenvalues θ0 > ... > θd . There exists a time τ ∈ R+ and a constant λ ∈ C
+satisfying
+UX (τ )eu = λev
+if and only if the following conditions hold.
+(i) Vertices u and v are strongly cospectral.
+(ii) [12, Theorem 6.1] Non-zero elements in Φu are either all integers or
+all quadratic integers. Moreover, there is a square-free integer ∆, an
+integer a, and integers b0 , ..., bk such that
+θr =
+
+√ 
+1
+a + br ∆ for all r = 0, ..., k.
+2
+
+Here we allow ∆ = 1 for the case where all eigenvalues
+√ are integers, and
+a = 0 for the case where they are all multiples of ∆.
+
+4
+
+(iii) Let g = gcd
+
+
+
+θ0 − θr
+√
+∆
+
+k !
+
+. Then
+
+r=0
+
+θ0 − θr
+√
+is even, and
+g ∆
+θ0 − θr
+√
+b) θr ∈ Φ−
+is odd.
+uv if and only if
+g ∆
+a) θr ∈ Φ+
+uv if and only if
+
+Moreover, if these conditions hold and perfect state transfer occurs between
+u and v at time τ with phase λ, then
+a) There is a minimum time τ0 > 0 at which perfect state transfer occurs
+between u and v, and
+1 π
+τ0 = √ .
+g ∆
+b) The time τ is an odd multiple of τ0 .
+c) The phase λ is equal to eiτ θ0 .
+
+3
+
+Graph products
+
+In this section, we briefly introduce a very general method for solving the
+problem of finding perfect state transfer in graphs whose adjacency matrices
+are sums of tensor products of 01-matrices. For the sake of simplifying the
+notation, we will restrict our considerations to graphs X such that
+A(X) = B ⊗ C + M ⊗ N
+with B, C, M, N symmetric matrices. This includes most graph products,
+but both the number of terms of the sum and the number of factors in each
+term can be generalized to any positive integer. Example of graphs of this
+form are the cartesian product XY of graphs X and Y , whose adjacency
+matrix satisfies
+A(XY ) = A(X) ⊗ I + I ⊗ A(Y ).
+
+The existence of perfect state transfer in the cartesian product is easily determined from the following equation (see [8]).
+UXY (t) = UX (t) ⊗ UY (t).
+5
+
+(3.1)
+
+3.1 Lemma. Suppose X is a graph such that A(X) = B ⊗ C + M ⊗ N,
+where B and M are commuting m × m matrices. Let β0 ≥ ... ≥ βm−1 and
+µ0 ≥ ... ≥ µm−1 be the spectra of B and M respectively. Then UX (t) is
+similar to a block diagonal matrix with m blocks, in which the r-th block is
+equal to exp(itLr ), with
+Lr = βr C + µr N.
+Proof. Because B and M are symmetric and commute, they can be simultaneously diagonalized by a matrix P . As a consequence, A(X) is similar to a
+block diagonal matrix whose blocks are equal to Lr , with r ∈ {0, ..., m − 1}.
+The result now follows trivially.
+A typical vertex of X will be represented as (w, u), where w indexes a
+row of B and M, and u a row of C and N. In the context of the lemma
+above, we allow the use of the terms perfect state transfer and periodicity
+to symmetric matrices in general.
+3.2 Lemma. Suppose X is defined as in Lemma 3.1, and let E0 , ..., Em−1
+be the rank-1 projectors onto the common eigenlines of B and M. Let
+Lr = βr C + µr N. If the graph X admits perfect state transfer from (w, u)
+to (z, v), then
+(i) the vertices w and z are strongly cospectral in the matrices B and M;
+and
+(ii) for all r such that Er w 6= 0; if u = v, the matrix Lr is periodic at u;
+and if u 6= v, the matrix Lr admits perfect state transfer from u to v.
+Proof. By hypothesis, there exists a time τ and a complex number λ such
+that
+UX (τ )(ew ⊗ eu ) = λ(ez ⊗ ev ).
+Let P be the matrix that simultaneously diagonalizes B and M. Thus
+(P T ⊗ I)UX (τ )(P ⊗ I)(P T ew ⊗ eu ) = λ(P T ez ⊗ ev ),
+where (P T ⊗ I)UX (τ )(P ⊗ I) is the block diagonal matrix of Lemma 3.1.
+This is true if and only if, for all r = 0, ..., m − 1,
+(eTr P T ew ) exp(iτ Lr )eu = (eTr P T ez )λev .
+
+6
+
+Because the matrices exp(iτ Lr ) are all unitary, it follows that, for all r,
+(eTr P T ew ) = ±(eTr P T ez ),
+and so w and z are strongly cospectral in the matrices B and M; and also
+that
+exp(iτ Lr )eu = ±λev
+for all r such that (eTr P T ew ) 6= 0.
+
+3.3 Lemma. Suppose X is defined as in Lemma 3.2, and let γ0 ≥ ... ≥ γn−1
+and ν0 ≥ ... ≥ νn−1 be the spectra of C and N respectively. Suppose that C
+and N also commute, and let F0 , ..., Fn−1 be the rank-1 projectors onto the
+common eigenlines of C and N. Then
+UX (t) =
+
+m−1
+n−1
+XX
+r=0 s=0
+
+eit(βr γs +µr νs ) Er ⊗ Fs .
+
+Proof. Note that
+B⊗C +M ⊗N =
+From
+
+m−1
+n−1
+XX
+r=0 s=0
+
+(βr γs + µr νs )Er ⊗ Fs .
+
+
+
+UX (t) = exp it B ⊗ C + M ⊗ N ,
+
+and the facts that BM = MB and CN = NC, it follows that
+UX (t) =
+
+m−1
+n−1
+XX
+r=0 s=0
+
+4
+
+eit(βr γs +µr νs ) Er ⊗ Fs .
+
+Tensor product of graphs
+
+Consider graphs X and Y with respective adjacency matrices A(X) and
+A(Y ). The tensor product of X and Y , denoted by X × Y , is the graph with
+adjacency matrix A(X) ⊗ A(Y ). This product is also known in the literature
+7
+
+as the weak direct product, the direct product, the categorical product, and
+many other names (see [14, Chapter 4]).
+In this section, we almost completely determine when a tensor product of
+graphs admits perfect state transfer. As an immediate application, we find
+more examples of perfect state transfer.
+4.1 Theorem. Suppose X and Y are graphs, and X × Y admits perfect
+state transfer between vertices (w, u) and (z, v). If u = v, then Y is periodic
+at u. If u 6= v, then Y admits uv-perfect state transfer. Likewise, if w = z,
+then X is periodic at w. If w 6= z, then X admits wz-perfect state transfer.
+Proof. It is a simple consequence of Lemma 3.2 with B = C = 0, M = A(X)
+and N = A(Y ), or M = A(Y ) and N = A(X).
+4.2 Lemma. Suppose X and Y are graphs and A(X) admits the spectral
+d
+X
+decomposition A(X) =
+θr Er . Then
+r=0
+
+UX×Y (t) =
+
+d
+X
+r=0
+
+Er ⊗ UY (θr t).
+
+Proof. It is a consequence of Lemma 3.3 and an easy rearrangement.
+Now we will determine under which conditions on the factors we can
+obtain perfect state transfer on the product.
+4.3 Theorem. Suppose UY (τ √
+)eu = λev , and that the eigenvalues of Y in the
+support of u are of the form bi ∆u . Suppose w and z are strongly cospectral
+vertices in X. Then X × Y admits perfect state transfer from (w, u) to (z, v)
+if and only if the following conditions hold.
+√
+(i) For all θr ∈ Φw , we have θr = tr ∆w , where tr ∈ Z and ∆w is a
+square-free positive integer (which could be 1).
+(ii) The powers of two in the factorizations of each tr are all equal.
+(iii) If λ is a primitive n-th root of the unit, then n is even, and there exists
+an integer m such that
+a) If θr ∈ Φ+
+wz , then the odd part of tr is congruent to m modulo n.
+8
+
+n
+b) If θr ∈ Φ−
+wz , then the odd part of tr is congruent to m + 2 modulo
+n.
+
+Proof. Let Φw = {θ0 , ..., θd }, and Φu = {ϕ0 , ..., ϕk }. Let h be the gcd of the
+differences (ϕ0 − ϕr ) for r = 1, ..., k. Let h = 2e ℓ, with ℓ an odd integer.
+Suppose that perfect state transfer occurs in X × Y between (w, u) and
+(z, v) at time τ and phase γ. As a consequence of the fact that A(X × Y ) =
+A(X) ⊗ A(Y ), the eigenvalues in the support of (w, u) are of the form θr ϕi ,
+with 0 ≤ r ≤ d and 0 ≤ i ≤ k. In light of
+√ Theorem 2.1, the eigenvalues θr
+are either integers or integer multiples of ∆w for some square-free positive
+∆w ∈ Z.
+Then, using Lemma 4.2, we have
+γ(ez ⊗ ev ) = UX⊗Y (τ )(ew ⊗ eu )
+=
+
+d
+X
+r=0
+
+=
+
+d
+X
+r=0
+
+(Er ⊗ UY (θr τ ))(ew ⊗ eu )
+Er ew ⊗ UY (θr τ )eu .
+
+Multiplying both sides by Er ⊗ I, we get that, for σr ∈ {+1, −1},
+UY (θr τ )eu = σr γev
+−
+depending on whether θr ∈ Φ+
+wz or θr ∈ Φwz . In either case, θr τ is a time for
+which perfect state transfer occurs in Y between u and v. Applying Theorem
+2.1, this implies that
+
+π
+θr τ = ℓr e √
+2 .ℓ ∆u
+
+and σr γ = λℓr ,
+
+where ℓr is an odd integer. Considering θr and θs in the support of w, we
+will have
+ℓr
+θr
+= .
+θs
+ℓs
+
+(4.1)
+
+Because the integers ℓr are odd, the power of 2 dividing each tr is the same,
+proving condition (ii).
+′
+To prove condition (iii), suppose we take m′ ∈ {1, ..., n} such that λm =
+′′
+γ. The fact that there is a m′′ such that λm = −γ is equivalent to (−1)
+9
+
+being a power of λ, which happens if and only if n is even. In that case, if
+n
+′
+−
+′
+θr ∈ Φ+
+wz , then ℓr ≡ m mod n, and if θr ∈ Φwz , then ℓr ≡ m + 2 mod n.
+Note that the odd part of tr is an odd multiple ℓr , which by Equation 4.1
+does not depend on r. Say ℓ′ . So if the integers ℓr satisfy the congruences
+with m′ , so will the odd parts of tr with m = m′ ℓ′ .
+Now suppose all three conditions hold. Let tr = 2f .kr , for some f ≥ 0
+and odd integers kr . By Lemma 4.2, we have
+UX×Y
+
+
+
+π
+√ √
+e+f
+2 ℓ ∆w ∆u
+
+
+
+d
+X
+
+
+
+π
+.
+=
+Er ⊗ UY θr . e+f √ √
+2 ℓ ∆w ∆u
+r=0
+
+Note that
+UY
+
+
+
+π
+θr . e+f √ √
+2 ℓ ∆w ∆u
+
+
+
+ 
+kr
+π
+√
+= UY
+2e ℓ ∆u
+
+Hence
+UX×Y
+
+
+
+π
+√ √
+e+f
+2 ℓ ∆w ∆u
+
+
+
+d
+X
+
+ 
+kr
+π
+√
+(ew ⊗ eu ) =
+Er ew ⊗ UY
+eu
+e ∆
+2
+u
+r=0
+=
+
+d
+X
+r=0
+
+Er ew ⊗ λkr ev .
+
+kr
+If r ∈ Φ+
+= λm , and if r ∈ Φ−
+wz , then condition (iii) implies that λ
+wz , then
+kr
+−m
+m
+λ = λ . If λ = γ, we have
+
+
+π
+√ √
+(ew ⊗ eu ) = γ(ez ⊗ ev ),
+UX×Y
+2e+f ∆w ∆u
+
+as claimed.
+Note that if w = z, the theorem above takes the following form.
+4.4 Corollary. Suppose UY (τ )eu = √
+λev , and that the eigenvalues of Y in
+the support of u are of the form bi ∆u . Let w ∈ V (X). Then X × Y
+admits perfect state transfer from (w, u) to (w, v) if and only if the following
+conditions hold.
+√
+(i) For all θr ∈ Φw , we have θr = tr ∆w , where tr ∈ Z and ∆w is a
+square-free positive integer (which could be 1).
+10
+
+(ii) The powers of two in the factorizations of each tr are all equal.
+(iii) If λ is a primitive n-th root of the unit, then there exists an integer m
+such that the odd part of the integer tr is congruent to m modulo n.
+Note that the conditions on X of both results depend very little on Y .
+In fact, if ϕ0 is the largest eigenvalue of Y and τ is the time at which perfect
+state transfer occurs in Y , then the conditions depend only on the eigenvalues
+of X, except for the order of eiϕ0 τ as a root of unity. As a consequence, we
+have the following result. We will use Y k to denote the Cartesian product
+of the graph Y with itself k times.
+4.5 Corollary. If X × Y admits perfect state transfer, and if the eigenvalues
+of Y in the support of vertices involved in perfect state transfer are integers
+or integer multiples of a square root, then X × Y k admits perfect state
+transfer for all k ∈ Z+ .
+Proof. By Equation (3.1), if Y admits perfect state transfer at minimum
+time τ , then so does Y k . The corollary now follows from the fact that the
+largest eigenvalue of Y k is kϕ0 , so the order of the phase as a root of unity
+does not increase.
+This can be pushed even further.
+4.6 Corollary. If Y admits perfect state transfer, if the eigenvalues of X
+and Y are integers or integer multiples of a square root, and if the powers of
+two in the factorizations of the integer parts of the eigenvalues of X are all
+the same, then there exists a k0 ∈ Z+ such that X × Y (mk0 ) admits perfect
+state transfer for all m ≥ 1.
+As a consequence, we present new examples of perfect state transfer in
+simple graphs. For the cases below, we assume that Y is a graph admitting
+uv-perfect state transfer, and the eigenvalues of Y in the support of u are
+either integers or integer multiples of square roots. All the graphs known in
+the literature admitting perfect state transfer are of this form.
+Stars Let Sn represent the graph on n + 1 vertices with degree sequence
+(n, 1, 1, 1, ..., 1). The spectrum of Sn is
+√ (1)
+√ (1)
+{ n , 0(n−2) , − n }.
+11
+
+√
+√
+Let w be the vertex of degree n. The eigenvalue support of w is { n, − n}.
+From Corollary 4.6, there is a k such that Sn × Y k admits perfect state
+transfer from (w, u, u, ..., u) to (w, v, v, ..., v).
+Note that k is usually quite small. If Y admits perfect state transfer at
+time π2 , which is a rather common situation, then k = 2 will suffice.
+Odd eigenvalues If X is a graph with odd eigenvalues, and w ∈ V (X),
+then it follows from Corollary 4.6 that there is a k such that X × Y k admits
+perfect state transfer from (w, u, u, ..., u) to (w, v, v, ..., v).
+We can find many graphs with odd eigenvalues among the known distanceregular graphs. For example, there are 32548 non-isomorphic strongly regular
+graphs with parameters (36,15,6,6). These graphs have distinct eigenvalues
+{15, 3, −3}. The tensor product of each of them with C4 will admit perfect
+state transfer.
+
+5
+
+Double covers and switching graphs
+
+Given graphs X and Y on the same set of vertices, we define the graph X ⋉Y
+as the graph with adjacency matrix
+
+
+A(X) A(Y )
+A(X ⋉ Y ) =
+A(Y ) A(X)
+If A(X) and A(Y ) have their ones in disjoint positions, then X ⋉Y is a double
+cover of the graph with adjacency matrix A(X) + A(Y ). When A(Y ) =
+J − I − A(X), X ⋉ Y is a double cover of the complete graph and is known
+in the literature as the switching graph of X (see [13, chapter 11]).
+If X is the empty graph, then X ⋉ Y = A(K2 ) ⊗ A(Y ) is known as the
+bipartite double of Y . Perfect state transfer on bipartite doubles of graphs
+belonging to association schemes was studied in [9]. Here we intend to study
+X ⋉ Y in a more general form.
+Note that
+ I2 and A(K
+ 2 ) commute, and can be simultaneously diagonalized
+1
+1
+by H = √12
+. Using Lemma 3.1, we have:
+1 −1
+5.1 Lemma. Given graphs X and Y , A = A(X) and B = A(Y ), we have,
+for all t ≥ 0,
+
+
+UA+B (t)
+0
+.
+(H ⊗ I)UX⋉Y (t)(H ⊗ I) =
+0
+UA−B (t)
+12
+
+5.2 Theorem. Given graphs X and Y on the same vertex set V , with A =
+A(X) and B = A(Y ), the graph X ⋉ Y on vertex set {0, 1} × V admits
+perfect state transfer if and only if one of the following holds.
+(i) For some τ ∈ R+ , λ ∈ C and u ∈ V , the matrices A + B and A − B
+are periodic at u at time τ with respective phase factors +λ and −λ.
+In this case, perfect state transfer is between (0, u) and (1, u).
+(ii) For some τ ∈ R+ , λ ∈ C and u, v ∈ V , the matrices A + B and A − B
+admit uv-perfect state transfer at time τ with the same phase factor
+λ. In this case, perfect state transfer is between (0, u) and (0, v), and
+between (1, u) and (1, v).
+(iii) For some τ ∈ R+ , λ ∈ C and u, v ∈ V , the matrices A + B and A − B
+admit uv-perfect state transfer at time τ with respective phase factors
++λ and −λ. In this case, perfect state transfer is between (0, u) and
+(1, v), and between (1, u) and (0, v).
+Proof. From Lemma 5.1, it follows that
+
+
+1 UA+B (t) + UA−B (t) UA+B (t) − UA−B (t)
+UX⋉Y (t) =
+.
+2 UA+B (t) − UA−B (t) UA+B (t) + UA−B (t)
+
+For any u ∈ V , perfect state transfer happens at τ between (0, u) and (1, u)
+if and only if
+
+UA+B (τ ) − UA−B (τ ) u,u = 2.
+Because |UA+B (τ )u,u | ≤ 1 and |UA−B (τ )u,u | ≤ 1, this is equivalent to
+λ = UA+B (τ )u,u = − UA−B (τ )u,u
+
+and |λ| = 1,
+
+proving (i).
+Likewise, perfect state transfer happens at τ between (0, u) and (0, v) if
+and only if
+
+UA+B (τ ) + UA−B (τ ) u,v = 2.
+Because |UA+B (τ )u,v | ≤ 1 and |UA−B (τ )u,v | ≤ 1, this is equivalent to
+λ = UA+B (τ )u,v = UA−B (τ )u,v
+
+and |λ| = 1.
+
+Naturally these conditions are also equivalent to perfect state transfer at time
+τ between (1, u) and (1, v). This proves (ii).
+Case (iii) can be proved similarly, and the three cases together cover all
+possible ways in which a vertex of X ⋉ Y could be involved in perfect state
+transfer.
+13
+
+We show below how to obtain new examples of perfect state transfer in
+switching graphs using case (i).
+5.3 Corollary. Let θ0 > ... > θd be the eigenvalues of A(X)−A(X). Suppose
+|V (X)| = n > 2. Then X ⋉ X admits perfect state transfer if and only if
+there is an integer k such that, for all θr in the support of a vertex u, the
+number 2k(θr + 1)/n is odd for all r.
+Proof. Let A = A(X) and B = A(X). First note that A + B = J − I is
+the adjacency matrix of the complete graph, thus the matrix A + B does not
+admit perfect state transfer when n > 2. So if X ⋉ X admits perfect state
+transfer, we must be in case (i) of Theorem 5.2.
+Let λ = [UA+B (τ )]u,u . Because A + B = J − I, it follows that |λ| = 1 if
+and only if τ = 2kπ
+for any integer k. In that case, λ = e−iτ . Given Theorem
+n
+5.2, perfect state transfer between (0, u) and (1, u) happens if and only if
+eiτ θr = −e−iτ
+for all θr in the support of u. This is equivalent to the condition in the
+statement.
+When X is a regular graph, then X and X commute. More generally, if
+A = A(X) and B = A(Y ) commute, then UA±B (t) = UA (t)UB (±t). Using
+this fact, it is very easy to find examples of graphs X and Y such that X ⋉ Y
+admits perfect state transfer using Theorem 5.2.
+For instance, if X is the empty graph and Y is a non-bipartite connected
+graph admitting perfect state transfer with phase ±i, then X ⋉Y is connected
+and admits perfect state transfer. Similarly, if X is a graph admitting perfect
+state transfer and Y is such that A(Y ) = I, then X ⋉ Y is a simple graph
+admitting perfect state transfer.
+More interestingly, if A(X) and A(Y ) commute, and if there is a time τ
+such that at this time X is periodic at u and Y is periodic at u with phase
+±i, then perfect state transfer occurs in X ⋉ Y between (0, u) and (1, u). We
+use this to generate the examples below.
+Switching graphs The graph Kn Kn is a strongly regular graph with
+parameters (n2 , 2n − 2, n − 2, 2). Its eigenvalues are {2n − 2, n − 2, −2},
+hence for all n divisible by 4, it follows from the observation above that the
+switching graph of Kn Kn admits perfect state transfer at time π/2.
+14
+
+There are two feasible parameter sets for strongly regular graphs on 96
+vertices for which constructions of such graphs are known (see [5]). The
+parameter sets are (96, 20, 4, 4) and (96, 76, 60, 60). One example for the first
+set is the point-graph of the generalized quadrangle GQ(5,3). The switching
+graph of all strongly regular graphs with such parameters admit perfect state
+transfer.
+
+Acknowledgements
+We thank an anonymous referee for some invaluable remarks.
+
+References
+[1] R. J. Angeles-Canul, R. M. Norton, M. C. Opperman, C. C. Paribello,
+M. C. Russell, and C. Tamon. Perfect state transfer, integral circulants,
+and join of graphs. Quantum Inf. Comput., 10(3-4):325–342, 2010.
+[2] Rachel Bachman, Eric Fredette, Jessica Fuller, Michael Landry, Michael
+Opperman, Christino Tamon, and Andrew Tollefson. Perfect state transfer on quotient graphs. Quantum Inf. Comput., 12(3-4):293–313, 2012.
+[3] Milan Bašić. Characterization of quantum circulant networks having
+perfect state transfer. Quantum Information Processing, 12(1):345–364,
+2013.
+[4] A. Bernasconi, C. Godsil, and S. Severini. Quantum networks on cubelike graphs. Phys. Rev. A (3), 78(5):052320, 5, 2008.
+[5] A.E. Brouwer, J.H. Koolen, and M.H. Klin. A root graph that is locally
+the line graph of the Petersen graph. Discrete Mathematics, 264(13):13
+– 24, 2003.
+[6] W. Cheung and C. Godsil. Perfect state transfer in cubelike graphs.
+Linear Algebra Appl., 435(10):2468–2474, 2011.
+[7] M. Christandl, N. Datta, A. Ekert, and A. J. Landahl. Perfect state
+transfer in quantum spin networks. Phys. Rev. Lett., 92:187902, May
+2004.
+15
+
+[8] Matthias Christandl, Nilanjana Datta, Tony C Dorlas, Artur Ekert,
+Alastair Kay, and Andrew J Landahl. Perfect transfer of arbitrary states
+in quantum spin networks. Physical Review A, 71(3):032312, 2005.
+[9] G. Coutinho, C. Godsil, K. Guo, and F. Vanhove. Perfect state transfer
+on distance-regular graphs and association schemes. ArXiv e-prints,
+January 2014.
+[10] Gabriel Coutinho. Quantum State Transfer in Graphs. PhD dissertation,
+University of Waterloo, 2014.
+[11] Yang Ge, Benjamin Greenberg, Oscar Perez, and Christino Tamon. Perfect state transfer, graph products and equitable partitions. Int. J.
+Quantum Inf., 9(3):823–842, 2011.
+[12] C. Godsil. When can perfect state transfer occur? Electronic J. Linear
+Algebra, 23:877–890, 2012.
+[13] Chris Godsil and Gordon Royle. Algebraic Graph Theory. SpringerVerlag, New York, 2001.
+[14] Richard Hammack, Wilfried Imrich, and Sandi Klavžar. Handbook of
+Product Graphs, Second Edition. CRC Press, 2nd edition, 2011.
+[15] Hiranmoy Pal and Bikash Bhattacharjya. Perfect state transfer on NEPS
+of the path P3. ArXiv e-prints, January 2015.
+[16] Marko D. Petković and Milan Bašić. Further results on the perfect state
+transfer in integral circulant graphs. Computers & Mathematics with
+Applications, 61(2):300 – 312, 2011.
+
+16
+
+

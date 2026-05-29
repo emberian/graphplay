@@ -1,0 +1,1685 @@
+arXiv:1301.5889v2 [math.CO] 11 Mar 2014
+
+Uniform Mixing and Association Schemes
+Chris Godsil, Natalie Mullin, Aidan Roy
+November 8, 2021
+Abstract
+We consider continuous-time quantum walks on distance-regular
+graphs. Using results about the existence of complex Hadamard matrices in association schemes, we determine which of these graphs have
+quantum walks that admit uniform mixing.
+First we apply a result due to Chan to show that the only strongly
+regular graphs that admit instantaneous uniform mixing are the Paley graph of order nine and certain graphs corresponding to regular
+symmetric Hadamard matrices with constant diagonal. Next we prove
+that if uniform mixing occurs on a bipartite graph X with n vertices,
+then n is divisible by four. We also prove that if X is bipartite and
+regular, then n is the sum of two integer squares. Our work on bipartite graphs implies that uniform mixing does not occur on C2m for
+m ≥ 3. Using a result of Haagerup, we show that uniform mixing does
+not occur on Cp for any prime p such that p ≥ 5. In contrast to this
+result, we see that ǫ-uniform mixing occurs on Cp for all primes p.
+
+1
+
+Introduction
+
+Quantum walks are a quantum analogue of a random walk on a graph,
+and have recently been the subject of much investigation. For recent
+survey from a mathematician’s viewpoint, see [11]. A quantum walk
+can behave quite differently from a classical walk: for example Childs
+et al. [9] found a graph in which the time to propagate from one node
+to another was sped up exponentially compared to any classical walk.
+We describe the physical motivation for continuous-time quantum walks. Let X be a graph with Laplacian matrix L, and let
+
+1
+
+p(t) = (p1 (t), . . . , pn (t)) be a probability distribution over the vertices {1, . . . , n} of X, for each time t. Then p(t) is a continuous-time
+random walk on X if it satisfies the differential equation
+dp(t)
+= −Lp(t).
+dt
+This is a continuous version of a discrete-time random walk, in which
+the Laplacian matrix is the transition matrix for a Markov process on
+the vertices. The solution to the differential equation is
+p(t) = e−Lt p(0).
+Since L has rows which sum to 0, e−Lt has rows which sum to 1 and
+is therefore a stochastic process.
+In a continuous-time quantum walk, instead of a probability distribution p(t) we use a quantum state |ψ(t)i defined on a state space with
+orthonormal basis {|1i, . . . , |ni}. Instead of a stochastic process, the
+walk is governed by a unitary evolution. From Schrödinger’s equation
+for the evolution of a quantum system
+i
+
+d|ψ(t)i
+= L|ψ(t)i,
+dt
+
+we have the solution
+|ψ(t)i = eitL |ψ(0)i.
+
+Since the Laplacian L is Hermitian, eiLt is unitary. Assume our quantum walk begins at some vertex j, so |ψ(0)i = |ji. If at some time t
+we measure the state |ψ(t)i in the vertex basis {|1i, . . . , |ni}, then the
+probability of outcome |ki is
+|hk|ψ(t)i|2 = hk|eiLt |ji
+
+2
+
+= (eiLt )kj
+
+2
+
+.
+
+If this probability distribution is uniform over all vertices k, and this
+is true for all initial states |ji, then the graph is said to have uniform
+mixing.
+In fact we will define the unitary evolution using the adjacency
+matrix rather than the Laplacian. When X is regular, the resulting
+states differ only by an overall phase factor, and this does not affect
+uniform mixing.
+In this paper we focus on the question of which graphs have uniform mixing: can a quantum walk beginning at a single vertex result
+
+2
+
+in a state whose probability distribution is uniform over all vertices?
+If this is possible at some small time t, then the behaviour is quite
+different from a classical walk, which typically approaches the uniform
+distribution as t → ∞.
+Moore and Russell [15] in 2001 gave the first example of uniform
+mixing, showing that the n-cube has uniform mixing at time t = π/4.
+Since then a large body of work has been produced to study this
+problem. We summarize the conclusions. The following graphs do
+admit uniform mixing:
+(a) The complete graphs K2 , K3 , and K4 [2].
+(b) The Hamming graphs H(n, q), q ∈ {2, 3, 4} [15] [6].
+
+(c) The Cartesian product of any two graphs that admit uniform
+mixing at the same time.
+
+Note that since the Hamming graph H(n, q) is the n-th Cartesian
+power of Kq , the results in (b) follow from the results in (a). A number
+of Cayley graphs for Zd2 admit uniform mixing, but no classification is
+yet known. Some work in this direction appears in [3].
+On the other hand, some graphs are known not to admit uniform
+mixing:
+(a) Kn for n > 4.
+(b) H(n, q) for q > 4.
+(c) Cycles Cn for n = 2u q, where q = 1 and u ≥ 3 or q ∼
+= 3 mod 4
+[1].
+(d) The cycle C5 [6].
+(e) Complete multipartite graphs (except C4 ) [2].
+(f) The transpositions Cayley graph X(Sn , {transpositions}) [10].
+
+An obvious question raised by these results is which cycles admit
+uniform mixing. In this work we show that the cycle Cn does not
+admit uniform mixing if n is even and greater than four, or if n is
+a prime greater than three. We see that if a bipartite graph on n
+vertices admits uniform mixing then n must be divisible by four; if in
+addition the graph is regular then n must be the sum of two integer
+squares.
+The graphs we have that do admit uniform mixing are highly regular, and this leads us to ask which strongly regular graphs admit
+uniform mixing. We use work of Chan [7] to show that the only
+
+3
+
+strongly regular graphs that admit instantaneous uniform mixing are
+the Paley graph of order 9 and certain graphs corresponding to regular
+symmetric Hadamard matrices with constant diagonal.
+Since uniform mixing seems to be rare, we consider a relaxed version, called ǫ-uniform mixing, and we demonstrate that this does take
+place on all cycles of prime length.
+
+2
+
+Uniform mixing
+
+Let A denote the adjacency matrix of a graph X on n vertices. The
+transition operator U (t) defined by
+U (t) = eitA .
+determines a continuous quantum walk. It is straightforward to observe that the transition matrix satisfies the following properties.
+(i) U (t)T = U (t).
+(ii) U (t) = U (−t).
+(iii) U (t) is unitary.
+Suppose that A and B are two m × n matrices. The Schur product
+A ◦ B is the m × n matrix given by
+(A ◦ B)j,k = Aj,k Bj,k .
+We say the graph X admits uniform mixing at time t if and only if
+U (t) ◦ U (−t) =
+
+1
+J
+n
+
+where J is the n × n all-ones matrix.
+Let || · || denote the Frobenius norm. More explicitly, for two n × n
+matrices A and B we have
+v
+uX
+n
+u n X
+|Aj,k − Bj,k |2 .
+||A − B|| = t
+j=1 j=1
+
+We say that a graph X admits ǫ-uniform mixing if and only if for every
+ǫ > 0, there exists some time t such that the corresponding mixing
+matrix U (t) satisfies
+||U (t) ◦ U (t)∗ −
+
+4
+
+1
+J|| < ǫ.
+n
+
+It is useful to note the following lemma, which relates uniform
+mixing on a graph and its complement at certain times.
+2.1 Lemma. Let X denote a regular graph on n vertices, and let t
+denote an integer multiple of 2π/n. At time t, uniform mixing occurs
+on X if and only if it occurs on the complement X.
+Proof. Note that
+eitĀ = eit(J−I−A) = eit(J−I) e−itA
+
+
+ 
+
+1
+1
+i(n−1)t
+−it
+= e
+J +e
+e−iAt .
+I− J
+n
+n
+If t denote an integer multiple of 2π/n, then the above equation reduces to
+eitĀ = e−it eitA ,
+which implies that the complement of X has uniform mixing if and
+only if X does.
+In Section 4, we see that the previous lemma applies to all cases
+of strongly regular graphs that admit uniform mixing.
+
+3
+
+Type-II Matrices
+
+Suppose that A is an n × m matrix with all non-zero entries. We say
+that the Schur inverse of A is the matrix given by
+(−)
+
+Aj,k =
+
+1
+.
+Aj,k
+
+We say that a complex n × n matrix H is a type-II matrix if and only
+if
+HH (−)T = nI.
+3.1 Lemma. The graph X admits uniform mixing at time t if and
+√
+only if nU (t) is a type-II matrix.
+Proof. We note that a complex number x satisfies |x| = 1 if and only
+if x̄ = x−1 . Therefore the transition matrix satisfies
+√
+1
+1
+U (t) ◦ U (t)∗ = J if and only if
+nU (t)∗ = √ U (t)(−)T .
+n
+n
+Since U (t) is a symmetric unitary matrix, it follows that U (t)(−)T =
+√
+U (t)−1 . We conclude that U (t) is flat if and only if nU (t) is typeII.
+
+5
+
+More specifically, a flat type-II matrix is called a complex Hadamard
+matrix. Therefore, we have the following.
+3.2 Corollary. The graph X admits uniform mixing at time t if and
+√
+only if nU (t) is a complex Hadamard matrix.
+For the known examples of graphs that admit uniform mixing, the
+√
+entries of nU (t) at the corresponding time are roots of unity. Such
+matrices are called Butson-type complex Hadamard matrices. They
+live in a more general family of complex Hadamard matrices whose
+entries are all algebraic numbers.
+We recall a useful formulation of the Gelfond-Schneider Theorem
+due to Michel Waldschmidt [5].
+3.3 Theorem. If x and y are two non-zero complex numbers with x
+irrational, then at least one of the numbers x, ey , or exy is transcendental.
+The above theorem is crucial in the proof of the following result.
+3.4 Theorem. Let X denote a graph. If at some non-zero time t all
+entries of the transition matrix U (t) are algebraic numbers, then the
+ratio of any two non-zero eigenvalues of X must be rational.
+Proof. Let A denote the adjacency matrix of X, and let {θ0 , . . . , θd }
+denote the eigenvalues of A. We consider a fixed pair of eigenvalues
+θr and θs . Since A is an integer matrix, the characteristic polynomial of A is a monic polynomial with integer coefficients. Therefore
+each eigenvalue of A is an algebraic integer. Furthermore, since A is
+symmetric, we decompose A as
+A=
+
+d
+X
+
+θk Ek ,
+
+k=0
+
+where each Ek is orthogonal projection onto the k-th eigenspace. This
+directly implies that
+d
+X
+U (t) =
+eθk it Ek .
+(3.1)
+k=0
+
+From this we see that the eigenvalues of U (t) are {eitθ0 , . . . , eitθd }. If
+all entries of U (t) are algebraic, then the eigenvalues of U (t) must be
+
+6
+
+algebraic. If we further suppose that θr /θs is irrational, then Theorem
+3.3 implies that one of
+{θr /θs , eitθs , eitθs (θr /θs ) }
+must be transcendental, which is a contradiction. Therefore θr /θs
+must be rational for every pair of distinct eigenvalues θr and θs of
+X.
+Restricting our consideration to regular graphs yields the following
+corollary.
+3.5 Corollary. Suppose that X is a regular graph with transition
+matrix U (t). Further suppose that H is a matrix with all algebraic
+entries such that
+U (t) = γH,
+for some non-zero time t and some γ in C. Then X must have all
+integral eigenvalues.
+Proof. By a well-known result from linear algebra, we know that for
+the complex matrix itA we have
+det(U (t)) = det(eitA ) = etr(itA) = 1.
+Under our assumption that U (t) = γH, this result implies that
+γ n det(H) = 1.
+Since H has all algebraic entries, it follows that det(H) is an algebraic number. This implies that γ is algebraic, and hence all of the
+entries of U (t) must be algebraic. Theorem 3.4 shows that the ratio of
+any two eigenvalues must be rational. Since X is regular, the largest
+eigenvalue is an integer, and so the rest of the eigenvalues of X must
+be rational. Recall that the eigenvalues of A are algebraic integers.
+The only rational algebraic integers are the integers themselves, and
+so we conclude that all of the eigenvalues of X must be integers.
+
+7
+
+4
+
+Complex Hadamards and SRGs
+
+Let X be a strongly regular graph with parameters (n, k, λ, µ) and let
+A be its adjacency matrix, with spectral decomposition
+A = kEk + θEθ + τ Eτ ,
+where k > λ ≥ τ .
+The following result of Chan [7] is instrumental in our classification
+of strongly regular graphs that admit uniform mixing.
+4.1 Theorem. Let A be the adjacency matrix of a primitive strongly
+regular graph X with eigenvalues k, θ, τ , and W = I + xA + y Ā. If W
+is a complex Hadamard matrix, then X or X̄ has one of the following
+parameter sets (n, k, λ, µ):
+(i) (4θ 2 , 2θ 2 − θ, θ 2 − θ, θ 2 − θ)
+
+(ii) (4θ 2 , 2θ 2 + θ, θ 2 + θ, θ 2 + θ)
+(iii) (4θ 2 − 1, 2θ 2 , θ 2 , θ 2 )
+
+(iv) (4θ 2 + 4θ + 1, 2θ 2 + 2θ, θ 2 + θ − 1, θ 2 + θ)
+(v) (4θ 2 + 4θ + 2, 2θ 2 + θ, θ 2 − 1, θ 2 )
+
+Moreover, Chan determines the possible values of x and y that can
+occur in each of these cases.
+
+5
+
+Uniform mixing on SRGs
+
+If we suppose a strongly regular graph X admits uniform mixing, then
+there are numbers c, x and y with |c| = |x| = |y| = 1 such that
+√
+c nU (t) = I + xA + y Ā,
+√
+and c nU (t) is a complex Hadamard matrix. Applying Chan’s results
+in the previous section, we obtain the following classification of primitive strongly regular graphs that admit uniform mixing. Our main
+result in this section follows.
+5.1 Theorem. A primitive strongly regular graph X with adjacency
+matrix A has uniform mixing if and only if one of the following holds
+(a) J − 2A is a regular symmetric Hadamard matrix of order 4θ 2
+with constant diagonal and positive row sum and θ is even.
+
+8
+
+(b) J − 2A − 2I is a regular symmetric Hadamard matrix of order
+4θ 2 with constant diagonal and positive row sum and θ is odd.
+(c) The Paley graph of order 9, which has parameters (9, 4, 1, 2).
+To prove this theorem, we consider each possible case of Theorem
+4.1 separately. First we lay some groundwork that applies to all cases.
+Recall that we have
+eiAt = eikt Ek + eiθt Eθ + eiτ t Eτ ,
+and so we can expand both sides of this equation in terms of the
+spectral decomposition. Comparing the expressions for Ek , Eθ and
+Eτ on both sides, we get the following system of equations:
+√
+(5.1)
+ceikt n = 1 + xk + y(v − k − 1)
+√
+ceiθt n = 1 + xθ + y(−θ − 1)
+(5.2)
+iτ t √
+ce
+n = 1 + xτ + y(−τ − 1).
+(5.3)
+These equations are the characterizing equations. The graph X admits
+uniform mixing if and only if a solution to the characterizing equations
+exists in t, x, y and c with |x| = |y| = |c| = 1.
+Chan shows [7, Lemma 2.2] that if X has at least 5 vertices, then
+θ +τ ∈ {0, 1, 2}. Moreover, for each value of θ +τ , Chan finds parameter sets (n, k, λ, µ) in Theorem 4.1 that can occur and also determines
+the values of x and y that can occur in the characterizing equations.
+In each case, we must also consider if the complement has uniform
+mixing ceitĀ = I + xA + y Ā. The eigenvalues of the complement are
+{v − k − 1, −θ − 1, −τ − 1}.
+The characterizing equations for the complement of X, written in
+terms of the parameters of X, are:
+√
+(5.4)
+cei(n−k−1)t n = 1 + xk + y(n − k − 1)
+i(−θ−1)t √
+n = 1 + xθ + y(−θ − 1)
+(5.5)
+ce
+√
+cei(−τ −1)t n = 1 + xτ + y(−τ − 1).
+(5.6)
+
+5.1
+
+Regular symmetric Hadamard matrices
+
+We first consider uniform mixing on strongly regular graphs with parameters given in (i) or (ii) of Theorem 4.1. If a graph X with adjacency matrix A has these parameters or the complementary parameters, then J − 2A or J − 2A − 2I, respectively, is a regular symmetric
+Hadamard matrix [4].
+
+9
+
+5.2 Lemma. Suppose X is a primitive strongly regular graph such
+that X or X has parameters given in (i) or (ii) of Theorem 4.1. Then
+X admits uniform mixing if and only if one of the following holds:
+(a) The parameters of X or X are given in (i) and θ is even.
+(b) The parameters of X or X are given in (ii) and θ is odd.
+Proof. First suppose that X is a graph with parameters (4θ 2 , 2θ 2 −
+θ, θ 2 − θ, θ 2 − θ). Chan shows that x = −1 and y = 1. The characterizing equations above reduce to
+ceiθ(2θ−1)t = 1
+ceiθt = −1
+
+ce−iθt = 1.
+
+Thus c = eiθt = ±i, so θt = π(m + 1/2) for some integer m, and
+t = π(m + 1/2)/θ and kt = (2θ − 1)π(m + 1/2). When θ is even, any
+m is a valid solution and uniform mixing occurs. These are the Latin
+square graphs Lθ (2θ). When θ is odd, no solutions occur.
+For the complement, the characterizing equations for G reduce to
+2
+
+cei(2θ +θ−1)t = 1
+
+(5.7)
+
+i(θ−1)t
+
+(5.8)
+
+ce
+
+=1
+
+cei(−θ−1)t = −1
+
+(5.9)
+
+for some |c| = 1. Thus c = e−i(θ−1)t and the first and third equations
+2
+are eit2θ t = 1 and e−i2θt = −1. Thus eiθt = ±i, so θt = π(m + 1/2)
+for some m, and t = π(m + 1/2)/θ. When θ is even, any m is a valid
+solution and uniform mixing occurs. When θ is odd, no solutions
+occur.
+If X or X has parameters (4θ 2 , 2θ 2 + θ, θ 2 + θ, θ 2 + θ), then a
+similar results holds: there are no solutions for θ even, and for θ odd
+t = π(m + 1/2)/θ is a solution for every m. These are the negative
+Latin square graphs N Lθ (2θ). The same applies to the complement:
+uniform mixing occurs when θ is even, and no solutions occur when θ
+is odd.
+There are infinite families of strongly regular graphs with these
+parameters [13].
+
+10
+
+5.2
+
+Symplectic-type graphs
+
+We turn the graphs in part (iii) of Theorem 4.1. These are the strongly
+regular graphs with parameters (4θ 2 − 1, 2θ 2 , θ 2 , θ 2 ); their eigenvalues
+satisfy θ + τ = 0. Chan shows in this case that (x, y) is one of
+(
+!
+!)
+√
+√
+2θ 2 − 3 ± i 4θ 2 − 5
+−2θ 2 + 1 ± i 4θ 2 − 1
+−1,
+,
+,1
+.
+2(θ 2 − 1)
+2θ 2
+2
+
+√
+
+2
+
+4θ −1
+Case (x, y) = ( −2θ +1±i
+, 1): The characterizing equations
+2θ 2
+reduce to
+√
+2 √
+(5.10)
+cei2θ t n = ±i n
+√
+ceiθt n = θ(x − 1)
+(5.11)
+−iθt √
+ce
+n = −θ(x − 1).
+(5.12)
+
+Equations (5.11) and (5.12) imply that e2iθt = −1 and so eiθt = ±i
+2
+and ei2θ t = (−1)θ . Then Equation (5.10) implies that c = ±i. But
+then the LHS of equation (5.11) is real while the RHS is not, a contradiction. So there are no solutions.
+The characterizing equations for the complement of X are:
+√
+√
+2
+(5.13)
+cei(2θ −2)t n = ±i n
+√
+(5.14)
+cei(−θ−1)t n = θ(x − 1)
+i(θ−1)t √
+ce
+n = −θ(x − 1).
+(5.15)
+2
+
+Equations (5.14) and (5.15) imply that ei2θt = −1 and so ei2θ t =
+(−1)θ . Then equation (5.13) implies that c = ±iei2t . Since eit is a
+4θ-th root of unity, so is cei(−θ−1)t = eit(1−θ) . On the other hand, from
+equation (5.14),
+√
+
+eit(1−θ) = √θn (x − 1) = − 2θn±i ,
+which has algebraic degree exactly four since n is not a perfect square.
+This implies that eit(1−θ) is a primitive m-th root of unity for some m
+such that φ(m) = 4, namely m ∈ {5, 8, 10, 12}. (Here φ is the Euler
+totient function.) But then it is not difficult to check that none of
+these primitive m-th roots of unity have imaginary part ±1/2θ, for
+any θ > 1. Thus there are no solutions.
+
+11
+
+2
+
+√
+
+2
+
+4θ −5
+Case (x, y) = (−1, 2θ −3±i
+): The characterizing equations
+2(θ 2 −1)
+reduce to
+p
+2 √
+(5.16)
+cei2θ t n = −2 ± i 4θ 2 − 5
+iθt √
+ce
+n = 1 − θ + y(−θ − 1)
+(5.17)
+√
+ce−iθt n = 1 + θ + y(θ − 1).
+(5.18)
+
+√
+Simplifying (5.17) plus (5.18) we have ncRe(eiθt ) = 1 − y. Taking
+the absolute value, we get Re(eiθt )2 = 1/n(θ 2 − 1). Similarly, from
+(5.17) minus (5.18) we get Im(eiθt )2 = θ 2 (4θ 2 − 5)/n(θ 2 − 1). Thus we
+can solve:
+p
+1
+(5.19)
+[±1 ± θi 4θ 2 − 5],
+eiθt = p
+n(θ 2 − 1)
+p
+1
+c= √
+[±1 ± i 4θ 2 − 5].
+(5.20)
+2 θ2 − 1
+
+We then check that there are no solutions to the characterizing equations for any choice of integer θ. For small θ we can check explicitly.
+2
+When θ is large, we examine arg(cei2θ t ) in two different ways: once
+from combining (5.19) and (5.20) and once from (5.16). We use asymptotics with error bounds to show the values are not equal. We need
+one preliminary observation: when θ is large, eiθt is close to ±i and
+so the argument of eiθt is approximately ±(π/2 − Re(eiθt )).
+5.3 Lemma. For any x on the unit circle, arg(x) = ±(π/2−Re(x))+ǫ,
+where |ǫ| ≤ Re(x)2 .
+Proof. Assume Im(x) > 0 and Re(x) < 0: the other cases are similar.
+The part of arg(x) past π/2 is the portion of the unit circle arc in the
+upper left quadrant, which is contained
+p in a rectangle with√horizontal
+width Re(x) and vertical height 1 − 1 − Re(x)2 . Since z ≥ z for
+any z ∈ [0, 1], we have
+p
+arg(x) − π/2 ≤ −Re(x) + 1 − 1 − Re(x)2
+≤ −Re(x) + 1 − (1 − Re(x)2 )
+
+= −Re(x) + Re(x)2 .
+
+On the the other hand arg(x) − π/2 ≥ −Re(x).
+
+12
+
+Now consider the arguments of eiθt and c from equations (5.19)
+and (5.20):
+θt = arg(eiθt ) = ± π2 ± 2θ12 + O( θ14 ),
+1
++ O( θ12 ),
+arg(c) = ± π2 ± 2θ
+2
+
+arg(cei2θ t ) = arg(c) + 2θ(θt)
+
+1
+= ± π2 ± 2θ
+[2 ± 1] + O( θ12 ).
+
+√
+2
+On the other hand from (5.16) we have Re(cei2θ t ) = −2/ n ≈ − θ1 ,
+and so
+2
+arg(cei2θ t ) = ± π2 − θ1 + O( θ12 ),
+
+a contradiction. Using Lemma 5.3 this asymptotic argument can be
+made exact. Details are left to the reader.
+The characterizing equations of the complement reduce to
+p
+√
+2
+cei(2θ −2)t n = −2 ± i 4θ 2 − 5
+(5.21)
+√
+(5.22)
+cei(−θ−1)t n = 1 − θ + y(−θ − 1)
+√
+(5.23)
+cei(θ−1)t n = 1 + θ + y(θ − 1).
+√ −it
+Adding/subtracting the last two equations gives nce Re(eiθt ) =
+√
+1 − y and nce−it Im(eiθt ) = θ(1 + y). Again we can solve:
+p
+1
+(5.24)
+[±1 ± θi 4θ 2 − 5]
+eiθt = p
+n(θ 2 − 1)
+p
+1
+ce−it = √
+[±1 ± i 4θ 2 − 5].
+(5.25)
+2 θ2 − 1
+Again we use an asymptotic description of the argument which can be
+made precise with Lemma 5.3. We get:
+θt = arg(eiθt ) = ± π2 ± 2θ12 + O( θ14 ),
+
+π
+± 2θ13 + O( θ15 ),
+t = ± 2θ
+
+1
++ O( θ12 ),
+arg(c) = t ± π2 ± 2θ
+2
+
+arg(cei(2θ −2)t ) = arg(c) + (2θ 2 − 2)t
+
+= ± π2 + 1θ [± 12 ± 1 ± π/2] + O( θ12 ).
+
+Meanwhile from equation (5.21),
+2
+
+arg(cei(2θ −2)t ) = ± π2 − 1θ + O( θ12 ).
+Since the two expressions are not equal, no solution exists. Thus
+there is no uniform mixing in the symplectic-type graphs or their
+complements.
+
+13
+
+5.3
+
+Regular conference matrix type graphs
+
+We treat the fourth family of graphs from Chan’s theorem. These
+have parameters (n, k, λ, µ) = (4θ 2 + 4θ + 2, 2θ 2 + θ, θ 2 − 1, θ 2 ) and
+θ + τ = −1.
+√
+−1±i
+
+(4θ 2 (θ+1)2 −1
+
+Chan found x = ±i or x =
+and in either case,
+2θ(θ+1)
+the y = x̄. The characteristic equations reduce to:
+√
+(5.26)
+ceikt n = 1 + xk + y(n − k − 1)
+iθt √
+ce
+n = 1 + xθ + x̄(−θ − 1)
+(5.27)
+√
+(5.28)
+cei(−θ−1)t n = 1 + x(−θ − 1) + x̄θ.
+From (5.27) plus (5.28) we have
+√
+nc(eiθt + ei(−θ−1)t ) = 2 − 2Re(x),
+
+so ceiθt + cei(−θ−1)t is real. Thus either ceiθt = −cei(−θ−1)t or ceiθt =
+cei(−θ−1)t . But in the first case x = y = 1, which is not a solution. We
+conclude that or ceiθt = cei(−θ−1)t = c̄ei(θ+1)t and therefore c = eit/2 .
+The same analysis shows that c = eit/2 for the complement of G as
+well.
+Case x = i, y = −i: The characteristic equations reduce to:
+√ it(k+1/2)
+ne
+= 1 − i(2θ + 1)
+(5.29)
+√ it(θ+1/2)
+ne
+= 1 + i(2θ + 1)
+(5.30)
+It follows that eit(k+θ+1) = 1, so eit is a (k + θ + 1) = (2θ 2 + 2θ + 1)-th
+root of unity and eit(θ+1/2) is a (4θ 2 + 4θ + 2)-th root of unity. But by
+√
+(5.30), noting that n is not an integer, eit(θ+1/2) has algebraic degree
+exactly 4. Since none of the primitive m-th roots of unity of algebraic
+√
+degree 4 have real part 1/ n for any θ, there are no solutions.
+For the complement of X, the characteristic equations reduce to
+√ it((n−k−1)+1/2)
+ne
+= 1 − i(2θ + 1)
+(5.31)
+√ it(θ+1/2)
+ne
+= 1 − i(2θ + 1)
+(5.32)
+So eit(n−k−1−θ) = 1 and eit is a n − k − 1 − θ = (2θ 2 + 2θ + 1)-th root
+of unity. Again there are no solutions.
+
+14
+
+−1±i
+
+√
+
+(4θ 2 (θ+1)2 −1
+
+Case x =
+2θ(θ+1)
+tic equations reduce to:
+
+: This case is similar. The characteris-
+
+p
+−2θ 2 − 2θ − 1 ± i(2θ + 1) 4θ 2 (θ + 1)2 − 1
+ne
+=
+2θ(θ + 1)
+p
+2
+√ it(θ+1/2)
+2θ + 2θ + 1 ∓ i(2θ + 1) 4θ 2 (θ + 1)2 − 1
+ne
+=
+2θ(θ + 1)
+
+√
+
+it(k+1/2)
+
+Thus −eit(θ+1/2) = eit(k+1/2) and so eit(k−θ) = −1 and eit is a 2(k−θ) =
+4θ 2 -th root of unity while eit(k+1/2) is an 8θ 2 -th root of unity. Since
+none of the primitive m-th roots of unity of algebraic degree 4 have
+2 +2θ+1
+for any θ, there are no solutions.
+real part √2θn(2θ(θ+1)
+For the complement of X, the characteristic equations are:
+p
+√ it((n−k−1)+1/2)
+−2θ 2 − 2θ − 1 ± i(2θ + 1) 4θ 2 (θ + 1)2 − 1
+ne
+=
+2θ(θ + 1)
+p
+2
+√ it(θ+1/2)
+2θ + 2θ + 1 ± i(2θ + 1) 4θ 2 (θ + 1)2 − 1
+ne
+=
+2θ(θ + 1)
+Then eit(n−k+θ) = 1, so eit is a (n − k + θ) = (2θ 2 + 4θ + 2)-th root of
+unity. Again no solutions exist.
+
+5.4
+
+Conference graphs
+
+The final family of graphs that arise in Chan’s theorem are known as
+conference graphs. A conference graph has parameters ((2θ+1)2 , 2θ 2 +
+2θ, θ 2 +θ−1, θ 2 +θ) with θ+τ = −1. Chan shows that y = x̄. As in the
+previous case, the characteristic equations reduce to (5.26), (5.27), and
+(5.28) with c = eit/2 . Then equations (5.27) minus (5.28) reduce to
+Im(x) = Im(eit(θ+1/2) ) and therefore x = eit(θ+1/2) or x = −e−it(θ+1/2) .
+There are two possible values of (x, y), namely
+)
+(
+p
+p
+−1 ± (2θ + 1)(2θ − 1)i 1 ± (2θ + 1)(2θ + 3)i
+, y = x̄.
+,
+x∈
+2θ
+2(θ + 1)
+−1±
+
+√
+
+(2θ+1)(2θ−1)i
+
+Case x =
+: In this case (5.26) reduces to ceikt =
+2θ
+π(2m+1)
+2π(2m+1)
+−1. Thus t = k+1/2 =
+, for some integer m.
+n
+
+Suppose θ is an integer. Now x = eit(θ+1/2) = eiπ(2m+1)/(2θ+1)
+or −e−it(θ+1/2) = −e−iπ(2m+1)/(2θ+1) , so x is a 2(2θ + 1)-th root of
+
+15
+
+unity. But we claim that x is a 2(2θ + 1)-th root of unity only when
+θ = 1. To see this, note that |Re(x)| = 1/2θ, while any 2(2θ + 1)th root of unity has a real part of larger absolute value. (The root
+smallest real part in absolute value is ω = eiπ(θ+1)/(2θ+1) , which has
+π
+|Re(ω)| = sin( 2(2θ+1)
+) > 1/2θ for θ > 1.) In the case θ = 1, we get
+the 3 × 3 Latin square graph, for which uniform mixing does occur.
+If θ is not an integer, then by Corollary 3.5 uniform mixing cannot
+occur on the corresponding conference graph. So there are no solutions
+if θ is not an integer.
+√
+
+(2θ+1)(2θ+3)i
+: This case is similar: we find ceikt = 1.
+2(θ+1)
+2π(2m+1)
+Thus t = π(2m+1)
+, for some integer m. So t(θ + 1/2) =
+n
+k+1/2 =
+it(θ+1/2)
+(2πm)/(2θ + 1), and x = e
+or −e−it(θ+1/2) is a (2θ + 1)-th root
+
+Case x =
+
+1±
+
+of unity. Since |Re(x)| is too small, this never occurs. Thus the only
+conference graph having uniform mixing is the 3 × 3 Latin square.
+The combination of the work above proves Theorem 5.1.
+
+6
+
+Bipartite graphs
+
+Next we consider bipartite graphs. To begin, suppose that X is a
+bipartite graph on n vertices with adjacency matrix A. We assume
+the rows and columns of A are ordered such that
+
+
+0 B
+A=
+.
+BT 0
+Since A is a block matrix, we easily compute the even and odd powers
+of A.
+
+
+(BB T )k
+0
+2k
+A =
+0
+(B T B)k
+
+
+0
+(BB T )k B
+2k+1
+A
+=
+.
+(B T B)k B T
+0
+
+16
+
+Now we derive an expression for the transition matrix of X in terms
+of these blocks.
+X 1
+U (t) = eitA =
+(itA)k
+k!
+k≥0
+
+X (−1)k t2k (BB T )k
+0
+=
+0
+(B T B)k
+(2k)!
+k≥0
+
+X (−1)k t2k+1 
+0
+(BB T )k B
++i
+0
+(2k + 1)! (B T B)k B T
+k≥0
+
+To simplify notation we write U (t) in block form as
+
+
+F1 (t) iK(t)
+U (t) =
+.
+iK T (t) F2 (t)
+We pay particular attention to the fact that F1 (t), F2 (t), and K(t) are
+all real matrices for all times t. This observation leads to the following
+result.
+6.1 Lemma. Suppose X is a bipartite graph on n > 2 vertices with
+transition matrix U (t). If X admits uniform mixing at time t, then
+√
+each entry of nU (t) is a fourth root of unity.
+Proof. If X admits uniform mixing at time t, then
+1
+|U (t)j,k | = √
+n
+for all 1 ≤ j, k ≤ n. In terms of the blocks that comprise U (t), this
+means that all of the entries of the real matrices F1 (t), F2 (t) and K(t)
+√
+√
+are equal to ±1/ n. Hence all entries of nU (t) are fourth roots of
+unity.
+Lemma 6.1 can be used to rederive Kay’s result [14] concerning the
+phase factors for perfect state transfer in bipartite graphs. In addition,
+combining Lemma 6.1 with Theorem 3.4 yields the following results.
+6.2 Lemma. If X is a bipartite graph on n > 2 vertices that admits
+uniform mixing, then the ratio of any two non-zero eigenvalues must
+be rational.
+
+17
+
+Proof. Let U (t) denote the transition matrix of X, and suppose that
+X admits uniform mixing at non-zero time t. By Lemma 6.1, we know
+that each entry of U (t) must be a fourth root of unity. Therefore, all
+the entries of U (t) are algebraic numbers. By Theorem 3.4, the ration
+of any two non-zero eigenvalues of X must be rational.
+6.3 Theorem. If X is a bipartite graph on n > 2 vertices that admits
+uniform mixing, then n is divisible by four.
+Proof. Let U (t) denote the transition matrix of X, and suppose that
+X admits uniform mixing at time t. By Lemma 6.1, we know that
+each entry of U (t) must be a fourth root of unity.
+Let Γ1 and Γ2 denote the two colours classes on X. For convenience, we assume that the vertices in Γ1 correspond to the first |Γ1 |
+rows of U (t). Let D denote the diagonal matrix of order n × n such
+that
+(
+1 if u ∈ Γ1
+Du,u =
+i if u ∈ Γ2 .
+Let H denote the matrix given by
+√
+H = nDU (t)D.
+In terms of the blocks of U (t), we see that
+
+
+√
+F1
+−K
+H= n
+.
+−K T −C2
+This implies that H is a real matrix with entries equal to 1 or −1. A
+straightforward computation also reveals that
+HH ∗ = nDU (t)DD ∗ U (t)∗ D ∗ = nI.
+Therefore H is a real Hadamard matrix. It is well known that if H is
+a real Hadamard matrix of order n such that n > 2, then n is divisible
+by four.
+The work done by Adamczak et al. [1] implies that if uniform
+mixing occurs on C2m , then m must be a sum of two squares. Here
+we show that this is true for all regular bipartite graphs.
+6.4 Theorem. If X is a regular, bipartite graph with n vertices that
+admits uniform mixing, then n is the sum of two integer squares.
+
+18
+
+Proof. Suppose X is a regular bipartite graph with transition matrix
+U (t). Further suppose that X admits uniform mixing at time t. By
+√
+Lemma 6.1, each of the entries of nU (t) is a fourth root of unity. In
+particular, this implies that
+√
+√
+nU (t)1 = (a + ib)1 and
+nU (t)∗ 1 = (a − ib)1
+for some integers a and b where 1 is the all-ones vector. Taking the
+product of both of these expressions yields
+nU (t)U (t)∗ 1 = (a − ib)(a + ib)1 = (a2 + b2 )1.
+
+Since U (t) is unitary, we know that U (t)U (t)∗ = I. We conclude that
+n = a2 + b2 .
+
+7
+
+Cycles
+
+It was conjectured by Ahmadi et al. [2] that no cycle Cn , except for
+C3 and C4 , admits uniform mixing. Adamczak et al. [1] show that
+Cn does not admit uniform mixing if n = 2u for u ≥ 3 or if n = 2u m
+where m is not the sum of two integer squares and u ≥ 1. Carlson et
+al. [6] show that uniform mixing does not occur on C5 . (This result
+also follows from the earlier result in this paper that uniform mixing
+does not occur on conference graphs.)
+Using Corollary 3.5, we show that uniform mixing cannot occur
+on any even cycle. Likewise, we see that uniform mixing cannot occur
+on Cp where p is a prime such that p ≥ 5. For both of these results,
+we use the irrationality of the eigenvalues of the underlying graph.
+First we recall that the eigenvalues of a general cycle Cn have the
+form
+θr = ω r + ω −r ,
+for 0 ≤ r ≤ n − 1 where ω = e2πi/n . If n is even, then 2 and −2
+are both simple eigenvalues of Cn , and the remaining eigenvalues each
+have multiplicity 2. On the other hand, if n is odd, then θ0 = 2 is
+the only simple eigenvalue, and the nontrivial eigenvalues each have
+multiplicity two.
+7.1 Lemma. If n = 5 or n ≥ 7, then Cn has an irrational eigenvalue.
+
+Proof. Using the notation above, we note that θ1 = 2 cos(2πi/n).
+Since n is a positive integer, the eigenvalue θ1 = 2 cos(2πi/n) is rational if and only if n ∈ {1, 3, 4, 6} (see [16].) If we assume n = 5 and
+n ≥ 7, then θ1 is an irrational eigenvalue of Cn .
+
+19
+
+Applying Corollary 3.5, we obtain the following result.
+7.2 Theorem. The cycle C4 is the unique even cycle that admits
+uniform mixing.
+Proof. Let U (t) denote the transition matrix of C2m . If m = 2,
+it is straightforward to observe that U (t) is flat at time t = π/4.
+Suppose for a contradiction that m > 2 and U (t) is flat at some time
+t. By Theorem 6.3, it follows that m must be even, and so √
+m > 3.
+Furthermore,
+by
+Lemma
+6.1
+all
+of
+the
+entries
+of
+U
+(t)
+are
+±1/
+2m or
+√
+±i/ 2m, and hence they are all algebraic. Thus by Corollary 3.5, the
+eigenvalues of C2m must be integers, which contradicts Lemma 7.1.
+Next we turn our attention to cycles of odd prime order. It is
+known that C3 admits uniform mixing at time t = 2π/9. On the other
+hand, it is known that C5 does not admit uniform mixing [6]. (This is
+also a consequence of our earlier results about conference graphs.) We
+extend these results to show that Cp does not admit uniform mixing
+for any prime p such that p ≥ 5. To obtain this result, we consider
+the following important observation due to Haagerup [12].
+7.3 Theorem. Let p denote a prime number. There are a finite number of cyclic type-II matrices of order p with constant diagonal 1.
+Haagerup’s work refers to so-called cyclic p-roots, which are equivalent to cyclic p × p type-II matrices with constant diagonal 1. Using
+Haagerup’s Theorem, we obtain the following new result.
+7.4 Theorem. The cycle C3 is the unique cycle of odd prime order
+that admits uniform mixing.
+Proof. Let p denote an odd prime such that p ≥ 5, and let U (t)
+denote the transition matrix of Cp . Suppose that Cp admits uniform
+√
+mixing at time t. This implies that pU (t) is a scalar multiple of a
+type-II matrix of order p with constant diagonal 1. By Haagerup’s
+work we know that there are a finite such number of such type-II
+matrices. The set of all cyclic type-II matrices with constant diagonal
+1 of a given order form an algebraic variety. It is well known that
+if an algebraic variety over C has a finite number of points, then the
+coordinates of each point are algebraic numbers. Therefore U (t) must
+be a scalar multiple of a matrix with all algebraic entries. In turn,
+Theorem 3.5 implies that Cp must have all integral eigenvalues. This
+contradicts the fact that Cp has an irrational eigenvalue, which we
+proved in Lemma 7.1.
+
+20
+
+8
+
+Cyclotomic number theory
+
+We recall some information about number fields related to the cyclic
+schemes. The following results are well-known. See [17], for example.
+Suppose that p is an odd prime. Let d = (p−1)/2, and let θ1 , . . . , θd
+denote the nontrivial eigenvalues of Cp . Also let φ denote the Euler
+phi function. As before, ω is the primitive p-root of unity given by
+ω = e2πi/p .
+8.1 Lemma. Each of the eigenvalues θ0 , . . . , θd can be expressed as a
+polynomial in θ1 with integral coefficients.
+Proof. First recall that θ0 = 2 is trivially a polynomial in θ1 . Next
+note that
+(ω + ω −1 )2 = ω 2 + ω −2 + 2.
+Rearranging this equation yields θ2 = θ12 − 2. More generally, for
+2 ≤ k ≤ d, we see that (ω + ω −1 )k can be expressed as an integral
+linear combination of 1, θ1 , . . . , θk−1 . By induction we conclude that
+each eigenvalue θ0 , . . . , θd can be expressed as a polynomial in θ1 with
+integral coefficients.
+Using this lemma, we obtain useful information about the smallest
+number field containing all of the eigenvalues of the cycle.
+8.2 Lemma. The extension field Q(θ1 , . . . , θd ) is isomorphic to Q(θ1 ),
+and
+[Q(θ1 ) : Q] = (p − 1)/2.
+Proof. By Lemma 8.1, we immediately see that Q(θ1 , . . . , θd ) is isomorphic to Q(θ1 ). Recall that the cyclotomic field Q(ω) is an algebraic
+extension of Q, and
+[Q(ω) : Q] = φ(p) = p − 1,
+where φ denotes the Euler phi function. Since ω is the root of a
+quadratic polynomial over Q(θ1 ) and θ1 is real, we see that [Q(θ1 ) :
+Q] = (p − 1)/2.
+Finally, we obtain a very useful theorem about the linear independence of a subset of the eigenvalues of the cycle.
+
+21
+
+8.3 Theorem. The set {1, θ1 , θ2 , . . . , θ(p−3)/2 } is linearly independent
+over Q.
+Proof. Suppose, for a contradiction, that there exists some rational
+coefficients αk for 0 ≤ k ≤ (p − 3)/2 such that
+α0 + α1 θ1 + α2 θ2 + · · · + α(p−3)/2 θ(p−3)/2 = 0,
+with at least one αk non-zero. Since we have θk = ω k + ω −k , we see
+can re-express this equation in terms of ω as
+α0 +α1 (ω+ω −1 )+α2 (ω 2 +ω −2 )+· · ·+α(p−3)/2 (ω (p−3)/2 +ω −(p−3)/2 ) = 0.
+Multiplying both sides by ω (p−3)/2 yields a polynomial equation in
+terms of ω with rational coefficients and degree at most p − 3. This
+contradicts the fact that [Q(ω) : Q] = p − 1.
+In our following work with ǫ-uniform mixing on Cp , we consider
+the scaled exponents of the eigenvalues of U (t) as elements of the
+additive group R/Z. Recall that the direct product of d copies of R/Z
+is a compact torus. Suppose that t is an element of a compact torus
+T . We say that t is a generator if the smallest closed subgroup of T
+containing t is T itself.
+8.4 Theorem (Kronecker). Let (t1 , . . . , tr ) denote an element of Rr ,
+and let t be the image of this point in T = (R/Z)r . Then t is a
+generator of T if and only if {1, t1 , . . . , tr } are linearly independent
+over Q.
+
+9
+
+ǫ-uniform mixing on Cp
+
+In this section we show that ǫ-uniform mixing occurs on cycles of prime
+length. In particular, we show in these cases that U (t) gets arbitrarily
+close to the scalar multiple of a complex Hadamard matrix.
+We rely on the viewpoint of cyclic association schemes. Let p
+denote an odd prime and consider the cycle Cp . Let d = ⌊ p2 ⌋. For
+0 ≤ r ≤ d we define the following adjacency matrices.
+(
+1 if j − k ∈ {r, −r} (mod p)
+[Ar ]j,k =
+0 otherwise.
+
+22
+
+Note that A0 is the p × p identity matrix, and A1 is the adjacency
+matrix of the cycle Cp . Let A = {A0 , . . . , Ad }. The set of matrices
+A = {A0 , . . . , Ad } form the cyclic association scheme of order p.
+It is also convenient to consider the underlying permutation matrix
+C that is the adjacency matrix of a directed cycle. We index the rows
+and columns of C with elements of Zp such that
+(
+1 if j − k ≡ 1 (mod p)
+Cj,k =
+0 otherwise.
+Let A = {A0 , . . . , Ad } denote the cyclic association scheme on p
+vertices. Since p is an odd prime, we see that A has d = (p − 1)/2
+classes. We further let {E0 , . . . , Ed } denote the spectral idempotents
+of A. We assume that these idempotents have been ordered such that
+E0 = p1 J and
+n−1
+X
+
+ω jr + ω −jr C j .
+Er =
+j=0
+
+for 1 ≤ r < ⌊n/2⌋.
+To begin our new work, we define
+F =
+
+d
+X
+
+2
+
+ω r Er ,
+
+(9.1)
+
+r=0
+
+where ω = ei2π/p .
+9.1 Lemma. The matrix F is a flat unitary matrix.
+Proof.
+First we verify that F is unitary. We do this by a direct
+computation. It is convenient to recall that
+Er2 = Er
+
+and Er Ej = 0 if r 6= j.
+
+Using these observations we see that
+!
+! d
+d
+d
+X
+X
+X
+−r 2
+r2
+∗
+Er = I.
+ω Er =
+ω Er
+FF =
+r=0
+
+r=0
+
+r=0
+
+Next we use the discrete Fourier transform Θ to show that F is flat.
+Note that for an arbitrary matrix M in C[A] there exists a unique
+
+23
+
+polynomial p(x) of degree at most p − 1 in C[x] such that M = p(C).
+Further note that Θ is defined such that
+Θ(M ) =
+
+n−1
+X
+
+p(ω j )C j .
+
+j=0
+
+Since Θ is linear, we have
+∗
+
+Θ(F )Θ(F ) =
+
+=
+
+d
+X
+
+r=0
+d
+X
+
+!
+
+r2
+
+ω Θ(Er )
+r2
+
+ω Ar
+
+r=0
+
+
+
+=
+
+p−1
+X
+j=0
+
+d
+X
+
+!
+
+d
+X
+
+ω
+
+−r 2
+
+−r 2
+
+!
+
+Θ(Er )
+
+r=0
+
+ω
+
+Ar
+
+r=0
+
+!
+
+
+
+p−1
+X
+2
+ω Cj 
+ω −j C j 
+j2
+
+j=0
+
+
+
+p−1 X
+p−1
+X
+2
+2
+
+wj −(k−j)  C k
+=
+j=0
+
+k=0
+
+=
+
+p−1
+X
+k=0
+
+
+
+p−1
+X
+2
+ω −k 
+wjk  C k
+j=0
+
+0
+
+= pC = pI.
+
+By a well-known property of the discrete Fourier transform, we know
+that Θ(F )Θ(F ∗ ) = pI implies that
+F ◦ F∗ =
+
+1
+J.
+p
+
+Therefore F is flat.
+Our goal is to show that U (t) gets arbitrarily close to a complex
+scalar multiple of F as t ranges over all real numbers. Since F is a flat
+matrix, achieving this goal implies that Cp admits ǫ-uniform mixing.
+The proof of this result relies heavily on Kronecker’s Theorem.
+9.2 Theorem. The odd prime cycle Cp admits ǫ-uniform mixing.
+Proof. Let U ′ (t) denote the scaled transition matrix given by
+U ′ (t) = e−2it U (t) = E0 + e(θ1 −2)it E1 + · · · + e(θd −2)it Ed .
+
+24
+
+(9.2)
+
+Note that U ′ (t) is a unitary matrix, and U ′ (t) is flat if and only if U (t)
+is flat. Let ǫ denote a positive real number. We proceed by showing
+that there exists some time t such that
+ǫ
+||U ′ (t) − F || < .
+2
+We consider U ′ (t) at times that are an integer multiple of 2π/p. For
+any s in Z, we see that Equation 9.2 becomes
+′
+
+U (2sπ/p) =
+
+d
+X
+
+e2s(θr −2)πi/p Er .
+
+r=0
+
+In terms of e, we express Equation 9.1 as
+F =
+
+d
+X
+
+2
+
+e2r πi/p Er .
+
+r=0
+
+Our goal is to find a time t such that the coordinates of F and U ′ (t) are
+close to the same value. In terms of the exponents of these coefficients,
+this is equivalent to finding some integer s such that 1p r 2 ≈ p1 (θr − 2)s
+in (R/Z) for 0 ≤ r ≤ d. For two elements x and y in R/Z, we define
+the distance |x − y|R/Z to be
+|x − y|R/Z = inf |x − y − k|,
+k∈Z
+
+where the norm on the right hand side of the definition is the absolute
+value of x − y − k considered as a real number.
+From Theorem 8.3, we know that
+n 1, θ1 , . . . , θd−1 are linearly indeo
+pendent over Q, and consequently 1, p1 (θ1 − 2), . . . , p1 (θd−1 − 2) is
+linearly independent over the rationals.
+By Kronecker’s Theorem (Theorem 8.4), we see that
+
+
+
+1
+1
+(θ1 − 2)s, . . . , (θd−1 − 2)s : s ∈ Z
+D=
+p
+p
+is dense in (R/Z)d−1 .
+Therefore for any δ > 0, we can find some s in Z such that
+1
+r2
+(θr − 2)s −
+<δ
+p
+p R/Z
+
+25
+
+(9.3)
+
+in (R/Z) for all 1 ≤ r ≤ d − 1. It remains to consider the coordinates
+of U ′ (t) and F with respect to Ed . Recall that for a cyclic association
+scheme we have
+θd = −1 − θ1 − θ2 · · · − θd−1 .
+
+We can use this to derive an expression for the d-th coordinate of U ′ (t)
+in terms of the first d − 1 coordinates.
+!
+d−1
+X
+1
+1
+θr s
+−3 −
+(θd − 2)s =
+p
+p
+r=1
+d−1
+
+X1
+1
+= − (2(d − 1) + 3)s −
+(θr − 2)s
+p
+p
+r=1
+
+= −s −
+
+d−1
+X
+r=1
+
+1
+(θr − 2)s.
+p
+
+Now working in R/Z, we see that the exponent of the d-th coordinate
+of U ′ (t) − F is
+d−1
+
+X1
+1
+1
+1
+(θd − 2)s − d2 = −s −
+(θr − 2)s − d2
+p
+p
+p
+p
+r=1
+
+
+d
+d−1
+X 1
+1 2
+1X 2
+r .
+(θr − 2)s − r +
+=
+p
+p
+p
+
+(9.4)
+
+(9.5)
+
+r=0
+
+r=1
+
+Note that
+d
+
+1 X 2 d(d + 1)(2d + 1)
+(p − 1)(p + 1)
+r =
+=
+p r=1
+6p
+24
+Since p is an odd prime, we know that both p − 1 and p + 1 are even,
+and exactly one of those values is divisible by 4. Therefore (p−1)(p+1)
+is divisible by 8. Since we are assuming that p 6= 3, we also know that
+p − 1 or p + 1 is divisible by 3. It follows that
+(p − 1)(p + 1)
+∈ Z.
+24
+must be an integer. We simplify Equation 9.4 in R/Z to
+d−1 
+
+X
+1
+1
+(θd − 2)s − d2 =
+p
+p
+r=1
+
+26
+
+
+1
+1 2
+(θr − 2)s − r .
+p
+p
+
+Now we use this expression and Inequality 9.3 to bound the coefficient
+d-th coordinate of U ′ (t) − F in terms of δ as follows:
+d−1
+X
+1
+1 2
+1
+1
+(θd − 2)s − d
+(θr − 2)s − r 2
+≤
+< (d − 1)δ.
+p
+p R/Z r=1 p
+p R/Z
+
+This implies that for any ǫ > 0, we can find a sufficiently small δ such
+that
+ǫ
+U ′ (2sπ/p) − F < .
+2
+It can be shown that if A and B are symmetric n×n complex matrices,
+such that
+||A − B|| ≤ γ,
+for some positive real number γ. Then
+||A ◦ A∗ − B ◦ B ∗ || ≤ 2γ.
+Therefore it follows that
+||U ′ (2sπ/p) ◦ U ′ (2sπ/p)∗ −
+
+1
+J|| < ǫ.
+n
+
+Finally, we note that U ′ (2sπ/p) ◦ U ′ (2sπ/p)∗ = U (2sπ/p) ◦ U (2sπ/p)∗ ,
+which proves that ǫ-uniform mixing occurs on Cp .
+
+10
+
+Future work
+
+Our results strongly supports the conjecture of Ahmadi et al. [2] that
+no cycle Cn , except for C3 and C4 , admits uniform mixing. In this
+paper we proved that no prime cycles, except for C3 , admit uniform
+mixing. Thus it would be desirable to relate the mixing properties of
+Cpm to mixing properties of Cm for any prime p and integer m. This
+could lead to a complete proof of Ahmadi et al.’s conjecture.
+Another area for future work is finding additional examples of
+graphs in association schemes that admit uniform mixing. Recent
+work by Chan shows that such graphs exist in certain schemes derived from n-cubes [8].
+In addition to those problems, there are still basic questions concerning uniform mixing that remain unanswered. For example, it is
+unknown whether a graph that admits uniform mixing is necessarily
+regular.
+
+27
+
+References
+[1] William Adamcak, Kevin Andrew, Leon Bergen, Dillon Ethier,
+Peter Hernberg, Jennifer Lin, and Christino Tamon. Non-uniform
+mixing of quantum walk on cycles. International Journal of
+Quantum Information, 05(06):781–793, 2007.
+[2] Amir Ahmadi, Ryan Belk, Christino Tamon, and Carolyn
+Wendler. On mixing in continuous-time quantum walks on some
+circulant graphs. Quantum Inf. Comput., 3(6):611–618, 2003.
+[3] Ana Best, Markus Kliegl, Shawn Mead-Gluchacki, and Christino
+Tamon. Mixing of quantum walks on generalized hypercubes. International Journal of Quantum Information, 06(06):1135–1148,
+2008.
+[4] A. E. Brouwer and J. H. van Lint. Strongly regular graphs and
+partial geometries. In Enumeration and Design (Waterloo, Ont.,
+1982), pages 85–122. Academic Press, Toronto, ON, 1984.
+[5] Edward B. Burger and Robert Tubbs. Making Transcendence
+Transparent. Springer-Verlag, New York, 2004.
+[6] William Carlson, Allison Ford, Elizabeth Harris, Julian Rosen,
+Christino Tamon, and Kathleen Wrobel. Universal mixing of
+quantum walk on graphs. Quantum Inf. Comput., 7(8), 2007.
+[7] Ada Chan. Complex Hadamard matrices and strongly regular
+graphs. arXiv:1102.5601 [math.CO], 2011.
+[8] Ada Chan. Complex Hadamard matrices, instantaneous uniform
+mixing and cubes. arXiv preprint arXiv:1305.5811, 2013.
+[9] Andrew M. Childs, Richard Cleve, Enrico Deotto, Edward Farhi,
+Sam Gutmann, and Daniel A. Spielman. Exponential algorithmic
+speedup by a quantum walk. In Proceedings of the Thirty-Fifth
+Annual ACM Symposium on Theory of Computing, STOC ’03,
+pages 59–68, New York, NY, USA, 2003. ACM.
+[10] Heath Gerhardt and John Watrous. Continuous-time quantum
+walks on the symmetric group. In Approximation, Randomization, and Combinatorial Optimization, volume 2764 of Lecture
+Notes in Comput. Sci., pages 290–301. Springer, Berlin, 2003.
+[11] Chris Godsil.
+State transfer on graphs.
+312(1):129–147, 2012.
+
+28
+
+Discrete Math.,
+
+[12] Uffe Haagerup. Cyclic p-roots of prime lengths p and related
+complex Hadamard matrices. arXiv:0803.2629 [math.AC], pages
+1–29, 2008.
+[13] Willem H. Haemers and Qing Xiang. Strongly regular graphs
+with parameters (4m4 , 2m4 + m2 , m4 + m2 , m4 + m2 ) exist for all
+m > 1. European J. Combin., 31(6):1553–1559, 2010.
+[14] Alastair Kay. Basics of perfect communication through quantum
+networks. Phys. Rev. A, 84:022337, Aug 2011.
+[15] Cristopher Moore and Alexander Russell. Quantum walks on the
+hypercube. In Randomization and Approximation Techniques in
+Computer Science, volume 2483 of Lecture Notes in Comput. Sci.,
+pages 164–178. Springer, Berlin, 2002.
+[16] J. M. H. Olmsted. Discussions and notes: rational values of
+trigonometric functions. Amer. Math. Monthly, 52(9):507–508,
+1945.
+[17] Pierre Samuel. Algebraic Theory of Numbers. Translated from
+the French by Allan J. Silberger. Houghton Mifflin Co., Boston,
+Mass., 1970.
+
+29
+
+

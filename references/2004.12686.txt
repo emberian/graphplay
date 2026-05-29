@@ -1,0 +1,3023 @@
+On the optimality of spatial search by continuous-time quantum walk
+Shantanav Chakraborty,∗ Leonardo Novo,† and Jérémie Roland‡
+
+arXiv:2004.12686v1 [quant-ph] 27 Apr 2020
+
+QuIC, Ecole Polytechnique de Bruxelles, Université Libre de Bruxelles
+(Dated: April 28, 2020)
+One of the most important algorithmic applications of quantum walks is to solve spatial search
+problems. A widely used quantum algorithm for this problem, introduced by Childs and Goldstone
+[Phys. Rev. A 70, 022314 (2004)], finds a marked node on a graph of n nodes via a continuous√
+time quantum walk. This algorithm is said to be optimal if it can find any of the nodes in O( n)
+time. However, given a graph, no general conditions for the optimality of the algorithm are known
+and previous works demonstrating optimal quantum search for certain graphs required an instancespecific analysis. In fact, the demonstration of necessary and sufficient conditions a graph must
+fulfill for quantum search to be optimal has been a long-standing open problem.
+In this work, we make significant progress towards solving this problem. We derive general expressions, depending on the spectral properties of the Hamiltonian driving the walk, that predict
+the performance of this quantum search algorithm provided certain spectral conditions are fulfilled.
+Our predictions are valid, for example, for (normalized) Hamiltonians whose spectral gap is considerably larger than n−1/2 . This allows us to derive necessary and sufficient conditions for optimal
+quantum search in this regime, as well as provide new examples of graphs where quantum search is
+sub-optimal. In addition, by extending this analysis, we are also able to show the optimality of quantum search for certain graphs with very small spectral gaps, such as graphs that can be efficiently
+partitioned into clusters. Our results imply that, to the best of our knowledge, all prior results analytically demonstrating the optimality of this algorithm for specific graphs can be recovered from
+our general results.
+
+I.
+
+INTRODUCTION
+
+Quantum walks, the quantum analogue of classical random walks, find widespread applications in several areas of quantum information processing [1]. In particular, they are a universal model for quantum computation
+[2, 3] and are central to the design of several quantum
+algorithms [4].
+The problem of finding a marked node in a graph, known
+as the spatial search algorithm, can be formulated as a
+continuous-time quantum walk (CTQW). In the original
+work by Childs and Goldstone [5], it was shown
+√ that
+search by CTQW can find a marked node in O( n) time
+[6] for certain graphs with n nodes such as the complete
+graph, hybercube and d-dimensional lattices with d > 4.
+This implied a quadratic speedup for the spatial search
+problem with respect to classical random walks for these
+graphs. However for lattices of d ≤ 4, a full quadratic
+speedup is lost. Since then√a plethora of results have been
+published exhibiting a O( n) running time of the Childs
+and Goldstone algorithm (henceforth referred to as the
+CG algorithm) on certain specific graphs [7–16].
+Although we state the general framework of the CG algorithm in detail in Sec. II, here we mention the algorithm
+briefly as this will aid the understanding of our contributions. Given a graph G of n nodes, the CG algorithm
+involves evolving the following search Hamiltonian
+Hsearch = Horacle + rH,
+
+∗ shchakra@ulb.ac.be
+† lfgnovo@gmail.com
+‡ jroland@ulb.ac.be
+
+(1)
+
+where r is a tunable parameter (the hopping rate of the
+quantum walk on G), H is the Hamiltonian encoding the
+structure of G (such as the graph’s adjacency matrix or
+Laplacian) and Horacle is the oracular Hamiltonian that
+singles out the marked node, which we shall denote as
+|wi [17]. Typically, the algorithm commences from the
+highest eigenvector
+of H which has a small overlap with
+√
+|wi (say ), and involves carefully choosing the value of
+r, such that evolving Hsearch for the minimum possible
+time, results in a state that has a large overlap with |wi.
+It can be shown [18] that the algorithm is optimal if it
+can√find the marked node with constant probability in
+Θ( ) time (in many cases  = 1/n as we discuss in
+Sec. II).
+Most prior results on the optimality of the CG algorithm,
+for particular graphs, have required an analysis specific to
+the underlying instance. For example in Ref. [7], the authors demonstrated, using degenerate perturbation theory that the CG algorithm can √find a marked node on
+a strongly regular graph in O( n) time, a graph that
+lacks global symmetry. Using similar techniques it was
+shown that a marked node can be found in optimal time
+on a graph with low algebraic connectivity [19]. A long
+standing open problem has been to obtain the general
+conditions for the optimality of the algorithm and in particular to quantify the necessary and sufficient conditions
+a given graph must satisfy for the algorithm to be optimal.
+A first attempt towards deriving sufficient conditions for
+the optimality of the algorithm was made in Ref. [9] by
+connecting the graph spectral properties to the algorithmic running time. Namely, the authors demonstrated
+that the algorithm is optimal if the Hamiltonian encoding the graph structure, i.e. H has a constant spectral gap
+
+2
+(without loss of generality, we assume H to have eigenvalues in the interval [0, 1], see Sec. II for details). However in the scenario where the spectral gap is no longer
+a constant, i.e, it decreases with the size of the graph,
+the results of the aforementioned work are not applicable.
+In our work, we significantly extend this result and provide the necessary and sufficient conditions for the CG
+algorithm to be optimal, for any H obeying certain general assumptions (Sec. III). The regime of validity of our
+results is defined by a spectral condition which is obeyed,
+for example, when the spectral gap of H (say ∆) is sufficiently larger than the overlap
+of the initial state with the
+√
+marked node, i.e. ∆  . To the best of our knowledge,
+this condition is general enough to encompass most prior
+works predicting optimality of the CG algorithm for specific graphs. Examples include the complete graph, hypercube [5], strongly regular graphs [7], complete bipartite graphs [8], lattices of dimension greater than four [5],
+Erdös-Renyi random graphs [9] or balanced trees [10] (for
+specific positions of the marked node).
+To prove our optimality conditions, we first obtain general results regarding the best possible performance of
+the algorithm for any given graph obeying the previously
+mentioned validity regime. Precisely, we obtain general
+expressions, depending on the spectrum of H, for the optimal value of r, the maximum possible amplitude that
+can be obtained at the marked node and the time at
+which this amplitude is reached (Theorem 2). The optimality conditions follow by imposing
+√ the maximum amplitude to be constant after a time .
+These predictions are, however, not valid for graphs with
+a sufficiently low spectral gap. Such low spectral gaps
+appear, for example, on graphs composed by highly connected clusters that are sparsely connected among each
+other, which find applications in spectral clustering [20].
+A simple example is the so-called joined complete-graph
+of n nodes: two complete graphs of n/2 nodes each,
+joined by a single edge between them (See Fig. 1b). If
+H is defined by the normalized adjacency matrix of this
+graph, the spectral gap of H is small enough to violate
+the spectral condition. However in Ref. [19], using an
+analysis tailored to this particular instance, the authors
+showed that the √
+CG algorithm can find a marked node on
+this graph in Θ( n) time.
+Such instances are characterized by the following features
+in the spectrum of H: (i) A few of the highest eigenvalues are closely spaced (nearly degenerate), implying an
+extremely small spectral gap and (ii) A large gap between the closely spaced eigenvalues and the rest of the
+spectrum. We capture these properties precisely via new
+spectral conditions and provide, in Sec. IV, a general theorem regarding the performance of quantum search on
+such graphs (Theorem 8). This leads to a sufficient condition that is able to predict optimal quantum search on
+the joined complete graph and other graphs with similar
+spectral properties.
+In Sec. V, we provide an explicit example which com-
+
+pares and contrasts the applicability of Theorem 2 and
+Theorem 8, respectively. Therein, we consider the quantum walk of a rook on a rectangular chessboard. This
+corresponds to the Cartesian product between two complete graphs, known as the Rook’s graph (See Fig. 3)
+[21, 22]. By altering the length and breadth of the chessboard (equivalently, by changing the size of the complete
+graphs) the spectral properties of the graph (namely,
+the spectral gap) can be changed. We identify different
+regimes of optimal and suboptimal quantum search, elucidating how the interplay between different choices of
+r affect the algorithmic performance. Finally, we summarize and discuss upon the results of the article in
+Sec. VI.
+
+II.
+
+PRELIMINARIES
+
+First, we describe the framework of the CG algorithm.
+Consider any graph G with a set of n vertices labelled
+{1, 2, ...n} and a Hamiltonian H, which is an Hermitian
+matrix of dimension n that encodes the connectivity of
+the underlying graph. In other words, we demand that
+H is local, i.e. its (i, j)th -entry is non-zero if and only if
+node i (or ith edge) is adjacent to node j (or j th edge) in
+G (for example, H could be proportional to the graph’s
+adjacency matrix). Then, evolution under the Hamiltonian H implements the continuous-time quantum walk
+on the graph that it encodes. Without loss of generality,
+it is assumed that H has eigenvalues in the interval [0, 1]
+[23].
+As mentioned earlier the search Hamiltonian corresponding to the CG algorithm is given by
+Hsearch = Horacle + rH.
+We require that Horacle is local so that it perturbs the
+node |wi in a way that affects only vertices (or edges)
+in its vicinity. We will focus on the original formulation
+of the CG algorithm where Horacle = |wihw| adds a local
+energy at node |wi, leaving the remaining vertices unaffected. In fact, simulating this oracular Hamiltonian
+for a time t, corresponds to O(t)-queries to the oracle
+of the Grover’s search algorithm [24]. The steps of this
+algorithm are explained in Algorithm 1.
+Algorithm 1: CG algorithm
+Choose some r > 0 such that Hsearch = |wihw| + rH.
+1) Prepare the 1-eigenstate of H.
+2) Evolve the state of 1) under Hsearch for some time
+T.
+
+We note that our formulation of the CG algorithm is
+slightly more general than that of [5], where the authors
+consider the Hamiltonian Hsearch = −rL − |wihw|, such
+that L is the Laplacian P
+of the graph [25], and choose the
+inital state |si = n−1/2 i |ii which is the 0-eigenstate of
+
+3
+L. Our formulation becomes equivalent to that of [5] if
+we set H = I − L, where L is the normalized Laplacian
+and by suitably rescaling r.
+The essential parameter in Algorithm 1 is the value of
+r, which has to be chosen judiciously so that the state
+|Ψ(T )i prepared after step 2) has a large overlap with
+the marked node
+α(T ) = |hw|Ψ(T )i|,
+
+(2)
+
+for the minimum possible T . The marked node can then
+be obtained from this final state via a measurement on
+the state-space basis, or via amplitude amplification followed by measurement.
+
+A.
+
+Running time of CG algorithm
+
+To fully quantify the cost of running the CG algorithm,
+it is important to take into account not only the cost
+of evolving the search Hamiltonian for a given time, but
+also the cost to set-up the initial state and measure the
+final state. Furthermore, in some prior works [5, 26,
+27] amplitude amplification has been used in conjunction
+with Hamiltonian evolution in order to find a marked
+node on lattices. To quantify the cost of such a procedure
+we need to introduce the cost of implementing the Grover
+oracle (the cost of evolving Horacle for constant time),
+which we denote as Cw .
+We use the following notation for the different costs.
+Setup cost S: the cost of preparing the initial state of
+the algorithm (1-eigenstate of H). [28]
+Time-evolution cost T : The cost of implementing
+the time-evolution operator eiT Hsearch . A discrete
+simulation of this operator would require O(T )
+queries to the Grover oracle [29].
+Measurement cost M: The cost of performing a measurement in the state-space basis.
+Depending on the strategy used to obtain the marked
+node from the state |Ψ(T )i, the overall cost can be
+quantified as follows (constant factors are omitted for
+simplicity):
+i) Amplitude Amplification: Applying 1/α(T ) rounds of the quantum amplitude amplification procedure [30] results in obtaining the marked node with
+constant probability. The overall running time of the CG
+algorithm along with amplitude amplification is
+Tsearch =
+
+1
+(S + T + Cw ) + M.
+α(T )
+
+(3)
+
+However, amplitude amplification is a discrete-time procedure, which implies that the overall algorithm is no
+longer continuous-time.
+
+Furthermore, as evident from Eq. (3), the setup cost
+plays a crucial role in the overall running time of the
+algorithm. In fact in prior works on the CG algorithm,
+the Setup cost S and the cost of making a measurement
+M have not been considered in order to compute the
+overall running time.
+It is important to guarantee that it is advantageous to run
+the quantum walk, as opposed to using only amplitude
+amplification on the initial state and bypassing the walk
+altogether. √If the initial state of Algorithm 1 has an
+overlap of  with |wi, the cost of the latter strategy
+is
+1
+TAA = √ (S + Cw ) + M,
+
+
+(4)
+
+where Cw is the cost of implementing the Grover oracle (evolving Horacle for constant time). Clearly for the
+CTQW to be advantageous we need TAA to be larger
+than Tsearch from Eq. (3).
+In the case of the CG algorithm, if the setup cost is
+reasonably large, such as for the applications considered
+in [31, 32], the aforementioned inequality is indeed
+satisfied and bypassing the quantum walk will invariably
+be disadvantageous. Hence, the choice of r and T
+should be such that the overhead due to amplitude
+amplification is as low as possible, or in other words
+α(T ) is as large as possible.
+
+ii) Repetition: By repeating the time-evolution followed by a measurement in the state-space basis 1/α(T )2 times would result in obtaining the marked node with a
+high probability. The overall running time of the procedure in this case is
+Tsearch =
+
+1
+(S + T + M).
+α(T )2
+
+(5)
+
+Clearly, repeating the algorithm results in the overall
+running time being quadratically slower (with respect
+to 1/α(T )) as compared to that of amplitude amplification. However, if one assumes access only to the
+time-evolution of Hsearch , then repeating this procedure
+is the only way to amplify the success probability.
+
+B.
+
+Optimality of the algorithm
+
+It is natural to ask, in this context, what is the minimum
+time needed to find the marked node for any Hamiltonian
+H. From the seminal work by Farhi and Gutmann [18],
+it is easy to obtain the following lower bound on the
+evolution time T required to find |wi
+ 
+1
+T =Ω √ .
+(6)
+
+
+4
+For vertex-transitive graphs, which informally means
+that there is no particular structure that allows to distinguish a node from any other node, we have that  = 1/n,
+√
+recovering the familiar Grover lower bound T = Ω( n)
+[33].
+As such, throughout the article we shall say that the CG
+algorithm is optimal for a given graph G if Algorithm
+1 results in a state that has a constant overlap with |wi
+after evolving for a time that
+√ matches the aforementioned
+lower bound, i.e. T = Θ(1/ ). In such a case, the overall
+search time would scale as
+ 
+Cw
+Tsearch = S + Θ √ + M,
+(7)
+
+assuming the cost √
+of implementing the walk evolution
+for time T = Θ(1/ ) is dominated by the cost Cw of
+implementing the oracle, i.e.,
+ 
+Cw
+T =Θ √ .
+(8)
+
+In this scenario, running the walk is advantageous as
+compared to simply doing amplitude amplification on the
+initial state (Eq. (4)) when the set-up cost is considerably
+larger than the cost of implementing the oracle.
+It is worth noting that in order to quantify a speedup,
+one can also compare the running time of quantum spatial search with the time required by classical random
+walks to solve the same problem. In fact, the time required by a classical random walk to find a marked node
+on any graph, known as the hitting time, is bounded as
+follows:
+1
+1
+≤ HT(w) ≤
+,
+(9)
+
+∆
+where ∆ is the spectral gap of the operator defining the
+random walk (such as the normalized adjacency matrix
+or the graph Laplacian).
+In fact, it has been established that discrete-time quantum walk search algorithms [34–36] as well as the recent
+continuous-time quantum walk search algorithm we proposed [37], can find a marked node on any graph in square
+root of the hitting time, resulting in a generic quadratic
+advantage. However, such algorithms require a larger
+Hilbert space and can be seen as quantum walks on the
+edges of the underlying graph. As such, in this article we
+shall also compare the running time of the CG algorithm
+with the hitting time of classical random walks, towards
+identifying the regimes for which a quadratic speed-up
+can be obtained as well as the limitations of this framework for quantum search.
+III.
+
+PERFORMANCE OF THE CG ALGORITHM
+
+Also let the gap between the two highest eigenvalues of
+H (spectral gap) be given by
+∆ = 1 − λn−1 .
+
+(11)
+
+It will be convenient to express the marked node in the
+basis of the eigenstates of H as
+|wi =
+
+n
+X
+
+ai |vi i
+
+(12)
+
+i=1
+
+and define the following set of parameters
+Sk =
+
+n−1
+X
+
+|ai |2
+,
+(1 − λi )k
+i=1
+
+(13)
+
+for integer k ≥ 1. These parameters depend only on the
+spectral properties of the graph and the position of the
+marked node and turn out to be crucial to understanding
+the algorithmic performance, as it is clear, for example, in
+the studies of quantum search on lattices [5] and fractals
+[13]. We note also that for vertex-transitive graphs these
+parameters depend only on the eigenvalues of H, as all
+the probabilities |ai |2 = 1/n.
+Furthermore, we impose the following spectral condition
+that defines the regime of validity of our analysis
+
+
+√
+S1 S2 p
+ < c min
+, ∆ S2 ,
+(14)
+S3
+where c is a small positive constant. The reason why
+we need to impose this condition will become clear in
+Sec. III A. In a nutshell, this condition ensures that we
+can bound the error in our perturbative analysis and furthermore, that the additive error we obtain in the final
+amplitude at the marked node is small enough for our
+predictions to be meaningful.
+In subsection III C we discuss the generality of this condition
+and prove that it is fulfilled for any graph where
+√
+ ≤ c∆. However, it is more general than that since
+it also√includes the critical case
+√ of the 4d-lattice, where
+both  and ∆ scale as Θ(1/ n).
+Our main results regarding the performance of the algorithm are the following. In subsection III A, we demonstrate that the optimal choice for r is r = S1 , provided
+the spectral condition from Eq. (14) is respected. In this
+case we show that the maximum amplitude at the solution is reached at time
+√ 
+
+1 S2
+T =Θ √
+(15)
+ S1
+and is given by
+
+In this section we derive the main results characterizing
+the performance of the CG algorithm. Let H have eigenvalues 0 ≤ λ1 ≤ λ2 ≤ · · · λn−1 < λn = 1 with the corresponding eigenvectors, |v1 i, · · · , |vn i such that
+H|vi i = λi |vi i.
+
+(10)
+
+S1
+ν≈√ .
+S2
+
+(16)
+
+Furthermore, we show that essentially the same behavior is maintained if we choose r within a window of
+
+5
+√
+|r − S1 | = O( S2 ). If r is chosen outside this interval, we show in Sec.
+√ III B that the maximum amplitude
+reached is o(S1 / S2 ), independently of
+√ the evolution
+time we choose. This implies that Θ(S1 / S2 ) is the maximum amplitude achievable for any time and any choice
+of r.
+Consequently, we can draw the following necessary and
+sufficient condition for optimal quantum search (in the
+sense discussed in Sec. II B), within the regime of validity
+of our analysis.
+Theorem 1 (Optimality of quantum search) Let
+H be such that the spectral condition from Eq. (14)
+is fulfilled.
+Then the CG algorithm is optimal iff
+√
+S1 / S2 = Θ(1).
+The proof of this result
+√ follows directly from the statements above. If S1 / S2 = Θ(1), choosing r sufficiently
+close to S1 ensures that we obtain a √
+constant amplitude
+at the marked node after T = Θ(1/ ) (see Eqs. (15)
+and (16)), matching the√lower bound in Eq. (6). On the
+other hand, since Θ(S1 / S2 ) is√the maximum amplitude
+achievable, if we have that S1 / S2 = o(1) the algorithm
+is never optimal.
+With this necessary and sufficient condition, many hitherto published results showing that this algorithm is optimal for specific graphs can be recovered , without the
+need to do a graph specific analysis [5, 7–12, 14, 15, 38–
+41]. For example,
+it is possible to see, from the fact that
+√
+√
+S1 / S2 ≥ ∆ (see Lemma 5), that search is optimal for
+any Hamiltonian H with a constant spectral gap, and
+thus recover the main result from Ref. [9]. This encompasses graphs such as Erdös-Renyi random graphs, complete bipartite graphs or strongly regular graphs. Additionally, our results also predict optimality for graphs
+such as hypercubes, lattices of dimension greater than
+four even though they do not exhibit a constant spectral
+gap.
+One can wonder whether a simpler and more intuitive
+sufficient condition for optimality can be derived from
+Theorem 1. To our knowledge, all previously known examples of√graphs whose spectral gap is large enough compared to  can be searched by quantum walk in optimal
+time (e.g.
+√ lattices of dimension d ≥ 5), so one could think
+that   ∆ is a sufficient condition for optimal quantum search. We show explicitly that this is not the case
+– there exist graphs for which the spectral√condition is
+satisfied and the spectral gap√is such that   ∆ but
+nevertheless the value of S1 / S2 decreases with the size
+of the graph which implies suboptimality. This is the
+case, for example, for the normalized adjacency matrix
+of the Rook’s graph in some regime (see Sec. V). In fact,
+this example shows that this quantum walk algorithm
+can also be slower than the square root of the hitting
+time of the corresponding classical walk.
+
+A.
+
+Performance of quantum search at the critical
+point (r ≈ S1 )
+
+Here we present one of our main results, which characterizes the performance of quantum search when the
+parameter r is close to its optimal value.
+Theorem 2 Let H be such that the spectral condition of
+Eq. (14) is obeyed, with Sk defined as in Eq. (13). By
+choosing r = S1 and
+√ 
+
+1 S2
+T =Θ √
+,
+ S1
+Algorithm
+√ 1 prepares a state |f i such that ν = |hw|f i| =
+Θ S1 / S2 .
+Proof. As defined previously, the Hamiltonian H has
+eigenvalues λi and corresponding eigenvectors |vi i. We
+denote each eigenvalue of rH as λ0i := rλi . First, we
+express the solution state |wi in terms of the eigenstates
+of H. We have
+|wi =
+
+n
+X
+
+ai |vi i,
+
+(17)
+
+i=1
+
+√
+such that |an | = . Now we find the condition for which
+a quantum state |ψi defined as
+|ψi =
+
+n
+X
+
+bi |vi i,
+
+(18)
+
+i=1
+
+is an eigenstate of Hsearch = rH +Horacle . That is,
+
+X
+
+=⇒
+
+i
+
+=⇒
+
+Hsearch |ψi = E|ψi
+
+(19)
+
+λ0i bi |vi i + hw|ψi|wi = E|ψi
+| {z }
+
+(20)
+
+X
+X
+(λ0i bi + γai )|vi i =
+Ebi |vi i.
+
+(21)
+
+=:γ
+
+i
+
+i
+
+This implies that
+bi =
+
+γai
+.
+E − λ0i
+
+(22)
+
+Note that
+γ = hw|ψi =
+
+X
+
+a∗i bi
+
+i
+
+where we substitute for bi to get
+1=
+
+X |ai |2
+.
+E − λ0i
+i
+
+(23)
+
+This equation gives us the condition for E to be an eigenvalue of Hsearch . It can be seen that the RHS of (23) is
+a monotonically decreasing function of E within each interval ]λ0i−1 , λ0i [ and λ0i are poles of this function. This
+
+6
+guarantees that each of these intervals, as well as as the
+interval ]λ0n , +∞[, contains exactly one eigenvalue.
+We are interested in finding the two largest eigenvalues
+of Hsearch . We choose r = S1 and will look for solutions
+of Eq. (23) of the form E = λ0n + δ, within the interval |δ| < c0 S1 ∆ for some small constant c0 . Indeed, we
+will demonstrate that there are two solutions within this
+interval.
+To show this, we rewrite Eq. (23) in terms of δ and choose
+r = S1 to obtain
+ X |ai |2
++
+= 1,
+δ i<n S1 ∆i + δ
+
+(24)
+
+where we used the definitions from Eqs. (30) and (33).
+Note that the spectral condition imposed in Eq. (14)
+guarantees that η is small. Using this condition we can
+show that
+S1
+η ≤ c √ ≤ c,
+S2
+
+(35)
+
+where we also used the fact that √SS1 ≤ 1 which is demon2
+strated later in Lemma 5.
+On the other hand, from (28) we have that
+  0
+F (δ+ ) =
+2η + η 02 + f (δ+ ) .
+(36)
+δ+
+
+where ∆i = λn − λi . Finding solutions of this equation is
+equivalent to finding the zeros of a function F (δ) which
+can be written as
+ X |ai |2
+F (δ) = +
+−1
+(25)
+δ i<n S1 ∆i + δ
+!
+∞
+X
+(−δ)k
+ X |ai |2
+1+
+−1
+(26)
+= +
+δ i<n S1 ∆i
+S k ∆k
+k=1 1 i
+
+Given the bound (34), we see that the RHS of (36) is
+positive if η 0 = η and negative if η 0 = −η, provided c
+and c0 are sufficiently small. This shows that indeed δ+
+is in the interval from Eq. (54). The same reasoning
+can be used to show that δ− belongs to the interval in
+Eq. (55).
+We can now verify the validity of the assumption δ+ ≤
+c0 S1 ∆, for some small constant c0 , which was necessary
+to obtain the bound in Eq. (29). We have that
+
+∞
+
+S2 δ X |ai |2 δ 2 X (−δ)k
+− 2 +
+δ
+S1
+S13 ∆3i
+∆ki S1k
+i<n
+k=0
+
+
+
+S2 δ 2
+=
+1 − 2 + f (δ) ,
+δ
+S1 
+
+δ+ ≤ δ0 (1 + |η|)
+S1 √
+(1 + c)
+≤√
+S2
+≤ c(1 + c)S1 ∆,
+
+=
+
+(27)
+(28)
+
+The term f (δ) can be seen as an error term that can be
+bounded as
+|f (δ)| ≤
+
+1
+S3 |δ|3 1
+S3 |δ|3
+.
+≤
+3
+S1  1 − |δ|
+S13  1 − c0
+
+(29)
+
+S1 ∆
+
+If this error term was neglected, the function F (δ) would
+have zeros at ±δ0 , where
+δ0 =
+
+√ S1
+√ .
+S2
+
+(30)
+
+We will see that the presence of the term f (δ) introduces
+a relative error in these solutions i.e., there are two solutions δ± in the intervals
+
+(37)
+(38)
+(39)
+
+where in the second step we used Eqs. (35) and (30)
+and in the last step we used the spectral condition (14).
+Hence, for sufficiently small c the condition δ+ ≤ c0 S1 ∆
+is verified.
+Now that we have obtained two approximate solutions
+to Eq. (23) E± = λ0n + δ± , we proceed to compute the
+overlap of the corresponding eigenstates |ψ± i with the
+marked node. From the normalization
+P 2 condition of the
+eigenstates of Hsearch , we have
+|bi | = 1. So from
+Eq. (22), we can obtain the following equation for γ± =
+hw|ψ± i
+X
+
+|γ± ai |2
+
+(40)
+2 =1
+(E± − λ0i )
+"
+#−1
+X
+
+|ai |2
+2
+=⇒ |γ± | = 2 +
+(41)
+δ± i<n (E± − λ0i )2
+
+−1
+2
+X
+|ai |
+
+ 
+=⇒ |γ± |2 =  2 +
+
+2  . (42)
+δ± i<n 2 2
+δ±
+S1 ∆i 1 + S1 ∆i
+i
+
+δ+ ∈ [(1 − η)δ0 , (1 + η)δ0 ]
+δ− ∈ [−(1 + η)δ0 , −(1 − η)δ0 ],
+where the relative error is given by
+√
+S3 
+η = 3/2 .
+S2
+
+(31)
+(32)
+
+(33)
+
+To demonstrate this let us focus on the interval given by
+Eq. (54) and show that F (δ) has a zero in this interval (an
+analogous derivation can be done for the other interval
+in Eq. (55)). If we take δ+ = δ0 (1 + η 0 ), where |η 0 | ≤ η
+we can bound |f (δ+ )| as
+|f (δ+ )| ≤
+
+S3 δ03 (1 + η)3
+η(1 + η)3
+≤
+,
+3
+S1 (1 − c0 )
+(1 − c0 )
+
+(34)
+
+±
+Replacing
+ the values of δ and neglecting terms scaling
+as Θ η 2 we obtain
+
+S12
+(1 + Θ(η))
+2S2
+S1
+=⇒ |γ± | = √
+(1 + Θ(η))
+2S2
+|γ± |2 =
+
+(43)
+(44)
+
+7
+Without loss of generality we can choose the eigenbasis
+of Hsearch such that the overlaps γ± are positive. Furthermore, we can calculate the values of b±
+n = hψ± |vn i
+from Eq. (22), which yields
+an
+.
+(45)
+b±
+n = γ±
+δ±
+Substituting the values of δ± and γ± , we obtain
+that,
+1
+b±
+n = ± √ (1 + Θ(η)).
+2
+
+(46)
+
+So the starting state can be written as
+|vn i =
+
+|ψ+ i − |ψ− i
+√
++ |Φi,
+2
+
+Proof. The proof of this result follows from the fact
+that, for any r within this interval, we still have that
+the value of |δ± | = Θ(δ0 ). More precisely, by rewriting
+Eq. (28) for arbitrary r we have
+
+
+
+
+
+δ S1
+S2 δ 2
+F (δ) =
+1+
+−1 − 2
+(53)
+δ
+ r
+r 
+which will have two zeros in the intervals
+h
+i
+(+)
+(+)
+δ+ ∈ (1 − η)δ0 , (1 + η)δ0
+h
+i
+(−)
+(−)
+δ− ∈ −(1 + η)δ0 , −(1 − η)δ0 ,
+where
+
+(48)
+(49)
+
+√
+
+Thus after a time T = 2δπ0 = Θ( √1 SS12 ), up to a global
+phase, we end up in the state
+|f i =
+
+(55)
+
+(47)
+
+where |Φi is an unnormalized quantum state such that
+k|Φik ≤ Θ(η).
+So evolving |vn i under Hsearch for a time t results
+in
+e−iHsearch t |vn i
+
+0
+1
+= √ e−iλn t e−iδ+ t |v+ i − e−iδ− t |v− i + Θ(η).
+2
+
+(54)
+
+(±)
+δ0 =
+
+√
+S1 
+√
+S2
+
+β
+±
+2
+
+r
+
+β2
+1+
+4
+
+!
++ O()
+
+(56)
+
+which is of the same order of the value δ0 from Eq. (30).
+Hence, with analogous arguments to those used in the
+proof of Theorem 2 we conclude that a deviation to
+the optimal value of r as in Eq. (52), only changes the
+maximum amplitude and the evolution time needed to
+reach this amplitude by constant factors.
+
+
+|v+ i + |v− i
+√
++ |Φ0 i,
+2
+
+such that k|Φ0 ik ≤ Θ(η). The overlap of |f i with the
+solution state is given by
+ν = |hw|f i|
+
+ √ 
+
+
+S1
+S2
+S1
+=√
+1+Θ η
+=Θ √
+,
+S1
+S2
+S2
+
+(50)
+(51)
+
+where we have used the spectral condition (14) which
+ensures that
+√
+√
+S2
+S3
+η
+=
+≤ c.
+S1
+S1 S2
+
+B.
+
+Previously, we have established that Algorithm
+1 pre√
+pares a state with an overlap of Θ(S1 / S2 ) with the
+marked vertex for any choice of r within the interval
+h
+p 
+p i
+r∗ ∈ S1 − Θ
+S2  , S1 + Θ
+S2  ,
+(57)
+after a time
+√ 
+
+1 S2
+T =Θ √
+.
+ S1
+
+
+Subsequently, we show that essentially the same behavior
+is maintained if we choose any r within a small enough
+interval around S1 .
+Theorem 3 Let H be such that the spectral condition of
+Eq. (14) is obeyed and r be chosen such that
+p
+|r − S1 | ≤ |β| S2 ,
+(52)
+for some small constant β such that |β|  1. After a
+time
+√ 
+
+1 S2
+T =Θ √
+,
+ S1
+Algorithm
+√ 1 prepares a state |f i such that ν = |hw|f i| =
+Θ S1 / S2 .
+
+Failure of the algorithm away from r ≈ S1
+
+In this section we prove that for any choice of r outside
+the window mentioned in √
+Eq. (57), the amplitude of the
+algorithm is less than S1 / S2 , irrespective of T .
+Theorem 4 For any r ≥ 0, such that r ∈
+/ r∗ ,
+
+
+S1
+−iHsearch T
+|hw|e
+|vn i| ≤ o √
+,
+S2
+∀T ≥ 0.
+Proof. In order to derive this, we require all the eigenvalues and eigenvectors of Hsearch . As such we consider
+that Hsearch has eigenvalues En > En−1 > · · · ≥ E1 ,
+such that Hsearch |ψi i = Ei |ψi i. As before, we consider
+
+8
+that the eigenvectors and corresponding eigenvalues of H
+are λi and |vi i, respectively.
+Then for 1 ≤ α ≤ n let
+n
+X
+(α)
+|ψα i =
+bi |vi i,
+
+(58)
+
+i=1
+
+and define
+γα = hw|ψα i.
+
+2
+δ+
+.
+
+Substituting this into Eq. (67), we get
+
+=⇒ |γn |2 ≤
+
+2δ+
+|hw|e−iHsearch t |vn i| ≤ √
+
+
+(59)
+
+So, by using the fact that Hsearch |ψi i = Ei |ψi i, we obtain
+(α)
+bi =
+
+Let En = r + δ+ and ∆j = 1 − λj . From Eq. (62) we
+have
+1
+
+≥ 2
+(68)
+2
+|γn |
+δ+
+
+γα ai
+, 1 ≤ α ≤ n.
+Eα − rλi
+
+n−1
+X
+
+|aj |2
++
+=1
+δ+ j=1 En − r + r∆j
+
+
+S1
++
+>1
+δ+
+r
+r
+=⇒ δ+ <
+.
+r − S1
+
+For all 1 ≤ α ≤ n, we use the definition of γα in Eq. (59)
+(α)
+and the expression for bi in Eq. (60) to obtain
+|ai |2
+= 1.
+F (Eα ) :=
+Eα − rλi
+i=1
+From the normalization condition,
+every α, we also obtain that
+
+(α) 2
+i |bi |
+
+P
+
+(61)
+
+= 1, for
+
+n
+X
+|ai |2
+=
+.
+|γα |2
+(Eα − rλi )2
+i=1
+
+1
+
+(62)
+
+(70)
+
+Next using the fact that F (En ) = 1 (Eq. (61)), we obtain
+an upper bound on δ+ as follows
+
+(60)
+
+n
+X
+
+(69)
+
+=⇒
+
+(71)
+(72)
+(73)
+
+Next we substitute the upper bound on δ+ into Eq. (70)
+to obtain
+√
+2 r
+.
+(74)
+|hw|e−iHsearch t |vn i| ≤
+S1 − r
+√
+For any r = S1 + ω(S2 ), we indeed obtain that
+
+
+S1
+|hw|e−iHsearch t |vn i| ≤ o √
+.
+(75)
+S2
+
+Now,
+hw|e
+
+−iHsearch t
+
+|vn i =
+
+X
+
+e
+
+−iEα t
+
+hw|ψα ihψα |vn i
+
+(63)
+
+α
+
+=
+
+√ X −iEα t
+
+e
+γα b(α)∗
+n
+
+(64)
+
+α
+
+=
+
+√ X |γα |2 e−iEα t
+
+,
+Eα − r
+α
+
+(65)
+(α)
+
+where in the last line we have replaced the value of bn
+from Eq. (60).
+Note
+√ that from the condition that the amplitude at t = 0
+is  we obtain
+n
+X
+
+|γα |2
+= 1.
+E −r
+α=1 α
+
+We first use Eq. (65) and Eq. (66) to
+
+√
+2 |γn |2 √
+−iHsearch t
+|hw|e
+|vn i| ≤
+− .
+En − r
+
+From Eq. (59), it is easy to obtain that
+|γn−1 |2 ≤
+
+2δ− √
+|hw|e−iHsearch t |vn i| ≤ √ + 
+
+
+(77)
+
+(78)
+
+Here we use the fact that F (En−1 ) = 1 to obtain an
+upper bound on δ− . We have,
+−
+
+n−1
+X
+
+|aj |2
++
+=1
+δ− j=1 −δ− + r∆j
+
+
+S1
++
+<1
+δ−
+r
+r
+=⇒ δ− <
+.
+S1 − r
+=⇒ −
+
+(67)
+
+2
+δ−
+.
+
+
+This gives us
+
+(66)
+
+Now we shall consider the following two cases, each of
+which we treat differently: (i) When r > r∗ and (ii)
+r < r∗ .
+(i) r > r∗ :
+obtain that
+
+(ii) r < r∗ : In this region, the proof is similar in
+spirit to the case where r > r∗ . Here we can bound
+the amplitude by bounding the value of δ− where
+En−1 = r − δ− .
+In fact as before, using Eq. (65) and Eq. (66) to obtain
+that
+√
+2 |γn−1 |2 √
+−iHsearch t
++ .
+(76)
+|hw|e
+|vn i| ≤
+δ−
+
+[∵ δ− < r∆]
+
+(79)
+(80)
+(81)
+
+9
+We now substitute the upper bound on δ− into Eq. (78)
+to obtain
+√
+√
+2 r
++ .
+(82)
+|hw|e−iHsearch t |vn i| ≤
+r − S1
+√
+Thus any r = S1 −ω(S2 ), we indeed obtain that
+
+
+S1
+,
+(83)
+|hw|e−iHsearch t |vn i| ≤ o √
+S2
+where in the last
+√ line we √use the fact that we are in a
+regime where  = o S1 / S2 .
+This concludes the proof.
+
+
+
+C. Validity of the spectral condition and
+implications to algorithmic performance
+
+We have seen that the maximum amplitude√ at the
+marked node is determined by the ratio S1 / S2 and
+hence it is important to obtain upper and lower bounds
+on this quantity, given any H. We do so via the following
+lemma:
+
+Lemma 5 If S1 , S2 and  are defined as in Lemma 2,
+then
+p
+
+S1
+∆(1 − ) ≤ √ ≤ 1.
+S2
+
+Proof. The lower bound is obtained in a straightforward manner. Observe that
+P
+|ai |2
+S1
+i<n 1−λi
+√ = qP
+(84)
+|ai |2
+S2
+i<n (1−λi )2
+s
+√ 
+X |ai |2
+p
+≥ ∆
+≥ ∆(1 − ) = Θ ∆ , (85)
+1 − λi
+i<n
+It is possible to show that this bound is in fact tight. For
+example, we can construct a normalized Hamiltonian
+for which |ai |2 = 1/n [42] and the spectrum is such that:
+• there is one eigenvector with eigenvalue 1.
+√
+• there are Θ(n ∆) eigenvectors with eigenvalue
+1 − ∆.
+√
+• there are Θ(n(1 − ∆)) eigenvectors with eigenvalue 0.
+√
+It √
+can be seen in this case the quantity S1 / S2 =
+Θ( ∆).
+
+To prove the upper bound, we show that S12 /S2 ≤ 1, for
+which it suffices to prove that
+!2
+X |ai |2
+X |ai |2
+2
+S2 − S1 =
+−
+> 0.
+(1 − λi )2
+1 − λi
+i<n
+i<n
+The left hand side of this inequality can be written
+as
+
+X  |ai |2 |ak |2
+X |ai |2
+|ai |2 |ak |2
+2
++
+−
+.
+|an |
+(1 − λi )2
+(1 − λi )2
+(1 − λi )(1 − λk )
+i<n
+i,k<n
+
+Clearly, the first term is always non-negative so we now
+show that the second term is also non-negative. The
+second term can be written as
+
+X  |ai |2 |ak |2
+|ai |2 |ak |2
+−
+=
+(1 − λi )2
+(1 − λi )(1 − λk )
+i,k<n
+
+
+|ai |2 |ak |2
+1 X |ai |2 |ak |2
+−
++
+2
+(1 − λi )2
+(1 − λi )(1 − λk )
+i,k<n
+
+
+1 X |ai |2 |ak |2
+|ai |2 |ak |2
+−
+=
+2
+(1 − λk )2
+(1 − λi )(1 − λk )
+k,i<n
+
+X |ai |2 |ak |2 
+1
+1
+2
++
+−
+2
+(1 − λi )2
+(1 − λk )2
+(1 − λi )(1 − λk )
+i,k<n
+
+
+1 X
+(λk − λi )2
+ ≥ 0.
+= 
+|ai |2 |ak |2
+2
+(1 − λi )2 (1 − λk )2
+i,k<n
+
+√
+This implies that S12 /S2 ≤ 1 and hence S1 / S2 ≤ 1.
+This is saturated (up to O(1/n) terms), for example, if
+H is the normalized adjacency matrix of the complete
+graph.
+
+
+Furthermore, we need to understand the validity of
+the spectral condition imposed in Eq. (14). For this, it
+will be useful to write a weaker condition in terms of the
+spectral gap ∆. From the definition of the quantities
+Sk (see Eq. (13)) it is possible to see that S2 ≥ ∆S3
+and S1 , S2 √
+≥ 1. Furthermore, from Lemma 5 we have
+that S1 ≤ S2 . Hence, we can bound the RHS of the
+spectral condition as
+
+
+S1 S2 p
+c min
+, ∆ S2 ≥ c∆S1 ≥ c∆.
+(86)
+S3
+This
+√ implies that our analysis is valid for any graph with
+ ≤ c∆ i.e., with a sufficiently large spectral gap compared to the overlap of the initial state with the marked
+node. For example, for d-dimensional lattices the spectral gap is ∆ ∼ n−2/d and  = 1/n and so it is easy to
+see from the bound in Eq. (14) and (86) that the spectral
+condition is satisfied for lattices of dimension larger than
+5. In this scenario, we have that both S1 and S2 are constants [5] and so we recover the result that marked node
+
+10
+√
+can be found in Θ( n) time in such a case as demonstrated by Childs and Goldstone. A similar behaviour
+appears in certain fractal lattices. The scaling of the gap
+depends on the spectral dimension ds as ∆ ∼ n−2/ds and
+the coefficients S1 and S2 are constant for spectral dimension larger than 4 [43]. Hence, it can be shown that
+quantum search is optimal in this regime [13].
+We nottice, in addition, that for regular lattices the performance of quantum search for the critical case d = 4
+is also
+√ recovered. For 4d-lattices, we have that ∆√ =
+Θ(1/ n), S1 = Θ(1), S2 = Θ(log n) and S3 = Θ( n)
+[5]. As such the spectral condition is satisfied. Thus,
+the amplitude
+of the
+√
+√ final state with the solution
+√ node
+is S1 / S2 = Θ(1/ log n) after a time T = Θ( n log n).
+It can be seen, however, than for dimensions 2 and 3
+where the algorithm has been shown to be suboptimal
+[5], the spectral condition is violated and our analysis
+fails.
+On the other hand, there exist graphs for which
+√ the CG algorithm can be demonstrated to run in Θ( n) time, even
+though the spectral condition is violated. In the next section, we show how a different analysis helps capture the
+algorithmic performance on such instances.
+IV. QUANTUM SEARCH ON GRAPHS WITH
+QUASI-DEGENERATE HIGHEST EIGENVALUES
+
+In this section, we begin by considering examples of
+graphs for which the CG algorithm runs optimally even
+though their normalized adjacency matrix violates the
+spectral condition in Eq. (14).
+An example of this is the following vertex-transitive
+graph, which we shall refer to as a bridged-complete
+graph: two complete graphs of n/2 nodes such that every node in one complete graph is connected to the corresponding node in the other (See Fig. 1a). This is a
+particular case of the Rook’s graph which we discuss in
+Sec. V. The normalized adjacency matrix of this graph (i)
+
+has an extremely small spectral gap (∆ = Θ n−1+o(1) )
+and (ii) there exists a constant gap between the first two
+eigenvalues and the rest of the spectrum. The spectral
+condition is violated, since
+
+
+√
+S1 S2 p
+min
+, ∆ S2 = Θ()  ,
+(87)
+S3
+implying that Theorem 2 is not applicable for analyzing
+the algorithmic performance for this graph.
+However, intuitively the quantum walk search algorithm
+should run optimally for the bridged-complete graph.
+The quantum walk starts with an equal superposition
+of all nodes and, if we neglect the effect of the bridges
+connecting the two complete graphs, it is expected to be
+able to find a node marked in any of the two
+√ complete
+graphs of n/2 nodes with probability 1/2 in ∼ n/2 time.
+Moreover, since there is a bridge connecting each node
+in one complete graph to another node in the other, the
+walker can transition between any of the two complete
+
+(a)
+
+(b)
+
+FIG. 1: (a) The bridged-complete graph is a special case of
+a Rook’s graph with n1 = 2 and n2 = n/2. This corresponds
+to two complete graphs of n/2 edges such that each node in
+one complete graph is connected to the corresponding node
+in the other. (b) Joined-complete graph: two complete graphs
+of n/2 nodes each are connected by a single edge.
+
+graphs. So one√expects that a marked node would be
+obtained in Θ( n) time. A very similar example, with
+analogous spectral properties is the joined-complete graph
+(two complete-graphs joined by a single bridge, Fig 1b).
+This example was used in Ref. [19] to show that large
+spectral gaps are indeed not necessary for optimal quantum search.
+Thus, for both these graphs, we find that the spectrum of
+their normalized adjacency matrix satisfies the following
+two properties: (i) A few of the highest eigenvalues are
+closely spaced (nearly degenerate) and (ii) there exists a
+large gap between these highest eigenvalues and the rest
+of the spectrum (see Fig. 2). We call the space spanned
+by the eigenvectors corresponding to the closely-spaced
+eigenvalues as quasi-degenerate. Generally such graphs
+find applications in spectral clustering as they can be
+partitioned into clusters [20].
+We show here that a modification of the analysis done
+in Sec. III, which explicitly takes into account this quasidegeneracy of the highest eigenvalues, allows us to construct spectral conditions which are sufficient to predict
+whether the CG algorithm is optimal for Hamiltonians
+that satisfy the aforementioned properties. In particular, these conditions will allow us to predict optimality
+of quantum search for graphs such as the joined complete,
+or the bridged complete graph.
+Formally, consider a Hamiltonian H such that its eigenvalues are
+0 ≤ λ1 ≤ · · · ≤ λn = 1,
+such that
+H|vi i = λi |vi i.
+Let us denote by D the space spanned by the D eigenstates corresponding to the highest eigenvalues of H,
+
+11
+i.e.
+D = Span{|vn i, · · · , |vn−D+1 i},
+
+(88)
+
+such that |D| = D. Consequently, we refer to the space
+spanned by the remaining eigenstates by D̄. Furthermore, we denote the gaps between the eigenvalues λn = 1
+and λn−D+1 as
+∆D = 1 − λn−D+1 ,
+
+(89)
+
+and the gap between the λn = 1 and λn−D as
+∆ = 1 − λn−D ,
+
+(90)
+
+as depicted in Fig. 2. Our analysis aims at predicting
+√ the
+algorithmic performance in cases where ∆D   and
+∆ is sufficiently large, for example, when ∆  . Hence,
+we say that the D largest eigenvalues are nearly degenerate or quasi-degenerate. The precise spectral properties
+that the Hamiltonian H must fulfil are stated precisely
+in terms of a new spectral condition later on. Also, note
+that D = 1 corresponds to the non-degenerate case considered in Theorem 2 with ∆ being the spectral gap of
+H.
+We demonstrate the algorithmic performance for such instances in the following subsections in two steps. We first
+assume that D is completely degenerate, i.e. all eigenstates in D have eigenvalue one (∆D = 0) and find the
+evolution time and final amplitude of the algorithm based
+on this assumption (Subsec. IV A) [44]. Next, we demonstrate that, given certain conditions on ∆D , the algorithmic dynamics for the aforementioned case is the same
+as when D is completely degenerate, up to some small
+error.
+
+A.
+
+Performance of the CG algorithm when D is
+degenerate
+
+In order to analyse graphs with a D-degenerate highest
+eigenvalue (∆D = 0), it will be useful to define the following quantities
+Sk,D̄ =
+
+n−D
+X
+
+|ai |2
+,
+(1 − λi )k
+i=1
+
+√
+In addition, we define  = |hw|vn i| = |an | as before,
+except that in this case |vn i can be any state in the degenerate subspace D. We introduce the following spectral
+condition, analogous to the one in Eq. (14), in terms of
+the Sk,D̄ parameters
+
+
+S1,D̄ S2,D̄ q
+√
+D ≤ c min
+, ∆ S2,D̄ .
+(93)
+S3,D̄
+Our result regarding the performance of the quantum
+search algorithm is the following.
+Theorem 6 Let H be such that its largest D highest
+eigenvalues are degenerate and the spectral condition of
+Eq. (93) is obeyed, with Sk,D̄ defined as in Eq. (91). By
+choosing r = S1,D̄ and
+!
+p
+S2,D̄
+1
+T =Θ √
+,
+D S1,D̄
+
+(91)
+
+where k ≥ 1. These parameters are similar to Sk defined in Eq. (13), except that the sum excludes all the D
+degenerate eigenvalues (note that the quantities Sk are
+not defined if there is degeneracy of the largest eigenvalue).
+√
+Furthermore, we define D as the overlap of the solution with the D subspace. If the solution state |wi is
+expressed in the eigenbasis of H as in Eq. (12), this is
+given by
+X
+D =
+|ai |2 .
+(92)
+i∈D
+
+FIG. 2: The analysis of Sec. IV is tailored to the study
+of quantum search on graphs whose spectrum exhibits
+the features displayed in this figure. A small number D
+of quasi-degenerate eigenvalues lie close to the maximum
+value 1, within an energy gap ∆D . The next largest
+eigenvalue has an energy 1 − ∆, where ∆  ∆D . Such
+spectral features appear, for example, in the graphs of
+Fig 1 or, more generally, in graphs composed by highly
+connected clusters that are sparsely connected to each
+other.
+
+Algorithm 1, starting from any one of the 1-eigenstates
+of H, denoted by |vn i, prepares a state |f i such that
+!
+r
+ S1,D̄
+p
+ν = |hw|f i| = Θ
+.
+(94)
+D S2,D̄
+Proof. Let the solution state |wi be expressed in the
+eigenbasis of H as in Eq. (12). It will be convenient to
+consider a rotated basis for the degenerate subspace D
+such that a single eigenstate, defined as
+1 X
+(1)
+|vD i = √
+aj |vj i,
+D
+j∈D
+
+(95)
+
+12
+contains the whole overlap of this subspace with |wi, i.e.
+√
+(1)
+|hw|vD i| = D . We complete the basis with the states
+(j)
+(l) (m)
+|vD i, 2 ≤ j ≤ D, such that hvD |vD i = δl,m for any
+l, m ∈ {1, ..., D}.
+(j)
+We note that this choice guarantees that hw|vD i = 0,
+for 2 ≤ j ≤ D. This implies that these are eigenstates of
+Hsearch with eigenvalue 1, since
+(j)
+
+(j)
+
+(j)
+
+Hsearch |vD i = H|vD i = |vD i,
+
+(96)
+
+for 2 ≤ j ≤ D. This gives us a set of D − 1 eigenstates
+which do not play a role in the computation of the final
+amplitude. To see this, let us first express the initial state
+|vn i [45] as
+D
+X
+
+|vn i =
+
+(j)
+
+(97)
+
+p
+
+/D . We can now
+
+αj |vD i,
+
+j=1
+
+where
+write
+
+PD
+
+2
+j=1 |αj | = 1 and α1 =
+
+hw|eiHsearch T |vn i =
+
+p
+
+(1)
+
+/D hw|eiHsearch T |vD i,
+
+given by Eq. (125).
+
+One can easily see that for D = 1, || = |D |, S1,D̄ = S1
+and S2,D̄ = S2 we recover the statement of Theorem 2.
+However, for D > 1 there is, in general, no way to have
+|| = |D | as this would assume we are able to prepare
+(1)
+the state |vD i from Eq. (95), which depends on w via
+the overlaps ai . Given this, a possible strategy would
+be to choose |vn i as a random state in the degenerate
+subspace D, in which case the expected value of /D
+would be 1/D.
+Similarly to Theorem 3, it can be shown that the same algorithmic performance is maintained by choosing r such
+that |r − S1,D̄ |  D S2,D̄ . An analogous derivation
+to that of Theorem 4 shows that any choice of r such
+that
+h
+q
+
+q
+i
+r 6∈ S1,D̄ − Θ
+S2,D̄ D , S1,D̄ + Θ
+S2,D̄ D ,
+(103)
+leads to a maximum amplitude of
+r
+
+(98)
+
+o
+
+(j)
+using Eq. (96) and the fact that hw|vD i = 0, for 2 ≤ j ≤
+
+D.
+(1)
+Hence, to analyse the amplitude hw|eiHsearch T |vD i it is
+enough to consider the dynamics in the subspace
+n
+o
+(1)
+V = span |vD i, |vi i, i ∈ {1, ..., n − D} .
+(99)
+
+p
+T =Θ
+
+!
+
+S2,D̄ 1
+,
+√
+S1,D̄
+D
+
+S
+p 1,D̄ = Θ(1),
+S2,D̄
+
+(100)
+
+where PV is the projector in the V subspace. Note that
+the Hamiltonian H 0 = PV HPV has a single eigenvalue
+(1)
+1 (the state |vD i) and a spectral gap ∆. The only difference with respect to the analysis in Sec. III is that
+its dimension is n − D + 1. Hence, we can apply Theorem 2 by replacing the parameters Sk by Sk,D̄ defined
+in Eq. (91) as well as replacing the spectral condition of
+Eq. (14) by the one in Eq. (93). This implies that, by
+0
+choosing r = S1,D̄ and evolving Hsearch
+for time
+(101)
+
+(1)
+
+with initial state |vD i, results in a state that has an
+overlap with the solution
+!
+S1,D̄
+iHsearch T (1)
+|hw|e
+|vD i| = Θ p
+.
+(102)
+S2,D̄
+Finally, replacing this amplitude in Eq. (98) we obtain
+that after this time the amplitude |hw|eiHsearch T |vn i| is
+
+!
+ S1,D̄
+p
+.
+D S2,D̄
+
+(104)
+
+This implies the following necessary and sufficient conditions for optimality for Hamiltonians with degenerate
+highest eigenvalues. Provided that the spectral condition in Eq. (93) holds, we obtain that the algorithm is
+optimal, in the sense discussed in Sec. II B, if and only
+if
+
+We do this by applying the same techniques of Sec. III
+for the projected search Hamiltonian
+0
+Hsearch
+= PV Hsearch PV = |wihw| + PV HPV ,
+
+
+
+(105)
+
+and
+amplitude of
+p D = Θ(1), which ensures that an
+√
+/D = Θ(1) after a time T = Θ(1/ ). More generally, if D is not constant and provided Eq. (105) holds,
+we obtain an amplitude
+r
+
+ν∼
+,
+D
+after a time
+
+
+1
+T =Θ √
+.
+D
+p
+Hence, from Eq. (3), using D / rounds of quantum
+amplitude amplification would also result in finding the
+marked vertex in time
+r
+D
+Cw
+Tsearch =
+S + √ + M,
+(106)
+
+
+which is similar to the optimal performance except that
+there
+is a multiplicative overhead in the set-up cost of
+p
+D /.
+
+13
+Performance of the CG algorithm when D is
+quasi-degenerate
+
+B.
+
+Moreover, we have that
+deg
+
+deg
+
+In this subsection, we explicitly calculate an upper bound
+on the error of the predicted performance of the CG algorithm when ∆D , defined in Eq. (89), is larger than 0.
+In this case, we write H in its spectral form as
+X
+X
+X
+H=
+|vj ihvj | +
+λj |vj ihvj | +
+(λj − 1)|vj ihvj |.
+j∈D
+
+j∈D
+
+j/
+∈D
+
+e−iT Hsearch e−iT Herr = e−iT Hsearch (I − iT Herr + · · · )
+(117)
+deg
+
+= e−iT Hsearch + O(T kHerr k) (118)
+deg
+
+= e−iT Hsearch + O(r∆D T ).
+
+The error in the approximation can be bounded by combining Eq. (114) and Eq. (118) as
+
+(107)
+This in turn implies that the search Hamiltonian Hsearch
+can be split as
+deg
+Hsearch = Hsearch
++ Herr ,
+
+j/
+∈D
+
+(109)
+and
+Herr = r
+
+X
+
+(λj − 1)|vj ihvj |.
+
+deg
+
+e−iT Hsearch =e−iT Hsearch + ηqd ,
+
+(120)
+
+√
+
+ηqd = O r∆D max D T 2 , T
+
+√
+= O r∆D D T 2 ,
+
+(121)
+
+with
+(108)
+
+deg
+where Hsearch
+corresponds to the search Hamiltonian assuming that eigenspace D of H is exactly degenerate with
+all eigenvalues in D equal to 1, i.e.
+
+
+X
+X
+deg
+Hsearch
+= |wihw| + r
+|vj ihvj | +
+λj |vj ihvj |
+j∈D
+
+(110)
+
+√
+where in the last step we assumed T ≥ 1/ D .
+
+We can quantify the error caused by neglecting Herr in
+the time evolution of Hsearch for time T via the Trotter
+formulas [46]. This leads to the following Lemma.
+deg
+deg
+Lemma 7 Let Hsearch = Hsearch
++Herr , with Hsearch
+and
+Herr defined in Eqs. (109) and (110), respectively. For
+
+√
+any time T ≥ 1/ D , we have that
+deg
+
+(111)
+
+√
+
+Proof.
+have
+
+(112)
+
+Using first order Trotter formula [46] we
+
+
+
+3/2
+
+1 S2,D̄ ∆D
+≥
+.
+2
+c1 S1,
+D̄
+
+(123)
+
+For a sufficiently small positive constant c1 . A simpler,
+but less tight form for this condition in terms of the gaps
+∆D and ∆ can be obtained by using the p
+lower bound in
+Lemma (5) (which is valid also for S1,D̄ / S2,D̄ ). It can
+be shown that if
+√
+
+≥
+
+where
+
+√
+ηqd = O r∆D D T 2 .
+
+(122)
+
+Using this Lemma, we can now adapt Theorem 6 to
+Hamiltonians with quasi-degenerate highest eigenvalues.
+To do so, we need to impose a condition on the spectrum
+of H, that guarantees that the error ηqd in Lemma 7
+is small enough for the predictions of Theorem 6 to be
+meaningful. It can be seen that this is possible if
+
+j∈D
+
+hw|eiHsearch T |vn i = hw|eiHsearch T |vn i + ηqd ,
+
+(119)
+
+∆D
+c1 ∆2
+
+(124)
+
+then Eq. (123) is satisfied. For graphs such as the joined
+or bridged complete graph, we can take D = 2 in √
+which
+case ∆D = Θ(1/n) and ∆ = Θ(1), whereas  =
+Θ(n−1/2 ), ensuring this condition is satisfied.
+Our general result for search on graphs for which H has
+quasi-degenerate highest eigenvalues is the following.
+
+deg
+
+e−iT Hsearch = e−iT (Hsearch +Herr )
+
+(113)
+
+=e
+e−iT Herr + O k[|wihw|, Herr ]kT 2
+(114)
+
+deg
+√
+−iT Herr
+−iT Hsearch
+2
+=e
+e
++ O r∆D D T ,
+(115)
+deg
+−iT Hsearch
+
+Theorem 8 For a given Hamiltonian H, assume there is
+a positive integer D such that the conditions in Eqs. (123)
+and (93) are true. Then, by choosing r = S1,D̄ and
+!
+p
+S2,D̄
+1
+T =Θ √
+,
+D S1,D̄
+
+where we used the bound
+√
+k[|wihw|, Herr ]k = O(r∆D D ),
+
+(116)
+
+which can be demonstrated by using the fact that Herr
+has support only on the D subspace.
+
+Algorithm 1 prepares a state |f i such that
+r
+ν = |hw|f i| = Θ
+
+!
+ S1,D̄
+p
+.
+D S2,D̄
+
+(125)
+
+14
+
+Proof. The proof follows by combining the result of
+Lemma 7 with that of Theorem 6. After a time
+!
+p
+S2,D̄ 1
+,
+T =Θ
+√
+S1,D̄
+D
+we have the following bound for the error term
+
+
+∆D S2,D̄
+ηqd = O √
+D S1,D̄
+!
+r
+ S1,D̄
+p
+= c1 O
+,
+D S2,D̄
+
+(126)
+(127)
+
+where in the second step we use the condition from
+Eq. (123). Hence, for a sufficient small value of constant
+c1 , the amplitude obtained at the solution after evolving
+for this time T from Eq. (101) is given by
+hw|e
+
+iHsearch T
+
+deg
+iHsearch
+T
+
+|vn i = hw|e
+|vn i + ηqd
+!
+r
+ S1,D̄
+p
+=Θ
+,
+D S2,D̄
+
+(128)
+(129)
+
+where we used Eq. (127) and Theorem 6.
+
+
+
+This result leads to the following sufficient condition for
+optimal quantum search: provided there is an integer
+D = Θ(1)
+p such that Eqs. (123) and (93) are satisfied and
+S1,D̄ / S2,D̄ = Θ(1), quantum search is optimal. This is
+the case, for example, for √
+graphs in which there a constant D such that ∆D = o( ) and a large gap ∆ = Θ(1),
+such as the bridged or joined-complete graph.
+Note that, even though in the fully degenerate case in
+Sec. IV A our analysis provided necessary and sufficient
+conditions for optimal quantum search, here we can only
+provide a sufficient condition because our analysis gives
+no guarantee that the choice r = S1,D̄ gives the best
+algorithmic performance when there is quasi-degeneracy.
+This is because, the error term that we obtain by approximating the quasi-degenerate case with the fully degenerate case in Lemma 7, becomes too large for sufficiently
+large values of r and T .
+V.
+
+FINDING A MARKED NODE ON THE
+ROOK’S GRAPH
+
+In this section, we discuss the performance of the CG
+algorithm on the Rook’s graph. The edges of this graph
+correspond to the possible movements of a rook on a
+rectangular chessboard with n = n1 n2 nodes, where n1
+is the number of rows and n2 the number of columns.
+We assume, without loss of generality, that n2 ≥ n1 and
+take n1 = nσ and n2 = n1−σ where 0 < σ < 1/2.
+The motivation for studying quantum search on this
+graph is that, depending on the choice of σ, the performance of the algorithm varies drastically. The analysis of Sec. III can be applied in certain regimes, showing that for 1/3 ≤ σ ≤ 1/2 the algorithm is optimal,
+
+whereas for 1/4 ≤ σ < 1/3 the algorithm is suboptimal
+and also slower than the square root of the classical hitting time, which for this graph is Θ(n). Interestingly,
+this suboptimality
+result holds even when the spectral
+√
+gap ∆RG   showing that the latter condition is not
+sufficient for optimal quantum search.
+For sufficiently low values of σ, the analysis of Sec. III
+breaks down and the quasi-degenerate treatment from
+Sec. IV can be used to provide lower bounds on the amplitude that can be obtained at the marked node after a
+certain time. This allows us, for example, to demonstrate
+that if n1 = Θ(1) the algorithm is optimal. Our predictions regarding the algorithmic performance are summarized in Table II for different regimes of σ.
+
+A.
+
+The Rook’s graph and its spectrum
+
+We begin by introducing the Rook’s graph and the
+associated Hamiltonian H that drives the quantum
+walk.
+Consider the movement of a rook on a rectangular chessboard of n1 rows and n2 columns. The position of the
+rook on the chessboard is defined by the tuple (i↔ , jl ),
+where i↔ ∈ [n2 ] and jl ∈ [n1 ]. From any given position, the rook can move horizontally (left or right) to
+any of the available n2 positions or it can move vertically (forward and backward) to any of the available n1
+positions. Furthermore, suppose the rook accesses one
+of these available positions uniformly at random. If every cell of the chessboard is represented by the node of a
+graph then, the vertical movement of the rook is a walk
+on a complete graph of n1 nodes and the horizontal movement corresponds to a walk on the complete graph of n2
+nodes. So, overall there are n2 − 1 number of cliques
+(complete subgraphs) of n1 nodes such that each node of
+an n1 -sized clique is connected to the corresponding node
+in n2 −1 other cliques. The resulting graph has n = n1 n2
+vertices and each node has degree d = n1 + n2 − 2. This
+regular graph, known as the Rook’s graph [21, 22], corresponds to the Cartesian product of two complete graphs
+of n1 nodes and n2 nodes respectively and is also vertextransitive. This has been depicted in Fig. 3.
+The Cartesian product of two graphs G1 and G2 is denoted as G1 G2 . If the adjacency matrix of G1 is AG1
+and the adjacency matrix of G2 is AG2 , then
+AG1 G2 = AG1 ⊗ In2 + In1 ⊗ AG2 ,
+
+(130)
+
+where ⊗ denotes the Kronecker product and Ij denotes
+the identity matrix of dimension j. Thus, the adjacency
+matrix of the Rook’s graph is given by
+1
+2
+AG = AnCG
+⊗ In2 + In1 ⊗ AnCG
+,
+
+(131)
+
+1
+2
+where AnCG
+and AnCG
+are the adjacency matrices of the
+complete graph with n1 vertices and n2 vertices respectively. As an aside, note that the graph corresponding
+
+15
+Eigenvalue
+λA = 1
+
+Degeneracy
+1
+
+n2 − 1
+
+λB = n +n − n12 − 1 = 1 − Θ(n2σ−1 )
+1
+
+2
+
+n1
+
+n1 − 1
+
+λC = n +n − n11 − 1 = Θ(n2σ−1 )
+
+n2 − 1
+
+λD = 0
+
+(n1 − 1)(n2 − 1)
+
+1
+
+(a)
+
+FIG. 3: The possible moves of a rook on a rectangular
+chessboard of n1 rows and n2 columns (a) corresponds to
+a graph which is the Cartesian product of two complete
+graphs (Rook’s graph) of n1 and n2 nodes respectively
+as depicted in (b).
+
+2
+
+n1
+
+n2
+
+TABLE I: Eigenvalues (along with their respective degeneracies) of the Hamiltonian H corresponding to the
+normalized adjacency of the Rook’s graph
+
+B.
+
+(b)
+
+n1 − 1
+
+n2
+
+Algorithmic performance when r = S1
+
+We will first analyse the performance of quantum search
+via the approach developed in Sec. III. In order to determine the regime of validity of this approach we need
+to estimate the quantities , S1 , S2 and S3 . First observe that the resultant√graph is symmetric and vertextransitive, i.e. |ai | = 1/ n, ∀i, where ai is as defined in
+Eq. (12). Consequently, we have  = 1/n.
+Furthermore, using the definition of the parameters Sk
+from Eq. (13), it can be shown that these parameters
+scale with n as
+
+
+nσ−1
++
+1
+.
+(133)
+Sk = Θ
+(n2σ−1 )k
+In particular, this implies that
+
+to the case where n1 = 2 and n2 = n/2 is the bridgedcomplete graph see Fig. 1a and the case where n2 = n
+and n1 = 1 is the complete graph.
+We divide AG by the degree of each node (n1 +n2 −2) and
+rescale its eigenvalues so they lie between 0 and 1. So the
+Hamiltonian we consider for the spatial search problem is
+the rescaled and shifted version of AG which we denote by
+H. Without loss of generality, we take n2 ≥ n1 (the case
+n1 ≥ n2 can be recovered simply by exchanging the labels
+1 and 2 i.e. what we refer to as horizontal and vertical
+directions). Furthermore, we assume that n1 = nσ and
+n2 = n1−σ where 0 < σ < 1/2.
+It can be demonstrated that the Hamiltonian has 4 distinct eigenvalues (except in the case n1 = n2 , when there
+are there only three) which are shown in Table I along
+with its degeneracies. Its spectral gap is given by
+ 
+
+
+n1
+1
+= Θ 1−2σ .
+(132)
+∆RG = 1 − λB = Θ
+n2
+n
+Hence, by changing the value of σ, both the gap
+as well as the degeneracy of the different eigenvalues
+changes.
+In what follows we shall analyse the problem of finding a
+marked node on this graph for different regimes of σ. In
+particular, we will highlight regimes of σ where treating
+the first few eigenstates of H as quasi-degenerate shall
+help in deducing the algorithmic running time.
+
+S1 = Θ(1)
+
+(134)
+
+and
+(
+
+Θ n1−3σ ,
+S2 =
+Θ(1),
+
+for 0 < σ ≤ 1/3
+for 1/3 ≤ σ ≤ 1/2.
+
+(135)
+
+We can now verify the regime of validity of spectral condition in Eq.(14), which is required for Theorem 2 to be
+applied. It is easy to verify that this holds only when
+1/4 ≤ σ ≤ 1/2. Consequently the amplitude of the final
+state of the algorithm with the marked vertex is
+
+
+ (
+S1
+Θ n−(1−3σ)/2 , for 1/4 ≤ σ ≤ 1/3
+ν=Θ √
+=
+S2
+Θ(1),
+for 1/3 ≤ σ ≤ 1/2,
+(136)
+after a time
+
+√  (
+
+1 S2
+Θ n1−3σ/2 ,
+T =Θ √
+=
+√
+ S1
+Θ( n),
+
+for 1/4 ≤ σ ≤ 1/3
+for 1/3 ≤ σ ≤ 1/2.
+(137)
+
+The performance of the algorithm is thus quite distinct
+in the following two regimes.
+
+16
+i) 1/3 ≤ σ ≤ 1/2:
+In this regime the √algorithm
+is optimal, since ν = Θ(1) after a time Θ( n). This
+provides another example of optimal search for graphs
+which do not have constant spectral gap. In fact, from
+Eq. (132) we see that in this regime the scaling of the
+spectral gap changes from n−1/3 for σ = 1/3 to constant
+for σ = 1/2 .
+ii) 1/4 ≤ σ < 1/3:
+In this regime, the algorithm
+is suboptimal, as the
+final
+overlap with the
+
+ marked node
+ν = Θ n−(1−3σ)/2 after T = Θ n1−3σ/2 . In the worst
+case, for σ = 1/4, even if we assume that amplitude
+amplification can be used, one would need to evolve
+the walk for a total time of Θ(n3/4 ) to find the marked
+node.
+Interestingly, the Rook’s graph within this region of σ
+provides an example of suboptimality
+even though in
+√
+this regime we have that ∆RG   = n−1/2 (excluding
+in the case σ = 1/4). This proves that the latter
+condition is not sufficient for optimal quantum search.
+In addition, given that the hitting time for the Rook’s
+graph is Θ(n) for any σ, this shows that there exists a
+range of values of σ for which the CG algorithm is slower
+than the square root of the classical hitting time.
+
+C.
+
+Algorithmic performance when r = S1,D̄
+
+In order to go beyond the limitations imposed by the
+spectral condition of Eq. (14), which is only valid in the
+regime 1/4 ≤ σ ≤ 1/2, we use the analysis of Sec. IV.
+It is expected that this analysis is valid for low values of
+σ, since the gap 1 − λB becomes very small (Eq. (132))
+whereas the gap 1 − λC = Θ(1) is much larger (see Table I).
+Hence, we will treat the eigenstate with eigenvalue λA =
+1 and the n1 − 1 eigenstates with eigenvalue λB as quasidegenerate. To be consistent with the notation in Sec. IV,
+we denote this space as D such that D = |D| = n1 = nσ .
+In addition, the gaps ∆D and ∆ defined in Sec. IV are in
+this case
+∆D ≡ ∆RG = 1 − λB = Θ(n2σ−1 ),
+∆ = 1 − λC = Θ(1).
+
+(138)
+(139)
+
+The projection of the marked node |wi in the quasidegenerate subspace D is
+D =
+
+D
+n1
+=
+,
+n
+n
+
+(140)
+
+∀k ≥ 1.
+For Theorem 8 to hold, we require that both conditions
+Eqs. (123) and (93) are satisfied. Since ∆ and the parameters Sk,D̄ are constants, the condition in Eq. (93) is
+valid for any 0 ≤ σ < 1/2. On the other hand, it can
+be shown that (123) is valid as long as σ ≤ 1/4. Hence,
+Theorem 8 allows us to predict the performance of the
+algorithm for the choice of r = S1,D̄ and in the regime
+0 ≤ σ ≤ 1/4.
+We obtain that, after a time
+!
+p
+r 
+
+√
+S2,D̄ 1
+n
+T =Θ
+=Θ
+= Θ n1−σ ,
+√
+S1,D̄
+D
+n1
+(143)
+Algorithm 1 prepares a state that has an overlap of
+!
+
+
+
+
+r
+ S1,D̄
+1
+1
+p
+=Θ √
+ν=Θ
+= Θ √ σ (144)
+D S2,D̄
+n1
+n
+with the marked node. We discuss the following two
+cases:
+i) constant n1 (σ = 0):
+In this regime, the algorithm is optimal, as the marked node
+√ is found with
+a constant probability after T = Θ( n). Note that,
+as mentioned before, the bridged-complete graph corresponds to the choice of n1 = 2 and n2 = n/2. As such,
+this demonstrates the optimality of the algorithm for
+this instance.
+ii) n1 = nσ , with 0 < σ < 1/4:
+In this range,
+√
+thepamplitude at the marked node is Θ(1/ n1 ) after
+Θ( n/n1 ) time. If the quantum amplitude amplifi√
+cation procedure is available, then using n1 rounds
+of amplitude amplification,
+the marked node can be
+√
+obtained for T = Θ( n), however, with an overhead due
+to the need of reflecting on the initial state that has a
+certain set-up cost (in this case the total cost is given by
+Eq. (106)).
+On the other hand, if we assume access to simply the
+time evolution according to Hsearch , we have to repeat
+the entire procedure ∼ n1 times to find the marked node,
+√
+leading to an overall evolution time of T = Θ( n.n1 ).
+However, as we previously pointed out, the predicition
+from Theorem 8 does not guarantee that this is the
+best possible performance. We leave open the question
+of whether a better running time can be obtained for
+a different choice of r. Indeed, one would expect that
+the best choice of r should converge to the value S1 at
+c = 1/4 and recover the prediction of Sec. V B.
+
+where we have used the fact that the underlying graph
+is vertex-transitive implying that |ai |2 = 1/n, ∀i. The
+parameters Sk,D̄ , defined in Eq. (91), are given by
+
+
+1
+n2 − 1
+(n1 − 1)(n2 − 1)
+Sk,D̄ =
++
+n (1 − λC )k
+(1 − λD )k
+= 1 + Θ(1/n1 ) = Θ(1),
+
+VI.
+
+DISCUSSION
+
+(141)
+(142)
+
+In this article, we provide the necessary and sufficient
+conditions for the CG algorithm to be optimal, assuming
+
+17
+r = S1
+
+Range of n1 = nσ
+
+r = S1,D̄
+
+T
+
+ν
+
+T
+
+n1 = Θ(1)
+
+–
+
+–
+
+√
+Θ( n)
+
+0 < σ < 1/4
+
+–
+
+–
+
+Θ
+
+1/4 ≤ σ < 1/3
+1/3 ≤ σ ≤ 1/2
+
+
+ 
+
+Θ n1−3σ/2 Θ n−(1−3σ)/2
+√
+Θ( n)
+
+Θ(1)
+
+ν
+
+pn
+nσ
+
+Θ
+
+Θ(1)
+
+
+√1
+nσ
+
+–
+
+–
+
+–
+
+–
+
+TABLE II: Summary of the performance of the CG algorithm (Algorithm 1) on the Rook’s graph, corresponding to the
+movement of a rook on a rectangular chessboard of n1 = nσ columns and n1−σ rows for different regimes of σ and for two
+different choices of the parameter r. When 0 ≤ σ < 1/4, treating the highest eigenvalues of the Hamiltonian associated with
+the graph as quasi-degenerate allows us to analyse the algorithmic performance via Theorem 8 for the choice of r = S1,D̄ and
+predict optimality when n1 is constant. On the other hand, Theorem 2 is valid in the complementary regime of 1/4 ≤ σ ≤ 1/2,
+allowing us to predict the best algorithmic performance
+for these values of σ. We conclude that the algorithm is optimal when
+√
+1/3 ≤ σ ≤ 1/2 as a marked node can be found in n time. In contrast, in the regime 1/4 ≤ σ < 1/3 the maximum amplitude
+at the marked node is o(1) implying suboptimality (see also Theorem 1). Finally, the results for 1/2 ≤ σ ≤ 1 can be obtained
+from the results of the regime 0 ≤ σ ≤ 1/2 by replacing σ with 1 − σ
+
+very general conditions on the spectrum of the Hamiltonian encoding the structure of the underlying graph. An
+immediate consequence is that our necessary and sufficient conditions hold for all graphs whose normalized
+adjacency
+√ matrices exhibit a large enough spectral gap
+(∆  ). Additionally, we also provide strategies to
+analyze the algorithmic performance for graphs with a
+few quasi-degenerate highest eigenvalues, followed by a
+large gap. Such spectral features appear, for example,
+in graphs composed by a few clusters with sparse connections among them. Our work implies that, to the
+best of our knowledge, all prior results demonstrating
+the optimality of the algorithm for specific graphs, requiring instance-specific analysis, can now be recovered
+from our general results. We also provided an explicit
+example, namely, the application of the CG algorithm to
+the Rook’s graph which highlights the predictive power of
+our results and the limitations of this search algorithm,
+which is suboptimal for certain regimes of the “aspect
+ratio” of the chessboard.
+Our results provide a recipe to compute analytically the
+performance of the CG algorithm on any graph fulfilling
+the spectral conditions required for our main theorems
+to be valid (Theorem 2 and 8). They can hence be used
+to analyse quantum search on graphs that have not been
+previously studied or on graphs that were analysed only
+numerically such as the Chimera graph [47] – a graph
+that encodes the underlying architecture of the hardware
+of quantum annealers.
+We remark that our results are not directly applicable,
+but could in principle be extended, to some modified versions of the CG algorithm. For example, it would be
+interesting to extend our analysis to encompass strategies with different choices of the parameter r for different
+evolution times. Such strategies have been known to im-
+
+prove the algorithmic performance for some graphs [19].
+We also note that our results are only valid for the oracle Hamiltonian introduced in [5], which singles out the
+marked node by adding a local energy term to the Hamiltonian. Different oracles, which remove edges connected
+to the marked node, have been considered in works that
+show optimal quantum search on certain lattices such as
+graphene [48] or crystal lattices [27]. General conditions
+for optimal quantum search with such oracles are still
+unknown (some progress has been made in [37]).
+Our work further highlights the difficulty in comparing
+the performance of the CG algorithm to its classical counterpart (search by a classical random walk), where the
+performance is measured by the classical hitting time.
+In fact, it is not clear how the expressions that we have
+obtained for predicting the performance of this quantum
+search algorithm relate to this classical quantity. We can
+nevertheless guarantee that whenever the CG algorithm is
+optimal, there exists at least a quadratic speed-up with
+respect to the classical hitting time, since the latter is
+lower bounded by 1/ (see Eq. (9)). However, we also
+proved that the CG algorithm fails to achieve quadratic
+speedups with respect to classical search in some cases,
+as evidenced by the algorithmic running time on the
+Rook’s graph in the suboptimal regime (See Eq. (143)
+and Eq. (144)).
+Different quantum walk based algorithms are known to
+achieve this general quadratic speed-up in the discretetime framework [35, 36, 49] and in continuous-time, as
+recently demonstrated in Ref. [37]. In the latter work,
+we propose a new continuous-time time quantum walk
+algorithm based on the time-evolution of a Hamiltonian
+encoding an interpolating Markov chain. Compared to
+the CG algorithm, it has the additional advantages that
+it can be applied to any ergodic, reversible Markov chain
+
+18
+and has a guaranteed performance even when there are
+multiple marked nodes.
+We also propose a modified version of the CG algorithm that is applicable to search problems on Markov
+chains [37] which can be seen as a quantum walk on
+the edges and thus requires an extension of the walk’s
+Hilbert space. This modified algorithm improves upon
+the performance of the original CG algorithm for several instances such as lattices of dimension less than
+five. In particular, this modified algorithm
+can find a
+√
+marked node on the Rook’s graph in Θ( n) time for any
+dimensions of the chessboard, without requiring amplitude amplification. However, the modified CG algorithm
+does not provide a generic speedup over the CG algorithm and counterexamples have also been demonstrated
+in Ref. [37]. Moreover, a simple comparison of the performance of this modified CG algorithm to the classical
+hitting time remains elusive.
+An interesting direction of future research would be to
+explore the possibility of using continuous-time quantum
+walks to solve optimization problems, namely, to find
+ground states of classical Ising Hamiltonians which
+encode the solution to some NP-Hard problems [50].
+Recently, the applicability of CTQW to tackle this
+problem has been numerically investigated [51]. In this
+approach, each node represents a spin configuration,
+and the idea is to perform a continuous-time quantum
+walk on a graph where the local energies of each node,
+instead of being set by an oracle, corresponds to the
+energy of this respective configuration according to
+the Ising Hamiltonian. The aim is thus to use the
+
+quantum walk to find the node of minimum energy
+faster than classical methods. In Ref [51], the authors
+observe that this approach leads a faster than quadratic
+speedup, with respect to unstructured search, in the
+time required to find the ground state of random Ising
+Hamiltonians, for quantum walks on certain graphs.
+We remark that when the underlying graph of this
+quantum walk is the complete graph, our results can
+be used to make some analytical predictions, since the
+Hamiltonian of the walk has the form H + rP , where
+P is a one-dimensional projector (in this case, H is the
+classical Ising Hamiltonian and the adjacency matrix of
+the complete graph is a one-dimensional projector). It
+would be interesting if extensions of our results could
+help derive analytical expressions for the performance of
+this approach on different graphs. This could lead to a
+better understanding of the potential of CTQW-based
+algorithms to solve optimization problems.
+
+[1] Julia Kempe. Quantum random walks: an introductory
+overview. Contemporary Physics, 44(4):307–327, 2003.
+[2] Andrew M Childs. Universal computation by quantum
+walk. Physical review letters, 102(18):180501, 2009.
+[3] Andrew M Childs, David Gosset, and Zak Webb. Universal computation by multiparticle quantum walk. Science,
+339(6121):791–794, 2013.
+[4] Andris Ambainis. Quantum walks and their algorithmic
+applications. International Journal of Quantum Information, 1(04):507–518, 2003.
+[5] Andrew M Childs and Jeffrey Goldstone. Spatial search
+by quantum walk. Physical Review A, 70(2):022314,
+2004.
+[6] Throughout the article, we use a plethora of complexity
+theoretic notations which we briefly define now. f (n) =
+O(g(n)), if there exists a positive constant c such that
+|f (n)| ≤ c.g(n). If f (n) = O(g(n)), then g(n) = Ω(f (n)).
+Also f (n) = o(g(n)) if for all positive constants k,
+|f (n)| < k.g(n). Consequently, if f (n) = o(g(n)), then
+g(n) = ω(f (n)).
+[7] Jonatan Janmark, David A Meyer, and Thomas G Wong.
+Global symmetry is unnecessary for fast quantum search.
+Physical Review Letters, 112(21):210502, 2014.
+[8] Leonardo Novo, Shantanav Chakraborty, Masoud
+Mohseni, Hartmut Neven, and Yasser Omar. System-
+
+atic dimensionality reduction for quantum walks: Optimal spatial search and transport on non-regular graphs.
+Scientific reports, 5:13304, 2015.
+[9] Shantanav Chakraborty, Leonardo Novo, Andris Ambainis, and Yasser Omar. Spatial search by quantum walk
+is optimal for almost all graphs. Physical review letters,
+116(10):100501, 2016.
+[10] Pascal Philipp, Luı́s Tarrataca, and Stefan Boettcher.
+Continuous-time quantum search on balanced trees.
+Physical Review A, 93(3):032305, 2016.
+[11] Thomas G Wong. Quantum walk search on johnson
+graphs. Journal of Physics A: Mathematical and Theoretical, 49(19):195303, 2016.
+[12] Shantanav Chakraborty, Leonardo Novo, Serena Di Giorgio, and Yasser Omar. Optimal quantum spatial search
+on random temporal networks. Physical review letters,
+119(22):220503, 2017.
+[13] Shanshan Li and Stefan Boettcher. Renormalization
+group for a continuous-time quantum search in finite dimensions. Phys. Rev. A, 95:032301, Mar 2017.
+[14] Thomas G Wong, Konstantin Wünscher, Joshua Lockhart, and Simone Severini. Quantum walk search on kronecker graphs. Physical Review A, 98(1):012338, 2018.
+[15] Adam Glos and Thomas G Wong. Optimal quantumwalk search on kronecker graphs with dominant or fixed
+
+ACKNOWLEDGMENTS
+
+S.C. and J.R. are supported by the Belgian Fonds de la
+Recherche Scientifique - FNRS under grants no F.4515.16
+(QUICTIME) and R.50.05.18.F (QuantAlgo). S.C. and
+L.N. acknowledge support from F.R.S.-FNRS. L.N. also
+acknowledges funding from the Wiener-Anspach Foundation.
+
+19
+regular initiators. Physical Review A, 98(6):062334, 2018.
+[16] Mason L Rhodes and Thomas G Wong. Quantum walk
+search on the complete bipartite graph. Physical Review
+A, 99(3):032301, 2019.
+[17] It is worth mentioning, that throughout the article we
+consider the scenario where only a single node is marked
+and analogous results for multiple marked nodes is an
+open problem in this framework.
+[18] Edward Farhi and Sam Gutmann. Analog analogue of
+a digital quantum computation. Physical Review A,
+57(4):2403, 1998.
+[19] David A Meyer and Thomas G Wong. Connectivity is a
+poor indicator of fast quantum search. Physical review
+letters, 114(11):110503, 2015.
+[20] Ulrike Von Luxburg. A tutorial on spectral clustering.
+Statistics and computing, 17(4):395–416, 2007.
+[21] JW Moon. On the line-graph of the complete bigraph.
+The Annals of Mathematical Statistics, pages 664–667,
+1963.
+[22] AJ Hoffman et al. On the line graph of the complete
+bipartite graph. The Annals of Mathematical Statistics,
+35(2):883–885, 1964.
+[23] This can be ensured by replacing H with (H/||H||+I)/2,
+where I is the identity matrix.
+[24] Jérémie Roland and Nicolas J Cerf. Quantum-circuit
+model of hamiltonian search algorithms. Physical Review
+A, 68(6):062311, 2003.
+[25] Béla Bollobás.
+Modern graph theory, volume 184.
+Springer Science & Business Media, 2013.
+[26] Andrew M Childs and Jeffrey Goldstone. Spatial search
+and the dirac equation. Physical Review A, 70(4):042312,
+2004.
+[27] Andrew M. Childs and Yimin Ge. Spatial search by
+continuous-time quantum walks on crystal lattices. Phys.
+Rev. A, 89:052337, May 2014.
+[28] The cost of reflecting on this state can be quantified as
+2S. However, we shall omit constant factors for simplicity.
+[29] The results of [52] on simulating continuous query models
+can be used to quantify the cost of implementing timeevolution of Hsearch in terms of discrete queries to the
+Grover oracle as well as the cost of simulating H and the
+error of the simulation.
+[30] Gilles Brassard, Peter Hoyer, Michele Mosca, and Alain
+Tapp. Quantum amplitude amplification and estimation.
+Contemporary Mathematics, 305:53–74, 2002.
+[31] Andris Ambainis, Julia Kempe, and Alexander Rivosh.
+Coins make quantum walks faster. In Proceedings of
+the sixteenth annual ACM-SIAM symposium on Discrete
+algorithms, pages 1099–1108. Society for Industrial and
+Applied Mathematics, 2005.
+[32] Andris Ambainis. Quantum walk algorithm for element
+distinctness. SIAM Journal on Computing, 37(1):210–
+239, 2007.
+[33] For non vertex-transitive graphs, the structure can be
+such that
+√ certain particular nodes can be found faster
+than n time. For example, the central node on a star
+graph can be found in constant time. However, if any
+of the graph’s nodes can be marked, the minimum time
+needed
+to find any node in a graph is lower bounded by
+√
+n [18].
+[34] Frédéric Magniez, Ashwin Nayak, Jérémie Roland, and
+Miklos Santha. Search via quantum walk. SIAM Journal
+on Computing, 40(1):142–164, 2011.
+
+[35] Hari Krovi, Frédéric Magniez, Maris Ozols, and Jérémie
+Roland. Quantum walks can find a marked element on
+any graph. Algorithmica, 74(2):851–907, 2016.
+[36] Andris Ambainis, András Gilyén, Stacey Jeffery, and
+Martins Kokainis. Quadratic speedup for finding marked
+vertices by quantum walks. arXiv:1903.07493, 2019. To
+appear in the Proceedings of 52nd Annual Symposium
+on the Theory of Computing (STOC) 2020.
+[37] Shantanav Chakraborty, Leonardo Novo, and Jérémie
+Roland.
+Finding a marked node on any graph
+by continuous time quantum walk.
+arXiv preprint
+arXiv:1807.05957, 2018.
+[38] Thomas G Wong. Quantum walk search through potential barriers. Journal of Physics A: Mathematical and
+Theoretical, 49(48):484002, 2016.
+[39] Thomas G Wong, Luı́s Tarrataca, and Nikolay Nahimov. Laplacian versus adjacency matrix in quantum walk
+search. Quantum Information Processing, 15(10):4029–
+4048, 2016.
+[40] Thomas G Wong and Pascal Philipp. Engineering the
+success of quantum walk search using weighted graphs.
+Physical Review A, 94(2):022304, 2016.
+[41] Adam Glos, Aleksandra Krawiec, Ryszard Kukulski, and
+Zbigniew Puchala. Vertices cannot be hidden from quantum spatial search for almost all random graphs. Quantum Information Processing, 17(4):81, 2018.
+[42] This is possible independently of the position of the
+marked node |wi, for example, if the Hamiltonian is diagonalized by the Fourier transform.
+[43] Stefan Boettcher and Shanshan Li. Evaluation of spectral
+zeta-functions with the renormalization group. Journal of
+Physics A: Mathematical and Theoretical, 50(12):125003,
+feb 2017.
+[44] From the Perron-Frobenius theorem, ∆D can never zero
+for the adjacency matrix (or Laplacian) of a connected
+graph.
+[45] Since we are assuming D eigenstates with eigenvalue 1,
+|vn i can be any state in the subspace D.
+[46] Andrew M. Childs, Yuan Su, Minh C. Tran, Nathan
+Wiebe, and Shuchen Zhu. A theory of trotter error.
+arXiv:1912.08854, 2019.
+[47] Adam Glos and Tomasz Januszek. Impact of global and
+local interaction on quantum spatial search on chimera
+graph. International Journal of Quantum Information,
+17(05):1950040, 2019.
+[48] Iain Foulger, Sven Gnutzmann, and Gregor Tanner.
+Quantum search on graphene lattices. Physical review
+letters, 112(7):070504, 2014.
+[49] Mario Szegedy. Quantum speed-up of markov chain
+based algorithms. In Proceedings. 45th Annual IEEE
+Symposium on Foundations of Computer Science, 2004.,
+pages 32–41. IEEE, 2004.
+[50] Andrew Lucas. Ising formulations of many np problems.
+Frontiers in Physics, 2:5, 2014.
+[51] Adam Callison, Nicholas Chancellor, Florian Mintert,
+and Viv Kendon. Finding spin-glass ground states using
+quantum walks. arXiv preprint arXiv:1903.05003, 2019.
+[52] Dominic W Berry, Andrew M Childs, Richard Cleve,
+Robin Kothari, and Rolando D Somma. Exponential
+improvement in precision for simulating sparse hamiltonians. In Forum of Mathematics, Sigma, volume 5.
+Cambridge University Press, 2017.
+
+

@@ -1,0 +1,800 @@
+arXiv:0806.2074v2 [math.CO] 15 Oct 2010
+
+Periodic Graphs
+Chris Godsil
+Combinatorics & Optimization
+University of Waterloo
+cgodsil@uwaterloo.ca
+October 25, 2018
+Abstract
+Let X be a graph on n vertices with with adjacency matrix A
+and let H(t) denote the matrix-valued function exp(iAt). If u and v
+are distinct vertices in X, we say perfect state transfer from u to v
+occurs if there is a time τ such that |H(τ )u,v | = 1. If u ∈ V (X) and
+there is a time σ such that |H(σ)u,u | = 1, we say X is periodic at
+u with period σ. It not difficult to show that if the ratio of distinct
+non-zero eigenvalues of X is always rational, then X is periodic. We
+show that the converse holds, from which it follows that a regular
+graph is periodic if and only if its eigenvalues are distinct. For a class
+of graphs X including all vertex-transitive graphs we prove that, if
+perfect state transfer occurs at time τ , then H(τ ) is a scalar multiple of
+a permutation matrix of order two with no fixed points. Using certain
+Hadamard matrices, we construct a new infinite family of graphs on
+which perfect state transfer occurs.
+
+1
+
+Introduction
+
+Let X be a graph with adjacency matrix A. We define the matrix function
+H(t) by
+X
+tn
+H(t) := exp(itA) :=
+in An .
+n!
+n≥0
+
+1
+
+We note that t is a real variable
+H(t)∗ = exp(−iAt) = H(t)−1
+and therefore H(t) is a unitary matrix. We have H(0) = I and
+H(s + t) = H(s)H(t).
+We say that graph is periodic with respect to the vector z if there is a real
+number τ such that H(τ )z is a scalar multiple of z. (Since H(t) is unitary,
+this scalar will have absolute value 1.) We say that X is periodic relative
+to the vertex u if it is periodic relative to the standard basis vector eu or,
+equivalently if there is a time τ such that |H(τ )u,u | = 1. We say that X itself
+is periodic if there is a time τ such that H(τ ) is diagonal.
+If there are basis vectors z1 , . . . , zn such that X is periodic with period τr
+relative to the vector zr for r = 1, . . . , n, then it follows that X is periodic,
+with period dividing the product of the τi ’s.
+We say we have perfect state transfer if there are distinct vertices u and
+v in X and a time τ such that
+|H(τ )u,v | = 1.
+(If this holds then H(τ )u,v is the only non-zero entry in its row and column.)
+Christandl, Datta, Dorlas, Ekert, Kay and Landahl [5] prove that we have
+perfect state transfer between the end-vertices of paths of length one and
+two, and between vertices at maximal distance in Cartesian powers of these
+graphs. A graph exhibiting perfect state transfer between two vertices u and
+v models a network of quantum particles with fixed couplings, in which the
+state of the particle in u can be transferred to the particle in v without any
+information loss.
+This paper is an attempt to extend some of the results in the above paper,
+and in the more recent work by Saxena, Severini and Shparlinski [13]. We
+prove that a regular graph is periodic if and only if its eigenvalues are integers.
+We also show for a wide class of regular graphs (including all vertex-transitive
+graphs and all distance-regular graphs) that if perfect state transfer occurs,
+then there is a time τ such that H(τ ) is a scalar multiple of a permutation
+matrix of order two with zero diagonal. (And hence the number of vertices in
+the graph must be even.) Finally we present a new infinite class of antipodal
+distance-regular graphs where perfect state transfer occurs.
+2
+
+2
+
+Eigenvalues
+
+We are going to derive consequences for the eigenvalues of A when X is
+periodic, but first we show that periodicity and perfect state transfer are
+related.
+2.1 Lemma. If perfect state transfer from u to v occurs at time τ , then X
+is periodic at u and v with period 2τ .
+Proof. Assume H = H(τ ) and suppose that
+H(τ )eu = γev ,
+where kγk = 1. Then Hv,u = γ (because H(t) is symmetric) and therefore
+Hev = γeu . Now
+γ 2 eu = γHev = H 2 eu
+and similarly H 2 ev = ev .
+Our main tool in this paper is the spectral decomposition of a symmetric
+matrix. Suppose A is a symmetric matrix with eigenvalues θ1 , . . . , θd , and
+let Er be the matrix that represents orthogonal projection on the eigenspace
+associated with θr . If f a complex-valued function defined on the eigenvalues
+of A, we have
+d
+X
+f (A) =
+f (θr )Er .
+r=1
+
+In particular,
+H(t) =
+
+X
+
+exp(itθr )Er .
+
+r
+
+P
+Note that the scalars f (θr ) are the eigenvalues of f (A) and that
+Er = I.
+We will also make use of the fact that f (A) is necessarily a polynomial in A
+(because each projection Er is).
+Assume now that A is the adjacency matrix of a graph X on v vertices.
+If x is a vector in Rv , we say that an eigenvalue θr of X is in the eigenvalue
+support of x if Er x 6= 0. The case of interest to us will be when x is the
+characteristic vector of a subset S of V (X). The eigenvalue support of a
+non-zero vector cannot be empty and, if x 6= 0, we define the dual degree of
+x to be one less than the size of its eigenvalue support.
+
+3
+
+2.2 Theorem. Let X be a graph and let u be a vertex in X at which X is
+periodic. If θk , θ` , θr , θs are eigenvalues in the support of eu and θr 6= θs ,
+θk − θ`
+∈ Q.
+θr − θs
+Proof. Suppose the period of X at 1 is τ . Then
+H(τ )1,1 = γ
+where |γ| = 1. Since H(τ ) is unitary, this implies that we have
+
+
+γ 0
+H(τ ) =
+0 H1
+where H1 is unitary. Hence
+γe1 = H(τ )e1 =
+
+X
+
+exp(iτ θr )Er e1
+
+r
+
+The non-zero vectors Er e1 are pairwise orthogonal and so linearly independent, whence we see that
+exp(iτ θr ) = γ
+for each eigenvalue θr in the support of e1 .
+Consequently of θr and θs are in the eigenvalue support of e1 , then
+exp(iτ (θr − θs )) = 1
+and so τ (θr − θs ) is an integral multiple of 2π. This proves the theorem.
+2.3 Corollary. If X is periodic at u and there are two integer eigenvalues
+in the support of eu , then all eigenvalues in its support are integers.
+Proof. Suppose k and ` are distinct integer eigenvalues in the support of eu .
+By the theorem
+θr − `
+∈Q
+k−`
+and therefore θr is rational. Since θr is an algebraic integer, it must be an
+integer.
+
+4
+
+The condition in the previous theorem is known as the ratio condition.
+Christandl et al [5] stated that if perfect state transfer takes place on a path,
+then its eigenvalues must satisfy the ratio condition. Similarly Saxena et al
+[13] proved that if a circulant graph is periodic, its eigenvalues must satisfy
+the ratio condition.
+We can derive these results from ours, taking the second first. A circulant
+graph is vertex transitive and so if Er eu = 0 for some vertex u, then for all
+vertices u, we have Er eu = 0. But this implies that Er = 0, and so we
+conclude that the support of eu is the set of all eigenvalues of X. Hence the
+eigenvalues of a periodic circulant satisfy the ratio condition.
+Now paths. From the spectral decomposition we have
+X
+(t − θr )−1 (Er )u,u
+(tI − A)−1
+u,u =
+r
+
+while standard matrix theory yields that
+(tI − A)−1
+u,u =
+
+φ(X \ u, t)
+.
+φ(X, t)
+
+Since
+(Er )u,u = eTu Er eu = eTu Er2 eu = eTu ErT Er eu ,
+we see that (Er )u,u is not zero if and only if Er eu is not zero, that is, if and
+only if θr is in the support of eu . Therefore the dual degree of eu is equal to
+the number of poles of the rational function φ(X \ u, t)/φ(X, t), less 1. The
+characteristic polynomial of the path Pn on n vertices satisfies the recurrence
+φ(Pn+1 , t) = φ(Pn , t) − φ(Pn−1 , t),
+
+(n ≥ 1);
+
+since φ(P0 , t) = 1 and φ(P1 , t) = t, it follows that φ(Pn , t) and φ(Pn−1 , t) are
+coprime. So our rational function has n distinct zeros, and again we find
+that the eigenvalue support of a vertex of degree one in a path is the set of
+all eigenvalues of the path.
+
+3
+
+Periodicity
+
+It follows from the spectral decomposition
+X
+H(τ ) =
+exp(iτ θr )Er
+r
+
+5
+
+that if the eigenvalues of X are integers, then
+X
+H(2π) =
+Er = I
+r
+
+and therefore X is periodic with period 2π. This shows that the path P2 is
+periodic. However, as Christandl et al noted, P3 is periodic and its eigenvalues are
+√
+√
+− 2, 0, 2.
+Thus integrality is sufficient, but not necessary. There is a more general
+condition which is necessary and sufficient.
+3.1 Theorem. Suppose that the eigenvalues of X are θ1 , . . . , θd . Then X is
+periodic if and only if the ratio of any two non-zero eigenvalues is rational.
+Proof. We first show that the given condition is sufficient. If it holds and
+θs 6= 0, there are rational numbers q1 , . . . , qr such that θr = qr θs and therefore
+there is an integer N and integers k1 , . . . , kr such that N θr = kr θs . Hence if
+we take
+2N π
+τ=
+θs
+we have
+exp(iτ θr ) = exp(2ikr π) = 1
+for all r, and consequently X is periodic.
+Conversely, suppose X is periodic with period τ . Then H(τ ) is diagonal
+and commutes with A. If we view the diagonal of H(τ ) as a function on
+V (X), it must be constant on the connected components of X.
+If X is connected it follows that there is a complex number γ such that
+|γ| = 1 and H(τ ) = γI. Since the sum of the eigenvalues of X is zero, the
+product of the eigenvalues of H(τ ) is one, and thus if v = |V (X)|, then
+1 = det(H(τ )) = γ v .
+Therefore H(vτ ) = I, and so all eigenvalues of H(vτ ) are equal to one. If X
+is not connected, we can apply this argument to deduce that each diagonal
+entry of H(τ ) is an m-th root of unity, for some integer m, and therefore if
+w is the least common multiple of the sizes of the connected components of
+X, then H(wτ ) = I.
+6
+
+Hence
+exp(iwτ θr ) = 1
+for all r, and there are integers `1 , . . . , `r such that
+wτ θr = 2`r π.
+This implies that, for all r and s,
+θr
+`r
+=
+∈ Q.
+θs
+`s
+3.2 Lemma. If the ratios of the non-zero eigenvalues of X are rational, then
+the square of an eigenvalue is an integer.
+Proof. If the condition of the lemma holds and θs 6= 0, there are rationals
+q1 , . . . , qr such that θr = qr θs . Since the sum of the squares of the eigenvalues
+of A is equal to twice the number of edges, we see that θs2 is rational. Since θs
+is an algebraic integer, θs2 is thus a rational algebraic integer, and accordingly
+it is actually an integer.
+3.3 Corollary. A graph is X is periodic if and only if either:
+(a) The eigenvalues of X are integers, or
+(b) The eigenvalues of X are rational multiples of
+integer ∆.
+
+√
+∆, for some square-free
+
+If the second alternative holds, X is bipartite.
+Proof. The stated conditions are sufficient, and so we show they are necessary.
+Suppose k is a non-zero integer eigenvalue of X. Then θr /k ∈ Q and
+so θr ∈ Q. Since θr is an algebraic integer, it is therefore an integer. If no
+non-zero eigenvalue of X is an integer, then by the theorem each eigenvalue
+is a rational multiple of the spectral radius θ1 , say θi = mi θ1 .
+Also by the theorem θ12 ∈ Z, whence it follows that t2 − θ12 is the minimal
+polynomial of θ1 over the rationals, and therefore −θ1 is an eigenvalue of X.
+By the Perron-Frobenius theory, this implies that X is bipartite.
+
+7
+
+4
+
+Coherent Algebras
+
+A coherent algebra is a real or complex algebra of matrices that contains the
+all-ones matrix J and is closed under Schur multiplication, transpose and
+complex conjugation. (The Schur product A ◦ B of two matrices A and B
+with same order is defined by
+(A ◦ B)i,j = Ai,j Bi,j .
+It has been referred to as the “bad student’s product”.) A coherent algebra
+always has a basis of 01-matrices and this is unique, given that its elements
+are 01-matrices. This set of matrices determines a set of directed graphs and
+the combinatorial structure they form is known as a coherent configuration.
+When we say that a graph X is a “graph in a coherent algebra”, we mean
+that A(X) is a sum of distinct elements of the 01-basis.
+A coherent algebra is homogeneous if the identity matrix is an element
+of its 01-basis. If M belongs to a homogeneous coherent algebra, then
+M ◦ I = µI
+for some scalar µ. Hence the diagonal of any matrix in the algebra is constant.
+If A is a 01-matrix in the algebra, the diagonal entries of AAT are the row
+sums of A. Therefore all row sums and all column sums of any matrix in
+the 01-basis are the same, and therefore this holds for each matrix in the
+algebra. In particular we can view the non-identity matrices as adjacency
+matrices of regular directed graphs. Any directed graph in a homogeneous
+coherent algebra must be regular.
+We consider two classes of examples. First, if P is a set of permutation
+matrices of order n × n, then the commutant of P in Matn×n (C) is Schurclosed. Therefore it is a coherent algebra, and this algebra is homogeneous
+if and only the permutation group generated by P is transitive. Thus any
+graph whose automorphism group acts transitively on its vertices belongs to
+a coherent algebra
+For second class of examples, if X is a graph we define the r-th distance
+graph Xr of X to be the graph with V (Xr ) = V (X), where vertices u and v
+are adjacent in Xr if and only if they are at distance r in X. So if X has diameter d, we have distance graphs X1 , . . . , Xd with corresponding adjacency
+matrices A1 , . . . , Ad . If we use A0 to denote I, then the graph X is distance
+regular if the matrices A0 , . . . , Ad are the 01-basis of a homogeneous coherent
+8
+
+algebra. (It must be admitted that this is not the standard definition.) We
+will refer to the matrices Ai as distance matrices.
+A commutative coherent algebra is the same thing as a Bose-Mesner algebra of an association scheme. We will not go into this here, but we do note
+that the coherent algebra belonging to a distance-regular graph is commutative.
+4.1 Theorem. If X is a graph in a coherent algebra with vertices u and v,
+and perfect state transfer from u to v occurs at time τ , then H(τ ) is a scalar
+multiple of a permutation matrix with order two and no fixed points that
+lies in the centre of the automorphism group of X.
+Proof. First, if A = A(X) where X is a graph in a homogeneous coherent
+algebra then, because it is a polynomial in A, the matrix H(t) lines in the
+algebra for all t. Hence if
+|H(τ )u,v | = 1
+it follows that H(τ ) = ξP for some complex number ξ such that |ξ| = 1 and
+some permutation matrix P . Since A is symmetric, so is H(t) for any t, and
+therefore P is symmetric. So
+P2 = PPT = I
+and P has order two. Since P has constant diagonal, its diagonal is zero and
+it has no fixed points. As P is a polynomial in A, it commutes with any
+automorphism of X and hence is central.
+4.2 Corollary. If X is a graph in a coherent algebra with vertices u and v
+and perfect state transfer from u to v occurs at some time, then the number
+of vertices of X is even.
+Proof. Since P 2 = I and the diagonal of P is zero, the number of columns
+of P is even.
+Saxena et al [13] proved this corollary for circulant graphs. A homogeneous coherent algebra is imprimitive if there is a non-identity matrix in its
+01-basis whose graph is no connected, otherwise it is primitive. If the algebra is the commutant of a transitive permutation group, it is imprimitive
+if and only the group is imprimitive as a permutation group. The above
+corollary implies that if perfect state transfer takes place on a graph from a
+homogeneous coherent algebra, the algebra is imprimitive.
+Note that our corollary holds for any vertex-transitive graph, and for any
+distance-regular graph.
+9
+
+5
+
+Walk-Regular Graphs
+
+A graph is walk regular if its vertex-deleted subgraphs X\u are all cospectral.
+We have the following result which implies that any graph in a coherent
+configuration is walk regular. It follows immediately from Theorem 4.1 in
+[7].
+5.1 Lemma. A graph X with adjacency matrix A is walk regular if and only
+if the diagonal entries of Ak are constant for all non-negative integers k.
+Any connected regular graph with at most four distinct eigenvalues is walk
+regular (see Van Dam [15]). Note that a walk-regular graph is necessarily
+regular. The graph in Figure 1 is walk regular but not vertex transitive. This
+graph does not lie in a homogeneous coherent algebra—the row sums of the
+Schur product
+A ◦ (A2 − 4I) ◦ (A2 − 4I − J)
+are not all the same.
+
+K|PGgsKGGEoF
+
+Figure 1: A Walk-Regular Graph
+Suppose perfect state transfer takes place from u to v at time τ . Then
+10
+
+there is a complex number γ where |γ| = 1 such that
+H(2τ )u,v = H(2τ )v,u = γ.
+As |γ| = 1, we see that Hu,u = 0 and, as X is walk-regular, all diagonal
+entries of H are zero and in particular, tr(H(τ )) = 0. Since
+H(2τ )u,u = γ 2
+we also see that that H(2τ ) = γ 2 I. We conclude that the eigenvalues of
+H(τ ) are all ±γ and, since tr(H(τ )) = 0, both γ and −γ have multiplicity
+|V (X)|/2. (Accordingly |V (H)| must be even.)
+If mθ denotes the multiplicity of the eigenvalue θ, then
+X
+tr(H(t)) =
+mθ exp(itθ)
+θ
+
+and thus we may define the Laurent polynomial µ(z) by
+X
+mθ z θ .
+µ(z) :=
+θ
+
+Here z = exp(it) and we have made use of the fact that X is periodic and
+hence its eigenvalues are integers. We call µ(z) the multiplicity enumerator
+of X.
+5.2 Lemma. Let X be a walk-regular graph with integer eigenvalues. If
+perfect state transfer occurs on X, then µ(z) has an eigenvalue on the unit
+circle of the complex plane.
+Proof. The trace of H(t) is zero if and only if µ(exp(it)) = 0.
+The characteristic polynomial of the graph in Figure 1 is
+(t − 4)(t − 2)3 t3 (t + 2)5
+and its multiplicity enumerator is
+µ(z) = z −2 (z 6 + 3z 4 + 3z 2 + 5).
+This polynomial has no roots on the unit circle, and we conclude that perfect
+state transfer does not occur.
+11
+
+We see no reason to believe that, if perfect state transfer occurs on a
+walk-regular graph at time τ , then H(τ ) must be a multiple of a permutation
+matrix. (But we do not have an example.)
+For more information on walk-regular graphs, see [7]. The computations
+in this section were carried out in sage [14]. Van Dam [15] studies regular
+graphs with four eigenvalues, as we noted these provide examples of walkregular graphs.
+
+6
+
+Hypercubes
+
+The n-cube was one of the first cases where perfect state transfer was shown
+to occur (see [5]). The n-cube is an example of a distance-regular graph,
+and in this section we establish some of the consequences of our work for
+distance-regular graphs.
+Suppose X is a distance-regular graph with diameter d and distance matrices A0 , . . . , Ad . It has long been known that if X is imprimitive then either
+X2 is not connected or Xd is not connected (see [3, Chapter 22] or [4, Section 4.2]). For the n-cube, neither X2 nor Xn are connected. If X2 is not
+connected then X is bipartite and Xm is not connected if m is even. Here
+we will be concerned with the case where Xd is not connected. In this case it
+follows from the work just cited that the components of Xd must be complete
+graphs of the same size, and that two vertices of X lie in the same component
+of Xd if and only if they are at distance d in X. The components are called
+the antipodal classes of X; note these may have size greater than two. If Xd
+is not connected, we say that X is an antipodal distance regular graph.
+As already noted the n-cubes provide natural examples of distance-regular
+graphs. The n-cube has diameter n, and its vertices can be partitioned into
+pairs such that two vertices in the same pair are at distance n, while vertices
+in different pairs are at distance less than n, hence it is antipodal.
+Our next lemma is more or less a specialization of Corollary 4.2 to the
+case of distance-regular graphs.
+6.1 Lemma. Suppose X is a distance-regular graph with diameter d. If
+perfect state transfer from u to v occurs at time τ , then X is antipodal with
+antipodal classes of size two and H(τ ) = Xd .
+We outline a proof that perfect state transfer occurs on the n-cube. In the
+following section we will use much the same argument to provide a second
+12
+
+infinite class of examples.
+The n-cube gives rise to an association scheme, that is, a commutative
+coherent configuration as follows. Let X be the graph of the n-cube, and
+view its vertices as binary vectors of length n. Let Xi be the graph with
+the same vertex set as X, where two vertices are adjacent if and only if they
+differ in exactly i positions. Thus X1 = X and two vertices are adjacent in
+Xi if and only they are at distance i in X. Let Ai be the adjacency matrix
+of Xi and set A0 = I. Then A0 , . . . , An are symmetric 01-matrices and
+n
+X
+
+Ar = J.
+
+r=0
+
+It is known that these matrices commute and that their span is closed under
+matrix multiplication. Hence they form a basis for a commutative coherent
+algebra of dimension d+1. Since this algebra is commutative and semisimple,
+it has a second basis
+E0 , . . . , En
+of matrix idempotents. These are real symmetric matrices such that Ei Ej =
+δi,j and
+n
+X
+Ei = I.
+i=0
+
+These idempotents represent orthogonal projection onto the eigenspaces of
+the algebra and hence there are scalars pi (j) such that Ai Ej = pi (j)Ej .
+Consequently
+n
+n
+X
+X
+pi (r)Er .
+Er =
+Ai = Ai I = Ai
+r=0
+
+r=0
+
+The scalars pi (j) are known as the eigenvalues of the scheme.
+On the other hand, the matrices A0 , . . . , An are a basis for the algebra
+and thus there are scalars qi (j) such that
+−n
+
+Ej = 2
+
+n
+X
+
+qj (r)Ar .
+
+r=0
+
+The scalars qi (j) are the dual eigenvalues of the scheme.
+If f is any function defined on the eigenvalues of the scheme then
+f (A1 ) =
+
+n
+X
+
+f (p1 (r))Er .
+
+r=0
+
+13
+
+For the n-cube, p1 (r) = n − 2r and accordingly
+H(t) =
+
+n
+X
+
+exp(i(n − 2r)t) Er = exp(int)
+
+r=0
+
+n
+X
+
+exp(−2irt)Er .
+
+r=0
+
+If we set t = π, we then have
+H(π) = (−1)
+
+n
+
+n
+X
+
+Er = (−1)n I.
+
+r=0
+
+Thus the n-cube is periodic with period π. Now try n = π/2. Then
+n
+X
+H(π/2) = i
+(−1)r Er
+n
+
+r=0
+
+From, for example, [12, Section 21.3] we know that
+n
+X
+
+(−1)r Er = Ad
+
+r=0
+
+and we conclude that perfect state transfer occurs at time π/2.
+In [11], Jafarizadeh and Sufiani give examples of perfect state transfer on
+distance-regular graphs that arise when a weighted adjacency matrix is used
+in place of the ordinary adjacency matrix.
+
+7
+
+Hadamard Matrices
+
+We now show how to use a special class of Hadamard matrices to construct
+distance-regular graphs of diameter three with perfect state transfer.
+The Hadamard matrices H we want must be as follows:
+(a) Symmetric: H = H T .
+(b) Regular: all row and column sums are equal.
+(c) Constant diagonal: all entries on the diagonal are equal.
+
+14
+
+Suppose H is n × n and satisfies this constellation of conditions. If its rows
+sum to c, then HJ = cJ and H 2 J = c2 J. Since
+H 2 I = HH T = nI,
+√
+whence c = ± n. It follows that there are two possibilities: either the
+diagonal entries and the rows sums of H have the same sign, or they do not.
+To handle this we assign a parameter  = (H) to H, by defining  to be the
+sign of the product of the row sum of H with a diagonal entry. Whatever the
+value of (H), the order of H must be a square. For a recent useful paper on
+these Hadamard matrices, see Haemers [10].
+We remark that if the row sums of a Hadamard matrix are all equal then
+its columns sums must all be equal as well, and again the order of the matrix
+must be a square. Similarly, a symmetric Hadamard matrix with constant diagonal must have square order. If H and K are regular symmetric Hadamard
+matrices with constant diagonal, then so is their Kronecker product H ⊗ K
+and
+(H ⊗ K) = (H)(H).
+Finally if H is a regular Hadamard matrix of order n × n with constant
+diagonal, and P is the permutation matrix on Rn ⊗ Rn defined by
+P (u ⊗ v) = v ⊗ u,
+then P (H ⊗ H T ) is a symmetric regular Hadamard matrix with constant
+diagonal.
+Suppose H is a regular symmetric n × n Hadamard matrix with constant
+diagonal. Replacing H by −H is necessary, we may assume that the diagonal
+entries of H are equal to 1, and then the matrix
+1
+(J + H) − I
+2
+is the adjacency matrix of a regular graph (in fact a strongly regular graph).
+Unfortunately the graphs that result are not the ones we need. Our aim
+rather is to construct an antipodal distance-regular graph of diameter three
+on 2n vertices from H. (These graphs are member of a class known as regular
+two-graphs. An introductory treatment is offered in [8, Chapter 11])
+We construct our graphs as follows. Let H be a symmetric Hadamard
+matrix of order n × n with constant row sum and with all diagonal entries
+equal to 1. We construct a graph X(H) with vertex set
+{1, . . . , n} × {0, 1},
+15
+
+where (i, a) is adjacent to (j, b) if and only if i 6= j and
+Hi,j = (−1)a+b
+Clearly this gives us a regular graph X(H) on 2n vertices with valency n − 1.
+It is not hard to check that its diameter is three, and two vertices are at
+distance three if and only if they are of the form
+(i, 0), (i, 1)
+for some i. Suppose A is the adjacency matrix of X(H). The space S of
+vectors that are constant on the antipodal classes of X(H) has dimension n
+and the matrix representing the action of A on S is the n × n matrix JI . Its
+eigenvalues are n − 1 and −1 with respective multiplicities 1 and n − 1. The
+orthogonal complement of S is also A-invariant and the matrix representing
+the action of A is H.
+If we write H as I + C − D where C and D are 01-matrices, then
+
+
+
+
+1 0
+0 1
+A(X(H)) = C ⊗
++D⊗
+0 1
+1 0
+and the eigenvalues of A are the eigenvalues of the matrices
+C + D = J − I,
+
+C − D = H − I.
+
+Therefore the eigenvalues of A are n − 1, −1 and the eigenvalues of H − I.
+Since H 2 = nI, we see that the eigenvalues of A are
+√
+√
+n − 1, −1, n − 1, − n − 1.
+√
+If a is the multiplicity of n as an eigenvalue of F , then
+√
+√
+n = tr(A) = a n − (n − a) n
+whence
+
+√
+1
+a = (n + n).
+2
+
+it follows that
+√
+√ √
+√
+1
+1
+µ(z) = z n−1 + (n − 1)z −1 + (n + n)z n−1 + (n − n)z − n−1
+2
+2
+√
+√
+√
+√ 2√n 1
+√
+1
+− n−1 n+ n
+n
+=z
+(z
++ (n − 1)z + (n − n)z
++ (n − n)).
+2
+2
+
+16
+
+√
+
+√
+
+If z n = −1, then z 2 n = 1 and, since
+√
+
+√
+
+√
+√
+
+n is even,
+√
+
+z n− n = (z n ) n z − n = −1.
+√
+
+Therefore if z n = −1, then µ(z) = 0 and if z = eit then
+H(t) = −En−1 − E(−1) + E(−1+√n) + E(−1−√n) .
+Let F be the direct sum of n copies of the matrix
+
+
+1 1 1
+.
+2 1 1
+Then rk(F ) = n and col(F ) is the space of functions constant on the antipodal classes of X(H). Since F 2 = F , we find that E(−1) = F − En−1 and
+consequently
+H(t) = I − 2F.
+So H(t) is a permutation matrix and we have perfect state transfer.
+Infinitely many examples of regular symmetric Hadamard matrices with
+constant diagonal are known, in particular they exist whenever the order n
+is a power of four. Haemers [10] provides a summary of the state of our
+knowledge.
+
+8
+
+Questions and Comments
+
+The most obvious problem remaining is to characterize the pairs of vertices
+where perfect state transfer takes place.
+Angeles-Canul et al [1] et al give examples of graphs where perfect state
+transfer occurs but the underlying graph is not periodic; this answered a
+question we raised in an earlier version of this paper.
+Facer, Twamley and Cresser [6] construct certain Cayley graphs for Zd2
+on which perfect state transfer; the resulting family of graphs include the
+n-cubes. In [2], it is shown that if C is the connection set for a Cayley graph
+for Zd2 and σ is the sum of the elements of C and σ 6= 0, then we have perfect
+state transfer from v to v + σ for each element v of Zd2 . The d-cube has
+2d edges. It would be interesting to have a good estimate for the minimum
+number of edges in a graph where perfect state transfer between two vertices
+at distance d occurs.
+I would like to acknowledge a number of very useful discussions with
+Simone Severini on the topics of this paper.
+17
+
+References
+[1] Ricardo Javier Angeles-Canul, Rachael M. Norton, Michael C. Opperman, Christopher C. Paribello, Matthew C. Russell and Christino Tamon. Perfect state transfer, integral circulants and join of graphs. Quantum Information and Computation, 10(3&4):325-342, 2010. Available
+from http://arxiv.org/abs/0907.2148.
+[2] Anna Bernasconi, Chris Godsil, Simone Severini. Quantum Networks
+on Cubelike Graphs Phys. Rev. A, 78, 052320 (2008). Available from
+http://arxiv.org/abs/0808.0510v1.
+[3] Norman Biggs. Algebraic Graph Theory. Cambridge University Press,
+Cambridge, second edition, 1993.
+[4] A. E. Brouwer, A. M. Cohen, and A. Neumaier.
+Graphs. Springer-Verlag, Berlin, 1989.
+
+Distance-Regular
+
+[5] Matthias Christandl, Nilanjana Datta, Tony C. Dorlas, Artur Ekert,
+Alastair Kay and Andrew J. Landahl. Perfect transfer of arbitrary states
+in quantum spin networks. Physical Review A, 71:032312, 2005. Available from: http://arxiv.org/abs/quant-ph/0411020.
+[6] C. Facer, J. Twamley and J. D. Cresser. Quantum Cayley networks of
+the hypercube. Phys. Rev. A, 77:012334, 2008. Available from: http:
+//arxiv.org/abs/0706.3821.
+[7] C. D. Godsil and B. D. McKay. Feasibility conditions for the existence
+of walk-regular graphs. Linear Algebra Appl., 30:51–61, 1980.
+[8] Chris Godsil and Gordon Royle. Algebraic Graph Theory. SpringerVerlag, New York, 2001.
+[9] Chris Godsil and Simone Severini. Control by quantum dynamics on
+graphs Physical Review A, 81:052316 (2010) Available from http://
+arxiv.org/abs/0910.5397
+[10] W. H. Haemers. Strongly regular graphs with maximal energy. Linear
+Algebra Appl., 429:2719–2723, 2008.
+
+18
+
+[11] M. A. Jafarizadeh and R. Sufiani. Perfect state transfer over distanceregular spin networks, 2007. Available from: http://arxiv.org/abs/
+0709.0755.
+[12] F. J. MacWilliams and N. J. A. Sloane. The Theory of Error-Correcting
+Codes. North-Holland Publishing Co., Amsterdam, 1977.
+[13] Nitin Saxena, Simone Severini, and Igor Shparlinski. Parameters of
+integral circulant graphs and periodic quantum dynamics. Int. J.
+Quant. Inf., 5:417–430, 2007. Available from: http://arxiv.org/abs/
+quant-ph/0703236.
+[14] William Stein. Sage: Open Source Mathematical Software (Version 3.0).
+The Sage Group, 2008. http://www.sagemath.org.
+[15] Edwin R. van Dam. Regular graphs with four eigenvalues. Linear Algebra Appl., 226/228:139–162, 1995.
+
+19
+
+

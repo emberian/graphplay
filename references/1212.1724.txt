@@ -1,0 +1,2379 @@
+Quantum Homomorphisms
+Laura Mančinska1,2 , David E. Roberson1
+1 Department of Combinatorics & Optimization and
+
+arXiv:1212.1724v2 [quant-ph] 20 Sep 2016
+
+2 Institute for Quantum Computing
+
+University of Waterloo
+
+Abstract
+A homomorphism from a graph X to a graph Y is an adjacency preserving mapping f :
+V (X) → V (Y ). We consider a nonlocal game in which Alice and Bob are trying to convince a
+verifier with certainty that a graph X admits a homomorphism to Y . This is a generalization
+of the well-studied graph coloring game. Via systematic study of quantum homomorphisms we
+prove new results for graph coloring. Most importantly, we show that the Lovász theta number
+of the complement lower bounds the quantum chromatic number, which itself is not known to
+be computable. We also show that some of our newly introduced graph parameters, namely
+quantum independence and clique numbers, can differ from their classical counterparts while
+others, namely quantum odd girth, cannot. Finally, we show that quantum homomorphisms
+closely relate to zero-error channel capacity. In particular, we use quantum homomorphisms to
+construct graphs for which entanglement-assistance increases their one-shot zero-error capacity.
+
+Contents
+1 Introduction
+1.1 Preliminaries . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+2
+3
+
+2 Homomorphism Game
+2.1 The Classical Strategy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+2.2 The Quantum Strategy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+2.3 Basic Properties of Quantum Homomorphisms . . . . . . . . . . . . . . . . . . .
+2.4 Reformulating Quantum Homomorphisms in Terms of Homomorphisms . . . . .
+2.5 Non-signalling Strategies . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+4
+5
+5
+7
+8
+9
+
+3 Lovász ϑ
+
+10
+
+4 Quantum Parameters
+11
+4.1 Quantum Chromatic Number . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+4.2 Quantum Independence and Clique Numbers . . . . . . . . . . . . . . . . . . . . 13
+4.3 Walks and Quantum Odd Girth . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+4.4 Quantum Homomorphisms to Kneser Graphs . . . . . . . . . . . . . . . . . . . . 18
+5 Zero-Error Capacity
+19
+5.1 Relation to Quantum Independence Number . . . . . . . . . . . . . . . . . . . . . 21
+5.2 Relation to Quantum Homomorphisms . . . . . . . . . . . . . . . . . . . . . . . . 22
+6 Projective Rank
+23
+6.1 Relation to Other Parameters . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 24
+6.2 Relation to Quantum Homomorphisms . . . . . . . . . . . . . . . . . . . . . . . . 26
+
+1
+
+7 Concluding Remarks
+27
+7.1 Open Questions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+
+1
+
+Introduction
+
+The c-coloring game on a graph X consists of two players, Alice and Bob, attempting to convince
+a referee that they have a c-coloring of X [GW02, CHTW04]. The game is played as follows:
+the referee sends each of the players a vertex of X, and each player responds with a color from
+[c] = {1, 2, . . . , c}. To win, the players must respond with the same color when they are sent
+the same vertex, and with different colors when they are sent adjacent vertices. The players
+are not allowed to communicate during the game but may agree on a strategy beforehand. It
+can be easily seen that deterministic players with shared randomness (classical players) can win
+the c-coloring game on X with certainty if and only if there exists a c-coloring of X. On the
+other hand, players allowed to make quantum measurements on some shared entangled state
+can sometimes win the c-coloring game on X with certainty even when X admits no c-coloring.
+Thus the quantum chromatic number, χq (X), is defined to be the smallest c ∈ N such that
+quantum players can win the c-coloring game on X [AHKS06].
+Quantum strategies for the coloring game and the quantum chromatic number have been
+well-studied [AHKS06, CMN+ 07, FIG11, SS12, MSS13]. However, many questions remain unanswered. For example, it is not known whether χq (X) is computable, or whether there exists a
+family of graphs Xn such that limn→∞ χq (Xn ) < ∞ but limn→∞ χ(Xn ) = ∞. Furthermore,
+there are few lower bounds known for quantum chromatic number. The authors of [CMN+ 07]
+have shown that the orthogonal rank of a graph is a lower bound on a restricted version of
+quantum chromatic number, but the only general lower bound known is the clique number of a
+graph.
+A homomorphism from a graph X to a graph Y is a function, φ, from the vertex set of X,
+denoted V (X), to the vertex set of Y , denoted V (Y ), which preserves adjacency. More formally,
+φ : V (X) → V (Y ) is a homomorphism from X to Y if φ(x) ∼ φ(x′ ) whenever x ∼ x′ , where “∼”
+denotes adjacency. We will write X → Y if there exists a homomorphism from X to Y , and
+X 6→ Y if not. It is straightforward to see that a homomorphism from a graph X to the complete
+graph on c vertices, denoted Kc , is equivalent to a c-coloring of X. Thus homomorphisms are
+a natural generalization of colorings. There is a well-developed and beautiful theory around
+graph homomorphisms [HN04, HT97], and the study of them has given rise to original results
+on graph coloring.
+Echoing the way in which homomorphisms generalize colorings, we have defined a homomorphism game which generalizes the coloring game. To play the (X, Y )-homomorphism game
+for graphs X and Y , each player is sent a vertex of X, and must respond with a vertex of Y .
+In order to win, the players must respond with the same vertex of Y when they are given the
+same vertex of X, and they must respond with adjacent vertices when given adjacent vertices.
+Similarly to the coloring game, classical players can win the (X, Y )-homomorphism game if and
+only if X → Y . If quantum players can win the (X, Y )-homomorphism game, then we say that
+q
+there is a quantum homomorphism from X to Y and write X −
+→Y.
+Generalizing quantum colorings to quantum homomorphisms helps to place the idea into a
+broader and more natural mathematical context. Furthermore, a systematic study of quantum
+homomorphisms can potentially yield a better understanding of and new results concerning
+quantum colorings. Indeed, our Theorem 3.2 can be applied to quantum colorings to obtain
+ϑ(X) ≤ χq (X), a previously unknown and efficiently computable lower bound. Here, X refers
+to the complement of X. Defining quantum homomorphisms also allows us to define quantum
+versions of many other graph parameters, including quantum independence number, which
+turns out to be intimately related to entanglement-assisted zero-error capacity. Lastly, quantum
+homomorphisms afford us many new examples of nonlocal games which potentially have perfect
+quantum strategies but no such classical strategy. We have already found an infinite family of
+such examples (see Section 4.2).
+
+2
+
+Outline of the paper. We start by introducing some notation as well as the mathematical
+formalism used to describe quantum states and measurements in Section 1.1. In Section 2 we
+introduce in detail the homomorphism game and the general forms of classical and quantum
+strategies. We also reformulate the question of the existence of a winning quantum strategy for
+a particular homomorphism in terms of the existence of a particular set of projectors satisfying
+certain orthogonality constraints. This is achieved via an argument previously used in [CMN+ 07]
+to obtain a similar reformulation for the coloring game. We then use the reformulation to prove
+some basic properties of quantum homomorphisms. Additionally, we use this reformulation to
+show that there exists a quantum homomorphism from X to Y if and only if there exists a
+(classical) homomorphism from X to an infinite graph which depends Y .
+In Section 3 we show that the order of the Lovász theta function, ϑ, is respected by quantum
+q
+homomorphisms, i.e. if X −
+→ Y , then ϑ(X) ≤ ϑ(Y ). This is followed by section 4 in which
+we define and investigate quantum analogs of some graph parameters that can be defined using
+homomorphisms. We start with quantum chromatic number, which has been previously defined.
+We use the main result of Section 3 to show that the quantum chromatic number of X is lower
+bounded by ϑ(X). Using this bound we are able to show that the quantum colorings given
+in [AHKS06] are optimal. Moving on to quantum independence number, we prove a quantum
+analog of a classical result relating the existence of a homomorphism from X to Y to the existence
+of an independent set of size |V (X)| in a graph depending on X and Y . We then use this
+to construct graphs which have large separation between classical and quantum independence
+number. We again use the result from Section 3 to show that quantum independence number
+is upper bounded by Lovász theta number. The last parameter we consider is quantum odd
+girth. In contrast to quantum chromatic and independence numbers, we show that there are no
+separations between odd girth and quantum odd girth. To prove this we first prove a quantum
+analog of a well-known result relating homomorphisms and walks in graphs.
+In Section 5 we show that the entanglement-assisted one-shot zero-error capacity of a graph
+is lower bounded by the quantum independence number. Furthermore, we show that if the
+entanglement-assisted one-shot zero-error capacity of a graph can be achieved using only projective measurements on a maximally entangled state, then it is equal to the quantum independence number. We also show that the order of entanglement-assisted one-shot zero-error
+q
+→ Y.
+capacity is respected by quantum homomorphisms, i.e., that c∗0 (X) ≤ c∗0 (Y ) whenever X −
+In Section 6 we introduce a new graph parameter which we refer to as projective rank and
+denote ξf , that is a generalization of both orthogonal rank and fractional chromatic number. We
+show that this parameter lies between Lovász theta of the complement and quantum chromatic
+number. We also show that the order of projective rank is respected by quantum homomorq
+phisms, i.e., if X −
+→ Y , then ξf (X) ≤ ξf (Y ).
+
+1.1
+
+Preliminaries
+
+In this paper graphs will be undirected and, unless explicitly defined otherwise, finite. A graph
+is said to be vertex/edge transitive if for any two vertices/edges, there exists an automorphism
+of the graph that maps one to the other. We will refer to orthogonal projectors (matrices
+which are both idempotent and Hermitian) simply as projectors. We say that two positive
+semidefinite matrices E and F of the same dimensions, are orthogonal if EF = 0 or equivalently
+if Tr(EF ) = 0. Note that this also implies that the column spaces of E and F are orthogonal. We
+use MF (m, n) to denote the space of m×n matrices over the field F. For a matrix M ∈ MC (m, n),
+we write M to denote the m × n matrix obtained by taking the complex conjugate of each of
+the entries of M . Finally, for a natural number n ≥ 1 we use [n] to denote the set {1, . . . , n}.
+
+Quantum states and measurements. We now briefly introduce the mathematical formalism used to describe quantum states and measurements. For an in-depth explanation we
+refer the reader to [NC00].
+To any quantum system S, we associate a complex vector space Cd equipped with the usual
+inner product. A state of the system S can be specified by a unit vector ψ ∈ Cd or alternatively
+
+3
+
+using a rank-one projection ψψ ∗ . These are the most basic type of quantum states and they
+are known as pure states. Now suppose that the quantum system S is prepared in state ψ ∈ Cd
+with probability p and in state φ ∈ Cd with probability 1 − p. If we do not know which case has
+happened, we describe the state of S using the positive semidefinite matrix pψψ ∗ + (1 − p)φφ∗ .
+Such states are known as mixed states. More formally, a mixed state of system S is a positive
+semidefinite matrix ρ ∈ MC (d, d) with trace equal to one. We can extract classical information
+from a quantum system by measuring it. In this paper we describe a measurement using
+a positive-operator valued measure (POVM) and we thus use the terms “measurement” and
+“POVM” interchangeably. A POVM
+P E is specified by a set {E1 , . . . , En } ⊂ MC (d, d) of positive
+semidefinite operators such that
+i∈[n] Ei = Id , where Id is the d × d identity matrix. A
+POVM, or measurement, is projective if each Ei is a projector. Note that we can only measure
+a quantum system S using a measurement E if the dimension of the vector space associated to
+S matches the size of the matrices specifying the measurement E. According to the axioms of
+quantum mechanics, if we measure a quantum system S in a mixed state ρ using measurement
+E, then we obtain outcome i ∈ [n] with probability equal to pi = Tr(ρEi ). In the case when the
+state ρ is pure, i.e., ρ = ψψ ∗ , we can also express the probability pi as ψ ∗ Ei ψ.
+Consider two quantum systems A and B with associated spaces CdA and CdB respectively.
+The vector space we associate to the combined quantum system (A, B) is CdA ⊗ CdB . Furthermore, if A is in a state ψ1 ∈ CdA and B is in state ψ2 ∈ CdB , then their joint state is described
+using the tensor product ψ1 ⊗ ψ2 . However, not all pure states of (A, B) are tensor products. In
+fact, one of the key features of quantum mechanics, the phenomenon of entanglement, occurs
+when the state of the constituent quantum systems cannot be described independently. More
+precisely, a state ψ ∈ CdA ⊗ CdB is said to be entangled, if there does not exist a pair of states
+= ψ1 ⊗ ψ2 . We say that a quantum state ψ ∈ Cd ⊗ Cd
+ψ1 ∈ CdA , ψ2 ∈ CdB such that ψP
+1
+is maximally entangled if ψ = √d di=1 ui ⊗ vi , where {u1 , . . . , ud } and {v1 , . . . , vd } are some
+orthonormal bases for Cd . The canonical maximally entangled state in Cd ⊗ Cd is
+d
+
+1 X
+ei ⊗ ei ,
+Φ := √
+d i=1
+
+(1)
+
+where ei is the ith standard basis vector.
+Finally, let us discuss partial measurements of a composite quantum system (A, B). If a
+POVM E = {E1 , . . . , En } can be used to measure system A then it can also be used to measure
+the A part of the composite system (A, B). Applying E to a state ψ ∈ CdA ⊗ CdB of (A, B) will
+yield outcome i ∈ [n] with probability
+pi = ψ ∗ (Ei ⊗ I)ψ
+
+(2)
+
+leaving system B in state ρi = p1i TrA ((Ei ⊗I)ψψ ∗ ). Here, TrA : MC (dA dB , dA dB ) → MC (dB , dB )
+is the map defined by TrA (M ⊗ N ) = Tr(M )N and extended linearity; this map is known as
+partial trace. We sometimes refer to the ρi as the residual states. Note that there is no need
+to define residual states, when pi = 0 as this corresponds to a zero-probability event. To treat
+both the pi = 0 and the pi 6= 0 case in a unified manner, it is sometimes convenient to consider
+the unnormalized residual states ρ′i := TrA ((Ei ⊗ I)ψψ ∗ ). Note that the states ρ′i are welldefined and equal to the zero matrix for pi = 0. We stress that unnormalized states are used
+for convenience only and all quantum states are by definition normalized, i.e., of unit norm.
+
+2
+
+Homomorphism Game
+
+For a graph X and positive integer c, the (X, c)-coloring game is played as follows: a verifier sends Alice and Bob vertices xA and xB of X respectively, and they respond with colors
+yA , yB ∈ [c] accordingly. The players may decide on a strategy beforehand, but are not allowed
+to communicate after receiving input from the verifier. To win, the following conditions need to
+
+4
+
+be satisfied:
+if xA = xB , then yA = yB ;
+if xA ∼ xB , then yA 6= yB .
+
+(3)
+(4)
+
+The first condition is usually referred to as the consistency condition, while the second condition
+corresponds to the requirements of a proper coloring of a graph. The game is only played for
+one round, i.e. one pair of inputs and one pair of outputs are involved. It is of particular interest
+when quantum players can win the c-coloring game for some graph X for which classical players
+cannot. As mentioned above, the quantum chromatic number is the smallest c ∈ N such that
+quantum players can win the (X, c)-coloring game.
+For an ordered pair of graphs (X, Y ), the (X, Y )-homomorphism game, consists of a verifier
+sending Alice and Bob vertices xA and xB of X respectively, and Alice and Bob responding with
+vertices yA and yB of Y accordingly. To win the (X, Y )-homomorphism game, the following
+conditions need to be satisfied:
+if xA = xB , then yA = yB ;
+
+(5)
+
+if xA ∼ xB , then yA ∼ yB .
+
+(6)
+
+Like above, the first condition is the consistency condition and the second corresponds to the
+adjacency-preserving property of homomorphisms. When Y = Kc , this game reduces to the
+(X, c)-coloring game since inequality is adjacency in the complete graph. When we say that two
+players can “win” a game, we mean that they can win with probability 1.
+
+2.1
+
+The Classical Strategy
+
+Any deterministic strategy for the (X, Y )-homomorphism game can be specified by some functions fA , fB : V (X) → V (Y ), where Alice responds with fA (x) whenever she receives x as an
+input, and fB is defined similarly. Due to the consistency condition, we must have that fA = fB
+for a winning strategy. Furthermore, it must be the case that fA is in fact a homomorphism
+from X to Y . Conversely, if φ : X → Y is a homomorphism, then each player responding with
+φ(x) upon receiving x is a winning deterministic strategy for the (X, Y )-homomorphism game.
+Classical players are in general not restricted to deterministic strategies, they are allowed
+probabilistic strategies which depend on shared randomness. However, in this case their strategy
+can be viewed as a probability distribution over deterministic strategies. Since they must win
+with certainty, each deterministic strategy which occurs with nonzero probability must be a
+winning deterministic strategy. Therefore, by the above there must still exist a homomorphism
+from X to Y in this case. Thus classical players can win the (X, Y )-homomorphism game if and
+only if X → Y .
+
+2.2
+
+The Quantum Strategy
+
+For quantum Alice and Bob, the most general strategy for playing the (X, Y )-homomorphism
+game is as follows: upon receiving input x ∈ V (X), Alice performs POVM Ex = {Exy }y∈V (Y ) on
+her part of a shared state ψ ∈ CdA ⊗ CdB and obtains some outcome y ∈ V (Y ), which she sends
+to the verifier as her answer. Bob acts similarly, except that he uses POVMs Fx = {Fxy }y∈V (Y )
+for x ∈ V (X). The probability that Alice outputs y ∈ V (Y ) and Bob outputs y ′ ∈ V (Y ) upon
+receiving inputs x, x′ ∈ V (X) respectively is given by ψ ∗ (Exy ⊗ Fx′ y′ )ψ. Therefore, to win we
+need that
+ψ ∗ (Exy ⊗ Fx′ y′ ) ψ = 0 for y 6= y ′ ;
+
+ψ ∗ (Exy ⊗ Fx′ y′ ) ψ = 0 for x ∼ x′ and y 6∼ y ′ ,
+
+where y 6∼ y ′ includes the case where y = y ′ . Since quantum players can always perform at least
+q
+as well as classical ones, we have that X → Y ⇒ X −
+→Y.
+
+5
+
+The following theorem was proven by Cameron et. al. in [CMN+ 07] for the coloring game,
+and the same proof works more generally for the homomorphism game.
+Theorem 2.1. If the (X, Y )-homomorphism game can be won by a quantum strategy, then it
+can be won by a quantum strategy such that
+a. the matrices Exy and Fxy are d × d projectors for some d ∈ N;
+b. Exy = F xy for all x ∈ V (X), y ∈ V (Y );
+Pd
+c. ψ = √1d i=1 ei ⊗ ei .
+
+Furthermore, if Y is vertex transitive, then we may assume that:
+d. The projectors Exy all have the same rank.
+Further following the argument of [CMN+ 07] we obtain:
+Corollary 2.2. There exists a quantum homomorphism from X to Y if and only if there exist
+projectors Exy for x ∈ V (X), y ∈ V (Y ) such that
+X
+Exy = I ∀x ∈ V (X);
+(7)
+y∈V (Y )
+
+Exy Ex′ y′ = 0 if (x = x′ & y 6= y ′ ) or (x ∼ x′ & y 6∼ y ′ ).
+
+(8)
+
+We say that “Exy are projectors that give a quantum homomorphism from X to Y ” if the
+matrices Exy satisfy the conditions of Corrolary 2.2.
+The following lemma shows that we can further restrict to using only real projectors. We
+will need this fact later when proving results about Lovász theta.
+Lemma 2.3. There exists a quantum homomorphism from X to Y if and only if there exist
+real projectors Exy for all x ∈ V (X), y ∈ V (Y ) satisfying (7) and (8) from Corollary 2.2.
+Proof. The ‘if’ direction is trivial by Corollary 2.2. To prove the other direction, suppose
+q
+that X −
+→ Y . By Corollary 2.2 there exist (possibly complex) projectors Exy ∈ MC (d, d) for
+x ∈ V (X), y ∈ V (Y ) satisfying (7) and (8) above. Let R : MC (d, d) → MR (2d, 2d) be the map
+defined by
+
+
+ℜ(A) ℑ(A)
+R(A) =
+−ℑ(A) ℜ(A)
+where ℜ(A) and ℑ(A) are the real and imaginary parts of A respectively. It is routine to check
+that R(A + B) = R(A) + R(B), R(AB) = R(A)R(B), and that R takes Hermitian matrices to
+symmetric matrices. Therefore, for all x ∈ V (X) and y ∈ V (Y ), the matrix R(Exy ) is a real
+projector that satisfies (7) and (8).
+Recall from Theorem 2.1 that if Y is vertex transitive we can assume that the projectors used
+in a winning quantum strategy all have the same rank. This gives us the following corollary.
+q
+
+Corollary 2.4. If Y is vertex transitive, then X −
+→ Y if and only if there exist rank r projectors
+Exy ∈ MC (d, d) for x ∈ V (X), y ∈ V (Y ) for some r, d ∈ N such that
+d = r|V (Y )|;
+
+(9)
+
+Exy Ex′ y′ = 0 if (x = x′ & y 6= y ′ ) or (x ∼ x′ & y 6∼ y ′ ).
+
+(10)
+
+Proof. Suppose that such projectors exist. Since the sum of mutually orthogonal projectors is
+equal to identity if and only if the sum of their ranks is equal to the dimension in which they
+live, we have that
+X
+Exy = I ∀x ∈ V (X).
+y∈V (Y )
+
+q
+
+→Y.
+Therefore by Corollary 2.2 we have that X −
+
+6
+
+q
+
+If X −
+→ Y , then by Corollary 2.2 we have that there exist projectors Exy ∈ MC (d, d) for
+x ∈ V (X), y ∈ V (Y ) for some d ∈ N that satisfy (7) and (8). Furthermore, since Y is vertex
+transitive, we can assume that the projectors Exy all have the same rank, r, for some r ∈ N.
+Condition (7) then implies that d = r|V (Y )|.
+
+2.3
+
+Basic Properties of Quantum Homomorphisms
+
+In this section we discuss some basic properties of quantum homomorphisms which we need later.
+First, we show that, like classical homomorphisms, quantum homomorphisms are transitive.
+q
+
+q
+
+q
+
+q
+
+Lemma 2.5. The relation −
+→ is transitive: if X −
+→ Y and Y −
+→ Z, then X −
+→ Z.
+q
+
+q
+
+Proof. Assume that X −
+→ Y and Y −
+→ Z. Consider the (X, Z)-homomorphism game; we now
+describe a strategy to win this game which relies only on the fact that Alice and Bob can win
+both the (X, Y )- and (Y, Z)-homomorphism games. Alice is given xA ∈ V (X) and Bob is given
+xB ∈ V (X). Alice and Bob first act as if they are playing the (X, Y )-homomorphism game to
+obtain outputs yA , yB ∈ V (Y ) respectively. They then act as if they are playing the (Y, Z)homomorphism game with inputs yA and yB to obtain outputs zA , zB ∈ V (Z) respectively. If
+xA = xB , then yA = yB and then zA = zB since Alice and Bob win the (X, Y )-homomorphism
+game and (Y, Z)-homomorphism game. Similarly, if xA ∼ xB , then yA ∼ yB and so zA ∼ zB .
+q
+Therefore, Alice and Bob can win the (X, Z)-homomorphism game, i.e. X −
+→ Z.
+The above proof does not use that fact that the players are using a particular type of
+strategy, therefore this also proves that classical homomorphisms are transitive, though that is
+well-known and easy to see. In the quantum case, the method of “composition” given in the
+proof corresponds to the following: if {Exy : x ∈ V (X), y ∈ V (Y )} are the projectors which give
+′ :
+y ∈ V (Y ), z ∈ V (Z)} are the projectors
+a quantum homomorphism from X to Y , and {Eyz
+which give a quantum homomorphism from Y to Z, then the following projectors give a quantum
+homomorphism from X to Z:
+X
+′
+′′
+Exy ⊗ Eyz
+for x ∈ V (X), z ∈ V (Z).
+Exz
+=
+y∈V (Y )
+
+The next result was given in different terms in [CMN+ 07]. It shows that when restricted to
+complete graphs, quantum homomorphisms behave the same as homomorphisms.
+q
+
+→ Kn if and only if m ≤ n.
+Lemma 2.6. Km −
+q
+
+→ Kn .
+Proof. If m ≤ n, then Km → Kn and thus Km −
+q
+→ Kn . Let Exy for x ∈ V (Km ), y ∈ V (Kn ) be the projectors
+Now suppose that Km −
+satisfying the conditions of Corollary 2.4. The projectors Exy have rank some r ∈ N and live
+in MC (rn, rn). For fixed y ∈ V (Kn ) the projectors {Exy }x∈V (Km ) are pairwise orthogonal.
+Therefore,
+
+
+X
+X
+rk (Exy ) = rm
+Exy  =
+rk 
+x∈V (Km )
+
+x∈V (Km )
+
+and thus rm ≤ rn which of course implies that m ≤ n.
+
+Lemma 2.7. Suppose that X is a connected graph and Y is a graph with connected components
+q
+q
+Y1 , . . . , Yn . If X −
+→ Y , then there exists k ∈ [n] such that X −
+→ Yk .
+q
+
+Proof. If X is a single vertex then we are done, otherwise X has an edge. Suppose that X −
+→Y
+and that Exy for x ∈ V (X), y ∈ V (Y ) are projectors satisfying the conditions of Corollary 2.2.
+For each i ∈ [n] and x ∈ V (X) define Exi as follows:
+X
+Exy .
+Exi =
+y∈V (Yi )
+
+7
+
+Since Exy Exy′ = 0 for y 6= y ′ , we have that the matrices Exi are projectors. Furthermore, since
+the V (Yi ) partition V (Y ), we have that Exi Exj = 0 for i 6= j. Now suppose that x′ , x′′ ∈ V (X)
+are adjacent. Since y 6∼ y ′ for y ∈ V (Yi ), y ′ ∈ V (Yj ), i 6= j we have that
+Ex′ i Ex′′ j = 0 for all i 6= j.
+P
+This implies that Ex′ i (I − Ex′′ i ) = 0 and (I − Ex′ i ) Ex′′ i = 0 for all i ∈ [n], as i∈[n] Ex′ i =
+P
+j∈[n] Ex′′ j = I. Therefore, Ex′ i = Ex′ i Ex′′ i = Ex′′ i . Since X is connected, we further obtain
+that for each
+P i ∈ [n] there exists a projector Ei such that Exi = Ei for all x ∈ V (X).
+Since i∈[n] Ei = I, we can fix a k ∈ [n] such that Ek 6= 0. Then for all x ∈ V (X), y ∈ V (Yk )
+we have that
+X
+Exy = Ek
+y∈V (Yk )
+
+Exy Ex′ y′ = 0 if (x = x′ & y 6= y ′ ) or (x ∼ x′ & y 6∼ y ′ ).
+
+Hence, when restricted to the image of Ek , the projectors Exy for x ∈ V (X), y ∈ V (Yk ) satisfy
+q
+the conditions of Corollary 2.2 and X −
+→ Yk as desired.
+
+2.4 Reformulating Quantum Homomorphisms in Terms of Homomorphisms
+Using Corollary 2.2, we can rephrase the question of the existence of a quantum homomorphism
+from X to Y as a question of the existence of a homomorphism from X to a graph, M(Y ),
+which depends only on Y . In theory, this may offer some assistance in the study of quantum
+homomorphisms, since it allows one to apply results concerning homomorphisms, which have
+been extensively studied. In practice it may not be of much use because the graphs M(Y ) seem
+to be difficult to analyse, and in particular contain an uncountable number of vertices.
+Definition. For a finite graph Y and d ∈ N, define M (Y, d) to be the graph whose vertices
+p(y) is a projector for all y ∈ V (Y ), and
+P are functions p : V (Y ) → MC (d, d) such that
+′
+p(y)
+=
+I.
+Two
+such
+functions,
+p
+and
+p
+,
+are
+adjacent if p(y)p′ (y ′ ) = 0 for all y 6∼ y ′ .
+y∈V (Y )
+Further, define M(Y ) to be the disjoint union of M (Y, d) over all d ∈ N.
+Note that the vertices of M (Y, d) are exactly projective measurements in dimension d whose
+outcomes are indexed by the vertices of Y . We have the following:
+q
+
+Theorem 2.8. If X and Y are graphs, then X −
+→ Y if and only if X → M (Y, d) for some
+d ∈ N.
+Proof. Suppose that φ : X → M (Y, d) for some d ∈ N. For all x ∈ V (X) and y ∈ V (Y ), let
+Exy = φ(x)(y). It is straightforward to check that the projectors Exy satisfy the conditions of
+q
+→Y.
+Corollary 2.2 and thus X −
+q
+Conversely, if X −
+→ Y , then there exist projectors Exy satisfying the conditions of Corollary 2.2. For each x ∈ V (X), define px : V (Y ) → MC (d, d) as px (y) = Exy . The function φ : V (X) → V (M (Y, d)) defined by φ(x) = px is clearly a homomorphism from X to
+M (Y, d).
+If we really want to only consider a single target graph instead of a family, then we can use
+M(Y ):
+q
+
+Theorem 2.9. If X and Y are graphs, then X −
+→ Y if and only if X → M(Y ).
+q
+
+Proof. If X −
+→ Y then by Theorem 2.8 there exists d ∈ N such that X → M (Y, d). Since
+M (Y, d) is a subgraph of M(Y ), we have that X → M(Y ).
+Now suppose that φ : X → M(Y ). If X ′ is a component of X, then the image of X ′ under
+q
+φ is connected and therefore must be contained in M (Y, d) for some d ∈ N. Therefore X ′ −
+→Y
+
+8
+
+by Theorem 2.8, and similarly all components of X have a quantum homomorphism from X
+to Y . Now by considering the (X, Y )-homomorphism game, it is easy to see that X must have
+a quantum homomorphism to Y : each player plays according to the strategy required for the
+component of X from which their input vertex comes.
+
+2.5
+
+Non-signalling Strategies
+
+We here consider the case in which Alice and Bob have access to more general correlations than
+those produced by shared entanglement. Mathematically, a correlation can be described as a
+joint conditional probability distribution P (YA , YB |XA , XB ), where XA and XB are random
+variables representing Alice and Bob’s respective inputs to the correlation, and YA and YB their
+respective outputs. For instance, when Alice and Bob employ a quantum strategy for some
+game, then the correlation produced by their strategy is given by
+P (YA = y, YB = y ′ |XA = x, XB = x′ ) = ψ ∗ (Exy ⊗ Fx′ y′ ) ψ ∗ ,
+where Exy and Fx′ y′ are Alice and Bob’s POVM elements corresponding to respective inputs x
+and x′ and outputs y and y ′ , and ψ is their shared state. The set of quantum correlations (for
+some fixed input and output sets) is defined to be the set of all correlations that can be produced
+in this manner. An important property of quantum correlations is that they are non-signalling,
+i.e., Alice cannot obtain any information concerning Bob’s input based on her input and output,
+and vice versa. More formally, we have the following definition:
+Definition. A correlation P is non-signalling (with respect to the partition {(XA , YA ), (XB , YB )})
+if
+X
+P (YA = y|XA = x, XB = x′ ) :=
+P (YA = y, YB = y ′ |XA = x, XB = x′ )
+y′
+
+′
+
+P (YB = y|XA = x , XB = x) :=
+
+X
+
+P (YA = y ′ , YB = y|XA = x′ , XB = x)
+
+y′
+
+are both independent of x′ .
+The widely accepted physical principle which motivates this definition is that information
+cannot be transmitted faster than light. Thus, if Alice and Bob are sufficiently far apart and
+must produce their outputs within a short time span, then they can only produce non-signalling
+correlations.
+It is sometimes useful to consider what parties are able to achieve using arbitrary nonsignalling correlations. This relaxation lets us place bounds on what is achievable using quantum
+correlations, and often allows for easier analysis. Note, however, that arbitrary non-signalling
+correlations may not actually be producible by any physical means, but of course the same could
+have been said of quantum correlations just over 100 years ago. So when we say that Alice and
+Bob have access to arbitrary non-signalling correlations, we think of each of them as having a
+black box into which takes their respective inputs and provides them with an output. The only
+requirement we place on these (potentially physically impossible) boxes is that the correlation
+they produce is non-signalling.
+It turns out that players with access to such arbitrary non-signalling correlations can play
+the homomorphism game just as well as if they were able to communicate during the game.
+To see this note that for any graph X, the (X, K2 )-homomorphism game can be won using the
+following non-signalling correlation:
+ 1
+if δ(xA , xB ) = δ(yA , yB )
+2
+P (YA = yA , YB = yB |XA = xA , XB = xB ) =
+0 o.w.
+Here XA , XB take values from V (X) and YA , YB take values from V (K2 ), and δ is the Kronecker
+delta function. Note that there is no way to win the (X, K1 )-homomorphism game if X is not
+empty, since if the players are given adjacent vertices they will always lose.
+
+9
+
+3
+
+Lovász ϑ
+
+The Lovász theta number of a graph X, denoted ϑ(X), was introduced in [Lov79] as an upper
+bound on the Shannon capacity Θ(X). It was later shown to upper bound the entanglementassisted Shannon capacity Θ∗ (X) as well [DSW11, Bei10]. Since ϑ admits a semidefinite program
+formulation, it can be approximated efficiently and is thus of great practical use. In this paper
+we will be mostly interested in Lovász theta of the complement of a graph, denoted ϑ̄(X), as
+this is preserved by homomorphisms. There are various definitions for ϑ, and hence ϑ̄, but the
+one below from [KMS98] suits us since it directly defines ϑ̄ in terms of homomorphisms.
+Definition 3.1. For m ∈ N and α < 0, let S(m, α) be the infinite graph whose vertices are unit
+vectors in Rm and two vectors u and v are adjacent if uT v = α. Then
+
+
+1
+ϑ̄(X) = inf 1 − : X → S(m, α), α < 0 .
+α
+In fact, the infimum in the definition above can be replaced by a minimum unless X is an empty
+graph, in which case ϑ̄(X) = 1. Also, note that m is not restrained, but we can assume that
+m = |V (X)| if we like, since any set of |V (X)| vectors lives in a space of dimension at most
+|V (X)|.
+From this definition it is clear that if X → Y , then ϑ̄(X) ≤ ϑ̄(Y ). Surprisingly, the same is
+true for quantum homomorphisms.
+q
+
+Theorem 3.2. If X −
+→ Y , then ϑ̄(X) ≤ ϑ̄(Y ).
+q
+
+Proof. Suppose that X −
+→ Y and Y → S(m, α) for some m ∈ N and α < 0. To prove the
+theorem it suffices to show that X → S(m′ , α) for some m′ ∈ N. Since Y → S(m, α), there
+q
+→ Y,
+exist unit vectors vy ∈ Rm for y ∈ V (Y ) such that vyT vy′ = α whenever y ∼ y ′ . Since X −
+Lemma 2.3 implies that there exist real projectors Exy in some dimension d that give a quantum
+homomorphism from X to Y . Define vectors ux for x ∈ V (X) by
+1 X
+ux = √
+vy ⊗ vec(Exy )
+d y∈V (Y )
+where vec(M ) is the vector obtained by stacking the rows of M (as column vectors) on top of
+each other. Then we have
+
+T 
+
+X
+X
+1
+vy′ ⊗ vec(Ex′ y′ )
+vy ⊗ vec(Exy ) 
+uTx ux′ = 
+d
+′
+y ∈V (Y )
+
+y∈V (Y )
+
+1
+=
+d
+
+X
+
+vyT vy′ Tr(Exy Ex′ y′ ).
+
+y,y ′ ∈V (Y )
+
+Since Tr(Exy Exy′ ) = 0 for all y 6= y ′ , we further get
+uTx ux =
+
+1
+d
+
+X
+
+vyT vy Tr(Exy Exy )
+
+y∈V (Y )
+
+
+
+1  X
+Exy 
+= Tr
+d
+y∈V (Y )
+
+1
+= Tr(I) = 1.
+d
+
+10
+
+So the vectors ux have unit norm and now we just need to check that uTx ux′ = α whenever
+x ∼ x′ . In this case, we have that Tr(Exy Ex′ y′ ) = 0 whenever y 6∼ y ′ and so
+α X
+1 X T
+vy vy′ Tr(Exy Ex′ y′ ) =
+Tr(Exy Ex′ y′ )
+d
+d
+y∼y ′
+y∼y ′
+
+
+X
+α X
+α  X
+=
+Tr(Exy Ex′ y′ ) = Tr
+Exy  
+d ′
+d
+′
+
+uTx ux′ =
+
+y,y ∈V (Y )
+
+y∈V (Y )
+
+y ∈V (Y )
+
+= α.
+
+
+
+Ex′ y′ 
+
+(11)
+
+Hence X → S(md2 , α) and we are done.
+As we will see in the next section, this theorem can be used to bound quantum parameters
+defined in terms of homomorphisms, such as quantum chromatic number. In general, no algoq
+rithm is known for deciding whether X −
+→ Y . However, if ϑ̄(X) > ϑ̄(Y ), the above theorem
+allows us to conclude that X does not admit a quantum homomorphism to Y .
+There is another graph parameter, χvec , known as the vector chromatic number [KMS98],
+which is closely related to ϑ̄. The only difference is that in the definition of χvec , the vectors assigned to adjacent vertices must have inner product at most some α < 0, as opposed to requiring
+equality. The analog of the theorem above for χvec holds, and the same proof works with the
+exception of changing the second ’=’ in Equation (11) to ’≤’, and noting that Tr(Exy Ex′ y′ ) ≥ 0
+since both matrices are positive semidefinite.
+
+4
+
+Quantum Parameters
+
+There are several graph parameters that can be defined in terms of homomorphisms. Having
+defined quantum homomorphisms, it is natural to define quantum analogs of such graph parameters by simply replacing “homomorphism” with “quantum homomorphism” in the definition.
+Here we consider the following:
+quantum chromatic number:
+quantum clique number:
+quantum independence number:
+quantum odd girth:
+
+q
+
+χq (X) := min{n ∈ N : X −
+→ Kn };
+q
+→ X};
+ωq (X) := max{n ∈ N : Kn −
+αq (X) := ωq (X);
+q
+→ X}.
+ogq (X) := min{n ∈ N, n odd : Cn −
+
+The above definitions of quantum clique and independence numbers are different from those
+given in [Bei10] and [DSW11]. The quantum clique number of [Bei10] and the various independence numbers of [DSW11] are defined in terms of the amount of quantum or classical
+information one can send over a quantum channel, and are therefore more analogous to capacities
+than our notion of quantum independence number.
+It is known that there exist graphs X such that χq (X) < χ(X) [AHKS06, CMN+ 07, FIG11,
+SS12, MSS13]; we will see that there can also be (large) separations between α(X) and αq (X)
+(and thus between ω(X) and ωq (X)). In contrast to these separations, we will show in Section 4.3
+that quantum odd girth is always equal to odd girth.
+
+4.1
+
+Quantum Chromatic Number
+
+The quantum chromatic number has been relatively well-studied [AHKS06, CMN+ 07, FIG11,
+SS12, MSS13]. In particular, a family of graphs exhibiting an exponential separation between
+χ and χq is known [BCT99, BCW98, AHKS06]. In [CMN+ 07], the authors show that when
+restricted to using rank one projectors, larger than exponential separations cannot be achieved.
+However, in [FIG11] it is shown that rank one projectors are not always sufficient to attain
+χq (X). Despite these advances, some fundamental questions regarding quantum chromatic
+
+11
+
+number remain unsolved. For example, it is not known whether χq (X) is computable or whether
+there exists a sequence of graphs Xn for which limn→∞ χ(Xn ) = ∞ but limn→∞ χq (Xn ) < ∞.
+Our main result concerning quantum chromatic number is the following lower bound which
+is a direct consequence of Theorem 3.2:
+Corollary 4.1. For any graph X,
+ϑ̄(X) ≤ χq (X).
+q
+
+Proof. Let c = χq (X). Then X −
+→ Kc and by Theorem 3.2, ϑ̄(X) ≤ ϑ̄(Kc ) = c.
+This lower bound on χq (X) is new1 and, as ω(X) ≤ ϑ̄(X), it improves upon the best
+previously known lower bound, ω(X). Furthermore, since ω(X) is NP-hard to compute, the
+above is also an improvement in terms of efficiency. This is particularly useful since it is not
+known if χq (X) is even computable.
+We now use this lower bound to compute the exact value of the quantum chromatic number
+for a well-known class of graphs. For n ∈ N, let Ωn be the graph whose vertices are the ±1
+vectors of length n with orthogonal vectors being adjacent. We only consider the case when
+4|n, since otherwise Ωn is either empty or bipartite. In such a case, a result of Frankl and Rödl
+[FR87] implies that χ(Ωn ) is exponential in n. On the other hand, it is known that χq (Ωn ) ≤ n
+for all n ∈ N [AHKS06]. However, it it remained unknown whether this inequality is tight for
+4|n. To show this, we first compute ϑ̄(Ωn ) for 4|n.
+Lemma 4.2. If n is divisible by 4, then ϑ̄(Ωn ) = n.
+Proof. 2 Let n = 4m. In [Lov79], it was shown that if X is regular (all vertices have equal degree)
+and edge transitive, then
+λmin
+ϑ(X) = |V (X)|
+λmin − λmax
+where λmax and λmin are the largest and smallest eigenvalues of the adjacency matrix of X,
+respectively. Since Ωn is regular and edge transitive, we can use this equality to compute
+ϑ(Ωn ). The maximum eigenvalue of a regular graph is just the degree of the graph, and so for
+Ωn this is equal to 4m
+. The minimum eigenvalue of Ωn for 4|n was computed in [God03] and
+ 2m
+is equal to − 4m
+/(4m
+−
+1). Therefore,
+2m
+(4m
+2m)
+−
+1
+2n
+4m−1
+n
+n
+=
+2
+ϑ(Ωn ) = 2
+=
+.
+
+(4m
+1 + (4m − 1)
+n
+2m)
+− 4m
+− 4m−1
+2m
+
+Another result from [Lov79] states that for a vertex transitive graph X,
+ϑ(X)ϑ̄(X) = |V (X)|.
+Since Ωn is vertex transitive as well, we obtain that
+ϑ̄(Ωn ) = n
+as desired.
+Combining the above with Corollary 4.1 yields the following:
+Corollary 4.3. If n is divisible by 4, then χq (Ωn ) = n.
+
+Curiously, {Ω4n }n∈N is an infinite family of graphs for which the quantum chromatic number
+is known exactly, while the chromatic number remains unknown (for n > 2).
+1
+Through private communication we have learned that ϑ(X) ≤ χq (X) has been independently proven (but not
+published) by M. Laurent, G. Scarpa, and A. Varvitsiotis.
+2
+This proof is a minor modification of a proof from unpublished notes of Simone Severini.
+
+12
+
+4.2
+
+Quantum Independence and Clique Numbers
+q
+
+In this section we show that any graphs X and Y such that X −
+→ Y but X 6→ Y can be used to
+construct a graph Z for which αq (Z) > α(Z), and thus ωq (Z) > ω(Z). Such constructions show
+that quantum advantage can also occur for homomorphism games with non-complete target
+graphs. We begin with a definition from [HN04]:
+Definition. For graphs X and Y , define their homomorphic product, denoted X ⋉ Y , to be the
+graph with vertex set V (X) × V (Y ) with distinct vertices (x, y) and (x′ , y ′ ) being adjacent if
+either x = x′ , or x ∼ x′ and y 6∼ y ′ .
+It is useful to consider this product because the edges in X ⋉ Y correspond exactly to the
+required orthogonalities for projectors giving a quantum homomorphism from X to Y . We will
+often use the following two properties:
+K|V (Y )| → X ⋉ Y
+
+(12)
+
+X ⋉ Y → K|V (X)| .
+
+(13)
+
+Both of these properties follow from the fact that the sets Vx = {(x, y) : y ∈ V (Y )} for x ∈ V (X)
+induce cliques of size |V (Y )| and partition V (X ⋉ Y ).
+The following lemma is the original motivation for defining the homomorphic product, and
+it is stated as Exercise 7 in Chapter 2 of [HN04].
+Lemma 4.4. For graphs X and Y , we have that X → Y if and only if α(X ⋉ Y ) = |V (X)|.
+Proof. Let m = |V (X)| and n = |V (Y )| and note that
+α(X ⋉ Y ) = ω(X ⋉ Y ) ≤ χ(X ⋉ Y ) ≤ m
+by Property (13). So α(X ⋉ Y ) = m if and only if X ⋉ Y has an independent set of size m.
+Suppose that ϕ : X → Y is a homomorphism. Then the set {(x, ϕ(x)) : x ∈ V (X)} is an
+independent set of size m in X ⋉ Y .
+Conversely, let S be an independent set of size m in X ⋉ Y . Since the set {(x, y) : y ∈ V (Y )}
+induces a clique for all x ∈ V (X), and there are m such sets partitioning V (X ⋉Y ), there must be
+exactly one vertex of S whose first coordinate is x for every x ∈ V (X). Define φ : V (X) → V (Y )
+as follows:
+φ(x) = y for the unique y such that (x, y) ∈ S.
+It is straightforward to check that φ is a homomorphism.
+Somewhat surprisingly, a quantum analog of this lemma also holds.
+q
+
+Lemma 4.5. For graphs X and Y , we have that X −
+→ Y if and only if αq (X ⋉ Y ) = |V (X)|.
+Proof. Let m = |V (X)| and n = |V (Y )|. Note that
+αq (X ⋉ Y ) = ωq (X ⋉ Y ) ≤ χq (X ⋉ Y ) ≤ χ(X ⋉ Y ) ≤ m
+q
+
+by Property (13). So αq (X ⋉ Y ) = m if and only if Km −
+→X ⋉Y.
+q
+Suppose that X −
+→ Y and consider Alice and Bob playing the (Km , X ⋉ Y )-homomorphism
+game. We will describe a winning strategy for this game, thus proving one direction of the
+lemma. Since m = |V (X)|, we can assume that Km and X have the same vertex set. When
+Alice and Bob are given inputs xA , xB ∈ V (Km ) = V (X), they act as if they are playing the
+(X, Y )-homomorphism game with xA and xB as their inputs in order to obtain yA , yB ∈ V (Y ).
+They then output (xA , yA ) and (xB , yB ) respectively. If xA = xB , then yA = yB and thus
+(xA , yA ) = (xB , yB ). If xA 6= xB , then either xA ∼ xB in X or xA 6≃ xB in X (note that 6≃
+means “neither equal nor adjacent to” and is equivalent to “adjacent in the complement”). In
+the former case, we will have that yA ∼ yB and thus (xA , yA ) 6≃ (xB , yB ) in X ⋉ Y and therefore
+(xA , yA ) ∼ (xB , yB ) in X ⋉ Y . In the latter case, we have that (xA , yA ) 6≃ (xB , yB ) in X ⋉ Y
+
+13
+
+regardless of yA and yB , and therefore (xA , yA ) ∼ (xB , yB ) in X ⋉ Y . So Alice and Bob can
+win the (Km , X ⋉ Y )-homomorphism game and therefore αq (X ⋉ Y ) = |V (X)|.
+Conversely, suppose that αq (X ⋉ Y ) = m, and that Pi(x,y) ∈ MC (d, d) for i ∈ [m], x ∈
+V (X), y ∈ V (Y ) are the projectors corresponding to a winning strategy for the (Km , X ⋉ Y )homomorphism game. Then for all i ∈ [n]
+X
+Pi(x,y) = I
+x∈V (X),y∈V (Y )
+
+and
+Pi(x,y) Pj(x′ ,y′ ) = 0
+
+whenever (i = j & (x, y) 6= (x′ , y ′ )) OR i 6= j & (x, y) 6∼ (x′ , y ′ ) in X ⋉ Y . Considering how
+adjacency is defined in X⋉Y , we can rewrite the orthogonality conditions above as Pi(x,y) Pj(x′ ,y′ ) =
+0 if one of the following hold:
+a. i = j and (x, y) 6= (x′ , y ′ ), or
+
+b. i 6= j and x = x′ , or
+
+c. i 6= j and x ∼ x′ and y 6∼ y ′ .
+
+For each x ∈ V (X), y ∈ V (Y ) define
+Qxy =
+
+X
+
+Pi(x,y) .
+
+i∈[m]
+
+We claim that the matrices Qxy are projectors which satisfy the conditions of Corollary 2.2 for
+the (X, Y )-homomorphism game. They are indeed projectors since by (b) they are the sum of
+mutually orthogonal projectors.
+Now we must check that the projectors Qxy satisfy the orthogonality conditions (8):
+
+
+
+X
+X
+X
+Pi(x,y) Pj(x′ ,y′ )
+Pj(x′ ,y′ )  =
+Pi(x,y)  
+Qxy Qx′ y′ = 
+i,j∈[m]
+
+j∈[m]
+
+i∈[m]
+
+
+if x = x′ & y 6= y ′ by (a) and (b)
+ 0
+0
+if x ∼ x′ & y 6∼ y ′ by (a) and (c)
+=
+
+something o.w.
+
+These are exactly the needed orthogonalities and so it is only left to show that for all x ∈ V (X)
+X
+Qxy = I.
+(14)
+y∈V (Y )
+
+Since for a fixed x ∈ V (X), the projectors Qxy are mutually orthogonal, we have that
+d with equality if and only if (14) holds. By (a) we have that
+
+
+X
+X
+
+Pi(x,y)  = rk(I) = d
+rk Pi(x,y) = rk 
+x∈V (X),y∈V (Y )
+
+x∈V (X),y∈V (Y )
+
+for all i ∈ [m]. Therefore,
+
+X
+
+md =
+i∈[m]
+
+=
+
+X
+
+x∈V (X)
+
+X
+
+
+
+rk Pi(x,y)  =
+
+X
+
+rk (Qxy ) ≤ |V (X)|d = md
+
+x∈V (X),y∈V (Y )
+
+
+
+
+P
+
+y∈V (Y )
+
+
+
+14
+
+X
+
+x∈V (X),y∈V (Y )
+
+
+
+rk 
+
+X
+
+i∈[m]
+
+
+
+Pi(x,y) 
+
+y∈V (Y ) rk(Qxy ) ≤
+
+P
+where the second equality follows from (b). Of course this implies that y∈V (Y ) rk(Qxy ) = d
+for all x ∈ V (X) and thus (14) holds and we are done.
+Interestingly, one direction of the above lemma can be proved without appealing to the actual
+strategy being used, while the other direction cannot. Indeed, if X is the path on three vertices,
+and Y = K1 , then there is no non-signalling correlation which wins the (X, Y )-homomorphism
+game (if Alice and Bob receive adjacent vertices they have no way of winning). However, X ⋉ Y
+is a single edge plus an isolated vertex, and so any graph (including arbitrarily large cliques) can
+be mapped to X ⋉ Y using a non-signalling correlation as described in Section 2.5. Therefore
+the non-signalling version of the “if” direction of this lemma does not hold, and thus any proof
+of it has to appeal to the particular type of strategy being used.
+We now show how to construct graphs exhibiting separations between independence and
+quantum independence numbers. This construction is inspired by, and a generalization of,
+Theorem 16 of [MSS13].
+q
+
+Corollary 4.6. If X 6→ Y and X −
+→ Y , then α(X ⋉ Y ) < αq (X ⋉ Y ).
+q
+
+Proof. If X 6→ Y , then α(X ⋉ Y ) < |V (X)|. If X −
+→ Y , then αq (X ⋉ Y ) = |V (X)|.
+By the definition of quantum independence number, the above corollary states that if X 6→
+q
+q
+→ X ⋉ Y , where n = |V (Y )|. Therefore the
+Y and X −
+→ Y , then Kn 6→ X ⋉ Y and Kn −
+(Kn , X ⋉ Y )-homomorphism game exhibits quantum advantage, and by Lemma 2.6 the graph
+X ⋉ Y is not (homomorphically equivalent to) a complete graph.
+Unfortunately, the above result does not guarantee a large separation. However, we will see
+how to remedy this in some cases.
+For graphs X and Y , their Cartesian product, denoted XY , is the graph with vertex set
+V (X) × V (Y ) with two vertices being adjacent if they are equal in one coordinate and adjacent
+in the other. Note that X ⋉ Kn = XKn for all graphs X. A classic theorem of Vizing’s states:
+α(XY ) ≤ min{α(X)|V (Y )|, α(Y )|V (X)|}.
+Suppose that X is a graph such that χq (X) = c ≪ |V (X)|/α(X) (note that this necessarily
+q
+implies that χq (X) ≪ χ(X)). We have that X −
+→ Kc and therefore αq (XKc) = |V (X)|.
+However, applying the result of Vizing, we obtain α(XKc ) ≤ cα(X) ≪ |V (X)|.
+Applying this approach to the graphs Ωn , we get the following:
+Corollary 4.7. There exists an ǫ > 0, such that for n ∈ N divisible by 4
+
+n
+αq (Ωn Kn )
+2
+1
+.
+≥
+α(Ωn Kn )
+n 2−ǫ
+q
+
+→ Kn , so by Lemma 4.5, αq (Ωn Kn ) = |V (Ωn )| = 2n . A
+Proof. We have mentioned that Ωn −
+result by Frankl and Rödl [FR87] shows that there exists an ǫ > 0 such that for n ∈ N divisible
+by 4, α(Ωn ) ≤ (2 − ǫ)n . Applying the Vizing result gives that α(Ωn Kn ) ≤ n(2 − ǫ)n .
+The idea and proof for the above corollary is identical to Theorem 17 in [MSS13], though
+their result is about one-shot zero-error capacities rather than independence numbers.
+As with quantum chromatic number, Theorem 3.2 lets us bound the quantum clique number
+of a graph.
+Corollary 4.8. For any graph X,
+ωq (X) ≤ ϑ̄(X) & αq (X) ≤ ϑ(X).
+q
+
+→ X, and by Theorem 3.2 we have n = ϑ̄(Kn ) ≤ ϑ̄(X).
+Proof. Let n = ωq (X). Then Kn −
+Applying the above to Lemma 4.5, we further obtain:
+
+15
+
+q
+
+Corollary 4.9. If X −
+→ Y , then
+ϑ(X ⋉ Y ) = |V (X)|.
+Proof. First, we have that
+ϑ(X ⋉ Y ) = ϑ̄(X ⋉ Y ) ≤ χ(X ⋉ Y ) ≤ |V (X)|,
+where the last inequality follows by Property (13) of the homomorphic product. Suppose that
+q
+X−
+→ Y , then by Corollary 4.8 and Lemma 4.5 we have
+ϑ(X ⋉ Y ) ≥ αq (X ⋉ Y ) = |V (X)|.
+Though this corollary is weaker than Lemma 4.5, it may be of practical use since ϑ can be
+approximated efficiently.
+Another nice consequence of Theorem 3.2, and more specifically Corollary 4.8, is a quantum
+version of the well-known clique-coclique bound for vertex transitive graphs:
+Corollary 4.10. If X is a vertex transitive graph, then
+αq (X)ωq (X) ≤ |V (X)|.
+Proof. In [Lov79], it is shown that ϑ(X)ϑ̄(X) = |V (X)| for any vertex transitive graph X.
+Applying Corollary 4.8 we see that
+αq (X)ωq (X) ≤ ϑ(X)ϑ̄(X) = |V (X)|.
+The clique-colique bound is a special case of the no-homomorphism lemma [AC85], which
+states that if X → Y , and Y is vertex transitive, then
+|V (X)|
+|V (Y )|
+≤
+.
+α(X)
+α(Y )
+So it is natural to ask if a quantum version of the no-homomorphism lemma holds true. In
+particular this would imply that for all graphs X,
+|V (X)|
+≤ χq (X).
+αq (X)
+It turns out that this does not hold. Recalling the graph Ωn , for 4|n we have the following:
+χq (Ωn ) = n and αq (Ωn ) ≤ ϑ(Ωn ) =
+
+2n
+and |V (Ωn )| = 2n .
+n
+
+n
+
+n
+
+Since, αq (Ωn ) is integer, we have that αq (Ωn ) ≤ ⌊ 2n ⌋, and thus αq (Ωn ) < 2n whenever n is not
+a power of 2. Therefore, we have that
+2n
+|V (Ωn )|
+> 2n = n = χq (Ωn )
+αq (Ωn )
+n
+when n is a multiple of 4 but not a power of 2.
+
+16
+
+4.3
+
+Walks and Quantum Odd Girth
+
+In this section we show that, unlike for quantum chromatic and independence numbers, there
+can be no separation between odd girth and quantum odd girth. The key ingredient in this
+q
+→ Y . A walk
+proof is Lemma 4.11 below which concerns walks in graphs X and Y such that X −
+′
+of length ℓ from x to x in a graph X is a sequence of vertices x = x0 , x1 , . . . , xℓ = x′ such that
+xi−1 ∼ xi for i ∈ [ℓ]. If x = x′ , then we say the walk is closed. Note that both vertices and
+edges are allowed to be repeated in a walk. We will use x ∼ℓ x′ to denote that there exists a
+walk of length ℓ from x to x′ .
+Suppose that ϕ is a homomorphism from X to Y . For any walk x0 , x1 , . . . , xℓ in X, we
+have that ϕ(xi−1 ) ∼ ϕ(xi ) for all i ∈ [ℓ], since homomorphisms preserve adjacency. Therefore,
+ϕ(x) ∼ℓ ϕ(x′ ) whenever x ∼ℓ x′ . Lemma 4.11 below is a quantum analog of this well-known
+classical result. In terms of the homomorphism game, Lemma 4.11 says that, for any winning
+quantum strategy, if there is a walk of length ℓ between Alice and Bob’s input vertices, then
+they always respond with vertices which have a walk of length ℓ between them.
+Lemma 4.11. Let X and Y be graphs and suppose that {Exy : x ∈ V (X), y ∈ V (Y )} are
+projectors which give a quantum homomorphism from X to Y . If x ∼ℓ x′ and y 6∼ℓ y ′ , then
+Exy Ex′ y′ = 0.
+Proof. We use induction on the length of the walk ℓ. For ℓ ∈ {0, 1} the lemma holds by
+Condition (8). Now suppose that it holds for some ℓ ≥ 1. Let x and x′ be vertices of X such
+that x = x0 , x1 , . . . , xℓ , xℓ+1 = x′ is a walk of length ℓ+1 in X. Let y, y ′ ∈ V (Y ) be vertices such
+that y 6∼ℓ+1 y ′ . Since there exists a walk of length ℓ from x to xℓ , by our induction hypothesis
+we have that
+Exy Exℓ y′′ = 0
+for all y ′′ such that y 6∼ℓ y ′′ . Therefore,
+X
+
+Exy
+
+Exℓ y′′ = Exy .
+
+y ′′ :y∼ℓ y ′′
+
+Thus, it suffices to show that
+Ex′ y′
+
+X
+
+y ′′ :y∼
+′′
+
+′′
+
+′
+
+ℓ
+
+Exℓ y′′ = 0.
+y ′′
+
+Note that if y ∼ℓ y and y ∼ y , then y ∼ℓ+1 y ′ which is a contradiction. Therefore, no such
+y ′′ exists. From this we have that
+X
+X
+Ex′ y′
+Exℓ y′′ = Ex′ y′
+Exℓ y′′ = 0,
+y ′′ :y∼ℓ y ′′
+
+y ′′ :y∼ℓ y ′′ & y ′ 6∼y ′′
+
+since xℓ ∼ x′ .
+Using Lemma 4.11, the equality of odd girth and quantum odd girth is almost immediate:
+Theorem 4.12. For any graph X and integer g ∈ N,
+q
+
+→ X if and only if Cg → X.
+Cg −
+In particular, this implies that
+ogq (X) = og(X)
+for any graph X.
+Proof. For even g, the graph Cg is bipartite and therefore homomorphically equivalent to K2 .
+Therefore the statement Cg → X is equivalent to X having an edge. It is easy to see that
+q
+→ X if and only if X has an edge, and thus the theorem holds for even g.
+K2 −
+q
+→ X. Let Eux for u ∈ V (Cg ) and x ∈ V (X) be the projectors
+Suppose that g is odd and Cg −
+that give this quantum homomorphism. For any v ∈ V (Cg ), there exists a walk of length g in
+
+17
+
+Cg beginning and ending at v, thus v ∼g v. By Condition (7), there must exist an x′ ∈ V (X)
+such that Evx′ 6= 0. Therefore, Evx′ Evx′ 6= 0 and by Lemma 4.11 we have that x′ ∼g x′ . In
+other words, X has a closed walk of odd length g. This is only possible if X contains an odd
+q
+→ X, we have
+cycle of length g or less, and thus Cg → X. Finally, since Cg → X implies Cg −
+proved the first claim. The second claim follows directly from the definitions of odd girth and
+quantum odd girth.
+We also have the following corollary for small quantum clique number:
+Corollary 4.13. If ωq (X) = 3, then ω(X) = 3.
+Proof. This follows from Theorem 4.12 and the fact that C3 = K3 .
+
+4.4
+
+Quantum Homomorphisms to Kneser Graphs
+
+Here we prove a lemma which relates the existence of quantum homomorphism from X to Y
+to the existence of a quantum homomorphism from X ⋉ Y to a particular Kneser graph. The
+Kneser graph, Kn:r , is the graph whose vertices are the r-subsets of the set [n] with disjoint sets
+being adjacent.
+Lemma 4.14. Let X and Y be graphs. If n, r ∈ N are such that nr = |V (Y )|, then
+X ⋉ Y → Kn:r ⇒ X → Y
+and
+
+q
+
+q
+
+X ⋉Y −
+→ Kn:r ⇒ X −
+→Y
+Proof. Suppose that X ⋉ Y → Kn:r
+containing
+the element 1 give an
+ . The r-subsets of [n]n−1
+
+independent set of Kn:r of size n−1
+,
+and
+thus
+α(K
+)
+≥
+for
+all
+values
+of n and r. Since
+n:r
+r−1
+r−1
+Kn:r is vertex transitive, we can apply the no-homomorphism lemma [AC85] to obtain that
+|V (Kn:r )|
+n
+|V (X ⋉ Y )|
+≤
+≤ = |V (Y )|.
+α(X ⋉ Y )
+α(Kn:r )
+r
+Therefore, α(X ⋉ Y ) ≥ |V (X)| and by Lemma 4.4 X → Y .
+The proof of the quantum statement uses results and discussion from Section 6. Suppose that
+q
+X ⋉Y −
+→ Kn:r . Since Kn:r has a projective representation of value nr = |V (Y )|, by Theorem 6.6
+q
+so does X ⋉ Y , and therefore by Corollary 6.1, X −
+→Y.
+Lemma 4.15. If X and Y are graphs and G is a subgroup of Aut(Y ) that acts transitively on
+V (Y ), then
+X → Y ⇔ X ⋉ Y → K|G|: |G|
+|V (Y )|
+
+and
+
+q
+
+q
+
+X−
+→Y ⇔X ⋉Y −
+→ K|G|: |G|
+
+|V (Y )|
+
+Proof. Let G be as stated and let n = |G| and r = |G|/|V (Y )|. Note that we can view the
+vertices of Kn:r as being r-subsets of G. We will prove both forward implications simultaneously.
+Suppose that Alice and Bob can win the (X, Y )-homomorphism game. For all y, y ′ ∈ V (Y ) let
+G(y, y ′ ) = {φ ∈ G : φ(y) = y ′ }.
+Note that G(y, y ′ ) is a coset of the stabilizer of y. Since G acts transitively on V (Y ), the orbit
+of any vertex is V (Y ), and therefore
+|G(y, y ′ )| = |G|/|V (Y )| = r
+for all y, y ′ ∈ V (Y ). Consider the following strategy for the (X ⋉ Y, Kn:r )-homomorphism
+game. Upon receiving (xA , yA ), (xB , yB ) ∈ V (X ⋉ Y ), Alice and Bob act as if they are playing
+
+18
+
+′
+′
+the (X, Y )-homomorphism game with xA , xB ∈ V (X) to obtain yA
+, yB
+∈ V (Y ). They then
+′
+′
+respond with G(yA , yA ) and G(yB , yB ) respectively. To show that this is a valid strategy for
+the (X ⋉ Y, Kn:r )-homomorphism game, we have two cases:
+′
+′
+• If (xA , yA ) = (xB , yB ), then xA = xB and therefore yA
+= yB
+. Furthermore, yA = yB and
+′
+′
+so G(yA , yA ) = G(yB , yB ).
+
+• If (xA , yA ) ∼ (xB , yB ), then we have two subcases:
+
+′
+′
+– If xA = xB and yA 6= yB , then yA
+= yB
+. Since no automorphism of Y can map both
+′
+′
+yA and yB to the same vertex, G(yA , yA
+) and G(yB , yB
+) are disjoint.
+′
+′
+– If xA ∼ xB and yA 6∼ yB , then yA ∼ yB . Since no automorphism of Y can map
+′
+two (possibly equal) nonadjacent vertices to two adjacent vertices, G(yA , yA
+) and
+′
+G(yB , yB
+) are disjoint.
+
+The other direction of each statement is proven by Lemma 4.14 and the fact that
+|G|
+= |V (Y )|.
+|G|/|V (Y )|
+Applying Theorem 3.2 to the above, we obtain a corollary similar to Corollary 4.9:
+q
+
+Corollary 4.16. If Y is vertex transitive and X −
+→ Y , then
+ϑ̄(X ⋉ Y ) = |V (Y )|.
+Proof. Recalling Property (12), we see that
+ϑ̄(X ⋉ Y ) ≥ ω(X ⋉ Y ) ≥ |V (Y )|.
+q
+
+→ Kn:r for n = |Aut(Y )|, and r = |Aut(Y )|/|V (Y )|. Applying
+By Lemma 4.15, X ⋉ Y −
+Theorem 3.2 we have that
+ϑ̄(X ⋉ Y ) ≤ ϑ̄(Kn:r ) =
+
+n
+= |V (Y )|
+r
+
+where the value of ϑ̄(Kn:r ) comes from [Lov79].
+As with Corollary 4.9, the above result is strictly weaker than Lemma 4.15, but since ϑ̄
+is efficient to approximate, it may be of more practical use. We note that in the case of Y
+being vertex transitive, it has been shown in [Rob16] that ϑ̄(X ⋉ Y ) = |V (Y )| is equivalent to
+ϑ(X ⋉ Y ) = |V (X)|. Therefore, Corollary 4.16 is in fact implied by Corollary 4.9.
+
+5
+
+Zero-Error Capacity
+
+In this section we investigate the relationship of quantum homomorphisms to zero-error channel
+capacity. We start by explaining the setting of zero-error communication.
+Suppose Alice wants to use a noisy classical channel N to communicate messages to Bob with
+zero probability of decoding error. The channel N is completely specified by the set of inputs
+Z, the set of outputs W and a conditional probability distribution N (w|z), the probability to
+output w upon inputting z. Inputs z and z ′ are said to be confusable if there exists w ∈ W such
+that N (w|z) > 0 and N (w|z ′ ) > 0. To represent a channel N , we use its confusability graph XN .
+This is a graph with vertex set Z in which distinct vertices z, z ′ are adjacent whenever inputs
+z and z ′ are confusable. Note that XN does not have loops even though input z is confusable
+with itself.
+Let us identify the messages that Alice wants to transmit to Bob with the integers from [m].
+To send a messages, the parties need to agree on encoding function E : [m] → Z, which Alice uses
+to map messages to inputs on the channel. They also need a decoding function D : W → [m],
+
+19
+
+which Bob uses to map outputs of the channel to messages. Since, we are interested in zero-error
+communication, we must have that for all i ∈ [m]
+D(w) = i for all w with N (w|E(i)) > 0.
+
+(15)
+
+If the channel inputs z = E(i) and z ′ = E(i′ ) are confusable for some i 6= i′ , then it is impossible
+for Bob to choose D so that Condition (15) is satisfied. This is because, there exists an output
+w ∈ W which can be produced upon both of the inputs z and z ′ . So in case Bob receives w he
+will not be able to tell if Alice intended to send message i or i′ . Therefore the image of encoding
+function E must consist entirely of mutually unconfusable inputs. In other words, the image of
+E is an independent set in the confusability graph XN . On the other hand, it is also easy to see
+that if the image of E forms an independent set of XN , then decoding is always possible.
+The one-shot zero-error capacity, c0 (N ), is the largest m for which Alice and Bob can choose
+the encoding and decoding functions which allow them to transmit any of the m messages with
+zero chance of error through one use of N . From the discussion in the previous paragraph it
+is clear that c0 (N ) = α(XN ). It turns out that one-shot zero-error capacity can increase if
+Alice and Bob are allowed to use shared entanglement [CLMW10]. The capacity in this case is
+referred to as the entanglement-assisted one-shot zero-error capacity, and denoted c∗0 (N ). As in
+the unassisted case, it can be shown that c∗0 (N ) only depends on the confusability graph XN
+[CLMW10]. Thus, from now on we can consider one-shot capacities of graphs and write c0 (X)
+or c∗0 (X). For each graph X, we choose a canonical channel N that has X as its confusability
+graph. This is the channel with input set V (X), output set E(X), and
+(
+1
+if e is incident to x
+N (e|x) = deg(x)
+(16)
+0
+if otherwise.
+For isolated vertices we can either add loops or allow for isolated vertices to be outputs of our
+channel.
+We now describe the general form of a quantum protocol that Alice and Bob can use to
+transmit one of m different messages over N using a shared entangled state ψ. To send message
+i ∈ [m], Alice measures her part of ψ using a POVM Ei = {Eiz }z∈Z . Alice gets some outcome
+z which leaves Bob with unnormalized residual state βiz := TrA ((Eiz ⊗ I)ψψ ∗ ), where TrA is
+the partial trace (see Section 1.1). We note that βiz = 0 if and only if the probability of Alice
+obtaining outcome z is zero. Alice then uses the measurement outcome z as the input to the
+channel. Bob receives some output w such that N (w|z) > 0. To recover the original message
+i, Bob performs a measurement on his residual state βiz . We will explain that, as was shown
+in [CLMW10], a successful recovery can be ensured if and only if
+Tr(βiz βjz′ ) = 0 for all distinct i, j ∈ [m] and all confusable z, z ′ ∈ Z.
+
+(17)
+
+First, note that Tr(βiz βjz′ ) = 0 if and only if βiz βjz′ = 0 since βiz and βjz′ are positive
+semidefinite. To show that Condition (17) is necessary, suppose for contradiction that for some
+i, j ∈ [m] and confusable z, z ′ ∈ Z we have Tr(βiz βjz′ ) 6= 0. In such case, βiz , βjz′ 6= 0 and hence
+Alice obtains outcome z upon measurement Ei with nonzero probability and similarly for z ′ and
+Ej . Since z and z ′ are confusable, there exists a w ∈ W such that N (w|z) > 0 and N (w|z ′ ) > 0.
+Therefore, it is possible for Bob to receive w when Alice is trying to send i and when she is
+trying to send j. Since Bob cannot use the channel output w to recover Alice’s messge, he must
+use his residual state. In the case where Alice was trying to send i, Bob has residual state βiz ,
+and in the case where she was trying to send j he has βjz′ . In quantum information it is a
+well-known fact that only orthogonal quantum states can be perfectly distinguished. Since by
+assumption the states βiz and βjz′ are not orthogonal, Bob cannot tell with certainty which
+state he has. Therefore, he cannot conclude with certainty whether Alice was trying to send
+message i or j.
+On the other hand, suppose that Condition (17) does hold. We will describe a strategy for
+Bob which lets him determine with certainty which message Alice was trying to send. For each
+
+20
+
+i ∈ [m] and w ∈ W , define Pwi to be the projection onto the image (column space) of the
+following operator:
+X
+βiz .
+αwi :=
+z:N (w|z)>0
+
+For distinct messages i, j and channel inputs z, z ′ and output w such that N (w|z), N (w|z ′ ) > 0,
+by Condition (17) we have that βiz and βjz′ are orthogonal. This implies that αwi and αwj are
+orthogonal for i 6= j, and therefore the projectors Pwi and Pwj are orthogonal for i 6= j. We can
+therefore define the projective measurement
+)
+(
+X
+Pwi ,
+Fw := {Pwi : i ∈ [m]} ∪ I −
+i
+
+which Bob performs upon receiving output w. If Alice was trying to send message i, then
+1
+′ :=
+Bob’s (normalized) residual state is βiz
+Tr(βiz ) βiz for some z such that N (w|z) > 0. Since
+the image of βiz is contained in the image of αwi , we have that Pwi βiz = βiz and therefore
+′
+′
+Tr(Pwi βiz
+) = Tr(βiz
+) = 1. Thus Bob obtains outcome i from his measurement with probability
+1 and from this can correctly conclude that Alice was sending message i.
+
+5.1
+
+Relation to Quantum Independence Number
+
+Recalling that c0 (X) = α(X) for any graph X, it is natural to ask if there is any relation
+between the entanglement-assisted one-shot capacity and the quantum independence number.
+The following theorem shows that these two parameters are indeed related.
+Theorem 5.1. For any graph X,
+
+αq (X) ≤ c∗0 (X)
+
+with equality if and only if c∗0 (X) can be achieved using a strategy in which all of Alice’s meaP
+surements are projective and the shared state is Φ = √1d di=1 ei ⊗ ei ∈ Cd ⊗ Cd for some
+d ∈ N.
+Proof. We will make use of the following identity, which can be proved easily using the techniques
+from [WBC15]:
+1
+Tr(TrA ((E ⊗ I)ΦΦ∗ ) TrA ((F ⊗ I)ΦΦ∗ )) = 2 Tr(EF ).
+d
+Let Eix ∈ MC (d, d) be projectors that give a quantum homomorphism from Km to X, where
+m = αq (X). We will show that the projectors Eix along with the shared state Φ give a valid
+strategy for sending m messages with X. Bob’s residual states for this strategy are
+βxi = TrA ((Eix ⊗ I)ΦΦ∗ ).
+It remains to show that the above operators satisfy Condition (17). If i 6= j and (x ∼ x′ or
+x = x′ ), then by the winning conditions of the (Km , X)-homomorphism game, we have that
+Tr(Eix Ejx′ ) = 0, and therefore
+Tr(βxi βxj ′ ) = 0.
+That is, Condition (17) is satisfied. Therefore αq (X) ≤ c∗0 (X).
+Now suppose that Alice can use projective measurements Eix and the shared state, Φ, to
+send m messages with X. From the discussion above, we have that
+0 = Tr(TrA ((Eix ⊗ I)ΦΦ∗ ) TrA ((Ejx′ ⊗ I)ΦΦ∗ )) =
+
+1
+Tr(Eix Ejx′ )
+d2
+
+for all i 6= j, and confusable x, x′ . Note that x is confusable with x′ if and only if x ∼ x′ or
+x = x′ . Since the matrices Eix ’s are projectors, we also have that Tr(Eix Eix′ ) = 0 for all i ∈ [m]
+
+21
+
+and x 6= x′ . These are all the orthogonalities required to win the (Km , X)-homomorphism
+game.
+If in fact c∗0 (X) can always be achieved using projective measurements on the maximally
+entangled state, then αq (X) = c∗0 (X). In light of this we conjecture the following:
+Conjecture 5.2. For any graph X,
+αq (X) = c∗0 (X).
+As a corollary to the above theorem, we obtain a method for constructing a graph Z with
+q
+c0 (Z) < c∗0 (Z) given graphs X and Y such that X −
+→ Y but X 6→ Y . This was already proven
+for Y = Kn in [MSS13].
+q
+
+Corollary 5.3. If X −
+→ Y but X 6→ Y , then
+
+c0 (X ⋉ Y ) < c∗0 (X ⋉ Y ) = |V (X)|.
+
+Proof. First, note that
+c∗0 (X ⋉ Y ) ≤ ϑ(X ⋉ Y ) ≤ χ(X ⋉ Y ) ≤ |V (X)|.
+q
+
+Now since X 6→ Y and X −
+→ Y , we have that
+
+c0 (X ⋉ Y ) = α(X ⋉ Y ) < |V (X)| = αq (X ⋉ Y ) ≤ c∗0 (X ⋉ Y ) ≤ |V (X)|.
+
+5.2
+
+Relation to Quantum Homomorphisms
+
+Here we show that quantum homomorphisms respect the order of entanglement-assisted one-shot
+zero-error capacity.
+q
+
+Lemma 5.4. If X −
+→ Y , then c∗0 (X) ≤ c∗0 (Y ).
+q
+
+→ Y and that Pxy ∈ MC (d, d), for x ∈ V (X), y ∈ V (Y ) are projectors
+Proof. Suppose that X −
+which give such a quantum homomorphism. Furthermore, let Eix , i ∈ [m], x ∈ V (X), be POVM
+elements and ψ the shared state giving a strategy for sending m messages with X. Then Bob’s
+residual states for this strategy
+βxi = TrA ((Eix ⊗ I)ψψ ∗ )
+Pd
+satisfy the orthogonality condition (17). Let Φ = √1d i=1 ei ⊗ ei , and let
+X
+Pxy ⊗ Eix
+Fiy =
+x∈V (X)
+
+for all i ∈ [m], y ∈ V (Y ). We claim that the POVMs {Fiy }y∈V (Y ) and the state Φ ⊗ ψ give a
+valid strategy for sending m messages with Y . First, note that
+X
+X
+X
+I ⊗ Eix = I
+Pxy ⊗ Eix =
+Fiy =
+x∈V (X)
+
+x∈V (X),y∈V (Y )
+
+y∈V (Y )
+
+Second, each Fiy is positive semidefinite since it is the sum of tensor products of positive
+semidefinite matrices, therefore the sets {Fiy }y∈V (Y ) are indeed POVMs. If we use A′ and A to
+denote the spaces in Alice’s posession, then the the residual states are given by
+
+
+X
+((Pxy ⊗ I)ΦΦ∗ ) ⊗ ((Eix ⊗ I)ψψ ∗ )
+αiy = TrA′ A 
+x∈V (X)
+
+1
+=
+d
+
+X
+
+x∈V (X)
+
+Pxy ⊗ TrA ((Eix ⊗ I)ψψ ∗ ) =
+
+22
+
+1
+d
+
+X
+
+x∈V (X)
+
+Pxy ⊗ βxi .
+
+Suppose that i 6= j and y, y ′ are confusable, i.e. y is not adjacent to y ′ in Y . Then
+αiy αjy′ =
+
+1
+d2
+
+X
+
+x,x′ ∈V (X)
+
+Pxy Px′ y′ ⊗ βxi βxj ′ =
+
+1
+d2
+
+X
+
+x6≃x′ in X
+
+Pxy Px′ y′ ⊗ βxi βxj ′ = 0
+
+where the last equality holds because of the orthogonality constraints on the projectors Pxy .
+This shows that Alice and Bob can send m messages using Y .
+The entanglement-assisted Shannon capacity, Θ∗ , is the asymptotic version of c∗0 , and is
+defined as
+q
+Θ∗ (X) = lim n c∗0 (X ⊠n ).
+n→∞
+
+Here, X ⊠ Y is the graph with vertex set V (X) × V (Y ) with two distinct vertices being adjacent
+if each coordinate is either equal or adjacent, and X ⊠n is the product of X with itself n times.
+The value of Θ∗ corresponds to the per use capacity of a channel with entanglementassistance in the limit of many uses. We now prove an asymptotic version of the above lemma.
+To avoid messy notation, we define the following:
+X n := X
+
+⊠n
+
+.
+
+q
+
+Lemma 5.5. If X −
+→ Y , then Θ∗ (X) ≤ Θ∗ (Y ).
+
+
+q
+Proof. Suppose that X −
+→ Y . It suffices to show that c∗0 X n ≤ c∗0 Y n for all n ∈ N. By the
+q
+previous lemma this holds if X n −
+→ Y n for all n ∈ N. It is straightforward to check that two
+vertices (x1 , . . . , xn ) and (x′1 , . . . , x′n ) are adjacent in X n if and only if xi ∼ x′i for some i ∈ [n].
+To win the (X n , Y n )-homomorphism game Alice and Bob may play as follows: When they
+receive (x1 , . . . , xn ) and (x′1 , . . . , x′n ) respectively, they act as if they are playing the (X, Y )homomorphism game with each coordinate to obtain (y1 , . . . , yn ) and (y1′ , . . . , yn′ ), which they
+respond with accordingly. If the vertices they received were equal, then each coordinate was
+equal and therefore they responded with equal vertices. If the vertices they received were
+adjacent, then there exists i ∈ [n] such that xi ∼ x′i and therefore yi ∼ yi′ and thus they
+responded with adjacent vertices.
+
+
+q
+Therefore, X n −
+→ Y n and so c∗0 X n ≤ c∗0 Y n for all n ∈ N.
+
+6
+
+Projective Rank
+
+As we have seen, the existence of a quantum homomorphism from a graph X to a graph Y
+is related to the existence of a set of projectors satisfying certain orthogonality conditions.
+Furthermore, when Y is vertex transitive, it can be assumed that the projectors all have the
+same rank. Noting that the orthogonality conditions of Corollary 2.4 exactly correspond to the
+adjacencies of X ⋉ Y , we see that a set of projectors satisfying the conditions in Corollary 2.4
+is exactly an assignment of rank r projectors from MC (d, d) to the vertices of X ⋉ Y such that
+adjacent vertices receive orthogonal projectors and d = r|V (Y )|. This motivates the following
+definition:
+Definition. A d/r-projective representation (or simply a d/r-representation) of a graph X is
+an assignment of rank r projectors in MC (d, d) to the vertices of X such that adjacent vertices
+are assigned orthogonal projectors. We say that the value of a d/r-representation is the rational
+number dr .
+Note that a 3/1-representation is not a 6/2-representation, but they have the same values,
+namely 3. The following corollary is the original motivation for defining projective representations, and simply amounts to a rephrasing of Corollary 2.4.
+q
+
+Corollary 6.1. If X ⋉ Y has a projective representation of value |V (Y )|, then X −
+→ Y . Furthermore, if Y is vertex transitive, then the converse also holds.
+
+23
+
+Proof. Suppose X ⋉ Y has a projective d/r-representation of value |V (Y )|. The adjacencies of
+X ⋉ Y exactly correspond to the orthogonalities of Condition (8), and so this is satisfied by the
+projectors in the representation. Since d = r|V (Y )|, Condition (7) also holds. This proves the
+first claim.
+The converse holds when Y is vertex transitive since we can assume that all of the d × d
+projectors which give the quantum homomorphism from X to Y have the same rank r, and
+therefore d = r|V (Y )| by Condition (7).
+Since X ⋉ Y contains a clique of size |V (Y )|, it has a projective representation of value
+|V (Y )| if and only if this is the minimum value of any projective representation of X ⋉ Y . This
+motivates the following definition.
+Definition. The projective rank of a graph X, denoted ξf (X), is given by
+
+
+d
+: X has a d/r-representation .
+ξf (X) = inf
+r
+If we let Ω(r, d) be the graph whose vertices are the rank r projectors in MC (d, d), and in
+which adjacency is orthogonality, then it is clear that a d/r-representation is simply a homomorphism to Ω(r, d). Therefore,
+
+
+d
+: X → Ω(r, d) .
+ξf (X) = inf
+r
+From this it is trivial to see that ξf is preserved by homomorphisms.
+It is not clear whether or not the infimum in the definition of ξf is always attained for
+every graph, or even if it is always rational. Note that using the same trick as in the proof of
+Lemma 2.3, we see that if a graph X has a d/r-representation, then it has a 2d/2r-representation
+using real projectors. Therefore restricting to real projectors does not change the value of ξf (X).
+
+6.1
+
+Relation to Other Parameters
+
+An orthogonal representation of a graph is an assignment of nonzero vectors to its vertices such
+that adjacent vertices receive orthogonal vectors. The minimum dimension in which there exists
+an orthogonal representation of a graph X is known as its orthogonal rank, and is denoted by
+ξ(X). This parameter has been investigated in various papers including [CMN+ 07]. Clearly, a
+projective representation using rank 1 projectors is equivalent to an orthogonal representation,
+and one can think of projective rank as a fractional version of orthogonal rank. Due to this, we
+have that
+ξf (X) ≤ ξ(X)
+for all graphs X.
+One can also think of projective rank as a subspace version of fractional chromatic number.
+A homomorphism from X to Kd:r can be transformed into a d/r-projective representation by
+simply mapping an r-subset, S, of [d] to the projection onto span{ei ∈ Cd : i ∈ S}, where ei
+is the ith standard basis vector. Since the fractional chromatic number of a graph X, denoted
+χf (X), is the minimum value of d/r such that X → Kd:r [GR01], we see that
+ξf (X) ≤ χf (X)
+for all graphs X.
+Slightly less trivially, we have the following:
+Lemma 6.2. For any graph X,
+ξf (X) ≤ χq (X).
+
+24
+
+Proof. Suppose that X has a quantum c-coloring, i.e. a quantum homomorphism to Kc . Corollary 2.4 implies that there exists rank r projectors, Exi ∈ MC (cr, cr), for all x ∈ V (X) and
+i ∈ [c] such that Exi Ex′ j = 0 whenever (x = x′ & i 6= j) or (x ∼ x′ & i = j). In particular,
+Ex1 Ex′ 1 = 0 whenever x ∼ x′ and thus the projectors Ex1 give a projective representation of X
+of value cr
+r = c. Therefore ξf (X) ≤ c.
+Note that the above lemma is also implied by the fact that quantum homomorphisms respect
+projective rank, Theorem 6.6 below, since the projective rank of Kc can easily be seen to be c.
+In [Lov79], it was shown that ϑ̄(X) ≤ ξ(X) and ϑ̄(X) ≤ χf (X) for any graph X. Here we
+show that ϑ̄ also lower bounds projective rank. The proof uses the following definition of ϑ:
+Definition 6.3. For any graph X with vertices x1 , . . . , xn , we have that
+ϑ(X) = min max
+
+1
+
+φ,c i∈[n] (cT φ(xi ))2
+
+where φ is an assignment of real unit vectors to the vertices of X such that nonadjacent vertices
+are assigned orthogonal vectors and c is any unit vector.
+We are now prepared to prove the above mentioned result.
+Theorem 6.4. For any graph X,
+ϑ̄(X) ≤ ξf (X).
+Proof. We will show that ϑ(X) ≤ ξf (X) which is equivalent. The proof is similar to the proof
+of ϑ(X) ≤ ξ(X) given in [Lov79]. Suppose that Ex for x ∈ V (X) gives a d/r-representation of
+X using only real projectors. Let
+1
+vx = √ vec(Ex )
+r
+for all x ∈ V (X), and let
+
+1
+c = √ vec(Id )
+d
+
+Note that
+1
+1
+vec(Ex )T vec(Ex ) = Tr (Ex Ex )
+r
+r
+1
+1
+= Tr(Ex ) = r = 1
+r
+r
+
+vxT vx =
+
+and that
+
+1
+1
+vec(I)T vec(I) = d = 1.
+d
+d
+So the vx and c are unit vectors. Also, if x 6≃ x′ , then Tr(Ex Ex′ ) = 0 and therefore vxT vx′ = 0.
+Therefore the vectors vx for x ∈ V (X) give an orthonormal representation of X as required in
+Definition 6.3. Furthermore,
+cT c =
+
+1
+1
+cT vx = √ vec(I)T vec(Ex ) = √ Tr(IEx )
+rd
+rd
+r
+r
+1
+1
+= √ Tr(Ex ) = √ r =
+d
+rd
+rd
+for all x ∈ V (X). This means that
+d
+1
+= .
+ϑ(X) ≤ p
+r
+( r/d)2
+
+This shows that ϑ(X) ≤ ξf (X), and taking complements yields the theorem.
+For a vertex transitive graph, one can show that its projective rank and quantum independence number are related.
+
+25
+
+(X)|
+Lemma 6.5. If X is vertex transitive, then ξf (X) ≤ |V
+αq (X) .
+
+Proof. Let X be a vertex transitive graph and let n = |V (X)|, m = αq (X), and let Eix ∈
+MC (d, d), for i ∈ [m], x ∈ V (X) be projectors which give a qunatum homomorphism from Km
+all of the projectors Eix have the same
+to X. Since X is vertex transitive, we can assume thatP
+rank r, and thus d = rn. For each x ∈ V (X), let Fx = i∈[m] Eix . We claim that the matrices
+Fx give a projective representation of X with value n/m. Since Eix Ejx = 0 when i 6= j, the
+matrices Fx are the sum of orthogonal projectors and are thus projectors. Furthermore, they
+have rank mr since each Eix has rank r. If x ∼ x′ , then
+X
+Eix Ejx′ = 0
+Fx Fx′ =
+i,j∈[m]
+
+′
+
+since Eix Ejx′ = 0 if (i = j & x 6= x ) OR (i 6= j & (x ∼ x′ or x = x′ )). Therefore, the projectors
+Fx give a projective representation of X of value d/mr = n/m = |V (X)|/αq (X).
+Note that for vertex transitive graphs, this lemma gives an upper bound on αq (X) which is
+strictly stronger than the bound in Corollary 4.8. We have that
+αq (X) ≤
+
+6.2
+
+|V (X)|
+|V (X)|
+≤
+= ϑ(X).
+ξf (X)
+ϑ̄(X)
+
+Relation to Quantum Homomorphisms
+
+Our main result on projective rank is that, like ϑ̄, it is respected by quantum homomorphisms.
+q
+
+Theorem 6.6. If X −
+→ Y , and Y has a projective representation of value γ ∈ Q, then X has a
+projective representation of value γ, and therefore ξf (X) ≤ ξf (Y ).
+q
+
+Proof. Suppose that X −
+→ Y , and that Exy ∈ MC (d′ , d′ ) for x ∈ V (X), y ∈ V (Y ) are the
+projectors which give the quantum homomorphism. Furthermore, let Fy for y ∈ V (Y ) give a
+d/r-representation of Y . Define Fx for x ∈ V (X) as follows:
+X
+Exy ⊗ Fy .
+Fx =
+y∈V (Y )
+
+We will show that this is a projective representation of value dr for X. First we must check
+that the matrices Fx are projectors. Since Exy and Fy are both projectors, their tensor product
+is a projector. Furthermore, if y 6= y ′ then Exy Exy′ = 0 and thus (Exy ⊗ Fy )(Exy′ ⊗ Fy′ ) =
+(Exy Exy′ ) ⊗ (Fy Fy′ ) = 0. Therefore, Fx is the sum of mutually orthogonal projectors and is
+thus a projector. Next we must check that Fx Fx′ = 0 for x ∼ x′ . We have that
+
+
+
+X
+X
+X
+Exy Ex′ y′ ⊗ Fy Fy′ .
+Ex′ y′ ⊗ Fy′  =
+Exy ⊗ Fy  
+Fx Fx′ = 
+y,y ′ ∈V (Y )
+
+y ′ ∈V (Y )
+
+y∈V (Y )
+
+However, for x ∼ x′ , whenever y 6∼ y ′ we have that Exy Ex′ y′ = 0, and whenever y ∼ y ′ we have
+that Fy Fy′ = 0. Therefore, all of the terms in the final sum above are 0 for x ∼ x′ and thus
+Fx Fx′ = 0 in this case.
+Now all that is left to do is check that this representation has value dr . The dimension of
+this representation is simply dd′ since the projectors Exy are in dimension d′ and the projectors
+Fy are in dimension d. To compute the rank of Fx , we use the fact that trace is equal to rank
+for projectors. We have that
+
+
+X
+X
+Tr (Exy ⊗ Fy )
+Exy ⊗ Fy  =
+Tr(Fx ) = Tr 
+y∈V (Y )
+
+=
+
+X
+
+y∈V (Y )
+
+Tr (Exy ) Tr (Fy ) = r
+
+X
+
+y∈V (Y )
+
+y∈V (Y )
+
+26
+
+Tr (Exy ) = r Tr(Id′ ) = rd′ .
+
+′
+
+d
+d
+Therefore, the representation has value dd
+rd′ = r and thus ξf (X) ≤ r .
+The contrapositive of the above theorem gives us a way to show that there is no quantum
+homomorphism from some graph to another, however the projective rank may be very difficult
+to compute (it may not be computable at all) and so this may not be very useful in practice.
+
+7
+
+Concluding Remarks
+
+We have seen that quantum homomorphisms offer a natural generalization of quantum colorings and that they respect the order of some known graph parameters such as Lovász theta and
+entanglement-assisted zero-error capacity (after taking complements). We have also introduced
+a new parameter, projective rank, whose order is respected by quantum homomorphisms. Furthermore, we have used the notion of quantum homomorphisms to introduce quantum versions
+of graph parameters other than quantum chromatic number. Also, we have established various
+relations between these and the above mentioned parameters. As a summary, in Figure 1 we give
+a Hasse diagram comparing the investigated graph parameters. For two graph parameters f and
+g, we say that f ≤ g if f (X) ≤ g(X) for all graphs X. We also use the notation f¯(X) := f (X).
+Below we explain the relations depicted in Figure 1.
+
+χ
+χf
+
+ξ
+
+χq
+ξf
+ϑ̄
+Θ̄∗
+c̄∗0
+Θ̄
+ωq
+ω
+
+Figure 1: Partial Order of Graph Parameters. A circle enclosing two parameters indicates
+that it is not known whether they are comparable. A dashed line connecting two parameters f
+and g indicates that is not known whether f 6= g.
+We have that χ ≥ χf , χq , ξ, since an n-coloring of a graph can be used to obtain fractional
+and quantum n-colorings and an orthogonal representation in dimension n. Furthermore, we
+have seen examples for which χ is strictly greater than these three parameters, such as Kneser
+graphs for χf and Ωn for χq and ξ. Therefore χ > χf , χq , ξ.
+Since χf (C5 ) = 5/2 < 3 = χq (C5 ) = ξ(C5 ) and χf (Ωn ) = |V (Ωn )|/α(Ωn ) > n = χq (Ωn ) =
+ξ(Ωn ) for n a sufficiently large multiple of four, we have that χf and χq are incomparable, as well
+as χf and ξ. The fact that ξf ≤ ξ, χf was discussed in Section 6.1, and ξf ≤ χq is Lemma 6.2
+from that section. The incomparabilities among χf , χq , and ξ imply that ξf cannot be equal to
+any of these, therefore ξf < χf , χq , ξ.
+√
+Theorem 6.4 states that ϑ̄ ≤ ξf , and equality does not hold since ϑ̄(C5 ) = 5, and it can
+be shown that ξf (C5 ) = 5/2. In [DSW11] and [Bei10] it is shown that Θ̄∗ ≤ ϑ̄, however it is an
+open question as to whether these two parameters are equal.
+
+27
+
+Since Θ̄∗ is the entanglement-assisted version of Θ̄, and the asymptotic version of c̄∗0 , clearly
+∗
+Θ̄ ≥ Θ̄, c̄∗0 . In [LMM+ 12] and [BBG13], examples of graphs for which
+thus Θ̄∗ , is
+√ c̄0 , and
+∗
+∗
+∗
+strictly larger than Θ̄ are given,
+√ thus Θ̄ < Θ̄ . Since c̄0 (C5 ) ≤ ϑ̄(C5 ) = 5 and c̄0 is an integer,
+we have that c̄∗0 (C5 ) = 2 < 5 = Θ̄∗ (C5 ), and thus c̄∗0 < Θ̄∗ .
+Our Theorem 5.1 is equivalent to ωq ≤ c̄∗0 . However, as mentioned in Conjecture 5.2, we
+believe that ωq and c̄∗0 are in fact equal. Since an n-clique is also a quantum n-clique, we have
+that ω ≤ ωq , and our Corollary 4.7 provides examples of graphs with quantum clique number
+strictly greater than clique number (after taking complements).
+√
+Since Θ̄ is the asymptotic version of ω, we have that ω ≤ Θ̄. Also, ω(C5 ) = 2 < 5 = Θ̄(C5 ),
+so these parameters are not equal.
+To see that√Θ̄ is not comparable with either c̄∗0 or ωq , note that 2 = ω(C5 ) ≤ ωq (C5 ) ≤
+∗
+c̄0 (C5 ) = 2 < 5 = Θ̄(C5 ). Combining this with the examples from [LMM+ 12] and [BBG13]
+mentioned above, we see that c̄∗0 and Θ̄ are incomparable. Furthermore, to obtain the lower
+bound on c̄∗0 for those examples, the authors use projective measurements and a maximally
+entangled state. Therefore by our Theorem 5.1 we have that ωq is not comparable to Θ̄.
+∗
+
+7.1
+
+Open Questions
+q
+
+Perhaps the most central question is whether it is decidable if X −
+→ Y for arbitrary X and Y .
+If we fix the dimension of the projectors Alice and Bob are allowed to use in their strategy for
+the (X, Y )-homomorphism game, then this question reduces to determining if a particular set
+of quadratic equations in a finite number of variables has a solution and is therefore decidable.
+So bounding the dimension needed for a quantum homomorphism would resolve this problem.
+This question remains open even for the specific case of quantum colorings.
+We have seen separations between classical and quantum versions of chromatic number
+and independence/clique number, and we have seen that there are no separations between the
+classical and quantum versions of odd girth. An interesting question is which other parameters
+have separations and which ones do not? More generally, for what graphs X do there exist
+q
+graphs Y such that X −
+→ Y but X 6→ Y ? This never happens when X is a cycle, but can
+happen for at least some complete graphs. Is there some condition on X which guarantees the
+existence/nonexistence of such a Y ? Similarly, for which graphs Y do there exist graphs X such
+q
+that X −
+→ Y but X 6→ Y ? As we have seen, this happens for some complete graphs, and the
+only graphs for which we know this does not happen are empty graphs and bipartite graphs.
+In light of Theorem 5.1, it is natural to ask if αq (X) = c∗0 (X) for all graphs X. We believe
+this to be the case. A positive answer would imply that the entanglement-assisted zero-error
+capacity of a channel can always be attained using projective measurements on a maximally
+entangled state, thus resolving an open problem from quantum information theory.
+The definition of projective rank uses an infimum, and it is of interest whether or not that
+infimum can be replaced by a minimum, i.e. that the value of ξf (X) is always obtained by
+some projective representation of X. Even if this is not the case, one may ask if ξf (X) is always
+rational. One possible approach to the former question is to try to come up with a different proof
+that the fractional chromatic number of a graph is always attained by some homomorphism into
+a Kneser graph. The current proof relies on the fact that fractional chromatic number can be
+written as a linear program and therefore can always be attained.
+q
+So far the only examples of graphs X and Y such that X 6→ Y and X −
+→ Y are with one of
+X and Y being complete. Note that Lemma 4.15 can be used to construct examples in which
+neither X nor Y is complete. However, for the examples we constructed it turned out that
+q
+X−
+→ Kn , X 6→ Kn , and Kn is a subgraph of Y for some n ∈ N. Therefore we are interested in
+q
+whether there exist graphs X and Y such that X −
+→ Y , X 6→ Y , and there is no n ∈ N such
+q
+q
+→Y.
+that X −
+→ Kn −
+The relation “→” gives rise to a partial order on homomorphic equivalence classes of graphs.
+This partial order is known as the homomorphism order of graphs, and has been heavily studied
+
+28
+
+and possesses many remarkable properties [HN04, HT97]. In the same way, one can consider
+the quantum homomorphism order of graphs. The quantum homomorphism order can easily
+be shown to be a lattice with the same meet and join operations as the homomorphism order.
+q
+Since X → Y ⇒ X −
+→ Y , the quantum homomorphism order is a (poset) homomorphic image
+of the homomorphism order. It is now natural to ask which properties these orders share. In
+particular, is the quantum homomorphism order dense?
+Although we have focused on quantum strategies for the homomorphism game, some of the
+proofs do not rely on the type of strategy being used. What separates results proved in this
+manner from results which require explicit use of the type of strategy being considered?
+
+Acknowledgments. The authors would like to thank Giannicola Scarpa for stimulating
+discussions and Simone Severini for his helpful notes. DR would like to thank Chris Godsil for
+his support throughout this project. We would also like to thank the anonymous referees of QIP
+2013 for their helpful comments on our technical report.
+
+References
+[AC85]
+
+Michael O. Albertson and Karen L. Collins.
+3-chromatic graphs.
+Discrete Mathematics,
+doi:10.1016/0012-365X(85)90073-1.
+
+Homomorphisms of
+54(2):127–132,
+1985.
+
+[AHKS06] David Avis, Jun Hasegawa, Yosuke Kikuchi, and Yuuya Sasaki. A quantum protocol
+to win the graph colouring game on all Hadamard graphs. IEICE Transactions on
+Fundamentals of Electronics, Communications and Computer Sciences, 89(5):1378–
+1381, 2006. arXiv:quant-ph/0509047v4.
+[BBG13]
+
+Jop Briët, Harry Buhrman, and Dion Gijswijt. Violating the Shannon capacity of
+metric graphs with entanglement. Proceedings of the National Academy of Sciences,
+110(48):19227–19232, 2013. arXiv:1207.1779v1.
+
+[BCT99]
+
+Gilles Brassard, Richard Cleve, and Alain Tapp. Cost of exactly simulating quantum
+entanglement with classical communication. Physical Review Letters, 83:1874–1877,
+1999. arXiv:quant-ph/9901035.
+
+[BCW98]
+
+Harry Buhrman, Richard Cleve, and Avi Wigderson. Quantum vs. classical communication and computation. In Proceedings of the 30th Annual ACM symposium
+on Theory of Computing, pages 63–68. ACM, 1998. arXiv:quant-ph/9802040.
+
+[Bei10]
+
+Salman Beigi.
+Entanglement-assisted zero-error capacity is upper-bounded
+by the Lovász theta function.
+Physical Review A, 82:10303–10306, 2010.
+arXiv:1002.2488.
+
+[CHTW04] Richard Cleve, Peter Hoyer, Ben Toner, and John Watrous. Consequences and
+limits of nonlocal strategies. In Proceedings of the 19th IEEE Annual Conference
+on Computational Complexity, pages 236–249, 2004. arXiv:quant-ph/0404076v2.
+[CLMW10] Toby S. Cubitt, Debbie Leung, William Matthews, and Andreas Winter. Improving
+zero-error classical communication with entanglement. Physical Review Letters,
+104:230503, 2010. arXiv:0911.5300.
+[CMN+ 07] Peter J. Cameron, Ashley Montanaro, Michael W. Newman, Simone Severini, and
+Andreas Winter. On the quantum chromatic number of a graph. Electronic Journal
+of Combinatorics, 14(1), 2007. arXiv:quant-ph/0608016.
+[DSW11]
+
+Runyao Duan, Simone Severini, and Andreas Winter. Zero-error communication via
+quantum channels and a quantum Lovász ϑ function. In Proceedings of the 2011
+IEEE International Symposium on Information Theory Proceedings, pages 64–68,
+2011. arXiv:1002.2514.
+
+29
+
+[FIG11]
+
+Junya Fukawa, Hiroshi Imai, and François Le Gall. Quantum coloring games via
+symmetric SAT games. In Proceedings of the 11th Asian Quantum Information
+Science Conference, 2011.
+
+[FR87]
+
+Peter Frankl and Vojtěch Rödl. Forbidden intersections. Transactions of the American Mathematical Society, 300(1):259–286, 1987. doi:10.2307/2000598.
+
+[God03]
+
+Chris Godsil. Interesting graphs and their colourings. Unpublished notes, 2003.
+
+[GR01]
+
+Chris Godsil and Gordon Royle. Algebraic graph theory, volume 207 of Graduate
+Texts in Mathematics. Springer-Verlag, 2001.
+
+[GW02]
+
+Viktor Galliard and Stefan Wolf. Pseudo-telepathy, entanglement, and graph colorings. In Proceedings of the 2002 IEEE International Symposium on Information
+Theory, page 101, 2002. doi:10.1109/ISIT.2002.1023373.
+
+[HN04]
+
+Pavol Hell and Jaroslav Nešetřil. Graphs and homomorphisms. Oxford University
+Press, 2004.
+
+[HT97]
+
+Geňa Hahn and Claude Tardif. Graph homomorphisms: structure and symmetry.
+In Graph symmetry, volume 497, pages 107–166. Springer, 1997.
+doi:10.1007/978-94-015-8937-6_4.
+
+[KMS98]
+
+David Karger, Rajeev Motwani, and Madhu Sudan. Approximate graph coloring by semidefinite programming. Journal of the ACM, 45(2):246–265, 1998.
+arXiv:cs/9812008.
+
+[LMM+ 12] Debbie Leung, Laura Mančinska, William Matthews, Maris Ozols, and Aidan Roy.
+Entanglement can increase asymptotic rates of zero-error classical communication
+over classical channels. Communications in Mathematical Physics, 311:97–111,
+2012. arXiv:1009.1195.
+[Lov79]
+
+László Lovász. On the Shannon capacity of a graph. IEEE Transactions on Information Theory, 25(1):1–7, 1979. doi:10.1109/TIT.1979.1055985.
+
+[MSS13]
+
+Laura Mančinska, Giannicola Scarpa, and Simone Severini. New separations in
+zero-error channel capacity through projective Kochen-Specker sets and quantum coloring. IEEE Transactions on Information Theory, 59(6):4025–4032, 2013.
+arXiv:1207.1111.
+
+[NC00]
+
+Michael A. Nielsen and Isaac L. Chuang. Quantum Computation and Quantum
+Information. Cambridge University Press, 2000.
+
+[Rob16]
+
+David E. Roberson. Conic formulations of graph homomorphisms. Journal of
+Algebraic Combinatorics, 43(4):877–913, 2016. arXiv:1411.6723.
+
+[SS12]
+
+Giannicola Scarpa and Simone Severini. Kochen-Specker sets and the rank-1 quantum chromatic number. IEEE Transactions on Information Theory, 58(4):2524–
+2529, 2012. arXiv:1106.0712.
+
+[WBC15]
+
+Christopher J. Wood, Jacob D. Biamonte, and David G. Cory. Tensor networks
+and graphical calculus for open quantum systems. Quantum Information & Computation, 15(9&10):759–811, 2015. arXiv:1111.6950.
+
+30
+
+

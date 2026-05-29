@@ -1,0 +1,1692 @@
+arXiv:2509.09948v1 [quant-ph] 12 Sep 2025
+
+Orthogonal polynomials, quantum walks and
+the Prouhet–Tarry–Escott problem
+Frederico Cançado
+Gabriel Coutinho∗
+Thomás Jung Spier
+September 15, 2025
+Abstract
+This paper is motivated by the following problem. Define a quantum
+walk on a positively weighted path (linear chain). Can the weights be
+tuned so that perfect state transfer occurs between the first vertex and
+any other position? We do not fully answer this question — in fact, we
+show that a particular case of this problem is equivalent to a solution
+of a particular case of the well known Prouhet–Tarry–Escott problem,
+deeming our original task certainly harder than anticipated. In our
+journey, we prove new results about sequences of orthogonal polynomials satisfying three-term recurrences. In particular, we provide a full
+characterization of when two polynomials belong to such a sequence,
+which (as far as we were able to ascertain) was known only for when
+their degrees differ by one.
+
+Keywords perfect state transfer ; strong cospectrality ; orthogonal
+polynomials ; Prouhet–Tarry–Escott problem.
+
+1
+
+Introduction
+
+In this paper we are concerned with a chain of qubits subject to a nearest
+neighbor interaction regime. The coupling strengths must be positive, and we
+allow for a possible external magnetic field at each qubit. In mathematical
+terms, we are modeling the qubit network by an undirected, weighted graph,
+with positive edge weights, possibly with weighted loops at each vertex, whose
+adjacency matrix is tridiagonal. The main problem we study is that of completely transferring the state at the excited site to another site in the network,
+∗
+
+gabriel@dcc.ufmg.br — remaining affiliations in the end of the manuscript.
+
+1
+
+a phenomenon known as “perfect state transfer”. According to Schrödinger’s
+equation, this is equivalent to the following mathematical statement:
+• If A is symmetric and tridiagonal of dimension d + 1, with positive offdiagonal terms, when is it the case that for some value of t an off-diagonal
+entry of exp(itA) has absolute value equal to 1?
+Since the seminal work in [4], there has been a long list of works devoted
+to the study of perfect state transfer in all sorts of graphs. We refer to the
+works in [15, 7] and references therein for detailed introductions to the topic.
+The connection between tridiagonal matrices and sequences of orthogonal
+polynomials is well known, and in the context of quantum walks it has been
+successfully exploited (see for instance [19, 18, 17]). In [19] a complete characterization of perfect state transfer between extremal sites of weighted paths was
+obtained. These examples also admit state transfer between any pair of symmetric positions, though they do not provide in this latter case an exhaustive
+list. What, however, seems harder and somewhat unintuitive is the problem
+of characterizing perfect state transfer between asymmetric positions. In [6],
+an infinite family of weighted paths admitting perfect state transfer between
+asymmetric sites was obtained, also by exploring the connection to orthogonal
+polynomials.
+We raise the question of whether it is possible to completely describe all
+possible cases of perfect state transfer in weighted chains. While this still seems
+out of reach, in this paper we present several significant advances towards this
+quest. Again, assume the chain contains d + 1 sites, and all coupling strengths
+are positive.
+Our first main result is a characterization of when two monic polynomials
+with distinct real roots belong to an orthogonal polynomial sequence corresponding to a tridiagonal matrix 1 — which should be of interest on its own.
+Theorem. Let q and p be two monic polynomials with distinct real zeros of
+degrees ℓ and m, respectively, where ℓ < m. Then there exists a tridiagonal
+matrix with positive off-diagonal entries determining a sequence of orthogonal
+polynomials containing p and q, if and only if, the following property holds:
+In any open interval determined by two roots of q, there is a root of p,
+and all the zeros of q lie in the open interval determined by the smallest
+and largest zeros of p.
+1
+
+It is plausible this result is already known, however our best efforts could not locate a
+reference.
+
+2
+
+This theorem is restated as Theorem 8, and proved in Section 2.
+When studying perfect state transfer, an important concept is that of
+cospectral vertices. Loosely speaking, two vertices are cospectral if quantum
+walks 2 of any duration and starting at each vertex have the same probability
+of return, for both vertices. This concept has been studied in classical contexts
+since the 1970s, and its connection to quantum walks was studied in [13]. In
+particular, perfect state transfer between two vertices is possible only if they
+are cospectral.
+Our second main result is a characterization of which positions in a weighted
+path might admit a pair of cospectral vertices. As usual, we assume the edges
+connecting neighbouring vertices have positive weight.
+Theorem. Let 0 ≤ ℓ < m ≤ d. There exists a weighted path with d + 1
+vertices and positive edge weights in which (vertices in positions) ℓ and m are
+cospectral if, and only if, ℓ < d2 < m.
+We remark that this result should also have implications in the study of
+classical random walks and Markov chains. We restate this as Theorem 11
+and prove it in Section 3.
+Perfect state transfer has been characterized between the extremal positions of linear chains, and there are known infinite families admitting state
+transfer between the first and the second-to-last positions. In light of the result above, it is natural to ask if perfect state transfer might happen between
+vertices at the first position and at the closest possible, which will be right
+after the middle of the chain. If that is the case, then the two vertices are
+cospectral and periodic, as we will soon explain. Our third main result shows
+that such examples of pairs of vertices will imply the existence of ideal solutions of the Prouhet–Tarry-Escott problem, which seems to have been first
+proposed in the 1750s and for which solutions are known only for a few cases 3
+(see [5] for a recent exposition).
+Theorem. In a linear chain with vertices{0, ·· · , d}, if there are periodic and
+, then there is an ideal solution
+cospectral vertices in positions 0 and n = d+1
+2
+to the Prouhet–Tarry–Escott problem on n integers.
+A slightly more general version of this theorem is stated as Theorem 18
+and proved in Section 4.
+Finally, we finish the paper discussing some consequences to the study
+of perfect state transfer in linear chains in Section 5, along with some open
+questions in the end.
+2
+3
+
+This also applies to classical random walks.
+Cases corresponding to n integers with 3 ≤ n ≤ 10, and for n = 12.
+
+3
+
+1.1
+
+A quick recap of orthogonal polynomials and tridiagonal matrices
+
+In this section we briefly introduce the notation we use throughout the paper,
+while recalling the main results and definitions from the literature. We refer
+the reader to [3] for a complete introduction to orthogonal polynomials, and
+to [19] for an elementary introduction suited for an application to quantum
+walks.
+Consider a spin chain on d + 1 sites with Jacobi matrix
+
+
+a0 λ 1
+
+
+
+ λ 1 a1 . . .
+,
+
+(1)
+J := 
+.
+.
+.. .. λ 
+
+
+d
+λ d ad
+where we assume that ai , λi ∈ R and λi > 0 for all i. In this paper, we shall
+refer to these as d–chains (with d + 1 sites).
+Its eigenvalues are simple [3]. We shall adhere to the convention that they
+are ordered largest to smallest, by θ0 > · · · > θd . Observe that J is the
+adjacency matrix of a weighted path P , shown in Figure 1.
+a0
+
+a1
+
+a2
+
+ad
+...
+
+λ1
+
+λ2
+
+λ3
+
+λd
+
+Figure 1: Weighted path corresponding to tridiagonal matrix, or a d–chain.
+Let p−1 ≡ 0, p0 ≡ 1, p1 (x) := x − a0 and pk+1 (x) := (x − ak )pk − λ2k pk−1 (x)
+for k ∈ [d] be the orthogonal polynomial sequence associated with J. In this
+case, pk (x) has degree k and is the characteristic polynomial of the principal
+submatrix of J formed by the first k rows and columns. Therefore,
+pd+1 = (x − θd ) · · · (x − θ0 ).
+
+(2)
+
+By rearranging the recurrence relation defining the orthogonal polynomial
+sequence and observing that pd+1 (θs ) = 0, it also follows that
+
+4
+
+
+
+p0 (θs )
+
+
+
+ p (θ ) 
+ 1 s 
+
+
+ λ1 
+|θs ⟩ = 
+
+..
+
+
+.
+
+
+ pd (θs ) 
+λ1 · · · λd
+is the eigenvector of J corresponding to the eigenvalue θs . Note that, {|θs ⟩}s=0,...,d
+is an orthogonal basis of eigenvectors of J.
+
+1.2
+
+Quantum walks and cospectral vertices
+
+We say perfect state transfer occurs from site ℓ to site m if, for some real
+number τ ,
+exp(iτ J)|ℓ⟩ = γ|m⟩,
+
+(3)
+
+where γ is a complex number in the unit circle, and |k⟩ is the vector with zero
+on all positions except for the k th position, which has a one.
+It is straightforward to verify that if there is perfect state transfer from ℓ
+to m, then there is also from m to ℓ at the same time (and with the same γ).
+Because we allow J to be weighted, it is without loss of generality that we can
+take τ = π, since we can just rescale the matrix by an overall multiplicative
+factor, and γ = 1, since we can always add a multiple of the identity matrix
+I to J. Thus, Equation (3) is, up to rescaling and translation, equivalent to
+having:
+∀s, eiπθs ⟨θs |ℓ⟩ = ⟨θs |m⟩.
+
+(4)
+
+If ℓ = 0 and m = d, a complete and useful description of all solutions to
+this problem was obtained in [14] with a direct method, and in [19] applying
+orthogonal polynomials. For the case ℓ = 0 and m = d − 1, examples were
+constructed in [15] and [11].
+Using the orthogonal polynomial sequence we can write out conditions
+depending only on the polynomials and the eigenvalues that are equivalent to
+perfect state transfer between any two vertices in a d–chain.
+Theorem 1. Consider a d–chain. There is perfect state transfer between vertices in positions ℓ and m if and only if there exists a scaled and translated
+transformed d–chain corresponding to polynomials {pr }d+1
+r=0 , with integer eigend
+values {θs }s=0 , so that
+5
+
+• For some C > 0 we have that pℓ (θs ) = (−1)θ0 −θs Cpm (θs ), for each eigenvalue θs .
+This transformed d–chain admits perfect state transfer at time π.
+While this theorem is implicit in previous works (see [19] for instance), we
+will provide a proof shortly.
+An important concept in the study of quantum walks is that of cospectral
+vertices. 4 . We say two vertices ℓ and m are cospectral in a d–chain if
+∀s, |⟨θs |ℓ⟩| = |⟨θs |m⟩|.
+It follows that the two vertices are cospectral if, and only if,
+∀s,
+
+pm (θs )
+pℓ (θs )
+=
+.
+λ1 · · · λℓ
+λ1 · · · λm
+
+We can do slightly better:
+Lemma 2. The vertices ℓ and m of a d–chain are cospectral if, and only if,
+for some constant C > 0, |pℓ (θs )| = C|pm (θs )| for every s = 0, . . . , d.
+Proof. The necessity of the statement is clear, so let us prove the sufficiency.
+Consider the matrix U with entries
+Uℓ,s =
+
+pℓ (θs )
+,
+λ1 · · · λℓ us
+
+where us is the norm of |θs ⟩. Note that the column vectors of U form the
+orthonormal basis of eigenvectors of J. Therefore U is orthogonal, and, as a
+consequence, its rows also form an orthonormal basis of Rd+1 . The hypothesis
+that |pℓ (θs )| = C|pm (θs )| for every s and some constant C > 0 implies that
+the ℓ-th and m–th rows of U with squared coordinates are multiple of each
+other. Since the ℓ-th and m–th rows of U both have norm 1, it follows that
+the squared coordinates of these rows are in fact equal. In other words, we
+have
+pℓ (θs )
+pm (θs )
+=
+,
+s = 0, . . . , d,
+λ1 · · · λℓ us
+λ1 · · · λm us
+and hence ℓ and m are cospectral.
+4
+
+For graphs that admit eigenvalues with higher multiplicity, one must distinguish between
+cospectral and strongly cospectral vertices. We refer to [13] for a complete treatment.
+When the eigenvalues are simple, both definitions are equivalent, so we may as well adopt
+a simplified approach.
+
+6
+
+Proof of Theorem 1. Equation (4) is equivalent to having both vertices cospectral, and for all θi in the support of ℓ (and m), θi even if the signs of pℓ (θs )
+and pm (θs ) agree, and odd otherwise. From Lemma 2, this is equivalent to the
+stated condition.
+A key technique to study cospectral vertices consists of examining the
+characteristic polynomial of vertex-deleted subgraphs. If P is a weighted path,
+we denote by ϕP the characteristic polynomial of the adjacency matrix of P .
+For instance, if P is as in Figure 1, with adjacency matrix J as in (1), then
+ϕP = pd+1 from (2).
+We let P \ ℓ denote the graph (which may now be disconnected) obtained
+upon deleting ℓ (and its incident edges) from P . It is well-known that two
+vertices ℓ and m are cospectral in P if and only if ϕP \ℓ = ϕP \m (see [13,
+Theorem 3.1] or [12, Chapter 4] for a complete treatment).
+Giving a step further, we define the rational function
+αℓP :=
+
+ϕP
+.
+ϕP \ℓ
+
+P
+It follows that ϕP \ℓ = ϕP \m if and only if αℓP = αm
+, and also equivalently,
+P \m
+P \ℓ
+αℓ
+= αm . See [8] for the first appearance of this terminology, along with
+applications to study cospectrality in graphs. In this paper we will make use
+of this approach, so for later reference, we state this as a lemma.
+
+Lemma 3. Let ℓ and m be vertices in a weighted path P with eigenvalues
+θ0 > · · · > θd . Then, the following are equivalent:
+(a) ℓ and m are cospectral, that is, for all s, |⟨ℓ|θs ⟩| = |⟨m|θs ⟩|;
+(b) ϕP \ℓ = ϕP \m ;
+P
+(c) αℓP = αm
+;
+P \m
+
+(d) αℓ
+
+2
+
+P \ℓ
+
+= αm .
+
+Orthogonal polynomial sequences
+
+The goal of this Section is to prove Theorem 8, which provides a characterization of when two given arbitrary polynomials belong to a d–chain.
+
+7
+
+2.1
+
+Necessary conditions for an OPS
+
+We say that two polynomials with real zeros of different degrees (strongly)
+interlace if, in any (open) closed interval determined by two roots of the polynomial of lower degree, there is a root of the polynomial of higher degree, and
+if all the zeros of the polynomial of lower degree lie in the open interval determined by the smallest and largest zeros of the polynomial of higher degree.
+Note that if two polynomials strongly interlace, then all their zeros are simple.
+First, notice that if pm and pd+1 are in an orthogonal polynomial sequence,
+then pm and pd+1 strongly interlace [3, Thm. 6.2]. This is a known result, but
+for completeness, we present a new proof using our techniques in Corollary 6.
+Denote by p̂d−m the characteristic polynomial of the principal submatrix of
+J, defined in Equation (1), consisting of the last d − m rows and columns. We
+also denote by pm−1 the characteristic polynomial of the principal submatrix
+of J consisting of the rows and columns {d − m + 1, . . . , d − 1}.
+We now present a result that is a direct consequence of the ChristoffelDarboux formula [12, Cor. 2.2] and establishes a connection between the
+polynomials pm , p̂m , and pm−1 .
+Theorem 4. Let p0 , . . . , pd+1 be an orthogonal polynomial sequence. Then,
+for any m in {0, . . . , d}, we have:
+!
+d
+Y
+p̂d−m pd − pm−1 pd+1 =
+λ2t pm ,
+(5)
+t=m+1
+
+which can also be rewritten as
+pd
+=
+pd+1
+
+d
+Y
+
+!
+λ2t
+
+t=m+1
+
+p
+pm
++ m−1 .
+p̂d−m pd+1 p̂d−m
+
+(6)
+
+Proof. Consider the d–chain as a weighted path P , and let ϕP denote its
+characteristic polynomial. Note that, by the Christoffel-Darboux formula [12,
+Cor. 2.2],
+!
+d
+Y
+ϕP \m ϕP \d − ϕP \{m,d} ϕP =
+λ2t (ϕP \{m,...,d} )2 .
+t=m+1
+
+Observe that ϕP \m = pm p̂d−m , represents the characteristic polynomial of
+the matrix J with the m-th row and column removed. This matrix is blockdiagonal, containing the matrices corresponding to pm and p̂d−m . Similarly,
+
+8
+
+ϕP \{m,d} = pm pm−1 . Substituting these expressions into the formula above
+yields:
+!
+d
+Y
+λ2t p2m ,
+pm p̂d−m pd − pm pm−1 pd+1 =
+t=m+1
+
+Finally, dividing both sides of the equation by pm results in the desired expression.
+Corollary 5. Let p0 , p1 , · · · , pd+1 be an orthogonal polynomial sequence.
+Then, gcd(pm , pd+1 ) = gcd(p̂d−m , pd+1 ) = gcd(pm , p̂d−m ).
+Proof. Note that gcd(pd , pd+1 ) = 1 and gcd(pm−1 , p̂d−m ) = 1, since pd and
+pd+1 , as well as pm−1 and p̂d−m , are consecutive polynomials in an orthogonal
+polynomial sequence and therefore strongly interlace [3, Thm. 5.3]. This
+observation, together with Equation (5), immediately implies the result.
+As a corollary, we obtain that two polynomials in an orthogonal polynomial
+sequence strongly interlace [3, Thm. 6.2].
+Corollary 6. Let p0 , p1 , · · · , pd+1 be an orthogonal polynomial sequence.
+Then, pm and pd+1 strongly interlace.
+Proof. First, observe that for every k in {0, . . . , d}, as pk and pk+1 strongly
+interlace [3, Thm. 5.3], the zeros of pk are in the open interval determined by
+the smallest and largest zeros of pk+1 . It follows that the zeros of pm are in
+the open interval determined by the smallest and largest zeros of pd+1 .
+Next, note that ϕP \m = pm p̂d−m and ϕP = pd+1 interlace by the Cauchy
+Interlacing Theorem. By Corollary 5, let g be defined as gcd(pm , pd+1 ) =
+gcd(p̂d−m , pd+1 ). It follows that the polynomials pm p̂d−m /g and pd+1 /g interlace, as the same zeros are removed from both polynomials. In particular, we
+conclude that pm and pd+1 /g interlace, and, as these polynomials are coprime,
+we obtain that they strongly interlace.
+Corollary 7. Let p0 , p1 , . . . , pd+1 be an orthogonal polynomial sequence.
+Then,
+d
+X
+pd
+τs
+(x) =
+pd+1
+x − θs
+s=0
+where, for every s in {0, . . . , d},
+Qd
+λ2t
+p
+(x)(x − θs )
+pm
+τs :=
+(θs ) Q t=m+1
++ lim m−1
+.
+x→θs
+p̂d−m
+p̂d−m (x)
+r̸=s (θs − θr )
+9
+
+(7)
+
+Proof. First, observe that a partial fraction expansion exists for pd /pd+1 [3, p.
+29]. To determine the numerators, we simply use Equation (6). Note that the
+first term on the RHS cannot be ∞, because by Corollary 5, gcd(p̂d−m , pd+1 ) =
+gcd(p̂d−m , pm ).
+Before we proceed to the next section, we observe some further properties
+of the coefficients
+Pτs in Corollary 7. An immediate consequence is that τs > 0
+for every s and ds=0 τs = 1.
+Let I be the subset of indices s such that θs is a common zero of pm and
+pd+1 . Since pm−1 and p̂d−m strongly interlace, and by Corollary 5, we have
+pm−1 (x)(x − θs )
+≥ 0,
+x→θs
+p̂d−m (x)
+lim
+
+for every s, with equality if and only if s is not in I. Furthermore, observe
+that if s is not in I, then, since τs > 0, it follows that
+Qd
+λ2t
+pm
+> 0.
+(θs ) Q t=m+1
+p̂d−m
+r̸=s (θs − θr )
+It is also possible to prove that this expression is negative if s is in I.
+
+2.2
+
+Construction of orthogonal polynomial sequence
+
+In this section, we present our first main result, which provides an algorithm
+that constructs an orthogonal polynomial sequence with two given polynomials
+qm and qd+1 that strongly interlace. This is a known result when m equals d
+(see [19] or [12, Lem. 5.1]). We manage to fully extend it for any m by showing
+that strong interlacing is also sufficient.
+Theorem 8. Let qm and qd+1 be two monic polynomials with distinct real zeros
+of degrees m and d + 1, respectively, where m < d + 1. Then, there exists an
+orthogonal polynomial sequence (pk )k with pm and pd+1 equal to qm and qd+1 ,
+respectively, if and only if qm and qd+1 strongly interlace.
+We note that our construction in the previous theorem produces all possible
+orthogonal polynomial sequences containing the polynomials qm and qd+1 . As
+our proof shows, there are d − m degrees of freedom in the construction of
+such a sequence.
+Q
+Assume that qd+1 = ds=0 (x − θs ) and let J be the set of indices s such
+that θs is a zero of qm . We will proceed backward from Section 2.1. We start
+with the following result.
+10
+
+Proposition 9. There exists a monic polynomial q̂d−m with distinct real zeros
+and degree d − m, such that q̂d−m (θs ) = 0 for every s in J, and
+qm
+q̂d−m
+
+(θs ) Y
+
+1
+(θs − θr )
+
+>0
+
+r̸=s
+
+for s not in J.
+Proof. Observe that, since qm and qd+1 strongly interlace, there are exactly
+d − m − |J| closed intervals determined by consecutive zeros of qd+1 that do
+not contain a zero of qm . Choose d − m − |J| real numbers µ1 , . . . , µd−m−|J|
+in the interior of these closed intervals, one for each interval. Let q̂d−m be the
+polynomial
+Y
+(x − µ1 ) · · · (x − µd−m−|J| ) (x − θs ).
+s∈J
+
+Note that qm q̂d−m has degree d and interlaces qd+1 , therefore
+qm q̂d−m
+(x) (x − θs ) ≥ 0,
+x→θs qd+1
+lim
+
+for every s, with equality if and only if s is in J. If s is not in J, then
+q̂d−m (θs ) ̸= 0, and therefore
+1
+qm q̂d−m
+1
+= 2
+lim
+(θs ) Y
+(x) (x − θs ) > 0.
+q̂d−m
+q̂d−m (θs ) x→θs qd+1
+(θs − θr )
+qm
+
+r̸=s
+
+Proposition 10. Let qm and q̂d−m as in the statement of Proposition 9. Then,
+there exists Λ > 0 and ρs ≥ 0 for s in {0, . . . , d} such that ρs > 0 if and only
+if s is in J, and such that,
+τs :=
+
+qm
+q̂d−m
+
+(θs ) Q
+
+d
+X
+Λ
++ ρs > 0 for every s, and
+τs = 1.
+r̸=s (θs − θr )
+s=0
+
+Proof. If J is empty, we set ρs = 0 for every s. Since all the terms are positive according to Proposition 9, we only need to choose Λ as a normalization
+constant to satisfy the conditions.
+
+11
+
+If J is non-empty, we can first choose Λ > 0 sufficiently small and then,
+we choose ρs > 0 for s in J in such a way that all the conditions are satisfied.
+For instance, we can take Λ > 0 small such that,
+qm
+q̂d−m
+
+(θs ) Q
+
+Λ
+1
+<
+,
+2(d + 1)
+r̸=s (θs − θr )
+
+for every s, and then choose
+1
+ρs :=
+|J|
+
+d
+X
+qm
+Λ
+1−
+(θs ) Q
+q̂
+r̸=s (θs − θr )
+s=0 d−m
+
+!
+>
+
+1
+1
+>
+,
+2|J|
+2(d + 1)
+
+for s in J and ρs P
+= 0 if s is not in J. Observe that in this case, by Proposition 9,
+we clearly have ds=0 τs = 1 and τs > 0 for every s in {0, . . . , d}.
+Now we are ready for the proof of the main result of this section.
+Proof of Theorem 8. Note that the necessity in the statement follows directly
+from Corollary 6. We will now prove the sufficiency part of the statement.
+Consider the polynomial q̂d−m defined in Proposition 9 and the values τs >
+0 for s in {0, . . . , d} defined in Proposition 10. Now, define the polynomial qd
+by
+d
+X τs
+qd
+(x) =
+.
+qd+1
+x
+−
+θ
+s
+s=0
+Observe that qd is monic, has degree d, distinct real zeros, and strongly interlaces qd+1 . Thus, we may consider the orthogonal polynomial sequence p0 ≡ 1,
+p1 , . . . , pd+1 with pd := qd and pd+1 := qd+1 . To finish the proof we just need
+to prove that pm is equal to qm .
+Let I be the set of indices s such that θs is a common zero of pm and
+pd+1 . Consider the polynomials Pm and P̂d−m obtained from pm and p̂d−m by
+removing common zeros. Observe, that deg Pm = m − |I| and deg P̂d−m =
+d − m − |I|. Similarly, consider the polynomials Qm and Q̂d−m , and observe
+that deg Qm = m − |J| and deg Q̂d−m = d − m − |J|.
+Observe that, by Corollary 7 and Proposition 10, if s is not in I ∪ J, then
+Qd
+2
+Pm
+pd
+t=m+1 λt
+(θs ) Q
+= lim (x − θs )
+(x)
+x→θs
+pd+1
+P̂d−m
+r̸=s (θs − θr )
+qd
+= lim (x − θs )
+(x)
+x→θs
+qd+1
+Λ
+Qm
+=
+(θs ) Q
+,
+Q̂d−m
+r̸=s (θs − θr )
+12
+
+which leads to the relation
+!
+d
+Y
+λ2t Pm (θs )Q̂d−m (θs ) = ΛQm (θs )P̂d−m (θs ),
+t=m+1
+
+for every s not in I ∪ J. But, since deg(Pm Q̂d−m ) and deg(Qm P̂d−m ) are both
+equal to d − |I| − |J|, we have
+!
+!
+d
+Y
+deg
+λ2t Pm Q̂d−m − ΛQm P̂d−m ≤ d−|I|−|J| < |{0, . . . , d}\(I ∪J)|.
+t=m+1
+
+As a consequence,
+d
+Y
+
+!
+λ2t Pm Q̂d−m = ΛQm P̂d−m .
+
+t=m+1
+
+Since the polynomials
+are monic,
+gcd(Pm , P̂d−m ) = 1 and gcd(Qm , Q̂d−m ) = 1,
+
+Q
+d
+2
+= Λ, Pm = Qm and P̂d−m = Q̂d−m . Thus, we
+it follows that
+t=m+1 λt
+conclude that I = J, pm = qm , and p̂d−m = q̂d−m , as we wanted to prove.
+
+3
+
+Cospectral vertices positions
+
+In this section, we study the possible positions of cospectral vertices in a d–
+chain. More precisely, we fully characterize the possible 0 ≤ ℓ < m ≤ d for
+which there exists some d–chain with vertices at positions ℓ and m cospectral.
+Theorem 11. Let 0 ≤ ℓ < m ≤ d. There exists a d–chain in which ℓ and m
+are cospectral if, and only if, ℓ < d2 < m.
+We proceed towards the proof of Theorem 11. Our next result constrains
+the position of cospectral pairs of vertices in a chain and proves the necessity
+part of Theorem 11.
+Proposition 12. Let ℓ < m be a cospectral pair of vertices in a d–chain.
+d
+Then, ℓ < < m.
+2
+Proof. We have by Lemma 2 that ℓ and m are cospectral if, and only if
+pd+1 | p2ℓ − Cp2m , for some C > 0. It follows that,
+d + 1 = deg(pd+1 ) ≤ deg(p2ℓ − Cp2m ) = 2m,
+13
+
+and therefore d/2 < m. In other words, we must have at least one vertex in
+the second half of the path. Now notice that we cannot have both vertices in
+the second half of the path, because in this case a reflection of the path would
+give us a path with two cospectral vertices in its first half.
+This result also shows that there are no triplets of cospectral vertices in
+chains, for in this case two of them would be on the same half of the path,
+which is forbidden by Proposition 12.
+We proceed to prove the sufficiency part of Theorem 11. Our next result
+is a direct consequence of the results of the previous sections.
+Proposition 13. Let pd+1 be a monic polynomial with integer zeros θd < · · · <
+θ0 , and let d2 < m ≤ d. Then, the following are equivalent:
+(a) There exists a d–chain with spectrum {θ0 , . . . , θd } in which the vertices 0
+and m are cospectral.
+(b) There exists a monic polynomial pm of degree m with real zeros, which
+strongly interlaces pd+1 , such that |pm (θs )| is constant for all θs .
+Proof. The implication (a) =⇒ (b) is clear by Lemma 2 and Corollary 6.
+Therefore assume that pm is a polynomial with the properties as in (b). Since
+pm and pd+1 are monic polynomials of degrees m and d + 1 that strongly
+interlace, Theorem 8 implies that there is an orthogonal polynomial sequence
+(pk (x))k=0,...,d containing both. This orthogonal polynomial sequence satisfies
+a three-term recurrence relation [3] pk+1 (x) := (x − ak )pk − λ2k pk−1 (x), for k
+in [d], where p0 ≡ 1 and p1 (x) = x − a0 . Using these coefficients ak and λk we
+can then define a Jacobi matrix J, as in Equation (1). In this way, we obtain
+a d–chain with spectrum {θ0 , . . . , θd } with these polynomials pm and pd+1 . As
+|pm (θs )| is constant as s varies in {0, . . . , d}, by Lemma 2, we obtain that 0
+and m are cospectral in this d–chain.
+As a consequence of Theorem 13, we can construct a chain with cospectral
+vertices 0 and m, provided the condition in Proposition 12 is satisfied.
+Proposition 14. Let d/2 < m ≤ d. Then, a d–chain exists in which 0 and
+m form a cospectral pair.
+Proof. Let pm be any monic polynomial with m distinct real zeros. Fix an ϵ > 0
+sufficiently small such that pm ± ϵ has distinct real zeros. Let ρ2m−1 < · · · < ρ0
+be the union of the zero sets of pm − ϵ and pm + ϵ. Note that the zeros
+of pm are in the open interval (ρ2m−1 , ρ0 ) and that between two consecutive
+zeros of pm there is always an element of {ρ2 , ρ4 , . . . , ρ2m−2 }. For a given
+14
+
+m ≤ d < 2m let S be the union of {ρ0 , ρ2m−1 } ⊔ {ρ2 , ρ4 , . . . , ρ2m−2 } with a
+subset of {ρ1 , ρ3 , . . . , ρ2m−3 } with d − m elements. Note that S has d + 1
+elements. Let pd+1 be the monic polynomial of degree d + 1 with zero set S,
+and observe that pd+1 and pm strongly interlace and that |pm | is constant on
+S. Using these polynomials pm and pd+1 , by Theorem 13, we can obtain a
+d–chain with vertices 0 and m cospectral.
+The next result shows that given a chain with a cospectral pair of vertices,
+we can always construct a larger chain with a cospectral pair of vertices. The
+proof of this result uses techniques and results developed in [8, 9, 10]. Although
+the results in these works are stated for unweighted graphs, they also apply to
+weighted graphs with simple modifications.
+Proposition 15. Let ℓ < m be a cospectral pair in a d–chain, and k be a
+natural number. Then, there exists a (d + 2k)–chain in which ℓ + k < m + k
+form a cospectral pair.
+Proof. It suffices to prove the statement for k = 1, since iterating this case
+yields the general result. Let ℓ < m be a cospectral pair of vertices in a d–chain,
+P \m
+P \ℓ
+which we view as a weighted path P . By Lemma 3, we have αℓ
+= αm . We
+are going to construct a (d + 2)–chain P̃ such that
+P̃ \m+1
+
+αℓ+1
+
+P \m
+
+= αℓ
+
+−
+
+1
+1
+P̃ \ℓ+1
+P \ℓ
+= αm
+−
+= αm+1 ,
+x−u
+x−u
+
+for some appropriately chosen real number u. By Lemma 3 this will establish
+the result.
+Assume that P has vertex weights (as )s=0,...,d and edge weights (λs )s=1,...,d ,
+with associated orthogonal polynomial sequence (ps )s=0,...,d+1 . By Equation (4)
+in [8], we have
+P \m
+P \{ℓ−1,m}
+= αℓ
+−
+αℓ
+
+λ2m+1
+P \{m+1,ℓ}
+P \ℓ
+, and αm = αℓ
+− P \m ,
+P \ℓ
+αℓ−1
+αm+1
+λ2ℓ
+
+where we set λ0 = 0 = λd+1 if ℓ = 0 or m = d. Moreover, we have
+P \ℓ
+
+αℓ−1 =
+
+ϕP \ℓ
+
+pℓ p̂d−ℓ
+pℓ
+p̂d−m
+P \m
+=
+=
+=
+,
+and
+similarly
+α
+.
+m+1
+ϕP \{ℓ,ℓ−1}
+pℓ−1 p̂d−ℓ
+pℓ−1
+p̂d−m−1
+
+Since pℓ and pℓ−1 , and p̂d−m and p̂d−m−1 strongly interlace, by Corollary 7
+we have
+ℓ
+d−m
+X
+X
+λ2m+1
+λ2ℓ
+µs
+τs
+=
+,
+and
+=
+,
+P \ℓ
+P
+\m
+x
+−
+r
+x
+−
+t
+s
+s
+αℓ−1
+α
+m+1
+s=1
+s=1
+15
+
+where r1 , . . . , rℓ and t1 , . . . , td−m are distinct real numbers, and µ1 , . . . , µℓ ,
+τ1 , . . . , τd−m are positive.
+Let u be a real number different from r1 , . . . , rℓ and t1 , . . . , td−m . Define
+the monic polynomials qℓ , qℓ+1 , q̂d−m , and q̂d+1−m by
+λ̃2ℓ+1
+
+ℓ
+qℓ+1 X µs
+1
+=
++
+,
+qℓ
+x
+−
+r
+x
+−
+u
+s
+s=1
+
+and λ̃2m+2
+
+d−m
+X τs
+q̂d+1−m
+1
+=
++
+,
+q̂d−m
+x
+−
+t
+x
+−
+u
+s
+s=1
+
+where λ̃ℓ+1 and λ̃m+2 are positive constants.
+As qℓ+1 and qℓ , and q̂d+1−m and q̂d−m strongly interlace (by Lemma 4 in [9]),
+there exist orthogonal polynomial sequences (qs )s=0,...,ℓ+1 and (q̂s )s=0,...,d+1−m
+containing these polynomials and satisfying the three-term recurrences
+q1 (x) = x − ã0 , qs+1 (x) = (x − ãs )qs (x) − λ̃2s qs−1 (x),
+
+s ∈ [ℓ],
+
+and
+q̂1 (x) = x−ãd+2 , q̂s+1 (x) = (x−ãd+2−s )q̂s (x)− λ̃2d+2−(s−1) q̂s−1 (x),
+
+s ∈ [d−m].
+
+For s in {ℓ + 1, . . . , m + 1} define ãs := as−1 , and for s in {ℓ + 2, . . . , m + 1}
+define λ̃s := λs−1 . Let P̃ have vertex weights (ãs )s=0,...,d+2 and edge weights
+(λ̃s )s=1,...,d+2 with associated orthogonal polynomial sequence (p̃k )k=0,...,d+3 .
+By Equation (4) in [8],
+P̃ \m+1
+
+αℓ+1
+
+P̃ \{ℓ,m+1}
+
+= αℓ+1
+
+−
+
+λ̃2ℓ+1
+P̃ \ℓ+1
+
+.
+
+αℓ
+
+Now, note that,
+P̃ \{ℓ,m+1}
+
+αℓ+1
+
+=
+
+ϕP̃ \{ℓ,m+1}
+ϕP̃ \{ℓ,ℓ+1,m+1}
+
+=
+
+ϕP \{ℓ−1,m}
+P \{ℓ−1,m}
+= αℓ
+,
+P
+\{ℓ−1,ℓ,m}
+ϕ
+
+where in the second equality we used that ãs = as−1 for s ∈ {ℓ + 1, . . . , m + 1}
+and λ̃s = λs−1 for s ∈ {ℓ + 2, . . . , m + 1}. Moreover,
+λ̃2ℓ+1
+
+= λ̃2ℓ+1
+P̃ \ℓ+1
+
+αℓ
+
+ℓ
+X
+p̃ℓ
+qℓ
+µs
+1
+λ2
+1
+2
+= λ̃ℓ+1
+=
++
+= Pℓ\ℓ +
+.
+p̃ℓ+1
+qℓ+1
+x − rs x − u
+αℓ−1 x − u
+s=1
+
+Therefore,
+P̃ \m+1
+
+αℓ+1
+
+P \m
+
+= αℓ
+
+−
+
+1
+.
+x−u
+
+The proof that
+P̃ \ℓ+1
+
+P \ℓ
+αm+1 = αm
+−
+
+is analogous.
+16
+
+1
+x−u
+
+We are now ready for the proof of the main result of this section.
+Proof of Theorem 11. By Proposition 12 we know that if ℓ and m are cospecd
+d
+tral in a d–chain, then ℓ < < m. For the other direction, consider ℓ < <
+2
+2
+m ≤ d. Note that if we do a reflection on the d–chain, then we may deal
+with the pair d − m < d/2 < d − l. Therefore, we can also assume without
+loss, by possibly doing a reflection, that m + ℓ ≤ d. In this case, we have
+0 < d−2ℓ
+< m − ℓ ≤ d − 2l, and thus, by Proposition 14, we know that there
+2
+is a (d − 2ℓ)–chain with 0 and m − ℓ cospectral. We conclude the result by
+using Proposition 15 with this chain for k = ℓ.
+
+4
+
+Periodic cospectral vertices
+
+Having fully characterized the positions of cospectral vertices in d–chains in
+the previous section, we turn to the study of periodic cospectral vertices. We
+say vertex at ℓ is periodic if Equation (3) holds with ℓ = m, which, as before,
+is equivalent to having, without loss of generality,
+exp(i(2π)J)|ℓ⟩ = |ℓ⟩.
+
+(8)
+
+It is straightforward to notice that if perfect state transfer happens between
+ℓ and m at time τ , then both are periodic at time 2τ , so in order to study
+vertices involved in state transfer, we may address the necessary condition of
+both vertices being cospectral and periodic.
+We consider d–chains with ℓ = 0 and d2 < m ≤ d cospectral and periodic.
+By Lemma 2, this is equivalent to requiring |pm (θs )| = C|p0 (θs )| = C and
+θs ∈ Z for every s.
+For such a pair of periodic cospectral vertices, denote by S+ and S− the
+sets of eigenvalues θs with pm (θs ) > 0 and pm (θs ) < 0, respectively, so that
+S+ ⊔ S− = {θs }s=0,...,d . Note that pm is uniquely determined by S+ and S− .
+Indeed, by Lagrange interpolation there exists a unique polynomial of degree at
+most d that takes the value 1 on S+ and −1 on S− , and the monic normalization
+of this polynomial is precisely pm .
+Since S+ and S− uniquely determine pm , if we fix the spectrum {θs }s=0,...,d ,
+it suffices to study the admissible configurations of these two sets to determine
+the possible periodic cospectral vertices positions. The next result provides a
+restriction on such configurations. In particular, it shows that, in the ordering
+θd < · · · < θ0 , there are never three consecutive elements all belonging to S+
+or S− .
+17
+
+Proposition 16. Let τm−1 < · · · < τ0 and θd < · · · < θ0 be the zeros of pm
+and pd+1 , respectively. Then, for each i in {0, . . . , m−2}, the interval (τi+1 , τi )
+contains either one or two zeros θj of pd+1 , which are in S+ or S− depending
+on whether i is odd or even, respectively. Moreover, the intervals (−∞, τm−1 )
+and (τ0 , ∞) contain only θd and θ0 , respectively. In particular, θ0 ∈ S+ and
+θd ∈ S+ if and only if m is even.
+Proof. Consider i in {0, . . . , m − 2} and the corresponding interval (τi+1 , τi ).
+Since pm is monic, its sign in this interval depends on the parity of i. Thus,
+any zero θj of pd+1 in (τi+1 , τi ) belongs to S+ or S− depending on whether i is
+odd or even, respectively.
+Because pm and pd+1 strongly interlace, there is at least one zero θj in
+(τi+1 , τi ). We claim that there are at most two. Suppose, for contradiction,
+that θj+1 < θj < θj−1 are all contained in (τi+1 , τi ). Then pm (θj+1 ) = pm (θj ) =
+pm (θj−1 ) = ±C, so by Rolle’s Theorem, there exist distinct zeros ρ− and ρ+
+of p′m in (θj+1 , θj ) and (θj , θj−1 ), respectively. Since pm is real-rooted, pm and
+p′m interlace, there must be a zero τ of pm in [ρ− , ρ+ ], and hence in (τi+1 , τi ),
+which is a contradiction. This proves our claim.
+A similar argument shows that the intervals (−∞, τm−1 ) and (τ0 , ∞) contain only θd and θ0 , respectively.
+By combining Proposition 13 with Proposition 16, we can now show that
+the most challenging case for constructing periodic cospectral vertices occurs
+when the vertices are at positions 0 and ⌈ d+1
+⌉.
+2
+Theorem 17. Let d2 < m ≤ d be such that there exists a d–chain with vertices
+0 and m cospectral and periodic. Then, for every m ≤ d′ ≤ d there exists a
+d′ –chain with vertices 0 and m cospectral and periodic.
+Proof. By Proposition 13, let pm and pd+1 be the monic polynomials associated
+with a d–chain where the vertices 0 and m are cospectral and periodic, and
+denote by S := S+ ⊔ S− the set of zeros of pd+1 . Observe that S consists of
+integers.
+We claim that, for any integer d′ with m ≤ d′ ≤ d, it is possible to remove d − d′ elements from S to obtain a subset S ′ ⊆ S such that the monic
+polynomial qd′ +1 , whose zero set is S ′ , strongly interlaces pm .
+Let τm−1 < · · · < τ0 be the zeros of pm . By Proposition 16, there exists
+a subset E ⊆ {0, . . . , m − 2} consisting of the indices i for which the interval
+(τi+1 , τi ) contains exactly two zeros of pd+1 . Note that E has exactly d − m
+elements. Thus we may select a subset R ⊆ E of size d−d′ . For each i in R, we
+choose one θki of the two zeros of pd+1 in (τi+1 , τi ), and define S ′ := S \{θki }i∈R .
+18
+
+By construction, S ′ has exactly d′ +1 distinct elements. We now show that the
+monic polynomial qd′ +1 , whose zero set is S ′ , strongly interlaces pm . Indeed,
+Proposition 16 guarantees that both θd and θ0 are in S ′ , so all zeros of pm
+lie in the open interval determined by the smallest and largest zeros of qd′ +1 .
+Moreover, for each i in {0, . . . , m − 2}, the interval (τi+1 , τi ) contains at least
+one zero of qd′ +1 by construction. Hence, pm and qd′ +1 strongly interlace.
+Finally, by Proposition 13, there exists a d′ –chain in which 0 and m are
+cospectral, corresponding to the polynomials pm and qd′ +1 . Since the set S ′
+consists of integers, it follows that 0 and m are also periodic in this d′ –chain.
+Note that, by Theorem 17, the hardest case is constructing chains with pe⌉. One of our paper highlights
+riodic cospectral vertices at positions 0 and ⌈ d+1
+2
+is to show that constructing these chains is related to a classical problem in
+number theory.
+
+4.1
+
+Prouhet–Tarry–Escott problem
+
+We denote by P T En the problem of finding two distinct multisets of integers
+E = {e1 , . . . , en } and F = {f1 , . . . , fn } such that
+ek1 + · · · + ekn = f1k + · · · + fnk
+for every k in {1, . . . , n − 1}. These are known as the ideal solutions to the
+Prouhet–Tarry–Escott problem, a classical problem with a history dating back
+over two centuries. Solutions for P T En are known only for n ≤ 10 and n = 12.
+For further information on this problem and its history, we recommend [1, 2, 5].
+As we will see later in Corollary 21, the multisets E and F are disjoint and
+each element in E or F appears at most twice. We define the problem P T En0
+just the same as P T En but with the additional requirement that no element
+is repeated in E ∪ F , that is, E and F are disjoint sets. We also define P T En1
+as the variant of P T En where at most one element in E ∪ F appears twice,
+and all others are distinct. Clearly, a solution to P T En0 is also a solution to
+P T En1 , which in turn is a solution to P T En .
+In this section we prove the following result.
+Theorem 18. Let d be a natural number. If d is odd, then
+exists a
+
+ there
+if
+and
+only
+d–chain with periodic cospectral vertices at positions 0 and d+1
+2
+0
+if there exists a solution to P T E d+1 . If d is even, then such a d–chain exists
+⌈ 2 ⌉
+if and only if there exists a solution to P T E 1 d+1 .
+⌈ 2 ⌉
+19
+
+By combining Theorems 17 and 18, we obtain the following result, which
+shows that determining all possible positions of pairs of periodic cospectral
+vertices ℓ = 0 and d2 < m ≤ d in d–chains is nearly equivalent to solving the
+Prouhet–Tarry–Escott problem.
+Corollary 19. Determining all possible positions of pairs of periodic cospectral
+vertices 0 and d2 < m ≤ d in d–chains requires solving the problem P T En0 for
+every natural number n. Conversely, a positive solution to P T En0 for each n
+yields a complete description of such positions.
+Proof. By Theorem 18, determining whether there exists a d–chain with d odd
+such that 0 and ⌈ d+1
+⌉ are periodic and cospectral requires solving P T E⌈0d+1 ⌉ .
+2
+2
+
+Therefore, by varying d over all odd natural numbers, we must solve P T En0
+for every natural number n. This proves one direction of the statement.
+Conversely, assume that there is a positive solution to P T En0 for every
+natural number n. In particular, we also obtain a positive solution to P T En1
+for every n. By Theorem 18, for every natural number d we can then obtain a
+⌉ periodic and cospectral. But then, by Theorem 17,
+d–chain with 0 and ⌈ d+1
+2
+d
+for every d and 2 < m ≤ d we can construct a d–chain with vertices 0 and m
+periodic and cospectral.
+Moreover, Theorems 17 and 18, together with the results of Section 2.2,
+provide an algorithm to convert solutions of P T En0 or P T En1 into chains with
+pairs of periodic cospectral vertices. Note that further number theoretic requirements are needed in order to guarantee these pairs admit perfect state
+transfer between them.
+To prove Theorem 18 we use the following reformulation of P T En in terms
+of polynomials.
+For a multiset E = {e1 , . . . , en }, let pE be the polynomial
+Q
+pE (x) := nj=1 (x − ej ).
+Theorem 20 (Theorem 1 in [1]). Let E and F be two distinct multisets of
+integers with n elements. Then, E and F form a solution to P T En if, and
+only if, pE − pF is a constant.
+The following result is a direct consequence of Theorem 20 and is referred
+to as the interlacing theorem for the Prouhet–Tarry–Escott problem (see [2,
+Thm. 2.1.3], or Exercise E2 in [1]). In our setting, this result is an analogue
+of Proposition 16.
+Corollary 21 (Thm. 2.1.3 in [2]). If E = {e1 , . . . , en } and F = {f1 , . . . , fn }
+are multisets that form a solution to P T En with e1 ≤ e2 ≤ · · · ≤ en and
+f1 ≤ f2 ≤ · · · ≤ fn , then
+e1 < f1 ≤ f2 < e2 ≤ e3 < · · · < en−1 ≤ en < fn , if n is odd,
+20
+
+e1 < f1 ≤ f2 < e2 ≤ e3 < · · · < en−2 ≤ en−1 < fn−1 ≤ fn < en , if n is even,
+where we assume without loss of generality that e1 < f1 .
+We are now ready for the proof of Theorem 18.
+Proof of Theorem 18.
+(=⇒)
+Assume that d ≥
+1, the case d = 1 is trivial. Consider a d–chain in which
+ d+1
+the vertices 0 and 2 are cospectral and periodic, and the corresponding
+sets S+ and S− . Note that S+ and S− are disjoint
+ of integers.
+ d+1sets
+We first claim
+ both
+ d+1 |S+ | and |S− | equal 2 when d is odd, and that
+ that
+,
+when d is even.
+{|S+ |, |S− |} = d+1
+2
+2
+Since |S+ |+|S
+ − | = d+1, it suffices to show that both |S+ | and |S− | are at
+d+1
+most 2 to establish the claim. Let τ⌈ d−1 ⌉ < · · · < τ0 be the zeros of
+2
+p⌈ d+1 ⌉ . By Proposition 16, all the zeros θd−1 < · · · < θ1 lie in the interval
+2
+(τ⌈ d−1 ⌉ , τ0 ), and those that are in S+ lie in the intervals (τi+1 , τi ) for
+2
+⌉ − 2}. Again, by Proposition 16,
+odd indices i in the set {0, 1, . . . , ⌈ d+1
+2
+each such interval contains at most two elements from S+ . There are
+exactly ⌊ 12 (⌈ d+1
+⌉ − 2)⌋ such odd indices i, so the number of elements
+2
+in S+ ∩ (τ⌈ d−1 ⌉ , τ0 ) is at most 2⌊ 12 (⌈ d+1
+⌉ − 2)⌋ = 2⌊ d4 ⌋. Note that, by
+2
+2
+⌉ is even, which
+Proposition 16, θ0 ∈ S+ , and θd ∈ S+ if and only if ⌈ d+1
+2
+occurs precisely when d ≡ 2 or 3 (mod 4). Thus, |S+ | is at most 2⌊ d4 ⌋+1
+if d ≡ 0 or 1 (mod 4), and at most 2⌊ d4 ⌋ + 2 if d ≡ 2 or 3 (mod 4). In
+any case, we conclude that |S+ | ≤ ⌈ d+1
+⌉. Moreover, by Proposition 16,
+2
+among the zeros θd−1 < · · · < θ1 , at most ⌈ d−1
+⌉ are in S− . Since θ0 ∈
+/ S−
+2
+d+1
+d−1
+and possibly θd ∈ S− , we obtain that |S− | ≤ ⌈ 2 ⌉ + 1 = ⌈ 2 ⌉. This
+proves our claim.
+Now consider the polynomials pS+ and pS− , and note that pd+1 = pS+ pS− .
+From our earlier discussion, we know that if d is odd, then both pS+ and pS−
+⌉, while if d is even, their degrees are ⌈ d+1
+⌉ and ⌊ d+1
+⌋ in some
+have degree ⌈ d+1
+2
+2
+2
+order. Since |p⌈ d+1 ⌉ | is constant on the zeros of pd+1 , there exists a constant C
+2
+such that pS+ divides p⌈ d+1 ⌉ − C and pS− divides p⌈ d+1 ⌉ + C. We now analyze
+2
+2
+the two cases: d odd and d even.
+Assume that d is odd. Since pS+ , pS− , and p⌈ d+1 ⌉ ± C are all monic of the
+2
+same degree ⌈ d+1
+−
+C and pS− = p⌈ d+1 ⌉ + C.
+⌉,
+it
+follows
+that
+p
+=
+p
+d+1
+S
++
+⌈ 2 ⌉
+2
+2
+Therefore, we have pS+ − pS− = −2C. Hence by Theorem 20, since S+ and S−
+
+21
+
+are sets of integers, they form a solution to P T E⌈ d+1 ⌉ . Furthermore, because
+2
+S+ and S− are disjoint sets, this gives a solution to P T E⌈0d+1 ⌉ .
+2
+Now,
+assume
+that d is even.
+Without loss of generality, suppose that
+
+
+ d+1
+, the proof for the other case being analogous.
+|S+ | = 2 and |S− | = d+1
+2
+In this case, we have pS+ = p⌈ d+1 ⌉ − C and (x − ξ)pS− = p⌈ d+1 ⌉ + C for some
+2
+2
+real number ξ. Therefore, pS+ − (x − ξ)pS− = −2C. From this expression,
+it follows that the sum of the elements in S+ equals ξ plus the sum of the
+elements in S− . Since S+ and S− are integer sets, it follows that ξ is an
+integer. By Theorem 20, it then follows that the multisets S+ and S− ∪ {ξ}
+form a solution to P T E⌈ d+1 ⌉ . Moreover, as S+ and S− are disjoint sets, the
+2
+only possible repeated element in the multiset S+ ∪ S− ∪ {ξ} is ξ. Therefore,
+S+ and S− ∪ {ξ} form a solution to P T E⌈1d+1 ⌉ . This completes the proof of
+2
+one direction of the statement.
+(⇐=)
+Let d be odd and assume that there exists a solution formed by sets
+E = {e1 , . . . , e⌈ d+1 ⌉ } and F = {f1 , . . . , f⌈ d+1 ⌉ } for P T E⌈0d+1 ⌉ . Consider the
+2
+2
+2
+polynomials pE and pF . By Theorem 20, the difference pE − pF is a non-zero
+F
+constant. Define pd+1 := pE pF and p⌈ d+1 ⌉ := pE +p
+. Observe that pd+1 and
+2
+2
+d+1
+p⌈ d+1 ⌉ are monic polynomials of degrees d + 1 and ⌈ 2 ⌉, respectively, and that
+2
+pd+1 has distinct integer zeros E ⊔ F . Also note that |p⌈ d+1 ⌉ | is constant on
+2
+the zeros of pd+1 .
+We claim that p⌈ d+1 ⌉ has distinct real zeros and strongly interlaces pd+1 .
+2
+To see this, consider Corollary 21 and assume without loss of generality that
+e1 < f1 . By Corollary 21, for each odd index i in {1, . . . , ⌈ d+1
+⌉}, we have ei <
+2
+fi , and by the definition of p⌈ d+1 ⌉ , it follows that p⌈ d+1 ⌉ (ei ) = −p⌈ d+1 ⌉ (fi ) ̸= 0.
+2
+2
+2
+Therefore, by continuity, p⌈ d+1 ⌉ has a zero in (ei , fi ). Similarly, for each even j
+2
+in {1, . . . , ⌈ d+1
+⌉},
+p
+has
+a zero in (fj , ej ). Hence, p⌈ d+1 ⌉ has at least ⌈ d+1
+⌉
+d+1
+⌈ 2 ⌉
+2
+2
+2
+d+1
+distinct real zeros. Since its degree is also ⌈ 2 ⌉, these are all its zeros. Note
+that this argument also shows that all the zeros of p⌈ d+1 ⌉ lie strictly between
+2
+the smallest and largest zeros of pd+1 . Moreover, between any two consecutive
+zeros of p⌈ d+1 ⌉ , there are two consecutive elements from either E or F , i.e.
+2
+at least two zeros of pd+1 . Therefore, p⌈ d+1 ⌉ and pd+1 strongly interlace. By
+2
+applying Proposition 13 to pd+1 and p⌈ d+1 ⌉ , we conclude that there exists a
+2
+d–chain in which 0 and ⌈ d+1
+⌉
+are
+periodic
+and cospectral.
+2
+Now, assume that d is even and that there exists a solution given by multisets E and F for P T En1 . As before, consider the polynomials pE and pF
+F
+. Observe that qd+2 and p⌈ d+1 ⌉
+and define qd+2 := pE pF and p⌈ d+1 ⌉ := pE +p
+2
+2
+
+2
+
+22
+
+are monic polynomials of degrees d + 2 and ⌈ d+1
+⌉, respectively, and that qd+2
+2
+has zero set E ∪ F . Also note that |p⌈ d+1 ⌉ | is constant on the zeros of qd+2 .
+2
+Using the same reasoning as before, together with Corollary 21, we can show
+that p⌈ d+1 ⌉ has real zeros and strongly interlaces qd+2 . Note that the mul2
+tiset E ∪ F may contain an element ξ that appears twice. In this case, we
+(x)
+define pd+1 (x) := qd+2
+. If no element appears twice in E ∪ F , we choose
+x−ξ
+ξ to be any element in E ∪ F that is not in {e1 , f1 , e⌈ d+1 ⌉ , f⌈ d+1 ⌉ } and define
+2
+
+2
+
+(x)
+. In either case, it follows from Corollary 21 and our previous
+pd+1 (x) := qd+2
+x−ξ
+argument that pd+1 has distinct integer zeros and strongly interlaces p⌈ d+1 ⌉ .
+2
+Finally, by applying Proposition 13 to pd+1 and p⌈ d+1 ⌉ , we conclude that there
+2
+⌉
+are
+periodic
+and cospectral.
+exists a d–chain in which 0 and ⌈ d+1
+2
+
+5
+
+Perfect State Transfer
+
+In this section, we apply the theory developed in the previous sections to study
+d–chains with perfect state transfer between vertices ℓ = 0 and d2 < m ≤ d. We
+prove that, apart from trivial cases, there is no perfect state transfer between
+the first position and the one immediately after the middle of the chain. In
+Section 5.1, we also present new examples of positions admitting perfect state
+transfer.
+The next result is the analogue of Proposition 13 for perfect state transfer.
+Theorem 22. Let pd+1 be a monic polynomial with integer zeros θd < · · · < θ0 ,
+and let d2 < m ≤ d. Then, the following are equivalent:
+(a) There exists a d–chain with spectrum {θ0 , . . . , θd } that admits perfect state
+transfer between vertices 0 and m.
+(b) There exists a monic polynomial pm of degree m with real zeros, which
+strongly interlaces pd+1 , such that pm (θs ) = (−1)θ0 −θs C for some constant
+C > 0 and every θs .
+Proof. This result follows directly from Theorem 1 and Proposition 13.
+We remark that if in the ordering θd < · · · < θ0 the eigenvalues occur in
+alternating blocks of even or odd integers of length one or two (as it should
+be by Proposition 16), then the strong interlacing of the polynomials pm and
+pd+1 in item (b) of Theorem 22 follows automatically.
+The next result is an analogue of Theorem 17 and suggests that the most
+challenging case is constructing d–chains with perfect state transfer between
+0 and ⌈ d+1
+⌉, precisely the situation in Theorem 18.
+2
+23
+
+Theorem 23. Let m ≤ d be such that there exists a d–chain with perfect state
+transfer between vertices 0 and m. Then, for any m ≤ d′ ≤ d, there exists a
+d′ –chain with perfect state transfer between 0 and m.
+Proof. The proof of this result is analogous to the proof of Theorem 17 and
+uses Theorem 22.
+Unlike the case of periodic and cospectral vertices in Theorem 18, where
+the existence of d–chains corresponds to certain solutions of the Prouhet–
+Tarry–Escott problem, perfect state transfer between vertices 0 and ⌈ d+1
+⌉ in a
+2
+d–chain can actually be ruled out for d ≥ 4. This shows that even for weighted
+d–chains perfect state transfer imposes stricter conditions than periodicity and
+cospectrality alone.
+Theorem 24. If d ≥ 4, then there is no perfect state transfer between vertices
+⌉ in a d–chain.
+0 and ⌈ d+1
+2
+Proof. Assume that d is such that there exists a d–chain with perfect state
+transfer between vertices 0 and ⌈ d+1
+⌉. By Theorem 22, S+ and S− are the
+2
+sets of even and odd zeros of pd+1 , respectively.
+From the proof of Theorem 18, we know that: if d is odd, then S+ and S−
+form a solution to P T E⌈0d+1 ⌉ ; if d is even, then there exists ξ ∈ Z such that
+2
+
+either ξ ∪ S+ and S− , or ξ ∪ S− and S+ form a solution to P T E⌈1d+1 ⌉ .
+2
+
+In either case, we obtain a solution with multisets E and F to P T E⌈1d+1 ⌉
+2
+where we may assume, without loss of generality, that either: E consists entirely of even integers, and F contains at most one even number; F consists
+entirely of odd integers, and E contains at most one odd number. Consider the polynomials pE and pF , and note that, by Theorem 20, we have
+pE (x) − pF (x) = C for some nonzero integer C.
+Now, by a result of Kleiman [16] (see also [5, p. 4]), if G = {g1 , . . . , gn }
+and H = {h1 , . . . , hn } form a solution to P T En , then
+Y
+Y
+(n − 1)! divides
+gi −
+hj = pG (0) − pH (0).
+i∈[n]
+
+j∈[n]
+
+Applying this to our setting, it follows that if ⌈ d+1
+⌉ − 1 ≥ 2, i.e., if d ≥ 4, then
+2
+2 divides C.
+Hence, if d ≥ 4, pE (x) ≡ pF (x) (mod 2), and so pE and pF have the same
+factorization in F2 [x]. But pE (x) has 0 as a root with multiplicity at least
+⌈ d+1
+⌉ − 1 ≥ 2 while pF (x) has 0 as a root with multiplicity at most 1 in
+2
+F2 [x]. Therefore, pE and pF cannot have the same factorization in F2 [x]. We
+conclude that d < 4.
+24
+
+5.1
+
+Perfect State Transfer Examples
+
+In this section, we present examples of d–chains that exhibit perfect state
+transfer between vertices 0 and d2 < m ≤ d. We begin by providing examples
+that illustrate a converse to Theorem 24.
+Observe that for d = 1 and d = 2, the paths P2 and P3 , with vertex weights
+equal to 0 and edge weights equal to 1, are examples of d–chains with perfect
+⌉. For d = 3, we have the following
+state transfer between vertices 0 and ⌈ d+1
+2
+example.
+Example 25. Let p4 := (x2 − 1)(x2 − 4) be the monic polynomial with zero
+set {±1, ±2}. If we define p2 := x2 − 52 , then p2 (θs ) = (−1)2−θs 32 for all
+θs ∈ {±1, ±2} . Observe that p2 has real roots and strongly interlaces p4 . By
+Theorem 22, the pair p4 and p2 provides an example of a 3–chain with perfect
+state transfer between vertices 0 and 2.
+Since Theorem 24 rules out perfect state transfer between 0 and ⌈ d+1
+⌉ for
+2
+d+3
+all d ≥ 4, the next possible pair is 0 and ⌈ 2 ⌉. When d is odd, a sufficient
+(though not necessary) condition for the existence of d–chains with perfect
+state transfer between these positions is the existence of a solution to P T E 0d+3
+2
+in which both sets contain exactly one odd number. The following example
+illustrates this construction.
+Example 26. A non-exhaustive search among the known solutions to P T E5
+yields the following two solutions to P T E50 , each with exactly one odd number
+in each set:
+E1 := {−8, −4, 0, 8, 9},
+
+F1 := {−7, −6, 2, 6, 10},
+
+E2 := {−55, −24, −6, 32, 58},
+
+F2 := {−52, −34, 9, 22, 60}.
+
+Let Ẽ1 and F̃1 be E1 and F1 divided by two. Define the monic polynomial
+p8 (x) := x(x − 1)(x + 2)(x − 3)(x + 3)(x − 4)(x + 4)(x − 5),
+whose zero set is exactly the integers in Ẽ1 ⊔ F̃1 , and set
+
+1
+5
+315
+p5 (x) := pẼ1 (x) + pF̃1 (x) = x5 − x4 − 25x3 + 40x2 + 144x −
+.
+2
+2
+4
+Then p8 and p5 strongly interlace, and for every root θs of p8 we have
+315
+p5 (θs ) = (−1)5−θs
+.
+4
+By Theorem 22, this gives a 7–chain with perfect state transfer between 0 and
+5. Moreover, by Theorem 23, it also gives a 6–chain with perfect state transfer
+between 0 and 5.
+25
+
+6
+
+Questions
+
+Our first question asks for a complete characterization of the positions of
+pairs of periodic cospectral vertices (or admitting perfect state transfer) in
+d–chains.
+Question 27. Consider a d–chain. What are the possible positions of pairs
+of periodic cospectral vertices ℓ < m? For which of these pairs is perfect state
+transfer possible?
+We observe that Proposition 13 and Theorem 22 address only the case
+ℓ = 0. This is because Theorem 8 characterizes when two polynomials belong
+to an orthogonal polynomial sequence, whereas no analogous characterization
+is known for three polynomials. Moreover, even in this restricted setting with
+ℓ = 0, number-theoretic obstructions arise, as shown by Theorems 18 and 24.
+This motivates the following problem.
+Problem 28. For every sufficiently large d, construct d–chains such that the
+vertices 0 and md , with d2 < md ≤ d, are cospectral and periodic (or exhibit
+perfect state transfer), and such that limd→∞ mdd is as small as possible.
+
+Acknowledgements
+The authors thank Alastair Kay for conversations about the topic of this paper
+a while ago. We acknowledge the financial support of FAPEMIG, CNPq and
+CAPES.
+
+References
+[1] Peter Borwein. The Prouhet–Tarry–Escott problem. Computational Excursions in Analysis and Number Theory, pages 85–95, 2002.
+[2] Timothy Caley. The Prouhet–Tarry–Escott problem. PhD thesis, University of Waterloo, 2013.
+[3] Theodore S Chihara. An introduction to orthogonal polynomials. Courier
+Corporation, 2011.
+[4] Matthias Christandl, Nilanjana Datta, Tony C Dorlas, Artur Ekert, Alastair Kay, and Andrew J Landahl. Perfect transfer of arbitrary states in
+quantum spin networks. Physical Review A, 71:32312, 2005.
+26
+
+[5] Don Coppersmith, Michael Mossinghoff, Danny Scheinerman, and Jeffrey VanderKam. Ideal solutions in the Prouhet–Tarry–Escott problem.
+Mathematics of Computation, 93(349):2473–2501, 2024.
+[6] G. Coutinho, L. Vinet, H. Zhan, and A. Zhedanov. Perfect state transfer
+in a spin chain without mirror symmetry. Journal of Physics A: Mathematical and Theoretical, 52, 2019.
+[7] Gabriel Coutinho and Chris Godsil. Continuous-time quantum walks
+in graphs. IMAGE - The Bulletin of the International Linear Algebra
+Society, Spring:12–21, 2018.
+[8] Gabriel Coutinho, Emanuel Juliano, and Thomás Jung Spier. Strong
+cospectrality in trees. Algebraic Combinatorics, 6(4):955–963, 2023.
+[9] Gabriel Coutinho, Emanuel Juliano, and Thomás Jung Spier. No perfect
+state transfer in trees with more than 3 vertices. Journal of Combinatorial
+Theory, Series B, 168:68–85, 2024.
+[10] Gabriel Coutinho, Emanuel Juliano, and Thomás Jung Spier. The spectrum of symmetric decorated paths. Linear Algebra and its Applications,
+2025.
+[11] Gabriel Coutinho, Luc Vinet, Hanmeng Zhan, and Alexei Zhedanov. Perfect state transfer in a spin chain without mirror symmetry. Journal of
+Physics A: Mathematical and Theoretical, 52(45):455302, 2019.
+[12] Chris D Godsil. Algebraic Combinatorics. Chapman & Hall, 1993.
+[13] Chris D Godsil and Jamie Smith. Strongly cospectral vertices. Australas.
+J Comb., 88:1–21, 2024.
+[14] Alastair Kay. Perfect, efficient, state transfer and its application as a
+constructive tool. International Journal of Quantum Information, 8:641–
+676, 2010.
+[15] Alastair Kay. Basics of perfect communication through quantum networks. Physical Review A, 84, 2011.
+[16] H Kleiman. A note on the Tarry–Escott problem. J. Reine Angew. Math.,
+278:279, 1975.
+[17] Luc Vinet and Alexei Zhedanov. Almost perfect state transfer in quantum
+spin chains. Physical Review A, 86:052319, 11 2012.
+27
+
+[18] Luc Vinet and Alexei Zhedanov. Dual-1 Hahn polynomials and perfect
+state transfer. In Journal of Physics: Conference Series, volume 343,
+page 012125. IOP Publishing, 2012.
+[19] Luc Vinet and Alexei Zhedanov. How to construct spin chains with perfect
+state transfer. Physical Review A, 85:12323, 2012.
+
+28
+
+Gabriel Coutinho
+Dept. of Computer Science
+Universidade Federal de Minas Gerais, Brazil
+E-mail address: gabriel@dcc.ufmg.br
+Frederico Cançado
+Dept. of Mathematics
+Universidade Federal de Minas Gerais, Brazil
+E-mail address: fredericocancado@ufmg.br
+Thomás Jung Spier
+Dept. of Combinatorics and Optimization
+University of Waterloo, Canada
+E-mail address: tjungspier@uwaterloo.ca
+
+29
+
+

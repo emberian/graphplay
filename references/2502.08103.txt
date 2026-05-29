@@ -1,0 +1,2235 @@
+Perfect state transfer between real pure states
+Chris Godsil1 , Stephen Kirkland2 , and Hermie Monterde2
+
+arXiv:2502.08103v4 [quant-ph] 12 Jun 2025
+
+June 13, 2025
+
+Dedicated to Agnes T. Paras on the occasion of her 60th birthday
+Abstract
+Pure states correspond to one-dimensional subspaces of Cn represented by unit vectors. In this
+paper, we develop the theory of perfect state transfer (PST) between real pure states with emphasis on
+the adjacency and Laplacian matrices as Hamiltonians of a graph representing a quantum spin network.
+We characterize PST between real pure states based on the spectral information of a graph and prove
+three fundamental results: (i) every periodic real pure state x admits perfect state transfer with another
+real pure state y, (ii) every connected graph admits perfect state transfer between real pure states, and
+(iii) for any pair of real pure states x and y and for any time τ, there exists a real symmetric matrix M
+such that x and y admit perfect state transfer relative to M at time τ. We also determine all real pure
+states that admit PST in complete graphs, complete bipartite graphs, paths, and cycles. This leads to a
+complete characterization of pair and plus state transfer in paths and complete bipartite graphs. We give
+constructions of graphs that admit PST between real pure states. Finally, using results on the spread
+of graphs, we prove that amongst all n-vertex simple unweighted graphs, the least minimum PST time
+between real pure states is attained by any join graph for the Laplacian case, while it is attained by the
+join of an empty graph and a complete graph of appropriate sizes for the adjacency case.
+
+Keywords: quantum walks, perfect state transfer, pure states, graph spectra, adjacency matrix, Laplacian
+matrix
+MSC2010 Classification: 05C50; 81P45
+
+1
+
+Introduction
+
+Throughout, we assume that G is a simple undirected connected graph on n vertices with positive edge
+weights having adjacency matrix A and Laplacian matrix L. We say that G is unweighted if every edge of
+G has weight one. A continuous quantum walk on G is determined by the matrix
+UM ptq :“ eitM ,
+
+t P R,
+
+(1)
+
+where i2 “ ´1 and M is a real symmetric matrix called the Hamiltonian associated with G. Here, M is
+indexed by the vertices of G such that Mu,v “ 0 if and only if there is no edge between u and v. Note that
+UM ptq is a complex, symmetric and unitary matrix for each t P R. We write UM ptq as Uptq if M is clear
+from the context. Sometimes, we take M to be A or L. But unless otherwise stated, our results apply to
+any real symmetric matrix M that respects the adjacencies of G. We denote the m ˆ n all-ones matrix and
+n ˆ n identity matrix by Jm,n and In , respectively. We write these matrices as J and I if the context is clear.
+
+1
+
+A quantum state is represented by a positive semidefinite matrix with trace one, known as a density
+matrix. If the initial state of our quantum walk is represented by a density matrix D, then the state Dptq at
+time t is given by
+UptqDUp´tq,
+J
+
+where Up´tq “ Uptq “ Uptq´1 [God17]. We say that perfect state transfer (PST) occurs between two
+density matrices D1 and D2 if for some time τ ą 0, we have
+D2 “ UpτqD1 Up´τq.
+We say that perfect state transfer (PST) occurs between two nonzero complex vectors x and y if for some
+time τ ą 0, there is a unit complex number γ called phase factor such that
+Upτqx “ γy.
+
+(2)
+
+The minimum such τ is called the minimum PST time.
+A density matrix D is a pure state if the rank of D is equal to one, and it is a real state if all its entries
+1
+J for some nonzero vector x P Rn , where
+are real. Thus, a real pure state D can be written as D “ }x}
+2 xx
+1
+J denote the real pure
+} ¨ } is the Euclidean norm. For each x P Rn with x ‰ 0, we let Dx :“ }x}
+2 xx
+state associated with x. Since the equation Dy “ UpτqDx Up´τq is equivalent to Upτqx “ γy for some
+unit γ P C, the existence of perfect state transfer between real density matrices Dx and Dy is equivalent
+to perfect state transfer between the real vectors x and y. Thus, we abuse terminology and also refer to
+x as a real pure state. If u and v are two vertices in G and s is a non-zero real number, then a real pure
+state of the form x “ eu is called a vertex state, while x “ eu ` sev is called an s-pair state [KMA` 24].
+In particular, a p´1q-pair state is called a pair state and a 1-pair state is called a plus state. Perfect state
+transfer between vertex states has been extensively studied, see [CDEL04, Cou14, God12b, Kay10, KT11]
+for surveys and [ÁG23, BMP24, CJS24] for more recent work. On the other hand, perfect state transfer
+between pair states, between plus states, and between s-pair states has only been investigated recently
+[BTVX25, CG20, KMA` 24, PM24]. As Upτq is unitary, Upτqx “ γy implies that }x} “ }y}. Thus, to
+simplify our discussion, we examine perfect state transfer between real vectors with the same length, in
+lieu of density matrices. Throughout, we assume that x and y are real vectors with }x} “ }y} ‰ 0.
+In this paper, we develop the theory of perfect state transfer between real pure states in weighted
+graphs. In Sections 2 and 4, we extend the concept of eigenvalue supports and strong cospectrality to
+real pure states. Section 3 deals with periodicity. In particular, we show that periodicity of a real pure
+state with nonnegative entries is relatively rare whenever M has nonnegative rational entries, a result that
+can be viewed as an extension of the relative rarity of vertex periodicity [God12c]. We also provide a
+simple formula for calculating the minimum period of a periodic real pure state. We devote Section 5 to
+a characterization of perfect state transfer between real pure states, which extends a characterization of
+vertex perfect state transfer due to Coutinho [Cou14]. We establish three important facts in this section:
+(i) every periodic real pure state x admits perfect state transfer with another real pure state y, (ii) every
+connected graph admits perfect state transfer between real pure states, and (iii) for any pair of real pure
+states x and y and for any time τ, there exists a real symmetric matrix M such that x and y admit perfect
+state transfer relative to M at time τ. In Sections 6, 7 and 10, we characterize perfect state transfer between
+real pure states in complete graphs, cycles, paths and complete bipartite graph. As a consequence, we
+obtain a characterization of pair and plus state transfer in paths and complete bipartite graphs. While only
+a few cycles and paths admit vertex perfect state transfer, it turns out that there are infinite families of
+such graphs that admit perfect state transfer between real pure states. Sections 8 and 9 are dedicated to
+constructions of graphs with PST between real pure states. In Section 11, we utilize results on the spread
+
+2
+
+of graphs to establish that amongst all n-vertex unweighted graphs, the minimum PST time between real
+pure states for the Laplacian case is attained by any join graph, while for the adjacency case, it is attained
+by the join of an empty graph and a complete graph of appropriate sizes, provided that n is sufficiently
+dk f
+large. Finally, in Section 12, we determine closed form expressions for dtk |τ , where f ptq “ |yJ Uptqx|2 is
+d2 f
+
+the fidelity of transfer between real vectors x and y, and f pτq “ 1. We give sharp bounds on dt2 |τ , which
+describes the sensitivity of the fidelity at time τ with respect to the readout time.
+Let x ‰ 0 be a real vector. Observe that for any time t ą 0, there is perfect state transfer between x and
+γUptqx for some unit γ P C. But as Uptq has complex entries, we are not guaranteed that γUptqx has real
+entries. Now, suppose γUpτqx has real entries. In this case, a result of Godsil implies that perfect state
+transfer between x and γUpτqx is monogamous [God17, Corollary 5.3]. That is, if there is perfect state
+transfer between x and another vector y P Rn , then y “ γUpτqx. If we also assume that τ is the minimum
+PST time between x and y “ γUpτqx, then every PST time is an odd multiple of τ [God17, Lemma 5.2].
+Hence, if t “ p2k ` 1qτ, then
+γUptqx “ γUpτq2k Upτqx “ Upτq2k y “ γ´2k y.
+That is, y “ γ2k`1 Uptqx. From this, we deduce that for every γ P C, there is at most one real vector in
+the set tγUptqx : t ą 0u distinct from ˘x. This demonstrates that the existence of perfect state transfer
+between real pure states is a special occurrence, and therefore warrants an investigation.
+Our work provides a spectral framework for studying perfect state transfer between real pure states
+that unifies the study of perfect state transfer between vertices and s-pair states. We recover known results
+about perfect state transfer between vertex states, plus states and pair states, and produce new instances of
+pair and plus state transfer.
+
+2
+
+Eigenvalue supports
+
+Let M be a Hamiltonian of a graph G. Since M is real symmetric, we may write M in its spectral
+decomposition:
+k
+ÿ
+M“
+λ j Ej ,
+(3)
+j“1
+
+where λ1 , . . . , λk are the distinct eigenvalues of M with corresponding eigenprojection matrices E1 , . . . , Ek .
+Combining equations (1) and (3), we obtain a spectral decomposition of Uptq given by
+Uptq “
+
+k
+ÿ
+
+eitλ j Ej .
+
+(4)
+
+j“1
+
+Thus, the eigenvalues and eigenvectors of M completely determine the behaviour of the quantum walk.
+Let x P Rn with x ‰ 0. The eigenvalue support of x relative to M, denoted σx pMq, is the set
+σx pMq “ tλ j : Ej x ‰ 0u.
+Note that σx pMq is always nonempty. If |σx pMq| “ 1, then x is called a fixed state relative to M.
+n
+Proposition 1. Let
+ř x P R zt0u. If S is a subset of the set of distinct eigenvalues of M, then σx pMq “ S if
+and only if x “ jPS u j , where each u j is a real eigenvector associated with an eigenvalue λ j P S.
+
+Proof. Let σx pMq “ S. If λ j P S, then
+is an eigenvector for M associated with λ j . As the Ej s
+ř u j :“ Ej x ř
+sum to identity, we obtain x “ Ix “ λ j PS Ej x “ λ j PS u j . The converse is straightforward.
+3
+
+We let ϕpM, tq denote the characteristic polynomial of M in the variable t. Adapting the same proof
+of Proposition 2.4 in [KMA` 24] yields a more general result.
+Lemma 2. Let x P Rn zt0u and suppose ax has rational entries for some nonzero a P R. If ϕpM, tq has
+integer coefficients, then σx pMq is closed under taking algebraic conjugates.
+If S is a singleton set in Proposition 1, then we get the following result.
+Proposition 3. A vector x P Rn zt0u is a fixed state if and only if x is an eigenvector for M associated
+with the lone eigenvalue in σx pMq.
+If x is a fixed state, then (4) implies that Uptqx “ eitλ x for any time t, where λ is an eigenvalue of M
+with associated eigenvector x. For connected graphs in particular, a vertex state eu is not an eigenvector
+for M, and hence is not a fixed state.
+Example 4. Some examples of fixed pure states include (i) x P spant1u, if G is regular or M “ L, (ii)
+x P spantvu, if v is a Perron eigenvector for M “ A, and (iii) x P spanteu ´ ev u, if u, v are twins in G.
+The covering radius of a set S Ď VpGq is the least nonnegative integer r such that each vertex of G is
+at distance at most r from S. The covering radius of a vector x P Rn is defined to be the covering radius
+of the set S “ tu P VpGq : xJ eu ‰ 0u. We state Lemma 4.1 in [God12a].
+Lemma 5. Suppose x P Rn zt0u is not a fixed state and has covering radius r. If M and x are entrywise
+nonnegative, then |σx pMq| ě r ` 1.
+Remark 6. If G is a primitive strongly regular graph and S “ tu, vu, where u and v are adjacent,
+then r “ 2 but x “ eu ´ ev satisfies |σx pMq| “ 2. Thus, Lemma 5 need not hold if x is not entrywise
+nonnegative.
+
+3
+
+Periodicity
+
+Definition 7. Suppose x P Rn zt0u is not a fixed state. We say that x is periodic in G (relative to M) if
+there is a time τ ą 0 such that
+Upτqx “ γx
+for some unit γ P C. The minimum such τ is called the minimum period of x, which we denote by ρ.
+A set S Ď R with at least two elements satisfy the ratio condition if
+λ p ´ λq
+PQ
+λr ´ λ s
+for all λ p , λq , λr , λs P S with λr ‰ λs . Note that S automatically satisfies the ratio condition whenever
+|S| “ 2.
+Theorem 8. A vector x P Rn is periodic in G if and only if σx pMq satisfies the ratio condition. If we also
+assume that |σx pMq| ě 3 and σx pMq is closed under algebraic conjugates,?then x is periodic if and only if
+either (i) σx pMq Ď Z or (ii) each λ j P σx pMq is of the form λ j “ 21 pa ` b j ∆q, where a, b j , ∆ are integers
+and ∆ ą 1 is square-free.
+Proof. This follows from [CG21, Corollary 7.3.1], and [CG21, Theorem 7.6.1].
+The following is straightforward from Theorem 8.
+4
+
+Corollary 9. Suppose x P Rn such that |σx pMq| ě 3 and σx pMq is closed under taking algebraic conjugates. If x is periodic, then the elements in σx pMq differ by at least one.
+We now turn our attention to the minimum period.
+Lemma 10. Let G be a graph and x P Rn zt0u with σx pMq “ tλ1 , . . . , λm u, where λ1 ą λ2 .
+1. If m “ 2, then x is periodic in G with ρ “ λ12π
+´λ2
+2πq
+
+2. If m ě 3 and x is periodic in G, then ρ “ λ1 ´λ2 , where q “ lcmpq3 , . . . , qm q and the p j ’s and q j ’s
+λ ´λ
+
+p
+
+are integers such that λ11´λ2j “ q jj and gcdpp j , q j q “ 1.
+Proof. This follows from a simple extension of the proof of [KMP23, Theorem 5].
+Corollary 11. In Lemma 10(2), if we assume in addition that σx pMq is closed under taking algebraic
+´λ2 λ1?
+m
+3
+? , where g “ gcdp λ1?
+conjugates, then ρ “ g2π
+, ´λ
+, . . . , λ1?´λ
+q.
+∆
+∆
+∆
+∆
+?
+Proof. By Theorem 8, we may write each λ j “ 12 pa ´` b j ∆q, where
+¯ ∆ ě 1. Thus, each q j in Lemma
+b ´b
+
+´b2
+2
+. Therefore, q “ lcmpq3 , . . . , qm q “
+10(2) can be written as q j “ b12g
+, where g j “ gcd 1 2 j , b1 ´b
+2
+j
+´
+¯
+2πq
+´b2
+´b2
+´λ2
+1 ´b2
+? .
+lcm b12g
+, . . . , b2g
+“ b12g
+“ λg1?
+. Applying Lemma 10(2) then yields ρ “ λ1 ´λ2 “ g2π
+m
+3
+∆
+∆
+
+Theorem 12. Let M and x P Rn zt0u be entrywise nonnegative.
+1. If |σx pMq| “ 2, then x is periodic and the covering radius of x is at most one.
+2. Suppose x is periodic relative to M. If |σx pMq| ě 3 and σx pMq is closed under taking algebraic
+conjugates, then the covering radius of x is at most 2k, where k is the maximum row sum of M.
+Proof. Let r be the covering radius of x. Since M and x are entrywise nonnegative, Lemma 5 yields
+r ` 1 ď |σx pMq|. Combining this with Lemma 10(1) gives us (1). Now, let ρpMq denote the spectral radius
+of M. As |σx pMq| ě 3, σx pMq is closed under taking algebraic conjugates and x is periodic, Corollary 9
+yields |σx pMq| ď 2ρpMq ` 1. As ρpMq ď k, we get r ` 1 ď |σx pMq| ď 2ρpMq ` 1 ď 2k ` 1, which
+yields the desired result in (2).
+Remark 13. Theorem 12 applies to A. Since we may take M “ kI ´ L, Theorem 12 also applies to L.
+Theorem 14. For each k ą 0, there are only finitely many connected graphs with positive integer weights
+and maximum degree at most k such that a vector x ‰ 0 with nonnegative rational entries is periodic
+relative to A or L.
+Proof. Assume that G is a connected unweighted graph with maximum degree k and let x be a vector with
+nonnegative rational entries that is periodic relative to M. By Lemma 2, σx pMq is closed under taking
+algebraic conjugates. Let r be the covering radius of x. Since x is not fixed, we have |σx pMq| ě 2, and
+so applying Theorem 12 to M P tA, kI ´ Lu yields r ď 2k. As k is fixed, there are only finitely many
+connected unweighted graphs with degree at most k and the covering radius of x is bounded above by 2k.
+This remains true if we assign positive integer weights to G.
+Theorem 14 generalizes Godsil’s result on periodic vertex states [God12c, Corollary 6.2] and Kim et.
+al’s results on periodic s-pair states with nonnegative rational entries [KMA` 24, Corollary 3.5]. We also
+note that Theorem 14 need not apply if x has a positive and a negative entry. See [PM24] for an infinite
+family of trees with maximum degree three admitting PST between pair states.
+5
+
+Remark 15. The argument in the proof of Theorem 14 applies when the Hamiltonian taken is the signless
+Laplacian matrix. In this case, we obtain the bound r ď 4k in the above proof in lieu of r ď 2k. By Lemma
+2, Theorem 14 applies to entrywise nonnegative vectors x ‰ 0 whenever ax has rational entries for some
+a ą 0.
+
+4
+
+Strong cospectrality
+
+Definition 16. Let x, y P Rn zt0u with y ‰ ˘x and }x} “ }y}. We say that x and y are strongly cospectral
+(relative to M) if for each λ j P σx pMq, either Ej x “ Ej y or Ej x “ ´Ej y.
+` pMq and σ´ pMq given by
+The above definition allows us to partition σx pMq into two sets σx,y
+x,y
+`
+σx,y
+pMq “ tλ j : Ej x “ Ej y ‰ 0u
+
+and
+
+´
+σx,y
+pMq “ tλ j : Ej x “ ´Ej y ‰ 0u.
+
+Thus, if x is involved in strong cospectrality, then |σx pMq| ě 2. Consequently, a fixed state cannot be
+strongly cospectral with another pure state by Proposition 3.
+The proof of our next result is analogous to that of Theorem 3.1 and Lemma 10.1 in [GS24], and so
+we omit it here.
+Lemma 17. The following are equivalent.
+1. For all j, xJ Ej x “ yJ Ej y.
+2. For all integers k ě 0, xJ Mk x “ yJ Mk y.
+3. There exists an orthogonal matrix Q that commutes with M such that Q2 “ I and Qx “ y.
+Lemma 18. If x and y are strongly cospectral, then xJ Mk x “ yJ Mk y for all integers k ě 0.
+Proof. Since Ej x “ ˘Ej y, we get xJ Ej x “ yJ Ej y. Invoking Lemma 17(2) yields the desired result.
+The following result will prove useful in the latter sections.
+ř
+Theorem 19. Let x, y P Rn zt0u and suppose x “ jPσx pMq u j , where each u j is a real eigenvector
+associated with an eigenvalue λ j P σx pMq. The following are equivalent.
+1. The vectors x and y are strongly cospectral.
+2. There exists an orthogonal matrix Q that is a polynomial in M such that Q2 “ I and Qx “ y.
+3. For some nonempty sets σ1 and σ2 that partition σx pMq, we have
+ÿ
+ÿ
+ÿ
+ÿ
+x“
+uj `
+u j and y “
+uj ´
+uj.
+λ j Pσ1
+
+λ j Pσ2
+
+λ j Pσ1
+
+λ j Pσ2
+
+` pMq “ σ and σ´ pMq “ σ .
+In this case, σx,y
+2
+1
+x,y
+
+Proof. The proof of the equivalence of (1) and (2) is analogous to that of [GS24, Theorem 10.2]. To prove
+(1) implies (3), suppose x and y are strongly cospectral. Let λk P σx pMq “ σy pMq. By assumption,
+Ek x “ uk . Thus, Ek x “ Ek y if and only if Ek y “ uk , while Ek x “ ´Ek y if and only if Ek y “ ´uk .
+Consequently,
+
+6
+
+ÿ
+
+y“
+
+λ j Pσy pMq
+
+ÿ
+
+Ej y “
+
+`
+λ j Pσx,y
+pMq
+
+uj ´
+
+ÿ
+
+uj.
+
+´
+λ j Pσx,y
+pMq
+
+The converse is straightforward.
+Remark 20. Suppose x P Rn zt0u is not a fixed state and let m “ |σx pMq|. There are 2m´1 ´ 1 ways
+to partition σx pMq into two subsets. By Theorem 19(3), we get 2m´1 ´ 1 vectors y that are strongly
+cospectral with x in G.
+The following result generalizes Corollary 6.4 of [GS24] to real pure states.
+Lemma 21. If x and y are strongly cospectral, then any automorphism of G that fixes y also fixes x.
+Proof. Let P be a permutation matrix representing an automorphism of G that fixes y. That is, Py “ y
+and PEj “ Ej P for each λ j P σx pMq. Thus, Ej x “ ˘Ej y “ ˘PJ Ej Py “ ˘PJ Ej y “ PJ Ej x. Since the
+Ej s sum to identity, the above equation yields Px “ x.
+
+5
+
+Perfect state transfer
+
+Recall that a fixed state cannot be involved in strong cospectrality. Hence, we restrict our discussion of
+PST to vectors that are not eigenvectors for M.
+If x and y are vertex states (respectively, pair states, plus states and s-pair states), then we sometimes
+use the term vertex PST (respectively, pair PST, plus PST and s-pair PST) in lieu of PST between x and y.
+Lemma 22. Let x, y P Rn zt0u with y ‰ ˘x. If perfect state transfer occurs between x and y in G at time
+τ ą 0, then the following hold.
+1. The vectors x and y are strongly cospectral, and x and y are periodic at time 2τ.
+ρ
+
+2. The minimum PST time between x and y is 2 , where ρ is given in Lemma 10.
+3. If perfect state transfer also occurs between x and z in G, then y “ z.
+Proof. This is immediate from Lemma 2.3, Lemma 5.2 and Corollary 5.3 of [God17], respectively.
+We now provide a characterization of PST between real pure states. Our result applies even if ϕpM, tq R
+Zrxs (that is, even if σx pMq is not closed under algebraic conjugates). We denote the largest power of two
+that divides an integer a by ν2 paq. We adopt the convention that ν2 p0q “ `8.
+Theorem 23. Let G be a graph on n vertices and let x, y P Rn zt0u with y ‰ ˘x.
+1. If |σx pMq| “ 2, then x and y admit perfect state transfer if and only if they are strongly cospectral.
+2. Let σx pMq “ tλ1 , . . . , λm u for some m ě 3. The vectors x and y admit perfect state transfer if and
+λ ´λ
+p
+only if x and y are strongly cospectral, λ11´λ2j “ q jj for each j ě 3, where p j and q j are integers such
+that gcdpp j , q j q “ 1, and one of the following conditions holds.
+` pMq, then
+(a) If λ1 , λ2 P σx,y
+
+ν2 pqℓ q “ ν2 pqk q ą ν2 pqh q
+´ pMq and λ P σ` pMqztλ , λ u, where each ν pq q above is absent
+for all λℓ , λk P σx,y
+2 h
+1 2
+h
+x,y
+`
+whenever |σx,y pMq| “ 2.
+
+7
+
+` pMq and λ P σ´ pMq, then each q is odd, and p is even if and only if λ P
+(b) If λ1 P σx,y
+2
+j
+h
+h
+x,y
+` pMq.
+σx,y
+ρ
+
+Moreover, the minimum PST time is 2 , where ρ is given in Lemma 10.
+Proof. The last statement follows from Lemma 22(2). Thus, we may assume that the minimum PST
+ρ
+` pMq. For all
+time is τ “ 2 , where ρ is given in Lemma 10. Without loss of generality, let λ1 P σx,y
+`
+´
+λh P σx,y pMq and λℓ P σx,y pMq, equation (2) implies that
+eiτpλ1 ´λh q “ ´eiτpλ1 ´λℓ q .
+
+(5)
+
+By Lemma 22(1), it suffices to prove the converse of (1). Let |σx pMq| “ 2, and x and y be strongly
+` pMq and σ´ pMq ‰ ∅, we have σ´ pMq “ tλ u. From equation (5), we get
+cospectral. Since λ1 P σx,y
+2
+x,y
+x,y
+π
+iτpλ
+´λ
+q
+2
+1
+e
+“ ´1, and so PST occurs between x and y at τ “ λ1 ´λ2 .
+We now prove (2). Suppose PST occurs between x and y. By Lemma 22(1), x and y are strongly
+λ ´λ
+p
+cospectral and periodic. By Theorem 8, the latter statement is equivalent to λ11´λ2j “ q jj for each j ě 3,
+πq
+
+where p j and q j are integers such that gcdpp j , q j q “ 1. In this case, τ “ λ1 ´λ2 , where q “ lcmpq3 , . . . , qm q.
+` pMq. Equation (5) holds if and only if
+To prove (2a), let λ2 P σx,y
+ˆ
+τ pλ1 ´ λℓ q “ πq
+
+λ1 ´ λ ℓ
+λ1 ´ λ2
+
+˙
+
+#
+πqpℓ
+“
+”
+qℓ
+
+` pMq, we have τ pλ ´ λ q “ πq
+Since λ2 P σx,y
+2
+1
+
+´
+
+λ1 ´λ2
+λ1 ´λ2
+
+` pMq
+0 (mod 2π), if λℓ P σx,y
+´ pMq.
+π (mod 2π), if λℓ P σx,y
+
+(6)
+
+¯
+“ πq ” 0 (mod 2π), and so q is even. Now,
+
+´ pMq, we need each qpℓ to be odd in which case ν pqq “ ν pq q.
+for equation (6) to hold for each λℓ P σx,y
+2
+2 ℓ
+qℓ
+` pMq, we
+Equivalently, the ν2 pqℓ q’s must all be equal. On the other hand, for (6) to hold for each λh P σx,y
+qp
+` pMq. Thus
+need each qhh to be even. That is, we must have ν2 pqq “ ν2 pqℓ q ą ν2 pqh q for each λh P σx,y
+
+(2a) holds, and (2b) can be proven similarly. The converse of (2) is straightforward.
+
+Remark 24. Suppose G has at least three vertices. If x “ eu and y “ ev are strongly cospectral in G,
+then |σx pMq| ě 3 by [Mon22, Theorem 3.4] and so Theorem 23(1) does not apply to vertex states.
+Combining Theorem 19(3) and Theorem 23(1) yields the following result.
+Corollary 25. Let x, y P Rn zt0u. If σx pMq “ tλ1 , λ2 u, then x and y admit perfect state transfer if and
+only if x “ u1 ` u2 and y “ u1 ´ u2 , where u1 , u2 are real eigenvectors associated with λ1 , λ2 .
+Theorem 26. All connected graphs on n ě 2 vertices admit perfect state transfer between real pure states.
+Proof. By assumption, M P tA, Lu has at least two distinct eigenvalues, say λ1 , λ2 . By Corollary 25,
+there is PST between x “ u1 ` u2 and y “ u1 ´ u2 , where u1 , u2 are real eigenvectors associated with
+λ1 , λ2 .
+Remark 27. The real pure states admitting PST in Theorem 26 have eigenvalue supports of size two.
+For those with eigenvalue supports of size at least three, periodicity is required by Theorem 23(2) to
+achieve PST. However, there are graphs for which periodicity does not hold for such real pure states (e.g.,
+conference graphs on n vertices, where n is not a perfect square). Thus, the conclusion of Theorem 26 can
+fail for some connected graphs whenever the real pure states in question have eigenvalue supports of size
+at least three.
+8
+
+Combining Theorem 23(2) and Theorem 8 yields an extension of [Cou14, Theorem 2.4.4].
+Corollary 28. Let G be a graph on n vertices and x, y P Rn zt0u with y ‰ ˘x. If |σx pMq| ě 3 and
+σx pMq is closed under algebraic conjugates, then x and y admit perfect state transfer if and only if all
+conditions below hold.
+1. The vectors x and y are strongly cospectral.
+?
+2. Each eigenvalue λ j P σx pMq is of the form λ j “ 21 pa ` b j ∆q, where a, b j , and ∆ are integers and
+either ∆ “ 1 or ∆ ą 1 is a square-free natural number.
+` pMq. For all λ P σ` pMq and λ , λ P σ´ pMq, we have
+3. Let λ1 P σx,y
+ℓ k
+h
+x,y
+x,y
+
+´
+ν2
+
+λ1?
+´λh
+∆
+
+¯
+
+´
+ą ν2
+
+λ1?´λℓ
+∆
+
+¯
+
+´
+“ ν2
+
+λ1?´λk
+∆
+
+¯
+.
+
+π
+In the case that there is PST between x and y, the minimum PST time is g?
+, where g is given in Corollary
+∆
+11.
+
+As it turns out, a periodic real pure state always admits PST with another real pure state.
+Theorem 29. If x P Rn zt0u is periodic in G at time τ, then x is involved in perfect state transfer in G at
+τ
+2.
+Proof.řIf |σx pMq| “ 2, then the same proof used in Theorem 26 works. Now, let |σx pMq| ě 3 and suppose
+x “ jPσx pMq u j , where u j is a real eigenvector associated with the eigenvalue λ j P σx pMq. Since x is
+λ ´λ
+
+p
+
+periodic, Theorem 8 implies that we may write λ11´λ2j “ q jj for each j ě 3, where p j , q j are integers such
+ř
+` pMq| “ 1,
+that gcdpp j , q j q “ 1. If each p j and q j are odd, then define y :“ u1 ´ j‰1 u j . Since |σx,y
+invoking Theorem 23(2b) yields PST between x and y. Ifřsome p j ’s ř
+are even and each q j is odd, then let
+σ1 “ tλ j : p j is evenu, σ2 “ σx pMqzσ1 , and define y :“ jPσ1 u j ´ jPσ2 u j . Note that λ1 P σ1 , λ2 P σ2
+` pMq “ σ has at least two elements. Since λ P σ` pMq and λ P σ´ pMq, applying Theorem
+and σx,y
+2
+1
+1
+x,y
+x,y
+23(2b) yields PST between x and y. Finally,
+if
+some
+q
+’s
+are
+even,
+then
+let
+σ
+:“
+tλℓ : ν2 pqℓ qq “ ηu, where
+2
+j
+ř
+ř
+` pMq “ σ
+η “ max jě3 ν2 pq j q ą 0. Define y “ jPσ1 u j ´ jPσ2 u j , where σ1 “ σx pMqzσ2 . Since σx,y
+1
+`
+has at least two elements and λ1 , λ2 P σx,y pMq, Theorem 23(2a) again yields PST between x and y. In all
+cases, y is unique by Lemma 22(3). Moreover, y is real because the u j s are all real.
+We close this section with the following result.
+Theorem 30. Let x, y P Rn zt0u with y ‰ ˘x. For all τ ą 0 and for all integers m1 , m2 ě 1 such that
+m1 ` m2 ď n, there exists a real symmetric matrix M such that perfect state transfer occurs between x
+` pMq| “ m and |σ´ pMq| “ m .
+and y relative to M at time τ, |σx,y
+2
+1
+x,y
+Proof. Let x, y P Rn with y ‰ ˘x. Fix τ ą 0 and fix integers m1 , m2 ě 1 such that m1 ` m2 ď n. Since
+}x} “ }y}, it follows that x ` y and x ´ y are orthogonal vectors. Since
+$
+»
+»
+fi
+fi,
+1 m1
+0 m1
+&
+.
+!
+)
+x`y
+x´y
+fl , ?1 –
+fl
+0 m2
+1
+tu1 , u2 u :“ ?1m1 –
+and
+tv
+,
+v
+u
+:“
+,
+m2
+1 2
+m2
+}x`y} }x´y}
+%
+0n´pm1 `m2 q
+0n´pm1 `m2 q
+
+9
+
+are orthonormal sets, we may extend them to orthonormal bases U “ tu1 , . . . , un u and V “ tv1 , . . . , vn u
+for Rn , respectively. Then there exists an orthogonal matrix Q such that Qu j “ v j for each j. If we write
+Q “ rw1 , . . . , wn s, where w1 , . . . , wn are columns of Q, then Qu1 “ v1 and Qu2 “ v2 are equivalent to
+¨
+¨
+˛
+˛
+m1
+m2
+ÿ
+ÿ
+}x ` y} ˝
+}x ´ y} ˝
+x`y “ ?
+w j ‚ and x ´ y “ ?
+w j ‚.
+m1
+m2
+j“1
+
+Thus, we obtain
+˛ ¨
+¨
+m1
+m
+ÿ
+}x ` y} ‚ ˝ ÿ2
+˝
+wj `
+x“
+?
+2 m1
+j“1
+
+j“m1 `1
+
+j“m1 `1
+
+˛
+
+˛ ¨
+m1
+m
+ÿ
+}x ` y} ‚ ˝ ÿ2
+˝
+wj ´
+y“
+?
+2 m1
+¨
+
+}x ´ y} ‚
+wj
+and
+?
+2 m2
+
+j“1
+
+j“m1 `1
+
+˛
+}x ´ y} ‚
+wj
+?
+2 m2
+(7)
+
+Now, let tθ1 , . . . , θn u be a set of n distinct real numbers and consider the real symmetric matrix
+M“
+
+n
+ÿ
+
+θ j w j wJ
+j
+
+j“1
+
+Since equation (7) holds, Theorem 19(3) implies that x and y are strongly cospectral relative to the matrix
+` pMq “ tθ , . . . , θ u and σ´ pMq “ tθ
+M with σx,y
+m1
+1
+m1 `1 , . . . , θm1 `m2 u. We proceed with cases.
+x,y
+Case 1. Suppose m1 ` m2 “ 2. In this case, choose θ1 , θ2 such that θ1 ´ θ2 “ πτ . Since |σx pMq| “ 2,
+π
+π
+invoking Theorem 23(1) yields PST between x and y relative to M at time θ1 ´θ
+“ π{τ
+“ τ.
+2
+Case 2. Suppose m1 ` m2 ě 3. In this case, choose θ1 , . . . , θm1 `m2 such that θ1 ´ θ j “ πb j {pgτq where
+b j is even for all j P t2, . . . , m1 u, b j is odd otherwise, and g “ gcdpb2 , . . . , bm1 `m2 q. Observe that
+b j {g j
+pj
+θ1 ´ θ j
+“
+:“ ,
+θ1 ´ θ2
+b2 {g j
+qj
+
+(8)
+
+2
+where each g j “ gcdpb j , b2 q. Thus, q “ lcmpq3 , . . . , qm1 `m2 q “ lcmp gb23 , . . . , gm b`m
+q “ bg2 . We have
+2
+1
+two cases. First, if m1 “ 1, then each p j and q j is odd. In this case, invoking Theorem 23(2b) yields
+
+πb {g
+
+πq
+
+2
+“ τ. Now, if m1 ě 2, then bℓ is odd for
+PST between x and y relative to M at time θ1 ´θ2 “ πb2 {pgτq
+
+´ pMq, and so ν pg q “ ν pgcdpb , b qq “ 0. Consequently, ν pq q “ ν p b2 q “ ν pb q for
+each θℓ P σx,y
+2 ℓ
+2
+2 ℓ
+2 gℓ
+2 2
+ℓ 2
+´
+`
+each θℓ P σx,y pMq. Moreover, bh is even for each θh P σx,y pMq, and so ν2 pgh q “ ν2 pgcdpbh , b2 qq ě 1.
+` pMq. Equivalently,
+Consequently, ν2 pqh q “ ν2 p gb2h q ă ν2 pb2 q for each θh P σx,y
+
+ν2 pqℓ q “ ν2 pqk q ą ν2 pqh q
+´ pMq and θ P σ` pMqztθ , θ u, where each ν pq q above is absent whenever |σ` pMq| “
+for all θℓ , θk P σx,y
+2 h
+1 2
+h
+x,y
+x,y
+2. Finally, invoking Theorem 23(2a) yields PST between x and y at time τ.
+Combining the above two cases yields the desired result.
+
+6
+
+Complete graphs and cycles
+
+Here, we characterize real pure states that exhibit PST in complete graphs and cycles. Since these graphs
+are regular, it suffices to investigate the quantum walk relative to A.
+Theorem 31. The vectors x, y P Rn zt0u with y ‰ ˘x admit perfect state transfer in Kn if and only if
+J
+y “ x ´ 2p1n xq 1. In this case, the minimum PST time is πn .
+10
+
+Proof. For Kn , U A
+
+ptq “ e´it
+
+´ itn
+¯
+˘
+` itn
+pe ´1q1J x
+1
+it
+1. If x “ n1 1 or
+pe ´ 1q n J ` I . Thus, e U A ptqx “ x `
+n
+
+π
+x K 1, then x is fixed. Otherwise, x is periodic with ρ “ 2π
+n . Invoking Corollary 28, n is the minimum
+J
+
+PST time from x, in which case we obtain eiπ{n U A pτqx “ x ´ 2p1n xq 1.
+Example 32. In K2 , if VpK2 q “ tu, vu, then PST happens between eu ` sev and ev ` seu at π2 for all
+s ‰ ˘1. In K3 , if VpK3 q “ tu, v, wu, then PST happens between the pairs teu ` 2ew , eu ` 2ev u and
+teu ` 21 ew , ev ` 12 ew u both at π3 . In K4 , if VpK4 q “ tu, v, w, xu, then PST happens between eu ` ew and
+ev ` e x at π4 .
+J
+
+If x “ eu ` sew , then x ´ 2p1n xq 1 “ eu ` sew ´ 2p1`sq
+n 1. Hence, if s “ ´1 then x is fixed, while if
+J
+
+s ‰ ´1, and n ě 5 then x ´ 2p1n xq 1 is not an s-pair state. Thus, s-pair PST does not occur in Kn for all
+n ě 5. Together with Example 32, we have the following result.
+Corollary 33. Perfect state transfer between s-pair states occurs in Kn if and only if n P t2, 3, 4u.
+For cycles Cn , we adopt the convention that VpCn q “ Zn where vertices j, k are adjacent if and only if
+|k ´ j| ” 1 mod n. The eigenvalues and eigenvectors of Cn are well-known, see [BH11, Section 1.4.3].
+For our purposes, we provide normalized eigenvectors for Cn in the following lemma.
+Lemma 34. The adjacency eigenvalues of Cn are λ j “ 2 cosp2jπ{nq, where 0 ď j ď t n2 u. The associated
+eigenvector for λ0 “ 2 is v0 “ ?1n 1, while the associated eigenvector for λ n2 “ ´2 whenever n is even
+is v n2 “ ?1n r1, ´1, 1, ´1, . . . , 1, ´1sJ . For 1 ď j ă n2 , we have the following associated eigenvectors for
+λj:
+b ”
+´ ¯
+´ ¯
+´
+¯ıJ
+2jπ
+4jπ
+2jpn´1qπ
+cos n
+¨ ¨ ¨ cos
+v j “ n2 1 cos n
+n
+and
+vn´j “
+
+b ”
+´ ¯
+´ ¯
+´
+¯ıJ
+2jπ
+4jπ
+2jpn´1qπ
+2
+0
+sin
+sin
+¨
+¨
+¨
+sin
+.
+n
+n
+n
+n
+
+Moreover, tv0 , . . . , vn´1 u is an orthonormal basis for Rn .
+We are now ready to characterize real pure states that admit PST in cycles. Since Corollary 25 takes
+care of the case |σx pAq| “ 2, we only focus on the case when |σx pAq| ě 3.
+Theorem 35. Let n ě 3 and x, y P Rn . Suppose |σx pAq| ě 3, and σx pAq is closed under algebraic
+conjugates. Then Cn admits perfect state transfer between x and y if and only if either:
+1. n “ 2m, x “ av0 ` bpα1 v n6 ` α2 v 5n q ` cpβ 1 v n4 ` β 2 v 3n q ` dpγ1 v n3 ` γ2 v 2n q ` ev n2 and y “
+6
+4
+3
+av0 ´ bα1 v n6 ´ bα2 v 5n ` cβ 1 v n4 ` cβ 2 v 3n ´ dγ1 v n3 ´ dγ2 v 2n ` ev n2 , and either
+6
+
+4
+
+3
+
+(a) If c “ 0, then m ” 0 (mod 3). In this case σx pMq Ď t˘1, ˘2u.
+(b) Else, m ” 0 (mod 6). In this case, 0 P σx pMq, σx pMq Ď t0, ˘1, ˘2u and σx pMq ‰ t0, ˘2u.
+2. n “ 4m, x “ av0 ` bpβ 1 vm ` β 2 v3m q ` cv2m and y “ ´av0 ` bpβ 1 vm ` β 2 v3m q ´ cv2m . In this
+case σx pMq “ t0, ˘2u.
+3. n “ 12m, x “ apα1 v3m ` α2 v9m q ` bpβ 1 vm ` β 2 v11m q ` cpγ1 v5m ` γ2 v7m q and
+? y “ apα1 v3m `
+α2 v9m q ´ bpβ 1 vm ` β 2 v11m q ´ cpγ1 v5m ` γ2 v7m q. In this case, σx pMq “ t0, ˘ 3u.
+11
+
+4. n “ 8m, x “ apα1 v2m ` α2 v6m q ` bpβ 1 vm ` β 2 v7m q ` cpγ1 v3m ` γ2 v5m q and
+? y “ apα1 v2m `
+α2 v6m q ´ bpβ 1 vm ` β 2 v7m q ´ cpγ1 v3m ` γ2 v5m q. In this case σx pMq “ t0, ˘ 2u.
+In all cases above, a, b, c, d, e P R are such that a2 ` b2 ` c2 “ }x}2 in (2)-(4) with a, b, c ‰ 0, and
+a2 ` b2 ` c2 ` d2 ` e2 “ }x}2 otherwise. Moreover, pα1 , α2 q, pβ 1 , β 2 q, pγ1 , γ2 q P R2 ztp0, 0qu such that
+α21 ` α22 “ β21 ` β22 “ γ12 ` γ22 “ 1. The minimum PST time in (1)-(4) is π, π2 , ?π3 and ?π2 , respectively.
+Proof. Let |σx pAq| ě 3 and σx pAq be closed under taking algebraic conjugates. If x is periodic, then the
+elements in σx pAq differ by at least one by Corollary 9. Since |λ j | ď 2, we get |σx pAq| ď 5. By Theorem
+8, we have two cases.
+Case 1. Let σx pAq Ď Z so that σx pAq Ď t0, ˘1, ˘2u. Invoking Proposition 1, we may write x “
+av0 ` bu ` cw ` dz ` ev n2 , where a, b, c, d, e P R with a2 ` b2 ` c2 ` d2 ` e2 “ 1, and u, w, z are
+eigenvectors associated with λ n6 “ 1, λ n4 “ 0, λ n3 “ ´1, respectively. The latter implies that we may
+write u “ α1 v n6 ` α2 v 5n , w “ β 1 v n4 ` β 2 v 3n , and z “ γ1 v n3 ` γ2 v 2n , where pα1 , α2 q, pβ 1 , β 2 q, pγ1 , γ2 q P
+6
+
+4
+
+3
+
+R2 ztp0, 0qu satisfying α21 ` α22 “ β21 ` β22 “ γ12 ` γ22 “ 1. From this, it is clear that n “ 2m for some
+integer m. We proceed with two subcases.
+• Suppose b ‰ 0 or d ‰ 0. If c “ 0, then n6 or n3 is an integer, which implies that m ” 0 (mod 3).
+Otherwise, m ” 0 (mod 6). This proves (1).
+• Suppose b “ 0 and d “ 0. Then we may rewrite x “ av0 ` b1 w ` c1 v n2 , where w “ β 1 v n4 ` β 2 v 3n .
+4
+Thus, n ” 0 (mod 4). This proves (2).
+?
+?
+Case 2. Let σx pAq Ď t 2a , 21 pa ˘ b1 ∆q, 21 pa ˘ b2 ∆qu, where a, b1 , b2 , ∆ are integers such that b1 ą
+b2 ą 0 and ∆ ą 1 is square-free. Note that 2a is an integer as it is a root of a polynomial with integer
+?
+coefficients. Since | 2a | ď 2, we get a P t0, ˘2, ˘4u. If a “ 2, then | 21 p2 ˘ b j ∆q| ď 2 implies that b j “ 1
+?
+and ∆ P t2, 3u. However, 21 p2 ˘ ∆q are not quadratic integers whenever ∆ P t2, 3u. Thus, a ‰ 2 and
+?
+similarly, a ‰ ´2. Now, if a “ 0, then | 21 b j ∆| ď 2, where 21 b j is an integer, so we get 12 b j “ 1 and
+∆ P t2, 3u. Since b1 ą b2 and σx pAq is closed under algebraic conjugates, |σx pAq| P t4, 5u cannot hapen.
+Thus, |σx pAq| “ 3. We have the following subcases.
+?
+n 5n
+• Let ∆ “ 3. Then σx pAq “ t0, ˘ 3u. By Lemma 34, n “ 12m and j P t n4 , 12
+, 12 u. Therefore,
+x “ az ` bu ` cw, where z “ α1 v n4 ` α2 v 3n , u “ β 1 v 12n ` β 2 v 11n and w “ γ1 v 5n ` γ2 v 7n .
+4
+12
+12
+12
+?
+• Let ∆ “ 2. Then σx pAq “ t0, ˘ 2u. A similar argument yields n “ 8m and x “ az ` bu ` cw,
+where z “ α1 v n4 ` α2 v 3n , u “ β 1 v n8 ` β 2 v 7n and w “ γ1 v 3n ` γ2 v 5n .
+4
+
+8
+
+8
+
+8
+
+Combining the two cases above yields (3) and (4). Finally, the Pythagorean relations involving a, b, c, d, e
+and the pairs pα1 , α2 q, pβ 1 , β 2 q, pγ1 , γ2 q follows from the fact that tv j u is an orthonormal basis for Rn .
+It is known that cycles admit s-pair state transfer if and only if n P t4, 6, 8u [KMA` 24]. If we consider
+real pure states in general, then Theorem 35 implies that there are infinite families of cycles that admit PST.
+We close this section with the following example.
+?
+?
+ř
+řm´1
+n
+Example 36. Let x “ m´1
+e
+and
+y
+“
+e
+in
+C
+.
+We
+may
+write
+x
+“
+pv0 ` 2vm ` v2m q
+4m
+4j
+4j`2
+j“0
+j“0
+4
+?
+?
+?
+and y “ ?4n pv0 ´ 2vm ` v2m q. Invoking Theorem 35(2) with a “ c “ 4n , β 1 “ 1 (so that β 2 “ 0)
+
+and b “ 2?n2 yields PST between x and y at time π2 . In particular, if m “ 2, then we recover the fact that
+C8 admits plus PST between x “ e0 ` e4 and y “ e2 ` e6 [KMA` 24]. If m “ 3, then C12 admits PST
+between x “ e0 ` e4 ` e8 and y “ e2 ` e6 ` e10 . This complements the fact that C12 does not admit
+s-pair PST.
+12
+
+7
+
+Paths
+
+In this section, we characterize adjacency and Laplacian PST between real pure states in paths. We adopt
+the convention that the vertices of Pn are labelled so that vertices j, k are adjacent whenever |k ´ j| “ 1.
+We start with the adjacency case. The adjacency eigenvalues and eigenvectors of Pn are well-known, see
+[BH11, Section 1.4.4]. Again for our purposes, we provide normalized eigenvectors for ApPn q below.
+¯
+´
+jπ
+Lemma 37. For j P t1, . . . , nu, the adjacency eigenvector of Pn with eigenvalue µ j “ 2 cos n`1 is
+b
+zj “
+
+2
+n`1
+
+” ´
+¯
+´
+¯
+´
+¯ıJ
+jπ
+2jπ
+njπ
+sin n`1 , sin n`1 , . . . , sin n`1
+.
+
+Moreover, tz1 , . . . , zn u forms an orthonormal basis for Rn .
+We now characterize real pure states that admit adjacency PST in paths. Again, since Corollary 25
+takes care of the case |σx pAq| “ 2, we only focus on the case when |σx pAq| ě 3.
+Theorem 38. Let n ě 3. Suppose x, y P Rn such that |σx pAq| ě 3 and σx pAq is closed under algebraic
+conjugates. Pn admits perfect state transfer between x and y if and only if either:
+1. n ` 1 “ 6m, and either
+(a) x “ az3m ` bz2m ` cz4m and y “ az3m ´ bz2m ´ cz4m ,
+(b) x “ az3m ` bzm ` cz5m and y “ az3m ´ bzm ´ cz5m , or
+2. n ` 1 “ 4m, x “ az2m ` bzm ` cz3m and y “ az2m ´ bzm ´ cz3m .
+In all cases above, a, b, c P Rzt0u are such that a2 ` b2 ` c2 “ }x}2 . Moreover, the minimum PST times
+in (1a), (1b) and (2) are π2 , ?π3 and ?π2 , respectively.
+Proof. Let |σx pAq| ě 3 and σx pAq be closed under algebraic conjugates. As |µ j | ă 2, Corollary 9 yields
+|σx pAq| “ 3. By Theorem 8, we get two cases. If σx pAq Ď Z, then
+? using the same argument as Case 1 of
+the proof of Theorem 35 to show (1a). If σx pAq “ t 2a , 12 pa ˘ b ∆qu, then one may use the argument in
+Case 2 to obtain (1b) and (2).
+Example 39. Let n ` 1 “ 4m and consider x “
+
+řt m´1
+2 u
+
+řt m2 u
+
+we can
+j“1 e8j´1 in Pn . Observe that
+?
+?
+?
+n`1
+n`1
+write x “ 2?2 pz2m ` ?12 pzm ` z3m qq. Invoking Theorem 38(2) with a “ 2b “ 2c “ 2?2 , we
+?
+řt m´1
+řt m2 u
+π
+2 u
+? p´z2m ` ?1 pzm ` z3m qq “
+?
+get PST between x and y “ 2n`1
+e
+´
+8j`3
+j“0
+j“1 e8j´3 at time 2 . In
+2
+2
+?
+
+j“0
+
+e8j`1 ´
+
+particular, we have:
+
+1. If m “ 2, then we obtain pair PST between x “ e1 ´ e7 and y “ e3 ´ e5 in P7 .
+2. If m “ 3, then we obtain PST between x “ e1 ´ e7 ` e9 and y “ e3 ´ e5 ` e11 in P11 .
+Corollary 40. Pair perfect state transfer occurs in Pn relative to A if and only if n P t3, 5, 7u.
+Proof. Suppose pair PST occurs in Pn between eu ´ ew and ev ´ e x . Since tu, wu ‰ tv, xu, we have
+n ě 3. From the proof of Theorem 38, we have |σeu ´ew pAq| ď 3. We proceed with two cases.
+Case 1. Let |σeu ´ew pAq| “ 2. That is, eu ´ ew “ az j ` bzk and ev ´ e x “ az j ´ bzk with j ‰ k. Adding
+these two
+yields eu ` ev ´ ew ´ e x “ 2az j . Note that the ℓth entry of z j is nonzero if and only
+´ equations
+¯
+if sin
+
+jℓπ
+n`1
+
+‰ 0, or equivalently, n ` 1 does not divide jℓ. We now determine the conditions such that
+13
+
+z j has at most four nonzero entries. If n ` 1 P t7, 9, 11u or n ` 1 ě 13, then the Euler totient function
+yields at least five integers in t1, . . . , nu that are relatively prime to n ` 1, and so there are at least five
+values of ℓ such that n ` 1 does not divide jℓ. In this case, z j has at least five nonzero entries. Now, if
+n ` 1 P t8, 10, 12u, then for all j P t1, . . . , 7u, one checks that there are at least five values of ℓ such
+that n ` 1 does not divide jℓ. In this case, we again get that z j has at least five nonzero entries. For the
+remaining cases n P t3, 4, 5u, it is easy to check that there is PST between e1 ´ e2 and e3 ´ e2 in P3 at
+π
+?
+, and between e1 ´ e5 and e2 ´ e4 in P5 at π2 . The latter was also observed in [PM24].
+2
+Case 2. Let |σeu ´ew pAq| “ 3. Theorem 38 allows to us write eu ´ ew “ az n`1 ` bz j ` czk and ev ´
+2
+
+e x “ az n`1 ´ bz j ´ czk where j, k ‰ n`1
+2 . Adding these two equations yields eu ` ev ´ ew ´ e x “
+2
+b
+2
+2a n`1
+r1, 0, ´1, 0, 1, . . .sJ . This holds if and only if u, v P t1, 5u, w, x P t3, 7u, n “ 7 and a “ 21 . Now,
+e1 ´ e3 is not periodic in P7 , while pair PST happens between e1 ´ e7 and e3 ´ e5 at time ?π2 by Example
+39(1).
+Combining the two cases above proves the forward direction. The converse is straightforward.
+An analogous argument yields P3 as the only path that admits PST, between e1 ` e2 and e3 ` e2 in P3
+at ?π2 .
+Corollary 41. Plus perfect state transfer occurs in Pn relative to A if and only if n “ 3.
+Despite the rarity of vertex, pair and plus PST in Pn relative to A, Theorem 38 guarantees that there
+are infinite families of paths that admit PST between real pure states.
+We now turn to the Laplacian case. The Laplacian eigenvalues and eigenvectors of Pn are known, see
+[BH11, Section 1.4.4]. We provide normalized eigenvectors for LpPn q below.
+´
+´ ¯¯
+jπ
+Lemma 42. The Laplacian eigenvector of Pn corresponding to the eigenvalue θ j “ 2 1 ´ cos n
+is
+wj “
+
+b ”
+´ ¯
+´ ¯
+´ ¯
+´
+¯
+´
+¯ıJ
+jπ
+3jπ
+5jπ
+p2n´3qjπ
+p2n´1qjπ
+2
+cos
+,
+cos
+,
+cos
+,
+.
+.
+.
+,
+cos
+,
+cos
+n
+2n
+2n
+2n
+2n
+2n
+
+for j P t0, 1, . . . n ´ 1u and w0 “ ?1n 1. Moreover, tw0 , . . . , wn´1 u is an orthonormal basis for Rn .
+The same argument in the proof of Theorem 38 yields an analogous result for the Laplacian case.
+Theorem 43. Let n ě 3. Suppose x, y P Rn such that |σx pLq| ě 3 and σx pLq is closed under algebraic
+conjugates. Then Pn admits Laplacian perfect state transfer between x and y if and only if either:
+1. n “ 3m, x “ aw2m ` bw 3m ` cwm ` dw0 , y “ ´aw2m ` bw 3m ´ cwm ` dw0 , and m is even if
+2
+2
+b ‰ 0.
+2. n “ 6m, x “ aw 3m ` bw m2 ` cw 5m and y “ aw 3m ´ bw m2 ´ cw 5m .
+2
+
+2
+
+2
+
+2
+
+3. n “ 4m, x “ aw2m ` bwm ` cw3m and y “ aw2m ´ bwm ´ cw3m .
+In all cases, a, b, c, d P R are such that a2 ` b2 ` c2 ` d2 “ }x}2 in (1) and a2 ` b2 ` c2 “ }x}2 otherwise.
+Moreover, the minimum PST times in (2) and (3) are ?π3 and ?π2 , respectively, and π otherwise.
+Adapting the proof of Corollary 40 for the Laplacian case yields the following result.
+Corollary 44. Laplacian pair perfect state transfer occurs in Pn relative to L if and only if n P t3, 4u.
+Meanwhile, Laplacian plus perfect state transfer occurs in Pn if and only if n “ 4.
+14
+
+Remark 45. We make the following observations about Pn for n P t3, 4, 5u relative to L.
+1. In P3 , te1 ´ e2 , e3 ´ e2 u has PST at π2 . Moreover, e1 ` e2 and e3 ` e2 are strongly cospectral and
+` pLq “ t0, 3u and σ´ pLq “ t1u, but they do not admit PST as Corollary 28(3)
+periodic with σx,y
+x,y
+does not hold.
+2. In P4 , te1 ` e4 , e2 ` e3 u has PST at π2 , te1 ´ e2 , e3 ´ e4 u has PST at ?π2 , and te2 ´ e3 , ?12 pe1 ´
+π
+e2 ` e3 ´ e4 qu and te1 ´ e4 , ?12 pe1 ` e2 ´ e3 ´ e4 qu have PST at 2?
+.
+2
+
+3. In P5 , te1 ´ e5 , ?15 pe1 ` 2e2 ´ 2e4 ´ e5 qu and te2 ´ e4 , ?15 p2e1 ´ e2 ` e4 ´ 2e5 qu have PST, both
+at ?π5 .
+In [CG20], Laplacian PST between pair states that form edges, also known as edge PST, was characterized for Pn . It turns out, Pn admits Laplacian pair PST if and only if it admits Laplacian edge PST.
+We end this section with a remark about the PST time between real pure states in paths.
+Remark 46. Let τn be the least minimum PST time in Pn . Relative to A, we have τn “ 4 cospπ π q ,
+n`1
+
+attained by x “ az1 ` bzn and y “ az1 ´ bzn . Relative to L, we have τn “
+
+¯¯ attained by
+´
+´π
+2 1´cos pn´1qπ
+n
+
+x “ aw0 ` bwn´1 and y “ aw0 ´ bwn´1 . In both cases, τn Ñ π4 as n Ñ 8.
+
+8
+
+Cartesian product
+
+In this section, we use the Cartesian product to construct larger graphs that admit PST between real pure
+states. Let G and H be weighted graphs on m and n vertices, respectively. The Cartesian product of G and
+H, denoted G□ H, is the graph with vertex set VpGq ˆ VpHq such that
+MpG□ Hq “ MpGq b In ` Im b MpHq,
+where M P tA, Lu. Hence, UMpG□ Hq ptq “ UMpGq ptq b UMpHq ptq, from which we obtain
+UMpG□ Hq ptqpx b yq “ UMpGq ptqx b UMpHq ptqy.
+From the above equation, we get the following result which holds for M P tA, Lu.
+Theorem 47. Let x1 , y1 P Rm and x2 , y2 P Rn such that x1 ‰ ˘y1 . Then perfect state transfer occurs
+between x1 b x2 and y1 b y2 in G□ H at time τ if and only if either
+1. x2 ‰ ˘y2 , perfect state transfer occurs between x2 and y2 in H, and perfect state transfer occurs
+between x1 and y1 in G both at time τ; or
+2. x2 “ ˘y2 is periodic in H and perfect state transfer occurs between x1 and y1 in G both at time τ.
+Corollary 48. Let r, s P Rzt0u with r “ ˘s. If H admits perfect state transfer between e a ` seb and
+ec ` red at time τ, where ta, bu ‰ tc, du whenever r “ s, then the following hold.
+1. If G admits perfect state transfer between vertex states eu and ev at time τ, then G□ H admits
+perfect state transfer between the pure states eu b pe a ` seb q and ev b pec ` red q at time τ.
+2. If G is periodic at a vertex states eu at time τ, then G□ H admits perfect state transfer between the
+pure states eu b pe a ` seb q and eu b pec ` red q at time τ.
+15
+
+Since eu b pe a ` seb q is an s-pair state in G□ H, the above corollary with r “ s can be used to
+construct infinite families of graphs with s-pair PST.
+Example 49. Consider the hypercube Qd of dimension d ě 1, which is known to admit PST between any
+pair of antipodal vertices eu and ev at time π2 . The following hold for all d ě 1.
+• By Corollary 48(1) and Example 36, Qd □C8 admits PST between teu b pe0 ` e4 q, ev b pe2 ` e6 qu,
+and Qd □C12 admits PST between teu b pe0 ` e4 ` e8 q, ev b pe2 ` e6 ` e10 qu at π2 .
+• By Corollary 48 and [KMA` 24, Theorem 6.5(iv-vi)], Qd □C6 admits PST between teu b pe0 ´
+e2 q, ev b pe3 ´ e5 qu at π2 , and between teu b pe0 ` 2e2 q, eu b pe0 ` 2e4 qu and teu b pe0 ` 12 e2 q, eu b
+pe4 ` 12 e2 qu at π.
+• By Corollary 48(1) and Remark 45(1,2), we get PST in Qd □ P3 and Qd □ P4 relative to L between
+the pairs teu b pe1 ´ e2 q, ev b pe3 ´ e2 qu and teu b pe1 ` e4 q, ev b pe2 ` e3 qu at π2 , respectively.
+Example 50. Let M “ A and consider P3□n , the Cartesian product of n ě 1 copies of P3 . This graph
+admits PST at time ?π2 between any pair of vertices eu and ev at distance 2n. By Corollary 48(1) and
+Example 39(1), pP3□n q□ P7 admits PST between teu b pe1 ´ e7 q, ev b pe3 ´ e5 qu at ?π2 for all n ě 1.
+Moreover, by Corollary 48(1) with [KMA` 24, Theorem 6.5(vii)], pP3□n q□C8 admits PST between teu b
+pe0 ´ e2 q, ev b pe4 ´ e6 qu at ?π2 for all n ě 1.
+
+9
+
+Joins
+
+Let G and H be weighted graphs on m and n vertices, respectively. The join of G and H, denoted G _ H,
+is obtained from taking a copy of G and a copy of H and adding all edges between G and H with weight
+one. Throughout, we assume that G and H are k- and ℓ-regular graphs, respectively whenever we deal
+with M “ A.
+Let λ and µ be nonzero eigenvalues of LpGq and LpHq, respectively. From [ADL` 16, Equation 33],
+the transition matrix of G _ H relative to L is given by
+„
+ȷ ÿ
+„
+ȷ ÿ
+„
+ȷ
+1
+eitpm`nq
+n2 J
+´mnJ
+Eλ 0
+0 0
+itpλ`nq
+itpµ`mq
+UL ptq “
+J`
+`
+e
+`
+e
+,
+0 0
+0 Fµ
+m`n
+mnpm ` nq ´mnJ m2 J
+µą0
+
+λą0
+
+(9)
+„
+whenever G and H are connected. If G (respectively, H) is disconnected, then we add the term eitn
+
+E0 ´ m1 J 0
+0
+0
+
+„
+
+ȷ
+0
+0
+) in the third (respectively, fourth) summand in (9).
+0 F0 ´ n1 J
+Suppose further that G and H are k- and ℓ-regular graphs, respectively.
+Let λ ă k and µ ă ℓ be
+?
+1
+˘
+eigenvalues of ApGq and ApHq respectively. Let λ “ 2 pk ` ℓ ˘ ∆q, where ∆ “ pk ´ ℓq2 ` 4mn.
+From [CG21, Equation 12.2.1], the transition matrix of G _ H relative to A is given by
+„
+„
+ȷ ÿ
+ȷ
+`
+´
+ÿ
+eitλ
+eitλ
+Eλ 0
+0 0
+J
+J
+itλ
+itµ
+U A ptq “ ?
+uu ` ?
+vv `
+e
+`
+e
+, (10)
+0 0
+0 Fµ
+m ∆pk ´ λ´ q
+m ∆pλ` ´ kq
+(respectively, eitm
+
+µăℓ
+
+λăk
+
+„
+
+ȷ
+
+ȷ
+pk ´ λ` q1m
+pk ´ λ´ q1m
+whenever G and H are connected, where u “
+and v “
+. If G (respecm1n
+m1n
+ȷ
+„
+„
+ȷ
+0
+0
+E0 ´ m1 J 0
+itk
+it
+ℓ
+tively, H) is disconnected, then we include the term e
+(respectively, e
+)
+0
+0
+0 F0 ´ n1 J
+16
+
+„
+
+ȷ
+
+in the third (respectively, fourth) summand in equation (10). For more about quantum walks on join graphs,
+see [KM23].
+The join operation can be used to construct larger graphs that admit PST between real pure states.
+Theorem 51. Let x1 , y1 P Rm and x2 , y2 P Rn be unit vectors such that 1J x1 “ 1J x2 “ 0. If G and H
+are connected, then the following hold relative to M P tA, Lu.
+1. G admits„perfect
+ȷ between x1 and y1 if and only if G _ H admits perfect state transfer
+ȷ state„ transfer
+y1
+x1
+at the same time.
+and
+between
+0
+0
+2. Suppose G admits perfect state transfer between x1 and y1 and H admits perfect state transfer
+between x2 and y2 both at time τ. If τpλ ´ θ ` δpn ´ mqq ” 0 (mod 2π) for some λ P σx`1 ,y1 pMq,
+„
+ȷ
+„
+ȷ
+x1
+y1
+`
+θ P σx2 ,y2 pMq and δ P t0, 1u, then G _ H admits perfect state transfer between
+and
+x2
+y2
+at time τ relative to M “ L whenever δ “ 1 and relative to M “ A whenever δ “ 0.
+Proof. Let UG ptq denote the transition matrix of G relative to L. As 1J x1 “ 0, equation (9) yields
+ȷ
+„
+ȷ „
+ȷ
+„
+ȷ „ itn
+x1
+UG ptqx1
+x1
+e UG ptqx1
+and U A ptq
+“
+.
+UL ptq
+“
+0
+0
+0
+0
+From these equations, (1) is straightforward. We now prove (2). Since 1J x1 “ 1J x2 “ 0, the same
+argument yields
+ȷ „ itn
+ȷ
+ȷ „
+ȷ „ itn
+„
+0
+e UG ptqx1
+x1
+e UG ptqx1
+“
+.
+(11)
+`
+“
+UL ptq
+x2
+eitm UH ptqx2
+0
+eitm UH ptqx2
+As PST occurs between x j and y j for j P t1, 2u at τ, we have UG pτqx1 “ γ1 y1 and UH pτqx2 “ γ2 y2 ,
+where γ1 “ eiτλ and γ2 “ eiτθ for all λ P σx`1 ,y1 pLq and θ P σx`2 ,y2 pLq. Thus, if τpλ ´ θ ` n ´ mq ” 0
+(mod 2π) for some λ P σx`1 ,y1 pMq and θ P σx`2 ,y2 pMq, then τpn ` λq ” τpm ` θq (mod 2π), and so
+ȷ
+ȷ „ iτn
+ȷ „ iτpn`λq
+ȷ
+„
+„
+e UG pτqx1
+e
+y1
+y1
+x1
+iτpn`λq
+iτpn`λq
+iτpm`θq
+by
+“
+“
+“e
+e
+“e
+. Thus, UL pτq
+y2
+x2
+eiτm UH pτqx2
+eiτpm`θq y2
+ȷ
+ȷ
+„
+„
+y1
+x1
+in G _ H. The same argument
+and
+equation (11). This proves that PST occurs between
+x2
+y2
+applies to M “ A except that eitn and eitm in (11) are both absent.
+
+10
+
+Complete bipartite graphs
+
+In this section, we characterize PST between real pure states in the complete bipartite graph Km,n . We only
+focus on the case when |σx pMq| ě 3, starting with the adjacency case.
+„ ȷ
+ȷ
+„ ?
+x
+?n1m
+Theorem 52. Let x “ 1 , y P Rm`n , where x1 P Rm and |σx pAq| ě 3. Let z and v˘ “
+˘ m1n
+x2
+?
+be eigenvectors for ApKm,n q associated with 0 and ˘ mn respectively. Then x and y admit adjacency
+` ´
+perfect state transfer in Km,n
+only
+„ 1 if and
+ȷ if x P spantv , v , zu, x R span U for any two-subset U of
+J
+p1 x q1
+tv` , v´ , zu and y “ x ´ 2 m1 J 1
+. Moreover, the minimum PST time is ?πmn .
+p1
+x
+q1
+2
+n
+
+17
+
+Proof. Since Km,n “ Om _ On , (10) yields the following spectral decomposition for ApKm,n q:
+I ´ 1J
+U A ptq “ m m
+0
+„
+
+?
+?
+„
+ȷ
+„
+ȷ
+ȷ
+?
+?
+e´it mn
+eit mn
+0
+nJ
+nJ
+´
+mnJ
+mnJ
+?
+?
+`
+.
+`
+mnJ
+mJ
+mJ
+In ´ n1 J
+2mn
+2mn ´ mnJ
+
+(12)
+
+Taking y “ U A p ?πmn qx yields the desired conclusion.
+Corollary 53. Pair perfect state transfer occurs in Km,n relative to A if and only if either
+1. pm, nq P tp1, 2q, p2, 1qu, between eu ´ ew and eu ´ e x , where u is a degree two vertex.
+2. m “ n “ 2, between eu ´ ew and ev ´ e x , where tu, wu and tv, xu are non-incident edges.
+Proof. Note that eu ´ ew is fixed whenever u and
+Now, suppose u and w are adjacent.
+„ w are 2non-adjacent.
+ȷ
+eu ´ m 1
+Then equation (12) yields U A ptqpeu ´ ew q “
+, and so (1) and (2) are immediate.
+´pew ´ n2 1q
+Corollary 54. Plus perfect state transfer occurs in Km,n relative to A if and only if either (i) one of the
+two conditions in Corollary 53 hold with the pair states turned into plus states, or (ii) m “ 4 or n “ 4,
+between eu ` ew and ev ` e x , where tu, w, v, xu is a bipartition of size four.
+Proof. If u and w are adjacent, then the„same argumentȷin Corollary 53 proves statement (i). Otherwise,
+e ` ew ´ m4 1
+equation (12) yields U A ptqpeu ` ew q “ u
+, and so statement (ii) is immediate.
+0
+The minimum PST time in Corollaries 53 and 54 is ?πmn .
+For the Laplacian case, equation (9) gives us the transition matrix for Km,n :
+1
+eitpm`nq
+UL ptq “
+J`
+m`n
+mnpm ` nq
+
+„
+
+n2 J
+´mnJ
+´mnJ m2 J
+
+ȷ
+
+„
+`e
+
+itn
+
+Im ´ m1 J 0
+0
+0
+
+ȷ
+
+„
+`e
+
+itm
+
+0
+0
+0 In ´ n1 J
+
+ȷ
+.
+
+Using the same argument in the proof of Theorem 52 yields an analogous result for the Laplacian case.
+„ ȷ
+x
+Theorem 55. Let x “ 1 , y P Rm`n , where x1 P Rm and where |σx pLq| ě 3. Let u, v and w be
+x2
+eigenvectors for LpKm,n q associated with m, n and m ` n respectively. Then x and y admit Laplacian
+perfect state transfer in Km,n if and only if x P spant1, u, v, wu, x R span U for any two-subset U of
+t1, u, v, wu and either
+„
+ȷ
+´x1 ` m2 p1J x1 q1
+1. ν2 pmq “ ν2 pnq and y “
+´x2 ` n2 p1J x2 q1
+„
+ȷ
+2
+´x1 ` m`n
+pp1J x2 q ` p1J x1 qq1
+2. ν2 pmq ą ν2 pnq and y “
+.
+2
+x2 ` m`n
+pp1J x1 q ´ mn p1J x2 qq1
+„
+ȷ
+2
+pp1J x2 q ´ mn p1J x1 qq1
+x1 ` m`n
+3. ν2 pmq ă ν2 pnq and y “
+.
+2
+´x2 ` m`n
+pp1J x1 q ` p1J x2 qq1
+π
+The minimum PST time in all cases above is gcdpm,nq
+.
+
+We finish this section by characterizing Laplacian pair and plus PST in complete bipartite graphs.
+
+18
+
+Corollary 56. Laplacian pair perfect state transfer occurs in Km,n if and only if either Corollary 53(2)
+holds or pm, nq P tp2, 4kq, p4k, 2qu for any integer k ě 1. In particular, perfect state transfer occurs
+between eu ´ ew and ev ´ ew in K2,4k , where tu, vu is a partite set of size two and w P VpKm,n qztu, vu.
+Proof. If u and w are non-adjacent, then eu ´ ew is fixed. Otherwise, eu ´ ew has eigenvalue support
+tm, n, m ` nu. Applying Theorem 55(1) with x1 “ eu and x2 “ ´ew yields the desired conclusion.
+In [Che19], it was shown that K2,4k admits Laplacian pair PST. Thus, C4 and K2,4k are the only complete bipartite graphs that admit pair PST by Corollary 56. For plus state transfer, we have the following:
+Corollary 57. Laplacian plus perfect state transfer occurs in Km,n if and only if either
+1. m “ n “ 2, between eu ` ew and ev ` e x , where either (i) tu, wu and tv, xu are non-incident edges
+or (ii) tu, wu and tv, xu are the two partite sets of size two, or
+2. pm, nq P tp4, 4kq, p4k, 4qu for any odd k, between eu ` ew and ev ` e x , where tu, w, v, xu is a
+partite set of size four.
+„
+ȷ
+eu ´ m2 1
+Proof. First, suppose u and w are adjacent. If ν2 pmq “ ν2 pnq, then Theorem 55(1) yields y “
+.
+ew ´ n2 1
+ȷ
+„
+4
+1
+´eu ` m`n
+, which
+This proves (1i). Now, if ν2 pmq ą ν2 pnq, then Theorem 55(2) gives us y “
+2
+ew ` m`n p1 ´ mn q1
+is not a plus state for any m and n. Similarly for the case ν2 pmq ă ν2 pnq.
+„ Now, suppose
+ȷu and w are
+4
+´eu ´ ew ` m 1
+non-adjacent. If ν2 pmq “ ν2 pnq, then Theorem 55(1) again yields y “
+. From this,
+0
+ȷ
+„
+4
+´eu ´ ew ` m`n
+1
+, which yields
+(2) follows. If ν2 pmq ą ν2 pnq, then Theorem 55(2) implies that y “
+4
+m`n 1
+(1ii). If ν2 pmq ă ν2 pnq, then one gets the same result by applying Theorem 55(3).
+
+11
+
+Minimizing PST time
+
+The following result determines the vectors x and graphs G such that the minimum period of x in G is the
+least amongst all unweighted connected n-vertex graphs.
+Theorem 58. Let x P Rn . The following hold.
+1. Amongst all connected unweighted n-vertex graphs, x attains the least minimum period in G relative to L"if and
+„ only ifȷ*G “ G1 _ G2 with |VpGi q| “ ni for i P t1, 2u, n “ n1 ` n2 , and
+n 2 1 n1
+x P span 1n ,
+.
+´n1 1n2
+2. There exists an integer N ą 0 such that for all connected unweighted n-vertex graphs with n ě N,
+x attains the least minimum period in G relative to A if and only if G “ Oa _ Kn´a with a “ r n3 s,
+"„ ´ ȷ „ ` ȷ*
+a
+´λ 1 a
+´λ 1 a
+and x P span
+,
+, where λ˘ “ 12 pn ´ a ´ 1 ˘ pn ´ a ´ 1q2 ` 4apn ´ aqq.
+a1n´a
+a1n´a
+?
+Moreover, for 1 and 2, we have ρ “ 2π
+n and ρ “
+
+?
+π 3
+2π
+«
+n , respectively.
+pn´a´1q2 `4apn´aq
+
+19
+
+Proof. Let λ1 and λ2 be the largest and smallest eigenvalues of M. We first prove 1. By assumption,
+0 is a simple eigenvalue of LpGq with eigenvector 1n . Moreover, every eigenvalue λ of LpGq satisfies
+λ ď n with equality if and only if G is a join graph. Thus, for any two eigenvalues λ1 and λ2 of LpGq,
+the Laplacian spread λ1 ´ λ2 is maximum if and only if λ1 “ n and λ2 “ 0. Invoking Lemma 10, the
+least minimum period is attained if and only if G„ “ G1 _ȷG2 for some graphs Gi on ni vertices, i P t1, 2u
+n 2 1 n1
+is the eigenvector associated with n. To prove
+and σx pLq “ t0, nu, in which case ρ “ 2π
+n and ´n 1
+1 n2
+2, we use a result due to Breen, Riasanovsky, Tait and Urschel [BRTU22] states that there is an N ą 0
+such that if n ě N, the maximum adjacency spread λ1 ´ λ2 over all connected n-vertex graphs is attained
+uniquely by the complete
+split graph G “ Oa _ Kn´a . In this case, a
+we have λ1 “ λ` , λ2 “ λ´ and
+a
+2n
+λ˘ “ 12 pn ´ a ´ 1 ˘ pn ´ a ´ 1q2 ` 4apn ´ aqq so that λ1 ´ λ2 “ pn ´ a ´ 1q2 ` 4apn ´ aq « ?
+.
+3
+The same argument used in the above case yields the desired conclusion.
+Corollary 59. Let x, y P Rn .
+1. Amongst all connected unweighted n-vertex graphs, x and y attain the least minimum PST time
+relative to L if and only if the conditions in Theorem 58(1) hold and
+˜„
+1
+y “ n1 p1J
+n xq1n ´ n1 n2 pn1 `n2 q
+
+n 2 1 n1
+´n1 1n2
+
+ȷJ ¸ „
+ȷ
+n 2 1 n1
+x
+.
+´n1 1n2
+
+2. There exists an integer N ą 0 such that amongst all connected unweighted n-vertex graphs with
+n ě N, x and y attain the least minimum PST time relative to A ifaand only if the conditions in
+Theorem 58(2) hold and y has the form below, where D˘ “ ˘apλ˘ q pn ´ a ´ 1q2 ` 4apn ´ aq.
+˜„
+y “ D1´
+
+´λ´ 1 a
+a1n´a
+
+˜„
+ȷJ ¸ „ ´ ȷ
+ȷ ¸„ ` ȷ
+`1 J
+´λ
+´λ 1 a
+´λ 1 a
+a
+x
+x
+´ D1`
+.
+a1n´a
+a1n´a
+a1n´a
+
+The minimum PST time in (1) is πn , and (for all sufficiently large n) ?
+
+π
+, otherwise.
+pn´a´1q2 `4apn´aq
+
+Proof. This follows from Theorems 23(1) and 58, and the fact that |σx pMq| “ 2.
+We close this section with the following remark.
+Remark 60. As n Ñ 8, the least minimum PST times in Corollary 59 both tend to 0, in contrast to the
+least minimum PST time for paths which tend to π4 by Remark 46. Thus, the join graphs in Corollary 59
+are desirable if a smaller minimum PST time is preferred.
+
+12
+
+Sensitivity with respect to readout time
+
+Suppose PST occurs between real unit vectors x, y P Rn relative to M at time τ. Define f : R` Ñ r0, 1s
+as
+f ptq “ |yJ eitM x|2 .
+1
+J itM x|2 . This adds
+If x and y are not unit vectors, then we may define the above function as f ptq “ }x}
+2 |y e
+1
+a constant factor of }x}
+2 to the above function, and so in order to simplify our calculations, we shall only
+deal with real unit vectors in this section.
+
+20
+
+Note that f ptq is the analogue of the fidelity of state transfer from x to y at time t. Following the proof
+of Theorem 2.2 in [Kir15], we find that for each k P N,
+$
+ˆ ˙
+k
+ÿ
+’
+k
+k mod 4
+’
+j
+ˇ
+&
+k
+p´1q
+pyJ M j yqpyJ Mk´j yq if k is even
+p´1q 2
+d fˇ
+j
+(13)
+“
+ˇ
+j“0
+dtk τ ’
+’
+%0
+if k is odd.
+Moreover, by Lemma 18, we have xJ Mk x “ yJ Mk y for all integers
+ˇ k ě 0.
+d2 f ˇ
+There is practical interest in determining how large or small dt2 ˇ can be, since that will give intuition
+τ
+
+on what features govern the sensitivity of the fidelity with respect to the readout time. Taking k “ 2 in
+(13) yields
+d2 f ˇˇ
+(14)
+ˇ “ ´2pyJ M2 y ´ pyJ Myq2 q.
+dt2 τ
+ř
+Let σy pMq “ tλ1 , . . . , λℓ u and write y “ ℓj“1 c j v j where each v j is a unit vector associated with λ j ,
+ř
+each scalar c j P Rzt0u and ℓj“1 c2j “ 1. Then
+˛
+¨¨
+˛2
+ℓ
+ℓ
+ˇ
+ÿ
+d2 f ˇ
+‹
+˚ ÿ
+a j λ2j ‚,
+ˇ “ 2ppyJ Myq2 ´ yJ M2 yq “ 2 ˝˝ a j λ j ‚ ´
+2
+dt τ
+j“1
+
+j“1
+
+where a j “ c2j for each j “ 1, . . . , ℓ. Observe that from the Cauchy-Scwarz inequality,
+¨
+
+ℓ
+ÿ
+
+˝
+
+˛2
+
+¨
+
+aj λj‚ “ ˝
+
+j“1
+
+˛2
+
+ℓ
+ÿ
+
+¨
+
+ℓ
+ÿ
+
+pc j λ j qc j ‚ ď ˝
+j“1
+
+˛¨
+c2j λ2j ‚˝
+
+j“1
+
+ℓ
+ÿ
+
+˛
+c2j ‚ “
+
+j“1
+
+ℓ
+ÿ
+
+a j λ2j .
+
+j“1
+
+ˇ
+d2 f ˇ
+We thus deduce that dt2 ˇ ď 0. This upper bound may be approached arbitrarily closely when x is of
+τ
+?
+corresponding to different eigenvalues, and
+the form ϵu ` 1 ´ ϵ2 v, where u and v are unit eigenvectors
+ˇ
+d2 f ˇ
+|ϵ| ą 0 is small. Furthermore, from (14), we obtain dt2 ˇ “ 0 if and only if y is a unit eigenvector for
+τ
+M. However, this implies that y is fixed by Proposition 3. That is,
+ˇ y cannot exhibit strong cospectrality, a
+d2 f ˇ
+contradiction to the fact that y is involved in PST. Therefore, dt2 ˇ ă 0.
+τ
+ř
+ř
+ř
+Next we seek the minimum value of p ℓj“1 a j λ j q2 ´ ℓj“1 a j λ2j subject to the constraint that ℓj“1 a j “
+1 and a j ě 0 for all j “ 1, . . . , ℓ. Suppose that we have distinct indices j1 , j2 such that a j1 , a j2 ą 0. For
+each j “ 1, . . . , ℓ, consider the coefficients b j given by b j “ a j whenever j ‰ j1 , j2 , b j1 “ a j1 ` ϵ, and
+b j2 “ a j2 ´ ϵ, where ϵ is sufficiently small. It is straightforward to show that
+¨
+
+ℓ
+ÿ
+
+˝
+j“1
+
+˛2
+bj λ j ‚ ´
+
+ℓ
+ÿ
+j“1
+
+¨
+b j λ2j “ ˝
+
+ℓ
+ÿ
+j“1
+
+˛2
+aj λj‚ ´
+
+ℓ
+ÿ
+
+¨
+a j λ2j ` ϵpλ j1 ´ λ j2 q ˝2
+
+j“1
+
+ℓ
+ÿ
+
+˛
+a j λ j ´ pλ j1 ` λ j2 q‚` ϵ2 pλ j1 ´ λ j2 q2 .
+
+j“1
+
+(15)
+Observe that if there is a third index j3 ‰ j1 , j2 such that a j3 ą 0, then because λ j2 ‰ λ j3 , we get that
+ř
+ř
+ř
+one of 2 ℓj“1 a j λ j ´ pλ j1 ` λ j2 q and 2 ℓj“1 a j λ j ´ pλ j1 ` λ j3 q is nonzero. In particular, if 2 ℓj“1 a j λ j ´
+21
+
+pλ j1 ` λ j2 q ‰ 0, then by virtue of (15), we can choose a value of ϵ so that
+¨
+
+ℓ
+ÿ
+
+˝
+
+˛2
+bj λ j ‚ ´
+
+j“1
+
+ℓ
+ÿ
+
+¨
+b j λ2j ă ˝
+
+j“1
+
+ℓ
+ÿ
+j“1
+
+˛2
+aj λj‚ ´
+
+ℓ
+ÿ
+
+a j λ2j .
+
+j“1
+
+ř
+ř
+In this case, p ℓj“1 a j λ j q2 ´ ℓj“1 a j λ2j cannot attain the minimum value. So in order to find the minimum
+value, it suffices to focus on expressions of the form paλ j1 ` p1 ´ aqλ j2 q2 ´ paλ2j1 ` p1 ´ aqλ2j2 q where a P
+r0, 1s and λ j1 , λ j2 P tλ1 , . . . , λℓ u. Let λmax , λmin denote the largest and smallest elements of tλ1 , . . . , λℓ u,
+respectively. Since
+paλ j1 ` p1 ´ aqλ j2 q2 ´ paλ2j1 ` p1 ´ aqλ2j2 q “ ´ap1 ´ aqpλ j1 ´ λ j2 q2 ,
+ˇ
+d2 f ˇ
+we find that the minimum value for dt2 ˇ is given by ´ 21 pλmax ´ λmin q2 , which is attained by x “ ?12 pu `
+τ
+
+vq and y “ ?12 pu ´ vq, where u, v are unit eigenvectors corresponding to λmax and λmin , respectively.
+We summarize the above discussion as follows.
+Theorem 61. Suppose perfect state transfer occurs between unit vectors x and y at time τ relative to M.
+Let λmax “ max σx pMq, λmin “ min σx pMq. Then
+ˇ
+d2 f ˇˇ
+1
+0ą
+ě ´ pλmax ´ λmin q2 .
+ˇ
+2
+dt τ
+2
+Example 62. Consider the Petersen graph with adjacency matrix A, which has eigenvalues 3, 1, ´2. Let
+v1 , v2 , v3 be unit eigenvectors corresponding to 3, 1 and ´2, respectively and form x P R10 as x “
+c1 v1 ` c2 v2 ` c3 v3 where c1 , c2 , c3 P Rzt0u, c21 ` c22 ` c23 “ 1. Setting y “ ´c
+ˇ 1 v1 ´ c2 v2 ` c3 v3 , we find
+2f ˇ
+d
+that there is PST from xxJ to yyJ at time π. According to Theorem 61, dt2 ˇ is bounded above by 0 and
+π
+
+below by ´ 25
+2.
+
+Combining Theorem 61 with the proof of Corollary 59, we obtain the connected
+unweighted n-vertex
+ˇ
+d2 f ˇˇ
+graphs and the unit vectors admitting PST that attain the least value of dt2 ˇ . These unit vectors have the
+τ
+most sensitive fidelity with respect to the PST time, and these are precisely those that minimize the PST
+time amongst all connected unweighted n-vertex graphs.
+Corollary 63. Amongst all connected unweighted n-vertex graphs that admit perfect ˇ
+state transfer bed2 f ˇˇ
+tween unit vectors at time τ relative to L (respectively, relative to A), the least value of dt2 ˇ is attained by
+τ
+the join graph in Theorem 58(1) (respectively, Theorem 58(2)) and unit vectors x and y, where y is given
+in Corollary 59(1) (respectively, Corollary 59(2)).
+Acknowledgement. C. Godsil is supported by NSERC grant no. RGPIN-9439. S. Kirkland is supported
+by NSERC grant no. RGPIN-2025-05547. H. Monterde is supported by the University of Manitoba Faculty
+of Science and Faculty of Graduate Studies. We thank the Department of Mathematics and the Graduate
+Mathematics Society at the University of Manitoba for supporting the research visit of C. Godsil, where
+we all started to work on this project.
+
+22
+
+References
+[ADL` 16] R. Alvir, S. Dever, B. Lovitz, J. Myer, C. Tamon, Y. Xu, and H. Zhan, Perfect state transfer in Laplacian quantum
+walk, J. Algebr. Comb. 43 (2016), no. 4, 801–826. Ò16
+[ÁG23] S. Árnadóttir and C. Godsil, On state transfer in Cayley graphs for abelian groups, Quantum Inf. Process. 22 (2023),
+8. Ò2
+[BH11] A. Brouwer and W. Haemers, Spectra of graphs, Springer Science & Business Media, 2011. Ò11, 13, 14
+[BMP24] Bikash Bhattacharjya, Hermie Monterde, and Hiranmoy Pal, Quantum walks on blow-up graphs, J. Phys. A-Math.
+57 (2024), no. 33, 335303. Ò2
+[BRTU22] J. Breen, A. Riasanovsky, M. Tait, and J. Urschel, Maximum spread of graphs and bipartite graphs, Commun. Am.
+Math. Soc. 2 (2022), no. 11, 417–480. Ò20
+[BTVX25] Pierre-Antoine Bernard, Christino Tamon, Luc Vinet, and Weichen Xie, Quantum state transfer in graphs with tails,
+Linear Algebra Appl. (2025). Ò2
+[CDEL04] M. Christandl, N. Datta, A. Ekert, and A. Landahl, Perfect state transfer in quantum spin networks, Phys. Rev. Lett.
+92 (2004), no. 18, 187902. Ò2
+[CG20] Q. Chen and C. Godsil, Pair state transfer, Quantum Inf. Process. 19 (2020), 321. Ò2, 15
+[CG21] G. Coutinho and C. Godsil, Graph Spectra and Continuous Quantum Walks (2021), available at https://www.
+math.uwaterloo.ca/~cgodsil/quagmire/pdfs/GrfSpc3.pdf. Ò4, 16
+[Che19] Q. Chen, Edge State Transfer, Master’s Thesis, 2019. Ò19
+[CJS24] G. Coutinho, E. Juliano, and T.J. Spier, No perfect state transfer in trees with more than 3 vertices, J. Comb. Theory,
+B 168 (2024), 68–85. Ò2
+[Cou14] G. Coutinho, Quantum State Transfer in Graphs, Ph.D. Dissertation (2014). Ò2, 9
+[God12a] C. Godsil, Controllable subsets in graphs, Ann. Comb. 16 (2012), no. 4, 733–744. Ò4
+[God12b]
+
+, State transfer on graphs, Discrete Math. 312 (2012), no. 1, 129–147. Ò2
+
+[God12c]
+
+, When can perfect state transfer occur?, Electron. J. Linear Algebra (2012), 877–890. Ò2, 5
+
+[God17]
+
+, Real state transfer, arXiv preprint arXiv:1710.04042 (2017). Ò2, 3, 7
+
+[GS24] C. Godsil and J. Smith, Strongly cospectral vertices, Australas. J. Combin. 88 (2024), 1–21. MR4734932 Ò6, 7
+[Kay10] A. Kay, Perfect, efficient, state transfer and its application as a constructive tool, Int. J. Quantum Inf. 8 (2010),
+no. 04, 641–676. Ò2
+[Kir15] S. Kirkland, Sensitivity analysis of perfect state transfer in quantum spin networks, Linear Algebra Appl. 472 (2015),
+1–30. Ò21
+[KM23] S. Kirkland and H. Monterde, Quantum walks on join graphs, arXiv preprint arXiv:2312.06906 (2023). Ò17
+[KMA` 24] S. Kim, H. Monterde, B. Ahmadi, A. Chan, S. Kirkland, and S. Plosker, A generalization of quantum pair state
+transfer, Quantum Inf. Process. 23 (2024), no. 11, 369. Ò2, 4, 5, 12, 16
+[KMP23] S. Kirkland, H. Monterde, and S. Plosker, Quantum state transfer between twins in weighted graphs, J. Algebr.
+Comb. 58 (2023), no. 3, 623–649. Ò5
+[KT11] V. Kendon and C. Tamon, Perfect state transfer in quantum walks on graphs, J. Comput. Theor. Nanosci. 8 (2011),
+no. 3, 422–433. Ò2
+[Mon22] H. Monterde, Strong cospectrality and twin vertices in weighted graphs, Electron. J. Linear Algebra (2022), 494–
+518. Ò8
+[PM24] H. Pal and Sarojini Mohapatra, Quantum pair state transfer on isomorphic branches, arXiv preprint
+arXiv:2402.07078 (2024). Ò2, 5, 14
+
+23
+
+

@@ -49,6 +49,10 @@ import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.Bundle
 import Graphplay.PST
+import Graphplay.PST.QuotientIff
+import Graphplay.Loopy
+import Graphplay.Product
+import Graphplay.Product.PST
 
 open scoped Matrix
 
@@ -79,29 +83,23 @@ noncomputable def fiberEquitable
     EquitablePartition B.total I :=
   B.fiberPartition d hfib α β hcouple
 
-/-- The quotient weighted graph of the fiber partition.  This is the
-"template-with-couplings" matrix `Q + α`-data, lifted to a Hermitian
-weighted graph on the index set `I` via `EquitablePartition.quotient`. -/
+/-- The quotient graph of the fiber partition, as a **loopy** weighted graph.
+
+The symmetric quotient `Q̃ = D^{1/2} Q D^{-1/2}` carries a genuinely nonzero
+diagonal (its diagonal entries record the fiber regularity degrees `d i`), so
+it does *not* live in the loopless `WeightedGraph` layer.  It lives in
+`LoopyWeightedGraph` (`Graphplay.Loopy`), exactly the loopless-free Hermitian
+layer built for this purpose.  This dissolves the former `loopless` blocker:
+there is no zero-diagonal field to discharge. -/
 noncomputable def fiberQuotient
     (B : GraphBundle Q V)
     (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
       IsBiregular (B.coupling h) (α h) (β h)) :
-    WeightedGraph I where
+    LoopyWeightedGraph I where
   adj := (B.fiberEquitable d hfib α β hcouple).symmQuotient
   herm := (B.fiberEquitable d hfib α β hcouple).symmQuotient_isHermitian
-  loopless := by
-    -- Diagonal entry of the quotient on cell `i` is the regularity degree
-    -- `d i` of the fiber.  The "loopless" axiom of a `WeightedGraph` would
-    -- force `d i = 0`, which is *not* true for nontrivial fibers; rather
-    -- than weaken the definition we (a) note that PST is invariant under
-    -- diagonal shifts and (b) move the diagonal of the quotient into a
-    -- global phase, which `IsPST` is blind to.  The cleanest packaging
-    -- subtracts `d i` along the diagonal at the time of building the
-    -- quotient `WeightedGraph` wrapper.  Deferred to a follow-on pass.
-    intro _
-    sorry
 
 /-! ## 2. The master theorem -/
 
@@ -127,15 +125,21 @@ theorem pst_iff_quotient
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
       IsBiregular (B.coupling h) (α h) (β h))
+    (hne : ∀ k, (B.fiberEquitable d hfib α β hcouple).cellCard k ≠ 0)
     (i j : I) (τ : ℝ) :
     IsCellUniformPST B.total (B.fiberEquitable d hfib α β hcouple) i j τ ↔
-    IsPST (B.fiberQuotient d hfib α β hcouple) i j τ := by
-  -- Forward: cell-uniform PST on the host pushes through the cellInflate
-  -- isometry to give PST of the same modulus on the quotient.
-  -- Backward: this is the existing `EquitablePartition.pst_lift`, after
-  -- discharging the placeholder hypothesis using the IsPST of the
-  -- quotient.
-  sorry
+    LoopyWeightedGraph.IsLoopyPST (B.fiberQuotient d hfib α β hcouple) j i τ := by
+  -- `IsLoopyPST (fiberQuotient) j i τ` unfolds to
+  -- `‖(fiberQuotient).evolve τ j i‖ = 1`
+  -- = `‖exp(-(I·τ) • (fiberQuotient).adj) j i‖ = 1`
+  -- = `‖exp(-(I·τ) • symmQuotient) j i‖ = 1`
+  -- (since `(fiberQuotient).adj = (fiberEquitable …).symmQuotient`), which is
+  -- exactly the right-hand side of the Bachman–Tamon iff
+  -- `EquitablePartition.cellUniformPST_iff_quotientPST` from `QuotientIff`.
+  -- The `hne` hypothesis (every cell — i.e. every fiber — nonempty) is the
+  -- one that lemma requires; we surface it as an explicit hypothesis since a
+  -- bundle may a priori have an empty fiber.
+  exact (B.fiberEquitable d hfib α β hcouple).cellUniformPST_iff_quotientPST hne i j τ
 
 /-- One-way form: PST on the quotient lifts to cell-uniform PST on the
 total bundle.  This is the direction used in synthesis. -/
@@ -145,10 +149,11 @@ theorem cellUniformPST_of_quotient_pst
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
       IsBiregular (B.coupling h) (α h) (β h))
+    (hne : ∀ k, (B.fiberEquitable d hfib α β hcouple).cellCard k ≠ 0)
     (i j : I) (τ : ℝ)
-    (h : IsPST (B.fiberQuotient d hfib α β hcouple) i j τ) :
+    (h : LoopyWeightedGraph.IsLoopyPST (B.fiberQuotient d hfib α β hcouple) j i τ) :
     IsCellUniformPST B.total (B.fiberEquitable d hfib α β hcouple) i j τ :=
-  (B.pst_iff_quotient d hfib α β hcouple i j τ).mpr h
+  (B.pst_iff_quotient d hfib α β hcouple hne i j τ).mpr h
 
 /-- The other direction: cell-uniform PST on the total bundle descends to
 PST on the quotient. -/
@@ -158,10 +163,11 @@ theorem quotient_pst_of_cellUniformPST
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
       IsBiregular (B.coupling h) (α h) (β h))
+    (hne : ∀ k, (B.fiberEquitable d hfib α β hcouple).cellCard k ≠ 0)
     (i j : I) (τ : ℝ)
     (h : IsCellUniformPST B.total (B.fiberEquitable d hfib α β hcouple) i j τ) :
-    IsPST (B.fiberQuotient d hfib α β hcouple) i j τ :=
-  (B.pst_iff_quotient d hfib α β hcouple i j τ).mp h
+    LoopyWeightedGraph.IsLoopyPST (B.fiberQuotient d hfib α β hcouple) j i τ :=
+  (B.pst_iff_quotient d hfib α β hcouple hne i j τ).mp h
 
 end GraphBundle
 
@@ -174,23 +180,59 @@ variable [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
 
 /-! ### 3.1 GGPT: Cartesian product preserves PST -/
 
+/-- **Bridge lemma.**  The bundle-corner Cartesian product
+`GraphBundle.cartesianProduct G H` (Bundle.lean) and the first-class
+Kronecker-sum Cartesian product `WeightedGraph.cartesianProduct G H`
+(Product.lean) have the *same adjacency matrix*.
+
+The two definitions write the same entrywise sum with the two `if`-summands
+in the opposite order:
+* bundle:  `(if v₁=v₂ then H.adj w₁ w₂ else 0) + (if w₁=w₂ then G.adj v₁ v₂ else 0)`,
+* product: `(if w₁=w₂ then G.adj v₁ v₂ else 0) + (if v₁=v₂ then H.adj w₁ w₂ else 0)`,
+
+so the equality is just commutativity of addition. -/
+theorem graphBundle_cartesianProduct_adj_eq
+    (G : WeightedGraph V) (H : WeightedGraph W) :
+    (GraphBundle.cartesianProduct G H).adj =
+      (WeightedGraph.cartesianProduct G H).adj := by
+  funext p q
+  show (if p.1 = q.1 then H.adj p.2 q.2 else 0) + (if p.2 = q.2 then G.adj p.1 q.1 else 0)
+      = (if p.2 = q.2 then G.adj p.1 q.1 else 0) + (if p.1 = q.1 then H.adj p.2 q.2 else 0)
+  exact add_comm _ _
+
+/-- The two Cartesian products have the same quantum-walk evolution (since the
+walk only depends on the adjacency matrix and the adjacencies agree). -/
+theorem graphBundle_cartesianProduct_evolve_eq
+    (G : WeightedGraph V) (H : WeightedGraph W) (τ : ℝ) :
+    (GraphBundle.cartesianProduct G H).evolve τ =
+      (WeightedGraph.cartesianProduct G H).evolve τ := by
+  unfold WeightedGraph.evolve
+  rw [graphBundle_cartesianProduct_adj_eq]
+
 /-- **GGPT Theorem (Cartesian, [1009.1340 §1, Christandl et al. [11]]).**
 The Cartesian product `G □ H` exhibits PST between `(u₁, w)` and `(u₂, w)`
-whenever `G` exhibits PST between `u₁` and `u₂` and `H` is regular.
+whenever `G` exhibits PST between `u₁` and `u₂` and `H` is *periodic at `w`*
+at the same time `τ` (i.e. `‖(H.evolve τ) w w‖ = 1`).
 
-Specialization of `pst_iff_quotient` to the bundle whose template is `G`
-(as a `SimpleGraph` on `V`), with constant fiber `H` and coupling the
-identity on each template edge. -/
+This is the honest, fully-general transfer theorem.  GGPT derive the
+periodicity of `H` at `w` from regularity together with a spectral lattice
+condition; stated directly as `‖(H.evolve τ) w w‖ = 1` the hypothesis makes the
+statement *true* without that extra input, and iterating it from the single
+edge `K₂` yields PST on the hypercube `Q_n = K₂^□n`.
+
+Proof: the bundle-corner Cartesian product agrees with the first-class
+Kronecker-sum product (`graphBundle_cartesianProduct_evolve_eq`), so this is a
+direct application of the genuinely-proven, axiom-clean engine
+`WeightedGraph.cartesianProduct_pst` in `Graphplay/Product/PST.lean`. -/
 theorem cartesianProduct_pst
     (G : WeightedGraph V) (H : WeightedGraph W)
-    {dH : ℂ} (hHreg : H.isRegular dH)
     (u₁ u₂ : V) (w : W) (τ : ℝ)
-    (hG : IsPST G u₁ u₂ τ) :
+    (hG : IsPST G u₁ u₂ τ) (hH : ‖(H.evolve τ) w w‖ = 1) :
     IsPST (GraphBundle.cartesianProduct G H) (u₁, w) (u₂, w) τ := by
-  -- Build the Cartesian bundle, apply the master theorem.  The fiber
-  -- quotient is exactly `G` (up to the diagonal-shift normalization in
-  -- `fiberQuotient.loopless`).
-  sorry
+  have hcore : IsPST (WeightedGraph.cartesianProduct G H) (u₁, w) (u₂, w) τ :=
+    WeightedGraph.cartesianProduct_pst G H hG hH
+  unfold IsPST at hcore ⊢
+  rwa [graphBundle_cartesianProduct_evolve_eq]
 
 /-! ### 3.2 GGPT: Lexicographic product preserves PST under regular fibers -/
 
@@ -207,23 +249,33 @@ theorem lexProduct_pst
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (GraphBundle.lexProduct G H) (u₁, w₁) (u₂, w₂) τ := by
+  -- HONEST SORRY (genuinely GGPT-hard; statement is NOT proven here).
   -- Lex coupling = J = all-ones rectangular matrix, which is
-  -- (|W|, |W|)-biregular.  Apply master theorem; in the quotient the
-  -- off-diagonal is `|W| · G.adj`, a positive rescaling of `G`, so PST
-  -- in `G` at time `τ` becomes PST in the quotient at time `τ / |W|`.
-  -- The exact match of `τ` requires the eigenvalue lattice condition
-  -- stated in GGPT 1009.1340 Theorem 2; we treat the lattice as part of
-  -- the input hypothesis.
+  -- (|W|, |W|)-biregular.  In the fiber quotient the off-diagonal is
+  -- `|W| · G.adj`, a positive rescaling of `G`, so PST in `G` at time `τ`
+  -- becomes PST in the quotient at the RESCALED time `τ / |W|`, not `τ`.
+  -- Matching the original `τ` requires the eigenvalue-lattice condition of
+  -- GGPT (arXiv:1009.1340 §4, Thm 2), which is not among the hypotheses of
+  -- this statement; without it the conclusion at the literal `τ` is false in
+  -- general.  Left as an honest sorry pending that spectral input.
   sorry
 
 /-! ### 3.3 GGPT: Weak (= tensor / direct) product preserves PST -/
 
 /-- The **tensor product** (= weak / direct product) `G ⊗ H` of weighted
-graphs: as a bundle over `G` whose template-edge coupling is `H.adj`. -/
+graphs.  Concretely the adjacency is the entrywise Kronecker product
+`(v₁, w₁) ↦ (v₂, w₂) = G.adj v₁ v₂ · H.adj w₁ w₂`.  This is exactly the
+first-class `WeightedGraph.tensorProduct` from `Graphplay/Product.lean`
+(`herm`/`loopless` proven there), to which we delegate. -/
 noncomputable def tensorProduct (G : WeightedGraph V) (H : WeightedGraph W) :
     WeightedGraph (V × W) :=
-  -- Concretely: adjacency `(v₁, w₁) ↦ (v₂, w₂) = G.adj v₁ v₂ · H.adj w₁ w₂`.
-  sorry
+  WeightedGraph.tensorProduct G H
+
+@[simp]
+theorem tensorProduct_adj (G : WeightedGraph V) (H : WeightedGraph W)
+    (p q : V × W) :
+    (tensorProduct G H).adj p q = G.adj p.1 q.1 * H.adj p.2 q.2 :=
+  rfl
 
 /-- **GGPT Theorem (Weak product, [1009.1340 §3]).**  For a circulant `H`
 with odd eigenvalues and `G` with PST whose spectrum lies in `π · ℤ`, the
@@ -237,9 +289,13 @@ theorem tensorProduct_pst
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (tensorProduct G H) (u₁, w₁) (u₂, w₂) τ := by
-  -- Bundle: template `G`, fiber `H`, coupling on edge `v₁ ~ v₂` is
-  -- `H.adj` itself.  Biregularity is the regularity of `H`.  Quotient is
-  -- a scalar multiple of `G`.  Apply master theorem.
+  -- HONEST SORRY (genuinely GGPT-hard; statement is NOT proven here).
+  -- The tensor adjacency is the Kronecker PRODUCT `A_G ⊗ₖ A_H`, whose
+  -- exponential does NOT factor as `exp(A_G) ⊗ₖ exp(A_H)` (unlike the
+  -- Cartesian/Kronecker-SUM case): `exp(A⊗B) ≠ exp A ⊗ exp B`.  GGPT
+  -- (arXiv:1009.1340 §3) instead require `H` circulant with odd eigenvalues
+  -- and `G` PST with spectrum in `π·ℤ`; those spectral hypotheses are not
+  -- present here.  Closing this needs the GGPT spectral-lattice argument.
   sorry
 
 /-! ### 3.4 Strong product (beyond GGPT) -/
@@ -253,18 +309,36 @@ theorem strongProduct_pst
     (u₁ u₂ : V) (w : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (GraphBundle.strongProduct G H) (u₁, w) (u₂, w) τ := by
-  -- Strong-product coupling on `v₁ ~_G v₂` is `I + H.adj`, which is
-  -- biregular with sums `1 + dH`.  Master theorem gives the quotient
-  -- as `(1 + dH) · G.adj`.
+  -- HONEST SORRY (beyond GGPT; statement is NOT proven here).
+  -- The strong adjacency `A_{G⊠H} = A_G ⊗ I + I ⊗ A_H + A_G ⊗ₖ A_H` carries
+  -- the tensor (Kronecker-product) cross term, so its exponential does not
+  -- factor through a Cartesian-style Kronecker-sum split.  As in the tensor
+  -- case this needs a spectral-lattice / circulant hypothesis on `H` (cf.
+  -- arXiv:1009.1340 §3–§4) not present in the statement.
   sorry
 
 /-! ### 3.5 Conormal product (beyond GGPT) -/
 
 /-- The **conormal product** (also called the disjunctive or co-strong
-product) `G * H`: adjacency is "either factor adjacent". -/
+product) `G * H`: adjacency is "either factor adjacent".  Concretely we use
+the weighted inclusion–exclusion realization of the logical OR,
+
+`adj (v₁,w₁) (v₂,w₂) = G.adj v₁ v₂ + H.adj w₁ w₂ - G.adj v₁ v₂ · H.adj w₁ w₂`,
+
+which on 0/1 graphs is `1` exactly when `v₁ ∼_G v₂` *or* `w₁ ∼_H w₂` and `0`
+otherwise.  Hermitian (each term is Hermitian-symmetric) and loopless (on the
+diagonal every term vanishes by `G.loopless`/`H.loopless`). -/
 noncomputable def conormalProduct (G : WeightedGraph V) (H : WeightedGraph W) :
-    WeightedGraph (V × W) :=
-  sorry
+    WeightedGraph (V × W) where
+  adj := Matrix.of fun p q =>
+    G.adj p.1 q.1 + H.adj p.2 q.2 - G.adj p.1 q.1 * H.adj p.2 q.2
+  herm := by
+    ext p q
+    simp only [Matrix.conjTranspose_apply, Matrix.of_apply, star_sub, star_add, star_mul']
+    rw [G.herm.apply p.1 q.1, H.herm.apply p.2 q.2, mul_comm]
+  loopless := by
+    intro v
+    simp [Matrix.of_apply, G.loopless, H.loopless]
 
 /-- The conormal product preserves PST under bi-regularity. -/
 theorem conormalProduct_pst
@@ -273,15 +347,25 @@ theorem conormalProduct_pst
     (u₁ u₂ : V) (w : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (conormalProduct G H) (u₁, w) (u₂, w) τ := by
+  -- HONEST SORRY (beyond GGPT; statement is NOT proven here).
+  -- The conormal adjacency `A_G ⊕ A_H − A_G ⊗ₖ A_H` again contains a
+  -- Kronecker-product cross term, so the walk does not factor as a Cartesian
+  -- Kronecker sum; PST preservation requires the same spectral-lattice input
+  -- as the tensor/strong cases (cf. arXiv:1009.1340 §3).
   sorry
 
 /-! ### 3.6 Disjunctive product (beyond GGPT) -/
 
-/-- The **disjunctive product** `G ∨ H`: adjacency is "G-adj OR H-adj"
-(the OR of Cartesian and tensor on the same vertex set). -/
+/-- The **disjunctive product** `G ∨ H`: adjacency is "G-adj OR H-adj".  The
+disjunctive product coincides with the conormal product, so we realize it by
+the same weighted inclusion–exclusion OR
+
+`adj (v₁,w₁) (v₂,w₂) = G.adj v₁ v₂ + H.adj w₁ w₂ - G.adj v₁ v₂ · H.adj w₁ w₂`,
+
+i.e. `disjunctiveProduct G H = conormalProduct G H`. -/
 noncomputable def disjunctiveProduct (G : WeightedGraph V) (H : WeightedGraph W) :
     WeightedGraph (V × W) :=
-  sorry
+  conormalProduct G H
 
 /-- The disjunctive product preserves PST under regularity hypotheses. -/
 theorem disjunctiveProduct_pst
@@ -290,6 +374,10 @@ theorem disjunctiveProduct_pst
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (disjunctiveProduct G H) (u₁, w₁) (u₂, w₂) τ := by
+  -- HONEST SORRY (beyond GGPT; statement is NOT proven here).
+  -- `disjunctiveProduct = conormalProduct`, so this reduces to
+  -- `conormalProduct_pst` and needs the same spectral-lattice input
+  -- (cf. arXiv:1009.1340 §3).  Left honest.
   sorry
 
 end BundlePSTCorollaries

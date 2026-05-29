@@ -139,7 +139,7 @@ structure GraphonLQR (Ω : Type u) [MeasurableSpace Ω] (μ : Measure Ω) where
 
 namespace GraphonLQR
 
-variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
 
 /-- The state-side operator `A = L_a · 1 + D_a · W.op`, a bounded
 linear endomorphism of `L²(μ; ℂ)`. -/

@@ -132,7 +132,7 @@ distance-from-`K_n` partition along an attaching infinite path. -/
 theorem ConsistentPartitionSequence.pst_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
               (nhds Plim.quotient))
@@ -151,7 +151,7 @@ uniform mixing.  The graphon-level cell-uniform mixing predicate is
 theorem ConsistentPartitionSequence.mixing_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
               (nhds Plim.quotient))
@@ -167,7 +167,7 @@ finite quotients lift to graphon-level cell-uniform search-success times. -/
 theorem ConsistentPartitionSequence.search_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
               (nhds Plim.quotient))
@@ -516,7 +516,7 @@ limit-quotient evolution at the stage-`n` time `τ n` (compared to fidelity
 theorem ConsistentPartitionSequence.pst_rate_inheritance
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (i j : I) (tau_lim : ℝ) :
     -- Conclusion: limit fidelity-error `≤ |tau_lim| · liminf r n = 0`, recovering
@@ -575,7 +575,7 @@ continuous measure (no point spectrum). -/
 theorem failure_mode_continuous_spectrum
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_cont : True /- placeholder: `Plim.quotient` has purely continuous spectrum -/) :
     -- Then the cell-uniform PST predicate is false on the limit, even
@@ -645,7 +645,7 @@ This is the chiral version of `pst_inherited`. -/
 theorem ChiralConsistentPartitionSequence.pst_inherited
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : ChiralConsistentPartitionSequence I)
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (i j : I) (τ : ℕ → ℝ) (tau_lim : ℝ) :
     True := by

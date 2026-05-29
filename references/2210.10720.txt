@@ -1,0 +1,2851 @@
+Limits of action convergent graph sequences
+with unbounded (p, q)-norms
+
+arXiv:2210.10720v1 [math.CO] 19 Oct 2022
+
+Aranka Hrušková
+Alfréd Rényi Insitute of Mathematics, Reáltanoda utca 13-15, Budapest, Hungary
+
+Abstract
+The recently developed notion of action convergence by Backhausz and Szegedy [2] unifies and
+generalises the dense (graphon) and local-global (graphing) convergences of graph sequences. This
+is done through viewing graphs as operators and examining their dynamical properties. Suppose
+(An )∞
+n is a sequence of operators representing graphs, Cauchy with respect to the action metric. If
+(An )∞
+n has uniformly bounded (p, q)-norms where (p, q) is any pair in [1, ∞) × (1, ∞), then Backhausz
+and Szegedy prove that (An )∞
+n has a limit operator which, moreover, must be self-adjoint and
+positivity-preserving. In the present work, we construct a large class of graph sequences whose only
+uniformly bounded (p, q)-norm is the (∞, 1)-norm, but which converge nonetheless. We show that
+the limit operators in this case are not unique, not self-adjoint, and need not be positivity-preserving.
+In particular, in the action convergence language, this means that the space of graphops is not
+compact. By identifying these multiple limits, we also demonstrate that c-regularity is not invariant
+under weak equivalence, where c is the eigenvalue of the identity function, when the identity function
+is an eigenfunction.
+
+1
+
+Introduction
+
+The central object of the relatively young field of graph limit theory is a sequence (Gn )∞
+n=1 of finite
+graphs, for which we seek to find a limit object. The two most thoroughly developed convergence
+notions, based on different methods of sampling small subgraphs from large graphs, are, however, only
+applicable when either the number of edges in Gn is asymptotically quadratic in terms of the number of
+vertices [6, 12, 13] or when the maximum degree ∆(Gn ) is uniformly bounded above [12, 17]. We call
+the former sequences dense and have graphons for them as limit objects, while the latter are an extreme
+case of sparse sequences and their limits are graphings [9]. This leaves out the territory of sequences in
+which the number of edges grows subquadratically but superlinearly in terms of the number of vertices –
+that includes for example the hypercubes, the incidence graphs of finite projective planes, and many
+regimes of the Erdős-Rényi model G(n, p(n)). A number of authors have in recent years defined various
+extensions of the classical notions mentioned above with the aim of reaching the world of sequences with
+intermediate densities [3, 4, 5, 7, 8, 11, 14, 15]. In this paper, we are interested in action convergence
+introduced by Backhausz and Szegedy [2], which unifies and generalises graphons and graphings in the
+common framework of P -operators.
+Definition (P -operator). Let (Ω, A, µ) be a probability space. Then we call a linear operator A : L∞ (Ω) →
+1
+
+L1 (Ω) a P-operator if the norm
+kAk∞→1 =
+
+kAvk1
+v∈L∞ (Ω) kvk∞
+sup
+
+is finite.
+As the name and the definition of the limit object above suggest, action convergence lays emphasis on
+the dynamical properties of graphs. There is a number of natural operators associated to a finite graph,
+of which the most prominent are the adjacency matrix, the discrete Laplacian, and the transition matrix
+of the simple random walk; in this paper, we will always identify a finite graph with its adjacency matrix.
+The key to the definition of the convergence is the notion of profiles that allow us to compare operators
+even when they act on L-spaces of different probability spaces. A k-profile Sk (A) of a P -operator A is
+a collection of probability measures on R2k encoding the actions of A and giving rise to the following
+metrisation.
+Definition. Let A : L∞ (ΩA ) → L1 (ΩA ) and B : L∞ (ΩB ) → L1 (ΩB ) be P -operators. Then their action
+distance is
+∞
+X
+dH (Sk (A), Sk (B))
+dM (A, B) =
+,
+2k
+k=1
+
+where dH is the Hausdorff distance. A sequence (An )∞
+n of P -operators action converges to a P -operator
+A if and only if limn dM (An , A) = 0. When dM (A, B) = 0, we say that A and B are weakly equivalent.
+Importantly, Backhausz and Szegedy show in [2] that a sequence (Gn )∞
+n of graphs with uniformly
+bounded maximum degree converges locally-globally to a graphing G if and only if their adjacency
+∞
+matrices (A(Gn ))∞
+n action converge to G, and thata sequence
+ (Gn )n of graphs converges to a graphon
+∞
+A(Gn )
+|V (Gn )| n action converge to W . In our setting, a
+2
+graphon W : [0, 1] → [0, 1] becomes the P -operator that sends f ∈ L2 ([0, 1], λ) to
+
+W if and only if their scaled adjacency matrices
+Z 1
+(W f )(x) =
+
+W (x, y)f (y) dλ(y),
+0
+
+and a graphing (G, ν) becomes the P -operator that sends v ∈ L2 (V (G), ν) to
+X
+(Gv)(x) =
+v(y).
+xy∈E(G)
+
+In particular, both graphons and graphings are not just operators from L∞ to L1 , but from L2 to L2 ,
+and satisfy that kW k2→2 ≤ 1 and kGk2→2 ≤ d, where d is the maximum degree of the graphing G. Both
+of them are also self-adjoint and positivity-preserving – any P -operator that has these two properties is
+called a graphop. Given a sequence of P -operators, we can in general deduce information about the
+existence of its limit and about the limit’s properties if we can assume uniform boundedness of some
+(p, q)-norms like the (2, 2)-norms above.
+Lemma 1.1 (Sequential compactness, Lemma 2.6 in [2]). Let (An )∞
+n=1 be a sequence of P -operators
+with uniformly bounded k·k∞→1 norms. Then (An )∞
+has
+a
+Cauchy
+subsequence with respect to the
+n=1
+distance dM .
+2
+
+Theorem 1.2 (Existence of limit object, Theorem 2.9 in [2]). Let p ∈ [1, ∞) and q ∈ [1, ∞]. Let (An )∞
+n=1
+be a sequence of P -operators, Cauchy with respect to the distance dM and with uniformly bounded k·kp→q
+norms. Then there is a P -operator A such that limn dM (An , A) = 0 and kAkp→q ≤ lim supn kAn kp→q .
+For c ∈ R, a P -operator is called c-regular if the identity function 1 is an eigenfunction with
+eigenvalue c, i.e., A1 = c1.
+Proposition 1.3 (Section 3 in [2]). Let p, q ∈ [1, ∞] be fixed and let (An )∞
+n be a sequence of P -operators
+with uniformly bounded (p, q)-norms. Suppose that (An )∞
+action
+converges
+to a P -operator A. Then
+n
+(a) if q ∈
+/ {1, ∞} and An is self-adjoint for every n, then A is also self-adjoint,
+(b) if p 6= ∞ and An is positivity-preserving for every n, then A is also positivity-preserving, and
+(c) if p 6= ∞, c ∈ R and An is c-regular for every n, then A is also c-regular.
+In the present work, we are interested in optimality of the restrictions on p and q in Theorem 1.2
+and Proposition 1.3. We quickly show that part (a) of Proposition 1.3 must hold for all (p, q) ∈
+[1, ∞]2 \ {(∞, 1)}, but our main result is identifying a large class of sequences (An )∞
+n in which An is
+self-adjoint and positivity-preserving for every n and whose only uniformly bounded (p, q)-norms are
+the (∞, 1)-norms, but which at the same time have multiple limit objects, none of which are self-adjoint
+and some of which are not positivity-preserving. In other words, we show that a sequence of graphops
+does not necessarily action converge to a graphop. The graphops in our sequences arise as the adjacency
+matrices of finite simple graphs G that contain a vertex of degree |V (G)| − 1, that is a vertex adjacent
+to every other vertex of G. We call G+ the graph on |V (G)| + 1 vertices obtained from G by adding a
+vertex like that.
+Theorem 1.4. Let (Gn )∞
+n be a sequence of finite graphs with |V (Gn )| → ∞, whose adjacency operators
+action converge to a P -operator A : L∞ (Ω, ν) → L1 (Ω, ν), where (Ω, ν) is separable. Then there is a
+ν-filter F on Ω such that for any ν-ultrafilter U extending F, both
+A+ : L∞ (Ω, ν) → L1 (Ω, ν)
+
+given by A+ g (ω) = (Ag)(ω) + φU (g)
+
+A− : L∞ (Ω, ν) → L1 (Ω, ν)
+
+given by A− g (ω) = (Ag)(ω) − φU (g)
+Pn
++ ∞
+∞
+are action limits
+Pn of (Gn )n , where φU : L (Ω, ν) → R is the functional sending limn→∞ i=1 αn,i χEn,i
+to limn→∞ i=1 αn,i 1En,i ∈U .
+and
+
+In the construction of the limit objects, we utilise a functional φU from the dual space (L∞ )∗ of L∞
+which are not in the canonical embedding of L1 in (L∞ )∗ . In particular, φU : L∞ → R arises from a
+finitely additive measure given by an ultrafilter U, where U is any extension of a suitable countably
+generated filter F. In the course of proving that such a filter F exists, we establish Theorem 4.3 which
+we believe is of independent interest. It states that for any linear operator A : L∞ (Ω) → L1 (Ω), where
+Ω is a finite measure space, there is an ultrafilter U such that for any function f ∈ L∞ and a number
+a ∈ R, we can find functions fa which are arbitrarily close to f in the 1-norm and also whose images
+under A are arbitrarily close to Af in the 1-norm, but such that φU (fa ) = a, independently of the value
+of φU (f ).
+The rest of the paper is organised as follows. In Section 2, we define k-profiles and prove the extension
+of part (a) of Proposition 1.3. In Section 3, we warm up with the most basic case of our construction
+3
+
+∞ ∗
+which is the star graphs (Sn )∞
+n . We recall the structure of (L ) , explain how the functional φU plays
+the role of the high-degree vertex, prove that the (∞, 1)-norm is not continuous with respect to dM by
+showing that limn kSn k∞→1 > klimn Sn k∞→1 , establish that no action limit of Sn can be self-adjoint,
+and prove a special case of Theorem 1.4. The main results are in Section 4 in which we first describe
+∞
+what the limiting k-profiles of (G+
+n )n must be. Then we prove Theorem 4.3 and relying on it, we go on
+to prove Theorem 1.4. We close off in Section 5 with two open questions.
+
+2
+
+Preliminaries
+
+Let A : L∞ (Ω) → L1 (Ω) be a P -operator. Then for every f ∈ L∞ (Ω), the pair (f, Af ) represents
+an observation of the dynamical properties of A. We want to compress this observation into a form
+which will not involve Ω and also neglect some inessential features of A (see Remark ...), and do so by
+considering the law of the random variable
+(f, Af ) : Ω → R2
+ω 7→ (f (ω), Af (ω)).
+More generally, taking a k-tuple (f1 , . . . , fk ) of functions in L∞ (Ω) provides an even finer observation
+(f1 , . . . , fk , Af1 , . . . , Afk ), and by compressing and collecting all of these, we arrive at a set of probability
+measures which captures the various ways in which A acts on functions.
+Definition (k-profile). Let A : L∞ (Ω) → L1 (Ω) be a P -operator and k a positive integer. The k-profile
+Sk (A) of A is
+
+
+
+∞
+Sk (A) := D(f1 , . . . , fk , Af1 , . . . , Afk ) : f1 , . . . , fk ∈ B1L
+⊂ P R2k ,
+∞
+
+where B1L is the closed unit ball of L∞ (Ω) and D(f1 , . . . , fk , Af1 , . . . , Afk ) is the joint distribution of
+f1 , . . . , fk , Af1 , . . . , Afk , i.e., the image measure given by the map ω 7→ (f1 (ω), . . . , fk (ω), Af1 (ω), . . . , Afk (ω)).
+We will also be using the shorthand
+DA (f1 , . . . , fk ) := D (f1 , . . . , fk , Af1 , . . . , Afk ) .
+For a hands-on example, when A is an n × n matrix then its k-profile is the set of all discrete
+probability measures on R2k of the form
+n
+
+1X
+δ((v1 )j ,...,(vk )j ,(v1 A)j ,...,(vk A)j )
+n
+j=1
+
+where v1 , . . . , vk are real vectors with entries in [−1, 1] and δx denotes the Dirac measure concentrated
+on x ∈ R2k . (We assumed the uniform distribution on [n] here.)
+As explained in the Introduction, we measure the similarity of k-profiles of different P -operators by
+the Hausdorff distance.
+
+4
+
+Definition (Hausdorff pseudometric). Let (M, d) be a metric space. Then the Hausdorff pseudometric
+dH on the power set P(M ) is given by
+(
+)
+dH (X, Y ) = max
+
+sup inf d(x, y), sup inf d(x, y)
+
+x∈X y∈Y
+
+y∈Y x∈X
+
+for all subsets X, Y of M .
+Note that dH (X, Y ) = 0 if and only if X = Y .
+
+It remains to determine what metric we consider on the set P R2k of probability measures on R2k .
+Since we want to metrise the weak convergence of measures, we choose the Lévy-Prokhorov metric.
+Definition (Lévy-Prokhorov metric). Let (M, d) be a metric space, B(M ) its associated Borel σ-algebra,
+and P(M ) the set of all probability measures on (M, B(M )). The Lévy-Prokhorov metric dLP on P(M )
+is given by
+dLP (η, µ) = inf{ε > 0 : η(U ) ≤ µ(U ε ) + ε and µ(U ) ≤ η(U ε ) + ε for every Borel set U ⊂ M },
+where U ε = {x ∈ M : d(x, U ) < ε}.
+Note that for any two probability measures η, µ ∈ P(RnP
+), we have dLP (η, µ) ≤ 1, hence also for any
+1
+two P -operators A, B, their distance satisfies dM (A, B) ≤ ∞
+k=1 2k = 1.
+∞
+Let now (·, ·)A denote the bilinear form on functions from L (Ω) given by a P -operator A as follows:
+Z
+(f, g)A := (Af )g dµ = E[(Af )g].
+Ω
+
+Definition. A P -operator A : L∞ (Ω) → L1 (Ω) is
+1. self-adjoint if (f, g)A = (g, f )A for all g, f ∈ L∞ (Ω),
+2. positivity-preserving if (Af )(ω) ≥ 0 holds for a.a. ω ∈ Ω whenever f (ω) ≥ 0 holds for a.a. ω ∈ Ω,
+3. c-regular if A1 = c1, for c ∈ R,
+4. a graphop if it is self-adjoint and positivity-preserving.
+While the definition of a P -operator requires the (∞, 1)-operator norm to be finite, the general
+definition of a (p, q)-norm, for p, q ∈ [1, ∞], is
+kAkp→q := sup
+
+f ∈L∞
+
+kAf kq
+kf kp
+
+.
+
+Since the q-norms k·kq are increasing with q, the operator norms k·kp→q are increasing with q and
+decreasing with p, meaning in particular that
+kAk∞→1 ≤ kAkp→q
+for any linear operator A and any p, q ∈ [1, ∞].
+Following the lines of the argument made in [10] for finite matrices, we quickly prove the following.
+5
+
+Lemma 2.1. Let p, q be in [1, ∞], and let p0 , q 0 be their Hölder conjugates. Let A and A∗ be P -operators
+satisfying that
+(v, w)A = (w, v)A∗ for all v, w ∈ L∞ .
+Then kAkp→q = kA∗ kq0 →p0 .
+Proof.
+kAkp→q = sup
+
+f ∈L∞
+
+kAf kq
+kf kp
+
+= sup
+f ∈L∞
+
+n
+o
+kAf kq : kf kp ≤ 1
+(
+
+Z
+
+= sup
+
+sup
+
+f ∈L∞
+
+g∈L∞
+
+(
+= sup
+
+sup
+
+g∈L∞
+
+f ∈L∞
+
+= sup
+g∈L∞
+
+= sup
+g∈L∞
+∗
+
+(Af )g : kgkq0 ≤ 1
+Z
+
+)
+
+
+: kf kp ≤ 1
+
+)
+
+f (A g) : kf kp ≤ 1 : kgkq0 ≤ 1
+∗
+
+o
+n
+kA∗ gkp0 : kgkq0 ≤ 1
+kA∗ gkp0
+kgkq0
+
+= kA kq0 →p0
+
+Corollary 2.2. The assumption in Proposition 1.3 (a) can be extended from (p, q) ∈ [1, ∞] × (1, ∞) to
+(p, q) ∈ [1, ∞]2 \ {(∞, 1)}.
+Proof. Let p ∈ (1, ∞). If kAkp→1 or kAkp→∞ are uniformly bounded then so are kAk∞→p0 or kAk1→p0
+by Lemma 2.1, and so Proposition 1.3 (a) gives that A is self-adjoint.
+If kAk1→1 , kAk1→∞ or kAk∞→∞ are uniformly bounded then so are, say,
+kAk2→1 = kAk∞→2 ,
+by monotonicity of the (p, q)-norms. Now we can apply Proposition 1.3 (a) to kAk∞→2 to conclude
+that A is self-adjoint.
+Finally, as remarked in [2, Section 2], the (p, q)-norms can be read out from the 1-profiles of
+P -operators (and are hence invariant under weak equivalence). For a measure µ on R2 , let µy ∈ P(R)
+denote its y-axis marginal. Then in the case of the (∞, 1)-norm, we can get it as follows:
+kBf k1
+= sup {kf Bk1 : kf k∞ ≤ 1}
+f ∈L∞ kf k∞
+Z
+
+L∞
+= sup
+|Bf | dν : f ∈ B1
+Ω
+Z
+
+∞
+= sup
+|x| dD(Bf ) : f ∈ B1L
+ZR
+
+= sup
+|x| dµy (x) : µ ∈ S1 (B) .
+
+∞ > kBk∞→1 = sup
+
+R
+
+6
+
+This enables us to prove that the (∞, 1)-norms are lower semicontinuous with respect to action
+convergence.
+Lemma 2.3. Let (An )∞
+n be a Cauchy sequence of P -operators with uniformly bounded k·k∞→1 norms.
+Suppose further that limn→∞ dM (An , A) = 0 for a P -operator A. Then kAk∞→1 ≤ lim inf n→∞ kAn k∞→1 .
+2
+Proof. Suppose that a sequence (µn )∞
+n of measures on R converges in dLP to a measure µ. Then for
+every n, dLP ((µn )y , µy ) ≤ dLP (µn , µ), and so the measures (µn )y converge in dLP to µy . The LévyProkhorov distance is on R a metrisation of weak convergence of measures, and so by the portmanteau
+theorem,
+Z
+Z
+
+|x| dµy (x) ≤ lim inf
+n→∞
+
+R
+
+|x| d(µn )y (x)
+R
+
+because the function |x| is continuous and bounded below. This implies both that the equality
+Z
+
+kBk∞→1 = sup
+|x| dµy (x) : µ ∈ S1 (B)
+R
+
+from above can be extended to
+
+Z
+
+Z
+kBk∞→1 = sup
+|x| dµy (x) : µ ∈ S1 (B) = sup
+|x| dµy (x) : µ ∈ S1 (B)
+R
+
+R
+d
+
+LP
+and that any measure µ ∈ S1 (A) and any sequence (µn )∞
+n with µn ∈ S1 (An ) and µn −−→ µ must satisfy
+Z
+Z
+|x| dµy (x) ≤ lim inf
+|x| d(µn )y (x) ≤ lim inf kAn k∞→1 ,
+
+n→∞
+
+R
+
+implying
+
+n→∞
+
+R
+
+Z
+
+
+|x| dµy (x) : µ ∈ S1 (B)
+
+kAk∞→1 = sup
+R
+
+≤ lim inf kAn k∞→1 .
+n→∞
+
+However, we will see in Section 3 that the (∞, 1)-norm is not continuous.
+
+3
+
+The case of stars
+
+The question naturally arises whether Theorem 1.2 is as good as it gets, that is whether there are
+Cauchy sequences with uniformly bounded norms k·k∞→q for some q ∈ [1, ∞] which, however, do not
+action converge to any P -operator.
+For positivity-preserving operators A,
+kAk∞→q = kA1kq ,
+where 1 = χΩ is the constant function with value 1. At the same time, we have seen that for self-adjoint
+operators A,
+kAk∞→q = kAkq0 →1 .
+7
+
+Suppose then that we want to look for a candidate Cauchy sequence (An )∞
+n which would exemplify the
+impossibility of extending Theorem 1.2 beyond p 6= ∞ – if we want to find it among graphops then
+these two observations tell us that (kAn 1kq )∞
+n must be unbounded for every q ∈ (1, ∞]. Let us note
+that if A is the adjacency matrix of a graph then A1 = d is (an ordering of) its degree sequence, and so
+the sequence (Sn )∞
+n of stars, having as large a difference between minimum and maximum degree as
+possible in a simple graph, becomes in immediate candidate to investigate.
+In particular, we denote by Sn the n-vertex tree with n − 1 leaves. Then we can check that for
+q ∈ (1, ∞), the q-norm of its degree sequence is unbounded:
+
+kdkq =
+
+1 q
+(1 + · · · + 1q + (n − 1)q )
+n
+
+1
+
+
+
+q
+
+=
+
+n − 1 (n − 1)q
++
+n
+n
+
+1
+q
+
+≥
+
+n−1
+1
+
+nq
+
+→ ∞ as n → ∞.
+
+By the monotonicities of (p, q)-norms, this means that the (∞, 1)-norm
+kSn k∞→1 =
+
+1
+(1 × (n − 1) + (n − 1) × 1) < 2
+n
+
+is the only uniformly bounded (p, q)-norm of the star sequence, where we took the liberty of identifying
+Sn with its adjacency matrix.
+In the rest of the section, we will investigate what a putative action limit A of (Sn )∞
+n would have to
+satisfy, showing that necessarily, the continuity of the (∞, 1)-norm cannot hold, i.e.,
+lim kSn k∞→1 6= kAk∞→1 ,
+
+n→∞
+
+and that A cannot be self-adjoint, so in particular, it cannot be a graphop. We will derive an action
+limit at the end of the section.
+Lemma 3.1. A P -operator A satisfies limn→∞ dM (Sn , A) = 0 if and only if
+o
+ n
+
+Sk (A) = P [−1, 1]k × δz : z ∈ [−1, 1]k
+for every positive integer k.
+We shall in fact deduce this lemma from the following more general result.
+Lemma 3.2 (Uniform approximability of P(M )). Let (M, d) be a totally bounded metric space. Then
+forPall ε > 0, there is N = N (ε) such that for every µ ∈ P(M, B(M )), there is a sequence µn =
+∞
+n
+1
+i=1 δxi n of discrete probability measures such that
+n
+∀n ≥ N (ε) dLP (µ, µn ) < ε.
+In particular, N does not depend on µ.
+Proof. For a positive integer k, let us fix a finite set {z1 , . . . , zm(k) } ⊆ M whose k1 -balls cover M and
+a partition M1 , . . . , Mm(k) in B(M ) of M such that zi ∈ Mi ⊆ B1/k (zi ) for every i ∈ [m] = [m(k)].
+
+8
+
+Given P
+a probability measure µ on M and a partition M1 , . . . , Mm as described, let κm ∈ P(M ) be
+κm = m
+i µ(Mi )δzi . Then for every measurable A,
+µ(A) =
+
+m
+X
+
+µ(A ∩ Mi ) =
+
+i=1
+
+X
+i∈[m]
+A∩Mi 6=∅
+
+and
+κm (A) =
+
+X
+
+µ(A ∩ Mi ) ≤
+
+i∈[m]
+A∩Mi 6=∅
+
+X
+
+κm ({zi }) =
+
+i∈[m]
+zi ∈A
+
+X
+
+µ(Mi ) =
+
+X
+
+
+
+κm ({zi }) ≤ κm A1/k
+
+i∈[m]
+A∩Mi 6=∅
+
+µ(Mi ) ≤ µ(A1/k ),
+
+i∈[m]
+zi ∈A
+
+so dLP (µ, κm ) ≤ k1 .
+P
+The next step is to approximate the discrete measure κm by µn = n1 ni δxi where for every i ∈ [n]
+we will put xi = zj for some j ∈ [m]. Let µn be any probability measure on {z1 , . . . , zm } such that
+µn ({zj }) = bnκm (zj )c /n or dnκm (zj )e /n for every j ∈ [m]. Then |κm (zj ) − µn (zj )| < n1 for all j ∈ [m],
+and so dLP (κm , µn ) < m
+n . Finally, the triangle inequality implies
+dLP (µ, µn ) ≤ dLP (µ, κm ) + dLP (κm , µn ) <
+
+1 m
++ ,
+k
+n
+
+and hence for every µ ∈ P(M ) and n ≥ m(k) · k, we have that dLP (µ, µn ) < 2/k as desired.
+Proof of Lemma 3.1. Let us first note that limn→∞ dM (Sn , A) = 0 if and only if
+lim dH (Sk (Sn ), Sk (A)) = 0
+
+n→∞
+
+for every positive integer k, so let us fix k for the rest of the proof and show that limn→∞ dH (Sk (Sn ), Sk (A)) =
+0 if and only if
+
+ n
+o
+Sk (A) = P [−1, 1]k × δz : z ∈ [−1, 1]k .
+Lemma 3.2 implies that for every ε > 0, there is an N = N (ε) such that ∀n ≥ N ,
+dH
+
+n
+n1 X
+
+n
+
+δxi : xi ∈ [−1, 1]k
+
+o
+
+ 
+
+
+× δz : z ∈ [−1, 1]k , P [−1, 1]k × δz : z ∈ [−1, 1]k
+
+!
+≤ ε.
+
+i=1
+
+P
+On the other hand, Sn sends the vector (a1 , a2 , . . . , an ) ∈ [−1, 1]n to ( nj=2 aj , a1 , . . . , a1 ), which means
+that every choice of vectors v1 , . . . , vk with entries in [−1, 1] gives an element n1 δ((v1 )1 ,...,(vk )1 ,Pnj=2 (v1 )j ,...,Pnj=2 (vk )j ) +
+
+Pn
+j=2 δ((v1 )j ,...,(vk )j ,(v1 )1 ,...,(vk )1 ) of Sk (Sn ) which satisfies
+ 
+n
+
+X
+1
+dLP
+δ((v1 )1 ,...,(vk )1 ,Pnj=2 (v1 )j ,...,Pnj=2 (vk )j ) +
+δ((v1 )j ,...,(vk )j ,(v1 )1 ,...,(vk )1 ) ,
+n
+1
+n
+
+δx +
+
+j=2
+n
+X
+j=2
+
+9
+
+
+
+1
+δ((v1 )j ,...,(vk )j ) × δ((v1 )1 ,...,(vk )1 ) ≤
+n
+
+for every x ∈ [−1, 1]k . This means that
+( n
+!
+)
+n
+o
+1X
+1
+k
+k
+≤ ,
+dH Sk (Sn ),
+δxi : xi ∈ [−1, 1] × δz : z ∈ [−1, 1]
+n
+n
+i=1
+
+and so the triangle inequality tells us that ∀n ≥ N ,
+
+ 
+
+dH Sk (Sn ),P [−1, 1]k × δz : z ∈ [−1, 1]k
+n
+n1 X
+o 
+
+≤ dH Sk (Sn ),
+δxi : xi ∈ [−1, 1]k × δz : z ∈ [−1, 1]k
+n
+
+
+
+i=1
+
++ dH
+≤
+
+n
+n 1 X
+
+n
+
+o n
+o
+
+ n
+o
+δxi : xi ∈ [−1, 1]k × δz : z ∈ [−1, 1]k , P [−1, 1]k × δz : z ∈ [−1, 1]k
+
+i=1
+
+1
+ε + .
+n
+
+
+Now if Sk (A) = P [−1, 1]k × {δz : z ∈ [−1, 1]k } then ∀n ≥ N ,
+
+dH Sk (Sn ), Sk (A)
+
+
+
+
+ 
+
+
+≤ dH Sk (Sn ), P [−1, 1]k × {δz : z ∈ [−1, 1]k } + dH P [−1, 1]k × {δz : z ∈ [−1, 1]k }, Sk (A)
+
+
+
+
+= dH Sk (Sn ), P [−1, 1]k × {δz : z ∈ [−1, 1]k }
+≤ ε+
+
+1
+,
+n
+
+and so limn→∞ dH (Sk (Sn ), Sk (A)) = 0.
+On the other hand, if limn dH (Sk (Sn ), Sk (A)) = 0 and ε > 0 then there is M = M (ε) such
+that ∀n ≥ M dH (Sk (Sn ), Sk (A)) < ε. Combining this with the computations above, we get that
+∀n ≥ max{N (ε), M (ε)},
+
+dH Sk (A), P([−1, 1]k ) × {δz : z ∈ [−1, 1]k }
+
+≤ dH (Sk (A), Sk (Sn )) + dH Sk (Sn ), P([−1, 1]k ) × {δz : z ∈ [−1, 1]k }
+1
+< 2ε + ,
+n
+
+ 
+and so in fact dH Sk (A), P([−1, 1]k ) × {δz : z ∈ [−1, 1]k } = 0. As P [−1, 1]k × δz : z ∈ [−1, 1]k is
+ 
+closed, this is equivalent to Sk (A) = P [−1, 1]k × δz : z ∈ [−1, 1]k as desired.
+Let us now assume that there is a P -operator A : L∞ (Ω, µ) → L1 (Ω, µ) for some probability space
+(Ω, A, µ) such that limn→∞ dM (Sn , A) = 0.
+∞
+Every f ∈ B1L gives an element D(f, Af ) of S1 (A) which, by Lemma 3.2, is of the form ν × δcf for
+some constant cf ∈ [−1, 1]. That is, A is in fact an element of L∞ (Ω)∗ and sends f to cf .
+∞
+
+Lemma 3.3. For every f ∈ B1L , it must be the case that |cf | ≤ kf k∞ .
+10
+
+Proof.
+f
+kf k∞
+
+f
+∞
+∈ B1L
+kf k∞
+f
+≡ |c f | ≤ 1
+⇒ A
+kf k
+kf k∞
+f
+≤ kf k∞
+⇒ kf k∞ A
+kf k∞
+
+=1⇒
+∞
+
+⇒ |cf | ≡ |Af | ≤ kf k∞
+
+Next we note that for every x ∈ [−1, 1] \ {0}, the Dirac measure δ(0,x) is in S1 (A), while the lemma
+above says it cannot be in the profile S1 (A) itself. Thus for every x ∈ [−1, 1] \ {0} and for every  > 0
+∞
+there must be fx, ∈ B1L such that dLP δ(0,x) , DA (fx, ) < . Now
+
+dLP δ(0,x) , DA (fx, ) < 
+⇔ inf{δ > 0 : δ(0,x) (U ) ≤ DA (fx, )(U δ ) + δ and DA (fx, )(U ) ≤ δ(0,x) (U δ ) + δ for every Borel set U ⊂ R2 } < 
+⇔ δ(0,x) (U ) ≤ DA (fx, )(U  ) +  and DA (fx, )(U ) ≤ δ(0,x) (U  ) +  for every Borel set U ⊂ R2
+
+⇔ 1 ≤ DA (fx, ) B ((0, x)) + 
+(3.1)
+
+⇒ cfx, ∈ (x − , x + ) ∩ [−1, 1].
+
+Also let Ωx< be the subset {ω : |fx, (ω)| < } of Ω, and similarly let Ωx≥ = {ω : |fx, (ω)| ≥ } ⊂ Ω.
+
+Then apart from the line (3.1) above, 1 ≤ DA (fx, ) B ((0, x)) +  also implies that µ (Ωx< ) ≥ 1 − 
+and µ Ωx≥ ≤ .
+Corollary 3.4. If a P -operator A is an action limit of (Sn )∞
+n then kAk∞→1 = 1.
+Proof.
+|cf |
+kAf k1
+kf k∞
+= sup
+≤ sup
+= 1.
+∞ kf k
+∞
+∞
+∞
+f ∈B L
+f ∈B L kf k∞
+f ∈B L kf k∞
+
+kAk∞→1 = sup
+1
+
+1
+
+1
+
+On the other hand, for every ε > 0
+kAk∞→1 ≥
+
+|cf1,ε |
+kAf1,ε k1
+1−ε
+=
+>
+≥ 1 − ε,
+kf1,ε k∞
+kf1,ε k∞
+kf1,ε k∞
+
+so kAk∞→1 ≥ 1, completing the proof.
+Since we will later construct an action limit of (Sn )∞
+n , Corollary 3.4 shows that, as claimed at the
+beginning of the section, the (∞, 1)-norm is not continuous with respect to action convergence. In
+particular, if limn dM (Sn , A) = 0 then
+2n − 2
+= 2 6= 1 = kAk∞→1 .
+n
+Using the notation set up before Corollary 3.4, we will now deliver on our second promise of proving
+that A cannot possibly be self-adjoint.
+lim kSn k∞→1 = lim
+
+n→∞
+
+n→∞
+
+11
+
+Proposition 3.5. Suppose that a P -operator A is an action limit of (Sn )∞
+n . Then A is not self-adjoint.
+Proof. Let ε ∈ (0, 1/3) and 1 be the characteristic function χΩ . Then
+Z
+|(1, f1,ε )A | =
+
+Z
+
+Z
+f1,ε dµ ≤
+
+(A1)f1,ε dµ = c1
+
+while
+
+Z
+
+Ω1<ε
+
+f1,ε dµ +
+
+Ω1≥ε
+
+
+
+f1,ε dµ ≤ εµ Ω1<ε +µ Ω1≥ε ≤ 2ε
+
+Z
+|(f1,ε , 1)A | =
+
+(Af1,ε )1 dµ = |cf1,ε | > 1 − ε.
+
+But then
+|(f1,ε , 1)A | > 1 − ε > 2ε ≥ |(1, f1,ε )A | ,
+and so (f1,ε , 1)A 6= (1, f1,ε )A and A is not self-adjoint.
+Again, since we will actually show the existence of an action limit A at the end of the section,
+Proposition 3.5 demonstrates a limitation of Proposition 1.3 (a) and together with Corollary 2.2
+effectively answers the question of necessary self-adjointness of a limit of a sequence of self-adjoint
+P -operators.
+R
+Proposition 3.6. There is no g ∈ L1 (Ω, µ) such that Af ≡ Ω gf dµ for every f ∈ L∞ (Ω, µ).
+Proof. Suppose that on the contrary, g ∈ L1 (Ω, µ) is as stated. Then
+Z
+Z
+
+
+kgk1 =
+|g|dµ =
+g 1{ω:g(ω)≥0} − 1{ω:g(ω)<0} dµ = A 1{ω:g(ω)≥0} − 1{ω:g(ω)<0} ≤ 1.
+Ω
+
+Ω
+
+Now let x ∈ [−1, 1] \ {0} and  > 0. By the discussion between Lemma 3.3 and Corollary 3.4, we have
+that
+Z
+Z
+Z
+Z
+Z
+Z
+ Z
+ Z
+|gf | < 
+|g| ≤  1−
+|g| +
+x− < |cfx, | =
+gfx, dµ ≤ |gfx, | =
+|gf |+
+|g|+
+Ωx
+<
+
+and so
+
+Ωx
+≥
+
+Z
+|g| >
+Ωx
+≥
+
+Taking x = 1, we get
+
+Ωx
+<
+
+Ωx
+≥
+
+Ωx
+≥
+
+Ωx
+≥
+
+x − 2
+.
+1−
+
+1 − 2
+→ 1 as  → 0,
+(3.2)
+1−
+R
+R
+R
+and recalling Ω1 |g| ≤ Ω |g| ≤ 1, we conclude that Ω |g| = 1.
+≥
+S
+1
+Now for any integer n ≥ 2, let Bn = ∞
+i=n Ω≥2−i ⊂ Ω. Note that for every m ≥ n, (3.2) tells us that
+Z
+
+|g| >
+
+Ω1≥
+
+Z
+1≥
+
+Z
+|g| ≥
+
+Bn
+
+Ω1
+
+|g| > 1 − 21−m → 1 as m → ∞,
+
+≥2−m
+
+12
+
+|g|,
+
+and so for every n ≥ 2 we have
+
+R
+
+µ(Bn ) = µ
+
+Bn |g| = 1 and thus
+∞
+[
+
+!
+Ω1≥2−i
+
+i=n
+
+Ω\Bn |g| = 0. On the other hand, observe that
+
+R
+
+∞
+∞
+
+ X
+X
+1
+≤
+µ Ω≥2−i ≤
+2−i = 21−n ,
+i=n
+
+i=n
+
+which implies that the intersection of the chain B2 ⊇ B3 ⊇ B4 ⊇ B5 ⊇ . . . has measure zero. But then
+Z
+Z
+Z
+1=
+|g| =
+|g| +
+|g| = 0 + 0 = 0,
+Ω
+
+∩∞
+n=2 Bn
+
+∪∞
+n=2 (Ω\Bn )
+
+which is a contradiction.
+We have just shown that when A : L∞ (Ω, A) → R is an action limit of (Sn )∞
+n then
+A ∈ L∞ (Ω)∗ \ L1 (Ω),
+R
+where we are abusing notation and identifying elements g ∈ L1 (Ω) with the functionals f 7→ f g dµ.
+Let us now recall the structure of the dual space L∞ (Ω, A, µ)∗ . We mostly follow the terminology and
+notation of [16] and [1]. Let ba(A) be the space of of bounded finitely additive signed measures, also
+known as signed charges. The total variation of a charge ν on the σ-algebra A is
+( n
+)
+X
+|ν(Mi )| : {M1 , . . . , Mn } is a measurable partition of Ω ,
+|ν|(Ω) = sup
+i=1
+
+and ν ∈ ba(A) if and only if |ν|(Ω) < ∞. The dual of L∞ (A, µ) is represented by the subset ba(A, µ) of
+ba(A) which consists of all the finitely additive signed measures ν that satisfy
+ν(N ) = 0 whenever µ(N ) = 0,
+
+for all N ∈ A.
+
+Any such charge ν then gives a functional via
+Z
+n
+X
+f 7→
+f dν = lim
+αn,i ν (En,i ) ,
+Ω
+
+Pn
+
+n→∞
+
+i=1
+
+∞
+
+∞
+where
+i=1 αn,i χEn,i n is any sequence of simple functions which converge to f in the L -norm, and
+every element of L∞ (A, µ)∗ arises this way. Moreover, as shown for example in Section 6.2 of [1], the
+(∞, 1)-norm of this functional is |ν|(Ω). Having proved Corollary 3.4, we could have used this fact to
+streamline the first part of the proof of Proposition 3.6.
+Every ν ∈ ba(A) can be uniquely written as ν = κν + γν , where κν is countably additive, i.e., κν is
+a singed measure, and γν is purely finitely additive. Having proved that if A is an action limit of stars,
+the purely finitely additive part of the finitely additive measure representing A must be non-trivial,
+we now zoom in on a particular subset of purely finitely additive measures. We start by introducing
+µ-ultrafilters, which turn out to be in one-to-one correspondence with the {0, 1}-valued elements of
+ba(A, µ).
+
+Definition (µ-filter). Let (Ω, A, µ) be a measure space. A non-empty collection F of measurable subsets
+of Ω is a µ-filter if and only if
+13
+
+• µ(S) > 0 for all S ∈ F,
+• if S, T ∈ F then S ∩ T ∈ F , and
+• if S ∈ F and S ⊂ T then T ∈ F.
+A maximal filter is called an ultrafilter.
+Every µ-ultrafilter U now gives a finitely additive measure δU by setting
+(
+1, if E ∈ U
+δU (E) =
+0, if E ∈
+/ U.
+Moreover, every {0, 1}-valued element of ba(A, µ) arises this way, and if µ is atomless then each such
+charge is purely finitely additive.
+Theorem 3.7. Let U be a λ-ultrafilter on the probability space (Ω = [0, 1), B([0, 1)), λ). Then the
+P -operator A given by
+A : L∞ (λ) → L1 (λ)
+Z
+
+f 7→
+f dδU · χΩ
+satisfies limn→∞ dM (Sn , A) = 0.
+Proof. By Lemma 3.1, this is equivalent to showing that for every positive integer k,
+
+
+Sk (A) = P [−1, 1]k × {δz : z ∈ [−1, 1]k }.
+Let k be fixed. The operator A sends every element f ∈ L∞ (Ω) to a constant function where
+∞
+the absolute value of the constant is at most kf k∞ , so in particular elements of B1L are sent
+to [−1, 1].  Thus Sk (A) ⊂ P [−1, 1]k × {δz : z ∈ [−1, 1]k }. On the other hand, for every µ ∈
+P [−1, 1]k and z ∈ [−1, 1]k , we will now construct a sequence (DA (fn,1 , . . . , fn,k ))∞
+n in Sk (A) such
+
+k
+k
+that limn dLP (µ × δz , DA (fn,1 , . . . , fn,k )) = 0, implying that P [−1, 1] × {δz : z ∈ [−1,
+ 1] } ⊆ Sk (A).
+i−1 i
+∞
+We start by fixinga sequence (En )n in U such that
+for every n ≥ 1, En = n , n for some i ∈ [n].
+1 Pn
+k
+k
+Given µ ∈ P [−1, 1] and z ∈ [−1, 1] , let (µn = n i δxi )∞
+n be a sequence given by Lemma 3.2. Now
+for every n ≥ 1 and j ∈ [k] let
+(
+
+
+i
+(xi )j , if ω ∈ i−1
+,
+n n \ En
+fn,j (ω) =
+zj ,
+if ω ∈ En .
+Then
+
+
+1
+δz +
+dLP µn × δz , DA (fn,1 , . . . , fn,k ) = dLP µn × δz ,
+n
+
+= dLP
+
+X
+
+14
+
+
+
+δxi × δz
+
+i∈[n]
+[ i−1
+, i )6=En
+n n
+
+ X
+n
+1
+1
+δxi ,
+δz +
+n
+n
+i=1
+
+
+
+X
+i∈[n]
+[ i−1
+, i )6=En
+n n
+
+δ xi
+
+
+
+≤
+
+1
+.
+n
+
+Hence, by the triangle inequality,
+
+
+dLP µ × δz , DA (fn,1 , . . . , fn,k ) ≤ dLP (µ × δz , µn × δz ) + dLP µn × δz , DA (fn,1 , . . . , fn,k )
+1
+≤ dLP (µ, µn ) + → 0 as n → ∞.
+n
+
+Remark 3.8. Note that the limit object in Theorem 3.7 is definitely not unique. Not only do we have
+a choice of the ultrafilter, but we could also take any (M, B(M ), κ) instead of (Ω = [0, 1), B([0, 1)), λ),
+where (M, d) is a totally bounded metric space such that for infinitely many positive integers n, it is
+possible to partition M into M1 , . . . , Mn ∈ B(M ) with κ(Mi ) = n1 for all i ∈ [n].
+
+4
+
+Graphs G+ with a vertex that neighbours everything
+
+Stars are in fact just a special case of the following construction.
+Definition. Let G be a graph. Then G+ is the graph on |V (G)| + 1 vertices formed from G by adding
+a single vertex v and connecting it to all the other vertices.
+Seen like this, a star with n leaves is En+ where En is the empty graph on n vertices. This viewpoint
+∞
+allows us to extend the result from the previous section to more sequences of the form (G+
+n )n than
++
+∞
+∞
+just (Sn )n = (En )n . Before stating the full theorem, we set up the scene with a couple of lemmas and
+propositions.
+Lemma 4.1. Let (Gn )∞
+n be Cauchy in dM . If lim supn→∞ |V (Gn )| = ∞ then lim inf n→∞ |V (Gn )| = ∞,
+and for any action limit A : L∞ (Ω, ν) → L1 (Ω, ν) of (Gn )∞
+n , (Ω, ν) is atomless.
+Proof. Suppose on the contrary that there is a natural number k such that for infinitely many n, the
+graph Gn has k vertices. Then there is a subsequence (Gmj )j such that |V (Gmi )| = k for all i ≥ 1. On
+the other hand,
+let (Gni )i be a subsequence with strictly increasing number of vertices. For a measure
+
+µ ∈ P R2 , let µx ∈ P(R) be its x-axis marginal. Then dLP (µx , κx ) ≤ dLP (µ, κ) for all µ, κ ∈ P(R2 ),
+and thus
+dH ((S1 )x (Gn ), (S1 )x (Gm )) ≤ dH (S1 (Gn ), S1 (Gm )) ≤ 2dM (Gn , Gm )
+for any n, m ∈ N, where
+
+∞
+(S1 )x (G) := {µx : µ ∈ S1 (G)} = D(f ) : f ∈ B1L
+.
+Now limi (S1 )x (Gni ) contains the uniform measure on [−1, 1], which implies that both limj (S1 )x (Gmj )
+and (S1 )x (A) must contain it too. But limj (S1 )x (Gmj ) only contains measures which are approximable
+arbitrarily well by k atoms, so we get a contradiction with lim inf n |V (Gn )| < ∞. Similarly, (S1 )x (A)
+containing the uniform measure on [−1, 1] implies that (Ω, ν) is atomless.
+∞
+Lemma 4.1 implies that if (G+
+n )n is Cauchy in dM and lim supn→∞ |V (Gn )| = ∞ then the special
+added vertices vn will have smaller and smaller weight, yet the fact that they are adjacent to all the other
+vertices in their graph means that the value at vn has a great impact on the outcome after applying the
+
+15
+
+adjacency operator. In particular, if two functions f, g : V (G+
+n ) → R only differ in the value they assign
+to the added vertex vn , then as n grows larger, the resulting measures DGn (f ) and DGn (g) will more
+and more look like they are equivalent up to a shift along the y-axis by f (vn ) − g(vn ). To formalise the
+intuition forming upon this observation, we introduce the following definition.
+Definition. Let µ be a measure on Rn and v ∈ Rn a vector. Then µ ⊕ v is the measure on Rn such that
+(µ ⊕ v)(T ) = µ(T ⊕ {−v}) = µ({t − v : t ∈ T })
+for any measurable subset T . For any set S of measures on Rn and set V ⊆ Rn of vectors,
+S ⊕ V := {µ ⊕ v : µ ∈ S, v ∈ V }.
+So as not to clutter the exposition with technicalities, we will only focus on sequences (Gn )∞
+n with
+|V (Gn )| → ∞.
++ ∞
+Proposition 4.2. If (Gn )∞
+n is Cauchy in dM and lim supn |V (Gn )| = ∞ then (Gn )n is Cauchy in dM
+too. Moreover, if the limiting closures of the k-profiles of (Gn )∞
+n are Xk := limn→∞ Sk (Gn ) then the
+k × [−1, 1]k .
+limiting closures of Sk (G+
+)
+are
+X
+⊕
+V
+where
+V
+=
+{0}
+k
+k
+k
+n
+
+Proof. Let us fix µ ∈ Xk and v = {0}k × (v1 , . . . , vk ) ∈ Vk . By the definition of Xk , there is a sequence
+∞
++v
+(µn )∞
+n = (DGn (f1 , . . . , fk ))n of measures in Sk (Gn ) such that limn→∞ dLP (µn , µ) = 0. Let µn be
++
+the measure in Sk (Gn ) obtained by assigning the same values to the vertices of the subgraph Gn as
+f1 , . . . , fk do and giving the values (v1 , . . . , vk ) to the additional vertex. Formally,
+(
+fi (u) if u ∈ V (Gn )
++vk 
++vi
++v1
++v
+µn := DG+
+f1 , . . . , fk
+where fi (u) =
+n
+vi
+if {u} = V (G+
+n ) \ V (Gn ).
+Then
+dLP (µ+v
+n , µn ⊕ v) ≤
+
+1
+|V (Gn )| + 1
+
+
+because (µ⊕v)(A⊕{v}) = µ(A) for any measurable A, and (f1+v1 , . . . , fk+vk )G+
+n (u) = ((f1 , . . . , fk )Gn ) (u)+
+(v1 , . . . , vk ). By the triangle inequality,
++v
+dLP (µ+v
+n , µ ⊕ v) ≤ dLP (µn , µn ⊕ v) + dLP (µn ⊕ v, µ ⊕ v) ≤
+
+1
++ dLP (µn , µ),
+|V (G)| + 1
+
+where the right-hand side tends to 0 by Lemma 4.1. Hence for every measure in Xk ⊕ Vk , there is a
+sequence in Sk (G+
+n ) converging to it.
++
++
+Vice versa, suppose that (µ+
+(f1+ , . . . , fk+ ))∞
+n = DG+
+n is a sequence with µn ∈ Sk (Gn ) which is
+n
+convergent in dLP to a measure µ+ . We want to show that µ+ ∈ Xk ⊕ Vk . Let vn ∈ [−1, 1]k be the
+k
+values assigned by
+f1+ , . . . , fk+ to the added vertex in G+
+n . The set [−1, 1] is compact, so there is a
+
+∞
+k
+subsequence µ+
+ni i on which vn converges to some v ∈ [−1, 1] .
+Employing the triangle inequality again gives
++
++
+dLP (µni ⊕ v, µ+ ) ≤ dLP (µni ⊕ v, µni ⊕ vni ) + dLP (µni ⊕ vni , µ+
+ni ) + dLP (µni , µ )
+
+16
+
+(4.1)
+
+for every i ∈ N. The second summand on the right-hand side is bounded above by |V (Gn1 )|+1 like before
+i
+
+∞
+and the third summand goes to 0 by the assumption of convergence of (µ+
+n )n . To bound the first
+summand, we observe two facts: that dLP (η ⊕ w, ν) = dLP (η, ν ⊕ (−w)) and that dLP (η, η ⊕ w) ≤ kwk
+for any measures η and ν and vector w. The first is true because for any ε > 0,
+
+(η ⊕ w)(U ) ≤ ν (U ε ) + ε for all measurable U
+⇔ (η ⊕ w)(U ⊕ {w}) ≤ ν ((U ⊕ {w})ε ) + ε for all measurable U
+⇔ η(U ) ≤ ν (U ε ⊕ {w}) + ε for all measurable U
+⇔ η(U ) ≤ (ν ⊕ (−w)) (U ε ) + ε for all measurable U
+and similarly the other way round. The second is true because U ⊕ {w} ⊆ U kwk+ε for any ε > 0,
+implying that
+
+
+η(U ) = (η ⊕ w)(U ⊕ {w}) ≤ (η ⊕ w) U kwk+ε
+
+
+and (η ⊕ w)(U ) = η(U ⊕ {−w}) ≤ η U kwk+ε .
+Returning to inequality 4.1, we now get
+
+
+dLP µni , µ+ ⊕ (−v) = dLP µni ⊕ v, µ+ ≤ kvni − vk +
+
+1
++
++ dLP (µ+
+ni , µ ) → 0 as i → ∞.
+|V (Gni )| + 1
+
+Since µni ∈ Sk (Gni ), we conclude that µ := µ+ ⊕ (−v) ∈ Xk , and so µ+ = µ ⊕ v ∈ Xk ⊕ Vk as
+claimed.
+Having established the form of limn Sk (G+
+n ), we could now show along more technical, but in essence
+∞
+similar lines as in the proof of Proposition 3.5 that no action limit of (G+
+n )n , where lim |V (Gn )| = ∞,
+can possibly be self-adjoint.
+Notation. Given a measure space (Ω, A, µ), we write χF for the characteristic function of a measurable
+set F ∈ A, and 1E for the indicator functions of events E from any other measure space. We also write
+p
+BrL (g) for the closed Lp -ball of radius r around the function g ∈ Lp , and we denote by 0 the function
+p
+which sends (almost every) element of Ω to 0. Finally, B1L is a shorthand for the unit ball around 0.
+We are now preparing to prove that when Gn → A, there indeed is a P -operator A+ whose k-profiles
+∞
+are like those prescribed by Proposition 4.2 for the prospective limit of (G+
+n )n . We would like to keep A
++
+in A in some form because it encodes the possibly complicated structure of (Gn )∞
+n which is of course
++
+∞
+also present in (Gn )n . But at the same time we must introduce the shifts arising from the presence
+of the special vertex in G+
+n which has an outsized influence with respect to its increasingly negligible
+measure. Like we did in Section 3, we will use an ultrafilter-based functional
+φU : L∞ → R
+lim
+
+n→∞
+
+n
+X
+i=1
+
+αi,n χEi,n 7→ lim
+
+n→∞
+
+17
+
+n
+X
+i=1
+
+αi,n 1Ei,n ∈U
+
+for this – decreasing nested sequences of smaller and smaller sets in U will play the role that the special
+vertex played in the proof of Proposition 4.2. However, we must be careful that the ultrafilter U does
+not interfere with the key properties of the original limit A. The following theorem, which is also of
+independent interest, tells us that U can be chosen to satisfy our needs.
+Theorem 4.3. Let A : L∞ (Ω, µ) → L1 (Ω, µ) be a linear operator, where (Ω, µ) is an atomless separable
+finite measure space. Then there is a µ-filter F such that any ultrafilter U containing F has the following
+property:
+∞
+∞
+for all f ∈ B1L , ε > 0, a ∈ [−1, 1], there is fa,ε ∈ B1L such that
+I. kf − fa,ε k1 < ε
+II. kAf − Afa,ε k1 < ε
+III. φU (fa,ε ) ∈ (a − ε, a + ε).
+Proof. We will generate F in countably many steps; using the separability of L1 (Ω), we will generate
+countably many functions f ∈ L∞ (Ω) that represent the action of A to an arbitrary precision (see
+Figure 1), and build a filter F that meshes well
+with the properties of these functions.
+∞
+L
+Let us first consider the image A B1
+⊆ L1 (Ω, µ) of the unit ball of L∞ (Ω) under the action
+1
+of the operator A. Since L (Ω, µ) is separable, we can pick, for any positive integer n, a countable
+∞
+collection Cn of functions g ∈ L1 (Ω, µ) such that the union of their n1 -balls covers A B1L , that is,
+∞
+
+A B1L
+
+
+
+⊆
+
+[
+
+1
+
+L
+B1/n
+(g).
+
+g∈Cn
+
+ 1
+
+L (g) ⊆ L∞ (Ω, µ) of these covering 1 -balls. Given one such
+Next, we look at the preimages A−1 B1/n
+n
+ 1
+
+−1
+L
+1
+fixed preimage A
+B (g) , we view it as a subset of L (Ω, µ) and pick a countable collection Dn,g
+ 1/n1
+
+
+
+L (g) ∩ B L∞ whose 1 -balls cover A−1 B L1 (g) ∩ B L∞ . Altogether, this
+of functions in A−1 B1/n
+1
+1
+n
+1/n
+S
+produces the countable family Bn = g∈Cn Dn,g of functions from the unit ball of L∞ (Ω, µ) which by
+∞
+construction satisfies that for every f ∈ B1L , there is some hf ∈ Bn such that both khf − f k1 ≤ n1 and
+kAhf − Af k1 ≤ n2 .
+S
+We will now construct a filter F based on the countable collection B = ∞
+n=1 Bn . Let us start by
+∞
+L
+fixing an ordering f1 , f2 , . . . of the elements of B ⊂ B1 .
+For each m ≥ 1, we will find a sequence Em,1 ⊃ Em,2 ⊃ Em,3 . . . of measurable sets such that
+1. µ(Em,k ) > 0 for all k, but µ(Em,k ) → 0 as k → ∞,
+2.
+
+AχEm,k 1 → 0 as k → ∞, and
+
+3. the range of fm |Em,k shrinks, i.e. ess sup(fm |Em,k ) − ess inf(fm |Em,k ) → 0 as k → ∞.
+The conditions 1.–3. will help us to prove the corresponding requirements I.–III. from the statement of
+the theorem. In particular, condition 3. helps us track the value of φU (fm ), which we will be able to
+change by adding functions which are non-zero only on Em,k . Moreover, the sets Em,k will also satisfy
+18
+
+∞
+
+A B1L
+
+∞
+B1L
+
+L∞ (Ω)
+
+
+L1 (Ω)
+
+A
+
+∞
+∞
+(a) We first cover A B1L
+with n1 -balls, i.e., A B1L
+is represented by the countable collection Cn up to an
+error of 1/n in the 1-norm.
+
+∞
+
+A B1L
+
+∞
+B1L
+
+L∞ (Ω)
+
+
+L1 (Ω)
+
+A
+
+A−1
+
+
+1
+
+L
+A−1 B1/n
+(g)
+
+1
+
+
+
+L
+B1/n
+(g)
+
+
+
+∞
+1
+(b) Each function f ∈ B1L belongs to a preimage A−1 B1/n
+(g) , which can itself be represented up to a n1 -error
+in the 1-norm by a countable collection Dn,g .
+
+Figure 1: Constructing the countable family Bn =
+1
+n -balls cover it
+
+S
+
+19
+
+L∞ whose
+g∈Cn Dn,g of functions in the unit ball B1
+
+E1,1 ⊃ E1,2 ⊃ E1,3 ⊃ . . .
+⊃
+
+⊃
+
+⊃
+
+E2,1 ⊃ E2,2 ⊃ E2,3 ⊃ . . .
+⊃
+
+⊃
+
+⊃
+
+E3,1 ⊃ E3,2 ⊃ E3,3 ⊃ . . .
+..
+..
+..
+.
+.
+.
+Figure 2: The measurable sets Em,k satisfy that for any fixed m ≥ 1, the real numbers µ(Em,k ),
+AχEm,k 1 , and sup(fm |Em,k ) − inf(fm |Em,k ) all tend to zero as k tends to infinity.
+the inclusions E1,k ⊃ E2,k ⊃ E3,k . . . for every positive integer k (see Figure 2). Together with that
+µ(Em,k ) > 0 for all m, k ∈ N, this implies that
+µ(Em1 ,k1 ∩ · · · ∩ Emn ,kn ) > 0
+
+(4.2)
+
+for any n ∈ N and m1 , . . . , mn , k1 , . . . , kn ∈ N because Em1 ,k1 ∩ · · · ∩ Emn ,kn ⊇ Emaxi∈[n] {mi },maxi∈[n] {ki } .
+Finally, inequality (4.2) tells us that defining
+F := {(Em1 ,k1 ∩ · · · ∩ Emn ,kn ) ∪ B : n ∈ N, B ⊆ Ω is measurable}
+gives a µ-filter.
+Let us now construct the sequences (Em,k )∞
+k=1 by induction as follows. For m = 1, put
+(
+
+f1−1 ([0, 1]) ,
+if µ f1−1 ([0, 1]) > 0
+
+E1,1 =
+f1−1 ([−1, 0)) , if µ f1−1 ([0, 1]) = 0.
+
+∞
+Note that µ f1−1 ([−1, 0)) ∪ f1−1 ([0, 1]) = µ(Ω) because f1 ∈ B1L , so we necessarily have
+> 0.
+ µ(E1,1 )1−k
+
+−1
+1−k
+Having obtained E1,k as a subset of f1 [x1k , x1k + 2 ] where x1k is some number in −1, 1 − 2
+,
+we obtain E1,k+1 by first restricting to R, where R is given by
+(
+
+
+E1,k ∩ f1−1 [x1k , x1k + 2−k ] ,
+if µ E1,k ∩ f1−1 ([x1k , x1k + 2−k ]) > 0
+
+
+R=
+E1,k ∩ f1−1 [x1k + 2−k , x1k + 21−k ] , if µ E1,k ∩ f1−1 ([x1k , x1k + 2−k ]) = 0,
+and then to R0 , where R0 is any measurable subset of R satisfying that 0 < µ(R0 ) ≤ µ(R)
+3).
+2 (see Figure
+
+We then set x1,k+1 to be equal to x1k if R was chosen to be a subset of f1−1 [x1k , x1k + 2−k ] and to
+x1k + 2−k otherwise. Restricting to R and then R0 ensures, respectively, that
+
+
+µ(Ω)
+sup f1 |E1,k+1 − inf f1 |E1,k+1 ≤ 2−k and µ (E1,k+1 ) ≤ k .
+2
+Since (Ω, µ) is atomless, there is an uncountable collection R of measurable subsets of R0 such that
+for any S1 6= S2 ∈ R, we have µ(S1 4S2 ) > 0 and either S1 ⊂ S2 or S2 ⊂ S1 . We now consider
+the uncountable collection of functions AχS , S ∈ R in L1 (Ω, µ), and conclude that by separability of
+20
+
+f1−1 [x1k , x1k + 2−k ]
+
+R0
+R
+
+
+
+E1,k+1
+
+f1−1 [x1k , x1k + 21−k ]
+
+
+
+E1,k
+
+f1−1 [x1k + 2−k , x1k + 21−k ]
+
+
+
+Figure 3: Constructing E1,k+1 as a subset of E1,k
+L1 (Ω, µ), there must be some S ⊂ T ∈ R such that kAχT − AχS k1 < k1 . Linearity of A then implies
+that AχT \S 1 < k1 , and so we set E1,k+1 := T \ S.
+For m > 1, suppose we already
+Now if there is some j ≥ 1
+ have Em−1,1 ⊃ Em−1,2 ⊃ . . . as desired.
+−1 ([0, 1]) = 0 then we set E
+−1 ([−1, 0)), and we necessarily
+such that µ Em−1,j ∩ fm
+:=
+E
+∩
+f
+m,1
+m−1,1
+m
+
+−1 ([0, 1]) > 0 for all j ∈ N,
+have that µ(Em,1 ∩ Em−1,j ) > 0 for all j ∈ N. Otherwise µ Em−1,j ∩ fm
+−1 ([0, 1]). Suppose now that we have obtained E
+and we set Em,1 := Em−1,1 ∩ fm
+m,k as a subset of
+
+
+−1
+1−k
+fm [xmk , xmk + 2 ] for some xmk ∈ −1, 1 − 21−k and that µ(Em,k ∩ Em−1,j ) > 0 for all j ≥ k.
+We obtain Em,k+1 by first restricting to
+
+
+−1 [x
+−k ] ,
+
+E
+∩
+E
+∩
+f
+,
+x
++
+2
+
+m−1,k+1
+m,k
+mk
+mk
+m
+
+
+
+
+−1 ([x
+−k
+if µ Em−1,j ∩ Em,k ∩ fm
+mk , xmk + 2 ]) > 0 for all j > k
+
+R=
+−1 [x
+−k , x
+1−k ] ,
+
+E
+∩
+E
+∩
+f
++
+2
++
+2
+
+m−1,k+1
+m,k
+mk
+mk
+m
+
+
+
+
+−1 ([x
+−k
+if µ Em−1,j ∩ Em,k ∩ fm
+mk , xmk + 2 ]) = 0 for some j > k.
+
+−1 [x
+−k
+As before, we set xm,k+1 to be xmk if R is chosen S
+to be a subset of fm
+mk , xmk + 2 ] and to
+be xmk + 2−k otherwise. Let us now partition R into ∞
+j=k+1 Rj , where
+Rj := (Em−1,j \ Em−1,j+1 ) ∩ R.
+Importantly, we observe that we must have µ(Rj ) > 0 for infinitely many j: if there was some J > k
+such that µ(Rj ) = 0 for all j ≥ J then we would conclude that
+
+
+∞
+∞
+X
+[
+0=
+µ(Rj ) = µ 
+Rj  = µ (Em−1,J ∩ R) ,
+j=J
+
+j=J
+
+which contradicts the definition of R. Next, by atomlessness of Ω, for every j > k, there is a family
+{Rj (t) : t ∈ (0, 1]} of measurable subsets of Rj , which satisfies that
+µ(Rj (t)) = tµ(Rj )
+21
+
+Rk+1
+Rk+2
+Rk+3
+
+Em−1,k+3 Em−1,k+2E
+
+m−1,k+1
+
+R (1/2)
+R(1/4)
+
+Em,k
+
+R (1/8)
+
+Figure 4: Constructing Em,k+1 as a subset of Em−1,k+1
+and Rj (t) ⊆ Rj (s) whenever t ≤ s. Let us define R(t) ⊆ R to be
+R(t) :=
+
+∞
+[
+
+Rj (t)
+
+j=k+1
+
+for any t ∈ (0, 1], and note that R(t) ( R(s) whenever t < s (see Figure 4). Crucially,
+µ ((R(s) \ R(t)) ∩ Em−1,j ) > 0
+for all t < s and j > k. This is because (R(s) \ R(t)) ∩ Em−1,j contains
+
+Rj 0 (s) \ Rj 0 (t) ∩ Em−1,j 0 = Rj 0 (s) \ Rj 0 (t)
+where j 0 ≥ j is an integer such that µ(Rj 0 ) > 0.
+We are now ready to consider the uncountable family AχR(t) , t ∈ (0, 1] of functions in L1 (Ω). As
+before, by separability of L1 (Ω), there must be some t < s such that AχR(s) − AχR(t) 1 < k1 . Linearity
+of A then implies that AχR(s)\R(t) 1 < k1 , and we set Em,k+1 := R(s) \ R(t).
+We have now constructed the sets Em,k as promised and, as already said, we set the µ-filter F to be
+F := {(Em1 ,k1 ∩ · · · ∩ Emn ,kn ) ∪ B : n ∈ N, B ⊆ Ω is measurable} .
+∞
+
+Let now U be any ultrafilter containing F. It remains to show that for a given f ∈ B1L , ε > 0 and
+∞
+a ∈ [−1, 1], there is fa,ε ∈ B1L satisfying the conditions 1.–3. We first note that for every m ≥ 1,
+the sequence (xmk )∞
+k=1 of real numbers converges. Let xm be the limit, and let us observe that by the
+careful construction of F, we can conclude that φU (fm ) = xm for every m. This follows from the general
+22
+
+fact that if some measurable set E is in U then for any function g ∈ L∞ , the number φU (g) must be
+in [ess inf(g|E ), ess sup(g|E )]. Next, let n be a positive integer such that n2 < ε and let us recall what
+we noted at the beginning of the proof, that is that by the construction of Bn , there is some hf ∈ Bn
+such S
+that khf − f k1 ≤ n1 and kAhf − Af k1 ≤ n2 . Suppose that hf appears as fm in the ordering of
+B = n Bn . Then we would like to set fa,ε to be fm + (a − xm )χEm,k for some large enough k because
+linearity of φU and Em,k being in F gives us that
+
+φU fm + (a − xm )χEm,k = φU (fm ) + (a − xm )φU (χEm,k ) = xm + (a − xm ) = a.
+(4.3)
+∞
+
+However, fm + (a − xm )χEm,k may not be in the unit ball B1L , so we will need to do some technical
+∞
+tinkering. On Ω \ Em,k , the functions fm and fa,ε are equal, so we do not
+get out of B1L there
+
+∞
+because fm = hf is in B1L to start with. On Em,k , fm takes values in xmk, xmk + 21−k , and so
+fm + (a − xm )χEm,k takes values in V = xmk + a − xm , xmk + 21−k + a − xm . But xm itself is in
+
+
+
+
+xmk , xmk + 21−k , and so V ⊂ a − 21−k , a + 21−k . Setting fa,ε to be
+
+
+
+
+if a ∈ −1 + 21−k , 1 − 21−k
+fm + (a − xm )χEm,k ,
+
+fa,ε := fm + (1 − 21−k − xm )χEm,k ,
+if a ∈ 1 − 21−k , 1
+
+
+
+
+fm + (−1 + 21−k − xm )χEm,k , if a ∈ −1, −1 + 21−k
+∞
+
+therefore ensures that fa,ε is in the unit ball B1L , and we fix k to be a positive integer large enough so
+that
+
+
+2
+2
+µ(Ω)
+1−k
+,
+,2
+<ε− .
+max
+k−2
+k−1
+n
+2
+Finally, we check that fa,ε satisfies the conditions I.–III. Firstly,
+kf − fa,ε k1 ≤ kf − fm k1 +kfm − fa,ε k1 <
+
+1
+1
+1
+1 µ(Ω)
++2 χEm,k 1 = +2µ(Em,k ) ≤ +2µ(E1,k ) ≤ + k−2 < ε.
+n
+n
+n
+n 2
+
+Secondly,
+kAf − Afa,ε k1 ≤ kAf − Afm k1 + kAfm − Afa,ε k1 ≤
+
+2
+2
+2
++ 2 AχEm,k 1 ≤ +
+< ε.
+n
+n k−1
+
+
+
+Thirdly, if a ∈ −1 + 21−k , 1 − 21−k then φU (fa,ε ) = a as per equation (4.3). If a ∈ (1 − 21−k , 1] then
+
+
+φU (fa,ε ) = 1 − 21−k = a + 1 − 21−k − a ,
+where 1 − 21−k − a ∈ [−21−k , 0), and similarly for a ∈ [−1, −1 + 21−k ), so
+|φU (fa,ε ) − a| ≤ 21−k < ε
+as desired.
+Remark 4.4 (on assumptions in Theorem 4.3). In the theorem above, finiteness of µ(Ω) is implicitly
+used in viewing subsets of L∞ (Ω) as subsets of L1 (Ω). Note, however, that we do not require kAk∞→1
+to be bounded! One may hope to eliminate the condition of separability of L1 (Ω), and especially if we
+would instead insist that kAk∞→1 be finite, it does not seem unreasonable to believe that this might
+indeed be possible.
+23
+
+We now restate and prove our main theorem, of which Theorem 3.7 is a special case.
+Theorem 1.4. Let (Gn )∞
+n be a sequence of finite graphs with |V (Gn )| → ∞, whose adjacency operators
+action converge to a P -operator A : L∞ (Ω, ν) → L1 (Ω, ν), where (Ω, ν) is separable. Then there is a
+ν-filter F on Ω such that for any ν-ultrafilter U extending F, both
+A+ : L∞ (Ω, ν) → L1 (Ω, ν)
+
+given by A+ g (ω) = (Ag)(ω) + φU (g)
+
+A− : L∞ (Ω, ν) → L1 (Ω, ν)
+
+given by A− g (ω) = (Ag)(ω) − φU (g)
+Pn
++ ∞
+∞
+are action limits
+Pn of (Gn )n , where φU : L (Ω, ν) → R is the functional sending limn→∞ i=1 αn,i χEn,i
+to limn→∞ i=1 αn,i 1En,i ∈U .
+and
+
+As already mentioned, our limits A+ and A− cannot be self-adjoint, showing that Proposition 1.3
+(a), which holds under the assumption of uniform boundedness of the (p, q)-norms of a Cauchy sequence,
+cannot be extended to include (p, q) = (∞, 1). However, the situation is interestingly more subtle
+with being positivity-preserving. If the original limit A is positivity-preserving then so is A+ because
+the value φU (f ) is always in the essential range of f . But that is to say that the functional −φU is
+positivity-reversing, and so when we return to the case of the star sequence (Sn )∞
+n , where A ≡ 0 is
++
+the trivial P -operator on an atomless space (Ω, ν), then the limit A is positivity-preserving while
+A− is not. This shows that Proposition 1.3 (b) cannot be extended to (p, q) = (∞, 1), but raises the
+question whether a Cauchy sequence of graphops always has a positivity-preserving limit (see Section 5).
+In any case, we conclude that the property of being positivity-preserving is not invariant under weak
+equivalence.
+Furthermore, if A is c-regular for some c ∈ R then A+ is c + 1-regular while A− is c − 1-regular. In
+other words, Theorem 1.4 shows that also c-regularity is not invariant under weak equivalence, unless
+we first restrict our consideration from the set of all P -operators to the set of P -operators with the
+(p, q)-norm bounded above by b, for some p, q ∈ [1, ∞) × [1, ∞] and fixed b ∈ R≥0 . This in particular
+means that Proposition 1.3 (c) cannot be extended to include (p, q) = (1, ∞).
++ ∞
+Proof. If lim supn→∞ |V (Gn )| < ∞ then by Lemma 4.1, (Gn )∞
+n is eventually constant, and so is (Gn )n .
++
+−
++
+Suppose now that lim supn→∞ |V (Gn )| = ∞. To prove that A and A are action limits of (Gn )∞
+n ,
+we need to show that the closures of their k-profiles equal the limits of the closures of the k-profiles of
+G+
+n . In other words, that
+Sk (A± ) = lim Sk (G+
+n)
+n→∞
+
+for every k. By Proposition 4.2,
+lim Sk (G+
+n ) = Xk ⊕ Vk
+
+n→∞
+
+where Xk = limn Sk (Gn ). We will now show first that Sk (A± ) ⊆ Xk ⊕ Vk and then that Xk ⊕ Vk ⊆
+Sk (A± ).
+For a given k ∈ N, let µ = DA± (f1 , . . . , fk ) be any measure in Sk (A± ), given by some k functions in
+∞
+B1L . Then
+
+µ = DA± (f1 , . . . , fk ) = D f1 , . . . , fk , A± f1 , . . . , A± fk
+= D (f1 , . . . , fk , Af1 ± φU (f1 ) · 1, . . . , Afk ± φU (fk ) · 1)
+= D (f1 , . . . , fk , Af1 , . . . , Afk ) ⊕ (0, . . . , 0, ±φU (f1 ), . . . , ±φU (fk )) ∈ Sk (A) ⊕ Vk .
+24
+
+This proves that both Sk (A+ ) and Sk (A− ) are subsets of Sk (A) ⊕ Vk , and hence their closures are
+subsets of Sk (A) ⊕ Vk = Xk ⊕ Vk . In other words, Sk (A± ) ⊆ Xk ⊕ Vk as required.
+∞
+On the other hand, let µ be a measure in Xk . Then there is a sequence µn = DA (f 1 , . . . , f k ) n of
+∞
+measures that converge to µ in dLP . The functions f 1 , . . . , f k ∈ B1L naturally depend on n, but we
+again drop this further index in the interest of readability. We also stress that the upper indices are just
+indices and do not stand for taking powers. Let also v = {0}k × (v1 , . . . , vk ) be an element of Vk . We
+will now show that we can approximate the measure µ ⊕ v with elements from Sk (A+ ) as well as from
+Sk (A− ).
+Let F be a ν-filter given by Theorem 4.3 and let U be any ultrafilter extending it. For every i ∈ [k],
+i
+be the functions also given by Theorem 4.3 upon applying it to f i . Then we set
+let fvi , 1 and f−v
+,1
+i n
+
+i n
+
+
+
+1
+k
++
+µ+v
+n := DA+ fv , 1 , . . . , fv , 1 ∈ Sk (A )
+1 n
+
+and similarly
+
+k n
+
+
+
+1
+k
+µ−v
+f
+∈ Sk (A− ).
+:=
+D
+,
+.
+.
+.
+,
+f
+−
+1
+1
+A
+n
+−v ,
+−v ,
+1 n
+
+k n
+
+By the triangle inequality,
+
+
+±v
+dLP µ±v
+n , µ ⊕ v ≤ dLP µn , µn ⊕ v + dLP (µn ⊕ v, µ ⊕ v)
+
+
+
+
+
+
+1
+k
+1
+k
+⊕
+v
++ dLP (µn , µ)
+= dLP DA± f±v
+,
+.
+.
+.
+,
+f
+,
+D
+f
+,
+.
+.
+.
+,
+f
+A
+,1
+±v , 1
+1 n
+
+k n
+
+(4.4)
+
+where the second summand goes to 0 by the assumption that µn → µ. Shifting our attention to the
+first summand, we see that for A+ it is equal to
+ 
+
+
+
+dLP D fv11 , 1 , . . . , fvkk , 1 , A+ fv11 , 1 , . . . , A+ fvkk , 1 , D f 1 , . . . , f k , Af 1 , . . . , Af k ⊕ v
+n
+n
+n
+n
+ 
+
+
+1
+k
+1
+1
+= dLP D fv1 , 1 , . . . , fvk , 1 , Afv1 , 1 + φU (fv1 , 1 )1, . . . , Afvkk , 1 + φU (fvkk , 1 )1 , D f 1 , . . . , f k , Af 1 + v1 1, . . . , Af k + vk 1
+n
+
+n
+
+n
+
+n
+
+n
+
+
+
+k
+1
+, . . . , f−v
+and similarly when we start with DA− f−v
+,1
+,1
+
+to the first summand being
+
+1 n
+
+k n
+
+n
+
+
+
+
+
+instead of DA+ fv1 , 1 , . . . , fvk , 1 , we arrive
+1 n
+
+k n
+
+ 
+
+
+
+
+1
+k
+− 1
+− k
+1
+k
+1
+k
+,
+D
+f
+,
+.
+.
+.
+,
+f
+,
+Af
+,
+.
+.
+.
+,
+Af
+⊕
+v
+dLP D f−v
+1,...,f
+1,A f
+1,...,A f
+1
+−vk , n
+−v1 , n
+−vk , n
+1, n
+ 
+
+1
+k
+1
+1
+k
+k
+= dLP D f−v
+1,...,f
+1 , Af
+1 − φU (f
+1 )1, . . . , Af
+1 − φU (f
+1 )1 ,
+−vk , n
+−v1 , n
+−v1 , n
+−vk , n
+−vk , n
+1, n
+
+
+D f 1 , . . . , f k , Af 1 + v1 1, . . . , Af k + vk 1 .
+To bound this first summand, both for A+ and A− , we use that by Theorem 4.3, the functions
+
+i
+i
+i
+i
+i
+i
+fvi , 1 − f i and f−v
+1 − f as well as Af
+1 − Af and Af
+1 − Af all have their 1-norms bounded
+vi , n
+−vi , n
+i n
+i, n
+
+above by 1/n. Markov’s inequality then gives that the 2k sets
+n
+
+
+o
+Ni+ = ω ∈ Ω : fvi , 1 − f i (ω) ≥ δ
+i
+n
+ n
+
+o
+Mi+ = ω ∈ Ω : Afvi , 1 − Af i (ω) ≥ δ
+i n
+
+25
+
+as well as the 2k sets
+
+o
+n
+
+i
+i
+ω ∈ Ω : f−v , 1 − f (ω) ≥ δ
+i n
+n
+
+o
+
+−
+i
+i
+Mi = ω ∈ Ω : Af−v , 1 − Af (ω) ≥ δ
+Ni− =
+
+i n
+
+
+±
+
+
+±
+
+1
+all satisfy ν Ni ≤ δn
+and ν Mi
+together also with that
+
+1
+≤ δn
+, where δ = δ(n) is a positive number to be chosen later. Put
+
+φU
+
+
+
+fvi , 1
+i n
+
+
+
+
+
+1
+1
+,
+∈ vi − , vi +
+n
+n
+
+this says that the set
+M
+
+
+
++
+
+:=
+
+
+
+
+
+
+1
+i
+i
+i
+i
+i
+ω ∈ Ω : ∃i ∈ [k] such that fvi , 1 − f (ω) ≥ δ or A(fvi , 1 − f ) + (φU (fvi , 1 ) − vi )1 (ω) ≥ δ +
+n
+n
+n
+n
+
+satisfies M + ⊆ N1+ ∪ · · · ∪ Nk+ ∪ M1+ ∪ · · · ∪ Mk+ . Analogously, with
+M
+
+−
+
+
+:=
+
+ω ∈ Ω : ∃i ∈ [k] such that
+
+
+
+i
+i
+f−v
+1 − f
+i, n
+
+
+
+(ω) ≥ δ or
+
+
+
+i
+i
+i
+A(f−v
+1 − f ) + (−φU (f
+1 ) − vi )1
+−vi , n
+i, n
+
+
+
+1
+(ω) ≥ δ +
+n
+
+
+
+we have that M − ⊆ N1− ∪ · · · ∪ Nk− ∪ M1− ∪ · · · ∪ Mk− , and so by the union bound,
+k
+k
+X
+X
+
+
+ 2k
+ν M± ≤
+ν Ni± +
+ν Mi± ≤
+.
+δn
+i=1
+
+i=1
+
+The inequality above expresses that on most of Ω, the functions
+
+
+1
+k
+1
+1
+k
+k
+2k
+f±v
+1,...,f
+1 , Af
+1 ± φU (f
+1 )1, . . . , Af
+1 ± φU (f
+1 )1 : Ω → R
+±vk , n
+±v1 , n
+±v1 , n
+±vk , n
+±vk , n
+1, n
+
+
+and
+f 1 , . . . , f k , Af 1 + v1 1, . . . , Af k + vk 1 : Ω → R2k
+output real vectors that are close
+to one another. In particular, for every ω ∈ Ω \ M ± , we have
+
+1
+k
+k
+that all the 2k coordinates of f±v
+, . . . , Af±v
+± φU (f±v
+)1 (ω) − (f 1 , . . . , Af k + vk 1)(ω) are
+,1
+,1
+,1
+1 n
+
+k n
+
+k n
+
+in (−δ − 1/n, δ + 1/n). This implies that
+
+−1
+
+−1 
+
+1
+k
+k
+1
+k
+k(δ+ n1 ,...,δ+ n1 )k ∪ M ±
+f±v
+(U
+)
+⊆
+f
+,
+.
+.
+.
+,
+Af
++
+v
+1
+U
+1 , . . . , Af
+1 ± φU (f
+1 )1
+k
+±vk , n
+±vk , n
+1, n
+−1 
+
+
+k
+k
+1
+k(δ+ n1 ,...,δ+ n1 )k ∪ M ±
+U
+and (f 1 , . . . , Af k + vk 1)−1 (U ) ⊆ f±v
+1 ± φU (f
+1 )1
+1 , . . . , Af
+±v ,
+v ,
+,
+1 n
+
+k n
+
+k n
+
+for any measurable subset U of R2k . Taking the measure ν of both sides of these inclusions gives
+
+
+1
+k
+k
+D f±v
+1 , . . . , Af
+1 ± φU (f )1 (U )
+±vk , n
+1,
+ n
+
+−1
+
+
+
+
+1
+1
+(δ+ n
+,...,δ+ n
+)k
+k
+k
+1
+k
+−1
+±
+k
+±
+φ
+(f
+)1
+(U
+)
+≤
+ν
+(f
+,
+.
+.
+.
+,
+Af
++
+v
+1)
+=ν
+f±1 , . . . , Af±v
+U
+∪
+M
+U v ,1
+k
+,1
+k n
+
+k n
+
+
+
+√ 
+2k
+≤ D f 1 , . . . , Af k + vk 1 U (δ+1/n) 2k +
+δn
+26
+
+and
+
+
+
+
+D f 1 , . . . , Af k + vk 1 (U ) = ν (f 1 , . . . , Af k + vk 1)−1 (U )
+
+
+−1 
+
+1
+1
+(δ+ n
+,...,δ+ n
+)k
+1
+k
+k
+±
+k
+≤ν
+f±v , 1 , . . . , Af±v , 1 ± φU (fv , 1 )1
+U
+∪M
+1 n
+
+k n
+
+k n
+
+
+√ 
+2k
+k
+k
+(δ+1/n) 2k
+1
++
+,
+.
+.
+.
+,
+Af
+±
+φ
+(f
+)1
+U
+,
+≤ D f±v
+1
+1
+1
+U
+±v
+,
+v
+,
+,
+1 n
+k n
+k n
+δn
+
+
+which means that
+
+
+
+
+
+
+ 
+1 √
+2k
+k
+k
+1
+k
+1
+δ+
+2k,
+.
+dLP D f±v , 1 , . . . , Af±v , 1 ± φU (f±v , 1 )1 , D f , . . . , Af + vk 1 ≤ max
+1 n
+k n
+k n
+n
+δn
+√
+Finally, we set δ = δ(n) to be 1/ n, to get that
+ 
+
+
+
+1
+k
+k
+1
+k
+dLP µ±v
+,
+µ
+⊕
+v
+=
+d
+D
+f
+,
+.
+.
+.
+,
+Af
+±
+φ
+(f
+)1
+,
+D(f
+,
+.
+.
+.
+,
+Af
++
+v
+1)
+1
+1
+1
+n
+LP
+U
+k
+n
+±v1 , n
+±vk , n
+±vk , n
+)
+(
+√ √
+(1 + n) 2k 2k
+,√
+≤ max
+→ 0.
+n
+n
+This finishes the argument started at inequality (4.4) that dLP (µ±v
+n , µ ⊕ v) → 0, and so Xk ⊕ Vk ⊆
+Sk (A± ).
+Remark 4.5 (on assumptions in Theorem 1.4). The mild requirement that (Ω, ν) be separable could
+be replaced by that A be positivity-preserving or at least by the existence of a measurable set E with
+ν(E) > 0 such that for every f ≥ 0 which is only non-zero on E, Af ≥ 0. In that case, the construction
+of an appropriate ν-filter F becomes much easier than in the proof of Theorem 4.3.
+
+5
+
+Two questions
+
+We tried to to push the boundaries of Theorem 3.7 and Proposition 1.3, and while we concluded that
+all three parts of the latter fail unless uniform boundedness of (p, q)-norms is assumed, we did not find
+a Cauchy sequence that would exemplify that the norm requirement could not be dropped from the
+statement of Theorem 3.7.
+Question 5.1. Let (An )∞
+n be a Cauchy sequence of graphops. Is there always a P -operator A with
+limn dM (An , A) = 0?
+We have also seen limits of graphop sequences which were not positivity-preserving, yet we were
+always able to find a positivity-preserving limit too.
+Question 5.2. Let (An )∞
+n be a graphop sequence which has an action limit A. Is there necessarily an
+action limit B of (An )∞
+n which is positivity-preserving?
+Acknowledgement
+I would like to thank Jan Grebík and Konrad Królicki for discussions that set me on the right track.
+27
+
+References
+[1] Charalambos Aliprantis and Kim Border. Infinite Dimensional Analysis. Springer Berlin, Heidelberg,
+3rd edition, 2006.
+[2] Ágnes Backhausz and Balázs Szegedy. Action convergence of operators and graphs. Canadian
+Journal of Mathematics, page 1–50, 2020.
+[3] Christian Borgs, Jennifer T. Chayes, Henry Cohn, and Nina Holden. Sparse exchangeable graphs
+and their limits via graphon processes. Journal of Machine Learning Research, 18(1):7740–7810,
+jan 2017.
+[4] Christian Borgs, Jennifer T. Chayes, Henry Cohn, and Yufei Zhao. An Lp theory of sparse graph
+convergence II: LD convergence, quotients and right convergence. The Annals of Probability,
+46(1):337 – 396, 2018.
+[5] Christian Borgs, Jennifer T. Chayes, Henry Cohn, and Yufei Zhao. An Lp theory of sparse graph
+convergence I: Limits, sparse random graph models, and power law distributions. Transactions of
+the American Mathematical Society, 372(5):3019 – 3062, 2019.
+[6] Christian Borgs, Jennifer T. Chayes, László Lovász, Vera T. Sós, and Katalin Vesztergombi.
+Convergent sequences of dense graphs I: Subgraph frequencies, metric properties and testing.
+Advances in Mathematics, 219(6):1801–1851, 2008.
+[7] Martin Doležal. Graph limits: An alternative approach to s-graphons. Journal of Graph Theory,
+99(1):90–106, 2022.
+[8] Péter Frenkel. Convergence of graphs with intermediate density. Transactions of the American
+Mathematical Society, 370, 02 2016.
+[9] Hamed Hatami, László Lovász, and Balázs Szegedy. Limits of locally–globally convergent graph
+sequences. Geometric and Functional Analysis, 24:269–296, 2014.
+[10] Anne-Louise Klaus and Chi-Kwong Li. Isometries for the vector (p,q) norm and the induced (p,q)
+norm. Linear and Multilinear Algebra, 38(4):315–332, 1995.
+[11] Dávid Kunszenti-Kovács, László Miklós Lovász, and Balázs Szegedy. Measures on the square as
+sparse graph limits. J. Comb. Theory, Ser. B, 138:1–40, 2019.
+[12] Lászlo Lovász. Large Networks and Graph Limits. Providence, R.I.: American Mathematical
+Society., 2012.
+[13] László Lovász and Balázs Szegedy. Limits of dense graph sequences. Journal of Combinatorial
+Theory, Series B, 96(6):933–957, 2006.
+[14] Jaroslav Nešetřil and Patrice Ossona de Mendez. Sparsity. Springer Berlin, Heidelberg, 2012.
+[15] Balázs Szegedy. Sparse graph limits, entropy maximization and transitive graphs. arXiv: Combinatorics 1504.00858, 2015.
+28
+
+[16] John Toland. The Dual of L∞ (X, L, λ), Finitely Additive Measures and Weak Convergence. Springer,
+2020.
+[17] Remco van der Hofstad. Random Graphs and Complex Networks: Volume 2. to appear, 2023.
+
+29
+
+

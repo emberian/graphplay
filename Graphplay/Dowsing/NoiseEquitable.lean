@@ -54,6 +54,7 @@ import Mathlib.Data.NNReal.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.Toolkit.Noise
+import Graphplay.PST.DiagonalShift
 
 open scoped Matrix
 open NormedSpace
@@ -169,8 +170,16 @@ def centerMat (V : Type u) [Fintype V] [DecidableEq V] : Set (Matrix V V ℂ) :=
 /-- The centre of `Matrix V V ℂ` consists of scalar multiples of `1`. -/
 theorem mem_centerMat_iff (M : Matrix V V ℂ) :
     M ∈ centerMat V ↔ ∃ c : ℂ, M = c • (1 : Matrix V V ℂ) := by
-  -- standard finite-dimensional Schur-style argument.
-  sorry
+  -- A matrix commutes with every other matrix iff it is a scalar matrix
+  -- (`Matrix.mem_range_scalar_iff_commute_single'`); the scalar matrix
+  -- `Matrix.scalar V c` is `c • 1` via `smul_one_eq_diagonal`.
+  constructor
+  · intro hM
+    obtain ⟨c, hc⟩ := Matrix.mem_range_scalar_iff_commute_single'.mpr
+      (fun i j => (hM (Matrix.single i j 1)).symm)
+    exact ⟨c, by rw [← hc, Matrix.scalar_apply, smul_one_eq_diagonal]⟩
+  · rintro ⟨c, rfl⟩ N
+    rw [smul_mul_assoc, one_mul, mul_smul_comm, mul_one]
 
 /-- **Universally-equitable characterisation.**  `N` is universally
 equitable iff every jump operator is a scalar multiple of the identity.

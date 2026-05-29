@@ -1,0 +1,1714 @@
+Quantum walks on finite and bounded infinite
+
+arXiv:2510.05306v1 [math.CO] 6 Oct 2025
+
+graphs
+Chris Godsil ∗1 , Steve Kirkland †2 , Sarojini Mohapatra‡3 , Hermie
+Monterde§2 , and Hiranmoy Pal ¶3
+1
+
+Department of Combinatorics & Optimization, University of Waterloo,
+Waterloo, Ontario, Canada
+
+2
+
+Department of Mathematics, University of Manitoba, Winnipeg, MB,
+Canada R3T 2N2
+3
+
+National Institute of Technology Rourkela, India-769008
+October 8, 2025
+
+Abstract
+A weighted graph G with countable vertex set is bounded if there is an upper
+bound on the maximum of the sum of absolute values of all edge weights incident to
+a vertex in G. In this paper, we prove a fundamental result on equitable partitions
+of bounded weighted graphs with twin subgraphs and use this fact to construct finite
+and bounded infinite graphs with pair and plus state transfer with the adjacency
+matrix as a Hamiltonian. We show that for each k ≥ 3, (i) there are infinitely many
+connected unweighted graphs with maximum degree k admitting pair state transfer
+at τ ∈ { √π2 , π2 }, and (ii) there are infinitely many signed graphs with exactly one
+∗
+
+cgodsil@uwaterloo.ca
+stephen.kirkland@umanitoba.ca
+‡
+mohapatrasarojini5@gmail.com
+§
+monterdh@myumanitoba.ca
+¶
+palh@nitrkl.ac.in
+†
+
+1
+
+negative edge weight and whose underlying unweighted graphs have maximum degree k admitting plus state transfer at τ ∈ { √π2 , π2 }. Parallel results are proven for
+perfect state transfer between a plus state and a pair state, and for the existence
+of sedentary pair and plus states. We further prove that almost all connected unweighted finite planar graphs admit pair state transfer at τ ∈ { √π2 , π2 }, and almost
+all connected unweighted finite planar graphs can be assigned a single negative edge
+weight resulting in plus state transfer, or perfect state transfer between a plus state
+and a pair state, at τ ∈ { √π2 , π2 }. Analogous results are shown to hold for unweighted finite trees. Using blow-up graphs, Cayley graphs and graphs with tails,
+we construct new infinite families of (finite and infinite) unweighted graphs and
+signed graphs admitting pair or plus state transfer.
+
+Keywords: continuous quantum walk, equitable partition, signed graph, infinite
+graph, perfect state transfer, pair states.
+MSC: 81P45, 05C50, 15A16, 15A60.
+
+1
+
+Introduction
+
+Accuracy matters. This statement applies in many settings, but in particular, it is true
+in the context of transferring quantum information in a network of interacting qubits.
+Such a network can be modeled by a graph, where the vertices represent the qubits, and
+the edges represent interactions between pairs of qubits. Sparse graphs are of particular
+interest here, as the realization of a qubit network has a cost associated with each edge
+in the graph. Consequently, trees, planar graphs, and graphs of small maximum degree
+are natural candidates to consider in the context of networks of qubits.
+The quantum walk on a graph G is governed by the transition matrix exp (itA), where
+A is the adjacency matrix of G. If for unit vectors u, v ∈
+for some γ ∈
+
+Cn we have exp (iτ A)u = γv
+
+C, then perfect state transfer (PST) occurs from u to v at τ [15]. This
+
+corresponds to accurate communication of the pure quantum state associated with u to
+the pure quantum state associated with v, and is a highly desirable property. Much
+of the literature in quantum walks focuses on vertex PST on finite graphs, i.e. when u
+and v are standard basis vectors and G has finite vertex set (see [12] for a survey and
+
+2
+
+[2, 10, 18, 19, 24, 27] for recent work). However, it seems that vertex PST on finite
+graphs is rare. Godsil showed that for any integer k > 0, there is a finite number of
+connected unweighted finite graphs of maximum degree k with vertex PST [13, Corollary
+6.2]. Motivated by this result, there is an emerging literature on extensions of vertex
+PST, such as PST between pair states (unit vectors of the form √12 (eu − ev )), also known
+as pair PST, and PST between plus states (unit vectors of the form √12 (eu + ev )), also
+known as plus PST [4, 17, 25, 29]. For infinite graphs, only quantum walks on graphs
+attached to a finite number of infinite paths have been investigated [1, 6, 7, 11]. The
+growing interest in pair and plus PST and the scant work on quantum walks on infinite
+graphs prompts us in this paper to investigate perfect state transfer on weighted graphs
+with countable vertex sets that are bounded (i.e., there is a bound on the maximum of
+the sum of absolute values of edge weights incident to a vertex) with focus on pair PST,
+plus PST, and PST between a pair state and a plus state.
+We now outline our main contributions in this paper. Using equitable partitions, we
+establish a connection between plus PST in a bounded graph and vertex PST in a quotient
+graph. We also relate the existence of pair PST in a bounded graph with (edge-perturbed)
+twin subgraphs and vertex PST in the graph induced by the vertices of the subgraphs in
+question. In contrast to the rarity of vertex PST in finite graphs, we show that for each
+k ≥ 3, there are infinitely many connected unweighted graphs with maximum degree k
+admitting pair PST at time τ ∈ { π2 , √π2 }. We also prove a stronger result for planar graphs
+(resp., trees), which states that almost all connected unweighted finite planar graphs
+(resp., trees) admit pair PST at time τ . Consequently, for each k ≥ 2, there are more
+connected unweighted finite graphs (resp., planar graphs, trees) with maximum degree k
+admitting pair PST than those admitting vertex PST. This suggests that PST between
+entangled vertex states (represented by pair states) is a more common phenomenon than
+vertex PST. Moreover, we prove that for each k ≥ 3, there are infinitely many signed
+graphs with exactly one negative edge weight and whose underlying unweighted graphs
+have maximum degree k admitting plus PST and PST between a pair state and a plus
+state at time τ ∈ { √π2 , π2 }. For planar graphs (resp., trees), we establish a stronger result
+which states that almost all unweighted finite planar graphs (resp., trees) can be assigned
+a single negative edge weight to produce plus PST or PST between a plus state and a
+
+3
+
+pair state at time τ . Finally, using blow-up graphs, Cayley graphs, and graphs with tails,
+we supply new infinite families of unweighted graphs admitting pair and plus PST. The
+constructions we provide apply to both finite and infinite graphs, leading to new examples
+of pair and plus PST in infinite graphs that do not necessarily have tails. This observation
+is in stark contrast to vertex PST, which only occurs in finite graphs [14].
+
+1.1
+
+Graphs
+
+Let G be an undirected weighted graph with vertex set V (G) and edge set E(G). We allow
+our graphs to be infinite with countable vertex set and non-zero real edge weights. Define
+a weight function w : V (G) × V (G) → R such that w(a, b) = w(b, a) for all {a, b} ∈ E(G),
+and w(a, b) = 0 if and only if {a, b} ∈
+/ E(G). If w(a, b) ̸= 0, then w(a, b) is called the
+edge weight of {a, b}. We say that G is a positively weighted graph (resp., negatively
+weighted graph) if all edge weights in G are positive (resp., negative). If w(a, b) = 1 for
+all {a, b} ∈ E(G), then G is an unweighted graph. We say that G is a weighted signed
+graph if G has an edge with positive weight, and another one with a negative weight. In
+particular, if w(a, b) = ±1 for all {a, b} ∈ E(G), then G is an unweighted signed graph.
+Unless otherwise specified, a graph G denotes an undirected graph whose edge weights
+are arbitrary nonzero real numbers. We denote the unweighted path, cycle, and complete
+graphs on n vertices by Pn , Cn and Kn , respectively. We let NG (a) be the set of neighbours
+of vertex a in G and we refer to {w(a, b) : b ∈ NG (a)} as the sequence of edge weights of
+P
+a. The degree of vertex a of G is the sum b∈NG (a) w(a, b), while its absolute degree is the
+P
+sum b∈NG (a) |w(a, b)|. If the absolute degree of vertex a is finite, then so is its degree.
+A graph G is locally finite if for each vertex a of G, the sequence of edge weights of
+P
+a is square summable, i.e., b∈NG (a) |w(a, b)|2 < ∞. The adjacency matrix A(G) of a
+locally finite graph G is a real symmetric matrix indexed by the vertices of G such that
+A(G)a,b = w(a, b). In this case, we may consider A(G) : C|V (G)| → C|V (G)| as a linear
+operator where the u–th entry of A(G)f for each f ∈ C|V (G)| is given by
+A(G)f (u) =
+
+X
+
+(f T ev )w(u, v).
+
+v∈NG (u)
+
+As G is locally finite, |A(G)f (u)| is bounded above for all u ∈ V (G) and f ∈ C|V (G)| by the
+Cauchy-Schwarz inequality. A locally finite graph G is bounded if the maximum absolute
+4
+
+degree in G is bounded. Note that any finite weighted graph is bounded. Moreover, the
+n
+
+:n∈
+infinite star with sequence of edge weights given by { (−1)
+n
+
+Z+} is locally finite but
+
+not bounded, since the central vertex has unbounded absolute degree (but finite degree).
+Recall that ∥A(G)∥ = sup∥f ∥=1 ∥A(G)f ∥. If A(G) is a bounded linear operator, i.e.,
+∥A(G)∥ < ∞, then G is locally finite since for each vertex a of G,
+X
+
+|w(a, b)|2 = ∥A(G)ea ∥2 ≤ ∥A(G)∥2 < ∞.
+
+(1)
+
+b∈NG (a)
+
+The following result is relevant throughout this work.
+Theorem 1. Let G be a locally finite graph. If G is bounded and M is the maximum
+absolute degree in G, then A(G) is a bounded linear operator on the Hilbert space ℓ2 (Z+ )
+of square-summable functions on V (G) and ∥A(G)∥ ≤ M. The converse holds whenever
+each edge weight in G has absolute value at least one.
+Proof. The first and second statements follow resp. from [31, Theorem 6.12-A] and (1).
+If G is an unweighted graph, then Theorem 1 recovers a result of Mohar [20, Theorem
+3.2] which states that G is bounded if and only if A(G) is a bounded linear operator.
+
+1.2
+
+Quantum walks
+
+A pure state u in G is a unit vector in C|V (G)| . Pure states in G of the form ea , √12 (ea − eb )
+and √12 (ea + eb ) are called vertex states, pair states, and plus states, respectively. Often,
+we drop the normalization factor for a pair or a plus state for the sake of brevity.
+A quantum walk on a bounded graph G is determined by a one-parameter family of
+unitary matrices given by
+
+UG (t) = exp (itA(G)) =
+
+∞
+X
+(it)k A(G)k
+k=0
+
+k!
+
+,
+
+t∈
+
+R
+
+where i2 = −1. Since G is bounded, A(G) is a bounded linear operator on ℓ2 (Z+ ) by
+Theorem 1, and so the above sum converges. The matrix UG (t) is the transition matrix of
+G. Note that we may ignore the case when G is negatively weighted, since G determines
+the same quantum walk as the positively weighted graph H where A(H) = −A(G).
+5
+
+Let u and v be pure states. A graph G is said to have perfect state transfer (PST)
+from u to v at τ ∈ R if
+UG (τ )u = γv for some γ ∈ C.
+If u and v are linearly dependent, then u is periodic in G at τ , and we may write the
+above equation as UG (τ )u = γu for some γ ∈ C. We say that G admits pretty good state
+transfer (PGST) from u to v relative to the sequence {τk } ⊆ R if
+lim UG (τk )u = γv for some γ ∈ C.
+
+k→∞
+
+If u and v are real, then there is PST (resp., PGST) from u to v if and only if there
+is PST (resp., PGST) from v to u at the same time (resp., sequence of times). In this
+case, we simply say that there is PST (resp., PGST) between u and v. In particular, if u
+and v are pair states (resp., plus states), then we also say pair PST or pair state transfer
+(resp., plus PST or plus state transfer) in lieu of PST between the pair states (resp., plus
+states) u and v. Lastly, a pure state u is C-sedentary in G if
+inf u∗ UG (t)u ≥ C
+t>0
+
+for some constant 0 < C ≤ 1. If C is not important, then we say that u is sedentary.
+In general, one may define a quantum walk on G using any real symmetric matrix M
+such that Mu,v = 0 if and only if there is no edge between u and v. Such a matrix is called
+the Hamiltonian of the quantum walk, and is an infinite matrix whenever G is infinite.
+Hence, unless otherwise stated, we assume that the Hamiltonian taken is A(G) whenever
+we say PST (resp., PGST) from u to v in G, periodicity of u in G and sedentariness of u
+in G. However, if PST (resp., PGST) occurs from u to v in G relative to a Hamiltonian M
+that is different from A(G), then we simply say PST (resp., PGST) from u to v relative
+to M , periodicity of u relative to M , and sedentariness of u relative to M , respectively.
+
+1.3
+
+Equitable partitions
+
+A partition Π of a graph G is a partition
+
+S
+
+j Vj of V (G), where each Vj is a finite set. The
+
+Vj ’s are called the cells of Π. The normalized characteristic matrix C associated with Π is
+a matrix whose rows are indexed by the vertices of G and j–th column is the normalized
+
+6
+
+characteristic vector of the cell Vj . If I is the identity matrix, Jk is the k × k all-ones
+M
+matrix and
+Mk is the direct sum of matrices Mk , then
+k
+
+CT C = I
+
+and CC T =
+
+M 1
+J|Vk | .
+|V
+k|
+k
+
+If G is finite, then C is a |V (G)| × d matrix, where d is the number of cells in Π.
+P
+A partition Π of a bounded graph G is equitable if for each a ∈ Vj , the sum b∈Vk w(a, b)
+is a constant cjk ∈
+
+R for all j. In the unweighted case, this means that the number of
+
+neighbours in Vk of a vertex in Vj depends only on the choice of j and k. If Π is equitable,
+then
+cj,k |Vj | = ck,j |Vk |,
+and so cj,k and ck,j are either both positive, both negative or both zero. An equitable
+partition Π of G gives rise to a (symmetrized) quotient graph G/Π, which is the undirected
+graph with adjacency matrix A(G/Π) defined entry-wise as follows:
+
+A(G/Π)j,k =
+
+
+
+
+
+√
+
+cjk ckj , if cjk ≥ 0,
+
+√
+
+ − cjk ckj , if cjk < 0.
+
+It is known that A(G)C = CA(G/Π) and the matrices A(G) and CC T =
+
+L
+
+1
+k |Vk | J|Vk |
+
+commute [13, Lemma 4.2]. Since G is bounded, Theorem 1 implies that the power series
+expansion of exp (itA(G)) converges. Thus,
+UG (t)C = CUG/Π (t) for all t ∈
+
+R.
+
+(2)
+
+For more on equitable partitions, we refer the interested reader to [16].
+
+2
+
+Twin subgraphs
+
+
+Let X1 and X2 be graphs with isomorphism f : X1 → X2 satisfying w f (a), f (b) =
+w(a, b) for all pairs of vertices a and b in X1 . Consider a connected graph G where
+the disjoint union X1 ∪ X2 of X1 and X2 appears as an induced subgraph of G where
+
+w f (a), y = w(a, y), for all a ∈ V (X1 ) and y ∈ V (G) \ V (X1 ∪ X2 ) . We say that X1
+7
+
+X1
+
+X1
+
+2
+1
+
+2
+1
+
+H
+
+H
+
+3
+
+3
+
+5
+X2
+
+5
+X2
+
+4
+
+4
+
+Figure 1: A graph with P2 as twin subgraphs (left) and an edge-perturbed version (right)
+and X2 are twin subgraphs of G with fˆ as the automorphism of G that switches each
+vertex of X1 to its f -isomorphic copy in X2 and fixes all other vertices of G.
+Let X1 and X2 be twin subgraphs of a graph G. Create G′ by adding edges in
+G between X1 and X2 in a way that preserves the automorphism fˆ of G. That is,
+A(G′ )a,fˆ(b) = A(G′ )fˆ(a),b . In this case, we call X1 and X2 edge-perturbed twin subgraphs
+in G′ , and fˆ is an automorphism of both G′ and G that switches each vertex of X1 to its
+f -isomorphic copy in X2 and fixes all other vertices of G′ .
+The following generalizes a fundamental fact on equitable partitions [13, Lemma 4.2].
+Theorem 2. Let G be a bounded graph with edge-perturbed twin subgraphs X1 and X2
+with A = A(G), and Π be a partition of G where {a, fˆ(a)} is a cell for each a ∈ V (X1 ).
+Let Q = [B C] be the matrix where the columns of B consist of all vectors from the set
+{ √12 (ea − efˆ(a) ) : a ∈ V (X1 )} and C is the normalized characteristic matrix of Π. The
+following are equivalent:
+1. Π is equitable.
+2. The column space of Q is A-invariant.
+3. There is a matrix B such that AQ = QB.
+
+4. The matrices A and QQT = I2|V (X1 )| ⊕ 
+
+
+M
+
+k>|V (X1 )|
+
+1
+J|V |  commute.
+|Vk | k
+
+Moreover, if such a matrix B exists, then
+
+
+
+
+′
+0 
+A(X1 ) − A
+B := 
+,
+0
+A(G/Π)
+
+8
+
+(3)
+
+and A′ is a symmetric matrix whose rows and columns are indexed by the vertices of X1
+and X2 , respectively, and (A′ )u,v ̸= 0 if and only if u and v are adjacent in G.
+Proof. We first prove 1 ⇔ 3. Assume Π is equitable so that AC = CA(G/Π). As X1 and
+X2 are edge-perturbed twin subgraphs in G and {a, fˆ(a)} is a cell for all a ∈ V (X1 ), we
+get AB = B(A(X1 ) − A′ ). Combining the two preceding equations gives us
+
+
+
+A(X1 ) − A
+AQ = [AB AC] = [B(A(X1 ) − A′ ) CA(G/Π)] = [B C] 
+0
+
+′
+
+0
+A(G/Π)
+
+
+ = QB.
+
+Conversely, suppose AQ = QB. Let ea be the characteristic vector of vertex a in G,
+and let ěa be the characteristic vector of vertex a such that Qěa = √12 (ea − efˆ(a) ) if
+a ∈ V (X1 ), and Qěa is the normalized characteristic vector of the cell containing the
+vertex a, otherwise. If a ∈ V (G)\V (X1 ) belong to Vj , then eTa Q = eTb Q = √1 ěTj . Thus,
+X |Vj |
+1
+1
+T
+T
+T
+if k ∈ V (G)\V (X1 ), then ea (AQ)ěk = ea (QB)ěk = √ ěj Běk = √
+Aa,v . Hence,
+|Vj |
+
+s
+X
+
+Aa,v =
+
+v∈Vk
+
+|Vk |
+
+v∈Vk
+
+|Vk | T
+ě Běk = cj,k .
+|Vj | j
+
+As the above sum is independent of the choice of vertex in Vj , Π is equitable.
+Next, we prove 2 ⇔ 3. If 3 holds, then AQěu = QBěu for all u. Since Qěu and QBěu
+belong to the column space of Q, we obtain 2. The converse is straightforward.
+Lastly, we prove 3 ⇔ 4. If AQ = QB, then QT A = BQT since A and B are symmetric.
+So, AQQT = QBQT = QQT A. Conversely, if AQQT = QQT A, then the fact QT Q = I
+yields QT AQQT = QT A. If B := QT AQ, then BQT = QT A, and because A and B are
+M 1
+symmetric, we get AQ = QB. Finally, using the fact that CC T =
+J|Vk | gives us
+|V
+k|
+k
+
+
+
+
+
+
+
+
+
+
+M
+M
+M
+
+
+1
+−1
+1
+1
+1
+
+
+
+QQT = BB T + CC T = 
+J2 ⊕
+J|Vk |  ,
+
+ ⊕ O
+2
++
+2
+|V
+|
+k
+1
+|V (X1 )| −1
+|V (X1 )|
+k>|V (X1 )|
+where O is the zero matrix of the appropriate size. This yields the form of QQT in 4.
+Combining the above cases proves the equivalence of 1-4. Finally, if a matrix B in 3
+exists, then Π is equitable. As B T B = I, we get B T AB = A(X1 )−A′ and C T AC = A(G/Π).
+
+9
+
+Now, if a ∈ V (X1 ) and b ∈ V (G)\V (X1 ), then Qěa =
+
+√1
+2
+
+
+
+ea − efˆ(a)
+
+
+
+and Qěb is a
+
+characteristic vector of Π. As X1 and X2 are edge-perturbed twin subgraphs in G,
+T
+
+ěTa (QT AQ)ěb = (Qěa )T A(Qěb ) = √12 ea − efˆ(a) A(Qěb ) = 0.
+
+
+T
+T
+B AB B AC 
+Therefore, B = Q AQ = 
+, and because B T AB = A(X1 ) − A′ and
+T
+T
+C AB C AC
+T
+
+C T AC = A(G/Π), we obtain the form of B.
+Note that if G is finite, then Q is a |V (G)| × (|V (X1 )| + d) matrix.
+Our next result is useful throughout this work.
+Theorem 3. Let G be a bounded graph with edge-perturbed twin subgraphs X1 and X2 , and
+
+
+let U ′ (t) = exp it A (X1 ) − A′ . If G admits an equitable partition Π where {a, fˆ(a)}
+forms a cell for every a ∈ V (X1 ), then
+
+
+
+
+′
+0 
+U (t)
+QT UG (t)Q = 
+,
+0
+UG/Π (t)
+
+for all t ∈
+
+R.
+
+
+
+
+
+A(X1 ) − A
+Proof. From Theorem 2(3), it follows that AQ = QB where B = 
+0
+
+′
+
+0
+
+
+.
+A(G/Π)
+
+Thus, QT A(G)Q = B. From Theorem 2(4), QQT commutes with A(G), and so
+
+
+
+
+′ k
+0
+(A(X1 ) − A )
+
+QT A(G)k Q = (QT A(G)Q)k = B k = 
+
+k
+0
+(A(G/Π))
+
+(4)
+
+for all integers k ≥ 0. Finally, since G is bounded, Theorem 1 implies that power series
+expansion of exp (itA(G)) converges, in which case (4) gives us
+
+QT UG (t)Q =
+
+∞
+X
+
+∞
+X
+
+k
+
+
+k
+
+
+′
+
+0 
+(it)
+(it) k U (t)
+(QT A(G)k Q) =
+B =
+,
+k!
+k!
+0
+UG/Π (t)
+k=0
+k=0
+
+which establishes the desired result.
+If G is not bounded, then it is not clear how we can simplify QT UG (t)Q in (5).
+10
+
+(5)
+
+Remark 1. If the graph G in Theorem 3 has an equitable partition Π but has no (edgeperturbed) twin subgraphs, then the vectors in B are absent as columns of Q. In this case,
+Q = C and so we may view the result in Theorem 3 as an extension of (2).
+Remark 2. In Theorem 3, if X1 and X2 are twin subgraphs and G has no edges between
+X1 and X2 , then A′ = 0, so U ′ (t) is equal to UX1 (t), the transition matrix of X1 .
+Since QT Q = I, the form of QT UG (t)Q in Theorem 3 yields the following result.
+Corollary 1. With the assumption in Theorem 3, the following hold.
+1. Perfect state transfer occurs from u to v relative to A(X1 ) − A′ if and only if perfect
+state transfer occurs from Bu to Bv in G at the same time.
+2. The vector u is periodic relative to A(X1 ) − A′ if and only if Bu is periodic in G at
+the same time.
+3. Perfect state transfer occurs from u to v in G/Π if and only if perfect state transfer
+occurs from Cu to Cv in G at the same time.
+4. The vector u is periodic in G/Π if and only if Cu is periodic in G at the same time.
+Remark 3. Corollary 1(1,3) hold if we replace ‘perfect state transfer’ with ‘pretty good
+state transfer’, while Corollary 1(2,4) hold if we replace ‘periodic’ with ‘sedentary’.
+
+3
+
+Signed graphs
+
+Here, we establish a connection between perfect state transfer in a positively weighted
+graph G and in a weighted signed graph G̃ whenever A(G) and ±A(G̃) are similar.
+Proposition 1. Let G be a positively weighted graph and D be an involutory matrix such
+that DA(G)D = δA(G̃) where δ = ±1. Then G has perfect state transfer from u to v at
+τ if and only if G̃ has perfect state transfer from Du to Dv at time δτ .
+Proof. Since DA(G)D = δA(G̃), we have UG (t) = DUG̃ (δt)D. If perfect state transfer
+occurs from u to v in G at τ , then DUG̃ (δτ )Du = UG (τ )u = γv for some γ ∈
+D2 = I, we obtain UG̃ (δτ )(Du) = γ(Dv). The converse is straightforward.
+11
+
+C. Since
+
+If G is a positively weighted graph and D is a diagonal matrix with ±1 entries with
+at least one entry equal to −1, then G̃ is a weighted signed graph. Additionally, if G is
+unweighted, then the preceding statement implies that G̃ is an unweighted signed graph.
+A weighted signed graph G̃ is balanced (resp., anti-balanced ) relative to a positively
+weighted graph G if DA(G)D = A(G̃) (resp., DA(G)D = −A(G̃)) for some diagonal
+matrix D with ±1 entries. The following is immediate from Proposition 1.
+Corollary 2. A positively weighted graph has perfect state transfer from u to v at τ if
+and only if the corresponding balanced (resp., anti-balanced) weighted signed graph has
+perfect state transfer from Du to Dv at τ (resp., −τ ).
+Using positively weighted graphs with pair PST (resp., plus PST), we generate weighted
+signed graphs with plus PST (resp., pair PST) or PST between a plus state and a pair
+state. In what follows, w(a, b) and w̃(a, b) denote the weights of the edge {a, b} in G and
+G̃, respectively. For a diagonal matrix D, we let Da denote the a–th diagonal entry of D.
+Corollary 3. Suppose G is a positively weighted graph with perfect state transfer between
+√1 (ea − eb ) and √1 (ec − ed ) at τ . The following hold.
+2
+2
+
+1. Let G̃ be the weighted signed graph with w̃ (b, x) = −w(b, x) for all x ∈ NG (b).
+(a) If b ̸= c, d, then G̃ admits perfect state transfer between √12 (ea +eb ) and √12 (ec −ed ).
+(b) Otherwise, G̃ admits perfect state transfer between √12 (ea + eb ) and √12 (ec + ed ).
+2. Let G̃ be the weighted signed graph with w̃ (b, x) = −w (b, x) and w̃ (d, y) = −w(d, y)
+for all x ∈ NG (b)\ {d} and for all y ∈ NG (d)\ {b}.
+(a) If a = d, then G̃ admits perfect state transfer between √12 (eb − ed ) and √12 (ec + ed ).
+(b) If b = c, then G̃ admits perfect state transfer between √12 (ea + eb ) and √12 (ed − eb ).
+(c) Otherwise, G̃ admits perfect state transfer between √12 (ea + eb ) and √12 (ec + ed ).
+Furthermore, perfect state transfer occurs in 1 and 2 at τ .
+Proof. To prove 1, note that G̃ is balanced relative to G since DA(G)D = A(G̃), where
+D is the diagonal matrix of ±1’s with Dj = −Db = 1 for j ∈ {a, c, d}. Since G has PST
+between u = √12 (ea − eb ) and v = √12 (ec − ed ), Corollary 2 yields PST in G̃ between
+12
+
+Du = √12 (ea + eb ) and Dv = √12 (ec − ed ) if b ∈
+/ {c, d}, and between Du = √12 (ea + eb ) and
+Dv = ± √12 (ec + ed ) otherwise. The same argument works for 2 by taking D such that
+Da = Dc = −Db = −Dd = 1.
+Remark 4. If G is a positively weighted graph with perfect state transfer between √12 (ea +
+eb ) and √12 (ec + ed ), then the conclusion in Corollary 3 holds whenever we replace every
+pair state with a plus state, and every plus state with a pair state.
+Applying a sign change to the edges of a graph with edge-perturbed twin subgraphs
+yields the next result. Note that UG̃D (t) denotes the transition matrix of G̃D .
+Theorem 4. Let G be a bounded graph with edge-perturbed twin subgraphs X1 and X2
+with isomorphism f : X1 → X2 . Suppose D is a diagonal matrix of ±1’s and let G̃D be
+
+
+the graph satisfying DA(G)D = A(G̃D ). If U ′ (t) = exp it A (X1 ) − A′ , then
+
+
+
+
+′
+0 
+U (t)
+(DQ)T UG̃D (t)DQ = 
+,
+0
+UG/Π (t)
+
+for all t ∈ R.
+
+Proof. This follows from Theorem 3 and the fact that UG (t) = DUG̃D (t)D.
+
+4
+
+Pair and plus state transfer
+
+We now investigate pair and plus state transfer in a graph G̃D obtained from a graph G
+with edge-perturbed twin subgraphs.
+Corollary 4. Let G be a bounded graph with edge-perturbed twin subgraphs X1 and X2 ,
+and let a, b be vertices of X1 . The following are equivalent.
+1. Perfect state transfer occurs between a and b in X1 relative to A(X1 ) − A′ .
+2. Perfect state transfer occurs between √12 (ea − efˆ(a) ) and √12 (eb − efˆ(b) ) in G.
+3. Perfect state transfer occurs between √12 (ea + efˆ(a) ) and √12 (eb + efˆ(b) ) in G̃D , where
+D is a diagonal matrix of ±1’s with Da = −Dfˆ(a) and Db = −Dfˆ(b) .
+4. Perfect state transfer occurs between √12 (ea + efˆ(a) ) and √12 (eb − efˆ(b) ) in G̃D , where
+D is a diagonal matrix of ±1’s with Da = −Dfˆ(a) and Db = Dfˆ(b) .
+13
+
+Furthermore, perfect state transfer occurs at the same time in 1-4.
+Proof. The equivalence of 1 and 2 is immediate from Corollary 1(1). Let δ = ±1. The
+equivalence of 2 and 3 follows from Theorem 4 by taking D such that Da = −Dfˆ(a) and
+
+
+
+
+δ
+δ
+√
+√
+Db = −Dfˆ(b) , in which case DQěa = 2 ea + efˆ(a) and DQěb = 2 eb + efˆ(b) . The
+equivalence of 2 and 4 follows from Theorem 4 by taking D such that Da = −Dfˆ(a) and
+
+
+
+
+Db = Dfˆ(b) , in which case DQěa = √δ2 ea + efˆ(a) and DQěb = √δ2 eb − efˆ(b) .
+The equivalence of 1 and 2 in Corollary 4 was used by Pal and Mohapatra to obtain
+an infinite family of trees with maximum degree three admitting pair PST [29].
+Corollary 5. Let G be a bounded graph and Π be an equitable partition of G with cells
+V1 = {a, b} and V2 = {c, d}. The following are equivalent.
+1. Perfect state transfer occurs between V1 and V2 in G/Π.
+2. Perfect state transfer occurs between √12 (ea + eb ) and √12 (ec + ed ) in G.
+3. Perfect state transfer occurs between √12 (ea − eb ) and √12 (ec − ed ) in G̃D , where D
+is a diagonal matrix of ±1’s with Da = −Db and Dc = −Dd .
+4. Perfect state transfer occurs between √12 (ea − eb ) and √12 (ec + ed ) in G̃D , where D
+is a diagonal matrix of ±1’s with Da = −Db and Dc = Dd .
+Furthermore, perfect state transfer occurs at the same time in 1-4.
+Proof. The equivalence of 1 and 2 follows from Corollary 1(3) by taking (u, v) = (e1 , e2 )
+
+
+and (Ce1 , Ce2 ) = √12 (ea + eb ), √12 (ec + ed ) . The rest follows using the same argument
+in the proof of Corollary 4.
+Example 1. Let A(G) be the adjacency matrix of the unweighted graph G given in Figure
+2(a). Let V1 = {1, 2} , V2 = {3} , V3 = {4, 5} , and V4 = {6} be disjoint cells of an equitable
+partition Π of the vertex set of G. The characteristic matrix C and the adjacency matrix
+A(G/Π) of the symmetrized quotient graph of G over Π are as follows.
+T
+
+
+1
+ √2
+
+
+0
+
+C=
+0
+
+
+0
+
+√1
+2
+
+0
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+√1
+2
+
+√1
+2
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ ,
+0
+
+
+1
+
+
+√
+2 0
+2
+ 0
+√
+
+√
+ 2 0
+2 0 
+
+
+A(G/Π) = 
+.
+√
+√
+ 0
+
+2
+0
+2
+
+
+
+√
+√
+2 0
+2 0
+
+
+14
+
+√
+
+6
+
+1
+
+4
+
+6
+
+5
+
+2
+
+1
+
+4
+
+3
+
+6
+
+5
+
+2
+
+1
+
+4
+
+3
+
+5
+
+2
+
+3
+
+Figure 2: Perfect state transfer between √12 (e1 + e2 ) and √12 (e4 + e5 ) (left), between
+√1 (e1 − e2 ) and √1 (e4 − e5 ) (centre), and between √1 (e1 + e2 ) and √1 (e4 − e5 ) (right)
+2
+2
+2
+2
+Let D′ = diag (1, −1, 1, 1, −1, 1), D′′ = diag (1, 1, 1, 1, −1, 1) . We observe the following.
+1. The adjacency matrix of a weighted C4 with each edge having a weight
+
+√
+2 is A(G/Π).
+
+Since the unweighted C4 has perfect state transfer between vertices 1 and 3 at π2 ,
+ 
+π
+UG/Π 2√
+ě1 = −ě3 , where ě1 = [1 0 0 0]T and ě3 = [0 0 1 0]T . By Corollary
+2
+π
+5(2), we get perfect state transfer between √12 (e1 + e2 ) and √12 (e4 + e5 ) in G at 2√
+.
+2
+
+2. Using D′ , Corollary 5(3) yields perfect state transfer between √12 (e1 −e2 ) and √12 (e4 −
+e5 ) at 2 π√2 in G̃D′ , see Figure 2(b). Using D′′ , Corollary 5(4) yields perfect state
+π
+between √12 (e1 + e2 ) and √12 (e4 − e5 ) in G̃D′′ , see Figure 2(c).
+transfer at 2√
+2
+
+Remark 5. Corollaries 4 and 5 hold when we replace ‘perfect state transfer’ with ‘pretty
+good state transfer’. In this case, PGST occurs at the same sequence of times in 1-4.
+
+5
+
+Infinite families
+
+In this section, we assume that the graphs and signed graphs are unweighted (i.e., they
+have edge weights 1 and ±1, respectively).
+It is known that P2 admits perfect state transfer between the vertices 1 and 2 at π2 .
+Taking the graph on the left of Figure 1, we find that for any graph H identified at vertex
+3, perfect state transfer occurs in G between √12 (e1 −e5 ) and √12 (e2 −e4 ) at π2 by Corollary
+4(2). In particular, if H is a graph, planar graph or tree with maximum degree k, then:
+Theorem 5. For each k ≥ 3, there are infinitely many connected unweighted graphs
+(resp., planar graphs, trees) with maximum degree k admitting pair state transfer at π2 .
+15
+
+X1
+
+X1
+
+2
+1
+
+2
+1
+
+H
+
+H
+
+3
+
+3
+
+5
+X2
+
+5
+X2
+
+4
+
+4
+
+Figure 3: Signed versions of a graph with P2 as twin subgraphs
+Theorem 5 complements the fact that for every positive integer k, there are only
+finitely many connected graphs with maximum degree k admitting plus state transfer [17,
+Corollary 3.5]. If k = 3, then Theorem 5 recovers a result of Pal and Mohapatra [29].
+Corollary 6. There are infinitely many unweighted trees with maximum degree three
+admitting pair state transfer at π2 .
+Now, if we assign the edge {3, 4} in the graph on the left of Figure 1 a negative weight,
+we obtain the graph on the left of Figure 3, which has perfect state transfer at π2 between
+√1 (e1 + e5 ) and √1 (e2 + e4 ) by Corollary 4(3). This yields the following results analogous
+2
+2
+
+to Theorem 5 and Corollary 6, respectively.
+Theorem 6. For each k ≥ 3, there are infinitely many connected unweighted signed
+graphs G̃ such that the underlying graphs have maximum degree k, G̃ has exactly one
+negative edge weight, and plus state transfer in G̃ at π2 .
+Corollary 7. There are infinitely many unweighted signed trees T̃ such that the underlying
+graphs have maximum degree three, T̃ has exactly one negative edge weight and plus state
+transfer in T̃ at π2 .
+Applying Corollary 4(4) and Theorem 5 to the graph on the right Figure 3 yields the
+following result.
+Theorem 7. For each k ≥ 3, there are infinitely many connected unweighted signed graphs
+G̃ such that the underlying graphs have maximum degree k and perfect state transfer occurs
+between a plus state and a pair state in G̃ at π2 .
+Corollary 8. There are infinitely many unweighted signed trees T̃ such that the underlying
+trees have maximum degree three, T̃ has exactly one negative edge weight and perfect state
+transfer occurs between a plus state and a pair state in T̃ at π2 .
+16
+
+Remark 6. Since H in both figures in Figure 3 may be taken to be finite or infinite,
+Theorems 5-7 and Corollaries 6-8 hold for finite graphs and bounded infinite graphs.
+For the class of finite graphs, we obtain the following results.
+Theorem 8. Almost all labelled connected unweighted planar finite graphs admit pair state
+transfer at π2 . Moreover, almost all labelled connected unweighted planar finite graphs can
+be assigned a single negative edge weight so that the resulting signed graphs have plus state
+transfer, or perfect state transfer between a pair state and a plus state, both at π2 .
+Proof. Let CP n denote the class of labelled connected unweighted planar graphs on n
+vertices. Adapting the proof of Theorem 4.3 in [8] by replacing H as P5 rooted at the
+vertex adjacent to two degree two vertices (in lieu of a P3 rooted at a central vertex),
+we conclude that a labelled connected planar graph on n vertices (sampled from CP n
+uniformly at random) contains P5 as a rooted branch – actually linearly many – with
+probability approaching 1 as n approaches infinity. Therefore, almost all labelled connected planar graphs have the same form as the graph on the left of Figure 1, where H is
+connected planar graph. Combining this with our observations at the start of the section
+and Corollary 4(2-4) yields the desired result.
+An analogous result also holds for trees.
+Theorem 9. Almost all unweighted finite trees admit pair state transfer at π2 . Moreover,
+almost all unweighted trees can be assigned a single negative edge weight so that the resulting signed trees have plus state transfer, or perfect state transfer between a pair state
+and a plus state, both at π2 .
+Proof. In [30, Theorem 7], Schwenk showed that for any rooted tree L, almost all trees
+contain L as a limb. Taking L as P5 rooted at the vertex adjacent to two degree two
+vertices, we get that almost all trees have the same form as the graph on the left of Figure
+1, where H is a tree. Combining this with our observations at the start of the section and
+Corollary 4(2-4) yields the result.
+Remark 7. We may also consider graphs with twin subgraphs isomorphic to P3 (in lieu
+of P2 ) in Figure 1. Since P3 has PST between end vertices at √π2 . Applying the same
+argument to the graphs in Figure 4, Theorems 5-9 and Corollaries 6-8 also hold at √π2 .
+17
+
+X1
+
+1
+X1
+
+2
+3
+
+1
+
+H
+
+2
+
+3
+H
+
+7
+4
+4
+5
+
+7
+
+6
+
+5
+
+X2
+X2
+
+6
+
+Figure 4: Graphs having P3 as twin subgraphs
+Corollary 9. For each k ≥ 2, there are more connected unweighted finite graphs (resp.,
+planar graphs, trees) with maximum degree k admitting pair state transfer than those
+admitting vertex state transfer. This holds for all k ≥ 3 if we replace ‘finite’ by ‘infinite’.
+Proof. For finite and infinite graphs (resp., planar graphs, trees), the case k ≥ 3 follows
+from Theorem 5, [13, Corollary 6.2] and the fact that vertex PST does not occur in infinite
+graphs [14, Theorem 5.6]. For finite graphs, the case k = 2 follows from the fact that
+there are only three such graphs with maximum degree two admitting vertex PST (K2 ,
+P3 and C4 ), while there are six admitting pair state transfer (P3 , P5 , P7 , C4 , C6 , and C8 )
+(see [15, Corollary 7.4] and [17, Theorem 6.5]). The case k = 2 for finite planar graphs
+(resp., trees) follows similarly.
+
+6
+
+Blow-ups
+
+For every positive integer n, consider Zn = {0, 1, 2, . . . , n − 1} . The blow-up of n copies
+n
+
+of H, denoted by ⊎ H, is the graph with vertex set Zn × V (H), and adjacency matrix
+Jn ⊗ A(H).
+Using the blow-up operation, we generate new examples of pair and plus PST.
+n
+
+Theorem 10. Let a and b be vertices in H, Xn := ⊎ H, and D be a diagonal matrix of
+±1’s. The following are equivalent.
+1. Perfect state transfer occurs between vertices a and b in H.
+2. Perfect state transfer occurs between
+
+Pn−1
+
+j=0 e(j,a) and
+
+Pn−1
+
+j=0 e(j,b) in Xn . In particular,
+
+perfect state transfer occurs between √12 (e(0,a) + e(1,a) ) and √12 (e(0,b) + e(1,b) ) in X2 .
+18
+
+(1, a)
+
+(1, b)
+
+(1, c)
+
+(1, a)
+
+(1, b)
+
+(1, c)
+
+(1, a)
+
+(1, b)
+
+(1, c)
+
+(0, a)
+
+(0, b)
+
+(0, c)
+
+(0, a)
+
+(0, b)
+
+(0, c)
+
+(0, a)
+
+(0, b)
+
+(0, c)
+
+2
+
+Figure 5: ⊎ P3 with PST between √12 (e(0,a) + e(1,a) ) and √12 (e(0,c) + e(1,c) ) (left), signed
+2
+
+2
+
+⊎ P3 with PST between √12 (e(0,a) − e(1,a) ) and √12 (e(0,c) + e(1,c) ) (centre), signed ⊎ P3 with
+PST between √12 (e(0,a) − e(1,a) ) and √12 (e(0,c) − e(1,c) ) (right)
+3. The signed graph X̃2 with A(X̃2 ) = DA(X2 )D where D(0,a) = −D(1,a) and D(0,b) =
+−D(1,b) has perfect state transfer between √12 (e(0,a) − e(1,a) ) and √12 (e(0,b) − e(1,b) ).
+4. The signed graph X̃2 with A(X̃2 ) = DA(X2 )D where D(0,a) = −D(1,a) and D(0,b) =
+D(1,b) has perfect state transfer between √12 (e(0,a) − e(1,a) ) and √12 (e(0,b) + e(1,b) ).
+Further, perfect state transfer occurs in 1 at τ , in 2 at nτ and in 3-4 at τ2 .
+
+Proof. For each a ∈ V (H), (j, a) : j ∈
+
+Zn forms a cell of equitable partition Π of V (Xn).
+
+Applying Corollary 1 and noting that A(Xn /Π) = nA(H) yields the equivalence of 1 and
+the first statement in 2. Meanwhile, applying Corollary 5(3,4) with G = X2 yields the
+equivalence of 3, 4 and the second statement in 2.
+2
+
+Remark 8. Since (0, a) and (1, a) are twins in ⊎ H, the pair state √12 (e(0,a) − e(1,a) ) is
+2
+
+2
+
+an eigenvector for A(⊎ H), so it is not involved in perfect state transfer in ⊎ H [21].
+Remark 9. Theorem 10 holds when we replace ‘perfect state transfer’ with ‘pretty good
+state transfer’. In this case, PGST occurs in 1 relative to {τk }, in 2 relative to { τnk }, and
+in 3-4 relative to { τ2k }.
+Example 2. It is known that P3 admits PST between vertices a and c at √π2 . Applying
+2
+
+Theorem 10, we get PST between √12 (e(0,a) + e(1,a) ) and √12 (e(0,c) + e(1,c) ) in ⊎ P3 , between
+2
+√1 (e(0,a) − e(1,a) ) and √1 (e(0,c) + e(1,c) ) in a signed ⊎ P3 , and between √1 (e(0,a) − e(1,a) )
+2
+2
+2
+2
+1
+π
+and √2 (e(0,c) − e(1,c) ) in a signed ⊎ P3 all at 2√2 (see Figure 5).
+
+We now provide infinite families illustrating Theorem 10(1-2).
+2
+
+Example 3. In [2, Theorem 6], ⊎ Kn has PST at π2 between
+ everypair of twin vertices a
+2
+
+2
+
+and b if and only if n is even. Invoking Theorem 10(2), ⊎ ⊎ Kn
+
+4
+
+= ⊎ Kn admits plus
+
+state transfer at π4 between √12 (e(0,a) + e(1,a) ) and √12 (e(0,b) + e(1,b) ) whenever n is even.
+19
+
+Example 4. Let X be a distance-regular graph that admits PST at τ . By [9, Corollary
+4.5], X is antipodal with classes of size two, and so PST occurs between any pair of
+2
+
+vertices a and b at distance d. Invoking Theorem 10(2), ⊎ X admits plus state transfer
+at the same time between √12 (e(0,a) + e(1,a) ) and √12 (e(0,b) + e(1,b) ). In particular, this holds
+if we take X = Qd , the hypercube of dimension d, for all d ≥ 1 with τ = π2 .
+Example 5. There is PGST in Pn between vertices a and b if and only if a + b = n + 1
+and either (i) n = 2t − 1, (ii) n = p − 1 for some odd prime p, or (iii) n = 2t p − 1 for
+some integer t > 0 and odd prime p, and a is a multiple of 2t−1 [32, Theorem 4.3.3].
+2
+
+Invoking Theorem 10(2) and Remark 9, we get PGST in ⊎ Pn between √12 (e(0,a) + e(1,a) )
+and √12 (e(0,b) + e(1,b) ) if and only if a + b = n + 1 and one of conditions (i)-(iii) hold.
+Example 6. There is PGST in Cn between vertices a and b if and only if (i) n is a
+power of two and (ii) a and b are antipodal vertices in Cn [28, Theorem 13]. Again
+2
+
+invoking Theorem 10(2) and Remark 9, we get PGST in ⊎ Cn between √12 (e(0,a) + e(1,a) )
+and √12 (e(0,b) + e(1,b) ) if and only if conditions (i) and (ii) hold.
+
+7
+
+Sedentariness
+
+Recall that a pure state u is C-sedentary in G if for some constant 0 < C ≤ 1,
+inf u∗ UG (t)u ≥ C.
+t>0
+
+If C is not important, then we simply say that u is sedentary. In this section, we study
+the case when u is a vertex state, a plus state, or a pair state.
+Vertex sedentariness was first studied in depth by Monterde in [23], where she observed
+that a sedentary vertex in a graph does not have PGST. This observation extends to any
+pure state: a sedentary pure state is not involved in PGST. The most common example
+of a graph with sedentary vertices is the complete graph: for all n ≥ 3, the vertex state
+[23, Equation 6].
+ea in Kn is C-sedentary for all a ∈ V (Kn ), where C = n−2
+n
+The following result is analogous to Corollary 4 and follows from Theorem 4.
+Corollary 10. Let G be a bounded graph with edge-perturbed twin subgraphs X1 and X2
+and let a be a vertex of X1 . The following are equivalent.
+20
+
+2
+
+3
+
+2
+
+1
+
+1
+4
+
+H
+
+4
+
+5
+6
+
+3
+
+H
+
+5
+7
+
+6
+
+7
+
+Figure 6: The graph G (left) and the signed graph G̃D (right) with X1 = K3
+1. Vertex a is C-sedentary in X1 relative to A(X1 ) − A′ .
+2. The pair state √12 (ea − efˆ(a) ) is C-sedentary in G.
+3. The plus state √12 (ea + efˆ(a) ) is C-sedentary in G̃D , where D is a diagonal matrix
+of ±1’s with Da = −Dfˆ(a) .
+We say that vertices u and v are twins in a weighted (signed or unsigned) graph G if
+NG (u)\{v} = NG (v)\{u} and w(a, u) = w(a, v) for all a ∈ NG (u)\{v}. A maximal subset
+T ⊆ V (G) is a twin set in G if every pair of vertices in T are twins.
+Theorem 11. Let T be a twin set in X1 with |T | ≥ 3 and C = 1 − |T2 | . If X1 and X2 are
+twin subgraphs of a bounded graph G and a ∈ T , then √12 (ea − efˆ(a) ) is C-sedentary in G
+and √12 (ea + efˆ(a) ) is C-sedentary in G̃D , where D is given in Corollary 10(3).
+Proof. Since T is a twin set in X1 with |T | ≥ 3, it follows that each a ∈ T is C-sedentary
+in X1 [23, Theorem 16]. As X1 and X2 are twin subgraphs of G, it follows that A′ = 0,
+and so applying Corollary 10 yields the desired result.
+Example 7. Let G be a bounded graph with twin subgraphs X1 = X2 = Kn , where
+V (X1 ) = {1, . . . , n} and V (X2 ) = {n + 2, . . . , 2n + 1} (see Figure 6 for n = 3). Consider
+G̃D , where D is a diagonal matrix of ±1’s with D1 = −Dn+2 . Each vertex of X1 is (1− n2 )sedentary, and so by Theorem 11, √12 (ej −ek ) for j ∈ {1, . . . , n−1} and k ∈ {n+2, . . . , 2n}
+is (1 − n2 )-sedentary in G, while √12 (e1 + en+2 ) is (1 − n2 )-sedentary in G̃D .
+The next result is analogous to Corollary 5 and again follows from Theorem 4.
+Corollary 11. Let G be a bounded graph and Π be an equitable partition of G with cell
+V1 = {a, b}. The following are equivalent.
+21
+
+v
+|{z}
+
+u
+
+n−2 vertices
+
+Figure 7: The graph Pn′ with twin vertices u and v
+1. Vertex V1 is C-sedentary in G/Π.
+2. The plus state √12 (ea + eb ) is C-sedentary in G.
+3. The pair state √12 (ea − eb ) is C-sedentary in G̃D , where D is a diagonal matrix of
+±1’s with Da = −Db .
+Applying Corollary 11 to blow-up graphs gives us the following result.
+2
+
+Corollary 12. Let H be a graph and X := ⊎ H. The following are equivalent.
+1. Vertex a is C-sedentary in H.
+2. The plus state √12 (e(0,a) + e(1,a) ) is C-sedentary in X.
+3. The pair state √12 (e(0,a) − e(1,a) ) is C-sedentary in X̃, where A(X̃) = DA(X)D for
+some diagonal matrix D of ±1’s such that D(1,a) = −D(0,a) .
+Again, using the fact that each vertex a of Kn is C-sedentary for all n ≥ 3, where
+, we get the following consequence of Corollary 12.
+C = n−2
+n
+2
+
+Example 8. The plus state √12 (e(0,a) + e(1,a) ) is C-sedentary in ⊎ Kn for all a ∈ V (Kn ).
+Let n ≥ 3 be odd and consider the family Pn′ of graphs obtained from Pn by adding
+vertex v that is twins with vertex u = 1 of Pn (see Figure 7). In [22], Monterde showed
+that u and v are sedentary vertices. Applying Corollary 10 with X1 = X2 = Pn′ as twin
+subgraphs yields the following two results, one of which is analogous to Theorem 5 and
+Corollary 6, and another one analogous to Theorem 6 and Corollary 7, respectively.
+Theorem 12. For each k ≥ 3, there are infinitely many connected unweighted graphs with
+maximum degree k containing a sedentary pair state. In particular, there are infinitely
+many unweighted trees with maximum degree three and a sedentary pair state.
+
+22
+
+Theorem 13. For each k ≥ 3, there are infinitely many connected unweighted signed
+graphs Ĝ such that the underlying graphs have maximum degree k, Ĝ has exactly one
+edge of negative weight, and Ĝ contains a sedentary plus state. In particular, there are
+infinitely many unweighted signed trees T̂ such that the underlying graphs have maximum
+degree three, T̂ has exactly one negative edge weight and T̂ contains a sedentary plus state.
+Lastly, adapting similar proofs to that of Theorem 8 and 9 yields the following result.
+Theorem 14. Almost all labelled connected unweighted planar graphs contain a sedentary pair state. Moreover, almost all labelled connected unweighted planar graphs can be
+assigned a single negative edge so that the resulting signed graphs contain a sedentary plus
+state. This statement holds if we replace ‘labelled connected planar graphs’ with ‘trees’.
+
+8
+
+Cayley Graphs
+
+Let (Γ, +) be a finite abelian group and consider a connection set S ⊂ Γ, without containing the identity, satisfying {−s : s ∈ S} = S. A Cayley graph over Γ with the connection
+set S is denoted by Cay (Γ, S) has the vertex set Γ where two vertices a, b ∈ Γ are adjacent if and only if a − b ∈ S. The cycle Cn on n vertices is a Cayley graph over Zn with
+connection set {−1, 1} . There is no plus state transfer in the cycle C6 [17, Theorem 6.5].
+However, assigning −1 to the edges {3, 4} and {0, 5} in C6 results perfect state transfer
+between √12 (e1 + e5 ) and √12 (e2 + e4 ). Using the characterization of pretty good pair state
+transfer in cycles [29, Theorem 9], we obtain an observation on a signed cycle.
+Theorem 15. The cycle Cn with w (0, n − 1) = w
+
+n n
+, +1
+2 2
+
+
+
+= −1 exhibits pretty good
+
+state transfer between √12 (ea + en−a ) and √12 (e n2 −a + e n2 +a ), whenever 0 < a < n2 with
+a ̸= n4 and either:
+1. n = 2k , where k is a positive integer greater than two or,
+2. n = 2k p, where k is a positive integer and p is an odd prime, and a = 2k−2 r, for
+some positive integer r.
+Another way to view a signed graph G̃ is as two edge-disjoint spanning subgraphs of
+the underlying unsigned graph G that is G̃ = G+ ∪ G− , where the edges of G+ and G−
+are signed with 1 and −1, respectively. The adjacency matrix of G̃ is given by
+23
+
+ 
+
+
+A G̃ = A G+ − A G− .
+Such a decomposition of the adjacency matrix of the signed graph into positive and
+negative parts gives rise to the following result. The proof of the following result is omitted
+as it is similar to that of perfect state transfer between vertex states in [3, Theorem 2].
+Theorem 16. Let H and K be edge-disjoint spanning subgraphs of a graph G such that
+G = H ∪ K. If H has perfect state transfer between √12 (ea ± eb ) and √12 (ec ± ed ) at τ and
+K is periodic at √12 (ea ± eb ) at τ , then the signed graph G̃ = H + ∪ K − has perfect state
+transfer between √12 (ea ± eb ) and √12 (ec ± ed ) at τ provided A(H) and A(K) commute.
+We also need the following result.
+Proposition 2. [26] If S1 and S2 are symmetric subsets of an abelian group Γ then
+adjacency matrices of the Cayley graphs Cay (Γ, S1 ) and Cay (Γ, S2 ) commute.
+We now construct signed Cayley graphs with pair state and plus state transfer.
+Example 9. Let Γ be an abelian group of order 4n. Consider Cay (Z6 × Γ, S1 ) and
+
+
+Cay (Z6 × Γ, S2 ), with S1 = (±1, 0) and S2 = (0, j) for all j ∈ Γ \ {0} . The graph
+Cay (Z6 × Γ, S1 ) is formed by 4n number of disjoint cycles C6 , while Cay (Z6 × Γ, S2 ) is
+the graph formed by six complete graphs of order 4n. Now, the graph Cay (Z6 × Γ, S1 ∪ S2 )
+is a connected graph. Since the complete graph K4n is periodic at π2 and C6 has pair state
+transfer between √12 (e0 − e2 ) and √12 (e3 − e5 ) at the same time, then by Theorem 16 and
+Proposition 2, the signed graph Cay (Z6 × Γ, S1 )∪Cay (Z6 × Γ, S2 )− has pair state transfer
+at π2 between √12 (e(0,j) − e(2,j) ) and √12 (e(3,j) − e(5,j) ) for j ∈ Γ.
+Example 10. Let C be a subset of Zd2 such that the sum of the elements of C is 0.
+
+
+Then each vertex in Cay Zd2 , C is periodic at π2 [5]. Consider Cay Z8 × Zd2 , S1 and
+
+
+
+Cay Z8 × Zd2 , S2 , with S1 = (±1, 0) and S2 = (0, j) for all j ∈ C. The graph
+
+
+Cay Z8 × Zd2 , S1 is formed by 2d number of disjoint cycles C8 , while Cay Z8 × Zd2 , S2 is
+the graph formed by eight cube-like graphs of order 2d . Now, the graph Cay Z8 × Zd2 , S1 ∪ S2
+
+is connected graph. Since the cube-like graph Cay Zd2 , C is periodic at π2 and C8 has plus
+state transfer between √12 (e0 + e4 ) and √12 (e2 + e6 ) at the same time, Theorem 16 and
+
+−
+Proposition 2 implies that the signed graph Cay Z8 × Zd2 , S1 ∪ Cay Z8 × Zd2 , S2
+has
+plus state transfer at π2 between √12 (e(0,j) + e(4,j) ) and √12 (e(2,j) + e(6,j) ) for j ∈ Zd2 .
+24
+
+
+
+9
+
+Graphs with tails
+
+Let G and H be graphs. The graph obtained by identifying a vertex of G with a vertex
+of H, say V (G) ∩ V (H) = {u}, is called the 1-sum of G and H at vertex u. We say that
+G is a graph with a tail if G is a 1-sum of a graph and a path, where the 1-sum is taken
+at the pendant vertex of the path. Let Y = {Hj (rj ) : j ∈ {1, . . . , |V (G)|}} be a collection
+of rooted graphs, where each Hj is rooted at vertex rj . The rooted product of G with Y,
+denoted GY , is obtained from the 1-sum of G with Hj by identifying vertex j of G with
+vertex rj in Hj , for each j.
+In this section, we apply our results to graphs with tails. Throughout, we let P∞
+denote the infinite path. The following result is a strengthening of [1, Theorem 15].
+Corollary 13. Let X1 be a bounded graph and G = P3Y where Y = {X1 , P∞ , X2 } and
+f : X1 → X2 is an isomorphism. Then X1 has perfect state transfer between vertices u
+and v if and only if G has perfect state transfer between √12 (eu − ef (u) ) and √12 (ev − ef (v) ).
+Proof. Note that X1 and X2 are twin subgraphs in P3Y . As there are no edges between
+X1 and X2 , we get A′ = 0. Applying Corollary 4(1-2) yields the desired result.
+We now construct graphs with tails with pair PST that do not arise from rooted
+products of P3 . Let X be the Cartesian product of two copies of P3 . The fly-swatter
+graph Gn is obtained from a 1-sum of X and Pn at vertex u, where u is a degree two
+vertex of X and a leaf in Pn (see Figure 8). The following generalizes [1, Example 11].
+Corollary 14. For n ∈ Z+ ∪∞, let Gn be the fly-swatter graph. Then perfect state transfer
+occurs between √12 (e1 −e7 ) and √12 (e3 −e5 ) in Gn for all n ∈ Z+ ∪∞ at √π2 . Moreover, if Ĝn
+and G′n are signed graphs with adjacency matrices DA(Gn )D and D′ A(Gn )D′ respectively,
+where D and D′ are diagonal matrices of ±1’s such that D1 = −D7 , D3 = −D5 , D1′ =
+−D7′ , and D3′ = D5′ , then perfect state transfer occurs between √12 (e1 + e7 ) and √12 (e3 + e5 )
+in Ĝn and between √12 (e1 + e7 ) and √12 (e3 − e5 ) in G′n for all n ∈ Z+ ∪ ∞ at √π2 .
+Proof. Note that Gn has twin subgraphs X1 = X2 = P3 , where the subgraph induced
+by V (G)\(V (X1 ) ∪ V (X2 )) is a union of Pn and two isolated vertices. As PST occurs
+between vertices 1 and 3 in X1 and A′ = 0, Corollary 4(2) yields the desired result.
+
+25
+
+X1
+
+2
+1
+
+8
+
+3
+9
+
+7
+
+X2
+
+4
+5
+
+6
+
+Figure 8: The fly-swatter graph G4
+
+Let V (Cn ) = Zn and E(Cn ) = {(j, j + 1) : j ∈ Zn }. For p ≥ 3, let H2p be the resulting
+graph after adding the matching M to C2p , where M = ∅ if p = 3, 4, and for p ≥ 5,
+
+n
+o
+
+
+ { p−3 , 3p+1 }, { p−1 , 3(p+1) }, { p+1 , 3(p−1) }, { p+3 , 3p−1 }
+if p is odd
+2
+2
+2
+2
+2
+2
+2
+2
+M= n
+o
+
+
+ { p2 − 2, 3p
++ 1}, { p2 − 1, 3p
++ 2}, { p2 + 1, 3p
+− 2}, { p2 + 2, 3p
+− 1}
+otherwise.
+2
+2
+2
+2
+Corollary 15. Let Gp,n be the graph obtained from a 1-sum of H2p and a path Pn at
+vertex p. The following hold for all integers p ≥ 3 and for all n ∈ Z+ ∪ ∞.
+1. Perfect state transfer occurs between √12 (e⌈ p2 −1⌉ − e⌊ 3p +1⌋ ) and √12 (e⌊ p2 +1⌋ − e⌈ 3p −1⌉ )
+2
+
+2
+
+in Gp,n at τ = π2 whenever p is odd and τ = √π2 otherwise.
+2. Let Ĝp,n and G′p,n be signed graphs with A(Ĝp,n ) = DA(Gn )D and A(G′p,n ) =
+D′ A(Gn )D′ , where D, D′ are diagonal matrices of ±1’s such that D⌈ p2 −1⌉ = −D⌊ 3p +1⌋ ,
+2
+
+D⌊ p2 +1⌋ = −D⌈ 3p −1⌉ , D⌈′ p −1⌉ = −D⌊′ 3p +1⌋ , and D⌊′ p +1⌋ = D⌈′ 3p −1⌉ . Then perfect state
+2
+2
+2
+2
+
+2
+
+transfer occurs between √12 (e⌈ p2 −1⌉ + e⌊ 3p +1⌋ ) and √12 (e⌊ p2 +1⌋ + e⌈ 3p −1⌉ ) in Ĝp,n and
+2
+2
+1
+1
+′
+between √2 (e⌈ p2 −1⌉ + e⌊ 3p +1⌋ ) and √2 (e⌊ p2 +1⌋ − e⌈ 3p −1⌉ ) in Gp,n at τ given in 1.
+2
+2
+Proof. If p is odd, then our assumption on H2p gives Gp,n with twin subgraphs X1 =
+X2 = K2 where V (X1 ) = { p−1
+, p+1
+}, V (X2 ) = { 3p+1
+, 3p−1
+} and the subgraph induced
+2
+2
+2
+2
+by V (G)\(V (X1 ) ∪ V (X2 )) is a union of Pp−2 and a one-sum of Pp−2 and Pn at vertex
+u which is the middle vertex of Pp−2 and a leaf of Pn . If p is even, then Gp,n has twin
+subgraphs X1 = X2 = P3 where V (X1 ) = { p2 − 1, p2 , p2 + 1}, V (X2 ) = { 3p
++ 1, 3p
+, 3p − 1},
+2
+2 2
+and the subgraph induced by V (G)\(V (X1 ) ∪ V (X2 )) is a union of Pp−3 and a one-sum of
+Pp−3 and Pn at vertex u which is the middle vertex of Pp−3 and a leaf of Pn . Since A′ = 0
+26
+
+X1
+X1
+
+1
+
+2
+
+0
+
+2
+1
+
+3
+
+3
+0
+
+X2
+
+5
+
+4
+
+4
+7
+X2
+
+5
+6
+
+Figure 9: The graph G3,3 (left) with PST between √12 (e1 − e5 ) and √12 (e2 − e4 ) at π2 , and
+G4,3 (right) with PST between √12 (e1 − e7 ) and √12 (e3 − e5 ) at √π2
+in both cases, and K2 and P3 admit PST between end vertices at π2 and √π2 , respectively,
+Corollary 4(2) yields 1, while Corollary 4(3-4) yields 2.
+
+10
+
+Open questions
+
+In [14, Theorem 5.6], it is shown that no vertex state in a bounded infinite graph admits
+periodicity (which in turn implies that vertex PST does not occur in bounded infinite
+graphs). Thus, it is natural to wonder whether infinite graphs in general do not admit
+PST. In [14], examples of locally finite graphs that are not bounded possessing periodic
+vertices are given, but it is unknown whether they are involved in perfect state transfer.
+We also constructed signed graphs with exactly one negative edge weight having PST
+between a pair state and a plus state. It would be interesting to find a characterization
+of PST between a plus state and a pair state in undirected connected unweighted graphs.
+Finally, recall that the number of edges in a planar graph is linear in its number of
+vertices. This relative sparsity makes it appealing to characterize vertex PST in planar
+graphs. In particular, are there infinite families of planar graphs with vertex PST?
+
+Disclosure statement
+No potential conflict of interest was reported by the author(s).
+
+27
+
+Acknowledgements
+C. Godsil is supported by NSERC grant number RGPIN-9439. S. Kirkland is supported
+by NSERC grant number RGPIN-2025-05547. S. Mohapatra is supported by the Department of Science and Technology (INSPIRE: IF210209). H. Monterde is supported by the
+University of Manitoba Faculty of Science and Faculty of Graduate Studies.
+
+References
+[1] P. Bernard, C. Tamon, L. Vinet, and W. Xie. Quantum state transfer in graphs with tails.
+Linear Algebra Appl., 710:363–384, 2025.
+[2] B. Bhattacharjya, H. Monterde, and H. Pal. Quantum walks on blow-up graphs. J. Phys.
+A, 57(33):Paper No. 335303, 16, 2024.
+[3] J. Brown, C. Godsil, D. Mallory, A. Raz, and C. Tamon. Perfect state transfer on signed
+graphs. Quantum Inf. Comput., 13(5-6):511–530, 2013.
+[4] Q. Chen and C. Godsil. Pair state transfer. Quantum Inf. Process., 19(9):Paper No. 321,
+30, 2020.
+[5] W.-C. Cheung and C. Godsil. Perfect state transfer in cubelike graphs. Linear Algebra
+Appl., 435(10):2468–2474, 2011.
+[6] A. M. Childs. Universal computation by quantum walk.
+102(18):180501, 2009.
+
+Physical review letters,
+
+[7] A. M. Childs, D. Gosset, and Z. Webb. Universal computation by multiparticle quantum
+walk. Science, 339(6121):791–794, 2013.
+[8] L. Ciardo. The braess’ paradox for pendent twins. Linear Algebra Appl., 590:304–316, 2020.
+[9] G. Coutinho, C. Godsil, K. Guo, and F. Vanhove. Perfect state transfer on distance-regular
+graphs and association schemes. Linear Algebra Appl., 478:108–130, 2015.
+[10] G. Coutinho, E. Juliano, and T. Jung Spier. No perfect state transfer in trees with more
+than 3 vertices. J. Combin. Theory Ser. B, 168:68–85, 2024.
+[11] E. Farhi, J. Goldstone, and S. Gutmann. A quantum algorithm for the hamiltonian nand
+tree. Theory Comput., 4:Article 8, 169–190, 2008.
+[12] C. Godsil. State transfer on graphs. Discrete Math., 312(1):129–147, 2012.
+[13] C. Godsil. When can perfect state transfer occur? Electron. J. Linear Algebra, 23:877–890,
+2012.
+[14] C. Godsil. Periodic vertices in infinite graphs. In preparation, 2025.
+[15] C. Godsil, S. Kirkland, and H. Monterde. Perfect state transfer between real pure states.
+
+28
+
+SIAM J. Matrix Anal. Appl., 46(3):2093–2115, 2025.
+[16] C. Godsil and G. Royle. Algebraic Graph Theory, volume 207 of Graduate Texts in Mathematics. Springer-Verlag, New York, 2001.
+[17] S. Kim, H. Monterde, B. Ahmadi, A. Chan, S. Kirkland, and S. Plosker. A generalization
+of quantum pair state transfer. Quantum Inf. Process., 23(11):Paper No. 369, 2024.
+[18] S. Kirkland and H. Monterde. Quantum walks on join graphs. Discrete Math., 2025.
+[19] S. Kirkland, H. Monterde, and S. Plosker. Quantum state transfer between twins in weighted
+graphs. J. Algebraic Combin., 58(3):623–649, 2023.
+[20] B. Mohar. The spectrum of an infinite graph. Linear Algebra Appl., 48:245–256, 1982.
+[21] H. Monterde. Strong cospectrality and twin vertices in weighted graphs. Electron. J. Linear
+Algebra, 38:494–518, 2022.
+[22] H. Monterde. New results in vertex sedentariness. arXiv preprint arXiv:2401.00362, 2023.
+[23] H. Monterde. Sedentariness in quantum walks. Quantum Inf. Process., 22(7):Paper No.
+273, 27, 2023.
+[24] H. Monterde, H. Pal, and S. Kirkland. Laplacian quantum walks on blow-up graphs. Linear
+Algebra Appl., 2025.
+[25] S. Ojha and H. Pal. q-laplacian state transfer on graphs with involutions. arXiv preprint
+arXiv:2509.20749, 2025.
+[26] H. Pal. More circulant graphs exhibiting pretty good state transfer. Discrete Math.,
+341(4):889–895, 2018.
+[27] H. Pal. Real state transfer on edge perturbed graphs with generalized clusters. arXiv
+preprint arXiv:2505.07982, 2025.
+[28] H. Pal and B. Bhattacharjya. Pretty good state transfer on circulant graphs. Electron. J.
+Combin., 24(2):Paper No. 2.23, 13, 2017.
+[29] H. Pal and S. Mohapatra. Quantum pair state transfer on isomorphic branches. arXiv
+preprint arXiv:2402.07078, 2024.
+[30] A. J. Schwenk. Almost all trees are cospectral. In New directions in the theory of graphs
+(Proc. Third Ann Arbor Conf., Univ. Michigan, Ann Arbor, Mich., 1971), pages 275–307.
+Academic Press, 1973.
+[31] A. Taylor. Introduction to Functional Analysis. John Wiley & Sons, 1958.
+[32] C. van Bommel. Quantum Walks and Pretty Good State Transfer on Paths. Ph.D. Dissertation, 2019.
+
+29
+
+

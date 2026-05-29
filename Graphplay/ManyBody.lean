@@ -170,9 +170,15 @@ variable {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
 /-- Occupation at site `v`. -/
 def occAt (n : OccupationVector V N) (v : V) : ℕ := n.occ v
 
-/-- Apply a single hop `v ← u`: decrement `u`, increment `v`. Returns `none`
-if `u` is unoccupied. -/
-noncomputable def hop (n : OccupationVector V N) (u v : V) :
+/-- Apply a single hop `v ← u` between **distinct** sites `u ≠ v`: decrement
+`u`, increment `v`. Returns `none` if `u` is unoccupied.
+
+The `u ≠ v` hypothesis is the physical content of a hop: a particle moves
+from one site to a *different* site.  Without it, the `if w = u` branch (which
+is tested first) would shadow the increment at `v` when `u = v`, decreasing
+the total occupation by one — so total-occupation conservation genuinely
+requires `u ≠ v`. -/
+noncomputable def hop (n : OccupationVector V N) (u v : V) (huv : u ≠ v) :
     Option (OccupationVector V N) :=
   if h : n.occ u = 0 then none
   else some
@@ -180,8 +186,29 @@ noncomputable def hop (n : OccupationVector V N) (u v : V) :
                       else if w = v then n.occ v + 1
                       else n.occ w
       totalEq := by
-        -- The total occupation is preserved by a hop.
-        sorry }
+        -- The total occupation is preserved by a hop between distinct sites.
+        have hu : 1 ≤ n.occ u := Nat.one_le_iff_ne_zero.mpr h
+        classical
+        have hv_mem : v ∈ Finset.univ.erase u :=
+          Finset.mem_erase.mpr ⟨huv.symm, Finset.mem_univ v⟩
+        -- On the doubly-erased index set the modified occupation equals `n.occ`.
+        have hrest : (∑ w ∈ (Finset.univ.erase u).erase v,
+              (if w = u then n.occ u - 1 else if w = v then n.occ v + 1 else n.occ w))
+            = ∑ w ∈ (Finset.univ.erase u).erase v, n.occ w := by
+          refine Finset.sum_congr rfl (fun w hw => ?_)
+          rw [Finset.mem_erase] at hw
+          obtain ⟨hwv, hw'⟩ := hw
+          rw [Finset.mem_erase] at hw'
+          obtain ⟨hwu, _⟩ := hw'
+          rw [if_neg hwu, if_neg hwv]
+        -- Extract sites `u` and `v` from both the new sum and `n.totalEq`.
+        rw [← Finset.add_sum_erase Finset.univ _ (Finset.mem_univ u),
+            ← Finset.add_sum_erase _ _ hv_mem, hrest]
+        rw [if_pos rfl, if_neg huv.symm, if_pos rfl]
+        have htot := n.totalEq
+        rw [← Finset.add_sum_erase Finset.univ n.occ (Finset.mem_univ u),
+            ← Finset.add_sum_erase _ n.occ hv_mem] at htot
+        omega }
 
 /-- The bosonic matrix element of the hop `u ← v`: `√((n_u + 1) n_v)` (with
 the convention that the destination occupation increases by one). -/

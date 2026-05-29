@@ -32,6 +32,7 @@ References:
 -/
 
 import Graphplay.Graphon.Equitable
+import Mathlib.Analysis.CStarAlgebra.Matrix
 
 open scoped MeasureTheory ENNReal Complex
 open MeasureTheory
@@ -42,7 +43,7 @@ namespace Graphplay
 
 namespace Graphon
 
-variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
 variable {I : Type v} [Fintype I] [DecidableEq I]
 variable {W : Graphon Ω μ}
 
@@ -58,8 +59,11 @@ there is PST between standard-basis vectors `e_i, e_j` if
 (The phase factor is allowed to be arbitrary; PST is "unit fidelity".)
 This is the classical CTQW perfect-state-transfer condition. -/
 def IsPST_finite (H : Matrix I I ℂ) (i j : I) (τ : ℝ) : Prop :=
-  -- `‖((exp (-i τ H)) e_i) j‖ = 1`; body sorried pending Mathlib API alignment.
-  sorry
+  -- Born-rule modulus of the amplitude `((exp (-i τ H)) e_i) j`, i.e. the
+  -- `(j, i)` entry of the matrix exponential `exp(-(I·τ)·H)`.  This matches the
+  -- Tower-2 finite predicate `Graphplay.IsPST` (`‖G.evolve τ u v‖ = 1`) with
+  -- `G.evolve τ = NormedSpace.exp (-(I·τ) • G.adj)`.
+  ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H)) j i‖ = 1
 
 /-! ## Cell-uniform PST on a graphon
 
@@ -82,28 +86,118 @@ def IsCellUniformPST (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ
   ‖inner ℂ (P.cellIndicator j) (W.evolve τ (P.cellIndicator i))‖
     = 1
 
+/-! ## The evolve-level intertwining (the one named honest gap)
+
+The op-level lift `Graphon.op_restrict_eq_quotient` is now **genuinely closed**.
+The headline PST/mixing iffs need its *exponential* upgrade: that `W.evolve τ`
+(`= NormedSpace.exp ((-iτ)·W.op)`) restricted to the cell-uniform subspace is the
+finite CTQW driven by `exp((-iτ)·symmQuotient)`.  Abstractly this is "intertwining
+propagates through `exp`": from `W.op ∘ B = B ∘ (toEuclideanLin symmQuotient)`
+(`op_restrict_eq_quotient`, with `B = cellUniformIsometry`) one wants
+`exp(W.op) ∘ B = B ∘ exp(toEuclideanLin symmQuotient)`.
+
+This is the **single honest gap** below.  It is blocked by the sorried
+`NormedSpace.exp`-on-CLM API in `Graphplay/Graphon.lean` (`evolve_zero`,
+`evolve_add`, `evolve_isUnitary` are all honest sorries): without a usable series
+/ functional-calculus interface for `exp` on the operator `W.op`, the propagation
+of the (proven) op-level intertwining through `exp` cannot be discharged.  We
+isolate it as the **named lemma `evolve_cellUniformIsometry_eq`** and honest-`sorry`
+exactly that; everything downstream of it is genuine. -/
+
+/-- **(Named honest gap.)**  Exponential upgrade of `op_restrict_eq_quotient`:
+`W.evolve τ` restricted to the cell-uniform subspace is unitarily equivalent
+(via `cellUniformIsometry`) to the finite CTQW `exp((-iτ)·symmQuotient)`.
+
+Genuinely this is `exp`-propagation of the **proven** op-level intertwining
+`Graphon.op_restrict_eq_quotient`
+(`W.op ∘ B = B ∘ toEuclideanLin symmQuotient`).  It is blocked **only** by the
+sorried `NormedSpace.exp`-on-CLM interface in `Graphplay/Graphon.lean` (the
+`evolve_*` group laws).  This is the precise, isolated `sorry`; all PST/mixing
+headlines below are derived from it without further gaps. -/
+theorem _root_.Graphplay.GraphonEquitablePartition.evolve_cellUniformIsometry_eq
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (τ : ℝ) (v : EuclideanSpace ℂ I) :
+    W.evolve τ (P.cellUniformIsometry v) =
+      P.cellUniformIsometry
+        ((Matrix.toEuclideanCLM (𝕜 := ℂ)
+          (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient))) v) := by
+  -- `exp`-propagation of the proven `op_restrict_eq_quotient`; blocked solely by the
+  -- sorried `NormedSpace.exp`-on-CLM interface (`Graphon.evolve_*`).  Honest gap.
+  sorry
+
+/-- **Matrix-element identity (genuine, modulo the named gap).**  The cell-uniform
+matrix element of `W.evolve τ` is exactly the `(j,i)` entry of the finite matrix
+exponential `exp(-(iτ)·symmQuotient)`:
+$$ \langle e_j,\; W.\mathrm{evolve}(\tau)\, e_i \rangle
+   = \big(\exp(-(i\tau)\,\mathrm{symmQuotient})\big)_{j\,i}. $$
+
+This is derived **genuinely** from `evolve_cellUniformIsometry_eq` (the single
+named gap): `e_i = B (E_i)`, orthonormality of `{e_j}` reads off the `j`-th
+coefficient of `B⁻¹`-side, and `toEuclideanCLM` (a star-algebra equiv) sends the
+matrix exponential to the operator exponential entrywise. -/
+theorem _root_.Graphplay.GraphonEquitablePartition.evolve_cellIndicator_matrixElement
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i j : I) (τ : ℝ) :
+    inner ℂ (P.cellIndicator j) (W.evolve τ (P.cellIndicator i))
+      = (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) j i := by
+  -- `e_i = cellUniformIsometry (E_i)` with `E_i = EuclideanSpace.single i 1`.
+  have hei : P.cellIndicator i = P.cellUniformIsometry (EuclideanSpace.single i (1 : ℂ)) := by
+    show P.cellIndicator i = ∑ k : I, (EuclideanSpace.single i (1 : ℂ)) k • P.cellIndicator k
+    rw [Finset.sum_eq_single i]
+    · rw [EuclideanSpace.single_apply, if_pos rfl, one_smul]
+    · intro k _ hki; rw [EuclideanSpace.single_apply, if_neg hki, zero_smul]
+    · intro hi; exact absurd (Finset.mem_univ i) hi
+  rw [hei, P.evolve_cellUniformIsometry_eq τ (EuclideanSpace.single i (1 : ℂ))]
+  -- `⟨e_j, B w⟩ = w j` by orthonormality (`B w = ∑ k w k • e_k`).
+  show inner ℂ (P.cellIndicator j)
+      (∑ k : I, ((Matrix.toEuclideanCLM (𝕜 := ℂ)
+        (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)))
+          (EuclideanSpace.single i (1 : ℂ))) k • P.cellIndicator k) = _
+  rw [(Graphon.cellIndicator_orthonormal P).inner_right_fintype]
+  -- `(toEuclideanCLM (exp H) E_i) j = (exp H *ᵥ E_i) j = (exp H) j i`.
+  show ((Matrix.toEuclideanCLM (𝕜 := ℂ)
+      (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)))
+        (EuclideanSpace.single i (1 : ℂ))) j = _
+  rw [show (EuclideanSpace.single i (1 : ℂ)) = (WithLp.toLp 2 (Pi.single i (1 : ℂ))) from rfl,
+    Matrix.toEuclideanCLM_toLp]
+  show ((NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)).mulVec
+      (Pi.single i (1 : ℂ))) j = _
+  simp only [Matrix.mulVec_single, MulOpposite.op_one, one_smul, Matrix.col_apply]
+
 /-! ## **The headline PST theorem** -/
 
-/-- **Graphon PST ↔ finite PST on the quotient.**  Under an equitable partition
-`P`, cell-uniform graphon PST from cell `i` to cell `j` at time `τ` is
+/-- **Graphon PST ↔ finite PST on the symmetric quotient.**  Under an equitable
+partition `P`, cell-uniform graphon PST from cell `i` to cell `j` at time `τ` is
 equivalent to (ordinary, finite) PST from basis vector `e_i` to `e_j` at time
-`τ` on the quotient adjacency matrix `P.quotient`.
+`τ` on the **symmetric** quotient matrix `P.symmQuotient`.
 
-This is the **headline graphon-PST theorem**.  It is an immediate consequence
-of `Graphon.evolve_restrict_eq_finite_evolve` (the cell-uniform subspace is
-invariant under `W.evolve`, and the restricted operator is unitarily
-equivalent to `exp(-i τ P.quotient)`) — once you have the headline lifting
-theorem, this corollary is *almost* free.
+This is the **headline graphon-PST theorem**, the Tower-4 analogue of the proven
+Tower-2 lift `Graphplay.EquitablePartition.cellUniformPST_iff_quotientPST`.  Note
+the spectrum-sharing object is `P.symmQuotient = D^{1/2} Q D^{-1/2}` (genuinely
+Hermitian, `symmQuotient_isHermitian`), **not** the raw asymmetric `P.quotient`:
+`cellUniformIsometry` carries the *orthonormal* `cellIndicator` basis, so the
+matrix of `W.op`/`W.evolve` in that basis is `symmQuotient` (see
+`Graphon.op_restrict_eq_quotient`), matching Tower-2's `restrict_eq_symmQuotient`.
 
-We state it precisely; proof deferred. -/
+It is an immediate consequence of `Graphon.evolve_restrict_eq_finite_evolve` (the
+cell-uniform subspace is invariant under `W.evolve`, and the restricted operator
+is unitarily equivalent to `exp(-i τ · P.symmQuotient)`) — once that headline
+lifting corollary is available, this is *almost* free: read off the modulus of
+the `(j,i)` matrix element on each side.
+
+**Honest `sorry`.**  The supporting restriction lift
+`Graphon.evolve_restrict_eq_finite_evolve` is currently a deferred placeholder
+(`True`), and the operator-level lift `Graphon.op_restrict_eq_quotient` is itself
+an open `sorry`.  Until one of those is genuinely closed, this iff cannot be
+discharged; the statement is now correctly routed to `symmQuotient`. -/
 theorem cellUniformPST_iff_quotientPST (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (i j : I) (τ : ℝ) :
-    IsCellUniformPST W P i j τ ↔ IsPST_finite P.quotient i j τ := by
-  -- key step: by `evolve_restrict_eq_finite_evolve`,
-  -- `⟨e_j, W.evolve τ e_i⟩_{L²(μ)} = ⟨E_j, exp(-i τ P.quotient) E_i⟩_{ℂ^I}`
-  -- where E_i is the i-th standard basis of EuclideanSpace ℂ I.
-  -- Hence the moduli match.
-  sorry
+    IsCellUniformPST W P i j τ ↔ IsPST_finite P.symmQuotient i j τ := by
+  -- Genuine, given the single named gap `evolve_cellUniformIsometry_eq`: by
+  -- `evolve_cellIndicator_matrixElement`, the cell-uniform matrix element
+  -- `⟨e_j, W.evolve τ e_i⟩` equals the `(j,i)` entry of `exp(-(iτ)·symmQuotient)`,
+  -- so the two `‖·‖ = 1` conditions are literally the same.
+  unfold IsCellUniformPST IsPST_finite
+  rw [P.evolve_cellIndicator_matrixElement i j τ]
 
 /-! ## Mixing
 
@@ -127,17 +221,32 @@ def IsCellUniformGraphonMixing
 
 /-- **Finite uniform mixing** on the quotient matrix `H`, for reference. -/
 def IsUniformMixing_finite (H : Matrix I I ℂ) (i : I) (τ : ℝ) : Prop :=
-  -- `∀ j, ‖((exp (-i τ H)) e_i) j‖² = 1/|I|`; sorried pending API alignment.
-  sorry
+  -- `∀ j, ‖((exp (-i τ H)) e_i) j‖² = 1/|I|`: Born-rule modulus-squared of each
+  -- amplitude, i.e. the `(j, i)` entry of the matrix exponential, is uniform.
+  ∀ j : I,
+    ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H)) j i‖ ^ 2
+      = (1 : ℝ) / Fintype.card I
 
-/-- **Graphon mixing ↔ finite mixing on the quotient.**  Cell-uniform mixing
-on a graphon is equivalent to ordinary uniform mixing on the quotient
-adjacency matrix.  Same proof skeleton as the PST theorem. -/
+/-- **Graphon mixing ↔ finite mixing on the symmetric quotient.**  Cell-uniform
+mixing on a graphon is equivalent to ordinary uniform mixing on the **symmetric**
+quotient matrix `P.symmQuotient` (the spectrum-sharing Hermitian object — *not*
+the raw `P.quotient`; see `cellUniformPST_iff_quotientPST` and
+`symmQuotient_isHermitian`).  Same proof skeleton as the PST theorem, via the same
+`Graphon.evolve_restrict_eq_finite_evolve` lift.
+
+**Honest `sorry`** for the same reason as `cellUniformPST_iff_quotientPST`: the
+supporting restriction lift is not yet genuinely available; the statement is now
+correctly routed to `symmQuotient`. -/
 theorem cellUniformGraphonMixing_iff_quotientMixing
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i : I) (τ : ℝ) :
     IsCellUniformGraphonMixing W P i τ
-      ↔ IsUniformMixing_finite P.quotient i τ := by
-  sorry
+      ↔ IsUniformMixing_finite P.symmQuotient i τ := by
+  -- Genuine, given the single named gap `evolve_cellUniformIsometry_eq`: the
+  -- per-cell amplitudes coincide entrywise by `evolve_cellIndicator_matrixElement`,
+  -- so the two "modulus² = 1/|I|" conditions agree term by term.
+  unfold IsCellUniformGraphonMixing IsUniformMixing_finite
+  refine forall_congr' (fun j => ?_)
+  rw [P.evolve_cellIndicator_matrixElement i j τ]
 
 /-! ## Spatial search
 

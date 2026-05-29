@@ -1,0 +1,1262 @@
+arXiv:1709.07975v1 [math.CO] 23 Sep 2017
+
+Strongly Cospectral Vertices
+Chris Godsil, Jamie Smith
+September 26, 2017
+Abstract
+Two vertices a and b in a graph X are cospectral if the vertexdeleted subgraphs X \ a and X \ b have the same characteristic polynomial. In this paper we investigate a strengthening of this relation
+on vertices, that arises in investigations of continuous quantum walks.
+Suppose the vectors ea for a in V (X) are the standard basis for RV (X) .
+We say that a and b are strongly cospectral if for each eigenspace U
+of A(X), the orthogonal projections of ea and eb are either equal or
+differ only in sign. We develop the basic theory of this concept and
+provide constructions of graphs with pairs of strongly cospectral vertices. Given a continuous quantum walk on on a graph, each vertex
+determines a curve in complex projective space. We derive results
+that show tht the closer these curves are, the more “similar” the corresponding vertices are.
+
+Contents
+1 Introduction
+
+2
+
+2 Cospectral Vertices
+
+5
+
+3 Characterizing Cospectral Vertices
+
+7
+
+4 Parallel Vertices: Characterizations
+
+8
+
+5 Average States
+
+10
+
+6 An Uncomplicated Algebra
+
+12
+1
+
+7 Eigenspaces and Parallel Vertices
+
+14
+
+8 Parallel Vertices and a Rational Function
+
+15
+
+9 Constructing Strongly Cospectral Pairs
+
+16
+
+10 Walk-Regular Graphs
+
+18
+
+11 Symmetries
+
+19
+
+12 Automorphisms, Equitable Partitions
+
+22
+
+13 Cospectral Vertices
+
+24
+
+14 Strongly Cospectral Vertices
+
+27
+
+15 Problems
+
+28
+
+1
+
+Introduction
+
+To start, we set up some machinery for working with quantum states. We will
+represent a quantum state in Cn by a density matrix, a positive semidefinite
+n × n matrix with trace one. A density matrix D represents a pure state if
+rk(D) = 1, in which case D = zz ∗ for some unit vector z. We will only be
+concerned with pure states in this paper and generally they will be associated
+to vertices of a graph X—if a ∈ V (X), then ea denotes the standard basis
+vector in CV (X) indexed by a and our focus will be on pure states of the form
+Da = ea eTa . If D is a pure state then D2 = D and D represents orthogonal
+projection onto the column space of D; thus D corresponds to a point in
+complex projective space.
+If X is a graph with adjacency matrix A, the continuous quantum walk
+on X is determined by the family of unitary matrices
+U (t) = exp(itA),
+
+t ≥ 0.
+
+The understanding is that if, initially our system is in the satate associated
+with the density matrix D, then at time t its state is given by
+U (t)DU (−t).
+2
+
+It is easy to check that this is a density matrix, which we denote by D(t),
+and that D(t) is pure if and only if D is. It follows that, if our initial state
+D is pure, a quantum walk determines a curve in projective space, namely
+the set of points D(t). (If our initial state were not pure, we would have a
+curve on a Grassmannian, but we will not go there.)
+Given distinct vertices a and b in X, one question of interest to physicists
+is whether there is a time t such that Db lies on the curve containing Da ;
+equivalently is there a time t such that U (t)Da U (−t) = Db . If there is such
+a time, we say that we have perfect state transfer from a to b at time t. If
+we do have perfect state transfer at time t, then
+kDa (t) − Db k = 0.
+Since, as it happen, perfect state transfer is rare, we might decide to settle
+for less: we could ask whether, given  > 0, there is a time t such that
+kDa (t) − Db k < .
+If this is possible (for all positive ) we have pretty good state transfer from a
+to b. Pretty good state transfer occurs more often than perfect state transfer.
+For example we get perfect state transfer between the end-vertices of the
+path Pn if and only if n = 2 or n = 3, but we have pretty good state transfer
+between the end-vertices of Pn if and only if n + 1 is a power of two, a prime,
+or twice a prime. For details see Banchi et al [1]; more recent work on this
+topic appears in [4, 13].)
+Let θ1 , . . . , θm be the distinct eigenvalues of the adjacency matrix A of
+the graph X. For each eigenvalue θr there is an idempotent matrix Er representing orthogonal projection onto the eigenspace with eigenvalue θr . If f is
+a function defined on the eigenvalues of A, then
+X
+f (A) =
+f (θr )Er
+r
+
+and, in particular
+U (t) =
+
+X
+
+eitθr Er .
+
+r
+
+Hence
+D(t) =
+
+X
+
+eit(θr −θs ) Er DEs
+
+r,s
+
+3
+
+and so Da (t) = Db if and only if
+X
+X
+eit(θr −θs ) Er Da Es = Db =
+E r Db E s
+r,s
+
+r,s
+
+and this holds if and only if
+eit(θr −θs ) Er Da Es = Er Db Es
+for all r, s. Now all six matrices in this equality are real, whence we deduce
+that if perfect state transfer occurs,
+eit(θr −θs ) Er Da Es = ±1
+and, for each r,
+Er Da Er = Er Db Er .
+(The diagonal entries in both sides are necessarily non-negative since density
+matrices are positive semidefinite and Er is symmetric, whence both sides
+are positive semidefinite.) This leads us to the conclusion that, if perfect
+state transfer from a to b occurs, then for each r.
+Er ea = ±Er eb
+We define two vertices a and b in a graph X to be strongly cospectral if, for
+each spectral idempotent Er of X, we have Er ea = ±Er eb . Our ruminations
+have lead to the conclusion that, if there is perfect state transfer between
+vertices a and b, then these two vertices are strongly cospectral. There is a
+related and older concept, due to Schwenk [12]: vertices a and b in the graph
+X are cospectral if the vertex-deleted subgraphs X\a and X\b are cospectral.
+We will see that ‘strongly cospectral’ is a refinement of this concept. (The
+first explicit appearance of strongly cospectral vertices is probably in [6].)
+The first part of this paper develops the theory of strongly cospectral
+vertices. We show that if vertices a and b in X are strongly cospectral, then
+any automorphism of X that fixes a must fix the vertex b. (So the concept
+has combinatorial implications.) We provide a number of characterizations,
+for example: vertices a and b are strongly cospectral if and only if they. are
+cospectral and all poles of the rational function φ(X \ {a, b}, t)/φ(X, t) are
+simple. We use this to provide constructions of graphs with pairs of cospectral
+vertices. We show that cospectral vertices and strongly cospectral vertices
+4
+
+are connected by mappings that can viewed as relaxations of automorphisms.
+Thus we prove that a and b are strongly cospectral, there is an orthogonal
+matrix Q, a rational polynomial in A, such that Q2 = I and Qea = eb .
+The second part of this paper considers the geometry of the orbits of the
+pure states of the form Da . As we noted above, there is perfect state transfer
+from a to b if and only if Db lies in the orbit of Da ; equivalently if and only if
+the orbits of Da and Db coincide. Further we have pretty good state transfer
+if and only if Db lies in the closure of the orbit of Da , that is, if and only if
+the closures of the two orbits are equal. We show that equality of orbits, or
+of orbit closures, is unnecessary. Among other things, we prove that if the
+orbits are sufficiently close, then a and b must be cospectral and, if they are
+even closer, then a and b must be cospectral.
+
+2
+
+Cospectral Vertices
+
+We view the relation of being strongly cospectral as a combination of two
+relations. The first of these two is an older concept: two vertices a and b in a
+graph X are cospectral if the characteristic polynomials of the vertex-deleted
+subgraphs X \ a and X \ b are equal, that is,
+φ(X \ a, t) = φ(X \ b, t).
+It is immediate that that if there is an automorphism of X that maps a to
+b, then a and b are cospectral. Cospectral vertices were first introduced in
+Schwenk’s fundamental paper [12]; here Schwenk noted that the vertices u
+and v in the tree in Figure 1 are cospectral, but lie in different orbits of the
+automorphism group of the tree. Using this he was able to show that the
+proportion of trees on n vertices that are determined by their characteristic
+polynomial goes to zero as n → ∞.
+There are a surprising number of characterizations of cospectral vertices.
+We will list them in the next section, but we need first to introduce more
+terminology.
+Suppose S is a subset of the vertices a graph X with characteristic vector
+z and n = |V (X)|. We define the walk matrix MS relative to S to be the
+n × n matrix with the vectors
+z, Az, . . . , An−1 z
+
+5
+
+u
+
+v
+
+Figure 1: A pair of cospectral vertices
+
+as its columns. The case of interest to us will be when S is a single vertex a
+and, in this case, we will refer the walk matrix relative to a. We will use eS to
+denote the characteristic vector of S. The column space of MS is A-invariant,
+and so it is a module over the ring R[A] of real polynomials in A. It is in
+fact a cyclic module, generated by the first column z of MS . We call it the
+walk module relative to S.
+We see that the ij-entry of of MST MS is z T Ai+j−2 z, and so it is equal to
+the number of walks on X with length i + j − 2 that start and end on a
+vertex in S. Hence if S = {a}, then this entry is the number of closed walks
+in X that start at a and have length i + j − 2. We define WS (X, t) to be the
+generating function
+X
+z T Ak ztk = z T (I − tA)−1 z.
+k≥0
+
+2.1 Lemma. Let a and b be vertices in X. Then Wa (X, t) = Wb (X, t) if and
+only if MaT Ma = MbT Mb .
+Proof. It should be clear that, if the walk-generating functions are equal, the
+matrix products are equal. For the converse, let θ1 , . . . , θm denote the distinct
+eigenvalues of A and let EE1 , . . . , Em denote the corresponding orthogonal
+projections onto the distinct eigenspaces of A. Then for any vector z,
+z T (I − tA)−1 z =
+
+X z T Er z
+r
+
+1 − tθr
+
+.
+
+Since m ≤ n, it follows that the generating function z T (I − tA)−1 z is determined by its first m coefficients.
+
+6
+
+3
+
+Characterizing Cospectral Vertices
+
+We give a comprehensive list of characterizations of cospectral vertices. The
+first four appear already in [8]
+3.1 Theorem. Let a and b be vertices in the graph X with corresponding
+walk matrices Ma and Mb . The following statements are equivalent:
+(a) a and b are cospectral.
+(b) φ(X \ a, t) = φ(X \ b, t).
+(c) Wa (X, t) = Wb (X, t).
+(d) For each spectral idempotent Er we have (Er )a,a = (Er )b,b .
+(e) For any non-negative integer k we have (Ak )a,a = (Ak )b,b .
+(f) MaT Ma = MbT Mb .
+(g) The R[A]-modules generated by ea − eb and ea + eb are orthogonal subspaces of RV (X) .
+Proof. Claims (a) and (b) are equivalent, because (b) is the definition of
+cospectral. From the proof of Lemma 2.1 we have
+t−1 Wv (X, t−1 ) =
+
+φ(X \ v, t)
+φ(X, t)
+
+and, from [7, p. 30],
+φ(X \ v, t) X (Er )v,v
+=
+.
+φ(X, t)
+t
+−
+θ
+r
+r
+
+(3.1)
+
+Hence (b), (c) and (d) are equivalent. Since any power of A is a linear combination of the spectral idempotents Er , and since the spectral idempotents are
+polynomials in A, we see that (d) and (e) are equivalent. By the discussion
+in the previous section, (c) and (f) are equivalent.
+We turn to (g). The given modules are orthogonal if and only if for all
+non-negative i and j, we have
+hAi (ea − eb ), Aj (ea + eb )i = 0,
+
+7
+
+equivalently if and only if
+(ea − eb )T Ak (ea + eb ) = 0
+for all k ≥ 0. This is equivalent in turn to
+(ea − eb )T Et (ea + eb ) = 0
+for each spectral idempotent Er . As
+(ea − eb )T Et (ea + eb ) = eTa Er ea − eTb Er eb − eTb Er ea + eTa Er eb
+and
+eTb Er ea = (Er )b,a = (Er )a,b = eTb Er eb
+we find that (ea − eb )T Et (ea + eb ) = 0 for all r if and only if eTa Er ea = eTb Er eb
+for all r.
+We make some remarks. One consequence of Part (g) of the theorem is
+that if two vertices of X are cospectral, then the characteristic polynomial of
+X factors non-trivially over Q. More precisely, the characteristic polynomials
+of the respective restrictions of A to the modules generated by ea − eb and
+ea + eb are disjoint factors of φ(X, t).
+A graph is said to be walk regular if for each non-negative integer k, the
+diagonal of Ak is constant or, equivalently if the diagonals of the spectral
+idempotents are constant. In a walk-regular graph, any two vertices are
+cospectral; in particular any two vertices of a strongly regular graph are
+cospectral.
+Finally, since Er = ERT Er , we have
+(Er )v,v = eTv ErT Er ev = kEr ev k2 ,
+whence vertices a and b are cospectral if and only if the eigenspace projections
+Er ea and Er eb have the same length for each r. It follows (as we would hope)
+that strongly cospectral vertices are cospectral.
+
+4
+
+Parallel Vertices: Characterizations
+
+We have developed some of the theory of cospectral vertices and noted that
+strongly cospectral vertices are cospectral. To characterize strongly cospectral vertices, we need a second condition. Two vertices a in b in X are parallel
+8
+
+if, for each r, one of the vectors Er ea and Er eb is a scalar multiple of the
+other. Equivalently a and b are parallel if and only if the vectors Er ea and
+Er eb are parallel for each r. As an immediate consequence of the definition
+of strongly cospectral vertices, we have:
+4.1 Lemma. Two vertices in a graph are strongly cospectral if and only if
+they are cospectral and parallel.
+If the eigenvalues of X are all simple, it is easy to see that any two
+vertices in X are parallel. It follows in this case that two vertices are strongly
+cospectral if and only if they are cospectral. (The eigenvalues of Schwenks
+tree in Figure 1) are simple, and the vertices u and v there are strongly
+cospectral.)
+4.2 Lemma. The eigenvalues of X are all simple if and only if any two
+vertices of X are parallel.
+Proof. Suppose any two vertices of X are parallel. If a ∈ V (X) and Er ea 6= 0,
+then for each r we have that Er eb is a scalar multiple of Er ea . Hence Er ea
+spans the eigenspace belonging to θr and so θr has multiplicity one.
+We use heu iA to denote the R[A]-module generated by eu , and we call it
+the walk module relative to u. (When A is clear from the context, we may be
+lazy and write simply heu i.) The eigenvalue support of a subset S of V (X)
+with characteristic vector z is the set of eigenvalues θr such that Er z 6= 0.
+(We will also refer to the eigenvalue support of an arbitrary vector.) Two
+cospectral vertices necessarily have the same eigenvalue support.
+4.3 Lemma. The walk modules generated by vertices a and b in X are equal
+if and only if a and b are parallel and have the same eigenvalue support.
+Proof. If u ∈ V (X), the non-zero vectors Er eu form an orthogonal basis for
+heu i. Given this, the result is immediate.
+Finally we note that, by [9, Lemma 13.1], if we have pretty good state
+transfer from vertex a to vertex b, then a are b are strongly cospectral. (This
+result is a private communication from Dave Witte Morris.) Since perfect
+state transfer can be viewed as a special case of pretty good state transfer, it
+follows that vertices involved in perfect state transfer are necessarily strongly
+cospectral. (This is not hard to prove directly.)
+9
+
+5
+
+Average States
+
+If θ1 , . . . , θm are the distinct eigenvalues of the adjacency matrix A of X,
+we use Er to denote the matrix representing orthogonal projection onto the
+θr -eigenspace of A. So A has spectral decomposition
+X
+A=
+θr Er ,
+r
+
+We make use of some theory developed in [3]. The commutant comm(A)
+of a matrix A is the set of all matrices that commute with A. If A is n × n,
+then comm(A) is a subspace of the space of n × n real matrices. This latter
+space is an inner product space, with inner product
+hM, N i = tr(M T N ).
+The kM k of a matrix M is hM, M i1/2 . The operation of orthogonal projection onto comm(A) is well defined, we denote the orthogonal projection of a
+matrix M onto comm(A) by Φ(M ).
+5.1 Lemma. If A is a symmetric matrix with spectral idempotents E1 , . . . , Em ,
+then
+X
+Φ(M ) =
+Er M Er .
+r
+
+As Φ is linear and self-adjoint,
+hΦ(M ), M − Φ(M )i = hM, Φ(M ) − Φ2 (M )i = h(, M i)(0) = 0
+and therefore
+kM k2 = kM − Φ(M )k2 + kΦ(M )k2 .
+This implies that kΦ(M )k ≤ kM k for any M . Hence the operator norm of Φ
+is at most 1.
+5.2 Lemma. For any density matrix D and for any time t, we have Φ(D(t)) =
+Φ(D).
+Proof. One line:
+Φ(D(t)) =
+
+X
+
+Er U (t)DU (−t)Er =
+
+r
+
+X
+r
+
+10
+
+eitθr Er DEr e−itθr = Φ(D).
+
+cX of the graph X is
+The average mixing matrix M
+X
+cX =
+M
+(Er )2 .
+r
+
+Our next result is Theorem 3.1 in [3].
+5.3 Theorem. If a, b ∈ V (X), then
+cX )a,b = hΦ(Da ), Φ(Db )i.
+(M
+If a ∈ V (X), then
+Φ(Da ) =
+
+X
+
+Er ea eTa Er
+
+r
+
+We calculate that
+kEr ea eTa Er k = eTa Er ea = (Er )a, a
+and define
+Fr =
+
+1
+Er ea eTa Er .
+(Er )a,a
+
+Thus Fr represents orthogonal projection onto the space of Er ea and the
+scalars
+(Er )a,a ,
+r = 1, . . . , m
+are the eigenvalues of Φ(Da ).
+5.4 Lemma. Assume a and b are vertices in the graph X. Then:
+(a) a and b are cospectral if and only the average states Φ(Da ) and Φ(Db )
+are similar.
+(b) a and b are strongly cospectral if and only if Φ(Da ) = Φ(Db ).
+Proof. From Equation (3.1), we see that a and b are cospectral if and only
+if Φ(Da ) and Φ(Db ) are. For the second claim we note that a and b are
+parallel if and only if Er ea eTa Er = Er eb eTb Er for all r, that is, if and only if
+the projections Fr are the same for a and b.
+
+11
+
+P
+The sum r Fr is the matrix representing orthogonal projection onto the
+walk module generated by ea .
+We introduce spectral densities of subsets of vertices of a graph. Assume
+S ⊆ V (X) and let z be the normalized characteristic vector of S. (So z is
+zero off S, constant on S and z T z = 1.) The quantities
+z T Er z,
+
+(r = 1, . . . , m)
+
+are non-negative and sum to 1. Hence they determine a probability density
+on the eigenvalues of A; this is the spectral density of S. We will only work
+with the case where S is a single vertex, where the value of the spectral
+density of vertex a on θr is (Er )a,a . Hence the spectral density is determined
+by the eigenvalues of Φ(Da ). The generating function for closed walks on a
+is the moment generating function for the spectral density at a and, viewed
+as a generating function, U (t)a,a is the characteristic function of the spectral
+density.
+If p1 , . . . , pn and q1 , . . . , qn are two probability densities on the same finite
+set, we define their fidelity to be
+n
+X
+√ √
+pj qj .
+j=1
+
+By Cauchy-Schwarz, this is at most 1, and equality holds if and only if pj = qj
+for all j. Thus we may view the fidelity as a measure of distance between
+probability densities with the same finite support.
+More background on average mixing appears in [10, 3]
+
+6
+
+An Uncomplicated Algebra
+
+We need information about the matrix algebra generated by A and ea eTa for
+a vertex a. It is no harder to work with an arbitrary non-zero vector z in
+place of a vector ea , so we do.
+We use hSi to denote the algebra generated by a set of matrices. The
+algebra of interest to is hA, zz T i, where A is an adjacency matrix and z ∈ RN .
+T
+6.1 Lemma. Assume
+PA = hA, zz i for an adjacency matrix A with spectral
+decomposition A = r θr Er . Let S be the set of eigenvalues θr such that
+Er z 6= 0. If r ∈ S, define
+1
+Fr = T
+Er zz T Er , Er0 = Er − Fr ;
+z Er z
+
+12
+
+if r ∈
+/ S then Er0 = Er . Then the matrices
+Er zz T Es , (r, s ∈ S),
+together with the non-zero matrices Er0 , form a trace-orthogonal basis for A.
+Proof. Easy calculations show that the matrices Fr are idempotents (Fr
+represents orthogonal projection onto the span of Er z) and they commute
+with the spectral idempotents. Further Ek Fr = 0 if k 6= r and Er Fr = 0 if
+r∈
+/ S and Er Fr = Fr if r ∈ S. One consequence of this is that the matrices
+0
+Er are pairwise orthogonal and are orthogonal to each matrix Fs .
+It is also easy to check that distinct matrices of the form Er zz T Es are
+trace-orthogonal.
+Thus it only remains to verify that the given matrices span A. The key
+is that
+(Ak zz T A` )(Am zz T An ) = z T A`+m z Ak zz T An
+from which it ensues that A is spanned matrices of the form Ak zz T A` , along
+with the powers of A. The span of the first set of matrices is equal to the
+span of the matrices Er zz T Es and the spectral idempotents span the space
+of polynomials in A; therefore we have an orthogonal basis as claimed.
+6.2 Corollary. If the vertices a and b in X are parallel with the same eigenvalue support, then hA, ea eTa i = hA, eb eTb i.
+Proof. Suppose a and b are parallel. If θr and θs lie in the eigenvalue support
+of a and b, then Er ea eTa Es and Er eb eTb Es are non-zero scalar multiples of each
+other. From the previous lemma it follows that our two algebras are equal.
+6.3 Corollary. Let X be a graph on n vertices and let a and b be parallel
+vertices in X with the same eigenvalue support. If the matrix Q commutes
+with A and Qea = ea , then Qeb = eb .
+6.4 Corollary. If a and b are strongly cospectral vertices in X, then any
+automorphism of X that fixes a also fixes b.
+Given this corollary, it is an easy exercise to show that no two vertices in
+the Petersen graph are strongly cospectral, but more is true.
+The characteristic matrix of a partition π is the matrix whose columns
+are the characteristic vectors of the cells of π. If P is the characteristic
+13
+
+matrix of π, then P 1 = 1 and P T P is diagonal with positive diagonal entries.
+If D = (P T P )1/2 then the columns of P D−1 are pairwise orthogonal unit
+vectors, and we call this matrix the normalized characteristic matrix of π.
+We recall that a partition π of V (X) is equitable if the column space of P is
+A-invariant. Alternatively, π is equitable if and only if P D−1 P T commutes
+with A. (Note that P D−1 P T represents orthogonal projection onto col(P ).)
+If π is a partition of V (X) and v ∈ V (X), then {v} is a cell of π if and
+only if P D−1 P T ev = ev .
+6.5 Corollary. If a and b are strongly cospectral vertices in X and {a} is a
+cell in the equitable partition π, then {b} is also a cell in π.
+If X is a graph and a ∈ V (X), the cells of the distance partition relative to
+a are the sets of vertices at a given distance from a. It is easy to verify that
+if X is strongly regular, then the distance partition relative to any vertex
+is equitable. We conclude that if X is strongly regular and not complete
+multipartite, no two distinct vertices X in are strongly cospectral.
+
+7
+
+Eigenspaces and Parallel Vertices
+
+Our next result provides one way of deciding whether two vertices are parallel.
+7.1 Lemma. The projections of ea and eb onto the θr -eigenspace are parallel
+if and only if (Er )a,a (Er )b,b − (Er )2a,b = 0.
+Proof. Observe that
+(Er )a,b = eTa ErT Er eb = hEr ea , Er eb i
+and for any vertex c
+(Er )c,c = hEr ec , Er ec i
+whence Cauchy-Schwarz implies that
+(Er )2a,b ≤ (Er )a,a (Er )b,b
+with equality if and only if the vectors Er ea and Er eb are parallel.
+
+14
+
+We point out that (Er )a,a (Er )b,b − (Er )2a,b is the determinant of the 2 × 2
+submatrix of Er with rows and columns indexed by a and b.
+If u and v are vertices in X, we say an element f in RV (X) is balanced if
+f (u) = f (v) and is skew if f (u) = −f (v). A subspace is balanced or skew if
+each vector in it is balanced or, respectively, skew.
+7.2 Lemma. Two vertices u and v in X are strongly cospectral if and only
+if each eigenspace is balanced or skew relative to the vertices u and v.
+Proof. If u and v are strongly cospectral, then either Er (eu − ev ) = 0 or
+Er (eu + ev ) = 0. Since col(Er ) is the θr -eigenspace, it follows that either each
+eigenvector in the θr -eigenspace is balanced, or each eigenspace is skew. The
+converse follows easily.
+7.3 Lemma. Let S be a subset of V (X) such that any two vertices in S are
+parallel and have the same eigenvalue support, of size s. Then |S| ≤ s.
+Proof. Suppose a ∈ S. Denote the non-zero vectors Er ea by x1 , . . . , xs .
+Then for each vertex b in S, we can write eb as a linear combination of
+x1 , . . . , xs . Since the vectors eb for b in S are linearly independent, we must
+have |S| ≤ s.
+
+8
+
+Parallel Vertices and a Rational Function
+
+We need an identity due to Jacobi. A proof is given in [7, Theorem 4.1.2].
+8.1 Theorem. Let X be a graph. If D ⊆ V (X), then
+det(((tI − A)−1 )D,D ) =
+
+φ(X \ D, t)
+.
+φ(X, t)
+
+8.2 Corollary. Let θ1 , . . . , θm be the distinct eigenvalues of X, with corresponding spectral idempotents E1 , . . . , Em . If D ⊆ V (X), the multiplicity of
+θr as a pole of φ(X \ D, t)/φ(X, t) is equal to rk((Er )D,D ).
+Proof. We have
+((tI − A)−1 )D,D =
+
+X
+r
+
+15
+
+1
+(Er )D,D .
+t − θr
+
+The right side here is the sum of F = (t − θr )−1 (Er )D,D and a matrix M
+whose entries are rational functions with no pole at θr . If n = |V (X)|,
+then det(F + M ) is the sum of the determinants of the 2n matrices we get
+from M by replacing each subset of its columns by the corresponding subset
+of columns of F . This shows that rk((Er )D,D ) is an upper bound on our
+multiplicity. If Fr were diagonal, we would have equality. But there is an
+invertible real matrix G such that F = GT DG where D is diagonal, with
+nonzero diagonal entries equal to 1. Hence G−T ((tI − A)−1 )D,D G−1 has a
+pole of order rk((Er )D,D ) at θr . This completes the proof.
+We note that (Er )D,D is the Gram matrix of the vectors Er eu , for u in D.
+8.3 Lemma. Distinct vertices a and b of X are parallel if and only all poles
+of the rational function φ(X \ {a, b}, t)/φ(X, t) are simple.
+Proof. By Corollary 8.2, if D = {a, b} then the multiplicity of the pole at θr
+in φ(X \ D, t)/φ(X, t) is equal to rk((Er )D,D ). We have
+|(Er )a,b |2 = (eTa Er eb )2 = hEr ea , Er eb i2 ≤ kEr ea k2 kEr eb k2 = (Er )a,a (Er )b,b
+whence it follows that rk((Er )D,D ) = 1 if and only if a and b are parallel.
+8.4 Corollary. Distinct vertices a and b of X are strongly cospectral if and
+only if they are cospectral and all poles of φ(X\{a, b}, t)/φ(X, t) are simple.
+One merit of this result is that it enables to decide if two vertices are
+parallel using exact arithmetic.
+
+9
+
+Constructing Strongly Cospectral Pairs
+
+We present two constructions of strongly cospectral vertices.
+9.1 Theorem. Let Z be the graph obtained from vertex-disjoint graphs X
+and Y by joining a vertex u in X to a vertex v in Y by a path P of length
+at least one. If u and v are cospectral in Z, they are strongly cospectral.
+Proof. Assume A = A(Z) and let φu,v (Z, t) denote the determinant of the
+uv-minor of tI − A. From the spectral decomposition of A, we have
+X (Er )u,v
+φu,v (Z, t)
+= ((tI − a)−1 )u,v =
+,
+φ(Z, t)
+t
+−
+θ
+r
+r
+16
+
+showing that the poles of φu,v (Z, t)/φ(Z, t) are simple. From [7, Corollary 2.2],
+we have
+X
+φu,v (Z, t) =
+φ(X \ P, t)
+P
+
+where the sum is over all paths in X that join u to v. By construction there
+is only one path in Z that joins u to v, and therefore
+φu,v (Z, t) = φ(X \ u, t)φ(Y \ v, t).
+If Q is the path we get from P by deleting its end-vertices.
+φ(X \ u, t)φ(Y \ v, t)
+φu,v (Z, t)
+φ(Z \ {u, v}, t)
+= φ(Q, t)
+= φ(Q, t)
+φ(Z, t)
+φ(Z, t)
+φ(Z, t)
+We conclude that the poles of φ(Z \ {u, v}, t)/φ(Z, t) are all simple and so,
+by Lemma 8.3, it follows that u and v are strongly cospectral.
+Note that u and v will be cospectral in Z if X and Y are cospectral and
+also X\u and X\v are cospectral. We get interesting examples by taking two
+vertex-disjoint copies of Schenk’s tree from Figure 1 and joining the vertex u
+in the first copy to vertex v in the second by a path of positive length. This
+gives pairs of strongly cospectral vertices that do not lie in an orbit of the
+automorphism group of the resulting graph.
+Now we consider a rabbit-ear construction. Our first step is an interesting
+unpublished observation due to K. Guo, reproduced here with her permission.
+9.2 Lemma. If a is a vertex of degree one in X with neighbour b, then a
+and b are parallel.
+Proof. Assume Y = X \ a. Then
+φ(X, t) = tφ(Y, t) − φ(Y \ b, t)
+and
+φ(X \ {a, b}, t)
+1
+φ(X \ {a, b}, t)
+=
+=
+.
+φ(X\{a,b},t)
+φ(X, t)
+tφ(X \ a, t) − φ(X \ {a, b}, t)
+t−
+φ(X\a,t)
+
+By interlacing, the derivative of φ(X\{a, b}, t)/φ(X\a, t) is negative wherever
+it is defined, and therefore the poles of the above rational function are simple.
+Now Lemma 8.3 implies that a and b are parallel.
+17
+
+We use mult(θ, X) to denote the multiplicity of θ are a zero if φ(X, t).
+9.3 Lemma. Let a be a vertex in X and let Z be formed from X by joining
+two new vertices of valency one to a. If mult(0, X \a) ≤ mult(0, X), then the
+two new vertices are strongly cospectral in Z.
+Proof. Assume the two new vertices are b and c. Since Z \ b and Z \ c are
+isomorphic, b and c are cospectral. We have
+φ(Z, t) = t2 φ(X, t) − 2tφ(X \ a, t)
+and so we are concerned with the multiplicities of the poles of
+1
+φ(X, t)
+=
+
+t(tφ(X, t) − 2φ(X \ a, t))
+t t − 2 φ(X\a,t)
+φ(X,t)
+
+By interlacing the zeros of
+t−2
+
+φ(X \ a, t)
+φ(X, t)
+
+are simple and hence Lemma 8.3 yields that b and c are parallel if and only if
+0 is not a zero of this rational function. We see that 0 is a zero if and only if
+the multiplicity of 0 as an eigenvalue of X \ a is greater than its multiplicity
+as an eigenvalue of X.
+
+10
+
+Walk-Regular Graphs
+
+A graph is walk regular if all its vertices are cospectral. The conept was
+introduced in [8]. Clearly vertex-transitive graphs are walk regular, as a
+strongly regular graphs. An old and well-known result states that a vertextransitive graph with only simple eigenvalues is K1 or K2 . This has been
+generalized—a walk regular graph with only simple eigenvalues is K1 or K2
+(see e.g., [8, Theorem 4.8]). The following result generalizes this in turn.
+10.1 Lemma. If all vertices in X are strongly cospectral, then X = K2 .
+Proof. If all vertices of X are strongly cospectral to u, then the θr eigenspace
+of X is spanned by Er eu , and therefore all eigenvalues of X are simple. Assume n = |V (X)|. If
+
+M = E1 eu . . . En eu
+18
+
+then D = M T M is diagonal. If S is the matrix of coefficients defined above
+S = D−1 M T
+and SS T = D=1 M T M D−1 = D−1 . But S is a ±1-matrix and therefore
+SS T = nI. Hence S is a Hadamard matrix and n must be even.
+Consequently
+1
+= Dr,r = eTu Er eu
+n
+and therefore each diagonal entry of Er is equal to 1/n. It follows that X is
+walk-regular and therefore by [8, Theorem 4.8] we deduce that |V (X)| ≤ 2.
+The four vertices of degree two in the Cartesian product of P3 with K2
+are pairwise strongly cospectral, so we can have more than a pair of strongly
+cospectral vertices. (They are cospectral because they form an orbit under
+the action of the automorphism group. To see they are parallel it is easiest to
+note that the characteristic polynomial has only simple zeros; you can verify
+this using your favourite computer algebra package.)
+
+11
+
+Symmetries
+
+An orthogonal symmetry of a graph X is an orthogonal matrix that commutes with A. If the eigenvalue θr of X has multiplicity mr and O(m) denotes
+the group of m×m orthogonal real matrices, then the orthogonal symmetries
+of X form a group isomorphic to the direct product of the orthogonal groups
+O(mr ). Thus this group is determined entirely by the multiplicities of the
+eigenvalues of X and, given this, does not promise to be very useful. Nonetheless it does have its applications. Note that the permutation matrices in it
+form a group isomorphic to Aut(X).
+If the idempotents in the spectral decomposition of A are E1 , . . . , Em and
+2
+σr = 1 for each r, then
+X
+S=
+σr Er
+r
+2
+
+T
+
+satisfies S = I. Since S = S , we see that S is orthogonal. Since S must
+be a polynomial in A, it follows that the 2m matrices S form a subgroup of
+the orthogonal symmetries of X; this subgroup is an elementary abelian 2group. Any automorphism of X that lies in this group must lie in the centre
+of Aut(X).
+19
+
+If a and b are cospectral then A(X \ a) and A(X \ b) are similar. Since
+these matrices are symmetric, there is an orthogonal matrix L say, such that
+LT A(X \ a)L = A(X \ b).
+11.1 Lemma. The vertices a and b in X are cospectral if and only there is
+an orthogonal symmetry Q of X such that Q2 = I and Qea = eb .
+Proof. Let U (+) and U (−) respectively denote the A-modules generated by
+ea + eb and ea − eb . By Theorem 3.1(g), these two modules are orthogonal
+subspaces of RV (X) . Let U (0) be the orthogonal complement of U (+)+U (−).
+There is a unique orthogonal matrix Q such that Qx = −x of x ∈ U (−) and
+Qx = x if x lies in U (+) or U (0).
+Then
+2Qea = Q((ea + eb ) + (ea − eb )) = ea + eb − ea + eb = 2eb ,
+and so Qea = eb .
+As
+QA(ea + eb ) = A(ea + eb ) = AQ(ea + eb )
+and as
+QAk (ea − eb ) = −A(ea − eb ) = AQ(ea − eb )
+If x ∈ U (0), then
+QAx = Ax = AQx
+and therefore QA = AQ.
+Thus we have shown that a symmetry exists as required when a and b
+are cospectral. The converse is straightforward.
+It is interesting to note that if a, b ∈ V (X) and some automorphism γ
+maps a to b, it does not necessarily follow that γ maps b to a. In fact a
+permutation group G on a set V is said to be generously transitive if each
+pair of elements of V is swapped by some element of G. A transitive group
+of order cannot be generously transitive. The lemma implies that if γ maps
+a to b, then some orthogonal matrix swaps a and b, but this matrix need not
+be related to any automorphism of X.
+11.2 Theorem. The vertices a and b in X are strongly cospectral if and
+only there is an orthogonal symmetry Q of X such that Q is a polynomial in
+A, is rational, Q2 = I and Qea = eb .
+20
+
+Proof. We use exactly the same construction as in the previous theorem and
+then observe that it a and b are strongly cospectral, then U (+) and U (−) are
+both direct sums of eigenspaces of A. This implies that Q is a signed sum of
+the idempotents Er , and hence is a polynomial in A.
+Let E be the extension of the rationals by the eigenvalues of X and
+let α be an automorphism of E. Assume a and b are strongly cospectral.
+Then Erα is an idempotent in the spectral decomposition of A, associated to
+the eigenvalue θrα . Therefore ((Er )a,a )α > 0 and consequently ((Er )a,b ) and
+((Er )a,a )α must have the same sign. It follows that Q is fixed by all field
+automorphisms of E and therefore it is a rational matrix.
+The converse is straightforward.
+Suppose X is walk regular and a and b are strongly cospectral. Then
+Qa,a = 0 but, since Q is a polynomial in A, its diagonal is constant. Therefore
+tr(Q) = 0. Since Q2 = I its eigenvalues are all ±1; we conclude that 1 and
+−1 have equal multiplicity and therefore |V (X)| must be even.
+With a little more information, we can sharpen the previous theorem
+and derive a reformulation of Coutinho [5, Lemma 3.1(i)]. Recall that the
+eccentricity of a vertex u in X is the least integer d such that any vertex of X
+is at distance at most d from u. If the eccentricity of a is d, then the supports
+of the vectors (A + I)j ea (for j = 0, . . . , d) form a strictly increasing sequence
+of subsets of V (X). Therefore these vectors are linearly independent and
+accordingly d + 1 is a lower bound on the dimension of the walk module
+hea iA . If equality holds in the bound, Coutinho defines the vertex a to be
+spectrally extremal.
+11.3 Corollary. Let a and b be strongly cospectral vertices, and assume a
+has eccentrity d. If the size of the eigenvalue support of a is equal to d + 1,
+then b is the unique vertex at distance d from a.
+Proof. Suppose the eigenvalue support of A has size s. We have Qea = eb
+and Q = p(A), where we choose p to have the least possible degree. It follows
+that deg(p) = s − 1. Since s − 1 is the eccentricity of a, for each vertices
+u are distance s − 1 from a, the corresponding entry of p(A)ea is not zero.
+Therefore b is the unique vertex in X at distance s − 1 from a.
+It can be shown that each vertex in a distance-regular graph is spectrally
+extremal.
+Recall that r-th distance graph Xr of X is the graph with vertex set
+V (X), where two vertices are adjacent in Xr if thay are distance r in X.
+21
+
+(Thus X1 = X.) We
+P use Ar to denote adjacency matrix of Xr and we set
+A0 = I. We have r Ar = J. We define X to be distance regular if, for
+each r, the matrix Ar is a polynomial of degree r in A1 . It follows from the
+definition that J is a polynomial in A1 and consequently Ar and J commute
+for each r. Therefore the distance graphs Xr are regular.
+If A is the adjacency matrix of distance-regular graph, then Ak is a linear combination of the matrices A0 , . . . , Ad (for any non-negative integer k).
+Accordingly the diagonal of Ak is constant for all k, and therefore any two
+vertices in X are cospectral.
+We use our theory to present a short proof of a result of Coutinho et al
+[2].
+11.4 Theorem. Suppose X is a distance-regular graph of diameter d, with
+distance matrices A0 , . . . , Ad . If a and b are distinct strongly cospectral
+vertices in X, then Ad is a permutation matrix of order two and Ad ea = eb .
+Proof. Let Q be the matrix provided by Theorem 11.2. Then Q lies in
+the Bose-Mesner algebra of the association scheme A = {A0 , . . . , Ad } which
+contains X. Since Qea = eb , the a-column of Q has exactly one nonzero
+entry, Qa,b . This implies that Q is equal to one of the matrices Ar , and that
+Ar is a permutation matrix.
+A distance-regular graph is primitive if its distance-graphs X1 , . . . , Xd
+are connected, otherwise it is imprimitive. It is a standard result that if
+a distance-regular graph of diameter d is imprimitive, either X2 is not connected (and X is bipartite), or Xd is not connected (in which case the graphs
+is said to be antipodal). The d-cube is distance-regular, bipartite and antipodal. The previous theorem implies that a distance-regular graph which
+contains a pair of strongly cospectral vertices is imprimitive.
+
+12
+
+Automorphisms, Equitable Partitions
+
+Let π be a partition of V (X). We say that π is an equitable partition if
+the space of functions on V (X) that are constant on the cells of π. (There
+are less sophisticated definitions, but this one is best suited to our immediate
+needs. For more details see, e.g., [11, Section 9.3].) If Q represents orthogonal
+projection onto the space of functions on V (X) constant on the cells of π,
+then π is equitable if and only A and Q commute.
+22
+
+Suppose that we have an equitable partition π in which {a} is a singleton
+cell, and let Q represent orthogonal projection onto the space of functions
+constant on the cells of π. Then 2Q − I is orthogonal and commutes with A
+and (2Q − I)ea = ea . Now if b lies in a cell of π with size k, then
+2
+
+1
+1
+1
+2
+−1 =1−
+k(Q − I)eb k = (k − 1) 2 +
+k
+k
+k
+√
+and so if Qeb 6= eb , we have k2(Q − I)eb k ≥ 2. Therefore:
+√
+12.1 Lemma. Suppose a, b ∈ V (X). If kDa (t) − Db k < 1/ 2, then any
+equitable partition in which {a} is a singleton cell must also have {b} as a
+singleton cell.
+If D is a pure state, then D2 = D and consequently if D1 and D2 are
+pure states
+kD1 − D2 k2 = tr(D1 − D2 )2 = tr(D1 + D2 − 2D1 D2 ) = 2 − 2hD1 , D2 i
+If D1 = yy ∗ and D2 = zz ∗ , this yields that kD1 − D2 k2 = 2 − 2(y ∗ z)2 .
+12.2 Lemma. Let √
+a and b be vertices of X. If there is a time t such that
+kDa (t) − Db k < 1/ 2, then any automorphism of X that fixes a must also
+fix b.
+Proof. Assume P is an orthogonal matrix that commutes with A and P ea =
+ea . Then
+P (Da (t) − Db )P T = P U (t)ea eTa U (−t)P T − P eb eTb P T
+= U (t)P ea eTa P T U (−t) − P eb eTb P T
+= U (t)Da U (−t) − P eb eTb P T
+= Da (t) − P Db P T .
+This implies that
+kDa (t) − Db k = kDa (t) − P Db P T k
+and hence if kDa (t) − Db k = δ, then by the triangle inequality,
+kDb − P Db P T k ≤ 2δ.
+23
+
+Now assume P is a permutation matrix. Then P Db P T = Dc for some
+vertex c. If c = b, then P eb = eb . If P eb 6= eb , then
+kDb − P Db P T k2 = kDb − Dc k2 = 2.
+√
+We conclude that if there is a time t such that kDa (t) − D(t)k < 1/ 2, then
+any automorphism of X that fixes a must also fix b.
+Suppose that we have an equitable partition π in which {a} is a singleton
+cell, and let Q represent orthogonal projection onto the space of functions
+constant on the cells of π. Then 2Q − I is orthogonal and commutes with A
+and (2Q − I)ea = ea . Now if b lies in a cell of π with size k, then
+
+2
+1
+1
+1
+2
+−1 =1−
+k(Q − I)eb k = (k − 1) 2 +
+k
+k
+k
+√
+and therefore if Qeb 6= eb , we have k2(Q − I)eb k ≥ 2. Therefore:
+√
+12.3 Lemma. Assume a, b ∈ V (X). If kDa (t) − Db k < 1/ 2, then any
+equitable partition in which {a} is a singleton cell must also have {b} as a
+singleton cell.
+
+13
+
+Cospectral Vertices
+
+If (pi ) and (qi ) are the spectral densities of two vertices in the graph X, then
+their fidelity is at most 1, in which case they are equal (and the vertices are
+cospectral). We derive an upper bound on fidelity of the spectral densities
+of two non-cospectral vertices. For this we need more machinery.
+If |V (X)| = n and x ∈ RV (X) , the walk matrix of X relative to x is the
+n × n matrix with columns
+x, Ax, . . . , An−1 x.
+The case of combinatorial interest arise when x is the characteristic vector
+of a nonempty subset of V (X); in this paper we are concerned only with the
+case where x is the characteristic vector of vertex, that is, x = ea for some
+vertex a. We will use Ma to denote the walk matrix of X relative to the
+vertex a. Note that
+(MaT Ma )i,j = eTa Ai+j−2 ea ;
+24
+
+thus the entries of MaT Ma are determined by the numbers of closed walks in
+X that start (and finish) at a.
+Suppose
+X
+A=
+θr Er
+r
+
+is the spectral decomposition of A, thus θ1 , . . . , θm are the distinct eigenvalues
+of A and Er is the matrix that represents orthogonal projection onto the
+eigenspace belonging to θr . Since the spectral idempotents Er form a basis
+for the vector space of real polynomials in A, and since Er is a polynomial
+in A, it follows that the vectors Er ea span the column space of Ma , more
+precisely, the non-zero vectors Er ea form an orthogonal basis for col(Ma ).
+The set of eigenvalues θr such that Er ea 6= 0 is the eigenvalue support of the
+vertex a. (Hence rk(Ma ) is equal to the size of the eigenvalue support of a.)
+13.1 Lemma. AssumeP
+a and b are distinct vertices in the graph X and set
+n = |V (X)|. Let A = r θr Er be the spectral decomposition of X and let
+F be the m × n matrix with Fr` = θr`−1 . Then
+max{|(Er )a,a − (Er )b,b |} ≥
+r
+
+1
+.
+tr(F F T )
+
+Proof. Let Na and Nb respectively denote the n × m matrices with columns
+consisting of the vectors Er ea and Er eb . If Ma and Mb are the walk matrices
+of a and b respectively, then
+Ma = Na F,
+
+Mb = Nb F
+
+and
+MaT Ma − MbT Mb = F T (NaT Na − NbT Nb )F
+
+(13.1)
+
+The matrices NaT Na and NbT Nb are diagonal with
+(NaT Na )r,r = (Er )a,a ,
+
+(NbT Nb )r,r = (Er )b,b .
+
+Hence
+F T (NaT Na − NbT Nb )F =
+
+X
+
+((Er )a,a − (Er )b,b )F T er eTr F.
+
+(13.2)
+
+r
+
+Let η denote the maximum value over r of |(Er )a,a − (Er )b,b |. Then by the
+triangle inequality
+X
+X
+((Er )a,a − (Er )b,b )F T er eTr F ≤ η
+kF T er eTr F k.
+(13.3)
+r
+
+r
+
+25
+
+We have
+kF T er eTr F k2 = tr(F T er eTr F F T er eTr F ) = (eTr F F T er )2 ,
+whence kF T er eTr F k = (F F T )r,r and therefore the right side in (13.3) is equal
+to η tr(F F T ).
+If a and b are not cospectral then MaT Ma 6= MbT Mb and, since these
+matrices are integer matrices, the norm of MaT Ma − MbT Mb is at least 1. So
+Equations (13.1), (13.2) and (13.3) imply that
+1
+≤ η.
+tr(F F T )
+Our next lemma provides a lower bound on |U (t)a,b |.
+13.2 Lemma. If a, b ∈ V (X) and E1 , . . . , Em are the spectral idempotents
+of A, then
+√ q
+|(Er )a,a − (Er )b,b | < 8 1 − |U (t)a,b |
+Proof. We have
+U (t)a,b =
+
+X
+
+eitθr (Er )a,b .
+
+r
+
+By the triangle inequality we have
+|U (t)a,b | ≤
+
+X
+|(Er )a,b |.
+r
+
+Now
+(Er )a,b = eTa Er eb = hEr ea , Er eb i
+and by Cauchy-Schwarz
+q
+q
+|hEr ea , Er eb i| ≤ kEr ea kkEr eb k = (Er )a,a (Er )b,b .
+We conclude that
+|U (t)a,b | ≤
+
+Xq
+
+(Er )a,a
+
+q
+(Er )b,b .
+
+r
+
+Here the upper bound is the fidelity between the spectral densities at a and
+b, which we denote by vectors x and t respectively. As
+hx − y, x − yi = 2 − 2hx, yi ≤ 2 − 2|U (t)a,b |.
+26
+
+Therefore, for any r, we have
+q
+q
+q
+(Er )a,a − (Er )b,b ≤ 2 − 2|U (t)a,b |.
+and since, (Er )a,a ≤ 1 and (Er )b,b ≤ 1, we finally have our upper bound:
+√ q
+|(Er )a,a − (Er )b,b | < 8 1 − |U (t)a,b |.
+We now show that if the orbits of Da and Db are close enough, then a
+and b are cospectral.
+13.3 Theorem. Let n = V (X) and let ρ be the largest eigenvalue of A and
+let a and b be vertices of X. If there is a time t such thst
+|U (t)a,b | ≥ 1 −
+
+1
+,
+8n4 ρ4
+
+then a and b are cospectral.
+Proof. We need an estimate for tr(F F T ). As tr(F F T ) is equal to the sum of
+the entries of the Schur product F ◦ F , and as the maximum entry of F is
+ρn−1 , we see that tr(F F T ) ≤ n2 ρn . Now the result follows from the previous
+two lemmas.
+There is a simple relation between 1 − |U (t)a,b | and the distance between
+orbits:
+kDb − Da (t)k2 = 2 − 2hDb , Da (t)i = 2 − 2|U (t)a,b |2 ,
+
+14
+
+Strongly Cospectral Vertices
+
+We prove an analog of the result of the previous section, showing that if the
+orbits of Da and Db are close enough, then a and b are strongly cospectral.
+Two preliminary results are needed; the first is Theorem 9.3 in [10], the
+second is Lemma 3.1 from the same source.
+14.1 Lemma. Two vertices of X are strongly cospectral if and only if the
+cX are equal.
+corresponding rows of M
+14.2 Lemma. Let D denote the discriminant of the minimal polynomial of
+cX are integers.
+the adjacency matrix of X. Then the entries of D2 M
+27
+
+14.3 Lemma. Let a and b be vertices in the graph X. There is a constant
+η (depending on X) such that if for some t we have
+kDa (t) − Db k < η,
+then a and b are strongly cospectral.
+Proof. Suppose kDa (t) − Db k < ζ. Then since the operator norm of Φ is at
+most 1, we can apply Lemma 5.2 to deduce that
+kΦ(Da ) − Φ(Db )k = kΦ(Da (t)) − Φ(Db )k ≤ kDa (t) − Db k < ζ.
+If u ∈ V (X), then Cauchy-Schwarz yields
+|hΦ(Da ) − Φ(Db ), Φ(Du )i| ≤ kΦ(Da ) − Φ(Db )k kΦ(Du )k.
+Since Du is pure, kDu k = 1 whence kΦ(Du )k ≤ 1. and it follows that the
+right side of this inequality is bounded above by ζ.
+cX is
+We conclude that the absolute value of an entry of (ea − eb )T M
+bounded above by ζ. On the other hand, if D is the discriminant of the
+cX is an integer matrix and, accordingly,
+minimal polynomial of A, then D2 M
+cX is bounded
+if a and b are not strongly cospectral, some entry of (ea − eb )T M
+−2
+below by D .
+It would not be too difficult to derive an estimate for η, it would be
+substantially smaller than the distance required to show that the vertices are
+cospectral.
+This lemma implies that if there is pretty good state transfer from a to
+b, then a and b are strongly cospectral.
+
+15
+
+Problems
+
+Is there a tree that contains three vertices, any two of which are strongly
+cospectral?
+We have shown that the distance between orbits of Da and Db provides
+a measure of ‘similarity’ between the vertices a and b. Are there further
+interesting properties of vertices related to this distance? We admit that
+computing this distance, even for specific graphs, is a difficult task. Are
+there interesting graphs where this computation is feasible?
+Find examples of cospectral vertices a and b for which there is a positive
+constant δ such that |U (t)a,b | < 1 − δ for all t. Find examples of strongly
+cospectral vertices satisfying the same condition.
+28
+
+References
+[1] Leonardo Banchi, Gabriel Coutinho, Chris Godsil, and Simone Severini.
+Pretty good state transfer in qubit chains—the Heisenberg Hamiltonian.
+J. Math. Phys., 58(3):032202, 9, 2017.
+[2] G. Coutinho, C. Godsil, K. Guo, and F. Vanhove. Perfect state transfer on distance-regular graphs and association schemes. Linear Algebra
+Appl., 478:108–130, 2015.
+[3] G. Coutinho, C. Godsil, K. Guo, and H. Zhan. A New Perspective on
+the Average Mixing Matrix. ArXiv e-prints, September 2017.
+[4] G. Coutinho, K. Guo, and C. M. van Bommel. Pretty good state transfer
+between internal nodes of paths. ArXiv e-prints, November 2016.
+[5] Gabriel Coutinho. Spectrally extremal vertices, strong cospectrality, and
+state transfer. The Electronic Journal of Combinatorics, 23(1):P1–46,
+2016.
+[6] Xiaoxia Fan and Chris Godsil. Pretty good state transfer on double
+stars. Linear Algebra Appl., 438(5):2346–2358, 2013.
+[7] C. D. Godsil. Algebraic Combinatorics. Chapman and Hall Mathematics
+Series. Chapman & Hall, New York, 1993.
+[8] C. D. Godsil and B. D. McKay. Feasibility conditions for the existence
+of walk-regular graphs. Linear Algebra Appl., 30:51–61, 1980.
+[9] Chris Godsil. State transfer on graphs. Discrete Math., 312(1):129–147.
+[10] Chris Godsil. Average mixing of continuous quantum walks. Journal of
+Combinatorial Theory, Series A, 120(7):1649–1662, 2013.
+[11] Chris Godsil and Gordon Royle. Algebraic Graph Theory. SpringerVerlag, New York, 2001.
+[12] Allen J. Schwenk. Almost all trees are cospectral. In New directions
+in the theory of graphs (Proc. Third Ann Arbor Conf., Univ. Michigan,
+Ann Arbor, Mich., 1971), pages 275–307. Academic Press, New York,
+1973.
+29
+
+[13] C. M. van Bommel. A complete characterization of pretty good state
+transfer on paths. ArXiv e-prints, December 2016.
+
+30
+
+

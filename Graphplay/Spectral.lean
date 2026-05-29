@@ -147,7 +147,30 @@ theorem spectrum_subset (P : EquitablePartition G I)
   -- (`cellInflateVec_ne_zero_of_ne_zero`) eigenvector of `G.adj`
   -- (`adj_mulVec_cellInflateVec`), so `μ ∈ spectrum ℂ G.adj`.
   intro μ hμ
-  sorry
+  -- Step 1: turn spectrum membership of the quotient into a `HasEigenvalue` of
+  -- its linearised operator `Q.toLin'`.
+  rw [← Matrix.spectrum_toLin'] at hμ
+  have hev_q : Module.End.HasEigenvalue P.symmQuotient.toLin' μ :=
+    Module.End.hasEigenvalue_iff_mem_spectrum.mpr hμ
+  -- Step 2: extract a nonzero eigenvector `v` with `Q *ᵥ v = μ • v`.
+  obtain ⟨v, hvmem, hvne⟩ := hev_q.exists_hasEigenvector
+  have hveig : P.symmQuotient.mulVec v = μ • v := by
+    have := Module.End.mem_eigenspace_iff.mp hvmem
+    rwa [Matrix.toLin'_apply] at this
+  -- Step 3: the cell-inflate of `v` is a nonzero eigenvector of `G.adj`.
+  have hinf_ne : P.cellInflateVec v ≠ 0 :=
+    P.cellInflateVec_ne_zero_of_ne_zero v hvne hne
+  have hinf_eig : G.adj.mulVec (P.cellInflateVec v) = μ • P.cellInflateVec v :=
+    P.adj_mulVec_cellInflateVec v μ hveig
+  -- Step 4: convert back to spectrum membership of `G.adj`.
+  have hinf_mem : P.cellInflateVec v ∈ Module.End.eigenspace G.adj.toLin' μ := by
+    rw [Module.End.mem_eigenspace_iff, Matrix.toLin'_apply]
+    exact hinf_eig
+  have hev_a : Module.End.HasEigenvalue G.adj.toLin' μ :=
+    Module.End.hasEigenvalue_of_hasEigenvector ⟨hinf_mem, hinf_ne⟩
+  have : μ ∈ spectrum ℂ G.adj.toLin' :=
+    Module.End.hasEigenvalue_iff_mem_spectrum.mp hev_a
+  rwa [Matrix.spectrum_toLin'] at this
 
 /-! ### Eigenvalue multiplicity lift.
 

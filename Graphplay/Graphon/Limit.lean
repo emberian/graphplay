@@ -160,7 +160,7 @@ the `𝒮.quotient n`. -/
 theorem ConsistentPartitionSequence.pst_time_convergence
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : ConsistentPartitionSequence I)
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
               (nhds Plim.quotient))
@@ -178,7 +178,7 @@ theorem ConsistentPartitionSequence.pst_time_convergence
 theorem ConsistentPartitionSequence.mixing_time_convergence
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : ConsistentPartitionSequence I)
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
               (nhds Plim.quotient))
@@ -194,7 +194,7 @@ time. -/
 theorem ConsistentPartitionSequence.search_time_convergence
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : ConsistentPartitionSequence I)
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
               (nhds Plim.quotient))

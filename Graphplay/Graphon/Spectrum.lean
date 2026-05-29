@@ -75,7 +75,7 @@ namespace Graphplay
 
 namespace Graphon
 
-variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
 variable {I : Type v} [Fintype I] [DecidableEq I]
 variable {W : Graphon Ω μ}
 
@@ -297,7 +297,8 @@ structure HasContinuousTailSector (W : Graphon Ω μ) : Prop where
 which has both a non-trivial cell-uniform PST sector **and** a continuous
 tail sector. -/
 theorem xieTamon_exists_continuous_tail :
-    ∃ (Ω : Type) (_ : MeasurableSpace Ω) (μ : Measure Ω) (W : Graphon Ω μ),
+    ∃ (Ω : Type) (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
+      (W : Graphon Ω μ),
       W.HasContinuousSpectrum ∧ W.HasContinuousTailSector := by
   -- the explicit construction is `K_n + path-n` regularised; statement only
   sorry

@@ -14,14 +14,14 @@ hosts in continuous-time quantum walk theory:
 * The four-color-completion construction (cf. Graphplay's own
   `Tower6` / `Tower7` papers) recovers `K_{a, b, c, d}` as the quotient
   of an `S_4`-equivariant bundle.
-* **Li, Luo, Feng, Li (2025)** (arXiv:2506.21108, *Deterministic
-  spatial search via continuous-time quantum walks on complete
-  multipartite graphs*) prove that, for any complete multipartite graph
-  with at least one part of size `≥ 2`, the CTQW *Grover search* with
-  oracle on the marked vertex achieves success probability `1` at the
-  natural time `τ = π / (2 √(d - λ_2))` where `d` is the degree of the
-  marked vertex and `λ_2` is the second-largest eigenvalue of the
-  adjacency matrix.
+* **Li, Luo, Feng, Li (2025)** (arXiv:2506.21108, *Deterministic quantum
+  search on all Laplacian integral graphs*) prove that **every Laplacian
+  integral graph** admits deterministic CTQW spatial search with certainty
+  when the marked proportion is known in advance — a general result, not
+  specific to complete multipartite graphs.  Complete multipartite graphs
+  are one instance, because they are Laplacian integral (shown below); so
+  the theorem specializes to `K_{n_1,…,n_k}`.  (The success-time formula is
+  a consequence of Laplacian integrality, not assumed here.)
 
 We package the family, give its Laplacian spectrum, and state the
 deterministic-search theorem.
@@ -65,8 +65,13 @@ noncomputable def CompleteMultipartite (parts : List ℕ) :
     WeightedGraph (CompleteMultipartiteV parts) where
   adj := fun x y => if x.1 ≠ y.1 then (1 : ℂ) else 0
   herm := by
-    -- Symmetric: `x.1 ≠ y.1 ↔ y.1 ≠ x.1`.
-    sorry
+    -- Symmetric real 0/1 matrix: `x.1 ≠ y.1 ↔ y.1 ≠ x.1`, and `star` fixes `0`, `1`.
+    ext x y
+    rw [Matrix.conjTranspose_apply, apply_ite (star : ℂ → ℂ), star_one, star_zero]
+    -- Goal: `(if y.1 ≠ x.1 then 1 else 0) = if x.1 ≠ y.1 then 1 else 0`.
+    by_cases h : x.1 = y.1
+    · rw [if_neg (not_not.mpr h.symm), if_neg (not_not.mpr h)]
+    · rw [if_pos (Ne.symm h), if_pos h]
   loopless := by
     intro v
     simp
@@ -158,8 +163,9 @@ and total size ≥ 2).  The witnessing parameters are
 which one verifies by direct spectral computation in the
 `(|w⟩, |s⟩, …)` invariant subspace.
 
-Reference: arXiv:2506.21108, Theorem 1 (*Deterministic spatial search via
-continuous-time quantum walks on complete multipartite graphs*). -/
+This is the complete-multipartite **instance** of Li–Luo–Feng–Li's general
+theorem (arXiv:2506.21108, *Deterministic quantum search on all Laplacian
+integral graphs*): `K_{n_1,…,n_k}` is Laplacian integral, hence covered. -/
 theorem completeMultipartite_deterministicSearch
     (parts : List ℕ) (hk : 2 ≤ parts.length)
     (hpos : ∀ ni ∈ parts, 1 ≤ ni)

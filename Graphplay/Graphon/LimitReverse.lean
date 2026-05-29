@@ -63,7 +63,7 @@ namespace Graphplay
 
 namespace Graphon
 
-variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
 
 /-! ## 1. The reverse statement
 

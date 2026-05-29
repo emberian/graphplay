@@ -326,6 +326,56 @@ theorem adj_mulVec_cellUniformVec (P : EquitablePartition G I) (i : I) :
   rw [this]
   rfl
 
+/-- **Explicit eigenvector-lift coefficient**: `G.adj` acting on the cell-`i`
+indicator is the cell-uniform combination whose coefficient on cell `j` is
+exactly `symmQuotient j i`.  (The existential `adj_mulVec_cellUniformVec` hides
+this coefficient; here it is named, which is what the restriction theorem and
+the spectral lift need.) -/
+theorem adj_mulVec_cellUniformVec_eq (P : EquitablePartition G I) (i : I) :
+    G.adj.mulVec (P.cellUniformVec i)
+      = fun v => ∑ j, P.symmQuotient j i * P.cellUniformVec j v := by
+  classical
+  funext v
+  set k := P.cells v with hk
+  have hRHS :
+      (∑ j, P.symmQuotient j i * P.cellUniformVec j v)
+        = P.quotient k i / (Real.sqrt (P.cellCard i) : ℂ) := by
+    rw [Finset.sum_eq_single k]
+    · have hvk : P.cellUniformVec k v = (1 : ℂ) / (Real.sqrt (P.cellCard k) : ℂ) := by
+        simp only [cellUniformVec]; rw [if_pos hk.symm]
+      rw [hvk]
+      have hkpos : (0 : ℝ) < P.cellCard k := by
+        unfold cellCard; rw [Nat.cast_pos, Finset.card_pos]; exact ⟨v, by simp [hk.symm]⟩
+      have hck : (Real.sqrt (P.cellCard k) : ℂ) ≠ 0 := by
+        rw [Ne, Complex.ofReal_eq_zero]; exact ne_of_gt (Real.sqrt_pos.mpr hkpos)
+      simp only [symmQuotient]
+      field_simp
+    · intro j _ hjk
+      have : P.cellUniformVec j v = 0 := by
+        simp only [cellUniformVec]; rw [if_neg]; rw [← hk]; exact fun h => hjk h.symm
+      rw [this, mul_zero]
+    · intro h; exact absurd (Finset.mem_univ k) h
+  rw [hRHS]
+  show G.adj.mulVec (P.cellUniformVec i) v = _
+  have hLHS :
+      G.adj.mulVec (P.cellUniformVec i) v
+        = (∑ z, (if P.cells z = i then G.adj v z else 0)) /
+            (Real.sqrt (P.cellCard i) : ℂ) := by
+    simp only [Matrix.mulVec, dotProduct, cellUniformVec]
+    rw [Finset.sum_div]
+    apply Finset.sum_congr rfl
+    intro z _
+    by_cases hz : P.cells z = i
+    · rw [if_pos hz, if_pos hz]
+      by_cases hci : (Real.sqrt (P.cellCard i) : ℂ) = 0
+      · rw [hci]; simp
+      · field_simp
+    · rw [if_neg hz, if_neg hz, mul_zero, zero_div]
+  rw [hLHS]
+  congr 1
+  have := P.quotient_apply k i v hk.symm
+  rw [this]; rfl
+
 /-- **Invariance**: the cell-uniform subspace is stable under the linear
 action of `G.adj`. -/
 theorem cellUniformSubspace_invariant (P : EquitablePartition G I)
@@ -375,10 +425,35 @@ cell `j` is `Q j i · √|C_j|/√|C_i| = symmQuotient j i`. -/
 theorem restrict_eq_symmQuotient (P : EquitablePartition G I) (w : I → ℂ) :
     G.adj.mulVec (fun v => ∑ i, w i * P.cellUniformVec i v) =
       (fun v => ∑ i, (P.symmQuotient.mulVec w) i * P.cellUniformVec i v) := by
-  -- True statement (proof deferred): the only step beyond
-  -- `adj_mulVec_cellUniformVec` is exposing its existential coefficient as
-  -- `symmQuotient j i` and pushing the linear combination through `mulVec`.
-  sorry
+  -- Rewrite the cell-uniform combination as `∑ i, w i • cellUniformVec i`,
+  -- push `G.adj.mulVec` through the (linear) sum, expand each generator via
+  -- `adj_mulVec_cellUniformVec_eq`, then swap and recollect into `mulVec`.
+  have hin : (fun v => ∑ i, w i * P.cellUniformVec i v)
+      = ∑ i, w i • P.cellUniformVec i := by
+    funext x; rw [Finset.sum_apply]
+    exact Finset.sum_congr rfl (fun i _ => by rw [Pi.smul_apply, smul_eq_mul])
+  rw [hin]
+  have hlin : G.adj.mulVec (∑ i, w i • P.cellUniformVec i)
+      = ∑ i, w i • G.adj.mulVec (P.cellUniformVec i) := by
+    rw [← Matrix.mulVecLin_apply, map_sum]
+    exact Finset.sum_congr rfl (fun i _ => by rw [map_smul, Matrix.mulVecLin_apply])
+  rw [hlin]
+  funext v
+  rw [Finset.sum_apply]
+  simp only [Pi.smul_apply, smul_eq_mul]
+  have hev : ∀ i, G.adj.mulVec (P.cellUniformVec i) v
+      = ∑ j, P.symmQuotient j i * P.cellUniformVec j v := by
+    intro i; rw [P.adj_mulVec_cellUniformVec_eq i]
+  simp_rw [hev, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro j _
+  simp only [← mul_assoc]
+  rw [← Finset.sum_mul]
+  congr 1
+  -- `∑ i, w i * symmQuotient j i = (symmQuotient.mulVec w) j`.
+  simp only [Matrix.mulVec, dotProduct]
+  exact Finset.sum_congr rfl (fun i _ => mul_comm _ _)
 
 /-! ### Refinements. -/
 

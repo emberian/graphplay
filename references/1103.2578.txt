@@ -1,0 +1,1520 @@
+arXiv:1103.2578v3 [math.CO] 1 Oct 2011
+
+Average Mixing of Continuous Quantum
+Walks
+Chris Godsil
+Combinatorics & Optimization
+University of Waterloo
+November 16, 2018
+Abstract
+If X is a graph with adjacency matrix A, then we define H (t ) to be the
+operator exp(i t A). The Schur (or entrywise) product H (t )◦H (−t ) is a doubly stochastic matrix and because of work related to quantum computing,
+cX , defined by
+we are concerned with the average mixing matrix M
+Z
+1 C
+c
+M X = lim
+H (t ) ◦ H (−t ) d t .
+C →∞ C 0
+
+In this paper we establish some of the basic properties of this matrix, showing that it is positive semidefinite and that its entries are always rational.
+We see that in a number of cases its form is surprisingly simple. Thus for
+the path on n vertices it is equal to
+1
+(2J + I + T )
+2n + 2
+
+where T is the permutation matrix that swaps j and n + 1 − j for each j . If
+X is an odd cycle or, more generally, if X is one of the graphs in a pseudocyclic association scheme on n vertices with d classes, each of valency m,
+then its average mixing matrix is
+m −1
+n −m +1
+J+
+I.
+2
+n
+n
+(One reason this is interesting is that a graph in a pseudocyclic scheme
+may have trivial automorphism group, and then the mixing matrix is more
+symmetric than the graph itself.)
+
+1
+
+1 Average Mixing
+Let X be a graph with adjacency matrix A. We define a transition matrix H X (t )
+by
+H X (t ) := exp(i t A).
+For a physicist this matrix determines a continuous quantum walk. We note
+that it is both symmetric and unitary, in particular H X (t ) = H X (−t ). For relevant
+recent surveys see, e.g., Kendon and Tamon [6], Godsil [4].
+The matrix H(t ) gives rise to a family of probability densities as follows. Let
+A ◦ B denote the Schur product of two matrices A and B with the same order.
+Thus
+(A ◦ B)u,v = A u,v B u,v .
+and we will use A ◦2 to denote A ◦ A. Then if
+M X (t ) := H X (t ) ◦ H X (−t )
+we see that M X (t ) is a nonnegative real matrix and, since H X (t ) is unitary, each
+row and column of M X (t ) sums to 1. We use e u to denote the standard basis
+vector of CV (X ) indexed by the vertex u, thus we have a family of probability
+densities e uT M X (t ), and we are concerned with the behavior of these densities.
+cX , which we define by
+In this paper we are interested in the matrix M
+cX =
+M
+
+1
+C
+
+ZC
+0
+
+M X (t ) d t .
+
+Following [1], we call this the average mixing matrix of X .
+cX , we use the spectral decomposition of A. This
+To work with M X and M
+allows us to write A as
+X
+A = θr E r
+r
+
+where θr runs over the distinct eigenvalues of A and E r is the matrix representing orthogonal projection onto the eigenspace belonging to θr . Then we have
+X
+H X (t ) = exp(i θr t )E r
+r
+
+and
+M X (t ) =
+
+X
+r
+
+From this we have:
+
+E r◦2 + 2
+
+X
+
+cos((θr − θs )t ) E r ◦ E s .
+
+r <s
+
+2
+
+1.1 Lemma. If A =
+
+P
+
+r θr E r is the spectral decomposition of S = A(X ), then
+
+cX =
+M
+
+X
+r
+
+E r◦2 .
+
+2 Properties of the Average Mixing Matrix
+In this section we derive some basis properties of the average mixing matrix.
+We know already that it is symmetric. By a famous theorem of Schur, the Schur
+product M ◦N of two positive semidefinite matrices is positive semidefinite and,
+since the sum of positive semidefinite matrices is positive semidefinite, we see
+cX is positive semidefinite. If A and B are symmetric matrices of the same
+that M
+order, we write A < B to denote that A − B is positive semidefinite.
+cX is a nonnegative matrix. In fact:
+Clearly M
+cX are positive.
+2.1 Lemma. If X is connected, all entries of M
+
+cX )u,v = 0 then (E r◦2 )u,v = 0.
+Proof. Each Schur square E r◦2 is nonnegative and if (M
+However this implies that (E r )u,v = 0 for all r and hence any linear combination
+of the idempotents E r has uv -entry zero. Since this implies that (A k )u,v = 0 for
+all k we conclude that X is not connected.
+
+In [4, Lemma 16.2] we show that average mixing is never uniform, that is,
+c
+M X cannot be a scalar multiple of the all-ones matrix J .
+We say that a matrix M is a contraction if x ∗ M x ≤ x ∗ x for all complex vectors x.
+cX is the average mixing matrix of the graph X then all eigenval2.2 Lemma. If M
+cX lie in the interval [0, 1].
+ues of M
+
+Proof. Since H(t ) ⊗ H(−t ) is unitary and since H(t ) ◦ H(−t ) is a principal submatrix of H(t ) ⊗ H(−t ), it follows that H(t ) ◦ H(−t ) is a contraction. Since it is
+symmetric and real, its eigenvalues must lie in the interval [0, 1], and therefore
+cX too.
+this holds true for M
+
+cX is the average of doubly stochastic matrices, it is doubly stochastic
+Since M
+and its largest eigenvalue is 1. We can also see this without appealing to the
+averaging. Notice that
+((E r ◦ E r )1)u = ((e uT E r ) ◦ (e uT E r ))1 = 〈e uT E r , e uT E r 〉 = e uT E r2 e u = e uT E r e u = (E r )u,u
+and, since
+
+P
+
+c
+
+r E r = I , it follows that M X 1 = 1.
+
+3
+
+2.3 Lemma. The average mixing matrix of a graph is rational.
+
+Proof. Let φ(X , x) be the characteristic polynomial of X , and let F be a splitting
+field for φ(X , x). We use the fact that an element of F which is fixed by all field
+automorphisms of F must be rational. If σ is an automorphism of F, then
+X
+A = A σ = θrσ E rσ .
+r
+
+Since θrσ must be an eigenvalue of A and since the spectral decomposition of
+A is unique, it follows that E rσ is one of the idempotents in the spectral decom-
+
+position of A. Therefore the set of idempotents is closed under field automorphisms, and so must the {E r◦2 }r . Consequently
+cσ = M
+cX
+M
+X
+
+cX is rational.
+for all σ and therefore M
+
+Note that this lemma holds whether we use the Laplacian or the adjacency
+matrix—all we need is that A be symmetric with integer entries.
+We use L(X ) to denote the Laplacian matrix X . If ∆ is the diagonal matrix
+whose i -th diagonal entry is the valency of the i -vertex of X , then
+L(X ) = ∆ − A.
+The transition matrix of X relative to L(X ) is
+HL (t ) := exp(i t (∆ − A)).
+When X is regular, questions about HL reduce immediately to questions about
+H X , but in general there is no simple relation between the two cases.
+2.4 Lemma. If X is regular then X and its complement X have the same average mixing matrix. For any graph X , the average mixing matrix relative to the
+Laplacian of X is equal to the average mixing matrix relative to the Laplacian of
+X.
+
+Proof. If X is regular then the idempotents in the spectral decomposition of
+its adjacency matrix are the idempotents in the spectral decomposition of the
+adjacency matrix of X . For any graph X on n vertices
+L(X ) = L(K n ) − L(X );
+since L(K n ) = nI − J and since L(X ) commutes with J , the idempotents in the
+spectral decomposition of its Laplacian are the idempotents in the spectral decomposition of the Laplacian of X .
+4
+
+3 Integrality
+cX and the graph X , it
+In investigating the relation between the structure of M
+cX so that it entries are integers. For this we need
+can be convenient to scale M
+to know a common multiple of the denominators of its entries.
+
+cX
+3.1 Lemma. If D is the discriminant of the minimal polynomial of A , then D 2 M
+is an integer matrix.
+
+Proof. Let θ1 , . . . , θm be the distinct eigenvalues of A. Define polynomials ℓr (t )
+by
+Y
+ℓr (t ) := (t − θs ).
+s6=r
+
+′
+
+We note that ℓr (θr ) = ψ (θr ) and
+
+ℓr (θs )
+= δr,s .
+ψ′ (θr )
+Now
+Er =
+
+1
+
+ℓr (A).
+ψ′ (θr )
+
+The discriminant D of ψ is equal (up to sign) to
+m
+Y
+
+ψ′ (θr );
+
+r =1
+
+since the entries of ℓr (A) are algebraic integers we conclude that the entries of
+cX are algebraic
+D 2 E r◦2 are algebraic integers and therefore the entries of D 2 M
+cX is rational, the lemma follows.
+integers. Since M
+We have no reason to believe this lemma is optimal. If the eigenvalues of X
+are all simple, we can do better.
+
+3.2 Theorem. Let X be a graph with all eigenvalues simple and let D be the
+cX is an integer matrix.
+discriminant of its characteristic polynomial. Then D M
+
+Proof. We have
+
+(xI − A)−1 =
+
+X
+
+1
+Er
+r x − θr
+
+and since (I − t A)−1 is the walk generating function of X , it follows from [3,
+Corollary 4.1.3] that
+¡
+¢1/2
+(x − θr ) φ(X \u, x)φ(X \v, x) − φ(X \uv, x)φ(X , x)
+(E r )u,v = lim
+x→θr
+φ(X , x)
+5
+
+and since
+
+φ(X , x)
+= φ′ (X , θr )
+x→θr x − θr
+lim
+
+we conclude that if θr is simple
+¡
+
+(E r )u,v
+
+¢2
+
+=
+
+φ(X \u, θr ) φ(X \v, θr )
+.
+φ′ (X , θr )2
+
+If B is the n × n matrix with ur -entry φ(X \u, θr ) and ∆ is the n × n diagonal
+matrix with r -th diagonal entry φ′ (X , θr ), it follows that
+cX = B∆−2 B T .
+M
+
+Assume n = |V (X )| and let θ1 , . . . , θn be the eigenvalues of X . Let V be the
+n × n Vandermonde matrix with i j -entry θ ij −1 . Let φ be the characteristic polynomial of X . The discriminant of φ is equal to the product of the entries of ∆,
+we denote it by D.
+Let C be the n × n matrix whose ur -entry is the coefficient of x r −1 in φ(X \
+u, x). Then C V = B and
+cX = C V ∆−2V T C T .
+M
+Define polynomials ℓs (x) by
+
+ℓs (x) =
+
+Y
+
+(x − θr )
+
+r 6=s
+
+and let L be the n × n matrix with s j -entry equal to the coefficient of x j −1 in
+ℓs (x). Note that
+ℓs (θr ) = δr,s φ′ (θs )
+and therefore
+LV = ∆.
+Since
+∆ = ∆T = V T L T
+it follows that
+∆−2 = V −1 L −1 L −T V −T
+and so
+V ∆−2V T = V V −1 L −1 L −T V −T V T = (L T L)−1 .
+
+6
+
+(We’re almost done.) The entries of L are algebraic integers. As
+det(V V T ) = det(V )2 = D
+and as LD = ∆, we see that det(L T L) = D. Therefore the entries of
+D(L T L)−1
+are algebraic integers. So the entries of DV ∆−2V T are algebraic integers and,
+cX are algebraic integers.
+since the entries of C are integers, the entries of D M
+cX are rational and therefore they are all integers.
+But the entries of D M
+It is at least plausible that if D is the discriminant of the minimal polynomial
+cX is an integer matrix.
+of X , then D M
+
+4 Average Mixing on Paths
+
+We need the following trigonometric identity.
+4.1 Lemma.
+2
+
+n
+X
+
+cos(r θ) =
+
+sin((n + 12 )θ)
+sin( 12 θ)
+
+r =0
+
++ 1.
+
+Proof. If q := e i θ then
+2
+
+n
+X
+
+cos(r θ) =
+
+r =0
+
+n
+X
+
+(q r + q −r )
+
+r =0
+n+1
+
+=
+
+q
+
+− 1 q −n−1 − 1
++ −1
+q −1
+q −1
+
+=
+
+q n+1 − 1 q −n − q
++
+q −1
+1−q
+
+=
+
+q n+1 − q −n
++1
+q −1
+
+=
+=
+
+q n+1/2 − q −1/2−n
+q 1/2 − q −1/2
+sin((n + 12 )θ)
+sin( 12 θ)
+7
+
++ 1.
+
++1
+
+We will also use the following explicit expression for the idempotents in the
+spectral decomposition of A(P n ). This result is standard, but we offer a sketch
+of the proof.
+4.2 Lemma. The idempotents E 1 , . . . , E n in the spectral decomposition of P n are
+given by
+¶
+µ
+¶
+µ
+2
+kr π
+jrπ
+(E r ) j ,k =
+sin
+.
+sin
+n +1
+n +1
+n +1
+
+Proof. If A = A(P n ) and e n is the n vector in the standard basis of Rn , then
+
+
+ 
+
+
+
+sin(β)
+sin(2β)
+sin(β)
+ sin(2β)  sin(β) + sin(3β)
+ sin(2β) 
+
+ 
+
+
+
+A
+=
+ = 2 cos(β) 
+ − sin((n + 1)β)e n
+..
+..
+..
+
+
+
+
+
+
+.
+.
+.
+sin(nβ)
+
+sin((n − 1)β)
+
+So if sin((n1β)) = 0 then
+
+sin(nβ)
+
+
+sin(β)
+ sin(2β) 
+
+
+z(β) := 
+
+..
+
+
+.
+
+
+sin(nβ)
+
+is an eigenvector for A with eigenvalue 2 cos(β). Letting β vary over the values
+2πr
+,
+n +1
+
+r = 1, . . ., n
+
+we obtain n distinct eigenvalues. Therefore each eigenvalue of P n is simple and
+the projection onto the eigenspace spanned by z(β) is
+1
+z(β)T z(β)
+
+z(β)z(β)T ).
+
+We can compute the value of the inner product z(β)T z(β) using Lemma 4.1,
+and this yields the stated expression for E r .
+4.3 Lemma. If E 1 , . . . , E n are the idempotents for P n , then the average mixing
+matrix of P n is
+X
+1
+Er ◦ Er =
+(2J + I + T ).
+2n + 2
+r
+8
+
+Proof. We use Lemma 4.2:
+´
+³
+´
+³
+4
+2 kr π
+2 jrπ
+(E r ◦ E r ) j ,k =
+sin
+sin
+(n + 1)2
+n +1
+n +1
+
+which implies that
+
+µ
+³ 2kr π ´¶
+³ 2 j r π ´¶ µ
+1
+(n + 1)2
+1 − cos
+.
+(E r ◦ E r ) j ,k = 1 − cos
+4
+4
+n +1
+n +1
+Now
+µ
+³ 2 j r π ´¶µ
+³ 2kr π ´¶
+1 − cos
+1 − cos
+=
+n +1
+n +1
+³ 2kr π ´ 1
+³ 2( j + k)r π ´ 1
+³ 2( j − k)r π ´
+³2jr π´
+− cos
++ cos
++ cos
+1 − cos
+n +1
+n +1
+2
+n +1
+2
+n +1
+
+We need to sum each of the five terms on the right from 1 to n. From Lemma 4.1
+it follows that
+´
+´
+³
+³
+
+
+(2n+1)ℓπ
+ℓπ
+³
+´
+n
+sin
+sin
+2ℓπ
+−
+X
+1
+2ℓr π
+1
+n+1
+n+1
+´  = −1 +
+´  = −1.
+³
+³
+cos
+= −1 +
+n +1
+2
+2
+r =1
+sin ℓπ
+sin ℓπ
+n+1
+
+n+1
+
+Consequently
+
+
+
+
+3(n + 1)/2, j = k;
+n
+X
+2
+(n + 1) (E r ◦ E r ) j ,k = 3(n + 1)/2, j + k = n + 1
+
+
+r =1
+n + 1,
+otherwise
+
+and this completes the proof.
+
+5 Path Laplacians
+Let ∆ denote the diagonal matrix with i -th diagonal entry equal to the valency
+of the i -th vertex of X . Then the Laplacian of X is ∆ − A. Let D be the n × (n − 1)
+matrix with
+D i ,i = 1, D i ,i −1 = −1
+and all other entries zero. Then D is the incidence matrix of an orientation of
+P n and
+DD T = ∆ − A(P n ),
+D T D = 2I − A(P n−1 ).
+9
+
+If θ1 , . . . , θn−1 are the eigenvalues of P n−1 , this shows that the non-zero eigenvalues of ∆ − A(P n ) are the numbers 2 − θr for r = 1, . . . , n − 1. We can also use this
+to determine the idempotents in the spectral decomposition of ∆ − A(P n ). The
+lemma follows.
+5.1 Lemma. If E 1 , . . . , E n−1 are the idempotents in the spectral decomposition
+of P n−1 , then the idempotents of ∆ − A(P n ) are n −1 J and
+1
+DE r D T , . . . , r = 1, . . . , n − 1.
+2 − θr
+
+Proof. Since
+DE r D T DE s D T = DE r (2I − A(P n−1 )E s D T )
+and since E r E s = 0 if r 6= s and (2I − A(P n−1 )E s = (2 − θs )E s , it follows that
+DE r D T DE s D T = δr,s (2 − θr )DE r D T .
+Therefore (2 − θr )−1 DE r D T is an idempotent. Next
+(∆ − A(P n ))DE r D T = DD T DE r D T = D(2I − A(P n−1 ))E r D T = (2 − θr )DE r D T
+and therefore (2−θr )−1 DE r D T represents orthogonal projection onto an eigenspace
+of A(P n ). The lemma follows.
+5.2 Lemma. If E 1 , . . . , E n−1 are the idempotents in the spectral decomposition
+of P n−1 , then
+¶
+µ
+¶
+µ
+(2k − 1)r π
+(2 j − 1)r π
+2
+−1
+T
+cos
+,
+1 ≤ j , k ≤ n.
+(2 − θr ) (DE r D ) j ,k = cos
+n
+2n
+2n
+
+Proof. From Lemma 4.2, we have
+¶
+µ
+¶
+µ
+2
+kr π
+jrπ
+(E r ) j ,k = sin
+sin
+,
+n
+n
+n
+
+1 ≤ j , k ≤ n − 1.
+
+Let α = r π/n and let σ denote the column vector of length n − 1 where σ j =
+sin( j α). Then
+2
+DE r D T = Dσ(Dσ)T
+n
+
+10
+
+and
+
+
+
+
+
+
+sin(α)
+sin(2α) − sin(α)
+..
+.
+
+cos(α/2)
+cos(3α/2)
+..
+.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Dσ = 
+,
+ = 2 sin(α/2) 
+
+
+
+
+cos((2n − 3)α/2)
+sin((n − 1)α) − sin((n − 2)α)
+cos((2n − 1)α/2)
+
+− sin((n − 1)α)
+
+where in computing the last entry we have used the fact that nα = r π, whence
+sin(nα) = 0 and
+− sin(n − 1)α = sin(nα) − sin(n − 1)α.
+Finally for P n−1 we have
+2 − θr = 2 − 2 cos
+
+³r π´
+n
+
+2
+
+= 4 sin
+
+³rπ´
+2n
+
+5.3 Theorem. The average mixing matrix for the continuous quantum walk using the Laplacian matrix of the path P n is
+´
+1 ³
+n
+(n
+−
+1)J
++
+(I
++
+T
+)
+.
+n2
+2
+
+Proof. Set
+Fr = (2 − θr )−1 DE r D T .
+Then
+µ
+¶
+¶
+µ
+4
+2 (2k − 1)r π
+2 (2 j − 1)r π
+cos
+cos
+n2
+2n
+2n
+¶¶ µ
+µ
+¶¶
+µ
+µ
+(2k − 1)r π
+(2 j − 1)r π
+1
+1
++
+cos
+1
++
+cos
+= 2
+n
+n
+n
+
+(Fr◦2 ) j ,k =
+
+and
+µ
+
+1 + cos
+
+³ (2 j − 1)r π ´¶ µ
+n
+
+1 + cos
+
+= 1 + cos
+
+³ (2k − 1)r π ´¶
+
+n
+³ (2 j − 1)r π ´
+
++ cos
+
+³ (2k − 1)r π ´
+
+n
+n
+³ (2 j + 2k − 2)r π ´ 1
+³ (2 j − 2k)r π ´
+1
++ cos
++ cos
+.
+2
+n
+2
+n
+11
+
+From Lemma 4.1 we have
+2
+
+n−1
+X
+
+cos
+
+r =1
+
+³ r ℓπ ´
+n
+
+¡
+¢
+sin (n − 21 ) ℓπ
+n
+= −1 +
+¡ ¢
+sin ℓπ
+2n
+¡
+¢
+sin ℓπ − ℓπ
+2n
+= −1 +
+¡ ¢
+sin ℓπ
+2n
+³ ´
+− cos(ℓπ) sin ℓπ
+2n
+³ ´
+= −1 +
+sin ℓπ
+2n
+= −((−1)ℓ + 1).
+
+It is now easy to derive the stated formula for the average mixing matrix.
+We note that 2I − L(P n ) can be viewed as the adjacency matrix of a path on
+n vertices with a loop of weight one on each end-vertex. Examples show that
+if we add loops with weight other than 0 or 1, the average mixing matrix is not
+a linear combination of I , J and T . Thus if we add loops of weight 2 to the
+end-vertices of P 6 , the average mixing matrix is:
+
+
+599
+ 218
+
+
+1
+ 146
+
+146
+2 ∗ 9 ∗ 107 
+
+ 218
+599
+
+218
+455
+290
+290
+455
+218
+
+146
+290
+527
+527
+290
+146
+
+146
+290
+527
+527
+290
+146
+
+218
+455
+290
+290
+455
+218
+
+
+599
+218 
+
+
+146 
+.
+146 
+
+218 
+599
+
+(Here the discriminant of the characteristic polynomial is 26 35 107.)
+
+6 Cycles
+We determine the average mixing matrices for cycles.
+Let P be the permutation matrix corresponding to a cycle of length n and
+let ζ be a primitive n-th root of unity. Define matrices F0 , . . . , Fn−1 by
+(Fr )i ,j =
+
+1 r (i −j )
+ζ
+.
+n
+
+12
+
+(Thus the rows and columns of these matrices are indexed by {0, . . . , n −1.) Then
+P is a normal matrix and has the spectral decomposition
+P=
+
+n−1
+X
+
+ζr Fr .
+
+r =0
+
+We also note that
+
+1
+Fr +s
+n
+where the subscripts are viewed as elements of Zn . The adjacency matrix of the
+cycle on n vertices is P + P T . Define E 0 to be F0 and, if 0 < r < n/2, we set
+Fr ◦ F s =
+
+E r = Fr + Fn−r .
+Further E 0 := F0 and, if n is even then E n/2 := Fn/2 . Then if n is odd,
+E 0 , . . . , E (n−1)/2
+are the idempotents in the spectral decomposition of A(C n) and the corresponding eigenvalues are
+θr = ζr + ζ−r ,
+
+r = 0, . . .,
+
+n −1
+;
+2
+
+if n is even we have the additional idempotent E n/2 with eigenvalue ζn/2 = −1.
+6.1 Lemma. If n is odd then the average mixing matrix of the cycle C n is
+n −1
+1
+J + I,
+2
+n
+n
+
+if n is even it is
+
+n −2
+1
+J + (I + P n/2 ).
+2
+n
+n
+Proof. Assume first that n = 2m + 1. Then the average mixing matrix is
+m
+X
+
+r =0
+
+E r◦2 = F0◦2 +
+=
+
+(Fr + F−r )◦2
+
+r =1
+
+X
+1 m
+1
+F0 +
+(F2r + F−2r + 2F0 )
+n
+n r =1
+
+= F0 +
+=
+
+m
+X
+
+X
+1 n−1
+Fr
+n r =1
+
+1
+n −1
+I+
+F0 .
+n
+n
+13
+
+Now suppose n = 2m. Then the average mixing matrix is
+◦2
+Em
++
+
+m−1
+X
+r =0
+
+◦2
+E r◦2 = F0◦2 + Fm
++
+
+=
+
+(Fr + F−r )◦2
+
+r =1
+
+m−1
+1
+1
+1 X
+(F2r + F−2r + 2F0 )
+F0 + F0 +
+n
+n
+n r =1
+
+= F0 +
+=
+
+m−1
+X
+
+X
+1 m−1
+(F2r + F−2r )
+n r =1
+
+X
+n −2
+2 m−1
+F0 +
+F2r .
+n
+n r =0
+
+Since
+P m F s = (ζm )s F s = (−1)s F s
+we see that P m has spectral decomposition
+Pm =
+
+n−1
+X
+
+(−1)s F s
+
+s=0
+
+and consequently
+m−1
+X
+1
+(I + P m ) =
+F2r .
+2
+r =0
+
+Our stated formula for the average mixing matrix follows.
+In general the average mixing matrix for a circulant can be more complex
+in structure than the average mixing matrix of a cycle. We will see in the next
+section that graphs in pseudocyclic schemes provide the right generalization of
+cycles or, at least, of odd cycles.
+It is easy for different circulants of order n to have the same spectral idempotents, any two such circulants necessarily have the same average mixing matrix.
+
+7 Pseudocyclic Schemes
+An association scheme A with d classes on v vertices is a set of 01-matrices
+A 0 , . . . , A d such that
+P
+(a) A 0 = I and i A i = J .
+14
+
+(b) For each i we have A Ti ∈ A .
+(c) A i A j = A j A i .
+(d) For all i and j the product A i A j lies in the real span of A .
+Convenient references are [2, 3]. We often view the matrices A i as the adjacency matrices of directed graphs on v vertices, we call these the graphs of
+the scheme and note that the axioms are often stated in terms of the graphs
+rather than their adjacency matrices. An association scheme is symmetric if
+each matrix in it is symmetric. These axioms imply that the span of A is a commutative matrix algebra that is closed under the Schur product. It is called the
+Bose-Mesner algebra of the scheme. The matrices in A form a basis consisting
+of Schur idempotents. There is also a basis of matrix idempotents E 0 , . . . , E d ,
+which satisfy
+P
+(a) E 0 = v −1 J and E j = I .
+
+(b) For each j there is an index j ′ such that E j = E j ′ .
+
+(c) For all i and j the Schur product E i ◦ E j lies in the Bose-Mesner algebra.
+The matrix idempotents can be viewed as providing (an analog of) the spectral
+decomposition.
+Since the matrices A i commute it follows that A i and J commute and hence
+there are constants v i such that A J = v i J , these are the valencies of the scheme.
+The column space of E j is an eigenspace for all matrices in the Bose-Mesner
+algebra, its dimension is denoted by m j and it is referred to as a multiplicity
+of the scheme. Note that v 0 = m 0 = 1. A scheme is pseudocyclic if m 1 , . . . , m d
+are equal (in which case their common value is (v − 1)/d ). If a scheme is pseudocyclic then v 1 , . . . , v d are necessarily all equal to (v − 1)/d . For details see
+Brouwer, Cohen and Neumaier[2, §2.2B].
+We note one class of examples, the cyclotomic schemes. Assume q is a
+prime power and d divides q − 1. Let F be the finite field of order q and let S
+be the subgroup of the multiplicative group of F generated by the non-zero d th powers. Thus |S| = (q − 1)/d . Let S 1 , . . . , S d denote the cosets of S in F∗ , with
+S 1 = S. Now we define the matrices of an association scheme with d classes and
+with vertex set F by setting A 0 = I and
+(A i )x,y = 1,
+
+(i = 1, . . . , d )
+15
+
+if and only if y − x is in S i . These matrices form the cyclotomic scheme with d
+classes on F. It is symmetric if and only if −1 ∈ S. The directed graphs X 1 , . . . , X d
+such that A i = A(X i ) are all isomorphic. The most well known case is when
+d = 2 and q ∼
+= 1 modulo four, in which case the two graphs we have constructed
+are the Paley graphs.
+We note that there are pseudocyclic schemes which are not cyclotomic, and
+that there are pseudocyclic schemes with two classes where the two graphs are
+asymmetric, that is, their only automorphism is the identity.
+
+8 Average Mixing on Pseudocyclic Graphs
+8.1 Theorem. Suppose X is a graph in a d -class pseudocyclic scheme on n vertices consisting of graphs of valency m = (n − 1)/d . Then the average mixing
+matrix of X is
+n −m +1
+m −1
+J+
+I.
+2
+n
+n
+Proof. Koppinen [7] proved that for an association scheme with d classes we
+have
+d
+d
+X 1
+X 1
+A i ⊗ A Ti =
+Ej ⊗Ej.
+j =0 m j
+i =0 nv i
+If the scheme is symmetric then A i ◦ A i = A i and, since M ◦ N is a submatrix of
+M ⊗ N , Koppinen’s identity yields that
+d
+X
+
+d
+X 1
+1
+Ai =
+Ej ◦Ej.
+i =0 nv i
+j =0 m j
+
+For any scheme, we have m 0 = v 0 = 1 and for a pseudocyclic scheme
+mi = v i =
+As
+
+P
+
+i A i = J and
+
+P
+
+n −1
+,
+d
+
+i = 1, . . . , d .
+
+j E j = I , if m = (n − 1)/d we find that
+
+´ 1
+´
+d
+1³
+1
+1 X
+I + (J − I ) = 2 J +
+E ◦2
+n
+m
+n
+m j =1 j
+
+and hence
+¶
+µ
+d
+1 X
+m −1
+1
+n 2 − nm
+m −1
+1
+◦2
+− 2 J+
+I=
+J
++
+I.
+Ej =
+m j =1
+nm n
+nm
+n 3m
+nm
+16
+
+A graph in a pseudocyclic scheme with two classes is known as a conference
+graph, and there are examples whose automorphism group is trivial.
+
+9 Cospectral Vertices
+If u ∈ V (X ) then (A k )u,u is equal to the number of closed walks on X of length
+k that start (and finish) at u. The following result summarizes some standard
+facts. (The equivalence of (a) and (c) follows from Equation (1) on page 52 of
+[3] and (a) and (b) from Equation (2) on page 9 of the same source.)
+9.1 Theorem. Let X be a graph with vertices u and v , and let E 1 , . . . , E m be the
+idempotents in the spectral decomposition of A(X ). Then the following are
+equivalent:
+
+(a) (A k )u,u = (A k )v,v for all k ≥ 0.
+(b) kE r e u k2 = kE r e v k2 .
+(c) The graphs X \u and X \v are cospectral.
+Note that
+kE r e u k2 = e uT E rT E r e u = e uT E r2e u = e uT E r e u = (E r )u,u .
+We will say that vertices u and v of X are cospectral if any of the conditions in
+this theorem hold.
+We recall that the graph X admits perfect state transfer from u to v at time
+τ if there is a scalar γ such that
+H X (τ)e u = γe v
+where |γ| = 1 since ke u k = kH X (τ)e u k. As H X (t ) is a polynomial in A, we have
+E r H X (t ) = H X (t )E r = exp(i θr t )E r
+and therefore
+γE r e v = H X (τ)E r e u = exp(i θr τ)E r e v .
+Since E r e v and E r e u are real vectors and since |γ| = | exp(i θr τ)| = 1, we conclude that
+E r e u = ±E r e v .
+17
+
+(This fact is well known and we include the proof for convenience only.)
+Clearly if E r e u = ±E r e v then
+kE r e u k2 = kE r e v k2
+and so u and v are cospectral. We will say that u and v are strongly cospectral
+if E r e u = ±E r e v .
+9.2 Lemma. If u and v are vertices in X and the eigenvalues of X are simple,
+then u and v are strongly cospectral if and only if they are cospectral.
+
+Proof. We only need to consider the case where u and v are cospectral. The
+vectors E r e u and E r e v are both eigenvectors of X with eigenvalue θr . Since θr
+is simple this means that that E r e v is a scalar multiple of E r e u . Since these two
+vectors have the same length, the lemma follows.
+cX be the average mixing matrix of the graph X . Then ver9.3 Theorem. Let M
+cX (e u − e v ) = 0.
+tices u and v are strongly cospectral if and only if M
+
+Proof. Suppose N < 0 and N (e 1 − e 2 ) = 0. We may assume that the leading 2 × 2
+submatrix of N is
+¶
+µ
+a b
+b d
+
+and therefore
+
+0 = (e 1 − e 2 )T N (e 1 − e 2 ) = a + d − 2b.
+Hence b = (a + d )/2. Since N < 0 we have ad − b 2 ≥ 0 and thus
+0 ≤ 4ad − 4b 2 = 4ad − (a + d )2 = −(a − d )2 ,
+whence a = d = b.
+cX (e u − e v ) = 0 then
+If M
+
+cX (e u − e v ) =
+0 = (e u − e v )T M
+
+X
+(e u − e v )T E r◦2 (e u − e v )
+r
+
+cX is positive semidefinite, we have
+and as each summand E r◦2 in M
+E r◦2 (e u − e v ) = 0
+
+for all r . Therefore, for all r ,
+((E r )u,u )2 = ((E r )u,v )2 = ((E r )v,v )2
+Since
+(E r )u,v = 〈E r e u , E r e v 〉
+it follows by Cauchy-Schwarz that E r e u = ±E r e v .
+18
+
+A graph is walk regular if all its vertices are cospectral. There are many
+classes of examples, and it is not necessary that such graphs be vertex transitive. We note the following though:
+9.4 Lemma. If all vertices in X are strongly cospectral, then X is K 1 or K 2 .
+cX are equal,
+Proof. If all vertices are strongly cospectral, then all rows of M
+and therefore it is a scalar multiple of J . By [4, Lemma 16.2] this implies that
+|V (X )| ≤ 2.
+One consequence of the results here is that, if the rows of the average mixing matrix of X are distinct, there is no perfect state transfer on X . Kay [5, Section D] has shown that if we have perfect state transfer in X from u to v and
+from u to w, then v = w.
+
+10 Discrete Walks
+If U is a unitary matrix then its powers describe a discrete quantum walk. The
+corresponding average mixing matrix is
+lim
+
+N−1
+X
+
+N→∞ n=0
+
+U n ◦U −n .
+
+Since unitary matrices are normal, they have a spectral decomposition which
+we can write as
+X
+U = e i θr E r
+r
+
+where θr is real and E r Hermitian for all r . The unitary matrices considered in
+quantum computing are constructed from an underlying regular graph.
+10.1 Theorem. If E 1 , . . . , E m are the idempotents in the spectral decomposition
+P
+b of U is r E r◦2 . If U is
+of the unitary matrix U , the average mixing matrix U
+rational then Û is rational.
+
+Proof. We have
+
+U n ◦U −n =
+
+X
+r
+
+Therefore
+
+E r◦2 +
+
+X
+
+e ni (θr −θs ) E r ◦ E s .
+
+r 6=s
+
+X
+X n
+1
+1 N−1
+U ◦U −n = E r◦2 +
+N n=0
+N
+r
+19
+
+Ã
+
+N−1
+X
+n=0
+
+e
+
+ni (θr −θs )
+
+!
+
+Er ◦ Es
+
+and since
+
+N−1
+X
+
+e ni (θr −θs ) =
+
+n=0
+
+e ni (θr −θs ) − 1
+e i (θr −θs ) − 1
+
+The right side is bounded in absolute value by
+2
+¯
+¯
+i
+(θ
+−θ
+¯e r s ) − 1¯
+
+which is independent of N . Hence
+
+as N tends to infinity.
+
+X n
+X
+1 N−1
+U ◦U −n → E r◦2
+N n=0
+r
+
+Since
+I −U n ◦U −n =
+
+X
+
+(1 − e ni (θr −θs ) )E r ◦ E s = 2
+
+X
+
+(1 − cos(n(θr − θs )))E r ◦ E s ,
+
+r 6=s
+
+r 6=s
+
+b is positive
+we see that I − U n ◦ U −t is positive semidefinite and hence I − U
+semidefinite.
+b is rational.
+If U is based on a regular graph then U
+
+11 Questions
+
+We list three questions raised by our work.
+1. Is it true that if D is the discriminant of the minimal polynomial of X , then
+cX is an integer matrix?
+DM
+
+cX that works over the ratio2. Is there a useful algorithm for computing M
+nals?
+
+3. Which graph have the property that their average mixing matrix is a linear
+combination of I and J ? (Jamie Smith, in unpublished work, has found a
+strongly regular graph with this property that is not pseudocyclic.)
+
+Acknowledgements
+I have had some very useful discussions about average mixing with Christino
+Tamon. All computations were carried out using the package sage [8].
+20
+
+References
+[1] W. A DAMCZAK , K. A NDREW, P. H ERNBERG , L. B ERGEN , J. L IN , AND
+D. E THIER, Non-uniform mixing of quantum walk on cycles, arxiv, quantph (2008), pp. 1–12.
+[2] A. E. B ROUWER , A. M. C OHEN , AND A. N EUMAIER , Distance-Regular
+Graphs, Springer, Berlin, Heidelberg and New York, 1989.
+[3] C. G ODSIL, Algebraic Combinatorics, Chapman & Hall/CRC, 1993.
+[4]
+
+, State Transfer on Graphs, arxiv, (2011), p. 36.
+
+[5] A. K AY, The Basics of Perfect Communication through Quantum Networks,
+arxiv, (2011), p. 8.
+[6] V. M. K ENDON AND C. TAMON, Perfect state transfer in quantum walks
+on graphs, Journal of Computational and Theoretical Nanoscience, (2010),
+pp. 1–16.
+[7] M. KOPPINEN , On algebras with two multiplications, including Hopf algebras and Bose-Mesner algebras, Journal of Algebra, 182 (1996), pp. 256–273.
+[8] William Stein. Sage: Open Source Mathematical Software (Version 3.0). The
+Sage Group, 2008. http://www.sagemath.org .
+
+21
+
+

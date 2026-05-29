@@ -1,0 +1,750 @@
+arXiv:1011.0231v2 [math.CO] 4 Jan 2011
+
+When can Perfect State Transfer Occur?
+Chris Godsil
+Combinatorics & Optimization
+University of Waterloo
+cgodsil@uwaterloo.ca
+January 11, 2018
+Abstract
+Let X be a graph on n vertices with with adjacency matrix A and
+let H(t) denote the matrix-valued function exp(iAt). If u and v are
+distinct vertices in X, we say perfect state transfer from u to v occurs
+if there is a time τ such that |H(τ )u,v | = 1. Our chief problem is to
+characterize the cases where perfect state transfer occurs. We show
+that if perfect state transfer does occur in a graph, then the square of
+its spectral radius is either an integer or lies in a quadratic extension
+of the rationals. From this we deduce that for any integer k there
+only finitely many graphs with maximum valency k on which perfect
+state transfer occurs. We also show that if perfect state transfer from
+u to v occurs, then the graphs X \ u and X \ v are cospectral and any
+automorphism of X that fixes u must fix v (and conversely).
+
+1
+
+Introduction
+
+Let X be a graph on n vertices with with adjacency matrix A and let H(t)
+denote the matrix-valued function exp(iAt). If u and v are distinct vertices in
+X, we say perfect state transfer from u to v occurs if there is a time τ such
+that |H(τ )u,v | = 1. The terminology, and much of the motivation, comes
+from Quantum Physics, see e.g., [1]. We say that X is periodic relative to
+a vertex u if there is a time τ such that |H(τ )u,u | = 1, and say X itself is
+periodic if there is a time τ such that |H(τ )u,u | = 1 for all vertices u. It is
+1
+
+not hard to see that X will be periodic with period 2π if all its eigenvalues
+are integers. In [2] we showed that X is periodic if and only if either its
+eigenvalues are integers, or X is bipartite and there is a square-free
+integer
+√
+∆ such that all eigenvalues of X are integer multiples of ∆. As shown by
+Christandl et al [1] the d-cube is periodic, as are the Cartesian powers of the
+path P3 . (The eigenvalues of the d-cube are integers,
+√ and the eigenvalues of
+a Cartesian power of P3 are integer multiples of 2.)
+Our work in this paper has arisen from our attempts to characterize the
+pairs of vertices for which perfect state transfer does occur. Our results taken
+together imply that finding examples of perfect state transfer is not going
+to be easy. In particular we prove that if perfect state transfer from u to v
+occurs then
+(1) Any automorphism of X that fixes u must fix v, and conversely.
+(2) The subgraphs X \ u and X \ v are cospectral.
+(3) If ρ is the spectral radius of X, then ρ2 is an integer.
+
+2
+
+Periodicity and Perfect State Transfer
+
+Our first result is elementary, but it shows that perfect state transfer implies
+periodicity at at least two vertices. This is important conceptually, and also
+plays an important role in the rest of this paper. If S is a subset of the
+vertices of the graph X then we use eS to denote the characteristic vector of
+S. Here the only case of interest to us will be when S is a single vertex, and
+then if u ∈ V (X) then eu is one of the standard basis vectors.
+2.1 Lemma. If perfect state transfer from u to v takes place at time τ , then
+it also takes place from v to u. Further X is periodic with period 2τ at both
+u and v.
+Proof. We may assume that
+H(τ )eu = γev
+where |γ| = 1. Since H(t) is symmetric for all t, we also have
+H(τ )ev = γeu
+2
+
+and therefore
+H(2τ )eu = γ 2 eu ,
+
+H(2τ )ev = γ 2 ev .
+
+A more explicit form of this result is that if perfect state transfer from u
+to v takes place at time τ , then H(τ ) can be written in block form
+
+
+H1 0
+0 H2
+where H1 and H2 are unitary and
+
+0 1
+.
+H1 = γ
+1 0
+
+
+We also see that eu +ev is an eigenvector for H(τ ) with eigenvalue γ, while
+eu − ev is an eigenvector with eigenvalue −γ. This has consequences for the
+spectral decomposition of H(τ ), which we will discuss after introducing some
+associated notation. If θ1 , . . . , θd are the distinct eigenvalues of A, then Er
+is the matrix that represents orthogonal projection onto the eigenspace with
+eigenvalue θr . Hence the matrices E1 , . . . , Ed are idempotent and symmetric
+and for any function f (x) defined on the eigenvalues of A, we have
+f (A) =
+
+d
+X
+
+f (θr )Er .
+
+r=1
+
+It follows that
+H(t) =
+
+X
+
+exp(iθr t)Er ;
+
+r
+
+when t = τ and we have perfect state transfer from u to v at time τ . We can
+rewrite this in the form
+X
+H(τ ) = γF+ − γF− +
+exp(iθr t)Er .
+
+where the sum is over the integers r such that θr is not congruent modulo
+2π to ±γ. The matrices F+ and F− are non-empty sums of the principal
+idempotents and F+ F− = 0.
+
+3
+
+3
+
+The Ratio Condition
+
+If u is a vertex in X, we define its eigenvalue support to be the set of eigenvalues θr of X such that
+Er eu 6= 0.
+Note that
+kEr eu k2 = eTu ErT Er eu = eTu Er2 eu = eTu Er eu
+and therefore θr lies in the eigenvalue support of u if and only if (Er )u,u 6= 0.
+The ratio condition is a necessary condition for a graph to be periodic at a
+vertex. The version we offer here is stated as Theorem 2.2 in [2]; it is an
+extension of result from Saxena, Severini and Shparlinski [4], which in turn
+extends an idea used in Christandl et al [1].
+3.1 Theorem. Let X be a graph and let u be a vertex in X at which X is
+periodic. If θk , θℓ , θr , θs are eigenvalues in the support of eu and θr 6= θs ,
+then
+θk − θℓ
+∈ Q.
+θr − θs
+
+4
+
+Orbits and Equitable Partitions
+
+If u ∈ V (X), then Aut(X)v denotes the group of automorphisms of X that
+fix v. Our next result says that if perfect state transfer from u to v occurs,
+then any automorphism of X that fixes u must fix v (and vice versa).
+4.1 Lemma. If X admits perfect state transfer from u to v, then Aut(X)u =
+Aut(X)v .
+Proof. We identify the automorphisms of X with the permutation matrices
+that commute with A. Since H(t) is a polynomial in A, any permutation
+matrix from Aut(X) commutes with H(τ ). If the automorphism associated
+with P fixes u, the P eu = eu . If perfect state transfer takes place at time
+τ and H = H(τ ), then there is a complex scalar γ such that |γ| = 1 and
+Heu = γev . So
+γP ev = P Heu = HP eu = Heu = γev
+and thus v is fixed. As our argument is symmetric in u and v, the lemma
+follows.
+
+4
+
+By way of example, suppose X is a Cayley graph for an abelian group
+G. The map that sends g in G to g −1 is an automorphism of G and also an
+automorphism of X. The fixed points of this automorphism are the elements
+of G with order one or two. So if perfect state transfer for 1 to a second
+vertex a occurs, then a has order two. Consequently perfect state transfer
+cannot occur on a Cayley graph for an abelian group of odd order. (Another
+proof of this is presented as Corollary 4.2 in [2].)
+A partition π of the vertices of a graph X is equitable if, for each ordered
+pair of cells Ci and Cj from π, all vertices in Ci have the same number
+of neighbors in Cj . (So the subgraph of X induced by a cell is a regular
+graph, and the subgraph formed by the vertices of two cells and the edges
+which join them is bipartite and semiregular.) We note that the orbits of
+any group of automorphisms of X form an equitable partition. The discrete
+partition, with each cell a singleton, is always equitable; the trivial partition
+with exactly one cell is equitable if an only if X is regular. For the basics
+concerning equitable partitions see for example [3, Sction 9.3]. The join of
+two equitable partitions is equitable, and consequently given any partition
+of X, there is a unique coarsest refinement of it—the join of all equitable
+partitions which refine it.
+If u ∈ V (G), we use ∆u to denote the coarsest equitable refinement of
+the partition
+{{u}, V (X) \ {u}}
+The orbits of the group of automorphisms of X that fix u will be a refinement
+of ∆u .
+If π is a partition of V (X), its characteristic matrix is the 01-matrix whose
+columns are the characteristic vectors of the cells of π, viewed as subsets of
+V (X). If we scale the columns of the characteristic matrix so they are unit
+vectors, we obtain the normalized characteristic matrix of π. If P and Q
+are respectively the characteristic and normalized characteristic matrix of π,
+then P and Q have the same column space and QT Q = I. The matrix QQT
+is block diagonal, and its diagonal blocks are all of the form
+
+1
+Jr
+r
+where Jr is the all-ones matrix of order r × r, and the size of the i-th block
+is the size of the i-th cell of π. The vertex u forms a singleton cell of π if and
+only if Qeu = eu .
+We use |π| to denote the number of cells of π.
+5
+
+4.2 Lemma. Suppose π is a partition of the vertices of the graph X, and that
+Q is its normalized characteristic matrix. Then the following are equivalent:
+(a) π is equitable.
+(b) The column space of Q is A-invariant.
+(c) There is a matrix B of order |π| × |π| such that AQ = QB.
+(d) A and QQT commute.
+If there is perfect state transfer form u to v, then it follows from Lemma 4.1
+that the orbit partitions of Aut(X)u and Aut(X)v are equal. Since equitable
+partitions are an analog of orbit partitions, it is not entirely unreasonable to
+view the following result as an extension of this fact.
+4.3 Theorem. Let u and v be vertices in X. If there is perfect state transfer
+from u to v, then ∆u = ∆v .
+Proof. Let Q be the normalized characteristic matrix of the partition ∆u and
+assume H(t) = exp(iAt). Then H(t) is a polynomial and so QH(t) = H(t)Q.
+If we have perfect state transfer from u to v at time τ , then
+H(τ )eu = γev
+and accordingly
+γQev = QH(τ )eu = H(τ )Qeu = H(τ )eu = γev .
+So Qev = ev and this implies that {v} is a cell of ∆u .
+
+By way of example, consider a distance-regular graph X with diameter d.
+If u ∈ V (X), then ∆u is the distance partition with respect to u with exactly
+d + 1 cells, where the i-th cell is the set of vertices at distance i from u. We
+conclude that if perfect state transfer occurs on X, then for each vertex u
+there is exactly one vertex vertex at distance d from it. In particular perfect
+state transfer does not occur on strongly regular graphs. (This also follows
+from some observations in [2, Section 4].)
+
+6
+
+5
+
+Cospectral Vertices
+
+Vertices u and v in the graph X are cospectral if
+φ(X \ u, t) = φ(X \ v, t).
+Of course two vertices that lie in the same orbit of Aut(X) are cospectral,
+but there are many examples of cospectral pairs of vertices where this does
+not hold. A graph is walk regular if any two of its vertices are cospectral.
+Any strongly regular graph is walk regular.
+5.1 Lemma. If X admits perfect state transfer from u to v, then Er u =
+±Er v for all r, and u and v are cospectral.
+Proof. By Cramer’s rule,
+((tI − A)−1 )u,u =
+
+φ(X \ u, t)
+φ(X, t)
+
+and so using the spectral decomposition we find that
+φ(X \ u, t) X
+=
+(t − θr )−1 (Er )u,u ,
+φ(X, t)
+r
+where
+(Er )u,u = kEr eu k2 .
+Assume we have perfect state transfer from u to v at time τ and set H =
+H(τ ). Then there is a complex number γ such that |γ| = 1 and Heu = γev .
+As HEr = exp(iθr τ )Er we have
+exp(iθr τ )Er eu = γEr ev
+and since Er eu and Er ev are real our first claim follows. This implies that
+eTu Er eu = kEr eu k2 = kEr ev k2 = eTv Er ev
+and therefore u and v are cospectral.
+
+7
+
+6
+
+Integrality, Nearly
+
+From [2] we know that if a graph is periodic, then the squares of its eigenvalues are integers and, if the graph is not bipartite, the eigenvalues themselves
+are integers. Here we derive a variant of this fact, which will imply that that
+if perfect state transfer occurs on X, then the square of the spectral radius
+of X is an integer.
+At the end of the previous section we saw that if we had perfect state
+transfer from u to v at time τ , then
+H(τ )Er eu = γEr ev
+from which it follows that the eigenvalue supports of u and v are equal.
+6.1 Theorem. Suppose X is a connected graph with at least three vertices
+where perfect state transfer from u to v occurs at time τ . Let δ be the
+dimension of the A-invariant subspace generated by eu . Then δ ≥ 3 and
+either all eigenvalues in√the eigenvalue support of u are integers, or they are
+all of the form 12 (a + bi ∆) where ∆ is a square-free integer and a and bi are
+integers.
+Proof. Let S denote the eigenvalue support of eu . From the spectral decomposition, the A-invariant subspace generated by eu is spanned by the non-zero
+vectors Er eu such that θr ∈ S. Since Er Es = 0 when r 6= s these vectors are
+pairwise orthogonal and so form a basis for our A-invariant subspace. We
+conclude that δ = |S|.
+Since we have transfer from u to v at time τ , there is a complex number
+γ such that
+H(τ )eu = γev
+from which we see that that the A-invariant subspace generated by eu contains ev . Hence δ ≥ 2, but if equality holds then the span of eu and ev is
+A-invariant and, since X is connected it follows that |V (X)| = 2.
+If θr and θs are algebraic conjugates, then Er and Es are algebraic conjugates and so Er eu = 0 if and only if Es eu = 0. Hence S contains all algebraic
+conjugates of each of its elements. If two eigenvalues in S are integers, say
+θ0 and θ1 then since the ratio conditions asserts that
+θr − θ0
+∈ Q,
+θ1 − θ0
+8
+
+we conclude that all elements of S are integers.
+If all eigenvalues in S are integers, we’re done, so suppose that θ0 and θ1
+are two distinct irrational eigenvalues in S. We show that (θ1 − θ0 )2 is an
+integer. By the ratio condition, if θr , θs ∈ S there is a rational number ar,s
+such that
+θr − θs = ar,s (θ1 − θ0 )
+and therefore
+
+Y
+Y
+2
+(θr − θs ) = (θ1 − θ0 )δ −δ
+ar,s .
+r6=s
+
+i6=j
+
+The product on the left is an integer and the product of the ar,s ’s is rational,
+and hence
+2
+(θ1 − θ0 )δ −δ ∈ Q.
+Since θ1 − θ0 is an algebraic integer, this implies that
+2
+
+(θ1 − θ0 )δ −δ ∈ Z.
+Suppose m is the least positive integer such that (θ1 − θ0 )m is an integer.
+Then there are m distinct conjugates of θ1 − θ0 of the form
+βe2πik/m
+
+(k = 0, . . . , m − 1)
+
+where β is the positive real m-th root of an integer, and since the eigenvalues
+of X are real we conclude that m ≤ 2. Since θ1 − θ0 is not rational, it must
+therefore be the square root of an integer. Assume ∆ = (θ1 − θ0 )2 .
+Let F be the extension of Q generated by S and let G be the Galois group
+of this extension. We aim to show that |F : Q| = 2. Let σ be a non-identity
+element of G and let θ be an irrational element in S. Then
+2
+
+θσ − θσ
+=a∈Q
+θσ − θ
+and consequently
+k+1
+
+k
+
+θσ − θσ
+σk−1
+=
+a
+= a.
+k
+k−1
+θσ − θσ
+The product of all the possible fractions on the left here is 1, so if m is the
+order of σ, then am = 1. Since a is real, this implies that a = ±1.
+If a = 1, then
+k+1
+k
+k
+k−1
+θσ − θσ = θσ − θσ ,
+9
+
+from which it follows that for all k
+θσ
+
+k+1
+
+− θ = k(θσ − θ).
+
+Setting k equal to the order of σ yields a contradiction, and thus a = −1.
+Now we have
+2
+θσ − θσ = −θσ + θ
+
+and accordingly σ 2 fixes θ. Therefore all elements of the Galois group G have
+order dividing two.
+Now let ϕ be an element of S. Since
+ϕ−θ
+∈Q
+θσ − θ
+we have
+ϕ = aθσ + (1 − a)θ
+for some rational a. If ρ ∈ G, then there is a rational b such that
+θρ = bθσ + (1 − b)θ
+θσρ = (1 − b)θσ + bθ.
+As ρ2 = 1 and
+
+
+b
+1−b
+1−b
+b
+
+2
+
+
+ 2
+b + (1 − b)2
+2b(1 − b)
+=
+2b(1 − b)
+b2 + (1 − b)2
+
+we have b − b2 = 0. If b = 0 then ρ = 1, if b = 1 then ρ = σ. We conclude
+that |G| = 2 and |F : Q| = 2.
+As |G| =√2, the field Q(θ0 ) is a quadratic extension of Q and consequently
+Q(θ0 ) = Q( ∆). Because X is connected its spectral radius is simple and
+the corresponding eigenvector is positive. Therefore the spectral radius must
+lie in the eigenvalue support S of eu . Assume θ0 is the spectral radius and
+suppose it is an integer. Then if θ1 is an irrational eigenvalue in S, we may
+assume that
+√
+θ1 = θ0 − ∆
+√
+(where ∆ ∈ Z) but then the conjugate θ0 + ∆ is an eigenvalue of X greater
+than θ0 . Therefore if θ0 is an integer, all elements of S are integers.
+
+10
+
+Assume θ0 is irrational,
+and let θ0 , . . . , θm be the irrational eigenvalues in
+√
+S. Then θ0 − θ1 = ∆ for some integer ∆ and for i = 0, . . . , m there are
+rationals ai and bi such that
+√
+θi = ai + bi ∆.
+(Since θi is an algebraic integer,
+both 2ai and 2bi must be integers.) The
+√
+conjugate θ̄i of θi is ai − bi ∆ and, by the ratio condition,
+√
+θi − θ0
+ai − a0 + (bi − b0 ) ∆
+√
+=
+∈ Q,
+θ̄0 − θ0
+2b0 ∆
+whence ai = a0 for i = 0, . . . , m.
+If there is an integer eigenvalue ψ in S, then
+√
+ψ − a0 − bi ∆
+√ ∈ Q.
+ψ − a0 + bi ∆
+Since
+
+√
+
+
+a+b ∆
+a b
+√ ∈ Q ⇐⇒ det
+= 0,
+c d
+c+d ∆
+it follows that ψ = a0 .
+
+Suppose δ = 3. Then the subspace U generated by eu contains ev , Aeu
+and Aev . If Aeu = ev , then δ = 2, and so U is spanned by eu , ev and either
+one of Aeu and Aev . We find that X is the join of u and v with a regular
+graph.
+6.2 Corollary. There are only finitely many connected graphs with maximum valency at most k where perfect state transfer occurs.
+Proof. Suppose X is a connected graph where perfect state transfer from
+u to v occurs at time τ and let S be the eigenvalue support of u. If the
+eigenvalues in S are √
+integers then |S| ≤ 2k + 1, and if they are not integers
+then |S| < (2k + 1) 2. So the dimension√of the A-invariant subspace of
+RV (X) generated by eu is at most ⌈(2k + 1) 2⌉, and this is also a bound on
+the maximum distance from u of a vertex in X. If s ≥ 1, the number of
+vertices at distance s from u is at most k(k − 1)s−1, and the result follows.
+
+11
+
+7
+
+Controllable Vertices
+
+Let A be the adjacency matrix of the graph X on n vertices and suppose S
+is a subset of V (X) with characteristic vector eS . The walk matrix of S is
+the matrix with columns
+eS , AeS , . . . , An−1 eS .
+We say that the pair (X, S) is controllable if this walk matrix is invertible.
+If u ∈ V (X) then the walk matrix of u is just the walk matrix relative to
+the subset {u} of V (X). From our discussion at the start of the proof of
+Theorem 6.1, we have that the rank of the walk matrix relative to u is equal
+to the size of the eigenvalue support of u. Thus if (X, u) is controllable, the
+eigenvalues of A must be distinct.
+We say that vertices u and v of X are cospectral if the vertex-deleted
+subgraphs
+X \ u, X \ v
+
+are cospectral. We use φ(X, x) to denote the characteristic polynomial of
+A(X).
+7.1 Lemma. Let u and v be vertices of X with respective walk matrices Wu
+and Wv . Then u and v are cospectral if and only if WuT Wu = WvT Wv .
+Proof. By Cramer’s rule
+((xI − A)−1 )u,u =
+Now
+((xI − A)−1 )u,u = x−1
+
+φ(X \ u, x)
+φ(X, x)
+X
+
+(Ak )u,u x−k
+
+k≥0
+
+and therefore vertices u and v are cospectral if and only if
+(Ak )u,u = (Ak )v,v
+for all non-negative integers k. If n = |V (X)|, then equality holds for all
+non-negative integers k if and only if it holds for k = 0, 1, . . . , n − 1. To
+complete the proof observe that if Wu is the walk matrix for the vertex u,
+then
+(WuT Wu )r,s = eTu Ar+s−2 eu .
+One consequence of this is that if u and v are cospectral and (X, u) is
+controllable, then so is (X, v). We also have:
+12
+
+7.2 Corollary. If u is a vertex in X with walk matrix Wu , then rk(Wu )
+is equal to the number of poles of the rational function φ(X \ u, x)/φ(X, x).
+Hence (X, u) is controllable if and only if φ(X\u, x) and φ(X, x) are coprime.
+Proof. By the spectral decomposition,
+((xI − A)−1 )u,u =
+
+X
+r
+
+1
+(Er )u,u .
+x − θr
+
+We will prove that a controllable vertex cannot be involved in perfect
+state transfer. For this we need the following:
+7.3 Lemma. Let X be a graph with n = |V (X)|. If σ is the minimum
+distance between two eigenvalues of X, then
+12
+.
+n+1
+
+σ2 <
+
+Proof. Assume that the eigenvalues of X in non-increasing order are θ1 , . . . , θn .
+If we have
+M := A ⊗ I − I ⊗ A
+then the eigenvalues of M are the numbers
+θi − θj ,
+
+1 ≤ i, j ≤ n.
+
+Now
+M 2 = A2 ⊗ I + I ⊗ A2 − 2A ⊗ A
+
+and consequently, if e := |E(X)| then
+n
+X
+
+(θi − θj )2 = tr(M 2 ) = 2n tr(A2 ) = 4ne.
+
+i,j=1
+
+Since
+we have
+
+θi − θj ≥ (i − j)σ
+n
+X
+
+(θi − θj )2 ≥ σ 2
+
+i,j=1
+
+As
+
+n
+X
+i=1
+
+i2 =
+
+n
+X
+
+(i − j)2
+
+i,j=1
+
+n(n + 1)(2n + 1)
+6
+13
+
+we find that
+n
+X
+
+(i − j)2 = 2n
+
+i,j=1
+
+n
+X
+i=1
+
+i2 − 2
+
+n
+X
+i=1
+
+!2
+
+i
+
+=
+
+n2 (n2 − 1)
+,
+6
+
+and since e ≤ n(n − 1) this yields
+σ2
+
+n2 (n2 − 1)
+≤ 4ne ≤ 2n2 (n − 1).
+6
+
+This gives our stated bound but with ≤ in place of <. To achieve strictness
+we note that if equality were to hold then e = n(n − 1) and X = Kn . Since
+σ(Kn ) = 0, we are done.
+7.4 Theorem. Let X be a connected graph on at least four vertices. If
+we have perfect state transfer between distinct vertices u and v in X, then
+neither u nor v is controllable.
+Proof. Let n = |V (X)|. We assume by way of contradiction that (X, u) is
+controllable. Then the eigenvalue support of u contains all eigenvalues of X
+and these eigenvalues are distinct. By Theorem 6.1, this means that there
+are integers a and ∆ and distinct integers b1 , . . . , bn and the eigenvalues of A
+are the numbers
+√
+1
+(a + br ∆).
+2
+As tr(A) = 0 we have
+√
+n
+n
+√
+1X
+na
+∆X
+0=
++
+(a + bi ∆) =
+br
+2 r=1
+2
+2 r=1
+
+√
+P
+If ∆ is not an integer, this implies that r br = 0 and hence that a = 0.
+Accordingly the
+integer multiples of the irra√
+√ eigenvalues of A are distinct
+tional number ∆ that sum to zero. If ∆ is an integer then the eigenvalues
+of A are distinct integers that sum to zero. In either case σ(X) ≥ 1.
+By Lemma 7.3 we can assume that n = |V (X) ≤ 10. This leaves us with
+six cases. First suppose ∆ = 1. Assume n = 10. Then the sum of the squares
+of the eigenvalues of X is bounded below by the sum of the squares of the
+integers from −4 to 5, which is 85, and hence the average valency of a vertex
+14
+
+is at least 8.5. This implies that θ1 = 9, not 5, consequently the sum of the
+squares of the eigenvalues is at least
+85 − 25 + 81 = 141
+and now the average valency is 14.1, which is impossible. The cases where
+n is 7, 8 or 9 all yield contradictions in the same way. If ∆ > 1, it is even
+easier to derive contradictions.
+Next, brute force computation (using Sage [5]) shows that the path P4 is
+the only graph on 4, 5 or 6 vertices where the minimum separation between
+consecutive eigenvalues is at least 1. The positive eigenvalues of P4 are
+√
+( 5 ± 1)/2
+and their ratio is not rational.
+
+8
+
+Nearly Perfect State Transfer?
+
+If u and v are controllable and cospectral we cannot get perfect state transfer
+between them. Our next results shows that if these conditions hold, there is
+a symmetric orthogonal matrix Q which commutes with A and maps eu to
+ev .
+8.1 Lemma. Let u and v be vertices in X with respective walk matrices Wu
+and Wv . If u and v are controllable and Q := Wv Wu−1 then Q is a polynomial
+in A. Further Q is orthogonal if and only if u and v are cospectral.
+Proof. Let Cφ denote the companion matrix of the characteristic polynomial
+of A. Then
+AWu = Wu Cφ
+for any vertex u in X. Hence if u and v are controllable,
+Wu−1 AWu = Wv−1 AWv
+and from this we get that
+AWv Wu−1 = Wv Wu−1 A.
+
+15
+
+Since X has a controllable vertex its eigenvalues are all simple, and so any
+matrix that commutes with A is a polynomial in A. This proves the first
+claim.
+From Lemma 7.1, the vertices u and v are cospectral if and only if
+WuT Wu = WvT Wv , which is equivalent to
+Q−T = Wv−T WuT = Wv Wu−1 = Q.
+This places us in an interesting position. If u and v are cospectral and
+controllable, there is an orthogonal matrix Q that commutes with A such
+that Qeu = ev but, by the result of the previous section, Q cannot be equal
+to a scalar multiple of H(t) for any t.
+
+Acknowledgement
+I thanks Dave Morris for carefully reading the first draft of this paper and
+for providing a number of useful comments.
+
+References
+[1] M. Christandl, N. Datta, T. Dorlas, A. Ekert, A. Kay, and
+A. Landahl, Perfect transfer of arbitrary states in quantum spin networks, Phys Rev A, 71 (2005), p. 032312.
+[2] C. Godsil, Periodic graphs, arXiv, math.CO (2008), 0806.2074v2. 19
+pages.
+[3] C. Godsil and G. Royle, Algebraic Graph Theory, vol. 207 of Graduate Texts in Mathematics, Springer-Verlag, New York, 2001.
+[4] N. Saxena, S. Severini, and I. Shparlinski, Parameters of integral
+circulant graphs and periodic quantum dynamics, arXiv, quant-ph (2007),
+quant-ph/0703236v1. 12 pages.
+[5] W. Stein et al., Sage Mathematics Software (Version 4.5.2), The Sage
+Development Team, 2010. http://www.sagemath.org.
+
+16
+
+

@@ -1,0 +1,1741 @@
+arXiv:1102.4898v3 [math.CO] 17 Jun 2017
+
+State Transfer on Graphs
+Chris Godsil
+Combinatorics & Optimization
+University of Waterloo
+October 29, 2018
+Abstract
+If X is a graph with adjacency matrix A, then we define H (t ) to be
+the operator exp(i t A). We say that we have perfect state transfer in X
+from the vertex u to the vertex v at time τ if the uv-entry of |H (τ)u,v | = 1.
+State transfer has been applied to key distribution in commercial cryptosystems, and it seems likely that other applications will be found. We
+offer a survey of some of the work on perfect state transfer and related
+questions. The emphasis is almost entirely on the mathematics.
+
+1 Perfect State Transfer
+Let X be a graph on n vertices with with adjacency matrix A and let H(t ) denote the matrix-valued function exp(i At ). If u and v are distinct vertices in X ,
+we say perfect state transfer from u to v occurs if there is a time τ such that
+|H(τ)u,v | = 1. (We will occasionally use “pst” as an abbreviation for “perfect
+state transfer”.) We say that X is periodic relative to a vertex u if there is a time
+τ such that |H(τ)u,u | = 1, and we say X itself is periodic if there is a time τ such
+that |H(τ)u,u | = 1 for all vertices u.
+We can use the complete graph K 2 as an illustration. Here
+µ
+¶
+0 1
+A=
+,
+1 0
+so A n equals I if n is even and equals A if n is odd. Consequently
+µ
+¶
+cos(t ) i sin(t )
+H(t ) = cos(t )I + i sin(t )A =
+i sin(t ) cos(t )
+1
+
+and hence
+
+¶
+0 i
+H(π/2) =
+.
+i 0
+µ
+
+This shows that we have perfect state transfer from u to v at time π/2. We also
+see that X is periodic with period π (because H(π) = −I ). Of course at t = π/2
+we also have perfect state transfer from v to u; we will see that this is not an
+accident.
+We note two properties of H(t ):
+(a) Since A is symmetric, H(t ) is symmetric.
+(b) Since exp(i t A) = exp(−i t A), we find that H(t ) is unitary.
+1.1 Lemma. If we have perfect state transfer on X from u to v at time τ, then we
+have perfect state transfer from v to u at the same time, and X is periodic at u
+and v with period dividing 2τ.
+
+Proof. If u ∈ V (X ), let |u〉 denote the vector that is one on u and zero elsewhere.
+(So |u〉 is the characteristic vector of u, viewed as a subset of V (X ).) If we have
+pst from u to v at time τ then there is a complex number γ of norm 1 such that
+H(τ)|u〉 = γ|v 〉.
+But this says that H(τ)u,v = γ and, since H(τ) is symmetric, we have H(τ)v,u = γ
+and therefore there is pst from v to u at time τ.
+Now we see that
+H(τ)2 |u〉 = γ2 |u〉,
+
+H(τ)2 |v 〉 = γ2 |v 〉
+
+and since H(τ)2 = H(2τ), we’ve proved our second claim.
+If |H(t )u,v | = 1 then since H(t ) is unitary, the uv -entry of H(t ) is the only
+non-zero entry in the u-column and the only non-zero entry in the v row. Hence
+if we have perfect state transfer from 1 to 2 at time τ, then H(τ) has the form
+µ
+
+T
+H(τ) =
+0
+
+0
+H1
+
+where H1 is unitary and
+0 1
+T =γ
+1 0
+µ
+
+2
+
+¶
+
+¶
+
+with |γ| = 1.
+The theory of perfect state transfer starts with the papers Bose [11] and Christandl et al [18]; we will refer to the latter frequently.
+We note that our matrix H(t ) determines what is known as a continuous
+quantum walk, for background on this we refer the reader to [31, 32]. Physicists
+use exp(−i t A) where we have used exp(i t A); this makes absolutely no difference to the theory, which is what we care about here. For recent surveys on
+state transfer see Kendon and Tamon [33], Stevanović [38] and Kay [29].
+
+2 Spectral Decomposition
+The main tool we use is spectral decomposition of symmetric matrices. Suppose A is symmetric with distinct eigenvalues
+θ1 , . . . , θm
+and let E r denote orthogonal projection on the eigenspace belonging to θr .
+Then
+E r2 = E r = E r†
+and if f is a complex-valued function defined on the eigenvalues of A,
+f (A) =
+
+m
+X
+
+f (θr )E r .
+
+r =1
+
+Taking f to be the exponential matrix we obtain the basic identity
+H(t ) =
+
+m
+X
+
+exp(i θr t )E r .
+
+r =1
+
+One important consequence of this is that, for each t , the matrix H(t ) is a polynomial in A. Thus it commutes with A and, more generally, with any matrix
+that commutes with A. Further
+H(t )|u〉 =
+
+m
+X
+
+r =1
+
+exp(i θr t )E r |u〉
+
+where the non-zero vectors E r |u〉 are eigenvectors for A (and H). The set of
+eigenvalues θr such that E r |u〉 6= 0 is the eigenvalue support of the vector |u〉.
+3
+
+2.1 Lemma. Let E 1 , . . . , E m be the idempotents in the spectral decomposition of
+A(X ) and let θ1 , . . . , θm be the corresponding eigenvalues. Then there is perfect
+state transfer from u to v at time τ if and only if there is a constant γ such that
+E r |u〉 = γ exp(−i τθr )E r |v 〉
+
+(r = 1, . . . , m)
+
+Proof. We have
+H(τ)|u〉 = γ|v 〉.
+if and only if, for all r ,
+γE r |v 〉 = E r H(τ)|u〉.
+Since
+E r H(τ) = H(τ)E r = exp(i θr τ)E r
+the lemma follows.
+2.2 Corollary. If there is perfect state transfer from u to v , then E r |u〉 = ±E r |v 〉,
+and accordingly u and v have the same eigenvalue support.
+
+Proof. If we have state transfer from u to v , then E r |u〉 = βE r |v 〉 where |β| = 1.
+As E r |u〉 and E r |v 〉 are both real, β = ±1.
+For later use we note some properties of the eigenvalue support of a vertex,
+but to prove these we will need to provide an expression for the idempotents
+E r . If θ1 , . . . , θm are the distinct eigenvalues of A, define the polynomial p k (t ) by
+p k (t ) =
+
+Y t − θr
+
+r 6=k θk − θr
+
+.
+
+Then it is not hard to verify that E r = p r (A).
+2.3 Lemma. Suppose u ∈ V (X ) and S is its eigenvalue support. If θ ∈ S then all
+algebraic conjugates of θ are in S . If X is bipartite and θ ∈ S then −θ ∈ S . The
+spectral radius of the connected component of X that contains u belongs to S .
+
+Proof. If X is not connected, then the elements of S are eigenvalues of the connected component of X that contains u, and the associated eigenvectors are
+zero on vertices not in this component. So we may assume X is connected. If
+θr and θs are algebraic conjugates then E r = p r (A) and E s = p s (A) are algebraic
+conjugates and so E r |u〉 6= 0 if and only if E s |u〉 6= 0. The eigenvalue belonging to
+4
+
+the spectral radius of a connected graph is simple and the corresponding eigenvector has no entry zero. It follows that no entry of the associated idempotent
+is zero, which implies the third claim.
+Suppose X is bipartite on n vertices. Let D be the n × n diagonal matrix
+such that D v,v = 1 if v is at even distance from u, and D v,v = −1 otherwise. If
+D AD = −A and if Az = θz then ADz = −θDz.
+
+3 Period
+If we have perfect state transfer from u to v in X at time τ, then X is periodic
+at u with period 2τ. Our next result shows that minimum time at which perfect
+state transfer involving u occurs is determined by the minimum period at u.
+Some preliminaries. Assume X is connected and let T denote the set of
+times τ such that H(τ)e u is a scalar multiple of e u . Then T is an additive subgroup of R. Since for small t ,
+H(t ) ≈ I + i t A
+and since Ae u 6= 0, it follows that T is a discrete subgroup of R. Hence it is cyclic,
+generated by the minimum period of X at u. If we have perfect state transfer
+from u to v at time τ then X is periodic at u with period 2τ, and hence τ ≥ σ/2.
+3.1 Lemma. Suppose X is a connected graph and X is periodic at u with minimum period σ. Then if there is perfect state transfer from u to v , there is perfect
+state transfer from u to v at time σ/2.
+
+Proof. Suppose we have uv -pst with minimum time τ. Then X is periodic at u,
+with minimum period σ (say).
+If σ < τ, then H(τ − σ)e u = γe v for some γ and so τ is not minimal. Hence
+τ < σ. Since X is periodic at τ with period 2τ, we see that σ ≤ 2τ. If σ < 2τ then
+u is periodic with period dividing 2τ − σ and so σ ≤ 2τ − σ, which implies that
+σ ≤ τ. We conclude that σ = 2τ.
+Thus if the minimum period of X at u is σ and there is perfect state transfer
+from u to v , then there is perfect state transfer from u to v at time σ/2 (and not
+at any shorter time).
+We have the following corollary, due to Kay [30, Section IIID]:
+3.2 Corollary. If we have perfect state transfer in X from u to v and also from u
+to w , then v = w .
+5
+
+It is actually possible to derive a lower bound on the minimum period in
+terms of the eigenvalues of X .
+3.3 Lemma. If X is a graph with eigenvalues θ1 , . . . , θm and transition matrix
+H(t ). If x is a non-zero vector, then the minimum time τ such that x T H(τ)x = 0
+π
+is at least θ −θ
+.
+1
+
+m
+
+Proof. Assume kxk = 1. We want
+0 = x T H(t )x =
+
+X i tθ T
+e s x E s x,
+
+where the sum is over the eigenvalues θs such that E r x 6== 0, i.e., over the eigenvalue support of x. Since
+X
+1 = x T x = x T E s x,
+the right side is a convex combination of complex numbers of norm 1. When
+t = 0 these numbers are all equal to 1, and as t increases they spread out on
+the unit circle of radius. If they are contained in an arc of length less than π,
+their convex hull cannot contain 0, and for small(ish) values of t , they lie in
+the interval bounded by t θ1 and t θm . So for x T H X (t )x to be zero, we need
+t (θ1 − θm ) ≥ π, and thus we have the constraint
+t≥
+
+π
+.
+θ1 − θm
+
+If u ∈ V (X ) and x = |u〉, then this bound is tight for P 2 but not for P 3 .
+3.4 Lemma. If X is a graph with eigenvalues θ1 , . . . , θm , the minimum period of
+X at a vertex is at least θ 2π
+.
+−θ
+1
+
+m
+
+Proof. We want
+γ=
+
+X iθ t
+e r (E r )u,u ,
+r
+
+where kγk = 1, and for this to hold there must be integers m r,s such that
+t (θr − θs ) = 2m r,s π.
+This yields the stated bound.
+In the previous lemma, θ1 is the spectral radius of A(X ). However θm can
+be replaced by the least eigenvalue in the eigenvalue support. If the entries of x
+are non-negative, these comments apply to Lemma 3.3 too. For more bounds
+along the lines of the last two lemmas, go to [30, Section IIIC].
+6
+
+4 More Examples
+Our theory is developing nicely, but as yet we have just one example of perfect
+state transfer. We describe a second, also from Christandl et al. [18].
+4.1 Lemma. There is perfectpstate transfer between the end vertices of the path
+on three vertices at time π/ 2.
+p
+p
+Proof. The eigenvalues of P 3 are 2, 0, − 2 with respective eigenvectors
+
+ 
+ 
+
+1
+1
+1
+1  
+1 p 
+1 p 
+0 ,
+− 2 .
+2 , p
+2
+2
+2
+−1
+1
+1
+If we denote these vectors by z 1 , z 2 , z 3 respectively, then
+E r = z r z rT .
+Then
+and consequently
+
+p
+p
+H(t ) = exp(i t 2)E 1 + E 2 + exp(−i t 2)E 3
+
+
+
+0
+0 −1
+p
+H(π/ 2) = −E 1 + E 2 − E 3 =  0 −1 0  .
+−1 0
+0
+If X and Y are graphs then their Cartesian product X  Y is defined as follows. Its vertex set is V (X ) × V (Y ), and (x1 , y 1 ) is adjacent to (x2 , y 2 ) if either
+(a) x1 = x2 and y 1 is adjacent to y 2 , or
+(b) x1 is adjacent to x2 and y 1 = y 2 .
+Thus the Cartesian product of the paths P m and P n is the m × n grid. We
+use X d to denote the d -th Cartesian power of X —the Cartesian product of d
+copies of X . The d -th Cartesian power of P 2 is the d -cube Q d .
+The theory of the Cartesian product is very well developed, for details for
+[28]. We could have defined the Cartesian product using adjacency matrices:
+A(X  Y ) = A(X ) ⊗ I + I ⊗ A(Y ).
+This expresses A(X  Y ) as the sum of two commuting matrices, and hence
+allows one to prove the following (due once again to Christandl et al.).
+7
+
+4.2 Lemma. For any graphs X and Y we have
+H A(X Y ) (t ) = H A(X ) (t ) ⊗ H A(Y ) (t ).
+This lemma is particularly important in physical terms, because it implies
+that a physical system modelled by X  Y is a composite of the systems modelled by X and Y . It also means that we now have infinitely many examples
+where perfect state transfer occurs. The vertices of the d -th Cartesian power
+of X are the d -tuples in V (X )d , and if u and v are two such d -tuples, then the
+distance between them is
+d
+X
+distX (u r , v r ).
+r =1
+
+4.3 Theorem. If we have perfect state transfer from u to v in X at time τ, then at
+time τ we have perfect state transfer in the d -th Cartesian power of X between
+the d -tuples
+(u, . . . , u), (v, . . . , v ).
+Since we have perfect state transfer on P 2 and P 3 , we might naturally expect
+that perfect state transfer is possible on all paths. We will see that this is false.
+
+5 Periodicity
+We have seen that the existence of perfect state transfer implies periodicity.
+Studying periodicity is an effective stepping stone to the study of state transfer, and so we take this step.
+The first thing to note is that
+X
+Er = I
+and so X itself will be periodic if there is a time τ and a scalar γ with |γ| = 1 such
+that
+e i τθr = γ, r = 1, . . . , m.
+Certainly taking τ to be zero works. What is much more interesting is that if
+the eigenvalues of X are integers then τ = 2π works: if the eigenvalues of X
+are integers then X is periodic with period dividing 2π. The path P 2 = K 2 is an
+example.
+
+8
+
+With only a little more thought we see that if there there is a number δ such
+that θr /δ ∈ Q for all r , then X is periodic with period dividing 2π/δ. The basic
+question is to what extent this rationality condition is necessary.
+The ratio condition is a necessary condition for a graph to be periodic at
+a vertex. The version we offer here is stated as Theorem 2.2 in [23]; it is an
+extension of result from Saxena, Severini and Shparlinski [37], which in turn
+extends an idea used in Christandl et al. [18].
+5.1 Theorem. Let X be a graph and let u be a vertex in X at which X is periodic.
+If θk , θℓ , θr , θs are eigenvalues in the support of |u〉 and θr 6= θs , then
+θk − θℓ
+∈ Q.
+θr − θ s
+Using this one can prove that a graph is periodic if and only if the ratio of
+any two eigenvalues is rational, and this leads to the following result from [23]
+5.2 Theorem. A graph X is periodic if and only if either:
+
+(a) The eigenvalues of X are integers, or
+(b) The eigenvalues of X are rational multiples of
+integer ∆.
+
+p
+
+∆, for some square-free
+
+If the second alternative holds, X is bipartite.
+If X is regular then its spectral radius is an integer and so (b) cannot hold.
+Thus a regular graph is periodic if and only if its eigenvalues are integers.
+Since our actual concern is perfect state transfer, not periodicity, it will only
+be useful if there are interesting cases where perfect state transfer implies periodicity (and just periodicity at a vertex). We take this up in the next section.
+Note that there are graphs with perfect state transfer that are not periodic. Stevanović observes that the bipartite complements of an even number of copies
+of P 3 provide a family of examples, and another class is presented in AngelesCanul et al. [4]. (A bipartite graph Y is a bipartite complement of a bipartite
+graph X with bipartition (A, B) if the edge set E (Y ) is the complement of E (X )
+in the edge set of the complete bipartite graph with bipartition (A, B).)
+
+9
+
+6 Vertex-Transitive Graphs
+An automorphism of the graph X is a permutation α of V (X ) such that the
+vertices u α and v α are adjacent if and only if u and v are. Any permutation
+can be represented by a permutation matrix, and a permutation matrix P is an
+automorphism of X if and only if it commutes with A(X ). The set of all automorphisms of X forms its automorphism group Aut(X ). Our graph X is vertex
+transitive if Aut(X ) is transitive as a permutation group, that is, for each pair of
+vertices u and v there is an automorphism α such that u α = v .
+Cayley graphs form an important class of vertex-transitive graphs. To construct a Cayley graph for a group G we first choose a subset C of G. The vertex
+set of the Cayley graph X (G,C ) is G, and elements g and h of G are adjacent if
+hg −1 ∈ C . We call C the connection set, and we do not assume that C generates
+G (so X might not be connected). To avoid loops and multiple edges we do assume that 1 ∉ C and the C is inverse-closed; if g ∈ C then g −1 ∈ C . If a ∈ G then
+the map that send g to g a is an automorphism of G. In fact G acts regularly on
+V (X ) by right multiplication, and so any Cayley graph is vertex transitive.
+There are two classes of Cayley graphs which are important to us. If G is
+the cyclic group Zn , then a Cayley graph for G is a circulant. If G is the elementary abelian 2-group Zd2 , then X is a so-called cubelike graph. The cycle on n
+vertices is a circulant with connection set {1, −1}, and the d -cube is a cubelike
+graph. Note that if G is abelian we are using + as our group operation.
+For vertex-transitive graph, the existence of perfect state transfer has very
+strong consequences, as shown by the following result. (This is a consequence
+of [23, Theorem 4.1].)
+6.1 Theorem. Suppose X is a connected vertex-transitive graph with vertices u
+and v , and perfect state transfer from u to v occurs at time τ. Then H(τ) is a
+scalar multiple of a permutation matrix with order two and no fixed points, and
+it lies in the centre of the automorphism group of X .
+An immediate consequence is that if perfect state transfer takes place on a
+vertex-transitive graph X , then |V (X )| is even.
+We can weaken the assumption that X is vertex transitive in this theorem
+it is enough that A(X ) should belong to a homogeneous coherent algebra. A
+coherent algebra is a vector space of matrices that is closed under both the
+usual matrix multiplication and under Schur multiplication and contains I and
+J . Such an algebra has a unique basis of 01-matrices and it is homogeneous
+10
+
+if I is an element of this basis (rather than a sum of elements). The adjacency
+matrix of a vertex-transitive graph belongs to a homogeneous coherent algebra,
+and so does the adjacency matrix of a distance-regular graph. For details see
+[23, Theorem 4.1].
+For vertex-transitive graphs we can specify the true period: if the eigenvalues are integers and 2e is the largest power of 2 that divides the greatest common divisor of the eigenvalues then the period is π/2d−1 .
+
+7 Cayley Graphs of Abelian Groups
+In investigations of state transfer, Cayley graphs of abelian groups provide a useful test bed, because it is easy to compute their eigenvalues and eigenvectors.
+Another advantage of this class is that we can decide which vertices might
+be involved in state transfer. Each finite group G gives rise to two regular permutation groups: the group of permutations given by right multiplication on G
+and the group of permutations given by left multiplication. If n = |G|, these give
+two regular subgroups of the symmetric group Sym(n) and each element in one
+group commutes with each element in the other. The intersection of these two
+groups consists of the elements in the center of G. (So if G is abelian, the two
+groups are equal.) If T denotes the permutation matrix arising in Theorem 6.1,
+then we have the following extension of this theorem:
+7.1 Lemma. If X is a Cayley graph for a group G and perfect state transfer occurs
+at time τ, then T lies in the center of G .
+Even when G is abelian this is useful, because it tells us that T is an element
+of G. So if we have perfect state transfer on a Cayley graph for an abelian group
+G, then it maps the vertex g to g + c for some element of order two in Z (G). If
+G is the cyclic group of order n = 2ν, then perfect state transfer must send 0 to
+ν (and a to a + ν). If G is cyclic then this element of order two is unique (it if it
+exists).
+
+7.1 Cubelike Graphs
+A cubelike graph is a Cayley graph for Zd2 . The adjacency matrix of a cubelike
+graph can written as sum of commuting permutation matrices P such that P 2 =
+I and tr(P ) = 0. If
+A = P1 + · · · + Pd
+11
+
+then
+H(t ) = exp(i t (P 1 + · · · + P d )) =
+But if P 2 = I then
+and therefore
+
+d
+Y
+
+exp(i t P r ).
+
+r =1
+
+exp(i t P ) = cos(t )I + i sin(t )P
+H(t ) =
+
+d
+Y
+
+(cos(t )I + i sin(t )P r ).
+
+r =1
+
+Consequently H(π) = (−1)d I and
+
+H(π/2) = i d
+
+d
+Y
+
+Pr .
+
+r =1
+
+Using these ideas we arrive at the following result from [9]
+7.2 Lemma. Suppose C ⊆ Zd2 \0 and X = X (Zd2 ,C ). Then X is periodic with period dividing π. Its period is equal to π if and only the sum σ of the elements of
+C is not zero, and in this case we have perfect state transfer from 0 to σ at time
+π/2.
+The connection set of a cubelike graph on 2d vertices with valency m can
+be presented as a d × m matrix over Z2 with distinct columns; the columns of
+the matrix are the connection set. If M is such a matrix then its row space is a
+binary code. A binary code is even if the Hamming weight of any code word is
+even and it is easy to show that the code is even if and only if M1 = 0, that, is, the
+columns of M sum to zero. Hence we have perfect state transfer on a cubelike
+graph at π/2 if and only if its code is not even.
+We may have perfect state transfer when the code is even. A binary code
+is doubly even if all code words have weight divisible by four. The code is selforthogonal if M M T = 0 and again it is not hard to show that a self-orthogonal
+code is doubly even if and only if the weight of each row of M is doubly even. In
+[17] it is proved that if the code of a cubelike graph is self-orthogonal and even,
+but not doubly even, then we have perfect state transfer at time π/4.
+
+7.2 Circulants
+A circulant is a Cayley graph for the cyclic group Zn . As we saw above there is
+no perfect state transfer if n is odd and, if n = 2ν then any state transfer must
+be from a to a + ν.
+12
+
+However we have got ahead of ourselves—a circulant is periodic if and only
+its eigenvalues are integers. So we need to determine when this holds. Computing the eigenvalues of a circulant is easy because we know its eigenvectors.
+Choose a primitive n-th root of unity in C, say ζ, and an integer s. Then the
+function that maps x in Zn to ζsx is an eigenvector. If the connection set is C ,
+then the eigenvalue is
+X sx
+ζ .
+x∈C
+
+What is more surprising is that it is easy to characterize the connection
+sets C such that X (C ) has only integer eigenvalues. Define two elements of
+an abelian group G to be equivalent if they generate the same subgroup of G.
+Bridges and Mena [13] showed that the eigenvalues of X (G,C ) are integers if
+and only if C is a union of equivalence classes. For cyclic groups, two elements
+are equivalent if and only if they have the same order.
+In [7, 6, 8, 36] Bašić, Petković and (in one case) Stevanović have investigated
+perfect state transfer on circulants. Among their many results, they proved that
+if n is squarefree or is congruent to 2 modulo 4, there is no perfect state transfer.
+More recently Bašić [5] has completely characterized the circulants on which
+perfect state transfer occurs.
+A bicirculant is a graph on 2n vertices admitting an automorphism of order
+n with two orbits of length n. (So the Petersen graph is one example.) Any circulant of even order is a bicirculant but in general a bicirculant graph need not
+be vertex transitive. If X is a bicirculant relative to an automorphism g , then
+the subgraphs induced by the orbits of g are circulants. Angeles-Canul et al. [4]
+define a circulant join to be a bicirculant where the two induced circulants are
+isomorphic, and give a condition for such a graph to admit perfect state transfer.
+
+8 Equitable Partitions
+A partition π of the vertices of a graph X is equitable if, for each ordered pair of
+cells C i and C j from π, all vertices in C i have the same number of neighbors in
+C j . (So the subgraph of X induced by a cell is a regular graph, and the subgraph
+formed by the vertices of two cells and the edges which join them is bipartite
+and semiregular, that is, all vertices in the same color class have the same valency.) We note that the orbits of any group of automorphisms of X form an
+equitable partition. The discrete partition, with each cell a singleton, is always
+13
+
+equitable; the trivial partition with exactly one cell is equitable if an only if X
+is regular. For the basics concerning equitable partitions see for example [24,
+Section 9.3]. In particular the join of two equitable partitions is equitable, and
+consequently given any partition of X , there is a unique coarsest refinement of
+it—the join of all equitable partitions which refine it. (Note: here “join” refers
+to join in the lattices of partitions.)
+If π is a partition of V (X ), its characteristic matrix is the 01-matrix whose
+columns are the characteristic vectors of the cells of π, viewed as subsets of
+V (X ). If we scale the columns of the characteristic matrix so they are unit vectors, we obtain the normalized characteristic matrix of π. If P and Q are respectively the characteristic and normalized characteristic matrix of π, then P and
+Q have the same column space and Q T Q = I . The matrix QQ T is block diagonal,
+and its diagonal blocks are all of the form
+1
+Jr
+r
+where J r is the all-ones matrix of order r ×r , and the size of the i -th block is the
+size of the i -th cell of π. The vertex u forms a singleton cell of π if and only if
+Qe u = e u .
+We use |π| to denote the number of cells of π.
+8.1 Lemma. Suppose π is a partition of the vertices of the graph X , and that Q
+is its normalized characteristic matrix. Then the following are equivalent:
+
+(a) π is equitable.
+(b) The column space of Q is A -invariant.
+(c) There is a matrix B of order |π| × |π| such that AQ = QB .
+(d) A and QQ T commute.
+If u ∈ V (G), we use ∆u to denote the partition of the vertices by distance
+from u. The following result is proved in [26].
+8.2 Theorem. A graph X is distance-regular if it is regular and for each vertex u
+in X , the distance partition ∆u is equitable.
+(If X is not regular but all distance partitions are equitable, then it is a distancebiregular graph. For details see [26].)
+Ge at al [19] provide an application of the theory of equitable partitions unrelated to what we consider here.
+14
+
+9 Stabilizers
+If u ∈ V (X ), then Aut(X )u denotes the group of automorphisms of X that fix u.
+Our next result says that if perfect state transfer from u to v occurs, then any
+automorphism of X that fixes u must fix v (and vice versa).
+9.1 Lemma. Suppose perfect state transfer from u to v occurs on X at time τ. If
+M A = AM and M|u〉 = |u〉 then M|v 〉 = |v 〉.
+
+Proof. Since M must commute with E r ,
+ME r |u〉 = E r M|u〉 = E r |u〉.
+By Lemma 2.1 it follows that ME r |v 〉 = E r |v 〉, and therefore M|v 〉 = |v 〉.
+9.2 Corollary. If X admits perfect state transfer from u to v , then Aut(X )u =
+Aut(X )v .
+By way of example, suppose X is a Cayley graph for an abelian group G. The
+map that sends g in G to g −1 is an automorphism of G and also an automorphism of X . The fixed points of this automorphism are the elements of G with
+order one or two. So if perfect state transfer from 1 to a second vertex a occurs, then a has order two. Consequently perfect state transfer cannot occur
+on a Cayley graph for an abelian group of odd order. (Another proof of this is
+presented as Corollary 4.2 in [23].)
+If there is perfect state transfer from u to v , then it follows from the previous
+corollary that the orbit partitions of Aut(X )u and Aut(X )v are equal. Since equitable partitions can be viewed as a generalization of orbit partitions, it is not
+entirely unreasonable to view the following result as an extension of this fact.
+9.3 Corollary. Let u and v be vertices in X and let πu and πv denote the coarsest
+equitable partition of X in which {u} (respectively {v }) is a cell of size one. If
+there is perfect state transfer from u to v , then ∆u = ∆v .
+
+Proof. Let Q be the normalized characteristic matrix of the partition πu , let
+R = QQ T and assume H(t ) = exp(i At ). Then H(t ) is a polynomial in A and so
+R H(t ) = H(t )R. If we have perfect state transfer from u to v at time τ, then
+H(τ)e u = γe v
+15
+
+and accordingly
+γRe v = R H(τ)e u = H(τ)Re u = H(τ)e u = γe v .
+So Re v = e v and this implies that {v } is a cell of πu . By symmetry, {u} is a cell in
+πv and it follows that πu = πv
+
+By way of example, consider a distance-regular graph X with diameter d . If
+u ∈ V (X ), then ∆u is the distance partition with respect to u with exactly d + 1
+cells, where the i -th cell is the set of vertices at distance i from u. We conclude
+that if perfect state transfer occurs on X , then for each vertex u there is exactly
+one vertex vertex at distance d from it. In particular perfect state transfer does
+not occur on strongly regular graphs. (This also follows from some observations
+in [23, Section 4].)
+9.4 Lemma. Suppose C and D are cells of an equitable partition π of X and
+that we have perfect state transfer from u in C to v in D at time τ. If y is the
+characteristic vector of the cell of π that contains u , then H(τ)y is the scalar
+multiple of the characteristic vector of the cell that contains v . Further these
+two cells have the same size.
+
+Proof. Let Q be the normalized characteristic matrix of the partition. Then
+HQ|u〉 = Q H|u〉 = γQ|v 〉.
+If w ∈ V (X ) then Q|w〉 is the normalized characteristic vector of the cell containing w and so our first claim holds. Since H is unitary, z and H z have the
+same length.
+
+10 Finiteness
+From [23] we know that if a graph is periodic, then the squares of its eigenvalues are integers and, if the graph is not bipartite, the eigenvalues themselves
+are integers. A variant of this fact was derived in [21], it implies that that if perfect state transfer occurs on X , then the spectral radius of X is an integer or a
+quadratic irrational.
+10.1 Theorem. Suppose X is a connected graph with at least three vertices where
+perfect state transfer from u to v occurs at time τ. Let δ be the dimension of the
+A -invariant subspace generated by e u . Then δ ≥ 3 and either all eigenvalues
+p in
+1
+the eigenvalue support of u are integers, or they are all of the form 2 (a + br ∆)
+where ∆ is a square-free integer and a and br are integers.
+16
+
+10.2 Corollary. There are only finitely many connected graphs with maximum
+valency at most k where perfect state transfer occurs.
+
+Proof. Suppose X is a connected graph where perfect state transfer from u to v
+occurs at time τ and let S be the eigenvalue support of u. If the eigenvaluespin
+S are integers then |S| ≤ 2k +1, and if they are not integers then |S| < (2k +1) 2.
+V (X )
+So the dimension
+generated by |u〉 is at
+p of the A-invariant subspace of R
+most ⌈(2k + 1) 2⌉, and this is also a bound on the maximum distance from u
+of a vertex in X . If s ≥ 1, the number of vertices at distance s from u is at most
+k(k − 1)s−1 , and the result follows.
+10.3 Corollary. Suppose X is a bipartite graph with spectral radius θ1 . If perfect
+state transfer takes place on X , then θ12 ∈ Z.
+
+Proof. Suppose X is bipartite are we have perfect state transfer from u to v . Let
+S be the eigenvalue support of u. By Theorem 10.1 there is a squarefree integer
+∆ and integers a and b r such that each eigenvalue in S has the form
+p
+1
+(a + b r ∆).
+2
+We assume
+p by way of contradiction that a 6= 0. The spectral radius θ1 is then
+(a + b r ∆)/2 and from Lemma 2.3 we see that θ1 and −θ1 belong to S. This
+implies that a = 0.
+
+11 Cospectral Vertices
+We use φ(X , x) to denote the characteristic polynomial of A(X ). Vertices u and
+v in the graph X are cospectral if
+φ(X \u, t ) = φ(X \v, t ).
+Of course two vertices that lie in the same orbit of Aut(X ) are cospectral, but
+there are many examples of cospectral pairs of vertices where this does not hold.
+A graph is walk regular if any two of its vertices are cospectral. Any strongly
+regular graph is walk regular.
+We note the following identities:
+X
+φ(X \u, t )
+= ((t I − A)−1 )u,u = (t − θr )−1 (E r )u,u .
+φ(X , t )
+r
+17
+
+(Here the first inequality is a consequence of Cramer’s rule and the second is
+spectral decomposition.) Since
+(E r )u,u = kE r |u〉k2
+we see that u and v are cospectral if and only the projections E r |u〉 and E r |v 〉
+have the same length for each r . So Lemma 2.1 yields immediately:
+11.1 Lemma. If X admits perfect state transfer from u to v , then E r u = ±E r v
+for all r , and u and v are cospectral.
+We note that if the eigenvalues of A are simple and
+kE r |u〉k2 = kE r |v 〉k2
+then necessarily E r |u〉 = ±E r |v 〉.
+Let A be the adjacency matrix of the graph X on n vertices and suppose S
+is a subset of V (X ) with characteristic vector |S〉. The walk matrix of S is the
+matrix with columns
+|S〉, A|S〉, . . . , A n−1 |S〉.
+
+We say that the pair (X , S) is controllable if this walk matrix is invertible. If
+u ∈ V (X ) then the walk matrix of u is just the walk matrix relative to the subset
+{u} of V (X ). From our discussion at the start of the proof of Theorem 10.1, we
+have that the rank of the walk matrix relative to u is equal to the size of the
+eigenvalue support of u. Thus if (X , u) is controllable, the eigenvalues of A must
+be distinct.
+11.2 Lemma. Let u and v be vertices of X with respective walk matrices Wu and
+Wv . Then u and v are cospectral if and only if WuT Wu = WvT Wv .
+One consequence of this is that if u and v are cospectral and (X , u) is controllable, then so is (X , v ). We also have the following (from [25]):
+11.3 Corollary. If u is a vertex in X with walk matrix Wu , then rk(Wu ) is equal to
+the number of poles of the rational function φ(X \u, x)/φ(X , x). Hence (X , u) is
+controllable if and only if φ(X \u, x) and φ(X , x) are coprime.
+
+Proof. By the spectral decomposition,
+((xI − A)−1 )u,u =
+
+1
+(E r )u,u .
+r x − θr
+
+X
+
+18
+
+The characteristic polynomial of the path P n satisfies the recurrence
+φ(P n+1 , x) = xφ(P n , x) − φ(P n−1 , x)
+and using this it easy to show that either end-vertex of a path is controllable.
+On the other hand, if X has an eigenvalue of multiplicity greater than one then
+no vertex in X is controllable. The following result comes from [21].
+11.4 Theorem. Let X be a connected graph on at least four vertices. If we have
+perfect state transfer between distinct vertices u and v in X , then neither u nor
+v is controllable.
+For information on controllability, go to [20].
+
+12 Transfer without Exponentials
+If u and v are controllable and cospectral we cannot get perfect state transfer between them. Our next result shows that if these conditions hold, there
+is nonetheless a symmetric orthogonal matrix Q which commutes with A and
+maps |u〉 to |v 〉.
+12.1 Lemma. Let u and v be vertices in X with respective walk matrices Wu and
+Wv . If u and v are controllable and Q := Wv Wu−1 then Q is a polynomial in A .
+Further Q is orthogonal if and only if u and v are cospectral.
+
+Proof. Let C φ denote the companion matrix of the characteristic polynomial of
+A. Then
+AWu = Wu C φ
+for any vertex u in X . Hence if u and v are controllable,
+Wu−1 AWu = Wv−1 AWv
+and from this we get that
+AWv Wu−1 = Wv Wu−1 A.
+Since X has a controllable vertex its eigenvalues are all simple, and so any matrix that commutes with A is a polynomial in A. This proves the first claim.
+
+19
+
+From Lemma 11.2, the vertices u and v are cospectral if and only if WuT Wu =
+
+WvT Wv , which is equivalent to
+
+Q −T = Wv−T WuT = Wv Wu−1 = Q.
+This lemma places us in an interesting position. If u and v are cospectral
+and controllable, there is an orthogonal matrix Q that commutes with A such
+that Q|u〉 = |v 〉 but, by the result of the previous section, Q cannot be equal to a
+scalar multiple of H(t ) for any t .
+
+13 Pretty Good State Transfer
+We say we have pretty good state transfer from u to v if there is a sequence {tk }
+of real numbers and a scalar γ such that
+lim H(tk )|u〉 = γ|v 〉.
+
+k→∞
+
+As an example consider P 4 with eigenvalues
+1 p
+θ1 = ( 5 + 1),
+2
+
+1 p
+θ2 = ( 5 − 1),
+2
+
+1 p
+θ3 = (− 5 + 1),
+2
+
+1 p
+θ4 = (− 5 − 1).
+2
+
+Then by straightforward computation
+
+
+0
+
+0
+E1 − E2 + E3 − E4 = 
+0
+1
+
+0
+0
+1
+0
+
+0
+1
+0
+0
+
+
+1
+
+0
+;
+0
+0
+
+P
+denote the right side by T . (We could prove that T = r (−1)r −1 E r by verifying that if z r is an eigenvector with eigenvalue θr , then T z r = (−1)r −1 z r .) Now
+choose integers a and b so that
+p
+a 1+ 5
+≈
+.
+b
+2
+Then bθ1 ≈ a and
+bθ2 = b(θ1 − 1) ≈ a − b,
+
+bθ3 ≈ b − a,
+20
+
+bθ4 ≈ −a.
+
+For example take a = 987 and b = 610 and set τ = 610π/2. Then the values of
+τθr are (approximately)
+987π/2,
+
+377π/2,
+
+−377π/2,
+
+−987π/2
+
+and these are congruent modulo 2π to
+3π/2,
+
+π/2,
+
+3π/2,
+
+π/2.
+
+Hence
+H(305π) ≈ −i T.
+
+(The approximation is accurate to five decimal places.)
+In general we have to choose a and b so that a ∼
+= 3 and b ∼
+= 2 modulo 4. If f n
+is the n-th Fibonacci number with f 0 = f 1 = 1 then modulo 4
+f 4m+2 ∼
+= 2,
+
+f 4m+3 ∼
+=3
+
+and
+p the ratios f n+1 / f n are the standard continued fraction approximation to
+( 5 + 1)/2. We conclude that we have pretty good state transfer between the
+end-vertices of P 4 . We leave the reader the exercise of verifying that there is
+also pretty good state transfer
+between the end-vertices of P 5 (for which the
+p
+eigenvalues are 0, ±1, ± 3). In the next section we see that we do not have
+perfect state transfer on P n when n ≥ 4. Also, to get a good approximation to
+perfect state transfer on P 5 the numerical evidence is that t must be very large.
+This suggests that pretty good state transfer will not be a satisfactory substitute
+for perfect state transfer in practice.
+Dave Morris has noted the following in a private communication.
+13.1 Lemma. If we have pretty good state transfer from u to v , then E r |u〉 =
+±E r |v 〉 for each r .
+
+Proof. By assumption there is a sequence {tk } of real numbers such that
+lim H(tk )|u〉 = γ|v 〉.
+
+k→∞
+
+Since the unit circle is compact there is a subsequence {tℓ } and a complex number ζ such that exp(i tℓ ) → ζ. Now
+ζE r |u〉 = lim exp(i tℓ θr )E r |u〉 = lim E r H(tℓ )|u〉 = γE r |v 〉.
+ℓ→∞
+
+ℓ→∞
+
+Since E r |u〉 and E r |v 〉 are real vectors, the lemma follows.
+21
+
+14 Paths
+In [18] Christandl et al. proved that perfect state transfer between the end-vertices
+of a path on n vertices did not occur if n ≥ 4. It is possible to extend their arguments to show that P 2 and P 3 are the only paths where perfect state transfer
+occurs at all. Our approach has benefited from discussions with Dragan Stevanović.
+To begin we note some simple properties of paths. First, the characteristic
+polynomials φ(P n , x) satisfy the recurrence
+φ(P n+1 , x) = xφ(P n , x) − φ(P n−1 , x).
+One consequence of this is φ(P n+1 , x) and φ(P n , x) are coprime. Since interlacing implies that any multiple eigenvalue of P n+1 must be an eigenvalue of P n ,
+we also see that the eigenvalues of a path are simple.
+Given the Φ(P n , x) and φ(P n−1 , x) are coprime, it follows from Theorem 11.4
+that we do not have perfect state transfer between end-vertices in P n when n ≥
+4. Using the identity
+φ(P m+n , x) = φ(P m , x)φ(P n , x) − φ(P m−1 , x)φ(P n−1 , x)
+(which can be derived easily by induction from our recurrence above), it is not
+hard to show that φ(P n , x) and φ(P m , x) have a non-trivial common factor if and
+only if m + 1 divides n + 1. This rules out many more possible cases of perfect
+state transfer.
+If n is odd then the stabilizer in Aut(P n ) of the middle vertex of P n has order two, while the stabilizer of any other vertex is trivial. So the middle vertex
+cannot be involved in perfect state transfer.
+But nothing we have mentioned will rule out perfect state transfer between
+(say) vertices 3 and 6 in P 8 . We address this problem now.
+Let ζn (x) denote the vector
+
+1
+ φ(P 1 , x) 
+
+
+
+.
+..
+
+
+.
+
+
+φ(P n−1 , x)
+
+If the eigenvalues of P n are
+θ1 ≥ · · · ≥ θn
+22
+
+then ζn (θr ) is an eigenvector for P n with eigenvalue θr . This is easy to verify
+using the recurrence, and using this we can also see that two consecutive entries of ζr cannot be zero. Nor can the last entry be zero. We say there is a sign
+change at r in the sequence (φ(P r , x))rn−1
+=0 if
+φ(P r −1 (x)) φ(P r (x)) < 0
+or if φ(P r (x)) = 0 and
+
+φ(P r −1 (x)) φ(P r +1 (x)) < 0.
+
+From the recurrence we see that if φ(P r (x)) = 0 then there is a sign change at r .
+It follows from Sturm’s theorem that there are exactly m − 1 sign changes in the
+sequence (φ(P n , θm ))rn−1
+=0 .
+Let T be the permutation matrix representing the non-identity automorphism of P n . Since the eigenvalues of the path are simple, if z is an eigenvector
+for A = A(P n ), then T z is also an eigenvector and consequently T z = ±z. Since
+the bottom entry of ζn (θ2 ) must be negative, we have
+T ζn (θ2 ) = −ζn (θ2 ).
+We conclude that either no entry of ζn (θ2 ) is zero, or n is odd and the middle
+entry is zero. Hence if m is not the middle vertex then neither E 1 |m〉 nor E 2 |m〉
+is zero. If D is the n ×n diagonal matrix with D r,r = (−1)r and z is an eigenvector
+of the path with eigenvalue θ, then Dz is an eigenvector with eigenvalue −θ.
+Hence E n−1 |m〉 and E n |m〉 are not zero. By Theorem 5.1 we have that
+θ2 θn − θn−1
+=
+∈ Q.
+θ1
+θ1 − θn
+The eigenvalues of P n are the numbers
+³ rπ ´
+2 cos
+,
+n +1
+and it follows that
+
+r = 1, . . . , n
+
+θ2 = θ12 − 2.
+
+Our rationality condition now implies that θ1 must be, at worst, a quadratic
+irrational. But by Corollary 10.3 we have that θ12 is an integer, and therefore θ2
+must also be an integer. Since θ2 < 2 and θ1 > 0 we have
+θ2 ∈ {−1, 0, 1}.
+23
+
+If θ2 = −1 p
+then θ1 = 1 and X = K 2 . If θ2 = 0, then θ1 =
+then θ1 = 3 and according to the ratio condition
+
+p
+
+2 and X = P 3 . If θ2 = 1
+
+p
+p
+3−1
+θ1 − θ2
+=p
+= 2− 3
+θ1 + θ2
+3+1
+
+should be rational.
+Depending on one’s mood, it is either instructive or depressing to see how
+much effort is needed to deal with perfect state transfer on paths.
+
+15 Joins
+If X and Y are graphs let X + Y denote their join, which we get by taking a
+copy of X and a copy of Y and joining each vertex in X to each vertex in Y .
+Angeles-Canul et al. [4, 3] and the Ge et al. [19] provide many interesting results
+on perfect state transfer in joins, including cases with weighted edges. Here we
+will focus simply on the joins of two regular graphs.
+Assume X is k-regular on m vertices and Y is ℓ-regular on n vertices. Set
+A = A(X ) and B = A(Y ). If Z := X + Y then
+µ
+¶
+A J
+A(Z ) = T
+.
+J
+B
+If Az = θz and 1T z = 0, then
+µ ¶
+µ ¶
+z
+z
+A(Z )
+=θ
+.
+0
+0
+Similarly, if B z = θz then
+
+µ ¶
+µ ¶
+0
+0
+A(Z )
+=θ
+.
+z
+z
+
+We see that n +m −2 of the eigenvalues of X +Y are eigenvalues of X and eigenvalues of Y . The remaining two eigenvalues are associated with eigenvectors
+that are constant on V (X ) and V (Y ). Assume that A and B have respective
+spectral decompositions:
+A=
+
+X
+
+θr E r ,
+
+r
+
+24
+
+B=
+
+X
+s
+
+νs F s
+
+where E 1 and F1 are multiples of J . Then we have a decomposition
+X
+X
+F̂r ,
+θr Ê r +
+A(Z ) = µ1 N1 + µ2 N2 +
+s>1
+
+r >1
+
+where a lot of explanation is needed. Here
+µ
+
+Er
+Ê r =
+0
+
+¶
+0
+,
+0
+
+0 0
+F̂ s =
+0 Fs
+µ
+
+¶
+
+while since rk(N1 ) = rk(N2 ) = 1 they are respectively of the form
+µ
+
+p
+
+aJ
+p m,m
+ab J n,m
+
+¶
+ab J m,n
+,
+b J n,n
+
+µ
+
+cJ
+p m,m
+cd J n,m
+
+p
+¶
+cd J m,n
+d J n,n
+
+with a, b, c, d to be determined, along with the eigenvalues µ1 and µ2 .
+To determine µ1 and µ2 , we note that the partition of V (X +Y ) with two cells
+V (X ) and V (Y ) is equitable, with quotient
+µ
+
+¶
+k n
+.
+m ℓ
+
+Hence µ1 and µ2 are the zeros of the characteristic polynomial of this matrix
+x 2 − (k + ℓ)x + kℓ − mn,
+that is they are equal to
+p
+1
+(k + ℓ ± (k − ℓ)2 + 4mn).
+2
+Now let u and v be distinct vertices in X . We determine conditions for perfect state transfer from u to v in X + Y . Since (Fˆs )u,v = 0 and (Ê r ) = (E r )u,v ,
+X
+(H X +Y (t ))u,v = exp(i µ1 t ) (N1 )u,v + exp(i µ2 t ) (N2 )u,v +
+exp(i θr t ) (E r )u,v
+r >1
+X
+exp(i θr t ) (E r )u,v .
+= a exp(i µ1 t ) + c exp(i µ2 t ) +
+r >1
+
+On the other hand
+H X (t )u,v =
+
+X
+1
+exp(i kt ) +
+exp(i θr t ) (E r )u,v .
+m
+r >1
+25
+
+and thus if we have perfect state transfer from u to v in X at time τ, we will have
+perfect state transfer between the same vertices in X + Y at time τ if
+1
+exp(i kτ) = a exp(i µ1 τ) + c exp(i µ2 τ).
+m
+
+(15.1)
+
+As
+I = N1 + N2 +
+
+X
+
+r >1
+
+Ê r +
+
+X
+
+F̂ s
+
+s>1
+
+we see that a + c = 1/m. Since exp(i kt ), exp(i µ1 τ) and exp(i µ2 τ) are roots of
+unity, we see that (15.1) can hold if and only if
+exp(i kτ) = exp(i µ1 τ) = exp(i µ2 τ).
+For this we need both (k − mu 1 )τ and (k − µ2 )τ to be integer multiples of 2π,
+and hence that
+k − µ1
+∈ Q.
+k − µ2
+
+This can only happen if (k − ℓ)2 + 4mn is a perfect square.
+In our treatment here we have followed Angeles-Canul et al [4]. Using these
+ideas they prove the following results.
+
+15.1 Lemma. Suppose Y is a k -regular graph on n vertices. Then there is perfect
+state transfer in K 2 + Y between the vertices of K 2 if
+p
+(a) ∆ = k 2 + 8n is an integer.
+
+(b) n is even and 4|k .
+(c) The largest power of two that divides k is not equal to the largest power that
+divides ∆.
+15.2 Lemma. Suppose Y is a k -regular graph on n vertices. Then there is perfect
+state transfer in K 2 + Y between the vertices of K 2 if
+p
+(a) ∆ = (k − 1)2 + 8n is an integer.
+
+(b) Both k − 1 and n are divisible by 8.
+
+26
+
+The join of X and Y is the complement of the disjoint union of X and Y .
+Hence for regular graphs we can derive results about joins from information
+about complements.
+15.3 Lemma. Suppose X is regular graph on n vertices with perfect state transfer from u to v at τ. If τ is an integer multiple of 2π/n , then there is perfect state
+transfer from u to v at time τ in X .
+
+Proof. Since X is regular, A and J − I commute and so
+H X (t ) = exp(i t (J − I ))H X (−t ).
+Using the spectral decomposition of J − I we find that
+1
+1
+exp(i t (J − I )) = exp(i (n − 1)t ) J + exp(−i t )(I − J )
+n
+n
+and this is a multiple of I if exp(i nt ) = 1, that is, if t is an integer multiple of
+2π/n.
+Using this lemma, it is immediate that we have perfect state transfer on nK 2
+(when n ≥ 2) and nC 4 .
+
+16 The Direct Product
+If X and Y are graphs then their direct product X × Y is the graph with adjacency matrix
+A(X ) ⊗ A(Y ).
+16.1 Lemma. Suppose X and Y are graphs with respective adjacency matrices
+A and B and suppose A has spectral decomposition
+X
+A = θr E r .
+r
+
+Then
+H X ×Y (t ) =
+
+X
+r
+
+E r ⊗ HY (θr t ).
+
+Proof. First,
+A ⊗B =
+
+X
+r
+
+θr E r ⊗ B
+
+27
+
+and since the matrices E r ⊗ B commute,
+Y
+H X ×Y (t ) = exp(i θr E r ⊗ B).
+r
+
+If E 2 = E then
+exp(E ⊗ M) = I +
+
+X 1
+
+k≥1 k!
+
+E ⊗ M k = (I − E ) ⊗ I + E ⊗ exp(M)
+
+and accordingly
+H X ×Y (t ) =
+Since E r E s = 0 if r 6= s and
+
+Q
+
+Y¡
+¢
+(I − E r ) ⊗ I + E r ⊗ HY (θr t ) .
+r
+
+r (I − E r ) = 0, the lemma follows.
+
+16.2 Lemma. Suppose that HY (τ)|u〉 = γ|v 〉 where γ = exp(i ϕ) and HY (2τ) =
+γ2 I . If the eigenvalues θ1 , . . . , θm of X are odd integers, then
+H X ×Y (τ) = H X (ϕ) ⊗ γ−1 HY (τ).
+P
+Proof. Assume that HY (t ) = r exp(i t θr )E r . If θr is an odd integer then
+HY (θr τ) = HY (2τ)(θr −1)/2 HY (τ) = γθr γ−1 HY (τ)
+
+and accordingly
+H X ×Y (t ) =
+
+µ
+
+X
+r
+
+θr
+
+¶
+
+γ E r ⊗ γ−1 HY (τ).
+
+If γ = exp(i ϕ) it follows that
+µ
+¶
+X
+H X ×Y (t ) =
+exp(i ϕθr )E r ⊗ γ−1 HY (τ) = H X (ϕ) ⊗ γ−1 HY (τ)
+r
+
+as required.
+A closely related result appears as Proposition 2 in Ge et al. [19]. We present
+two examples provided there.
+If the eigenvalues of X are odd integers then H X (0) = I and H X (π) = −I .
+The eigenvalues of the d -cube are the integers d − 2r for r = 0, . . . , d , and it has
+perfect state transfer at π/2, with γ = i d . Hence if X is a graph with odd integer
+eigenvalues, then we have perfect state transfer on the product X × Q d when
+d is even. For a second example, if R d denotes
+power of P 3
+p the d -th Cartesian
+d
+then R d has perfect state transfer
+at
+time
+π/
+2
+with
+γ
+=
+(−1)
+.
+Therefore
+X ×R d
+p
+has perfect state transfer at π/ 2.
+Ge et al. [19] also give results for the lexicographic product.
+28
+
+17 Mixing
+Questions about perfect state transfer might be viewed as asking at what times
+t does the transition matrix satisfy certain restrictions on its entries. There are
+a number of interesting questions of this form.
+
+17.1 Perfect Mixing
+For the first, we can ask if there is a time t such that all entries of H(t ) have the
+same absolute value. We say a unitary matrix is flat if all its entries have the
+same absolute value and we say that perfect mixing occurs at time t is H(t ) is
+flat. We have
+µ
+¶
+1 1 i
+HK 2 (π/4) = p
+2 i 1
+which is flat. Since
+HQ d (t ) = HK 2 (t )⊗d
+
+we have perfect mixing at time π/4 on the d -cube. Also
+µ
+¶
+µ
+¶
+1
+1
+1
+1
+HK 4 (t ) = exp(3i t ) J + exp(−i t ) I − J = exp(−i t ) exp(4i t ) J + I − J
+4
+4
+4
+4
+and thus HK 4 (π/4) is flat. Consequently any Cartesian product of copies of K 2
+and K 4 is perfect mixing at time π/4.
+The graphs K 2 and K 4 are the first two members of a series of graphs: folded
+cubes. The folded (d + 1)-cube is the graph we get from the d -cube by joining
+each vertex to the unique vertex at distance d from itself. It can also be viewed
+as the quotient of the (d + 1)-cube over the equitable partition formed by the
+pairs of vertices at distance d + 1, which is the origin of the term ‘folding’. The
+first interesting example is the folded 5-cube, often known as the Clebsch graph.
+In [10] Best et al. prove (in our terms) that when d is odd, the folded d -cube has
+perfect mixing.
+Ahmadi et al. [2] prove that K 3 is perfect mixing and in [14] Carlson et al. show
+that C 5 is not. Konno [34, Section 10.3] shows that C 6 is not perfect mixing. We
+can prove a little more. If m is odd,
+C 2m ∼
+= K 2 ×C m .
+Then by Lemma 16.1
+µ
+¶
+µ
+¶
+1 1 1
+1 1 −1
+HK 2 ×X (t ) =
+⊗ H X (t ) +
+⊗ H X (−t ).
+2 1 1
+2 −1 1
+29
+
+If HK 2 ×X (t ) is flat and
+a := (H X (t ))u,v ,
+
+b := (H X (−t ))u,v .
+
+then |a+b| = |a−b| and this can hold if and only if b = i a. Hence H(−t ) = i H X (t )
+and
+µ
+¶
+1 1+i 1−i
+HK 2 ×X (t ) =
+⊗ H X (t ).
+2 1−i 1+i
+
+Hence K 2 × X is uniform mixing if and only if H X (2t ) = −i I and X is uniform
+mixing at t . As K 3 is perfect mixing when t = 4π/9, it follows that C 6 is not
+perfect mixing. Since C 5 is not perfect mixing, neither is C 10 .
+If perfect mixing occurs at time τ, then H(τ) is a flat unitary matrix. Such
+matrices form an important class of so-called type-II matrices. For further information see [16].
+
+17.2 Average Uniform Mixing
+For all t , each row of the Schur product
+H(t ) ◦ H(−t )
+
+is a probability density; it is equal to
+X
+X
+X
+exp(i t (θr − θs )) E r ◦ E s = E r ◦ E r + 2
+cos(t (θr − θs )) E r ◦ E s
+r,s
+
+r
+
+r <s
+
+and its average value over time is
+X
+r
+
+Er ◦ Er .
+
+17.1 Lemma. If the n × n matrices F1 , . . . , Fk are positive semidefinite and
+is a multiple of J , then Fr is a multiple of J for each r .
+
+P
+
+r Fr
+
+Proof. If F is positive semidefinite z = |u〉 − |v 〉, then
+
+0 ≤ z T F z = Fu,u + F v,v − 2Fu,v
+
+and if equality holds
+
+Fu,u = F v,v = Fu,v .
+
+Now
+z
+
+T
+
+µ
+X
+r
+
+¶
+
+Fr z =
+
+X¡
+¢
+(Fr )u,u + (Fr )v,v − 2(Fr )u,v
+r
+
+P
+Since Fr is positive semidefinite each summand above is non-negative. If r Fr
+is a multiple of J then the left side is zero, and so each summand on the right is
+zero.
+30
+
+The continuous quantum walk on X is average uniform mixing if the average value of H(t ) ◦ H(−t ) is a multiple of J . Our next result is new.
+17.2 Lemma. If |V (X )| ≥ 3 then the continuous quantum walk on X is not average uniform mixing.
+
+Proof. If X is not connected, it cannot be average uniform mixing, so we assume
+that X is connected. If the continuous walk on X is average uniform mixing,
+then
+X
+Er ◦ Er
+r
+
+is a multiple of J . Since E r is positive semidefinite, E r ◦ E r is positive semidefinite for each r and therefore the previous lemma implies that E r ◦ E r is a multiple of J .
+Since θ1 is the spectral radius of A, then entries of E 1 are non-negative and
+as E 1 ◦ E 1 is a multiple of J , it follows that E 1 is a multiple of J . Hence we may
+assume X is k-regular. If n = |V (X )| then E 1 = n1 J . If r 6= 1 then E r is flat and
+since E 1 E r = 0 we see that n is even and exactly half the entries in any row or
+column of E r are negative. This implies that each eigenvalue of X is an integer,
+with the same parity as the valency k. If |(E r )u,v | = e, then
+e = (E r )u,u = (E r2 )u,u = ne 2
+and thus e = 1/n. Therefore tr(E r ) = 1, which tells us that each eigenvalue of X
+is simple. Since all diagonal entries of E r must be positive, they are all equal and
+by [27, Theorem 4.1] it follows that X is walk-regular. From [27, Theorem 4.8]
+we know that the only connected walk-regular graph with simple integer eigenvalues is K 2 .
+Adamczak et al. [1] prove the above theorem for Cayley graphs of abelian
+groups. Our proof follows theirs closely.
+We do not seem to know very much about the average value of H(t ). The
+following indicates that there may be some surprises.
+17.3 Theorem. Suppose E 1 , . . . , E n are the idempotents for the path P n and let
+T be the permutation matrix such that T |u〉 = |n + 1 − u〉 for u = 1, . . ., n . Then
+n
+X
+
+r =1
+
+Er ◦ Er =
+
+1
+(2J + I + T ).
+2n + 2
+
+For a proof and further information, see [22].
+31
+
+18 Weighted Adjacency Matrices
+Suppose |V (X )| = n. We say a symmetric matrix M is a weighted adjacency matrix for X if Mu,v = 0 for each pair of distinct nonadjacent vertices u and v . So
+if M is a weighted adjacency matrix for X , it is a weighted adjacency matrix for
+any graph Y such that X is a subgraph of Y . If the off-diagonal entries of M
+are 0 or ±1 and the diagonal entries are zero, we will call M a signed adjacency
+matrix. Much of the theory of perfect state transfer extends to weighted adjacency matrices with very little effort, since spectral decomposition still applies.
+If π is an equitable partition of X then, as we saw, perfect state transfer on X
+implies perfect state transfer on the quotient X /π; the adjacency matrix of this
+is weighted and thus we see that information about state transfer on weighted
+graphs may have a bearing on the unweighted case. See Ge et al. [19, Section 5]
+for an illustration. Since the d -cube is distance regular, the distance partition
+relative to any vertex is equitable and the corresponding quotient is a weighted
+path. As shown by Christandl et al. [18] it follows that for each d there is a
+weighting of the edges of a path of length d that admits perfect state transfer
+between the end-vertices. If ∆ denotes the diagonal matrix of valencies of X ,
+then it seems reasonable to consider the Laplacian ∆ − A and perhaps the unsigned Laplacian ∆ + A. Bose et al. consider perfect state transfer relative to the
+Laplacian in [12]. (Whether the adjacency matrix or the Laplacian is used by a
+physicist depends on the type of spin interaction postulated.)
+To decide which weightings are natural we need to know the physical situation being modelled, and currently this is largely a matter of speculation. We
+note that the fundamental papers [18, 37] focus on the unweighted case.
+
+19 Some Physics
+The states of a quantum system are the 1-dimensional subspaces of a complex
+vector space—equivalently the points of a complex projective space. There are
+two ways we may avoid admitting that projective geometry is involved.
+The first way is to regard vectors non-zero x and y as equivalent if they span
+the same subspace; thus we represent a projective point by an equivalence class
+of complex vectors. This is the traditional approach in introductions to quantum physics. Here a reversible change of state is modelled by the application of
+a unitary operator: if our state is x then the new state is the subspace spanned
+by U x, where U is unitary. It is traditional to use unit vectors to represent states
+32
+
+(which reduces the size of our equivalence classes), and so then we might say
+that the new state y is equal to γU x. Here γ is a complex number of norm 1;
+physicists call it a phase factor.
+The second way is to represent the 1-dimensional space spanned by the
+nonzero vector x using the projection
+1
+x∗x
+If y = ax (and a 6= 0) then
+
+1
+y∗y
+
+xx ∗ .
+
+y y∗ =
+
+1
+x∗x
+
+xx ∗
+
+If |x| = 1 and U is unitary then |U x| = 1, and the projection on y is
+U xx ∗U ∗ .
+So our phase factors are gone. The map that sends xx ∗ to U xx ∗U ∗ is a linear
+map on the space of Hermitian matrices. A quantum state corresponds to a
+Hermitian matrix with rank 1 and trace 1. Our unitary operator U is now
+U ⊗U ∗ .
+(Physicists refer to linear maps on spaces of operators as superoperators.)
+Note that a positive semidefinite Hermitian matrix can be written as a sum
+of matrices of the form xx ∗ and, if its trace is 1, it can be written as a convex
+combination or Hermitian matrices with rank and trace 1. Physicists refer to
+the latter as pure states and to a positive semidefinite matrix with trace 1 as a
+density matrix.
+We turn to our continuous quantum walks, where our operators are the operators H(t ). In the density matrix approach these become
+H(t ) ⊗ H(t )∗ = H(t ) ⊗ H(−t ).
+If H(t ) = exp(i t A), then
+H(t ) ⊗ H(−t ) = exp(i t (A ⊗ I − I ⊗ A)).
+If H(t )|u〉 = γ|v 〉 then H(−t )|v 〉 = γ−1 |u〉 and so
+H(t ) ⊗ H(−t ) |u〉 ⊗ |v 〉 = |v 〉 ⊗ |u〉.
+33
+
+We also have
+H(t ) ⊗ H(−t ) |u〉 ⊗ |u〉 = |v 〉 ⊗ |v 〉.
+
+This shows that questions about perfect state transfer on graphs can be translated to questions about “phase-free” perfect state transfer on signed graphs,
+because we can view A ⊗ I − I ⊗ A as the adjacency matrix of a signed version of
+the Cartesian square X  X .
+There is a very interesting recent paper by Pemberton-Ross and Kay [35] using signed adjacency matrices to obtain perfect state transfer between vertices
+at distance n in graphs with cn edges (for some constant c).
+
+20 Questions
+We list some questions which seem interesting. Unless explicitly stated otherwise, we consider only unweighted graphs.
+(1) Is there a graph where we have perfect state transfer from u to v , but there
+is no automorphism of X which swaps u and v ?
+(2) Let P n (a) be the path of length n with loops of weight a on each end-vertex.
+Is it true that for each n there is a weight a such that we have perfect state
+transfer between the end-vertices? Casaccino et al. state in [15] that they
+have numerical evidence that the answer is yes.
+(3) Is there some useful theory about the case where H(t )u,u = 0 for some time
+t and some vertex u? Or at least when H(t ) ◦ I = 0?
+(4) There are cubelike graphs with perfect state transfer at times π/2 and cubelike graphs with perfect state transfer at times π/4. Are there cubelike graphs
+with perfect state transfer at time τ, where τ is arbitrarily small?
+(5) Are there any trees, K 2 and P 3 aside, on which perfect state transfer occurs?
+[I do not see this as being useful, but it might be fun.]
+
+Acknowledgements
+I would like to thank the following people, who either provided useful comments on early versions of this paper, or helped me understand the material
+presented in it: XiaoXia Fan, Alastair Kay, Dave Morris, Simone Severini, Murray Smith, Christino Tamon, Dragan Stevanović.
+34
+
+References
+[1] W. A DAMCZAK , K. A NDREW, L. B ERGEN , D. E THIER , P. H ERNBERG , J. L IN ,
+AND C. TAMON, Non-uniform mixing of quantum walk on cycles, International Journal of Quantum Information, 5 (2007), p. 12. [arXiv:0708.2096]
+[2] A. A HMADI , R. B ELK , C. TAMON , AND C. W ENDLER , On mixing in continuous-time quantum walks on some circulant graphs,
+Quantum Information and Computation, 3 (2003), pp. 611–618.
+[arXiv:quant-ph/0209106]
+[3] R. J. A NGELES -C ANUL , R. N ORTON , M. O PPERMAN , C. PARIBELLO, M. RUS SELL , AND C. TAMON, On quantum perfect state transfer in weighted join
+graphs, International Journal of Quantum Information, 7 (2009), p. 16.
+[arXiv:0909.0431]
+[4]
+
+, Perfect state transfer, integral circulants and join of graphs, Quantum
+Information and Computation, 10 (2010), pp. 325–342. [arXiv:0907.2148]
+
+[5] M. B AŠI Ć, Characterization of circulant graphs having perfect state transfer, arXiv:1104.1825 (2011), p. 14.
+[6] M. B AŠI Ć AND M. D. P ETKOVI Ć , Some classes of integral circulant graphs
+either allowing or not allowing perfect state transfer, Appl. Math. Lett., 22
+(2009), pp. 1609–1615.
+[7]
+
+, Perfect state transfer in integral circulant graphs of non-square-free
+order, Linear Algebra Appl., 433 (2010), pp. 149–163.
+
+[8] M. B AŠI Ć , M. D. P ETKOVI Ć , AND D. S TEVANOVI Ć, Perfect state transfer in
+integral circulant graphs, Appl. Math. Lett., 22 (2009), pp. 1117–1121.
+[9] A. B ERNASCONI , C. G ODSIL , AND S. S EVERINI, Quantum networks on cubelike graphs, Physical Review A, 78 (2008), p. 5. [arXiv:0808.0510]
+[10] A. B EST, M. K LIEGL , S. M EAD -G LUCHACKI , AND C. TAMON, Mixing of
+quantum walks on generalized hypercubes, International Journal of Quantum Information, 6 (2008), pp. 1135–1148. [arXiv:0808.2382]
+[11] S. B OSE, Quantum communication through an unmodulated spin chain,
+Physical Review Letters, 91 (2003). [arxiv:quant-ph/0212041]
+35
+
+[12] S. B OSE , A. C ASACCINO, S. M ANCINI , AND S. S EVERINI, Communication in
+XYZ All-to-All Quantum Networks with a Missing Link, International Journal of Quantum Information, 7 (2009), pp. 713–723. [arXiv:0808.0748]
+[13] W. G. B RIDGES AND R. A. M ENA, Rational G-matrices with rational eigenvalues, Journal of Combinatorial Theory Series A, 280 (1982), pp. 264–280.
+[14] W. C ARLSON , A. F ORD, E. H ARRIS , J. ROSEN , C. TAMON , AND K. W ROBEL ,
+Universal mixing of quantum walk on graphs, Quantum Information and
+Computation, 7 (2007), pp. 738–751. [arxiv:quant-ph/0608044]
+[15] A. C ASACCINO, S. L LOYD, S. M ANCINI , AND S. S EVERINI, Quantum state
+transfer through a qubit network with energy shifts and fluctuations, International Journal of Quantum Information, 7 (2009), pp. 1417–1427.
+[arXiv:0904.4510]
+[16] A. C HAN AND C. G ODSIL, Type-II matrices and combinatorial structures,
+Combinatorica, 30 (2010), pp. 1–24. [arXiv:0707.1836]
+[17] W.-C. C HEUNG AND C. G ODSIL, Perfect state transfer in cubelike
+graphs, Linear Algebra and its Applications, 435 (2011), 2468–2474,
+[arXiv:1010.4721]
+[18] M. C HRISTANDL , N. D ATTA , T. D ORLAS , A. E KERT, A. K AY, AND A. L AN DAHL , Perfect transfer of arbitrary states in quantum spin networks, Physical Review A, 71 (2005), p. 12. [arxiv:quant-ph/0411020]
+[19] Y. G E , B. G REENBERG , O. P EREZ , AND C. TAMON, Perfect state transfer,
+graph products and equitable partitions. [arXiv:1009.1340]
+[20] C. G ODSIL, Controllable subsets in graphs, arXiv:1010.3231 (2010), p. 14.
+[21]
+
+, When can perfect state transfer occur?, arXiv:1011.0231 (2010), p. 15,
+
+[22]
+
+, Average mixing of continuous quantum walks, arXiv:1103.2578
+(2011), p. 20, .
+
+[23]
+
+, Periodic Graphs, Electronic J. Combinatorics, 18 (2011), #23.
+[arXiv:0806.2074]
+
+[24] C. G ODSIL AND G. ROYLE, Algebraic Graph Theory, Springer, New York,
+2001.
+36
+
+[25] C. G ODSIL AND S. S EVERINI, Control by quantum dynamics on graphs,
+Physical Review A, 81 (2010), p. 5. [arXiv:0910.5397]
+[26] C. G ODSIL AND J. S HAWE -TAYLOR , Distance-regularised graphs are
+distance-regular or distance-biregular, Journal of Combinatorial Theory,
+Series B, 43 (1987), pp. 14–24.
+[27] C. D. G ODSIL AND B. D. M C K AY, Feasibility conditions for the existence of
+walk-regular graphs, Linear Algebra and its Applications, 30 (1980), pp. 51–
+61.
+[28] W. I MRICH AND S. K LAVZAR, Product Graphs: Structure and Recognition,
+Wiley, 2000.
+[29] A. K AY, Perfect, efficient, state transfer and its application as a constructive tool, International Journal of Quantum Information, 08 (2010), p. 641.
+[arXiv:0903.4274]
+[30]
+
+, The basics of perfect communication through quantum networks,
+arXiv:1102.2338 (2011), p. 8.
+
+[31] J. K EMPE, Quantum random walks - an introductory overview, Contemporary Physics, 44 (2003), p. 20. [arxiv:0303081]
+[32] V. K ENDON , Quantum walks on general graphs, International Journal on
+Quantum Computation, 4(5) (2006), 791–805. [arxiv:quant-ph/0306140]
+[33] V. M. K ENDON AND C. TAMON, Perfect state transfer in quantum walks on
+graphs, Journal of Computational and Theoretical Nanoscience, 8 (2011),
+pp. 422–433.
+[34] N. KONNO, Quantum walks, in Quantum potential theory, vol. 1954 of Lecture Notes in Math., Springer, Berlin, 2008, pp. 309–452.
+[35] P. J. P EMBERTON -R OSS AND A. K AY, Perfect quantum routing in regular
+spin networks. Phys. Rev. Lett. 106, 020503 (2011), p. 4. [arXiv:1007.2786]
+[36] M. P ETKOVI Ć AND M. B AŠI Ć, Further results on the perfect state transfer in
+integral circulant graphs, Computers and Mathematics with Applications,
+61 (2011), pp. 300–312.
+
+37
+
+[37] N. S AXENA , S. S EVERINI , AND I. S HPARLINSKI, Parameters of integral circulant graphs and periodic quantum dynamics, International Journal on
+Quantum Computation, 5(3) (2007), 417–430. [arXiv:quant-ph/0703236]
+[38] D. S TEVANOVI Ć, Applications of Graph Spectra in Quantum Physics, in Selected Topics on Applications of Graph Spectra, D. Cvetković and I. Gutman, eds., Belgrade, 2011, Mathematical Institute SANU, pp. 85–111.
+
+38
+
+

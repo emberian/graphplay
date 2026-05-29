@@ -1,0 +1,438 @@
+arXiv:1606.02264v2 [math.CO] 6 Dec 2021
+
+Perfect state transfer is poly-time
+Gabriel Coutinho∗
+
+Chris Godsil†
+
+Dep. Ciência da Computação
+
+Dep. Combinatorics and Optimization
+
+UFMG
+
+University of Waterloo
+
+Belo Horizonte, MG, Brazil
+
+Waterloo, ON, Canada
+
+gabriel@dcc.ufmg.br
+
+cgodsil@uwaterloo.ca
+
+December 8, 2021
+
+Abstract
+We show that deciding whether a graph admits perfect state transfer can be done in polynomial time on a classical computer with respect
+to the size of the graph.
+
+Keywords: Perfect state transfer; quantum walks; spectral graph theory.
+MSC: 81P68; 05C50; 15A16.
+
+1
+
+Introduction
+
+Since the seminal papers by Bose [4] and Christandl et al. [9], it is safe to say
+that over 500 papers have been published in physics, computer science and
+mathematics journals concerning the topic of state transfer over continuoustime quantum walk models. From the combinatorics point of view, there has
+been a remarkable effort in characterizing simple graphs for which perfect
+state transfer occurs according to the adjacency matrix or Laplacian matrix
+models. State transfer has been studied in distance-regular graphs (Coutinho
+∗
+Acknowledges the support of grants FAPESP 15/16339-2 and FAPESP 13/03447-6.
+Affiliation at the time of original work: Dep. Ciência da Computação / IME-USP / São
+Paulo, Brazil.
+†
+Acknowledges the support of NSERC Grant RGPIN-9439.
+
+1
+
+et al. [11], Jafarizadeh and Sufiani [21]), graph products and alike structures
+(Ge et al. [14], Coutinho and Godsil [11], Pal and Bhattacharjya [23], Ackelsberg et al. [1]), weighted paths (Kay [22], Vinet and Zhedanov [25]), Cayley
+graphs for abelian groups (Saxena el al. [24], Cheung and Godsil [8], Chan
+[6], Bašić[3]), and trees (Coutinho and Liu [12]), among other examples.
+However, to the best of our knowledge, the classical complexity and related computational aspects of determining when perfect state transfer occurs
+in simple graphs has not been studied. This is the topic of this paper.
+
+2
+
+The hardness of perfect state transfer
+
+Let M be a symmetric integer matrix whose rows and columns are indexed
+by a finite set V of n elements, and whose spectral decomposition is given by
+M=
+
+d
+X
+
+θr Er ,
+
+r=0
+
+where the θr ’s are the distinct eigenvalues of M .
+If a, b ∈ V , we say that M admits perfect state transfer between a and b
+if there is a time τ ∈ R+ such that
+| exp(iτ M )a,b | = 1.
+
+(1)
+
+Denote by ea the vector whose entires are indexed by V with its ath
+entry equal to 1, and all the remaining equal to 0. A necessary condition
+(see Godsil [17, Lemma 5.1]) for perfect state transfer to occur is that, for
+all r,
+Er ea = ±Er eb .
+When this occurs, we say that a and b are strongly cospectral. The eigenvalue
+support of a, denoted by Θa , is the set of eigenvalues of M whose projection
+of ea onto the corresponding eigenspace is not 0, that is
+Θa = {θr : Er ea 6= 0}.
+If M is a matrix that encodes the adjacency of a graph, say the adjacency
+or the Laplacian matrix, we say that the graph admits perfect state transfer between the corresponding vertices, or that such vertices are strongly
+cospectral, with respect to the quantum walk model determined by M .
+2
+
+In this paper, we show the following result, which can be notably applied
+for the cases where M is the adjacency matrix or the Laplacian matrix of a
+graph.
+2.1 Theorem. For any n × n symmetric integer matrix M whose entries
+belong to1 [−n, n], deciding whether or not M admits perfect state transfer
+can be done in polynomial time in n.
+To show this result, we make use of the following characterization of
+perfect state transfer.
+2.2 Theorem. (see Coutinho [10, Theorem 2.4.4]) If M is a symmetric
+integer matrix and two of its columns are indexed by a and b, and if θ0 >
+... > θk are the eigenvalues in Θa , then M admits perfect state transfer
+between a and b if and only if the following conditions hold.
+(a) Columns a and b are strongly cospectral.
+(b) Columns a and b are periodic, or equivalently (see Godsil [17, Theorem
+6.1]), non-zero elements of Θa are either all integers or all quadratic
+integers. Moreover, there is a square-free integer ∆, an integer p, and
+integers q0 , ..., qk such that
+√
+p + qr ∆
+, for all r = 0, ..., k.
+θr =
+2
+√
+(c) Let g = gcd{(θ0 − θr )/ ∆}kr=0 . Then
+√
+(a) Er ea = Er eb if and only if (θ0 − θr )/(g ∆) is even, and
+√
+(b) Er ea = −Er eb if and only if (θ0 − θr )/(g ∆) is odd.
+Moreover, if these
+√ conditions hold, the minimum time perfect state transfer
+occurs is π/(g ∆).
+In order to decide whether perfect state transfer occurs, we must check
+all three conditions above. On the course of the following results, we will
+show how each of the conditions can be independently checked in polynomial
+time.
+1
+
+Or, more generally, entries whose absolute values are bounded by a polynomial in n.
+
+3
+
+Let φ(x) be the characteristic polynomial of M , and if T ⊂ V , let φT (x)
+be the characteristic polynomial of the matrix obtained from M by removing
+the rows and columns indexed by T . Recall that the complexity of computing
+the characteristic polynomial is the same as computing the determinant.
+2.3 Lemma. For j ∈ {0, ..., d}, the multiplicity of θj as a pole of φT (x)/φ(x)
+is at most equal to the rank of (Ej )T,T . If the rank is equal to |T |, then the
+multiplicity of the pole is also equal to |T |.
+Proof. The following identity is due to Jacobi (see for instance Godsil [15,
+Section 4.1]):
+φT (x)
+det[(xI − M )−1 ]T,T =
+.
+φ(x)
+On the other hand, using the spectral decomposition of M , it follows that
+−1
+
+[(xI − M ) ]T,T =
+
+d
+X
+
+1
+(Er )T,T .
+x − θr
+r=0
+
+P
+1
+Let us just denote Fr = x−θ
+(E
+)
+and
+H
+=
+r
+T,T
+r6=j Fr . Now let P be an
+r
+orthogonal matrix that diagonalizes Fj to a diagonal matrix D. It follows
+that
+
+φT (x)
+= det D + P T HP .
+φ(x)
+This determinant is the sum of the determinants of the matrices we obtain
+from P T HP by replacing each subset of columns by the corresponding set
+from D. Note that D contains poles at θj but P T HP does not. Thus the
+multiplicity of θj as a pole of φT (x)/φ(x) cannot exceed the rank of (Ej )T,T .
+While equality does not hold in general, it holds for the full rank case, as a
+consequence of [13, Theorem 7.2.9].
+2.4 Lemma. Given M an n×n symmetric matrix whose columns are indexed
+by V , two columns a and b of M are strongly cospectral if and only if
+(i) φa (x) = φb (x) (when this occurs we call u and v cospectral), and
+(ii) The poles of φab (x)/φ(x) are simple.
+As a consequence, condition (a) of Theorem 2.1 can be checked in polynomial
+time on n.
+4
+
+Proof.
+Claim 1: Condition (ii) is equivalent to a and b being parallel, that is,
+for all r, either Er ea or Er eb is a scalar multiple of the other.
+This is an immediate consequence of Lemma 2.3.
+Claim 2: Condition (i) is equivalent to, for all r, (Er )a,a = (Er )b,b .
+This is due to Godsil and McKay [19].
+Now, clearly if a and b are strongly cospectral, then they are parallel. So
+we proceed to assume that a and b are parallel vertices and show that, in
+this case, strong cospectrality is equivalent to cospectrality. In fact, Er is
+idempotent, thus Er ea = 0 if and only if (Er )a,a = 0. So in either case it
+must be that Er ea = 0 if and only if Er eb = 0 for all r. Now suppose that
+Er ea = λEr eb 6= 0. Then
+(Er )a,a = λ(Er )a,b = λ(Er )b,a = λ2 (Er )b,b ,
+thus they are strongly cospectral if and only if they are cospectral.
+To finish the proof, we show that both conditions can be checked in
+polynomial time. Nothing needs to be said about condition (i). For condition
+(ii), let g(x) be the greatest common divisor of φ(x) and φab (x). Condition
+(ii) is equivalent to f (x) = φ(x)/g(x) being a polynomial without repeated
+roots, which in turn can be verified by checking whether or not the greatest
+common divisor of f (x) and f 0 (x) is a constant.
+2.5 Lemma. Given an n × n symmetric integer matrix M whose entries
+belong to [−n, n], condition (b) of Theorem 2.2 can be tested in polynomial
+time. Moreover, if the conditions passes, the eigenvalues in Θa and their
+corresponding eigenvectors can be computed in polynomial time.
+Proof. For a column a of M , let
+f (x) =
+
+φ(x)
+.
+gcd(φ(x), φa (x))
+
+From Lemma 2.3, we see that f (x) has simple roots, which are precisely the
+eigenvalues of M that lie in Θa . If the degree of f (x) is k, the coefficient of
+(−x)k−1 is the sum of the roots of f (x).
+5
+
+From the assumption that the entries of M are bounded, we have that
+d
+X
+
+θr2 ≤ tr M 2 =
+
+r=0
+
+X
+
+Mij2 ≤ n4 ,
+
+1≤i,j≤n
+
+thus the eigenvalues of M lie in the interval [−n4 , n4 ]. Condition (b) holds
+if and only if all roots of f (x) are either integers or quadratic integers with
+a constant rational term. Because the sum of the eigenvalues is known, the
+number of possible candidates for the roots of f (x) in the interval [−n4 , n4 ]
+that satisfies condition (b) is a polynomial function on n, therefore we can
+efficiently check whether f (x) satisfies condition (b), and compute its factorization.
+Proof of Theorem 2.1. From Lemmas 2.4 and 2.5, conditions (a) and (b) of
+Theorem 2.2 can be checked efficiently, and if condition (b) holds then Θa can
+be computed efficiently. Upon knowing
+the elements of Θa , the computation
+√
+of g and of the ratios (θ0 − θr )/(g ∆) can be carried out, remaining only to
+check whether the signs appearing in condition (c) are compatible. To that
+effect, it suffices to note that for any eigenvector x associated to an eigenvalue
+θr such that xa 6= 0, we have that if Er ea = Er eb , then xT Er ea = xT Er eb
+and thus xa = xb ; and likewise, if Er ea = −Er eb , then xa = −xb .
+
+3
+
+Comments and related open questions
+
+Related work
+Chen et al. [7] recently worked on the problem of determining when there is a
+positive real number t such that, for a given rational matrix M and rational
+vectors u and v, etM u = v. There is a clear resemblance to our problem,
+however our result does not follow from theirs for the following reason. They
+assume one can compute the Jordan Normal Form and the eigenvectors of a
+given matrix efficiently, citing the work of Cai [5], who in turn deals with roots
+of polynomials of degree larger than 4 by computing sufficiently good rational
+approximations. We note that this approach would not determine whether
+or not perfect state transfer occurs, but only some arbitrarily good phaseshifted version of it. The fact that we are able to examine the eigenvalues in
+the support of a column locally (Lemma 2.5), and restrict to the case where
+such eigenvalues are integers or quadratic integers (Godsil [17, Theorem 6.1])
+6
+
+is key to efficiently determine if perfect state transfer indeed occurs. Also, the
+fact that they are not considering complex numbers leads them to easily rule
+out the case p 6= 0 of condition (b) in Theorem 2.2, whereas we know that
+there are infinitely many examples of symmetric matrices admitting perfect
+state transfer in this case.
+Uniform mixing
+Given a n × n integer symmetric matrix M , consider the mixing matrix2
+N (t) = exp(itM ) ◦ exp(−itM ),
+where the product depicted is the entry-wise matrix product3 . We say that
+M admits uniform mixing at a time τ if
+N (τ ) =
+
+1
+J,
+n
+
+where J stands for the matrix whose all entries are equal to 1.
+Determining whether a matrix admits uniform mixing is a considerably
+harder problem than that of perfect state transfer, even in the special case
+where M is the adjacency matrix of a simple graph and its eigenvalues are
+known (see for instance Godsil et al. [20]). For this reason, we believe a reasonable question here is to determine classes of graphs for which the existence
+of uniform mixing can be tested in polynomial time. For example:
+1. Can we test whether a cubelike graph admits uniform mixing in polynomial time?
+Average mixing
+Note that N (t) denotes a probability distribution. The average of this distribution can be computed as follows
+Z
+1 T
+N̂ (t) = lim
+N (t)dt.
+T →∞ T 0
+2
+3
+
+This is usually denoted as M (t), but we are already using M with a different meaning.
+Also known as Schur or Hadamard product, or perhaps the bad student product.
+
+7
+
+As shown
+Pd in Godsil [16], it follows that, if M admits spectral decomposition
+M = r=0 θr Er , then
+N̂ (t) =
+
+d
+X
+
+Er ◦ Er .
+
+(2)
+
+r=0
+
+The average mixing matrix enjoys interesting properties, notably, it is rational, doubly-stochastic and positive semidefinite. Moreover, two columns of
+N̂ (t) are equal if and only if they are strongly cospectral, a property that, as
+seen above, can be tested in polynomial time. We therefore ask:
+2. Given M a symmetric integer matrix, can N̂ (t) be computed in polynomial time?
+Naturally, as seen from (2), N̂ (t) can be computed numerically in polynomial
+time up to desired precision. However the rationality of N̂ suggests there
+could be a way of doing this computation symbolically.
+Pretty good state transfer
+Recall the definition of perfect state transfer in (1). This definition can be
+relaxed to an  version as follows. If a, b ∈ V , we say that M admits pretty
+good (or almost) state transfer between a and b if for any  > 0, there is a
+time τ ∈ R+ such that
+| exp(iτ M )a,b | ≥ 1 − .
+Naturally, perfect state transfer implies pretty good, but the converse does
+not hold. For instance, it is been shown that infinitely many paths admit
+pretty good state transfer between the end vertices in both the adjacency
+matrix and the Laplacian matrix model of quantum walks (see [18] [2]), as
+opposed to what happens with perfect state transfer. It is thus natural to
+ask whether pretty good state transfer can also be determined in polynomial
+time. As it turns out, pretty good state transfer has been characterized via
+Kronecker’s theorem on Diophantine approximations (see [2, Theorem 4]). In
+order to test the condition on Kronecker’s theorem, it seems to be necessary
+to obtain some information about the minimal polynomial over the rationals
+of each of the eigenvalues of M , and their corresponding splitting fields.
+This suggests that the problem of deciding whether or not pretty good state
+transfer occurs might be harder than deciding perfect state transfer. We thus
+ask:
+8
+
+3. Given M a symmetric integer matrix, is there an algorithm that terminates in finite time that determines whether or not there is pretty
+good state transfer between two columns of M ?
+
+References
+[1] Ethan Ackelsberg, Zachary Brehm, Ada Chan, Joshua Mundinger, and
+Christino Tamon. “Laplacian State Transfer in Coronas”. In: (Aug.
+2015), p. 12. arXiv: 1508.05458 (cit. on p. 2).
+[2] L. Banchi, G. Coutinho, C. Godsil, and S. Severini. “Pretty good state
+transfer in qubit chains-The Heisenberg Hamiltonian”. In: Journal of
+Mathematical Physics 58 (3 2017) (cit. on p. 8).
+[3] Milan Bašić. “Characterization of quantum circulant networks having perfect state transfer”. In: Quantum Information Processing 12.1
+(2013), pp. 345–364 (cit. on p. 2).
+[4] Sougato Bose. “Quantum Communication through an Unmodulated
+Spin Chain”. In: Physical Review Letters 91.20 (Nov. 2003), p. 207901
+(cit. on p. 1).
+[5] Jin-Yi Cai. “Computing the Jordan Normal Form exactly for commuting matrices in polynomial time”. en. In: International Journal of
+Foundations of Computer Science 05.03n04 (Dec. 1994), pp. 293–302
+(cit. on p. 6).
+[6] Ada Chan. “Complex Hadamard Matrices, Instantaneous Uniform Mixing and Cubes”. In: ArXiv e-prints (2013). arXiv: 1305.5811 (cit. on
+p. 2).
+[7] Taolue Chen, Nengkun Yu, and Tingting Han. “Continuous-time orbit
+problems are decidable in polynomial-time”. In: Information Processing
+Letters 115.1 (Jan. 2015), pp. 11–14 (cit. on p. 6).
+[8] Wang-Chi Cheung and Chris D Godsil. “Perfect state transfer in cubelike graphs”. In: Linear Algebra and its Applications 435.10 (2011),
+pp. 2468–2474 (cit. on p. 2).
+[9] Matthias Christandl, Nilanjana Datta, Artur Ekert, and Andrew J Landahl. “Perfect State Transfer in Quantum Spin Networks”. In: Physical
+Review Letters 92.18 (2004), p. 187902 (cit. on p. 1).
+9
+
+[10] Gabriel Coutinho. “Quantum State Transfer in Graphs”. PhD dissertation. University of Waterloo, 2014 (cit. on p. 3).
+[11] Gabriel Coutinho and Chris D Godsil. “Perfect state transfer in products and covers of graphs”. en. In: Linear and Multilinear Algebra (Apr.
+2015), pp. 1–12 (cit. on p. 2).
+[12] Gabriel Coutinho and Henry Liu. “No Laplacian Perfect State Transfer
+in Trees”. en. In: SIAM Journal on Discrete Mathematics 29.4 (Nov.
+2015), pp. 2179–2188 (cit. on p. 2).
+[13] Dragoš M Cvetković, Peter Rowlinson, and Slobodan Simic. Eigenspaces
+of graphs. 66. Cambridge University Press, 1997 (cit. on p. 4).
+[14] Yang Ge, Benjamin Greenberg, Oscar Perez, and Christino Tamon.
+“Perfect state transfer, graph products and equitable partitions”. In:
+International Journal of Quantum Information 9.3 (2011), pp. 823–842
+(cit. on p. 2).
+[15] Chris D Godsil. Algebraic Combinatorics. New York: Chapman & Hall,
+1993, pp. xvi+362 (cit. on p. 4).
+[16] Chris D Godsil. “Average mixing of continuous quantum walks”. In:
+Journal of Combinatorial Theory, Series A 120.7 (2013), pp. 1649–1662
+(cit. on p. 8).
+[17] Chris D Godsil. “When can perfect state transfer occur?” In: Electronic
+Journal of Linear Algebra 23 (2012), pp. 877–890 (cit. on pp. 2, 3, 7).
+[18] Chris D Godsil, Stephen Kirkland, Simone Severini, and Jamie Smith.
+“Number-theoretic nature of communication in quantum spin systems.”
+In: Physical review letters 109.5 (Aug. 2012), p. 050502 (cit. on p. 8).
+[19] Chris D Godsil and Brendan D McKay. “Spectral conditions for the
+reconstructibility of a graph”. In: Journal of Combinatorial Theory,
+Series B 30.3 (1981), pp. 285–289 (cit. on p. 5).
+[20] Chris D Godsil, Natalie Mullin, and Aidan Roy. “Uniform Mixing and
+Association Schemes”. In: ArXiv e-prints (2013). arXiv: 1301 . 5889
+(cit. on p. 7).
+[21] Mohamad Ali Jafarizadeh and Rahime Sufiani. “Perfect state transfer
+over distance-regular spin networks”. In: Physical Review A 77.2 (2008),
+p. 22315 (cit. on p. 2).
+
+10
+
+[22] Alastair Kay. “Perfect, efficient, state transfer and its application as a
+constructive tool”. In: International Journal of Quantum Information
+8.04 (2010), pp. 641–676 (cit. on p. 2).
+[23] Hiranmoy Pal and Bikash Bhattacharjya. “Perfect state transfer on
+NEPS of the path on three vertices”. In: Discrete Mathematics 339.2
+(Feb. 2016), pp. 831–838 (cit. on p. 2).
+[24] Nitin Saxena, Simone Severini, and Igor E Shparlinski. “Parameters
+of integral circulant graphs and periodic quantum dynamics”. In: International Journal of Quantum Information 5.03 (2007), pp. 417–430
+(cit. on p. 2).
+[25] Luc Vinet and Alexei Zhedanov. “How to construct spin chains with
+perfect state transfer”. In: Physical Review A 85.1 (2012), p. 12323
+(cit. on p. 2).
+
+11
+
+

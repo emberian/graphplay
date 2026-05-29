@@ -1,0 +1,1541 @@
+arXiv:2305.10199v1 [math.CO] 17 May 2023
+
+No perfect state transfer in trees with more
+than 3 vertices
+Gabriel Coutinho∗
+
+Emanuel Juliano
+
+Thomás Jung Spier
+
+May 18, 2023
+Abstract
+We prove that the only trees that admit perfect state transfer according to the adjacency matrix model are P2 and P3 . This answers
+a question first asked by Godsil in 2012 and proves a conjecture by
+Coutinho and Liu from 2015.
+
+Keywords perfect state transfer ; trees ; quantum walks
+MSC 05C50 ; 81P45 ; 15A16
+
+1
+
+Introduction
+
+Let G be a graph and A its adjacency matrix. The graph is used to model
+a (continuous-time) quantum walk: each vertex represents a qubit and edges
+represent interaction. Once a particular type of initial state is set in the
+system, a time-dependent evolution governed by Schrödinger’s equation takes
+place, and this evolution is given by the matrix
+exp(itA),
+with t ≥ 0. Quantum walks have been extensively studied, both their theoretical applications [20] and experimental runs [1], and can be used to implement
+quantum algorithms and quantum information protocols [3]. This paper concerns one of these protocols known as perfect state transfer. As the name
+suggests, it consists of initializing the quantum network with all qubits at the
+same state, then inputting an orthogonal state to a particular qubit, and observing after some time an evolution that allows for a complete recovery of
+∗
+
+gabriel@dcc.ufmg.br — remaining affiliations in the end of the manuscript.
+
+1
+
+that special state somewhere else in the network. This problem has been extensively studied by several communities [8]. Most theoretical results typically
+fall into two classes: either new constructions of families of graphs admitting
+perfect state transfer are found, or necessary conditions are exploited to show
+natural impediments or that it does not occur for some graphs. This paper
+falls into the second category.
+In 2012, Godsil [18] asked if perfect state transfer occurs in a tree. Back
+then the question was motivated perhaps by curiosity, but it has since picked
+up relevance because the capability of building a network with few edges in
+which state transfer occurs at large combinatorial distances has been well
+motivated [21]. Trees are, naturally, the obvious candidates to be studied.
+The paths on 2 and 3 vertices admit perfect state transfer, but no other.
+Some paths of arbitrarily long length admit pretty good state transfer, an
+approximation of perfect state transfer, but at the cost of increasingly long
+(and difficult to find) waiting times. In 2015 Coutinho and Liu [13] proved
+that in the Laplacian matrix model, that in which the quantum walk is given
+by exp(itL), there is no perfect state transfer in trees but for P2 . They also
+showed that if a tree (again, except for P2 ) contains a perfect matching, then
+there is no perfect state transfer according to the adjacency matrix model,
+and conjectured that the hypothesis on the matchings is not necessary for
+trees with at least four vertices. In this paper we prove this conjecture.
+
+2
+
+Preliminaries
+
+For the purposes of this paper, we can treat the topic in a pure mathematical
+formalism. Let G be a graph, with vertices i and j. We use the bra-ket notation: |ii represents the characteristic vector of a vertex, sometimes denoted by
+ei , and hi| its conjugate transpose. Perfect state transfer from i to j is defined
+as there existing t > 0 and λ ∈ C so that
+exp(itA)|ii = λ|ji.
+
+2.1
+
+Strong cospectrality
+
+Using the spectral decomposition of A into a sum
+P of distinct eigenvalues times
+each eigenprojector, say denoted by A(G) =
+θr Er , it is easy to show that
+perfect state transfer implies Er |ii = ±Er |ji for all r. If this occurs, vertices i
+and j are called strongly cospectral. Those eigenvalues θr for which Er |ii 6= 0
+are called the eigenvalue support of i. We will denote by Φ(G) the set of
+eigenvalues of a graph G, and for a vertex i of G we write Φi (G) (or simply
+2
+
+Φi ) for its eigenvalue support. The characteristic polynomial of A(G) (in
+the variable t) will be denoted by φG . It is easy to see that if i and j are
+strongly cospectral, then for all r we have (Er )ii = (Er )jj . This is known to be
+equivalent to φG\i = φG\j , in which case the vertices are called cospectral. For
+a lengthy discussion about strongly cospectral vertices and related concepts,
+we refer to [16]). To efficiently decide whether or not two vertices are strongly
+cospectral can be done by means of the following result.
+Theorem 1 (Corollary 8.4 in [16]). Vertices i and j of a graph G are strongly
+cospectral if and only if φG\i = φG\j and all poles of φG\{i,j} /φG are simple.
+It is easy to see that if there is an automorphism of the graph G that maps
+the vertex i to the vertex j, then i and j are cospectral, however the same
+does not hold for strong cospectrality. Note also that as a consequence of
+Theorem 1, if i and j are in distinct connected components of the graph G,
+then i and j are not strongly cospectral.
+
+2.2
+
+Perfect state transfer
+
+Deciding whether or not perfect state transfer occurs can be done in polynomial
+time [7] by an application of the following characterization theorem.
+P
+Theorem 2 (Theorem 2.4.4 in [5]). Let G be a graph, A(G) =
+θr Er the
+spectral decomposition of its adjacency matrix, and let i, j ∈ V (G). There is
+perfect state transfer between i and j at time t if and only if the following
+conditions hold.
+(a) Er |ii = σr Er |ji, with σr ∈ {−1, +1} (that is, i and j are strongly cospectral.)
+(b) There is an integer a, a square-free positive integer ∆ (possibly equal to
+1), so that for all θr in the support of i, there is br giving
+√
+a + br ∆
+θr =
+.
+2
+In particular, because θr is an algebraic integer, it follows that all br have
+the same parity as a.
+(c) There is g ∈ Z so that, for all θr in the support of i, (b0 − br )/g = kr , with
+kr ∈ Z, and kr ≡ (1 − σr )/2 (mod 2).
+If the conditions hold, then the positive values of t √
+for which perfect state
+transfer occurs are precisely the odd multiples of π/(g ∆).
+3
+
+Condition (b) above is due to Godsil [19] and forces a strong necessary
+condition: the distinct eigenvalues in the support of vertices involved in perfect
+state transfer have to be separated by at least 1.
+Recently we showed a slight yet quite necessary strengthening of this last
+observation in [12]:
+Theorem 3 (Theorem 14 in [12]). Assume
+perfect state transfer occurs in
+√
+G at minimum time t. Then t ≤ π/ 2, and therefore either g or ∆ (as in
+Theorem 2) are ≥ 2.
+
+2.3
+
+Interlacing polynomials
+
+In this subsection, we recall two basic facts about interlacing polynomials that
+will be used in our proofs. Let p and q be real polynomials with real zeros.
+Assume that p and q have n and n − 1 distinct zeros, respectively. We say
+that p and q interlace if between every two zeros of q there is a zero of p and
+vice-versa. We say that p and q strictly interlace if they interlace and do not
+share zeros.
+Lemma 4. [p. 150 in [17]] The polynomials p and q interlace if, and only if,
+n
+X
+λ`
+q
+(t) =
+,
+p
+t − s`
+`=1
+
+where s` are the zeros of p and λ` ≥ 0 for every `. Furthermore, p and q
+strictly interlace if, and only if, λ` > 0 for every `.
+There is also the following characterization of interlacing when we instead
+consider the quotient p/q. It is quite straightforward from the above, but we
+add its proof for clarity.
+Lemma 5. The polynomials p and q interlace if, and only if,
+n−1
+X
+p
+λ`
+(t) = x − s −
+,
+q
+t
+−
+s
+`
+`=1
+
+where s` are the zeros of q and λ` ≥ 0 for every `. Furthermore, p and q
+strictly interlace if, and only if, λ` > 0 for every `.
+Proof. We prove the second part of the statement, the first one is analogous.
+Assume that
+n−1
+X
+p
+λ`
+(t) = t − s −
+,
+q
+t
+−
+s
+`
+`=1
+4
+
+where s1 < · · · < sn−1 are the zeros of q and λ` > 0 for every `. Then
+ 0
+n−1
+X
+p
+λ`
+(t) = 1 +
+>1
+q
+(t − s` )2
+i=1
+for every t not in {s1 , . . . , sn−1 }. It follows that (p/q)(t) is strictly increasing and has a unique zero in each of its n branches (−∞, s1 ), (s1 , s2 ), . . . ,
+(sn−1 , ∞). These zeros are precisely the zeros of p. Thus p and q strictly
+interlace.
+Now assume that p and q strictly interlace. Since deg p = deg q + 1 we have
+p(t) = (t − s)q(t) − b · r(t), where r is monic of degree n − 2 and b is real. In
+the proof of Lemma 5.1 in [17] it is proved that in this situation b > 0 and q
+strictly interlaces r. Thus by Lemma 4 we can write
+n−1
+X
+λ`
+r
+(t) =
+q
+t − s`
+i=1
+
+where s` is a zero of q and λ` > 0 for every `. Therefore
+n−1
+X
+p
+r
+bλ`
+(t) = t − s − b · (t) = t − s −
+,
+q
+q
+t − s`
+`=1
+
+where bλ` > 0 for every `. This finishes the proof.
+
+2.4
+
+Variational inequalities
+
+In this subsection we state an important result we will need. For a real symmetric m × m matrix A we denote by θm (A) ≤ · · · ≤ θ1 (A) its eigenvalues.
+We also denote by
+kAkop = sup kA|vik = max{|θ1 (A)|, |θm (A)|}
+hv|vi=1
+
+its operator norm.
+The next theorem is a standard result about eigenvalues of Hermitian matrices, but since we actually need the equality case, we provide a proof.
+Theorem 6. [Corollary III.2.6 in [2]] Let A and B be two real symmetric
+m × m matrices. Then,
+|θ` (A) − θ` (B)| ≤ kA − Bkop ,
+for every `. If equality holds for `, then there is some vector |vi 6= 0 in the
+subspace generated by the 1st and m-th eigenspaces of A − B which is an `-th
+eigenvector of both A and B.
+5
+
+Proof. Consider ` in {1, . . . , m}. By the min-max principle [2, Corollary
+111.1.2],
+θ` (A) = max min hv|A|vi
+dim V =` |vi∈V
+k|vik=1
+
+and
+θ` (B) =
+
+max hv|B|vi.
+
+min
+
+dim W =m−`+1 |vi∈W
+k|vik=1
+
+Let V and W be subspaces of Rm such that the maximum and minimum
+in the above equations are reached. Since dim V = ` and dim W = m − ` + 1,
+it holds dim V ∩ W ≥ 1. Let |vi be a vector in V ∩ W with k|vik = 1. Then,
+θ` (A) ≤ hv|A|vi and θ` (B) ≥ hv|B|vi, and so
+θ` (A) − θ` (B) ≤ hv|A|vi − hv|B|vi = hv|(A − B)|vi ≤ kA − Bkop .
+Switching the roles of A and B we also have θ` (B) − θ` (A) ≤ kA − Bkop . This
+proves the first part of the statement.
+If θ` (A) − θ` (B) = kA − Bkop , then notice that the vector |vi used in the
+inequalities above needs to be an `-th eigenvector of both A and B and be
+contained in the subspace generated by the 1st and m-th eigenspaces of A−B.
+This proves the second part of the statement.
+
+3
+
+Main result
+
+In this section we state our main result and describe its proof strategy, leaving
+the details for the next section.
+Assume i and j are distinct vertices in G with neighbors i0 and j 0 , respectively, such that ii0 and jj 0 are cut-edges, each separating i and j into different
+connected components. We analyze two possibilities: either i0 = j and j 0 = i,
+and ij is a cut-edge; or i0 6= j and j 0 6= i. In Figure 1 we illustrate these two
+possibilities.
+
+6
+
+Figure 1: On the left side we represent a graph where ij is a cut-edge. On
+the right side we illustrate a graph where the vertices i and j have neighbors
+i0 6= j and j 0 6= i, and ii0 and jj 0 are cut-edges that each separates i and j into
+different connected components. Observe that it may be that i0 = j 0 .
+The case in which ij is a bridge, on the left side of Figure 1, was taken care
+of in [9, Theorem 11], with a proof that the only graph which admits perfect
+state transfer between two vertices separated by a bridge is P2 . So we focus
+on the other case which remained open.
+Proposition 7. Let G be a graph. Assume that i and j are strongly cospectral
+vertices in G with neighbors i0 6= j and j 0 6= i, respectively, such that ii0 and jj 0
+are cut-edges that each separates i and j into different connected components.
+Then,
+√ the minimum distance between elements in Φi is smaller than, or equal
+to, 2, with equality if, and only if, G is isomorphic to P3 .
+It is immediate to verify that [9, Theorem 11], Proposition 7 and Theorem 3
+imply our main result:
+Theorem 8. Let G be a graph with more than three vertices.
+1. Assume that i and j are distinct vertices in G with neighbors i0 and j 0
+respectively, such that ii0 and jj 0 are cut-edges. Note that i0 and j 0 are
+possibly equal to each other, or to j and i, respectively.
+2. Assume the removal of ii0 and the removal of jj 0 separate i and j into
+two connected components.
+Then, there is no perfect state transfer between i and j.
+Recall that both P2 and P3 admit perfect state transfer. Since the only connected trees with at most three vertices are P2 and P3 we obtain the following
+consequence.
+Theorem 9. No tree on more than three vertices admits perfect state transfer.
+7
+
+This answers a question by Godsil [18, Question (5)] and by the first author [5, Problem 1], later stated as a conjecture in [13, Conjecture 1] and in [10,
+Conjecture 1]. Corollary 9 generalizes early results in the literature that there
+is no perfect state transfer on paths on more than three vertices [4], double
+stars [15, Theorem 4.6] and trees on more than 2 vertices with unique perfect
+matchings [13, Theorem 7.2]. By noticing that our argument generally holds
+for graphs with integer weights, a corollary of our Theorem 8 is the result that
+trees on more than two vertices do not admit Laplacian perfect state transfer,
+proved in [13, Corollary 4.4].
+Theorem 8 also implies that the two main constructions of strongly cospectral pairs presented in the work of Godsil and Smith [16, Theorem 9.1 and
+Lemma 9.3] do not produce perfect state transfer, except in the trivial cases
+of P2 and P3 . Our result also shows that there is no adjacency (or Laplacian)
+perfect state transfer between vertices of degree 1, except in trivial cases.
+
+4
+
+Strong cospectrality and rational functions
+
+To prove Proposition 7, we will make use of the machinery presented in this
+section. We begin with the following well known equality.
+Lemma 10 (Lemma 2.1 in [17]). Let i and j be vertices in a graph G. Then,
+!2
+φG\i φG\j − φG\{i,j} φG =
+
+X
+
+φG\P
+
+.
+
+P :i→j
+
+The sum on the right hand side runs over all paths connecting i to j.
+The previous lemma has the following immediate consequence for cospectral
+vertices.
+Corollary 11. Let i and j be cospectral vertices in the weighted graph G.
+Then,
+!
+!
+X
+X
+φG\i +
+φG\P = φG φG\{i,j} .
+φG\i −
+φG\P
+P :i→j
+
+P :i→j
+
+Proof. Since i and j are cospectral, we have φG\i = φG\j . To finish the proof
+we simply apply Lemma 10 and rearrange the terms.
+We can also obtain explicit formulae for the entries of the eigenprojectors.
+See for instance [9, Section 2.3] or [17, Chapter 4].
+8
+
+Theorem 12. Let i and j be vertices in a graph G. Then,
+(a)
+
+X (Eθ )i,i
+φG\i
+;
+(t)
+=
+φG
+t−θ
+θ∈Φ(G)
+
+P
+(b)
+
+P :i→j φ
+φG
+
+G\P
+
+(t) =
+
+X (Eθ )i,j
+.
+t−θ
+
+θ∈Φ(G)
+
+Note that θ is in Φi if and only if (Eθ )i,i > 0. In other words Φi is precisely
+the set of poles of φG\i /φG . When two vertices i and j are strongly cospectral,
+we define Φ+
+ij to be the set of eigenvalues θ for which Eθ |ii = Eθ |ji 6= 0, and
+−
+Φij to be the set of eigenvalues θ for which Eθ |ii = −Eθ |ji 6= 0.
+Proposition 13. Let G be a graph and i and j be strongly cospectral vertices
+−
+in G. Then, Φ+
+ij and Φij are respectively the set of poles of
+P
+P
+φG\i − P :i→j φG\P
+φG\i + P :i→j φG\P
+and
+.
+φG
+φG
+Proof. By Theorem 12 we have that
+P
+X (Eθ )i,i + (Eθ )i,j
+X 2(Eθ )i,i
+φG\i + P :i→j φG\P
+(t)
+=
+=
+.
+φG
+t
+−
+θ
+t
+−
+θ
++
+θ∈Φ
+θ∈Φij
+
+i
+
+Thus θ is a pole of this rational function if and only if θ is in Φ+
+ij . The same
+−
+reasoning applies to Φij .
+It turns out that it is useful to take the inverse of these functions and treat
+−
+Φ+
+ij and Φij as the zeros of two rational functions.
+Inspired by the notation in [11], we define
+P
+P
+G\i
+G\P
+G\i
+G\P
+φ
+−
+φ
+φ
++
+P
+:i→j
+P :i→j φ
++
+−
+αij =
+, αij =
+.
+φG\{i,j}
+φG\{i,j}
+Lemma 14. Let i and j be strongly cospectral vertices in a graph G. Then, Φ+
+ij
++
+−
+and Φ−
+are
+precisely
+the
+set
+of
+zeros
+of
+α
+and
+α
+,
+respectively.
+Furthermore,
+ij
+ij
+ij
+|Φ+
+ij |−1
++
+αij
+(t) = t − r0+ −
+
+X
+
+λ+
+`
+
+`=1
+
+t − r`+
+
+|Φ−
+ij |−1
+−
+αij
+(t) = t − r0− −
+
+,
+
+X
+`=1
+
+−
+where λ+
+` , λ` > 0 for every `.
+
+9
+
+λ−
+`
+,
+t − r`−
+
+Proof. Observe that, by Corollary 11,
+P
+φG\i − P :i→j φG\P
+φG
++
+P
+αij =
+=
+.
+φG\{i,j}
+φG\i + P :i→j φG\P
+This last function is precisely the inverse of the function that appears in
+Proposition 13 whose poles are the elements of Φ+
+ij . Therefore we conclude
++
++
+that Φij is precisely the set of zeros of αij .
+We also know, from the proof of Proposition 13, that
+P
+X 2(Eθ )i,i
+φG\i + P :i→j φG\P
+,
+=
+φG
+t−θ
++
+θ∈Φij
+
+where 2(Eθ )i,i > 0 for every θ in Φ+
+ij . Thus by Lemmas 4 and 5 we obtain that
+|Φ+
+ij |−1
++
+αij
+(t) = t − r0+ −
+
+X
+`=1
+
+λ+
+`
+,
+t − r`+
+
++
+where λ+
+` > 0, for every ` = 1, . . . , |Φij | − 1.
+−
+The same reasoning applies to αij
+.
+
+Notice that the difference between
+P
++
+−
+αij
+− αij
+= −2
+
+G\P
+P :i→j φ
+.
+φG\{i,j}
+
+(1)
+
+We will heavily exploit this fact below in our main result in this section.
+Let i and j be strongly cospectral vertices in a graph G. Assume that every
+path from i to j goes through the neighbors i1 , . . . , iu and j1 , . . . , jv of i and j,
+respectively. Notice that the sets {i1 , . . . , iu } and {j1 , . . . , jv } may intersect.
+In Figure 2 we illustrate this situation.
+
+Figure 2: Observe that every path from i to j goes through the neighbors
+i1 , i2 , i3 and j1 , j2 , j3 .
+10
+
+Lemma 15. Let i and j be vertices in the graph G. Assume that every path
+from i to j goes through the neighbors i1 , . . . , iu and j1 , . . . , jv of i and j,
+respectively. Then,
+P
+k
+G\P
+X
+λ`
+P :i→j φ
+,
+(t) =
+G\{i,j}
+φ
+t − s`
+`=1
+where s` , λ` ∈ R for every ` and
+k
+X
+
+|λ` | ≤
+
+√
+
+uv.
+
+`=1
+
+Proof. Let H 0 be the graph formed by the connected components of G \ {i, j}
+containing i1 , . . . , iu and j1 , . . . , jv . Let H be a graph formed by the remaining
+connected components of G \ {i, j}. Thus G \ {i, j} = H 0 t H.
+Observe that there is a correspondence between paths from i to j in G
+and paths from {i1 , . . . , iu } to {j1 , . . . , jv } in H 0 . For a path P from i to j
+we write P 0 for the corresponding path from {i1 , . . . , iu } to {j1 , . . . , jv } in H 0 ,
+0
+and vice-versa. Also, notice that φG\{i,j} = φH · φH , and that, for every path
+0
+0
+P from i to j, it holds φG\P = φH \P · φH . Thus, we obtain,
+G\P
+P :i→j φ
+φG\{i,j}
+
+Pu
+
+P
+
+=
+=
+
+k=1
+
+Pv
+
+`=1
+
+u X
+v
+X
+
+P
+
+k=1 `=1
+
+H 0 \P 0
+· φH
+P 0 :ik →j` φ
+φG\{i,j}
+
+P
+
+H 0 \P 0
+P 0 :ik →j` φ
+.
+φH 0
+
+By Theorem 12 we know that, for every k and l,
+P
+H 0 \P 0
+X (Eθ )i ,j
+P 0 :ik →j` φ
+k `
+,
+=
+0
+H
+φ
+t−θ
+0
+θ∈Φ(H )
+
+where Eθ is the eigenprojector of θ for the graph H 0 . Write |χi i for the vector
+indexed by the vertices of H 0 which is the characteristic vector of the neighbors
+of i, and analogously consider the vector |χj i. It follows that,
+G\P
+P :i→j φ
+φG\{i,j}
+
+P
+
+=
+
+X Pu
+
+k=1
+
+θ∈Φ(H 0 )
+
+Pv
+
+`=1 (Eθ )ik ,j`
+
+t−θ
+
+=
+
+X hχi |Eθ |χj i
+.
+t−θ
+0
+
+θ∈Φ(H )
+
+Finally, two applications of Cauchy-Schwarz and the fact that
+give
+11
+
+P
+
+Eθ = I
+
+X
+
+X
+
+|hχi |Eθ |χj i| ≤
+
+θ∈Φ(H 0 )
+
+kEθ |χi ik · kEθ |χj ik
+
+θ∈Φ(H 0 )
+
+≤
+
+s X
+
+kEθ |χi ik2
+
+s X
+
+θ∈Φ(H 0 )
+
+kEθ |χj ik2
+
+θ∈Φ(H 0 )
+
+= k|χi ik · k|χj ik
+√
+= uv.
+
+We obtain an immediate corollary.
+Corollary 16. Let G be a graph and i and j be vertices in G with neighbors
+i0 6= j and j 0 6= i, respectively, such that ii0 and jj 0 are cut-edges that each
+separates i and j into different connected components. Then,
+P
+k
+G\P
+X
+λ`
+P :i→j φ
+(t) =
+,
+G\{i,j}
+φ
+t − s`
+`=1
+where s` , λ` ∈ R for every ` and
+
+k
+X
+
+|λ` | ≤ 1.
+
+`=1
+
+5
+
+Proof of main result
+
+Consider a rational function of the form
+k
+X
+λ`
+α(t) = t − s0 −
+t − s`
+`=1
+
+where λ` ≥ 0 for every `. Observe that every zero of this rational function is
+a zero of
+k
+k
+Y
+X
+Y
+(t − s` ) −
+λ`
+(t − sm ).
+`=0
+
+`=1
+
+m6=`
+
+This expression is the characteristic polynomial of the following matrix,
+
+√
+√
+√ 
+λ
+λ
+·
+·
+·
+λk
+s
+0
+1
+2
+ √λ1 s1
+0 ···
+0 
+ √
+
+ λ2
+
+0
+s
+·
+·
+·
+0
+2
+Mα := 
+.
+ ..
+..
+..
+.. 
+.
+.
+ .
+.
+.
+.
+. 
+√
+λk
+0
+0 · · · sk
+12
+
+Recall the statement of Lemma 14. Let
+−
++
+}.
+} ∪ {r1− , . . . , r|Φ
+{r1 , . . . , rk } = {r1+ , . . . , r|Φ
+−
++
+|−1
+|−1
+
+(2)
+
+ij
+
+ij
+
+−
+Observe that k is smaller than, or equal to, |Φ+
+ij | + |Φij | − 2. We can write
+
++
+αij
+(t) = t − r0+ −
+
+k
+X
+µ+
+`
+,
+t
+−
+r
+`
+`=1
+
+−
+αij
+(t) = t − r0− −
+
+k
+X
+µ−
+`
+,
+t
+−
+r
+`
+`=1
+
+(3)
+
+−
++
+−
+where µ+
+` , µ` ≥ 0 for all ` = 1, . . . , k, and either µ` > 0 or µ` > 0 for every
+`. By our previous discussion we can consider the (k + 1) × (k + 1) matrices
++
+−
+Mα+ij and Mα−ij associated with αij
+and αij
+, respectively. To ease the notation
++
+we will refer to these matrices by Mij and Mij− .
+−
+From the k + 1 eigenvalues of Mij+ and Mij− there are exactly |Φ+
+ij | and |Φij |
++
+−
+zeros of αij and αij , respectively.
+We can translate the content of Corollary 16 to properties of the difference
+of the matrices Mij+ and Mij− . This is established in our next result.
+
+Lemma 17. Let G be a graph. Assume that i and j are strongly cospectral
+vertices in G with neighbors i0 6= j and j 0 6= i, respectively, such that ii0 and jj 0
+are cut-edges that each separates i and j into different connected components.
+Then,
+
+
+0
+ pµ+ − pµ−
+
+1
+1
+Mij+ − Mij− = 
+.
+.
+
+p + . p −
+µk − µk
+where
+
+Pk
+
+`=1
+
+p
+
+µ+
+` −
+
+p + p −
+p + p − 
+µ1 − µ1 · · ·
+µk − µk
+
+0
+···
+0
+
+,
+..
+..
+..
+
+.
+.
+.
+0
+···
+0
+
+p −  2 Pk
+−
+≤ `=1 |µ+
+µ`
+` − µ` | ≤ 2.
+
+Proof. By Corollary 16 we have that
++
+−
+αij
+− αij
+=
+
+k
+X
+µ+ − µ−
+`
+
+`=1
+
+where
+
+Pk
+
+`=1
+
+t − r`
+
+`
+
+,
+
+−
++
+−
+µ+
+` − µ` ≤ 2. Thus, we obtain that r0 = r0 and
+k q
+k
+q 2 X
+X
++
+−
+−
+µ` − µ`
+≤
+|µ+
+` − µ` | ≤ 2,
+`=1
+
+`=1
+
+13
+
+where the first inequality is due to
+This concludes the proof.
+
+p
+p − 2
+−
+µ+
+−
+µ`
+≤ |µ+
+`
+` − µ` |, for every `.
+
+Observe that Lemma 17 shows that the difference of Mij+ − Mij− is small in
+a certain sense. We can use this information along with Theorem 6 to control
+the distance between the distinct eigenvalues of the matrices Mij+ and Mij− .
+In order to treat the equality case of Proposition 7 we will also need the
+following standard result in algebraic graph theory. Let i denote the eccentricity of vertex i in the graph G, that is, the maximum distance between any
+vertex of G and vertex i. Recall from Theorem 12 that the number of zeros of
+(φG /φG\i ) is the size of the eigenvalue support of i.
+Lemma 18 (Lemma 5 in [6]). Let i be a vertex in the graph G. Then, the
+number of zeros of (φG /φG\i ) is at least i + 1.
+Finally, we make the crucial observation that strong cospectrality implies
+−
++
+that the sets Φ+
+ij and Φij are disjoint. Therefore, if we obtain zeros of αij and
+−
+αij close to each other, then we obtain two (distinct) elements of Φi that are
+close.
+We are finally ready for the proof of Proposition 7.
+Proof of Proposition 7. Recall (2) and (3), and consider Mij+ − Mij− , just like
+−
+in Lemma 17. Observe that |Φ+
+ij | + |Φij | > k + 1. Thus, by the pigeonhole
+principle, there is some index m in {1, . . . , k + 1}, such that θm (Mij+ ) and
++
+−
+θm (Mij− ) are zeros of αij
+and αij
+, respectively.
+By Lemma 17 we have that the difference Mij+ − Mij− has precisely two
+nonzero eigenvalues equal to
+v
+u k q
+q 2
+uX
++
+t
+µ` − µ−
+,
+(4)
+±
+`
+`=1
+
+and moreover we can say that
+
+r
+Pk
+
+p
+p − 2 √
++
+µ
+−
+µ`
+≤ 2. Therefore by
+`
+`=1
+
+Theorem 6 we have that
+θm (Mij+ ) − θm (Mij− ) ≤ kMij+ − Mij− kop ≤
+
+√
+
+2.
+
++
+−
+It follows that there are zeros of αij
+and αij
+with distance smaller than, or
+√
+equal to, 2. By the discussion above we conclude
+√ that there are two elements
+of Φi with distance smaller than, or equal to, 2.
+We proceed to analyze the equality case.
+
+14
+
++
+−
+By Corollary 16 we know that k ≥ 1, because otherwise αij
+and αij
+are
+equal. We claim that k = 1, and
++
+αij
+(t) = t − r −
+
+2
+t−r
+
+−
+and αij
+(t) = t − r
+
+for some real number r.
+√
+Assume that |θm (Mij+ )−θm (Mij− )| = 2. By the equality case in Theorem 6
+there exists a nonzero vector |vi spanned by the eigenvectors corresponding
+to the two nonzero eigenvalues of Mij+ − Mij− which is an m-th eigenvector of
+both Mij+ and Mij− . Since
+(Mij+ − Mij− )|vi = (θm (Mij+ ) − θm (Mij− ))|vi,
+and (Mij+ − Mij− ) has precisely two nonzero eigenvalues given by (4), it follows
+from Lemma 17 that
+k
+k q
+q 2 X
+X
++
+−
+−
++
+− 2
+µ` − µ`
+≤
+|µ+
+2 ≤ (θm (Mij ) − θm (Mij )) =
+` − µ` | ≤ 2,
+`=1
+
+`=1
+
+p
+p − 2
++
+−
+from which follows that
+µ` − µ`
+= |µ+
+` − µ` | for every `.
+Recall from (3) that µ` ≥ 0 for all `. Thus, for every `, either µ+
+` = 0 and
+−
++
+−
+µ` > 0, or µ` > 0 and µ` = 0. The eigenvector |vi can be easily computed
+from the expression of (Mij+ − Mij− ), and the equations Mij± |vi = θm (Mij± )|vi
+are given by
+p ± p ±
+p ± 
+
+
+µ
+µ
+µk 
+·
+·
+·
+r
+0
+1
+2
+p ±
+a
+ µ
+p
+p
+r1
+0
+···
+0 
+ b( µ+ − µ− )
+ p 1
+1
+1 
+
+
+ µ±
+0
+r2
+···
+0 
+=
+
+..
+2
+
+ .
+
+.
+.
+.
+.
+.
+..
+..
+..
+.. 
+p + p −
+ ..
+p ±
+b( µk − µk )
+µk
+0
+0
+···
+rk
+
+
+a
+p
+p
+b( µ+ − µ− )
+1
+1 
+± 
+= θm (Mij ) 
+.
+..
+
+
+p +. p −
+b( µk − µk )
+Observe that b = 0 implies a = 0, so we have b 6= 0. Thus, for every ` either
++
+−
+• µ−
+` = 0, a + br` = θm (Mij ) b and br` = θm (Mij ) b, and therefore
+
+r` = θm (Mij− ) and
+or
+15
+
+a
+= θm (Mij+ ) − θm (Mij− );
+b
+
+−
++
+• µ+
+` = 0, a + br` = θm (Mij ) b and br` = θm (Mij ) b, and therefore
+
+r` = θm (Mij+ ) and
+
+a
+= θm (Mij− ) − θm (Mij+ ).
+b
+
+√
+Since |θm (Mij+ ) − θm (Mij− )| = 2, it cannot happen that (a/b) is simultaneously equal to a positive and negative number, therefore it must be that,
+−
++
++
+for every `, either µ−
+` = 0 and r` = θm (Mij ); or µ` = 0 and r` = θm (Mij ).
+P
+−
+The r` ’s are by definition distinct, and k`=1 |µ+
+` −µ` | = 2, therefore k = 1,
+and, either
+−
+−
+• µ+
+1 = 2, µ1 = 0 and r1 = θm (Mij ), or
+−
++
+• µ+
+1 = 0, µ1 = 2 and r1 = θm (Mij ).
+
+Finally, recall that the principal eigenvector of the adjacency matrix A
+has positive entries and therefore the largest element of Φi is always in Φ+
+ij .
+A simple analysis concludes that, if we denote by r = r0 , it must be that
+−
++
+2
+and αij
+(t) = t − r, proving the claims.
+αij
+(t) = t − r − t−r
+It remains to show that the graph G is in fact P3 . First, notice that,
++
+−
+αij
+(t) + αij
+(t)
+1
+(t) =
+=t−r−
+.
+G\{i,j}
+φ
+2
+t−r
+
+φG\i
+
+By Lemma 18 it follows that j has eccentricity 1 in G \ i. By symmetry
+we obtain the analogous conclusion for the vertex i. It follows that i0 = j 0 and
+that the only neighbors of this vertex are i and j.
++
+−
+By Corollary 11 and the definition of αij
+and αij
+, we have that
+φG
+φG\{i,j}
+
++
+−
+= αij
+· αij
+,
+
+whence
+G\{i,j}
+φG
+φG
+φG\{i,j}
+(t − r)((t − r)2 − 2)
++
+− φ
+=
+·
+=
+α
+·
+α
+·
+=
+.
+ij
+ij
+φG\i
+φG\{i,j}
+φG\i
+φG\i
+(t − r)2 − 1
+
+By Lemma 18, i has eccentricity at most 2 in G, from which follows that
+the only neighbor of j in G is i0 = j 0 . By symmetry we obtain that the only
+neighbor of i in G is also i0 = j 0 . We conclude that the graph G consists only
+of the vertices i, j and i0 = j 0 .
+
+16
+
+6
+
+Final remarks
+
+The technology in this paper (together with Lemma IV.3.2 in [2]) can also
+be used to provide a proof that if i and j are cospectral and separated by a
+bridge, then there are two eigenvalues in the support of i whose distance is at
+most 1, if and only if the graph is not P2 . This is precisely a result obtained
+in [9] with a different technique.
+The attentive reader may have noticed that we did not require i and j to
+be strongly cospectral in the preceding paragraph. This is the case because
+a result of Godsil and Smith [16, Theorem 9.1] implies that if i and j are
+cospectral and ij is a bridge, then i and j are strongly cospectral. So one
+wonders: is Proposition 7 also valid assuming only cospectrality? This turns
+out to be far from true.
+There exists a well-known construction of integral trees of arbitrarily large
+diameter due to Csikvári [14]. This construction allows for the spectrum to
+be specified in advance.
+Theorem 19 (Theorem 11 in [14]). For every set S of positive integers there
+is a tree whose positive eigenvalues are exactly the elements of S. If the set S
+is different from the set {1} then the constructed tree will have diameter 2|S|.
+By inspecting the proof of Theorem 19 one can see that if the maximum
+distance between consecutive elements in S is at least 2, then the trees have
+a non-trivial automorphism, thus, in particular, they have cospectral pairs of
+vertices. It is also easy to guarantee that their distance will be 2. Putting
+together these observations we have the following result.
+Theorem 20. There exists a sequence of integral trees (Tn ) with cospectral
+pairs of vertices at distance 2 such that the minimum distance between elements
+in Φ(Tn ) tends to ∞ as n → ∞.
+Theorem 20 is in sharp contrast to the Proposition 7, and shows that the
+hypothesis of strong cospectrality cannot be reduced to cospectrality.
+The results in this paper can also be stated to weighted graphs (with or
+without loops), in particular, Proposition 7 holds just the same as long as the
+bridges have weight 1 (the equality case will conclude the resulting graph is
+P3 up to diagonal translations). The weighted generalizations can be easily
+obtained by replacing all occurrences of φG\P in Section 4 by ρP · φG\P , where
+ρP is the product of the weights in the path. The results in Subsection 2.2 hold
+for integer weighted graphs. In particular, the technology developed in this
+paper provides a completely alternative proof to the result that no trees on
+17
+
+more than two vertices admit perfect state transfer according to the Laplacian
+matrix [13]. For reference, we state the most general weighted version we can
+obtain:
+Theorem 21. Let i and j be strongly cospectral vertices in the weighted graph
+G, possibly connected by an edge of weight ai,j . Assume that every path from i
+to j, with the exception of the trivial path through the edge ij, goes through the
+neighbors i1 , . . . , iu and j1 , . . . , jv of i and j, respectively. Then, the minimum
+distance between elements in Φi is smaller than, or equal to
+v
+v
+u
+!
+!
+u u
+u
+v
+X
+u X
+u 2
+a2j` ,j .
+a2i,ik ·
+ai,j + tai,j + 2t
+k=1
+
+`=1
+
+Acknowledgements
+All authors acknowledge the support of FAPEMIG. Gabriel Coutinho acknowledges the support of CNPq.
+
+References
+[1] F Acasiete, F P Agostini, J Khatibi Moqadam, and R Portugal. Implementation of quantum walks on ibm quantum computers. Quantum
+Information Processing, 19:426, 2020.
+[2] Rajendra Bhatia. Matrix Analysis, volume 169. Springer, New York, NY,
+1997.
+[3] Andrew M Childs. Universal computation by quantum walk. Physical
+Review Letters, 102:4,180501, 2009.
+[4] Matthias Christandl, Nilanjana Datta, Tony C Dorlas, Artur Ekert, Alastair Kay, and Andrew J Landahl. Perfect transfer of arbitrary states in
+quantum spin networks. Physical Review A, 71:32312, 2005.
+[5] Gabriel Coutinho. Quantum State Transfer in Graphs. PhD thesis, University of Waterloo, 2014.
+[6] Gabriel Coutinho. Quantum walks and the size of the graph. Discrete
+Mathematics, 342(10):2765–2769, 2019.
+
+18
+
+[7] Gabriel Coutinho and Chris Godsil. Perfect state transfer is poly-time.
+Quantum Information & Computation, 17:495–502, 2017.
+[8] Gabriel Coutinho and Chris Godsil. Continuous-time quantum walks
+in graphs. IMAGE - The Bulletin of the International Linear Algebra
+Society, Spring:12–21, 2018.
+[9] Gabriel Coutinho, Chris Godsil, Emanuel Juliano, and Christopher M
+van Bommel. Quantum walks do not like bridges. Linear Algebra and its
+Applications, 652:155–172, 2022.
+[10] Gabriel Coutinho, Chris Godsil, Emanuel Juliano, and Christopher M
+van Bommel. Quantum walks do not like bridges. Linear Algebra and its
+Applications, 652:155–172, 2022.
+[11] Gabriel Coutinho, Emanuel Juliano, and Thomás Jung Spier. Strong
+cospectrality in trees. arXiv preprint arXiv:2206.02995, 2022.
+[12] Gabriel Coutinho, Emanuel Juliano, and Thomás Jung Spier. The spectrum of symmetric decorated paths. arXiv preprint arXiv:2305.09406,
+2023.
+[13] Gabriel Coutinho and Henry Liu. No Laplacian perfect state transfer in
+trees. SIAM Journal on Discrete Mathematics, 29:2179–2188, 11 2015.
+[14] Péter Csikvári. Integral trees of arbitrarily large diameters. Journal of
+Algebraic Combinatorics, 32(3):371–377, 2010.
+[15] Xiaoxia Fan and Chris Godsil. Pretty good state transfer on double stars.
+Linear Algebra and Its Applications, 438(5):2346–2358, 2013.
+[16] Chris Godsil and Jamie Smith.
+preprint arXiv:1709.07975, 2017.
+
+Strongly cospectral vertices.
+
+arXiv
+
+[17] Chris D Godsil. Algebraic Combinatorics. Chapman & Hall, 1993.
+[18] Chris D Godsil. State transfer on graphs. Discrete Mathematics, 312:129–
+147, 2012.
+[19] Chris D Godsil. When can perfect state transfer occur? Electronic Journal of Linear Algebra, 23:877–890, 2012.
+[20] Karuna Kadian, Sunita Garhwal, and Ajay Kumar. Quantum walk and
+its application domains: A systematic review. Computer Science Review,
+41:100419, 2021.
+19
+
+[21] Alastair Kay. The perfect state transfer graph limbo. arXiv preprint
+arXiv:1808.00696, 2018.
+Gabriel Coutinho
+Dept. of Computer Science
+Universidade Federal de Minas Gerais, Brazil
+E-mail address: gabriel@dcc.ufmg.br
+Emanuel Juliano
+Dept. of Computer Science
+Universidade Federal de Minas Gerais, Brazil
+E-mail address: emanuelsilva@dcc.ufmg.br
+Thomás Jung Spier
+Dept. of Computer Science
+Universidade Federal de Minas Gerais, Brazil
+E-mail address: thomasjung@dcc.ufmg.br
+
+20
+
+

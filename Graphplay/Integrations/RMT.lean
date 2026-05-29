@@ -497,7 +497,7 @@ cell-uniform PST is generically destroyed.
 
 Statement only. -/
 theorem pst_robustness
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     {I : Type v} [Fintype I] [DecidableEq I]
     {W₀ : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W₀)
     {X : Type w} [MeasurableSpace X]
@@ -547,7 +547,7 @@ any `W₀` with PST quotient, and replace its action on
 `(cellUniformSubspace)^⊥` by a Wigner random graphon `ξ` supported on the
 orthogonal complement. -/
 theorem thermalizing_yet_PST_host
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     {I : Type v} [Fintype I] [DecidableEq I]
     {W₀ : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W₀)
     (i j : I) (τ : ℝ) (h_pst : Graphplay.Graphon.IsCellUniformPST W₀ P i j τ) :

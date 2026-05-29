@@ -1,0 +1,2584 @@
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+arXiv:1811.00626v1 [math.CO] 1 Nov 2018
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+Abstract. We present a new approach to graph limit theory which unifies
+and generalizes the two most well developed directions, namely dense graph
+limits (even the more general Lp limits) and Benjamini–Schramm limits (even
+in the stronger local-global setting). We illustrate by examples that this new
+framework provides a rich limit theory with natural limit objects for graphs of
+intermediate density. Moreover, it provides a limit theory for bounded operators (called P -operators) of the form L∞ (Ω) → L1 (Ω) for probability spaces Ω.
+We introduce a metric to compare P -operators (for example finite matrices)
+even if they act on different spaces. We prove a compactness result which
+implies that in appropriate norms, limits of uniformly bounded P -operators
+can again be represented by P -operators. We show that limits of operators
+representing graphs are self-adjoint, positivity-preserving P -operators called
+graphops. Graphons, Lp graphons and graphings (known from graph limit
+theory) are special examples for graphops. We describe a new point of view on
+random matrix theory using our operator limit framework.
+
+1. Introduction
+A fundamental question posed in the emerging field of graph limit theory is the
+following: How can we measure similarity of graphs? Each branch of graph limit
+theory is based on a similarity metric [20]. Experience shows that, to be useful in
+applications, the similarity metric should satisfy a few natural properties.
+(1) (Expressive power)The similarity metric should be fine enough to provide
+a rich enough picture of graph theory.
+(2) (Compactness)The similarity metric should be coarse enough to provide
+many interesting Cauchy convergent graph sequences.
+(3) (Limit objects)Limits of Cauchy convergent sequences of graphs should
+be naturally represented by "graph-like" analytic objects.
+The tension between the first and the second requirement makes the search for useful similarity metrics especially interesting. The so-called dense graph limit theory
+is based on a set of equivalent metrics. One of them is the δ -distance [5, 21, 22].
+Convergence in δ is equivalent to the convergence of subgraph densities. The completion of the set of all graphs in this metric is compact, and thus every graph
+sequence has a convergent sub-sequence, which is a very useful property. A shortcoming of dense graph limit theory is that sparse graphs are considered to be similar
+Date: 5th November 2018.
+2000 Mathematics Subject Classification. 05C50.
+Key words and phrases. graph limits, operator, random matrix.
+1
+
+2
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+to the empty graph and thus it has not enough expressive power to study graphs
+in which the number of edges is sub-quadratic in the number of vertices. Another
+similarity notion was introduced by Benjamini and Schramm [4] to study bounded
+degree graphs that are basically the sparsest graphs. This metric requires an absolute bound for the largest degree and hence it can not be used for graphs with
+super-linear number of edges. Graph sequences in which the number of edges is
+super-linear and sub-quadratic in terms of the number of vertices are called graphs
+of intermediate density.
+Finding useful similarity notions for graphs of intermediate density is a major research direction in graph limit theory. There are many promising non-equivalent
+approaches to this subject [6, 7, 8, 14, 17, 24, 25, 27]. However, none of them
+provides a real unification of the most well-developed branches: dense graph limit
+theory (together with its Lp extension [7, 8]), Benjamini–Schramm limit theory (together with the stronger local-global convergence, see e.g. [9, 16]) and corresponding
+limit objects: graphons, Lp graphons and graphings.
+In this paper we take a new point of view on the subject. Instead of considering
+graphs as static structures, we focus more on the action and dynamics generated
+by graphs. One can associate various operators with graphs. The most well-known
+examples are: adjacency operators, Laplace operators and Markov kernel operators
+(related to random walks). We formulate a framework theory of operator convergence
+and apply it to graph theory through representing operators.
+The dynamical aspect is present in many existing limit theories. However, it has
+not been exploited to unify them. Limit objects such as graphons and graphings act
+on L2 spaces of probability spaces. (Even the so called Lp graphons can be viewed
+as operators of the form Lq (Ω) → Lp (Ω), where Ω is a probability space.) While
+graphons are compact operators represented by measurable functions of the form
+W : [0, 1]2 → [0, 1], graphings are non-compact and are represented by singular
+measures on [0, 1]2 concentrated on edge sets of bounded degree Borel graphs [12,
+16]. A common property of all of these objects is that they are bounded operators in
+an appropriate norm and they act on function spaces of random variables. Graphons
+and graphings are bounded in the usual L2 operator norm k.k2→2 , and Lp graphons
+are bounded in the k.kq→p norm, where p−1 + q −1 = 1.
+In spite of the fact that existing convergence notions for graphons and graphings are
+intuitively similar, the exact connection has not yet been explained from a functional
+analytic point of view. In this paper we introduce a general convergence notion
+for operators acting on functions on probability spaces. We show that graphon
+convergence, Lp graphon convergence and local-global convergence of graphings
+are all special cases of this general convergence notion. Moreover, we obtain a very
+general framework for graph limit theory by studying the convergence of operator
+representations of graphs.
+We also demonstrate that the new limit theory for operators has applications beyond graph theory through a new approach to random matrix theory. An important
+motivation for this paper comes from a previous result by the authors which proves
+Gaussianity for almost eigenvectors of random regular graphs using graph limit
+techniques (local-global limits) and information theory [2]. It is very natural to ask
+if similar limit techniques can be used to study dense random matrices such as
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+3
+
+Figure 1. Two probability measures of the form µv in the profile
+of a 2000 × 2000 random matrix.
+matrices with i.i.d ±1 entries. Available graph limit techniques proved to be too
+weak for this problem. Dense random matrices (when regarded as weighted graphs)
+converge to trivial objects in dense graph limit theory. Note that an interesting
+connection between dense graph limits and random matrices was investigated in
+[23, 29].
+We propose a new limit approach for matrices, graphs and operators which is based
+on the following quite simple and natural probabilistic view point on matrix actions.
+Let A ∈ Rn×n be an arbitrary matrix and let v ∈ Rn be a vector. Let M denote
+the 2 × n matrix whose rows are v and vA. Each column of M is an element in R2 ,
+thus, by choosing a random column, we obtain a probability distribution µv on R2 .
+The following interesting question arises:
+How much do we learn about A if we know the set of all probability measures µv
+arising this way?
+It is easy to see for example that A is the identity matrix if and only if µv is
+supported on the line y = x in R2 for every v ∈ Rn . The matrix A is degenerate
+if and only if there is a measure µv which is not the Dirac measure δ(0,0) , but it is
+supported on the line y = 0.
+Philosophically, we regard each measure µv as an observation associated with the
+action of A and we regard the set of all possible observations {µv : v ∈ Rn } as the
+profile of A. A useful fact about profiles is that they allow us to compare matrices
+of different sizes, since they are sets of probability measures on R2 independently of
+the sizes of the matrices. Another nice fact is that the profile of A contains rather
+detailed information about the eigenvalues of A and the entry distributions of the
+corresponding eigenvectors. It is easy to see that v is an eigenvector with eigenvalue
+λ if and only if the measure µv is supported on the line y = λx in R2 . The entry
+distribution of v is simply the distribution of the x coordinates in µv .
+It is useful to extend this idea to the case when k vectors v1 , v2 , . . . , vk are considered
+simultaneously. (For some technical reasons we will assume that v1 , v2 , . . . , vk are
+in [−1, 1]n .) In this case M is the 2k × n matrix with rows {vi }ki=1 and {vi A}ki=1 .
+A random column in M yields a probability distribution on R2k , and the k-profile
+Sk (A) of A is the collection of all such probability measures. We regard A and
+B to be similar if for small natural numbers k their k-profiles are close in the
+Hausdorff metric dH defined for sets of probability measures on R2k based on the
+
+4
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+Lévy–Prokhorov metric for individual measures (precise definition will be given in
+Section 2.) This similarity can be metrized by the formula
+∞
+X
+dM (A, B) :=
+2−k dH (Sk (A), Sk (B)).
+k=1
+
+A sequence of matrices converges in this metric if for every fixed k, their k-profiles
+converge in dH .
+The above ideas generalize naturally to the framework where (Ω, A, µ) is a probability space and A is an operator of the form A : L∞ (Ω) → L1 (Ω). Such operators
+with an appropriate boundedness condition will be called P -operators (Definition
+2.1). If v ∈ L∞ (Ω), then both v and vA are random variables, and their joint distribution is a measure µv on R2 . This allows us to define k-profiles, metric and
+convergence for P -operators similarly as we defined them for matrices. Note that
+matrices are special P -operators, where the probability space is [n] := {1, 2, . . . , n}
+with the uniform distribution. In this case L∞ ([n]) = L1 ([n]) = R[n] , and every
+matrix is a P -operator. Note that both graphons (symmetric measurable functions
+of the form W : [0, 1]2 → [0, 1]) and graphings (certain bounded degree Borel
+graphs on measure spaces) are special P -operators. We prove the next surprising
+result.
+Theorem 1.1. P -operator convergence (given by Definition 2.6) restricted to the
+set of graphons is the same as graphon convergence. Furthermore, P -operator convergence restricted to the set of graphings is equivalent to the local-global convergence
+of graphings.
+The proof of the above theorem relies on a recent result of the second author which
+reformulates local-global convergence in terms of colored star metric [28]. Our main
+theorem (in an informal language) is the following.
+Theorem 1.2. (Compactness and limit object) Every sequence of P -operators
+with uniformly bounded k.k∞→1 norms has a Cauchy convergent sub-sequence with
+respect to dM . Furthermore, if p, q ∈ [1, ∞), then every Cauchy convergent sequence
+of k.kp→q uniformly bounded P -operators has a limit, which is also a P -operator,
+and the same bound applies for its norm.
+We show that, under certain boundedness conditions, a number of important operator properties are closed with respect to P -operator convergence. This includes
+self-adjointness, positivity and the positivity-preserving property. A P -operator
+A : L∞ (Ω) → L1 (Ω) is called positivity-preserving if vA is a non-negative function on Ω whenever v ∈ L∞ (Ω) is non-negative. The graph-like objects in the
+universe of P -operators are special P -operators called graphops.
+Definition 1.3. A graphop is a positivity-preserving, self adjoint P -operator.
+A particularly nice property of graphops is that they can be represented by symmetric finite measures ν on Ω2 with absolutely continuous marginals (see Theorem
+6.3.)
+Intuitively, the measure ν plays the role of the "edge set" of the graphop A. When
+scaled to a probability measure, ν can be used to sample a random element in Ω × Ω,
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+⇒
+
+0 1 1 1
+1010
+1100
+1000
+
+⇒
+
+( 0.3 0.2 1 −0.8 )
+↓
+( 0.4 1.3 0.5 0.3 )
+
+1
+4
+
+
+
+5
+
+δ(0.3,0.4) + δ(0.2,1.3)
+
+⇒
++δ(1,0.5) + δ(−0.8,0.3)
+
+
+
+Figure 2. graph ⇒ operator ⇒ action ⇒ measure (computing an
+element in the 1-profile of a graph)
+which is the analogue of a random directed edge in a finite graph. By disintegrating
+ν, we obtain measures νx for every x ∈ Ω describing "neighborhoods" in A.
+Adjacency matrices of graphs (or positive weighted graphs), graphons, Lp -graphons
+and graphings are all examples for graphops. A concrete example for a graphop
+(called spherical graphop), which is none of the previous classes, is explained on
+Figure 4.
+Remark 1.4. Graphops have "edge densities" and "degrees". If A : L∞ (Ω) →
+L1 (Ω) is a graphop, then 1Ω A is a non-negative function. The expected value of
+1Ω A is the edge density of A. The value of 1Ω A at a point x ∈ Ω is the "degree" of
+x. The distribution of the random variable 1Ω A is the "degree distribution" of A.
+Adjacency operator convergence: We obtain a general graph convergence notion by considering the convergence of appropriately normalized adjacency matrices
+of graphs. For a graph G, let A(G) denote the adjacency matrix of G. It turns out
+that for a bounded degree sequence of graphs {Gi }∞
+i=1 the P -operator convergence
+of the sequence {A(Gi )}∞
+is
+equivalent
+to
+local-global
+convergence (an thus it
+i=1
+implies Benjamini–Schramm convergence). On the other hand, for a general graph
+sequence, the P -operator convergence of A(Gi )/|V (Gi )| is equivalent to dense graph
+convergence. For graph sequences of intermediate growth we normalize each operator A(Gi ) by a constant depending on Gi to obtain non-trivial convergence notion
+and limit object. A natural choice is the spectral radius given by kA(Gi )k2→2 or,
+more generally, norms of the form kA(Gi )kp→q .
+The convergence of normalized adjacency matrices leads to a rich limit theory for
+graphs of intermediate density. To demonstrate this we give various examples for
+convergent sequences and limit objects. We calculate the limit object of hypercube
+graphs. The hypercube graph Qn is the graph on {0, 1}n in which two vectors are
+connected if they differ at exactly one coordinate. These graphs are very sparse
+and they are of intermediate density. The graph Qn is vertex-transitive and can
+be represented as a Cayley graph of the elementary abelian group Z2n with respect
+to a minimal generating system. Quite surprisingly, the limiting P -operator turns
+out to be also a Cayley graph of the compact group Z2∞ with respect to a carefully chosen topological generating system. This illustrates that our limit objects
+give natural representations of convergent sequences. We calculate similarly natural
+representations for other convergent graph sequences such as increasing powers of
+regular graphs and incidence graphs of projective planes.
+Random walk metric and convergence: A possible limitation for the use of
+adjacency operator convergence is that it may trivialize if the degree distribution is
+very uneven in a graph sequence. The simplest examples are stars and subdivisions
+of complete graphs. In the star graph Sn there is one vertex with degree n and n
+
+6
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+P -operators
+graphops
+Markov graphops
+limi→∞ C4i
+
+%
+
+. spherical graphop
+.
+constant 1 graphon
+
+identity op.
+
+&
+
+.
+local
+global
+limits
+
+dense
+
+sparse
+
+limits of hypercubes
+
+dense
+graph
+limits
+
+- limits of
+Barabási–Albert graphs
+
+graphings
+
+graphons
+limits of random ±1 matrices
+
+negative values
+allowed
+
+↓
+
+Lp -graphons
+
+Figure 3. Universe of P -operators
+vertices with degree 1. When normalized in any reasonable way, they converge to the
+0 operator. The property that a graph has very uneven degree distribution is related
+to the property that a random walk on the graph spends a positive proportion of the
+time in a negligible fraction of the vertex set. A natural way to counterbalance this
+problem is to use Markov kernels of random walks instead of adjacency operators.
+(Such a modified limit was first used by Benjamini and Curien in case of bounded
+degree graphs [3].) The P -operator language shows a nice advantage in this case
+to the plain matrix language. Even for finite graphs G the corresponding Markov
+kernel is not just a matrix. The underlying probability space on V (G) is modified
+from the uniform distribution to the stationary distribution νG of the random walk.
+Note that νG (i) is proportional to the degree d(i) of i ∈ V (G). The operator M (G)
+is given by
+X
+(1)
+(vM (G))(i) = d(i)−1
+v(j)
+(i,j)∈E(G)
+
+for i ∈ supp(νG ). Although M (G) is not symmetric when viewed as a matrix, its
+action on L2 (V (G), νG ) is self-adjoint. Thus M (G) is a positivity-preserving, selfadjoint P -operator with the property that 1V (G) M (G) = 1V (G) . The last property
+is called 1-regularity.
+The random walk metric dRW on finite non-empty graphs is given by
+dRW (G1 , G2 ) := dM (M (G1 ), M (G2 )).
+The completion of the set of finite, non-empty graphs in dRW is a compact space
+GRW . Elements of GRW can be represented by Markov graphops, i.e. positivitypreserving, self-adjoint 1-regular P -operators.
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+7
+
+Note that if A is a Markov graphop, then kAk2→2 = 1. We will see that Markov
+graphops can also be represented by symmetric self-couplings of probability spaces
+(Ω, A, µ). A symmetric self-coupling is a probability measure ν on (Ω × Ω, A ⊗ A)
+such that ν is symmetric with respect to interchanging the coordinates and both
+marginals of ν are equal to µ. A very pleasant property of the set of all Markov
+graphops is that it is compact in the metric dM (see Theorem 3.6), and thus we do
+not need any extra conditions to guarantee convergent subsequences.
+We will show in the examples section (Section 12) that stars and subdivisions
+of complete graphs converge to natural and non-trivial limit objects according to
+random walk convergence. Note that random walk convergence coincides with normalized adjacency operator convergence for regular graphs (graphs in which every
+degree is the same).
+As we mentioned before, random walk convergence is very convenient. Every graph
+sequence {Gi }∞
+i=1 with non-empty graphs has a convergent subsequence in dRW ,
+and the limit object is usually an interesting structured object independently of
+the sparsity of the sequence. The most trivial the limit object one can get is the
+quasi-random Markov graphop which can be represented by the constant 1 graphon
+W (x, y) := 1. This occurs for example if the second largest eigenvalue in absolute
+value of M (Gi ) is o(1).
+Extended random walk convergence: Finally we describe a general convergence
+notion that combines the advantages of adjacency operator convergence and random
+walk convergence. A feature of random walk convergence is that some information
+may be lost in the limit regarding degree distributions. It turns out that there is
+a rather natural way to solve this problem, using a mild extension of random walk
+convergence based on a simultaneous version of action convergence. The principle
+of action convergence allows us to introduce the convergence of pairs (A, f ) where
+A : L∞ (Ω) → L1 (Ω) is a P -operator and f is a measurable function on Ω. Roughly
+speaking, this goes by considering f as a reference function that is automatically
+included as the last function into every function system used in the definition of
+the k-profile of A. More precisely, we define Sk (A, f ) as the set of all possible joint
+distributions of the random variables {vi }ki=1 , {vi A}ki=1 and f on Ω, where the
+values of vi are in [−1, 1]. We have that Sk (A, f ) is a set of probability measures
+on R2k+1 .
+We can use the extra function to store information on the degrees of vertices in G.
+For a graph G let d∗G denote a function on V (G) that is an appropriately normalized
+version of the degree function dG . We can represent G by the pair (M (G), d∗G )
+(recall equation (1)). In the limit we obtain a similar pair (A, f ) where A is a
+Markov graphop. The non-negative function f −1 (which may also take the value
+∞) can be used to "re-scale" the probability measure on Ω to a possibly infinite
+measure.
+Pairs of the form (A, f ) can also be used to represent generalized graphons of
+the form W : R+ × R+ → [0, 1], where W is symmetric and kW k1 ≤ ∞. This
+construction will be described in Section 5. Note that these generalized graphons
+arise in the recently emerging theory of graphexes [6, 17].
+
+8
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+a
+
+Ω = {(x, y, z) : x2 + y 2 + z 2 = 1} , µ = uniform measure
+(a, b) ∈ E ⇔ a⊥b
+
+(Ω, E) is a Borel graph
+
+νa := uniform measure on {b : b ∈ Ω, a⊥b}
+b
+
+S : L2 (Ω, µ) → L2 (Ω, µ)
+Z
+(f S)(a) :=
+f (b) dνa
+b⊥a
+
+Figure 4. The spherical graphop. It is neither a graphon nor a
+graphing: it is somewhere half way in between.
+
+Applications to random matrix theory: As we mentioned earlier, the notion
+of P -operator convergence was partially motivated by efforts to find a fine enough
+convergence notion such that random matrices converge to a structured, non-trivial
+object. The study of this limiting object can help in describing approximate properties of random matrices such as entry distributions of eigenvectors and almost
+eigenvectors. In dense graph limit theory random matrices with i.i.d ±1 entries
+converge, but the limit object is the constant 0 function. (In a refinement of dense
+limit theory [18] the limit object is the constant function on [0, 1]2 whose value is
+the uniform probability measure on {1, −1}.)
+Our main observation about random matrices is that k-profiles of appropriately
+normalized random matrices are non-trivial rich objects and their study brings a
+new point of view on random matrix
+theory. Let Gn denote a random matrix whose
+√
+entries
+are
+i.i.d.
+zero-mean
+±1/
+n-valued
+random variables. The normalizing factor
+√
+n is needed to obtain bounded spectral radius. With probability close to 1, we
+have that kGn k2→2 is close to 2, see e.g. [15]. In this paper we do ground work on the
+limiting properties of Gn according to action convergence. We prove a concentration
+of measure type statement for Gn with respect to the metric dM . This means that
+for large n the matrix-valued random variable Gn is well concentrated in the metric
+space of P -operators together with distance dM . This concentration result together
+with our compactness results imply that for certain good sequences {ni }∞
+i=1 of
+natural numbers, {Gni }∞
+is
+convergent
+with
+probability
+one
+and
+the
+limit
+object
+i=1
+is represented by some P -operator L acting on L2 ([0, 1]) with bounded k.k2→2 norm.
+In this paper we leave the question open whether the sequence of all natural numbers
+is a good sequence. Note that a similar open problem is know for random regular
+graphs using local-global convergence [1] and it is known that a positive answer
+would imply the convergence of a great number of interesting graph parameters.
+For our application it will be enough that any sequence of natural numbers contains
+a good sub-sequence. Our general results in this paper prepare a follow-up paper
+which focuses on the limiting properties of random matrices with a special emphasis
+on eigenvectors and almost eigenvectors.
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+9
+
+2. Limits of matrices and operators
+For k vectors {vi ∈ Rn }ki=1 let us define their joint empirical entry distribution,
+denoted by D(v1 , v2 , . . . , vk ), as the probability measure on Rk given by
+D(v1 , v2 . . . , vk ) := n−1
+
+(2)
+
+n
+X
+
+δ(v1,j ,v2,j ,...,vk,j ) ,
+
+j=1
+
+where vi,j denotes the j-th component of vi and δx denotes the Dirac measure at
+x ∈ Rk . A natural view on empirical entry distributions is the following. Consider
+[n] := {1, 2, . . . , n} as a probability space with the uniform distribution µ[n] and
+vectors in Rn as functions of the form v : [n] → R. From this view point vectors are
+random variables and matrices in Rn×n are operators acting on the space of random
+variables on the probability space ([n], µ[n] ). The joint empirical entry distribution
+D(v1 , v2 , . . . , vk ) is simply the joint distribution of the vectors v1 , v2 , . . . , vn viewed
+as random variables.
+Let (Ω, A, µ) (or shortly Ω) be a probability space and assume that v1 , v2 , . . . , vk
+are R-valued measurable functions on Ω. We denote by D(v1 , v2 , . . . , vk ) the joint
+distribution of v1 , v2 , . . . , vk . In other words it is the push-forward of the measure µ
+under the map x 7→ (v1 (x), v2 (x), . . . , vk (x)), which is a Borel measure on Rk .
+Definition 2.1. A P -operator is a linear operator of the form A : L∞ (Ω) →
+L1 (Ω) such that
+kAk∞→1 := sup kvAk1 /kvk∞
+v∈L∞ (Ω)
+
+is finite. We denote by B(Ω) the set of all P -operators on Ω.
+Remark 2.2. If Ω = [n] and µ = µ[n] , then L1 (Ω) = L∞ (Ω) = Rn . In this case
+B(Ω) is the set of all n × n matrices. Thus every matrix A ∈ Rn×n is a P -operator.
+For a set S ⊆ R we denote by L∞
+S (Ω) the set of bounded measurable functions on
+Ω whose values are in S.
+Definition 2.3. (k-profile of P -operators) For a P -operator A ∈ B(Ω) we define
+the k-profile of A, denoted by Sk (A), as the set of all possible probability measures
+of the form
+D(v1 , v2 , . . . , vk , v1 A, v2 A, . . . , vk A),
+
+(3)
+
+where v1 , v2 , . . . , vk run through all possible k-tuples of functions in L∞
+[−1,1] (Ω).
+For joint distributions of the form (3) we will often use the shothand notation
+DA (v1 , v2 , . . . , vk ) := D(v1 , v2 , . . . , vk , v1 A, v2 A, . . . , vk A).
+k
+
+Let P(R ) denote the set of Borel probability measures on Rk for k ∈ N.
+Definition 2.4. (Lévy–Prokhorov metric) The Lévy–Prokhorov metric dLP on
+P(Rk ) is defined by
+dLP (η1 , η2 ) = inf{ε > 0 : η1 (U ) ≤ η2 (U ε )+ε and η2 (U ) ≤ η1 (U ε )+ε for all U ∈ Bk },
+where Bk is the Borel σ-algebra on Rk and U ε is the set of points that have distance
+smaller than ε from U .
+
+10
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+Definition 2.5. (Hausdorff metric) We measure the distance of subsets X, Y in
+P(Rk ) using the Hausdorff metric dH .
+n
+o
+dH (X, Y ) := max sup inf dLP (x, y) , sup inf dLP (x, y) .
+x∈X y∈Y
+
+y∈Y x∈X
+
+Note that dH (X, Y ) = 0 if and only if cl(X) = cl(Y ), where cl is the closure in dLP .
+It follows that dH is a pseudometric for all subsets in P(Rk ) and it is a metric for
+closed sets.
+Definition 2.6. (Action convergence of P -operators) We say that a sequence
+of P -operators {Ai ∈ B(Ωi )}∞
+i=1 is action convergent if for every k ∈ N the sequence
+{Sk (Ai )}∞
+is
+a
+Cauchy
+sequence
+in dH .
+i=1
+Remark 2.7. The completeness of (P(Rk ), dH ) implies that {Ai }∞
+i=1 in the above
+definition is convergent if and only if for every k ∈ N there is a closed set Xk such
+that limi→∞ dH (Sk (Ai ), Xk ) = 0.
+Definition 2.8. (Metrization of action convergence) For two P -operators
+A, B let
+∞
+X
+(4)
+dM (A, B) :=
+2−k dH (Sk (A), Sk (B)).
+k=1
+
+For a probability measure µ on Rk let τ (µ) ∈ [0, ∞] denote the quantity
+Z
+|xi | dµ.
+(5)
+max
+1≤i≤k
+
+(x1 ,x2 ,...,xk )∈Rk
+
+For c ∈ R+ and k ∈ N let
+Pc (Rk ) := {µ : µ ∈ P(Rk ), τ (µ) ≤ c}.
+Let furthermore Qc (Rk ) denote the set of closed sets in the metric space (Pc (Rk ), dLP ).
+The following lemma is an easy consequence of classical results.
+Lemma 2.9. The metric spaces (Pc (Rk ), dLP ) and (Qc (Rk ), dH ) are both compact
+and complete metric spaces.
+Proof. Markov’s inequality gives uniform tightness in Pc (Rk ), which implies the
+compactness of (Pc (Rk ), dLP ). It is known that Hausdorff distance for the closed
+subsets in a compact Polish space is again compact.
+
+Lemma 2.10. Let A ∈ B(Ω) and let c := max(kAk∞→1 , 1). Then for every k ∈ N
+we have that Sk (A) ∈ Qc (R2k ).
+Proof. Let {vi }ki=1 be a system of vectors in L∞
+[−1,1] (Ω). We have that kvi k1 ≤
+kvi k∞ ≤ 1 and kvi Ak1 ≤ kAk∞→1 holds for 1 ≤ i ≤ k. Since the first moments of the absolute values of the coordinates in (3) are given by {kvi k1 }ki=1
+and {kvi Ak1 }ki=1 , the proof is complete.
+
+Lemma 2.9 and Lemma 2.10 have the following corollary.
+Lemma 2.11. (Sequential compactness) Let {Ai }∞
+i=1 be a sequence of P -operators with uniformly bounded k.k∞→1 norms. Then it has an action convergent
+subsequence.
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+11
+
+For a real number p ∈ [1, ∞] and measurable function v : Ω → R we have that
+Z
+1/p
+kvkp :=
+|v|p dµ
+∈ R+ ∪ {0, ∞}.
+Note that if p = ∞, then kvk∞ denotes the "essential maximum" of v. It is well
+known that for p ≤ q we have kvkp ≤ kvkq for any measurable function v on Ω. Let
+p, q ∈ [1, ∞] be real numbers and let A : L∞ (Ω) → L1 (Ω) be a linear operator. The
+operator norm kAkp→q is defined by
+kAkp→q :=
+
+sup
+
+kvAkq /kvkp .
+
+v∈L∞ (Ω)
+
+We say that A is (p, q)-bounded if kAkp→q is finite. We have that if p0 , q 0 ∈ [1, ∞]
+satisfy p0 ≥ p and q 0 ≤ q then kAkp0 →q0 ≤ kAkp→q . We denote by Bp,q (Ω) the set
+of (p, q)-bounded linear operators from L∞ (Ω) to L1 (Ω). If p0 , q 0 ∈ [1, ∞] satisfy
+p0 ≥ p and q 0 ≤ q, then Bp,q (Ω) ⊆ Bp0 ,q0 (Ω). In particular, Bp,q (Ω) ⊆ Bp,1 (Ω) and
+B(Ω) = B∞,1 (Ω) contains Bp,q for every p, q ∈ [1, ∞].
+Remark 2.12. (L2 theory) If a P -operator A satisfies kAkp→q ≤ ∞, then A
+extends uniquely to an operator of the form Lp (Ω) → Lq (Ω). In this sense, by
+slightly abusing the notation, we can identify the set Bp,q (Ω) with the set of operators Lp (Ω) → Lq (Ω) with bounded k.kp→q norm. An especially nice class of
+P -operators is the set B2,2 (Ω). If Ω is fixed then these operators are closed with
+respect to composition and they form a so-called von Neumann algebra.
+Remark 2.13. (Lp graphons as P -operators) Let p ∈ (0, ∞] and assume that
+W : Ω × Ω → R is a measurable function such that
+Z
+1/p
+|W |p dµ2
+kW kp :=
+< ∞.
+Let q := p/(p − 1). We Rcan associate an operator AW : Lq (Ω) → Lp (Ω) with W ,
+defined by (f AW )(x) := f (y)W (y, x) dµ. It is easy to see that kAW kq→p < ∞ and
+thus AW ∈ Bq,p is a P -operator representing the so-called Lp -graphon W . For a theory of Lp -graphon convergence see [7]. It follows from our theory that for sequences
+p
+of Lp -graphons {Wi }∞
+i=1 with uniformly bounded L -norms, action convergence of
+p
+the representing operators AWi is equivalent to L -graphon convergence.
+The following theorem is one of the main results in this paper. Its proof can be
+found in Section 4.
+Theorem 2.14. (Existence of limit object) Let p ∈ [1, ∞) and q ∈ [1, ∞]. Let
+{Ai }∞
+i=1 be a convergent sequence of P -operators with uniformly bounded k.kp→q
+norms. Then there is a P -operator A such that limi→∞ dM (Ai , A) = 0, and kAkp→q ≤
+supi∈N kAi kp→q .
+For a P -operator A and k ∈ N let Sk∗ (A) denote the closure of Sk (A) in the space
+(P(R2k ), dLP ).
+Definition 2.15. (Weak equivalence and weak containment) Let A and B
+be two P -operators. We say that A and B are weakly equivalent if dM (A, B) = 0.
+We have that A and B are weakly equivalent if and only if Sk∗ (A) = Sk∗ (B) holds
+for every k ∈ N. We say that A is weakly contained in B if Sk∗ (A) ⊆ Sk∗ (B) holds
+for every k ∈ N. We denote weak containment by A ≺ B.
+
+12
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+It is easy to see that norms of the form k.kp→q are invariant with respect to weak
+equivalence (these norms can be read off from the 1-profiles of P -operators.) Let X
+denote the set of weak equivalence classes of P -operators and let X 0 ⊂ X denote
+the set of equivalence classes of P -operators defined on atomless probability spaces.
+For c ∈ R+ , p ∈ [1, ∞), q ∈ (1, ∞] let Xp,q,c := {A : A ∈ X , kAkp→q ≤ c} and
+0
+Xp,q,c
+:= {A : A ∈ X 0 , kAkp→q ≤ c}.
+The next theorem follows from Theorem 2.14 and Lemma 3.2.
+Theorem 2.16. (Compactness) For every c ∈ R+ , p ∈ [1, ∞), q ∈ (1, ∞] the
+0
+spaces (Xp,q,c , dM ) and (Xp,q,c
+, dM ) are compact.
+Corollary 2.17. Let c ∈ R+ . We have that {W : W ∈ B2→2 ([0, 1]), kW k2 ≤ c} is
+compact in the topology generated by dM .
+Lemma 2.18. Let k ∈ N and let A, B be P -operators both in B(Ω) for some
+probability space (Ω, A, µ). Then
+1/2
+
+dH (Sk (A), Sk (B)) ≤ kA − Bk∞→1 (2k)3/4 .
+Proof. Let x ∈ Sk (A) be arbitrary. We have that there are functions v1 , v2 , . . . , vk ∈
+k
+L∞
+[−1,1] (Ω) such that x is equal to the probability measure DA ({vi }i=1 ). Let y :=
+k
+DB ({vi }i=1 ) ∈ Sk (B). Since
+kvi A − vi Bk1 ≤ kvi k∞ kA − Bk∞→1 ≤ kA − Bk∞→1
+1/2
+
+holds for every i ∈ [k], we have by Lemma 13.2 that dLP (x, y) ≤ kA−Bk∞→1 (2k)3/4 .
+We obtained that
+sup
+
+inf
+
+x∈Sk (A) z∈Sk (B)
+
+1/2
+
+dLP (x, z) ≤ kA − Bk∞→1 (2k)3/4 .
+
+By switching the roles of A and B and repeating the same argument we get the
+above inequality with A and B switched. This implies the statement of the lemma.
+
+Lemma 2.19. (Norm distance vs. dM distance) Assume that A, B are P 1/2
+operators acting on the same space L∞ (Ω). We have dM (A, B) ≤ 3kA − Bk∞→1 .
+Proof. Using Lemma 2.18 we obtain that
+1/2
+
+dM (A, B) ≤ kA − Bk∞→1
+
+∞
+X
+
+1/2
+
+2−k (2k)3/4 ≤ 3kA − Bk∞→1 .
+
+k=1
+
+
+Let A ∈ B(Ω, A, µ) be a P -operator. We define the bilinear form (f, g)A for functions
+f, g ∈ L∞ (Ω) by
+Z
+(6)
+(f, g)A :=
+(f A)g dµ = E((f A)g).
+Ω
+
+Note that
+(f, g)A ≤ kf k∞ kgk∞ kAk∞→1 ,
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+13
+
+and thus (f, g)A is finite. In general if kAkp→q ≤ ∞ holds for a conjugate pair with
+1/p + 1/q = 1, then we have
+(f, g)A ≤ kf kp kgkp kAkp→q .
+
+(7)
+
+We define the cut norm of A by
+kAk := sup |(1S , 1T )A |.
+S,T ∈A
+
+It is well known that
+kAk ≤ kAk∞→1 ≤ 4kAk ,
+which means that k.k is equivalent to the norm k.k∞→1 . Let ψ : Ω → Ω be an
+invertible measure-preserving transformation with measure-preserving inverse. The
+transformation ψ induces a natural, linear action on L∞ (Ω), also denoted by ψ,
+defined by f ψ (x) := f (ψ(x)). Furthermore, for A ∈ B(Ω) let Aψ := ψ −1 ◦ A ◦ ψ.
+It is easy to see that if A ∈ B(Ω), then Aψ ∈ B(Ω) and that dM (A, Aψ ) = 0.
+Let
+δ (A, B) := inf kAψ − B φ k ,
+ψ,φ
+
+where ψ, φ run through all invertible measure preserving transformations of Ω. The
+proof of the next lemma follows from Lemma 2.19.
+Lemma 2.20. Assume that A, B are P -operators acting on the same space L∞ (Ω).
+Then dM (A, B) ≤ 12δ (A, B)1/2 .
+3. P -operators with special properties
+The goal of this chapter is to show that various fundamental properties behave well
+with respect to P -operator convergence.
+Definition 3.1. Let A ∈ B(Ω) be a P -operator.
+• A is self-adjoint if (v, w)A = (v, w)A holds for every v, w ∈ L∞ (Ω).
+• A is positive if (v, v)A ≥ 0 holds for every v ∈ L∞ (Ω).
+• A is positivity-preserving if for every v ∈ L∞ (Ω) with v(x) ≥ 0 for
+almost every x ∈ Ω, we have that (vA)(x) ≥ 0 holds for almost every
+x ∈ Ω.
+• A is c-regular if 1Ω A = c1Ω for some c ∈ R.
+• A is a graphop if it is positivity-preserving and self-adjoint.
+• A is a Markov graphop if A is a 1-regular graphop.
+• A is atomless if Ω is atomless.
+Lemma 3.2. Atomless P -operators are closed with respect to dM .
+Proof. Let A ∈ B(Ω) be an atomless P -operator and let B ∈ B(Ω2 ) with dM (B, A) =
+ε. We have that there is a function v ∈ L∞
+[−1,1] (Ω) such that the distribution of v
+is uniform on [−1, 1]. Let α := DA (v). It follows from dH (S1 (A), S1 (B)) ≤ 2ε that
+there is β = DB (w) ∈ S1 (B) with dLP (β, α) ≤ 3ε and thus dLP (α1 , β1 ) ≤ 3ε, where
+α1 = D(v) and β1 = D(w) are the marginals of α and β on the first coordinate. It
+
+14
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+follows that β1 is at most 3ε far from the uniform distribution in dLP , and thus the
+largest atom in β1 is at most 10ε. Hence the largest atom in Ω2 has weight at most
+10ε = 10dM (B, A). We obtained that if B is the limit of atomless operators, then
+B is atomless.
+
+Proposition 3.3. Let p ∈ [1, ∞] and q ∈ (1, ∞). Let {Ai ∈ B(Ωi )}∞
+i=1 be a sequence
+of uniformly (p, q)-bounded P -operators converging to a P -operator A ∈ B(Ω). Then
+we have the following two statements.
+(1) If Ai is positive for every i, then A is also positive.
+(2) If Ai is self-adjoint for every i, then A is also self-adjoint.
+Proof. To prove the first claim let v ∈ L∞
+[−1,1] (Ω). By the definition of convergence
+(Definition 2.6) there are elements vi ∈ L∞
+[−1,1] (Ωi ) such that DA (vi ) weakly converges to DA (v) as i goes to infinity. By Lemma 13.4 we have that (vi , vi )Ai =
+E(vi (Ai vi )) converges to (v, v)A = E(v(Av)). We have by the assumption that
+(vi , vi )Ai ≥ 0 holds for every i, and thus (v, v)A ≥ 0 holds.
+To prove the second claim let v, w ∈ L∞
+[−1,1] (Ω) and let µ := DA (v, w). By the
+definition of convergence we have that for every i ∈ N there exist functions vi , wi ∈
+L∞
+[−1,1] (Ωi ) such that µi := DAi (vi , wi ) weakly converges to µ. By Lemma 13.4
+we obtain that E(vi (wi Ai )) weakly converges to E(v(wA)) and E((vi Ai )wi ) weakly
+converges to E((vA)w) as i goes to infinity. On the other hand we have that
+E(vi (wi Ai )) = (wi , vi )Ai ,
+
+E(v(wA)) = (w, v)A ,
+
+E((vi Ai )wi ) = (vi , wi )Ai ,
+
+E((vA)w) = (v, w)A .
+
+Since by assumption we have (vi , wi )Ai = (wi , vi )Ai the proof is complete.
+
+
+
+Proposition 3.4. Let p ∈ [1, ∞), q ∈ [1, ∞], c ∈ R and let {Ai ∈ B(Ωi )}∞
+i=1
+be a sequence of uniformly (p, q)-bounded P -operators converging to a P -operator
+A ∈ B(Ω). Then we have the following two statements.
+(1) If Ai is positivity-preserving for every i, then A is also positivity-preserving.
+(2) If Ai is c-regular for every i, then A is also c-regular.
+∞
+∞
+Proof. Let v ∈ L∞
+[0,1] (Ω). Then there is a sequence {vi ∈ L[−1,1] (Ωi )}i=1 such that
+DAi (vi ) weakly converges to DA (v). The fact that D(vi ) weakly converges to the
+non-negative distribution D(v) implies that D(vi − |vi |) weakly converges to δ0 . It
+follows from Lemma 13.6 that dLP (DAi (vi ), DAi (|vi |)) converges to 0 and so (v, vA)
+is the weak limit of DAi (|vi |). Since |vi |Ai is non-negative for every i we obtain that
+vA is non-negative.
+
+Let vi ∈ L∞
+[−1,1] (Ωi ) be a sequence of functions such that DAi (vi ) weakly converges
+to DA (1Ω ). We have that D(vi − 1Ωi ) weakly converges to δ0 and hence by Lemma
+13.6 we have that dLP (DAi (1Ωi ), DAi (vi )) goes to 0 as i goes to infinity. It follows that DAi (1Ωi ) weakly converges to DA (1Ω ). Since 1Ωi Ai = c1Ωi , the proof is
+complete.
+
+Lemma 3.5. Let A ∈ B(Ω) be a Markov graphop. Then kAk2→2 = 1.
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+15
+
+Proof. First we show that kAk∞→∞ = 1. Let v ∈ L∞
+[0,1] (Ω). We have that 1Ω − v is
+non-negative and thus (1Ω − v)A = 1Ω − vA is non-negative. It follows that vA is
+non-negative with kvAk∞ ≤ 1. Let v ∈ L∞
+[−1,1] (Ω). We can write v = v1 − v2 such
+that kv1 k∞ , kv2 k∞ ≤ 1 and both v1 , v2 are non-negative. We have shown that the
+values of v1 A and v2 A are in [0, 1] and so vA = v1 A − v2 A takes values in [−1, 1].
+It follows that kvAk∞ ≤ 1. In general, we have for v ∈ L∞ (Ω) with m := kvk∞
+that v ∈ L∞
+[−m,m] and thus by linearity and the previous statement we obtain that
+kvAk∞ ≤ m.
+The fact that 1Ω A = 1Ω implies that kAk2→2 ≥ 1. Now let v ∈ L∞ (Ω) be arbitrary.
+Then for every k ∈ N we have that kvAk k2 ≤ kvAk k∞ ≤ kvk∞ . By the spectral
+theorem this is possible only if kAk2→2 ≤ 1.
+
+Theorem 3.6. Let M be the set of weak equivalence classes of Markov graphops.
+Then (M, dM ) is a compact metric space.
+Proof. Lemma 3.5 together with Proposition 3.3 and Proposition 3.4 implies that
+if {Ai }∞
+i=1 is a sequence of Markov graphops with limit A, then A is also a Markov
+graphop. The compactness follows from Lemma 2.11 and Theorem 2.14.
+
+4. Construction of the limit object
+In this section we prove Theorem 2.14. Let {(Ωi , Ai , µi )}∞
+i=1 be a sequence of measure spaces. Assume that {Ai ∈ Bp,q (Ωi )}∞
+is
+a
+convergent
+sequence of P -operators
+i=1
+such that supi∈N kAi kp→q ≤ c for some c ∈ R+ . For every k ∈ N we define
+Xk := lim Sk∗ (Ai ).
+i→∞
+
+We wish to prove that there is a P -operator A ∈ Bp,q (Ω) for some probability space
+(Ω, A, µ) such that for every k ∈ N we have that
+lim Sk∗ (Ai ) = Sk∗ (A).
+
+i→∞
+
+We will need the next algebraic notion.
+Definition 4.1. (Free semigroup with operators) Let G and L be sets. We
+denote by F (G, L) the free semigroup with generator set G and operator set L
+(freely acting on F (G, L)). More precisely, we have that F (G, L) is the smallest set
+of abstract words satisfying the following properties.
+(1) G ⊆ F (G, L).
+(2) If w1 , w2 ∈ F (G, L), then w1 w2 ∈ F (G, L).
+(3) If w ∈ F (G, L), l ∈ L, then l(w) ∈ F (G, L).
+There is a unique length function m : F (G, L) → N such that m(g) = 1 for g ∈ G,
+m(w1 w2 ) = m(w1 ) + m(w2 ) and m(l(w)) = m(w) + 1.
+An example for a word in F (G, L) is l3 (l1 (g1 g2 l2 (g2 )g3 ))l3 (g2 )g1 , where g1 , g2 , g3 ∈
+G and l1 , l2 , l3 ∈ L. Note that if both G and L are countable sets, then so is
+F (G, L).
+
+16
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+Construction of a function system. In this technical part of the proof we
+construct a function system {vi,f ∈ L∞ (Ωi )}i∈N,f ∈F for some countable index set
+F . Later we will use this function system to construct a probability distribution
+κ ∈ P(RF ×{0,1} ) and an operator A ∈ Bp,q (RF ×{0,1} , κ). We will show that A is an
+appropriate limit object for the sequence {Ai }∞
+i=1 .
+First we describe the index set F . For every k ∈ NS
+let Xk0 ⊆ Xk be a countable dense
+∞
+subset in the metric space (Xk , dLP ). Let G := k=1 Xk0 × [k]. Let L = Q × Q+ .
+Let F := F (G, L) be as in Definition 4.1. We have that F is countable.
+Now we describe the functions {vi,g }i∈N,g∈G . For every i, k ∈ N and t ∈ Xk0 let
+{vi,(t,j) }kj=1 be a system of functions in L∞
+[−1,1] (Ωi ) such that the joint distribution
+of
+(vi,(t,1) , vi,(t,2) , . . . , vi,(t,k) , vi,(t,1) Ai , vi,(t,2) Ai , . . . , vi,(t,k) Ai )
+converges to t as i goes to infinity.
+To continue with our construction we need to interpret elements of L as non-linear
+operators on function spaces. For y ∈ Q and z ∈ Q+ let hy,z : R → R be the
+bounded, continuous function defined by hy,z (x) = 0 if x ∈
+/ (y − z, y + z) and
+hy,z (x) = 1 − |x − y|/z if x ∈ (y − z, y + z). For every i ∈ N, l ∈ L and v ∈ L∞ (Ωi )
+we define l(v) := hy,z ◦ (vAi ), where l is given by the pair (y, z) ∈ Q × Q+ . Note
+that by definition kl(v)k∞ ≤ 1.
+Now for every i ∈ N we construct the functions {vi,w }i∈N,w∈F recursively to the
+length of m(w). For words of length 1 the functions are already constructed above.
+Assume that for some 1 ≤ k ∈ N we have already constructed all the functions
+vi,w with m(w) ≤ k. Let w ∈ F such that m(w) = k + 1. If w = w1 w2 for some
+w1 , w2 ∈ F , then vi,w := vi,w1 vi,w2 . If w = l(w1 ), then vi,w := l(vi,w1 ).
+Construction of the probability space. Let ξi : Ωi → RF ×{0,1} be the function
+such that for f ∈ F, e ∈ {0, 1} and ωi ∈ Ωi the (f, e) coordinate of ξi (ωi ) is equal to
+(vi,f Aei )(ωi ), where A0i is defined to be the identity operator. Let κi ∈ P(RF ×{0,1} )
+denote the distribution of the random variable ξi . (In other words κi is the joint
+distribution of the functions {vi,f }f ∈F and {vi,f Ai }f ∈F .) Since τ (κi ) ≤ c holds for
+every i (recall equation (5) for the definition of τ ), we have that there is a strictly
+growing sequence {ni }∞
+i=1 of natural numbers such that κni is weakly convergent
+with limit κ as i goes to infinity. Let Ω := RF ×{0,1} be the probability space with
+the Borel σ-algebra A and measure κ.
+Construction of the operator. We will define an operator A ∈ Bp,q (Ω) with Ω
+defined above. For (f, e) ∈ F × {0, 1} let π(f,e) : RF ×{0,1} → R denote projection
+function to the coordinate at (f, e). Notice that
+(8)
+
+π(f,e) ◦ ξi = vi,f Aei
+
+(i ∈ N, (f, e) ∈ F × {0, 1}).
+
+In particular, due to the definition of κ, we also have π(f,0) ∈ L∞
+[−1,1] (Ω) for f ∈ F .
+Our goal is to show that there is a unique (p, q)-bounded linear operator A from
+L∞ (Ω) to L1 (Ω) with kAkp→q ≤ c such that π(f,0) A = π(f,1) holds for every
+f ∈ F.
+Lemma 4.2. The coordinate functions on RF ×{0,1} have the following properties.
+(1) If f1 , f2 ∈ F , then π(f1 f2 ,0) = π(f1 ,0) π(f2 ,0) holds in L∞ (Ω).
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+17
+
+(2) If f ∈ F and l = (y, z) holds for some y, z, then π(l(f ),0) = hy,z ◦ π(f,1)
+holds in L∞ (Ω).
+(3) If a1 , a2 , . . . , ak ∈ F, λ1 , λ2 , . . . , λk ∈ R, then
+k
+X
+
+λj π(aj ,1)
+
+j=1
+
+≤c
+q
+
+k
+X
+
+λj π(aj ,0)
+
+j=1
+
+.
+p
+
+(4) The linear span of the functions {π(f,0) }f ∈F is dense in the space Lp (Ω).
+(5) Assume that k ∈ N and t ∈ Xk0 . Then (t, j) ∈ G ⊂ F holds for 1 ≤ j ≤ k
+and
+D(π((t,1),0) , π((t,2),0) , . . . , π((t,k),0) , π((t,1),1) , π((t,2),1) , . . . , π((t,k),1) ) = t.
+Remark 4.3. Note that when functions on Ω are treated as functions in Lr (Ω)
+for some r ∈ [1, ∞], then they are considered to be equal if they differ on a κ
+zero measure set. This kind of weak equality of functions enables various algebraic
+correspondences between different coordinate functions, which would be impossible
+in a strict sense. As a toy example let us consider the uniform measure µ on {(x, x) :
+x ∈ [0, 1]} which is a Borel measure on R2 . We have that the x-coordinate function
+(x, y) 7→ x is equal to the y-coordinate function (x, y) 7→ y in the space Lr (R2 , µ),
+because they agree on the support of µ.
+The proof of Lemma 4.2 will use the following two lemmas.
+Lemma 4.4. Let r ∈ [1, ∞). For every v ∈ Lr (Ω) we have that
+2
+
+lim v −
+
+n→∞
+
+n
+X
+j=−n2
+
+(j/n)hj/n,1/n ◦ v
+
+= 0.
+r
+
+Pn2
+Proof. Let sn := j=−n2 (j/n)hj/n,1/n . The statement is equivalent to limn→∞ kv−
+sn ◦ vkr = 0. An elementary calculation shows that sn (x) = x if x ∈ [−n, n] and
+|sn (x)| ≤ n holds for x ∈ Kn := R \ [−n, n]. Now we have that
+v − sn ◦ v = 1Kn ◦ (v − sn ◦ v) = 1Kn ◦ v − 1Kn ◦ sn ◦ v,
+and hence
+kv − sn ◦ vkr ≤ k1Kn ◦ vkr + nP(|v| ≥ n) = k1Kn ◦ vkr + nP(|v|r ≥ nr ),
+where v is viewed as a random variable on Ω. For r = 1, it is well known that
+v ∈ L1 (Ω) implies limn→∞ nP(|v| ≥ n) = 0. For r > 1, by Markov’s inequality
+we have that P(|v|r ≥ nr ) is at most kvkrr /nr and thus nP(|v| ≥ n) converges to
+0 as n goes to infinity. Now it suffices to show that lim R
+n→∞ k1Kn ◦ vkr = 0. Let
+Un := {x : x ∈ Ω, |v(x)| > n}. We have that k1Kn ◦ vkrr = Un |v|r dκ. The fact that
+R
+v is measurable implies that limn→∞ κ(Un ) = 0 and limn→∞ Un |v|r dκ = 0.
+
+The following lemma is easy to prove, see e.g. Theorem 22.4 in the lecture notes
+[11].
+
+18
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+Lemma 4.5. Let r ∈ [1, ∞). Let {vi ∈ L∞ (Ω)}i∈I be a system of functions for
+some countable index set I such that for every a, b ∈ I there is c ∈ I with va vb = vc .
+Let A0 be the σ-algebra generated by the functions {vi }i∈I . Suppose that the constant
+1 function on Ω can be approximated by a uniformly bounded family of finite linear
+combinations of {vi }i∈I . Then the Lr -closure of the linear span of {vi ∈ L∞ (Ω)}i∈I
+is Lr (Ω, A0 , κ).
+Now we return to the proof of Lemma 4.2.
+Proof. To prove the first statement of the lemma recall that by the construction of
+the function system we have for every i ∈ N and f1 , f2 ∈ F that vi,f1 f2 = vi,f1 vi,f2
+holds. Therefore, by equation (8), we have that each κi is supported inside the
+closed set
+
+ω : ω ∈ RF ×{0,1} , π(f1 f2 ,0) (ω) = π(f1 ,0) (ω)π(f2 ,0) (ω) .
+This implies that κ is also supported inside this set and thus π(f1 f2 ,0) = π(f1 ,0) π(f2 ,0)
+holds κ-almost everywhere.
+The proof of the second statement is similar to the first one. Again by the construction of the function system we have for every i ∈ N and f ∈ F, l = (p, q) ∈ L that
+vi,l(f ) = l(vi,f ) = hp,q ◦ (vi,f Ai ). This means by the definition of κi and equation
+(8) that κi is supported on the closed set
+
+ω : ω ∈ RF ×{0,1} , π(l(f ),0) (ω) = hp,q (π(f,1) (ω))
+for every i ∈ N. Thus π(l(f ),0) = hp,q ◦ π(f,1) holds κ-almost everywhere.
+For the proof of the third statement, let us use that kAi kp→q ≤ c holds for every
+i ∈ N and hence
+k
+k
+X
+X
+λj vi,aj .
+λj vi,aj Ai ≤ c
+q
+
+j=1
+
+p
+
+j=1
+
+Since the sum on the right-hand side is a function in L∞ (Ωi ) whose values are in
+Pk
+Pk
+the compact interval [−λ, λ] for λ := j=1 |λj |, we have that j=1 λj π(aj ,0) is a
+w
+
+bounded, continuous function on the support of κ. Therefore, using κni → κ and
+equation (8) again (in particular, integrating of the pth power of the absolute values
+with respect to κi ), we obtain that
+lim
+
+i→∞
+
+k
+X
+
+λj vni ,aj
+
+j=1
+
+=
+p
+
+k
+X
+
+λj π(aj ,0)
+
+j=1
+
+.
+p
+
+Pk
+q
+On the other hand,
+j=1 λj π(aj ,1) | is a nonnegative continuous function, thus
+weak convergence in this case implies the following inequality:
+k
+X
+j=1
+
+λj π(aj ,1)
+
+≤ lim sup
+q
+
+i→∞
+
+k
+X
+
+λj vni ,aj Ai
+
+j=1
+
+.
+q
+
+These inequalities together yield the third statement.
+For the fourth statement, let Hr denote the Lr -closure of the linear span of the
+functions {π(f,0) }f ∈F for r ∈ [1, ∞). First we show that π(f,1) ∈ Hq holds for every
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+19
+
+f ∈ F . By the second statement we have that
+2
+
+n
+X
+
+(9)
+
+j=−n2
+
+2
+
+(j/n)hj/n,1/n ◦ π(f,1) =
+
+n
+X
+
+(j/n)π(lj (f ),0) ,
+
+j=−n2
+
+where lj is given by the pair (j/n, 1/n) for −n2 ≤ j ≤ n2 . Since the right-hand side
+of (9) is in Hq , we obtain that the left-hand side is also in Hq . On the other hand,
+we have π(f,1) ∈ Lq (Ω) due to the third statement. Hence by Lemma 4.4 we obtain
+that, as n goes to infinity, the left-hand side of (9) converges to π(f,1) in Lq (Ω) and
+thus π(f,1) ∈ Hq .
+Let A0 be the σ-algebra generated by the functions {π(f,0) }f ∈F . Notice that the
+constant 1 function on Ω can be approximated already in X10 . We have by the first
+statement in this lemma and Lemma 4.5 that Hr = Lr (Ω, A0 , κ) holds for every r ∈
+[1, ∞). As we have shown, we have for every f ∈ F that π(f,1) ∈ Hq = Lq (Ω, A0 , κ)
+and thus all coordinate functions on RF ×{0,1} are measurable in A0 . This shows
+that Hr = Lr (Ω, A0 , κ) = Lr (Ω, A, κ) = Lr (Ω) holds for every r ∈ [1, ∞).
+The last statement of the lemma follows directly from the definition of the functions
+{vi,(t,j) }i∈N,j∈[k] and the definition of κ.
+
+We are ready to define the operator A ∈ Bp,q (Ω). For f ∈ F , let π(f,0) A = π(f,1) .
+This defines a linear operator on the linear span of {π(f,0) }f ∈F , which is bounded
+due to the third statement of Lemma 4.2. Hence it has a unique continuous linear
+extension on its Lp -closure. By the fourth statement of the same lemma we get that
+there is a unique operator A ∈ Bp,q (Ω) with kAkp→q ≤ c such that π(f,0) A = π(f,1)
+holds for every f ∈ F .
+Last part of the proof. The last statement of Lemma 4.2 together with the
+equality π((t,j),0) A = π((t,j),1) imply that for every k ∈ N and t ∈ Xk0 we have
+t ∈ Sk (A). Therefore for every k ∈ N we have that Xk ⊆ Sk∗ (A). Our goal is
+to show that Xk = Sk∗ (A) for every k ∈ N and thus it remains to prove that
+Sk∗ (A) ⊆ Xk .
+k
+Let k ∈ N and let v1 , v2 , . . . , vk ∈ L∞
+[−1,1] (Ω). We need to show that α := DA ({vj }j=1 )
+is in Xk . Let ε > 0 be arbitrary. We have by the fourth statement of Lemma 4.2 that
+for some large enough natural number m there are elements f1 , f2 , . . . , fm ∈ F and
+real numbers {λa,j }a∈[m],j∈[k] such that for every j ∈ [k] we have kwj − vj kp ≤ ε,
+Pm
+where wj := a=1 λa,j π(fa ,0) for j ∈ [k].
+
+Since only vectors with infinity norm at most 1 are considered in the profile, we will
+use a truncating function. Namely, let h̃ : R → R be the continuous function with
+h̃(x) = x for x ∈ [−1, 1], h̃(x) = −1 for x ∈ (−∞, −1] and h̃(x) = 1 for x ∈ [1, ∞).
+Since kvj k∞ ≤ 1 holds for j ∈ [k] we have that |wj (x) − vj (x)| ≥ |h̃ ◦ wj (x) − vj (x)|
+holds almost everywhere and thus by kwj − vj kp ≤ ε we obtain kh̃ ◦ wj − vj kp ≤ ε
+for j ∈ [k]. This also implies by the triangle inequality that
+(10)
+
+kh̃ ◦ wj − wj kp ≤ kh̃ ◦ wj − vj kp + kvj − wj kp ≤ 2ε
+
+holds for j ∈ [k].
+
+20
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+For i ∈ N and j ∈ [k] let zi,j :=
+definition of κ we have that
+
+Pm
+
+k
+a=1 λa,j vi,fa . Let βi := DAi ({zi,j }j=1 ). By the
+
+β := lim βni = DA ({wj }kj=1 )
+i→∞
+
+∞
+
+holds in dLP . Since wj ∈ L (Ω), we have kvj A − wj Ak1 ≤ kvj A − wj Akq ≤
+ckvj − wj kp ≤ cε. We get from Lemma 13.2 that dLP (α, β) ≤ (2k)3/4 (c0 ε)1/2 , where
+c0 := max(c, 1).
+Let
+βi0 := DAi {h̃ ◦ zi,j }kj=1 ).
+Notice that the functions h̃ ◦ zi,j − zi,j are uniformly bounded and their distribution
+converges weakly to the distribution of h̃ ◦ wj − wj . Hence if i is large enough, then
+by (10) we have that kh̃ ◦ zi,j − zi,j kp ≤ 3ε holds for j ∈ [k] and thus dLP (βi0 , βi ) ≤
+(2k)3/4 (3c0 ε)1/2 by Lemma 13.2.
+∞
+0
+0
+Let {n0i }∞
+i=1 be a subsequence of {ni }i=1 such that β := limi→∞ βn0 exists. Observe
+i
+
+that β 0 ∈ Xk and dLP (β 0 , β) ≤ (2k)3/4 (3c0 ε)1/2 . We obtain that
+dLP (Xk , α) ≤ dLP (β 0 , α) ≤ dLP (β 0 , β) + dLP (β, α) ≤ 3(2k)3/4 (c0 ε)1/2 .
+This holds for every ε > 0 and thus α ∈ Xk .
+
+
+
+5. General graph limits
+There are various ways of representing graphs by operators and in particular by
+P -operators. Depending on the chosen representation we get a corresponding limit
+notion for graphs. In this section we list four natural operator representations of
+graphs and investigate the corresponding graph limit notions. Let G be a finite
+graph on the vertex set V (G) = [n] with edge set E(G).
+Adjacency operator convergence: Recall that µ[n] denotes the uniform distribution on [n]. We denote by A(G) ∈ B([n], µ[n] ) the P -operator defined by
+X
+(vA(G))(i) :=
+v(j)
+(j,i)∈E(G)
+
+for i ∈ [n]. We have that d ≥ kA(G)k2→2 ≥ d1/2 , where d is the maximal degree
+∞
+in G. We can say that a graph sequence {Gi }∞
+i=1 is convergent if {A(Gi )}i=1 is
+an action convergent sequence of P -operators. We obtain compactness for graphs
+with uniformly bounded degree. Quite surprisingly (and non-trivially) it turns out
+that this convergence notion is equivalent to local-global convergence, which is a
+refinement of Benjamini–Schramm convergence (see [4, 16]). However, for graphs
+with non-bounded degrees compactness is not guaranteed. This can be solved by
+scaling the operators A(G) by some number that depends on G. For example we
+have that kA(G)/|V (G)|k2→2 ≤ 1 holds for every graph G. Again quite surprisingly it turns out that convergence of A(Gi )/|V (Gi )| is equivalent to dense graph
+convergence. (For a definition of dense graph convergence see [21].) This motivates
+us to introduce scaling functions that map graphs to positive real numbers. Let G
+denote the set of isomorphism classes of finite graphs.
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+21
+
+Definition 5.1. Let f : G → R+ be a function. We say that a graph sequence
+{Gi }∞
+i=1 is adjacency operator convergent (or just convergent) with scaling f if the
+sequence {A(Gi )/f (Gi )}∞
+i=1 is an action convergent sequence of P -operators.
+Recall that a graphop is a self-adjoint, positivity-preserving P -operator. The word
+graphop is a mixture of the words graph and operator. Note that both graphons
+and graphings used in graph limit theory are graphops. Theorem 2.14 implies the
+following.
+Theorem 5.2. Let {Gi }∞
+i=1 be an adjacency operator convergent sequence of graphs
+with scaling f : G → R+ . Assume that there exist p ∈ [1, ∞), q ∈ (1, ∞) and c ∈ R+
+such that kGi /f (Gi )kp→q ≤ c holds for every i ∈ N. Then there is a graphop A
+such that limi→∞ A(G)/f (Gi ) = A holds. We say that A is the adjacency operator
+limit of ({Gi }∞
+i=1 , f ).
+A natural scaling is fp,q (G) := kA(G)kp→q defined for non-empty graphs G (fp,q
+can be defined as 1 on the empty graph), where p ∈ [1, ∞), q ∈ (1, ∞]. Let us call it
+norm scaling. With this scaling every graph sequence has a convergent subsequence,
+hence we have sequential compactness for arbitrary graph sequences. Norm scaling
+leads to a general convergence notion that generalizes local-global convergence and
+recovers dense graph limits up to a constant multiplicative factor in the limit object.
+The norm scaling is very convenient to use for general graph sequences where no
+other natural normalization is given.
+Random walk convergence of graphs: Let νG denote the stationary measure
+of the random walk on G. It is well known that νG is the probability measure on
+[n] with νG (i) = di /(2|E(G)|), where di is the degree of the vertex i for i ∈ [n].
+We denote by M (G) ∈ B2,2 ([n], νG ) the P -operator defined by equation (1). The
+operator M (G) is known as the Markov kernel corresponding to the random walk
+on G. We have that M (G) is a Markov graphop. Consequently, by Lemma 3.5 we
+have that kM (G)k2→2 = 1. (If G has no edges, then M (G) is not defined.)
+Definition 5.3. A graph sequence of non-empty graphs {Gi } is called random walk
+convergent if {M (Gi )}∞
+i=1 is a convergent sequence of P -operators.
+The following theorem is a direct consequence of Theorem 3.6.
+Theorem 5.4. Every graph sequence {Gi }∞
+i=1 has a random walk convergent subsequence. If {Gi }∞
+i=1 is random walk convergent, then there is a Markov graphop A
+such that limi→∞ M (Gi ) = A. We say that A is the random walk limit of {Gi }∞
+i=1 .
+Note that for regular graphs random walk convergence is equivalent to adjacency
+operator convergence with scaling by kGk2→2 . However, if there is a small but
+non-zero number of very high degree points in G and many low degree points, then
+adjacency operator convergence may trivialize. Examples for this are the star graphs
+or the 2-subdivisions of complete graphs. In these cases random walk convergence
+turns out to be more natural and leads to interesting and non-trivial limit objects
+(see Section 12).
+Extended random walk convergence: A Markov pair is a pair of a Markov
+graphop A ∈ B(Ω) and a measurable function f on Ω. As we explained in the
+
+22
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+introduction, a sequence of Markov pairs {(Ai , fi )}∞
+i=1 is convergent if the extended
+k-profiles formed by distributions of the form
+DAi ,f ({vj }kj=1 ) := D({vj }kj=1 , {vj Ai }kj=1 , f )
+converge in dH for every k ∈ N. It can be proved with a slight extension of the
+proof of Theorem 2.14 (details will be worked out elsewhere) that a convergent
+sequence of Markov pairs has a limit which is also a Markov pair. There are two
+different uses of Markov pairs. The first one is the following. In spite of the fact that
+the Markov kernel of a finite graph M (G) determines the sequence of the non-zero
+degrees (even with multiplicities), this information may be lost in the limit. Even
+if it is preserved in some way (examples for this are sequences of bounded degree
+graphs), degrees can not be read off in the usual way from the limit object which
+is a Markov graphop. The idea is that we can store the information on the degrees
+in a normalized version d∗ of the degree function d.
+Remark 5.5. (Representing graphops by Markov pairs) In general, every
+graphop A ∈ B(Ω, A, µ) can be naturally represented by a Markov pair in the following way. Let ν be the representing measure of A given by Theorem 6.3 and let
+ν 0 be the marginal measure of ν on (Ω, A). Let M (A) denote the Markov graphop
+on (Ω, A, ν 0 ) determined by the measure ν using again Theorem 6.3. Note that the
+action of M (A) is given by
+(vM (A))(x) = (vA)(x)/(1Ω A)(x).
+The representation of A is given by the pair (M (A), 1Ω A).
+Another interesting use of Markov pairs is that we can use them to represent generalized graphons (related to graphexes [6, 17]) that are symmetric non-negative
+measurable functions of the form W : R+ × R+ → [0, 1] with kW k1 <R∞. Let ν
+W dλ2 .
+denote the probability measure on R+ × R+ defined by ν(S) = kW k−1
+1
+S
+0
++
+Let ν be the marginal distribution of ν on R . Let M denote the Markov
+graphop
+R
+on (R+ , ν 0 ) determined by Theorem 6.3. For x ∈ R+ let f (x) := R+ W (x, y) dλ.
+We can represent the generalized graphon W by the Markov pair (M, f ).
+Laplace operator convergence: Using the above notations we denote by L(G) ∈
+B2 ([n], µ[n] ) the P -operator defined by
+X
+(vL(G))(i) := d(i)v(i) −
+v(j).
+(j,i)∈E(G)
+
+We have that L(G) is a positive self-adjoint operator. Note that in contrast with
+A(G) and M (G), the operator L(G) is typically not positivity-preserving. On the
+other hand we gain positiveness. Similarly to the previous definitions we say that
+a graph sequence {Gi }∞
+i=1 is Laplace operator convergent (or just convergent) with
+scaling f if the sequence {L(Gi )/f (Gi )}∞
+i=1 has uniformly bounded operator norm
+and is a convergent sequence of P -operators. Limit objects are positive, self-adjoint
+P -operators.
+Degree weighted operator convergence: Finally we mention one more interesting P -operator related to G. Similarly to M (G) we use the stationary distribution
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+23
+
+of the random walk. Let F (G) ∈ B([n], νG ) be defined by
+X
+(vF (G))(i) :=
+v(j)d(j).
+(j,i)∈E(G)
+
+Again we have that F (G) is a graphop. Indeed, positivity-preserving property is
+clear, and self-adjointness can be verified by a simple calculation. Limits of appropriately normalized versions of F (Gi ) are graphops. It may be interesting to
+mention that this concept resonates with the so-called PageRank algorithm [26] in
+the sense that the operator puts larger weight on the neighbors with higher degree
+when calculating the image of a vector at a given vertex.
+6. Measure representation of graphops
+Let A ∈ B(Ω, A, µ) be a graphop. In this section we construct a measure ν on
+Ω × Ω that represents the operator A. This means that the operator A can be
+reconstructed from the measure ν in a natural way. Intuitively, if we think of A as
+an infinite graph-like object, then ν shows where we can find the edges in Ω × Ω.
+Note that both graphons and graphings are given in terms of such measures rather
+than in the form of operators. More precisely, graphons are given by a measurable
+function which is the Radon–Nykodim derivative of a measure on [0, 1] × [0, 1].
+Our goal in this chapter is to bring closer the operator language and the existing
+representations of graph limits.
+Assume that (Ω, A) is a standard Borel space. Let R denote the set of product sets
+of the form S × T ⊆ Ω × Ω where S, T ∈ A. We have that R is a so-called semiring.
+We define the function ν on R such that ν(S × T ) := (1S , 1T )A holds for S, T ∈ A
+(recall equation (6)).
+Lemma 6.1. The function ν has the following properties.
+(1) ν(S × T ) ≥ 0 for every S, T ∈ A.
+n
+(2) If S × T is the disjoint
+Pn union of the finitely many product sets {Si × Ti }i=1 ,
+then ν(S × T ) = i=1 ν(Si × Ti ).
+
+(3) For every ε > 0 there is δ = δ(ε) > 0 such that ν(S × T ) ≤ ε whenever the
+minimum of µ(S) and µ(T ) is at most δ.
+Proof. By the positivity-preserving property of A and the bilinearity of (., .)A we
+have that ν satisfies the first two properties. To show the last property observe
+that by the self-adjoint property A we have that ν(S × T ) = ν(T × S) and so the
+statement is equivalent to showing the existence of δ > 0 such that ν(S × T ) ≤ ε
+whenever ν(T ) ≤ δ. We have by the first two properties that
+Z
+ν(S × T ) ≤ ν(S × T ) + ν((Ω \ S) × T ) = ν(Ω × T ) =
+f dµ,
+T
+R
+where f := 1Ω A. Now, since f ≥ 0 and f dµ < ∞, the statement of the lemma
+follows from the well know absolute continuity property of integration.
+
+The proof of the following lemma follows a similar scheme as [10, Lemma A.10] or
+[13, Theorem 454D].
+
+24
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+Lemma 6.2. The function ν is a premeasure on S and it has a unique extension
+to a Borel measure on (Ω × Ω, A ⊗ A), denoted also by ν.
+Proof. First we claim that if ε > 0 and δ > 0 satisfy the third property in lemma
+6.1 and µ(S), µ(T ) ≥ 1 − δ, then
+(11)
+
+ν(S × T ) ≥ ν(Ω × Ω) − 2ε.
+
+Indeed, by Lemma 6.1 we have
+ν(S × T ) = ν(Ω × Ω) − ν((Ω \ S) × T ) − ν(S × (Ω \ T )) + ν((Ω \ S) × (Ω \ T )) ≥
+≥ ν(Ω × Ω) − ν((Ω \ S) × Ω) − ν(Ω × (Ω \ T )) ≥ ν(Ω × Ω) − 2ε.
+To prove that ν is a premeasure the only non-trivial part is to show thatPif R ∈ R is
+∞
+the pairwise disjoint union of sets {Ri = Si × Ti }∞
+i=1 in R, then ν(R) ≤
+i=1 ν(Ri ).
+Note that it suffices to prove it for R = Ω × Ω, since given any other product set
+R we can obtain Ω × Ω as the disjoint union of R and a finite number of other
+product sets, in such a way that the claim for Ω × Ω implies the claim for R. Now
+since Ω is standard, there exists a topology τ on Ω generating A such that 1) we
+can approximate every set in A by a compact set with arbitrary precision measured
+in µ; 2) both Si and Ti are open for every i ∈ N. Let ε > 0 arbitrary and let
+K1 , K2 ∈ A be τ - compact sets such that µ(K1 ), µ(K2 ) ≥ 1 − δ(ε). We have by
+equation (11) that ν(K1 × K2 ) ≥ ν(Ω × Ω) − 2ε. Since every Si and Ti is open, we
+have that {Si × Ti }∞
+i=1 is an open cover of the compact set K1 × K2 , and so there
+is a finite sub-cover. Applying the second property of ν to this finite sub-cover we
+obtain that
+∞
+X
+ν(Ω × Ω) ≤ ν(K1 × K2 ) + 2ε ≤ 2ε +
+ν(Ri ).
+i=1
+
+Since this is true for every ε > 0, we obtain that ν is a premeasure. The Carathéodory
+extension theorem implies that there is a unique extension of ν to A ⊗ A.
+
+Theorem 6.3. (Measure representation of graphops) If A ∈ B(Ω, A, µ) is a
+graphop, then there is a unique finite measure ν on (Ω×Ω, A⊗A) with the following
+properties.
+(1) ν is symmetric, i.e. ν(S × T ) = ν(T × S) holds for every S, T ∈ A.
+(2) The marginal distribution of ν on Ω is absolutely continuous with respect
+to µ.
+R
+(3) (f, g)A = (x,y)∈Ω2 f (x)g(y) dν holds for every f, g ∈ L∞ (Ω).
+Conversely, if ν is a finite measure on (Ω × Ω, A ⊗ A) satisfying the first two
+properties, then there is a unique graphop A such that the third property is satisfied.
+Proof. The existence and uniqueness of ν follows from Lemma 6.2. For the converse
+statement let f ∈ L∞ (Ω) be an arbitrary
+function. Let Ff denote the L∞ (Ω) →
+R
+R functional defined by Ff (g) := (x,y)∈Ω2 f (x)g(y) dν. We have that |Ff (g)| ≤
+2
+1
+kf k∞ kgk∞ ν(Ω
+R ), and thus by duality there is a unique function m(f ) ∈ L (Ω) such
+that Ff (g) = m(f )(x)g(x) dµ. It is clear from the definition that A : f 7→ m(f ) is
+a self-adjoint, positivity-preserving linear operator with kAk∞→1 = ν(Ω2 ) satisfying
+the third property.
+
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+25
+
+Remark 6.4. (Fiber measures) A natural way of reconstructing A from the
+representing measure ν goes by disintegrating the measure ν. By using the disintegration theorem one obtains a family of measures {νx }x∈Ω on (Ω, A) (called fiber
+measures) such that
+Z
+(f A)(x) =
+
+f dνx .
+Ω
+
+In general it is very convenient to describe a graphop in terms of fiber measures.
+This is illustrated on Figure 4.
+Remark 6.5. (Markov graphops as couplings) Markov graphops are special
+graphops such that 1Ω A = 1Ω . It follows that the marginal distribution of ν on
+Ω is equal to µ. This means that Markov graphops are completely specified by the
+data (Ω, A, ν), where ν is a symmetric probability measure on (Ω × Ω, A ⊗ A). Such
+objects are symmetric self-couplings of probability spaces.
+7. Quotient convergence and partitions
+In the first part of this section we relate P -operator convergence to the so-called
+quotient convergence, which was studied in different forms by different authors [8, 9,
+19]. The version that we generalize to P -operators was defined in [19]. In the second
+part of the chapter we describe a variant of action convergence that turns out to
+be equivalent to the original version for uniformly (p, q)-bounded sequences.
+Definition 7.1. A function partition of (Ω, A, µ) is a set {vi }ki=1 of 0 − 1 valued
+Pk
+measurable functions on Ω such that i=1 vi = 1Ω . A fractional function partition
+Pk
+is a set {vi }ki=1 of functions in L∞
+i=1 vi = 1Ω . We say that
+[0,1] (Ω) such that
+k
+{vi }i=1 is balanced if kvi k1 = 1/k holds for every i ∈ [k].
+Definition 7.2. (Quotients of P -operators) Let k ∈ N and A ∈ B(Ω). A
+balanced fractional k × k quotient of A is a matrix M ∈ Rk×k such that there is a
+balanced fractional function partition {vi }ki=1 of Ω with Mi,j = (vi , vj )A for every
+i, j ∈ [k]. Let Qk (A) denote the set of all balanced fractional quotients of A.
+Note that by linearity, the entry sum of any matrix M ∈ Qk (A) is equal
+P to (1Ω , 1Ω )A
+for every k ∈ N. For two matrices A, B ∈ R[k]×[k] let d1 (A, B) := i,j |Ai,j − Bi,j |
+denote the entry-wise l1 distance. For two subsets S1 , S2 ⊆ R[k]×[k] let d1,H denote
+the corresponding Hausdorff distance.
+Definition 7.3. (Quotient convergence and metric) A sequence of P -operators
+{Ai }∞
+i=1 is quotient convergent if for every k we have that Qk (Ai ) is convergent in
+d1,H .
+The following proposition says that P -operator convergence is stronger than quotient convergence if the sequence has uniformly bounded k.kp→q norm for some
+p ∈ [1, ∞), q ∈ (1, ∞].
+Lemma 7.4. Let us fix c ≥ 1 in R+ and numbers p ∈ [1, ∞), q ∈ (1, ∞]. For every
+k ∈ N and ε > 0 there exists δ such that whenever two P -operators A ∈ B(Ω1 ), B ∈
+B(Ω2 ) with kAkp→q , kBkp→q ≤ c satisfy dM (A, B) ≤ δ, then d1,H (Qk (A), Qk (B)) ≤
+ε.
+
+26
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+Proof. Depending on p and q let us choose p0 ∈ (p, ∞) and q 0 ∈ (1, q) with 1/p0 +
+1/q 0 = 1. Let M ∈ Qk (B). We need to show that if A and B are sufficiently close
+in dM , then there is M 0 ∈ Qk (A) with d1 (M, M 0 ) ≤ ε. The other direction (when
+M ∈ Qk (A)) follows by the symmetry of the argument.
+Let v1 , v2 , . . . , vk be a balanced fractional function partition of Ω2 such that the
+corresponding quotient of B is M . We have by the definition of dM that there are
+vectors {wi }ki=1 in L∞
+[−1,1] (Ω1 ) such that
+dLP (DB ({vi }ki=1 )), DA ({wi }ki=1 )) ≤ 2k+1 dM (A, B).
+It is easy to see that depending on k and an arbitrary constant ε2 > 0 if dM (A, B)
+is small enough than there is a balanced fractional function partition {wi0 }ki=1 on
+Ω1 such that kwi − wi0 kp0 ≤ ε2 holds for every i ∈ [k]. For such a function system
+we have for every i, j ∈ [k] that
+|(wi , wj )A − (wi0 , wj0 )A | ≤ |(wi , wj )A − (wi0 , wj )A | + |(wi0 , wj )A − (wi0 , wj0 )A | =
+= |(wi − wi0 , wj )A | + |(wi0 , wj − wj0 )A | ≤ 2ε2 c,
+where the last inequality is by (7). Let M 0 ∈ Qk (A) be the quotient matrix of A
+00
+corresponding to {wi0 }ki=1 and let M 00 be defined by Mi,j
+:= (wi , wj )A . We have
+0
+00
+2
+that d1 (M , M ) ≤ 2ε2 k c ≤ ε/2 for appropriate ε2 . It remains to show that
+|(vi , vj )A − (wi , wj )A | is small for every i, j ∈ [k] if dM (A, B) is sufficiently small.
+This follows from Lemma 13.4.
+
+The following proposition is a direct consequence of the previous lemma.
+Proposition 7.5. (Action convergence ⇒ quotient convergence) Let p ∈
+[1, ∞), q ∈ (1, ∞] and let {Ai }∞
+i=1 be an action convergent sequence of P -operators
+with uniformly bounded k.kp→q norms. Then {Ai }∞
+i=1 is quotient convergent.
+In the rest of this section we will formulate a version of action convergence. It is
+clear that {vi }ki=1 is a function partition if and only if there is measurable partition
+P = {P1 , P2 , . . . , Pk } of Ω such that vi = 1Pi . Let Mk denote the set of probability
+measures µ on R2k such that µ is concentrated on {ei }ki=1 × Rk , where ei ∈ Rk is
+the vector with 1 at the i-th coordinate and 0 everywhere else. Let A ∈ B(Ω, B, µ).
+We have that {vi }ki=1 is a function partition if and only DA ({vi }ki=1 ) ∈ Mk . Let
+Sk0 (A) := Sk (A) ∩ Mk . In other words Sk0 (A) is the set of all probability measures DA ({vi }ki=1 ), where {vi }∞
+i=1 is a function partition. The next theorem gives
+a useful equivalent formulation of P -operator convergence for uniformly bounded
+operators.
+Theorem 7.6. Let p ∈ [1, ∞), q ∈ (1, ∞] and let {Ai }∞
+i=1 be a uniformly (p, q)bounded sequence of P -operators. Then {Ai }∞
+i=1 is convergent if and only if for
+every k the sequence Sk0 (Ai ) is convergent.
+The proof of this theorem is a direct consequence of the following two lemmas.
+Lemma 7.7. Let p ∈ [1, ∞), q ∈ (1, ∞], c ∈ R+ be fixed. Then for each ε > 0, k ∈ N
+there is δ such that if A is a P -operator with kAkp→q ≤ c and µ ∈ Sk (A) satisfies
+dLP (µ, Mk ) ≤ δ, then there is µ2 ∈ Sk0 (A) with dLP (x, y) ≤ ε. Furthermore, if for
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+27
+
+two P -operators A, B with kAkp→q , kBkp→q ≤ c we have dH (Sk (A), Sk (B)) ≤ δ/2,
+then
+dH (Sk0 (A), Sk0 (B)) ≤ ε + 2dH (Sk (A), Sk (B)).
+Proof. Assume that A ∈ B(Ω). Let µ = DA ({vi }ki=1 ). If ε2 > 0 and δ is small
+enough, then we have that there are 0 − 1-valued functions w1 , w2 , . . . , wk in Lp (Ω)
+Pk
+such that i=1 wi = 1Ω and maxi∈[k] kvi − wi kp ≤ ε2 . It is clear that if ε2 is small
+enough, then µ2 := DA ({wi }ki=1 ) is in Sk0 (A) and dLP (µ, µ2 ) ≤ ε.
+To see the second claim let µ ∈ Sk0 (A). Then there is some µ2 ∈ Sk (B) with
+dLP (µ, µ2 ) ≤ 2dH (Sk (A), Sk (B)) ≤ δ. It follows from the first part of the statement
+that there is µ3 ∈ Sk0 (B) with dLP (µ2 , µ3 ) ≤ ε. We get that dLP (µ, µ3 ) ≤ ε +
+2dH (Sk (A), Sk (B)).
+
+Lemma 7.8. Let p ∈ [1, ∞), q ∈ (1, ∞], c ∈ R+ be fixed. For every ε > 0, k ∈ N
+there is δ > 0 and k 0 ∈ N such that if A ∈ B(Ω1 ) and B ∈ B(Ω2 ) are P -operators
+with kAkp→q , kBkp→q ≤ c and dH (Sk0 0 (A), Sk0 0 (B)) ≤ δ, then dH (Sk (A), Sk (B)) ≤
+ε.
+Proof. Let µ ∈ Sk (A) be given by µ = DA ({vi }ki=1 ), where vi ∈ L∞
+[−1,1] (Ω1 ) holds
+for i ∈ [k]. For an arbitrary natural number m and v ∈ Lp (Ω) let [v]m denote the
+m−1 Z-discretization of v obtained by composing v with the function x 7→ dxme/m.
+It is clear that kv − [v]m kp ≤ m−1 . For every i ∈ [k] the level sets of [vi ]m partition
+Ω1 into at most 2m measurable sets. By taking common refinement of the level sets
+k
+we obtain that there is a partition {Pi }N
+i=1 of Ω1 into N ≤ (2m) measurable sets
+such that each [vi ]m is measurable in this partition. This means that there exist
+real numbers
+P {ui,j }i∈[k],j∈[N ] between −1 and 1 such that for every i ∈ [k] we have
+[vi ]m = j∈[N ] ui,j 1Pj .
+Let ε0 > 0 be some sufficiently small number. If δ is small enough, we have that
+N
+there is a partition {Qi }N
+Ω2 such that DA ({1Pi }N
+i=1 of P
+i=1 ) and DB ({1Qi }i=1 ) are at
+0
+0
+most ε far in dLP . Let wi := j∈[N ] ui,j 1Qj . It is clear that if ε is small enough,
+then κ := DB ({wi }ki=1 ) is arbitrarily close to DB ({vi }ki=1 ). We obtain that if m is
+big enough, and ε0 is small enough then κ ∈ Sk (B) is at most ε far from µ. All the
+estimates in the proof depend only on c, ε, k and p, q.
+
+8. Dense graph limits and graphons
+In this chapter we explain how the so-called dense graph limit theory fits into
+our general limit theory. Let us consider the probability space ([0, 1], L, λ), where
+λ is the Lebesgue measure on the Lebesgue σ-algebra L. Special P -operators on
+L2 ([0, 1]) – called graphons – play a crucial role in dense graph limits. A graphon is
+a two variable measurable function W : [0, 1]2 → [0, 1] with the symmetry property
+that W (x, y) = W (y, x) holds for every x, y ∈ [0, 1]. Graphons act on the Hilbert
+space L2 ([0, 1]) by
+Z
+(f W )(x) :=
+
+f (y)W (y, x) dλ,
+y
+
+28
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+where f ∈ L2 ([0, 1]). It is easy to see that kW k2→2 ≤ 1 and thus graphons are
+P -operators. It is also clear that graphons are positivity-preserving and self-adjoint
+operators and hence they are also graphops. Let W denote the space of graphons.
+For U, W ∈ W we say that U ∼ W (U is isomorphic to W ) if δ (U, W ) = 0. Let
+W̃ := W/ ∼ be the set of equivalence classes. The next theorem from [21] is a
+fundamental result in graph limit theory.
+Theorem 8.1. [Lovász–Szegedy, [21]] The metric space (W̃, δ ) is compact.
+The space (W̃, δ ) is basically the graph limit space. Every finite graph G =
+(V (G), E(G)) with V (G) = [n] is represented in W̃ by the function WG with
+WG (x, y) := 1 if (dxne, dyne) ∈ E(G) and WG (x, y) := 0 otherwise. Graph convergence in dense graph limit theory is equivalent to the convergence of the representing functions WG in (W̃, δ ). Our next theorem shows that this limit theory is
+embedded into our more general limit framework.
+Theorem 8.2. The two pseudometrics δ and dM are equivalent on W.
+Proof. By Lemma 2.20 it remains to show that for every ε > 0 there is δ > 0
+such that if dM (U, W ) ≤ δ, then δ (U, W ) ≤ ε. By contradiction, let us assume
+∞
+that there exist ε > 0 and two sequence of graphons {Ui }∞
+i=1 and {Wi }i=1 such
+that δ (Ui , Wi ) > ε for every i ∈ N and limi→∞ dM (Ui , Wi ) = 0. By choosing an
+appropriate subsequence we can assume by Theorem 8.1 that limi→∞ Ui = U and
+limi→∞ Wi = W holds where the convergence is in δ . We obtain that δ (U, W ) ≥
+ε. On the other hand by the triangle inequality and Lemma 2.20 we have that
+dM (U, W ) ≤ dM (U, Ui ) + dM (Ui , Wi ) + dM (Wi , W )
+≤ dM (Ui , Wi ) + 12δ (U, Ui )1/2 + 12δ (W, Wi )1/2
+and thus by taking limi→∞ we get that dM (U, W ) = 0. We have by Proposition
+7.5 that d1,H (Qk (U ), Qk (W )) = 0 holds for every k ∈ N. It is well known in graph
+limit theory (see e.g. [8]) that such quotient equivalence implies δ (U, W ) = 0. 
+The next lemma is rather technical and we skip the proof.
+Lemma 8.3. For every ε > 0 there exists a number n such that if G is a finite
+graph with |V (G)| ≥ n, then dM (A(G)/|V (G)|, WG ) ≤ ε.
+Together with Theorem 8.2 it implies the following.
+Proposition 8.4. If {Gi }∞
+i=1 is a growing sequence of finite graphs, then the action
+convergence of {A(Gi )/|V (Gi )|}∞
+i=1 is equivalent to dense graph convergence.
+9. Benjamini–Schramm and local-global limits
+Benjamini–Schramm and local-global limits are used in the study of bounded degree
+graphs. Let d be a fixed number and let Gd denote the set of isomorphism classes
+of graphs with maximal degree at most d. Informally speaking, a graph sequence
+{Gi }∞
+i=1 in Gd is Benjamini–Schramm convergent if for every fixed r the probability
+distribution of isomorphism classes of neighborhoods of radius r converges when i
+goes to infinity. It is often useful to refine this convergence notion to the local-global
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+29
+
+setting. In this framework we put "colorings" on the vertex sets of Gi in all possible
+ways and look at all possible colored neighborhood statistics. It is not to confuse
+with colored Benjamini–Schramm limits, where we put one coloring on each graph
+Gi . We give the formal definition of local-global limits.
+We summarize the notion of local-global convergence based on [16]. A rooted graph
+is a graph with a distinguished vertex o called root. The radius of a rooted graph
+is the maximal distance from the root over all vertices. A k-coloring of a graph
+G = (V, E) is a function f : V → [k]. Let Gd,k,r denote the set of isomorphism
+classes of k-colored rooted graphs of maximal degree at most d and radius at most
+r. Note that Gd,k,r is a finite set. We denote by P(Gd,k,r ) the set of probability
+distributions on Gd,k,r . We have that P(Gd,k,r ) together with the total variation
+distance dTV is a compact metric space. By abusing the notation we denote by dH
+the Hausdorff distance for subsets in (P(Gd,k,r ), dTV ).
+Let G = (V, E) ∈ Gd and let f : V → [k] be a k-coloring. We denote by τr (G, f )
+the probability distribution on Gd,k,r obtained by putting the root o on a uniformly
+chosen random vertex of G and then taking the colored neighborhood of o of radius
+r. Let Zk,r (G) denote the set of all possible probability distributions τr (G, f ), where
+f runs through all possible k-colorings of G. We have that Zk,r (G) is a subset of
+P(Gd,k,r ).
+Definition 9.1. A graph sequence {Gi }∞
+i=1 is called local-global convergent if for
+every r, k ≥ 1 the sequence Zk,r (Gi ) is convergent in the metric dH .
+It was proved in [16] that limits of local-global convergent graph sequences can
+be described by certain Borel graphs called graphings. We give the formal definition.
+Definition 9.2. (Graphing) Let X be a Polish topological space and let ν be a
+probability measure on the Borel sets in X. A graphing is a graph G on V (G) = X
+with Borel measurable edge set E(G) ⊂ X × X in which all degrees are at most d
+and
+Z
+Z
+(12)
+e(x, B)dν(x) =
+e(x, A)dν(x)
+A
+
+B
+
+for all measurable sets A, B ⊆ X, where e(x, S) is the number of edges from x ∈ X
+to S ⊆ X.
+A k-coloring of a graphing G = (X, E) is a measurable function f : X → [k].
+The probability measure ν allows us to talk about random vertices in G. The
+colored neighborhood of a random vertex in G is a graph in Gd,k,r . The probability
+distribution τr (G, f ), the measure Zk,r (G) and convergence are similarly defined as
+for finite graphs.
+Finite graphs are special graphings, where X is a finite set and ν is the uniform
+distribution. It will be important that graphings are bounded operators on L2 (X, ν).
+The action is given by
+X
+(vG)(x) =
+v(y)
+(y,x)∈E
+
+30
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+for v ∈ L2 (X, ν). We have that kGk2 ≤ d. Note that the integral formula (12) is
+equivalent to the fact that G is a self-adjoint operator. Graphings are also positivitypreserving and hence they are examples for graphops. The next theorem is proved
+in [28].
+Theorem 9.3. A sequence of graphings {Gi }∞
+i=1 is local-global convergent if and
+only if Zk,1 (Gi ) is convergent in dH for every fixed k ≥ 1.
+Our main theorem here says that, restricted to graphings, P -operator convergence
+is the same as local-global convergence. Consequently, P -operator convergence is a
+generalization of graphing convergence.
+Theorem 9.4. A sequence of graphings is local-global convergent if and only if it
+is convergent in the metric dM .
+Proof. We need some preparation. Let Md,k denote the set of vectors v = (v1 , v2 , . . . , v2k )
+Pk
+P2k
+[2k]
+in N0 (where N0 = N ∪ {0}) such that i=1 vi = 1 and i=k+1 vi ≤ d. There
+is a natural bijection α between Md,k and Gd,k,1 given in the following way. For a
+vector v ∈ Md,k let q(v) denote the unique coordinate i ∈ [k] with vi = 1 and let
+P2k
+s(v) := i=k+1 vi . We denote by α(v) the colored star in which the color of the
+root is q(v), the root has s(v) neighbors, and for the neighbors of o the color i ∈ [k]
+is used vi+k times. It is clear that the isomorphism type α(v) is determined by this
+information and each isomorphism type in Gd,k,1 is obtained this way. Consequently
+α is a bijection. We denote by α̂ the bijection between the sets of probability measures P(Md,k ) and P(Gd,k,1 ) induced by α using the formula α̂(µ)(T ) := µ(α−1 (T )).
+It is clear that α̂ is continuous with respect to the given metrization on P(Md,k )
+and P(Gd,k,1 ).
+Observe that if G is a graphing (of maximal degree d), then Sk0 (G) = Sk (G) ∩
+P(Md,k ). Now we show that α̂(Sk0 (G)) = Zk,1 (G). To see this, notice that colorings
+f : X → [k] are in a one-to-one correspondence with systems of 0 − 1-valued funcPk
+tions {vi }ki=1 with i=1 vi = 1X , called function partitions. The correspondence is
+given by vi = 1f −1 (i) . It is clear that if {vi }∞
+i=1 is a function partition, then
+α̂(DG ({vi }ki=1 )) = τ1 (G, f ).
+We obtain that α̂(Sk0 (G)) = α̂(Sk (G) ∩ P(Md,k )) = Zk,1 (G). Now the continuity of
+α̂ and Theorem 7.6 finish the proof.
+
+10. Generalizations
+Action convergence is based on a very general principle. We do not exploit the
+generality of it in this paper, but as illustration we describe a few useful generalizations.
+Complex spaces. The theory developed in this paper can be generalized to operators acting on complex number valued function spaces. Most of the definitions
+are the same and the proofs of the theorems require some minor changes. Note also
+that if a P -operator A over C has the special property that it takes real valued
+functions to real valued functions, then its k-profile over C-valued functions can be
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+31
+
+reconstructed from its 2k-profile over R by decomposing functions according to real
+and complex part.
+Simultaneous convergence. We have mentioned in the introduction that it is
+sometimes useful to introduce simultaneous convergence of pairs (A, f ), where A ∈
+B(Ω) is a P -operator and f is measurable on Ω. Based on the same principle
+one can further generalize this to a simultaneous convergence notion of several P operators and several functions. An especially interesting case is when matrices and
+their adjoint matrices are considered simultaneously. In this case Sk (A) is defined
+by
+D(v1 , v2 , . . . , vk , v1 A, v2 A, . . . , vk A, v1 A∗ , v2 A∗ , . . . , vk A∗ ).
+It is not clear whether this leads to a finer convergence notion of matrices or
+not.
+Non-linear operators. In the definition of the metric dM we never use the linearity of the operators. The definition of k-profile and distance dM (A, B) is meaningful
+for arbitrary functions A : L∞ (Ω1 ) → L1 (Ω1 ) and B : L∞ (Ω2 ) → L1 (Ω2 ). (Even
+multivalued functions can be allowed.) Interesting examples for non-linear operators are finite matrices composed pointwise with non-linear functions. For example:
+(x, y, z)A := ((x+y)2 , sin(y +z), z −x). Such functions arise in deep learning.
+
+11. Random matrices
+In this section we investigate the convergence of certain dense random matrices with
+respect to the metric dM . We consider a sequence of normalized random matrices
+(Hn ) with independent zero-mean ±n−1/2 -valued random variables as entries. This
+is the same as if we choose an element uniformly at random from the the set of all
+n × n matrices with ±n−1/2 entries. This set will be denoted by Mn . Our goal is
+to prove the following.
+Proposition 11.1. For every infinite S 0 ⊆ N there exists a P -operator A and an
+infinite set S ⊆ S 0 such that the sequence (Hj )j∈S converges to A with respect to
+dM with probability 1.
+We start with a statement on the concentration of measure.
+Lemma 11.2. For every n ∈ N, let Mn ∈ Mn be fixed, and Hn be a uniformly
+chosen element of Mn . Then for every η > 0, we have
+
+lim P dM (Mn , Hn ) − E(dM (Mn , Hn )) > η = 0.
+n→∞
+
+Proof. For 1 ≤ j ≤ n, let Fj be the σ-algebra generated by the first j columns of
+Hn . We apply the well-known concentration inequalities for the martingale Yj =
+E dM (Mn , Hn ) Fj . Notice that if matrices A, B ∈ {−1, 1}n×n differ only in a
+single column, then the distance of DA (v1 , . . . , vk ) and DB (v1 , . . . , vk ) is at most
+1/n in the Lévy–Prokhorov metric (for arbitrary k and vectors vj ), because the two
+measures coincide everywhere except on an event of probability 1/n. This implies
+
+32
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+dM (A, B) ≤ 1/n. Hence |Yj − Yj−1 | ≤ 1/n holds for every j = 1, 2, . . . , n. Therefore
+by Azuma’s inequality we have that
+
+
+
+η2
+P dM (Mn , Hn )−E(dM (Mn , Hn )) > η ≤ 2 exp −
+= 2 exp(−η 2 n/2).
+2n · (1/n)2
+
+Lemma 11.3. There exists a sequence of matrices (Mj )j∈N such that the following
+conditions hold: (i) Mj ∈ Mj ∩ X2,2,3 for every j ∈ N; (ii) dM (Mj , Hj ) → 0 in
+probability as j → ∞, where Hj is a uniformly chosen random element of Mj .
+Proof. Given ε > 0, first we find a sequence of matrices around which random
+matrices are concentrated with error ε. The metric space (X2,2,3 , dM ) is compact
+by Theorem 2.16, hence it contains a finite ε/8-net. We denote the size of this net
+by F (ε). Consider balls of radius ε/8 around the elements of this net. Let Nε,n be
+the set of matrices satisfying the following property: in one of these balls, it is the
+closest element of Mn to the center (in case of equality, choose one arbitrarily).
+Then Nε,n is an ε/4-net in Mn ∩ X2,2,3 , and its size is at most F (ε), as we have
+0
+∈ Nε,n
+chosen at most one element from each ball. It follows that there exists Mε,n
+such that
+ 1 − P(kHn k2 > 3)
+0
+.
+P dM (Mε,n
+, Hn ) ≤ ε/4 ≥
+F (ε)
+Since the operator norm of our random matrix Hn random matrix is concentrated
+around its expectation 2 (see e.g. [15]), the probability P(kHn k2 > 3) tends to 0 as
+n goes to infinity. Therefore for every ε > 0, we have
+0
+lim inf P dM (Mε,n
+, Hn ) ≤ ε/4) > 0.
+n→∞
+
+0
+)n∈N implies that
+This equation together with Lemma 11.2 for η = ε/4 and (Mε,n
+ ε
+0
+E dM (Mε,n
+, Hn ) ≤ .
+2
+
+By combining this with Lemma 11.2 for η = ε/2, we conclude that
+
+0
+lim P dM (Mε,n
+, Hn ) > ε = 0.
+n→∞
+
+The proof can be completed by a standard diagonalization argument. More precisely, we can choose a function n0 (ε) such that
+
+0
+P dM (Mε,n
+, Hn ) > ε < ε holds for every n ≥ n0 (ε).
+0
+Now let k(n) = max{k : n0 (1/k) < n}. Then the sequence Mj = M1/k(j),j
+satisfies
+the conditions of the lemma.
+
+
+Proof of Proposition 11.1. Let (Mj )j∈N be a sequence of matrices satisfying the
+conditions of Lemma 11.3. By this lemma, we can choose an infinite subset S ⊆ S 0
+such that (dM (Mj , Hj ))j∈S tends to 0 with probability 1 as j → ∞, and (Mj )j∈S
+converges to a P -operator A with respect to dM . To guarantee the second condition,
+we can use Lemma 2.11 and Theorem 2.14, because Mj ∈ X2,2,3 for all j. This S
+will be an appropriate subset of S 0 .
+
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+33
+
+12. Examples
+12.1. Hypercubes and uniform towers. The hypercube graph Qn = (V (Qn ), E(Qn ))
+is formed by the vertices and edges of the n-dimensional hypercube. More precisely,
+V (Qn ) = {0, 1}n and two vertices are connected if and only if the representing
+vectors have Hamming distance one, i.e. they differ at exactly one coordinate. The
+graph Qn is n-regular, |V (Qn )| = 2n and |E(Qn )| = 2n−1 n. This means that the
+sequence {Qn }∞
+n=1 is very sparse but not with bounded degrees. Note that Qn is a
+Cayley graph of the group Z2n where {0, 1} is identified with the cyclic group Z2
+of order 2 and the generators are the basis vectors ei , i ∈ [n] with 1 at the i-th
+coordinate and 0 elsewhere.
+Our goal is to show that hypercubes converge to an appropriate Cayley graph of the
+compact group Z2∞ with a carefully chosen topological basis.
+A topological basis is an independent set of vectors in Z2∞ that generates a dense set
+in Z2∞ . (Note that topological independence is not assumed here.) Quite surprisingly
+∞
+the usual topological basis {ei }∞
+i=1 of Z2 is not useful for constructing the limit
+of the hypercubes. The main obstacle is that {ei }∞
+i=1 is a countable set but there
+is no natural uniform distribution on an infinite countable set. Instead we need to
+find a nice enough topological basis with uncountable many elements and a natural
+uniform distribution on this basis.
+Since Qn is regular, we have that adjacency operator convergence is equivalent to
+random walk convergence, so we do not have to choose one of them. The right scaling
+of the sequence is An := A(Qn )/n, where A(Qn ) is the adjacency matrix of Qn . The
+operator An is a Markov graphop, and if {An }∞
+n=1 is convergent, then the limit is
+also a Markov graphop (recall Theorem 3.6). As we stated above, the purpose of this
+part of the paper is to show that they indeed converge and to determine the limit
+object. Some details will be left to the reader regarding the general convegence. We
+will work with the subsequence {Q2n }∞
+i=1 that has especially nice properties based
+on certain uniform mappings between Q2n+1 and Q2n . The general convergence can
+be obtained from approximate versions of these uniform maps.
+
+Figure 5. Two representations of the adjacency matrix of the
+hypercube in dimension 8
+
+34
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+On Figure 5 we show the adjacency matrix of the 8 dimensional hypercube Q8
+using two different orderings of the vertices. Light gray points represent zeros and
+black points represent ones. The first ordering is based on the binary forms of the
+numbers 0, 1, 2, . . . , 255, which is a rather natural way to order {0, 1}8 . On the
+second figure we compose this ordering with a carefully chosen automorphism of
+the group Z28 . Quite surprisingly it turns out that the second figure provides a
+more useful representation when going to the limit. There is a qualitative difference
+between the two types of representations of Q8 . Intuitively, the first pictures would
+converge to some "infinite picture", where each vertical (and horizontal) line has
+countable intersection with the black points. On the other hand the second figure
+fits into a sequence such that, after going to the limit, vertical (and horizontal)
+lines have uncountable intersections with the black points. We will see later that
+this helps in putting a uniform distribution on the limiting picture.
+We will need the following definition.
+Definition 12.1. (Uniform map and uniform tower) Let G1 , G2 be graphs. A
+map f : V (G2 ) → V (G1 ) is (a, b)-uniform if
+(1) f is a graph homomorphism, i.e. (f (v), f (w)) ∈ E(G1 ) holds for every
+(v, w) ∈ E(G2 ).
+(2) |f −1 (v)| = a holds for every v ∈ V (G1 ).
+(3) If v ∈ V (G2 ) and w is any neighbor of f (v), then exactly b neighbors of v
+are mapped to w.
+A uniform tower is a sequence {Gi , fi }∞
+i=1 of finite graphs Gi and maps fi : V (Gi+1 ) →
+V (Gi ) such that fi is (ai , bi )-uniform for i ∈ N.
+Lemma 12.2. Let G1 , G2 be finite graphs and let f : V (G2 ) → V (G1 ) be an
+(a, b)-uniform map for some a, b ∈ N. Then A(G1 ) ≺ A(G2 )/b.
+Proof. The second property of uniformity implies that if v1 , v2 , . . . , vk ∈ RV (G1 ) for
+some k, then
+D(v1 , v2 , . . . , vk ) = D(v1 ◦ f, v2 ◦ f, . . . , vk ◦ f ).
+Furthermore, the first and third property imply that if v ∈ RV (G1 ) , then vA(G1 ) ◦
+f = (v ◦ f )A(G2 )/b. We obtain that
+DA(G1 ) ({vi }ki=1 ) = DA(G2 )/b ({vi ◦ f }ki=1 ),
+and hence Sk (A(G1 )) ⊆ Sk (A(G2 )/b) holds for every k.
+
+
+
+Recall that if {Xi }∞
+fi : Xi+1 → Xi ,
+i=1 is a sequence of finite sets with maps Q
+∞
+then the inverse limit X is the set of elements in (x1 , x2 , . . . ) ∈ i=1 Xi such that
+fi (xi+1 ) = xi holds for every i. Since X is a closed subset of the compact space
+Q
+∞
+i=1 Xi , we have that X is compact with respect to the subspace topology. The
+map πi : X → Xi defined by πi (x1 , x2 , . . . ) := xi is a continuous map. If each fi has
+the property that |fi−1 (v)| = |fi−1 (w)| holds for every v, w ∈ Xi+1 , then there is a
+unique Borel probability measure µ on X such that for every i the push-forward
+measure of µ under πi is uniform on Xi . We call µ the uniform measure on X.
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+35
+
+Definition 12.3. Let {Gi , fi }∞
+i=1 be a uniform tower such that Gi is di -regular for
+i ∈ N. Let V be the inverse limit of {V (Gi ), fi }∞
+i=1 . For every x ∈ V let N (x) ⊆ V
+denote the inverse limit of the set of neighbors of πi (x) and let νx denote the uniform
+measure
+on N (x). Let A be the P -operator in B2,2 (V, µ) defined by (f A)(x) =
+R
+f
+dν
+.
+We say that A is the inverse limit of the tower {Gi , fi }∞
+x
+i=1 .
+V
+Theorem 12.4. (Convergence of uniform towers) Let {Gi , fi }∞
+i=1 be a uniform
+tower such that Gi is di -regular for i ∈ N. Then {A(Gi )/di } is a convergent sequence
+of P -operators and the limit object is the inverse limit of {Gi , fi }∞
+i=1 .
+Proof. Observe that kA(Gi )/di k2 = 1 and if fi is (ai , bi ) uniform, then di+1 = di bi .
+We have by Lemma 12.2 that A(Gi )/di ≺ A(Gi+1 )/di+1 holds for every i ∈ N. It
+follows by compactness that Sk (A(Gi )/di ) converges to ∪∞
+i=1 Sk (A(Gi )/di ) in dH as
+i goes to infinity. Let A ∈ B2,2 (V, µ) be the inverse limit of the tower {Gi , fi }∞
+i=1 .
+By approximating measurable functions in L2 (V, µ) by functions of the form v ◦ πi
+we obtain that Sk∗ (A) is the closure of ∪∞
+
+i=1 Sk (A(Gi )/di ).
+Construction of the limiting hypercube: We finally arrived to the construction which allows us to determine the limit of the sequence {Q2n }∞
+n=1 . The main
+n
+observation is that there are (22 , 2)-uniform maps fn : V (Q2n+1 ) → V (Q2n ). Let
+Tn denote the vertex set of the rooted binary tree of depth n. If n = ∞, then
+T∞ denotes the infinite rooted binary tree. We have that Tn has 2n leaves. If v is
+not a leaf, then we denote by α1 (v) and α2 (v) the two children of v. Recall that
+Z2 denotes the group with two elements. For n ∈ N ∪ {∞} let Gn be the set of
+functions f : Tn → Z2 such that f (v) = f (α1 (v)) + f (α2 (v)). It is clear that Gn
+n
+is an elementary abelian 2-group of order 22 with respect to pointwise addition.
+It follows that Gn is a vector space of dimension 2n over the field with 2 elements.
+The group G∞ is the inverse limit of the groups Gn and it is a compact abelian
+group with Haar measure µ. Let B denote the boundary of T∞ . It is well known
+that B is the Cantor set and every element b ∈ B is uniquely characterized by an
+infinite path started at the root of T∞ . By abusing the notation let us identify b
+with this infinite path. Let gb denote the element in Z2T∞ that takes 1 at the vertices
+of the path b and 0 otherwise. It is clear that gb ∈ G∞ holds for every b ∈ B. Let
+Q := {gb : b ∈ B} and let ν be the probability measure on Q obtained by first
+choosing b uniformly in the Cantor set B and then taking gb . For n ∈ N ∪ {∞}
+and m ≤ n we denote by πn,m : Gn → Gm the group homomorphism obtained by
+restricting a Z2 -labeling of Tn to the subtree Tm . It is easy to see that π∞,n (Q) is
+a basis in the vector space Gn and thus we can represent Q2n as the Cayley graph
+of Gn with generators π∞,n (Q). It is easy to see that the maps
+πn+1,n : V (Q2n+1 ) → V (Q2n )
+2n
+
+are (2 , 2) uniform.
+It follows from Theorem 12.4 that the limit object of the sequence {Q2n }∞
+n=1 is
+basically the Cayley graph of the compact group G∞ ≃ Z2∞ with generators Q and
+with uniform measure on the edges. More precisely, let A denote the P -operator in
+B2,2 (G∞ , µ) defined by
+Z
+(f A)(x) :=
+f (x + z) dν.
+z∈Q
+
+36
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+Then the P -operator A is the limit of the graph sequence {Q2n }.
+
+12.2. Product graphs. The product of two graphs G1 and G2 is the graph on
+V (G1 ) × V (G2 ) such that ((i, j), (k, l)) ∈ E(G1 × G2 ) if and only if (i, k) ∈ E(G1 )
+and (j, l) ∈ E(G2 ). Graph sequences formed by the powers of a given graph are
+good test graphs for limit theories. We have that 2|E(G1 × G2 )| = 4|E(G1 )||E(G2 )|
+and thus E(Gi ) = 2i−1 |E(Gi )|i . It follows that
+β := lim log |E(Gi )|/ log |V (Gi )| = log(2|E(G)|)/ log(|V (G)|).
+i→∞
+
+The number 0 ≤ β ≤ 2 expresses the exponent of the growth rate of the number of
+i
+edges in terms of the number of vertices in {Gi }∞
+i=1 . One can view G as a fractal
+like graph (see Figure 6).
+
+Figure 6. The 3rd power of two different graphs on six vertices
+When G is d-regular, we can use Theorem 12.4 to compute the limit object of
+i+1
+{Gi }∞
+) → V (Gi ) given by
+i=1 . The main observation is that the map πi : V (G
+the projection to the first i coordinates is uniform and thus {Gi , πi }∞
+i=1 is a uniform tower. It is easy to see that the inverse limit is simply given as the infinite
+power G∞ with the uniform distribution on the vertices and on the edges. According to Theorem 12.4 this inverse limit is basically the limit of the normalized
+∞
+P -operator sequence {A(Gi )/di }∞
+i=1 . The corresponding graphop A ∈ B(V (G) ) is
+given by
+(vA)(x) = E(x,y)∈E(G∞ ) v(y),
+where the expected value is calculated according to the product measure on the
+neighbors of x. More precisely, if x = (x1 , x2 , . . . ) ∈ V (G∞ ) is fixed, then the set
+of neighbors of x is the infinite product N (x1 ) × N (x2 ) × . . . . We define νx as the
+product of the uniform measures on N (x1 ) × N (x2 ) × . . . and the expected value
+is according to the measure νx .
+If G is not regular, then the degrees in Gi are very unevenly distributed. In this
+case we can use random walk convergence to get a non-trivial and natural limit
+object, but we skip the details.
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+37
+
+12.3. Star graphs. For every n ≥ 1, let Gn be the star graph on vertex set Ωn =
+{0, 1, . . . , n − 1}, namely, in which vertex 0 is connected to every other
+√ vertex with
+a single edge. √
+Since the operator norm of its adjacency matrix is n, we should
+normalize by n to get a sequence of matrices with bounded operator norm. In
+this case the limit will be constant 0, which does not reflect the structure of the
+graphs. Therefore, instead of the adjacency operator convergence notion, we are
+interested in the random walk convergence of this sequence, as it was defined in
+Section 5.
+Let νn be the stationary measure of the random walk on Gn . This puts weight 1/2 to
+vertex 0, and 1/(2n−2) everywhere else. Then the Markov operator Mn := M (Gn ),
+which acts on L2 (Ωn ), is given as follows:
+(vMn )(0) =
+
+n−1
+1 X
+v(i);
+n − 1 i=1
+
+(j = 1, . . . , n − 1),
+
+(vMn )(j) = v(0)
+
+where v ∈ L2 (Ωn ). Hence the k-profile of Mn consists of the following probability
+measures on R2 , where v1 , . . . , vk ∈ L∞
+[−1,1] (Ωn ) are chosen arbitrarily: the measure
+puts weight 1/2 to
+
+
+n−1
+n−1
+1 X
+1 X
+v1 (i), . . . ,
+vk (i) ,
+v1 (0), . . . , vk (0),
+n − 1 i=1
+n − 1 i=1
+and it puts weight 1/(2n − 2) to
+
+v1 (j), . . . , vk (j), v1 (0), . . . , vk (0)
+for each j = 1, 2, . . . , n − 1.
+Now let Ω = [0, 1/2] with the following probability measure ν: it is the Lebesgue
+measure on (0, 1/2] together with an atom of weight 1/2 at 0. We define a P -operator
+M on L2 (Ω) by
+Z 1/2
+(f M )(0) = 2
+f (y)dy;
+(f M )(x) = f (0) (0 < x ≤ 1/2),
+0
+2
+
+where f ∈ L (Ω). Then the k-profile of the P -operator M is the set of the following
+probability measures for f1 , . . . , fk ∈ L2 (Ω): the measure puts weight 1/2 to
+
+
+Z 1/2
+Z 1/2
+f1 (0), . . . , fk (0), 2
+f1 (y)dy, . . . , 2
+fk (y)dy ,
+0
+
+0
+
+and puts a uniform distribution (with total weight 1/2) to
+
+f1 (x), . . . , fk (x), f1 (0), . . . , fk (0) .
+By comparing the profiles of Mn and M , for every k ≥ 1, we have that Sk (Mn ) ⊂
+Sk (M ). On the other hand, we show that every element of Sk (M ) can be approximated weakly by a sequence whose nth term is chosen from Sk (Mn ). For every
+(m)
+(m)
+m ≥ 1 we can choose continuous functions f1 , . . . , fk ∈ L2 (Ω) such that the L2 (m)
+distance of fs and fs is at most 1/m for every s ∈ [k]. Furthermore, if mn is large
+enough, then by choosing vs (j) = fs (j/mn ), we can find an element of Sk (Mmn )
+whose Lévy–Prokhorov distance from the probability measure corresponding to
+f1 , . . . , fk in Sk (M ) is arbitrarily small. We conclude that the Hausdorff distance
+
+38
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+of Sk (Mn ) and Sk (M ) tends to 0 as n → ∞ for each k ≥ 1, and M is the limit of
+the sequence of star graphs with respect to random walk convergence.
+
+12.4. Subdivisions of complete graphs. Our second example is the 2-subdivision
+of the complete graph on n vertices. More precisely, for n ≥ 1, let
+Ωn = [n] ∪ {wij , 1 ≤ i < j ≤ n}.
+When j < i, we will use wji = wij . As for the edges, for every 1 ≤ i < j ≤ n, vertex
+wij is connected to i and j. This graph has n + n(n − 1)/2 vertices and n(n − 1)
+edges.
+We denote by Mn the Markov operator of this graph. For every v : Ωn → R and
+1 ≤ i < j ≤ n, we have
+
+1 X
+1
+(vMn )(i) =
+v(wij );
+(vM )(wij ) = v(i) + v(j) .
+n−1
+2
+j6=i
+
+The stationary measure puts weight 1/(2n) to vertices from [n], and weight 1/(n2 −
+n) to the other vertices. Hence the k-profile of Mk is given by the set of probability
+measures putting weight 1/(2n) to
+
+
+1 X
+1 X
+v1 (wij ), . . . ,
+vk (wij ) ,
+v1 (i), . . . , vk (i),
+n−1
+n−1
+j6=i
+
+j6=i
+
+and weight 1/(n2 − n) to
+
+
+
+
+1
+1
+v1 (i) + v1 (j) , . . . , vk (i) + vk (j) ,
+v1 (wij ), . . . , vk (wij ),
+2
+2
+where v1 , . . . , vk : Ωn → R are arbitrary functions.
+Let [0, 1]2∼ denote the set of unordered pairs {(x, y) : x, y ∈ [0, 1]}. In other words
+[0, 1]2∼ is the set [0, 1]2 factored by the equivalence (x, y) ∼ (y, x). We represent
+the limit as a P -operator on Ω = [0, 1] ∪ [0, 1]2∼ . In this case a function f ∈ L2 (Ω)
+can be given by a pair (f1 , f2 ), where f1 ∈ L2 ([0, 1]) and f2 ∈ L2 ([0, 1]2∼ ). Then we
+define M as follows:
+Z 1
+f1 (y) + f1 (z)
+(f M )(x) =
+f2 (x, u) du;
+(f M )(y, z) =
+,
+2
+0
+where x, y, z are all from the interval [0, 1]. The k-profile of M consists of probability
+measures which are the distributions of the following random variables for some
+functions f (1) , . . . , f (k) ∈ L∞
+[−1,1] (Ω). With probability 1/2, we choose x uniformly
+at random from the interval [0, 1] and take
+
+
+Z 1
+Z 1
+(1)
+(k)
+(1)
+(k)
+f2 (x, u) du, . . . ,
+f2 (x, u) du .
+f1 (x), . . . , f1 (x),
+0
+2
+
+0
+
+Otherwise we choose (y, z) ∈ [0, 1] uniformly at random, and take
+
+
+
+
+1 (1)
+1 (k)
+(1)
+(k)
+(1)
+(k)
+f2 (y, z), . . . , f2 (y, z),
+f (y) + f1 (z) , . . . , f1 (y) + f1 (z) .
+2 1
+2
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+39
+
+Similarly to the previous case, by approximating L2 functions with continuous ones,
+it can be proved that M is indeed the limit of Mn , and hence the sequence of 2subdivisions of complete graphs converges to this P -operator according to random
+walk convergence.
+12.5. Incidence graphs of finite projective planes. Let q be a prime power and
+let P(q) denote the projective plane over the finite field with q elements. The plane
+P(q) has q 2 + q + 1 lines and q 2 + q + 1 points. We denote by Gq the bipartite graph
+whose vertices are the lines and the points in Pq and the edges in Gq are incidences
+in P(q). This means that a line l is connected with a point p if l contains p. We have
+that Gq is (q + 1)-regular, |V (Gq )| = 2(q 2 + q + 1) and |E(Gq )| = (q 2 + q + 1)(q + 1).
+It follows that the sequence Gq is an intermediate density sequence. The number
+of edges is roughly the 3/2-th power of the number of vertices.
+
+Figure 7. The Fano plane P(2) and the matrix of the incidence
+graph of the projective plane over the field F9
+We show that the matrices A(Gq )/(q + 1) form a convergent sequence whose limit
+is represented by the generalized graphon W : [0, 1]2 → [0, 1] defined by W (x, y) = 2
+if (x, y) ∈ [1/2, 1] × [0, 1/2] ∪ [0, 1/2] × [1, 1/2] and W (x, y) = 0 elsewhere.
+The proof is based on the fact that the eigenvalues of Gq are known to be q +
+√
+√
+1, −q − 1, q, − q with multiplicity 1, 1, q 2 + q, q 2 + q. The two eigenvalues q + 1
+and −q − 1 belong to the constant 1 vector v1 and the vector v2 which takes 1
+at points and −1 at lines. Let Bq := (v1∗ v1 − v2∗ v2 )/2(q 2 + q + 1). We have that
+kA(Gq )/(q + 1) − Bq k2→2 = q −1/2 . It follows from Lemma 2.19 that
+1/2
+
+dM (A(Gq )/(q + 1), Bq ) ≤ 3kA(Gq )/(q + 1) − Bq k2→2 = 3q −1/4
+and hence the limit A(Gq )/(q + 1) is the same as the limit of Bq as the prime power
+q goes to infinity. On the other hand Bq is twice the normalized adjacency matrix
+of the complete bipartite graph with equal color classes on 2(q 2 + q + 1) points.
+This proves the claim.
+The next question illustrates that this does not end the limiting investigation of
+Gq . We can look at it at a finer scale by removing the two dominant eigenvectors
+and normalizing it with a different constant.
+
+40
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+Question 12.5. Let Bq0 := (A(Gq )/(q + 1) − Bq )q 1/2 . We have that kBq0 k2→2 = 1.
+Does the sequence of P -operators Bq0 converge as the prime power q goes to infinity?
+If yes, what is the limit object?
+Note that by compactness we know that Bq0 has convergent subsequences.
+
+13. Appendix (technical lemmas)
+Lemma 13.1. Let X, Y be two jointly distributed Rk -valued random variables.
+Then dLP (D(X), D(Y )) ≤ τ (X − Y )1/2 k 3/4 .
+Proof. First we claim that for a > 0 we have
+P(|X − Y | ≥ a) ≤ τ (X − Y )k 3/2 /a.
+
+(13)
+
+Let πi : Rk → R denote the i-th coordinate function for 1 ≤ i ≤ k. If the square of
+every coordinate of X − Y is at most a2 /k, then |X − Y | ≤ a. Hence by the union
+bound we have that
+P(|X − Y | ≥ a) ≤
+
+k
+X
+i=1
+
+P(|πi (X − Y )| ≥ a/k 1/2 ) ≤
+
+k
+X
+
+E(|πi (X − Y )|)k 1/2 /a.
+
+i=1
+
+Since τ (X − Y ) is the maximum of E(|πi (X − Y )|) over 1 ≤ i ≤ k, inequality (13)
+follows.
+Let U be a Borel set in Rk . From (13) we have for every ε > 0 that
+(14)
+
+P(Y ∈ U ε ) ≥ P(X ∈ U ) − c and P(X ∈ U ε ) ≥ P(Y ∈ U ) − c,
+
+where c = τ (X − Y )k 3/2 ε−1 . In particular, if ε = τ (X − Y )1/2 k 3/4 , then c = ε and
+(14) witnesses that dLP (D(X), D(Y )) ≤ τ (X − Y )1/2 k 3/4 .
+
+Lemma 13.2. Let v1 , v2 , . . . , vk and w1 , w2 , . . . , wk be in L1 (Ω) for some probability
+space Ω. Let m := maxi∈[k] kvi − wi k1 . Then
+dLP (D(v1 , v2 , . . . , vk ), D(w1 , w2 , . . . , wk )) ≤ m1/2 k 3/4 .
+Proof. We apply Lemma 13.1 to the jointly distributed random variables X(ω) :=
+(v1 (ω), v2 (ω), . . . , vk (ω)) and Y (ω) := (w1 (ω), w2 (ω), . . . , wk (ω)) defined for ω ∈ Ω.
+Since τ (X − Y ) = m, Lemma 13.1 finishes the proof.
+
+For a real number z ∈ R+ let qz : R → R denote the function such that fz (x) = 0
+for |x| ≥ 2z, fz (x) = |x + z| − z for x ∈ [−2z, 0] and fz (x) = −|x − z| + z for
+x ∈ [0, 2z].
+Lemma 13.3. Let q ∈ (1, ∞) and let X be a real-valued random variable with
+E(|X|q ) = c < ∞. Then for z ∈ R+ we have that E|fz (X) − X| ≤ cz 1−q .
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+41
+
+Proof. Let p = q/(q−1). We have that fz (x)−x is 0 for x ∈ [−z, z] and |fz (x)−x| ≤
+|x| for x ∈ R \ [−z, z]. It follows from Hölder’s inequality that
+E|fz (X) − X| ≤ E(|X|1R\[−z,z] (X)) ≤ E(|X|q )1/q E(1R\[−z,z] )1/p
+= E(|X|q )1/q P(|X| ≥ z)1/p ≤ c1/q P(|X| ≥ z)1/p .
+By Markov’s inequality we have that
+P(|X| ≥ z) = P(|X|q ≥ z q ) ≤ E(|X|q )/z q ≤ c/z q .
+This completes the proof.
+
+Lemma 13.4. Let q ∈ (1, ∞). Let {(Xi , Yi )}∞
+i=1 be a sequence of pairs of jointly
+distributed real valued random variables such that Xi ∈ [−1, 1] and E(|Yi |q ) ≤ c < ∞
+for some c ∈ R+ . Assume that the distributions of (Xi , Yi ) weakly converge to some
+q
+probability distribution (X, Y ) as i goes to infinity. Then E(|Y | ) ≤ c and
+lim E(Xi Yi ) = E(XY ).
+
+i→∞
+
+Proof. RThe statement E(|Y |q ) ≤ c follows from the compactness of {µ : µ ∈
+P(R), x |x|q dµ ≤ c} in the weak topology. Since fz is continuous with finite
+support, we have that limi→∞ E(f1 (Xi )fz (Yi )) = E(f1 (X)fz (Y )) holds for every
+z ∈ R+ . On the other hand we have that
+|E(f1 (Xi )fz (Yi ) − Xi Yi )| = |E(Xi (fz (Yi ) − Yi ))| ≤ E|fz (Yi ) − Yi | ≤ cz (1−q)
+by Lemma 13.3, and similarly
+|E(f1 (X)fz (Y ) − XY )| ≤ cz (1−q) .
+It follows that
+lim E(Xi Yi ) − E(XY ) ≤ 2cz (1−q)
+
+i→∞
+
+and hence as z goes to infinity we obtain the statement of the lemma.
+
+
+
+Lemma 13.5. Let
+on [−c, c] for some c ∈ R+ . Let
+R µ pbe a probability measure
+p
+p ∈ [1, ∞). Then R |x| dµ ≤ (2dLP (µ, δ0 )) + 2dLP (µ, δ0 )cp
+Proof. Let d := dLP (µ, δ0 ). We have that 1 = δ0 ({0}) ≤ µ([−2d, 2d]) + 2d and so
+µ([−2d, 2d]) ≥ 1 − 2d. It follows that
+Z
+Z
+Z
+p
+p
+|x| dµ =
+|x| dµ +
+|x|p dµ ≤ (2d)p + 2dcp .
+R
+
+[−2d,2d]
+
+R\[−2d,2d]
+
+
+Lemma 13.6. Let p ∈ [1, ∞) and let A ∈ B(Ω) be a P -operator. Let vi and wi be
+elements in L∞ (Ω) with values in [−1, 1] for i ∈ [k]. Then we have
+dLP (DA ({vi }ki=1 ), DA ({wi }ki=1 )) ≤ m1/2 ((2d)p + 2p+1 d)1/(2p) (2k)3/4 ,
+where m = max{1, kAkp→1 } and d = maxi∈[k] {dLP (D(vi − wi ), δ0 )}.
+Proof. We have by Lemma 13.5 that kvi − wi kp ≤ ((2d)p + 2p+1 d)1/p for every
+i ∈ [k]. It follows that kvi A − wi Akp ≤ kAkp→1 ((2d)p + 2p+1 d)1/p holds for every
+i ∈ [k]. Then Lemma 13.2 finishes the proof.
+
+
+42
+
+ÁGNES BACKHAUSZ, BALÁZS SZEGEDY
+
+Acknowledgement. The research leading to these results has received funding
+from the European Research Council under the European Union’s Seventh Framework Programme (FP7/2007-2013) / ERC grant agreement n◦ 617747. The research
+was partially supported by the MTA Rényi Institute Lendület Limits of Structures
+Research Group. The first author was supported by the "Bolyai Ösztöndíj" of the
+Hungarian Academy of Sciences.
+References
+[1] Á. Backhausz and B. Szegedy, On large girth regular graphs and random processes on trees.
+Random Structures Algorithms 53 (2018) no. 3, 389–416.
+[2] Á. Backhausz and B. Szegedy, On the almost eigenvectors of random regular graphs. To
+appear in Ann. Probab. http://arxiv.org/pdf/1607.04785.pdf
+[3] I. Benjamini and N. Curien, Ergodic theory on stationary random graphs, Electron. J. Probab.
+17 (2012), no. 93, 20 pp.
+[4] I. Benjamini and O. Schramm, Recurrence of distributional limits of finite planar graphs.
+Electron. J. Probab. 6 (2001), no. 23, 1–13.
+[5] C. Borgs, J. T. Chayes, L. Lovász, V. T. Sós, K. Vesztergombi, Convergent sequences of dense
+graphs. I. Subgraph frequencies, metric properties and testing, Adv. Math. 219 (2008), no. 6,
+1801–1851.
+[6] C. Borgs, J.T. Chayes, H. Cohn, N. Holden, Sparse exchangeable graphs and their limits via
+graphon processes, J. Mach. Learn. Res. 18 (2018), 1–71.
+[7] C. Borgs, J.T. Chayes, H. Cohn, Y. Zhao, An Lp theory of sparse graph convergence I: limits,
+sparse random graph models, and power law distributions. To appear in Trans. Amer. Math.
+Soc. http://arxiv.org/pdf/1401.2906.pdf
+[8] C. Borgs, J.T. Chayes, H. Cohn, Y. Zhao, An Lp theory of sparse graph convergence II: LD
+convergence, quotients, and right convergence. Ann. Probab. 46 (2018), no. 1, 337–396.
+[9] B. Bollobás, O. Riordan, Sparse graphs: Metrics and random models. Random Structures
+Algorithms 39 (2011), 1–38.
+[10] P. Candela, B. Szegedy, Nilspace factors for general uniformity seminorms, cubic exchaneability and limits. Preprint. http://arxiv.org/pdf/1803.08758.pdf
+[11] Bruce
+K.
+Driver.
+Analysis
+tools
+with
+exapmles.
+Lecture
+notes.
+http://www.math.ucsd.edu/∼bdriver/240A-C-03-04/Lecture Notes/anal2p-new.pdf
+[12] G. Elek, On the limit of large girth graph sequences, Combinatorica 30 (2010), no. 5, 553–563.
+[13] D. H. Fremlin, Measure theory. Vol. 4, Torres Fremlin, Colchester, 2006.
+[14] P. E. Frenkel, Convergence of graphs with intermediate density, Trans. Amer. Math. Soc. 370
+(2018), no. 5, 3363–3404.
+[15] S. Geman, A limit theorem for the norm of random matrices, Ann. Probab. 8 (1980), no. 2,
+252–261.
+[16] H. Hatami, L. Lovász and B. Szegedy, Limits of locally-globally convergent graph sequences,
+Geom. Funct. Anal. 24 (2014), no. 1, 269–296.
+[17] S. Janson. Graphons and cut metric on σ-finite measure spaces. Preprint. http://arxiv.org/
+pdf/1608.01833.pdf
+[18] D. Kunszenti-Kovács, L. Lovász, B. Szegedy, Multigraph limits, unbounded kernels,and
+Banach space decorated graphs. Preprint. arXiv:1406.7846 [math.CO]
+[19] D. Kunszenti-Kovács, L. Lovász, B. Szegedy, Measures on the square as sparse graph limits.
+Preprint. arXiv:1610.05719 [math.CO]
+[20] L. Lovász, Large networks and graph limits, American Mathematical Society Colloquium
+Publications, 60, American Mathematical Society, Providence, RI, 2012.
+[21] L. Lovász and B. Szegedy, Limits of dense graph sequences, J. Combin. Theory Ser. B 96
+(2006), no. 6, 933–957.
+[22] L. Lovász and B. Szegedy, Szemerédi’s lemma for the analyst, GAFA 17 (2006), issue 1,
+252–270.
+[23] C. Male, S. Péché, Uniform regular weighted graphs with large degree: Wigner’s law, asymptotic freeness and graphons limit. Preprint. http://arxiv.org/pdf/1410.8126.pdf
+[24] J. Nešetřil and P. Ossona de Mendez, Sparsity, Algorithms and Combinatorics, 28, Springer,
+Heidelberg, 2012.
+
+ACTION CONVERGENCE OF OPERATORS AND GRAPHS
+
+43
+
+[25] J. Nešetřil and P. Ossona de Mendez, Local-global convergence, an analytic and structural
+approach. Preprint. http://arxiv.org/pdf/1805.02051.pdf
+[26] L. Page, PageRank: Bringing Order to the Web (http://web.archive.org/
+web/20020506051802/www-diglib.stanford.edu/cgi-bin/WP/get/SIDL-WP-1997-0072?1),
+Stanford Digital Library Project, talk. August 18, 1997 (archived 2002).
+[27] B. Szegedy, Sparse graph limits, entropy maximization and transitive graphs. Preprint.
+arXiv:1504.00858 [math.CO]
+[28] B. Szegedy, On the colored star metric. Manuscipt.
+[29] Y. Zhu, A graphon approach to limiting spectral distributions of Wigner-type matrices. Preprint. http://arxiv.org/pdf/1806.11246.pdf
+
+Ágnes Backhausz. ELTE Eötvös Loránd University, Budapest, Hungary, Faculty of Science, Department of Probability and Statistics and MTA Alfréd Rényi
+Institute of Mathematics. Pázmány Péter sétány 1/c, Budapest, Hungary, H-1117.
+agnes@math.elte.hu
+Balázs Szegedy. MTA Alfréd Rényi Institute of Mathematics, Reáltanoda utca
+13–15., Budapest, Hungary, H-1053. szegedy.balazs@renyi.mta.hu
+
+

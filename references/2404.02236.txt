@@ -1,0 +1,904 @@
+Selected Open Problems in
+Continuous-Time Quantum Walks
+arXiv:2404.02236v1 [math.CO] 2 Apr 2024
+
+Gabriel Coutinho∗
+
+Krystal Guo†
+
+April 2, 2024
+
+Abstract
+Quantum walks on graphs are fundamental to quantum computing and have led
+to many interesting open problems in algebraic graph theory. This review article
+highlights three key classes of open problems in this domain; perfect state transfer,
+instantaneous uniform mixing, and average mixing matrices. In highlighting these
+open problems, our aim is to stimulate further research and exploration in this rapidly
+evolving field.
+
+1
+
+Introduction
+
+Quantum walks on graphs are essential for quantum computing. Amongst other important
+advances, quantum walks were shown to be a universal computational primitive in a landmark result of Childs in [8]. They have also gained prominence in algebraic graph theory;
+many problems arising in the study of quantum walks have given rise to interesting combinatorial problems. There are many open problems in this rapidly evolving field, and in this
+review article, we highlight three classes of problems, place them in context with relevant
+results and propose several unsolved problems.
+Most of the results stated in this text are either not new or follow easily from known
+facts, but there are some new theorems. These are not the focus of this paper; our main goal
+is to survey the basics and propose problems we believe are central to the field. We refer the
+reader to [15] for a full survey of the basic result. For the purposes of this paper, we give a
+very brief introduction, as follows.
+The transition matrix of a continuous-time quantum walk on a graph G with adjacency
+matrix A is a matrix-valued function in time, denoted U (t), and is given as follows:
+U (t) = exp(itA).
+∗
+
+Universidade Federal de Minas Gerais, Belo Horizonte, Brazil. gabriel@dcc.ufmg.br
+Korteweg-de Vries Institute for Mathematics, University of Amsterdam, Amsterdam, The Netherlands.
+QuSoft (Research center for Quantum software & technology), Amsterdam, The Netherlands. k.guo@uva.nl
+†
+
+1
+
+The quantum state of the quantum system defined on the graph at time t is given by U (t)
+applied to the vector describing the initial state. Typically we will require the initial state
+or the target state to be either eu , the characteristic vector of a vertex u ∈ V (G), or for it
+to have entries of constant absolute value.
+The three classes of problems are discussed are summarized here.
+(1) State transfer occurs when the state at one vertex is transferred to another vertex, either
+perfectly or approximately. Its study is partially motivated by the No-Cloning Theorem,
+which is a seminal result in quantum mechanics which forbids the duplication of an
+arbitrary unknown quantum state. Many aspects of state transfer have been studied,
+see for instance [10, 28, 24, 12, 1, 30, 19] for a very limited sample of papers on the
+topic.
+(2) Instantaneous uniform mixing occurs when all entries of U (t) have the same absolute
+value. In layman’s terms, no matter where you start your quantum walk, after this
+special time t, the probability of being anywhere is constant. This has applications in
+entanglement generation and state preparation, and has been studied in [2, 25, 7]. We
+should warn that uniform mixing is a considerably less understood concept than state
+transfer.
+(3) We also consider the average of M (t) on the real line (yes, this is ill-defined, but we
+consider the limit of the uniform averages of M (t) on arbitrarily long intervals, and this
+is allowed). This matrix satisfies several pleasant linear algebraic properties, and some
+of these connect very naturally to the combinatorics of the graph. It has been studied
+in notably in [3, 22, 18, 27].
+
+2
+
+Economic perfect state transfer
+
+If we think of edges in a graph as corresponding to interactions between qubits, then, for the
+purposes of implementation, it would be more economical to minimize the number of edges,
+while preserving the behaviour. In this vein, one might ask for the graph on n vertices with
+the least number of edges such that there is perfect state transfer between some two vertices.
+This question was first asked by Godsil in [23] but remains open and has motivated other
+works with partial results [13, 29].
+Henceforth in this paper, we will denote the spectral decomposition of the adjacency
+matrix A(G) by
+d
+X
+A=
+θr Er .
+i=0
+
+2
+
+2.1
+
+Lower bound
+
+Formally, perfect state transfer occurs at a G between vertices u and v at time t if there is
+a complex number γ of absolute value 1 so that
+U (t)eu = γev ,
+where eu and ev are the characteristic vectors of these vertices. It is easy to verify that
+if perfect state transfer occurs, then for all r, Er eu = ±Er ev . Whenever these vectors are
+nonzero, and depending on these signs, eiθr t = ±γ, which leads to a strong restriction on the
+θr . In particular,
+t(θr − θs ) = krs π,
+where krs is an integer of suitable parity. We refer the reader to [15] for a more developed
+introduction to the topic.
+In fact, [16,
+√ Theorem 14] establishes that the minimum time perfect state transfer occurs
+is at most π/ 2, therefore for
+√ those eigenvalues θr for which Er eu ̸= 0, the difference between
+any two of them is at least 2.
+Following the steps in [13], the number of distinct eigenvalues for which Er eu ̸= 0 upper
+bounds
+√ (D/2) + 1, where D is the diameter of the graph, and they are all separated by at
+least 2. The sum of the squares of all eigenvalues of the graph is 2m, where m is number of
+edges, and therefore an upper bound to the diameter can be obtained in terms of the number
+of edges. The result in [13] is stated for periodic vertices and only assumes the eigenvalues
+are separated by 1. Recalling that if perfect state transfer occurs, then at double
+√ the time
+there is periodicity, and using the recent result that improves separation to 2, the same
+steps of [13] result in the following bound for the diameter D of graphs on m edges that
+admit perfect state transfer:
+D3 ≤ 80m.
+The obvious immediate problem is to improve this.
+2.1 Open Problem. If perfect state transfer occurs in a graph with m edges of diameter
+D, show that
+m ∈ Ω(Dk ),
+for k > 3.
+The result in [13] mentioned above does not exploit the fact that vertices involved in
+perfect state transfer are strongly cospectral. The theory developed in [16] might provide
+some quantitative ways of exploiting this fact.
+Standard eigenvalue bounds for the diameter, for instance the well-known results in [11],
+do not seem to be particularly useful in our context, however we have no strong reason to
+believe they are not.
+The strongest reason we have to believe it is possible to provide some improvement in
+Problem 2.1 is the fact that our best examples are exponentially large in terms of D, as we
+expose in the next section. The strongest reason we have to believe it might not be possible
+3
+
+to improve the cubic bound is the following family of graphs, found by Dragan Stevanović
+(private communication):
+
+a
+
+<latexit sha1_base64="tWikw4S2svP8h5R+YG/446JmGsI=">AAAB6HicbVBNS8NAEJ3Ur1q/qh69LBahp5KIqMeCF48t2A9oQ9lsJ+3azSbsboQS+gu8eFDEqz/Jm//GbZuDtj4YeLw3w8y8IBFcG9f9dgobm1vbO8Xd0t7+weFR+fikreNUMWyxWMSqG1CNgktsGW4EdhOFNAoEdoLJ3dzvPKHSPJYPZpqgH9GR5CFn1FipGQzKFbfmLkDWiZeTCuRoDMpf/WHM0gilYYJq3fPcxPgZVYYzgbNSP9WYUDahI+xZKmmE2s8Wh87IhVWGJIyVLWnIQv09kdFI62kU2M6ImrFe9ebif14vNeGtn3GZpAYlWy4KU0FMTOZfkyFXyIyYWkKZ4vZWwsZUUWZsNiUbgrf68jppX9a869pV86pSr+ZxFOEMzqEKHtxAHe6hAS1ggPAMr/DmPDovzrvzsWwtOPnMKfyB8/kDv/2M1Q==</latexit>
+
+<latexit sha1_base64="NNtibvTNRyHmcP54PtiH9zjQnt8=">AAAB6HicbVBNS8NAEJ3Ur1q/qh69LBahp5KIqMeCF48t2A9oQ9lsJ+3azSbsboQS+gu8eFDEqz/Jm//GbZuDtj4YeLw3w8y8IBFcG9f9dgobm1vbO8Xd0t7+weFR+fikreNUMWyxWMSqG1CNgktsGW4EdhOFNAoEdoLJ3dzvPKHSPJYPZpqgH9GR5CFn1FipSQfliltzFyDrxMtJBXI0BuWv/jBmaYTSMEG17nluYvyMKsOZwFmpn2pMKJvQEfYslTRC7WeLQ2fkwipDEsbKljRkof6eyGik9TQKbGdEzVivenPxP6+XmvDWz7hMUoOSLReFqSAmJvOvyZArZEZMLaFMcXsrYWOqKDM2m5INwVt9eZ20L2vede2qeVWpV/M4inAG51AFD26gDvfQgBYwQHiGV3hzHp0X5935WLYWnHzmFP7A+fwBvnmM1A==</latexit>
+
+b
+
+Figure 1: One specimen of a family found by Dragan Stevanović.
+
+Hopefully the white-black color coding indicates how to generate the rest of the family
+straightforwardly. Vertices a and b are strongly cospectral, and the eigenvalues for which
+Er ea ̸= 0 are the integers in [−n, n], except for 0, where n is the number of vertices in the
+first layer. In a sense, they almost admit perfect state transfer between them, but they do
+not, for any n. And the number of edges in this family grows cubic in the diameter, as can
+be easily verified.
+
+2.2
+
+Upper bound
+
+The standard examples of graphs admitting perfect state transfer at arbitrarily large distances are the hypercubes Qn (see for instance [9]), which we like to view as the iterared
+Cartesian product of the graph P2 with itself. Here when the diameter is D, the number of
+vertices is 2D and the number of edges is D × 2D−1 . Iterated products of P3 with itself also
+provide an infinite family slightly sparser: 3D vertices, D × 3D/2−1 edges (the relevant result
+here is that when G admits perfect state transfer at time t, then any Cartesian power of G
+also does, and at the same time.)
+An operation inspired by the works in [17, 5] allows for some local improvement. Here
+we apply the well-known theory of equitable partitions (see [20, Chapter 9] for instance) to
+quantum walks, with a twist.
+If P the characteristic matrix of a partition π of the vertex set of G, then π is equitable
+when the column space of P is A-invariant, where A = A(G). In this case, there is a square
+matrix B so that begin
+AP = P B.
+whence exp(itA)P = P exp(itB). If the columns of P are normalized, then P T AP = B, so
+B is symmetric, and exp(itB) is the transition matrix of the quantum walk defined on the
+weighted graph whose vertex set corresponds to the rows and columns of B. If columns i and
+j of P are equal to the characteristic vectors of two vertices from G, say eu and ev , then it
+follows that there is perfect state transfer between u and v in G if and only if there is perfect
+state transfer between i and j in the graph defined by B. This is essentially a result from [5].
+The twist now comes from the fact that P needs not be the normalized characteristic matrix
+of a partition. Any matrix with orthonormal columns will do, so long as its column space is
+4
+
+A-invariant, and two of its columns are equal to eu and ev . The concept of pseudo-equitable
+partition [17] comes in handy, as the columns of P still carry some combinatorial meaning.
+2.1 Theorem. Let B be a symmetric matrix so that for some time t and λ ∈ C,
+exp(itB)ei = λej .
+Let P be the characteristic matrix of a partition of V (G), with u, v ∈ V (G), and D a diagonal
+matrix, so that P ei = eu , P ej = ev , and Duu = Dvv = 1. Assume the column space of DP
+is A-invariant, let S be obtained from DP upon normalizing its columns, and finally assume
+that AS = SB. Then G admits perfect state transfer between u and v.
+Proof. From AS = SB we have
+exp(itA)S = S exp(itB).
+Multiplying both sides by ei , we have
+exp(itA)Sei = λSej =⇒ exp(itA)eu = λev .
+
+This simple proof hides a procedure to construct new graphs admitting perfect state
+transfer, based on hypercubes, but with fewer vertices and edges, which we exemplify below
+for Q4 :
+
+a
+
+<latexit sha1_base64="tWikw4S2svP8h5R+YG/446JmGsI=">AAAB6HicbVBNS8NAEJ3Ur1q/qh69LBahp5KIqMeCF48t2A9oQ9lsJ+3azSbsboQS+gu8eFDEqz/Jm//GbZuDtj4YeLw3w8y8IBFcG9f9dgobm1vbO8Xd0t7+weFR+fikreNUMWyxWMSqG1CNgktsGW4EdhOFNAoEdoLJ3dzvPKHSPJYPZpqgH9GR5CFn1FipGQzKFbfmLkDWiZeTCuRoDMpf/WHM0gilYYJq3fPcxPgZVYYzgbNSP9WYUDahI+xZKmmE2s8Wh87IhVWGJIyVLWnIQv09kdFI62kU2M6ImrFe9ebif14vNeGtn3GZpAYlWy4KU0FMTOZfkyFXyIyYWkKZ4vZWwsZUUWZsNiUbgrf68jppX9a869pV86pSr+ZxFOEMzqEKHtxAHe6hAS1ggPAMr/DmPDovzrvzsWwtOPnMKfyB8/kDv/2M1Q==</latexit>
+
+<latexit sha1_base64="NNtibvTNRyHmcP54PtiH9zjQnt8=">AAAB6HicbVBNS8NAEJ3Ur1q/qh69LBahp5KIqMeCF48t2A9oQ9lsJ+3azSbsboQS+gu8eFDEqz/Jm//GbZuDtj4YeLw3w8y8IBFcG9f9dgobm1vbO8Xd0t7+weFR+fikreNUMWyxWMSqG1CNgktsGW4EdhOFNAoEdoLJ3dzvPKHSPJYPZpqgH9GR5CFn1FipSQfliltzFyDrxMtJBXI0BuWv/jBmaYTSMEG17nluYvyMKsOZwFmpn2pMKJvQEfYslTRC7WeLQ2fkwipDEsbKljRkof6eyGik9TQKbGdEzVivenPxP6+XmvDWz7hMUoOSLReFqSAmJvOvyZArZEZMLaFMcXsrYWOqKDM2m5INwVt9eZ20L2vede2qeVWpV/M4inAG51AFD26gDvfQgBYwQHiGV3hzHp0X5935WLYWnHzmFP7A+fwBvnmM1A==</latexit>
+
+b
+
+Figure 2: The graph Q4 .
+
+As we commented, there is perfect state transfer between a and b. The distance partition
+with respect to a is equitable. Assume its characteristic matrix is P1 . The symmetric matrix
+B which represents the action of A(Q4 ) onto the columns of its normalized partition matrix
+S1 is the adjacency matrix of the following weighted path:
+p
+p
+6
+6
+2
+2
+<latexit sha1_base64="vrhcfSl6vo1q3ljDXcWo1OgDrHU=">AAAB73icbVBNS8NAEJ34WetX1aOXxSL0VBKR6rHgxWMF+wFtKJvtpl262aS7E6GE/gkvHhTx6t/x5r9x2+agrQ8GHu/NMDMvSKQw6Lrfzsbm1vbObmGvuH9weHRcOjltmTjVjDdZLGPdCajhUijeRIGSdxLNaRRI3g7Gd3O//cS1EbF6xGnC/YgOlQgFo2ilTs9MNGa1Wb9UdqvuAmSdeDkpQ45Gv/TVG8QsjbhCJqkxXc9N0M+oRsEknxV7qeEJZWM65F1LFY248bPFvTNyaZUBCWNtSyFZqL8nMhoZM40C2xlRHJlVby7+53VTDG/9TKgkRa7YclGYSoIxmT9PBkJzhnJqCWVa2FsJG1FNGdqIijYEb/XlddK6qnq1qvdwXa5X8jgKcA4XUAEPbqAO99CAJjCQ8Ayv8OZMnBfn3flYtm44+cwZ/IHz+QNESpAK</latexit>
+
+<latexit sha1_base64="vrhcfSl6vo1q3ljDXcWo1OgDrHU=">AAAB73icbVBNS8NAEJ34WetX1aOXxSL0VBKR6rHgxWMF+wFtKJvtpl262aS7E6GE/gkvHhTx6t/x5r9x2+agrQ8GHu/NMDMvSKQw6Lrfzsbm1vbObmGvuH9weHRcOjltmTjVjDdZLGPdCajhUijeRIGSdxLNaRRI3g7Gd3O//cS1EbF6xGnC/YgOlQgFo2ilTs9MNGa1Wb9UdqvuAmSdeDkpQ45Gv/TVG8QsjbhCJqkxXc9N0M+oRsEknxV7qeEJZWM65F1LFY248bPFvTNyaZUBCWNtSyFZqL8nMhoZM40C2xlRHJlVby7+53VTDG/9TKgkRa7YclGYSoIxmT9PBkJzhnJqCWVa2FsJG1FNGdqIijYEb/XlddK6qnq1qvdwXa5X8jgKcA4XUAEPbqAO99CAJjCQ8Ayv8OZMnBfn3flYtm44+cwZ/IHz+QNESpAK</latexit>
+
+<latexit sha1_base64="9VGpc9BV8DZuKJfaqjJ7DAGf1tQ=">AAAB6HicbVBNS8NAEJ34WetX1aOXxSL0VJIi6rHgxWML9gPaUDbbSbt2swm7G6GE/gIvHhTx6k/y5r9x2+agrQ8GHu/NMDMvSATXxnW/nY3Nre2d3cJecf/g8Oi4dHLa1nGqGLZYLGLVDahGwSW2DDcCu4lCGgUCO8Hkbu53nlBpHssHM03Qj+hI8pAzaqzUrA1KZbfqLkDWiZeTMuRoDEpf/WHM0gilYYJq3fPcxPgZVYYzgbNiP9WYUDahI+xZKmmE2s8Wh87IpVWGJIyVLWnIQv09kdFI62kU2M6ImrFe9ebif14vNeGtn3GZpAYlWy4KU0FMTOZfkyFXyIyYWkKZ4vZWwsZUUWZsNkUbgrf68jpp16reddVrXpXrlTyOApzDBVTAgxuowz00oAUMEJ7hFd6cR+fFeXc+lq0bTj5zBn/gfP4AdkeMog==</latexit>
+
+<latexit sha1_base64="9VGpc9BV8DZuKJfaqjJ7DAGf1tQ=">AAAB6HicbVBNS8NAEJ34WetX1aOXxSL0VJIi6rHgxWML9gPaUDbbSbt2swm7G6GE/gIvHhTx6k/y5r9x2+agrQ8GHu/NMDMvSATXxnW/nY3Nre2d3cJecf/g8Oi4dHLa1nGqGLZYLGLVDahGwSW2DDcCu4lCGgUCO8Hkbu53nlBpHssHM03Qj+hI8pAzaqzUrA1KZbfqLkDWiZeTMuRoDEpf/WHM0gilYYJq3fPcxPgZVYYzgbNiP9WYUDahI+xZKmmE2s8Wh87IpVWGJIyVLWnIQv09kdFI62kU2M6ImrFe9ebif14vNeGtn3GZpAYlWy4KU0FMTOZfkyFXyIyYWkKZ4vZWwsZUUWZsNkUbgrf68jpp16reddVrXpXrlTyOApzDBVTAgxuowz00oAUMEJ7hFd6cR+fFeXc+lq0bTj5zBn/gfP4AdkeMog==</latexit>
+
+a
+
+<latexit sha1_base64="tWikw4S2svP8h5R+YG/446JmGsI=">AAAB6HicbVBNS8NAEJ3Ur1q/qh69LBahp5KIqMeCF48t2A9oQ9lsJ+3azSbsboQS+gu8eFDEqz/Jm//GbZuDtj4YeLw3w8y8IBFcG9f9dgobm1vbO8Xd0t7+weFR+fikreNUMWyxWMSqG1CNgktsGW4EdhOFNAoEdoLJ3dzvPKHSPJYPZpqgH9GR5CFn1FipGQzKFbfmLkDWiZeTCuRoDMpf/WHM0gilYYJq3fPcxPgZVYYzgbNSP9WYUDahI+xZKmmE2s8Wh87IhVWGJIyVLWnIQv09kdFI62kU2M6ImrFe9ebif14vNeGtn3GZpAYlWy4KU0FMTOZfkyFXyIyYWkKZ4vZWwsZUUWZsNiUbgrf68jppX9a869pV86pSr+ZxFOEMzqEKHtxAHe6hAS1ggPAMr/DmPDovzrvzsWwtOPnMKfyB8/kDv/2M1Q==</latexit>
+
+<latexit sha1_base64="NNtibvTNRyHmcP54PtiH9zjQnt8=">AAAB6HicbVBNS8NAEJ3Ur1q/qh69LBahp5KIqMeCF48t2A9oQ9lsJ+3azSbsboQS+gu8eFDEqz/Jm//GbZuDtj4YeLw3w8y8IBFcG9f9dgobm1vbO8Xd0t7+weFR+fikreNUMWyxWMSqG1CNgktsGW4EdhOFNAoEdoLJ3dzvPKHSPJYPZpqgH9GR5CFn1FipSQfliltzFyDrxMtJBXI0BuWv/jBmaYTSMEG17nluYvyMKsOZwFmpn2pMKJvQEfYslTRC7WeLQ2fkwipDEsbKljRkof6eyGik9TQKbGdEzVivenPxP6+XmvDWz7hMUoOSLReFqSAmJvOvyZArZEZMLaFMcXsrYWOqKDM2m5INwVt9eZ20L2vede2qeVWpV/M4inAG51AFD26gDvfQgBYwQHiGV3hzHp0X5935WLYWnHzmFP7A+fwBvnmM1A==</latexit>
+
+b
+
+Figure 3: The symmetric quotient of the distance partition in Q4 .
+
+5
+
+Again, there is perfect state transfer between a and b (simply apply Theorem 2.1 with
+P1 = P , S1 = S and D = I). Consider now the graph G below:
+
+a
+<latexit sha1_base64="26NAuwYzzHAyJUc/EzVQn3qvHIE=">AAAB6HicbVBNS8NAEJ3Ur1q/qh69LBahp5KIqMeCF48t2A9oQ9lsJ+3azSbsboQS+gu8eFDEqz/Jm//GbZuDtj4YeLw3w8y8IBFcG9f9dgobm1vbO8Xd0t7+weFR+fikreNUMWyxWMSqG1CNgktsGW4EdhOFNAoEdoLJ3dzvPKHSPJYPZpqgH9GR5CFn1FipSQfliltzFyDrxMtJBXI0BuWv/jBmaYTSMEG17nluYvyMKsOZwFmpn2pMKJvQEfYslTRC7WeLQ2fkwipDEsbKljRkof6eyGik9TQKbGdEzVivenPxP6+XmvDWz7hMUoOSLReFqSAmJvOvyZArZEZMLaFMcXsrYWOqKDM2m5INwVt9eZ20L2vedc1rXlXq1TyOIpzBOVTBgxuowz00oAUMEJ7hFd6cR+fFeXc+lq0FJ585hT9wPn8AvYOM0Q==</latexit>
+
+<latexit sha1_base64="kZo9iFfj3ENXNrGGpGtybRbEx8g=">AAAB6HicbVBNS8NAEJ3Ur1q/qh69LBahp5KIqMeCF48t2A9oQ9lsJ+3azSbsboQS+gu8eFDEqz/Jm//GbZuDtj4YeLw3w8y8IBFcG9f9dgobm1vbO8Xd0t7+weFR+fikreNUMWyxWMSqG1CNgktsGW4EdhOFNAoEdoLJ3dzvPKHSPJYPZpqgH9GR5CFn1FipyQbliltzFyDrxMtJBXI0BuWv/jBmaYTSMEG17nluYvyMKsOZwFmpn2pMKJvQEfYslTRC7WeLQ2fkwipDEsbKljRkof6eyGik9TQKbGdEzVivenPxP6+XmvDWz7hMUoOSLReFqSAmJvOvyZArZEZMLaFMcXsrYWOqKDM2m5INwVt9eZ20L2vedc1rXlXq1TyOIpzBOVTBgxuowz00oAUMEJ7hFd6cR+fFeXc+lq0FJ585hT9wPn8AwIuM0w==</latexit>
+
+c
+
+<latexit sha1_base64="tWikw4S2svP8h5R+YG/446JmGsI=">AAAB6HicbVBNS8NAEJ3Ur1q/qh69LBahp5KIqMeCF48t2A9oQ9lsJ+3azSbsboQS+gu8eFDEqz/Jm//GbZuDtj4YeLw3w8y8IBFcG9f9dgobm1vbO8Xd0t7+weFR+fikreNUMWyxWMSqG1CNgktsGW4EdhOFNAoEdoLJ3dzvPKHSPJYPZpqgH9GR5CFn1FipGQzKFbfmLkDWiZeTCuRoDMpf/WHM0gilYYJq3fPcxPgZVYYzgbNSP9WYUDahI+xZKmmE2s8Wh87IhVWGJIyVLWnIQv09kdFI62kU2M6ImrFe9ebif14vNeGtn3GZpAYlWy4KU0FMTOZfkyFXyIyYWkKZ4vZWwsZUUWZsNiUbgrf68jppX9a869pV86pSr+ZxFOEMzqEKHtxAHe6hAS1ggPAMr/DmPDovzrvzsWwtOPnMKfyB8/kDv/2M1Q==</latexit>
+
+b
+
+Figure 4: The graph G which is a sort of modified Q4 , obtained upon “compressing” four
+vertices.
+
+If D is the diagonal matrix that assigns 1 to all vertices and 2 to vertex c, and if P2 is
+the characteristic matrix of the distance partition of a, then the column space of DP2 is Ainvariant. If S2 is obtained upon normalizing the columns of DP2 , then it is a straightforward
+calculation to verify that the same matrix B as above represents the action of A(G) onto
+the columns of S2 . Thus Theorem 2.1 applies, and G admits perfect state transfer between
+a and b.
+There is a combinatorial interpretation of a partition being equitable. It consists of
+verifying that the out degree of every vertex from class i to class j is constant, depending
+only on i and j. It is straightforward to verify that the distance partition of a in G above also
+satisfies this regularity, except that edges arriving at c should be counted with weight 2, and
+edges departing c should be counted with weight 1/2. This combinatorial interpretation was
+heavily exploited in [29] to generate modified versions of several Cartesian powers of P2 and
+P3 , each with significantly fewer vertices and edges than the original. The procedure however
+did not lead to an infinite family whose size of each graph was bounded by a polynomial in
+the diameter.
+It is plausible that there is a subfamily of Cartesian powers of P2 for which this compressing procedure can be described in such a way that the resulting graphs are bounded by
+a polynomial in the diameter.
+2.2 Open Problem. Find an infinite family of graphs for which there is perfect state
+transfer, and the size of the graph is bounded by a polynomial in the diameter.
+
+2.3
+
+Bonus problems related to state transfer
+
+Godsil and Smith [21] provide an extensive theory of strongly cospectral vertices. The
+standard characterization says that two vertices are strongly cospectral if and only if they
+are cospectral and parallel. Vertices u and v are cospectral if, for any fixed k, the number
+of closed walks of length k starting and ending in u is the same as the number for v. It is
+fair to say this is a combinatorial characterization of cospectrality.
+2.3 Open Problem. Find a combinatorial characterization of strong cospectrality.
+6
+
+It could be that there is no perfect state transfer between u and v, which would correspond
+to | exp(itA)uv | being equal to 1 for some t, but there could be distinct values of t for which
+the sequence (| exp(itj A)uv |)j≥0 converges to 1. When this occurs, we say that pretty good
+state transfer happens in G between u and v. One of the results in [14] says that it is possible
+to verify whether a given graph admits pretty good state transfer, but it does not lead to
+a procedure to compute the sequence of times (tj ). It is also remarkable that perfect state
+transfer can be tested in polynomial time, whereas the algorithm in [14] presents exponential
+complexity.
+2.4 Open Problem. Find a polynomial time algorithm to test whether pretty good state
+transfer occurs, and find an algorithm to compute a subsequence of times which represent
+pretty good state transfer.
+
+3
+
+Uniform mixing
+
+There is a surprising connection between uniform mixing and perfect state transfer. If the
+vertices of a graph G can be partitioned into pairs such that there is perfect state transfer
+between each pair at some time τ , then the transition matrix at that time, U τ , must be a
+permutation matrix and thus have eigenvalues which are roots of unity. In all known cases of
+uniform mixing, the eigenvalues of U τ , where τ is the time of instantaneous uniform mixing,
+are also roots of unities, but there is no simple combinatorial explanation. This is the topic
+of our next open problem.
+Let G be a graph with adjacency matrix A. Recall that the transition matrix of the
+continuous-time quantum walk on G is given by
+U (t) = exp itA
+and the mixing matrix at time t is given by
+M (t) = U (t) ◦ U (t) = U (t) ◦ U (−t).
+We say that G admits instantaneous uniform mixing (or simply uniform mixing) at time τ if
+all entries of M (τ ) are equal. Equivalently, G admits uniform mixing at time τ if all entries
+of U (τ ) have the same absolute value.
+3.1 Open Problem. If G admits uniform mixing at time τ , then the eigenvalues of U (τ )
+are roots of unity.
+Uniform mixing has been studied in special graph classes, including in cycles [2], in
+circulant graphs [4, 3] and in association schemes in [7, 25]
+
+3.1
+
+Uniform mixing in association schemes
+
+We consider a continuous-time quantum walk on G, a distance regular graph of diameter d.
+Instead of looking at the eigenvalues of U (t), we can look at the mixing matrix
+M (t) = U (t) ◦ U (t)
+7
+
+which is symmetric and doubly-stochastic with non-negative real entries. We can give an
+explicit formula for the eigenvalues of M (t) in terms of the P and Q matrices of the distance
+regular graph.
+Recall that since {Ei }di=0 and {Ai }di=0 are both bases of M, there exists change of bases
+matrices between them. The eigenmatrices of the association scheme are (d + 1) × (d + 1)
+matrices P and Q such that
+d
+X
+
+d
+
+1X
+Aj =
+Pij Ei and Ej =
+Qij Ai ,
+n i=0
+i=0
+where n is the number of vertices. Note that this implies that {Pij }di=0 are the eigenvalues
+of Aj .
+3.1 Lemma. If G is a distance-regular graph of diameter d and M (t) is the mixing matrix,
+then
+!
+d
+X 1 X
+(1)
+eitPr1 −itPr′ 1 Qsr Qsr′ Pℓs Eℓ
+M (t) =
+2
+n
+′
+ℓ=0
+s,r,r
+for ℓ = 0, . . . , d.
+Proof. Since G is a distance-regular, A(G) = A1 in an association. The eigenvalues of A1
+are {Pr1 }dr=0 and we see that
+U (t) =
+
+d
+X
+
+e
+
+itPr1
+
+Er ,
+
+U (t) =
+
+r=0
+
+d
+X
+
+e−itPr1 Er .
+
+r=0
+
+Since we want to take a Schur product, we will write U (t), U (t) in the Schur basis as follows:
+!
+!
+d
+d
+d
+d
+X
+X
+X
+X
+1
+1
+eitPr1
+U (t) =
+Qsr As =
+eitPr1 Qsr As
+n
+n
+r=0
+s=0
+s=0
+r=0
+whence
+! !
+! !
+d
+d
+d
+d
+1 X X itPr1
+1 X X −itPr′ 1
+e
+Qsr As ◦
+e
+Qs′ r′ As′
+M (t) = U (t) ◦ U (t) =
+n s=0 r=0
+n s′ =0 r′ =0
+!
+!
+d
+d
+d
+X
+1 X X itPr1
+−itPr′ 1
+= 2
+e
+Qsr
+e
+Qsr′ As
+n s=0 r=0
+r′ =0
+!
+d
+1 X X itPr1 −itPr′ 1
+= 2
+e
+Qsr Qsr′ As .
+n s=0 r,r′
+
+8
+
+To find the eigenvalues, we will change into the other basis.
+! d
+!
+d
+X
+1 X X itPr1 −itPr′ 1
+e
+Qsr Qsr′
+M (t) = 2
+Pℓs Eℓ
+n s=0 r,r′
+ℓ=0
+!
+d
+X
+1 X itPr1 −itPr′ 1
+=
+e
+Qsr Qsr′ Pℓs Eℓ ,
+2
+n
+′
+ℓ=0
+s,r,r
+which gives the eigenvalues of M (t).
+The following lemma will allow us to determine if the distance regular graph has perfect
+state transfer between pairs of antipodal vertices from the eigenvalues of M (t).
+3.2 Lemma. If M is a symmetric n × n matrix such that the following hold:
+(a) M is doubly stochastic, and,
+(b) the characteristic polynomial of M is xn−1 (x − 1),
+then M = n1 J.
+Proof. Suppose M is a n × n matrix satisfying the hypotheses in the theorem. Since M has
+exactly one non-zero eigenvalue, then M has exactly one linear independent row. We may
+write
+
+
+v
+ α1 v 
+
+
+M =  .. 
+ . 
+αn−1 v
+where the αj s are scalars in R. Since row sums are constant, we have
+n
+X
+
+vℓ = αj
+
+n
+X
+
+vℓ
+
+ℓ=1
+
+ℓ=1
+
+for j = 1, . . . , n − 1. Then αj = 1 for j = 1, . . . , n − 1.
+Suppose there exists j and ℓ in {1, . . . , n} such that vj ̸= vℓ . Since M is symmetric, we
+have that
+vj = M (1, j) = M (j, 1) = v1
+and
+vℓ = M (1, ℓ) = M (ℓ, 1) = v1 = vj ,
+a contradiction. Thus v is a constant vector. Since v has non-negative entries and sums to
+1, we have that M = n1 J as required.
+
+9
+
+If we combine this with the previous lemma, we obtain a necessary and sufficient condition
+for uniform mixing, using the parameters of the graph.
+3.3 Corollary. If A(G) is a relation of an association scheme, then G admits uniform mixing
+at time t if and only if
+! (
+1, if ℓ = 0;
+1 X itPr1 −itPr′ 1
+′ Pℓs
+e
+Q
+Q
+=
+sr
+sr
+n2 s,r,r′
+0, otherwise.
+Proof. Follow directly from Lemmas 3.1 and 3.2.
+Though this appears as if it would be difficult to use, however, it does give us a way to
+rule out uniform mixing for some classes of graphs. For a Hadamard graph:
+
+
+1 √n
+2n − 2
+n
+1
+√
+1
+n
+0
+− n −1
+
+
+.
+0
+−2
+0
+1
+P =Q=
+1
+
+√
+√
+1 − n
+0
+n −1
+1 −n 2n − 2 −n
+1
+
+If n is a square, the Hadamard graph of order n has perfect state transfer at time t = √πn .
+(If n is not a square, then the graph has non-integral eigenvalues.)
+3.4 Lemma. The Hadamard graph of order n has uniform mixing at some time t if and
+only if n = 4.
+
+Proof. We will look at the ℓ = 2 eigenvalue of M (t) for any time t. We get
+
+√
+1  2 (2i√nt)
+2 (−2i nt)
+2
+(int)
+(−int)
+λ2 = 2 2n e
++ 2n e
++ 12n + 8ne
++ 8ne
+− 16n
+n
+√
+√
+8
+8
+16
+= 2e(2i nt) + 2e(−2i nt) + 12 + e(int) + e(−int) −
+n
+n
+n
+If λ2 = 0, then we have
+ √
+ 8
+√
+ 16
+e(int) + e(−int) =
+− 12
+2 e(2i nt) + e(−2i nt) +
+n
+n
+√  16
+16
+4 cos(2 nt) +
+(cos (nt)) =
+− 12
+n
+n
+√
+16 16
+4 cos(2 nt) + 12 =
+−
+cos (nt)
+n
+n
+ 16
+√
+4 cos(2 nt) + 3 =
+(1 − cos (nt)) .
+n
+We see that the left hand side is at least 8 for any n, t. Then
+16
+32
+8 ≤ (1 − cos(nt)) ≤
+n
+n
+from whence we obtain that n ≤ 4. We can verify that the Hadamard graph with n = 2
+does not have uniform mixing but the Hadamard graph with n = 4 does uniform mixing at
+time t = √πn , since it is isomorphic to the hypercube on 16 vertices.
+10
+
+This leads us to our next open problem. Like the Hadamard graph, C9 is also a formally
+self-dual distance-regular graph of diameter 4. Unfortunately, it seems that the application
+of Corollary 3.3 is much more diffcult in this case.
+3.2 Open Problem. Determine if C9 admits uniform mixing.
+We note that it is possible that C9 admits uniform mixing but the eigenvalues of U τ are
+not roots of unity. The open problem first appeared in [25] and in the thesis [32] of one of
+the authors, Natalie Mullin. Their work shows that uniform mixing does not occur on even
+cycle and nor on any cycle of prime length.
+A major drawback of Corollary 3.3 is that, unlike the characterisation of perfect state
+transfer, it is not independent of the time of uniform mixing. For the Hadamard graphs, we
+are able to show that no time t exists which satisfy the conditions of Corollary 3.3, except
+when n = 4. In general, it would be enlightening to give a characterisation of instantaneous
+uniform mixing which does not depend on the time.
+3.3 Open Problem. Given the eigenvalues and eigenspaces of a graph, give necessary and
+sufficient conditions for uniform mixing to occur.
+We note that such a characterisation is likely difficult and related to the decidability of
+uniform mixing. It would be useful even in classes of graphs, like the class of distance-regular
+or strongly regular graphs.
+
+4
+
+Average mixing matrix
+
+Recall that
+M (t) = U (t) ◦ U (−t)
+
+is doubly-stochastic. Its rows (and columns) are probability distributions, and each of its
+entries indicates the probability that certain special separable states evolve to others within
+the quantum walk. The typical behaviour of a quantum walk can therefore be inferred by
+taking averages of the matrices M (t) for varying values of t. The uniform average on the
+interval [0, T ] is given by
+Z
+1 T
+c
+M (t) dt.
+M[0,T ] =
+T 0
+It is quite well-known that if T → ∞, this average converges to a nice, special matrix, whose
+connection to the combinatorics of the graph has lead to unexpected results.
+The average mixing matrix is defined as
+c = lim M
+c[0,T ] ,
+M
+T →∞
+
+and a straightforward calculation shows that if A(G) =
+c=
+M
+
+d
+X
+r=0
+
+Er ◦ Er .
+
+11
+
+Pd
+
+r=0 θr Er , then
+
+Averages of probability distribution coming from the rows of M (t) were investigated in
+hypercubes in [31], complete graphs in [3] and circulants in [2]. Godsil [22] introduced the
+c, and the connection of M
+c and average states and the commutant algebra
+basic theory of M
+of A(G) was developed in [18].
+As the theory of the average mixing matrix is relatively new, there are many interesting
+problems one can ask. We discuss a few below.
+We begin with a problem that remotes to the topic of the previous section:
+c is
+4.1 Open Problem. If G is a primitive distance-regular graph, show that the rank of M
+equal to the number of vertices.
+
+4.1
+
+c
+Different takes on the positivity of M
+
+c has nonnegative entries and is positive semidefinite. It was shown
+It is quite clear that M
+c
+in [18] that M is in fact completely positive semidefinite, meaning, it is the Gram matrix
+of positive semidefinite matrices. In each of these cones of matrices, it is natural and often
+very useful to find the rank within the cone of a given matrix.
+The non-negative rank of a non-negative n × n matrix M is the least number k, P
+such that
+there are k matrices {Mr }kr=1 of rank 1 with non-negative entries, such that M = kr=1 Mr .
+The completely positive semidefinite rank (cpsd-rank) of a completely positive semidefinite matrix M is the smallest dimension d so that M is the Gram matrix of positive semidefinite matrices of size d × d.
+c is at most n, and it is well-known that
+The result in [18] shows that the cpsd-rank of M
+the non-negative rank of a non-negative n × n matrix is at most n. The paper [18] also
+c and other properties of the graph, for
+develops theory connecting the (usual) rank of M
+example, there it is shown that if G has simple eigenvalues and at least three vertices, then
+c is at most n − 1, with equality implying that all automorphisms of G have
+the rank of M
+fixed points.
+c is equal to n?
+4.2 Open Problem. When is the non-negative rank of M
+c.
+4.3 Open Problem. Compute the cpsd-rank of M
+4.4 Open Problem. In the extremal cases for the non-negative or cpsd ranks, what combinatorial consequences may be derived?
+c is almost always completely positive. In other words, it is a Gram matrix
+The matrix M
+of non-negative vectors.
+c is completely positive.
+4.1 Lemma. If G has simple eigenvalues, then M
+Proof. If the θr -eigenspace has dimension 1, then Er = vr vrT . Then we have
+c=
+M
+
+d
+X
+r=0
+
+d
+d
+X
+X
+T
+T
+Er ◦ Er =
+(vr vr ) ◦ (vr vr ) =
+(vr ◦ vr )(vr ◦ vr )T .
+r=0
+
+r=0
+
+Since the entries of vr ◦ vr are square, they are non-negative and this gives a non-negative
+c.
+factorization of M
+12
+
+The completely positive rank (cp-rank) of a completely positive matrix M is the smallest
+dimension d for which M is a Gram matrix of non-negative vectors in Rd .
+Since the rank of the average mixing matrix of a graph with simple eigenvalues is at most
+n − 1, this may be a situation where it is possible to find the cp-rank or to characterise those
+whose cp-rank is equal to the number of vertices.
+c is equal to n?
+4.5 Open Problem. When is the cp-rank of M
+
+4.2
+
+Rank, trace, eigenvalues, and alternative averages
+
+The average mixing matrix is computed from the uniform average over intervals. There are
+other probability distributions for which the average of the mixing matrices lead to interesting
+phenomena. If R is a random variable with probability density function fR (t) : R −
+→ [0, ∞),
+then the average mixing matrix under R is defined as
+Z ∞
+cR := E[M (R)] =
+M
+M (t)fR (t) dt.
+−∞
+
+The recent pre-print [6] explores this idea, and among other things, show that for the paths
+cR has rank 1 (something that never happens
+P3 and P4 there are choices of R for which M
+c unless the graph is P2 ). The natural question of whether this is also possible for Pn ,
+for M
+n ≥ 5, remains open, however here we point to another line of investigation.
+Rank, diagonal entries, trace, eigenvalues, all of these very natural linear algebraic propc [18, 27, 26]. Proposition 6 in [6] provides absolute
+erties of a matrix have been studied for M
+c, for any R. Thus we
+upper and lower bounds for these parameters in terms of those of M
+propose the very open ended line of research:
+cR , R an arbitrary
+4.6 Open Problem. Develop a spectral graph theory for the matrix M
+random variable.
+cR = M (τ ) for a fixed τ ∈ R, so
+We point out that R can always be chosen so that M
+developments to this theory above will address questions about state transfer or uniform
+mixing, so one should not be too ambitious. On the other hand, tools from probability
+theory should be useful, and have not been heavily explored in the context of this interplay
+between graph theory and quantum walks.
+
+Acknowledgements
+Gabriel Coutinho acknowledges the support from CNPq. The collaboration of the two authors is supported by FAPEMIG grant APQ-04481-22. Krystal Guo acknowledges the support from FAPERJ. Both authors would like to express our gratitude to Nair Abreu for
+her invaluable contributions to the spectral graph theory, and to the editors of this special
+issue for providing us with the opportunity to contribute to the celebration of Nair Abreu’s
+birthday.
+13
+
+References
+[1] G. Coutinho and K. Guo and C.M. van Bommel. “Pretty good state transfer between
+internal nodes of paths”. eng. In: Quantum information & computation 17.9&10 (2017),
+pp. 825–830 (cit. on p. 2).
+[2] William Adamczak, Kevin Andrew, Leon Bergen, Dillon Ethier, Peter Hernberg, Jennifer Lin, and Christino Tamon. “Non-uniform mixing of quantum walk on cycles”. In:
+International Journal of Quantum Information 5.06 (2007), pp. 781–793 (cit. on pp. 2,
+7, 12).
+[3] William Adamczak, Kevin Andrew, Peter Hernberg, and Christino Tamon. A note on
+graphs resistant to quantum uniform mixing. arXiv:quant-ph/0308073. 2003 (cit. on
+pp. 2, 7, 12).
+[4] Amir Ahmadi, Ryan Belk, Christino Tamon, and Carolyn Wendler. “On mixing in
+continuous-time quantum walks on some circulant graphs”. In: Quantum Information
+& Computation 3.6 (2003), pp. 611–618 (cit. on p. 7).
+[5] Rachel Bachman, Eric Fredette, Jessica Fuller, Michael Landry, Michael Opperman,
+Christino Tamon, and Andrew Tollefson. “Perfect state transfer on quotient graphs”.
+In: arXiv preprint arXiv:1108.0339 (2011) (cit. on p. 4).
+[6] Pedro Baptista, Gabriel Coutinho, and Vitor Marques. Unexpected Averages of Mixing
+Matrices. arXiv:2308.16378. 2023 (cit. on p. 13).
+[7] Ada Chan. “Complex Hadamard matrices, instantaneous uniform mixing and cubes”.
+In: Algebraic Combinatorics 3.3 (2020), pp. 757–774 (cit. on pp. 2, 7).
+[8] Andrew M Childs. “Universal computation by quantum walk”. In: Physical Review
+Letters 102.18 (2009), pp. 4, 180501 (cit. on p. 1).
+[9] Matthias Christandl, Nilanjana Datta, Tony C Dorlas, Artur Ekert, Alastair Kay, and
+Andrew J Landahl. “Perfect transfer of arbitrary states in quantum spin networks”.
+In: Physical Review A 71.3 (2005), p. 32312 (cit. on p. 4).
+[10] Matthias Christandl, Nilanjana Datta, Artur Ekert, and Andrew J Landahl. “Perfect
+state transfer in quantum spin networks”. eng. In: Physical review letters 92.18 (2004),
+pp. 187902–187902 (cit. on p. 2).
+[11] Fan RK Chung. “Diameters and eigenvalues”. In: Journal of the American Mathematical Society 2.2 (1989), pp. 187–196 (cit. on p. 3).
+[12] G. Coutinho, C. Godsil, K. Guo, and F. Vanhove. “Perfect state transfer on distanceregular graphs and association schemes”. In: Linear Algebra and its Applications 478
+(2015), pp. 108–130 (cit. on p. 2).
+[13] Gabriel Coutinho. “Quantum walks and the size of the graph”. In: Discrete Mathematics 342.10 (2019), pp. 2765–2769 (cit. on pp. 2, 3).
+
+14
+
+[14] Gabriel Coutinho, Pedro Ferreira Baptista, Chris Godsil, Thomás Jung Spier, and
+Reinhard Werner. “Irrational quantum walks”. In: SIAM Journal on Applied Algebra
+and Geometry 7.3 (2023), pp. 567–584 (cit. on p. 7).
+[15] Gabriel Coutinho and Chris Godsil. “Continuous-time quantum walks in graphs”. In:
+The Bulletin of the International Linear Algebra Society (2018), p. 5 (cit. on pp. 1, 3).
+[16] Gabriel Coutinho, Emanuel Juliano, and Thomás Jung Spier. The spectrum of symmetric decorated paths. arXiv:2305.09406. 2023 (cit. on p. 3).
+[17] Miguel Angel Fiol, Ernest Garriga, and José Luis Andrés Yebra. “Locally pseudodistance-regular graphs”. In: journal of combinatorial theory, Series B 68.2 (1996),
+pp. 179–205 (cit. on pp. 4, 5).
+[18] G. Coutinho, C. D. Godsil, K. Guo, and H. Zhan. “A New Perspective on the Average
+Mixing Matrix”. In: Electron. J. Comb. 25.4 (2018), P4.14 (cit. on pp. 2, 12, 13).
+[19] C. D. Godsil, K. Guo, M. Kempton, G. Lippner, and F. Münch. “State transfer in
+strongly regular graphs with an edge perturbation”. In: J. Comb. Theory, Ser. A 172
+(2020), p. 105181 (cit. on p. 2).
+[20] Chris Godsil and Gordon Royle. Algebraic Graph Theory. New York: Springer-Verlag,
+2001, pp. xx+439 (cit. on p. 4).
+[21] Chris Godsil and Jamie Smith. “Strongly cospectral vertices”. In: Australasian Journal
+of Combinatorics 88.1 (2024), pp. 1–21 (cit. on p. 6).
+[22] Chris D Godsil. “Average mixing of continuous quantum walks”. In: Journal of Combinatorial Theory, Series A 120.7 (2013), pp. 1649–1662 (cit. on pp. 2, 12).
+[23] Chris D Godsil. “Periodic graphs”. In: Electronic Journal of Combinatorics 18.1 (2011),
+Paper 23, 15 (cit. on p. 2).
+[24] Chris D Godsil. “When can perfect state transfer occur?” In: Electronic Journal of
+Linear Algebra 23 (2012), pp. 877–890 (cit. on p. 2).
+[25] Chris D Godsil, Natalie Mullin, and Aidan Roy. Uniform Mixing and Association
+Schemes. arXiv: 1301.5889. 2013 (cit. on pp. 2, 7, 11).
+[26] Chris D. Godsil, Krystal Guo, and Mariia Sobchuk. “Diagonal entries of the average
+mixing matrix”. In: Australas. J Comb. 86 (2023), pp. 373–386 (cit. on p. 13).
+[27] K. Godsil C. and Guo and J. Sinkovic. “Average Mixing Matrix of Trees”. In: Electronic
+Journal of Linear Algebra 34 (June 2018), pp. 269–282 (cit. on pp. 2, 13).
+[28] Alastair Kay. “Perfect, efficient, state transfer and its application as a constructive
+tool”. In: International Journal of Quantum Information 8.04 (2010), pp. 641–676
+(cit. on p. 2).
+[29] Alastair Kay. The perfect state transfer graph limbo. arXiv:1808.00696. 2018 (cit. on
+pp. 2, 6).
+
+15
+
+[30] Mark Kempton, Gabor Lippner, and Shing-Tung Yau. “Perfect state transfer on graphs
+with a potential”. eng. In: Quantum information & computation 17.34 (2017), pp. 303–
+327 (cit. on p. 2).
+[31] Cristopher Moore and Alexander Russell. “Quantum walks on the hypercube”. In: International Workshop on Randomization and Approximation Techniques in Computer
+Science. Springer. 2002, pp. 164–178 (cit. on p. 12).
+[32] Natalie Ellen Mullin. “Uniform Mixing of Quantum Walks and Association Schemes”.
+en. PhD Thesis. Sept. 2013 (cit. on p. 11).
+
+16
+
+
