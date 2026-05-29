@@ -756,7 +756,12 @@ Summary of stated (sorry-deferred) content:
 
   * `hasFiniteLimits_WGraphP`, `regular_epi_mono_factorization`,
     `regular_epi_stable_under_pullback`, `WGraphP_regular` — `WGraphP` is regular.
-  * `FinerThan` lattice, `subobject_iso_finerThan` — subobject classifier.
+  * `FinerThan.preorder` (the genuine, sorry-free refinement order — *not* a
+    lattice: the meet of two equitable partitions can fail to be equitable, and
+    antisymmetry fails up to cell-relabelling), `FinerThan.meet` (sorry-free,
+    takes equitability of the joint labelling as a hypothesis) with its
+    bounds `meet_le_left`/`meet_le_right`, `FinerThan.join`/`le_join`, and
+    `subobject_iso_finerThan` — subobject classifier.
   * `InternalPredicate`, `internal_forall_is_refinement_stable`,
     `internal_exists_is_refinement_witness` — internal logic.
   * `discretePartition`, `Discrete`, `Forget`, `discrete_adjoint_quotient`,

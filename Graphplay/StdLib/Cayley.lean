@@ -183,11 +183,24 @@ noncomputable def cycle (n : ℕ) [NeZero n] : WeightedGraph (ZMod n) := by
       simp }
 
 /-- **Bašić–Petković–Stevanović, applied to the cycle.**  `C_n` admits
-PST between antipodal vertices iff `n` is a power of `2` (specifically
-`n ∈ {2, 4}`; cf. arXiv:0810.4866 Example 3.2; the iff was sharpened in
-arXiv:1304.5894). -/
+perfect state transfer between the antipodal vertices `0` and `n/2` iff
+`n ∈ {2, 4}`.
+
+Genuine statement (replacing the previous `True ↔ …` placeholder): the LHS is
+now the *actual* PST predicate — existence of a transfer time `τ` realising
+PST between vertex `0` and the antipodal vertex `(n/2 : ZMod n)` of the cycle
+`C_n`.  (For odd `n` there is no exact antipode; PST then provably fails, which
+is consistent with the RHS excluding all odd `n`.)
+
+Cf. arXiv:0810.4866 Example 3.2; the iff was sharpened in arXiv:1304.5894.
+`C_2 = K_2` (trivial PST) and `C_4` are the only cycles with antipodal PST. -/
 theorem cycle_PST_iff (n : ℕ) [NeZero n] (h : 2 ≤ n) :
-    True ↔ n = 2 ∨ n = 4 := by
+    (∃ τ : ℝ, IsPST (cycle n) (0 : ZMod n) ((n / 2 : ℕ) : ZMod n) τ)
+      ↔ n = 2 ∨ n = 4 := by
+  -- Spectral PST criterion on the circulant `C_n`: the eigenvalues are
+  -- `2 cos(2πj/n)` and antipodal PST holds iff all eigenvalue *gaps* from the
+  -- top are even integer multiples of a common period, which (Bašić et al.)
+  -- pins `n ∈ {2, 4}`.  Number-theoretic case analysis deferred.
   sorry
 
 /-- The complete list (per Bašić–Petković–Stevanović 2009+2013) of

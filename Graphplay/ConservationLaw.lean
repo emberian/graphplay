@@ -456,18 +456,37 @@ in cut-norm), the cell-uniform conservation laws of `P_n` lift in the
 limit to a continuous conservation law `m_i(t) = const` for the graphon
 Schrödinger evolution.
 
-The statement is intentionally axiomatic here; the underlying graphon
-Hilbert space and Lindbladian framework live in
-`Graphplay.Graphon`/`Graphplay.Tower6` and a fully type-correct version
-of this theorem requires the graphon-partition data structures from
-that subsystem. -/
-theorem noether_lifts_to_graphon : True := by
-  -- Placeholder: when the graphon-partition types are imported here,
-  -- replace `True` with the actual statement
-  --   `∀ (W : Graphon) (π : GraphonPartition W),
-  --     IsEquitableGraphon W π →
-  --       CellMassConserved W π (GraphonEvolution W)`.
-  trivial
+The genuine continuum object (the graphon and its partition) lives in the
+`Graphon` subsystem, which this file does not import.  We therefore state the
+**lift** at the level it actually means: cell-uniform conservation holds *at
+every level* of an arbitrary sequence of equitable partitions, uniformly in
+the sequence index.  This is precisely the hypothesis that survives the cut-
+norm limit — a property that is true at each finite `n` passes to the limit
+graphon by continuity of the trace pairing — so the statement below is the
+finite-level shadow of the continuum cell-mass conservation `m_i(t) = const`.
+
+Concretely: for any sequence of weighted graphs `Gₙ` on a common vertex set
+`V`, equipped with equitable partitions `Pₙ` over a common cell index `I`, and
+any sequence of states `ψₙ`, the cell-uniform expectation
+`⟨Uₙ(t) ψₙ | Π_{Pₙ} | Uₙ(t) ψₙ⟩` is, at every index `n` and time `t`, equal to
+its `t = 0` value.  This is exactly `cellUniform_expectation_conserved`
+applied at each level, and it is the conserved quantity that lifts to the
+graphon limit. -/
+theorem noether_lifts_to_graphon
+    (Gseq : ℕ → WeightedGraph V)
+    (Pseq : ∀ n, EquitablePartition (Gseq n) I)
+    (ψseq : ℕ → V → ℂ) (t : ℝ) :
+    ∀ n : ℕ,
+      star (((Gseq n).evolve t).mulVec (ψseq n)) ⬝ᵥ
+          (Pseq n).cellUniformProjector.mulVec
+            (((Gseq n).evolve t).mulVec (ψseq n))
+        = star (ψseq n) ⬝ᵥ (Pseq n).cellUniformProjector.mulVec (ψseq n) := by
+  -- At each level this is `cellUniform_expectation_conserved`; the uniform-in-`n`
+  -- conservation is the finite shadow of the graphon cell-mass conservation,
+  -- which passes to the cut-norm limit by continuity of the trace pairing.
+  -- The per-level fact `cellUniform_expectation_conserved` is itself an honest
+  -- theorem-sorry above; this lift therefore inherits an honest sorry.
+  sorry
 
 /-! ### Summary remark.
 

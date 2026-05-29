@@ -84,8 +84,3 @@ def main (args : List String) : IO UInt32 := do
 
 end Toolkit
 end Graphplay
-
-/-- IO-only entry point for `lake build`'s `lean_exe`.  Reads `argv` (skipping
-the program name) and dispatches to `Graphplay.Toolkit.main`. -/
-def main (args : List String) : IO UInt32 :=
-  Graphplay.Toolkit.main args

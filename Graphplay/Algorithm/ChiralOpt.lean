@@ -381,20 +381,37 @@ theorem chiralOptimize_feasible
   sorry
 
 /-- **Equitable-partition compatibility.**  The optimiser preserves the
-fiber-equitable partition of the bundle: signing only off-diagonal
-blocks does not disturb intra-fiber row sums on `|adj|`. -/
-theorem chiralOptimize_preserves_partition
+fiber-equitable partition of the bundle: the optimised signed total graph
+admits the *same* partition `P` as an equitable partition.
+
+Genuine statement (replacing the previous `True` placeholder): provided the
+optimiser's output signing is **cross-constant** on the cells of `P` (its phase
+on a pair `(x, y)` depends only on the cells of `x` and `y` — the regime in
+which the chiral re-signing rotates whole cross-cell blocks uniformly), the
+total graph re-signed by that signing carries `P` as an `EquitablePartition`.
+
+This is the precise transcription of "signing only off-diagonal blocks does not
+disturb intra-fiber row sums": a cell-pair-constant phase factors out of each
+cell-row sum, so equitability is preserved.  We prove it via
+`WeightedGraph.signedBy_preserves_equitable`.
+
+The cross-constant hypothesis is genuinely required: an *arbitrary* phasing can
+break equitability, so we expose it as an explicit assumption rather than
+asserting the (false) unconditional claim.
+
+Returns the *witness* equitable partition (data), hence a `def`; it is fully
+constructed with no `sorry`. -/
+noncomputable def chiralOptimize_preserves_partition
     (B : GraphBundle Q V) (target : PrimitiveTarget)
     (H : HardwareSpec) (k : ℕ)
     {J : Type*} [Fintype J] [DecidableEq J]
-    (P : EquitablePartition (B.total) J) :
-    True := by
-  -- A statement-level placeholder: the optimised signed total graph admits
-  -- the same `P` as an equitable partition.  Concretely the signing acts
-  -- by unit-modulus phases on off-diagonal blocks and therefore preserves
-  -- |adj| row sums on each cell.  Stated as `True` here; the structural
-  -- claim should grow into an `EquitablePartition (signedBy ...) J`.
-  trivial
+    (P : EquitablePartition (B.total) J)
+    (hcross :
+      ((chiralOptimize B target H k).signing).CrossConstant P.cells) :
+    EquitablePartition
+      ((B.total).signedBy ((chiralOptimize B target H k).signing)) J :=
+  WeightedGraph.signedBy_preserves_equitable
+    (B.total) P ((chiralOptimize B target H k).signing) hcross
 
 /-! ## Convenience: pre-canned optimisers
 

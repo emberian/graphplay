@@ -739,7 +739,62 @@ integers), where the Godsil condition reduces to ordinary integrality
 + parity.  We do not develop the p-adic theory here; we only flag the
 connection. -/
 
-theorem padic_remark_placeholder : True := trivial
+/-- **Rational quasi-integrality criterion** (the `ℚ`-specialisation of the
+p-adic reformulation of Godsil's arithmetic condition).  A rational number `q`
+is an integer (`q.den = 1`) **iff** its `p`-adic norm is at most `1` for every
+prime `p`.
+
+This is the genuine number-theoretic content flagged in the remark above: the
+Galois-conjugate version reduces, for an eigenvalue that is *already rational*
+(the integral-graph case), to exactly this statement, since a rational number
+has only itself as a Galois conjugate and `padicNorm p q ≤ 1` is precisely the
+condition "`q` is a `p`-adic integer".  The forward direction is `padicNorm`'s
+integrality bound; the reverse direction says a denominator `> 1` is detected
+by the `p`-adic norm at any prime dividing it. -/
+theorem padic_quasiIntegral_iff (q : ℚ) :
+    q.den = 1 ↔ ∀ p : ℕ, p.Prime → padicNorm p q ≤ 1 := by
+  constructor
+  · -- An integer has `p`-adic norm `≤ 1` at every prime.
+    intro hden p hp
+    haveI : Fact p.Prime := ⟨hp⟩
+    -- `q = q.num` as a rational when `q.den = 1`, so `padicNorm p q = padicNorm p (q.num)`.
+    have hq : (q.num : ℚ) = q := Rat.coe_int_num_of_den_eq_one hden
+    rw [← hq]
+    exact padicNorm.of_int q.num
+  · -- Conversely, a denominator `> 1` is detected by a prime divisor.
+    intro h
+    by_contra hden
+    -- `q.den ≥ 2`, so it has a prime factor `p`.
+    have hden2 : 2 ≤ q.den := by
+      have hpos := q.den_pos
+      omega
+    obtain ⟨p, hp, hpdvd⟩ := (q.den).exists_prime_and_dvd (by omega)
+    haveI : Fact p.Prime := ⟨hp⟩
+    -- At such a prime the `p`-adic norm exceeds `1`, contradicting `h p hp`.
+    have hp1 : 1 < padicNorm p q := by
+      -- `padicValRat p q < 0` because `p ∣ q.den` and `q` is reduced.
+      have hq0 : q ≠ 0 := by
+        intro h0; rw [h0] at hden; exact hden (by simp)
+      have hval : padicValRat p q < 0 := by
+        rw [padicValRat_def]
+        have hnum : padicValInt p q.num = 0 := by
+          rw [padicValInt]
+          -- `p ∤ q.num` since `gcd(num, den) = 1` and `p ∣ den`.
+          have hcop : Nat.Coprime q.num.natAbs q.den := q.reduced
+          have hpnum : ¬ (p ∣ q.num.natAbs) := by
+            intro hpn
+            exact hp.one_lt.ne' (Nat.eq_one_of_dvd_coprimes hcop hpn hpdvd)
+          rw [padicValNat.eq_zero_of_not_dvd hpnum]
+        have hden' : 1 ≤ padicValNat p q.den :=
+          one_le_padicValNat_of_dvd (by omega) hpdvd
+        have hden'' : (1 : ℤ) ≤ (padicValNat p q.den : ℤ) := by exact_mod_cast hden'
+        rw [hnum]
+        simp only [Int.natCast_zero, zero_sub, neg_neg]
+        omega
+      rw [padicNorm.eq_zpow_of_nonzero hq0]
+      apply one_lt_zpow₀ (by exact_mod_cast hp.one_lt)
+      omega
+    exact absurd (h p hp) (not_le.mpr hp1)
 
 end PST
 end Graphplay

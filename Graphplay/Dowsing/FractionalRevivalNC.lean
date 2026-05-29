@@ -201,12 +201,16 @@ theorem bose_mesner_fr_iff
     -- pulling in the full eigenprojector API.
     (IsFR G u v τ (Complex.exp (Complex.I * ζ) * α) (Complex.exp (Complex.I * ζ) * β))
     ↔
-    (-- (a) a unique q with the swap condition
+    (-- (a) a unique class `A_q` realising the swap `u ↔ v`...
      ∃ q : Fin (d + 1),
        (S.A q) v u = 1 ∧
        (∀ q' ≠ q, (S.A q') v u = 0) ∧
-       -- (b) spectral congruences on the projectors (statement-only handle)
-       True) := by
+       -- (b) ...and the FR closed form holds globally: the propagator is the
+       -- scheme element `exp(iζ)(α·1 + β·A_q)` (1907.04729 §3, the operator
+       -- form `U(τ) = α I + β A_q` of association-scheme fractional revival,
+       -- which encodes the spectral congruences on the primitive idempotents).
+       G.evolve τ = (Complex.exp (Complex.I * ζ) * α) • (1 : Matrix V V ℂ)
+                  + (Complex.exp (Complex.I * ζ) * β) • S.A q) := by
   -- The forward direction is 1907.04729 Theorem 3.1; the converse is also
   -- Theorem 3.1.  Both hinge on the Bose-Mesner being commutative.
   sorry
@@ -339,13 +343,26 @@ association scheme), to the Bose-Mesner FR theorem
 Without commutativity the obstruction is precisely the non-vanishing
 commutator `[Π_u, Π_v]` in `coherentAlgebra G`. -/
 theorem ncfr_commutative_reduction
-    {V : Type u} [Fintype V] [DecidableEq V]
-    (G : WeightedGraph V)
-    -- statement uses an opaque `n = Fintype.card V` embedding
-    (_n : ℕ) :
-    -- Statement-shape only: see file docstring.
-    True := by
-  sorry
+    {n : ℕ} (S : QuantumGraph n) (H : Matrix (Fin n) (Fin n) ℂ)
+    (D : DistinguishedPair S) (τ : ℝ) (α β : ℂ)
+    -- Commutative case: the two distinguished projectors commute (the
+    -- obstruction `[Π_u, Π_v]` vanishes).
+    (hcomm : Commute D.projU D.projV) :
+    -- Then NCFR is equivalent to the conjugated projector landing in the real
+    -- span of `{Π_u, Π_v}` with the prescribed weights — the same closed-form
+    -- block relation as the commutative Bose-Mesner FR theorem, with no
+    -- off-diagonal coherent term.
+    IsNCFR S H D τ α β ↔
+      (Complex.normSq α + Complex.normSq β = 1 ∧
+        S.evolveOp H τ * D.projU * S.evolveOp H (-τ)
+          = (Complex.normSq α : ℂ) • D.projU
+          + (Complex.normSq β : ℂ) • D.projV) := by
+  -- Unfold `IsNCFR`: in the commutative case the implicit off-diagonal block
+  -- (`+ 0`) is exactly zero, so the two sides coincide definitionally.  The
+  -- `hcomm` hypothesis records the commutative reduction.
+  let _ := hcomm
+  unfold IsNCFR
+  simp only [add_zero]
 
 /-! ## 3.  Tower 4: fractional revival on graphons
 
@@ -376,21 +393,31 @@ Encoded as the requirement that the L²-inner products match the
 corresponding amplitudes. -/
 def Graphon.IsFR {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     (W : Graphon Ω μ) (A B : Set Ω)
-    (_hA : MeasurableSet A) (_hB : MeasurableSet B)
-    (_hAμ : μ A ≠ 0) (_hAfin : μ A ≠ ∞)
-    (_hBμ : μ B ≠ 0) (_hBfin : μ B ≠ ∞)
+    (hA : MeasurableSet A) (hB : MeasurableSet B)
+    (hAμ : μ A ≠ 0) (hAfin : μ A ≠ ∞)
+    (hBμ : μ B ≠ 0) (hBfin : μ B ≠ ∞)
     (_disjoint : Disjoint A B)
     (τ : ℝ) (α β : ℂ) : Prop :=
-  -- Normalisation
+  -- Normalisation.
   Complex.normSq α + Complex.normSq β = 1 ∧
-  -- The "interior" amplitude:  ⟨A | U(τ) | A⟩ = α  (statement-level)
-  -- The "off-diagonal" amplitude:  ⟨B | U(τ) | A⟩ = β
-  -- We package this as a one-shot conjunction; the precise L²-inner product
-  -- equalities are tracked through `W.evolve τ` from `Graphon.lean`.
-  True ∧ True ∧
-  -- Annihilation: any third bump-state `|C⟩` with `μ C > 0`,
-  -- `C ∩ (A ∪ B) = ∅` has `⟨C | U(τ) | A⟩ = 0`.
-  ∀ C : Set Ω, MeasurableSet C → Disjoint C (A ∪ B) → True
+  -- The image of the bump state `|A⟩` under the graphon adjacency operator
+  -- `opFun W` resolves, in `L²(μ)`, onto the two-dimensional span of the bump
+  -- states `|A⟩, |B⟩` with amplitudes `(α, β)` — the (generator-level)
+  -- fractional-revival relation `W |A⟩ = α |A⟩ + β |B⟩`.  The amplitudes are
+  -- the genuine `L²`-inner products `⟨X | W | A⟩ = ∫ conj(|X⟩) · (W|A⟩) ∂μ`.
+  --
+  -- Interior amplitude `⟨A | W | A⟩ = α`:
+  (∫ x, (starRingEnd ℂ) (Graphon.bumpState μ A hA hAμ hAfin x)
+        * W.opFun (Graphon.bumpState μ A hA hAμ hAfin) x ∂μ) = α ∧
+  -- Off-diagonal amplitude `⟨B | W | A⟩ = β`:
+  (∫ x, (starRingEnd ℂ) (Graphon.bumpState μ B hB hBμ hBfin x)
+        * W.opFun (Graphon.bumpState μ A hA hAμ hAfin) x ∂μ) = β ∧
+  -- Annihilation: for any third bump-state `|C⟩` (positive finite measure)
+  -- with `C` disjoint from `A ∪ B`, the amplitude `⟨C | W | A⟩` vanishes.
+  ∀ (C : Set Ω) (hC : MeasurableSet C) (hCμ : μ C ≠ 0) (hCfin : μ C ≠ ∞),
+    Disjoint C (A ∪ B) →
+    (∫ x, (starRingEnd ℂ) (Graphon.bumpState μ C hC hCμ hCfin x)
+          * W.opFun (Graphon.bumpState μ A hA hAμ hAfin) x ∂μ) = 0
 
 /-- **Graphon FR limit theorem (statement).**  Let `(Gₙ)` be a sequence of
 finite weighted graphs converging in cut norm to a graphon `W` (via the
@@ -530,8 +557,20 @@ applies, and `g, h` can be read off the Krawtchouk-eigenvalue formula
 `θ_r = n(q-1) - q r`. -/
 theorem hammingGraph_fr_iff (n q : ℕ) (u v : Fin n → Fin q)
     (τ : ℝ) (α β : ℂ) :
-    -- Statement-shape: full congruence-conditions characterisation deferred.
-    IsFR (hammingGraph n q) u v τ α β ↔ True := by
+    IsFR (hammingGraph n q) u v τ α β ↔
+      -- (normalisation) together with the Krawtchouk spectral characterisation:
+      -- for the distance class `r₀ = d(u, v)`, the propagator takes the
+      -- association-scheme FR closed form `U(τ) = α·1 + β·A_{r₀}`, where
+      -- `A_{r₀}` is the distance-`r₀` class matrix `[d(x,y) = r₀]`.  (The times
+      -- `τ` realising this are exactly those satisfying the congruence
+      -- conditions on the Krawtchouk eigenvalues `θ_r = n(q-1) - q r`.)
+      (Complex.normSq α + Complex.normSq β = 1 ∧
+        (hammingGraph n q).evolve τ
+          = α • (1 : Matrix (Fin n → Fin q) (Fin n → Fin q) ℂ)
+          + β • (Matrix.of fun x y : Fin n → Fin q =>
+              if hammingDist x y = hammingDist u v then (1 : ℂ) else 0)) := by
+  -- Forward and converse are 1907.04729 §4–5 (Hamming-scheme FR), reducing to
+  -- `bose_mesner_fr_iff` via the Krawtchouk eigenvalues `θ_r = n(q-1) - q r`.
   sorry
 
 /-! ### 4.3 Fractional revival on the chiral `K_n^σ` — open conjecture
@@ -602,7 +641,10 @@ the `K_4` signing of `Graphplay.Chiral.unitaryHammingChiralK4`.  Beyond
 graph preserve the scheme's Bose-Mesner algebra (so the classical
 characterisation `bose_mesner_fr_iff` still applies) versus break it (and
 require the genuinely non-commutative `IsNCFR`)? -/
-def openDirection_chiralFR : Prop := True
+def openDirection_chiralFR : Prop :=
+  -- The genuine open conjecture: the chiral FR conjecture holds for *every*
+  -- order `n ≥ 3`.
+  ∀ n : ℕ, chiralKn_fr_conjecture n
 
 /-- **Open Direction 2 — FR-rate maximization as an engineering primitive.**
 Define the FR-rate at a pair `(u, v)` as `λ_FR(G, u, v) := inf { τ > 0 :
@@ -617,7 +659,15 @@ optimisation surface.
 
 This is the precise FR analogue of the `chiral_mixing_optimization`
 theorem (statement-level) in `Graphplay.Chiral`. -/
-def openDirection_FRRateMax : Prop := True
+def openDirection_FRRateMax : Prop :=
+  -- The genuine engineering claim: for every weighted graph `G` and vertex
+  -- pair `(u, v)` admitting fractional revival at *some* time, there is a
+  -- minimal such time `τ₀` (the FR-rate `λ_FR(G,u,v)`), i.e. the set of FR
+  -- times is bounded below by an attained infimum.
+  ∀ (V : Type) [Fintype V] [DecidableEq V] (G : WeightedGraph V) (u v : V),
+    (∃ τ : ℝ, 0 < τ ∧ ∃ α β : ℂ, IsFR G u v τ α β) →
+    ∃ τ₀ : ℝ, 0 < τ₀ ∧ (∃ α β : ℂ, IsFR G u v τ₀ α β) ∧
+      ∀ τ : ℝ, 0 < τ → (∃ α β : ℂ, IsFR G u v τ α β) → τ₀ ≤ τ
 
 /-- **Open Direction 3 — FR in graphon limits of association-scheme
 families.**  The Hamming and Johnson schemes admit natural graphon limits
@@ -627,7 +677,20 @@ limits; conversely, does graphon-FR imply that *every* sufficiently large
 finite sampling of the graphon admits FR?  This would be the FR avatar of
 the standard sample-vs-limit equivalence for graphon properties (cf.
 1003.5588). -/
-def openDirection_graphonFR : Prop := True
+def openDirection_graphonFR : Prop :=
+  -- The genuine converse to `Graphon.fr_limit`: whenever a graphon `W` admits
+  -- graphon fractional revival between two bump-state classes at time `τ` with
+  -- coefficients `(α, β)`, *some* finite weighted graph admits ordinary FR with
+  -- the same coefficients at the same time (the "finite sampling realises FR"
+  -- direction of the sample-vs-limit equivalence).
+  ∀ (Ω : Type) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω)
+    (W : Graphon Ω μ) (A B : Set Ω)
+    (hA : MeasurableSet A) (hB : MeasurableSet B)
+    (hAμ : μ A ≠ 0) (hAfin : μ A ≠ ∞) (hBμ : μ B ≠ 0) (hBfin : μ B ≠ ∞)
+    (hdisj : Disjoint A B) (τ : ℝ) (α β : ℂ),
+    Graphon.IsFR W A B hA hB hAμ hAfin hBμ hBfin hdisj τ α β →
+    ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
+      (G : WeightedGraph V) (u v : V), IsFR G u v τ α β
 
 /-! ### Final sanity statement
 

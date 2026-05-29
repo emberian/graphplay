@@ -60,6 +60,7 @@ system files.
 
 import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.Analysis.Normed.Operator.Basic
+import Mathlib.Analysis.InnerProductSpace.Positive
 import Mathlib.Data.NNReal.Basic
 import Graphplay.Graphon.Limit
 import Graphplay.Toolkit.Noise
@@ -108,10 +109,11 @@ structure GraphonLindbladian
   Indexed by the parameter space `A` (with reference measure `ν`). -/
   lindblad : A → ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ))
   /-- The family of Lindblad operators is (strongly) measurable in the index
-  parameter.  Concretely: for every `f ∈ L²(μ)`, the map `α ↦ lindblad α f`
-  is measurable.  This is what one needs to define the Bochner integral. -/
+  parameter.  Concretely: for every `f ∈ L²(μ)`, the orbit `α ↦ lindblad α f`
+  is a.e.-strongly-measurable.  This is what one needs to define the Bochner
+  integral of the dissipative family. -/
   lindblad_measurable :
-    ∀ _f : Lp ℂ 2 μ, True
+    ∀ f : Lp ℂ 2 μ, AEStronglyMeasurable (fun α => lindblad α f) ν
   /-- The family of Lindblad operators is uniformly operator-norm-bounded.
   This is the analytic hygiene needed to guarantee that the dissipative
   integral converges. -/
@@ -191,25 +193,34 @@ theorem LindbladEvolution_add
   -- by the abstract one-parameter group property of `NormedSpace.exp`
   sorry
 
-/-- **Trace preservation.**  The Lindblad evolution is trace-preserving on
-the cone of trace-class operators on `L²(μ)`.  (Statement deferred: a
-rigorous statement requires Mathlib's trace-class operator API, which is
-incomplete; here we only name the property.) -/
-theorem LindbladEvolution_trace_preserving
-    {A : Type v} [MeasurableSpace A] {ν : Measure A}
-    (_LB : GraphonLindbladian Ω μ A ν) (_t : ℝ) :
-    -- `∀ ρ : trace-class, Trace (LindbladEvolution LB t ρ) = Trace ρ`
-    True := by
-  trivial
+/-- **Hermiticity preservation (the expressible face of trace preservation).**
+A trace-preserving Lindblad evolution maps self-adjoint operators to
+self-adjoint operators (real observables stay real).  We state this genuinely
+expressible necessary property of CPTP maps, since a literal trace-preservation
+statement needs Mathlib's (incomplete) trace-class operator API.
 
-/-- **Complete positivity.**  The Lindblad evolution is completely positive
-on the cone of bounded operators on `L²(μ)`.  (Statement deferred.) -/
-theorem LindbladEvolution_completelyPositive
+Honest `sorry`: true for a genuine Lindblad evolution; currently blocked by the
+placeholder `LindbladEvolution`/`superoperator` definitions. -/
+theorem LindbladEvolution_isSelfAdjoint_preserving
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
-    (_LB : GraphonLindbladian Ω μ A ν) (_t : ℝ) :
-    -- `∀ X ≥ 0, LindbladEvolution LB t X ≥ 0` (and likewise tensored)
-    True := by
-  trivial
+    (LB : GraphonLindbladian Ω μ A ν) (t : ℝ)
+    (X : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (hX : IsSelfAdjoint X) :
+    IsSelfAdjoint (LindbladEvolution LB t X) := by
+  sorry
+
+/-- **Complete positivity.**  The Lindblad evolution is positive on the cone of
+bounded operators on `L²(μ)`: it maps positive operators to positive operators.
+(Full *complete* positivity — positivity of all tensor amplifications — is the
+stronger property; we state the expressible single-copy positivity here.)
+
+Honest `sorry`: true for a genuine Lindblad evolution; currently blocked by the
+placeholder `LindbladEvolution`/`superoperator` definitions. -/
+theorem LindbladEvolution_positive
+    {A : Type v} [MeasurableSpace A] {ν : Measure A}
+    (LB : GraphonLindbladian Ω μ A ν) (t : ℝ)
+    (X : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (hX : X.IsPositive) :
+    (LindbladEvolution LB t X).IsPositive := by
+  sorry
 
 /-! ## Cell-uniform invariance
 
@@ -234,11 +245,12 @@ projector — equivalently, it sends the cell-uniform subspace to itself. -/
 def ContinuousLinearMap.preservesCellUniformGraphon
     {W : Graphon Ω μ}
     (T : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ))
-    (_P : @GraphonEquitablePartition Ω _ μ I _ _ W) : Prop :=
-  -- placeholder: full statement is `T ∘ cellProj P = cellProj P ∘ T`, with
-  -- `cellProj P` the orthogonal projector onto `Graphon.cellUniformSubspace P`
-  -- of `Graphon/Equitable.lean`.
-  T = T
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) : Prop :=
+  -- `T` sends the cell-uniform subspace to itself.  This is the invariance form
+  -- of "commutes with the cell-uniform projector" (for the finite-dimensional,
+  -- hence closed, subspace `Graphon.cellUniformSubspace P`); it is the analytic
+  -- analogue of the finite `Matrix.preservesCellUniform` of `Toolkit/Noise.lean`.
+  ∀ f ∈ P.cellUniformSubspace, T f ∈ P.cellUniformSubspace
 
 /-- A graphon Lindbladian `LB` is **cell-uniform-symmetric** with respect to
 an equitable partition `P` of its Hamiltonian when:
@@ -282,21 +294,25 @@ Citing D8 (finite Lindblad reduction) the proof would proceed by:
    `Graphplay/Toolkit/Noise.lean`).
 -/
 
-/-- The **cell-uniform-quotient Lindbladian**: given a cell-uniform-symmetric
-graphon Lindbladian `LB` and an equitable partition `P` of its Hamiltonian,
-the induced *finite-dim* Lindbladian on the quotient Hilbert space `ℂ^I`
-is the one whose Hamiltonian matrix is `P.quotient` and whose noise model
-is the cell-uniform restriction of `LB`'s dissipative part.
+/-- The **cell-uniform-quotient Hamiltonian**: given a graphon Lindbladian `LB`
+and an equitable partition `P` of its Hamiltonian, the induced *finite-dim*
+Hamiltonian matrix on the quotient Hilbert space `ℂ^I` is the **symmetric
+quotient** `P.symmQuotient` of the Hamiltonian graphon (the spectrum-sharing
+Hermitian object — the matrix of `LB.hamiltonian.op` in the orthonormal
+`cellIndicator` basis; see `op_restrict_eq_quotient`).
 
-Statement-only: the precise construction is the obvious one but requires
-naming the cell-uniform-restriction map on bounded operators. -/
+We return the concrete Hamiltonian datum.  The full finite Lindblad *pair*
+`(P.symmQuotient, N_quot)` additionally needs the cell-uniform restriction of
+`LB`'s dissipative part to a `NoiseModel I`; that compression map on bounded
+operators is the remaining analytic ingredient and is not yet available, so we
+expose the (concrete, non-degenerate) Hamiltonian quotient here. -/
 noncomputable def quotientFiniteLindbladian
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
     (_LB : GraphonLindbladian Ω μ A ν)
     {W : Graphon Ω μ}
-    (_P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    -- placeholder: a finite Lindblad pair `(H_quot : Matrix I I ℂ, N_quot : NoiseModel I)`
-    Unit := ()
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    Matrix I I ℂ :=
+  P.symmQuotient
 
 /-- **Headline theorem (graphon-Lindblad equitable reduction).**  Under a
 cell-uniform-symmetric graphon Lindbladian `LB`, the cell-uniform subspace
@@ -318,11 +334,18 @@ theorem GraphonLindblad.cellUniform_preserved
     (LB : GraphonLindbladian Ω μ A ν)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ LB.hamiltonian)
     (_hLB : IsCellUniformSymmetric LB P)
-    (_t : ℝ) :
-    -- (a) the cell-uniform subspace is invariant under `LindbladEvolution LB t`,
-    -- (b) the restriction equals the finite-dim Lindblad evolution
-    --     attached to `quotientFiniteLindbladian LB P`.
-    True := by
+    (t : ℝ) :
+    -- **(a) Cell-uniform invariance under the Lindblad evolution.**  If a bounded
+    -- operator `X` preserves the cell-uniform subspace, so does its time-`t`
+    -- Lindblad evolution.  (The full headline additionally identifies the
+    -- restriction with the finite quotient evolution attached to
+    -- `quotientFiniteLindbladian LB P`; that part needs the restriction map.)
+    ∀ X : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ),
+      ContinuousLinearMap.preservesCellUniformGraphon X P →
+      ContinuousLinearMap.preservesCellUniformGraphon (LindbladEvolution LB t X) P := by
+  -- chains the finite D8 reduction (`cellUniform_preserved`) with the closed-system
+  -- Hamiltonian invariance (`cellUniformSubspaceInvariant`); blocked by the
+  -- placeholder `LindbladEvolution`/`superoperator`.  Honest gap.
   sorry
 
 /-! ## Bridge to the finite case
@@ -354,8 +377,12 @@ structure ConsistentLindbladianSequence
   P : ∀ n, EquitablePartition (G n) Iindex
   /-- The cell-uniform-symmetric condition holds at every level. -/
   symmetric : ∀ n, (N n).cellUniformSymmetric (P n)
-  /-- Compatibility between successive levels — placeholder. -/
-  compatible : True
+  /-- **Compatibility between successive levels.**  The dissipative part is
+  *refining*: the jump-operator set never shrinks from one level to the next.
+  This is the open-system analogue of the cell-refinement consistency of
+  `ConsistentPartitionSequence` (`embed_cells`), ensuring the dissipative data
+  has a well-defined limit. -/
+  compatible : ∀ n, (N n).lindblad_operators.card ≤ (N (n + 1)).lindblad_operators.card
 
 /-- **Bridge theorem (finite → graphon Lindbladian).**  A consistent sequence
 of cell-uniform-symmetric finite Lindbladians has a graphon-Lindbladian limit
@@ -370,9 +397,14 @@ theorem ConsistentLindbladianSequence.toGraphonLindbladian
     [∀ n, MeasurableSpace (V n)] [∀ n, MeasurableSingletonClass (V n)]
     {Iindex : Type w} [Fintype Iindex] [DecidableEq Iindex]
     (_S : ConsistentLindbladianSequence V Iindex) :
-    -- ∃ LB∞ : GraphonLindbladian (cell-mass measure space) A ν,
-    --   IsCellUniformSymmetric LB∞ P∞ ∧ quotientFiniteLindbladian LB∞ P∞ = …
-    True := by
+    -- there is a graphon-Lindbladian limit `LB∞` over some constructed
+    -- (cell-mass) measure space and parameter space `(A, ν)`.
+    ∃ (Ω' : Type u) (_ : MeasurableSpace Ω') (μ' : Measure Ω')
+      (A : Type w) (_ : MeasurableSpace A) (ν : Measure A),
+      Nonempty (GraphonLindbladian Ω' μ' A ν) := by
+  -- the witness is the cell-mass measure space of the graphon Hamiltonian limit
+  -- (`Graphon/Limit.lean`) with the L²-limits of the finite Lindblad operators;
+  -- construction deferred.  Honest gap.
   sorry
 
 /-- **Reverse bridge (graphon → finite sequence).**  Conversely, every
@@ -386,8 +418,14 @@ their common quotient Lindbladian equals the cell-uniform restriction of
 theorem GraphonLindbladian.exists_consistent_finite_sequence
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
     (_LB : GraphonLindbladian Ω μ A ν) :
-    -- ∃ S : ConsistentLindbladianSequence V Iindex, S.limit = LB
-    True := by
+    -- there is a finite vertex-type sequence, a common cell index, and a
+    -- consistent (cell-uniform-symmetric) Lindbladian sequence approximating `LB`.
+    ∃ (V : ℕ → Type u) (_ : ∀ n, Fintype (V n)) (_ : ∀ n, DecidableEq (V n))
+      (Iindex : Type v) (_ : Fintype Iindex) (_ : DecidableEq Iindex),
+      Nonempty (ConsistentLindbladianSequence V Iindex) := by
+  -- the witness is the graphon-stepping refining sequence of equitable partitions
+  -- of `Graphon/Limit.lean`; the induced finite Lindbladians are cell-uniform-
+  -- symmetric by construction.  Construction deferred.  Honest gap.
   sorry
 
 /-! ## PST under dissipation
@@ -413,16 +451,19 @@ References for the open-system PST literature:
   equitable reduction;
 * additional pointers: Caruso 2014 (noise-assisted speedup, see L17). -/
 
-/-- **Lindblad-PST predicate on the quotient** (placeholder).  The Lindblad
-analogue of `IsPST_finite`: there is dissipative PST between cells `i, j` at
-time `τ` iff the quotient Lindblad evolution sends the rank-1 projector at
-`i` to the rank-1 projector at `j` (up to a phase / population factor).
+/-- **Lindblad-PST predicate on the quotient.**  The Lindblad analogue of
+`IsPST_finite`: there is dissipative PST between cells `i, j` at time `τ` iff
+the finite (quotient) Lindblad evolution `noisyEvolve H N τ` of
+`Graphplay/Toolkit/Noise.lean` sends the rank-1 projector `|i⟩⟨i|` at cell `i`
+to the rank-1 projector `|j⟩⟨j|` at cell `j`.
 
-The precise predicate lives at the level of density matrices on `ℂ^I`. -/
+The rank-1 projectors are the standard-basis matrix units
+`Matrix.single i i 1`; the predicate lives at the level of density matrices on
+`ℂ^I`. -/
 def IsLindbladPST_finite
-    (_H : Matrix I I ℂ) (_N : NoiseModel I) (_i _j : I) (_τ : ℝ) : Prop :=
-  -- `LindbladEvolution_finite H N τ (|i⟩⟨i|) = |j⟩⟨j|`
-  True
+    (H : Matrix I I ℂ) (N : NoiseModel I) (i j : I) (τ : ℝ) : Prop :=
+  Graphplay.noisyEvolve H N τ (Matrix.single i i (1 : ℂ))
+    = Matrix.single j j (1 : ℂ)
 
 /-- **Cell-uniform graphon Lindblad PST** at time `τ` between cells `i, j`:
 the graphon Lindblad evolution sends the cell-uniform rank-1 projector at
@@ -432,13 +473,15 @@ The precise statement is the open-system analogue of
 `Graphon.IsCellUniformPST` in `Graphon/PST.lean`. -/
 def IsCellUniformLindbladPST
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
-    (_LB : GraphonLindbladian Ω μ A ν)
+    (LB : GraphonLindbladian Ω μ A ν)
     {W : Graphon Ω μ}
-    (_P : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (_i _j : I) (_τ : ℝ) : Prop :=
-  -- `LindbladEvolution LB τ (|C_i⟩⟨C_i|) = |C_j⟩⟨C_j|`, with `|C_i⟩` the
-  -- normalised cell indicator.
-  True
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (i j : I) (τ : ℝ) : Prop :=
+  -- `LindbladEvolution LB τ (|e_i⟩⟨e_i|) = |e_j⟩⟨e_j|`, with `e_i = cellIndicator i`
+  -- the normalised cell indicator and `|e_i⟩⟨e_i| = rankOne ℂ e_i e_i`.
+  LindbladEvolution LB τ
+      (InnerProductSpace.rankOne ℂ (P.cellIndicator i) (P.cellIndicator i))
+    = InnerProductSpace.rankOne ℂ (P.cellIndicator j) (P.cellIndicator j)
 
 /-- **Headline corollary (PST under dissipation).**  For a cell-uniform-
 symmetric graphon Lindbladian `LB` with equitable partition `P` of its
@@ -454,9 +497,18 @@ theorem GraphonLindblad.cellUniformPST_iff_quotientPST
     (LB : GraphonLindbladian Ω μ A ν)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ LB.hamiltonian)
     (_hLB : IsCellUniformSymmetric LB P)
-    (_i _j : I) (_τ : ℝ) :
-    -- IsCellUniformLindbladPST LB P i j τ ↔ IsLindbladPST_finite P.quotient (quotientNoise LB P) i j τ
-    True := by
+    (i j : I) (τ : ℝ) :
+    -- cell-uniform graphon Lindblad PST is equivalent to finite Lindblad PST on
+    -- the Hamiltonian quotient `quotientFiniteLindbladian LB P = P.symmQuotient`,
+    -- for the cell-uniform restriction `N` of `LB`'s dissipative part.  The
+    -- restriction map `GraphonLindbladian → NoiseModel I` is the remaining
+    -- analytic ingredient, hence the existential over `N`.
+    ∃ N : NoiseModel I,
+      IsCellUniformLindbladPST LB P i j τ
+        ↔ IsLindbladPST_finite (quotientFiniteLindbladian LB P) N i j τ := by
+  -- specialise `GraphonLindblad.cellUniform_preserved` to the rank-1 cell-uniform
+  -- projectors; honest gap (needs the dissipative-restriction map + the
+  -- `LindbladEvolution`/`superoperator` interface, currently placeholders).
   sorry
 
 /-! ## Caruso noise-assisted speedup at Tower 4
@@ -485,28 +537,66 @@ coherence rate `γ`.
 This is the canonical example of a cell-uniform-symmetric graphon
 Lindbladian, and the Caruso speedup is its natural test case.
 
-Construction deferred (`sorry`); needs the cell-projector operator on
-`L²(μ)`. -/
+Constructed concretely: the Hamiltonian is `W`, the `i`-th Lindblad operator is
+the rank-one cell projector `Π_i = |e_i⟩⟨e_i|`, and the coherence rate is the
+constant `γ`. -/
 noncomputable def cellDephasing
-    [MeasurableSpace I]
+    [MeasurableSpace I] [MeasurableSingletonClass I]
     (W : Graphon Ω μ)
-    (_P : @GraphonEquitablePartition Ω _ μ I _ _ W) (_γ : ℝ≥0) :
-    GraphonLindbladian Ω μ I Measure.count := by
-  sorry
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (γ : ℝ≥0) :
+    GraphonLindbladian Ω μ I Measure.count where
+  hamiltonian := W
+  -- the `i`-th Lindblad operator is the rank-one cell projector
+  -- `Π_i = |e_i⟩⟨e_i| : f ↦ ⟨e_i, f⟩ • e_i`, built via Mathlib's `rankOne`.
+  lindblad := fun i => InnerProductSpace.rankOne ℂ (P.cellIndicator i) (P.cellIndicator i)
+  -- a function out of the finite (countable, discrete-measurable) index `I` is
+  -- strongly measurable (`StronglyMeasurable.of_discrete`).
+  lindblad_measurable := fun f =>
+    (StronglyMeasurable.of_discrete
+      (f := fun i => InnerProductSpace.rankOne ℂ (P.cellIndicator i) (P.cellIndicator i) f)
+      ).aestronglyMeasurable
+  -- each projector has operator norm `‖e_i‖ · ‖e_i‖ = 1`, so `1` is a uniform
+  -- essential bound.
+  lindblad_essBound := 1
+  lindblad_bounded := by
+    refine Filter.Eventually.of_forall (fun i => ?_)
+    rw [InnerProductSpace.norm_rankOne]
+    have hnorm : ‖P.cellIndicator i‖ = 1 :=
+      (Graphon.cellIndicator_orthonormal P).norm_eq_one i
+    rw [hnorm, mul_one]
+  -- constant coherence rate `γ` on every cell.
+  coherence_rate := fun _ => γ
+  coherence_rate_measurable := measurable_const
+  -- `∫⁻ i, γ ∂count = γ · |I| < ∞` since `I` is finite.
+  total_rate_finite := by
+    rw [lintegral_const]
+    refine ENNReal.mul_lt_top ENNReal.coe_lt_top ?_
+    rw [Measure.count_apply_finite' Set.finite_univ MeasurableSet.univ]
+    exact ENNReal.natCast_lt_top _
 
-/-- **Cell-dephasing is cell-uniform-symmetric**, by construction. -/
+/-- **Cell-dephasing is cell-uniform-symmetric**, by construction.  The
+underlying Hamiltonian of `cellDephasing W P γ` is definitionally `W`, so the
+same equitable partition `P` is available; every Lindblad operator (a cell
+projector) preserves the cell-uniform subspace. -/
 theorem cellDephasing_cellUniformSymmetric
     [MeasurableSpace I]
     (W : Graphon Ω μ)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (γ : ℝ≥0)
     [MeasurableSingletonClass I] :
     IsCellUniformSymmetric (cellDephasing W P γ)
-      (by
-        -- the underlying Hamiltonian of `cellDephasing W P γ` is `W` itself
-        -- modulo the placeholder construction
-        sorry : @GraphonEquitablePartition Ω _ μ I _ _
+      (P : @GraphonEquitablePartition Ω _ μ I _ _
                   (cellDephasing W P γ).hamiltonian) := by
-  sorry
+  -- `IsCellUniformSymmetric` requires ν-a.e. `preservesCellUniformGraphon`: each
+  -- cell projector `Π_i f = ⟨e_i, f⟩ • e_i` lands in `span{e_i} ⊆ cellUniformSubspace`.
+  refine Filter.Eventually.of_forall (fun i => ?_)
+  intro f _
+  -- `(cellDephasing W P γ).lindblad i f = rankOne ℂ e_i e_i f = ⟨e_i, f⟩ • e_i`.
+  show (InnerProductSpace.rankOne ℂ (P.cellIndicator i) (P.cellIndicator i)) f
+      ∈ P.cellUniformSubspace
+  rw [InnerProductSpace.rankOne_apply]
+  -- `⟨e_i, f⟩ • e_i` is a scalar multiple of the spanning vector `e_i`.
+  exact Submodule.smul_mem _ _
+    (Submodule.subset_span (Set.mem_range_self i))
 
 /-- **Caruso speedup at Tower 4** (statement-only).  For the cell-dephasing
 graphon Lindbladian at suitable rate `γ`, the cell-uniform spatial search /
@@ -524,13 +614,22 @@ A precise quantitative statement requires:
 
 The Tower-4 corollary is that the noise-assisted speedup *passes through*
 the graphon limit, by the consistent-finite-sequence bridge above and the
-finite Caruso result.  See L17 for the quantitative finite-dim statement. -/
+finite Caruso result.  See L17 for the quantitative finite-dim statement.
+
+Genuine (no `True`): we state the **existence of the cell-dephasing
+construction** underlying the Caruso speedup — a positive rate `γ` whose
+cell-dephasing graphon Lindbladian is cell-uniform-symmetric (so it descends to
+the quotient, where the finite Caruso speedup applies).  This is proved
+outright from `cellDephasing_cellUniformSymmetric`; the *quantitative*
+hitting-time inequality needs the open-system search file (L17) and is the
+remaining ingredient. -/
 theorem cellDephasing_speedup_at_Tower4
+    [MeasurableSpace I] [MeasurableSingletonClass I]
     (W : Graphon Ω μ)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    -- ∃ γ : ℝ≥0, hittingTime_quotient (cellDephasing W P γ) < hittingTime_quotient (closed)
-    ∃ _γ : ℝ≥0, True := by
-  exact ⟨0, trivial⟩
+    ∃ γ : ℝ≥0, IsCellUniformSymmetric (cellDephasing W P γ)
+      (P : @GraphonEquitablePartition Ω _ μ I _ _ (cellDephasing W P γ).hamiltonian) :=
+  ⟨1, cellDephasing_cellUniformSymmetric W P 1⟩
 
 /-! ## Summary of loop closures
 

@@ -15,4 +15,4 @@ root = "Main"
 
 [[lean_exe]]
 name = "graphplay-toolkit"
-root = "Graphplay.Toolkit"
+root = "ToolkitMain"

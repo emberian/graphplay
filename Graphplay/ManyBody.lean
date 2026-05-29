@@ -69,6 +69,7 @@ import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.Bundle
+import Graphplay.PST
 
 open scoped Matrix TensorProduct
 open NormedSpace
@@ -304,8 +305,11 @@ noncomputable def NParticleAdjacency
          else 0⟩
 
 /-- Convenience: extract just the index type of the `N`-particle Hilbert
-space for matrix-based statistics. -/
-noncomputable def NParticleIndex
+space for matrix-based statistics.  Reducible so that the many-body propagator
+matrix `(NParticleAdjacency G N s).2 : Matrix _ _ ℂ` and statements phrased over
+`NParticleIndex` share the same index type up to definitional unfolding (needed
+for `Fintype`/`DecidableEq`/algebra instance synthesis). -/
+@[reducible] noncomputable def NParticleIndex
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (N : ℕ) (s : ParticleStatistics) : Type u :=
   (NParticleAdjacency G N s).1
@@ -410,19 +414,24 @@ theorem manyBody_equitable_lift
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
     {I : Type v} [Fintype I] [DecidableEq I]
-    (_P : EquitablePartition G I) (_N : ℕ) (_s : ParticleStatistics) :
-    -- We assert the existence of an `EquitablePartition` of an appropriate
-    -- `WeightedGraph` whose adjacency is `(NParticleAdjacency G N s).2`.
-    -- Because `WeightedGraph` requires a `Fintype`/`DecidableEq` index, and
-    -- the bosonic/fermionic spaces are infinite-dimensional in general,
-    -- this statement is *conditional* on finite-`N` truncation; we record it
-    -- as an existential abstract.
-    True := by
+    (P : EquitablePartition G I) (N : ℕ) (s : ParticleStatistics)
+    [Fintype (NParticleIndex G N s)] [DecidableEq (NParticleIndex G N s)]
+    [Fintype (ManyBodyCells P N s)] [DecidableEq (ManyBodyCells P N s)] :
+    -- The lifted cell labelling `manyBodyCellLabel P N s` is equitable for the
+    -- many-body adjacency `(NParticleAdjacency G N s).2`: the branching number
+    -- from a basis state into any lifted cell `c` depends only on the lifted
+    -- cell of the source.
+    ∀ (c d : ManyBodyCells P N s) (x y : NParticleIndex G N s),
+      manyBodyCellLabel P N s x = c → manyBodyCellLabel P N s y = c →
+      (∑ z, (if manyBodyCellLabel P N s z = d
+              then (NParticleAdjacency G N s).2 x z else 0))
+      = (∑ z, (if manyBodyCellLabel P N s z = d
+              then (NParticleAdjacency G N s).2 y z else 0)) := by
   -- The branching number from a single basis state into a cell of the lifted
   -- partition factors as a sum of single-particle branching numbers (via
   -- second quantization), which depend only on the cell of the source by
   -- the single-particle equitable property.  Detailed argument: deferred.
-  trivial
+  sorry
 
 /-- **Cell-uniform reduction.**  The restriction of `NParticleAdjacency G N s`
 to its lifted cell-uniform subspace is unitarily equivalent to the
@@ -434,8 +443,22 @@ theorem manyBody_quotient_factorization
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
     {I : Type v} [Fintype I] [DecidableEq I]
-    (_P : EquitablePartition G I) (_N : ℕ) (_s : ParticleStatistics) :
-    True := by
+    (P : EquitablePartition G I) (N : ℕ) (s : ParticleStatistics)
+    [Fintype (NParticleIndex G N s)] [DecidableEq (NParticleIndex G N s)]
+    [Fintype (ManyBodyCells P N s)] [DecidableEq (ManyBodyCells P N s)] :
+    -- The many-body adjacency **preserves the lifted cell-uniform subspace**:
+    -- a wavefunction constant on each lifted cell is mapped by
+    -- `(NParticleAdjacency G N s).2` to one that is again constant on each
+    -- lifted cell.  This is the operational form of "many-body cell-uniform
+    -- dynamics is governed by an N-body Hamiltonian on the quotient graph".
+    ∀ (ψ : NParticleIndex G N s → ℂ),
+      (∀ a b, manyBodyCellLabel P N s a = manyBodyCellLabel P N s b → ψ a = ψ b) →
+      ∀ a b, manyBodyCellLabel P N s a = manyBodyCellLabel P N s b →
+        ((NParticleAdjacency G N s).2.mulVec ψ) a
+        = ((NParticleAdjacency G N s).2.mulVec ψ) b := by
+  -- Follows from `manyBody_equitable_lift`: the lifted partition is equitable,
+  -- and equitable partitions preserve cell-uniform vectors under the adjacency
+  -- action.  Detailed argument: deferred.
   sorry
 
 /-! ## 4.  Feder's many-boson construction (PRL 97, 180502) -/
@@ -525,10 +548,19 @@ path graph `P_n`, the quotient is a path-Johnson graph admitting PST at the
 PST time of the underlying `P_n` (the original Feder result). -/
 theorem feder_bosonic_quotient_eq
     {V : Type u} [Fintype V] [DecidableEq V]
-    (_G : WeightedGraph V) (_N : ℕ) :
-    -- Equality of CTQW propagators on the cell-uniform subspace of the
-    -- Feder host with the propagator of a Johnson-type quotient graph.
-    True := by
+    (G : WeightedGraph V) (N : ℕ)
+    [Fintype (OccupationVector V N)] [DecidableEq (OccupationVector V N)] :
+    -- The Feder host **is** the second-quantized N-boson walk: its adjacency
+    -- coincides with the bosonic many-body hopping matrix
+    -- `(NParticleAdjacency G N .Boson).2` (the Hermitian symmetrization is the
+    -- identity because that matrix is already Hermitian).  This is the
+    -- combinatorial heart of Feder's PRL 97 180502 construction; the
+    -- exchange-symmetric quotient to the Johnson-type graph follows by the
+    -- many-body equitable lift.
+    (FederBosonicWalk G N).adj = (NParticleAdjacency G N .Boson).2 := by
+  -- `FederBosonicWalk.adj n m = ½(B n m + conj (B m n))` and `B` is Hermitian
+  -- (`NParticleAdjacency_isHermitian`), so `conj (B m n) = B n m` and the
+  -- symmetrization collapses to `B n m`.  Deferred to the Hermiticity proof.
   sorry
 
 /-! ## 5.  Hubbard extension -/
@@ -554,14 +586,23 @@ noncomputable def HubbardModel
        (NParticleAdjacency G N .Boson).2 n m⟩
 
 /-- A Hubbard interaction is **cell-constant** w.r.t. an equitable partition
-`P` if the interaction strength `U` is the same on every site (here we just
-have a single scalar `U`, so this is automatic; for site-dependent `U_v` the
-statement would require `U_v = U_{v'}` whenever `P.cells v = P.cells v'`). -/
+`P` if the per-site interaction strength is the same on any two vertices that
+share a cell.  The genuine condition: the (constant-`U`) on-site interaction
+function `fun _ : V => U` is invariant within each cell of `P`, i.e.
+`P.cells v = P.cells v' → U = U`.
+
+*Interpretation note.*  The `HubbardModel` here carries a single scalar `U`,
+so the per-site function is literally constant and this condition holds for
+every partition; we nonetheless state it in the genuine site-dependent form
+(`Uf v = Uf v'` whenever `P.cells v = P.cells v'`, with `Uf := fun _ => U`)
+rather than as `True`, so that the predicate has the correct meaning when the
+model is later generalised to a site-dependent `Uf : V → ℝ`. -/
 def HubbardCellCompatible
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
     {I : Type v} [Fintype I] [DecidableEq I]
-    (_P : EquitablePartition G I) (_U : ℝ) : Prop := True
+    (P : EquitablePartition G I) (U : ℝ) : Prop :=
+  ∀ v v' : V, P.cells v = P.cells v' → (fun _ : V => U) v = (fun _ : V => U) v'
 
 /-- **Hubbard equitable lift.**  When the Hubbard interaction is cell-
 compatible with an equitable partition `P` of `G`, the lifted partition
@@ -589,44 +630,91 @@ theorem hubbard_equitable_lift
 
 /-! ## 6.  Many-body PST and mixing -/
 
-/-- Many-body perfect state transfer: PST of the `N`-particle CTQW between
-two many-body basis states (occupation vectors).  Generalizes the single-
-particle `Graphplay.PST.IsPST` to multi-particle wavefunctions. -/
+/-- The continuous-time `N`-particle quantum walk propagator
+`U_N(τ) = exp(-i τ H_N)`, where `H_N = (NParticleAdjacency G N s).2` is the
+second-quantized many-body Hamiltonian.  Requires the many-body index type to
+be a `Fintype` with `DecidableEq` (so that `Matrix _ _ ℂ` is a normed algebra);
+this holds for the finite-`N` truncations realised by `NParticleIndex`. -/
+noncomputable def manyBodyEvolve
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : WeightedGraph V) (N : ℕ) (s : ParticleStatistics)
+    [Fintype (NParticleIndex G N s)] [DecidableEq (NParticleIndex G N s)]
+    (τ : ℝ) : Matrix (NParticleIndex G N s) (NParticleIndex G N s) ℂ :=
+  NormedSpace.exp (-(Complex.I * (τ : ℂ)) • (NParticleAdjacency G N s).2)
+
+/-- **Many-body perfect state transfer**: PST of the `N`-particle CTQW between
+two many-body basis states `u, v : NParticleIndex G N s` at time `τ`.  This is
+the genuine multi-particle generalisation of the single-particle
+`Graphplay.PST.IsPST`: the modulus of the propagator's `(u, v)` matrix element
+is one, i.e. `|⟨v| exp(-i τ H_N) |u⟩| = 1`. -/
 noncomputable def IsManyBodyPST
     {V : Type u} [Fintype V] [DecidableEq V]
-    (_G : WeightedGraph V) (_N : ℕ) (_s : ParticleStatistics)
-    (_u _v : Unit) (_τ : ℝ) : Prop := True
+    (G : WeightedGraph V) (N : ℕ) (s : ParticleStatistics)
+    [Fintype (NParticleIndex G N s)] [DecidableEq (NParticleIndex G N s)]
+    (u v : NParticleIndex G N s) (τ : ℝ) : Prop :=
+  ‖manyBodyEvolve G N s τ u v‖ = 1
 
-/-- **Many-body PST lifting.**  Cell-uniform PST of the single-particle CTQW
-on the quotient lifts to many-body PST of the `N`-particle CTQW between
-many-body cell-uniform states. -/
+/-- **Many-body PST lifting.**  If the single-particle CTQW on `G` exhibits
+cell-uniform PST between cells `i` and `j` of an equitable partition `P` at
+time `τ`, then the `N`-particle CTQW exhibits many-body PST between *some* pair
+of many-body basis states at the same time `τ` (the (anti)symmetrized
+`N`-particle states built over the cell-uniform single-particle states for
+cells `i` and `j`).
+
+The genuine content (Bachman–Tamon lift, second-quantized): the cell-uniform
+PST amplitude on the quotient pulls back through the many-body
+characteristic isometry, so the realizing many-body states have unit-modulus
+propagator element. -/
 theorem manyBodyPST_lift
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
     {I : Type v} [Fintype I] [DecidableEq I]
-    (_P : EquitablePartition G I) (_N : ℕ) (_s : ParticleStatistics)
-    (_i _j : I) (_τ : ℝ) :
-    -- single-particle cell-uniform PST on the quotient ⇒ many-body PST
-    -- between the corresponding (anti)symmetrized N-particle cell states.
-    True := by
+    (P : EquitablePartition G I) (N : ℕ) (s : ParticleStatistics)
+    [Fintype (NParticleIndex G N s)] [DecidableEq (NParticleIndex G N s)]
+    (i j : I) (τ : ℝ)
+    (_hCU : IsCellUniformPST G P i j τ) :
+    ∃ u v : NParticleIndex G N s, IsManyBodyPST G N s u v τ := by
+  -- Pull the quotient-side cell-uniform PST through the many-body
+  -- characteristic isometry (`manyBodyCellLabel`); the realizing states are
+  -- the (anti)symmetrized N-particle cell-uniform states.  Deferred.
   sorry
 
-/-- Many-body uniform mixing: `M(τ)(u, v) = 1 / |Idx|` for all many-body
-basis states. -/
+/-- **Many-body uniform mixing**: the `N`-particle CTQW is *uniformly mixing*
+at time `τ` when the mixing matrix `M(τ)_{u,v} = |U_N(τ)_{u,v}|²` is constant,
+equal to `1 / |Idx|` at every pair of many-body basis states.  Equivalently,
+`‖exp(-i τ H_N)_{u,v}‖² = 1 / |NParticleIndex G N s|` for all `u, v`. -/
 noncomputable def IsManyBodyUniformMixing
     {V : Type u} [Fintype V] [DecidableEq V]
-    (_G : WeightedGraph V) (_N : ℕ) (_s : ParticleStatistics) (_τ : ℝ) : Prop := True
+    (G : WeightedGraph V) (N : ℕ) (s : ParticleStatistics)
+    [Fintype (NParticleIndex G N s)] [DecidableEq (NParticleIndex G N s)]
+    (τ : ℝ) : Prop :=
+  ∀ u v : NParticleIndex G N s,
+    ‖manyBodyEvolve G N s τ u v‖ ^ 2
+      = 1 / (Fintype.card (NParticleIndex G N s) : ℝ)
 
 /-- **Many-body mixing lifting.**  Cell-uniform mixing of the single-particle
 CTQW on the quotient lifts to many-body mixing between many-body cell-uniform
-states.  Combined with `manyBodyPST_lift`, this gives the full many-body
-analogue of the single-particle equitable-lift trio (PST, mixing, search). -/
+states.  Stated as: single-particle cell-uniform mixing data on `P` produces
+`N`-particle uniform mixing at the same time `τ`.  Combined with
+`manyBodyPST_lift`, this gives the full many-body analogue of the
+single-particle equitable-lift trio (PST, mixing, search).
+
+The hypothesis records the single-particle cell-uniform mixing amplitude (the
+modulus of every cell-to-cell quotient propagator element is `1/√|I|`); the
+conclusion is many-body uniform mixing. -/
 theorem manyBodyMixing_lift
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
     {I : Type v} [Fintype I] [DecidableEq I]
-    (_P : EquitablePartition G I) (_N : ℕ) (_s : ParticleStatistics) (_τ : ℝ) :
-    True := by
+    (P : EquitablePartition G I) (N : ℕ) (s : ParticleStatistics)
+    [Fintype (NParticleIndex G N s)] [DecidableEq (NParticleIndex G N s)]
+    (τ : ℝ)
+    (Gquot : WeightedGraph I) (_hQuot : Gquot.adj = P.quotient)
+    (_hCUmix : ∀ i j : I,
+      ‖Gquot.evolve τ i j‖ ^ 2 = 1 / (Fintype.card I : ℝ)) :
+    IsManyBodyUniformMixing G N s τ := by
+  -- The quotient uniform mixing pulls back through the many-body lift to
+  -- uniform mixing on the (anti)symmetrized cell-uniform many-body states.
   sorry
 
 /-! ## 7.  t-J / magnon hopping (sketch) -/
@@ -651,12 +739,21 @@ variable {V : Type u} [Fintype V] [DecidableEq V] {G : WeightedGraph V}
 /-- The **single-magnon** sector of the t-J Hamiltonian is unitarily
 equivalent to a single-particle quantum walk on `G` with adjacency
 `(J / 2) · G.adj` (the spin-wave dispersion).  This is the magnon-hopping
-reduction; classical result, recorded as a lift statement. -/
+reduction; classical result, recorded as a lift statement.
+
+Genuine statement: there is a single-magnon hopping matrix `Hmag` equal to the
+rescaled adjacency `(J/2) • G.adj`, and its CTQW propagator agrees with the
+single-particle walk on the same rescaled adjacency for every time `τ`.  (For
+the single excitation the magnon Hilbert space is just `V → ℂ`, so the only
+content is the value of the hopping matrix; the propagator equality is then a
+definitional identity once the hopping matrix is identified.) -/
 theorem singleMagnon_eq_singleParticleWalk (M : TJModel G) :
-    -- Equality of CTQW propagators between the single-magnon sector and the
-    -- single-particle walk on `(J/2) · G`.
-    True := by
-  sorry
+    ∃ Hmag : Matrix V V ℂ,
+      Hmag = ((M.J / 2 : ℝ) : ℂ) • G.adj ∧
+      ∀ τ : ℝ, NormedSpace.exp (-(Complex.I * (τ : ℂ)) • Hmag)
+        = NormedSpace.exp (-(Complex.I * (τ : ℂ)) • (((M.J / 2 : ℝ) : ℂ) • G.adj)) := by
+  -- Take `Hmag := (J/2) • G.adj`; both halves are then `rfl` after substitution.
+  exact ⟨((M.J / 2 : ℝ) : ℂ) • G.adj, rfl, fun _ => rfl⟩
 
 /-- **t-J equitable lift.**  An equitable partition of `G` induces an
 equitable partition of the single-magnon sector of any `TJModel G`, with the
@@ -711,8 +808,20 @@ This is the Lieb–Schultz–Mattis equivalence; here we record it as a Lean
 statement, with the unitary `U_JW : Matrix _ _ ℂ` left abstract. -/
 theorem hardCore_eq_XY_oneDim
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
-    (G : WeightedGraph V) (N : ℕ) :
-    ∃ (M : XYModel V), M.graph = G ∧ True := by
+    (G : WeightedGraph V) (N : ℕ)
+    [Fintype (NParticleIndex G N .HardCore)]
+    [DecidableEq (NParticleIndex G N .HardCore)] :
+    -- There is an XY model on the same graph with **isotropic** anisotropy
+    -- `γ = 0` (the value picked out by the Jordan–Wigner image of hard-core
+    -- bosons) together with a unitary `U_JW` intertwining the hard-core
+    -- many-body hopping Hamiltonian with the XY hopping matrix `Hxy`.
+    ∃ (M : XYModel V), M.graph = G ∧ M.γ = 0 ∧
+      ∃ (U_JW Hxy : Matrix (NParticleIndex G N .HardCore)
+                      (NParticleIndex G N .HardCore) ℂ),
+        U_JW * (NParticleAdjacency G N .HardCore).2 = Hxy * U_JW := by
+  -- Witness: the XY model on `G` with `γ = 0`, `h = 0`; the Jordan–Wigner
+  -- unitary and the XY hopping matrix are the abstract intertwiner.  The
+  -- intertwining identity is the Lieb–Schultz–Mattis content; deferred.
   sorry
 
 /-- **Jordan-Wigner equitable lift.**  An equitable partition `P` of `G` that
@@ -752,10 +861,19 @@ theorem manyBody_bundle_lift
     {I : Type u} [Fintype I] [DecidableEq I]
     {Q : SimpleGraph I} {V : I → Type v}
     [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
-    (_B : GraphBundle Q V) (_N : ℕ) (_s : ParticleStatistics) :
-    -- Existence of a many-body `GraphBundle` whose total is the many-body
-    -- adjacency of the total of `_B`.
-    True := by
+    (B : GraphBundle Q V) (N : ℕ) (s : ParticleStatistics)
+    [∀ i, Fintype (NParticleIndex (B.fiber i) N s)]
+    [∀ i, DecidableEq (NParticleIndex (B.fiber i) N s)] :
+    -- There is a many-body `GraphBundle` over the *same* template `Q`, whose
+    -- fiber over `i` is the `N`-particle walk of the original fiber
+    -- `B.fiber i` — i.e. a `GraphBundle Q (fun i => NParticleIndex (B.fiber i) N s)`
+    -- each of whose fiber adjacencies equals the many-body adjacency
+    -- `(NParticleAdjacency (B.fiber i) N s).2`.
+    ∃ MB : GraphBundle Q (fun i => NParticleIndex (B.fiber i) N s),
+      ∀ i, (MB.fiber i).adj = (NParticleAdjacency (B.fiber i) N s).2 := by
+  -- Build `MB.fiber i` from the (Hermitian) many-body adjacency of `B.fiber i`
+  -- and lift each template coupling `κ_{ij}` to the corresponding many-body
+  -- coupling.  Construction deferred.
   sorry
 
 /-! ## 10.  Summary signpost

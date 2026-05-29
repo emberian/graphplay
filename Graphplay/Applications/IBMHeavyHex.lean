@@ -472,10 +472,16 @@ weighted graph.  Sketched as a Prop-level statement; a precise version
 identifies vertices on both sides via a `Sigma`-to-`HeavyHexVertex` bijection
 that pairs each `(v, ())` with `data v` and each honeycomb-edge with a flag. -/
 theorem heavyHexAsBundle_total_eq (n m : ℕ) :
-    -- The total bundle, up to canonical re-indexing, agrees with the
-    -- heavy-hex weighted graph.  Stated as `True` while the indexing
-    -- bijection is being worked out; see the writeup.
-    True := trivial
+    -- The total bundle agrees with the heavy-hex weighted graph up to a
+    -- canonical re-indexing: there is a vertex bijection between the bundle's
+    -- total vertex type and `HeavyHexVertex n m` that intertwines the two
+    -- adjacency matrices.
+    ∃ e : (Σ _ : HoneyVertex n m, Unit) ≃ HeavyHexVertex n m,
+      ∀ x y, (heavyHexAsBundle n m).total.adj x y
+        = (heavyHexWeighted n m).adj (e x) (e y) := by
+  -- The re-indexing pairs each `(v, ())` with `data v`; the adjacency match is
+  -- the edge-subdivision identity.  Construction of the bijection deferred.
+  sorry
 
 /-! ## 4. Walk primitives on the quotient.
 
@@ -499,15 +505,30 @@ analytically-tractable two-cell PST that the heavy-hex chip supports
 *automatically* via the equitable-partition lift. -/
 theorem dataFlag_pst_on_quotient (n m : ℕ) :
     ∃ τ : ℝ, τ = Real.pi / (2 * Real.sqrt 6) ∧
-      -- PST between the two cells on the quotient: `‖U(τ) data flag‖ = 1`
-      -- where `U(τ) = exp(-i τ Q)`.
-      True := by
-  exact ⟨Real.pi / (2 * Real.sqrt 6), rfl, trivial⟩
+      -- PST between the two cells on the (Hermitian, symmetric) quotient:
+      -- `‖U(τ) data flag‖ = 1` where `U(τ) = exp(-i τ Q̃)` and `Q̃` is the
+      -- symmetric quotient `D^{1/2} Q D^{-1/2}` of the data/flag partition.
+      ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
+          (dataFlagPartition n m).symmQuotient)) Role.data Role.flag‖ = 1 := by
+  refine ⟨Real.pi / (2 * Real.sqrt 6), rfl, ?_⟩
+  -- The symmetric 2×2 quotient is `[[0, √6], [√6, 0]]` (weighted `K_2`), which
+  -- has PST at `τ = π/(2√6)`: `exp(-iτ Q̃)` is the off-diagonal swap up to a
+  -- phase, so `‖U(τ)_{data,flag}‖ = 1`.  Deferred to the `K_2` PST computation.
+  sorry
 
-/-- **Uniform mixing on the data/flag quotient at time `π / (4√6)`.** -/
+/-- **Uniform mixing on the data/flag quotient at time `π / (4√6)`.**  At this
+time the symmetric quotient walk sends the data-uniform state to a 50/50
+data/flag superposition: the off-diagonal propagator element has modulus
+`1/√2`, i.e. `‖U(t)_{data,flag}‖ = 1/√2`. -/
 theorem dataFlag_uniform_mixing_on_quotient (n m : ℕ) :
-    ∃ t : ℝ, t = Real.pi / (4 * Real.sqrt 6) ∧ True := by
-  exact ⟨Real.pi / (4 * Real.sqrt 6), rfl, trivial⟩
+    ∃ t : ℝ, t = Real.pi / (4 * Real.sqrt 6) ∧
+      ‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) •
+          (dataFlagPartition n m).symmQuotient)) Role.data Role.flag‖
+        = 1 / Real.sqrt 2 := by
+  refine ⟨Real.pi / (4 * Real.sqrt 6), rfl, ?_⟩
+  -- Half the PST time of the weighted-`K_2` quotient gives the balanced
+  -- (50/50) splitting; `‖U(t)_{data,flag}‖ = |sin(√6 · t)| = 1/√2`.  Deferred.
+  sorry
 
 /-! ### IBM tunable-coupler as a chiral-signing channel.
 
@@ -605,12 +626,20 @@ theorem heavyHex_chiral_mixing_lift (n m : ℕ)
     ∃ (B : Bundle (HeavyHexVertex n m) Role)
       (s : ChiralSigning (HeavyHexVertex n m))
       (h : s.CrossConstant B.partition.cells),
-      ((B.signedBy s h).CellUniformMixing t ↔ True) := by
+      -- cell-uniform mixing of the signed chip ⇔ the signed (symmetric)
+      -- quotient walk has equal-modulus columns (the genuine RHS of
+      -- `Bundle.chiral_mixing_optimization`).
+      ((B.signedBy s h).CellUniformMixing t ↔
+        (∀ k k' l : Role,
+          ‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) •
+              (B.signedBy s h).partition.symmQuotient)) l k‖
+            = ‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) •
+              (B.signedBy s h).partition.symmQuotient)) l k'‖)) := by
   -- Direct application of `Bundle.chiral_mixing_optimization`.
-  refine ⟨⟨heavyHexWeighted n m, dataFlagPartition n m⟩,
+  exact ⟨⟨heavyHexWeighted n m, dataFlagPartition n m⟩,
           heronChiralSigning n m τ hτ hτh hτd,
-          heronChiralSigning_crossConstant n m τ hτ hτh hτd, ?_⟩
-  sorry
+          heronChiralSigning_crossConstant n m τ hτ hτh hτd,
+          Bundle.chiral_mixing_optimization _ _ _ t⟩
 
 /-! ## 6. Hardware spec extraction.
 
@@ -675,7 +704,12 @@ chip's tunable-coupler frame). -/
 theorem heavyHex_quotient_satisfies (n m : ℕ)
     (embed : HeavyHexVertex n m → ℝ × ℝ)
     (hG : (heavyHexWeighted n m).satisfies ibmHeronSpec embed) :
-    True := trivial
+    -- The data/flag quotient graph satisfies the relaxed (quotient) spec under
+    -- some induced (centroid) embedding of the two role-cells.
+    ∃ embed_quotient : Role → ℝ × ℝ,
+      ((dataFlagPartition n m).quotientHWGraph).satisfies
+        ibmHeronSpec.quotient embed_quotient :=
+  WeightedGraph.satisfies_quotient hG (dataFlagPartition n m)
 
 /-! ## 7. Three concrete engineering payoffs.
 
@@ -746,11 +780,16 @@ theorem amplitudeDamping_preserves_dataFlag (n m : ℕ) (rate : ℝ) :
   sorry
 
 /-- A *non*-example: arbitrary per-edge cross-talk does *not* preserve the
-partition.  Statement deferred. -/
+partition.  Genuine statement: for a heavy-hex chip large enough to have a data
+cell of size `> 1` (e.g. `n = m = 2`), there is a `NoiseModel` that is **not**
+cell-uniform-symmetric for the data/flag partition. -/
 theorem perEdge_crossTalk_may_break_dataFlag :
-    -- there exists a (per-edge crosstalk) noise model that is not cell-
-    -- uniform-symmetric for the data/flag partition.
-    True := trivial
+    ∃ N : NoiseModel (HeavyHexVertex 2 2),
+      ¬ N.cellUniformSymmetric (dataFlagPartition 2 2) := by
+  -- Witness: a single Lindblad jump operator supported on one specific
+  -- (data, data) pair within the data cell; it acts non-uniformly across the
+  -- cell, so it fails `Matrix.preservesCellUniform`.  Construction deferred.
+  sorry
 
 /-! ### Payoff #3: Chiral-signing optimisation for fast mixing.
 
@@ -771,15 +810,23 @@ spectral gap.  Optimising over the unitary signings of that quotient gives
 the optimal cell-uniform mixing time, by `chiral_mixing_optimization`. -/
 
 /-- **Payoff #3 (negative half).**  On the *2-cell* data/flag quotient,
-chiral signings do not change the mixing time. -/
+chiral signings do not change the mixing time, because the chiral phase leaves
+the eigenvalue *moduli* of the (Hermitian) 2×2 quotient unchanged.  Genuine
+statement: for any unit-modulus, Hermitian, diagonal-`1` quotient phasing `τ`,
+the off-diagonal magnitudes of the signed symmetric quotient coincide with
+those of the unsigned one, so its two eigenvalues are `±|q|` exactly as in the
+unsigned case (the spectral gap, hence the mixing time, is `τ`-independent). -/
 theorem dataFlag_chiral_no_speedup (n m : ℕ) :
     ∀ (τ : Role → Role → ℂ),
       (∀ r s, ‖τ r s‖ = 1) → (∀ r s, τ s r = star (τ r s)) →
       (∀ r, τ r r = 1) →
-      -- the spectral radius of the signed 2 x 2 quotient equals √6
-      -- regardless of `τ`.
-      True := by
-  intros; trivial
+      -- the off-diagonal magnitude of the signed quotient `‖τ·q‖` equals the
+      -- unsigned magnitude `‖q‖`, for every off-diagonal pair `(r, s)`.
+      ∀ r s : Role, r ≠ s →
+        ‖τ r s * (dataFlagPartition n m).symmQuotient r s‖
+          = ‖(dataFlagPartition n m).symmQuotient r s‖ := by
+  intro τ hτ _ _ r s _
+  rw [norm_mul, hτ r s, one_mul]
 
 /-- **Payoff #3 (positive half).**  On a 3-cell refinement of the
 data/flag partition (separating data-degree-3 from data-degree-2 boundary

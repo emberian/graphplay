@@ -36,10 +36,35 @@ Current planned modules (created on demand):
   Unblocks `Graphplay/Tower6.lean :: constSheaf`.
 -/
 
+import Mathlib.LinearAlgebra.Matrix.Hermitian
+
+open scoped Matrix
+
 namespace Graphplay.ForMathlib
 
-/-- Sentinel so the namespace is non-empty before any infrastructure lands.
-Replace usages as real lemmas are added. -/
-theorem forMathlib_namespace_anchor : True := trivial
+/-- A Hermitian matrix is a self-adjoint element of the `*`-ring of matrices.
+
+This is the small but genuinely reusable bridge between Mathlib's two
+formulations of "self-adjointness" for matrices: the bespoke
+`Matrix.IsHermitian` predicate (`Aᴴ = A`) and the general algebraic
+`IsSelfAdjoint` predicate (`star A = A`).  On `Matrix V V R` the star
+operation *is* the conjugate transpose, so the two notions agree
+definitionally; packaging the conversion as a named lemma lets the
+operator-algebraic towers (`QuantumGraph`, `Tower6`) treat a Hermitian
+adjacency as a self-adjoint algebra element without re-deriving it.
+
+Target: `Mathlib/LinearAlgebra/Matrix/Hermitian.lean`. -/
+theorem isSelfAdjoint_of_isHermitian
+    {V : Type*} {R : Type*} [Fintype V] [NonUnitalNonAssocSemiring R] [StarRing R]
+    {A : Matrix V V R} (h : A.IsHermitian) : IsSelfAdjoint A :=
+  h
+
+/-- The converse: a self-adjoint matrix (in the algebraic `star` sense) is
+Hermitian.  Together with `isSelfAdjoint_of_isHermitian` this records the
+definitional equivalence `Matrix.IsHermitian A ↔ IsSelfAdjoint A`. -/
+theorem isHermitian_of_isSelfAdjoint
+    {V : Type*} {R : Type*} [Fintype V] [NonUnitalNonAssocSemiring R] [StarRing R]
+    {A : Matrix V V R} (h : IsSelfAdjoint A) : A.IsHermitian :=
+  h
 
 end Graphplay.ForMathlib

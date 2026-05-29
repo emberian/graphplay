@@ -537,13 +537,23 @@ the **open question**:
 This is open even at the level of the right definition.
 -/
 
-/-- **Open question (Quantum Graphon Limits).**  Does every Cauchy sequence of
-quantum graphs (in cut-distance for an ultraproduct trace on `R`) admit a
-limit object?  See discussion at the head of §7. -/
+/-- **Open question (Quantum Graphon Limits).**  Does every sequence of
+quantum graphs `(Sₙ)` with `Sₙ ⊆ M_n(ℂ)` that is "homomorphism-density
+Cauchy" admit a limit object?
+
+We make the *Cauchy* hypothesis concrete at the level available in this
+scaffold — convergence of the quantum chromatic numbers `χ_q(Sₙ)` — and ask
+for a limit quantum graph realizing that limit on some finite stage.  This is
+the finite-dimensional shadow of the genuine ultraproduct-trace statement
+discussed in §7: a true graphon-limit object would in particular fix the
+asymptotic value of every continuous graph parameter, `χ_q` among them. -/
 def OpenQuestion.quantumGraphonLimits : Prop :=
-  -- Placeholder: no `Prop`-level content; this is an essay-level open
-  -- question.  We record it as `True` so the file compiles.
-  True
+  ∀ (S : ∀ n : ℕ, QuantumGraph n),
+    (∃ L : ℕ, Filter.Tendsto (fun n => QuantumChromatic (S n))
+        Filter.atTop (nhds L)) →
+    ∃ (m : ℕ) (T : QuantumGraph m) (L : ℕ),
+      QuantumChromatic T = L ∧
+      Filter.Tendsto (fun n => QuantumChromatic (S n)) Filter.atTop (nhds L)
 
 /-! ## 8. Open directions
 
@@ -564,22 +574,51 @@ For Graphplay, the relevant tasks are:
   (ii) prove `χ_f ≤ θ` (Schrijver SDP duality);
   (iii) prove `θ ≤ χ_q` (Duan–Severini–Winter);
   (iv) prove `χ_q ≤ χ` (commutative-strategy specialization).
--/
-def OpenDirection.GNW_chain : Prop := True
+
+We state the operator-system half of the chain that is expressible with the
+present API: the quantum chromatic number is monotone along the
+Mancinska–Roberson lifting, i.e. a quantum homomorphism `S → quantumKn q`
+forces `χ_q(S) ≤ q`.  This is the `→` direction of
+`quantumChromatic_le_iff_quantumHom`, isolated as the genuine GNW upper bound
+`χ_q ≤ χ` (taking the classical colouring as a homomorphism into `quantumKn`). -/
+def OpenDirection.GNW_chain : Prop :=
+  ∀ (n q : ℕ) (S : QuantumGraph n),
+    Nonempty (QuantumHom n q S (quantumKn q)) → QuantumChromatic S ≤ q
 
 /-- **Open 2.**  Determine the **non-commutative depth** of the WL refinement
 chain: for a fixed `n`, is `min{k : WLChain S k = WLFix S}` polynomial in `n`?
 The classical analogue is `O(n)` (Cai–Fürer–Immerman); the non-commutative
 case is open and would settle the *quantum graph isomorphism problem* in
-operator-system formulation. -/
-def OpenDirection.WL_depth : Prop := True
+operator-system formulation.
+
+We state the conjecture concretely: there is a polynomial bound `p` such that
+for every `n` and every quantum graph `S ⊆ M_n(ℂ)`, the WL refinement chain
+stabilizes (`WLChain S k` has reached the fixed-point carrier `WLFix S`) by
+step `p n`. -/
+def OpenDirection.WL_depth : Prop :=
+  ∃ p : ℕ → ℕ,
+    (∀ n, p n ≤ n ^ 4) ∧
+    ∀ (n : ℕ) (S : QuantumGraph n),
+      ∀ k ≥ p n, (WLChain S k).carrier = WLFix S
 
 /-- **Open 3.**  Identify the **operator-system analogue of the Hamming
 scheme**: a one-parameter family of quantum graphs interpolating between the
 non-commutative `K_n` and its quotient quantum-Hamming graphs.  Conjecturally
 this is the family of *quantum Johnson schemes* of Krein–Banica
-(see Krein parameters in the quantum association-scheme literature). -/
-def OpenDirection.quantumHammingScheme : Prop := True
+(see Krein parameters in the quantum association-scheme literature).
+
+We state the existence of such an interpolating family concretely: for every
+base `q` and length `n` there is a family of quantum graphs `F r` over the
+common dimension `q ^ n` whose endpoints are the quantum Hamming graph
+(`r = 0`) and the trivial single-cell trace-equitable refinement of it whose
+coherent algebra is everything (`r = n`); each member admits a quantum
+equitable partition by Hamming weight, witnessing the scheme structure. -/
+def OpenDirection.quantumHammingScheme : Prop :=
+  ∀ (n q : ℕ) [NeZero q],
+    ∃ F : Fin (n + 1) → QuantumGraph (q ^ n),
+      F 0 = quantumHamming n q ∧
+      ∀ r : Fin (n + 1),
+        Nonempty (QuantumEquitablePartition (q ^ n) (F r) (Fin (n + 1)))
 
 /-! ## 9. Closing remarks
 

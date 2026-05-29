@@ -287,20 +287,54 @@ on the quotient and *vector* strong cospectrality of `|C_i⟩, |C_j⟩` on the
 host. -/
 theorem stronglyCospectral_cellUniform_iff_quotient
     (P : EquitablePartition G I) (i j : I) :
-    -- Host-side: `|C_i⟩` and `|C_j⟩` are strongly cospectral as *vectors*
-    -- (sibling `Cospectrality.lean` provides the vector version
-    -- `IsStronglyCospectralVec`; we restate without referencing the precise
-    -- name to keep this file decoupled from L1's exact signature).
-    True ↔ True := by
-  -- The forward direction holds because `cellUniformVec i, cellUniformVec j`
-  -- both lie in the cell-uniform subspace, on which `G.adj` acts via
-  -- `P.quotient` (by `restrict_eq_quotient`); spectral projectors of
-  -- `P.quotient` on `e_i, e_j` therefore correspond exactly to spectral
-  -- projectors of the *restricted* `G.adj` on `cellUniformVec i,
+    -- Host-side: `|C_i⟩` and `|C_j⟩` are strongly cospectral as *vectors*.
+    -- For every eigenvalue `λ` of `G.adj`, the spectral projector of `G.adj`
+    -- onto the `λ`-eigenspace sends `cellUniformVec i` and `cellUniformVec j`
+    -- to parallel vectors: the cross entry is a unit-modulus phase times the
+    -- geometric mean of the two diagonal entries.  We spell the projector
+    -- entries out inline (in the host eigenbasis) to stay decoupled from the
+    -- sibling `Cospectrality.lean` vector predicate.
+    (∀ lam : ℝ, lam ∈ Set.range G.herm.eigenvalues →
+      ∃ ε : ℂ, ‖ε‖ = 1 ∧
+        (∑ k : V, if G.herm.eigenvalues k = lam
+            then (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec i x)
+              * star (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec j x)
+            else 0)
+          = ε * Complex.ofReal (Real.sqrt
+              ((∑ k : V, if G.herm.eigenvalues k = lam
+                  then Complex.normSq (∑ x, star (G.herm.eigenvectorBasis k x)
+                        * P.cellUniformVec i x)
+                  else 0)
+               * (∑ k : V, if G.herm.eigenvalues k = lam
+                  then Complex.normSq (∑ x, star (G.herm.eigenvectorBasis k x)
+                        * P.cellUniformVec j x)
+                  else 0))))
+      ↔
+    -- Quotient-side: `e_i` and `e_j` are strongly cospectral as vertices of
+    -- the (Hermitian) symmetric quotient `P.symmQuotient`, in its own
+    -- eigenbasis.
+    (∀ lam : ℝ, lam ∈ Set.range P.symmQuotient_isHermitian.eigenvalues →
+      ∃ ε : ℂ, ‖ε‖ = 1 ∧
+        (∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
+            then P.symmQuotient_isHermitian.eigenvectorBasis k i
+              * star (P.symmQuotient_isHermitian.eigenvectorBasis k j)
+            else 0)
+          = ε * Complex.ofReal (Real.sqrt
+              ((∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
+                  then Complex.normSq (P.symmQuotient_isHermitian.eigenvectorBasis k i)
+                  else 0)
+               * (∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
+                  then Complex.normSq (P.symmQuotient_isHermitian.eigenvectorBasis k j)
+                  else 0)))) := by
+  -- The equivalence holds because `cellUniformVec i, cellUniformVec j` both
+  -- lie in the cell-uniform subspace, on which `G.adj` acts via
+  -- `P.symmQuotient` (by `restrict_eq_symmQuotient`); the spectral projectors
+  -- of `P.symmQuotient` on `e_i, e_j` therefore correspond exactly to the
+  -- spectral projectors of the *restricted* `G.adj` on `cellUniformVec i,
   -- cellUniformVec j`.  Conversely, equitability ensures no leakage, so the
-  -- host spectral projector on `|C_i⟩` is the same as the quotient
-  -- projector — strong cospectrality transfers.
-  trivial
+  -- host spectral projector on `|C_i⟩` agrees with the quotient projector —
+  -- strong cospectrality transfers in both directions.
+  sorry
 
 /-- **Automatic strong cospectrality (corollary).**  For an equitable
 partition `P`, the cell-uniform vectors `|C_i⟩` and `|C_j⟩` are strongly

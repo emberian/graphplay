@@ -117,15 +117,26 @@ structure ConsistentPartitionSequence
         = ∑ z : V n, (if cells n z = j then (G n).adj y z else 0)
 
 /-- The **stage-`n` quotient matrix** of a consistent partition sequence,
-defined directly as a per-vertex cell-flux.  This is the finite analogue of
-`GraphonEquitablePartition.quotient`. -/
+defined directly as a cell-mass-averaged cell-flux.  This is the finite
+analogue of `GraphonEquitablePartition.quotient`:
+$$ B^{(n)}_{i j} \;=\; \frac{1}{|C^{(n)}_i|}
+   \sum_{x \in C^{(n)}_i}\ \sum_{z \in C^{(n)}_j} (G\,n).\mathrm{adj}\ x\ z. $$
+The cell-mass normalisation makes the matrix **total** (well-defined for every
+`i`, taken to be `0` on an empty cell) and choice-free; by `𝒮.equitable` the
+inner double sum is constant on `C^{(n)}_i`, so for a nonempty cell this average
+equals the per-vertex flux out of any representative `x ∈ C^{(n)}_i`. -/
 noncomputable def ConsistentPartitionSequence.quotient
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : ConsistentPartitionSequence I) (n : ℕ) :
-    Matrix I I ℂ := fun i j =>
-  -- pick any representative `x ∈ cell i`; value is `∑_{z ∈ cell j} (G n).adj x z`,
-  -- independent of choice by `𝒮.equitable`.  Sorried pending typeclass routing.
-  sorry
+    Matrix I I ℂ :=
+  -- route the stage-`n` finiteness / decidability instances explicitly
+  letI : Fintype (𝒮.V n) := 𝒮.finV n
+  letI : DecidableEq (𝒮.V n) := 𝒮.decV n
+  fun i j =>
+    (((Finset.univ.filter (fun x : 𝒮.V n => 𝒮.cells n x = i)).card : ℂ))⁻¹ *
+      ∑ x ∈ Finset.univ.filter (fun x : 𝒮.V n => 𝒮.cells n x = i),
+        ∑ z ∈ Finset.univ.filter (fun z : 𝒮.V n => 𝒮.cells n z = j),
+          (𝒮.G n).adj x z
 
 /-! ## **The limit theorem (statement only)**
 
@@ -215,7 +226,13 @@ theorem ConsistentPartitionSequence.search_time_convergence
     (γ : ℝ) (w : I) (τ : ℕ → ℝ) (τlim : ℝ)
     (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim)) :
     IsCellUniformSearchSuccess Wlim Plim γ w τlim := by
-  trivial
+  -- the conclusion `IsCellUniformSearchSuccess` is now the concrete modulus-one
+  -- amplitude condition (no longer `True`).  By `cellUniformSearch_iff_quotientSearch`
+  -- it is the finite-search success on `Plim.symmQuotient`, which is the
+  -- operator-norm limit (`h_lim`) of the finite searches on `𝒮.quotient n` via
+  -- joint continuity of `exp(-iτ · finiteSearchHamiltonian H γ w)` in `(H, τ)`.
+  -- Honest gap (depends on the `exp`/search lift).
+  sorry
 
 /-! ## Concrete corollary: Xie–Tamon (arXiv:2301.07251)
 
@@ -241,19 +258,28 @@ matrices.
 
 We package this as the following corollary. -/
 
-/-- **Xie–Tamon as a corollary of the limit theorem (statement).**  For the
-consistent partition sequence `G_n = K_n + P_n` with `P_n =
-distance-from-K_n`, the graphon limit's quotient matrix is an explicit
-infinite tridiagonal operator, and PST on the limit is impossible — recovering
-the Xie–Tamon "no infinite tail beats optimality" result. -/
+/-- **Xie–Tamon as a corollary of the limit theorem.**  There is a consistent
+partition sequence (concretely `G_n = K_n + P_n` with `P_n =
+distance-from-K_n`) and a graphon limit `(Wlim, Plim)` of it for which PST
+between two **distinct** cells `i ≠ j` is impossible at *every* time `τ` —
+recovering the Xie–Tamon "no infinite tail beats optimality" result.
+
+The statement is now genuine (no `True`): it asserts the existence of the
+sequence, its limit, two distinct cells, and the all-time PST-impossibility
+`∀ τ, ¬ IsCellUniformPST Wlim Plim i j τ`.  The explicit `K_n + path-n`
+construction and the impossibility proof (via the continuous tail sector of
+`Graphon/Spectrum.lean`) are deferred as an honest `sorry`. -/
 theorem xie_tamon_no_infinite_tail
-    (I : Type v) [Fintype I] [DecidableEq I] :
-    True := by
-  -- placeholder: the precise statement requires defining the explicit
-  -- `K_n + path-n` consistent partition sequence and verifying the
-  -- equitable property; we leave the concrete corollary as future work
-  -- once the limit theorem above is filled in.
-  trivial
+    (I : Type v) [Fintype I] [DecidableEq I] [Nontrivial I] :
+    ∃ (𝒮 : ConsistentPartitionSequence I)
+      (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
+      (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
+      (i j : I), i ≠ j ∧ (∀ τ : ℝ, ¬ IsCellUniformPST Wlim Plim i j τ) := by
+  -- the precise witness is the explicit `K_n + path-n` consistent partition
+  -- sequence; its graphon limit has a continuous tail sector
+  -- (`Graphon/Spectrum.lean`, `HasContinuousTailSector`) that obstructs
+  -- cell-uniform PST.  Construction + impossibility proof deferred.
+  sorry
 
 end Graphon
 

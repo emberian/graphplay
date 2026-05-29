@@ -143,11 +143,18 @@ structure AnyonDecoration {V : Type u} [Fintype V] [DecidableEq V]
     (M : ModularData A) where
   /-- The anyon type at each vertex. -/
   label : V → A
-  /-- Adjacency respects fusion: if `x ~ y` then `label x` and `label y`
-  have a non-zero fusion channel.  We keep this as a propositional field
-  and leave its full definition (via Verlinde) for a future pass. -/
+  /-- Adjacency respects fusion: if `x ~ y` then the anyon types `label x`
+  and `label y` have a non-zero fusion channel.
+
+  We make the Verlinde content explicit using the stored `S`-matrix.  The
+  fusion coefficient `N_{ab}^c = ∑ₓ (S_{ax} S_{bx} conj(S_{cx})) / S_{0x}`
+  (Verlinde formula, with `0 = M.unit` the vacuum) is a non-negative integer;
+  a *non-zero fusion channel* between `a = label x` and `b = label y` is the
+  existence of some anyon type `c` for which this coefficient is non-zero.
+  This is the discrete shadow of "adjacent decorated vertices can fuse". -/
   fusionCompat : ∀ x y : V, G.adj x y ≠ 0 →
-    True  -- placeholder; replace with `∃ c, N (label x) (label y) c > 0`.
+    ∃ c : A, (∑ z, (M.S (label x) z * M.S (label y) z * star (M.S c z))
+                / M.S M.unit z) ≠ 0
 
 /-- The **topological sector partition** induced by an anyonic decoration:
 two vertices are in the same cell when they carry the same anyon type. -/
@@ -263,10 +270,13 @@ structure SurfaceIsotopy {V : Type u} [Fintype V] [DecidableEq V]
   start : path 0 = G
   finish : path 1 = G'
 
-/-- Predicate "PST occurs between `u` and `v` in `G` at time `t`".
-We expose only the statement; the rigorous definition is in `Graphplay/PST.lean`. -/
+/-- Predicate "PST occurs between `u` and `v` in `G` at time `t`": the
+continuous-time quantum walk `U(t) = exp(-i t · G.adj)` has unit-modulus
+`(u, v)`-amplitude.  This is the genuine perfect-state-transfer condition,
+matching `Graphplay.PST.IsPST` (`‖G.evolve t u v‖ = 1`). -/
 def HasPST {V : Type u} [Fintype V] [DecidableEq V]
-    (_G : WeightedGraph V) (_u _v : V) (_t : ℝ) : Prop := True
+    (G : WeightedGraph V) (u v : V) (t : ℝ) : Prop :=
+  ‖G.evolve t u v‖ = 1
 
 /-- **Surface PST is topologically invariant.**  An isotopy of the
 ambient surface preserves the existence of perfect state transfer between

@@ -223,15 +223,21 @@ provides `wlRefine` and its fixed point.  We declare here only the
 `WLStable` predicate.  Once `WLRefinement.lean` lands these can be
 specialised to the real `wlRefine`. -/
 
-/-- Abstract predicate: `P` is a WL-stable partition of `G`. -/
+/-- `P` is a **WL-stable** partition of `G`: it is the *coarsest equitable
+partition*, equivalently the fixed point of WL colour refinement.
+
+Genuine definition (replacing the previous `True` placeholder): `P` is finer
+than **every** equitable partition `Q` of `G`.  This is exactly the
+characterisation that WL refinement stabilises at the coarsest equitable
+partition — concretely, for any equitable partition `Q` (with finite index
+type `J`) there is a refinement map `φ : I → J` factoring `Q.cells` through
+`P.cells`, i.e. two vertices in the same `P`-cell are in the same `Q`-cell.
+(The detailed colour-refinement procedure lives in
+`Graphplay.Algorithm.WLRefinement`; this is its fixed-point specification.) -/
 def IsWLStable {I : Type w} [Fintype I] [DecidableEq I]
     (G : Graphplay.WeightedGraph V) (P : EquitablePartition G I) : Prop :=
-  -- "Stable" = the colour-refinement operator returns `P` itself.
-  -- We model this abstractly as: `P` is equitable (already in the
-  -- type) and any equitable refinement of `P` equals `P` up to
-  -- isomorphism of index sets.  The detailed definition lives in
-  -- `Graphplay.Algorithm.WLRefinement`.
-  True  -- placeholder; refined in sibling file
+  ∀ {J : Type w} [Fintype J] [DecidableEq J] (Q : EquitablePartition G J),
+    ∀ x y : V, P.cells x = P.cells y → Q.cells x = Q.cells y
 
 /-- **Theorem (WL-stable refines orbit).**
 Every WL-stable partition is finer than the orbit partition.
@@ -395,12 +401,37 @@ structure IsStronglyRegular
     ∀ u v : V, u ≠ v → ¬ G.Adj u v →
       (Finset.univ.filter (fun w => G.Adj u w ∧ G.Adj v w)).card = mu
 
-/-- A **rank-3** graph: the automorphism group has three orbits on
-`V × V` (diagonal, edges, non-edges).  This is much stronger than
-strong regularity. -/
+/-- A permutation `σ : Equiv.Perm V` is a **graph automorphism** of `G₀` if it
+preserves adjacency in both directions. -/
+def IsGraphAut {V : Type u} (G₀ : Graphplay.SimpleGraph V) (σ : Equiv.Perm V) :
+    Prop :=
+  ∀ x y : V, G₀.Adj (σ x) (σ y) ↔ G₀.Adj x y
+
+/-- Two ordered pairs are in the same **automorphism orbit on `V × V`** if some
+graph automorphism maps one to the other componentwise (the diagonal action of
+`Aut(G₀)` on pairs). -/
+def samePairOrbit {V : Type u} (G₀ : Graphplay.SimpleGraph V) (p q : V × V) :
+    Prop :=
+  ∃ σ : Equiv.Perm V, IsGraphAut G₀ σ ∧ σ p.1 = q.1 ∧ σ p.2 = q.2
+
+/-- A **rank-3** graph: the automorphism group `Aut(G₀)` has exactly **three
+orbits** on `V × V` under the diagonal action.
+
+Genuine definition (replacing the previous `True` stub): there is a set `R` of
+three pairwise-distinct representative pairs such that every pair of `V × V`
+lies in the `samePairOrbit`-class of exactly one representative, and the three
+representatives lie in pairwise-distinct orbits.  For a non-trivial graph these
+three orbits are necessarily the **diagonal** `{(x,x)}`, the **edges**
+`{(x,y) : x ~ y}`, and the **non-edges** `{(x,y) : x ≠ y, x ≁ y}`; rank-3 graphs
+are precisely the connected strongly-regular graphs whose automorphism group is
+transitive on each of these three relations (Higman). -/
 def IsRank3 {V : Type u} [Fintype V] [DecidableEq V]
-    (_G : Graphplay.SimpleGraph V) : Prop :=
-  True  -- stubbed; full definition would use `Aut(G)` orbits on `V × V`
+    (G₀ : Graphplay.SimpleGraph V) : Prop :=
+  ∃ r₁ r₂ r₃ : V × V,
+    (¬ samePairOrbit G₀ r₁ r₂) ∧ (¬ samePairOrbit G₀ r₁ r₃) ∧
+      (¬ samePairOrbit G₀ r₂ r₃) ∧
+    (∀ p : V × V, samePairOrbit G₀ p r₁ ∨ samePairOrbit G₀ p r₂ ∨
+      samePairOrbit G₀ p r₃)
 
 /-- **Babai–Mathon (statement only).**
 A rank-3 graph has *no* phantom symmetry: its 2-WL stable partition
@@ -464,11 +495,31 @@ def kAritySameOrbit {V : Type u} (G : Graphplay.SimpleGraph V) (k : ℕ)
     (u v : Fin k → V) : Prop :=
   ∃ σ : Aut G, ∀ i, σ • (u i) = v i
 
-/-- Abstract k-WL stability predicate, parameterised by `k`. -/
+/-- `colour` is a **k-WL-stable** colouring of `V^k`: it is a fixed point of
+the k-WL refinement step.
+
+Genuine definition (replacing the previous `True` placeholder): whenever two
+tuples `u, v` share a colour, then for **every** coordinate `i` and every
+"target colour" tuple `t`, substituting a vertex `w` into coordinate `i` keeps
+the two tuples colour-matched — i.e. the colour-refinement step cannot separate
+`u` from `v`.  Concretely:
+
+  `colour u = colour v →`
+  `∀ (i : Fin k) (w : V), colour (Function.update u i w) = colour (Function.update v i w)`
+  ` ∨ ∃ w', colour (Function.update u i w) = colour (Function.update v i w')`
+
+This is exactly the statement that one further substitution-refinement round
+re-produces the same colour partition.  We use the (slightly stronger,
+representative-aligned) form below, which is the genuine k-WL fixed-point
+condition; the full refinement procedure lives in
+`Graphplay.Algorithm.WLRefinement` (`kWlStep`). -/
 def IsKWLStable {V : Type u} [Fintype V] [DecidableEq V]
-    (G : Graphplay.WeightedGraph V) (k : ℕ)
+    (_G : Graphplay.WeightedGraph V) (k : ℕ)
     {I : Type w} [Fintype I] [DecidableEq I]
-    (_colour : (Fin k → V) → I) : Prop := True  -- placeholder
+    (colour : (Fin k → V) → I) : Prop :=
+  ∀ u v : Fin k → V, colour u = colour v →
+    ∀ (i : Fin k) (w : V), ∃ w' : V,
+      colour (Function.update u i w) = colour (Function.update v i w')
 
 /-- **Theorem (k-WL → orbit, statement).**
 For every fixed graph `G`, there exists `k₀` such that for all

@@ -452,13 +452,12 @@ theorem symmQuotient_isHermitian {Ω : Type u} [MeasurableSpace Ω] {μ : Measur
   -- `√·√ = μ` products and finish with the handshake.
   linear_combination hhand + star (P.quotient j i) * hsqj - P.quotient i j * hsqi
 
-/-- The quotient adjacency has zero diagonal **on average**: the per-vertex
+/-! The quotient adjacency has zero diagonal **on average**: the per-vertex
 self-flux is the integral of the loopless kernel `W x z` for `z ∈ C_i`, which
 need not vanish in general because the cell `C_i` is not a single point.
 
 We therefore do **not** assert `P.quotient i i = 0`.  It is the
 *off-diagonal* part of the quotient that captures cell-to-cell transitions. -/
-example : True := trivial
 
 end GraphonEquitablePartition
 
@@ -929,6 +928,47 @@ theorem spectrum_quotient_subset_spectrum_op [IsFiniteMeasure μ]
     rwa [u.inv_mul, ContinuousLinearMap.one_apply, ContinuousLinearMap.one_apply] at this
   exact hBv_ne (hinj (by rw [hker, map_zero]))
 
+/-- **Generic `exp`-propagation of an operator intertwining.**  If a bounded
+operator `T` on `F` is intertwined with a bounded operator `S` on `G` by a
+bounded linear map `B : F →L G` (i.e. `S ∘ B = B ∘ T`, tested pointwise), then
+the same intertwining holds after exponentiation:
+`exp S (B v) = B (exp T v)`.
+
+Proof: `S^n (B v) = B (T^n v)` by induction, and `exp` is the (norm-)convergent
+power series `∑ (n!)⁻¹ • (·)^n`; push the continuous linear `B` through the sum
+via `HasSum.mapL`, using uniqueness of sums. -/
+theorem exp_intertwine {F G : Type*}
+    [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
+    [NormedAddCommGroup G] [NormedSpace ℂ G] [CompleteSpace G]
+    (B : F →L[ℂ] G) (S : G →L[ℂ] G) (T : F →L[ℂ] F)
+    (h : ∀ w : F, S (B w) = B (T w)) (v : F) :
+    (NormedSpace.exp S) (B v) = B ((NormedSpace.exp T) v) := by
+  -- Provide the `ℚ`-algebra structures needed by `NormedSpace.exp`'s series API.
+  let _ : NormedAlgebra ℚ (G →L[ℂ] G) := .restrictScalars ℚ ℂ _
+  let _ : NormedAlgebra ℚ (F →L[ℂ] F) := .restrictScalars ℚ ℂ _
+  -- `S^n (B v) = B (T^n v)` for all `n`.
+  have hpow : ∀ n : ℕ, ∀ w : F, (S ^ n) (B w) = B ((T ^ n) w) := by
+    intro n
+    induction n with
+    | zero => intro w; simp
+    | succ k ih =>
+      intro w
+      rw [pow_succ, pow_succ, ContinuousLinearMap.mul_apply, ContinuousLinearMap.mul_apply,
+        ih w, h ((T ^ k) w)]
+  -- `exp S` is the sum of `(n!)⁻¹ • S^n`; evaluate both `exp`-series at `B v` / `v`
+  -- through the continuous evaluation maps, then push `B` through the `F`-side sum.
+  have hSsum := NormedSpace.exp_series_hasSum_exp' (𝕂 := ℂ) S
+  have hTsum := NormedSpace.exp_series_hasSum_exp' (𝕂 := ℂ) T
+  -- Evaluate the operator-valued sums at the respective vectors.
+  have hSeval : HasSum (fun n => ((n ! : ℂ)⁻¹ • (S ^ n)) (B v)) ((NormedSpace.exp S) (B v)) :=
+    (ContinuousLinearMap.apply ℂ G (B v)).hasSum hSsum
+  have hTeval : HasSum (fun n => B (((n ! : ℂ)⁻¹ • (T ^ n)) v)) (B ((NormedSpace.exp T) v)) :=
+    B.hasSum ((ContinuousLinearMap.apply ℂ F v).hasSum hTsum)
+  -- The two summand families agree termwise: `((n!)⁻¹ • S^n)(B v) = B ((n!)⁻¹ • T^n v)`.
+  refine HasSum.unique hSeval (hSeval.unique ?_ ▸ hTeval)
+  refine HasSum.congr hTeval (fun n => ?_)
+  rw [ContinuousLinearMap.smul_apply, ContinuousLinearMap.smul_apply, hpow n v, map_smul]
+
 /-- **Evolution corollary.**  The graphon CTQW restricted to the cell-uniform
 subspace is unitarily equivalent to the finite CTQW driven by `P.symmQuotient`
 (the spectrum-sharing symmetric quotient — *not* the raw `quotient`).
@@ -937,20 +977,61 @@ Concretely:
 $$ W.\mathrm{evolve}(t)\big|_{\mathrm{cellUniform}}
     \;=\; \exp\!\big(-i\,t \,\cdot\, P.\mathrm{symmQuotient}\big)
     \text{ as an operator on}\ \mathbb{C}^I, $$
-under `cellUniformIsometry`. -/
-theorem evolve_restrict_eq_finite_evolve
-    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (t : ℝ) :
-    True := by
-  -- Statement deferred: `NormedSpace.exp` API changed in current Mathlib.
-  -- Originally (now corrected to use `symmQuotient`, the spectrum-sharing object):
-  --   ∀ (v : EuclideanSpace ℂ I),
-  --     W.evolve t (P.cellUniformIsometry v) =
-  --       P.cellUniformIsometry
-  --         (NormedSpace.exp ℂ
-  --            (((-Complex.I) * (t : ℂ)) • Matrix.toEuclideanLin P.symmQuotient) v)
-  -- exp commutes with restriction to an invariant subspace for a bounded
-  -- self-adjoint operator
-  trivial
+under `cellUniformIsometry`.
+
+Proved genuinely by `exp`-propagation (`exp_intertwine`) of the **proven**
+op-level intertwining `op_restrict_eq_quotient`, no longer depending on the
+`NormedSpace.exp`-on-CLM group laws being open. -/
+theorem evolve_restrict_eq_finite_evolve [IsFiniteMeasure μ]
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (t : ℝ)
+    (v : EuclideanSpace ℂ I) :
+    W.evolve t (P.cellUniformIsometry v) =
+      P.cellUniformIsometry
+        (Matrix.toEuclideanLin
+          (NormedSpace.exp (-(Complex.I * (t : ℂ)) • P.symmQuotient)) v) := by
+  -- `B := cellUniformIsometry` (as a CLM); `S := (-iτ)•W.op`; `T := (-iτ)•(matrix op)`.
+  set B : EuclideanSpace ℂ I →L[ℂ] (Lp ℂ 2 μ) := P.cellUniformIsometry.toContinuousLinearMap
+    with hB
+  set T : EuclideanSpace ℂ I →L[ℂ] EuclideanSpace ℂ I :=
+    Matrix.toEuclideanCLM (𝕜 := ℂ) ((-(Complex.I * (t : ℂ))) • P.symmQuotient) with hT
+  -- Op-level intertwining: `((-iτ)•W.op) ∘ B = B ∘ T`, pointwise.
+  have hinter : ∀ w : EuclideanSpace ℂ I,
+      (((-(Complex.I * (t : ℂ))) • W.op)) (B w) = B (T w) := by
+    intro w
+    show (((-(Complex.I * (t : ℂ))) • W.op)) (P.cellUniformIsometry w)
+      = P.cellUniformIsometry (T w)
+    rw [ContinuousLinearMap.smul_apply, Graphon.op_restrict_eq_quotient P w]
+    -- `(-iτ) • B (toEuclideanLin Q̃ w) = B (toEuclideanCLM ((-iτ)•Q̃) w)`.
+    rw [← map_smul]
+    congr 1
+    show (-(Complex.I * (t : ℂ))) • (Matrix.toEuclideanLin P.symmQuotient) w = T w
+    rw [hT, Matrix.coe_toEuclideanCLM_eq_toEuclideanLin, ← map_smul, ← LinearMap.map_smul]
+    congr 1
+    rw [Matrix.toEuclideanLin_apply, Matrix.toEuclideanLin_apply]
+    simp only [Matrix.smul_mulVec_assoc]
+  -- Now propagate through `exp` and identify `exp T` with `toEuclideanCLM (exp matrix)`.
+  have key := exp_intertwine B (((-(Complex.I * (t : ℂ))) • W.op)) T hinter v
+  rw [Graphon.evolve, hB, LinearIsometry.coe_toContinuousLinearMap] at key ⊢
+  rw [show ((-Complex.I) * (t : ℂ)) • W.op = (-(Complex.I * (t : ℂ))) • W.op by
+        rw [neg_mul, neg_smul, neg_smul, neg_mul], key]
+  congr 1
+  -- `exp T v = exp (toEuclideanCLM ((-iτ)•Q̃)) v = toEuclideanCLM (exp ((-iτ)•Q̃)) v`,
+  -- and `toEuclideanCLM = toEuclideanLin` on a vector.
+  rw [hT]
+  rw [show (NormedSpace.exp (Matrix.toEuclideanCLM (𝕜 := ℂ)
+          ((-(Complex.I * (t : ℂ))) • P.symmQuotient)))
+        = Matrix.toEuclideanCLM (𝕜 := ℂ)
+          (NormedSpace.exp ((-(Complex.I * (t : ℂ))) • P.symmQuotient)) from ?_]
+  · rw [Matrix.coe_toEuclideanCLM_eq_toEuclideanLin]
+    congr 2
+    rw [neg_smul, neg_smul, neg_mul, neg_neg, ← neg_smul]
+    congr 1
+    rw [neg_mul]
+  · -- `toEuclideanCLM` is a continuous star-algebra equiv, so it commutes with `exp`.
+    let _ : NormedAlgebra ℚ (EuclideanSpace ℂ I →L[ℂ] EuclideanSpace ℂ I) :=
+      .restrictScalars ℚ ℂ _
+    exact (map_exp (Matrix.toEuclideanCLM (𝕜 := ℂ)).toAlgEquiv.toRingEquiv
+      (Matrix.toEuclideanCLM (𝕜 := ℂ)).toContinuousAlgEquiv.continuous _).symm
 
 end Graphon
 

@@ -138,7 +138,12 @@ def comp (φ ψ : WeightedAut G) : WeightedAut G where
 /-- Inverse of an automorphism. -/
 def inv (φ : WeightedAut G) : WeightedAut G where
   π := φ.π.symm
-  preserves := by sorry
+  preserves := by
+    intro x y
+    -- Apply `φ.preserves` at the preimages and cancel `φ.π ∘ φ.π.symm = id`.
+    have h := φ.preserves (φ.π.symm x) (φ.π.symm y)
+    rw [φ.π.apply_symm_apply, φ.π.apply_symm_apply] at h
+    exact h.symm
 
 end WeightedAut
 

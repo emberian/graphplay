@@ -290,8 +290,10 @@ structure HasContinuousTailSector (W : Graphon Ω μ) : Prop where
     ∃ (S : Submodule ℂ (Lp ℂ 2 μ)),
       S ≠ ⊥ ∧ IsClosed (S : Set (Lp ℂ 2 μ)) ∧
       (∀ f ∈ S, W.op f ∈ S) ∧
-      -- restricted spectrum is in the continuous part of `W.op`
-      True
+      -- the restriction of `W.op` to `S` has **no** L²-eigenvectors: the sector
+      -- is purely continuous, i.e. every nonzero `f ∈ S` fails the eigenvalue
+      -- equation for every scalar `lam`.
+      (∀ f ∈ S, f ≠ 0 → ∀ lam : ℂ, W.op f ≠ lam • f)
 
 /-- The Xie–Tamon construction (statement only): there is a graphon `W`
 which has both a non-trivial cell-uniform PST sector **and** a continuous
@@ -331,12 +333,13 @@ We state the theorem in the language of the existing `IsCellUniformPST` and
 theorem cellUniformPST_decouples_from_continuous
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i j : I) (τ : ℝ) :
     -- cell-uniform PST depends only on the discrete part of the spectrum,
-    -- restricted to the cell-uniform subspace (which is automatically
-    -- pure-point)
-    True := by
-  -- the substantive content is `cellUniformPST_iff_quotientPST` in
-  -- `Graphon/PST.lean`; here we record the spectral interpretation
-  sorry
+    -- restricted to the (finite-dimensional, hence pure-point) cell-uniform
+    -- subspace: it is exactly finite PST on the symmetric quotient matrix
+    -- `P.symmQuotient`, with no reference to the continuous part of `W.op`.
+    IsCellUniformPST W P i j τ ↔ IsPST_finite P.symmQuotient i j τ :=
+  -- genuine: this is the headline PST theorem of `Graphon/PST.lean`, which is
+  -- itself proven (modulo the single named `exp`-lift gap it depends on).
+  Graphon.cellUniformPST_iff_quotientPST P i j τ
 
 /-! ## 5. Wave-packet PST: a generalisation to non-eigenstate transfer
 
@@ -369,19 +372,27 @@ theorem isCellUniformPST_iff_isWavePacketTransfer
   -- normalisation of `cellIndicator` plus unfolding both definitions
   sorry
 
-/-- **Wave-packet PST in the pure point regime.**  If `W` has pure point
-spectrum and `φ₀, φ₁` are simultaneous eigenstate sums over the *same*
-finite-dimensional invariant subspace, then wave-packet PST reduces to a
-finite Godsil-ratio-style condition on the eigenvalue ratios.
+/-- **Wave-packet PST is exact phase transfer.**  For normalised states
+`φ₀, φ₁`, wave-packet PST at time `τ` is equivalent to `W.evolve τ` sending
+`φ₀` to a **unit phase** times `φ₁`:
+$$ \mathrm{WavePacketPST} \iff \exists\, \alpha \in \mathbb{R},\;
+   W.\mathrm{evolve}(\tau)\,\varphi_0 = e^{i\alpha}\,\varphi_1. $$
+This is the genuine "transfer up to a phase" reformulation of the
+modulus-one inner-product condition (Cauchy–Schwarz equality case for unit
+vectors), and is the right Tower-4 shape of the finite Godsil criterion.
 
-(Statement only; this is the right Tower-4 generalisation of the finite
-Godsil ratio criterion.) -/
+The `HasPointSpectrum` hypothesis is recorded for context (in the pure-point
+regime the phase `α` is computed from the eigenvalue ratios, the Godsil
+condition); the equivalence itself holds generally for unit vectors.  Honest
+`sorry` (Cauchy–Schwarz equality characterisation in `Lp`). -/
 theorem isWavePacketTransfer_pointSpectrum
     (W : Graphon Ω μ) (phi0 phi1 : Lp ℂ 2 μ) (τ : ℝ)
-    (_h : W.HasPointSpectrum) :
-    W.IsWavePacketTransfer phi0 phi1 τ ↔ True := by
-  -- the substantive RHS is a Godsil-ratio condition on the joint spectral
-  -- support of `φ₀, φ₁`; statement only
+    (_h : W.HasPointSpectrum)
+    (hphi0 : ‖phi0‖ = 1) (hphi1 : ‖phi1‖ = 1) :
+    W.IsWavePacketTransfer phi0 phi1 τ ↔
+      ∃ α : ℝ, W.evolve τ phi0 = (Complex.exp (Complex.I * α)) • phi1 := by
+  -- the modulus-one overlap of two unit vectors is the Cauchy–Schwarz equality
+  -- case, which forces colinearity with a unit-modulus (hence phase) scalar
   sorry
 
 /-! ## 6. Failure modes: purely continuous spectrum kills PST
@@ -458,10 +469,16 @@ matrix and call this the **cell-strong-cospectrality** of cells
 `i, j`. -/
 def IsCellStronglyCospectral
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i j : I) : Prop :=
-  ∀ lam ∈ spectrum ℂ (Matrix.toEuclideanLin P.quotient),
-    -- the spectral projection `E_λ` of `P.quotient` satisfies
-    -- `E_λ E_i = ±1 • E_λ E_j`
-    True
+  ∀ lam ∈ spectrum ℂ (Matrix.toEuclideanLin P.symmQuotient),
+    -- the spectral (eigenspace) projection `E_λ` of the symmetric quotient
+    -- satisfies `E_λ E_i = ±1 • E_λ E_j` (sign depending on `λ`).  We compare
+    -- the orthogonal projections of the standard basis vectors onto the
+    -- `lam`-eigenspace, coerced back into `EuclideanSpace ℂ I`.
+    ∃ ε : ℂ, (ε = 1 ∨ ε = -1) ∧
+      ((Module.End.eigenspace (Matrix.toEuclideanLin P.symmQuotient) lam).orthogonalProjection
+          (EuclideanSpace.single i (1 : ℂ)) : EuclideanSpace ℂ I)
+        = ε • ((Module.End.eigenspace (Matrix.toEuclideanLin P.symmQuotient) lam).orthogonalProjection
+          (EuclideanSpace.single j (1 : ℂ)) : EuclideanSpace ℂ I)
 
 /-- **Graphon strong cospectrality** of cells `i, j` of an equitable
 partition `P`.  Equivalent (by the headline lifting theorem) to strong

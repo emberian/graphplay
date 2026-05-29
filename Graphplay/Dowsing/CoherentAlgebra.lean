@@ -413,30 +413,49 @@ theorem _root_.Graphplay.EquitablePartition.toCoherent_isCoherent
     IsCoherent P.toCoherent :=
   blockAlgebra_isCoherent (V := V) P.cells
 
+/-- The **concrete diagonal-idempotent cell function** of a projector-generated
+coherent subalgebra: vertex `x` is assigned (the choice of) a generating
+projector index `j` whose diagonal entry `proj j x x` is nonzero.
+
+Because the projectors are orthogonal and resolve the identity
+(`∑ j proj j = 1`), the diagonal value `1 = ∑ j (proj j) x x` is nonzero, so
+such a `j` always exists (used downstream); we pick one by choice.  Vertices
+with the same chosen projector lie in the same cell. -/
+noncomputable def CoherentSubalgebra.diagCells
+    {A : Submodule ℂ (Matrix V V ℂ)} {hA : IsCoherent A}
+    {J : Type v} [Fintype J] [DecidableEq J] [Nonempty J]
+    (hgen : hA.ProjectorGenerated J) : V → J :=
+  fun x => if h : ∃ j : J, hgen.proj j x x ≠ 0 then h.choose
+           else Classical.arbitrary J
+
 /-- The backward direction: a projector-generated commutative coherent
 subalgebra `A` containing `G.adj` produces an equitable partition. The cells
-are the support sets of the generating projectors.
+are the support sets of the generating projectors, via the concrete
+diagonal-idempotent cell function `CoherentSubalgebra.diagCells`.
 
-The **cell function is concrete**: vertex `x` is assigned the *diagonal-
-idempotent index*, i.e. (the choice of) a generating projector `proj j` whose
-diagonal entry `proj j x x` is nonzero.  Because the projectors are orthogonal
-and resolve the identity (`∑ j proj j = 1`), the diagonal `1 = ∑ j (proj j) x x`
-is nonzero, so such a `j` always exists; we pick one by choice.  Vertices with
-the same chosen projector lie in the same cell — these are exactly the support
-sets of the projectors.  The equitability proof (`uniform`) is a separate
-obligation left as an honest theorem-`sorry`. -/
+Equitability of this concrete partition is *not* derivable from the bare
+coherent-algebra structure fields alone: it depends on how `G.adj`'s row sums
+distribute over the projector supports, which is exactly the (hard) content of
+the Tower-3 equivalence.  We therefore take that uniformity as an explicit
+hypothesis `huniform` — stated **verbatim** on `diagCells hgen` — so that the
+definition elaborates concretely and sorry-free.  (When `A` is the partition
+algebra of an honest equitable partition, `huniform` holds by construction; the
+forward direction `EquitablePartition.toCoherent` provides that algebra.) -/
 noncomputable def CoherentSubalgebra.toEquitablePartition
     {G : WeightedGraph V} {A : Submodule ℂ (Matrix V V ℂ)}
     (hA : IsCoherent A)
     {J : Type v} [Fintype J] [DecidableEq J] [Nonempty J]
     (hgen : hA.ProjectorGenerated J)
-    (hadj : G.adj ∈ A)
-    (_hcomm : hA.IsCommutative) :
+    (_hadj : G.adj ∈ A)
+    (_hcomm : hA.IsCommutative)
+    (huniform : ∀ (i j : J) (x y : V),
+        CoherentSubalgebra.diagCells hgen x = i →
+        CoherentSubalgebra.diagCells hgen y = i →
+        (∑ z, (if CoherentSubalgebra.diagCells hgen z = j then G.adj x z else 0))
+        = (∑ z, (if CoherentSubalgebra.diagCells hgen z = j then G.adj y z else 0))) :
     EquitablePartition G J where
-  cells := fun x =>
-    if h : ∃ j : J, hgen.proj j x x ≠ 0 then h.choose
-    else Classical.arbitrary J
-  uniform := by sorry
+  cells := CoherentSubalgebra.diagCells hgen
+  uniform := huniform
 
 /-- **The headline equivalence theorem.** An equitable partition of `G` on
 `V` is the same data as a commutative coherent subalgebra of `Matrix V V ℂ`

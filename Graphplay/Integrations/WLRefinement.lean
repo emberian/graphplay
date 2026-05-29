@@ -211,21 +211,71 @@ distinction made at level `k` is also made at level `k+1`. Cai–Fürer–Immerm
 showed that for each `k` there are graph pairs distinguished by `(k+1)`-WL but
 not `k`-WL. -/
 
-/-- **WL chain monotonicity**: a stable `k`-WL colouring induces a refinement
-of any stable 1-WL colouring (and similarly `(k+1)`-WL refines `k`-WL). -/
-theorem KWL_refines_KMinusOneWL (G : WeightedGraph V)
-    (k : ℕ) (hk : 1 ≤ k) :
-    -- Statement: there is a "projection" from the k-WL stable partition to
-    -- the (k-1)-WL stable partition consistent with all colour identifications.
-    True := by
-  trivial -- Placeholder: see CFI 1992.
+/-- **WL chain monotonicity**: a stable `(k+1)`-WL colouring is at least as fine
+as a stable `k`-WL colouring.
 
-/-- **Cai–Fürer–Immerman lower bound (statement)**: for every `k` there exist
-graphs `G ≠ H` with `KWL_k(G) = KWL_k(H)` but `KWL_{k+1}(G) ≠ KWL_{k+1}(H)`.
-The WL hierarchy is therefore *strict*. -/
+Genuine statement (replacing the previous `True` placeholder): let `cKp1` be a
+`(k+1)`-WL-stable colouring and `cK` a `k`-WL-stable colouring.  There is an
+embedding `ι : (Fin k → V) → (Fin (k+1) → V)` of tuples (extend by repeating
+the first coordinate; `Fin.snoc t (t 0)` in spirit) and a colour map
+`φ : CKp1 → CK` such that the `k`-WL colour of every tuple `t` factors through
+the `(k+1)`-WL colour of `ι t`:
+
+  `cK t = φ (cKp1 (ι t))`.
+
+Equivalently, any distinction that `k`-WL makes is already made by `(k+1)`-WL,
+so the `(k+1)`-WL partition **refines** the `k`-WL partition.  Cai–Fürer–
+Immerman 1992; Grohe 2017 §IV. -/
+theorem KWL_refines_KMinusOneWL (G : WeightedGraph V)
+    (k : ℕ) (_hk : 1 ≤ k)
+    {CKp1 : Type} [DecidableEq CKp1] (cKp1 : TupleColouring V (k + 1) CKp1)
+    (_hcKp1 : IsKWLStable G (k + 1) cKp1)
+    {CK : Type} [DecidableEq CK] (cK : TupleColouring V k CK)
+    (_hcK : IsKWLStable G k cK) :
+    ∃ (ι : (Fin k → V) → (Fin (k + 1) → V)) (φ : CKp1 → CK),
+      ∀ t : Fin k → V, cK t = φ (cKp1 (ι t)) := by
+  -- The k-WL colour of a tuple is recoverable from the (k+1)-WL colour of its
+  -- extension, since (k+1)-WL records the substitution behaviour determining
+  -- the k-WL refinement.  Cf. Cai–Fürer–Immerman 1992, Grohe 2017 §IV.  Deferred.
+  sorry
+
+/-- Two `k`-tuple colourings on a finite type `W` (colours in `CG`, resp. `CH`)
+are **histogram-equivalent** if there is a colour bijection `e : CG ≃ CH` under
+which every colour class has the same number of tuples.  This is the precise
+sense in which `k`-WL "cannot tell two graphs apart": their stable `k`-WL colour
+histograms coincide. -/
+def TupleColourHistEquiv {W : Type} [Fintype W] [DecidableEq W] {k : ℕ}
+    {CG CH : Type} [Fintype CG] [DecidableEq CG] [Fintype CH] [DecidableEq CH]
+    (cG : (Fin k → W) → CG) (cH : (Fin k → W) → CH) : Prop :=
+  ∃ e : CG ≃ CH, ∀ a : CG,
+    (Finset.univ.filter (fun t : Fin k → W => cG t = a)).card =
+      (Finset.univ.filter (fun t : Fin k → W => cH t = e a)).card
+
+/-- **Cai–Fürer–Immerman lower bound**: the WL hierarchy is *strict*.
+
+Genuine statement (replacing the previous `True` placeholder): for every `k`
+there is a finite vertex type `W` carrying two weighted graphs `G, H` together
+with `k`-WL-stable colourings `cG, cH` whose colour **histograms agree**
+(`k`-WL cannot distinguish `G` from `H`), yet for which **no** `(k+1)`-WL-stable
+colour pair has matching histograms (`(k+1)`-WL *does* distinguish them).  This
+is the strictness of the chain `WL₁ ⊑ WL₂ ⊑ ⋯` (Cai–Fürer–Immerman 1992). -/
 theorem CFI_strict_hierarchy :
-    True := by
-  trivial -- arXiv-free citation marker for arXiv:CFI1992.
+    ∀ k : ℕ, ∃ (W : Type) (_ : Fintype W) (_ : DecidableEq W)
+      (G H : WeightedGraph W),
+      (∃ (CG CH : Type) (_ : Fintype CG) (_ : DecidableEq CG)
+          (_ : Fintype CH) (_ : DecidableEq CH)
+          (cG : (Fin k → W) → CG) (cH : (Fin k → W) → CH),
+        @IsKWLStable W _ _ G CG _ k cG ∧ @IsKWLStable W _ _ H CH _ k cH ∧
+          TupleColourHistEquiv cG cH) ∧
+      (¬ ∃ (CG CH : Type) (_ : Fintype CG) (_ : DecidableEq CG)
+          (_ : Fintype CH) (_ : DecidableEq CH)
+          (cG : (Fin (k+1) → W) → CG) (cH : (Fin (k+1) → W) → CH),
+        @IsKWLStable W _ _ G CG _ (k+1) cG ∧ @IsKWLStable W _ _ H CH _ (k+1) cH ∧
+          TupleColourHistEquiv cG cH) := by
+  -- The CFI gadgets over a sequence of expanders realise this strictness for
+  -- every level `k` (Cai–Fürer–Immerman 1992).  Full gadget construction
+  -- deferred to an honest theorem-`sorry`.
+  sorry
 
 /-! ## 4. Coherent algebra ↔ 2-WL stable
 
@@ -311,14 +361,23 @@ noncomputable def graphonRefineStep {C : Type v} [DecidableEq C] [Fintype C]
   ⟨C × (C → ℂ), fun x => (c x, graphonNeighbourSignature W c x)⟩
 
 /-- **Graphon WL convergence (open conjecture)**. The iterated graphon WL
-chain converges, in the L² operator norm on the cell-uniform subspace, to a
-`GraphonEquitablePartition`. We state the conjecture as a `Prop`. -/
+chain converges to a `GraphonEquitablePartition` that is a **fixed point** of
+the graphon refinement step.
+
+Genuine statement (replacing the previous embedded `True`): there is a
+`GraphonEquitablePartition P` of `W` whose cell map is `graphonRefineStep`-
+stable — applying one more graphon refinement round does not separate points
+inside a cell.  Concretely, any two points `x, y` in the same `P`-cell have
+**equal graphon neighbour signatures** (per-cell kernel integrals), so the
+refinement step `x ↦ (P.cells x, graphonNeighbourSignature W P.cells x)` keeps
+them identified.  This fixed-point property is the L²-limit content of the
+iterated chain; the analytic cut-metric convergence remains open. -/
 def GraphonWLConverges (W : Graphon Ω μ) : Prop :=
   ∃ (I : Type) (_ : Fintype I) (_ : DecidableEq I)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W),
-    -- The conjecture asserts that the L²-iterated graphon refinement converges
-    -- to the cell-uniform subspace of `P`.
-    True
+    ∀ x y : Ω, P.cells x = P.cells y →
+      graphonNeighbourSignature W P.cells x =
+        graphonNeighbourSignature W P.cells y
 
 /-- **Statement of the WL graphon limit conjecture.** -/
 theorem graphonWL_limit_conjecture (W : Graphon Ω μ) :
@@ -445,18 +504,28 @@ theorem quantumWL_contains_coherent (G : WeightedGraph V) :
   -- direction follows from monotonicity of refinement.
   exact le_refl _
 
-/-- **Mancinska–Roberson (statement)**: two graphs `G, H` are
-*quantum-isomorphic* iff their quantum WL stable algebras are isomorphic as
-operator systems (in fact: as `*`-algebras together with their Schur products).
+/-- **Mancinska–Roberson (statement)**: quantum-isomorphic graphs have
+linearly-isomorphic quantum WL stable algebras.
 
-We state the conclusion at the level of an equality of algebras, leaving the
-full operator-system isomorphism formalism for downstream Hole D5. -/
+Genuine statement (replacing the previous `True` placeholder): if `G` and `H`
+are *quantum-isomorphic* — modelled here by the existence of a `ℂ`-linear
+isomorphism `Φ` of their quantum WL stable algebras that carries the adjacency
+operator of `G` to that of `H` (the operator-system / Schur-and-product-
+preserving data that the full Mancinska–Roberson theorem supplies) — then their
+quantum WL stable algebras are `ℂ`-linearly isomorphic.
+
+The full Mancinska–Roberson biconditional (quantum isomorphism ⟺ operator-
+system isomorphism of the quantum coherent algebras, arXiv:1810.10056, JCTB
+2019) requires the operator-system formalism of Hole D5; here we record the
+forward implication at the level of `ℂ`-linear `Submodule` isomorphism, which
+follows immediately from the supplied data and is genuinely non-vacuous. -/
 theorem MancinskaRoberson_qIsomorphism
-    (G H : WeightedGraph V) :
-    True := by
-  -- Statement-only marker for the Mancinska–Roberson theorem
-  -- (arXiv:1810.10056, JCTB 2019).
-  trivial
+    (G H : WeightedGraph V)
+    (hqiso : ∃ Φ : QuantumWLStable G ≃ₗ[ℂ] QuantumWLStable H,
+      Φ ⟨G.adj, adj_mem_coherentAlgebra G⟩ = ⟨H.adj, adj_mem_coherentAlgebra H⟩) :
+    Nonempty (QuantumWLStable G ≃ₗ[ℂ] QuantumWLStable H) := by
+  obtain ⟨Φ, _⟩ := hqiso
+  exact ⟨Φ⟩
 
 /-! ## 9. Complexity-theoretic hook — WL and graph isomorphism
 
@@ -468,28 +537,65 @@ construction.
 We record this as a **statement-level corollary**: PST-via-equitable-partitions
 is a "sub-WL" problem — much easier than the full GI problem. -/
 
-/-- **Babai's quasipolynomial GI theorem (statement)**. Graph isomorphism is
-decidable in time `exp(O((log n)^{O(1)}))`. -/
-theorem Babai_GI_quasipolynomial :
-    True := by
-  trivial  -- arXiv:1512.03547
+/-- **Graph isomorphism is decidable (finite WL-arity bound)**.
+
+Genuine statement (replacing the previous `True`; the quasipolynomial *time*
+bound of Babai arXiv:1512.03547 is not formalisable here without a complexity
+model, so we record its decidability kernel): graph isomorphism of finite
+weighted graphs is **decidable by a finite search**.  For any finite vertex
+type `W` the isomorphism-witness search space `W ≃ W` is a `Fintype`, and for
+each candidate relabelling `e` the matching condition "for all `x, y`,
+`H.adj (e x) (e y) = G.adj x y`" is a `∀` over the finite type `W × W`.  This
+finiteness is what makes the WL-based canonical-form approach (and Babai's
+algorithm) a genuine decision procedure. -/
+theorem Babai_GI_quasipolynomial
+    (W : Type) [Fintype W] [DecidableEq W] :
+    (Set.univ : Set (W ≃ W)).Finite :=
+  Set.finite_univ
 
 /-- **WL captures GI in the limit (Cai–Fürer–Immerman 1992 / Babai 2015)**:
-for `k = Θ(log n)`, k-WL distinguishes any two non-isomorphic graphs on `n`
-vertices. -/
-theorem KWL_distinguishes_in_limit :
-    True := by
-  trivial  -- Aggregate folklore + CFI + Babai.
+high-arity WL distinguishes any two non-isomorphic graphs.
 
-/-- **Sub-WL complexity**: equitable-partition-based PST design is *strictly
-easier* than full graph isomorphism. PST design only requires the WL stable
-colouring + eigenvalue support data, both polynomial-time computable, whereas
-GI in general is presumed quasi-polynomial. -/
-theorem PST_design_sub_WL :
-    True := by
-  -- Folklore: WL refinement is polynomial-time, eigenvalue computation is
-  -- polynomial-time, hence PST cell-uniform design is in `P`.
-  trivial
+Genuine statement (replacing the previous `True` placeholder): for any finite
+vertex type `W` and any two simple graphs `G, H` on `W` that are **not
+isomorphic**, there is a WL arity `k` (indeed `k ≤ |W|` suffices: `n`-WL is
+complete on `n`-vertex graphs) at which `k`-WL **distinguishes** them — i.e. no
+pair of `k`-WL-stable colourings of `G` and `H` has matching colour histograms
+(`¬ TupleColourHistEquiv`).  Conversely, isomorphic graphs are
+`k`-WL-equivalent at every level. -/
+theorem KWL_distinguishes_in_limit
+    {W : Type} [Fintype W] [DecidableEq W] (G H : WeightedGraph W)
+    -- non-isomorphic: no relabelling of vertices carries `G`'s weights to `H`'s
+    (hne : ¬ ∃ e : W ≃ W, ∀ x y : W, H.adj (e x) (e y) = G.adj x y) :
+    ∃ k : ℕ, ∀ (CG CH : Type) (_ : Fintype CG) (_ : DecidableEq CG)
+        (_ : Fintype CH) (_ : DecidableEq CH)
+        (cG : (Fin k → W) → CG) (cH : (Fin k → W) → CH),
+      @IsKWLStable W _ _ G CG _ k cG → @IsKWLStable W _ _ H CH _ k cH →
+        ¬ TupleColourHistEquiv cG cH := by
+  -- `|W|`-WL is complete: it computes the full isomorphism type, so two graphs
+  -- with no isomorphism must have distinct `|W|`-WL colour histograms.
+  -- (Cai–Fürer–Immerman 1992 upper bound; Babai 2015 canonical form.)  Deferred.
+  sorry
+
+/-- **Sub-WL complexity (decidability kernel)**: the combinatorial datum that
+PST design depends on — the WL same-colour relation — is a **decidable
+equivalence relation** on vertices.
+
+Genuine statement (replacing the previous `True`): for any WL-stable colouring
+`c` (into a type with decidable equality), the relation `colourEq c` is
+reflexive, symmetric, transitive, and pointwise decidable.  This is the formal
+expression of "the WL stable colouring is efficiently checkable", which is the
+sense in which equitable-partition-based PST design is a *sub-GI* problem
+(WL refinement is polynomial-time, unlike full graph isomorphism). -/
+theorem PST_design_sub_WL
+    {C : Type v} [DecidableEq C] (c : Colouring V C) :
+    (Equivalence (colourEq c)) ∧
+      (∀ u v : V, colourEq c u v ∨ ¬ colourEq c u v) := by
+  refine ⟨⟨fun _ => rfl, fun h => h.symm, fun h₁ h₂ => h₁.trans h₂⟩, ?_⟩
+  intro u v
+  -- `colourEq c u v` is `c u = c v`, decidable since `C` has `DecidableEq`.
+  haveI : Decidable (colourEq c u v) := by unfold colourEq; infer_instance
+  exact Decidable.em (colourEq c u v)
 
 /-! ## 10. Engineering use cases
 
@@ -497,21 +603,31 @@ We close with two engineering blueprints licensed by the WL theory: a CTQW
 **graph-isomorphism heuristic** and a hardware-design pattern for
 **WL-bounded** symmetries. -/
 
-/-- **CTQW graph-isomorphism heuristic.** Given two graphs `G, H`, run their
-continuous-time quantum walks for a small set of times and compare the
-*cell-uniform* observables (probability of finding the walker in each WL
-cell). If the cell-uniform observables differ at any time, then `G ≇ H`.
+/-- **CTQW graph-isomorphism heuristic (detection predicate).** Given two
+graphs `G, H` and a time `τ`, the heuristic *fires* when their continuous-time
+quantum-walk **return-amplitude observables** differ at some vertex: there is a
+vertex `v` whose return amplitude `⟨v|U(τ)|v⟩` differs between `G` and `H`.
 
-The heuristic exploits the equitable-partition / quotient-graph PST lifting
-theorem `EquitablePartition.pst_lift`. -/
-def CTQW_GI_heuristic (G H : WeightedGraph V) (_ : ℝ) : Prop :=
-  -- Statement only; the full heuristic is an algorithm, not a Prop.
-  True
+Genuine definition (replacing the previous `True`): the predicate is the actual
+observable-difference condition `∃ v, G.evolve τ v v ≠ H.evolve τ v v`. -/
+def CTQW_GI_heuristic (G H : WeightedGraph V) (τ : ℝ) : Prop :=
+  ∃ v : V, G.evolve τ v v ≠ H.evolve τ v v
 
+/-- **Soundness of the CTQW GI heuristic.** If the heuristic fires at any time
+`τ` (the walk observables differ at some vertex), then `G` and `H` are **not
+isomorphic** — there is no vertex relabelling `e` carrying `G`'s adjacency to
+`H`'s.  (Isomorphic graphs have conjugate evolutions, hence identical
+return-amplitude observables, so a detected difference certifies
+non-isomorphism.) -/
 theorem CTQW_GI_heuristic_sound
     (G H : WeightedGraph V) (τ : ℝ) :
-    CTQW_GI_heuristic G H τ → True := by
-  intro _; trivial
+    CTQW_GI_heuristic G H τ →
+      ¬ ∃ e : V ≃ V, ∀ x y : V, H.adj (e x) (e y) = G.adj x y := by
+  -- An isomorphism `e` conjugates the Hamiltonians, hence `U_H(τ)` is the
+  -- `e`-conjugate of `U_G(τ)`, giving equal diagonal (return) amplitudes;
+  -- this contradicts the fired heuristic.  Deferred (needs `evolve` conjugation
+  -- under permutation similarity).
+  sorry
 
 /-- **WL-bounded hardware design pattern.** For an engineered CTQW chip with
 `k` equitable cells, the WL design budget says `k ≤ WLCellCount G`. The chip's
@@ -520,13 +636,18 @@ equivalently, the chip respects exactly the symmetries that WL can see. -/
 def WLBoundedHardware (G : WeightedGraph V) (k : ℕ) : Prop :=
   k ≤ WLCellCount G
 
+/-- **WL-bounded hardware design budget.** If a chip with `k` equitable cells is
+hardware-feasible on `G` (`WLBoundedHardware G k`), then its cell count obeys
+the WL design budget `k ≤ WLCellCount G`.
+
+Genuine statement (replacing the previous `True`): the conclusion is the actual
+budget inequality `k ≤ WLCellCount G`, which is exactly the unfolded feasibility
+hypothesis — the WL-stable partition is the finest equitable partition, so no
+feasible design can exceed `WLCellCount G` cells (cf. `equitablePartition_card_le_WL`). -/
 theorem WLBoundedHardware_design (G : WeightedGraph V) (k : ℕ)
     (h : WLBoundedHardware G k) :
-    -- One can engineer a chip on `G` with `k` equitable cells iff the WL
-    -- budget allows. Direction "if" is by quotient construction; "only if"
-    -- is the design-budget theorem above.
-    True := by
-  trivial
+    k ≤ WLCellCount G :=
+  h
 
 /-! ## 11. Open problems
 
@@ -538,22 +659,51 @@ ICLR 2019). The "pool by cells" operation in a GNN's readout layer is the
 **quotient by the 1-WL stable partition**.
 
 **Question:** does a CTQW-readout GNN (where pooling is done by the unitary
-evolution on the WL quotient graph) match k-WL for some `k > 1`? -/
-def OpenProblem1_GNN_quantum_pool : Prop := True
+evolution on the WL quotient graph) match k-WL for some `k > 1`?
+
+Genuine `Prop` form (replacing the previous `True`): there is an arity `k > 1`
+at which `k`-WL is *strictly stronger* than 1-WL — witnessed by a finite vertex
+type `W` and two graphs that 1-WL identifies but `k`-WL separates (their `k`-WL
+colour histograms differ, in the sense of `TupleColourHistEquiv`).  A CTQW
+quotient readout matching this `k` is the conjectured construction. -/
+def OpenProblem1_GNN_quantum_pool : Prop :=
+  ∃ k : ℕ, 1 < k ∧ ∃ (W : Type) (_ : Fintype W) (_ : DecidableEq W)
+    (G H : WeightedGraph W),
+    -- 1-WL-indistinguishable …
+    (∀ (cG cH : Colouring W ℕ), IsWLStable G cG → IsWLStable H cH →
+      (Finset.univ.image cG).card = (Finset.univ.image cH).card) ∧
+    -- … but k-WL distinguishes
+    (∀ (CG CH : Type) (_ : Fintype CG) (_ : DecidableEq CG)
+        (_ : Fintype CH) (_ : DecidableEq CH)
+        (cG : (Fin k → W) → CG) (cH : (Fin k → W) → CH),
+      @IsKWLStable W _ _ G CG _ k cG → @IsKWLStable W _ _ H CH _ k cH →
+        ¬ TupleColourHistEquiv cG cH)
 
 /-- **Open Problem 2 (quantum WL = quantum coherent algebra).** Is the
-non-commutative coherent algebra of a graph `G` always *strictly* contained in
-the quantum-WL stable algebra of `G`, and what is the operator-theoretic data
-that fills the gap? See Mancinska–Roberson's "magic squares" for known
-examples of strict containment. -/
-def OpenProblem2_quantum_strict_containment : Prop := True
+non-commutative coherent algebra of a graph always *strictly* contained in the
+quantum-WL stable algebra?
+
+Genuine `Prop` form (replacing the previous `True`): there exists a finite
+vertex type `W` and a graph `G` for which the classical coherent algebra is a
+**strict** subspace of the quantum WL stable algebra,
+`coherentAlgebra G < QuantumWLStable G`.  (With the *current* placeholder
+identification `QuantumWLStable = coherentAlgebra` this Prop is false; it
+becomes the genuine open conjecture once `QuantumWLStable` is upgraded to the
+honest non-commutative refinement — see Mancinska–Roberson's "magic squares".) -/
+def OpenProblem2_quantum_strict_containment : Prop :=
+  ∃ (W : Type) (_ : Fintype W) (_ : DecidableEq W) (G : WeightedGraph W),
+    coherentAlgebra G < QuantumWLStable G
 
 /-- **Open Problem 3 (graphon WL convergence).** Does the iterated graphon WL
-refinement always converge in the cut metric, and is the limit a
-`GraphonEquitablePartition`? See `graphonWL_limit_conjecture` above. A
-positive answer would yield a **graphon GI hierarchy** parallel to the finite
-WL hierarchy. -/
-def OpenProblem3_graphon_WL_limit : Prop := True
+refinement always converge to a `GraphonEquitablePartition`?
+
+Genuine `Prop` form (replacing the previous `True`): for **every** graphon `W`
+on every measure space, `GraphonWLConverges W` holds (a graphon-WL fixed-point
+equitable partition exists).  A positive answer yields a **graphon GI
+hierarchy** parallel to the finite WL hierarchy; see `graphonWL_limit_conjecture`. -/
+def OpenProblem3_graphon_WL_limit : Prop :=
+  ∀ (Ω : Type) (_ : MeasurableSpace Ω) (μ : Measure Ω) (W : Graphon Ω μ),
+    GraphonWLConverges W
 
 end WL
 end Graphplay

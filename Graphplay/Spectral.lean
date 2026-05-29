@@ -275,10 +275,14 @@ Proof sketch (punted): expand `exp` as a power series, use
 action, and pass `cellInflateVec` through the limit.
 -/
 theorem evolve_cellInflateVec (P : EquitablePartition G I) (v : I → ℂ) (t : ℝ) :
-    -- statement body deferred: depends on `Matrix.exp` (renamed in Mathlib);
-    -- restated as a placeholder proposition.
-    (True : Prop) := by
-  trivial
+    (NormedSpace.exp ((-(t : ℂ) * Complex.I) • G.adj)).mulVec
+        (P.cellInflateVec v)
+      = P.cellInflateVec
+          ((NormedSpace.exp ((-(t : ℂ) * Complex.I) • P.symmQuotient)).mulVec v) := by
+  -- Expand `exp` as a power series, use `adj_mulVec_cellInflateVec` inductively
+  -- on each `A^n` to lift the quotient action, and pass `cellInflateVec`
+  -- through the limit.
+  sorry
 
 /-- **Bachman–Tamon PST iff (spectral form, finite-dimensional case).**
 
@@ -293,9 +297,17 @@ the lift of quotient evolution (then quotient PST and cell-uniform PST are
 the *same* statement on the two sides of the lift). -/
 theorem pst_on_quotient_iff (P : EquitablePartition G I) (i j : I) (t : ℝ)
     (γ : ℂ) :
-    -- Statement body deferred: depends on `Matrix.exp` (renamed in Mathlib).
-    (True ↔ True) := by
-  exact Iff.rfl
+    -- Quotient PST: `e^{-itQ} e_i = γ · e_j`.
+    ((NormedSpace.exp ((-(t : ℂ) * Complex.I) • P.symmQuotient)).mulVec
+        (Pi.single i 1) = γ • Pi.single j 1)
+      ↔
+    -- Cell-uniform PST on the full graph: `e^{-itA} |C_i⟩ = γ · |C_j⟩`.
+    ((NormedSpace.exp ((-(t : ℂ) * Complex.I) • G.adj)).mulVec
+        (P.cellUniformVec i) = γ • P.cellUniformVec j) := by
+  -- `cellUniformVec • = cellInflateVec ∘ Pi.single`, so the cell-uniform
+  -- evolution is the lift of the quotient evolution by `evolve_cellInflateVec`;
+  -- the two PST conditions are then the two sides of the lift.
+  sorry
 
 /-! ### Direct restatement of the eigenvalue lift in spectral form. -/
 

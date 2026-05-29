@@ -467,11 +467,105 @@ noncomputable def productPartition
     EquitablePartition (GraphBundle.cartesianProduct G H) (I × J) where
   cells := fun ⟨v, w⟩ => (P.cells v, P'.cells w)
   uniform := by
-    -- Block-diagonal independence: row sums into a `(i, j)`-cell split
-    -- as the sum of row sums into `i` on the `G` side and into `j` on
+    -- Block-diagonal independence: row sums into a `(i', j')`-cell split
+    -- as the sum of row sums into `i'` on the `G` side and into `j'` on
     -- the `H` side, each of which depends only on the source cell by
     -- equitability of `P` and `P'`.
-    sorry
+    rintro ⟨i', j'⟩ ⟨k', l'⟩ ⟨x, xw⟩ ⟨y, yw⟩ hx hy
+    -- Unpack the cell equalities for the source vertices.
+    obtain ⟨hxv, hxw⟩ := Prod.mk.injEq .. ▸ hx
+    obtain ⟨hyv, hyw⟩ := Prod.mk.injEq .. ▸ hy
+    -- Abbreviation for the cartesian-product adjacency.
+    show (∑ z : V × W,
+            if (P.cells z.1, P'.cells z.2) = (k', l') then
+              ((if x = z.1 then H.adj xw z.2 else 0)
+                + (if xw = z.2 then G.adj x z.1 else 0)) else 0)
+        = (∑ z : V × W,
+            if (P.cells z.1, P'.cells z.2) = (k', l') then
+              ((if y = z.1 then H.adj yw z.2 else 0)
+                + (if yw = z.2 then G.adj y z.1 else 0)) else 0)
+    -- A pointwise rewrite turning the product-guard into a conjunction and
+    -- distributing the `if` over the sum of the two coupling terms.
+    have key : ∀ (a : V) (aw : W),
+        (∑ z : V × W,
+            if (P.cells z.1, P'.cells z.2) = (k', l') then
+              ((if a = z.1 then H.adj aw z.2 else 0)
+                + (if aw = z.2 then G.adj a z.1 else 0)) else 0)
+        = (if P.cells a = k' then
+              (∑ zw : W, if P'.cells zw = l' then H.adj aw zw else 0) else 0)
+          + (if P'.cells aw = l' then
+              (∑ z : V, if P.cells z = k' then G.adj a z else 0) else 0) := by
+      intro a aw
+      -- Expand the product sum into a double sum and distribute the guarded
+      -- `if` over the two coupling terms.
+      rw [Fintype.sum_prod_type]
+      have hsplit : ∀ (zv : V) (zw : W),
+          (if (P.cells zv, P'.cells zw) = (k', l') then
+              ((if a = zv then H.adj aw zw else 0)
+                + (if aw = zw then G.adj a zv else 0)) else 0)
+          = (if (P.cells zv = k' ∧ P'.cells zw = l') then
+                (if a = zv then H.adj aw zw else 0) else 0)
+            + (if (P.cells zv = k' ∧ P'.cells zw = l') then
+                (if aw = zw then G.adj a zv else 0) else 0) := by
+        intro zv zw
+        by_cases hc : (P.cells zv, P'.cells zw) = (k', l')
+        · rw [if_pos hc]
+          rw [Prod.mk.injEq] at hc
+          rw [if_pos hc, if_pos hc]
+        · rw [if_neg hc]
+          have hc' : ¬ (P.cells zv = k' ∧ P'.cells zw = l') := by
+            rw [← Prod.mk.injEq]; exact hc
+          rw [if_neg hc', if_neg hc', add_zero]
+      simp only [hsplit, Finset.sum_add_distrib]
+      congr 1
+      · -- The `H`-coupling term: nonzero only at `zv = a`.
+        rw [Finset.sum_comm]
+        by_cases ha : P.cells a = k'
+        · rw [if_pos ha]
+          refine Finset.sum_congr rfl (fun zw _ => ?_)
+          rw [Finset.sum_eq_single a]
+          · by_cases hw : P'.cells zw = l' <;> simp [ha, hw]
+          · intro b _ hba; rw [if_neg (Ne.symm hba), ite_self]
+          · intro hcon; exact absurd (Finset.mem_univ a) hcon
+        · rw [if_neg ha]
+          refine Finset.sum_eq_zero (fun zw _ => ?_)
+          refine Finset.sum_eq_zero (fun zv _ => ?_)
+          by_cases hzv : P.cells zv = k'
+          · -- `P.cells zv = k'` but `P.cells a ≠ k'` forces `a ≠ zv`, so the
+            -- inner `if a = zv` vanishes.
+            have hne : a ≠ zv := fun h => ha (h ▸ hzv)
+            by_cases hw : P'.cells zw = l' <;> simp [hzv, hw, hne]
+          · simp [hzv]
+      · -- The `G`-coupling term: nonzero only at `zw = aw`.
+        by_cases hw : P'.cells aw = l'
+        · rw [if_pos hw]
+          refine Finset.sum_congr rfl (fun zv _ => ?_)
+          rw [Finset.sum_eq_single aw]
+          · by_cases ha : P.cells zv = k' <;> simp [ha, hw]
+          · intro b _ hba; rw [if_neg (Ne.symm hba), ite_self]
+          · intro hcon; exact absurd (Finset.mem_univ aw) hcon
+        · rw [if_neg hw]
+          refine Finset.sum_eq_zero (fun zv _ => ?_)
+          refine Finset.sum_eq_zero (fun zw _ => ?_)
+          by_cases hzw : P'.cells zw = l'
+          · -- `P'.cells zw = l'` but `P'.cells aw ≠ l'` forces `aw ≠ zw`.
+            have hne : aw ≠ zw := fun h => hw (h ▸ hzw)
+            by_cases ha : P.cells zv = k' <;> simp [ha, hzw, hne]
+          · simp [hzw]
+    rw [key x xw, key y yw]
+    -- Rewrite all source-cell labels to the common cell indices `i', j'`.
+    rw [hxv, hyv, hxw, hyw]
+    congr 1
+    · -- `H`-side: depends only on the source `H`-cell `j' = P'.cells xw`.
+      by_cases h : i' = k'
+      · rw [if_pos h, if_pos h]
+        exact P'.uniform j' l' xw yw hxw hyw
+      · rw [if_neg h, if_neg h]
+    · -- `G`-side: depends only on the source `G`-cell `i' = P.cells x`.
+      by_cases h : j' = l'
+      · rw [if_pos h, if_pos h]
+        exact P.uniform i' k' x y hxv hyv
+      · rw [if_neg h, if_neg h]
 
 /-- **Bachman–Tamon–Feder naturality square**: the quotient of the
 Cartesian product by `productPartition P P'` is the Cartesian product

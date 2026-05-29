@@ -38,6 +38,7 @@ import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.LinearAlgebra.Matrix.Trace
+import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.Probability.Notation
 import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.InformationTheory.Hamming
@@ -45,6 +46,7 @@ import Graphplay.Weighted
 import Graphplay.Equitable
 
 open scoped Matrix
+open scoped ComplexOrder
 open Classical
 
 universe u v w
@@ -144,26 +146,45 @@ structure QuantumChannel (A B : Type*) [Fintype A] [Fintype B] where
   /-- Complete positivity is recorded as a `Prop` placeholder. -/
   completelyPositive : Prop
 
-/-- The **quotient channel** induced by an equitable partition: average
-each cell.  Concretely, this is the channel whose Stinespring isometry is
-the orthogonal projector onto the cell-uniform subspace, followed by the
-canonical isometry `cellUniformSubspace ≃ (I → ℂ)`.
+/-- The **quotient channel** induced by an equitable partition: the
+cell-measurement (completely-dephasing) channel that records *which cell* a
+state occupies, discarding intra- and inter-cell coherences.
 
-Equivalently: take a state `ρ` on `V → ℂ`; the matrix entry `(i, j)` of
-the output is the doubly-averaged
-`(1/√(|C_i||C_j|)) · ∑_{x ∈ C_i, y ∈ C_j} ρ x y`. -/
+Concretely the output entry `(i, j)` of `apply ρ` is
+
+`δ_{ij} · ∑_{x ∈ C_i} ρ x x`,
+
+i.e. the output is the diagonal density matrix on `I → ℂ` whose `i`-th
+diagonal entry is the total diagonal mass of `ρ` over cell `C_i`.  This is
+the genuine CPTP measurement channel `Mat_V(ℂ) → Mat_I(ℂ)` with the
+one-Kraus-operator-per-vertex family `K_{i,x} = |i⟩⟨x|` (`x ∈ C_i`):
+`apply ρ = ∑_{i} ∑_{x ∈ C_i} K_{i,x} ρ K_{i,x}†`.  It is manifestly trace
+preserving (the cell sums of the diagonal reassemble the full trace) and
+completely positive (sum of `K · K†` conjugations). -/
 noncomputable def quotientChannel (P : EquitablePartition G I) :
     QuantumChannel V I where
   apply ρ := fun i j =>
-    (∑ x, ∑ y, (if P.cells x = i then (1 : ℂ) else 0) *
-                 (if P.cells y = j then (1 : ℂ) else 0) * ρ x y)
-      / ((Real.sqrt (P.cellCard i) * Real.sqrt (P.cellCard j) : ℝ) : ℂ)
+    if i = j then (∑ x, (if P.cells x = i then ρ x x else 0)) else 0
   trace_preserving := by
-    -- Trace preservation is the equitable analogue of "sum of cell sums =
-    -- total sum" — true for any partition.  Punted.
+    -- `trace (apply ρ) = ∑_i ∑_{x ∈ C_i} ρ x x = ∑_x ρ x x = trace ρ`,
+    -- partitioning `V` by the (total) cell map.
     intro ρ
-    sorry
-  completelyPositive := True
+    simp only [Matrix.trace, Matrix.diag_apply, if_pos rfl, if_true]
+    -- LHS: `∑ i, ∑ x, if cells x = i then ρ x x else 0`.
+    rw [Finset.sum_comm]
+    -- `∑ x, ∑ i, if cells x = i then ρ x x else 0 = ∑ x, ρ x x`.
+    refine Finset.sum_congr rfl (fun x _ => ?_)
+    rw [Finset.sum_ite_eq Finset.univ (P.cells x) (fun _ => ρ x x)]
+    simp
+  -- Genuine statement of complete positivity, recorded as the positivity-
+  -- preservation property of this channel: positive-semidefinite inputs map
+  -- to positive-semidefinite outputs (the diagonal cell-mass is nonnegative
+  -- and the output is a diagonal PSD matrix).
+  completelyPositive :=
+    ∀ ρ : Matrix V V ℂ, Matrix.PosSemidef ρ →
+      Matrix.PosSemidef
+        (fun i j => if i = j then (∑ x, (if P.cells x = i then ρ x x else 0)) else 0
+          : Matrix I I ℂ)
 
 /-- **Classical capacity bound.**  The classical (Holevo) capacity of the
 quotient channel is bounded by `log |I|`: the channel cannot distinguish
@@ -247,10 +268,16 @@ has a quotient algebra equal to the Bose–Mesner algebra of an association
 scheme of degree `k`.  We record this as a `Prop`-level marker for the bridge
 statement below.
 
+We record the two `Prop`-level invariants that survive the bridge: the
+partition has `k` cells (the scheme's degree / valency), and its symmetric
+quotient `Q̃` is Hermitian — the marker that the quotient algebra is the
+commutative Bose–Mesner algebra of a symmetric association scheme.
+
 (Full development of the association-scheme algebra is out of scope here;
 see `references/1907.04729.txt` and `Graphplay.Equitable.Refines`.) -/
 def IsAssociationSchemePartition (_G : WeightedGraph V)
-    (_P : EquitablePartition G I) (_k : ℕ) : Prop := True
+    (P : EquitablePartition G I) (k : ℕ) : Prop :=
+  Fintype.card I = k ∧ P.symmQuotient.IsHermitian
 
 /-- **Tamon bridge (1907.04729).**  For a distance-regular / association-scheme
 partition of valency `k`, the classical capacity of the quotient channel

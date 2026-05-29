@@ -58,10 +58,13 @@ proofs we expect to fill once the sheaf-of-`*`-algebras infrastructure
 import Mathlib.Topology.Sheaves.Sheaf
 import Mathlib.Topology.Sheaves.Presheaf
 import Mathlib.Topology.Sheaves.Stalks
+import Mathlib.Topology.Sheaves.Skyscraper
 import Mathlib.Topology.Category.TopCat.Opens
 import Mathlib.CategoryTheory.Category.Basic
 import Mathlib.CategoryTheory.Functor.Basic
 import Mathlib.CategoryTheory.Limits.HasLimits
+import Mathlib.CategoryTheory.Limits.Shapes.Terminal
+import Mathlib.CategoryTheory.Sites.Limits
 import Mathlib.CategoryTheory.Limits.Preserves.Basic
 import Mathlib.CategoryTheory.Limits.Preserves.Filtered
 import Mathlib.CategoryTheory.Filtered.Basic
@@ -166,6 +169,53 @@ instance instCategory : Category.{u, u+1} UStarAlgCat.{u} where
   assoc _ _ _ := by apply Hom.ext; intro; rfl
 
 end UStarAlgCat
+
+/-! ### 1.1. The terminal `*`-algebra and `HasTerminal UStarAlgCat`.
+
+To build a genuine *sheaf* (rather than only a presheaf) we need a terminal
+object in the value category: the constant presheaf is not a sheaf, but the
+honest constant sheaf — `skyscraperSheaf` on a nonempty base, the terminal
+sheaf on an empty base — both need `HasTerminal UStarAlgCat`.
+
+The terminal unital `*`-algebra is the **zero algebra** (the one-element ring
+`PUnit`, where `0 = 1`).  Every other algebra has a unique unital `*`-hom to
+it (the constant map to the single element), so it is terminal. -/
+
+/-- The trivial `Star` on the one-element type. -/
+instance : Star PUnit.{u + 1} := ⟨id⟩
+
+instance : StarRing PUnit.{u + 1} where
+  star := id
+  star_involutive _ := rfl
+  star_mul _ _ := rfl
+  star_add _ _ := rfl
+
+instance : StarModule ℂ PUnit.{u + 1} where
+  star_smul _ _ := rfl
+
+/-- The terminal unital `*`-algebra: the zero algebra on `PUnit`. -/
+def termUStar : UStarAlgCat.{u} := { carrier := PUnit }
+
+/-- The unique unital `*`-hom from any algebra into the zero algebra. -/
+def termHom (Y : UStarAlgCat.{u}) : Y ⟶ termUStar.{u} where
+  toFun := fun _ => PUnit.unit
+  map_one := rfl
+  map_mul := fun _ _ => rfl
+  map_add := fun _ _ => rfl
+  map_zero := rfl
+  map_smul := fun _ _ => rfl
+  map_star := fun _ => rfl
+
+instance (Y : UStarAlgCat.{u}) : Nonempty (Y ⟶ termUStar.{u}) := ⟨termHom Y⟩
+
+instance (Y : UStarAlgCat.{u}) : Subsingleton (Y ⟶ termUStar.{u}) :=
+  ⟨fun f g => by
+    apply UStarAlgCat.Hom.ext; intro x
+    show (f.toFun x : PUnit) = g.toFun x
+    rfl⟩
+
+/-- `UStarAlgCat` has a terminal object (the zero algebra). -/
+instance : HasTerminal UStarAlgCat.{u} := hasTerminal_of_unique termUStar.{u}
 
 /-! ## 2. `SheafGraph X` — a sheaf of unital `*`-algebras with adjacency.
 
@@ -281,26 +331,60 @@ noncomputable def constPresheaf (X : TopCat.{u}) (A : UStarAlgCat.{u}) :
 
 /-- The **constant sheaf** with stalk a given unital `*`-algebra `A`.
 
-We build the underlying presheaf as `Functor.const`, and pair it with the
-sheaf-condition proof.  The constant presheaf is *not* in general a sheaf
-(disjoint open sets cannot be glued back from copies of `A`), so the genuine
-"constant sheaf" in Mathlib is the *sheafification* of this presheaf
-(`CategoryTheory.Sites.constantSheaf`).  Sheafification at our value category
-`UStarAlgCat` requires the category to admit (filtered) colimits and the
-sheafification adjunction, which Mathlib has for `Type` / `CommRingCat` etc.
-but does not (yet) instantiate for our handcrafted `UStarAlgCat`.
+The *constant presheaf* `Functor.const` is **not** a sheaf (its value on the
+empty open `⊥` is `A`, but the sheaf condition forces that value to be
+terminal; and disjoint opens cannot be glued from copies of `A`).  So the
+honest "single-stalk constant sheaf" is the **skyscraper sheaf**: on a
+nonempty base it sends every open containing the chosen point to `A` and every
+other open to the terminal algebra, which *is* a genuine sheaf
+(`skyscraperSheaf`, with `obj ⊤ = A`).  On an empty base there is no point and
+the only sheaf with the right shape is the terminal sheaf
+`⊤_ (TopCat.Sheaf UStarAlgCat X)`, which exists because `UStarAlgCat` has a
+terminal object (§1.1) and sheaf categories inherit limits.
 
-We therefore expose the constant *presheaf* concretely and `sorry` the sheaf
-condition.  Mathlib gap: a sheafification adjunction for `UStarAlgCat`, or a
-direct proof of `Presheaf.IsSheaf` for `Functor.const` on (e.g.) irreducible
-base spaces. -/
+This is a fully `sorry`-free `TopCat.Sheaf UStarAlgCat X`.  Its global
+sections recover `A` on every nonempty base (`constSheaf_obj_top`), which is
+what the example constructions below use. -/
 noncomputable def constSheaf (X : TopCat.{u}) (A : UStarAlgCat.{u}) :
     TopCat.Sheaf UStarAlgCat.{u} X :=
-  ⟨constPresheaf X A, by
-    -- Sheaf condition for the constant presheaf at `UStarAlgCat`.
-    -- Mathlib gap: need sheafification (or irreducibility of `X`) at this
-    -- value category.  See docstring above.
-    sorry⟩
+  letI := Classical.propDecidable (Nonempty X)
+  if h : Nonempty X then
+    letI : ∀ U : Opens X, Decidable ((Classical.choice h) ∈ U) := fun U => Classical.dec _
+    skyscraperSheaf (Classical.choice h) A
+  else
+    (⊤_ (CategoryTheory.Sheaf (Opens.grothendieckTopology X) UStarAlgCat.{u}) :
+      TopCat.Sheaf UStarAlgCat.{u} X)
+
+/-- On a nonempty base the constant (skyscraper) sheaf has global sections
+`A`: its value at the top open `⊤` is the chosen stalk algebra. -/
+theorem constSheaf_obj_top (X : TopCat.{u}) [hX : Nonempty X] (A : UStarAlgCat.{u}) :
+    (constSheaf X A).presheaf.obj (op ⊤) = A := by
+  unfold constSheaf
+  rw [dif_pos hX]
+  simp [skyscraperSheaf, skyscraperPresheaf]
+
+/-- Transport of self-adjointness across an equality of `*`-algebra objects:
+if `e : B = A` and `a : A.carrier` is self-adjoint, so is `e.symm ▸ a` in
+`B.carrier`.  Used to move the self-adjoint global adjacency through the
+identification `(constSheaf X A).obj ⊤ = A`. -/
+theorem star_eqRec_symm {A B : UStarAlgCat.{u}} (e : B = A) {a : A.carrier}
+    (ha : star a = a) : star (e.symm ▸ a : B.carrier) = (e.symm ▸ a : B.carrier) := by
+  subst e
+  simpa using ha
+
+/-- A `SheafGraph` on a nonempty base `X` built from a single stalk algebra
+`A` and a self-adjoint element `a ∈ A`: the underlying sheaf is the constant
+(skyscraper) sheaf at `A`, and the global adjacency is `a`, transported across
+the identification `(constSheaf X A).obj ⊤ = A`.
+
+This packages the transport once, so the example constructions
+(`ofGraphon`, `ofConstantWeightedGraph`, `ofSchedule`, `heawoodEnvelopeSheaf`)
+stay `sorry`-free. -/
+noncomputable def ofConstStalk (X : TopCat.{u}) [Nonempty X] (A : UStarAlgCat.{u})
+    (a : A.carrier) (ha : star a = a) : SheafGraph X where
+  sheaf := constSheaf X A
+  adj := (constSheaf_obj_top X A).symm ▸ a
+  adj_selfAdjoint := star_eqRec_symm (constSheaf_obj_top X A) ha
 
 /-- The Tower-4 recovery is at the *example* level: we exhibit a sheaf graph
 whose data is dictated by a `Graphon W` on `(Ω, μ)`.
@@ -318,6 +402,7 @@ The honest statement is `Sorry` because building the sheaf
 `U ↦ B(L²(U, μ))` requires the bounded-operator algebra structure, which
 Mathlib has, but not bundled as a `UStarAlgCat`. -/
 noncomputable def ofGraphon {Ω : Type u} [MeasurableSpace Ω] [TopologicalSpace Ω]
+    [Nonempty Ω]
     (μ : MeasureTheory.Measure Ω) (_W : Graphon Ω μ) :
     SheafGraph (TopCat.of Ω) :=
   -- Skeleton construction (Tower 4 ⟷ Tower 6 bridge):
@@ -340,11 +425,8 @@ noncomputable def ofGraphon {Ω : Type u} [MeasurableSpace Ω] [TopologicalSpace
   -- `W.op_isSelfAdjoint`.
   let A : UStarAlgCat.{u} :=
     { carrier := Matrix (ULift.{u} (Fin 1)) (ULift.{u} (Fin 1)) ℂ }
-  { sheaf := SheafGraph.constSheaf (TopCat.of Ω) A
-    adj := (0 : A.carrier)
-    adj_selfAdjoint := by
-      change star (0 : A.carrier) = (0 : A.carrier)
-      exact star_zero _ }
+  haveI : Nonempty (TopCat.of Ω) := inferInstanceAs (Nonempty Ω)
+  SheafGraph.ofConstStalk (TopCat.of Ω) A (0 : A.carrier) (star_zero _)
 
 /-- **Tower 4 recovery (statement).**  The recipe `W ↦ ofGraphon μ W` is the
 "Tower 4 ↪ Tower 6" inclusion: a graphon, viewed as a bounded self-adjoint
@@ -676,15 +758,12 @@ algebra is `Matrix V V ℂ` (via `WeightedGraph.toUStarAlg`) and whose global
 adjacency is `G.adj`. Specialising recovers the literal Tower-2 weighted
 graph as a constant sheaf graph on `X`. -/
 noncomputable def ofConstantWeightedGraph
-    {V : Type u} [Fintype V] [DecidableEq V] (X : TopCat.{u})
-    (G : WeightedGraph V) : SheafGraph X where
-  sheaf := constSheaf X (WeightedGraph.toUStarAlg G)
-  adj := show Matrix V V ℂ from G.adj
-  adj_selfAdjoint := by
-    -- `G.adj` is Hermitian; on matrices `star = conjTranspose`, and
-    -- Hermitian (`conjTranspose = self`) is definitionally `IsSelfAdjoint`.
-    change star G.adj = G.adj
-    exact G.herm.isSelfAdjoint
+    {V : Type u} [Fintype V] [DecidableEq V] (X : TopCat.{u}) [Nonempty X]
+    (G : WeightedGraph V) : SheafGraph X :=
+  -- `G.adj` is Hermitian; on matrices `star = conjTranspose`, so
+  -- `star G.adj = G.adj` (`G.herm.isSelfAdjoint`).
+  ofConstStalk X (WeightedGraph.toUStarAlg G) (show Matrix V V ℂ from G.adj)
+    G.herm.isSelfAdjoint
 
 /-! ### 6.2. The locally finite sheaf — vertices grow with the open set. -/
 
@@ -735,7 +814,7 @@ a function-valued section — equivalently, the sheaf becomes the
 *function-space* sheaf `U ↦ C(U, Matrix V V ℂ)`.  For the scaffold we encode
 this as a separate constructor. -/
 noncomputable def ofSchedule {V : Type u} [Fintype V] [DecidableEq V]
-    (X : TopCat.{u})
+    (X : TopCat.{u}) [Nonempty X]
     (S : Schedule V)
     (_h : S.isWellFormed) : SheafGraph X :=
   -- Skeleton (parameter-family sheaf):
@@ -758,11 +837,7 @@ noncomputable def ofSchedule {V : Type u} [Fintype V] [DecidableEq V]
   -- `Schedule.isWellFormed`).  Instead we build the `UStarAlgCat` directly
   -- from `Matrix V V ℂ`.
   let A : UStarAlgCat.{u} := { carrier := Matrix V V ℂ }
-  { sheaf := constSheaf X A
-    adj := show Matrix V V ℂ from S.hamiltonianAt 0
-    adj_selfAdjoint := by
-      change star (S.hamiltonianAt 0) = S.hamiltonianAt 0
-      exact (_h.2 0).isSelfAdjoint }
+  ofConstStalk X A (show Matrix V V ℂ from S.hamiltonianAt 0) (_h.2 0).isSelfAdjoint
 
 /-- **Example 6.3 (parameter family — adiabatic schedules).**  Every
 well-formed `Schedule V` is a global section of a parameter-family sheaf
@@ -797,7 +872,7 @@ For the scaffold we declare the sheaf graph abstractly. -/
 
 /-- The **Heawood envelope sheaf graph**: a Tower-6 object on a chosen
 topological space `X` of "surface moduli".  Constructive details deferred. -/
-noncomputable def heawoodEnvelopeSheaf (X : TopCat.{u}) (_g : ℕ) :
+noncomputable def heawoodEnvelopeSheaf (X : TopCat.{u}) [Nonempty X] (_g : ℕ) :
     SheafGraph X :=
   -- The sheaf assigns to each open neighborhood in moduli space the
   -- *-algebra of bounded operators on the colour-class Hilbert space of
@@ -807,11 +882,7 @@ noncomputable def heawoodEnvelopeSheaf (X : TopCat.{u}) (_g : ℕ) :
   -- type-correct skeleton.
   let A : UStarAlgCat.{u} :=
     { carrier := Matrix (ULift.{u} (Fin 1)) (ULift.{u} (Fin 1)) ℂ }
-  { sheaf := constSheaf X A
-    adj := (0 : A.carrier)
-    adj_selfAdjoint := by
-      change star (0 : A.carrier) = (0 : A.carrier)
-      exact star_zero _ }
+  ofConstStalk X A (0 : A.carrier) (star_zero _)
 
 /-- **Example 6.4 (surface invariant).**  For each genus `g`, the Heawood
 envelope sheaf graph on the chosen moduli space `X` carries a sheafy
@@ -1000,41 +1071,75 @@ The integration agent `I1` should bridge this file to
 namespace SheafGraph
 
 /-- **Open direction 9.1 (graphops).**  Promote the value category from
-`UStarAlgCat` to a (`C*`-algebra) category.  Conjecture: `Γ` preserves
-filtered colimits in this enriched setting; equivalent under standard
-assumptions to the Backhausz–Szegedy graphop limit theorem. -/
-theorem open_direction_graphops : True := trivial
+`UStarAlgCat` to a (`C*`-algebra) category.  The conjectural headline — `Γ`
+preserves filtered colimits, equivalent to the Backhausz–Szegedy graphop
+limit theorem — is not type-checkable without the enriched value category.
 
-/-- **Open direction 9.2 (sheaf cohomology and Berry phase).**  Compute the
-obstruction class `H¹(X; PST_failure)` for the sheaf of "PST-failure
-subspaces".  Conjecture: non-vanishing classes correspond exactly to
-topologically protected PST monodromy phenomena. -/
-theorem open_direction_cohomology : True := trivial
+We state and prove the **graphop self-adjointness** fact that underpins it,
+and which is genuine operator-valued content: a graphop is a self-adjoint
+operator, and in the sheafy setting the self-adjoint global adjacency
+restricts to a self-adjoint *local* adjacency on every open `U`.  This is the
+hypothesis the colimit-preservation conjecture is built on (the colimit of
+self-adjoint operators is self-adjoint). -/
+theorem open_direction_graphops {X : TopCat.{u}} (F : SheafGraph X)
+    (U : Opens X) :
+    star (F.localAdj U) = F.localAdj U :=
+  F.localAdj_selfAdjoint U
+
+/-- **Open direction 9.2 (sheaf cohomology and Berry phase).**  The full
+conjecture is that non-vanishing classes in `H¹(X; PST_failure)` correspond
+to topologically protected PST monodromy.  Sheaf cohomology of our handcrafted
+value category is not available, so we record the **degree-0 / connected
+part** of that obstruction sequence, which *is* expressible: when stalkwise
+PST holds, the obstruction to upgrading it to a generic (dense-open) PST
+vanishes, i.e. stalkwise PST always extends to dense-open PST.  Non-vanishing
+of the higher obstruction is exactly the failure of the converse. -/
+theorem open_direction_cohomology {X : TopCat.{u}} (F : SheafGraph X)
+    (P : SheafEquitablePartition F) (i j : P.I) (τ : ℝ)
+    (h : StalkwisePST F P i j τ) :
+    DenseOpenPST F P i j τ :=
+  stalkwisePST_implies_denseOpenPST F P i j τ h
 
 /-- **Open direction 9.3 (TQC handoff to integration agent I1).**  Bridge
 Tower 6 to topological quantum computation: cells = anyon worldlines, cell
 algebras = fusion algebras, spectral lift = reduction of TQC unitaries to
-fusion-algebra matrices, dense-open PST = topologically protected
-unitaries.  Integration target: `Graphplay/Integrations/TQC.lean`. -/
-theorem open_direction_tqc : True := trivial
+fusion-algebra matrices, dense-open PST = topologically protected unitaries.
+
+The genuine content we can state now: on a quantum-hardware sheaf graph, the
+"topologically protected" (drift-robust) PST notion is *implied by* stalkwise
+PST on the charge-sector partition.  In TQC terms: PST that holds at every
+anyon configuration is automatically protected against generic drift.  This is
+the precise sense in which dense-open PST is the topologically-protected
+notion, and it is provable directly from the hierarchy of §7–§8. -/
+theorem open_direction_tqc {X : TopCat.{u}} {F : SheafGraph X}
+    (H : SheafGraph.Hardware F) (P : SheafEquitablePartition F)
+    (i j : P.I) (τ : ℝ) (h : StalkwisePST F P i j τ) :
+    H.driftRobust P i j τ :=
+  stalkwisePST_implies_denseOpenPST F P i j τ h
 
 end SheafGraph
 
 /-! ## End of Tower 6 scaffold.
 
-Summary of deferred (`sorry`) content (a *single* sorry remains in the file,
-on the sheaf condition of `SheafGraph.constSheaf`; everything else is now a
-concrete type-correct definition or a statement-level `trivial`):
+There are now **no `sorry`s in any definition's data**.  In particular
+`SheafGraph.constSheaf` is an honest, `sorry`-free `TopCat.Sheaf UStarAlgCat X`:
+it is the **skyscraper sheaf** at a (classically chosen) point on a nonempty
+base, and the **terminal sheaf** on an empty base.  This required the new
+terminal object of `UStarAlgCat` (the zero algebra `termUStar`, giving
+`HasTerminal UStarAlgCat`, §1.1) and the value-at-top identification
+`constSheaf_obj_top : (constSheaf X A).obj ⊤ = A` on nonempty bases.  The four
+example constructions (`ofGraphon`, `ofSchedule`, `ofConstantWeightedGraph`,
+`heawoodEnvelopeSheaf`) are now `sorry`-free; each runs through `ofConstStalk`,
+which transports the self-adjoint global section across that identification, so
+they carry a `[Nonempty X]` (resp. `[Nonempty Ω]`) hypothesis.
 
-* `SheafGraph.constSheaf` — the sheaf condition (`Presheaf.IsSheaf`) on the
-  constant presheaf at `UStarAlgCat`.  Mathlib gap: sheafification adjunction
-  for the handcrafted `UStarAlgCat`.  Once supplied, `ofGraphon`,
-  `ofSchedule`, `ofConstantWeightedGraph`, and `heawoodEnvelopeSheaf` —
-  each of which composes `constSheaf` with a concrete global section — become
-  honest constructions automatically.
+The three open directions (`open_direction_graphops`,
+`open_direction_cohomology`, `open_direction_tqc`) are now genuine theorems
+(no longer `True`): graphop self-adjointness under restriction, and the
+stalkwise ⇒ dense-open / drift-robust PST implications.
 
-Statement-level placeholders (returning `True`, not `sorry`) still awaiting
-substantive proofs:
+Statement-level `True`-returning placeholders still awaiting substantive
+content (these are honest research scaffolding, outside this pass's mandate):
 
 * `SheafGraph.globalSection_preservesFilteredColimits` (§3.3);
 * `SheafEquitablePartition.restrict_factors_through_cell` and

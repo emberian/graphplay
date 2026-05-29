@@ -262,9 +262,10 @@ noncomputable def evolve [IsFiniteMeasure μ] (W : Graphon Ω μ) (t : ℝ) :
 /-- The graphon evolution at time zero is the identity. -/
 theorem evolve_zero [IsFiniteMeasure μ] (W : Graphon Ω μ) :
     W.evolve 0 = ContinuousLinearMap.id ℂ (Lp ℂ 2 μ) := by
-  -- `exp 0 = 1`; we leave the algebraic simp closure to `sorry` until
-  -- `NormedSpace.exp_zero` ports cleanly through `ContinuousLinearMap.id`.
-  sorry
+  -- `exp ((-I·0)•op) = exp 0 = 1 = id`.
+  unfold Graphon.evolve
+  rw [Complex.ofReal_zero, mul_zero, zero_smul, NormedSpace.exp_zero,
+    ← ContinuousLinearMap.one_def]
 
 /-- The graphon evolution is a one-parameter group:
 `evolve (s + t) = evolve s ∘ evolve t`.
@@ -274,7 +275,19 @@ holds because the two exponents commute (they are both scalar multiples of
 `op`). -/
 theorem evolve_add [IsFiniteMeasure μ] (W : Graphon Ω μ) (s t : ℝ) :
     W.evolve (s + t) = W.evolve s ∘L W.evolve t := by
-  sorry
+  unfold Graphon.evolve
+  -- `exp_add_of_commute` lives in the `[NormedAlgebra ℚ _]` section; provide the
+  -- instance by restricting scalars from the CLM `ℂ`-algebra structure.
+  let _ : NormedAlgebra ℚ ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) := .restrictScalars ℚ ℂ _
+  -- The two exponents are scalar multiples of `W.op`, hence commute.
+  have hcomm : Commute (((-Complex.I) * (s : ℂ)) • W.op) (((-Complex.I) * (t : ℂ)) • W.op) :=
+    ((Commute.refl W.op).smul_left _).smul_right _
+  -- `(-I·(s+t))•op = (-I·s)•op + (-I·t)•op`, then split the exponential.
+  rw [← ContinuousLinearMap.mul_def,
+    ← NormedSpace.exp_add_of_commute hcomm, ← add_smul]
+  congr 2
+  push_cast
+  ring
 
 /-- The graphon evolution is unitary at every time `t`.  This is a consequence
 of self-adjointness of `op` together with `exp(i A)` being unitary for
@@ -282,7 +295,20 @@ self-adjoint `A`. -/
 theorem evolve_isUnitary [IsFiniteMeasure μ] (W : Graphon Ω μ) (t : ℝ) :
     (W.evolve t).adjoint ∘L (W.evolve t) =
       ContinuousLinearMap.id ℂ (Lp ℂ 2 μ) := by
-  sorry
+  unfold Graphon.evolve
+  let _ : NormedAlgebra ℚ ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) := .restrictScalars ℚ ℂ _
+  set A : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) := ((-Complex.I) * (t : ℂ)) • W.op with hA
+  -- `adjoint = star` on the CLM C⋆-algebra, and `star (exp A) = exp (star A)`.
+  rw [← ContinuousLinearMap.star_eq_adjoint, NormedSpace.star_exp]
+  -- `star A = (I·t)•op = -A`, since `op` is self-adjoint.
+  have hstarA : star A = -A := by
+    rw [hA, star_smul, (W.op_isSelfAdjoint).star_eq, ← neg_smul]
+    congr 1
+    rw [star_mul', Complex.star_def, Complex.conj_ofReal, Complex.conj_neg_I]
+    ring
+  rw [hstarA, ← ContinuousLinearMap.mul_def, ← NormedSpace.exp_add_of_commute
+    (Commute.refl A).neg_left, neg_add_cancel, NormedSpace.exp_zero,
+    ← ContinuousLinearMap.one_def]
 
 /-! ### Bridge: finite weighted graphs ↪ graphons
 
@@ -346,43 +372,79 @@ graph (a `WeightedGraph I`) along a measurable cell map `Ω → I`, where the
 counting measure on `I` is replaced by the cell-mass measure on `Ω`.
 
 This is the **structure theorem for finite-rank graphons** and the main bridge
-between finite and graphon worlds. (Placeholder Prop: full structure-bearing
-predicate deferred.) -/
+between finite and graphon worlds.
+
+Concrete predicate: there is a finite index type `J`, a measurable cell map
+`cells : Ω → J` (for the discrete σ-algebra on `J`), and an `J × J` complex
+matrix `M` such that the kernel is (a.e.) the pullback of `M` along the cell
+map, `W.kernel x y = M (cells x) (cells y)`. -/
 def IsStep {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (_W : Graphon Ω μ) : Prop := True
+    (W : Graphon Ω μ) : Prop :=
+  ∃ (J : Type u) (_ : Fintype J) (cells : Ω → J)
+    (_ : @Measurable _ _ _ (⊤ : MeasurableSpace J) cells)
+    (M : Matrix J J ℂ),
+    ∀ᵐ p ∂(μ.prod μ), W.kernel p.1 p.2 = M (cells p.1) (cells p.2)
 
-/-- **The step characterisation theorem** (statement only).  A graphon `W` is
-a step graphon (in the sense of `IsStep`) iff there exists a measurable
-partition of `Ω` into finitely many cells on which `W.kernel` is (a.e.)
-constant — equivalently, iff `W` comes from a `WeightedGraph` on a finite
-index type via a measurable cell map.
+/-- **The step characterisation theorem.**  A graphon `W` is a step graphon
+(in the sense of `IsStep`) iff there exists a finite index type `J`, a
+measurable cell map `cells : Ω → J`, and a complex matrix `M` such that
+`W.kernel = M ∘ (cells × cells)` a.e. — equivalently, iff `W` comes from a
+matrix on a finite index type via a measurable cell map.
 
-Proof deferred (`sorry`).  Reference: Lovász, *Large Networks and Graph
-Limits*, Ch. 7, Prop. 7.1. -/
+Here the right-hand side is **literally** the definition of `IsStep`, so the
+equivalence is reflexivity; the genuine mathematical content (Lovász, *Large
+Networks and Graph Limits*, Ch. 7, Prop. 7.1) is the *definition* of `IsStep`
+itself.  We keep the theorem as the named bridge with a `rfl`-style proof. -/
 theorem isStep_iff_exists_finite_partition {Ω : Type u} [MeasurableSpace Ω]
     {μ : Measure Ω} (W : Graphon Ω μ) :
-    -- Statement body deferred: requires `MeasurableSpace` on the finite
-    -- index type and is restated only as a placeholder.
-    IsStep W ↔ True := by
-  sorry
+    IsStep W ↔
+      ∃ (J : Type u) (_ : Fintype J) (cells : Ω → J)
+        (_ : @Measurable _ _ _ (⊤ : MeasurableSpace J) cells)
+        (M : Matrix J J ℂ),
+        ∀ᵐ p ∂(μ.prod μ), W.kernel p.1 p.2 = M (cells p.1) (cells p.2) :=
+  Iff.rfl
 
 /-- The graphon attached to a finite weighted graph is a step graphon, with
-the identity cell map. -/
+the identity cell map and step matrix `G.adj`. -/
 theorem isStep_toGraphon {V : Type u} [Fintype V] [DecidableEq V]
     [MeasurableSpace V] [MeasurableSingletonClass V]
-    (_G : WeightedGraph V) : IsStep _G.toGraphon := by
-  trivial
+    (G : WeightedGraph V) : IsStep G.toGraphon := by
+  -- witness: `J = V`, `cells = id`, `M = G.adj`; the kernel of `toGraphon` is
+  -- literally `G.adj`, so the pullback equality holds everywhere (hence a.e.).
+  classical
+  refine ⟨V, inferInstance, id, ?_, G.adj, ?_⟩
+  · -- `id : V → V` into the discrete σ-algebra `⊤`: preimages of (all) sets are
+    -- measurable in `V` since `V` is countable with measurable singletons.
+    intro s _
+    exact (Set.Countable.measurableSet (Set.to_countable s)).preimage measurable_id
+  · exact Filter.Eventually.of_forall (fun _ => rfl)
 
-/-- The graphon operator on `G.toGraphon` agrees, under the identification
-`L²(V, counting) ≃ ℂ^V`, with the matrix `G.adj` viewed as a linear operator.
+/-- **The graphon operator on a step graphon recovers the adjacency matrix.**
+Under the canonical identification `L²(V, counting; ℂ) ≃ EuclideanSpace ℂ V`
+(`MeasureTheory.L2.PiLpToL2` / `Lp` over the counting measure), the graphon
+operator `G.toGraphon.op` acts on the standard basis indicator at `v` by the
+`v`-th column of `G.adj`.
 
-(Statement only — the equivalence with `Matrix.toLin'` is the natural one.) -/
-theorem op_toGraphon {V : Type u} [Fintype V] [DecidableEq V]
-    [MeasurableSpace V] [MeasurableSingletonClass V] (G : WeightedGraph V) :
-    True := by
-  -- a precise statement requires the explicit isometry
-  -- `L²(V, counting; ℂ) ≃ ℂ^V`, which we encode in `Equitable.lean`
-  trivial
+We record the **entrywise** form, which is independent of the choice of
+identification and needs no isometry machinery: the pointwise integral action
+`opFun` of the step graphon on the single-point indicator `1_{w}` evaluated at
+`x` is exactly the matrix entry `G.adj x w`. -/
+theorem opFun_toGraphon_single {V : Type u} [Fintype V] [DecidableEq V]
+    [MeasurableSpace V] [MeasurableSingletonClass V] (G : WeightedGraph V)
+    (w x : V) :
+    (G.toGraphon).opFun (fun y => if y = w then (1 : ℂ) else 0) x = G.adj x w := by
+  -- `opFun f x = ∫ y, kernel x y · f y ∂count = ∑ y, G.adj x y · [y = w] = G.adj x w`.
+  show (∫ y, (G.toGraphon).kernel x y * (if y = w then (1 : ℂ) else 0) ∂Measure.count) = _
+  -- the counting-measure integral over a `Fintype` is the finite sum
+  rw [integral_count]
+  -- collapse the sum to the single `y = w` term
+  rw [Finset.sum_eq_single w]
+  · show (G.toGraphon).kernel x w * (if w = w then (1 : ℂ) else 0) = G.adj x w
+    rw [if_pos rfl, mul_one]; rfl
+  · intro y _ hy
+    show (G.toGraphon).kernel x y * (if y = w then (1 : ℂ) else 0) = 0
+    rw [if_neg hy, mul_zero]
+  · intro hw; exact absurd (Finset.mem_univ w) hw
 
 end Graphon
 

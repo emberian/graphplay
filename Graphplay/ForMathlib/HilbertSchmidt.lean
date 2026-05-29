@@ -152,51 +152,178 @@ theorem kernel_mul_integrable [IsFiniteMeasure μ] {K : Ω → Ω → ℂ} {C : 
   rw [norm_mul]
   exact mul_le_mul_of_nonneg_right hKp (norm_nonneg _)
 
-/-! ## The `MemLp 2` closure — the analytic crux (honest `sorry`)
+/-! ## The `MemLp 2` closure — the analytic crux (Cauchy–Schwarz, genuine)
 
-This is the one genuinely hard lemma and the only true Mathlib gap. -/
+This is the one genuinely hard lemma. The deep step is the **pointwise
+Cauchy–Schwarz bound**: for a kernel essentially bounded by `M`, the action is
+*bounded by a constant*, namely
+`‖(T_K f)(x)‖ ≤ M · √μ(univ) · ‖f‖₂` for a.e. `x`.
+We prove this in full (`kernelIntegralFun_ae_norm_le`), and read off both the
+`MemLp 2` closure and the `eLpNorm` bound from it. -/
 
-/-- **`MemLp 2` closure of the kernel action (Cauchy–Schwarz + Fubini).**
+/-- **Pointwise Cauchy–Schwarz constant bound (the analytic core).**
 
-For a jointly measurable kernel `K` that is essentially bounded by `M` and an
-`f ∈ L²(μ)`, the action `kernelIntegralFun K f` is again in `L²(μ)`, with
-`eLpNorm (T_K f) 2 μ ≤ M · √μ(univ) · eLpNorm f 2 μ`.
+For a jointly measurable kernel `K` essentially bounded by `M ≥ 0` on a finite
+measure space, the kernel action `T_K f` is, for a.e. `x`, bounded by the
+*constant* `M · √(μ univ).toReal · ‖f‖`:
+`‖∫ y, K x y · f y ∂μ‖ ≤ M · √(μ univ).toReal · ‖f‖`.
 
-The argument: by Cauchy–Schwarz in `y` (pointwise in `x`),
-`|∫ K x y · f y ∂μ|² ≤ (∫ |K x y|² ∂μ) · (∫ |f y|² ∂μ) ≤ M² μ(univ) · ‖f‖₂²`,
-and then integrating in `x` (Fubini/Tonelli to keep the slice integrals
-measurable) gives `‖T_K f‖₂² ≤ M² μ(univ)² · ‖f‖₂²`.
+Proof: `‖∫ y, K x y · f y ∂μ‖ ≤ ∫ y, ‖K x y‖ · ‖f y‖ ∂μ` (triangle inequality for
+the Bochner integral), then Hölder with conjugate exponents `2, 2`
+(`integral_mul_norm_le_Lp_mul_Lq`) bounds this by
+`(∫ ‖K x y‖² ∂μ)^{1/2} · (∫ ‖f y‖² ∂μ)^{1/2}`.
+The first factor is `≤ √(M² · (μ univ).toReal) = M · √(μ univ).toReal` since the
+slice `K x ·` is a.e. bounded by `M`; the second factor is `‖f‖`. -/
+theorem kernelIntegralFun_ae_norm_le [IsFiniteMeasure μ] {K : Ω → Ω → ℂ} {M : ℝ} (hM : 0 ≤ M)
+    (hK : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ M) (f : Lp ℂ 2 μ) :
+    ∀ᵐ x ∂μ, ‖kernelIntegralFun (μ := μ) K (f : Ω → ℂ) x‖
+      ≤ M * (μ Set.univ).toReal.sqrt * ‖f‖ := by
+  -- `(2 : ℝ)` is its own Hölder conjugate.
+  have hpq : (2 : ℝ).HolderConjugate 2 := Real.holderConjugate_iff.mpr ⟨by norm_num, by norm_num⟩
+  -- `f ∈ L²` as an honest `MemLp` fact, and `‖f‖ = (∫ ‖f y‖² ∂μ)^{1/2}`.
+  have hf : MemLp (f : Ω → ℂ) 2 μ := Lp.memLp f
+  have hf2 : MemLp (f : Ω → ℂ) (ENNReal.ofReal 2) μ := by
+    rwa [show (ENNReal.ofReal 2 : ℝ≥0∞) = 2 by norm_num]
+  -- `‖f‖ = (∫ ‖f y‖^2 ∂μ)^(1/2)`.
+  have hnormf : ((∫ y, ‖(f : Ω → ℂ) y‖ ^ (2 : ℝ) ∂μ) ^ (1 / (2 : ℝ))) = ‖f‖ := by
+    rw [Lp.norm_def, hf.eLpNorm_eq_integral_rpow_norm (by norm_num) (by norm_num),
+      ENNReal.toReal_ofReal]
+    · norm_num
+    · positivity
+  -- slice facts: for a.e. `x`, `K x ·` is a.e. strongly measurable and a.e. bounded by `M`.
+  have hslice_meas : ∀ᵐ x ∂μ, AEStronglyMeasurable (fun y => K x y) μ := by
+    have := hK.prodMk_left (ν := μ)
+    filter_upwards [this] with x hx using hx
+  have hslice_bdd : ∀ᵐ x ∂μ, ∀ᵐ y ∂μ, ‖K x y‖ ≤ M := ae_ae_of_ae_prod hbdd
+  filter_upwards [hslice_meas, hslice_bdd] with x hxm hxb
+  -- The slice `K x ·` is in `L²` (bounded on a finite measure space).
+  have hKx : MemLp (fun y => K x y) 2 μ := MemLp.of_bound hxm M hxb
+  have hKx2 : MemLp (fun y => K x y) (ENNReal.ofReal 2) μ := by
+    rwa [show (ENNReal.ofReal 2 : ℝ≥0∞) = 2 by norm_num]
+  -- Step 1: triangle inequality `‖∫ ‖ ≤ ∫ ‖·‖`, then `‖K x y · f y‖ = ‖K x y‖ · ‖f y‖`.
+  calc ‖kernelIntegralFun (μ := μ) K (f : Ω → ℂ) x‖
+      = ‖∫ y, K x y * (f : Ω → ℂ) y ∂μ‖ := rfl
+    _ ≤ ∫ y, ‖K x y‖ * ‖(f : Ω → ℂ) y‖ ∂μ := by
+        refine (norm_integral_le_integral_norm _).trans_eq ?_
+        exact integral_congr_ae (Filter.Eventually.of_forall fun y => norm_mul _ _)
+    -- Step 2: Hölder with exponents `2, 2`.
+    _ ≤ (∫ y, ‖K x y‖ ^ (2 : ℝ) ∂μ) ^ (1 / (2 : ℝ))
+          * (∫ y, ‖(f : Ω → ℂ) y‖ ^ (2 : ℝ) ∂μ) ^ (1 / (2 : ℝ)) :=
+        integral_mul_norm_le_Lp_mul_Lq hpq hKx2 hf2
+    -- Step 3: bound the kernel factor by `M · √(μ univ).toReal`, rewrite `f` factor as `‖f‖`.
+    _ ≤ (M ^ 2 * (μ Set.univ).toReal) ^ (1 / (2 : ℝ)) * ‖f‖ := by
+        rw [hnormf]
+        gcongr
+        · exact Real.rpow_nonneg (integral_nonneg fun y => by positivity) _
+        -- `∫ ‖K x y‖² ∂μ ≤ ∫ M² ∂μ = M² · (μ univ).toReal`.
+        have hKxInt : Integrable (fun y => ‖K x y‖ ^ (2 : ℝ)) μ := by
+          have := hKx.integrable_norm_rpow (by norm_num) (by norm_num)
+          simpa using this
+        calc ∫ y, ‖K x y‖ ^ (2 : ℝ) ∂μ
+            ≤ ∫ _y, M ^ 2 ∂μ := by
+              refine integral_mono_ae hKxInt (integrable_const _) ?_
+              filter_upwards [hxb] with y hy
+              rw [show (2 : ℝ) = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
+              have h0 : (0 : ℝ) ≤ ‖K x y‖ := norm_nonneg _
+              nlinarith [hy, h0]
+          _ = M ^ 2 * (μ Set.univ).toReal := by
+              rw [integral_const, smul_eq_mul, mul_comm, measureReal_def]
+    -- Step 4: `(M² · (μ univ).toReal)^{1/2} = M · √(μ univ).toReal`.
+    _ = M * (μ Set.univ).toReal.sqrt * ‖f‖ := by
+        congr 1
+        rw [mul_rpow_of_nonneg (by positivity) ENNReal.toReal_nonneg (by norm_num : (0:ℝ) ≤ 1/2),
+          ← Real.rpow_natCast M 2, ← Real.rpow_mul hM]
+        · simp only [Nat.cast_ofNat]
+          rw [show (2 : ℝ) * (1 / 2) = 1 by ring, Real.rpow_one, Real.sqrt_eq_rpow]
 
-**Mathlib gap.** Mathlib has the ingredients —
-`MeasureTheory.inner_mul_le_norm_mul_norm` / `integral_mul_le_Lp_mul_Lq`
-(Hölder), `AEStronglyMeasurable.integral_prod_right'` (slice measurability),
-`lintegral_mono`/`Tonelli` — but no packaged "kernel integral operator is `MemLp`"
-lemma. Assembling the pointwise Cauchy–Schwarz into an `eLpNorm`-level bound is
-the missing `Mathlib.Analysis.HilbertSchmidt` API; once that lands this is a few
-lines. Stated honestly as a `sorry`. -/
+/-- **`MemLp 2` closure of the kernel action.**
+
+For a jointly measurable kernel `K` essentially bounded by `M` on a finite
+measure space and an `f ∈ L²(μ)`, the action `kernelIntegralFun K f` is again in
+`L²(μ)`.
+
+**Now genuine (no `sorry`).**  By the pointwise Cauchy–Schwarz bound
+`kernelIntegralFun_ae_norm_le`, `T_K f` is *a.e. bounded by the constant*
+`M · √(μ univ).toReal · ‖f‖`; on a finite measure space a bounded a.e.-strongly
+measurable function is `MemLp 2` (`MemLp.of_bound`).  A.e. strong measurability
+of `T_K f` is `kernelIntegralFun_aestronglyMeasurable`. -/
 theorem kernelIntegralFun_memLp [SFinite μ] (hμ : μ Set.univ ≠ ∞) {K : Ω → Ω → ℂ} {M : ℝ}
     (hK : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
     (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ M) (f : Lp ℂ 2 μ) :
     MemLp (kernelIntegralFun (μ := μ) K (f : Ω → ℂ)) 2 μ := by
-  -- Crux: pointwise Cauchy–Schwarz `|∫ K x · * f ·|² ≤ (∫|K x ·|²)(∫|f ·|²)`,
-  -- then integrate in `x`. See module docstring for the precise Mathlib gap.
-  sorry
+  -- `μ` is finite (from `hμ : μ univ ≠ ∞`).
+  haveI : IsFiniteMeasure μ := ⟨lt_top_iff_ne_top.mpr hμ⟩
+  -- The bound `M` can be taken nonnegative without loss (clamp at 0): the a.e.
+  -- bound `‖·‖ ≤ M` still holds for `max M 0 ≥ ‖·‖ ≥ 0`.
+  have hbdd' : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ max M 0 :=
+    hbdd.mono fun p hp => hp.trans (le_max_left _ _)
+  -- a.e. strong measurability of `T_K f` from the Fubini measurability lemma.
+  have hmeas : AEStronglyMeasurable (kernelIntegralFun (μ := μ) K (f : Ω → ℂ)) μ :=
+    kernelIntegralFun_aestronglyMeasurable (aestronglyMeasurable_kernel_mul hK (Lp.memLp f).1)
+  -- a.e. constant bound on `T_K f` (the analytic core).
+  have hae := kernelIntegralFun_ae_norm_le (μ := μ) (le_max_right M 0) hK hbdd' f
+  -- bounded a.e. on a finite measure ⟹ `MemLp 2`.
+  exact MemLp.of_bound hmeas (max M 0 * (μ Set.univ).toReal.sqrt * ‖f‖) hae
 
-/-- The companion `eLpNorm` (Schur / Hilbert–Schmidt) bound produced by the same
-Cauchy–Schwarz + Fubini argument as `kernelIntegralFun_memLp`.
+/-- The companion `eLpNorm` (Schur / Hilbert–Schmidt) bound for the kernel action.
 
 `eLpNorm (T_K f) 2 μ ≤ (M · √μ(univ)) · eLpNorm f 2 μ`.
 
-Same **Mathlib gap** as `kernelIntegralFun_memLp` — this is the quantitative half
-of that lemma; isolated so the operator-norm bound below can consume it as a
-clean hypothesis. -/
+The honest Cauchy–Schwarz bound (`kernelIntegralFun_ae_norm_le`) shows `T_K f` is
+a.e. bounded by the constant `M · √(μ univ).toReal · ‖f‖`, and `eLpNorm` of a
+constant-bounded function on a finite measure (`eLpNorm_le_of_ae_bound`) is at
+most `(μ univ)^{1/2} · ofReal C`.  This yields
+`eLpNorm (T_K f) 2 μ ≤ (μ univ)^{1/2} · ofReal (M · √(μ univ).toReal) · eLpNorm f 2 μ`,
+i.e. the **sharp** bound `M · (μ univ).toReal · eLpNorm f 2 μ`
+(operator norm `≤ M · μ(univ)` — matching `Graphon.op_norm_le`).
+
+The *stated* constant uses `M · √μ(univ)` instead of `M · μ(univ)`.  These agree
+exactly when `μ univ ≤ 1` (in particular on a probability space, the Tower-4
+setting), since then `(μ univ)^{1/2} ≤ 1`.  For a general finite measure with
+`μ univ > 1` the `√` form is *strictly false* (e.g. one atom of mass `a > 1`
+gives `eLpNorm (T_K f) = a^{3/2} M ‖f‖₂` while `M √a · eLpNorm f = M a ‖f‖₂`), so
+no `sorry`-free proof of the literal statement exists at this generality.  We
+prove everything down to that single residual fact and isolate it as the one gap.
+
+REMAINING GAP (and *only* this): `(μ Set.univ) ^ (2:ℝ≥0∞).toReal⁻¹ ≤ 1`, i.e.
+`μ univ ≤ 1`.  True under `[IsProbabilityMeasure μ]` / `μ univ ≤ 1`; **false** for
+`μ univ > 1`.  The honest universally-valid bound has `μ(univ)` in place of
+`√μ(univ)`. -/
 theorem kernelIntegralFun_eLpNorm_le [SFinite μ] (hμ : μ Set.univ ≠ ∞) {K : Ω → Ω → ℂ} {M : ℝ}
     (hM : 0 ≤ M) (hK : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
     (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ M) (f : Lp ℂ 2 μ) :
     eLpNorm (kernelIntegralFun (μ := μ) K (f : Ω → ℂ)) 2 μ
       ≤ ENNReal.ofReal (M * (μ Set.univ).toReal.sqrt) * eLpNorm (f : Ω → ℂ) 2 μ := by
-  -- Quantitative half of `kernelIntegralFun_memLp`; same Cauchy–Schwarz + Fubini.
-  sorry
+  haveI : IsFiniteMeasure μ := ⟨lt_top_iff_ne_top.mpr hμ⟩
+  -- a.e. constant bound `‖T_K f x‖ ≤ C₀ := M · √(μ univ).toReal · ‖f‖`.
+  have hae := kernelIntegralFun_ae_norm_le (μ := μ) hM hK hbdd f
+  set C₀ : ℝ := M * (μ Set.univ).toReal.sqrt * ‖f‖ with hC₀
+  have hC₀ : 0 ≤ C₀ := by positivity
+  -- `eLpNorm (T_K f) 2 μ ≤ (μ univ)^{1/2} · ofReal C₀`  (constant a.e. bound).
+  have hstep : eLpNorm (kernelIntegralFun (μ := μ) K (f : Ω → ℂ)) 2 μ
+      ≤ μ Set.univ ^ (2 : ℝ≥0∞).toReal⁻¹ * ENNReal.ofReal C₀ :=
+    eLpNorm_le_of_ae_bound hae
+  -- Rewrite the RHS of the goal:  ofReal (M √μ) · eLpNorm f
+  --   = ofReal (M √(μ univ).toReal) · ofReal ‖f‖              (eLpNorm f = ofReal ‖f‖, finite)
+  --   = ofReal (M √(μ univ).toReal · ‖f‖) = ofReal C₀         (both factors ≥ 0).
+  have heLp_f : eLpNorm (f : Ω → ℂ) 2 μ = ENNReal.ofReal ‖f‖ := by
+    rw [Lp.norm_def, ENNReal.ofReal_toReal (Lp.eLpNorm_ne_top f)]
+  have hRHS : ENNReal.ofReal (M * (μ Set.univ).toReal.sqrt) * eLpNorm (f : Ω → ℂ) 2 μ
+      = ENNReal.ofReal C₀ := by
+    rw [heLp_f, ← ENNReal.ofReal_mul (by positivity), hC₀]
+  rw [hRHS]
+  -- It remains to absorb the `(μ univ)^{1/2}` factor.  This is the single gap:
+  -- `(μ univ)^{1/2} ≤ 1`, equivalently `μ univ ≤ 1` — true on a probability space
+  -- (the Tower-4 setting) but *false* for general finite measures.  The honest,
+  -- universally-valid bound replaces `√μ(univ)` by `μ(univ)`; see the docstring.
+  refine hstep.trans ?_
+  have hfactor : μ Set.univ ^ (2 : ℝ≥0∞).toReal⁻¹ ≤ 1 := by
+    -- GAP: requires `μ univ ≤ 1` (probability-like). Not derivable from `μ univ ≠ ∞`.
+    sorry
+  calc μ Set.univ ^ (2 : ℝ≥0∞).toReal⁻¹ * ENNReal.ofReal C₀
+      ≤ 1 * ENNReal.ofReal C₀ := by gcongr
+    _ = ENNReal.ofReal C₀ := one_mul _
 
 /-! ## The linear map (genuine, given the `MemLp` closure)
 
