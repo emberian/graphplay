@@ -26,7 +26,19 @@ Pointed at **SmolLM3-3B** — 576 heads it had never seen, no supervision — th
 - **Positional / prev-token heads cluster early** (L0–1), upstream of the induction band.
 - **Final layer goes content** — a sensible output layer.
 
-→ headline figure: `figures/atlas_heatmap.png` (two positional rows on top, a grey ocean of sinks from L2 down, a red induction band through the late layers, a yellow content row at the bottom).
+**The headline figure — every head of SmolLM3-3B, colored by its dominant walk-atom:**
+
+![Circuit atlas of SmolLM3-3B: a layer × head grid where each head is colored by the structured-walk atom it sparse-codes onto](figures/atlas_heatmap.png)
+
+*Two positional rows on top; a grey ocean of attention-sinks switching on hard at layer 2; a red induction band burning through the late layers (L22–31); a yellow content row at the bottom — recovered with no training and no labels.*
+
+![Distribution of circuit types across the model: how many heads of each type, overall and by layer](figures/type_distribution.png)
+
+*The circuit-type census: sinks dominate the bulk, with positional heads concentrated early and induction heads in the mid-to-late band.*
+
+![Per-head circuit scores: induction score, previous-token score, and sink mass mapped across the layer × head grid](figures/score_maps.png)
+
+*Independent score maps (induction / prev-token / sink) — the cross-check that the atom labels track the known behavioral signatures, not just the fit.*
 
 The striking part isn't *that* these phenomena exist — it's that a 22-atom dictionary of **walks** sorts a 3-billion-parameter model into them with the layer-distribution falling out correctly, when **the dictionary contains no information about layers at all.**
 
@@ -35,6 +47,10 @@ The striking part isn't *that* these phenomena exist — it's that a 22-atom dic
 - **The phenomena are known.** Attention sinks (Xiao et al., StreamingLLM), induction heads (Olsson et al.), the previous-token / QK-OV circuit picture (Elhage et al., *A Mathematical Framework for Transformer Circuits*) — all prior art. We did not discover them; we **re-derived their map** with an independent instrument.
 - **The method generalizes something that exists.** TransformerLens's `head_detector` already matches head patterns against fixed `previous_token` / `duplicate_token` / `induction` templates. This is that idea, scaled up: an **over-complete, named, structured-operator dictionary** + sparse coding + dominant-atom labeling. The genuinely new ingredient is using **graph-diffusion / continuous-time-quantum-walk / heat-kernel operators** as the interpretability basis — that specific vocabulary doesn't appear in the interp literature.
 - **It's a classifier, not a reconstructor.** The named atom is diagnostic of circuit type *even when the fit is loose*. Induction heads pick the right atom (`induction-shift`) but leave a large diffuse residual (~0.37 error). Only ~32% of heads reconstruct tightly (≤0.10 error); 89% get a clean *label*. So: it tells you *what kind of head* this is; it does **not** compress the head.
+
+![Reconstruction residual per head: bright cells are heads the walk basis labels but cannot reconstruct — the irreducible content heads](figures/residual_heatmap.png)
+
+*The honesty panel: bright = large residual = "right label, not a tight fit." The diagnostic survives where the compression doesn't.*
 - **Two caveats worth keeping visible:** attention heads are **polysemantic** (a single head often does several things — Kissane et al. find ≥90% in GPT-2-small), and **pattern-match ≠ causal role** — a proper version would add an ablation/patching check that the atom-label tracks the head's causal function.
 
 ## Why "walks"?
