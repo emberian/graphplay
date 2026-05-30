@@ -1,0 +1,29 @@
+[package]
+name = "rust-probe"
+version = "0.1.0"
+edition = "2021"
+description = "High-throughput equitable-partition + residual decomposition core for the attention-zoo probe."
+license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "rust-probe"
+path = "src/main.rs"
+
+[lib]
+name = "rust_probe"
+path = "src/lib.rs"
+
+[dependencies]
+ndarray = { version = "0.15", features = ["rayon"] }
+rayon = "1.10"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+byteorder = "1"
+
+[dev-dependencies]
+# (tests live in tests/ and use only the public lib API + std)
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
