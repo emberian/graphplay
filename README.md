@@ -15,30 +15,49 @@ size.
 Graphplay names that structure — *the universal coarse-graining of
 quantum-walk operators* — and mechanizes it across seven mathematical
 settings (the **spine**), with a stdlib of named families, computable
-companions over ℚ, two applied disassembly studies, and a research
-program of eighteen open theorems.
+companions over ℚ, a numerical simulator, an engineering toolkit, two
+applied disassembly studies, and a bridge to quantum-accelerated machine
+learning.
 
-The library currently spans 93 Lean files; `lake build` emits **zero
-errors**. Two milestones now hold across the whole stack:
+The library spans ~100 Lean files; `lake build` emits **zero errors**.
+What holds now:
 
-- **Every construction is real.** There is no `sorry` in any definition
-  and no `True`-placeholder theorem anywhere — every graph family,
-  operator, partition, channel, bundle, sheaf, and compiler pass is a
-  concrete, fully-elaborated term. (One single irreducible exception: the
-  filtered-colimit-preservation *data* witness `Quotient.mapCocone_isColimit`,
-  honestly isolated.) The project also **builds two runnable executables**
-  (`lake exe graphplay`, `lake exe graphplay-toolkit` — the latter compiles
-  a real spec JSON into a search-compiler report).
-- **The spine is machine-checked.** The finite equitable-partition → quotient
-  → PST/mixing/search lift (Tower 2) *and* its graphon continuous-limit
-  counterpart (Tower 4) are proven **end-to-end and axiom-clean** (`#print
-  axioms` shows only `propext`/`Classical.choice`/`Quot.sound`, no `sorryAx`).
+- **Every construction is real.** No `sorry` in any definition, no
+  `True`-placeholder theorem — every graph family, operator, partition,
+  channel, bundle, sheaf, and compiler pass is a concrete, fully-elaborated
+  term (one isolated exception: the filtered-colimit-preservation *data*
+  witness, honestly flagged).
+- **The spine is machine-checked, axiom-clean.** The finite
+  equitable-partition → quotient → PST/mixing/**search** lift (Tower 2) *and*
+  its graphon continuous-limit counterpart (Tower 4) are proven end-to-end
+  with `#print axioms` showing only `propext`/`Classical.choice`/`Quot.sound`
+  — no `sorryAx`. So is `PST ⇒ strong cospectrality` (Godsil's necessary
+  condition) and the **first machine-checked *negative*-PST theorems**
+  (dominating-vertex / cone-apex / join — graphs that provably *cannot* transfer).
+- **It runs.** `lake exe graphplay-sim` numerically evolves real CTQW
+  Hamiltonians and prints probability-vs-time: Grover-optimal spatial search
+  peaking at `t* = (π/2)√n`, hypercube PST at `π/2`, chiral (magnetic-flux)
+  directional transport, fractional revival, Lindblad decoherence, and a
+  Hamiltonian synthesized by the inverse-design toolkit transferring on demand.
+- **It engineers.** `Toolkit/InverseDesign` *synthesizes* a host Hamiltonian
+  with a target property (PST between marked sites) by inflating a small
+  quotient, with a machine-checked certificate that the property is inherited.
+- **It reaches toward quantum-ML acceleration.** `Integrations/MachineLearning`
+  proves an attention matrix *is* a quantum-walk Hamiltonian and that a
+  symmetry of the attention pattern induces an exact equitable-partition
+  quotient (verified compression). `Integrations/AttentionComplexity` proves
+  — axiom-clean — that structured (block-equitable) attention's `O(n²)` apply
+  collapses to a **provably linear-in-n `O(n·r·d)`** algorithm, forward *and*
+  backward, with the residual hard part shrunk to the small `r×r` quotient
+  where quantum search/linear-algebra speedups apply. (See "Toward verified
+  quantum ML acceleration" below.)
 
-The remaining ~431 `sorry`s are now exclusively *theorem bodies* —
-the deep per-paper results (Godsil existence via Dirichlet/Kronecker, Choi/
-Stinespring, MIP*=RE, infinite-dimensional continuous-spectrum analysis,
-association-scheme coincidences) — that the now-complete scaffolding sets
-up precisely. **Constructions are done; the deep proofs are in progress.**
+The remaining `sorry`s are exclusively *theorem bodies* — the genuinely-deep
+per-paper results (Godsil's Diophantine existence direction, Choi/Stinespring,
+MIP*=RE, infinite-dimensional continuous-spectrum analysis, association-scheme
+coincidences) and the quantitative quantum-advantage *rates* (`O(√n)`,
+`O(κ/ε)`) that inherit from upstream dynamical theorems. **The constructions
+and the structural reductions are proven; the deep rates are the honest frontier.**
 
 ## The seven-tower spine
 
@@ -72,6 +91,43 @@ genuinely-proven `exp(M⊗1)=exp(M)⊗1` factorization, and a machine-checked
 reusable **proof-automation library** (`Graphplay/Tactics.lean`: custom
 tactics `herm_grind`/`modulus_one`/`loopless_grind`/`equitable_discharge`,
 named simp/aesop rule-sets, 18 proven helper lemmas).
+
+## Toward verified quantum ML acceleration
+
+The destination this project is aimed at: a *verified theoretical framework*
+for quantum acceleration of machine-learning workloads — and the reason it
+might be worth building the hardware. The bridge is already structural, not
+hand-wavy:
+
+- **Attention is a quantum-walk Hamiltonian.** `Integrations/MachineLearning`
+  turns an attention score matrix into a Hermitian operator, and proves that a
+  symmetry of the attention pattern (translation-invariant, block-structured,
+  or weight-tied / group-equivariant heads) induces a genuine **equitable
+  partition** — so the operator reduces *exactly* to a small `r × r` quotient.
+  This is the verified statement that "structured attention is compressible."
+- **Structured attention is provably linear-time.**
+  `Integrations/AttentionComplexity` proves, axiom-clean, that for block-equitable
+  attention `A[i][j] = B[cell i][cell j]` the naive `O(n²·d)` apply equals an
+  `O(n·r·d)` algorithm *exactly* (`blockAttentionApply_eq_fullAttentionApply`),
+  i.e. the quadratic in sequence length **collapses to linear in n**
+  (`attention_apply_linear_in_n : blockCost = n·(r·d + d)`) — forward *and*
+  backward (`training_step_linear_under_equitable`). The residual hard work
+  shrinks from `n` to the small quotient dimension `r`.
+- **The quotient is where quantum buys more.** On the `r × r` quotient, the
+  remaining linear-algebra / search work is exactly what continuous-time quantum
+  walks accelerate — `Integrations/MatrixInversion` (CTQW linear solve, the ML
+  normal equations / kernel systems) and `Integrations/QuantumAdvantage` (the
+  Grover/CTQW `O(√r)` spatial search, lifted through the axiom-clean
+  `cellUniformSearch_iff_quotientSearch`).
+
+The honest split: **the symmetry reduction and its exactness are *proven*** —
+so any upstream quantum speedup is inherited by the small quotient *with a proof
+the answer is identical*. The quantitative quantum-advantage **rates** (`O(√n)`
+search separation vs classical `Ω(n)`, `O(κ/ε)` inversion) are the deep
+dynamical theorems still in progress, and the bridge from *exactly*-equitable
+to *approximately*-structured (learned) attention — ε-equitable-partition theory
+with controlled error — is the open research frontier this framework is built to
+attack. Collaborators welcome.
 
 ## Entry points by audience
 
@@ -261,6 +317,10 @@ Run the executables:
 ```sh
 lake exe graphplay                          # load banner + toolkit usage
 lake exe graphplay-toolkit examples/k4_equal_fiber.json   # → search-compiler report
+lake exe graphplay-sim                      # numerically evolve CTQW Hamiltonians,
+                                            #   print probability-vs-time tables:
+                                            #   search (peak at (π/2)√n), PST, chiral,
+                                            #   fractional revival, Lindblad, attention-quotient
 ```
 
 Try the demos:
@@ -272,11 +332,21 @@ Try the demos:
 
 ## Status (honest)
 
-- **0 errors**, **~431 `sorry` warnings** (all on theorem bodies), 93 Lean
+- **0 errors**, **~290 `sorry` warnings** (all on theorem bodies), ~100 Lean
   files. Down from ~634; the entire reduction was **eliminating every
   `sorry` in a definition** (152 → 1 irreducible) and every `True`-placeholder
   theorem (→ 0) — so what remains is genuinely "prove this true statement",
-  never "this object isn't built yet".
+  never "this object isn't built yet". An ongoing adversarial **vacuity audit**
+  hardens against "compiles but says nothing" theorems (`True` hypotheses,
+  trivial conclusions, stub-driven `0 ≤ 0`) — several caught and corrected.
+- **The corpus is modeled end-to-end.** The Tamon/Godsil quantum-walk
+  literature — PST/PGST, fractional revival, uniform/average mixing, spatial
+  search (incl. the CNO spectral-ratio criterion), graphs-with-tails, chiral
+  signings, Laplacian/lackadaisical walks, association schemes, graph products,
+  corona/joins, circulant/bunkbed, many-particle Feder/exterior-power walks,
+  coined/Szegedy walks, weak-coupling Feshbach–Schur — is represented as precise
+  statements; the spine and a large fraction of named results are proven, the
+  deep per-paper headlines are honest sorries. See `paper/coverage/COVERAGE_MATRIX.md`.
 - **Runnable.** `lake build` produces working executables; `lake exe
   graphplay` and `lake exe graphplay-toolkit <spec.json>` both run.
 - Tower 1 is proven and `#eval`-able.
