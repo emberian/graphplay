@@ -63,10 +63,11 @@ References for the spectral content:
 
 import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.Analysis.InnerProductSpace.Spectrum
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Graphplay.Graphon.Equitable
 import Graphplay.Graphon.PST
 
-open scoped MeasureTheory ENNReal Complex BigOperators
+open scoped MeasureTheory ENNReal Complex BigOperators Matrix
 open MeasureTheory
 
 universe u v
@@ -124,13 +125,47 @@ def residualSpectrum (W : Graphon Ω μ) : Set ℂ :=
   { lam | lam ∈ spectrum ℂ W.op ∧ lam ∉ W.pointSpectrum ∧
       ¬ Dense (Set.range (W.op - lam • ContinuousLinearMap.id ℂ (Lp ℂ 2 μ))) }
 
+/-- The point spectrum is contained in the spectrum: an L²-eigenvalue makes
+`lam • 1 - W.op` non-injective, hence not a unit. -/
+theorem pointSpectrum_subset_spectrum (W : Graphon Ω μ) :
+    W.pointSpectrum ⊆ spectrum ℂ W.op := by
+  rintro lam ⟨v, hv_ne, hv_eig⟩
+  rw [spectrum.mem_iff]
+  intro hunit
+  -- `(algebraMap ℂ _ lam - W.op) v = lam • v - W.op v = 0` while `v ≠ 0`.
+  have hker : (algebraMap ℂ ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) lam - W.op) v = 0 := by
+    rw [ContinuousLinearMap.sub_apply, hv_eig, Algebra.algebraMap_eq_smul_one]
+    show (lam • ContinuousLinearMap.id ℂ (Lp ℂ 2 μ)) v - lam • v = 0
+    rw [ContinuousLinearMap.smul_apply, ContinuousLinearMap.id_apply, sub_self]
+  obtain ⟨u, hu⟩ := hunit
+  have hinj : Function.Injective (algebraMap ℂ ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) lam - W.op) := by
+    rw [← hu]
+    intro a b hab
+    have : (↑u⁻¹ * ↑u : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) a
+        = (↑u⁻¹ * ↑u : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) b := by
+      simp only [ContinuousLinearMap.mul_apply]
+      rw [show (u : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) a = (u : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) b
+        from hab]
+    rwa [u.inv_mul, ContinuousLinearMap.one_apply, ContinuousLinearMap.one_apply] at this
+  exact hv_ne (hinj (by rw [hker, map_zero]))
+
 /-- The point, continuous, and residual spectrum together cover the spectrum
 of `W.op`.  (Standard, c.f. Reed–Simon I, Theorem VI.5.) -/
 theorem spectrum_eq_point_union_continuous_union_residual (W : Graphon Ω μ) :
     spectrum ℂ W.op =
       W.pointSpectrum ∪ W.continuousSpectrum ∪ W.residualSpectrum := by
-  -- elementary set-theory + definition of the three subsets
-  sorry
+  ext lam
+  constructor
+  · intro hlam
+    by_cases hp : lam ∈ W.pointSpectrum
+    · exact Or.inl (Or.inl hp)
+    · by_cases hd : Dense (Set.range (W.op - lam • ContinuousLinearMap.id ℂ (Lp ℂ 2 μ)))
+      · exact Or.inl (Or.inr ⟨hlam, hp, hd⟩)
+      · exact Or.inr ⟨hlam, hp, hd⟩
+  · rintro ((hp | hc) | hr)
+    · exact W.pointSpectrum_subset_spectrum hp
+    · exact hc.1
+    · exact hr.1
 
 /-- For self-adjoint operators (such as `W.op`), the **residual spectrum is
 empty**.  Reed–Simon I, Theorem VII.1. -/
@@ -145,7 +180,8 @@ theorem residualSpectrum_empty (W : Graphon Ω μ) :
 point and continuous parts only. -/
 theorem spectrum_eq_point_union_continuous (W : Graphon Ω μ) :
     spectrum ℂ W.op = W.pointSpectrum ∪ W.continuousSpectrum := by
-  sorry
+  rw [spectrum_eq_point_union_continuous_union_residual W,
+    residualSpectrum_empty W, Set.union_empty]
 
 /-! ## 2. The "has pure point spectrum" / "has continuous spectrum" predicates -/
 
@@ -196,10 +232,10 @@ and that point spectrum equals the spectrum of the finite Hermitian matrix
 /-- The cell-uniform sector is finite-dimensional, isomorphic to `ℂ^I`. -/
 theorem cellUniformSubspace_finiteDimensional
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    FiniteDimensional ℂ P.cellUniformSubspace := by
-  -- transport finite-dimensionality from `EuclideanSpace ℂ I` across
-  -- `cellUniformIsometry`
-  sorry
+    FiniteDimensional ℂ P.cellUniformSubspace :=
+  -- the cell-uniform subspace is the span of the finite range of `cellIndicator`,
+  -- hence finite-dimensional over `ℂ`.
+  FiniteDimensional.span_of_finite ℂ (Set.finite_range _)
 
 /-- **Cell-uniform discrete spectrum.**  Restricted to the cell-uniform
 subspace, the graphon operator has **pure point spectrum**, and that
@@ -207,12 +243,25 @@ spectrum is exactly the spectrum of the finite matrix `P.quotient`.
 
 This is the analytic content of the headline lifting theorem combined with
 the fact that `cellUniformSubspace` is finite-dimensional. -/
-theorem cellUniform_pointSpectrum
+theorem cellUniform_pointSpectrum [IsFiniteMeasure μ]
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    spectrum ℂ (Matrix.toEuclideanLin P.quotient) ⊆ W.pointSpectrum := by
-  -- by `op_restrict_eq_quotient`, any eigenvector of `P.quotient` on `ℂ^I`
-  -- transports across `cellUniformIsometry` to an L²-eigenvector of `W.op`
-  sorry
+    spectrum ℂ (Matrix.toEuclideanLin P.symmQuotient) ⊆ W.pointSpectrum := by
+  -- by `op_restrict_eq_quotient`, any eigenvector of `P.symmQuotient` on `ℂ^I`
+  -- transports across `cellUniformIsometry` to an L²-eigenvector of `W.op`.
+  intro lam hlam
+  -- Step 1: extract a nonzero eigenvector `v` of `toEuclideanLin symmQuotient`.
+  have hev : Module.End.HasEigenvalue (Matrix.toEuclideanLin P.symmQuotient) lam :=
+    Module.End.hasEigenvalue_iff_mem_spectrum.mpr hlam
+  obtain ⟨v, hv⟩ := hev.exists_hasEigenvector
+  rw [Module.End.hasEigenvector_iff] at hv
+  obtain ⟨hv_mem, hv_ne⟩ := hv
+  have hv_eig : (Matrix.toEuclideanLin P.symmQuotient) v = lam • v :=
+    Module.End.mem_eigenspace_iff.mp hv_mem
+  -- Step 2: `B v` is a nonzero L²-eigenvector of `W.op`.
+  refine ⟨P.cellUniformIsometry v, ?_, ?_⟩
+  · intro h0
+    exact hv_ne (P.cellUniformIsometry.injective (by rw [h0, map_zero]))
+  · rw [Graphon.op_restrict_eq_quotient P v, hv_eig, map_smul]
 
 /-! ### 3b. Step graphons (finite weighted graphs) — purely discrete -/
 
@@ -231,6 +280,25 @@ def IsStepGraphon (W : Graphon Ω μ) : Prop :=
     (P : @GraphonEquitablePartition Ω _ μ J _ _ W),
       P.cellUniformSubspace = ⊤
 
+/-- In finite dimensions every spectral point of `W.op` is an L²-eigenvalue:
+`spectrum ℂ W.op ⊆ pointSpectrum W`.  This is the bridge from the
+operator-algebra spectrum (`spectrum ℂ` of a `→L[ℂ]`) to the eigenvalue
+spectrum, via `ContinuousLinearMap.spectrum_eq` and the finite-dimensional
+`Module.End.hasEigenvalue_iff_mem_spectrum`. -/
+theorem spectrum_subset_pointSpectrum_of_finiteDimensional (W : Graphon Ω μ)
+    [FiniteDimensional ℂ (Lp ℂ 2 μ)] :
+    spectrum ℂ W.op ⊆ W.pointSpectrum := by
+  intro lam hlam
+  -- `lam ∈ spectrum` of the CLM equals `lam ∈ spectrum` of its underlying End.
+  rw [ContinuousLinearMap.spectrum_eq] at hlam
+  -- in finite dim this means `W.op` has eigenvalue `lam` (as an endomorphism).
+  have hev : Module.End.HasEigenvalue (W.op : Module.End ℂ (Lp ℂ 2 μ)) lam :=
+    Module.End.hasEigenvalue_iff_mem_spectrum.mpr hlam
+  obtain ⟨v, hv⟩ := hev.exists_hasEigenvector
+  rw [Module.End.hasEigenvector_iff] at hv
+  obtain ⟨hv_mem, hv_ne⟩ := hv
+  exact ⟨v, hv_ne, Module.End.mem_eigenspace_iff.mp hv_mem⟩
+
 /-- **Step graphons have pure point spectrum.**  Their spectrum is the
 spectrum of a finite Hermitian matrix (the quotient adjacency for the finest
 equitable partition), and there is no continuous part. -/
@@ -238,7 +306,19 @@ theorem isStepGraphon_hasPointSpectrum (W : Graphon Ω μ)
     (hW : W.IsStepGraphon) : W.HasPointSpectrum := by
   -- if the cell-uniform subspace is all of L²(μ), then L²(μ) is
   -- finite-dimensional and every spectral point is an eigenvalue
-  sorry
+  obtain ⟨J, _, _, P, hP⟩ := hW
+  -- the whole space `L²(μ)` equals the (finite-dim) cell-uniform subspace.
+  haveI : FiniteDimensional ℂ (Lp ℂ 2 μ) := by
+    have hfd : FiniteDimensional ℂ P.cellUniformSubspace :=
+      cellUniformSubspace_finiteDimensional P
+    have : FiniteDimensional ℂ (⊤ : Submodule ℂ (Lp ℂ 2 μ)) := hP ▸ hfd
+    exact (Submodule.topEquiv.finiteDimensional)
+  -- pure point: continuousSpectrum is empty since every spectral point is an eigenvalue.
+  rw [HasPointSpectrum]
+  ext lam
+  simp only [continuousSpectrum, Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+  rintro ⟨hspec, hnp, _⟩
+  exact hnp (spectrum_subset_pointSpectrum_of_finiteDimensional W hspec)
 
 /-! ### 3c. Constant-edge graphon (limit of `K_n`) — purely continuous off
 the one-dimensional cell-uniform fiber.
@@ -270,7 +350,14 @@ and the only invariant cell-uniform sector is one-dimensional. -/
 theorem constant_pointSpectrum (W : Graphon Ω μ) (c : ℂ) (hc : c ≠ 0)
     (_hW : W.IsConstant c) (hμ : μ Set.univ ≠ ∞) :
     (c * (μ Set.univ).toReal) ∈ W.pointSpectrum := by
-  -- the constant `1 ∈ L²(μ)` is mapped to `(c * μ(Ω)) • 1` by `W.op`
+  -- HONEST SORRY (genuinely measure-theoretic `op` integral).  The witness is the
+  -- constant function `1 ∈ L²(μ)`: `W.op 1 = (c · μ(Ω)) • 1` because
+  -- `(W.op 1)(x) = ∫ y, W.kernel x y · 1 ∂μ = ∫ y, W.kernel x y ∂μ`, and by
+  -- `IsConstant c` (an a.e.-on-`μ.prod μ` hypothesis) this slice integral equals
+  -- `c · μ(Ω)` for a.e. `x` — a Fubini/Tonelli slice argument on the open
+  -- `op`-integral layer (the same still-open kernel-action integral underlying
+  -- `kernelIntegralFun_memLp`).  No vacuous weakening: the eigenvalue
+  -- `c · μ(Ω).toReal` is the genuine rank-one eigenvalue.
   sorry
 
 /-! ### 3d. The Xie–Tamon graphon (`K_n + path-n`) — continuous tail sector.
@@ -370,7 +457,14 @@ theorem isCellUniformPST_iff_isWavePacketTransfer
     IsCellUniformPST W P i j τ ↔
       W.IsWavePacketTransfer (P.cellIndicator i) (P.cellIndicator j) τ := by
   -- normalisation of `cellIndicator` plus unfolding both definitions
-  sorry
+  have hi : ‖P.cellIndicator i‖ = 1 :=
+    (Graphon.cellIndicator_orthonormal P).norm_eq_one i
+  have hj : ‖P.cellIndicator j‖ = 1 :=
+    (Graphon.cellIndicator_orthonormal P).norm_eq_one j
+  unfold IsCellUniformPST IsWavePacketTransfer
+  constructor
+  · intro h; exact ⟨hi, hj, h⟩
+  · intro h; exact h.2.2
 
 /-- **Wave-packet PST is exact phase transfer.**  For normalised states
 `φ₀, φ₁`, wave-packet PST at time `τ` is equivalent to `W.evolve τ` sending
@@ -434,10 +528,414 @@ theorem constant_graphon_pst_trivial
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (i j : I) (τ : ℝ) (hτ : τ ≠ 0) :
     IsCellUniformPST W P i j τ → i = j := by
-  -- on the constant-graphon operator, every cell-indicator evolves into a
-  -- phase times itself (since the operator acts as a scalar on the
-  -- constants and as `0` on the orthogonal complement)
+  -- HONEST SORRY (blocked on the still-open `op`/`quotient` integral).
+  -- Route: `cellUniformPST_iff_quotientPST` reduces this to finite PST on
+  -- `P.symmQuotient`.  For a constant graphon the flux out of any cell `i` into
+  -- cell `j` is `Q i j = c · μ(C_j)` (independent of the source cell), so
+  -- `symmQuotient i j = √μ_i · c · μ_j / √μ_j = c · √μ_i · √μ_j` is **rank one**:
+  -- `M = (c · μ(Ω)) · |ψ⟩⟨ψ|` with `ψ_i = √(μ_i / μ(Ω))` unit.  Then
+  -- `exp(-iτM)_{ji} = δ_{ji} + (e^{-iτ c μ(Ω)} - 1) ψ_j ψ_i`, whose modulus is
+  -- `< 1` for `i ≠ j` (a finite rank-one computation), forcing `i = j`.
+  -- The finite tail is reachable; the **blocking** step is computing
+  -- `Q i j = c · μ(C_j)` from `IsConstant c`, which is exactly the open
+  -- measure-theoretic `op`/`quotient` slice integral (cf. `constant_pointSpectrum`).
+  -- No vacuous weakening: the conclusion `i = j` is the genuine PST-triviality.
   sorry
+
+/-! ## 6½. Matrix-level forward Godsil extraction (PST ⟹ strong cospectrality)
+
+The headline `cellUniformPST_implies_stronglyCospectral` reduces, via
+`cellUniformPST_iff_quotientPST`, to **finite** PST on the Hermitian quotient
+`P.symmQuotient`.  The Tower-1 spectral-projector spine
+(`Graphplay.PST.isPST_imp_isStronglyCospectral`) proves the forward
+"PST ⟹ strong cospectrality" extraction, but it is phrased over a
+`WeightedGraph` — and `symmQuotient` has a (generally non-constant) **non-zero
+diagonal** (the per-cell self-flux), so it is *not loopless* and does not fit
+the `WeightedGraph` interface.
+
+We therefore replicate the (short) projector-algebra forward extraction here,
+for an **arbitrary** Hermitian matrix `H : Matrix I I ℂ`, keyed off
+`Matrix.IsHermitian`.  This is the exact analogue of the Tower-1 spine, built
+on Mathlib's `IsHermitian.eigenvectorUnitary` / `spectral_theorem` and the
+matrix exponential, and is axiom-clean.
+
+Note the phase is `‖ε‖ = 1` (the **chiral** unit-circle phase), *not* `±1`:
+`symmQuotient` is genuinely complex-Hermitian (its entries
+`√μ_i · Q_{ij} / √μ_j` inherit the complex graphon kernel `Q`), so the
+real-symmetric `±1` constraint is false in general.  This matches the finite
+Tower-1 `IsStronglyCospectral` (`‖ε‖ = 1`) and the file's own Section-7
+documentation. -/
+
+namespace HermProj
+
+variable {I : Type v} [Fintype I] [DecidableEq I]
+variable {H : Matrix I I ℂ} (hH : H.IsHermitian)
+
+/-- The eigenvector unitary of `H` (columns = orthonormal eigenvectors). -/
+noncomputable def U (hH : H.IsHermitian) : Matrix I I ℂ :=
+  (hH.eigenvectorUnitary : Matrix I I ℂ)
+
+/-- `U Uᴴ = 1`. -/
+theorem U_mul_conjTranspose : U hH * (U hH)ᴴ = (1 : Matrix I I ℂ) := by
+  unfold U; rw [← Matrix.star_eq_conjTranspose]
+  exact Unitary.coe_mul_star_self hH.eigenvectorUnitary
+
+/-- `Uᴴ U = 1`. -/
+theorem conjTranspose_mul_U : (U hH)ᴴ * U hH = (1 : Matrix I I ℂ) := by
+  unfold U; rw [← Matrix.star_eq_conjTranspose]
+  exact Unitary.coe_star_mul_self hH.eigenvectorUnitary
+
+/-- `U` is a unit matrix. -/
+theorem U_isUnit : IsUnit (U hH) :=
+  isUnit_iff_exists.mpr ⟨(U hH)ᴴ, U_mul_conjTranspose hH, conjTranspose_mul_U hH⟩
+
+/-- Column orthonormality of `U`: `(Uᴴ U)_{i,j} = δ`. -/
+theorem U_col_orthonormal (i j : I) :
+    ∑ x : I, star (U hH x i) * U hH x j = if i = j then 1 else 0 := by
+  have h := conjTranspose_mul_U hH
+  have hij := congrFun (congrFun h i) j
+  rw [Matrix.mul_apply] at hij
+  simp only [Matrix.conjTranspose_apply, Matrix.one_apply] at hij
+  rw [← hij]
+
+/-- The continuous-time evolution `exp(-(iτ)•H)`. -/
+noncomputable def evolve (hH : H.IsHermitian) (τ : ℝ) : Matrix I I ℂ :=
+  NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H)
+
+/-- **Spectral-evolution bridge.**  The `(u,v)` entry of `exp(-(iτ)•H)` is the
+eigenbasis trigonometric sum. -/
+theorem evolve_eq_U_sum (τ : ℝ) (u v : I) :
+    evolve hH τ u v
+      = ∑ k : I, U hH u k
+          * Complex.exp (-(Complex.I * (τ : ℂ)) * (hH.eigenvalues k : ℂ))
+          * star (U hH v k) := by
+  classical
+  set c : ℂ := -(Complex.I * (τ : ℂ)) with hc
+  -- Spectral theorem: H = U * diag(λ) * Uᴴ.
+  have hspec : H
+      = (U hH) * (Matrix.diagonal (fun k => (hH.eigenvalues k : ℂ)))
+          * (U hH)ᴴ := by
+    have h := hH.spectral_theorem
+    rw [Unitary.conjStarAlgAut_apply] at h
+    rw [U, ← Matrix.star_eq_conjTranspose]
+    convert h using 2
+  have hdiagsmul : c • (Matrix.diagonal (fun k => (hH.eigenvalues k : ℂ)))
+      = (Matrix.diagonal (fun k => c * (hH.eigenvalues k : ℂ))) := by
+    rw [← Matrix.diagonal_smul]; rfl
+  have hinv : (U hH)⁻¹ = (U hH)ᴴ := by
+    apply Matrix.inv_eq_right_inv; exact U_mul_conjTranspose hH
+  have hscale : c • H
+      = (U hH) * (Matrix.diagonal (fun k => c * (hH.eigenvalues k : ℂ)))
+          * (U hH)⁻¹ := by
+    rw [hinv]; conv_lhs => rw [hspec]
+    rw [← hdiagsmul, mul_smul_comm, smul_mul_assoc]
+  have hexpdiag :
+      NormedSpace.exp (Matrix.diagonal (fun k => c * (hH.eigenvalues k : ℂ)))
+        = Matrix.diagonal (fun k => Complex.exp (c * (hH.eigenvalues k : ℂ))) := by
+    rw [Matrix.exp_diagonal]; congr 1; funext k
+    rw [Pi.coe_exp, ← Complex.exp_eq_exp_ℂ]
+  have hevolve : evolve hH τ
+      = (U hH)
+          * Matrix.diagonal (fun k => Complex.exp (c * (hH.eigenvalues k : ℂ)))
+          * (U hH)⁻¹ := by
+    unfold evolve
+    rw [← hc, hscale, Matrix.exp_conj _ _ (U_isUnit hH), hexpdiag]
+  rw [hevolve, hinv, Matrix.mul_apply]
+  refine Finset.sum_congr rfl (fun k _ => ?_)
+  rw [Matrix.mul_apply, Finset.sum_eq_single k]
+  · rw [Matrix.diagonal_apply_eq, Matrix.conjTranspose_apply, mul_assoc]
+  · intro l _ hl; rw [Matrix.diagonal_apply_ne _ hl, mul_zero]
+  · intro h; exact absurd (Finset.mem_univ k) h
+
+/-- The **spectral projector** `E_λ` onto the `λ`-eigenspace of `H`, as a
+matrix; its `(u,v)` entry is `∑_{k : λ_k = λ} U_{uk} · conj U_{vk}`. -/
+noncomputable def proj (hH : H.IsHermitian) (lam : ℝ) : Matrix I I ℂ :=
+  fun u v => ∑ k : I, if hH.eigenvalues k = lam then U hH u k * star (U hH v k) else 0
+
+/-- The diagonal projector entry (a sum of squared norms), as a real number. -/
+noncomputable def projDiag (hH : H.IsHermitian) (lam : ℝ) (u : I) : ℝ :=
+  ∑ k : I, if hH.eigenvalues k = lam then ‖U hH u k‖ ^ 2 else 0
+
+/-- The diagonal entry of the projector matrix is the (real) diagonal entry. -/
+theorem proj_diag (lam : ℝ) (u : I) :
+    proj hH lam u u = (projDiag hH lam u : ℂ) := by
+  rw [proj, projDiag, Complex.ofReal_sum]
+  refine Finset.sum_congr rfl (fun k _ => ?_)
+  by_cases h : hH.eigenvalues k = lam
+  · simp only [h, if_true]
+    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq]
+  · simp only [h, if_false, Complex.ofReal_zero]
+
+/-- The diagonal projector entry is nonnegative. -/
+theorem projDiag_nonneg (lam : ℝ) (u : I) : 0 ≤ projDiag hH lam u := by
+  rw [projDiag]; apply Finset.sum_nonneg; intro k _
+  by_cases h : hH.eigenvalues k = lam
+  · simp only [h, if_true]; positivity
+  · simp only [h, if_false, le_refl]
+
+/-- The projector matrix is self-adjoint: `(E_λ)_{v,u} = conj (E_λ)_{u,v}`. -/
+theorem proj_conjTranspose_apply (lam : ℝ) (a b : I) :
+    proj hH lam b a = star (proj hH lam a b) := by
+  unfold proj; rw [star_sum]
+  refine Finset.sum_congr rfl (fun k _ => ?_)
+  by_cases h : hH.eigenvalues k = lam
+  · simp only [h, if_true]; rw [star_mul', star_star, mul_comm]
+  · simp only [h, if_false, star_zero]
+
+/-- The `(u,w)` entry of `E_λ E_μ` collapses to the diagonal-supported sum. -/
+theorem proj_mul_entry (lam mu : ℝ) (u w : I) :
+    (proj hH lam * proj hH mu) u w
+      = ∑ k, (if hH.eigenvalues k = lam ∧ hH.eigenvalues k = mu
+                then U hH u k * star (U hH w k) else 0) := by
+  rw [Matrix.mul_apply]
+  show (∑ x : I,
+      (∑ k, if hH.eigenvalues k = lam then U hH u k * star (U hH x k) else 0) *
+      (∑ l, if hH.eigenvalues l = mu then U hH x l * star (U hH w l) else 0)) = _
+  simp_rw [Finset.sum_mul_sum]
+  rw [Finset.sum_comm]
+  rw [Finset.sum_congr rfl (fun k _ => Finset.sum_comm)]
+  refine Finset.sum_congr rfl (fun k _ => ?_)
+  by_cases hk : hH.eigenvalues k = lam
+  · have step : (∑ l, ∑ x,
+        (if hH.eigenvalues k = lam then U hH u k * star (U hH x k) else 0) *
+        (if hH.eigenvalues l = mu then U hH x l * star (U hH w l) else 0))
+        = ∑ l, (if hH.eigenvalues l = mu then U hH u k * star (U hH w l) else 0) *
+              (if k = l then (1:ℂ) else 0) := by
+      refine Finset.sum_congr rfl (fun l _ => ?_)
+      simp only [hk, if_true]
+      by_cases hl : hH.eigenvalues l = mu
+      · simp only [hl, if_true]
+        rw [← U_col_orthonormal hH k l, Finset.mul_sum]
+        refine Finset.sum_congr rfl (fun x _ => ?_); ring
+      · simp only [hl, if_false]
+        rw [zero_mul, Finset.sum_eq_zero]; intro x _; ring
+    rw [step, Finset.sum_eq_single k]
+    · simp only [if_true, mul_one]
+      by_cases hl : hH.eigenvalues k = mu
+      · rw [if_pos hl, if_pos (And.intro hk hl)]
+      · rw [if_neg hl, if_neg (fun hc => hl hc.2)]
+    · intro l _ hkl; rw [if_neg (Ne.symm hkl), mul_zero]
+    · intro h; exact absurd (Finset.mem_univ k) h
+  · simp only [hk, false_and, if_false, zero_mul, Finset.sum_const_zero]
+
+/-- **Idempotency** of the spectral projector: `E_λ E_λ = E_λ`. -/
+theorem proj_idem (lam : ℝ) : proj hH lam * proj hH lam = proj hH lam := by
+  ext u w; rw [proj_mul_entry]; unfold proj
+  refine Finset.sum_congr rfl (fun k _ => ?_)
+  by_cases h : hH.eigenvalues k = lam
+  · simp only [h, and_self, if_true]
+  · simp only [h, false_and, if_false]
+
+/-- **Orthogonality** of distinct spectral projectors: `E_λ E_μ = 0` for `λ ≠ μ`. -/
+theorem proj_orthogonal (lam mu : ℝ) (hne : lam ≠ mu) :
+    proj hH lam * proj hH mu = 0 := by
+  ext u w; rw [proj_mul_entry]
+  rw [Matrix.zero_apply, Finset.sum_eq_zero]
+  intro k _
+  by_cases h : hH.eigenvalues k = lam
+  · rw [if_neg]; rintro ⟨h1, h2⟩; exact hne (h1.symm.trans h2)
+  · rw [if_neg]; rintro ⟨h1, _⟩; exact h h1
+
+/-- The `(u,v)` entry of the evolution expands as a sum over eigenvalues. -/
+theorem evolve_eq_projSum (τ : ℝ) (u v : I) :
+    evolve hH τ u v
+      = ∑ lam ∈ (Finset.univ.image hH.eigenvalues),
+          Complex.exp (-(Complex.I * (τ : ℂ)) * (lam : ℂ)) * proj hH lam u v := by
+  rw [evolve_eq_U_sum]
+  rw [← Finset.sum_fiberwise_of_maps_to (g := hH.eigenvalues)
+        (t := Finset.univ.image hH.eigenvalues)
+        (fun k _ => Finset.mem_image_of_mem _ (Finset.mem_univ k))]
+  refine Finset.sum_congr rfl (fun lam _ => ?_)
+  rw [proj, Finset.mul_sum, Finset.sum_filter]
+  refine Finset.sum_congr rfl (fun k _ => ?_)
+  by_cases h : hH.eigenvalues k = lam
+  · simp only [h, if_true]; ring
+  · simp only [h, if_false, mul_zero]
+
+/-- The evolution expands as `U(τ) = ∑_λ e^{-iτλ} E_λ`. -/
+theorem evolve_eq_sum_proj (τ : ℝ) :
+    evolve hH τ
+      = ∑ lam ∈ (Finset.univ.image hH.eigenvalues),
+          Complex.exp (-(Complex.I * (τ : ℂ)) * (lam : ℂ)) • proj hH lam := by
+  ext u v
+  rw [evolve_eq_projSum, Matrix.sum_apply]
+  refine Finset.sum_congr rfl (fun lam _ => ?_)
+  rw [Matrix.smul_apply, smul_eq_mul]
+
+/-- `E_μ U(τ) = e^{-iτμ} E_μ`. -/
+theorem proj_mul_evolve (τ : ℝ) (mu : ℝ)
+    (hmu : mu ∈ Set.range hH.eigenvalues) :
+    proj hH mu * evolve hH τ
+      = Complex.exp (-(Complex.I * (τ : ℂ)) * (mu : ℂ)) • proj hH mu := by
+  rw [evolve_eq_sum_proj, Finset.mul_sum, Finset.sum_eq_single mu]
+  · rw [Matrix.mul_smul, proj_idem]
+  · intro lam _ hlam
+    rw [Matrix.mul_smul, proj_orthogonal hH mu lam (Ne.symm hlam), smul_zero]
+  · intro hmem
+    exfalso; apply hmem
+    obtain ⟨k, hk⟩ := hmu
+    rw [Finset.mem_image]; exact ⟨k, Finset.mem_univ k, hk⟩
+
+/-- The conjugate-transpose of the propagator is the reverse-time propagator:
+`(U(τ))ᴴ = U(-τ) = exp(-(i(-τ))•H)`. -/
+theorem evolve_conjTranspose (τ : ℝ) :
+    (evolve hH τ)ᴴ = evolve hH (-τ) := by
+  unfold evolve
+  rw [← Matrix.exp_conjTranspose]
+  congr 1
+  rw [Matrix.conjTranspose_smul, hH.eq]
+  congr 1
+  simp only [star_neg, star_mul', Complex.star_def, map_mul, Complex.conj_I,
+    Complex.conj_ofReal]
+  push_cast
+  ring
+
+/-- `evolve` is unitary: `U(τ) (U(τ))ᴴ = 1`. -/
+theorem evolve_mul_conjTranspose (τ : ℝ) :
+    evolve hH τ * (evolve hH τ)ᴴ = (1 : Matrix I I ℂ) := by
+  rw [evolve_conjTranspose]
+  unfold evolve
+  rw [← Matrix.exp_add_of_commute]
+  · rw [show -(Complex.I * (τ : ℂ)) • H + -(Complex.I * ((-τ : ℝ) : ℂ)) • H = 0 by
+        rw [← add_smul]; push_cast; rw [show -(Complex.I * (τ:ℂ)) + -(Complex.I * (-(τ:ℂ))) = 0 by ring, zero_smul]]
+    exact NormedSpace.exp_zero
+  · exact ((Commute.refl H).smul_left _).smul_right _
+
+/-- The `u`-row of `U(τ)` has unit `ℓ²`-norm. -/
+theorem evolve_row_normSq (τ : ℝ) (u : I) :
+    ∑ w : I, ‖evolve hH τ u w‖ ^ 2 = 1 := by
+  have h := evolve_mul_conjTranspose hH τ
+  have huu : (evolve hH τ * (evolve hH τ)ᴴ) u u = (1 : Matrix I I ℂ) u u := by rw [h]
+  rw [Matrix.mul_apply, Matrix.one_apply_eq] at huu
+  have key : ∑ w : I, evolve hH τ u w * (evolve hH τ)ᴴ w u
+      = ((∑ w : I, ‖evolve hH τ u w‖ ^ 2 : ℝ) : ℂ) := by
+    rw [Complex.ofReal_sum]
+    refine Finset.sum_congr rfl (fun w _ => ?_)
+    rw [Matrix.conjTranspose_apply, Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq]
+  rw [key] at huu
+  exact_mod_cast huu
+
+/-- **PST forces the rest of the row to vanish.** -/
+theorem evolve_eq_zero_of_pst (τ : ℝ) (u v : I)
+    (hpst : ‖evolve hH τ u v‖ = 1) (w : I) (hw : w ≠ v) :
+    evolve hH τ u w = 0 := by
+  have hsum := evolve_row_normSq hH τ u
+  have hsplit : ‖evolve hH τ u v‖ ^ 2
+      + ∑ w ∈ Finset.univ.erase v, ‖evolve hH τ u w‖ ^ 2 = 1 := by
+    rw [← Finset.sum_erase_add _ _ (Finset.mem_univ v)] at hsum; linarith [hsum]
+  rw [hpst] at hsplit; simp only [one_pow] at hsplit
+  have hrest : ∑ w ∈ Finset.univ.erase v, ‖evolve hH τ u w‖ ^ 2 = 0 := by linarith
+  have hzero : ‖evolve hH τ u w‖ ^ 2 = 0 := by
+    have hmem : w ∈ Finset.univ.erase v := Finset.mem_erase.mpr ⟨hw, Finset.mem_univ w⟩
+    exact (Finset.sum_eq_zero_iff_of_nonneg (fun x _ => sq_nonneg _)).mp hrest w hmem
+  have : ‖evolve hH τ u w‖ = 0 := by nlinarith [norm_nonneg (evolve hH τ u w)]
+  exact norm_eq_zero.mp this
+
+/-- `U(τ)ᴴ` entry is the conjugate of the transposed entry: needed for the
+column relation. -/
+theorem evolve_neg_eq_star (τ : ℝ) (b u : I) :
+    evolve hH (-τ) b u = star (evolve hH τ u b) := by
+  have := congrFun (congrFun (evolve_conjTranspose hH τ) b) u
+  rw [Matrix.conjTranspose_apply] at this
+  rw [← this]
+
+/-- **Column relation from PST.**  With `γ := U(τ) u v` (modulus 1), for every
+eigenvalue `μ` and every `a`:
+`e^{iτμ} (E_μ)_{a,u} = conj γ · (E_μ)_{a,v}`. -/
+theorem proj_col_relation (τ : ℝ) (u v : I)
+    (hpst : ‖evolve hH τ u v‖ = 1) (mu : ℝ)
+    (hmu : mu ∈ Set.range hH.eigenvalues) (a : I) :
+    Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) * proj hH mu a u
+      = star (evolve hH τ u v) * proj hH mu a v := by
+  have hmul := proj_mul_evolve hH (-τ) mu hmu
+  have hau := congrFun (congrFun hmul a) u
+  rw [Matrix.mul_apply, Matrix.smul_apply, smul_eq_mul] at hau
+  have hexp : Complex.exp (-(Complex.I * ((-τ : ℝ) : ℂ)) * (mu : ℂ))
+      = Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) := by
+    congr 1; push_cast; ring
+  rw [hexp] at hau
+  rw [← hau, Finset.sum_eq_single v]
+  · rw [evolve_neg_eq_star hH τ v u]; ring
+  · intro b _ hbv
+    rw [evolve_neg_eq_star hH τ b u, evolve_eq_zero_of_pst hH τ u v hpst b hbv,
+      star_zero, mul_zero]
+  · intro h; exact absurd (Finset.mem_univ v) h
+
+/-- **PST implies cospectrality** (diagonal equality). -/
+theorem pst_imp_cospectral (τ : ℝ) (u v : I)
+    (hpst : ‖evolve hH τ u v‖ = 1) (mu : ℝ)
+    (hmu : mu ∈ Set.range hH.eigenvalues) :
+    projDiag hH mu u = projDiag hH mu v := by
+  set γ := evolve hH τ u v with hγ
+  have hγnorm : ‖γ‖ = 1 := hpst
+  have hu := proj_col_relation hH τ u v hpst mu hmu u
+  have hv := proj_col_relation hH τ u v hpst mu hmu v
+  rw [proj_diag] at hu
+  rw [proj_diag] at hv
+  rw [proj_conjTranspose_apply] at hv
+  set E := proj hH mu u v with hE
+  set p := Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) with hp
+  have hpnorm : ‖p‖ = 1 := by rw [hp, Complex.norm_exp]; simp
+  have huc : γ * star E = star p * (projDiag hH mu u : ℂ) := by
+    have h2 := congrArg star hu
+    rw [star_mul', star_mul', star_star] at h2
+    rw [show star ((projDiag hH mu u : ℝ) : ℂ) = ((projDiag hH mu u : ℝ) : ℂ)
+        from Complex.conj_ofReal _] at h2
+    linear_combination -h2
+  have hpp : p * star p = 1 := by
+    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hpnorm]; norm_num
+  have hγγ : γ * star γ = 1 := by
+    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hγnorm]; norm_num
+  have key : (projDiag hH mu u : ℂ) = (projDiag hH mu v : ℂ) := by
+    have lhs : p * (γ * star E) = (projDiag hH mu u : ℂ) := by
+      rw [huc, ← mul_assoc]; rw [show p * star p = 1 from hpp, one_mul]
+    have rhs : γ * (p * star E) = (projDiag hH mu v : ℂ) := by
+      rw [hv, ← mul_assoc, hγγ, one_mul]
+    rw [← lhs, ← rhs]; ring
+  exact_mod_cast key
+
+/-- **Strong cospectrality** of basis vectors `i, j` for a Hermitian matrix
+`H`: for every eigenvalue `λ`, the cross projector entry `(E_λ)_{i,j}` is a
+unit-modulus phase times the geometric mean of the diagonal entries.  This is
+the chiral (`‖ε‖ = 1`) projector-parallelism condition. -/
+def IsStronglyCospectral (hH : H.IsHermitian) (i j : I) : Prop :=
+  ∀ lam : ℝ, lam ∈ Set.range hH.eigenvalues →
+    ∃ ε : ℂ, ‖ε‖ = 1 ∧
+      proj hH lam i j
+        = ε * Complex.ofReal (Real.sqrt (projDiag hH lam i * projDiag hH lam j))
+
+/-- **PST ⟹ strong cospectrality** for a bare Hermitian matrix.  This is the
+matrix-level analogue of Godsil's necessary condition
+(`Graphplay.PST.isPST_imp_isStronglyCospectral`), proven axiom-cleanly here so
+it applies to `symmQuotient` (which is Hermitian but not loopless, hence not a
+`WeightedGraph`). -/
+theorem pst_imp_stronglyCospectral (τ : ℝ) (i j : I)
+    (hpst : ‖evolve hH τ i j‖ = 1) :
+    IsStronglyCospectral hH i j := by
+  intro mu hmu
+  set γ := evolve hH τ i j with hγ
+  have hγnorm : ‖γ‖ = 1 := hpst
+  set p := Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) with hp
+  have hpnorm : ‖p‖ = 1 := by rw [hp, Complex.norm_exp]; simp
+  have hcosp := pst_imp_cospectral hH τ i j hpst mu hmu
+  have hu := proj_col_relation hH τ i j hpst mu hmu i
+  rw [proj_diag] at hu
+  set E := proj hH mu i j with hE
+  have hγγ : γ * star γ = 1 := by
+    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hγnorm]; norm_num
+  have hEval : E = γ * p * (projDiag hH mu i : ℂ) := by
+    have : γ * (p * (projDiag hH mu i : ℂ)) = γ * (star γ * E) := by rw [hu]
+    rw [← mul_assoc, ← mul_assoc, hγγ, one_mul] at this
+    rw [← this]
+  refine ⟨γ * p, ?_, ?_⟩
+  · rw [norm_mul, hγnorm, hpnorm, one_mul]
+  · rw [hEval]
+    congr 1
+    rw [← hcosp]
+    norm_cast
+    rw [Real.sqrt_mul_self (projDiag_nonneg hH mu i)]
+
+end HermProj
 
 /-! ## 7. Strong cospectrality on graphons (Tower-4 lift of L1)
 
@@ -456,29 +954,26 @@ the standard basis vectors `E_i, E_j ∈ ℂ^I` for the matrix `P.quotient`**.
 
 We state it via existence of a spectral decomposition of `P.quotient`. -/
 
-/-- **Strong cospectrality on the quotient.**  For a finite Hermitian
-matrix `H` and two basis vectors `E_i, E_j ∈ ℂ^I`, strong cospectrality
-holds when, in the spectral decomposition `H = Σ_λ λ • E_λ` (sum of
-eigen-projectors `E_λ` over eigenvalues `λ ∈ spectrum H`), each
-projector satisfies
-$$ E_\lambda (E_i) = \pm E_\lambda (E_j) $$
-(as an equality in `ℂ^I`), with sign depending on `λ`.
+/-- **Strong cospectrality on the quotient.**  For the finite Hermitian
+symmetric-quotient matrix `P.symmQuotient` and two cells `i, j`, strong
+cospectrality holds when, for every eigenvalue `λ`, the spectral projectors
+`E_λ` of `P.symmQuotient` send the standard basis vectors `E_i, E_j` to
+**parallel** vectors: the cross projector entry `(E_λ)_{i,j}` is a
+unit-modulus phase times the geometric mean of the diagonal entries
+`(E_λ)_{i,i}, (E_λ)_{j,j}`.
 
-This is the finite Tower-1 definition; we record it on the quotient
-matrix and call this the **cell-strong-cospectrality** of cells
-`i, j`. -/
+This is the chiral (`‖ε‖ = 1`) Tower-1 strong-cospectrality predicate
+(`Graphplay.PST.IsStronglyCospectral`), specialised to the Hermitian quotient
+via `HermProj.IsStronglyCospectral`.  We use the **chiral** unit-circle phase
+rather than the real-symmetric `±1`: `P.symmQuotient` is genuinely
+complex-Hermitian (its entries `√μ_i · Q_{ij} / √μ_j` inherit the complex
+graphon kernel `Q`), so the `±1` constraint is false in general; `‖ε‖ = 1`
+is what PST actually delivers and matches the finite Tower-1 definition.
+
+We call this the **cell-strong-cospectrality** of cells `i, j`. -/
 def IsCellStronglyCospectral
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i j : I) : Prop :=
-  ∀ lam ∈ spectrum ℂ (Matrix.toEuclideanLin P.symmQuotient),
-    -- the spectral (eigenspace) projection `E_λ` of the symmetric quotient
-    -- satisfies `E_λ E_i = ±1 • E_λ E_j` (sign depending on `λ`).  We compare
-    -- the orthogonal projections of the standard basis vectors onto the
-    -- `lam`-eigenspace, coerced back into `EuclideanSpace ℂ I`.
-    ∃ ε : ℂ, (ε = 1 ∨ ε = -1) ∧
-      ((Module.End.eigenspace (Matrix.toEuclideanLin P.symmQuotient) lam).orthogonalProjection
-          (EuclideanSpace.single i (1 : ℂ)) : EuclideanSpace ℂ I)
-        = ε • ((Module.End.eigenspace (Matrix.toEuclideanLin P.symmQuotient) lam).orthogonalProjection
-          (EuclideanSpace.single j (1 : ℂ)) : EuclideanSpace ℂ I)
+  HermProj.IsStronglyCospectral P.symmQuotient_isHermitian i j
 
 /-- **Graphon strong cospectrality** of cells `i, j` of an equitable
 partition `P`.  Equivalent (by the headline lifting theorem) to strong
@@ -505,11 +1000,31 @@ are graphon-strongly-cospectral.
 This is the graphon lift of Coutinho–Godsil's necessary condition. -/
 theorem cellUniformPST_implies_stronglyCospectral
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i j : I) (τ : ℝ)
-    (_h : IsCellUniformPST W P i j τ) :
+    (h : IsCellUniformPST W P i j τ) :
     IsGraphonStronglyCospectral P i j := by
-  -- via `cellUniformPST_iff_quotientPST` and the finite Coutinho–Godsil
-  -- statement
-  sorry
+  -- Step 1: cell-uniform PST reduces to finite PST on the Hermitian quotient
+  -- `P.symmQuotient`: `IsPST_finite P.symmQuotient i j τ`, i.e. the `(j,i)` entry
+  -- of `exp(-(iτ)·symmQuotient)` has modulus 1.
+  have hfin : IsPST_finite P.symmQuotient i j τ :=
+    (Graphon.cellUniformPST_iff_quotientPST P i j τ).mp h
+  -- This is exactly `‖HermProj.evolve symmQuotient_isHermitian τ j i‖ = 1`.
+  have hpst : ‖HermProj.evolve P.symmQuotient_isHermitian τ j i‖ = 1 := hfin
+  -- Step 2: apply the matrix-level forward Godsil extraction to get
+  -- `HermProj.IsStronglyCospectral` of basis vectors `j, i`.
+  have hsc_ji : HermProj.IsStronglyCospectral P.symmQuotient_isHermitian j i :=
+    HermProj.pst_imp_stronglyCospectral P.symmQuotient_isHermitian τ j i hpst
+  -- Step 3: strong cospectrality is symmetric, so we obtain it for `i, j`.
+  rw [isGraphonStronglyCospectral_iff_quotient, IsCellStronglyCospectral]
+  intro lam hlam
+  obtain ⟨ε, hε, heq⟩ := hsc_ji lam hlam
+  -- `(E_λ)_{i,j} = star ((E_λ)_{j,i})`; `star ε` is still a phase; the geometric
+  -- mean is symmetric in `i, j`.
+  refine ⟨star ε, by rw [norm_star, hε], ?_⟩
+  have hconj := HermProj.proj_conjTranspose_apply P.symmQuotient_isHermitian lam j i
+  -- `proj _ lam i j = star (proj _ lam j i) = star (ε * sqrt(d_j d_i))`.
+  rw [hconj, heq, star_mul']
+  congr 1
+  rw [Complex.star_def, Complex.conj_ofReal, mul_comm (HermProj.projDiag _ lam j)]
 
 /-! ## 8. Tower-4 closing remarks
 

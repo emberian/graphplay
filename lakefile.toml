@@ -16,3 +16,7 @@ root = "Main"
 [[lean_exe]]
 name = "graphplay-toolkit"
 root = "ToolkitMain"
+
+[[lean_exe]]
+name = "graphplay-sim"
+root = "SimMain"

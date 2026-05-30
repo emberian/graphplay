@@ -77,6 +77,95 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
   {G : WeightedGraph V}
   {I : Type v} [Fintype I] [DecidableEq I]
 
+/-! ## 0. Span-membership helpers for the invariance↔equitability backbone. -/
+
+/-- The (un-normalized) cell indicator for a bare cell map `cells : V → I`. -/
+private def rawInd (cells : V → I) (i : I) : V → ℂ :=
+  fun x => if cells x = i then 1 else 0
+
+/-- The (normalized) cell generator appearing in
+`cellUniform_invariant_iff_equitable`. -/
+private noncomputable def normGen (cells : V → I) (i : I) : V → ℂ :=
+  fun x =>
+    if cells x = i
+      then (1 : ℂ) /
+            ((Real.sqrt
+              ((Finset.univ.filter (fun w : V => cells w = i)).card : ℝ) : ℝ) : ℂ)
+      else 0
+
+/-- The span of the normalized generators equals the span of the raw cell
+indicators: on a nonempty cell the normalized generator is a nonzero scalar
+multiple of the raw indicator, and on an empty cell both vanish. -/
+private theorem span_normGen_eq_span_rawInd (cells : V → I) :
+    Submodule.span ℂ (Set.range (normGen (V := V) cells))
+      = Submodule.span ℂ (Set.range (rawInd (V := V) cells)) := by
+  apply le_antisymm <;> rw [Submodule.span_le] <;> rintro _ ⟨i, rfl⟩
+  · -- `normGen i = c • rawInd i` for the scalar `c = 1/√|C_i|`.
+    have : normGen (V := V) cells i
+        = ((1 : ℂ) /
+            ((Real.sqrt ((Finset.univ.filter (fun w : V => cells w = i)).card : ℝ) : ℝ) : ℂ))
+          • rawInd (V := V) cells i := by
+      funext x; simp only [normGen, rawInd, Pi.smul_apply, smul_eq_mul]
+      by_cases hx : cells x = i <;> simp [hx]
+    rw [this]
+    exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩)
+  · -- conversely `rawInd i = √|C_i| • normGen i` (and both are `0` when empty).
+    by_cases hcard : (Finset.univ.filter (fun w : V => cells w = i)).card = 0
+    · -- empty cell: `rawInd i = 0`.
+      have hzero : rawInd (V := V) cells i = 0 := by
+        funext x; simp only [rawInd, Pi.zero_apply]
+        rw [if_neg]
+        intro hx
+        rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff] at hcard
+        exact hcard (Finset.mem_univ x) hx
+      rw [hzero]; exact Submodule.zero_mem _
+    · have heq : rawInd (V := V) cells i
+          = ((Real.sqrt ((Finset.univ.filter (fun w : V => cells w = i)).card : ℝ) : ℝ) : ℂ)
+            • normGen (V := V) cells i := by
+        have hpos : (0 : ℝ) < ((Finset.univ.filter (fun w : V => cells w = i)).card : ℝ) := by
+          rw [Nat.cast_pos]; exact Nat.pos_of_ne_zero hcard
+        have hsq : ((Real.sqrt ((Finset.univ.filter (fun w : V => cells w = i)).card : ℝ) : ℝ) : ℂ) ≠ 0 := by
+          rw [Ne, Complex.ofReal_eq_zero]; exact ne_of_gt (Real.sqrt_pos.mpr hpos)
+        funext x; simp only [normGen, rawInd, Pi.smul_apply, smul_eq_mul]
+        by_cases hx : cells x = i
+        · simp only [if_pos hx, mul_one_div, div_self hsq]
+        · simp only [if_neg hx, mul_zero]
+      rw [heq]
+      exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩)
+
+/-- Membership criterion for the raw-indicator span: a vector lies in the span
+of the cell indicators iff it is **constant on each cell**. -/
+private theorem mem_span_rawInd_iff (cells : V → I) (v : V → ℂ) :
+    v ∈ Submodule.span ℂ (Set.range (rawInd (V := V) cells))
+      ↔ ∀ x y : V, cells x = cells y → v x = v y := by
+  constructor
+  · intro hv
+    induction hv using Submodule.span_induction with
+    | mem w hw =>
+      obtain ⟨i, rfl⟩ := hw
+      intro x y hxy; simp only [rawInd]; rw [hxy]
+    | zero => intro x y _; rfl
+    | add a b _ _ ha hb => intro x y hxy; simp only [Pi.add_apply]; rw [ha x y hxy, hb x y hxy]
+    | smul c a _ ha => intro x y hxy; simp only [Pi.smul_apply, smul_eq_mul]; rw [ha x y hxy]
+  · intro hconst
+    -- `v = ∑ i, (v's value on cell i) • rawInd i`, hence in the span.
+    classical
+    have hrep : v = ∑ i : I, (if h : ∃ x, cells x = i then v h.choose else 0)
+        • rawInd (V := V) cells i := by
+      funext x
+      rw [Finset.sum_apply]
+      rw [Finset.sum_eq_single (cells x)]
+      · have hex : ∃ z, cells z = cells x := ⟨x, rfl⟩
+        rw [dif_pos hex, Pi.smul_apply, smul_eq_mul]
+        simp only [rawInd, if_true, mul_one, eq_self_iff_true]
+        exact hconst _ _ hex.choose_spec.symm
+      · intro i _ hi
+        rw [Pi.smul_apply, smul_eq_mul]
+        simp only [rawInd, if_neg (fun (h : cells x = i) => hi h.symm), mul_zero]
+      · intro h; exact absurd (Finset.mem_univ _) h
+    rw [hrep]
+    exact Submodule.sum_mem _ (fun i _ => Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩))
+
 /-! ## 1. Recalling the forward direction.
 
 The forward direction of the Bachman–Tamon iff lives in `Graphplay/PST.lean`
@@ -158,10 +247,70 @@ theorem cellUniform_invariant_iff_equitable
                             ((Finset.univ.filter
                               (fun w : V => cells w = i)).card : ℝ) : ℝ) : ℂ)
                     else 0)))) := by
-  -- "⇒": invoke `cellUniformSubspace_invariant`.
-  -- "⇐": given invariance, define the branching number via the basis
-  -- expansion of `G.adj.mulVec (cellUniformVec i)` and check uniformity.
-  sorry
+  -- The generator family is exactly `normGen cells`; rewrite the span and use
+  -- the constant-on-cells membership criterion throughout.
+  have hgen : (fun i : I => fun x : V =>
+      if cells x = i
+        then (1 : ℂ) /
+              ((Real.sqrt ((Finset.univ.filter (fun w : V => cells w = i)).card : ℝ) : ℝ) : ℂ)
+        else 0) = normGen (V := V) cells := rfl
+  rw [hgen]
+  -- Reduce all span-membership to the constant-on-cells criterion.
+  simp only [span_normGen_eq_span_rawInd, mem_span_rawInd_iff]
+  constructor
+  · -- "⇒": from an equitable partition, invariance is `restrict_eq_symmQuotient`
+    -- read off pointwise.  Here we argue directly: `(G.adj *ᵥ v) x` depends only
+    -- on `cells x` when `v` is constant on cells and `P` is equitable.
+    rintro ⟨P, rfl⟩ v hvconst x y hxy
+    -- `(G.adj *ᵥ v) x = ∑_z A x z * v z`; group `z` by cell.
+    -- Using equitability of `P` and constancy of `v`.
+    show G.adj.mulVec v x = G.adj.mulVec v y
+    -- Rewrite each side as a sum over cells of `(branching into cell · value on cell)`.
+    classical
+    have key : ∀ w : V, G.adj.mulVec v w
+        = ∑ i : I, P.branching i w * (if h : ∃ z, P.cells z = i then v h.choose else 0) := by
+      intro w
+      -- Work from the RHS: expand `branching`, swap sums, collapse over the cell.
+      simp only [EquitablePartition.branching, Finset.sum_mul]
+      rw [Finset.sum_comm]
+      simp only [Matrix.mulVec, dotProduct]
+      apply Finset.sum_congr rfl
+      intro z _
+      -- Inner sum over `i` collapses to `i = cells z`.
+      rw [Finset.sum_eq_single (P.cells z)]
+      · rw [if_pos rfl]
+        have hex : ∃ u, P.cells u = P.cells z := ⟨z, rfl⟩
+        rw [dif_pos hex]
+        have hvz : v z = v hex.choose := hvconst z hex.choose hex.choose_spec.symm
+        rw [hvz]
+      · intro i _ hi
+        rw [if_neg (fun h => hi h.symm), zero_mul]
+      · intro h; exact absurd (Finset.mem_univ _) h
+    rw [key x, key y]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [P.branching_eq (P.cells x) i x y rfl hxy.symm]
+  · -- "⇐": invariance of constant-on-cells functions yields the equitable
+    -- partition.  Apply the hypothesis to the raw indicator of a cell.
+    intro hinv
+    refine ⟨⟨cells, ?_⟩, rfl⟩
+    -- The uniform / branching condition: for `x, y` in cell `i`, branching into
+    -- `j` agrees.  Apply `hinv` to `v = rawInd cells j` (constant on cells), then
+    -- read `(G.adj *ᵥ rawInd j) x = ∑_{z : cells z = j} A x z = branching x→j`.
+    intro i j x y hx hy
+    have hvconst : ∀ a b : V, cells a = cells b → rawInd (V := V) cells j a = rawInd (V := V) cells j b := by
+      intro a b hab; simp only [rawInd]; rw [hab]
+    have hAv := hinv (rawInd (V := V) cells j) hvconst x y (by rw [hx, hy])
+    -- Unfold `(G.adj *ᵥ rawInd j) x = ∑ z, A x z * (if cells z = j then 1 else 0)`.
+    have hexp : ∀ w : V, G.adj.mulVec (rawInd (V := V) cells j) w
+        = ∑ z, (if cells z = j then G.adj w z else 0) := by
+      intro w
+      simp only [Matrix.mulVec, dotProduct, rawInd]
+      apply Finset.sum_congr rfl
+      intro z _
+      by_cases hz : cells z = j <;> simp [hz]
+    rw [hexp x, hexp y] at hAv
+    exact hAv
 
 /-- **Equitability ⇒ no leakage.**  If `P` is equitable, the evolution
 `G.evolve τ` preserves the cell-uniform subspace, hence the
@@ -326,31 +475,56 @@ theorem stronglyCospectral_cellUniform_iff_quotient
                * (∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
                   then Complex.normSq (P.symmQuotient_isHermitian.eigenvectorBasis k j)
                   else 0)))) := by
-  -- The equivalence holds because `cellUniformVec i, cellUniformVec j` both
-  -- lie in the cell-uniform subspace, on which `G.adj` acts via
-  -- `P.symmQuotient` (by `restrict_eq_symmQuotient`); the spectral projectors
-  -- of `P.symmQuotient` on `e_i, e_j` therefore correspond exactly to the
-  -- spectral projectors of the *restricted* `G.adj` on `cellUniformVec i,
-  -- cellUniformVec j`.  Conversely, equitability ensures no leakage, so the
-  -- host spectral projector on `|C_i⟩` agrees with the quotient projector —
-  -- strong cospectrality transfers in both directions.
+  -- HONEST SORRY: requires an explicit isometry between the host eigenbasis
+  -- `G.herm.eigenvectorBasis` and the quotient eigenbasis
+  -- `P.symmQuotient_isHermitian.eigenvectorBasis` (via `cellInflateVec`),
+  -- equating the two spectral-projector cross-entries.  No such eigenbasis
+  -- transport lemma exists yet in the infrastructure.
   sorry
 
 /-- **Automatic strong cospectrality (corollary).**  For an equitable
 partition `P`, the cell-uniform vectors `|C_i⟩` and `|C_j⟩` are strongly
-cospectral in `G` whenever `e_i` and `e_j` are strongly cospectral in
-`P.quotient`.
+cospectral in `G` whenever `e_i` and `e_j` are strongly cospectral in the
+symmetric quotient `P.symmQuotient`.
 
-This is automatic in the sense that the *only* nontrivial precondition is
-spectral support equality, which is guaranteed by the quotient projector
-identity above.  PST then follows from the standard Coutinho–Godsil criterion
-(strong cospectrality + arithmetic condition on the eigenvalue ratios, which
-is precisely what sibling `Graphplay.PST.GodsilRatio` formalizes). -/
+The previous formulation of this corollary was the vacuous `True → True`; we
+restate it with the genuine quotient-side and host-side strong-cospectrality
+predicates (the same spelled-out spectral-projector cross-entry conditions used
+in `stronglyCospectral_cellUniform_iff_quotient`), and discharge it via that
+iff.  The honest content is exactly the eigenbasis-transport `sorry` carried by
+that iff. -/
 theorem cellUniform_stronglyCospectral_of_quotient
     (P : EquitablePartition G I) (i j : I)
-    (_hquot : True /- quotient-side strong cospectrality, from L1 -/) :
-    True /- host-side strong cospectrality of `|C_i⟩, |C_j⟩` -/ := by
-  trivial
+    (hquot :
+      ∀ lam : ℝ, lam ∈ Set.range P.symmQuotient_isHermitian.eigenvalues →
+        ∃ ε : ℂ, ‖ε‖ = 1 ∧
+          (∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
+              then P.symmQuotient_isHermitian.eigenvectorBasis k i
+                * star (P.symmQuotient_isHermitian.eigenvectorBasis k j)
+              else 0)
+            = ε * Complex.ofReal (Real.sqrt
+                ((∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
+                    then Complex.normSq (P.symmQuotient_isHermitian.eigenvectorBasis k i)
+                    else 0)
+                 * (∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
+                    then Complex.normSq (P.symmQuotient_isHermitian.eigenvectorBasis k j)
+                    else 0)))) :
+    ∀ lam : ℝ, lam ∈ Set.range G.herm.eigenvalues →
+      ∃ ε : ℂ, ‖ε‖ = 1 ∧
+        (∑ k : V, if G.herm.eigenvalues k = lam
+            then (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec i x)
+              * star (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec j x)
+            else 0)
+          = ε * Complex.ofReal (Real.sqrt
+              ((∑ k : V, if G.herm.eigenvalues k = lam
+                  then Complex.normSq (∑ x, star (G.herm.eigenvectorBasis k x)
+                        * P.cellUniformVec i x)
+                  else 0)
+               * (∑ k : V, if G.herm.eigenvalues k = lam
+                  then Complex.normSq (∑ x, star (G.herm.eigenvectorBasis k x)
+                        * P.cellUniformVec j x)
+                  else 0))) :=
+  (P.stronglyCospectral_cellUniform_iff_quotient i j).mpr hquot
 
 /-! ## 6. Phantom-symmetry corollary.
 
@@ -421,19 +595,18 @@ phase function `τ_pair : I → I → ℂ` extracted from `s` via cross-constanc
 -/
 theorem cellUniformPST_iff_quotientPST_signed
     (P : EquitablePartition G I) (s : ChiralSigning V)
-    (h : s.CrossConstant P.cells) (i j : I) (τ : ℝ) :
+    (h : s.CrossConstant P.cells)
+    (hne : ∀ k, (G.signedBy_preserves_equitable P s h).cellCard k ≠ 0)
+    (i j : I) (τ : ℝ) :
     let P' := G.signedBy_preserves_equitable P s h
     IsCellUniformPST (G.signedBy s) P' i j τ ↔
-      -- PST on the signed quotient — placeholder, see
-      -- `Graphplay.Chiral.Bundle.chiral_mixing_optimization` for the full
-      -- statement.
-      ‖(NNReal.toReal 1 : ℂ)‖ = 1 := by
-  -- Reduce to `cellUniformPST_iff_quotientPST` applied to `P'`, then use
-  -- `signedBy_preserves_equitable` to identify the signed quotient with
-  -- `(τ_pair * P.quotient)` (entrywise).  The Levine et al. characteristic
-  -- isometry intertwines the host and quotient evolutions on the signed
-  -- bundle exactly as in the unsigned case.
-  sorry
+      -- PST on the *signed quotient*: the Born-rule modulus condition on the
+      -- symmetric quotient of the signed equitable partition.  (The previous
+      -- formulation carried the vacuous placeholder RHS `‖(1 : ℂ)‖ = 1`, which
+      -- is trivially true and said nothing about the signed quotient.)
+      ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P'.symmQuotient)) j i‖ = 1 := by
+  intro P'
+  exact P'.cellUniformPST_iff_quotientPST hne i j τ
 
 /-- **Chiral phantom symmetry (corollary).**  Combining
 `phantom_symmetry_PST_exists` with `cellUniformPST_iff_quotientPST_signed`:

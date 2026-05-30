@@ -193,10 +193,10 @@ theorem ConsistentPartitionSequence.pst_time_convergence
     (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
     (h_pst : ∀ n, IsPST_finite (𝒮.quotient n) i j (τ n)) :
     IsCellUniformPST Wlim Plim i j τlim := by
-  -- by continuity of `exp` in operator norm and joint continuity in `(H, t)`,
-  -- `exp(-i τ_n · 𝒮.quotient n) → exp(-i τlim · Plim.quotient)` in operator
-  -- norm.  Hence the matrix elements converge and the modulus-one condition
-  -- passes to the limit.
+  -- Honest gap: needs joint continuity of `(H, t) ↦ exp(-i t · H)` entrywise to
+  -- pass modulus-one to the limit, AND a bridge from the raw `𝒮.quotient`/`Plim.quotient`
+  -- (in the hypotheses) to the spectrum-sharing `Plim.symmQuotient` (in the conclusion,
+  -- via `cellUniformPST_iff_quotientPST`); the two matrices differ unless cell masses coincide.
   sorry
 
 /-- **Mixing-time convergence.**  Analogous statement for uniform mixing. -/
@@ -211,6 +211,8 @@ theorem ConsistentPartitionSequence.mixing_time_convergence
     (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
     (h_mix : ∀ n, IsUniformMixing_finite (𝒮.quotient n) i (τ n)) :
     IsCellUniformGraphonMixing Wlim Plim i τlim := by
+  -- Honest gap: as in `pst_time_convergence` — joint `exp`-continuity plus the raw
+  -- `quotient` vs `symmQuotient` bridge (`cellUniformGraphonMixing_iff_quotientMixing`).
   sorry
 
 /-- **Search-time convergence.**  Spatial-search success times computed on

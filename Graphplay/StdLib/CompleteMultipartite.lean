@@ -154,18 +154,20 @@ def IsDeterministicSearch {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (w : V) : Prop :=
   ∃ γ τ : ℝ, searchSuccessAmplitude G w γ τ = 1
 
-/-- **Li, Luo, Feng, Li (2025).**  Every complete multipartite graph
-`K_{n_1, …, n_k}` admits deterministic CTQW spatial search at *every*
-vertex `w`, provided the graph is non-empty (i.e. has at least two parts
-and total size ≥ 2).  The witnessing parameters are
-  `γ* = (degree of w) / (n · second-eigenvalue gap)` and
-  `τ* = π / (2 √(d − λ_2))`,
-which one verifies by direct spectral computation in the
-`(|w⟩, |s⟩, …)` invariant subspace.
+/-- **Complete-multipartite instance of Li–Luo–Feng–Li (2025).**  Every
+complete multipartite graph `K_{n_1, …, n_k}` admits deterministic CTQW spatial
+search at *every* vertex `w`, provided the graph is non-empty (at least two
+parts, each of size ≥ 1).
 
-This is the complete-multipartite **instance** of Li–Luo–Feng–Li's general
-theorem (arXiv:2506.21108, *Deterministic quantum search on all Laplacian
-integral graphs*): `K_{n_1,…,n_k}` is Laplacian integral, hence covered. -/
+CITATION FIX: the deterministic-search guarantee is **not** a
+complete-multipartite-specific result.  It is the specialisation of the
+**general** theorem of Li, Luo, Feng, Li (arXiv:2506.21108, *Deterministic
+quantum search on all Laplacian integral graphs*): every Laplacian-integral
+graph admits deterministic search, and `K_{n_1,…,n_k}` is Laplacian integral
+(`completeMultipartite_laplacian_integral`), hence covered.  The witnessing
+`(γ*, τ*)` come from that general construction applied to the explicit
+Laplacian spectrum, not from a formula special to complete multipartite
+graphs. -/
 theorem completeMultipartite_deterministicSearch
     (parts : List ℕ) (hk : 2 ≤ parts.length)
     (hpos : ∀ ni ∈ parts, 1 ≤ ni)

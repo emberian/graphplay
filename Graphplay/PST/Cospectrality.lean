@@ -51,6 +51,7 @@ import Mathlib.Combinatorics.SimpleGraph.Hasse
 import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.PST
+import Graphplay.PST.GodsilRatio
 
 open scoped Matrix
 open NormedSpace
@@ -178,6 +179,47 @@ def IsStronglyCospectral (G : WeightedGraph V) (u v : V) : Prop :=
       eigenProjEntry G lam u v
         = ε * Complex.ofReal
             (Real.sqrt (eigenProjDiag G lam u * eigenProjDiag G lam v))
+
+/-! ### Bridge to the `eigU`-coordinate projector (sibling `GodsilRatio`)
+
+The projector entries here, defined through Mathlib's `eigenvectorBasis`,
+coincide with the `eigU`-coordinate entries of the sibling module
+`Graphplay.PST.GodsilRatio`, because `eigenvectorUnitary i j = eigenvectorBasis
+j i` definitionally.  This lets us transport the *unconditional* forward
+extraction `PST ⇒ strong cospectrality` (proven there via the spectral-projector
+algebra) into this module's `eigenProjEntry`/`eigenProjDiag` language. -/
+
+/-- The projector entry of this module equals the `eigU`-coordinate entry of
+`GodsilRatio`. -/
+theorem eigenProjEntry_eq_local (G : WeightedGraph V) (lam : ℝ) (u v : V) :
+    eigenProjEntry G lam u v = Graphplay.PST.eigenProjEntryLocal G lam u v := by
+  unfold eigenProjEntry Graphplay.PST.eigenProjEntryLocal Graphplay.PST.eigU
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  congr 1
+
+/-- The diagonal projector entry of this module equals the `GodsilRatio` one. -/
+theorem eigenProjDiag_eq_local (G : WeightedGraph V) (lam : ℝ) (u : V) :
+    eigenProjDiag G lam u = Graphplay.PST.eigenProjDiagLocal G lam u := by
+  unfold eigenProjDiag
+  rw [eigenProjEntry_eq_local, Graphplay.PST.eigenProjEntryLocal_self, Complex.ofReal_re]
+
+/-- This module's `IsStronglyCospectral` is propositionally equal to the
+`GodsilRatio` one (the definitions differ only by the bridged projector
+entries). -/
+theorem isStronglyCospectral_iff_local (G : WeightedGraph V) (u v : V) :
+    IsStronglyCospectral G u v ↔ Graphplay.PST.IsStronglyCospectral G u v := by
+  unfold IsStronglyCospectral Graphplay.PST.IsStronglyCospectral
+  refine forall_congr' (fun lam => imp_congr_right (fun _ => ?_))
+  rw [eigenProjEntry_eq_local, eigenProjDiag_eq_local, eigenProjDiag_eq_local]
+
+/-- **PST implies strong cospectrality** (necessary condition, Godsil 2012,
+Thm 2.1; here in this module's projector language).  Proven *unconditionally
+and axiom-cleanly* by transporting the sibling `GodsilRatio` extraction
+`Graphplay.PST.isPST_imp_isStronglyCospectral` through the projector bridge. -/
+theorem isStronglyCospectral_of_isPST (G : WeightedGraph V) (u v : V) (τ : ℝ)
+    (h : IsPST G u v τ) : IsStronglyCospectral G u v :=
+  (isStronglyCospectral_iff_local G u v).mpr
+    (Graphplay.PST.isPST_imp_isStronglyCospectral G τ u v h)
 
 /-- The **real (orthogonal) variant**: strong cospectrality with phases
 restricted to `±1`.  This is the original Godsil-Royle definition for
@@ -398,29 +440,24 @@ theorem Hom.preserves_stronglyCospectral
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} (P : EquitablePartition G I)
     (u v : V) (h : CellSeparating P u v)
+    (Gq : WeightedGraph I) (hQ : Gq.adj = P.symmQuotient)
     (hsc : IsStronglyCospectral G u v) :
-    -- We state the conclusion via the quotient adjacency: strong
-    -- cospectrality of the *cell-uniform vectors* `1_{C_i}/√|C_i|` and
-    -- `1_{C_j}/√|C_j|` under `G.adj` follows from `hsc`, and by the
-    -- spectrum subset / restriction lemmas of `Graphplay.Spectral` it
-    -- equals strong cospectrality of `i, j` in the quotient.
-    -- Stub statement: existence of a phase-aligned projector decomposition
-    -- on the quotient side.
-    ∀ lam : ℝ, lam ∈ spectrum ℝ P.quotient →
-      ∃ ε : ℂ, ‖ε‖ = 1 := by
-  -- Proof outline: from `hsc lam ⟨ε, hε, eq⟩`, transport `ε` through the
-  -- cellInflate isometry; the projector commutes with the isometry because
-  -- the cell-uniform subspace is `G.adj`-invariant
-  -- (`cellUniformSubspace_invariant` in `Graphplay.Equitable`).
-  --
-  -- The conclusion as stated only asks for a unit-modulus phase to exist for
-  -- each quotient eigenvalue; the canonical phase `ε = 1` already witnesses
-  -- it.  (The genuine content — that the phase is *the transported* `hsc`
-  -- phase aligning the quotient projectors — is captured by the stronger
-  -- downstairs `IsStronglyCospectral` statement, which needs the
-  -- `cellInflate` isometry transport from `Graphplay.Spectral`.)
-  intro lam _hlam
-  exact ⟨1, norm_one⟩
+    -- Genuine downstairs conclusion: the cells `P.cells u` and `P.cells v`
+    -- (distinct, by `h.separates`) are *strongly cospectral as vertices of the
+    -- quotient graph `Gq`* (whose adjacency is the symmetric quotient).
+    IsStronglyCospectral Gq (P.cells u) (P.cells v) := by
+  -- HONEST SORRY.  The previous formulation concluded only `∀ lam, ∃ ε, ‖ε‖ = 1`
+  -- — a vacuous statement (`ε = 1` always works, independent of `hsc`).  The
+  -- genuine content is strong cospectrality of the cells *in the quotient*:
+  -- transport each phase witness `ε_λ` from `hsc` through the `cellInflate`
+  -- isometry (`Graphplay.Spectral.cellInflateLin`, injective on nonempty cells),
+  -- which embeds the quotient `λ`-eigenspaces isometrically into the
+  -- `G.adj`-invariant cell-uniform host subspace (`cellUniformSubspace_invariant`)
+  -- so the spectral projectors commute with the embedding.  This eigenbasis
+  -- transport lemma is the same one the sibling
+  -- `Graphplay.PST.QuotientIff.stronglyCospectral_cellUniform_iff_quotient`
+  -- carries as an honest `sorry`; assembling it here is left likewise.
+  sorry
 
 /-! ## Concrete examples
 

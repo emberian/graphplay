@@ -383,6 +383,11 @@ theorem no_equitable_partition_no_sequence
          -- `limit_exists` applied to `𝒮`.  We assert non-existence by
          -- contradiction with `hNoEP`.
          False) := by
+  -- HONEST SORRY: the conclusion `¬(tendsto → False)` is a placeholder shape
+  -- whose faithful form ("the index `I` of an approximating sequence is forced
+  -- to be an actual equitable partition") needs `limit_exists` to manufacture a
+  -- `GraphonEquitablePartition I W` from `𝒮`, contradicting `hNoEP` — that
+  -- forward-limit-builds-EP lemma is not available in the current op layer.
   sorry
 
 /-! ## 7. Categorical statement: Cauchy completion

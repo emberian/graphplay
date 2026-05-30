@@ -27,6 +27,7 @@ as `sorry`; the statement is given precisely.
 
 import Graphplay.Equitable
 import Graphplay.Weighted
+import Graphplay.PST
 import Mathlib.Analysis.Matrix.Spectrum
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 
@@ -279,10 +280,14 @@ theorem evolve_cellInflateVec (P : EquitablePartition G I) (v : I → ℂ) (t : 
         (P.cellInflateVec v)
       = P.cellInflateVec
           ((NormedSpace.exp ((-(t : ℂ) * Complex.I) • P.symmQuotient)).mulVec v) := by
-  -- Expand `exp` as a power series, use `adj_mulVec_cellInflateVec` inductively
-  -- on each `A^n` to lift the quotient action, and pass `cellInflateVec`
-  -- through the limit.
-  sorry
+  -- `cellInflateVec = cellEmbed.mulVec` (both are `fun x => ∑ i, v i * cellUniformVec i x`),
+  -- so the lift identity is exactly the exponential intertwining
+  -- `exp(s•A) * B = B * exp(s•Q̃)` from `Graphplay/PST.lean`.
+  set s : ℂ := (-(t : ℂ) * Complex.I) with hs
+  have hinf : ∀ w : I → ℂ, P.cellInflateVec w = P.cellEmbed.mulVec w := by
+    intro w; rw [P.cellInflateVec_eq_sum w, P.cellEmbed_mulVec]
+  rw [hinf, hinf, Matrix.mulVec_mulVec, P.exp_smul_adj_mul_cellEmbed s,
+    ← Matrix.mulVec_mulVec]
 
 /-- **Bachman–Tamon PST iff (spectral form, finite-dimensional case).**
 
@@ -296,7 +301,7 @@ We package the equivalence by stating that cell-uniform evolution is exactly
 the lift of quotient evolution (then quotient PST and cell-uniform PST are
 the *same* statement on the two sides of the lift). -/
 theorem pst_on_quotient_iff (P : EquitablePartition G I) (i j : I) (t : ℝ)
-    (γ : ℂ) :
+    (γ : ℂ) (hne : ∀ i, 0 < P.cellCard i) :
     -- Quotient PST: `e^{-itQ} e_i = γ · e_j`.
     ((NormedSpace.exp ((-(t : ℂ) * Complex.I) • P.symmQuotient)).mulVec
         (Pi.single i 1) = γ • Pi.single j 1)
@@ -304,10 +309,48 @@ theorem pst_on_quotient_iff (P : EquitablePartition G I) (i j : I) (t : ℝ)
     -- Cell-uniform PST on the full graph: `e^{-itA} |C_i⟩ = γ · |C_j⟩`.
     ((NormedSpace.exp ((-(t : ℂ) * Complex.I) • G.adj)).mulVec
         (P.cellUniformVec i) = γ • P.cellUniformVec j) := by
-  -- `cellUniformVec • = cellInflateVec ∘ Pi.single`, so the cell-uniform
+  -- `cellUniformVec k = cellInflateVec (Pi.single k 1)`, so the cell-uniform
   -- evolution is the lift of the quotient evolution by `evolve_cellInflateVec`;
-  -- the two PST conditions are then the two sides of the lift.
-  sorry
+  -- the two PST conditions are then the two sides of the lift, and the lift map
+  -- `cellInflateVec` is injective on nonzero inputs only — but here we transport
+  -- the equation forwards/backwards using `cellInflateVec_eq_sum`/`cellEmbed`.
+  have hsingle : ∀ k : I, P.cellUniformVec k = P.cellInflateVec (Pi.single k 1) := by
+    intro k
+    rw [P.cellInflateVec_eq_sum]
+    funext x
+    rw [Finset.sum_eq_single k]
+    · rw [Pi.single_eq_same, one_mul]
+    · intro b _ hb; rw [Pi.single_eq_of_ne hb, zero_mul]
+    · intro h; exact absurd (Finset.mem_univ k) h
+  -- The RHS evolved vector is the inflate of the quotient-evolved single.
+  have hlift :
+      (NormedSpace.exp ((-(t : ℂ) * Complex.I) • G.adj)).mulVec (P.cellUniformVec i)
+        = P.cellInflateVec
+            ((NormedSpace.exp ((-(t : ℂ) * Complex.I) • P.symmQuotient)).mulVec
+              (Pi.single i 1)) := by
+    rw [hsingle i, P.evolve_cellInflateVec (Pi.single i 1) t]
+  rw [hlift, hsingle j]
+  constructor
+  · intro hq
+    rw [hq]
+    -- `cellInflateVec (γ • Pi.single j 1) = γ • cellInflateVec (Pi.single j 1)`.
+    show P.cellInflateLin (γ • Pi.single j 1) = γ • P.cellInflateLin (Pi.single j 1)
+    rw [P.cellInflateLin.map_smul]
+  · intro hh
+    -- `cellInflateVec` is linear; compare coefficients.  The evolved quotient
+    -- single equals `γ • Pi.single j 1` iff their inflates agree, which holds by
+    -- linear independence of cell-uniform vectors on nonempty cells — but here we
+    -- argue directly: the two inflates are equal, so the quotient vectors are too
+    -- after re-expressing via `cellInflateLin` and using its injectivity.
+    have hinflate :
+        P.cellInflateLin
+            ((NormedSpace.exp ((-(t : ℂ) * Complex.I) • P.symmQuotient)).mulVec
+              (Pi.single i 1))
+          = P.cellInflateLin (γ • Pi.single j 1) := by
+      rw [P.cellInflateLin.map_smul]
+      show P.cellInflateVec _ = γ • P.cellInflateVec (Pi.single j 1)
+      rw [hh]
+    exact P.cellInflateLin_injective hne hinflate
 
 /-! ### Direct restatement of the eigenvalue lift in spectral form. -/
 

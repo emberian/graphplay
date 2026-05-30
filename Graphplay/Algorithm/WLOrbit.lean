@@ -239,6 +239,25 @@ def IsWLStable {I : Type w} [Fintype I] [DecidableEq I]
   ∀ {J : Type w} [Fintype J] [DecidableEq J] (Q : EquitablePartition G J),
     ∀ x y : V, P.cells x = P.cells y → Q.cells x = Q.cells y
 
+/-- Reindex an equitable partition along a bijection of the cell-index type.
+The relabelled partition has cells `e ∘ Q.cells` and is still equitable. -/
+noncomputable def reindexEquitable
+    {J K : Type*} [Fintype J] [DecidableEq J] [Fintype K] [DecidableEq K]
+    (G : Graphplay.WeightedGraph V) (Q : EquitablePartition G J) (e : J ≃ K) :
+    EquitablePartition G K where
+  cells := fun v => e (Q.cells v)
+  uniform := by
+    intro i j x y hx hy
+    -- `e (Q.cells z) = j ↔ Q.cells z = e.symm j`, so the branch sums reduce to
+    -- the original equitable condition at cell `e.symm j`.
+    have hrw : ∀ z : V, (e (Q.cells z) = j) ↔ (Q.cells z = e.symm j) := by
+      intro z; rw [Equiv.eq_symm_apply]
+    simp only [hrw]
+    -- `x, y` are in cell `e.symm i` of `Q`.
+    have hx' : Q.cells x = e.symm i := by rw [← Equiv.eq_symm_apply] at hx; exact hx
+    have hy' : Q.cells y = e.symm i := by rw [← Equiv.eq_symm_apply] at hy; exact hy
+    exact Q.uniform (e.symm i) (e.symm j) x y hx' hy'
+
 /-- **Theorem (WL-stable refines orbit).**
 Every WL-stable partition is finer than the orbit partition.
 
@@ -255,14 +274,47 @@ theorem wlStable_refines_orbit
     {I : Type w} [Fintype I] [DecidableEq I]
     (G₀ : Graphplay.SimpleGraph V)
     (G : Graphplay.WeightedGraph V)
-    [HasAutInvariantWeights G₀ G]
+    [HasAutInvariantWeights G₀ G] [Nonempty V]
     (P : EquitablePartition G I)
     (hStable : IsWLStable G P) :
     -- "P refines orbitPartition": there is a map `I → OrbitClass G₀`
     -- such that the obvious square commutes.
     ∃ φ : I → OrbitClass G₀,
       ∀ v : V, φ (P.cells v) = orbitPartition G₀ v := by
-  sorry
+  classical
+  -- The orbit partition is equitable.  Reindex it into `Type w` (where `P`'s
+  -- index lives) so we can feed it to `IsWLStable`, which is universe-fixed.
+  let Qorb : EquitablePartition G (OrbitClass G₀) :=
+    orbitPartition_isEquitable G₀ G
+  -- Transport `OrbitClass G₀ : Type u` into `ULift (Fin (card)) : Type w`.
+  let n : ℕ := Fintype.card (OrbitClass G₀)
+  let eFin : OrbitClass G₀ ≃ Fin n := Fintype.equivFin (OrbitClass G₀)
+  let eUp : OrbitClass G₀ ≃ ULift.{w} (Fin n) := eFin.trans Equiv.ulift.symm
+  let Qw : EquitablePartition G (ULift.{w} (Fin n)) :=
+    reindexEquitable G Qorb eUp
+  -- `P` refines `Qw` by WL-stability.
+  have hrefw : ∀ x y : V, P.cells x = P.cells y → Qw.cells x = Qw.cells y :=
+    hStable Qw
+  -- Hence `P` refines the orbit partition (compose back through `eUp.symm`).
+  have href : ∀ x y : V, P.cells x = P.cells y →
+      orbitPartition G₀ x = orbitPartition G₀ y := by
+    intro x y h
+    have := hrefw x y h
+    -- `Qw.cells z = eUp (orbitPartition z)`; apply `eUp.symm`.
+    have e1 : Qw.cells x = eUp (orbitPartition G₀ x) := rfl
+    have e2 : Qw.cells y = eUp (orbitPartition G₀ y) := rfl
+    rw [e1, e2] at this
+    exact eUp.injective this
+  -- Build `φ` by choosing a representative vertex for each `P`-cell; the
+  -- fallback uses an arbitrary vertex (`V` is nonempty).
+  refine ⟨fun i =>
+      if hi : ∃ v, P.cells v = i then orbitPartition G₀ (Classical.choose hi)
+      else orbitPartition G₀ (Classical.arbitrary V), ?_⟩
+  intro v
+  have hi : ∃ w, P.cells w = P.cells v := ⟨v, rfl⟩
+  simp only []
+  rw [dif_pos hi]
+  exact href (Classical.choose hi) v (Classical.choose_spec hi)
 
 /-! ## §4. Phantom symmetry -/
 

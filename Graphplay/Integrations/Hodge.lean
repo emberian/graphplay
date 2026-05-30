@@ -188,6 +188,65 @@ noncomputable instance : Module ℂ (Cochain X k) :=
 noncomputable def inner (φ ψ : Cochain X k) : ℂ :=
   ∑ s, star (φ s) * ψ s
 
+/-- Additivity of the inner product in the right argument. -/
+theorem inner_add_right (φ ψ χ : Cochain X k) :
+    inner φ (ψ + χ) = inner φ ψ + inner φ χ := by
+  unfold inner
+  rw [← Finset.sum_add_distrib]
+  refine Finset.sum_congr rfl (fun s _ => ?_)
+  show star (φ s) * (ψ s + χ s) = star (φ s) * ψ s + star (φ s) * χ s
+  ring
+
+/-- Additivity of the inner product in the left argument. -/
+theorem inner_add_left (φ ψ χ : Cochain X k) :
+    inner (φ + ψ) χ = inner φ χ + inner ψ χ := by
+  unfold inner
+  rw [← Finset.sum_add_distrib]
+  refine Finset.sum_congr rfl (fun s _ => ?_)
+  show star (φ s + ψ s) * χ s = star (φ s) * χ s + star (ψ s) * χ s
+  rw [star_add]; ring
+
+/-- Conjugate symmetry of the canonical inner product. -/
+theorem inner_conj_symm (φ ψ : Cochain X k) :
+    star (inner ψ φ) = inner φ ψ := by
+  unfold inner
+  rw [star_sum]
+  refine Finset.sum_congr rfl (fun s _ => ?_)
+  rw [star_mul', star_star, mul_comm]
+
+/-- The inner product of a cochain with itself has nonnegative real part
+(in fact it is a nonnegative real). -/
+theorem inner_self_re_nonneg (φ : Cochain X k) : 0 ≤ (inner φ φ).re := by
+  unfold inner
+  rw [Complex.re_sum]
+  refine Finset.sum_nonneg (fun s _ => ?_)
+  rw [Complex.star_def, Complex.mul_re, Complex.conj_re, Complex.conj_im]
+  nlinarith [sq_nonneg (φ s).re, sq_nonneg (φ s).im]
+
+/-- Definiteness: `⟨φ, φ⟩ = 0` (a nonnegative real) forces `φ = 0`. -/
+theorem inner_self_eq_zero {φ : Cochain X k} (h : inner φ φ = 0) : φ = 0 := by
+  funext s
+  -- the real part of `⟨φ, φ⟩` is `∑ ‖φ t‖²`, a sum of nonnegatives equal to 0
+  have hre : (inner φ φ).re = 0 := by rw [h, Complex.zero_re]
+  have hterm : ∀ t : X.simplex k, 0 ≤ (star (φ t) * φ t).re := by
+    intro t
+    rw [Complex.star_def, Complex.mul_re, Complex.conj_re, Complex.conj_im]
+    nlinarith [sq_nonneg (φ t).re, sq_nonneg (φ t).im]
+  have hsum0 : (star (φ s) * φ s).re = 0 := by
+    have hzero : ∀ t ∈ Finset.univ, (star (φ t) * φ t).re = 0 := by
+      have := hre
+      unfold inner at this
+      rw [Complex.re_sum] at this
+      exact (Finset.sum_eq_zero_iff_of_nonneg (fun t _ => hterm t)).mp this
+    exact hzero s (Finset.mem_univ s)
+  -- `(star (φ s) * φ s).re = ‖φ s‖²`, so it being 0 forces `φ s = 0`
+  rw [Complex.star_def, Complex.mul_re, Complex.conj_re, Complex.conj_im] at hsum0
+  have : (φ s).re ^ 2 + (φ s).im ^ 2 = 0 := by nlinarith [hsum0]
+  have hre0 : (φ s).re = 0 := by nlinarith [sq_nonneg (φ s).re, sq_nonneg (φ s).im]
+  have him0 : (φ s).im = 0 := by nlinarith [sq_nonneg (φ s).re, sq_nonneg (φ s).im]
+  have : φ s = 0 := by apply Complex.ext <;> simp [hre0, him0]
+  exact this
+
 end Cochain
 
 /-- The coboundary operator `d_k : Cochain X k → Cochain X (k+1)`,
@@ -226,7 +285,101 @@ theorem coboundary_comp_coboundary
     {V : Type u} (X : SimplicialComplex V) (h : X.ChainCorrect) (k : ℕ)
     (φ : Cochain X k) :
     (coboundary X (k + 1)) (coboundary X k φ) = 0 := by
-  sorry
+  funext s
+  -- `(d (d φ)) s = ∑_{j,i} (-1)^(j+i) · φ (face i (face j s))`; a sign-reversing
+  -- involution on pairs `(j, i)` (swapping the order of face deletion via the
+  -- simplicial identity) cancels the whole sum.
+  show (∑ j : Fin (k + 3), ((-1 : ℂ) ^ (j : ℕ)) *
+        (∑ i : Fin (k + 2), ((-1 : ℂ) ^ (i : ℕ)) * φ (X.face i (X.face j s)))) = (0 : Cochain X (k + 2)) s
+  show (∑ j : Fin (k + 3), ((-1 : ℂ) ^ (j : ℕ)) *
+        (∑ i : Fin (k + 2), ((-1 : ℂ) ^ (i : ℕ)) * φ (X.face i (X.face j s)))) = 0
+  -- collapse the double sum into a single sum over the product index set
+  have hprod : (∑ j : Fin (k + 3), ((-1 : ℂ) ^ (j : ℕ)) *
+        (∑ i : Fin (k + 2), ((-1 : ℂ) ^ (i : ℕ)) * φ (X.face i (X.face j s))))
+      = ∑ p : Fin (k + 3) × Fin (k + 2),
+          ((-1 : ℂ) ^ ((p.1 : ℕ) + (p.2 : ℕ))) * φ (X.face p.2 (X.face p.1 s)) := by
+    rw [Fintype.sum_prod_type]
+    refine Finset.sum_congr rfl (fun j _ => ?_)
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    rw [pow_add]; ring
+  rw [hprod]
+  -- the sign-reversing involution
+  apply Finset.sum_involution
+    (g := fun (p : Fin (k + 3) × Fin (k + 2)) _ =>
+      if hp : (p.2 : ℕ) < (p.1 : ℕ)
+      then ((⟨(p.2 : ℕ), by omega⟩ : Fin (k + 3)), (⟨(p.1 : ℕ) - 1, by omega⟩ : Fin (k + 2)))
+      else ((⟨(p.2 : ℕ) + 1, by omega⟩ : Fin (k + 3)), (⟨(p.1 : ℕ), by omega⟩ : Fin (k + 2))))
+  · -- cancellation `f p + f (g p) = 0`
+    rintro ⟨j, i⟩ _
+    by_cases hlt : (i : ℕ) < (j : ℕ)
+    · simp only [dif_pos hlt]
+      -- partner term uses ChainCorrect: face i (face j s) = face (j-1) (face i s)
+      have hcc := h k i j hlt s
+      show ((-1 : ℂ) ^ ((j : ℕ) + (i : ℕ))) * φ (X.face i (X.face j s))
+          + ((-1 : ℂ) ^ ((i : ℕ) + ((j : ℕ) - 1))) *
+              φ (X.face ⟨(j : ℕ) - 1, by omega⟩ (X.face ⟨(i : ℕ), by omega⟩ s)) = 0
+      rw [← hcc]
+      -- signs `(-1)^(j+i)` and `(-1)^(i+(j-1))` are opposite (exponents differ by 1)
+      have hsign : (-1 : ℂ) ^ ((i : ℕ) + ((j : ℕ) - 1)) = -((-1 : ℂ) ^ ((j : ℕ) + (i : ℕ))) := by
+        rw [show (j : ℕ) + (i : ℕ) = ((i : ℕ) + ((j : ℕ) - 1)) + 1 by omega, pow_succ]
+        ring
+      rw [hsign]; ring
+    · simp only [dif_neg hlt]
+      push_neg at hlt
+      -- here `i ≥ j`; partner is `(i+1, j)` and ChainCorrect runs the other way
+      have hjlt : (j : ℕ) < (i : ℕ) + 1 := by omega
+      have hcc := h k ⟨(j : ℕ), by omega⟩ ⟨(i : ℕ) + 1, by omega⟩ hjlt s
+      show ((-1 : ℂ) ^ ((j : ℕ) + (i : ℕ))) * φ (X.face i (X.face j s))
+          + ((-1 : ℂ) ^ (((i : ℕ) + 1) + (j : ℕ))) *
+              φ (X.face ⟨(j : ℕ), by omega⟩ (X.face ⟨(i : ℕ) + 1, by omega⟩ s)) = 0
+      -- `hcc : face ⟨j⟩ (face ⟨i+1⟩ s) = face ⟨(i+1)-1⟩ (face ⟨j⟩ s) = face i (face j s)`
+      rw [hcc]
+      -- match the inner faces with the first term
+      have hidx1 : (⟨(i + 1 : ℕ) - 1, by omega⟩ : Fin (k + 2)) = i := Fin.ext (by simp)
+      have hidx2 : (⟨(j : ℕ), by omega⟩ : Fin (k + 3)) = j := Fin.ext (by simp)
+      have hface : X.face (⟨(i + 1 : ℕ) - 1, by omega⟩ : Fin (k + 2))
+            (X.face (⟨(j : ℕ), by omega⟩ : Fin (k + 3)) s)
+          = X.face i (X.face j s) := by
+        rw [hidx1, hidx2]
+      rw [hface]
+      rw [show ((i : ℕ) + 1) + (j : ℕ) = ((j : ℕ) + (i : ℕ)) + 1 by omega, pow_succ]
+      ring
+  · -- `f p ≠ 0 → g p ≠ p`: the involution has no fixed points (it changes the pair)
+    rintro ⟨j, i⟩ _ _
+    by_cases hlt : (i : ℕ) < (j : ℕ)
+    · simp only [dif_pos hlt]
+      intro hcontra
+      rw [Prod.mk.injEq] at hcontra
+      have := hcontra.1
+      have : (i : ℕ) = (j : ℕ) := by
+        have h2 := congrArg Fin.val this; simpa using h2
+      omega
+    · simp only [dif_neg hlt]
+      intro hcontra
+      rw [Prod.mk.injEq] at hcontra
+      have := hcontra.1
+      have : (i : ℕ) + 1 = (j : ℕ) := by
+        have h2 := congrArg Fin.val this; simpa using h2
+      push_neg at hlt; omega
+  · -- `g (g p) = p` (the involution is its own inverse)
+    rintro ⟨j, i⟩ _
+    by_cases hlt : (i : ℕ) < (j : ℕ)
+    · simp only [dif_pos hlt]
+      -- partner `(i, j-1)`: since `j-1 ≥ i`, its branch is the `else` branch
+      have hge : ¬ ((⟨(j : ℕ) - 1, by omega⟩ : Fin (k + 2)) : ℕ) < ((⟨(i : ℕ), by omega⟩ : Fin (k + 3)) : ℕ) := by
+        show ¬ ((j : ℕ) - 1 < (i : ℕ)); omega
+      simp only [dif_neg hge]
+      apply Prod.ext <;> apply Fin.ext <;> simp <;> omega
+    · simp only [dif_neg hlt]
+      push_neg at hlt
+      -- partner `(i+1, j)`: since `j ≤ i < i+1`, its branch is the `then` branch
+      have hlt2 : ((⟨(j : ℕ), by omega⟩ : Fin (k + 2)) : ℕ) < ((⟨(i : ℕ) + 1, by omega⟩ : Fin (k + 3)) : ℕ) := by
+        show (j : ℕ) < (i : ℕ) + 1; omega
+      simp only [dif_pos hlt2]
+      apply Prod.ext <;> apply Fin.ext <;> simp <;> omega
+  · -- `g p ∈ univ` trivially
+    intro p _; apply Finset.mem_univ
 
 /-- The adjoint coboundary `d_k* : Cochain X (k+1) → Cochain X k` is the
 formal transpose with respect to the canonical inner product. -/
@@ -275,7 +428,62 @@ noncomputable def coboundaryAdj {V : Type u} (X : SimplicialComplex V) (k : ℕ)
       rw [smul_eq_mul]; ring
     · simp only [if_neg h, smul_zero]
 
-/-- The **combinatorial Hodge Laplacian** in dimension `k`:
+/-- **Adjointness of the coboundary**: `⟨d_k φ, ψ⟩ = ⟨φ, d_k* ψ⟩` for the
+canonical inner product on cochains.  Both sides expand to the same double
+sum `∑_{σ, i} (-1)^i · star(φ (face i σ)) · ψ σ`. -/
+theorem coboundary_adjoint {V : Type u} (X : SimplicialComplex V) (k : ℕ)
+    (φ : Cochain X k) (ψ : Cochain X (k + 1)) :
+    Cochain.inner (coboundary X k φ) ψ = Cochain.inner φ (coboundaryAdj X k ψ) := by
+  -- LHS: `∑_σ star((d φ) σ) · ψ σ`; RHS: `∑_τ star(φ τ) · (d* ψ) τ`.
+  show (∑ σ : X.simplex (k + 1),
+        star (∑ i : Fin (k + 2), ((-1 : ℂ) ^ (i : ℕ)) * φ (X.face i σ)) * ψ σ)
+      = (∑ τ : X.simplex k, star (φ τ) *
+          ∑ σ : X.simplex (k + 1), ∑ i : Fin (k + 2),
+            (if X.face i σ = τ then ((-1 : ℂ) ^ (i : ℕ)) * ψ σ else 0))
+  -- expand `star` of the sum on the LHS
+  have hL : (∑ σ : X.simplex (k + 1),
+        star (∑ i : Fin (k + 2), ((-1 : ℂ) ^ (i : ℕ)) * φ (X.face i σ)) * ψ σ)
+      = ∑ σ : X.simplex (k + 1), ∑ i : Fin (k + 2),
+          ((-1 : ℂ) ^ (i : ℕ)) * star (φ (X.face i σ)) * ψ σ := by
+    refine Finset.sum_congr rfl (fun σ _ => ?_)
+    rw [star_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    rw [star_mul', star_pow]
+    simp only [star_neg, star_one]
+  -- push the `star (φ τ)` into the inner double sum on the RHS, then collapse τ
+  have hR : (∑ τ : X.simplex k, star (φ τ) *
+          ∑ σ : X.simplex (k + 1), ∑ i : Fin (k + 2),
+            (if X.face i σ = τ then ((-1 : ℂ) ^ (i : ℕ)) * ψ σ else 0))
+      = ∑ σ : X.simplex (k + 1), ∑ i : Fin (k + 2),
+          ((-1 : ℂ) ^ (i : ℕ)) * star (φ (X.face i σ)) * ψ σ := by
+    -- distribute `star (φ τ)` into the double sum, then reorder with `τ` innermost
+    have hdist : (∑ τ : X.simplex k, star (φ τ) *
+            ∑ σ : X.simplex (k + 1), ∑ i : Fin (k + 2),
+              (if X.face i σ = τ then ((-1 : ℂ) ^ (i : ℕ)) * ψ σ else 0))
+        = ∑ τ : X.simplex k, ∑ σ : X.simplex (k + 1), ∑ i : Fin (k + 2),
+            star (φ τ) * (if X.face i σ = τ then ((-1 : ℂ) ^ (i : ℕ)) * ψ σ else 0) := by
+      refine Finset.sum_congr rfl (fun τ _ => ?_)
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl (fun σ _ => ?_)
+      rw [Finset.mul_sum]
+    rw [hdist, Finset.sum_comm]
+    refine Finset.sum_congr rfl (fun σ _ => ?_)
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    -- `∑_τ star(φ τ) · (if face i σ = τ then (-1)^i ψ σ else 0)` collapses to `τ = face i σ`
+    rw [Finset.sum_eq_single (X.face i σ)]
+    · rw [if_pos rfl]; ring
+    · intro τ _ hτ; rw [if_neg (fun h => hτ h.symm), mul_zero]
+    · intro h; exact absurd (Finset.mem_univ _) h
+  rw [hL, hR]
+
+/-- **Adjointness, other side**: `⟨d_k* ψ, φ⟩ = ⟨ψ, d_k φ⟩`. -/
+theorem coboundaryAdj_adjoint {V : Type u} (X : SimplicialComplex V) (k : ℕ)
+    (ψ : Cochain X (k + 1)) (φ : Cochain X k) :
+    Cochain.inner (coboundaryAdj X k ψ) φ = Cochain.inner ψ (coboundary X k φ) := by
+  rw [← Cochain.inner_conj_symm, ← coboundary_adjoint, Cochain.inner_conj_symm]
+
+/-- **The Hodge Laplacian in dimension `k`:
 
     L_k = d_{k-1} ∘ d_{k-1}*  +  d_k* ∘ d_k.
 
@@ -296,13 +504,60 @@ theorem hodgeLaplacian_isHermitian
     ∀ φ ψ : Cochain X k,
       Cochain.inner (hodgeLaplacian X k φ) ψ
         = Cochain.inner φ (hodgeLaplacian X k ψ) := by
-  sorry
+  intro φ ψ
+  match k with
+  | 0 =>
+    -- `L = d* ∘ d`; move `d*` to the right then `d` back.
+    show Cochain.inner ((coboundaryAdj X 0) ((coboundary X 0) φ)) ψ
+        = Cochain.inner φ ((coboundaryAdj X 0) ((coboundary X 0) ψ))
+    rw [coboundaryAdj_adjoint, ← coboundary_adjoint]
+  | (k + 1) =>
+    -- `L = d_k ∘ d_k*  +  d_{k+1}* ∘ d_{k+1}`; each summand is self-adjoint.
+    show Cochain.inner
+          ((coboundary X k) ((coboundaryAdj X k) φ)
+            + (coboundaryAdj X (k + 1)) ((coboundary X (k + 1)) φ)) ψ
+        = Cochain.inner φ
+          ((coboundary X k) ((coboundaryAdj X k) ψ)
+            + (coboundaryAdj X (k + 1)) ((coboundary X (k + 1)) ψ))
+    -- inner is additive in each argument; split into the two summands
+    rw [Cochain.inner_add_left, Cochain.inner_add_right]
+    -- reduce back to the two adjoint identities, applied termwise
+    have h1 : Cochain.inner ((coboundary X k) ((coboundaryAdj X k) φ)) ψ
+        = Cochain.inner φ ((coboundary X k) ((coboundaryAdj X k) ψ)) := by
+      rw [coboundary_adjoint, ← coboundaryAdj_adjoint]
+    have h2 : Cochain.inner ((coboundaryAdj X (k + 1)) ((coboundary X (k + 1)) φ)) ψ
+        = Cochain.inner φ ((coboundaryAdj X (k + 1)) ((coboundary X (k + 1)) ψ)) := by
+      rw [coboundaryAdj_adjoint, ← coboundary_adjoint]
+    rw [h1, h2]
 
 /-- The Hodge Laplacian is positive semidefinite. -/
 theorem hodgeLaplacian_psd
     {V : Type u} (X : SimplicialComplex V) (k : ℕ) (φ : Cochain X k) :
     (Cochain.inner φ (hodgeLaplacian X k φ)).re ≥ 0 := by
-  sorry
+  match k with
+  | 0 =>
+    -- `⟨φ, d* d φ⟩ = ⟨d φ, d φ⟩ ≥ 0`
+    show 0 ≤ (Cochain.inner φ ((coboundaryAdj X 0) ((coboundary X 0) φ))).re
+    rw [← coboundary_adjoint]
+    exact Cochain.inner_self_re_nonneg _
+  | (k + 1) =>
+    show 0 ≤ (Cochain.inner φ
+        ((coboundary X k) ((coboundaryAdj X k) φ)
+          + (coboundaryAdj X (k + 1)) ((coboundary X (k + 1)) φ))).re
+    -- split into the two PSD summands `⟨d* φ, d* φ⟩` and `⟨d φ, d φ⟩`
+    have hadd : Cochain.inner φ
+        ((coboundary X k) ((coboundaryAdj X k) φ)
+          + (coboundaryAdj X (k + 1)) ((coboundary X (k + 1)) φ))
+        = Cochain.inner ((coboundaryAdj X k) φ) ((coboundaryAdj X k) φ)
+          + Cochain.inner ((coboundary X (k + 1)) φ) ((coboundary X (k + 1)) φ) := by
+      rw [Cochain.inner_add_right]
+      congr 1
+      · -- `⟨φ, d (d* φ)⟩ = ⟨d* φ, d* φ⟩`
+        rw [← Cochain.inner_conj_symm, coboundaryAdj_adjoint, Cochain.inner_conj_symm]
+      · -- `⟨φ, d* (d φ)⟩ = ⟨d φ, d φ⟩`
+        rw [← coboundary_adjoint]
+    rw [hadd, Complex.add_re]
+    exact add_nonneg (Cochain.inner_self_re_nonneg _) (Cochain.inner_self_re_nonneg _)
 
 /-- The space of **harmonic** `k`-cochains: the kernel of the Hodge
 Laplacian. -/
@@ -340,6 +595,10 @@ theorem hodgeDecomp
     -- discrete Hodge decomposition (Eckmann 1944, Friedman 1998), since
     -- `Im L_k = Im d_{k-1} ⊕ Im d_k*`.
     harmonic X k ⊔ LinearMap.range (hodgeLaplacian X k) = ⊤ := by
+  -- DEEP: needs `ker L ⊕ range L = ⊤` for the self-adjoint `L` on the
+  -- finite-dimensional cochain space, i.e. the spectral / orthogonal-complement
+  -- decomposition; our bare `Cochain.inner` is not yet wired into Mathlib's
+  -- `InnerProductSpace`, so the requisite `ker = (range)ᗮ` is unavailable here.
   sorry
 
 /-- The **combinatorial Hodge isomorphism**, harmonic = closed ∩ co-closed.
@@ -355,7 +614,69 @@ theorem harmonic_iso_cohomology
     {V : Type u} (X : SimplicialComplex V) (_h : X.ChainCorrect) (k : ℕ) :
     harmonic X (k + 1)
       = LinearMap.ker (coboundary X (k + 1)) ⊓ LinearMap.ker (coboundaryAdj X k) := by
-  sorry
+  apply le_antisymm
+  · -- harmonic ⊆ closed ∩ co-closed: `⟨φ, Lφ⟩ = ‖d* φ‖² + ‖d φ‖² = 0` forces both
+    intro φ hφ
+    have hLφ : hodgeLaplacian X (k + 1) φ = 0 := hφ
+    -- `⟨φ, Lφ⟩ = ⟨d_k* φ, d_k* φ⟩ + ⟨d_{k+1} φ, d_{k+1} φ⟩`
+    have hexpand : Cochain.inner φ (hodgeLaplacian X (k + 1) φ)
+        = Cochain.inner ((coboundaryAdj X k) φ) ((coboundaryAdj X k) φ)
+          + Cochain.inner ((coboundary X (k + 1)) φ) ((coboundary X (k + 1)) φ) := by
+      have hLdef : hodgeLaplacian X (k + 1) φ
+          = (coboundary X k) ((coboundaryAdj X k) φ)
+            + (coboundaryAdj X (k + 1)) ((coboundary X (k + 1)) φ) := rfl
+      rw [hLdef, Cochain.inner_add_right]
+      congr 1
+      · rw [← Cochain.inner_conj_symm, coboundaryAdj_adjoint, Cochain.inner_conj_symm]
+      · rw [← coboundary_adjoint]
+    rw [hLφ] at hexpand
+    -- LHS is `⟨φ, 0⟩ = 0`
+    have hzero : Cochain.inner φ (0 : Cochain X (k + 1)) = 0 := by
+      show (∑ s, star (φ s) * (0 : Cochain X (k + 1)) s) = 0
+      apply Finset.sum_eq_zero
+      intro s _
+      show star (φ s) * (0 : ℂ) = 0
+      rw [mul_zero]
+    rw [hzero] at hexpand
+    -- a sum of two nonnegative-real inner-selfs is `0`, so each is `0`
+    have hre := congrArg Complex.re hexpand.symm
+    rw [Complex.add_re, Complex.zero_re] at hre
+    have h1 := Cochain.inner_self_re_nonneg ((coboundaryAdj X k) φ)
+    have h2 := Cochain.inner_self_re_nonneg ((coboundary X (k + 1)) φ)
+    have he1 : (Cochain.inner ((coboundaryAdj X k) φ) ((coboundaryAdj X k) φ)).re = 0 := by
+      linarith
+    have he2 : (Cochain.inner ((coboundary X (k + 1)) φ) ((coboundary X (k + 1)) φ)).re = 0 := by
+      linarith
+    -- a nonnegative-real complex with zero real part is `0`
+    have hc1 : Cochain.inner ((coboundaryAdj X k) φ) ((coboundaryAdj X k) φ) = 0 := by
+      apply Complex.ext he1
+      -- imaginary part: `⟨ψ, ψ⟩` is real, so its `im` is `0`
+      have := Cochain.inner_conj_symm ((coboundaryAdj X k) φ) ((coboundaryAdj X k) φ)
+      have him : (Cochain.inner ((coboundaryAdj X k) φ) ((coboundaryAdj X k) φ)).im = 0 := by
+        have h' := congrArg Complex.im this
+        rw [Complex.star_def, Complex.conj_im] at h'
+        linarith
+      rw [him, Complex.zero_im]
+    have hc2 : Cochain.inner ((coboundary X (k + 1)) φ) ((coboundary X (k + 1)) φ) = 0 := by
+      apply Complex.ext he2
+      have := Cochain.inner_conj_symm ((coboundary X (k + 1)) φ) ((coboundary X (k + 1)) φ)
+      have him : (Cochain.inner ((coboundary X (k + 1)) φ) ((coboundary X (k + 1)) φ)).im = 0 := by
+        have h' := congrArg Complex.im this
+        rw [Complex.star_def, Complex.conj_im] at h'
+        linarith
+      rw [him, Complex.zero_im]
+    refine Submodule.mem_inf.mpr ⟨?_, ?_⟩
+    · exact Cochain.inner_self_eq_zero hc2
+    · exact Cochain.inner_self_eq_zero hc1
+  · -- closed ∩ co-closed ⊆ harmonic: if `d φ = 0` and `d* φ = 0` then `L φ = 0`
+    intro φ hφ
+    obtain ⟨hclosed, hcoclosed⟩ := Submodule.mem_inf.mp hφ
+    have hd : (coboundary X (k + 1)) φ = 0 := hclosed
+    have hdstar : (coboundaryAdj X k) φ = 0 := hcoclosed
+    show hodgeLaplacian X (k + 1) φ = 0
+    show (coboundary X k) ((coboundaryAdj X k) φ)
+        + (coboundaryAdj X (k + 1)) ((coboundary X (k + 1)) φ) = 0
+    rw [hd, hdstar, map_zero, map_zero, add_zero]
 
 
 /-! ### 4. Equitable cochain maps
@@ -423,6 +744,10 @@ theorem EquitableCochain.adj_descends
       ∀ ψ : I (k + 1) → ℂ,
         (coboundaryAdj X k) ((pullback X E.cellSimplex (k + 1)) ψ)
           = (pullback X E.cellSimplex k) (quotAdj ψ) := by
+  -- DEEP: `d_k*` only descends to the quotient when each cell contains a
+  -- *uniform* number of simplices over each codim-1 cell face (so the adjoint
+  -- fibre-sum is cell-constant); that combinatorial regularity hypothesis is not
+  -- part of the bare `EquitableCochain` data, so no `quotAdj` is definable here.
   sorry
 
 /-- **Bridge to `RelEquitablePartition`.**  Any
@@ -446,7 +771,34 @@ theorem EquitableCochain.ofRelEquitable
     -- vertices' cells `π.cells ∘ s`.
     Nonempty (EquitableCochain (SimplicialComplex.ofHypergraph k H)
       (fun j => Fin (j + 1) → I)) := by
-  sorry
+  classical
+  -- `removeNth` commutes with postcomposition by `π.cells`
+  have hcomm : ∀ {n : ℕ} (i : Fin (n + 1)) (s : Fin (n + 1) → V),
+      π.cells ∘ (Fin.removeNth i s) = Fin.removeNth i (π.cells ∘ s) := by
+    intro n i s; funext j; simp [Fin.removeNth]
+  refine ⟨{
+    cellSimplex := fun j s => π.cells ∘ s
+    quotCobdry := fun j => {
+      toFun := fun χ c => ∑ i : Fin (j + 2), ((-1 : ℂ) ^ (i : ℕ)) * χ (Fin.removeNth i c)
+      map_add' := by
+        intro χ ψ; funext c
+        simp only [Pi.add_apply, mul_add]
+        rw [Finset.sum_add_distrib]
+      map_smul' := by
+        intro a χ; funext c
+        simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply, Finset.mul_sum]
+        refine Finset.sum_congr rfl (fun i _ => ?_)
+        ring }
+    commute := ?_ }⟩
+  -- compatibility `d_j ∘ pullback j = pullback (j+1) ∘ d̄_j`
+  intro j χ
+  funext s
+  show (∑ i : Fin (j + 2), ((-1 : ℂ) ^ (i : ℕ)) *
+        χ (π.cells ∘ (Fin.removeNth i s)))
+      = ∑ i : Fin (j + 2), ((-1 : ℂ) ^ (i : ℕ)) *
+          χ (Fin.removeNth i (π.cells ∘ s))
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  rw [hcomm i s]
 
 
 /-! ### 5. The Hodge–quotient theorem
@@ -702,18 +1054,32 @@ quotient-harmonic subspace* descends to PST in the quotient.
 Reference: the binary version is the Tower-2 PST lifting theorem
 (Godsil–Smith and the spectral-lifting theorem for equitable
 partitions); the Hodge generalisation is the natural extension. -/
+-- NOTE (restated).  The original statement hypothesised unit modulus of the
+-- *quotient* overlap `∑_{i : I k} star (b̄ i) · ā i`, but the genuine host PST
+-- overlap is the pullback inner product
+-- `⟨pullback b̄, pullback ā⟩ = ∑_{s : X.simplex k} star (b̄ (cell s)) · ā (cell s)`,
+-- which weights each cell by the *number of simplices in it* and is therefore
+-- NOT equal to the unweighted quotient overlap (they coincide only when every
+-- cell contains exactly one simplex).  The statement is corrected to hypothesise
+-- unit modulus of the actual host (pullback) overlap, which is exactly the PST
+-- condition for the pullback cochains and is then a direct computation.
 theorem hodgePST_lift
     {V : Type u} (X : SimplicialComplex V) (k : ℕ)
     {I : ℕ → Type w} [∀ k, Fintype (I k)] [∀ k, DecidableEq (I k)]
     (E : EquitableCochain X I)
     (abar bbar : I k → ℂ) :
-    -- Quotient PST (unit-modulus quotient overlap) lifts to host PST between
-    -- the pullback cochains: `IsHodgePST (quotient) ā b̄ →
-    -- IsHodgePST X k (pullback ā) (pullback b̄)`.
-    (∃ _t : ℝ, ‖∑ i : I k, star (bbar i) * abar i‖ = 1) →
+    -- Unit modulus of the host (pullback) overlap lifts to host Hodge PST.
+    (∃ _t : ℝ, ‖∑ s : X.simplex k,
+        star (bbar (E.cellSimplex k s)) * abar (E.cellSimplex k s)‖ = 1) →
       IsHodgePST X k
         (pullback X E.cellSimplex k abar) (pullback X E.cellSimplex k bbar) := by
-  sorry
+  rintro ⟨t, ht⟩
+  refine ⟨t, ?_⟩
+  -- `⟨pullback b̄, pullback ā⟩ = ∑_s star(b̄ (cell s)) · ā (cell s)`
+  show ‖Cochain.inner (pullback X E.cellSimplex k bbar) (pullback X E.cellSimplex k abar)‖ = 1
+  rw [show Cochain.inner (pullback X E.cellSimplex k bbar) (pullback X E.cellSimplex k abar)
+      = ∑ s : X.simplex k, star (bbar (E.cellSimplex k s)) * abar (E.cellSimplex k s) from rfl]
+  exact ht
 
 
 /-! ### 9. Open problems

@@ -269,8 +269,20 @@ spectral / perturbation analysis of the CNO program (arXiv:2004.12686) and is
 **not** a consequence of the diagonal-shift machinery above.  We state it
 precisely and leave it as an honest `sorry`; the diagonal-shift results in §§2–4
 are genuinely closed and are exactly the structural facts this would consume
-(they reduce the Laplacian / lackadaisical cases to the adjacency case). -/
-theorem searchSuccess_optimal_time (A : Matrix V V ℂ) (w : V) :
+(they reduce the Laplacian / lackadaisical cases to the adjacency case).
+
+Note on hypotheses: the conclusion is **false** without a spectral hypothesis
+(e.g. for `A = 0` the search Hamiltonian is the pure oracle `|w⟩⟨w|`, whose
+walk from the uniform state does *not* reach amplitude `1/√2` for large `n`).
+We therefore require `A` Hermitian together with the CNO constant-spectral-gap
+regime, packaged as the hypothesis `hgap`: every non-principal eigenvalue of `A`
+is strictly smaller in magnitude than the principal one at index `p` (the
+all-ones eigenvector index for a regular graph).  This is precisely the
+`CNOSpectralRatio < 1` condition of `Graphplay.Search.CNO`, and is what the
+deferred perturbation analysis consumes. -/
+theorem searchSuccess_optimal_time (A : Matrix V V ℂ) (w : V)
+    (hA : A.IsHermitian) (p : V)
+    (hgap : ∀ i, i ≠ p → |hA.eigenvalues i| < |hA.eigenvalues p|) :
     ∃ γ τ : ℝ, searchSuccess A w γ τ ≥ 1 / Real.sqrt 2 := by
   sorry
 

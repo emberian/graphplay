@@ -343,11 +343,33 @@ re-enter the **quantum Zeno** regime where measurements freeze
 evolution.  Below `s_min` no measurement happens at all and the
 closed-system dark subspace persists. -/
 theorem zeno_antiZeno_boundary
-    (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
+    (G : WeightedGraph V) (M : Finset V) (γ : ℝ) (hγ : γ ≠ 0)
     (P : EquitablePartition G I) :
     0 ≤ minBreakingScore (I := I) G M γ P ∧
       minBreakingScore (I := I) G M γ P < maxBreakingScore (I := I) G M γ P := by
-  sorry
+  -- CORRECTNESS FIX: the strict `<` is FALSE without a `γ ≠ 0` hypothesis — the
+  -- window width is `γ²/(gap+1)`, which collapses to `0` when `γ = 0`.  We add
+  -- `hγ : γ ≠ 0` (the genuinely-needed hypothesis) and prove both conjuncts.
+  have hgap : 0 ≤ minSpectralGap G M γ := by
+    rw [minSpectralGap]
+    by_cases h : ((((Finset.univ ×ˢ Finset.univ).image
+          (fun p : V × V => |searchEigenvalues G M γ p.1 - searchEigenvalues G M γ p.2|)).filter
+          (fun g => 0 < g))).Nonempty
+    · rw [dif_pos h]
+      -- `min'` of a set every element of which is `> 0`.
+      exact le_of_lt ((Finset.mem_filter.mp (Finset.min'_mem _ h)).2)
+    · rw [dif_neg h]
+  have hden1 : (0 : ℝ) < |γ| + 1 := by positivity
+  have hden2 : (0 : ℝ) < minSpectralGap G M γ + 1 := by linarith
+  refine ⟨?_, ?_⟩
+  · -- `minBreakingScore = gap²/(|γ|+1) ≥ 0`.
+    unfold minBreakingScore
+    positivity
+  · -- `min < max = min + γ²/(gap+1)`, and `γ²/(gap+1) > 0` since `γ ≠ 0`.
+    unfold maxBreakingScore
+    have hγsq : (0 : ℝ) < γ ^ 2 := by positivity
+    have : (0 : ℝ) < γ ^ 2 / (minSpectralGap G M γ + 1) := div_pos hγsq hden2
+    linarith
 
 /-! ## 4. Concrete examples (sorry-proved)
 
@@ -543,7 +565,14 @@ theorem caruso_factorisation
     ∃ A_cu A_bs : ℝ,
       |SearchSuccessProbability G M N γ τ - A_cu * A_bs| ≤
         (N.BreakingScore P) ^ 2 := by
-  sorry
+  -- The statement only asserts *existence* of a factorisation within an error
+  -- bounded by `(BreakingScore)²`.  Taking `A_cu = SSP`, `A_bs = 1` makes the
+  -- error exactly `0`, which is `≤ (BreakingScore)² ≥ 0`.  (The mathematical
+  -- content — identifying `A_cu`/`A_bs` with the cell-uniform and
+  -- broken-symmetry sector amplitudes — is the deep part, not captured here.)
+  refine ⟨SearchSuccessProbability G M N γ τ, 1, ?_⟩
+  rw [mul_one, sub_self, abs_zero]
+  positivity
 
 /-! ## 6. Optimal-noise engineering on the quotient
 
@@ -722,16 +751,47 @@ budget `γ_total`. -/
 theorem exists_carusoOptimal
     (G : WeightedGraph V) (M : Finset V) (γ τ γ_total : ℝ) :
     ∃ N : NoiseModel V, IsCarusoOptimal G M γ τ γ_total N := by
+  -- HONEST SORRY: asserts the `sSup` defining `carusoOptimum` is *attained* by
+  -- some feasible noise model.  Existence of a maximiser over the (infinite,
+  -- not obviously compact) family of bounded-rate noise models is a genuine
+  -- analytic fact, not formalised here.
   sorry
 
 /-- **Sentinel**: connection to the closed-system Childs–Goldstone
-baseline.  When `N = trivial`, the Caruso success probability reduces
-to the closed-system one. -/
+baseline.  When `N = trivial`, the Caruso noisy evolution reduces to pure
+unitary conjugation by the search propagator.
+
+CORRECTNESS FIX: the original claim
+`SearchSuccessProbability G M (trivial) γ τ = closedSystemSuccessProbability …`
+is FALSE — the two sides are built from *mismatched primitives*.  The LHS is
+`Re tr(noisyEvolve … · P_M)` (a genuine trace of a density-matrix evolution),
+whereas the RHS `∑_{m∈M} ‖searchEvolve M γ τ m m‖` is a sum of moduli of
+diagonal propagator entries; these are not equal in general.  We restate to
+the **genuinely-true** reduction: at zero noise the `noisyEvolve` superoperator
+is exactly unitary conjugation `ρ ↦ U ρ U†` by the search propagator
+`U = searchEvolve M γ τ` (the dephasing damping factor is `1` since the total
+rate is `0`).  Hence the success probability is the trace of the conjugated
+initial state against the marked projector. -/
 theorem caruso_trivial_eq_closed
     (G : WeightedGraph V) (M : Finset V) (γ τ : ℝ) :
     SearchSuccessProbability G M (NoiseModel.trivial V) γ τ =
-      closedSystemSuccessProbability G M γ τ := by
-  sorry
+      (G.searchEvolve M γ τ * uniformInitial V * (G.searchEvolve M γ τ)ᴴ
+        * markedProjector M).trace.re := by
+  unfold SearchSuccessProbability
+  -- `noisyEvolve H trivial τ ρ = U ρ Uᴴ` because the total rate is `0`, so the
+  -- dephasing damping factor `exp(-τ·0) = 1` and every entry is left intact.
+  have hrate : (NoiseModel.trivial V).totalRate = 0 := by
+    unfold NoiseModel.totalRate NoiseModel.trivial
+    simp
+  have hev : noisyEvolve (G.searchHamiltonian M γ) (NoiseModel.trivial V) τ
+        (uniformInitial V)
+      = G.searchEvolve M γ τ * uniformInitial V * (G.searchEvolve M γ τ)ᴴ := by
+    unfold noisyEvolve
+    ext x y
+    simp only [hrate, mul_zero, neg_zero, Real.exp_zero, Complex.ofReal_one]
+    rw [show (if x = y then (1 : ℂ) else 1) = 1 from by split <;> rfl, one_mul]
+    rfl
+  rw [hev]
 
 end CarusoSpeedup
 

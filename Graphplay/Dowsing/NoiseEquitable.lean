@@ -103,21 +103,75 @@ theorem cellProjector_mem_partitionAlgebra
   intro x y hxy
   simp only [cellProjector, if_neg hxy]
 
+/-- The cell-projector has equal rows within a cell: if `x, y` lie in the same
+cell then `cellProjector P x · = cellProjector P y ·`.  Hence applying it to any
+vector produces a cell-uniform result. -/
+theorem cellProjector_row_eq
+    (P : EquitablePartition G I) {x y : V} (hxy : P.cells x = P.cells y) (z : V) :
+    cellProjector P x z = cellProjector P y z := by
+  simp only [cellProjector, hxy]
+
+theorem cellProjector_mulVec_cellUniform
+    (P : EquitablePartition G I) (φ : V → ℂ) {x y : V}
+    (hxy : P.cells x = P.cells y) :
+    (cellProjector P).mulVec φ x = (cellProjector P).mulVec φ y := by
+  unfold Matrix.mulVec dotProduct
+  refine Finset.sum_congr rfl (fun z _ => ?_)
+  simp only []
+  rw [cellProjector_row_eq P hxy z]
+
+/-- The cell-projector fixes cell-uniform vectors: if `ψ` is constant on each
+cell, then `(cellProjector P).mulVec ψ = ψ`. -/
+theorem cellProjector_mulVec_eq_self_of_cellUniform
+    (P : EquitablePartition G I) (ψ : V → ℂ)
+    (hψ : ∀ x y : V, P.cells x = P.cells y → ψ x = ψ y) (x : V) :
+    (cellProjector P).mulVec ψ x = ψ x := by
+  rw [Matrix.mulVec, dotProduct]
+  set c := (Finset.univ.filter (fun w : V => P.cells w = P.cells x)).card with hc
+  -- Each summand equals `if P.cells x = P.cells z then (1/c)·ψ x else 0`,
+  -- using cell-uniformity of `ψ` to replace `ψ z` by `ψ x` on the cell.
+  have hterm : ∀ z : V, cellProjector P x z * ψ z
+      = (if P.cells x = P.cells z then (1 : ℂ) / (c : ℂ) * ψ x else 0) := by
+    intro z
+    by_cases h : P.cells x = P.cells z
+    · simp only [cellProjector, if_pos h, hc]
+      rw [hψ x z h]
+    · simp only [cellProjector, if_neg h, zero_mul]
+  have hsum : ∑ z : V, cellProjector P x z * ψ z
+      = ∑ z ∈ Finset.univ.filter (fun w : V => P.cells x = P.cells w),
+        (1 : ℂ) / (c : ℂ) * ψ x := by
+    rw [Finset.sum_congr rfl (fun z _ => hterm z), Finset.sum_filter]
+  rw [hsum, Finset.sum_const]
+  have hcardeq : (Finset.univ.filter (fun w : V => P.cells x = P.cells w)).card = c := by
+    rw [hc]; congr 1; ext z; simp [eq_comm]
+  rw [hcardeq]
+  have hcpos : 0 < c := by
+    rw [hc]; apply Finset.card_pos.mpr; exact ⟨x, by simp⟩
+  have hcne : (c : ℂ) ≠ 0 := by exact_mod_cast hcpos.ne'
+  rw [nsmul_eq_mul]
+  field_simp
+
 /-- **Commutant criterion (forward direction).**  If `L` is in the commutant
 of the partition algebra of `P`, then `L` commutes with the cell-projector
-and therefore preserves the cell-uniform subspace.
-
-This is the *easy* direction of the criterion: an element of the commutant
-of any algebra commutes with each of its members. -/
+and therefore preserves the cell-uniform subspace. -/
 theorem commutantOf_preservesCellUniform
     (P : EquitablePartition G I) (L : Matrix V V ℂ)
     (hL : L ∈ commutantOf P) :
     Matrix.preservesCellUniform L P := by
-  -- From `hL`, `L * cellProjector P = cellProjector P * L`; this gives that
-  -- `L.mulVec` preserves the range of the cell-projector, which is the
-  -- cell-uniform subspace.  The pointwise statement of
-  -- `preservesCellUniform` then follows after unfolding `cellUniformVec`.
-  sorry
+  -- `L` commutes with the cell-projector (a member of the partition algebra).
+  have hcomm : L * cellProjector P = cellProjector P * L :=
+    hL _ (cellProjector_mem_partitionAlgebra P)
+  intro ψ hψ x y hxy
+  -- `L.mulVec ψ = L.mulVec (Π.mulVec ψ) = (L*Π).mulVec ψ = (Π*L).mulVec ψ
+  --             = Π.mulVec (L.mulVec ψ)`, which is cell-uniform.
+  have hfix : (cellProjector P).mulVec ψ = ψ := by
+    funext z; exact cellProjector_mulVec_eq_self_of_cellUniform P ψ hψ z
+  have hrw : ∀ z, L.mulVec ψ z = (cellProjector P).mulVec (L.mulVec ψ) z := by
+    intro z
+    conv_lhs => rw [← hfix]
+    rw [Matrix.mulVec_mulVec, hcomm, ← Matrix.mulVec_mulVec]
+  rw [hrw x, hrw y]
+  exact cellProjector_mulVec_cellUniform P (L.mulVec ψ) hxy
 
 /-- **Commutant criterion (reverse direction).**  Conversely, if every
 Lindblad operator preserves the cell-uniform subspace, the *unital algebra
@@ -341,6 +395,14 @@ noncomputable def _root_.Graphplay.NoiseModel.BreakingScore
 theorem breakingScore_zero_iff_cellUniformSymmetric
     (P : EquitablePartition G I) (N : NoiseModel V) :
     N.BreakingScore P = 0 ↔ N.cellUniformSymmetric P := by
+  -- HONEST SORRY: as stated this iff is FALSE (cf. issue #53 and the
+  -- `boundaryDephasing` analysis above).  `BreakingScore = 0` only forces each
+  -- Lindblad operator to be *block-diagonal* w.r.t. `P` (zero off-block
+  -- Frobenius mass), whereas `cellUniformSymmetric` requires it to *preserve*
+  -- the cell-uniform subspace — i.e. additionally be *constant on diagonal
+  -- blocks*.  The diagonal projector `|m⟩⟨m|` is a counterexample: score `0`
+  -- but not cell-uniform-preserving.  A correct statement would replace
+  -- `breakingScoreOp` by the full Frobenius distance to `commutantOf P`.
   sorry
 
 /-- The **Caruso-style speedup conjecture (deferred).**  Fix a graph `G`, a
@@ -366,6 +428,13 @@ theorem noise_assisted_speedup_conjecture
     ∃ N₀ : NoiseModel V, ∃ N₁ : NoiseModel V,
       N₀.cellUniformSymmetric P ∧ ¬ N₁.cellUniformSymmetric P ∧
         N₁.BreakingScore P > 0 := by
+  -- HONEST SORRY: not provable for *all* `P` as stated.  A model `N₁` with
+  -- `BreakingScore P > 0` needs a Lindblad operator with off-block mass, which
+  -- requires `P` to have at least two distinct cells.  For the trivial
+  -- one-cell partition every `breakingScoreOp` is `0`, so the conjunct
+  -- `BreakingScore P > 0` is unsatisfiable.  The genuine Caruso content (an
+  -- intermediate breaking score is optimal) is anyway a deep quantitative
+  -- claim about `noisyEvolve` dynamics.
   sorry
 
 /-! ## 5. Three concrete noise models analysed
@@ -457,26 +526,97 @@ def markedRefined
         have := P.uniform i' j' x y hx' hy'
         simpa [Sum.inl.injEq] using this
 
-/-- **Boundary dephasing breaks the marked-refined partition.**  The
-breaking score is strictly positive — and is exactly `rate * (1 − 1/|cell(m)|)`,
-i.e. the rate scaled by the "non-singleton fraction" of the cell of `m`. -/
+/-- **Boundary dephasing's breaking score is `0` (corrected, issue #53).**
+
+The original statement claimed the breaking score was `rate · (1 − 1/|cell(m)|)`,
+the "non-singleton fraction" of the cell of `m`.  Against the *concrete*
+`breakingScoreOp` — which measures the squared Frobenius mass of `L` joining
+distinct cells — this is **false**: the single Lindblad operator
+`|m⟩⟨m| = single m m 1` is a *diagonal* matrix, so it has no off-block entries
+at all and its breaking score is exactly `0`.  We prove the corrected value.
+
+(The folklore `rate·(1−1/|cell|)` is the *coherence* removed by dephasing in a
+different, non-Frobenius normalisation; it is not what `breakingScoreOp`
+computes.) -/
 theorem boundaryDephasing_breakingScore
     (P : EquitablePartition G I) (m : V) (rate : ℝ) (hrate : 0 < rate)
     -- assume cell(m) is non-singleton, so refinement is non-trivial
     (hcell : ∃ v : V, P.cells v = P.cells m ∧ v ≠ m) :
     (NoiseModel.boundaryDephasing V m rate).BreakingScore (markedRefined P m)
-      = rate * (1 - (1 / (P.cellCard (P.cells m)))) := by
-  sorry
+      = 0 := by
+  -- The only Lindblad operator is `single m m 1`, a diagonal matrix.  Its
+  -- breaking score sums `‖single m m 1 x y‖²` over off-block `(x, y)`; but an
+  -- off-block pair has `x ≠ y` (distinct cells ⇒ distinct vertices), so every
+  -- summed entry is `0`.
+  unfold NoiseModel.BreakingScore NoiseModel.boundaryDephasing breakingScoreOp
+  simp only [Finset.sum_singleton]
+  have hop : (∑ x : V, ∑ y : V,
+      if (markedRefined P m).cells x ≠ (markedRefined P m).cells y then
+        ‖(Matrix.single m m (1 : ℂ)) x y‖ ^ 2 else 0) = 0 := by
+    apply Finset.sum_eq_zero; intro x _
+    apply Finset.sum_eq_zero; intro y _
+    split
+    · rename_i hxy
+      -- distinct cells ⇒ distinct vertices ⇒ the `single` entry vanishes.
+      have hxy' : x ≠ y := by
+        rintro rfl; exact hxy rfl
+      have hentry : (Matrix.single m m (1 : ℂ)) x y = 0 := by
+        rcases eq_or_ne m x with hx | hx
+        · subst hx
+          exact Matrix.single_apply_of_col_ne m m hxy' (1 : ℂ)
+        · exact Matrix.single_apply_of_row_ne hx _ _ _
+      rw [hentry]; simp
+    · rfl
+  rw [hop, mul_zero]
 
-/-- **Boundary dephasing is NOT cell-uniform-symmetric for the
-marked-refined partition.**  Immediate corollary of the strictly positive
-breaking score. -/
+/-- **Boundary dephasing is NOT cell-uniform-symmetric for the marked-refined
+partition** — but for a reason orthogonal to the breaking *score* (issue #53).
+
+Crucially, this is *not* a corollary of a positive breaking score: the score is
+`0` (proved above), because `breakingScoreOp` only sees off-block Frobenius mass
+and the diagonal projector `|m⟩⟨m|` has none.  Nevertheless `|m⟩⟨m|` fails to
+*preserve* the cell-uniform subspace: applied to the all-ones (cell-uniform)
+vector it returns the indicator `e_m`, which is non-constant on `m`'s
+(non-singleton) cell.  This is the precise sense in which
+`breakingScore_zero_iff_cellUniformSymmetric` is *false* — block-diagonality
+(score `0`) is strictly weaker than cell-uniform preservation.  We prove the
+negative statement directly. -/
 theorem boundaryDephasing_not_cellUniformSymmetric
     (P : EquitablePartition G I) (m : V) (rate : ℝ) (hrate : 0 < rate)
     (hcell : ∃ v : V, P.cells v = P.cells m ∧ v ≠ m) :
     ¬ (NoiseModel.boundaryDephasing V m rate).cellUniformSymmetric
         (markedRefined P m) := by
-  sorry
+  obtain ⟨w, hwm, hwne⟩ := hcell
+  intro hsym
+  -- The single Lindblad operator `single m m 1` must preserve cell-uniform.
+  have hLmem : Matrix.single m m (1 : ℂ) ∈
+      (NoiseModel.boundaryDephasing V m rate).lindblad_operators := by
+    simp [NoiseModel.boundaryDephasing]
+  have hpres := hsym _ hLmem
+  -- Apply to the constant-`1` vector, cell-uniform for any partition.
+  have hconst : ∀ x y : V, (markedRefined P m).cells x = (markedRefined P m).cells y →
+      (fun _ : V => (1 : ℂ)) x = (fun _ : V => (1 : ℂ)) y := fun _ _ _ => rfl
+  -- `w` and `m` share a cell of `markedRefined P m`.
+  have hcelleq : (markedRefined P m).cells w = (markedRefined P m).cells m := by
+    simp only [markedRefined, hwm]
+  have key := hpres (fun _ => (1 : ℂ)) hconst w m hcelleq
+  -- Compute both `mulVec` entries: at `w` it is `0`, at `m` it is `1`.
+  have hmw : (Matrix.single m m (1 : ℂ)).mulVec (fun _ => (1 : ℂ)) w = 0 := by
+    rw [Matrix.mulVec, dotProduct]
+    apply Finset.sum_eq_zero; intro y _
+    have : (Matrix.single m m (1 : ℂ)) w y = 0 :=
+      Matrix.single_apply_of_row_ne hwne.symm _ _ _
+    rw [this, zero_mul]
+  have hmm : (Matrix.single m m (1 : ℂ)).mulVec (fun _ => (1 : ℂ)) m = 1 := by
+    rw [Matrix.mulVec, dotProduct, Finset.sum_eq_single m]
+    · rw [Matrix.single_apply_same, mul_one]
+    · intro b _ hb
+      have : (Matrix.single m m (1 : ℂ)) m b = 0 :=
+        Matrix.single_apply_of_col_ne m m (Ne.symm hb) (1 : ℂ)
+      rw [this, zero_mul]
+    · intro h; exact absurd (Finset.mem_univ m) h
+  rw [hmw, hmm] at key
+  exact zero_ne_one key
 
 /-! ## 6. Chiral–noise duality
 

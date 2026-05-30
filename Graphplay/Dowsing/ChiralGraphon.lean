@@ -320,8 +320,14 @@ the cell-level shadow of `s.herm`. -/
 theorem quotientPhase_herm (s : GraphonSigning Ω μ)
     {cells : Ω → I} (h : s.CellCrossConstant cells) :
     ∀ i j : I, s.quotientPhase h j i = star (s.quotientPhase h i j) := by
-  -- pull `s.herm` through `quotientPhase_spec`; the residual is a finite
-  -- cell-pair argument, deferred.
+  -- Honest sorry: `quotientPhase` is a `Classical.choose` witness for an
+  -- a.e.-on-`μ.prod μ` equation `σ = τ(cells·, cells·)`.  Transporting the
+  -- everywhere identity `s.herm` (σ y x = star (σ x y)) to a *cell-pair*
+  -- identity `τ j i = star (τ i j)` requires picking a representative point in
+  -- the rectangle `C_i × C_j` where the a.e. equation holds simultaneously at
+  -- `(x,y)` and `(y,x)`.  That extraction is valid only when `μ(C_i)·μ(C_j) > 0`
+  -- (a positive-measure cell hypothesis); under bare `cells : Ω → I` with no
+  -- positivity the statement can fail (e.g. `μ = 0` makes `τ` unconstrained).
   sorry
 
 /-- The quotient phase is unimodular: `|τ i j| = 1`.  This is the
@@ -329,6 +335,10 @@ cell-level shadow of `s.unimod`. -/
 theorem quotientPhase_unimod (s : GraphonSigning Ω μ)
     {cells : Ω → I} (h : s.CellCrossConstant cells) :
     ∀ i j : I, ‖s.quotientPhase h i j‖ = 1 := by
+  -- Honest sorry (same obstruction as `quotientPhase_herm`): `s.unimod` is an
+  -- a.e. fact, so extracting `‖τ i j‖ = 1` at the cell level needs a
+  -- positive-measure representative in `C_i × C_j`; false without a
+  -- positive-cell-measure hypothesis.
   sorry
 
 end GraphonSigning

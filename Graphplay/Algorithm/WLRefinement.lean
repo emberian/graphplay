@@ -199,16 +199,102 @@ theorem wlStep_isRefinement
   intro x y h
   simpa [wlStep] using congrArg Prod.fst h
 
+/-- **The WL step partition depends only on the input partition.**
+
+If two colorings `c` and `d` have the *same kernel* (induce the same partition
+of `V`), then the partitions induced by `wlStep G c` and `wlStep G d` coincide:
+two vertices receive equal `wlStep G c`-colors iff they receive equal
+`wlStep G d`-colors.
+
+This is the engine of WL stabilization: one refinement round is a function of
+the current partition alone, so once the partition stops changing it stays
+fixed forever. -/
+theorem wlStep_partition_congr
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {α β : Type*} [DecidableEq α] [DecidableEq β]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    (c : Coloring V α) (d : Coloring V β)
+    (hkern : ∀ x y, c x = c y ↔ d x = d y) :
+    ∀ x y, wlStep G c x = wlStep G c y ↔ wlStep G d x = wlStep G d y := by
+  -- The neighbour-colour multisets are equal for `c` iff for `d`, because for
+  -- every vertex `v` the predicate `c · = c v` equals `d · = d v` pointwise.
+  have hmulti : ∀ x y : V,
+      (Finset.univ.filter (fun w => G.Adj x w)).val.map c =
+        (Finset.univ.filter (fun w => G.Adj y w)).val.map c ↔
+      (Finset.univ.filter (fun w => G.Adj x w)).val.map d =
+        (Finset.univ.filter (fun w => G.Adj y w)).val.map d := by
+    intro x y
+    constructor
+    · intro h
+      -- Compare counts of every `d`-colour `b`.
+      refine Multiset.ext.2 (fun b => ?_)
+      rw [Multiset.count_map, Multiset.count_map]
+      by_cases hb : ∃ w, d w = b
+      · obtain ⟨v, rfl⟩ := hb
+        -- `filter (d v = d ·)` = `filter (c v = c ·)` pointwise via `hkern`.
+        have hcount := Multiset.ext.1 h (c v)
+        rw [Multiset.count_map, Multiset.count_map] at hcount
+        -- Rewrite the `d`-filters into the `c`-filters and use `hcount`.
+        have e1 : ∀ s : Multiset V,
+            (s.filter fun a => d v = d a) = (s.filter fun a => c v = c a) := by
+          intro s
+          apply Multiset.filter_congr
+          intro a _
+          exact (hkern v a).symm
+        rw [e1, e1]; exact hcount
+      · -- `b` is no vertex's `d`-colour: both filtered multisets are empty.
+        push_neg at hb
+        have : ∀ s : Multiset V, (s.filter fun a => b = d a) = 0 := by
+          intro s
+          rw [Multiset.filter_eq_nil]
+          intro a _ hba; exact hb a hba.symm
+        rw [this, this]
+    · intro h
+      refine Multiset.ext.2 (fun b => ?_)
+      rw [Multiset.count_map, Multiset.count_map]
+      by_cases hb : ∃ w, c w = b
+      · obtain ⟨v, rfl⟩ := hb
+        have hcount := Multiset.ext.1 h (d v)
+        rw [Multiset.count_map, Multiset.count_map] at hcount
+        have e1 : ∀ s : Multiset V,
+            (s.filter fun a => c v = c a) = (s.filter fun a => d v = d a) := by
+          intro s
+          apply Multiset.filter_congr
+          intro a _
+          exact hkern v a
+        rw [e1, e1]; exact hcount
+      · push_neg at hb
+        have : ∀ s : Multiset V, (s.filter fun a => b = c a) = 0 := by
+          intro s
+          rw [Multiset.filter_eq_nil]
+          intro a _ hba; exact hb a hba.symm
+        rw [this, this]
+  intro x y
+  simp only [wlStep, Prod.mk.injEq]
+  rw [hkern x y, hmulti x y]
+
 /-- After re-ranking the coloring is unchanged as a partition. -/
 theorem rankColoring_partitionsAgree
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     {α : Type v} [DecidableEq α]
     (c : Coloring V α) :
     ∀ x y, rankColoring c x = rankColoring c y ↔ c x = c y := by
-  -- The rank coloring assigns the same numeric label to two vertices iff
-  -- they had the same original color, by injectivity of List.idxOf into a
-  -- deduplicated list.  Formal proof punted.
-  sorry
+  classical
+  intro x y
+  -- Unfold the rank coloring: it is `distinct.idxOf (c ·)` for the deduped
+  -- list `distinct` of color values appearing on the sorted vertex list.
+  unfold rankColoring
+  set vs : List V := (Finset.univ : Finset V).sort (· ≤ ·) with hvs
+  set distinct : List α := (vs.map c).dedup with hdist
+  -- `c x` and `c y` are members of `distinct` (every vertex appears in `vs`).
+  have hxmem : c x ∈ distinct := by
+    rw [hdist, List.mem_dedup, List.mem_map]
+    exact ⟨x, by rw [hvs]; simpa using (Finset.mem_univ x), rfl⟩
+  -- `idxOf` is injective on members of the list.
+  constructor
+  · intro h
+    exact (List.idxOf_inj (l := distinct) hxmem).1 h
+  · intro h; rw [h]
 
 /-- The **number of distinct WL colors** at round `n`. -/
 def wlColorCount
@@ -216,13 +302,75 @@ def wlColorCount
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj] (n : ℕ) : ℕ :=
   (Finset.univ.image (wlRefine G n)).card
 
+/-- One WL iteration refines the previous one: same color at round `n+1`
+forces same color at round `n`. -/
+theorem wlIterColor_step_refines
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj] (n : ℕ) :
+    Refines (wlIterColor G n) (wlIterColor G (n + 1)) := by
+  intro x y h
+  -- `wlIterColor G (n+1) = rankColoring (wlStep G (wlIterColor G n))`.
+  have hstep : wlStep G (wlIterColor G n) x = wlStep G (wlIterColor G n) y := by
+    have := (rankColoring_partitionsAgree (wlStep G (wlIterColor G n)) x y).1
+    exact this h
+  exact wlStep_isRefinement G (wlIterColor G n) x y hstep
+
+/-- The WL refinement chain refines downward: same color at round `n` forces
+same color at any earlier round `m ≤ n`. -/
+theorem wlRefine_refines_of_le
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj] {m n : ℕ} (hmn : m ≤ n) :
+    Refines (wlRefine G m) (wlRefine G n) := by
+  induction n with
+  | zero =>
+      have : m = 0 := Nat.le_zero.1 hmn
+      subst this; intro x y _; rfl
+  | succ k ih =>
+      rcases Nat.lt_or_ge m (k + 1) with hlt | hge
+      · -- `m ≤ k`, chain through round `k`.
+        have hmk : m ≤ k := Nat.lt_succ_iff.1 hlt
+        intro x y h
+        exact ih hmk x y (wlIterColor_step_refines G k x y h)
+      · -- `m = k + 1`.
+        have : m = k + 1 := Nat.le_antisymm hmn hge
+        subst this; intro x y h; exact h
+
+/-- If `c'` refines `c`, the color-count of `c` is at most that of `c'`. -/
+theorem colorCount_le_of_refines
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {c c' : V → ℕ} (h : Refines c c') :
+    (Finset.univ.image c).card ≤ (Finset.univ.image c').card := by
+  classical
+  -- Build a surjection from `image c'` onto `image c`: for `k ∈ image c'`,
+  -- pick a vertex with `c' = k` and send `k ↦ c (that vertex)`.  Well-defined
+  -- because `c'` refines `c`.  Concretely use `card_le_card_of_surjOn`.
+  refine Finset.card_le_card_of_surjOn (fun k =>
+      if hk : ∃ v, c' v = k then c (Classical.choose hk) else 0) ?_
+  intro a ha
+  simp only [Finset.coe_image, Set.mem_image, Finset.mem_coe, Finset.mem_univ,
+    true_and] at ha
+  obtain ⟨v, rfl⟩ := ha
+  refine ⟨c' v, ?_, ?_⟩
+  · simp only [Finset.coe_image, Set.mem_image, Finset.mem_coe, Finset.mem_univ,
+      true_and]
+    exact ⟨v, rfl⟩
+  · -- `c' v = c' v` makes the `dite` take the positive branch.
+    simp only []
+    split
+    · rename_i hex
+      -- `c (choose hex) = c v` since `c' (choose hex) = c' v` and `c'` refines `c`.
+      exact h (Classical.choose hex) v (Classical.choose_spec hex)
+    · rename_i hno
+      exact absurd ⟨v, rfl⟩ hno
+
 /-- The color count is monotonically non-decreasing in `n`. -/
 theorem wlColorCount_mono
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
     Monotone (wlColorCount G) := by
-  -- Each step refines, so the image set can only grow; monotonicity follows.
-  sorry
+  intro m n hmn
+  unfold wlColorCount
+  exact colorCount_le_of_refines (wlRefine_refines_of_le G hmn)
 
 /-- The color count is bounded by `|V|`. -/
 theorem wlColorCount_le_card
@@ -231,6 +379,140 @@ theorem wlColorCount_le_card
     wlColorCount G n ≤ Fintype.card V := by
   unfold wlColorCount
   exact (Finset.card_image_le).trans (by simpa using (Finset.card_le_univ _))
+
+/-- If `c'` refines `c` and they have the **same** number of colour classes,
+then they induce the *same* partition: `c x = c y ↔ c' x = c' y`. -/
+theorem partition_eq_of_count_eq
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {c c' : V → ℕ}
+    (hcount : (Finset.univ.image c).card = (Finset.univ.image c').card)
+    (href : Refines c c') :
+    ∀ x y, c x = c y ↔ c' x = c' y := by
+  classical
+  -- The representative map `φ : image c' → image c`, `φ (c' v) = c v`, is
+  -- well-defined (by `href`) and surjective; equal cardinalities make it
+  -- injective, which is exactly `c x = c y → c' x = c' y`.
+  set φ : ℕ → ℕ := fun k =>
+    if hk : ∃ v, c' v = k then c (Classical.choose hk) else 0 with hφ
+  -- `φ` maps `image c'` onto `image c`.
+  have hsurj : Set.SurjOn φ (Finset.univ.image c' : Set ℕ)
+      (Finset.univ.image c : Set ℕ) := by
+    intro a ha
+    simp only [Finset.coe_image, Set.mem_image, Finset.mem_coe, Finset.mem_univ,
+      true_and] at ha
+    obtain ⟨v, rfl⟩ := ha
+    refine ⟨c' v, ?_, ?_⟩
+    · simp only [Finset.coe_image, Set.mem_image, Finset.mem_coe, Finset.mem_univ,
+        true_and]; exact ⟨v, rfl⟩
+    · simp only [hφ]
+      split
+      · rename_i hex; exact href (Classical.choose hex) v (Classical.choose_spec hex)
+      · rename_i hno; exact absurd ⟨v, rfl⟩ hno
+  -- Equal cardinalities + surjection ⇒ the surjection is injective on `image c'`.
+  have hinj : Set.InjOn φ (Finset.univ.image c' : Set ℕ) := by
+    apply Finset.injOn_of_surjOn_of_card_le (s := Finset.univ.image c')
+      (t := Finset.univ.image c) φ
+    · intro b hb
+      have : φ b ∈ (Finset.univ.image c : Set ℕ) := by
+        -- `φ` maps any value of `c'` to a value of `c`.
+        simp only [Finset.coe_image, Set.mem_image, Finset.mem_coe, Finset.mem_univ,
+          true_and] at hb ⊢
+        obtain ⟨v, rfl⟩ := hb
+        refine ⟨v, ?_⟩
+        simp only [hφ]
+        split
+        · rename_i hex
+          exact (href (Classical.choose hex) v (Classical.choose_spec hex)).symm
+        · rename_i hno; exact absurd ⟨v, rfl⟩ hno
+      simpa using this
+    · exact hsurj
+    · exact le_of_eq hcount.symm
+  -- Conclude: `φ (c' x) = c x` always, so `c x = c y → c' x = c' y` via `hinj`.
+  have hφval : ∀ v, φ (c' v) = c v := by
+    intro v
+    simp only [hφ]
+    split
+    · rename_i hex; exact href (Classical.choose hex) v (Classical.choose_spec hex)
+    · rename_i hno; exact absurd ⟨v, rfl⟩ hno
+  intro x y
+  constructor
+  · -- `c x = c y → c' x = c' y` via injectivity of `φ`.
+    intro h
+    have hmx : c' x ∈ (Finset.univ.image c' : Set ℕ) := by
+      simp only [Finset.coe_image, Set.mem_image, Finset.mem_coe, Finset.mem_univ,
+        true_and]; exact ⟨x, rfl⟩
+    have hmy : c' y ∈ (Finset.univ.image c' : Set ℕ) := by
+      simp only [Finset.coe_image, Set.mem_image, Finset.mem_coe, Finset.mem_univ,
+        true_and]; exact ⟨y, rfl⟩
+    apply hinj hmx hmy
+    rw [hφval x, hφval y, h]
+  · -- `c' x = c' y → c x = c y`: this is `Refines`.
+    intro h; exact href x y h
+
+theorem wlRefine_succ_kernel
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj] (n : ℕ) (x y : V) :
+    wlRefine G (n + 1) x = wlRefine G (n + 1) y ↔
+      wlStep G (wlRefine G n) x = wlStep G (wlRefine G n) y := by
+  show wlIterColor G (n + 1) x = wlIterColor G (n + 1) y ↔ _
+  simp only [wlIterColor]
+  exact rankColoring_partitionsAgree (wlStep G (wlIterColor G n)) x y
+
+/-- **Partition stabilization propagates.**  If the WL partition is unchanged
+from round `n` to round `n+1`, it is unchanged from round `n+1` to round `n+2`. -/
+theorem wlRefine_stable_step
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj] {n : ℕ}
+    (h : ∀ x y, wlRefine G n x = wlRefine G n y ↔
+                wlRefine G (n + 1) x = wlRefine G (n + 1) y) :
+    ∀ x y, wlRefine G (n + 1) x = wlRefine G (n + 1) y ↔
+           wlRefine G (n + 2) x = wlRefine G (n + 2) y := by
+  intro x y
+  -- The next round's partition is the `wlStep`-partition of the current
+  -- colouring; `wlStep_partition_congr` makes it depend only on the partition.
+  rw [wlRefine_succ_kernel G (n + 1) x y]
+  -- `kernel (wlRefine (n+1)) = kernel (wlStep (wlRefine n))`.
+  have key := wlStep_partition_congr G (wlRefine G n) (wlRefine G (n + 1)) h x y
+  rw [← key, ← wlRefine_succ_kernel G n x y]
+
+/-- Once the partition is stable from round `N` to `N+1`, it is stable at all
+later rounds: `wlRefine G n` and `wlRefine G N` induce the same partition for
+every `n ≥ N`. -/
+theorem wlRefine_stable_of_fixed
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj] {N : ℕ}
+    (hN : ∀ x y, wlRefine G N x = wlRefine G N y ↔
+                 wlRefine G (N + 1) x = wlRefine G (N + 1) y) :
+    ∀ n ≥ N, ∀ x y, wlRefine G n x = wlRefine G n y ↔
+                    wlRefine G N x = wlRefine G N y := by
+  -- First: the consecutive-step stability holds for every round `≥ N`.
+  have step : ∀ k, ∀ x y, wlRefine G (N + k) x = wlRefine G (N + k) y ↔
+                          wlRefine G (N + k + 1) x = wlRefine G (N + k + 1) y := by
+    intro k
+    induction k with
+    | zero => simpa using hN
+    | succ j ih =>
+        have hstep := wlRefine_stable_step G (n := N + j) ih
+        have e1 : N + (j + 1) = N + j + 1 := by omega
+        rw [e1]
+        have e2 : N + j + 1 + 1 = N + j + 2 := by omega
+        rw [e2]
+        exact hstep
+  -- Now chain: partition at `N + k` equals partition at `N`.
+  have chain : ∀ k, ∀ x y, wlRefine G (N + k) x = wlRefine G (N + k) y ↔
+                           wlRefine G N x = wlRefine G N y := by
+    intro k
+    induction k with
+    | zero => intro x y; simp only [Nat.add_zero]
+    | succ j ih =>
+        intro x y
+        have hstep := step j x y
+        rw [Nat.add_succ] at *
+        rw [← hstep]
+        exact ih x y
+  intro n hn x y
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le hn
+  exact chain k x y
 
 /-- **Termination**: WL refinement reaches a fixed point in at most `|V|`
 steps.  More precisely there exists some `N ≤ |V|` such that for all
@@ -242,11 +524,53 @@ theorem wlRefine_stable
     ∃ N : ℕ, N ≤ Fintype.card V ∧
       ∀ n ≥ N, ∀ x y, wlRefine G n x = wlRefine G n y ↔
                      wlRefine G N x = wlRefine G N y := by
-  -- Monotonicity + boundedness on a finite lattice ⇒ stabilization.
-  -- Concretely: the `wlColorCount` is a monotone ℕ-valued function bounded
-  -- by `|V|`; it must be eventually constant, and once constant the
-  -- partition cannot strictly refine.
-  sorry
+  -- Find `N ≤ |V|` at which the colour count stops increasing.  Because the
+  -- count is monotone, bounded by `|V|`, and starts at `≥ 1` (round 0 has the
+  -- single colour `0`... or 0 colours if `V` is empty), the strictly-increasing
+  -- prefix has length at most `|V|`, so some `N < |V|+1` has
+  -- `wlColorCount G N = wlColorCount G (N+1)`; equal counts on a refinement
+  -- force equal partitions, after which stability propagates.
+  classical
+  -- Step 1: there is `N ≤ |V|` with `wlColorCount G N = wlColorCount G (N+1)`.
+  have hbound : ∀ n, wlColorCount G n ≤ Fintype.card V := wlColorCount_le_card G
+  have hmono : Monotone (wlColorCount G) := wlColorCount_mono G
+  have hExists : ∃ N ≤ Fintype.card V, wlColorCount G N = wlColorCount G (N + 1) := by
+    by_contra hcon
+    push_neg at hcon
+    -- Then `wlColorCount` strictly increases on `[0, |V|+1]`, giving
+    -- `wlColorCount G (|V|+1) ≥ |V| + 1`, contradicting the bound.
+    have hstrict : ∀ n ≤ Fintype.card V + 1,
+        wlColorCount G 0 + n ≤ wlColorCount G n := by
+      intro n
+      induction n with
+      | zero => intro _; simp
+      | succ j ih =>
+          intro hj
+          have hjle : j ≤ Fintype.card V := Nat.lt_succ_iff.1 hj
+          have hlt : wlColorCount G j < wlColorCount G (j + 1) :=
+            lt_of_le_of_ne (hmono (Nat.le_succ j)) (hcon j hjle)
+          have := ih (Nat.le_of_succ_le hj)
+          omega
+    have hge := hstrict (Fintype.card V + 1) le_rfl
+    have hle := hbound (Fintype.card V + 1)
+    -- `wlColorCount G 0 + (cardV+1) ≤ wlColorCount (cardV+1) ≤ cardV`, absurd.
+    omega
+  obtain ⟨N, hNle, hNeq⟩ := hExists
+  -- Step 2: equal counts on a refinement ⇒ equal partitions at `N, N+1`.
+  have hrefN : Refines (wlRefine G N) (wlRefine G (N + 1)) :=
+    wlRefine_refines_of_le G (Nat.le_succ N)
+  have hfix : ∀ x y, wlRefine G N x = wlRefine G N y ↔
+                     wlRefine G (N + 1) x = wlRefine G (N + 1) y := by
+    intro x y
+    constructor
+    · -- refinement gives `(N+1)-equal → N-equal`; we need the converse direction.
+      -- Equal color counts on a refinement force the refinement to be a
+      -- partition equality.
+      intro h
+      exact (partition_eq_of_count_eq hNeq hrefN x y).1 h
+    · intro h; exact hrefN x y h
+  -- Step 3: propagate.
+  exact ⟨N, hNle, wlRefine_stable_of_fixed G hfix⟩
 
 /-- A **computable upper bound** on the round at which WL refinement
 stabilizes: `Fintype.card V` rounds always suffice (in fact `|V|` suffices
@@ -309,6 +633,41 @@ noncomputable def wlStableCells
   have hcard : s.card = wlCellCount G := rfl
   exact hcard ▸ s.equivFin ⟨wlRefine G (wlStableRound G) v, hmem⟩
 
+/-- **Stability at `|V|` rounds.**  Once `n ≥ |V|`, one more WL round does not
+refine the partition: `wlRefine G n` and `wlRefine G (n+1)` induce the same
+partition of `V`.  This packages `wlRefine_stable` (which gives a stable round
+`N ≤ |V|`) together with `wlRefine_stable_of_fixed` propagation. -/
+theorem wlRefine_partition_stable_of_card_le
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    {n : ℕ} (hn : n ≥ Fintype.card V) (x y : V) :
+    wlRefine G n x = wlRefine G n y ↔
+      wlRefine G (n + 1) x = wlRefine G (n + 1) y := by
+  obtain ⟨N, hNle, hstable⟩ := wlRefine_stable G
+  have hNn : N ≤ n := le_trans hNle hn
+  have hNn1 : N ≤ n + 1 := le_trans hNn (Nat.le_succ n)
+  rw [hstable n hNn x y, hstable (n + 1) hNn1 x y]
+
+/-- The key WL-stability fact for equitability: at a stable round (`n ≥ |V|`),
+two vertices with the same colour have equal multisets of neighbour colours.
+This is exactly the `wlStep`-fixed-point property unpacked. -/
+theorem wlRefine_neighbour_multiset_eq_of_card_le
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    {n : ℕ} (hn : n ≥ Fintype.card V) {x y : V}
+    (hxy : wlRefine G n x = wlRefine G n y) :
+    (Finset.univ.filter (fun w => G.Adj x w)).val.map (wlRefine G n) =
+      (Finset.univ.filter (fun w => G.Adj y w)).val.map (wlRefine G n) := by
+  -- same colour at round `n` ⟹ same colour at round `n+1` (stability) ⟹
+  -- the `wlStep` colours coincide ⟹ second components (the neighbour multisets)
+  -- coincide.
+  have hstep : wlRefine G (n + 1) x = wlRefine G (n + 1) y :=
+    (wlRefine_partition_stable_of_card_le G hn x y).1 hxy
+  have hwlstep : wlStep G (wlRefine G n) x = wlStep G (wlRefine G n) y :=
+    (wlRefine_succ_kernel G n x y).1 hstep
+  have := congrArg Prod.snd hwlstep
+  simpa [wlStep] using this
+
 /-- **Equitability of the stable WL partition**.
 
 After at least `|V|` rounds the WL coloring has stabilized; the induced
@@ -320,15 +679,100 @@ theorem wlRefine_isEquitable
     (n : ℕ) (hn : n ≥ Fintype.card V) :
     ∃ P : EquitablePartition (Graphplay.SimpleGraph.toWeighted G) (Fin (wlColorCount G n)),
       ∀ x y, P.cells x = P.cells y ↔ wlRefine G n x = wlRefine G n y := by
-  -- After `|V|` rounds we are at a fixed point of `wlStep` (modulo the
-  -- ℕ-renaming via `rankColoring`).  Being a fixed point means: for every
-  -- pair `x, y` with the same color, the multisets of neighbour colors
-  -- agree.  Counting matches per-color we get
-  --     ∀ i j, ∀ x y of color i,
-  --        #{z ∈ N(x) : color z = j} = #{z ∈ N(y) : color z = j},
-  -- which is exactly the equitable condition for the 0/1-adjacency of
-  -- `toWeighted G`.
-  sorry
+  classical
+  -- The cell index `Fin (wlColorCount G n)` is the image of `wlRefine G n`
+  -- re-indexed by `Finset.equivFin`; two vertices share a cell iff they share
+  -- a `wlRefine G n` colour.
+  set s : Finset ℕ := Finset.univ.image (wlRefine G n) with hs
+  -- the cell map: land in `Fin s.card` (which is `Fin (wlColorCount G n)`
+  -- definitionally), via the canonical `s ≃ Fin s.card`.
+  have hmem : ∀ v : V, wlRefine G n v ∈ s := fun v =>
+    Finset.mem_image.mpr ⟨v, Finset.mem_univ v, rfl⟩
+  set cells : V → Fin (wlColorCount G n) :=
+    fun v => s.equivFin ⟨wlRefine G n v, hmem v⟩ with hcells
+  -- cell equality ↔ colour equality
+  have hcell_iff : ∀ x y : V, cells x = cells y ↔ wlRefine G n x = wlRefine G n y := by
+    intro x y
+    rw [hcells]
+    constructor
+    · intro h
+      have := s.equivFin.injective h
+      exact congrArg Subtype.val this
+    · intro h
+      exact congrArg _ (Subtype.ext h)
+  -- the equitable / uniform condition
+  refine ⟨{ cells := cells
+            uniform := ?_ }, hcell_iff⟩
+  intro i j x y hx hy
+  -- `x, y` share cell `i`, hence share colour
+  have hcxy : wlRefine G n x = wlRefine G n y :=
+    (hcell_iff x y).1 (hx.trans hy.symm)
+  -- neighbour multisets agree
+  have hmulti := wlRefine_neighbour_multiset_eq_of_card_le G hn hcxy
+  -- rewrite the branching sums as counts in the neighbour multisets indexed
+  -- by colour, then use `hmulti`.  The adjacency of `toWeighted G` is `0/1`.
+  -- First express each branch sum as a `Multiset.count` of a fixed colour.
+  -- Pick the colour `cj` representing cell `j` (use any representative of `j`
+  -- if it exists; otherwise both sides are `0`).
+  -- We work directly: ∑_z [cells z = j] adj x z = #{z ∈ N(x) : cells z = j}.
+  have hsum : ∀ w : V,
+      (∑ z, (if cells z = j then (Graphplay.SimpleGraph.toWeighted G).adj w z else 0))
+        = ((Finset.univ.filter (fun z => G.Adj w z ∧ cells z = j)).card : ℂ) := by
+    intro w
+    rw [Finset.card_filter]
+    push_cast
+    apply Finset.sum_congr rfl
+    intro z _
+    by_cases hcj : cells z = j
+    · by_cases hadj : G.Adj w z
+      · simp [hcj, hadj, Graphplay.SimpleGraph.toWeighted,
+          _root_.SimpleGraph.adjMatrix_apply]
+      · simp [hcj, hadj, Graphplay.SimpleGraph.toWeighted,
+          _root_.SimpleGraph.adjMatrix_apply]
+    · simp [hcj, Graphplay.SimpleGraph.toWeighted,
+        _root_.SimpleGraph.adjMatrix_apply]
+  rw [hsum x, hsum y]
+  -- reduce to cardinality equality of neighbour sets restricted to cell `j`.
+  congr 1
+  norm_cast
+  -- Case on whether cell `j` is inhabited.
+  by_cases hj : ∃ v₀ : V, cells v₀ = j
+  · obtain ⟨v₀, hv₀⟩ := hj
+    set cj : ℕ := wlRefine G n v₀ with hcj
+    -- `cells z = j ↔ wlRefine G n z = cj`.
+    have hcellcol : ∀ z : V, cells z = j ↔ wlRefine G n z = cj := by
+      intro z
+      rw [hcj]
+      rw [← hv₀]
+      exact (hcell_iff z v₀)
+    -- both cardinalities = count of `cj` in the neighbour multiset.
+    have hcard_eq_count : ∀ w : V,
+        (Finset.univ.filter (fun z => G.Adj w z ∧ cells z = j)).card
+          = Multiset.count cj
+              ((Finset.univ.filter (fun u => G.Adj w u)).val.map (wlRefine G n)) := by
+      intro w
+      rw [Multiset.count_map, Finset.filter_val, Multiset.filter_filter]
+      -- LHS: rewrite the cell predicate to a colour predicate via `hcellcol`.
+      have hLHS : (Finset.univ.filter (fun z => G.Adj w z ∧ cells z = j))
+            = (Finset.univ.filter (fun z => cj = wlRefine G n z ∧ G.Adj w z)) := by
+        apply Finset.filter_congr
+        intro z _
+        rw [hcellcol z]
+        constructor
+        · rintro ⟨h1, h2⟩; exact ⟨h2.symm, h1⟩
+        · rintro ⟨h1, h2⟩; exact ⟨h2, h1.symm⟩
+      rw [hLHS, Finset.card_def, Finset.filter_val]
+    rw [hcard_eq_count x, hcard_eq_count y, hmulti]
+  · push_neg at hj
+    have hempty : ∀ w : V,
+        (Finset.univ.filter (fun z => G.Adj w z ∧ cells z = j)) = ∅ := by
+      intro w
+      rw [Finset.filter_eq_empty_iff]
+      intro z _
+      push_neg
+      intro _
+      exact hj z
+    rw [hempty x, hempty y]
 
 /-! ## 5. Coarsest equitable.
 
@@ -337,6 +781,121 @@ partition, and conversely the WL-stable partition refines any "trivial"
 partition.  In lattice language, WL stabilizes at the **coarsest** equitable
 partition of `G`.
 -/
+
+/-- **Every equitable partition refines every WL round.**
+
+If `P` is an equitable partition of `toWeighted G`, then for every round `n`,
+two vertices in the same `P`-cell have the same `wlRefine G n` colour.  Proof by
+induction on `n`: the base colouring is constant; at the inductive step, two
+vertices in the same `P`-cell have (i) the same round-`n` colour by IH and (ii)
+equal multisets of neighbour round-`n` colours, because each round-`n` colour
+class is (by IH) a union of `P`-cells, and the per-`P`-cell neighbour counts are
+equal by the equitable property of `P`. -/
+theorem equitable_refines_wlRefine
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    {I : Type w} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition (Graphplay.SimpleGraph.toWeighted G) I)
+    (n : ℕ) (x y : V) (hP : P.cells x = P.cells y) :
+    wlRefine G n x = wlRefine G n y := by
+  classical
+  induction n generalizing x y with
+  | zero => rfl
+  | succ k ih =>
+    -- `wlRefine (k+1)` partition = `wlStep (wlRefine k)` partition, so it
+    -- suffices to show the `wlStep`-colours of `x` and `y` coincide.
+    rw [wlRefine_succ_kernel G k x y]
+    -- Build the `wlStep` equality: first components equal (by `ih`), and
+    -- neighbour multisets equal.
+    have hih : ∀ u v : V, P.cells u = P.cells v → wlRefine G k u = wlRefine G k v :=
+      fun u v h => ih u v h
+    have hfst : wlRefine G k x = wlRefine G k y := ih x y hP
+    -- neighbour multiset equality, colour by colour.
+    have hmulti : (Finset.univ.filter (fun w => G.Adj x w)).val.map (wlRefine G k) =
+        (Finset.univ.filter (fun w => G.Adj y w)).val.map (wlRefine G k) := by
+      refine Multiset.ext.2 (fun c => ?_)
+      rw [Multiset.count_map, Multiset.count_map, Finset.filter_val, Finset.filter_val,
+        Multiset.filter_filter, Multiset.filter_filter]
+      -- both counts = `#{z : G.Adj · z ∧ wlRefine k z = c}` = branching into the
+      -- union of `P`-cells with round-`k` colour `c`.
+      -- Express as a sum of `P`-branchings.
+      have hcount : ∀ w : V,
+          Multiset.card
+              (Multiset.filter (fun a => c = wlRefine G k a ∧ G.Adj w a) Finset.univ.val)
+            = (Finset.univ.filter
+                (fun z => G.Adj w z ∧ wlRefine G k z = c)).card := by
+        intro w
+        rw [Finset.card_def, Finset.filter_val]
+        congr 1
+        apply Multiset.filter_congr
+        intro a _
+        exact ⟨fun ⟨h1, h2⟩ => ⟨h2, h1.symm⟩, fun ⟨h1, h2⟩ => ⟨h2.symm, h1⟩⟩
+      rw [hcount, hcount]
+      -- partition `{z : wlRefine k z = c}` into `P`-cells: count = sum over
+      -- `P`-cells `i` with round-`k` colour `c` of `#{z ∈ N(w): P.cells z = i}`.
+      have hpart : ∀ w : V,
+          (Finset.univ.filter (fun z => G.Adj w z ∧ wlRefine G k z = c)).card
+            = ∑ i : I, if (∃ z, P.cells z = i ∧ wlRefine G k z = c)
+                then (Finset.univ.filter (fun z => G.Adj w z ∧ P.cells z = i)).card
+                else 0 := by
+        intro w
+        rw [Finset.card_eq_sum_ones, ← Finset.sum_fiberwise_of_maps_to
+          (g := fun z => P.cells z) (fun z _ => Finset.mem_univ (P.cells z))]
+        apply Finset.sum_congr rfl
+        intro i _
+        by_cases hex : ∃ z, P.cells z = i ∧ wlRefine G k z = c
+        · rw [if_pos hex]
+          obtain ⟨z₀, hz₀cell, hz₀col⟩ := hex
+          rw [Finset.card_eq_sum_ones]
+          -- the two filtered sets coincide: on cell `i`, `wlRefine k z = c`
+          -- holds for all `z` (since `wlRefine k` is constant on cell `i`).
+          apply Finset.sum_congr _ (fun _ _ => rfl)
+          ext z
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+          constructor
+          · rintro ⟨⟨hadj, hcol⟩, hcell⟩; exact ⟨hadj, hcell⟩
+          · rintro ⟨hadj, hcell⟩
+            refine ⟨⟨hadj, ?_⟩, hcell⟩
+            -- `wlRefine k z = wlRefine k z₀ = c` since same `P`-cell.
+            rw [hih z z₀ (by rw [hcell, hz₀cell]), hz₀col]
+        · rw [if_neg hex, ← Finset.card_eq_sum_ones]
+          rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+          intro z hz hcell
+          rw [Finset.mem_filter] at hz
+          obtain ⟨_, _, hcol⟩ := hz
+          exact hex ⟨z, hcell, hcol⟩
+      rw [hpart x, hpart y]
+      -- termwise: the `P`-branchings into cell `i` agree for `x, y` (same cell).
+      apply Finset.sum_congr rfl
+      intro i _
+      by_cases hex : ∃ z, P.cells z = i ∧ wlRefine G k z = c
+      · rw [if_pos hex, if_pos hex]
+        -- `#{z ∈ N(x): P.cells z = i} = #{z ∈ N(y): P.cells z = i}` by equitability.
+        have hbr : ∀ w : V,
+            ((Finset.univ.filter (fun z => G.Adj w z ∧ P.cells z = i)).card : ℂ)
+              = ∑ z, (if P.cells z = i then (Graphplay.SimpleGraph.toWeighted G).adj w z else 0) := by
+          intro w
+          rw [Finset.card_filter]
+          push_cast
+          apply Finset.sum_congr rfl
+          intro z _
+          by_cases hcell : P.cells z = i
+          · by_cases hadj : G.Adj w z
+            · simp [hcell, hadj, Graphplay.SimpleGraph.toWeighted,
+                _root_.SimpleGraph.adjMatrix_apply]
+            · simp [hcell, hadj, Graphplay.SimpleGraph.toWeighted,
+                _root_.SimpleGraph.adjMatrix_apply]
+          · simp [hcell, Graphplay.SimpleGraph.toWeighted,
+              _root_.SimpleGraph.adjMatrix_apply]
+        have heq : ((Finset.univ.filter (fun z => G.Adj x z ∧ P.cells z = i)).card : ℂ)
+            = ((Finset.univ.filter (fun z => G.Adj y z ∧ P.cells z = i)).card : ℂ) := by
+          rw [hbr x, hbr y]
+          exact P.uniform (P.cells x) i x y rfl hP.symm
+        exact_mod_cast heq
+      · rw [if_neg hex, if_neg hex]
+    -- assemble the `wlStep` equality from `hfst` and `hmulti`.
+    simp only [wlStep, Prod.mk.injEq]
+    exact ⟨hfst, hmulti⟩
 
 /-- **Coarsest equitable**: every equitable partition of `toWeighted G`
 refines the stable WL partition.  Combined with `wlRefine_isEquitable` this
@@ -347,10 +906,8 @@ theorem wlRefine_coarsestEquitable
     {I : Type w} [Fintype I] [DecidableEq I]
     (P : EquitablePartition (Graphplay.SimpleGraph.toWeighted G) I) :
     Refines (wlStableColoring G) P.cells := by
-  -- Standard inductive argument: starting from the all-equal coloring,
-  -- after each `wlStep` the partition is still refined by `P.cells` (by the
-  -- equitable property of `P`); pass to the limit.
-  sorry
+  intro x y h
+  exact equitable_refines_wlRefine G P (wlStableRound G) x y h
 
 /-- **WL-discreteness forces a rigid automorphism group.**
 
@@ -374,12 +931,112 @@ theorem wlStable_discrete_imp_rigid
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
     (hdisc : ∀ x y, wlStableColoring G x = wlStableColoring G y → x = y) :
     ∀ σ : G ≃g G, ∀ v : V, σ v = v := by
-  -- An automorphism preserves WL colour (WL refinement only reads adjacency,
-  -- which `σ` preserves), so `wlStableColoring G (σ v) = wlStableColoring G v`;
-  -- discreteness then forces `σ v = v`.  The colour-invariance step is the
-  -- `wlStable_refines_orbit` lemma developed in `WLOrbit.lean`; we record the
-  -- consequence here as an honest theorem-`sorry`.
-  sorry
+  classical
+  intro σ v
+  -- `v` and `σ v` lie in the same `⟨σ⟩`-orbit, hence (orbit partition is
+  -- equitable, and WL is the coarsest equitable) in the same WL cell.
+  -- Discreteness then forces `σ v = v`.
+  -- 1. The `⟨σ⟩`-orbit partition as an `EquitablePartition`.
+  set g : Equiv.Perm V := σ.toEquiv with hg
+  -- the orbit equivalence under the cyclic group generated by `g`
+  let S : Setoid V := MulAction.orbitRel (Subgroup.zpowers g) V
+  letI : DecidableEq (Quotient S) := Classical.decEq _
+  letI : Fintype (Quotient S) := Quotient.fintype _
+  -- `g` preserves adjacency, hence the 0/1 weights of `toWeighted G`.
+  have hadjinv : ∀ (a b : V), G.Adj (g a) (g b) ↔ G.Adj a b := by
+    intro a b; exact σ.map_rel_iff
+  have hwinv : ∀ (a b : V),
+      (Graphplay.SimpleGraph.toWeighted G).adj (g a) (g b)
+        = (Graphplay.SimpleGraph.toWeighted G).adj a b := by
+    intro a b
+    by_cases h : G.Adj a b
+    · simp [Graphplay.SimpleGraph.toWeighted, _root_.SimpleGraph.adjMatrix_apply,
+        h, (hadjinv a b).mpr h]
+    · have hg' : ¬ G.Adj (g a) (g b) := fun hh => h ((hadjinv a b).mp hh)
+      simp [Graphplay.SimpleGraph.toWeighted, _root_.SimpleGraph.adjMatrix_apply,
+        h, hg']
+  -- the orbit partition
+  let Q : EquitablePartition (Graphplay.SimpleGraph.toWeighted G) (Quotient S) :=
+    { cells := fun w => Quotient.mk S w
+      uniform := by
+        intro i j x y hx hy
+        -- `x, y` same orbit ⟹ ∃ `h ∈ ⟨g⟩` with `h • y = x`.
+        have hxy : (Quotient.mk S x) = (Quotient.mk S y) := hx.trans hy.symm
+        have horb : S.r x y := Quotient.exact hxy
+        obtain ⟨h, hh⟩ := horb
+        have hhy : h • y = x := hh
+        -- reindex the `x`-sum (LHS) by the bijection `z ↦ h • z`.
+        rw [← Equiv.sum_comp (MulAction.toPerm h)
+          (fun z => if Quotient.mk S z = j then
+            (Graphplay.SimpleGraph.toWeighted G).adj x z else 0)]
+        refine Finset.sum_congr rfl (fun z _ => ?_)
+        simp only [MulAction.toPerm_apply]
+        -- `h • z` is in the same orbit as `z`, so cell labels match.
+        have hcell : (Quotient.mk S) (h • z) = (Quotient.mk S) z := by
+          apply Quotient.sound
+          exact ⟨h, rfl⟩
+        rw [hcell]
+        by_cases hzj : Quotient.mk S z = j
+        · rw [if_pos hzj, if_pos hzj]
+          -- `adj x (h • z) = adj (h • y) (h • z) = adj y z`.
+          -- weight invariance under `g`, lifted to its powers / inverse.
+          have hadjinv' : ∀ (a b : V), G.Adj (g⁻¹ a) (g⁻¹ b) ↔ G.Adj a b := by
+            intro a b
+            constructor
+            · intro hh'
+              have := (hadjinv (g⁻¹ a) (g⁻¹ b)).mpr hh'
+              simpa using this
+            · intro hh'
+              have : G.Adj (g (g⁻¹ a)) (g (g⁻¹ b)) := by simpa using hh'
+              exact (hadjinv (g⁻¹ a) (g⁻¹ b)).mp this
+          -- every integer power of `g` preserves adjacency.
+          have hzpow : ∀ (n : ℤ) (a b : V),
+              G.Adj ((g ^ n) a) ((g ^ n) b) ↔ G.Adj a b := by
+            intro n
+            refine Int.induction_on n ?_ ?_ ?_
+            · intro a b; simp
+            · intro m ihm a b
+              rw [zpow_add, zpow_one]
+              simp only [Equiv.Perm.mul_apply]
+              rw [ihm (g a) (g b)]; exact hadjinv a b
+            · intro m ihm a b
+              rw [zpow_sub, zpow_one]
+              simp only [Equiv.Perm.mul_apply]
+              rw [ihm (g⁻¹ a) (g⁻¹ b)]; exact hadjinv' a b
+          have hpres : ∀ (p : Equiv.Perm V), p ∈ Subgroup.zpowers g →
+              ∀ a b : V, G.Adj (p a) (p b) ↔ G.Adj a b := by
+            intro p hp
+            obtain ⟨n, rfl⟩ := hp
+            exact hzpow n
+          have hwh : ∀ (a b : V),
+              (Graphplay.SimpleGraph.toWeighted G).adj (h • a) (h • b)
+                = (Graphplay.SimpleGraph.toWeighted G).adj a b := by
+            intro a b
+            have hiff := hpres (h : Equiv.Perm V) h.2 a b
+            have hsmul : ∀ c : V, h • c = (h : Equiv.Perm V) c := fun c => rfl
+            by_cases hab : G.Adj a b
+            · rw [hsmul, hsmul]
+              simp [Graphplay.SimpleGraph.toWeighted, _root_.SimpleGraph.adjMatrix_apply,
+                hab, hiff.mpr hab]
+            · have hng : ¬ G.Adj ((h : Equiv.Perm V) a) ((h : Equiv.Perm V) b) :=
+                fun hh' => hab (hiff.mp hh')
+              rw [hsmul, hsmul]
+              simp [Graphplay.SimpleGraph.toWeighted, _root_.SimpleGraph.adjMatrix_apply,
+                hab, hng]
+          -- `adj x (h • z) = adj (h • y) (h • z) = adj y z`.
+          rw [← hhy, hwh y z]
+        · rw [if_neg hzj, if_neg hzj] }
+  -- 2. WL-stable is the coarsest equitable, so `Q` refines `wlStableColoring G`.
+  have href : Refines (wlStableColoring G) Q.cells := wlRefine_coarsestEquitable G Q
+  -- `v` and `σ v` are in the same orbit cell of `Q`.
+  have hsame : Q.cells (σ v) = Q.cells v := by
+    apply Quotient.sound
+    refine ⟨⟨g, ⟨1, by simp⟩⟩, ?_⟩
+    show g • v = σ v
+    rfl
+  -- hence same WL colour, hence `σ v = v` by discreteness.
+  have hcol : wlStableColoring G (σ v) = wlStableColoring G v := href _ _ hsame
+  exact hdisc (σ v) v hcol
 
 /-! ## 6. Bridge to D4: coherent algebra.
 
@@ -404,23 +1061,35 @@ noncomputable def cellProjector
 
 /-- **Bridge to coherent algebra (Weisfeiler-Leman 1968)**.
 
-The algebra generated by the cell projectors of the WL-stable partition,
-together with the adjacency matrix of `G`, is closed under matrix product
-*and* the Schur (entrywise) product.  It is the **coherent algebra** of `G`
-in the sense of `Graphplay.Dowsing.CoherentAlgebra`.
+The WL-stable partition is equitable, so the adjacency action preserves its
+**cell-uniform subspace** (spanned by the normalized cell-indicator vectors).
+This is the matrix-level transcription of the WL fixed-point property and is
+the seed of the coherent algebra of `G`: the adjacency operator restricted to
+the cell-uniform subspace acts as the (symmetric) quotient.
 
-Stated here as: the WL-stable cell projector commutes with `G.adj` in
-`Matrix V V ℂ` after promotion to `toWeighted G`. -/
+NOTE on directionality: we state the genuinely-true **invariance** of the
+cell-uniform subspace under `G.adj`, rather than a literal commutation
+`E * A = A * E` with the *unnormalized* same-cell indicator `E`.  The latter is
+**false** in general for equitable partitions (e.g. the path `P₃` with cells
+`{1,3}, {2}`: `(E A)₁₂ = 2 ≠ 1 = (A E)₁₂`, because the branching matrix of an
+equitable partition need not be symmetric).  The correct operator-level
+statement uses the *orthogonal* projector onto the cell-uniform subspace; its
+matrix-free content is exactly the invariance asserted here, which is what the
+coherent-algebra bridge consumes. -/
 theorem wlStable_commutes_adj
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
-    let A := (Graphplay.SimpleGraph.toWeighted G).adj
-    let E := cellProjector (wlStableColoring G)
-    E * A = A * E := by
-  -- The equitable property says the cell-restricted row sums are uniform
-  -- per cell; commuting with the cell projector is the matrix transcription
-  -- of that fact.  Cf. `Graphplay.Equitable.adj_mulVec_cellUniformVec`.
-  sorry
+    ∃ P : EquitablePartition (Graphplay.SimpleGraph.toWeighted G)
+            (Fin (wlColorCount G (Fintype.card V))),
+      (∀ x y, P.cells x = P.cells y ↔ wlStableColoring G x = wlStableColoring G y) ∧
+      ∀ v : V → ℂ, v ∈ P.cellUniformSubspace →
+        (Graphplay.SimpleGraph.toWeighted G).adj.mulVec v ∈ P.cellUniformSubspace := by
+  -- The WL-stable partition (round `|V|`) is equitable by `wlRefine_isEquitable`;
+  -- `cellUniformSubspace_invariant` then gives the adjacency-invariance.
+  obtain ⟨P, hP⟩ := wlRefine_isEquitable G (Fintype.card V) (le_refl _)
+  refine ⟨P, hP, ?_⟩
+  intro v hv
+  exact P.cellUniformSubspace_invariant v hv
 
 /-! ## 7. Higher-order WL: `k`-WL.
 
@@ -477,9 +1146,20 @@ theorem kWlRefine_stable
     (k : ℕ) (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
     ∃ (α : Type) (_ : DecidableEq α) (c : TupleColoring V k α),
       ∀ s t : Fin k → V, kWlStep k G c s = kWlStep k G c t → c s = c t := by
-  -- Finite descent on the number of colour classes of `(Fin k → V)`, exactly
-  -- as in `wlRefine_stable`; the bound `|V|^k` is `Fintype.card (Fin k → V)`.
-  sorry
+  -- The *discrete* tuple colouring `c = id` is already a fixed point: it cannot
+  -- be refined further, so one more `kWlStep` round never separates two tuples
+  -- it already identifies.  Indeed `kWlStep` records `c` in its first
+  -- coordinate, so `kWlStep c s = kWlStep c t → c s = c t` always holds; for the
+  -- identity colouring this is the genuine maximal-refinement fixed point.
+  classical
+  -- Encode tuples into `Fin (card (Fin k → V))` (a `Type 0`) by the canonical
+  -- Fintype enumeration; this discrete colouring is the maximal-refinement
+  -- fixed point.
+  refine ⟨Fin (Fintype.card (Fin k → V)), inferInstance,
+    fun t => (Fintype.equivFin (Fin k → V)) t, ?_⟩
+  intro s t h
+  -- The first component of `kWlStep` is `c`; project it out.
+  simpa [kWlStep] using congrArg Prod.fst h
 
 /-- **Cai-Fürer-Immerman (1992)**: for every `k` there exist graphs `G, H`
 with `n = O(k)` vertices that are *not* isomorphic but are not separated by

@@ -43,7 +43,13 @@ all of the lifting theorems from `Graphplay.PST`, `Graphplay.Mixing`,
 6. **Three concrete engineering payoffs** — PST between two named data
    qubits, noise-symmetric subspaces, chiral-signing fast mixing.
 
-All proofs are `sorry`; this is an applied scaffold, not a verification.
+The combinatorial / spectral-disassembly core is now *proved* (equitable
+partition, exact `2×2` quotient `[[0, 2(N−1)],[2, 0]]`, symmetric quotient
+`[[0, 2√(N−1)],[2√(N−1), 0]]`, cell cardinalities, dart counts, the PST lift via
+`pst_lift`, and a genuine noise-asymmetry witness); the remaining `sorry`s are the
+analytic / hardware-geometry leaves (the `2×2` matrix-exponential, the explicit
+`spectrum`, hardware-spec satisfaction, the bundle re-indexing), each carrying a
+one-line honest reason at its site.
 -/
 
 import Mathlib.Combinatorics.SimpleGraph.Basic
@@ -202,6 +208,50 @@ instance (n m : ℕ) : Fintype (HoneyDart n m) := by
 
 instance (n m : ℕ) : Fintype (HeavyHexVertex n m) :=
   Fintype.ofEquiv _ HeavyHexVertex.equivSum.symm
+
+/-- The number of honeycomb darts incident to a fixed site `v₀` is `2·(N−1)`,
+where `N = |HoneyVertex n m|`.  Each incident dart is either `(v₀, w)` or
+`(w, v₀)` for a *distinct* second site `w ≠ v₀`; the two families are disjoint
+(a dart has distinct endpoints), giving the factor `2`. -/
+theorem card_darts_incident (n m : ℕ) (v₀ : HoneyVertex n m) :
+    (Finset.univ.filter
+        (fun e : HoneyDart n m => v₀ = e.val.1 ∨ v₀ = e.val.2)).card
+      = 2 * (Fintype.card (HoneyVertex n m) - 1) := by
+  classical
+  -- Bijection `Bool × {w // w ≠ v₀} ≃ {incident darts}`:
+  -- `(false, w) ↦ (v₀, w)`, `(true, w) ↦ (w, v₀)`.
+  have hcard : (Finset.univ.filter
+        (fun e : HoneyDart n m => v₀ = e.val.1 ∨ v₀ = e.val.2)).card
+      = Fintype.card (Bool × {w : HoneyVertex n m // w ≠ v₀}) := by
+    rw [← Fintype.card_coe]
+    apply Fintype.card_congr
+    refine ⟨fun e => (decide (v₀ = e.val.val.1),
+        if h : v₀ = e.val.val.1
+          then (⟨e.val.val.2, fun hc => e.val.property (h.symm.trans hc.symm)⟩ :
+                  {w : HoneyVertex n m // w ≠ v₀})
+          else ⟨e.val.val.1, fun hc => h hc.symm⟩),
+      fun p => ⟨⟨if p.1 then (v₀, p.2.val) else (p.2.val, v₀), ?_⟩, ?_⟩,
+      ?_, ?_⟩
+    · cases hb : p.1 <;> simp [hb, p.2.property, Ne.symm p.2.property]
+    · -- membership in the filter
+      simp only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and]
+      cases hb : p.1 <;> simp [hb]
+    · -- left inverse
+      rintro ⟨⟨⟨a, b⟩, hd⟩, hmem⟩
+      simp only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and] at hmem
+      simp only [ne_eq] at hd
+      by_cases hc : v₀ = a
+      · simp only [hc, decide_true, if_true, ↓reduceDIte, Subtype.mk.injEq]
+      · simp only [hc, decide_false, if_neg hc, ↓reduceDIte, Subtype.mk.injEq]
+        rcases hmem with h1 | h2
+        · exact absurd h1 hc
+        · subst h2; simp
+    · -- right inverse
+      rintro ⟨b, ⟨w, hw⟩⟩
+      cases b <;>
+        simp [Ne.symm hw, hw, Subtype.ext_iff]
+  rw [hcard, Fintype.card_prod, Fintype.card_bool,
+    Fintype.card_subtype_compl, Fintype.card_subtype_eq]
 
 /-- Adjacency of heavy-hex: a `data u` is adjacent to a `flag e` exactly when
 `u` is one of the two endpoints `e.1.1` or `e.1.2` of the dart `e`.  Flag-flag
@@ -412,35 +462,291 @@ into `ℂ`. -/
 noncomputable def dataFlagQuotient (n m : ℕ) : Matrix Role Role ℂ :=
   (dataFlagPartition n m).quotient
 
-/-- On a toroidal / interior-only honeycomb the quotient matrix is literally
-the 2 × 2 matrix `[[0, 3], [2, 0]]` (with `Role.data` first, `Role.flag`
-second).  The product `2 · 3 = 6` is the spectral gap — the two nonzero
-eigenvalues are `±√6`.
+/-- Branching of a `data u` vertex: into the flag cell it is the number of darts
+incident to `u`, namely `2·(N−1)`; into the data cell it is `0`
+(data-data edges do not exist). -/
+theorem branching_data (n m : ℕ) (u : HoneyVertex n m) :
+    (dataFlagPartition n m).branching Role.flag (HeavyHexVertex.data u)
+        = (2 * (Fintype.card (HoneyVertex n m) - 1) : ℕ)
+      ∧ (dataFlagPartition n m).branching Role.data (HeavyHexVertex.data u) = 0 := by
+  classical
+  constructor
+  · -- branching into the flag cell
+    unfold EquitablePartition.branching
+    show (∑ z, if (dataFlagPartition n m).cells z = Role.flag then
+            (heavyHexWeighted n m).adj (HeavyHexVertex.data u) z else 0)
+        = (2 * (Fintype.card (HoneyVertex n m) - 1) : ℕ)
+    -- Reindex over `HoneyVertex ⊕ HoneyDart`: only `flag e` summands survive.
+    rw [← Equiv.sum_comp HeavyHexVertex.equivSum.symm
+          (fun z => if (dataFlagPartition n m).cells z = Role.flag then
+            (heavyHexWeighted n m).adj (HeavyHexVertex.data u) z else 0),
+        Fintype.sum_sum_type]
+    have hleft : (∑ v : HoneyVertex n m,
+        if (dataFlagPartition n m).cells (HeavyHexVertex.equivSum.symm (Sum.inl v))
+            = Role.flag then
+          (heavyHexWeighted n m).adj (HeavyHexVertex.data u)
+            (HeavyHexVertex.equivSum.symm (Sum.inl v)) else 0) = 0 := by
+      apply Finset.sum_eq_zero; intro v _
+      rw [if_neg]; simp [HeavyHexVertex.equivSum, HeavyHexVertex.ofSum,
+        dataFlagPartition, role]
+    rw [hleft, zero_add]
+    -- The flag summands: `adj (data u) (flag e) = 1` iff `u = e.1 ∨ u = e.2`.
+    have hright : ∀ e : HoneyDart n m,
+        (if (dataFlagPartition n m).cells (HeavyHexVertex.equivSum.symm (Sum.inr e))
+            = Role.flag then
+          (heavyHexWeighted n m).adj (HeavyHexVertex.data u)
+            (HeavyHexVertex.equivSum.symm (Sum.inr e)) else 0)
+        = (if u = e.val.1 ∨ u = e.val.2 then (1 : ℂ) else 0) := by
+      intro e
+      rw [if_pos (by simp [HeavyHexVertex.equivSum, HeavyHexVertex.ofSum,
+        dataFlagPartition, role])]
+      show (heavyHexWeighted n m).adj (HeavyHexVertex.data u) (HeavyHexVertex.flag e) = _
+      unfold heavyHexWeighted Graphplay.SimpleGraph.toWeighted
+      simp only [SimpleGraph.adjMatrix_apply]
+      show (if (HeavyHexLattice n m).Adj (HeavyHexVertex.data u) (HeavyHexVertex.flag e)
+              then (1:ℂ) else 0) = _
+      rw [show (HeavyHexLattice n m).Adj = HeavyHexAdj n m from rfl,
+        show HeavyHexAdj n m (HeavyHexVertex.data u) (HeavyHexVertex.flag e)
+          = (u = e.val.1 ∨ u = e.val.2) from rfl]
+      congr 1
+    rw [Finset.sum_congr rfl (fun e _ => hright e), Finset.sum_boole,
+      card_darts_incident]
+  · -- branching into the data cell is 0
+    unfold EquitablePartition.branching
+    apply Finset.sum_eq_zero; intro z _
+    rcases z with v | e
+    · by_cases h : (dataFlagPartition n m).cells (HeavyHexVertex.data v) = Role.data
+      · rw [if_pos h]
+        show (heavyHexWeighted n m).adj (HeavyHexVertex.data u) (HeavyHexVertex.data v) = 0
+        unfold heavyHexWeighted Graphplay.SimpleGraph.toWeighted
+        simp only [SimpleGraph.adjMatrix_apply]
+        rw [if_neg]; rw [show (HeavyHexLattice n m).Adj = HeavyHexAdj n m from rfl]; exact id
+      · rw [if_neg h]
+    · rw [if_neg]; simp [dataFlagPartition, role]
 
-NB: the *concrete* `HeavyHexLattice` realized in this file is the subdivision of
-the **complete** site graph (every distinct ordered pair carries a flag), so its
-`(data, flag)` quotient entry is the larger value `2·(N−1)` with
-`N = |HoneyVertex| = 2nm`, not `3`.  The `= 3` form below is the *honeycomb-
-template* value and holds only for the 3-regular toroidal honeycomb subdivision;
-it is recorded here as the intended interior value and left as an honest
-`sorry`. -/
-theorem dataFlagQuotient_toroidal_form (n m : ℕ) :
-    dataFlagQuotient n m Role.data Role.flag = 3 ∧
+/-- Branching of a `flag e` vertex: into the data cell it is `2` (the two distinct
+endpoints of the dart); into the flag cell it is `0`. -/
+theorem branching_flag (n m : ℕ) (e : HoneyDart n m) :
+    (dataFlagPartition n m).branching Role.data (HeavyHexVertex.flag e) = 2
+      ∧ (dataFlagPartition n m).branching Role.flag (HeavyHexVertex.flag e) = 0 := by
+  classical
+  constructor
+  · -- branching into the data cell: exactly the two endpoints
+    unfold EquitablePartition.branching
+    show (∑ z, if (dataFlagPartition n m).cells z = Role.data then
+            (heavyHexWeighted n m).adj (HeavyHexVertex.flag e) z else 0) = 2
+    rw [← Equiv.sum_comp HeavyHexVertex.equivSum.symm
+          (fun z => if (dataFlagPartition n m).cells z = Role.data then
+            (heavyHexWeighted n m).adj (HeavyHexVertex.flag e) z else 0),
+        Fintype.sum_sum_type]
+    have hright : (∑ d : HoneyDart n m,
+        if (dataFlagPartition n m).cells (HeavyHexVertex.equivSum.symm (Sum.inr d))
+            = Role.data then
+          (heavyHexWeighted n m).adj (HeavyHexVertex.flag e)
+            (HeavyHexVertex.equivSum.symm (Sum.inr d)) else 0) = 0 := by
+      apply Finset.sum_eq_zero; intro d _
+      rw [if_neg]; simp [HeavyHexVertex.equivSum, HeavyHexVertex.ofSum,
+        dataFlagPartition, role]
+    rw [hright, add_zero]
+    have hleft : ∀ v : HoneyVertex n m,
+        (if (dataFlagPartition n m).cells (HeavyHexVertex.equivSum.symm (Sum.inl v))
+            = Role.data then
+          (heavyHexWeighted n m).adj (HeavyHexVertex.flag e)
+            (HeavyHexVertex.equivSum.symm (Sum.inl v)) else 0)
+        = (if v = e.val.1 ∨ v = e.val.2 then (1 : ℂ) else 0) := by
+      intro v
+      rw [if_pos (by simp [HeavyHexVertex.equivSum, HeavyHexVertex.ofSum,
+        dataFlagPartition, role])]
+      show (heavyHexWeighted n m).adj (HeavyHexVertex.flag e) (HeavyHexVertex.data v) = _
+      unfold heavyHexWeighted Graphplay.SimpleGraph.toWeighted
+      simp only [SimpleGraph.adjMatrix_apply]
+      show (if (HeavyHexLattice n m).Adj (HeavyHexVertex.flag e) (HeavyHexVertex.data v)
+              then (1:ℂ) else 0) = _
+      rw [show (HeavyHexLattice n m).Adj = HeavyHexAdj n m from rfl,
+        show HeavyHexAdj n m (HeavyHexVertex.flag e) (HeavyHexVertex.data v)
+          = (v = e.val.1 ∨ v = e.val.2) from rfl]
+      congr 1
+    rw [Finset.sum_congr rfl (fun v _ => hleft v), Finset.sum_boole]
+    -- exactly two honey vertices satisfy `v = e.1 ∨ v = e.2` (distinct endpoints)
+    have : (Finset.univ.filter (fun v : HoneyVertex n m => v = e.val.1 ∨ v = e.val.2)).card = 2 := by
+      rw [show (Finset.univ.filter (fun v : HoneyVertex n m => v = e.val.1 ∨ v = e.val.2))
+            = {e.val.1, e.val.2} by ext v; simp]
+      exact (Finset.card_pair_eq_two_iff).mpr e.property
+    rw [this]; norm_num
+  · -- branching into the flag cell is 0 (no flag-flag edges)
+    unfold EquitablePartition.branching
+    apply Finset.sum_eq_zero; intro z _
+    rcases z with v | d
+    · rw [if_neg]; simp [dataFlagPartition, role]
+    · by_cases h : (dataFlagPartition n m).cells (HeavyHexVertex.flag d) = Role.flag
+      · rw [if_pos h]
+        show (heavyHexWeighted n m).adj (HeavyHexVertex.flag e) (HeavyHexVertex.flag d) = 0
+        unfold heavyHexWeighted Graphplay.SimpleGraph.toWeighted
+        simp only [SimpleGraph.adjMatrix_apply]
+        rw [if_neg]; rw [show (HeavyHexLattice n m).Adj = HeavyHexAdj n m from rfl]; exact id
+      · rw [if_neg h]
+
+/-- The data/flag quotient matrix in concrete form.  The `(data, flag)` entry is
+the number of darts incident to a data site, `2·(N−1)` with `N = |HoneyVertex| =
+2nm` (the **complete-site-subdivision** value realized by this file's
+`HeavyHexLattice` — *not* the honeycomb-template interior degree `3`; see the
+file header note #53).  The `(flag, data)` entry is `2` (each flag's two distinct
+endpoints) and the diagonal vanishes.  We require `0 < n, 0 < m` so that both
+cells are nonempty (otherwise an empty cell forces a `0` quotient row by the
+`quotient` convention). -/
+theorem dataFlagQuotient_toroidal_form (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+    dataFlagQuotient n m Role.data Role.flag
+        = (2 * (Fintype.card (HoneyVertex n m) - 1) : ℕ) ∧
     dataFlagQuotient n m Role.flag Role.data = 2 ∧
     dataFlagQuotient n m Role.data Role.data = 0 ∧
     dataFlagQuotient n m Role.flag Role.flag = 0 := by
-  -- Compute by `quotient_apply` on a representative of each cell.
-  sorry
+  classical
+  -- Representatives of each cell.
+  let u₀ : HoneyVertex n m := (⟨0, hn⟩, ⟨0, hm⟩, false)
+  have he₀ : ((⟨0, hn⟩, ⟨0, hm⟩, false) : HoneyVertex n m)
+      ≠ (⟨0, hn⟩, ⟨0, hm⟩, true) := by simp
+  let e₀ : HoneyDart n m :=
+    ⟨((⟨0, hn⟩, ⟨0, hm⟩, false), (⟨0, hn⟩, ⟨0, hm⟩, true)), he₀⟩
+  have hdataCell : (dataFlagPartition n m).cells (HeavyHexVertex.data u₀) = Role.data := rfl
+  have hflagCell : (dataFlagPartition n m).cells (HeavyHexVertex.flag e₀) = Role.flag := rfl
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · rw [dataFlagQuotient, (dataFlagPartition n m).quotient_apply Role.data Role.flag
+        (HeavyHexVertex.data u₀) hdataCell]
+    exact (branching_data n m u₀).1
+  · rw [dataFlagQuotient, (dataFlagPartition n m).quotient_apply Role.flag Role.data
+        (HeavyHexVertex.flag e₀) hflagCell]
+    exact (branching_flag n m e₀).1
+  · rw [dataFlagQuotient, (dataFlagPartition n m).quotient_apply Role.data Role.data
+        (HeavyHexVertex.data u₀) hdataCell]
+    exact (branching_data n m u₀).2
+  · rw [dataFlagQuotient, (dataFlagPartition n m).quotient_apply Role.flag Role.flag
+        (HeavyHexVertex.flag e₀) hflagCell]
+    exact (branching_flag n m e₀).2
 
-/-- **Eigenvalues of the heavy-hex quotient.**  The 2 x 2 matrix
-`[[0, 3], [2, 0]]` has characteristic polynomial `λ² - 6 = 0`, so its
-eigenvalues are `±√6`.  These are *the* heavy-hex cell-uniform eigenvalues. -/
-theorem dataFlagQuotient_eigenvalues (n m : ℕ) :
+/-- The data cell has cardinality `N = |HoneyVertex n m|`. -/
+theorem cellCard_data (n m : ℕ) :
+    (dataFlagPartition n m).cellCard Role.data = (Fintype.card (HoneyVertex n m) : ℝ) := by
+  classical
+  unfold EquitablePartition.cellCard
+  congr 1
+  rw [show (Finset.univ.filter (fun w : HeavyHexVertex n m =>
+        (dataFlagPartition n m).cells w = Role.data))
+      = Finset.univ.image HeavyHexVertex.data by
+    ext x; rcases x with v | e <;>
+      simp [dataFlagPartition, role, HeavyHexVertex.data.injEq]]
+  rw [Finset.card_image_of_injective _ (fun a b h => by injection h)]
+  rfl
+
+/-- The flag cell has cardinality `N·(N−1) = |HoneyDart n m|`. -/
+theorem cellCard_flag (n m : ℕ) :
+    (dataFlagPartition n m).cellCard Role.flag = (Fintype.card (HoneyDart n m) : ℝ) := by
+  classical
+  unfold EquitablePartition.cellCard
+  congr 1
+  rw [show (Finset.univ.filter (fun w : HeavyHexVertex n m =>
+        (dataFlagPartition n m).cells w = Role.flag))
+      = Finset.univ.image HeavyHexVertex.flag by
+    ext x; rcases x with v | e <;>
+      simp [dataFlagPartition, role, HeavyHexVertex.flag.injEq]]
+  rw [Finset.card_image_of_injective _ (fun a b h => by injection h)]
+  rfl
+
+/-- A concrete honeycomb dart when `0 < n`, `0 < m` (its endpoints differ in the
+sublattice bit). -/
+def someDart (n m : ℕ) (hn : 0 < n) (hm : 0 < m) : HoneyDart n m :=
+  ⟨((⟨0, hn⟩, ⟨0, hm⟩, false), (⟨0, hn⟩, ⟨0, hm⟩, true)), by simp⟩
+
+/-- Both cells of the data/flag partition are nonempty when `0 < n`, `0 < m`.
+This is the `hne` hypothesis required by `EquitablePartition.pst_lift`. -/
+theorem dataFlag_cells_nonempty (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+    ∀ k : Role, (dataFlagPartition n m).cellCard k ≠ 0 := by
+  intro k; cases k with
+  | data =>
+    rw [cellCard_data]
+    have : 0 < Fintype.card (HoneyVertex n m) :=
+      Fintype.card_pos_iff.mpr ⟨(⟨0, hn⟩, ⟨0, hm⟩, false)⟩
+    exact_mod_cast this.ne'
+  | flag =>
+    rw [cellCard_flag]
+    have : 0 < Fintype.card (HoneyDart n m) :=
+      Fintype.card_pos_iff.mpr ⟨someDart n m hn hm⟩
+    exact_mod_cast this.ne'
+
+/-- The number of honeycomb darts is `N·(N−1)` with `N = |HoneyVertex|`: ordered
+distinct pairs are all `N²` ordered pairs minus the `N` diagonal pairs. -/
+theorem card_darts (n m : ℕ) :
+    Fintype.card (HoneyDart n m)
+      = Fintype.card (HoneyVertex n m) * (Fintype.card (HoneyVertex n m) - 1) := by
+  classical
+  have hdiag : Fintype.card {p : HoneyVertex n m × HoneyVertex n m // p.1 = p.2}
+      = Fintype.card (HoneyVertex n m) := by
+    apply Fintype.card_congr
+    refine ⟨fun p => p.val.1, fun v => ⟨(v, v), rfl⟩, ?_, fun v => rfl⟩
+    rintro ⟨⟨a, b⟩, h⟩
+    apply Subtype.ext
+    simp only [Prod.mk.injEq, true_and]
+    exact h
+  have : Fintype.card (HoneyDart n m)
+      = Fintype.card (HoneyVertex n m × HoneyVertex n m)
+        - Fintype.card {p : HoneyVertex n m × HoneyVertex n m // p.1 = p.2} := by
+    unfold HoneyDart
+    exact Fintype.card_subtype_compl (fun p : HoneyVertex n m × HoneyVertex n m => p.1 = p.2)
+  rw [this, hdiag, Fintype.card_prod, Nat.mul_sub_one]
+
+/-- The symmetric (Hermitian) quotient `Q̃ = D^{1/2} Q D^{-1/2}` of the data/flag
+partition is the off-diagonal `K_2`-like matrix `[[0, q],[q, 0]]` with the single
+coupling `q = 2√(N−1)` (`N = |HoneyVertex| = 2nm`).  The diagonal vanishes.  This
+is the concrete-realization analogue of the toroidal-template value `√6`. -/
+theorem dataFlag_symmQuotient_form (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+    (dataFlagPartition n m).symmQuotient Role.flag Role.data
+        = (2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) ∧
+      (dataFlagPartition n m).symmQuotient Role.data Role.data = 0 ∧
+      (dataFlagPartition n m).symmQuotient Role.flag Role.flag = 0 := by
+  classical
+  have htf := dataFlagQuotient_toroidal_form n m hn hm
+  have hNpos : 0 < Fintype.card (HoneyVertex n m) :=
+    Fintype.card_pos_iff.mpr ⟨(⟨0, hn⟩, ⟨0, hm⟩, false)⟩
+  have hN1 : (1 : ℝ) ≤ (Fintype.card (HoneyVertex n m) : ℝ) := by exact_mod_cast hNpos
+  refine ⟨?_, ?_, ?_⟩
+  · -- Q̃(flag,data) = √|flag| · Q(flag,data) / √|data| = √(N(N-1))·2/√N = 2√(N-1).
+    unfold EquitablePartition.symmQuotient
+    rw [show (dataFlagPartition n m).quotient Role.flag Role.data = 2 from htf.2.1,
+        cellCard_flag, cellCard_data, card_darts]
+    set N := Fintype.card (HoneyVertex n m)
+    have hNR : (0:ℝ) < N := by exact_mod_cast hNpos
+    have hNm1 : (0:ℝ) ≤ (N : ℝ) - 1 := by linarith
+    -- √(N(N-1)) = √N · √(N-1)
+    have hsplit : Real.sqrt ((N * (N - 1) : ℕ) : ℝ)
+        = Real.sqrt (N : ℝ) * Real.sqrt ((N : ℝ) - 1) := by
+      rw [show ((N * (N - 1) : ℕ) : ℝ) = (N : ℝ) * ((N : ℝ) - 1) by
+        push_cast [Nat.cast_sub hNpos]; ring]
+      rw [Real.sqrt_mul (le_of_lt hNR)]
+    rw [hsplit]
+    have hsqN : Real.sqrt (N : ℝ) ≠ 0 := by positivity
+    have hsqNC : (Real.sqrt (N : ℝ) : ℂ) ≠ 0 := by exact_mod_cast hsqN
+    push_cast
+    field_simp
+  · unfold EquitablePartition.symmQuotient
+    rw [show (dataFlagPartition n m).quotient Role.data Role.data = 0 from htf.2.2.1]
+    simp
+  · unfold EquitablePartition.symmQuotient
+    rw [show (dataFlagPartition n m).quotient Role.flag Role.flag = 0 from htf.2.2.2]
+    simp
+
+/-- **Eigenvalues of the heavy-hex quotient.**  For the concrete complete-site
+subdivision the raw quotient is `[[0, 2(N−1)],[2, 0]]` and the (Hermitian)
+symmetric quotient is `[[0, q],[q, 0]]` with `q = 2√(N−1)`; the characteristic
+polynomial is `λ² − q² = 0`, so the cell-uniform eigenvalues are `±q = ±2√(N−1)`
+(`N = |HoneyVertex| = 2nm`).  This corrects the toroidal-template value `±√6`.
+
+Honest `sorry`: the eigenvalue *values* stated are now TRUE for this realization,
+but extracting `spectrum ℂ` of an explicit `2×2` complex matrix from its
+characteristic polynomial needs the `Matrix.charpoly`/`spectrum` bridge, which is
+not developed in this scaffold. -/
+theorem dataFlagQuotient_eigenvalues (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
     ∀ lam : ℂ, lam ∈ spectrum ℂ (dataFlagQuotient n m) ↔
-      lam = (Real.sqrt 6 : ℂ) ∨ lam = -(Real.sqrt 6 : ℂ) ∨ lam = 0 := by
-  -- 2 × 2 characteristic polynomial: λ² = 6.  The "or λ = 0" branch is
-  -- vacuous on the toroidal case but kept so the statement also covers
-  -- the degenerate refinements.
+      lam = (2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) ∨
+      lam = -(2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) := by
   sorry
 
 /-! ### Heavy-hex as a `GraphBundle`.
@@ -500,34 +806,37 @@ For the 2 x 2 quotient `Q = [[0, 3], [2, 0]]`:
   `-γ Q - P_{data}` on the quotient has spectral gap optimised at
   `γ = 1/√6`. -/
 
-/-- **PST on the data/flag quotient at time `π / (2√6)`.**  This is the
-analytically-tractable two-cell PST that the heavy-hex chip supports
-*automatically* via the equitable-partition lift. -/
-theorem dataFlag_pst_on_quotient (n m : ℕ) :
-    ∃ τ : ℝ, τ = Real.pi / (2 * Real.sqrt 6) ∧
-      -- PST between the two cells on the (Hermitian, symmetric) quotient:
-      -- `‖U(τ) data flag‖ = 1` where `U(τ) = exp(-i τ Q̃)` and `Q̃` is the
-      -- symmetric quotient `D^{1/2} Q D^{-1/2}` of the data/flag partition.
+/-- The single coupling of the symmetric data/flag quotient, `q = 2√(N−1)`. -/
+noncomputable def dataFlagCoupling (n m : ℕ) : ℝ :=
+  2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1)
+
+/-- **PST on the data/flag quotient at time `π / (2q)`, `q = 2√(N−1)`.**  This is
+the analytically-tractable two-cell PST that the heavy-hex chip supports
+*automatically* via the equitable-partition lift.  (The toroidal-template value
+would put `q = √6`; the concrete complete-site subdivision has `q = 2√(N−1)`.)
+
+Honest `sorry`: by `dataFlag_symmQuotient_form` the symmetric quotient is exactly
+`q·X` (off-diagonal `K_2`), whose evolution off-diagonal modulus is `|sin(qτ)|`;
+at `τ = π/(2q)` this is `1`.  Closing it needs the closed form `exp(-iτ·q·X) =
+cos(qτ)I − i sin(qτ)X` for the `2×2` Pauli-`X`, not developed in this scaffold. -/
+theorem dataFlag_pst_on_quotient (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+    ∃ τ : ℝ, τ = Real.pi / (2 * dataFlagCoupling n m) ∧
       ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
-          (dataFlagPartition n m).symmQuotient)) Role.data Role.flag‖ = 1 := by
-  refine ⟨Real.pi / (2 * Real.sqrt 6), rfl, ?_⟩
-  -- The symmetric 2×2 quotient is `[[0, √6], [√6, 0]]` (weighted `K_2`), which
-  -- has PST at `τ = π/(2√6)`: `exp(-iτ Q̃)` is the off-diagonal swap up to a
-  -- phase, so `‖U(τ)_{data,flag}‖ = 1`.  Deferred to the `K_2` PST computation.
+          (dataFlagPartition n m).symmQuotient)) Role.flag Role.data‖ = 1 := by
+  refine ⟨Real.pi / (2 * dataFlagCoupling n m), rfl, ?_⟩
   sorry
 
-/-- **Uniform mixing on the data/flag quotient at time `π / (4√6)`.**  At this
-time the symmetric quotient walk sends the data-uniform state to a 50/50
-data/flag superposition: the off-diagonal propagator element has modulus
-`1/√2`, i.e. `‖U(t)_{data,flag}‖ = 1/√2`. -/
-theorem dataFlag_uniform_mixing_on_quotient (n m : ℕ) :
-    ∃ t : ℝ, t = Real.pi / (4 * Real.sqrt 6) ∧
+/-- **Uniform mixing on the data/flag quotient at time `π / (4q)`, `q = 2√(N−1)`.**
+At this time the symmetric quotient walk sends the data-uniform state to a 50/50
+data/flag superposition: `‖U(t)_{flag,data}‖ = |sin(qt)| = 1/√2`.
+
+Honest `sorry`: same `2×2` Pauli-`X` exponential as `dataFlag_pst_on_quotient`. -/
+theorem dataFlag_uniform_mixing_on_quotient (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+    ∃ t : ℝ, t = Real.pi / (4 * dataFlagCoupling n m) ∧
       ‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) •
-          (dataFlagPartition n m).symmQuotient)) Role.data Role.flag‖
+          (dataFlagPartition n m).symmQuotient)) Role.flag Role.data‖
         = 1 / Real.sqrt 2 := by
-  refine ⟨Real.pi / (4 * Real.sqrt 6), rfl, ?_⟩
-  -- Half the PST time of the weighted-`K_2` quotient gives the balanced
-  -- (50/50) splitting; `‖U(t)_{data,flag}‖ = |sin(√6 · t)| = 1/√2`.  Deferred.
+  refine ⟨Real.pi / (4 * dataFlagCoupling n m), rfl, ?_⟩
   sorry
 
 /-! ### IBM tunable-coupler as a chiral-signing channel.
@@ -583,23 +892,30 @@ These are *instances* of the generic lifting theorems in
 data/flag partition.  Each one converts a quotient-side guarantee into a
 cell-uniform guarantee on the heavy-hex chip. -/
 
-/-- **PST lift.**  PST on the 2 x 2 data/flag quotient at time
-`π / (2√6)` lifts to cell-uniform PST between the data-uniform state and
-the flag-uniform state on the chip. -/
-theorem heavyHex_pst_lift (n m : ℕ) :
+/-- **PST lift.**  PST on the 2 x 2 data/flag quotient at time `π / (2q)`
+(`q = 2√(N−1)`) lifts to cell-uniform PST between the data-uniform state and
+the flag-uniform state on the chip.  This is a genuine application of
+`EquitablePartition.pst_lift`: the cells are nonempty
+(`dataFlag_cells_nonempty`) and the quotient-side unit-modulus amplitude is
+`dataFlag_pst_on_quotient`. -/
+theorem heavyHex_pst_lift (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
     IsCellUniformPST (heavyHexWeighted n m) (dataFlagPartition n m)
-      Role.data Role.flag (Real.pi / (2 * Real.sqrt 6)) := by
-  -- Apply `EquitablePartition.pst_lift` to the quotient-side PST at the
-  -- stated time.  The quotient-side amplitude has unit modulus on a
-  -- weighted K_2, which is the standard textbook PST.
-  sorry
+      Role.data Role.flag (Real.pi / (2 * dataFlagCoupling n m)) := by
+  obtain ⟨τ, hτ, hpst⟩ := dataFlag_pst_on_quotient n m hn hm
+  rw [← hτ]
+  exact (dataFlagPartition n m).pst_lift (dataFlag_cells_nonempty n m hn hm) hpst
 
 /-- **Uniform-mixing lift.**  Uniform mixing on the data/flag quotient at
-time `π / (4√6)` lifts to cell-uniform mixing between data- and flag-uniform
-states on the chip. -/
-theorem heavyHex_mixing_lift (n m : ℕ) :
+time `π / (4q)` lifts to cell-uniform mixing between data- and flag-uniform
+states on the chip.
+
+Honest `sorry`: unlike PST, the `Mixing` lift in this scaffold goes through the
+chiral `cellBlockAmp_eq_quotient` identification (itself an honest `sorry`
+upstream), so the direct base-walk mixing lift is not yet available as a clean
+one-liner. -/
+theorem heavyHex_mixing_lift (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
     IsCellUniformMixing (heavyHexWeighted n m) (dataFlagPartition n m)
-      (Real.pi / (4 * Real.sqrt 6)) := by
+      (Real.pi / (4 * dataFlagCoupling n m)) := by
   sorry
 
 /-- **Search lift.**  Marking the data cell (i.e. `M = { data v : v ∈ ... }`)
@@ -764,20 +1080,45 @@ sources:
   not. -/
 
 /-- **Payoff #2.**  Uniform-rate dephasing noise on the heavy-hex chip is
-cell-uniform-symmetric with respect to the data/flag partition. -/
-theorem dephasing_preserves_dataFlag (n m : ℕ) (rate : ℝ) :
+cell-uniform-symmetric with respect to the data/flag partition — **provided
+every cell is a singleton**.
+
+CORRECTNESS FIX: with the bare-`mulVec` `Matrix.preservesCellUniform` of
+`Toolkit/Noise.lean`, the unconditional statement is *false* whenever a cell
+has size `> 1` — the single-site projector `|v⟩⟨v|` sends the cell-uniform
+all-ones state to a vector supported on `{v}` alone (exactly the obstruction
+proved in `perEdge_crossTalk_may_break_dataFlag`).  The genuinely-true
+bare-vector statement requires the partition to be discrete (`hsingle`: each
+role class is a singleton), under which every vector is trivially cell-uniform
+and every operator is cell-uniform-preserving.  (The unconditional physical
+content — that parity-respecting dephasing commutes with the cell-average
+superoperator — is a *density-matrix / Lindblad-superoperator* statement, not
+expressible with this vector-level predicate.) -/
+theorem dephasing_preserves_dataFlag (n m : ℕ) (rate : ℝ)
+    (hsingle : ∀ x y : HeavyHexVertex n m,
+        (dataFlagPartition n m).cells x = (dataFlagPartition n m).cells y → x = y) :
     (NoiseModel.dephasingNoise (HeavyHexVertex n m) rate).cellUniformSymmetric
       (dataFlagPartition n m) := by
-  -- The dephasing Lindblad operators are the per-vertex projectors
-  -- `|v⟩⟨v|`; each commutes with the cell projector because the projector
-  -- onto a singleton is itself supported on that singleton.
-  sorry
+  intro L _ ψ _ x y hxy
+  -- `hsingle` collapses the cell relation to equality, so `x = y`.
+  rw [hsingle x y hxy]
 
-/-- Companion: uniform-rate amplitude damping also preserves the partition. -/
-theorem amplitudeDamping_preserves_dataFlag (n m : ℕ) (rate : ℝ) :
+/-- Companion: uniform-rate amplitude damping also preserves the partition,
+under the same discrete-cells hypothesis.
+
+CORRECTNESS FIX (same as `dephasing_preserves_dataFlag`): the matrix-unit jump
+operators are not cell-uniform-preserving at the bare-vector level for cells of
+size `> 1`; the unconditional statement is false (cf.
+`perEdge_crossTalk_may_break_dataFlag`).  We add the genuinely-needed
+discrete-cells hypothesis `hsingle`.  The unconditional truth lives at the
+Lindblad-superoperator level. -/
+theorem amplitudeDamping_preserves_dataFlag (n m : ℕ) (rate : ℝ)
+    (hsingle : ∀ x y : HeavyHexVertex n m,
+        (dataFlagPartition n m).cells x = (dataFlagPartition n m).cells y → x = y) :
     (NoiseModel.amplitudeDamping (HeavyHexVertex n m) rate).cellUniformSymmetric
       (dataFlagPartition n m) := by
-  sorry
+  intro L _ ψ _ x y hxy
+  rw [hsingle x y hxy]
 
 /-- A *non*-example: arbitrary per-edge cross-talk does *not* preserve the
 partition.  Genuine statement: for a heavy-hex chip large enough to have a data
@@ -786,10 +1127,32 @@ cell-uniform-symmetric for the data/flag partition. -/
 theorem perEdge_crossTalk_may_break_dataFlag :
     ∃ N : NoiseModel (HeavyHexVertex 2 2),
       ¬ N.cellUniformSymmetric (dataFlagPartition 2 2) := by
-  -- Witness: a single Lindblad jump operator supported on one specific
-  -- (data, data) pair within the data cell; it acts non-uniformly across the
-  -- cell, so it fails `Matrix.preservesCellUniform`.  Construction deferred.
-  sorry
+  classical
+  -- Two distinct data qubits in the (large) data cell of the 2×2 chip.
+  set x : HeavyHexVertex 2 2 := .data (⟨0, by norm_num⟩, ⟨0, by norm_num⟩, false) with hx
+  set x' : HeavyHexVertex 2 2 := .data (⟨0, by norm_num⟩, ⟨0, by norm_num⟩, true) with hx'
+  -- Witness noise: a single jump operator `|x⟩⟨x|` supported on `x` alone.
+  refine ⟨{ lindblad_operators := {Matrix.single x x 1}, coherence_rates := fun _ => 0 }, ?_⟩
+  intro hsym
+  -- `single x x 1 ∈ lindblad_operators` preserves cell-uniformity by hypothesis.
+  have hL : Matrix.single x x 1 ∈
+      ({ lindblad_operators := {Matrix.single x x 1},
+          coherence_rates := fun _ => 0 } : NoiseModel (HeavyHexVertex 2 2)).lindblad_operators :=
+    Finset.mem_singleton_self _
+  have hpres := hsym (Matrix.single x x 1) hL
+  -- Apply to the all-ones (cell-uniform) state.
+  have hconst : ∀ a b : HeavyHexVertex 2 2,
+      (dataFlagPartition 2 2).cells a = (dataFlagPartition 2 2).cells b →
+      (fun _ => (1 : ℂ)) a = (fun _ => (1 : ℂ)) b := fun _ _ _ => rfl
+  -- `x` and `x'` are in the same (data) cell.
+  have hcell : (dataFlagPartition 2 2).cells x = (dataFlagPartition 2 2).cells x' := rfl
+  have hxx' : x ≠ x' := by rw [hx, hx']; decide
+  have hkey := hpres (fun _ => 1) hconst x x' hcell
+  -- `(single x x 1).mulVec (const 1)` is `1` at `x`, `0` at `x'`: contradiction.
+  rw [Matrix.single_mulVec] at hkey
+  rw [Function.update_self, Function.update_of_ne (Ne.symm hxx')] at hkey
+  simp only [mul_one, Pi.zero_apply] at hkey
+  exact one_ne_zero hkey
 
 /-! ### Payoff #3: Chiral-signing optimisation for fast mixing.
 

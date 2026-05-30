@@ -371,7 +371,57 @@ theorem crossConstant_flat_on_cells
     (_h : s.CrossConstant cells) (γ : List V) (i : I)
     (_hγ : InsideCell cells i γ) :
     (s.toU1GaugeField G).wilsonCycle γ = 1 := by
-  sorry
+  obtain ⟨τ, hτ⟩ := _h
+  cases γ with
+  | nil => rfl
+  | cons v₀ rest =>
+    -- the head vertex `v₀` is in cell `i`, so `τ i i = s.σ v₀ v₀ = 1`
+    have hv0 : cells v₀ = i := _hγ.1
+    have hτii : τ i i = 1 := by
+      have := hτ v₀ v₀
+      rw [s.diag v₀, hv0] at this
+      exact this.symm
+    show ((List.zip (v₀ :: rest) (rest ++ [v₀])).foldr
+        (fun pair acc => (s.toU1GaugeField G).A pair.1 pair.2 * acc) 1) = 1
+    -- every factor is `s.σ pair.1 pair.2 = τ (cells pair.1) (cells pair.2)`; we
+    -- only need that it collapses to `1` once we know each component is in cell `i`.
+    -- Build the list of all vertices appearing, all in cell `i`.
+    have hall_gen : ∀ (L : List V), InsideCell cells i L → ∀ v ∈ L, cells v = i := by
+      intro L
+      induction L with
+      | nil => intro _ v hv; simp at hv
+      | cons w ws ih =>
+        intro hL v hv
+        rcases List.mem_cons.mp hv with h | h
+        · subst h; exact hL.1
+        · exact ih hL.2 v h
+    have hall : ∀ v ∈ (v₀ :: rest), cells v = i := hall_gen (v₀ :: rest) _hγ
+    -- each second-coordinate vertex lies in `rest ++ [v₀]`, all of whose entries
+    -- are in `v₀ :: rest` (as a set), hence in cell `i`.
+    have hall2 : ∀ v ∈ (rest ++ [v₀]), cells v = i := by
+      intro v hv
+      rcases List.mem_append.mp hv with h | h
+      · exact hall v (List.mem_cons_of_mem _ h)
+      · have hvv : v = v₀ := List.mem_singleton.mp h
+        rw [hvv]; exact hall v₀ List.mem_cons_self
+    have hfactor : ∀ pair ∈ List.zip (v₀ :: rest) (rest ++ [v₀]),
+        (s.toU1GaugeField G).A pair.1 pair.2 = 1 := by
+      intro pair hpair
+      have h1 := List.of_mem_zip hpair
+      show s.σ pair.1 pair.2 = 1
+      rw [hτ pair.1 pair.2, hall pair.1 h1.1, hall2 pair.2 h1.2, hτii]
+    -- with every factor equal to `1`, the fold is `1`
+    have foldone : ∀ (L : List (V × V)),
+        (∀ pair ∈ L, (s.toU1GaugeField G).A pair.1 pair.2 = 1) →
+        (L.foldr (fun pair acc => (s.toU1GaugeField G).A pair.1 pair.2 * acc) 1) = 1 := by
+      intro L
+      induction L with
+      | nil => intro _; rfl
+      | cons p ps ih =>
+        intro hL
+        rw [List.foldr_cons, hL p List.mem_cons_self, one_mul]
+        exact ih (fun pair hpair => hL pair (List.mem_cons_of_mem _ hpair))
+    exact foldone _ hfactor
 
 /-- **CrossConstant ⇒ quotient-only curvature (statement).**
 
@@ -386,7 +436,59 @@ theorem crossConstant_quotient_curvature
     (_hmap : γ₁.map cells = γ₂.map cells) :
     (s.toU1GaugeField G).wilsonCycle γ₁ =
       (s.toU1GaugeField G).wilsonCycle γ₂ := by
-  sorry
+  obtain ⟨τ, hτ⟩ := _h
+  -- The fold of `s.σ a b = τ (cells a) (cells b)` over a zipped pair of lists
+  -- depends only on the cell-images of the two lists.
+  have key : ∀ (a₁ a₂ b₁ b₂ : List V),
+      a₁.map cells = a₂.map cells → b₁.map cells = b₂.map cells →
+      (List.zip a₁ b₁).foldr (fun pair acc => s.σ pair.1 pair.2 * acc) 1
+        = (List.zip a₂ b₂).foldr (fun pair acc => s.σ pair.1 pair.2 * acc) 1 := by
+    intro a₁
+    induction a₁ with
+    | nil =>
+      intro a₂ b₁ b₂ ha hb
+      have : a₂ = [] := by cases a₂ with
+        | nil => rfl
+        | cons _ _ => simp at ha
+      subst this; rfl
+    | cons x xs ih =>
+      intro a₂ b₁ b₂ ha hb
+      cases a₂ with
+      | nil => simp at ha
+      | cons x' xs' =>
+        cases b₁ with
+        | nil =>
+          have : b₂ = [] := by cases b₂ with
+            | nil => rfl
+            | cons _ _ => simp at hb
+          subst this; rfl
+        | cons y ys =>
+          cases b₂ with
+          | nil => simp at hb
+          | cons y' ys' =>
+            simp only [List.map_cons, List.cons.injEq] at ha hb
+            simp only [List.zip_cons_cons, List.foldr_cons]
+            rw [hτ x y, hτ x' y', ha.1, hb.1, ih xs' ys ys' ha.2 hb.2]
+  -- specialise to the rotated lists used in `wilsonCycle`
+  cases hγ₁ : γ₁ with
+  | nil =>
+    have : γ₂ = [] := by
+      cases γ₂ with
+      | nil => rfl
+      | cons _ _ => rw [hγ₁] at _hmap; simp at _hmap
+    subst this; rfl
+  | cons v₀ rest =>
+    cases hγ₂ : γ₂ with
+    | nil => rw [hγ₁, hγ₂] at _hmap; simp at _hmap
+    | cons w₀ rest' =>
+      show (List.zip (v₀ :: rest) (rest ++ [v₀])).foldr
+          (fun pair acc => s.σ pair.1 pair.2 * acc) 1
+        = (List.zip (w₀ :: rest') (rest' ++ [w₀])).foldr
+          (fun pair acc => s.σ pair.1 pair.2 * acc) 1
+      rw [hγ₁, hγ₂] at _hmap
+      simp only [List.map_cons, List.cons.injEq] at _hmap
+      refine key _ _ _ _ (by simp [_hmap.1, _hmap.2]) ?_
+      simp only [List.map_append, List.map_cons, List.map_nil, _hmap.1, _hmap.2]
 
 /-! ## §5.  Magnetic flux quantization on graph bundles (Hofstadter butterfly)
 
@@ -452,7 +554,14 @@ theorem hofstadter_flux_quantization
     -- cell-uniform spectrum into `q` Hofstadter subbands.  We state the
     -- root-of-unity quantization, which is the algebraic core of the result.
     (fluxOfRational p q) ^ q = 1 := by
-  sorry
+  -- `(exp(2π i p / q))^q = exp(2π i p) = (exp(2π i))^p = 1`.
+  unfold fluxOfRational
+  rw [← Complex.exp_nat_mul]
+  have hq : (q : ℂ) ≠ 0 := by exact_mod_cast (NeZero.ne q)
+  rw [show (q : ℂ) * (2 * Real.pi * Complex.I * (p : ℂ) / (q : ℂ))
+      = (p : ℂ) * (2 * Real.pi * Complex.I) by
+        field_simp]
+  rw [Complex.exp_int_mul_two_pi_mul_I p]
 
 /-- **Constructive Hofstadter chip family (statement).**  For every `p, q`
 with `gcd p q = 1`, there is an explicit chiral bundle on the
@@ -469,7 +578,73 @@ theorem hofstadter_chip_family
     ∃ (W : Type) (_ : Fintype W) (Gw : SimpleGraph W)
       (F : U1GaugeField W Gw) (γ : List W),
       F.wilsonCycle γ = fluxOfRational p q := by
-  sorry
+  -- `fluxOfRational p q` is unimodular, so it can be placed on a single oriented
+  -- edge of a triangle (the elementary plaquette), with all other edges trivial;
+  -- the triangle's Wilson loop is then exactly the flux.
+  have hflux_unimod : ‖fluxOfRational p q‖ = 1 := by
+    unfold fluxOfRational
+    have hq : (q : ℂ) ≠ 0 := by exact_mod_cast (NeZero.ne q)
+    rw [show 2 * (Real.pi : ℂ) * Complex.I * (p : ℂ) / (q : ℂ)
+        = ((2 * Real.pi * (p : ℝ) / (q : ℝ) : ℝ) : ℂ) * Complex.I by push_cast; field_simp]
+    rw [Complex.norm_exp_ofReal_mul_I]
+  -- the edge phase: `flux` on the oriented edge `0 → 1`, its conjugate on `1 → 0`,
+  -- and `1` everywhere else.
+  classical
+  set z := fluxOfRational p q with hz
+  let A : Fin 3 → Fin 3 → ℂ := fun i j =>
+    if i = 0 ∧ j = 1 then z
+    else if i = 1 ∧ j = 0 then star z
+    else 1
+  have hzne0 : z ≠ 0 := by
+    intro h; rw [h, norm_zero] at hflux_unimod; exact one_ne_zero hflux_unimod.symm
+  refine ⟨Fin 3, inferInstance, ⊤, ?_, [0, 1, 2], ?_⟩
+  · refine ⟨A, ?_, ?_, ?_⟩
+    · -- unimodularity: each branch is `z`, `star z`, or `1`, all norm 1
+      intro i j
+      show ‖A i j‖ = 1
+      simp only [A]
+      split
+      · exact hflux_unimod
+      · split
+        · rw [norm_star]; exact hflux_unimod
+        · exact norm_one
+    · -- herm: `A j i = star (A i j)`, checked on the three relevant branches
+      intro i j
+      show A j i = star (A i j)
+      simp only [A]
+      by_cases h01 : i = 0 ∧ j = 1
+      · obtain ⟨hi, hj⟩ := h01
+        subst hi; subst hj
+        simp
+      · by_cases h10 : i = 1 ∧ j = 0
+        · obtain ⟨hi, hj⟩ := h10
+          subst hi; subst hj
+          simp
+        · -- neither special edge: both `A i j` and `A j i` are `1`
+          rw [if_neg h01]
+          have hji01 : ¬ (j = 0 ∧ i = 1) := by
+            rintro ⟨hj, hi⟩; exact h10 ⟨hi, hj⟩
+          have hji10 : ¬ (j = 1 ∧ i = 0) := by
+            rintro ⟨hj, hi⟩; exact h01 ⟨hi, hj⟩
+          rw [if_neg hji01, if_neg hji10, if_neg h10, star_one]
+    · -- diag: `A i i = 1` since `i = 0 ∧ i = 1` and `i = 1 ∧ i = 0` are false
+      intro i
+      show A i i = 1
+      simp only [A]
+      rw [if_neg (by rintro ⟨h0, h1⟩; rw [h0] at h1; exact absurd h1 (by decide)),
+        if_neg (by rintro ⟨h0, h1⟩; rw [h0] at h1; exact absurd h1 (by decide))]
+  · -- Wilson loop of the triangle `[0,1,2]` is `A 0 1 · A 1 2 · A 2 0 = z · 1 · 1 = z`
+    show (List.zip [(0 : Fin 3), 1, 2] ([(1 : Fin 3), 2] ++ [0])).foldr
+        (fun pair acc => A pair.1 pair.2 * acc) 1 = z
+    show A 0 1 * (A 1 2 * (A 2 0 * 1)) = z
+    have e01 : A 0 1 = z := by simp only [A]; rw [if_pos (by decide)]
+    have e12 : A 1 2 = 1 := by
+      simp only [A]
+      rw [if_neg (by decide), if_neg (by decide)]
+    have e20 : A 2 0 = 1 := by
+      simp only [A]
+      rw [if_neg (by decide), if_neg (by decide)]
+    rw [e01, e12, e20]; ring
 
 /-! ## §6.  Gauge transformations as bundle automorphisms
 
@@ -534,7 +709,14 @@ theorem GaugeTransform.cellUniform_preserves_crossConstant
     (_hF : F.toChiralSigning.CrossConstant cells)
     (_ht : t.CellUniform cells) :
     (F.gaugeTransform t).toChiralSigning.CrossConstant cells := by
-  sorry
+  obtain ⟨τ, hτ⟩ := _hF
+  obtain ⟨g_quot, hg⟩ := _ht
+  -- the transformed phase `g x · F.A x y · star (g y)` depends only on the cells
+  refine ⟨fun i j => g_quot i * τ i j * star (g_quot j), ?_⟩
+  intro x y
+  show t.g x * F.A x y * star (t.g y) = g_quot (cells x) * τ (cells x) (cells y) * star (g_quot (cells y))
+  rw [hg x, hg y]
+  rw [show F.A x y = τ (cells x) (cells y) from hτ x y]
 
 /-- **Wilson loops are gauge invariant (statement).**  Applying any gauge
 transformation `t` to `F` leaves every Wilson loop unchanged. -/
@@ -542,7 +724,70 @@ theorem U1GaugeField.wilsonCycle_gauge_invariant
     {V : Type u} {G : SimpleGraph V}
     (F : U1GaugeField V G) (t : GaugeTransform V) (γ : List V) :
     (F.gaugeTransform t).wilsonCycle γ = F.wilsonCycle γ := by
-  sorry
+  cases γ with
+  | nil => rfl
+  | cons v₀ rest =>
+    set L := List.zip (v₀ :: rest) (rest ++ [v₀]) with hL
+    -- both Wilson loops are `List.prod` of the mapped edge phases
+    have hfold : ∀ (A : V → V → ℂ),
+        (L.foldr (fun pair acc => A pair.1 pair.2 * acc) 1)
+          = (L.map (fun p => A p.1 p.2)).prod := by
+      intro A
+      rw [List.prod_eq_foldr, List.foldr_map]
+    show (L.foldr (fun pair acc => (F.gaugeTransform t).A pair.1 pair.2 * acc) 1)
+        = (L.foldr (fun pair acc => F.A pair.1 pair.2 * acc) 1)
+    rw [hfold (F.gaugeTransform t).A, hfold F.A]
+    -- the gauge-transformed factor factors as `g(p.1) · F.A · star(g p.2)`
+    have hsplit : (L.map (fun p => (F.gaugeTransform t).A p.1 p.2))
+        = (L.map (fun p => (t.g p.1 * F.A p.1 p.2) * star (t.g p.2))) := by
+      apply List.map_congr_left
+      intro p _; rfl
+    rw [hsplit]
+    rw [show (L.map (fun p => (t.g p.1 * F.A p.1 p.2) * star (t.g p.2)))
+        = (L.map (fun p => (fun p => t.g p.1 * F.A p.1 p.2) p * (fun p => star (t.g p.2)) p))
+        from rfl, List.prod_map_mul]
+    rw [show (L.map (fun p => t.g p.1 * F.A p.1 p.2))
+        = (L.map (fun p => (fun p => t.g p.1) p * (fun p => F.A p.1 p.2) p))
+        from rfl, List.prod_map_mul]
+    -- lengths of the two zipped lists agree, so `map Prod.fst`/`map Prod.snd` recover them
+    have hlen : (v₀ :: rest).length = (rest ++ [v₀]).length := by
+      simp [List.length_append]
+    have hfst : L.map (fun p => t.g p.1) = (v₀ :: rest).map t.g := by
+      rw [hL, show (fun p : V × V => t.g p.1) = t.g ∘ Prod.fst from rfl,
+        ← List.map_map, List.map_fst_zip (le_of_eq hlen)]
+    have hsnd : L.map (fun p => star (t.g p.2))
+        = (rest ++ [v₀]).map (fun v => star (t.g v)) := by
+      rw [hL, show (fun p : V × V => star (t.g p.2)) = (fun v => star (t.g v)) ∘ Prod.snd from rfl,
+        ← List.map_map, List.map_snd_zip (le_of_eq hlen.symm)]
+    rw [hfst, hsnd]
+    -- the phase prefactor `P` and its conjugate multiply to `‖P‖² = 1`
+    set P := ((v₀ :: rest).map t.g).prod with hP
+    have hperm : List.Perm ((v₀ :: rest).map t.g) ((rest ++ [v₀]).map t.g) := by
+      apply List.Perm.map
+      exact (List.perm_append_comm (l₁ := [v₀]) (l₂ := rest))
+    have hstarprod : ((rest ++ [v₀]).map (fun v => star (t.g v))).prod = star P := by
+      rw [hP]
+      rw [show (fun v : V => star (t.g v)) = (⇑(starRingEnd ℂ)) ∘ t.g from rfl,
+        ← List.map_map, List.prod_hom _ (starRingEnd ℂ)]
+      rw [Complex.star_def]
+      congr 1
+      exact (hperm.prod_eq).symm
+    rw [hstarprod]
+    -- `P · wilson · star P = ‖P‖² · wilson = wilson`
+    have hPnorm : ‖P‖ = 1 := by
+      rw [hP, List.norm_prod]
+      -- every factor `‖g v‖ = 1`, so the product is `1`
+      apply List.prod_eq_one
+      intro x hx
+      rw [List.mem_map] at hx
+      obtain ⟨z, hz, rfl⟩ := hx
+      rw [List.mem_map] at hz
+      obtain ⟨v, _, rfl⟩ := hz
+      exact t.unimod v
+    have hPP : P * star P = 1 := by
+      rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hPnorm]; norm_num
+    -- rearrange `P · wilson · star P = (P · star P) · wilson = wilson`
+    rw [mul_right_comm, hPP, one_mul]
 
 /-! ## §7.  Non-abelian extension: matrix-valued gauge fields and Yang-Mills lattice gauge theory
 
@@ -716,7 +961,23 @@ theorem chern_quantization
     -- set `P` puts the total log-flux in `(2π/n)·ℤ` — the integrality of the
     -- discrete first Chern class.
     ∀ γ ∈ P, (F.toU1.wilsonCycle γ) ^ n = 1 := by
-  sorry
+  intro γ _
+  -- Each factor `F.toU1.A x y = zmodChar n (...)` is an `n`-th root of unity,
+  -- and `n`-th roots of unity are closed under (commutative) multiplication.
+  have hchar : ∀ k : ZMod n, (zmodChar n k) ^ n = 1 := by
+    intro k
+    rw [zmodChar_eq_pow, ← pow_mul, mul_comm, pow_mul, zmodRoot_pow_n, one_pow]
+  cases γ with
+  | nil => show (1 : ℂ) ^ n = 1; rw [one_pow]
+  | cons v₀ rest =>
+    show ((List.zip (v₀ :: rest) (rest ++ [v₀])).foldr
+        (fun pair acc => F.toU1.A pair.1 pair.2 * acc) 1) ^ n = 1
+    -- induct on the zipped list; each step multiplies by an `n`-th root of unity
+    induction (List.zip (v₀ :: rest) (rest ++ [v₀])) with
+    | nil => show (1 : ℂ) ^ n = 1; rw [one_pow]
+    | cons p ps ih =>
+      rw [List.foldr_cons, mul_pow, ih, mul_one]
+      exact hchar _
 
 /-- **Quantum Hall effect on lattice (statement).**  A chiral signing of
 a 2D graph layout with non-zero discrete Chern number realises a quantized

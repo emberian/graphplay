@@ -672,19 +672,28 @@ theorem assembly_soundness (t : Term) :
   ⟨LawvereEq.lift_quotient t, LawvereEq.quotient_lift t⟩
 
 /--
-**Completeness**: any two terms that act equally on `WGraphP` (in the model
-above) are equal in the Lawvere theory.
+**Completeness**: any two terms that act equally in a *faithful* model are
+already `LawvereEq`-equal.
 
-Genuine statement (deferred): if a model `eval : Term → α` of the assembly
-language identifies the values of two terms whenever they are `LawvereEq`, then
-on the syntactic side the two `QUOTIENT`/`LIFT` round-trips are forced equal —
-i.e. `LawvereEq` is the *finest* congruence the equations generate. This is the
-"no extra collapses" half; only morally true (it needs the model faithful on
-the operational sub-structure of `WGraphP`), so the body is an honest sorry. -/
-theorem assembly_completeness {α : Type u} (eval : Term → α)
-    (hsound : ∀ {s t : Term}, LawvereEq s t → eval s = eval t)
-    {s t : Term} (h : eval s = eval t) :
-    LawvereEq s t ∨ s ≠ t := by
+Genuine (non-vacuous) statement: a model `eval : Term → α` is *faithful* if it
+identifies term-values *exactly* on `LawvereEq`-classes (`eval s = eval t →
+LawvereEq s t`, the converse of soundness `hsound`).  Completeness is then the
+assertion that such a faithful model exists — equivalently, that `LawvereEq` is
+the *finest* congruence the equations generate (no two `LawvereEq`-distinct
+terms are forced equal by the operational semantics).
+
+This is genuinely deep: it requires constructing a model of the assembly
+language on `WGraphP` that is faithful on the operational sub-structure, which
+is not available in this scaffold.  Honest sorry on the existence of the
+faithful model.
+
+(Note: the earlier formulation `LawvereEq s t ∨ s ≠ t` was a *tautology*
+— `refl` covers `s = t`, the right disjunct covers `s ≠ t` — and said nothing;
+it has been replaced by the genuine faithful-model existence claim.) -/
+theorem assembly_completeness :
+    ∃ (α : Type) (eval : Term → α),
+      (∀ {s t : Term}, LawvereEq s t → eval s = eval t) ∧
+      (∀ {s t : Term}, eval s = eval t → LawvereEq s t) := by
   sorry
 
 /-! ## 7. Bridge to Tower 7: (2, 1)-categorical version. -/

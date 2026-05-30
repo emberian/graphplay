@@ -225,7 +225,29 @@ theorem trivial_preserves_phantom
     PreservesPhantomSymmetry P (ChiralSigning.trivial V) := by
   -- `G.signedBy (trivial V) = G` (mod the simp lemma `signedBy_trivial` in
   -- `Chiral.lean`).  Then transport `hP`.
-  sorry
+  -- First: the equitable structure is preserved (the signed graph is `G`).
+  have heq : PreservesEquitable P (ChiralSigning.trivial V) := by
+    intro i j x y hx hy
+    rw [G.signedBy_trivial]
+    exact P.uniform i j x y hx hy
+  refine ⟨heq, ?_⟩
+  -- The phantom-symmetry data on `G.signedBy (trivial) = G` transports from `hP`.
+  -- Obtain the distinguishing cell pair from `hP`.
+  obtain ⟨i, j, hij, hφ⟩ := hP
+  refine ⟨i, j, hij, ?_⟩
+  intro φ x hx
+  -- A `WeightedAut (G.signedBy (trivial V))` is a `WeightedAut G` since the
+  -- adjacency is literally `G.adj` after `signedBy_trivial`.
+  have hgr : G.signedBy (ChiralSigning.trivial V) = G := G.signedBy_trivial
+  -- Transport `φ` to a `WeightedAut G`.
+  let φ' : WeightedAut G :=
+    { π := φ.π
+      preserves := by
+        intro a b
+        have h := φ.preserves a b
+        simp only [WeightedGraph.signedBy_trivial] at h
+        exact h }
+  exact hφ φ' x hx
 
 /-! ## §3.  Headline theorem: phantom symmetry survives ⇔ flat on cells
 
@@ -418,8 +440,9 @@ theorem hofstadter_family_indexed_by_chern_number
     True := by
   -- The construction is the explicit clock gauge field of I7 §2 with
   -- value `k` per plaquette; integrality of the Chern number then
-  -- matches the rational flux quantization `e^{2π i k/q}`.
-  sorry
+  -- matches the rational flux quantization `e^{2π i k/q}`.  The statement is
+  -- recorded at `Prop`-level `True` (the genuine existential lives in I7).
+  trivial
 
 /-! ## §6.  TQC connection: topologically protected unitaries
 
@@ -638,8 +661,8 @@ theorem nonabelian_phantomSymmetry_iff_flatOnCells_conjecture
     True := by
   -- See I7 §7, `matrix_gauge_field_preserves_equitable` for the
   -- equitable-preservation half; the phantom-symmetric half awaits a
-  -- matrix-weighted graph type.
-  sorry
+  -- matrix-weighted graph type.  Recorded at `Prop`-level `True`.
+  trivial
 
 /-- **Companion statement: non-abelian Chern number on cells.**  For
 SU(N) lattice gauge fields, the relevant integer invariant on the
@@ -658,7 +681,7 @@ theorem nonabelian_chernNumber_extension_conjecture
     -- and the robustness theorem of §7 extends with `c₂` in place of
     -- the first Chern number.
     True := by
-  sorry
+  trivial
 
 end TopologicalProtection
 end Graphplay

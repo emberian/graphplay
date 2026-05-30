@@ -52,6 +52,7 @@ import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.PST
+import Graphplay.PST.QuotientIff
 import Graphplay.Mixing
 import Graphplay.Search
 import Graphplay.Chiral
@@ -490,14 +491,21 @@ theorem pst_lift_clique
     (huniform : ∀ (i j : I) (x y : V), π.cells x = i → π.cells y = i →
       (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj x z else 0))
       = (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj y z else 0)))
+    (hne : ∀ c, (relEquitable_clique (E := E) H edge compat π huniform).cellCard c ≠ 0)
     (i j : I) (τ : ℝ)
+    -- NOTE (quotient vs symmQuotient bridge): the genuinely-Hermitian object on
+    -- which the Bachman–Tamon iff (`cellUniformPST_iff_quotientPST`) is stated is
+    -- the `D^{1/2}`-conjugate `symmQuotient`, not the raw `quotient` (they agree
+    -- only up to the cell-size diagonal, which rescales the off-diagonal moduli).
+    -- The genuine PST hypothesis is therefore phrased on `symmQuotient`; with
+    -- nonempty cells (`hne`) the lift is then exact.
     (hq : Graphon.IsPST_finite
-      (relEquitable_clique (E := E) H edge compat π huniform).quotient i j τ) :
+      (relEquitable_clique (E := E) H edge compat π huniform).symmQuotient i j τ) :
     IsCellUniformPST
       (cliqueLaplacian (E := E) edge)
-      (relEquitable_clique (E := E) H edge compat π huniform) i j τ := by
-  -- Reduce to `EquitablePartition.pst_lift` from `Graphplay/PST.lean`.
-  sorry
+      (relEquitable_clique (E := E) H edge compat π huniform) i j τ :=
+  ((relEquitable_clique (E := E) H edge compat π huniform).cellUniformPST_iff_quotientPST
+    hne i j τ).mpr hq
 
 /-- **PST lift, Hodge model.**  Genuine quotient PST `hq` lifts to
 cell-uniform PST on the (zero, at this resolution) Hodge Laplacian. -/
@@ -506,13 +514,17 @@ theorem pst_lift_hodge
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (π : RelEquitablePartition H I)
+    (hne : ∀ c, (relEquitable_hodge (E := E) H edge compat π).cellCard c ≠ 0)
     (i j : I) (τ : ℝ)
+    -- Hypothesis on the genuinely-Hermitian `symmQuotient` (see the note on
+    -- `pst_lift_clique`).
     (hq : Graphon.IsPST_finite
-      (relEquitable_hodge (E := E) H edge compat π).quotient i j τ) :
+      (relEquitable_hodge (E := E) H edge compat π).symmQuotient i j τ) :
     IsCellUniformPST
       (hodgeLaplacian (E := E) edge)
-      (relEquitable_hodge (E := E) H edge compat π) i j τ := by
-  sorry
+      (relEquitable_hodge (E := E) H edge compat π) i j τ :=
+  ((relEquitable_hodge (E := E) H edge compat π).cellUniformPST_iff_quotientPST
+    hne i j τ).mpr hq
 
 /-- **PST lift, tensor model.**  Indexed by the derived cell type
 `Fin k → I`. -/
@@ -528,13 +540,17 @@ theorem pst_lift_tensor
         (tensorWalk (E := E) edge).adj x z else 0))
       = (∑ z, (if tensorCells (E := E) (H := H) edge π z = j then
         (tensorWalk (E := E) edge).adj y z else 0)))
+    (hne : ∀ c, (relEquitable_tensor (E := E) H edge compat π huniform).cellCard c ≠ 0)
     (i j : Fin k → I) (τ : ℝ)
+    -- Hypothesis on the genuinely-Hermitian `symmQuotient` (see the note on
+    -- `pst_lift_clique`).
     (hq : Graphon.IsPST_finite
-      (relEquitable_tensor (E := E) H edge compat π huniform).quotient i j τ) :
+      (relEquitable_tensor (E := E) H edge compat π huniform).symmQuotient i j τ) :
     IsCellUniformPST
       (tensorWalk (E := E) edge)
-      (relEquitable_tensor (E := E) H edge compat π huniform) i j τ := by
-  sorry
+      (relEquitable_tensor (E := E) H edge compat π huniform) i j τ :=
+  ((relEquitable_tensor (E := E) H edge compat π huniform).cellUniformPST_iff_quotientPST
+    hne i j τ).mpr hq
 
 /-! ### Mixing and search liftings (statement-only).
 
@@ -555,6 +571,13 @@ theorem mixing_lift_clique
     IsCellUniformMixing
       (cliqueLaplacian (E := E) edge)
       (relEquitable_clique (E := E) H edge compat π huniform) t := by
+  -- HONEST SORRY (deep): unlike the PST liftings (which route through the
+  -- proven `cellUniformPST_iff_quotientPST`), there is *no* finite
+  -- mixing↔symmQuotient iff yet; the host cell-block amplitude `cellBlockAmp`
+  -- only equals the quotient-weighted amplitude via the sorried
+  -- `Graphplay.Mixing.cellBlockAmp_eq_quotient`.  Moreover the hypothesis
+  -- constrains only row `i` of the *raw* quotient, which cannot force the
+  -- `∀ i j` cell-uniform mixing conclusion (target `|Cᵢ||Cⱼ|/n²`).
   sorry
 
 theorem mixing_lift_hodge
@@ -568,6 +591,10 @@ theorem mixing_lift_hodge
     IsCellUniformMixing
       (hodgeLaplacian (E := E) edge)
       (relEquitable_hodge (E := E) H edge compat π) t := by
+  -- HONEST SORRY (deep): same gap as `mixing_lift_clique` — the finite
+  -- mixing↔quotient bridge rests on the sorried
+  -- `Graphplay.Mixing.cellBlockAmp_eq_quotient`, and the single-row raw-quotient
+  -- hypothesis is too weak for the `∀ i j` conclusion.
   sorry
 
 theorem search_lift_clique
@@ -897,10 +924,15 @@ theorem chiral_pst_lift_hodge
     (edge : E → (Fin k → V))
     (s : ChiralHodgeSigning V E k)
     (P : EquitablePartition (s.signedHodgeLaplacian edge) I)
+    (hne : ∀ c, P.cellCard c ≠ 0)
     (i j : I) (τ : ℝ)
-    (hq : Graphon.IsPST_finite P.quotient i j τ) :
-    IsCellUniformPST (s.signedHodgeLaplacian edge) P i j τ := by
-  sorry
+    -- NOTE (quotient vs symmQuotient bridge): exactly as in `pst_lift_clique`,
+    -- the genuinely-Hermitian object on which the Bachman–Tamon iff is stated is
+    -- the `D^{1/2}`-conjugate `symmQuotient`, not the raw `quotient`.  With
+    -- nonempty cells (`hne`) the lift is exact.
+    (hq : Graphon.IsPST_finite P.symmQuotient i j τ) :
+    IsCellUniformPST (s.signedHodgeLaplacian edge) P i j τ :=
+  (P.cellUniformPST_iff_quotientPST hne i j τ).mpr hq
 
 /-! ## 7. Hypergraphon limit
 

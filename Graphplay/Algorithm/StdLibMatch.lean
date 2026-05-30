@@ -405,7 +405,17 @@ noncomputable def familyGraph : (f : KnownFamily) →
 /-- **Soundness of the matcher.**  A successful `stdLibMatch` returns a
 result whose recognised family is isospectral to the input under the
 returned bijection.  Strengthening this to *isomorphism* (when the
-structural recogniser succeeds) is the natural next step. -/
+structural recogniser succeeds) is the natural next step.
+
+⚠ DOUBLE STUB-DRIVEN VACUITY.  Two independent placeholders hollow this out:
+(1) `stdLibMatch` is hardwired to `none`, so the hypothesis
+`stdLibMatch G = some r` is *unsatisfiable* (`none = some r` is `False`) and
+the theorem holds vacuously for every `G, r`; (2) even the conclusion
+`Isospectral G (familyGraph …)` is vacuous because `spectralFingerprint` and
+`expectedSpectrum` both return `0`, so `Isospectral` is always `0 = 0`.  This
+becomes a genuine soundness theorem only once `stdLibMatch`,
+`spectralFingerprint`, and `expectedSpectrum` get real definitions.  The
+`sorry` stands for that future proof; do not read it as current evidence. -/
 theorem stdLibMatch_sound
     (G : WeightedGraph V) (r : MatchResult V)
     (h : stdLibMatch G = some r) :
@@ -414,7 +424,13 @@ theorem stdLibMatch_sound
   sorry
 
 /-- **No-false-positive corollary.**  If `G` is not isospectral to any
-`KnownFamily`, then `stdLibMatch G = none`. -/
+`KnownFamily`, then `stdLibMatch G = none`.
+
+⚠ STUB-DRIVEN VACUITY.  Since `stdLibMatch` is hardwired to `none`, the
+conclusion `stdLibMatch G = none` is `rfl` — true for *every* `G`, with the
+hypothesis `h` entirely unused.  It becomes the genuine "no false positive"
+guarantee once `stdLibMatch` actually performs recognition.  The `sorry`
+holds the place for that real argument. -/
 theorem stdLibMatch_complete_negative
     (G : WeightedGraph V)
     (h : ∀ f : KnownFamily, ¬ Isospectral G (familyGraph f)) :
@@ -431,14 +447,22 @@ caller only wants to know "what is this graph?". -/
 noncomputable def stdLibMatchName (G : WeightedGraph V) : Option KnownFamily :=
   (stdLibMatch G).map (·.family)
 
-/-- The full match's family agrees with the lightweight match. -/
+/-- The full match's family agrees with the lightweight match.
+
+⚠ STUB-DRIVEN VACUITY: the hypothesis `stdLibMatch G = some r` is
+unsatisfiable while `stdLibMatch ≡ none` (see `stdLibMatch_sound`), so this
+holds vacuously.  It is in fact provable *unconditionally* by
+`simp [stdLibMatchName, h]` once `h` is in hand (a rewrite), and becomes
+non-vacuous only when `stdLibMatch` is implemented. -/
 theorem stdLibMatchName_eq_family
     (G : WeightedGraph V) (r : MatchResult V)
     (h : stdLibMatch G = some r) :
     stdLibMatchName G = some r.family := by
-  -- direct rewrite from the assumption; deferred so the file compiles
-  -- alongside the broader matcher API.
-  sorry
+  -- Genuine (non-vacuous-modulo-stub) proof: `stdLibMatchName` is the
+  -- `.family`-map of `stdLibMatch`, so rewriting by `h` closes it directly.
+  unfold stdLibMatchName
+  rw [h]
+  rfl
 
 /-! ## Diagnostics
 

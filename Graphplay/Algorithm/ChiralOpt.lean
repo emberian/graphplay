@@ -351,7 +351,18 @@ noncomputable def discretisationError (_target : PrimitiveTarget) (_k : ℕ) : �
 /-- **Correctness of the chiral-signing optimiser.**  The returned
 signing achieves a figure of merit at least `feasibleOptimum - δ(k)`.
 
-This is the headline theorem of the file; proof deferred. -/
+This is the intended headline theorem of the file; proof deferred.
+
+⚠ STUB-DRIVEN VACUITY WARNING.  As currently defined, `chiralOptimize`
+returns `bestScore = OptScore.bottom` (value `0`), `feasibleOptimum := 0`,
+and `discretisationError := 0` — all placeholders.  So the *literal*
+statement below is `0 ≥ 0 - 0`, which is trivially true and says NOTHING
+about any real optimisation.  The `sorry` stands for the genuine proof that
+will exist once `scoreFastestMix`/`scoreFastestPST`/… (currently all `0`),
+`feasibleOptimum`, and `discretisationError` are given their real analytic
+definitions (mixing distance, search success, `O(1/k)` grid error).  Until
+then this theorem is content-free; do not cite it as evidence of optimality.
+-/
 theorem chiralOptimize_correct
     (B : GraphBundle Q V) (target : PrimitiveTarget)
     (H : HardwareSpec) (k : ℕ) :
@@ -360,7 +371,12 @@ theorem chiralOptimize_correct
   sorry
 
 /-- **Convergence.**  As the discretisation `k → ∞`, the optimiser
-attains the feasible optimum. -/
+attains the feasible optimum.
+
+⚠ STUB-DRIVEN VACUITY WARNING.  With the current placeholders the score is
+the constant `0` and `feasibleOptimum := 0`, so this degenerates to
+`Tendsto (fun _ => 0) atTop (nhds 0)` — true by constancy, content-free.
+Genuine only once `score`/`feasibleOptimum`/`discretisationError` are real. -/
 theorem chiralOptimize_converges
     (B : GraphBundle Q V) (target : PrimitiveTarget)
     (H : HardwareSpec) :
@@ -371,7 +387,12 @@ theorem chiralOptimize_converges
   sorry
 
 /-- **Hardware-feasibility of the output.**  The returned signing's
-phases lie in `H.allowedPhaseSet` (up to discretisation snap). -/
+phases lie in `H.allowedPhaseSet` (up to discretisation snap).
+
+⚠ STUB-DRIVEN: `chiralOptimize` currently returns `ChiralSigning.trivial`
+(all phases `1`), so this reduces to `1 ∈ H.allowedPhaseSet ∨ x.1 = y.1`.
+It becomes the genuine feasibility guarantee once `chiralOptimize` performs
+the real grid search and snaps to `allowedPhaseSet`. -/
 theorem chiralOptimize_feasible
     (B : GraphBundle Q V) (target : PrimitiveTarget)
     (H : HardwareSpec) (k : ℕ)

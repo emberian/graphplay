@@ -131,8 +131,26 @@ theorem exists_WLStable (G : WeightedGraph V) :
     ∃ (C : Type) (_ : DecidableEq C) (c : Colouring V C), IsWLStable G c := by
   -- The number of distinct colours is bounded above by `|V|`, and each step
   -- never coarsens the partition, so a fixed point is reached within `|V|`
-  -- iterations.
-  sorry
+  -- iterations.  The *injective* colouring `c = id : V → V` is already a fixed
+  -- point: it distinguishes every pair of vertices, so no further refinement
+  -- can separate more, and it is trivially equitable.  This is the (always
+  -- available) terminal colouring of the descent.
+  classical
+  -- `V` may live in a higher universe; use the injective colouring valued in
+  -- the `Type 0` representative `Fin (card V)` via the Fintype equivalence.
+  obtain ⟨e⟩ := Fintype.truncEquivFin V
+  refine ⟨Fin (Fintype.card V), inferInstance, fun v => e v, ?_⟩
+  intro u v
+  constructor
+  · intro h
+    -- the first component of `refineStep G c u` is `c u = e u`; `e` injective
+    have := congrArg Prod.fst h
+    simp only [refineStep] at this
+    exact this
+  · intro h
+    -- `e u = e v` ⇒ `u = v` ⇒ steps equal
+    have huv : u = v := e.injective h
+    rw [huv]
 
 /-- The **1-WL stable partition** of `G`: the equivalence classes of any
 stable colouring. This is the *coarsest* equitable partition of `G`. -/
@@ -202,7 +220,23 @@ finite descent on the number of colour classes). -/
 theorem exists_KWLStable (G : WeightedGraph V) (k : ℕ) :
     ∃ (C : Type) (_ : DecidableEq C) (c : TupleColouring V k C),
       IsKWLStable G k c := by
-  sorry
+  -- Same finite-descent argument as `exists_WLStable`: the injective tuple
+  -- colouring `c = id : (Fin k → V) → (Fin k → V)` is already a fixed point,
+  -- distinguishing every pair of `k`-tuples, so no `k`-WL step refines further.
+  classical
+  -- The injective tuple colouring valued in the `Type 0` representative
+  -- `Fin (card (Fin k → V))` via the Fintype equivalence.
+  obtain ⟨e⟩ := Fintype.truncEquivFin (Fin k → V)
+  refine ⟨Fin (Fintype.card (Fin k → V)), inferInstance, fun x => e x, ?_⟩
+  intro x y
+  constructor
+  · intro h
+    have := congrArg Prod.fst h
+    simp only [kRefineStep] at this
+    exact this
+  · intro h
+    have hxy : x = y := e.injective h
+    rw [hxy]
 
 /-! ## 3. The WL chain refines
 

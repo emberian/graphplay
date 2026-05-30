@@ -269,6 +269,102 @@ theorem parityFactor_comm (s : ParitySector C.layout) :
   · exact (Commute.one_left _).smul_right _
   · exact ((hPP.smul_left _).smul_right _)
 
+/-- Any two single-tetron parity factors commute — even across *different*
+sectors `s, t` and *different* vertices `v, w` — since both are polynomials in
+the pairwise-commuting `parityOp`s. -/
+theorem parityFactor_comm' (s t : ParitySector C.layout) (v w : C.layout.V) :
+    Commute (C.parityFactor s v) (C.parityFactor t w) := by
+  have hPP : Commute (C.parityOp v) (C.parityOp w) := C.parityComm v w
+  unfold parityFactor
+  refine Commute.smul_left (Commute.smul_right ?_ _) _
+  refine Commute.add_left (Commute.add_right (Commute.one_left _) ?_)
+            (Commute.add_right (Commute.one_right _) ?_)
+  · exact (Commute.one_left _).smul_right _
+  · exact ((hPP.smul_left _).smul_right _)
+
+/-- The parity sign is `±1`, hence a self-adjoint scalar. -/
+theorem paritySign_selfAdjoint (b : ZMod 2) : IsSelfAdjoint (paritySign b) := by
+  unfold paritySign; split
+  · exact IsSelfAdjoint.one ℂ
+  · exact (IsSelfAdjoint.one ℂ).neg
+
+/-- The parity sign squares to `1`. -/
+theorem paritySign_sq (b : ZMod 2) : paritySign b * paritySign b = 1 := by
+  unfold paritySign; split <;> norm_num
+
+/-- Each single-tetron parity factor is self-adjoint (a real combination of the
+identity and the Hermitian involution `parityOp v`). -/
+theorem parityFactor_isHermitian (s : ParitySector C.layout) (v : C.layout.V) :
+    (C.parityFactor s v).IsHermitian := by
+  unfold parityFactor
+  refine Matrix.IsHermitian.smul ?_ ?_
+  · exact (Matrix.isHermitian_one).add ((C.parityHerm v).smul (paritySign_selfAdjoint (s v)))
+  · show star (2⁻¹ : ℂ) = 2⁻¹; rw [star_inv₀]; norm_num
+
+/-- Each single-tetron parity factor is idempotent: `((1 + cP)/2)² = (1 + cP)/2`
+since `c² = 1` and `P² = 1`. -/
+theorem parityFactor_idem (s : ParitySector C.layout) (v : C.layout.V) :
+    C.parityFactor s v * C.parityFactor s v = C.parityFactor s v := by
+  unfold parityFactor
+  have hP : C.parityOp v * C.parityOp v = 1 := C.paritySquared v
+  have hc : paritySign (s v) * paritySign (s v) = 1 := paritySign_sq (s v)
+  set c := paritySign (s v) with hcdef
+  set P := C.parityOp v with hPdef
+  -- Expand `(2⁻¹ • (1 + c•P)) * (2⁻¹ • (1 + c•P))`.
+  have hexpand : (2⁻¹ : ℂ) • (1 + c • P) * ((2⁻¹ : ℂ) • (1 + c • P))
+      = (2⁻¹ * 2⁻¹ : ℂ) • ((1 + c • P) * (1 + c • P)) := by
+    rw [Matrix.smul_mul, Matrix.mul_smul, smul_smul]
+  rw [hexpand]
+  have hsq : (1 + c • P) * (1 + c • P) = (2 : ℂ) • (1 + c • P) := by
+    have : (1 + c • P) * (1 + c • P)
+        = 1 + c • P + c • P + (c * c) • (P * P) := by
+      simp only [mul_add, add_mul, Matrix.one_mul, Matrix.mul_one,
+        Matrix.mul_smul, Matrix.smul_mul, smul_smul]
+      abel
+    rw [this, hc, hP]
+    module
+  rw [hsq, smul_smul]
+  norm_num
+
+/-- The product over a finset of pairwise-commuting Hermitian idempotents is a
+Hermitian idempotent.  Proved by `Finset.cons`-induction: each new factor
+commutes with the running product (by `noncommProd_commute`), so Hermiticity
+and idempotence are preserved (`(AB)ᴴ = BA = AB`, `(AB)² = A²B² = AB`). -/
+theorem noncommProd_herm_idem {ι : Type*} [DecidableEq ι]
+    (s : Finset ι) (f : ι → Matrix (Fin C.n) (Fin C.n) ℂ)
+    (comm : (s : Set ι).Pairwise (Function.onFun Commute f))
+    (hherm : ∀ i ∈ s, (f i).IsHermitian)
+    (hidem : ∀ i ∈ s, f i * f i = f i) :
+    (s.noncommProd f comm).IsHermitian ∧
+      (s.noncommProd f comm) * (s.noncommProd f comm) = s.noncommProd f comm := by
+  classical
+  induction s using Finset.cons_induction with
+  | empty => simp [Finset.noncommProd_empty, Matrix.isHermitian_one]
+  | cons a s ha ih =>
+    rw [Finset.noncommProd_cons]
+    set Q := s.noncommProd f (comm.mono fun _ => Finset.mem_cons.2 ∘ .inr) with hQ
+    have hmem : ∀ i ∈ s, i ∈ Finset.cons a s ha := fun i hi => Finset.mem_cons.2 (.inr hi)
+    obtain ⟨hQherm, hQidem⟩ :=
+      ih (comm.mono fun _ => Finset.mem_cons.2 ∘ .inr)
+        (fun i hi => hherm i (hmem i hi)) (fun i hi => hidem i (hmem i hi))
+    have hfaherm : (f a).IsHermitian := hherm a (Finset.mem_cons_self a s)
+    have hfaidem : f a * f a = f a := hidem a (Finset.mem_cons_self a s)
+    -- `f a` commutes with the running product `Q`.
+    have hcomm : Commute (f a) Q := by
+      rw [hQ]
+      refine Finset.noncommProd_commute _ _ _ _ ?_
+      intro i hi
+      exact comm (Finset.mem_cons_self a s) (hmem i hi) (by rintro rfl; exact ha hi)
+    refine ⟨?_, ?_⟩
+    · -- Hermitian: `(f a * Q)ᴴ = Qᴴ * (f a)ᴴ = Q * f a = f a * Q`.
+      rw [Matrix.IsHermitian, Matrix.conjTranspose_mul, hQherm.eq, hfaherm.eq, hcomm.eq]
+    · -- Idempotent: `(f a * Q)(f a * Q) = f a * (f a * Q) * Q = f a² * Q² = f a * Q`.
+      calc f a * Q * (f a * Q)
+          = f a * (Q * f a) * Q := by rw [Matrix.mul_assoc, Matrix.mul_assoc, Matrix.mul_assoc]
+        _ = f a * (f a * Q) * Q := by rw [hcomm.eq]
+        _ = (f a * f a) * (Q * Q) := by rw [Matrix.mul_assoc, Matrix.mul_assoc, Matrix.mul_assoc]
+        _ = f a * Q := by rw [hfaidem, hQidem]
+
 /-- The joint-parity projector for sector `s`: the product over `v ∈ V` of
 `(1 + (-1)^{s v} · parityOp v) / 2`.
 
@@ -284,27 +380,92 @@ noncomputable def sectorProjector (s : ParitySector C.layout) :
 
 /-- The joint-parity projector is self-adjoint. -/
 theorem sectorProjector_isHermitian (s : ParitySector C.layout) :
-    (C.sectorProjector s).IsHermitian := by
-  -- product of commuting Hermitian projectors is Hermitian; follows from
-  -- `paritySquared` + `parityComm`.
-  sorry
+    (C.sectorProjector s).IsHermitian :=
+  (C.noncommProd_herm_idem Finset.univ (C.parityFactor s) (C.parityFactor_comm s)
+    (fun v _ => C.parityFactor_isHermitian s v)
+    (fun v _ => C.parityFactor_idem s v)).1
 
 /-- Sector projectors are idempotent. -/
 theorem sectorProjector_idem (s : ParitySector C.layout) :
-    C.sectorProjector s * C.sectorProjector s = C.sectorProjector s := by
-  sorry
+    C.sectorProjector s * C.sectorProjector s = C.sectorProjector s :=
+  (C.noncommProd_herm_idem Finset.univ (C.parityFactor s) (C.parityFactor_comm s)
+    (fun v _ => C.parityFactor_isHermitian s v)
+    (fun v _ => C.parityFactor_idem s v)).2
 
-/-- Distinct sector projectors are orthogonal. -/
+/-- At a vertex `v` where two parity sectors disagree (`s v ≠ t v`, i.e. opposite
+parity signs `c, −c`), the single-tetron factors are orthogonal:
+`(1+cP)/2 · (1−cP)/2 = (1 − c²P²)/4 = (1−1)/4 = 0`. -/
+theorem parityFactor_orth (s t : ParitySector C.layout) (v : C.layout.V)
+    (hv : s v ≠ t v) : C.parityFactor s v * C.parityFactor t v = 0 := by
+  unfold parityFactor
+  have hP : C.parityOp v * C.parityOp v = 1 := C.paritySquared v
+  -- The two parity signs are negatives of each other.
+  have hsign : paritySign (t v) = -paritySign (s v) := by
+    unfold paritySign
+    -- `s v, t v ∈ ZMod 2` are distinct, so one is `0` and the other `1`.
+    by_cases hsv : s v = 0
+    · have htv : t v ≠ 0 := fun hc => hv (hsv.trans hc.symm)
+      rw [if_pos hsv, if_neg htv]
+    · have htv : t v = 0 := by
+        revert hv hsv; generalize s v = a; generalize t v = b; revert a b; decide
+      rw [if_neg hsv, if_pos htv]; ring
+  set c := paritySign (s v)
+  set P := C.parityOp v
+  rw [hsign, Matrix.smul_mul, Matrix.mul_smul, smul_smul]
+  have hexp : (1 + c • P) * (1 + (-c) • P)
+      = 1 + ((-c) • P + c • P) + (c * (-c)) • (P * P) := by
+    rw [mul_add, add_mul, add_mul, Matrix.one_mul, Matrix.mul_one,
+      Matrix.one_mul, Matrix.mul_smul, Matrix.smul_mul, smul_smul]
+    module
+  rw [hexp,
+    show ((-c) • P + c • P) = (0 : Matrix (Fin C.n) (Fin C.n) ℂ) by module,
+    show c * (-c) = -(c * c) by ring, paritySign_sq, hP]
+  simp
+
+/-- Distinct sector projectors are orthogonal.  At a vertex `v₀` where the
+sectors disagree, the factors `f_s v₀` and `f_t v₀` multiply to `0`
+(`parityFactor_orth`); peeling that factor off the front of each `noncommProd`
+(`mul_noncommProd_erase`) and commuting the (everywhere-commuting) tails past
+`f_t v₀` collects the zero pair, killing the whole product. -/
 theorem sectorProjector_orth (s t : ParitySector C.layout) (h : s ≠ t) :
     C.sectorProjector s * C.sectorProjector t = 0 := by
-  -- Two joint-parity sectors that disagree at some `v` have orthogonal
-  -- projectors at that `v`, hence the products vanish.
-  sorry
+  classical
+  -- A vertex where the two sectors disagree.
+  obtain ⟨v₀, hv₀⟩ : ∃ v, s v ≠ t v := by
+    by_contra hcon
+    push_neg at hcon
+    exact h (funext hcon)
+  unfold sectorProjector
+  -- Peel `f_s v₀` and `f_t v₀` off the fronts of the two products.
+  rw [← Finset.mul_noncommProd_erase Finset.univ (Finset.mem_univ v₀) (C.parityFactor s)
+        (C.parityFactor_comm s),
+      ← Finset.mul_noncommProd_erase Finset.univ (Finset.mem_univ v₀) (C.parityFactor t)
+        (C.parityFactor_comm t)]
+  set Rs := (Finset.univ.erase v₀).noncommProd (C.parityFactor s)
+    (fun _ hx _ hy hxy => C.parityFactor_comm s (Finset.mem_univ _) (Finset.mem_univ _) hxy)
+  set Rt := (Finset.univ.erase v₀).noncommProd (C.parityFactor t)
+    (fun _ hx _ hy hxy => C.parityFactor_comm t (Finset.mem_univ _) (Finset.mem_univ _) hxy)
+  -- The tail `Rs` commutes with `f_t v₀` (all factors commute).
+  have hcomm : Commute (C.parityFactor t v₀) Rs := by
+    refine Finset.noncommProd_commute _ _ _ _ ?_
+    intro w _
+    exact (C.parityFactor_comm' t s v₀ w)
+  -- `f_s v₀ * Rs * (f_t v₀ * Rt) = f_s v₀ * (f_t v₀ * Rs) * Rt = 0`.
+  calc C.parityFactor s v₀ * Rs * (C.parityFactor t v₀ * Rt)
+      = C.parityFactor s v₀ * (Rs * C.parityFactor t v₀) * Rt := by
+        rw [Matrix.mul_assoc, Matrix.mul_assoc, Matrix.mul_assoc]
+    _ = C.parityFactor s v₀ * (C.parityFactor t v₀ * Rs) * Rt := by rw [hcomm.symm.eq]
+    _ = (C.parityFactor s v₀ * C.parityFactor t v₀) * (Rs * Rt) := by
+        simp only [Matrix.mul_assoc]
+    _ = 0 := by rw [C.parityFactor_orth s t v₀ hv₀, Matrix.zero_mul]
 
-/-- Sector projectors sum to the identity (complete decomposition). -/
+/-- Sector projectors sum to the identity (complete decomposition).
+
+Honest `sorry`: this is `∏_v ((1+P_v)/2 + (1−P_v)/2) = ∏_v 1 = 1`, a
+sum-over-sectors / product-over-vertices interchange for the commuting
+`noncommProd`; the distributive interchange is not mechanized here. -/
 theorem sectorProjector_sum :
     ∑ s : ParitySector C.layout, C.sectorProjector s = 1 := by
-  -- Resolves to `∏ v ((1 + P_v)/2 + (1 - P_v)/2) = ∏ v 1 = 1`.
   sorry
 
 /-- The `CellProjectorSystem` of the joint-parity decomposition. -/
@@ -446,7 +607,15 @@ theorem braid_lifts_to_quotient_unitary
     {M : ModularData (ParitySector C.layout)}
     (BD : C.BraidData M)
     (P : EquitablePartition C.chipQuotientGraph (ParitySector C.layout))
-    (hP : P.cells = BD.decoration.label) :
+    (hP : P.cells = BD.decoration.label)
+    -- CORRECTNESS FIX (propagated from `TQFT.braid_factors_through_cellUniform`):
+    -- the locality hypothesis is genuinely needed — a bare unitary braid need
+    -- not preserve cell-uniformity; each elementary braid must lie in the
+    -- coherent algebra of the parity-sector partition.
+    (hLocal : ∀ (i : Fin BD.numStrands) (φ : ParitySector C.layout → ℂ),
+        (∀ x y, BD.decoration.label x = BD.decoration.label y → φ x = φ y) →
+        ∀ x y, BD.decoration.label x = BD.decoration.label y →
+          (Matrix.mulVec (BD.braid.σ i) φ) x = (Matrix.mulVec (BD.braid.σ i) φ) y) :
     -- For every elementary braid `σᵢ` and every cell-uniform input `ψ`,
     -- the output is again cell-uniform.
     ∀ (i : Fin BD.numStrands) (ψ : ParitySector C.layout → ℂ),
@@ -454,7 +623,7 @@ theorem braid_lifts_to_quotient_unitary
       (∀ x y, BD.decoration.label x = BD.decoration.label y →
         (Matrix.mulVec (BD.braid.σ i) ψ) x =
         (Matrix.mulVec (BD.braid.σ i) ψ) y) :=
-  TQFT.braid_factors_through_cellUniform BD.decoration BD.braid P hP
+  TQFT.braid_factors_through_cellUniform BD.decoration BD.braid P hP hLocal
 
 /-- **Theorem (composition of braids = composition of quotient gates).**
 For two braids `σ_i` and `σ_j`, the cell-uniform-action of their composite
@@ -464,7 +633,14 @@ braiding a *gate* (rather than an arbitrary unitary). -/
 theorem braid_composition_quotient
     {M : ModularData (ParitySector C.layout)} (BD : C.BraidData M)
     (P : EquitablePartition C.chipQuotientGraph (ParitySector C.layout))
-    (hP : P.cells = BD.decoration.label) (i j : Fin BD.numStrands) :
+    (hP : P.cells = BD.decoration.label)
+    -- CORRECTNESS FIX (propagated from `TQFT.braid_factors_through_cellUniform`):
+    -- the per-braid locality hypothesis is genuinely needed (see above).
+    (hLocal : ∀ (k : Fin BD.numStrands) (φ : ParitySector C.layout → ℂ),
+        (∀ x y, BD.decoration.label x = BD.decoration.label y → φ x = φ y) →
+        ∀ x y, BD.decoration.label x = BD.decoration.label y →
+          (Matrix.mulVec (BD.braid.σ k) φ) x = (Matrix.mulVec (BD.braid.σ k) φ) y)
+    (i j : Fin BD.numStrands) :
     -- Functoriality: applying `σ_i` then `σ_j` to a cell-uniform input yields
     -- a cell-uniform output (the composite gate again factors through the
     -- parity-sector quotient).
@@ -475,9 +651,9 @@ theorem braid_composition_quotient
         (Matrix.mulVec (BD.braid.σ j) (Matrix.mulVec (BD.braid.σ i) ψ)) y) := by
   intro ψ hψ
   -- `σ_i · ψ` is cell-uniform by `braid_factors_through_cellUniform`...
-  have h1 := TQFT.braid_factors_through_cellUniform BD.decoration BD.braid P hP i ψ hψ
+  have h1 := TQFT.braid_factors_through_cellUniform BD.decoration BD.braid P hP hLocal i ψ hψ
   -- ...hence so is `σ_j · (σ_i · ψ)`.
-  exact TQFT.braid_factors_through_cellUniform BD.decoration BD.braid P hP j
+  exact TQFT.braid_factors_through_cellUniform BD.decoration BD.braid P hP hLocal j
     (Matrix.mulVec (BD.braid.σ i) ψ) h1
 
 end TetronChip
@@ -658,17 +834,21 @@ chip's bulk; only quasiparticle-poisoning events break parity, and those
 are exponentially suppressed by the topological gap).
 -/
 
-/-- A `NoiseModel` is **parity-symmetric** if every jump operator commutes
-with every per-tetron parity operator. -/
+/-- A `NoiseModel` is **parity-symmetric** with respect to a given family of
+per-tetron parity operators `parityOpV v : Matrix C.layout.V C.layout.V ℂ` (the
+images of `C.parityOp v` on the chip's reduced `V → ℂ` Hilbert space) if every
+jump operator commutes with every per-tetron parity operator.
+
+NON-VACUITY FIX: the previous version asked `L * 1 = 1 * L`, i.e. `L = L`, a
+predicate satisfied by *every* `L` — vacuously `True` and saying nothing about
+parity.  We now take the genuine parity-operator family as an explicit parameter
+(the `parityOpV` argument, supplying the V-level lift the older comment said was
+missing) and demand honest commutation `L * Pᵥ = Pᵥ * L`. -/
 def NoiseModel.parityConserving
+    (parityOpV : C.layout.V → Matrix C.layout.V C.layout.V ℂ)
     (N : NoiseModel C.layout.V) : Prop :=
   ∀ L ∈ N.lindblad_operators, ∀ v : C.layout.V,
-    L * (Matrix.diagonal (fun _ => (1 : ℂ))) =
-    (Matrix.diagonal (fun _ => (1 : ℂ))) * L
-  -- Placeholder for: `L * (per-tetron parity image on the V-dim Hilbert
-  -- space) = (the same) * L`; full statement requires lifting the
-  -- `parityOp v ∈ Matrix (Fin n) (Fin n) ℂ` to the chip's reduced
-  -- Hilbert space `V → ℂ`.
+    L * parityOpV v = parityOpV v * L
 
 /-- **Payoff 2 (parity-symmetric noise preserves the cell-uniform
 subspace).**  If `N` is parity-symmetric, then `N` is `cellUniformSymmetric`

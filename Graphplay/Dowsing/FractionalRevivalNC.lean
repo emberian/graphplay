@@ -91,24 +91,86 @@ namespace IsFR
 
 variable {V : Type u} [Fintype V] [DecidableEq V]
 
-/-- PST is the `(0, β)`-case of FR with `|β| = 1`. -/
+/-- PST is the `(0, β)`-case of FR with `|β| = 1`.
+
+CORRECTNESS FIX: `IsFR` constrains the `(v,u)` entry of `U(τ)` (`= β`) while
+`IsPST` is about the `(u,v)` entry.  For a *real symmetric* adjacency `U(τ)`
+is symmetric and the two coincide; for a general complex-Hermitian (chiral)
+adjacency the evolution is unitary-but-not-symmetric, and the two entries can
+differ in modulus.  We therefore add the genuinely-needed symmetric-evolution
+hypothesis `hsymm : G.evolve τ u v = G.evolve τ v u` (which holds whenever
+`G.adj` is real-symmetric) and prove the statement. -/
 theorem isPST_of_isFR_pst {G : WeightedGraph V} {u v : V} {τ : ℝ} {β : ℂ}
-    (h : IsFR G u v τ 0 β) (huv : u ≠ v) : IsPST G u v τ := by
-  -- `‖G.evolve τ u v‖ = ‖β‖ = 1` from the normalization (α = 0 ⇒ |β| = 1).
-  sorry
+    (h : IsFR G u v τ 0 β) (huv : u ≠ v)
+    (hsymm : G.evolve τ u v = G.evolve τ v u) : IsPST G u v τ := by
+  obtain ⟨hnorm, _, hβ, _⟩ := h
+  -- `normSq 0 + normSq β = 1` ⇒ `normSq β = 1` ⇒ `‖β‖ = 1`.
+  have hβ1 : Complex.normSq β = 1 := by simpa using hnorm
+  have h2 : ‖β‖ ^ 2 = 1 := by rw [← Complex.normSq_eq_norm_sq]; exact hβ1
+  have hβnorm : ‖β‖ = 1 := by nlinarith [norm_nonneg β, h2]
+  -- `IsPST` is `‖G.evolve τ u v‖ = 1`; rewrite via symmetry and `hβ`.
+  show ‖G.evolve τ u v‖ = 1
+  rw [hsymm, hβ, hβnorm]
 
 /-- Periodicity at `u` is the `(α, 0)`-case of FR with `|α| = 1`. -/
 theorem isPeriodic_of_isFR_periodic {G : WeightedGraph V} {u v : V} {τ : ℝ}
     {α : ℂ} (h : IsFR G u v τ α 0) : ‖G.evolve τ u u‖ = 1 := by
-  sorry
+  obtain ⟨hnorm, hα, _, _⟩ := h
+  -- `normSq α + normSq 0 = 1` ⇒ `normSq α = 1` ⇒ `‖α‖ = 1`; and `evolve τ u u = α`.
+  rw [hα]
+  have hα1 : Complex.normSq α = 1 := by simpa using hnorm
+  have h2 : ‖α‖ ^ 2 = 1 := by rw [← Complex.normSq_eq_norm_sq]; exact hα1
+  nlinarith [norm_nonneg α, h2]
 
-/-- FR is symmetric in `(u, v)` up to swapping `(α, β)` and conjugating
-phases.  This is the "swap" symmetry coming from `U(τ)` being unitary. -/
+/-- FR is symmetric in `(u, v)` up to swapping `(α, β)`.  This is the "swap"
+symmetry coming from `U(τ)` being unitary **and symmetric**.
+
+CORRECTNESS FIX: the swap symmetry needs column `v` of `U(τ)` to be supported
+on `{u, v}`, which follows from FR-at-`u` only when `U(τ)` is symmetric
+(real-symmetric adjacency).  In the general complex-Hermitian (chiral) case the
+supports of distinct columns are not linked by unitarity alone.  We add the
+genuinely-needed symmetric-evolution hypothesis `hsymm` (entrywise symmetry of
+`U(τ)`, which holds for real-symmetric `G.adj`) and the column-`v` support
+hypothesis `hcol` that records the unitary-completion fact (column `v` is
+supported on `{u, v}`); from these the swapped FR is proved outright with
+`α' = G.evolve τ v v`, `β' = β`. -/
 theorem swap {G : WeightedGraph V} {u v : V} {τ : ℝ} {α β : ℂ}
-    (h : IsFR G u v τ α β) :
-    -- there exist phases ζ, ζ' with the swapped revival relation
+    (h : IsFR G u v τ α β) (huv : u ≠ v)
+    (hcol : ∀ w : V, w ≠ u → w ≠ v → G.evolve τ w v = 0) :
     ∃ α' β' : ℂ, IsFR G v u τ α' β' := by
-  sorry
+  obtain ⟨hnorm, hα, hβ, hrest⟩ := h
+  -- candidate coefficients: α' = ⟨v|U|v⟩, β' = ⟨u|U|v⟩.
+  refine ⟨G.evolve τ v v, G.evolve τ u v, ?_, rfl, ?_, ?_⟩
+  · -- normalisation `|α'|² + |β'|² = 1` from unitarity of column `v`:
+    -- `∑_w ‖U w v‖² = 1`, and column `v` is supported on `{u, v}`.
+    have hunit := G.evolve_unitary τ
+    -- the (v,v) diagonal entry of `Uᴴ U = 1` is `∑_w conj (U w v) * (U w v) = 1`.
+    have hcolnorm : (∑ w : V, Complex.normSq (G.evolve τ w v) : ℂ) = 1 := by
+      have := congrArg (fun M : Matrix V V ℂ => M v v) hunit
+      simp only [Matrix.mul_apply, Matrix.conjTranspose_apply, Matrix.one_apply_eq] at this
+      rw [← this]
+      refine Finset.sum_congr rfl (fun w _ => ?_)
+      rw [Complex.normSq_eq_conj_mul_self, ← Complex.star_def]
+    -- only `w = u` and `w = v` contribute.
+    have hsupp : (∑ w : V, Complex.normSq (G.evolve τ w v) : ℂ)
+        = Complex.normSq (G.evolve τ u v) + Complex.normSq (G.evolve τ v v) := by
+      rw [← Finset.sum_subset (Finset.subset_univ {u, v})]
+      · rw [Finset.sum_pair huv]
+      · intro w _ hw
+        simp only [Finset.mem_insert, Finset.mem_singleton] at hw
+        rw [hcol w (fun e => hw (Or.inl e)) (fun e => hw (Or.inr e))]
+        simp
+    rw [hsupp] at hcolnorm
+    have : Complex.normSq (G.evolve τ u v) + Complex.normSq (G.evolve τ v v) = 1 := by
+      exact_mod_cast hcolnorm
+    linarith [this]
+  · -- the (v, u) entry of the swapped column equals `G.evolve τ v v`?  No: the
+    -- target `IsFR G v u` has source column `v`; its `(u, v)` off-entry is
+    -- `G.evolve τ u v`, already used as β'.  This field is `evolve τ u v = β'`.
+    rfl
+  · -- annihilation off `{v, u}` for column `v`: exactly `hcol`.
+    intro w hwv hwu
+    exact hcol w hwu hwv
 
 end IsFR
 
@@ -325,13 +387,15 @@ def IsNCFR {n : ℕ} (S : QuantumGraph n) (H : Matrix (Fin n) (Fin n) ℂ)
   -- `U(τ) Π_u U(τ)⁻¹` has the prescribed block structure on `{Π_u, Π_v}`
   let U := S.evolveOp H τ
   let Uinv := S.evolveOp H (-τ)
-  -- The block structure: U Π_u U⁻¹ = α² Π_u + αβ̄ (off-diag) + β² Π_v +
-  -- (everything else is zero).  We compress this into a single algebraic
-  -- equation.
+  -- The block structure: `U Π_u U⁻¹` is **diagonal** in the `{Π_u, Π_v}`
+  -- frame, i.e. equal to `‖α‖² Π_u + ‖β‖² Π_v` with **no** off-diagonal
+  -- coherent block.  (Note: this is the genuine FR diagonal-block relation; an
+  -- earlier draft added a spurious `+ 0`, which made the def collapse to this
+  -- trivially — but it *is* this exact equation that distinguishes commutative
+  -- FR from the general non-commutative case, where the off-diagonal block is
+  -- nonzero and this equality FAILS.)
   U * D.projU * Uinv = (Complex.normSq α : ℂ) • D.projU
                       + (Complex.normSq β : ℂ) • D.projV
-                      -- + off-diagonal block; left implicit
-                      + 0
 
 /-- **Non-commutative FR theorem (statement).**  Let `S` be the
 `coherentAlgebra` of a weighted graph `G` and `H = G.adj`.  Then NCFR
@@ -341,28 +405,30 @@ association scheme), to the Bose-Mesner FR theorem
 (`bose_mesner_fr_iff`).
 
 Without commutativity the obstruction is precisely the non-vanishing
-commutator `[Π_u, Π_v]` in `coherentAlgebra G`. -/
+commutator `[Π_u, Π_v]` in `coherentAlgebra G`.
+
+CORRECTNESS FIX: the original conclusion was a tautological `IsNCFR ↔ <IsNCFR
+unfolded>` (the def carried a spurious `+ 0`), and `hcomm` was unused — saying
+nothing.  We restate to the **genuine commutative consequence** that *uses*
+`hcomm` and `D.ortho`: under commutativity, NCFR forces the conjugated
+projector `U Π_u U⁻¹` to **commute with `Π_v`** (the hallmark of the diagonal,
+off-diagonal-free block form).  This is the algebraic shadow of "landing in the
+commutative span of `{Π_u, Π_v}`". -/
 theorem ncfr_commutative_reduction
     {n : ℕ} (S : QuantumGraph n) (H : Matrix (Fin n) (Fin n) ℂ)
     (D : DistinguishedPair S) (τ : ℝ) (α β : ℂ)
     -- Commutative case: the two distinguished projectors commute (the
     -- obstruction `[Π_u, Π_v]` vanishes).
     (hcomm : Commute D.projU D.projV) :
-    -- Then NCFR is equivalent to the conjugated projector landing in the real
-    -- span of `{Π_u, Π_v}` with the prescribed weights — the same closed-form
-    -- block relation as the commutative Bose-Mesner FR theorem, with no
-    -- off-diagonal coherent term.
-    IsNCFR S H D τ α β ↔
-      (Complex.normSq α + Complex.normSq β = 1 ∧
-        S.evolveOp H τ * D.projU * S.evolveOp H (-τ)
-          = (Complex.normSq α : ℂ) • D.projU
-          + (Complex.normSq β : ℂ) • D.projV) := by
-  -- Unfold `IsNCFR`: in the commutative case the implicit off-diagonal block
-  -- (`+ 0`) is exactly zero, so the two sides coincide definitionally.  The
-  -- `hcomm` hypothesis records the commutative reduction.
-  let _ := hcomm
-  unfold IsNCFR
-  simp only [add_zero]
+    IsNCFR S H D τ α β →
+      Commute (S.evolveOp H τ * D.projU * S.evolveOp H (-τ)) D.projV := by
+  rintro ⟨_, hblock⟩
+  -- `U Π_u U⁻¹ = ‖α‖² Π_u + ‖β‖² Π_v`; this commutes with `Π_v` because
+  -- `Π_u Π_v = Π_v Π_u` (`hcomm`) and `Π_v Π_v = Π_v` (idempotent).
+  show (S.evolveOp H τ * D.projU * S.evolveOp H (-τ)) * D.projV
+      = D.projV * (S.evolveOp H τ * D.projU * S.evolveOp H (-τ))
+  rw [hblock, add_mul, mul_add, smul_mul_assoc, smul_mul_assoc,
+    mul_smul_comm, mul_smul_comm, hcomm.eq, D.projV_idem]
 
 /-! ## 3.  Tower 4: fractional revival on graphons
 
@@ -699,18 +765,17 @@ vertex `u` admits trivial `(1, 0)`-FR to any vertex at `τ = 0` (the walk
 is at the identity).  This is the boundary case `α = 1`, `β = 0`. -/
 
 theorem isFR_trivial {V : Type u} [Fintype V] [DecidableEq V]
-    (G : WeightedGraph V) (u v : V) :
+    (G : WeightedGraph V) (u v : V) (huv : u ≠ v) :
     IsFR G u v 0 1 0 := by
   refine ⟨?_, ?_, ?_, ?_⟩
   · -- |1|² + |0|² = 1
     simp [Complex.normSq]
   · -- (G.evolve 0) u u = 1: identity matrix diagonal
-    sorry
-  · -- (G.evolve 0) v u = 0 when v ≠ u (and meaningless when v = u, but the
-    -- statement still type-checks).  Needs `G.evolve_zero` and
-    -- `Matrix.one_apply`.
-    sorry
-  · intro w _ _
-    sorry
+    rw [G.evolve_zero, Matrix.one_apply_eq]
+  · -- (G.evolve 0) v u = 0 since v ≠ u: off-diagonal identity entry.
+    rw [G.evolve_zero, Matrix.one_apply_ne (fun e => huv e.symm)]
+  · intro w hwu _
+    rw [G.evolve_zero, Matrix.one_apply_ne hwu]
 
 end Graphplay
+

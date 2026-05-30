@@ -44,7 +44,10 @@ in the shape that the rest of Graphplay expects.
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.Combinatorics.SimpleGraph.Basic
+import Mathlib.Combinatorics.SimpleGraph.Clique
+import Mathlib.Combinatorics.SimpleGraph.Coloring.VertexColoring
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Real.StarOrdered
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
@@ -125,7 +128,22 @@ theorem lovaszThetaFeasible_nonempty
   -- Take `X = (1/|V|) • I`; trivially PSD, hermitian, unit trace, and
   -- vanishes off the diagonal so the edge-constraint holds vacuously
   -- because `G.Adj i j` implies `i ≠ j`.
-  sorry
+  classical
+  have hcard : (0 : ℝ) < (Fintype.card V : ℝ) := by
+    exact_mod_cast Fintype.card_pos
+  refine ⟨(Fintype.card V : ℝ)⁻¹ • (1 : Matrix V V ℝ), ?_, ?_, ?_, ?_⟩
+  · -- Hermitian
+    exact (Matrix.isHermitian_one).smul (IsSelfAdjoint.all _)
+  · -- PosSemidef: nonneg scalar times identity
+    exact (Matrix.PosSemidef.one).smul (by positivity)
+  · -- unit trace
+    simp only [Matrix.smul_apply, Matrix.one_apply_eq, smul_eq_mul, mul_one,
+      Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+    field_simp
+  · -- edge constraint: off-diagonal of `I` is `0`
+    intro i j hadj
+    have hij : i ≠ j := G.ne_of_adj hadj
+    simp [Matrix.one_apply_ne hij]
 
 /-- The Lovász theta function is non-negative: in fact `ϑ(G) ≥ 1` for
 every non-empty graph (witness: the `(1/|V|) • I` matrix above has
@@ -134,7 +152,139 @@ theorem one_le_lovaszTheta
     {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     (1 : ℝ) ≤ lovaszTheta G := by
-  sorry
+  classical
+  -- The all-ones scaled identity `(1/|V|)•I` is feasible with objective `1`,
+  -- so `1` is in the objective set; and the set is bounded above by `|V|`,
+  -- so `1 ≤ sSup`.
+  set S : Set ℝ :=
+    { v : ℝ | ∃ X : Matrix V V ℝ, lovaszThetaFeasible G X ∧ v = ∑ i, ∑ j, X i j }
+    with hSdef
+  -- (1) `1 ∈ S` via the witness `(1/|V|)•I`.
+  have hcard : (0 : ℝ) < (Fintype.card V : ℝ) := by exact_mod_cast Fintype.card_pos
+  have hone : (1 : ℝ) ∈ S := by
+    refine ⟨(Fintype.card V : ℝ)⁻¹ • (1 : Matrix V V ℝ),
+      ⟨(Matrix.isHermitian_one).smul (IsSelfAdjoint.all _),
+       (Matrix.PosSemidef.one).smul (by positivity), ?_, ?_⟩, ?_⟩
+    · simp only [Matrix.smul_apply, Matrix.one_apply_eq, smul_eq_mul, mul_one,
+        Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+      field_simp
+    · intro i j hadj
+      simp [Matrix.one_apply_ne (G.ne_of_adj hadj)]
+    · -- objective of the witness is `∑ᵢ Xᵢᵢ = 1`
+      have : ∀ i, ∑ j, ((Fintype.card V : ℝ)⁻¹ • (1 : Matrix V V ℝ)) i j
+          = (Fintype.card V : ℝ)⁻¹ := by
+        intro i
+        rw [Finset.sum_eq_single i]
+        · simp
+        · intro j _ hji
+          simp [Matrix.one_apply_ne (Ne.symm hji)]
+        · simp
+      simp only [this, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+      field_simp
+  -- (2) `S` is bounded above by `|V|`.
+  have hbdd : BddAbove S := by
+    refine ⟨(Fintype.card V : ℝ), ?_⟩
+    rintro v ⟨X, ⟨hHerm, hPSD, htr, _⟩, rfl⟩
+    -- entrywise PSD bound `2 * X i j ≤ X i i + X j j`
+    have hsymm : ∀ i j, X j i = X i j := fun i j => by
+      have := hHerm.apply j i; simpa [Matrix.conjTranspose_apply] using this.symm
+    have hentry : ∀ i j, X i j ≤ (X i i + X j j) / 2 := by
+      intro i j
+      set w : V → ℝ := Pi.single i (1:ℝ) - Pi.single j (1:ℝ) with hw
+      have hge := hPSD.dotProduct_mulVec_nonneg w
+      -- evaluate the quadratic form
+      have heval : (star w) ⬝ᵥ (X *ᵥ w) = X i i + X j j - 2 * X i j := by
+        have hstar : star w = w := by rw [hw]; simp [star_sub]
+        rw [hstar, hw]
+        simp only [sub_dotProduct, single_dotProduct, Matrix.mulVec_sub,
+          Matrix.mulVec_single_one, Pi.sub_apply, Matrix.col_apply, one_mul]
+        rw [hsymm i j]
+        ring
+      rw [heval] at hge
+      linarith
+    -- sum the bound: `∑∑ X ij ≤ ∑∑ (X ii + X jj)/2 = |V|·(∑ X ii) = |V|`
+    calc ∑ i, ∑ j, X i j
+        ≤ ∑ i, ∑ j, (X i i + X j j) / 2 := by
+          apply Finset.sum_le_sum; intro i _
+          apply Finset.sum_le_sum; intro j _
+          exact hentry i j
+      _ = (Fintype.card V : ℝ) := by
+          have hsplit : ∀ i, ∑ j, (X i i + X j j) / 2
+              = (Fintype.card V : ℝ) * (X i i) / 2 + (1 / 2) := by
+            intro i
+            simp only [add_div, Finset.sum_add_distrib, Finset.sum_const,
+              Finset.card_univ, nsmul_eq_mul]
+            rw [← Finset.sum_div, htr]
+            ring
+          rw [Finset.sum_congr rfl (fun i _ => hsplit i), Finset.sum_add_distrib,
+            Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+          have hsum2 : ∑ i, (Fintype.card V : ℝ) * X i i / 2
+              = (Fintype.card V : ℝ) / 2 := by
+            rw [show (fun i => (Fintype.card V : ℝ) * X i i / 2)
+                  = (fun i => (Fintype.card V : ℝ) / 2 * X i i) from
+                funext (fun i => by ring)]
+            rw [← Finset.mul_sum, htr, mul_one]
+          rw [hsum2]
+          ring
+  -- conclude
+  exact le_csSup hbdd hone
+
+/-- **Structural upper bound `ϑ(G) ≤ |V|`.**  Every feasible objective is
+bounded above by `|V|` (the entrywise PSD bound `X i j ≤ (X i i + X j j)/2`
+summed over all pairs gives `∑∑ X i j ≤ |V| · tr X = |V|`), so the supremum
+defining `ϑ(G)` is at most `|V|`.  Genuine, axiom-clean; together with
+`one_le_lovaszTheta` this sandwiches `1 ≤ ϑ(G) ≤ |V|` on nonempty graphs. -/
+theorem lovaszTheta_le_card
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    lovaszTheta G ≤ (Fintype.card V : ℝ) := by
+  classical
+  set S : Set ℝ :=
+    { v : ℝ | ∃ X : Matrix V V ℝ, lovaszThetaFeasible G X ∧ v = ∑ i, ∑ j, X i j }
+    with hSdef
+  -- `S` is bounded above by `|V|` (same argument as in `one_le_lovaszTheta`).
+  have hub : ∀ v ∈ S, v ≤ (Fintype.card V : ℝ) := by
+    rintro v ⟨X, ⟨hHerm, hPSD, htr, _⟩, rfl⟩
+    have hsymm : ∀ i j, X j i = X i j := fun i j => by
+      have := hHerm.apply j i; simpa [Matrix.conjTranspose_apply] using this.symm
+    have hentry : ∀ i j, X i j ≤ (X i i + X j j) / 2 := by
+      intro i j
+      set w : V → ℝ := Pi.single i (1:ℝ) - Pi.single j (1:ℝ) with hw
+      have hge := hPSD.dotProduct_mulVec_nonneg w
+      have heval : (star w) ⬝ᵥ (X *ᵥ w) = X i i + X j j - 2 * X i j := by
+        have hstar : star w = w := by rw [hw]; simp [star_sub]
+        rw [hstar, hw]
+        simp only [sub_dotProduct, single_dotProduct, Matrix.mulVec_sub,
+          Matrix.mulVec_single_one, Pi.sub_apply, Matrix.col_apply, one_mul]
+        rw [hsymm i j]; ring
+      rw [heval] at hge; linarith
+    calc ∑ i, ∑ j, X i j
+        ≤ ∑ i, ∑ j, (X i i + X j j) / 2 := by
+          apply Finset.sum_le_sum; intro i _
+          apply Finset.sum_le_sum; intro j _
+          exact hentry i j
+      _ = (Fintype.card V : ℝ) := by
+          have hsplit : ∀ i, ∑ j, (X i i + X j j) / 2
+              = (Fintype.card V : ℝ) * (X i i) / 2 + (1 / 2) := by
+            intro i
+            simp only [add_div, Finset.sum_add_distrib, Finset.sum_const,
+              Finset.card_univ, nsmul_eq_mul]
+            rw [← Finset.sum_div, htr]; ring
+          rw [Finset.sum_congr rfl (fun i _ => hsplit i), Finset.sum_add_distrib,
+            Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+          have hsum2 : ∑ i, (Fintype.card V : ℝ) * X i i / 2
+              = (Fintype.card V : ℝ) / 2 := by
+            rw [show (fun i => (Fintype.card V : ℝ) * X i i / 2)
+                  = (fun i => (Fintype.card V : ℝ) / 2 * X i i) from
+                funext (fun i => by ring)]
+            rw [← Finset.mul_sum, htr, mul_one]
+          rw [hsum2]; ring
+  -- `lovaszTheta G = sSup S`; case on emptiness of `S`.
+  unfold lovaszTheta
+  rw [← hSdef]
+  rcases Set.eq_empty_or_nonempty S with hempty | hne
+  · rw [hempty, Real.sSup_empty]; positivity
+  · exact Real.sSup_le hub (by positivity)
 
 /-! ## Equivalent characterisations
 
@@ -179,8 +329,10 @@ theorem lovaszTheta_eq_orthonormalRepresentation
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     lovaszTheta G =
       sInf { v : ℝ | ∃ (d : ℕ) (ρ : OrthonormalRepresentation G d), v = ρ.value } := by
-  -- Original Lovász 1979 proof: SDP-duality between the trace-1 PSD
-  -- feasible set and the orthonormal-representation infimum.
+  -- HONEST SORRY (deep): Lovász 1979 SDP-duality.  Currently also *false as
+  -- literally stated* because the placeholder `OrthonormalRepresentation.value
+  -- := 0` collapses the RHS to `sInf {0} = 0 < 1 ≤ lovaszTheta` — it becomes
+  -- true once `value` gets its genuine `inf_c max_i 1/⟨c,u_i⟩²` definition.
   sorry
 
 /-- **Equivalence (b): the dual SDP / "M-formulation".**  `ϑ(G)` equals
@@ -221,21 +373,26 @@ Mathlib, lifted into `ℝ`).
 -/
 
 /-- The independence number of `G`: the size of the largest independent
-set.  We use a placeholder name so the file is self-contained; in the
-broader Graphplay codebase this is identified with the Mathlib
-`SimpleGraph.cocliqueNum`. -/
+set.  An independent set of `G` is exactly a clique of the complement
+`Gᶜ`, so we define it as the clique number of `Gᶜ` — the genuine value
+`sSup {n | ∃ s, Gᶜ.IsNClique n s}` from Mathlib's `SimpleGraph.cliqueNum`.
+This is a *real* definition (no longer a `0` stub), so any bound stated in
+terms of it (`α ≤ ϑ`) is non-vacuous. -/
 noncomputable def independenceNumber
     {V : Type u} [Fintype V] [DecidableEq V]
-    (_G : SimpleGraph V) : ℕ :=
-  0  -- placeholder; the real value is `Mathlib.SimpleGraph.cocliqueNum`
+    (G : SimpleGraph V) : ℕ :=
+  Gᶜ.cliqueNum
 
-/-- The chromatic number of `G`.  Placeholder shim around the Mathlib
-`SimpleGraph.chromaticNumber`, which lives in `ℕ∞`; we coerce to `ℕ` by
-sending the `⊤` case to `0`. -/
+/-- The chromatic number of `G`.  Genuine shim around the Mathlib
+`SimpleGraph.chromaticNumber`, which lives in `ℕ∞`; we coerce to `ℕ` with
+`ENat.toNat`, which sends the (non-finite-colorable) `⊤` case to `0`.  On
+a finite vertex type `G` is always colorable, so the `⊤` case never fires
+and `chromaticNumber G = G.chromaticNumber.toNat` is the true chromatic
+number. -/
 noncomputable def chromaticNumber
     {V : Type u} [Fintype V] [DecidableEq V]
-    (_G : SimpleGraph V) : ℕ :=
-  0  -- placeholder; shim for `SimpleGraph.chromaticNumber`
+    (G : SimpleGraph V) : ℕ :=
+  G.chromaticNumber.toNat
 
 /-- **Lovász sandwich theorem.**  For every finite simple graph `G`,
 
@@ -402,14 +559,16 @@ which the equitable-partition lift is *tight* in the LT sense — i.e.
 those for which no equitable coarsening can sharpen the LT bound.
 -/
 
-/-- The *perfect graph* predicate: every induced subgraph `H ≤ G`
-satisfies `χ(H) = ω(H)` (clique-number equals chromatic number).
-Placeholder name for the genuine definition (which one finds in
-Mathlib's combinatorics library or in Chudnovsky–Robertson–Seymour–
-Thomas's strong perfect graph theorem). -/
+/-- The *perfect graph* predicate: every induced subgraph `G.induce s`
+satisfies `χ(H) = ω(H)` (chromatic number equals clique number).  This is
+the genuine Berge definition (no longer a `True` stub), so using
+`IsPerfect G` as a hypothesis is a real restriction on `G` — e.g. an odd
+`C₅` fails it (`ω = 2 < 3 = χ`).  We phrase the equality in `ℕ` via the
+`chromaticNumber`/`cliqueNum` shims; the quantifier ranges over all vertex
+subsets `s : Set V`. -/
 def IsPerfect {V : Type u} [Fintype V] [DecidableEq V]
-    (_G : SimpleGraph V) : Prop :=
-  True  -- placeholder
+    (G : SimpleGraph V) : Prop :=
+  ∀ s : Set V, (G.induce s).chromaticNumber.toNat = (G.induce s).cliqueNum
 
 /-- **Lovász perfect-graph corollary.**  On perfect graphs, the LT
 sandwich collapses:

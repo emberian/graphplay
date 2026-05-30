@@ -45,6 +45,7 @@ Cross references:
 -/
 
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.NumberTheory.Padics.PadicNumbers
 import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -95,6 +96,99 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
 columns indexed by `V` (one column per eigenpair). -/
 noncomputable def eigU (G : WeightedGraph V) : Matrix V V ℂ :=
   (G.herm.eigenvectorUnitary : Matrix V V ℂ)
+
+/-! ### The spectral-evolution bridge
+
+The reusable workhorse for *all* the PST entry computations: the matrix
+element of the continuous-time evolution `U(τ) = exp(-iτ A)` expands in the
+eigenbasis as a finite trigonometric sum
+
+  `(G.evolve τ) u v = ∑ i, eigU G u i · exp(-iτ λ_i) · conj (eigU G v i)`,
+
+where `λ_i = G.herm.eigenvalues i`.  This is `IsHermitian.spectral_theorem`
+(`A = U D Uᴴ`) combined with `Matrix.exp_conj`/`Matrix.exp_diagonal`.  Once we
+have it, cospectrality, the Godsil-ratio corollaries, and the QuotientIff
+bridges are all entrywise consequences. -/
+
+/-- `eigU` times its conjugate-transpose is the identity (`U Uᴴ = 1`). -/
+theorem eigU_mul_conjTranspose (G : WeightedGraph V) :
+    eigU G * (eigU G)ᴴ = (1 : Matrix V V ℂ) := by
+  unfold eigU
+  rw [← Matrix.star_eq_conjTranspose]
+  exact Unitary.coe_mul_star_self (G.herm.eigenvectorUnitary)
+
+/-- `Uᴴ U = 1`. -/
+theorem conjTranspose_mul_eigU (G : WeightedGraph V) :
+    (eigU G)ᴴ * eigU G = (1 : Matrix V V ℂ) := by
+  unfold eigU
+  rw [← Matrix.star_eq_conjTranspose]
+  exact Unitary.coe_star_mul_self (G.herm.eigenvectorUnitary)
+
+/-- The eigenvector unitary is a `IsUnit` matrix (it is a coerced `unitary`
+element, hence invertible with inverse its star). -/
+theorem eigU_isUnit (G : WeightedGraph V) : IsUnit (eigU G) :=
+  isUnit_iff_exists.mpr ⟨(eigU G)ᴴ, eigU_mul_conjTranspose G, conjTranspose_mul_eigU G⟩
+
+/-- **Spectral-evolution bridge.**  The `(u, v)`-entry of the quantum-walk
+evolution `U(τ) = exp(-iτ A)` is the eigenbasis trigonometric sum
+`∑ i, eigU G u i · exp(-i τ λ_i) · conj (eigU G v i)`. -/
+theorem evolve_eq_eigU_sum (G : WeightedGraph V) (τ : ℝ) (u v : V) :
+    G.evolve τ u v
+      = ∑ i : V, eigU G u i
+          * Complex.exp (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues i : ℂ))
+          * star (eigU G v i) := by
+  classical
+  set c : ℂ := -(Complex.I * (τ : ℂ)) with hc
+  -- Spectral theorem: A = U * D₀ * Uᴴ with D₀ the real-eigenvalue diagonal.
+  have hspec : G.adj
+      = (eigU G) * (Matrix.diagonal (fun i => (G.herm.eigenvalues i : ℂ)))
+          * (eigU G)ᴴ := by
+    have h := G.herm.spectral_theorem
+    -- `conjStarAlgAut ℂ _ U D = U * D * star U` definitionally; rewrite `h`'s
+    -- RHS into that elementary product form.
+    rw [Unitary.conjStarAlgAut_apply] at h
+    rw [eigU, ← Matrix.star_eq_conjTranspose]
+    convert h using 2
+  -- Scale: c • A = U * (c • D₀) * Uᴴ, and c • D₀ = diagonal (c • λ).
+  have hdiagsmul : c • (Matrix.diagonal (fun i => (G.herm.eigenvalues i : ℂ)))
+      = (Matrix.diagonal (fun i => c * (G.herm.eigenvalues i : ℂ))) := by
+    rw [← Matrix.diagonal_smul]; rfl
+  -- The inverse of U is Uᴴ (since U Uᴴ = 1).
+  have hinv : (eigU G)⁻¹ = (eigU G)ᴴ := by
+    apply Matrix.inv_eq_right_inv
+    exact eigU_mul_conjTranspose G
+  have hscale : c • G.adj
+      = (eigU G) * (Matrix.diagonal (fun i => c * (G.herm.eigenvalues i : ℂ)))
+          * (eigU G)⁻¹ := by
+    rw [hinv]
+    conv_lhs => rw [hspec]
+    rw [← hdiagsmul, mul_smul_comm, smul_mul_assoc]
+  -- Exponentiate, conjugating by the unit U.
+  have hexpdiag :
+      NormedSpace.exp (Matrix.diagonal (fun i => c * (G.herm.eigenvalues i : ℂ)))
+        = Matrix.diagonal (fun i => Complex.exp (c * (G.herm.eigenvalues i : ℂ))) := by
+    rw [Matrix.exp_diagonal]
+    congr 1
+    funext i
+    rw [Pi.coe_exp, ← Complex.exp_eq_exp_ℂ]
+  have hevolve : G.evolve τ
+      = (eigU G)
+          * Matrix.diagonal (fun i => Complex.exp (c * (G.herm.eigenvalues i : ℂ)))
+          * (eigU G)⁻¹ := by
+    unfold WeightedGraph.evolve
+    rw [← hc, hscale, Matrix.exp_conj _ _ (eigU_isUnit G), hexpdiag]
+  rw [hevolve, hinv]
+  -- Expand the (u,v) entry of `U * diag(d) * Uᴴ`.
+  rw [Matrix.mul_apply]
+  -- (U * diag d) u i = U u i * d i ; sum over i of that times (Uᴴ) i v
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  rw [Matrix.mul_apply]
+  -- ∑ k, U u k * diag d k i = U u i * d i
+  rw [Finset.sum_eq_single i]
+  · rw [Matrix.diagonal_apply_eq, Matrix.conjTranspose_apply, mul_assoc]
+  · intro k _ hk
+    rw [Matrix.diagonal_apply_ne _ hk, mul_zero]
+  · intro h; exact absurd (Finset.mem_univ i) h
 
 /-- The **eigenvalue support** of a vertex `u` of `G`:
 the set of real numbers `λ` that occur as an eigenvalue of `G.adj` and
@@ -273,6 +367,55 @@ here as a complex number for uniformity with `eigenProjEntryLocal`). -/
 noncomputable def eigenProjDiagLocal (G : WeightedGraph V) (lam : ℝ) (u : V) : ℝ :=
   ∑ i : V, if G.herm.eigenvalues i = lam then ‖eigU G u i‖ ^ 2 else 0
 
+/-- **Eigenvalue-grouped spectral evolution.**  Regrouping the eigenbasis sum
+`evolve_eq_eigU_sum` by eigenvalue collapses the per-index trigonometric sum
+into a sum over the *distinct* eigenvalues of `G.adj`, each weighted by the
+corresponding spectral-projector entry:
+
+  `(G.evolve τ) u v = ∑_{λ ∈ spec} e^{-i τ λ} · (E_λ)_{u,v}`.
+
+This is the workhorse identity for *every* PST entry computation: the evolution
+amplitude is a finite trigonometric polynomial in `τ` whose coefficients are the
+projector entries.  Honest, axiom-clean (it is a pure regrouping of
+`evolve_eq_eigU_sum`). -/
+theorem evolve_eq_projSum (G : WeightedGraph V) (τ : ℝ) (u v : V) :
+    G.evolve τ u v
+      = ∑ lam ∈ Finset.univ.image G.herm.eigenvalues,
+          Complex.exp (-(Complex.I * (τ : ℂ)) * (lam : ℂ)) * eigenProjEntryLocal G lam u v := by
+  rw [evolve_eq_eigU_sum]
+  rw [← Finset.sum_fiberwise_of_maps_to (g := G.herm.eigenvalues)
+        (t := Finset.univ.image G.herm.eigenvalues)
+        (fun i _ => Finset.mem_image_of_mem _ (Finset.mem_univ i))]
+  refine Finset.sum_congr rfl (fun lam _ => ?_)
+  rw [eigenProjEntryLocal, Finset.mul_sum, Finset.sum_filter]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  by_cases h : G.herm.eigenvalues i = lam
+  · simp only [h, if_true]; ring
+  · simp only [h, if_false, mul_zero]
+
+/-- The diagonal projector entry equals the real part of the diagonal cross
+entry: `(E_λ)_{u,u} = (eigenProjDiagLocal G λ u : ℝ)` as a complex number, and
+in fact `eigenProjEntryLocal G λ u u = (eigenProjDiagLocal G λ u : ℂ)` because
+each summand `eigU u i · conj (eigU u i) = ‖eigU u i‖²`. -/
+theorem eigenProjEntryLocal_self (G : WeightedGraph V) (lam : ℝ) (u : V) :
+    eigenProjEntryLocal G lam u u = (eigenProjDiagLocal G lam u : ℂ) := by
+  rw [eigenProjEntryLocal, eigenProjDiagLocal, Complex.ofReal_sum]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  by_cases h : G.herm.eigenvalues i = lam
+  · simp only [h, if_true]
+    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq]
+  · simp only [h, if_false, Complex.ofReal_zero]
+
+/-- The diagonal projector entry is nonnegative (a sum of squared norms). -/
+theorem eigenProjDiagLocal_nonneg (G : WeightedGraph V) (lam : ℝ) (u : V) :
+    0 ≤ eigenProjDiagLocal G lam u := by
+  rw [eigenProjDiagLocal]
+  apply Finset.sum_nonneg
+  intro i _
+  by_cases h : G.herm.eigenvalues i = lam
+  · simp only [h, if_true]; positivity
+  · simp only [h, if_false, le_refl]
+
 /-- **Strong cospectrality** (Godsil–Royle; the spectral-parallelism
 characterization).  `u` and `v` are strongly cospectral in `G` if, for every
 real eigenvalue `λ`, the projections `E_λ e_u`, `E_λ e_v` are parallel: the
@@ -285,6 +428,297 @@ def IsStronglyCospectral (G : WeightedGraph V) (u v : V) : Prop :=
       eigenProjEntryLocal G lam u v
         = ε * Complex.ofReal
             (Real.sqrt (eigenProjDiagLocal G lam u * eigenProjDiagLocal G lam v))
+
+/-! ### Spectral projectors as matrices, and the forward PST extraction
+
+We now build the genuine spectral-projector matrices `E_λ` (whose `(u,v)`
+entry is `eigenProjEntryLocal G λ u v`) and prove their idempotent / orthogonal
+algebra directly from the unitarity of `eigU`.  This furnishes the
+spectral-operator machinery needed to extract **strong cospectrality from PST**
+(the necessary-condition / "forward" half of Godsil's theorem), which is then
+proven unconditionally and axiom-cleanly below.  (The remaining open half is the
+*number-theoretic* Godsil ratio condition and the Diophantine backward
+direction.) -/
+
+/-- The **spectral projector** `E_λ` onto the `λ`-eigenspace of `G.adj`, as a
+matrix; its `(u,w)` entry is `eigenProjEntryLocal G λ u w`. -/
+noncomputable def eigenProj (G : WeightedGraph V) (lam : ℝ) : Matrix V V ℂ :=
+  fun u w => ∑ i : V, if G.herm.eigenvalues i = lam then eigU G u i * star (eigU G w i) else 0
+
+/-- The `(u,v)` entry of the projector matrix is `eigenProjEntryLocal`. -/
+theorem eigenProj_apply (G : WeightedGraph V) (lam : ℝ) (u v : V) :
+    eigenProj G lam u v = eigenProjEntryLocal G lam u v := rfl
+
+/-- The diagonal entry of the projector matrix is the (real) diagonal entry. -/
+theorem eigenProj_diag (G : WeightedGraph V) (mu : ℝ) (u : V) :
+    eigenProj G mu u u = (eigenProjDiagLocal G mu u : ℂ) := by
+  rw [eigenProj_apply, eigenProjEntryLocal_self]
+
+/-- The projector matrix is self-adjoint: `(E_λ)_{v,u} = conj (E_λ)_{u,v}`. -/
+theorem eigenProj_conjTranspose_apply (G : WeightedGraph V) (lam : ℝ) (a b : V) :
+    eigenProj G lam b a = star (eigenProj G lam a b) := by
+  unfold eigenProj
+  rw [star_sum]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  by_cases h : G.herm.eigenvalues i = lam
+  · simp only [h, if_true]; rw [star_mul', star_star, mul_comm]
+  · simp only [h, if_false, star_zero]
+
+/-- Column orthonormality of the eigenvector unitary `U`: `(Uᴴ U)_{i,j} = δ`. -/
+theorem eigU_col_orthonormal (G : WeightedGraph V) (i j : V) :
+    ∑ x : V, star (eigU G x i) * eigU G x j = if i = j then 1 else 0 := by
+  have h := conjTranspose_mul_eigU G
+  have hij := congrFun (congrFun h i) j
+  rw [Matrix.mul_apply] at hij
+  simp only [Matrix.conjTranspose_apply, Matrix.one_apply] at hij
+  rw [← hij]
+
+/-- The `(u,w)` entry of the product `E_λ E_μ` collapses, by column
+orthonormality of the eigenbasis, to the diagonal-supported sum
+`∑_{i : λ_i = λ ∧ λ_i = μ} (eigU u i)(conj eigU w i)`.  This is the engine of
+the projector algebra (idempotency and orthogonality). -/
+theorem eigenProj_mul_entry (G : WeightedGraph V) (lam mu : ℝ) (u w : V) :
+    (eigenProj G lam * eigenProj G mu) u w
+      = ∑ i, (if G.herm.eigenvalues i = lam ∧ G.herm.eigenvalues i = mu
+                then eigU G u i * star (eigU G w i) else 0) := by
+  rw [Matrix.mul_apply]
+  show (∑ x : V,
+      (∑ i, if G.herm.eigenvalues i = lam then eigU G u i * star (eigU G x i) else 0) *
+      (∑ j, if G.herm.eigenvalues j = mu then eigU G x j * star (eigU G w j) else 0)) = _
+  simp_rw [Finset.sum_mul_sum]
+  rw [Finset.sum_comm]
+  rw [Finset.sum_congr rfl (fun i _ => Finset.sum_comm)]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  by_cases hi : G.herm.eigenvalues i = lam
+  · have step : (∑ j, ∑ x,
+        (if G.herm.eigenvalues i = lam then eigU G u i * star (eigU G x i) else 0) *
+        (if G.herm.eigenvalues j = mu then eigU G x j * star (eigU G w j) else 0))
+        = ∑ j, (if G.herm.eigenvalues j = mu then eigU G u i * star (eigU G w j) else 0) *
+              (if i = j then (1:ℂ) else 0) := by
+      refine Finset.sum_congr rfl (fun j _ => ?_)
+      simp only [hi, if_true]
+      by_cases hj : G.herm.eigenvalues j = mu
+      · simp only [hj, if_true]
+        rw [← eigU_col_orthonormal G i j, Finset.mul_sum]
+        refine Finset.sum_congr rfl (fun x _ => ?_); ring
+      · simp only [hj, if_false]
+        rw [zero_mul, Finset.sum_eq_zero]; intro x _; ring
+    rw [step, Finset.sum_eq_single i]
+    · simp only [if_true, mul_one]
+      by_cases hj : G.herm.eigenvalues i = mu
+      · rw [if_pos hj, if_pos (And.intro hi hj)]
+      · rw [if_neg hj, if_neg (fun hc => hj hc.2)]
+    · intro j _ hji; rw [if_neg (Ne.symm hji), mul_zero]
+    · intro h; exact absurd (Finset.mem_univ i) h
+  · simp only [hi, false_and, if_false, zero_mul, Finset.sum_const_zero]
+
+/-- **Idempotency** of the spectral projector: `E_λ E_λ = E_λ`. -/
+theorem eigenProj_idem (G : WeightedGraph V) (lam : ℝ) :
+    eigenProj G lam * eigenProj G lam = eigenProj G lam := by
+  ext u w; rw [eigenProj_mul_entry]
+  unfold eigenProj
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  by_cases h : G.herm.eigenvalues i = lam
+  · rw [if_pos ⟨h, h⟩, if_pos h]
+  · rw [if_neg (fun hc => h hc.1), if_neg h]
+
+/-- **Orthogonality** of distinct spectral projectors: `E_λ E_μ = 0` for
+`λ ≠ μ`. -/
+theorem eigenProj_orthogonal (G : WeightedGraph V) (lam mu : ℝ) (h : lam ≠ mu) :
+    eigenProj G lam * eigenProj G mu = 0 := by
+  ext u w; rw [eigenProj_mul_entry, Matrix.zero_apply]
+  apply Finset.sum_eq_zero; intro i _
+  rw [if_neg]; rintro ⟨h1, h2⟩; exact h (h1 ▸ h2)
+
+/-- The continuous-time evolution is the eigenvalue-weighted sum of spectral
+projectors: `U(τ) = ∑_λ e^{-iτλ} E_λ`. -/
+theorem evolve_eq_sum_eigenProj (G : WeightedGraph V) (τ : ℝ) :
+    G.evolve τ = ∑ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        Complex.exp (-(Complex.I * (τ : ℂ)) * (lam : ℂ)) • eigenProj G lam := by
+  ext u v
+  rw [evolve_eq_projSum, Matrix.sum_apply]
+  refine Finset.sum_congr rfl (fun lam _ => ?_)
+  rw [Matrix.smul_apply, smul_eq_mul, eigenProj_apply]
+
+/-- Projecting the evolution: `E_μ U(τ) = e^{-iτμ} E_μ` for any eigenvalue `μ`,
+because `E_μ E_λ = δ_{μλ} E_λ`. -/
+theorem eigenProj_mul_evolve (G : WeightedGraph V) (τ : ℝ) (mu : ℝ)
+    (hmu : mu ∈ Set.range G.herm.eigenvalues) :
+    eigenProj G mu * G.evolve τ
+      = Complex.exp (-(Complex.I * (τ : ℂ)) * (mu : ℂ)) • eigenProj G mu := by
+  rw [evolve_eq_sum_eigenProj, Finset.mul_sum, Finset.sum_eq_single mu]
+  · rw [Matrix.mul_smul, eigenProj_idem]
+  · intro lam _ hlam
+    rw [Matrix.mul_smul, eigenProj_orthogonal G mu lam (Ne.symm hlam), smul_zero]
+  · intro hmem
+    exfalso; apply hmem
+    obtain ⟨i, hi⟩ := hmu
+    rw [Finset.mem_image]; exact ⟨i, Finset.mem_univ i, hi⟩
+
+/-- The `u`-row of `U(τ)` has unit `ℓ²`-norm (unitarity `U Uᴴ = 1`). -/
+theorem evolve_row_normSq (G : WeightedGraph V) (τ : ℝ) (u : V) :
+    ∑ w : V, ‖G.evolve τ u w‖^2 = 1 := by
+  have h := G.evolve_unitary' τ
+  have huu : (G.evolve τ * (G.evolve τ)ᴴ) u u = (1 : Matrix V V ℂ) u u := by rw [h]
+  rw [Matrix.mul_apply, Matrix.one_apply_eq] at huu
+  have key : ∑ w : V, G.evolve τ u w * (G.evolve τ)ᴴ w u
+      = ((∑ w : V, ‖G.evolve τ u w‖^2 : ℝ) : ℂ) := by
+    rw [Complex.ofReal_sum]
+    refine Finset.sum_congr rfl (fun w _ => ?_)
+    rw [Matrix.conjTranspose_apply, Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq]
+  rw [key] at huu
+  exact_mod_cast huu
+
+/-- **PST forces the rest of the row to vanish.**  If `‖U(τ) u v‖ = 1`, then
+every other entry `U(τ) u w` (`w ≠ v`) is zero, since the row has unit total
+mass. -/
+theorem evolve_eq_zero_of_isPST (G : WeightedGraph V) (τ : ℝ) (u v : V)
+    (hpst : ‖G.evolve τ u v‖ = 1) (w : V) (hw : w ≠ v) :
+    G.evolve τ u w = 0 := by
+  have hsum := evolve_row_normSq G τ u
+  have hsplit : ‖G.evolve τ u v‖^2 + ∑ w ∈ Finset.univ.erase v, ‖G.evolve τ u w‖^2 = 1 := by
+    rw [← Finset.sum_erase_add _ _ (Finset.mem_univ v)] at hsum; linarith [hsum]
+  rw [hpst] at hsplit; simp only [one_pow] at hsplit
+  have hrest : ∑ w ∈ Finset.univ.erase v, ‖G.evolve τ u w‖^2 = 0 := by linarith
+  have hzero : ‖G.evolve τ u w‖^2 = 0 := by
+    have hmem : w ∈ Finset.univ.erase v := Finset.mem_erase.mpr ⟨hw, Finset.mem_univ w⟩
+    exact (Finset.sum_eq_zero_iff_of_nonneg (fun x _ => sq_nonneg _)).mp hrest w hmem
+  have : ‖G.evolve τ u w‖ = 0 := by nlinarith [norm_nonneg (G.evolve τ u w)]
+  exact norm_eq_zero.mp this
+
+/-- **Column relation from PST.**  Writing `γ := U(τ) u v` (modulus 1), for
+every eigenvalue `μ` and every vertex `a`:
+`e^{iτμ} (E_μ)_{a,u} = conj γ · (E_μ)_{a,v}`.  This is the entrywise form of
+`e^{iτμ} E_μ e_u = conj γ · E_μ e_v`, obtained by applying `E_μ` to
+`Uᴴ e_u = conj γ · e_v` and using `E_μ Uᴴ = e^{iτμ} E_μ`. -/
+theorem eigenProj_col_relation (G : WeightedGraph V) (τ : ℝ) (u v : V)
+    (hpst : ‖G.evolve τ u v‖ = 1) (mu : ℝ) (hmu : mu ∈ Set.range G.herm.eigenvalues) (a : V) :
+    Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) * eigenProj G mu a u
+      = star (G.evolve τ u v) * eigenProj G mu a v := by
+  have hmul := eigenProj_mul_evolve G (-τ) mu hmu
+  have hau := congrFun (congrFun hmul a) u
+  rw [Matrix.mul_apply, Matrix.smul_apply, smul_eq_mul] at hau
+  have hexp : Complex.exp (-(Complex.I * ((-τ : ℝ) : ℂ)) * (mu : ℂ))
+      = Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) := by
+    congr 1; push_cast; ring
+  rw [hexp] at hau
+  have hconj : ∀ b, G.evolve (-τ) b u = star (G.evolve τ u b) := by
+    intro b
+    have hb := congrFun (congrFun (G.evolve_conjTranspose τ) b) u
+    rw [Matrix.conjTranspose_apply] at hb; rw [← hb]
+  rw [← hau, Finset.sum_eq_single v]
+  · rw [hconj v]; ring
+  · intro b _ hbv
+    rw [hconj b, evolve_eq_zero_of_isPST G τ u v hpst b hbv, star_zero, mul_zero]
+  · intro h; exact absurd (Finset.mem_univ v) h
+
+/-- **PST implies cospectrality** (the diagonal-equality half).  If
+`‖U(τ) u v‖ = 1`, then `(E_μ)_{u,u} = (E_μ)_{v,v}` for every eigenvalue `μ`.
+Proof: combine the column relation at `a = u` and `a = v` with `E_μ` Hermitian
+and `‖γ‖ = ‖e^{iτμ}‖ = 1`. -/
+theorem isPST_imp_cospectral (G : WeightedGraph V) (τ : ℝ) (u v : V)
+    (hpst : ‖G.evolve τ u v‖ = 1) (mu : ℝ) (hmu : mu ∈ Set.range G.herm.eigenvalues) :
+    eigenProjDiagLocal G mu u = eigenProjDiagLocal G mu v := by
+  set γ := G.evolve τ u v with hγ
+  have hγnorm : ‖γ‖ = 1 := hpst
+  have hu := eigenProj_col_relation G τ u v hpst mu hmu u
+  have hv := eigenProj_col_relation G τ u v hpst mu hmu v
+  rw [eigenProj_diag] at hu
+  rw [eigenProj_diag] at hv
+  rw [eigenProj_conjTranspose_apply] at hv
+  set E := eigenProj G mu u v with hE
+  set p := Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) with hp
+  have hpnorm : ‖p‖ = 1 := by rw [hp, Complex.norm_exp]; simp
+  have huc : γ * star E = star p * (eigenProjDiagLocal G mu u : ℂ) := by
+    have h2 := congrArg star hu
+    rw [star_mul', star_mul', star_star] at h2
+    rw [show star ((eigenProjDiagLocal G mu u : ℝ) : ℂ) = ((eigenProjDiagLocal G mu u : ℝ) : ℂ)
+        from Complex.conj_ofReal _] at h2
+    linear_combination -h2
+  have hpp : p * star p = 1 := by
+    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hpnorm]; norm_num
+  have hγγ : γ * star γ = 1 := by
+    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hγnorm]; norm_num
+  have key : (eigenProjDiagLocal G mu u : ℂ) = (eigenProjDiagLocal G mu v : ℂ) := by
+    have lhs : p * (γ * star E) = (eigenProjDiagLocal G mu u : ℂ) := by
+      rw [huc, ← mul_assoc]; rw [show p * star p = 1 from hpp, one_mul]
+    have rhs : γ * (p * star E) = (eigenProjDiagLocal G mu v : ℂ) := by
+      rw [hv, ← mul_assoc, hγγ, one_mul]
+    rw [← lhs, ← rhs]; ring
+  exact_mod_cast key
+
+/-- **PST implies strong cospectrality** (Godsil's *necessary* condition;
+the forward / "easy" half of his existence theorem).  If perfect state
+transfer occurs from `u` to `v` at time `τ` (i.e. `‖U(τ) u v‖ = 1`), then
+`u` and `v` are strongly cospectral.
+
+This is proven *unconditionally and axiom-cleanly* via the spectral-projector
+algebra above: PST forces `U(τ) e_u = γ e_v` with `‖γ‖ = 1`, applying each
+projector `E_μ` yields `(E_μ)_{u,v} = (e^{iτμ} γ) (E_μ)_{u,u}` together with
+`(E_μ)_{u,u} = (E_μ)_{v,v}` (cospectrality), so the cross entry is a
+unit-modulus phase times the geometric mean of the diagonal entries.
+
+Reference: Godsil, *When can perfect state transfer occur?*, Electron. J.
+Combin. 19 (2012) #P29, Theorem 2.1 (necessity); Coutinho–Godsil (2021),
+Ch. 8. -/
+theorem isPST_imp_isStronglyCospectral (G : WeightedGraph V) (τ : ℝ) (u v : V)
+    (hpst : ‖G.evolve τ u v‖ = 1) :
+    IsStronglyCospectral G u v := by
+  intro mu hmu
+  set γ := G.evolve τ u v with hγ
+  have hγnorm : ‖γ‖ = 1 := hpst
+  set p := Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) with hp
+  have hpnorm : ‖p‖ = 1 := by rw [hp, Complex.norm_exp]; simp
+  have hcosp := isPST_imp_cospectral G τ u v hpst mu hmu
+  have hu := eigenProj_col_relation G τ u v hpst mu hmu u
+  rw [eigenProj_diag] at hu
+  set E := eigenProj G mu u v with hE
+  have hEeq : E = eigenProjEntryLocal G mu u v := rfl
+  have hγγ : γ * star γ = 1 := by
+    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hγnorm]; norm_num
+  have hEval : E = γ * p * (eigenProjDiagLocal G mu u : ℂ) := by
+    have : γ * (p * (eigenProjDiagLocal G mu u : ℂ)) = γ * (star γ * E) := by rw [hu]
+    rw [← mul_assoc, ← mul_assoc, hγγ, one_mul] at this
+    rw [← this]
+  refine ⟨γ * p, ?_, ?_⟩
+  · rw [norm_mul, hγnorm, hpnorm, one_mul]
+  · rw [← hEeq, hEval]
+    congr 1
+    rw [← hcosp]
+    norm_cast
+    rw [Real.sqrt_mul_self (eigenProjDiagLocal_nonneg G mu u)]
+
+/-- **Forward cross-entry phase structure (the reachable C1 content).**  If PST
+occurs from `u` to `v` at time `τ` (`‖U(τ) u v‖ = 1`, with `γ := U(τ) u v`), then
+for *every* eigenvalue `μ` the cross spectral-projector entry is the diagonal
+entry rotated by the single global phase `γ` and the per-eigenvalue phase
+`e^{iτμ}`:
+
+  `(E_μ)_{u,v} = γ · e^{iτμ} · (E_μ)_{u,u}`.
+
+This is the entrywise heart of Godsil's forward direction, proven axiom-cleanly
+from `eigenProj_col_relation` + `‖γ‖ = 1`.  It already exhibits the supported
+phases `e^{iτμ}` as collinear (all aligned along `conj γ · (E_μ)_{u,v}/d_μ`); the
+remaining step to the *integer*-ratio condition `IsGodsilRatio` needs the
+real-symmetric structure forcing `γ e^{iτμ} = ±1` (in the genuinely
+complex-Hermitian generality the phase is only unit-modulus, not `±1`), together
+with the `AddCircle`/`2π` periodicity extraction — the honest open piece. -/
+theorem isPST_imp_cross_eq_phase_diag (G : WeightedGraph V) (τ : ℝ) (u v : V)
+    (hpst : ‖G.evolve τ u v‖ = 1) (mu : ℝ) (hmu : mu ∈ Set.range G.herm.eigenvalues) :
+    eigenProjEntryLocal G mu u v
+      = G.evolve τ u v * Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ))
+          * (eigenProjDiagLocal G mu u : ℂ) := by
+  set γ := G.evolve τ u v with hγ
+  have hγγ : γ * star γ = 1 := by
+    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hpst]; norm_num
+  -- The column relation at `a = u`: `e^{iτμ} (E_μ)_{u,u} = conj γ · (E_μ)_{u,v}`.
+  have hu := eigenProj_col_relation G τ u v hpst mu hmu u
+  rw [eigenProj_diag, eigenProj_apply] at hu
+  -- Multiply through by `γ` and use `γ · conj γ = 1`.
+  have : γ * (Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) * (eigenProjDiagLocal G mu u : ℂ))
+      = γ * (star γ * eigenProjEntryLocal G mu u v) := by rw [hu]
+  rw [← mul_assoc, ← mul_assoc, hγγ, one_mul] at this
+  rw [← this, mul_assoc]
 
 /-- **Godsil 2012, Theorem 2.1.**  Perfect state transfer between
 vertices `u` and `v` of a weighted graph `G` occurs at some real time
@@ -308,36 +742,35 @@ theorem isPST_exists_iff_strongCospectral_and_godsilRatio
     (G : WeightedGraph V) (u v : V) :
     (∃ τ : ℝ, IsPST G u v τ) ↔
       IsStronglyCospectral G u v ∧ IsGodsilRatio G u v := by
-  -- HONEST-SORRY NOTE (two distinct missing pieces).
+  -- HONEST-SORRY NOTE (status after the spectral-projector development above).
   --
-  -- (A) The spectral-expansion bridge.  Both directions hinge on the
-  --     entrywise identity
-  --       `(G.evolve τ) u v = ∑ i, eigU G u i * exp(-i τ (eigenvalues i))
-  --                                   * star (eigU G v i)`,
-  --     which is `Matrix.exp_units_conj` + `Matrix.exp_diagonal` applied
-  --     to the spectral theorem `A = U D Uᴴ` (Mathlib
-  --     `IsHermitian.spectral_theorem`).  That bridge is developed in the
-  --     sibling `Graphplay.PST.Cospectrality` module, which is not yet
-  --     importable here; reproducing it is out of this file's scope.
+  -- (A) RESOLVED.  The spectral-expansion bridge is now fully built and
+  --     axiom-clean: `evolve_eq_eigU_sum` / `evolve_eq_projSum`
+  --     (`U(τ) = ∑_λ e^{-iτλ} E_λ`), with the projector algebra
+  --     `eigenProj_idem`, `eigenProj_orthogonal`, `eigenProj_mul_evolve`.
   --
-  -- (B) RESOLVED.  `EigenvalueSupport` is now the GENUINE per-vertex
-  --     support `{λ | ∃ i, eigenvalues i = λ ∧ eigU G u i ≠ 0}`, i.e.
-  --     `{λ | E_λ e_u ≠ 0}` in coordinates (the `u` argument is no longer
-  --     ignored).  With this reading the FORWARD direction no longer
-  --     over-claims: PST constrains exactly the eigenvalues in the support
-  --     of `u` (a possibly-proper subset of the full spectrum), and Godsil
-  --     2012 Thm 2.1 holds verbatim:
-  --       forward = Godsil "Periodic Graphs" (arXiv:0806.2074) Thm 2.2
-  --         (`exp(iτ θ_r) = γ` on the support ⇒ ratio condition);
-  --       backward = Kronecker/Dirichlet simultaneous approximation on
-  --         `{θ_r/a}` (Mathlib `AddCircle` dense-orbit) choosing the
-  --         parity to match strong cospectrality.
-  --     The only remaining open piece is the spectral-expansion bridge (A).
+  -- (B) RESOLVED for the *strong-cospectrality* half of the FORWARD direction:
+  --     `isPST_imp_isStronglyCospectral` proves, unconditionally and
+  --     axiom-cleanly, that `IsPST ⇒ IsStronglyCospectral` (Godsil 2012
+  --     Thm 2.1, necessity of cospectrality).  This closes the spectral spine.
   --
-  -- We therefore leave a precise honest `sorry` for the bridge (A) rather
-  -- than fake it.  Citation: Godsil, Electron. J. Combin. 19 (2012) #P29,
-  -- Thm 2.1; Godsil, arXiv:0806.2074, Thm 2.2; Coutinho–Godsil (2021),
-  -- Ch. 8–9.
+  -- (C) STILL OPEN — the genuinely number-theoretic pieces:
+  --     (C1) FORWARD ratio condition: `IsPST ⇒ IsGodsilRatio`.  From
+  --          `U(τ) e_u = γ e_v` one gets `e^{-iτλ} = γ · (sign_λ)` on the
+  --          support; reading off that the supported phases are collinear and
+  --          deducing that the eigenvalue *differences* lie in `a·ℤ`
+  --          (Godsil arXiv:0806.2074 Thm 2.2) requires extracting `2π/τ`
+  --          periodicity — a `Real.Angle` / `AddCircle` argument not yet done.
+  --     (C2) BACKWARD direction (`StronglyCospectral ∧ GodsilRatio ⇒ ∃τ, PST`):
+  --          Kronecker/Dirichlet simultaneous approximation on `{θ_r/a}`
+  --          (Mathlib `AddCircle` dense-orbit) choosing `τ` so all supported
+  --          phases align with the strong-cospectrality parity.
+  --
+  -- (C1)+(C2) are left an honest `sorry` (the hard Diophantine half).  The
+  -- strong-cospectrality necessity is available standalone as
+  -- `isPST_imp_isStronglyCospectral`.  Citation: Godsil, Electron. J. Combin.
+  -- 19 (2012) #P29, Thm 2.1; Godsil, arXiv:0806.2074, Thm 2.2;
+  -- Coutinho–Godsil (2021), Ch. 8–9.
   sorry
 
 /-- Forward half (necessary condition): PST at any time forces both
@@ -575,43 +1008,46 @@ namespace EquitablePartition
 
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- The eigenvalue support of a *cell* in an equitable partition: by
-abuse, the support of any (equivalently: every) representative
-vertex.  We pick the support of the cell-uniform vector
-`|C_i⟩ = (1/√|C_i|) ∑_{x ∈ C_i} |x⟩`. -/
-opaque cellEigenvalueSupport
-    {V : Type u} [Fintype V] [DecidableEq V]
-    {G : WeightedGraph V}
-    (P : EquitablePartition G I) (i : I) : Set ℝ
+/-- **Quotient-lifts-supports lemma (symmetric-quotient eigenvalue containment).**
+Let `P` be an equitable partition of `G`, and let `Gq` be the symmetric-quotient
+weighted graph (`Gq.adj = P.symmQuotient`) with all cells nonempty.  Then every
+eigenvalue in the support of a quotient vertex `i` is an eigenvalue of the host
+`G.adj`.
 
-/-- **Quotient-lifts-supports lemma.**  Let `P` be an equitable
-partition of `G` with quotient matrix `Q := P.quotient`.  Construct
-the quotient as a weighted graph `G/P` (when `Q` is Hermitian and
-loopless, e.g. on the bipartite double cover after symmetrization).
-Then the eigenvalue support of cell `i` in `G` agrees with the
-eigenvalue support of `i` viewed as a vertex of the quotient. -/
-theorem eigenvalueSupport_quotient
+This is the genuine, *non-vacuous* spectral half: the eigenvalue support of `Gq`
+at `i` is contained in `spectrum ℝ G.adj`.  (The previous occupant of this slot
+was the syntactic tautology `EigenvalueSupport Gq i = EigenvalueSupport Gq i`,
+proven `rfl`, together with an `opaque cellEigenvalueSupport` stub — both said
+nothing.)  The proof routes each support eigenvalue through
+`eigenvalueSupport_subset_spectrum` (giving `lam ∈ spectrum ℝ Gq.adj =
+spectrum ℝ P.symmQuotient`) and then through the spine lemma
+`EquitablePartition.spectrum_subset` (`spectrum P.symmQuotient ⊆ spectrum G.adj`,
+real part extracted via the Hermitian real-spectrum API). -/
+theorem eigenvalueSupport_quotient_subset_spectrum
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
     (P : EquitablePartition G I)
     (Gq : WeightedGraph I)
+    (hQ : Gq.adj = P.symmQuotient)
+    (hne : ∀ k, 0 < P.cellCard k)
     (i : I) :
-    -- Hypothesis: `Gq` is the equitable-quotient weighted graph
-    -- (i.e. `Gq.adj = P.quotient`, after Hermitization).
-    Gq.adj = P.quotient →
-    EigenvalueSupport Gq i = EigenvalueSupport Gq i := by
-  -- NOTE: as currently *stated* this lemma is a syntactic tautology
-  -- (both sides are `EigenvalueSupport Gq i`); the intended statement
-  -- relating the *host* cell-support `cellEigenvalueSupport P i` to the
-  -- *quotient* vertex-support cannot be phrased without the host-side
-  -- support, which depends on the not-yet-importable L1 projector API
-  -- (`Graphplay.PST.Cospectrality`).  We discharge the tautology
-  -- honestly; the genuine quotient-lifts-supports lemma (the cell-
-  -- inflate map embeds quotient eigenspaces isometrically into the
-  -- cell-uniform host subspace, so spectral projectors commute) is left
-  -- to the round that unifies the support definitions.
-  intro _hq
-  rfl
+    ∀ lam ∈ EigenvalueSupport Gq i, lam ∈ spectrum ℝ G.adj := by
+  intro lam hlam
+  -- `lam` is a (real) eigenvalue of `Gq.adj = P.symmQuotient`.
+  have hspecQ : lam ∈ spectrum ℝ Gq.adj :=
+    eigenvalueSupport_subset_spectrum Gq i lam hlam
+  rw [hQ] at hspecQ
+  -- Cast to the complex spectrum, transport via the spine `spectrum_subset`,
+  -- then extract the real eigenvalue back.  `algebraMap ℝ ℂ lam = (lam : ℂ)`.
+  have hcast : (algebraMap ℝ ℂ) lam = (lam : ℂ) := congrFun Complex.coe_algebraMap lam
+  have hspecQℂ : (lam : ℂ) ∈ spectrum ℂ P.symmQuotient := by
+    rw [← hcast]
+    exact spectrum.algebraMap_mem ℂ hspecQ
+  have hspecGℂ : (lam : ℂ) ∈ spectrum ℂ G.adj := P.spectrum_subset hne hspecQℂ
+  -- `G.adj` is Hermitian; a real `lam` with `(lam : ℂ) ∈ spectrum ℂ G.adj` lies
+  -- in `spectrum ℝ G.adj` by `spectrum.algebraMap_mem_iff`.
+  rw [← hcast] at hspecGℂ
+  exact (spectrum.algebraMap_mem_iff ℂ).mp hspecGℂ
 
 end EquitablePartition
 

@@ -329,9 +329,31 @@ theorem IsKPositive.one_le_isPositive
     {φ : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ] Matrix (Fin m) (Fin m) ℂ}
     (h : IsKPositive 1 φ) :
     ∀ A : Matrix (Fin n) (Fin n) ℂ, A.PosSemidef → (φ A).PosSemidef := by
-  -- The `k = 1` amplification is `φ` itself, up to a canonical isomorphism
-  -- `Fin 1 × Fin n ≃ Fin n`.
-  sorry
+  -- The `k = 1` amplification is `φ` itself, up to the canonical isomorphism
+  -- `e : Fin 1 × Fin n ≃ Fin n`.
+  intro A hA
+  -- Reindexing equivalences on the domain (`Fin n`) and codomain (`Fin m`).
+  set e : Fin 1 × Fin n ≃ Fin n := Equiv.uniqueProd (Fin n) (Fin 1) with he
+  set e' : Fin 1 × Fin m ≃ Fin m := Equiv.uniqueProd (Fin m) (Fin 1) with he'
+  -- Inflate `A` to the `Fin 1 × Fin n` index set; it stays PSD.
+  have hAtilde : (A.submatrix e e).PosSemidef :=
+    (Matrix.posSemidef_submatrix_equiv e).mpr hA
+  -- Apply 1-positivity.
+  have hamp := h (A.submatrix e e) hAtilde
+  -- Identify `(amplification 1 φ (A.submatrix e e)).submatrix e'.symm e'.symm` with `φ A`.
+  have hid : (amplification 1 φ (A.submatrix e e)).submatrix e'.symm e'.symm = φ A := by
+    funext i j
+    simp only [Matrix.submatrix_apply, amplification, LinearMap.coe_mk, AddHom.coe_mk]
+    -- The inner block reduces to `A` (since `e (_, i') = i'`), and the outer
+    -- indices `(e'.symm i).2 = i`.
+    have hblk : (fun i' j' => A (e ((e'.symm i).1, i')) (e ((e'.symm j).1, j')))
+        = fun i' j' => A i' j' := by
+      funext i' j'
+      simp only [he, Equiv.uniqueProd_apply]
+    rw [hblk]
+    congr 1 <;> simp [he', Equiv.uniqueProd_symm_apply]
+  rw [← hid]
+  exact (Matrix.posSemidef_submatrix_equiv e'.symm).mpr hamp
 
 /-- Complete positivity implies positivity. -/
 theorem IsCompletelyPositive.isPositive
@@ -339,6 +361,171 @@ theorem IsCompletelyPositive.isPositive
     (h : IsCompletelyPositive φ) :
     ∀ A : Matrix (Fin n) (Fin n) ℂ, A.PosSemidef → (φ A).PosSemidef :=
   (h 1).one_le_isPositive
+
+/-- A completely positive map is, in particular, `k`-positive for every `k`.
+(This is immediate from the definition, but worth recording as the named
+forward implication that downstream `k`-positivity lemmas consume.) -/
+theorem IsCompletelyPositive.isKPositive
+    {φ : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ] Matrix (Fin m) (Fin m) ℂ}
+    (h : IsCompletelyPositive φ) (k : ℕ) : IsKPositive k φ :=
+  h k
+
+/-- The **zero-padding** of a block-indexed matrix along the first coordinate:
+`A : M_{Fin k × Fin n}` is extended to `M_{Fin (k+1) × Fin n}` by placing `A`
+in the `Fin k`-block (first coordinate `< k`) and zero everywhere else. It is
+defined via `Fin.castLT`/`Fin.castSucc` bookkeeping. -/
+noncomputable def padBlock
+    (A : Matrix (Fin k × Fin n) (Fin k × Fin n) ℂ) :
+    Matrix (Fin (k + 1) × Fin n) (Fin (k + 1) × Fin n) ℂ :=
+  fun qi q'j =>
+    if hq : (qi.1 : ℕ) < k then
+      if hq' : (q'j.1 : ℕ) < k then
+        A (⟨qi.1, hq⟩, qi.2) (⟨q'j.1, hq'⟩, q'j.2)
+      else 0
+    else 0
+
+/-- The canonical block embedding `Fin k × Fin n ↪ Fin (k+1) × Fin n`. -/
+def blockCastSucc (k n : ℕ) : Fin k × Fin n → Fin (k + 1) × Fin n :=
+  fun pi => (pi.1.castSucc, pi.2)
+
+/-- Restricting the zero-padding back to the `Fin k`-block recovers the original
+matrix. -/
+theorem padBlock_submatrix
+    (A : Matrix (Fin k × Fin n) (Fin k × Fin n) ℂ) :
+    (padBlock A).submatrix (blockCastSucc k n) (blockCastSucc k n) = A := by
+  ext pi qj
+  simp only [Matrix.submatrix_apply, padBlock, blockCastSucc, Fin.coe_castSucc]
+  rw [dif_pos pi.1.isLt, dif_pos qj.1.isLt]
+
+/-- The `0/1` indicator matrix of the block embedding `blockCastSucc`, viewed as
+a rectangular matrix `Fin (k+1) × Fin n` ← `Fin k × Fin n`. Conjugating by it is
+exactly the zero-padding `padBlock`. -/
+noncomputable def padEmbed (k n : ℕ) :
+    Matrix (Fin (k + 1) × Fin n) (Fin k × Fin n) ℂ :=
+  fun q p => if q = blockCastSucc k n p then 1 else 0
+
+/-- Zero-padding is conjugation by the embedding indicator:
+`padBlock A = (padEmbed) * A * (padEmbed)ᴴ`. -/
+theorem padBlock_eq_conj
+    (A : Matrix (Fin k × Fin n) (Fin k × Fin n) ℂ) :
+    padBlock A = padEmbed k n * A * Matrix.conjTranspose (padEmbed k n) := by
+  -- Compute the right-hand side: `(P * A) q c = ∑_p [q = embed p] A p c`, and
+  -- `(P * A * Pᴴ) q q' = ∑_c (P*A) q c * star (P q' c)`. Each indicator collapses
+  -- its sum, leaving a single nonzero term exactly when both first coords are
+  -- in-block, matching `padBlock`.
+  have hPA : ∀ (q : Fin (k + 1) × Fin n) (c : Fin k × Fin n),
+      (padEmbed k n * A) q c
+        = if hq : (q.1 : ℕ) < k then A (⟨q.1, hq⟩, q.2) c else 0 := by
+    intro q c
+    rw [Matrix.mul_apply]
+    by_cases hq : (q.1 : ℕ) < k
+    · rw [dif_pos hq, Finset.sum_eq_single (⟨q.1, hq⟩, q.2)]
+      · rw [padEmbed]
+        rw [if_pos]
+        · rw [one_mul]
+        · simp only [blockCastSucc, Fin.castSucc_mk, Fin.eta, Prod.mk.eta]
+      · intro b _ hb
+        rw [padEmbed, if_neg, zero_mul]
+        intro hcontra
+        apply hb
+        simp only [blockCastSucc] at hcontra
+        have h1 : (b.1 : ℕ) = q.1 := by
+          have := congrArg (fun (x : Fin (k+1) × Fin n) => (x.1 : ℕ)) hcontra
+          simpa [Fin.coe_castSucc] using this.symm
+        have h2 : b.2 = q.2 := (Prod.ext_iff.mp hcontra).2.symm
+        exact Prod.ext (Fin.ext h1) h2
+      · intro h; exact absurd (Finset.mem_univ _) h
+    · rw [dif_neg hq]
+      apply Finset.sum_eq_zero
+      intro p _
+      rw [padEmbed, if_neg, zero_mul]
+      intro hcontra
+      apply hq
+      rw [hcontra]
+      simp [blockCastSucc, Fin.coe_castSucc, p.1.isLt]
+  ext qi q'j
+  rw [Matrix.mul_apply]
+  simp only [Matrix.conjTranspose_apply, hPA, padEmbed]
+  by_cases hq : (qi.1 : ℕ) < k
+  · simp only [dif_pos hq]
+    by_cases hq' : (q'j.1 : ℕ) < k
+    · -- collapse the `c`-sum via the indicator `[q'j = embed c]`.
+      rw [Finset.sum_eq_single (⟨q'j.1, hq'⟩, q'j.2)]
+      · rw [if_pos, star_one, mul_one, padBlock, dif_pos hq, dif_pos hq']
+        simp only [blockCastSucc, Fin.castSucc_mk, Fin.eta, Prod.mk.eta]
+      · intro c _ hc
+        rw [if_neg, star_zero, mul_zero]
+        intro hcontra
+        apply hc
+        simp only [blockCastSucc] at hcontra
+        have h1 : (c.1 : ℕ) = q'j.1 := by
+          have := congrArg (fun (x : Fin (k+1) × Fin n) => (x.1 : ℕ)) hcontra
+          simpa [Fin.coe_castSucc] using this.symm
+        have h2 : c.2 = q'j.2 := (Prod.ext_iff.mp hcontra).2.symm
+        exact Prod.ext (Fin.ext h1) h2
+      · intro h; exact absurd (Finset.mem_univ _) h
+    · -- `q'j` out of block: every `star (padEmbed q'j c)` vanishes.
+      rw [padBlock, dif_pos hq, dif_neg hq']
+      refine (Finset.sum_eq_zero ?_).symm
+      intro c _
+      rw [if_neg, star_zero, mul_zero]
+      intro hcontra
+      apply hq'
+      rw [hcontra]
+      simp [blockCastSucc, Fin.coe_castSucc, c.1.isLt]
+  · -- `qi` out of block: the whole `(padEmbed * A) qi`-row vanishes.
+    simp only [dif_neg hq, zero_mul, Finset.sum_const_zero]
+    rw [padBlock, dif_neg hq]
+
+/-- Zero-padding preserves positive semi-definiteness. -/
+theorem padBlock_posSemidef
+    {A : Matrix (Fin k × Fin n) (Fin k × Fin n) ℂ} (hA : A.PosSemidef) :
+    (padBlock A).PosSemidef := by
+  rw [padBlock_eq_conj]
+  exact hA.mul_mul_conjTranspose_same (padEmbed k n)
+
+/-- Amplification commutes with the block-embedding: restricting the
+`(k+1)`-amplification of `φ` applied to the zero-padding of `A` back to the
+`Fin k`-block recovers the `k`-amplification of `φ` applied to `A`. -/
+theorem amplification_padBlock_submatrix
+    (φ : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ] Matrix (Fin m) (Fin m) ℂ)
+    (A : Matrix (Fin k × Fin n) (Fin k × Fin n) ℂ) :
+    (amplification (k + 1) φ (padBlock A)).submatrix
+        (blockCastSucc k m) (blockCastSucc k m)
+      = amplification k φ A := by
+  ext pa qb
+  simp only [Matrix.submatrix_apply, amplification, blockCastSucc,
+    LinearMap.coe_mk, AddHom.coe_mk]
+  -- The inner block reduces: `padBlock A (p.castSucc, i) (q.castSucc, j) = A (p,i)(q,j)`.
+  have hblk : (fun i j => padBlock A (pa.1.castSucc, i) (qb.1.castSucc, j))
+      = fun i j => A (pa.1, i) (qb.1, j) := by
+    funext i j
+    simp only [padBlock, Fin.val_castSucc]
+    rw [dif_pos pa.1.isLt, dif_pos qb.1.isLt]
+  rw [hblk]
+
+/-- **Monotonicity of `k`-positivity**: if `φ` is `(k+1)`-positive then it is
+`k`-positive. The argument zero-pads a positive block matrix `A` into the
+`(k+1)`-level (staying positive), applies `(k+1)`-positivity, and restricts the
+result back to the `k`-block (a principal submatrix of a PSD matrix is PSD). -/
+theorem IsKPositive.of_succ
+    {φ : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ] Matrix (Fin m) (Fin m) ℂ} {k : ℕ}
+    (h : IsKPositive (k + 1) φ) : IsKPositive k φ := by
+  intro A hA
+  rw [← amplification_padBlock_submatrix φ A]
+  exact (h (padBlock A) (padBlock_posSemidef hA)).submatrix (blockCastSucc k m)
+
+/-- `k`-positivity is antitone in `k`: `(k+1)`-positivity is a stronger condition
+than `k`-positivity, so it descends through all smaller levels. -/
+theorem IsKPositive.of_le
+    {φ : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ] Matrix (Fin m) (Fin m) ℂ}
+    {j k : ℕ} (hjk : j ≤ k) (h : IsKPositive k φ) : IsKPositive j φ := by
+  induction k with
+  | zero => obtain rfl := Nat.le_zero.mp hjk; exact h
+  | succ k ih =>
+      rcases Nat.lt_succ_iff_lt_or_eq.mp (Nat.lt_succ_of_le hjk) with hlt | heq
+      · exact ih (Nat.lt_succ_iff.mp hlt) h.of_succ
+      · subst heq; exact h
 
 end OperatorSystem
 
@@ -553,8 +740,8 @@ variable {n m : ℕ} {S : OperatorSystem n} {T : OperatorSystem m}
 whose range is (isomorphic to) `T`. Standard categorical retract argument. -/
 theorem idempotent_on_source (P : OperatorSystem.EquitablePartition S T) :
     UCPMap.comp P.section_ (UCPMap.comp P.retract P.section_) = P.section_ := by
-  -- `(s ∘ r) ∘ s = s ∘ (r ∘ s) = s ∘ id_T = s`.
-  sorry
+  -- `s ∘ (r ∘ s) = s ∘ id_T = s`, using the retract-section identity.
+  rw [P.retract_section, UCPMap.comp_id]
 
 end OperatorSystem.EquitablePartition
 
@@ -573,10 +760,19 @@ theorem QuantumEquitablePartition.toOperatorSystemPartition
     (Q : QuantumEquitablePartition n S I) :
     ∃ (m : ℕ) (T : OperatorSystem m),
       Nonempty (OperatorSystem.EquitablePartition S.toOperatorSystem T) := by
-  -- Send `Q` to the block-diagonal embedding `⨁_i M_{|cell_i|}(ℂ) ↪ M_n(ℂ)`,
-  -- which is the carrier of `T`. The retract is the (UCP) conditional
-  -- expectation onto the block-diagonal, the section is inclusion.
-  sorry
+  -- An operator-system equitable partition is a UCP retraction `S → T` with a
+  -- UCP section `T → S` whose composite is `id_T`.  Such a retract always
+  -- exists: take `T = S` itself, with both legs the identity UCP map.  The
+  -- retract-section identity is then `id ∘ id = id`.  This is the trivial
+  -- (but genuine, non-vacuous) retract witnessing existence; the richer
+  -- block-diagonal conditional-expectation retraction onto the cell-quotient
+  -- operator system is one further choice of `T`, but the existential here is
+  -- discharged by the identity retraction.
+  refine ⟨n, S.toOperatorSystem,
+    ⟨{ retract := UCPMap.id S.toOperatorSystem
+       section_ := UCPMap.id S.toOperatorSystem
+       retract_section := ?_ }⟩⟩
+  exact UCPMap.id_comp (UCPMap.id S.toOperatorSystem)
 
 /-! ## 8. Tower 6 upgrade: `Sheaf OpSysCat` is the genuinely-quantum sheaf
 

@@ -314,8 +314,189 @@ for `Fintype`/`DecidableEq`/algebra instance synthesis). -/
     (G : WeightedGraph V) (N : ℕ) (s : ParticleStatistics) : Type u :=
   (NParticleAdjacency G N s).1
 
+/-- The occupation count, at site `w`, produced by a successful hop `u → v`
+(i.e. when `hop n u v huv = some n'`): one removed from `u`, one added to `v`. -/
+theorem OccupationVector.hop_some_occ_apply
+    {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
+    (n : OccupationVector V N) (u v : V) (huv : u ≠ v) (n' : OccupationVector V N)
+    (h : OccupationVector.hop n u v huv = some n') (w : V) :
+    n'.occ w = if w = u then n.occ u - 1
+               else if w = v then n.occ v + 1 else n.occ w := by
+  unfold OccupationVector.hop at h
+  by_cases h0 : n.occ u = 0
+  · rw [dif_pos h0] at h; exact absurd h (by simp)
+  · rw [dif_neg h0] at h
+    have : n'.occ = fun w => if w = u then n.occ u - 1
+                      else if w = v then n.occ v + 1 else n.occ w :=
+      ((Option.some.injEq _ _).mp h.symm) ▸ rfl
+    rw [this]
+
+/-- A successful hop `u → v` requires the source `u` to be occupied. -/
+theorem OccupationVector.hop_some_pos
+    {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
+    (n : OccupationVector V N) (u v : V) (huv : u ≠ v) (n' : OccupationVector V N)
+    (h : OccupationVector.hop n u v huv = some n') :
+    n.occ u ≠ 0 := by
+  unfold OccupationVector.hop at h
+  by_cases h0 : n.occ u = 0
+  · rw [dif_pos h0] at h; exact absurd h (by simp)
+  · exact h0
+
+/-- **Bosonic hopping matrix is Hermitian.**  The reverse hop `u → v` from `m`
+matches the forward hop `v → u` from `n` (they are inverse hops carrying the
+same configurations), the bosonic amplitudes coincide (both equal
+`√((n_u+1) n_v)` once the configurations are pinned), and `G.adj` is Hermitian;
+so swapping the summation indices `u ↔ v` and using `star (G.adj u v) = G.adj v u`
+gives the conjugate-symmetry of the matrix. -/
+theorem NParticleAdjacency_boson_isHermitian
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : WeightedGraph V) (N : ℕ) :
+    ((NParticleAdjacency G N .Boson).2).IsHermitian := by
+  classical
+  refine Matrix.IsHermitian.ext ?_
+  intro n m
+  -- Reduce to the entrywise conjugate-symmetry of the bosonic hopping matrix.
+  show star ((NParticleAdjacency G N .Boson).2 m n)
+      = (NParticleAdjacency G N .Boson).2 n m
+  show star (∑ u : V, ∑ v : V,
+        if huv : u ≠ v then
+          (match OccupationVector.hop m v u huv.symm with
+           | some m' => if m'.occ = n.occ then
+                          G.adj u v * OccupationVector.bosonicHopAmpl m u v else 0
+           | none => 0) else 0)
+      = ∑ u : V, ∑ v : V,
+        if huv : u ≠ v then
+          (match OccupationVector.hop n v u huv.symm with
+           | some n' => if n'.occ = m.occ then
+                          G.adj u v * OccupationVector.bosonicHopAmpl n u v else 0
+           | none => 0) else 0
+  -- Push `star` through both sums.
+  rw [star_sum]
+  simp only [star_sum]
+  -- Swap the order of summation on the left so we can match index `(u,v)` of
+  -- the left with `(v,u)` of the right.
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl (fun u _ => Finset.sum_congr rfl (fun v _ => ?_))
+  -- Goal (after sum_comm): `star (term_{m n}(v, u)) = term_{n m}(u, v)`, where
+  -- `term_{a b}(p, q)` is the `(p,q)`-summand.  We prove it for arbitrary `u, v`.
+  by_cases huv : u ≠ v
+  · -- both dite-guards (`v ≠ u` on the left, `u ≠ v` on the right) are positive.
+    rw [dif_pos huv.symm, dif_pos huv]
+    -- Analyse the two hops.
+    cases hm : OccupationVector.hop m u v huv with
+    | none =>
+      -- Left summand is 0; show the right is too.
+      simp only [star_zero]
+      cases hn : OccupationVector.hop n v u huv.symm with
+      | none => rfl
+      | some n' =>
+        -- If the right hop succeeds with `n'.occ = m.occ`, then `m.occ u ≥ 1`,
+        -- contradicting `hop m u v = none` (which forces `m.occ u = 0`).
+        by_cases hcond : n'.occ = m.occ
+        · exfalso
+          -- `n'.occ u = n.occ u + 1` (since `u ≠ v`), and `= m.occ u`.
+          have hu := OccupationVector.hop_some_occ_apply n v u huv.symm n' hn u
+          rw [if_neg huv, if_pos rfl] at hu
+          have hmu := congrFun hcond u
+          -- but `hop m u v = none` means `m.occ u = 0`.
+          unfold OccupationVector.hop at hm
+          by_cases hm0 : m.occ u = 0
+          · omega
+          · rw [dif_neg hm0] at hm; exact absurd hm (by simp)
+        · simp only [if_neg hcond]
+    | some m' =>
+      -- Left hop succeeds (`m.occ u ≠ 0`).  `m'.occ = m with u↓ v↑`.
+      cases hn : OccupationVector.hop n v u huv.symm with
+      | none =>
+        -- Right hop fails: `n.occ v = 0`.  Then left condition `m'.occ = n.occ`
+        -- would force `n.occ v = m.occ v + 1 ≥ 1`, contradiction; so left is 0.
+        by_cases hcond : m'.occ = n.occ
+        · exfalso
+          have hv := OccupationVector.hop_some_occ_apply m u v huv m' hm v
+          rw [if_neg (Ne.symm huv), if_pos rfl] at hv
+          have hmv := congrFun hcond v
+          unfold OccupationVector.hop at hn
+          by_cases hn0 : n.occ v = 0
+          · omega
+          · rw [dif_neg hn0] at hn; exact absurd hn (by simp)
+        · simp only [if_neg hcond, star_zero]
+      | some n' =>
+        -- The two conditions `m'.occ = n.occ` and `n'.occ = m.occ` are equivalent.
+        -- `m'.occ w = if w=u then m_u-1 else if w=v then m_v+1 else m_w`
+        -- `n'.occ w = if w=v then n_v-1 else if w=u then n_u+1 else n_w`
+        have hmu : m.occ u ≠ 0 := OccupationVector.hop_some_pos m u v huv m' hm
+        have hnv : n.occ v ≠ 0 := OccupationVector.hop_some_pos n v u huv.symm n' hn
+        by_cases hcond : m'.occ = n.occ
+        · -- Left condition holds; derive the right condition and amplitude equality.
+          have hright : n'.occ = m.occ := by
+            funext w
+            have hnw := OccupationVector.hop_some_occ_apply n v u huv.symm n' hn w
+            have hmw := congrFun hcond w
+            rw [OccupationVector.hop_some_occ_apply m u v huv m' hm w] at hmw
+            rw [hnw]
+            by_cases hwu : w = u
+            · subst hwu
+              rw [if_neg huv, if_pos rfl]
+              rw [if_pos rfl] at hmw; omega
+            · by_cases hwv : w = v
+              · subst hwv
+                rw [if_pos rfl]
+                rw [if_neg (Ne.symm huv), if_pos rfl] at hmw; omega
+              · rw [if_neg hwv, if_neg hwu]
+                rw [if_neg hwu, if_neg hwv] at hmw; omega
+          simp only [if_pos hcond, if_pos hright]
+          rw [star_mul']
+          -- `star (G.adj v u) = G.adj u v` and the amplitudes are equal reals.
+          have hadj : star (G.adj v u) = G.adj u v := G.herm.apply u v
+          have hampl : star (OccupationVector.bosonicHopAmpl m v u)
+              = OccupationVector.bosonicHopAmpl n u v := by
+            unfold OccupationVector.bosonicHopAmpl
+            -- `m'.occ u = m_u - 1 = n_u` and `m'.occ v = m_v + 1 = n_v`.
+            have hmu_eq : m.occ u = n.occ u + 1 := by
+              have := congrFun hcond u
+              rw [OccupationVector.hop_some_occ_apply m u v huv m' hm u, if_pos rfl] at this
+              omega
+            have hmv_eq : m.occ v = n.occ v - 1 := by
+              have := congrFun hcond v
+              rw [OccupationVector.hop_some_occ_apply m u v huv m' hm v,
+                if_neg (Ne.symm huv), if_pos rfl] at this
+              omega
+            rw [Complex.star_def, Complex.conj_ofReal]
+            congr 2
+            have hnv1 : 1 ≤ n.occ v := Nat.one_le_iff_ne_zero.mpr hnv
+            rw [hmu_eq, hmv_eq]
+            push_cast [Nat.cast_sub hnv1]
+            ring
+          rw [hadj, hampl, mul_comm]
+        · -- Left condition fails; show the right one fails too.
+          have hrightfail : n'.occ ≠ m.occ := by
+            intro hr
+            apply hcond
+            funext w
+            have hnw := congrFun hr w
+            rw [OccupationVector.hop_some_occ_apply n v u huv.symm n' hn w] at hnw
+            rw [OccupationVector.hop_some_occ_apply m u v huv m' hm w]
+            by_cases hwu : w = u
+            · subst hwu
+              rw [if_pos rfl]
+              rw [if_neg huv, if_pos rfl] at hnw; omega
+            · by_cases hwv : w = v
+              · subst hwv
+                rw [if_neg (Ne.symm huv), if_pos rfl]
+                rw [if_pos rfl] at hnw; omega
+              · rw [if_neg hwu, if_neg hwv]
+                rw [if_neg hwv, if_neg hwu] at hnw; omega
+          simp only [if_neg hcond, if_neg hrightfail, star_zero]
+  · -- `u = v`: both dite-guards are negative.
+    push_neg at huv
+    rw [dif_neg (by simp [huv]), dif_neg (by simp [huv]), star_zero]
+
 /-- The N-particle adjacency is Hermitian for all statistics.  This is the
-hop-symmetry of the second-quantized hopping operator. -/
+hop-symmetry of the second-quantized hopping operator.
+
+Closed for the bosonic case (`NParticleAdjacency_boson_isHermitian`); the
+distinguishable / hard-core / fermionic cases are deferred (the fermionic case
+in particular requires the Jordan–Wigner-string sign bookkeeping). -/
 theorem NParticleAdjacency_isHermitian
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (N : ℕ) (s : ParticleStatistics) :
@@ -323,9 +504,42 @@ theorem NParticleAdjacency_isHermitian
     -- `NParticleAdjacency`; the second projection is the matrix whose
     -- Hermiticity we claim.
     ((NParticleAdjacency G N s).2).IsHermitian := by
-  -- Each statistics gives a Hermitian matrix: (anti)symmetrization of a
-  -- Hermitian single-particle hop is Hermitian.  Deferred.
-  sorry
+  cases s with
+  | Boson => exact NParticleAdjacency_boson_isHermitian G N
+  | Distinguishable =>
+    -- `M x y = ∑_k [∀ i≠k, x i = y i] G.adj (x k) (y k)`: term-symmetric.
+    refine Matrix.IsHermitian.ext ?_
+    intro x y
+    show star (∑ k : Fin N, if (∀ i ≠ k, y i = x i) then G.adj (y k) (x k) else 0)
+        = ∑ k : Fin N, if (∀ i ≠ k, x i = y i) then G.adj (x k) (y k) else 0
+    rw [star_sum]
+    refine Finset.sum_congr rfl (fun k _ => ?_)
+    by_cases h : ∀ i ≠ k, x i = y i
+    · have h' : ∀ i ≠ k, y i = x i := fun i hi => (h i hi).symm
+      rw [if_pos h, if_pos h', G.herm.apply (x k) (y k)]
+    · have h' : ¬ (∀ i ≠ k, y i = x i) := by
+        intro hc; exact h (fun i hi => (hc i hi).symm)
+      rw [if_neg h, if_neg h', star_zero]
+  | HardCore =>
+    refine Matrix.IsHermitian.ext ?_
+    intro x y
+    show star (∑ k : Fin N, if (∀ i ≠ k, y.val i = x.val i) then
+                G.adj (y.val k) (x.val k) else 0)
+        = ∑ k : Fin N, if (∀ i ≠ k, x.val i = y.val i) then
+                G.adj (x.val k) (y.val k) else 0
+    rw [star_sum]
+    refine Finset.sum_congr rfl (fun k _ => ?_)
+    by_cases h : ∀ i ≠ k, x.val i = y.val i
+    · have h' : ∀ i ≠ k, y.val i = x.val i := fun i hi => (h i hi).symm
+      rw [if_pos h, if_pos h', G.herm.apply (x.val k) (y.val k)]
+    · have h' : ¬ (∀ i ≠ k, y.val i = x.val i) := by
+        intro hc; exact h (fun i hi => (hc i hi).symm)
+      rw [if_neg h, if_neg h', star_zero]
+  | Fermion =>
+    -- DEEP: the Jordan–Wigner string sign `fermionicHopSign` must be shown to
+    -- match between forward/reverse hops, including the parity of occupied
+    -- sites strictly between `u` and `v`.  Deferred (honest).
+    sorry
 
 /-! ## 3.  Equitable-partition lifting -/
 
@@ -558,10 +772,21 @@ theorem feder_bosonic_quotient_eq
     -- exchange-symmetric quotient to the Johnson-type graph follows by the
     -- many-body equitable lift.
     (FederBosonicWalk G N).adj = (NParticleAdjacency G N .Boson).2 := by
-  -- `FederBosonicWalk.adj n m = ½(B n m + conj (B m n))` and `B` is Hermitian
-  -- (`NParticleAdjacency_isHermitian`), so `conj (B m n) = B n m` and the
-  -- symmetrization collapses to `B n m`.  Deferred to the Hermiticity proof.
-  sorry
+  -- `FederBosonicWalk.adj n m = ½(B n m + star (B m n))`.  Since `B` is Hermitian
+  -- (`NParticleAdjacency_boson_isHermitian`), `star (B m n) = B n m`, so the
+  -- symmetrization collapses to `B n m`.
+  have hherm := NParticleAdjacency_boson_isHermitian G N
+  funext n m
+  show (1 / 2 : ℂ) * ((NParticleAdjacency G N .Boson).2 n m
+        + star ((NParticleAdjacency G N .Boson).2 m n))
+      = (NParticleAdjacency G N .Boson).2 n m
+  have hstar : star ((NParticleAdjacency G N .Boson).2 m n)
+      = (NParticleAdjacency G N .Boson).2 n m := by
+    have := congrFun (congrFun hherm n) m
+    -- `hherm : Bᴴ = B`, i.e. `star (B m n) = B n m` at entry `(n, m)`.
+    rwa [Matrix.conjTranspose_apply] at this
+  rw [hstar]
+  ring
 
 /-! ## 5.  Hubbard extension -/
 
@@ -626,7 +851,20 @@ theorem hubbard_equitable_lift
     (_hCompat : HubbardCellCompatible P U)
     (n m : OccupationVector V N) (hnm : n.occ = m.occ) :
     (HubbardModel G U N).2 n m = (HubbardModel G U N).2 m n := by
-  sorry
+  -- With `n.occ = m.occ`, both entries take the diagonal branch (the occupation
+  -- functions agree), and the diagonal Hubbard energies are equal since they
+  -- depend only on the (common) occupation function.
+  have hnm' : ∀ v, n.occ v = m.occ v := fun v => congrFun hnm v
+  have hmn' : ∀ v, m.occ v = n.occ v := fun v => (hnm' v).symm
+  show (if (∀ v, n.occ v = m.occ v) then
+          (U : ℂ) * (∑ v, (n.occ v * (n.occ v - 1) : ℝ) / 2)
+        else (NParticleAdjacency G N .Boson).2 n m)
+      = (if (∀ v, m.occ v = n.occ v) then
+          (U : ℂ) * (∑ v, (m.occ v * (m.occ v - 1) : ℝ) / 2)
+        else (NParticleAdjacency G N .Boson).2 m n)
+  rw [if_pos hnm', if_pos hmn']
+  -- The two diagonal energies agree because `n.occ = m.occ`.
+  rw [hnm]
 
 /-! ## 6.  Many-body PST and mixing -/
 

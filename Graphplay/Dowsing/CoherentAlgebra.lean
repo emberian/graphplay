@@ -81,45 +81,45 @@ def schur (A B : Matrix V V ℂ) : Matrix V V ℂ := Graphplay.schurProduct A B
 
 /-- Commutativity of the Schur product. -/
 @[simp] theorem schur_comm (A B : Matrix V V ℂ) : schur A B = schur B A := by
-  sorry
+  ext i j; simp [mul_comm]
 
 /-- Associativity of the Schur product. -/
 theorem schur_assoc (A B C : Matrix V V ℂ) :
     schur (schur A B) C = schur A (schur B C) := by
-  sorry
+  ext i j; simp [mul_assoc]
 
 /-- `Jₙ` is a left unit for the Schur product. -/
 @[simp] theorem schur_J_left (A : Matrix V V ℂ) :
     schur (matJ (V := V)) A = A := by
-  sorry
+  ext i j; simp
 
 /-- `Jₙ` is a right unit for the Schur product. -/
 @[simp] theorem schur_J_right (A : Matrix V V ℂ) :
     schur A (matJ (V := V)) = A := by
-  sorry
+  ext i j; simp
 
 /-- Bilinearity of the Schur product over `ℂ` (left side). -/
 theorem schur_add_left (A B C : Matrix V V ℂ) :
     schur (A + B) C = schur A C + schur B C := by
-  sorry
+  ext i j; simp [Matrix.add_apply, add_mul]
 
 /-- Bilinearity of the Schur product over `ℂ` (right side). -/
 theorem schur_add_right (A B C : Matrix V V ℂ) :
     schur A (B + C) = schur A B + schur A C := by
-  sorry
+  ext i j; simp [Matrix.add_apply, mul_add]
 
 /-- Compatibility of Schur with scalar multiplication. -/
 theorem schur_smul_left (c : ℂ) (A B : Matrix V V ℂ) :
     schur (c • A) B = c • schur A B := by
-  sorry
+  ext i j; simp [Matrix.smul_apply, mul_assoc]
 
 /-- The Schur product preserves the conjugate transpose: `(A ∘ B)ᴴ = Aᴴ ∘ Bᴴ`. -/
 theorem schur_conjTranspose (A B : Matrix V V ℂ) :
     (schur A B)ᴴ = schur Aᴴ Bᴴ := by
-  funext x y
+  ext i j
   -- `(A∘B)ᴴ x y = conj ((A∘B) y x) = conj (A y x) * conj (B y x)`
   -- and `(Aᴴ ∘ Bᴴ) x y = Aᴴ x y * Bᴴ x y = conj (A y x) * conj (B y x)`.
-  sorry
+  simp [Matrix.conjTranspose_apply, star_mul']
 
 /-! ## 2. Coherent subalgebras
 
@@ -139,12 +139,34 @@ structure IsCoherent (S : Submodule ℂ (Matrix V V ℂ)) : Prop where
   mul_mem : ∀ A ∈ S, ∀ B ∈ S, A * B ∈ S
   schur_mem : ∀ A ∈ S, ∀ B ∈ S, schur A B ∈ S
 
+/-- A **non-unital coherent algebra**: like `IsCoherent` but *without* the
+`1 ∈ S` axiom.  This is the genuinely-correct closure structure of the block
+algebra / partition algebra of an arbitrary partition: those contain `J` and
+are closed under `*`, Schur, and `*`, but contain the identity matrix `1` only
+when every cell is a singleton (see `blockAlgebra_isCoherent`).  Containing `1`
+is an *extra* hypothesis (`IsCoherent = IsCoherentNoOne + one_mem`). -/
+structure IsCoherentNoOne (S : Submodule ℂ (Matrix V V ℂ)) : Prop where
+  J_mem : matJ (V := V) ∈ S
+  star_mem : ∀ A ∈ S, Aᴴ ∈ S
+  mul_mem : ∀ A ∈ S, ∀ B ∈ S, A * B ∈ S
+  schur_mem : ∀ A ∈ S, ∀ B ∈ S, schur A B ∈ S
+
+/-- Every (unital) coherent algebra is in particular non-unital coherent. -/
+theorem IsCoherent.toNoOne {S : Submodule ℂ (Matrix V V ℂ)} (h : IsCoherent S) :
+    IsCoherentNoOne S :=
+  ⟨h.J_mem, h.star_mem, h.mul_mem, h.schur_mem⟩
+
 /-- A coherent subalgebra is **commutative** if matrix multiplication is
 commutative on it. The classical / Bose-Mesner regime sits at exactly this
 boundary; non-commutative coherent algebras are the right setting for the
 quantum colouring / quantum permutation group story (Hole D5). -/
 def IsCoherent.IsCommutative {S : Submodule ℂ (Matrix V V ℂ)}
     (_h : IsCoherent S) : Prop :=
+  ∀ A ∈ S, ∀ B ∈ S, A * B = B * A
+
+/-- Commutativity of a non-unital coherent algebra. -/
+def IsCoherentNoOne.IsCommutative {S : Submodule ℂ (Matrix V V ℂ)}
+    (_h : IsCoherentNoOne S) : Prop :=
   ∀ A ∈ S, ∀ B ∈ S, A * B = B * A
 
 /-- A coherent subalgebra is **projector-generated** if it is spanned (over
@@ -182,11 +204,86 @@ singletons). All other coherent algebras lie strictly in between. -/
 noncomputable def initialCoherent : Submodule ℂ (Matrix V V ℂ) :=
   Submodule.span ℂ ({1, matJ (V := V)} : Set (Matrix V V ℂ))
 
+/-- `J * J = |V| • J`. -/
+theorem matJ_mul_matJ :
+    (matJ (V := V)) * (matJ (V := V)) = (Fintype.card V : ℂ) • (matJ (V := V)) := by
+  ext i j
+  simp [Matrix.mul_apply, matJ, Matrix.smul_apply, Finset.card_univ]
+
+/-- The all-ones matrix is Hermitian. -/
+theorem matJ_isHermitian : (matJ (V := V)).IsHermitian := by
+  apply Matrix.IsHermitian.ext; intro i j; simp [matJ]
+
 theorem initialCoherent_isCoherent : IsCoherent (initialCoherent (V := V)) := by
   -- Both `1` and `J` are Hermitian; the products `1·1 = 1`, `1·J = J = J·1`,
   -- and `J·J = |V|·J` stay in the span. Similarly `1∘1 = 1`, `1∘J = 1`,
-  -- `J∘J = J`. Routine but tedious; left as `sorry`.
-  sorry
+  -- `J∘J = J`.
+  have h1 : (1 : Matrix V V ℂ) ∈ initialCoherent (V := V) :=
+    Submodule.subset_span (by simp)
+  have hJ : matJ (V := V) ∈ initialCoherent (V := V) :=
+    Submodule.subset_span (by simp)
+  -- the spanning set, for `span_induction`
+  refine ⟨h1, hJ, ?_, ?_, ?_⟩
+  · -- star_mem: it suffices on generators, then extends ℂ-linearly.
+    intro A hA
+    refine Submodule.span_induction
+      (p := fun A _ => Aᴴ ∈ initialCoherent (V := V)) ?_ ?_ ?_ ?_ hA
+    · rintro x (rfl | rfl)
+      · rw [Matrix.conjTranspose_one]; exact h1
+      · rw [(matJ_isHermitian (V := V)).eq]; exact hJ
+    · simpa using Submodule.zero_mem _
+    · intro x y _ _ hx hy; rw [Matrix.conjTranspose_add]; exact Submodule.add_mem _ hx hy
+    · intro c x _ hx; rw [Matrix.conjTranspose_smul]
+      exact Submodule.smul_mem _ _ hx
+  · -- mul_mem
+    intro A hA B hB
+    refine Submodule.span_induction
+      (p := fun A _ => ∀ B ∈ initialCoherent (V := V), A * B ∈ initialCoherent (V := V))
+      ?_ ?_ ?_ ?_ hA B hB
+    · rintro x (rfl | rfl) B hB
+      · rw [one_mul]; exact hB
+      · -- J * B: induct on B
+        refine Submodule.span_induction
+          (p := fun B _ => matJ (V := V) * B ∈ initialCoherent (V := V)) ?_ ?_ ?_ ?_ hB
+        · rintro y (rfl | rfl)
+          · rw [mul_one]; exact hJ
+          · rw [matJ_mul_matJ]; exact Submodule.smul_mem _ _ hJ
+        · simpa using Submodule.zero_mem _
+        · intro u v _ _ hu hv; rw [mul_add]; exact Submodule.add_mem _ hu hv
+        · intro c u _ hu; rw [mul_smul_comm]; exact Submodule.smul_mem _ _ hu
+    · intro B _; rw [zero_mul]; exact Submodule.zero_mem _
+    · intro x y _ _ hx hy B hB; rw [add_mul]; exact Submodule.add_mem _ (hx B hB) (hy B hB)
+    · intro c x _ hx B hB; rw [smul_mul_assoc]; exact Submodule.smul_mem _ _ (hx B hB)
+  · -- schur_mem
+    intro A hA B hB
+    refine Submodule.span_induction
+      (p := fun A _ => ∀ B ∈ initialCoherent (V := V), schur A B ∈ initialCoherent (V := V))
+      ?_ ?_ ?_ ?_ hA B hB
+    · rintro x (rfl | rfl) B hB
+      · -- 1 ∘ B: induct on B
+        refine Submodule.span_induction
+          (p := fun B _ => schur (1 : Matrix V V ℂ) B ∈ initialCoherent (V := V)) ?_ ?_ ?_ ?_ hB
+        · rintro y (rfl | rfl)
+          · have : schur (1 : Matrix V V ℂ) 1 = 1 := by
+              ext i j; simp only [schur_apply, Matrix.one_apply]; split <;> simp
+            rw [this]; exact h1
+          · have : schur (1 : Matrix V V ℂ) (matJ (V := V)) = 1 := by
+              ext i j; simp [Matrix.one_apply]
+            rw [this]; exact h1
+        · show schur (1 : Matrix V V ℂ) 0 ∈ _
+          have hz : schur (1 : Matrix V V ℂ) 0 = 0 := by ext i j; simp
+          rw [hz]; exact Submodule.zero_mem _
+        · intro u v _ _ hu hv; rw [schur_add_right]; exact Submodule.add_mem _ hu hv
+        · intro c u _ hu
+          rw [show schur (1 : Matrix V V ℂ) (c • u) = c • schur 1 u by
+            rw [schur_comm, schur_smul_left, schur_comm]]
+          exact Submodule.smul_mem _ _ hu
+      · -- J ∘ B = B
+        rw [schur_J_left]; exact hB
+    · intro B _; rw [show schur (0 : Matrix V V ℂ) B = 0 by ext i j; simp]
+      exact Submodule.zero_mem _
+    · intro x y _ _ hx hy B hB; rw [schur_add_left]; exact Submodule.add_mem _ (hx B hB) (hy B hB)
+    · intro c x _ hx B hB; rw [schur_smul_left]; exact Submodule.smul_mem _ _ (hx B hB)
 
 /-- The terminal (largest) coherent subalgebra: all of `Matrix V V ℂ`. -/
 noncomputable def fullCoherent : Submodule ℂ (Matrix V V ℂ) := ⊤
@@ -209,7 +306,18 @@ theorem isCoherent_sInf
     IsCoherent (sInf 𝒮) := by
   -- Every closure axiom is preserved by intersections of submodules:
   -- if every member contains `1`, the intersection does; etc.
-  sorry
+  constructor
+  · rw [Submodule.mem_sInf]; intro S hS; exact (h S hS).one_mem
+  · rw [Submodule.mem_sInf]; intro S hS; exact (h S hS).J_mem
+  · intro A hA
+    rw [Submodule.mem_sInf] at hA ⊢
+    intro S hS; exact (h S hS).star_mem A (hA S hS)
+  · intro A hA B hB
+    rw [Submodule.mem_sInf] at hA hB ⊢
+    intro S hS; exact (h S hS).mul_mem A (hA S hS) B (hB S hS)
+  · intro A hA B hB
+    rw [Submodule.mem_sInf] at hA hB ⊢
+    intro S hS; exact (h S hS).schur_mem A (hA S hS) B (hB S hS)
 
 /-! ## 3. The partition algebra of an equitable partition.
 
@@ -278,25 +386,129 @@ theorem sum_cellIndicatorMat (cells : V → I) :
     rintro ⟨hix, hiy⟩
     exact hxy (hix.trans hiy.symm)
 
-/-- **The partition algebra is a coherent subalgebra.** This is the forward
-direction of the headline equivalence: every (not-necessarily-equitable)
-partition gives a commutative coherent algebra. -/
+/-- **The partition algebra is closed under `*`, Schur, and conjugate
+transpose** (a *non-unital* coherent algebra).
+
+CORRECTNESS FIX: the original claim `IsCoherent (partitionAlgebra cells)` is
+FALSE for non-singleton cells.  `IsCoherent` requires `1 ∈ S` and `J ∈ S`, but
+every element of `partitionAlgebra cells` is supported on within-cell pairs
+(it is a span of the diagonal cell-indicators `cellIndicatorMat cells i`); the
+identity matrix `1 = [x = y]` is not block-constant on a diagonal block of
+size `> 1`, and the all-ones `J` couples distinct cells.  So `1, J ∈
+partitionAlgebra cells` iff every cell is a singleton.  We therefore restate to
+the genuinely-true conclusion: the three *non-unital* closure properties
+(matrix product, Schur product, conjugate transpose) that hold for *every*
+partition.  (The full unital coherent algebra of a partition is the **block
+algebra** `blockAlgebra`, spanned by `{1_{C_i × C_j}}` over `i, j : I`.) -/
 theorem partitionAlgebra_isCoherent (cells : V → I) :
-    IsCoherent (partitionAlgebra (V := V) cells) := by
-  -- The partition algebra is spanned by rank-1-in-cell projectors which are
-  -- mutually Schur-orthogonal (their Schur product vanishes off-diagonal) and
-  -- ordinary-product-orthogonal up to scalar. Hence it is closed under both
-  -- products. `1 ∈ S` because the *block-diagonal* matrix `∑ᵢ Πᵢ` equals `1`
-  -- (in the sense that it has 1s exactly on cell-equal pairs and zero
-  -- elsewhere — i.e. it is `J` restricted to within-cell pairs, NOT the
-  -- identity matrix on `Matrix V V ℂ`). The identity matrix is not in this
-  -- algebra unless every cell is a singleton.
-  --
-  -- IMPORTANT FOLKLORE FIX: the actual partition algebra contains `1` and
-  -- `J` if and only if every cell has size 1 or the partition is trivial.
-  -- The full coherent-algebra-from-a-partition is the **block algebra**
-  -- spanned by `{e_{C_i × C_j}}` over `i, j : I` — see `blockAlgebra` below.
-  sorry
+    (∀ A ∈ partitionAlgebra (V := V) cells, ∀ B ∈ partitionAlgebra (V := V) cells,
+        A * B ∈ partitionAlgebra (V := V) cells) ∧
+    (∀ A ∈ partitionAlgebra (V := V) cells, ∀ B ∈ partitionAlgebra (V := V) cells,
+        schur A B ∈ partitionAlgebra (V := V) cells) ∧
+    (∀ A ∈ partitionAlgebra (V := V) cells, Aᴴ ∈ partitionAlgebra (V := V) cells) := by
+  -- The partition algebra is spanned by the cell-indicators `Π_i =
+  -- cellIndicatorMat cells i`, which satisfy `Π_i · Π_j = δ_{ij} |C_i| · Π_i`,
+  -- `Π_i ∘ Π_j = δ_{ij} Π_i`, and `Π_iᴴ = Π_i`.  All three closures follow by
+  -- `span_induction`.
+  refine ⟨?_, ?_, ?_⟩
+  · -- matrix-product closure
+    intro A hA B hB
+    refine Submodule.span_induction
+      (p := fun A _ => ∀ B ∈ partitionAlgebra (V := V) cells,
+          A * B ∈ partitionAlgebra (V := V) cells) ?_ ?_ ?_ ?_ hA B hB
+    · rintro a ⟨i, rfl⟩ B hB
+      refine Submodule.span_induction
+        (p := fun B _ => cellIndicatorMat (V := V) cells i * B
+            ∈ partitionAlgebra (V := V) cells) ?_ ?_ ?_ ?_ hB
+      · rintro b ⟨j, rfl⟩
+        by_cases hij : i = j
+        · subst hij
+          have : cellIndicatorMat (V := V) cells i * cellIndicatorMat (V := V) cells i
+              = ((Finset.univ.filter (fun w : V => cells w = i)).card : ℂ)
+                  • cellIndicatorMat (V := V) cells i := by
+            ext x y
+            simp only [Matrix.mul_apply, cellIndicatorMat, Matrix.smul_apply, smul_eq_mul]
+            -- rewrite each summand to `if cells z = i then [cells x=i ∧ cells y=i] else 0`.
+            have hsum : ∀ z : V,
+                (if cells x = i ∧ cells z = i then (1:ℂ) else 0)
+                  * (if cells z = i ∧ cells y = i then (1:ℂ) else 0)
+                = (if cells z = i then (1:ℂ) else 0)
+                    * (if cells x = i ∧ cells y = i then (1:ℂ) else 0) := by
+              intro z
+              by_cases hz : cells z = i
+              · by_cases hx : cells x = i <;> by_cases hy : cells y = i <;> simp [hz, hx, hy]
+              · simp [hz]
+            rw [Finset.sum_congr rfl (fun z _ => hsum z), ← Finset.sum_mul, Finset.sum_boole]
+          rw [this]; exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩)
+        · have : cellIndicatorMat (V := V) cells i * cellIndicatorMat (V := V) cells j = 0 := by
+            ext x y
+            simp only [Matrix.mul_apply, cellIndicatorMat, Matrix.zero_apply]
+            apply Finset.sum_eq_zero; intro z _
+            by_cases hz : cells z = i
+            · -- second factor `[cells z = j ∧ …]` is false since `cells z = i ≠ j`.
+              rw [if_neg (show ¬ (cells z = j ∧ cells y = j) from
+                    fun h => hij (hz.symm.trans h.1)), mul_zero]
+            · -- first factor `[… ∧ cells z = i]` is false.
+              rw [if_neg (show ¬ (cells x = i ∧ cells z = i) from fun h => hz h.2), zero_mul]
+          rw [this]; exact Submodule.zero_mem _
+      · simpa using Submodule.zero_mem _
+      · intro u v _ _ hu hv; rw [mul_add]; exact Submodule.add_mem _ hu hv
+      · intro c u _ hu; rw [mul_smul_comm]; exact Submodule.smul_mem _ _ hu
+    · intro B _; rw [zero_mul]; exact Submodule.zero_mem _
+    · intro x y _ _ hx hy B hB; rw [add_mul]; exact Submodule.add_mem _ (hx B hB) (hy B hB)
+    · intro c x _ hx B hB; rw [smul_mul_assoc]; exact Submodule.smul_mem _ _ (hx B hB)
+  · -- Schur-product closure
+    intro A hA B hB
+    refine Submodule.span_induction
+      (p := fun A _ => ∀ B ∈ partitionAlgebra (V := V) cells,
+          schur A B ∈ partitionAlgebra (V := V) cells) ?_ ?_ ?_ ?_ hA B hB
+    · rintro a ⟨i, rfl⟩ B hB
+      refine Submodule.span_induction
+        (p := fun B _ => schur (cellIndicatorMat (V := V) cells i) B
+            ∈ partitionAlgebra (V := V) cells) ?_ ?_ ?_ ?_ hB
+      · rintro b ⟨j, rfl⟩
+        by_cases hij : i = j
+        · subst hij
+          have : schur (cellIndicatorMat (V := V) cells i) (cellIndicatorMat (V := V) cells i)
+              = cellIndicatorMat (V := V) cells i := by
+            ext x y; simp only [schur_apply, cellIndicatorMat]; split <;> simp
+          rw [this]; exact Submodule.subset_span ⟨i, rfl⟩
+        · have : schur (cellIndicatorMat (V := V) cells i) (cellIndicatorMat (V := V) cells j) = 0 := by
+            ext x y
+            simp only [schur_apply, cellIndicatorMat, Matrix.zero_apply]
+            by_cases hx : cells x = i ∧ cells y = i
+            · rw [if_neg (show ¬ (cells x = j ∧ cells y = j) from
+                    fun h => hij (hx.1.symm.trans h.1)), mul_zero]
+            · rw [if_neg hx, zero_mul]
+          rw [this]; exact Submodule.zero_mem _
+      · show schur (cellIndicatorMat (V := V) cells i) 0 ∈ _
+        rw [show schur (cellIndicatorMat (V := V) cells i) 0 = 0 by ext x y; simp]
+        exact Submodule.zero_mem _
+      · intro u v _ _ hu hv; rw [schur_add_right]; exact Submodule.add_mem _ hu hv
+      · intro c u _ hu
+        rw [show schur (cellIndicatorMat (V := V) cells i) (c • u) = c • schur _ u by
+          rw [schur_comm, schur_smul_left, schur_comm]]
+        exact Submodule.smul_mem _ _ hu
+    · intro B _; rw [show schur (0 : Matrix V V ℂ) B = 0 by ext x y; simp]
+      exact Submodule.zero_mem _
+    · intro x y _ _ hx hy B hB; rw [schur_add_left]; exact Submodule.add_mem _ (hx B hB) (hy B hB)
+    · intro c x _ hx B hB; rw [schur_smul_left]; exact Submodule.smul_mem _ _ (hx B hB)
+  · -- conjugate-transpose closure
+    intro A hA
+    refine Submodule.span_induction
+      (p := fun A _ => Aᴴ ∈ partitionAlgebra (V := V) cells) ?_ ?_ ?_ ?_ hA
+    · rintro a ⟨i, rfl⟩
+      have : (cellIndicatorMat (V := V) cells i)ᴴ = cellIndicatorMat (V := V) cells i := by
+        ext x y
+        simp only [Matrix.conjTranspose_apply, cellIndicatorMat]
+        by_cases h : cells y = i ∧ cells x = i
+        · rw [if_pos h, if_pos ⟨h.2, h.1⟩, star_one]
+        · rw [if_neg h, if_neg (fun h' => h ⟨h'.2, h'.1⟩), star_zero]
+      rw [this]; exact Submodule.subset_span ⟨i, rfl⟩
+    · show (0 : Matrix V V ℂ)ᴴ ∈ _
+      rw [Matrix.conjTranspose_zero]; exact Submodule.zero_mem _
+    · intro x y _ _ hx hy; rw [Matrix.conjTranspose_add]; exact Submodule.add_mem _ hx hy
+    · intro c x _ hx; rw [Matrix.conjTranspose_smul]; exact Submodule.smul_mem _ _ hx
 
 /-- **The block algebra of a partition.** This is the algebra spanned by the
 characteristic matrices of cell-product blocks `Cᵢ × Cⱼ`. *This* is the
@@ -311,6 +523,44 @@ noncomputable def blockAlgebra (cells : V → I) : Submodule ℂ (Matrix V V ℂ
   Submodule.span ℂ
     (Set.range (fun p : I × I => blockIndicatorMat (V := V) cells p.1 p.2))
 
+/-- A generic closure principle for the block algebra under a binary operation
+`op` that is additive and ℂ-linear in each argument: if `op` of any two
+*generators* lands in the algebra, then `op` of any two members does. -/
+theorem blockAlgebra_binop_mem (cells : V → I)
+    (op : Matrix V V ℂ → Matrix V V ℂ → Matrix V V ℂ)
+    (op_add_left : ∀ a b c, op (a + b) c = op a c + op b c)
+    (op_add_right : ∀ a b c, op a (b + c) = op a b + op a c)
+    (op_smul_left : ∀ (r : ℂ) a c, op (r • a) c = r • op a c)
+    (op_smul_right : ∀ (r : ℂ) a c, op a (r • c) = r • op a c)
+    (op_zero_left : ∀ c, op 0 c = 0)
+    (op_zero_right : ∀ a, op a 0 = 0)
+    (hgen : ∀ p q : I × I,
+        op (blockIndicatorMat (V := V) cells p.1 p.2)
+           (blockIndicatorMat (V := V) cells q.1 q.2)
+        ∈ blockAlgebra (V := V) cells)
+    (A B : Matrix V V ℂ)
+    (hA : A ∈ blockAlgebra (V := V) cells)
+    (hB : B ∈ blockAlgebra (V := V) cells) :
+    op A B ∈ blockAlgebra (V := V) cells := by
+  refine Submodule.span_induction
+    (p := fun A _ => ∀ B ∈ blockAlgebra (V := V) cells,
+        op A B ∈ blockAlgebra (V := V) cells) ?_ ?_ ?_ ?_ hA B hB
+  · -- left generator; induct on right
+    rintro a ⟨p, rfl⟩ B hB
+    refine Submodule.span_induction
+      (p := fun B _ => op (blockIndicatorMat (V := V) cells p.1 p.2) B
+          ∈ blockAlgebra (V := V) cells) ?_ ?_ ?_ ?_ hB
+    · rintro b ⟨q, rfl⟩; exact hgen p q
+    · show op (blockIndicatorMat (V := V) cells p.1 p.2) 0 ∈ _
+      rw [op_zero_right]; exact Submodule.zero_mem _
+    · intro u v _ _ hu hv; rw [op_add_right]; exact Submodule.add_mem _ hu hv
+    · intro r u _ hu; rw [op_smul_right]; exact Submodule.smul_mem _ _ hu
+  · intro B _
+    show op 0 B ∈ _
+    rw [op_zero_left]; exact Submodule.zero_mem _
+  · intro x y _ _ hx hy B hB; rw [op_add_left]; exact Submodule.add_mem _ (hx B hB) (hy B hB)
+  · intro r x _ hx B hB; rw [op_smul_left]; exact Submodule.smul_mem _ _ (hx B hB)
+
 /-- The block algebra is closed under matrix multiplication: blocks compose
 via `1_{Cᵢ×Cⱼ} · 1_{Cⱼ'×C_k} = |Cⱼ| · δ_{j j'} · 1_{Cᵢ×C_k}`. -/
 theorem blockAlgebra_mul_mem (cells : V → I)
@@ -318,7 +568,54 @@ theorem blockAlgebra_mul_mem (cells : V → I)
     (hA : A ∈ blockAlgebra (V := V) cells)
     (hB : B ∈ blockAlgebra (V := V) cells) :
     A * B ∈ blockAlgebra (V := V) cells := by
-  sorry
+  refine blockAlgebra_binop_mem cells (· * ·)
+    (fun a b c => add_mul a b c) (fun a b c => mul_add a b c)
+    (fun r a c => smul_mul_assoc r a c) (fun r a c => mul_smul_comm r a c)
+    (fun c => zero_mul c) (fun a => mul_zero a) ?_ A B hA hB
+  -- generator case: `1_{Ci×Cj} · 1_{Ck×Cl} = |Cj| · δ_{j k} · 1_{Ci×Cl}`.
+  rintro ⟨i, j⟩ ⟨k, l⟩
+  show blockIndicatorMat (V := V) cells i j * blockIndicatorMat (V := V) cells k l
+      ∈ blockAlgebra (V := V) cells
+  by_cases hjk : j = k
+  · -- product equals `|Cj| • 1_{Ci×Cl}`
+    subst hjk
+    have hprod :
+        blockIndicatorMat (V := V) cells i j * blockIndicatorMat (V := V) cells j l
+        = ((Finset.univ.filter (fun w : V => cells w = j)).card : ℂ)
+            • blockIndicatorMat (V := V) cells i l := by
+      ext x y
+      simp only [Matrix.mul_apply, blockIndicatorMat, Matrix.smul_apply, smul_eq_mul]
+      -- the summand is `[cells z = j] * ([cells x=i] * [cells y=l])`.
+      have hsummand : ∀ z : V,
+          (if cells x = i ∧ cells z = j then (1:ℂ) else 0)
+            * (if cells z = j ∧ cells y = l then (1:ℂ) else 0)
+          = (if cells z = j then (1:ℂ) else 0)
+              * (if cells x = i ∧ cells y = l then (1:ℂ) else 0) := by
+        intro z
+        by_cases hzj : cells z = j
+        · by_cases hxi : cells x = i <;> by_cases hyl : cells y = l <;>
+            simp [hzj, hxi, hyl]
+        · simp [hzj]
+      rw [Finset.sum_congr rfl (fun z _ => hsummand z), ← Finset.sum_mul]
+      congr 1
+      simp [Finset.sum_boole]
+    rw [hprod]
+    exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨(i, l), rfl⟩)
+  · -- product is zero
+    have hprod :
+        blockIndicatorMat (V := V) cells i j * blockIndicatorMat (V := V) cells k l = 0 := by
+      ext x y
+      simp only [Matrix.mul_apply, blockIndicatorMat, Matrix.zero_apply]
+      apply Finset.sum_eq_zero
+      intro z _
+      by_cases hzj : cells z = j
+      · -- then `cells z = k` is false (since `j ≠ k`), killing the right factor.
+        rw [if_neg (show ¬ (cells z = k ∧ cells y = l) from
+              fun h => hjk (hzj.symm.trans h.1)), mul_zero]
+      · -- the left factor is false.
+        rw [if_neg (show ¬ (cells x = i ∧ cells z = j) from
+              fun h => hzj h.2), zero_mul]
+    rw [hprod]; exact Submodule.zero_mem _
 
 /-- The block algebra is closed under Schur product: `1_{Cᵢ×Cⱼ} ∘ 1_{Cᵢ'×Cⱼ'}
 = δ_{i i'} δ_{j j'} · 1_{Cᵢ×Cⱼ}`. -/
@@ -327,22 +624,87 @@ theorem blockAlgebra_schur_mem (cells : V → I)
     (hA : A ∈ blockAlgebra (V := V) cells)
     (hB : B ∈ blockAlgebra (V := V) cells) :
     schur A B ∈ blockAlgebra (V := V) cells := by
-  sorry
+  refine blockAlgebra_binop_mem cells schur
+    (fun a b c => schur_add_left a b c) (fun a b c => schur_add_right a b c)
+    (fun r a c => schur_smul_left r a c)
+    (fun r a c => by rw [schur_comm, schur_smul_left, schur_comm])
+    (fun c => by ext i j; simp) (fun a => by ext i j; simp) ?_ A B hA hB
+  -- generator case: `1_{Ci×Cj} ∘ 1_{Ck×Cl} = δ_{i k} δ_{j l} · 1_{Ci×Cj}`.
+  rintro ⟨i, j⟩ ⟨k, l⟩
+  show schur (blockIndicatorMat (V := V) cells i j) (blockIndicatorMat (V := V) cells k l)
+      ∈ blockAlgebra (V := V) cells
+  by_cases hik : i = k
+  · by_cases hjl : j = l
+    · subst hik; subst hjl
+      have : schur (blockIndicatorMat (V := V) cells i j)
+              (blockIndicatorMat (V := V) cells i j)
+          = blockIndicatorMat (V := V) cells i j := by
+        ext x y; simp only [schur_apply, blockIndicatorMat]; split <;> simp
+      rw [this]; exact Submodule.subset_span ⟨(i, j), rfl⟩
+    · have : schur (blockIndicatorMat (V := V) cells i j)
+              (blockIndicatorMat (V := V) cells k l) = 0 := by
+        ext x y
+        simp only [schur_apply, blockIndicatorMat, Matrix.zero_apply]
+        by_cases h1 : cells x = i ∧ cells y = j
+        · rw [if_neg (show ¬ (cells x = k ∧ cells y = l) from
+                fun h2 => hjl (h1.2.symm.trans h2.2)), mul_zero]
+        · rw [if_neg h1, zero_mul]
+      rw [this]; exact Submodule.zero_mem _
+  · have : schur (blockIndicatorMat (V := V) cells i j)
+            (blockIndicatorMat (V := V) cells k l) = 0 := by
+      ext x y
+      simp only [schur_apply, blockIndicatorMat, Matrix.zero_apply]
+      by_cases h1 : cells x = i ∧ cells y = j
+      · rw [if_neg (show ¬ (cells x = k ∧ cells y = l) from
+              fun h2 => hik (h1.1.symm.trans h2.1)), mul_zero]
+      · rw [if_neg h1, zero_mul]
+    rw [this]; exact Submodule.zero_mem _
 
-/-- The block algebra is a coherent subalgebra. -/
+/-- **The block algebra contains `J` and is closed under `*`, Schur, and
+conjugate transpose** (a coherent algebra *without* the identity).
+
+CORRECTNESS FIX: the original claim `IsCoherent (blockAlgebra cells)` is FALSE
+for non-singleton cells.  `IsCoherent` requires `1 ∈ S`, but every element of
+`blockAlgebra cells` is block-constant (`blockAlgebra_block_constant`), whereas
+the identity matrix `1 = [x = y]` is *not* constant on a diagonal block
+`C_i × C_i` of size `> 1`.  Hence `1 ∈ blockAlgebra cells` iff every cell is a
+singleton.  We restate to the genuinely-true conclusion `IsCoherentNoOne (blockAlgebra
+cells)`: `J ∈ blockAlgebra` together with the three closure properties (matrix
+product, Schur product, conjugate transpose), all of which hold for *every*
+partition. -/
 theorem blockAlgebra_isCoherent (cells : V → I) :
-    IsCoherent (blockAlgebra (V := V) cells) := by
-  -- Identity: `1 = ∑ᵢ 1_{Cᵢ × Cᵢ}` (block-diagonal sum) — wait, this is
-  -- the within-cell indicator, not `1`. In fact `1 ∈ blockAlgebra` iff the
-  -- diagonal of the all-ones matrix lies in the span of diagonal blocks,
-  -- which is automatic when the cells form a partition.
-  --
-  -- `J ∈ blockAlgebra`: `J = ∑_{i,j} 1_{Cᵢ × Cⱼ}`.
-  --
-  -- Closure under star: `(1_{Cᵢ × Cⱼ})ᴴ = 1_{Cⱼ × Cᵢ}` (real entries).
-  -- Closure under matrix mul: see `blockAlgebra_mul_mem`.
-  -- Closure under Schur: see `blockAlgebra_schur_mem`.
-  sorry
+    IsCoherentNoOne (blockAlgebra (V := V) cells) := by
+  refine ⟨?_, ?_, fun A hA B hB => blockAlgebra_mul_mem cells A B hA hB,
+    fun A hA B hB => blockAlgebra_schur_mem cells A B hA hB⟩
+  · -- `J = ∑_{i,j} 1_{C_i × C_j}` is in the span of the block indicators.
+    have : matJ (V := V) = ∑ p : I × I, blockIndicatorMat (V := V) cells p.1 p.2 := by
+      ext x y
+      rw [Matrix.sum_apply]
+      simp only [matJ, blockIndicatorMat]
+      rw [Finset.sum_eq_single (cells x, cells y)]
+      · simp
+      · rintro ⟨i, j⟩ _ hne
+        rw [if_neg]; rintro ⟨hi, hj⟩
+        exact hne (Prod.ext hi.symm hj.symm)
+      · intro h; exact absurd (Finset.mem_univ _) h
+    rw [this]
+    exact Submodule.sum_mem _ (fun p _ => Submodule.subset_span ⟨p, rfl⟩)
+  · -- conjugate-transpose closure: `(1_{C_i×C_j})ᴴ = 1_{C_j×C_i}`.
+    intro A hA
+    refine Submodule.span_induction
+      (p := fun A _ => Aᴴ ∈ blockAlgebra (V := V) cells) ?_ ?_ ?_ ?_ hA
+    · rintro a ⟨⟨i, j⟩, rfl⟩
+      have : (blockIndicatorMat (V := V) cells i j)ᴴ = blockIndicatorMat (V := V) cells j i := by
+        ext x y
+        simp only [Matrix.conjTranspose_apply, blockIndicatorMat]
+        by_cases h : cells y = i ∧ cells x = j
+        · rw [if_pos h, if_pos ⟨h.2, h.1⟩, star_one]
+        · rw [if_neg h, if_neg (fun h' => h ⟨h'.2, h'.1⟩), star_zero]
+      rw [this]; exact Submodule.subset_span ⟨(j, i), rfl⟩
+    · show (0 : Matrix V V ℂ)ᴴ ∈ _
+      rw [Matrix.conjTranspose_zero]; exact Submodule.zero_mem _
+    · intro x y _ _ hx hy; rw [Matrix.conjTranspose_add]; exact Submodule.add_mem _ hx hy
+    · intro c x _ hx; rw [Matrix.conjTranspose_smul]; exact Submodule.smul_mem _ _ hx
 
 /-- The block algebra is **commutative** if and only if the partition has the
 property that `|Cᵢ| · 1_{Cᵢ × Cⱼ} · 1_{Cⱼ × Cᵢ} = |Cⱼ| · 1_{Cⱼ × Cᵢ} · 1_{Cᵢ × Cⱼ}`
@@ -350,16 +712,18 @@ for every `i, j` — equivalently, iff all cells have the same size. (This is
 exactly the "Bose-Mesner regularity" condition.) -/
 theorem blockAlgebra_isCommutative_iff_cells_equicard
     (cells : V → I) :
-    (∃ h : IsCoherent (blockAlgebra (V := V) cells), h.IsCommutative)
+    (blockAlgebra_isCoherent (V := V) cells).IsCommutative
       ↔ (∀ i j : I, (Finset.univ.filter (fun v : V => cells v = i)).card =
                     (Finset.univ.filter (fun v : V => cells v = j)).card)
         ∨ ¬ Nonempty I := by
-  -- We list this as a *necessary condition*, but it's actually only
-  -- sufficient under the additional hypothesis that the partition is
-  -- equitable for some graph. In full generality the block algebra is
-  -- isomorphic to the matrix algebra `Matrix I I ℂ` weighted by cell sizes,
-  -- which is commutative iff `|I| ≤ 1` OR cells are equal-size (and then
-  -- you get the "regularised" version). Statement-only.
+  -- CORRECTNESS FIX: the original LHS quantified over a proof `h : IsCoherent
+  -- (blockAlgebra cells)`, which *fails* for non-singleton cells (see
+  -- `blockAlgebra_isCoherent`), so that existential is essentially never
+  -- inhabited and the equivalence was false.  We restate the LHS as
+  -- commutativity of the (genuinely-existing) non-unital coherent structure
+  -- `blockAlgebra_isCoherent`.  The equicardinality ↔ commutativity direction
+  -- is the deep Bose-Mesner regularity argument, left as an honest `sorry` on
+  -- this now-true statement. -/
   sorry
 
 /-! ## 4. The headline equivalence (Tower 3, commutative).
@@ -383,34 +747,68 @@ noncomputable def _root_.Graphplay.EquitablePartition.toCoherent
     Submodule ℂ (Matrix V V ℂ) :=
   blockAlgebra (V := V) P.cells
 
-/-- `G.adj` lies in the block algebra of any equitable partition for `G`. The
-**key lemma**: equitable ⇒ adjacency is `(cells, cells)`-block constant in
-the sense that the row-sums into each cell are cell-determined. -/
+/-- Any **block-constant** matrix lies in the block algebra: it is the
+ℂ-combination `∑_{i,j} c_{ij} · 1_{C_i × C_j}` of the block indicators. -/
+theorem blockConstant_mem_blockAlgebra {cells : V → I} {M : Matrix V V ℂ}
+    (hM : ∀ x x' z z' : V, cells x = cells x' → cells z = cells z' →
+        M x z = M x' z') :
+    M ∈ blockAlgebra (V := V) cells := by
+  classical
+  -- coefficient on block `(i, j)`: the common value of `M` there (or `0` if a
+  -- cell is empty, in which case the indicator vanishes anyway).
+  let coeff : I × I → ℂ := fun p =>
+    if hi : ∃ x : V, cells x = p.1 then
+      (if hj : ∃ z : V, cells z = p.2 then M hi.choose hj.choose else 0)
+    else 0
+  have hM_eq : M = ∑ p : I × I, coeff p • blockIndicatorMat (V := V) cells p.1 p.2 := by
+    ext x z
+    rw [Matrix.sum_apply]
+    rw [Finset.sum_eq_single (cells x, cells z)]
+    · -- the surviving term is the `(cells x, cells z)` block, value `coeff = M x z`.
+      have hi : ∃ w : V, cells w = cells x := ⟨x, rfl⟩
+      have hj : ∃ w : V, cells w = cells z := ⟨z, rfl⟩
+      simp only [Matrix.smul_apply, blockIndicatorMat, smul_eq_mul, and_self,
+        if_true, mul_one, coeff, dif_pos hi, dif_pos hj]
+      exact (hM hi.choose x hj.choose z hi.choose_spec hj.choose_spec).symm
+    · rintro ⟨i, j⟩ _ hne
+      simp only [Matrix.smul_apply, blockIndicatorMat, smul_eq_mul]
+      rw [if_neg, mul_zero]
+      rintro ⟨hi, hj⟩
+      exact hne (Prod.ext hi.symm hj.symm)
+    · intro h; exact absurd (Finset.mem_univ _) h
+  rw [hM_eq]
+  exact Submodule.sum_mem _ (fun p _ => Submodule.smul_mem _ _ (Submodule.subset_span ⟨p, rfl⟩))
+
+/-- `G.adj` lies in the block algebra of an equitable partition for `G`
+**provided the partition is coherent** (i.e. `G.adj` is block-constant).
+
+CORRECTNESS FIX: the original unconditional claim `G.adj ∈ P.toCoherent` is
+FALSE for a merely (loosely) *equitable* partition.  Equitability only forces
+the *row-sums into each cell* to be cell-determined (the `branching` numbers),
+whereas membership in `blockAlgebra P.cells` requires `G.adj` itself to be
+**block-constant** (`blockAlgebra_block_constant`) — a strictly stronger
+condition ("coherently / strongly equitable").  E.g. a path `P₃` with the
+partition `{{ends}, {center}}` is equitable but its adjacency is not constant on
+the `ends × ends` block.  We add the genuinely-needed block-constancy hypothesis
+`hstrong` (equivalently `IsCoherentPartition G P.cells`) and prove containment
+via `blockConstant_mem_blockAlgebra`. -/
 theorem _root_.Graphplay.EquitablePartition.adj_mem_toCoherent
-    {G : WeightedGraph V} (P : EquitablePartition G I) :
-    G.adj ∈ P.toCoherent := by
-  -- Equitability gives `branching` depending only on (source cell, target
-  -- cell). Hence the matrix `G.adj` itself is a *function of the two cell
-  -- labels modulo within-cell distribution*: writing
-  -- `G.adj = ∑_{i,j} Qᵢⱼ · 1_{Cᵢ × Cⱼ} / |Cⱼ|` (under the cell-uniform basis
-  -- convention) realises `G.adj` as a member of `blockAlgebra cells` — at
-  -- least when `G.adj` itself is cell-block-constant, which is the case
-  -- precisely when the partition is **strongly** equitable. For a *purely*
-  -- equitable partition, `G.adj` is in the algebra spanned by the
-  -- block-indicators and the off-diagonal cell-coupling matrices.
-  --
-  -- This subtlety is precisely the difference between "equitable" (only the
-  -- row-sums into each cell are uniform) and "coherently equitable" (the
-  -- adjacency itself is block-constant). Both share the same `blockAlgebra`
-  -- target, but the proof of containment for the weaker case requires
-  -- extending the algebra by the off-diagonal coupling. Left as `sorry`.
-  sorry
+    {G : WeightedGraph V} (P : EquitablePartition G I)
+    (hstrong : ∀ x x' z z' : V, P.cells x = P.cells x' → P.cells z = P.cells z' →
+        G.adj x z = G.adj x' z') :
+    G.adj ∈ P.toCoherent :=
+  blockConstant_mem_blockAlgebra hstrong
 
 /-- The forward direction of the headline equivalence: every equitable
-partition produces a coherent subalgebra containing `G.adj`. -/
+partition produces a non-unital coherent subalgebra (containing `J` and closed
+under `*`, Schur, `*`).
+
+CORRECTNESS FIX: restated from `IsCoherent` to `IsCoherentNoOne` — the block
+algebra contains the identity `1` only for singleton-cell partitions (see
+`blockAlgebra_isCoherent`). -/
 theorem _root_.Graphplay.EquitablePartition.toCoherent_isCoherent
     {G : WeightedGraph V} (P : EquitablePartition G I) :
-    IsCoherent P.toCoherent :=
+    IsCoherentNoOne P.toCoherent :=
   blockAlgebra_isCoherent (V := V) P.cells
 
 /-- The **concrete diagonal-idempotent cell function** of a projector-generated
@@ -465,14 +863,22 @@ orthogonal projectors.
 This is the *formal version* of the unproven
 `Graphplay.tower3_equitable_partition` from `QuantumGraph.lean`.  We state the
 **forward direction** as a genuine theorem: every equitable partition `P` of `G`
-yields a coherent subalgebra `P.toCoherent` that contains `G.adj` (the backward
-direction, recovering an equitable partition from a projector-generated
-commutative coherent subalgebra, is `CoherentSubalgebra.toEquitablePartition`). -/
+yields a non-unital coherent subalgebra `P.toCoherent` that contains `G.adj`
+(the backward direction, recovering an equitable partition from a
+projector-generated commutative coherent subalgebra, is
+`CoherentSubalgebra.toEquitablePartition`).
+
+CORRECTNESS FIX: restated from `IsCoherent` to `IsCoherentNoOne` (the block
+algebra is unital only for singleton cells), and `G.adj ∈ P.toCoherent`
+requires the **block-constancy** hypothesis `hstrong` (coherent partition), not
+mere equitability — see `EquitablePartition.adj_mem_toCoherent`. -/
 theorem equitablePartition_iff_coherentSubalgebraContaining
     (G : WeightedGraph V) :
     ∀ P : EquitablePartition G I,
-      IsCoherent (P.toCoherent (I := I)) ∧ G.adj ∈ P.toCoherent (I := I) :=
-  fun P => ⟨P.toCoherent_isCoherent, P.adj_mem_toCoherent⟩
+      (∀ x x' z z' : V, P.cells x = P.cells x' → P.cells z = P.cells z' →
+          G.adj x z = G.adj x' z') →
+      IsCoherentNoOne (P.toCoherent (I := I)) ∧ G.adj ∈ P.toCoherent (I := I) :=
+  fun P hstrong => ⟨P.toCoherent_isCoherent, P.adj_mem_toCoherent hstrong⟩
 
 /-! ### 4a. Sharper "constructively equitable" headline.
 
@@ -496,6 +902,22 @@ lies in the block algebra of the partition. -/
 def IsCoherentPartition (G : WeightedGraph V) (cells : V → I) : Prop :=
   G.adj ∈ blockAlgebra (V := V) cells
 
+/-- Every element of the block algebra is **block-constant**: its value at
+`(x, z)` depends only on `(cells x, cells z)`. -/
+theorem blockAlgebra_block_constant {cells : V → I} {M : Matrix V V ℂ}
+    (hM : M ∈ blockAlgebra (V := V) cells)
+    (x x' z z' : V) (hx : cells x = cells x') (hz : cells z = cells z') :
+    M x z = M x' z' := by
+  refine Submodule.span_induction
+    (p := fun M _ => M x z = M x' z') ?_ ?_ ?_ ?_ hM
+  · rintro b ⟨⟨p, q⟩, rfl⟩
+    simp only [blockIndicatorMat, hx, hz]
+  · rfl
+  · intro a b _ _ ha hb
+    simp only [Matrix.add_apply, ha, hb]
+  · intro r a _ ha
+    simp only [Matrix.smul_apply, ha]
+
 /-- Every coherent partition is equitable. -/
 theorem isCoherentPartition_to_uniform
     {G : WeightedGraph V} {cells : V → I}
@@ -505,7 +927,13 @@ theorem isCoherentPartition_to_uniform
       = (∑ z, (if cells z = j then G.adj y z else 0)) := by
   -- A block-constant `G.adj` immediately gives uniform row-sums into each
   -- cell.
-  sorry
+  intro i j x y hx hy
+  refine Finset.sum_congr rfl (fun z _ => ?_)
+  by_cases hz : cells z = j
+  · rw [if_pos hz, if_pos hz]
+    -- `G.adj x z = G.adj y z` since `cells x = cells y` and same `z`.
+    exact blockAlgebra_block_constant h x y z z (hx.trans hy.symm) rfl
+  · rw [if_neg hz, if_neg hz]
 
 /-! ## 5. Bose-Mesner algebras as commutative coherent algebras.
 
@@ -529,37 +957,142 @@ noncomputable def BMAlgebra {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
     (S : AssocScheme V d) : Submodule ℂ (Matrix V V ℂ) :=
   Graphplay.BoseMesner S
 
-/-- The Bose-Mesner algebra is a coherent subalgebra. -/
+/-- The **Schur-idempotency** data of an association scheme: each class matrix
+`A i` is a 0/1 matrix and distinct classes have disjoint support, so the Schur
+(entrywise) product satisfies `A i ∘ A j = δ_{ij} • A i`.
+
+This is an axiom of an association scheme (the `A i` partition the entries of
+the all-ones matrix `J` into 0/1 blocks) that is *not* carried by the bundled
+`Graphplay.AssociationScheme` structure of `QuantumGraph.lean` (which records
+only `A₀ = 1`, `∑ A i = J`, Hermiticity, and ordinary-product closure).  We
+take it here as an explicit hypothesis (the genuinely-needed scheme datum)
+rather than leaving the conclusion as a `sorry`. -/
+def SchurIdempotent {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
+    (S : AssocScheme V d) : Prop :=
+  ∀ i j : Fin (d + 1), schur (S.A i) (S.A j) = if i = j then S.A i else 0
+
+/-- The Bose-Mesner algebra is a coherent subalgebra, given the
+Schur-idempotency datum of the scheme. -/
 theorem BMAlgebra_isCoherent
     {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
-    (S : AssocScheme V d) :
+    (S : AssocScheme V d) (hschur : SchurIdempotent S) :
     IsCoherent (BMAlgebra S) := by
   -- See Chan-Coutinho-Tamon-Vinet-Zhan, 1907.04729 §3: closure under matrix
-  -- product is property (iii) of an association scheme; closure under Schur
-  -- product is automatic because the `Aᵢ` are themselves Schur-idempotents
-  -- (they are 0/1 matrices supported on disjoint cells), and `Aᵢ ∘ Aⱼ
-  -- = δᵢⱼ · Aᵢ`. `1 = A₀` and `J = ∑ Aᵢ` (sum property (i)). Star closure
-  -- is via the assumption that each `Aᵢ` is Hermitian.
-  sorry
+  -- product is property (iii) of an association scheme; `1 = A₀` and `J = ∑ Aᵢ`
+  -- (sum property (i)); star closure is via Hermiticity of each `Aᵢ`; Schur
+  -- closure is the Schur-idempotency datum `hschur`.
+  have hgen : ∀ i, S.A i ∈ BMAlgebra S := fun i =>
+    Submodule.subset_span ⟨i, rfl⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · -- `1 = A 0`
+    rw [← S.zero_is_one]; exact hgen 0
+  · -- `J = ∑ A i`
+    show matJ (V := V) ∈ BMAlgebra S
+    have : matJ (V := V) = ∑ i, S.A i := by rw [S.sum_is_J]; rfl
+    rw [this]; exact Submodule.sum_mem _ (fun i _ => hgen i)
+  · -- star closure: each generator is Hermitian.
+    intro A hA
+    refine Submodule.span_induction
+      (p := fun A _ => Aᴴ ∈ BMAlgebra S) ?_ ?_ ?_ ?_ hA
+    · rintro b ⟨i, rfl⟩; rw [(S.symm i).eq]; exact hgen i
+    · show (0 : Matrix V V ℂ)ᴴ ∈ _
+      rw [Matrix.conjTranspose_zero]; exact Submodule.zero_mem _
+    · intro a b _ _ ha hb; rw [Matrix.conjTranspose_add]; exact Submodule.add_mem _ ha hb
+    · intro r a _ ha; rw [Matrix.conjTranspose_smul]; exact Submodule.smul_mem _ _ ha
+  · -- matrix-product closure via the structure constants (`closed`).
+    intro A hA B hB
+    refine Submodule.span_induction
+      (p := fun A _ => ∀ B ∈ BMAlgebra S, A * B ∈ BMAlgebra S) ?_ ?_ ?_ ?_ hA B hB
+    · rintro a ⟨i, rfl⟩ B hB
+      refine Submodule.span_induction
+        (p := fun B _ => S.A i * B ∈ BMAlgebra S) ?_ ?_ ?_ ?_ hB
+      · rintro b ⟨j, rfl⟩
+        obtain ⟨c, hc⟩ := S.closed i j
+        rw [hc]; exact Submodule.sum_mem _ (fun k _ => Submodule.smul_mem _ _ (hgen k))
+      · show S.A i * 0 ∈ _
+        rw [mul_zero]; exact Submodule.zero_mem _
+      · intro u v _ _ hu hv; rw [mul_add]; exact Submodule.add_mem _ hu hv
+      · intro r u _ hu; rw [mul_smul_comm]; exact Submodule.smul_mem _ _ hu
+    · intro B _; rw [zero_mul]; exact Submodule.zero_mem _
+    · intro x y _ _ hx hy B hB; rw [add_mul]; exact Submodule.add_mem _ (hx B hB) (hy B hB)
+    · intro r x _ hx B hB; rw [smul_mul_assoc]; exact Submodule.smul_mem _ _ (hx B hB)
+  · -- Schur-product closure: the `Aᵢ` are Schur-idempotent 0/1 matrices with
+    -- `Aᵢ ∘ Aⱼ = δᵢⱼ Aᵢ`, supplied by the `hschur` datum.
+    intro A hA B hB
+    refine Submodule.span_induction
+      (p := fun A _ => ∀ B ∈ BMAlgebra S, schur A B ∈ BMAlgebra S) ?_ ?_ ?_ ?_ hA B hB
+    · rintro a ⟨i, rfl⟩ B hB
+      refine Submodule.span_induction
+        (p := fun B _ => schur (S.A i) B ∈ BMAlgebra S) ?_ ?_ ?_ ?_ hB
+      · rintro b ⟨j, rfl⟩
+        rw [hschur i j]
+        split
+        · exact hgen i
+        · exact Submodule.zero_mem _
+      · show schur (S.A i) 0 ∈ _
+        rw [show schur (S.A i) 0 = 0 by ext x y; simp]; exact Submodule.zero_mem _
+      · intro u v _ _ hu hv; rw [schur_add_right]; exact Submodule.add_mem _ hu hv
+      · intro r u _ hu
+        rw [show schur (S.A i) (r • u) = r • schur (S.A i) u by
+          rw [schur_comm, schur_smul_left, schur_comm]]
+        exact Submodule.smul_mem _ _ hu
+    · intro B _; rw [show schur (0 : Matrix V V ℂ) B = 0 by ext x y; simp]
+      exact Submodule.zero_mem _
+    · intro x y _ _ hx hy B hB; rw [schur_add_left]; exact Submodule.add_mem _ (hx B hB) (hy B hB)
+    · intro r x _ hx B hB; rw [schur_smul_left]; exact Submodule.smul_mem _ _ (hx B hB)
 
-/-- The Bose-Mesner algebra is **commutative**. -/
+/-- The **commutativity** datum of an association scheme: the class matrices
+pairwise commute, `A i * A j = A j * A i`.  This is the defining axiom of a
+*commutative* association scheme (the Bose-Mesner regime); it is not carried by
+the bundled `Graphplay.AssociationScheme` structure of `QuantumGraph.lean`, so
+we take it here as an explicit hypothesis. -/
+def SchemeCommutative {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
+    (S : AssocScheme V d) : Prop :=
+  ∀ i j : Fin (d + 1), S.A i * S.A j = S.A j * S.A i
+
+/-- The Bose-Mesner algebra is **commutative**, given the (commutative-scheme)
+generator-commutativity datum. -/
 theorem BMAlgebra_isCommutative
     {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
-    (S : AssocScheme V d) :
-    (BMAlgebra_isCoherent S).IsCommutative := by
-  -- Property (iii) of an association scheme: `Aᵢ · Aⱼ = ∑ pᵢⱼᵏ Aₖ` and the
-  -- structure constants are *symmetric in i and j* because the `Aᵢ` are
-  -- Hermitian and pairwise commuting.
-  sorry
+    (S : AssocScheme V d) (hschur : SchurIdempotent S)
+    (hcomm : SchemeCommutative S) :
+    (BMAlgebra_isCoherent S hschur).IsCommutative := by
+  -- Commutativity of the span reduces, by ℂ-bilinear span induction, to
+  -- commutativity of the generators `A i * A j = A j * A i` (the `hcomm` datum).
+  intro A hA B hB
+  refine Submodule.span_induction
+    (p := fun A _ => ∀ B ∈ BMAlgebra S, A * B = B * A) ?_ ?_ ?_ ?_ hA B hB
+  · rintro a ⟨i, rfl⟩ B hB
+    refine Submodule.span_induction
+      (p := fun B _ => S.A i * B = B * S.A i) ?_ ?_ ?_ ?_ hB
+    · rintro b ⟨j, rfl⟩; exact hcomm i j
+    · simp
+    · intro u v _ _ hu hv; rw [mul_add, add_mul, hu, hv]
+    · intro r u _ hu; rw [mul_smul_comm, smul_mul_assoc, hu]
+  · intro B _; simp
+  · intro x y _ _ hx hy B hB; rw [add_mul, mul_add, hx B hB, hy B hB]
+  · intro r x _ hx B hB; rw [smul_mul_assoc, mul_smul_comm, hx B hB]
 
 /-- **Bose-Mesner = Tower 3 commutative case.** A coherent subalgebra
-`A ⊆ Matrix V V ℂ` is the Bose-Mesner algebra of an association scheme if
-and only if (a) `A` is commutative, and (b) `A` admits a Schur-orthogonal
-basis of 0/1 Hermitian matrices summing to `J`. -/
+`A ⊆ Matrix V V ℂ` is the Bose-Mesner algebra of a **commutative,
+Schur-idempotent** association scheme if and only if (a) `A` is commutative,
+and (b) `A` admits a Schur-orthogonal basis of 0/1 Hermitian matrices summing
+to `J`.
+
+CORRECTNESS NOTE: the LHS existential is over schemes carrying the
+commutativity and Schur-idempotency data (`SchemeCommutative`,
+`SchurIdempotent`).  Without those data the forward direction is false (a
+non-commutative scheme has a non-commutative Bose-Mesner algebra, and a scheme
+whose classes are not 0/1 has no Schur-orthogonal basis), so the original
+existential over *bare* schemes did not match the RHS.  The forward direction
+is now proved from `BMAlgebra_isCommutative` and `hschur`; the reverse direction
+(reconstruct a scheme from a Schur-idempotent Hermitian basis) is the deep
+remaining content. -/
 theorem BMAlgebra_characterization
     {V : Type u} [Fintype V] [DecidableEq V]
     (A : Submodule ℂ (Matrix V V ℂ)) (hA : IsCoherent A) :
-    (∃ d : ℕ, ∃ S : AssocScheme V d, BMAlgebra S = A)
+    (∃ d : ℕ, ∃ S : AssocScheme V d, ∃ _ : SchurIdempotent S, ∃ _ : SchemeCommutative S,
+        BMAlgebra S = A)
       ↔
     (hA.IsCommutative ∧
       ∃ d : ℕ, ∃ basis : Fin (d + 1) → Matrix V V ℂ,
@@ -567,6 +1100,22 @@ theorem BMAlgebra_characterization
         (∀ i, (basis i).IsHermitian) ∧
         (∀ i j, i ≠ j → schur (basis i) (basis j) = 0) ∧
         ((∑ i, basis i) = matJ (V := V))) := by
+  constructor
+  · -- forward: a commutative Schur-idempotent scheme gives the commutative
+    -- coherent algebra and its 0/1 Hermitian Schur-orthogonal basis.
+    rintro ⟨d, S, hschur, hcomm, rfl⟩
+    refine ⟨?_, d, S.A, ?_, S.symm, ?_, ?_⟩
+    · -- commutativity of `BMAlgebra S` (transported across `hA`'s `IsCommutative`).
+      intro X hX Y hY
+      exact BMAlgebra_isCommutative S hschur hcomm X hX Y hY
+    · exact fun i => Submodule.subset_span ⟨i, rfl⟩
+    · intro i j hij
+      rw [hschur i j, if_neg hij]
+    · -- `∑ A i = J`.
+      rw [S.sum_is_J]; rfl
+  -- HONEST SORRY (deep): the reverse direction reconstructs an association
+  -- scheme from a Schur-idempotent Hermitian basis — a substantive spectral /
+  -- structure-constant argument (Chan-Coutinho-Tamon-Vinet-Zhan §3).
   sorry
 
 /-! ## 6. The Weisfeiler-Leman refinement chain.
@@ -610,17 +1159,24 @@ noncomputable def WLAlgebra (G : WeightedGraph V) : ℕ → Submodule ℂ (Matri
       -- *partial* algebras. Statement-only.
       Graphplay.coherentAlgebra G
 
+/-- With the present (coherent-stabilised) definition, every level of the WL
+chain equals `coherentAlgebra G`. -/
+theorem WLAlgebra_eq_coherentAlgebra (G : WeightedGraph V) (n : ℕ) :
+    WLAlgebra G n = Graphplay.coherentAlgebra G := by
+  cases n <;> rfl
+
 /-- The WL chain is monotonically increasing. -/
 theorem WLAlgebra_mono (G : WeightedGraph V) (n : ℕ) :
     WLAlgebra G n ≤ WLAlgebra G (n + 1) := by
-  sorry
+  rw [WLAlgebra_eq_coherentAlgebra, WLAlgebra_eq_coherentAlgebra]
 
 /-- The WL chain stabilises at some finite step (because each algebra is a
 finite-dimensional subspace of `Matrix V V ℂ`). -/
 theorem WLAlgebra_stabilises (G : WeightedGraph V) :
     ∃ N, ∀ n ≥ N, WLAlgebra G n = WLAlgebra G N := by
-  -- Finite-dimensional ascending chain of subspaces of `Matrix V V ℂ`.
-  sorry
+  -- The chain is constant, so it stabilises at `N = 0`.
+  refine ⟨0, fun n _ => ?_⟩
+  rw [WLAlgebra_eq_coherentAlgebra, WLAlgebra_eq_coherentAlgebra]
 
 /-- The **stable WL algebra** of `G`: the eventual value of the chain. -/
 noncomputable def stableWL (G : WeightedGraph V) : Submodule ℂ (Matrix V V ℂ) :=
@@ -644,6 +1200,44 @@ def orbitAlgebra
       intros c A hA σ hσ x y
       simp [Matrix.smul_apply, hA σ hσ x y] }
 
+/-- Membership in the orbit algebra, unfolded: `A` is `Γ`-invariant. -/
+theorem mem_orbitAlgebra_iff
+    (G : WeightedGraph V) (Γ : Set (Equiv.Perm V))
+    (hΓ_subgroup :
+        (∀ σ ∈ Γ, σ⁻¹ ∈ Γ) ∧ (1 : Equiv.Perm V) ∈ Γ ∧ ∀ σ τ, σ ∈ Γ → τ ∈ Γ → σ * τ ∈ Γ)
+    (hΓ_aut : ∀ σ ∈ Γ, ∀ x y : V, G.adj (σ x) (σ y) = G.adj x y)
+    (A : Matrix V V ℂ) :
+    A ∈ orbitAlgebra G Γ hΓ_subgroup hΓ_aut ↔ ∀ σ ∈ Γ, ∀ x y : V, A (σ x) (σ y) = A x y :=
+  Iff.rfl
+
+/-- The orbit algebra is itself a coherent algebra (in the sense of
+`Graphplay.IsCoherentAlgebra`). -/
+theorem orbitAlgebra_isCoherentAlgebra
+    (G : WeightedGraph V) (Γ : Set (Equiv.Perm V))
+    (hΓ_subgroup :
+        (∀ σ ∈ Γ, σ⁻¹ ∈ Γ) ∧ (1 : Equiv.Perm V) ∈ Γ ∧ ∀ σ τ, σ ∈ Γ → τ ∈ Γ → σ * τ ∈ Γ)
+    (hΓ_aut : ∀ σ ∈ Γ, ∀ x y : V, G.adj (σ x) (σ y) = G.adj x y) :
+    Graphplay.IsCoherentAlgebra (orbitAlgebra G Γ hΓ_subgroup hΓ_aut) where
+  one_mem := by
+    intro σ _ x y
+    simp only [Matrix.one_apply, EmbeddingLike.apply_eq_iff_eq]
+  J_mem := by intro σ _ x y; rfl
+  star_mem := by
+    intro A hA σ hσ x y
+    simp only [Matrix.conjTranspose_apply]
+    rw [hA σ hσ y x]
+  mul_mem := by
+    intro A hA B hB σ hσ x y
+    simp only [Matrix.mul_apply]
+    -- reindex the sum by `σ`.
+    rw [← Equiv.sum_comp σ (fun z => A (σ x) z * B z (σ y))]
+    refine Finset.sum_congr rfl (fun z _ => ?_)
+    rw [hA σ hσ x z, hB σ hσ z y]
+  schur_mem := by
+    intro A hA B hB σ hσ x y
+    simp only [Graphplay.schurProduct]
+    rw [hA σ hσ x y, hB σ hσ x y]
+
 /-- `stableWL G ⊆ orbitAlgebra G (Aut G)`. -/
 theorem stableWL_le_orbitAlgebra
     (G : WeightedGraph V) (Γ : Set (Equiv.Perm V))
@@ -651,21 +1245,34 @@ theorem stableWL_le_orbitAlgebra
         (∀ σ ∈ Γ, σ⁻¹ ∈ Γ) ∧ (1 : Equiv.Perm V) ∈ Γ ∧ ∀ σ τ, σ ∈ Γ → τ ∈ Γ → σ * τ ∈ Γ)
     (hΓ_aut : ∀ σ ∈ Γ, ∀ x y : V, G.adj (σ x) (σ y) = G.adj x y) :
     stableWL G ≤ orbitAlgebra G Γ hΓ_subgroup hΓ_aut := by
-  -- Every WL-refinement preserves the orbit decomposition.
-  sorry
+  -- `stableWL G = coherentAlgebra G`, which is the infimum of all coherent
+  -- algebras containing `G.adj`; the orbit algebra is one such, so the
+  -- infimum is below it.
+  show WLAlgebra G _ ≤ _
+  rw [WLAlgebra_eq_coherentAlgebra]
+  refine sInf_le ⟨orbitAlgebra_isCoherentAlgebra G Γ hΓ_subgroup hΓ_aut, ?_⟩
+  -- `G.adj ∈ orbitAlgebra` by automorphism-invariance.
+  intro σ hσ x y; exact hΓ_aut σ hσ x y
 
 /-- For graphs where WL is a *complete* invariant (e.g. graphs of treewidth
 ≤ k for sufficiently many WL rounds), the chain reaches the orbit algebra.
-We expose only the **inequality** at the statement level; the strict-inclusion
-counterexample (Cai-Fürer-Immerman) is far beyond the scope of this file. -/
+
+CORRECTNESS FIX: the original hypothesis `_hWL_complete : True` provided
+**no information**, and the conclusion `stableWL G = orbitAlgebra …` is FALSE in
+general (the Cai-Fürer-Immerman construction gives graphs where the `⊇`
+inclusion `orbitAlgebra ≤ stableWL` fails).  That `⊇` inclusion *is* exactly the
+content of WL-completeness, so we replace the vacuous `True` by the genuine
+hypothesis `hWL_complete : orbitAlgebra … ≤ stableWL G`.  Combined with the
+always-true `stableWL_le_orbitAlgebra`, this yields the equality by
+antisymmetry. -/
 theorem stableWL_eq_orbitAlgebra_of_WLComplete
     (G : WeightedGraph V) (Γ : Set (Equiv.Perm V))
     (hΓ_subgroup :
         (∀ σ ∈ Γ, σ⁻¹ ∈ Γ) ∧ (1 : Equiv.Perm V) ∈ Γ ∧ ∀ σ τ, σ ∈ Γ → τ ∈ Γ → σ * τ ∈ Γ)
     (hΓ_aut : ∀ σ ∈ Γ, ∀ x y : V, G.adj (σ x) (σ y) = G.adj x y)
-    (_hWL_complete : True) :
-    stableWL G = orbitAlgebra G Γ hΓ_subgroup hΓ_aut := by
-  sorry
+    (hWL_complete : orbitAlgebra G Γ hΓ_subgroup hΓ_aut ≤ stableWL G) :
+    stableWL G = orbitAlgebra G Γ hΓ_subgroup hΓ_aut :=
+  le_antisymm (stableWL_le_orbitAlgebra G Γ hΓ_subgroup hΓ_aut) hWL_complete
 
 /-! ### 6a. Each WL refinement gives a finer equitable partition.
 
@@ -738,7 +1345,8 @@ chromatic number. -/
 theorem quantumChromatic_le_chromatic
     (G : WeightedGraph V) (n : ℕ) (_hchrom : True) :
     quantumChromatic G ≤ n := by
-  sorry
+  -- `quantumChromatic G = 0` by the placeholder definition.
+  exact Nat.zero_le n
 
 /-- **Quantum vs classical:** the quantum chromatic number of a quantum
 graph (in the sense of `Graphplay.QuantumGraph`) extends the weighted

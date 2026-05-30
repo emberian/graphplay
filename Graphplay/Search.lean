@@ -301,17 +301,46 @@ theorem search_quotient_reduction
   simp only [Pi.smul_apply, smul_eq_mul]
   ring
 
-/-- Corollary: optimal search on the refined quotient lifts to optimal search
-on the host. -/
+/-- **Optimal search on the refined quotient** (genuine hypothesis form).  This
+is the cell-uniform success amplitude of the *refined-quotient* search evolution
+`exp(-iτ·(-γ·Q̃' − markedDiag))` applied to the uniform initial state on the
+quotient index `MarkedRefined I`, projected onto the marked (`(·, true)`) cells.
+It is the quotient-side analogue of `IsOptimalSearch` (amplitude `≥ 1/√2`). -/
+def IsRefinedQuotientOptimalSearch
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {G : WeightedGraph V} (P : EquitablePartition G I) (M : Finset V)
+    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M))
+    (γ τ : ℝ) : Prop :=
+  let P' := P.refineByMarked M hM
+  ‖(∑ ib : MarkedRefined I, ∑ jb : MarkedRefined I,
+      if jb.2 = true then
+        (NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
+            (-(γ : ℂ) • P'.symmQuotient - markedDiag I))) jb ib /
+          Real.sqrt (Fintype.card (MarkedRefined I))
+      else 0)‖ ≥ 1 / Real.sqrt 2
+
+/-- **Optimal search on the refined quotient lifts to optimal search on the
+host.**  Given that the marked set is a union of cells (`hM`, so the marked-
+refined partition is equitable and `search_quotient_reduction` applies), if the
+refined quotient supports optimal search then so does the host.
+
+The previous formulation carried a vacuous `True →` placeholder hypothesis; this
+replaces it with the genuine quotient-side optimal-search predicate
+`IsRefinedQuotientOptimalSearch`.  The bridge is `search_quotient_reduction`
+(the host search Hamiltonian acts as the refined-quotient one on the
+cell-uniform subspace), combined with the norm-preservation of the cell-inflate
+on nonempty cells; assembling these into the `IsOptimalSearch` amplitude bound
+is the remaining deep step, left as an honest `sorry`. -/
 theorem optimal_search_lift
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} (P : EquitablePartition G I) (M : Finset V)
-    (γ τ : ℝ) :
-    -- Placeholder hypothesis: optimal search on the refined quotient.
-    True →
+    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M))
+    (hne : ∀ i, 0 < (P.refineByMarked M hM).cellCard i)
+    (γ τ : ℝ)
+    (hquot : IsRefinedQuotientOptimalSearch P M hM γ τ) :
     IsOptimalSearch G M γ τ := by
-  intro _
   sorry
 
 /-- The infinite-attached-tail special case (Xie–Tamon 2301.07251): the
@@ -320,20 +349,28 @@ diagram of equitable partitions whose colimit recovers the full-tail walk.
 Optimal search persists in the limit when it holds uniformly along the
 diagram.
 
-We state this as a Prop-level claim that the family of optimal-search
-witnesses at finite truncations refines to one at the colimit; the
-formalization uses the `Nat`-indexed approximants from `Graphplay/Basic.lean`'s
-`UnionGraph`. -/
+Honest finite-parent form.  The genuine Xie–Tamon statement is about an
+*unbounded* tail and requires an `InverseLimit`/`UnionGraph` extension not
+present here.  What is genuinely provable at this finite level is the *quotient
+lift* itself: given a family of marked-refined partitions `P n` all sharing the
+marked-union property `hM n`, if for some truncation `n` the refined quotient
+supports optimal search, then the (finite) host does.
+
+Note on the prior formulation: it carried a vacuous `∀ _n : ℕ, IsOptimalSearch
+G M γ τ` hypothesis (with `_n` unused — i.e. literally `IsOptimalSearch G M γ τ`
+restated, making the theorem `A → A`) and an unused partition family `P`.  That
+said nothing; this restatement makes the family and the per-truncation quotient
+hypothesis genuinely load-bearing via `optimal_search_lift`. -/
 theorem search_infinite_tail
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : WeightedGraph V) (M : Finset V) (γ τ : ℝ)
     (P : ℕ → EquitablePartition G I)
-    (hopt : ∀ _n : ℕ, IsOptimalSearch G M γ τ) :
-    -- The colimit witness is just the original witness because the host graph
-    -- is finite; the content of Xie–Tamon is the unbounded-tail version,
-    -- whose statement requires an `InverseLimit`/`UnionGraph` extension and
-    -- is left to a future scaffold pass.
-    IsOptimalSearch G M γ τ := hopt 0
+    (hM : ∀ n, ∀ x y : V, (P n).cells x = (P n).cells y → (x ∈ M ↔ y ∈ M))
+    (hne : ∀ n, ∀ i, 0 < ((P n).refineByMarked M (hM n)).cellCard i)
+    (n : ℕ)
+    (hquot : IsRefinedQuotientOptimalSearch (P n) M (hM n) γ τ) :
+    IsOptimalSearch G M γ τ :=
+  optimal_search_lift (P n) M (hM n) (hne n) γ τ hquot
 
 end Graphplay

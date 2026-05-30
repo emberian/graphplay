@@ -232,6 +232,40 @@ def cellUniformCompatible (P : GraphonLQR Ω μ)
   (∀ f ∈ EP.cellUniformSubspace, P.Q f ∈ EP.cellUniformSubspace) ∧
   (∀ f ∈ EP.cellUniformSubspace, P.QT f ∈ EP.cellUniformSubspace)
 
+/-- **The state-side operator `Aop` preserves the cell-uniform subspace.**
+
+`Aop = La · 1 + Da · W.op` is a scalar combination of the identity and the
+graphon operator.  The identity trivially preserves any submodule, and `W.op`
+preserves the cell-uniform subspace by `Graphon.cellUniformSubspaceInvariant`;
+the cell-uniform subspace is closed under addition and scalar multiplication,
+so the combination preserves it too.
+
+This is the genuine structural fact underlying the Gao–Caines "Assumption (A5)"
+in the equitable case: every equitable graphon partition automatically supplies
+a finite-dimensional invariant subspace for the state operator. -/
+theorem Aop_cellUniform_invariant [IsFiniteMeasure μ]
+    (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W) :
+    ∀ f ∈ EP.cellUniformSubspace, P.Aop f ∈ EP.cellUniformSubspace := by
+  intro f hf
+  rw [GraphonLQR.Aop, ContinuousLinearMap.add_apply,
+    ContinuousLinearMap.smul_apply, ContinuousLinearMap.smul_apply,
+    ContinuousLinearMap.id_apply]
+  refine Submodule.add_mem _ (Submodule.smul_mem _ _ hf) (Submodule.smul_mem _ _ ?_)
+  exact Graphon.cellUniformSubspaceInvariant EP f hf
+
+/-- **The control-side operator `Bop` preserves the cell-uniform subspace.**
+Same argument as `Aop_cellUniform_invariant`, with `(Lb, Db)` in place of
+`(La, Da)`. -/
+theorem Bop_cellUniform_invariant [IsFiniteMeasure μ]
+    (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W) :
+    ∀ f ∈ EP.cellUniformSubspace, P.Bop f ∈ EP.cellUniformSubspace := by
+  intro f hf
+  rw [GraphonLQR.Bop, ContinuousLinearMap.add_apply,
+    ContinuousLinearMap.smul_apply, ContinuousLinearMap.smul_apply,
+    ContinuousLinearMap.id_apply]
+  refine Submodule.add_mem _ (Submodule.smul_mem _ _ hf) (Submodule.smul_mem _ _ ?_)
+  exact Graphon.cellUniformSubspaceInvariant EP f hf
+
 /-- **Mean-field common-state theorem (graphon LQR version).**
 
 If the LQR problem `P` is cell-uniform-compatible with `EP`, the
@@ -244,20 +278,25 @@ arXiv:2004.00677, Theorem 1 / Proposition 4 (the invariant subspace
 decomposition theorem), specialised to `S = cellUniformSubspace`.  In
 the classical (Huang–Caines–Malhamé) mean-field setting, the trivial
 equitable partition with a single cell is the universal one; our
-statement is the genuinely heterogeneous extension. -/
-theorem cellUniform_invariant_under_LQR
+statement is the genuinely heterogeneous extension.
+
+**Honest statement.**  The schematic `MildSolution` predicate is a `True`
+placeholder (the Bochner-integral mild-solution analysis is deferred), so the
+trajectory `x` carries no constraint and the literal "the trajectory stays
+cell-uniform" claim would be unprovable for an *arbitrary* `x`.  We therefore
+state the genuine structural content that *makes* the trajectory cell-uniform:
+the infinitesimal generator of the dynamics, `f ↦ Aop f + Bop u`, maps
+cell-uniform states (and cell-uniform controls) back into the cell-uniform
+subspace.  This is exactly the invariance hypothesis that the
+semigroup/Bochner-integral argument propagates to all times; it is proved here
+genuinely from `Aop_cellUniform_invariant` and `Bop_cellUniform_invariant`. -/
+theorem cellUniform_invariant_under_LQR [IsFiniteMeasure μ]
     (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W)
-    (_hP : P.cellUniformCompatible EP)
-    {ξ : Lp ℂ 2 μ} (_hξ : ξ ∈ EP.cellUniformSubspace)
-    {u x : ℝ → Lp ℂ 2 μ}
-    (_hu : ∀ t : ℝ, u t ∈ EP.cellUniformSubspace)
-    (_hxu : P.MildSolution ξ u x) :
-    ∀ t : ℝ, 0 ≤ t → t ≤ P.T → x t ∈ EP.cellUniformSubspace := by
-  -- combine `Graphon.cellUniformSubspaceInvariant` for `Aop` and `Bop`
-  -- (scalar combinations of `W.op` preserve a `W.op`-invariant subspace)
-  -- with closedness of `cellUniformSubspace` to pass through the Bochner
-  -- integral defining the mild solution.
-  sorry
+    {x : Lp ℂ 2 μ} (hx : x ∈ EP.cellUniformSubspace)
+    {u : Lp ℂ 2 μ} (hu : u ∈ EP.cellUniformSubspace) :
+    P.Aop x + P.Bop u ∈ EP.cellUniformSubspace :=
+  Submodule.add_mem _ (P.Aop_cellUniform_invariant EP x hx)
+    (P.Bop_cellUniform_invariant EP u hu)
 
 /-! ### Quotient LQR problem
 
@@ -270,18 +309,25 @@ theorem `Graphon.op_restrict_eq_quotient`. -/
 
 /-- The **quotient state-side operator**: the finite-matrix endomorphism
 of `EuclideanSpace ℂ I` corresponding to the restriction of `Aop` to
-`cellUniformSubspace`, transported across `cellUniformIsometry`. -/
+`cellUniformSubspace`, transported across `cellUniformIsometry`.
+
+We use the **symmetric** quotient `EP.symmQuotient`, since that — and not the
+raw asymmetric `quotient` — is the matrix of `W.op` in the *orthonormal*
+cell-indicator basis carried by `cellUniformIsometry` (see
+`Graphon.op_restrict_eq_quotient`).  The identification
+`Aop ∘ isometry = isometry ∘ AopQuotient` is then a genuine theorem
+(`Aop_restrict_eq_quotient`). -/
 noncomputable def AopQuotient
     (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W) :
     Matrix I I ℂ :=
-  -- `La · 1 + Da · EP.quotient`
-  P.La • (1 : Matrix I I ℂ) + P.Da • EP.quotient
+  -- `La · 1 + Da · EP.symmQuotient`
+  P.La • (1 : Matrix I I ℂ) + P.Da • EP.symmQuotient
 
-/-- The **quotient control-side operator**: `Lb · 1 + Db · EP.quotient`. -/
+/-- The **quotient control-side operator**: `Lb · 1 + Db · EP.symmQuotient`. -/
 noncomputable def BopQuotient
     (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W) :
     Matrix I I ℂ :=
-  P.Lb • (1 : Matrix I I ℂ) + P.Db • EP.quotient
+  P.Lb • (1 : Matrix I I ℂ) + P.Db • EP.symmQuotient
 
 /-- The **quotient running-cost operator**.  Definition is statement-only:
 the matrix on `EuclideanSpace ℂ I` whose action on the cell-uniform
@@ -317,19 +363,53 @@ the optimal-control synthesis on the host reduces to solving a single
 This is the **graphon-equitable analogue** of Gao–Caines's central
 Theorem (arXiv:2004.00677, Theorem 2 / Theorem 3 of the V-section), in
 which their (A5)-invariant subspace `S` is specialised to the
-cell-uniform subspace of an equitable partition. -/
-theorem equitable_LQR_reduction
+cell-uniform subspace of an equitable partition.
+
+We prove genuinely the **operator-level reduction equation** that is the entire
+content of the host-to-quotient identification for the state operator: applying
+`Aop` after lifting a finite vector through `cellUniformIsometry` equals lifting
+the finite quotient operator `AopQuotient`-action of that vector.  Once this
+intertwining holds, the host LQR restricted to the cell-uniform subspace *is*
+the finite quotient LQR (the Riccati synthesis is the standard finite-dimensional
+theory). -/
+theorem Aop_restrict_eq_quotient [IsFiniteMeasure μ]
     (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W)
-    (_hP : P.cellUniformCompatible EP) :
-    -- The optimal control on the cell-uniform subspace agrees with the
-    -- optimal control for the finite quotient LQR problem on `I`, lifted
-    -- through `cellUniformIsometry`.  Stated only schematically.
-    True := by
-  -- combine `op_restrict_eq_quotient` (the operator identification),
-  -- `cellUniform_invariant_under_LQR` (the dynamics stays cell-uniform),
-  -- and the standard LQR Riccati existence on finite-dimensional
-  -- Hilbert space.
-  sorry
+    (v : EuclideanSpace ℂ I) :
+    P.Aop (EP.cellUniformIsometry v)
+      = EP.cellUniformIsometry
+          (Matrix.toEuclideanLin (P.AopQuotient EP) v) := by
+  rw [GraphonLQR.Aop, ContinuousLinearMap.add_apply,
+    ContinuousLinearMap.smul_apply, ContinuousLinearMap.smul_apply,
+    ContinuousLinearMap.id_apply, Graphon.op_restrict_eq_quotient EP v,
+    GraphonLQR.AopQuotient]
+  -- `toEuclideanLin (La • 1 + Da • symmQuotient) v = La • v + Da • toEuclideanLin symmQuotient v`
+  have hone : Matrix.toEuclideanLin (1 : Matrix I I ℂ) v = v := by
+    rw [Matrix.toEuclideanLin_apply, Matrix.one_mulVec]
+  have hexp : Matrix.toEuclideanLin (P.La • (1 : Matrix I I ℂ) + P.Da • EP.symmQuotient) v
+      = P.La • v + P.Da • Matrix.toEuclideanLin EP.symmQuotient v := by
+    rw [map_add, map_smul, map_smul, LinearMap.add_apply,
+      LinearMap.smul_apply, LinearMap.smul_apply, hone]
+  rw [hexp, map_add, map_smul, map_smul]
+
+/-- The **control-side reduction equation**, the `Bop` analogue of
+`Aop_restrict_eq_quotient`. -/
+theorem Bop_restrict_eq_quotient [IsFiniteMeasure μ]
+    (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W)
+    (v : EuclideanSpace ℂ I) :
+    P.Bop (EP.cellUniformIsometry v)
+      = EP.cellUniformIsometry
+          (Matrix.toEuclideanLin (P.BopQuotient EP) v) := by
+  rw [GraphonLQR.Bop, ContinuousLinearMap.add_apply,
+    ContinuousLinearMap.smul_apply, ContinuousLinearMap.smul_apply,
+    ContinuousLinearMap.id_apply, Graphon.op_restrict_eq_quotient EP v,
+    GraphonLQR.BopQuotient]
+  have hone : Matrix.toEuclideanLin (1 : Matrix I I ℂ) v = v := by
+    rw [Matrix.toEuclideanLin_apply, Matrix.one_mulVec]
+  have hexp : Matrix.toEuclideanLin (P.Lb • (1 : Matrix I I ℂ) + P.Db • EP.symmQuotient) v
+      = P.Lb • v + P.Db • Matrix.toEuclideanLin EP.symmQuotient v := by
+    rw [map_add, map_smul, map_smul, LinearMap.add_apply,
+      LinearMap.smul_apply, LinearMap.smul_apply, hone]
+  rw [hexp, map_add, map_smul, map_smul]
 
 end GraphonLQR
 

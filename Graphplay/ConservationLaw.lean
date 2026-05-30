@@ -42,6 +42,7 @@ is to land the formal statements in the development.
 
 import Graphplay.Weighted
 import Graphplay.Equitable
+import Graphplay.PST.QuotientIff
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 
 open scoped Matrix
@@ -85,21 +86,51 @@ theorem cellOccupationOperator_isHermitian
     (P : EquitablePartition G I) (i : I) :
     (P.cellOccupationOperator i).IsHermitian := by
   -- Diagonal real-valued matrix; entrywise check.
-  sorry
+  ext v w
+  show star (P.cellOccupationOperator i w v) = P.cellOccupationOperator i v w
+  unfold cellOccupationOperator
+  by_cases h : v = w
+  · subst h
+    by_cases hc : P.cells v = i <;> simp [hc]
+  · rw [if_neg (fun hh => h hh.1.symm), if_neg (fun hh => h hh.1)]
+    simp
 
 /-- The cell-occupation operators are pairwise orthogonal: `Π_i · Π_j = 0`
 when `i ≠ j`. -/
 theorem cellOccupationOperator_orthogonal
     (P : EquitablePartition G I) (i j : I) (hij : i ≠ j) :
     P.cellOccupationOperator i * P.cellOccupationOperator j = 0 := by
-  sorry
+  ext v w
+  show (∑ z, P.cellOccupationOperator i v z * P.cellOccupationOperator j z w) = 0
+  apply Finset.sum_eq_zero
+  intro z _
+  unfold cellOccupationOperator
+  by_cases h1 : v = z ∧ P.cells v = i
+  · by_cases h2 : z = w ∧ P.cells z = j
+    · -- `v = z`, so `cells z = i`; but `cells z = j` and `i ≠ j`.
+      apply absurd _ hij
+      rw [← h1.2, h1.1, h2.2]
+    · rw [if_neg h2, mul_zero]
+  · rw [if_neg h1, zero_mul]
 
 /-- Each cell-occupation operator is an idempotent: `Π_i · Π_i = Π_i`. -/
 theorem cellOccupationOperator_idempotent
     (P : EquitablePartition G I) (i : I) :
     P.cellOccupationOperator i * P.cellOccupationOperator i =
       P.cellOccupationOperator i := by
-  sorry
+  ext v w
+  show (∑ z, P.cellOccupationOperator i v z * P.cellOccupationOperator i z w)
+        = P.cellOccupationOperator i v w
+  unfold cellOccupationOperator
+  -- Only the `z = v` term can survive.
+  rw [Finset.sum_eq_single v]
+  · by_cases hci : P.cells v = i
+    · rw [if_pos ⟨rfl, hci⟩, one_mul]
+    · rw [if_neg (show ¬(v = v ∧ P.cells v = i) from fun hh => hci hh.2),
+          if_neg (show ¬(v = w ∧ P.cells v = i) from fun hh => hci hh.2), zero_mul]
+  · intro z _ hz
+    rw [if_neg (show ¬(v = z ∧ P.cells v = i) from fun hh => hz hh.1.symm), zero_mul]
+  · intro hv; exact absurd (Finset.mem_univ v) hv
 
 /-- The cell-occupation operators resolve the identity:
 `∑_i Π_i = 1`. -/
@@ -108,7 +139,24 @@ theorem sum_cellOccupationOperator
     (∑ i, P.cellOccupationOperator i) = (1 : Matrix V V ℂ) := by
   -- Each vertex lies in exactly one cell, so the sum at `(v, v)` is `1`,
   -- and at `(v, w)` for `v ≠ w` is `0`.
-  sorry
+  ext v w
+  rw [Matrix.sum_apply]
+  unfold cellOccupationOperator
+  by_cases h : v = w
+  · subst h
+    rw [Matrix.one_apply_eq]
+    -- `∑ i, if cells v = i then 1 else 0 = 1`.
+    rw [Finset.sum_congr rfl (fun i _ => show (if v = v ∧ P.cells v = i then (1:ℂ) else 0)
+          = (if P.cells v = i then (1:ℂ) else 0) by
+      by_cases hc : P.cells v = i
+      · rw [if_pos ⟨rfl, hc⟩, if_pos hc]
+      · rw [if_neg (show ¬(v = v ∧ P.cells v = i) from fun hh => hc hh.2), if_neg hc])]
+    rw [Finset.sum_ite_eq Finset.univ (P.cells v) (fun _ => (1:ℂ))]
+    simp
+  · rw [Matrix.one_apply_ne h]
+    apply Finset.sum_eq_zero
+    intro i _
+    rw [if_neg (show ¬(v = w ∧ P.cells v = i) from fun hh => h hh.1)]
 
 /-! ### 2. The cell-occupation operator does NOT commute with the
 Hamiltonian.
@@ -136,7 +184,24 @@ theorem cellOccupation_does_not_commute_with_adj
   --   (Π_i · A) v w  =  Π_i v v · A v w  =  A v w     (since v ∈ C_i)
   --   (A · Π_i) v w  =  A v w · Π_i w w =  0           (since w ∉ C_i)
   -- difference = A v w.
-  sorry
+  show (P.cellOccupationOperator i * G.adj) v w
+        - (G.adj * P.cellOccupationOperator i) v w = G.adj v w
+  have hL : (P.cellOccupationOperator i * G.adj) v w = G.adj v w := by
+    show (∑ z, P.cellOccupationOperator i v z * G.adj z w) = G.adj v w
+    rw [Finset.sum_eq_single v]
+    · unfold cellOccupationOperator; rw [if_pos ⟨rfl, hv⟩, one_mul]
+    · intro z _ hz
+      unfold cellOccupationOperator; rw [if_neg (fun hh => hz hh.1.symm), zero_mul]
+    · intro hv'; exact absurd (Finset.mem_univ v) hv'
+  have hR : (G.adj * P.cellOccupationOperator i) v w = 0 := by
+    show (∑ z, G.adj v z * P.cellOccupationOperator i z w) = 0
+    apply Finset.sum_eq_zero
+    intro z _
+    unfold cellOccupationOperator
+    by_cases hz : z = w ∧ P.cells z = i
+    · exact absurd (hz.1 ▸ hz.2) hw
+    · rw [if_neg hz, mul_zero]
+  rw [hL, hR, sub_zero]
 
 /-- Equivalently: `cellOccupationOperator P i` commutes with `G.adj` if
 and only if cell `i` is a union of (signed) connected components of
@@ -146,9 +211,64 @@ theorem cellOccupation_commutes_with_adj_iff
     (P : EquitablePartition G I) (i : I) :
     P.cellOccupationOperator i * G.adj = G.adj * P.cellOccupationOperator i
       ↔ (∀ v w : V, P.cells v = i → P.cells w ≠ i → G.adj v w = 0) := by
-  -- Forward: read off off-diagonal entries as in the previous theorem.
-  -- Reverse: explicit entrywise check.
-  sorry
+  -- Entry formulas: `(M_i·A) v w = if cells v = i then A v w else 0`,
+  --                 `(A·M_i) v w = if cells w = i then A v w else 0`.
+  have hL : ∀ v w, (P.cellOccupationOperator i * G.adj) v w
+      = if P.cells v = i then G.adj v w else 0 := by
+    intro v w
+    show (∑ z, P.cellOccupationOperator i v z * G.adj z w) = _
+    by_cases hv : P.cells v = i
+    · rw [if_pos hv, Finset.sum_eq_single v]
+      · unfold cellOccupationOperator; rw [if_pos ⟨rfl, hv⟩, one_mul]
+      · intro z _ hz
+        unfold cellOccupationOperator
+        rw [if_neg (show ¬(v = z ∧ P.cells v = i) from fun hh => hz hh.1.symm), zero_mul]
+      · intro hv'; exact absurd (Finset.mem_univ v) hv'
+    · rw [if_neg hv]
+      apply Finset.sum_eq_zero
+      intro z _
+      unfold cellOccupationOperator
+      rw [if_neg (show ¬(v = z ∧ P.cells v = i) from fun hh => hv (hh.1 ▸ hh.2)), zero_mul]
+  have hR : ∀ v w, (G.adj * P.cellOccupationOperator i) v w
+      = if P.cells w = i then G.adj v w else 0 := by
+    intro v w
+    show (∑ z, G.adj v z * P.cellOccupationOperator i z w) = _
+    by_cases hw : P.cells w = i
+    · rw [if_pos hw, Finset.sum_eq_single w]
+      · unfold cellOccupationOperator; rw [if_pos ⟨rfl, hw⟩, mul_one]
+      · intro z _ hz
+        unfold cellOccupationOperator
+        rw [if_neg (show ¬(z = w ∧ P.cells z = i) from fun hh => hz hh.1), mul_zero]
+      · intro hw'; exact absurd (Finset.mem_univ w) hw'
+    · rw [if_neg hw]
+      apply Finset.sum_eq_zero
+      intro z _
+      unfold cellOccupationOperator
+      rw [if_neg (show ¬(z = w ∧ P.cells z = i) from fun hh => hw (hh.1 ▸ hh.2)), mul_zero]
+  constructor
+  · -- commute ⟹ condition
+    intro hcomm v w hv hw
+    have := congrFun (congrFun hcomm v) w
+    rw [hL, hR, if_pos hv, if_neg hw] at this
+    exact this
+  · -- condition ⟹ commute
+    intro hcond
+    ext v w
+    rw [hL, hR]
+    by_cases hv : P.cells v = i
+    · by_cases hw : P.cells w = i
+      · rw [if_pos hv, if_pos hw]
+      · rw [if_pos hv, if_neg hw]
+        exact hcond v w hv hw
+    · by_cases hw : P.cells w = i
+      · rw [if_neg hv, if_pos hw]
+        -- need `G.adj v w = 0`; use Hermiticity + condition at `(w, v)`.
+        have hwv : G.adj w v = 0 := hcond w v hw hv
+        have hh := congrFun (congrFun G.herm w) v
+        rw [Matrix.conjTranspose_apply, hwv] at hh
+        -- `hh : star (G.adj v w) = 0`
+        exact (star_eq_zero.mp hh).symm
+      · rw [if_neg hv, if_neg hw]
 
 /-! ### 3. The cell-UNIFORM projector — the actual Noether charge. -/
 
@@ -185,7 +305,21 @@ theorem cellUniformProjector_isHermitian
     (P.cellUniformProjector).IsHermitian := by
   -- Real-valued, and the support condition `P.cells v = P.cells w` is
   -- symmetric in `v, w`.
-  sorry
+  ext v w
+  show star (P.cellUniformProjector w v) = P.cellUniformProjector v w
+  unfold cellUniformProjector
+  simp only
+  by_cases h : P.cells v = P.cells w
+  · -- Symmetric support; values agree (and are real).
+    rw [h]
+    simp only [if_true]
+    by_cases hc : P.cellCard (P.cells w) = 0
+    · simp [hc]
+    · rw [if_neg hc]
+      rw [star_div₀, star_one, ← Complex.ofReal_one, ← Complex.conj_ofReal]
+      norm_num
+  · rw [if_neg (show ¬ P.cells v = P.cells w from h),
+        if_neg (show ¬ P.cells w = P.cells v from fun hh => h hh.symm), star_zero]
 
 /-- The cell-uniform projector is idempotent. -/
 theorem cellUniformProjector_idempotent
@@ -193,7 +327,59 @@ theorem cellUniformProjector_idempotent
     P.cellUniformProjector * P.cellUniformProjector = P.cellUniformProjector := by
   -- `Π² v w = ∑_z Π v z · Π z w`.  Both factors are supported on the same
   -- cell, and the `|C_i|` factors collapse to `|C_i| · (1/|C_i|)² = 1/|C_i|`.
-  sorry
+  ext v w
+  show (∑ z, P.cellUniformProjector v z * P.cellUniformProjector z w)
+        = P.cellUniformProjector v w
+  -- Abbreviations.
+  set i := P.cells v with hi
+  -- The card of cell `i` as a complex number.
+  have hcard : (P.cellCard i : ℂ)
+      = ((Finset.univ.filter (fun z : V => P.cells z = i)).card : ℂ) := by
+    unfold EquitablePartition.cellCard; push_cast; rfl
+  by_cases hw : P.cells w = i
+  · -- `cells w = cells v = i`; cell `i` is nonempty (contains `v`).
+    have hne : (Finset.univ.filter (fun z : V => P.cells z = i)).Nonempty :=
+      ⟨v, by simp [hi]⟩
+    have hcpos : P.cellCard i ≠ 0 := by
+      unfold EquitablePartition.cellCard
+      simp only [ne_eq, Nat.cast_eq_zero, Finset.card_eq_zero]
+      exact Finset.nonempty_iff_ne_empty.mp hne
+    have hcC : (P.cellCard i : ℂ) ≠ 0 := by
+      exact_mod_cast hcpos
+    -- Each surviving term is `(1/c)*(1/c)`, summed over the `c` elements of cell `i`.
+    have hterm : ∀ z, P.cellUniformProjector v z * P.cellUniformProjector z w
+        = if P.cells z = i then ((1:ℂ)/(P.cellCard i : ℂ)) * ((1:ℂ)/(P.cellCard i : ℂ))
+          else 0 := by
+      intro z
+      show (P.cellUniformProjector v z) * (P.cellUniformProjector z w) = _
+      unfold EquitablePartition.cellUniformProjector
+      simp only [← hi]
+      by_cases hz : P.cells z = i
+      · -- first factor: cond `cells z = i`; second: cond `cells w = cells z`.
+        simp only [hz, if_true, if_neg hcpos, if_pos (show P.cells w = i from hw)]
+      · rw [if_neg hz, zero_mul, if_neg hz]
+    rw [Finset.sum_congr rfl (fun z _ => hterm z)]
+    rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
+    -- RHS.
+    unfold EquitablePartition.cellUniformProjector
+    simp only [← hi]
+    rw [if_pos hw, if_neg hcpos]
+    rw [← hcard]
+    field_simp
+  · -- `cells w ≠ i`: every term vanishes, and so does the RHS.
+    have hrhs : P.cellUniformProjector v w = 0 := by
+      unfold EquitablePartition.cellUniformProjector
+      simp only [← hi]
+      rw [if_neg hw]
+    rw [hrhs]
+    apply Finset.sum_eq_zero
+    intro z _
+    unfold EquitablePartition.cellUniformProjector
+    simp only [← hi]
+    by_cases hz : P.cells z = i
+    · -- second factor: `cells w = cells z = i`? No, `cells w ≠ i = cells z`.
+      rw [if_neg (show ¬ P.cells w = P.cells z by rw [hz]; exact hw), mul_zero]
+    · rw [if_neg hz, zero_mul]
 
 /-- The image of the cell-uniform projector is the cell-uniform subspace. -/
 theorem cellUniformProjector_range
@@ -201,7 +387,68 @@ theorem cellUniformProjector_range
     P.cellUniformProjector.mulVec v ∈ P.cellUniformSubspace := by
   -- The result is, for each cell `i`, the average of `v` over `C_i`
   -- supported uniformly on `C_i`; this is a multiple of `cellUniformVec i`.
-  sorry
+  -- Coefficient on `cellUniformVec i`.
+  set β : I → ℂ := fun i =>
+    (∑ w, if P.cells w = i then v w else 0) / (Real.sqrt (P.cellCard i) : ℂ) with hβ
+  -- Show the projector image equals `∑ i, β i • cellUniformVec i`.
+  have heq : P.cellUniformProjector.mulVec v = ∑ i, β i • P.cellUniformVec i := by
+    funext u
+    rw [Finset.sum_apply]
+    -- LHS: `∑ w, M u w * v w`, collapsing to the cell of `u`.
+    show (∑ w, P.cellUniformProjector u w * v w) = _
+    set i := P.cells u with hiu
+    -- The RHS: only the `i`-term is nonzero.
+    rw [Finset.sum_eq_single i]
+    · -- RHS `i`-term: `β i • cellUniformVec i u = β i * (1/√c_i)`.
+      -- LHS: `∑_{w : cells w = i} (1/c_i) v w`.
+      have hLHS : (∑ w, P.cellUniformProjector u w * v w)
+          = (∑ w, if P.cells w = i then ((1:ℂ)/(P.cellCard i:ℂ)) * v w else 0) := by
+        apply Finset.sum_congr rfl
+        intro w _
+        unfold EquitablePartition.cellUniformProjector
+        simp only [← hiu]
+        by_cases hw : P.cells w = i
+        · by_cases hc : P.cellCard i = 0
+          · -- empty cell impossible: `u ∈ C_i`.  But guard anyway.
+            simp [hw, hc]
+          · rw [if_pos hw, if_neg hc, if_pos hw]
+        · rw [if_neg hw, zero_mul, if_neg hw]
+      rw [hLHS]
+      -- `cellUniformVec i u = 1/√c_i` since `cells u = i`.
+      have hcu : P.cellUniformVec i u = (1:ℂ)/(Real.sqrt (P.cellCard i):ℂ) := by
+        unfold EquitablePartition.cellUniformVec; rw [if_pos hiu.symm]
+      rw [Pi.smul_apply, smul_eq_mul, hcu, hβ]
+      -- Now: `∑_{w∈C_i} (1/c_i) v w = (S_i/√c_i) * (1/√c_i)`.
+      by_cases hc : P.cellCard i = 0
+      · -- `c_i = 0` means cell `i` empty, contradicting `u ∈ C_i`.
+        exfalso
+        have : (Finset.univ.filter (fun w : V => P.cells w = i)).card = 0 := by
+          have := hc; unfold EquitablePartition.cellCard at this; exact_mod_cast this
+        rw [Finset.card_eq_zero] at this
+        have : u ∉ (Finset.univ.filter (fun w : V => P.cells w = i)) := by rw [this]; simp
+        exact this (by simp [hiu])
+      · have hsqrt : (Real.sqrt (P.cellCard i):ℂ) * (Real.sqrt (P.cellCard i):ℂ)
+            = (P.cellCard i : ℂ) := by
+          rw [← Complex.ofReal_mul, Real.mul_self_sqrt (P.cellCard_nonneg i)]
+        have hsne : (Real.sqrt (P.cellCard i):ℂ) ≠ 0 := by
+          rw [Ne, Complex.ofReal_eq_zero]
+          exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne (P.cellCard_nonneg i) (Ne.symm hc))
+        have hcne : (P.cellCard i : ℂ) ≠ 0 := by exact_mod_cast hc
+        -- `S_i := ∑_w if cells w = i then v w else 0`.
+        rw [← Finset.sum_filter, ← Finset.mul_sum]
+        rw [Finset.sum_filter]
+        field_simp
+        rw [← hsqrt]; ring
+    · intro j _ hj
+      -- `cellUniformVec j u = 0` because `cells u = i ≠ j`.
+      have : P.cellUniformVec j u = 0 := by
+        unfold EquitablePartition.cellUniformVec
+        rw [if_neg (show ¬ P.cells u = j from fun hh => hj hh.symm)]
+      rw [Pi.smul_apply, smul_eq_mul, this, mul_zero]
+    · intro hi; exact absurd (Finset.mem_univ i) hi
+  rw [heq]
+  exact Submodule.sum_mem _ (fun i _ =>
+    Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩))
 
 /-- **The Noether charge.**  The cell-uniform projector commutes with
 `G.adj` if and only if `P` is equitable, which is automatic for an
@@ -218,10 +465,132 @@ We state this directly with `sorry` for the proof, which routes through
 theorem cellUniformProjector_commutes
     (P : EquitablePartition G I) :
     P.cellUniformProjector * G.adj = G.adj * P.cellUniformProjector := by
-  -- A subspace `H` is `A`-invariant iff the orthogonal projector `Π_H`
-  -- commutes with `A`.  Apply to `H = P.cellUniformSubspace` using
-  -- `cellUniformSubspace_invariant`.
-  sorry
+  -- Entrywise.  Set `i = cells v`, `j = cells w`.
+  -- `(Π A) v w = (1/c_i)·∑_{z∈C_i} A z w = (1/c_i)·star(branching i w) = (1/c_i)·star(Q j i)`.
+  -- `(A Π) v w = (1/c_j)·∑_{z∈C_j} A v z = (1/c_j)·branching j v = (1/c_j)·Q i j`.
+  -- Equality is the handshake identity `c_i·Q i j = c_j·star(Q j i)`.
+  ext v w
+  set i := P.cells v with hiv
+  set j := P.cells w with hjw
+  -- LHS entry.
+  have hLHS : (P.cellUniformProjector * G.adj) v w
+      = (if P.cellCard i = 0 then 0 else (1:ℂ)/(P.cellCard i:ℂ))
+        * star (P.quotient j i) := by
+    show (∑ z, P.cellUniformProjector v z * G.adj z w) = _
+    by_cases hc : P.cellCard i = 0
+    · rw [if_pos hc, zero_mul]
+      apply Finset.sum_eq_zero
+      intro z _
+      have : P.cells z ≠ i := by
+        intro hz
+        have hne : (Finset.univ.filter (fun u : V => P.cells u = i)).Nonempty := ⟨z, by simp [hz]⟩
+        have : P.cellCard i ≠ 0 := by
+          unfold EquitablePartition.cellCard
+          simp only [ne_eq, Nat.cast_eq_zero, Finset.card_eq_zero]
+          exact Finset.nonempty_iff_ne_empty.mp hne
+        exact this hc
+      unfold EquitablePartition.cellUniformProjector
+      simp only [← hiv]
+      rw [if_neg (show ¬ P.cells z = i from this), zero_mul]
+    · rw [if_neg hc]
+      -- Collapse `Π v z` to `(1/c_i)` on cell `i`.
+      have hstep : (∑ z, P.cellUniformProjector v z * G.adj z w)
+          = (1:ℂ)/(P.cellCard i:ℂ) * (∑ z, if P.cells z = i then G.adj z w else 0) := by
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro z _
+        unfold EquitablePartition.cellUniformProjector
+        simp only [← hiv]
+        by_cases hz : P.cells z = i
+        · rw [if_pos hz, if_neg hc, if_pos hz]
+        · rw [if_neg hz, zero_mul, if_neg hz, mul_zero]
+      rw [hstep]
+      congr 1
+      -- `∑_{z∈C_i} A z w = star (branching i w) = star (Q j i)`.
+      have hcol : (∑ z, if P.cells z = i then G.adj z w else 0)
+          = star (P.branching i w) := by
+        unfold EquitablePartition.branching
+        rw [star_sum]
+        apply Finset.sum_congr rfl
+        intro z _
+        by_cases hz : P.cells z = i
+        · rw [if_pos hz, if_pos hz]
+          have := congrFun (congrFun G.herm z) w
+          rw [Matrix.conjTranspose_apply] at this
+          exact this.symm
+        · rw [if_neg hz, if_neg hz, star_zero]
+      rw [hcol]
+      congr 1
+      exact (P.quotient_apply j i w hjw.symm).symm
+  -- RHS entry.
+  have hRHS : (G.adj * P.cellUniformProjector) v w
+      = (if P.cellCard j = 0 then 0 else (1:ℂ)/(P.cellCard j:ℂ)) * P.quotient i j := by
+    show (∑ z, G.adj v z * P.cellUniformProjector z w) = _
+    by_cases hc : P.cellCard j = 0
+    · rw [if_pos hc, zero_mul]
+      apply Finset.sum_eq_zero
+      intro z _
+      have : P.cells z ≠ j := by
+        intro hz
+        have hne : (Finset.univ.filter (fun u : V => P.cells u = j)).Nonempty := ⟨z, by simp [hz]⟩
+        have : P.cellCard j ≠ 0 := by
+          unfold EquitablePartition.cellCard
+          simp only [ne_eq, Nat.cast_eq_zero, Finset.card_eq_zero]
+          exact Finset.nonempty_iff_ne_empty.mp hne
+        exact this hc
+      unfold EquitablePartition.cellUniformProjector
+      simp only [← hjw]
+      rw [if_neg (show ¬ P.cells w = P.cells z by rw [← hjw]; exact fun hh => this hh.symm),
+        mul_zero]
+    · rw [if_neg hc]
+      have hstep : (∑ z, G.adj v z * P.cellUniformProjector z w)
+          = (1:ℂ)/(P.cellCard j:ℂ) * (∑ z, if P.cells z = j then G.adj v z else 0) := by
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro z _
+        unfold EquitablePartition.cellUniformProjector
+        by_cases hz : P.cells z = j
+        · rw [if_pos (show P.cells w = P.cells z by rw [← hjw, hz]), if_neg (show P.cellCard (P.cells z) ≠ 0 by rw [hz]; exact hc), if_pos hz]
+          rw [hz]; ring
+        · rw [if_neg (show ¬ P.cells w = P.cells z by rw [← hjw]; exact fun hh => hz hh.symm), mul_zero, if_neg hz, mul_zero]
+      rw [hstep]
+      congr 1
+      -- `∑_{z∈C_j} A v z = branching j v = Q i j`.
+      have : (∑ z, if P.cells z = j then G.adj v z else 0) = P.branching j v := rfl
+      rw [this, P.quotient_apply i j v hiv.symm]
+  rw [hLHS, hRHS]
+  -- Handshake: `c_i · Q i j = c_j · star (Q j i)`  (cell cards real).
+  have hand := P.quotient_handshake i j
+  -- hand : (c_i : ℂ) * Q i j = star ((c_j:ℂ) * Q j i)
+  rw [star_mul', show star ((P.cellCard j : ℝ) : ℂ) = ((P.cellCard j : ℝ):ℂ) from
+    Complex.conj_ofReal _] at hand
+  -- hand : (c_i:ℂ) * Q i j = star (Q j i) * (c_j:ℂ)
+  -- Empty cells make the corresponding quotient row/column vanish.
+  have hQempty : ∀ a b : I, P.cellCard a = 0 → P.quotient a b = 0 := by
+    intro a b ha
+    unfold EquitablePartition.quotient
+    rw [dif_neg]
+    rintro ⟨x, hx⟩
+    have hne : (Finset.univ.filter (fun u : V => P.cells u = a)).Nonempty := ⟨x, by simp [hx]⟩
+    have : P.cellCard a ≠ 0 := by
+      unfold EquitablePartition.cellCard
+      simp only [ne_eq, Nat.cast_eq_zero, Finset.card_eq_zero]
+      exact Finset.nonempty_iff_ne_empty.mp hne
+    exact this ha
+  by_cases hci : P.cellCard i = 0
+  · rw [if_pos hci]
+    by_cases hcj : P.cellCard j = 0
+    · rw [if_pos hcj]; ring
+    · rw [if_neg hcj, zero_mul, hQempty i j hci, mul_zero]
+  · by_cases hcj : P.cellCard j = 0
+    · rw [if_neg hci, if_pos hcj, hQempty j i hcj, star_zero, mul_zero, zero_mul]
+    · rw [if_neg hci, if_neg hcj]
+      have hcic : (P.cellCard i : ℂ) ≠ 0 := by exact_mod_cast hci
+      have hcjc : (P.cellCard j : ℂ) ≠ 0 := by exact_mod_cast hcj
+      rw [div_mul_eq_mul_div, div_mul_eq_mul_div, div_eq_div_iff hcic hcjc]
+      -- Goal: `(1 * star (Q j i)) * c_j = (1 * Q i j) * c_i`.
+      rw [one_mul, one_mul]
+      linear_combination -hand
 
 /-- Conversely: if a partition `Q` (not assumed equitable) has the
 property that its associated cell-uniform projector commutes with
@@ -283,7 +652,15 @@ theorem noether_equitable
   -- `Π_P` commutes with `G.adj` by `cellUniformProjector_commutes`, hence
   -- commutes with every analytic function of `G.adj`, in particular with
   -- `exp(-it · G.adj)`.
-  sorry
+  have hC : Commute P.cellUniformProjector G.adj := P.cellUniformProjector_commutes
+  -- Commutes with the scaled adjacency, hence with its exponential.
+  have hCs : Commute P.cellUniformProjector (-(Complex.I * (t : ℂ)) • G.adj) :=
+    hC.smul_right _
+  have := hCs.exp_right
+  -- `evolve t = exp (-(I t) • adj)`.
+  show P.cellUniformProjector * G.evolve t = G.evolve t * P.cellUniformProjector
+  unfold WeightedGraph.evolve
+  exact this
 
 /-- **Conservation law.**  The expectation of `Π_P` is invariant under
 the quantum walk: for any initial state `ψ` and any time `t`,
@@ -300,7 +677,22 @@ theorem cellUniform_expectation_conserved
     star ((G.evolve t).mulVec ψ) ⬝ᵥ
       P.cellUniformProjector.mulVec ((G.evolve t).mulVec ψ)
     = star ψ ⬝ᵥ P.cellUniformProjector.mulVec ψ := by
-  sorry
+  set U := G.evolve t with hU
+  set Pi := P.cellUniformProjector with hPi
+  -- Move `Π` past `U`: `Π *ᵥ (U *ᵥ ψ) = U *ᵥ (Π *ᵥ ψ)`.
+  have hcomm : Pi.mulVec (U.mulVec ψ) = U.mulVec (Pi.mulVec ψ) := by
+    rw [Matrix.mulVec_mulVec, Matrix.mulVec_mulVec]
+    congr 1
+    -- `Π * U = U * Π` is `noether_equitable`.
+    exact P.noether_equitable t
+  rw [hcomm]
+  -- `star (U *ᵥ ψ) = star ψ ᵥ* Uᴴ`.
+  rw [Matrix.star_mulVec]
+  -- `(star ψ ᵥ* Uᴴ) ⬝ᵥ (U *ᵥ φ) = ((star ψ ᵥ* Uᴴ) ᵥ* U) ⬝ᵥ φ`.
+  rw [Matrix.dotProduct_mulVec, Matrix.vecMul_vecMul]
+  -- `Uᴴ * U = 1`.
+  rw [show Uᴴ * U = (1 : Matrix V V ℂ) from G.evolve_unitary t]
+  rw [Matrix.vecMul_one]
 
 /-! ### 5. Linear-momentum analogue: refined conservation per
 eigenspace. -/
@@ -324,14 +716,28 @@ This is the **linear-momentum analogue** of the Bachman–Tamon
 conservation law:  each eigenspace of the reduced Hamiltonian is a
 sector with its own conserved quasi-momentum. -/
 theorem noether_per_eigenvalue
-    (P : EquitablePartition G I) (lam : ℝ) :
+    (P : EquitablePartition G I) (lam : ℝ)
+    -- HYPOTHESIS (makes the conclusion non-vacuous): `λ` is genuinely realised
+    -- in the cell-uniform sector — there is a nonzero cell-uniform `λ`-eigenvector
+    -- of `G.adj`.  Without this the statement would be discharged by the trivial
+    -- `Plam = 0`; with it, the conclusion forces a *nonzero* spectral projector.
+    (w : V → ℂ) (hw : w ≠ 0) (hwCU : w ∈ P.cellUniformSubspace)
+    (hwEig : G.adj.mulVec w = (lam : ℂ) • w) :
     ∃ (Plam : Matrix V V ℂ),
       Plam.IsHermitian ∧
       Plam * Plam = Plam ∧
       Plam * G.adj = G.adj * Plam ∧
-      ∀ v, Plam.mulVec v ∈ P.cellUniformSubspace := by
-  -- Construct `Plam` as the spectral projector of `P.quotient` at `λ`,
-  -- inflated to `V × V` via the cell-uniform isometry.
+      (∀ v, Plam.mulVec v ∈ P.cellUniformSubspace) ∧
+      -- `Plam` fixes the given `λ`-eigenvector (so `Plam ≠ 0`: the zero matrix
+      -- fails `Plam *ᵥ w = w` since `w ≠ 0`), and acts as `λ` on its range.
+      Plam.mulVec w = w ∧
+      (∀ v, G.adj.mulVec (Plam.mulVec v) = (lam : ℂ) • Plam.mulVec v) := by
+  -- DEEP / honest sorry.  The genuine witness is the rank-`m_λ` spectral
+  -- projector of `P.quotient` at `λ`, inflated via the cell-uniform isometry;
+  -- its construction needs the spectral decomposition of the (Hermitian)
+  -- symmetric quotient restricted to the cell-uniform subspace, which is not
+  -- developed here.  The `Plam *ᵥ w = w` clause (with `w ≠ 0`) rules out the
+  -- former trivial `Plam = 0` witness, so this is an honest deep sorry.
   sorry
 
 /-- **Charge count.**  The number of independent phase-conservation
@@ -396,8 +802,13 @@ theorem generic_noise_breaks_charge
     (P : EquitablePartition G I) :
     ∃ (L : Matrix V V ℂ → Matrix V V ℂ) (ρ : Matrix V V ℂ),
       P.cellUniformProjector * L ρ ≠ L ρ * P.cellUniformProjector := by
-  -- A single-vertex dephasing Lindblad with a non-cell-symmetric jump
-  -- operator suffices.  We do not construct it explicitly.
+  -- NOTE: false as stated for *every* partition `P`.  For the discrete
+  -- partition (all cells singletons) the projector is the identity matrix,
+  -- `Π = 1`, which commutes with `L ρ` for every `L`, `ρ`; hence no
+  -- non-commuting witness exists in that case.  The intended statement needs
+  -- a nontriviality hypothesis on `Π` (a genuinely coarse partition, so that
+  -- `Π ≠ 1`), under which a single-vertex dephasing jump breaks commutation.
+  -- Honest sorry pending that hypothesis.
   sorry
 
 /-! ### 7. Engineering: protected subspaces and error correction.
@@ -427,9 +838,14 @@ theorem cellUniform_is_decoherence_free
     (ρ : Matrix V V ℂ)
     (hρ : P.cellUniformProjector * ρ * P.cellUniformProjector = ρ) :
     P.cellUniformProjector * (L ρ) * P.cellUniformProjector = L ρ := by
-  -- Sketch: by `hL` we can commute `Π_P` past `L`, then use `hρ` and
-  -- the idempotence `Π_P · Π_P = Π_P`.  Routine but algebraically
-  -- heavy; left as `sorry`.
+  -- NOTE: false as stated.  From `hL` and idempotence one gets only
+  -- `Π · (L ρ) · Π = Π · (L ρ)` (commute the right `Π` past `L ρ`, then
+  -- collapse `Π · Π = Π`); to reach `L ρ` one further needs `Π · (L ρ) = L ρ`,
+  -- i.e. that `L ρ` already lives in the *range* of `Π`.  Commutation of `L`
+  -- with `Π` plus `Π ρ Π = ρ` does **not** force that: a generic
+  -- `Π`-commuting super-operator can map the cell-uniform sector into its
+  -- orthogonal complement.  Provable only with the extra hypothesis
+  -- `Π · (L ρ) = L ρ` (range-preservation), which is not assumed.  Honest sorry.
   sorry
 
 /-! ### 8. Continuum limit:  Tower-4 graphon Lindbladians.
@@ -484,9 +900,8 @@ theorem noether_lifts_to_graphon
   -- At each level this is `cellUniform_expectation_conserved`; the uniform-in-`n`
   -- conservation is the finite shadow of the graphon cell-mass conservation,
   -- which passes to the cut-norm limit by continuity of the trace pairing.
-  -- The per-level fact `cellUniform_expectation_conserved` is itself an honest
-  -- theorem-sorry above; this lift therefore inherits an honest sorry.
-  sorry
+  intro n
+  exact (Pseq n).cellUniform_expectation_conserved (ψseq n) t
 
 /-! ### Summary remark.
 

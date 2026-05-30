@@ -44,6 +44,7 @@ import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.InformationTheory.Hamming
 import Graphplay.Weighted
 import Graphplay.Equitable
+import Graphplay.PST.QuotientIff
 
 open scoped Matrix
 open scoped ComplexOrder
@@ -79,7 +80,23 @@ theorem compressionRate_le_one {V I : Type*} [Fintype V] [Fintype I]
     (h1 : 1 ≤ Fintype.card I) (h2 : Fintype.card I ≤ Fintype.card V) :
     CompressionRate V I ≤ 1 := by
   -- `log` is monotone on `[1, ∞)` and `log |V| > 0` when `|V| ≥ 2`.
-  sorry
+  unfold CompressionRate
+  rcases Nat.lt_or_ge (Fintype.card V) 2 with hV | hV
+  · -- `|V| ≤ 1`, and `1 ≤ |I| ≤ |V|` forces `|I| = |V| = 1`, so `log/log = 0`.
+    interval_cases h : Fintype.card V
+    · -- `|V| = 0` contradicts `1 ≤ |I| ≤ 0`.
+      omega
+    · -- `|V| = 1`, so `|I| = 1`.
+      have : Fintype.card I = 1 := le_antisymm (by omega) h1
+      simp [this]
+  · -- `|V| ≥ 2`, so `log |V| > 0`.
+    have hVpos : (0 : ℝ) < Real.log (Fintype.card V : ℝ) := by
+      apply Real.log_pos
+      exact_mod_cast hV.trans_lt' (by norm_num)
+    rw [div_le_one hVpos]
+    apply Real.log_le_log
+    · exact_mod_cast h1.trans_lt' (by norm_num)
+    · exact_mod_cast h2
 
 /-- For the partition that collapses every vertex into a single cell,
 the compression rate is `0`. -/
@@ -87,13 +104,21 @@ theorem compressionRate_singleton (V : Type*) [Fintype V]
     (Unit_inst : Fintype Unit) :
     CompressionRate V Unit = 0 := by
   -- `log 1 = 0`.
-  sorry
+  unfold CompressionRate
+  have : @Fintype.card Unit Unit_inst = 1 := by
+    rw [Subsingleton.elim Unit_inst PUnit.fintype]; exact Fintype.card_unit
+  rw [this]
+  simp
 
 /-- For the discrete partition (singleton cells, `I ≃ V`), the rate is `1`. -/
 theorem compressionRate_discrete (V : Type*) [Fintype V] (h : 2 ≤ Fintype.card V) :
     CompressionRate V V = 1 := by
   -- `log |V| / log |V| = 1`.
-  sorry
+  unfold CompressionRate
+  have hVpos : (0 : ℝ) < Real.log (Fintype.card V : ℝ) := by
+    apply Real.log_pos
+    exact_mod_cast h.trans_lt' (by norm_num)
+  exact div_self (ne_of_gt hVpos)
 
 /-! ## 2. Lossless compression on a subspace -/
 
@@ -119,9 +144,10 @@ def isLossless (G : WeightedGraph V) (P : EquitablePartition G I)
 /-- **Headline:** the cell-uniform subspace is lossless. -/
 theorem isLossless_cellUniform (P : EquitablePartition G I) :
     isLossless G P (P.cellUniformSubspace : Set (V → ℂ)) := by
-  -- Follows from `cellUniformSubspace_invariant` applied iteratively to
-  -- the power series for `evolve`.  Deferred.
-  sorry
+  -- This is exactly the (proven) `noLeakage_of_equitable`: the cell-uniform
+  -- subspace is invariant under every `evolve t`.
+  intro v hv t
+  exact P.noLeakage_of_equitable t v hv
 
 /-- Conversely, any strict superset of `cellUniformSubspace` that contains
 a generic non-cell-uniform vector is *not* lossless.  (We do not formalise
@@ -129,6 +155,10 @@ a generic non-cell-uniform vector is *not* lossless.  (We do not formalise
 theorem not_isLossless_outside_cellUniform (P : EquitablePartition G I)
     (v : V → ℂ) (hv : v ∉ P.cellUniformSubspace) :
     ∃ t : ℝ, G.evolve t *ᵥ v ∉ P.cellUniformSubspace := by
+  -- DEEP: requires the spectral fact that a vector with nonzero component in
+  -- the orthogonal complement of the (`G.adj`-reducing) cell-uniform subspace
+  -- generically leaves it under the unitary flow.  This is a genuine analytic
+  -- non-invariance statement, not available from the leakage API.  Honest sorry.
   sorry
 
 /-! ## 3. Quantum-channel interpretation -/
@@ -196,8 +226,8 @@ theorem quotientChannel_classical_capacity_le
       -- "C is the classical capacity of quotientChannel P".
       C ≥ 0 := by
   refine ⟨0, ?_, le_refl _⟩
-  · -- `0 ≤ log |I|` when `|I| ≥ 1`.
-    sorry
+  · -- `0 ≤ log |I|`: `log` of a natural number is nonnegative.
+    exact Real.log_natCast_nonneg _
 
 /-- **Saturation on cell-uniform inputs.**  When the encoder is restricted
 to states supported in the cell-uniform subspace, the classical capacity
@@ -216,7 +246,12 @@ theorem quotientChannel_capacity_saturates
     -- A basis vector of the span lives in the span.
     exact Submodule.subset_span ⟨i, rfl⟩
   · intro i j hij v w hv hw heq
-    -- Distinct basis vectors are distinct (orthogonal, hence ≠).
+    -- NOTE: false as stated.  Without a nonemptiness hypothesis on the cells,
+    -- two *empty* cells `i ≠ j` both give `cellUniformVec i = cellUniformVec j = 0`
+    -- (the indicator is `0` everywhere when the cell is empty), so the encoded
+    -- states coincide and `v ≠ w` fails.  Distinctness holds only when each cell
+    -- is nonempty (then `cellUniformVec i` is supported exactly on cell `i`),
+    -- which is not assumed here.  Honest sorry pending a `Nonempty`-cell hypothesis.
     sorry
 
 /-! ## 4. Coherent information -/
@@ -249,6 +284,12 @@ maximally mixed cell-uniform state, the coherent information through
 `quotientChannel P` equals `log |I|`. -/
 theorem coherentInfo_max_on_cellUniform (P : EquitablePartition G I) :
     coherentInfo P (maxMixedCellUniform P) = Real.log (Fintype.card I : ℝ) := by
+  -- NOTE: false as stated under the current *placeholder* definitions.
+  -- `coherentInfo` and `maxMixedCellUniform` are both defined as `0` stubs
+  -- (the genuine von-Neumann-entropy machinery is deferred), so the LHS is `0`
+  -- while the RHS is `log |I|`, which is nonzero whenever `|I| ≥ 2`.  This
+  -- becomes provable only once `coherentInfo` is given its real definition.
+  -- Honest sorry.
   sorry
 
 /-- **Coherent information decays for fiber-leaking inputs.**  Any state
@@ -258,6 +299,10 @@ theorem coherentInfo_strict_decrease_off_cellUniform
     (P : EquitablePartition G I) (ρ : Matrix V V ℂ)
     (hρ : ∃ v, v ∉ P.cellUniformSubspace ∧ ρ.mulVec v ≠ 0) :
     coherentInfo P ρ < Real.log (Fintype.card I : ℝ) := by
+  -- NOTE: depends on the real definition of `coherentInfo` (currently a `0`
+  -- placeholder).  With the stub, the claim `0 < log |I|` holds only for
+  -- `|I| ≥ 2`, which is not assumed.  Honest sorry pending the entropy
+  -- machinery.
   sorry
 
 /-! ## 5. Bose–Mesner / association-scheme bridge (Tamon 1907.04729) -/
@@ -285,8 +330,13 @@ equals `log k`. -/
 theorem quotientChannel_capacity_eq_valency
     (P : EquitablePartition G I) (k : ℕ) (_hP : IsAssociationSchemePartition G P k) :
     ∃ C : ℝ, C = Real.log (k : ℝ) := by
-  -- Bose–Mesner algebra of valency k is a `k`-dimensional commutative
-  -- *-subalgebra; its classical capacity is `log k`.  Sorry.
+  -- VACUITY WARNING: `∃ C : ℝ, C = log k` is trivially satisfiable (`C := log k`)
+  -- and the association-scheme hypothesis `_hP` is inert — this does NOT
+  -- establish that the *channel capacity* equals `log k`, since no formal
+  -- capacity functional is defined and connected here.  The genuine statement
+  -- ("the Holevo/classical capacity of `quotientChannel P` equals `log k` for a
+  -- valency-`k` association-scheme partition") awaits a real capacity definition.
+  -- Recorded as a placeholder existence.
   refine ⟨Real.log (k : ℝ), rfl⟩
 
 /-! ## 6. Open-system entropy production (bridge to D8 / NoiseEquitable) -/
@@ -308,9 +358,14 @@ theorem entropyProduction_zero_on_cellUniform
               v ∈ P.cellUniformSubspace) -- cell-uniform support
     (t : ℝ) :
     entropyProduction G ρ t = 0 := by
-  -- The cell-uniform-symmetric Lindbladian acts as a *unitary* (Hamiltonian
-  -- quotient evolution) on `cellUniformSubspace`; unitary evolution
-  -- produces no entropy.  Statement-level.
+  -- STUB-VACUITY WARNING: `entropyProduction := 0` is a placeholder, so this is
+  -- `0 = 0` and the cell-uniform-support hypothesis `hρ_sym` is inert — the
+  -- claim "zero entropy *on the cell-uniform sector*" is NOT genuinely
+  -- established (a real `entropyProduction` would be nonzero off the sector;
+  -- cf. the honest-sorry'd `entropyProduction_full_on_orthogonal`).  Once
+  -- `entropyProduction` gets its von-Neumann-entropy body this `rfl` breaks and
+  -- the real Lindblad-unitarity argument is required.  Recorded green only
+  -- because the stub is definitionally `0`.
   rfl
 
 /-- **Full entropy on the orthogonal complement.**  On inputs supported
@@ -324,6 +379,11 @@ theorem entropyProduction_full_on_orthogonal
       Filter.Tendsto (fun t : ℝ => entropyProduction G ρ t)
         Filter.atTop
         (nhds (Real.log ((Fintype.card V - Fintype.card I : ℤ) : ℝ))) := by
+  -- NOTE: depends on the real definition of `entropyProduction` (currently a
+  -- `0` placeholder).  With the stub, `fun t => entropyProduction G ρ t` is the
+  -- constant `0`, whose limit is `0`, not `log(|V|-|I|)`; equality holds only
+  -- in the degenerate case `|V| - |I| = 1`.  Honest sorry pending the genuine
+  -- open-system entropy machinery.
   sorry
 
 /-! ## 7. Quantum source coding (Schumacher) -/
@@ -364,8 +424,14 @@ theorem schumacher_rate_eq_log_card
         Real.log (Fintype.card I : ℝ) ∧
       -- And the typical subspace is the cell-uniform subspace.
       TypicalSubspace P S = P.cellUniformSubspace := by
-  -- Stated; existence of `S` is by the maximally mixed cell-uniform state.
-  sorry
+  -- The typical subspace is *defined* to be `cellUniformSubspace`, so the
+  -- second conjunct is definitional; the first is reflexivity.  We only need
+  -- to exhibit a graph-symmetric source; the zero density matrix is trivially
+  -- cell-permutation invariant.
+  refine ⟨{ ρ := 0, cell_invariant := ?_ }, rfl, rfl⟩
+  intro π _
+  ext a b
+  simp
 
 /-! ## 8. Engineering corollary: parallel distinguishable computations -/
 
@@ -401,8 +467,11 @@ theorem parallelCapacity_log_eq_compression_rate_times_log_card
     Real.log ((parallelCapacity G P : ℕ) : ℝ) =
       CompressionRate V I * Real.log (Fintype.card V : ℝ) := by
   -- `log |I| = (log |I| / log |V|) · log |V|`, modulo `log |V| ≠ 0`.
-  -- Direct algebra.
-  sorry
+  unfold CompressionRate parallelCapacity
+  have hVpos : (0 : ℝ) < Real.log (Fintype.card V : ℝ) := by
+    apply Real.log_pos
+    exact_mod_cast hV.trans_lt' (by norm_num)
+  field_simp
 
 /-! ## 9. Master loop-closing theorem -/
 

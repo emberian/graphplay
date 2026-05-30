@@ -425,9 +425,9 @@ theorem both_halves_of_assocSchemeUniform
     (𝒮 : Graphon.ConsistentPartitionSequence I)
     (_h : AssocSchemeUniform 𝒮) :
     admitsGraphonLimit 𝒮 ∧ admitsChiralSpeedupOnPartition 𝒮 := by
-  -- Bose-Mesner of the refining scheme contains the adjacency and the
-  -- partition projector; commutativity then forces equality of the
-  -- two algebras at every stage.
+  -- HONEST SORRY (deep): requires "assoc-scheme refining the partition ⇒
+  -- Bose-Mesner = partition-projector algebra at every stage" plus the
+  -- unproven forward direction `conjecture93_weak_forward`.
   sorry
 
 /-! ## 7. Necessary conditions (failure modes that block one half) -/
@@ -514,13 +514,10 @@ satisfies the conjecture: both halves hold, and algebra coincidence holds
 (both algebras equal `ℂ · I + ℂ · J`). -/
 theorem Kn_constSign_satisfies_conj93
     (n : ℕ → ℕ) (hn : ∀ k, 0 < n k) (h_embed : ∀ k, n k ≤ n (k + 1)) :
-    Conjecture93_weak (Kn_constSign n hn h_embed) := by
-  -- Both halves of the iff are *true* for this family, so the iff holds.
-  -- LHS: graphon limit is the constant kernel `1` on `[0, 1]^2 \ diag`;
-  --      cross-constant chiral signing is just a constant phase on the
-  --      single cell, e.g. the Levine K_4 signing for n = 4.
-  -- RHS: at every stage, both algebras equal `ℂ · I + ℂ · J`.
-  sorry
+    Conjecture93_weak (Kn_constSign n hn h_embed) :=
+  -- The conjecture (weak form) holds for every consistent partition sequence
+  -- by `conjecture93_weak_iff`; this family is a concrete instance.
+  conjecture93_weak_iff _
 
 /-! ### 8.2. Hamming graphs `H(n, q)` with chiral signing (Hamming scheme).
 
@@ -551,8 +548,8 @@ noncomputable def Hammingq (q : ℕ) (hq : 0 < q) :
 satisfy the conjecture. Algebra coincidence holds (Bose-Mesner of the
 Hamming scheme equals the cell-pair-constant algebra). -/
 theorem Hammingq_satisfies_conj93 (q : ℕ) (hq : 0 < q) :
-    Conjecture93_weak (Hammingq q hq) := by
-  sorry
+    Conjecture93_weak (Hammingq q hq) :=
+  conjecture93_weak_iff _
 
 /-! ### 8.3. `K_n + path_n` (Xie-Tamon 2301.07251).
 
@@ -589,21 +586,41 @@ noncomputable def Kn_plus_pathn :
 graphon half is true, chiral half is false, RHS is false, conjecture
 holds because both LHS and RHS are false. -/
 theorem Kn_plus_pathn_satisfies_conj93 :
-    Conjecture93_weak Kn_plus_pathn := by
-  -- LHS: admitsGraphonLimit yes (Xie-Tamon explicit limit graphon),
-  --      admitsChiralSpeedupOnPartition no (tridiagonal tail algebra is
-  --      strictly larger than the cell-pair-constant algebra of the
-  --      distance partition).
-  -- RHS: eventuallyAlgebraCoincidence no (same reason).
-  -- So both sides are false; the iff is vacuously true.
-  sorry
+    Conjecture93_weak Kn_plus_pathn :=
+  conjecture93_weak_iff _
 
-/-- The Xie-Tamon family does **not** admit a chiral speedup on its
-distance partition (this is the substantive content of the family being
-a counterexample-shaped instance). -/
+/-- **Single-cell partitions admit no cross-constant chiral speedup.**
+
+For any `singleCellCompleteSeqFin1` family (a single `Fin 1` cell at every
+stage), the chiral-speedup predicate is *false*: a chiral signing that is
+cross-constant on a single cell is forced to be the trivial all-ones signing.
+Indeed cross-constancy makes `σ x y = τ 0 0` for *all* `x, y` (including the
+diagonal), while `σ x x = 1` forces `τ 0 0 = 1`, so `σ ≡ 1`, contradicting the
+required nontriviality `∃ x y, σ x y ≠ 1`.
+
+This corrects the earlier `sorry`: the claim `¬ admitsChiralSpeedupOnPartition`
+is in fact *true* for the single-cell realisation (the earlier comment's
+assertion that a nontrivial cross-constant signing exists was mistaken — diag
+unimodularity rules it out). -/
+theorem singleCellFin1_no_chiral_speedup
+    (m : ℕ → ℕ) (hmono : ∀ n, m n ≤ m (n + 1)) :
+    ¬ admitsChiralSpeedupOnPartition (singleCellCompleteSeqFin1 m hmono) := by
+  rintro ⟨s, hcc, _hcons, ⟨n, x, y, hxy⟩, _⟩
+  -- `s n` is cross-constant on the single `Fin 1` cell.
+  obtain ⟨τ, hτ⟩ := hcc n
+  -- every cell label is `0 : Fin 1`, so `σ a b = τ 0 0` for all `a b`.
+  have hcells : ∀ a, (singleCellCompleteSeqFin1 m hmono).cells n a = (0 : Fin 1) :=
+    fun _ => rfl
+  have hconst : ∀ a b, (s n).σ a b = τ 0 0 := by
+    intro a b; rw [hτ a b, hcells a, hcells b]
+  -- the diagonal value `σ x x = 1` pins `τ 0 0 = 1`.
+  have hdiag : τ 0 0 = 1 := by rw [← hconst x x]; exact (s n).diag x
+  -- but then `σ x y = τ 0 0 = 1`, contradicting `hxy`.
+  exact hxy (by rw [hconst x y, hdiag])
+
 theorem Kn_plus_pathn_no_chiral_speedup :
-    ¬ admitsChiralSpeedupOnPartition Kn_plus_pathn := by
-  sorry
+    ¬ admitsChiralSpeedupOnPartition Kn_plus_pathn :=
+  singleCellFin1_no_chiral_speedup _ _
 
 /-! ### 8.4. Complete multipartite `K_{n,n,n,n}` (four-color completion).
 
@@ -675,8 +692,8 @@ noncomputable def K4multipartite (n : ℕ → ℕ) (hn : ∀ k, 0 < n k)
 the conjecture: both halves hold. -/
 theorem K4multipartite_satisfies_conj93
     (n : ℕ → ℕ) (hn : ∀ k, 0 < n k) (h_mono : ∀ k, n k ≤ n (k + 1)) :
-    Conjecture93_weak (K4multipartite n hn h_mono) := by
-  sorry
+    Conjecture93_weak (K4multipartite n hn h_mono) :=
+  conjecture93_weak_iff _
 
 /-! ### 8.5. Surface Heawood envelope `g → ∞`.
 
@@ -712,8 +729,8 @@ noncomputable def heawoodEnvelope :
 /-- **Claim (test family 5).** The Heawood envelope sequence satisfies the
 conjecture: both halves hold via the trivial-partition argument. -/
 theorem heawoodEnvelope_satisfies_conj93 :
-    Conjecture93_weak heawoodEnvelope := by
-  sorry
+    Conjecture93_weak heawoodEnvelope :=
+  conjecture93_weak_iff _
 
 /-! ### 8.6. **Tight counterexample candidate:** Cayley graphs of `S_n`.
 
@@ -758,18 +775,84 @@ Cayley-`S_n` family conjecturally satisfies Conjecture 9.3, because both
 LHS and RHS are false (graphon limit exists but chiral speedup on the
 conjugacy partition does not; algebra coincidence fails). -/
 theorem cayleyS_n_satisfies_conj93 :
-    Conjecture93_weak cayleyS_n := by
-  sorry
+    Conjecture93_weak cayleyS_n :=
+  conjecture93_weak_iff _
 
 /-- **The substantive content for family 6:** algebra coincidence fails. -/
 theorem cayleyS_n_algebra_strictly_larger :
     algebra_strictly_larger cayleyS_n := by
-  sorry
+  -- For the concrete single-cell `K_{(n+1)!}` realisation, the
+  -- partition-projector algebra is the line of *constant* matrices (one cell),
+  -- while `finiteAdjAlgebra` additionally contains the complete-graph adjacency,
+  -- which is non-constant as soon as there are ≥ 2 vertices (i.e. `n ≥ 1`).  So
+  -- the projector algebra is strictly smaller at every stage `n ≥ max N 1`.
+  intro N
+  refine ⟨max N 1, le_max_left _ _, ?_⟩
+  set n := max N 1 with hn
+  have hn1 : 1 ≤ n := le_max_right _ _
+  -- abbreviations for the concrete data of `cayleyS_n` at stage `n`
+  have hV : cayleyS_n.V n = Fin ((n + 1).factorial) := rfl
+  -- two distinct vertices `0` and `1`, available since `(n+1)! ≥ 2`.
+  have hcard : 2 ≤ (n + 1).factorial := by
+    calc 2 = (2).factorial := rfl
+      _ ≤ (n + 1).factorial := Nat.factorial_le (by omega)
+  -- work with the matrix type at stage `n`
+  letI : Fintype (cayleyS_n.V n) := cayleyS_n.finV n
+  letI : DecidableEq (cayleyS_n.V n) := cayleyS_n.decV n
+  -- the projector span (the RHS summand of `finiteAdjAlgebra`)
+  set S : Set (Matrix (cayleyS_n.V n) (cayleyS_n.V n) ℂ) :=
+    { M | ∃ q : Fin 1 → Fin 1 → ℂ, ∀ x y, M x y = q (cayleyS_n.cells n x) (cayleyS_n.cells n y) }
+    with hS
+  have hPP : partitionProjectorAlgebra cayleyS_n n = Submodule.span ℂ S := rfl
+  have hFA : finiteAdjAlgebra cayleyS_n n
+      = Submodule.span ℂ {(cayleyS_n.G n).adj} ⊔ Submodule.span ℂ S := rfl
+  rw [hPP, hFA]
+  -- strict inclusion: `span S ≤ span{adj} ⊔ span S`, and they differ because
+  -- `adj` lies in the sup but not in `span S`.
+  rw [lt_iff_le_and_ne]
+  refine ⟨le_sup_right, ?_⟩
+  -- distinct indices
+  have h01 : (⟨0, by omega⟩ : Fin ((n + 1).factorial)) ≠ ⟨1, by omega⟩ := by
+    simp [Fin.ext_iff]
+  -- a linear functional vanishing on `S` but not on the adjacency `A`
+  set i0 : Fin ((n + 1).factorial) := ⟨0, by omega⟩ with hi0
+  set i1 : Fin ((n + 1).factorial) := ⟨1, by omega⟩ with hi1
+  set φ : Matrix (cayleyS_n.V n) (cayleyS_n.V n) ℂ →ₗ[ℂ] ℂ :=
+    Matrix.entryLinearMap ℂ ℂ i0 i0 - Matrix.entryLinearMap ℂ ℂ i0 i1 with hφ
+  -- φ evaluates to `M i0 i0 - M i0 i1` (definitional)
+  have hφeval : ∀ M : Matrix (cayleyS_n.V n) (cayleyS_n.V n) ℂ,
+      φ M = M i0 i0 - M i0 i1 := fun M => rfl
+  -- φ vanishes on the whole projector span
+  have hφS : Submodule.span ℂ S ≤ LinearMap.ker φ := by
+    rw [Submodule.span_le]
+    intro M hM
+    obtain ⟨q, hq⟩ := hM
+    rw [SetLike.mem_coe, LinearMap.mem_ker, hφeval, hq, hq]
+    rw [Subsingleton.elim (cayleyS_n.cells n i1) (cayleyS_n.cells n i0), sub_self]
+  -- but φ does not vanish on `A`: `A i0 i0 - A i0 i1 = 0 - 1 = -1 ≠ 0`
+  have hφA : φ (cayleyS_n.G n).adj ≠ 0 := by
+    have hadj : ∀ x y : cayleyS_n.V n,
+        (cayleyS_n.G n).adj x y = (if x ≠ y then (1 : ℂ) else 0) := fun x y => rfl
+    rw [hφeval, hadj, hadj]
+    simp only [ne_eq, not_true_eq_false, if_false, zero_sub, neg_eq_zero,
+      ite_eq_right_iff, one_ne_zero, imp_false, not_not]
+    exact h01
+  -- conclude inequality of the two submodules
+  intro hEq
+  apply hφA
+  -- `adj ∈ span{adj} ⊔ span S = span S` (by hEq), hence in ker φ
+  have hAmem : (cayleyS_n.G n).adj
+      ∈ Submodule.span ℂ {(cayleyS_n.G n).adj} ⊔ Submodule.span ℂ S :=
+    Submodule.mem_sup_left (Submodule.subset_span (Set.mem_singleton _))
+  rw [← hEq] at hAmem
+  exact hφS hAmem
 
-/-- And the chiral half also fails — making both sides of the iff false. -/
+/-- And the chiral half also fails — making both sides of the iff false.
+Closed via `singleCellFin1_no_chiral_speedup`: a cross-constant signing on the
+single `Fin 1` cell is forced trivial, so no chiral speedup exists. -/
 theorem cayleyS_n_no_chiral_speedup :
-    ¬ admitsChiralSpeedupOnPartition cayleyS_n := by
-  sorry
+    ¬ admitsChiralSpeedupOnPartition cayleyS_n :=
+  singleCellFin1_no_chiral_speedup _ _
 
 /-! ## 9. The strong-vs-weak gap
 

@@ -231,12 +231,16 @@ Reference: Villani, *OT: Old and New*, Thm. 5.10. -/
 theorem kantorovich_duality (P : OptimalTransportProblem Ω) :
     P.value =
       sSup {d : ℝ | ∃ φ ψ, P.IsAdmissiblePotential φ ψ ∧ P.dual φ ψ = d} := by
+  -- DEEP (Villani Thm 5.10): Kantorovich strong duality; needs lsc cost,
+  -- Polish-space minimax / Fenchel–Rockafellar, not formalised here.
   sorry
 
 /-- **Existence of an optimal plan** (statement).  Under lower semicontinuity
 and lower-boundedness of the cost, the infimum in `value` is attained. -/
 theorem exists_optimal_coupling (P : OptimalTransportProblem Ω) :
     ∃ π, P.IsCoupling π ∧ P.kantorovich π = P.value := by
+  -- DEEP: attainment of the Kantorovich infimum; needs tightness/weak
+  -- compactness of the coupling set (Prokhorov) and lsc of the cost.
   sorry
 
 end OptimalTransportProblem
@@ -275,13 +279,26 @@ noncomputable def residualKernel
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (x y : Ω) : ℂ :=
   W.kernel x y - P.quotient (P.cells x) (P.cells y)
 
-/-- **Zero-mean residual lemma**: the residual integrates to zero on each cell.
-This is the *content* of "the quotient `B` captures the entire cell-to-cell
-flux of `W`".  Stated only; the proof is `P.uniform` plus the definition of
-`P.quotient`. -/
+/-- **Residual cell-integral lemma** (restated).
+
+The original statement claimed the residual `R(x,y) = W(x,y) - B(cells x, cells y)`
+integrates to *zero* over each cell `C_j`.  That is FALSE as written: `P.quotient`
+is the *per-vertex* flux `B_{ij} = ∫_{C_j} W(x,·)` (NOT divided by `μ(C_j)`), so the
+true cell-integral of the residual is
+`∫_{C_j} R(x,·) = B_{cells x, j} − B_{cells x, j}·μ(C_j) = B_{cells x, j}·(1 − μ(C_j))`,
+which vanishes only when `μ(C_j) = 1`.  We restate the correct identity.
+
+(The genuine *zero-mean* residual is obtained with the mass-normalised quotient
+`B_{ij}/μ(C_j)`; with the raw per-vertex `P.quotient` the residual carries the
+factor `1 − μ(C_j)`.) -/
 theorem residualKernel_cell_integral_zero
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (x : Ω) (j : I) :
-    ∫ y, (if P.cells y = j then residualKernel P x y else 0) ∂μ = 0 := by
+    ∫ y, (if P.cells y = j then residualKernel P x y else 0) ∂μ
+      = P.quotient (P.cells x) j * (1 - (P.cellMass j : ℂ)) := by
+  -- Honest sorry: the split `∫(W − B) = ∫ W − B·μ(C_j)` needs the cell-restricted
+  -- integrability of `W x ·` (Hilbert–Schmidt / finite-measure infrastructure of
+  -- `Graphon.Equitable`), which is not re-exported here; the displayed value is
+  -- the genuine (corrected) identity, replacing the false `= 0`.
   sorry
 
 /-- **Equitable coarsening of a transport plan.**  Given a (nonneg-real)
@@ -316,6 +333,9 @@ theorem quotientTransportPlan_subStochastic
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (_hW : IsNonnegReal W)
     (_hsub : IsSubStochastic W) :
     ∀ i : I, ∑ j, P.cellMass j * quotientTransportPlan P i j ≤ 1 := by
+  -- DEEP: `∑_j μ(C_j)·B_{ij} = ∫_Ω W(x,·)·= marginal(x) ≤ 1` for `x ∈ C_i` by
+  -- sub-stochasticity; needs the cell-decomposition of the marginal integral
+  -- (finite-measure integrability infrastructure of `Graphon.Equitable`).
   sorry
 
 end Graphon
@@ -361,6 +381,29 @@ noncomputable def scaleKernel (W : Graphon Ω μ) (c : ℝ) : Graphon Ω μ wher
     exact mul_le_mul_of_nonneg_left hp (abs_nonneg c)
   loopless x := by rw [W.loopless x, mul_zero]
 
+/-- **Constant scaling preserves an equitable partition** (with the same cells):
+the `uniform` integral identity scales by the same constant `c` on both sides. -/
+noncomputable def scaleKernelEquitable {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (c : ℝ) :
+    @GraphonEquitablePartition Ω _ μ I _ _ (W.scaleKernel c) where
+  cells := P.cells
+  measurable_cells := P.measurable_cells
+  cell_pos := P.cell_pos
+  cell_finite := P.cell_finite
+  uniform := by
+    intro i j x y hx hy
+    -- pull the scalar `c` out of both integrals, then use `P.uniform`
+    have hpull : ∀ w : Ω,
+        (∫ z, (if P.cells z = j then (W.scaleKernel c).kernel w z else 0) ∂μ)
+          = (c : ℂ) * ∫ z, (if P.cells z = j then W.kernel w z else 0) ∂μ := by
+      intro w
+      rw [← integral_const_mul]
+      refine integral_congr_ae (Filter.Eventually.of_forall (fun z => ?_))
+      show (if P.cells z = j then (c : ℂ) * W.kernel w z else 0)
+          = (c : ℂ) * (if P.cells z = j then W.kernel w z else 0)
+      split <;> simp
+    rw [hpull x, hpull y, P.uniform i j x y hx hy]
+
 /-- The **row normalisation** of a graphon, as a Hermitian-preserving rescaling.
 True per-row Sinkhorn division `W(x,y) ↦ W(x,y) / marginal(x)` breaks the
 Hermitian symmetry of the kernel (and needs `marginal` measurable, hence
@@ -399,7 +442,18 @@ theorem sinkhorn_preserves_equitable
     ∀ k : ℕ,
       ∃ Pk : @GraphonEquitablePartition Ω _ μ I _ _ (sinkhornIterate W k),
         Pk.cells = P.cells := by
-  sorry
+  intro k
+  induction k with
+  | zero => exact ⟨P, rfl⟩
+  | succ k ih =>
+    obtain ⟨Pk, hPk⟩ := ih
+    -- `sinkhornIterate W (k+1) = sinkhornStep (Sₖ) = ((Sₖ).scaleKernel c₁).scaleKernel c₂`;
+    -- constant scaling preserves the partition and its cells.
+    refine ⟨scaleKernelEquitable
+      (scaleKernelEquitable Pk (1 + |(sinkhornIterate W k).essBound|)⁻¹)
+      (1 + |((sinkhornIterate W k).rowNormalize).essBound|)⁻¹, ?_⟩
+    show Pk.cells = P.cells
+    exact hPk
 
 /-- **Sinkhorn iterates of the quotient match the quotient of Sinkhorn
 iterates.**  Define a finite Sinkhorn–Knopp iteration on the quotient matrix
@@ -416,7 +470,29 @@ theorem sinkhorn_quotient_commutes
     ∃ B : Matrix I I ℂ,
       ∀ Pk : @GraphonEquitablePartition Ω _ μ I _ _ (sinkhornIterate W k),
         Pk.cells = P.cells → Pk.quotient = B := by
-  sorry
+  classical
+  -- `quotient` reads only `cells` (via `cell` and `cellMass`) and the fixed
+  -- kernel `sinkhornIterate W k`, so it is determined by the cell map: any two
+  -- such partitions with equal cells have equal quotient.
+  have hcong : ∀ (Pa Pb : @GraphonEquitablePartition Ω _ μ I _ _ (sinkhornIterate W k)),
+      Pa.cells = Pb.cells → Pa.quotient = Pb.quotient := by
+    intro Pa Pb hc
+    funext i j
+    show (Pa.cellMass i)⁻¹ • ∫ x in Pa.cell i,
+          ∫ z, (if Pa.cells z = j then (sinkhornIterate W k).kernel x z else 0) ∂μ ∂μ
+        = (Pb.cellMass i)⁻¹ • ∫ x in Pb.cell i,
+          ∫ z, (if Pb.cells z = j then (sinkhornIterate W k).kernel x z else 0) ∂μ ∂μ
+    have hcell : Pa.cell i = Pb.cell i := by
+      show Pa.cells ⁻¹' {i} = Pb.cells ⁻¹' {i}; rw [hc]
+    have hcm : Pa.cellMass i = Pb.cellMass i := by
+      show (μ (Pa.cell i)).toReal = (μ (Pb.cell i)).toReal; rw [hcell]
+    rw [hcm, hcell, hc]
+  by_cases h : ∃ Pk : @GraphonEquitablePartition Ω _ μ I _ _ (sinkhornIterate W k),
+      Pk.cells = P.cells
+  · obtain ⟨Pk0, hc0⟩ := h
+    refine ⟨Pk0.quotient, fun Pk hck => ?_⟩
+    exact hcong Pk Pk0 (hck.trans hc0.symm)
+  · refine ⟨0, fun Pk hck => absurd ⟨Pk, hck⟩ h⟩
 
 /-- **Sinkhorn convergence rate.**  The Sinkhorn iteration on `W` converges to
 a doubly stochastic graphon `Wlim`, with convergence rate at least as fast as the
@@ -434,6 +510,10 @@ theorem sinkhorn_convergence
       -- geometric convergence of the total mass to the bistochastic limit at
       -- rate `ρ`: `|totalMass(Sₖ W) - totalMass(W_lim)| ≤ C · ρ^k`.
       ∀ k : ℕ, |(sinkhornIterate W k).totalMass - Wlim.totalMass| ≤ C * ρ ^ k := by
+  -- DEEP: existence of the doubly-stochastic Sinkhorn limit with geometric rate;
+  -- needs the IPF/Hilbert-projective contraction convergence theorem
+  -- (Franklin–Lorenz, Carlier 2022), and a genuine per-row normalisation rather
+  -- than the constant-scaling surrogate used by `sinkhornStep`.
   sorry
 
 /-- **Quotient lower bound on the Sinkhorn rate.**  The Sinkhorn convergence
@@ -456,6 +536,10 @@ theorem sinkhorn_rate_quotient_bound
       ∀ (ρ_W : ℝ), 0 ≤ ρ_W → ρ_W < 1 →
         (∀ k : ℕ, |(sinkhornIterate W k).totalMass| ≤ ρ_W ^ k) →
         ρ_B ≤ ρ_W := by
+  -- DEEP: the genuine quotient Sinkhorn rate `ρ_B` is the Hilbert-projective
+  -- contraction `1 - exp(-d_H(B))` of the finite quotient matrix (Franklin–Lorenz,
+  -- Carlier 2022); proving it lower-bounds every host rate needs the finite IPF
+  -- contraction theorem, not available here.
   sorry
 
 end Graphon
@@ -541,6 +625,9 @@ theorem mixing_sinkhorn_conjecture
         cellUniformMixingTime P ε ≤
           C * (sinkhornConvergenceTime P ε : ℝ) *
             Real.log (Fintype.card I) / (Fintype.card I) := by
+  -- DEEP (open conjecture): the `log n / n` mixing↔Sinkhorn dictionary; relates an
+  -- sInf-defined CTQW mixing time to the finite Sinkhorn iteration count, an open
+  -- quantitative relation (no proof, classical or quantum, is known).
   sorry
 
 end Graphon
@@ -585,7 +672,10 @@ theorem quantum_sampler_existence
     -- `ε`-close to the prescribed `target i`.
     ∃ t : ℝ, 0 ≤ t ∧
       ∀ i : I, ∃ q : ℝ, 0 ≤ q ∧ |q - target i| ≤ ε := by
-  sorry
+  -- take `t = 0` and read off the exact target weights `q i = target i`
+  refine ⟨0, le_refl 0, fun i => ⟨target i, h_prob i, ?_⟩⟩
+  rw [sub_self, abs_zero]
+  exact le_of_lt _hε
 
 /-! ### Wasserstein distance between graphons -/
 
@@ -610,6 +700,9 @@ theorem wassersteinDistance_triangle [MetricSpace Ω]
     (W₁ W₂ W₃ : Graphon Ω μ) :
     wassersteinDistance W₁ W₃ ≤
       wassersteinDistance W₁ W₂ + wassersteinDistance W₂ W₃ := by
+  -- DEEP: the `L²(μ⊗μ)` Minkowski inequality for `√(∫ ‖·‖²)`; requires the
+  -- kernel differences to lie in `L²(μ⊗μ)` (integrability of `‖Wᵢ-Wⱼ‖²`), which
+  -- is not assumed in the lightweight `Graphon` signature.
   sorry
 
 /-- **Equitable-partition approximation** of the Wasserstein distance:
@@ -631,6 +724,10 @@ theorem wassersteinDistance_eq_quotient [MetricSpace Ω]
       Real.sqrt (∑ i : I, ∑ j : I,
         P₁.cellMass i * P₁.cellMass j *
           ‖P₁.quotient i j - P₂.quotient i j‖ ^ 2) := by
+  -- DEEP: collapsing the `L²(μ⊗μ)` integral of the kernel difference to the
+  -- cell-mass-weighted finite `ℓ²` sum of quotient differences; needs the
+  -- block-constant decomposition + per-cell integrability (Graphon.Equitable
+  -- finite-measure machinery, not re-exported here).
   sorry
 
 end Graphon
@@ -727,7 +824,18 @@ theorem entropic_chiral_analogy
     ∀ ε > 0,
       ∃ θ : ℝ, 0 < θ ∧ θ < Real.pi ∧
         Real.sin θ = Real.exp (-ε) := by
-  sorry
+  intro ε hε
+  -- `exp(-ε) ∈ (0,1)`, so `θ := arcsin (exp(-ε)) ∈ (0, π/2) ⊂ (0, π)` works
+  have h1 : (0 : ℝ) < Real.exp (-ε) := Real.exp_pos _
+  have h2 : Real.exp (-ε) < 1 := by
+    rw [show (1 : ℝ) = Real.exp 0 by simp]
+    exact Real.exp_lt_exp.mpr (by linarith)
+  refine ⟨Real.arcsin (Real.exp (-ε)), ?_, ?_, ?_⟩
+  · exact Real.arcsin_pos.mpr h1
+  · have hle : Real.arcsin (Real.exp (-ε)) ≤ Real.pi / 2 := Real.arcsin_le_pi_div_two _
+    have hpi : Real.pi / 2 < Real.pi := by linarith [Real.pi_pos]
+    linarith
+  · exact Real.sin_arcsin (by linarith) (le_of_lt h2)
 
 end Graphon
 
@@ -763,6 +871,10 @@ theorem synthesis_existence
       -- to within any `ε > 0`
       ∀ ε > 0, ∃ t : ℝ, 0 ≤ t ∧
         ∀ i : I, ∃ q : ℝ, 0 ≤ q ∧ |q - target i| ≤ ε := by
+  -- DEEP (construction): requires synthesising a witness `(Ω, μ, W, P)` — a
+  -- genuine `GraphonEquitablePartition` with positive finite-mass cells whose
+  -- quotient realises `target` (the `Toolkit/Bundle.lean` block-constant graphon
+  -- construction, across the `Type u`/`Type v` universe gap). Not built here.
   sorry
 
 /-- **Optimal-transport composition.**  Two engineered graphons `W₁, W₂`
@@ -777,7 +889,35 @@ theorem displacement_interpolation
     ∃ Wt : Graphon Ω μ,
       ∀ x y : Ω,
         Wt.kernel x y = ((1 - t : ℝ) : ℂ) * W₁.kernel x y + (t : ℂ) * W₂.kernel x y := by
-  sorry
+  obtain ⟨ht0, ht1⟩ := _ht
+  refine ⟨{
+    kernel := fun x y => ((1 - t : ℝ) : ℂ) * W₁.kernel x y + (t : ℂ) * W₂.kernel x y
+    measurable := by
+      exact (measurable_const.mul W₁.measurable).add (measurable_const.mul W₂.measurable)
+    herm := by
+      intro x y
+      show ((1 - t : ℝ) : ℂ) * W₁.kernel y x + (t : ℂ) * W₂.kernel y x
+          = star (((1 - t : ℝ) : ℂ) * W₁.kernel x y + (t : ℂ) * W₂.kernel x y)
+      rw [W₁.herm x y, W₂.herm x y, star_add, star_mul', star_mul']
+      simp only [Complex.star_def, Complex.conj_ofReal]
+    essBound := |1 - t| * W₁.essBound + |t| * W₂.essBound
+    bounded := by
+      filter_upwards [W₁.bounded, W₂.bounded] with p hp1 hp2
+      show ‖((1 - t : ℝ) : ℂ) * W₁.kernel p.1 p.2 + (t : ℂ) * W₂.kernel p.1 p.2‖
+          ≤ |1 - t| * W₁.essBound + |t| * W₂.essBound
+      refine le_trans (norm_add_le _ _) ?_
+      rw [norm_mul, norm_mul, Complex.norm_real, Complex.norm_real, Real.norm_eq_abs,
+        Real.norm_eq_abs]
+      have hb1 : |1 - t| * ‖W₁.kernel p.1 p.2‖ ≤ |1 - t| * W₁.essBound :=
+        mul_le_mul_of_nonneg_left hp1 (abs_nonneg _)
+      have hb2 : |t| * ‖W₂.kernel p.1 p.2‖ ≤ |t| * W₂.essBound :=
+        mul_le_mul_of_nonneg_left hp2 (abs_nonneg _)
+      linarith
+    loopless := by
+      intro x
+      show ((1 - t : ℝ) : ℂ) * W₁.kernel x x + (t : ℂ) * W₂.kernel x x = 0
+      rw [W₁.loopless x, W₂.loopless x, mul_zero, mul_zero, add_zero] }, ?_⟩
+  intro x y; rfl
 
 end Graphon
 

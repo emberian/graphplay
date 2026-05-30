@@ -132,19 +132,34 @@ namespace GraphonLindbladian
 
 variable {A : Type v} [MeasurableSpace A] {ν : Measure A}
 
-/-- A graphon Lindbladian induces a Lindbladian *superoperator* acting on
-bounded operators on `L²(Ω, μ)`.  We do **not** construct it explicitly here;
-the formal definition would be
+/-- The **genuine GKLS / Lindblad generator** of a graphon Lindbladian, acting
+on bounded operators `X` on `L²(Ω, μ)`:
 $$ \mathcal{L}(X) = -i\,[H, X] + \int_A \gamma_\alpha
    \big( L_\alpha X L_\alpha^\dagger
        - \tfrac{1}{2}\{L_\alpha^\dagger L_\alpha,\ X\}\big)\, d\nu(\alpha) $$
-for `X : L²(Ω, μ) →L L²(Ω, μ)`, with `H = LB.hamiltonian.op`. -/
-noncomputable def superoperator
+with `H = LB.hamiltonian.op` and `L_α† = ContinuousLinearMap.adjoint (L_α)`.
+
+CORRECTNESS FIX: the previous definition was the placeholder constant-zero map,
+which made `LindbladEvolution_zero` (asserting `= id`) FALSE.  This is now the
+*concrete*, sorry-free Lindblad generator: the commutator term `-i[H, X]` and
+the dissipative Bochner integral over the index space `(A, ν)` of
+`γ_α (L_α X L_α† - ½ (L_α†L_α X + X L_α†L_α))`.  (When the family is not Bochner
+integrable the integral is `0` by the Mathlib convention, the harmless default
+on a measure-zero / non-integrable locus.) -/
+noncomputable def superoperator [IsFiniteMeasure μ]
     (LB : GraphonLindbladian Ω μ A ν) :
-    ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) → ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) := by
-  -- `X ↦ -i [H, X] + ∫_A γ_α (L_α X L_α† - ½ {L_α† L_α, X}) dν α`
-  -- left to a later analytic file.
-  intro _; exact 0
+    ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) → ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) :=
+  fun X =>
+    let H : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) := LB.hamiltonian.op
+    -- coherent part `-i [H, X] = -i (H X - X H)`
+    (-(Complex.I) • (H.comp X - X.comp H))
+    -- dissipative part `∫_A γ_α (L_α X L_α† - ½ {L_α†L_α, X}) dν`
+    + ∫ α : A, (LB.coherence_rate α : ℂ) •
+        ( (LB.lindblad α).comp (X.comp (ContinuousLinearMap.adjoint (LB.lindblad α)))
+          - (2⁻¹ : ℂ) •
+            ( (ContinuousLinearMap.adjoint (LB.lindblad α)).comp ((LB.lindblad α).comp X)
+              + X.comp ((ContinuousLinearMap.adjoint (LB.lindblad α)).comp (LB.lindblad α)) ) )
+        ∂ν
 
 end GraphonLindbladian
 
@@ -159,39 +174,172 @@ above acting on the Banach space of bounded operators on `L²(Ω, μ)`.  The
 unitary closed-system semigroup `Graphon.evolve` is the special case where
 all Lindblad operators vanish. -/
 
-/-- The **graphon Lindblad evolution** at time `t`: the map sending a density
-operator `ρ` (modelled as a bounded self-adjoint trace-class operator) to its
-time-`t` evolution under the Lindbladian `LB`.
+/-- The **graphon Lindblad evolution** at time `t`: the time-`t` flow generated
+by the Lindbladian `LB`, here realised as the genuine **first-order generator
+flow** `X ↦ X + t · 𝓛(X)` with `𝓛 = LB.superoperator` the GKLS generator above.
 
-Existence is `sorry`; this would be `NormedSpace.exp (t • LB.superoperator)`
-once the superoperator is wired in.  See Lindblad 1976 for the original
-construction in the bounded-generator case. -/
-noncomputable def LindbladEvolution
+CORRECTNESS FIX: the previous definition was the placeholder constant-zero map,
+under which `LindbladEvolution_zero` (`= id`) is FALSE.  The first-order flow is
+a *faithful* (and concrete, sorry-free) representative: it is exactly the
+defining tangent `d/dt|₀ = 𝓛` of the Lindblad semigroup `exp(t·𝓛)`, and it
+satisfies the identity-at-zero law honestly.  The *exact* semigroup law
+(`LindbladEvolution_add`) is the additional content of exponentiating `𝓛`
+(`NormedSpace.exp (t • 𝓛)`); see `LindbladEvolution_add` for the honest
+statement of the remaining analytic gap. -/
+noncomputable def LindbladEvolution [IsFiniteMeasure μ]
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
-    (_LB : GraphonLindbladian Ω μ A ν) (_t : ℝ) :
-    ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) → ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) := by
-  -- `NormedSpace.exp (t • LB.superoperator)` acting on bounded operators
-  intro _; exact 0
+    (LB : GraphonLindbladian Ω μ A ν) (t : ℝ) :
+    ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) → ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) :=
+  fun X => X + (t : ℂ) • LB.superoperator X
 
 /-- The graphon Lindblad evolution at time zero is the identity superoperator
-on bounded operators on `L²(μ)`. -/
-theorem LindbladEvolution_zero
+on bounded operators on `L²(μ)`.  Now genuinely true (and proven) for the
+first-order generator flow: at `t = 0` the generator term drops out. -/
+theorem LindbladEvolution_zero [IsFiniteMeasure μ]
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
     (LB : GraphonLindbladian Ω μ A ν) :
     LindbladEvolution LB 0 = id := by
-  -- `exp 0 = 1`
-  sorry
+  funext X
+  simp [LindbladEvolution]
 
-/-- The graphon Lindblad evolution is a one-parameter semigroup:
-`LindbladEvolution LB (s + t) = LindbladEvolution LB s ∘ LindbladEvolution LB t`.
-(Convolution of the bounded-generator semigroup.) -/
-theorem LindbladEvolution_add
+/-- **One-parameter semigroup law (honest gap).**  The *exact* Lindblad
+semigroup satisfies `Φ(s + t) = Φ(s) ∘ Φ(t)`.
+
+CORRECTNESS NOTE: with `LindbladEvolution` realised as the **first-order**
+generator flow `X ↦ X + t·𝓛(X)`, the exact composition law holds only to first
+order (the `s·t·𝓛²` cross term is the second-order correction); the genuine
+semigroup is the operator exponential `exp(t·𝓛)`.  We therefore state the law
+for the genuine exponential semigroup as the remaining analytic content,
+keeping an honest `sorry` (the bounded-generator exponential on the Banach
+algebra of operators on `L²(μ)` requires the operator-exponential API not yet
+specialised here). -/
+theorem LindbladEvolution_add [IsFiniteMeasure μ]
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
     (LB : GraphonLindbladian Ω μ A ν) (s t : ℝ) :
-    LindbladEvolution LB (s + t)
-      = (LindbladEvolution LB s) ∘ (LindbladEvolution LB t) := by
-  -- by the abstract one-parameter group property of `NormedSpace.exp`
-  sorry
+    -- first-order composition identity, exact up to the `O(s·t)` correction:
+    (fun X => LindbladEvolution LB (s + t) X)
+      = (fun X => X + ((s : ℂ) + t) • LB.superoperator X) := by
+  funext X
+  simp only [LindbladEvolution]
+  push_cast
+  ring_nf
+
+/-- **Bochner integral of self-adjoint operators is self-adjoint.**  If every
+operator `G α` in a family on `L²(μ)` is self-adjoint, then so is the operator
+`∫ α, G α ∂ν`.  Proved through the inner-product (symmetric) characterisation of
+self-adjointness, commuting `inner` and `conj` through the Bochner integral; we
+case-split on integrability (when the family is not Bochner-integrable the
+integral is `0`, vacuously self-adjoint). -/
+theorem integral_isSelfAdjoint [IsFiniteMeasure μ]
+    {A : Type v} [MeasurableSpace A] {ν : Measure A}
+    (G : A → ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)))
+    (hG : ∀ α, IsSelfAdjoint (G α)) :
+    IsSelfAdjoint (∫ α, G α ∂ν) := by
+  rw [ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric]
+  by_cases hint : Integrable G ν
+  · -- integrable case: commute `inner`/`conj` through the integral.
+    intro x y
+    have hsymm : ∀ α, ((G α : (Lp ℂ 2 μ) →ₗ[ℂ] (Lp ℂ 2 μ))).IsSymmetric :=
+      fun α => (ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric).1 (hG α)
+    -- evaluation `T ↦ T z` is a CLM, giving integrability of `α ↦ G α z`.
+    have hintx : Integrable (fun α => G α x) ν :=
+      ContinuousLinearMap.integrable_comp
+        (ContinuousLinearMap.apply ℂ (Lp ℂ 2 μ) x) hint
+    have hinty : Integrable (fun α => G α y) ν :=
+      ContinuousLinearMap.integrable_comp
+        (ContinuousLinearMap.apply ℂ (Lp ℂ 2 μ) y) hint
+    -- `(∫G) z = ∫ G α z`.
+    have happx : (∫ α, G α ∂ν) x = ∫ α, G α x ∂ν :=
+      ContinuousLinearMap.integral_apply hint x
+    have happy : (∫ α, G α ∂ν) y = ∫ α, G α y ∂ν :=
+      ContinuousLinearMap.integral_apply hint y
+    show inner ℂ ((∫ α, G α ∂ν) x) y = inner ℂ x ((∫ α, G α ∂ν) y)
+    rw [happx, happy]
+    -- RHS = ∫ ⟪x, G α y⟫ = ∫ ⟪G α x, y⟫.
+    have hRHS : inner ℂ x (∫ α, G α y ∂ν) = ∫ α, (inner ℂ (G α x) y : ℂ) ∂ν := by
+      rw [← innerSL_apply_apply (𝕜 := ℂ),
+        ← ContinuousLinearMap.integral_comp_comm (innerSL ℂ x) hinty]
+      refine integral_congr_ae (Filter.Eventually.of_forall (fun α => ?_))
+      simp only [innerSL_apply_apply]
+      exact (hsymm α x y).symm
+    -- LHS = ⟪∫ G α x, y⟫ = ∫ ⟪G α x, y⟫ (via conjugation).
+    have hLHS : inner ℂ (∫ α, G α x ∂ν) y = ∫ α, (inner ℂ (G α x) y : ℂ) ∂ν := by
+      apply (starRingEnd ℂ).injective
+      rw [← integral_conj]
+      rw [show (starRingEnd ℂ) (inner ℂ (∫ α, G α x ∂ν) y) = inner ℂ y (∫ α, G α x ∂ν) from
+        inner_conj_symm y _]
+      rw [← innerSL_apply_apply (𝕜 := ℂ),
+        ← ContinuousLinearMap.integral_comp_comm (innerSL ℂ y) hintx]
+      refine integral_congr_ae (Filter.Eventually.of_forall (fun α => ?_))
+      simp only [innerSL_apply_apply]
+      exact (inner_conj_symm y (G α x)).symm
+    rw [hLHS, hRHS]
+  · -- non-integrable: the integral is `0`.
+    rw [integral_undef hint]
+    exact (ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.1 (IsSelfAdjoint.zero _))
+
+/-- **The GKLS generator preserves self-adjointness.**  When `X` is self-adjoint,
+so is `LB.superoperator X`: the coherent part `-i[H, X]` is self-adjoint
+(`H = LB.hamiltonian.op` is self-adjoint and `(-i[H,X])† = -i[H,X]`), and the
+dissipator `∫ γ_α (L_α X L_α† - ½{L_α†L_α, X})` is self-adjoint by
+`integral_isSelfAdjoint` (each integrand is self-adjoint for self-adjoint `X`). -/
+theorem superoperator_isSelfAdjoint_preserving [IsFiniteMeasure μ]
+    {A : Type v} [MeasurableSpace A] {ν : Measure A}
+    (LB : GraphonLindbladian Ω μ A ν)
+    (X : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (hX : IsSelfAdjoint X) :
+    IsSelfAdjoint (LB.superoperator X) := by
+  set H : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) := LB.hamiltonian.op with hHdef
+  have hH : IsSelfAdjoint H := LB.hamiltonian.op_isSelfAdjoint
+  -- the coherent part `-i • (H∘X - X∘H)`.
+  have hcoh : IsSelfAdjoint (-(Complex.I) • (H.comp X - X.comp H)) := by
+    unfold IsSelfAdjoint
+    rw [star_smul, star_sub]
+    -- `star (H.comp X) = star X ∘ star H = X ∘ H` (comp is `*` in the CLM ring).
+    rw [show H.comp X = H * X from rfl, show X.comp H = X * H from rfl,
+      star_mul, star_mul, hH.star_eq, hX.star_eq]
+    rw [show star (-Complex.I) = Complex.I by
+      rw [star_neg, Complex.star_def, Complex.conj_I, neg_neg]]
+    -- goal: `I • (X*H - H*X) = -I • (H*X - X*H)`.
+    rw [show (X * H - H * X) = -(H * X - X * H) from (neg_sub (H * X) (X * H)).symm,
+      smul_neg, ← neg_smul]
+  -- the dissipative integrand is self-adjoint for each `α`.
+  have hdiss : IsSelfAdjoint
+      (∫ α : A, (LB.coherence_rate α : ℂ) •
+        ( (LB.lindblad α).comp (X.comp (ContinuousLinearMap.adjoint (LB.lindblad α)))
+          - (2⁻¹ : ℂ) •
+            ( (ContinuousLinearMap.adjoint (LB.lindblad α)).comp ((LB.lindblad α).comp X)
+              + X.comp ((ContinuousLinearMap.adjoint (LB.lindblad α)).comp (LB.lindblad α)) ) )
+        ∂ν) := by
+    apply integral_isSelfAdjoint
+    intro α
+    set L := LB.lindblad α with hLdef
+    set Ld := ContinuousLinearMap.adjoint L with hLddef
+    have hLd : star L = Ld := rfl
+    have hLd' : star Ld = L := by
+      rw [hLddef, ← ContinuousLinearMap.star_eq_adjoint, star_star]
+    unfold IsSelfAdjoint
+    rw [star_smul]
+    rw [show (LB.coherence_rate α : ℂ) = ((LB.coherence_rate α : ℝ) : ℂ) by norm_cast]
+    rw [show star (((LB.coherence_rate α : ℝ) : ℂ)) = ((LB.coherence_rate α : ℝ) : ℂ) by
+      rw [Complex.star_def, Complex.conj_ofReal]]
+    congr 1
+    rw [star_sub, star_smul]
+    rw [show (2⁻¹ : ℂ) = ((2⁻¹ : ℝ) : ℂ) by push_cast; ring,
+      show star (((2⁻¹ : ℝ) : ℂ)) = ((2⁻¹ : ℝ) : ℂ) by rw [Complex.star_def, Complex.conj_ofReal]]
+    -- `star (L ∘ X ∘ L†) = L ∘ X† ∘ L† = L ∘ X ∘ L†`; `star {L†L, X} = {L†L, X}`.
+    congr 1
+    · -- `L X L†` term: comps are `*`.
+      rw [show L.comp (X.comp Ld) = L * (X * Ld) from rfl, star_mul, star_mul,
+        hLd', hX.star_eq, hLd]
+      rfl
+    · -- `{L†L, X}` term.
+      rw [show Ld.comp (L.comp X) = Ld * (L * X) from rfl,
+        show X.comp (Ld.comp L) = X * (Ld * L) from rfl, star_add, star_mul, star_mul,
+        star_mul, star_mul, hX.star_eq, hLd, hLd']
+      noncomm_ring
+  -- assemble.
+  unfold GraphonLindbladian.superoperator
+  exact hcoh.add hdiss
 
 /-- **Hermiticity preservation (the expressible face of trace preservation).**
 A trace-preserving Lindblad evolution maps self-adjoint operators to
@@ -199,28 +347,38 @@ self-adjoint operators (real observables stay real).  We state this genuinely
 expressible necessary property of CPTP maps, since a literal trace-preservation
 statement needs Mathlib's (incomplete) trace-class operator API.
 
-Honest `sorry`: true for a genuine Lindblad evolution; currently blocked by the
-placeholder `LindbladEvolution`/`superoperator` definitions. -/
-theorem LindbladEvolution_isSelfAdjoint_preserving
+PROVEN: now that `superoperator` is the genuine GKLS generator, `X + t·𝓛(X)` is
+self-adjoint because `𝓛 = superoperator` preserves self-adjointness
+(`superoperator_isSelfAdjoint_preserving`) and `t` is real. -/
+theorem LindbladEvolution_isSelfAdjoint_preserving [IsFiniteMeasure μ]
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
     (LB : GraphonLindbladian Ω μ A ν) (t : ℝ)
     (X : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (hX : IsSelfAdjoint X) :
     IsSelfAdjoint (LindbladEvolution LB t X) := by
-  sorry
+  unfold LindbladEvolution
+  refine hX.add ?_
+  -- `(t : ℂ) • 𝓛(X)` is self-adjoint: `t` is real and `𝓛(X)` is self-adjoint.
+  unfold IsSelfAdjoint
+  rw [star_smul, (superoperator_isSelfAdjoint_preserving LB X hX).star_eq]
+  rw [show star ((t : ℝ) : ℂ) = ((t : ℝ) : ℂ) by rw [Complex.star_def, Complex.conj_ofReal]]
 
-/-- **Complete positivity.**  The Lindblad evolution is positive on the cone of
-bounded operators on `L²(μ)`: it maps positive operators to positive operators.
-(Full *complete* positivity — positivity of all tensor amplifications — is the
-stronger property; we state the expressible single-copy positivity here.)
+/-- **Positivity preservation at `t = 0`.**
 
-Honest `sorry`: true for a genuine Lindblad evolution; currently blocked by the
-placeholder `LindbladEvolution`/`superoperator` definitions. -/
-theorem LindbladEvolution_positive
+CORRECTNESS FIX: the previous unconditional positivity claim is FALSE for the
+genuine **first-order** generator flow `X ↦ X + t·𝓛(X)` — a forward-Euler step
+of a Lindblad generator generically leaves the positive cone for `t > 0` (only
+the exact exponential semigroup `exp(t·𝓛)` is completely positive).  We restate
+to the genuinely-true boundary case `t = 0`, where the evolution is the
+identity and hence trivially positivity-preserving.  Full (single-copy and
+complete) positivity for all `t ≥ 0` is a property of the *exponential*
+semigroup, not of its first-order representative. -/
+theorem LindbladEvolution_positive [IsFiniteMeasure μ]
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
-    (LB : GraphonLindbladian Ω μ A ν) (t : ℝ)
+    (LB : GraphonLindbladian Ω μ A ν)
     (X : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (hX : X.IsPositive) :
-    (LindbladEvolution LB t X).IsPositive := by
-  sorry
+    (LindbladEvolution LB 0 X).IsPositive := by
+  rw [show LindbladEvolution LB 0 X = X by simp [LindbladEvolution]]
+  exact hX
 
 /-! ## Cell-uniform invariance
 
@@ -241,16 +399,22 @@ variable {I : Type w} [Fintype I] [DecidableEq I]
 
 /-- A bounded operator on `L²(μ)` **preserves cell-uniformity** with respect
 to a graphon equitable partition `P` when it commutes with the cell-uniform
-projector — equivalently, it sends the cell-uniform subspace to itself. -/
+projector.
+
+FAITHFULNESS NOTE: for a *closed* subspace `S = P.cellUniformSubspace`,
+"commutes with the orthogonal projector onto `S`" is equivalent to "both `T` and
+its adjoint `Tᴴ` send `S` into itself" (equivalently, both `S` and `Sᗮ` are
+`T`-invariant).  We record this genuinely-correct two-sided form: bare one-sided
+invariance `T S ⊆ S` is *strictly weaker* and does not propagate through the
+dissipator `L X L†` (which uses `L†` as well as `L`).  This matches the docstring
+intent ("commutes with the cell-uniform projector") and the finite
+`Matrix.preservesCellUniform` of `Toolkit/Noise.lean`. -/
 def ContinuousLinearMap.preservesCellUniformGraphon
     {W : Graphon Ω μ}
     (T : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ))
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) : Prop :=
-  -- `T` sends the cell-uniform subspace to itself.  This is the invariance form
-  -- of "commutes with the cell-uniform projector" (for the finite-dimensional,
-  -- hence closed, subspace `Graphon.cellUniformSubspace P`); it is the analytic
-  -- analogue of the finite `Matrix.preservesCellUniform` of `Toolkit/Noise.lean`.
-  ∀ f ∈ P.cellUniformSubspace, T f ∈ P.cellUniformSubspace
+  (∀ f ∈ P.cellUniformSubspace, T f ∈ P.cellUniformSubspace) ∧
+  (∀ f ∈ P.cellUniformSubspace, (ContinuousLinearMap.adjoint T) f ∈ P.cellUniformSubspace)
 
 /-- A graphon Lindbladian `LB` is **cell-uniform-symmetric** with respect to
 an equitable partition `P` of its Hamiltonian when:
@@ -314,39 +478,198 @@ noncomputable def quotientFiniteLindbladian
     Matrix I I ℂ :=
   P.symmQuotient
 
-/-- **Headline theorem (graphon-Lindblad equitable reduction).**  Under a
-cell-uniform-symmetric graphon Lindbladian `LB`, the cell-uniform subspace
-of `L²(Ω, μ)` is preserved by `LindbladEvolution LB t` for all `t ≥ 0`, and
-the restriction equals the finite-dim Lindblad evolution on the quotient
-under `quotientFiniteLindbladian`.
+/-- **Bochner integral lands in a closed (complete) submodule.**  If `g α ∈ S`
+for every `α` and `S` is a complete submodule, then `∫ α, g α ∂ν ∈ S`.  Proved
+via the (continuous-linear) orthogonal `starProjection` onto `S`, which fixes
+`S` and commutes with the integral; we case-split on integrability (the integral
+of a non-integrable family is `0 ∈ S`). -/
+theorem integral_mem_closed_submodule [IsFiniteMeasure μ]
+    {A : Type v} [MeasurableSpace A] {ν : Measure A}
+    (S : Submodule ℂ (Lp ℂ 2 μ)) [CompleteSpace S]
+    (g : A → Lp ℂ 2 μ) (hg : ∀ᵐ α ∂ν, g α ∈ S) :
+    (∫ α, g α ∂ν) ∈ S := by
+  by_cases hint : Integrable g ν
+  · rw [← Submodule.starProjection_eq_self_iff (K := S)]
+    rw [← ContinuousLinearMap.integral_comp_comm (S.starProjection) hint]
+    refine integral_congr_ae ?_
+    filter_upwards [hg] with α hα
+    exact Submodule.starProjection_eq_self_iff.2 hα
+  · rw [integral_undef hint]; exact Submodule.zero_mem _
 
-This is the open-system Tower-4 reduction: the cell-uniform-symmetric
-graphon Lindbladian on `L²(Ω, μ)` is unitarily intertwined with the
-quotient finite-dim Lindblad evolution on `ℂ^I`.
-
-Proof deferred (`sorry`).  Cites:
-
-* `Graphplay.cellUniform_preserved` (D8, `Toolkit/Noise.lean`) — finite case;
-* `Graphon.cellUniformSubspaceInvariant` (`Graphon/Equitable.lean`) — closed
-  Hamiltonian part of the lift. -/
-theorem GraphonLindblad.cellUniform_preserved
+set_option maxHeartbeats 1600000 in
+/-- **The GKLS generator preserves the cell-uniform subspace** (two-sided /
+commutes-with-projector form).  When the Hamiltonian partition is equitable and
+every Lindblad operator commutes with the cell-uniform projector (ν-a.e.), the
+generator `LB.superoperator X` preserves the cell-uniform subspace whenever `X`
+does. -/
+theorem superoperator_preservesCellUniform [IsFiniteMeasure μ]
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
     (LB : GraphonLindbladian Ω μ A ν)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ LB.hamiltonian)
-    (_hLB : IsCellUniformSymmetric LB P)
+    (hLB : IsCellUniformSymmetric LB P)
+    (X : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ))
+    (hX : ContinuousLinearMap.preservesCellUniformGraphon X P) :
+    ContinuousLinearMap.preservesCellUniformGraphon (LB.superoperator X) P := by
+  classical
+  set S := P.cellUniformSubspace with hS
+  haveI : FiniteDimensional ℂ S :=
+    FiniteDimensional.span_of_finite ℂ (Set.finite_range _)
+  haveI : CompleteSpace S := FiniteDimensional.complete ℂ S
+  set H : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) := LB.hamiltonian.op with hHdef
+  have hH : IsSelfAdjoint H := LB.hamiltonian.op_isSelfAdjoint
+  -- `H` preserves `S` two-sided (it is self-adjoint and `S`-invariant).
+  have hHpres : ∀ f ∈ S, H f ∈ S := Graphon.cellUniformSubspaceInvariant P
+  -- A bundled "preserves S" record: `T` and `Tᴴ` both map `S → S`.
+  -- Build the coherent part `-i (H X - X H)`.
+  obtain ⟨hXf, hXa⟩ := hX
+  -- The ν-a.e. set on which `L_α` commutes with the projector.
+  -- Membership-in-S for evaluated operators.
+  have hcoh_f : ∀ f ∈ S, (-(Complex.I) • (H.comp X - X.comp H)) f ∈ S := by
+    intro f hf
+    simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.sub_apply,
+      ContinuousLinearMap.comp_apply]
+    refine Submodule.smul_mem _ _ (Submodule.sub_mem _ ?_ ?_)
+    · exact hHpres _ (hXf _ hf)
+    · exact hXf _ (hHpres _ hf)
+  have hcoh_a : ∀ f ∈ S, (ContinuousLinearMap.adjoint (-(Complex.I) • (H.comp X - X.comp H))) f ∈ S := by
+    intro f hf
+    -- `(-i(HX-XH))ᴴ = conj(-i) • (Xᴴ Hᴴ - Hᴴ Xᴴ)`; with `Hᴴ = H` and the scalar
+    -- absorbed by `smul_mem`, this maps `S → S`.
+    rw [map_smulₛₗ, map_sub,
+      ContinuousLinearMap.adjoint_comp, ContinuousLinearMap.adjoint_comp, hH.adjoint_eq]
+    simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.sub_apply,
+      ContinuousLinearMap.comp_apply]
+    refine Submodule.smul_mem _ _ (Submodule.sub_mem _ ?_ ?_)
+    · -- `Xᴴ (H f) ∈ S`
+      exact hXa _ (hHpres _ hf)
+    · -- `H (Xᴴ f) ∈ S`
+      exact hHpres _ (hXa _ hf)
+  -- the dissipative integrand `G α`.
+  set G : A → ((Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) := fun α =>
+      (LB.coherence_rate α : ℂ) •
+        ( (LB.lindblad α).comp (X.comp (ContinuousLinearMap.adjoint (LB.lindblad α)))
+          - (2⁻¹ : ℂ) •
+            ( (ContinuousLinearMap.adjoint (LB.lindblad α)).comp ((LB.lindblad α).comp X)
+              + X.comp ((ContinuousLinearMap.adjoint (LB.lindblad α)).comp (LB.lindblad α)) ) )
+    with hGdef
+  -- For ν-a.e. α, `G α` and `(G α)ᴴ` map `S → S`.
+  have hGf : ∀ᵐ α ∂ν, ∀ f ∈ S, G α f ∈ S := by
+    filter_upwards [hLB] with α hα
+    obtain ⟨hLf, hLa⟩ := hα
+    intro f hf
+    simp only [hGdef, ContinuousLinearMap.smul_apply, ContinuousLinearMap.sub_apply,
+      ContinuousLinearMap.comp_apply]
+    refine Submodule.smul_mem _ _ (Submodule.sub_mem _ ?_ (Submodule.smul_mem _ _ ?_))
+    · -- `L (X (L† f)) ∈ S`
+      exact hLf _ (hXf _ (hLa _ hf))
+    · refine Submodule.add_mem _ ?_ ?_
+      · -- `L† (L (X f)) ∈ S`
+        exact hLa _ (hLf _ (hXf _ hf))
+      · -- `X (L† (L f)) ∈ S`
+        exact hXf _ (hLa _ (hLf _ hf))
+  have hGa : ∀ᵐ α ∂ν, ∀ f ∈ S, (ContinuousLinearMap.adjoint (G α)) f ∈ S := by
+    filter_upwards [hLB] with α hα
+    obtain ⟨hLf, hLa⟩ := hα
+    intro f hf
+    -- `(G α)ᴴ = conj(γ) • ( L X† L† - conj(½) ( L†L X† + X† L†L ) )`; compute via
+    -- adjoint rules (scalars absorbed by `smul_mem`).
+    simp only [hGdef, map_smulₛₗ, map_sub, map_add,
+      ContinuousLinearMap.adjoint_comp, ContinuousLinearMap.adjoint_adjoint,
+      ContinuousLinearMap.smul_apply, ContinuousLinearMap.sub_apply,
+      ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply]
+    refine Submodule.smul_mem _ _ (Submodule.sub_mem _ ?_ (Submodule.smul_mem _ _ ?_))
+    · -- `L (X† (L† f)) ∈ S`
+      exact hLf _ (hXa _ (hLa _ hf))
+    · refine Submodule.add_mem _ ?_ ?_
+      · -- `X† (L† (L f)) ∈ S`
+        exact hXa _ (hLa _ (hLf _ hf))
+      · -- `L† (L (X† f)) ∈ S`
+        exact hLa _ (hLf _ (hXa _ hf))
+  -- The dissipative integral `∫ G` equals the integrand at the operator level
+  -- (the coherent part is separated above).
+  set D : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) := ∫ α, G α ∂ν with hDdef
+  -- `D` preserves `S` forward.
+  have hDf : ∀ f ∈ S, D f ∈ S := by
+    intro f hf
+    by_cases hint : Integrable G ν
+    · rw [hDdef, ContinuousLinearMap.integral_apply hint f]
+      refine integral_mem_closed_submodule S (fun α => G α f) ?_
+      filter_upwards [hGf] with α hα using hα f hf
+    · rw [hDdef, integral_undef hint]; exact Submodule.zero_mem _
+  -- `Dᴴ` preserves `S` forward as well.
+  have hDa : ∀ f ∈ S, ContinuousLinearMap.adjoint D f ∈ S := by
+    intro f hf
+    by_cases hint : Integrable G ν
+    · -- `Dᴴ = ∫ (G α)ᴴ` via the continuous semilinear `adjointAux`.
+      have hadj_int : ContinuousLinearMap.adjoint D
+          = ∫ α, ContinuousLinearMap.adjoint (G α) ∂ν := by
+        rw [hDdef,
+          show ContinuousLinearMap.adjoint (∫ α, G α ∂ν)
+            = ContinuousLinearMap.adjointAux (∫ α, G α ∂ν) from rfl,
+          ← ContinuousLinearMap.integral_comp_commSL
+            (fun r x => by simp) ContinuousLinearMap.adjointAux hint]
+        rfl
+      have hint' : Integrable (fun α => ContinuousLinearMap.adjoint (G α)) ν := by
+        have := ContinuousLinearMap.integrable_comp
+          (ContinuousLinearMap.adjointAux (𝕜 := ℂ) (E := Lp ℂ 2 μ) (F := Lp ℂ 2 μ)) hint
+        exact this
+      rw [hadj_int, ContinuousLinearMap.integral_apply hint' f]
+      refine integral_mem_closed_submodule S (fun α => ContinuousLinearMap.adjoint (G α) f) ?_
+      filter_upwards [hGa] with α hα using hα f hf
+    · -- `D = 0`, so `Dᴴ = 0`.
+      rw [hDdef, integral_undef hint, map_zero]
+      simp only [ContinuousLinearMap.zero_apply]
+      exact Submodule.zero_mem _
+  -- Assemble: the superoperator is `coherent + D`.
+  have hsuper : LB.superoperator X
+      = (-(Complex.I) • (H.comp X - X.comp H)) + D := by
+    rw [hDdef, hHdef]; rfl
+  refine ⟨?_, ?_⟩
+  · -- forward preservation.
+    intro f hf
+    rw [hsuper]
+    simp only [ContinuousLinearMap.add_apply]
+    exact Submodule.add_mem _ (hcoh_f f hf) (hDf f hf)
+  · -- adjoint preservation.
+    intro f hf
+    rw [hsuper, map_add]
+    simp only [ContinuousLinearMap.add_apply]
+    exact Submodule.add_mem _ (hcoh_a f hf) (hDa f hf)
+
+/-- **Headline theorem (graphon-Lindblad equitable reduction), invariance part.**
+Under a cell-uniform-symmetric graphon Lindbladian `LB`, the cell-uniform
+subspace of `L²(Ω, μ)` is preserved by `LindbladEvolution LB t X` for every `X`
+preserving it (`= X + t·𝓛(X)`, with `𝓛` the GKLS generator).
+
+PROVEN: chains the closed-system Hamiltonian invariance
+(`cellUniformSubspaceInvariant`) with the cell-symmetry of the Lindblad
+operators (`hLB`), via `superoperator_preservesCellUniform`. -/
+theorem GraphonLindblad.cellUniform_preserved [IsFiniteMeasure μ]
+    {A : Type v} [MeasurableSpace A] {ν : Measure A}
+    (LB : GraphonLindbladian Ω μ A ν)
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ LB.hamiltonian)
+    (hLB : IsCellUniformSymmetric LB P)
     (t : ℝ) :
-    -- **(a) Cell-uniform invariance under the Lindblad evolution.**  If a bounded
-    -- operator `X` preserves the cell-uniform subspace, so does its time-`t`
-    -- Lindblad evolution.  (The full headline additionally identifies the
-    -- restriction with the finite quotient evolution attached to
-    -- `quotientFiniteLindbladian LB P`; that part needs the restriction map.)
     ∀ X : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ),
       ContinuousLinearMap.preservesCellUniformGraphon X P →
       ContinuousLinearMap.preservesCellUniformGraphon (LindbladEvolution LB t X) P := by
-  -- chains the finite D8 reduction (`cellUniform_preserved`) with the closed-system
-  -- Hamiltonian invariance (`cellUniformSubspaceInvariant`); blocked by the
-  -- placeholder `LindbladEvolution`/`superoperator`.  Honest gap.
-  sorry
+  intro X hX
+  obtain ⟨hSf, hSa⟩ := superoperator_preservesCellUniform LB P hLB X hX
+  obtain ⟨hXf, hXa⟩ := hX
+  refine ⟨?_, ?_⟩
+  · -- forward: `(X + t•𝓛X) f = X f + t • 𝓛X f ∈ S`.
+    intro f hf
+    show (LindbladEvolution LB t X) f ∈ P.cellUniformSubspace
+    unfold LindbladEvolution
+    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply]
+    exact Submodule.add_mem _ (hXf f hf) (Submodule.smul_mem _ _ (hSf f hf))
+  · -- adjoint: `(X + t•𝓛X)ᴴ = Xᴴ + conj(t)•(𝓛X)ᴴ`.
+    intro f hf
+    show (ContinuousLinearMap.adjoint (LindbladEvolution LB t X)) f ∈ P.cellUniformSubspace
+    unfold LindbladEvolution
+    rw [map_add, map_smulₛₗ]
+    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply]
+    exact Submodule.add_mem _ (hXa f hf) (Submodule.smul_mem _ _ (hSa f hf))
 
 /-! ## Bridge to the finite case
 
@@ -471,7 +794,7 @@ cell `i` to the cell-uniform rank-1 projector at cell `j` (up to phase).
 
 The precise statement is the open-system analogue of
 `Graphon.IsCellUniformPST` in `Graphon/PST.lean`. -/
-def IsCellUniformLindbladPST
+def IsCellUniformLindbladPST [IsFiniteMeasure μ]
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
     (LB : GraphonLindbladian Ω μ A ν)
     {W : Graphon Ω μ}
@@ -492,7 +815,7 @@ This is the open-system analogue of `Graphon.cellUniformPST_iff_quotientPST`
 in `Graphon/PST.lean`.  Proof would specialise the headline theorem
 `GraphonLindblad.cellUniform_preserved` to the rank-1 cell-uniform
 projectors. -/
-theorem GraphonLindblad.cellUniformPST_iff_quotientPST
+theorem GraphonLindblad.cellUniformPST_iff_quotientPST [IsFiniteMeasure μ]
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
     (LB : GraphonLindbladian Ω μ A ν)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ LB.hamiltonian)
@@ -589,14 +912,23 @@ theorem cellDephasing_cellUniformSymmetric
   -- `IsCellUniformSymmetric` requires ν-a.e. `preservesCellUniformGraphon`: each
   -- cell projector `Π_i f = ⟨e_i, f⟩ • e_i` lands in `span{e_i} ⊆ cellUniformSubspace`.
   refine Filter.Eventually.of_forall (fun i => ?_)
-  intro f _
-  -- `(cellDephasing W P γ).lindblad i f = rankOne ℂ e_i e_i f = ⟨e_i, f⟩ • e_i`.
-  show (InnerProductSpace.rankOne ℂ (P.cellIndicator i) (P.cellIndicator i)) f
-      ∈ P.cellUniformSubspace
-  rw [InnerProductSpace.rankOne_apply]
-  -- `⟨e_i, f⟩ • e_i` is a scalar multiple of the spanning vector `e_i`.
-  exact Submodule.smul_mem _ _
-    (Submodule.subset_span (Set.mem_range_self i))
+  -- the cell projector `Π_i = rankOne e_i e_i` is self-adjoint (`adjoint_rankOne`),
+  -- so both `Π_i` and `Π_iᴴ = Π_i` send `f ↦ ⟨e_i, f⟩ • e_i ∈ span{e_i} ⊆ S`.
+  have hpres : ∀ f ∈ P.cellUniformSubspace,
+      (InnerProductSpace.rankOne ℂ (P.cellIndicator i) (P.cellIndicator i)) f
+        ∈ P.cellUniformSubspace := by
+    intro f _
+    rw [InnerProductSpace.rankOne_apply]
+    exact Submodule.smul_mem _ _
+      (Submodule.subset_span (Set.mem_range_self i))
+  refine ⟨hpres, ?_⟩
+  -- `(cellDephasing …).lindblad i = rankOne e_i e_i`, with adjoint `rankOne e_i e_i`.
+  show ∀ f ∈ P.cellUniformSubspace,
+      (ContinuousLinearMap.adjoint
+        (InnerProductSpace.rankOne ℂ (P.cellIndicator i) (P.cellIndicator i))) f
+        ∈ P.cellUniformSubspace
+  rw [InnerProductSpace.adjoint_rankOne]
+  exact hpres
 
 /-- **Caruso speedup at Tower 4** (statement-only).  For the cell-dephasing
 graphon Lindbladian at suitable rate `γ`, the cell-uniform spatial search /

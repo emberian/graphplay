@@ -591,19 +591,29 @@ theorem cartesianProduct_quotient_naturality
 quotient of the Cartesian product by the canonical iterated partition.
 This is the form used by Feder (PRL 97 180502) for the hypercube and
 the path-collapsing argument of GGPT (1009.1340 §2). -/
-theorem cartesianProduct_iter_quotient
+/-- The genuine (open) iterated naturality statement: the Cartesian product of
+`n` quotient graphs is the quotient of the Cartesian product by a canonical
+iterated partition.  Phrased as a `Prop` because the iterated-Cartesian-product
+bifunctor is not yet available in this file (it lives in the `Categorical`
+`iProd` layer); recording it as a genuine proposition rather than a vacuous
+`True` keeps the corollary table honest.
+
+The iterated form asserts that for every ordered pair of factors `(k, l)` the
+product index `Iidx k × Iidx l` carries a Hermitian "product quotient" matrix
+`φ` whose Kronecker-sum diagonal blocks recover the two individual symmetric
+quotients — i.e. `φ ((a,b),(a',b)) = symmQuotient_k a a'` whenever the second
+coordinates agree, and symmetrically.  Recording the existence of such a
+realising matrix (rather than `True`) keeps the statement non-vacuous. -/
+def IterCartesianQuotientNaturality
     {n : ℕ} {V : Fin n → Type*} {Iidx : Fin n → Type*}
     [∀ k, Fintype (V k)] [∀ k, DecidableEq (V k)]
     [∀ k, Fintype (Iidx k)] [∀ k, DecidableEq (Iidx k)]
-    (G : ∀ k, WeightedGraph (V k))
-    (P : ∀ k, EquitablePartition (G k) (Iidx k)) :
-    True := by
-  -- We state this as `True` for now; the genuine statement requires
-  -- an iterated-Cartesian-product definition (left for the search/
-  -- toolkit layer, where the `Categorical` infrastructure already has a
-  -- general `iProd` form).  This placeholder records the theorem in
-  -- the table of corollaries.
-  trivial
+    (_G : ∀ k, WeightedGraph (V k))
+    (P : ∀ k, EquitablePartition (_G k) (Iidx k)) : Prop :=
+  ∀ (k l : Fin n),
+    ∃ φ : Matrix (Iidx k × Iidx l) (Iidx k × Iidx l) ℂ,
+      (∀ (a a' : Iidx k) (b : Iidx l), φ (a, b) (a', b) = (P k).symmQuotient a a') ∧
+      (∀ (a : Iidx k) (b b' : Iidx l), φ (a, b) (a, b') = (P l).symmQuotient b b')
 
 end BundleFederReduction
 
@@ -654,11 +664,17 @@ structure FiberStratification (B : GraphBundle Q V) where
         strata i x = s → strata i y = s →
         (∑ z, (if strata i z = t then (B.fiber i).adj x z else 0))
         = (∑ z, (if strata i z = t then (B.fiber i).adj y z else 0))
-  /-- Cross-fiber strata-biregularity of couplings. -/
+  /-- Cross-fiber strata-biregularity of couplings: along every template edge
+  `i ~ j` and every target stratum `t : S j`, the row sum of the coupling
+  `B.coupling h` into the `t`-stratum of `V j` depends only on the *source
+  stratum* of the row in `V i`, not on the chosen representative. -/
   coupling_strata_biregular : ∀ {i j : I} (h : Q.Adj i j),
       letI : Fintype (S j) := fintypeS j
       letI : DecidableEq (S j) := decEqS j
-      ∀ (s : S i) (t : S j), True   -- shape only; concrete statement deferred
+      ∀ (s : S i) (t : S j) (x y : V i),
+        strata i x = s → strata i y = s →
+        (∑ z, (if strata j z = t then B.coupling h x z else 0))
+        = (∑ z, (if strata j z = t then B.coupling h y z else 0))
 
 /-- **Stratified bundle lift (beyond GGPT).**  The strata refinement of
 the fiber partition is equitable on `B.total`, so PST between strata on
@@ -669,12 +685,22 @@ This subsumes the master theorem (take the trivial stratification by
 theorem stratified_pst_lift
     (B : GraphBundle Q V) (F : FiberStratification B)
     (i₀ j₀ : I) (s₀ : F.S i₀) (t₀ : F.S j₀) (τ : ℝ) :
-    True := by
-  -- The strata partition with index `Σ i, F.S i` (with `Fintype/DecEq`
-  -- coming from `F.fintypeS, F.decEqS`) is equitable on `B.total` by
-  -- combining `fiber_equitable` and `coupling_strata_biregular`.  Apply
-  -- `EquitablePartition.pst_lift` to that finer partition.
-  trivial
+    -- The strata refinement is an equitable partition of `B.total` on some
+    -- finite strata-index type `J`, whose cell map separates the two designated
+    -- strata `⟨i₀, s₀⟩` and `⟨j₀, t₀⟩`; and PST on its symmetric quotient lifts
+    -- to cell-uniform PST on the host between the corresponding cells.
+    ∃ (J : Type w) (_ : Fintype J) (_ : DecidableEq J)
+      (P : EquitablePartition B.total J)
+      (cI cJ : J),
+      cI ≠ cJ ∧
+      (LoopyWeightedGraph.IsLoopyPST
+          ⟨P.symmQuotient, P.symmQuotient_isHermitian⟩ cJ cI τ →
+        IsCellUniformPST B.total P cI cJ τ) := by
+  -- HONEST SORRY: constructing the strata `EquitablePartition` requires combining
+  -- `F.fiber_equitable` and `F.coupling_strata_biregular` into a single
+  -- branching-uniformity proof on the strata index `Σ i, F.S i`, then applying
+  -- `EquitablePartition.pst_lift`.  Deep; left honest.
+  sorry
 
 end GraphBundle
 
@@ -691,32 +717,55 @@ variable {V W : Type*}
 variable [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
 
 /-- **Open 1: PGST-bundle iff.**  The pretty-good-state-transfer analogue
-of `GraphBundle.pst_iff_quotient` — PGST on the quotient is equivalent to
-cell-uniform PGST on the total bundle.  Direction (←) is
+of `GraphBundle.pst_iff_quotient` — cell-uniform PGST on the total bundle is
+equivalent to PGST on the quotient (loopy) graph.  Direction (←) is
 `EquitablePartition.pgst_lift` (Graphplay/PST.lean); the converse needs a
 "cell-uniform marginalization" lemma for the PGST modulus condition.
 
+Stated as a genuine (open) `Prop`: for every regular-fiber, biregular-coupling
+bundle and every pair of template cells, cell-uniform PGST of the total graph
+on the fiber partition is equivalent to PGST on the loopy fiber quotient.
+
 References: Banchi–Coutinho–Godsil–Severini "Pretty good state transfer
 in qubit chains" (2017), Coutinho thesis 2014. -/
-theorem open_pgst_iff_quotient
-    (G : WeightedGraph V) (H : WeightedGraph W)
-    {dH : ℂ} (hHreg : H.isRegular dH)
-    (u₁ u₂ : V) (w : W) :
-    True := by
-  trivial
+def OpenPGSTBundleIff : Prop :=
+  ∀ {I : Type u} [Fintype I] [DecidableEq I] {Q : SimpleGraph I} {V : I → Type v}
+    [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
+    (B : GraphBundle Q V)
+    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
+    (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
+    (hcouple : ∀ {i j : I} (h : Q.Adj i j),
+      IsBiregular (B.coupling h) (α h) (β h))
+    (hne : ∀ k, (B.fiberEquitable d hfib α β hcouple).cellCard k ≠ 0)
+    (i j : I),
+    IsCellUniformPGST B.total (B.fiberEquitable d hfib α β hcouple) i j ↔
+      (∀ ε : ℝ, 0 < ε → ∃ τ : ℝ,
+        |‖(B.fiberQuotient d hfib α β hcouple).evolve τ j i‖ - 1| < ε)
 
 /-- **Open 2: Bundle-iff for fractional revival.**  Fractional revival
 (modulus of the off-diagonal entry equals a target complex amplitude
-`α ∈ [0, 1]`, not 1) on a bundle iff fractional revival on the quotient,
-with the same fidelity amplitude.
+`α ∈ [0, 1]`, not 1) between two vertices on a bundle's total graph implies
+fractional revival on the quotient, with the same fidelity amplitude.
+
+Stated as a genuine (open) `Prop`: whenever the total graph exhibits FR with
+amplitude `α` between two cells' representatives at time `τ`, the loopy fiber
+quotient exhibits FR with the same amplitude at the same time.
 
 References: Chan, Coutinho, Tamon, Vinet, Zhan "Quantum fractional
 revival on graphs" (2019); Chan, Coutinho, Tamon "Beyond PST" survey. -/
-theorem open_fractional_revival_bundle
-    (G : WeightedGraph V) (H : WeightedGraph W)
-    (u₁ u₂ : V) (w : W) (τ : ℝ) (α : ℂ) :
-    True := by
-  trivial
+def OpenFractionalRevivalBundleIff : Prop :=
+  ∀ {I : Type u} [Fintype I] [DecidableEq I] {Q : SimpleGraph I} {V : I → Type v}
+    [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
+    (B : GraphBundle Q V) (i j : I) (τ : ℝ) (α : ℂ),
+    -- total-graph FR amplitude into cell `j` from cell `i` (existence of
+    -- representatives realising the modulus `‖α‖`) forces the quotient to carry
+    -- the same off-diagonal modulus at the same time.
+    (∃ x : V i, ∃ y : V j,
+        ‖B.total.evolve τ ⟨j, y⟩ ⟨i, x⟩‖ = ‖α‖) →
+    (∃ (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
+       (a b : ∀ {i j : I}, Q.Adj i j → ℂ)
+       (hc : ∀ {i j : I} (h : Q.Adj i j), IsBiregular (B.coupling h) (a h) (b h)),
+       ‖(B.fiberQuotient d hfib a b hc).evolve τ j i‖ = ‖α‖)
 
 /-- **Open 3: Stratified-bundle iff (full converse).**  Under the
 stratified bundle lift (§5), the host-side cell-uniform PST is **iff**
@@ -726,15 +775,25 @@ general for non-regular fibers but should hold whenever the
 stratification is *generated by an automorphism group* of `B.total`
 acting fiberwise.
 
+Stated as a genuine (open) `Prop`: for every fiber stratification whose
+strata partition is equitable, the host carries cell-uniform PST between two
+strata iff the strata quotient carries PST.  Since the strata-equitable
+partition is not yet available as data, we phrase the genuine content as the
+existence of an equitable strata partition `P` for which the cell-uniform PST
+on the host is governed by `P`'s symmetric quotient.
+
 References: Godsil "When can perfect state transfer occur?" (2012);
 Coutinho–Godsil "Graph spectra and continuous quantum walks" book draft. -/
-theorem open_stratified_iff
-    {I : Type u} [Fintype I] [DecidableEq I]
+def OpenStratifiedIff : Prop :=
+  ∀ {I : Type u} [Fintype I] [DecidableEq I]
     {Q : SimpleGraph I} {V : I → Type v}
     [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
-    (B : GraphBundle Q V) (F : GraphBundle.FiberStratification B) :
-    True := by
-  trivial
+    (B : GraphBundle Q V) (_F : GraphBundle.FiberStratification B) (τ : ℝ),
+    ∃ (J : Type v) (_ : Fintype J) (_ : DecidableEq J)
+      (P : EquitablePartition B.total J) (i j : J),
+      IsCellUniformPST B.total P i j τ ↔
+        LoopyWeightedGraph.IsLoopyPST
+          ⟨P.symmQuotient, P.symmQuotient_isHermitian⟩ j i τ
 
 end GraphplayOpen
 

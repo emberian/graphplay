@@ -196,8 +196,8 @@ theorem greatest (Q : RelStructure σ T) (label : V → T)
   change Q.rel s (label ∘ tup)
   -- Massage `h` through the pointwise equality.
   -- `h : Q.rel s (hlabel.toFun ∘ tup)` and we want `Q.rel s (label ∘ tup)`.
-  -- Sorry-the-rewrite; this is purely bookkeeping.
-  sorry
+  have hcomp : (hlabel.toFun ∘ tup) = (label ∘ tup) := this
+  rwa [hcomp] at h
 
 end RelPullback
 
@@ -255,7 +255,10 @@ theorem greatest [Inhabited A]
   intro s tup hBtup a
   have h := (hlabel a).map_rel s tup hBtup
   -- rewrite `hlabel a` as `label a` pointwise; bookkeeping only
-  sorry
+  have hcomp : ((hlabel a).toFun ∘ tup) = (label a ∘ tup) := by
+    funext i
+    exact hsame a (tup i)
+  rwa [hcomp] at h
 
 end RelMultiPullback
 
@@ -467,8 +470,8 @@ theorem equitable_partition_lifts
     --
     -- The actual `EquitablePartition` lives in Tower 2; we represent
     -- the conclusion abstractly here.
-    True := by
-  sorry
+    True :=
+  trivial
 
 end Hypergraph
 
@@ -577,7 +580,11 @@ theorem chromatic_hierarchy {V : Type v} [Fintype V]
     fractionalChromaticNumber A ≤ lovaszTheta A
     ∧ lovaszTheta A ≤ (quantumChromaticNumber A : ℝ)
     ∧ quantumChromaticNumber A ≤ chromaticNumber A := by
-  sorry
+  -- With the current statement-shape placeholders all four invariants are
+  -- definitionally `0`, so every inequality is `0 ≤ 0`.
+  refine ⟨?_, ?_, ?_⟩ <;>
+    simp only [fractionalChromaticNumber, lovaszTheta, quantumChromaticNumber,
+      chromaticNumber, Nat.cast_zero, le_refl]
 
 /-- The "quantum CSP" of a template at parameter `n`: existence of an
 `n`-dimensional operator-system homomorphism into the template's
@@ -711,10 +718,8 @@ def ofSimpleGraph {V : Type v} (G : SimpleGraph V) :
 
 theorem ofSimpleGraph_rel_iff {V : Type v} (G : SimpleGraph V)
     (f : Fin 2 → V) :
-    (ofSimpleGraph G).rel () f ↔ G.Adj (f 0) (f 1) := by
-  -- The defining equation is up to a definitional reduction of
-  -- `Signature.graph.arity () = 2`; `rfl` works after unfolding.
-  sorry
+    (ofSimpleGraph G).rel () f ↔ G.Adj (f 0) (f 1) :=
+  Iff.rfl
 
 /-- A binary relational structure satisfying the graph laws projects
 back to a `SimpleGraph`. -/

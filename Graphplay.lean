@@ -76,6 +76,8 @@ import Graphplay.PST.Cospectrality
 import Graphplay.PST.GodsilRatio
 import Graphplay.PST.QuotientIff
 import Graphplay.PST.DiagonalShift
+import Graphplay.PST.Periodicity
+import Graphplay.PST.Universal
 
 -- Algorithms (γ-loops L4, L6 + β)
 import Graphplay.Algorithm.WLRefinement
@@ -92,6 +94,11 @@ import Graphplay.StdLib.HypercubeProduct
 import Graphplay.StdLib.Hamming
 import Graphplay.StdLib.Cayley
 import Graphplay.StdLib.CompleteMultipartite
+import Graphplay.StdLib.Corona
+import Graphplay.StdLib.Join
+import Graphplay.StdLib.Circulant
+import Graphplay.StdLib.AverageMixing
+import Graphplay.StdLib.CoinedWalk
 import Graphplay.StdLib.Cycle
 import Graphplay.StdLib.Computable
 
@@ -116,6 +123,8 @@ import Graphplay.Integrations.MeanFieldGames
 import Graphplay.Integrations.Hodge
 import Graphplay.Integrations.LatticeGauge
 import Graphplay.Integrations.WLRefinement
+import Graphplay.Integrations.QuantumMarkov
+import Graphplay.Integrations.MatrixInversion
 
 -- Engineering toolkit
 import Graphplay.Toolkit
@@ -125,6 +134,10 @@ import Graphplay.Toolkit.Report
 import Graphplay.Toolkit.Hardware
 import Graphplay.Toolkit.Noise
 import Graphplay.Toolkit.Scheduler
+import Graphplay.Toolkit.InverseDesign
+
+-- Numerical CTQW simulator (runnable, Float-backed)
+import Graphplay.Simulate
 
 -- Applied spectral disassembly case studies
 import Graphplay.Applications.IBMHeavyHex
