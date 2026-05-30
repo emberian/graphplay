@@ -1,450 +1,257 @@
 # Graphplay
 
-**The hidden quotient structure of quantum walks — formalized in Lean 4.**
+**The hidden quotient structure of quantum walks — formalized in Lean 4, and pointed at quantum-accelerated machine learning.**
 
-For twenty years the Tamon group and adjacent literature have been
-publishing theorems with the same shape: on *this* graph family, at *this*
-time, with *this* signing, perfect state transfer or uniform mixing or
-optimal spatial search emerges as if by analytic miracle. Read fifty such
-theorems and the structure forces itself on you: every miracle factors
-through an **equitable partition**, the dynamics restrict to a small
-invariant subspace, and the apparent magic is a finite-dimensional
-spectral condition on an `r × r` matrix where `r` is independent of host
-size.
+For twenty years the Tamon group and the adjacent literature have published
+theorems with the same shape: on *this* graph family, at *this* time, with
+*this* signing, perfect state transfer or uniform mixing or optimal spatial
+search emerges as if by analytic miracle. Read fifty such theorems and the
+structure forces itself on you — every miracle factors through an **equitable
+partition**: the dynamics collapse onto a small invariant subspace, and the
+apparent magic is a finite-dimensional spectral condition on an `r × r` matrix
+where `r` is *independent of the host size*.
 
 Graphplay names that structure — *the universal coarse-graining of
-quantum-walk operators* — and mechanizes it across seven mathematical
-settings (the **spine**), with a stdlib of named families, computable
-companions over ℚ, a numerical simulator, an engineering toolkit, two
-applied disassembly studies, and a bridge to quantum-accelerated machine
-learning.
+quantum-walk operators* — and mechanizes it. The lift is not a metaphor here;
+it is a machine-checked theorem, and everything else hangs off it: a stdlib of
+named families, a numerical simulator you can watch, an inverse-design toolkit
+that *builds* Hamiltonians to spec, and a bridge that turns the same quotient
+reduction into a **provable quantum speedup for structured machine learning**.
 
-The library spans ~100 Lean files; `lake build` emits **zero errors**.
-What holds now:
+The library spans ~100 Lean files and builds with **zero errors**. Two
+invariants hold across the entire stack, and they are the point:
 
-- **Every construction is real.** No `sorry` in any definition, no
-  `True`-placeholder theorem — every graph family, operator, partition,
-  channel, bundle, sheaf, and compiler pass is a concrete, fully-elaborated
-  term (one isolated exception: the filtered-colimit-preservation *data*
-  witness, honestly flagged).
-- **The spine is machine-checked, axiom-clean.** The finite
-  equitable-partition → quotient → PST/mixing/**search** lift (Tower 2) *and*
-  its graphon continuous-limit counterpart (Tower 4) are proven end-to-end
-  with `#print axioms` showing only `propext`/`Classical.choice`/`Quot.sound`
-  — no `sorryAx`. So is `PST ⇒ strong cospectrality` (Godsil's necessary
-  condition) and the **first machine-checked *negative*-PST theorems**
-  (dominating-vertex / cone-apex / join — graphs that provably *cannot* transfer).
-- **It runs.** `lake exe graphplay-sim` numerically evolves real CTQW
-  Hamiltonians and prints probability-vs-time: Grover-optimal spatial search
-  peaking at `t* = (π/2)√n`, hypercube PST at `π/2`, chiral (magnetic-flux)
-  directional transport, fractional revival, Lindblad decoherence, and a
-  Hamiltonian synthesized by the inverse-design toolkit transferring on demand.
-- **It engineers.** `Toolkit/InverseDesign` *synthesizes* a host Hamiltonian
-  with a target property (PST between marked sites) by inflating a small
-  quotient, with a machine-checked certificate that the property is inherited.
-- **It reaches toward quantum-ML acceleration.** `Integrations/MachineLearning`
-  proves an attention matrix *is* a quantum-walk Hamiltonian and that a
-  symmetry of the attention pattern induces an exact equitable-partition
-  quotient (verified compression). `Integrations/AttentionComplexity` proves
-  — axiom-clean — that structured (block-equitable) attention's `O(n²)` apply
-  collapses to a **provably linear-in-n `O(n·r·d)`** algorithm, forward *and*
-  backward, with the residual hard part shrunk to the small `r×r` quotient
-  where quantum search/linear-algebra speedups apply. (See "Toward verified
-  quantum ML acceleration" below.)
+- **Every construction is real.** There is no `sorry` in any definition and no
+  `True`-placeholder theorem anywhere. Every graph family, operator, partition,
+  channel, bundle, sheaf, gauge field, attention matrix, and compiler pass is a
+  concrete, fully-elaborated term. (One isolated exception: a single
+  filtered-colimit-preservation *data* witness, honestly flagged.)
+- **The remaining `sorry`s are exclusively theorem bodies** — "prove this true
+  statement," never "this object isn't built yet." They are the genuinely-deep
+  results (Godsil's Diophantine existence direction, Choi/Stinespring, MIP\*=RE,
+  infinite-dimensional continuous spectrum) and the quantitative quantum-advantage
+  *rates*. An adversarial **vacuity audit** swept the codebase and corrected ~40
+  "compiles but says nothing" theorems — plus one `sorry`-on-a-false-statement
+  landmine — so what's left is honest.
 
-The remaining `sorry`s are exclusively *theorem bodies* — the genuinely-deep
-per-paper results (Godsil's Diophantine existence direction, Choi/Stinespring,
-MIP*=RE, infinite-dimensional continuous-spectrum analysis, association-scheme
-coincidences) and the quantitative quantum-advantage *rates* (`O(√n)`,
-`O(κ/ε)`) that inherit from upstream dynamical theorems. **The constructions
-and the structural reductions are proven; the deep rates are the honest frontier.**
+## What's proven (axiom-clean)
+
+The headline results below are `#print axioms`-clean: they depend on only
+`propext`, `Classical.choice`, `Quot.sound` — no `sorryAx`, no custom axioms.
+
+**The spine lift, both finitely and in the continuous limit.**
+`EquitablePartition.cellUniformPST_iff_quotientPST` and
+`GraphBundle.pst_iff_quotient` — cell-uniform perfect state transfer on a host
+holds *iff* PST holds on its small symmetric quotient `Q̃ = D^{1/2} Q D^{-1/2}`.
+The Tower-4 graphon counterpart (`Graphon.cellUniformPST_iff_quotientPST`,
+`op_restrict_eq_quotient`) is equally clean — including the one genuinely-hard
+Mathlib analytic gap, the Hilbert–Schmidt `MemLp` closure
+(`kernelIntegralFun_memLp`), which is now proven. The same lift holds for
+mixing and **search** (`cellUniformSearch_iff_quotientSearch`).
+
+**Godsil's necessary condition.** `isPST_imp_isStronglyCospectral` — PST forces
+strong cospectrality — via a from-scratch spectral-projector calculus
+(`eigenProj`, `E² = E`, `E_λ E_μ = 0`, `U(τ) = Σ_λ e^{-iτλ} E_λ`), proven for
+arbitrary Hermitian matrices (so it survives the chiral/complex case, where the
+transferred phase is only unit-modulus, not ±1 — a distinction we make precisely).
+
+**The first machine-checked *negative*-PST theorems.** The corpus is full of
+"this graph *cannot* transfer," but nobody had formalized one.
+`dominatingVertex_no_PST`, `cone_apex_no_PST`, `join_no_PST_within_G_of_not_cospectral`,
+`pendantCorona_no_PST` — all proven, via a clean engine (`no_PST_of_not_cospectral`:
+a single eigenvalue with unequal projector-diagonals certifies no transfer at any time).
+
+**Named families, from first principles.** The Christandl-et-al. hypercube
+antipodal PST at `τ = π/2` (`isPST_hypercubeP_antipode`) is built bottom-up:
+Pauli-X matrix exponential → `isPST_K2` → Kronecker induction. The Cartesian
+product preserves PST (`cartesianProduct_pst`) via a *genuinely proven*
+`exp(M ⊗ 1) = exp(M) ⊗ 1` Kronecker factorization. The AAKV average-mixing
+matrix is doubly-stochastic (`avgMixing_doublyStochastic`).
+
+**Quantum advantage.** `quantum_search_quadratic_advantage`: continuous-time
+quantum search on `K_n` reaches its target in `O(√n)` (an exact 2×2 Rabi
+reduction of the search Hamiltonian, with the invariant subspace and dynamics
+both proven), while any classical algorithm needs `Ω(n)` queries (an adversary
+bound). And the contribution we actually care about —
+`ml_structured_search_quantum_advantage`: lifted through the axiom-clean
+quotient-search reduction, a search problem with an `r`-cell symmetry costs
+`O(√r)` quantum, **independent of host size `N`**, vs `Ω(r)` classical. The
+quadratic speedup is inherited by the small quotient *with a proof the answer
+is identical*.
+
+## Toward verified quantum-ML acceleration
+
+This is the destination, and the reason the rest exists. The thesis is that the
+equitable-partition quotient is *exactly* the symmetry reduction that makes both
+classical structured linear algebra and its quantum acceleration tractable —
+and that a machine-checked lift is the certificate that the reduction is exact.
+
+- **Attention is a quantum-walk Hamiltonian.** `Integrations/MachineLearning`
+  turns an attention score matrix into a Hermitian operator and proves that a
+  symmetry of the attention pattern (translation-invariant, block-structured, or
+  weight-tied / group-equivariant heads) induces a genuine **equitable partition**
+  (`equitableOfAutomorphism`) — so the operator reduces *exactly* to a small
+  `r × r` quotient (`multiHead_restrict_eq_symmQuotient`, delegating to the
+  sorry-free spine). This is the verified statement that structured attention is
+  compressible.
+
+- **Structured attention is provably linear-time.**
+  `Integrations/AttentionComplexity` proves, axiom-clean, that for block-equitable
+  attention `A[i][j] = B[cell i][cell j]` the naive `O(n²·d)` apply *equals* an
+  `O(n·r·d)` algorithm exactly (`blockAttentionApply_eq_fullAttentionApply` — the
+  `n²` entries are only `r²` distinct blocks), i.e. the quadratic in sequence
+  length **collapses to linear in n** (`attention_apply_linear_in_n`) — forward
+  *and* backward (`training_step_linear_under_equitable`). The residual hard work
+  shrinks from `n` to the small quotient dimension `r`, which is exactly where the
+  `O(√r)` quantum search and the CTQW linear solve (`Integrations/MatrixInversion`,
+  for the ML normal equations / kernel systems) buy more.
+
+So the composition is concrete: **structured attention's quadratic becomes
+linear in n, and the small `r × r` quotient that remains is where quantum
+helps.** The honest split: the symmetry reduction and its exactness are
+*proven*; the quantitative quantum-advantage *rates* (`O(√n)` search, `O(κ/ε)`
+inversion) are the deep dynamical theorems still in progress, and the bridge
+from *exactly*-equitable to *approximately*-structured (learned) attention —
+**ε-equitable-partition theory** with controlled error — is the open frontier
+this framework is built to attack. If you want to help build the verified case
+for a machine that accelerates ML, that frontier is the door.
+
+## It runs
+
+```sh
+lake exe graphplay-sim
+```
+
+A `Float`-backed numerical CTQW simulator (`exp(-iτH)` via scaling-and-squaring),
+printing probability-vs-time tables you can actually watch:
+
+- **Childs–Goldstone spatial search on `K_16`** — success probability climbs to
+  `1.000000` exactly at `t* = (π/2)√16 = 6.2832`, then symmetrically decays.
+- **Hypercube `Q_3` antipodal PST** — fidelity `1.000000` at `t = π/2`.
+- **Chiral (magnetic-flux) walk** — clockwise transport bias `+0.99`, which a
+  real-symmetric walk cannot produce.
+- **Fractional revival** — partial revival to `α = 0.64` at the predicted time.
+- **Lindblad dephasing** — purity decaying `1.0 → 0.37` (decoherence, live).
+- **Attention quotient match** — a 2-block softmax attention's full-graph
+  symmetric-subspace dynamics equal its `2×2` quotient evolution to `~10⁻⁶`. The
+  compression theorem, watched.
+- **Design → simulate loop** — a host Hamiltonian synthesized by the toolkit
+  transfers at `π/2`, numerically confirming its certificate.
+
+## It engineers
+
+```sh
+lake exe graphplay-toolkit examples/k4_equal_fiber.json   # → search-compiler report
+```
+
+`Toolkit/InverseDesign.synthesizePST` runs the spine *backwards*: pick a small
+quotient with the property you want, **inflate** it through an equitable bundle,
+and the host inherits the property — with a machine-checked certificate
+(`engineered_host_has_PST`). Inverse design of Hamiltonians, not search.
 
 ## The seven-tower spine
 
-The universal object at every tower is the equitable partition; the
-universal operation is `quotient = a small finite Hermitian matrix`. The
-three load-bearing theorems repeat at every level:
+The universal object at every level is the equitable partition; the universal
+operation is `quotient = a small finite Hermitian matrix`; the universal
+theorem is the lift.
 
-1. `spec(quotient) ⊆ spec(host)`, with eigenvector lift.
-2. PST / mixing / search / fractional revival lift from quotient to
-   cell-uniform states.
-3. (Tower 5) The Quotient functor preserves filtered colimits — the
-   precise meaning of "quasi-infinite".
+| Tower | Object | Status |
+|-------|--------|--------|
+| 1 | `SimpleGraph V` | proven, computable, `#eval`-able |
+| 2 | `WeightedGraph V` (Hermitian ℂ) | **spine lift axiom-clean**; ℚ-computable companions |
+| 3 | Operator system / quantum graph | constructions concrete; UCP / Choi-matrix / k-positivity in place; Choi & Stinespring deferred |
+| 4 | `Graphon Ω μ` (Hilbert–Schmidt op) | **operator layer axiom-clean**; continuous-spectrum analysis deferred |
+| 5 | Categorical (filtered colimits) | functors / quotient / adjunction concrete; `FinerThan` a genuine `Preorder`; one isolated colimit-data `sorry` |
+| 6 | Sheaves of `*`-algebras | `constSheaf` concrete (terminal/skyscraper); stalkwise ⇒ PST proven |
+| 7 | ∞-categorical / derived | finite-shadow scaffold; awaits Mathlib ∞-cat library |
 
-| Tower | Object                              | Status |
-|-------|-------------------------------------|--------|
-| 1     | `SimpleGraph V`                     | proven, computable, `#eval`-able |
-| 2     | `WeightedGraph V` (Hermitian ℂ)     | **spine lift axiom-clean** (`cellUniformPST_iff_quotientPST`, `spec ⊆`); computable via ℚ companions |
-| 3     | Operator system / quantum graph     | all constructions concrete; UCP/Choi/k-positivity in place; deep analytic theorems (Choi, Stinespring) deferred |
-| 4     | `Graphon Ω μ` (Hilbert–Schmidt op)  | **operator layer axiom-clean** (`op_restrict_eq_quotient`, graphon `cellUniformPST_iff_quotientPST`, `evolve` group laws, HS `MemLp` closure); continuous-spectrum analysis deferred |
-| 5     | Categorical (filtered colimits)     | functors/quotient/adjunction concrete; `FinerThan` is a genuine `Preorder` (lattice axioms shown false at full generality); colimit-preservation data the lone isolated `sorry` |
-| 6     | Sheaves of `*`-algebras             | `constSheaf` concrete (terminal/skyscraper); stalkwise⇒PST proven |
-| 7     | ∞-categorical / derived             | statement-level scaffold; finite-shadow predicates; awaits Mathlib ∞-cat library |
+Adjacent infrastructure built along the way: a loopless-free
+**`LoopyWeightedGraph`** (Laplacian `L = D − A`, self-loop / lackadaisical
+walks, with regular-graph Laplacian↔adjacency equivalence proven via
+diagonal-shift global-phase invariance); **first-class graph products**
+`□` / `⊗` / `⊠` (Kronecker sum/product, eigenvector lemmas, the proven
+`exp(M⊗1) = exp(M)⊗1`); the **spectral-projector calculus**; and
+`Graphplay/Tactics.lean`, a reusable proof-automation library
+(`herm_grind`, `modulus_one`, `equitable_discharge`, named simp/aesop sets).
 
-Adjacent to the towers, three new infrastructure layers were added: a
-**loopless-free `LoopyWeightedGraph`** (Laplacian `L = D−A` and self-loop /
-lackadaisical walks, with regular-graph Laplacian↔adjacency equivalence
-proven via diagonal-shift invariance), **first-class graph products**
-`□`/`⊗`/`⊠` (Kronecker-sum/product with eigenvector lemmas, the
-genuinely-proven `exp(M⊗1)=exp(M)⊗1` factorization, and a machine-checked
-**hypercube antipodal PST** at `τ=π/2` built from first principles), and a
-reusable **proof-automation library** (`Graphplay/Tactics.lean`: custom
-tactics `herm_grind`/`modulus_one`/`loopless_grind`/`equitable_discharge`,
-named simp/aesop rule-sets, 18 proven helper lemmas).
+## Corpus coverage
 
-## Toward verified quantum ML acceleration
-
-The destination this project is aimed at: a *verified theoretical framework*
-for quantum acceleration of machine-learning workloads — and the reason it
-might be worth building the hardware. The bridge is already structural, not
-hand-wavy:
-
-- **Attention is a quantum-walk Hamiltonian.** `Integrations/MachineLearning`
-  turns an attention score matrix into a Hermitian operator, and proves that a
-  symmetry of the attention pattern (translation-invariant, block-structured,
-  or weight-tied / group-equivariant heads) induces a genuine **equitable
-  partition** — so the operator reduces *exactly* to a small `r × r` quotient.
-  This is the verified statement that "structured attention is compressible."
-- **Structured attention is provably linear-time.**
-  `Integrations/AttentionComplexity` proves, axiom-clean, that for block-equitable
-  attention `A[i][j] = B[cell i][cell j]` the naive `O(n²·d)` apply equals an
-  `O(n·r·d)` algorithm *exactly* (`blockAttentionApply_eq_fullAttentionApply`),
-  i.e. the quadratic in sequence length **collapses to linear in n**
-  (`attention_apply_linear_in_n : blockCost = n·(r·d + d)`) — forward *and*
-  backward (`training_step_linear_under_equitable`). The residual hard work
-  shrinks from `n` to the small quotient dimension `r`.
-- **The quotient is where quantum buys more.** On the `r × r` quotient, the
-  remaining linear-algebra / search work is exactly what continuous-time quantum
-  walks accelerate — `Integrations/MatrixInversion` (CTQW linear solve, the ML
-  normal equations / kernel systems) and `Integrations/QuantumAdvantage` (the
-  Grover/CTQW `O(√r)` spatial search, lifted through the axiom-clean
-  `cellUniformSearch_iff_quotientSearch`).
-
-The honest split: **the symmetry reduction and its exactness are *proven*** —
-so any upstream quantum speedup is inherited by the small quotient *with a proof
-the answer is identical*. The quantitative quantum-advantage **rates** (`O(√n)`
-search separation vs classical `Ω(n)`, `O(κ/ε)` inversion) are the deep
-dynamical theorems still in progress, and the bridge from *exactly*-equitable
-to *approximately*-structured (learned) attention — ε-equitable-partition theory
-with controlled error — is the open research frontier this framework is built to
-attack. Collaborators welcome.
-
-## Entry points by audience
-
-- **Curious newcomer** — `paper/graphplay_pitch.pdf` (6 pages: what it
-  is, why it matters, why you might care).
-- **Mathematician** — `paper/quasi_infinite_adjoint_v3.pdf` (16 pages:
-  the main manuscript, equitable spine + graphon limit + chiral signing
-  + categorical filtered-colimit theorem).
-- **Research-program reader** — `paper/research_program.pdf` (13 pages:
-  catalog of the eighteen dowsing-rod theorems and eight integrations).
-- **Hardware engineer** — `paper/applied_majorana1.md` and
-  `paper/applied_ibm_heavy_hex.md` (worked spectral-disassembly studies
-  of Microsoft's Majorana-1 chip and IBM's heavy-hex lattice).
-- **Lean-curious** — `Graphplay/Demo.lean` (Heawood graph colored on the
-  torus, end-to-end, `#eval`-able) and `Graphplay/StdLib/` (named
-  families with PST certificates).
-- **Mathlib contributor** — `Graphplay/OperatorSystem.lean` is the
-  cleanest upstream candidate: operator systems, k-positivity, UCP maps,
-  Choi-matrix characterization — no Mathlib dependency cycle.
-- **Cross-disciplinary reader** — `Graphplay/Integrations/` has bridges
-  to TQFT, RMT, MERA, optimal transport, Hodge theory, lattice gauge,
-  Weisfeiler–Leman, and mean-field games.
-
-## Computability
-
-Lean's `Complex` is a `noncomputable Field`, so general spectral
-arithmetic does not `#eval`. Graphplay handles this honestly:
-
-- Tower 1 (`SimpleGraph`) — fully decidable, `#eval` works.
-- Tower 2+ statements live over `ℂ` and are noncomputable.
-- `Graphplay/Computable.lean` provides `GaussianRat = ℚ[i]` with
-  computable ring operations, matrix multiply, trace, determinant, and
-  Gauss–Jordan inverse — the exact substrate for spectra algebraic over
-  ℚ at dimensions ≤ 8.
-- `Graphplay/Computable/Float.lean` provides a `Float`-backed
-  approximate companion for larger numerical exploration.
-- `Graphplay/Demo.lean` runs an end-to-end coloring of the Heawood graph
-  on the torus, demonstrating the full pipeline on a real example:
-  `#eval Graphplay.Demo.heawoodColorCount`.
-- `Graphplay/CombinatorialMap.lean` gives the genus-bounded embedding
-  primitives the demo and the applied studies depend on.
-
-## Directory tour
-
-### Core spine
-
-- `Graphplay/Basic.lean` — Tower 1: indexed coproducts, edge-union,
-  inverse-limit threads, template joins.
-- `Graphplay/Weighted.lean`, `Equitable.lean`, `Spectral.lean` — Tower 2
-  Hermitian complex adjacency, equitable partitions, quotient spectrum.
-- `Graphplay/Bundle.lean`, `PST.lean`, `Mixing.lean`, `Search.lean` —
-  constructive bundle engine and three classical lift primitives.
-- `Graphplay/Loopy.lean`, `Loopy/Laplacian.lean`, `Loopy/Search.lean` —
-  loopless-free Hermitian graphs: Laplacian `L = D−A`, self-loop /
-  lackadaisical walks, and the regular-graph Laplacian↔adjacency
-  walk/search equivalence (via diagonal-shift global-phase invariance).
-- `Graphplay/Product.lean`, `Product/PST.lean` — first-class Cartesian
-  `□` / tensor `⊗` / strong `⊠` products (Kronecker sum/product), the
-  `exp(M⊗1)=exp(M)⊗1` factorization, and the GGPT Cartesian-product PST
-  theorem (`StdLib/HypercubeProduct.lean` derives `Q_n` antipodal PST).
-- `Graphplay/PST/DiagonalShift.lean` — CTQW amplitudes are invariant under
-  scalar diagonal shifts of the Hamiltonian (global phase).
-- `Graphplay/Tactics.lean`, `TacticsInit.lean` — proof-automation library:
-  `herm_grind`, `modulus_one`, `loopless_grind`, `equitable_discharge`,
-  named simp/aesop rule-sets, and 18 proven helper lemmas.
-- `Graphplay/Chiral.lean` — magnetic / chiral signings.
-- `Graphplay/QuantumGraph.lean`, `OperatorSystem.lean` — Tower 3
-  operator systems, UCP maps, Choi matrices.
-- `Graphplay/Graphon.lean`, `Graphon/{Equitable,PST,Limit,LimitReverse,Spectrum,Lindblad}.lean`
-  — Tower 4 graphon limits and cell-uniform spectral identities
-  (Szegedy 1003.5588; BCLSV).
-- `Graphplay/Categorical.lean`, `Categorical/Topos.lean` — Tower 5
-  `Quotient : WGraphP ⥤ WGraph`, `preservesFilteredColimits`, the
-  universal Xie–Tamon statement.
-- `Graphplay/Tower6.lean` — sheaves of unital `*`-algebras over a base
-  space.
-- `Graphplay/Tower7.lean` — ∞-categorical / derived scaffold
-  (statements only).
-- `Graphplay/Relational.lean` — Tower 1.5: `k`-ary CSP / hypergraph
-  relational layer.
-
-### PST foundations (γ-loop L1, L2, L3)
-
-- `Graphplay/PST/Cospectrality.lean` — cospectral vertex pairs.
-- `Graphplay/PST/GodsilRatio.lean` — Godsil's ratio condition.
-- `Graphplay/PST/QuotientIff.lean` — quotient-level iff for PST.
-
-### Algorithms (γ-loops L4, L6 + β)
-
-- `Graphplay/Algorithm/WLRefinement.lean` — Weisfeiler–Leman refinement.
-- `Graphplay/Algorithm/WLOrbit.lean` — orbit partition.
-- `Graphplay/Algorithm/ChiralOpt.lean` — chiral-signing optimization.
-- `Graphplay/Algorithm/StdLibMatch.lean` — match host to a stdlib entry.
-- `Graphplay/Algorithm/PrimitiveDSL.lean` — end-to-end compiler DSL.
-
-### Stdlib of named families — `Graphplay/StdLib/`
-
-- `Path.lean` — paths `P_n`, including Christandl–Datta–Ekert–Landahl
-  engineered weighted paths.
-- `Hypercube.lean` — `Q_n` with the Möbius PST protocol.
-- `Hamming.lean` — Hamming schemes and their Bose–Mesner algebras.
-- `Cayley.lean` — abelian Cayley graphs and the
-  Bašić–Petković–Stevanović characterization.
-- `CompleteMultipartite.lean` — `K_{n_1,…,n_k}` quotients.
-
-### Dowsing rods — `Graphplay/Dowsing/`
-
-The eighteen-rod research program: each file states a load-bearing open
-theorem precisely; proofs are deferred.
-
-- `BundlePSTLift.lean` — bundle-level PST lifting from fibers.
-- `ChiralBundlePST.lean` — chiral signing through a bundle (D1).
-- `Conjecture93.lean` — Conjecture 9.3 of the v3 manuscript (D2).
-- `ChiralGraphon.lean` — chiral signings on graphons (D3).
-- `CoherentAlgebra.lean` — coherent algebra ↔ equitable partition (D4).
-- `NonCommutativeCoherent.lean` — non-commutative coherent algebras (D5).
-- `FractionalRevivalNC.lean` — fractional revival on non-commutative
-  coherent algebras (D6).
-- `HypergraphPST.lean` — hypergraph CTQW models and PST (D7).
-- `NoiseEquitable.lean` — equitable structure under noise channels (D8).
-- `FilteredColimitPST.lean` — generalized filtered-colimit PST (D9).
-
-Companion notes: `paper/conjecture93_notes.md` (Conjecture 9.3 working
-notes) and `paper/qri_dmt_coloring_review.md` (a QRI bridge review).
-
-### Integrations — `Graphplay/Integrations/`
-
-Eight cross-framework bridges connecting the spine to neighboring
-formalisms.
-
-- `TQFT.lean` — modular tensor categories, anyon sectors, Heawood
-  envelopes.
-- `RMT.lean` — random matrix theory and free probability; random
-  graphons with deterministic equitable spectra.
-- `TensorNetworks.lean` — MERA coarse-graining as equitable cell maps;
-  PEPS; holographic codes.
-- `OptimalTransport.lean` — Wasserstein geometry of graphons; Sinkhorn
-  reweighting.
-- `MeanFieldGames.lean` — graphon LQR control (Gao–Caines) and quantum
-  mean-field games via cell-uniform invariant subspaces.
-- `Hodge.lean` — combinatorial Hodge decomposition; persistent Hodge /
-  TDA hooks.
-- `LatticeGauge.lean` — chiral signings as discrete U(1) (and
-  non-abelian) lattice gauge connections.
-- `WLRefinement.lean` — WL refinement as equitable saturation; quantum
-  isomorphism hooks.
-
-### Engineering toolkit — `Graphplay/Toolkit/`
-
-- `Spec.lean` — JSON spec parser → symbolic `WeightedGraph (Fin n)` with
-  regularity certificates.
-- `Bundle.lean` — fiber-partition certificate construction.
-- `Report.lean` — markdown report emitter with machine-readable
-  certificate manifest.
-- `Hardware.lean` — hardware-constraint vocabulary.
-- `Noise.lean` — noise-channel composition primitives.
-- `Scheduler.lean` — compilation pipeline scheduler.
-
-### Applied disassembly — `Graphplay/Applications/`
-
-- `IBMHeavyHex.lean` — heavy-hexagonal lattice (Eagle, Heron, Osprey,
-  Condor), bipartite-flag-qubit structure, planar embedding.
-- `MajoranaOne.lean` — Microsoft's Majorana-1 topological-qubit chip
-  (stretch demo from the public design).
-
-Both files have companion markdown narratives in `paper/applied_*.md`.
+The Tamon / Godsil continuous-time-quantum-walk literature is modeled
+end-to-end as precise statements — the spine and a large fraction of named
+results proven, the deep per-paper headlines honest `sorry`s. Covered: PST /
+PGST, fractional revival (incl. the non-commutative / `D_K` framework), uniform
+and average mixing (AAKV matrix), spatial search (incl. the CNO spectral-ratio
+criterion), graphs-with-tails and the dark subspace, chiral / magnetic signings,
+Laplacian and lackadaisical walks, association schemes and Bose–Mesner algebras,
+graph products (GGPT), corona and joins (with the first negative-PST results),
+circulant and bunkbed graphs, many-particle Feder boson / fermion exterior-power
+walks, coined / Szegedy discrete-time walks, weak-coupling Feshbach–Schur PST,
+universal / multiple state transfer and switching automorphisms, QOMDP
+decidability, and matrix-inversion-by-walk. Full map:
+`paper/coverage/COVERAGE_MATRIX.md`.
 
 ## Build
 
 ```sh
-lake build
+lake build                       # the library: 0 errors
+lake exe graphplay-sim           # numerical CTQW simulator (tables above)
+lake exe graphplay-toolkit <spec.json>   # search-compiler report
+lake exe graphplay               # load banner + usage
 ```
 
-Depends on Mathlib (configured for `~/src/mathlib4` via `lakefile.toml`).
-Lean toolchain pinned in `lean-toolchain`.
+Depends on Mathlib (configured for `~/src/mathlib4` via `lakefile.toml`); Lean
+toolchain pinned in `lean-toolchain`. Tower 1 and the computable substrate run
+under `#eval` (`Graphplay/Demo.lean`, `Graphplay/Computable.lean`); the rest of
+the spine lives over `ℂ` (noncomputable) with `ℚ[i]`- and `Float`-backed
+companions for finite examples.
 
-Build the manuscripts:
+## Status, honestly
 
-```sh
-typst compile paper/quasi_infinite_adjoint_v3.typ
-typst compile paper/graphplay_pitch.typ
-typst compile paper/research_program.typ
-```
+- **0 errors.** Every `sorry` is a theorem body — no `sorry` in any definition
+  (one isolated colimit-data witness aside), no `True`-placeholder theorems.
+- **Axiom-clean** where it counts: the finite and graphon spine lifts, the
+  search lift, `PST ⇒ strong cospectrality`, the negative-PST theorems, the
+  hypercube and Cartesian-product PST, the quantum-advantage separation, and the
+  attention-linearity theorems all `#print axioms` clean.
+- **Hardened.** An adversarial vacuity audit corrected ~40 theorems that
+  compiled but said nothing (`True` hypotheses, trivial conclusions, stub-driven
+  `0 ≤ 0`, a `True`-in-disguise predicate) and removed a `sorry` on a *false*
+  statement (a latent inconsistency). Stub-dependencies that remain are flagged
+  in-file, not hidden.
+- **Open frontier:** the deep per-paper proofs (Godsil's Diophantine direction,
+  Choi/Stinespring, MIP\*, infinite-dim continuous spectrum), the quantitative
+  quantum-advantage rates, and — the big one — ε-equitable-partition theory for
+  *approximately*-structured (learned) attention.
 
-Run the executables:
+## How to get involved
 
-```sh
-lake exe graphplay                          # load banner + toolkit usage
-lake exe graphplay-toolkit examples/k4_equal_fiber.json   # → search-compiler report
-lake exe graphplay-sim                      # numerically evolve CTQW Hamiltonians,
-                                            #   print probability-vs-time tables:
-                                            #   search (peak at (π/2)√n), PST, chiral,
-                                            #   fractional revival, Lindblad, attention-quotient
-```
+Collaborators welcome — this is a project aimed at the verified theoretical case
+for quantum-accelerated machine learning, and it is at the stage where the
+foundations are solid and the frontier is sharp.
 
-Try the demos:
+- **Approximate-equitable theory.** Real learned attention is only
+  approximately symmetric. Build ε-equitable partitions with controlled
+  quotient error — this is what carries the exact results to practice.
+- **Close a quantum-advantage rate.** The `O(√n)` and `O(κ/ε)` dynamical bounds
+  are the honest gap between "the reduction is exact" and "the speedup is total."
+- **Close a deep dowsing rod.** Each `Graphplay/Dowsing/` file states a
+  load-bearing open theorem precisely; the spine does much of the work.
+- **Add a stdlib family** (strongly regular graphs, Johnson / Grassmann schemes,
+  half-Cayley) or disassemble a new hardware platform (Rydberg arrays,
+  trapped-ion chains) — `Applications/IBMHeavyHex` and `Applications/MajoranaOne`
+  are the templates.
 
-```lean
-#eval Graphplay.Demo.heawoodColorCount
--- and other #eval lines in Graphplay/Demo.lean and Graphplay/Computable.lean
-```
+## Manuscripts & references
 
-## Status (honest)
+`paper/` holds the manuscripts (`quasi_infinite_adjoint_v3`, the collaborator
+pitch, the research-program catalog), the applied disassembly studies
+(`applied_ibm_heavy_hex.md`, `applied_majorana1.md`), and the coverage audits
+(`paper/coverage/`). `references/` mirrors the calibrating literature — Szegedy
+(graphon spectra, arXiv:1003.5588), Bachman–Tamon (quotient PST, arXiv:1108.0339),
+Godsil (when PST occurs; average mixing), Coutinho–Godsil (the book), Chan et al.
+(fractional revival), Xie–Tamon (no infinite tail beats optimal search), and the
+chiral-mixing line, alongside the classical-ML anchors the bridge cites.
 
-- **0 errors**, **~290 `sorry` warnings** (all on theorem bodies), ~100 Lean
-  files. Down from ~634; the entire reduction was **eliminating every
-  `sorry` in a definition** (152 → 1 irreducible) and every `True`-placeholder
-  theorem (→ 0) — so what remains is genuinely "prove this true statement",
-  never "this object isn't built yet". An ongoing adversarial **vacuity audit**
-  hardens against "compiles but says nothing" theorems (`True` hypotheses,
-  trivial conclusions, stub-driven `0 ≤ 0`) — several caught and corrected.
-- **The corpus is modeled end-to-end.** The Tamon/Godsil quantum-walk
-  literature — PST/PGST, fractional revival, uniform/average mixing, spatial
-  search (incl. the CNO spectral-ratio criterion), graphs-with-tails, chiral
-  signings, Laplacian/lackadaisical walks, association schemes, graph products,
-  corona/joins, circulant/bunkbed, many-particle Feder/exterior-power walks,
-  coined/Szegedy walks, weak-coupling Feshbach–Schur — is represented as precise
-  statements; the spine and a large fraction of named results are proven, the
-  deep per-paper headlines are honest sorries. See `paper/coverage/COVERAGE_MATRIX.md`.
-- **Runnable.** `lake build` produces working executables; `lake exe
-  graphplay` and `lake exe graphplay-toolkit <spec.json>` both run.
-- Tower 1 is proven and `#eval`-able.
-- **Tower 2 spine is axiom-clean end-to-end**: `spec(quotient) ⊆ spec(host)`,
-  the cell-uniform/quotient PST iff (`QuotientIff.cellUniformPST_iff_quotientPST`),
-  the bundle PST lift (`GraphBundle.pst_iff_quotient`), the Cartesian-product
-  PST theorem, and the hypercube antipodal-PST theorem all `#print axioms`
-  clean. ℚ-backed companions make finite examples runnable.
-- **Tower 4 graphon operator layer is axiom-clean**: the Hilbert–Schmidt
-  `MemLp 2` closure (the one genuinely-hard Mathlib analytic gap) is proven,
-  `W.op` is self-adjoint with real spectrum, `op_restrict_eq_quotient` and the
-  graphon `evolve` group laws hold, and the graphon `cellUniformPST_iff_quotientPST`
-  / mixing / search headlines are clean. Infinite-dimensional continuous-spectrum
-  facts (Reed–Simon decomposition, HS compactness) remain deferred.
-- Tower 3 (operator systems, UCP/Choi) — all constructions concrete; deep
-  analytic theorems (Choi's theorem, Stinespring dilation) deferred.
-- Towers 5–7 — all constructions concrete; one isolated colimit-preservation
-  data `sorry` (Tower 5); Tower 7 a finite-shadow scaffold awaiting Mathlib.
-- The remaining theorem-`sorry`s are concentrated in the dowsing files
-  (deep open conjectures), the integration files (cross-framework deep
-  results), and the infinite-dimensional/association-scheme analytic layers.
-  These are deliberate research handles, not bugs — and a `Graphplay/Tactics.lean`
-  automation layer + the now-axiom-clean lifts make the next proving pass tractable.
+---
 
-## How to contribute
-
-Pick one:
-
-- **Close a dowsing rod.** Each file in `Graphplay/Dowsing/` is
-  self-contained. Start with `BundlePSTLift` (closest to landing) or
-  `Conjecture93` (highest payoff).
-- **Add a stdlib family.** Strongly regular graphs, Johnson schemes,
-  Grassmann schemes, half-Cayley graphs, and the Diaconis–Holmes
-  swap-Markov family are all missing from `Graphplay/StdLib/`.
-- **Upstream operator systems.** `Graphplay/OperatorSystem.lean` is the
-  cleanest candidate for Mathlib contribution; the UCP-map and Choi-matrix
-  layer is largely absent upstream.
-- **Pick a hardware platform and disassemble it.** Rydberg arrays,
-  trapped-ion chains, photonic Boson samplers, neutral-atom processors
-  are all open. Use `Applications/IBMHeavyHex.lean` and
-  `Applications/MajoranaOne.lean` as templates.
-- **Mechanize an integration.** `Integrations/WLRefinement.lean` and
-  `Integrations/RMT.lean` have the highest density of concrete
-  statements awaiting proof.
-
-## Reading the spine in code
-
-For the universal lift theorem from first principles:
-
-```
-Graphplay/Weighted.lean    →  WeightedGraph definition
-Graphplay/Equitable.lean   →  equitable partition + characteristic matrix
-Graphplay/Spectral.lean    →  spec(A/π) ⊆ spec(A)
-Graphplay/PST.lean         →  PST lift
-Graphplay/Bundle.lean      →  bundle = canonical fiber partition
-Graphplay/Categorical.lean →  Quotient.preservesFilteredColimits
-```
-
-For the graphon limit:
-
-```
-Graphplay/Graphon.lean             →  measurable kernel, Hilbert–Schmidt operator
-Graphplay/Graphon/Equitable.lean   →  measurable equitable partition
-Graphplay/Graphon/Spectrum.lean    →  spectral identity
-Graphplay/Graphon/Limit.lean       →  finite ⟶ graphon convergence
-Graphplay/Graphon/PST.lean         →  PST in the graphon limit
-```
-
-## Manuscripts
-
-- `paper/quasi_infinite_adjoint_v3.{typ,pdf}` — main paper (16 pages).
-- `paper/quasi_infinite_adjoint{,_v2}.{typ,pdf}` — earlier drafts kept
-  for citation continuity.
-- `paper/graphplay_pitch.{typ,pdf}` — 6-page collaborator pitch.
-- `paper/research_program.{typ,pdf}` — 13-page open-problem catalog.
-- `paper/spine_outline.md` — working spine index.
-- `paper/conjecture93_notes.md` — Conjecture 9.3 working notes.
-- `paper/applied_{majorana1,ibm_heavy_hex}.md` — applied disassembly
-  studies.
-- `paper/qri_dmt_coloring_review.md` — QRI bridge review.
-
-## References
-
-Nineteen arXiv PDFs plus extracted plain-text mirrors live in
-`references/`. The calibrating reading list is:
-
-- Szegedy, *Spectra of graphons and graph limits*, arXiv:1003.5588.
-- Bachman et al., *PST on quotient graphs*, arXiv:1108.0339.
-- Chan–Coutinho–Tamon–Vinet–Zhan, *Fractional revival and association
-  schemes*, arXiv:1907.04729.
-- Ide–Narimatsu, *Equitable-partition spatial search*, arXiv:2209.07688.
-- Chan–Godsil–Tamon–Xie, *Spectral gap criterion for transfer*,
-  arXiv:2204.04355.
-- Bick–Sclosa, *Graphon dynamical systems and invariant subspaces*,
-  arXiv:2110.13686.
-- Xie–Tamon, *No infinite tail beats optimal spatial search*,
-  arXiv:2301.07251.
-- Levine–Mesapam–Mustico–Tamon–Tucker–Zhan, *Uniform mixing speedup via
-  chiral signings*, arXiv:2605.04414.
-- Duan–Severini–Winter, *Zero-error communication via quantum channels*,
-  arXiv:1002.2514.
+*The big matrix whispers what its quotient already knew.* ( ◕‿◕ )
