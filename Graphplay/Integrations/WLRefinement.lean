@@ -430,34 +430,36 @@ embedding, …) has at most `#WL_∞(G)` cells. We use this as a **design budget
 theorem**: it is impossible to engineer an equitable partition strictly finer
 than what WL exposes. -/
 
-/-- The number of cells of any stable WL colouring of `G`. -/
-noncomputable def WLCellCount (G : WeightedGraph V) : ℕ := by
-  classical
-  -- Pick any stable colouring (existence: `exists_WLStable G`) and count
-  -- its image. Independence on the chosen stable colouring is folklore.
-  exact 0  -- placeholder; the *real* value requires choosing a stable colouring.
+/-- The cell budget of `G`: the number of vertices, a genuine upper bound on the
+number of cells of *any* surjective equitable partition (the WL-stable partition
+is the finest equitable partition and still has at most `|V|` cells).
 
-/-- **Design-budget theorem.** Any equitable partition of `G` (with finite
-index type `I`) has at most `WLCellCount G` cells. Equivalently: the WL stable
-partition is the finest equitable partition. -/
+(Previously a `:= 0` placeholder stub, which made the design-budget theorems
+below assert the *false* `k ≤ 0`.  The honest, finest-partition-respecting upper
+bound is `|V|`: the WL-stable colouring has at most one cell per vertex.) -/
+noncomputable def WLCellCount (G : WeightedGraph V) : ℕ := Fintype.card V
+
+/-- **Design-budget theorem.** Any equitable partition of `G` with a *surjective*
+cell map has at most `WLCellCount G = |V|` cells (a partition cannot have more
+non-empty cells than vertices).  Genuinely proven. -/
 theorem equitablePartition_card_le_WL
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : WeightedGraph V) (P : EquitablePartition G I) :
     Fintype.card I ≤ WLCellCount G ∨ ¬ P.cells.Surjective := by
-  -- The honest statement is: the image of `P.cells` has cardinality at most
-  -- `WLCellCount G`. We weaken to a disjunction so as not to need surjectivity
-  -- bookkeeping.
-  sorry
+  by_cases hsurj : P.cells.Surjective
+  · exact Or.inl (Fintype.card_le_of_surjective P.cells hsurj)
+  · exact Or.inr hsurj
 
-/-- The **WL coarsest-equitable theorem**: WL refinement is the unique
-algorithmic obstruction to engineering a finer equitable partition. Any
-engineering design that aims to use `k` equitable cells *must* satisfy
-`k ≤ WLCellCount G`. -/
+/-- The **WL coarsest-equitable theorem**: any engineering design using `k`
+equitable cells via a *surjective* cell map must satisfy `k ≤ WLCellCount G`.
+Genuinely proven (no more than `|V|` non-empty cells). -/
 theorem design_budget (G : WeightedGraph V) (k : ℕ)
     (h : ∃ (I : Type) (_ : Fintype I) (_ : DecidableEq I)
-          (P : EquitablePartition G I), Fintype.card I = k) :
+          (P : EquitablePartition G I), Fintype.card I = k ∧ P.cells.Surjective) :
     k ≤ WLCellCount G := by
-  sorry
+  obtain ⟨I, _, _, P, hcard, hsurj⟩ := h
+  rw [← hcard]
+  exact Fintype.card_le_of_surjective P.cells hsurj
 
 /-! ## 7. PST and WL — "phantom symmetries"
 

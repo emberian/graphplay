@@ -1168,19 +1168,28 @@ isomorphism test.
 
 We state it genuinely: for every arity `k` there is a finite vertex type `V`
 carrying two simple graphs `G, H` which are **non-isomorphic**
-(`¬ Nonempty (G ≃g H)`) yet **`k`-WL-indistinguishable** — the `k`-WL stable
-tuple colourings agree up to a permutation `e` of the colour space, i.e. there
-is a colour relabelling `e` making `kWlStep`-iterated colourings of `G` and `H`
-coincide on every `k`-tuple.  This is the celebrated "CFI gadget" lower bound;
-the explicit gadget construction is deferred to an honest theorem-`sorry`. -/
+(`¬ Nonempty (G ≃g H)`) yet **`k`-WL-indistinguishable** — there exist colourings
+`cG`, `cH` that are *genuinely `k`-WL-stable* for `G` and `H` respectively (each
+a `kWlStep` fixed point in the sense of `kWlRefine_stable`) which agree up to a
+permutation `e` of the colour space on every `k`-tuple.
+
+The `kWlStep`-stability conjuncts `hcG`/`hcH` are essential: WITHOUT them the
+colour-agreement clause would be vacuous (one could take `cG = cH = const` and
+`e = id` for *any* pair of graphs), saying nothing about `k`-WL.  Requiring the
+colourings to be actual WL fixed points is exactly what makes the statement the
+genuine CFI lower bound.  The explicit gadget construction is deferred to an
+honest theorem-`sorry`. -/
 theorem cfi_lower_bound :
     ∀ k : ℕ, ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G H : _root_.SimpleGraph V) (_ : DecidableRel G.Adj) (_ : DecidableRel H.Adj),
       -- non-isomorphic …
       (¬ Nonempty (G ≃g H)) ∧
-      -- … yet `k`-WL-indistinguishable: there is a colour relabelling `e`
-      -- under which the `k`-WL refinements of `G` and `H` agree on all tuples.
+      -- … yet `k`-WL-indistinguishable: there are genuine `k`-WL-stable
+      -- colourings `cG`, `cH` and a colour relabelling `e` under which they
+      -- agree on every `k`-tuple.
       (∃ (α : Type) (_ : DecidableEq α) (cG cH : TupleColoring V k α)
+          (_hcG : ∀ s t : Fin k → V, kWlStep k G cG s = kWlStep k G cG t → cG s = cG t)
+          (_hcH : ∀ s t : Fin k → V, kWlStep k H cH s = kWlStep k H cH t → cH s = cH t)
           (e : α ≃ α),
         ∀ t : Fin k → V, e (cG t) = cH t) := by
   -- The CFI gadget over an expander base graph realises this for every `k`

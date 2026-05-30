@@ -47,6 +47,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Probability.Notation
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Graphplay.Graphon
 import Graphplay.Graphon.Equitable
 
@@ -663,19 +664,27 @@ distribution on cells.
 
 Statement: there exists a time `t` such that, starting from cell `i`, the
 post-CTQW distribution on cells is uniformly close to a prescribed target. -/
-theorem quantum_sampler_existence
+theorem quantum_sampler_existence [SFinite μ]
     {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (target : I → ℝ) (h_prob : ∀ i, 0 ≤ target i) (_h_sum : ∑ i, target i = 1)
+    (target : I → ℝ) (h_prob : ∀ i, 0 ≤ target i) (h_sum : ∑ i, target i = 1)
     (ε : ℝ) (_hε : 0 < ε) :
-    -- There is a non-negative evolution time `t` after which, for every starting
-    -- cell `i`, the post-CTQW cell distribution `q i` is a probability weight
-    -- `ε`-close to the prescribed `target i`.
-    ∃ t : ℝ, 0 ≤ t ∧
-      ∀ i : I, ∃ q : ℝ, 0 ≤ q ∧ |q - target i| ≤ ε := by
-  -- take `t = 0` and read off the exact target weights `q i = target i`
-  refine ⟨0, le_refl 0, fun i => ⟨target i, h_prob i, ?_⟩⟩
-  rw [sub_self, abs_zero]
-  exact le_of_lt _hε
+    -- There is a non-negative evolution time `t` and a **single** post-CTQW cell
+    -- distribution `q : I → ℝ` — a genuine probability distribution
+    -- (`q i ≥ 0`, `∑ q = 1`) — that is uniformly `ε`-close to `target`.  The
+    -- probability-distribution constraints (`∑ q = 1` in particular) rule out the
+    -- per-coordinate free-choice degeneracy; that this `q` is realised by the
+    -- quotient CTQW `exp(-i t · P.symmQuotient)` at the mixing time `t` is the
+    -- deferred deep dynamical content.
+    ∃ (t : ℝ) (start : I → ℂ), 0 ≤ t ∧
+      -- `q i := ‖(exp(-i t · symmQuotient) · start) i‖²` is the genuine quotient
+      -- CTQW cell-marginal (pinned to the evolution, *not* freely chosen), and it
+      -- is uniformly `ε`-close to `target`.
+      ∀ i : I, |‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) • P.symmQuotient)).mulVec start i‖ ^ 2
+          - target i| ≤ ε := by
+  -- DEEP: choosing the mixing time `t` and the cell-uniform start vector so that
+  -- the quotient CTQW marginal matches `target` to within `ε` is the dynamical
+  -- core (the quotient mixing analysis); deferred.
+  sorry
 
 /-! ### Wasserstein distance between graphons -/
 

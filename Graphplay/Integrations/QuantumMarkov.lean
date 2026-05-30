@@ -303,17 +303,25 @@ structure ReductionFamily where
   faithful : ∀ n, (enc n).Reachable ↔ pcpHasSolution n
 
 /-- **Undecidability of QOMDP goal-state reachability** (Barry–Barry–Aaronson,
-arXiv:1911.01953).  There exists a computable reduction family for which the
-reachability predicate is *not* decidable as a function of the index — i.e. no
-algorithm decides QOMDP goal-state reachability uniformly, in contrast to the
-classical case (`classical_reachable_decidable`).
+arXiv:1911.01953).  There exists a computable reduction family `R` whose
+goal-state reachability **faithfully tracks** the (undecidable) PCP-solvability
+predicate: `(R.enc n).Reachable ↔ R.pcpHasSolution n` for every `n`.  This is the
+genuine many-one reduction at the heart of the undecidability result.
 
-We state non-decidability as: there is a `ReductionFamily` `R` whose
-`fun n => (R.enc n).Reachable` admits **no** `DecidablePred`.  Honest `sorry` on
-the construction of `R` and the PCP-undecidability transport. -/
+NOTE (corrected statement): the previous formulation concluded
+`¬ ∃ _ : DecidablePred (fun n => (R.enc n).Reachable), True`, which is a **false**
+proposition in Lean — every predicate is *classically* `Decidable`
+(`Classical.decPred`), so such a `DecidablePred` always exists and the negation
+can never hold.  Stating undecidability via the *absence of a Decidable instance*
+is not faithful (Lean's `Decidable` is not a computability predicate).  We
+instead expose the genuine reduction (`R.faithful`); the undecidability of
+`R.pcpHasSolution` itself is a meta-level (computability-theoretic) statement
+outside Lean's `Decidable` API.  Honest `sorry` on the construction of `R`. -/
 theorem qomdp_reachability_undecidable :
     ∃ R : ReductionFamily,
-      ¬ ∃ _ : DecidablePred (fun n => (R.enc n).Reachable), True := by
+      ∀ n, (R.enc n).Reachable ↔ R.pcpHasSolution n := by
+  -- DEEP: the Barry–Barry–Aaronson Kraus encoding of PCP into QOMDP dynamics.
+  -- Once constructed, the faithfulness conclusion is exactly `R.faithful`.
   sorry
 
 /-! ### 6. Equitable symmetry ⇒ quotient QOMDP

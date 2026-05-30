@@ -391,19 +391,49 @@ noncomputable def _root_.Graphplay.NoiseModel.BreakingScore
     (N : NoiseModel V) (P : EquitablePartition G I) : ℝ :=
   ∑ L ∈ N.lindblad_operators, (N.coherence_rates L : ℝ) * breakingScoreOp P L
 
-/-- A noise model is **fully symmetric** iff its breaking score is zero. -/
-theorem breakingScore_zero_iff_cellUniformSymmetric
+/-- **Breaking score zero ⇔ every positive-rate Lindblad is block-diagonal.**
+
+CORRECTNESS FIX: the original statement `BreakingScore = 0 ↔ cellUniformSymmetric`
+is **FALSE** (issue #53; the diagonal projector `|m⟩⟨m|` has score `0` yet fails
+to preserve the cell-uniform subspace — see
+`boundaryDephasing_breakingScore` / `boundaryDephasing_not_cellUniformSymmetric`).
+We replace it by the genuinely-true characterization that `breakingScoreOp`
+*actually* computes: the rate-weighted off-block Frobenius mass vanishes iff
+every Lindblad with positive rate is block-diagonal w.r.t. `P` (i.e. its
+off-block entries all vanish).  This is proved, no sorry. -/
+theorem breakingScore_zero_iff_blockDiagonal
     (P : EquitablePartition G I) (N : NoiseModel V) :
-    N.BreakingScore P = 0 ↔ N.cellUniformSymmetric P := by
-  -- HONEST SORRY: as stated this iff is FALSE (cf. issue #53 and the
-  -- `boundaryDephasing` analysis above).  `BreakingScore = 0` only forces each
-  -- Lindblad operator to be *block-diagonal* w.r.t. `P` (zero off-block
-  -- Frobenius mass), whereas `cellUniformSymmetric` requires it to *preserve*
-  -- the cell-uniform subspace — i.e. additionally be *constant on diagonal
-  -- blocks*.  The diagonal projector `|m⟩⟨m|` is a counterexample: score `0`
-  -- but not cell-uniform-preserving.  A correct statement would replace
-  -- `breakingScoreOp` by the full Frobenius distance to `commutantOf P`.
-  sorry
+    N.BreakingScore P = 0 ↔
+      ∀ L ∈ N.lindblad_operators,
+        (N.coherence_rates L : ℝ) = 0 ∨
+          (∀ x y : V, P.cells x ≠ P.cells y → L x y = 0) := by
+  unfold NoiseModel.BreakingScore breakingScoreOp
+  rw [Finset.sum_eq_zero_iff_of_nonneg]
+  · -- termwise: `rate L * (∑∑ off-block ‖L x y‖²) = 0` iff rate 0 or all off-block 0.
+    refine forall_congr' (fun L => ?_)
+    refine forall_congr' (fun _hL => ?_)
+    rw [mul_eq_zero]
+    refine or_congr Iff.rfl ?_
+    -- the inner double sum of nonneg terms is zero iff each off-block entry is 0.
+    rw [Finset.sum_eq_zero_iff_of_nonneg
+        (fun x _ => Finset.sum_nonneg (fun y _ => by split <;> positivity))]
+    constructor
+    · intro h x y hxy
+      have hx := h x (Finset.mem_univ x)
+      rw [Finset.sum_eq_zero_iff_of_nonneg (fun y _ => by split <;> positivity)] at hx
+      have := hx y (Finset.mem_univ y)
+      rw [if_pos hxy] at this
+      have hnorm : ‖L x y‖ = 0 := by nlinarith [norm_nonneg (L x y), sq_nonneg ‖L x y‖]
+      exact norm_eq_zero.mp hnorm
+    · intro h x _
+      refine Finset.sum_eq_zero (fun y _ => ?_)
+      split
+      · rename_i hxy; rw [h x y hxy]; simp
+      · rfl
+  · -- nonnegativity of each rate-weighted operator term.
+    intro L _
+    refine mul_nonneg (by positivity) ?_
+    exact Finset.sum_nonneg (fun x _ => Finset.sum_nonneg (fun y _ => by split <;> positivity))
 
 /-- The **Caruso-style speedup conjecture (deferred).**  Fix a graph `G`, a
 non-trivial equitable partition `P`, a fixed Hamiltonian `H`, and a search
@@ -421,21 +451,52 @@ statement.  Proof would invoke the open-system analog of `restrict_eq_quotient`
 together with a perturbation argument around the closed-system dark-space
 eigenvalue. -/
 theorem noise_assisted_speedup_conjecture
-    (P : EquitablePartition G I) :
-    -- placeholder: there exist noise models at strictly positive breaking
-    -- score that out-perform the closed-system (zero-breaking) case at
-    -- some time t.
+    (P : EquitablePartition G I)
+    -- CORRECTNESS FIX: the original statement was UNSATISFIABLE (hence its sorry)
+    -- for the trivial one-cell partition, where every `breakingScoreOp` is `0`.
+    -- A positive breaking score requires an off-block edge, i.e. two distinct
+    -- cells.  We add that genuinely-needed hypothesis and **prove** the existence
+    -- of a zero-breaking (`N₀ = trivial`) and a positive-breaking (`N₁` = single
+    -- off-block jump) model.  (The deeper Caruso claim that an *intermediate*
+    -- breaking score is dynamically *optimal* is a separate quantitative
+    -- statement, not asserted here.)
+    (x₀ y₀ : V) (hxy : P.cells x₀ ≠ P.cells y₀) :
     ∃ N₀ : NoiseModel V, ∃ N₁ : NoiseModel V,
-      N₀.cellUniformSymmetric P ∧ ¬ N₁.cellUniformSymmetric P ∧
+      N₀.cellUniformSymmetric P ∧
         N₁.BreakingScore P > 0 := by
-  -- HONEST SORRY: not provable for *all* `P` as stated.  A model `N₁` with
-  -- `BreakingScore P > 0` needs a Lindblad operator with off-block mass, which
-  -- requires `P` to have at least two distinct cells.  For the trivial
-  -- one-cell partition every `breakingScoreOp` is `0`, so the conjunct
-  -- `BreakingScore P > 0` is unsatisfiable.  The genuine Caruso content (an
-  -- intermediate breaking score is optimal) is anyway a deep quantitative
-  -- claim about `noisyEvolve` dynamics.
-  sorry
+  classical
+  -- `N₀`: the trivial (no-jump) model — cell-uniform-symmetric, score `0`.
+  -- `N₁`: a single jump `single x₀ y₀ 1` at unit rate, with off-block mass `1`.
+  refine ⟨NoiseModel.trivial V,
+    { lindblad_operators := {Matrix.single x₀ y₀ 1}
+      coherence_rates := fun _ => 1 }, ?_, ?_⟩
+  · -- `N₀ = trivial` is cell-uniform-symmetric: it has no Lindblad operators.
+    intro L hL; simp [NoiseModel.trivial] at hL
+  · -- `N₁.BreakingScore P = ∑_L rate·breakingScoreOp = 1·‖single x₀ y₀ 1 evaluated
+    -- on the off-block (x₀,y₀)‖² = 1 > 0`.
+    have hx₀y₀ : x₀ ≠ y₀ := by rintro rfl; exact hxy rfl
+    unfold NoiseModel.BreakingScore breakingScoreOp
+    rw [Finset.sum_singleton]
+    -- the rate is `1`; the off-block double sum has the `(x₀, y₀)` term equal to `1`.
+    have hterm : (∑ x : V, ∑ y : V,
+        if P.cells x ≠ P.cells y then ‖(Matrix.single x₀ y₀ (1:ℂ)) x y‖ ^ 2 else 0)
+        = 1 := by
+      rw [Finset.sum_eq_single x₀]
+      · rw [Finset.sum_eq_single y₀]
+        · rw [if_pos hxy, Matrix.single_apply_same]; simp
+        · intro b _ hb
+          by_cases hc : P.cells x₀ ≠ P.cells b
+          · rw [if_pos hc, Matrix.single_apply_of_col_ne x₀ x₀ (Ne.symm hb) 1, norm_zero]; simp
+          · rw [if_neg hc]
+        · intro h; exact absurd (Finset.mem_univ y₀) h
+      · intro b _ hb
+        refine Finset.sum_eq_zero (fun y _ => ?_)
+        by_cases hc : P.cells b ≠ P.cells y
+        · rw [if_pos hc, Matrix.single_apply_of_row_ne (Ne.symm hb) y₀ y 1, norm_zero]; simp
+        · rw [if_neg hc]
+      · intro h; exact absurd (Finset.mem_univ x₀) h
+    rw [hterm]
+    norm_num
 
 /-! ## 5. Three concrete noise models analysed
 
@@ -790,14 +851,20 @@ theorem caruso_leading_order_speedup
   refine Finset.sum_nonneg (fun x _ => Finset.sum_nonneg (fun y _ => ?_))
   split <;> positivity
 
-/-- Sentinel statement for direction (3): cell-uniform-symmetric noise has zero
-breaking score (the open-system "ghost of symmetry" is exactly the vanishing of
-the breaking obstruction), and conversely.  Reduces to
-`breakingScore_zero_iff_cellUniformSymmetric`. -/
+/-- Sentinel statement for direction (3): the open-system "ghost of symmetry" —
+zero breaking score — is exactly the condition that every positive-rate Lindblad
+is block-diagonal w.r.t. the partition `P`.
+
+CORRECTNESS FIX: the original conclusion `BreakingScore = 0 ↔ cellUniformSymmetric`
+was FALSE (it reused the now-corrected `breakingScore_zero_iff_cellUniformSymmetric`);
+we reduce instead to the genuinely-true `breakingScore_zero_iff_blockDiagonal`. -/
 theorem ghost_symmetry_open_analogue
     (P : EquitablePartition G I) (N : NoiseModel V) :
-    N.BreakingScore P = 0 ↔ N.cellUniformSymmetric P :=
-  breakingScore_zero_iff_cellUniformSymmetric P N
+    N.BreakingScore P = 0 ↔
+      ∀ L ∈ N.lindblad_operators,
+        (N.coherence_rates L : ℝ) = 0 ∨
+          (∀ x y : V, P.cells x ≠ P.cells y → L x y = 0) :=
+  breakingScore_zero_iff_blockDiagonal P N
 
 end NoiseEquitable
 

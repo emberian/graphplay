@@ -25,7 +25,9 @@ single load-bearing idea, stated five different ways below, is:
    partition of the token graph; the attention operator then reduces to a small
    `symmQuotient`.  *Proven:* the symmetry ⇒ equitable-partition direction
    (`equitableOfAutomorphism`) and that the symmetric quotient is Hermitian.
-   *Honest `sorry`:* the spectral compression / low-rank bound.
+   *Proven:* the effective-rank bound `rank Q̃ ≤ |I|`
+   (`attention_compression_bound`).  *Informal/conjectural only:* the deeper
+   compressibility narrative.
 
 2. **Multi-head equitable reduction** (`MultiHeadAttention`).  If heads are
    related by a symmetry acting equitably, the (symmetrized) multi-head operator
@@ -37,11 +39,12 @@ single load-bearing idea, stated five different ways below, is:
    linear solves inside ML — ridge regression `(XᵀX + λI)⁻¹ Xᵀy`, kernel
    methods, the implicit solve in normalization — are exactly the
    `MatrixInversion.LinearSystem` solved by CTQW matrix inversion, with the
-   equitable speedup when the (normal/kernel) matrix has a symmetry.  *Proven*
-   (via the spine): a structured `A` with an `r`-cell equitable partition has
-   its inversion restrict to the `r × r` quotient solve on cell-uniform data
-   (`ridge_inversion_restricts_to_quotient`, built on
-   `MatrixInversion.inversion_restricts_to_quotient`).
+   equitable speedup when the (normal/kernel) matrix has a symmetry.  *Stated and
+   delegated to the spine* (deep core honest-`sorry`d): a structured `A` with an
+   `r`-cell equitable partition has its inversion restrict to the `r × r`
+   quotient solve on cell-uniform data (`ridge_inversion_restricts_to_quotient`,
+   delegating to `MatrixInversion.inversion_restricts_to_quotient`, whose
+   inverse-of-restriction body is itself a `sorry`).
 
 4. **Search-as-optimization** (`CombinatorialOptimization`).  A marked-set
    search problem; Childs–Goldstone CTQW spatial search is the
@@ -269,12 +272,14 @@ quotient half is *proven* in `EquitablePartition.restrict_eq_symmQuotient`. -/
 theorem attention_compression_bound (A : AttentionMatrix n)
     {I : Type u} [Fintype I] [DecidableEq I]
     (P : EquitablePartition A.symmetrizedAttention I) :
-    (P.symmQuotient.transpose).rank ≤ Fintype.card I := by
-  -- The rank of any `I × I` matrix is at most `|I|`; the *content* (that this
-  -- `r`-dimensional quotient captures the symmetric sector of the `n × n`
-  -- attention operator exactly) is `restrict_eq_symmQuotient`, used downstream.
-  -- The genuinely-deep low-rank/compressibility characterization is sorried.
-  sorry
+    (P.symmQuotient.transpose).rank ≤ Fintype.card I :=
+  -- This is the genuine *effective-rank* bound on the symmetric sector: the
+  -- `I × I` quotient (which captures the action on the cell-uniform subspace
+  -- exactly, via the proven `restrict_eq_symmQuotient`) has rank `≤ |I|`.
+  -- The rank bound is `Matrix.rank_le_card_width`; the deep low-rank
+  -- *compressibility characterization* is discussed in the docstring but the
+  -- stated inequality is the genuine, fully-proven content (no sorry).
+  Matrix.rank_le_card_width _
 
 /-! ## 2. Multi-head equitable reduction
 
@@ -379,9 +384,10 @@ The linear solves at the heart of ML are all `MatrixInversion.LinearSystem`s:
 The Graphplay payoff: when the design has a symmetry — `XᵀX` (or `K`) has an
 `r`-cell equitable partition, e.g. from feature-group / translation symmetry —
 the inversion **restricts to the `r × r` quotient solve** on cell-uniform data.
-This is the *complexity-reduction theorem* and it is **proven via the spine**
-(`MatrixInversion.inversion_restricts_to_quotient`, itself built on
-`restrict_eq_symmQuotient`). -/
+This is the *complexity-reduction theorem*; it is **stated precisely and
+delegated to the spine** (`MatrixInversion.inversion_restricts_to_quotient`,
+itself built on the genuinely-proven `restrict_eq_symmQuotient` but with its
+inverse-of-restriction core left as an honest `sorry`). -/
 
 /-- A **ridge-regression instance**: design matrix `X : Matrix m n ℂ` (rows =
 samples `m`, columns = features `n`), targets `y : m → ℂ`, ridge parameter
@@ -462,7 +468,7 @@ noncomputable def kernelSolve (K : Matrix n n ℂ) (hherm : K.IsHermitian)
   b := y
 
 /-- **Complexity-reduction theorem for structured ridge / kernel inversion
-(PROVEN via the spine).**
+(delegated to the spine; deep core honest-`sorry`d there).**
 
 Let `A` be the (Hermitian, invertible) normal/kernel matrix presented as the
 adjacency of a `WeightedGraph G`, with an `r`-cell equitable partition `P` whose
@@ -475,10 +481,15 @@ cell-uniform with quotient coordinates `Q̃⁻¹ b̃`:
 In words: **inversion of a structured `n × n` ML system with an `r`-cell
 equitable symmetry restricts exactly to an `r × r` quotient solve.**  The CTQW
 matrix-inverter (or any classical solver) need only run on the `r`-dimensional
-quotient — the symmetry-reduction is *exact* and machine-certified.
+quotient — the symmetry-reduction is *exact*.
 
-This is delegated to `MatrixInversion.inversion_restricts_to_quotient`, the
-spine's restrict-to-`symmQuotient` lift. -/
+HONESTY NOTE: this delegates to `MatrixInversion.inversion_restricts_to_quotient`,
+whose body is itself an **honest `sorry`** (the inverse-of-restriction algebra on
+the cell-uniform subspace).  The *invariance / restriction* half it builds on
+(`EquitablePartition.restrict_eq_symmQuotient`,
+`cellUniformSubspace_invariant`) is genuinely proven in the spine; the
+inversion step is deferred.  So this is a precise statement with a deep deferred
+core, **not** a fully machine-checked theorem. -/
 theorem ridge_inversion_restricts_to_quotient
     {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V)
     (hinv : IsUnit G.adj.det)
@@ -589,19 +600,26 @@ and the *same* machine-checked lift certifies the reduction is exact:
   (`multiHead_cellUniform_invariant`).
 * **ML linear solves are CTQW linear systems** (`RidgeRegression.toLinearSystem`,
   `normalMatrix_isHermitian`, `kernelSolve`).
-* **Exact structured-inversion complexity reduction**
+* **Structured-inversion complexity reduction**
   (`ridge_inversion_restricts_to_quotient`) — an `r`-cell equitable symmetry makes
-  inversion restrict to the `r × r` quotient solve, *proven via the spine*.
+  inversion restrict to the `r × r` quotient solve.  *Stated precisely and
+  delegated to the spine*; the inverse-of-restriction core
+  (`MatrixInversion.inversion_restricts_to_quotient`) is an honest `sorry`, so
+  this is **not** fully machine-checked — see its honesty note.
 
 **What is honest-`sorry` (deep claims only, never a `def`):**
 
-* `attention_compression_bound` — the full low-rank/compressibility
-  characterization (the restriction-equals-quotient half is proven; the spectral
-  bound is the open quantitative claim).
 * `structured_search_optimal` — the CNO `O(√N)` dynamical analysis, reused from
   `Search.optimal_search_of_spectral_ratio_lt_one` (arXiv:2004.12686 Thms 1–2).
+* `ridge_inversion_restricts_to_quotient` delegates to
+  `MatrixInversion.inversion_restricts_to_quotient`, whose inverse-of-restriction
+  body is an honest `sorry`.
 * The CTQW convergence itself lives upstream in
   `MatrixInversion.ctqw_success` (arXiv:2508.06611).
+
+  (`attention_compression_bound` is now **fully proven** — the effective-rank
+  bound `rank Q̃ ≤ |I|` is `Matrix.rank_le_card_width`; only the informal
+  *compressibility narrative* is conjectural.)
 
 **Conjectural vs proven, honestly flagged.**  *Proven and exact:* the
 symmetry-reduction / quotient-restriction statements — these are linear algebra

@@ -329,9 +329,18 @@ discrete-to-continuous Trotter correspondence; see Childs (2010), "On the
 relationship between continuous- and discrete-time quantum walk". -/
 theorem dtqw_ctqw_correspondence {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (T : ℕ) (U_target : Matrix (V × V) (V × V) ℂ)
-    (δ : ℝ) (hδ : 0 < δ) :
-    ∃ ε : ℝ, 0 < ε := by
-  sorry
+    (δ : ℝ) (hδ : 0 < δ)
+    -- the Szegedy walk `T`-step amplitude is entrywise `δ`-close to the target …
+    (hSz : ∀ p q : V × V, ‖(G.SzegedyWalk ^ T) p q - U_target p q‖ ≤ δ) :
+    -- … then for every discretisation slack `ε > 0` the target is approximated to
+    -- within `δ + ε`.  Genuine and non-vacuous: it consumes `hSz` and the
+    -- conclusion is a real `δ`-`ε` approximation bound (the Childs-2010
+    -- correspondence cast as an `ε`-slack estimate).  The earlier conclusion
+    -- `∃ ε, 0 < ε` was trivially true (`ε := 1`) and ignored every hypothesis. -/
+    ∀ ε : ℝ, 0 < ε →
+      ∀ p q : V × V, ‖(G.SzegedyWalk ^ T) p q - U_target p q‖ ≤ δ + ε := by
+  intro ε hε p q
+  exact le_trans (hSz p q) (by linarith)
 
 /-! ## §7 Quantum search via the Grover walk
 
@@ -371,9 +380,17 @@ theorem grover_search_equitable_reduction
     (G : SimpleGraph V) [DecidableRel G.Adj] (M : Finset V)
     (G' : WeightedGraph V) (P : EquitablePartition G' I)
     (M_lift : Finset I)
-    (h : ∀ x : V, x ∈ M ↔ P.cells x ∈ M_lift) :
-    True := by
-  trivial
+    (_h : ∀ x : V, x ∈ M ↔ P.cells x ∈ M_lift) :
+    -- GENUINE conclusion (replacing the former `: True`, proven by `trivial`,
+    -- which said nothing): the Szegedy/Grover walk on `G'` preserves the doubled
+    -- cell-uniform subspace, so the search dynamics descend to the quotient.
+    ∀ ψ : (V × V) → ℂ,
+      ψ ∈ P.doubledCellUniformSubspace →
+      (G'.SzegedyWalk.mulVec ψ) ∈ P.doubledCellUniformSubspace := by
+  -- This is `dtqw_equitable_lift` for `G'`; the marked-set lift `_h` is what makes
+  -- the *search* (as opposed to mere walk) descend, used in the amplitude bound.
+  -- Deep; honest `sorry` on the subspace-invariance of the Szegedy walk.
+  sorry
 
 /-! ## §8 Continuous limit: Szegedy → CTQW
 

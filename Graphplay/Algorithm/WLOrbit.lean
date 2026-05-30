@@ -589,17 +589,30 @@ theorem kWL_eq_kAritySameOrbit
   sorry
 
 /-- **CFI lower bound (statement).**
-There is a family of graphs `G_n` of size `n` for which no
-`k = o(n)`-WL distinguishes `G_n` from a non-isomorphic companion
-`G'_n`.  In particular, the threshold `k₀` of
-`kWL_eq_kAritySameOrbit` can be `Ω(|V|)`. -/
+For every fixed arity `k` there is a pair of **non-isomorphic** graphs `G, H`
+(on a common vertex type `V`) that are nevertheless **`k`-WL-indistinguishable**:
+there are `k`-WL-stable colourings `cG`, `cH` of `V^k` and a colour relabelling
+`e` under which they agree on every `k`-tuple.  Equivalently, `k`-WL cannot
+witness the non-isomorphism — the threshold `k₀` of `kWL_eq_kAritySameOrbit` must
+grow without bound across such families.
+
+This is the genuine CFI statement.  The earlier formulation
+`∀ c > 0, ∀ᶠ n, c·card ≤ n ∧ True` was VACUOUS — it mentioned neither `k`-WL nor
+non-isomorphism, carried a spurious `∧ True`, and was satisfiable by the empty
+family (`card = 0`).  We replace it with the real two-graph indistinguishability
+statement, requiring genuine `k`-WL-stable colourings (`IsKWLStable`) so the
+colour-agreement clause is non-trivial.  Honest `sorry` on the CFI gadget. -/
 theorem cfi_kwl_lower_bound :
-    ∃ (Vfam : ℕ → Type) (_ : ∀ n, Fintype (Vfam n))
-      (_ : ∀ n, DecidableEq (Vfam n))
-      (Gfam : ∀ n, Graphplay.SimpleGraph (Vfam n)),
-      ∀ c > (0 : ℚ), ∀ᶠ n in Filter.atTop,
-        c * (Fintype.card (Vfam n) : ℚ) ≤ (n : ℚ) ∧ True := by
-  -- Concrete statement deferred to CFI bookkeeping.
+    ∀ k : ℕ, ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
+      (G H : Graphplay.SimpleGraph V),
+      (¬ Nonempty (toMathlib G ≃g toMathlib H)) ∧
+      ∃ (GW HW : Graphplay.WeightedGraph V)
+        (_ : HasAutInvariantWeights G GW) (_ : HasAutInvariantWeights H HW)
+        (I : Type) (_ : Fintype I) (_ : DecidableEq I)
+        (cG cH : (Fin k → V) → I)
+        (_hcG : IsKWLStable GW k cG) (_hcH : IsKWLStable HW k cH) (e : I ≃ I),
+        ∀ t : Fin k → V, e (cG t) = cH t := by
+  -- The CFI gadget over an expander base realises this for every `k`.
   sorry
 
 /-! ## §8. PST engineering via phantom symmetry
@@ -618,9 +631,19 @@ twisted product gadgets, and rank-≥ 4 association schemes can host
 PST pairs that lie outside the classical "find an automorphism"
 search heuristic. -/
 
-/-- *Statement only.*  A phantom-symmetry-aware PST search succeeds
-on the CFI family even though no automorphism swaps the PST
-endpoints.  This is the Bachman–Tamon design principle. -/
+/-- **Bachman–Tamon design principle (honest `sorry`).**  A phantom pair admits a
+perfect-state-transfer window even though no automorphism swaps the endpoints.
+
+Given phantom symmetry, there is a pair `(u, v)` in distinct `Aut(G₀)`-orbits but
+with the same WL colour *and* a time `τ` at which the continuous-time quantum
+walk transfers perfectly between them: `‖G.evolve τ u v‖ = 1` (the PST window).
+
+The PST conjunct is the genuine, deep content of Bachman–Tamon (arXiv:1108.0339):
+it is the equitable-partition spectral-idempotent test, NOT something that
+follows from phantom symmetry alone.  The earlier version of this theorem dropped
+the PST conjunct entirely and merely re-derived the phantom pair from the
+hypothesis (`hPhantom → hPhantom`), which said nothing beyond its own assumption.
+We restore the PST window and leave the spectral argument as an honest `sorry`. -/
 theorem bachman_tamon_pst_via_phantom
     {V : Type u} [Fintype V] [DecidableEq V]
     (G₀ : Graphplay.SimpleGraph V)
@@ -630,15 +653,9 @@ theorem bachman_tamon_pst_via_phantom
     (P : EquitablePartition G I)
     (hStable : IsWLStable G P)
     (hPhantom : HasPhantomSymmetry G₀ G P hStable) :
-    -- There is a pair `(u, v)` in distinct orbits but with the same
-    -- WL colour, *and* the equitable-partition spectral test of
-    -- Bachman–Tamon admits a PST window for `(u, v)`.
-    --
-    -- The PST predicate itself is in `Graphplay.PST`; here we only
-    -- expose its *existence* statement.
-    ∃ u v : V, P.cells u = P.cells v ∧ ¬ sameOrbit G₀ u v := by
-  rcases hPhantom with ⟨u, v, hcol, hne⟩
-  exact ⟨u, v, hcol, hne⟩
+    ∃ u v : V, P.cells u = P.cells v ∧ ¬ sameOrbit G₀ u v ∧
+      ∃ τ : ℝ, ‖G.evolve τ u v‖ = 1 := by
+  sorry
 
 /-- The contrapositive engineering claim: if WL = orbit on `G`
 (no phantom symmetry), then a classical automorphism-search-based

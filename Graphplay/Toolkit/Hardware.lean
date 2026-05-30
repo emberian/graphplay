@@ -213,9 +213,16 @@ satisfies the hardware spec `H` when:
 * every non-zero edge weight has phase in `allowedPhaseSet`;
 * every vertex has the required degree.
 
-All conjuncts are stated with `sorry`-filled placeholders for the actual
-geometric/topological content; the point is to fix the predicate's shape so
-later files can quantify over it. -/
+⚠ WEAKNESS / PARTIAL DEFINITION.  Three of the five conjuncts
+(`maxCouplingDistance`, `surfaceGenus`, `requiredRegularity`) are currently
+`True` placeholders *even when the spec field is `some _`* — so `satisfies` only
+genuinely enforces the **qubit-count bound** and the **allowed-phase set**.  Any
+theorem that relies on the distance/genus/regularity conjuncts (e.g.
+`satisfies_quotient`) is therefore only as strong as those two real constraints
+until the placeholders are replaced by the actual geometric/topological content
+(`dist (embed x) (embed y) ≤ r`, an embedding of the realisation on `Σ_g`, and
+the degree condition).  The shape is fixed here so later files can quantify over
+the predicate; do not read a `satisfies` hypothesis as enforcing geometry yet. -/
 def WeightedGraph.satisfies
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (H : HardwareSpec) (embed : V → ℝ × ℝ) : Prop :=
@@ -235,12 +242,16 @@ def WeightedGraph.satisfies
    | some _ => True    -- placeholder: |{y : G.adj x y ≠ 0}| = d for every x
    | none   => True)
 
-/-- `unconstrained` is satisfied by every graph and embedding.  -/
+/-- `unconstrained` is satisfied by every graph and embedding.  Genuinely proven
+(not `sorry`): every field of `unconstrained` is `none` except `allowedPhaseSet =
+Set.univ`, so all five conjuncts of `satisfies` hold — the four `none`/placeholder
+ones trivially, and the phase conjunct because every weight lies in `Set.univ`. -/
 theorem WeightedGraph.satisfies_unconstrained
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (embed : V → ℝ × ℝ) :
     G.satisfies HardwareSpec.unconstrained embed := by
-  sorry
+  simp only [WeightedGraph.satisfies, HardwareSpec.unconstrained, Set.mem_univ,
+    implies_true, and_true, true_and]
 
 /-- Intersection of specs satisfied iff both are satisfied. -/
 theorem WeightedGraph.satisfies_intersect

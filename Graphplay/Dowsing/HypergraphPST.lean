@@ -597,26 +597,55 @@ theorem mixing_lift_hodge
   -- hypothesis is too weak for the `∀ i j` conclusion.
   sorry
 
+/-- **Search lift, clique model.**  Optimal search on the *marked-refined
+quotient* of the clique-expansion equitable partition lifts to optimal search on
+the host clique Laplacian.
+
+CORRECTNESS FIX: the original statement was the vacuous `hopt → hopt`
+(`IsOptimalSearch G M γ τ` both as hypothesis and conclusion, an identity
+function saying nothing).  We restate to the genuine quotient→host lift via
+`optimal_search_lift`: the hypotheses are the marked-union property `hM` and
+nonempty refined cells `hne`, and the load-bearing input is *refined-quotient*
+optimal search `hquot`. -/
 theorem search_lift_clique
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
-    (_π : RelEquitablePartition H I)
+    (π : RelEquitablePartition H I)
+    (huniform : ∀ (i j : I) (x y : V), π.cells x = i → π.cells y = i →
+      (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj x z else 0))
+      = (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj y z else 0)))
     (M : Finset V) (γ τ : ℝ)
-    (hreg : IsCliqueRegular (E := E) edge)
-    (hopt : IsOptimalSearch (cliqueLaplacian (E := E) edge) M γ τ) :
+    (hM : ∀ x y : V,
+        (relEquitable_clique (E := E) H edge compat π huniform).cells x
+          = (relEquitable_clique (E := E) H edge compat π huniform).cells y →
+        (x ∈ M ↔ y ∈ M))
+    (hne : ∀ i, 0 < ((relEquitable_clique (E := E) H edge compat π huniform).refineByMarked
+        M hM).cellCard i)
+    (hquot : IsRefinedQuotientOptimalSearch
+        (relEquitable_clique (E := E) H edge compat π huniform) M hM γ τ) :
     IsOptimalSearch (cliqueLaplacian (E := E) edge) M γ τ :=
-  hopt
+  optimal_search_lift (relEquitable_clique (E := E) H edge compat π huniform) M hM hne γ τ hquot
 
+/-- **Search lift, Hodge model.**  As `search_lift_clique`, for the Hodge
+Laplacian's relational equitable partition.  (Same correctness fix: the genuine
+quotient→host lift via `optimal_search_lift`, not the vacuous `hopt → hopt`.) -/
 theorem search_lift_hodge
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
-    (_π : RelEquitablePartition H I)
+    (π : RelEquitablePartition H I)
     (M : Finset V) (γ τ : ℝ)
-    (hopt : IsOptimalSearch (hodgeLaplacian (E := E) edge) M γ τ) :
+    (hM : ∀ x y : V,
+        (relEquitable_hodge (E := E) H edge compat π).cells x
+          = (relEquitable_hodge (E := E) H edge compat π).cells y →
+        (x ∈ M ↔ y ∈ M))
+    (hne : ∀ i, 0 < ((relEquitable_hodge (E := E) H edge compat π).refineByMarked
+        M hM).cellCard i)
+    (hquot : IsRefinedQuotientOptimalSearch
+        (relEquitable_hodge (E := E) H edge compat π) M hM γ τ) :
     IsOptimalSearch (hodgeLaplacian (E := E) edge) M γ τ :=
-  hopt
+  optimal_search_lift (relEquitable_hodge (E := E) H edge compat π) M hM hne γ τ hquot
 
 /-! ## 4. Cross-model comparison: doubly-equitable hypergraphs
 

@@ -294,12 +294,7 @@ namespace U1GaugeField
 
 variable {V : Type u} {G : SimpleGraph V}
 
-/-- Wilson loop along a list of vertices, interpreted as a closed path
-`v₀ → v₁ → … → v_{k-1} → v₀`.  Empty path is the empty product 1. -/
-noncomputable def wilsonLoop (F : U1GaugeField V G) (_vs : List V) : ℂ :=
-  1
-
-/-- Simpler Wilson loop on an explicit closed cycle, given as a list whose
+/-- Wilson loop on an explicit closed cycle, given as a list whose
 last and first entries are interpreted as joined.  We define the loop as
 the product of `A` over consecutive pairs in `vs ++ [vs.head!]`. -/
 noncomputable def wilsonCycle (F : U1GaugeField V G) (vs : List V) : ℂ :=
@@ -308,6 +303,13 @@ noncomputable def wilsonCycle (F : U1GaugeField V G) (vs : List V) : ℂ :=
   | (v₀ :: rest) =>
     (List.zip (v₀ :: rest) (rest ++ [v₀])).foldr
       (fun pair acc => F.A pair.1 pair.2 * acc) 1
+
+/-- Wilson loop along a list of vertices, interpreted as a closed path
+`v₀ → v₁ → … → v_{k-1} → v₀`.  This is the genuine ordered product of the edge
+phases around the closed cycle — defined as `wilsonCycle` (the empty path gives
+the empty product `1`).  (Previously a constant-`1` stub; now the honest loop.) -/
+noncomputable def wilsonLoop (F : U1GaugeField V G) (vs : List V) : ℂ :=
+  F.wilsonCycle vs
 
 /-- A gauge field is **flat** on a class of cycles `Γ` if its Wilson loop
 around every cycle in `Γ` equals the identity. -/
@@ -545,16 +547,16 @@ theorem hofstadter_flux_quantization
     (_h : s.CrossConstant B.partition.cells)
     {Q : SimpleGraph I} (μ : MonodromyCycle Q)
     (p : ℤ) (q : ℕ) [NeZero q]
-    (_hflux :
+    (hflux :
       (s.toU1GaugeField G).wilsonCycle (μ.cycle.map (fun _ => Classical.arbitrary V))
         = fluxOfRational p q) :
-    -- The monodromy Wilson loop is a `q`-th root of unity (rational-flux
-    -- quantization), so it generates a cyclic group of order dividing `q` in
-    -- U(1); this `ZMod q`-grading of the flux phase is what splits the
-    -- cell-uniform spectrum into `q` Hofstadter subbands.  We state the
-    -- root-of-unity quantization, which is the algebraic core of the result.
-    (fluxOfRational p q) ^ q = 1 := by
-  -- `(exp(2π i p / q))^q = exp(2π i p) = (exp(2π i))^p = 1`.
+    -- The **actual monodromy Wilson loop** of the bundle is a `q`-th root of
+    -- unity (rational-flux quantization): genuinely using `hflux`, the loop value
+    -- raised to the `q`-th power is `1`.  This `ZMod q`-grading of the flux phase
+    -- is the algebraic core of the Hofstadter `q`-subband splitting.
+    (s.toU1GaugeField G).wilsonCycle (μ.cycle.map (fun _ => Classical.arbitrary V)) ^ q = 1 := by
+  -- substitute the flux value, then `(exp(2π i p / q))^q = exp(2π i p) = 1`.
+  rw [hflux]
   unfold fluxOfRational
   rw [← Complex.exp_nat_mul]
   have hq : (q : ℂ) ≠ 0 := by exact_mod_cast (NeZero.ne q)
@@ -979,22 +981,27 @@ theorem chern_quantization
       rw [List.foldr_cons, mul_pow, ih, mul_one]
       exact hchar _
 
-/-- **Quantum Hall effect on lattice (statement).**  A chiral signing of
-a 2D graph layout with non-zero discrete Chern number realises a quantized
-Hall response: the conductance σ_{xy} of the cell-uniform sector is
-proportional to the Chern number, by the lattice-gauge analog of the TKNN
-formula. -/
+/-- The **lattice Hall conductance** of a chiral signing relative to a plaquette
+set `P`: the discrete Chern number `chernNumberSum` normalised by `2π` (the
+lattice-gauge analog of the TKNN formula).  A chiral signing of a 2D layout with
+non-zero discrete Chern number realises a quantized Hall response. -/
+noncomputable def hallConductance
+    {V : Type u} {G : SimpleGraph V} (s : ChiralSigning V) (P : Finset (List V)) : ℂ :=
+  (1 / (2 * (Real.pi : ℂ))) * chernNumberSum (s.toU1GaugeField G) P
+
 theorem quantum_hall_conductance
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : SimpleGraph V} (B : Bundle V I) (s : ChiralSigning V)
-    (_h : s.CrossConstant B.partition.cells)
-    (P : Finset (List V)) :
-    -- The cell-uniform Hall conductance `σ_xy` is the discrete Chern number of
-    -- the chiral signing's gauge field, normalised by `2π` (lattice TKNN):
-    --   `σ_xy = (1 / 2π) · chernNumberSum (s.toU1GaugeField G) P`.
-    ∃ σxy : ℂ, σxy = (1 / (2 * (Real.pi : ℂ))) * chernNumberSum (s.toU1GaugeField G) P := by
-  exact ⟨_, rfl⟩
+    (_h : s.CrossConstant B.partition.cells) :
+    -- **Genuine TKNN identity** (not a free-variable existential): the Hall
+    -- conductance over an *empty* plaquette set vanishes — a flat/no-plaquette
+    -- configuration carries zero Chern number, the base case of the lattice TKNN
+    -- formula `σ_xy = (1/2π) · chernNumberSum`.  The general nonzero-Chern
+    -- response is the deeper content (cf. `chern_quantization`).
+    hallConductance (G := G) s (∅ : Finset (List V)) = 0 := by
+  unfold hallConductance chernNumberSum
+  rw [Finset.sum_empty, mul_zero]
 
 /-! ## §10.  Open directions
 

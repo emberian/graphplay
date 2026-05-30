@@ -587,10 +587,6 @@ theorem cartesianProduct_quotient_naturality
   -- which is exactly the Cartesian product of the quotient adjacencies.
   sorry
 
-/-- Iterated form: the Cartesian product of `n` quotient graphs is the
-quotient of the Cartesian product by the canonical iterated partition.
-This is the form used by Feder (PRL 97 180502) for the hypercube and
-the path-collapsing argument of GGPT (1009.1340 §2). -/
 /-- The genuine (open) iterated naturality statement: the Cartesian product of
 `n` quotient graphs is the quotient of the Cartesian product by a canonical
 iterated partition.  Phrased as a `Prop` because the iterated-Cartesian-product
@@ -735,7 +731,7 @@ def OpenPGSTBundleIff : Prop :=
     (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
     (hcouple : ∀ {i j : I} (h : Q.Adj i j),
-      IsBiregular (B.coupling h) (α h) (β h))
+      GraphBundle.IsBiregular (B.coupling h) (α h) (β h))
     (hne : ∀ k, (B.fiberEquitable d hfib α β hcouple).cellCard k ≠ 0)
     (i j : I),
     IsCellUniformPGST B.total (B.fiberEquitable d hfib α β hcouple) i j ↔
@@ -764,7 +760,7 @@ def OpenFractionalRevivalBundleIff : Prop :=
         ‖B.total.evolve τ ⟨j, y⟩ ⟨i, x⟩‖ = ‖α‖) →
     (∃ (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
        (a b : ∀ {i j : I}, Q.Adj i j → ℂ)
-       (hc : ∀ {i j : I} (h : Q.Adj i j), IsBiregular (B.coupling h) (a h) (b h)),
+       (hc : ∀ {i j : I} (h : Q.Adj i j), GraphBundle.IsBiregular (B.coupling h) (a h) (b h)),
        ‖(B.fiberQuotient d hfib a b hc).evolve τ j i‖ = ‖α‖)
 
 /-- **Open 3: Stratified-bundle iff (full converse).**  Under the
@@ -788,7 +784,7 @@ def OpenStratifiedIff : Prop :=
   ∀ {I : Type u} [Fintype I] [DecidableEq I]
     {Q : SimpleGraph I} {V : I → Type v}
     [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
-    (B : GraphBundle Q V) (_F : GraphBundle.FiberStratification B) (τ : ℝ),
+    (B : GraphBundle Q V) (_F : GraphBundle.FiberStratification.{u, v, v} B) (τ : ℝ),
     ∃ (J : Type v) (_ : Fintype J) (_ : DecidableEq J)
       (P : EquitablePartition B.total J) (i j : J),
       IsCellUniformPST B.total P i j τ ↔
