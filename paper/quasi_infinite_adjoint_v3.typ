@@ -198,6 +198,80 @@ identity is exact and sorry-free; we make *no* claim about a deeper
 "quantum-rate" composition here (the speculative `attention_quantum_composition`
 clause carries an honest `sorry` and is not used).
 
+#emph[Scope of the precondition.]
+The exact reduction has a precondition, and honesty requires stating where it
+fires and where it does not. The reduction requires the attention to be
+*equitable* in the relevant axis. It therefore does *not* apply to vanilla,
+fully-dense, *learned* attention: a content-dependent score matrix has, in
+general, no nontrivial automorphism, so its finest equitable partition is the
+discrete one ($r = n$) and the reduction degenerates to the identity. We say
+this plainly --- it is the honest boundary of the theorem.
+
+But efficiency pressure has already pushed *production* attention toward
+structured, hence equitable, patterns, and it is worth separating these by
+*which* reduction each enables, because they are not the same reduction.
+
+#table(
+  columns: (auto, auto, auto, auto),
+  inset: 6pt,
+  align: (left, left, left, left),
+  stroke: 0.5pt + luma(180),
+  table.header(
+    [*Structure*], [*Example*], [*Reduction*], [*Lean*],
+  ),
+  [Token-axis cell\ (segment/block-uniform,\ grouped/pooled)],
+  [block-/segment-attention,\ pooled tokens],
+  [$O(n^2) -> O(n r)$, exact:\ $A[i][j]$ depends only\ on token *cells*],
+  [`blockAttentionApply`\ (this section), #proven],
+
+  [Banded / Toeplitz\ (sliding-window, local)],
+  [Mistral, Longformer],
+  [$O(n w)$ via *translation*\ (circulant-equitable under\ the cyclic group) ---\ a *distinct* reduction],
+  [`circulant_banded_cost`,\ #proven],
+
+  [Head-axis\ (grouped-/multi-query)],
+  [GQA / MQA: Llama,\ Mistral],
+  [exact head-cell quotient],
+  [`multiHead_restrict_`\ `eq_symmQuotient`, #proven],
+
+  [Positional structure\ (relative schemes)],
+  [RoPE (rotation-equiv.),\ ALiBi (distance-based)],
+  [*restores* the translation/\ rotation equivariance that\ learned-absolute\ embeddings break],
+  [in progress],
+)
+
+The token-axis case is the literal subject of this section: the block apply is
+exact when $A[i][j]$ depends only on the *cells* of $i$ and $j$. The banded /
+Toeplitz case is a *real* win --- it is what sliding-window models exploit ---
+but it is a *different* reduction, riding *translation* (circulant-equitability
+under the cyclic group) rather than the cell structure, and we are careful not
+to conflate the two; conflating $O(n w)$ with $O(n r)$ would be exactly the kind
+of sleight-of-hand we are writing this section to avoid. The head-axis case is
+the current, proven `multiHead_restrict_eq_symmQuotient` of §3.2. And the
+positional schemes matter because relative position (RoPE, ALiBi) *restores* the
+translation- and rotation-equivariance that learned *absolute* position
+embeddings destroy: the architectural trend --- RoPE, sliding-window attention,
+grouped-query attention --- is, for efficiency reasons of its own, moving
+production attention *toward* the equitable regime.
+
+The residual fully-dense-learned case is then the *$epsilon$-equitable
+frontier.* Here we do *not* claim the exact reduction. Instead we claim that the
+equitability *defect* --- the distance from the realized score pattern to the
+nearest equitable partition --- is *measurable* and the resulting error
+*bounded*. The empirical instrument for this is the catgrad equitability-defect
+probe (see `paper/catgrad_integration.md`), which computes the equitable
+partition of a model's actual attention hypergraph and reports the defect; the
+structured cases of the table above are formalized as explicit equitable
+partitions in `Graphplay/Integrations/StructuredAttention.lean`: segment-uniform
+($O(n r)$, `segment_attention_exact_reduction`) and grouped/pooled
+(`pooledTokens_equitable`) are proven axiom-clean, as is the banded translation
+reduction ($O(n w)$, `circulant_banded_cost`); only the deep FFT spectral-cost is
+left an honest `sorry`.
+
+The takeaway is one line: the theorem bites on a real and growing slice of
+production attention, and for the rest the paper supplies a *measurement*, not a
+hand-wave.
+
 #emph[3.2 The functor stack is a verified compiler.]
 We define a small typed transformer DSL (`TransformerProgram`) with a
 denotational semantics `denote` and a compilation pass `compile` that targets

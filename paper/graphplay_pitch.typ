@@ -73,6 +73,12 @@ forward apply, the backward pass (`blockGrad_apply`), and a training step
 *exact*: no rank truncation, no kernel approximation. (The separate
 `attention_quantum_composition` carries an honest `sorry` on a deep
 quantum-rate clause; the structural reduction does not depend on it.)
+The precondition is honest and bounded: the exact reduction fires on
+*equitable* attention --- block/segment, grouped-query (GQA/MQA), and
+relative-position (RoPE, sliding-window) patterns that production transformers
+already use for efficiency --- and not on fully-dense *learned* attention, for
+which we instead measure the equitability defect rather than claim the
+reduction (#sym.section 3.1, "Scope of the precondition").
 
 #emph[Result 2 --- A verified ML#sym.arrow.r chip compiler. #text(fill: rgb("#1a7f37"))[proven].]
 `Graphplay/Integrations/TransformerDSL.lean` defines a small typed language of
