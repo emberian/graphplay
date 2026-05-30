@@ -99,6 +99,9 @@ import Graphplay.StdLib.Join
 import Graphplay.StdLib.Circulant
 import Graphplay.StdLib.AverageMixing
 import Graphplay.StdLib.CoinedWalk
+import Graphplay.StdLib.Feder
+import Graphplay.StdLib.AlgebraicConnectivity
+import Graphplay.StdLib.GraphsWithTails
 import Graphplay.StdLib.Cycle
 import Graphplay.StdLib.Computable
 
@@ -113,6 +116,7 @@ import Graphplay.Dowsing.HypergraphPST
 import Graphplay.Dowsing.NoiseEquitable
 import Graphplay.Dowsing.FilteredColimitPST
 import Graphplay.Dowsing.Conjecture93
+import Graphplay.Dowsing.WeakCoupling
 
 -- Cross-framework integrations
 import Graphplay.Integrations.TQFT
@@ -125,6 +129,9 @@ import Graphplay.Integrations.LatticeGauge
 import Graphplay.Integrations.WLRefinement
 import Graphplay.Integrations.QuantumMarkov
 import Graphplay.Integrations.MatrixInversion
+import Graphplay.Integrations.MachineLearning
+import Graphplay.Integrations.AttentionComplexity
+import Graphplay.Integrations.QuantumAdvantage
 
 -- Engineering toolkit
 import Graphplay.Toolkit
