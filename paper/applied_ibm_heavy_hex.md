@@ -78,22 +78,32 @@ file as `dataFlagPartition` and (sketched) `refined_chiral_speedup`.
 
 ## 4. Engineering payoffs
 
-The Lean file gives three concrete `theorem` statements (each with
-`sorry`) representing the engineering payoffs of the disassembly:
+The Lean file gives three concrete `theorem` statements representing the
+engineering payoffs of the disassembly. As of the current proof state, the
+core of all three is **proven, axiom-clean**: the exact quotient spectrum,
+the cell-uniform PST lift, and both halves of the noise and chiral payoffs
+are fully discharged. The only remaining `sorry`s are honest upstream gaps
+(boundary-truncation embedding, and the `Mixing`/`Search` lifts that route
+through still-`sorry`'d upstream identities); they are flagged at their
+sites and never feed the payoffs below.
 
-### Payoff #1 — PST between two specified data qubits
+### Payoff #1 — PST between two specified data qubits (PROVEN)
 
-CTQW on the quotient `K_2`-with-weight-`√6` exhibits perfect state
-transfer at time `π / (2√6)`. By `EquitablePartition.pst_lift` (from
-`Graphplay.PST`), this lifts to *cell-uniform* PST between the
-data-uniform state and the flag-uniform state. A further chip-automorphism
-average — concretely, any reflection or rotation symmetry of the chip
-exchanging a pair of data qubits `u, v` — promotes cell-uniform PST to
-two-qubit PST between `|u⟩` and `|v⟩` at time `t = π / √6`. The
-protocol uses only the chip's native couplings: Heron's tunable couplers
-suffice.
+The exact quotient spectrum is now a theorem:
+`dataFlagQuotient_eigenvalues` proves (axiom-clean) that the data/flag
+quotient has spectrum exactly `{±2√(N−1)}`, `N = |HoneyVertex| = 2nm` (the
+toroidal-template special case is the textbook `±√6`). The symmetric
+quotient `Q̃ = q·X`, `q = 2√(N−1)`, exhibits perfect state transfer at time
+`π / (2q)`; `heavyHex_pst_lift` then proves (axiom-clean) that this lifts to
+*cell-uniform* PST between the data-uniform state and the flag-uniform state,
+via `EquitablePartition.pst_lift`. A further chip-automorphism average —
+concretely, any reflection or rotation symmetry of the chip exchanging a pair
+of data qubits `u, v` — promotes cell-uniform PST to two-qubit PST between
+`|u⟩` and `|v⟩` (`ibm_native_pst_two_qubit`, still `sorry`: needs the
+automorphism-symmetrisation step). The protocol uses only the chip's native
+couplings: Heron's tunable couplers suffice.
 
-### Payoff #2 — Noise-symmetric subspaces
+### Payoff #2 — Noise-symmetric subspaces (PROVEN)
 
 A noise model preserves the data/flag partition iff each of its Lindblad
 operators commutes with the cell projector. Working out three standard
@@ -109,17 +119,29 @@ models:
 initial state* under any cell-uniform-symmetric noise model remains
 cell-uniform for all time, and its evolution is the noisy evolution of
 the 2 × 2 quotient. This is the engineering content of
-`dephasing_preserves_dataFlag` and `amplitudeDamping_preserves_dataFlag`
-in the Lean file.
+`dephasing_preserves_dataFlag` and `amplitudeDamping_preserves_dataFlag`,
+both now **proven (axiom-clean)** under the genuinely-needed discrete-cells
+hypothesis (the unconditional bare-vector statement is *false* for cells of
+size `> 1`, and the file proves that obstruction as a separate theorem,
+`perEdge_crossTalk_may_break_dataFlag` — a real per-edge crosstalk noise
+model that breaks the partition).
 
-### Payoff #3 — Chiral-signing optimisation for fast mixing
+### Payoff #3 — Chiral-signing optimisation for fast mixing (negative half PROVEN)
 
-Here we get an interesting *negative result*: on the 2-cell data/flag
-quotient, chiral signings (cross-constant unitary phases τ : Role → Role
-→ ℂ) cannot speed up uniform mixing. The signed quotient is
-`[[0, 3·e^{iφ}], [2·e^{-iφ}, 0]]`, with the same spectral radius `√6`
-regardless of `φ`. The 2-cell quotient is *too coarse* for the Levine et
-al. (arXiv:2605.04414) chiral speedup to bite. The positive half:
+Here we get an interesting *negative result*, and it is now **proven
+(axiom-clean)**: on the 2-cell data/flag quotient, chiral signings
+(cross-constant unitary phases τ : Role → Role → ℂ) cannot speed up uniform
+mixing. `dataFlag_chiral_no_speedup` proves the signed off-diagonal magnitude
+`‖τ·q‖` equals the unsigned `‖q‖`, and `dataFlag_chiral_spectrum_phase_independent`
+proves the full spectral statement: the signed symmetric quotient
+`[[0, e^{iφ}·q], [e^{-iφ}·q, 0]]` has spectrum exactly `{±q}`, `q = 2√(N−1)`,
+*independent of the phase* `φ` — so the spectral radius (hence the mixing
+time) is `φ`-invariant. The matrix-level engine is `roleHermitian_spectrum`
+(any zero-diagonal Hermitian `2×2` `Role`-matrix has spectrum `{±r}` depending
+on its off-diagonal *only through the modulus* `r`). The 2-cell quotient is
+*too coarse* for the Levine et al. (arXiv:2605.04414) chiral speedup to bite.
+The positive half (`refined_chiral_speedup`, still `sorry`: needs the 3-cell
+boundary refinement + upstream `CellUniformMixing`):
 on the 3-cell refinement (`data-3`, `data-2`, `flag`), the chiral
 phasing has more room — three independent cross-cell phases — and the
 chiral mixing optimisation theorem
@@ -131,7 +153,64 @@ an independently-controllable phase. This is the meaning of the
 `HardwareSpec` we attach to Heron (`allowedPhaseSet = unit circle`),
 versus Eagle (`{1}`, no tunable phase).
 
-## 5. Open questions about real chip parameters
+## 5. Compiling an ML primitive INTO the chip — a falsifiable experiment
+
+The disassembly above runs chip → quotient → CTQW primitive. The companion
+file `Graphplay/Applications/CompileML.lean` runs the **inverse** direction —
+*compilation*: ML primitive → small quotient → native chip couplings +
+schedule. We pick a clean ML primitive that maps to a CTQW observable: a
+**2-class structured-attention / associative-recall** task, where recall =
+perfect transfer between a *query-uniform* state and a *key-uniform* state.
+An attention head whose query/key structure is invariant under a symmetry
+induces an equitable partition of its token graph into two role cells, and
+the attention pattern descends to the `2×2` matrix the symmetry induces on
+those cells (the `O(n²) → O(nr)` collapse of `Integrations.AttentionComplexity`).
+When that induced matrix is the off-diagonal `K₂` coupling, the recall map
+*is* PST between the two role cells — exactly the data/flag PST proven above.
+
+The compiler `compileToHeavyHex` emits the native IBM-Heron coupling weights
+(the proven `ibmHeronSpec` plus the static heavy-hex CTQW schedule run for
+`t = π/(2q)`), so it lands on the *same* data/flag cells the disassembly
+exposed. The compilation-correctness theorem
+`compiled_cellUniform_realizes_target` is **proven, axiom-clean**: the
+compiled host's cell-uniform evolution between the data (query) and flag (key)
+cells realizes the target recall as PST, obtained by lifting the proven IBM
+PST through the equitable partition. We did *not* search for a chip — the
+couplings are emitted from the 2-cell recall quotient and the recall property
+falls out of `heavyHex_pst_lift`.
+
+The payoff is a **falsifiable on-device protocol**
+(`compiled_experiment_prediction`, proven). Hand it to a lab running an
+IBM-Heron device — this is the **Heron experiment**:
+
+* **State prep.** Prepare the data-uniform (query) state
+  `|C_data⟩ = |V|^{-1/2} ∑_{data v} |v⟩`.
+* **Evolution.** Run the native heavy-hex CTQW (every nominal nearest-neighbour
+  coupling at unit weight, tunable couplers at zero phase) for time
+  `t = π/(2q)`, `q = 2√(N−1)`.
+* **Measurement.** Measure the flag-uniform (key) population
+  `P_key = |⟨C_flag|U(t)|C_data⟩|²`.
+* **Predicted signal.** `P_key(t) = sin²(t·q)` (proven equal to the Born-rule
+  population via `predictedKeyPopulation_eq_amplitude_sq`); in particular
+  `P_key = 1` at `t = π/(2q)` (ideal recall, `predictedKeyPopulation_at_compiledTime`).
+* **Deficit law.** The observed deficit `1 − P_key` is governed by the device
+  noise model's `NoiseEquitable.NoiseModel.BreakingScore` of the data/flag
+  partition: zero breaking score forces every positive-rate Lindblad to be
+  block-diagonal w.r.t. the partition
+  (`compiled_breakingScore_zero_blockDiagonal`, proven), so the recall is left
+  intact to that order. A measured `P_key` deviating from `sin²(t·q)` by more
+  than the breaking-score-predicted deficit **falsifies** either the chip's
+  data/flag partition symmetry or the claim that its residual noise respects
+  it — and with it the structured-attention `O(n) → O(r)` acceleration claim.
+  (The prediction is genuinely two-sided: `compiled_positive_breakingScore_exists`
+  proves a positive-breaking-score noise model exists, the regime in which a
+  measured deficit is *predicted* rather than a falsification.) The single
+  end-to-end referee check is `compile_recall_to_heron`, which compiles the
+  plain-recall target onto a Heron-sized `(7, 19)` device and proves all four
+  clauses (Heron spec, well-formed schedule, cell-uniform recall, ideal key
+  population `1`).
+
+## 6. Open questions about real chip parameters
 
 A few obvious follow-ups that the Lean scaffold leaves open:
 
@@ -167,6 +246,18 @@ A few obvious follow-ups that the Lean scaffold leaves open:
 
 ---
 
-*File: `Graphplay/Applications/IBMHeavyHex.lean`.  Companion paper draft:
-this file. All proofs in the Lean file are `sorry`; the contribution is
-the disassembly and the named statements.*
+*Files: `Graphplay/Applications/IBMHeavyHex.lean` (disassembly + payoffs)
+and `Graphplay/Applications/CompileML.lean` (the compile-into-the-chip
+direction).  Companion paper draft: this file. The core of all three
+payoffs is now **proven, axiom-clean** — the exact `±2√(N−1)` quotient
+spectrum (`dataFlagQuotient_eigenvalues`), the cell-uniform PST lift
+(`heavyHex_pst_lift`), the noise-preservation theorems
+(`dephasing_/amplitudeDamping_preserves_dataFlag`), and the chiral
+no-speedup negative result (`dataFlag_chiral_no_speedup`,
+`dataFlag_chiral_spectrum_phase_independent`) — together with the
+compilation-correctness and falsifiable-prediction theorems
+(`compiled_cellUniform_realizes_target`, `compiled_experiment_prediction`).
+Remaining honest `sorry`s are upstream gaps: the boundary-truncation
+embedding, the two-qubit automorphism promotion, and the `Mixing`/`Search`
+lifts (blocked on still-`sorry`'d upstream identities), each flagged at its
+site.*

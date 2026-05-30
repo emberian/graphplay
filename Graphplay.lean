@@ -117,6 +117,7 @@ import Graphplay.Dowsing.NoiseEquitable
 import Graphplay.Dowsing.FilteredColimitPST
 import Graphplay.Dowsing.Conjecture93
 import Graphplay.Dowsing.WeakCoupling
+import Graphplay.Dowsing.DiracLimit
 
 -- Cross-framework integrations
 import Graphplay.Integrations.TQFT

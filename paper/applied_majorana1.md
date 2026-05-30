@@ -85,17 +85,30 @@ braid in the configuration space of MZMs.
 ## 4. Three engineering payoffs as theorems
 
 The Lean file `Graphplay/Applications/MajoranaOne.lean` states the
-following three theorems (proofs `sorry`).
+following three theorems. The Tower-3 backbone they rest on is now
+**proven, axiom-clean**: `sectorProjector_sum` proves the joint-parity
+sector projectors `Π_s` sum to `1` (the completeness axiom, via a
+non-commutative distributive interchange `noncommProd_sum_pi`); together
+with the Hermitian/idempotent/orthogonality lemmas they assemble into the
+`cellProjectorSystem`, and `parityQuantumEquitablePartition` proves the
+parity sectors **are** a genuine `QuantumEquitablePartition` of the chip's
+operator system. Payoff 2 is fully discharged on top of this; Payoffs 1 and
+3 remain honest upstream `sorry`s (flagged below).
 
 **Payoff 1 — Topologically-protected PST between two tetrons via braiding.**
+(`payoff1_topologically_protected_PST`, still `sorry` — honest upstream gap.)
 For a parity-conserving chip with parity-sector equitable partition `P` and
 a braid gate `BG : TQFT.BraidGate P` realising a permutation of sectors
 `s_u ↔ s_v`, the chip exhibits cell-uniform PST between the cells at `s_u`
 and `s_v` at time `BG.τ`.  Mechanism: combine `TQFT.braid_gate_realizable`
 (existence of a realising Hamiltonian time) with `EquitablePartition.pst_lift`
-(Bachman-Tamon 1108.0339 cell-uniform lift).
+(Bachman-Tamon 1108.0339 cell-uniform lift). The blocker is
+`braid_gate_realizable`, itself a deep FKLW (Freedman-Kitaev-Larsen-Wang)
+`sorry` in `TQFT.lean`; the parity-sector partition `P` it lifts through is
+already proven equitable.
 
 **Payoff 2 — Parity-symmetric noise preserves the cell-uniform subspace.**
+(`payoff2_parity_noise_preserves_partition`, **proven, axiom-clean**.)
 If `N : NoiseModel V` is *parity-conserving* — every Lindblad jump operator
 commutes with every per-tetron parity operator — then `N` is
 `cellUniformSymmetric` with respect to the parity-sector partition `P`, and
@@ -104,28 +117,38 @@ hence the Lindblad evolution preserves `cellUniform P`
 (`Graphplay/Dowsing/NoiseEquitable.lean`): `N.BreakingScore P = 0`.
 Physically: any noise process conserving total fermion parity is
 automatically parity-symmetric, and topological-gap protection exponentially
-suppresses the parity-breaking processes.
+suppresses the parity-breaking processes. (The Lean statement takes the
+genuine per-tetron parity-operator family as an explicit parameter and
+demands honest commutation `L·Pᵥ = Pᵥ·L`, so the hypothesis is non-vacuous.)
 
 **Payoff 3 — Drift in flux preserves equitability iff connection is flat.**
-For a perturbed flux configuration `F : C.fluxField`, the parity-sector
-equitable partition is preserved by the flux-dressed Hamiltonian iff `F` is
-flat in the U(1) lattice-gauge sense.  This is the rigorous form of
-"topological protection requires flat connections", obtained by combining
-`Tower6.robust_pst_neighbourhood` with `LatticeGauge.signedBy_preserves_
-equitable`.
+(`payoff3_drift_iff_flat`, still `sorry` — honest gap: the witness needs
+pinning.) For a perturbed flux configuration `F : C.fluxField`, the
+parity-sector equitable partition is preserved by the flux-dressed
+Hamiltonian iff `F` is flat in the U(1) lattice-gauge sense.  This is the
+rigorous form of "topological protection requires flat connections",
+obtained by combining `Tower6.robust_pst_neighbourhood` with
+`LatticeGauge.signedBy_preserves_equitable`. The flat-iff-preserved core is
+captured by the proven `flat_iff_partition_preserved`; the remaining `sorry`
+is the existential cross-constant-signing witness in the iff's reverse
+direction, which needs the flux witness pinned down.
 
 ## 5. Honest assessment: defensible vs. speculative
 
-**Directly following from existing Graphplay theorems:**
+**Directly following from existing Graphplay theorems (now PROVEN):**
 
 * The parity-sector decomposition *is* a `QuantumEquitablePartition` once
   one accepts parity-conservation of the operator system.  This is the
-  D5 non-commutative-coherent-algebra correspondence applied verbatim.
+  D5 non-commutative-coherent-algebra correspondence applied verbatim, and
+  it is now **proven, axiom-clean**: `sectorProjector_sum` (the projectors
+  sum to `1`), `cellProjectorSystem`, and `parityQuantumEquitablePartition`.
 * Payoff 2 is *almost* a tautology: any symmetry-respecting noise model
   preserves the symmetry's cell-uniform subspace.  This is the direct
-  application of `cellUniformSymmetric` + the parity-superselection structure.
+  application of `cellUniformSymmetric` + the parity-superselection structure,
+  and it is **proven** (`payoff2_parity_noise_preserves_partition`).
 * The braid-gate correspondence is `TQFT.braid_factors_through_cellUniform`
-  applied to the parity-sector decoration.
+  applied to the parity-sector decoration (Payoff 1 still rests on the
+  upstream FKLW `braid_gate_realizable` `sorry`).
 
 **Speculative — modelling assumptions:**
 
@@ -152,6 +175,44 @@ equitable`.
   phase; ours involves U(1) gauge-flatness of a sheaf-of-operator-algebras
   connection.  These should be equivalent in nice cases but the literature
   uses very different vocabulary.
+
+## 5b. Compiling an ML primitive INTO the chip — the parity-sector experiment
+
+Everything above runs the *disassembly* direction: chip → parity-sector
+quotient → CTQW primitive. The companion file
+`Graphplay/Applications/CompileML.lean` runs the **inverse** direction —
+*compilation*: ML primitive → small quotient → native chip schedule. The
+primitive is a **2-class structured-attention / associative-recall** task,
+where recall = perfect transfer between a *query-uniform* state and a
+*key-uniform* state; an attention head invariant under a symmetry induces a
+2-cell equitable partition of its token graph, and the recall map is PST
+between the two role cells (the `O(n²) → O(nr)` collapse of
+`Integrations.AttentionComplexity`).
+
+For the Majorana-1 chip this is the **parity-sector version**:
+`compileToMajorana` emits the parity-sector schedule realizing the recall as
+transfer between two joint-parity sectors, via the proven minimal realization
+`InverseDesign.synthesizePST` (the `K₂` recall quotient inflated to a parity
+register, transferring between the two cells at `π/2`).
+`compileToMajorana_realizesRecall` is **proven** (reusing the axiom-clean
+`synthesizePST_realizesPST`): the compiled parity register realizes recall as
+genuine PST between two cell endpoints. (The full Majorana-1-specific lift — a
+parity-conserving Lindblad schedule directly on `TetronChip` — needs the
+open-system Bachman-Tamon and is left to that file; the closed-system
+parity-register realization is what is emitted here.)
+
+The falsifiable on-device protocol `compiled_experiment_prediction` (proven,
+stated for the heavy-hex realization in `CompileML.lean`) carries over to the
+parity sectors: prepare the query-uniform state, run the native CTQW for the
+emitted time, and measure the key-cell population. The prediction is
+`predictedKeyPopulation = sin²(t·q)` — `1` at the compiled time (ideal recall)
+— with the observed deficit `1 − P_key` governed by the noise model's
+`NoiseEquitable.NoiseModel.BreakingScore` of the partition: a measured key
+population deviating from `sin²(t·q)` beyond the breaking-score-predicted
+deficit **falsifies** either the chip's parity-sector partition symmetry or
+the claim that its residual noise conserves parity — exactly the
+`BreakingScore = 0` ⇔ block-diagonal-noise content that ties Payoff 2 to a
+number a lab can read off.
 
 ## 6. Open questions
 
@@ -186,11 +247,17 @@ equitable`.
 
 ---
 
-**File map.**  Lean: `Graphplay/Applications/MajoranaOne.lean`; this
-markdown: `paper/applied_majorana1.md`.  Both depend on Tower 3 (`QuantumGraph`,
-`NonCommutativeCoherent`), Tower 6 (`SheafGraph`,
-`SheafEquitablePartition`), Tower 7 (`BraidRepresentation` /
+**File map.**  Lean: `Graphplay/Applications/MajoranaOne.lean` (disassembly +
+payoffs) and `Graphplay/Applications/CompileML.lean` (the compile-into-the-chip
+direction, parity-sector version); this markdown: `paper/applied_majorana1.md`.
+Both depend on Tower 3 (`QuantumGraph`, `NonCommutativeCoherent`), Tower 6
+(`SheafGraph`, `SheafEquitablePartition`), Tower 7 (`BraidRepresentation` /
 `BicategoricalEquitablePartition`), and the integrations `TQFT.lean` and
-`LatticeGauge.lean`.  All proofs are `sorry`; the file's purpose is to *pin
-down the statements* so that filling in the proofs is a future agent's
-task.
+`LatticeGauge.lean`.  The Tower-3 backbone and Payoff 2 are now **proven,
+axiom-clean** — `sectorProjector_sum`, `cellProjectorSystem`,
+`parityQuantumEquitablePartition`, `flat_iff_partition_preserved`, and
+`payoff2_parity_noise_preserves_partition`.  The remaining honest `sorry`s are
+upstream: Payoff 1 (the braid-gate PST, blocked on the FKLW
+`braid_gate_realizable` in `TQFT.lean`) and Payoff 3 (the flux-flatness
+existential witness, which needs the witness pinned down) — each flagged at
+its site.

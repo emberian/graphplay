@@ -56,6 +56,7 @@ import Graphplay.Search.CNO
 import Graphplay.Equitable
 import Mathlib.Data.Nat.Log
 import Mathlib.Data.Nat.Bitwise
+import Mathlib.Data.ZMod.Basic
 
 open scoped Matrix
 open Graphplay.StdLib
@@ -650,6 +651,376 @@ theorem strongly_regular_sparse_search
   -- Delegates to the CNO criterion; the spectral-timing core is sorried there
   -- (`-- BLOCKED: needs CNO spectral-ratio timing`).
   optimal_search_of_spectral_ratio_lt_one G w p deg hne hreg huniform hp hratio
+
+/-! ## The d-dimensional periodic lattice `Z_L^d` — the buildable-but-(usually)-non-advantageous host.
+
+We now add the *other* canonical buildable search host: the **`d`-dimensional
+periodic lattice (discrete torus) `Z_L^d`**, the abstraction of every physically
+*spatial* quantum chip — optical lattices, superconducting grids, photonic
+waveguide arrays.  Its vertex set is `Fin d → ZMod L` (a `d`-tuple of coordinates
+mod `L`), and two vertices are adjacent iff they differ by `±1` in *exactly one*
+coordinate (nearest-neighbour hopping with wraparound).  Each vertex has exactly
+`2·d` neighbours — `2` per axis — so the lattice is `2d`-regular with **degree
+independent of `N = L^d`**: the hallmark of buildable hardware.
+
+The honest twist (this is the point of the file): Childs–Goldstone
+(`quant-ph/0306054`) proved that continuous-time spatial search on `Z_L^d` attains
+the optimal `Θ(√N)` running time **only for `d > 4`**; `d = 4` loses a `√log N`
+factor, and `d ≤ 3` — *every literal 2D/3D chip* — does **not** achieve the
+quadratic speedup at all.  The mechanism is an infrared (small-momentum)
+convergence threshold of the lattice Green's function `∑_k 1/(1−cos k)`, which is
+dimension-`4`-critical.  So the most *buildable* host (a 2D/3D grid) is precisely
+the one that does *not* win, while the hypercube `Q_d` — degree only `log₂N`, yet
+spectrally in the high-dimensional regime — threads the needle.
+
+Throughout we require `[Fact (2 < L)]` (i.e. `L ≥ 3`): a periodic lattice with
+side `< 3` has the two `±1` neighbours along an axis collapse onto each other, so
+`L ≥ 3` is exactly the condition for the `2d` nearest neighbours to be genuinely
+distinct (and for the graph to be loopless).  This is no loss: every physical
+lattice has `L ≥ 3`. -/
+
+/-- The vertex type of the `d`-dimensional periodic lattice of side `L`: a tuple
+of `d` coordinates, each in `ZMod L` (so addition wraps around — the torus). -/
+abbrev LatticeVertex (d L : ℕ) : Type := Fin d → ZMod L
+
+/-- A side length `L > 2` is in particular nonzero, so `ZMod L` is a finite type
+with decidable equality (hence so is `LatticeVertex d L`). -/
+instance (priority := 100) instNeZeroOfFact2Lt (L : ℕ) [h : Fact (2 < L)] : NeZero L :=
+  ⟨by have := h.out; omega⟩
+
+/-- A side `L > 2` is in particular `> 1`, so `ZMod L` is nontrivial (`1 ≠ 0`,
+`-1 ≠ 0`, `-1 ≠ 1`). -/
+instance (priority := 100) instFact1LtOfFact2Lt (L : ℕ) [h : Fact (2 < L)] :
+    Fact (1 < L) := ⟨by have := h.out; omega⟩
+
+/-- **Axis shift.**  `latticeShift i s x` moves `x` by `s` along axis `i`
+(leaving all other coordinates fixed): `Function.update x i (x i + s)`.  The
+nearest-neighbour edges of the torus are the shifts with `s = ±1`. -/
+def latticeShift {d L : ℕ} (i : Fin d) (s : ZMod L) (x : LatticeVertex d L) :
+    LatticeVertex d L :=
+  Function.update x i (x i + s)
+
+@[simp] theorem latticeShift_self {d L : ℕ} (i : Fin d) (s : ZMod L)
+    (x : LatticeVertex d L) : latticeShift i s x i = x i + s := by
+  unfold latticeShift; rw [Function.update_self]
+
+theorem latticeShift_of_ne {d L : ℕ} {i j : Fin d} (s : ZMod L)
+    (x : LatticeVertex d L) (h : j ≠ i) : latticeShift i s x j = x j := by
+  unfold latticeShift; rw [Function.update_of_ne h]
+
+/-- Shifting back: `latticeShift i (-s) (latticeShift i s x) = x`. -/
+@[simp] theorem latticeShift_neg_cancel {d L : ℕ} (i : Fin d) (s : ZMod L)
+    (x : LatticeVertex d L) :
+    latticeShift i (-s) (latticeShift i s x) = x := by
+  funext j
+  by_cases hj : j = i
+  · subst hj; rw [latticeShift_self, latticeShift_self]; ring
+  · rw [latticeShift_of_ne _ _ hj, latticeShift_of_ne _ _ hj]
+
+/-- The **nearest-neighbour adjacency** of the periodic lattice: `x` and `y` are
+adjacent iff `y` is `x` shifted by `±1` along some single axis. -/
+def latticeAdjacent {d L : ℕ} (x y : LatticeVertex d L) : Prop :=
+  ∃ (i : Fin d) (s : ZMod L), (s = 1 ∨ s = -1) ∧ y = latticeShift i s x
+
+/-- Adjacency is symmetric (shifting by `s` is undone by shifting by `-s`, and
+`±1` is closed under negation). -/
+theorem latticeAdjacent_comm {d L : ℕ} (x y : LatticeVertex d L) :
+    latticeAdjacent x y ↔ latticeAdjacent y x := by
+  -- It suffices to prove one direction (then apply it both ways).
+  suffices h : ∀ a b : LatticeVertex d L, latticeAdjacent a b → latticeAdjacent b a by
+    exact ⟨h x y, h y x⟩
+  rintro a b ⟨i, s, hs, rfl⟩
+  refine ⟨i, -s, ?_, (latticeShift_neg_cancel i s a).symm⟩
+  rcases hs with h | h
+  · right; rw [h]
+  · left; rw [h, neg_neg]
+
+open Classical in
+/-- **The `d`-dimensional periodic lattice `Z_L^d` as a weighted graph.**
+Adjacency value is `1` between nearest neighbours (differ by `±1` in exactly one
+coordinate, mod `L`) and `0` otherwise.  Hermitian by symmetry of
+`latticeAdjacent`; loopless because a `±1` shift never fixes a vertex when
+`L ≥ 3`. -/
+noncomputable def latticeGraph (d L : ℕ) [Fact (2 < L)] :
+    WeightedGraph (LatticeVertex d L) where
+    adj := fun x y => if latticeAdjacent x y then (1 : ℂ) else 0
+    herm := by
+      refine Matrix.IsHermitian.ext (fun x y => ?_)
+      show star (if latticeAdjacent y x then (1 : ℂ) else 0)
+          = if latticeAdjacent x y then (1 : ℂ) else 0
+      rw [← latticeAdjacent_comm x y]
+      by_cases h : latticeAdjacent x y
+      · rw [if_pos h]; simp
+      · rw [if_neg h]; simp
+    loopless := by
+      intro v
+      -- `latticeAdjacent v v` would force a `±1` shift to fix `v`, i.e. `±1 = 0`,
+      -- impossible for `L ≥ 3`.
+      rw [if_neg]
+      rintro ⟨i, s, hs, hv⟩
+      have hval : v i = v i + s := by
+        have := congrFun hv i; rwa [latticeShift_self] at this
+      have hs0 : s = 0 := by
+        have h2 : v i + 0 = v i + s := by rw [add_zero]; exact hval
+        exact (add_left_cancel h2).symm
+      rcases hs with h | h
+      · rw [h] at hs0; exact one_ne_zero hs0
+      · rw [h] at hs0
+        have : (1 : ZMod L) = 0 := by rw [← neg_neg (1 : ZMod L), hs0, neg_zero]
+        exact one_ne_zero this
+
+/-! ### `2d`-regularity and sparsity of the lattice — the axiom-clean deliverable.
+
+The lattice is `2d`-regular: each vertex has exactly two neighbours per axis
+(`+1` and `−1`), for `2d` total, and they are genuinely distinct when `L ≥ 3`.
+We prove this by exhibiting the neighbour set as the injective image of the `2d`
+shift maps indexed by `Fin d × Bool` (`true ↦ +1`, `false ↦ −1`). -/
+
+/-- The signed unit of a Boolean: `true ↦ +1`, `false ↦ −1` in `ZMod L`. -/
+def signUnit (L : ℕ) (b : Bool) : ZMod L := if b then 1 else -1
+
+theorem signUnit_mem_pm (L : ℕ) (b : Bool) :
+    signUnit L b = 1 ∨ signUnit L b = -1 := by
+  unfold signUnit; cases b <;> simp
+
+/-- The `2d` neighbour-generating map: `(i, b) ↦ x shifted by ±1 along axis i`. -/
+def latticeNeighborMap {d L : ℕ} (x : LatticeVertex d L) (ib : Fin d × Bool) :
+    LatticeVertex d L :=
+  latticeShift ib.1 (signUnit L ib.2) x
+
+/-- **Injectivity of the `2d` neighbour map** (uses `L ≥ 3`).  Two distinct
+`(axis, sign)` pairs give distinct neighbours: distinct axes change disjoint
+coordinates, and on a common axis `+1 ≠ −1` because `L ≥ 3`. -/
+theorem latticeNeighborMap_injective {d L : ℕ} [Fact (2 < L)]
+    (x : LatticeVertex d L) :
+    Function.Injective (latticeNeighborMap x) := by
+  rintro ⟨i, b⟩ ⟨i', b'⟩ h
+  unfold latticeNeighborMap at h
+  -- Compare the two shifted vertices coordinatewise.
+  -- First, the axes must agree: if `i ≠ i'`, evaluate at `i`.
+  have hii : i = i' := by
+    by_contra hne
+    -- At axis `i`, the LHS is `x i + signUnit b`, the RHS is `x i` (axis `i'` ≠ `i`).
+    have hL : latticeShift i (signUnit L b) x i = x i + signUnit L b :=
+      latticeShift_self i (signUnit L b) x
+    have hR : latticeShift i' (signUnit L b') x i = x i :=
+      latticeShift_of_ne (signUnit L b') x hne
+    have heq : x i + signUnit L b = x i := by rw [← hL, ← hR, h]
+    -- `signUnit b = 0` contradicts `±1 ≠ 0` for `L ≥ 3`.
+    have h0 : signUnit L b = 0 := by
+      have h2 : x i + signUnit L b = x i + 0 := by rw [add_zero]; exact heq
+      exact add_left_cancel h2
+    rcases signUnit_mem_pm L b with hp | hp
+    · rw [hp] at h0; exact one_ne_zero h0
+    · rw [hp] at h0
+      exact one_ne_zero (by rw [← neg_neg (1 : ZMod L), h0, neg_zero])
+  subst hii
+  -- Same axis: signs must agree, else `+1 = −1` which fails for `L ≥ 3`.
+  have hsign : signUnit L b = signUnit L b' := by
+    have := congrFun h i
+    rw [latticeShift_self, latticeShift_self] at this
+    exact add_left_cancel this
+  have hbb : b = b' := by
+    -- `b ≠ b'` ⇒ one sign is `1`, the other `-1` ⇒ `1 = -1`, false for `L ≥ 3`.
+    cases b <;> cases b'
+    · rfl
+    · exfalso
+      -- `signUnit false = -1`, `signUnit true = 1`: `-1 = 1` is false.
+      simp only [signUnit, Bool.false_eq_true, if_false, if_true] at hsign
+      exact ZMod.neg_one_ne_one hsign
+    · exfalso
+      simp only [signUnit, Bool.false_eq_true, if_false, if_true] at hsign
+      exact ZMod.neg_one_ne_one hsign.symm
+    · rfl
+  rw [hbb]
+
+open Classical in
+/-- The neighbour finset of `x` is exactly the image of the `2d` shift maps. -/
+theorem lattice_neighborFinset_eq_image {d L : ℕ} [Fact (2 < L)]
+    (x : LatticeVertex d L) :
+    (Finset.univ.filter (fun y => latticeAdjacent x y))
+      = Finset.univ.image (latticeNeighborMap x) := by
+  classical
+  ext y
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_image]
+  constructor
+  · rintro ⟨i, s, hs, rfl⟩
+    -- `s = ±1 = signUnit (decide (s = 1))`.
+    rcases hs with hs1 | hsm1
+    · exact ⟨(i, true), by unfold latticeNeighborMap signUnit; rw [hs1]; simp⟩
+    · exact ⟨(i, false), by unfold latticeNeighborMap signUnit; rw [hsm1]; simp⟩
+  · rintro ⟨⟨i, b⟩, rfl⟩
+    exact ⟨i, signUnit L b, signUnit_mem_pm L b, rfl⟩
+
+/-- **The periodic lattice `Z_L^d` is `2d`-regular** (axiom-clean).  Every vertex
+has exactly `2d` neighbours — `2` per axis (`+1`, `−1`), all distinct because
+`L ≥ 3` — so the weighted row sum is `2d`. -/
+theorem latticeGraph_isRegular (d L : ℕ) [Fact (2 < L)] :
+    (latticeGraph d L).isRegular ((2 * d : ℕ) : ℂ) := by
+  classical
+  intro x
+  unfold WeightedGraph.degree
+  -- `degree x = ∑ y, [adjacent x y] = #(neighbours) = #(image of 2d shifts) = 2d`.
+  have hadj : ∀ y, (latticeGraph d L).adj x y
+      = (if latticeAdjacent x y then (1 : ℂ) else 0) := fun _ => rfl
+  rw [Finset.sum_congr rfl (fun y _ => hadj y)]
+  rw [show (∑ y, (if latticeAdjacent x y then (1 : ℂ) else 0))
+        = ((Finset.univ.filter (fun y => latticeAdjacent x y)).card : ℂ) from ?_]
+  · rw [lattice_neighborFinset_eq_image x,
+      Finset.card_image_of_injective _ (latticeNeighborMap_injective x)]
+    rw [Finset.card_univ, Fintype.card_prod, Fintype.card_fin, Fintype.card_bool]
+    push_cast; ring
+  · rw [Finset.card_filter, Nat.cast_sum]
+    apply Finset.sum_congr rfl
+    intro y _
+    by_cases hy : latticeAdjacent x y <;> simp [hy]
+
+/-- **Degree equals `2d`** at any specific vertex (unfolded regularity). -/
+theorem latticeGraph_degree (d L : ℕ) [Fact (2 < L)] (x : LatticeVertex d L) :
+    (latticeGraph d L).degree x = ((2 * d : ℕ) : ℂ) :=
+  latticeGraph_isRegular d L x
+
+/-- **Sparsity / buildability of the lattice: degree is `O(d)`, constant in `N`.**
+With `N = L^d` vertices, the lattice degree `2d` is *independent of `N`* for fixed
+dimension `d` — bounded, nearest-neighbour coupling, the hallmark of buildable
+spatial hardware (optical lattices, superconducting grids, photonic arrays).  This
+is exactly why a literal 2D/3D chip is the *most* realizable host.  (Contrast
+`K_N`, degree `N − 1`, all-to-all.)  Stated as: the degree `2d` does not depend on
+the side length `L` (hence not on `N = L^d`). -/
+theorem latticeGraph_sparse (d L L' : ℕ) [Fact (2 < L)] [Fact (2 < L')] :
+    (latticeGraph d L).degree (fun _ => 0)
+      = (latticeGraph d L').degree (fun _ => 0) := by
+  rw [latticeGraph_degree d L, latticeGraph_degree d L']
+
+/-- **The lattice has `N = L^d` vertices.**  Records the vertex count, against
+which the constant degree `2d` is the sparsity claim. -/
+theorem latticeGraph_card (d L : ℕ) [NeZero L] :
+    Fintype.card (LatticeVertex d L) = L ^ d := by
+  unfold LatticeVertex
+  rw [Fintype.card_fun, ZMod.card, Fintype.card_fin]
+
+/-! ### The marked-vertex lattice search Hamiltonian and distance shells.
+
+The lattice search Hamiltonian is the Childs–Goldstone form
+`H = -γ·A(Z_L^d) − |w⟩⟨w|`, identical in shape to the hypercube's — it is just
+`(latticeGraph d L).searchHamiltonian {w} γ`.  Unlike the hypercube, the
+distance-from-`w` (radial) partition of `Z_L^d` is in general only *almost*
+equitable (the `L¹` graph distance shells are not equitable on the torus for
+generic `L` because corner/edge wraparound counts break exact branching), which is
+itself a symptom of why the spectral analysis is harder; we therefore do *not*
+claim an exact equitable radial quotient here.  What is genuine and recorded: the
+search Hamiltonian itself, and its entrywise CG form. -/
+
+/-- The **lattice spatial-search Hamiltonian** `H = -γ·A(Z_L^d) − |w⟩⟨w|`, the
+Childs–Goldstone marked Hamiltonian on the periodic lattice. -/
+noncomputable def latticeSearchHamiltonian (d L : ℕ) [Fact (2 < L)]
+    (w : LatticeVertex d L) (γ : ℝ) : Matrix (LatticeVertex d L) (LatticeVertex d L) ℂ :=
+  (latticeGraph d L).searchHamiltonian ({w} : Finset (LatticeVertex d L)) γ
+
+/-- Entrywise Childs–Goldstone form of the lattice search Hamiltonian:
+`H u v = -γ·[u ∼ v] − [u = v = w]`. -/
+theorem latticeSearchHamiltonian_apply (d L : ℕ) [Fact (2 < L)]
+    (w : LatticeVertex d L) (γ : ℝ) (u v : LatticeVertex d L) :
+    latticeSearchHamiltonian d L w γ u v
+      = -(γ : ℂ) * (latticeGraph d L).adj u v
+        - (if u = v ∧ u = w then (1 : ℂ) else 0) := by
+  unfold latticeSearchHamiltonian WeightedGraph.searchHamiltonian
+  simp only [Finset.mem_singleton]
+
+/-! ### The HONEST headline: the dimension threshold.
+
+This is the paper-worthy result, stated precisely with the dimension dependence
+explicit.  The proof is the deep Childs–Goldstone spectral integral — genuinely
+hard, blocked here. -/
+
+/-- **`lattice_search_dimension_threshold` — the honest headline (Childs–Goldstone,
+`quant-ph/0306054`).**  Continuous-time spatial search on the `d`-dimensional
+periodic lattice `Z_L^d` achieves the **optimal `Θ(√N)` running time if and only
+if `d > 4`**.  Concretely: for `d > 4` the marked-vertex CTQW search is optimal
+(`IsOptimalCTQWSearch`); for `d ≤ 4` no choice of coupling `γ` yields the optimal
+constant-amplitude `√N` search (`d ≤ 3` fails outright; `d = 4` loses a `√log N`
+factor and so still misses the *exact* `Θ(√N)` window).
+
+The mechanism is the infrared convergence of the lattice Green's function
+`G_d = (2π)^{-d} ∫_{[-π,π]^d} dᵏ / ∑_{a} (1 − cos kₐ)`, whose small-`k` integrand
+`~ ‖k‖^{-2}` is integrable exactly when `d > 4` (a `d/2 > 2` power-counting
+threshold) — the same `4`-critical dimension as the random-walk / φ⁴ upper
+critical dimension.  Above it, the spectral gap of the normalized search
+Hamiltonian is constant (the CNO ratio condition holds) and CG search is optimal;
+at and below it the gap closes and the amplitude saturates below `O(1)`.
+
+**Honest `sorry`.**  The spectral integral and its dimension-`4` IR-convergence
+threshold are the deep analytic content of Childs–Goldstone; we state the genuine
+biconditional and block exactly that step. -/
+theorem lattice_search_dimension_threshold (d L : ℕ) [Fact (2 < L)]
+    (w : LatticeVertex d L) :
+    IsOptimalCTQWSearch (latticeGraph d L) w ↔ 4 < d := by
+  -- BLOCKED: Childs–Goldstone spectral integral / d>4 IR-convergence
+  -- of the lattice Green's function `∫ dᵏ / ∑(1−cos kₐ)` (quant-ph/0306054).
+  sorry
+
+/-- **High-dimensional lattices DO get the speedup (`d > 4`).**  The `d > 4`
+half of the threshold: above the critical dimension the lattice Green's function
+converges, the CNO spectral-ratio condition holds, and CTQW search is optimal.
+(Honest `sorry`, the forward direction of `lattice_search_dimension_threshold`.) -/
+theorem lattice_search_optimal_high_dim (d L : ℕ) [Fact (2 < L)]
+    (w : LatticeVertex d L) (hd : 4 < d) :
+    IsOptimalCTQWSearch (latticeGraph d L) w :=
+  (lattice_search_dimension_threshold d L w).mpr hd
+
+/-! ### The honest CONTRAST: buildable vs advantageous are in tension.
+
+This is the conceptual payoff.  A literal 2D/3D lattice is the *most buildable*
+quantum search host (constant-degree nearest-neighbour coupling), yet by the
+dimension threshold it does **not** get the quadratic search advantage.  The
+hypercube `Q_d`, by contrast, has degree `log₂N` (still sub-`N`, still buildable in
+the PST/search-chip sense) **and** sits spectrally in the high-dimensional regime,
+so it *does* win.  The logarithmic dimensionality of `Q_d` threads the needle
+between buildability and advantage that the literal spatial lattice cannot. -/
+
+/-- **`buildable_lattice_no_advantage_low_dim` — the honest contrast theorem.**
+For every *physically spatial* lattice — dimension `d ≤ 3` (every realizable
+2D/3D chip), with side `L ≥ 3` — continuous-time spatial search does **NOT**
+achieve the optimal `Θ(√N)` quadratic speedup, *even though the lattice is the
+most buildable host* (constant degree `2d`, nearest-neighbour).  Meanwhile the
+Boolean hypercube `Q_e` (degree `e = log₂N`, also buildable) **does** achieve it
+(`hypercube_sparse_search_advantage`).
+
+Buildability and advantage are therefore in genuine tension: the literal spatial
+lattice is maximally buildable but search-suboptimal, while the hypercube's
+*logarithmic* dimensionality threads the needle.  Childs–Goldstone
+(`quant-ph/0306054`): optimal lattice search requires `d > 4`.
+
+The statement bundles the two genuinely-proven structural facts (the lattice is
+`2d`-regular and constant-degree-sparse; the hypercube is `e`-regular and
+`log₂N`-sparse) with the honest dynamical contrast (lattice not optimal for
+`d ≤ 3`; hypercube optimal).  The non-advantage direction is the `d ≤ 3` (`≤ 4`)
+half of `lattice_search_dimension_threshold`, an honest `sorry`. -/
+theorem buildable_lattice_no_advantage_low_dim
+    (d L : ℕ) [Fact (2 < L)] (hd : d ≤ 3) (w : LatticeVertex d L)
+    (e : ℕ) (he : 1 ≤ e) (wQ : Fin (2 ^ e)) :
+    -- (1) the lattice IS maximally buildable (proven, axiom-clean):
+    ((latticeGraph d L).isRegular ((2 * d : ℕ) : ℂ)
+      ∧ Fintype.card (LatticeVertex d L) = L ^ d)
+    ∧
+    -- (2) yet the buildable lattice does NOT get the advantage (d ≤ 3):
+    ¬ IsOptimalCTQWSearch (latticeGraph d L) w
+    ∧
+    -- (3) WHILE the (also buildable, log-degree) hypercube DOES:
+    ((Hypercube e).isRegular (e : ℂ)
+      ∧ e = Nat.log 2 (Fintype.card (Fin (2 ^ e)))
+      ∧ IsOptimalCTQWSearch (Hypercube e) wQ) := by
+  refine ⟨⟨latticeGraph_isRegular d L, latticeGraph_card d L⟩, ?_, ?_, ?_, ?_⟩
+  · -- lattice not optimal for d ≤ 3: the negative half of the threshold.
+    -- BLOCKED: Childs–Goldstone d ≤ 4 sub-criticality (quant-ph/0306054); for
+    -- d ≤ 3 the lattice Green's function diverges in the IR and the search
+    -- amplitude saturates below the optimal constant.
+    rw [lattice_search_dimension_threshold d L w]
+    omega
+  · exact hypercube_isRegular e
+  · exact hypercube_sparse e
+  · -- hypercube optimal: from the flagship advantage (its honest CNO-timing sorry).
+    exact ((hypercube_sparse_search_advantage e he wQ).2.2)
 
 end SparseSearch
 end Graphplay
