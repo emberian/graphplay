@@ -1,0 +1,69 @@
+# refs/ml-theory — reference manifest
+
+ML-theory references gathered during the explanatory-program literature sweeps.
+Files >10 MB are gitignored (not committed to keep the repo lean); fetch via arXiv ID.
+
+- `acdc_2304.14997.pdf` (4.9M) — arXiv:2304.14997
+- `activation_patching_bestpractices_2404.15255.pdf` (416K) — arXiv:2404.15255
+- `anthropic2021_math_framework_transformer_circuits.pdf` (4.6M)
+- `approx_equivariance_rl_2411.04225.pdf` (8.6M) — arXiv:2411.04225
+- `attention_heads_survey_2024.pdf` (3.5M)
+- `attention_only_implementing_mlps.pdf` (184K)
+- `attention_only_unrolled_subspace_denoising_2025.pdf` (4.1M)
+- `attribution_patching_2310.10348.pdf` (2.5M) — arXiv:2310.10348
+- `causal_abstraction_nn_2106.02997.pdf` (2.1M) — arXiv:2106.02997
+- `cohen2021_edge_of_stability.pdf` (7.9M)
+- `das_causal_alignment_2303.02536.pdf` (3.1M) — arXiv:2303.02536
+- `deepsets_symmetric_elements_maron_2002.08599.pdf` (3.8M) — arXiv:2002.08599
+- `DEQ_1909.01377.pdf` (840K) — arXiv:1909.01377
+- `dong2021_pure_attention_rank_collapse.pdf` (1.5M)
+- `elhage2021_mathematical_framework_transformer_circuits.pdf` (4.6M)
+- `gcnn_cohen_welling_1602.07576.pdf` (200K) — arXiv:1602.07576
+- `gdl_grids_groups_graphs_2104.13478.pdf` ( 43M) — arXiv:2104.13478  **[large — gitignored]**
+- `ghorbani2019_hessian_spectrum.pdf` (1.9M)
+- `Giannou_LoopedProgrammable_2301.13196.pdf` (2.0M) — arXiv:2301.13196
+- `grokking_power_2022.pdf` (1.7M)
+- `hashimoto_2018_deep_learning_adscft.pdf` (3.8M)
+- `HRM_2506.21734.pdf` (2.2M) — arXiv:2506.21734
+- `importance_of_ffn_2025.pdf` (280K)
+- `induction_heads_2022.pdf` (9.5M)
+- `intrinsic_dim_2012.13255.pdf` (376K) — arXiv:2012.13255
+- `ioi_path_patching_2211.00593.pdf` (1.3M) — arXiv:2211.00593
+- `kochjanusz_ringel_2018_ml_realspace_RG.pdf` (3.4M)
+- `kunin2020_neural_mechanics.pdf` ( 13M)  **[large — gitignored]**
+- `li_wang_2018_neural_network_RG.pdf` (716K)
+- `linear_representation_hypothesis_2311.03658.pdf` (2.4M) — arXiv:2311.03658
+- `linformer_2006.04768.pdf` (904K) — arXiv:2006.04768
+- `LoopedLearnLearning_2311.12424.pdf` (2.7M) — arXiv:2311.12424
+- `LoopedLengthGen_2409.15647.pdf` (1.4M) — arXiv:2409.15647
+- `lora_2106.09685.pdf` (1.5M) — arXiv:2106.09685
+- `mehta_schwab_2014_exact_RG_deeplearning.pdf` (280K)
+- `mlps_with_attention_heads_2023.pdf` (184K)
+- `natural_graph_networks_2007.08349.pdf` (532K) — arXiv:2007.08349
+- `olsson2022_induction_heads_icl.pdf` (9.5M)
+- `omnigrok_2022.pdf` (1.8M)
+- `param_space_symmetry_survey_2506.13018.pdf` (3.6M) — arXiv:2506.13018
+- `performer_2009.14794.pdf` (5.6M) — arXiv:2009.14794
+- `phase_coherent_transformer_2605.10123.pdf` (736K) — arXiv:2605.10123
+- `probing_classifiers_promises.pdf` (204K)
+- `progress_measures_grokking_nanda_2023.pdf` (2.9M)
+- `quantization_model_neural_scaling_2023.pdf` (2.1M)
+- `rank_collapse_2103.03404.pdf` (1.5M) — arXiv:2103.03404
+- `RecurrentDepth_Huginn_2502.05171.pdf` ( 11M) — arXiv:2502.05171  **[large — gitignored]**
+- `sae_interpretable_features_2309.08600.pdf` (1.7M) — arXiv:2309.08600
+- `scatterbrain_2110.15343.pdf` (3.1M) — arXiv:2110.15343
+- `shwartzziv_tishby_2017_opening_blackbox.pdf` (3.7M)
+- `simsek2021_geometry_loss_landscape.pdf` (9.6M)
+- `StabilityLooped_2604.15259.pdf` (1.0M) — arXiv:2604.15259
+- `TinyRecursive_TRM_2510.04871.pdf` (420K) — arXiv:2510.04871
+- `tishby_zaslavsky_2015_info_bottleneck_dl.pdf` (364K)
+- `toy_models_superposition_2022.pdf` (4.7M)
+- `transformer_vs_mlpmixer_expressivity_gap.pdf` (424K)
+- `tuci2026_generalization_at_eos.pdf` (9.3M)
+- `tuned_lens_2303.08112.pdf` (1.6M) — arXiv:2303.08112
+- `UniversalTransformers_1807.03819.pdf` (2.3M) — arXiv:1807.03819
+- `which_attention_heads_icl_2025.pdf` (1.4M)
+- `which_attention_heads_matter_icl_2025.pdf` (1.4M)
+- `why_attention_fails_degeneration_2025.pdf` (1.7M)
+- `why_attention_fails_degeneration_mlp_2025.pdf` (1.7M)
+- `zhao2022_symmetries_flat_minima_conserved.pdf` (2.5M)

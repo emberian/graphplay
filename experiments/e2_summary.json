@@ -1,0 +1,78 @@
+{
+  "matches": 3,
+  "n": 4,
+  "tasks": [
+    {
+      "task": "induction",
+      "needs": "sparse",
+      "acc": 0.9973439574241638,
+      "bets": {
+        "low-rank": 0.654,
+        "banded": 0.035,
+        "fixed-sparse": 0.031,
+        "equitable": 0.626
+      },
+      "winner": "fixed-sparse",
+      "predicted": "fixed-sparse",
+      "target_resid": 0.031,
+      "is_small": true,
+      "is_top": true,
+      "match": true,
+      "rankR_at_r4": 23
+    },
+    {
+      "task": "averaging",
+      "needs": "low-rank",
+      "acc": 0.9769694209098816,
+      "bets": {
+        "low-rank": 0.486,
+        "banded": 0.528,
+        "fixed-sparse": 0.514,
+        "equitable": 0.585
+      },
+      "winner": "low-rank",
+      "predicted": "low-rank",
+      "target_resid": 0.486,
+      "is_small": false,
+      "is_top": true,
+      "match": false,
+      "rankR_at_r4": 23
+    },
+    {
+      "task": "recall",
+      "needs": "sparse",
+      "acc": 1.0,
+      "bets": {
+        "low-rank": 0.382,
+        "banded": 0.347,
+        "fixed-sparse": 0.279,
+        "equitable": 0.569
+      },
+      "winner": "fixed-sparse",
+      "predicted": "fixed-sparse",
+      "target_resid": 0.279,
+      "is_small": true,
+      "is_top": true,
+      "match": true,
+      "rankR_at_r4": 10
+    },
+    {
+      "task": "local",
+      "needs": "banded",
+      "acc": 1.0,
+      "bets": {
+        "low-rank": 0.91,
+        "banded": 0.019,
+        "fixed-sparse": 0.019,
+        "equitable": 0.891
+      },
+      "winner": "fixed-sparse",
+      "predicted": "banded",
+      "target_resid": 0.019,
+      "is_small": true,
+      "is_top": true,
+      "match": true,
+      "rankR_at_r4": 23
+    }
+  ]
+}

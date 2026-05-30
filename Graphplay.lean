@@ -135,6 +135,8 @@ import Graphplay.Integrations.AttentionComplexity
 import Graphplay.Integrations.QuantumAdvantage
 import Graphplay.Integrations.TransformerDSL
 import Graphplay.Integrations.StructuredAttention
+import Graphplay.Integrations.EquitableMechanism
+import Graphplay.Integrations.NovelAttention
 
 -- Engineering toolkit
 import Graphplay.Toolkit

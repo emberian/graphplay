@@ -1,0 +1,191 @@
+{
+  "model": "HuggingFaceTB/SmolLM2-135M",
+  "n_heads": 9,
+  "n_kv_heads": 3,
+  "group_size": 3,
+  "d_head": 64,
+  "n_layers": 30,
+  "head_to_group": [
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2
+  ],
+  "head_axis_max_defect": 0.0,
+  "head_axis_per_layer": [
+    {
+      "layer": 0,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 1,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 2,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 3,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 4,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 5,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 6,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 7,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 8,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 9,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 10,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 11,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 12,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 13,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 14,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 15,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 16,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 17,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 18,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 19,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 20,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 21,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 22,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 23,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 24,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 25,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 26,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 27,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 28,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    },
+    {
+      "layer": 29,
+      "k_defect": 0.0,
+      "v_defect": 0.0
+    }
+  ],
+  "token_axis_defects": [
+    {
+      "layer": 0,
+      "token_defect_r4": 0.749657680937012,
+      "rank_R_r4": 18
+    },
+    {
+      "layer": 15,
+      "token_defect_r4": 0.8883333851226844,
+      "rank_R_r4": 12
+    },
+    {
+      "layer": 29,
+      "token_defect_r4": 0.9003090238861452,
+      "rank_R_r4": 18
+    }
+  ],
+  "status": "OK",
+  "gqa_defect_zero": true
+}

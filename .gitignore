@@ -1,2 +1,11 @@
-/.lake
+*.pyc
+**/__pycache__/
+**/.venv/
+**/target/
 /.claude
+/.lake
+experiments/.venv/
+gdl_grids_groups_graphs_2104.13478.pdf
+kunin2020_neural_mechanics.pdf
+RecurrentDepth_Huginn_2502.05171.pdf
+residual_lab/.venv/
