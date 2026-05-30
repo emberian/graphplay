@@ -30,9 +30,7 @@ invariants hold across the entire stack, and they are the point:
   statement," never "this object isn't built yet." They are the genuinely-deep
   results (Godsil's Diophantine existence direction, Choi/Stinespring, MIP\*=RE,
   infinite-dimensional continuous spectrum) and the quantitative quantum-advantage
-  *rates*. An adversarial **vacuity audit** swept the codebase and corrected ~40
-  "compiles but says nothing" theorems — plus one `sorry`-on-a-false-statement
-  landmine — so what's left is honest.
+  *rates*.
 
 ## What's proven (axiom-clean)
 
@@ -207,17 +205,12 @@ companions for finite examples.
 
 ## Status, honestly
 
-- **0 errors.** Every `sorry` is a theorem body — no `sorry` in any definition
+- **0 build errors.** Every `sorry` is a theorem body — no `sorry` in any definition
   (one isolated colimit-data witness aside), no `True`-placeholder theorems.
 - **Axiom-clean** where it counts: the finite and graphon spine lifts, the
   search lift, `PST ⇒ strong cospectrality`, the negative-PST theorems, the
   hypercube and Cartesian-product PST, the quantum-advantage separation, and the
   attention-linearity theorems all `#print axioms` clean.
-- **Hardened.** An adversarial vacuity audit corrected ~40 theorems that
-  compiled but said nothing (`True` hypotheses, trivial conclusions, stub-driven
-  `0 ≤ 0`, a `True`-in-disguise predicate) and removed a `sorry` on a *false*
-  statement (a latent inconsistency). Stub-dependencies that remain are flagged
-  in-file, not hidden.
 - **Open frontier:** the deep per-paper proofs (Godsil's Diophantine direction,
   Choi/Stinespring, MIP\*, infinite-dim continuous spectrum), the quantitative
   quantum-advantage rates, and — the big one — ε-equitable-partition theory for
