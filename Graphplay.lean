@@ -132,6 +132,7 @@ import Graphplay.Integrations.MatrixInversion
 import Graphplay.Integrations.MachineLearning
 import Graphplay.Integrations.AttentionComplexity
 import Graphplay.Integrations.QuantumAdvantage
+import Graphplay.Integrations.TransformerDSL
 
 -- Engineering toolkit
 import Graphplay.Toolkit
@@ -149,3 +150,9 @@ import Graphplay.Simulate
 -- Applied spectral disassembly case studies
 import Graphplay.Applications.IBMHeavyHex
 import Graphplay.Applications.MajoranaOne
+
+-- Compile-into-hardware: ML primitives → real chips (falsifiable experiment)
+import Graphplay.Applications.CompileML
+
+-- Sparse, buildable search advantage (hypercube; beyond all-to-all K_n)
+import Graphplay.Applications.SparseSearch

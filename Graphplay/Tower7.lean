@@ -209,21 +209,24 @@ the colimit `colim(p ⟶ p ⟶ p ⟶ …)` of the idempotent diagram, and the
 quotient `A̅` is the induced action on this colimit.
 
 Our `InfinityCategory` token does **not** carry colimits, so we cannot form
-that colimit object honestly.  But the *truncated* quotient — the carrier on
-which the quotient endomorphism lives and the endomorphism's own data — is
-available concretely: at the homotopy-truncated (idempotent-undecomposed)
-level the quotient carrier is the ambient object `X` itself, and the quotient
-Hermitian endomorphism is the original `A` (the induced action on `p(X)`
-restricts, in the truncation, to `A`, whose self-adjointness 2-cell `A.herm2`
-is exactly the data we transport).  This is a genuine, type-correct datum
-with no `sorry`: it is the `p = 1_X` specialization, which is the strict
-Tower-3 quotient when the partition is trivial.  The non-trivial colimit
-quotient refines this and requires the quasicategory library (see §9.3). -/
+that colimit object honestly.
+
+SCAFFOLD: placeholder, not real content.  The genuine quotient is the action
+on the colimit `colim(p ⟶ p ⟶ p ⟶ …)` of the coherent idempotent, which
+requires the quasicategory library (see §9.3) to even *express*.  The body
+below returns the **degenerate `p = 1_X` specialization** — the ambient object
+`X` with the host endomorphism `A`, i.e. the strict Tower-3 quotient *only*
+when the partition is trivial.  It discards the partition argument `_P`
+entirely and is therefore NOT the quotient of a general coherent equitable
+partition.  Because `(quotient _P).2 = A` and `(quotient _P).1 = X` on the
+nose, any theorem that compares the quotient to the host via this def is
+hollow; see the honest `sorry` in `infinity_pst_lift`. -/
 def CoherentEquitablePartition.quotient
     {C : StableInfinityCategory.{u}} {X : C.Obj}
     {A : HermitianEndo C X}
-    (_ : CoherentEquitablePartition C X A) :
+    (_P : CoherentEquitablePartition C X A) :
     Σ Y : C.Obj, HermitianEndo C Y :=
+  -- SCAFFOLD: degenerate `p = 1_X` value; the real colimit quotient is deferred.
   ⟨X, A⟩
 
 /-! ## 2. The ∞-categorical lifting theorem (statement).
@@ -255,20 +258,41 @@ structure UnitaryGroupoid (C : StableInfinityCategory.{u}) : Type u where
 /-- **∞-categorical PST** between objects `i, j : C.Obj` at "time" `τ : ℝ`,
 given a Hermitian endomorphism `A` on the ambient object: a coherent
 isomorphism in the unitary ∞-groupoid between the τ-evolution of `i` and
-`j`. Placeholder. -/
+`j`.
+
+SCAFFOLD: the genuine condition is the existence of an *invertible 2-cell* in
+the mapping ∞-groupoid `Map_C(X, X)` relating `exp(-i τ A) ∘ ι_i` (the
+τ-evolution of the cell-uniform state at `i`, generated from the *Hermitian
+endomorphism `A`*) and `ι_j`.  Expressing that requires (i) the operator
+functional calculus `exp(-i τ A)` on a 1-endomorphism of an ∞-category and
+(ii) the mapping-space / 2-cell invertibility predicate — neither of which is
+available for our placeholder `InfinityCategory` token (no functional calculus,
+no honest mapping spaces).  We therefore record the *carrier* of the genuine
+statement as opaque data: a 2-cell between the (here un-evaluated) τ-evolution
+of `i` and the inclusion of `j`, packaged through the only structure we have,
+`C.TwoCell` on endomorphisms of `X`.  The fields `A`, `τ`, `i`, `j` are all
+load-bearing in the intended statement; only the *evolution* `exp(-iτA)` and
+*invertibility* are deferred.  This Prop is therefore genuinely about `A` and
+`τ`, but its content (the evolution operator) is `sorry`-blocked, so every
+theorem concluding `IsInfinityPST` is an honest `sorry` below.
+
+This replaces a former object-equivalence shadow `Nonempty (Hom i j) ∧
+Nonempty (Hom j i)` which dropped *all* `A`/`τ` content and made
+`infinity_pst_lift` a hollow `P → P`. -/
 def IsInfinityPST
     (C : StableInfinityCategory.{u}) {X : C.Obj}
-    (_A : HermitianEndo C X) (i j : C.Obj) (_τ : ℝ) : Prop :=
-  -- FAITHFUL FINITE SHADOW (correctness fix): the genuine ∞-categorical
-  -- statement is the existence of an invertible 2-cell in the mapping
-  -- ∞-groupoid `Map_C(X, X)` between `exp(-i τ A) ∘ ι_i` and `ι_j`.  Its
-  -- *homotopy-truncated* (1-categorical) shadow — the condition expressible on
-  -- the underlying category of `C` — is that `i` and `j` are **equivalent
-  -- objects**: there are 1-morphisms both ways (`i ⟶ j` and `j ⟶ i`), the
-  -- 1-categorical avatar of "PST connects the two states up to phase".  This is
-  -- a genuine, non-vacuous condition (it fails, e.g., when `C.Hom i j` is
-  -- empty), replacing the former placeholder `True`.
-  Nonempty (C.Hom i j) ∧ Nonempty (C.Hom j i)
+    (A : HermitianEndo C X) (i j : C.Obj) (τ : ℝ) : Prop :=
+  -- Genuine intent: ∃ an invertible 2-cell `exp(-iτ·A.A) ∘ ι_i ≃ ι_j` in
+  -- `Map_C(X,X)`.  We cannot form `exp(-iτ·A.A)` (no functional calculus on
+  -- the token category) nor `ι_i, ι_j` (no chosen cell-uniform inclusions),
+  -- so the honest condition is left as an opaque, `A`/`τ`-dependent claim.
+  -- Stated via the data we *do* have so the args stay live; proofs deferred.
+  ∃ _evolution_witness : C.TwoCell A.A A.A,
+    -- placeholder slot for the (deferred) statement
+    -- "`exp(-iτ·A.A)` carries the cell-`i` state to the cell-`j` state":
+    -- a real proof must produce the genuine evolution 2-cell, not this
+    -- self-loop, so consumers `sorry` rather than supply `A.herm2`.
+    (i = i) ∧ (j = j) ∧ (τ = τ)
 
 /-- **∞-categorical lifting theorem (statement).**
 
@@ -294,17 +318,18 @@ theorem infinity_pst_lift
     -- Conclusion: the host endomorphism `A` exhibits ∞-PST between the
     -- cell-uniform states `i, j` in the host at the same time `τ`.
     IsInfinityPST C A i j τ := by
-  -- With the faithful finite-shadow definition of `IsInfinityPST` (object
-  -- equivalence `i ≃ j`, independent of the endomorphism), the quotient
-  -- hypothesis and the host conclusion are the *same* condition on `i, j` —
-  -- because the truncated quotient carrier of `P` is the ambient object `X`
-  -- and `(P.quotient).2 = A` (see `CoherentEquitablePartition.quotient`).  The
-  -- 1-categorical PST relation therefore transports verbatim.  (The genuine
-  -- ∞-categorical lift — transporting the invertible 2-cell through the
-  -- coherent idempotent, Lurie HA §1.2.4 — refines this and awaits a Mathlib
-  -- quasicategory library.)
-  intro h
-  exact h
+  -- BLOCKED: needs ∞-cat Mathlib.  The genuine lift transports the invertible
+  -- 2-cell `exp(-iτ·Ā) ∘ ι_i ≃ ι_j` through the coherent idempotent `P.p`
+  -- (Lurie HA §1.2.4) to obtain `exp(-iτ·A) ∘ ι_i ≃ ι_j` on the host.  This is
+  -- genuine content: it requires the cell-uniform inclusions `ι_i, ι_j`, the
+  -- operator functional calculus `exp(-iτ·–)`, and the coherent-idempotent
+  -- splitting — none expressible with the placeholder `InfinityCategory`
+  -- token.  NOTE: the quotient `P.quotient` here is the degenerate `p = 1_X`
+  -- scaffold (`= ⟨X, A⟩`), so the hypothesis is *not* a genuine statement
+  -- about a nontrivial quotient; once the colimit quotient and `IsInfinityPST`
+  -- evolution content are available, this becomes a real (non-`P → P`) lift.
+  intro _h
+  sorry
 
 /-! ## 3. (2,1)-categorical / bicategorical truncation.
 
@@ -430,19 +455,23 @@ represents an isomorphism in the derived category at time τ.
 
 We sorry everything; the goal is the precise statement of the connection. -/
 
-/-- Placeholder for the derived category of Hermitian operators with
-equitable partitions. The intended definition is `D(HermOp(V) / EqPart)` —
-a triangulated category obtained by localizing at quasi-isomorphisms in
-the chain complex `0 → ker p → V → image p → 0`. -/
+/-- SCAFFOLD: placeholder, not real content.  The genuine definition is the
+derived category `D(HermOp(V) / EqPart)` — a triangulated category obtained by
+localizing at quasi-isomorphisms in the chain complex
+`0 → ker p → V → image p → 0`.  This `dummy : Unit` carrier carries none of
+that structure (no objects, morphisms, triangles); it is a token so that the
+*statements* below type-check. -/
 structure DerivedHermPart : Type 1 where
   dummy : Unit := ()
 
-/-- The **Ext^0** group between two cell images in the derived category.
-By the dual definition of `Ext^0` as `Hom` in the derived category, this is
-the space of degree-0 maps between the relevant cell-image complexes. -/
+/-- SCAFFOLD: placeholder, not real content.  The genuine `Ext^0` is `Hom` in
+the derived category between cell-image complexes; here it is `Unit`, which
+carries no map data and in particular has no notion of *invertible class*.
+Any theorem asserting "PST ⟺ invertible Ext⁰ class" over this stub is
+necessarily deferred (see `pst_as_Ext0`). -/
 def DerivedHermPart.Ext0 (_D : DerivedHermPart)
     (_imageI _imageJ : Unit) : Type :=
-  Unit  -- placeholder
+  Unit  -- SCAFFOLD placeholder; real value is `Hom`-in-derived-category
 
 /-- **PST as a class in Ext^0 (statement-only).**
 
@@ -458,14 +487,25 @@ condition in a triangulated category, which encodes more (kernel/cokernel
 must vanish in the derived sense).
 
 Reference: Bachman–Tamon arXiv:1108.0339 in the strict case; the derived
-upgrade is folklore. -/
+upgrade is folklore.
+
+BLOCKED: needs the triangulated-category / derived-`Ext` infrastructure (and
+the ∞-cat layer for the genuine version).  The conclusion is the genuine
+*PST ⟺ invertibility* equivalence, schematised over an abstract PST predicate
+`IsPSTAt` and an abstract "represents an isomorphism" predicate
+`IsInvertibleClass` on the `Ext^0` group: PST holds iff there is a class whose
+image is invertible.  This is a real (non-tautological) biconditional — it is
+*not* the former `Nonempty Unit`, which asserted nothing since `Unit` is always
+inhabited.  Proof deferred until `Ext0` is the genuine derived-`Hom`. -/
 theorem pst_as_Ext0
     (D : DerivedHermPart)
-    (imageI imageJ : Unit) (_τ : ℝ) :
-    -- The intended statement: existence of a distinguished class
-    -- in `D.Ext0 imageI imageJ` that is invertible iff PST holds.
-    Nonempty (D.Ext0 imageI imageJ) := by
-  exact ⟨()⟩
+    (imageI imageJ : Unit) (_τ : ℝ)
+    (IsPSTAt : Prop)
+    (IsInvertibleClass : D.Ext0 imageI imageJ → Prop) :
+    IsPSTAt ↔ ∃ c : D.Ext0 imageI imageJ, IsInvertibleClass c := by
+  -- BLOCKED: needs derived-category Ext machinery; the `Ext0` carrier is a
+  -- `Unit` stub with no invertibility notion, so neither direction is provable.
+  sorry
 
 /-! ## 6. Connection to TQFT (Tower 6 + Tower 7).
 
@@ -488,9 +528,12 @@ More precisely:
 
 We state the connection as a `Prop` over a (heavily) opaque MTC type. -/
 
-/-- Placeholder type for a modular tensor category. The genuine definition
-is a braided fusion category over `ℂ` with nondegenerate S-matrix; see
-Etingof–Gelaki–Nikshych–Ostrik *Tensor Categories* §8. -/
+/-- SCAFFOLD: placeholder, not real content.  The genuine modular tensor
+category is a braided fusion category over `ℂ` with nondegenerate S-matrix (see
+Etingof–Gelaki–Nikshych–Ostrik *Tensor Categories* §8); this `dummy : Unit`
+carrier has none of that data, so `Nonempty MTC` is a content-free tautology
+and the correspondence below is stated against an *abstract association
+predicate* and deferred. -/
 structure MTC : Type 1 where
   dummy : Unit := ()
 
@@ -507,13 +550,24 @@ becomes the surface on which the MTC's anyons live; the chiral signings
 becomes the fusion-rule data.
 
 Reference: Kitaev, "Anyons in an exactly solved model"; Lurie, "On the
-classification of TQFTs". -/
+classification of TQFTs".
+
+BLOCKED: needs ∞-cat Mathlib (rigid-dualizable subcategory + fusion structure).
+The genuine statement is the existence of an MTC *functorially associated* to
+each Tower-7 object — i.e. an `M : MTC` satisfying an association predicate
+`AssociatedTo C M` capturing "`M`'s underlying 1-category is the homotopy
+1-category of the rigid subgroupoid of `C`".  We schematise that predicate as a
+hypothesis-free abstract `Prop`-family and conclude the genuine `∃ M,
+AssociatedTo M`.  This is *not* the former `Nonempty MTC` (a content-free
+tautology, since `MTC` has a `dummy : Unit` inhabitant); it demands the
+association data, which the stub `MTC` cannot supply, so the proof is deferred. -/
 theorem mtc_correspondence
-    (_C : StableInfinityCategory.{u}) :
-    -- Existence of an MTC functorially associated to each Tower-7 object.
-    -- Genuine statement requires the rigid-dualizable subcategory.
-    Nonempty MTC := by
-  exact ⟨{ dummy := () }⟩
+    (_C : StableInfinityCategory.{u})
+    (AssociatedTo : MTC → Prop) :
+    ∃ M : MTC, AssociatedTo M := by
+  -- BLOCKED: needs the rigid-dualizable subcategory / fusion data to *build*
+  -- the associated MTC; the `dummy`-stub `MTC` cannot satisfy `AssociatedTo`.
+  sorry
 
 /-! ## 7. Higher chiral signings.
 
@@ -598,20 +652,42 @@ Tower 7 is wrong. -/
 /-- **Topological invariance of uniform-mixing time (conjecture).**
 
 For any quantum walk on a graph `G` and any two embeddings of `G` in compact
-orientable surfaces of the same genus, the uniform-mixing time is the same. -/
+orientable surfaces of the same genus, the uniform-mixing time is the same.
+
+SCAFFOLD: the surface/embedding/mixing-time machinery
+(`Graphplay.Mixing`, surface-embedding data) is not imported in this Tower-7
+scaffold, so we express the conjecture *schematically*, parametrised by:
+* a type `Emb` of "embeddings of a graph into a surface";
+* a genus map `genus : Emb → ℕ`;
+* a uniform-mixing-time map `mix : Emb → ℝ`.
+
+The genuine content — that `mix` is genus-determined, i.e. factors through
+`genus` — is captured below as `∀ e₁ e₂, genus e₁ = genus e₂ → mix e₁ = mix e₂`.
+This is a *non-vacuous* statement (it constrains `mix`), replacing the former
+`∀ g, g ≥ 0 → True` which was literally `True`.  Quantifying over all such
+`(Emb, genus, mix)` is of course false in general (no constraint ties `mix` to
+`genus`); the *real* conjecture restricts to `mix` arising from an actual
+quantum-walk uniform-mixing time, which this scaffold cannot reference. -/
 def TopologicalInvarianceConjecture : Prop :=
-  -- Placeholder: the full statement would quantify over genus, surface,
-  -- embeddings, and mixing-time function from `Graphplay.Mixing`.
-  ∀ (g : ℕ) (_ : g ≥ 0), True
+  ∀ (Emb : Type) (genus : Emb → ℕ) (mix : Emb → ℝ),
+    (∀ e₁ e₂ : Emb, genus e₁ = genus e₂ → mix e₁ = mix e₂)
 
 /-- **Tower 7 implies the topological invariance conjecture.** Corollary of
 `infinity_pst_lift` together with `coherent_quasi_infinite_limit`. The
-embedding-functoriality argument is sketched in §8 above; full proof is
-deferred. -/
+embedding-functoriality argument is sketched in §8 above.
+
+BLOCKED: needs ∞-cat Mathlib (and the surface/mixing-time infrastructure).
+As stated schematically, `TopologicalInvarianceConjecture` is in fact *false*
+for arbitrary `(Emb, genus, mix)` — the genus-invariance of mixing time only
+holds when `mix` is the genuine quantum-walk uniform-mixing time and the
+Tower-7 coherent-lift argument applies.  We therefore record this as an honest
+`sorry`: the real theorem awaits both the ∞-categorical lift and the imported
+mixing-time/surface machinery to even pin down the correct restricted domain. -/
 theorem topological_invariance_corollary :
     TopologicalInvarianceConjecture := by
-  intro _ _
-  trivial
+  -- BLOCKED: requires the restricted domain (quantum-walk mixing times) +
+  -- ∞-categorical coherent lift; the unrestricted schematic form is false.
+  sorry
 
 /-! ## 9. Open directions.
 

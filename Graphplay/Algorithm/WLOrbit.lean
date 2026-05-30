@@ -388,6 +388,12 @@ theorem cfiExists :
       (I : Type) (_ : Fintype I) (_ : DecidableEq I)
       (P : EquitablePartition G I) (hStable : IsWLStable G P),
       HasPhantomSymmetry G₀ G P hStable := by
+  -- BLOCKED: false under current `IsWLStable` def. With `HasAutInvariantWeights`
+  -- in scope the orbit partition is equitable, so any WL-stable (= finer than
+  -- every equitable partition) `P` already separates distinct orbits — hence
+  -- `HasPhantomSymmetry` is unsatisfiable here (cf. `babai_mathon_rank3_no_phantom`,
+  -- now PROVEN). Genuine CFI phantom symmetry needs the round-indexed WL
+  -- fixed-point notion from `WLRefinement`, not this coarsest-equitable form.
   sorry
 
 /-- *Concrete CFI marker.*  When (and only when) we are working with
@@ -509,11 +515,19 @@ theorem babai_mathon_rank3_no_phantom
     (P : EquitablePartition G I)
     (hStable : IsWLStable G P) :
     ¬ HasPhantomSymmetry G₀ G P hStable := by
-  -- Rank 3 implies that the orbit partition on `V` has at most
-  -- *one* non-singleton orbit, and a parameter-count using the
-  -- (k, λ, μ) data shows 1-WL already reaches this resolution.
-  -- Proof omitted (see Brouwer–Cohen–Neumaier §1.10).
-  sorry
+  classical
+  -- Under the present `IsWLStable` definition (P finer than *every* equitable
+  -- partition), no phantom symmetry can ever occur: the orbit partition is
+  -- equitable, so a same-WL-colour pair is automatically in the same orbit.
+  -- (This is in fact *stronger* than the rank-3 hypothesis the classical
+  -- Babai–Mathon argument uses; `hRank3` is not needed for this definitional
+  -- form.  See Brouwer–Cohen–Neumaier §1.10 for the genuine rank-3 content.)
+  rintro ⟨u, v, hcol, hno⟩
+  haveI : Nonempty V := ⟨u⟩
+  obtain ⟨φ, hφ⟩ := wlStable_refines_orbit G₀ G P hStable
+  have horb : orbitPartition G₀ u = orbitPartition G₀ v := by
+    rw [← hφ u, ← hφ v, hcol]
+  exact absurd ((orbitPartition_eq_iff G₀ u v).mp horb) hno
 
 /-- Strong-regularity + rank-3 ⇔ no phantom symmetry (statement only).
 The forward direction is `babai_mathon_rank3_no_phantom`; the
@@ -528,6 +542,12 @@ theorem no_phantom_iff_rank3
         (P : EquitablePartition G I) (hStable : IsWLStable G P),
         ¬ HasPhantomSymmetry G₀ G P hStable)
       ↔ IsRank3 G₀ := by
+  -- BLOCKED: false forward direction under current defs. The LHS holds for
+  -- EVERY `G₀` with `HasAutInvariantWeights` (no phantom symmetry is possible —
+  -- see `babai_mathon_rank3_no_phantom`), so the iff would force `IsRank3 G₀`
+  -- for arbitrary `G₀`, which is false (e.g. an edgeless graph is not rank-3).
+  -- The genuine equivalence needs the round-indexed 1-WL fixed point, not the
+  -- coarsest-equitable `IsWLStable`.
   sorry
 
 /-! ## §7. k-WL refinement and the k-arity orbit partition
@@ -655,7 +675,19 @@ theorem bachman_tamon_pst_via_phantom
     (hPhantom : HasPhantomSymmetry G₀ G P hStable) :
     ∃ u v : V, P.cells u = P.cells v ∧ ¬ sameOrbit G₀ u v ∧
       ∃ τ : ℝ, ‖G.evolve τ u v‖ = 1 := by
-  sorry
+  classical
+  -- Under the present `IsWLStable` definition (P finer than *every* equitable
+  -- partition) the phantom-symmetry hypothesis is actually contradictory: the
+  -- orbit partition is equitable, so WL-stability forces same WL colour ⇒ same
+  -- orbit, while phantom symmetry exhibits a same-colour pair in *distinct*
+  -- orbits.  We discharge the (impossible) goal from that contradiction.
+  obtain ⟨u, v, hcol, hno⟩ := hPhantom
+  haveI : Nonempty V := ⟨u⟩
+  obtain ⟨φ, hφ⟩ := wlStable_refines_orbit G₀ G P hStable
+  -- Same WL colour ⇒ same orbit, contradicting `hno`.
+  have horb : orbitPartition G₀ u = orbitPartition G₀ v := by
+    rw [← hφ u, ← hφ v, hcol]
+  exact absurd ((orbitPartition_eq_iff G₀ u v).mp horb) hno
 
 /-- The contrapositive engineering claim: if WL = orbit on `G`
 (no phantom symmetry), then a classical automorphism-search-based

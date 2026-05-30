@@ -173,8 +173,43 @@ theorem residualSpectrum_empty (W : Graphon Ω μ) :
     W.residualSpectrum = (∅ : Set ℂ) := by
   -- standard: if `λ ∈ spectrum ∖ σ_p`, denseness of range follows from
   -- self-adjointness via the orthogonal-complement characterisation of
-  -- range closure
-  sorry
+  -- range closure.
+  ext lam
+  simp only [residualSpectrum, Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+  rintro ⟨hspec, hnp, hndense⟩
+  -- The operator `T = W.op - lam • id`.
+  set T : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) :=
+    W.op - lam • ContinuousLinearMap.id ℂ (Lp ℂ 2 μ) with hT
+  -- `W.op` is self-adjoint, so its spectral points are real: `conj lam = lam`.
+  have hsa : IsSelfAdjoint W.op := W.op_isSelfAdjoint
+  have hreal : (starRingEnd ℂ) lam = lam := by
+    rw [Complex.conj_eq_iff_im]; exact hsa.im_eq_zero_of_mem_spectrum hspec
+  -- The adjoint of `T` is `W.op - conj(lam) • id = W.op - lam • id = T`.
+  have hTadj : ContinuousLinearMap.adjoint T = T := by
+    rw [hT, map_sub, map_smulₛₗ, ContinuousLinearMap.adjoint_id, hsa.adjoint_eq, hreal]
+  -- `¬Dense (range T)` ⟹ `(range T)ᗮ ≠ ⊥`, providing a nonzero kernel vector of `Tᴴ = T`.
+  -- range of `T` as a submodule has carrier `Set.range ⇑T`.
+  have hndense' : ¬ Dense (↑(LinearMap.range (T : (Lp ℂ 2 μ) →ₗ[ℂ] (Lp ℂ 2 μ))) :
+      Set (Lp ℂ 2 μ)) := hndense
+  -- Denseness ↔ orthogonal complement is `⊥`.
+  rw [Submodule.dense_iff_topologicalClosure_eq_top,
+    Submodule.topologicalClosure_eq_top_iff] at hndense'
+  -- So `(range T)ᗮ ≠ ⊥`; extract a nonzero `v` with `Tᴴ v = 0`, i.e. `T v = 0`.
+  have hne : (LinearMap.range (T : (Lp ℂ 2 μ) →ₗ[ℂ] (Lp ℂ 2 μ)))ᗮ ≠ ⊥ := hndense'
+  obtain ⟨v, hv_mem, hv_ne⟩ := (Submodule.ne_bot_iff _).mp hne
+  -- `v ∈ (range T)ᗮ = ker Tᴴ`.
+  have hker : v ∈ LinearMap.ker (ContinuousLinearMap.adjoint T :
+      (Lp ℂ 2 μ) →ₗ[ℂ] (Lp ℂ 2 μ)) := by
+    rw [← ContinuousLinearMap.orthogonal_range T]
+    exact hv_mem
+  rw [hTadj, LinearMap.mem_ker] at hker
+  -- `T v = 0` gives `W.op v = lam • v`, so `lam ∈ pointSpectrum`, contradicting `hnp`.
+  have heig : W.op v = lam • v := by
+    have : T v = 0 := hker
+    rw [hT, ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply,
+      ContinuousLinearMap.id_apply, sub_eq_zero] at this
+    exact this
+  exact hnp ⟨v, hv_ne, heig⟩
 
 /-- **Consequence:** the spectrum of a graphon operator splits into the
 point and continuous parts only. -/
@@ -358,6 +393,7 @@ theorem constant_pointSpectrum (W : Graphon Ω μ) (c : ℂ) (hc : c ≠ 0)
   -- `op`-integral layer (the same still-open kernel-action integral underlying
   -- `kernelIntegralFun_memLp`).  No vacuous weakening: the eigenvalue
   -- `c · μ(Ω).toReal` is the genuine rank-one eigenvalue.
+  -- BLOCKED: open `op` slice integral (Fubini on product-a.e. kernel constancy).
   sorry
 
 /-! ### 3d. The Xie–Tamon graphon (`K_n + path-n`) — continuous tail sector.
@@ -390,6 +426,8 @@ theorem xieTamon_exists_continuous_tail :
       (W : Graphon Ω μ),
       W.HasContinuousSpectrum ∧ W.HasContinuousTailSector := by
   -- the explicit construction is `K_n + path-n` regularised; statement only
+  -- BLOCKED: needs spectral theory of multiplication operators (continuous spectrum)
+  -- not in Mathlib; a trivial witness cannot satisfy `HasContinuousSpectrum`.
   sorry
 
 /-! ## 4. PST under a continuous spectrum: the cell-uniform sector decouples
@@ -486,8 +524,57 @@ theorem isWavePacketTransfer_pointSpectrum
     W.IsWavePacketTransfer phi0 phi1 τ ↔
       ∃ α : ℝ, W.evolve τ phi0 = (Complex.exp (Complex.I * α)) • phi1 := by
   -- the modulus-one overlap of two unit vectors is the Cauchy–Schwarz equality
-  -- case, which forces colinearity with a unit-modulus (hence phase) scalar
-  sorry
+  -- case, which forces colinearity with a unit-modulus (hence phase) scalar.
+  -- First, `W.evolve τ` is norm-preserving (unitary), so `‖evolve τ φ₀‖ = 1`.
+  have hnorm_evolve : ‖W.evolve τ phi0‖ = 1 := by
+    have hinner : (inner ℂ (W.evolve τ phi0) (W.evolve τ phi0) : ℂ)
+        = (inner ℂ phi0 phi0 : ℂ) := by
+      rw [← ContinuousLinearMap.adjoint_inner_right]
+      have hu := congrFun (congrArg
+        (fun (T : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) => (T : Lp ℂ 2 μ → Lp ℂ 2 μ))
+        (W.evolve_isUnitary τ)) phi0
+      simp only [ContinuousLinearMap.coe_comp', Function.comp_apply,
+        ContinuousLinearMap.id_apply] at hu
+      rw [hu]
+    have h2 : ((‖W.evolve τ phi0‖ : ℂ)) ^ 2 = ((‖phi0‖ : ℂ)) ^ 2 := by
+      rw [inner_self_eq_norm_sq_to_K (𝕜 := ℂ), inner_self_eq_norm_sq_to_K (𝕜 := ℂ)] at hinner
+      exact hinner
+    have h3 : ‖W.evolve τ phi0‖ ^ 2 = ‖phi0‖ ^ 2 := by exact_mod_cast h2
+    rw [hphi0] at h3
+    nlinarith [norm_nonneg (W.evolve τ phi0), h3]
+  constructor
+  · -- forward: modulus-one overlap ⟹ colinearity with unit scalar.
+    rintro ⟨_, _, hpst⟩
+    have hphi1_ne : phi1 ≠ 0 := by
+      intro h; rw [h, norm_zero] at hphi1; exact zero_ne_one hphi1
+    have hev_ne : W.evolve τ phi0 ≠ 0 := by
+      intro h; rw [h, norm_zero] at hnorm_evolve; exact zero_ne_one hnorm_evolve
+    -- Cauchy–Schwarz equality: `evolve τ φ₀ = r • φ₁` with `r ≠ 0`.
+    have heq : ‖(inner ℂ phi1 (W.evolve τ phi0) : ℂ)‖ = ‖phi1‖ * ‖W.evolve τ phi0‖ := by
+      rw [hpst, hphi1, hnorm_evolve, mul_one]
+    obtain ⟨r, hr_ne, hr⟩ := (norm_inner_eq_norm_iff hphi1_ne hev_ne).1 heq
+    -- `‖r‖ = 1` since `‖evolve τ φ₀‖ = ‖r‖ · ‖φ₁‖`.
+    have hr_norm : ‖r‖ = 1 := by
+      have : ‖W.evolve τ phi0‖ = ‖r‖ * ‖phi1‖ := by rw [hr, norm_smul]
+      rw [hnorm_evolve, hphi1, mul_one] at this
+      exact this.symm
+    -- A unit-modulus complex `r` is `exp(I·arg r)`.
+    refine ⟨r.arg, ?_⟩
+    rw [hr]
+    congr 1
+    have := Complex.norm_mul_exp_arg_mul_I r
+    rw [hr_norm, Complex.ofReal_one, one_mul] at this
+    rw [mul_comm (Complex.I)]; exact this.symm
+  · -- reverse: `evolve τ φ₀ = exp(I·α) • φ₁` ⟹ modulus-one overlap.
+    rintro ⟨α, hα⟩
+    refine ⟨hphi0, hphi1, ?_⟩
+    rw [hα, inner_smul_right, norm_mul, Complex.norm_exp]
+    have hre : (Complex.I * (α : ℂ)).re = 0 := by simp
+    rw [hre, Real.exp_zero, one_mul]
+    -- `⟪φ₁, φ₁⟫ = (‖φ₁‖ : ℂ)^2`, so its norm is `‖φ₁‖^2 = 1`.
+    rw [inner_self_eq_norm_sq_to_K (𝕜 := ℂ)]
+    rw [hphi1]
+    simp
 
 /-! ## 6. Failure modes: purely continuous spectrum kills PST
 
@@ -517,6 +604,8 @@ theorem no_wavePacketTransfer_of_pure_continuous
     ¬ W.IsWavePacketTransfer phi0 phi1 τ := by
   -- spectral-measure argument: a purely continuous spectral measure
   -- spreads `evolve τ φ₀` strictly across the spectrum
+  -- BLOCKED: spectral measure / projection-valued measure of self-adjoint
+  -- operators not available in Mathlib.
   sorry
 
 /-- **Constant graphon: cell-uniform PST is trivial.**  For a constant
@@ -540,6 +629,7 @@ theorem constant_graphon_pst_trivial
   -- `Q i j = c · μ(C_j)` from `IsConstant c`, which is exactly the open
   -- measure-theoretic `op`/`quotient` slice integral (cf. `constant_pointSpectrum`).
   -- No vacuous weakening: the conclusion `i = j` is the genuine PST-triviality.
+  -- BLOCKED: open `op`/`quotient` slice integral `Q i j = c·μ(C_j)` (cf. constant_pointSpectrum).
   sorry
 
 /-! ## 6½. Matrix-level forward Godsil extraction (PST ⟹ strong cospectrality)

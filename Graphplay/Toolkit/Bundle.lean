@@ -3,8 +3,8 @@
 
 Given a parsed `CompilerSpec`, construct the *host bundle*: a
 `Graphplay.GraphBundle` whose template is the symbolic template adjacency and
-whose fibers are uniform `Fin (fibers[i])` copies coupled by the all-ones
-weighted matrix.
+whose fibers are uniform `Fin (fibers[i])` copies coupled by the constant
+matrix carrying the genuine template edge weight (`couplingWeight`).
 
 This is the structural value-add over the Python compiler.  The Python
 compiler emits *numerical* quotient matrices.  Here we instead emit:
@@ -17,8 +17,9 @@ compiler emits *numerical* quotient matrices.  Here we instead emit:
 The certificate is produced by `fiberPartition` from
 `Graphplay.GraphBundle` (sibling worktree A2; we import as if the API is
 stable).  All constructions in this file are concrete and the structural
-proof obligations (Hermitian/loopless fibers, biregular all-ones couplings,
-the equitable fiber partition) are discharged in full.
+proof obligations (Hermitian/loopless fibers, biregular weighted couplings,
+the equitable fiber partition) are discharged in full against the genuine
+weighted host.
 -/
 import Graphplay.Toolkit.Spec
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -35,55 +36,96 @@ namespace Toolkit
 open scoped Classical
 open scoped Matrix
 
-/-! ## Converting symbolic adjacency to a `Matrix`. -/
+/-! ## Converting symbolic adjacency to a `Matrix`.
+
+`Float → ℝ` has no IEEE-exact sanctioned bridge in Mathlib (Floats are binary
+floating point, Reals are Cauchy classes).  We therefore route the conversion
+through the *decimal string* `Float.toString` produces, parsing it into an
+exact `ℚ` and coercing `ℚ → ℝ → ℂ`.  This is faithful to the printed decimal
+(the value the user actually wrote / the compiler emits), and crucially it is a
+*genuine, total* conversion: it carries the real template weights, rather than
+collapsing every entry to `0`.  The matrix is then symmetrized and zero-on-the-
+diagonal so that it is Hermitian and loopless **by construction**. -/
+
+/-- Parse the decimal string of a `Float` into an exact rational.  Handles an
+optional leading `-` and a single decimal point; missing fractional part
+defaults to `0`.  E.g. `1.5 ↦ 3/2`, `-2.25 ↦ -9/4`, `3.0 ↦ 3`. -/
+def floatToℚ (f : Float) : ℚ :=
+  let s := f.toString
+  let neg := s.startsWith "-"
+  let s := if neg then (s.toRawSubstring.drop 1).toString else s
+  let parts := s.splitOn "."
+  let intPart : Nat := ((parts.headD "").toNat?).getD 0
+  let fracStr := (parts[1]?).getD ""
+  let fracNat : Nat := (fracStr.toNat?).getD 0
+  let denom : Nat := 10 ^ fracStr.length
+  let q : ℚ := (intPart : ℚ) + (fracNat : ℚ) / (denom : ℚ)
+  if neg then -q else q
+
+/-- The real number a `Float` denotes (via its decimal string). -/
+noncomputable def floatToℝ (f : Float) : ℝ := (floatToℚ f : ℝ)
+
+/-- The raw symbolic weight `m[i][j]`, defaulting to `0` outside the matrix. -/
+def entryFloat (m : List (List Float)) (i j : Nat) : Float :=
+  ((m[i]?).bind (·[j]?)).getD 0.0
+
+/-- The *symmetrized* real weight `(m[i][j] + m[j][i]) / 2`.  Symmetrizing makes
+the resulting matrix Hermitian independently of any list-asymmetry in `m`; for
+the symmetric matrices `buildTemplate` actually produces this equals `m[i][j]`. -/
+noncomputable def symEntry (m : List (List Float)) (i j : Nat) : ℝ :=
+  (floatToℝ (entryFloat m i j) + floatToℝ (entryFloat m j i)) / 2
+
+theorem symEntry_symm (m : List (List Float)) (i j : Nat) :
+    symEntry m i j = symEntry m j i := by
+  unfold symEntry; ring
 
 /-- Convert a `List (List Float)` symbolic adjacency into a Mathlib
 `Matrix (Fin n) (Fin n) ℂ`.
 
-NOTE: `Float → ℝ` is intentionally non-computable in Lean (Floats are IEEE
-754, Reals are Cauchy classes).  Until Mathlib offers a sanctioned bridge,
-we route the conversion through `Float.toString` and decimal parsing.
-Where the parser fails the entry defaults to `0`.  Downstream proofs should
-treat this as opaque. -/
+The entry `(i,j)` is the symmetrized real weight `symEntry m i j` coerced into
+`ℂ`, with the diagonal forced to `0`.  This is the **genuine weighted adjacency
+matrix** of the template — it carries the real edge weights, not the zero
+matrix.  It is real-symmetric, hence Hermitian (`toMatrixℂ_isHermitian`), and
+zero on the diagonal, hence loopless (`toMatrixℂ_loopless`). -/
 noncomputable def toMatrixℂ (m : List (List Float)) (n : Nat) :
     Matrix (Fin n) (Fin n) ℂ := fun i j =>
-  let _ := (m[i.val]?).getD []
-  let _ := j.val
-  -- Stubbed conversion: returns zero.  The structural certificates only
-  -- need *which* entries are nonzero, which is recorded separately in
-  -- `templateSimpleGraph`.  Numerical entries are surfaced as `Float`
-  -- via the report rendering path, not via this `Matrix` view.
-  (0 : ℂ)
+  if i = j then 0 else ((symEntry m i.val j.val : ℝ) : ℂ)
 
-/-- The `toMatrixℂ` view is definitionally the zero matrix (the numerical
-`Float → ℂ` bridge is intentionally stubbed; see `toMatrixℂ`).  Recording this
-as a lemma lets the `templateWeightedGraph` field proofs be genuine. -/
-theorem toMatrixℂ_eq_zero (m : List (List Float)) (n : Nat) :
-    toMatrixℂ m n = 0 := rfl
+/-- The genuine weighted adjacency is Hermitian: it is real-symmetric. -/
+theorem toMatrixℂ_isHermitian (m : List (List Float)) (n : Nat) :
+    (toMatrixℂ m n).IsHermitian := by
+  ext i j
+  unfold toMatrixℂ
+  by_cases h : i = j
+  · subst h; simp [Matrix.conjTranspose_apply]
+  · have h' : ¬ j = i := fun hh => h hh.symm
+    simp only [Matrix.conjTranspose_apply, if_neg h, if_neg h', Complex.star_def,
+      Complex.conj_ofReal]
+    congr 1
+    unfold symEntry
+    ring
+
+/-- The genuine weighted adjacency is loopless: the diagonal is forced to `0`. -/
+theorem toMatrixℂ_loopless (m : List (List Float)) (n : Nat) (v : Fin n) :
+    toMatrixℂ m n v v = 0 := by
+  unfold toMatrixℂ; simp
 
 /-- The symbolic template `WeightedGraph (Fin n)` derived from a spec.
 
-Because the numerical `Float → ℂ` bridge is stubbed (`toMatrixℂ` returns the
-zero matrix; the genuine nonzero pattern is recorded combinatorially in
-`templateSimpleGraph`), the adjacency here is the zero matrix.  The Hermitian
-and loopless field proofs are therefore genuine (no `sorry`): the zero matrix
-is its own conjugate transpose and has zero diagonal. -/
+The adjacency is now the **genuine weighted adjacency** `toMatrixℂ` (the real
+symmetrized template weights), not the zero matrix.  The Hermitian and loopless
+field proofs are discharged by `toMatrixℂ_isHermitian` / `toMatrixℂ_loopless`. -/
 noncomputable def CompilerSpec.templateWeightedGraph (s : CompilerSpec) :
     WeightedGraph (Fin s.templateSize) where
   adj := toMatrixℂ s.templateAdj s.templateSize
-  herm := by
-    rw [toMatrixℂ_eq_zero]
-    simp [Matrix.IsHermitian]
-  loopless := by
-    intro _
-    rw [toMatrixℂ_eq_zero]
-    rfl
+  herm := toMatrixℂ_isHermitian _ _
+  loopless := toMatrixℂ_loopless _ _
 
 /-! ## Host bundle assembly
 
 We use the canonical `GraphBundle` shape from `Graphplay/Bundle.lean`:
 template `Q : SimpleGraph (Fin n)`, fibers `V i := Fin (fibers[i])`,
-couplings the all-ones complex matrix scaled by the template weight.
+couplings the constant complex matrix carrying the template edge weight.
 
 Because the toolkit's adjacency is *weighted* but the sibling `SimpleGraph`
 template is unweighted, we split: the simple-graph template carries only
@@ -149,9 +191,24 @@ structure FiberPartitionCert
     (∑ z, (if cells z = j then G.adj x z else 0))
       = (∑ z, (if cells z = j then G.adj y z else 0))
 
-/-- The host bundle constructed from a compiler spec.  Fibers are empty
-graphs of the appropriate size; couplings carry the symbolic template
-weight on each edge. -/
+/-- The (complex) coupling weight between template vertices `i` and `j`: the
+genuine symmetrized real template weight `symEntry … i j`, coerced into `ℂ`.
+This is the same weight `toMatrixℂ` puts on the template edge, now carried onto
+the host coupling layer.  Symmetric and real, so `couplingWeight j i =
+star (couplingWeight i j)` — the fact `hostBundle.hermCompat` needs. -/
+noncomputable def CompilerSpec.couplingWeight (s : CompilerSpec) (i j : Nat) : ℂ :=
+  ((symEntry s.templateAdj i j : ℝ) : ℂ)
+
+theorem CompilerSpec.couplingWeight_star (s : CompilerSpec) (i j : Nat) :
+    star (s.couplingWeight i j) = s.couplingWeight j i := by
+  unfold CompilerSpec.couplingWeight
+  rw [Complex.star_def, Complex.conj_ofReal, symEntry_symm]
+
+/-- The host bundle constructed from a compiler spec.  Fibers are edgeless
+(matching Python: no within-fiber edges — a genuine modeling choice, not a
+stub).  Each coupling is the **weighted** rectangular matrix whose every entry
+is the genuine template weight `couplingWeight i j` (no longer the all-ones
+matrix that dropped the weight). -/
 noncomputable def CompilerSpec.hostBundle (s : CompilerSpec) :
     HostBundle s.templateSimpleGraph s.fiberType where
   fiber := fun _ =>
@@ -162,19 +219,17 @@ noncomputable def CompilerSpec.hostBundle (s : CompilerSpec) :
       herm := by simp [Matrix.IsHermitian]
       loopless := by intro _; rfl }
   coupling := fun {i j} _hadj =>
-    -- The all-ones matrix scaled by the template edge weight.
-    -- The weight pipeline `Float → ℝ → ℂ` is stubbed (see `toMatrixℂ`); we
-    -- return the all-ones rectangular complex matrix.  Numerical scaling
-    -- happens in the report-rendering path, not on this `Matrix` term.
-    let _ := i
-    let _ := j
-    fun _ _ => (1 : ℂ)
+    -- The constant matrix carrying the genuine template edge weight on every
+    -- (fiber-vertex, fiber-vertex) pair.
+    fun _ _ => s.couplingWeight i.val j.val
   hermCompat := by
     intro i j h
-    -- The all-ones rectangular matrix has conjugate transpose the all-ones
-    -- matrix again, since `star (1 : ℂ) = 1`.  Genuine proof, no `sorry`.
+    -- `coupling (symm h)` is the constant `couplingWeight j i`; its conjugate
+    -- transpose is the constant `star (couplingWeight j i) = couplingWeight i j
+    -- = coupling h`.  Genuine, uses `couplingWeight_star`.
     ext a b
-    simp [Matrix.conjTranspose_apply]
+    simp only [Matrix.conjTranspose_apply]
+    rw [s.couplingWeight_star]
 
 /-! ## The certificate
 
@@ -226,8 +281,9 @@ noncomputable def HostBundle.total
 
 /-- The fiber-partition certificate: every spec induces an equitable partition
 of its host bundle by fiber index.  The proof uses regular fibers (vacuous,
-since fibers are edgeless) and biregular couplings (the all-ones matrix is
-trivially biregular). -/
+since fibers are edgeless) and biregular couplings (the constant `couplingWeight`
+matrix is trivially biregular: every row of the off-diagonal block sums to
+`|V j| * couplingWeight i j`, independent of the representative). -/
 noncomputable def CompilerSpec.fiberPartitionCert (s : CompilerSpec) :
     FiberPartitionCert (V := Σ i, s.fiberType i) (I := Fin s.templateSize)
       (s.hostBundle.total) where
@@ -236,14 +292,16 @@ noncomputable def CompilerSpec.fiberPartitionCert (s : CompilerSpec) :
     classical
     -- The row sum from a vertex `x` (in fiber `i`) into fiber `j` is a constant
     -- determined by `i` and `j`: `0` on the diagonal (fibers are edgeless), the
-    -- all-ones coupling row sum `|V j|` when `Q.Adj i j`, and `0` otherwise.
-    -- In every case it is independent of the representative `x`.
+    -- weighted coupling row sum `|V j| * couplingWeight i j` when `Q.Adj i j`,
+    -- and `0` otherwise.  In every case it is independent of the rep `x`.
     set Q := s.templateSimpleGraph
     set B := s.hostBundle
     suffices key : ∀ (i j : Fin s.templateSize) (x : Σ k, s.fiberType k), x.1 = i →
         (∑ z : Σ k, s.fiberType k, (if z.1 = j then B.total.adj x z else 0))
           = (if i = j then (0 : ℂ)
-             else if Q.Adj i j then (Fintype.card (s.fiberType j) : ℂ) else 0) by
+             else if Q.Adj i j then
+               (Fintype.card (s.fiberType j) : ℂ) * s.couplingWeight i.val j.val
+             else 0) by
       intro i j x y hx hy
       rw [key i j x hx, key i j y hy]
     intro i j x hx
@@ -266,7 +324,7 @@ noncomputable def CompilerSpec.fiberPartitionCert (s : CompilerSpec) :
         rw [dif_pos hij]
         -- `B.fiber x.1` has zero adjacency.
         rfl
-      · -- `i ≠ j`: off-diagonal, governed by the all-ones coupling.
+      · -- `i ≠ j`: off-diagonal, governed by the weighted coupling.
         rw [if_neg hij]
         have hsum :
             (∑ w : s.fiberType j, B.total.adj x ⟨j, w⟩)
@@ -280,12 +338,13 @@ noncomputable def CompilerSpec.fiberPartitionCert (s : CompilerSpec) :
         rw [hsum]
         by_cases hadj : Q.Adj x.1 j
         · rw [if_pos hadj]
-          -- Each coupling entry is `1`; the row sum is `|V j|`.
+          -- Each coupling entry is `couplingWeight x.1 j`; the row sum is
+          -- `|V j| * couplingWeight x.1 j`.
           have hone : (∑ w : s.fiberType j,
               (if h : Q.Adj x.1 j then B.coupling h x.2 w else 0))
-                = ∑ _w : s.fiberType j, (1 : ℂ) := by
+                = ∑ _w : s.fiberType j, s.couplingWeight x.1.val j.val := by
             apply Finset.sum_congr rfl; intro w _; rw [dif_pos hadj]; rfl
-          rw [hone, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one]
+          rw [hone, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
         · rw [if_neg hadj]
           apply Finset.sum_eq_zero
           intro w _

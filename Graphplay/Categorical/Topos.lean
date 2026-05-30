@@ -519,17 +519,24 @@ instance EPCat.category {V : Type u} [Fintype V] [DecidableEq V]
   assoc _ _ _ := rfl
 
 /--
-The **refinement Grothendieck topology** on `EPCat G`: a sieve `S` on `(I, P)`
-covers iff every cell of `P` is contained in the image of some
-`(J, Q) ⟶ (I, P)` in `S` — i.e. refinements jointly cover the partition.
+The **refinement Grothendieck topology** on `EPCat G`.
 
-We provide the named `GrothendieckTopology` instance. The defining covering
-predicate is sorry'd to a placeholder (all sieves cover, the discrete
-topology), and the axioms are discharged at the same level — heavy-sorried
-data layer. -/
+The *intended* genuine topology: a sieve `S` on `(I, P)` covers iff every cell
+of `P` is contained in the image of some `(J, Q) ⟶ (I, P)` in `S` — i.e.
+refinements jointly cover the partition.
+
+SCAFFOLD: placeholder, not real content.  The body is the **discrete**
+(maximal) Grothendieck topology `GrothendieckTopology.discrete`, in which
+*every* sieve covers.  That is NOT the genuine refinement topology above (whose
+covering predicate is the joint-cell-coverage condition, with `pullback_stable'`
+and `transitive'` requiring real proofs about refinement images).  Because the
+body is the discrete stub, any theorem that reads off its covering structure
+(`= ⊤`, sheaf condition, etc.) reflects the stub, not the refinement topology —
+see the honest `sorry` in `sheaf_is_consistent_cell_data`. -/
 noncomputable def refinement_grothendieck_topology
     {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V) :
     GrothendieckTopology (EPCat V G) :=
+  -- SCAFFOLD: discrete (maximal) topology; the genuine refinement topology is deferred.
   GrothendieckTopology.discrete (EPCat V G)
 
 /--
@@ -538,14 +545,38 @@ functorial assignment of cell-data to every equitable partition that is
 *consistent under refinement*: refining a partition and then taking
 cell-data agrees with restricting cell-data along the refinement.
 
-Concrete shadow (provable): the refinement topology we use is the maximal
-(discrete) topology — equal to `⊤` — in which every sieve is covering, so the
-"consistency under refinement" condition is imposed against the finest possible
-collection of refinement covers. -/
+The genuine content (stated, deferred): for the **refinement** topology, a
+presheaf `F : (EPCat V G)ᵒᵖ ⥤ Type` that is a sheaf satisfies refinement
+descent — its value on a coarse partition is the equalizer of its values on a
+refinement cover, i.e. cell-data glues uniquely from compatible cell-data on a
+joint refinement.  We schematise this over an abstract presheaf `F` and the
+Mathlib sheaf predicate `Presheaf.IsSheaf` for the refinement topology.
+
+BLOCKED: needs the genuine refinement topology.  As built,
+`refinement_grothendieck_topology` is the **discrete** (maximal `⊤`) stub
+(see its doc-comment), for which the sheaf condition is the *strongest* one
+(descent against *all* sieves), so it is NOT the intended
+"consistency under refinement" — the former theorem `… = ⊤` was true only
+because of that stub and asserted nothing about refinement descent.
+
+We schematise the genuine biconditional over an abstract cell-data consistency
+predicate `RefinementConsistent F` (the intended "glues uniquely from a
+refinement cover" property): being a sheaf for the topology is equivalent to
+`RefinementConsistent`.  This is non-tautological — it ties the categorical
+sheaf condition to the partition-combinatorial descent property — and is left an
+honest `sorry` because, with only the discrete stub available, neither the real
+topology nor the genuine `RefinementConsistent` instance can be supplied.  Once
+the real refinement topology lands, instantiate `RefinementConsistent` with the
+joint-cell-coverage descent predicate and discharge. -/
 theorem sheaf_is_consistent_cell_data
-    {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V) :
-    refinement_grothendieck_topology G = ⊤ :=
-  GrothendieckTopology.discrete_eq_top
+    {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V)
+    (F : (EPCat V G)ᵒᵖ ⥤ Type u)
+    (RefinementConsistent : ((EPCat V G)ᵒᵖ ⥤ Type u) → Prop) :
+    Presheaf.IsSheaf (refinement_grothendieck_topology G) F ↔
+      RefinementConsistent F := by
+  -- BLOCKED: needs the genuine refinement topology (the body is the discrete
+  -- stub) and the genuine `RefinementConsistent` predicate.  Deferred.
+  sorry
 
 /--
 **Bridge to Tower 6**: the sheaf-graph of Tower 6 over a topological base `X`
@@ -705,17 +736,45 @@ homomorphisms; 2-morphisms are **natural isomorphisms of partitions** — pairs
 of bijections (vertex-level and cell-level) commuting with the partition and
 the adjacency strictly.
 
+A 2-cell `α : f ⟹ g` between parallel 1-morphisms `f, g : X ⟶ Y` is a
+*target automorphism* of `Y` intertwining `f` into `g`: a graph automorphism
+`vertexIso` of `Y` (a vertex bijection that strictly preserves the adjacency)
+together with a compatible cell bijection `cellIso`, such that `g` is obtained
+from `f` by post-composing with this automorphism (`naturality_base`,
+`naturality_cell`). Invertibility of the underlying bijections makes this an
+*iso*-2-cell, i.e. a (2, 1)-cell.
+
 This recovers `WGraphP` as the homotopy category (the 2-truncation to
-0-truncated 2-morphisms).
--/
+0-truncated 2-morphisms): the only 2-cells are graph automorphisms of the
+target relating two parallel maps, so `f` and `g` are identified in the
+homotopy category exactly when such an automorphism exists.
+
+These fields carry genuine content: the former version recorded only
+`vertexIso x = f x ∨ vertexIso x = g x` with no bijectivity, adjacency
+preservation, or honest naturality, so an identity-valued witness existed for
+*any* parallel pair and the bridge theorems below were hollow. The fields now
+demand a real graph automorphism intertwining `f` and `g`. -/
 structure TwoCellWGraphP {X Y : WGraphPObj.{u}}
     (f g : WGraphPHom X Y) : Type u where
-  vertexIso : X.V → Y.V
-  cellIso : X.I → Y.I
-  /-- Naturality square against `f` and `g`. -/
-  nat_base : ∀ x, vertexIso x = f.base.toFun x ∨ vertexIso x = g.base.toFun x
-  /-- Cell-level naturality. -/
-  nat_cell : ∀ i, cellIso i = f.cellMap i ∨ cellIso i = g.cellMap i
+  /-- The underlying vertex automorphism of the target `Y`. -/
+  vertexIso : Y.V → Y.V
+  /-- The underlying cell automorphism of the target `Y`. -/
+  cellIso : Y.I → Y.I
+  /-- `vertexIso` is a bijection (it has an inverse). -/
+  vertexIso_bij : Function.Bijective vertexIso
+  /-- `cellIso` is a bijection. -/
+  cellIso_bij : Function.Bijective cellIso
+  /-- `vertexIso` strictly preserves the target adjacency: it is a genuine
+      weighted-graph automorphism of `Y.base`. -/
+  vertexIso_adj : ∀ a b, Y.base.adj (vertexIso a) (vertexIso b) = Y.base.adj a b
+  /-- The vertex and cell automorphisms are compatible with the target
+      partition: `vertexIso` descends to `cellIso` on cell labels. -/
+  iso_comm : ∀ v, Y.cells (vertexIso v) = cellIso (Y.cells v)
+  /-- Naturality at the vertex level: post-composing `f` with `vertexIso`
+      yields `g`. -/
+  naturality_base : ∀ x, g.base.toFun x = vertexIso (f.base.toFun x)
+  /-- Naturality at the cell level. -/
+  naturality_cell : ∀ i, g.cellMap i = cellIso (f.cellMap i)
 
 /--
 **Tower-7 bridge.** All of the topos-style structure stated above
@@ -734,15 +793,23 @@ Lawvere theory) lifts to the (2, 1)-categorical setting, with:
     holding up to coherent 2-isomorphism rather than on the nose.
 
 Concrete shadow (provable): the (2, 1)-categorical refinement is non-degenerate
-— every 1-morphism `f` carries an identity 2-cell `TwoCellWGraphP f f`, so the
-2-morphism layer is reflexive. This is the base coherence the full bridge
-extends. -/
+— every 1-morphism `f` carries an *identity* 2-cell `TwoCellWGraphP f f` whose
+underlying graph automorphism of the target is the identity, so the 2-morphism
+layer is reflexive. With the genuine `TwoCellWGraphP` fields (bijectivity,
+adjacency preservation, naturality) this is a real reflexivity statement: the
+identity automorphism honestly intertwines `f` with itself. It is the base
+coherence the full bridge extends; the non-reflexive content (existence of a
+nontrivial iso-2-cell between *distinct* parallel maps) is genuinely deferred. -/
 theorem tower7_bridge {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y) :
     Nonempty (TwoCellWGraphP f f) :=
-  ⟨{ vertexIso := f.base.toFun
-     cellIso := f.cellMap
-     nat_base := fun _ => Or.inl rfl
-     nat_cell := fun _ => Or.inl rfl }⟩
+  ⟨{ vertexIso := id
+     cellIso := id
+     vertexIso_bij := Function.bijective_id
+     cellIso_bij := Function.bijective_id
+     vertexIso_adj := fun _ _ => rfl
+     iso_comm := fun _ => rfl
+     naturality_base := fun _ => rfl
+     naturality_cell := fun _ => rfl }⟩
 
 /--
 **Coherence with `Graphplay.Tower7`**: the (2, 1)-categorical version of
@@ -751,13 +818,21 @@ recovers the Tower-7 statement of homotopy-coherent Xie–Tamon.
 
 Concrete shadow (provable): the 2-cells are stable under the discrete-functor
 embedding — applying `Discrete.map` to a 1-morphism and forming its identity
-2-cell is again a valid `TwoCellWGraphP`, the base case of 2-functoriality. -/
+iso-2-cell (the identity graph automorphism of the target) is again a valid
+`TwoCellWGraphP`, the base case of 2-functoriality. With the genuine
+`TwoCellWGraphP` fields this carries real content (identity is a bona-fide
+adjacency-preserving target automorphism intertwining `Discrete.map f` with
+itself); the nontrivial 2-functoriality on non-identity 2-cells is deferred. -/
 theorem tower7_quotient_coherence {X Y : WGraphObj.{u}} (f : WGraphHom X Y) :
     Nonempty (TwoCellWGraphP (Discrete.map f) (Discrete.map f)) :=
-  ⟨{ vertexIso := (Discrete.map f).base.toFun
-     cellIso := (Discrete.map f).cellMap
-     nat_base := fun _ => Or.inl rfl
-     nat_cell := fun _ => Or.inl rfl }⟩
+  ⟨{ vertexIso := id
+     cellIso := id
+     vertexIso_bij := Function.bijective_id
+     cellIso_bij := Function.bijective_id
+     vertexIso_adj := fun _ _ => rfl
+     iso_comm := fun _ => rfl
+     naturality_base := fun _ => rfl
+     naturality_cell := fun _ => rfl }⟩
 
 /-! ## End of file.
 
@@ -775,12 +850,19 @@ Summary of stated (sorry-deferred) content:
     `internal_exists_is_refinement_witness` — internal logic.
   * `discretePartition`, `Discrete`, `Forget`, `discrete_adjoint_quotient`,
     `discrete_adjoint_forget` — coreflection.
-  * `EPCat`, `refinement_grothendieck_topology`,
-    `sheaf_is_consistent_cell_data`, `tower6_bridge` — sheaf site.
+  * `EPCat`, `refinement_grothendieck_topology` (SCAFFOLD: discrete-topology
+    stub, not the genuine refinement topology — doc-labelled as such),
+    `sheaf_is_consistent_cell_data` (honest `sorry`: the genuine refinement
+    descent biconditional, no longer the hollow `= ⊤` that was green only
+    because of the discrete stub), `tower6_bridge` — sheaf site.
   * `Instr`, `Term`, `LawvereEq`, `assembly_lawvere_theory_exists`,
     `assembly_soundness`, `assembly_completeness` — Lawvere theory.
-  * `TwoCellWGraphP`, `tower7_bridge`, `tower7_quotient_coherence` — Tower-7
-    (2, 1)-categorical bridge.
+  * `TwoCellWGraphP` (now carries genuine fields: vertex/cell bijectivity,
+    adjacency preservation, partition compatibility, honest naturality — the
+    former version had only a trivial `= f ∨ = g` disjunction making the bridge
+    theorems hollow), `tower7_bridge`, `tower7_quotient_coherence` (still
+    provable, but now via a genuine *identity graph automorphism* reflexive
+    iso-2-cell, real content) — Tower-7 (2, 1)-categorical bridge.
 -/
 
 end Topos

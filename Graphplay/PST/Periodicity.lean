@@ -203,6 +203,8 @@ theorem isPeriodicAt_two_mul_of_isPST (G : WeightedGraph V) {u v : V} {τ : ℝ}
   -- complex-Hermitian generality of `WeightedGraph`, `U` need not be symmetric
   -- and the conclusion requires the spectral phase-alignment (Godsil's ratio
   -- condition), so we keep the fully-general statement an honest `sorry`.
+  -- BLOCKED: false without real-symmetry; needs ‖U(τ)_{v,u}‖=1 which fails for
+  -- general Hermitian A (use isPeriodicAt_two_mul_of_isPST_of_symm instead).
   sorry
 
 /-- **PST ⇒ periodicity (existential form).**  Any PST vertex is periodic.
@@ -223,6 +225,8 @@ theorem isPeriodicAt_two_mul_of_isPST_target (G : WeightedGraph V) {u v : V}
   -- `‖U(τ)_{v,u}‖ = 1`, which (as for the source) needs the real-symmetric
   -- `Uᵀ = U` (see `isPeriodicAt_two_mul_of_isPST_target_of_symm`).  General
   -- complex-Hermitian case: honest `sorry`.
+  -- BLOCKED: needs ‖U(τ)_{v,u}‖=1 (real-symmetry); use
+  -- isPeriodicAt_two_mul_of_isPST_target_of_symm for the symmetric case.
   sorry
 
 /-- **PST ⇒ periodicity of the target at `2τ`, real-symmetric case (CLOSED).**
@@ -295,6 +299,8 @@ theorem isPeriodic_iff_eigenvalue_support_ratios_rational (G : WeightedGraph V)
   -- not yet developed; left an honest `sorry`.  The *unitarity* scaffolding it
   -- builds on (`evolve_col_sq_norm_eq_one`, row/column concentration) is closed
   -- above.  Reference: Godsil, *Periodic graphs* (arXiv:1009.5375), Thm 6.1.
+  -- BLOCKED: needs Real.Angle/AddCircle 2π-periodicity + Kronecker simultaneous
+  -- approximation (both directions of the Diophantine criterion).
   sorry
 
 /-! ## Universal PST and switching automorphisms -/
@@ -344,6 +350,8 @@ theorem switchingAutomorphism_of_isPST (G : WeightedGraph V) {u v : V} {τ : ℝ
   -- PST at `τ` makes `U(τ)` a symmetric unitary swapping `e_u ↔ e_v` up to a
   -- global phase; on a graph with simple eigenvalue support this is realized by
   -- a genuine adjacency automorphism (the "switching" map).
+  -- BLOCKED: extracting a vertex permutation from the PST unitary needs the
+  -- unitary→permutation-matrix recovery (simple-spectrum) argument, unavailable.
   sorry
 
 end Graphplay

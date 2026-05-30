@@ -150,28 +150,40 @@ noncomputable def Aop (P : GraphonLQR Ω μ) : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2
 noncomputable def Bop (P : GraphonLQR Ω μ) : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) :=
   P.Lb • ContinuousLinearMap.id ℂ (Lp ℂ 2 μ) + P.Db • P.W.op
 
-/-- A *mild solution* of the controlled graphon dynamics
+/-- A **(strong/classical) solution** of the controlled graphon dynamics
 `ẋ_t = A x_t + B u_t` on `[0, T]`, given an initial state `ξ` and a
-control trajectory `u : ℝ → Lp ℂ 2 μ`.  We state existence and uniqueness
-only; the actual integration uses Bochner integrals against `B` applied
-to `u_s` and the strongly continuous semigroup of `A`.  Following
-Gao–Caines (Proposition 1, arXiv:2004.00677), this is a standard
-infinite-dimensional Cauchy problem. -/
+control trajectory `u : ℝ → Lp ℂ 2 μ`.
+
+This is the genuine differential constraint linking the trajectory `x` to the
+control `u`: the initial condition `x 0 = ξ`, together with the requirement that
+on the horizon `[0, T]` the (Fréchet/`HasDerivAt`) time-derivative of `x` equals
+`A x_t + B u_t`, where `A = Aop` and `B = Bop` are the bounded operators built
+from the graphon coupling.  A *mild* solution (the Bochner-integral / variation-
+of-constants form `x_t = exp(t A) ξ + ∫₀ᵗ exp((t-s) A) B u_s ds`) coincides with
+this differential form when the data is smooth enough; we encode the differential
+form here because it is a genuine (non-trivial) constraint on the pair `(u, x)`,
+unlike the previous `True` placeholder.
+
+Following Gao–Caines (Proposition 1, arXiv:2004.00677), well-posedness is a
+standard infinite-dimensional Cauchy problem on the Hilbert space `Lp ℂ 2 μ`. -/
 def MildSolution (P : GraphonLQR Ω μ)
     (ξ : Lp ℂ 2 μ) (u x : ℝ → Lp ℂ 2 μ) : Prop :=
-  ∀ t : ℝ, 0 ≤ t → t ≤ P.T →
-    -- x_t = exp(t · Aop) ξ + ∫₀ᵗ exp((t - s) · Aop) (Bop · u_s) ds
-    -- stated only schematically; the right-hand side is a Bochner integral
-    True
+  x 0 = ξ ∧
+    ∀ t : ℝ, 0 ≤ t → t ≤ P.T →
+      HasDerivAt x (P.Aop (x t) + P.Bop (u t)) t
 
 /-- **Proposition 1 (Gao–Caines, arXiv:2004.00677).**  The controlled
-graphon dynamics has a unique mild solution for every initial state and
-every square-integrable control trajectory.  Stated here as a placeholder. -/
+graphon dynamics has a (mild) solution for every initial state and every
+square-integrable control trajectory: there is a trajectory `x` with `x 0 = ξ`
+whose derivative satisfies `ẋ_t = Aop(x_t) + Bop(u_t)` on `[0, T]`. -/
 theorem mildSolution_exists_unique (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ)
     (u : ℝ → Lp ℂ 2 μ) :
     ∃ x : ℝ → Lp ℂ 2 μ, P.MildSolution ξ u x := by
-  -- standard semigroup existence theorem on the Hilbert space `Lp ℂ 2 μ`,
-  -- using boundedness of `Aop` and `Bop`
+  -- BLOCKED: genuine infinite-dimensional Cauchy-problem / strongly-continuous
+  -- semigroup existence (Gao–Caines Prop. 1; Curtain–Zwart). Mathlib lacks the
+  -- C₀-semigroup / variation-of-constants machinery to construct the solution
+  -- trajectory and prove the `HasDerivAt` identity on `[0, T]`. The statement is
+  -- now the genuine ODE-solution existence (not the old `True` placeholder).
   sorry
 
 /-- The LQR cost functional `J(u) = ∫₀ᵀ (⟨x, Q x⟩ + ⟨u, u⟩) dt +
@@ -197,8 +209,12 @@ theorem optimal_control_exists (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ)
       P.MildSolution ξ u_star x_star ∧
       ∀ u x : ℝ → Lp ℂ 2 μ,
         P.MildSolution ξ u x → P.cost x_star u_star ≤ P.cost x u := by
-  -- Riccati operator existence + uniqueness from the standard
-  -- infinite-dimensional LQR theory (Curtain–Zwart [17] in Gao–Caines).
+  -- BLOCKED: the optimality constraint is now genuine — competitors `(u, x)`
+  -- are quantified over *actual* solutions of the dynamics `MildSolution ξ u x`
+  -- (initial condition + `HasDerivAt` law), not the old vacuous `True`. Proving
+  -- existence of the Riccati-feedback optimum requires the infinite-dimensional
+  -- LQR / operator-Riccati theory (Curtain–Zwart [17] in Gao–Caines), absent
+  -- from Mathlib.
   sorry
 
 end GraphonLQR
@@ -440,28 +456,57 @@ namespace Quantum
 variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- **Closed-quantum mean-field theorem (graphon Schrödinger).**
+/-- **Closed-quantum mean-field theorem (graphon Schrödinger) — infinitesimal
+invariance.**
 
 If a time-dependent Hamiltonian `H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)`
-preserves the cell-uniform subspace of an equitable partition `EP` at
-every time `t`, then any solution `ψ : ℝ → Lp ℂ 2 μ` of the Schrödinger
-equation `i ∂_t ψ = H(t) ψ` whose initial value is cell-uniform stays
-cell-uniform for all time.
+preserves the cell-uniform subspace of an equitable partition `EP` at every
+time, then along any Schrödinger trajectory `i ∂_t ψ = H(t) ψ` the *velocity*
+`∂_t ψ = -i H(t) ψ` stays in the cell-uniform subspace whenever `ψ t` does.
 
-This is the analogue of `cellUniform_invariant_under_LQR` for unitary
-quantum dynamics, and is the **closed quantum mean-field game**
-theorem. -/
+This is the genuine infinitesimal-invariance core of the closed quantum
+mean-field reduction: the tangent vector to the evolution never leaves the
+cell-uniform subspace, which is exactly the condition the propagator argument
+integrates to all-time invariance.  Stated this way it is *genuinely provable*
+from the generator hypothesis `hH` (no vacuous `True` dynamics hypothesis, no
+`sorry`); the all-time propagation is its honest integral consequence
+(`schrodinger_cellUniform_invariant_allTime`, BLOCKED below).
+
+This is the analogue of `cellUniform_invariant_under_LQR` for unitary quantum
+dynamics. -/
 theorem schrodinger_cellUniform_invariant
+    {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ))
+    (hH : ∀ t : ℝ, ∀ f ∈ EP.cellUniformSubspace,
+              H t f ∈ EP.cellUniformSubspace)
+    (ψ : ℝ → Lp ℂ 2 μ) (t : ℝ)
+    (hψt : ψ t ∈ EP.cellUniformSubspace)
+    {ψ' : Lp ℂ 2 μ}
+    -- the Schrödinger law `i ∂_t ψ = H(t) ψ`, i.e. `∂_t ψ = -i · H(t)(ψ t)`
+    (hψ : ψ' = (-Complex.I) • H t (ψ t)) :
+    ψ' ∈ EP.cellUniformSubspace := by
+  rw [hψ]
+  exact Submodule.smul_mem _ _ (hH t (ψ t) hψt)
+
+/-- **All-time closed-quantum cell-uniform invariance.**  Integrating the
+infinitesimal invariance (`schrodinger_cellUniform_invariant`): a Schrödinger
+trajectory starting cell-uniform stays cell-uniform for all time. -/
+theorem schrodinger_cellUniform_invariant_allTime
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ))
     (_hH : ∀ t : ℝ, ∀ f ∈ EP.cellUniformSubspace,
               H t f ∈ EP.cellUniformSubspace)
     (ψ : ℝ → Lp ℂ 2 μ)
     (_hψ0 : ψ 0 ∈ EP.cellUniformSubspace)
-    (_hψ : ∀ t : ℝ, True /- schematic: i ∂_t ψ = H t · ψ -/) :
+    -- genuine Schrödinger dynamics: `∂_t ψ = -i H(t)(ψ t)` on all of `ℝ`
+    (_hψ : ∀ t : ℝ, HasDerivAt ψ ((-Complex.I) • H t (ψ t)) t) :
     ∀ t : ℝ, ψ t ∈ EP.cellUniformSubspace := by
-  -- propagator invariance: a closed subspace invariant under H(t) is
-  -- invariant under U(t, s) for the time-ordered evolution
+  -- BLOCKED: integrating the infinitesimal invariance to all times requires the
+  -- time-ordered propagator / Grönwall argument (a closed subspace invariant
+  -- under H(t) is invariant under U(t,s)), which needs the C₀-evolution-family
+  -- machinery absent from Mathlib. The infinitesimal core is proved genuinely in
+  -- `schrodinger_cellUniform_invariant`; the dynamics hypothesis here is now the
+  -- real `HasDerivAt` Schrödinger law (not the former `True` placeholder).
   sorry
 
 /-- **Open-quantum mean-field theorem (graphon Lindblad).**
@@ -639,17 +684,21 @@ namespace MFGames
 variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- **Quantum congestion game on a graphon**, schematic.  A self-
-consistent quantum mean-field state is a fixed point of the map
-"strategy ↦ best-response under the strategy-modulated graphon".  When
-the graphon is equitable, the fixed point lives in the cell-uniform
-subspace. -/
+/-- **Quantum congestion equilibrium on a graphon.**  A self-consistent
+quantum mean-field state `ψ` is a *best response to itself*: among all
+cell-uniform competing strategies `φ`, none yields a higher payoff against the
+aggregate state `ψ` than `ψ` itself.  Concretely, `ψ` lies in the cell-uniform
+subspace and is a Nash fixed point of the payoff-induced best-response map.
+
+This is the genuine equilibrium predicate (Nash / self-consistency), replacing
+the former `True` placeholder.  The previous `True` meant *every* state was an
+"equilibrium". -/
 def congestionFixedPoint
-    {W : Graphon Ω μ} (_EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (_payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ) : Prop :=
-  -- a state ψ in cellUniformSubspace such that ψ is its own best
-  -- response under `payoff`
-  True
+    {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ) (ψ : Lp ℂ 2 μ) : Prop :=
+  ψ ∈ EP.cellUniformSubspace ∧
+    ∀ φ ∈ EP.cellUniformSubspace,
+      (payoff ψ φ).re ≤ (payoff ψ ψ).re
 
 /-- **Existence of a cell-uniform congestion equilibrium.**  Under
 suitable continuity/compactness conditions on the payoff functional,
@@ -658,23 +707,34 @@ Brouwer / Kakutani on `EuclideanSpace ℂ I`). -/
 theorem congestion_equilibrium_exists
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ) :
-    -- A cell-uniform congestion equilibrium lives in the (genuine, non-empty)
-    -- cell-uniform subspace.  The genuine content is membership in that
-    -- finite-dim subspace; the *fixed-point* property (`congestionFixedPoint`,
-    -- a schematic `True` placeholder here) is supplied by Brouwer/Kakutani on
-    -- `EuclideanSpace ℂ I` in a full development.
-    ∃ ψ : Lp ℂ 2 μ,
-      ψ ∈ EP.cellUniformSubspace ∧ congestionFixedPoint EP payoff :=
-  ⟨0, Submodule.zero_mem _, trivial⟩
+    -- There is a *genuine* cell-uniform congestion equilibrium: a state `ψ` that
+    -- is its own best response among cell-uniform competitors.  Membership in the
+    -- subspace is now part of `congestionFixedPoint` itself, so this is no longer
+    -- the vacuous `0 ∈ subspace ∧ True`.
+    ∃ ψ : Lp ℂ 2 μ, congestionFixedPoint EP payoff ψ := by
+  -- BLOCKED: existence of a Nash / best-response fixed point requires a
+  -- Brouwer/Kakutani fixed-point argument on the finite-dimensional cell-uniform
+  -- subspace `EuclideanSpace ℂ I` together with continuity/compactness of the
+  -- payoff-induced best-response map — not available for an *arbitrary* `payoff`.
+  -- (For an arbitrary payoff with no structure, the statement may even fail; the
+  -- intended development imposes continuity/quasiconcavity hypotheses.)
+  sorry
 
-/-- **Quantum routing on a chiral graphon, schematic.**  The control
-variables are the time-dependent phases on directed edges.  The
-optimal-routing problem reduces to an `I × I` chiral optimisation when
-the payoff is cell-uniform. -/
+/-- **Optimal quantum routing on a chiral graphon.**  The strategic control
+variables are the time-dependent phase profiles on directed edges
+(`phasesFunc : ℝ → Ω → Ω → ℂ`).  A profile is *optimal* with respect to a routing
+cost functional `routingCost : (ℝ → Ω → Ω → ℂ) → ℝ` if no admissible competing
+profile achieves a strictly smaller cost.
+
+This is the genuine minimality (optimal-control) predicate, replacing the former
+`True` placeholder.  When the routing payoff is cell-uniform, this optimisation
+reduces to an `|I| × |I|` chiral optimisation on the quotient — the content of
+the equitable-partition routing reduction. -/
 def chiralRoutingOptimal
     {W : Graphon Ω μ} (_EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (_phasesFunc : ℝ → Ω → Ω → ℂ) : Prop :=
-  True
+    (routingCost : (ℝ → Ω → Ω → ℂ) → ℝ)
+    (phasesFunc : ℝ → Ω → Ω → ℂ) : Prop :=
+  ∀ q : ℝ → Ω → Ω → ℂ, routingCost phasesFunc ≤ routingCost q
 
 end MFGames
 

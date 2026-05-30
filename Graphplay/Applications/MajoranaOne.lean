@@ -459,14 +459,210 @@ theorem sectorProjector_orth (s t : ParitySector C.layout) (h : s ≠ t) :
         simp only [Matrix.mul_assoc]
     _ = 0 := by rw [C.parityFactor_orth s t v₀ hv₀, Matrix.zero_mul]
 
+/-- Reindexing a `Finset.noncommProd` along an injective map `g`: the product
+over `s.image g` of `f` equals the product over `s` of `f ∘ g`.  Proved by
+unfolding to the underlying `Multiset` (where `image` becomes `map` because `g`
+is injective on `s`, so no `dedup` collapse occurs) and `Multiset.map_map`. -/
+theorem noncommProd_image {α β γ : Type*} [DecidableEq α] [Monoid γ]
+    {s : Finset α} {g : α → β} (hg : Set.InjOn g s) [DecidableEq β]
+    (f : β → γ) (comm) :
+    (s.image g).noncommProd f comm
+      = s.noncommProd (fun a => f (g a))
+          (fun x hx y hy hxy => comm (Finset.mem_image_of_mem g hx)
+            (Finset.mem_image_of_mem g hy)
+            (fun h => hxy (hg hx hy h))) := by
+  classical
+  -- Unfold both sides to `Multiset.noncommProd`; the underlying multisets are
+  -- equal because `g` is injective on `s` (so `image` = `map`, no `dedup`
+  -- collapse).  Then the `Pairwise` commutation proof is irrelevant.
+  have hnodup : ((s.image g).val.map f) = s.val.map (fun a => f (g a)) := by
+    rw [Finset.image_val,
+      Multiset.dedup_eq_self.2
+        (s.nodup.map_on (fun x hx y hy h => hg hx hy h)),
+      Multiset.map_map]
+    rfl
+  show Multiset.noncommProd ((s.image g).val.map f) _
+      = Multiset.noncommProd (s.val.map (fun a => f (g a))) _
+  -- Generalize both commutation proofs, then rewrite the multiset; the two
+  -- `noncommProd`s then agree by proof irrelevance (`Pairwise` is a `Prop`).
+  generalize_proofs h₁ h₂
+  revert h₁
+  rw [hnodup]
+  intro h₁
+  rfl
+
+/-- A `noncommProd` over a finset equals the `noncommProd` over its `attach`
+(reindexing the factor function along `Subtype.val`).  Special case of
+`noncommProd_image` along the injection `Subtype.val`. -/
+theorem noncommProd_attach {α γ : Type*} [DecidableEq α] [Monoid γ]
+    (s : Finset α) (h : α → γ) (comm) :
+    s.noncommProd h comm
+      = s.attach.noncommProd (fun x => h x.1)
+          (fun x _ y _ hxy => comm x.2 y.2 (fun heq => hxy (Subtype.ext heq))) := by
+  classical
+  have hval : s.val.map h = s.attach.val.map (fun x => h x.1) := by
+    rw [Finset.attach_val, ← Multiset.attach_map_val' s.val h]
+    rfl
+  show Multiset.noncommProd (s.val.map h) _ = Multiset.noncommProd _ _
+  generalize_proofs h₁ h₂
+  revert h₁
+  rw [hval]
+  intro h₁
+  rfl
+
+/-- **General distributive interchange for a globally-commuting `noncommProd`.**
+For a family `f i : κ i → A` whose *entire* image pairwise commutes (the
+`gcomm` hypothesis), the non-commutative product over `s` of the row-sums
+`∑_b f i b` expands as a sum over the dependent product `s.pi t` of the
+non-commutative products of the chosen entries.  This is the
+`Finset.noncommProd` analogue of `Finset.prod_sum`; because we keep the head
+factor on the *left* throughout, no reordering (hence no use of `gcomm` beyond
+discharging the `noncommProd` commutation side-goals) is needed in the algebra.
+
+This is the engine behind `sectorProjector_sum`. -/
+theorem noncommProd_sum_pi {ι : Type*} [DecidableEq ι] {A : Type*} [Ring A]
+    {κ : ι → Type*} [∀ i, DecidableEq (κ i)] (s : Finset ι) (t : ∀ i, Finset (κ i))
+    (f : ∀ i, κ i → A)
+    (gcomm : ∀ (i j : ι) (a : κ i) (b : κ j), Commute (f i a) (f j b)) :
+    s.noncommProd (fun i => ∑ b ∈ t i, f i b)
+        (fun i _ j _ _ => Commute.sum_left _ _ _
+          (fun a _ => Commute.sum_right _ _ _ (fun b _ => gcomm i j a b)))
+      = ∑ p ∈ s.pi t,
+          s.attach.noncommProd (fun x => f x.1 (p x.1 x.2))
+            (fun x _ y _ _ => gcomm x.1 y.1 _ _) := by
+  classical
+  induction s using Finset.induction with
+  | empty => simp
+  | insert a s ha ih =>
+    -- Peel the head vertex `a` off the left of the product.
+    rw [Finset.noncommProd_insert_of_notMem _ _ _ _ ha, ih, Finset.pi_insert ha]
+    -- `(∑_b f a b) * (∑_p ∏ ...) = ∑_b ∑_p f a b * ∏ ...`.
+    rw [Finset.sum_mul_sum]
+    -- The RHS is a sum over `(t a).biUnion`; expand via `Finset.sum_biUnion`.
+    have hdisj : ∀ x ∈ t a, ∀ y ∈ t a, x ≠ y →
+        Disjoint ((s.pi t).image (Finset.Pi.cons s a x))
+          ((s.pi t).image (Finset.Pi.cons s a y)) := by
+      intro x _ y _ hxy
+      simp only [Finset.disjoint_iff_ne, Finset.mem_image]
+      rintro _ ⟨p₂, _, rfl⟩ _ ⟨p₃, _, rfl⟩ heq
+      have := congrArg (fun g => g a (Finset.mem_insert_self a s)) heq
+      simp only [Finset.Pi.cons_same] at this
+      exact hxy this
+    rw [Finset.sum_biUnion hdisj]
+    refine Finset.sum_congr rfl fun b _ => ?_
+    -- Reindex the inner sum over the injective image `Pi.cons s a b`.
+    have hinj : ∀ p₁ ∈ s.pi t, ∀ p₂ ∈ s.pi t,
+        Finset.Pi.cons s a b p₁ = Finset.Pi.cons s a b p₂ → p₁ = p₂ :=
+      fun p₁ _ p₂ _ eq => Finset.Pi.cons_injective ha eq
+    rw [Finset.sum_image hinj]
+    refine Finset.sum_congr rfl fun p _ => ?_
+    -- Re-attach the head vertex inside the inner `noncommProd`.
+    rw [Finset.attach_insert,
+      Finset.noncommProd_insert_of_notMem _ _ _ _
+        (by simpa only [Finset.mem_image, Finset.mem_attach, Subtype.mk.injEq, true_and,
+          Subtype.exists, exists_prop, exists_eq_right] using ha)]
+    -- Head factor evaluates to `f a b` (via `Pi.cons_same`); the tail is a
+    -- `noncommProd` over `s.attach.image (embedding into (insert a s).attach)`.
+    have hinj' : Set.InjOn
+        (fun x : {x // x ∈ s} => (⟨x.1, Finset.mem_insert_of_mem x.2⟩ : {x // x ∈ insert a s}))
+        s.attach := by
+      intro x _ y _ h
+      exact Subtype.ext (Subtype.mk.inj h)
+    rw [noncommProd_image hinj']
+    -- Now both sides are `head * tail` products over `s.attach`.  The head
+    -- factor: `f a (Pi.cons s a b p a _) = f a b` by `Pi.cons_same`; the tail
+    -- factor: on a vertex `x.1 ∈ s` (so `x.1 ≠ a`), `Pi.cons s a b p x.1 _ =
+    -- p x.1 _` by `Pi.cons_ne`.
+    have hhead : f a (Finset.Pi.cons s a b p a (Finset.mem_insert_self a s)) = f a b := by
+      rw [Finset.Pi.cons_same]
+    have htail : s.attach.noncommProd
+          (fun x : {x // x ∈ s} =>
+            f x.1 (Finset.Pi.cons s a b p x.1 (Finset.mem_insert_of_mem x.2)))
+          (fun x _ y _ _ => gcomm x.1 y.1 _ _)
+        = s.attach.noncommProd (fun x => f x.1 (p x.1 x.2))
+          (fun x _ y _ _ => gcomm x.1 y.1 _ _) := by
+      refine Finset.noncommProd_congr rfl (fun x _ => ?_) _
+      rw [Finset.Pi.cons_ne (ha := by rintro heq; exact ha (heq ▸ x.2))]
+    rw [hhead, htail]
+
+/-- The single-tetron parity factor as a function of the *bit* `b : ZMod 2`
+(rather than of the whole sector `s`): `g v b = (1 + (-1)^b · P_v)/2`.  We have
+`parityFactor s v = parityFactorBit v (s v)`, so the sector projector is a
+non-commutative product of these bit-indexed factors. -/
+noncomputable def parityFactorBit (v : C.layout.V) (b : ZMod 2) :
+    Matrix (Fin C.n) (Fin C.n) ℂ :=
+  (2⁻¹ : ℂ) • (1 + paritySign b • C.parityOp v)
+
+theorem parityFactor_eq_bit (s : ParitySector C.layout) (v : C.layout.V) :
+    C.parityFactor s v = C.parityFactorBit v (s v) := rfl
+
+/-- The two single-tetron parity factors at a vertex sum to the identity:
+`(1 + P)/2 + (1 − P)/2 = 1`.  This is the per-vertex completeness that, multiplied
+over all vertices, gives `sectorProjector_sum`. -/
+theorem parityFactorBit_sum (v : C.layout.V) :
+    ∑ b : ZMod 2, C.parityFactorBit v b = 1 := by
+  have h2 : (∑ b : ZMod 2, C.parityFactorBit v b)
+      = C.parityFactorBit v 0 + C.parityFactorBit v 1 := by
+    rw [show (Finset.univ : Finset (ZMod 2)) = {0, 1} from by decide]
+    rw [Finset.sum_insert (by decide), Finset.sum_singleton]
+  rw [h2]
+  unfold parityFactorBit paritySign
+  simp only [if_pos rfl, if_neg (by decide : (1 : ZMod 2) ≠ 0), one_smul, neg_smul]
+  match_scalars <;> norm_num
+
+/-- Any two bit-indexed parity factors commute (polynomials in commuting
+`parityOp`s). -/
+theorem parityFactorBit_comm (v w : C.layout.V) (a b : ZMod 2) :
+    Commute (C.parityFactorBit v a) (C.parityFactorBit w b) := by
+  have hPP : Commute (C.parityOp v) (C.parityOp w) := C.parityComm v w
+  unfold parityFactorBit
+  refine Commute.smul_left (Commute.smul_right ?_ _) _
+  refine Commute.add_left (Commute.add_right (Commute.one_left _) ?_)
+            (Commute.add_right (Commute.one_right _) ?_)
+  · exact (Commute.one_left _).smul_right _
+  · exact ((hPP.smul_left _).smul_right _)
+
 /-- Sector projectors sum to the identity (complete decomposition).
 
-Honest `sorry`: this is `∏_v ((1+P_v)/2 + (1−P_v)/2) = ∏_v 1 = 1`, a
-sum-over-sectors / product-over-vertices interchange for the commuting
-`noncommProd`; the distributive interchange is not mechanized here. -/
+`∑_s ∏_v g_v(s_v) = ∏_v (∑_b g_v(b)) = ∏_v 1 = 1`, the distributive interchange
+mechanised in `noncommProd_sum_pi`.  The sum-over-sectors / product-over-vertices
+swap is the heart of the `CellProjectorSystem` completeness axiom. -/
 theorem sectorProjector_sum :
     ∑ s : ParitySector C.layout, C.sectorProjector s = 1 := by
-  sorry
+  classical
+  -- Rewrite each `sectorProjector s` as a `noncommProd` of bit-indexed factors.
+  have hsp : ∀ s : ParitySector C.layout,
+      C.sectorProjector s
+        = Finset.univ.attach.noncommProd
+            (fun x : {x // x ∈ (Finset.univ : Finset C.layout.V)} =>
+              C.parityFactorBit x.1 (s x.1))
+            (fun x _ y _ _ => C.parityFactorBit_comm x.1 y.1 _ _) := by
+    intro s
+    rw [sectorProjector, noncommProd_attach Finset.univ (C.parityFactor s)]
+    refine Finset.noncommProd_congr rfl (fun x _ => ?_) _
+    rw [parityFactor_eq_bit]
+  -- Apply the distributive interchange with `t _ = univ`, `f v b = g_v(b)`.
+  have hkey := noncommProd_sum_pi (A := Matrix (Fin C.n) (Fin C.n) ℂ)
+    (κ := fun _ : C.layout.V => ZMod 2) Finset.univ (fun _ => Finset.univ)
+    (fun v b => C.parityFactorBit v b)
+    (fun i j a b => C.parityFactorBit_comm i j a b)
+  -- LHS of `hkey`: `∏_v (∑_b g_v b) = ∏_v 1 = 1`.
+  have hLHS : (Finset.univ.noncommProd (fun v => ∑ b : ZMod 2, C.parityFactorBit v b)
+      (fun i _ j _ _ => Commute.sum_left _ _ _
+        (fun a _ => Commute.sum_right _ _ _
+          (fun b _ => C.parityFactorBit_comm i j a b)))) = 1 := by
+    rw [Finset.noncommProd_congr rfl (fun v _ => C.parityFactorBit_sum v)]
+    simp [Finset.noncommProd_eq_pow_card]
+  rw [hLHS] at hkey
+  -- RHS of `hkey`: a sum over `univ.pi (fun _ => univ)`; reindex via
+  -- `sum_univ_pi` to a sum over `Fintype.piFinset (fun _ => univ) = univ`, i.e.
+  -- over all sectors `x : V → ZMod 2`.
+  rw [Finset.sum_univ_pi, Fintype.piFinset_univ] at hkey
+  -- `1 = ∑_{x : V → ZMod 2} attach.noncommProd (fun y => parityFactorBit y.1 (x y.1))`.
+  rw [eq_comm] at hkey
+  rw [← hkey]
+  refine Finset.sum_congr rfl (fun x _ => ?_)
+  rw [hsp]
 
 /-- The `CellProjectorSystem` of the joint-parity decomposition. -/
 noncomputable def cellProjectorSystem :
@@ -814,9 +1010,10 @@ theorem payoff1_topologically_protected_PST
     (BG : TQFT.BraidGate P)
     (s_u s_v : ParitySector C.layout) :
     IsCellUniformPST C.chipQuotientGraph P s_u s_v BG.τ := by
-  -- combine `TQFT.braid_gate_realizable` (existence of the realizing
-  -- Hamiltonian time) with `EquitablePartition.pst_lift` (the
-  -- Bachman-Tamon cell-uniform lift).
+  -- BLOCKED: needs `braid_gate_realizable` (itself a DEEP/FKLW sorry in TQFT.lean)
+  -- AND an identification of the realising Hamiltonian's CTQW evolution with the
+  -- chip graph's own `symmQuotient` evolution so that `EquitablePartition.pst_lift`
+  -- applies; the latter bridge (graph = realiser) is not available here.
   let _ := hPC
   let _ := BG
   sorry
@@ -910,10 +1107,13 @@ theorem payoff3_drift_iff_flat
       (∃ σ : ChiralSigning (ParitySector C.layout),
         σ.CrossConstant P.cells) := by
   let _ := PM; let _ := hPC
-  -- Forward: a flat flux descends to the trivial (cross-constant) quotient
-  -- signing.  Reverse: a cross-constant quotient signing lifts to a flat
-  -- chip flux (the lattice-gauge dictionary `signedBy_preserves_equitable`).
-  -- The equivalence with flatness is the Tower-6 content; deferred.
+  -- BLOCKED (statement too weak to be a theorem): the RHS `∃ σ, σ.CrossConstant
+  -- P.cells` is *vacuously satisfiable* — `ChiralSigning.trivial` is cross-constant
+  -- with `τ = fun _ _ => 1` — so the RHS is always `True`, while `fluxField.isFlat F`
+  -- is not (it depends on `F`).  Hence the iff as written is not provable; the
+  -- intended statement must pin the witness `σ` to the *flux-induced* signing
+  -- `F.toChiralSigning` (cross-constant ⇔ flat), which is the genuine Tower-6 /
+  -- lattice-gauge content and is deferred.
   sorry
 
 end TetronChip

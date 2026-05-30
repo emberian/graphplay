@@ -743,30 +743,79 @@ structure InversePartitionSequence
       = @Finset.sum (V n) ℂ _ (@Finset.univ (V n) (finV n))
         (fun z => if cells n z = j then (G n).adj y z else 0)
 
-/-- The stage-`n` quotient of an inverse partition sequence. -/
+/-- The **stage-`n` quotient matrix** of an inverse partition sequence,
+defined exactly as in the forward (`ConsistentPartitionSequence.quotient`)
+case: the cell-mass-averaged cell-flux
+$$ B^{(n)}_{i j} \;=\; \frac{1}{|C^{(n)}_i|}
+   \sum_{x \in C^{(n)}_i}\ \sum_{z \in C^{(n)}_j} (G\,n).\mathrm{adj}\ x\ z. $$
+The cell-mass normalisation makes the matrix total (`0` on an empty cell) and
+choice-free; by `𝒮.equitable` the inner double sum is constant on `C^{(n)}_i`,
+so for a nonempty cell this equals the per-vertex flux out of any representative
+`x ∈ C^{(n)}_i`.  This is the genuine projective-stage quotient, *not* the zero
+matrix. -/
 noncomputable def InversePartitionSequence.quotient
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : InversePartitionSequence I) (n : ℕ) :
-    Matrix I I ℂ := fun _ _ => 0
+    Matrix I I ℂ :=
+  -- route the stage-`n` finiteness / decidability instances explicitly
+  letI : Fintype (𝒮.V n) := 𝒮.finV n
+  letI : DecidableEq (𝒮.V n) := 𝒮.decV n
+  fun i j =>
+    (((Finset.univ.filter (fun x : 𝒮.V n => 𝒮.cells n x = i)).card : ℂ))⁻¹ *
+      ∑ x ∈ Finset.univ.filter (fun x : 𝒮.V n => 𝒮.cells n x = i),
+        ∑ z ∈ Finset.univ.filter (fun z : 𝒮.V n => 𝒮.cells n z = j),
+          (𝒮.G n).adj x z
 
-/-- **Inverse-limit master theorem.**  The cofiltered/inverse-limit dual
-of `pst_inherited`.
-
-The infinite-state quantum Markov chain on `varprojlim_n G_n` has a
-well-defined cell-uniform PST predicate via the limit quotient — and this
-predicate is *equivalent to* simultaneous finite PST on every stage
-quotient (as opposed to limiting times in the filtered case).
-
-Statement-only. -/
-theorem InversePartitionSequence.pst_lifted
+/-- **Genuine simultaneous-stage content (proved).**  With the de-stubbed
+`InversePartitionSequence.quotient` (the genuine cell-mass-averaged cell-flux,
+*not* the zero matrix), the statement "if every stage quotient exhibits finite
+PST at time `τ`, then every stage quotient exhibits finite PST at time `τ`" is the
+identity transport.  We keep it only as the honest record that finite PST holds
+simultaneously on every genuine stage quotient — it makes **no** claim about an
+inverse-limit object.  (Formerly this was the hollow `pst_lifted`, a `P → P`
+tautology over the zero-matrix stub; the conclusion below is now a non-vacuous
+statement about the real quotient, but it is still merely the hypothesis re-stated,
+so it carries no lift content.) -/
+theorem InversePartitionSequence.pst_simultaneous
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : InversePartitionSequence I) (i j : I) (τ : ℝ)
     (h_pst : ∀ n, Graphon.IsPST_finite (𝒮.quotient n) i j τ) :
-    -- The inverse-limit cell-uniform PST predicate is, in the cofiltered case,
-    -- *exactly* simultaneous finite PST on every stage quotient.  We record the
-    -- genuine equivalence content: the hypothesis is reproduced at every stage.
     ∀ n, Graphon.IsPST_finite (𝒮.quotient n) i j τ :=
   h_pst
+
+/-- **Inverse-limit master theorem (HONEST RESTATEMENT, `sorry`).**  The genuine
+cofiltered/inverse-limit dual of `pst_inherited`.
+
+The infinite-state quantum Markov chain on `varprojlim_n G_n` should carry a
+well-defined cell-uniform PST predicate via the *inverse-limit quotient operator*,
+equivalent to simultaneous finite PST on every stage quotient.  Stating that
+genuinely requires an inverse-limit graphon `Wlim` and equitable partition `Plim`
+together with operator-norm convergence of the stage quotients to `Plim.quotient`
+— the cofiltered analogue of `ConsistentPartitionSequence.pst_inherited`.  Given
+that data, the conclusion would be `Graphon.IsCellUniformPST Wlim Plim i j τ`.
+
+BLOCKED: no inverse-limit graphon / equitable-partition construction exists in
+the codebase (`Graphplay/Categorical.lean` provides only the unweighted
+`InverseLimitGraph` cochain limit, with no measurable graphon quotient and no
+operator-norm convergence of `𝒮.quotient n`).  Until that cofiltered limit
+machinery is built — mirroring `Graphon.Limit` for the filtered case — the
+genuine lift cannot be discharged.  We therefore state it honestly with the
+limit data as hypotheses and an honest `sorry` for the (currently unavailable)
+cofiltered convergence step. -/
+theorem InversePartitionSequence.pst_lifted
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (𝒮 : InversePartitionSequence I)
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
+    (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
+    (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
+              (nhds Plim.quotient))
+    (i j : I) (τ : ℝ)
+    (h_pst : ∀ n, Graphon.IsPST_finite (𝒮.quotient n) i j τ) :
+    Graphon.IsCellUniformPST Wlim Plim i j τ := by
+  -- BLOCKED: needs the cofiltered-limit PST-time-convergence theorem (the
+  -- inverse-limit analogue of `Graphon.ConsistentPartitionSequence.pst_time_convergence`),
+  -- which does not exist; no inverse-limit graphon quotient machinery is in scope.
+  sorry
 
 /-! ## 4. Quantitative convergence-rate refinement
 
@@ -802,22 +851,39 @@ theorem ConsistentPartitionSequence.pst_rate_inheritance
     Graphon.IsCellUniformPST Wlim Plim i j tau_lim :=
   ConsistentPartitionSequence.pst_inherited 𝒮 Wlim Plim h_lim i j τ tau_lim hτ h_pst
 
-/-- **Rate-vs-time tradeoff.**  Under the same hypotheses, if additionally
-the *PST time* at stage `n` admits a uniform bound `τ n ≤ T` and the rate
-`r n` is `O(1/n^α)` for some `α > 0`, then the fidelity error of using the
-stage-`n` quotient as an approximation to the limit at time `tau_lim` is
-`O(T / n^α)`. -/
+/-- **Rate-vs-time tradeoff (HONEST RESTATEMENT, `sorry`).**
+
+Genuine statement of the `O(T / n^α)` bound.  Given:
+  * a uniform bound `τ n ≤ T` on the stage-`n` PST times,
+  * a convergence rate `r n = K / (n+1)^α` for the stage quotients,
+    i.e. `‖𝒮.quotient n - L‖ ≤ r n` for the limit matrix `L`,
+the *approximation error* of using the stage-`n` evolution
+`exp(-i (τ n) · 𝒮.quotient n)` in place of the limit evolution
+`exp(-i (τ n) · L)` is bounded by `C · T / (n+1)^α`, with the constant
+`C` the operator-norm Lipschitz constant of `t ↦ exp(-i t ·)`.  This is the
+real big-O content the previous `∃ C, 0 < C ∧ C ≥ T` placeholder lacked (its
+`α, hα` arguments were dead and it merely re-exhibited `T`).
+
+We give the explicit operator-norm error conclusion.  Note `α` and `hα` are
+now genuinely used (in the `r n` decay rate) and `T` bounds the times.
+
+BLOCKED: the proof needs the operator-norm Lipschitz bound
+`‖exp(-i t A) - exp(-i t B)‖ ≤ |t| · ‖A - B‖` for Hermitian/bounded `A, B`
+(the same `exp`-continuity gap deferred in
+`Graphon.ConsistentPartitionSequence.pst_time_convergence`).  Honest `sorry`. -/
 theorem ConsistentPartitionSequence.pst_rate_tradeoff
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
-    (α T : ℝ) (hα : 0 < α) (hT : 0 < T) :
-    -- There is a positive constant `C` (the joint operator-norm Lipschitz
-    -- constant of `exp(-i t ·)` on the relevant time window) such that the
-    -- stage-`n` fidelity error is bounded by `C · T / n^α`.  We expose the
-    -- existence of such a positive constant; the explicit big-O bound itself
-    -- requires the rate hypothesis machinery not in scope here.
-    ∃ C : ℝ, 0 < C ∧ C ≥ T :=
-  ⟨T, hT, le_refl T⟩
+    (L : Matrix I I ℂ) (α T K : ℝ) (hα : 0 < α) (hT : 0 < T) (hK : 0 ≤ K)
+    (τ : ℕ → ℝ) (hτpos : ∀ n, 0 ≤ τ n) (hτT : ∀ n, τ n ≤ T)
+    (hrate : ∀ n (a b : I), ‖𝒮.quotient n a b - L a b‖ ≤ K / ((n : ℝ) + 1) ^ α) :
+    ∃ C : ℝ, 0 < C ∧ ∀ n (a b : I),
+      ‖(NormedSpace.exp (-(Complex.I * ((τ n : ℂ))) • 𝒮.quotient n)) a b
+        - (NormedSpace.exp (-(Complex.I * ((τ n : ℂ))) • L)) a b‖
+        ≤ C * T * (K / ((n : ℝ) + 1) ^ α) := by
+  -- BLOCKED: requires `‖exp(-i t A) - exp(-i t B)‖ ≤ |t|·‖A - B‖`, the matrix-exp
+  -- Lipschitz bound; same deferred gap as `pst_time_convergence`.  Honest sorry.
+  sorry
 
 /-! ## 5. Failure modes
 
@@ -1110,8 +1176,9 @@ Statements introduced in this file:
 
   Cofiltered/inverse-limit dual (Section 3):
     * `InversePartitionSequence`
-    * `InversePartitionSequence.quotient`
-    * `InversePartitionSequence.pst_lifted`
+    * `InversePartitionSequence.quotient` (genuine cell-flux quotient)
+    * `InversePartitionSequence.pst_simultaneous` (identity transport, proved)
+    * `InversePartitionSequence.pst_lifted` (honest inverse-limit lift, `sorry`)
 
   Quantitative rate (Section 4):
     * `ConsistentPartitionSequence.pst_rate_inheritance`
@@ -1136,11 +1203,17 @@ Statements introduced in this file:
     * `xie_tamon_search_via_master`
 
 Master inheritance theorems, the `completeCPS` constructions and their quotient
-formulas/divergence, the failure modes and the open-problem backbone facts are
-fully proved.  The single remaining honest `sorry` is `limit_exists`'s
-companion machinery referenced indirectly; the quantitative `pst_rate_inheritance`
-now delegates to the master theorem under explicit rate hypotheses.
--/
+formulas/divergence, the failure modes, the open-problem backbone facts, and the
+identity `InversePartitionSequence.pst_simultaneous` are fully proved.  The
+forward `pst_inherited` and `pst_rate_inheritance` are genuine (delegating to the
+honestly-deferred `Graphon.…pst_time_convergence`).  The honest remaining
+`sorry`s are:
+  * `InversePartitionSequence.pst_lifted` — needs cofiltered/inverse-limit
+    graphon quotient machinery (not in the codebase) for the genuine lift;
+  * `pst_rate_tradeoff` — needs the matrix-exp Lipschitz bound
+    `‖exp(-itA) - exp(-itB)‖ ≤ |t|‖A-B‖` (same gap as `pst_time_convergence`).
+`InversePartitionSequence.quotient` is the genuine cell-mass-averaged cell-flux,
+no longer the zero-matrix stub. -/
 
 end FilteredColimitPST
 

@@ -724,6 +724,11 @@ theorem cross_model_coincidence
         (relEquitable_clique (E := E) H edge compat π huniform).quotient i j τ ↔
     Graphon.IsPST_finite
         (relEquitable_hodge (E := E) H edge compat π).quotient i j τ := by
+  -- BLOCKED: cross-model coincidence conjecture (open).
+  -- The 3-way spectral equivalence of clique/Hodge/tensor quotients under
+  -- double equitability is not in the literature for k ≥ 3, and with the
+  -- placeholder incidence (B = 0) the Hodge quotient degenerates, so the
+  -- genuine content cannot be discharged at this resolution.
   sorry
 
 /-- A weaker but more checkable cross-model statement: if the host
@@ -738,9 +743,12 @@ theorem cross_model_clique_regular_pst
     (u v : V) (τ : ℝ) :
     IsHypergraphPST_clique (E := E) edge u v τ ↔
       IsHypergraphPST_hodge (E := E) edge u v τ := by
-  -- For clique-regular hypergraphs, `cliqueLaplacian = hodgeLaplacian` up
-  -- to a scalar diagonal shift, and scalar shifts only affect the global
-  -- phase of `evolve`, so PST is preserved.  Punt the proof.
+  -- BLOCKED: false at the placeholder resolution.  The incidence matrix is
+  -- `B = 0` (Relational.lean placeholder), so `hodgeLaplacian ≡ 0` and its
+  -- walk is the identity; thus `IsHypergraphPST_hodge u v τ` for `u ≠ v` is
+  -- always false, while `cliqueLaplacian` can carry genuine PST.  The claimed
+  -- iff therefore needs the real (root-of-unity) incidence formula plus the
+  -- clique-regular scalar-shift argument, neither available here.
   sorry
 
 /-! ## 5. Concrete families

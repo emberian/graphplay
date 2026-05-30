@@ -324,6 +324,10 @@ theorem crossConstant_of_preservesEquitable
   --   ∑_{z ∈ cell j} σ x z · G.adj x z = ∑_{z ∈ cell j} σ y z · G.adj y z.
   -- Combined with the equitable identity for `G`, this forces each
   -- `σ x z = σ y z` on the support of `G.adj`, hence cross-constancy.
+  -- BLOCKED: `PreservesEquitable` + `_nonDegenerate` only constrain `σ` on the
+  -- edge support of `G.adj`; off-support pairs are unconstrained, so the
+  -- everywhere-defined `CrossConstant τ` cannot be pinned down without a
+  -- support-saturation hypothesis.  Genuine new content of the file.
   sorry
 
 /-! ## §4.  Topological invariant: Chern number on cells
@@ -403,12 +407,17 @@ theorem chernNumber_gauge_invariant
     ChernNumberOnCells σ P h basis
       = ChernNumberOnCells
           ((σ.toU1GaugeField SG).gaugeTransform t).toChiralSigning P
-          (by
-            -- Cell-uniform gauge transform preserves cross-constancy
-            -- (I7 §6, `cellUniform_preserves_crossConstant`).
-            sorry)
+          (-- Cell-uniform gauge transform preserves cross-constancy
+           -- (I7 §6, `cellUniform_preserves_crossConstant`).  The hypothesis
+           -- `(σ.toU1GaugeField SG).toChiralSigning.CrossConstant P.cells` is
+           -- definitionally `h` (the round-trip on `.σ` is `rfl`).
+           LatticeGauge.GaugeTransform.cellUniform_preserves_crossConstant
+             (σ.toU1GaugeField SG) t P.cells h _ht)
           basis := by
-  sorry
+  -- `ChernNumberOnCells` is the placeholder constant `0` on both sides
+  -- (the genuine winding integer lives in I7), so the two evaluations are
+  -- definitionally equal regardless of the cross-constancy witnesses.
+  rfl
 
 /-! ## §5.  Hofstadter chip family
 
@@ -488,10 +497,10 @@ theorem braidGate_iff_chernMatched
     (∃ σ : ChiralSigning V, ∃ h : σ.CrossConstant P.cells,
         IsTopologicallyProtectedUnitary σ P h basis m) ↔
     True := by
-  -- The forward direction picks `σ` to be the clock signing
-  -- corresponding to flux `m` on the elementary plaquette; the
-  -- reverse direction follows from the integrality of the discrete
-  -- Chern number (I7 §9).
+  -- BLOCKED: false as stated. `ChernNumberOnCells` is the placeholder `0`, so
+  -- the existential reduces to `∃ σ h, (0 : ℤ) = m`, which holds only for
+  -- `m = 0`; the claimed `↔ True` is therefore false for `m ≠ 0`.  Needs the
+  -- genuine winding-integer definition of `ChernNumberOnCells` (I7 §9).
   sorry
 
 /-- **Connection to Majorana-1 (statement).**  In the Majorana-1
@@ -513,10 +522,9 @@ theorem majoranaOne_braidGate_chernPlusMinusOne
         IsTopologicallyProtectedUnitary σ P h basis 1
         ∨ IsTopologicallyProtectedUnitary σ P h basis (-1)) ↔
     True := by
-  -- Concrete realization: the Kitaev-chain quotient on `Fin 2` cells
-  -- (occupied / unoccupied) with the Majorana braid acting as the
-  -- ±i phase on the cross-cell edge.  The Chern number of this
-  -- signing on cells is ±1.
+  -- BLOCKED: false as stated. With the placeholder `ChernNumberOnCells = 0`
+  -- the disjunction is `(0 = 1) ∨ (0 = -1)`, both false, so the existential is
+  -- empty and `… ↔ True` is false.  Needs the genuine Chern integer (I7 §9).
   sorry
 
 /-! ## §7.  Robustness: quantitative topological protection

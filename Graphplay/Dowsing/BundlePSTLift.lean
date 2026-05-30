@@ -249,7 +249,7 @@ theorem lexProduct_pst
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (GraphBundle.lexProduct G H) (u₁, w₁) (u₂, w₂) τ := by
-  -- HONEST SORRY (genuinely GGPT-hard; statement is NOT proven here).
+  -- BLOCKED (genuinely GGPT-hard; statement is NOT proven here).
   -- Lex coupling = J = all-ones rectangular matrix, which is
   -- (|W|, |W|)-biregular.  In the fiber quotient the off-diagonal is
   -- `|W| · G.adj`, a positive rescaling of `G`, so PST in `G` at time `τ`
@@ -289,7 +289,7 @@ theorem tensorProduct_pst
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (tensorProduct G H) (u₁, w₁) (u₂, w₂) τ := by
-  -- HONEST SORRY (genuinely GGPT-hard; statement is NOT proven here).
+  -- BLOCKED (genuinely GGPT-hard; statement is NOT proven here).
   -- The tensor adjacency is the Kronecker PRODUCT `A_G ⊗ₖ A_H`, whose
   -- exponential does NOT factor as `exp(A_G) ⊗ₖ exp(A_H)` (unlike the
   -- Cartesian/Kronecker-SUM case): `exp(A⊗B) ≠ exp A ⊗ exp B`.  GGPT
@@ -309,7 +309,7 @@ theorem strongProduct_pst
     (u₁ u₂ : V) (w : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (GraphBundle.strongProduct G H) (u₁, w) (u₂, w) τ := by
-  -- HONEST SORRY (beyond GGPT; statement is NOT proven here).
+  -- BLOCKED (beyond GGPT; statement is NOT proven here).
   -- The strong adjacency `A_{G⊠H} = A_G ⊗ I + I ⊗ A_H + A_G ⊗ₖ A_H` carries
   -- the tensor (Kronecker-product) cross term, so its exponential does not
   -- factor through a Cartesian-style Kronecker-sum split.  As in the tensor
@@ -347,7 +347,7 @@ theorem conormalProduct_pst
     (u₁ u₂ : V) (w : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (conormalProduct G H) (u₁, w) (u₂, w) τ := by
-  -- HONEST SORRY (beyond GGPT; statement is NOT proven here).
+  -- BLOCKED (beyond GGPT; statement is NOT proven here).
   -- The conormal adjacency `A_G ⊕ A_H − A_G ⊗ₖ A_H` again contains a
   -- Kronecker-product cross term, so the walk does not factor as a Cartesian
   -- Kronecker sum; PST preservation requires the same spectral-lattice input
@@ -374,7 +374,7 @@ theorem disjunctiveProduct_pst
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (disjunctiveProduct G H) (u₁, w₁) (u₂, w₂) τ := by
-  -- HONEST SORRY (beyond GGPT; statement is NOT proven here).
+  -- BLOCKED (beyond GGPT; statement is NOT proven here).
   -- `disjunctiveProduct = conormalProduct`, so this reduces to
   -- `conormalProduct_pst` and needs the same spectral-lattice input
   -- (cf. arXiv:1009.1340 §3).  Left honest.
@@ -405,9 +405,12 @@ theorem templateJoin_pst_iff
     (∃ x : V i, ∃ y : V j,
         IsPST ((GraphBundle.ofTemplateJoin Q V).total) ⟨i, x⟩ ⟨j, y⟩ τ) ↔
     IsPST ((Graphplay.SimpleGraph.toWeighted Q)) i j (τ * n) := by
-  -- The empty-fiber + all-ones-coupling bundle has biregular couplings
-  -- of constant row sum `n`.  Master theorem.  The factor `n` enters
-  -- via the row-sum rescaling between `quotient` and `Q`.
+  -- BLOCKED: the empty-fiber + all-ones-coupling bundle has biregular
+  -- couplings of constant row sum `n`, so the master theorem applies, but the
+  -- factor `n` enters via the row-sum rescaling between `quotient` and `Q`.
+  -- Matching the literal rescaled time `τ * n` against the master iff (stated
+  -- on `symmQuotient`, an orthogonal D^{1/2}-conjugation rather than a scalar
+  -- rescale) needs the GGPT eigenvalue-lattice input, not available here.
   sorry
 
 /-- **ColorCompletion PST iff complete-graph PST.**
@@ -427,10 +430,12 @@ theorem colorCompletion_pst_iff
     IsPST (GraphBundle.colorCompletion color) u v τ ↔
     (color u = color v ∨
      IsPST ((Graphplay.SimpleGraph.toWeighted (⊤ : SimpleGraph J))) (color u) (color v) τ) := by
-  -- Within a single color class the marginal evolution is trivial
-  -- (empty fiber); across color classes the master theorem reduces to
-  -- the complete graph on `J`.  The `∨` accounts for the "stay in same
-  -- color class" case.
+  -- BLOCKED: within a single color class the marginal evolution is trivial
+  -- (empty fiber); across color classes the master theorem reduces to the
+  -- complete graph on `J`, with the `∨` accounting for the "stay in same
+  -- color class" case.  Closing it needs the same quotient↔host time-matching
+  -- (symmQuotient vs scalar-rescaled `Q`) as `templateJoin_pst_iff`, which is
+  -- the GGPT spectral-lattice content absent from the hypotheses.
   sorry
 
 end GraphBundle
@@ -577,14 +582,19 @@ theorem cartesianProduct_quotient_naturality
     ∃ (φ : Matrix (I × J) (I × J) ℂ),
       (productPartition G H P P').quotient = φ ∧
       φ = (GraphBundle.cartesianProduct
+            -- BLOCKED: `symmQuotient` has a genuinely nonzero diagonal, so it is
+            -- NOT loopless; the `WeightedGraph` wrapper's `loopless` obligation is
+            -- false here.  The statement should be re-cast over `LoopyWeightedGraph`
+            -- (cf. `fiberQuotient`), which requires a loopy bundle-Cartesian-product
+            -- bifunctor not yet available in this file.
             ⟨P.symmQuotient, P.symmQuotient_isHermitian, by sorry⟩
             ⟨P'.symmQuotient, P'.symmQuotient_isHermitian, by sorry⟩).adj := by
-  -- The two `WeightedGraph` wrappers around `P.quotient`, `P'.quotient`
-  -- need to absorb the diagonal in the same way as `fiberQuotient.loopless`;
-  -- modulo that, the naturality is a direct computation:
-  -- `(P × P').quotient ((i, j), (i', j')) =`
-  --   `P.quotient (i, i') · δ(j, j') + δ(i, i') · P'.quotient (j, j')`
-  -- which is exactly the Cartesian product of the quotient adjacencies.
+  -- BLOCKED: structural — the conclusion is stated over the loopless
+  -- `WeightedGraph` layer but `symmQuotient` is loopy, so the two inner
+  -- `loopless` proofs above are unprovable.  Modulo recasting to
+  -- `LoopyWeightedGraph`, the naturality is the direct computation
+  -- `(P × P').quotient ((i,j),(i',j')) = P.quotient (i,i')·δ(j,j') +
+  --   δ(i,i')·P'.quotient (j,j')` (Cartesian product of the quotient adjacencies).
   sorry
 
 /-- The genuine (open) iterated naturality statement: the Cartesian product of
@@ -692,7 +702,7 @@ theorem stratified_pst_lift
       (LoopyWeightedGraph.IsLoopyPST
           ⟨P.symmQuotient, P.symmQuotient_isHermitian⟩ cJ cI τ →
         IsCellUniformPST B.total P cI cJ τ) := by
-  -- HONEST SORRY: constructing the strata `EquitablePartition` requires combining
+  -- BLOCKED: constructing the strata `EquitablePartition` requires combining
   -- `F.fiber_equitable` and `F.coupling_strata_biregular` into a single
   -- branching-uniformity proof on the strata index `Σ i, F.S i`, then applying
   -- `EquitablePartition.pst_lift`.  Deep; left honest.

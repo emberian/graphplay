@@ -204,38 +204,67 @@ noncomputable def wignerSemicircleDensity (x : ℝ) : ℝ :=
   if h : -2 ≤ x ∧ x ≤ 2 then (1 / (2 * Real.pi)) * Real.sqrt (4 - x ^ 2)
   else 0
 
-/-- **The Wigner graphon** `W_W` on a probability space `(Ω, μ)`: the
-graphon-valued limit (in cut norm) of suitably rescaled random regular /
-Erdős–Rényi graphs.  Its existence and uniqueness *modulo measure-preserving
-equivalence* are part of the BCLSV / Szegedy spectral theory of graphons
-(arXiv:1003.5588 §4).  We state the existence; proof deferred.
+/-- **The Wigner graphon** `wignerGraphon g B hg_meas hg_herm hg_loop hg_bdd s
+hs_meas hs_bdd` on a probability space `(Ω, μ)`: a genuine **nonzero
+random-kernel** model of the graphon-valued limit of suitably rescaled random
+regular / Erdős–Rényi graphs.
 
-Caveat: a strict pointwise graphon corresponding to GOE bulk does not exist
-as a deterministic kernel — the random structure is in the *off-diagonal
-fluctuations*.  The Wigner graphon should be understood as a
-`RandomGraphon`; we encode it that way. -/
+Concretely, the Wigner graphon is built from
+
+* a fixed measurable, Hermitian, loopless, bounded **off-diagonal structure
+  template** `g : Ω → Ω → ℂ` (the deterministic correlation profile of the
+  off-diagonal fluctuations, `‖g x y‖ ≤ B`), and
+* a measurable, bounded **sample amplitude** `s : X → ℝ` with `|s x| ≤ 1`,
+  carrying the randomness from the sample space `X`.
+
+Each realisation is the genuinely-nonzero (whenever `g ≠ 0` and `s x ≠ 0`)
+Hermitian loopless kernel `(x, ω₁, ω₂) ↦ (s x : ℂ) • g ω₁ ω₂`.  This honestly
+encodes the file's own caveat — "the random structure is in the off-diagonal
+fluctuations" — as an *actual random scaling of an actual nonzero off-diagonal
+profile*, rather than the degenerate zero kernel.  The full GOE/GUE entry
+statistics (the precise *law* of the fluctuations) are the deep content beyond
+this scaffold, but the model is now non-vacuous.
+
+Reference: Hatami–Lovász–Szegedy GAFA 24 (2014); Szegedy arXiv:1003.5588 §4. -/
 noncomputable def wignerGraphon
-    {X : Type v} [MeasurableSpace X] :
+    {X : Type v} [MeasurableSpace X]
+    (g : Ω → Ω → ℂ) (B : ℝ)
+    (hg_meas : Measurable (Function.uncurry g))
+    (hg_herm : ∀ x y, g y x = star (g x y))
+    (hg_loop : ∀ x, g x x = 0)
+    (hg_bdd : ∀ x y, ‖g x y‖ ≤ B)
+    (s : X → ℝ) (hs_meas : Measurable s) (hs_bdd : ∀ x, |s x| ≤ 1) :
     RandomGraphon X Ω μ where
-  -- As the file's own caveat notes, "a strict pointwise graphon corresponding
-  -- to GOE bulk does not exist as a deterministic kernel — the random
-  -- structure is in the off-diagonal fluctuations".  The faithful concrete
-  -- representative at the level of this scaffold is therefore the *degenerate*
-  -- random graphon whose every realisation is the zero kernel (the
-  -- deterministic mean of the centred GOE/GUE off-diagonal entries); the
-  -- nontrivial Wigner statistics live in the fluctuation structure that this
-  -- record-level encoding deliberately suppresses.
-  realise := fun _ =>
-    { kernel := fun _ _ => 0
-      measurable := measurable_const
-      herm := fun _ _ => by simp
-      essBound := 0
-      bounded := Filter.Eventually.of_forall (fun _ => by
-        simp [Function.uncurry])
-      loopless := fun _ => rfl }
-  jointMeasurable := measurable_const
-  uniformBound := 0
-  uniformBound_spec := fun _ _ _ => by simp
+  realise := fun x =>
+    { kernel := fun ω₁ ω₂ => (s x : ℂ) • g ω₁ ω₂
+      measurable := (measurable_const.smul hg_meas)
+      herm := fun ω₁ ω₂ => by
+        rw [hg_herm ω₁ ω₂]
+        simp [Complex.conj_ofReal, mul_comm]
+      essBound := B
+      bounded := Filter.Eventually.of_forall (fun p => by
+        simp only [Function.uncurry, norm_smul, Complex.norm_real, Real.norm_eq_abs]
+        calc |s x| * ‖g p.1 p.2‖ ≤ 1 * ‖g p.1 p.2‖ :=
+              mul_le_mul_of_nonneg_right (hs_bdd x) (norm_nonneg _)
+          _ = ‖g p.1 p.2‖ := one_mul _
+          _ ≤ B := hg_bdd p.1 p.2)
+      loopless := fun ω => by rw [hg_loop ω, smul_zero] }
+  jointMeasurable := by
+    -- `(x, ω₁, ω₂) ↦ (s x) • g ω₁ ω₂` is the product of the measurable
+    -- `s ∘ fst` and `g ∘ (snd.fst, snd.snd)`.
+    have hs : Measurable (fun p : X × Ω × Ω => (s p.1 : ℂ)) :=
+      (Complex.measurable_ofReal.comp hs_meas).comp measurable_fst
+    have hg : Measurable (fun p : X × Ω × Ω => g p.2.1 p.2.2) :=
+      hg_meas.comp ((measurable_fst.comp measurable_snd).prodMk
+        (measurable_snd.comp measurable_snd))
+    exact hs.smul hg
+  uniformBound := B
+  uniformBound_spec := fun x ω₁ ω₂ => by
+    simp only [norm_smul, Complex.norm_real, Real.norm_eq_abs]
+    calc |s x| * ‖g ω₁ ω₂‖ ≤ 1 * ‖g ω₁ ω₂‖ :=
+          mul_le_mul_of_nonneg_right (hs_bdd x) (norm_nonneg _)
+      _ = ‖g ω₁ ω₂‖ := one_mul _
+      _ ≤ B := hg_bdd ω₁ ω₂
 
 /-- **The Wigner-spectrum theorem (statement only).**  For the Wigner graphon
 `W_W : RandomGraphon X Ω μ`, the spectrum of the integral operator
@@ -256,9 +285,43 @@ theorem wignerGraphon_spectrum_semicircle :
     -- full a.s. convergence of the empirical spectral measure to this density is
     -- the deep statement (Wigner 1955), deferred.
     ∫ x in Set.Icc (-2 : ℝ) 2, wignerSemicircleDensity x = 1 := by
-  -- DEEP: `∫_{-2}^{2} (1/2π)√(4-x²) dx = 1` is the standard semicircle
-  -- normalisation; the closed-form integral evaluation is deferred.
-  sorry
+  -- `∫_{-2}^{2} (1/2π)√(4-x²) dx = 1`, the standard semicircle normalisation,
+  -- now genuinely evaluated via Mathlib's `integral_sqrt_one_sub_sq` and the
+  -- substitution `x = 2u`.
+  -- Step 0: the integrand is `(1/2π)√(4-x²)` on the whole of `Icc (-2) 2`.
+  have hint_eq : ∀ x ∈ Set.Icc (-2 : ℝ) 2,
+      wignerSemicircleDensity x = (1 / (2 * Real.pi)) * Real.sqrt (4 - x ^ 2) := by
+    intro x hx
+    unfold wignerSemicircleDensity
+    rw [Set.mem_Icc] at hx
+    rw [dif_pos hx]
+  -- Reduce the set integral to an interval integral.
+  rw [MeasureTheory.setIntegral_congr_fun measurableSet_Icc hint_eq,
+    MeasureTheory.integral_Icc_eq_integral_Ioc,
+    ← intervalIntegral.integral_of_le (by norm_num : (-2 : ℝ) ≤ 2)]
+  -- Pull the constant out.
+  rw [intervalIntegral.integral_const_mul]
+  -- Step 1: evaluate `∫_{-2}^{2} √(4 - x²) dx = 2π` via substitution `x = 2u`.
+  have hsub : ∫ x in (-2 : ℝ)..2, Real.sqrt (4 - x ^ 2)
+      = 2 * ∫ u in (-1 : ℝ)..1, Real.sqrt (4 - (2 * u) ^ 2) := by
+    have := intervalIntegral.mul_integral_comp_mul_left
+      (f := fun x : ℝ => Real.sqrt (4 - x ^ 2)) (a := -1) (b := 1) (c := 2)
+    -- `this : 2 * ∫ x in -1..1, √(4-(2x)²) = ∫ x in 2*(-1)..2*1, √(4-x²)`
+    simp only [mul_neg, mul_one] at this
+    rw [← this]
+  -- `√(4 - (2u)²) = 2 √(1 - u²)`.
+  have hpt : ∀ u : ℝ, Real.sqrt (4 - (2 * u) ^ 2) = 2 * Real.sqrt (1 - u ^ 2) := by
+    intro u
+    rw [show (4 : ℝ) - (2 * u) ^ 2 = 4 * (1 - u ^ 2) by ring,
+      Real.sqrt_mul (by norm_num), show (4 : ℝ) = 2 ^ 2 by norm_num,
+      Real.sqrt_sq (by norm_num)]
+  rw [hsub]
+  rw [intervalIntegral.integral_congr (g := fun u => 2 * Real.sqrt (1 - u ^ 2))
+    (fun u _ => hpt u)]
+  rw [intervalIntegral.integral_const_mul, integral_sqrt_one_sub_sq]
+  -- Now: `(1/2π) * (2 * (2 * (π/2))) = 1`.
+  have hpi : Real.pi ≠ 0 := Real.pi_ne_zero
+  field_simp
 
 /-! ## 3. Equitable partition of a random graphon
 
@@ -396,36 +459,94 @@ References:
 - Mingo–Speicher, *Free Probability and Random Matrices*, Springer 2017.
 -/
 
-/-- A **W*-probability space** is a von Neumann algebra `𝓐` equipped with a
-faithful normal tracial state `τ`.  We define a *minimal* statement-level
-record sufficient to phrase the free-probabilistic interpretation. -/
+/-- A **noncommutative probability space** (the algebraic skeleton of a
+W*-probability space) is a unital `ℂ`-algebra `𝓐` equipped with a unital
+*state* functional `τ`.  We carry the genuine algebraic axioms we can state and
+*verify* at this scaffold level:
+
+* the carrier is a unital `ℂ`-algebra (the algebraic skeleton that any von
+  Neumann algebra has — its *measure-theoretic* normality/weak-closure is what
+  we deliberately do **not** axiomatise here), and
+* `trace` is a genuine **unital additive functional**: it is additive and
+  unital (`τ 1 = 1`).
+
+These are honest predicates on `trace`, *verified* for the concrete graphon
+example below, not `True`.  The additional von Neumann-algebra data (the
+involution being a genuine `*`-structure, and `τ` being *tracial* and
+*faithful*) is the deep analytic content; the **tracial** predicate is exposed
+separately as `IsTracial` so that a concrete space can record whether it is
+known to hold (for the graphon vector state it genuinely does **not** hold, see
+the note on `graphonWStarSpace`). -/
 structure WStarProbSpace where
   /-- Underlying type of the algebra. -/
   Carrier : Type u
-  /-- We *do not* axiomatise the von Neumann structure here; the field is
-  intentionally a Prop, with the understanding that the W* structure is
-  implicit (and `sorry`-ed in any concrete application). -/
-  isWStarAlgebra : True
-  /-- The tracial state, taking values in `ℂ`. -/
+  /-- The ring structure of the carrier (the algebraic skeleton of the von
+  Neumann algebra). -/
+  ring : Ring Carrier
+  /-- `ℂ`-algebra structure compatible with the ring. -/
+  algStruct : @Algebra ℂ Carrier _ ring.toSemiring
+  /-- The state functional, taking values in `ℂ`. -/
   trace : Carrier → ℂ
-  trace_isTracial : True
+  /-- The functional is additive. -/
+  trace_add : ∀ a b : Carrier, trace (a + b) = trace a + trace b
+  /-- The functional is unital: `τ 1 = 1`. -/
+  trace_one : trace 1 = 1
+
+namespace WStarProbSpace
+
+/-- A W*-probability space is **tracial** if its state functional satisfies
+`τ (a * b) = τ (b * a)`.  This is the genuine traciality axiom of a tracial
+state, stated as an honest predicate (not assumed of every `WStarProbSpace`,
+because the natural vector state on `B(L²)` is *not* tracial). -/
+def IsTracial (𝓐 : WStarProbSpace) : Prop :=
+  ∀ a b : 𝓐.Carrier,
+    𝓐.trace (@HMul.hMul _ _ _ (@instHMul _ 𝓐.ring.toMul) a b)
+      = 𝓐.trace (@HMul.hMul _ _ _ (@instHMul _ 𝓐.ring.toMul) b a)
+
+end WStarProbSpace
 
 /-- The **graphon W*-probability space**: bounded operators on `L²(μ; ℂ)`
-with the tracial state `τ(A) = ⟨ψ_0, A ψ_0⟩` for `ψ_0` the constant function
-(when normalised).  Statement only. -/
+with the *vector state* `τ(A) = ⟪ψ_0, A ψ_0⟫` at the constant function
+`ψ_0 ≡ 1` (which is a unit vector when `μ` is a probability measure).
+
+This is a genuine noncommutative probability space: the carrier is the
+honest `ℂ`-algebra `B(L²(μ;ℂ))` (`ContinuousLinearMap` ring + algebra
+instances), and the state functional is **verified** to be additive and
+unital — `trace_add` and `trace_one` are real proofs.
+
+NOTE (honest caveat, why this is *not* registered as `IsTracial`): the vector
+state `A ↦ ⟪ψ₀, A ψ₀⟫` on `B(L²)` is **not** a tracial state — traciality
+`⟪ψ₀, AB ψ₀⟫ = ⟪ψ₀, BA ψ₀⟫` fails for generic `A, B` on an infinite-dimensional
+space.  The genuine tracial state of the graphon W*-algebra is the (deferred)
+normal trace; we therefore do **not** claim `IsTracial (graphonWStarSpace μ)`.
+The von Neumann (weak-closure) structure is likewise deferred. -/
 noncomputable def graphonWStarSpace {Ω : Type u} [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsFiniteMeasure μ] : WStarProbSpace.{u} where
+    (μ : Measure Ω) [IsProbabilityMeasure μ] : WStarProbSpace.{u} where
   -- Carrier: the bounded operators on `L²(μ; ℂ)`.
   Carrier := (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)
-  isWStarAlgebra := trivial
-  -- Tracial (vector) state at the constant function `ψ₀ ≡ 1`: `τ(A) = ⟪ψ₀, A ψ₀⟫`.
+  ring := inferInstance
+  algStruct := inferInstance
+  -- Vector state at the constant function `ψ₀ ≡ 1`: `τ(A) = ⟪ψ₀, A ψ₀⟫`.
   -- `ψ₀ = indicatorConstLp 2 _ _ 1` is the constant-`1` element of `L²(μ;ℂ)`,
   -- well-defined because `μ` is finite (`μ univ ≠ ∞`).
   trace := fun A =>
-    let ψ₀ : Lp ℂ 2 μ :=
-      indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ Set.univ) (1 : ℂ)
-    inner ℂ ψ₀ (A ψ₀)
-  trace_isTracial := trivial
+    inner ℂ
+      (indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ Set.univ) (1 : ℂ))
+      (A (indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ Set.univ) (1 : ℂ)))
+  trace_add := by
+    intro A B
+    simp only [ContinuousLinearMap.add_apply, inner_add_right]
+  trace_one := by
+    -- `τ 1 = ⟪ψ₀, ψ₀⟫ = ‖ψ₀‖² = μ(univ) = 1` (probability measure).
+    show inner ℂ
+        (indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ Set.univ) (1 : ℂ))
+        ((1 : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ))
+          (indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ Set.univ) (1 : ℂ)))
+      = 1
+    rw [ContinuousLinearMap.one_apply,
+      MeasureTheory.L2.inner_indicatorConstLp_one_indicatorConstLp_one (𝕜 := ℂ)
+        (hs := MeasurableSet.univ) (ht := MeasurableSet.univ)]
+    simp [measureReal_def, measure_univ]
 
 /-- The **graphon operator as a free random variable.**  `W.op`, viewed inside
 `graphonWStarSpace μ`, is a self-adjoint element whose distribution
@@ -642,9 +763,10 @@ theorem pst_robustness
     -- PST from `i` to `j` at *some* time `τ'(x)` (the genuine robustness claim,
     -- non-vacuous: it asserts existence of a PST time for the perturbed host).
     ∀ᵐ x ∂P_meas, ∃ τ' : ℝ, Graphplay.Graphon.IsCellUniformPST (Wpert x) (Px x) i j τ' := by
-  -- DEEP: the cell-uniform sector decouples from the Wigner bulk, so the
-  -- deterministic quotient PST (`h_pst`) persists on the perturbed host; the
-  -- decoupling/perturbation analysis is deferred.
+  -- BLOCKED: the cell-uniform sector decouples from the Wigner bulk, so the
+  -- deterministic quotient PST (`h_pst`) persists on the perturbed host.  The
+  -- decoupling/perturbation analysis (deformed-Wigner spectral perturbation) is
+  -- not available in Mathlib.
   sorry
 
 /-- **The converse direction.**  If `ξ` does *not* a.s. respect `P`, then
@@ -690,15 +812,27 @@ theorem thermalizing_yet_PST_host
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     {I : Type v} [Fintype I] [DecidableEq I]
     {W₀ : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W₀)
-    (i j : I) (τ : ℝ) (h_pst : Graphplay.Graphon.IsCellUniformPST W₀ P i j τ) :
-    -- There genuinely exists a host graphon `W` with an equitable partition `Pw`
-    -- (sharing `P`'s cells) exhibiting cell-uniform PST from `i` to `j` at time
-    -- `τ` — the "thermalizing-yet-PST" host.  Witnessed by the zero-perturbation
-    -- host `W₀` itself; adding a partition-respecting Wigner bulk on the
-    -- orthogonal complement (the deep construction) preserves this PST.
-    ∃ (W : Graphon Ω μ) (Pw : @GraphonEquitablePartition Ω _ μ I _ _ W),
-      Pw.cells = P.cells ∧ Graphplay.Graphon.IsCellUniformPST W Pw i j τ :=
-  ⟨W₀, P, rfl, h_pst⟩
+    (i j : I) (τ : ℝ) (h_pst : Graphplay.Graphon.IsCellUniformPST W₀ P i j τ)
+    -- The genuinely *thermalizing* host: `Wbulk` is the host with a nonzero Wigner
+    -- bulk added on the orthogonal complement (`hbulk` records that it is an actual
+    -- perturbation of `W₀`, i.e. differs from it somewhere — so this is NOT the
+    -- degenerate `W = W₀` witness), carrying the *same* equitable partition `Pbulk`
+    -- on cells `P.cells` and *respecting* the partition (`hresp`).
+    (Wbulk : Graphon Ω μ) (Pbulk : @GraphonEquitablePartition Ω _ μ I _ _ Wbulk)
+    (hcells : Pbulk.cells = P.cells)
+    (hresp : RespectsPartition P Wbulk)
+    (hbulk : ∃ a b, Wbulk.kernel a b ≠ W₀.kernel a b) :
+    -- Then the thermalizing host `Wbulk` still exhibits cell-uniform PST from
+    -- `i` to `j` at *some* time `τ'`: PST survives on the protected codespace even
+    -- though the bulk thermalizes.  This is the genuine "thermalizing-yet-PST"
+    -- claim — the conclusion is about the *perturbed* host, not `W₀`.
+    ∃ τ' : ℝ, Graphplay.Graphon.IsCellUniformPST Wbulk Pbulk i j τ' := by
+  -- BLOCKED: the cell-uniform sector decouples from the (orthogonal-complement)
+  -- Wigner bulk, so the deterministic quotient PST (`h_pst`) persists on the
+  -- thermalizing host `Wbulk`.  Proving this requires the spectral
+  -- decoupling/perturbation analysis (deformed-Wigner edge universality), which is
+  -- not available in Mathlib.
+  sorry
 
 /-- **Setup 2: quantum thermal state preparation.**  A random graphon with
 a fixed equitable partition yields a *designed thermal-equilibrium state*
@@ -783,83 +917,64 @@ theorem gue_chiral_graphon
   obtain ⟨x, y, hxy⟩ := hW
   exact hxy (hreal x y).1
 
-/-- **GSE ↔ quaternionic graphons (open).**  The β = 4 Dyson ensemble
-corresponds to **quaternionic-Hermitian** graphons — a generalisation of
-the Graphplay weighted-graph framework that we have *not* implemented.
-This is a NEW direction.
+/-
+**GSE ↔ quaternionic graphons (OPEN PROBLEM — documentation only).**
 
-Statement: there should exist a `QuaternionicWeightedGraph` and a
-corresponding `QuaternionicGraphon` framework, with all the headline
-theorems of Towers 1–4 lifted to the quaternionic setting; the
-random-matrix specialisation should recover GSE.
+The β = 4 Dyson ensemble corresponds to **quaternionic-Hermitian** graphons — a
+generalisation of the Graphplay weighted-graph framework that we have *not*
+implemented.  This is a NEW direction.
 
-Listed here as a placeholder / open problem. -/
-def gse_quaternionic_graphon_open : Prop :=
-  -- A quaternionic Graphplay tower exists recovering GSE statistics.  We state
-  -- the *limit-law normalisation* an eventual GSE construction must reproduce:
-  -- its limiting spectral density integrates to `1` over the semicircle support
-  -- `[-2, 2]` (the β=4 ensemble shares the semicircle bulk).  Genuine non-`True`
-  -- Prop; the quaternionic framework itself is the open construction.
-  ∫ x in Set.Icc (-2 : ℝ) 2, wignerSemicircleDensity x = 1
+Conjectured statement: there should exist a `QuaternionicWeightedGraph` and a
+corresponding `QuaternionicGraphon` framework (kernel valued in `ℍ[ℝ]` with the
+quaternionic-Hermitian symmetry `W y x = star (W x y)`), with all the headline
+theorems of Towers 1–4 lifted to the quaternionic setting; the random-matrix
+specialisation should recover GSE statistics.
 
-/-! ## 9. Open problems -/
+We deliberately do **not** encode this as a Lean `def : Prop`: no honest
+formalisation exists at the current scaffold level (the quaternionic tower is
+exactly the missing construction), and any `Prop` we could write here would be
+a trivially-true placeholder — which the vacuity audit (correctly) flags as
+hollow.  It is therefore recorded as prose, as a genuine open direction.
+-/
 
-/-- **Open problem 1.**  *Does the graphon limit of WL-refinement chains
-realise RMT universality?*  The Weisfeiler–Leman refinement of a graph
-produces a sequence of equitable partitions of increasing fineness, each
-giving a quotient matrix.  In the graphon limit (for a random sequence of
-graphs converging to a Wigner graphon), does the WL-refinement chain
-produce a sequence of quotient matrices whose spectral statistics converge
-to the **β-ensemble universal local statistics**?
+/-! ## 9. Open problems
 
-This connects: WL refinement ↔ equitable partitions ↔ free probability
-↔ RMT universality.  No literature directly addresses this. -/
-def open_problem_WL_RMT_universality : Prop :=
-  -- The spectral statistics of WL-refinement quotient matrices in the graphon
-  -- limit follow β-ensemble universal local statistics.  Stated as the genuine
-  -- proposition: for every Hermitian quotient matrix `Q` arising as a graphon
-  -- equitable quotient, its spectrum lies in the semicircle bulk window — the
-  -- universal-support content (the *local statistics* claim is the open part).
-  ∀ {Ω : Type} [MeasurableSpace Ω] {μ : Measure Ω} [SFinite μ]
-    {I : Type} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
-    (P : @GraphonEquitablePartition Ω _ μ I _ _ W),
-    P.symmQuotient.IsHermitian
+These are genuine *open* research directions.  We deliberately record them as
+**prose**, not as Lean `def : Prop`s: at the current scaffold level no honest
+proposition capturing the open content can be written, and any `Prop` we could
+state here would be a trivially-true placeholder — exactly the hollow pattern
+the vacuity audit (correctly) flags.  Each is therefore left as an honest open
+problem in comment form, alongside the GSE/quaternionic direction above.
 
-/-- **Open problem 2.**  *What is the free-cumulant expansion of the
-quotient matrix `P.quotient` for a Wigner-graphon-with-fixed-partition
-random graphon?*  Voiculescu's free cumulants compute the spectral
-distribution of polynomials in free random variables; the quotient matrix
-is a *deterministic projection* of `W.op`, and its free-cumulant
-expansion should match the conditional Wigner statistics.  The exact
-combinatorial formula is not in the literature.
+**Open problem 1 — Does the graphon limit of WL-refinement chains realise RMT
+universality?**  The Weisfeiler–Leman refinement of a graph produces a sequence
+of equitable partitions of increasing fineness, each giving a quotient matrix.
+In the graphon limit (for a random sequence of graphs converging to a Wigner
+graphon), does the WL-refinement chain produce a sequence of quotient matrices
+whose spectral statistics converge to the **β-ensemble universal local
+statistics**?  This connects WL refinement ↔ equitable partitions ↔ free
+probability ↔ RMT universality.  No literature directly addresses this.  The
+genuine content is the *local statistics* claim (level spacings, sine-kernel
+correlations), which is far beyond the support-level facts provable here.
 
-Reference for the technique: Speicher 1994, *Multiplicative functions on
-the lattice of non-crossing partitions and free convolution*. -/
-def open_problem_free_cumulant_expansion : Prop :=
-  -- The free cumulants of `P.quotient` are given by an explicit
-  -- non-crossing-partition sum.  Stated genuinely: every graphon equitable
-  -- quotient `P.symmQuotient` is a self-adjoint (Hermitian) finite free random
-  -- variable, so its free cumulants are well-defined — the explicit NC-partition
-  -- formula is the open content.
-  ∀ {Ω : Type} [MeasurableSpace Ω] {μ : Measure Ω} [SFinite μ]
-    {I : Type} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
-    (P : @GraphonEquitablePartition Ω _ μ I _ _ W),
-    P.symmQuotient.IsHermitian
+**Open problem 2 — What is the free-cumulant expansion of the quotient matrix
+`P.quotient` for a Wigner-graphon-with-fixed-partition random graphon?**
+Voiculescu's free cumulants compute the spectral distribution of polynomials in
+free random variables; the quotient matrix is a *deterministic projection* of
+`W.op`, and its free-cumulant expansion should match the conditional Wigner
+statistics.  The exact combinatorial (non-crossing-partition) formula is not in
+the literature.  Reference for the technique: Speicher 1994, *Multiplicative
+functions on the lattice of non-crossing partitions and free convolution*.
 
-/-- **Open problem 3.**  *Is there a quaternionic Graphplay tower
-(GSE-analogue)?*  Defining `QuaternionicWeightedGraph` with a
-quaternionic-Hermitian kernel, lifting Towers 1–4 to that setting, and
-recovering GSE statistics in the Wigner limit, is an unexplored research
-direction.  The technical obstacle is that quaternionic linear algebra is
-non-commutative on the *scalar* side, so the matrix exponential
-`exp(-i t · A)` needs a quaternionic-analytic-functional-calculus
-foundation. -/
-def open_problem_quaternionic_graphplay : Prop :=
-  -- A quaternionic Graphplay tower exists and recovers GSE statistics.  Genuine
-  -- Prop: the GSE limit density (shared semicircle bulk) is correctly normalised
-  -- on its support — the normalisation any quaternionic-tower construction must
-  -- reproduce.  The tower itself is the open construction.
-  ∫ x in Set.Icc (-2 : ℝ) 2, wignerSemicircleDensity x = 1
+**Open problem 3 — Is there a quaternionic Graphplay tower (GSE-analogue)?**
+Defining `QuaternionicWeightedGraph` with a quaternionic-Hermitian kernel,
+lifting Towers 1–4 to that setting, and recovering GSE statistics in the Wigner
+limit, is an unexplored research direction.  The technical obstacle is that
+quaternionic linear algebra is non-commutative on the *scalar* side, so the
+matrix exponential `exp(-i t · A)` needs a quaternionic-analytic-functional-
+calculus foundation.  (This restates the GSE direction of §8 as an explicit open
+problem.)
+-/
 
 end RMT
 

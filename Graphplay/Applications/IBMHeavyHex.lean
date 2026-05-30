@@ -45,16 +45,25 @@ all of the lifting theorems from `Graphplay.PST`, `Graphplay.Mixing`,
 
 The combinatorial / spectral-disassembly core is now *proved* (equitable
 partition, exact `2×2` quotient `[[0, 2(N−1)],[2, 0]]`, symmetric quotient
-`[[0, 2√(N−1)],[2√(N−1), 0]]`, cell cardinalities, dart counts, the PST lift via
-`pst_lift`, and a genuine noise-asymmetry witness); the remaining `sorry`s are the
-analytic / hardware-geometry leaves (the `2×2` matrix-exponential, the explicit
-`spectrum`, hardware-spec satisfaction, the bundle re-indexing), each carrying a
-one-line honest reason at its site.
+`[[0, 2√(N−1)],[2√(N−1), 0]]`, cell cardinalities, dart counts, the **explicit
+`2×2` matrix exponential** `exp(c·M) = Ur·diag(e^{cq},e^{−cq})·Ur⁻¹` with closed
+off-diagonal `sinh`/`sin`, the **exact spectrum** `{±2√(N−1)}` of the raw quotient
+via `det(λI−Q) = λ²−4(N−1)`, the **PST** at `τ = π/(2q)` and uniform mixing at
+`π/(4q)`, the PST lift via `pst_lift`, the three engineering payoffs (PST,
+noise-symmetric subspaces with a genuine asymmetry witness, and the chiral
+*no-speedup* negative result — now in its strong **phase-independent spectrum**
+form `dataFlag_chiral_spectrum_phase_independent`).  The remaining `sorry`s are
+the genuinely chip-parameter / upstream-machinery leaves: the bundle re-indexing
+bijection, the `Mixing`/`Search` lifts (blocked on upstream `sorry`s), the
+automorphism-averaged two-qubit PST, the explicit `HardwareSpec` satisfaction,
+and the 3-cell refined chiral speedup — each carrying a one-line honest reason at
+its site.
 -/
 
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Fintype.Sigma
 import Mathlib.Data.Fintype.Sum
@@ -733,21 +742,191 @@ theorem dataFlag_symmQuotient_form (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
     rw [show (dataFlagPartition n m).quotient Role.flag Role.flag = 0 from htf.2.2.2]
     simp
 
+/-! ### Exact `2×2` Pauli-`X` diagonalization of the symmetric quotient.
+
+The symmetric data/flag quotient is the off-diagonal `K_2` matrix
+`M = [[0, q], [q, 0]] = q·X` (on the two-element index type `Role`), with the
+single real coupling `q = 2√(N−1)`.  We diagonalize it *directly on `Role`* with
+the Hadamard-type conjugator `Ur = [[1,1],[1,-1]]`, mirroring the `Fin 2`
+treatment in `Integrations.QuantumAdvantage`, so that the matrix exponential
+`exp(c·M)` has the closed form `cosh`/`sinh` and its off-diagonal modulus is
+`|sinh(cq)|`.  This is what powers the PST and uniform-mixing payoffs below. -/
+
+section RoleDiag
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- A sum over `Role` is the sum of its two values. -/
+theorem Role.sum_univ {M : Type*} [AddCommMonoid M] (f : Role → M) :
+    (∑ r : Role, f r) = f Role.data + f Role.flag := by
+  rw [Fintype.sum_eq_add Role.data Role.flag (by decide) (by intro r hr; cases r <;> simp_all)]
+
+open Complex in
+/-- The `(data, flag)` entry of the symmetric quotient equals the `(flag, data)`
+entry `q = 2√(N−1)` (the matrix is real-symmetric Hermitian). -/
+theorem symmQuotient_dataFlag (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+    (dataFlagPartition n m).symmQuotient Role.data Role.flag
+      = (2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) := by
+  have hH := (dataFlagPartition n m).symmQuotient_isHermitian
+  have hfd := (dataFlag_symmQuotient_form n m hn hm).1
+  -- Hermitian: M(data,flag) = star (M(flag,data)) = star (real) = real.
+  have := congrFun (congrFun hH.eq Role.data) Role.flag
+  rw [Matrix.conjTranspose_apply] at this
+  rw [← this, hfd, Complex.star_def, Complex.conj_ofReal]
+
+/-- The conjugating (Hadamard-type) matrix on `Role`: `Ur = [[1,1],[1,-1]]`. -/
+noncomputable def Ur : Matrix Role Role ℂ :=
+  Matrix.of fun r s => match r, s with
+    | Role.data, Role.data => 1
+    | Role.data, Role.flag => 1
+    | Role.flag, Role.data => 1
+    | Role.flag, Role.flag => -1
+
+private theorem Ur_mul_half : Ur * ((1/2 : ℂ) • Ur) = 1 := by
+  ext i j
+  rw [Matrix.mul_apply, Role.sum_univ]
+  cases i <;> cases j <;>
+    simp [Ur, Matrix.one_apply] <;> ring
+
+private theorem Ur_isUnit : IsUnit Ur := by
+  refine ⟨⟨Ur, (1/2 : ℂ) • Ur, Ur_mul_half, ?_⟩, rfl⟩
+  ext i j
+  rw [Matrix.mul_apply, Role.sum_univ]
+  cases i <;> cases j <;>
+    simp [Ur, Matrix.one_apply] <;> ring
+
+private theorem Ur_inv : Ur⁻¹ = (1/2 : ℂ) • Ur :=
+  Matrix.inv_eq_right_inv Ur_mul_half
+
+/-- The diagonal matrix `diag(a, b)` on `Role` (value `a` on `data`, `b` on
+`flag`). -/
+noncomputable def roleDiag (a b : ℂ) : Matrix Role Role ℂ :=
+  Matrix.diagonal (fun r => match r with | Role.data => a | Role.flag => b)
+
+/-- `q • X` on `Role` (with `X = [[0,1],[1,0]]`) conjugates to `diag(q, -q)`:
+`q • Xr = Ur · diag(q, -q) · Ur⁻¹`, where `Xr` is the off-diagonal `Role` swap. -/
+private theorem symmQuotient_eq_conj_diag (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+    (dataFlagPartition n m).symmQuotient
+      = Ur * roleDiag
+          (((2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) : ℂ))
+          (-((2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) : ℂ)) * Ur⁻¹ := by
+  have hform := dataFlag_symmQuotient_form n m hn hm
+  have hdf := symmQuotient_dataFlag n m hn hm
+  rw [Ur_inv]
+  ext i j
+  rw [Matrix.mul_apply, Role.sum_univ, Matrix.mul_apply, Matrix.mul_apply,
+    Role.sum_univ, Role.sum_univ]
+  cases i <;> cases j <;>
+    simp only [Ur, roleDiag, Matrix.diagonal_apply, Matrix.of_apply, Matrix.smul_apply,
+      smul_eq_mul, ite_true, ite_false, reduceCtorEq] <;>
+    first
+      | (rw [hform.1]; push_cast; ring)
+      | (rw [hform.2.1]; push_cast; ring)
+      | (rw [hform.2.2]; push_cast; ring)
+      | (rw [hdf]; push_cast; ring)
+
+/-- The matrix exponential of `c • symmQuotient` in closed (diagonalized) form:
+`exp(c·M) = Ur · diag(exp(cq), exp(-cq)) · Ur⁻¹`. -/
+theorem exp_smul_symmQuotient (n m : ℕ) (hn : 0 < n) (hm : 0 < m) (c : ℂ) :
+    NormedSpace.exp (c • (dataFlagPartition n m).symmQuotient)
+      = Ur * roleDiag
+          (NormedSpace.exp (c * ((2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) : ℂ)))
+          (NormedSpace.exp (-(c * ((2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) : ℂ))))
+        * Ur⁻¹ := by
+  set q : ℂ := ((2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) : ℂ) with hq
+  rw [symmQuotient_eq_conj_diag n m hn hm]
+  -- pull the scalar through the conjugation: c • (Ur * D * Ur⁻¹) = Ur * (c • D) * Ur⁻¹.
+  rw [show c • (Ur * roleDiag q (-q) * Ur⁻¹) = Ur * (c • roleDiag q (-q)) * Ur⁻¹ by
+        rw [Matrix.mul_smul, Matrix.smul_mul]]
+  rw [Matrix.exp_conj _ _ Ur_isUnit]
+  congr 2
+  rw [show (c • roleDiag q (-q)) = roleDiag (c * q) (-(c * q)) by
+        unfold roleDiag
+        rw [← Matrix.diagonal_smul]
+        congr 1; funext r; cases r <;> simp [mul_comm c]]
+  unfold roleDiag
+  rw [Matrix.exp_diagonal, Pi.exp_def]
+  congr 1; funext r; cases r <;> simp
+
+/-- The off-diagonal `(flag, data)` entry of `exp(c·M)` is `sinh(cq)`. -/
+theorem exp_smul_symmQuotient_flag_data (n m : ℕ) (hn : 0 < n) (hm : 0 < m) (c : ℂ) :
+    NormedSpace.exp (c • (dataFlagPartition n m).symmQuotient) Role.flag Role.data
+      = (NormedSpace.exp (c * ((2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) : ℂ))
+          - NormedSpace.exp (-(c * ((2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) : ℂ)))) / 2 := by
+  rw [exp_smul_symmQuotient n m hn hm, Ur_inv]
+  rw [Matrix.mul_apply, Role.sum_univ, Matrix.mul_apply, Matrix.mul_apply,
+    Role.sum_univ, Role.sum_univ]
+  simp only [Ur, roleDiag, Matrix.diagonal_apply, Matrix.of_apply, Matrix.smul_apply,
+    smul_eq_mul, ite_true, ite_false, reduceCtorEq]
+  ring
+
+end RoleDiag
+
 /-- **Eigenvalues of the heavy-hex quotient.**  For the concrete complete-site
 subdivision the raw quotient is `[[0, 2(N−1)],[2, 0]]` and the (Hermitian)
 symmetric quotient is `[[0, q],[q, 0]]` with `q = 2√(N−1)`; the characteristic
 polynomial is `λ² − q² = 0`, so the cell-uniform eigenvalues are `±q = ±2√(N−1)`
 (`N = |HoneyVertex| = 2nm`).  This corrects the toroidal-template value `±√6`.
 
-Honest `sorry`: the eigenvalue *values* stated are now TRUE for this realization,
-but extracting `spectrum ℂ` of an explicit `2×2` complex matrix from its
-characteristic polynomial needs the `Matrix.charpoly`/`spectrum` bridge, which is
-not developed in this scaffold. -/
+An eigenvalue `lam` lies in the spectrum iff `det(lam·I − Q) = 0`, i.e.
+`lam² − 4(N−1) = 0` (the `(data,flag)·(flag,data)` product is `2(N−1)·2`),
+whose two roots are exactly `±2√(N−1)` since `(2√(N−1))² = 4(N−1)`. -/
 theorem dataFlagQuotient_eigenvalues (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
     ∀ lam : ℂ, lam ∈ spectrum ℂ (dataFlagQuotient n m) ↔
       lam = (2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) ∨
       lam = -(2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) : ℝ) := by
-  sorry
+  classical
+  intro lam
+  -- Concrete entries of the raw quotient.
+  obtain ⟨hDF, hFD, hDD, hFF⟩ := dataFlagQuotient_toroidal_form n m hn hm
+  set N := Fintype.card (HoneyVertex n m) with hN
+  set s : ℝ := Real.sqrt ((N : ℝ) - 1) with hs
+  -- `s² = N − 1 ≥ 0`.
+  have hNpos : 0 < N := Fintype.card_pos_iff.mpr ⟨(⟨0, hn⟩, ⟨0, hm⟩, false)⟩
+  have hN1 : (0:ℝ) ≤ (N : ℝ) - 1 := by
+    have : (1:ℝ) ≤ (N:ℝ) := by exact_mod_cast hNpos;
+    linarith
+  have hssq : s ^ 2 = (N : ℝ) - 1 := by rw [hs, sq, Real.mul_self_sqrt hN1]
+  -- Equivalence `Role ≃ Fin 2`, used to compute the 2×2 determinant.
+  let e : Role ≃ Fin 2 :=
+    { toFun := fun r => match r with | Role.data => 0 | Role.flag => 1
+      invFun := fun i => if i = 0 then Role.data else Role.flag
+      left_inv := by intro r; cases r <;> rfl
+      right_inv := by intro i; fin_cases i <;> rfl }
+  -- `lam ∈ spectrum ↔ ¬ IsUnit (lam•1 − Q) ↔ det (lam•1 − Q) = 0`.
+  rw [spectrum.mem_iff, Matrix.algebraMap_eq_diagonal, Matrix.isUnit_iff_isUnit_det,
+      isUnit_iff_ne_zero, not_not]
+  rw [show ((algebraMap ℂ (Role → ℂ)) lam) = (fun _ : Role => lam) from by
+        funext r; simp [Algebra.algebraMap_eq_smul_one]]
+  -- Compute the determinant by reindexing to `Fin 2`.
+  have hdet : (Matrix.diagonal (fun _ : Role => lam) - dataFlagQuotient n m).det
+      = lam ^ 2 - (4 * ((N : ℝ) - 1) : ℝ) := by
+    rw [← Matrix.det_reindex_self e]
+    rw [Matrix.det_fin_two]
+    simp only [Matrix.reindex_apply, Matrix.submatrix_apply, Matrix.sub_apply,
+      Matrix.diagonal_apply]
+    -- e.symm 0 = data, e.symm 1 = flag.
+    have h00 : (e.symm 0) = Role.data := rfl
+    have h11 : (e.symm 1) = Role.flag := rfl
+    rw [h00, h11]
+    rw [hDD, hFF, hDF, hFD]
+    -- diagonal indicators
+    simp only [if_pos rfl, reduceCtorEq, if_neg (by decide : ¬ Role.data = Role.flag),
+      if_neg (by decide : ¬ Role.flag = Role.data)]
+    push_cast [Nat.cast_sub hNpos]
+    ring
+  rw [hdet]
+  -- `lam² = 4(N−1)` iff `lam = ±2√(N−1) = ±2s`.
+  have hfactor : lam ^ 2 - (4 * ((N : ℝ) - 1) : ℝ) = 0 ↔
+      lam = ((2 * s : ℝ) : ℂ) ∨ lam = (-(2 * s : ℝ) : ℂ) := by
+    have hsc : ((4 * ((N : ℝ) - 1) : ℝ) : ℂ) = (((2 * s : ℝ)) : ℂ) ^ 2 := by
+      push_cast
+      rw [show (2 * (s:ℂ)) ^ 2 = 4 * (s:ℂ)^2 by ring]
+      rw [show ((s:ℝ):ℂ)^2 = (((s^2 : ℝ)) : ℂ) by push_cast; ring, hssq]
+      push_cast; ring
+    rw [hsc, sub_eq_zero, sq_eq_sq_iff_eq_or_eq_neg]
+  -- After folding `s = √(N−1)` the two sides coincide.
+  rw [hfactor, hs]
 
 /-! ### Heavy-hex as a `GraphBundle`.
 
@@ -786,7 +965,8 @@ theorem heavyHexAsBundle_total_eq (n m : ℕ) :
       ∀ x y, (heavyHexAsBundle n m).total.adj x y
         = (heavyHexWeighted n m).adj (e x) (e y) := by
   -- The re-indexing pairs each `(v, ())` with `data v`; the adjacency match is
-  -- the edge-subdivision identity.  Construction of the bijection deferred.
+  -- the edge-subdivision identity.
+  -- BLOCKED: total-vertex bijection misses flag qubits (fiber=Unit, no dart sum)
   sorry
 
 /-! ## 4. Walk primitives on the quotient.
@@ -810,6 +990,57 @@ For the 2 x 2 quotient `Q = [[0, 3], [2, 0]]`:
 noncomputable def dataFlagCoupling (n m : ℕ) : ℝ :=
   2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1)
 
+/-- The coupling `q = 2√(N−1)` is strictly positive whenever `0 < n, 0 < m`
+(then `N = |HoneyVertex| ≥ 2`, so `N − 1 ≥ 1 > 0`). -/
+theorem dataFlagCoupling_pos (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+    0 < dataFlagCoupling n m := by
+  unfold dataFlagCoupling
+  have hN : 2 ≤ Fintype.card (HoneyVertex n m) := by
+    have hcard : Fintype.card (HoneyVertex n m) = n * (m * 2) := by
+      simp only [HoneyVertex, Fintype.card_prod, Fintype.card_bool, Fintype.card_fin]
+    rw [hcard]
+    have h1 : 1 ≤ n := hn
+    have h2 : 1 ≤ m := hm
+    calc 2 = 1 * (1 * 2) := by norm_num
+      _ ≤ n * (m * 2) := by
+          apply Nat.mul_le_mul h1
+          exact Nat.mul_le_mul h2 (le_refl 2)
+  have h1 : (1 : ℝ) ≤ (Fintype.card (HoneyVertex n m) : ℝ) - 1 := by
+    have : (2 : ℝ) ≤ (Fintype.card (HoneyVertex n m) : ℝ) := by exact_mod_cast hN
+    linarith
+  have : 0 < Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) :=
+    Real.sqrt_pos.mpr (by linarith)
+  positivity
+
+/-- **Closed-form off-diagonal modulus of the symmetric-quotient walk.**  For real
+time `τ`, the `(flag, data)` matrix element of `exp(-i τ M)` (`M = q·X`,
+`q = 2√(N−1)`) is `-i·sin(τ q)`, of modulus `|sin(τ q)|`.  This is the genuine
+two-cell Rabi oscillation underlying both PST and uniform mixing on the chip. -/
+theorem norm_exp_symmQuotient_flag_data (n m : ℕ) (hn : 0 < n) (hm : 0 < m) (τ : ℝ) :
+    ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
+        (dataFlagPartition n m).symmQuotient)) Role.flag Role.data‖
+      = |Real.sin (τ * dataFlagCoupling n m)| := by
+  rw [exp_smul_symmQuotient_flag_data n m hn hm]
+  set q : ℝ := 2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) with hqdef
+  -- the scalar `c = -(I τ)`, so `c·q = -(I τ q)`.
+  -- Identify the argument `-(I τ) · q` with `(-(τ q)) · I` (real-times-I form).
+  have hsval : (-(Complex.I * (τ : ℂ)) * ((q : ℝ) : ℂ)) = ((-(τ * q) : ℝ) : ℂ) * Complex.I := by
+    push_cast; ring
+  have he1 : NormedSpace.exp (-(Complex.I * (τ : ℂ)) * ((q : ℝ) : ℂ))
+      = (Real.cos (-(τ*q)) : ℂ) + (Real.sin (-(τ*q)) : ℂ) * Complex.I := by
+    rw [hsval, ← Complex.exp_eq_exp_ℂ, Complex.exp_ofReal_mul_I]
+  have he2 : NormedSpace.exp (-(-(Complex.I * (τ : ℂ)) * ((q : ℝ) : ℂ)))
+      = (Real.cos (τ*q) : ℂ) + (Real.sin (τ*q) : ℂ) * Complex.I := by
+    have hneg : -(-(Complex.I * (τ : ℂ)) * ((q : ℝ) : ℂ)) = ((τ * q : ℝ) : ℂ) * Complex.I := by
+      rw [hsval]; push_cast; ring
+    rw [hneg, ← Complex.exp_eq_exp_ℂ, Complex.exp_ofReal_mul_I]
+  rw [he1, he2, Real.cos_neg, Real.sin_neg]
+  rw [show ((Real.cos (τ*q) : ℂ) + ((-Real.sin (τ*q) : ℝ) : ℂ) * Complex.I
+        - ((Real.cos (τ*q) : ℂ) + (Real.sin (τ*q) : ℂ) * Complex.I)) / 2
+      = -Complex.I * (Real.sin (τ*q) : ℂ) by push_cast; ring]
+  rw [norm_mul, norm_neg, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs]
+  rw [hqdef, dataFlagCoupling]
+
 /-- **PST on the data/flag quotient at time `π / (2q)`, `q = 2√(N−1)`.**  This is
 the analytically-tractable two-cell PST that the heavy-hex chip supports
 *automatically* via the equitable-partition lift.  (The toroidal-template value
@@ -824,7 +1055,11 @@ theorem dataFlag_pst_on_quotient (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
       ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
           (dataFlagPartition n m).symmQuotient)) Role.flag Role.data‖ = 1 := by
   refine ⟨Real.pi / (2 * dataFlagCoupling n m), rfl, ?_⟩
-  sorry
+  rw [norm_exp_symmQuotient_flag_data n m hn hm]
+  have hq : dataFlagCoupling n m ≠ 0 := (dataFlagCoupling_pos n m hn hm).ne'
+  rw [show Real.pi / (2 * dataFlagCoupling n m) * dataFlagCoupling n m
+        = Real.pi / 2 by field_simp]
+  rw [Real.sin_pi_div_two, abs_one]
 
 /-- **Uniform mixing on the data/flag quotient at time `π / (4q)`, `q = 2√(N−1)`.**
 At this time the symmetric quotient walk sends the data-uniform state to a 50/50
@@ -837,7 +1072,13 @@ theorem dataFlag_uniform_mixing_on_quotient (n m : ℕ) (hn : 0 < n) (hm : 0 < m
           (dataFlagPartition n m).symmQuotient)) Role.flag Role.data‖
         = 1 / Real.sqrt 2 := by
   refine ⟨Real.pi / (4 * dataFlagCoupling n m), rfl, ?_⟩
-  sorry
+  rw [norm_exp_symmQuotient_flag_data n m hn hm]
+  have hq : dataFlagCoupling n m ≠ 0 := (dataFlagCoupling_pos n m hn hm).ne'
+  rw [show Real.pi / (4 * dataFlagCoupling n m) * dataFlagCoupling n m
+        = Real.pi / 4 by field_simp]
+  rw [Real.sin_pi_div_four, abs_of_nonneg (by positivity)]
+  rw [eq_div_iff (by positivity), div_mul_eq_mul_div, Real.mul_self_sqrt (by norm_num)]
+  norm_num
 
 /-! ### IBM tunable-coupler as a chiral-signing channel.
 
@@ -916,6 +1157,7 @@ one-liner. -/
 theorem heavyHex_mixing_lift (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
     IsCellUniformMixing (heavyHexWeighted n m) (dataFlagPartition n m)
       (Real.pi / (4 * dataFlagCoupling n m)) := by
+  -- BLOCKED: upstream Mixing lift routes through `cellBlockAmp_eq_quotient` (sorry)
   sorry
 
 /-- **Search lift.**  Marking the data cell (i.e. `M = { data v : v ∈ ... }`)
@@ -926,6 +1168,7 @@ theorem heavyHex_search_lift (n m : ℕ) (γ τ : ℝ)
     IsOptimalSearch (heavyHexWeighted n m) M γ τ := by
   -- Reduce via `search_quotient_reduction` to a search on the refined
   -- (3-cell or 4-cell) quotient and apply `optimal_search_lift`.
+  -- BLOCKED: `IsOptimalSearch` requires upstream Search reduction machinery
   sorry
 
 /-- **Chiral-mixing lift.**  Any *cross-constant* chiral signing of heavy-hex
@@ -1000,16 +1243,19 @@ noncomputable def ibmCondorSpec : HardwareSpec where
 embedding that places each qubit at its nominal lattice site. -/
 theorem heavyHexEagle_satisfies (embed : HeavyHexVertex 7 18 → ℝ × ℝ) :
     heavyHexEagle.satisfies ibmEagleSpec embed := by
+  -- BLOCKED: |HeavyHexVertex 7 18| ≫ 127 (full dart set), needs truncation subset
   sorry
 
 /-- The Heron heavy-hex chip satisfies the Heron hardware spec. -/
 theorem heavyHexHeron_satisfies (embed : HeavyHexVertex 7 19 → ℝ × ℝ) :
     heavyHexHeron.satisfies ibmHeronSpec embed := by
+  -- BLOCKED: |HeavyHexVertex 7 19| ≫ 133 (full dart set), needs truncation subset
   sorry
 
 /-- The Condor heavy-hex chip satisfies the Condor hardware spec. -/
 theorem heavyHexCondor_satisfies (embed : HeavyHexVertex 33 34 → ℝ × ℝ) :
     heavyHexCondor.satisfies ibmCondorSpec embed := by
+  -- BLOCKED: |HeavyHexVertex 33 34| ≫ 1121 (full dart set), needs truncation subset
   sorry
 
 /-- **Quotient satisfaction.**  The data/flag quotient of any heavy-hex
@@ -1064,6 +1310,7 @@ theorem ibm_native_pst_two_qubit (n m : ℕ)
   -- Combine the cell-uniform PST lift (`heavyHex_pst_lift`) with the
   -- chip-automorphism averaging, an instance of the Bachman–Tamon
   -- automorphism trick.
+  -- BLOCKED: needs Bachman–Tamon automorphism-averaging (cell-uniform→two-qubit)
   sorry
 
 /-! ### Payoff #2: Noise-symmetric subspace identification.
@@ -1191,6 +1438,88 @@ theorem dataFlag_chiral_no_speedup (n m : ℕ) :
   intro τ hτ _ _ r s _
   rw [norm_mul, hτ r s, one_mul]
 
+/-- **Spectrum of any zero-diagonal Hermitian `2×2` `Role`-matrix.**  If `M` has
+vanishing diagonal and Hermitian off-diagonal entries `M data flag = a`,
+`M flag data = star a` of modulus `‖a‖ = r`, then `det(lam·I − M) = lam² − r²`
+(`star a · a = ‖a‖² = r²`), so the spectrum is exactly `{r, −r}` — depending on
+`a` *only through its modulus* `r`.  This is the matrix-level engine of Payoff #3:
+a chiral phase `a = r·e^{iφ}` leaves the spectrum (hence the spectral radius `r`
+and the mixing time) **completely** unchanged. -/
+theorem roleHermitian_spectrum (a : ℂ) (r : ℝ) (hr : ‖a‖ = r) (lam : ℂ)
+    (M : Matrix Role Role ℂ)
+    (hDD : M Role.data Role.data = 0) (hFF : M Role.flag Role.flag = 0)
+    (hDF : M Role.data Role.flag = a) (hFD : M Role.flag Role.data = star a) :
+    lam ∈ spectrum ℂ M ↔ lam = (r : ℂ) ∨ lam = -(r : ℂ) := by
+  classical
+  -- `star a · a = ‖a‖² = r²`.
+  have hstar : star a * a = ((r : ℂ)) ^ 2 := by
+    rw [Complex.star_def, RCLike.conj_mul, ← hr]
+    norm_cast
+  -- spectrum ↔ det = 0.
+  let e : Role ≃ Fin 2 :=
+    { toFun := fun ro => match ro with | Role.data => 0 | Role.flag => 1
+      invFun := fun i => if i = 0 then Role.data else Role.flag
+      left_inv := by intro ro; cases ro <;> rfl
+      right_inv := by intro i; fin_cases i <;> rfl }
+  rw [spectrum.mem_iff, Matrix.algebraMap_eq_diagonal, Matrix.isUnit_iff_isUnit_det,
+      isUnit_iff_ne_zero, not_not]
+  rw [show ((algebraMap ℂ (Role → ℂ)) lam) = (fun _ : Role => lam) from by
+        funext ro; simp [Algebra.algebraMap_eq_smul_one]]
+  have hdet : (Matrix.diagonal (fun _ : Role => lam) - M).det = lam ^ 2 - (r : ℂ) ^ 2 := by
+    rw [← Matrix.det_reindex_self e, Matrix.det_fin_two]
+    simp only [Matrix.reindex_apply, Matrix.submatrix_apply, Matrix.sub_apply,
+      Matrix.diagonal_apply]
+    have h00 : (e.symm 0) = Role.data := rfl
+    have h11 : (e.symm 1) = Role.flag := rfl
+    rw [h00, h11, hDD, hFF, hDF, hFD]
+    simp only [if_true, if_neg (by decide : ¬ (Role.data = Role.flag)),
+        if_neg (by decide : ¬ (Role.flag = Role.data))]
+    rw [show (lam - 0) * (lam - 0) - (0 - a) * (0 - star a)
+          = lam ^ 2 - star a * a by ring, hstar]
+  rw [hdet, sub_eq_zero, sq_eq_sq_iff_eq_or_eq_neg]
+
+/-- **Payoff #3 (negative half, spectral form).**  The chiral-signed symmetric
+data/flag quotient `M' = [[0, e^{iφ}·q], [e^{−iφ}·q, 0]]` (any unit-modulus
+Hermitian diagonal-`1` phasing `τ`) has the **same** spectrum `{±q}`,
+`q = 2√(N−1)`, as the unsigned quotient — *independent of the phase* `φ`.  Hence
+the spectral radius is `q` for every chiral signing: no mixing-time speedup is
+available on the 2-cell quotient. -/
+theorem dataFlag_chiral_spectrum_phase_independent (n m : ℕ) (hn : 0 < n) (hm : 0 < m)
+    (τ : Role → Role → ℂ) (hτ : ∀ r s, ‖τ r s‖ = 1)
+    (hτh : ∀ r s, τ s r = star (τ r s)) (lam : ℂ) :
+    lam ∈ spectrum ℂ
+        (Matrix.of fun r s => τ r s * (dataFlagPartition n m).symmQuotient r s) ↔
+      lam = (dataFlagCoupling n m : ℂ) ∨ lam = -(dataFlagCoupling n m : ℂ) := by
+  classical
+  set M : Matrix Role Role ℂ :=
+    Matrix.of fun r s => τ r s * (dataFlagPartition n m).symmQuotient r s with hM
+  obtain ⟨hfd, hdd, hff⟩ := dataFlag_symmQuotient_form n m hn hm
+  have hdf := symmQuotient_dataFlag n m hn hm
+  -- The signed off-diagonal entry and its modulus.
+  set q : ℝ := dataFlagCoupling n m with hq
+  have hqval : q = 2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) := rfl
+  have hqpos : 0 ≤ q := (dataFlagCoupling_pos n m hn hm).le
+  -- off-diagonal entry `a = τ(data,flag)·q`, modulus `q`.
+  have hdfc : (dataFlagPartition n m).symmQuotient Role.data Role.flag = (q : ℂ) := by
+    rw [hdf]; rw [hqval]
+  have hMDF : M Role.data Role.flag = τ Role.data Role.flag * (q : ℂ) := by
+    rw [hM]; simp only [Matrix.of_apply]; rw [hdfc]
+  have hqc : (dataFlagPartition n m).symmQuotient Role.flag Role.data = (q : ℂ) := by
+    rw [hfd]; rw [hqval]
+  have hMFD : M Role.flag Role.data = star (τ Role.data Role.flag * (q : ℂ)) := by
+    rw [hM]; simp only [Matrix.of_apply]
+    rw [hqc, hτh Role.data Role.flag]
+    rw [star_mul', Complex.star_def, Complex.conj_ofReal]
+  have hMDD : M Role.data Role.data = 0 := by
+    rw [hM]; simp only [Matrix.of_apply, hdd, mul_zero]
+  have hMFF : M Role.flag Role.flag = 0 := by
+    rw [hM]; simp only [Matrix.of_apply, hff, mul_zero]
+  have hnorm : ‖τ Role.data Role.flag * (q : ℂ)‖ = q := by
+    rw [norm_mul, hτ Role.data Role.flag, one_mul, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg hqpos]
+  rw [roleHermitian_spectrum (τ Role.data Role.flag * (q : ℂ)) q hnorm lam M
+      hMDD hMFF hMDF hMFD]
+
 /-- **Payoff #3 (positive half).**  On a 3-cell refinement of the
 data/flag partition (separating data-degree-3 from data-degree-2 boundary
 qubits), the optimal chiral signing of the quotient achieves a cell-uniform
@@ -1208,6 +1537,7 @@ theorem refined_chiral_speedup (n m : ℕ) :
       ∀ t : ℝ,
         ((⟨heavyHexWeighted n m, P⟩ :
           Bundle (HeavyHexVertex n m) I).signedBy s h).CellUniformMixing t := by
+  -- BLOCKED: needs the 3-cell boundary refinement + upstream CellUniformMixing
   sorry
 
 /-! ## Open questions / future work for this application.

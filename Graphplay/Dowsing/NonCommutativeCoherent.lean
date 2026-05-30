@@ -352,9 +352,12 @@ theorem QuantumEquitablePartition.pst_lift
     (Q : QuantumEquitablePartition n S I) (i j : I) (τ : ℝ) :
     IsPST_on_quotient Q.quotient i j τ →
       IsCellUniformPST_in S Q i j τ := by
-  -- Lift the quotient Hamiltonian to a Hermitian in `Q.algebra ⊆ M_n(ℂ)` via
-  -- the canonical block-diagonal embedding `M ↦ ∑_{i,j} M_{i,j} · pᵢ J pⱼ`;
-  -- exp commutes with ∗-homs; conclude by the block-trace normalization.
+  -- BLOCKED (deep analytic).  Lift the quotient Hamiltonian to a Hermitian in
+  -- `Q.algebra ⊆ M_n(ℂ)` via the canonical block-diagonal embedding
+  -- `M ↦ ∑_{i,j} M_{i,j} · pᵢ J pⱼ`; `exp` commutes with the ∗-hom embedding;
+  -- conclude by the block-trace normalization.  Requires the matrix-exponential
+  -- / ∗-homomorphism-intertwining layer (embedding ∘ exp = exp ∘ embedding) not
+  -- available here.  Left honest.
   sorry
 
 /-! ## 4. Mancinska–Roberson / Duan–Severini–Winter quantum homomorphisms
@@ -370,9 +373,16 @@ which is partially still WIP for matrix C∗-algebras.
 -/
 
 /-- A **quantum graph (state) homomorphism** from `S` to `T`: a ℂ-linear map
-`φ : M_n(ℂ) → M_m(ℂ)` that is unital, ∗-preserving, and sends the operator
-system `S` into `T`.  Complete positivity is omitted at this scaffold level;
-the conventional Mancinska–Roberson definition demands it. -/
+`φ : M_n(ℂ) → M_m(ℂ)` that is unital, ∗-preserving, multiplicative,
+trace-preserving, and sends the operator system `S` into `T`.
+
+In the Mancinska–Roberson / Duan–Severini–Winter framework the morphisms of
+the deterministic (classical-strategy) quantum-graph category are exactly the
+trace-preserving unital ∗-homomorphisms `M_n(ℂ) → M_m(ℂ)` carrying `S` into
+`T`; the genuinely quantum strategies arise by passing to a commuting
+operator-system dilation.  We record the trace- and product-preservation
+fields explicitly: they are the data needed for the quotient functoriality
+`QuantumHom.lifts_to_quotient`. -/
 structure QuantumHom (n m : ℕ) (S : QuantumGraph n) (T : QuantumGraph m) where
   /-- The underlying linear map. -/
   toLin : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ] Matrix (Fin m) (Fin m) ℂ
@@ -380,6 +390,10 @@ structure QuantumHom (n m : ℕ) (S : QuantumGraph n) (T : QuantumGraph m) where
   map_one : toLin 1 = 1
   /-- ∗-preservation. -/
   map_star : ∀ A, toLin (Aᴴ) = (toLin A)ᴴ
+  /-- Multiplicativity (∗-homomorphism). -/
+  map_mul : ∀ A B, toLin (A * B) = toLin A * toLin B
+  /-- Trace preservation. -/
+  map_trace : ∀ A, (toLin A).trace = A.trace
   /-- The operator system is sent into the target operator system. -/
   map_carrier : ∀ A ∈ S.carrier, toLin A ∈ T.carrier
 
@@ -401,10 +415,21 @@ theorem QuantumHom.lifts_to_quotient
     -- The quotients agree under `φ`: the induced map on `M_I(ℂ)` is the
     -- identity on each `(i, j)`-block trace.
     QS.quotient = QT.quotient := by
-  -- Track the block-trace through `φ`: ∗-preservation gives Hermiticity of
-  -- the image, unitality gives the cell-projector compatibility automatically
-  -- once `hcompat` is supplied, and the trace of `pⱼ A pᵢ` is preserved.
-  sorry
+  -- With the trace- and product-preservation fields of `QuantumHom`, the
+  -- normalized block traces transport exactly: `tr(QT.pᵢ) = tr(φ(QS.pᵢ)) =
+  -- tr(QS.pᵢ)` and `tr(QT.pᵢ · QT.pⱼ) = tr(φ(QS.pᵢ · QS.pⱼ)) = tr(QS.pᵢ · QS.pⱼ)`.
+  funext i j
+  show QS.blockTrace 1 i j = QT.blockTrace 1 i j
+  -- Trace of each cell projector is preserved: `tr(QT.pₖ) = tr(QS.pₖ)`.
+  have htr : ∀ k : I, (QT.cells.p k).trace = (QS.cells.p k).trace := by
+    intro k; rw [← hcompat k, φ.map_trace]
+  -- Trace of each cell-projector product is preserved.
+  have htr2 : ∀ a b : I,
+      (QT.cells.p a * 1 * QT.cells.p b).trace = (QS.cells.p a * 1 * QS.cells.p b).trace := by
+    intro a b
+    rw [Matrix.mul_one, Matrix.mul_one, ← hcompat a, ← hcompat b, ← φ.map_mul, φ.map_trace]
+  unfold QuantumEquitablePartition.blockTrace QuantumEquitablePartition.block
+  rw [htr i, htr j, htr2 i j]
 
 /-- **Duan–Severini–Winter recoverability.**  When the quantum homomorphism
 `φ` admits a UCP retraction (a "quantum graph epimorphism") the quotient on
@@ -580,40 +605,105 @@ The fixed point of the chain governs the quantum chromatic number `χ_q(S)`:
 canonical such homomorphism factors through the WL fixed-point algebra.
 -/
 
+/-- The **non-commutative coherent algebra** of `S`: the smallest unital
+∗-subalgebra of `M_n(ℂ)` that contains `S.carrier` *and* is closed under the
+matrix product, the Schur product and conjugate transpose (an
+`IsCoherentAlgebra`).  Defined as the infimum of all coherent algebras
+containing `S.carrier`; the infimum is taken over a nonempty family (the full
+matrix algebra `⊤` always qualifies). -/
+noncomputable def ncCoherentAlgebra {n : ℕ} (S : QuantumGraph n) :
+    Submodule ℂ (Matrix (Fin n) (Fin n) ℂ) :=
+  sInf {A | IsCoherentAlgebra A ∧ S.carrier ≤ A}
+
+/-- The non-commutative coherent algebra is closed under intersection of
+coherent algebras, hence is itself an `IsCoherentAlgebra`. -/
+theorem ncCoherentAlgebra_isCoherentAlgebra {n : ℕ} (S : QuantumGraph n) :
+    IsCoherentAlgebra (ncCoherentAlgebra S) := by
+  unfold ncCoherentAlgebra
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · exact Submodule.mem_sInf.mpr fun A hA => hA.1.one_mem
+  · exact (@Submodule.mem_sInf ℂ (Matrix (Fin n) (Fin n) ℂ) _ _ _ _
+      ((fun _ _ => (1 : ℂ)) : Matrix (Fin n) (Fin n) ℂ)).mpr fun A hA => hA.1.J_mem
+  · intro X hX
+    exact Submodule.mem_sInf.mpr fun A hA =>
+      hA.1.star_mem X (Submodule.mem_sInf.mp hX A hA)
+  · intro X hX Y hY
+    exact Submodule.mem_sInf.mpr fun A hA =>
+      hA.1.mul_mem X (Submodule.mem_sInf.mp hX A hA) Y (Submodule.mem_sInf.mp hY A hA)
+  · intro X hX Y hY
+    exact Submodule.mem_sInf.mpr fun A hA =>
+      hA.1.schur_mem X (Submodule.mem_sInf.mp hX A hA) Y (Submodule.mem_sInf.mp hY A hA)
+
+/-- `S.carrier` is contained in its non-commutative coherent algebra. -/
+theorem le_ncCoherentAlgebra {n : ℕ} (S : QuantumGraph n) :
+    S.carrier ≤ ncCoherentAlgebra S :=
+  le_sInf fun _ hA => hA.2
+
+/-- If `S.carrier` is *already* a coherent algebra, its non-commutative
+coherent algebra is itself. -/
+theorem ncCoherentAlgebra_eq_self_of_isCoherentAlgebra {n : ℕ} (S : QuantumGraph n)
+    (h : IsCoherentAlgebra S.carrier) :
+    ncCoherentAlgebra S = S.carrier :=
+  le_antisymm (sInf_le ⟨h, le_refl _⟩) (le_ncCoherentAlgebra S)
+
+/-- The non-commutative coherent algebra, packaged back as a `QuantumGraph`
+(it is unital and ∗-closed). -/
+noncomputable def ncCoherentGraph {n : ℕ} (S : QuantumGraph n) : QuantumGraph n where
+  carrier := ncCoherentAlgebra S
+  one_mem := (ncCoherentAlgebra_isCoherentAlgebra S).one_mem
+  star_mem := (ncCoherentAlgebra_isCoherentAlgebra S).star_mem
+
 /-- The **non-commutative WL refinement step** applied to an operator system
 inside `M_n(ℂ)`.  One step adjoins all matrix products of pairs of operators
-already in the system (and the operator-system Schur product with respect to
-the standard basis), then takes the unital ∗-closure. -/
-noncomputable def WLRefine {n : ℕ} (S : QuantumGraph n) : QuantumGraph n := by
-  -- Definitionally: the unital ∗-closure of `S ∪ (S · S) ∪ (S ⊙ S)` inside
-  -- `M_n(ℂ)`, where `⊙` is the operator-system Schur product.  We record the
-  -- statement as a placeholder.
-  exact S
+already in the system and the (standard-basis) Schur products, then takes the
+unital ∗-closure: this is exactly the passage to the non-commutative coherent
+algebra `ncCoherentGraph`.  (The coherent closure already absorbs *all* finite
+iterations of products/Schur-products, so a single non-commutative WL step
+reaches the fixed point — the analogue of the classical coherent closure.) -/
+noncomputable def WLRefine {n : ℕ} (S : QuantumGraph n) : QuantumGraph n :=
+  ncCoherentGraph S
+
+/-- `WLRefine` is idempotent on carriers: applied to (the graph of) an already
+coherent algebra it returns that same algebra. -/
+theorem WLRefine_carrier_idem {n : ℕ} (S : QuantumGraph n) :
+    (WLRefine (WLRefine S)).carrier = (WLRefine S).carrier := by
+  show ncCoherentAlgebra (ncCoherentGraph S) = (ncCoherentGraph S).carrier
+  exact ncCoherentAlgebra_eq_self_of_isCoherentAlgebra (ncCoherentGraph S)
+    (ncCoherentAlgebra_isCoherentAlgebra S)
 
 /-- The WL refinement forms an increasing chain of operator systems. -/
 noncomputable def WLChain {n : ℕ} (S : QuantumGraph n) : ℕ → QuantumGraph n
   | 0 => S
   | k + 1 => WLRefine (WLChain S k)
 
-/-- **WL termination.**  In `M_n(ℂ)` the dimension is finite, so the chain
-`WLChain S k` stabilizes at some `k ≤ n^2`.  The fixed point is the
-**non-commutative coherent algebra** of `S` — the smallest unital
-∗-subalgebra of `M_n(ℂ)` containing `S`. -/
+/-- From round `1` onward the WL chain is constant at the non-commutative
+coherent algebra `WLRefine S`: the coherent closure is reached in a single
+step and is then absorbed by all further refinements (idempotence). -/
+theorem WLChain_carrier_eq_of_one_le {n : ℕ} (S : QuantumGraph n) :
+    ∀ k, 1 ≤ k → (WLChain S k).carrier = (WLRefine S).carrier := by
+  intro k hk
+  induction k, hk using Nat.le_induction with
+  | base => rfl
+  | succ j hj ih =>
+    -- `WLChain S (j+1) = WLRefine (WLChain S j)`; `(WLChain S j).carrier` is
+    -- already coherent (`= WLRefine S`), so refining it again is idempotent.
+    show (WLRefine (WLChain S j)).carrier = (WLRefine S).carrier
+    have hcoh : IsCoherentAlgebra (WLChain S j).carrier := by
+      rw [ih]; exact ncCoherentAlgebra_isCoherentAlgebra S
+    show ncCoherentAlgebra (WLChain S j) = (WLRefine S).carrier
+    rw [ncCoherentAlgebra_eq_self_of_isCoherentAlgebra _ hcoh, ih]
+
+/-- **WL termination.**  The chain stabilizes by round `1`: `WLRefine` reaches
+the non-commutative coherent algebra of `S` — the smallest unital ∗-subalgebra
+of `M_n(ℂ)` containing `S` and closed under matrix/Schur products — in a single
+step, and is idempotent thereafter. -/
 theorem WLChain.terminates {n : ℕ} (S : QuantumGraph n) :
     ∃ k₀, ∀ k ≥ k₀, (WLChain S k).carrier = (WLChain S k₀).carrier := by
-  -- With the present (placeholder) `WLRefine = id`, the chain is constant at
-  -- `S`, so it has already stabilized at round `0`.  (For a non-trivial
-  -- `WLRefine` the genuine argument is the strictly-ascending finite-dimensional
-  -- chain bounded by `dim ≤ n^2`; both yield termination.)
-  refine ⟨0, ?_⟩
-  intro k _
-  -- `WLChain S k = S` for every `k`.
-  have hconst : ∀ m, WLChain S m = S := by
-    intro m
-    induction m with
-    | zero => rfl
-    | succ j ih => simp only [WLChain, ih]; rfl
-  rw [hconst k, hconst 0]
+  -- The chain stabilizes by round `1`: `WLRefine` reaches the non-commutative
+  -- coherent algebra in one step and is idempotent thereafter.
+  refine ⟨1, ?_⟩
+  intro k hk
+  rw [WLChain_carrier_eq_of_one_le S k hk, WLChain_carrier_eq_of_one_le S 1 (le_refl 1)]
 
 /-- **WL fixed point.**  The stable value of the WL chain. -/
 noncomputable def WLFix {n : ℕ} (S : QuantumGraph n) :
@@ -625,24 +715,60 @@ noncomputable def WLFix {n : ℕ} (S : QuantumGraph n) :
 the smallest unital ∗-subalgebra containing `S`. -/
 theorem WLFix_isCoherentAlgebra {n : ℕ} (S : QuantumGraph n) :
     IsCoherentAlgebra (WLFix S) := by
-  -- Honest sorry: with the current placeholder `WLRefine = id`, `WLFix S`
-  -- equals `S.carrier`, which is only unital + ∗-closed and need not be closed
-  -- under matrix/Schur products (the `mul_mem`/`schur_mem`/`J_mem` fields of
-  -- `IsCoherentAlgebra` fail in general).  The genuine theorem requires the real
-  -- ∗-closure `WLRefine`, deferred until the operator-system closure layer lands.
-  sorry
+  -- `WLFix S = (WLChain S k₀).carrier` for the chosen stabilization round `k₀`.
+  -- Whatever `k₀` is, the chain carrier from round `1` on equals the genuine
+  -- non-commutative coherent algebra `(WLRefine S).carrier`, which is coherent.
+  unfold WLFix
+  set k₀ := (WLChain.terminates S).choose
+  have hspec := (WLChain.terminates S).choose_spec
+  -- `(WLChain S k₀).carrier = (WLRefine S).carrier`.
+  have hcarrier : (WLChain S k₀).carrier = (WLRefine S).carrier := by
+    rcases Nat.eq_zero_or_pos k₀ with h0 | hpos
+    · -- `k₀ = 0`: pull the value at round `1` back to round `0` via `hspec`.
+      have h1 : (WLChain S 1).carrier = (WLChain S k₀).carrier := hspec 1 (by omega)
+      rw [← h1, WLChain_carrier_eq_of_one_le S 1 (le_refl 1)]
+    · exact WLChain_carrier_eq_of_one_le S k₀ hpos
+  rw [hcarrier]
+  exact ncCoherentAlgebra_isCoherentAlgebra S
 
-/-- **`χ_q` via WL.**  The quantum chromatic number of `S` is at most `q` iff
-there is a unital ∗-homomorphism from the WL fixed point of `S` to
-`M_q(ℂ)` (Mancinska–Roberson arXiv:1903.11491 Thm 4.1). -/
+/-- The **quantum chromatic number** of a quantum graph `S`, defined as the
+least `q` admitting a quantum homomorphism `S → quantumKn q` (the
+non-commutative complete graph on `q` vertices).  This is the genuine
+Mancinska–Roberson definition `χ_q(S) = min { q | S ⟶ K_q }`, realized as an
+infimum over `ℕ` (which is `0` when no homomorphism exists into any `K_q` — a
+degenerate case detected separately). -/
+noncomputable def QuantumChromaticHom {n : ℕ} (S : QuantumGraph n) : ℕ :=
+  sInf {q | Nonempty (QuantumHom n q S (quantumKn q))}
+
+/-- If a quantum homomorphism `S → quantumKn q` exists then `χ_q(S) ≤ q`: the
+quantum chromatic number is a lower bound of the set of admissible target
+sizes. -/
+theorem QuantumChromaticHom_le_of_hom
+    {n : ℕ} (S : QuantumGraph n) (q : ℕ)
+    (h : Nonempty (QuantumHom n q S (quantumKn q))) :
+    QuantumChromaticHom S ≤ q :=
+  Nat.sInf_le h
+
+/-- **`χ_q` via WL (Mancinska–Roberson arXiv:1903.11491 Thm 4.1).** The quantum
+chromatic number of `S` is at most `q` iff there is a quantum homomorphism from
+`S` into the non-commutative complete graph `quantumKn q`.
+
+The `←` direction is genuine and proven (`QuantumChromaticHom_le_of_hom`); the
+`→` direction is the deep half — it requires building, from the mere bound
+`χ_q(S) ≤ q`, an actual homomorphism into `K_q`, which needs the monotonicity
+construction `K_p ⟶ K_q` for `p ≤ q` (an inclusion of operator systems) and the
+realizability of the infimum.  Left honest. -/
 theorem quantumChromatic_le_iff_quantumHom
     {n : ℕ} (S : QuantumGraph n) (q : ℕ) :
-    QuantumChromatic S ≤ q ↔
+    QuantumChromaticHom S ≤ q ↔
       Nonempty (QuantumHom n q S (quantumKn q)) := by
-  -- This is the Mancinska–Roberson characterization of χ_q via UCP maps; the
-  -- "→" direction realizes the colouring as the image of the cell projectors
-  -- of an equitable partition into `M_q(ℂ)`.
-  sorry
+  constructor
+  · -- BLOCKED (deep, Mancinska–Roberson §4): realizing the infimum and the
+    -- monotone family `K_p ⟶ K_q` (p ≤ q) requires the operator-system
+    -- inclusion / UCP layer not available here.
+    intro _
+    sorry
+  · exact fun h => QuantumChromaticHom_le_of_hom S q h
 
 /-! ## 7. Speculation: graphon limits of quantum graphs
 
@@ -677,11 +803,11 @@ discussed in §7: a true graphon-limit object would in particular fix the
 asymptotic value of every continuous graph parameter, `χ_q` among them. -/
 def OpenQuestion.quantumGraphonLimits : Prop :=
   ∀ (S : ∀ n : ℕ, QuantumGraph n),
-    (∃ L : ℕ, Filter.Tendsto (fun n => QuantumChromatic (S n))
+    (∃ L : ℕ, Filter.Tendsto (fun n => QuantumChromaticHom (S n))
         Filter.atTop (nhds L)) →
     ∃ (m : ℕ) (T : QuantumGraph m) (L : ℕ),
-      QuantumChromatic T = L ∧
-      Filter.Tendsto (fun n => QuantumChromatic (S n)) Filter.atTop (nhds L)
+      QuantumChromaticHom T = L ∧
+      Filter.Tendsto (fun n => QuantumChromaticHom (S n)) Filter.atTop (nhds L)
 
 /-! ## 8. Open directions
 
@@ -711,7 +837,13 @@ forces `χ_q(S) ≤ q`.  This is the `→` direction of
 `χ_q ≤ χ` (taking the classical colouring as a homomorphism into `quantumKn`). -/
 def OpenDirection.GNW_chain : Prop :=
   ∀ (n q : ℕ) (S : QuantumGraph n),
-    Nonempty (QuantumHom n q S (quantumKn q)) → QuantumChromatic S ≤ q
+    Nonempty (QuantumHom n q S (quantumKn q)) → QuantumChromaticHom S ≤ q
+
+/-- The expressible operator-system half of the GNW chain holds: a quantum
+homomorphism `S → quantumKn q` forces `χ_q(S) ≤ q`.  (This is the genuine
+`←`-direction of `quantumChromatic_le_iff_quantumHom`.) -/
+theorem openDirection_GNW_chain : OpenDirection.GNW_chain :=
+  fun _ q S h => QuantumChromaticHom_le_of_hom S q h
 
 /-- **Open 2.**  Determine the **non-commutative depth** of the WL refinement
 chain: for a fixed `n`, is `min{k : WLChain S k = WLFix S}` polynomial in `n`?

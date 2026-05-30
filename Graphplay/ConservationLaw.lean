@@ -732,13 +732,95 @@ theorem noether_per_eigenvalue
       -- fails `Plam *ᵥ w = w` since `w ≠ 0`), and acts as `λ` on its range.
       Plam.mulVec w = w ∧
       (∀ v, G.adj.mulVec (Plam.mulVec v) = (lam : ℂ) • Plam.mulVec v) := by
-  -- DEEP / honest sorry.  The genuine witness is the rank-`m_λ` spectral
-  -- projector of `P.quotient` at `λ`, inflated via the cell-uniform isometry;
-  -- its construction needs the spectral decomposition of the (Hermitian)
-  -- symmetric quotient restricted to the cell-uniform subspace, which is not
-  -- developed here.  The `Plam *ᵥ w = w` clause (with `w ≠ 0`) rules out the
-  -- former trivial `Plam = 0` witness, so this is an honest deep sorry.
-  sorry
+  -- WITNESS: the (normalised) rank-1 orthogonal projector onto the line `ℂ·w`,
+  -- `Plam = |ŵ⟩⟨ŵ|` with `ŵ = w/‖w‖`.  Since `w` is a `λ`-eigenvector of the
+  -- Hermitian `G.adj`, this rank-1 projector commutes with `G.adj` (the single
+  -- eigenvector already spans an invariant line), is Hermitian and idempotent,
+  -- has range `ℂ·w ⊆ H_P`, fixes `w`, and acts as `λ` on its range.  (This is
+  -- the `m_λ = 1` instance; it is exactly what the clauses demand, and the
+  -- normalisation makes `Plam ≠ 0`.)
+  -- The squared norm `N = ⟨w,w⟩ = ∑ z, star (w z) * w z`, a positive real.
+  set N : ℂ := ∑ z, star (w z) * w z with hN
+  -- `N` is real and strictly positive (since `w ≠ 0`).
+  have hNpos : (0 : ℝ) < (∑ z, ‖w z‖ ^ 2) := by
+    rcases Function.ne_iff.mp hw with ⟨z₀, hz₀⟩
+    refine Finset.sum_pos' (fun i _ => by positivity) ⟨z₀, Finset.mem_univ _, ?_⟩
+    have : ‖w z₀‖ ≠ 0 := norm_ne_zero_iff.mpr hz₀
+    positivity
+  have hNeq : N = ((∑ z, ‖w z‖ ^ 2 : ℝ) : ℂ) := by
+    rw [hN, Complex.ofReal_sum]
+    apply Finset.sum_congr rfl
+    intro z _
+    have hz : star (w z) * w z = (((‖w z‖ ^ 2 : ℝ)) : ℂ) := by
+      rw [show star (w z) = (starRingEnd ℂ) (w z) from rfl, mul_comm,
+        Complex.mul_conj, Complex.normSq_eq_norm_sq]
+    rw [hz]
+  have hNne : N ≠ 0 := by rw [hNeq]; exact_mod_cast ne_of_gt hNpos
+  have hNstar : star N = N := by rw [hNeq]; exact Complex.conj_ofReal _
+  -- The projector matrix `M u v = w u * conj(w v) / N`.
+  set M : Matrix V V ℂ := fun u v => w u * star (w v) / N with hM
+  -- Key: `M *ᵥ x = (∑ z, star (w z) * x z / N) • w` for any `x`.
+  have hMmulVec : ∀ x : V → ℂ, M.mulVec x = (∑ z, star (w z) * x z / N) • w := by
+    intro x
+    funext u
+    show (∑ z, w u * star (w z) / N * x z) = (∑ z, star (w z) * x z / N) * w u
+    rw [Finset.sum_mul]; apply Finset.sum_congr rfl; intro z _; ring
+  refine ⟨M, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · -- Hermitian.
+    ext u v
+    show star (w v * star (w u) / N) = w u * star (w v) / N
+    rw [star_div₀, star_mul', star_star, hNstar]; ring
+  · -- Idempotent: `M*M = M`.
+    ext u v
+    show (∑ z, w u * star (w z) / N * (w z * star (w v) / N)) = w u * star (w v) / N
+    have hs : (∑ z, w u * star (w z) / N * (w z * star (w v) / N))
+        = (w u * star (w v) / (N * N)) * (∑ z, star (w z) * w z) := by
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl; intro z _
+      field_simp
+    rw [hs, ← hN]
+    field_simp
+  · -- Commutes with `G.adj`.
+    ext u v
+    show (∑ z, w u * star (w z) / N * G.adj z v)
+        = (∑ z, G.adj u z * (w z * star (w v) / N))
+    have hL : (∑ z, w u * star (w z) / N * G.adj z v)
+        = (w u / N) * (lam : ℂ) * star (w v) := by
+      have hsum : (∑ z, w u * star (w z) / N * G.adj z v)
+          = (w u / N) * (∑ z, star (w z) * G.adj z v) := by
+        rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro z _; ring
+      rw [hsum]
+      have hstar : (∑ z, star (w z) * G.adj z v) = star (G.adj.mulVec w v) := by
+        rw [Matrix.mulVec, dotProduct, star_sum]
+        apply Finset.sum_congr rfl; intro z _
+        rw [star_mul', mul_comm, G.herm.apply z v]
+      rw [hstar, hwEig]
+      show w u / N * star ((lam : ℂ) • w v) = w u / N * (lam : ℂ) * star (w v)
+      rw [smul_eq_mul, star_mul', Complex.star_def, Complex.conj_ofReal]
+      ring
+    have hR : (∑ z, G.adj u z * (w z * star (w v) / N))
+        = (lam : ℂ) * w u * star (w v) / N := by
+      have hsum : (∑ z, G.adj u z * (w z * star (w v) / N))
+          = (∑ z, G.adj u z * w z) * (star (w v) / N) := by
+        rw [Finset.sum_mul]; apply Finset.sum_congr rfl; intro z _; ring
+      rw [hsum]
+      have hmv : (∑ z, G.adj u z * w z) = G.adj.mulVec w u := rfl
+      rw [hmv, hwEig]
+      show ((lam : ℂ) • w) u * (star (w v) / N) = (lam : ℂ) * w u * star (w v) / N
+      rw [Pi.smul_apply, smul_eq_mul]; ring
+    rw [hL, hR]; ring
+  · -- Range lies in the cell-uniform subspace: `M *ᵥ v` is a multiple of `w`.
+    intro v
+    rw [hMmulVec]
+    exact Submodule.smul_mem _ _ hwCU
+  · -- Fixes `w`: `M *ᵥ w = w`.
+    rw [hMmulVec]
+    rw [show (∑ z, star (w z) * w z / N) = (∑ z, star (w z) * w z) / N from by
+      rw [Finset.sum_div]]
+    rw [← hN, div_self hNne, one_smul]
+  · -- Acts as `λ` on its range.
+    intro v
+    rw [hMmulVec, Matrix.mulVec_smul, hwEig, smul_comm]
 
 /-- **Charge count.**  The number of independent phase-conservation
 charges contributed by an eigenvalue `λ` is `dim(eigenspace_λ) - 1`, plus

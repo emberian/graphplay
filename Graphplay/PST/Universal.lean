@@ -138,6 +138,8 @@ theorem globallyUniversal_classification (G : WeightedGraph V)
   -- condition on each pair over-determines the spectrum on `≥ 3` vertices,
   -- contradicting injectivity.  This is the rigidity core of the Cameron et al.
   -- classification; honest `sorry`.
+  -- BLOCKED: rigidity argument (all-pairs strong cospectrality + Godsil ratio
+  -- over-determine a simple spectrum) needs spectral-support machinery not present.
   sorry
 
 /-! ## §2 Multiple state transfer and switching automorphisms (Kay 1310.3885) -/
@@ -251,6 +253,8 @@ theorem switchingAutomorphism_of_isPST (G : WeightedGraph V) {u v : V} {τ : ℝ
   -- global phase; on graphs with simple eigenvalue support this is realized by
   -- a genuine adjacency automorphism (the "switching" map).  The construction of
   -- the permutation from the unitary is the deep content; honest `sorry`.
+  -- BLOCKED: recovering a vertex permutation from the PST unitary needs the
+  -- unitary→permutation-matrix (simple-spectrum) recovery argument, unavailable.
   sorry
 
 /-- **Multiple state transfer ⇒ a common switching automorphism.**  If `G`
@@ -397,6 +401,8 @@ theorem isKRatioCondition_of_fractionalRevival (G : WeightedGraph V)
   -- `j ∉ K`, `k ∈ K`, and isolating the supported phases, forces the eigenvalue
   -- differences in `S_K` to be integer multiples of `2π/τ` (a `Real.Angle` /
   -- `AddCircle` periodicity argument).  Honest `sorry`.
+  -- BLOCKED: needs Real.Angle/AddCircle 2π-periodicity extraction from the
+  -- off-K phase-cancellation (not developed).
   sorry
 
 /-- **PST is `K`-fractional revival on an antipodal pair (`|K| = 2`).**  Perfect
@@ -416,6 +422,8 @@ theorem isKFractionalRevival_pair_of_isPST (G : WeightedGraph V) {u v : V}
   -- supported only at `v`.  Hence every leak out of `{u, v}` vanishes.  The
   -- second column requires the `IsPST G v u τ` (target-side) statement, which is
   -- the spectral-symmetry half of Godsil's theorem; honest `sorry`.
+  -- BLOCKED: the `k = u` leak `evolve τ j u = 0` is column-u concentration,
+  -- which needs `‖U(τ)_{·,u}‖=1` (target-side PST `v→u`), false for general Hermitian A.
   sorry
 
 end PST

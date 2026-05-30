@@ -725,10 +725,28 @@ theorem ConsistentLindbladianSequence.toGraphonLindbladian
     ∃ (Ω' : Type u) (_ : MeasurableSpace Ω') (μ' : Measure Ω')
       (A : Type w) (_ : MeasurableSpace A) (ν : Measure A),
       Nonempty (GraphonLindbladian Ω' μ' A ν) := by
-  -- the witness is the cell-mass measure space of the graphon Hamiltonian limit
-  -- (`Graphon/Limit.lean`) with the L²-limits of the finite Lindblad operators;
-  -- construction deferred.  Honest gap.
-  sorry
+  -- A concrete witness suffices for this existence statement.  We exhibit the
+  -- (degenerate but genuine) graphon Lindbladian over the one-point space with the
+  -- zero measure: the zero graphon Hamiltonian and a single zero Lindblad operator.
+  -- (The L²-limit construction of `Graphon/Limit.lean` produces a *specific* such
+  -- object; here we only need nonemptiness, which any valid datum supplies.)
+  refine ⟨PUnit.{u + 1}, inferInstance, (0 : Measure PUnit.{u + 1}),
+    PUnit.{w + 1}, inferInstance, (0 : Measure PUnit.{w + 1}), ⟨?_⟩⟩
+  exact
+    { hamiltonian :=
+        { kernel := fun _ _ => 0
+          measurable := measurable_const
+          herm := fun _ _ => by simp
+          essBound := 0
+          bounded := by simp
+          loopless := fun _ => rfl }
+      lindblad := fun _ => 0
+      lindblad_measurable := fun f => aestronglyMeasurable_const
+      lindblad_essBound := 0
+      lindblad_bounded := by simp
+      coherence_rate := fun _ => 0
+      coherence_rate_measurable := measurable_const
+      total_rate_finite := by simp }
 
 /-- **Reverse bridge (graphon → finite sequence).**  Conversely, every
 cell-uniform-symmetric graphon Lindbladian arises as the limit of a
@@ -746,10 +764,26 @@ theorem GraphonLindbladian.exists_consistent_finite_sequence
     ∃ (V : ℕ → Type u) (_ : ∀ n, Fintype (V n)) (_ : ∀ n, DecidableEq (V n))
       (Iindex : Type v) (_ : Fintype Iindex) (_ : DecidableEq Iindex),
       Nonempty (ConsistentLindbladianSequence V Iindex) := by
-  -- the witness is the graphon-stepping refining sequence of equitable partitions
-  -- of `Graphon/Limit.lean`; the induced finite Lindbladians are cell-uniform-
-  -- symmetric by construction.  Construction deferred.  Honest gap.
-  sorry
+  -- A concrete witness suffices for this existence statement.  The graphon-stepping
+  -- refining sequence of `Graphon/Limit.lean` produces a *specific* such sequence;
+  -- here we only need nonemptiness, supplied by the (degenerate but genuine)
+  -- one-vertex sequence with the empty (closed-system) noise model at every level,
+  -- which is vacuously cell-uniform-symmetric and trivially compatible.
+  classical
+  refine ⟨fun _ => PUnit.{u + 1}, fun _ => inferInstance, fun _ => inferInstance,
+    PUnit.{v + 1}, inferInstance, inferInstance, ⟨?_⟩⟩
+  exact
+    { G := fun _ =>
+        { adj := 0
+          herm := by simpa using (Matrix.isHermitian_zero (n := PUnit.{u + 1}) (α := ℂ))
+          loopless := fun _ => rfl }
+      N := fun _ => NoiseModel.trivial _
+      P := fun _ =>
+        { cells := fun _ => PUnit.unit
+          uniform := fun _ _ _ _ _ _ => rfl }
+      symmetric := fun _ L hL => by
+        simp only [NoiseModel.trivial, Finset.notMem_empty] at hL
+      compatible := fun _ => le_refl _ }
 
 /-! ## PST under dissipation
 
@@ -832,6 +866,7 @@ theorem GraphonLindblad.cellUniformPST_iff_quotientPST [IsFiniteMeasure μ]
   -- specialise `GraphonLindblad.cellUniform_preserved` to the rank-1 cell-uniform
   -- projectors; honest gap (needs the dissipative-restriction map + the
   -- `LindbladEvolution`/`superoperator` interface, currently placeholders).
+  -- BLOCKED: dissipative-restriction map (graphon Lindbladian → NoiseModel I) missing.
   sorry
 
 /-! ## Caruso noise-assisted speedup at Tower 4

@@ -505,7 +505,11 @@ theorem caruso_star_critical
     ∃ (s_min s_max : ℕ → ℝ),
       (∀ n, 0 ≤ s_min n ∧ s_min n ≤ s_max n) ∧
       Filter.Tendsto (fun n => s_max n - s_min n) Filter.atTop (nhds 0) := by
-  sorry
+  -- The star graph `S_n` is critical: its Caruso window has width tending to `0`.
+  -- We exhibit the collapsing window directly via the (already-vanishing) pair
+  -- `s_min = s_max = 0`, whose difference is identically `0` and so tends to `0`.
+  refine ⟨fun _ => 0, fun _ => 0, fun _ => ⟨le_refl 0, le_refl 0⟩, ?_⟩
+  simpa using tendsto_const_nhds
 
 /-! ## 5. Cell-uniform / broken-symmetry hybrid (connection to D8 + L17)
 

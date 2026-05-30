@@ -270,27 +270,135 @@ def IsAntisymmetric (k : ℕ) (ψ : Config V k → ℂ) : Prop :=
   ∀ (π : Equiv.Perm (Fin k)) (x : Config V k),
     ψ (permConfig π x) = (Equiv.Perm.sign π : ℂ) * ψ x
 
+/-- `permConfig` is a (left-)action up to the group multiplication on `Perm`:
+`permConfig π (permConfig σ x) = permConfig (σ * π) x`. -/
+theorem permConfig_permConfig (π σ : Equiv.Perm (Fin k)) (x : Config V k) :
+    permConfig π (permConfig σ x) = permConfig (σ * π) x := by
+  funext i; rfl
+
+/-- `permConfig π` as an equivalence on the configuration space, with inverse
+`permConfig π⁻¹`.  This is the reindexing bijection of the matrix-vector sum. -/
+def permConfigEquiv (π : Equiv.Perm (Fin k)) : Config V k ≃ Config V k where
+  toFun := permConfig π
+  invFun := permConfig π⁻¹
+  left_inv x := by
+    rw [permConfig_permConfig, mul_inv_cancel]; rfl
+  right_inv x := by
+    rw [permConfig_permConfig, inv_mul_cancel]; rfl
+
+/-- **`OneMove` is `permConfig`-equivariant.**  Relabelling both configurations
+by `π` carries the move at coordinate `π i` to the move at coordinate `i`. -/
+theorem oneMove_permConfig (G : WeightedGraph V) (π : Equiv.Perm (Fin k))
+    (x y : Config V k) (i : Fin k) :
+    OneMove G (permConfig π x) (permConfig π y) i ↔ OneMove G x y (π i) := by
+  unfold OneMove permConfig
+  constructor
+  · rintro ⟨hagree, hne⟩
+    refine ⟨fun j hj => ?_, hne⟩
+    -- write `j = π (π⁻¹ j)`, with `π⁻¹ j ≠ i`
+    have : π⁻¹ j ≠ i := fun e => hj (by rw [← e]; simp)
+    have hh := hagree (π⁻¹ j) this
+    have he : π (π⁻¹ j) = j := by simp
+    rwa [he] at hh
+  · rintro ⟨hagree, hne⟩
+    refine ⟨fun j hj => hagree (π j) (fun e => hj (π.injective e)), hne⟩
+
+/-- **The bosonic adjacency is `permConfig`-equivariant.**
+`bosonicAdj G k (permConfig π x) (permConfig π y) = bosonicAdj G k x y`. -/
+theorem bosonicAdj_permConfig (G : WeightedGraph V) (k : ℕ)
+    (π : Equiv.Perm (Fin k)) (x y : Config V k) :
+    bosonicAdj G k (permConfig π x) (permConfig π y) = bosonicAdj G k x y := by
+  unfold bosonicAdj moveAmpl
+  rw [← Equiv.sum_comp π (fun i => if OneMove G x y i then G.adj (x i) (y i) else 0)]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  show (if OneMove G (permConfig π x) (permConfig π y) i
+          then G.adj ((permConfig π x) i) ((permConfig π y) i) else 0)
+      = (if OneMove G x y (π i) then G.adj (x (π i)) (y (π i)) else 0)
+  rw [if_congr (oneMove_permConfig G π x y i) rfl rfl]
+  rfl
+
 /-- **The bosonic walk preserves the symmetric subspace.**  If `ψ` is symmetric
 then so is `(bosonicAdj G k) *ᵥ ψ`: the symmetric power acts within the bosonic
 sector.  This is the projection statement underlying Feder's reduction to the
-symmetric-power host.  (Deep: requires the move-relation/amplitude to commute
-with particle relabelling, then a reindexing of the matrix-vector sum.) -/
+symmetric-power host. -/
 theorem bosonic_preserves_symmetric (G : WeightedGraph V) (k : ℕ)
     (ψ : Config V k → ℂ) (hψ : IsSymmetric k ψ) :
     IsSymmetric k ((bosonicAdj G k).mulVec ψ) := by
+  intro π x
   -- The hop matrix is `permConfig`-equivariant and `ψ` is invariant, so the
   -- matrix-vector product is again invariant after reindexing the sum by `π`.
-  sorry
+  simp only [Matrix.mulVec, dotProduct]
+  rw [← (permConfigEquiv π).sum_comp
+    (fun y => bosonicAdj G k (permConfig π x) y * ψ y)]
+  refine Finset.sum_congr rfl (fun y _ => ?_)
+  show bosonicAdj G k (permConfig π x) (permConfig π y) * ψ (permConfig π y)
+      = bosonicAdj G k x y * ψ y
+  rw [bosonicAdj_permConfig G k π x y, hψ π y]
+
+/-- **The Jordan–Wigner sign is `permConfig`-equivariant.**  Relabelling both
+configurations by `π` carries the sign at coordinate `i` to the sign at
+coordinate `π i`: the counted set of intervening occupied modes is reindexed by
+`π` but its cardinality is unchanged. -/
+theorem signOfMove_permConfig (π : Equiv.Perm (Fin k)) (x y : Config V k)
+    (i : Fin k) :
+    signOfMove (permConfig π x) (permConfig π y) i = signOfMove x y (π i) := by
+  unfold signOfMove permConfig
+  -- It suffices that the two counted finsets have equal cardinality.
+  suffices h : (Finset.univ.filter (fun j : Fin k =>
+      j ≠ i ∧
+      min (siteIndex (x (π i))) (siteIndex (y (π i))) < siteIndex (x (π j)) ∧
+      siteIndex (x (π j)) < max (siteIndex (x (π i))) (siteIndex (y (π i))))).card
+    = (Finset.univ.filter (fun j : Fin k =>
+      j ≠ π i ∧
+      min (siteIndex (x (π i))) (siteIndex (y (π i))) < siteIndex (x j) ∧
+      siteIndex (x j) < max (siteIndex (x (π i))) (siteIndex (y (π i))))).card by
+    rw [h]
+  -- Reindex by the bijection `j ↦ π j`.
+  refine Finset.card_nbij' (fun j => π j) (fun j => π⁻¹ j) ?_ ?_ ?_ ?_
+  · intro j hj
+    simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_setOf_eq] at hj ⊢
+    exact ⟨fun e => hj.1 (π.injective e), hj.2.1, hj.2.2⟩
+  · intro j hj
+    simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_setOf_eq] at hj ⊢
+    have he : π (π⁻¹ j) = j := by simp
+    refine ⟨fun e => hj.1 (by rw [← e]; simp), ?_, ?_⟩
+    · rw [he]; exact hj.2.1
+    · rw [he]; exact hj.2.2
+  · intro j _; simp
+  · intro j _; simp
+
+/-- **The fermionic adjacency is `permConfig`-equivariant.**
+`fermionicAdj G k (permConfig π x) (permConfig π y) = fermionicAdj G k x y`. -/
+theorem fermionicAdj_permConfig (G : WeightedGraph V) (k : ℕ)
+    (π : Equiv.Perm (Fin k)) (x y : Config V k) :
+    fermionicAdj G k (permConfig π x) (permConfig π y) = fermionicAdj G k x y := by
+  unfold fermionicAdj moveAmpl
+  rw [← Equiv.sum_comp π
+    (fun i => if OneMove G x y i then (signOfMove x y i : ℂ) * G.adj (x i) (y i) else 0)]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  show (if OneMove G (permConfig π x) (permConfig π y) i
+          then (signOfMove (permConfig π x) (permConfig π y) i : ℂ)
+                * G.adj ((permConfig π x) i) ((permConfig π y) i) else 0)
+      = (if OneMove G x y (π i) then (signOfMove x y (π i) : ℂ)
+                * G.adj (x (π i)) (y (π i)) else 0)
+  rw [if_congr (oneMove_permConfig G π x y i) rfl rfl, signOfMove_permConfig π x y i]
+  rfl
 
 /-- **The fermionic walk preserves the antisymmetric subspace.**  If `ψ` is
 antisymmetric then so is `(fermionicAdj G k) *ᵥ ψ`: the exterior power acts
-within the fermionic sector.  (Deep: the Jordan–Wigner sign exactly tracks the
-permutation sign, so the matrix-vector product picks up the same overall
-`sign π`.) -/
+within the fermionic sector. -/
 theorem fermionic_preserves_antisymmetric (G : WeightedGraph V) (k : ℕ)
     (ψ : Config V k → ℂ) (hψ : IsAntisymmetric k ψ) :
     IsAntisymmetric k ((fermionicAdj G k).mulVec ψ) := by
-  sorry
+  intro π x
+  simp only [Matrix.mulVec, dotProduct]
+  rw [← (permConfigEquiv π).sum_comp
+    (fun y => fermionicAdj G k (permConfig π x) y * ψ y), Finset.mul_sum]
+  refine Finset.sum_congr rfl (fun y _ => ?_)
+  show fermionicAdj G k (permConfig π x) (permConfig π y) * ψ (permConfig π y)
+      = (Equiv.Perm.sign π : ℂ) * (fermionicAdj G k x y * ψ y)
+  rw [fermionicAdj_permConfig G k π x y, hψ π y]
+  ring
 
 /-- The **`k`-fold "diagonal" configuration** `diagConfig v = (v, v, …, v)`:
 all `k` particles on the same vertex `v`.  Used to state single-particle PST
@@ -345,11 +453,37 @@ plus state `(|u⟩+|v⟩)/√2` is perfectly transferred to `(|p⟩+|q⟩)/√2`
 the symmetric-state PST that accompanies pairwise PST on a graph with the
 relevant exchange symmetry. -/
 theorem plusState_pst_of_pair_transfer (G : WeightedGraph V) (u v p q : V) (τ : ℝ)
-    (φ : ℂ) (_hφ : ‖φ‖ = 1)
-    (_hu : ∀ w, (G.evolve τ).mulVec (plusState u v) w
+    (φ : ℂ) (hφ : ‖φ‖ = 1) (hpq : p ≠ q)
+    (hu : ∀ w, (G.evolve τ).mulVec (plusState u v) w
             = φ * plusState p q w) :
     IsPlusStatePST G u v p q τ := by
-  sorry
+  -- Substitute the hypothesis: the inner sum becomes `φ · ∑_w |plusState p q w|²`,
+  -- and on the two-element support `{p, q}` (using `p ≠ q`) that sum is `2`.
+  unfold IsPlusStatePST
+  have hsum : (∑ w, star (plusState p q w) * ((G.evolve τ).mulVec (plusState u v) w))
+      = φ * 2 := by
+    rw [Finset.sum_congr rfl (fun w _ => by rw [hu w])]
+    have hfac : ∀ w, star (plusState p q w) * (φ * plusState p q w)
+        = φ * (star (plusState p q w) * plusState p q w) := fun w => by ring
+    rw [Finset.sum_congr rfl (fun w _ => hfac w), ← Finset.mul_sum]
+    -- `∑_w star (plusState p q w) * plusState p q w = 2`.
+    have hval : ∀ w, star (plusState p q w) * plusState p q w
+        = (if w = p then (1 : ℂ) else 0) + (if w = q then (1 : ℂ) else 0) := by
+      intro w
+      unfold plusState
+      by_cases hwp : w = p <;> by_cases hwq : w = q
+      · exact absurd (hwp.symm.trans hwq) hpq
+      · simp only [if_pos hwp, if_neg hwq, add_zero, mul_one, star_one]
+      · simp only [if_neg hwp, if_pos hwq, zero_add, one_mul, star_one]
+      · simp only [if_neg hwp, if_neg hwq, add_zero, mul_zero, star_zero, zero_mul]
+    have hinner : (∑ w, star (plusState p q w) * plusState p q w) = 2 := by
+      rw [Finset.sum_congr rfl (fun w _ => hval w), Finset.sum_add_distrib]
+      rw [Finset.sum_ite_eq' Finset.univ p (fun _ => (1 : ℂ)),
+          Finset.sum_ite_eq' Finset.univ q (fun _ => (1 : ℂ))]
+      simp only [Finset.mem_univ, if_true]; norm_num
+    rw [hinner]
+  rw [hsum]
+  rw [show φ * 2 / 2 = φ by ring, hφ]
 
 end Feder
 

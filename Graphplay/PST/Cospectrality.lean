@@ -310,6 +310,8 @@ theorem isStronglyCospectral_iff (G : WeightedGraph V) (u v : V) :
   -- ⟨P_λ e_u, P_λ e_v⟩` plus the cospectrality argument and is left sorried.
   refine ⟨?_, ?_⟩
   · -- `→`: parallelism ⇏ cospectrality without the extra Gram input. Deep.
+    -- BLOCKED: geometric-mean encoding loses cospectrality (E_λ)_{u,u}=(E_λ)_{v,v};
+    -- needs Gram identity (E_λ)_{u,v}=⟨P_λ e_u,P_λ e_v⟩, not in this def.
     sorry
   · -- `←`: cospectral + matched off-diagonal ⇒ geometric-mean form. Honest.
     rintro ⟨hcosp, hmatch⟩
@@ -400,6 +402,8 @@ theorem IsStronglyCospectral.isPST_iff_godsilRatio
   -- (Coutinho-Godsil 2016, §4.1).  Direction `→` is "PST implies strong
   -- cospectrality + Godsil ratio" (Godsil, AGT-style derivation);
   -- direction `←` is "Diophantine approximation closes the τ".
+  -- BLOCKED: GodsilRatioCondition half needs Kronecker simultaneous
+  -- Diophantine approximation on AddCircle (not developed).
   sorry
 
 /-! ## Functoriality under equitable partitions
@@ -457,6 +461,8 @@ theorem Hom.preserves_stronglyCospectral
   -- transport lemma is the same one the sibling
   -- `Graphplay.PST.QuotientIff.stronglyCospectral_cellUniform_iff_quotient`
   -- carries as an honest `sorry`; assembling it here is left likewise.
+  -- BLOCKED: needs cellInflate eigenbasis-transport lemma relating quotient
+  -- spectral projectors to G.adj projectors (sibling QuotientIff, also sorry).
   sorry
 
 /-! ## Concrete examples
@@ -497,6 +503,8 @@ theorem isStronglyCospectral_pathEndpoints (n : ℕ) (hn : 2 ≤ n) :
     IsRealStronglyCospectral (pathWeightedGraph n)
       ⟨0, by omega⟩ ⟨n - 1, by omega⟩ := by
   -- Direct computation in the Chebyshev basis; cite Christandl et al.
+  -- BLOCKED: needs explicit path-graph Chebyshev eigenvector formula
+  -- ψ_k(j)=√(2/(n+1))sin(jkπ/(n+1)) and its endpoint sign symmetry (not in Mathlib).
   sorry
 
 /-- **Endpoints of `P_n` PST iff `n ∈ {2, 3}`** (Christandl-Datta-Ekert-Landahl
@@ -515,6 +523,8 @@ theorem pathEndpoints_isPST_iff (n : ℕ) (hn : 2 ≤ n) :
     (n = 2 ∨ n = 3) := by
   -- Combine `isStronglyCospectral_pathEndpoints` with the eigenvalue
   -- analysis of `2 cos(kπ/(n+1))`.  Punted.
+  -- BLOCKED: needs path-graph eigenvalues 2cos(kπ/(n+1)) and the Godsil-ratio
+  -- arithmetic that holds only for n∈{2,3} (depends on isPST_iff_godsilRatio).
   sorry
 
 /-! ## Phantom symmetry (Bachman-Tamon 1108.0339)
@@ -560,6 +570,8 @@ theorem exists_phantomSymmetric_isPST :
   -- phantom-symmetric pair (cell_i, cell_j) when no automorphism of G'
   -- exchanges the preimage cells while every automorphism of G does (or
   -- vice versa).  Detailed construction punted.
+  -- BLOCKED: needs an explicit Bachman-Tamon witness graph with computed
+  -- evolution exhibiting PST (no concrete construction available).
   sorry
 
 /-! ## Convenience consequences -/
@@ -606,6 +618,9 @@ theorem IsStronglyCospectral.of_aut
   -- `σ` permutes eigenspaces of `G.adj` within each eigenvalue; the orbit
   -- structure gives the parallelism `P_λ u = P_λ (σ u) = P_λ v` up to a
   -- root-of-unity phase.
+  -- BLOCKED: needs permutation-matrix/eigenbasis transport lemma
+  -- (Pσ commutes with A ⇒ permutes eigenspaces) relating eigenProjEntry at σu,σv;
+  -- no such spectral-uniqueness API available here.
   sorry
 
 end Graphplay

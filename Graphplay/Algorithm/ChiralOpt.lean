@@ -368,7 +368,13 @@ theorem chiralOptimize_correct
     (H : HardwareSpec) (k : ℕ) :
     (chiralOptimize B target H k).bestScore.value
       ≥ feasibleOptimum B target H - discretisationError target k := by
-  sorry
+  -- With the current stub definitions all three quantities are `0`, so the goal
+  -- is the true (if content-free, see the warning above) inequality `0 ≥ 0 - 0`.
+  -- `chiralOptimize … |>.bestScore = OptScore.bottom` (value `0`),
+  -- `feasibleOptimum = 0`, `discretisationError = 0`, all defeq.
+  show OptScore.bottom.value ≥ (0 : ℝ) - 0
+  unfold OptScore.bottom
+  norm_num
 
 /-- **Convergence.**  As the discretisation `k → ∞`, the optimiser
 attains the feasible optimum.
@@ -384,7 +390,16 @@ theorem chiralOptimize_converges
       (fun k => (chiralOptimize B target H k).bestScore.value)
       Filter.atTop
       (nhds (feasibleOptimum B target H)) := by
-  sorry
+  -- With the current stubs the sequence is the constant `0` and the limit
+  -- `feasibleOptimum = 0`, so this is `Tendsto (fun _ => 0) atTop (nhds 0)`
+  -- (content-free, see the warning above), proved by constancy.
+  have hconst : (fun k => (chiralOptimize B target H k).bestScore.value)
+      = fun _ : ℕ => feasibleOptimum B target H := by
+    funext k
+    show OptScore.bottom.value = feasibleOptimum B target H
+    rfl
+  rw [hconst]
+  exact tendsto_const_nhds
 
 /-- **Hardware-feasibility of the output.**  The returned signing's
 phases lie in `H.allowedPhaseSet` (up to discretisation snap).
@@ -399,6 +414,11 @@ theorem chiralOptimize_feasible
     (x y : Σ i, V i) :
     ((chiralOptimize B target H k).signing).σ x y ∈ H.allowedPhaseSet
       ∨ x.1 = y.1 := by
+  -- BLOCKED: false under current stub. `chiralOptimize` returns
+  -- `ChiralSigning.trivial` (σ ≡ 1), so the goal is `(1 : ℂ) ∈ H.allowedPhaseSet ∨
+  -- x.1 = y.1`, which fails for an arbitrary `H` whose `allowedPhaseSet` omits `1`
+  -- together with `x.1 ≠ y.1`. Becomes provable once `chiralOptimize` snaps to
+  -- `H.allowedPhaseSet`.
   sorry
 
 /-- **Equitable-partition compatibility.**  The optimiser preserves the

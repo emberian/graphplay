@@ -81,6 +81,16 @@ structure ClassicalStrategy (V O : Type*) where
   alice : V → O
   bob   : V → O
 
+/-- Fintype instance on classical strategies with finite question/answer
+alphabets, via the obvious equivalence with `(V → O) × (V → O)`. -/
+instance instFintypeClassicalStrategy {V O : Type*} [Fintype V] [Fintype O]
+    [DecidableEq V] : Fintype (ClassicalStrategy V O) :=
+  Fintype.ofEquiv ((V → O) × (V → O))
+    { toFun := fun p => ⟨p.1, p.2⟩
+      invFun := fun σ => (σ.alice, σ.bob)
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }
+
 /-- The winning probability of a classical (deterministic) strategy
 under the uniform question distribution. -/
 noncomputable def classicalWin (G : NonLocalGame V O)
@@ -140,13 +150,24 @@ structure QuantumStrategy (V O : Type*) [Fintype V] [Fintype O] where
 
 /-- The Tsirelson correlation produced by a quantum strategy.  This is
 the standard `⟨ψ| E_v^a ⊗ F_w^b |ψ⟩` quantity, expressed in matrix
-elements through the lex isomorphism.  Stated; proof is omitted. -/
+elements through the lex isomorphism `finProdFinEquiv : Fin nA × Fin nB ≃
+Fin (nA * nB)`.
+
+Writing `ψ_{(i,j)} := S.state (finProdFinEquiv (i, j))`, `E := (S.alicePOVM
+v).effect a`, `F := (S.bobPOVM w).effect b`, the (real part of the) inner
+product `⟨ψ, (E ⊗ F) ψ⟩` expands to
+
+  `Σ_{i j i' j'} conj(ψ_{(i,j)}) · E_{i i'} · F_{j j'} · ψ_{(i',j')}`.
+
+Since `E, F` are Hermitian this quantity is real; we take its real part to
+land in `ℝ`. -/
 noncomputable def QuantumStrategy.correlation
     (S : QuantumStrategy V O) (v w : V) (a b : O) : ℝ :=
-  -- Reᴿ ⟨ψ| (E_v^a ⊗ F_w^b) |ψ⟩, where the tensor is on the
-  -- `Fin (nA * nB) ≃ Fin nA × Fin nB` identification.
-  -- Placeholder: the operator-norm of a single block; refined later.
-  0
+  ((∑ i : Fin S.nA, ∑ j : Fin S.nB, ∑ i' : Fin S.nA, ∑ j' : Fin S.nB,
+      (starRingEnd ℂ) (S.state (finProdFinEquiv (i, j)))
+        * ((S.alicePOVM v).effect a i i')
+        * ((S.bobPOVM w).effect b j j')
+        * (S.state (finProdFinEquiv (i', j')))).re)
 
 /-- The winning probability of a Tsirelson-quantum strategy. -/
 noncomputable def quantumWin (G : NonLocalGame V O) (S : QuantumStrategy V O) :
@@ -186,10 +207,22 @@ structure CommutingOperatorStrategy (V O : Type*) [Fintype V] [Fintype O] where
     (alicePOVM v).effect a * (bobPOVM w).effect b
       = (bobPOVM w).effect b * (alicePOVM v).effect a
 
-/-- The correlation produced by a commuting-operator strategy. -/
+/-- The correlation produced by a commuting-operator strategy.  Here both
+players act on the *same* Hilbert space `Fin n`, and the correlation is the
+(real part of the) inner product `⟨ψ, E_v^a F_w^b ψ⟩` of the *product* of the
+two effects:
+
+  `Re Σ_{i j k} conj(ψ_i) · E_{i j} · F_{j k} · ψ_k`.
+
+Because the two POVMs commute (`S.commute`), the order `E · F` versus `F · E`
+does not matter. -/
 noncomputable def CommutingOperatorStrategy.correlation
     (S : CommutingOperatorStrategy V O) (v w : V) (a b : O) : ℝ :=
-  0
+  ((∑ i : Fin S.n, ∑ j : Fin S.n, ∑ k : Fin S.n,
+      (starRingEnd ℂ) (S.state i)
+        * ((S.alicePOVM v).effect a i j)
+        * ((S.bobPOVM w).effect b j k)
+        * (S.state k)).re)
 
 /-- The winning probability of a commuting-operator strategy. -/
 noncomputable def commutingWin (G : NonLocalGame V O)
@@ -202,57 +235,167 @@ noncomputable def commutingWin (G : NonLocalGame V O)
 noncomputable def CommutingOperatorValue (G : NonLocalGame V O) : ℝ :=
   ⨆ S : CommutingOperatorStrategy V O, commutingWin G S
 
+/-- The 1-dimensional quantum strategy realizing a classical strategy: both
+local Hilbert spaces are `Fin 1`, the (unique) shared state is `1`, and each
+local POVM is the deterministic indicator `E_v^a = ⟦a = alice v⟧` (a `1×1`
+matrix).  Its `correlation` equals the classical winning indicator. -/
+noncomputable def classicalToQuantum (σ : ClassicalStrategy V O) :
+    QuantumStrategy V O := by
+  classical
+  exact
+  { nA := 1
+    nB := 1
+    state := fun _ => 1
+    state_unit := by simp
+    alicePOVM := fun v =>
+      { effect := fun a => fun _ _ => if a = σ.alice v then 1 else 0
+        herm := by
+          intro a
+          ext i j
+          fin_cases i; fin_cases j
+          simp [Matrix.IsHermitian, Matrix.conjTranspose]
+        posSemidef_witness := fun _ => trivial
+        sum_eq_one := by
+          ext i j
+          fin_cases i; fin_cases j
+          rw [Matrix.sum_apply]
+          simp }
+    bobPOVM := fun w =>
+      { effect := fun b => fun _ _ => if b = σ.bob w then 1 else 0
+        herm := by
+          intro b
+          ext i j
+          fin_cases i; fin_cases j
+          simp [Matrix.IsHermitian, Matrix.conjTranspose]
+        posSemidef_witness := fun _ => trivial
+        sum_eq_one := by
+          ext i j
+          fin_cases i; fin_cases j
+          rw [Matrix.sum_apply]
+          simp } }
+
+/-- The correlation of the embedded classical strategy is exactly the joint
+indicator `⟦a = alice v⟧ · ⟦b = bob w⟧`. -/
+theorem classicalToQuantum_correlation [DecidableEq O]
+    (σ : ClassicalStrategy V O) (v w : V) (a b : O) :
+    (classicalToQuantum σ).correlation v w a b
+      = if a = σ.alice v ∧ b = σ.bob w then 1 else 0 := by
+  unfold QuantumStrategy.correlation classicalToQuantum
+  simp only [Fin.sum_univ_one]
+  -- everything collapses to the single index 0
+  by_cases ha : a = σ.alice v <;> by_cases hb : b = σ.bob w <;>
+    simp [ha, hb, Complex.ext_iff]
+
+/-- The win of the embedded classical strategy equals the classical win. -/
+theorem quantumWin_classicalToQuantum (G : NonLocalGame V O)
+    (σ : ClassicalStrategy V O) :
+    quantumWin G (classicalToQuantum σ) = classicalWin G σ := by
+  classical
+  unfold quantumWin classicalWin
+  -- the inner answer-sum collapses to the single winning answer pair
+  have hinner : ∀ p : V × V,
+      (∑ q : O × O, if G.verifier p q
+          then (classicalToQuantum σ).correlation p.1 p.2 q.1 q.2 else 0)
+        = (if G.verifier p (σ.alice p.1, σ.bob p.2) then (1 : ℝ) else 0) := by
+    intro p
+    have hstep : (∑ q : O × O, if G.verifier p q
+            then (classicalToQuantum σ).correlation p.1 p.2 q.1 q.2 else 0)
+        = ∑ q : O × O, if q = (σ.alice p.1, σ.bob p.2)
+            then (if G.verifier p q then (1 : ℝ) else 0) else 0 := by
+      refine Finset.sum_congr rfl ?_
+      intro q _
+      rw [classicalToQuantum_correlation]
+      by_cases hcond : q = (σ.alice p.1, σ.bob p.2)
+      · subst hcond
+        by_cases hv : G.verifier p (σ.alice p.1, σ.bob p.2) <;> simp [hv]
+      · have hcond' : ¬ (q.1 = σ.alice p.1 ∧ q.2 = σ.bob p.2) := by
+          rintro ⟨e1, e2⟩; exact hcond (Prod.ext e1 e2)
+        simp [hcond, hcond']
+    rw [hstep, Finset.sum_ite_eq' Finset.univ (σ.alice p.1, σ.bob p.2)]
+    simp
+  -- now sum over question pairs
+  have hsum : (∑ p : V × V, ∑ q : O × O, if G.verifier p q
+        then (classicalToQuantum σ).correlation p.1 p.2 q.1 q.2 else 0)
+      = ((Finset.univ.filter (fun p : V × V =>
+          G.verifier p (σ.alice p.1, σ.bob p.2))).card : ℝ) := by
+    simp_rw [hinner]
+    rw [Finset.sum_boole]
+  rw [hsum, sq]
+  ring
+
 /-- Classical strategies are quantum strategies (set `n_A = n_B = 1`,
-state `= 1`, deterministic POVMs).  Hence `ω ≤ ω^*`.  -/
-theorem ClassicalValue_le_QuantumValue (G : NonLocalGame V O) :
+state `= 1`, deterministic POVMs).  Hence `ω ≤ ω^*`.
+
+The genuine *content* — that every classical strategy embeds as a quantum one
+with the same win — is `quantumWin_classicalToQuantum` above, which is proved
+axiom-clean.  The final value inequality `⨆ classicalWin ≤ ⨆ quantumWin`
+additionally needs `QuantumValue`'s `iSup` to be bounded above so that
+`le_ciSup` applies. -/
+theorem ClassicalValue_le_QuantumValue
+    (G : NonLocalGame V O)
+    (hbdd : BddAbove (Set.range (quantumWin G))) :
     ClassicalValue G ≤ QuantumValue G := by
-  -- Honest sorry: the genuine proof embeds each classical strategy as a
-  -- 1-dimensional quantum strategy preserving the win.  This requires the real
-  -- `QuantumStrategy.correlation` (currently a `0` placeholder, which would make
-  -- `QuantumValue = 0` and the inequality false), so it is deferred until the
-  -- tensor-product / Tsirelson correlation layer is in place.
-  sorry
+  classical
+  -- Each classical win is dominated by the matching quantum win, which is
+  -- below the quantum value.
+  have hdom : ∀ σ : ClassicalStrategy V O,
+      classicalWin G σ ≤ QuantumValue G := by
+    intro σ
+    rw [← quantumWin_classicalToQuantum G σ]
+    exact le_ciSup hbdd (classicalToQuantum σ)
+  by_cases hne : Nonempty (ClassicalStrategy V O)
+  · exact ciSup_le hdom
+  · rw [not_nonempty_iff] at hne
+    -- `ClassicalValue = sSup ∅ = 0`.
+    simp only [ClassicalValue, Real.iSup_of_isEmpty]
+    -- `ClassicalStrategy V O` empty ⟹ `V → O` empty ⟹ `Nonempty V ∧ IsEmpty O`;
+    -- a `QuantumStrategy` then cannot exist, so its sup is also `0`.
+    have hVO : IsEmpty (V → O) := by
+      constructor; intro f; exact hne.false ⟨f, f⟩
+    have hVne : Nonempty V := by
+      by_contra hV; rw [not_nonempty_iff] at hV
+      exact hVO.false (fun v => (hV.false v).elim)
+    have hOe : IsEmpty O := by
+      constructor; intro a
+      exact hVO.false (fun _ => a)
+    have : IsEmpty (QuantumStrategy V O) := by
+      constructor
+      intro S
+      obtain ⟨v⟩ := hVne
+      -- `∑ a : O, effect a = 1` with `O` empty gives `0 = 1` in the matrix ring
+      have h01 : (0 : Matrix (Fin S.nA) (Fin S.nA) ℂ) = 1 := by
+        have := (S.alicePOVM v).sum_eq_one
+        rwa [Finset.univ_eq_empty (α := O), Finset.sum_empty] at this
+      -- `S.nA = 0`, else entry `(0,0)` distinguishes `0` and `1`
+      have hnA : S.nA = 0 := by
+        by_contra hpos
+        have hp : 0 < S.nA := Nat.pos_of_ne_zero hpos
+        have : (0 : ℂ) = 1 := by
+          have := congrArg (fun M => M ⟨0, hp⟩ ⟨0, hp⟩) h01
+          simpa using this
+        exact one_ne_zero this.symm
+      -- then the state lives on `Fin 0`, and `state_unit` reads `0 = 1`
+      have hstate := S.state_unit
+      haveI hempty : IsEmpty (Fin (S.nA * S.nB)) := by
+        rw [hnA, Nat.zero_mul]; exact Fin.isEmpty
+      rw [Finset.univ_eq_empty (α := Fin (S.nA * S.nB)), Finset.sum_empty] at hstate
+      exact zero_ne_one hstate
+    simp [QuantumValue, Real.iSup_of_isEmpty]
 
 /-- Every finite-dim Tsirelson-quantum strategy is also a commuting-op
 strategy (use `H_A ⊗ H_B` as the single Hilbert space, lift the local
 POVMs).  Hence `ω^* ≤ ω^{co}`.  -/
 theorem QuantumValue_le_CommutingOperatorValue (G : NonLocalGame V O) :
     QuantumValue G ≤ CommutingOperatorValue G := by
-  -- STUB-VACUITY WARNING: this proof is `0 ≤ 0`.  `QuantumStrategy.correlation`
-  -- and `CommutingOperatorStrategy.correlation` are both `:= 0` placeholders, so
-  -- `QuantumValue G = CommutingOperatorValue G = 0` and the inequality is
-  -- trivially true *without* establishing the genuine inclusion `ω* ≤ ω^co`
-  -- (which embeds a tensor-product strategy as a commuting-operator strategy on
-  -- `H_A ⊗ H_B`).  Once the two correlation functions get their real bodies,
-  -- this proof breaks and must be replaced by that genuine embedding argument.
-  -- Recorded green here only because both values are definitionally `0`.
-  -- At this scaffold layer both correlation functions are `0`, so every
-  -- strategy's win is `0` and both values equal `0` (using `iSup_const_zero`,
-  -- valid even when the strategy type is empty).  Hence the inequality holds.
-  have hQ : QuantumValue G = 0 := by
-    unfold QuantumValue quantumWin
-    have : ∀ S : QuantumStrategy V O,
-        (1 / ((Fintype.card V : ℝ) ^ 2)) *
-          ∑ p : V × V, ∑ q : O × O,
-            (if G.verifier p q then S.correlation p.1 p.2 q.1 q.2 else 0) = 0 := by
-      intro S
-      simp only [QuantumStrategy.correlation, ite_self, Finset.sum_const_zero,
-        mul_zero]
-    rw [show (fun S => _) = (fun _ : QuantumStrategy V O => (0 : ℝ)) from funext this]
-    exact Real.iSup_const_zero
-  have hC : CommutingOperatorValue G = 0 := by
-    unfold CommutingOperatorValue commutingWin
-    have : ∀ S : CommutingOperatorStrategy V O,
-        (1 / ((Fintype.card V : ℝ) ^ 2)) *
-          ∑ p : V × V, ∑ q : O × O,
-            (if G.verifier p q then S.correlation p.1 p.2 q.1 q.2 else 0) = 0 := by
-      intro S
-      simp only [CommutingOperatorStrategy.correlation, ite_self, Finset.sum_const_zero,
-        mul_zero]
-    rw [show (fun S => _) = (fun _ : CommutingOperatorStrategy V O => (0 : ℝ)) from
-        funext this]
-    exact Real.iSup_const_zero
-  rw [hQ, hC]
+  -- BLOCKED: needs the genuine tensor-product embedding of a `QuantumStrategy`
+  -- (state on `Fin (nA*nB)`, local POVMs `E_v^a`, `F_w^b`) into a
+  -- `CommutingOperatorStrategy` on the same `Fin (nA*nB)` with effects
+  -- `E_v^a ⊗ I` and `I ⊗ F_w^b` (which commute), together with the matrix
+  -- identity showing the two `correlation`s agree.  Constructing the Kronecker
+  -- products as `POVM`s (Hermitian, summing to 1) and verifying the correlation
+  -- equality is substantial; the value defs are now genuine so this is no longer
+  -- a vacuous `0 ≤ 0` and must be proved via that embedding.
+  sorry
 
 /-- **MIP* = RE separation (informal).**  There exists a non-local game
 `G` such that `QuantumValue G < CommutingOperatorValue G`.  This is
@@ -297,18 +440,118 @@ def GraphColoringGame {V : Type*} [Fintype V] [DecidableEq V]
     else if G.Adj v w then decide (a ≠ b)
     else true
 
+/-- A classical strategy wins **every** question pair of the coloring game iff
+its filtered win-set is all of `V × V`, equivalently its `classicalWin` is `1`
+(when `V` is nonempty). -/
+theorem GraphColoringGame.classicalWin_eq_one_iff
+    {V : Type*} [Fintype V] [DecidableEq V] [Nonempty V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] (k : ℕ)
+    (σ : ClassicalStrategy V (Fin k)) :
+    classicalWin (GraphColoringGame G k) σ = 1
+      ↔ ∀ p : V × V, (GraphColoringGame G k).verifier p (σ.alice p.1, σ.bob p.2) := by
+  have hcard : (0 : ℝ) < (Fintype.card V : ℝ) * (Fintype.card V : ℝ) := by
+    have : 0 < Fintype.card V := Fintype.card_pos
+    positivity
+  unfold classicalWin
+  rw [div_eq_one_iff_eq (ne_of_gt hcard)]
+  constructor
+  · intro h
+    -- the filtered set has full cardinality, so it is the whole univ
+    have hle : (Finset.univ.filter (fun p : V × V =>
+        (GraphColoringGame G k).verifier p (σ.alice p.1, σ.bob p.2))).card
+          = Fintype.card (V × V) := by
+      have : ((Finset.univ.filter (fun p : V × V =>
+          (GraphColoringGame G k).verifier p (σ.alice p.1, σ.bob p.2))).card : ℝ)
+            = (Fintype.card (V × V) : ℝ) := by
+        rw [h]; push_cast [Fintype.card_prod]; ring
+      exact_mod_cast this
+    have hfull : (Finset.univ.filter (fun p : V × V =>
+        (GraphColoringGame G k).verifier p (σ.alice p.1, σ.bob p.2))) = Finset.univ := by
+      apply Finset.eq_univ_of_card
+      rw [hle]
+    intro p
+    have : p ∈ (Finset.univ.filter (fun p : V × V =>
+        (GraphColoringGame G k).verifier p (σ.alice p.1, σ.bob p.2))) := by
+      rw [hfull]; exact Finset.mem_univ p
+    simpa using (Finset.mem_filter.mp this).2
+  · intro h
+    have hfull : (Finset.univ.filter (fun p : V × V =>
+        (GraphColoringGame G k).verifier p (σ.alice p.1, σ.bob p.2))) = Finset.univ := by
+      apply Finset.filter_true_of_mem
+      intro p _; exact h p
+    rw [hfull, Finset.card_univ, Fintype.card_prod]
+    push_cast; ring
+
 /-- **Classical coloring game value = 1 iff χ(G) ≤ k.**  (Mancinska-
-Roberson Prop 2.)  -/
+Roberson Prop 2.)
+
+A `[Nonempty V]` hypothesis is genuinely required: for empty `V` the value is
+`0` (vacuous question distribution) while a vacuous `k`-coloring still exists,
+so the bare iff is false. -/
 theorem GraphColoringGame.classical_value_eq_one
-    {V : Type*} [Fintype V] [DecidableEq V]
+    {V : Type*} [Fintype V] [DecidableEq V] [Nonempty V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (k : ℕ) :
     ClassicalValue (GraphColoringGame G k) = 1
       ↔ ∃ c : G.Coloring (Fin k), True := by
-  -- Forward: a perfect classical strategy with `alice = bob` is a proper
-  -- coloring, since `v ≠ w` adjacent forces `c v ≠ c w` and `v = w`
-  -- forces consistency.  Backward: any proper coloring `c` yields the
-  -- strategy `alice = bob = c`.
-  sorry
+  -- `classicalWin ≤ 1` for every strategy.
+  have hub : ∀ σ : ClassicalStrategy V (Fin k),
+      classicalWin (GraphColoringGame G k) σ ≤ 1 := by
+    intro σ
+    unfold classicalWin
+    rw [div_le_one (by
+      have : 0 < Fintype.card V := Fintype.card_pos
+      positivity)]
+    calc ((Finset.univ.filter (fun p : V × V =>
+            (GraphColoringGame G k).verifier p (σ.alice p.1, σ.bob p.2))).card : ℝ)
+        ≤ (Fintype.card (V × V) : ℝ) := by
+          exact_mod_cast Finset.card_filter_le _ _
+      _ = (Fintype.card V : ℝ) * (Fintype.card V : ℝ) := by
+          push_cast [Fintype.card_prod]; ring
+  have hbdd : BddAbove (Set.range (classicalWin (GraphColoringGame G k))) :=
+    ⟨1, by rintro _ ⟨σ, rfl⟩; exact hub σ⟩
+  constructor
+  · -- value 1 ⟹ a winning strategy ⟹ a coloring
+    intro hval
+    -- the strategy type is nonempty, else the sup would be `0 ≠ 1`
+    haveI : Nonempty (ClassicalStrategy V (Fin k)) := by
+      by_contra hempty
+      rw [not_nonempty_iff] at hempty
+      simp only [ClassicalValue, Real.iSup_of_isEmpty] at hval
+      norm_num at hval
+    obtain ⟨σ, hσ⟩ :=
+      exists_eq_ciSup_of_finite (f := classicalWin (GraphColoringGame G k))
+    rw [← ClassicalValue, hval] at hσ
+    have hwin := (classicalWin_eq_one_iff G k σ).mp hσ
+    -- build a coloring from `σ.alice`
+    refine ⟨SimpleGraph.Coloring.mk σ.alice ?_, trivial⟩
+    intro v w hvw
+    -- from the diagonal wins, `σ.alice w = σ.bob w`
+    have hdiag : σ.alice w = σ.bob w := by
+      have := hwin (w, w)
+      simp only [GraphColoringGame, if_true, decide_eq_true_eq] at this
+      exact this
+    -- from the adjacent win, `σ.alice v ≠ σ.bob w`
+    have hadj := hwin (v, w)
+    have hne : v ≠ w := G.ne_of_adj hvw
+    simp only [GraphColoringGame, if_neg hne, if_pos hvw, decide_eq_true_eq] at hadj
+    rw [hdiag]; exact hadj
+  · -- a coloring ⟹ the diagonal strategy wins all ⟹ value 1
+    rintro ⟨c, -⟩
+    set σ : ClassicalStrategy V (Fin k) := { alice := c, bob := c }
+    haveI : Nonempty (ClassicalStrategy V (Fin k)) := ⟨σ⟩
+    have hσ : classicalWin (GraphColoringGame G k) σ = 1 := by
+      rw [classicalWin_eq_one_iff]
+      intro p
+      simp only [GraphColoringGame, σ]
+      by_cases hvw : p.1 = p.2
+      · simp [hvw]
+      · simp only [if_neg hvw]
+        by_cases hadj : G.Adj p.1 p.2
+        · simp only [if_pos hadj, decide_eq_true_eq]
+          exact c.valid hadj
+        · simp [if_neg hadj]
+    apply le_antisymm (ciSup_le hub)
+    rw [← hσ]; exact le_ciSup hbdd σ
 
 /-! ## 3. Quantum value and the quantum chromatic number
 
@@ -433,10 +676,65 @@ def CHSHGame : NonLocalGame (Fin 2) (Fin 2) where
     -- XOR of answers = AND of questions
     decide ((a.val + b.val) % 2 = (x.val * y.val) % 2)
 
+/-- The win count of any deterministic strategy in the CHSH game is at most
+`3` out of the `4` question pairs: no classical strategy wins all four. -/
+theorem CHSH_win_count_le_three (σ : ClassicalStrategy (Fin 2) (Fin 2)) :
+    (Finset.univ.filter (fun p : Fin 2 × Fin 2 =>
+        CHSHGame.verifier p (σ.alice p.1, σ.bob p.2))).card ≤ 3 := by
+  -- The win predicate at the four pairs depends only on the four values
+  -- `σ.alice 0, σ.alice 1, σ.bob 0, σ.bob 1`; brute force over those.
+  have key : ∀ a0 a1 b0 b1 : Fin 2,
+      (Finset.univ.filter (fun p : Fin 2 × Fin 2 =>
+        CHSHGame.verifier p
+          ((fun i : Fin 2 => if i = 0 then a0 else a1) p.1,
+           (fun j : Fin 2 => if j = 0 then b0 else b1) p.2))).card ≤ 3 := by
+    decide
+  have ha : σ.alice = fun i : Fin 2 => if i = 0 then σ.alice 0 else σ.alice 1 := by
+    funext i; fin_cases i <;> simp
+  have hb : σ.bob = fun j : Fin 2 => if j = 0 then σ.bob 0 else σ.bob 1 := by
+    funext j; fin_cases j <;> simp
+  have := key (σ.alice 0) (σ.alice 1) (σ.bob 0) (σ.bob 1)
+  rwa [← ha, ← hb] at this
+
+/-- An explicit CHSH strategy winning `3` of the `4` pairs: both players
+always answer `0`, which wins on every pair except `(1,1)`. -/
+theorem CHSH_exists_win_three :
+    (Finset.univ.filter (fun p : Fin 2 × Fin 2 =>
+        CHSHGame.verifier p
+          (({alice := fun _ => 0, bob := fun _ => 0} :
+            ClassicalStrategy (Fin 2) (Fin 2)).alice p.1,
+           ({alice := fun _ => 0, bob := fun _ => 0} :
+            ClassicalStrategy (Fin 2) (Fin 2)).bob p.2))).card = 3 := by
+  decide
+
 /-- **CHSH classical bound.**  `ω(CHSH) = 3/4`.  -/
 theorem CHSH_classical_value : ClassicalValue CHSHGame = 3 / 4 := by
-  -- Brute force over the 16 deterministic strategies.
-  sorry
+  have hcard : (Fintype.card (Fin 2) : ℝ) * (Fintype.card (Fin 2) : ℝ) = 4 := by
+    simp [Fintype.card_fin]; norm_num
+  -- Each strategy's win is ≤ 3/4.
+  have hub : ∀ σ : ClassicalStrategy (Fin 2) (Fin 2), classicalWin CHSHGame σ ≤ 3 / 4 := by
+    intro σ
+    unfold classicalWin
+    rw [hcard]
+    have hle : ((Finset.univ.filter (fun p : Fin 2 × Fin 2 =>
+        CHSHGame.verifier p (σ.alice p.1, σ.bob p.2))).card : ℝ) ≤ 3 := by
+      exact_mod_cast CHSH_win_count_le_three σ
+    gcongr
+  -- The all-zero strategy attains 3/4.
+  set σ₀ : ClassicalStrategy (Fin 2) (Fin 2) := {alice := fun _ => 0, bob := fun _ => 0}
+  have hwit : classicalWin CHSHGame σ₀ = 3 / 4 := by
+    unfold classicalWin
+    rw [hcard, CHSH_exists_win_three]
+    norm_num
+  haveI : Nonempty (ClassicalStrategy (Fin 2) (Fin 2)) := ⟨σ₀⟩
+  have hbdd : BddAbove (Set.range (classicalWin CHSHGame)) :=
+    ⟨3 / 4, by rintro _ ⟨σ, rfl⟩; exact hub σ⟩
+  apply le_antisymm
+  · -- ClassicalValue ≤ 3/4
+    exact ciSup_le hub
+  · -- 3/4 ≤ ClassicalValue
+    rw [← hwit]
+    exact le_ciSup hbdd σ₀
 
 /-- **Tsirelson's bound.**  `ω^*(CHSH) = (2 + √2) / 4 = cos²(π/8)`.
 

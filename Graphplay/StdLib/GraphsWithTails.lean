@@ -350,7 +350,45 @@ theorem darkSubspace_decoupling (G : WeightedGraph V) (r : V) (m : ℕ) (lam : �
   -- The bulk coordinates reproduce `G.adj.mulVec x = λ • x` (hx.1); the only
   -- bulk/tail coupling is the root bridge `(inl r) ~ (inr 0)`, which contributes
   -- `x r = 0` (hx.2); the tail coordinates see only `0`-amplitude neighbours.
-  sorry
+  obtain ⟨heig, hroot⟩ := hx
+  funext y
+  rw [Pi.smul_apply, smul_eq_mul]
+  simp only [Matrix.mulVec, dotProduct]
+  -- Split the dot product over the `V ⊕ Fin (m+1)` index into the two summands.
+  rw [Fintype.sum_sum_type]
+  rcases y with v | w
+  · -- bulk coordinate: only the `inl`-block contributes (extension vanishes on tail).
+    have htail : ∀ j : Fin (m + 1),
+        (withTail G r m).adj (Sum.inl v) (Sum.inr j) * darkExtend (m + 1) x (Sum.inr j) = 0 := by
+      intro j; rw [darkExtend_inr]; ring
+    rw [Finset.sum_congr rfl (fun j _ => htail j), Finset.sum_const_zero, add_zero]
+    -- The `inl`-block sum is `(G.adj.mulVec x) v = lam • x v`.
+    have hbulk : ∀ v₂ : V,
+        (withTail G r m).adj (Sum.inl v) (Sum.inl v₂) * darkExtend (m + 1) x (Sum.inl v₂)
+          = G.adj v v₂ * x v₂ := by
+      intro v₂; rw [darkExtend_inl]; rfl
+    rw [Finset.sum_congr rfl (fun v₂ _ => hbulk v₂)]
+    have := congrFun heig v
+    simp only [Matrix.mulVec, dotProduct, Pi.smul_apply, smul_eq_mul] at this
+    rw [this, darkExtend_inl]
+  · -- tail coordinate: the `inl`-block contributes only at `v₂ = r` (the bridge),
+    -- weighting `x r = 0`; the `inr`-block weights the vanishing extension.
+    have hinr : ∀ j : Fin (m + 1),
+        (withTail G r m).adj (Sum.inr w) (Sum.inr j) * darkExtend (m + 1) x (Sum.inr j) = 0 := by
+      intro j; rw [darkExtend_inr]; ring
+    rw [Finset.sum_congr rfl (fun j _ => hinr j), Finset.sum_const_zero, add_zero]
+    -- The `inl`-block: `adj (inr w) (inl v₂) = if v₂ = r ∧ w = 0 then 1 else 0`,
+    -- so the only possibly nonzero term is `v₂ = r`, weighting `x r = 0`.
+    have hbulk : ∀ v₂ : V,
+        (withTail G r m).adj (Sum.inr w) (Sum.inl v₂) * darkExtend (m + 1) x (Sum.inl v₂) = 0 := by
+      intro v₂
+      rw [darkExtend_inl]
+      show (if v₂ = r ∧ w = ⟨0, Nat.succ_pos m⟩ then (1 : ℂ) else 0) * x v₂ = 0
+      by_cases hc : v₂ = r ∧ w = ⟨0, Nat.succ_pos m⟩
+      · rw [if_pos hc, hc.1, hroot, mul_zero]
+      · rw [if_neg hc, zero_mul]
+    rw [Finset.sum_congr rfl (fun v₂ _ => hbulk v₂), Finset.sum_const_zero]
+    rw [darkExtend_inr, mul_zero]
 
 /-! ### Tail invariance of PST inside the dark subspace
 

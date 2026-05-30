@@ -68,6 +68,7 @@ import Graphplay.QuantumGraph
 import Graphplay.Graphon
 import Graphplay.Graphon.Equitable
 import Graphplay.PST
+import Graphplay.PST.GodsilRatio
 
 open scoped Matrix
 open MeasureTheory
@@ -152,11 +153,21 @@ theorem exists_WLStable (G : WeightedGraph V) :
     have huv : u = v := e.injective h
     rw [huv]
 
-/-- The **1-WL stable partition** of `G`: the equivalence classes of any
-stable colouring. This is the *coarsest* equitable partition of `G`. -/
-def stablePartitionIndex (G : WeightedGraph V) : Type u := V
--- (Placeholder: the *actual* WL-stable index type is the quotient of `V` by
--- `colourEq` for a stable colouring.)
+/-- The setoid on `V` induced by colour-equality of a chosen 1-WL-stable
+colouring (existence from `exists_WLStable`).  `u ≈ v` iff they receive the same
+stable colour. -/
+noncomputable def stableSetoid (G : WeightedGraph V) : Setoid V where
+  r u v := (exists_WLStable G).choose_spec.choose_spec.choose u
+            = (exists_WLStable G).choose_spec.choose_spec.choose v
+  iseqv := ⟨fun _ => rfl, fun h => h.symm, fun h₁ h₂ => h₁.trans h₂⟩
+
+/-- The **1-WL stable partition** of `G`: the equivalence classes of a stable
+colouring, i.e. the quotient of `V` by colour-equality.  This is the *coarsest*
+equitable partition of `G`.
+
+(Previously `:= V`, the discrete index type giving every vertex its own class;
+the genuine index type is the colour-equivalence quotient `Quotient (stableSetoid G)`.) -/
+def stablePartitionIndex (G : WeightedGraph V) : Type u := Quotient (stableSetoid G)
 
 /-- Anything that **WL-stably colours** the graph is also an equitable
 partition: i.e. WL refinement is a *fixed-point-finding algorithm* for the
@@ -318,28 +329,68 @@ Godsil–Royle Chapter 9): the **2-WL stable partition** of `V × V` is exactly
 the partition into Schur-product-minimal idempotents of `coherentAlgebra G`,
 and the linear span of its cell-indicator matrices is `coherentAlgebra G`. -/
 
-/-- The **2-WL stable partition** of `V × V` (as a quotient by colour
-equivalence). -/
-def stablePartition2 (G : WeightedGraph V) : V × V → V × V := id
--- placeholder: the actual definition is the colour-equivalence class of a
--- 2-WL-stable colouring; existence given by `exists_KWLStable G 2`.
+/-- A chosen 2-WL-stable colouring of `V × V`, packaged as a colour type with
+its decidable equality and a stable tuple-colouring on `Fin 2 → V`.  Existence
+is `exists_KWLStable G 2`; we extract a witness with choice so the 2-WL stable
+partition below is a genuine total function. -/
+noncomputable def stable2WLColouring (G : WeightedGraph V) :
+    Σ (C : Type) (_ : DecidableEq C), { c : TupleColouring V 2 C // IsKWLStable G 2 c } :=
+  let h := (exists_KWLStable G 2).choose
+  ⟨h, (exists_KWLStable G 2).choose_spec.choose,
+    ⟨(exists_KWLStable G 2).choose_spec.choose_spec.choose,
+      (exists_KWLStable G 2).choose_spec.choose_spec.choose_spec⟩⟩
+
+/-- The colour type of the chosen 2-WL-stable colouring. -/
+def Colour2 (G : WeightedGraph V) : Type := (stable2WLColouring G).1
+
+noncomputable instance (G : WeightedGraph V) : DecidableEq (Colour2 G) :=
+  (stable2WLColouring G).2.1
+
+/-- The **2-WL stable partition** of `V × V`: the colour-equivalence class of the
+pair `(x, y)` under a chosen 2-WL-stable colouring of `2`-tuples.  Concretely,
+`(x, y)` is sent to the 2-WL colour of the tuple `![x, y]`, so two pairs lie in
+the same cell iff 2-WL cannot tell them apart.  (Previously `:= id`, the discrete
+partition giving every pair its own cell.) -/
+noncomputable def stablePartition2 (G : WeightedGraph V) : V × V → Colour2 G :=
+  fun p => (stable2WLColouring G).2.2.1 (fun i => if i = 0 then p.1 else p.2)
 
 /-- The **cell-indicator matrices** of a partition of `V × V`: for each cell
 `R ⊆ V × V`, the matrix `A_R : V × V → ℂ` with `A_R x y = 1` iff `(x, y) ∈ R`
 and `0` otherwise. -/
-noncomputable def cellIndicator {α : Type w} (R : V × V → α) (r : α) : Matrix V V ℂ :=
-  by classical exact fun x y => if R (x, y) = r then 1 else 0
+noncomputable def cellIndicator {α : Type w} [DecidableEq α]
+    (R : V × V → α) (r : α) : Matrix V V ℂ :=
+  fun x y => if R (x, y) = r then 1 else 0
 
-/-- **2-WL ↔ coherent algebra**: the ℂ-linear span of the cell-indicator
-matrices of the 2-WL stable partition equals `coherentAlgebra G`. -/
-theorem coherentAlgebra_eq_2WL_span (G : WeightedGraph V) :
-    coherentAlgebra G =
-      Submodule.span ℂ (Set.range (fun r : V × V => cellIndicator
-        (stablePartition2 G) r)) := by
-  -- Heavy lifting: closure of `coherentAlgebra G` under Schur and matrix
-  -- products forces it to *coincide* with the span of 2-WL cells, by the
-  -- abstract Bose-Mesner / cellular-algebra construction (see Chan et al.
-  -- §3 and Godsil–Royle Ch. 9).
+/-- **2-WL → coherent algebra (containment)**: the ℂ-linear span of the
+cell-indicator matrices of the *genuine* 2-WL stable partition is **contained
+in** `coherentAlgebra G`.
+
+This is the honest, correct direction of the folklore Bose–Mesner / cellular-
+algebra correspondence (Chan–Coutinho–Tamon–Vinet–Zhan 1907.04729 §3;
+Godsil–Royle Ch. 9): each 2-WL cell indicator is a coherent-algebra element
+(the coherent algebra contains the Bose–Mesner basis), so their span sits inside
+the coherent algebra.  The reverse containment (equality) additionally needs
+that 2-WL is *stable* enough to generate the whole algebra under Schur and
+matrix products; that direction is the deep part.
+
+NB: the previous statement asserted **equality** with the span of the *discrete*
+(`stablePartition2 := id`) partition, whose cell indicators span **all** of
+`Matrix V V ℂ` — strictly larger than `coherentAlgebra G` in general, so that
+equality was *false as stated* and survived only via `sorry`.  We restate to the
+true containment for the genuine 2-WL partition. -/
+theorem twoWL_span_le_coherentAlgebra (G : WeightedGraph V) :
+    Submodule.span ℂ (Set.range (fun r : Colour2 G => cellIndicator
+        (stablePartition2 G) r)) ≤ coherentAlgebra G := by
+  -- Each 2-WL cell indicator lies in `coherentAlgebra G` (the coherent algebra
+  -- contains the cellular/Bose–Mesner basis of the 2-WL stable partition), and
+  -- a submodule span of a set inside a submodule is inside that submodule.
+  -- The membership of each cell indicator is the cellular-algebra construction
+  -- (Chan et al. §3, Godsil–Royle Ch. 9).
+  rw [Submodule.span_le]
+  rintro M ⟨r, rfl⟩
+  -- BLOCKED: `cellIndicator (stablePartition2 G) r ∈ coherentAlgebra G` is the
+  -- Bose–Mesner membership of each 2-WL cell, which requires the cellular-
+  -- algebra closure construction not yet formalized here.  Honest theorem-sorry.
   sorry
 
 /-- **1-WL ↔ coherent quotient (commutative Tower 3 case)**: the 1-WL stable
@@ -477,12 +528,17 @@ def WLSameColour (G : WeightedGraph V) {C : Type v} [DecidableEq C]
     (c : Colouring V C) (u v : V) : Prop := c u = c v
 
 /-- The **eigenvalue support** of a vertex `u` in `G`: the set of eigenvalues
-of `G.adj` whose eigenprojector has nonzero `(u, u)` entry. We use a Prop-level
-placeholder for the set. -/
-def EigenvalueSupport (G : WeightedGraph V) (u : V) : Set ℝ := Set.univ
--- Placeholder. The honest definition uses the spectral decomposition of
--- `G.adj` (Hermitian by `G.herm`), and the diagonal of the projector onto
--- each eigenspace.
+`λ` of `G.adj` whose spectral projector `E_λ` does not kill `e_u`, i.e.
+`E_λ e_u ≠ 0`.  This is the *genuine* per-vertex support already developed in
+`Graphplay.PST.GodsilRatio` from the Hermitian diagonalization `A = U D Uᴴ`
+(`λ ∈ support u ↔ ∃ i, eigenvalues i = λ ∧ eigU G u i ≠ 0`).
+
+(Previously this slot was a `:= Set.univ` placeholder, which made the
+support-equality condition in `pst_requires_WL_and_eigenSupport` vacuously
+`univ = univ` and the hypothesis of `phantom_symmetries_exist` the
+unsatisfiable `univ ≠ univ`.  We delegate to the honest spectral definition.) -/
+abbrev EigenvalueSupport (G : WeightedGraph V) (u : V) : Set ℝ :=
+  Graphplay.PST.EigenvalueSupport G u
 
 /-- **PST necessity**: PST from `u` to `v` at some time implies (i) `u, v`
 share their WL stable colour and (ii) their eigenvalue supports agree. -/
@@ -492,10 +548,16 @@ theorem pst_requires_WL_and_eigenSupport
     (hc : IsWLStable G c) :
     (∃ τ : ℝ, IsPST G u v τ) →
       (WLSameColour G c u v ∧ EigenvalueSupport G u = EigenvalueSupport G v) := by
+  -- Genuine necessity: with the honest `EigenvalueSupport`, condition (ii) is
+  -- now real (PST ⇒ strong cospectrality ⇒ equal eigenvalue supports, Godsil).
+  -- BLOCKED: needs the PST ⇒ strong-cospectrality bridge from
+  -- `Graphplay.PST.Cospectrality` together with WL-colour stability transport.
   sorry
 
 /-- **Phantom symmetry**: there exist graphs where `WLSameColour` holds but
-the eigenvalue supports differ, hence no PST. Statement only.
+the eigenvalue supports differ, hence no PST. (Now a genuine existence claim:
+with the honest `EigenvalueSupport`, the differing-supports clause is a real,
+satisfiable condition rather than the previously-unsatisfiable `univ ≠ univ`.)
 
 These are the "WL-twins" that motivate Mancinska–Roberson's *quantum*
 isomorphism: classically WL-equivalent vertices that are *quantum-but-not-
@@ -506,6 +568,11 @@ theorem phantom_symmetries_exist :
       (C : Type) (_ : DecidableEq C) (_ : Fintype C) (c : Colouring V C),
       IsWLStable G c ∧ WLSameColour G c u v ∧
         EigenvalueSupport G u ≠ EigenvalueSupport G v := by
+  -- BLOCKED: requires constructing an explicit WL-regular but
+  -- not-strongly-cospectral graph (a WL-twin pair) — the canonical example is a
+  -- vertex-pair that 1-WL identifies yet whose spectral projectors differ at
+  -- `u` vs `v`.  Building such a graph and computing both `EigenvalueSupport`s
+  -- is a concrete but substantial spectral computation.  Honest theorem-sorry.
   sorry
 
 /-! ## 8. Quantum (non-commutative) WL — Mancinska–Roberson
@@ -516,29 +583,57 @@ captures **quantum isomorphism**: two graphs are quantum-isomorphic iff their
 quantum-WL stable algebras are isomorphic as operator systems. (Mancinska–
 Roberson, JCTB 2019.) -/
 
-/-- The **quantum WL refinement** is a non-commutative analogue of `refineStep`
-acting on quantum graphs (`QuantumGraph` / `coherentAlgebra` data). We package
-it abstractly here.
+/-- A **quantum-coherent (non-commutative coherent) algebra structure** on
+`S ⊆ Matrix V V ℂ`: it is a coherent algebra (`IsCoherentAlgebra`) that, in
+addition, contains the entire **commutant** of `G.adj`, i.e. every matrix that
+commutes with `G.adj`.  The commutant is exactly the algebra of operators left
+invariant by the *quantum* automorphisms (magic-square / quantum-permutation
+intertwiners, Mancinska–Roberson): classical WL refinement only sees the Schur-
+and product-closure of `G.adj`, whereas the quantum WL chain additionally
+stabilizes everything commuting with `G.adj`.  This makes a quantum-coherent
+algebra genuinely *at least as large* as — and in general strictly larger than —
+the classical coherent algebra. -/
+structure IsQuantumCoherentAlgebra (G : WeightedGraph V)
+    (S : Submodule ℂ (Matrix V V ℂ)) : Prop where
+  /-- `S` is a (classical) coherent algebra. -/
+  isCoherent : IsCoherentAlgebra S
+  /-- `S` contains the commutant of `G.adj`. -/
+  commutant_le : ∀ M : Matrix V V ℂ, M * G.adj = G.adj * M → M ∈ S
 
-The fixed point is the **quantum coherent algebra**, sometimes called the
-*non-commutative coherent algebra* (see Hole D5,
-`Graphplay/Dowsing/NonCommutativeCoherent.lean`). -/
+/-- The **quantum WL stable algebra** of `G`: the smallest quantum-coherent
+algebra containing `G.adj`.  This is the honest non-commutative refinement
+fixpoint (Hole D5, `Graphplay/Dowsing/NonCommutativeCoherent.lean`): it is the
+classical coherent algebra *enlarged* by the commutant of `G.adj` and then
+re-closed under the coherent-algebra operations.
+
+(Previously `:= coherentAlgebra G`, which collapsed the quantum/classical
+distinction and made `OpenProblem2_quantum_strict_containment` the
+unsatisfiable `X < X`.) -/
 noncomputable def QuantumWLStable (G : WeightedGraph V) : Submodule ℂ (Matrix V V ℂ) :=
-  coherentAlgebra G
--- Placeholder identification: in the *commutative* case the quantum WL stable
--- algebra coincides with the classical coherent algebra. In general the
--- quantum stable algebra is genuinely larger (= non-commutative coherent
--- algebra). The honest definition is the operator-system limit of an iterated
--- non-commutative refinement step.
+  sInf {S | IsQuantumCoherentAlgebra G S ∧ G.adj ∈ S}
 
 /-- **Quantum WL ⊇ classical WL.** The quantum WL stable algebra always
-contains the classical coherent algebra. (Trivial from the placeholder
-definition; non-trivial in the full theory.) -/
+contains the classical coherent algebra.
+
+Genuine proof (no longer `le_refl` on a stub): every quantum-coherent algebra in
+the defining family is in particular a *classical* coherent algebra containing
+`G.adj`, hence is one of the sets whose infimum is `coherentAlgebra G`; so
+`coherentAlgebra G` (the smaller infimum, over a *larger* family) is `≤` the
+quantum infimum. -/
 theorem quantumWL_contains_coherent (G : WeightedGraph V) :
     coherentAlgebra G ≤ QuantumWLStable G := by
-  -- Once `QuantumWLStable` is the *honest* non-commutative refinement, this
-  -- direction follows from monotonicity of refinement.
-  exact le_refl _
+  unfold coherentAlgebra QuantumWLStable
+  -- `sInf` is antitone in the index set: the quantum family is a subset of the
+  -- classical family, so its infimum is larger.
+  apply sInf_le_sInf
+  rintro S ⟨hS, hadj⟩
+  exact ⟨hS.isCoherent, hadj⟩
+
+/-- `G.adj` lies in its own quantum WL stable algebra. -/
+theorem adj_mem_QuantumWLStable (G : WeightedGraph V) :
+    G.adj ∈ QuantumWLStable G := by
+  unfold QuantumWLStable
+  exact Submodule.mem_sInf.mpr fun _ hS => hS.2
 
 /-- **Mancinska–Roberson (statement)**: quantum-isomorphic graphs have
 linearly-isomorphic quantum WL stable algebras.
@@ -558,7 +653,7 @@ follows immediately from the supplied data and is genuinely non-vacuous. -/
 theorem MancinskaRoberson_qIsomorphism
     (G H : WeightedGraph V)
     (hqiso : ∃ Φ : QuantumWLStable G ≃ₗ[ℂ] QuantumWLStable H,
-      Φ ⟨G.adj, adj_mem_coherentAlgebra G⟩ = ⟨H.adj, adj_mem_coherentAlgebra H⟩) :
+      Φ ⟨G.adj, adj_mem_QuantumWLStable G⟩ = ⟨H.adj, adj_mem_QuantumWLStable H⟩) :
     Nonempty (QuantumWLStable G ≃ₗ[ℂ] QuantumWLStable H) := by
   obtain ⟨Φ, _⟩ := hqiso
   exact ⟨Φ⟩

@@ -706,25 +706,114 @@ theorem blockAlgebra_isCoherent (cells : V → I) :
     · intro x y _ _ hx hy; rw [Matrix.conjTranspose_add]; exact Submodule.add_mem _ hx hy
     · intro c x _ hx; rw [Matrix.conjTranspose_smul]; exact Submodule.smul_mem _ _ hx
 
-/-- The block algebra is **commutative** if and only if the partition has the
-property that `|Cᵢ| · 1_{Cᵢ × Cⱼ} · 1_{Cⱼ × Cᵢ} = |Cⱼ| · 1_{Cⱼ × Cᵢ} · 1_{Cᵢ × Cⱼ}`
-for every `i, j` — equivalently, iff all cells have the same size. (This is
-exactly the "Bose-Mesner regularity" condition.) -/
+/-- A cell of `cells` is **occupied** when some vertex lands in it. -/
+def CellOccupied (cells : V → I) (i : I) : Prop :=
+  ∃ x : V, cells x = i
+
+/-- A block generator `1_{Cᵢ × Cⱼ}` vanishes if either cell is empty. -/
+theorem blockIndicatorMat_eq_zero_of_not_occupied (cells : V → I) {i j : I}
+    (h : ¬ CellOccupied cells i ∨ ¬ CellOccupied cells j) :
+    blockIndicatorMat (V := V) cells i j = 0 := by
+  ext x y
+  simp only [blockIndicatorMat, Matrix.zero_apply]
+  rcases h with h | h
+  · rw [if_neg]; rintro ⟨hx, _⟩; exact h ⟨x, hx⟩
+  · rw [if_neg]; rintro ⟨_, hy⟩; exact h ⟨y, hy⟩
+
+/-- **Commutativity criterion for the block algebra.**  The block algebra of a
+partition is commutative *iff there is at most one occupied (non-empty) cell*.
+
+Under the isomorphism `blockAlgebra cells ≃ M_k(ℂ)` (with `k` the number of
+occupied cells, sending `1_{Cᵢ × Cⱼ} ↦ √(|Cᵢ||Cⱼ|)·Eᵢⱼ`), commutativity is
+exactly `k ≤ 1`: a full matrix algebra `M_k(ℂ)` is commutative iff `k ≤ 1`.
+
+CORRECTNESS FIX: the original RHS `∀ i j, |Cᵢ| = |Cⱼ|` is FALSE (it breaks on
+empty cells, and even with all cells equicardinal `M_k(ℂ)` for `k ≥ 2` is
+non-commutative).  The honest condition is "at most one occupied cell". -/
 theorem blockAlgebra_isCommutative_iff_cells_equicard
     (cells : V → I) :
     (blockAlgebra_isCoherent (V := V) cells).IsCommutative
-      ↔ (∀ i j : I, (Finset.univ.filter (fun v : V => cells v = i)).card =
-                    (Finset.univ.filter (fun v : V => cells v = j)).card)
-        ∨ ¬ Nonempty I := by
-  -- CORRECTNESS FIX: the original LHS quantified over a proof `h : IsCoherent
-  -- (blockAlgebra cells)`, which *fails* for non-singleton cells (see
-  -- `blockAlgebra_isCoherent`), so that existential is essentially never
-  -- inhabited and the equivalence was false.  We restate the LHS as
-  -- commutativity of the (genuinely-existing) non-unital coherent structure
-  -- `blockAlgebra_isCoherent`.  The equicardinality ↔ commutativity direction
-  -- is the deep Bose-Mesner regularity argument, left as an honest `sorry` on
-  -- this now-true statement. -/
-  sorry
+      ↔ (∀ i j : I, CellOccupied cells i → CellOccupied cells j → i = j) := by
+  constructor
+  · -- commutative → at most one occupied cell.
+    intro hcomm i j hi hj
+    by_contra hij
+    -- `A = 1_{Cᵢ×Cⱼ}`, `B = 1_{Cⱼ×Cᵢ}` are in the block algebra.
+    have hA : blockIndicatorMat (V := V) cells i j ∈ blockAlgebra (V := V) cells :=
+      Submodule.subset_span ⟨(i, j), rfl⟩
+    have hB : blockIndicatorMat (V := V) cells j i ∈ blockAlgebra (V := V) cells :=
+      Submodule.subset_span ⟨(j, i), rfl⟩
+    have hAB := hcomm _ hA _ hB
+    -- Evaluate `A*B = B*A` at `(x, x)` for some `x ∈ Cᵢ`.
+    obtain ⟨x, hx⟩ := hi
+    obtain ⟨w, hw⟩ := hj
+    have hentry := congrFun (congrFun hAB x) x
+    -- `(A*B) x x = ∑_z 1_{Cᵢ×Cⱼ}(x,z)·1_{Cⱼ×Cᵢ}(z,x) = |Cⱼ|` (since x ∈ Cᵢ).
+    -- `(B*A) x x = ∑_z 1_{Cⱼ×Cᵢ}(x,z)·1_{Cᵢ×Cⱼ}(z,x) = 0` (needs x ∈ Cⱼ, false).
+    rw [Matrix.mul_apply, Matrix.mul_apply] at hentry
+    have hlhs : (∑ z, blockIndicatorMat (V := V) cells i j x z *
+          blockIndicatorMat (V := V) cells j i z x)
+        = ((Finset.univ.filter (fun z : V => cells z = j)).card : ℂ) := by
+      rw [Finset.card_filter, Nat.cast_sum]
+      apply Finset.sum_congr rfl
+      intro z _
+      simp only [blockIndicatorMat]
+      by_cases hz : cells z = j
+      · rw [if_pos ⟨hx, hz⟩, if_pos ⟨hz, hx⟩, mul_one, if_pos hz, Nat.cast_one]
+      · rw [if_neg (fun h => hz h.2), zero_mul, if_neg hz, Nat.cast_zero]
+    have hrhs : (∑ z, blockIndicatorMat (V := V) cells j i x z *
+          blockIndicatorMat (V := V) cells i j z x) = 0 := by
+      apply Finset.sum_eq_zero
+      intro z _
+      simp only [blockIndicatorMat]
+      rw [if_neg (fun h => hij (hx.symm.trans h.1)), zero_mul]
+    rw [hlhs, hrhs] at hentry
+    -- `|Cⱼ| = 0`, but `Cⱼ` is occupied.
+    have hc0 : (Finset.univ.filter (fun z : V => cells z = j)).card = 0 := by
+      exact_mod_cast hentry
+    rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff] at hc0
+    exact hc0 (Finset.mem_univ w) hw
+  · -- at most one occupied cell → commutative.
+    intro hocc A hA B hB
+    -- Reduce to commutativity of generators by ℂ-bilinear span induction.
+    refine Submodule.span_induction
+      (p := fun A _ => ∀ B ∈ blockAlgebra (V := V) cells, A * B = B * A) ?_ ?_ ?_ ?_ hA B hB
+    · rintro a ⟨⟨i, j⟩, rfl⟩ B hB
+      refine Submodule.span_induction
+        (p := fun B _ => blockIndicatorMat (V := V) cells i j * B
+            = B * blockIndicatorMat (V := V) cells i j) ?_ ?_ ?_ ?_ hB
+      · rintro b ⟨⟨k, l⟩, rfl⟩
+        show blockIndicatorMat (V := V) cells i j * blockIndicatorMat (V := V) cells k l
+            = blockIndicatorMat (V := V) cells k l * blockIndicatorMat (V := V) cells i j
+        -- Both generators vanish unless all four indices equal a single
+        -- occupied cell `c`; in that case both products coincide.
+        by_cases hi : CellOccupied cells i
+        · by_cases hj : CellOccupied cells j
+          · by_cases hk : CellOccupied cells k
+            · by_cases hl : CellOccupied cells l
+              · -- all occupied ⇒ i = j = k = l.
+                have e1 := hocc i j hi hj
+                have e2 := hocc j k hj hk
+                have e3 := hocc k l hk hl
+                subst e1; subst e2; subst e3; rfl
+              · have h0 : blockIndicatorMat (V := V) cells k l = 0 :=
+                  blockIndicatorMat_eq_zero_of_not_occupied cells (Or.inr hl)
+                rw [h0, mul_zero, zero_mul]
+            · have h0 : blockIndicatorMat (V := V) cells k l = 0 :=
+                blockIndicatorMat_eq_zero_of_not_occupied cells (Or.inl hk)
+              rw [h0, mul_zero, zero_mul]
+          · have h0 : blockIndicatorMat (V := V) cells i j = 0 :=
+              blockIndicatorMat_eq_zero_of_not_occupied cells (Or.inr hj)
+            rw [h0, zero_mul, mul_zero]
+        · have h0 : blockIndicatorMat (V := V) cells i j = 0 :=
+            blockIndicatorMat_eq_zero_of_not_occupied cells (Or.inl hi)
+          rw [h0, zero_mul, mul_zero]
+      · simp
+      · intro u v _ _ hu hv; rw [mul_add, add_mul, hu, hv]
+      · intro c u _ hu; rw [mul_smul_comm, smul_mul_assoc, hu]
+    · intro B _; rw [zero_mul, mul_zero]
+    · intro x y _ _ hx hy B hB; rw [add_mul, mul_add, hx B hB, hy B hB]
+    · intro c x _ hx B hB; rw [smul_mul_assoc, mul_smul_comm, hx B hB]
 
 /-! ## 4. The headline equivalence (Tower 3, commutative).
 
@@ -1113,9 +1202,13 @@ theorem BMAlgebra_characterization
       rw [hschur i j, if_neg hij]
     · -- `∑ A i = J`.
       rw [S.sum_is_J]; rfl
-  -- HONEST SORRY (deep): the reverse direction reconstructs an association
-  -- scheme from a Schur-idempotent Hermitian basis — a substantive spectral /
-  -- structure-constant argument (Chan-Coutinho-Tamon-Vinet-Zhan §3).
+  -- BLOCKED (deep): the reverse direction reconstructs an association scheme
+  -- from a Schur-orthogonal Hermitian basis summing to `J`.  The RHS data does
+  -- not supply `basis 0 = 1` nor the multiplicative structure constants
+  -- (`closed`); recovering an honest `AssociationScheme` (with `A 0 = 1` and
+  -- `A i · A j = ∑ₖ pᵢⱼᵏ Aₖ`) is the substantive spectral / structure-constant
+  -- argument of Chan-Coutinho-Tamon-Vinet-Zhan §3, beyond the algebraic API
+  -- available here.
   sorry
 
 /-! ## 6. The Weisfeiler-Leman refinement chain.
@@ -1333,20 +1426,26 @@ structure CoherentMorphism
   star_map : ∀ M, M ∈ A → toFun Mᴴ = (toFun M)ᴴ
 
 /-- The **quantum chromatic number** of a weighted graph: the smallest `n`
-such that there is a coherent morphism from `coherentAlgebra G` to
-`Matrix (Fin n) (Fin n) ℂ` sending `G.adj` to a matrix whose Schur square
-is *adapted to a colouring* (Mančinska-Roberson 2020). Statement only:
-the precise extra condition on the image of `G.adj` is "complementary to
-the diagonal" — left under-specified. -/
-noncomputable def quantumChromatic (G : WeightedGraph V) : ℕ := 0
+such that there is a coherent morphism from `coherentAlgebra G` to the full
+matrix algebra `Matrix (Fin n) (Fin n) ℂ` (the coherent algebra of the
+non-commutative complete graph `Kₙ`).  This is the coherent-algebra avatar of
+the Mančinska–Roberson quantum colouring: a coherent (unital, ∗-, matrix- and
+Schur-product-preserving) morphism into `M_n(ℂ)` is exactly a quantum
+`n`-colouring strategy.  Realized as an infimum over `ℕ`. -/
+noncomputable def quantumChromatic (G : WeightedGraph V) : ℕ :=
+  sInf {n : ℕ |
+    Nonempty (CoherentMorphism (Graphplay.coherentAlgebra G)
+      (⊤ : Submodule ℂ (Matrix (Fin n) (Fin n) ℂ)))}
 
-/-- The quantum chromatic number is bounded above by the classical
-chromatic number. -/
-theorem quantumChromatic_le_chromatic
-    (G : WeightedGraph V) (n : ℕ) (_hchrom : True) :
-    quantumChromatic G ≤ n := by
-  -- `quantumChromatic G = 0` by the placeholder definition.
-  exact Nat.zero_le n
+/-- If a coherent morphism `coherentAlgebra G → M_n(ℂ)` exists, then
+`χ_q(G) ≤ n`: the quantum chromatic number is a lower bound of the admissible
+colour counts. -/
+theorem quantumChromatic_le_of_coherentMorphism
+    (G : WeightedGraph V) (n : ℕ)
+    (h : Nonempty (CoherentMorphism (Graphplay.coherentAlgebra G)
+      (⊤ : Submodule ℂ (Matrix (Fin n) (Fin n) ℂ)))) :
+    quantumChromatic G ≤ n :=
+  Nat.sInf_le h
 
 /-- **Quantum vs classical:** the quantum chromatic number of a quantum
 graph (in the sense of `Graphplay.QuantumGraph`) extends the weighted

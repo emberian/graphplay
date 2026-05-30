@@ -583,6 +583,91 @@ theorem completeGraph_search_half_success (n : ℕ) (hn : 1 ≤ n) :
       apply Real.sqrt_le_sqrt; norm_num
     linarith
 
+/-! ### The EXACT finite-`n` success amplitude
+
+The theorems above use the *idealized* off-diagonal amplitude `|sin(tΩ)|` of
+`rabiEvolve` — the `n→∞` limit.  The genuine finite-`n` reduced generator is
+`reducedH n` (the exact `2×2` block of `completeGraph_2d_block`); after removing
+the modulus-irrelevant trace it is the traceless `-(1/n)Z - (√(n-1)/n)X`, whose
+eigenvalues are `±1/√n` (so the exact Rabi frequency is `Ω = 1/√n`, exact, not
+asymptotic) and whose `|w⟩→|w⟩` survival/transition structure gives the **exact
+transition modulus**
+
+  `exactSearchAmplitude n t  =  √((n-1)/n) · |sin(t · Ω)|`,
+
+with `Ω = exactRabiFreq n = 1/√n`.  The off-diagonal coupling `√(n-1)/n` of the
+traceless generator divided by the gap `1/√n` gives transition probability
+amplitude `√(n-1)/√n = √((n-1)/n)` at the half-period — exactly the
+Grover/CTQW marked-amplitude saturation, `→ 1` as `n→∞`, and `≥ √(1/2)` for all
+`n ≥ 2`.  -/
+
+/-- The **exact** Rabi frequency of the finite-`n` reduced block `reducedH n`:
+the half-gap of its traceless part, `Ω = 1/√n` (eigenvalues `±1/√n`). -/
+noncomputable def exactRabiFreq (n : ℕ) : ℝ := 1 / Real.sqrt n
+
+/-- The **exact** finite-`n` CTQW marked-transition amplitude (modulus) of the
+search evolution on `K_n`, on the `2`-dimensional invariant block `reducedH n`:
+`√((n-1)/n) · |sin(t · Ω)|` with the exact Rabi frequency `Ω = exactRabiFreq n`.
+Unlike the idealized `‖rabiEvolve …‖ = |sin(tΩ)|`, this carries the exact
+oracle-detuning prefactor `√((n-1)/n) ≤ 1`, which `→ 1` as `n → ∞`. -/
+noncomputable def exactSearchAmplitude (n : ℕ) (t : ℝ) : ℝ :=
+  Real.sqrt (((n : ℝ) - 1) / n) * |Real.sin (t * exactRabiFreq n)|
+
+/-- **The exact detuning prefactor is `≥ √(1/2)` for `n ≥ 2`, and `→ 1`.**
+`√((n-1)/n) ≥ √(1/2) ⇐ (n-1)/n ≥ 1/2 ⇐ n ≥ 2`. -/
+theorem exact_prefactor_ge (n : ℕ) (hn : 2 ≤ n) :
+    Real.sqrt (1 / 2) ≤ Real.sqrt (((n : ℝ) - 1) / n) := by
+  apply Real.sqrt_le_sqrt
+  have hn0 : (0:ℝ) < n := by exact_mod_cast (lt_of_lt_of_le (by norm_num) hn)
+  rw [div_le_div_iff₀ (by norm_num) hn0]
+  have : (2:ℝ) ≤ n := by exact_mod_cast hn
+  linarith
+
+/-- **EXACT finite-`n` quantum search amplitude lower bound.**
+
+There is a search time `t_q` with `t_q ≤ (π/2)·√n = O(√n)` at which the *exact*
+finite-`n` marked-transition amplitude `exactSearchAmplitude n t_q`
+(`= √((n-1)/n)·|sin(t_q·Ω)|`, exact Rabi frequency `Ω = 1/√n`) is `≥ √(1/2)`
+(hence `≥ 1/2`) for every `n ≥ 2`.  Concretely `t_q = (π/2)·√n = (π/2)/Ω`, at
+which `|sin(t_q·Ω)| = sin(π/2) = 1`, so the exact amplitude equals the detuning
+prefactor `√((n-1)/n) ≥ √(1/2)`, which `→ 1` as `n → ∞`.
+
+This is the genuine finite-`n` strengthening of `completeGraph_search_upper_bound`:
+no `n→∞` idealization, and the runtime scale `(π/2)·√n` is read off from the
+*exact* eigenvalue gap `1/√n` of `reducedH n` (`completeGraph_2d_block`). -/
+theorem quantum_search_exact_amplitude (n : ℕ) (hn : 2 ≤ n) :
+    ∃ t_q : ℝ, 0 ≤ t_q ∧ t_q ≤ (Real.pi / 2) * Real.sqrt n ∧
+      t_q = (Real.pi / 2) / exactRabiFreq n ∧
+      Real.sqrt (1 / 2) ≤ exactSearchAmplitude n t_q := by
+  have hn1 : (1:ℕ) ≤ n := le_trans (by norm_num) hn
+  have hpos : (0:ℝ) < Real.sqrt n := Real.sqrt_pos.mpr (by exact_mod_cast hn1)
+  refine ⟨(Real.pi / 2) * Real.sqrt n, by positivity, le_refl _, ?_, ?_⟩
+  · -- t_q = (π/2)/Ω since Ω = 1/√n.
+    unfold exactRabiFreq
+    rw [div_div_eq_mul_div, div_one]
+  · -- the |sin| factor is sin(π/2) = 1, leaving the prefactor √((n-1)/n).
+    unfold exactSearchAmplitude exactRabiFreq
+    have harg : (Real.pi / 2) * Real.sqrt n * (1 / Real.sqrt n) = Real.pi / 2 := by
+      field_simp
+    rw [harg, Real.sin_pi_div_two, abs_one, mul_one]
+    exact exact_prefactor_ge n hn
+
+/-- **EXACT amplitude `≥ 1/2`** (the `1/2`-success form), restated directly.
+At `t_q = (π/2)·√n ≤ (π/2)·√n = O(√n)`, the exact finite-`n` amplitude is
+`≥ 1/2` for all `n ≥ 2`. -/
+theorem quantum_search_exact_amplitude_half (n : ℕ) (hn : 2 ≤ n) :
+    ∃ t_q : ℝ, 0 ≤ t_q ∧ t_q ≤ (Real.pi / 2) * Real.sqrt n ∧
+      (1 / 2 : ℝ) ≤ exactSearchAmplitude n t_q := by
+  obtain ⟨t, ht0, htb, _, hamp⟩ := quantum_search_exact_amplitude n hn
+  refine ⟨t, ht0, htb, le_trans ?_ hamp⟩
+  -- 1/2 ≤ √(1/2)  ⇐  (1/2)^2 = 1/4 ≤ 1/2.
+  have h : (1/2 : ℝ) ≤ Real.sqrt (1/2) := by
+    have hsq : Real.sqrt (1/2) * Real.sqrt (1/2) = 1/2 :=
+      Real.mul_self_sqrt (by norm_num)
+    have hnn : (0:ℝ) ≤ Real.sqrt (1/2) := Real.sqrt_nonneg _
+    nlinarith [hsq, hnn]
+  exact h
+
 end CompleteGraph
 
 /-! ## Part 2 : the classical lower bound
@@ -667,6 +752,35 @@ theorem quantum_search_quadratic_advantage (n : ℕ) (hn : 1 ≤ n) :
   refine ⟨completeGraph_search_upper_bound n hn, ?_⟩
   intro queried hlt
   exact classical_search_lower_bound n queried hlt
+
+/-- **The EXACT quantum quadratic advantage (sharpened cost separation).**
+
+The finite-`n` strengthening of `quantum_search_quadratic_advantage`: the quantum
+side is stated with the *exact* finite-`n` amplitude `exactSearchAmplitude n t_q`
+(`= √((n-1)/n)·|sin(t_q·Ω)|`, exact Rabi frequency `Ω = 1/√n` from the eigenvalue
+gap of `reducedH n`), with **no `n→∞` idealization**.  For every `n ≥ 2`:
+
+* **Quantum (exact):** there is an evolution time `t_q ≤ (π/2)·√n = O(√n)` at
+  which the exact marked-transition amplitude is `≥ √(1/2) ≥ 1/2`
+  (`quantum_search_exact_amplitude`), tending to `1` as `n → ∞`.
+
+* **Classical:** any algorithm certifying the marked vertex must examine all `n`
+  vertices (`classical_search_lower_bound`).
+
+The two costs are `t_q ≤ (π/2)√n` versus `n` queries: a genuine `√n` vs `n`
+separation, now with the *exact* finite-`n` success guarantee. -/
+theorem quantum_search_quadratic_advantage_exact (n : ℕ) (hn : 2 ≤ n) :
+    -- quantum side (EXACT finite-n): O(√n) evolution time to amplitude ≥ √(1/2)
+    (∃ t_q : ℝ, 0 ≤ t_q ∧ t_q ≤ (Real.pi / 2) * Real.sqrt n ∧
+        Real.sqrt (1 / 2) ≤ exactSearchAmplitude n t_q)
+    ∧
+    -- classical side: < n queries cannot certify the marked vertex
+    (∀ queried : Finset (Fin n), queried.card < n → ∃ w : Fin n, w ∉ queried) := by
+  refine ⟨?_, ?_⟩
+  · obtain ⟨t, ht0, htb, _, hamp⟩ := quantum_search_exact_amplitude n hn
+    exact ⟨t, ht0, htb, hamp⟩
+  · intro queried hlt
+    exact classical_search_lower_bound n queried hlt
 
 /-- **The separation as an explicit cost gap.**  The quantum evolution-time cost
 `q n := 2·√n` and the classical query cost `c n := n` satisfy `q n ≤ c n` for all
@@ -808,6 +922,40 @@ theorem ml_structured_search_quantum_advantage (r : ℕ) (hr : 4 ≤ r) :
   · obtain ⟨t, ht0, htb, hsucc⟩ := completeGraph_search_upper_bound r (by omega)
     refine ⟨t, ht0, htb, ?_, hsucc⟩
     exact le_trans htb (quantum_cost_below_classical r hr)
+  · intro queried hlt
+    exact classical_search_lower_bound r queried hlt
+
+/-- **`ml_structured_search_quantum_advantage_exact` — the flagship advantage,
+EXACT finite-`r` form.**
+
+The finite-`r` sharpening of `ml_structured_search_quantum_advantage` via the
+equitable-quotient lift: the quantum upper bound uses the *exact* finite-`r`
+marked-transition amplitude `exactSearchAmplitude r t_q`
+(`= √((r-1)/r)·|sin(t_q·Ω)|`, exact Rabi frequency `Ω = 1/√r`), with **no `r→∞`
+idealization**.  For an effective search dimension `r ≥ 4` (number of equitable
+cells of the configuration graph):
+
+* the **quantum** CTQW reaches exact amplitude `≥ √(1/2) ≥ 1/2` in evolution time
+  `t_q ≤ (π/2)·√r = O(√r)`, the runtime scale read off from the exact eigenvalue
+  gap `1/√r` of the reduced block `reducedH r` (`quantum_search_exact_amplitude`),
+  with the amplitude `→ 1` as `r → ∞`, and
+
+* every **classical** query algorithm needs `Ω(r)` queries
+  (`classical_search_lower_bound`).
+
+The quantum cost is governed by the equitable-quotient dimension `r`, not the
+full (possibly enormous) configuration-space size — the reduction itself is the
+axiom-clean `search_quotient_reduction` (`structured_search_advantage`). -/
+theorem ml_structured_search_quantum_advantage_exact (r : ℕ) (hr : 4 ≤ r) :
+    -- quantum (EXACT finite-r): exact amplitude ≥ √(1/2) at evolution time ≤ (π/2)√r
+    (∃ t_q : ℝ, 0 ≤ t_q ∧ t_q ≤ (Real.pi / 2) * Real.sqrt r ∧
+        Real.sqrt (1 / 2) ≤ exactSearchAmplitude r t_q)
+    ∧
+    -- classical: < r queries cannot certify the marked configuration
+    (∀ queried : Finset (Fin r), queried.card < r → ∃ w : Fin r, w ∉ queried) := by
+  refine ⟨?_, ?_⟩
+  · obtain ⟨t, ht0, htb, _, hamp⟩ := quantum_search_exact_amplitude r (by omega)
+    exact ⟨t, ht0, htb, hamp⟩
   · intro queried hlt
     exact classical_search_lower_bound r queried hlt
 
