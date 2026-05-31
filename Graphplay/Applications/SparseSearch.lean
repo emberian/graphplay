@@ -573,15 +573,24 @@ theorem hypercube_search_quotient_reduction (d : ℕ) (w : Fin (2^d)) (γ : ℝ)
   search_quotient_reduction (hammingPartition d w) ({w} : Finset (Fin (2^d))) γ
     (markedSet_cellUniform d w) weights
 
-/-! ## The headline theorem. -/
+/-! ## The headline theorems (split: proven reduction vs. honest timing).
 
-/-- **`hypercube_sparse_search_advantage` — the headline.**  The Boolean hypercube
-`Q_d` is a **degree-`log₂ N` (sparse, physically realizable)** host whose marked
-CTQW search dynamics reduce, via its Hamming-distance equitable quotient, to a
-`(d+1)`-dimensional search — exhibiting the same quadratic advantage as the
-all-to-all `K_n`, but on a buildable graph.
+To keep theorem **names honest**, the proven structural content (sparsity +
+equitable reduction) and the unproven dynamical content (the `O(√N)` timing) are
+stated as *separate* theorems:
 
-The statement bundles the **genuinely proven (axiom-clean)** halves:
+* `hypercube_sparse_search_reduction` — the **axiom-clean deliverable**:
+  log-degree sparsity AND the equitable Hamming-chain reduction.  No timing
+  clause, fully `#print axioms`-clean.
+* `hypercube_search_optimal_timing` — the **honest frontier**: the `O(√N)`
+  `IsOptimalCTQWSearch` clause, carrying the single `-- BLOCKED:` `sorry`. -/
+
+/-- **`hypercube_sparse_search_reduction` — the axiom-clean deliverable.**  The
+Boolean hypercube `Q_d` is a **degree-`log₂ N` (sparse, physically realizable)**
+host whose marked CTQW search dynamics reduce, via its Hamming-distance equitable
+quotient, to a `(d+1)`-dimensional search.  This theorem asserts ONLY the
+genuinely proven (axiom-clean) halves — it does NOT claim the `O(√N)` timing
+advantage (see `hypercube_search_optimal_timing` for that, honest-`sorry`d):
 
 * **Sparsity / buildability.**  `Q_d` is `d`-regular with `d = log₂ N` — log-degree,
   unlike `K_N`'s degree `N − 1`.
@@ -589,14 +598,8 @@ The statement bundles the **genuinely proven (axiom-clean)** halves:
 * **Equitable reduction.**  The distance-from-`w` partition into the `d+1` cells is
   equitable (the binomial branching), the marked set `{w}` is a union of cells, and
   the host search Hamiltonian collapses to the `(d+1)`-dimensional collapsed-Hamming
-  quotient chain (`hypercube_search_quotient_reduction`).
-
-The deep `O(√N)` spectral-gap **timing** clause — that this `(d+1)`-dimensional
-reduced search actually reaches constant amplitude in time `O(√N)` — leans on the
-CNO spectral-ratio criterion of `Graphplay.Search.CNO`; it is the single honest
-`sorry` (the perturbative amplitude/time analysis of arXiv:2004.12686, exactly the
-same dynamical core sorried by the `K_n` flagship `complete_graph_optimal_search`). -/
-theorem hypercube_sparse_search_advantage (d : ℕ) (hd : 1 ≤ d) (w : Fin (2^d)) :
+  quotient chain (`hypercube_search_quotient_reduction`). -/
+theorem hypercube_sparse_search_reduction (d : ℕ) (hd : 1 ≤ d) (w : Fin (2^d)) :
     -- (1) SPARSITY / BUILDABILITY (proven, axiom-clean):
     ((Hypercube d).isRegular (d : ℂ) ∧ d = Nat.log 2 (Fintype.card (Fin (2^d))))
     ∧
@@ -610,16 +613,25 @@ theorem hypercube_sparse_search_advantage (d : ℕ) (hd : 1 ≤ d) (w : Fin (2^d
           (fun v => ∑ ib, weights ib * P'.cellUniformVec ib v)
         = (fun v => ∑ ib,
             ((-(γ : ℂ) • P'.symmQuotient - markedDiag (Fin (d + 1))).mulVec weights) ib *
-              P'.cellUniformVec ib v))
-    ∧
-    -- (3) O(√N) TIMING: the reduced search is CNO-optimal (BLOCKED on spectral
-    --     timing — the single honest sorry):
+              P'.cellUniformVec ib v)) := by
+  refine ⟨⟨hypercube_isRegular d, hypercube_sparse d⟩, ?_⟩
+  intro γ weights
+  exact hypercube_search_quotient_reduction d w γ weights
+
+/-- **`hypercube_search_optimal_timing` — the honest frontier (single `sorry`).**
+The deep `O(√N)` spectral-gap **timing** claim: the `(d+1)`-dimensional reduced
+hypercube search actually reaches constant amplitude in time `O(√N)`, i.e. it is
+CNO-optimal (`IsOptimalCTQWSearch`).  This leans on the CNO spectral-ratio
+criterion of `Graphplay.Search.CNO`; it is the single honest `sorry` (the
+perturbative amplitude/time analysis of arXiv:2004.12686, exactly the same
+dynamical core sorried by the `K_n` flagship `complete_graph_optimal_search`).
+
+This is the ONLY clause that asserts the search *advantage* (timing), and it is
+honestly unproven; the proven structural reduction is `hypercube_sparse_search_reduction`. -/
+theorem hypercube_search_optimal_timing (d : ℕ) (hd : 1 ≤ d) (w : Fin (2^d)) :
     IsOptimalCTQWSearch (Hypercube d) w := by
-  refine ⟨⟨hypercube_isRegular d, hypercube_sparse d⟩, ?_, ?_⟩
-  · intro γ weights
-    exact hypercube_search_quotient_reduction d w γ weights
-  · -- BLOCKED: needs CNO spectral-ratio timing
-    sorry
+  -- BLOCKED: needs CNO spectral-ratio timing
+  sorry
 
 /-! ## Generalization (the "tower" thesis): the CNO frontier.
 
@@ -978,49 +990,60 @@ the PST/search-chip sense) **and** sits spectrally in the high-dimensional regim
 so it *does* win.  The logarithmic dimensionality of `Q_d` threads the needle
 between buildability and advantage that the literal spatial lattice cannot. -/
 
-/-- **`buildable_lattice_no_advantage_low_dim` — the honest contrast theorem.**
-For every *physically spatial* lattice — dimension `d ≤ 3` (every realizable
-2D/3D chip), with side `L ≥ 3` — continuous-time spatial search does **NOT**
-achieve the optimal `Θ(√N)` quadratic speedup, *even though the lattice is the
-most buildable host* (constant degree `2d`, nearest-neighbour).  Meanwhile the
-Boolean hypercube `Q_e` (degree `e = log₂N`, also buildable) **does** achieve it
-(`hypercube_sparse_search_advantage`).
+/-- **`buildable_lattice_structural_contrast` — the axiom-clean structural
+contrast.**  The genuinely-proven (axiom-clean) half of the buildability-vs-
+advantage tension: the spatial lattice `Z_L^d` is `2d`-regular with `N = L^d`
+vertices (constant-degree, maximally buildable), while the Boolean hypercube
+`Q_e` is `e`-regular with `e = log₂N` (log-degree, also buildable).  Both
+sparsity facts are axiom-clean; this theorem makes **no** dynamical (timing /
+advantage) claim — that is `buildable_lattice_dynamical_contrast` (honest-`sorry`). -/
+theorem buildable_lattice_structural_contrast
+    (d L : ℕ) [Fact (2 < L)] (e : ℕ) :
+    -- the lattice is `2d`-regular with `L^d` vertices (proven, axiom-clean):
+    ((latticeGraph d L).isRegular ((2 * d : ℕ) : ℂ)
+      ∧ Fintype.card (LatticeVertex d L) = L ^ d)
+    ∧
+    -- the hypercube is `e`-regular with `e = log₂N` (proven, axiom-clean):
+    ((Hypercube e).isRegular (e : ℂ)
+      ∧ e = Nat.log 2 (Fintype.card (Fin (2 ^ e)))) := by
+  exact ⟨⟨latticeGraph_isRegular d L, latticeGraph_card d L⟩,
+    ⟨hypercube_isRegular e, hypercube_sparse e⟩⟩
+
+/-- **`buildable_lattice_dynamical_contrast` — the honest dynamical contrast
+(`sorry`-carrying).**  For every *physically spatial* lattice — dimension
+`d ≤ 3` (every realizable 2D/3D chip), with side `L ≥ 3` — continuous-time
+spatial search does **NOT** achieve the optimal `Θ(√N)` quadratic speedup, *even
+though the lattice is the most buildable host* (constant degree `2d`,
+nearest-neighbour).  Meanwhile the Boolean hypercube `Q_e` (degree `e = log₂N`,
+also buildable) **does** achieve it.
 
 Buildability and advantage are therefore in genuine tension: the literal spatial
 lattice is maximally buildable but search-suboptimal, while the hypercube's
 *logarithmic* dimensionality threads the needle.  Childs–Goldstone
 (`quant-ph/0306054`): optimal lattice search requires `d > 4`.
 
-The statement bundles the two genuinely-proven structural facts (the lattice is
-`2d`-regular and constant-degree-sparse; the hypercube is `e`-regular and
-`log₂N`-sparse) with the honest dynamical contrast (lattice not optimal for
-`d ≤ 3`; hypercube optimal).  The non-advantage direction is the `d ≤ 3` (`≤ 4`)
-half of `lattice_search_dimension_threshold`, an honest `sorry`. -/
-theorem buildable_lattice_no_advantage_low_dim
+Both dynamical clauses are honestly **unproven**: the lattice non-advantage is
+the `d ≤ 3` half of `lattice_search_dimension_threshold` (an honest `sorry`),
+and the hypercube advantage is `hypercube_search_optimal_timing` (also an honest
+`sorry`).  The axiom-clean structural facts are split off into
+`buildable_lattice_structural_contrast`. -/
+theorem buildable_lattice_dynamical_contrast
     (d L : ℕ) [Fact (2 < L)] (hd : d ≤ 3) (w : LatticeVertex d L)
     (e : ℕ) (he : 1 ≤ e) (wQ : Fin (2 ^ e)) :
-    -- (1) the lattice IS maximally buildable (proven, axiom-clean):
-    ((latticeGraph d L).isRegular ((2 * d : ℕ) : ℂ)
-      ∧ Fintype.card (LatticeVertex d L) = L ^ d)
-    ∧
-    -- (2) yet the buildable lattice does NOT get the advantage (d ≤ 3):
+    -- the buildable lattice does NOT get the advantage (d ≤ 3):
     ¬ IsOptimalCTQWSearch (latticeGraph d L) w
     ∧
-    -- (3) WHILE the (also buildable, log-degree) hypercube DOES:
-    ((Hypercube e).isRegular (e : ℂ)
-      ∧ e = Nat.log 2 (Fintype.card (Fin (2 ^ e)))
-      ∧ IsOptimalCTQWSearch (Hypercube e) wQ) := by
-  refine ⟨⟨latticeGraph_isRegular d L, latticeGraph_card d L⟩, ?_, ?_, ?_, ?_⟩
+    -- WHILE the (also buildable, log-degree) hypercube DOES:
+    IsOptimalCTQWSearch (Hypercube e) wQ := by
+  refine ⟨?_, ?_⟩
   · -- lattice not optimal for d ≤ 3: the negative half of the threshold.
     -- BLOCKED: Childs–Goldstone d ≤ 4 sub-criticality (quant-ph/0306054); for
     -- d ≤ 3 the lattice Green's function diverges in the IR and the search
     -- amplitude saturates below the optimal constant.
     rw [lattice_search_dimension_threshold d L w]
     omega
-  · exact hypercube_isRegular e
-  · exact hypercube_sparse e
-  · -- hypercube optimal: from the flagship advantage (its honest CNO-timing sorry).
-    exact ((hypercube_sparse_search_advantage e he wQ).2.2)
+  · -- hypercube optimal: the honest CNO-timing frontier.
+    exact hypercube_search_optimal_timing e he wQ
 
 end SparseSearch
 end Graphplay

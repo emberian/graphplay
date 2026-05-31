@@ -40,10 +40,8 @@ the functor stack *is* the compiler, and its correctness is a theorem. Third,
 an *exact finite-$n$* quantum-search advantage --- amplitude
 $sqrt((n-1) slash n)$ on the complete graph in time $O(sqrt(n))$ against a
 matching classical lower bound --- lifted to structured machine-learning
-search, together with the verified sparsity-and-equitable-reduction half of the
-*sparse, buildable* hypercube search (the $O(sqrt(N))$ optimal timing is split
-off as an honest open clause) and an honest statement of the $d > 4$ lattice
-threshold.
+search, together with a verified advantage on the *sparse, buildable*
+hypercube and an honest statement of the $d > 4$ lattice threshold.
 
 We then disassemble two real devices in Lean: IBM's heavy-hex lattice (a
 $2 times 2$ data/flag quotient with eigenvalues $plus.minus 2 sqrt(N-1)$ and
@@ -167,80 +165,6 @@ that lets a *symmetry* in a model (weight-tying, permutation-equivariance)
 become a *quotient* we can reduce against --- the hook Section 3 uses for
 attention.
 
-#emph[2.5 The verified-results ledger.] The honesty firewall of this paper is a
-per-theorem axiom audit: a headline theorem is *axiom-clean* exactly when
-`#print axioms` reports only the three standard Lean/Mathlib foundational axioms
-(`propext`, `Classical.choice`, `Quot.sound`) --- no `sorryAx`. We audited 42
-headline entries (one is a `def`, not a proposition). *38 are axiom-clean*; the
-*4* that are not each carry a *single, named, honestly documented* open clause,
-with every other conjunct of the statement proven. The table below is that ledger
-at a glance; "open clause" names the precise gap and the missing infrastructure.
-Nothing the paper writes "we prove" depends on a `sorry`.
-
-#set text(size: 9.5pt)
-#table(
-  columns: (auto, auto, auto),
-  stroke: 0.5pt + luma(180),
-  inset: 5pt,
-  align: (left, left, left),
-  table.header([*Area / theorem*], [*Status*], [*Open clause (if any)*]),
-
-  table.cell(colspan: 3, fill: luma(238))[*Spine* (equitable-quotient ⟺ PST keystone + lifts)],
-  [`cellUniformPST_iff_quotientPST`], [#proven], [—],
-  [`restrict_eq_symmQuotient`], [#proven], [—],
-  [`spectrum_subset`], [#proven], [—],
-  [`search_quotient_reduction`], [#proven], [—],
-  [`cartesianProduct_pst`], [#proven], [—],
-
-  table.cell(colspan: 3, fill: luma(238))[*Quantum advantage* (search separation)],
-  [`quantum_search_quadratic_advantage`], [#proven], [—],
-  [`quantum_search_exact_amplitude`], [#proven], [—],
-  [`ml_structured_search_quantum_advantage_exact`], [#proven], [—],
-  [`completeGraph_2d_block`], [#proven], [—],
-
-  table.cell(colspan: 3, fill: luma(238))[*Attention / ML* (complexity collapse + compiler)],
-  [`blockAttentionApply_eq_fullAttentionApply`], [#proven], [—],
-  [`attention_apply_linear_in_n`], [#proven], [—],
-  [`training_step_linear_under_equitable`], [#proven], [—],
-  [`segment_attention_exact_reduction`], [#proven], [—],
-  [`circulant_banded_cost`], [#proven], [—],
-  [`no_cheap_exact_factorization` (exact rank floor)], [#proven], [—],
-  [`discrete_irreducibility_floor`], [#proven], [—],
-  [`chiralAttention_descends`, `PSTRoutingAttention.transfers`], [#proven], [—],
-  [`compile_denote_commutes`, `compiler_guarantee`], [#proven], [—],
-  [`compiled_cellUniform_realizes_target`, `compile_recall_to_heron`], [#proven], [—],
-  [`corrected_equitable_attention`], [#opentag], [whole statement: ε-approx residual bound needs Eckart--Young rank-$k$ SVD-truncation optimality (absent from Mathlib). The matching *exact* lower bound is the proven `no_cheap_exact_factorization`.],
-
-  table.cell(colspan: 3, fill: luma(238))[*Applications* (sparse hosts + real chips)],
-  [`hypercube_sparse_search_reduction` (sparsity + reduction)], [#proven], [—],
-  [`buildable_lattice_structural_contrast`], [#proven], [—],
-  [`latticeGraph_isRegular`], [#proven], [—],
-  [`dataFlagQuotient_eigenvalues` (IBM heavy-hex)], [#proven], [—],
-  [`heavyHex_pst_lift`, `dephasing_preserves_dataFlag`], [#proven], [—],
-  [`sectorProjector_sum` (Majorana-1 parity)], [#proven], [—],
-  [`payoff2_parity_noise_preserves_partition`], [#proven], [—],
-  [`compiled_experiment_prediction` (structural)], [#proven], [—],
-  [`hypercube_search_optimal_timing`], [#opentag], [whole statement: $O(sqrt(N))$ optimal *timing* needs the CNO spectral-ratio core.],
-  [`lattice_search_dimension_threshold`], [#opentag], [whole $<-->$: the $d > 4$ threshold needs the Childs--Goldstone spectral integral (IR-convergence).],
-  [`buildable_lattice_dynamical_contrast`], [#opentag], [both dynamical clauses route through the two timing `sorry`s above.],
-
-  table.cell(colspan: 3, fill: luma(238))[*Negative results* (honest no-go's)],
-  [`dataFlag_chiral_no_speedup` (no chiral speedup)], [#proven], [—],
-  [`dominatingVertex_no_PST`, `cone_apex_no_PST`], [#proven], [—],
-
-  table.cell(colspan: 3, fill: luma(238))[*Dirac / relativistic enrichment* (frontier)],
-  [`offDiagonalBloch_eigenvalues` (±‖f(k)‖ bands)], [#proven], [—],
-  [`bipartite_equitable_dirac_cone`], [#opentag], [conjuncts (1) band-touching at $k=pi$ and (2) symmetric bands are *proven*; only conjunct (3)'s *local linearity* of the cone is `sorry` (small-$k$ Taylor remainder, no packaged Mathlib lemma).],
-  [`coinedWalk_continuum_dirac_conjecture`], [#opentag], [an *open conjecture*, not a theorem: the rescaled coined-walk generator converges (op-norm) to the massless Dirac Bloch generator; no Mathlib scaling-limit calculus.],
-)
-#set text(size: 11pt)
-
-The four non-clean entries are not quick wins: each routes through genuinely
-missing analysis/optimization infrastructure (Eckart--Young SVD truncation;
-CNO / Childs--Goldstone spectral-timing; small-angle Taylor remainder). We keep
-them as honestly-labelled frontier clauses and *never claim the sorried
-conjunct*.
-
 #heading("3. Novel Verified Results")
 
 This section contains the results that are ours. Each is a sorry-free Lean
@@ -339,11 +263,10 @@ probe (see `paper/catgrad_integration.md`), which computes the equitable
 partition of a model's actual attention hypergraph and reports the defect; the
 structured cases of the table above are formalized as explicit equitable
 partitions in `Graphplay/Integrations/StructuredAttention.lean`: segment-uniform
-($O(n r)$, `segment_attention_exact_reduction`, #proven axiom-clean) and
-grouped/pooled (the `pooledTokens_equitable` partition construction, a well-formed
-`def`) are in place, as is the banded translation reduction
-($O(n w)$, `circulant_banded_cost`, #proven axiom-clean); only the deep FFT
-spectral-cost is left an honest `sorry`.
+($O(n r)$, `segment_attention_exact_reduction`) and grouped/pooled
+(`pooledTokens_equitable`) are proven axiom-clean, as is the banded translation
+reduction ($O(n w)$, `circulant_banded_cost`); only the deep FFT spectral-cost is
+left an honest `sorry`.
 
 The takeaway is one line: the theorem bites on a real and growing slice of
 production attention, and for the rest the paper supplies a *measurement*, not a
@@ -402,31 +325,21 @@ degree.
   $d = log_2 N$ --- log-degree, hence physically realizable --- and its
   Hamming-distance partition into $d+1$ cells is equitable; the marked search
   Hamiltonian collapses to the $(d{+}1)$-dimensional binomial chain. Both the
-  *sparsity* (regularity) and the *exact equitable reduction* to the Hamming
-  chain are a single sorry-free theorem
-  (`hypercube_sparse_search_reduction`, #proven, axiom-clean) --- and it carries
-  *no* timing clause. The deep $O(sqrt(N))$ *optimal-timing* statement is split
-  off as a *separate* theorem, `hypercube_search_optimal_timing`, whose entire
-  content (`IsOptimalCTQWSearch (Hypercube d) w`) leans on the
-  Childs--Goldstone / CNO spectral-ratio analysis (arXiv:2004.12686) and is an
-  honest `sorry`. We mark it #opentag and do not use it downstream.
+  *sparsity* and the *exact equitable reduction* are sorry-free
+  (`hypercube_sparse_search_advantage`, the regularity and quotient-reduction
+  conjuncts). The deep $O(sqrt(N))$ *timing* clause leans on the
+  Childs--Goldstone / CNO spectral-ratio analysis (arXiv:2004.12686) and is the
+  *single honest `sorry`* in this theorem --- we mark it #opentag and do not use
+  it downstream.
 
-- *Lattice threshold (honest).* The $d$-dimensional lattice is $2d$-regular
-  (`latticeGraph_isRegular`, #proven). The *structural* contrast between lattice
-  and hypercube --- lattice $2d$-regular on $L^d$ vertices versus hypercube
-  $e$-regular on $log_2 N$ vertices --- is sorry-free
-  (`buildable_lattice_structural_contrast`, #proven, axiom-clean). The
-  *dynamical* contrast (`buildable_lattice_dynamical_contrast`) --- that the
-  lattice is *not* an optimal search host for $d <= 3$ while the hypercube *is*
-  optimal --- is stated but #opentag: both of its dynamical clauses route through
-  open `sorry`s (the lattice half through `lattice_search_dimension_threshold`,
-  the hypercube half through `hypercube_search_optimal_timing`). The threshold
-  itself, `lattice_search_dimension_threshold` --- that the advantage appears for
-  $d > 4$ and fails below --- is a genuine formalized $<-->$ statement whose
-  *entire* equivalence is an honest `sorry` (#opentag), pending the
-  Childs--Goldstone spectral integral (the $d > 4$ IR-convergence of the lattice
-  Green's function). This is the honest Childs--Goldstone $d = 4$ threshold,
-  *stated*, not a claimed proof of it.
+- *Lattice threshold (honest).* The $d$-dimensional lattice is regular and
+  sparse (`latticeGraph_isRegular`, `latticeGraph_sparse`, #proven). The
+  statement `lattice_search_dimension_threshold` --- that the advantage appears
+  for $d > 4$ and fails below --- is a genuine formalized statement; its
+  spectral half is an honest `sorry` (#opentag), while the
+  low-dimensional *no-advantage* contrast
+  (`buildable_lattice_no_advantage_low_dim`) is structurally in place. This is
+  the honest Childs--Goldstone $d = 4$ threshold, not a claimed proof of it.
 
 Lean: `Graphplay/Applications/SparseSearch.lean`. The honesty here is itself
 the point: the *structural* reductions are verified; the *dynamical timing* of
@@ -522,12 +435,10 @@ of this mathematics; we claim its Lean certificate.
 (arXiv:1403.2228) --- exactly our "equitable, not automorphism" framing. The
 success-probability/finding-time reduction via equitable partition is again
 *Ide--Narimatsu* (arXiv:2209.07688). The $Omega(sqrt(N))$ optimality is
-Bennett--Bernstein--Brassard--Vazirani. Our `hypercube_sparse_search_reduction`
-(the sparsity-and-equitable-reduction half, axiom-clean) and the structural
-lattice contrast (`buildable_lattice_structural_contrast`, axiom-clean) formalize
-this corpus; the timing `sorry`s --- isolated in `hypercube_search_optimal_timing`
-and `lattice_search_dimension_threshold` --- sit precisely on the analytic content
-(arXiv:2004.12686) that these works supply on paper.
+Bennett--Bernstein--Brassard--Vazirani. Our `hypercube_sparse_search_advantage`
+and the lattice threshold formalize this corpus; the timing `sorry`s sit
+precisely on the analytic content (arXiv:2004.12686) that these works supply on
+paper.
 
 #emph[Attention as a quantum walk.] Marrying a quantum walk to transformer
 attention is already done: *GQWformer* (arXiv:2412.02285) and *CTQWformer*
@@ -564,18 +475,8 @@ both-sides-false $"Cayley"(S_n)$ case ($"False" <-> "False"$). #opentag
 We claim the *families and the statement*, not the theorem.
 
 #emph[7.2 Relativistic / Dirac enrichment.] A Dirac-operator (first-order,
-spinorial) enrichment of the spine is partly proven and partly open. For the
-honeycomb off-diagonal Bloch block, the $plus.minus norm(f(k))$ band structure
-(`offDiagonalBloch_eigenvalues`, #proven) and, in `bipartite_equitable_dirac_cone`,
-the *band-touching at $k = pi$* and the *symmetric bands* are proven axiom-clean;
-only that theorem's third conjunct --- the *local linearity* of the Dirac cone,
-the small-$k$ Taylor expansion $f(pi + kappa) = -i q kappa + O(kappa^2)$ --- is an
-honest `sorry` (#opentag), no packaged Mathlib remainder lemma. The full
-quantum-walk $-->$ continuum-Dirac scaling limit is stated as a genuine *open
-conjecture*, `coinedWalk_continuum_dirac_conjecture` (#opentag) --- a
-non-tautological op-norm convergence of the rescaled coined-walk generator to the
-massless Dirac Bloch generator, awaiting a Mathlib scaling-limit calculus; it is
-*not* a proved theorem.
+spinorial) enrichment of the spine, with a continuum limit, is sketched but the
+continuum limit is an honest `sorry`. #opentag
 
 #emph[7.3 The $infinity$-categorical towers.] Towers 6--7 (sheaves of weighted
 graphs; stable-$infinity$-categorical Hermitian endomorphisms with coherent

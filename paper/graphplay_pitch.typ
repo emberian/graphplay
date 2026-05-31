@@ -32,9 +32,10 @@ denotes, and is strictly cheaper. (3) Verified quantum-search advantage on a
 *sparse, physically buildable* host: the Boolean hypercube's
 Hamming-distance equitable quotient collapses marked search to a
 $(d{+}1)$-dimensional chain, with sparsity and the exact equitable reduction
-proven axiom-clean (`hypercube_sparse_search_advantage`); we are honest that the
-$O(sqrt(N))$ *timing* clause, and the $d > 4$ lattice threshold
-(`lattice_search_dimension_threshold`), are deferred to the
+proven axiom-clean (`hypercube_sparse_search_reduction`); we are honest that the
+$O(sqrt(N))$ *optimal-timing* statement is a *separate* theorem
+(`hypercube_search_optimal_timing`, an open `sorry`), as is the $d > 4$ lattice
+threshold (`lattice_search_dimension_threshold`), both deferred to the
 Chakraborty--Novo--Roland spectral criterion. (4) Verified spectral
 disassembly of real chips --- IBM heavy-hex (`dataFlagQuotient_eigenvalues`)
 and the Microsoft Majorana-1 parity sectors (`sectorProjector_sum`) --- as
@@ -97,17 +98,21 @@ frontend for emitting these programs from real models.)
 
 #emph[Result 3 --- Search advantage on a buildable sparse host.
 #text(fill: rgb("#9a6700"))[proven core / deferred timing].]
-`hypercube_sparse_search_advantage` (`Applications/SparseSearch.lean`) proves,
+`hypercube_sparse_search_reduction` (`Applications/SparseSearch.lean`) proves,
 axiom-clean, that the Boolean hypercube $Q_d$ is (a) $d$-regular with $d = log_2 N$
 --- log-degree, hence sparse and physically realizable, unlike $K_N$'s degree
 $N{-}1$ --- and (b) that its Hamming-distance partition is equitable and
-collapses marked CTQW search exactly to a $(d{+}1)$-dimensional chain. The
-remaining $O(sqrt(N))$ *timing* clause is the single honest `sorry`, deferred to
-the Chakraborty--Novo--Roland spectral-ratio criterion (arXiv:2004.12686) ---
-the same dynamical core deferred by the $K_n$ flagship. The general lattice
-story is stated as `lattice_search_dimension_threshold`: a $d$-dimensional
-lattice supports the advantage iff $d > 4$ (Childs--Goldstone); the statement is
-written, its spectral (forward) half deferred. The exact finite-$n$ $K_n$
+collapses marked CTQW search exactly to a $(d{+}1)$-dimensional chain (this
+theorem carries *no* timing clause). The $O(sqrt(N))$ *optimal-timing* statement
+is a *separate* theorem, `hypercube_search_optimal_timing`, whose whole content is
+a single honest `sorry`, deferred to the Chakraborty--Novo--Roland spectral-ratio
+criterion (arXiv:2004.12686) --- the same dynamical core deferred by the $K_n$
+flagship. The structural lattice-vs-hypercube contrast is itself proven axiom-clean
+(`buildable_lattice_structural_contrast`); the general lattice *threshold* is
+stated as `lattice_search_dimension_threshold`: a $d$-dimensional lattice supports
+the advantage iff $d > 4$ (Childs--Goldstone); the statement is written, its
+*entire* equivalence deferred (as is the dynamical contrast
+`buildable_lattice_dynamical_contrast`). The exact finite-$n$ $K_n$
 amplitude `quantum_search_exact_amplitude` is fully proven.
 
 #emph[Result 4 --- Verified disassembly of real chips. #text(fill: rgb("#1a7f37"))[proven].]
@@ -265,8 +270,13 @@ we will fold into the spine.
 `quantum_search_exact_amplitude`, `cellUniformPST_iff_quotientPST`,
 `dataFlagQuotient_eigenvalues`, `sectorProjector_sum`,
 `compiled_experiment_prediction` (structural).
-#emph[Proven core / deferred clause:] `hypercube_sparse_search_advantage`,
-`lattice_search_dimension_threshold`.
-#emph[Open:] Conjecture 9.3, $infinity$-categorical towers, CNO timing, Dirac
+#emph[Proven core (axiom-clean):] `hypercube_sparse_search_reduction`,
+`buildable_lattice_structural_contrast`.
+#emph[Stated, open clause:] `hypercube_search_optimal_timing` (timing),
+`lattice_search_dimension_threshold` ($d>4$), `buildable_lattice_dynamical_contrast`,
+`corrected_equitable_attention` (ε-approx), `bipartite_equitable_dirac_cone`
+(cone local-linearity).
+#emph[Open:] Conjecture 9.3, $infinity$-categorical towers, CNO timing,
+`coinedWalk_continuum_dirac_conjecture`, Dirac
 limit. #emph[Contact:] open an issue on the repository. Collaborators welcome at
 any level.]
