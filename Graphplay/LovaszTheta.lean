@@ -59,6 +59,8 @@ import Mathlib.Data.Real.StarOrdered
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Analysis.Matrix.Spectrum
 import Mathlib.Combinatorics.SimpleGraph.LapMatrix
+import Mathlib.Algebra.QuadraticDiscriminant
+import Mathlib.Algebra.Order.Chebyshev
 import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.QuantumGraph
@@ -599,31 +601,249 @@ theorem alpha_le_lovaszTheta
   rw [hα]
   exact le_trans (le_of_eq rfl) (le_csSup (lovaszTheta_bddAbove G) hmem)
 
+/-! ### The covering bound `ϑ(G) ≤ χ(Ḡ)` (weak duality)
+
+We now BUILD the upper half of the Lovász sandwich.  The proof is the
+standard weak-duality / clique-cover argument, broken into elementary
+pieces:
+
+* `posSemidef_bilinForm_sq_le` — the bilinear Cauchy–Schwarz inequality
+  for a PSD matrix: `(u ⬝ X ⬝ w)² ≤ (u ⬝ X ⬝ u)(w ⬝ X ⬝ w)`.  Proved from
+  the quadratic discriminant of `t ↦ q(u + t•w) ≥ 0`.
+* `lovaszThetaFeasible.objective_le_chromatic_compl` — for any feasible
+  `X` and any colouring of `Ḡ` by `Fin k` (= a cover of `G` by `k`
+  cliques), the objective `∑∑ Xᵢⱼ ≤ k`.  Decompose `1 = ∑_a yₐ` over
+  colour classes `yₐ` (clique indicators); then
+  `∑∑ Xᵢⱼ = ∑_{a,b} yₐᵀXy_b ≤ ∑_{a,b} √(pₐ)√(p_b) = (∑_a √pₐ)² ≤ k·∑_a pₐ`,
+  where `pₐ = yₐᵀXyₐ = ∑_{i∈class a} Xᵢᵢ` (off-diagonal terms inside a
+  clique vanish, being edges of `G`), so `∑_a pₐ = tr X = 1`.
+
+This is genuine weak duality; no `sorry` is used in the chain below. -/
+
+/-- **Bilinear Cauchy–Schwarz for a PSD matrix.**  If `X` is positive
+semidefinite (real, symmetric), then for any two vectors `u w : V → ℝ`,
+
+    `(u ⬝ᵥ (X *ᵥ w))² ≤ (u ⬝ᵥ (X *ᵥ u)) · (w ⬝ᵥ (X *ᵥ w))`.
+
+Proof: the quadratic `t ↦ (u + t•w) ⬝ᵥ X (u + t•w)` is `≥ 0` for every
+real `t` (PSD), so its discriminant is `≤ 0`; expanding gives the claim. -/
+theorem posSemidef_bilinForm_sq_le
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {X : Matrix V V ℝ} (hX : X.PosSemidef) (u w : V → ℝ) :
+    (u ⬝ᵥ (X *ᵥ w)) ^ 2 ≤ (u ⬝ᵥ (X *ᵥ u)) * (w ⬝ᵥ (X *ᵥ w)) := by
+  -- symmetry of the bilinear form: `w ⬝ X u = u ⬝ X w`.
+  have hXT : X.transpose = X := by
+    have hH := hX.isHermitian
+    ext i j
+    have := congrFun (congrFun hH.eq j) i
+    simpa [Matrix.conjTranspose_apply, Matrix.transpose_apply] using this.symm
+  have hsymm : w ⬝ᵥ (X *ᵥ u) = u ⬝ᵥ (X *ᵥ w) := by
+    have := Matrix.dotProduct_transpose_mulVec X w u
+    rwa [hXT] at this
+  -- the quadratic form `q(t) = a t² + b t + c ≥ 0` for all `t`.
+  set a : ℝ := w ⬝ᵥ (X *ᵥ w) with ha
+  set b : ℝ := 2 * (u ⬝ᵥ (X *ᵥ w)) with hb
+  set c : ℝ := u ⬝ᵥ (X *ᵥ u) with hc
+  have hquad : ∀ t : ℝ, 0 ≤ a * (t * t) + b * t + c := by
+    intro t
+    have hge := hX.dotProduct_mulVec_nonneg (u + t • w)
+    have hstar : star (u + t • w) = u + t • w := by
+      ext i; simp [star_trivial]
+    rw [hstar] at hge
+    -- expand `(u + t w) ⬝ X (u + t w)`
+    have hexp : (u + t • w) ⬝ᵥ (X *ᵥ (u + t • w))
+        = c + t * (w ⬝ᵥ (X *ᵥ u)) + t * (u ⬝ᵥ (X *ᵥ w)) + (t * t) * a := by
+      simp only [Matrix.mulVec_add, Matrix.mulVec_smul, add_dotProduct,
+        dotProduct_add, smul_dotProduct, dotProduct_smul, smul_eq_mul]
+      rw [ha, hc]; ring
+    rw [hexp, hsymm] at hge
+    -- `hge : 0 ≤ c + t*(u⬝Xw) + t*(u⬝Xw) + (t*t)*a`; goal uses `b = 2*(u⬝Xw)`.
+    nlinarith [hge, hb]
+  -- discriminant `b² - 4ac ≤ 0`.
+  have hdisc : discrim a b c ≤ 0 := discrim_le_zero hquad
+  rw [discrim] at hdisc
+  -- `hdisc : b^2 - 4*a*c ≤ 0`; goal: `(u⬝Xw)^2 ≤ c*a` with `b = 2*(u⬝Xw)`.
+  nlinarith [hdisc, hb]
+
+end Graphplay
+
+namespace Graphplay
+
+/-- **Covering bound, primal form.**  For a feasible point `X` of the
+Lovász θ SDP on `G` and any proper colouring `C` of the complement `Ḡ`
+using colours `Fin k`, the SDP objective is at most `k`:
+
+    `∑ᵢ ∑ⱼ Xᵢⱼ ≤ k`.
+
+This is the weak-duality / clique-cover bound: each colour class of `Ḡ`
+is a clique of `G`, off-diagonal entries of `X` inside a clique vanish
+(they are edges of `G`), and a double Cauchy–Schwarz collapses the
+all-pairs objective to `k · tr X = k`. -/
+theorem lovaszThetaFeasible.objective_le_chromatic_compl
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj]
+    {X : Matrix V V ℝ} (hX : lovaszThetaFeasible G X)
+    {k : ℕ} (C : Gᶜ.Coloring (Fin k)) :
+    ∑ i, ∑ j, X i j ≤ (k : ℝ) := by
+  classical
+  obtain ⟨_hHerm, hPSD, htr, hedge⟩ := hX
+  -- colour-class indicator vectors `y a : V → ℝ`.
+  set y : Fin k → V → ℝ := fun a i => if C i = a then (1 : ℝ) else 0 with hy
+  -- `∑_a y a i = 1` for every vertex (each vertex has exactly one colour).
+  have hpartition : ∀ i, ∑ a, y a i = 1 := by
+    intro i
+    simp only [hy]
+    rw [Finset.sum_ite_eq Finset.univ (C i) (fun _ => (1:ℝ))]
+    simp
+  -- the per-class "energy" `p a = y a ⬝ X y a`.
+  set p : Fin k → ℝ := fun a => y a ⬝ᵥ (X *ᵥ y a) with hp
+  -- each `p a ≥ 0` (PSD).
+  have hp_nonneg : ∀ a, 0 ≤ p a := by
+    intro a
+    have := hPSD.dotProduct_mulVec_nonneg (y a)
+    rwa [show star (y a) = y a from by ext i; simp [star_trivial]] at this
+  -- the bilinear form `B a b = y a ⬝ X y b`.
+  set B : Fin k → Fin k → ℝ := fun a b => y a ⬝ᵥ (X *ᵥ y b) with hB
+  -- (1) the objective equals `∑_{a,b} B a b`.  Use bilinearity of the form:
+  -- `∑_{a,b} (y a) ⬝ X (y b) = (∑_a y a) ⬝ X (∑_b y b)`, and `∑_a y a = 1`.
+  have hones : (∑ a, y a) = (fun _ => (1 : ℝ)) := by
+    funext i; simpa using hpartition i
+  have hobj : ∑ i, ∑ j, X i j = ∑ a, ∑ b, B a b := by
+    -- collapse the double sum of bilinear forms into a single form on `∑ y`.
+    have hmulVec_sum : (X *ᵥ (∑ b, y b)) = ∑ b, (X *ᵥ y b) := by
+      funext i
+      simp only [Matrix.mulVec, dotProduct, Finset.sum_apply]
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl (fun j _ => ?_)
+      rw [Finset.mul_sum]
+    have hcollapse : ∑ a, ∑ b, B a b
+        = (∑ a, y a) ⬝ᵥ (X *ᵥ (∑ b, y b)) := by
+      simp only [hB]
+      rw [hmulVec_sum, sum_dotProduct]
+      refine Finset.sum_congr rfl (fun a _ => ?_)
+      rw [dotProduct_sum]
+    rw [hcollapse, hones]
+    -- `1 ⬝ X 1 = ∑_i ∑_j X i j`.
+    simp only [dotProduct, Matrix.mulVec, one_mul, mul_one]
+
+  -- (2) `∑_a p a = tr X = 1`: off-diagonal entries inside a clique vanish.
+  have hp_sum : ∑ a, p a = 1 := by
+    have hpa : ∀ a, p a = ∑ i, (if C i = a then X i i else 0) := by
+      intro a
+      simp only [hp, dotProduct, Matrix.mulVec, hy]
+      -- `y a ⬝ (X (y a)) = ∑_i [C i = a] ∑_j [C j = a] X i j`
+      rw [show (∑ i, (if C i = a then (1:ℝ) else 0) *
+              ∑ j, X i j * (if C j = a then (1:ℝ) else 0))
+            = ∑ i, ∑ j, (if C i = a then (1:ℝ) else 0) *
+                (if C j = a then (1:ℝ) else 0) * X i j from by
+        refine Finset.sum_congr rfl (fun i _ => ?_)
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl (fun j _ => ?_); ring]
+      refine Finset.sum_congr rfl (fun i _ => ?_)
+      -- inner sum over `j`: only `j` with `C j = a` survive, and among those
+      -- only `j = i` gives nonzero (others are `G`-edges in the clique).
+      rw [Finset.sum_eq_single i]
+      · by_cases hi : C i = a <;> simp [hi]
+      · intro j _ hji
+        by_cases hi : C i = a
+        · by_cases hj : C j = a
+          · -- `i ≠ j`, both colour `a` in `Ḡ` ⟹ clique of `G` ⟹ edge of `G` ⟹ `X i j = 0`
+            have hne : i ≠ j := fun h => hji h.symm
+            have hnotadjc : ¬ Gᶜ.Adj i j :=
+              C.not_adj_of_mem_colorClass (by simpa [SimpleGraph.Coloring.colorClass] using hi)
+                (by simpa [SimpleGraph.Coloring.colorClass] using hj)
+            have hadj : G.Adj i j := by
+              by_contra hadj
+              exact hnotadjc (by rw [SimpleGraph.compl_adj]; exact ⟨hne, hadj⟩)
+            simp [hedge i j hadj]
+          · simp [hj]
+        · simp [hi]
+      · simp
+    -- sum over `a`: each diagonal `X i i` counted once (its own colour).
+    have : ∑ a, p a = ∑ a, ∑ i, (if C i = a then X i i else 0) := by
+      exact Finset.sum_congr rfl (fun a _ => hpa a)
+    rw [this, Finset.sum_comm]
+    rw [show (∑ i, ∑ a, (if C i = a then X i i else 0)) = ∑ i, X i i from by
+      refine Finset.sum_congr rfl (fun i _ => ?_)
+      rw [Finset.sum_ite_eq Finset.univ (C i) (fun _ => X i i)]
+      simp]
+    exact htr
+  -- (3) bilinear Cauchy–Schwarz: `B a b ≤ √(p a) * √(p b)`.
+  have hB_cs : ∀ a b, B a b ≤ Real.sqrt (p a) * Real.sqrt (p b) := by
+    intro a b
+    have hsq : (B a b) ^ 2 ≤ p a * p b := by
+      simpa [hB, hp] using posSemidef_bilinForm_sq_le hPSD (y a) (y b)
+    have habs : B a b ≤ |B a b| := le_abs_self _
+    have : |B a b| = Real.sqrt ((B a b) ^ 2) := by rw [Real.sqrt_sq_eq_abs]
+    calc B a b ≤ |B a b| := habs
+      _ = Real.sqrt ((B a b) ^ 2) := this
+      _ ≤ Real.sqrt (p a * p b) := Real.sqrt_le_sqrt hsq
+      _ = Real.sqrt (p a) * Real.sqrt (p b) := Real.sqrt_mul (hp_nonneg a) _
+  -- (4) assemble: objective ≤ (∑ √p a)² ≤ k · ∑ p a = k.
+  calc ∑ i, ∑ j, X i j
+      = ∑ a, ∑ b, B a b := hobj
+    _ ≤ ∑ a, ∑ b, Real.sqrt (p a) * Real.sqrt (p b) := by
+        apply Finset.sum_le_sum; intro a _
+        apply Finset.sum_le_sum; intro b _
+        exact hB_cs a b
+    _ = (∑ a, Real.sqrt (p a)) ^ 2 := by
+        rw [sq, Finset.sum_mul_sum]
+    _ ≤ (k : ℝ) * ∑ a, (Real.sqrt (p a)) ^ 2 := by
+        have := sq_sum_le_card_mul_sum_sq (s := (Finset.univ : Finset (Fin k)))
+          (f := fun a => Real.sqrt (p a))
+        simpa using this
+    _ = (k : ℝ) * ∑ a, p a := by
+        congr 1
+        refine Finset.sum_congr rfl (fun a _ => ?_)
+        rw [Real.sq_sqrt (hp_nonneg a)]
+    _ = (k : ℝ) := by rw [hp_sum, mul_one]
+
+/-- **The covering bound `ϑ(G) ≤ χ(Ḡ)`.**  The Lovász theta number is at
+most the chromatic number of the complement (= the clique-cover number of
+`G`).  This is the upper half of the Lovász sandwich, proved by weak
+duality: the complement is finite-colourable, and any colouring caps every
+feasible objective via `lovaszThetaFeasible.objective_le_chromatic_compl`. -/
+theorem lovaszTheta_le_chromaticNumber_compl
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj] :
+    lovaszTheta G ≤ (chromaticNumber Gᶜ : ℝ) := by
+  classical
+  -- `k := χ(Ḡ)`; `Ḡ` is finite, hence colourable with `k` colours.
+  set k : ℕ := chromaticNumber Gᶜ with hk
+  have hcolorable : Gᶜ.Colorable k := by
+    rw [hk, chromaticNumber]
+    exact Gᶜ.colorable_chromaticNumber_of_fintype
+  -- a concrete colouring `C : Coloring (Fin k)`.
+  obtain ⟨C⟩ : Nonempty (Gᶜ.Coloring (Fin k)) := hcolorable
+  -- every feasible objective is `≤ k`; take the sSup.
+  unfold lovaszTheta
+  rcases Set.eq_empty_or_nonempty
+      { v : ℝ | ∃ X : Matrix V V ℝ, lovaszThetaFeasible G X ∧ v = ∑ i, ∑ j, X i j }
+      with hempty | hne
+  · rw [hempty, Real.sSup_empty]; positivity
+  · refine Real.sSup_le ?_ (by positivity)
+    rintro v ⟨X, hX, rfl⟩
+    exact lovaszThetaFeasible.objective_le_chromatic_compl G hX C
+
 /-- **Lovász sandwich theorem.**  For every finite simple graph `G`,
 
     α(G) ≤ ϑ(G) ≤ χ(Ḡ).
 
 The first inequality is Lovász's "independence number bound" — now proven
 axiom-clean as the standalone lemma `alpha_le_lovaszTheta` (indicator
-outer-product witness), which this theorem simply invokes.  The second is
-the "covering bound": any proper colouring of `Ḡ` by `k` colours yields a
-feasible point of the dual SDP with objective `k`.  The second conjunct is
-the deep dual-SDP / clique-cover direction and remains a documented
-`sorry`. -/
+outer-product witness).  The second is the "covering bound", now also
+proven axiom-clean as `lovaszTheta_le_chromaticNumber_compl` (weak
+duality: a colouring of `Ḡ` by `k` colours caps every feasible objective
+at `k`). -/
 theorem alpha_le_theta_le_chiBar
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj] :
     (independenceNumber G : ℝ) ≤ lovaszTheta G
     ∧ lovaszTheta G ≤ (chromaticNumber Gᶜ : ℝ) := by
-  refine ⟨alpha_le_lovaszTheta G, ?_⟩
-  -- HONEST SORRY (deep): the covering bound `ϑ(G) ≤ χ(Ḡ)`.  This is "weak duality"
-  -- between the trace-1 PSD primal and the clique-cover dual: a proper colouring of
-  -- `Ḡ` by `k` colours yields a dual-feasible point of value `k`.  Note this is the
-  -- *hypothesis* shape of `LovaszSDPDuality.strong_duality`, not its conclusion
-  -- (that field consumes weak duality + Slater and outputs the *equality* of optima).
-  -- So the field cannot non-circularly *produce* `ϑ ≤ χ̄`, and the file builds no
-  -- concrete colouring→dual-matrix map to supply weak duality directly.  Left honest.
-  sorry
+  -- Both halves are now genuine lemmas: the lower half is `alpha_le_lovaszTheta`
+  -- (indicator outer-product witness) and the upper half is the weak-duality
+  -- covering bound `lovaszTheta_le_chromaticNumber_compl`.
+  exact ⟨alpha_le_lovaszTheta G, lovaszTheta_le_chromaticNumber_compl G⟩
 
 /-! ## Equitable-partition monotonicity (Tower 1 ↔ Tower 2 bridge)
 
@@ -846,17 +1066,23 @@ theorem alpha_eq_theta_eq_chiBar_of_perfect
     (_hG : IsPerfect G) :
     (independenceNumber G : ℝ) = lovaszTheta G
     ∧ lovaszTheta G = (chromaticNumber Gᶜ : ℝ) := by
-  -- HONEST SORRY (deep).  `PerfectGraphSandwich.alpha_eq_theta_eq_chiBar` is the
-  -- intended discharging field: given the perfection predicate plus the *sandwich
-  -- inequalities* `α ≤ ϑ` and `ϑ ≤ χ̄`, it returns the equalities `α = ϑ ∧ ϑ = χ̄`.
-  -- We have `α ≤ ϑ` (`alpha_le_lovaszTheta`), but the second input `ϑ ≤ χ̄` is the
-  -- deep covering bound that is itself an unbuilt honest sorry here (the
-  -- second conjunct of `alpha_le_theta_le_chiBar`).  So `PerfectGraphSandwich`
-  -- cannot be wired axiom-clean until that bound exists: the collapse step is
-  -- conditional on a premise this file cannot yet supply.  Left honest rather
-  -- than routing through the (still-sorry'd) sandwich, which would only re-import
-  -- `sorryAx`.
-  sorry
+  -- The sandwich `α ≤ ϑ ≤ χ̄` is now BUILT axiom-clean (both halves are genuine
+  -- lemmas).  The collapse therefore reduces to the single Berge-perfection
+  -- equality `α(G) = χ̄(G)` (equivalently `ω(Ḡ) = χ(Ḡ)`, perfection of `Ḡ`):
+  -- given `α = χ̄` and `α ≤ ϑ ≤ χ̄`, all three coincide by antisymmetry.
+  obtain ⟨hαθ, hθχ⟩ := alpha_le_theta_le_chiBar G
+  -- ISOLATED HONEST GAP: `α(G) = χ̄(G)` on a perfect graph.  With the current
+  -- `IsPerfect G` (= perfection of `G`'s induced subgraphs), this is `ω(Ḡ) = χ(Ḡ)`,
+  -- i.e. perfection of the *complement* `Ḡ` — which follows from the Lovász
+  -- Perfect Graph Theorem (`G` perfect ⟺ `Ḡ` perfect).  That theorem is not in
+  -- Mathlib; this is the SOLE residual gap, isolated as one clean equality on a
+  -- TRUE statement.  Everything else (the collapse from it) is genuine below.
+  have hαχ : (independenceNumber G : ℝ) = (chromaticNumber Gᶜ : ℝ) := by
+    sorry
+  -- collapse by antisymmetry: `α ≤ ϑ ≤ χ̄ = α` forces all equal.
+  refine ⟨le_antisymm hαθ ?_, le_antisymm hθχ ?_⟩
+  · rw [hαχ]; exact hθχ
+  · rw [← hαχ]; exact hαθ
 
 /-- **Tightness characterisation.**  On a perfect graph, the
 equitable-partition lift of `Graphplay.Equitable.quotient` realises the
@@ -902,14 +1128,14 @@ theorem lovaszTheta_complement_le_chromaticNumber
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj] :
     lovaszTheta Gᶜ ≤ (chromaticNumber G : ℝ) := by
-  -- From `alpha_le_theta_le_chiBar` applied to `Gᶜ`, plus the
-  -- involution `(Ḡ)ᶜ = G`.
-  -- HONEST SORRY: pure corollary of the deep covering bound `ϑ ≤ χ̄`
-  -- (the second conjunct of `alpha_le_theta_le_chiBar`).  As established there,
-  -- `LovaszSDPDuality.strong_duality` produces *equalities* from weak-duality
-  -- inputs and cannot non-circularly yield this inequality; this corollary
-  -- therefore has no axiom-clean route here and stays honest.
-  sorry
+  classical
+  -- Apply the covering bound `ϑ(H) ≤ χ(Hᶜ)` to `H := Gᶜ`, then use `(Gᶜ)ᶜ = G`.
+  have h := lovaszTheta_le_chromaticNumber_compl (G := Gᶜ)
+  -- `h : lovaszTheta Gᶜ ≤ (chromaticNumber (Gᶜ)ᶜ : ℝ)`; rewrite `(Gᶜ)ᶜ = G`.
+  rw [show Gᶜᶜ = G from compl_compl G] at h
+  -- The `chromaticNumber` value depends only on the graph (eq of graphs), so the
+  -- coerced bound transfers.
+  exact h
 
 /-- **Engineering corollary: spectral lower bound on cell count.**
 
@@ -934,10 +1160,12 @@ theorem card_cells_ge_lovaszTheta_complement
     (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj]
     (_P : EquitablePartition (SimpleGraph.toWeighted G) I) :
     lovaszTheta Gᶜ ≤ (Fintype.card I : ℝ) := by
-  -- See the docstring for the proof chain.
-  -- HONEST SORRY: depends on the deep covering bound `ϑ ≤ χ̄` and equitable
-  -- monotonicity, both still honest sorries above and neither matched by the
-  -- assigned interfaces; no axiom-clean route here.
+  -- See the docstring for the proof chain.  The covering bound `ϑ ≤ χ̄` is now
+  -- BUILT (`lovaszTheta_le_chromaticNumber_compl`), so the only remaining gap is
+  -- equitable-quotient monotonicity of `ϑ`, isolated as the single named honest
+  -- lemma `lovaszTheta_via_equitable_partition` (still `sorry`).  Once that lemma
+  -- is discharged this corollary follows by the quotient/colouring chain; until
+  -- then it remains conditional on exactly that one named lemma.
   sorry
 
 /-! ## Tower-3 connection: `ϑ` and the coherent algebra

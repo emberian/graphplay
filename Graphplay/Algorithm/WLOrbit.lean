@@ -606,6 +606,21 @@ theorem kWL_eq_kAritySameOrbit
       ∀ {I : Type} [Fintype I] [DecidableEq I]
         (colour : (Fin k → V) → I) (_h : IsKWLStable G k colour),
       ∀ u v : Fin k → V, colour u = colour v ↔ kAritySameOrbit G₀ k u v := by
+  -- BLOCKED: false under the current `IsKWLStable` definition. The *constant*
+  -- colouring `colour ≡ c` satisfies `IsKWLStable` (the fixed-point clause holds
+  -- with `w' := w`), yet for it `colour u = colour v` holds for ALL `u v`, so the
+  -- iff would force `kAritySameOrbit G₀ k u v` for every pair of k-tuples — false
+  -- as soon as `G₀` has more than one `Aut`-orbit on `V^k` (e.g. any non-edge-
+  -- transitive graph for `k ≥ 2`). No choice of `k₀` escapes this, because the
+  -- counterexample colouring exists for every `k`.
+  --
+  -- The genuine statement requires `colour` to be the *coarsest* k-WL-stable
+  -- (the canonical k-WL fixed point reached from the initial atomic-type
+  -- colouring), not an arbitrary stable colouring; and even then the forward
+  -- direction `colour u = colour v → same orbit` only holds for `k ≥ |V|`
+  -- (it is exactly what CFI shows fails for fixed `k`). Closing it needs the
+  -- round-indexed k-WL refinement operator and its convergence proof, which are
+  -- not yet available here. Honest `sorry`.
   sorry
 
 /-- **CFI lower bound (statement).**

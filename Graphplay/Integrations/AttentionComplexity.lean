@@ -251,6 +251,7 @@ theorem attention_quantum_composition
     (cell : Fin n → Fin r) (V : Fin n → Fin d → ℝ)
     (hblock : ∀ i j, A i j = B (cell i) (cell j))
     {V' : Type} [Fintype V'] [DecidableEq V'] (G : WeightedGraph V')
+    (hGinv : IsUnit G.adj.det)
     {I : Type} [Fintype I] [DecidableEq I] (P : EquitablePartition G I)
     (hQinv : IsUnit P.symmQuotient.det) (bcoord : I → ℂ) (ε : ℝ) (hε : 0 < ε) :
     -- (1) classical: linear apply is correct and linear in n
@@ -276,13 +277,11 @@ theorem attention_quantum_composition
             inv := hQinv
             b := bcoord }, rfl, rfl, rfl, ?_⟩
   -- The exact restriction is the spine's quotient-inversion lift, surfaced in
-  -- MachineLearning.ridge_inversion_restricts_to_quotient.  We need G.adj invertible;
-  -- the *deep* quantum-rate guarantee (that walkTime O(κ/ε) suffices) is upstream in
-  -- ctqw_success and is the honest sorry here — the *restriction equality* itself is
-  -- proven via the spine when G.adj is invertible, which is the structural content.
-  -- The clause asserts the n-independent quotient solve exists with exact restriction;
-  -- the restriction half is `inversion_restricts_to_quotient`, gated on G.adj unit.
-  sorry
+  -- MachineLearning.ridge_inversion_restricts_to_quotient (gated on the hypothesis
+  -- `hGinv : IsUnit G.adj.det`, now in scope).  The *deep* quantum-rate guarantee
+  -- (that walkTime O(κ/ε) suffices) remains upstream in ctqw_success; here the
+  -- restriction equality is discharged directly by the spine lemma.
+  exact MachineLearning.ridge_inversion_restricts_to_quotient G hGinv P hQinv bcoord
 
 /-! ## 5. Training step: forward AND backward are linear in `n`
 

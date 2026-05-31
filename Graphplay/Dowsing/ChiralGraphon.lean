@@ -841,9 +841,22 @@ theorem open_iteratedHammingChiral_strict_speedup :
     ¬ (∀ R : Fin 4 → Fin 4 → ℝ,
         ChiralGraphonExamples.iteratedHammingChiral.kernel
           = fun x y => (R x y : ℂ)) := by
-  -- Genuinely open as a *mixing-time* comparison; here recorded at the
-  -- kernel-realness level as an honest theorem-level `sorry`.
-  sorry
+  -- If the kernel were a real cast, then every entry would be real; but the
+  -- `(0, 1)`-entry is `unitaryHammingChiralK4.adj 0 1 = chiralK4Matrix 0 1 = -i`,
+  -- which has imaginary part `-1 ≠ 0`.  Instantiate at the entrywise real part.
+  intro h
+  have hentry : ChiralGraphonExamples.iteratedHammingChiral.kernel (0 : Fin 4) (1 : Fin 4)
+      = -Complex.I := by
+    show unitaryHammingChiralK4.adj (0 : Fin 4) (1 : Fin 4) = -Complex.I
+    rw [show unitaryHammingChiralK4.adj = chiralK4Matrix from chiralK4_adj_eq]
+    simp [chiralK4Matrix]
+  -- The hypothesis applied at `R x y := (kernel x y).re` forces the entry to be real.
+  have hreal := congrArg (fun f => f (0 : Fin 4) (1 : Fin 4))
+    (h (fun x y => (ChiralGraphonExamples.iteratedHammingChiral.kernel x y).re))
+  simp only at hreal
+  -- `hreal : kernel 0 1 = ((kernel 0 1).re : ℂ)`; with `hentry` this gives `-i = 0`.
+  rw [hentry] at hreal
+  simp at hreal
 
 /-- **Open theorem 3 (Anantharaman et al. — quantum graphs in
 Benjamini–Schramm limits).**

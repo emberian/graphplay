@@ -247,9 +247,15 @@ diagonal "belief supports"), so reachability is decided by a finite search.
 This is a genuine `Prop` capturing the decidable content. -/
 theorem classical_reachable_finite_horizon
     {A : Type u} [Fintype A] {O : Type u} [Fintype O]
-    (M : QOMDP d A O) (hM : M.IsClassical) :
+    (M : QOMDP d A O) (_hM : M.IsClassical) :
     M.Reachable ↔ ∃ N : ℕ, ∃ π : QOMDP.Policy A, π.length ≤ N ∧ M.goalProb π = 1 := by
-  sorry
+  constructor
+  · -- Reachable gives a witnessing policy `π`; take the horizon `N = π.length`.
+    rintro ⟨π, hπ⟩
+    exact ⟨π.length, π, le_refl _, hπ⟩
+  · -- A bounded-horizon witness is in particular a witness.
+    rintro ⟨_N, π, _hlen, hπ⟩
+    exact ⟨π, hπ⟩
 
 /-! ### 5. The headline theorem: QOMDP goal-state reachability is undecidable
 

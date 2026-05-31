@@ -166,11 +166,13 @@ theorem stepFunction_approximation_rate
   -- blocks refine the cells of `P`, then apply the BCLSV stepping
   -- operator.  By BCLSV Thm. 3.6, for sufficiently fine `Π_N` the
   -- step-graphon `step(W, Π_N)` is `ε`-close to `W` in cut norm.
-  refine ⟨?_, 0, ?_, trivial⟩
-  · -- The sequence is produced by the construction of
-    -- `arises_from_consistent_sequence`; deferred.
-    sorry
-  · exact Nat.zero_le _
+  -- The sequence is produced by the construction of
+  -- `arises_from_consistent_sequence`: that theorem already builds a
+  -- consistent partition sequence whose quotients converge to `P.quotient`.
+  -- The quantitative cut-norm rate (BCLSV Thm. 3.6) is packaged as `True`
+  -- here, so it suffices to extract that sequence.
+  obtain ⟨𝒮, _h_lim, _⟩ := GraphonEquitablePartition.arises_from_consistent_sequence W P
+  exact ⟨𝒮, 0, Nat.zero_le _, trivial⟩
 
 /-! ## 3. Uniqueness modulo measure-preserving transformations
 

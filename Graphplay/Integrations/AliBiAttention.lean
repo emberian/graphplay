@@ -64,12 +64,11 @@ the restriction of this symmetric bias to the lower triangle; see
 
 ## Honest `sorry`
 
-* None at the `def` level, and **none** on the structural theorems above (they
-  are elementary and proven axiom-clean).  The only honest gap is the *deep
-  dynamical* softmax claim `aliBiBias_softmax_localizes` — that a large slope `m`
-  makes the softmax over biased scores concentrate on near-diagonal keys (the
-  quantitative locality of ALiBi attention) — which is genuine analysis content
-  (`-- BLOCKED:`) and is stated precisely without overclaim.
+* **None.**  Neither at the `def` level nor on the theorems: the structural facts
+  are elementary, and the quantitative softmax-localization claim
+  `aliBiBias_softmax_localizes` — that the out-of-band softmax mass decays
+  *geometrically* in the band half-width `w` (`≤ K·rʷ`, `r = e^{−m} < 1`) — is now
+  fully proven by the elementary `e^{−m·d}` tail bound, axiom-clean.
 
 ## References
 
@@ -355,40 +354,92 @@ theorem aliBiBandedCost_le_full (n w d : ℕ) (hw : 2 * w + 1 ≤ n) :
     aliBiBandedCost n w d ≤ AttentionComplexity.fullCost n d :=
   StructuredAttention.banded_le_full n w d hw
 
-/-! ### The deep dynamical claim (honest `sorry`)
+/-! ### The quantitative localization claim (PROVEN, geometric tail)
 
-The genuine *quantitative* localization — that a large slope `m` makes the
-softmax over biased scores concentrate its mass on near-diagonal keys (so the
-truncation to a band of half-width `w` incurs error `≤ ε`) — is real analysis
-content (geometric-series tail bound on `e^{−m·d}`), orthogonal to the
-equitable-partition / Toeplitz spine.  We state it precisely; the structural
-content above (Toeplitz, translation automorphism, path-distance, scale-free,
-banded count) is the fully-proven deliverable. -/
+The genuine *quantitative* localization — that the ALiBi slope `m` makes the
+softmax over biased scores concentrate its mass on near-diagonal keys, with the
+out-of-band mass decaying **geometrically** in the band half-width `w` — is the
+elementary tail bound on `e^{−m·d}`.  We state and *prove* it precisely below
+(`aliBiBias_softmax_localizes`): the out-of-band weight is `≤ K·rʷ` with
+`r = e^{−m} < 1`.  The structural content above (Toeplitz, translation
+automorphism, path-distance, scale-free, banded count) and this tail estimate are
+the fully-proven deliverable. -/
 
-/-- **Softmax localization under strong ALiBi slope (honest statement).**
+/-- **Softmax localization under ALiBi slope — geometric out-of-band decay
+(PROVEN).**
 
-For any tolerance `ε > 0` and (pure-positional) ALiBi scores `−m·|i−j|`, there
-is a slope `m` and a band half-width `w` such that the softmax attention from any
-query `i` places mass `≥ 1 − ε` on the in-band keys `{j : |i−j| ≤ w}` — i.e. the
-biased attention is `ε`-localized to the near-diagonal band.  We state the
-*existence* of an effective `(m, w)` realizing the localization (the precise
-content that makes `aliBiBandedCost` an honest approximation).
+The genuine localization claim: the *un-normalized softmax mass outside* a band of
+half-width `w` decays **geometrically in `w`**.  For a fixed positive slope `m`,
+write `r := exp(−m) ∈ (0,1)`.  Then for every query `i` and every band half-width
+`w`, the total ALiBi softmax weight on the out-of-band keys `{j : |i−j| > w}` is
+bounded by `K · rʷ` with the explicit constant `K := n · exp(−m)`:
+`∑_{|i−j| > w} exp(−m·|i−j|) ≤ K · rʷ`.
 
--- BLOCKED: this is the deep softmax-tail analysis — the normalized weights
--- `e^{−m·|i−j|} / ∑_k e^{−m·|i−k|}` have geometric-series tails, so the off-band
--- mass is `O(e^{−m·w})`; choosing `m, w` to beat `ε` is a real-analysis
--- estimate (geometric series + dominated tail), orthogonal to the
--- translation-equitable / path-distance spine proven above.  Honest `sorry` on
--- a precisely-stated existence claim; the structural content is fully proven.
--/
-theorem aliBiBias_softmax_localizes (n : ℕ) (ε : ℝ) (hε : 0 < ε) :
-    ∃ (m : ℝ) (w : ℕ), 0 < m ∧ w < n ∧
-      ∀ i : Fin n,
-        (∑ j ∈ Finset.univ.filter (fun j : Fin n => |(i : ℝ) - (j : ℝ)| ≤ w),
-            Real.exp (aliBiBias m n i j))
-          ≥ (1 - ε) * (∑ j : Fin n, Real.exp (aliBiBias m n i j)) := by
-  -- See `-- BLOCKED:` above: geometric-series softmax-tail estimate.
-  sorry
+This is **genuinely non-vacuous** and *not* trivialised by `w := n − 1`: the bound
+must hold for **all** `w` simultaneously, and `0 < r < 1`, so the right-hand side
+`K·rʷ → 0` geometrically as `w` grows.  (The old `∃ m w, in-band ≥ (1−ε)·total`
+shape was satisfied by `w := n−1`, where the band is the whole sequence; here the
+content is the *decay rate* of the tail, which a degenerate `w` cannot fake — the
+claim quantifies over every `w`.)  Because the normaliser `Zᵢ = ∑_k exp(−m|i−k|)
+≥ exp(0) = 1` (the diagonal `k = i` term), the *normalised* out-of-band probability
+is also `≤ K·rʷ`, so the band truncation of `aliBiBandedCost` incurs error that
+vanishes geometrically — the precise content making the banded apply honest.
+
+Proven by the elementary tail bound: each out-of-band term has `|i−j| ≥ w+1`, so
+`exp(−m|i−j|) ≤ exp(−m(w+1)) = exp(−m)·rʷ`, and there are at most `n` such keys. -/
+theorem aliBiBias_softmax_localizes (n : ℕ) (m : ℝ) (hm : 0 < m) :
+    ∀ (w : ℕ) (i : Fin n),
+      (∑ j ∈ Finset.univ.filter (fun j : Fin n => (w : ℝ) < |(i : ℝ) - (j : ℝ)|),
+          Real.exp (aliBiBias m n i j))
+        ≤ (n * Real.exp (-m)) * (Real.exp (-m)) ^ w := by
+  intro w i
+  set S := Finset.univ.filter (fun j : Fin n => (w : ℝ) < |(i : ℝ) - (j : ℝ)|) with hS
+  -- Each out-of-band term is `≤ exp(-m)·rʷ`.
+  have hterm : ∀ j ∈ S, Real.exp (aliBiBias m n i j)
+      ≤ Real.exp (-m) * (Real.exp (-m)) ^ w := by
+    intro j hj
+    have hjmem : (w : ℝ) < |(i : ℝ) - (j : ℝ)| := by
+      have := (Finset.mem_filter.mp (hS ▸ hj)).2
+      simpa using this
+    -- `exp(-m)·rʷ = exp(-m(w+1))`, and `|i-j| ≥ w+1 > w`, so `-m|i-j| ≤ -m(w+1)`.
+    rw [aliBiBias_apply, ← Real.exp_nat_mul, ← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    have hdist : (w : ℝ) + 1 ≤ |(i : ℝ) - (j : ℝ)| := by
+      -- `|i - j|` is an integer distance `> w`, hence `≥ w + 1`.
+      have hint : ∃ k : ℕ, |(i : ℝ) - (j : ℝ)| = (k : ℝ) := by
+        refine ⟨(max i.val j.val) - (min i.val j.val), ?_⟩
+        rcases le_total (i.val) (j.val) with h | h
+        · rw [abs_of_nonpos (by
+              have : (i : ℝ) ≤ (j : ℝ) := by exact_mod_cast h
+              linarith)]
+          rw [max_eq_right h, min_eq_left h]
+          push_cast [Nat.cast_sub h]; ring
+        · rw [abs_of_nonneg (by
+              have : (j : ℝ) ≤ (i : ℝ) := by exact_mod_cast h
+              linarith)]
+          rw [max_eq_left h, min_eq_right h]
+          push_cast [Nat.cast_sub h]; ring
+      obtain ⟨k, hk⟩ := hint
+      rw [hk] at hjmem ⊢
+      have : w < k := by exact_mod_cast hjmem
+      have : w + 1 ≤ k := this
+      exact_mod_cast this
+    have hkey : -m * |(i : ℝ) - (j : ℝ)| ≤ -m * ((w : ℝ) + 1) := by
+      apply mul_le_mul_of_nonpos_left hdist (by linarith)
+    nlinarith [hkey]
+  -- Sum-of-bounded-terms `≤ card · bound ≤ n · bound`.
+  calc (∑ j ∈ S, Real.exp (aliBiBias m n i j))
+      ≤ ∑ _j ∈ S, Real.exp (-m) * (Real.exp (-m)) ^ w :=
+        Finset.sum_le_sum hterm
+    _ = S.card * (Real.exp (-m) * (Real.exp (-m)) ^ w) := by
+        rw [Finset.sum_const, nsmul_eq_mul]
+    _ ≤ n * (Real.exp (-m) * (Real.exp (-m)) ^ w) := by
+        apply mul_le_mul_of_nonneg_right _ (by positivity)
+        have : S.card ≤ Fintype.card (Fin n) := by
+          simpa using Finset.card_le_univ S
+        rw [Fintype.card_fin] at this
+        exact_mod_cast this
+    _ = (n * Real.exp (-m)) * (Real.exp (-m)) ^ w := by ring
 
 /-! ## 7. Summary — ALiBi as translation-equitable path-distance bias
 

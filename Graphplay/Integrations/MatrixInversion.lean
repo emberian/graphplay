@@ -224,7 +224,20 @@ theorem inversion_restricts_to_quotient
     (bcoord : I → ℂ) :
     (G.adj⁻¹).mulVec (fun v => ∑ i, bcoord i * P.cellUniformVec i v)
       = (fun v => ∑ i, (P.symmQuotient⁻¹.mulVec bcoord) i * P.cellUniformVec i v) := by
-  sorry
+  -- Set `y := ∑ i, (Q̃⁻¹ bcoord) i • cuv i`.  By `restrict_eq_symmQuotient`,
+  -- `A y = ∑ i, (Q̃ (Q̃⁻¹ bcoord)) i • cuv i = ∑ i, bcoord i • cuv i = b`.
+  -- Applying `A⁻¹` to both sides and cancelling gives `A⁻¹ b = y`.
+  set y : V → ℂ := fun v => ∑ i, (P.symmQuotient⁻¹.mulVec bcoord) i * P.cellUniformVec i v
+    with hy
+  -- `A.mulVec y = b`.
+  have hAy : G.adj.mulVec y
+      = (fun v => ∑ i, bcoord i * P.cellUniformVec i v) := by
+    rw [hy, P.restrict_eq_symmQuotient (P.symmQuotient⁻¹.mulVec bcoord)]
+    have hcancel : P.symmQuotient.mulVec (P.symmQuotient⁻¹.mulVec bcoord) = bcoord := by
+      rw [Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv _ hQinv, Matrix.one_mulVec]
+    rw [hcancel]
+  -- Apply `A⁻¹` to both sides and cancel `A⁻¹ A = 1`.
+  rw [← hAy, Matrix.mulVec_mulVec, Matrix.nonsing_inv_mul _ hinv, Matrix.one_mulVec]
 
 /-! ### 5. Summary
 

@@ -191,9 +191,24 @@ even cardinality, which follows from `σ` being a fixed-point-free involution
 on a finite set). -/
 theorem card_E_eq_two_mul_numEdges (M : CombinatorialMap V E) :
     Fintype.card E = 2 * M.numEdges := by
-  -- `σ` is a fixed-point-free involution, so its orbits all have size 2 and
-  -- `Fintype.card E` is even.  Deferred.
-  sorry
+  -- `σ` is a fixed-point-free involution, so its support is all of `E` and its
+  -- cycle type consists entirely of 2-cycles; hence `Fintype.card E` is even.
+  classical
+  -- `σ` has no fixed points, so its support is the whole dart set.
+  have hsupp : M.σ.support = (Finset.univ : Finset E) := by
+    rw [Finset.eq_univ_iff_forall]
+    intro e
+    exact Equiv.Perm.mem_support.mpr (M.σ_no_fixed e)
+  -- `σ ^ 2 = σ * σ = 1`.
+  have hsq : M.σ ^ 2 = 1 := by
+    rw [pow_two]; exact M.σ_involutive
+  -- Therefore `2 ∣ #support = card E`.
+  have hdvd : 2 ∣ Fintype.card E := by
+    have h := Equiv.Perm.two_dvd_card_support hsq
+    rwa [hsupp, Finset.card_univ] at h
+  -- `card E = 2 * (card E / 2) = 2 * numEdges`.
+  unfold numEdges
+  exact (Nat.mul_div_cancel' hdvd).symm
 
 /-- **Euler-Poincaré identity for orientable embeddings.**  When the
 combinatorial map represents a connected cellular embedding on the orientable

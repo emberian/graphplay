@@ -154,8 +154,11 @@ theorem hamming_uniformMixing_iff_q_le_4 (n q : ℕ) (hn : 1 ≤ n) (hq : 2 ≤ 
     (∃ τ : ℝ, IsUniformMixing (Hamming n q) τ) ↔ q ≤ 4 := by
   refine ⟨?_, ?_⟩
   · -- Forward: if uniform mixing occurs, then `q ≤ 4`.  Contrapositive of
-    -- `hamming_no_uniformMixing_of_q_ge_5`.
-    sorry
+    -- `hamming_no_uniformMixing_of_q_ge_5`: if `q ≥ 5`, no time `τ` mixes.
+    rintro ⟨τ, hmix⟩
+    by_contra hq4
+    have hq5 : 5 ≤ q := by omega
+    exact hamming_no_uniformMixing_of_q_ge_5 n q hq5 hn τ hmix
   · -- Backward: choose `τ = 2π / q`.
     intro hle
     refine ⟨2 * Real.pi / q, ?_⟩

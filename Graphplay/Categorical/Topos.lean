@@ -730,7 +730,16 @@ theorem assembly_completeness :
     ∃ (α : Type) (eval : Term → α),
       (∀ {s t : Term}, LawvereEq s t → eval s = eval t) ∧
       (∀ {s t : Term}, eval s = eval t → LawvereEq s t) := by
-  sorry
+  -- The faithful model is the canonical one: the quotient of `Term` by
+  -- `LawvereEq` itself, with `eval = Quotient.mk`.  Soundness is
+  -- `Quotient.sound`; faithfulness is `Quotient.exact`.  This uses that
+  -- `LawvereEq` is an equivalence relation (`assembly_lawvere_theory_exists`).
+  let s : Setoid Term := ⟨LawvereEq, assembly_lawvere_theory_exists⟩
+  refine ⟨_root_.Quotient s, _root_.Quotient.mk s, ?_, ?_⟩
+  · intro a b hab
+    exact _root_.Quotient.sound (s := s) hab
+  · intro a b hab
+    exact _root_.Quotient.exact (s := s) hab
 
 /-! ## 7. Bridge to Tower 7: (2, 1)-categorical version. -/
 

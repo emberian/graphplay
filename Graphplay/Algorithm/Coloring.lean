@@ -52,15 +52,43 @@ one value in `{0, 1, …, s.card}` is absent. -/
 def mex (s : Finset ℕ) : ℕ :=
   (List.range (s.card + 1)).find? (fun n => n ∉ s) |>.getD 0
 
-theorem mex_lt_succ_card (s : Finset ℕ) : mex s ≤ s.card := by
-  -- Pigeonhole: among `{0,…,s.card}` (cardinality `s.card+1`) at least one is
-  -- absent from `s`.  The `find?` finds it and returns it ≤ s.card.
-  sorry
+/-- Pigeonhole helper: in `{0,…,s.card}` (cardinality `s.card+1`) some value is
+absent from `s`, so `find?` on `List.range (s.card+1)` succeeds. -/
+theorem mex_find?_isSome (s : Finset ℕ) :
+    ((List.range (s.card + 1)).find? (fun n => decide (n ∉ s))).isSome := by
+  rw [List.find?_isSome]
+  -- It suffices to exhibit an element of `range (s.card+1)` absent from `s`.
+  by_contra h
+  simp only [not_exists, not_and] at h
+  -- Then every element of `range (s.card+1)` lies in `s`, i.e. the finset
+  -- `Finset.range (s.card+1)` is a subset of `s`, contradicting cardinalities.
+  have hsub : Finset.range (s.card + 1) ⊆ s := by
+    intro n hn
+    rw [Finset.mem_range, ← List.mem_range] at hn
+    have hn' := h n hn
+    by_contra hns
+    exact hn' (by simpa using hns)
+  have := Finset.card_le_card hsub
+  rw [Finset.card_range] at this
+  omega
 
 theorem mex_not_mem (s : Finset ℕ) : mex s ∉ s := by
-  -- Pigeonhole as above; the value returned by `find?` is by construction
-  -- absent from `s` whenever one exists in `range (s.card + 1)`.
-  sorry
+  -- The value returned by `find?` satisfies the search predicate `· ∉ s`.
+  unfold mex
+  obtain ⟨k, hk⟩ := Option.isSome_iff_exists.mp (mex_find?_isSome s)
+  rw [hk, Option.getD_some]
+  have := List.find?_some hk
+  simpa using this
+
+theorem mex_lt_succ_card (s : Finset ℕ) : mex s ≤ s.card := by
+  -- The value returned by `find?` is a member of `List.range (s.card+1)`,
+  -- hence `< s.card+1`, i.e. `≤ s.card`.
+  unfold mex
+  obtain ⟨k, hk⟩ := Option.isSome_iff_exists.mp (mex_find?_isSome s)
+  rw [hk, Option.getD_some]
+  have hmem := List.mem_of_find?_eq_some hk
+  rw [List.mem_range] at hmem
+  omega
 
 /-! ### Vertex ordering.
 
@@ -118,6 +146,130 @@ private def greedyAcc
     (order : V → ℕ) : Acc V :=
   (vertexOrder order).foldl (greedyStep G) (Acc.empty V)
 
+/-! ### Invariants of the greedy loop.
+
+The two facts we need for properness:
+
+* **Coloredness is monotone.**  Once a vertex is `some`, the fold never sets it
+  back to `none`; and every vertex appearing in the processed list ends up
+  `some`.
+* **Properness is preserved.**  The relation "adjacent colored vertices have
+  distinct colors" is maintained by every `greedyStep`, because the new vertex's
+  color is the `mex` of its already-colored neighbours' colors and `mex` avoids
+  that finset (`mex_not_mem`).
+-/
+
+/-- If `c ∈ neighbourColors G f v` then some neighbour `w` of `v` has `f w = c`. -/
+private theorem mem_neighbourColors
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    (f : Acc V) (v : V) {c : ℕ} (hc : c ∈ neighbourColors G f v) :
+    ∃ w, G.Adj v w ∧ f w = some c := by
+  unfold neighbourColors at hc
+  rw [Finset.mem_biUnion] at hc
+  obtain ⟨w, hw, hcw⟩ := hc
+  rw [Finset.mem_filter] at hw
+  refine ⟨w, hw.2, ?_⟩
+  cases hfw : f w with
+  | none => rw [hfw] at hcw; simp at hcw
+  | some d =>
+      rw [hfw] at hcw
+      rw [Finset.mem_singleton] at hcw
+      rw [hcw]
+
+/-- A colored neighbour's color lies in `neighbourColors G f v`. -/
+private theorem color_mem_neighbourColors
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    (f : Acc V) (v w : V) {c : ℕ} (hadj : G.Adj v w) (hfw : f w = some c) :
+    c ∈ neighbourColors G f v := by
+  unfold neighbourColors
+  rw [Finset.mem_biUnion]
+  exact ⟨w, by rw [Finset.mem_filter]; exact ⟨Finset.mem_univ _, hadj⟩,
+    by rw [hfw]; exact Finset.mem_singleton_self c⟩
+
+/-- The "proper among colored vertices" invariant. -/
+private def IsProperAcc
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : _root_.SimpleGraph V) (f : Acc V) : Prop :=
+  ∀ a b, G.Adj a b → f a ≠ none → f b ≠ none → f a ≠ f b
+
+/-- A single greedy step preserves the properness invariant. -/
+private theorem isProperAcc_greedyStep
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    {f : Acc V} (hf : IsProperAcc G f) (v : V) :
+    IsProperAcc G (greedyStep G f v) := by
+  intro a b hadj ha hb
+  simp only [greedyStep, Acc.set] at ha hb ⊢
+  by_cases hav : a = v <;> by_cases hbv : b = v
+  · -- a = v = b contradicts adjacency (loopless)
+    exact absurd (hav.trans hbv.symm) (G.ne_of_adj hadj)
+  · -- a = v, b ≠ v: b is a colored neighbour of v, so its color is in
+    -- `neighbourColors`, which `mex` avoids.
+    simp only [if_pos hav, if_neg hbv] at *
+    intro hcontra
+    obtain ⟨cb, hcb⟩ := Option.ne_none_iff_exists'.mp hb
+    have hmem : cb ∈ neighbourColors G f v :=
+      color_mem_neighbourColors G f v b (hav ▸ hadj) hcb
+    rw [hcb] at hcontra
+    have : mex (neighbourColors G f v) = cb := Option.some.inj hcontra
+    rw [← this] at hmem
+    exact mex_not_mem _ hmem
+  · -- a ≠ v, b = v: symmetric.
+    simp only [if_neg hav, if_pos hbv] at *
+    intro hcontra
+    obtain ⟨ca, hca⟩ := Option.ne_none_iff_exists'.mp ha
+    have hmem : ca ∈ neighbourColors G f v :=
+      color_mem_neighbourColors G f v a (hbv ▸ hadj.symm) hca
+    rw [hca] at hcontra
+    have : mex (neighbourColors G f v) = ca := (Option.some.inj hcontra).symm
+    rw [← this] at hmem
+    exact mex_not_mem _ hmem
+  · -- a ≠ v, b ≠ v: unchanged, use the hypothesis.
+    simp only [if_neg hav, if_neg hbv] at *
+    exact hf a b hadj ha hb
+
+/-- The properness invariant survives the whole fold. -/
+private theorem isProperAcc_foldl
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    (l : List V) {f : Acc V} (hf : IsProperAcc G f) :
+    IsProperAcc G (l.foldl (greedyStep G) f) := by
+  induction l generalizing f with
+  | nil => simpa using hf
+  | cons x xs ih =>
+      rw [List.foldl_cons]
+      exact ih (isProperAcc_greedyStep G hf x)
+
+/-- After folding over `l`, every vertex that was colored before, or appears in
+`l`, is colored. -/
+private theorem ne_none_foldl
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    (l : List V) {f : Acc V} (w : V) (hw : f w ≠ none ∨ w ∈ l) :
+    (l.foldl (greedyStep G) f) w ≠ none := by
+  induction l generalizing f with
+  | nil =>
+      rcases hw with hw | hw
+      · simpa using hw
+      · simp at hw
+  | cons x xs ih =>
+      rw [List.foldl_cons]
+      apply ih
+      -- after stepping `x`, `w` is colored if it was, or if w = x, else defer.
+      by_cases hwx : w = x
+      · left
+        simp only [greedyStep, Acc.set, if_pos hwx]
+        exact Option.some_ne_none _
+      · rcases hw with hw | hw
+        · left
+          simp only [greedyStep, Acc.set, if_neg hwx]; exact hw
+        · right
+          rcases List.mem_cons.mp hw with h | h
+          · exact absurd h hwx
+          · exact h
+
 /-- **The greedy coloring.**
 
 Visit vertices in `order`-ascending order (`order : V → ℕ` is user-supplied,
@@ -143,10 +295,30 @@ theorem greedyColoring_isProper
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
     (order : V → ℕ) {u v : V} (h : G.Adj u v) :
     greedyColoring G order u ≠ greedyColoring G order v := by
-  -- Whichever of `u, v` appears later in `vertexOrder order` is processed
-  -- with the earlier one's color already in `neighbourColors`; the `mex` then
-  -- picks a *different* color by `mex_not_mem`.
-  sorry
+  -- Both vertices appear in `vertexOrder order` (a permutation of `univ`), so
+  -- both are colored in the final accumulator; the properness invariant
+  -- (maintained by every `greedyStep` via `mex_not_mem`) then gives distinct
+  -- colors.
+  have hmemu : u ∈ vertexOrder order := by
+    unfold vertexOrder; rw [List.mem_mergeSort, Finset.mem_sort]; exact Finset.mem_univ u
+  have hmemv : v ∈ vertexOrder order := by
+    unfold vertexOrder; rw [List.mem_mergeSort, Finset.mem_sort]; exact Finset.mem_univ v
+  -- Both are colored.
+  have hu : greedyAcc G order u ≠ none :=
+    ne_none_foldl G _ u (Or.inr hmemu)
+  have hv : greedyAcc G order v ≠ none :=
+    ne_none_foldl G _ v (Or.inr hmemv)
+  -- The accumulator is proper.
+  have hproper : IsProperAcc G (greedyAcc G order) :=
+    isProperAcc_foldl G _ (by intro a b _ ha _; exact absurd rfl ha)
+  have hne : greedyAcc G order u ≠ greedyAcc G order v := hproper u v h hu hv
+  -- Translate `Option` inequality to `getD 0` inequality.
+  unfold greedyColoring
+  obtain ⟨cu, hcu⟩ := Option.ne_none_iff_exists'.mp hu
+  obtain ⟨cv, hcv⟩ := Option.ne_none_iff_exists'.mp hv
+  rw [hcu, hcv, Option.getD_some, Option.getD_some]
+  intro hcc
+  exact hne (by rw [hcu, hcv, hcc])
 
 /-! ## 3. Color count. -/
 

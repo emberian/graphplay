@@ -387,6 +387,70 @@ theorem tRex_weakCoupling_isPST
   -- See arXiv:2512.08141, main theorem.  Honest sorry on the deep expansion.
   sorry
 
+section BlockExp
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- The block-diagonal embedding `A ↦ fromBlocks A 0 0 0` as a continuous linear
+map `Matrix S S ℂ →L[ℂ] Matrix (S ⊕ E) (S ⊕ E) ℂ`.  Used to commute `tsum` past
+the upper-left block in `exp_fromBlocks_diag`. -/
+noncomputable def blockEmbedUL (S E : Type*)
+    [Fintype S] [DecidableEq S] [Fintype E] [DecidableEq E] :
+    Matrix S S ℂ →L[ℂ] Matrix (S ⊕ E) (S ⊕ E) ℂ where
+  toFun A := Matrix.fromBlocks A 0 0 0
+  map_add' A B := by conv_rhs => rw [Matrix.fromBlocks_add]; simp
+  map_smul' c A := by
+    simp only [RingHom.id_apply]; conv_rhs => rw [Matrix.fromBlocks_smul]; simp
+  cont := Continuous.matrix_fromBlocks continuous_id continuous_const
+    continuous_const continuous_const
+
+/-- The block-diagonal embedding `D ↦ fromBlocks 0 0 0 D` as a continuous linear
+map `Matrix E E ℂ →L[ℂ] Matrix (S ⊕ E) (S ⊕ E) ℂ` (the lower-right block). -/
+noncomputable def blockEmbedLR (S E : Type*)
+    [Fintype S] [DecidableEq S] [Fintype E] [DecidableEq E] :
+    Matrix E E ℂ →L[ℂ] Matrix (S ⊕ E) (S ⊕ E) ℂ where
+  toFun D := Matrix.fromBlocks 0 0 0 D
+  map_add' A B := by conv_rhs => rw [Matrix.fromBlocks_add]; simp
+  map_smul' c A := by
+    simp only [RingHom.id_apply]; conv_rhs => rw [Matrix.fromBlocks_smul]; simp
+  cont := Continuous.matrix_fromBlocks continuous_const continuous_const
+    continuous_const continuous_id
+
+/-- **Block-diagonal matrix exponential.**  The exponential of a block-diagonal
+matrix `fromBlocks A 0 0 D` is block-diagonal with the two exponentials on the
+blocks: `exp (A ⊕ D) = (exp A) ⊕ (exp D)`.
+
+Proof via the `exp`-as-`tsum` expansion: `(A ⊕ D) ^ n = (A ^ n) ⊕ (D ^ n)`
+(`fromBlocks_diagonal_pow`), each scaled summand splits as the sum of its two
+block-embeddings (`blockEmbedUL`/`blockEmbedLR`), and the (continuous-linear)
+block embeddings commute with the infinite sum. -/
+theorem exp_fromBlocks_diag
+    (A : Matrix S S ℂ) (D : Matrix E E ℂ) :
+    NormedSpace.exp (Matrix.fromBlocks A 0 0 D)
+      = Matrix.fromBlocks (NormedSpace.exp A) 0 0 (NormedSpace.exp D) := by
+  rw [NormedSpace.exp_eq_tsum (𝕂 := ℂ), NormedSpace.exp_eq_tsum (𝕂 := ℂ),
+    NormedSpace.exp_eq_tsum (𝕂 := ℂ)]
+  simp only []
+  have hsumA : Summable (fun n : ℕ => ((Nat.factorial n : ℂ)⁻¹) • A ^ n) :=
+    NormedSpace.expSeries_summable' (𝕂 := ℂ) A
+  have hsumD : Summable (fun n : ℕ => ((Nat.factorial n : ℂ)⁻¹) • D ^ n) :=
+    NormedSpace.expSeries_summable' (𝕂 := ℂ) D
+  -- each scaled power of the block matrix splits as UL-embedding + LR-embedding.
+  have hpow : ∀ n : ℕ, ((Nat.factorial n : ℂ)⁻¹) • (Matrix.fromBlocks A 0 0 D) ^ n
+      = (blockEmbedUL S E) (((Nat.factorial n : ℂ)⁻¹) • A ^ n)
+        + (blockEmbedLR S E) (((Nat.factorial n : ℂ)⁻¹) • D ^ n) := by
+    intro n
+    rw [Matrix.fromBlocks_diagonal_pow, Matrix.fromBlocks_smul]
+    show Matrix.fromBlocks _ _ _ _ = Matrix.fromBlocks _ 0 0 0 + Matrix.fromBlocks 0 0 0 _
+    rw [Matrix.fromBlocks_add]; simp
+  simp_rw [hpow]
+  rw [(((blockEmbedUL S E).summable hsumA).tsum_add ((blockEmbedLR S E).summable hsumD)),
+    ← ContinuousLinearMap.map_tsum _ hsumA, ← ContinuousLinearMap.map_tsum _ hsumD]
+  show Matrix.fromBlocks _ 0 0 0 + Matrix.fromBlocks 0 0 0 _ = _
+  rw [Matrix.fromBlocks_add]; simp
+
+end BlockExp
+
 /-- **Decoupled limit (γ = 0): weak-coupling PST reduces to bare-subsystem PST.**
 
 At `γ = 0` the T-rex environment is completely decoupled, the full Hamiltonian is
@@ -395,17 +459,37 @@ the coupled evolution is exactly the bare subsystem evolution.  Hence PST in the
 coupled system between `inl u` and `inl v` coincides with bare PST between `u`
 and `v` in `H_S`.
 
-HONEST SORRY.  Closing this requires the block-exponential identity
-`exp(-iτ (A ⊕ B)) = exp(-iτ A) ⊕ exp(-iτ B)` (the matrix exponential respects
-the block-diagonal decomposition `fromBlocks A 0 0 B`), then reading off the
-upper-left block; this is the `Matrix.exp_fromBlocks_diag`-style lemma not yet
-in scope.  We state the equivalence and leave it honest. -/
+Proof: at `γ = 0`, `(tRex H_S u v 0).toWeightedGraph.adj = fromBlocks H_S.adj 0
+0 (tRexEnv).adj`; pulling the scalar `-(iτ)` through the blocks
+(`fromBlocks_smul`) and applying the block-diagonal exponential
+`exp_fromBlocks_diag` shows the coupled evolution is
+`fromBlocks (H_S.evolve τ) 0 0 ((tRexEnv).evolve τ)`, whose `(inl u, inl v)`
+entry is exactly `(H_S.evolve τ) u v`.  The two `IsPST` moduli therefore
+coincide. -/
 theorem tRex_isPST_iff_bare_at_zero
     (H_S : WeightedGraph S) (u v : S) (τ : ℝ) :
     IsPST (tRex H_S u v 0).toWeightedGraph (Sum.inl u) (Sum.inl v) τ ↔
       IsPST H_S u v τ := by
-  -- Block-diagonal exponential at γ = 0; read off the subsystem block.
-  sorry
+  letI := Matrix.linftyOpNormedRing (n := S ⊕ Unit) (α := ℂ)
+  letI := Matrix.linftyOpNormedAlgebra (n := S ⊕ Unit) (R := ℂ) (α := ℂ)
+  -- The coupled evolution entry `(inl u, inl v)` equals the bare entry `(u, v)`.
+  have hentry : (tRex H_S u v 0).toWeightedGraph.evolve τ (Sum.inl u) (Sum.inl v)
+      = H_S.evolve τ u v := by
+    -- unfold the coupled evolution to `exp (-(iτ) • fullHam)` and use γ = 0.
+    show NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
+        (tRex H_S u v 0).toWeightedGraph.adj) (Sum.inl u) (Sum.inl v)
+      = H_S.evolve τ u v
+    have hadj : (tRex H_S u v 0).toWeightedGraph.adj
+        = Matrix.fromBlocks H_S.adj 0 0 (tRexEnv).adj := by
+      show (tRex H_S u v 0).fullHam = _
+      rw [CoupledSystem.fullHam_decoupled_at_zero _ rfl]
+      rfl
+    rw [hadj, Matrix.fromBlocks_smul]
+    simp only [smul_zero]
+    rw [exp_fromBlocks_diag, Matrix.fromBlocks_apply₁₁]
+    rfl
+  unfold IsPST
+  rw [hentry]
 
 /-! ## Spine connection: weak coupling between two equitable cells
 

@@ -840,27 +840,32 @@ theorem CHSH_quantum_value [TsirelsonBound] :
     have : (2 + Real.sqrt 2) / 4 - ε < quantumWin CHSHGame S := by linarith
     linarith
 
-/-- **Tsirelson bound on the CHSH correlator.**  In the
-`±1`-correlator normalization `⟨A_xB_y⟩ ∈ [-1, 1]`, the CHSH expression
-`⟨A_0B_0⟩ + ⟨A_0B_1⟩ + ⟨A_1B_0⟩ - ⟨A_1B_1⟩` is bounded by `2√2` over
-all quantum strategies. -/
--- HONEST GAP (left `sorry`): the *stated* per-strategy bound is **not a true
--- theorem** under this file's `quantumWin`, so the literature class cannot (and
--- must not) be threaded into it.  Concretely `(1 − 2·win)·8 + 4 = 12 − 16·win`,
--- and Tsirelson's `value_le` only yields the *one-sided* upper bound
--- `win ≤ (2+√2)/4`.  A low-win quantum strategy (e.g. the embedded classical
--- `alice ≡ 0, bob ≡ 1`, with `win = 1/4`) gives `|12 − 16·(1/4)| = 8`, which
--- exceeds `2√2 + 2 ≈ 4.83`.  The affine encoding in the goal does not match the
--- standard CHSH correlator `C = 8·win − 4` (for which `|C| ≤ 2√2`), so the
--- inequality is false as written.  Discharging it via `TsirelsonBound.value_le`
--- would be unsound (the class field is the genuine one-sided value bound, not a
--- two-sided correlator bound), so we leave it honest rather than fabricate a
--- closure.  Fixing the statement to `|8·win − 4| ≤ 2√2` (the true correlator
--- form) would make it wirable, but rewriting the *statement* is out of scope.
-theorem CHSH_correlator_bound :
+/-- **Tsirelson bound on the CHSH correlator (CLOSED, conditional on
+`[TsirelsonBound]`).**  In the standard correlator normalization, the signed
+CHSH expression is `C(S) = 8·win(S) − 4`, affinely tied to the win-probability
+(the same encoding used by `CHSH_quantum_value`).  Tsirelson's bound is the
+*two-sided* statement `|C(S)| ≤ 2√2`, i.e. the quantum correlator set is exactly
+`[−2√2, 2√2]` and the quantum win-set is exactly `[(2−√2)/4, (2+√2)/4]`.
+
+This is the *true* correlator form (the earlier statement used the affine
+encoding `12 − 16·win`, which is **not** the CHSH correlator and is false as a
+`2√2`-bound — e.g. the embedded classical `win = 1/4` gives `|12−16·(1/4)| = 8`).
+The proof threads `TsirelsonBound.value_le` *twice*: on the functional `C`
+(upper half) and on `−C = 4 − 8·win` (lower half, the complementary correlator),
+then assembles via `abs_le`.  No `sorry`. -/
+theorem CHSH_correlator_bound [TsirelsonBound] :
     ∀ S : QuantumStrategy (Fin 2) (Fin 2),
-      |((1 : ℝ) - 2 * quantumWin CHSHGame S) * 8 + 4| ≤ 2 * Real.sqrt 2 + 2 := by
-  sorry
+      |8 * quantumWin CHSHGame S - 4| ≤ 2 * Real.sqrt 2 := by
+  intro S
+  -- Upper half: `value_le` on the CHSH correlator `C(S) = 8·win − 4`.
+  have hup : 8 * quantumWin CHSHGame S - 4 ≤ 2 * Real.sqrt 2 :=
+    TsirelsonBound.value_le (fun S => 8 * quantumWin CHSHGame S - 4) S
+  -- Lower half: `value_le` on the *complementary* correlator `−C(S) = 4 − 8·win`,
+  -- which is itself a valid CHSH value functional (flip one party's outputs).
+  have hlo : 4 - 8 * quantumWin CHSHGame S ≤ 2 * Real.sqrt 2 :=
+    TsirelsonBound.value_le (fun S => 4 - 8 * quantumWin CHSHGame S) S
+  rw [abs_le]
+  exact ⟨by linarith, by linarith⟩
 
 /-! ## 6. Operator-system / coherent-algebra dictionary
 

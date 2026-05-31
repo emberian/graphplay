@@ -116,7 +116,11 @@ example : Fintype.card D = 64 := by decide
 by `decide` once `cycleFactorsFinset` reduction kicks in but is too heavy
 for the kernel; left as `sorry`. -/
 theorem grid_genus_one : gridMap.genus = 1 := by
-  sorry
+  have hF : gridMap.numFaces = 16 := by native_decide
+  unfold CombinatorialMap.genus CombinatorialMap.eulerChar
+    CombinatorialMap.numVertices CombinatorialMap.numEdges
+  rw [hF]
+  norm_num
 
 /-- Heawood-bound connection (`Graphplay/Bundle.lean`): on the torus
 `g = 1`, the Heawood number is `⌊(7 + √49)/2⌋ = 7`, so the chromatic
@@ -125,7 +129,11 @@ number of any toroidal graph is `≤ 7`.  `gridMap`, having maximum degree
 example : Graphplay.GraphBundle.Heawood 1 = 7 := by
   -- `(7 + √49)/2 = 7`
   unfold Graphplay.GraphBundle.Heawood
-  sorry
+  have hsqrt : Real.sqrt (1 + 48 * ((1 : ℕ) : ℝ)) = 7 := by
+    rw [show (1 + 48 * ((1 : ℕ) : ℝ)) = 7 ^ 2 by push_cast; norm_num,
+      Real.sqrt_sq (by norm_num)]
+  rw [hsqrt]
+  norm_num
 
 end Torus
 end Examples

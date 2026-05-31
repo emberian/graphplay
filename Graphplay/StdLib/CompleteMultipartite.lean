@@ -185,7 +185,21 @@ theorem K4parts_deterministicSearch
     (a b c d : ℕ) (ha : 1 ≤ a) (hb : 1 ≤ b) (hc : 1 ≤ c) (hd : 1 ≤ d)
     (w : CompleteMultipartiteV [a, b, c, d]) :
     IsDeterministicSearch (K4parts a b c d) w := by
-  sorry
+  -- `K4parts a b c d` is definitionally `CompleteMultipartite [a, b, c, d]`, the
+  -- four-part complete multipartite host.  The four-part case is exactly the
+  -- `parts = [a, b, c, d]` instance of the general Li–Luo–Feng–Li theorem: the
+  -- list has length `4 ≥ 2`, and each part `∈ {a, b, c, d}` is `≥ 1` by
+  -- hypothesis, so `completeMultipartite_deterministicSearch` applies verbatim.
+  have hk : 2 ≤ [a, b, c, d].length := by simp [List.length]
+  have hpos : ∀ ni ∈ [a, b, c, d], 1 ≤ ni := by
+    intro ni hni
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hni
+    rcases hni with rfl | rfl | rfl | rfl
+    · exact ha
+    · exact hb
+    · exact hc
+    · exact hd
+  exact completeMultipartite_deterministicSearch [a, b, c, d] hk hpos w
 
 end StdLib
 end Graphplay

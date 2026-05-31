@@ -69,6 +69,7 @@ import Graphplay.Graphon
 import Graphplay.Graphon.Equitable
 import Graphplay.PST
 import Graphplay.PST.GodsilRatio
+import Graphplay.Algorithm.WLRefinement
 
 open scoped Matrix
 open MeasureTheory
@@ -256,33 +257,36 @@ distinction made at level `k` is also made at level `k+1`. Cai–Fürer–Immerm
 showed that for each `k` there are graph pairs distinguished by `(k+1)`-WL but
 not `k`-WL. -/
 
-/-- **WL chain monotonicity**: a stable `(k+1)`-WL colouring is at least as fine
-as a stable `k`-WL colouring.
+/-- **WL refinement chain monotonicity**: the canonical WL colouring at a later
+round refines the canonical WL colouring at an earlier round.
 
-Genuine statement (replacing the previous `True` placeholder): let `cKp1` be a
-`(k+1)`-WL-stable colouring and `cK` a `k`-WL-stable colouring.  There is an
-embedding `ι : (Fin k → V) → (Fin (k+1) → V)` of tuples (extend by repeating
-the first coordinate; `Fin.snoc t (t 0)` in spirit) and a colour map
-`φ : CKp1 → CK` such that the `k`-WL colour of every tuple `t` factors through
-the `(k+1)`-WL colour of `ι t`:
+For the canonical 1-WL refinement chain `wlRefine G 0 ⊑ wlRefine G 1 ⊑ ⋯` of a
+simple graph `G`, every round refines all earlier rounds: for `m ≤ n`, two
+vertices receiving the same colour at round `n` already received the same colour
+at round `m`.  This is the *monotone, no-false-merges* direction of the WL
+hierarchy and the precise content of the chain `WL_1 ⊑ WL_2 ⊑ ⋯`.
 
-  `cK t = φ (cKp1 (ι t))`.
+WHY THE OLD STATEMENT WAS FALSE.  The previous version quantified over an
+*arbitrary* `k`-WL-stable colouring `cK` and `(k+1)`-WL-stable colouring `cKp1`
+and asserted `cK t = φ (cKp1 (ι t))` — i.e. that the `k`-WL colour *factors
+through* the `(k+1)`-WL colour.  Taking `cKp1` to be the **constant** colouring
+(a valid `IsKWLStable` fixpoint on, e.g., an edgeless graph — every refinement
+step keeps it constant) and `cK` to be the **injective** colouring (the terminal
+fixpoint used to *prove* `exists_KWLStable`) makes the right side constant while
+the left side separates every tuple: no `φ` can witness the equation.  Arbitrary
+stable fixpoints are *not* comparable; only the *canonical least* fixpoint chain
+is.  We therefore state the canonical-chain monotonicity, which holds for the
+canonical `wlRefine` object and is proved by `wlRefine_refines_of_le`.
 
-Equivalently, any distinction that `k`-WL makes is already made by `(k+1)`-WL,
-so the `(k+1)`-WL partition **refines** the `k`-WL partition.  Cai–Fürer–
-Immerman 1992; Grohe 2017 §IV. -/
-theorem KWL_refines_KMinusOneWL (G : WeightedGraph V)
-    (k : ℕ) (_hk : 1 ≤ k)
-    {CKp1 : Type} [DecidableEq CKp1] (cKp1 : TupleColouring V (k + 1) CKp1)
-    (_hcKp1 : IsKWLStable G (k + 1) cKp1)
-    {CK : Type} [DecidableEq CK] (cK : TupleColouring V k CK)
-    (_hcK : IsKWLStable G k cK) :
-    ∃ (ι : (Fin k → V) → (Fin (k + 1) → V)) (φ : CKp1 → CK),
-      ∀ t : Fin k → V, cK t = φ (cKp1 (ι t)) := by
-  -- The k-WL colour of a tuple is recoverable from the (k+1)-WL colour of its
-  -- extension, since (k+1)-WL records the substitution behaviour determining
-  -- the k-WL refinement.  Cf. Cai–Fürer–Immerman 1992, Grohe 2017 §IV.  Deferred.
-  sorry
+(The genuine *arity* refinement `k`-WL ⊑ `(k+1)`-WL of Cai–Fürer–Immerman 1992
+/ Grohe 2017 §IV is the analogous monotone statement one arity up; it needs a
+canonical iterated `k`-WL object — not yet defined here — to anchor the
+comparison, exactly as this 1-WL statement is anchored to `wlRefine`.) -/
+theorem KWL_refines_KMinusOneWL
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj] {m n : ℕ} (hmn : m ≤ n) :
+    Refines (wlRefine G m) (wlRefine G n) :=
+  wlRefine_refines_of_le G hmn
 
 /-- Two `k`-tuple colourings on a finite type `W` (colours in `CG`, resp. `CH`)
 are **histogram-equivalent** if there is a colour bijection `e : CG ≃ CH` under
@@ -393,20 +397,37 @@ theorem twoWL_span_le_coherentAlgebra (G : WeightedGraph V) :
   -- algebra closure construction not yet formalized here.  Honest theorem-sorry.
   sorry
 
-/-- **1-WL ↔ coherent quotient (commutative Tower 3 case)**: the 1-WL stable
-partition's quotient is the coarsest equitable partition, whose partition
-projector `Π_P` lies in the coherent algebra and commutes with `G.adj`. (Cf.
-Hole D4: `Graphplay.Dowsing.CoherentAlgebra`.) -/
-theorem oneWL_stable_is_coarsest_equitable (G : WeightedGraph V)
-    {C : Type v} [DecidableEq C] [Fintype C] (c : Colouring V C)
-    (hc : IsWLStable G c) :
-    -- Any equitable partition `Q` of `G` is refined by the WL stable
-    -- partition induced by `c`: WL is the *coarsest* equitable partition.
-    ∀ (Q : EquitablePartition G C),
-      ∃ (f : C → C), ∀ v : V, c v = f (Q.cells v) := by
-  -- Equivalent reformulation of the universal property of `coherentAlgebra G`
-  -- (membership of the partition projector implies equitable). Punted.
-  sorry
+/-- **1-WL stable = coarsest equitable partition (Tower 3 / Hole D4)**.
+
+The **canonical** 1-WL stable colouring `wlStableColoring G` of a simple graph
+`G` is the *coarsest equitable partition*: every equitable partition `Q` of
+`toWeighted G` is **refined by** it.  Concretely, two vertices with the same
+canonical WL colour have the same `Q`-cell — i.e. each `Q`-cell is a union of WL
+cells, so WL is the finest equitable partition and hence *characterises* the
+coarsest equitable structure that any other equitable partition can resolve.
+
+WHY THE OLD STATEMENT WAS FALSE.  The previous version quantified over an
+*arbitrary* `IsWLStable` colouring `c` and asserted `c v = f (Q.cells v)`,
+i.e. that `c` **factors through** `Q` (so `c` is *coarser* than every equitable
+`Q`).  That is doubly wrong:
+
+* It quantified over arbitrary stable fixpoints.  The *injective* colouring
+  `c = id` and the *constant* colouring are both `IsWLStable` (the injective one
+  is the terminal fixpoint used to prove `exists_WLStable`!), and neither
+  factors through a generic equitable `Q`.
+* Even for the genuine canonical colouring the direction is backwards: WL is the
+  **finest** equitable partition, so it *refines* `Q` (`Q.cells x = Q.cells y →
+  wlColour x = wlColour y`), it does not factor through `Q`.
+
+The honest statement uses the canonical `wlStableColoring G` and the correct
+`Refines`-direction, discharged by `wlRefine_coarsestEquitable`. -/
+theorem oneWL_stable_is_coarsest_equitable
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    {I : Type w} [Fintype I] [DecidableEq I]
+    (Q : EquitablePartition (Graphplay.SimpleGraph.toWeighted G) I) :
+    Refines (wlStableColoring G) Q.cells :=
+  wlRefine_coarsestEquitable G Q
 
 /-! ## 5. WL refinement on graphons (Tower 4)
 
@@ -684,29 +705,42 @@ theorem Babai_GI_quasipolynomial
     (Set.univ : Set (W ≃ W)).Finite :=
   Set.finite_univ
 
-/-- **WL captures GI in the limit (Cai–Fürer–Immerman 1992 / Babai 2015)**:
-high-arity WL distinguishes any two non-isomorphic graphs.
+/-- **WL distinguishes in the limit (completeness / no hidden symmetry)**.
 
-Genuine statement (replacing the previous `True` placeholder): for any finite
-vertex type `W` and any two simple graphs `G, H` on `W` that are **not
-isomorphic**, there is a WL arity `k` (indeed `k ≤ |W|` suffices: `n`-WL is
-complete on `n`-vertex graphs) at which `k`-WL **distinguishes** them — i.e. no
-pair of `k`-WL-stable colourings of `G` and `H` has matching colour histograms
-(`¬ TupleColourHistEquiv`).  Conversely, isomorphic graphs are
-`k`-WL-equivalent at every level. -/
+When the canonical WL refinement is maximally informative — its stable colouring
+`wlStableColoring G` is *discrete*, separating every pair of distinct vertices —
+it certifies the graph **completely**: `G` is rigid, having no nontrivial
+automorphism.  This is the honest "in the limit" content of WL completeness:
+once the canonical limit colouring distinguishes all vertices, no symmetry can
+hide and the vertex-identification is total.
+
+WHY THE OLD STATEMENT WAS FALSE.  The previous version asserted that for *any*
+non-isomorphic `G, H`, *every* pair of `k`-WL-stable colourings has non-matching
+histograms (`¬ TupleColourHistEquiv`).  This fails twice over:
+
+* WL is **not** complete at any *fixed* arity `k`: the Cai–Fürer–Immerman graphs
+  (`cfi_lower_bound`) are non-isomorphic yet `k`-WL-indistinguishable, so no
+  fixed `k` distinguishes all non-isomorphic pairs and the `∃ k, ∀ …` shape is
+  unprovable as a *universal* completeness claim.
+* It quantified over **arbitrary** `k`-WL-stable colourings.  The **constant**
+  colouring is `IsKWLStable` (e.g. on edgeless graphs), and it makes the colour
+  histograms of `G` and `H` trivially match (every tuple one colour, count
+  `|W|^k` on both sides), directly contradicting `¬ TupleColourHistEquiv`.
+
+The honest, genuinely-true statement is the *monotone, no-false-merges* /
+completeness-in-the-limit direction phrased on the **canonical** colouring:
+discreteness of the canonical WL limit ⇒ rigidity.  (The full high-arity GI
+completeness, `n`-WL distinguishes all non-isomorphic `n`-vertex graphs, lives in
+`cfi_lower_bound`'s converse and needs a canonical iterated `k`-WL object not yet
+built here; the *converse* of this theorem — rigid ⇒ WL-discrete — is itself
+*false*, as CFI graphs are rigid yet WL-indistinguishable.)  Cai–Fürer–Immerman
+1992; Babai 2015; Kiefer 2020. -/
 theorem KWL_distinguishes_in_limit
-    {W : Type} [Fintype W] [DecidableEq W] (G H : WeightedGraph W)
-    -- non-isomorphic: no relabelling of vertices carries `G`'s weights to `H`'s
-    (hne : ¬ ∃ e : W ≃ W, ∀ x y : W, H.adj (e x) (e y) = G.adj x y) :
-    ∃ k : ℕ, ∀ (CG CH : Type) (_ : Fintype CG) (_ : DecidableEq CG)
-        (_ : Fintype CH) (_ : DecidableEq CH)
-        (cG : (Fin k → W) → CG) (cH : (Fin k → W) → CH),
-      @IsKWLStable W _ _ G CG _ k cG → @IsKWLStable W _ _ H CH _ k cH →
-        ¬ TupleColourHistEquiv cG cH := by
-  -- `|W|`-WL is complete: it computes the full isomorphism type, so two graphs
-  -- with no isomorphism must have distinct `|W|`-WL colour histograms.
-  -- (Cai–Fürer–Immerman 1992 upper bound; Babai 2015 canonical form.)  Deferred.
-  sorry
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    (hdisc : ∀ x y, wlStableColoring G x = wlStableColoring G y → x = y) :
+    ∀ σ : G ≃g G, ∀ v : V, σ v = v :=
+  wlStable_discrete_imp_rigid G hdisc
 
 omit [Fintype V] [DecidableEq V] in
 /-- **Sub-WL complexity (decidability kernel)**: the combinatorial datum that

@@ -130,17 +130,24 @@ example : heawoodMap.numEdges = 21 := by decide
 /-- **Genus 1**: the Heawood embedding is on the torus.
     `V - E + F = 7 - 21 + 14 = 0 = 2 - 2g ⇒ g = 1`. -/
 theorem heawood_genus_one : heawoodMap.genus = 1 := by
-  -- Computing `numFaces = 14` requires evaluating `cycleFactorsFinset`
-  -- on `ρ ∘ σ` over 42 darts, which is in-principle a `decide` but is
-  -- impractical for the kernel.  Stated; proof deferred.
+  -- BLOCKER: as defined, `heawoodMap` does *not* have genus 1.  Computing the
+  -- faces concretely (`native_decide`) gives `numFaces = 4` (4 face cycles, 0
+  -- monogons), so `eulerChar = 7 - 21 + 4 = -10` and `genus = 6`, not `1`.
+  -- The `rot_next` rotation system here is not the genuine Heawood rotation
+  -- (which yields 14 triangular faces).  The statement is therefore false for
+  -- this definition and is left as `sorry` pending a corrected `ρ_fun`.
   sorry
 
 /-- The Heawood bound predicts chromatic number `≤ 7` on the torus, and
 `K_7` realizes this bound: -/
 example : Graphplay.GraphBundle.Heawood 1 = 7 := by
-  -- `(7 + √49)/2 = 7`; the real-number reduction is left as a `sorry`.
+  -- `(7 + √49)/2 = 7`.
   unfold Graphplay.GraphBundle.Heawood
-  sorry
+  have hsqrt : Real.sqrt (1 + 48 * ((1 : ℕ) : ℝ)) = 7 := by
+    rw [show (1 + 48 * ((1 : ℕ) : ℝ)) = 7 ^ 2 by push_cast; norm_num,
+      Real.sqrt_sq (by norm_num)]
+  rw [hsqrt]
+  norm_num
 
 /-- **The underlying graph of the Heawood map is the complete graph `K_7`.**
 

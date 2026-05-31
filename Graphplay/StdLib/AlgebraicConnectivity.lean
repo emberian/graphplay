@@ -98,6 +98,30 @@ eigenvalue `λ₂(L)`.  When `V` has fewer than two vertices the set is empty an
 noncomputable def algebraicConnectivity (G : WeightedGraph V) : ℝ :=
   sInf (rayleighSet G)
 
+/-- **Real, nonnegative edge weights.**  Each adjacency entry is a nonnegative
+real number.  This holds for ordinary graphs and any `SimpleGraph.toWeighted`,
+and is precisely the hypothesis under which the Laplacian is positive
+semidefinite — the row sums `D_{uu} = ∑_w A_{uw}` then annihilate the all-ones
+vector and the quadratic form is a nonnegative sum of squared differences.
+(Hermitian symmetry of the real parts, `A_{uw} = A_{wu}`, is already supplied by
+`G.herm`.) -/
+def RealNonnegWeights (G : WeightedGraph V) : Prop :=
+  ∀ u w, (G.adj u w).im = 0 ∧ 0 ≤ (G.adj u w).re
+
+/-- Under `RealNonnegWeights`, the adjacency entry equals its own real part as a
+complex number. -/
+theorem RealNonnegWeights.adj_ofReal {G : WeightedGraph V}
+    (h : RealNonnegWeights G) (u w : V) :
+    G.adj u w = ((G.adj u w).re : ℂ) := by
+  have him := (h u w).1
+  apply Complex.ext <;> simp [him]
+
+/-- Hermiticity gives symmetry of the real parts of the adjacency entries. -/
+theorem adj_re_symm (G : WeightedGraph V) (u w : V) :
+    (G.adj u w).re = (G.adj w u).re := by
+  have h : G.adj w u = star (G.adj u w) := (G.herm.apply w u).symm
+  rw [h, Complex.star_def, Complex.conj_re]
+
 /-! ## 2.  Eigenvalue characterisation -/
 
 /-- The Laplacian eigenvalues of `G`, indexed in **antitone** order by
@@ -119,38 +143,206 @@ noncomputable def secondSmallestLaplacianEigenvalue
     (G : WeightedGraph V) (h : 2 ≤ Fintype.card V) : ℝ :=
   laplacianEigenvalues G ⟨Fintype.card V - 2, by omega⟩
 
-/-- **Fiedler's eigenvalue characterisation (statement).**  The algebraic
-connectivity (Rayleigh-quotient infimum over `𝟙^⊥`) coincides with the
-second-smallest Laplacian eigenvalue.  This is Courant–Fischer applied to the
-Hermitian Laplacian, using that the smallest eigenvalue `0` is realised by the
-all-ones vector (which we project out by the `orthToOnes` constraint).
-(Deep: Courant–Fischer min-max plus identification of the bottom eigenvector.) -/
+/-- **Fiedler's eigenvalue characterisation (statement).**  For real nonnegative
+edge weights the algebraic connectivity (Rayleigh-quotient infimum over `𝟙^⊥`)
+coincides with the second-smallest Laplacian eigenvalue.  This is Courant–Fischer
+applied to the Hermitian Laplacian, using that the smallest eigenvalue `0` is
+realised by the all-ones vector — which requires the row sums `D_{uu} = ∑_w
+A_{uw}` to genuinely annihilate `𝟙` (`L · 𝟙 = 0`), i.e. the real-weight
+hypothesis `RealNonnegWeights` — and projecting it out by the `orthToOnes`
+constraint.
+
+This is the one genuinely deep residual: Mathlib has the extremal-eigenvalue
+Rayleigh theory (`InnerProductSpace.Rayleigh`) but not the codimension-`1`
+Courant–Fischer min-max needed to identify `λ₂` with the constrained Rayleigh
+infimum.  The statement is true (Fiedler 1973); the proof is left as an honest
+`sorry`. -/
 theorem algebraicConnectivity_eq_secondSmallest
-    (G : WeightedGraph V) (h : 2 ≤ Fintype.card V) :
+    (G : WeightedGraph V) (h : 2 ≤ Fintype.card V) (hw : RealNonnegWeights G) :
     algebraicConnectivity G = secondSmallestLaplacianEigenvalue G h := by
   sorry
 
+/-! ## 2.5  Positive semidefiniteness for real, nonnegative edge weights
+
+The Laplacian `L = D − A` is **not** positive semidefinite for arbitrary
+Hermitian weights: `D_{uu} = Re(row-sum)` and the quadratic-form identity below
+only holds when the entries of `A` are real and nonnegative (the ordinary-graph
+case, and `SimpleGraph.toWeighted`).  We prove the standard rank-1-sum /
+difference-squared positivity under `RealNonnegWeights` (defined in §1). -/
+
+/-- **The Laplacian difference-squared identity.**  For real nonnegative weights,
+twice the real part of the Laplacian quadratic form is a nonnegative sum of
+weighted squared differences:
+
+  `2 · Re(xᴴ L x) = ∑_{u,w} A_{uw} |x_u − x_w|²`.
+
+This is the standard rank-1 decomposition `L = ∑ A_{uw}(e_u − e_w)(e_u − e_w)ᴴ`
+written at the level of the quadratic form. -/
+theorem laplacianForm_two_re (G : WeightedGraph V) (h : RealNonnegWeights G)
+    (x : V → ℂ) :
+    2 * (laplacianForm G x).re
+      = ∑ u, ∑ w, (G.adj u w).re * Complex.normSq (x u - x w) := by
+  -- Real part of the form, summand by summand.
+  have hre : (laplacianForm G x).re
+      = ∑ u, ∑ w, (star (x u) * (G.laplacian.adj u w) * x w).re := by
+    unfold laplacianForm
+    rw [Complex.re_sum]
+    exact Finset.sum_congr rfl fun u _ => Complex.re_sum _ _
+  -- `(star a · ↑r · b).re = r · (star a · b).re` for real scalar `r`.
+  have hscal : ∀ (r : ℝ) (a b : ℂ), (a * (r : ℂ) * b).re = r * (a * b).re := by
+    intro r a b
+    rw [mul_comm a ((r : ℂ)), mul_assoc, Complex.re_ofReal_mul]
+  -- `(star (x u) * x u).re = normSq (x u)`.
+  have hnorm : ∀ u, (star (x u) * x u).re = Complex.normSq (x u) := by
+    intro u
+    rw [Complex.star_def, Complex.mul_re, Complex.conj_re, Complex.conj_im,
+      Complex.normSq_apply]; ring
+  -- Expand each Laplacian summand using `L = D − A`, `D_{uu} = Re(deg u)`.
+  have hsummand : ∀ u w,
+      (star (x u) * (G.laplacian.adj u w) * x w).re
+        = (if u = w then (G.degree u).re * Complex.normSq (x u) else 0)
+          - (G.adj u w).re * (star (x u) * x w).re := by
+    intro u w
+    have hL : G.laplacian.adj u w
+        = (Matrix.diagonal (fun v => ((G.degree v).re : ℂ))) u w - G.adj u w := rfl
+    rw [hL, Matrix.diagonal_apply, h.adj_ofReal u w]
+    by_cases huw : u = w
+    · subst huw
+      rw [if_pos rfl, if_pos rfl, mul_sub, sub_mul, Complex.sub_re, hscal, hscal, hnorm,
+        Complex.ofReal_re]
+    · rw [if_neg huw, if_neg huw,
+        show (0 : ℂ) - ((G.adj u w).re : ℂ) = (((-(G.adj u w).re) : ℝ) : ℂ) by push_cast; ring,
+        hscal, Complex.ofReal_re]
+      ring
+  -- The diagonal weighted degree, as a sum of real adjacency entries.
+  have hdeg : ∀ u, (G.degree u).re = ∑ w, (G.adj u w).re := by
+    intro u
+    unfold WeightedGraph.degree
+    rw [Complex.re_sum]
+  -- Real part of `conj(x_u) * x_w` equals `Re(x_u * conj x_w)` (conjugation-invariance).
+  have hcross : ∀ u w, (star (x u) * x w).re = (x u * star (x w)).re := by
+    intro u w
+    simp only [Complex.star_def, Complex.mul_re, Complex.conj_re, Complex.conj_im]
+    ring
+  -- Rewrite the LHS as `∑_u ∑_w A_uw nsq(x_u) − ∑_u ∑_w A_uw Re(conj x_u · x_w)`.
+  rw [hre]
+  simp_rw [hsummand]
+  have hLHS : ∑ u, ∑ w, ((if u = w then (G.degree u).re * Complex.normSq (x u) else 0)
+        - (G.adj u w).re * (star (x u) * x w).re)
+      = (∑ u, ∑ w, (G.adj u w).re * Complex.normSq (x u))
+        - ∑ u, ∑ w, (G.adj u w).re * (star (x u) * x w).re := by
+    rw [← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun u _ => ?_
+    rw [Finset.sum_sub_distrib,
+      Fintype.sum_ite_eq u (fun _ => (G.degree u).re * Complex.normSq (x u)), hdeg,
+      Finset.sum_mul]
+  rw [hLHS]
+  -- The target sum, expanded by `normSq_sub`.
+  have hRHS : ∑ u, ∑ w, (G.adj u w).re * Complex.normSq (x u - x w)
+      = (∑ u, ∑ w, (G.adj u w).re * Complex.normSq (x u))
+        + (∑ u, ∑ w, (G.adj u w).re * Complex.normSq (x w))
+        - 2 * ∑ u, ∑ w, (G.adj u w).re * (x u * star (x w)).re := by
+    rw [Finset.mul_sum, ← Finset.sum_add_distrib, ← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun u _ => ?_
+    rw [Finset.mul_sum, ← Finset.sum_add_distrib, ← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun w _ => ?_
+    rw [Complex.normSq_sub]
+    push_cast [Complex.star_def]
+    ring
+  rw [hRHS]
+  -- Symmetry: `∑_u ∑_w A_uw nsq(x_w) = ∑_u ∑_w A_uw nsq(x_u)` (swap + Hermitian symmetry).
+  have hswap : ∑ u, ∑ w, (G.adj u w).re * Complex.normSq (x w)
+      = ∑ u, ∑ w, (G.adj u w).re * Complex.normSq (x u) := by
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl fun u _ => Finset.sum_congr rfl fun w _ => ?_
+    rw [adj_re_symm G w u]
+  rw [hswap]
+  -- And `Re(conj x_u · x_w) = Re(x_u · conj x_w)`.
+  simp_rw [hcross]
+  ring
+
+/-- **The Laplacian quadratic form is nonnegative for real nonnegative weights.**
+Immediate from the difference-squared identity `laplacianForm_two_re`: each
+summand `A_{uw} |x_u − x_w|²` is a product of nonnegatives. -/
+theorem laplacianForm_re_nonneg (G : WeightedGraph V) (h : RealNonnegWeights G)
+    (x : V → ℂ) : 0 ≤ (laplacianForm G x).re := by
+  have h2 : 0 ≤ 2 * (laplacianForm G x).re := by
+    rw [laplacianForm_two_re G h]
+    refine Finset.sum_nonneg fun u _ => Finset.sum_nonneg fun w _ => ?_
+    exact mul_nonneg (h u w).2 (Complex.normSq_nonneg _)
+  linarith
+
+/-- The Rayleigh-quotient set of a `RealNonnegWeights` graph consists of
+nonnegative reals: each Rayleigh quotient is `(laplacianForm).re / normSq` with
+both factors `≥ 0`. -/
+theorem rayleighSet_nonneg (G : WeightedGraph V) (h : RealNonnegWeights G) :
+    ∀ r ∈ rayleighSet G, 0 ≤ r := by
+  rintro r ⟨x, _, _, rfl⟩
+  exact div_nonneg (laplacianForm_re_nonneg G h x)
+    (Finset.sum_nonneg fun u _ => by positivity)
+
+/-- The Rayleigh-quotient set of a `RealNonnegWeights` graph is bounded below (by
+`0`).  This is the bounded-below fact powering Fiedler monotonicity. -/
+theorem bddBelow_rayleighSet (G : WeightedGraph V) (h : RealNonnegWeights G) :
+    BddBelow (rayleighSet G) :=
+  ⟨0, fun _ hr => rayleighSet_nonneg G h _ hr⟩
+
 /-! ## 3.  Nonnegativity and Fiedler monotonicity -/
 
-/-- **Algebraic connectivity is nonnegative.**  The Laplacian is positive
-semidefinite (it is a Hermitian "difference" `D − A` with nonnegative quadratic
-form `∑_{u<w} |x u − x w|²`-type structure for ordinary graphs), so every
-Rayleigh quotient — and hence the infimum — is `≥ 0`.  (Deep: positive
-semidefiniteness of the Laplacian quadratic form.) -/
-theorem algebraicConnectivity_nonneg (G : WeightedGraph V) :
-    0 ≤ algebraicConnectivity G := by
-  sorry
+/-- **Algebraic connectivity is nonnegative (real nonnegative weights).**  The
+Laplacian of a graph with nonnegative real edge weights is positive semidefinite
+(`laplacianForm_re_nonneg`), so every Rayleigh quotient — and hence the infimum
+— is `≥ 0`.
 
-/-- **Fiedler monotonicity (edge-addition statement).**  Adding edges (passing
-to a graph `G'` whose Laplacian quadratic form dominates that of `G` on every
-vector) cannot decrease the algebraic connectivity: `a(G) ≤ a(G')`.  We phrase
-the hypothesis as pointwise domination of the Rayleigh value via the real
-Laplacian forms on the common vertex set.  (Deep: monotonicity of the
-Rayleigh-quotient infimum under domination of the quadratic form.) -/
+The `RealNonnegWeights` hypothesis is genuinely needed: for general
+complex-Hermitian weights `D_{uu} = Re(row-sum)` and the Laplacian need not be
+PSD, so this fails without it. -/
+theorem algebraicConnectivity_nonneg (G : WeightedGraph V)
+    (h : RealNonnegWeights G) :
+    0 ≤ algebraicConnectivity G :=
+  Real.sInf_nonneg (rayleighSet_nonneg G h)
+
+/-- **Fiedler monotonicity (edge-addition statement).**  Adding edges (passing to
+a graph `G'` whose Laplacian quadratic form dominates that of `G` on every
+vector) cannot decrease the algebraic connectivity: `a(G) ≤ a(G')`.  We require
+`G` to have real nonnegative weights (so its Rayleigh set is bounded below, the
+fact making the infimum comparison meaningful) and phrase the edge-addition
+hypothesis as pointwise domination of the real Laplacian forms.
+
+Note both Rayleigh sets range over the *same* family of nonzero `𝟙^⊥` vectors,
+so they are simultaneously empty (when `card V < 2`); domination then transfers
+the infimum. -/
 theorem algebraicConnectivity_mono (G G' : WeightedGraph V)
+    (h : RealNonnegWeights G)
     (hdom : ∀ x : V → ℂ, (laplacianForm G x).re ≤ (laplacianForm G' x).re) :
     algebraicConnectivity G ≤ algebraicConnectivity G' := by
-  sorry
+  rcases Set.eq_empty_or_nonempty (rayleighSet G') with hempty | hne
+  · -- If `rayleighSet G'` is empty, so is `rayleighSet G` (same vector family).
+    have hGempty : rayleighSet G = ∅ := by
+      rw [Set.eq_empty_iff_forall_notMem]
+      rintro r ⟨x, hx, hortho, rfl⟩
+      have : (laplacianForm G' x).re / normSq x ∈ rayleighSet G' :=
+        ⟨x, hx, hortho, rfl⟩
+      rw [hempty] at this
+      exact this
+    unfold algebraicConnectivity
+    rw [hGempty, hempty]
+  · -- Otherwise, `sInf (rayleighSet G)` lower-bounds every element of `rayleighSet G'`.
+    apply le_csInf hne
+    rintro r' ⟨x, hx, hortho, rfl⟩
+    -- The matching `G`-Rayleigh value is `≤ r'` by domination, and `≥ sInf (rayleighSet G)`.
+    have hmemG : (laplacianForm G x).re / normSq x ∈ rayleighSet G :=
+      ⟨x, hx, hortho, rfl⟩
+    refine le_trans (csInf_le (bddBelow_rayleighSet G h) hmemG) ?_
+    -- `normSq x > 0` since `x ≠ 0`, so dividing the dominated numerators preserves `≤`.
+    have hpos : 0 < normSq x := by
+      unfold normSq
+      obtain ⟨i, hi⟩ := Function.ne_iff.mp hx
+      refine Finset.sum_pos' (fun j _ => by positivity) ⟨i, Finset.mem_univ i, ?_⟩
+      simp only [Pi.zero_apply] at hi
+      have : ‖x i‖ ≠ 0 := norm_ne_zero_iff.mpr hi
+      positivity
+    exact div_le_div_of_nonneg_right (hdom x) hpos.le
 
 /-! ## 4.  The genus / Heawood embedding upper bound -/
 

@@ -104,6 +104,9 @@ import Graphplay.StdLib.Feder
 import Graphplay.StdLib.AlgebraicConnectivity
 import Graphplay.StdLib.GraphsWithTails
 import Graphplay.StdLib.Cycle
+import Graphplay.StdLib.Tree
+import Graphplay.StdLib.DeBruijn
+import Graphplay.StdLib.Star
 import Graphplay.StdLib.Computable
 
 -- Dowsing-rod theorems (open Tamon-corpus extensions)

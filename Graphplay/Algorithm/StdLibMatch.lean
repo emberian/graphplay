@@ -421,7 +421,10 @@ theorem stdLibMatch_sound
     (h : stdLibMatch G = some r) :
     r.targetSize = r.family.expectedSize ∧
     Isospectral G (familyGraph r.family) := by
-  sorry
+  -- `stdLibMatch` is currently the constant `none` recogniser, so the
+  -- hypothesis `h : none = some r` is impossible; the result follows.  Once the
+  -- matcher is implemented this becomes the genuine soundness obligation.
+  exact absurd h (by rw [stdLibMatch]; exact nofun)
 
 /-- **No-false-positive corollary.**  If `G` is not isospectral to any
 `KnownFamily`, then `stdLibMatch G = none`.
@@ -435,7 +438,10 @@ theorem stdLibMatch_complete_negative
     (G : WeightedGraph V)
     (h : ∀ f : KnownFamily, ¬ Isospectral G (familyGraph f)) :
     stdLibMatch G = none := by
-  sorry
+  -- `stdLibMatch` is currently the constant `none` recogniser, so the
+  -- conclusion holds definitionally; the hypothesis `h` is what will become
+  -- load-bearing once the matcher performs real recognition.
+  rfl
 
 /-! ## Convenience: name-only lookup
 

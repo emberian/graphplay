@@ -73,44 +73,252 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
 
 /-- The (signed) row sum of the adjacency matrix at vertex `x`. This plays
 the role of the total weight leaving `x`; for an unweighted graph it is the
-degree of `x`.  Used to normalise outgoing distributions for the Szegedy
-walk. -/
+degree of `x`. -/
 noncomputable def szRowSum (G : WeightedGraph V) (x : V) : ℂ :=
   ∑ y, G.adj x y
 
-/-- The unnormalised outgoing-distribution vector at `x`: the row of `G.adj`
-at `x`, viewed as a function `V → ℂ`. -/
-noncomputable def szRow (G : WeightedGraph V) (x : V) : V → ℂ :=
-  fun y => G.adj x y
+/-- The **magnitude row sum** at vertex `x`: the total *transition weight*
+`D_x = ∑_y ‖A_{x y}‖` leaving `x`.  This is real and nonnegative, and is the
+correct normaliser for the Szegedy coin state: the random-walk transition
+probabilities are `P_{x y} = ‖A_{x y}‖ / D_x` (so `∑_y P_{x y} = 1`).  For a
+0/1 adjacency matrix this is the ordinary degree; for a Hermitian weighted
+graph it is the sum of the edge magnitudes, which is what keeps the coin
+state a genuine *unit* vector (and hence the projector idempotent). -/
+noncomputable def szMagRowSum (G : WeightedGraph V) (x : V) : ℝ :=
+  ∑ y, ‖G.adj x y‖
 
-/-- The bipartite-doubled rank-1 projection `Π_x` onto the normalised
-outgoing distribution at `x`, written as an entry of a `(V × V) × (V × V)`
-matrix:
+/-- `szMagRowSum` is nonnegative. -/
+theorem szMagRowSum_nonneg (G : WeightedGraph V) (x : V) :
+    0 ≤ G.szMagRowSum x :=
+  Finset.sum_nonneg (fun _ _ => norm_nonneg _)
 
-  `Π_x ((x', y), (x'', y'')) = (1/d_x) · A_{x' y} · conj(A_{x'' y''})`
+/-- The **Szegedy coin amplitude** at `x` toward `y`: the *square root* of the
+random-walk transition probability `P_{x y} = ‖A_{x y}‖ / D_x`, embedded into
+`ℂ`.  This is the standard Szegedy coin: `|φ_x⟩ = ∑_y √(P_{x y}) |x, y⟩`,
+which is normalised because `∑_y P_{x y} = 1`.  (The previous *linear* choice
+`A_{x y}/D_x` was **not** a unit vector for general weights, so the projector
+built from it failed to be idempotent.) -/
+noncomputable def szCoinAmp (G : WeightedGraph V) (x y : V) : ℂ :=
+  if G.szMagRowSum x = 0 then 0
+  else (Real.sqrt (‖G.adj x y‖ / G.szMagRowSum x) : ℝ)
 
-restricted to the `x' = x'' = x` block.  This is the canonical projector
-used in the Szegedy reflection construction; see Portugal (2018), eqn (7.4).
+/-- The coin amplitudes are real (cast from `ℝ`), so conjugation fixes them. -/
+theorem szCoinAmp_conj (G : WeightedGraph V) (x y : V) :
+    (starRingEnd ℂ) (G.szCoinAmp x y) = G.szCoinAmp x y := by
+  unfold szCoinAmp
+  by_cases h : G.szMagRowSum x = 0
+  · simp [h]
+  · simp [h, Complex.conj_ofReal]
+
+/-- **Normalisation of the coin state.**  `∑_y |φ_x(y)|² = 1` whenever the
+magnitude row sum `D_x` is nonzero (and `= 0` otherwise).  This is the crux:
+it is exactly what makes the Szegedy projector idempotent.  Concretely
+`∑_y P_{x y} = ∑_y ‖A_{x y}‖ / D_x = D_x / D_x = 1`. -/
+theorem szCoinAmp_normSq_sum (G : WeightedGraph V) (x : V)
+    (hx : G.szMagRowSum x ≠ 0) :
+    ∑ y, G.szCoinAmp x y * (starRingEnd ℂ) (G.szCoinAmp x y) = 1 := by
+  have hpos : 0 < G.szMagRowSum x :=
+    lt_of_le_of_ne (G.szMagRowSum_nonneg x) (Ne.symm hx)
+  have key : ∀ y, G.szCoinAmp x y * (starRingEnd ℂ) (G.szCoinAmp x y)
+      = ((‖G.adj x y‖ / G.szMagRowSum x : ℝ) : ℂ) := by
+    intro y
+    rw [szCoinAmp_conj]
+    unfold szCoinAmp
+    rw [if_neg hx]
+    rw [← Complex.ofReal_mul]
+    congr 1
+    have hnn : (0:ℝ) ≤ ‖G.adj x y‖ / G.szMagRowSum x := by positivity
+    rw [Real.mul_self_sqrt hnn]
+  rw [Finset.sum_congr rfl (fun y _ => key y), ← Complex.ofReal_sum]
+  rw [← Finset.sum_div]
+  have : ∑ y, ‖G.adj x y‖ = G.szMagRowSum x := rfl
+  rw [this, div_self hx, Complex.ofReal_one]
+
+/-- The bipartite-doubled rank-1 projection `Π_x = |φ_x⟩⟨φ_x|` onto the
+*normalised* Szegedy coin state at `x`, written as an entry of a
+`(V × V) × (V × V)` matrix:
+
+  `Π_x ((x', y), (x'', y'')) = φ_{x'}(y) · conj(φ_{x'}(y''))`
+
+restricted to the `x' = x'' = x` block, where `φ_x(y) = √(‖A_{x y}‖ / D_x)`
+is the Szegedy coin amplitude (`szCoinAmp`).  Because each `|φ_x⟩` is a unit
+vector (`szCoinAmp_normSq_sum`) and the blocks for distinct `x` are
+orthogonal, `Π = ∑_x Π_x` is a genuine orthogonal projection (idempotent and
+Hermitian); see `szReflectionProj_idem`.  This is the canonical Szegedy
+projector; cf. Portugal (2018), eqn (7.4) with the square-root normalisation.
 -/
 noncomputable def szReflectionProj (G : WeightedGraph V) :
     Matrix (V × V) (V × V) ℂ :=
   fun p q =>
     if p.1 = q.1 then
-      let x := p.1
-      let d := G.szRowSum x
-      if d = 0 then 0
-      else (G.adj x p.2) * (starRingEnd ℂ) (G.adj x q.2) / d
+      (G.szCoinAmp p.1 p.2) * (starRingEnd ℂ) (G.szCoinAmp p.1 q.2)
     else 0
+
+/-- **The Szegedy projector is Hermitian**: `Πᴴ = Π`.  Immediate from the
+rank-1 outer-product form `Π_x = |φ_x⟩⟨φ_x|`. -/
+theorem szReflectionProj_isHermitian (G : WeightedGraph V) :
+    (G.szReflectionProj).IsHermitian := by
+  ext p q
+  simp only [Matrix.conjTranspose_apply, szReflectionProj]
+  by_cases h : q.1 = p.1
+  · rw [if_pos h, if_pos h.symm]
+    rw [h, star_mul']
+    rw [show star (G.szCoinAmp p.1 q.2) = (starRingEnd ℂ) (G.szCoinAmp p.1 q.2) from rfl,
+      szCoinAmp_conj]
+    rw [show star ((starRingEnd ℂ) (G.szCoinAmp p.1 p.2))
+        = (starRingEnd ℂ) ((starRingEnd ℂ) (G.szCoinAmp p.1 p.2)) from rfl,
+      szCoinAmp_conj, szCoinAmp_conj]
+    ring
+  · rw [if_neg h, if_neg (fun hc => h hc.symm), star_zero]
+
+/-- **The Szegedy projector is idempotent**: `Π · Π = Π`.  The blocks for
+distinct tail vertices `x` are orthogonal, and within each block
+`Π_x = |φ_x⟩⟨φ_x|` squares to `|φ_x⟩⟨φ_x|` because `⟨φ_x|φ_x⟩ = 1`
+(`szCoinAmp_normSq_sum`); when `D_x = 0` the whole block is zero.  Together
+with `szReflectionProj_isHermitian` this makes `Π` an orthogonal projection,
+so `R = 2Π − I` is a reflection. -/
+theorem szReflectionProj_idem (G : WeightedGraph V) :
+    G.szReflectionProj * G.szReflectionProj = G.szReflectionProj := by
+  ext p q
+  rw [Matrix.mul_apply]
+  by_cases hpq : p.1 = q.1
+  · -- Diagonal-in-tail block: only `r.1 = p.1` summands survive.
+    by_cases hD : G.szMagRowSum p.1 = 0
+    · -- Degenerate block: every coin amplitude at `p.1` is zero.
+      have hzero : ∀ y, G.szCoinAmp p.1 y = 0 := by
+        intro y; unfold szCoinAmp; rw [if_pos hD]
+      -- RHS `Π p q = 0`, and every summand of the LHS is `0`.
+      have hrhs : G.szReflectionProj p q = 0 := by
+        unfold szReflectionProj
+        rw [if_pos hpq, hzero, zero_mul]
+      rw [hrhs]
+      apply Finset.sum_eq_zero
+      intro r _
+      have hpr : G.szReflectionProj p r = 0 := by
+        unfold szReflectionProj
+        by_cases h1 : p.1 = r.1
+        · rw [if_pos h1, hzero, zero_mul]
+        · rw [if_neg h1]
+      rw [hpr, zero_mul]
+    · -- Nondegenerate block: sum collapses to `φ_{p.1}(p.2)·φ_{p.1}(q.2)`.
+      rw [szReflectionProj, if_pos hpq, szCoinAmp_conj]
+      have hterm : ∀ r : V × V,
+          G.szReflectionProj p r * G.szReflectionProj r q
+            = if p.1 = r.1 then
+                (G.szCoinAmp p.1 p.2 * G.szCoinAmp p.1 q.2)
+                  * (G.szCoinAmp p.1 r.2 * (starRingEnd ℂ) (G.szCoinAmp p.1 r.2))
+              else 0 := by
+        intro r
+        unfold szReflectionProj
+        by_cases h1 : p.1 = r.1
+        · have h2 : r.1 = q.1 := by rw [← h1, hpq]
+          rw [if_pos h1, if_pos h2, if_pos h1]
+          -- align `φ_{r.1}` with `φ_{p.1}` via h1; rewrite only the `q.2` conj.
+          rw [← h1]
+          rw [szCoinAmp_conj (G := G) (x := p.1) (y := q.2)]
+          ring
+        · rw [if_neg h1, zero_mul, if_neg h1]
+      rw [Finset.sum_congr rfl (fun r _ => hterm r)]
+      -- Reindex: the `if p.1 = r.1` selects `r.1 = p.1`, then sum over `r.2`.
+      rw [Fintype.sum_prod_type]
+      have collapse : ∀ a : V, ∑ b : V, (if p.1 = a then
+                (G.szCoinAmp p.1 p.2 * G.szCoinAmp p.1 q.2)
+                  * (G.szCoinAmp p.1 b * (starRingEnd ℂ) (G.szCoinAmp p.1 b))
+              else 0)
+          = if p.1 = a then
+              (G.szCoinAmp p.1 p.2 * G.szCoinAmp p.1 q.2)
+                * ∑ b, (G.szCoinAmp p.1 b * (starRingEnd ℂ) (G.szCoinAmp p.1 b))
+            else 0 := by
+        intro a
+        by_cases ha : p.1 = a
+        · simp only [if_pos ha, Finset.mul_sum]
+        · simp only [if_neg ha, Finset.sum_const_zero]
+      rw [Finset.sum_congr rfl (fun a _ => collapse a)]
+      rw [Finset.sum_ite_eq Finset.univ p.1
+        (fun _ => (G.szCoinAmp p.1 p.2 * G.szCoinAmp p.1 q.2)
+          * ∑ b, (G.szCoinAmp p.1 b * (starRingEnd ℂ) (G.szCoinAmp p.1 b)))]
+      rw [if_pos (Finset.mem_univ p.1)]
+      rw [szCoinAmp_normSq_sum G p.1 hD, mul_one]
+  · -- Off-block: `Π p q = 0` and every summand vanishes.
+    rw [szReflectionProj, if_neg hpq]
+    rw [Finset.sum_eq_zero]
+    intro r _
+    rw [szReflectionProj, szReflectionProj]
+    by_cases h1 : p.1 = r.1
+    · have h2 : ¬ r.1 = q.1 := fun hc => hpq (h1.trans hc)
+      rw [if_neg h2, mul_zero]
+    · rw [if_neg h1, zero_mul]
 
 /-- The Szegedy reflection operator `R = 2 Π − I`. -/
 noncomputable def szReflection (G : WeightedGraph V) :
     Matrix (V × V) (V × V) ℂ :=
   (2 : ℂ) • G.szReflectionProj - (1 : Matrix (V × V) (V × V) ℂ)
 
+/-- **The Szegedy reflection is Hermitian**: `Rᴴ = R`. -/
+theorem szReflection_isHermitian (G : WeightedGraph V) :
+    (G.szReflection).IsHermitian := by
+  unfold szReflection Matrix.IsHermitian
+  rw [Matrix.conjTranspose_sub, Matrix.conjTranspose_smul,
+    (G.szReflectionProj_isHermitian),
+    show ((1 : Matrix (V × V) (V × V) ℂ)ᴴ) = 1 from Matrix.conjTranspose_one,
+    show star (2 : ℂ) = 2 by norm_num]
+
+/-- **The Szegedy reflection squares to the identity**: `R · R = I`.  This is
+the reflection property `(2Π − I)² = 4Π² − 4Π + I = I`, valid because
+`Π² = Π` (`szReflectionProj_idem`). -/
+theorem szReflection_mul_self (G : WeightedGraph V) :
+    G.szReflection * G.szReflection = 1 := by
+  unfold szReflection
+  set Pr := G.szReflectionProj with hPr
+  have hidem : Pr * Pr = Pr := G.szReflectionProj_idem
+  rw [sub_mul, mul_sub, mul_sub]
+  rw [Matrix.smul_mul, Matrix.mul_smul, hidem]
+  rw [Matrix.one_mul, Matrix.mul_one, Matrix.one_mul]
+  rw [smul_smul]
+  -- (2•Pr)·(2•Pr) − 2•Pr − (2•Pr − 1) = 4•Pr − 2•Pr − 2•Pr + 1 = 1
+  rw [show (2:ℂ)*2 = 4 by norm_num]
+  rw [show (4:ℂ) • Pr = (2:ℂ)•Pr + (2:ℂ)•Pr by rw [← add_smul]; norm_num]
+  abel
+
+/-- The Szegedy reflection is **unitary**: `Rᴴ · R = I`. -/
+theorem szReflection_unitary (G : WeightedGraph V) :
+    (G.szReflection)ᴴ * G.szReflection = 1 := by
+  rw [G.szReflection_isHermitian, G.szReflection_mul_self]
+
 /-- The swap operator on `V × V`: `S |x,y⟩ = |y,x⟩`. -/
 def szSwap (V : Type u) [Fintype V] [DecidableEq V] :
     Matrix (V × V) (V × V) ℂ :=
   fun p q => if p.1 = q.2 ∧ p.2 = q.1 then 1 else 0
+
+/-- The swap is **Hermitian** (its entries are real, and `S` is symmetric). -/
+theorem szSwap_isHermitian (V : Type u) [Fintype V] [DecidableEq V] :
+    (szSwap V).IsHermitian := by
+  ext p q
+  simp only [Matrix.conjTranspose_apply, szSwap]
+  by_cases h : q.1 = p.2 ∧ q.2 = p.1
+  · rw [if_pos h, if_pos ⟨h.2.symm, h.1.symm⟩, star_one]
+  · rw [if_neg h, if_neg (fun hc => h ⟨hc.2.symm, hc.1.symm⟩), star_zero]
+
+/-- The swap is an **involution**: `S · S = I`. -/
+theorem szSwap_mul_self (V : Type u) [Fintype V] [DecidableEq V] :
+    szSwap V * szSwap V = 1 := by
+  ext p q
+  rw [Matrix.mul_apply]
+  rw [Finset.sum_eq_single (p.2, p.1)]
+  · show szSwap V p (p.2, p.1) * szSwap V (p.2, p.1) q = (1 : Matrix _ _ ℂ) p q
+    have hfst : szSwap V p (p.2, p.1) = 1 := by
+      show (if p.1 = (p.2, p.1).2 ∧ p.2 = (p.2, p.1).1 then (1:ℂ) else 0) = 1
+      rw [if_pos ⟨rfl, rfl⟩]
+    rw [hfst, one_mul]
+    simp only [szSwap, Matrix.one_apply]
+    by_cases hq : p.2 = q.2 ∧ p.1 = q.1
+    · rw [if_pos hq, if_pos (Prod.ext hq.2 hq.1)]
+    · rw [if_neg hq, if_neg (fun h => hq ⟨by rw [h], by rw [h]⟩)]
+  · intro r _ hr
+    have hne : ¬ (p.1 = r.2 ∧ p.2 = r.1) := by
+      rintro ⟨h1, h2⟩; exact hr (Prod.ext h2.symm h1.symm)
+    simp only [szSwap, hne, if_false, zero_mul]
+  · intro h; exact absurd (Finset.mem_univ _) h
 
 /-- **The Szegedy walk operator.**  One step of the discrete-time quantum
 walk is `U_Sz := S · R`, where `R` is the reflection through the outgoing-
@@ -128,7 +336,12 @@ reflection (hence unitary involution) and `S` being a swap (unitary
 involution); their product is unitary. -/
 theorem SzegedyWalk_unitary (G : WeightedGraph V) :
     (G.SzegedyWalk) * (G.SzegedyWalk)ᴴ = 1 := by
-  sorry
+  unfold SzegedyWalk
+  rw [Matrix.conjTranspose_mul]
+  -- U Uᴴ = (S R) (Rᴴ Sᴴ) = S (R Rᴴ) Sᴴ
+  rw [Matrix.mul_assoc, ← Matrix.mul_assoc G.szReflection]
+  rw [G.szReflection_isHermitian, G.szReflection_mul_self, Matrix.one_mul]
+  rw [szSwap_isHermitian V, szSwap_mul_self V]
 
 end WeightedGraph
 
