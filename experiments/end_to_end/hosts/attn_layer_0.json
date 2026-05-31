@@ -1,0 +1,23 @@
+{
+  "name": "small-llama (LlamaForCausalLM, 8 heads / 2 KV groups) attention layer 0 -> CTQW quotient",
+  "problem": {
+    "domain": "transformer attention as a continuous-time quantum walk",
+    "task": "locate a marked query token in layer 0's head-quotient mode fabric",
+    "encoding": "each of the 2 KV groups is a cell; every cell is an equal fiber of 4 query heads; the quotient couples neighboring groups",
+    "compiler_goal": "lower one catgrad attention layer to a Graphplay host description",
+    "proof_route": "grouped-query head partition is equitable; adjacency spectral-ratio route on Q"
+  },
+  "template": {
+    "kind": "path",
+    "n": 2,
+    "prefix": "L0_"
+  },
+  "fiber_size": 4,
+  "marked": {
+    "0": 1
+  },
+  "scan": {
+    "steps": 2400,
+    "t_max_factor": 5.0
+  }
+}
