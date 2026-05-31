@@ -270,6 +270,77 @@ private theorem ne_none_foldl
           · exact absurd h hwx
           · exact h
 
+/-! ### Color bound invariant.
+
+Every greedy color is `< |V|`: a vertex's color is the `mex` of the colors of
+its already-coloured neighbours, and that finset has at most `|V| - 1` elements
+(it never contains the vertex itself, since the graph is loopless), so `mex`
+returns a value `≤ |V| - 1 < |V|`. -/
+
+/-- `neighbourColors G f v` has fewer than `|V|` elements: it is a biUnion over
+the (strict, loopless) neighbourhood of `v` of singletons/empties. -/
+private theorem neighbourColors_card_lt
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    (f : Acc V) (v : V) :
+    (neighbourColors G f v).card < (Finset.univ : Finset V).card := by
+  -- The index set of the biUnion avoids `v` (loopless), so it is `⊆ univ.erase v`.
+  have hsub : (Finset.univ.filter (fun w => G.Adj v w)) ⊆ Finset.univ.erase v := by
+    intro w hw
+    rw [Finset.mem_filter] at hw
+    rw [Finset.mem_erase]
+    exact ⟨fun h => (G.ne_of_adj (h ▸ hw.2)) rfl, Finset.mem_univ _⟩
+  -- Each fibre of the biUnion has cardinality ≤ 1.
+  have hbi : (neighbourColors G f v).card
+      ≤ (Finset.univ.filter (fun w => G.Adj v w)).card := by
+    refine le_trans (Finset.card_biUnion_le) ?_
+    refine le_trans (Finset.sum_le_card_nsmul _ _ 1 ?_) ?_
+    · intro w _
+      cases f w with
+      | none => simp
+      | some c => simp
+    · simp
+  have hidx : (Finset.univ.filter (fun w => G.Adj v w)).card
+      ≤ (Finset.univ.erase v).card := Finset.card_le_card hsub
+  have herase : (Finset.univ.erase v).card < (Finset.univ : Finset V).card := by
+    rw [Finset.card_erase_of_mem (Finset.mem_univ v)]
+    have : 0 < (Finset.univ : Finset V).card := Finset.card_pos.mpr ⟨v, Finset.mem_univ v⟩
+    omega
+  omega
+
+/-- The "all colours `< |V|`" invariant on a partial colouring. -/
+private def ColorsBoundedAcc
+    {V : Type u} [Fintype V] (f : Acc V) : Prop :=
+  ∀ w c, f w = some c → c < (Finset.univ : Finset V).card
+
+/-- A single greedy step preserves the colour-bound invariant. -/
+private theorem colorsBoundedAcc_greedyStep
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    {f : Acc V} (hf : ColorsBoundedAcc f) (v : V) :
+    ColorsBoundedAcc (greedyStep G f v) := by
+  intro w c hwc
+  simp only [greedyStep, Acc.set] at hwc
+  by_cases hwv : w = v
+  · rw [if_pos hwv] at hwc
+    have : mex (neighbourColors G f v) = c := Option.some.inj hwc
+    rw [← this]
+    exact lt_of_le_of_lt (mex_lt_succ_card _) (neighbourColors_card_lt G f v)
+  · rw [if_neg hwv] at hwc
+    exact hf w c hwc
+
+/-- The colour-bound invariant survives the whole fold. -/
+private theorem colorsBoundedAcc_foldl
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    (l : List V) {f : Acc V} (hf : ColorsBoundedAcc f) :
+    ColorsBoundedAcc (l.foldl (greedyStep G) f) := by
+  induction l generalizing f with
+  | nil => simpa using hf
+  | cons x xs ih =>
+      rw [List.foldl_cons]
+      exact ih (colorsBoundedAcc_greedyStep G hf x)
+
 /-- **The greedy coloring.**
 
 Visit vertices in `order`-ascending order (`order : V → ℕ` is user-supplied,
@@ -319,6 +390,25 @@ theorem greedyColoring_isProper
   rw [hcu, hcv, Option.getD_some, Option.getD_some]
   intro hcc
   exact hne (by rw [hcu, hcv, hcc])
+
+/-- Every greedy colour is `< |V|`.  (Every vertex is processed by the fold, so
+its accumulator entry is `some c` with `c < |V|`; the `getD 0` fallback is `0`,
+also `< |V|` since `V` is inhabited by `v`.) -/
+theorem greedyColoring_lt_card
+    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    (order : V → ℕ) (v : V) :
+    greedyColoring G order v < (Finset.univ : Finset V).card := by
+  have hbound : ColorsBoundedAcc (greedyAcc G order) :=
+    colorsBoundedAcc_foldl G _ (by intro w c h; simp [Acc.empty] at h)
+  unfold greedyColoring
+  cases hgv : greedyAcc G order v with
+  | none =>
+      simp only [Option.getD_none]
+      exact Finset.card_pos.mpr ⟨v, Finset.mem_univ v⟩
+  | some c =>
+      simp only [Option.getD_some]
+      exact hbound v c hgv
 
 /-! ## 3. Color count. -/
 
@@ -386,11 +476,42 @@ theorem wlGreedyColoring_numColors_le
     (hk : (Finset.univ.image (WL.wlStableColoring G)).card ≤ k) :
     wlGreedyColoring.numColors G ≤
       k * ((Finset.univ : Finset V).card) := by
-  -- Crude bound: greedy never uses more than `|V|` colors total; combined
-  -- with `k`-fold partition refinement we get the stated product bound.
-  -- A genuine proof tracking the equitable cell structure would give the
-  -- much tighter `k * (Δ + 1)` mentioned in the docstring.
-  sorry
+  -- Crude bound: greedy never uses more than `|V|` colors total (every colour
+  -- is `< |V|` by `greedyColoring_lt_card`), and for nonempty `V` the WL-stable
+  -- image is nonempty so `1 ≤ k`, giving `|V| ≤ k * |V|`.  For empty `V` both
+  -- sides are `0`.  A genuine proof tracking the equitable cell structure would
+  -- give the much tighter `k * (Δ + 1)` mentioned in the docstring.
+  -- Step 1: `numColors ≤ |V|`.
+  have hnum_le : wlGreedyColoring.numColors G ≤ (Finset.univ : Finset V).card := by
+    unfold wlGreedyColoring.numColors greedyColoring.numColors
+    simp only
+    set img : Finset ℕ := Finset.univ.image (greedyColoring G (WL.wlStableColoring G)) with himg
+    cases hmax : img.max with
+    | bot => simp
+    | coe m =>
+        simp only
+        -- `m ∈ img`, so `m = greedyColoring … v` for some `v`, hence `m < |V|`.
+        have hmem : m ∈ img := Finset.mem_of_max hmax
+        rw [himg, Finset.mem_image] at hmem
+        obtain ⟨v, _, hv⟩ := hmem
+        have hlt : m < (Finset.univ : Finset V).card := by
+          rw [← hv]; exact greedyColoring_lt_card G _ v
+        omega
+  -- Step 2: case split on whether `V` is empty.
+  rcases Nat.eq_zero_or_pos (Finset.univ : Finset V).card with hV0 | hVpos
+  · -- Empty `V`: numColors ≤ 0 = k * 0.
+    rw [hV0] at hnum_le ⊢
+    simpa using hnum_le
+  · -- Nonempty `V`: the WL image is nonempty, so `1 ≤ k`.
+    have himg_pos : 0 < (Finset.univ.image (WL.wlStableColoring G)).card := by
+      rw [Finset.card_pos]
+      obtain ⟨v, _⟩ := Finset.card_pos.mp hVpos
+      exact ⟨_, Finset.mem_image_of_mem _ (Finset.mem_univ v)⟩
+    have hk1 : 1 ≤ k := le_trans himg_pos hk
+    calc wlGreedyColoring.numColors G
+        ≤ (Finset.univ : Finset V).card := hnum_le
+      _ = 1 * (Finset.univ : Finset V).card := (one_mul _).symm
+      _ ≤ k * (Finset.univ : Finset V).card := Nat.mul_le_mul_right _ hk1
 
 /-! ## 6. Smoke tests.
 

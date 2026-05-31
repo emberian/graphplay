@@ -26,8 +26,11 @@ References:
 -/
 
 import Graphplay.Graphon.PST
+import Mathlib.Analysis.Matrix.Normed
+import Mathlib.Analysis.Normed.Algebra.Exponential
 
 open scoped MeasureTheory ENNReal Complex BigOperators
+open scoped Matrix.Norms.Operator
 open MeasureTheory
 
 universe u v
@@ -154,7 +157,14 @@ quantities. -/
 consistent partition sequence.
 
 This is the **graphon limit theorem of Graphplay**, the quasi-infinite
-counterpart of the BCLSV cut-norm limit construction.  Proof deferred. -/
+counterpart of the BCLSV cut-norm limit construction.
+
+HONEST GAP — Lovász–Szegedy weak-regularity / cut-norm compactness, which is
+not in Mathlib.  The conclusion (convergence to a limit) genuinely requires the
+compactness of the graphon space under the cut metric: as stated for an
+*arbitrary* `ConsistentPartitionSequence` (which carries no convergence field),
+the limit exists only after passing to a subsequence, so the honest theorem is
+"∃ subsequence" or "assuming `CutNormTendsto`".  Proof deferred (deep). -/
 theorem ConsistentPartitionSequence.limit_exists
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : ConsistentPartitionSequence I) :
@@ -168,12 +178,109 @@ theorem ConsistentPartitionSequence.limit_exists
 /-- A slightly weaker, very useful **convergence-of-quotients** statement:
 **The finite quotient matrices `𝒮.quotient n` form a Cauchy sequence in
 operator norm.**  This is the "matrix-only" tail of the limit theorem and
-is the version actually needed for PST/mixing/search time convergence. -/
+is the version actually needed for PST/mixing/search time convergence.
+
+HONEST GAP — same Lovász–Szegedy cut-norm content as `limit_exists`.  Note that
+without a convergence hypothesis on the sequence (a `ConsistentPartitionSequence`
+carries none), the Cauchy conclusion is *false* for adversarial sequences whose
+cell masses / fluxes oscillate; the honest theorem needs a `CutNormTendsto`-style
+hypothesis (or the regularity-lemma compactness that supplies a Cauchy
+subsequence).  Deferred (deep). -/
 theorem ConsistentPartitionSequence.quotient_cauchy
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : ConsistentPartitionSequence I) :
     CauchySeq (fun n => 𝒮.quotient n) := by
   sorry
+
+/-! ## Continuity of the finite spectral predicates under matrix + time limits
+
+The genuinely-reachable analytic core of the convergence theorems: the
+finite-PST and finite-mixing predicates are **closed conditions** on the pair
+`(H, τ)`, because `(H, τ) ↦ exp(-(iτ)·H)` is jointly continuous (`exp` is
+continuous as a map on the Banach algebra `Matrix I I ℂ` under the `linftyOp`
+norm, and `(H, τ) ↦ -(iτ)·H` is continuous), and the `(j,i)`-entry / its
+modulus are continuous.  A modulus-one (resp. uniform `1/|I|`) condition that
+holds along a sequence therefore passes to the limit by uniqueness of limits.
+
+These are stated for an **arbitrary** convergent matrix sequence, with no
+graphon hypotheses — they are pure matrix analysis and `sorry`-free. -/
+
+/-- **Finite PST passes to matrix + time limits.**  If `H n → Hlim` (in the
+`linftyOp` = entrywise topology), `τ n → τlim`, and each `H n` exhibits finite
+PST from `i` to `j` at time `τ n`, then `Hlim` exhibits finite PST from `i` to
+`j` at time `τlim`.  Pure matrix-analytic, axiom-clean. -/
+theorem IsPST_finite_of_tendsto
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {H : ℕ → Matrix I I ℂ} {Hlim : Matrix I I ℂ}
+    (hH : Filter.Tendsto H Filter.atTop (nhds Hlim))
+    (i j : I) {τ : ℕ → ℝ} {τlim : ℝ}
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
+    (h_pst : ∀ n, IsPST_finite (H n) i j (τ n)) :
+    IsPST_finite Hlim i j τlim := by
+  unfold IsPST_finite at h_pst ⊢
+  -- the exponent `-(iτ)·H` tends to its limit (continuity of scalar-mul & neg)
+  have hτc : Filter.Tendsto (fun n => ((τ n : ℝ) : ℂ)) Filter.atTop (nhds ((τlim : ℝ) : ℂ)) :=
+    (Complex.continuous_ofReal.tendsto _).comp hτ
+  have harg : Filter.Tendsto
+      (fun n => -(Complex.I * ((τ n : ℝ) : ℂ)) • H n) Filter.atTop
+      (nhds (-(Complex.I * ((τlim : ℝ) : ℂ)) • Hlim)) :=
+    ((Filter.Tendsto.const_mul Complex.I hτc).neg).smul hH
+  -- `exp` is continuous on the Banach algebra `Matrix I I ℂ`
+  have hexp : Filter.Tendsto
+      (fun n => NormedSpace.exp (-(Complex.I * ((τ n : ℝ) : ℂ)) • H n)) Filter.atTop
+      (nhds (NormedSpace.exp (-(Complex.I * ((τlim : ℝ) : ℂ)) • Hlim))) :=
+    (NormedSpace.exp_continuous.tendsto _).comp harg
+  -- the `(j,i)`-entry modulus tends to the limiting one
+  have hentry : Filter.Tendsto
+      (fun n => ‖(NormedSpace.exp (-(Complex.I * ((τ n : ℝ) : ℂ)) • H n)) j i‖)
+      Filter.atTop
+      (nhds ‖(NormedSpace.exp (-(Complex.I * ((τlim : ℝ) : ℂ)) • Hlim)) j i‖) := by
+    refine Filter.Tendsto.norm ?_
+    have hcont : Continuous (fun M : Matrix I I ℂ => M j i) :=
+      (continuous_apply i).comp (continuous_apply j)
+    exact (hcont.tendsto _).comp hexp
+  -- but the sequence is constantly `1`, so the limit value is `1`
+  have hconst : Filter.Tendsto
+      (fun n => ‖(NormedSpace.exp (-(Complex.I * ((τ n : ℝ) : ℂ)) • H n)) j i‖)
+      Filter.atTop (nhds 1) := by
+    simp only [h_pst]; exact tendsto_const_nhds
+  exact tendsto_nhds_unique hentry hconst
+
+/-- **Finite uniform mixing passes to matrix + time limits.**  Same continuity
+argument as `IsPST_finite_of_tendsto`, applied to the squared-modulus condition
+`‖·‖² = 1/|I|` for every coordinate `j`.  Pure matrix-analytic, axiom-clean. -/
+theorem IsUniformMixing_finite_of_tendsto
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {H : ℕ → Matrix I I ℂ} {Hlim : Matrix I I ℂ}
+    (hH : Filter.Tendsto H Filter.atTop (nhds Hlim))
+    (i : I) {τ : ℕ → ℝ} {τlim : ℝ}
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
+    (h_mix : ∀ n, IsUniformMixing_finite (H n) i (τ n)) :
+    IsUniformMixing_finite Hlim i τlim := by
+  unfold IsUniformMixing_finite at h_mix ⊢
+  intro j
+  have hτc : Filter.Tendsto (fun n => ((τ n : ℝ) : ℂ)) Filter.atTop (nhds ((τlim : ℝ) : ℂ)) :=
+    (Complex.continuous_ofReal.tendsto _).comp hτ
+  have harg : Filter.Tendsto
+      (fun n => -(Complex.I * ((τ n : ℝ) : ℂ)) • H n) Filter.atTop
+      (nhds (-(Complex.I * ((τlim : ℝ) : ℂ)) • Hlim)) :=
+    ((Filter.Tendsto.const_mul Complex.I hτc).neg).smul hH
+  have hexp : Filter.Tendsto
+      (fun n => NormedSpace.exp (-(Complex.I * ((τ n : ℝ) : ℂ)) • H n)) Filter.atTop
+      (nhds (NormedSpace.exp (-(Complex.I * ((τlim : ℝ) : ℂ)) • Hlim))) :=
+    (NormedSpace.exp_continuous.tendsto _).comp harg
+  have hentry : Filter.Tendsto
+      (fun n => ‖(NormedSpace.exp (-(Complex.I * ((τ n : ℝ) : ℂ)) • H n)) j i‖ ^ 2)
+      Filter.atTop
+      (nhds (‖(NormedSpace.exp (-(Complex.I * ((τlim : ℝ) : ℂ)) • Hlim)) j i‖ ^ 2)) := by
+    have hcont : Continuous (fun M : Matrix I I ℂ => M j i) :=
+      (continuous_apply i).comp (continuous_apply j)
+    exact (((hcont.tendsto _).comp hexp).norm).pow 2
+  have hconst : Filter.Tendsto
+      (fun n => ‖(NormedSpace.exp (-(Complex.I * ((τ n : ℝ) : ℂ)) • H n)) j i‖ ^ 2)
+      Filter.atTop (nhds ((1 : ℝ) / Fintype.card I)) := by
+    simp only [h_mix]; exact tendsto_const_nhds
+  exact tendsto_nhds_unique hentry hconst
 
 /-- **PST-time convergence.**  If `𝒮.quotient n` exhibits PST from cell `i`
 to cell `j` at time `τ_n` for every `n`, and `τ_n → τlim`, then the graphon
@@ -193,10 +300,19 @@ theorem ConsistentPartitionSequence.pst_time_convergence
     (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
     (h_pst : ∀ n, IsPST_finite (𝒮.quotient n) i j (τ n)) :
     IsCellUniformPST Wlim Plim i j τlim := by
-  -- Honest gap: needs joint continuity of `(H, t) ↦ exp(-i t · H)` entrywise to
-  -- pass modulus-one to the limit, AND a bridge from the raw `𝒮.quotient`/`Plim.quotient`
-  -- (in the hypotheses) to the spectrum-sharing `Plim.symmQuotient` (in the conclusion,
-  -- via `cellUniformPST_iff_quotientPST`); the two matrices differ unless cell masses coincide.
+  -- ANALYTIC CORE (now PROVEN): the finite-PST condition is closed under the
+  -- matrix + time limit, so finite-PST passes from `𝒮.quotient n` to the limit
+  -- `Plim.quotient`.
+  have hlim_raw : IsPST_finite Plim.quotient i j τlim :=
+    IsPST_finite_of_tendsto h_lim i j hτ h_pst
+  -- RESIDUAL (single honest gap): convert raw-quotient finite-PST to symmetric-quotient
+  -- finite-PST (`cellUniformPST_iff_quotientPST` routes the conclusion through
+  -- `Plim.symmQuotient = D^{1/2} Q D^{-1/2}`).  Since `‖exp(-iτ·symmQuotient)_{ji}‖
+  -- = (√μ_j/√μ_i)·‖exp(-iτ·Q)_{ji}‖`, this step requires the cell-mass equality
+  -- `μ_i = μ_j` at the transferring cells (or, equivalently, a `CutNormTendsto`
+  -- hypothesis pinning `𝒮`'s masses to `Plim`'s).  This is the genuine missing
+  -- content; the analytic limit-passing above (`hlim_raw`) is now fully proven.
+  rw [cellUniformPST_iff_quotientPST]
   sorry
 
 /-- **Mixing-time convergence.**  Analogous statement for uniform mixing. -/
@@ -211,8 +327,15 @@ theorem ConsistentPartitionSequence.mixing_time_convergence
     (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
     (h_mix : ∀ n, IsUniformMixing_finite (𝒮.quotient n) i (τ n)) :
     IsCellUniformGraphonMixing Wlim Plim i τlim := by
-  -- Honest gap: as in `pst_time_convergence` — joint `exp`-continuity plus the raw
-  -- `quotient` vs `symmQuotient` bridge (`cellUniformGraphonMixing_iff_quotientMixing`).
+  -- ANALYTIC CORE (now PROVEN): finite uniform mixing is closed under the matrix +
+  -- time limit, so it passes from `𝒮.quotient n` to `Plim.quotient`.
+  have hlim_raw : IsUniformMixing_finite Plim.quotient i τlim :=
+    IsUniformMixing_finite_of_tendsto h_lim i hτ h_mix
+  -- RESIDUAL (single honest gap): same raw → symmetric quotient bridge as in
+  -- `pst_time_convergence` (the conclusion is routed through `Plim.symmQuotient` by
+  -- `cellUniformGraphonMixing_iff_quotientMixing`); needs the cell-mass equality.
+  -- The analytic limit-passing above (`hlim_raw`) is now fully proven.
+  rw [cellUniformGraphonMixing_iff_quotientMixing]
   sorry
 
 /-- **Search-time convergence.**  Spatial-search success times computed on
@@ -228,12 +351,16 @@ theorem ConsistentPartitionSequence.search_time_convergence
     (γ : ℝ) (w : I) (τ : ℕ → ℝ) (τlim : ℝ)
     (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim)) :
     IsCellUniformSearchSuccess Wlim Plim γ w τlim := by
-  -- the conclusion `IsCellUniformSearchSuccess` is now the concrete modulus-one
-  -- amplitude condition (no longer `True`).  By `cellUniformSearch_iff_quotientSearch`
-  -- it is the finite-search success on `Plim.symmQuotient`, which is the
-  -- operator-norm limit (`h_lim`) of the finite searches on `𝒮.quotient n` via
-  -- joint continuity of `exp(-iτ · finiteSearchHamiltonian H γ w)` in `(H, τ)`.
-  -- Honest gap (depends on the `exp`/search lift).
+  -- HONEST GAP (two-fold).  Unlike `pst_time_convergence` / `mixing_time_convergence`,
+  -- this statement carries **no per-stage success hypothesis** `∀ n,
+  -- IsSearchSuccess_finite (𝒮.quotient n) γ w (τ n)`: there is nothing forcing the
+  -- amplitude to modulus one, so the conclusion cannot follow from `h_lim`, `hτ`
+  -- alone (it is in fact false for adversarial `γ, w`).  Even with such a hypothesis
+  -- added, the residual would be the same raw → symmetric quotient bridge as in the
+  -- PST/mixing cases, here for `finiteSearchHamiltonian` (`cellUniformSearch_iff_quotientSearch`
+  -- routes the conclusion through `Plim.symmQuotient`).  The reachable analytic core
+  -- — joint continuity of `(H, τ) ↦ exp(-(iτ)·finiteSearchHamiltonian H γ w)` — is the
+  -- same `NormedSpace.exp_continuous` machinery proven in `IsPST_finite_of_tendsto`.
   sorry
 
 /-! ## Concrete corollary: Xie–Tamon (arXiv:2301.07251)

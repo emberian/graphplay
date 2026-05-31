@@ -130,10 +130,23 @@ uniform mixing at time `τ = π / 4`, for every `n ≥ 1`.
 Reference: *Quantum walks on the hypercube*, Lemma 4.1; the proof passes
 to the character (Hadamard) basis, where `A` is diagonal with eigenvalues
 `n - 2·|S|` for `S ⊆ {1,…,n}`, and a direct computation gives
-`|U(π/4)_{x,y}|^2 = 1 / 2^n` for all `x, y`. -/
+`|U(π/4)_{x,y}|^2 = 1 / 2^n` for all `x, y`.
+
+HONEST SORRY (residual = ONE named bridge).  The `n = 1` case is fully
+computable now: `Hypercube 1 = K₂` (`HypercubeProduct.K2`) and
+`HypercubeProduct.exp_smul_X_lit` gives every entry of `U(π/4)` modulus
+`2^{-1/2}` (`|cos(π/4)| = |sin(π/4)| = 2^{-1/2}`), so `Q₁` mixes.  The
+general `n` reduces to this via the `n`-fold Cartesian product
+(`WeightedGraph.evolve_cartesianProduct_apply` makes `U(π/4)` factor
+entrywise as `∏ 2^{-1/2} = 2^{-n/2}`), but only after the **missing graph
+isomorphism** `Fin (2ⁿ) ≃ HypercubeProduct.HCVert n` (bit-decomposition,
+intertwining `hammingDist`-adjacency with the product adjacency) and a
+mixing-transport-across-iso lemma are built.  Those two facts are the only
+remaining gap; the statement itself is the genuine Moore–Russell result. -/
 theorem hypercube_uniformMixing (n : ℕ) (h : 1 ≤ n) :
     IsUniformMixing (Hypercube n) (Real.pi / 4) := by
-  -- Character-basis computation; deferred.
+  -- Residual: `Fin (2ⁿ) ≃ HCVert n` graph iso + mixing transport; base case
+  -- `Q₁ = K₂` is closed by `exp_smul_X_lit`.
   sorry
 
 /-- Equivalent statement: the **average mixing matrix** of the hypercube
@@ -147,9 +160,15 @@ theorem hypercube_averageUniformMixing (n : ℕ) (h : 1 ≤ n) :
   -- `M̄_{xy} = ∑_λ ‖E_λ e_x‖² ‖E_λ e_y‖²` (sum over spectral idempotents),
   -- which for the hypercube is uniform `= 1/2ⁿ` because every eigenvalue of
   -- `Q_n` (the integers `n - 2|S|`) has a flat, sign-balanced eigenprojector
-  -- in the Hadamard basis.  Proving this needs the full character-basis
-  -- spectral decomposition of the hypercube (not yet built in this model on
-  -- `Fin (2ⁿ)`), so we leave a precise, non-vacuous honest `sorry`.
+  -- in the Hadamard basis.  Concretely the eigenprojector `E_λ` is built from
+  -- the product characters `χ_w` (the analogue of `Hamming.hamChi`, here with
+  -- `q = 2`, `χ_w(x) = (-1)^{w·x}`, eigenvalue `n - 2·wt(w)` by
+  -- `Hamming.hamLambda` at `q = 2`); the Cesàro limit picks out
+  -- `∑_w |⟨χ_w, e_x⟩|² |⟨χ_w, e_y⟩|² = ∑_w 2^{-2n} = 2^{-n}`.  Formalizing this
+  -- needs (a) the spectral idempotents of `Q_n` and (b) evaluation of the
+  -- Cesàro `limUnder` — neither is built on `Fin (2ⁿ)` yet.  The residual is
+  -- exactly the average-mixing spectral formula; the statement is the correct,
+  -- non-vacuous time-average (NOT a corollary of single-time mixing).
   sorry
 
 /-! ## Computable rational companions -/

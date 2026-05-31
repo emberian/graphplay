@@ -54,6 +54,7 @@ import Graphplay.Weighted
 import Graphplay.Loopy
 import Graphplay.Equitable
 import Graphplay.CombinatorialMap
+import Graphplay.ForMathlib.CourantFischer
 
 open scoped Matrix
 
@@ -196,45 +197,9 @@ theorem laplacian_mulVec_onesVec (G : WeightedGraph V) (h : RealNonnegWeights G)
     apply Complex.ext <;> simp [hdeg_im]
   rw [hre, sub_self]
 
-/-- **Fiedler's codimension-`1` Courant–Fischer (the single residual).**  For the
-Hermitian, PSD Laplacian `L` of a graph with real nonnegative weights, the
-second-smallest eigenvalue equals the infimum of the Rayleigh quotient over
-nonzero vectors orthogonal to the all-ones bottom eigenvector.
-
-This is the genuinely missing piece: Mathlib supplies the extremal-eigenvalue
-Rayleigh theory (`InnerProductSpace.Rayleigh`: the top/bottom eigenvalue is the
-`iSup`/`iInf` of the Rayleigh quotient) and the antitone eigenbasis
-(`IsHermitian.eigenvalues₀`), but **not** the codimension-`1` min-max that, after
-projecting out a known bottom eigenvector, identifies the *next* eigenvalue with
-the constrained Rayleigh infimum.  The statement is packaged in this file's
-concrete vocabulary (`laplacianForm`, `normSq`, `orthToOnes`) and is fed the two
-hinges proved above (the matrix form `laplacianForm_eq_dotProduct` and the bottom
-eigenvector `laplacian_mulVec_onesVec`); everything in
-`algebraicConnectivity_eq_secondSmallest` is then derived from it by definitional
-unfolding.
-
-It is TRUE (Fiedler 1973; Courant–Fischer min-max applied to the eigenbasis of
-`L` with `𝟙/√n` as the realised bottom eigenvector).  Proving it amounts to
-porting the codim-`1` Courant–Fischer development into Mathlib's matrix spectral
-API, which is a multi-lemma effort beyond the scope of this single-lemma wave; it
-is isolated here as one honest, Mathlib-shaped residual. -/
-theorem hermitian_secondEigenvalue_eq_rayleigh_inf_orthogonal
-    (G : WeightedGraph V) (h : 2 ≤ Fintype.card V) (hw : RealNonnegWeights G) :
-    sInf (rayleighSet G)
-      = laplacianEigenvalues G ⟨Fintype.card V - 2, by omega⟩ := by
-  sorry
-
-/-- **Fiedler's eigenvalue characterisation.**  For real nonnegative edge weights
-the algebraic connectivity (Rayleigh-quotient infimum over `𝟙^⊥`) coincides with
-the second-smallest Laplacian eigenvalue.  Now a one-line consequence of the
-codimension-`1` Courant–Fischer residual
-`hermitian_secondEigenvalue_eq_rayleigh_inf_orthogonal`, after unfolding
-`algebraicConnectivity` and `secondSmallestLaplacianEigenvalue`. -/
-theorem algebraicConnectivity_eq_secondSmallest
-    (G : WeightedGraph V) (h : 2 ≤ Fintype.card V) (hw : RealNonnegWeights G) :
-    algebraicConnectivity G = secondSmallestLaplacianEigenvalue G h := by
-  unfold algebraicConnectivity secondSmallestLaplacianEigenvalue
-  exact hermitian_secondEigenvalue_eq_rayleigh_inf_orthogonal G h hw
+/-! The Fiedler codimension-`1` Courant–Fischer characterisation and its corollary
+`algebraicConnectivity_eq_secondSmallest` appear in §2.6 below, after the PSD /
+nonnegativity development (§2.5) they rely on. -/
 
 /-! ## 2.5  Positive semidefiniteness for real, nonnegative edge weights
 
@@ -360,6 +325,78 @@ theorem rayleighSet_nonneg (G : WeightedGraph V) (h : RealNonnegWeights G) :
 theorem bddBelow_rayleighSet (G : WeightedGraph V) (h : RealNonnegWeights G) :
     BddBelow (rayleighSet G) :=
   ⟨0, fun _ hr => rayleighSet_nonneg G h _ hr⟩
+
+/-! ## 2.6  Fiedler's eigenvalue characterisation (Courant–Fischer)
+
+With the PSD / nonnegativity development in hand, the codimension-`1`
+Courant–Fischer identity follows from the abstract matrix version
+`Graphplay.CourantFischer.inf_rayleighSetMat_eq_secondEigenvalue₀`, by identifying
+the concrete `rayleighSet G` (built from `laplacianForm`, `normSq`, `orthToOnes`)
+with the abstract Rayleigh set of the Laplacian `L = G.laplacian.adj` over the
+orthogonal complement of the all-ones vector. -/
+
+/-- **Fiedler's codimension-`1` Courant–Fischer.**  For the Hermitian, PSD
+Laplacian `L` of a graph with real nonnegative weights, the second-smallest
+eigenvalue equals the infimum of the Rayleigh quotient over nonzero vectors
+orthogonal to the all-ones bottom eigenvector.
+
+This is the codimension-`1` min-max that, after projecting out the known bottom
+eigenvector `𝟙` (`laplacian_mulVec_onesVec`), identifies the *next* eigenvalue
+with the constrained Rayleigh infimum.  The PSD hypothesis enters as eigenvalue
+nonnegativity (derived here from `laplacianForm_re_nonneg`), and the two hinges
+are the matrix form (`laplacianForm_eq_dotProduct`) and the bottom eigenvector
+(`laplacian_mulVec_onesVec`). -/
+theorem hermitian_secondEigenvalue_eq_rayleigh_inf_orthogonal
+    (G : WeightedGraph V) (h : 2 ≤ Fintype.card V) (hw : RealNonnegWeights G) :
+    sInf (rayleighSet G)
+      = laplacianEigenvalues G ⟨Fintype.card V - 2, by omega⟩ := by
+  -- Identify the concrete Rayleigh set with the abstract matrix Rayleigh set of the
+  -- Laplacian `L = G.laplacian.adj` over `(onesVec)^⊥`, then invoke codim-1 Courant–Fischer.
+  set L : Matrix V V ℂ := G.laplacian.adj with hL
+  have hLherm : L.IsHermitian := G.laplacian.herm
+  -- The Laplacian is PSD: every eigenvalue is `≥ 0` (the quadratic form is nonnegative).
+  have hmin : ∀ i, 0 ≤ hLherm.eigenvalues i := by
+    intro i
+    rw [hLherm.eigenvalues_eq i]
+    have := laplacianForm_re_nonneg G hw (WithLp.ofLp (hLherm.eigenvectorBasis i))
+    rwa [laplacianForm_eq_dotProduct] at this
+  -- The two Rayleigh sets coincide.
+  have hset : rayleighSet G = CourantFischer.rayleighSetMat L (onesVec V) := by
+    ext r
+    constructor
+    · rintro ⟨x, hx, hortho, rfl⟩
+      refine ⟨x, hx, ?_, ?_⟩
+      · -- `∑ star(𝟙 u) * x u = ∑ x u = 0`.
+        rw [← hortho]
+        exact Finset.sum_congr rfl fun u _ => by simp [onesVec]
+      · rw [laplacianForm_eq_dotProduct, hL]; rfl
+    · rintro ⟨x, hx, hortho, rfl⟩
+      refine ⟨x, hx, ?_, ?_⟩
+      · -- `orthToOnes x`, from `∑ star(𝟙 u) * x u = 0`.
+        unfold orthToOnes
+        rw [← hortho]
+        exact Finset.sum_congr rfl fun u _ => by simp [onesVec]
+      · rw [laplacianForm_eq_dotProduct, hL]; rfl
+  rw [hset]
+  rw [show laplacianEigenvalues G ⟨Fintype.card V - 2, by omega⟩
+      = hLherm.eigenvalues₀ ⟨Fintype.card V - 2, by omega⟩ from rfl]
+  have hne : Nonempty V := Fintype.card_pos_iff.mp (by omega)
+  have hones : onesVec V ≠ 0 := by
+    intro hc
+    exact one_ne_zero (congrFun hc (Classical.arbitrary V))
+  exact CourantFischer.inf_rayleighSetMat_eq_secondEigenvalue₀ L hLherm h
+    (onesVec V) hones (laplacian_mulVec_onesVec G hw) hmin
+
+/-- **Fiedler's eigenvalue characterisation.**  For real nonnegative edge weights
+the algebraic connectivity (Rayleigh-quotient infimum over `𝟙^⊥`) coincides with
+the second-smallest Laplacian eigenvalue.  A consequence of the codimension-`1`
+Courant–Fischer identity `hermitian_secondEigenvalue_eq_rayleigh_inf_orthogonal`,
+after unfolding `algebraicConnectivity` and `secondSmallestLaplacianEigenvalue`. -/
+theorem algebraicConnectivity_eq_secondSmallest
+    (G : WeightedGraph V) (h : 2 ≤ Fintype.card V) (hw : RealNonnegWeights G) :
+    algebraicConnectivity G = secondSmallestLaplacianEigenvalue G h := by
+  unfold algebraicConnectivity secondSmallestLaplacianEigenvalue
+  exact hermitian_secondEigenvalue_eq_rayleigh_inf_orthogonal G h hw
 
 /-! ## 3.  Nonnegativity and Fiedler monotonicity -/
 

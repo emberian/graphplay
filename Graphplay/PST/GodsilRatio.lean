@@ -1240,9 +1240,17 @@ importable here; hence the proof is an *honest* `sorry` attached to a
 theorem isPST_exists_path_iff (n : ℕ) (hn : 2 ≤ n) :
     (∃ τ : ℝ, IsPST (pathGraph n) (pathLeft (by omega)) (pathRight (by omega)) τ)
       ↔ (n = 2 ∨ n = 3) := by
+  -- STATUS.  The forward number-theoretic obstruction is now PROVEN in the
+  -- sibling module: `Graphplay.pathEigenvalue_not_arithmeticProgression` shows
+  -- (axiom-cleanly, via Niven `irrational_cos_pi_div`) that the path eigenvalues
+  -- `2cos(kπ/(n+1))` admit NO arithmetic progression for `n ≥ 4` — i.e. the
+  -- Godsil ratio condition fails, so no PST.  The residual is the single Godsil
+  -- existence bridge `isPST_exists_iff_strongCospectral_and_godsilRatio` (the
+  -- deep Kronecker/Dirichlet half), kept as one honest `sorry`.
   -- Citation: Christandl–Datta–Dorlas–Ekert–Kay–Landahl, Phys. Rev. A
   -- 71 (2005) 032312; Coutinho thesis (2014) §2.4; Godsil–Kirkland–
   -- Severini–Smith, arXiv:1201.4822.
+  -- BLOCKED ON: isPST_exists_iff_strongCospectral_and_godsilRatio (Diophantine bridge).
   sorry
 
 end Path

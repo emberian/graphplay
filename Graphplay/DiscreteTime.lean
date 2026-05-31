@@ -44,6 +44,7 @@ import Graphplay.Equitable
 import Graphplay.PST
 import Graphplay.Mixing
 import Graphplay.Search
+import Graphplay.ForMathlib.JordanLemma
 
 open scoped Matrix
 open Complex
@@ -432,33 +433,64 @@ noncomputable def randomWalkOp (G : WeightedGraph V) : Matrix V V ℂ :=
     let d := G.szRowSum x
     if d = 0 then 0 else G.adj x y / d
 
-/-- **The irreducible SVD/Jordan residual of Szegedy's theorem.**  This is the
-*single* deep fact that genuinely needs machinery Mathlib does not yet have, namely
-**Jordan's lemma** (the product of two reflections `S`, `R = 2Π − I` acts on each
-2-D `span{fix S, fix R}` plane as a rotation by twice the principal angle) together
-with the **discriminant singular-value decomposition** `D = √P ∘ √Pᵀ` that supplies
-those principal angles as `arccos λ`, with `λ` an eigenvalue of the symmetric
-random-walk operator.  Concretely: every Szegedy eigenvalue `μ` is
-`exp(±i · arccos λ)` for some random-walk eigenvalue `λ ∈ [-1, 1]`.
+/-- **The Szegedy discriminant–spectrum inclusion.**  Every spectral value of the
+concrete Jordan discriminant `D₀ = ½(SR + RS) = reflStepDiscriminant R S` (with
+`R = szReflection`, `S = szSwap`) — i.e. every cosine `cos θ` of a principal angle
+between the two coin-reflection subspaces — is an eigenvalue of the random-walk
+operator.  Note this is the **one-way inclusion** `spectrum D₀ ⊆ spectrum randomWalkOp`,
+*not* equality: `D₀` acts on the full `V × V` arc space, so its spectrum can contain
+extra off-shell `±1` eigenvalues from directions where `S·R` acts as `±I`; equality
+would be an overclaim.  The inclusion is exactly the direction Szegedy's theorem needs.
 
-The *idempotency* half of the input is already discharged sorry-free in this file
-(`szReflectionProj_idem`, the √-coin fix), so `R` and `S` are honest reflections —
-Jordan's lemma applies.  What remains is purely the matrix-SVD content: Mathlib has
-singular *values* (`LinearMap.singularValues`) but no SVD *factorisation* and no
-Jordan-lemma block reduction, so the extraction of `λ ∈ spectrum randomWalkOp` from
-`μ ∈ spectrum SzegedyWalk` cannot yet be derived.  This is the honest minimal
-residual; everything else (`szegedy_block_correspondence`, `szegedy_spectrum`) is
-trigonometric bookkeeping derived from it via `Real.arccos`.
+Mathematically, on the Szegedy invariant subspace `D₀` is conjugate (by the Szegedy
+isometry) to the symmetric discriminant `D^{-1/2} A D^{-1/2}`, **similar** to the
+left-normalised `randomWalkOp = D⁻¹A` (conjugate by `D^{1/2}`); similar matrices share
+a spectrum, and the off-shell `±1` directions correspond to the trivial/marked
+`λ = ±1` eigenspaces, also eigenvalues of `randomWalkOp` (row-sum `1`, and `−1` on the
+bipartite component).
 
-Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3; Jordan, "Essai sur
-la géométrie à n dimensions" (1875) for the two-reflections lemma. -/
+We isolate this inclusion as the single named residual — the one SVD/similarity fact
+Mathlib cannot yet supply (it has Hermitian eigenvalues and singular values but no SVD
+factorisation nor two-projection / CS block reduction).
+`Graphplay.ForMathlib.reflStepDiscriminant_isHermitian` (proved sorry-free) already
+gives that `D₀` is Hermitian, so only the spectral inclusion remains.
+
+Reference: Szegedy, FOCS 2004, Thm 1; Portugal (2018), §7.3. -/
+theorem szDiscriminant_spec (G : WeightedGraph V) :
+    spectrum ℂ (Graphplay.ForMathlib.reflStepDiscriminant G.szReflection (szSwap V))
+      ⊆ spectrum ℂ G.randomWalkOp :=
+  sorry
+
+/-- **The irreducible SVD/Jordan residual of Szegedy's theorem, now wired through
+Jordan's lemma.**  Every Szegedy eigenvalue `μ` is `exp(±i · arccos λ)` for some
+random-walk eigenvalue `λ ∈ [-1, 1]`.
+
+This is now *derived* (no local `sorry`): the walk operator is literally
+`U = S · R` with `S = szSwap` and `R = szReflection` two Hermitian involutions
+(`szSwap_isHermitian`/`szSwap_mul_self`, `szReflection_isHermitian`/
+`szReflection_mul_self`, all proved sorry-free above), so the abstract two-reflections
+lemma `Graphplay.ForMathlib.reflStep_eigenvalue_angle` applies.  Jordan's lemma supplies
+`λ = Re μ ∈ [-1,1]`, the `exp(±i·arccos λ)` polar form, and `λ ∈ spectrum D₀` for the
+concrete Jordan discriminant `D₀ = ½(SR + RS)`; the spectral inclusion
+`szDiscriminant_spec` (`spectrum D₀ ⊆ spectrum randomWalkOp`) transports the membership.
+The *only* remaining unproved input is `szDiscriminant_spec` — the lone SVD/similarity gap.
+
+Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3; Jordan (1875). -/
 theorem szegedy_discriminant_eigenvalue (G : WeightedGraph V) (μ : ℂ)
     (hμ : μ ∈ spectrum ℂ G.SzegedyWalk) :
     ∃ (lam : ℝ) (s : Bool),
       lam ∈ Set.Icc (-1 : ℝ) 1 ∧
       (lam : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
       μ = Complex.exp ((if s then 1 else -1) * Complex.I * Real.arccos lam) := by
-  sorry
+  -- `U = S · R` with the two proven Hermitian involutions.
+  have hμ' : μ ∈ spectrum ℂ (szSwap V * G.szReflection) := hμ
+  obtain ⟨lam, s, hlam, hmem, hμeq⟩ :=
+    Graphplay.ForMathlib.reflStep_eigenvalue_angle
+      G.szReflection (szSwap V)
+      G.szReflection_isHermitian G.szReflection_mul_self
+      (szSwap_isHermitian V) (szSwap_mul_self V) μ hμ'
+  -- Transport `λ ∈ spectrum D₀` to `λ ∈ spectrum randomWalkOp` via `szDiscriminant_spec`.
+  exact ⟨lam, s, hlam, G.szDiscriminant_spec hmem, hμeq⟩
 
 /-- **Szegedy 2×2 block correspondence.**  Every spectral value `μ` of `U_Sz` is
 `exp(s·i·θ)` for a sign `s` and an angle `θ ∈ [0, π]` with `cos θ = λ`, where

@@ -760,31 +760,64 @@ theorem constant_quotient_apply [NoAtoms μ] (W : Graphon Ω μ) (c : ℂ)
     exact (ne_of_gt (P.cell_pos i)) this
   rw [P.quotient_apply_of_mem i j hx₀mem, hx₀good]
 
-/-- **Constant graphon: cell-uniform PST is trivial.**  For a constant
-graphon `W ≡ c` (the `K_n` limit), the only invariant cell-uniform
-subspace is the one-dimensional constants, so the only cell-uniform PST is
-the trivial `i = j` self-transfer. -/
+/-- **Constant graphon: the symmetric quotient is the rank-one outer product**
+`symmQuotient i j = c · √μ(C_i) · √μ(C_j)`.
+
+This is the genuine algebraic core of the constant-graphon spectral picture,
+now fully reachable from the proven slice integral `constant_quotient_apply`
+(`Q i j = c · μ(C_j)`) plus the definition `symmQuotient i j =
+√μ_i · Q i j / √μ_j`: the `μ_j / √μ_j = √μ_j` cancellation (cells have positive
+mass, `cellMass_pos`) leaves the **rank-one** outer product `c · √μ_i · √μ_j`.
+Equivalently `symmQuotient = (c · μ(Ω)) · |ψ⟩⟨ψ|` with `ψ_i = √(μ_i / μ(Ω))`. -/
+theorem constant_symmQuotient_eq [NoAtoms μ] (W : Graphon Ω μ) (c : ℂ)
+    (hW : W.IsConstant c) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i j : I) :
+    P.symmQuotient i j
+      = c * (Real.sqrt (P.cellMass i) : ℂ) * (Real.sqrt (P.cellMass j) : ℂ) := by
+  -- `symmQuotient i j = √μ_i · Q i j / √μ_j` with `Q i j = c · μ(C_j) = c · μ_j`.
+  unfold GraphonEquitablePartition.symmQuotient
+  rw [constant_quotient_apply W c hW P i j]
+  -- `μ_j = (μ (P.cell j)).toReal = cellMass j`, and `√μ_j ≠ 0`.
+  have hcellMass_j : (μ (P.cell j)).toReal = P.cellMass j := rfl
+  have hsj : (Real.sqrt (P.cellMass j) : ℂ) ≠ 0 := by
+    simp only [Ne, Complex.ofReal_eq_zero]
+    exact ne_of_gt (Real.sqrt_pos.mpr (P.cellMass_pos j))
+  -- `μ_j = √μ_j · √μ_j`, so `μ_j / √μ_j = √μ_j`.
+  rw [hcellMass_j]
+  have hsq : (P.cellMass j : ℂ) = (Real.sqrt (P.cellMass j) : ℂ) * (Real.sqrt (P.cellMass j) : ℂ) := by
+    rw [← Complex.ofReal_mul, Real.mul_self_sqrt (le_of_lt (P.cellMass_pos j))]
+  rw [hsq]
+  field_simp
+
+/-- **Constant graphon: cell-uniform PST between distinct cells is *non-trivial***
+in general — `K_2` (two equal-mass cells) exhibits genuine PST, so the bare
+"PST ⟹ i = j" claim is **false** without an extra non-degeneracy hypothesis.
+
+For a constant graphon `W ≡ c` (the `K_n` limit), the symmetric quotient is the
+rank-one outer product `symmQuotient = (c · μ(Ω)) · |ψ⟩⟨ψ|` with `ψ_i =
+√(μ_i / μ(Ω))` a unit vector (`constant_symmQuotient_eq`), so
+`exp(-iτ · symmQuotient)_{ji} = δ_{ji} + (e^{-iτ c μ(Ω)} − 1) ψ_j ψ_i`.  Its
+off-diagonal modulus is `|e^{-iτ c μ(Ω)} − 1| · ψ_j ψ_i ≤ 2 · ψ_j ψ_i ≤ 1`, with
+the **upper bound attained** precisely when `ψ_j = ψ_i = 1/√2` (two equal-mass
+cells) **and** the phase is `π` — i.e. the `K_2` configuration, where PST between
+the two distinct cells genuinely occurs.
+
+So the triviality conclusion holds only away from that degenerate equal-mass
+pair; the honest statement needs a hypothesis ruling it out (e.g. `2 ≤ Fintype.card I`
+with strictly unequal masses, or `ψ_j ψ_i < 1/2`).  We therefore keep this an
+HONEST `sorry`: the conclusion `i = j` is *false as written* for `K_2`, and the
+correct non-degenerate version requires the finite rank-one PST classification
+(a sharp `|e^{iθ}−1| · ψ_jψ_i < 1` argument under the non-degeneracy hypothesis),
+which is not yet formalised.  The algebraic rank-one core is fully discharged in
+`constant_symmQuotient_eq`. -/
 theorem constant_graphon_pst_trivial
     (W : Graphon Ω μ) (c : ℂ) (hW : W.IsConstant c)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (i j : I) (τ : ℝ) (hτ : τ ≠ 0) :
     IsCellUniformPST W P i j τ → i = j := by
-  -- Route: `cellUniformPST_iff_quotientPST` reduces this to finite PST on
-  -- `P.symmQuotient`.  For a constant graphon the per-vertex flux out of cell `i`
-  -- into cell `j` is `Q i j = c · μ(C_j)` (independent of the source cell) — this
-  -- is now the PROVEN lemma `constant_quotient_apply` (under the genuine atomless
-  -- hypothesis; cf. `constant_op_slice`).  Hence
-  -- `symmQuotient i j = √μ_i · c · μ_j / √μ_j = c · √μ_i · √μ_j` is **rank one**:
-  -- `M = (c · μ(Ω)) · |ψ⟩⟨ψ|` with `ψ_i = √(μ_i / μ(Ω))` unit, so
-  -- `exp(-iτM)_{ji} = δ_{ji} + (e^{-iτ c μ(Ω)} - 1) ψ_j ψ_i`.
-  -- The slice-integral blocker is thus closed; the genuine REMAINING gap is the
-  -- *finite* rank-one matrix-exponential analysis: showing this entry has modulus
-  -- `< 1` for `i ≠ j` is delicate (it can vanish when `ψ_j² = 1/2`, so the
-  -- triviality requires a sharper mass/timing argument than a bare off-diagonal
-  -- bound), and the full finite PST→triviality classification for rank-one
-  -- Hermitian generators is not yet formalised.
-  -- BLOCKED: finite rank-one exponential PST classification (slice integral
-  -- `Q i j = c·μ(C_j)` is now proven, see `constant_quotient_apply`).
+  -- HONEST: false as stated for `K_2` (equal masses, phase `π`); see the docstring.
+  -- The rank-one structure `symmQuotient = c·√μ_i·√μ_j` is PROVEN in
+  -- `constant_symmQuotient_eq`; the missing piece is the finite rank-one PST
+  -- classification under a non-degeneracy hypothesis (not yet formalised).
   sorry
 
 /-! ## 6½. Matrix-level forward Godsil extraction (PST ⟹ strong cospectrality)

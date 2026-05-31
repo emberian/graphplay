@@ -92,6 +92,11 @@ theorem arcFlipFlop_conjTranspose :
   · rw [if_pos h, if_pos ⟨h.2.symm, h.1.symm⟩, star_one]
   · rw [if_neg h, if_neg (fun hc => h ⟨hc.2.symm, hc.1.symm⟩), star_zero]
 
+/-- The flip-flop is **Hermitian** (packaged `IsHermitian` form). -/
+theorem arcFlipFlop_isHermitian :
+    (arcFlipFlop V).IsHermitian :=
+  arcFlipFlop_conjTranspose
+
 /-- The flip-flop is an **involution**: `S · S = I`.  Reversing an arc twice
 returns it. -/
 theorem arcFlipFlop_mul_self :
@@ -290,6 +295,22 @@ theorem groverArcCoin_unitary (hV : Nonempty V) :
     (groverArcCoin V)ᴴ * groverArcCoin V = (1 : Matrix (V × V) (V × V) ℂ) :=
   arcCoin_unitary (groverCoin_unitary hV)
 
+/-- **The Grover arc coin is Hermitian**: `Cᴴ = C`.  Conjugation acts blockwise
+(`arcCoin_conjTranspose`) and the per-vertex Grover coin is Hermitian
+(`groverCoin_conjTranspose`), so the assembled arc coin is too. -/
+theorem groverArcCoin_isHermitian :
+    (groverArcCoin V).IsHermitian := by
+  unfold Matrix.IsHermitian groverArcCoin
+  rw [arcCoin_conjTranspose, groverCoin_conjTranspose]
+
+/-- **The Grover arc coin is an involution**: `C · C = I`.  Multiplicativity of
+`arcCoin` (`arcCoin_mul`) reduces to the per-vertex involution
+`groverCoin_mul_self`, and `arcCoin 1 = 1`. -/
+theorem groverArcCoin_mul_self (hV : Nonempty V) :
+    groverArcCoin V * groverArcCoin V = (1 : Matrix (V × V) (V × V) ℂ) := by
+  unfold groverArcCoin
+  rw [arcCoin_mul, groverCoin_mul_self hV, arcCoin_one]
+
 /-! ## §4 The one-step coined walk `U = S · C` -/
 
 /-- **One step of the coined quantum walk** with per-vertex coin `coin`:
@@ -352,28 +373,77 @@ unit circle.
 
 Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3. -/
 
-/-- **The irreducible SVD/Jordan residual of the Grover-walk spectral theorem.**
-The single deep fact, isolated exactly as for the Szegedy walk
-(`Graphplay.WeightedGraph.szegedy_discriminant_eigenvalue`): every Grover-walk
-eigenvalue `μ` is `exp(±i · arccos σ)` for a singular value `σ ∈ [0, 1]` of the
-discriminant `D = √P ∘ √Pᵀ`, equivalently a transition eigenvalue in
-`spectrum G.randomWalkOp`.  The content is **Jordan's lemma** (`U = S·C`, a product
-of two coin reflections, acts on each 2-D `span{|s_x⟩, S|s_x⟩}` plane as a rotation
-by twice the principal angle) plus the **discriminant SVD** supplying those angles
-as `arccos σ`.  Mathlib has singular *values* (`LinearMap.singularValues`) but no SVD
-*factorisation* and no Jordan-lemma block reduction, so this extraction cannot yet be
-derived; this is the honest minimal residual.  `groverStep_block_correspondence` and
-`groverStep_spectrum` are trigonometric bookkeeping on top of it.
+/-- **The Grover discriminant–spectrum identification.**  The concrete Jordan
+discriminant `D₀ = ½(SC + CS) = reflStepDiscriminant C S` (with `C = groverArcCoin`,
+`S = arcFlipFlop`), whose eigenvalues are the cosines of the principal angles, has each
+spectral value `z` equal to a *singular value* `σ ∈ [0,1]` of `D = √P ∘ √Pᵀ` that is a
+transition eigenvalue (`(σ : ℂ) ∈ spectrum randomWalkOp`).  This is exactly the content
+the headline theorem `groverStep_discriminant_eigenvalue` asserts (its `σ ∈ [0,1]`),
+matching the Szegedy-discriminant SVD: on the Grover invariant subspace the principal
+angles have cosines `σ ∈ [0,1]`.
 
-Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3; Jordan (1875) for
-the two-reflections lemma. -/
+Caveat (honest scope): `D₀` acts on the full `V × V` arc space; this lemma is the
+on-shell statement (the singular-value branch).  Pushing it to *every* spectral value
+including off-shell `±I`-directions is precisely the SVD/CS-decomposition block
+reduction.  We isolate this as the single named residual — the one SVD/CS fact Mathlib
+cannot yet supply (Hermitian eigenvalues and singular values exist, but no SVD
+factorisation nor two-projection block reduction).  The Hermitian-ness of `D₀` is
+already proved sorry-free (`Graphplay.ForMathlib.reflStepDiscriminant_isHermitian`);
+only the spectral content remains here.
+
+Reference: Szegedy, FOCS 2004, Thm 1; Portugal (2018), §7.3. -/
+theorem groverDiscriminant_spec (G : WeightedGraph V) (hV : Nonempty V) :
+    ∀ z ∈ spectrum ℂ
+        (Graphplay.ForMathlib.reflStepDiscriminant (groverArcCoin V) (arcFlipFlop V)),
+      ∃ σ : ℝ,
+        σ ∈ Set.Icc (0 : ℝ) 1 ∧ z = (σ : ℂ) ∧ (σ : ℂ) ∈ spectrum ℂ G.randomWalkOp :=
+  sorry
+
+/-- **The irreducible SVD/Jordan residual of the Grover-walk spectral theorem, now
+wired through Jordan's lemma.**  Every Grover-walk eigenvalue `μ` is
+`exp(±i · arccos σ)` for a singular value `σ ∈ [0, 1]` of the discriminant, equivalently
+a transition eigenvalue in `spectrum G.randomWalkOp`.
+
+This is now *derived* (no local `sorry`): the walk operator is literally
+`U = S · C` with `S = arcFlipFlop` and `C = groverArcCoin` two Hermitian involutions
+(`arcFlipFlop_isHermitian`/`arcFlipFlop_mul_self`, `groverArcCoin_isHermitian`/
+`groverArcCoin_mul_self`, all proved sorry-free above), so the abstract two-reflections
+lemma `Graphplay.ForMathlib.reflStep_eigenvalue_angle` applies.  Jordan's lemma supplies
+`lam = Re μ`, the `exp(±i·arccos lam)` polar form, and `lam ∈ spectrum D₀` for the
+concrete Jordan discriminant `D₀ = ½(SC + CS)`; the spec `groverDiscriminant_spec` then
+pins `lam = σ ∈ [0,1]` to a random-walk eigenvalue.  (For empty `V`, `groverStep V`
+lives over an empty index, its spectrum is empty, so the hypothesis `hμ` is vacuous.)
+The *only* remaining unproved input is `groverDiscriminant_spec`.
+
+Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3; Jordan (1875). -/
 theorem groverStep_discriminant_eigenvalue (G : WeightedGraph V) (μ : ℂ)
     (hμ : μ ∈ spectrum ℂ (groverStep V)) :
     ∃ (σ : ℝ) (s : Bool),
       σ ∈ Set.Icc (0 : ℝ) 1 ∧
       (σ : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
       μ = Complex.exp ((if s then 1 else -1) * Complex.I * Real.arccos σ) := by
-  sorry
+  -- `V` is nonempty: otherwise `V × V` is empty, the matrix algebra is trivial,
+  -- and `spectrum (groverStep V) = ∅` (`spectrum.of_subsingleton`), contradicting `hμ`.
+  have hV : Nonempty V := by
+    by_contra hempty
+    rw [not_nonempty_iff] at hempty
+    have : Subsingleton (Matrix (V × V) (V × V) ℂ) := inferInstance
+    rw [spectrum.of_subsingleton] at hμ
+    exact hμ.elim
+  -- `U = S · C` with the two proven Hermitian involutions.
+  have hμ' : μ ∈ spectrum ℂ (arcFlipFlop V * groverArcCoin V) := hμ
+  obtain ⟨lam, s, _hlam, hmem, hμeq⟩ :=
+    Graphplay.ForMathlib.reflStep_eigenvalue_angle
+      (groverArcCoin V) (arcFlipFlop V)
+      groverArcCoin_isHermitian (groverArcCoin_mul_self hV)
+      arcFlipFlop_isHermitian arcFlipFlop_mul_self μ hμ'
+  -- The discriminant spec pins `lam = σ ∈ [0,1]` to a random-walk eigenvalue.
+  obtain ⟨σ, hσIcc, hlamσ, hσspec⟩ := groverDiscriminant_spec G hV (lam : ℂ) hmem
+  refine ⟨σ, s, hσIcc, hσspec, ?_⟩
+  -- `lam = σ` as reals (from `(lam:ℂ) = (σ:ℂ)`), so the `arccos lam` form is the
+  -- `arccos σ` form.
+  have hlamσ' : lam = σ := by exact_mod_cast hlamσ
+  rw [hμeq, hlamσ']
 
 /-- **Grover-walk 2×2 block correspondence.**  Every eigenvalue `μ` of `groverStep`
 is `exp(s·i·θ)` for a sign `s` and an angle `θ ∈ [0, π]` with `cos θ = σ`, where

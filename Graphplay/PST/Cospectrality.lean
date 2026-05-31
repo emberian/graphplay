@@ -48,6 +48,8 @@ import Mathlib.Analysis.Matrix.Spectrum
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Chebyshev.RootsExtrema
 import Mathlib.RingTheory.Polynomial.Chebyshev
+import Mathlib.NumberTheory.Niven
+import Mathlib.NumberTheory.Real.Irrational
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
 import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
@@ -587,6 +589,170 @@ theorem pathEigenvalue_injective (n : ℕ) :
   have hkR : (k : ℝ) = (k' : ℝ) := by linarith
   exact Fin.ext (by exact_mod_cast hkR)
 
+/-! ### Niven irrationality of `cos(kπ/N)` and the path Diophantine obstruction
+
+The forward direction of the path-PST classification (`n ∈ {2,3}` only) bottoms
+out on a purely number-theoretic fact: the path eigenvalues `2cos(kπ/(n+1))`,
+`k = 1,…,n`, do **not** lie on a common arithmetic progression once `n ≥ 4`.
+This is the Godsil-ratio obstruction, and its kernel is **Niven's theorem**
+(Mathlib `irrational_cos_rat_mul_pi` / `niven_angle_div_pi_eq`): the only rational
+values of `cos(rπ)` at rational `r ∈ [0,1]` are at `r ∈ {0, 1/3, 1/2, 2/3, 1}`,
+so `cos(π/N)` is irrational for every `N ≥ 4`.
+
+We build the obstruction reusably here:
+* `irrational_cos_rat_of_mem`: the generic Niven contrapositive,
+* `irrational_cos_pi_div`: `cos(π/N)` irrational for `N ≥ 4`,
+* `pathEigenvalue_rec`: the Chebyshev three-term recurrence on the eigenvalues,
+* `pathEigenvalue_not_arithmeticProgression`: for `n ≥ 4`, the path eigenvalues
+  admit no arithmetic progression — the genuine, axiom-clean Diophantine residual. -/
+
+/-- **Generic Niven contrapositive.**  If `r ∈ [0,1] ∩ ℚ` is none of
+`{0, 1/3, 1/2, 2/3, 1}`, then `cos(rπ)` is irrational.  Direct from Mathlib's
+`niven_angle_div_pi_eq`. -/
+theorem irrational_cos_rat_of_mem (r : ℚ) (hr : r ∈ Set.Icc (0 : ℚ) 1)
+    (hne : r ≠ 0 ∧ r ≠ 1/3 ∧ r ≠ 1/2 ∧ r ≠ 2/3 ∧ r ≠ 1) :
+    Irrational (Real.cos ((r : ℝ) * Real.pi)) := by
+  rw [irrational_iff_ne_rational]
+  intro a b hb hcos
+  have hmem := niven_angle_div_pi_eq (r := r) ⟨a/b, by push_cast at hcos ⊢; rw [hcos]⟩ hr
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hmem
+  obtain ⟨h0, h13, h12, h23, h1⟩ := hne
+  rcases hmem with h | h | h | h | h
+  · exact h0 h
+  · exact h13 h
+  · exact h12 h
+  · exact h23 h
+  · exact h1 h
+
+/-- **`cos(π/N)` is irrational for `N ≥ 4`** (Niven).  Specialization of
+`irrational_cos_rat_of_mem` at `r = 1/N`: for `N ≥ 4` the reduced fraction
+`1/N ∉ {0, 1/3, 1/2, 2/3, 1}`.  This is the kernel of the path-PST obstruction:
+the smallest path angle `π/N` has irrational cosine exactly when `N ∉ {1,2,3}`. -/
+theorem irrational_cos_pi_div (N : ℕ) (hN : 4 ≤ N) :
+    Irrational (Real.cos (Real.pi / N)) := by
+  have hN0 : (0 : ℚ) < N := by exact_mod_cast (by omega : 0 < N)
+  have key : Irrational (Real.cos ((((1 : ℚ)/N : ℚ) : ℝ) * Real.pi)) := by
+    apply irrational_cos_rat_of_mem ((1 : ℚ)/N)
+    · refine ⟨by positivity, ?_⟩
+      rw [div_le_one hN0]; exact_mod_cast (by omega : (1 : ℕ) ≤ N)
+    · have hNne : (N : ℚ) ≠ 0 := ne_of_gt hN0
+      have hN4 : (4 : ℚ) ≤ N := by exact_mod_cast hN
+      refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> intro h <;>
+        (rw [div_eq_iff hNne] at h; nlinarith [h, hN0, hN4])
+  have heq : ((((1 : ℚ)/N : ℚ) : ℝ) * Real.pi) = Real.pi / N := by push_cast; ring
+  rwa [heq] at key
+
+/-- **Three-term recurrence on the path eigenvalues.**  Writing
+`θ_k = 2cos((k+1)π/(n+1))`, the Chebyshev recurrence reads
+`θ_{k+1} + θ_{k-1} = 2cos(π/(n+1)) · θ_k` for `k ≥ 1`.  (Indices over `ℕ`; the
+`pathEigenvalue` indices `k+1` are shifted by one.)  Pure trig:
+`cos(α+β) + cos(α-β) = 2cosα cosβ`. -/
+theorem pathEigenvalue_rec (n : ℕ) (k : ℕ) (hk : 1 ≤ k) :
+    2 * Real.cos (((k : ℝ)+1+1) * Real.pi / ((n:ℝ)+1))
+      + 2 * Real.cos (((k : ℝ)-1+1) * Real.pi / ((n:ℝ)+1))
+      = 2 * Real.cos (Real.pi / ((n:ℝ)+1))
+          * (2 * Real.cos (((k : ℝ)+1) * Real.pi / ((n:ℝ)+1))) := by
+  set N : ℝ := (n:ℝ)+1 with hN
+  set θ : ℝ := Real.pi / N with hθ
+  have e1 : ((k:ℝ)+1+1) * Real.pi / N = ((k:ℝ)+1) * θ + θ := by rw [hθ]; ring
+  have e2 : ((k:ℝ)-1+1) * Real.pi / N = ((k:ℝ)+1) * θ - θ := by rw [hθ]; ring
+  have e3 : (((k:ℝ)+1) * Real.pi / N) = ((k:ℝ)+1) * θ := by rw [hθ]; ring
+  rw [e1, e2, e3, Real.cos_add, Real.cos_sub]; ring
+
+/-- **The path eigenvalues do not lie on an arithmetic progression, for `n ≥ 4`**
+(the Godsil ratio obstruction, via Niven).
+
+Concretely: there are **no** reals `a > 0, b` with `2cos((k+1)π/(n+1)) = b + a·m_k`
+for integers `m_k`, `k = 0,…,n-1`.  This is the precise number-theoretic content
+behind "`P_n` has endpoint PST only for `n ∈ {2,3}`": strong cospectrality of the
+endpoints always holds (`isStronglyCospectral_pathEndpoints`), so the sole
+obstruction is the Godsil ratio condition, which *is* arithmetic-progression
+membership of the support eigenvalues — and that fails here.
+
+PROOF (axiom-clean, Niven).  Use the three-term recurrence at indices `k = 1, 2`
+(all of `0,1,2,3` are valid eigenvalue indices since `n ≥ 4`):
+`θ_2 + θ_0 = 2c·θ_1` and `θ_3 + θ_1 = 2c·θ_2`, where `c = cos(π/(n+1))`.
+Subtracting, `(θ_2+θ_0) - (θ_3+θ_1) = 2c·(θ_1 - θ_2)`.  If every `θ_k = b + a·m_k`,
+the offset `b` cancels (each side has zero net coefficient), leaving
+`2c = a·(integer) / a·(integer)`, a *rational*; the denominator `θ_1-θ_2 ≠ 0` by
+eigenvalue distinctness (`pathEigenvalue_injective`).  But `c = cos(π/(n+1))` is
+**irrational** for `n+1 ≥ 5` by Niven (`irrational_cos_pi_div`) — contradiction. -/
+theorem pathEigenvalue_not_arithmeticProgression (n : ℕ) (hn : 4 ≤ n) :
+    ¬ ∃ a b : ℝ, 0 < a ∧ ∀ k : Fin n, ∃ m : ℤ, pathEigenvalue n k = b + a * (m : ℝ) := by
+  rintro ⟨a, b, ha, hAP⟩
+  -- Local index helper: `pathEigenvalue n ⟨k, _⟩ = 2cos((k+1)π/(n+1))`.
+  have hpev : ∀ k : Fin n, pathEigenvalue n k
+      = 2 * Real.cos (((k : ℝ)+1) * Real.pi / ((n:ℝ)+1)) := by
+    intro k; rfl
+  set c : ℝ := Real.cos (Real.pi / ((n:ℝ)+1)) with hc
+  -- The four eigenvalue indices we use, as `Fin n` (valid since `n ≥ 4`).
+  let i0 : Fin n := ⟨0, by omega⟩
+  let i1 : Fin n := ⟨1, by omega⟩
+  let i2 : Fin n := ⟨2, by omega⟩
+  let i3 : Fin n := ⟨3, by omega⟩
+  -- recurrences at k = 1 and k = 2.
+  have r1 : pathEigenvalue n i2 + pathEigenvalue n i0
+      = 2 * c * pathEigenvalue n i1 := by
+    rw [hpev, hpev, hpev, hc]
+    have := pathEigenvalue_rec n 1 (by omega)
+    simp only [Nat.cast_one] at this ⊢
+    convert this using 3 <;> norm_num
+  have r2 : pathEigenvalue n i3 + pathEigenvalue n i1
+      = 2 * c * pathEigenvalue n i2 := by
+    rw [hpev, hpev, hpev, hc]
+    have := pathEigenvalue_rec n 2 (by omega)
+    simp only [Nat.cast_ofNat] at this ⊢
+    convert this using 3 <;> norm_num
+  -- AP witnesses.
+  obtain ⟨m0, h0⟩ := hAP i0
+  obtain ⟨m1, h1⟩ := hAP i1
+  obtain ⟨m2, h2⟩ := hAP i2
+  obtain ⟨m3, h3⟩ := hAP i3
+  -- (θ_2+θ_0) - (θ_3+θ_1) = 2c (θ_1 - θ_2); offset `b` cancels on the LHS.
+  have hsub : (pathEigenvalue n i2 + pathEigenvalue n i0)
+      - (pathEigenvalue n i3 + pathEigenvalue n i1)
+      = 2 * c * (pathEigenvalue n i1 - pathEigenvalue n i2) := by
+    rw [r1, r2]; ring
+  have hnum : (pathEigenvalue n i2 + pathEigenvalue n i0)
+      - (pathEigenvalue n i3 + pathEigenvalue n i1)
+      = a * (((m2 + m0) - (m3 + m1) : ℤ) : ℝ) := by
+    rw [h0, h1, h2, h3]; push_cast; ring
+  have hden : pathEigenvalue n i1 - pathEigenvalue n i2
+      = a * ((m1 - m2 : ℤ) : ℝ) := by
+    rw [h1, h2]; push_cast; ring
+  -- distinctness ⇒ denominator nonzero.
+  have hpevne : pathEigenvalue n i1 ≠ pathEigenvalue n i2 := by
+    intro he
+    have := pathEigenvalue_injective n he
+    have hval : (i1 : Fin n).val = (i2 : Fin n).val := congrArg Fin.val this
+    simp only [i1, i2] at hval
+    omega
+  have hane : a ≠ 0 := ne_of_gt ha
+  have hdenne : ((m1 - m2 : ℤ) : ℝ) ≠ 0 := by
+    intro hz; apply hpevne
+    have : pathEigenvalue n i1 - pathEigenvalue n i2 = 0 := by rw [hden, hz, mul_zero]
+    linarith
+  -- `2c` equals a rational, so `2c` is rational.
+  have hkey : 2 * c * (a * ((m1 - m2 : ℤ) : ℝ)) = a * (((m2 + m0) - (m3 + m1) : ℤ) : ℝ) := by
+    rw [← hden, ← hsub, hnum]
+  have h2c : 2 * c = (((m2 + m0) - (m3 + m1) : ℤ) : ℝ) / ((m1 - m2 : ℤ) : ℝ) := by
+    rw [eq_div_iff hdenne]
+    have hk := hkey
+    field_simp at hk
+    nlinarith [hk, ha, sq_nonneg a]
+  -- but `c = cos(π/(n+1))` is irrational by Niven, hence so is `2c`.
+  have hcirr : Irrational c := by
+    rw [hc, show Real.cos (Real.pi / ((n:ℝ)+1))
+        = Real.cos (Real.pi / ((n+1:ℕ):ℝ)) by push_cast; ring_nf]
+    exact irrational_cos_pi_div (n+1) (by omega)
+  have h2cirr : Irrational (2 * c) := by
+    rw [show (2 * c) = ((2 : ℚ) : ℝ) * c by push_cast; ring]
+    exact hcirr.ratCast_mul (by norm_num)
+  rw [h2c, show (((m2 + m0) - (m3 + m1) : ℤ) : ℝ) / ((m1 - m2 : ℤ) : ℝ)
+        = ((((((m2 + m0) - (m3 + m1) : ℤ) : ℚ) / ((m1 - m2 : ℤ) : ℚ)) : ℚ) : ℝ) by
+        push_cast; ring] at h2cirr
+  exact (Rat.not_irrational _) h2cirr
+
 /-- **Nodup charpoly roots ⟹ simple spectrum.**  A generic axiom-clean bridge:
 if the characteristic polynomial of a Hermitian-weighted graph `G` has no
 repeated roots, then Mathlib's eigenvalue function `G.herm.eigenvalues` is
@@ -1043,10 +1209,23 @@ theorem pathEndpoints_isPST_iff (n : ℕ) (hn : 2 ≤ n) :
     (∃ τ : ℝ, 0 < τ ∧
       IsPST (pathWeightedGraph n) ⟨0, by omega⟩ ⟨n - 1, by omega⟩ τ) ↔
     (n = 2 ∨ n = 3) := by
-  -- Combine `isStronglyCospectral_pathEndpoints` with the eigenvalue
-  -- analysis of `2 cos(kπ/(n+1))`.  Punted.
-  -- BLOCKED: needs path-graph eigenvalues 2cos(kπ/(n+1)) and the Godsil-ratio
-  -- arithmetic that holds only for n∈{2,3} (depends on isPST_iff_godsilRatio).
+  -- STATUS.  The two structural inputs are now BUILT and axiom-clean:
+  --  • strong cospectrality at the endpoints holds for *all* `n`
+  --    (`isStronglyCospectral_pathEndpoints`, simple Chebyshev spectrum), and
+  --  • the FORWARD number-theoretic obstruction — the Godsil ratio condition,
+  --    i.e. arithmetic-progression membership of the support eigenvalues
+  --    `2cos(kπ/(n+1))`, FAILS for every `n ≥ 4` — is now PROVEN via Niven as
+  --    `pathEigenvalue_not_arithmeticProgression` (axiom-clean; the kernel is
+  --    `irrational_cos_pi_div`, Mathlib `niven_angle_div_pi_eq`).
+  -- RESIDUAL (one named lemma).  Assembling these into the PST biconditional
+  -- still routes through the Godsil existence bridge
+  -- `IsStronglyCospectral.isPST_iff_godsilRatio` (PST ⟺ strong cospectrality ∧
+  -- Godsil ratio), whose proof is the deep Kronecker/Dirichlet simultaneous-
+  -- approximation half and remains an honest `sorry` in that single lemma.
+  -- Once that bridge lands, the forward `n ≥ 4 → ¬PST` direction is exactly
+  -- `pathEigenvalue_not_arithmeticProgression`, and the backward `n ∈ {2,3} → PST`
+  -- direction is the finite `K_2`/`P_3` exponential.
+  -- BLOCKED ON: IsStronglyCospectral.isPST_iff_godsilRatio (Diophantine bridge).
   sorry
 
 /-! ## Phantom symmetry (Bachman-Tamon 1108.0339)
