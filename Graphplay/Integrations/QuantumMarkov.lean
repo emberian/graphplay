@@ -112,7 +112,7 @@ def id (d : Type u) [Fintype d] [DecidableEq d] : KrausChannel d where
   unfold apply
   induction C.ops with
   | nil => simp
-  | cons K ops ih => simpa using ih
+  | cons K ops _ih => simp
 
 end KrausChannel
 

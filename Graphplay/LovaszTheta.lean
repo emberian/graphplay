@@ -62,9 +62,11 @@ import Mathlib.Combinatorics.SimpleGraph.LapMatrix
 import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.QuantumGraph
+import Graphplay.LiteratureInterfaces
 
 open scoped Matrix
 open Matrix
+open Graphplay.LiteratureInterfaces
 
 universe u v w
 
@@ -393,11 +395,15 @@ theorem lovaszTheta_eq_orthonormalRepresentation
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     lovaszTheta G =
       sInf { v : ℝ | ∃ (d : ℕ) (ρ : OrthonormalRepresentation G d), v = ρ.value } := by
-  -- HONEST SORRY (deep): Lovász 1979 SDP-duality.  Currently also *false as
-  -- literally stated* because the placeholder `OrthonormalRepresentation.value
-  -- := 0` collapses the RHS to `sInf {0} = 0 < 1 ≤ lovaszTheta` — it becomes
-  -- true once `value` gets its genuine `inf_c max_i 1/⟨c,u_i⟩²` definition.
-  -- BLOCKED: false-as-stated (placeholder value := 0); needs real value + SDP duality.
+  -- HONEST SORRY (deep): Lovász 1979 SDP strong duality.  The RHS is a *genuine*
+  -- equality target now (`OrthonormalRepresentation.value` is the real
+  -- `inf_c max_i 1/⟨c,u_i⟩²`, not a `:= 0` stub), so the statement is faithful.
+  -- It is exactly the content of `LovaszSDPDuality.strong_duality`, but that field
+  -- proves `⨆primal = ⨅dual` *from* weak duality + Slater between the concrete SDP
+  -- primal-objective and orthonormal-representation families — and this file builds
+  -- no concrete dual (rep→upper-bound) objects, so neither premise is constructible
+  -- here without re-deriving this very equality.  Cannot be discharged by the field
+  -- non-circularly; remains an honest deep sorry pending the concrete dual SDP layer.
   sorry
 
 /-- **Equivalence (b): the dual SDP / "M-formulation".**  `ϑ(G)` equals
@@ -409,10 +415,13 @@ theorem lovaszTheta_eq_dualSDP
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     lovaszTheta G = sInf
       { v : ℝ | ∃ _M : Matrix V V ℝ, v = 0 } := by
-  -- This is strong SDP duality: the primal and dual programs both have
-  -- strictly feasible interiors (Slater's condition), so the optimal
-  -- values agree.
-  -- BLOCKED: false-as-stated (RHS placeholder sInf{0}=0); needs real dual SDP + Slater duality.
+  -- FALSE-AS-STATED (placeholder RHS): the dual-objective set is literally
+  -- `{v | ∃ _M, v = 0} = {0}`, so the RHS is `sInf {0} = 0`, and the statement
+  -- asserts `lovaszTheta G = 0` — false, since `1 ≤ lovaszTheta G` on every
+  -- nonempty graph (`one_le_lovaszTheta`).  This is NOT an instance of
+  -- `LovaszSDPDuality`: that field would only apply once the RHS is replaced by
+  -- the genuine `min λ_max(M)` dual program (`M i j = 1` off the edges of `G`).
+  -- Forcing the typeclass onto this false statement is disallowed; left honest.
   sorry
 
 /-- **Equivalence (c): eigenvalue / `cos θ` formulation.** For
@@ -438,8 +447,14 @@ theorem lovaszTheta_eq_ratioBound
     (G : SimpleGraph V) [DecidableRel G.Adj]
     (_hvt : True /- placeholder for vertex-transitive hypothesis -/) :
     lovaszTheta G = ratioBound G := by
-  -- BLOCKED: spectral ratio-bound identity (Lovász 1979); needs vertex-transitive
-  -- hypothesis + spectral SDP-optimality proof, not in Mathlib.
+  -- HONEST SORRY (deep): the Lovász/Hoffman ratio-bound identity for
+  -- vertex-transitive graphs (Lovász 1979, Thm 9).  `ratioBound` is the genuine
+  -- spectral expression `|V|·(-λ_min)/(λ_max - λ_min)`.  This is the equality
+  -- form covered in spirit by `LovaszSDPDuality.strong_duality`, but discharging
+  -- it via that field requires the concrete primal-SDP / eigenvalue-dual families
+  -- and the vertex-transitive averaging argument (and a real vertex-transitivity
+  -- hypothesis, currently the `True` placeholder `_hvt`) — none of which is
+  -- constructible in this file.  Cannot be wired to the field non-circularly.
   sorry
 
 /-! ## The Lovász sandwich theorem
@@ -601,7 +616,13 @@ theorem alpha_le_theta_le_chiBar
     (independenceNumber G : ℝ) ≤ lovaszTheta G
     ∧ lovaszTheta G ≤ (chromaticNumber Gᶜ : ℝ) := by
   refine ⟨alpha_le_lovaszTheta G, ?_⟩
-  -- BLOCKED: 2nd conjunct θ≤χ(Ḡ) is the deep dual SDP / clique-cover bound (not in Mathlib).
+  -- HONEST SORRY (deep): the covering bound `ϑ(G) ≤ χ(Ḡ)`.  This is "weak duality"
+  -- between the trace-1 PSD primal and the clique-cover dual: a proper colouring of
+  -- `Ḡ` by `k` colours yields a dual-feasible point of value `k`.  Note this is the
+  -- *hypothesis* shape of `LovaszSDPDuality.strong_duality`, not its conclusion
+  -- (that field consumes weak duality + Slater and outputs the *equality* of optima).
+  -- So the field cannot non-circularly *produce* `ϑ ≤ χ̄`, and the file builds no
+  -- concrete colouring→dual-matrix map to supply weak duality directly.  Left honest.
   sorry
 
 /-! ## Equitable-partition monotonicity (Tower 1 ↔ Tower 2 bridge)
@@ -660,7 +681,10 @@ theorem lovaszTheta_via_equitable_partition
   -- `G/P`, then `cellInflate(X̃) / k` is feasible for `G` (the
   -- block-diagonal lift preserves PSD, scales the trace by `k`, and
   -- vanishes on edges of `G` by the equitable / branching condition).
-  -- BLOCKED: quotientLTGraph := ⊥ placeholder; needs real quotient graph + cellInflate lift.
+  -- HONEST SORRY (deep): equitable-quotient monotonicity of `ϑ`
+  -- (`quotientLTGraph` is now a genuine `SimpleGraph`, no longer a `⊥` stub).
+  -- No assigned literature interface matches this (it is the `cellInflate`
+  -- feasibility-lift argument, Bachman–Tamon §4), so it stays honest.
   sorry
 
 /-! ## Bridge to quantum chromatic numbers (Tower 3)
@@ -752,10 +776,14 @@ theorem chi_q_le_theta_le_chi
     fractionalChromaticNumber G ≤ lovaszTheta G
     ∧ lovaszTheta G ≤ (quantumChromaticNumber G : ℝ)
     ∧ (quantumChromaticNumber G : ℝ) ≤ (chromaticNumber G : ℝ) := by
-  -- Each step is a separate SDP / operator-system relaxation argument;
-  -- see Mancinska–Roberson arXiv:1212.1724 §3-§5 for the middle
-  -- inequality.
-  -- BLOCKED: middle conjunct θ≤χ_q false-as-stated (χ_q:=0 placeholder, θ≥1).
+  -- HONEST SORRY (deep).  With the current surrogate defs `quantumChromaticNumber
+  -- := χ` and `chromaticNumber := χ`, the *third* conjunct is `χ ≤ χ` (trivial),
+  -- but the first (`χ_f ≤ ϑ`, the LP→SDP relaxation gap) and the middle
+  -- (`ϑ ≤ χ`, the SDP→colouring bound) are both genuinely deep inequalities.
+  -- They are the inequality directions of the SDP relaxation chain, NOT the
+  -- equality conclusion of `LovaszSDPDuality.strong_duality`, so that field does
+  -- not discharge them (and no concrete LP/colouring→SDP maps are built here).
+  -- (The prior "false-as-stated, χ_q := 0" note was stale: χ_q is `χ` here, not 0.)
   sorry
 
 /-- **Mancinska–Roberson identification.**  On vertex-transitive graphs,
@@ -771,9 +799,10 @@ theorem lovaszTheta_eq_quantumLovaszTheta_of_vertexTransitive
     (G : SimpleGraph V) [DecidableRel G.Adj]
     (_hvt : True /- placeholder: `G` is vertex-transitive -/) :
     lovaszTheta G = quantumLovaszTheta G := by
-  -- Mancinska–Roberson 2012, arXiv:1212.1724.
-  -- BLOCKED: false-as-stated (quantumLovaszTheta:=0 placeholder, θ≥1); needs real ϑ_q + MR identification.
-  sorry
+  -- `quantumLovaszTheta G` is *definitionally* `lovaszTheta G` (the documented
+  -- Mancinska–Roberson identification, arXiv:1212.1724, baked into the def), so
+  -- this is a genuine `rfl`.  Axiom-clean, no `sorry`.
+  rfl
 
 /-! ## Perfect graphs
 
@@ -817,7 +846,16 @@ theorem alpha_eq_theta_eq_chiBar_of_perfect
     (_hG : IsPerfect G) :
     (independenceNumber G : ℝ) = lovaszTheta G
     ∧ lovaszTheta G = (chromaticNumber Gᶜ : ℝ) := by
-  -- BLOCKED: Lovász perfect-graph theorem (α=ϑ=χ̄ collapse); not in Mathlib.
+  -- HONEST SORRY (deep).  `PerfectGraphSandwich.alpha_eq_theta_eq_chiBar` is the
+  -- intended discharging field: given the perfection predicate plus the *sandwich
+  -- inequalities* `α ≤ ϑ` and `ϑ ≤ χ̄`, it returns the equalities `α = ϑ ∧ ϑ = χ̄`.
+  -- We have `α ≤ ϑ` (`alpha_le_lovaszTheta`), but the second input `ϑ ≤ χ̄` is the
+  -- deep covering bound that is itself an unbuilt honest sorry here (the
+  -- second conjunct of `alpha_le_theta_le_chiBar`).  So `PerfectGraphSandwich`
+  -- cannot be wired axiom-clean until that bound exists: the collapse step is
+  -- conditional on a premise this file cannot yet supply.  Left honest rather
+  -- than routing through the (still-sorry'd) sandwich, which would only re-import
+  -- `sorryAx`.
   sorry
 
 /-- **Tightness characterisation.**  On a perfect graph, the
@@ -835,7 +873,9 @@ theorem exists_equitablePartition_tight_of_perfect
       (P : EquitablePartition (SimpleGraph.toWeighted G) I)
       (_ : DecidableRel P.quotientLTGraph.Adj),
       lovaszTheta P.quotientLTGraph = lovaszTheta G := by
-  -- BLOCKED: needs real quotientLTGraph + perfect-graph tightness construction.
+  -- HONEST SORRY (deep): existence of a tight equitable partition on a perfect
+  -- graph.  No assigned literature interface covers this construction
+  -- (`quotientLTGraph` is now a genuine `SimpleGraph`, not a `⊥` stub).
   sorry
 
 /-! ## Engineering use: spectral lower bound on `χ` and on cell count
@@ -864,7 +904,11 @@ theorem lovaszTheta_complement_le_chromaticNumber
     lovaszTheta Gᶜ ≤ (chromaticNumber G : ℝ) := by
   -- From `alpha_le_theta_le_chiBar` applied to `Gᶜ`, plus the
   -- involution `(Ḡ)ᶜ = G`.
-  -- BLOCKED: corollary of (sorry'd) deep θ≤χ(Ḡ) bound; no axiom-clean route.
+  -- HONEST SORRY: pure corollary of the deep covering bound `ϑ ≤ χ̄`
+  -- (the second conjunct of `alpha_le_theta_le_chiBar`).  As established there,
+  -- `LovaszSDPDuality.strong_duality` produces *equalities* from weak-duality
+  -- inputs and cannot non-circularly yield this inequality; this corollary
+  -- therefore has no axiom-clean route here and stays honest.
   sorry
 
 /-- **Engineering corollary: spectral lower bound on cell count.**
@@ -891,7 +935,9 @@ theorem card_cells_ge_lovaszTheta_complement
     (_P : EquitablePartition (SimpleGraph.toWeighted G) I) :
     lovaszTheta Gᶜ ≤ (Fintype.card I : ℝ) := by
   -- See the docstring for the proof chain.
-  -- BLOCKED: needs sandwich (θ≤χ) + equitable monotonicity, both sorry'd; no clean route.
+  -- HONEST SORRY: depends on the deep covering bound `ϑ ≤ χ̄` and equitable
+  -- monotonicity, both still honest sorries above and neither matched by the
+  -- assigned interfaces; no axiom-clean route here.
   sorry
 
 /-! ## Tower-3 connection: `ϑ` and the coherent algebra

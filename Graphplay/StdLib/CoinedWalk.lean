@@ -219,6 +219,7 @@ identity on the tail index and as `coin` on the head index.
 def arcCoin (coin : Matrix V V ℂ) : Matrix (V × V) (V × V) ℂ :=
   fun p q => if p.1 = q.1 then coin p.2 q.2 else 0
 
+omit [Fintype V] in
 /-- The conjugate-transpose of `arcCoin coin` is `arcCoin (coinᴴ)`: conjugation
 acts blockwise. -/
 theorem arcCoin_conjTranspose (coin : Matrix V V ℂ) :
@@ -244,7 +245,7 @@ theorem arcCoin_mul (A B : Matrix V V ℂ) :
     -- Only the tail `x = p.1` contributes; collapse to `∑_y A_{p.2,y} B_{y,q.2}`.
     rw [Finset.sum_eq_single p.1]
     · refine Finset.sum_congr rfl (fun y _ => ?_)
-      simp only [arcCoin, if_pos hpq, if_true, eq_self_iff_true]
+      simp only [arcCoin, if_pos hpq, if_true]
     · intro x _ hx
       apply Finset.sum_eq_zero; intro y _
       simp only [arcCoin]; rw [if_neg (fun h => hx h.symm), zero_mul]
@@ -259,6 +260,7 @@ theorem arcCoin_mul (A B : Matrix V V ℂ) :
     · rw [if_neg (fun h => hpq (h1.trans h)), mul_zero]
     · rw [if_neg h1, zero_mul]
 
+omit [Fintype V] in
 /-- `arcCoin` preserves the identity: `arcCoin 1 = 1`. -/
 theorem arcCoin_one : arcCoin (1 : Matrix V V ℂ) = (1 : Matrix (V × V) (V × V) ℂ) := by
   ext p q
@@ -439,6 +441,7 @@ theorem arcFlipFlop_invariant (σ : Equiv.Perm V) (a b c d : V) :
   congr 1
   simp [σ.injective.eq_iff]
 
+omit [Fintype V] in
 /-- The arc coin built from a vertex-independent (constant-on-equality) coin is
 diagonally `σ`-invariant, when the per-vertex coin `coin` is itself
 `σ`-invariant: `coin (σ b) (σ d) = coin b d`. -/

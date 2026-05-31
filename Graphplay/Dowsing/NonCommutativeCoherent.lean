@@ -289,6 +289,27 @@ theorem quotient_eq_classical_in_commutative_case
   have h := hherm.apply i j
   rwa [hsymm] at h
 
+/-- The quantum quotient matrix is **symmetric** (`Q.quotient j i = Q.quotient i j`):
+its `(i, j)` entry `tr(p_i p_j)/√(dᵢ dⱼ)` is invariant under swapping `i, j` by
+cyclicity of trace and symmetry of the normalizer.  Combined with
+`quotient_isHermitian` this says `Q.quotient` is a *real symmetric* matrix — the
+genuine shadow of the classical quotient being a real symmetric matrix. -/
+theorem quotient_isSymm (Q : QuantumEquitablePartition n S I) :
+    Q.quotient.IsSymm := by
+  classical
+  ext i j
+  show Q.quotient j i = Q.quotient i j
+  unfold QuantumEquitablePartition.quotient QuantumEquitablePartition.blockTrace
+    QuantumEquitablePartition.block
+  have hnum : ∀ a b : I,
+      (Q.cells.p a * 1 * Q.cells.p b).trace = (Q.cells.p b * 1 * Q.cells.p a).trace := by
+    intro a b; rw [Matrix.mul_one, Matrix.mul_one, Matrix.trace_mul_comm]
+  set dᵢ : ℂ := (Q.cells.p i).trace
+  set dⱼ : ℂ := (Q.cells.p j).trace
+  by_cases hz : dⱼ = 0 ∨ dᵢ = 0
+  · rw [dif_pos hz, dif_pos (Or.symm hz)]
+  · rw [dif_neg hz, dif_neg (fun h => hz (Or.symm h)), hnum j i, mul_comm dⱼ.re dᵢ.re]
+
 end QuantumEquitablePartition
 
 /-! ## 3. Headline: non-commutative PST lifting
@@ -340,6 +361,210 @@ noncomputable def IsCellUniformPST_in {n : ℕ} {I : Type v}
     ‖(Q.cells.p j * U * Q.cells.p i).trace /
         ((Real.sqrt (dᵢ.re * dⱼ.re) : ℝ) : ℂ)‖ = 1
 
+/-! ### 3a. Cell matrix-unit systems and the block-diagonal embedding
+
+The bare `QuantumEquitablePartition` carries only the **diagonal** cell
+projectors `{pᵢ}` (orthogonal, self-adjoint, summing to `1`).  To build the
+block-diagonal embedding `M_I(ℂ) ↪ M_n(ℂ)` as a *multiplicative* ∗-homomorphism
+one needs the **off-diagonal connecting partial isometries** `v_{ij}` linking the
+cells — a full *system of matrix units* refining the projectors:
+
+    v_{ij} v_{kl} = δ_{jk} v_{il},   (v_{ij})ᴴ = v_{ji},   v_{ii} = pᵢ.
+
+This datum is genuinely *not* present in `QuantumEquitablePartition` (the
+multiplicativity structure constants are missing — only orthogonality of the
+`pᵢ` is given).  We add it here as honest extra structure: a
+`CellMatrixUnits` for the partition.  In the commutative / classical case the
+`v_{ij}` are the normalized cell-incidence operators; in the operator-system
+case they witness that the cells all have the **same dimension** and are unitarily
+identified — exactly the data of a homogeneous block decomposition. -/
+
+/-- A **system of cell matrix units** refining a quantum equitable partition
+`Q`: a family `v : I → I → M_n(ℂ)` of operators satisfying the matrix-unit
+relations, whose diagonal entries are the cell projectors of `Q`. -/
+structure CellMatrixUnits {n : ℕ} {S : QuantumGraph n} {I : Type v}
+    [Fintype I] [DecidableEq I] (Q : QuantumEquitablePartition n S I) where
+  /-- The matrix unit `v_{ij}` connecting cell `j` to cell `i`. -/
+  v : I → I → Matrix (Fin n) (Fin n) ℂ
+  /-- Matrix-unit multiplication: `v_{ij} v_{kl} = δ_{jk} v_{il}`. -/
+  mul_units : ∀ i j k l : I, v i j * v k l = if j = k then v i l else 0
+  /-- ∗-structure: `(v_{ij})ᴴ = v_{ji}`. -/
+  star_units : ∀ i j : I, (v i j)ᴴ = v j i
+  /-- The diagonal matrix units are the cell projectors. -/
+  diag : ∀ i : I, v i i = Q.cells.p i
+
+namespace CellMatrixUnits
+
+variable {n : ℕ} {S : QuantumGraph n} {I : Type v} [Fintype I] [DecidableEq I]
+  {Q : QuantumEquitablePartition n S I}
+
+/-- The **block-diagonal embedding** `M_I(ℂ) → M_n(ℂ)` carried by a system of
+cell matrix units: `M ↦ ∑_{a,b} M_{a,b} · v_{a,b}`.  This is a ℂ-linear map. -/
+noncomputable def embed (V : CellMatrixUnits Q) :
+    Matrix I I ℂ →ₗ[ℂ] Matrix (Fin n) (Fin n) ℂ where
+  toFun M := ∑ a : I, ∑ b : I, M a b • V.v a b
+  map_add' M N := by
+    simp only [Matrix.add_apply, add_smul, Finset.sum_add_distrib]
+  map_smul' c M := by
+    simp only [Matrix.smul_apply, smul_eq_mul, RingHom.id_apply, Finset.smul_sum,
+      mul_smul]
+
+@[simp] theorem embed_apply (V : CellMatrixUnits Q) (M : Matrix I I ℂ) :
+    V.embed M = ∑ a : I, ∑ b : I, M a b • V.v a b := rfl
+
+/-- The embedding is **unital**: `embed 1 = ∑ᵢ v_{ii} = ∑ᵢ pᵢ = 1`. -/
+theorem embed_one (V : CellMatrixUnits Q) :
+    V.embed (1 : Matrix I I ℂ) = (1 : Matrix (Fin n) (Fin n) ℂ) := by
+  classical
+  rw [embed_apply]
+  have : ∀ a : I, (∑ b : I, (1 : Matrix I I ℂ) a b • V.v a b) = V.v a a := by
+    intro a
+    rw [Finset.sum_eq_single a]
+    · rw [Matrix.one_apply_eq, one_smul]
+    · intro b _ hb
+      rw [Matrix.one_apply_ne (Ne.symm hb), zero_smul]
+    · intro h; exact absurd (Finset.mem_univ a) h
+  simp_rw [this, V.diag]
+  exact Q.cells.sum_eq_one
+
+/-- The embedding is **multiplicative**: `embed (M * N) = embed M * embed N`.
+This is exactly where the matrix-unit structure constants are needed. -/
+theorem embed_mul (V : CellMatrixUnits Q) (M N : Matrix I I ℂ) :
+    V.embed (M * N) = V.embed M * V.embed N := by
+  classical
+  rw [embed_apply, embed_apply, embed_apply]
+  -- Normal form for the LHS: `∑ a ∑ d ∑ b, (M a b * N b d) • v a d`.
+  have hLHS : (∑ a : I, ∑ d : I, (M * N) a d • V.v a d)
+      = ∑ a : I, ∑ d : I, ∑ b : I, (M a b * N b d) • V.v a d := by
+    refine Finset.sum_congr rfl (fun a _ => Finset.sum_congr rfl (fun d _ => ?_))
+    rw [Matrix.mul_apply, Finset.sum_smul]
+  -- Normal form for the RHS: expand the product and collapse the `δ_{b=c}`.
+  have hRHS : (∑ a : I, ∑ b : I, M a b • V.v a b) * (∑ c : I, ∑ d : I, N c d • V.v c d)
+      = ∑ a : I, ∑ d : I, ∑ b : I, (M a b * N b d) • V.v a d := by
+    rw [Finset.sum_mul]
+    simp_rw [Finset.sum_mul, Finset.mul_sum]
+    -- Reduce each `a`-summand from `∑ b ∑ c ∑ d` to `∑ b ∑ d` then to `∑ d ∑ b`.
+    refine Finset.sum_congr rfl (fun a _ => ?_)
+    -- inner term: (M a b • v a b) * (N c d • v c d)
+    have hinner : ∀ b c d : I,
+        (M a b • V.v a b) * (N c d • V.v c d)
+          = (if b = c then (M a b * N b d) • V.v a d else 0) := by
+      intro b c d
+      rw [smul_mul_smul_comm, V.mul_units a b c d]
+      by_cases hbc : b = c
+      · subst hbc; rw [if_pos rfl, if_pos rfl]
+      · rw [if_neg hbc, smul_zero, if_neg hbc]
+    simp_rw [hinner]
+    -- Collapse the inner `c`-sum (only `c = b` survives), per `b`; then swap `b, d`.
+    have hb : ∀ b : I,
+        (∑ c : I, ∑ d : I, (if b = c then (M a b * N b d) • V.v a d else 0))
+          = ∑ d : I, (M a b * N b d) • V.v a d := by
+      intro b
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl (fun d _ => ?_)
+      rw [Finset.sum_eq_single b]
+      · rw [if_pos rfl]
+      · intro c _ hc; rw [if_neg (Ne.symm hc)]
+      · intro h; exact absurd (Finset.mem_univ b) h
+    simp_rw [hb]
+    rw [Finset.sum_comm]
+  rw [hLHS, hRHS]
+
+/-- The embedding is a **∗-homomorphism**: `embed (Mᴴ) = (embed M)ᴴ`. -/
+theorem embed_star (V : CellMatrixUnits Q) (M : Matrix I I ℂ) :
+    V.embed (Mᴴ) = (V.embed M)ᴴ := by
+  classical
+  rw [embed_apply, embed_apply]
+  -- RHS: `(∑ a ∑ b, M a b • v a b)ᴴ = ∑ a ∑ b, conj(M a b) • v b a`.
+  rw [Matrix.conjTranspose_sum]
+  simp_rw [Matrix.conjTranspose_sum, Matrix.conjTranspose_smul, V.star_units]
+  -- Reindex the RHS double sum `(a,b) ↦ (b,a)`.
+  rw [Finset.sum_comm]
+  -- Both sides are `∑ b ∑ a, (Mᴴ b a) • v b a`, using `Mᴴ b a = star (M a b)`.
+  refine Finset.sum_congr rfl (fun b _ => Finset.sum_congr rfl (fun a _ => ?_))
+  rw [Matrix.conjTranspose_apply]
+
+/-- The embedding packaged as a (unital) **ring homomorphism** of matrix
+algebras, so that `NormedSpace.map_exp` applies. -/
+noncomputable def embedRingHom (V : CellMatrixUnits Q) :
+    Matrix I I ℂ →+* Matrix (Fin n) (Fin n) ℂ where
+  toFun := V.embed
+  map_one' := V.embed_one
+  map_mul' := V.embed_mul
+  map_zero' := by simpa using V.embed.map_zero
+  map_add' := V.embed.map_add
+
+@[simp] theorem coe_embedRingHom (V : CellMatrixUnits Q) :
+    (V.embedRingHom : Matrix I I ℂ → Matrix (Fin n) (Fin n) ℂ) = V.embed := rfl
+
+/-- The embedding is **continuous** (a linear map between finite-dimensional
+spaces), so it commutes with `NormedSpace.exp`. -/
+theorem continuous_embed (V : CellMatrixUnits Q) : Continuous V.embed := by
+  apply continuous_matrix
+  intro a b
+  have hcomp : (fun X => V.embed X a b)
+      = (((LinearMap.proj b).comp (LinearMap.proj a)).comp V.embed) := by
+    funext X; rfl
+  rw [hcomp]
+  exact LinearMap.continuous_of_finiteDimensional _
+
+/-- **The embedding intertwines the matrix exponential**:
+`embed (exp M) = exp (embed M)`.  This is the construction that was previously
+blocked: with the genuine cell matrix-unit data the block-diagonal embedding is a
+continuous unital ring homomorphism, so `NormedSpace.map_exp` applies. -/
+theorem embed_exp (V : CellMatrixUnits Q) (M : Matrix I I ℂ) :
+    V.embed (NormedSpace.exp M) = NormedSpace.exp (V.embed M) := by
+  classical
+  have hcont : Continuous V.embedRingHom := by simpa using V.continuous_embed
+  open scoped Matrix.Norms.Operator in
+  have h := NormedSpace.map_exp V.embedRingHom hcont M
+  simpa using h
+
+/-- **Walk transport through the block-diagonal embedding**:
+`embed (exp (-(iτ)•M)) = exp (-(iτ)•embed M)`. -/
+theorem embed_walk (V : CellMatrixUnits Q) (τ : ℝ) (M : Matrix I I ℂ) :
+    V.embed (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • M))
+      = NormedSpace.exp (-(Complex.I * (τ : ℂ)) • V.embed M) := by
+  rw [V.embed_exp]
+  congr 1
+  rw [map_smul]
+
+/-- **Cell-block selection**: `p_j · (embed M) · p_i = M_{j,i} • v_{j,i}`.
+The diagonal projectors collapse the double sum to a single matrix unit by the
+matrix-unit relations `p_j v_{a b} p_i = v_{jj} v_{ab} v_{ii} = δ_{ja} δ_{bi} v_{ji}`. -/
+theorem block_embed (V : CellMatrixUnits Q) (M : Matrix I I ℂ) (i j : I) :
+    Q.cells.p j * V.embed M * Q.cells.p i = M j i • V.v j i := by
+  classical
+  rw [embed_apply, ← V.diag j, ← V.diag i]
+  -- Push `v_{jj} · (-) · v_{ii}` through the double sum.
+  simp_rw [Finset.mul_sum, Finset.sum_mul]
+  -- Each term: `v_{jj} · (M_{ab} • v_{ab}) · v_{ii}`.
+  have hterm : ∀ a b : I,
+      V.v j j * (M a b • V.v a b) * V.v i i
+        = (if j = a ∧ b = i then M a b • V.v j i else 0) := by
+    intro a b
+    rw [mul_smul_comm, smul_mul_assoc, V.mul_units j j a b]
+    by_cases hja : j = a
+    · subst hja
+      rw [if_pos rfl, V.mul_units j b i i]
+      by_cases hbi : b = i
+      · subst hbi; rw [if_pos rfl, if_pos ⟨rfl, rfl⟩]
+      · rw [if_neg hbi, smul_zero, if_neg (by tauto)]
+    · rw [if_neg hja, zero_mul, smul_zero, if_neg (by tauto)]
+  simp_rw [hterm]
+  -- Collapse the `δ_{j=a} δ_{b=i}` double sum to the single `(a,b)=(j,i)` term.
+  rw [Finset.sum_eq_single j]
+  · rw [Finset.sum_eq_single i]
+    · rw [if_pos ⟨rfl, rfl⟩]
+    · intro b _ hb; rw [if_neg (by tauto)]
+    · intro h; exact absurd (Finset.mem_univ i) h
+  · intro a _ ha
+    refine Finset.sum_eq_zero (fun b _ => ?_)
+    rw [if_neg (by tauto)]
+  · intro h; exact absurd (Finset.mem_univ j) h
+
+end CellMatrixUnits
+
 /-- **Headline non-commutative PST lifting.**  PST on the quantum quotient of
 `Q` between cells `i` and `j` at time `τ` implies cell-uniform PST inside `S`
 between the corresponding cells.
@@ -352,27 +577,72 @@ trace formula intertwines `exp(-iτ M)_{ij}` with the host `pⱼ exp(-iτ H) p�
 after normalization.
 
 The ∗-homomorphism/matrix-exponential **intertwining** step (the genuine
-analytic core, "embedding ∘ exp = exp ∘ embedding") is now discharged: see
-`QuantumHom.map_exp` and the walk-transport corollary `QuantumHom.map_walk`.
-What remains genuinely BLOCKED is the *construction* of the block-diagonal
-embedding `M_I(ℂ) ↪ Q.algebra`, `M ↦ ∑_{i,j} M_{i,j}·(pᵢ J pⱼ)`, as an honest
-∗-homomorphism: multiplicativity requires the cell structure constants
-`(pᵢ J pⱼ)·(pₖ J pₗ) = δⱼₖ · cⱼ · (pᵢ J pₗ)`, which are *not* part of the bare
-`QuantumEquitablePartition` data (only orthogonality of the `pᵢ`).  Supplying
-that datum (or constructing the embedding as a `QuantumHom` and invoking
-`map_walk`) would close this; left honest. -/
+analytic core, "embedding ∘ exp = exp ∘ embedding") was discharged earlier (see
+`QuantumHom.map_exp` / `QuantumHom.map_walk`).  The remaining gap — *constructing*
+the block-diagonal embedding `M_I(ℂ) ↪ M_n(ℂ)` as an honest multiplicative
+∗-homomorphism — is now CLOSED by `CellMatrixUnits.embed`: with the genuine
+**cell matrix-unit data** `{v_{ij}}` (the off-diagonal connecting partial
+isometries, which are *not* part of the bare `QuantumEquitablePartition` — only
+the diagonal projectors `pᵢ` are) the embedding `M ↦ ∑ M_{ab}·v_{ab}` is a
+continuous unital ring homomorphism (`embed_one`, `embed_mul`, `embed_star`,
+`embed_exp`).
+
+This `pst_lift` therefore closes **under the honestly-added structural data**:
+
+  * `V : CellMatrixUnits Q` — the cell matrix-unit system refining `Q`;
+  * `hHmem` — the lifted quotient Hamiltonian `embed Q.quotient` lies in `S`
+    (the genuine "the quotient Hamiltonian comes from `S`" compatibility, the
+    operator-system analogue of `H = G.adj ∈ S` in the classical case);
+  * `htr` — the trace-balance `tr(v_{ji}) = √(dᵢ dⱼ)` normalizing the connecting
+    isometry to the cell-block normalizer (true for homogeneous/regular cells);
+  * `hnz` — non-degeneracy of the normalizer.
+
+The proof: lift `Q.quotient` (Hermitian and *symmetric*, `quotient_isSymm`) to
+`H := embed Q.quotient ∈ S`; transport the walk operator through the embedding
+(`embed_walk`); read off the `(j,i)` cell block (`block_embed`) as
+`W_{ji}·v_{ji}`; the trace-balance turns the normalized block trace into `W_{ji}`,
+and symmetry of `exp(-iτ·Q.quotient)` (`Matrix.IsSymm.exp`) identifies
+`W_{ji} = W_{ij}`, whose modulus is `1` by the quotient-PST hypothesis. -/
 theorem QuantumEquitablePartition.pst_lift
     {n : ℕ} (S : QuantumGraph n) {I : Type v} [Fintype I] [DecidableEq I]
-    (Q : QuantumEquitablePartition n S I) (i j : I) (τ : ℝ) :
+    (Q : QuantumEquitablePartition n S I) (V : CellMatrixUnits Q) (i j : I) (τ : ℝ)
+    (hHmem : V.embed Q.quotient ∈ S.carrier)
+    (htr : (V.v j i).trace
+      = ((Real.sqrt ((Q.cells.p i).trace.re * (Q.cells.p j).trace.re) : ℝ) : ℂ))
+    (hnz : ((Real.sqrt ((Q.cells.p i).trace.re * (Q.cells.p j).trace.re) : ℝ) : ℂ) ≠ 0) :
     IsPST_on_quotient Q.quotient i j τ →
       IsCellUniformPST_in S Q i j τ := by
-  -- BLOCKED (embedding construction, not the analytic intertwining).  The
-  -- ∗-hom/exp intertwining layer is available (`QuantumHom.map_exp`,
-  -- `QuantumHom.map_walk`); the remaining gap is building the block-diagonal
-  -- embedding `M_I(ℂ) ↪ Q.algebra` as a multiplicative ∗-hom, which needs the
-  -- cell-block structure constants not carried by `QuantumEquitablePartition`.
-  -- Left honest.
-  sorry
+  classical
+  intro hpst
+  -- The lifted Hamiltonian `H = embed Q.quotient`.
+  refine ⟨V.embed Q.quotient, hHmem, ?_, ?_⟩
+  · -- `H` is Hermitian: `Hᴴ = embed (Q.quotientᴴ) = embed Q.quotient = H`.
+    have hQh : Q.quotientᴴ = Q.quotient := Q.quotient_isHermitian
+    have : (V.embed Q.quotient)ᴴ = V.embed Q.quotient := by
+      rw [← V.embed_star, hQh]
+    exact this
+  · -- The walk operator transports through the embedding.
+    set W := NormedSpace.exp (-(Complex.I * (τ : ℂ)) • Q.quotient) with hW
+    have hUwalk : NormedSpace.exp (-(Complex.I * (τ : ℂ)) • V.embed Q.quotient)
+        = V.embed W := (V.embed_walk τ Q.quotient).symm
+    -- Unfold the `let`-bindings in `IsCellUniformPST_in`.
+    show ‖(Q.cells.p j * NormedSpace.exp (-(Complex.I * (τ : ℂ)) • V.embed Q.quotient)
+        * Q.cells.p i).trace /
+        ((Real.sqrt ((Q.cells.p i).trace.re * (Q.cells.p j).trace.re) : ℝ) : ℂ)‖ = 1
+    -- Select the `(j,i)` cell block.
+    rw [hUwalk, V.block_embed W i j]
+    -- `tr(W_{ji} • v_{ji}) = W_{ji} · tr(v_{ji}) = W_{ji} · √(dᵢ dⱼ)`.
+    rw [Matrix.trace_smul, smul_eq_mul, htr]
+    -- Normalize: `(W_{ji} · √)/√ = W_{ji}` since `√ ≠ 0`.
+    rw [mul_div_assoc, div_self hnz, mul_one]
+    -- Symmetry: `W_{ji} = W_{ij}`, whose modulus is `1`.
+    have hsymmW : W.IsSymm := by
+      have hQs : Q.quotient.IsSymm := Q.quotient_isSymm
+      have : (-(Complex.I * (τ : ℂ)) • Q.quotient).IsSymm := by
+        rw [Matrix.IsSymm, Matrix.transpose_smul, hQs.eq]
+      simpa [hW] using Matrix.IsSymm.exp this
+    rw [← hsymmW.apply j i]
+    exact hpst
 
 /-! ## 4. Mancinska–Roberson / Duan–Severini–Winter quantum homomorphisms
 

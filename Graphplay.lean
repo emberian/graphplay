@@ -8,6 +8,7 @@ import Graphplay.ForMathlib.HilbertSchmidt
 -- Proof-automation library (tactics / simp-sets / helper lemmas)
 import Graphplay.TacticsInit
 import Graphplay.Tactics
+import Graphplay.LiteratureInterfaces
 
 -- Core spine (Towers 1-2)
 import Graphplay.Basic
@@ -137,6 +138,7 @@ import Graphplay.Integrations.TransformerDSL
 import Graphplay.Integrations.StructuredAttention
 import Graphplay.Integrations.EquitableMechanism
 import Graphplay.Integrations.NovelAttention
+import Graphplay.Integrations.AliBiAttention
 
 -- Engineering toolkit
 import Graphplay.Toolkit

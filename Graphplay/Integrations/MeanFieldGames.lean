@@ -41,11 +41,13 @@ cell-uniform invariance theorem and its noisy `cellUniformSymmetric`
 extension (see `Graphplay/Toolkit/Noise.lean`, D8) play exactly the same
 role as Gao–Caines's reduction theorem.
 
-The file is intentionally **statement-only**: every theorem is asserted
-with the proof deferred to `sorry`.  The interest is in the *shape* of
-the statements and the demonstration that, with the right vocabulary,
-quantum mean-field control and classical graphon LQR control reduce to a
-single body of theorems.
+Many of the deeper analytic results (infinite-dimensional Cauchy problems,
+all-time invariance, Nash fixed points) remain honest `sorry`s, flagged
+`BLOCKED` inline; the surrounding bookkeeping and finite-dimensional
+reduction lemmas are proven.  The interest is in the *shape* of the
+statements and the demonstration that, with the right vocabulary, quantum
+mean-field control and classical graphon LQR control reduce to a single
+body of theorems.
 
 ## Outline
 
@@ -592,13 +594,13 @@ variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
 /-- The **cell-occupation ODE**.  Statement-only: under an equitable
-partition `EP`, the mean-field PDE on the cell distribution becomes a
-finite system of ODEs on the per-cell occupations.
+partition of the graphon, the mean-field PDE on the cell distribution becomes
+a finite system of ODEs on the per-cell occupations.
 
-The matrix driving the ODE is `EP.quotient`, exactly the operator on
-`EuclideanSpace ℂ I` from `Graphplay/Graphon/Equitable.lean`. -/
+The matrix driving the ODE is the partition's `quotient`, exactly the operator
+on `EuclideanSpace ℂ I` from `Graphplay/Graphon/Equitable.lean`. -/
 theorem cell_occupation_ODE
-    {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    {W : Graphon Ω μ} (_EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (m0 : I → ℝ) :
     -- There exists `m : ℝ → I → ℝ` with the prescribed initial occupation
     -- `m(0) = m0`.  The genuine (non-`True`) content is the initial-condition

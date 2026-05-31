@@ -610,6 +610,23 @@ theorem constantChiral_admits_chiralUniformMixing :
   apply div_pos Real.pi_pos
   positivity
 
+/-- **The Levine–…–Tamon speedup constant `π/(3√3)` is a genuine uniform-mixing
+instant of the finite chiral `K_4`.**
+
+This is the quantitative anchor of `constantChiral_admits_chiralUniformMixing`:
+at the very time `t = π/(3√3)`, the continuous-time quantum walk on the
+chirally-signed `K_4` (the `n = 4` base of the iterated-Hamming chiral
+graphon) attains *uniform mixing* — every transition amplitude
+`|U(t)_{ij}|` equals `1/2 = 1/√4`.  See
+`Graphplay.unitaryHammingChiralK4_uniformMixing`. -/
+theorem speedupConstant_isUniformMixingTime :
+    (0 < Real.pi / (3 * Real.sqrt 3))
+      ∧ ∀ i j : Fin 4,
+        ‖unitaryHammingChiralK4.evolve (Real.pi / (3 * Real.sqrt 3)) i j‖ = 1 / 2 := by
+  refine ⟨?_, ?_⟩
+  · apply div_pos Real.pi_pos; positivity
+  · exact unitaryHammingChiralK4_uniformMixing
+
 /-! ### 6b. Iterated-Hamming chiral: limit of `H(n, 4)^σ`
 
 In Levine et al. (corollary to Theorem 2) the chiral signing of `K_4`
@@ -673,15 +690,11 @@ theorem iteratedHammingChiral_mixing_time :
     ∀ x y : Fin 4, (iteratedHammingChiral.kernel x y).re = 0 := by
   intro x y
   show (unitaryHammingChiralK4.adj x y).re = 0
-  show (if x = y then (0 : ℂ) else unitaryHammingChiralK4Signing.σ x y).re = 0
-  by_cases hxy : x = y
-  · rw [if_pos hxy]; simp
-  · rw [if_neg hxy]
-    show (if x = y then (1 : ℂ)
-          else if (x : Fin 4) = 0 then -Complex.I
-          else if (y : Fin 4) = 0 then Complex.I
-          else if x.val < y.val then -Complex.I else Complex.I).re = 0
-    split_ifs <;> simp
+  -- The adjacency equals the explicit matrix `chiralK4Matrix`, every entry of
+  -- which is `0` or a pure phase `±i` (`Re = 0`).
+  rw [show unitaryHammingChiralK4.adj = chiralK4Matrix from chiralK4_adj_eq]
+  fin_cases x <;> fin_cases y <;>
+    simp [chiralK4Matrix]
 
 end ChiralGraphonExamples
 

@@ -16,10 +16,13 @@
    `|wᵢ|`), keeping the top-`k` eigenvalues gives a rank-`≤ k` correction whose
    squared Frobenius error is **exactly** the discarded tail, and this is the
    *minimum* over all rank-`≤ k` diagonal corrections (`diag_eckartYoung_optimal`).
-   The cost arithmetic, the decomposition `A = A_eq + R`, and the Frobenius error
-   bound are all fully proven; the remaining gap is purely the spectral-theorem
-   *reduction* of a general Hermitian residual to this diagonal normal form (the
-   unitary-invariance of the Frobenius norm, absent from Mathlib).
+   **This is now UNCONDITIONAL** (`corrected_equitable_attention`): the diagonal
+   hypothesis is removed for any **Hermitian (real-symmetric) residual** by proving
+   the unitary-invariance of the Frobenius norm (`frobNormSq_conj_unitary`, via the
+   trace formula `frobNormSq M = trace(Mᵀ·M)`, `frobNormSq_eq_trace`) and using
+   `Matrix.IsHermitian.spectral_theorem` to reduce `R = U·diag(λ)·Uᵀ` to the proven
+   diagonal case (`hermitian_diagTrunc_reduction`).  The cost arithmetic, the
+   decomposition `A = A_eq + R`, and the Frobenius error bound are all fully proven.
 
 2. **`equitable_strictly_generalizes_orbit`** — the **"beyond groups"** wedge.  The
    orbit partition of `Aut(G)` *refines* the coarsest equitable partition (same
@@ -47,8 +50,12 @@
   SVD-truncation optimality theorem (`diag_eckartYoung_optimal`,
   `frobNormSq_diag_sub_diagTrunc`, `diagTrunc_rank_le`) — Mathlib v4.30.0 has the
   abstract `SingularValues` API but not this truncation theorem, so we build it.
-  The only remaining input is the spectral-theorem reduction of a general Hermitian
-  residual to diagonal normal form (taken as the `hdiag` hypothesis).
+  The result is now **UNCONDITIONAL** (`corrected_equitable_attention`): the
+  spectral-theorem reduction of a general Hermitian (real-symmetric) residual to
+  diagonal normal form is **proven** here (`hermitian_diagTrunc_reduction`) via the
+  Frobenius trace formula (`frobNormSq_eq_trace`), unitary invariance
+  (`frobNormSq_conj_unitary`), and `Matrix.IsHermitian.spectral_theorem` — the
+  `hdiag` hypothesis is gone.
 * §2 `equitable_strictly_generalizes_orbit` (containment **and** strict witness) is
   **fully proven, axiom-clean**.
 * §3 `blockConstant_NTK_subset_spectrum` is **fully proven** (delegates to
@@ -399,6 +406,64 @@ theorem diag_eckartYoung_optimal (w : Fin n → ℝ) (k : ℕ) :
     rw [frobNormSq_diag_sub_diagTrunc, hinf]
     exact ciInf_le hbdd ⟨keep, hkeep⟩
 
+/-! ### Frobenius trace formula and unitary invariance (the spectral-theorem bridge)
+
+To lift the diagonal Eckart–Young theorem to a **general real-symmetric (Hermitian
+over ℝ) residual** we need two pieces of reusable infrastructure, both proven here:
+
+* `frobNormSq_eq_trace` — the squared Frobenius norm is the trace of `Mᵀ·M`:
+  `frobNormSq M = trace (Mᵀ * M)`.  Elementary: `(Mᵀ * M) i i = ∑ j (M j i)²`,
+  summed over `i` and reindexed gives `∑ᵢⱼ (M i j)²`.
+* `frobNormSq_conj_unitary` — **unitary invariance**: for an orthogonal
+  `U` (`Uᵀ * U = 1`), `frobNormSq (U * M * Uᵀ) = frobNormSq M`.  Proof: pass to the
+  trace formula and use cyclicity of trace plus `Uᵀ U = 1`.
+
+These are exactly the missing inputs that let `Matrix.IsHermitian.spectral_theorem`
+collapse a general Hermitian residual to the diagonal normal form already handled by
+`diag_eckartYoung_optimal`. -/
+
+/-- **Frobenius² is the trace of `Mᵀ·M` (PROVEN, axiom-clean).**
+`frobNormSq M = trace (Mᵀ * M)`.  The `i`-th diagonal entry of `Mᵀ·M` is the squared
+norm of the `i`-th column `∑ⱼ (M j i)²`; summing over `i` and swapping the order of
+summation gives the entrywise squared sum `∑ᵢⱼ (M i j)²`. -/
+theorem frobNormSq_eq_trace (M : Matrix (Fin n) (Fin n) ℝ) :
+    frobNormSq M = Matrix.trace (Mᵀ * M) := by
+  unfold frobNormSq
+  rw [Matrix.trace]
+  simp only [Matrix.diag_apply, Matrix.mul_apply, Matrix.transpose_apply]
+  -- trace (Mᵀ M) = ∑ i ∑ j (M j i) * (M j i) = ∑ i ∑ j (M j i)²
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro i _
+  apply Finset.sum_congr rfl
+  intro j _
+  ring
+
+/-- **Unitary invariance of Frobenius² (PROVEN, axiom-clean).**
+For `U : Matrix (Fin n) (Fin n) ℝ` orthogonal (`Uᵀ * U = 1`),
+`frobNormSq (U * M * Uᵀ) = frobNormSq M`.  Via the trace formula and cyclicity of
+trace: `trace ((U M Uᵀ)ᵀ (U M Uᵀ)) = trace (U Mᵀ Uᵀ U M Uᵀ) = trace (Mᵀ M)` using
+`Uᵀ U = 1` and `trace_mul_comm`.  This is the conjugation-invariance of the
+Frobenius norm absent from Mathlib v4.30.0. -/
+theorem frobNormSq_conj_unitary (M U : Matrix (Fin n) (Fin n) ℝ)
+    (hU : Uᵀ * U = 1) :
+    frobNormSq (U * M * Uᵀ) = frobNormSq M := by
+  rw [frobNormSq_eq_trace, frobNormSq_eq_trace]
+  -- (U M Uᵀ)ᵀ * (U M Uᵀ) = U * (Mᵀ * ((Uᵀ * U) * (M * Uᵀ))), which on `Uᵀ U = 1`
+  -- collapses to U * (Mᵀ * (M * Uᵀ)).
+  have hprod : (U * M * Uᵀ)ᵀ * (U * M * Uᵀ)
+      = U * (Mᵀ * (M * Uᵀ)) := by
+    rw [Matrix.transpose_mul, Matrix.transpose_mul, Matrix.transpose_transpose]
+    -- Right-associate everything, then cancel the central Uᵀ * U = 1.
+    simp only [Matrix.mul_assoc]
+    rw [← Matrix.mul_assoc Uᵀ U (M * Uᵀ), hU, Matrix.one_mul]
+  rw [hprod]
+  -- trace (U * (Mᵀ * (M * Uᵀ))) = trace ((Mᵀ * (M * Uᵀ)) * U) = trace (Mᵀ * M).
+  rw [Matrix.trace_mul_comm]
+  -- (Mᵀ * (M * Uᵀ)) * U = Mᵀ * (M * (Uᵀ * U)) = Mᵀ * M.
+  simp only [Matrix.mul_assoc]
+  rw [hU, Matrix.mul_one]
+
 /-! ### The corrected-attention error bound — Frobenius, PROVEN
 
 We now assemble the residual-corrected bound.  When the residual `R = A − A_eq` is
@@ -453,6 +518,359 @@ theorem corrected_equitable_attention_frobenius (A : Matrix (Fin n) (Fin n) ℝ)
       unfold residual; abel
     rw [hrw, hdiag, herr]
   · unfold residual; abel
+
+/-! ### UNCONDITIONAL Eckart–Young: general Hermitian residual via the spectral theorem
+
+The diagonal version above carries the hypothesis `hdiag : residual = diagonal w` — the
+residual *already* in spectral normal form.  We now **remove it**.  For an arbitrary
+**real-symmetric (Hermitian over ℝ) residual** `R = residual A B cell`, the spectral
+theorem `Matrix.IsHermitian.spectral_theorem` writes `R = U · diag(λ) · Uᵀ` with `U`
+orthogonal (`Uᵀ U = 1`) and `λ = hHerm.eigenvalues` the real eigenvalues.  Transport
+the diagonal rank-`k` truncation through `U`:
+
+  `R_k := U · diagTrunc λ keep · Uᵀ`,
+
+which has the same rank as `diagTrunc λ keep` (rank is invariant under multiplication
+by the unit-determinant `U`, `Uᵀ`) and, by the **unitary invariance of the Frobenius
+norm** (`frobNormSq_conj_unitary`), Frobenius² error
+
+  `frobNormSq (R − R_k) = frobNormSq (diag λ − diagTrunc λ keep) = diagTailSq λ k`.
+
+This is **unconditional Eckart–Young** for the residual-corrected mechanism: no
+diagonal hypothesis, only that the residual is Hermitian (over ℝ, symmetric), which is
+the natural setting for a self-adjoint attention/Gram residual. -/
+
+/-- **Spectral reduction of a Hermitian truncation (PROVEN, axiom-clean).**
+For a real-symmetric `R` (`hHerm : R.IsHermitian`) and any `keep` of size `≤ k`, the
+unitary-conjugated diagonal truncation `Rk = U · diagTrunc λ keep · Uᵀ` (where
+`U = hHerm.eigenvectorUnitary`, `λ = hHerm.eigenvalues`) has `rank Rk ≤ k` and
+Frobenius² error **equal** to the diagonal case `frobNormSq (diag λ − diagTrunc λ keep)`.
+This is the bridge from the proven diagonal Eckart–Young to the general Hermitian
+case: the spectral theorem `R = U · diag(λ) · Uᵀ` plus unitary invariance of the
+Frobenius norm (`frobNormSq_conj_unitary`) and rank invariance under the unit-det `U`. -/
+theorem hermitian_diagTrunc_reduction {n : ℕ} (R : Matrix (Fin n) (Fin n) ℝ)
+    (hHerm : R.IsHermitian) (k : ℕ) (keep : Finset (Fin n)) (hcard : keep.card ≤ k) :
+    ∃ Rk : Matrix (Fin n) (Fin n) ℝ, Rk.rank ≤ k ∧
+      frobNormSq (R - Rk)
+        = frobNormSq (Matrix.diagonal hHerm.eigenvalues
+            - diagTrunc hHerm.eigenvalues keep) := by
+  set U : Matrix (Fin n) (Fin n) ℝ :=
+    (hHerm.eigenvectorUnitary : Matrix (Fin n) (Fin n) ℝ) with hUdef
+  set w : Fin n → ℝ := hHerm.eigenvalues with hwdef
+  -- `U` is orthogonal: `Uᵀ U = 1` (over ℝ, `star U = Uᵀ`).
+  have hstar : star U * U = 1 := Matrix.UnitaryGroup.star_mul_self hHerm.eigenvectorUnitary
+  have hUT : Uᵀ * U = 1 := by
+    rwa [show (Uᵀ : Matrix (Fin n) (Fin n) ℝ) = star U from
+      (Matrix.conjTranspose_eq_transpose_of_trivial U).symm]
+  have hdetU : IsUnit U.det := Matrix.UnitaryGroup.det_isUnit hHerm.eigenvectorUnitary
+  -- Spectral theorem in real form: `R = U · diag w · Uᵀ`.
+  have hspec : R = U * Matrix.diagonal w * Uᵀ := by
+    have h := hHerm.spectral_theorem
+    rw [Unitary.conjStarAlgAut_apply] at h
+    rw [RCLike.ofReal_real_eq_id, Function.id_comp] at h
+    rw [show (star U : Matrix (Fin n) (Fin n) ℝ) = Uᵀ from
+      Matrix.conjTranspose_eq_transpose_of_trivial U] at h
+    exact h
+  refine ⟨U * diagTrunc w keep * Uᵀ, ?_, ?_⟩
+  · -- rank invariance under the unit-det conjugation.
+    rw [Matrix.rank_mul_eq_left_of_isUnit_det _ _ (by rwa [Matrix.det_transpose]),
+        Matrix.rank_mul_eq_right_of_isUnit_det _ _ hdetU]
+    exact (diagTrunc_rank_le w keep).trans hcard
+  · -- factor the conjugation out of the difference, then unitary invariance.
+    have hdiff : R - U * diagTrunc w keep * Uᵀ
+        = U * (Matrix.diagonal w - diagTrunc w keep) * Uᵀ := by
+      rw [hspec, Matrix.mul_sub, Matrix.sub_mul]
+    rw [hdiff]
+    exact frobNormSq_conj_unitary _ U hUT
+
+/-- **UNCONDITIONAL residual-corrected attention bound (general Hermitian residual,
+Eckart–Young, PROVEN axiom-clean).**
+
+The diagonal hypothesis `hdiag` of `corrected_equitable_attention_frobenius` is
+**removed**: we require only that the residual `R = A − A_eq` is **Hermitian over ℝ**
+(real-symmetric) — the natural condition for a self-adjoint attention/Gram residual.
+The spectral theorem reduces `R` to its eigenvalue normal form `diag(λ)` (conjugated by
+the orthogonal eigenvector matrix `U`), and the rank-`k` correction
+`R_k = U · diagTrunc λ keep · Uᵀ` (the top-`k` eigenvalues, transported through `U`) has
+
+  `‖A − (A_eq + R_k)‖_F² ≤ diagTailSq λ k = σ-tail(R)`,
+
+with `rank R_k ≤ k`.  The Frobenius error equals the discarded squared-eigenvalue tail
+exactly (unitary invariance of the Frobenius norm), and by `diag_eckartYoung_optimal`
+this tail is the *minimum* achievable — Eckart–Young, with **no diagonal hypothesis**.
+
+This closes the error half of the residual-corrected bound for a general Hermitian
+residual, delegating to the diagonal lemma via the spectral-theorem reduction
+`hermitian_diagTrunc_reduction`.  The diagonal version
+`corrected_equitable_attention_frobenius` is the special case it builds on. -/
+theorem corrected_equitable_attention (A : Matrix (Fin n) (Fin n) ℝ)
+    (B : Matrix (Fin r) (Fin r) ℝ) (cell : Fin n → Fin r) (k : ℕ)
+    (hHerm : (residual A B cell).IsHermitian) :
+    IsFrobeniusCorrectedBound A B cell k (diagTailSq hHerm.eigenvalues k) := by
+  -- the optimal `keep` from the diagonal Eckart–Young (top-k eigenvalues).
+  obtain ⟨⟨keep, hcard, _hrankd, herrd⟩, _hopt⟩ :=
+    diag_eckartYoung_optimal hHerm.eigenvalues k
+  -- transport the truncation through the eigenvector unitary.
+  obtain ⟨Rk, hrank, hfrob⟩ :=
+    hermitian_diagTrunc_reduction (residual A B cell) hHerm k keep hcard
+  refine ⟨Rk, hrank, ?_, ?_⟩
+  · -- A - (A_eq + Rk) = R - Rk, and frobNormSq (R - Rk) = diag tail ≤ diagTailSq.
+    have hrw : A - (equitablePart B cell + Rk) = residual A B cell - Rk := by
+      unfold residual; abel
+    rw [hrw, hfrob, herrd]
+  · unfold residual; abel
+
+/-- The **complex equitable (block-constant) part** of a phase-coherent attention
+matrix induced by a cell labelling `cell : Fin n → Fin r` and a complex block matrix
+`B`: `A_eq i j = B (cell i) (cell j)`.  Phase-coherent analogue of `equitablePart`. -/
+def equitablePartC (B : Matrix (Fin r) (Fin r) ℂ) (cell : Fin n → Fin r) :
+    Matrix (Fin n) (Fin n) ℂ :=
+  fun i j => B (cell i) (cell j)
+
+/-- The **complex residual** `R = A − A_eq` of a phase-coherent attention matrix.
+Phase-coherent analogue of `residual`; the chiral residual that the block-constant
+part fails to capture. -/
+def residualC (A : Matrix (Fin n) (Fin n) ℂ) (B : Matrix (Fin r) (Fin r) ℂ)
+    (cell : Fin n → Fin r) : Matrix (Fin n) (Fin n) ℂ :=
+  A - equitablePartC B cell
+
+/-! ## §1c. COMPLEX-HERMITIAN Eckart–Young — phase-coherent (chiral, U(1)-signed) attention
+
+The real-symmetric development above is the *non-phased* case.  Phase-coherent
+attention — chiral / `U(1)`-signed score matrices — has a genuinely **complex**
+self-adjoint residual `R = Rᴴ` (complex-Hermitian), not merely real-symmetric.  We
+mirror the entire real proof over `ℂ`, reusing the (real-valued) eigenvalue
+optimality lemma `diag_eckartYoung_optimal` since a Hermitian matrix has **real**
+eigenvalues even when its entries are complex.
+
+The infrastructure transferred verbatim, with `ᵀ ↦ ᴴ`, `(·)² ↦ ‖·‖²`, orthogonal
+`↦ unitary`:
+
+* `frobNormSqC M := ∑ᵢⱼ ‖M i j‖²` — the complex squared Frobenius norm.
+* `frobNormSqC_eq_trace : frobNormSqC M = (trace (Mᴴ * M)).re` — since
+  `(Mᴴ M)_{jj} = ∑ᵢ conj(M_{ij}) M_{ij} = ∑ᵢ ‖M_{ij}‖²` is real.
+* `frobNormSqC_conj_unitary : frobNormSqC (U M Uᴴ) = frobNormSqC M` for `Uᴴ U = 1`
+  — the **complex unitary** invariance, via the trace formula + cyclicity.
+* `hermitianC_diagTrunc_reduction` — the complex spectral theorem
+  `Matrix.IsHermitian.spectral_theorem` writes `R = U · diag(λ : ℂ) · Uᴴ` with `U`
+  unitary and `λ` the **real** eigenvalues; transport the diagonal truncation and
+  measure its error with `frobNormSqC_conj_unitary`, delegating the tail value to the
+  real `diagTailSq`.
+* `corrected_equitable_attention_complex` — the chiral / phase-coherent corrected
+  attention Frobenius bound. -/
+
+/-- **Complex squared Frobenius norm** `‖M‖_F² = ∑ᵢⱼ ‖M i j‖²` (complex entries).
+The phase-coherent analogue of `frobNormSq`: each entry contributes its *squared
+modulus*, the `U(1)`-invariant magnitude that a chiral residual carries. -/
+noncomputable def frobNormSqC (M : Matrix (Fin n) (Fin n) ℂ) : ℝ :=
+  ∑ i, ∑ j, ‖M i j‖ ^ 2
+
+/-- `frobNormSqC` is nonnegative. -/
+theorem frobNormSqC_nonneg (M : Matrix (Fin n) (Fin n) ℂ) : 0 ≤ frobNormSqC M := by
+  unfold frobNormSqC
+  exact Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => sq_nonneg _
+
+/-- **Complex Frobenius² is the real part of `trace (Mᴴ·M)` (PROVEN, axiom-clean).**
+`frobNormSqC M = (trace (Mᴴ * M)).re`.  The `j`-th diagonal entry of `Mᴴ·M` is
+`∑ᵢ conj(M i j) · M i j = ∑ᵢ ‖M i j‖²` (real); summing over `j`, taking the real part,
+and swapping the order of summation gives the entrywise squared-modulus sum. -/
+theorem frobNormSqC_eq_trace (M : Matrix (Fin n) (Fin n) ℂ) :
+    frobNormSqC M = (Matrix.trace (Mᴴ * M)).re := by
+  unfold frobNormSqC
+  rw [Matrix.trace]
+  simp only [Matrix.diag_apply, Matrix.mul_apply, Matrix.conjTranspose_apply,
+    Complex.re_sum]
+  -- (Mᴴ M)_{jj} = ∑ i conj (M i j) * M i j; its re is ∑ i ‖M i j‖²; then swap sums.
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro i _
+  apply Finset.sum_congr rfl
+  intro j _
+  -- (conj (M j i) * M j i).re = ‖M j i‖²
+  rw [Complex.sq_norm]
+  rw [show (star (M j i) * M j i) = ((Complex.normSq (M j i) : ℝ) : ℂ) from
+    (Complex.normSq_eq_conj_mul_self).symm]
+  rw [Complex.ofReal_re]
+
+/-- **Unitary invariance of complex Frobenius² (PROVEN, axiom-clean).**
+For `U : Matrix (Fin n) (Fin n) ℂ` unitary (`Uᴴ * U = 1`),
+`frobNormSqC (U * M * Uᴴ) = frobNormSqC M`.  Via the trace formula and cyclicity of
+trace: `trace ((U M Uᴴ)ᴴ (U M Uᴴ)) = trace (U Mᴴ Uᴴ U M Uᴴ) = trace (Mᴴ M)` using
+`Uᴴ U = 1` and `trace_mul_comm`.  This is the genuine `U(1)`-phase-invariance: the
+complex Frobenius norm is unchanged by the chiral eigenvector unitary. -/
+theorem frobNormSqC_conj_unitary (M U : Matrix (Fin n) (Fin n) ℂ)
+    (hU : Uᴴ * U = 1) :
+    frobNormSqC (U * M * Uᴴ) = frobNormSqC M := by
+  rw [frobNormSqC_eq_trace, frobNormSqC_eq_trace]
+  have hprod : (U * M * Uᴴ)ᴴ * (U * M * Uᴴ)
+      = U * (Mᴴ * (M * Uᴴ)) := by
+    rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose]
+    simp only [Matrix.mul_assoc]
+    rw [← Matrix.mul_assoc Uᴴ U (M * Uᴴ), hU, Matrix.one_mul]
+  rw [hprod]
+  rw [Matrix.trace_mul_comm]
+  simp only [Matrix.mul_assoc]
+  rw [hU, Matrix.mul_one]
+
+/-- **Complex diagonal truncation**: the complexified diagonal that keeps the
+eigenvalues at positions in `keep`, with *real* eigenvalues `w` cast into `ℂ`.  This
+is the phase-coherent analogue of `diagTrunc`, sitting on the diagonal of the complex
+spectral normal form. -/
+def diagTruncC (w : Fin n → ℝ) (keep : Finset (Fin n)) : Matrix (Fin n) (Fin n) ℂ :=
+  Matrix.diagonal (fun i => if i ∈ keep then (w i : ℂ) else 0)
+
+/-- **Complex diagonal truncation has rank ≤ `keep.card` (PROVEN, axiom-clean).**
+Same support argument as the real `diagTrunc_rank_le`, over `ℂ`. -/
+theorem diagTruncC_rank_le (w : Fin n → ℝ) (keep : Finset (Fin n)) :
+    (diagTruncC w keep).rank ≤ keep.card := by
+  unfold diagTruncC
+  rw [Matrix.rank_diagonal, Fintype.card_subtype]
+  apply Finset.card_le_card
+  intro i hi
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and, ne_eq,
+    ite_eq_right_iff, not_forall] at hi
+  exact hi.1
+
+/-- **The complex diagonal truncation residual's Frobenius² is the dropped-eigenvalue
+tail (PROVEN, axiom-clean).**
+`frobNormSqC (diagonal (ofReal ∘ w) − diagTruncC w keep) = ∑_{i∉keep} (w i)²` — the
+**same real tail** as the real `frobNormSq_diag_sub_diagTrunc`.  The complex
+off-diagonal entries vanish and the kept diagonal cancels, leaving the squared
+*moduli* `‖(w i : ℂ)‖² = (w i)²` of the dropped real eigenvalues. -/
+theorem frobNormSqC_diag_sub_diagTruncC (w : Fin n → ℝ) (keep : Finset (Fin n)) :
+    frobNormSqC (Matrix.diagonal (fun i => ((w i : ℂ))) - diagTruncC w keep)
+      = ∑ i ∈ keepᶜ, (w i) ^ 2 := by
+  unfold frobNormSqC diagTruncC
+  have hentry : ∀ i j : Fin n,
+      (Matrix.diagonal (fun i => ((w i : ℂ)))
+          - Matrix.diagonal (fun i => if i ∈ keep then (w i : ℂ) else 0)) i j
+        = if i = j then (if i ∈ keep then 0 else (w i : ℂ)) else 0 := by
+    intro i j
+    rw [Matrix.sub_apply, Matrix.diagonal_apply, Matrix.diagonal_apply]
+    split_ifs with h hk
+    · subst h; simp
+    · subst h; simp
+    · ring
+  simp_rw [hentry]
+  have hcol : ∀ i : Fin n, (∑ j : Fin n,
+      ‖(if i = j then (if i ∈ keep then (0:ℂ) else (w i : ℂ)) else 0)‖ ^ 2)
+        = ‖(if i ∈ keep then (0:ℂ) else (w i : ℂ))‖ ^ 2 := by
+    intro i
+    rw [Finset.sum_eq_single i]
+    · simp
+    · intro j _ hj
+      rw [if_neg (Ne.symm hj)]; simp
+    · intro h; exact absurd (Finset.mem_univ i) h
+  simp_rw [hcol]
+  rw [← Finset.sum_filter_add_sum_filter_not Finset.univ (fun i => i ∈ keep)
+      (fun i => ‖(if i ∈ keep then (0:ℂ) else (w i : ℂ))‖ ^ 2)]
+  have hk : ∑ i ∈ Finset.univ.filter (fun i => i ∈ keep),
+      ‖(if i ∈ keep then (0:ℂ) else (w i : ℂ))‖ ^ 2 = 0 := by
+    apply Finset.sum_eq_zero; intro i hi
+    simp only [Finset.mem_filter] at hi; simp [hi.2]
+  have hfiltercompl : Finset.univ.filter (fun i => ¬ i ∈ keep) = keepᶜ := by
+    ext i; simp [Finset.mem_compl]
+  have hnk : ∑ i ∈ Finset.univ.filter (fun i => ¬ i ∈ keep),
+      ‖(if i ∈ keep then (0:ℂ) else (w i : ℂ))‖ ^ 2 = ∑ i ∈ keepᶜ, (w i) ^ 2 := by
+    rw [hfiltercompl]
+    apply Finset.sum_congr rfl
+    intro i hi
+    rw [Finset.mem_compl] at hi
+    simp only [hi, if_false, Complex.norm_real, Real.norm_eq_abs, sq_abs]
+  rw [hk, hnk, zero_add]
+
+/-- **Complex spectral reduction of a Hermitian truncation (PROVEN, axiom-clean).**
+For a **complex-Hermitian** `R` (`hHerm : R.IsHermitian`, i.e. `Rᴴ = R`) and any
+`keep` of size `≤ k`, the unitary-conjugated diagonal truncation
+`Rk = U · diagTruncC λ keep · Uᴴ` (where `U = hHerm.eigenvectorUnitary`,
+`λ = hHerm.eigenvalues : Fin n → ℝ` the **real** eigenvalues) has `rank Rk ≤ k` and
+complex Frobenius² error **equal** to the real tail `∑_{i∈keepᶜ} (λ i)²`.  This is the
+chiral bridge from the diagonal Eckart–Young to the general complex-Hermitian case:
+the complex spectral theorem `R = U · diag(ofReal ∘ λ) · Uᴴ` plus unitary invariance of
+the complex Frobenius norm (`frobNormSqC_conj_unitary`) and rank invariance under the
+unit-det `U`. -/
+theorem hermitianC_diagTrunc_reduction {n : ℕ} (R : Matrix (Fin n) (Fin n) ℂ)
+    (hHerm : R.IsHermitian) (k : ℕ) (keep : Finset (Fin n)) (hcard : keep.card ≤ k) :
+    ∃ Rk : Matrix (Fin n) (Fin n) ℂ, Rk.rank ≤ k ∧
+      frobNormSqC (R - Rk) = ∑ i ∈ keepᶜ, (hHerm.eigenvalues i) ^ 2 := by
+  set U : Matrix (Fin n) (Fin n) ℂ :=
+    (hHerm.eigenvectorUnitary : Matrix (Fin n) (Fin n) ℂ) with hUdef
+  set w : Fin n → ℝ := hHerm.eigenvalues with hwdef
+  -- `U` is unitary: `Uᴴ U = 1` (over ℂ, `star U = Uᴴ`).
+  have hstar : star U * U = 1 := Matrix.UnitaryGroup.star_mul_self hHerm.eigenvectorUnitary
+  have hUH : Uᴴ * U = 1 := hstar
+  have hdetU : IsUnit U.det := Matrix.UnitaryGroup.det_isUnit hHerm.eigenvectorUnitary
+  -- Complex spectral theorem: `R = U · diag (ofReal ∘ w) · Uᴴ`.
+  have hspec : R = U * Matrix.diagonal (fun i => ((w i : ℂ))) * Uᴴ := by
+    have h := hHerm.spectral_theorem
+    rw [Unitary.conjStarAlgAut_apply] at h
+    rw [show (star U : Matrix (Fin n) (Fin n) ℂ) = Uᴴ from rfl] at h
+    -- `diag (ofReal ∘ w)` matches `diag (fun i => (w i : ℂ))`.
+    have hdiag : (Matrix.diagonal (RCLike.ofReal ∘ w) : Matrix (Fin n) (Fin n) ℂ)
+        = Matrix.diagonal (fun i => ((w i : ℂ))) := rfl
+    rw [hdiag] at h
+    exact h
+  refine ⟨U * diagTruncC w keep * Uᴴ, ?_, ?_⟩
+  · -- rank invariance under the unit-det conjugation.
+    have hdetUH : IsUnit (Uᴴ).det := by
+      rw [Matrix.det_conjTranspose]; exact hdetU.star
+    rw [Matrix.rank_mul_eq_left_of_isUnit_det _ _ hdetUH,
+        Matrix.rank_mul_eq_right_of_isUnit_det _ _ hdetU]
+    exact (diagTruncC_rank_le w keep).trans hcard
+  · -- factor the conjugation out of the difference, then unitary invariance.
+    have hdiff : R - U * diagTruncC w keep * Uᴴ
+        = U * (Matrix.diagonal (fun i => ((w i : ℂ))) - diagTruncC w keep) * Uᴴ := by
+      rw [hspec, Matrix.mul_sub, Matrix.sub_mul]
+    rw [hdiff, frobNormSqC_conj_unitary _ U hUH, frobNormSqC_diag_sub_diagTruncC]
+
+/-- A real number `s` is a **complex Frobenius error bound** for the phase-coherent
+residual-corrected approximant if there is a rank-`≤ k` complex correction `Rk` (the
+chiral diagonal/SVD truncation of the residual) with
+`‖A − (A_eq + Rk)‖_F² ≤ s` (complex Frobenius²), and `A_eq + Rk` differs from `A`
+exactly by `R − Rk`.  The `U(1)`-signed analogue of `IsFrobeniusCorrectedBound`. -/
+def IsFrobeniusCorrectedBoundC (A : Matrix (Fin n) (Fin n) ℂ)
+    (B : Matrix (Fin r) (Fin r) ℂ) (cell : Fin n → Fin r) (k : ℕ) (s : ℝ) : Prop :=
+  ∃ Rk : Matrix (Fin n) (Fin n) ℂ,
+    Rk.rank ≤ k ∧
+    frobNormSqC (A - (equitablePartC B cell + Rk)) ≤ s ∧
+    A - (equitablePartC B cell + Rk) = residualC A B cell - Rk
+
+/-- **COMPLEX-HERMITIAN residual-corrected attention bound — chiral / phase-coherent
+Eckart–Young (PROVEN axiom-clean).**
+
+The phase-coherent counterpart of `corrected_equitable_attention`: for a complex
+attention matrix `A` (chiral, `U(1)`-signed) whose residual `R = A − A_eq` is
+**complex-Hermitian** (`Rᴴ = R`) — the natural self-adjoint condition for a
+phase-coherent score residual — the rank-`k` correction
+`R_k = U · diagTruncC λ keep · Uᴴ` (the top-`k` *real* eigenvalues, transported through
+the chiral eigenvector **unitary** `U`) gives
+
+  `‖A − (A_eq + R_k)‖_F² ≤ diagTailSq λ k = σ-tail(R)`,
+
+with `rank R_k ≤ k`.  The complex Frobenius error equals the discarded squared-
+eigenvalue tail exactly (`frobNormSqC_conj_unitary`), and by `diag_eckartYoung_optimal`
+(eigenvalues are real even in the Hermitian-complex case) this tail is the *minimum*
+achievable — Eckart–Young for phase-coherent attention.  This is the version that
+applies to **chiral / phased attention**, the complex-Hermitian residual case. -/
+theorem corrected_equitable_attention_complex (A : Matrix (Fin n) (Fin n) ℂ)
+    (B : Matrix (Fin r) (Fin r) ℂ) (cell : Fin n → Fin r) (k : ℕ)
+    (hHerm : (residualC A B cell).IsHermitian) :
+    IsFrobeniusCorrectedBoundC A B cell k (diagTailSq hHerm.eigenvalues k) := by
+  -- the optimal `keep` from the diagonal Eckart–Young (top-k *real* eigenvalues).
+  obtain ⟨⟨keep, hcard, _hrankd, herrd⟩, _hopt⟩ :=
+    diag_eckartYoung_optimal hHerm.eigenvalues k
+  -- the diagonal tail value, as a real number.
+  have htail : ∑ i ∈ keepᶜ, (hHerm.eigenvalues i) ^ 2 = diagTailSq hHerm.eigenvalues k := by
+    have := herrd
+    rwa [frobNormSq_diag_sub_diagTrunc] at this
+  -- transport the truncation through the eigenvector unitary (complex).
+  obtain ⟨Rk, hrank, hfrob⟩ :=
+    hermitianC_diagTrunc_reduction (residualC A B cell) hHerm k keep hcard
+  refine ⟨Rk, hrank, ?_, ?_⟩
+  · have hrw : A - (equitablePartC B cell + Rk) = residualC A B cell - Rk := by
+      unfold residualC; abel
+    rw [hrw, hfrob, htail]
+  · unfold residualC; abel
 
 /-! ### §1b. The EXACT irreducibility lower bound (ε = 0, PROVEN axiom-clean)
 

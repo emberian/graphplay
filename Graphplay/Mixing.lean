@@ -5,6 +5,7 @@ import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.Topology.Defs.Filter
 import Graphplay.Weighted
 import Graphplay.Equitable
+import Graphplay.PST
 open scoped Matrix
 universe u v w
 namespace Graphplay
@@ -143,6 +144,67 @@ noncomputable def ChiralMixingSigning.evolve {V : Type u} [Fintype V] [Decidable
     {G : WeightedGraph V} (σ : ChiralMixingSigning G) (t : ℝ) : Matrix V V ℂ :=
   NormedSpace.exp (-(Complex.I * (t : ℂ)) • σ.signed)
 
+/-- The **signed graph** of a chiral signing: a `WeightedGraph` whose adjacency
+is `σ.signed`.  Hermiticity is the signing's `herm`; looplessness follows from
+`compatible` together with `G`'s own looplessness (`G.adj v v = 0 ⇒
+σ.signed v v = 0`).  This packages the signed walk as a genuine quantum-walk
+Hamiltonian so the proven cell-uniform/quotient machinery applies verbatim. -/
+def ChiralMixingSigning.signedGraph {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} (σ : ChiralMixingSigning G) : WeightedGraph V where
+  adj := σ.signed
+  herm := σ.herm
+  loopless := fun v => σ.compatible v v (G.loopless v)
+
+/-- `σ.evolve t` is the CTQW evolution of the `signedGraph`: by definition both
+are `exp(-(I·t) • σ.signed)`. -/
+theorem ChiralMixingSigning.evolve_eq_signedGraph_evolve
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} (σ : ChiralMixingSigning G) (t : ℝ) :
+    σ.evolve t = σ.signedGraph.evolve t := rfl
+
+/-- The Gram matrix `Bᴴ * B` of `cellEmbed` collapses on a **nonempty** row `i`:
+`(Bᴴ * B) i k = δ_{ik}` for that `i` (off-diagonal cells are orthogonal always;
+the diagonal is `1` precisely when cell `i` is nonempty).  Unlike the global
+`cellEmbed_conjTranspose_mul_cellEmbed`, this needs only `C_i ≠ ∅`, so it
+applies entrywise even when *other* cells are empty. -/
+theorem EquitablePartition.cellEmbed_gram_row {V : Type u} [Fintype V] [DecidableEq V]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {G : WeightedGraph V} (P : EquitablePartition G I) {i : I}
+    (hi : P.cellCard i ≠ 0) (k : I) :
+    (P.cellEmbedᴴ * P.cellEmbed) i k = if i = k then 1 else 0 := by
+  classical
+  rw [Matrix.mul_apply]
+  simp only [Matrix.conjTranspose_apply, EquitablePartition.cellEmbed,
+    EquitablePartition.cellUniformVec]
+  by_cases hik : i = k
+  · subst hik
+    rw [if_pos rfl]
+    have hsum : (∑ v, star (if P.cells v = i then (1:ℂ)/(Real.sqrt (P.cellCard i):ℂ) else 0)
+                  * (if P.cells v = i then (1:ℂ)/(Real.sqrt (P.cellCard i):ℂ) else 0))
+        = ∑ v, (if P.cells v = i then ((1:ℂ)/(Real.sqrt (P.cellCard i):ℂ))^2 else 0) := by
+      apply Finset.sum_congr rfl; intro v _
+      by_cases hv : P.cells v = i
+      · rw [if_pos hv, if_pos hv, star_div₀, star_one, Complex.star_def,
+          Complex.conj_ofReal]; ring
+      · rw [if_neg hv, if_neg hv, star_zero, mul_zero]
+    rw [hsum, ← Finset.sum_filter, Finset.sum_const]
+    have hci : (0 : ℝ) < P.cellCard i :=
+      lt_of_le_of_ne (P.cellCard_nonneg i) (Ne.symm hi)
+    have hcardeq : ((Finset.univ.filter (fun v : V => P.cells v = i)).card : ℂ)
+        = (P.cellCard i : ℂ) := by unfold EquitablePartition.cellCard; push_cast; rfl
+    rw [nsmul_eq_mul, hcardeq]
+    have hsq : (Real.sqrt (P.cellCard i) : ℂ) ^ 2 = (P.cellCard i : ℂ) := by
+      rw [sq, ← Complex.ofReal_mul, Real.mul_self_sqrt (P.cellCard_nonneg i)]
+    have hsqrt : (Real.sqrt (P.cellCard i) : ℂ) ≠ 0 := by
+      rw [Ne, Complex.ofReal_eq_zero]; exact ne_of_gt (Real.sqrt_pos.mpr hci)
+    field_simp; exact hsq.symm
+  · rw [if_neg hik]
+    apply Finset.sum_eq_zero; intro v _
+    by_cases hvi : P.cells v = i
+    · have hvk : P.cells v ≠ k := fun h => hik (hvi ▸ h)
+      rw [if_neg hvk, mul_zero]
+    · rw [if_neg hvi, star_zero, zero_mul]
+
 /-- Cell-block transition amplitude for an arbitrary propagator `U`: the summed
 amplitude from cell `Cⱼ` to cell `Cᵢ`. -/
 noncomputable def cellBlockAmp {V : Type u} [Fintype V] [DecidableEq V]
@@ -182,6 +244,26 @@ def ChiralMixingSigning.ReducesToQuotient {V : Type u} [Fintype V] [DecidableEq 
   ∀ (x x' y y' : V), P.cells x = P.cells x' → P.cells y = P.cells y' →
     σ.signed x y = σ.signed x' y'
 
+/-- Under `ReducesToQuotient`, the original equitable partition `P` of `G` is
+also equitable for the **signed** graph: since `σ.signed x z` depends only on
+the cells of `x` and `z`, the cell-`j` branching of `σ.signed` from any two
+vertices in the same cell coincides termwise. -/
+def ChiralMixingSigning.signedPartition {V : Type u} [Fintype V] [DecidableEq V]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {G : WeightedGraph V} (P : EquitablePartition G I)
+    (σ : ChiralMixingSigning G) (hred : σ.ReducesToQuotient P) :
+    EquitablePartition σ.signedGraph I where
+  cells := P.cells
+  uniform := by
+    intro i j x y hx hy
+    -- `signedGraph.adj = σ.signed`; rewrite `σ.signed x z = σ.signed y z` cellwise.
+    refine Finset.sum_congr rfl (fun z _ => ?_)
+    by_cases hz : P.cells z = j
+    · rw [if_pos hz, if_pos hz]
+      -- `cells x = i = cells y`, same `z`; `ReducesToQuotient` gives equality.
+      exact hred x y z z (hx.trans hy.symm) rfl
+    · rw [if_neg hz, if_neg hz]
+
 /-- The **quotient cell-block amplitude**: the cell-block transition amplitude
 of a *quotient-level* `I × I` propagator `W`, weighted by cell sizes.  This is
 the quantity that, for the signed quotient, measures uniform mixing at the
@@ -191,22 +273,147 @@ noncomputable def quotientCellBlockAmp {V : Type u} [Fintype V] [DecidableEq V]
     (P : EquitablePartition G I) (W : Matrix I I ℂ) (i j : I) : ℂ :=
   (P.cellCard i : ℂ) * W i j * (P.cellCard j : ℂ)
 
-/-- **Host–quotient cell-block identification (honest `sorry`).**  Under
-`ReducesToQuotient`, the host walk's cell-block amplitude equals the quotient
-walk's weighted cell-block amplitude for the propagator `W` induced by the
-signing on the quotient.  This is the genuine deep content of Levine–…–Tamon's
-chiral transfer (arXiv:2605.04414): it requires the invariant-subspace transfer
-(`restrict_eq_symmQuotient`) plus the spectral analysis of chiral signings, and
-is left as an honest `sorry`. -/
+/-- **Host–quotient cell-block identification.**  Under `ReducesToQuotient`,
+the host walk's cell-block amplitude equals the quotient walk's weighted
+cell-block amplitude for a propagator `W` induced by the signing on the
+quotient.
+
+This is the mixing analogue of the cell-uniform PST lift
+(`EquitablePartition.pst_lift` in `Graphplay/PST.lean`), driven by the same
+invariant-subspace intertwining `restrict_eq_symmQuotient` /
+`exp_smul_adj_mul_cellEmbed`.
+
+The witness `W` is the *quotient cell-block amplitude density*
+`W i j = cellBlockAmp P (σ.evolve t) i j / (|C_i|·|C_j|)`.  For nonempty cells
+this is exactly the entry of the quotient evolution
+`exp(-iτ Q̃_S)` rescaled by the cell-uniform normalizations (the value forced by
+the intertwining); for an empty cell both sides vanish identically.  The
+resulting identity `cellBlockAmp = |C_i|·W i j·|C_j|` then holds for *all*
+`i, j` simultaneously. -/
 theorem cellBlockAmp_eq_quotient
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} (P : EquitablePartition G I)
-    (σ : ChiralMixingSigning G) (_hred : σ.ReducesToQuotient P)
+    (σ : ChiralMixingSigning G) (hred : σ.ReducesToQuotient P)
     (t : ℝ) :
     ∃ W : Matrix I I ℂ, ∀ i j : I,
       cellBlockAmp P (σ.evolve t) i j = quotientCellBlockAmp P W i j := by
-  sorry
+  classical
+  -- Work with the signed graph and its (genuinely equitable, by `hred`)
+  -- partition `P'`; the proven PST/quotient machinery applies to it verbatim.
+  set Gs := σ.signedGraph with hGs
+  set P' := σ.signedPartition P hred with hP'
+  -- `P'.cells = P.cells`, so cell cardinalities and cell-block sums agree.
+  have hcells : ∀ v, P'.cells v = P.cells v := fun _ => rfl
+  have hcard : ∀ k, P'.cellCard k = P.cellCard k := by
+    intro k; unfold EquitablePartition.cellCard; simp_rw [hcells]
+  set s : ℂ := -(Complex.I * (t : ℂ)) with hs
+  -- The witness: the entry of the symmetric-quotient evolution `exp(s • Q̃)`,
+  -- rescaled by `1/(√|C_i|·√|C_j|)` so that the `|C_i|·|C_j|` weighting of
+  -- `quotientCellBlockAmp` reproduces the `√|C_i|·√|C_j|` normalization that
+  -- the cell-uniform matrix element carries.
+  refine ⟨fun i j =>
+      (NormedSpace.exp (s • P'.symmQuotient)) i j /
+        ((Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard j) : ℂ)), ?_⟩
+  intro i j
+  unfold quotientCellBlockAmp
+  -- The cell-block amplitude rewritten as a `cellUniform_matrixElement` of `P'`.
+  -- `cellBlockAmp P U i j = ∑_{x∈C_i,y∈C_j} U x y`; the PST matrix-element lemma
+  -- (with indices swapped) gives `∑_{x∈C_j,y∈C_i} U y x / (√|C_j|√|C_i|) =
+  -- (Bᴴ U B) i j`, and the two double sums coincide after `Finset.sum_comm`.
+  have hswap : cellBlockAmp P (σ.evolve t) i j
+      = ∑ x, ∑ y, if P'.cells x = j ∧ P'.cells y = i
+          then σ.evolve t y x else 0 := by
+    unfold cellBlockAmp
+    simp_rw [hcells]
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl (fun y _ => Finset.sum_congr rfl (fun x _ => ?_))
+    by_cases h : P.cells x = i ∧ P.cells y = j
+    · rw [if_pos h, if_pos ⟨h.2, h.1⟩]
+    · rw [if_neg h, if_neg (fun hc => h ⟨hc.2, hc.1⟩)]
+  -- Either both cells are nonempty (the matrix-element identity applies and the
+  -- normalizations recombine), or one is empty (both sides vanish).
+  by_cases hi : P.cellCard i = 0
+  · have hamp : cellBlockAmp P (σ.evolve t) i j = 0 := by
+      unfold cellBlockAmp
+      apply Finset.sum_eq_zero; intro x _
+      apply Finset.sum_eq_zero; intro y _
+      by_cases hx : P.cells x = i
+      · exfalso
+        have : (Finset.univ.filter fun w : V => P.cells w = i).Nonempty :=
+          ⟨x, by simp [hx]⟩
+        rw [← Finset.card_pos] at this
+        exact absurd (by unfold EquitablePartition.cellCard at hi; exact_mod_cast hi) this.ne'
+      · rw [if_neg (fun h => hx h.1)]
+    rw [hamp]; simp [hi]
+  · by_cases hj : P.cellCard j = 0
+    · have hamp : cellBlockAmp P (σ.evolve t) i j = 0 := by
+        unfold cellBlockAmp
+        apply Finset.sum_eq_zero; intro x _
+        apply Finset.sum_eq_zero; intro y _
+        by_cases hy : P.cells y = j
+        · exfalso
+          have : (Finset.univ.filter fun w : V => P.cells w = j).Nonempty :=
+            ⟨y, by simp [hy]⟩
+          rw [← Finset.card_pos] at this
+          exact absurd (by unfold EquitablePartition.cellCard at hj; exact_mod_cast hj) this.ne'
+        · rw [if_neg (fun h => hy h.2)]
+      rw [hamp]; simp [hj]
+    · -- Both cells nonempty.  Identify the cell-block amplitude with the
+      -- symmetric-quotient evolution entry via the proven intertwining.
+      have hsi : (Real.sqrt (P.cellCard i) : ℂ) ≠ 0 := by
+        rw [Ne, Complex.ofReal_eq_zero]
+        exact ne_of_gt (Real.sqrt_pos.mpr
+          (lt_of_le_of_ne (P.cellCard_nonneg i) (Ne.symm hi)))
+      have hsj : (Real.sqrt (P.cellCard j) : ℂ) ≠ 0 := by
+        rw [Ne, Complex.ofReal_eq_zero]
+        exact ne_of_gt (Real.sqrt_pos.mpr
+          (lt_of_le_of_ne (P.cellCard_nonneg j) (Ne.symm hj)))
+      -- `(Bᴴ * (σ.evolve t) * B) i j = exp(s • symmQuotient) i j`.  We need only
+      -- cell `i` nonempty: `E·B = B·exp(s•Q̃)` (intertwining, no nonemptiness),
+      -- then the row-`i` Gram collapse `(Bᴴ B) i k = δ_{ik}` (cell `i` nonempty).
+      have hP'i : P'.cellCard i ≠ 0 := by rw [hcard]; exact hi
+      have hev : σ.evolve t = NormedSpace.exp (s • Gs.adj) := rfl
+      have hEB : σ.evolve t * P'.cellEmbed
+          = P'.cellEmbed * NormedSpace.exp (s • P'.symmQuotient) := by
+        rw [hev]; exact P'.exp_smul_adj_mul_cellEmbed s
+      have hBEB : (P'.cellEmbedᴴ * σ.evolve t * P'.cellEmbed) i j
+          = (NormedSpace.exp (s • P'.symmQuotient)) i j := by
+        rw [Matrix.mul_assoc, hEB, ← Matrix.mul_assoc]
+        -- `(Bᴴ * B * exp) i j = ∑_k (Bᴴ B) i k · exp k j = exp i j`.
+        rw [Matrix.mul_apply]
+        rw [Finset.sum_eq_single i]
+        · rw [P'.cellEmbed_gram_row hP'i i, if_pos rfl, one_mul]
+        · intro k _ hki
+          rw [P'.cellEmbed_gram_row hP'i k, if_neg (fun h => hki h.symm), zero_mul]
+        · intro h; exact absurd (Finset.mem_univ i) h
+      -- The matrix-element identity for `P'` and `E = σ.evolve t`.
+      have hme := P'.cellUniform_matrixElement (σ.evolve t) j i
+      rw [hcard j, hcard i] at hme
+      -- `cellBlockAmp = (Bᴴ E B) i j · (√|C_j|·√|C_i|)`.
+      have hcb : cellBlockAmp P (σ.evolve t) i j
+          = (P'.cellEmbedᴴ * σ.evolve t * P'.cellEmbed) i j *
+              ((Real.sqrt (P.cellCard j) : ℂ) * (Real.sqrt (P.cellCard i) : ℂ)) := by
+        rw [hswap, ← hme, div_mul_cancel₀]
+        exact mul_ne_zero hsj hsi
+      rw [hcb, hBEB]
+      -- Now both sides are `(exp(s•Q̃)) i j` times the same scalar; collapse the
+      -- normalizations `√|C|·√|C| = |C|` (the `quotientCellBlockAmp` weighting).
+      have hsqi : (Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard i) : ℂ)
+          = (P.cellCard i : ℂ) := by
+        rw [← Complex.ofReal_mul, Real.mul_self_sqrt (P.cellCard_nonneg i)]
+      have hsqj : (Real.sqrt (P.cellCard j) : ℂ) * (Real.sqrt (P.cellCard j) : ℂ)
+          = (P.cellCard j : ℂ) := by
+        rw [← Complex.ofReal_mul, Real.mul_self_sqrt (P.cellCard_nonneg j)]
+      simp only [] -- beta-reduce the `W` lambda application
+      rw [mul_comm ((P.cellCard i : ℂ))
+        (NormedSpace.exp (s • P'.symmQuotient) i j / _), mul_assoc, div_mul_eq_mul_div,
+        eq_div_iff (mul_ne_zero hsi hsj)]
+      -- Goal (denominator cleared): collapse `√·√ = |C|` on both factors.
+      linear_combination
+        (NormedSpace.exp (s • P'.symmQuotient) i j) * (Real.sqrt (P.cellCard j) : ℂ)
+            * (Real.sqrt (P.cellCard j) : ℂ) * hsqi
+        + (NormedSpace.exp (s • P'.symmQuotient) i j) * (P.cellCard i : ℂ) * hsqj
 
 /-- **Chiral mixing via quotient.**  If a chiral signing reduces to the quotient
 and the quotient-level weighted cell-block amplitudes hit the uniform target,

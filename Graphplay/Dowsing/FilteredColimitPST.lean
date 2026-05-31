@@ -77,6 +77,11 @@ Cross-references inside Graphplay:
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.Analysis.Normed.Algebra.Exponential
+import Mathlib.Analysis.SpecialFunctions.Exponential
+import Mathlib.Analysis.CStarAlgebra.Matrix
+import Mathlib.Analysis.Matrix.Normed
+import Mathlib.Data.Matrix.Basis
 import Mathlib.CategoryTheory.Limits.Filtered
 import Mathlib.CategoryTheory.Filtered.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
@@ -851,7 +856,224 @@ theorem ConsistentPartitionSequence.pst_rate_inheritance
     Graphon.IsCellUniformPST Wlim Plim i j tau_lim :=
   ConsistentPartitionSequence.pst_inherited 𝒮 Wlim Plim h_lim i j τ tau_lim hτ h_pst
 
-/-- **Rate-vs-time tradeoff (HONEST RESTATEMENT, `sorry`).**
+/-! ### Matrix-exponential Lipschitz infrastructure
+
+The honest closure of `pst_rate_tradeoff` rests on the operator-norm Lipschitz
+bound `‖exp x − exp y‖ ≤ ‖x − y‖ · exp(max ‖x‖ ‖y‖)`, valid in any complete
+normed algebra.  We prove it from the exponential series via the
+non-commutative telescoping identity for `xⁿ − yⁿ`, then specialise it to the
+`L²`-operator-normed matrix algebra (the `CStar` norm under which
+`NormedSpace.exp` on matrices is defined) together with two entry/operator-norm
+comparisons. -/
+
+section ExpLipschitz
+
+open scoped BigOperators
+open Finset
+
+variable {𝔸 : Type*} [NormedRing 𝔸] [NormOneClass 𝔸] [NormedAlgebra ℂ 𝔸] [CompleteSpace 𝔸]
+
+set_option linter.unusedSectionVars false in
+/-- Non-commutative telescoping identity `xⁿ − yⁿ = ∑_{i<n} xⁱ (x−y) y^{n−1−i}`. -/
+theorem pow_sub_pow_telescope (x y : 𝔸) (n : ℕ) :
+    x ^ n - y ^ n = ∑ i ∈ range n, x ^ i * (x - y) * y ^ (n - 1 - i) := by
+  induction n with
+  | zero => simp
+  | succ k ih =>
+    rw [Finset.sum_range_succ]
+    have htop : x ^ k * (x - y) * y ^ (k + 1 - 1 - k) = x ^ k * (x - y) := by
+      have : k + 1 - 1 - k = 0 := by omega
+      rw [this, pow_zero, mul_one]
+    have hlow : ∑ i ∈ range k, x ^ i * (x - y) * y ^ (k + 1 - 1 - i)
+        = (∑ i ∈ range k, x ^ i * (x - y) * y ^ (k - 1 - i)) * y := by
+      rw [Finset.sum_mul]
+      apply Finset.sum_congr rfl
+      intro i hi
+      rw [Finset.mem_range] at hi
+      have he : k + 1 - 1 - i = (k - 1 - i) + 1 := by omega
+      rw [he, pow_succ, ← mul_assoc]
+    rw [hlow, htop, ← ih]
+    rw [sub_mul, mul_sub]
+    rw [show x ^ k * x = x ^ (k + 1) from (pow_succ x k).symm,
+        show y ^ k * y = y ^ (k + 1) from (pow_succ y k).symm]
+    abel
+
+set_option linter.unusedSectionVars false in
+/-- Power-difference norm bound: `‖xⁿ − yⁿ‖ ≤ n · M^{n−1} · ‖x − y‖` when `M`
+dominates both `‖x‖` and `‖y‖`. -/
+theorem norm_pow_sub_pow_le (x y : 𝔸) (M : ℝ) (hM0 : 0 ≤ M)
+    (hx : ‖x‖ ≤ M) (hy : ‖y‖ ≤ M) (n : ℕ) :
+    ‖x ^ n - y ^ n‖ ≤ (n : ℝ) * M ^ (n - 1) * ‖x - y‖ := by
+  rw [pow_sub_pow_telescope x y n]
+  calc ‖∑ i ∈ range n, x ^ i * (x - y) * y ^ (n - 1 - i)‖
+      ≤ ∑ i ∈ range n, ‖x ^ i * (x - y) * y ^ (n - 1 - i)‖ := norm_sum_le _ _
+    _ ≤ ∑ i ∈ range n, M ^ (n - 1) * ‖x - y‖ := by
+        apply Finset.sum_le_sum
+        intro i hi
+        rw [Finset.mem_range] at hi
+        calc ‖x ^ i * (x - y) * y ^ (n - 1 - i)‖
+            ≤ ‖x ^ i * (x - y)‖ * ‖y ^ (n - 1 - i)‖ := norm_mul_le _ _
+          _ ≤ (‖x ^ i‖ * ‖x - y‖) * ‖y ^ (n - 1 - i)‖ := by
+                gcongr; exact norm_mul_le _ _
+          _ ≤ (M ^ i * ‖x - y‖) * M ^ (n - 1 - i) := by
+                gcongr
+                · exact (norm_pow_le x i).trans (by gcongr)
+                · exact (norm_pow_le y (n - 1 - i)).trans (by gcongr)
+          _ = (M ^ i * M ^ (n - 1 - i)) * ‖x - y‖ := by ring
+          _ = M ^ (n - 1) * ‖x - y‖ := by
+                rw [← pow_add]; congr 2; omega
+    _ = (n : ℝ) * M ^ (n - 1) * ‖x - y‖ := by
+        rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_assoc]
+
+/-- The summand `n ↦ n!⁻¹·n·M^{n−1}` rewritten as a shifted exp summand. -/
+theorem factorial_mul_self_eq_shift (M : ℝ) :
+    (fun n : ℕ => (Nat.factorial n : ℝ)⁻¹ * (n : ℝ) * M ^ (n - 1))
+      = (fun n : ℕ => if n = 0 then 0 else (Nat.factorial (n - 1) : ℝ)⁻¹ * M ^ (n - 1)) := by
+  funext n
+  rcases n with _ | k
+  · simp
+  · simp only [Nat.succ_ne_zero, if_false, Nat.add_sub_cancel]
+    rw [Nat.factorial_succ]
+    push_cast
+    rw [mul_inv]
+    field_simp
+
+/-- Summability of `n ↦ n!⁻¹·n·M^{n−1}`. -/
+theorem summable_factorial_mul_self (M : ℝ) :
+    Summable (fun n : ℕ => (Nat.factorial n : ℝ)⁻¹ * (n : ℝ) * M ^ (n - 1)) := by
+  rw [factorial_mul_self_eq_shift]
+  have hsummable : Summable (fun k : ℕ => (Nat.factorial k : ℝ)⁻¹ * M ^ k) := by
+    have := NormedSpace.expSeries_div_summable M
+    refine this.congr (fun k => ?_)
+    rw [div_eq_inv_mul, mul_comm]
+  rw [← summable_nat_add_iff 1]
+  simpa only [Nat.succ_ne_zero, if_false, Nat.add_sub_cancel] using hsummable
+
+/-- `∑' n, n!⁻¹·n·M^{n−1} = exp M`. -/
+theorem tsum_factorial_mul_self (M : ℝ) :
+    ∑' n : ℕ, (Nat.factorial n : ℝ)⁻¹ * (n : ℝ) * M ^ (n - 1) = Real.exp M := by
+  rw [Real.exp_eq_exp_ℝ, NormedSpace.exp_eq_tsum ℝ]
+  simp only [smul_eq_mul]
+  rw [factorial_mul_self_eq_shift]
+  have hsummable : Summable (fun k : ℕ => (Nat.factorial k : ℝ)⁻¹ * M ^ k) := by
+    have := NormedSpace.expSeries_div_summable M
+    refine this.congr (fun k => ?_)
+    rw [div_eq_inv_mul, mul_comm]
+  rw [tsum_eq_zero_add' (f := fun n : ℕ =>
+      if n = 0 then 0 else (Nat.factorial (n - 1) : ℝ)⁻¹ * M ^ (n - 1))]
+  · simp only [if_true, ite_true, zero_add]
+    apply tsum_congr
+    intro k
+    simp only [Nat.succ_ne_zero, if_false, Nat.add_sub_cancel]
+  · simpa only [Nat.succ_ne_zero, if_false, Nat.add_sub_cancel] using hsummable
+
+set_option linter.unusedSectionVars false in
+/-- **Matrix-exponential Lipschitz bound.**  In a complete normed algebra,
+`‖exp x − exp y‖ ≤ ‖x − y‖ · exp(max ‖x‖ ‖y‖)`.  This is the analytic core the
+quantitative rate-tradeoff (`pst_rate_tradeoff`) was previously deferring. -/
+theorem norm_exp_sub_exp_le (x y : 𝔸) :
+    ‖NormedSpace.exp x - NormedSpace.exp y‖
+      ≤ ‖x - y‖ * Real.exp (max ‖x‖ ‖y‖) := by
+  set M := max ‖x‖ ‖y‖ with hM
+  have hM0 : 0 ≤ M := le_trans (norm_nonneg x) (le_max_left _ _)
+  have hx : ‖x‖ ≤ M := le_max_left _ _
+  have hy : ‖y‖ ≤ M := le_max_right _ _
+  have hxe : NormedSpace.exp x = ∑' n : ℕ, (Nat.factorial n : ℂ)⁻¹ • x ^ n := by
+    rw [NormedSpace.exp_eq_tsum ℂ]
+  have hye : NormedSpace.exp y = ∑' n : ℕ, (Nat.factorial n : ℂ)⁻¹ • y ^ n := by
+    rw [NormedSpace.exp_eq_tsum ℂ]
+  have hdiff : NormedSpace.exp x - NormedSpace.exp y
+      = ∑' n : ℕ, (Nat.factorial n : ℂ)⁻¹ • (x ^ n - y ^ n) := by
+    rw [hxe, hye, ← Summable.tsum_sub (NormedSpace.expSeries_summable' (𝕂 := ℂ) x)
+        (NormedSpace.expSeries_summable' (𝕂 := ℂ) y)]
+    apply tsum_congr
+    intro n
+    rw [smul_sub]
+  have hsummand_bd : ∀ n : ℕ, ‖(Nat.factorial n : ℂ)⁻¹ • (x ^ n - y ^ n)‖
+      ≤ (Nat.factorial n : ℝ)⁻¹ * ((n : ℝ) * M ^ (n - 1) * ‖x - y‖) := by
+    intro n
+    rw [norm_smul, norm_inv, Complex.norm_natCast]
+    gcongr
+    exact norm_pow_sub_pow_le x y M hM0 hx hy n
+  have hsplit : (fun n : ℕ => (Nat.factorial n : ℝ)⁻¹ * ((n : ℝ) * M ^ (n - 1) * ‖x - y‖))
+      = (fun n : ℕ => ((Nat.factorial n : ℝ)⁻¹ * (n : ℝ) * M ^ (n - 1)) * ‖x - y‖) := by
+    funext n; ring
+  have hbsummable : Summable (fun n : ℕ =>
+      (Nat.factorial n : ℝ)⁻¹ * ((n : ℝ) * M ^ (n - 1) * ‖x - y‖)) := by
+    rw [hsplit]
+    exact (summable_factorial_mul_self M).mul_right _
+  rw [hdiff]
+  calc ‖∑' n : ℕ, (Nat.factorial n : ℂ)⁻¹ • (x ^ n - y ^ n)‖
+      ≤ ∑' n : ℕ, ‖(Nat.factorial n : ℂ)⁻¹ • (x ^ n - y ^ n)‖ :=
+        norm_tsum_le_tsum_norm (by
+          exact Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hsummand_bd hbsummable)
+    _ ≤ ∑' n : ℕ, (Nat.factorial n : ℝ)⁻¹ * ((n : ℝ) * M ^ (n - 1) * ‖x - y‖) :=
+        Summable.tsum_le_tsum hsummand_bd
+          (Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hsummand_bd hbsummable)
+          hbsummable
+    _ = (∑' n : ℕ, (Nat.factorial n : ℝ)⁻¹ * (n : ℝ) * M ^ (n - 1)) * ‖x - y‖ := by
+        rw [hsplit, tsum_mul_right]
+    _ = ‖x - y‖ * Real.exp M := by rw [tsum_factorial_mul_self M]; ring
+
+end ExpLipschitz
+
+section L2MatrixNorm
+
+open scoped Matrix.Norms.L2Operator BigOperators NNReal
+open Finset
+
+variable {I : Type v} [Fintype I] [DecidableEq I]
+
+/-- Entry of a matrix is bounded by its `L²`-operator norm. -/
+theorem l2_entry_le_norm (A : Matrix I I ℂ) (a b : I) : ‖A a b‖ ≤ ‖A‖ := by
+  set v : EuclideanSpace ℂ I := EuclideanSpace.single b (1 : ℂ) with hv
+  have hcol : A a b = ((EuclideanSpace.equiv I ℂ).symm (A *ᵥ v)) a := by
+    show A a b = (A *ᵥ v) a
+    rw [hv, PiLp.ofLp_single, Matrix.mulVec_single]
+    simp
+  rw [hcol]
+  calc ‖((EuclideanSpace.equiv I ℂ).symm (A *ᵥ v)) a‖
+      ≤ ‖(EuclideanSpace.equiv I ℂ).symm (A *ᵥ v)‖ := PiLp.norm_apply_le _ a
+    _ ≤ ‖A‖ * ‖v‖ := Matrix.l2_opNorm_mulVec A _
+    _ = ‖A‖ := by rw [hv, PiLp.norm_single]; simp
+
+/-- `L²`-operator norm of a single-entry matrix `single i j a` is `≤ ‖a‖`. -/
+theorem l2_norm_single_le (i j : I) (a : ℂ) : ‖Matrix.single i j a‖ ≤ ‖a‖ := by
+  rw [Matrix.l2_opNorm_def]
+  refine ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg a) (fun x => ?_)
+  have hval : (Matrix.toEuclideanLin (𝕜 := ℂ) (m := I) (n := I)).trans
+      LinearMap.toContinuousLinearMap (Matrix.single i j a) x
+      = (EuclideanSpace.equiv I ℂ).symm
+          (Matrix.single i j a *ᵥ (EuclideanSpace.equiv I ℂ x)) := rfl
+  rw [hval, Matrix.single_mulVec]
+  rw [show Function.update (0 : I → ℂ) i (a * (EuclideanSpace.equiv I ℂ x) j)
+      = Pi.single i (a * x.ofLp j) from rfl]
+  rw [show (EuclideanSpace.equiv I ℂ).symm (Pi.single i (a * x.ofLp j))
+      = EuclideanSpace.single i (a * x.ofLp j) from by simp [EuclideanSpace.single]]
+  rw [PiLp.norm_single, norm_mul]
+  calc ‖a‖ * ‖x.ofLp j‖ ≤ ‖a‖ * ‖x‖ := by
+        gcongr; exact PiLp.norm_apply_le x j
+    _ = ‖a‖ * ‖x‖ := rfl
+
+/-- `L²`-operator norm bounded by `(card I)² · r` when every entry has norm `≤ r`. -/
+theorem l2_norm_le_card_sq_mul (A : Matrix I I ℂ) (r : ℝ) (hr : 0 ≤ r)
+    (h : ∀ a b, ‖A a b‖ ≤ r) : ‖A‖ ≤ (Fintype.card I : ℝ) ^ 2 * r := by
+  calc ‖A‖ = ‖∑ i : I, ∑ j : I, Matrix.single i j (A i j)‖ := by
+        rw [← Matrix.matrix_eq_sum_single A]
+    _ ≤ ∑ i : I, ‖∑ j : I, Matrix.single i j (A i j)‖ := norm_sum_le _ _
+    _ ≤ ∑ i : I, ∑ j : I, ‖Matrix.single i j (A i j)‖ := by
+        apply Finset.sum_le_sum; intro i _; exact norm_sum_le _ _
+    _ ≤ ∑ i : I, ∑ j : I, r := by
+        apply Finset.sum_le_sum; intro i _
+        apply Finset.sum_le_sum; intro j _
+        exact le_trans (l2_norm_single_le i j (A i j)) (h i j)
+    _ = (Fintype.card I : ℝ) ^ 2 * r := by
+        simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]; ring
+
+end L2MatrixNorm
+
+open scoped Matrix.Norms.L2Operator in
+/-- **Rate-vs-time tradeoff (CLOSED).**
 
 Genuine statement of the `O(T / n^α)` bound.  Given:
   * a uniform bound `τ n ≤ T` on the stage-`n` PST times,
@@ -867,10 +1089,12 @@ real big-O content the previous `∃ C, 0 < C ∧ C ≥ T` placeholder lacked (i
 We give the explicit operator-norm error conclusion.  Note `α` and `hα` are
 now genuinely used (in the `r n` decay rate) and `T` bounds the times.
 
-BLOCKED: the proof needs the operator-norm Lipschitz bound
-`‖exp(-i t A) - exp(-i t B)‖ ≤ |t| · ‖A - B‖` for Hermitian/bounded `A, B`
-(the same `exp`-continuity gap deferred in
-`Graphon.ConsistentPartitionSequence.pst_time_convergence`).  Honest `sorry`. -/
+CLOSED: the proof goes through the now-proven matrix-exp Lipschitz bound
+`norm_exp_sub_exp_le` (`‖exp x − exp y‖ ≤ ‖x − y‖ · exp(max ‖x‖ ‖y‖)`), the
+entry/operator-norm comparisons `l2_entry_le_norm` and `l2_norm_le_card_sq_mul`,
+and the uniform spectral bound `‖𝒮.quotient n‖ ≤ ‖L‖ + (card I)²·K` implied by
+the rate hypothesis.  The explicit constant is
+`C = ((card I)² + 1) · exp(T·(‖L‖ + (card I)²·K))`. -/
 theorem ConsistentPartitionSequence.pst_rate_tradeoff
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : Graphon.ConsistentPartitionSequence I)
@@ -881,9 +1105,75 @@ theorem ConsistentPartitionSequence.pst_rate_tradeoff
       ‖(NormedSpace.exp (-(Complex.I * ((τ n : ℂ))) • 𝒮.quotient n)) a b
         - (NormedSpace.exp (-(Complex.I * ((τ n : ℂ))) • L)) a b‖
         ≤ C * T * (K / ((n : ℝ) + 1) ^ α) := by
-  -- BLOCKED: requires `‖exp(-i t A) - exp(-i t B)‖ ≤ |t|·‖A - B‖`, the matrix-exp
-  -- Lipschitz bound; same deferred gap as `pst_time_convergence`.  Honest sorry.
-  sorry
+  classical
+  letI := (inferInstance : Fintype I)
+  -- Work in the L²-operator (CStar) matrix norm — the norm under which
+  -- `NormedSpace.exp` on matrices is defined.
+  rcases isEmpty_or_nonempty I with hI | hI
+  · -- Empty index type: the universally-quantified conclusion is vacuous.
+    exact ⟨1, one_pos, fun n a => (IsEmpty.false a).elim⟩
+  · set Qn : ℕ → Matrix I I ℂ := fun n => 𝒮.quotient n with hQn
+    set d : ℝ := (Fintype.card I : ℝ) ^ 2 with hd
+    have hd0 : 0 ≤ d := by positivity
+    -- ‖Qn n − L‖ ≤ d·K (entrywise rate ≤ K, then card² bound).
+    have hQLnorm : ∀ n, ‖Qn n - L‖ ≤ d * K := by
+      intro n
+      apply l2_norm_le_card_sq_mul _ K hK
+      intro a b
+      have h := hrate n a b
+      rw [Matrix.sub_apply]
+      refine le_trans h ?_
+      rw [div_le_iff₀ (by positivity)]
+      nlinarith [Real.one_le_rpow (by norm_num : (1 : ℝ) ≤ (n : ℝ) + 1) (le_of_lt hα), hK]
+    have hQnorm : ∀ n, ‖Qn n‖ ≤ ‖L‖ + d * K := by
+      intro n
+      calc ‖Qn n‖ = ‖(Qn n - L) + L‖ := by rw [sub_add_cancel]
+        _ ≤ ‖Qn n - L‖ + ‖L‖ := norm_add_le _ _
+        _ ≤ d * K + ‖L‖ := by gcongr; exact hQLnorm n
+        _ = ‖L‖ + d * K := by ring
+    set R : ℝ := T * (‖L‖ + d * K) with hR
+    have hR0 : 0 ≤ R := by positivity
+    refine ⟨(d + 1) * Real.exp R, by positivity, ?_⟩
+    intro n a b
+    set s : ℂ := -(Complex.I * (τ n : ℂ)) with hs
+    have hsnorm : ‖s‖ = τ n := by
+      rw [hs, norm_neg, norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_nonneg (hτpos n)]
+    have hentry := l2_entry_le_norm
+      (NormedSpace.exp (s • Qn n) - NormedSpace.exp (s • L)) a b
+    have hlip := norm_exp_sub_exp_le (s • Qn n) (s • L)
+    have hAB : ‖s • Qn n - s • L‖ = ‖s‖ * ‖Qn n - L‖ := by rw [← smul_sub, norm_smul]
+    have hmax : max ‖s • Qn n‖ ‖s • L‖ ≤ R := by
+      rw [hR]
+      apply max_le
+      · rw [norm_smul, hsnorm]
+        exact mul_le_mul (hτT n) (hQnorm n) (norm_nonneg _) (le_of_lt hT)
+      · rw [norm_smul, hsnorm]
+        exact mul_le_mul (hτT n) (by nlinarith [norm_nonneg L]) (norm_nonneg _) (le_of_lt hT)
+    calc ‖(NormedSpace.exp (s • Qn n)) a b - (NormedSpace.exp (s • L)) a b‖
+        = ‖(NormedSpace.exp (s • Qn n) - NormedSpace.exp (s • L)) a b‖ := by rw [Matrix.sub_apply]
+      _ ≤ ‖NormedSpace.exp (s • Qn n) - NormedSpace.exp (s • L)‖ := hentry
+      _ ≤ ‖s • Qn n - s • L‖ * Real.exp (max ‖s • Qn n‖ ‖s • L‖) := hlip
+      _ = (‖s‖ * ‖Qn n - L‖) * Real.exp (max ‖s • Qn n‖ ‖s • L‖) := by rw [hAB]
+      _ ≤ (T * (d * (K / ((n : ℝ) + 1) ^ α))) * Real.exp R := by
+          apply mul_le_mul
+          · apply mul_le_mul
+            · rw [hsnorm]; exact hτT n
+            · apply l2_norm_le_card_sq_mul _ _ (by positivity)
+              intro a' b'; rw [Matrix.sub_apply]; exact hrate n a' b'
+            · exact norm_nonneg _
+            · exact le_of_lt hT
+          · exact Real.exp_le_exp.mpr hmax
+          · exact Real.exp_nonneg _
+          · positivity
+      _ ≤ (d + 1) * Real.exp R * T * (K / ((n : ℝ) + 1) ^ α) := by
+          have hrw : (T * (d * (K / ((n : ℝ) + 1) ^ α))) * Real.exp R
+              = d * (Real.exp R * T * (K / ((n : ℝ) + 1) ^ α)) := by ring
+          have hrw2 : (d + 1) * Real.exp R * T * (K / ((n : ℝ) + 1) ^ α)
+              = (d + 1) * (Real.exp R * T * (K / ((n : ℝ) + 1) ^ α)) := by ring
+          rw [hrw, hrw2]
+          apply mul_le_mul_of_nonneg_right (by linarith)
+          positivity
 
 /-! ## 5. Failure modes
 
@@ -1206,12 +1496,18 @@ Master inheritance theorems, the `completeCPS` constructions and their quotient
 formulas/divergence, the failure modes, the open-problem backbone facts, and the
 identity `InversePartitionSequence.pst_simultaneous` are fully proved.  The
 forward `pst_inherited` and `pst_rate_inheritance` are genuine (delegating to the
-honestly-deferred `Graphon.…pst_time_convergence`).  The honest remaining
-`sorry`s are:
+honestly-deferred `Graphon.…pst_time_convergence`).
+
+**`pst_rate_tradeoff` is now CLOSED** (axiom-clean): the matrix-exponential
+Lipschitz bound `‖exp x − exp y‖ ≤ ‖x − y‖ · exp(max ‖x‖ ‖y‖)` is proved from the
+exponential series via the non-commutative telescoping identity
+(`pow_sub_pow_telescope`, `norm_pow_sub_pow_le`, `tsum_factorial_mul_self`,
+`norm_exp_sub_exp_le`), then specialised to the `L²`-operator (CStar) matrix norm
+via `l2_entry_le_norm`, `l2_norm_single_le`, `l2_norm_le_card_sq_mul`.
+
+The single remaining honest `sorry` is:
   * `InversePartitionSequence.pst_lifted` — needs cofiltered/inverse-limit
-    graphon quotient machinery (not in the codebase) for the genuine lift;
-  * `pst_rate_tradeoff` — needs the matrix-exp Lipschitz bound
-    `‖exp(-itA) - exp(-itB)‖ ≤ |t|‖A-B‖` (same gap as `pst_time_convergence`).
+    graphon quotient machinery (not in the codebase) for the genuine lift.
 `InversePartitionSequence.quotient` is the genuine cell-mass-averaged cell-flux,
 no longer the zero-matrix stub. -/
 

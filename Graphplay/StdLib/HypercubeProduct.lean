@@ -104,7 +104,7 @@ private theorem diag_fin_two (a b : ℂ) :
     (Matrix.diagonal ![a, b]) = !![a, 0; 0, b] := by
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.diagonal_apply, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]
+    simp [Matrix.cons_val_zero, Matrix.cons_val_one]
 
 /-- The diagonalizing (Hadamard-type) matrix `U = !![1,1;1,-1]`, satisfying
 `U² = 2·1`, hence invertible with `U⁻¹ = (1/2)·U`. -/
@@ -115,7 +115,7 @@ private theorem hadU_mul_half : hadU * ((1/2 : ℂ) • hadU) = 1 := by
   unfold hadU
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.one_apply] <;> ring
+    simp [Matrix.mul_apply, Fin.sum_univ_two] <;> ring
 
 private theorem hadU_isUnit : IsUnit hadU := by
   refine ⟨⟨hadU, (1/2 : ℂ) • hadU, hadU_mul_half, ?_⟩, rfl⟩
@@ -123,7 +123,7 @@ private theorem hadU_isUnit : IsUnit hadU := by
   unfold hadU
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.one_apply] <;> ring
+    simp [Matrix.mul_apply, Fin.sum_univ_two] <;> ring
 
 private theorem hadU_inv : hadU⁻¹ = (1/2 : ℂ) • hadU := by
   apply Matrix.inv_eq_right_inv
@@ -135,8 +135,7 @@ private theorem half_smul_hadU :
   unfold hadU
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.smul_apply, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons] <;>
-    ring
+    simp [Matrix.smul_apply, Matrix.cons_val_zero, Matrix.cons_val_one]
 
 /-- The Pauli-`X` matrix diagonalizes as `X = U · diag(1,-1) · U⁻¹`. -/
 private theorem X_eq_conj_diag :
@@ -147,7 +146,7 @@ private theorem X_eq_conj_diag :
   rw [Matrix.mul_fin_two, Matrix.mul_fin_two]
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons] <;> ring
+    simp [Matrix.cons_val_zero, Matrix.cons_val_one] <;> ring
 
 section ExpK2
 
@@ -189,14 +188,14 @@ private theorem exp_smul_X_lit (s : ℂ) :
   rw [Matrix.mul_fin_two, Matrix.mul_fin_two]
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons] <;> ring
+    simp [Matrix.cons_val_zero, Matrix.cons_val_one] <;> ring
 
 /-- The `(0,1)` entry of `exp(s • X)` is `(exp s - exp (-s))/2 = sinh s`. -/
 private theorem exp_smul_X_entry01 (s : ℂ) :
     NormedSpace.exp (s • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)) 0 1
       = (NormedSpace.exp s - NormedSpace.exp (-s)) / 2 := by
   rw [exp_smul_X_lit]
-  simp [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]
+  simp [Matrix.cons_val_zero, Matrix.cons_val_one]
 
 /-- The `(1,0)` entry of `exp(s • X)` is also `(exp s - exp (-s))/2 = sinh s`
 (`X` is symmetric, so the off-diagonal entries agree). -/
@@ -204,7 +203,7 @@ private theorem exp_smul_X_entry10 (s : ℂ) :
     NormedSpace.exp (s • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)) 1 0
       = (NormedSpace.exp s - NormedSpace.exp (-s)) / 2 := by
   rw [exp_smul_X_lit]
-  simp [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]
+  simp [Matrix.cons_val_zero, Matrix.cons_val_one]
 
 /-- At `s = -(iπ/2)` the off-diagonal value `(exp s - exp (-s))/2` equals `-i`:
 `exp s = cos(π/2) - i·sin(π/2) = -i` and `exp (-s) = cos(π/2) + i·sin(π/2) = i`,
@@ -328,7 +327,6 @@ theorem isPST_hypercubeP_antipode :
       · -- `b = 0`: `0 → 1`, exactly `isPST_K2`.
         simpa using isPST_K2
       · -- `b = 1`: `1 → 0`, the symmetric transfer.
-        simp only [if_neg (by decide : (1 : Fin 2) ≠ 0)]
         exact isPST_K2_symm
     -- `Q_n` transfers `t → antipode n t` by the inductive hypothesis.
     have hQ : ‖(hypercubeP n).evolve (Real.pi / 2) t (antipode n t)‖ = 1 :=

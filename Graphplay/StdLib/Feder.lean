@@ -86,7 +86,7 @@ def diffSet (x y : Config V k) : Finset (Fin k) :=
 say `i`, at which `x i` and `y i` are joined by an edge of `G` (the host
 amplitude `G.adj (x i) (y i)` is the move weight, generically nonzero).  This
 is the elementary one-particle hop in the `k`-particle walk. -/
-def OneMove (G : WeightedGraph V) (x y : Config V k) (i : Fin k) : Prop :=
+def OneMove (_G : WeightedGraph V) (x y : Config V k) (i : Fin k) : Prop :=
   (∀ j, j ≠ i → x j = y j) ∧ x i ≠ y i
 
 instance (G : WeightedGraph V) (x y : Config V k) (i : Fin k) :
@@ -270,6 +270,7 @@ def IsAntisymmetric (k : ℕ) (ψ : Config V k → ℂ) : Prop :=
   ∀ (π : Equiv.Perm (Fin k)) (x : Config V k),
     ψ (permConfig π x) = (Equiv.Perm.sign π : ℂ) * ψ x
 
+omit [Fintype V] [DecidableEq V] in
 /-- `permConfig` is a (left-)action up to the group multiplication on `Perm`:
 `permConfig π (permConfig σ x) = permConfig (σ * π) x`. -/
 theorem permConfig_permConfig (π σ : Equiv.Perm (Fin k)) (x : Config V k) :
@@ -335,6 +336,7 @@ theorem bosonic_preserves_symmetric (G : WeightedGraph V) (k : ℕ)
       = bosonicAdj G k x y * ψ y
   rw [bosonicAdj_permConfig G k π x y, hψ π y]
 
+omit [DecidableEq V] in
 /-- **The Jordan–Wigner sign is `permConfig`-equivariant.**  Relabelling both
 configurations by `π` carries the sign at coordinate `i` to the sign at
 coordinate `π i`: the counted set of intervening occupied modes is reindexed by
@@ -475,7 +477,7 @@ theorem plusState_pst_of_pair_transfer (G : WeightedGraph V) (u v p q : V) (τ :
       · exact absurd (hwp.symm.trans hwq) hpq
       · simp only [if_pos hwp, if_neg hwq, add_zero, mul_one, star_one]
       · simp only [if_neg hwp, if_pos hwq, zero_add, one_mul, star_one]
-      · simp only [if_neg hwp, if_neg hwq, add_zero, mul_zero, star_zero, zero_mul]
+      · simp only [if_neg hwp, if_neg hwq, add_zero, mul_zero, star_zero]
     have hinner : (∑ w, star (plusState p q w) * plusState p q w) = 2 := by
       rw [Finset.sum_congr rfl (fun w _ => hval w), Finset.sum_add_distrib]
       rw [Finset.sum_ite_eq' Finset.univ p (fun _ => (1 : ℂ)),

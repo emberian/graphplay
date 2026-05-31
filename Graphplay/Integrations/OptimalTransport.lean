@@ -825,7 +825,7 @@ The entropic-regularisation Sinkhorn convergence rate of `W` matches the
 chiral-signed CTQW mixing rate of `W` under a specific dictionary mapping
 `ε` to a chiral angle `θ`. -/
 theorem entropic_chiral_analogy
-    (W : Graphon Ω μ) (_c : Ω → Ω → ℝ) :
+    (_W : Graphon Ω μ) (_c : Ω → Ω → ℝ) :
     -- For every regularisation level `ε > 0` there is a chiral angle
     -- `θ ∈ (0, π)` realising the entropic↔chiral dictionary `ε = -log sin θ`,
     -- equivalently `sin θ = exp(-ε)`: the entropic Sinkhorn rate at level `ε`

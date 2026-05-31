@@ -405,25 +405,102 @@ theorem isKRatioCondition_of_fractionalRevival (G : WeightedGraph V)
   -- off-K phase-cancellation (not developed).
   sorry
 
+/-! ### Column concentration and real-symmetric revival -/
+
+/-- **Column concentration from PST (pure unitarity).**  If `‖U(τ)_{u,v}‖ = 1`
+then the entire `v`-column of `U(τ)` is supported at `u`: `U(τ)_{j,v} = 0` for
+`j ≠ u`.  This is the column dual of `evolve_eq_zero_of_isPST` and follows from
+`U(τ)ᴴ U(τ) = 1` (the `v`-column has unit `ℓ²`-norm, already saturated by the
+`(u,v)` entry).  No symmetry needed. -/
+theorem evolve_col_eq_zero_of_isPST (G : WeightedGraph V) (τ : ℝ) (u v : V)
+    (hpst : ‖G.evolve τ u v‖ = 1) (j : V) (hj : j ≠ u) :
+    G.evolve τ j v = 0 := by
+  -- `v`-column unit `ℓ²`-norm from `U(τ)ᴴ U(τ) = 1`.
+  have hU := G.evolve_unitary τ
+  have hvv := congrFun (congrFun hU v) v
+  rw [Matrix.mul_apply, Matrix.one_apply_eq] at hvv
+  have key : ∑ w : V, (G.evolve τ)ᴴ v w * G.evolve τ w v
+      = ((∑ w : V, ‖G.evolve τ w v‖ ^ 2 : ℝ) : ℂ) := by
+    rw [Complex.ofReal_sum]
+    refine Finset.sum_congr rfl (fun w _ => ?_)
+    rw [Matrix.conjTranspose_apply, mul_comm, Complex.star_def, Complex.mul_conj,
+      Complex.normSq_eq_norm_sq]
+  rw [key] at hvv
+  have hsum : ∑ w : V, ‖G.evolve τ w v‖ ^ 2 = 1 := by exact_mod_cast hvv
+  have hsplit : ‖G.evolve τ u v‖ ^ 2
+      + ∑ w ∈ Finset.univ.erase u, ‖G.evolve τ w v‖ ^ 2 = 1 := by
+    rw [← Finset.sum_erase_add _ _ (Finset.mem_univ u)] at hsum; linarith [hsum]
+  rw [hpst] at hsplit; simp only [one_pow] at hsplit
+  have hrest : ∑ w ∈ Finset.univ.erase u, ‖G.evolve τ w v‖ ^ 2 = 0 := by linarith
+  have hmem : j ∈ Finset.univ.erase u := Finset.mem_erase.mpr ⟨hj, Finset.mem_univ j⟩
+  have hz : ‖G.evolve τ j v‖ ^ 2 = 0 :=
+    (Finset.sum_eq_zero_iff_of_nonneg (fun x _ => sq_nonneg _)).mp hrest j hmem
+  have : ‖G.evolve τ j v‖ = 0 := by nlinarith [norm_nonneg (G.evolve τ j v)]
+  exact norm_eq_zero.mp this
+
+/-- **The evolution is complex-symmetric when the adjacency is symmetric.**  For
+a symmetric (real-weighted) adjacency `Aᵀ = A`, `U(τ)ᵀ = U(τ)`, hence
+`U(τ)_{v,u} = U(τ)_{u,v}` entrywise. -/
+theorem evolve_symm_of_isSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
+    (τ : ℝ) (u v : V) : G.evolve τ v u = G.evolve τ u v := by
+  have htr : (G.evolve τ)ᵀ = G.evolve τ := by
+    unfold WeightedGraph.evolve
+    rw [← Matrix.exp_transpose]
+    congr 1
+    rw [Matrix.transpose_smul, hsymm]
+  have h := congrFun (congrFun htr u) v
+  rwa [Matrix.transpose_apply] at h
+
+/-- **PST is `K`-fractional revival on an antipodal pair (`|K| = 2`),
+real-symmetric case (CLOSED).**  Perfect state transfer `u → v` at time `τ` on a
+graph with *symmetric* adjacency (`Aᵀ = A`, the classical real-weighted Godsil
+setting) implies fractional revival on `K = {u, v}` at time `τ`: the only nonzero
+amplitudes out of `{u, v}` stay within `{u, v}`.
+
+The `v`-leak (`U(τ)_{j,v} = 0`, `j ∉ {u,v}`) is pure unitarity
+(`evolve_col_eq_zero_of_isPST`).  The `u`-leak (`U(τ)_{j,u} = 0`, `j ∉ {u,v}`)
+uses symmetry: `‖U(τ)_{v,u}‖ = ‖U(τ)_{u,v}‖ = 1`, so the `u`-column concentrates
+at `v`.  Axiom-clean.  (The fully-general Hermitian statement is genuinely false
+without symmetry: `‖U(τ)_{·,u}‖ = 1` requires target-side `v → u`.) -/
+theorem isKFractionalRevival_pair_of_isPST_of_isSymm (G : WeightedGraph V)
+    (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (_huv : u ≠ v) (h : IsPST G u v τ) :
+    IsKFractionalRevival G {u, v} τ := by
+  have hUV : ‖G.evolve τ u v‖ = 1 := h
+  -- `‖U(τ)_{v,u}‖ = 1` from symmetry.
+  have hVU : ‖G.evolve τ v u‖ = 1 := by rw [evolve_symm_of_isSymm G hsymm τ u v]; exact hUV
+  intro k hk j hj
+  simp only [Finset.mem_insert, Finset.mem_singleton] at hk
+  have hju : j ≠ u := fun hju => hj (by simp [hju])
+  have hjv : j ≠ v := fun hjv => hj (by simp [hjv])
+  rcases hk with hk | hk
+  · -- `k = u`: column `u` concentrates at `v` (using `‖U(τ)_{v,u}‖ = 1`).
+    rw [hk]
+    exact evolve_col_eq_zero_of_isPST G τ v u hVU j hjv
+  · -- `k = v`: column `v` concentrates at `u` (pure unitarity).
+    rw [hk]
+    exact evolve_col_eq_zero_of_isPST G τ u v hUV j hju
+
 /-- **PST is `K`-fractional revival on an antipodal pair (`|K| = 2`).**  Perfect
 state transfer `u → v` at time `τ` implies fractional revival on `K = {u, v}` at
 time `τ`: the only nonzero amplitudes out of `{u, v}` stay within `{u, v}`.
 
 This is the bridge identifying PST as the antidiagonal special case of the
-`K = {u, v}` revival framework.
+`K = {u, v}` revival framework.  The closed, axiom-clean proof under the
+classical real-symmetric (`Aᵀ = A`) hypothesis is
+`isKFractionalRevival_pair_of_isPST_of_isSymm`.
 
 Reference: Chan et al., arXiv:2004.01129, Example 2.x (PST as fractional
 revival). -/
 theorem isKFractionalRevival_pair_of_isPST (G : WeightedGraph V) {u v : V}
     {τ : ℝ} (huv : u ≠ v) (h : IsPST G u v τ) :
     IsKFractionalRevival G {u, v} τ := by
-  -- PST `u → v` makes the `v`-column of `U(τ)` supported only at `u`
-  -- (`evolve_eq_zero_of_isPST`); by symmetry of the evolution the `u`-column is
-  -- supported only at `v`.  Hence every leak out of `{u, v}` vanishes.  The
-  -- second column requires the `IsPST G v u τ` (target-side) statement, which is
-  -- the spectral-symmetry half of Godsil's theorem; honest `sorry`.
-  -- BLOCKED: the `k = u` leak `evolve τ j u = 0` is column-u concentration,
-  -- which needs `‖U(τ)_{·,u}‖=1` (target-side PST `v→u`), false for general Hermitian A.
+  -- The `k = v` leak is pure unitarity (`evolve_col_eq_zero_of_isPST`); the
+  -- `k = u` leak needs `‖U(τ)_{·,u}‖ = 1`, i.e. target-side PST `v → u`, which is
+  -- the spectral-symmetry half of Godsil's theorem and is *false* for general
+  -- (non-symmetric) Hermitian `A`.  The real-symmetric case is closed in
+  -- `isKFractionalRevival_pair_of_isPST_of_isSymm`.
+  -- BLOCKED: `k = u` leak requires target-side PST (false for general Hermitian A);
+  -- use isKFractionalRevival_pair_of_isPST_of_isSymm for the symmetric case.
   sorry
 
 end PST

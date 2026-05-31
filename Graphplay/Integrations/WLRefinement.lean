@@ -213,7 +213,7 @@ abbrev TupleColouring (V : Type u) (k : ℕ) (C : Type v) := (Fin k → V) → C
 the new colour of a tuple `x : Fin k → V` is its old colour together with the
 function `i ↦ multiset over y of (c (substitute i ↦ y in x))`. We abstract
 this with the same signature trick used at `k=1`. -/
-def kRefineStep (G : WeightedGraph V) {C : Type v} [DecidableEq C]
+def kRefineStep (_G : WeightedGraph V) {C : Type v} [DecidableEq C]
     (k : ℕ) (c : TupleColouring V k C) :
     TupleColouring V k (C × (Fin k → V → C)) :=
   fun x => (c x, fun i y =>
@@ -488,7 +488,7 @@ is the finest equitable partition and still has at most `|V|` cells).
 (Previously a `:= 0` placeholder stub, which made the design-budget theorems
 below assert the *false* `k ≤ 0`.  The honest, finest-partition-respecting upper
 bound is `|V|`: the WL-stable colouring has at most one cell per vertex.) -/
-noncomputable def WLCellCount (G : WeightedGraph V) : ℕ := Fintype.card V
+noncomputable def WLCellCount (_G : WeightedGraph V) : ℕ := Fintype.card V
 
 /-- **Design-budget theorem.** Any equitable partition of `G` with a *surjective*
 cell map has at most `WLCellCount G = |V|` cells (a partition cannot have more
@@ -524,7 +524,7 @@ to an automorphism orbit. -/
 
 /-- The **WL colour identity predicate**: `u` and `v` carry the same colour in
 the WL-stable colouring. -/
-def WLSameColour (G : WeightedGraph V) {C : Type v} [DecidableEq C]
+def WLSameColour (_G : WeightedGraph V) {C : Type v} [DecidableEq C]
     (c : Colouring V C) (u v : V) : Prop := c u = c v
 
 /-- The **eigenvalue support** of a vertex `u` in `G`: the set of eigenvalues
@@ -708,6 +708,7 @@ theorem KWL_distinguishes_in_limit
   -- (Cai–Fürer–Immerman 1992 upper bound; Babai 2015 canonical form.)  Deferred.
   sorry
 
+omit [Fintype V] [DecidableEq V] in
 /-- **Sub-WL complexity (decidability kernel)**: the combinatorial datum that
 PST design depends on — the WL same-colour relation — is a **decidable
 equivalence relation** on vertices.

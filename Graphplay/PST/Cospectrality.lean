@@ -511,6 +511,104 @@ theorem isStronglyCospectral_of_simple_spectrum (G : WeightedGraph V)
   (isStronglyCospectral_iff_local G u v).mpr
     (Graphplay.PST.isStronglyCospectral_of_injective_eigenvalues G hinj u v)
 
+/-! ## Path eigenvalue distinctness (Chebyshev / Niven)
+
+The eigenvalues of the path adjacency matrix `A(P_n)` are
+`2cos(kπ/(n+1))` for `k = 1, …, n` (Christandl-Datta-Ekert-Landahl 2004; the
+characteristic polynomial is the Chebyshev `U_n`).  The **distinctness** of
+these eigenvalues — the sole missing input to path-endpoint strong
+cospectrality — is a self-contained real-analysis fact: the angles
+`kπ/(n+1)` for `k = 1, …, n` all lie in the open interval `(0, π)`, on which
+`Real.cos` is strictly anti-monotone (`Real.strictAntiOn_cos`,
+`Real.injOn_cos`).  We prove it here as a reusable helper. -/
+
+/-- The map `k ↦ 2cos(kπ/(n+1))` for `k : Fin n` (i.e. `k = 0, …, n-1`,
+representing the path eigenvalue indices `k+1 = 1, …, n`).  This is the
+explicit eigenvalue list of `A(P_n)`. -/
+noncomputable def pathEigenvalue (n : ℕ) (k : Fin n) : ℝ :=
+  2 * Real.cos ((((k : ℝ) + 1) * Real.pi) / ((n : ℝ) + 1))
+
+/-- For `k : Fin n`, the angle `(k+1)π/(n+1)` lies in `[0, π]` (in fact in the
+open interval `(0, π)`): `0 < k+1 ≤ n < n+1` so `0 < (k+1)/(n+1) < 1`. -/
+theorem pathAngle_mem_Icc (n : ℕ) (k : Fin n) :
+    (((k : ℝ) + 1) * Real.pi) / ((n : ℝ) + 1) ∈ Set.Icc (0 : ℝ) Real.pi := by
+  have hn1 : (0 : ℝ) < (n : ℝ) + 1 := by positivity
+  have hk_lt : ((k : ℝ) + 1) < (n : ℝ) + 1 := by
+    have : (k : ℕ) < n := k.2
+    have : ((k : ℝ)) < (n : ℝ) := by exact_mod_cast this
+    linarith
+  have hk_pos : (0 : ℝ) ≤ (k : ℝ) + 1 := by positivity
+  have hpi : (0 : ℝ) ≤ Real.pi := Real.pi_pos.le
+  constructor
+  · -- `0 ≤ ((k+1)π)/(n+1)`
+    apply div_nonneg
+    · positivity
+    · exact hn1.le
+  · -- `((k+1)π)/(n+1) ≤ π`: since `(k+1) ≤ (n+1)`, `(k+1)/(n+1) ≤ 1`.
+    rw [div_le_iff₀ hn1]
+    calc ((k : ℝ) + 1) * Real.pi
+        ≤ ((n : ℝ) + 1) * Real.pi := by
+          apply mul_le_mul_of_nonneg_right hk_lt.le hpi
+      _ = Real.pi * ((n : ℝ) + 1) := by ring
+
+/-- **Path eigenvalue distinctness** (Niven / Chebyshev).  The map
+`k ↦ 2cos((k+1)π/(n+1))`, `k : Fin n`, is injective: distinct indices give
+distinct path eigenvalues.  Argument: the angles `(k+1)π/(n+1)` all lie in
+`[0, π]`, where `Real.cos` is injective (`Real.injOn_cos`); the factor `2`
+and the strictly-increasing affine reindex `k ↦ (k+1)π/(n+1)` preserve
+injectivity.  This is the sole explicit-eigenvalue fact behind path-endpoint
+strong cospectrality (Mathlib has no path eigenstructure). -/
+theorem pathEigenvalue_injective (n : ℕ) :
+    Function.Injective (pathEigenvalue n) := by
+  intro k k' hkk'
+  -- Strip the factor `2` and apply `Real.injOn_cos` on `[0, π]`.
+  unfold pathEigenvalue at hkk'
+  have hcos : Real.cos ((((k : ℝ) + 1) * Real.pi) / ((n : ℝ) + 1))
+      = Real.cos ((((k' : ℝ) + 1) * Real.pi) / ((n : ℝ) + 1)) :=
+    mul_left_cancel₀ (by norm_num : (2 : ℝ) ≠ 0) hkk'
+  -- Injectivity of `cos` on `[0, π]` gives equal angles.
+  have hang := Real.injOn_cos (pathAngle_mem_Icc n k) (pathAngle_mem_Icc n k') hcos
+  -- The affine map `k ↦ (k+1)π/(n+1)` is injective (π/(n+1) > 0).
+  have hn1 : ((n : ℝ) + 1) ≠ 0 := by positivity
+  have hpi : (0 : ℝ) < Real.pi := Real.pi_pos
+  -- Equal fractions with equal nonzero denominators ⇒ equal numerators.
+  have hmul : ((k : ℝ) + 1) * Real.pi = ((k' : ℝ) + 1) * Real.pi := by
+    have hcongr := congrArg (· * ((n : ℝ) + 1)) hang
+    simp only [div_mul_cancel₀ _ hn1] at hcongr
+    exact hcongr
+  have hk_eq : ((k : ℝ) + 1) = ((k' : ℝ) + 1) :=
+    mul_right_cancel₀ (ne_of_gt hpi) hmul
+  have hkR : (k : ℝ) = (k' : ℝ) := by linarith
+  exact Fin.ext (by exact_mod_cast hkR)
+
+/-- **Nodup charpoly roots ⟹ simple spectrum.**  A generic axiom-clean bridge:
+if the characteristic polynomial of a Hermitian-weighted graph `G` has no
+repeated roots, then Mathlib's eigenvalue function `G.herm.eigenvalues` is
+injective.  Via `Matrix.IsHermitian.roots_charpoly_eq_eigenvalues`
+(`charpoly.roots = map (ofReal ∘ eigenvalues) univ.val`), a nodup root multiset
+forces `ofReal ∘ eigenvalues` injective on `univ`, and `Complex.ofReal` is
+injective.
+
+This isolates path-graph simple spectrum to the *single* algebraic fact that
+`A(P_n)`'s characteristic polynomial (the Chebyshev `U_n`) is squarefree —
+equivalently that its roots `2cos(kπ/(n+1))` are distinct, which is
+`pathEigenvalue_injective`. -/
+theorem injective_eigenvalues_of_charpoly_roots_nodup (G : WeightedGraph V)
+    (hnd : (G.adj.charpoly).roots.Nodup) :
+    Function.Injective G.herm.eigenvalues := by
+  -- `roots = map (ofReal ∘ eigenvalues) univ.val`; nodup ⇒ inj on univ.
+  have hroots := G.herm.roots_charpoly_eq_eigenvalues
+  rw [hroots] at hnd
+  have hmem : ∀ x : V, x ∈ (Finset.univ : Finset V).val :=
+    fun x => Finset.mem_val.mpr (Finset.mem_univ x)
+  have hinj_comp : Function.Injective
+      (fun x : V => (RCLike.ofReal (G.herm.eigenvalues x) : ℂ)) := by
+    intro x y hxy
+    exact Multiset.inj_on_of_nodup_map hnd x (hmem x) y (hmem y) hxy
+  intro x y hxy
+  apply hinj_comp
+  exact congrArg (fun r : ℝ => (RCLike.ofReal r : ℂ)) hxy
+
 /-! ## Concrete examples
 
 The textbook example of strong cospectrality is the endpoint pair of a path

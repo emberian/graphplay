@@ -683,7 +683,8 @@ theorem hypercube_twoLevel_optimal_timing (d : ℕ) (hd : 1 ≤ d) :
   rw [Fintype.card_fin]
   exact Nat.one_le_two_pow
 
-/-- **`hypercube_search_optimal_timing` — the honest frontier (single BLOCKED `sorry`).**
+/-! ### `hypercube_search_optimal_timing` — the frontier, now reduced to a finite chain bound.
+
 The full-space `O(√N)` **timing** claim: the literal `2^d`-dimensional hypercube
 search evolution reaches constant amplitude into the marked subspace in time
 `O(√N)`, i.e. it is optimal (`IsOptimalCTQWSearch`, the full-Hilbert-space
@@ -703,14 +704,94 @@ the `(d+1)`-dimensional collapsed-Hamming chain) onto the 2D effective subspace:
 the remaining `d−1` chain eigenstates contribute at order `O(1/Δ)` with `Δ = O(1)`
 the constant CNO spectral gap (arXiv:2004.12686, Thm 1–2).  Unlike `K_n` — where
 `span{|w⟩,|u⟩}` is *exactly* 2D-invariant (`completeGraph_2d_block`) — for `Q_d`
-this reduction is genuinely perturbative and is the honest remaining frontier. -/
-theorem hypercube_search_optimal_timing (d : ℕ) (hd : 1 ≤ d) (w : Fin (2^d)) :
+this reduction is genuinely perturbative and is the honest remaining frontier.
+
+### The exact finite-chain reduction of the hypercube timing — axiom-clean.
+
+The Hamming-distance partition has a **size-one marked cell**: the distance-`0`
+cell of `w` is exactly `{w}`.  Hence the host search column-sum amplitude lives
+*exactly* (no perturbation) on the finite `(d+1)`-cell collapsed Hamming chain,
+and `Graphplay.optimal_search_of_chain_amplitude` reduces
+`hypercube_search_optimal_timing` to a **single finite spectral inequality** on
+the `2(d+1)×2(d+1)` refined-quotient matrix exponential — the genuine expansion
+of the frontier from "`2^d`-dimensional perturbation theory" to "a finite,
+explicit, host-dimension-free chain amplitude bound". -/
+
+/-- The distance-`0` Hamming cell of `w` is the singleton `{w}`: if `x` is in the
+same Hamming cell as `w` (distance `0`) then `x = w`.  This is the size-one
+marked-cell hypothesis (`hcell`) required by the finite-chain reduction. -/
+theorem hammingCell_singleton (d : ℕ) (w : Fin (2^d)) (x : Fin (2^d))
+    (hx : (hammingPartition d w).cells x = (hammingPartition d w).cells w) : x = w := by
+  -- `cells = hammingCell`, and `hammingCell d w w` has `dist = 0`, so `dist w x = 0`.
+  have hxw : hammingDist d w x = hammingDist d w w := congrArg Fin.val hx
+  rw [hammingDist_self] at hxw
+  -- distance `0` means empty difference set, i.e. all bits agree.
+  have hcard : (diffSet w x).card = 0 := by rw [diffSet_card]; exact hxw
+  have hempty : diffSet w x = ∅ := Finset.card_eq_zero.mp hcard
+  apply Fin.ext
+  apply Nat.eq_of_testBit_eq
+  intro b
+  by_cases hb : b < d
+  · have hmem : (⟨b, hb⟩ : Fin d) ∉ diffSet w x := by rw [hempty]; exact Finset.notMem_empty _
+    rw [mem_diffSet] at hmem
+    have hbit := not_not.mp hmem
+    rw [bitOf_eq, bitOf_eq] at hbit
+    exact hbit.symm
+  · rw [Nat.testBit_eq_false_of_lt (lt_of_lt_of_le x.isLt
+          (Nat.pow_le_pow_right (by norm_num) (by omega))),
+        Nat.testBit_eq_false_of_lt (lt_of_lt_of_le w.isLt
+          (Nat.pow_le_pow_right (by norm_num) (by omega)))]
+
+/-- **`hypercube_optimal_of_chain_amplitude` — the finite-chain reduction
+(axiom-clean).**  Hypercube CTQW search for `w` is optimal **provided** the
+finite `(d+1)`-cell collapsed-Hamming chain reaches the success amplitude:
+there is a coupling `γ > 0` and a time `τ ≤ C·√N` (`C ≥ 0`) at which the
+`2(d+1)`-dimensional refined-quotient chain amplitude
+`‖chainSearchAmplitude (hammingPartition d w) w γ τ _‖ ≥ 1/√2`.
+
+This theorem is **fully proven and `#print axioms`-clean**: it is the *exact*
+(no perturbation) reduction of the full `2^d`-dimensional `IsOptimalSearch` onto
+the finite Hamming chain, via the size-one marked cell (`hammingCell_singleton`)
+and `Graphplay.optimal_search_of_chain_amplitude`.  The ONLY remaining input to
+close `hypercube_search_optimal_timing` is the finite chain amplitude inequality
+— concrete spectral data of an explicit `2(d+1)×2(d+1)` matrix, replacing the
+`2^d`-dimensional perturbation theory. -/
+theorem hypercube_optimal_of_chain_amplitude (d : ℕ) (w : Fin (2^d))
+    (γ τ C : ℝ) (hγ : 0 < γ) (hC : 0 ≤ C)
+    (hτ : τ ≤ C * Real.sqrt (Fintype.card (Fin (2^d))))
+    (hampl : ‖Graphplay.chainSearchAmplitude (hammingPartition d w) w γ τ
+              (markedSet_cellUniform d w)‖ ≥ 1 / Real.sqrt 2) :
+    IsOptimalCTQWSearch (Hypercube d) w :=
+  Graphplay.optimal_search_of_chain_amplitude (hammingPartition d w) w
+    (markedSet_cellUniform d w) (hammingCell_singleton d w) γ τ C hγ hC hτ hampl
+
+/-- **The finite chain spectral inequality that closes the hypercube frontier.**
+This is the precise, explicit, host-dimension-free remaining input: for some
+coupling `γ > 0` and time `τ = O(√N)`, the `2(d+1)`-dimensional collapsed-Hamming
+chain amplitude attains the success threshold `1/√2`.  It is what
+`hypercube_optimal_of_chain_amplitude` reduces the optimal-timing claim to. -/
+def HypercubeChainAmplitudeBound (d : ℕ) (w : Fin (2^d)) : Prop :=
+  ∃ (γ τ C : ℝ), 0 < γ ∧ 0 ≤ C ∧
+    τ ≤ C * Real.sqrt (Fintype.card (Fin (2^d))) ∧
+    ‖Graphplay.chainSearchAmplitude (hammingPartition d w) w γ τ
+        (markedSet_cellUniform d w)‖ ≥ 1 / Real.sqrt 2
+
+/-- **`hypercube_search_optimal_timing` — now reduced to the finite chain
+inequality.**  The full-space `O(√N)` optimal-search timing on `Q_d`, taking as
+its single hypothesis the finite, explicit collapsed-Hamming-chain amplitude bound
+`HypercubeChainAmplitudeBound` (an inequality on a `2(d+1)×2(d+1)` matrix
+exponential).  The reduction itself is axiom-clean (`hammingCell_singleton` +
+`optimal_search_of_chain_amplitude`); the frontier is now exactly the finite
+spectral input, no longer `2^d`-dimensional perturbation theory.
+
+(The unconditional form — discharging `HypercubeChainAmplitudeBound` from the
+explicit Krawtchouk chain spectrum / `2`-level effective reduction within the
+chain — is the remaining open clause, stated as the hypothesis.) -/
+theorem hypercube_search_optimal_timing (d : ℕ) (hd : 1 ≤ d) (w : Fin (2^d))
+    (hchain : HypercubeChainAmplitudeBound d w) :
     IsOptimalCTQWSearch (Hypercube d) w := by
-  -- BLOCKED: perturbative reduction of the full 2^d-dim dynamics onto the 2D
-  -- effective subspace span{|w⟩,|s⟩}.  The two-level timing itself is PROVEN
-  -- axiom-clean (`hypercube_twoLevel_optimal_timing`); only this reduction (exact
-  -- for K_n, perturbative for Q_d, CNO Thm 1–2) remains.
-  sorry
+  obtain ⟨γ, τ, C, hγ, hC, hτ, hampl⟩ := hchain
+  exact hypercube_optimal_of_chain_amplitude d w γ τ C hγ hC hτ hampl
 
 /-! ## Generalization (the "tower" thesis): the CNO frontier.
 
@@ -1108,11 +1189,13 @@ and the hypercube advantage is `hypercube_search_optimal_timing` (also an honest
 `buildable_lattice_structural_contrast`. -/
 theorem buildable_lattice_dynamical_contrast
     (d L : ℕ) [Fact (2 < L)] (hd : d ≤ 3) (w : LatticeVertex d L)
-    (e : ℕ) (he : 1 ≤ e) (wQ : Fin (2 ^ e)) :
+    (e : ℕ) (he : 1 ≤ e) (wQ : Fin (2 ^ e))
+    (hchain : HypercubeChainAmplitudeBound e wQ) :
     -- the buildable lattice does NOT get the advantage (d ≤ 3):
     ¬ IsOptimalCTQWSearch (latticeGraph d L) w
     ∧
-    -- WHILE the (also buildable, log-degree) hypercube DOES:
+    -- WHILE the (also buildable, log-degree) hypercube DOES (given its finite
+    -- collapsed-Hamming-chain amplitude bound, the now-explicit frontier input):
     IsOptimalCTQWSearch (Hypercube e) wQ := by
   refine ⟨?_, ?_⟩
   · -- lattice not optimal for d ≤ 3: the negative half of the threshold.
@@ -1121,8 +1204,8 @@ theorem buildable_lattice_dynamical_contrast
     -- amplitude saturates below the optimal constant.
     rw [lattice_search_dimension_threshold d L w]
     omega
-  · -- hypercube optimal: the honest CNO-timing frontier.
-    exact hypercube_search_optimal_timing e he wQ
+  · -- hypercube optimal: reduced to the finite chain amplitude bound.
+    exact hypercube_search_optimal_timing e he wQ hchain
 
 end SparseSearch
 end Graphplay

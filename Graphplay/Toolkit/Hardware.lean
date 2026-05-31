@@ -225,7 +225,7 @@ the degree condition).  The shape is fixed here so later files can quantify over
 the predicate; do not read a `satisfies` hypothesis as enforcing geometry yet. -/
 def WeightedGraph.satisfies
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : WeightedGraph V) (H : HardwareSpec) (embed : V → ℝ × ℝ) : Prop :=
+    (G : WeightedGraph V) (H : HardwareSpec) (_embed : V → ℝ × ℝ) : Prop :=
   -- conjunction of all five constraint axes
   (∀ x y : V, G.adj x y ≠ 0 →
     match H.maxCouplingDistance with
@@ -251,7 +251,7 @@ theorem WeightedGraph.satisfies_unconstrained
     (G : WeightedGraph V) (embed : V → ℝ × ℝ) :
     G.satisfies HardwareSpec.unconstrained embed := by
   simp only [WeightedGraph.satisfies, HardwareSpec.unconstrained, Set.mem_univ,
-    implies_true, and_true, true_and]
+    implies_true, and_true]
 
 /-- Intersection of specs satisfied iff both are satisfied. -/
 theorem WeightedGraph.satisfies_intersect

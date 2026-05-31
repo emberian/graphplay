@@ -29,7 +29,12 @@ partitioned weighted graphs.
      the same topos-style structure, with 2-morphisms given by natural
      isomorphisms of cell-index labellings.
 
-Almost all proofs are `sorry`; the file fixes precise *statements*.
+Most declarations here are genuinely proven (the refinement order, meet/join,
+internal-logic and bridge lemmas are sorry-free); only a handful of deep
+categorical claims (the `HasFiniteLimits` instance, the assembly equivalence,
+the refinement-descent sheaf condition, and the Tower-7 lift) remain honest
+`sorry`s.  See the end-of-file summary for the precise breakdown.  Throughout,
+the file fixes precise *statements*.
 -/
 
 import Mathlib.CategoryTheory.Category.Basic

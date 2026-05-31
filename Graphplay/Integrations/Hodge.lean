@@ -47,7 +47,8 @@ Conventions follow `Graphplay.Relational`:
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.AlgebraicTopology.SimplicialSet.Basic
-import Mathlib.Topology.Algebra.Module.LinearMap
+import Mathlib.Topology.Algebra.Module.ContinuousLinearMap.Basic
+import Mathlib.Topology.Algebra.Module.ContinuousLinearMap.Idempotent
 import Mathlib.Topology.Algebra.InfiniteSum.Basic
 import Mathlib.Topology.Separation.Hausdorff
 import Mathlib.LinearAlgebra.FiniteDimensional.Defs
@@ -150,10 +151,10 @@ def ofHypergraph
     (k : ℕ) (_H : Graphplay.Hypergraph.KUniform k V) :
     SimplicialComplex V where
   simplex j := Fin (j + 1) → V
-  fintype j := inferInstance
-  decEq j := inferInstance
+  fintype _j := inferInstance
+  decEq _j := inferInstance
   vertex_equiv := Equiv.funUnique (Fin 1) V
-  face {j} i s := Fin.removeNth i s
+  face {_j} i s := Fin.removeNth i s
 
 end SimplicialComplex
 
@@ -348,7 +349,7 @@ theorem coboundary_comp_coboundary
         ring
       rw [hsign]; ring
     · simp only [dif_neg hlt]
-      push_neg at hlt
+      push Not at hlt
       -- here `i ≥ j`; partner is `(i+1, j)` and ChainCorrect runs the other way
       have hjlt : (j : ℕ) < (i : ℕ) + 1 := by omega
       have hcc := h k ⟨(j : ℕ), by omega⟩ ⟨(i : ℕ) + 1, by omega⟩ hjlt s
@@ -383,7 +384,7 @@ theorem coboundary_comp_coboundary
       have := hcontra.1
       have : (i : ℕ) + 1 = (j : ℕ) := by
         have h2 := congrArg Fin.val this; simpa using h2
-      push_neg at hlt; omega
+      push Not at hlt; omega
   · -- `g (g p) = p` (the involution is its own inverse)
     rintro ⟨j, i⟩ _
     by_cases hlt : (i : ℕ) < (j : ℕ)
@@ -394,12 +395,12 @@ theorem coboundary_comp_coboundary
       simp only [dif_neg hge]
       apply Prod.ext <;> apply Fin.ext <;> simp <;> omega
     · simp only [dif_neg hlt]
-      push_neg at hlt
+      push Not at hlt
       -- partner `(i+1, j)`: since `j ≤ i < i+1`, its branch is the `then` branch
       have hlt2 : ((⟨(j : ℕ), by omega⟩ : Fin (k + 2)) : ℕ) < ((⟨(i : ℕ) + 1, by omega⟩ : Fin (k + 3)) : ℕ) := by
         show (j : ℕ) < (i : ℕ) + 1; omega
       simp only [dif_pos hlt2]
-      apply Prod.ext <;> apply Fin.ext <;> simp <;> omega
+      apply Prod.ext <;> apply Fin.ext <;> simp
   · -- `g p ∈ univ` trivially
     intro p _; apply Finset.mem_univ
 
@@ -949,7 +950,7 @@ the natural one. -/
 theorem hodgeQuotient
     {V : Type u} (X : SimplicialComplex V)
     {I : ℕ → Type w} [∀ k, Fintype (I k)] [∀ k, DecidableEq (I k)]
-    (E : EquitableCochain X I) (k : ℕ) :
+    (_E : EquitableCochain X I) (k : ℕ) :
     -- The harmonic-restricted CTQW fixes every harmonic cochain (stationarity
     -- of harmonic states under the Hodge flow), and in particular it commutes
     -- with the cell-uniform decomposition: any quotient-harmonic state pulled

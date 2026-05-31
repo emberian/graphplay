@@ -21,8 +21,11 @@ sequence of objects of `WGraphP` with morphisms going *down* the tower under
 `Quotient`, i.e. a cochain in `WGraphCochain` whose bonding maps are exactly
 `Quotient.map` images of partition-respecting morphisms.
 
-Almost every nontrivial proof is `sorry`d. The file is a statement-only
-scaffold whose *signatures* are precise.
+Most of the theorems here are genuinely proven (definitional unfoldings and
+structural witnesses); only the single deep analytic claim
+(`exact_mera_groundstate_preparation`) remains an honest `sorry`.  See the
+end-of-file summary for the precise sorry-vs-proven breakdown.  Throughout,
+the *signatures* are precise.
 
 ## References
 
@@ -103,7 +106,7 @@ structure TensorNetwork : Type 1 where
   is a node and `k` is an index into `legs t`. `None` means an open (external)
   leg; `Some (t', k')` means contract leg `k` of `t` against leg `k'` of `t'`.
   -/
-  contract : Π (t : T) (k : Fin (legs t).length), Option (Σ t' : T, Fin (legs t').length)
+  contract : Π (t : T) (_k : Fin (legs t).length), Option (Σ t' : T, Fin (legs t').length)
   /-- The matching is an involution (heavy bit; sorry). -/
   contract_involutive :
     ∀ (t : T) (k : Fin (legs t).length) (t' : T) (k' : Fin (legs t').length),
@@ -496,7 +499,7 @@ This is the MERA-side mirror of the quasi-infinite limit theorem
 Evenbly-Vidal arXiv:1106.1082 (geometric interpretation); BCLSV
 arXiv:1003.5588 (graphon cofiltered limits). -/
 theorem equitable_infinite_mera_has_limit
-    (IM : InfiniteMERA.{u}) (EIM : EquitableInfiniteMERA IM) :
+    (IM : InfiniteMERA.{u}) (_EIM : EquitableInfiniteMERA IM) :
     -- The cofiltered limit exists in `WGraph` and is well-defined.
     Nonempty (WGraph.WGraphCochain.{u}) := by
   -- Concretely: `IM.toCochain` is the cochain; the limit lives in `WGraph`
@@ -523,7 +526,7 @@ Statement-only; the actual circuit construction lives in
 `Graphplay/Toolkit/` and is the heavy bit. -/
 theorem exact_mera_groundstate_preparation
     {V : Type u} [Fintype V] [DecidableEq V]
-    (H : WeightedGraph V)
+    (_H : WeightedGraph V)
     (M : MERA) (hM_eq : Nonempty (EquitableMERA M)) :
     -- Genuine content: an equitable MERA structure certifies the MERA is
     -- *exact* (`IsExactMERA M`), which is the hypothesis enabling the
@@ -611,7 +614,7 @@ A PEPS represents the exact ground state of a 2D local Hamiltonian iff the
 Citation: Verstraete-Cirac arXiv:cond-mat/0407066; Evenbly-Vidal
 arXiv:1106.1082 §IV. -/
 theorem peps_exact_iff_two_d_equitable
-    (P : PEPS.{u})
+    (_P : PEPS.{u})
     {V_2D : Type u} [Fintype V_2D] [DecidableEq V_2D]
     (H : WeightedGraph V_2D)
     {I : Type u} [Fintype I] [DecidableEq I] :

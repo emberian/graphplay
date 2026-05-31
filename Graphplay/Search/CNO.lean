@@ -1194,4 +1194,310 @@ theorem complete_graph_optimal_search
 
 end CompleteGraphExact
 
+/-! ## The finite refined-quotient chain reduction — axiom-clean.
+
+For the complete graph the effective subspace `span{|w⟩, |u⟩}` is *exactly* 2D,
+and `complete_graph_optimal_search` rides that exact `2×2` block.  For a general
+host whose marked CTQW search has an **equitable partition** `P` with the marked
+set a union of cells (so `P.refineByMarked` is equitable and
+`search_quotient_reduction` applies), the search dynamics live *exactly* on the
+finite `cell-uniform` subspace indexed by `MarkedRefined I` (the
+`refined-quotient chain`).  This section makes that reduction precise at the
+**evolution** level — not just the generator level of `search_quotient_reduction`
+— by intertwining the full matrix exponential through the cell-embedding matrix
+`E`, mirroring the `K_n` flagship's `cg_exp_intertwine` but over an arbitrary
+finite quotient index.  The payoff (`IsOptimalCTQWSearch_of_chain_colSum`) is a
+**finite sufficient condition**: optimal search on the host follows from an
+explicit `(refined-quotient)`-block amplitude bound — a statement entirely on the
+finite `2·|I|`-dimensional chain, with NO reference to the (possibly huge) host
+dimension `N`.  This converts the hypercube frontier from "perturbation theory on
+`2^d` dimensions" to "a finite spectral inequality on the collapsed Hamming
+chain". -/
+
+section ChainReduction
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+variable {I : Type v} [Fintype I] [DecidableEq I]
+
+/-- **The cell-embedding matrix** of an equitable partition: the `V × I` matrix
+whose `(v, i)` entry is `cellUniformVec i v`.  Its columns are the normalized
+cell indicators; `E.mulVec w = ∑ i w i • e_i` is the canonical cell-uniform
+combination map. -/
+noncomputable def cellEmbed {G : WeightedGraph V} (P : EquitablePartition G I) :
+    Matrix V I ℂ := fun v i => P.cellUniformVec i v
+
+/-- `cellEmbed.mulVec w` is exactly the cell-uniform combination `∑ i, w i · e_i`. -/
+theorem cellEmbed_mulVec {G : WeightedGraph V} (P : EquitablePartition G I) (w : I → ℂ) :
+    (cellEmbed P).mulVec w = fun v => ∑ i, w i * P.cellUniformVec i v := by
+  funext v
+  simp only [cellEmbed, Matrix.mulVec, dotProduct]
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [mul_comm]
+
+/-- **Generic exponential intertwining through a rectangular embedding.**  If
+`H * E = E * M` (intertwining at the generator level), then
+`exp(s•H) * E = E * exp(s•M)`.  Pushes the power intertwining through the
+convergent `exp` series; the codomain index `I` is arbitrary finite (this is the
+`Fin 2 ⤳ I` generalization of the flagship `cg_exp_intertwine`). -/
+theorem exp_intertwine_embed (H : Matrix V V ℂ) (E : Matrix V I ℂ)
+    (M : Matrix I I ℂ) (s : ℂ) (hHE : H * E = E * M) :
+    NormedSpace.exp (s • H) * E = E * NormedSpace.exp (s • M) := by
+  have hpow : ∀ k : ℕ, (s • H) ^ k * E = E * (s • M) ^ k := by
+    intro k
+    induction k with
+    | zero => simp
+    | succ n ih =>
+      have hstep : (s • H) * E = E * (s • M) := by
+        rw [Matrix.smul_mul, Matrix.mul_smul, hHE]
+      rw [pow_succ, pow_succ, Matrix.mul_assoc, hstep, ← Matrix.mul_assoc, ih, Matrix.mul_assoc]
+  let φ : Matrix V V ℂ →+ Matrix V I ℂ :=
+    { toFun := fun A => A * E, map_zero' := Matrix.zero_mul _,
+      map_add' := fun A C => Matrix.add_mul A C _ }
+  have hφc : Continuous φ := Continuous.matrix_mul continuous_id continuous_const
+  let ψ : Matrix I I ℂ →+ Matrix V I ℂ :=
+    { toFun := fun N => E * N, map_zero' := Matrix.mul_zero _,
+      map_add' := fun M₁ M₂ => Matrix.mul_add _ M₁ M₂ }
+  have hψc : Continuous ψ := Continuous.matrix_mul continuous_const continuous_id
+  have hH : HasSum (fun k => (Nat.factorial k : ℂ)⁻¹ • (s • H) ^ k)
+      (NormedSpace.exp (s • H)) := exp_series_hasSum_exp' _
+  have hM : HasSum (fun k => (Nat.factorial k : ℂ)⁻¹ • (s • M) ^ k)
+      (NormedSpace.exp (s • M)) := exp_series_hasSum_exp' _
+  have hHφ := hH.map φ hφc
+  have hMψ := hM.map ψ hψc
+  have hterm : (φ ∘ fun k => (Nat.factorial k : ℂ)⁻¹ • (s • H) ^ k)
+      = (ψ ∘ fun k => (Nat.factorial k : ℂ)⁻¹ • (s • M) ^ k) := by
+    funext k
+    show ((Nat.factorial k : ℂ)⁻¹ • (s • H) ^ k) * E = E * ((Nat.factorial k : ℂ)⁻¹ • (s • M) ^ k)
+    rw [Matrix.smul_mul, Matrix.mul_smul, hpow k]
+  rw [hterm] at hHφ
+  exact hHφ.unique hMψ
+
+/-- **Generator-level search intertwining through the cell-embedding.**  For a
+marked-union equitable partition `P` (marked set `M`, hypothesis `hM`), the host
+search Hamiltonian `H = -γ·A − P_M`, restricted to the refined cell-uniform
+subspace, is the refined-quotient search Hamiltonian `H_chain = -γ·Q̃' −
+markedDiag`: `H_search · E' = E' · H_chain`, where `E' = cellEmbed P'` is the
+embedding of the refined partition.  This is `search_quotient_reduction` packaged
+as a matrix identity (one column per refined cell). -/
+theorem searchH_mul_cellEmbed {G : WeightedGraph V}
+    (P : EquitablePartition G I) (M : Finset V) (γ : ℝ)
+    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M)) :
+    let P' := P.refineByMarked M hM
+    G.searchHamiltonian M γ * cellEmbed P'
+      = cellEmbed P' * (-(γ : ℂ) • P'.symmQuotient - markedDiag I) := by
+  intro P'
+  apply Matrix.ext_of_mulVec_single
+  intro jb
+  rw [← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec]
+  -- `E'.mulVec (e_jb) = e_jb`-cell-uniform vec; apply `search_quotient_reduction`
+  -- to the single-cell weight family `w = Pi.single jb 1`.
+  rw [cellEmbed_mulVec P' (Pi.single jb (1 : ℂ))]
+  rw [search_quotient_reduction P M γ hM (Pi.single jb (1 : ℂ))]
+  rw [cellEmbed_mulVec P' ((-(γ : ℂ) • P'.symmQuotient - markedDiag I).mulVec (Pi.single jb 1))]
+
+/-- **Evolution-level search intertwining through the cell-embedding.**  The full
+search evolution `U(τ) = exp(-iτ·H_search)`, restricted to the refined
+cell-uniform subspace, is the refined-quotient chain evolution
+`exp(-iτ·H_chain)`: `U(τ) · E' = E' · exp(-iτ·H_chain)`.  Obtained from
+`searchH_mul_cellEmbed` by `exp_intertwine_embed`.  This is the *exact* (no
+perturbation) statement that the full `N`-dimensional search dynamics live on the
+finite `2·|I|`-dimensional refined-quotient chain. -/
+theorem searchEvolve_mul_cellEmbed {G : WeightedGraph V}
+    (P : EquitablePartition G I) (M : Finset V) (γ τ : ℝ)
+    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M)) :
+    let P' := P.refineByMarked M hM
+    G.searchEvolve M γ τ * cellEmbed P'
+      = cellEmbed P'
+        * NormedSpace.exp (-(Complex.I * (τ : ℂ)) • (-(γ : ℂ) • P'.symmQuotient - markedDiag I)) := by
+  intro P'
+  unfold WeightedGraph.searchEvolve
+  exact exp_intertwine_embed _ _ _ _ (searchH_mul_cellEmbed P M γ hM)
+
+end ChainReduction
+
+/-! ## The finite-chain sufficient condition for optimal CTQW search.
+
+We now package the deliverable: a host whose marked CTQW search reduces (via a
+marked-union equitable partition with a **size-one marked cell** — the singleton
+`M = {w}` is its own cell) to a finite refined-quotient chain, is optimal **iff**
+the finite chain's block evolution realizes the success amplitude.  This is the
+finite, explicit, host-dimension-free reduction of the optimal-search frontier:
+the only remaining input is an inequality on the `2·|I|`-dimensional refined
+quotient matrix exponential — checkable spectral data, not perturbation theory. -/
+
+section ChainCriterion
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+variable {I : Type v} [Fintype I] [DecidableEq I]
+
+/-- **The host search column-sum amplitude IS the finite chain block amplitude
+(axiom-clean).**  Suppose `P` is a marked-union equitable partition for the
+singleton marked set `{w}`, and `{w}` is *exactly* the cell `i₀` of `w` (size
+one, `hcell`).  Then the full-`N` success column sum `∑_v U(τ)_{v,w}` equals the
+finite refined-quotient block amplitude
+
+  `∑_{ib} (∑_v e_{ib} v) · (exp(-iτ·H_chain))_{ib, (i₀,true)}`,
+
+where `e_{ib} = P'.cellUniformVec ib`, `H_chain = -γ·Q̃' − markedDiag`, and
+`(i₀,true)` is the refined cell of `w`.  This is the host-dimension-free,
+*exact* (no perturbation) reduction of the success amplitude onto the finite
+`2·|I|`-dimensional chain — the generalization of the `K_n` flagship `cg_colSum`.
+-/
+theorem search_colSum_eq_chain {G : WeightedGraph V}
+    (P : EquitablePartition G I) (w : V) (γ τ : ℝ)
+    (hM : ∀ x y : V, P.cells x = P.cells y →
+      (x ∈ ({w} : Finset V) ↔ y ∈ ({w} : Finset V)))
+    (hcell : ∀ x : V, P.cells x = P.cells w → x = w) :
+    (∑ v, (G.searchEvolve ({w} : Finset V) γ τ) v w)
+      = ∑ ib : MarkedRefined I,
+          (∑ v, (P.refineByMarked ({w} : Finset V) hM).cellUniformVec ib v)
+            * (NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
+                (-(γ : ℂ) • (P.refineByMarked ({w} : Finset V) hM).symmQuotient
+                  - markedDiag I)))
+                ib (P.cells w, true) := by
+  classical
+  set P' := P.refineByMarked ({w} : Finset V) hM with hP'
+  set Hc : Matrix (MarkedRefined I) (MarkedRefined I) ℂ :=
+    -(γ : ℂ) • P'.symmQuotient - markedDiag I with hHc
+  set s : ℂ := -(Complex.I * (τ : ℂ)) with hs
+  -- The marked cell of `w` is `(P.cells w, true)`.
+  set jb₀ : MarkedRefined I := (P.cells w, true) with hjb₀
+  -- `P'.cells w = (P.cells w, true) = jb₀`.
+  have hcellw : P'.cells w = jb₀ := by
+    show (P.cells w, decide (w ∈ ({w} : Finset V))) = jb₀
+    rw [hjb₀]; simp
+  -- `P'.cells x = jb₀ ↔ x = w` (the refined marked cell is exactly the singleton).
+  have hcells_iff : ∀ x : V, P'.cells x = jb₀ ↔ x = w := by
+    intro x
+    constructor
+    · intro hx
+      have hfst : P.cells x = P.cells w := by
+        have := congrArg Prod.fst hx; rw [hjb₀] at this; exact this
+      exact hcell x hfst
+    · rintro rfl; exact hcellw
+  -- Hence the marked refined cell is the singleton `{w}` (size one).
+  have hcellcard : P'.cellCard jb₀ = 1 := by
+    rw [EquitablePartition.cellCard]
+    rw [show (Finset.univ.filter (fun x : V => P'.cells x = jb₀)) = {w} from ?_]
+    · simp
+    · ext x
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+      exact hcells_iff x
+  -- So the `jb₀`-cell-uniform vector is exactly the indicator `|w⟩`.
+  have he_jb₀ : (P'.cellUniformVec jb₀) = (fun v => if v = w then (1 : ℂ) else 0) := by
+    funext v
+    unfold EquitablePartition.cellUniformVec
+    rw [hcellcard]
+    simp only [Real.sqrt_one, Complex.ofReal_one, div_one]
+    by_cases hv : v = w
+    · subst hv; rw [if_pos hcellw, if_pos rfl]
+    · rw [if_neg (fun h => hv ((hcells_iff v).mp h)), if_neg hv]
+  -- `|w⟩ = E'.mulVec (e_{jb₀})` (column `jb₀` of the cell-embedding).
+  have hwcol : (P'.cellUniformVec jb₀)
+      = (cellEmbed P').mulVec (Pi.single jb₀ (1 : ℂ)) := by
+    rw [cellEmbed_mulVec]
+    funext v
+    rw [Finset.sum_eq_single jb₀]
+    · rw [Pi.single_eq_same, one_mul]
+    · intro ib _ hib; rw [Pi.single_eq_of_ne hib, zero_mul]
+    · intro h; exact absurd (Finset.mem_univ jb₀) h
+  -- The full search column = `(U.mulVec |w⟩)`, and `U·E' = E'·exp(s•Hc)`, so
+  -- `U.mulVec |w⟩ = E'.mulVec (exp(s•Hc).col jb₀)`.
+  have hintertwine : G.searchEvolve ({w} : Finset V) γ τ * cellEmbed P'
+      = cellEmbed P' * NormedSpace.exp (s • Hc) :=
+    searchEvolve_mul_cellEmbed P ({w} : Finset V) γ τ hM
+  have hUw : (G.searchEvolve ({w} : Finset V) γ τ).mulVec (P'.cellUniformVec jb₀)
+      = (cellEmbed P').mulVec
+          ((NormedSpace.exp (s • Hc)).mulVec (Pi.single jb₀ (1 : ℂ))) := by
+    rw [hwcol]
+    rw [Matrix.mulVec_mulVec, hintertwine, ← Matrix.mulVec_mulVec]
+  -- Each column entry: `U_{v,w} = (U.mulVec |w⟩)_v` since `|w⟩` is the indicator.
+  have hcol : ∀ v, (G.searchEvolve ({w} : Finset V) γ τ) v w
+      = (G.searchEvolve ({w} : Finset V) γ τ).mulVec (P'.cellUniformVec jb₀) v := by
+    intro v
+    rw [he_jb₀]
+    simp only [Matrix.mulVec, dotProduct]
+    rw [Finset.sum_eq_single w]
+    · rw [if_pos rfl, mul_one]
+    · intro b _ hb; rw [if_neg hb, mul_zero]
+    · intro h; exact absurd (Finset.mem_univ w) h
+  rw [Finset.sum_congr rfl (fun v _ => hcol v), Finset.sum_congr rfl (fun v _ => congrFun hUw v)]
+  -- `(E'.mulVec (exp.col jb₀))_v = ∑_ib e_ib(v) · exp_{ib,jb₀}`; then swap sums.
+  have hentry : ∀ v,
+      ((cellEmbed P').mulVec
+          ((NormedSpace.exp (s • Hc)).mulVec (Pi.single jb₀ (1 : ℂ)))) v
+        = ∑ ib, (P'.cellUniformVec ib v) * (NormedSpace.exp (s • Hc)) ib jb₀ := by
+    intro v
+    have hxcol : (NormedSpace.exp (s • Hc)).mulVec (Pi.single jb₀ (1 : ℂ))
+        = fun ib => (NormedSpace.exp (s • Hc)) ib jb₀ := by
+      funext ib; rw [Matrix.mulVec_single_one, Matrix.col_apply]
+    rw [hxcol]
+    simp only [cellEmbed, Matrix.mulVec, dotProduct]
+  rw [Finset.sum_congr rfl (fun v _ => hentry v), Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro ib _
+  rw [← Finset.sum_mul]
+
+/-- **The finite refined-quotient chain success amplitude.**  The
+`(MarkedRefined I)`-block evolution `exp(-iτ·H_chain)` applied to the marked
+column `(P.cells w, true)`, contracted against the cell masses
+`m_{ib} = ∑_v e_{ib} v` and normalized by `√N` (`N = |V|`).  By
+`search_colSum_eq_chain` this finite quantity **equals** the host's uniform-overlap
+search success amplitude — a `2·|I|`-dimensional, host-dimension-free object. -/
+noncomputable def chainSearchAmplitude {G : WeightedGraph V}
+    (P : EquitablePartition G I) (w : V) (γ τ : ℝ)
+    (hM : ∀ x y : V, P.cells x = P.cells y →
+      (x ∈ ({w} : Finset V) ↔ y ∈ ({w} : Finset V))) : ℂ :=
+  (∑ ib : MarkedRefined I,
+      (∑ v, (P.refineByMarked ({w} : Finset V) hM).cellUniformVec ib v)
+        * (NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
+            (-(γ : ℂ) • (P.refineByMarked ({w} : Finset V) hM).symmQuotient
+              - markedDiag I)))
+            ib (P.cells w, true)) / Real.sqrt (Fintype.card V)
+
+/-- **Finite-chain sufficient condition for optimal CTQW search (axiom-clean).**
+Let `P` be a marked-union equitable partition of `G` for the singleton `{w}`,
+with `{w}` *exactly* its own cell (size one, `hcell`).  Suppose there is a
+coupling `γ > 0` and a time `τ ≤ C·√N` (`C ≥ 0`) at which the **finite
+refined-quotient chain amplitude** reaches the success threshold
+`‖chainSearchAmplitude P w γ τ hM‖ ≥ 1/√2`.  Then host CTQW search for `w` is
+optimal (`IsOptimalCTQWSearch G w`).
+
+This is the central reduction: the host optimal-search frontier collapses to an
+inequality on the `2·|I|`-dimensional refined-quotient matrix exponential — a
+*finite, explicit spectral object*, with NO reference to the host dimension `N`
+beyond the `√N` normalization.  For the hypercube `Q_d` (`I = Fin (d+1)`, the
+Hamming-distance partition) this is a `2(d+1)×2(d+1)` chain; the open
+`hypercube_search_optimal_timing` reduces *exactly* to checking this inequality.
+-/
+theorem optimal_search_of_chain_amplitude {G : WeightedGraph V}
+    (P : EquitablePartition G I) (w : V)
+    (hM : ∀ x y : V, P.cells x = P.cells y →
+      (x ∈ ({w} : Finset V) ↔ y ∈ ({w} : Finset V)))
+    (hcell : ∀ x : V, P.cells x = P.cells w → x = w)
+    (γ τ C : ℝ) (hγ : 0 < γ) (hC : 0 ≤ C)
+    (hτ : τ ≤ C * Real.sqrt (Fintype.card V))
+    (hampl : ‖chainSearchAmplitude P w γ τ hM‖ ≥ 1 / Real.sqrt 2) :
+    IsOptimalCTQWSearch G w := by
+  refine ⟨γ, τ, C, hγ, hC, hτ, ?_⟩
+  -- `IsOptimalSearch G {w} γ τ` collapses to `‖(∑_v U(τ)_{v,w})/√N‖ ≥ 1/√2`.
+  show ‖_‖ ≥ 1 / Real.sqrt 2
+  have hcollapse : (∑ v, ∑ m, if m ∈ ({w} : Finset V)
+        then (G.searchEvolve {w} γ τ) v m / Real.sqrt (Fintype.card V) else 0)
+      = (∑ v, (G.searchEvolve {w} γ τ) v w) / Real.sqrt (Fintype.card V) := by
+    rw [Finset.sum_div]
+    apply Finset.sum_congr rfl
+    intro v _
+    rw [Finset.sum_eq_single w]
+    · simp
+    · intro b _ hb; simp [Finset.mem_singleton, hb]
+    · intro h; exact absurd (Finset.mem_univ w) h
+  rw [hcollapse, search_colSum_eq_chain P w γ τ hM hcell]
+  exact hampl
+
+end ChainCriterion
+
 end Graphplay

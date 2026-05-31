@@ -235,8 +235,8 @@ breaks that cospectrality (the `√5`-flavoured eigenvalue split of the local
 `[[0,1],[1,0]]` centre–pendant block); producing the witnessing `λ` from `hspec`
 alone is the graph-specific Perron computation, so we take the certificate as a
 hypothesis and discharge the theorem with the closed engine. -/
-theorem pendantCorona_no_PST (G : WeightedGraph V) (a b : V) (hab : a ≠ b)
-    (hspec : ∀ q : ℚ, (q : ℝ) ≠ Real.sqrt 5)
+theorem pendantCorona_no_PST (G : WeightedGraph V) (a b : V) (_hab : a ≠ b)
+    (_hspec : ∀ q : ℚ, (q : ℝ) ≠ Real.sqrt 5)
     (lam : ℝ) (hlam : lam ∈ Set.range (pendantCorona G).herm.eigenvalues)
     (hwit : PST.eigenProjDiagLocal (pendantCorona G) lam (Sum.inl a)
               ≠ PST.eigenProjDiagLocal (pendantCorona G) lam (Sum.inl b)) :

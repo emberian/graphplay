@@ -284,46 +284,125 @@ This is the continuous-time / FR analogue of Bachman-Chan-Cheng-Tamon
 quotient.  Our `PST.lean` already exposes the PST version (`pst_lift`); we
 generalise to arbitrary mixing coefficients here. -/
 
-/-- **FR lifting via equitable partitions (headline).**  If the quotient
-graph of an equitable partition exhibits `(α, β)`-fractional revival between
-cells `i` and `j` at time `τ`, then the host graph exhibits cell-uniform
-`(α, β)`-fractional revival between the corresponding cell-uniform states at
-the same time `τ`.
+section FRLift
 
-Proof: `exp(-i τ Q) |i⟩ = α |i⟩ + β |j⟩` on the quotient pulls back to
-cell-uniform states via the characteristic isometry of Bachman-Tamon
-(1108.0339, Lemma 1).  Bookkeeping deferred. -/
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+variable {V : Type u} [Fintype V] [DecidableEq V]
+  {G : WeightedGraph V}
+  {I : Type v} [Fintype I] [DecidableEq I]
+
+/-- **The host cell-uniform amplitude equals the symmetric-quotient evolution
+entry.**  For an equitable partition with all cells nonempty, the normalized
+cell-uniform matrix element `⟨C_k | U(τ) | C_i⟩` of the host walk equals the
+`(k, i)` entry of the evolution `exp(-(iτ) Q̃)` of the *Hermitian* symmetric
+quotient.  This is the single computational fact underlying the FR (and PST)
+lift: it is `cellUniform_matrixElement` of `evolve τ` combined with the
+exponential intertwining `Bᴴ (evolve τ) B = exp(-(iτ) Q̃)`. -/
+theorem EquitablePartition.cellUniformAmp_eq_symmQuotientEvolve
+    (P : EquitablePartition G I) (hne : ∀ k, P.cellCard k ≠ 0)
+    (k i : I) (τ : ℝ) :
+    (∑ x, ∑ y, if P.cells x = k ∧ P.cells y = i
+        then G.evolve τ x y /
+             ((Real.sqrt (P.cellCard k) * Real.sqrt (P.cellCard i) : ℝ) : ℂ)
+        else 0)
+      = (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) k i := by
+  set s : ℂ := -(Complex.I * (τ : ℂ)) with hs
+  -- Rewrite the FR-style amplitude into the `cellUniform_matrixElement` shape:
+  -- relabel the dummies `x ↔ y` so the summand becomes `(evolve τ) y x` with the
+  -- cell condition `cells x = i ∧ cells y = k`, and the real-cast denominator
+  -- becomes the product of complex square roots.
+  have hden : ((Real.sqrt (P.cellCard k) * Real.sqrt (P.cellCard i) : ℝ) : ℂ)
+      = (Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard k) : ℂ) := by
+    rw [Complex.ofReal_mul]; ring
+  have hrelabel :
+      (∑ x, ∑ y, if P.cells x = k ∧ P.cells y = i
+          then G.evolve τ x y /
+               ((Real.sqrt (P.cellCard k) * Real.sqrt (P.cellCard i) : ℝ) : ℂ)
+          else 0)
+        = (∑ x, ∑ y, if P.cells x = i ∧ P.cells y = k
+            then G.evolve τ y x else 0) /
+             ((Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard k) : ℂ)) := by
+    rw [Finset.sum_div]
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl (fun x _ => ?_)
+    rw [Finset.sum_div]
+    refine Finset.sum_congr rfl (fun y _ => ?_)
+    by_cases h : P.cells y = k ∧ P.cells x = i
+    · rw [if_pos ⟨h.1, h.2⟩, if_pos ⟨h.2, h.1⟩, hden]
+    · rw [if_neg (fun hc => h ⟨hc.1, hc.2⟩), if_neg (fun hc => h ⟨hc.2, hc.1⟩), zero_div]
+  rw [hrelabel, P.cellUniform_matrixElement (G.evolve τ) i k]
+  -- `Bᴴ (evolve τ) B = exp(s • symmQuotient)`, exactly as in `pst_lift`.
+  have hev : G.evolve τ = NormedSpace.exp (s • G.adj) := rfl
+  have hEB : G.evolve τ * P.cellEmbed
+      = P.cellEmbed * NormedSpace.exp (s • P.symmQuotient) := by
+    rw [hev]; exact P.exp_smul_adj_mul_cellEmbed s
+  have hBEB : P.cellEmbedᴴ * G.evolve τ * P.cellEmbed
+      = NormedSpace.exp (s • P.symmQuotient) := by
+    rw [Matrix.mul_assoc, hEB, ← Matrix.mul_assoc,
+      P.cellEmbed_conjTranspose_mul_cellEmbed hne, Matrix.one_mul]
+  rw [hBEB]
+
+/-- **FR lifting via equitable partitions (headline).**  If the *symmetric
+quotient* `Q̃` of an equitable partition exhibits `(α, β)`-fractional revival
+between cells `i` and `j` at time `τ` — i.e. the evolution `exp(-(iτ) Q̃)`
+sends the `i`-th basis vector to `α |i⟩ + β |j⟩` — then the host graph exhibits
+cell-uniform `(α, β)`-fractional revival between the corresponding cell-uniform
+states at the same time `τ`.
+
+This is the faithful FR analogue of `EquitablePartition.pst_lift`.  Just as the
+PST lift is stated on the genuinely-Hermitian `symmQuotient` (not the raw,
+non-Hermitian `quotient` — the two evolutions differ by the diagonal
+conjugation `D^{1/2} · D^{-1/2}` unless all cells are equal-sized), so is the
+FR lift: the cell-uniform amplitudes on the host are exactly the entries of
+`exp(-(iτ) Q̃)` (`cellUniformAmp_eq_symmQuotientEvolve`), and these are precisely
+the FR data prescribed on the symmetric quotient.  Requires every cell nonempty
+(`hne`). -/
 theorem EquitablePartition.fr_lift
-    {V : Type u} [Fintype V] [DecidableEq V]
-    {I : Type v} [Fintype I] [DecidableEq I]
-    {G : WeightedGraph V} (P : EquitablePartition G I)
+    (P : EquitablePartition G I)
     (i j : I) (τ : ℝ) (α β : ℂ)
-    (Gquot : WeightedGraph I)
-    (hQuot : Gquot.adj = P.quotient)
-    (hFRquot : IsFR Gquot i j τ α β) :
+    (hne : ∀ k, P.cellCard k ≠ 0)
+    (hnorm : Complex.normSq α + Complex.normSq β = 1)
+    (hα : (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) i i = α)
+    (hβ : (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) j i = β)
+    (hrest : ∀ k : I, k ≠ i → k ≠ j →
+      (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) k i = 0) :
     IsCellUniformFR G P i j τ α β := by
-  -- The quotient walk `exp(-i τ Q)` applied to `|i⟩` produces
-  -- `α |i⟩ + β |j⟩`; pulled back through `S` (the characteristic isometry,
-  -- `S Sᵀ = QQᵀ` of 1108.0339), this becomes
-  -- `α |C_i⟩ + β |C_j⟩` in the cell-uniform basis on the host.
-  -- The bookkeeping uses `EquitablePartition.restrict_eq_quotient` and is
-  -- the FR analogue of `EquitablePartition.pst_lift`.
-  sorry
+  -- Each cell-uniform amplitude equals the corresponding `symmQuotient`-evolution
+  -- entry by `cellUniformAmp_eq_symmQuotientEvolve`; substitute the FR data.
+  refine ⟨hnorm, ?_, ?_, ?_⟩
+  · rw [P.cellUniformAmp_eq_symmQuotientEvolve hne i i τ]; exact hα
+  · rw [P.cellUniformAmp_eq_symmQuotientEvolve hne j i τ]; exact hβ
+  · intro k hki hkj
+    rw [P.cellUniformAmp_eq_symmQuotientEvolve hne k i τ]; exact hrest k hki hkj
 
-/-- **FR system lifting**: a quotient FR system lifts to a cell-uniform FR
-system on the host.  Mirrors `fr_lift` over an indexing family. -/
+end FRLift
+
+/-- **FR system lifting**: a symmetric-quotient FR system lifts to a
+cell-uniform FR system on the host.  Mirrors `fr_lift` over an indexing family:
+each pair `(iPair a, jPair a)` on which `exp(-(iτ) Q̃)` exhibits FR lifts to
+cell-uniform FR on the host, simultaneously and at the common time `τ`. -/
 theorem EquitablePartition.fr_system_lift
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} (P : EquitablePartition G I)
-    (Gquot : WeightedGraph I) (hQuot : Gquot.adj = P.quotient)
+    (hne : ∀ k, P.cellCard k ≠ 0)
     (A : Type*) (iPair jPair : A → I) (τ : ℝ) (αCoef βCoef : A → ℂ)
-    (_ : IsFRSystem Gquot A iPair jPair τ αCoef βCoef) :
+    (hnorm : ∀ a : A, Complex.normSq (αCoef a) + Complex.normSq (βCoef a) = 1)
+    (hα : ∀ a : A,
+      (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) (iPair a) (iPair a)
+        = αCoef a)
+    (hβ : ∀ a : A,
+      (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) (jPair a) (iPair a)
+        = βCoef a)
+    (hrest : ∀ a : A, ∀ k : I, k ≠ iPair a → k ≠ jPair a →
+      (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P.symmQuotient)) k (iPair a) = 0) :
     -- the host satisfies cell-uniform FR on every pair simultaneously
     ∀ a : A, IsCellUniformFR G P (iPair a) (jPair a) τ (αCoef a) (βCoef a) := by
   -- Apply `fr_lift` pointwise.
-  intro _
-  sorry
+  intro a
+  exact P.fr_lift (iPair a) (jPair a) τ (αCoef a) (βCoef a) hne
+    (hnorm a) (hα a) (hβ a) (hrest a)
 
 /-! ## 2.  Tower 3: non-commutative fractional revival
 

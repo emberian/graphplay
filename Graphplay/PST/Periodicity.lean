@@ -92,6 +92,28 @@ theorem evolve_zero_diag_norm (G : WeightedGraph V) (u : V) :
     ‖G.evolve 0 u u‖ = 1 := by
   rw [G.evolve_zero, Matrix.one_apply_eq, norm_one]
 
+/-! ## Symmetry of the evolution for real-symmetric adjacency -/
+
+/-- **The evolution is complex-symmetric when the adjacency is symmetric.**
+If the (Hermitian) adjacency matrix is also *symmetric* (`Aᵀ = A`, equivalently
+`A` has real entries — the classical Godsil real-weighted-graph setting), then
+`U(τ) = exp(-iτ A)` satisfies `U(τ)ᵀ = U(τ)`, i.e. `U(τ)_{v,u} = U(τ)_{u,v}` for
+all `u, v`.  Proof: `(c • A)ᵀ = c • Aᵀ = c • A`, and `Matrix.exp_transpose`. -/
+theorem evolve_transpose_of_isSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
+    (τ : ℝ) : (G.evolve τ)ᵀ = G.evolve τ := by
+  unfold WeightedGraph.evolve
+  rw [← Matrix.exp_transpose]
+  congr 1
+  rw [Matrix.transpose_smul, hsymm]
+
+/-- Entrywise form of `evolve_transpose_of_isSymm`: real-symmetric adjacency
+gives `U(τ)_{v,u} = U(τ)_{u,v}` — exactly the pair-symmetry hypothesis required
+by the `…_of_symm` periodicity lemmas. -/
+theorem evolve_symm_of_isSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
+    (τ : ℝ) (u v : V) : G.evolve τ v u = G.evolve τ u v := by
+  have h := congrFun (congrFun (evolve_transpose_of_isSymm G hsymm τ) u) v
+  rwa [Matrix.transpose_apply] at h
+
 /-! ## The provable structural facts (the easy half of Godsil's theorem) -/
 
 /-- **The Cauchy–Schwarz unit-column fact.**  Because `U(τ)` is unitary, the
@@ -173,6 +195,23 @@ theorem isPeriodicAt_two_mul_of_isPST_of_symm (G : WeightedGraph V) {u v : V}
       rw [evolve_row_concentrated G τ hUV hwv, zero_mul]
     · intro hmem; exact absurd (Finset.mem_univ v) hmem
   rw [huu, norm_mul, hUV, one_mul]
+
+/-- **PST ⇒ periodicity at `2τ`, real-symmetric adjacency (CLOSED).**  The
+classical Godsil setting: when the adjacency matrix is symmetric (`Aᵀ = A`,
+i.e. real-weighted), PST from `u` to `v` at `τ` makes `u` periodic at `2τ`.
+This discharges the pair-symmetry hypothesis of
+`isPeriodicAt_two_mul_of_isPST_of_symm` via `evolve_symm_of_isSymm`.
+Axiom-clean, no `sorry`. -/
+theorem isPeriodicAt_two_mul_of_isPST_of_isSymm (G : WeightedGraph V)
+    (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (h : IsPST G u v τ) :
+    IsPeriodicAt G u (2 * τ) :=
+  isPeriodicAt_two_mul_of_isPST_of_symm G h (evolve_symm_of_isSymm G hsymm τ u v)
+
+/-- **PST ⇒ periodicity (existential form), real-symmetric adjacency (CLOSED).**
+For a symmetric adjacency, any PST source vertex is periodic.  Axiom-clean. -/
+theorem isPeriodic_of_isPST_of_isSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
+    {u v : V} {τ : ℝ} (hτ : 0 < τ) (h : IsPST G u v τ) : IsPeriodic G u :=
+  ⟨2 * τ, by linarith, isPeriodicAt_two_mul_of_isPST_of_isSymm G hsymm h⟩
 
 /-- **PST ⇒ periodicity (Godsil's necessary condition, easy half).**
 If `G` has PST from `u` to `v` at time `τ`, then `G` is periodic at `u` at time
@@ -262,6 +301,15 @@ theorem isPeriodicAt_two_mul_of_isPST_target_of_symm (G : WeightedGraph V)
       rw [hcol hwu, mul_zero]
     · intro hmem; exact absurd (Finset.mem_univ u) hmem
   rw [hvv, norm_mul, hUV, one_mul]
+
+/-- **PST ⇒ periodicity of the target at `2τ`, real-symmetric adjacency
+(CLOSED).**  Dual of `isPeriodicAt_two_mul_of_isPST_of_isSymm`: under a symmetric
+adjacency, PST `u → v` makes the target `v` periodic at `2τ`.  Discharges the
+pair-symmetry hypothesis via `evolve_symm_of_isSymm`.  Axiom-clean. -/
+theorem isPeriodicAt_two_mul_of_isPST_target_of_isSymm (G : WeightedGraph V)
+    (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (h : IsPST G u v τ) :
+    IsPeriodicAt G v (2 * τ) :=
+  isPeriodicAt_two_mul_of_isPST_target_of_symm G h (evolve_symm_of_isSymm G hsymm τ u v)
 
 /-! ## The deep classification (Godsil integrality; universal PST) -/
 

@@ -319,10 +319,12 @@ def darkExtend (m : ℕ) (x : V → ℂ) : (V ⊕ Fin m) → ℂ :=
     | Sum.inl v => x v
     | Sum.inr _ => 0
 
+omit [Fintype V] [DecidableEq V] in
 @[simp]
 theorem darkExtend_inl (m : ℕ) (x : V → ℂ) (v : V) :
     darkExtend m x (Sum.inl v) = x v := rfl
 
+omit [Fintype V] [DecidableEq V] in
 @[simp]
 theorem darkExtend_inr (m : ℕ) (x : V → ℂ) (j : Fin m) :
     darkExtend m x (Sum.inr j) = 0 := rfl
@@ -405,6 +407,7 @@ between `inl u` and `inl v` holds in the tailed graph `withTail G r m`. -/
 /-- The standard basis vector at a bulk vertex `u`, as a function `V → ℂ`. -/
 def bulkBasis (u : V) : V → ℂ := fun w => if w = u then 1 else 0
 
+omit [Fintype V] in
 @[simp]
 theorem bulkBasis_self (u : V) : bulkBasis u u = 1 := by simp [bulkBasis]
 

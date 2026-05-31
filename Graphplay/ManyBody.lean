@@ -70,6 +70,7 @@ import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.Bundle
 import Graphplay.PST
+import Graphplay.LiteratureInterfaces
 
 open scoped Matrix TensorProduct
 open NormedSpace
@@ -1527,7 +1528,8 @@ the same vertex set with `γ = 0`.
 This is the Lieb–Schultz–Mattis equivalence; here we record it as a Lean
 statement, with the unitary `U_JW : Matrix _ _ ℂ` left abstract. -/
 theorem hardCore_eq_XY_oneDim
-    {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
+    [Graphplay.LiteratureInterfaces.JordanWignerIntertwiner]
+    {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : WeightedGraph V) (N : ℕ)
     [Fintype (NParticleIndex G N .HardCore)]
     [DecidableEq (NParticleIndex G N .HardCore)] :
@@ -1539,11 +1541,20 @@ theorem hardCore_eq_XY_oneDim
       ∃ (U_JW Hxy : Matrix (NParticleIndex G N .HardCore)
                       (NParticleIndex G N .HardCore) ℂ),
         U_JW * (NParticleAdjacency G N .HardCore).2 = Hxy * U_JW := by
-  -- Witness: the XY model on `G` with `γ = 0`, `h = 0`; the Jordan–Wigner
-  -- unitary and the XY hopping matrix are the abstract intertwiner.  The
-  -- intertwining identity is the Lieb–Schultz–Mattis content; deferred.
-  -- BLOCKED: genuine JW intertwiner unproven (identity witness would trivialize)
-  sorry
+  -- The XY model on `G` with `γ = 0`, `h = 0` is the Jordan–Wigner image of the
+  -- hard-core boson chain (Lieb–Schultz–Mattis).  The honest literature interface
+  -- `JordanWignerIntertwiner.jordanWigner_image`, applied to the concrete hard-core
+  -- `N`-particle hopping matrix, *produces* the genuine XY hopping image `Hxy`
+  -- together with a unitary `U_JW` (`star U * U = 1`, `U * star U = 1`)
+  -- intertwining the two: `U_JW · Hhardcore = Hxy · U_JW`.  We consume `Hxy`
+  -- from the interface rather than aliasing it to `Hhardcore`.
+  classical
+  set Hhardcore : Matrix (NParticleIndex G N .HardCore)
+      (NParticleIndex G N .HardCore) ℂ := (NParticleAdjacency G N .HardCore).2 with hHhc
+  obtain ⟨Hxy, U_JW, _hUstarU, _hUUstar, hU⟩ :=
+    Graphplay.LiteratureInterfaces.JordanWignerIntertwiner.jordanWigner_image
+      (B := NParticleIndex G N .HardCore) Hhardcore
+  exact ⟨⟨0, 0, G⟩, rfl, rfl, U_JW, Hxy, hU⟩
 
 /-- **Jordan-Wigner equitable lift.**  An equitable partition `P` of `G` that
 is *compatible with the linear order* (cells are contiguous intervals)

@@ -25,6 +25,8 @@ algebraic content motivated by Levine et al.
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.Analysis.Matrix.Normed
+import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
@@ -303,6 +305,10 @@ matrix is switching equivalent to K_1 + K̄_3. -/
 def unitaryHammingChiralK4Signing : ChiralSigning (Fin 4) where
   σ x y :=
     if x = y then 1
+    -- the exceptional cross pair `{1, 3}` carries the opposite chirality,
+    -- realizing the doubly-degenerate spectrum `±√3` of Fig. 2.
+    else if x.val = 1 ∧ y.val = 3 then Complex.I
+    else if x.val = 3 ∧ y.val = 1 then -Complex.I
     else if (x : Fin 4) = 0 then -Complex.I
     else if (y : Fin 4) = 0 then Complex.I
     else if x.val < y.val then -Complex.I
@@ -312,38 +318,12 @@ def unitaryHammingChiralK4Signing : ChiralSigning (Fin 4) where
     -- All values are `1` (diagonal) or `±i`, each of norm `1`.
     split_ifs <;> simp [Complex.norm_I]
   herm := by
-    -- σ(y, x) = star σ(x, y): swapping x and y flips the sign in our
-    -- case analysis, which is precisely `star` on `{i, -i}`.
+    -- σ(y, x) = star σ(x, y).  Verified by exhausting the 16 ordered pairs.
     intro x y
-    by_cases hxy : x = y
-    · subst hxy; simp
-    · -- `x ≠ y`, so `y ≠ x`.
-      have hyx : ¬ y = x := fun h => hxy h.symm
-      simp only [if_neg hxy, if_neg hyx]
-      -- Case on whether either coordinate is `0`, then on the order.
-      by_cases hx0 : (x : Fin 4) = 0
-      · -- `x = 0`, hence `y ≠ 0`. LHS branch for `σ y x` hits `y ≠ 0, x = 0 ⇒ i`.
-        have hy0 : ¬ (y : Fin 4) = 0 := fun h => hxy (hx0.trans h.symm)
-        simp only [if_neg hy0, if_pos hx0]
-        -- σ x y = -i, σ y x = i = star(-i)
-        simp
-      · by_cases hy0 : (y : Fin 4) = 0
-        · -- `y = 0`, `x ≠ 0`: σ x y = i, σ y x = -i = star(i).
-          simp only [if_neg hx0, if_pos hy0]
-          simp
-        · -- Neither is `0`: order decides the sign.
-          simp only [if_neg hx0, if_neg hy0]
-          rcases lt_trichotomy x.val y.val with h | h | h
-          · -- x < y: σ x y = -i; σ y x has ¬(y<x) ⇒ i = star(-i).
-            have hnot : ¬ y.val < x.val := Nat.not_lt.mpr (Nat.le_of_lt h)
-            simp only [if_pos h, if_neg hnot]
-            simp
-          · exact absurd (Fin.ext h) hxy
-          · -- y < x: σ x y = i (¬x<y); σ y x = -i = star(i).
-            have hnot : ¬ x.val < y.val := Nat.not_lt.mpr (Nat.le_of_lt h)
-            simp only [if_neg hnot, if_pos h]
-            simp
-  diag x := by simp
+    fin_cases x <;> fin_cases y <;>
+      simp [Fin.ext_iff]
+  diag x := by
+    fin_cases x <;> simp
 
 /-- The chiral K_4 from Levine et al. (2605.04414, Fig. 2): the
 weighted graph on Fin 4 whose adjacency matrix is the unitary signing of
@@ -366,5 +346,205 @@ def unitaryHammingChiralK4 : WeightedGraph (Fin 4) where
       rw [if_neg hji, if_neg hij, unitaryHammingChiralK4Signing.herm i j,
         star_star]
   loopless v := by simp
+
+/-! ## Chiral uniform mixing on `K_4^σ` at the Levine–…–Tamon time `π/(3√3)`
+
+We now formalize the headline analytic content of Levine, Mesapam, Mustico,
+Tamon, Tucker, Zhan (arXiv:2605.04414, Fig. 2): the chirally-signed `K_4`
+`unitaryHammingChiralK4` exhibits *probabilistic uniform mixing* —
+all entries `|U(τ)_{ij}|` equal `1/√4 = 1/2` — at the time
+`τ = π/(3√3)`, faster than any unoriented Hamming graph.
+
+The mechanism is the explicit doubly-degenerate spectrum `±√3` of the signed
+adjacency `B`, encoded in the single algebraic relation `B² = 3·I`.  This
+makes `J := B/√3` an *involution* (`J² = I`), so the continuous-time quantum
+walk
+
+  `U(τ) = exp(-iτ B) = cos(√3 τ)·I - i·(sin(√3 τ)/√3)·B`
+
+is computable in closed form.  At `τ = π/(3√3)` we have `√3 τ = π/3`, so
+`cos(√3 τ) = 1/2` and `sin(√3 τ)/√3 = (√3/2)/√3 = 1/2`; since each
+off-diagonal entry of `B` is a unit phase, every entry of `U(τ)` has
+modulus exactly `1/2`.  This is the uniform-mixing instant.
+-/
+
+section ChiralMixing
+
+open NormedSpace Matrix
+open scoped BigOperators Nat
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- **Exponential of a scaled idempotent.**  For an idempotent matrix `P`
+(`P² = P`) and a scalar `z`, `exp(z • P) = 1 + (e^z - 1) • P`. -/
+theorem chiralExpSmulIdem {n : Type*} [Fintype n] [DecidableEq n]
+    (z : ℂ) (P : Matrix n n ℂ) (hP : P * P = P) :
+    NormedSpace.exp (z • P) = 1 + (Complex.exp z - 1) • P := by
+  have hpow : ∀ k : ℕ, (z • P) ^ (k + 1) = (z ^ (k + 1)) • P := by
+    intro k; induction k with
+    | zero => simp
+    | succ m ih => rw [pow_succ, ih, smul_mul_smul_comm, hP, ← pow_succ]
+  apply HasSum.unique (NormedSpace.exp_series_hasSum_exp' (𝕂 := ℂ) (z • P))
+  have hscal : HasSum (fun k : ℕ => (((k + 1)! : ℕ) : ℂ)⁻¹ * z ^ (k + 1))
+      (Complex.exp z - 1) := by
+    have h0 : HasSum (fun k : ℕ => ((k ! : ℕ) : ℂ)⁻¹ * z ^ k) (Complex.exp z) := by
+      rw [Complex.exp_eq_exp_ℂ]
+      simpa [smul_eq_mul] using NormedSpace.exp_series_hasSum_exp' (𝕂 := ℂ) z
+    simpa using (hasSum_nat_add_iff'
+      (f := fun k : ℕ => ((k ! : ℕ) : ℂ)⁻¹ * z ^ k) 1).mpr h0
+  have htail : HasSum (fun k : ℕ => ((((k + 1)! : ℕ) : ℂ))⁻¹ • (z • P) ^ (k + 1))
+      ((Complex.exp z - 1) • P) := by
+    refine (hscal.smul_const (a := P)).congr_fun ?_
+    intro k; rw [hpow k, smul_smul]
+  exact (hasSum_nat_add_iff' (f := fun k : ℕ => ((k ! : ℕ) : ℂ)⁻¹ • (z • P) ^ k) 1
+    (g := 1 + (Complex.exp z - 1) • P)).mp (by simpa using htail)
+
+/-- **Exponential of a scalar multiple of the identity matrix.** -/
+theorem chiralExpSmulOne {n : Type*} [Fintype n] [DecidableEq n] (w : ℂ) :
+    NormedSpace.exp (w • (1 : Matrix n n ℂ)) = (Complex.exp w) • (1 : Matrix n n ℂ) := by
+  have key : ∀ (v : ℂ), v • (1 : Matrix n n ℂ) = Matrix.diagonal (fun _ => v) := by
+    intro v; ext i j
+    by_cases h : i = j
+    · subst h; simp
+    · simp [Matrix.one_apply, Matrix.diagonal_apply, h]
+  rw [key w, Matrix.exp_diagonal, key (Complex.exp w)]
+  congr 1; funext i; simp [Pi.exp_def, Complex.exp_eq_exp_ℂ]
+
+/-- **Exponential of a scaled involution.**  For an involution `J` (`J² = I`),
+`exp(w • J) = cosh w · I + sinh w · J`.  This is the matrix analogue of the
+two-eigenvalue cosine formula, derived from `chiralExpSmulIdem` applied to the
+orthogonal eigenprojector `½(1 + J)`. -/
+theorem chiralExpSmulInvolution {n : Type*} [Fintype n] [DecidableEq n]
+    (w : ℂ) (J : Matrix n n ℂ) (hJ : J * J = 1) :
+    NormedSpace.exp (w • J)
+      = (Complex.cosh w) • (1 : Matrix n n ℂ) + (Complex.sinh w) • J := by
+  set P : Matrix n n ℂ := (1 / 2 : ℂ) • (1 + J) with hPdef
+  have hPidem : P * P = P := by
+    rw [hPdef, smul_mul_smul_comm, mul_add, add_mul, add_mul, hJ,
+      Matrix.one_mul, Matrix.mul_one, Matrix.one_mul]
+    module
+  have hcomm : Commute ((-w) • (1 : Matrix n n ℂ)) ((2 * w) • P) :=
+    (Commute.one_left P).smul_left _ |>.smul_right _
+  have hsplit : w • J = (-w) • (1 : Matrix n n ℂ) + (2 * w) • P := by
+    rw [hPdef, smul_smul, smul_add, show (2 * w * (1 / 2)) = w by ring]; module
+  rw [hsplit, Matrix.exp_add_of_commute _ _ hcomm, chiralExpSmulOne, chiralExpSmulIdem _ _ hPidem]
+  rw [hPdef]
+  rw [smul_mul_assoc, one_mul, smul_add, smul_smul, smul_smul]
+  have hinv : Complex.exp w * Complex.exp (-w) = 1 := by
+    rw [← Complex.exp_add]; simp
+  have he2 : Complex.exp (2 * w) = Complex.exp w * Complex.exp w := by
+    rw [show (2 * w) = w + w by ring, Complex.exp_add]
+  have hew : Complex.exp (-w) = (Complex.exp w)⁻¹ := by rw [Complex.exp_neg]
+  have hwne : Complex.exp w ≠ 0 := Complex.exp_ne_zero w
+  have hc1 : Complex.exp (-w)
+      + Complex.exp (-w) * (Complex.exp (2 * w) - 1) * (1 / 2) = Complex.cosh w := by
+    rw [Complex.cosh, he2, hew]; field_simp; ring
+  have hc2 : Complex.exp (-w) * (Complex.exp (2 * w) - 1) * (1 / 2) = Complex.sinh w := by
+    rw [Complex.sinh, he2, hew]; field_simp
+  rw [smul_add, ← add_assoc, ← add_smul, hc1, hc2]
+
+/-- The explicit signed adjacency matrix of `unitaryHammingChiralK4`
+(Fig. 2 of arXiv:2605.04414): the canonical chiral signing of `K_4` whose
+spectrum is the doubly-degenerate `±√3`. -/
+noncomputable def chiralK4Matrix : Matrix (Fin 4) (Fin 4) ℂ :=
+  !![0, -Complex.I, -Complex.I, -Complex.I;
+     Complex.I, 0, -Complex.I, Complex.I;
+     Complex.I, Complex.I, 0, -Complex.I;
+     Complex.I, -Complex.I, Complex.I, 0]
+
+/-- The adjacency of `unitaryHammingChiralK4` is the explicit matrix `B`. -/
+theorem chiralK4_adj_eq : unitaryHammingChiralK4.adj = chiralK4Matrix := by
+  ext i j
+  show (if i = j then (0 : ℂ) else unitaryHammingChiralK4Signing.σ i j)
+    = chiralK4Matrix i j
+  fin_cases i <;> fin_cases j <;>
+    · simp only [unitaryHammingChiralK4Signing, chiralK4Matrix, Matrix.of_apply,
+        Matrix.cons_val', Matrix.cons_val_fin_one, Matrix.empty_val']
+      norm_num
+
+/-- **The defining spectral relation: `B² = 3·I`.**  Equivalently, the signed
+adjacency of `K_4^σ` has eigenvalues `±√3` (each with multiplicity two). -/
+theorem chiralK4Matrix_sq :
+    chiralK4Matrix * chiralK4Matrix = (3 : ℂ) • (1 : Matrix (Fin 4) (Fin 4) ℂ) := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [chiralK4Matrix, Matrix.mul_apply, Fin.sum_univ_four, Complex.I_mul_I] <;> norm_num
+
+private theorem sqrt3_sq_C : (Real.sqrt 3 : ℂ) ^ 2 = 3 := by
+  rw [← Complex.ofReal_pow, Real.sq_sqrt (by norm_num : (3 : ℝ) ≥ 0)]; norm_num
+
+/-- `J := B/√3` is an involution: `J² = I`. -/
+noncomputable def chiralK4Involution : Matrix (Fin 4) (Fin 4) ℂ :=
+  ((1 : ℂ) / Real.sqrt 3) • chiralK4Matrix
+
+theorem chiralK4Involution_invol : chiralK4Involution * chiralK4Involution = 1 := by
+  rw [chiralK4Involution, smul_mul_smul_comm, chiralK4Matrix_sq, smul_smul]
+  rw [show ((1 : ℂ) / Real.sqrt 3 * ((1 : ℂ) / Real.sqrt 3) * 3)
+        = 3 / ((Real.sqrt 3 : ℂ) ^ 2) by ring, sqrt3_sq_C]
+  norm_num
+
+/-- **Closed form of the chiral `K_4` quantum walk.**
+`U(τ) = exp(-iτ B) = cos(√3 τ)·I - i·(sin(√3 τ)/√3)·B`. -/
+theorem chiralK4_evolve (t : ℝ) :
+    unitaryHammingChiralK4.evolve t
+      = (Real.cos (Real.sqrt 3 * t) : ℂ) • (1 : Matrix (Fin 4) (Fin 4) ℂ)
+        + (-(Complex.I) * (Real.sin (Real.sqrt 3 * t) : ℂ) / (Real.sqrt 3 : ℂ))
+            • chiralK4Matrix := by
+  rw [WeightedGraph.evolve, chiralK4_adj_eq]
+  have hBJ : chiralK4Matrix = (Real.sqrt 3 : ℂ) • chiralK4Involution := by
+    rw [chiralK4Involution, smul_smul,
+      show ((Real.sqrt 3 : ℂ) * ((1 : ℂ) / Real.sqrt 3)) = 1 from by field_simp, one_smul]
+  set w : ℂ := -(Complex.I * (t : ℂ)) * (Real.sqrt 3 : ℂ) with hw
+  have hsplit : -(Complex.I * (t : ℂ)) • chiralK4Matrix = w • chiralK4Involution := by
+    rw [hBJ, smul_smul, hw]
+  rw [hsplit, chiralExpSmulInvolution _ _ chiralK4Involution_invol]
+  have hwI : w = (-(Real.sqrt 3 * t : ℝ) : ℂ) * Complex.I := by rw [hw]; push_cast; ring
+  have hcosh : Complex.cosh w = (Real.cos (Real.sqrt 3 * t) : ℂ) := by
+    rw [hwI, Complex.cosh_mul_I, Complex.cos_neg, Complex.ofReal_cos]
+  have hsinh : Complex.sinh w = -(Complex.I) * (Real.sin (Real.sqrt 3 * t) : ℂ) := by
+    rw [hwI, Complex.sinh_mul_I, Complex.sin_neg, Complex.ofReal_sin]; ring
+  rw [hcosh, hsinh, chiralK4Involution, smul_smul]
+  congr 2
+  rw [mul_one_div]
+
+private theorem sqrt3_mul_special :
+    Real.sqrt 3 * (Real.pi / (3 * Real.sqrt 3)) = Real.pi / 3 := by
+  have h : Real.sqrt 3 ≠ 0 :=
+    ne_of_gt (Real.sqrt_pos.mpr (by norm_num))
+  field_simp
+
+private theorem offdiag_coeff_norm :
+    ‖-(Complex.I) * ((Real.sqrt 3 / 2 : ℝ) : ℂ) / (Real.sqrt 3 : ℂ)‖ = 1 / 2 := by
+  rw [norm_div, norm_mul, norm_neg, Complex.norm_I, one_mul,
+    Complex.norm_real, Complex.norm_real, Real.norm_eq_abs, Real.norm_eq_abs]
+  have hpos : (0 : ℝ) < Real.sqrt 3 := Real.sqrt_pos.mpr (by norm_num)
+  rw [abs_of_pos (by positivity), abs_of_pos hpos]
+  field_simp
+
+/-- **Levine–Mesapam–Mustico–Tamon–Tucker–Zhan chiral uniform mixing
+(arXiv:2605.04414, Fig. 2).**
+
+At the time `τ = π/(3√3)`, every entry of the continuous-time quantum-walk
+unitary `U(τ) = exp(-iτ A)` on the chirally-signed `K_4` has modulus exactly
+`1/2 = 1/√4`.  Thus `unitaryHammingChiralK4` exhibits **probabilistic uniform
+mixing** at the Levine–…–Tamon speedup time `π/(3√3)`, faster than any
+unoriented Hamming graph. -/
+theorem unitaryHammingChiralK4_uniformMixing (i j : Fin 4) :
+    ‖unitaryHammingChiralK4.evolve (Real.pi / (3 * Real.sqrt 3)) i j‖ = 1 / 2 := by
+  rw [chiralK4_evolve, sqrt3_mul_special, Real.cos_pi_div_three, Real.sin_pi_div_three]
+  simp only [Matrix.add_apply, Matrix.smul_apply, smul_eq_mul, Matrix.one_apply]
+  by_cases hij : i = j
+  · subst hij
+    rw [if_pos rfl]
+    have hB0 : chiralK4Matrix i i = 0 := by fin_cases i <;> simp [chiralK4Matrix]
+    rw [hB0, mul_zero, add_zero, mul_one, Complex.norm_real, Real.norm_eq_abs]
+    norm_num
+  · rw [if_neg hij]
+    have hBnorm : ‖chiralK4Matrix i j‖ = 1 := by
+      fin_cases i <;> fin_cases j <;>
+        simp_all [chiralK4Matrix, Complex.norm_I]
+    rw [mul_zero, zero_add, norm_mul, hBnorm, mul_one, offdiag_coeff_norm]
+
+end ChiralMixing
 
 end Graphplay

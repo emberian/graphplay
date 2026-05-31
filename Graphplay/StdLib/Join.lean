@@ -167,7 +167,7 @@ noncomputable def doubleCone (G : WeightedGraph V) :
   join G twoApex
 
 /-- The two apex tips of the double cone. -/
-abbrev apex (G : WeightedGraph V) (i : Fin 2) : V ⊕ Fin 2 := Sum.inr i
+abbrev apex (_G : WeightedGraph V) (i : Fin 2) : V ⊕ Fin 2 := Sum.inr i
 
 /-! ## The bipartite double cover -/
 
@@ -308,7 +308,7 @@ join NO-PST theorem — no `sorry`.
 Reference: Godsil, *When can perfect state transfer occur?* (ELA 23 (2012)). -/
 theorem join_no_PST_within_G_of_not_cospectral
     (G : WeightedGraph V) (H : WeightedGraph W) [Nonempty W]
-    (a b : V) (hab : a ≠ b)
+    (a b : V) (_hab : a ≠ b)
     (lam : ℝ) (hlam : lam ∈ Set.range (join G H).herm.eigenvalues)
     (hncs : PST.eigenProjDiagLocal (join G H) lam (Sum.inl a)
               ≠ PST.eigenProjDiagLocal (join G H) lam (Sum.inl b)) :
@@ -335,9 +335,9 @@ NO-PST statement.
 
 Reference: Godsil, *State transfer on graphs* (Discrete Math. 312 (2012)). -/
 theorem dominatingVertex_no_PST (K : WeightedGraph V) (u : V)
-    (hdom : ∀ x : V, x ≠ u → K.adj u x ≠ 0)
-    (hcard : 3 ≤ Fintype.card V)
-    (v : V) (hv : v ≠ u)
+    (_hdom : ∀ x : V, x ≠ u → K.adj u x ≠ 0)
+    (_hcard : 3 ≤ Fintype.card V)
+    (v : V) (_hv : v ≠ u)
     (lam : ℝ) (hlam : lam ∈ Set.range K.herm.eigenvalues)
     (hwit : PST.eigenProjDiagLocal K lam u ≠ PST.eigenProjDiagLocal K lam v) :
     ∀ τ : ℝ, ¬ IsPST K u v τ :=
@@ -348,7 +348,7 @@ certificate (NEGATIVE result).**  The single apex of a cone over `G` dominates
 the whole graph; supplying the eigenvalue `λ` at which its diagonal projector
 entry differs from the base vertex's certifies that it cannot perfectly transfer
 to that base vertex.  Closed (derived from `dominatingVertex_no_PST`). -/
-theorem cone_apex_no_PST (G : WeightedGraph V) (a : V)
+theorem cone_apex_no_PST (_G : WeightedGraph V) (a : V)
     (hcard : 3 ≤ Fintype.card V)
     -- the single-apex cone is the join with one extra vertex; we phrase the
     -- dominating hypothesis directly on a host `K` whose vertex `u` dominates.

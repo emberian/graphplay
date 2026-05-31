@@ -52,7 +52,7 @@ def fmtVals (xs : List Float) (maxItems : Nat := 18) : String :=
 def padLeft (s : String) (width : Nat) : String :=
   let n := s.length
   if n ≥ width then s
-  else String.mk (List.replicate (width - n) ' ') ++ s
+  else String.ofList (List.replicate (width - n) ' ') ++ s
 
 /-- Render an `n × n` matrix with row/column labels in fixed-width columns
 matching the Python `format_matrix` helper. -/

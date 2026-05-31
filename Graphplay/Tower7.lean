@@ -376,7 +376,7 @@ structure BicategoricalEquitablePartition (X : B) (A : X ⟶ X) where
 between the source and target states (viewed themselves as 1-morphisms from
 a "point" object). We model this as the existence of a 2-isomorphism between
 the relevant composites. -/
-def IsBicategoricalPST (X : B) (A : X ⟶ X) (s t : X ⟶ X) : Prop :=
+def IsBicategoricalPST (X : B) (_A : X ⟶ X) (s t : X ⟶ X) : Prop :=
   Nonempty (s ≅ t)  -- placeholder: 1-equivalence in the hom-category
 
 /-- **Bicategorical lift theorem.** If the cell-action `A ≫ p` is

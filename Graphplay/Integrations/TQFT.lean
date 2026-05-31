@@ -239,7 +239,7 @@ theorem braid_factors_through_cellUniform
     {M : ModularData A} (D : AnyonDecoration G M) {n : ℕ}
     (R : BraidRepresentation D n)
     (P : EquitablePartition G A)
-    (hP : P.cells = D.label)
+    (_hP : P.cells = D.label)
     -- CORRECTNESS FIX: as stated without this hypothesis the theorem is FALSE —
     -- the `BraidRepresentation` structure imposes only unitarity,
     -- far-commutation, and Yang–Baxter, *not* cell-uniform invariance, so an
@@ -429,7 +429,7 @@ theorem anyonicPST_isotopy_invariant
     {G G' : WeightedGraph V} {A : Type v} [Fintype A] [DecidableEq A]
     {M : ModularData A} (D : AnyonDecoration G M) (D' : AnyonDecoration G' M)
     (_H : SurfaceIsotopy G G') (u v : V) (t : ℝ)
-    (hlab : D.label = D'.label) :
+    (_hlab : D.label = D'.label) :
     AnyonicPST D u v t ↔ AnyonicPST D' u v t := by
   -- `AnyonicPST D u v t` unfolds to `HasPST G u v t`; inherit from the
   -- surface-isotopy invariance of PST.  (No sorry of its own — it reduces
@@ -619,7 +619,7 @@ theorem torus_modular_action
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {A : Type v} [Fintype A] [DecidableEq A]
     {M : ModularData A} (D : AnyonDecoration G M)
-    (P : EquitablePartition G A) (hP : P.cells = D.label) :
+    (P : EquitablePartition G A) (_hP : P.cells = D.label) :
     -- There exist matrices `ρS, ρT : Matrix A A ℂ` representing the `S` and `T`
     -- generators on the (quotient = anyon-type-indexed) cell-uniform sector,
     -- with `ρT` the genuine diagonal twist matrix `T_{aa} = θ_a` of `M`.  The

@@ -186,7 +186,6 @@ theorem K4parts_deterministicSearch
     (w : CompleteMultipartiteV [a, b, c, d]) :
     IsDeterministicSearch (K4parts a b c d) w := by
   sorry
-  done
 
 end StdLib
 end Graphplay

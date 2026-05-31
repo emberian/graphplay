@@ -137,7 +137,7 @@ sums `∑_{s ∈ S} χ(s)` align with the corresponding character sums at the
 identity in the parity sense `χ(a) = ±1` and the eigenvalue gaps are
 even.  We package this directly. -/
 def BasicParity {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
-    (S : Finset G) : Prop :=
+    (_S : Finset G) : Prop :=
   ∃ a : G, a ≠ 1 ∧ ∀ χ : G →* ℂ, χ a = 1 ∨ χ a = -1
 
 theorem cayley_abelian_PST_iff_rationalEigenvalues

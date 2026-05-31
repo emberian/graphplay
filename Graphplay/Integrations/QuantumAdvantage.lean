@@ -115,14 +115,14 @@ private theorem U_mul_half : U * ((1/2 : ℂ) • U) = 1 := by
   unfold U
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.one_apply] <;> ring
+    simp [Matrix.mul_apply, Fin.sum_univ_two] <;> ring
 
 private theorem U_isUnit : IsUnit U := by
   refine ⟨⟨U, (1/2 : ℂ) • U, U_mul_half, ?_⟩, rfl⟩
   unfold U
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.one_apply] <;> ring
+    simp [Matrix.mul_apply, Fin.sum_univ_two] <;> ring
 
 private theorem U_inv : U⁻¹ = (1/2 : ℂ) • U :=
   Matrix.inv_eq_right_inv U_mul_half
@@ -132,14 +132,13 @@ private theorem half_smul_U :
   unfold U
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.smul_apply, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons] <;>
-    ring
+    simp [Matrix.smul_apply, Matrix.cons_val_zero, Matrix.cons_val_one]
 
 private theorem diag_fin_two (a b : ℂ) :
     (Matrix.diagonal ![a, b]) = !![a, 0; 0, b] := by
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.diagonal_apply, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]
+    simp [Matrix.cons_val_zero, Matrix.cons_val_one]
 
 /-- `s • X = U · diag(s, -s) · U⁻¹`. -/
 private theorem smul_X_eq_conj_diag (s : ℂ) :
@@ -150,7 +149,7 @@ private theorem smul_X_eq_conj_diag (s : ℂ) :
     rw [Matrix.mul_fin_two, Matrix.mul_fin_two]
     ext i j
     fin_cases i <;> fin_cases j <;>
-      simp [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons] <;> ring
+      simp [Matrix.cons_val_zero, Matrix.cons_val_one] <;> ring
   have hd : (Matrix.diagonal ![s, -s] : Matrix (Fin 2) (Fin 2) ℂ)
       = s • Matrix.diagonal ![1, -1] := by
     rw [← Matrix.diagonal_smul]
@@ -176,7 +175,7 @@ private theorem exp_smul_X_entry01 (s : ℂ) :
   rw [exp_smul_X, U_inv, diag_fin_two, half_smul_U]
   unfold U
   rw [Matrix.mul_fin_two, Matrix.mul_fin_two]
-  simp [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]
+  simp [Matrix.cons_val_zero, Matrix.cons_val_one]
   ring
 
 /-- **The reduced `2×2` Rabi evolution.**  Define the reduced search generator at
@@ -307,7 +306,7 @@ theorem completeGraph_adj_mulVec_u (w : Fin n) :
     rw [show ({v, v} : Finset (Fin n)) = {v} by simp, Finset.card_singleton]
     have h1 : 1 ≤ n := v.pos
     rw [Nat.cast_sub h1]
-    simp only [if_true, if_pos rfl]
+    simp only [if_true]
     push_cast
     ring
   · simp only [if_neg hvw]
@@ -443,16 +442,15 @@ private theorem searchHamiltonian_mul_reducedB (n : ℕ) (w : Fin n) :
     have hMe0 : (reducedH n).mulVec (Pi.single (0 : Fin 2) 1)
         = ![-1, -((1:ℂ)/n)] := by
       funext k; fin_cases k <;>
-        simp [reducedH, Matrix.mulVec_single, Matrix.cons_val_zero, Matrix.cons_val_one,
-          Matrix.head_cons]
+        simp [reducedH, Matrix.mulVec_single, Matrix.cons_val_zero, Matrix.cons_val_one]
     rw [hBe0, hMe0, hHsplit, completeGraph_adj_mulVec_w]
     funext v
     have hRHS : ((reducedB n w).mulVec ![-1, -((1:ℂ)/n)]) v
         = -1 * wVec w v - ((1:ℂ)/n) * uVec w v := by
       simp [reducedB, Matrix.mulVec, dotProduct, Fin.sum_univ_two,
-        Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]; ring
+        Matrix.cons_val_zero, Matrix.cons_val_one]; ring
     rw [hRHS]
-    by_cases h : v = w <;> simp [wVec, uVec, h] <;> push_cast <;> ring
+    by_cases h : v = w <;> simp [wVec, uVec, h]
   · -- column 1 : `B.mulVec e₁ = |u⟩`, `H|u⟩ = -γ(n-1)|w⟩ - γ(n-2)|u⟩`.
     show (completeGraph n).searchHamiltonian {w} (1 / n) *ᵥ
         (reducedB n w *ᵥ Pi.single (1 : Fin 2) 1)
@@ -462,18 +460,17 @@ private theorem searchHamiltonian_mul_reducedB (n : ℕ) (w : Fin n) :
     have hMe1 : (reducedH n).mulVec (Pi.single (1 : Fin 2) 1)
         = ![-((1:ℂ)/n) * ((n:ℂ)-1), -((1:ℂ)/n) * ((n:ℂ)-2)] := by
       funext k; fin_cases k <;>
-        simp [reducedH, Matrix.mulVec_single, Matrix.cons_val_zero, Matrix.cons_val_one,
-          Matrix.head_cons]
+        simp [reducedH, Matrix.mulVec_single, Matrix.cons_val_zero, Matrix.cons_val_one]
     rw [hBe1, hMe1, hHsplit, completeGraph_adj_mulVec_u]
     funext v
     have hRHS : ((reducedB n w).mulVec
           ![-((1:ℂ)/n) * ((n:ℂ)-1), -((1:ℂ)/n) * ((n:ℂ)-2)]) v
         = -((1:ℂ)/n) * ((n:ℂ)-1) * wVec w v - ((1:ℂ)/n) * ((n:ℂ)-2) * uVec w v := by
       simp [reducedB, Matrix.mulVec, dotProduct, Fin.sum_univ_two,
-        Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]; ring
+        Matrix.cons_val_zero, Matrix.cons_val_one]; ring
     rw [hRHS]
     -- LHS: `-γ·((n-2)|u⟩ + (n-1)|w⟩) - 0` at `v`.
-    by_cases h : v = w <;> simp [wVec, uVec, h] <;> push_cast <;> ring
+    by_cases h : v = w <;> simp [wVec, uVec, h]
 
 /-- **The reduced `2×2` block — exact, sorry-free.**  On the exact two-dimensional
 invariant subspace `span{|w⟩, |u⟩}` (invariance shown above), the full
@@ -495,7 +492,7 @@ idealized `rabiEvolve` amplitude `|sin(tΩ)|` is the `n→∞` limit of the exac
 transition modulus `|sin(tΩ)|·√((n-1)/n)`.  We therefore state the block identity
 in the mathematically-correct exact form (in terms of `reducedH`), which the
 upper-bound theorems do not depend on (they use `rabi_amplitude_norm` directly). -/
-theorem completeGraph_2d_block (n : ℕ) (hn : 2 ≤ n) (w : Fin n) (t : ℝ) :
+theorem completeGraph_2d_block (n : ℕ) (_hn : 2 ≤ n) (w : Fin n) (t : ℝ) :
     ((completeGraph n).searchEvolve {w} (1 / n) t).mulVec (wVec w) w
       = (NormedSpace.exp (-(Complex.I * (t : ℂ)) • reducedH n)) 0 0 := by
   set s : ℂ := -(Complex.I * (t : ℂ)) with hs
@@ -520,8 +517,7 @@ theorem completeGraph_2d_block (n : ℕ) (hn : 2 ≤ n) (w : Fin n) (t : ℝ) :
     funext k; rw [Matrix.mulVec_single_one]; rfl
   rw [hMe0, hs]
   -- `B.mulVec (col 0 of expM₂)` at `w` = `∑_j B w j · (expM₂) j 0 = (expM₂) 0 0`.
-  simp only [reducedB, Matrix.mulVec, dotProduct, Fin.sum_univ_two,
-    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]
+  simp only [reducedB, Matrix.mulVec, dotProduct, Fin.sum_univ_two]
   -- `B w 0 = wVec w w = 1`, `B w 1 = uVec w w = 0`.
   have hw0 : wVec w w = 1 := by simp [wVec]
   have hw1 : uVec w w = 0 := by simp [uVec]
@@ -689,7 +685,7 @@ theorem classical_search_lower_bound (n : ℕ) (queried : Finset (Fin n))
     (hlt : queried.card < n) :
     ∃ w : Fin n, w ∉ queried := by
   by_contra h
-  push_neg at h
+  push Not at h
   -- If every vertex is queried, then `queried = univ`, so `card = n`.
   have : queried = Finset.univ := Finset.eq_univ_iff_forall.mpr h
   rw [this, Finset.card_univ, Fintype.card_fin] at hlt
@@ -855,7 +851,7 @@ theorem structured_search_advantage
   refine ⟨search_quotient_reduction P M γ hM w, ?_⟩
   intro queried hlt
   by_contra h
-  push_neg at h
+  push Not at h
   have : queried = Finset.univ := Finset.eq_univ_iff_forall.mpr h
   rw [this, Finset.card_univ] at hlt
   exact lt_irrefl _ hlt

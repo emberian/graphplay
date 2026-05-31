@@ -322,7 +322,7 @@ def rowSum (m : List (List Float)) (i : Nat) : Float :=
 else `none`.  Tolerance is fixed at `1e-9`. -/
 def approxRegular (m : List (List Float)) : Option Float :=
   let n := m.length
-  if h : n = 0 then none
+  if _h : n = 0 then none
   else
     let d := rowSum m 0
     let ok := (List.range n).all fun i =>
