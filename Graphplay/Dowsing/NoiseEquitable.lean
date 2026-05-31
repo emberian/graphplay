@@ -237,6 +237,26 @@ theorem mem_centerMat_iff (M : Matrix V V ℂ) :
   · rintro ⟨c, rfl⟩ N
     rw [smul_mul_assoc, one_mul, mul_smul_comm, mul_one]
 
+/-- **Scalar matrices preserve every cell-uniform subspace.**  A scalar
+multiple `c • 1` of the identity acts as `ψ ↦ c • ψ`, which carries
+cell-uniform vectors to cell-uniform vectors.  This is the easy half of the
+universally-equitable characterisation. -/
+theorem central_preservesCellUniform
+    {I' : Type v} [Fintype I'] [DecidableEq I'] {G' : WeightedGraph V}
+    (P : EquitablePartition G' I') (L : Matrix V V ℂ) (hL : L ∈ centerMat V) :
+    Matrix.preservesCellUniform L P := by
+  obtain ⟨c, rfl⟩ := (mem_centerMat_iff L).1 hL
+  intro ψ hψ x y hxy
+  -- `(c • 1).mulVec ψ = c • ψ`, so the conclusion reduces to cell-uniformity of `ψ`.
+  have hmv : ∀ z : V, ((c • (1 : Matrix V V ℂ)).mulVec ψ) z = c * ψ z := by
+    intro z
+    rw [Matrix.mulVec, dotProduct, Finset.sum_eq_single z]
+    · simp [Matrix.one_apply_eq]
+    · intro b _ hb
+      simp [Matrix.one_apply, hb.symm]
+    · intro h; exact absurd (Finset.mem_univ z) h
+  rw [hmv x, hmv y, hψ x y hxy]
+
 /-- **Universally-equitable characterisation.**  `N` is universally
 equitable iff every jump operator is a scalar multiple of the identity.
 
@@ -245,10 +265,16 @@ equitable — any genuine dissipation breaks *some* equitable partition. -/
 theorem isUniversallyEquitable_iff_central (N : NoiseModel V) :
     N.IsUniversallyEquitable ↔
       (∀ L ∈ N.lindblad_operators, L ∈ centerMat V) := by
-  -- (⇒): if `N` preserves every partition, take `P = discrete G`; commuting
-  --      with all 1-dimensional cell projectors forces `L ∈ centerMat V`.
-  -- (⇐): scalar multiples of the identity commute with everything.
-  sorry
+  constructor
+  · -- (⇒): if `N` preserves every partition, take 2-element cells; commuting
+    --      with the off-diagonal cell-mixing forces `L ∈ centerMat V`.  This is
+    --      the genuinely-deep direction (it needs non-singleton cells to probe
+    --      every off-diagonal entry); isolated as an honest `sorry`.
+    sorry
+  · -- (⇐): scalar multiples of the identity preserve every cell-uniform
+    --      subspace (`central_preservesCellUniform`), hence every partition.
+    intro hcentral G' I' _ _ P L hL
+    exact central_preservesCellUniform P L (hcentral L hL)
 
 /-- **Corollary.**  The only universally-equitable noise model with finitely
 many non-zero rates is the trivial unitary model up to global dephasing by

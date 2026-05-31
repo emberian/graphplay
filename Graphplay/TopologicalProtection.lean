@@ -145,6 +145,42 @@ def inv (φ : WeightedAut G) : WeightedAut G where
     rw [φ.π.apply_symm_apply, φ.π.apply_symm_apply] at h
     exact h.symm
 
+/-- Two automorphisms are equal when their underlying permutations agree
+(`preserves` is a proof-irrelevant `Prop`). -/
+@[ext]
+theorem ext {φ ψ : WeightedAut G} (h : φ.π = ψ.π) : φ = ψ := by
+  cases φ; cases ψ; cases h; rfl
+
+/-! The weighted-graph automorphisms form a group under `comp`/`id`/`inv`.
+These are genuinely-reachable structural facts (no placeholder is involved):
+the laws follow from the corresponding `Equiv` laws on the underlying
+permutations. -/
+
+/-- `comp` is associative. -/
+theorem comp_assoc (φ ψ χ : WeightedAut G) :
+    comp (comp φ ψ) χ = comp φ (comp ψ χ) := by
+  ext x; rfl
+
+/-- `id` is a left identity for `comp`. -/
+theorem id_comp (φ : WeightedAut G) : comp (id G) φ = φ := by
+  ext x; rfl
+
+/-- `id` is a right identity for `comp`. -/
+theorem comp_id (φ : WeightedAut G) : comp φ (id G) = φ := by
+  ext x; rfl
+
+/-- `inv` is a left inverse for `comp`. -/
+theorem inv_comp (φ : WeightedAut G) : comp (inv φ) φ = id G := by
+  ext x
+  show φ.π.symm (φ.π x) = x
+  exact φ.π.symm_apply_apply x
+
+/-- `inv` is a right inverse for `comp`. -/
+theorem comp_inv (φ : WeightedAut G) : comp φ (inv φ) = id G := by
+  ext x
+  show φ.π (φ.π.symm x) = x
+  exact φ.π.apply_symm_apply x
+
 end WeightedAut
 
 /-- An equitable partition is **phantom-symmetric** if it distinguishes

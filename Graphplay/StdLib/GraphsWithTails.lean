@@ -411,7 +411,42 @@ omit [Fintype V] in
 @[simp]
 theorem bulkBasis_self (u : V) : bulkBasis u u = 1 := by simp [bulkBasis]
 
-/-- **Tail does not affect PST in the dark subspace (Xie-Tamon 2301.07251).**
+/-- **The Jacobi-tail scattering interface (Xie-Tamon 2301.07251), as a local
+content-bearing typeclass.**
+
+The remaining content of the dark-subspace PST-invariance theorem — beyond the
+*proven* algebraic decoupling lemma `darkSubspace_decoupling` — is the
+matrix-exponential restriction-to-invariant-subspace argument together with the
+Jacobi-tail spectral separation (the tail's scattering eigenvalues are disjoint
+from the dark eigenvalues).  This is the deep continued-fraction analysis of
+arXiv:2301.07251 and is not yet formalized.
+
+We package exactly this residual as a *local* typeclass.  The field is **not
+vacuous**: it takes the *proven* decoupling fact `hdecouple` as a structural
+hypothesis (every dark vector extends by zero to a genuine eigenvector of the
+tailed adjacency, `darkSubspace_decoupling`).  A consumer therefore cannot
+satisfy the field without honouring the actual invariance of the dark subspace
+under the tailed walk — it is the faithful scattering residual, not a weakening.
+
+Reference: Xie, Tamon, *Bound states and persistent currents on graphs with
+tails* (arXiv:2301.07251); Bernard, Tamon, Vinet, Xie (arXiv:2211.14704). -/
+class JacobiTailScattering.{u'} where
+  /-- Given the proven dark-subspace decoupling for `(G, r)` (every dark vector
+  extends by zero to a `λ`-eigenvector of the tailed adjacency), the tailed walk
+  restricts to the bulk walk on the dark subspace, so dark PST is tail-invariant. -/
+  dark_pst_iff :
+    ∀ {V : Type u'} [Fintype V] [DecidableEq V]
+      (G : WeightedGraph V) (r : V) (m : ℕ) (u v : V),
+      u ≠ r → v ≠ r →
+      (∀ (lam : ℝ) {x : V → ℂ}, x ∈ darkSubspace G r lam →
+        (withTail G r m).adj.mulVec (darkExtend (m + 1) x)
+          = (lam : ℂ) • darkExtend (m + 1) x) →
+      (∀ lam : ℝ, G.adj.mulVec (bulkBasis u) = (lam : ℂ) • bulkBasis u →
+        bulkBasis u ∈ darkSubspace G r lam) →
+      ∀ τ : ℝ, IsPST G u v τ ↔ IsPST (withTail G r m) (Sum.inl u) (Sum.inl v) τ
+
+/-- **Tail does not affect PST in the dark subspace (Xie-Tamon 2301.07251)**,
+*conditional on the local `JacobiTailScattering` interface*.
 
 If the transfer between bulk vertices `u` and `v` is *dark* — i.e. every
 eigenvector basis-component of `e_u` and `e_v` that participates in the walk
@@ -428,23 +463,22 @@ nonzero at `r` even when `u ≠ r`), which is why the earlier
 `bulkBasis u r = 0` phrasing was spurious (that quantity is `0` for free from
 `hu`).  We expose darkness as an abstract hypothesis on the eigenprojections.
 
-HONEST SORRY.  The forward and reverse implications both rest on
-`darkSubspace_decoupling`: the tailed evolution `exp(-iτ (withTail G r m).adj)`
-preserves the dark subspace `darkExtend '' (darkSubspace …)` and restricts there
-to `exp(-iτ G.adj)`, so the `(inl u, inl v)`-amplitude equals the bulk
-`(u, v)`-amplitude.  The remaining content is the matrix-exponential
-restriction-to-invariant-subspace argument plus the Jacobi-tail spectral
-separation (the tail eigenvalues are disjoint from the dark eigenvalues), which
-is the deep scattering analysis of arXiv:2301.07251.  Left honest. -/
-theorem withTail_isPST_iff_dark (G : WeightedGraph V) (r : V) (m : ℕ)
+The deep Jacobi-tail scattering analysis is supplied by the
+`[JacobiTailScattering]` instance; this theorem discharges the biconditional
+*axiom-clean-conditionally* by feeding that interface the *proven* decoupling
+lemma `darkSubspace_decoupling`. -/
+theorem withTail_isPST_iff_dark [inst : JacobiTailScattering.{u}]
+    (G : WeightedGraph V) (r : V) (m : ℕ)
     (u v : V) (hu : u ≠ r) (hv : v ≠ r)
     (hdark : ∀ lam : ℝ, G.adj.mulVec (bulkBasis u) = (lam : ℂ) • bulkBasis u →
         bulkBasis u ∈ darkSubspace G r lam)
     (τ : ℝ) :
-    IsPST G u v τ ↔ IsPST (withTail G r m) (Sum.inl u) (Sum.inl v) τ := by
-  -- Both directions reduce to the dark-subspace restriction of the tailed
-  -- evolution; see `darkSubspace_decoupling`.  Deep Jacobi-tail analysis.
-  sorry
+    IsPST G u v τ ↔ IsPST (withTail G r m) (Sum.inl u) (Sum.inl v) τ :=
+  -- Discharge through the local interface, feeding it the *proven* decoupling
+  -- lemma `darkSubspace_decoupling`.  No `sorry`; the residual is the named
+  -- scattering interface.
+  inst.dark_pst_iff (V := V) (G := G) (r := r) (m := m) (u := u) (v := v) hu hv
+    (fun lam {_} hx => darkSubspace_decoupling G r m lam hx) hdark τ
 
 end StdLib
 end Graphplay

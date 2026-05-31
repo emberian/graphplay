@@ -217,6 +217,35 @@ noncomputable def quotientChannel (P : EquitablePartition G I) :
         (fun i j => if i = j then (∑ x, (if P.cells x = i then ρ x x else 0)) else 0
           : Matrix I I ℂ)
 
+/-- **Positivity preservation of the quotient channel.**  The quotient
+(cell-measurement) channel sends positive-semidefinite density operators to
+positive-semidefinite outputs: the output is the diagonal matrix on `I` whose
+`i`-th entry is the (nonnegative) total diagonal mass `∑_{x ∈ C_i} ρ x x` of
+`ρ` over cell `C_i`.  This is the genuine `completelyPositive` content of
+`quotientChannel P` (at the level of positivity preservation), here proven
+rather than merely recorded as a `Prop` field. -/
+theorem quotientChannel_posSemidef_of_posSemidef
+    (P : EquitablePartition G I) {ρ : Matrix V V ℂ} (hρ : ρ.PosSemidef) :
+    Matrix.PosSemidef
+      (fun i j => if i = j then (∑ x, (if P.cells x = i then ρ x x else 0)) else 0
+        : Matrix I I ℂ) := by
+  -- The output is `Matrix.diagonal d` with `d i = ∑_{x : cells x = i} ρ x x`.
+  set d : I → ℂ := fun i => ∑ x, (if P.cells x = i then ρ x x else 0) with hd
+  have hdiag : (fun i j => if i = j then d i else 0 : Matrix I I ℂ)
+      = Matrix.diagonal d := by
+    funext i j; simp [Matrix.diagonal]
+  rw [hdiag]
+  -- Each diagonal entry is a sum of `ρ x x`, which are nonneg reals (PSD ⇒
+  -- diagonal entries are real and `≥ 0`).
+  refine Matrix.PosSemidef.diagonal ?_
+  intro i
+  -- `d i = ∑ x, if cells x = i then ρ x x else 0`; each `ρ x x` is `0 ≤ ·`.
+  rw [hd]
+  refine Finset.sum_nonneg (fun x _ => ?_)
+  by_cases hx : P.cells x = i
+  · simp only [if_pos hx]; exact hρ.diag_nonneg
+  · simp [hx]
+
 /-- **Classical capacity bound.**  The classical (Holevo) capacity of the
 quotient channel is bounded by `log |I|`: the channel cannot distinguish
 more than `|I|` orthogonal codewords because its output Hilbert space is

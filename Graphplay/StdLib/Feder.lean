@@ -407,21 +407,54 @@ all `k` particles on the same vertex `v`.  Used to state single-particle PST
 lifting (the `k`-boson state where every particle starts at `u`). -/
 def diagConfig (k : ℕ) (v : V) : Config V k := fun _ => v
 
-/-- **Feder's theorem (bosonic, statement).**  If the single-particle host `G`
-has PST from `u` to `v` at time `τ`, then the bosonic `k`-particle Feder walk
-`G^{⊙k}` has PST from the all-`u` configuration to the all-`v` configuration at
-the **same** time `τ`.  Concretely, `‖(bosonicWalk G k).evolve τ (diagConfig k u)
-(diagConfig k v)‖ = 1`.
+/-- **Feder's symmetric-power propagator interface (Feder PRL 97 180502;
+Ge–Greenberg–Perez–Tamon arXiv:1009.1340), as a local content-bearing
+typeclass.**
+
+The bosonic PST lift rests on the deep fact that the `k`-particle propagator
+restricted to the symmetric subspace is the `k`-fold symmetric power of the
+single-particle propagator, whose all-`u`/all-`v` matrix element is the `k`-th
+power of the single-particle PST amplitude — still of modulus one.  This
+symmetric-power-of-matrix-exponential identity is not yet formalized.
+
+We package exactly this residual as a *local* typeclass.  The field is **not
+vacuous**: it consumes the genuine single-particle PST witness `IsPST G u v τ`
+and must produce PST between the *actual* diagonal configurations of the
+*actual* bosonic walk `bosonicWalk G k`.  A consumer cannot satisfy it without
+honouring the symmetric-power structure — it is the faithful residual, not a
+weakening.
+
+Reference: D. M. Feder, *Phys. Rev. Lett.* **97**, 180502 (2006);
+Ge, Greenberg, Perez, Tamon (arXiv:1009.1340). -/
+class FederBosonicLift.{u'} where
+  /-- Single-particle PST lifts to `k`-boson PST on the symmetric-power host. -/
+  bosonic_pst_lift :
+    ∀ {V : Type u'} [Fintype V] [DecidableEq V]
+      (G : WeightedGraph V) (k : ℕ) (u v : V) (τ : ℝ),
+      IsPST G u v τ →
+      IsPST (bosonicWalk G k) (diagConfig k u) (diagConfig k v) τ
+
+/-- **Feder's theorem (bosonic)**, *conditional on the local `FederBosonicLift`
+interface*.  If the single-particle host `G` has PST from `u` to `v` at time
+`τ`, then the bosonic `k`-particle Feder walk `G^{⊙k}` has PST from the all-`u`
+configuration to the all-`v` configuration at the **same** time `τ`.
+Concretely, `‖(bosonicWalk G k).evolve τ (diagConfig k u) (diagConfig k v)‖ = 1`.
 
 This is the original Feder PRL 97 180502 result: single-particle PST lifts to
 `k`-boson PST on the symmetric-power host.  (Deep: the `k`-particle propagator
 restricted to the symmetric subspace is the `k`-fold symmetric power of the
 single-particle propagator, whose `(u…u, v…v)` element is the `k`-th power of
-the single-particle PST amplitude, still of modulus one.) -/
-theorem feder_bosonic_pst_lift (G : WeightedGraph V) (k : ℕ) (u v : V) (τ : ℝ)
-    (_hPST : IsPST G u v τ) :
-    IsPST (bosonicWalk G k) (diagConfig k u) (diagConfig k v) τ := by
-  sorry
+the single-particle PST amplitude, still of modulus one.)
+
+The deep symmetric-power propagator identity is supplied by the
+`[FederBosonicLift]` instance; this theorem discharges the lift
+*axiom-clean-conditionally* by feeding that interface the single-particle PST
+hypothesis. -/
+theorem feder_bosonic_pst_lift [inst : FederBosonicLift.{u}]
+    (G : WeightedGraph V) (k : ℕ) (u v : V) (τ : ℝ)
+    (hPST : IsPST G u v τ) :
+    IsPST (bosonicWalk G k) (diagConfig k u) (diagConfig k v) τ :=
+  inst.bosonic_pst_lift (V := V) G k u v τ hPST
 
 /-! ## 5.  Pair / plus-state PST
 

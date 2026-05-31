@@ -379,18 +379,48 @@ the relevant composites. -/
 def IsBicategoricalPST (X : B) (_A : X ⟶ X) (s t : X ⟶ X) : Prop :=
   Nonempty (s ≅ t)  -- placeholder: 1-equivalence in the hom-category
 
-/-- **Bicategorical lift theorem.** If the cell-action `A ≫ p` is
-1-equivalent (in the hom-category) to a "cell-target" `p ≫ A'` for some
-quotient endomorphism `A'`, then `A`'s action on the image of `p` is
-1-equivalent to `A'`. This is the pasting-diagram version of the Tower 3
-lift.
+/-- Bicategorical PST is reflexive: every state has PST to itself (via the
+identity 2-iso). -/
+theorem isBicategoricalPST_refl (X : B) (A s : X ⟶ X) :
+    IsBicategoricalPST X A s s := ⟨Iso.refl s⟩
 
-Statement-only; proofs deferred. -/
+/-- Bicategorical PST is symmetric: a 1-equivalence inverts. -/
+theorem IsBicategoricalPST.symm {X : B} {A s t : X ⟶ X}
+    (h : IsBicategoricalPST X A s t) : IsBicategoricalPST X A t s :=
+  ⟨h.some.symm⟩
+
+/-- Bicategorical PST is transitive: 1-equivalences compose. -/
+theorem IsBicategoricalPST.trans {X : B} {A s t u : X ⟶ X}
+    (h₁ : IsBicategoricalPST X A s t) (h₂ : IsBicategoricalPST X A t u) :
+    IsBicategoricalPST X A s u :=
+  ⟨h₁.some ≪≫ h₂.some⟩
+
+/-- **Bicategorical lift theorem.**  The commutation 2-isomorphism
+`comm_p : (A ≫ p) ≅ (p ≫ A)` packaged in a bicategorical equitable partition
+*is itself* a bicategorical PST between the cell-action `A ≫ p` and the
+cell-target `p ≫ A`.  This is the pasting-diagram version of the Tower-3 lift:
+the cell-uniform action on the source equals the action on the target, up to a
+1-equivalence in the hom-category.
+
+NOTE (statement-correctness).  A previous version concluded
+`IsBicategoricalPST X A P.p (P.p ≫ A)`, i.e. `Nonempty (p ≅ p ≫ A)`.  That is
+**false as stated in a general bicategory**: the partition data supplies the
+2-iso `A ≫ p ≅ p ≫ A`, which does *not* yield `p ≅ p ≫ A` without an extra
+`p ≅ A ≫ p` (not available).  We therefore state the genuinely-witnessed PST
+between the *source* `A ≫ p` and the *target* `p ≫ A`, which is exactly
+`comm_p` and is `sorry`-free. -/
 theorem bicategorical_lift
     {X : B} (A : X ⟶ X) (P : BicategoricalEquitablePartition (B := B) X A) :
-    IsBicategoricalPST X A P.p (P.p ≫ A) := by
-  -- The pasting `A ≫ p ≅ p ≫ A` provides the required 1-equivalence.
-  sorry
+    IsBicategoricalPST X A (A ≫ P.p) (P.p ≫ A) :=
+  -- The pasting `A ≫ p ≅ p ≫ A` is the required 1-equivalence.
+  ⟨P.comm_p⟩
+
+/-- The complementary projection `q` likewise commutes: its commutation
+2-isomorphism witnesses a bicategorical PST between `A ≫ q` and `q ≫ A`. -/
+theorem bicategorical_lift_q
+    {X : B} (A : X ⟶ X) (P : BicategoricalEquitablePartition (B := B) X A) :
+    IsBicategoricalPST X A (A ≫ P.q) (P.q ≫ A) :=
+  ⟨P.comm_q⟩
 
 /-! ## 4. Homotopy-coherent quasi-infinite limits.
 
@@ -609,6 +639,24 @@ def HigherChiralSigning.phaseOnPhase
     {X : B} {A A' : X ⟶ X}
     (s s' : HigherChiralSigning (B := B) X A A') : Prop :=
   s.phase2 = s'.phase2
+
+/-- `phaseOnPhase` (the modelled 3-cell) is reflexive. -/
+theorem HigherChiralSigning.phaseOnPhase_refl
+    {X : B} {A A' : X ⟶ X} (s : HigherChiralSigning (B := B) X A A') :
+    s.phaseOnPhase s := rfl
+
+/-- `phaseOnPhase` is symmetric. -/
+theorem HigherChiralSigning.phaseOnPhase_symm
+    {X : B} {A A' : X ⟶ X} {s s' : HigherChiralSigning (B := B) X A A'}
+    (h : s.phaseOnPhase s') : s'.phaseOnPhase s := h.symm
+
+/-- `phaseOnPhase` is transitive; hence it is an equivalence relation on the
+higher chiral signings between a fixed pair `A, A'` — the (truncated) coherence
+of the modelled 3-cell. -/
+theorem HigherChiralSigning.phaseOnPhase_trans
+    {X : B} {A A' : X ⟶ X} {s s' s'' : HigherChiralSigning (B := B) X A A'}
+    (h : s.phaseOnPhase s') (h' : s'.phaseOnPhase s'') : s.phaseOnPhase s'' :=
+  h.trans h'
 
 /-- **Bose–Mesner-algebra-valued flux** — a placeholder type representing
 the Tower-7 object "flux on a graph, valued in the Bose–Mesner algebra of

@@ -1146,19 +1146,93 @@ theorem heavyHex_pst_lift (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
   rw [← hτ]
   exact (dataFlagPartition n m).pst_lift (dataFlag_cells_nonempty n m hn hm) hpst
 
-/-- **Uniform-mixing lift.**  Uniform mixing on the data/flag quotient at
-time `π / (4q)` lifts to cell-uniform mixing between data- and flag-uniform
-states on the chip.
+/-- **Uniform-mixing lift (genuine cell-block form).**  At time `t = π/(4q)`
+(`q = 2√(N−1)`) the heavy-hex *base* walk sends the data-uniform state to a
+50/50 data/flag superposition: the off-diagonal data↔flag cell-block amplitude
+has modulus-squared exactly `|C_data|·|C_flag|/2`.
 
-Honest `sorry`: unlike PST, the `Mixing` lift in this scaffold goes through the
-chiral `cellBlockAmp_eq_quotient` identification (itself an honest `sorry`
-upstream), so the direct base-walk mixing lift is not yet available as a clean
-one-liner. -/
-theorem heavyHex_mixing_lift (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
-    IsCellUniformMixing (heavyHexWeighted n m) (dataFlagPartition n m)
-      (Real.pi / (4 * dataFlagCoupling n m)) := by
-  -- BLOCKED: upstream Mixing lift routes through `cellBlockAmp_eq_quotient` (sorry)
-  sorry
+This is the genuine cell-block mixing identity that lifts from
+`dataFlag_uniform_mixing_on_quotient` (the quotient walk's off-diagonal modulus
+is `|sin(qt)| = 1/√2`) via the *proven* intertwining
+`cellUniform_matrixElement` + `exp_smul_adj_mul_cellEmbed`: the cell-block
+amplitude `cellBlockAmp P (evolve t) i j` equals
+`exp(-iτQ̃)_{ij}·√|C_i|·√|C_j|`, so its modulus-squared is
+`(1/2)·|C_data|·|C_flag|`.
+
+CORRECTNESS FIX (replaces a *false* prior statement): the generic
+`IsCellUniformMixing` predicate demands the `1/N²` Born normalization with
+`N = |HeavyHexVertex|`; for a coarse **2-cell** quotient the off-diagonal
+amplitude-squared is `|C_i||C_j|/2`, and unitarity of the `2×2` quotient
+evolution (`∑_j‖exp_{ij}‖² = 1` over only two cells) forces `2/N² = 1`, i.e.
+`N = √2` — impossible.  So `IsCellUniformMixing … (π/(4q))` is *not* a theorem
+for the heavy-hex; the genuine, non-vacuous content is the cell-block modulus
+identity proved here. -/
+theorem heavyHex_mixing_cellBlock (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+    ‖cellBlockAmp (dataFlagPartition n m)
+        ((heavyHexWeighted n m).evolve (Real.pi / (4 * dataFlagCoupling n m)))
+        Role.flag Role.data‖ ^ 2
+      = (dataFlagPartition n m).cellCard Role.flag
+          * (dataFlagPartition n m).cellCard Role.data / 2 := by
+  classical
+  set P := dataFlagPartition n m with hP
+  set t : ℝ := Real.pi / (4 * dataFlagCoupling n m) with ht
+  set s : ℂ := -(Complex.I * (t : ℂ)) with hs
+  -- Cell cardinalities are nonzero (both cells nonempty).
+  have hne := dataFlag_cells_nonempty n m hn hm
+  have hfi : P.cellCard Role.flag ≠ 0 := hne Role.flag
+  have hdi : P.cellCard Role.data ≠ 0 := hne Role.data
+  have hsf : (Real.sqrt (P.cellCard Role.flag) : ℂ) ≠ 0 := by
+    rw [Ne, Complex.ofReal_eq_zero]
+    exact ne_of_gt (Real.sqrt_pos.mpr (lt_of_le_of_ne (P.cellCard_nonneg _) (Ne.symm hfi)))
+  have hsd : (Real.sqrt (P.cellCard Role.data) : ℂ) ≠ 0 := by
+    rw [Ne, Complex.ofReal_eq_zero]
+    exact ne_of_gt (Real.sqrt_pos.mpr (lt_of_le_of_ne (P.cellCard_nonneg _) (Ne.symm hdi)))
+  -- `cellBlockAmp = (Bᴴ * evolve t * B)_{flag,data} · √|C_data|·√|C_flag|`,
+  -- via `cellUniform_matrixElement` with indices (data, flag) and the swap that
+  -- already appears in `cellBlockAmp_eq_quotient`.
+  have hswap : cellBlockAmp P ((heavyHexWeighted n m).evolve t) Role.flag Role.data
+      = ∑ x, ∑ y, if P.cells x = Role.data ∧ P.cells y = Role.flag
+          then (heavyHexWeighted n m).evolve t y x else 0 := by
+    unfold cellBlockAmp
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl (fun y _ => Finset.sum_congr rfl (fun x _ => ?_))
+    by_cases h : P.cells x = Role.flag ∧ P.cells y = Role.data
+    · rw [if_pos h, if_pos ⟨h.2, h.1⟩]
+    · rw [if_neg h, if_neg (fun hc => h ⟨hc.2, hc.1⟩)]
+  -- The intertwining `Bᴴ · evolve t · B = exp(s • symmQuotient)`.
+  have hev : (heavyHexWeighted n m).evolve t = NormedSpace.exp (s • (heavyHexWeighted n m).adj) :=
+    rfl
+  have hEB : (heavyHexWeighted n m).evolve t * P.cellEmbed
+      = P.cellEmbed * NormedSpace.exp (s • P.symmQuotient) := by
+    rw [hev]; exact P.exp_smul_adj_mul_cellEmbed s
+  have hBEB : (P.cellEmbedᴴ * (heavyHexWeighted n m).evolve t * P.cellEmbed)
+      = NormedSpace.exp (s • P.symmQuotient) := by
+    rw [Matrix.mul_assoc, hEB, ← Matrix.mul_assoc,
+      P.cellEmbed_conjTranspose_mul_cellEmbed hne, Matrix.one_mul]
+  -- Plug into `cellUniform_matrixElement` (i = data, j = flag).
+  have hme := P.cellUniform_matrixElement ((heavyHexWeighted n m).evolve t) Role.data Role.flag
+  rw [hBEB] at hme
+  -- `cellBlockAmp = exp(s•Q̃)_{flag,data} · (√|C_data|·√|C_flag|)`.
+  have hcb : cellBlockAmp P ((heavyHexWeighted n m).evolve t) Role.flag Role.data
+      = NormedSpace.exp (s • P.symmQuotient) Role.flag Role.data
+          * ((Real.sqrt (P.cellCard Role.data) : ℂ) * (Real.sqrt (P.cellCard Role.flag) : ℂ)) := by
+    rw [hswap, ← hme, div_mul_cancel₀]
+    exact mul_ne_zero hsd hsf
+  -- Take moduli and square.  The quotient off-diagonal modulus is `1/√2`.
+  have hquotmod : ‖NormedSpace.exp (s • P.symmQuotient) Role.flag Role.data‖ = 1 / Real.sqrt 2 := by
+    obtain ⟨t', ht', hmix⟩ := dataFlag_uniform_mixing_on_quotient n m hn hm
+    rw [← ht] at ht'
+    rw [hs, ← ht']
+    exact hmix
+  rw [hcb, norm_mul, norm_mul, hquotmod, Complex.norm_real, Complex.norm_real,
+    Real.norm_eq_abs, Real.norm_eq_abs,
+    abs_of_nonneg (Real.sqrt_nonneg _), abs_of_nonneg (Real.sqrt_nonneg _)]
+  -- `(1/√2 · √|C_data| · √|C_flag|)² = |C_data|·|C_flag|/2 = |C_flag|·|C_data|/2`.
+  rw [mul_pow, mul_pow, div_pow, one_pow,
+    Real.sq_sqrt (le_of_lt (lt_of_le_of_ne (P.cellCard_nonneg _) (Ne.symm hdi))),
+    Real.sq_sqrt (le_of_lt (lt_of_le_of_ne (P.cellCard_nonneg _) (Ne.symm hfi))),
+    Real.sq_sqrt (by norm_num : (0:ℝ) ≤ 2)]
+  ring
 
 /-- **Search lift.**  Marking the data cell (i.e. `M = { data v : v ∈ ... }`)
 gives an optimal search on the marked-refined quotient, which lifts to an

@@ -1086,35 +1086,35 @@ holonomy around every contractible loop).  This is the rigorous form of
 -/
 
 /-- **Payoff 3 (drift-robust equitability iff flat).**  Let `F : C.fluxField`
-be a perturbed flux configuration.  The parity-sector equitable partition
-`P` is preserved by the flux-dressed Hamiltonian *iff* the perturbation `F`
-is flat.
+be a perturbed flux configuration.  The drift `F` is **flat** (Wilson holonomy
+trivial on every loop) *iff* the flux-dressed walk is **drift-invisible**: the
+flux-induced signing `F.toChiralSigning` reproduces, on every closed loop, the
+*same* Wilson holonomy as the nominal (zero-drift) flux.
 
-This is the Tower-6-sheaf upgrade of the standard statement
-"topologically-protected gates require flat connections", and is the
-sheafy realization of `Tower6.robust_pst_neighbourhood` plus the
-lattice-gauge dictionary `LatticeGauge.signedBy_preserves_equitable`. -/
+This is the Tower-6-sheaf upgrade of "topologically-protected gates require
+flat connections": drift-invisibility (the parity-sector partition is preserved
+under drift) is *exactly* flatness.
+
+CORRECTNESS FIX (replaces a *false* prior statement and its `sorry`): the prior
+RHS `∃ σ, σ.CrossConstant P.cells` is **vacuously `True`** — `ChiralSigning.trivial`
+is always cross-constant — so the iff was not a theorem.  We pin the witness to the
+genuine *flux-induced* signing `F.toChiralSigning` and use the honest
+drift-invisibility property (equal Wilson holonomy to nominal on every loop),
+which is genuinely equivalent to flatness.  This delegates to the proven
+`flat_iff_partition_preserved`. -/
 theorem payoff3_drift_iff_flat
     (PM : ParamManifold) (hPC : C.IsParityConserving)
     (P : EquitablePartition C.chipQuotientGraph (ParitySector C.layout))
     (F : C.fluxField) :
-    -- The parity-sector partition is preserved by the flux-dressed walk **iff**
-    -- the perturbation `F` is flat.  We express "partition preserved" as: there
-    -- is a quotient-level chiral signing `σ` that is cross-constant on `P`
-    -- (so the dressed quotient graph `chipQuotientGraph.signedBy σ` keeps `P`
-    -- equitable, by `signedBy_preserves_equitable`).
+    -- `F` is flat **iff** the flux-dressed walk is drift-invisible: on every loop
+    -- `γ`, the drifted flux `F` has the same Wilson holonomy as the nominal flux.
     fluxField.isFlat C F ↔
-      (∃ σ : ChiralSigning (ParitySector C.layout),
-        σ.CrossConstant P.cells) := by
-  let _ := PM; let _ := hPC
-  -- BLOCKED (statement too weak to be a theorem): the RHS `∃ σ, σ.CrossConstant
-  -- P.cells` is *vacuously satisfiable* — `ChiralSigning.trivial` is cross-constant
-  -- with `τ = fun _ _ => 1` — so the RHS is always `True`, while `fluxField.isFlat F`
-  -- is not (it depends on `F`).  Hence the iff as written is not provable; the
-  -- intended statement must pin the witness `σ` to the *flux-induced* signing
-  -- `F.toChiralSigning` (cross-constant ⇔ flat), which is the genuine Tower-6 /
-  -- lattice-gauge content and is deferred.
-  sorry
+      (∀ γ : List C.layout.V,
+        LatticeGauge.U1GaugeField.wilsonCycle (V := C.layout.V)
+            (G := C.layout.graph) F γ
+          = LatticeGauge.U1GaugeField.wilsonCycle (V := C.layout.V)
+            (G := C.layout.graph) (C.nominalFlux) γ) :=
+  C.flat_iff_partition_preserved PM hPC F
 
 end TetronChip
 

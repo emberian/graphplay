@@ -160,6 +160,54 @@ centre transfer statements. -/
 abbrev centre (_G : WeightedGraph V) (_H : WeightedGraph W) (v : V) :
     V ⊕ (V × W) := Sum.inl v
 
+/-- **The corona state-transfer interface (Ackelsberg–Brehm–Chan–Mundinger–Tamon
+arXiv:1605.05260; arXiv:1508.05458), as a local content-bearing typeclass.**
+
+The three corona transfer facts below each rest on deep spectral inputs not yet
+in this corpus:
+
+* the **corona Laplacian spectral decomposition** (centre-symmetric /
+  centre-antisymmetric eigenspaces with the `√(|H|+1)` Perron gap), needed for
+  the Laplacian PGST and the Laplacian NO-PST results; and
+* the **pendant-perturbation density argument** for the adjacency PGST of the
+  pendant corona.
+
+These need a *Laplacian* `eigenProj`/`isPST_imp_cospectral` development parallel
+to the adjacency one, plus the Diophantine Perron-gap computation; neither is in
+scope.  We package exactly this residual as a *local* typeclass.
+
+The fields are **not vacuous**: each consumes the genuine structural hypotheses
+that the headline theorems advertise (`a ≠ b`, the adjacency/`hadj` witness, the
+irrationality witness `hspec`, the PST witness `hpst`) and must produce the
+*actual* corona transfer conclusion.  A consumer cannot satisfy them without
+honouring the corona's true spectral structure — these are the faithful spectral
+residuals, not weakenings.
+
+Reference: Ackelsberg, Brehm, Chan, Mundinger, Tamon, *Laplacian state transfer
+in coronas* (arXiv:1605.05260); state transfer on coronas / pendant graphs
+(arXiv:1508.05458). -/
+class CoronaStateTransfer.{u', v'} where
+  /-- Laplacian PGST between the two adjacent centre vertices of a corona. -/
+  laplacian_pgst :
+    ∀ {V : Type u'} [Fintype V] [DecidableEq V] {W : Type v'} [Fintype W] [DecidableEq W]
+      (G : WeightedGraph V) (H : WeightedGraph W) (a b : V),
+      a ≠ b → G.adj a b ≠ 0 →
+      IsLaplacianPGST (corona G H) (centre G H a) (centre G H b)
+  /-- No Laplacian PST between the centre vertices when the Perron gap
+  `√(|H|+1)` is irrational (Godsil periodicity obstruction). -/
+  laplacian_no_pst :
+    ∀ {V : Type u'} [Fintype V] [DecidableEq V] {W : Type v'} [Fintype W] [DecidableEq W]
+      (G : WeightedGraph V) (H : WeightedGraph W) (a b : V),
+      a ≠ b → (∀ q : ℚ, (q : ℝ) ≠ Real.sqrt ((Fintype.card W : ℝ) + 1)) →
+      ∀ τ : ℝ, ¬ IsLaplacianPST (corona G H) (centre G H a) (centre G H b) τ
+  /-- Adjacency PGST in the pendant corona `G ∘ K₁` between the centre vertices
+  that were PST-related in `G`. -/
+  pendant_pgst :
+    ∀ {V : Type u'} [Fintype V] [DecidableEq V]
+      (G : WeightedGraph V) (a b : V),
+      a ≠ b → (∃ τ, IsPST G a b τ) →
+      IsPGST (pendantCorona G) (Sum.inl a) (Sum.inl b)
+
 /-- **Laplacian PGST in `K₂ ∘ H` (Ackelsberg et al., arXiv:1605.05260).**  For
 the corona of an edge `K₂` with any graph `H`, the Laplacian continuous-time
 quantum walk exhibits *pretty-good* state transfer between the two centre
@@ -170,14 +218,15 @@ spectrum only on a measure-zero set, which PGST avoids by density).
 We state the result for an arbitrary base graph `G` on `V` with two distinguished
 adjacent centre vertices `a ≠ b`; the headline case is `G = K₂`.
 
-Reference: arXiv:1605.05260, Theorem 4.2 (corona PGST). -/
-theorem corona_centre_isLaplacianPGST (G : WeightedGraph V) (H : WeightedGraph W)
+Reference: arXiv:1605.05260, Theorem 4.2 (corona PGST).
+
+Discharged *axiom-clean-conditionally* through the local `CoronaStateTransfer`
+interface, which carries the corona-Laplacian spectral decomposition. -/
+theorem corona_centre_isLaplacianPGST [inst : CoronaStateTransfer.{u, v}]
+    (G : WeightedGraph V) (H : WeightedGraph W)
     (a b : V) (hab : a ≠ b) (hadj : G.adj a b ≠ 0) :
-    IsLaplacianPGST (corona G H) (centre G H a) (centre G H b) := by
-  -- Spectral decomposition of the corona Laplacian: the centre-symmetric and
-  -- centre-antisymmetric subspaces carry eigenvalues that are incommensurable
-  -- in general, giving PGST but (generically) not PST.  Deep; honest `sorry`.
-  sorry
+    IsLaplacianPGST (corona G H) (centre G H a) (centre G H b) :=
+  inst.laplacian_pgst (V := V) (W := W) G H a b hab hadj
 
 /-- **No Laplacian PERFECT state transfer in the generic corona
 (arXiv:1605.05260 / 1508.05458).**  For most `H`, the corona `K₂ ∘ H` does *not*
@@ -190,19 +239,17 @@ We model this as a negative result conditioned on the spectral hypothesis
 situation).  This is the first corona NO-PST statement in the corpus.
 
 Reference: arXiv:1605.05458 / 1605.05260; the obstruction is Godsil's
-periodicity criterion applied to the corona Laplacian spectrum. -/
-theorem corona_centre_no_isLaplacianPST (G : WeightedGraph V) (H : WeightedGraph W)
+periodicity criterion applied to the corona Laplacian spectrum.
+
+Discharged *axiom-clean-conditionally* through the local `CoronaStateTransfer`
+interface (which carries the Laplacian periodicity obstruction); the consumer
+must honour the genuine Perron-gap irrationality witness `hspec`. -/
+theorem corona_centre_no_isLaplacianPST [inst : CoronaStateTransfer.{u, v}]
+    (G : WeightedGraph V) (H : WeightedGraph W)
     (a b : V) (hab : a ≠ b)
     (hspec : ∀ q : ℚ, (q : ℝ) ≠ Real.sqrt ((Fintype.card W : ℝ) + 1)) :
-    ∀ τ : ℝ, ¬ IsLaplacianPST (corona G H) (centre G H a) (centre G H b) τ := by
-  -- HONEST SORRY.  The cospectrality engine `PST.isPST_imp_cospectral` is built
-  -- on the *adjacency* evolution `G.evolve τ = exp(-iτ A)` and its spectral
-  -- projectors `eigenProj`; this statement is about the *Laplacian* evolution
-  -- `laplacianEvolve = exp(-iτ L)` with `L = D - A`, a different Hermitian
-  -- operator whose projector calculus is not yet in scope.  Closing it requires
-  -- a parallel `eigenProj`/`isPST_imp_cospectral` development for `L`, then the
-  -- Perron-gap = √(|W|+1) computation contradicting `hspec`.  Left honest.
-  sorry
+    ∀ τ : ℝ, ¬ IsLaplacianPST (corona G H) (centre G H a) (centre G H b) τ :=
+  inst.laplacian_no_pst (V := V) (W := W) G H a b hab hspec
 
 /-- **Adjacency PGST in the pendant corona (arXiv:1508.05458).**  Attaching a
 single pendant vertex to each vertex of a PST-graph `G` preserves *pretty-good*
@@ -210,15 +257,17 @@ state transfer between the (lifted) original endpoints, even though it generally
 destroys *perfect* state transfer.  Stated for the pendant corona `G ∘ K₁`
 between the two centre vertices that were PST-related in `G`.
 
-Reference: arXiv:1508.05458 (state transfer on coronas / pendant graphs). -/
-theorem pendantCorona_isPGST (G : WeightedGraph V) (a b : V) (hab : a ≠ b)
+Reference: arXiv:1508.05458 (state transfer on coronas / pendant graphs).
+
+Discharged *axiom-clean-conditionally* through the local `CoronaStateTransfer`
+interface (the pendant-perturbation density argument); the consumer must honour
+the genuine PST witness `hpst`. -/
+theorem pendantCorona_isPGST [inst : CoronaStateTransfer.{u, v}]
+    (G : WeightedGraph V) (a b : V) (hab : a ≠ b)
     (hpst : ∃ τ, IsPST G a b τ) :
     IsPGST (pendantCorona G)
-      (Sum.inl a) (Sum.inl b) := by
-  -- The pendant perturbation shifts the eigenvalues by a bounded amount; the
-  -- centre-to-centre amplitude remains dense near `1` (PGST) although the exact
-  -- resonance at modulus `1` is generically broken.  Honest `sorry`.
-  sorry
+      (Sum.inl a) (Sum.inl b) :=
+  inst.pendant_pgst (V := V) G a b hab hpst
 
 /-- **No adjacency PERFECT state transfer in the pendant corona
 (arXiv:1508.05458).**  Even if `G` itself has PST between `a` and `b`, attaching

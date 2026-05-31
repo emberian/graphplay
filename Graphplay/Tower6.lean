@@ -275,6 +275,42 @@ theorem localAdj_selfAdjoint (F : SheafGraph X) (U : Opens X) :
   congr 1
   exact F.adj_selfAdjoint
 
+/-! #### Restriction functoriality.
+
+The restriction maps come from the underlying presheaf functor, so they satisfy
+the functor laws: restricting along the identity inclusion is the identity hom,
+and restricting along a composite `W ≤ V ≤ U` is the composite of restrictions.
+These are genuinely-reachable algebraic-bookkeeping facts (presheaf
+functoriality), not placeholders. -/
+
+/-- Restriction along the identity inclusion `U ≤ U` is the identity hom on
+`A(U)` (pointwise). -/
+theorem restrict_self (F : SheafGraph X) (U : Opens X) (x : (F.section_ U).carrier) :
+    (F.restrict (le_refl U)).toFun x = x := by
+  unfold restrict
+  have : (homOfLE (le_refl U)).op = 𝟙 (op U) := rfl
+  rw [this, F.sheaf.presheaf.map_id]
+  rfl
+
+/-- Restriction is functorial: restricting `A(U) → A(W)` along `W ≤ U` factors
+through any intermediate `V` with `W ≤ V ≤ U` as the composite of the two
+restrictions. -/
+theorem restrict_comp (F : SheafGraph X) {U V W : Opens X}
+    (hVU : V ≤ U) (hWV : W ≤ V) (x : (F.section_ U).carrier) :
+    (F.restrict (hWV.trans hVU)).toFun x
+      = (F.restrict hWV).toFun ((F.restrict hVU).toFun x) := by
+  unfold restrict
+  have hcomp : (homOfLE (hWV.trans hVU)).op
+      = (homOfLE hVU).op ≫ (homOfLE hWV).op := rfl
+  rw [hcomp, F.sheaf.presheaf.map_comp]
+  rfl
+
+/-- The local adjacency at the top open is the global adjacency itself:
+restricting along `⊤ ≤ ⊤` does nothing. -/
+theorem localAdj_top (F : SheafGraph X) : F.localAdj ⊤ = F.adj := by
+  unfold localAdj
+  exact F.restrict_self ⊤ F.adj
+
 end SheafGraph
 
 /-! ## 3. Recovery of lower towers.
@@ -609,6 +645,16 @@ def nerveGraph (P : SheafEquitablePartition F) : SimpleGraph P.I where
     refine ⟨hij.symm, ?_⟩
     rwa [inf_comm]
   loopless := ⟨by intro i hh; exact hh.1 rfl⟩
+
+/-- Adjacency in the nerve graph is exactly "distinct cells with overlapping
+covers".  This is the defining characterisation, recorded for downstream use. -/
+theorem nerveGraph_adj_iff (P : SheafEquitablePartition F) (i j : P.I) :
+    (P.nerveGraph).Adj i j ↔ i ≠ j ∧ (P.cover i ⊓ P.cover j : Opens X) ≠ ⊥ :=
+  Iff.rfl
+
+/-- The cover indices of an adjacent pair are genuinely distinct. -/
+theorem nerveGraph_ne_of_adj (P : SheafEquitablePartition F) {i j : P.I}
+    (h : (P.nerveGraph).Adj i j) : i ≠ j := h.1
 
 /-- The skeleton sheaf is, at the categorical level, a presheaf on the
 nerve poset.  We give it as a function on `I` (the cell algebras) plus the

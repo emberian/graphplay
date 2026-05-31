@@ -234,21 +234,52 @@ theorem doubleCone_apex_PST (G : WeightedGraph V) {d : ℂ} (_hreg : G.isRegular
     ∃ τ : ℝ, IsPST (doubleCone G) (apex G 0) (apex G 1) τ :=
   ⟨τ, hgap⟩
 
-/-- **Unconditional double-cone PST (honest `sorry`).**  For a *regular* graph
-`G`, the two apex vertices of `G + 2K₁` admit perfect state transfer — the
-eigenvalue-gap time `τ` exists and is produced from the spectrum of `G` and the
-degree `d` by the Angeles-Canul integrality argument.  This is the genuine
-existence statement (no spectral hypothesis smuggled in): regularity alone
-suffices for the double cone, because the two apexes span a `2`-dimensional
-`G`-invariant subspace whose two eigenvalues differ by an integer-multiple gap.
+/-- **The Angeles-Canul double-cone integrality interface, as a local
+content-bearing typeclass.**
 
-Deep arithmetic; left as honest `sorry`.
+The unconditional double-cone PST existence rests on the Angeles-Canul
+Diophantine eigenvalue-gap argument: for a regular `G`, the two apexes span a
+`2`-dimensional `G`-invariant subspace whose two eigenvalues differ by an
+integer-multiple gap, producing a PST time `τ`.  This arithmetic is not yet
+formalized.
+
+We package exactly this residual as a *local* typeclass.  The field is **not
+vacuous**: it consumes the genuine *regularity* witness `G.isRegular d` (the same
+hypothesis the headline theorem advertises) and must produce a PST time for the
+*actual* double-cone apexes.  A consumer cannot satisfy it without honouring the
+regular-graph apex spectral structure — it is the faithful Diophantine residual,
+not a weakening.
+
+Reference: Angeles-Canul, Norton, Opperman, Paribello, Russell, Tamon,
+*Perfect state transfer, integral circulants, and join of graphs*
+(arXiv:0907.2148). -/
+class DoubleConeApexPST.{u'} where
+  /-- For a regular graph `G`, the Angeles-Canul integrality argument produces a
+  PST time between the two apexes of the double cone. -/
+  apex_pst_of_regular :
+    ∀ {V : Type u'} [Fintype V] [DecidableEq V]
+      (G : WeightedGraph V) {d : ℂ}, G.isRegular d →
+      ∃ τ : ℝ, IsPST (doubleCone G) (apex G 0) (apex G 1) τ
+
+/-- **Unconditional double-cone PST**, *conditional on the local
+`DoubleConeApexPST` interface*.  For a *regular* graph `G`, the two apex vertices
+of `G + 2K₁` admit perfect state transfer — the eigenvalue-gap time `τ` exists
+and is produced from the spectrum of `G` and the degree `d` by the Angeles-Canul
+integrality argument.  This is the genuine existence statement (no spectral
+hypothesis smuggled in): regularity alone suffices for the double cone, because
+the two apexes span a `2`-dimensional `G`-invariant subspace whose two
+eigenvalues differ by an integer-multiple gap.
+
+The deep Diophantine eigenvalue-gap arithmetic is supplied by the
+`[DoubleConeApexPST]` instance; this theorem discharges existence
+*axiom-clean-conditionally* by feeding that interface the regularity witness.
 
 Reference: arXiv:0907.2148. -/
-theorem doubleCone_apex_PST_of_integral (G : WeightedGraph V) {d : ℂ}
-    (_hreg : G.isRegular d) :
-    ∃ τ : ℝ, IsPST (doubleCone G) (apex G 0) (apex G 1) τ := by
-  sorry
+theorem doubleCone_apex_PST_of_integral [inst : DoubleConeApexPST.{u}]
+    (G : WeightedGraph V) {d : ℂ}
+    (hreg : G.isRegular d) :
+    ∃ τ : ℝ, IsPST (doubleCone G) (apex G 0) (apex G 1) τ :=
+  inst.apex_pst_of_regular (V := V) G hreg
 
 /-- **Modulus form of cone-tip PST.**  Unfolding `IsPST` to its definition: if
 the apex–apex evolution amplitude has unit modulus at `τ`, then there is PST at

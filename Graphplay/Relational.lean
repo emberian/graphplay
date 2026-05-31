@@ -199,6 +199,46 @@ theorem greatest (Q : RelStructure σ T) (label : V → T)
   have hcomp : (hlabel.toFun ∘ tup) = (label ∘ tup) := this
   rwa [hcomp] at h
 
+/-! #### `Subrel` is a preorder, with `empty`/`complete` as bottom/top.
+
+These are the order-theoretic bookkeeping facts for the containment relation
+`Subrel`.  They are genuinely-reachable structural facts (no placeholder is
+load-bearing): `Subrel` is reflexive and transitive, `empty` is below every
+structure, and `complete` is above every structure. -/
+
+/-- `Subrel` is reflexive. -/
+theorem Subrel.refl {σ : Signature} {V : Type v} (A : RelStructure σ V) :
+    Subrel A A := fun _ _ h => h
+
+/-- `Subrel` is transitive. -/
+theorem Subrel.trans {σ : Signature} {V : Type v}
+    {A B C : RelStructure σ V} (hAB : Subrel A B) (hBC : Subrel B C) :
+    Subrel A C := fun s f h => hBC s f (hAB s f h)
+
+/-- The empty structure is below every structure (it is the `Subrel`-bottom):
+its relations never hold, so the implication is vacuous. -/
+theorem empty_Subrel {σ : Signature} {V : Type v} (A : RelStructure σ V) :
+    Subrel (RelStructure.empty σ V) A := fun _ _ h => (h : False).elim
+
+/-- Every structure is below the complete structure (it is the `Subrel`-top):
+the complete structure's relations always hold. -/
+theorem Subrel_complete {σ : Signature} {V : Type v} (A : RelStructure σ V) :
+    Subrel A (RelStructure.complete σ V) := fun _ _ _ => trivial
+
+/-- `Subrel` is antisymmetric: mutual containment forces equality of the
+relation predicates, hence (by structure η) equality of the structures.
+This makes `Subrel` a genuine partial order on relational structures. -/
+theorem Subrel.antisymm {σ : Signature} {V : Type v}
+    {A B : RelStructure σ V} (hAB : Subrel A B) (hBA : Subrel B A) :
+    A = B := by
+  cases A with
+  | mk relA =>
+    cases B with
+    | mk relB =>
+      congr 1
+      funext s f
+      exact propext ⟨hAB s f, hBA s f⟩
+
 end RelPullback
 
 /-! ### Multi-pullback
@@ -697,6 +737,36 @@ def tensorProduct.pair {σ : Signature}
       simpa [Function.comp] using this
     · have := g.map_rel s tup h
       simpa [Function.comp] using this
+
+/-- **Tensor-product universal property (β-rule, first leg).**  Projecting the
+mediating map `pair f g` onto the first factor recovers `f`. -/
+theorem tensorProduct.fst_pair {σ : Signature}
+    {U : Type _} {V : Type v} {W : Type w}
+    {C : RelStructure σ U} {A : RelStructure σ V} {B : RelStructure σ W}
+    (f : Hom C A) (g : Hom C B) :
+    Hom.comp (tensorProduct.pair f g) (tensorProduct.fst A B) = f := by
+  apply Hom.ext; intro x; rfl
+
+/-- **Tensor-product universal property (β-rule, second leg).**  Projecting the
+mediating map `pair f g` onto the second factor recovers `g`. -/
+theorem tensorProduct.snd_pair {σ : Signature}
+    {U : Type _} {V : Type v} {W : Type w}
+    {C : RelStructure σ U} {A : RelStructure σ V} {B : RelStructure σ W}
+    (f : Hom C A) (g : Hom C B) :
+    Hom.comp (tensorProduct.pair f g) (tensorProduct.snd A B) = g := by
+  apply Hom.ext; intro x; rfl
+
+/-- **Tensor-product universal property (η-rule).**  Any map into a tensor
+product equals the `pair` of its two projections; hence `pair` is the *unique*
+mediating map.  Together with `fst_pair`/`snd_pair` this is the full universal
+property of `⊗r` as a categorical product in the homomorphism category. -/
+theorem tensorProduct.pair_eta {σ : Signature}
+    {U : Type _} {V : Type v} {W : Type w}
+    {C : RelStructure σ U} {A : RelStructure σ V} {B : RelStructure σ W}
+    (h : Hom C (A ⊗r B)) :
+    tensorProduct.pair (Hom.comp h (tensorProduct.fst A B))
+        (Hom.comp h (tensorProduct.snd A B)) = h := by
+  apply Hom.ext; intro x; rfl
 
 end RelStructure
 
