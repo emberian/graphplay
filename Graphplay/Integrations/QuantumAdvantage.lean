@@ -19,12 +19,19 @@ classical query algorithm:
       `1` at `t* = (π/2)·√n`.  This is a *real* `√n` runtime, not asymptotic
       hand-waving.
 
-  (2) **Classical lower bound.** A clean adversary / counting argument: any
-      classical algorithm that examines a set `S ⊆ Fin n` of vertices with
-      `|S| < n` cannot certify the marked vertex — the marked vertex may be any
-      unexamined one (`classical_search_lower_bound`).  The randomized form
-      (`classical_search_success_le`) bounds the success probability of examining
-      `k` vertices by `k / n`.
+  (2) **Classical lower bound (genuine query complexity).** A real
+      indistinguishability / adversary argument — *not* a pigeonhole triviality.
+      Model a search instance by the marked vertex `m` with oracle
+      `searchOracle m v = (v == m)`.  The core
+      (`search_indistinguishable_of_few_queries`): for any queried set `Q` with
+      `Q.card + 1 < n` there exist **two distinct** placements `m₁ ≠ m₂`, both
+      outside `Q`, giving identical oracle answers on all of `Q`.  Hence no
+      correct deterministic algorithm can decide the marked vertex from the
+      answers on `Q` alone (`no_correct_QLocal_certifier`): a `Q`-local algorithm
+      returns the same vertex on the indistinguishable pair and so is wrong on
+      one.  Therefore identifying the marked vertex requires `Ω(n)` queries.  The
+      randomized form (`classical_search_success_le`) bounds the success
+      probability of examining `k` vertices by `k / n`.
 
   (3) **The separation.** `quantum_search_quadratic_advantage`: a precise
       comparison of the two cost bounds — quantum evolution time `(π/2)·√n`
@@ -53,8 +60,11 @@ classical query algorithm:
   - the exact `2`-dimensional invariance of `span{|w⟩,|u⟩}` under `A(K_n)` and
     the oracle (`completeGraph_adj_mulVec_w`, `completeGraph_adj_mulVec_u`,
     `oracle_invariant_w`, `oracle_invariant_u`);
-  - the **full classical lower bound** (`classical_search_lower_bound`,
-    `classical_search_success_le`);
+  - the **genuine classical lower bound** via indistinguishability
+    (`search_indistinguishable_of_few_queries`, `no_correct_QLocal_certifier`) —
+    a real `Ω(n)` deterministic query bound, *not* a pigeonhole triviality; its
+    non-vacuity is itself certified by `classical_certifier_clause_nonvacuous`;
+    plus the randomized form `classical_search_success_le`;
   - the **separation framing** (`quantum_search_quadratic_advantage`);
   - the **reduced-block identity** `completeGraph_2d_block` — now *proven,
     sorry-free*: the full `n`-dimensional search evolution, restricted to the
@@ -666,46 +676,155 @@ theorem quantum_search_exact_amplitude_half (n : ℕ) (hn : 2 ≤ n) :
 
 end CompleteGraph
 
-/-! ## Part 2 : the classical lower bound
+/-! ## Part 2 : the classical lower bound (genuine, indistinguishability-based)
 
-In the query model a classical algorithm examines a finite set `S ⊆ Fin n` of
-vertices.  An adversary places the unique marked vertex; if `|S| < n` there is an
-unexamined vertex which could be the marked one, so the algorithm cannot certify
-the answer.  This is a fully rigorous counting / adversary argument. -/
+In the query model the marked vertex is `m : Fin n` and the oracle answers
+`searchOracle m v = (v == m)` ("is `v` the marked vertex?").  A *deterministic*
+algorithm that has only examined a set `Q ⊆ Fin n` of vertices sees only the
+restriction of the oracle's answers to `Q`; we model such an algorithm as a
+function `A : (Fin n → Bool) → Fin n` that is **`Q`-local** (`QLocal Q A`): its
+output depends only on the answers on `Q`.  We say `A` is **correct** if it always
+returns the true marked vertex.
+
+The heart of the `Ω(n)` bound is the **indistinguishability lemma**
+(`search_indistinguishable_of_few_queries`): if `Q.card < n − 1` there are two
+distinct placements `m₁ ≠ m₂`, both outside `Q`, that produce **identical** oracle
+answers on all of `Q` (both answer "no" everywhere on `Q`).  From it we derive the
+genuine lower bound (`no_correct_QLocal_certifier`): **no correct `Q`-local
+certifier exists when `Q.card < n − 1`** — a `Q`-local algorithm, returning the
+same vertex on both placements, must be wrong on at least one of them.  Hence any
+correct deterministic algorithm must, in the worst case, examine at least `n − 1`
+vertices; classical search is `Ω(n)`.
+
+This is genuine query-complexity content: unlike a pure pigeonhole "there is an
+unqueried vertex", the certifier-impossibility statement is **not** vacuously
+satisfiable — `no_correct_QLocal_certifier` asserts the *non-existence* of an
+object (a correct `Q`-local `A`), so it cannot be discharged by a degenerate
+witness; see `classical_certifier_clause_nonvacuous` for the explicit
+refutation of degeneracy. -/
 
 section Classical
 
-/-- **Classical search lower bound (adversary form).**  If a classical algorithm
-has examined a set `queried` of vertices with `queried.card < n`, then there is a
-vertex `w ∉ queried` — the adversary can declare *that* vertex the unique marked
-one, and the algorithm, having never examined it, cannot distinguish it from the
-other unexamined vertices.  Hence certifying the marked vertex requires examining
-all `n` vertices (in the worst case `n` queries). -/
-theorem classical_search_lower_bound (n : ℕ) (queried : Finset (Fin n))
-    (hlt : queried.card < n) :
-    ∃ w : Fin n, w ∉ queried := by
-  by_contra h
-  push Not at h
-  -- If every vertex is queried, then `queried = univ`, so `card = n`.
-  have : queried = Finset.univ := Finset.eq_univ_iff_forall.mpr h
-  rw [this, Finset.card_univ, Fintype.card_fin] at hlt
-  exact lt_irrefl n hlt
+/-! The genuine lower bound is stated for an arbitrary finite vertex type `V` with
+decidable equality (so it applies both to the host `Fin n` and to the quotient
+index `I` of the ML lift). -/
 
-/-- **Two indistinguishable marked candidates.**  More strongly, if the algorithm
-examined fewer than `n - 1` vertices there are (at least) *two* unexamined
-vertices `w₁ ≠ w₂`; the adversary can place the marked vertex at either, and the
-algorithm — having examined neither — produces the same transcript on both inputs,
-so it cannot be correct on both.  This is the heart of the `Ω(n)` bound. -/
+variable {V : Type*} [Fintype V] [DecidableEq V]
+
+/-- The deterministic search **oracle** for marked vertex `m`: answers `true` at
+`v` iff `v = m` (`v == m`).  A query algorithm only ever sees this Boolean vector
+(restricted to the vertices it queried). -/
+def searchOracle (m : V) : V → Bool := fun v => v == m
+
+omit [Fintype V] in
+@[simp] theorem searchOracle_apply (m v : V) :
+    searchOracle m v = (v == m) := rfl
+
+omit [Fintype V] in
+/-- The oracle of `m` answers `false` at every `v ≠ m`. -/
+theorem searchOracle_eq_false_of_ne {m v : V} (h : v ≠ m) :
+    searchOracle m v = false := by
+  simp [searchOracle, beq_eq_false_iff_ne, h]
+
+/-- **`Q`-locality of a deterministic algorithm.**  `A : (V → Bool) → V`
+is `Q`-local if its output depends only on the oracle's answers on `Q`: whenever
+two oracles agree on all of `Q`, `A` returns the same vertex.  This is exactly the
+information available to an algorithm that has queried only the vertices in `Q`. -/
+def QLocal (Q : Finset V) (A : (V → Bool) → V) : Prop :=
+  ∀ f g : V → Bool, (∀ v ∈ Q, f v = g v) → A f = A g
+
+/-- A deterministic algorithm `A` is **correct** if, for every placement of the
+marked vertex `m`, querying the oracle returns `m`. -/
+def CorrectSearch (A : (V → Bool) → V) : Prop :=
+  ∀ m : V, A (searchOracle m) = m
+
+/-- **The indistinguishability lemma — the heart of the `Ω(n)` bound.**
+
+If a deterministic algorithm has queried only the vertices in `Q` with
+`Q.card + 1 < |V|` (so at least two vertices are *unqueried*), then there exist two
+**distinct** marked-vertex placements `m₁ ≠ m₂`, both outside `Q`, whose oracles
+give **identical answers on every queried vertex** `v ∈ Q` — namely both answer
+`false` (`v ≠ m₁` and `v ≠ m₂` for `v ∈ Q`).
+
+This is a genuine, non-vacuous combinatorial fact: the algorithm, seeing only the
+all-`false` answer vector on `Q`, cannot tell whether the marked vertex is `m₁`
+or `m₂`. -/
+theorem search_indistinguishable_of_few_queries (Q : Finset V)
+    (hlt : Q.card + 1 < Fintype.card V) :
+    ∃ m₁ m₂ : V, m₁ ≠ m₂ ∧ m₁ ∉ Q ∧ m₂ ∉ Q ∧
+      (∀ v ∈ Q, searchOracle m₁ v = searchOracle m₂ v) := by
+  -- The complement `Qᶜ` has card `|V| − Q.card ≥ 2`, hence two distinct elements.
+  have hcompl : 1 < Qᶜ.card := by
+    rw [Finset.card_compl]
+    omega
+  obtain ⟨m₁, hm₁, m₂, hm₂, hne⟩ := Finset.one_lt_card.mp hcompl
+  have hm₁Q : m₁ ∉ Q := Finset.mem_compl.mp hm₁
+  have hm₂Q : m₂ ∉ Q := Finset.mem_compl.mp hm₂
+  refine ⟨m₁, m₂, hne, hm₁Q, hm₂Q, ?_⟩
+  -- On any queried `v ∈ Q`, both oracles answer `false` (since `m₁, m₂ ∉ Q`).
+  intro v hv
+  have hv1 : v ≠ m₁ := fun h => hm₁Q (h ▸ hv)
+  have hv2 : v ≠ m₂ := fun h => hm₂Q (h ▸ hv)
+  rw [searchOracle_eq_false_of_ne hv1, searchOracle_eq_false_of_ne hv2]
+
+/-- **The genuine classical lower bound: no correct `Q`-local certifier.**
+
+If `Q.card + 1 < |V|` then there is **no** correct deterministic algorithm that is
+`Q`-local — i.e. no algorithm reading only the answers on `Q` can always identify
+the marked vertex.  Proof: take the two indistinguishable placements `m₁ ≠ m₂`
+from `search_indistinguishable_of_few_queries`.  A `Q`-local `A` sees identical
+answers on `Q` for both, so `A (oracle m₁) = A (oracle m₂)`; correctness forces
+`m₁ = m₂`, contradicting `m₁ ≠ m₂`.
+
+This is the load-bearing `Ω(n)` content: a correct algorithm cannot be `Q`-local
+for any `Q` with fewer than `|V| − 1` vertices, so it must query at least
+`|V| − 1` vertices in the worst case. -/
+theorem no_correct_QLocal_certifier (Q : Finset V)
+    (hlt : Q.card + 1 < Fintype.card V) :
+    ¬ ∃ A : (V → Bool) → V, QLocal Q A ∧ CorrectSearch A := by
+  rintro ⟨A, hloc, hcorr⟩
+  obtain ⟨m₁, m₂, hne, _, _, hagree⟩ :=
+    search_indistinguishable_of_few_queries Q hlt
+  -- `A` returns the same vertex on both indistinguishable oracles.
+  have hAeq : A (searchOracle m₁) = A (searchOracle m₂) := hloc _ _ hagree
+  -- Correctness pins each side to its marked vertex, forcing `m₁ = m₂`.
+  rw [hcorr m₁, hcorr m₂] at hAeq
+  exact hne hAeq
+
+/-- **The classical clause is genuinely non-vacuous.**  We exhibit, for every
+`|V| ≥ 2` and every `Q`, an explicit *witness algorithm* that **is** `Q`-local but
+is **not** correct — proving the `Q`-local certifiers do form a nonempty class, so
+the impossibility statement `no_correct_QLocal_certifier` is refuting a real,
+satisfiable property rather than quantifying over an empty domain.  (The constant
+algorithm `fun _ => c` is trivially `Q`-local; it fails to be correct precisely
+because no `Q`-local algorithm can be — which is the point of the lower bound.) -/
+theorem classical_certifier_clause_nonvacuous (c : V) (Q : Finset V) :
+    QLocal Q (fun _ => c) ∧ (2 ≤ Fintype.card V → ¬ CorrectSearch (fun _ => c)) := by
+  refine ⟨fun _ _ _ => rfl, ?_⟩
+  intro hn hcorr
+  -- A constant algorithm returns `c` on every oracle, but there are ≥ 2 distinct
+  -- marked vertices, so it cannot return the true one for both.
+  have : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.mp (by omega)
+  obtain ⟨a, b, hab⟩ := exists_pair_ne V
+  obtain ⟨m, hm⟩ : ∃ m : V, m ≠ c := by
+    by_cases h : a = c
+    · exact ⟨b, fun hb => hab (h.trans hb.symm)⟩
+    · exact ⟨a, h⟩
+  exact hm (hcorr m).symm
+
+/-- **Two indistinguishable marked candidates.**  More elementary form: if the
+algorithm examined fewer than `|V| − 1` vertices there are (at least) *two*
+unexamined vertices `w₁ ≠ w₂`; the adversary can place the marked vertex at
+either, and the algorithm — having examined neither — produces the same transcript
+on both inputs, so it cannot be correct on both.  (Subsumed by
+`search_indistinguishable_of_few_queries`, kept for the explicit witnesses.) -/
 theorem classical_search_two_candidates (n : ℕ) (queried : Finset (Fin n))
     (hlt : queried.card + 1 < n) :
     ∃ w₁ w₂ : Fin n, w₁ ≠ w₂ ∧ w₁ ∉ queried ∧ w₂ ∉ queried := by
-  -- The complement has card `n - queried.card ≥ 2`.
-  have hcompl : 1 < queriedᶜ.card := by
-    rw [Finset.card_compl, Fintype.card_fin]
-    omega
-  -- A finset of card > 1 contains two distinct elements.
-  obtain ⟨w₁, hw₁, w₂, hw₂, hne⟩ := Finset.one_lt_card.mp hcompl
-  exact ⟨w₁, w₂, hne, Finset.mem_compl.mp hw₁, Finset.mem_compl.mp hw₂⟩
+  obtain ⟨w₁, w₂, hne, h1, h2, _⟩ :=
+    search_indistinguishable_of_few_queries queried
+      (by rw [Fintype.card_fin]; exact hlt)
+  exact ⟨w₁, w₂, hne, h1, h2⟩
 
 /-- **Randomized classical bound.**  An algorithm that examines a fixed set of
 `k` vertices, with the marked vertex placed uniformly at random among the `n`
@@ -732,22 +851,26 @@ section Separation
 * **Quantum:** there is an evolution time `t_q ≤ 2·√n` at which CTQW spatial
   search on `K_n` reaches success probability `1` (`completeGraph_search_upper_bound`).
 
-* **Classical:** any algorithm certifying the marked vertex must examine all `n`
-  vertices — examining `queried` with `queried.card < n` always leaves an
-  unexamined candidate (`classical_search_lower_bound`).
+* **Classical (genuine `Ω(n)` query lower bound).**  No correct deterministic
+  algorithm can be `Q`-local for any queried set `Q` with `Q.card < n − 1`: by the
+  indistinguishability lemma it would return the same vertex on two distinct
+  placements `m₁ ≠ m₂` it cannot tell apart, contradicting correctness
+  (`no_correct_QLocal_certifier`).  Hence a correct algorithm must query at least
+  `n − 1` vertices in the worst case — this is the real query complexity, **not**
+  the vacuous pigeonhole "there exists an unqueried vertex".
 
-The two costs are `t_q ≤ 2√n` versus `n` queries: a genuine `√n` vs `n`
+The two costs are `t_q ≤ 2√n` versus `Ω(n)` queries: a genuine `√n` vs `n`
 separation. -/
 theorem quantum_search_quadratic_advantage (n : ℕ) (hn : 1 ≤ n) :
     -- quantum side: O(√n) evolution time to success 1
     (∃ t_q : ℝ, 0 ≤ t_q ∧ t_q ≤ 2 * Real.sqrt n ∧
         ‖rabiEvolve (1 / Real.sqrt n) t_q 0 1‖ = 1)
     ∧
-    -- classical side: < n queries cannot certify the marked vertex
-    (∀ queried : Finset (Fin n), queried.card < n → ∃ w : Fin n, w ∉ queried) := by
-  refine ⟨completeGraph_search_upper_bound n hn, ?_⟩
-  intro queried hlt
-  exact classical_search_lower_bound n queried hlt
+    -- classical side (Ω(n)): no correct Q-local certifier exists when Q.card < n−1
+    (∀ Q : Finset (Fin n), Q.card + 1 < n →
+        ¬ ∃ A : (Fin n → Bool) → Fin n, QLocal Q A ∧ CorrectSearch A) := by
+  refine ⟨completeGraph_search_upper_bound n hn, fun Q hlt => ?_⟩
+  exact no_correct_QLocal_certifier Q (by rw [Fintype.card_fin]; exact hlt)
 
 /-- **The EXACT quantum quadratic advantage (sharpened cost separation).**
 
@@ -760,23 +883,25 @@ gap of `reducedH n`), with **no `n→∞` idealization**.  For every `n ≥ 2`:
   which the exact marked-transition amplitude is `≥ √(1/2) ≥ 1/2`
   (`quantum_search_exact_amplitude`), tending to `1` as `n → ∞`.
 
-* **Classical:** any algorithm certifying the marked vertex must examine all `n`
-  vertices (`classical_search_lower_bound`).
+* **Classical (genuine `Ω(n)` query lower bound).**  No correct deterministic
+  algorithm can be `Q`-local for any `Q` with `Q.card < n − 1`
+  (`no_correct_QLocal_certifier`), so identifying the marked vertex requires
+  `Ω(n)` queries.
 
-The two costs are `t_q ≤ (π/2)√n` versus `n` queries: a genuine `√n` vs `n`
+The two costs are `t_q ≤ (π/2)√n` versus `Ω(n)` queries: a genuine `√n` vs `n`
 separation, now with the *exact* finite-`n` success guarantee. -/
 theorem quantum_search_quadratic_advantage_exact (n : ℕ) (hn : 2 ≤ n) :
     -- quantum side (EXACT finite-n): O(√n) evolution time to amplitude ≥ √(1/2)
     (∃ t_q : ℝ, 0 ≤ t_q ∧ t_q ≤ (Real.pi / 2) * Real.sqrt n ∧
         Real.sqrt (1 / 2) ≤ exactSearchAmplitude n t_q)
     ∧
-    -- classical side: < n queries cannot certify the marked vertex
-    (∀ queried : Finset (Fin n), queried.card < n → ∃ w : Fin n, w ∉ queried) := by
-  refine ⟨?_, ?_⟩
-  · obtain ⟨t, ht0, htb, _, hamp⟩ := quantum_search_exact_amplitude n hn
-    exact ⟨t, ht0, htb, hamp⟩
-  · intro queried hlt
-    exact classical_search_lower_bound n queried hlt
+    -- classical side (Ω(n)): no correct Q-local certifier exists when Q.card < n−1
+    (∀ Q : Finset (Fin n), Q.card + 1 < n →
+        ¬ ∃ A : (Fin n → Bool) → Fin n, QLocal Q A ∧ CorrectSearch A) := by
+  refine ⟨?_, fun Q hlt =>
+    no_correct_QLocal_certifier Q (by rw [Fintype.card_fin]; exact hlt)⟩
+  obtain ⟨t, ht0, htb, _, hamp⟩ := quantum_search_exact_amplitude n hn
+  exact ⟨t, ht0, htb, hamp⟩
 
 /-- **The separation as an explicit cost gap.**  The quantum evolution-time cost
 `q n := 2·√n` and the classical query cost `c n := n` satisfy `q n ≤ c n` for all
@@ -828,12 +953,14 @@ oracle).  Then:
   quotient is (quotient-)complete-like, this is the `√r` bound from Part 1.
 
 * **Classical cost `Ω(r)`.**  Any classical algorithm distinguishing the `r`
-  cells needs `Ω(r)` queries (`classical_search_lower_bound` on the quotient
-  index `I`), and over the host `Ω(N)`.
+  cells needs `Ω(r)` queries: by the indistinguishability lower bound
+  (`no_correct_QLocal_certifier` on the quotient index `I`) no correct algorithm
+  can read only the answers on a queried cell-set `Q` with `Q.card + 1 < r`, and
+  over the host `Ω(N)`.
 
 We state the load-bearing content as the conjunction of the exact quotient
-reduction (genuine, reused) and the classical `Ω(r)` lower bound on the quotient
-index, witnessing the `√r` vs `r` gap. -/
+reduction (genuine, reused) and the genuine classical `Ω(r)` lower bound on the
+quotient index, witnessing the `√r` vs `r` gap. -/
 theorem structured_search_advantage
     {G : WeightedGraph V} (P : EquitablePartition G I) (M : Finset V) (γ : ℝ)
     (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M))
@@ -845,16 +972,13 @@ theorem structured_search_advantage
             ((-(γ : ℂ) • P'.symmQuotient - markedDiag I).mulVec w) ib *
               P'.cellUniformVec ib v))
     ∧
-    -- (b) classical Ω(r): fewer than r queries on the quotient index leaves an
-    -- unidentified cell
-    (∀ queried : Finset I, queried.card < Fintype.card I → ∃ i : I, i ∉ queried) := by
-  refine ⟨search_quotient_reduction P M γ hM w, ?_⟩
-  intro queried hlt
-  by_contra h
-  push Not at h
-  have : queried = Finset.univ := Finset.eq_univ_iff_forall.mpr h
-  rw [this, Finset.card_univ] at hlt
-  exact lt_irrefl _ hlt
+    -- (b) classical Ω(r): no correct algorithm reading only the answers on a
+    -- queried cell-set `Q` with `Q.card + 1 < r` can identify the marked cell
+    -- (genuine indistinguishability lower bound on the quotient index)
+    (∀ Q : Finset I, Q.card + 1 < Fintype.card I →
+        ¬ ∃ A : (I → Bool) → I, QLocal Q A ∧ CorrectSearch A) := by
+  exact ⟨search_quotient_reduction P M γ hM w,
+    fun Q hlt => no_correct_QLocal_certifier Q hlt⟩
 
 /-- **Cost independence of host size.**  The quantum search cost after the
 equitable reduction depends only on the number of cells `r = |I|`, via the `√r`
@@ -897,10 +1021,11 @@ of dimension `r ≥ 4`:
 * the **quantum** CTQW finds the marked configuration with success probability
   `1` in evolution time `t_q ≤ 2·√r` (`completeGraph_search_upper_bound`), and
 
-* every **classical** query algorithm needs `Ω(r)` queries — `< r` examined
-  configurations always leave an unidentified candidate
-  (`classical_search_lower_bound`) — and `2·√r ≤ r`, so the quantum cost is
-  strictly below the classical one (`quantum_cost_below_classical`).
+* every **classical** query algorithm needs `Ω(r)` queries: by the
+  indistinguishability lower bound, no correct algorithm can be `Q`-local for any
+  queried set `Q` with `Q.card + 1 < r` (`no_correct_QLocal_certifier`) — and
+  `2·√r ≤ r`, so the quantum cost is strictly below the classical one
+  (`quantum_cost_below_classical`).
 
 This is a real `√r` vs `r` separation, with the quantum cost governed by the
 equitable-quotient dimension `r` rather than the full configuration-space size.
@@ -912,14 +1037,15 @@ theorem ml_structured_search_quantum_advantage (r : ℕ) (hr : 4 ≤ r) :
     (∃ t_q : ℝ, 0 ≤ t_q ∧ t_q ≤ 2 * Real.sqrt r ∧ t_q ≤ (r : ℝ) ∧
         ‖rabiEvolve (1 / Real.sqrt r) t_q 0 1‖ = 1)
     ∧
-    -- classical: < r queries cannot certify the marked configuration
-    (∀ queried : Finset (Fin r), queried.card < r → ∃ w : Fin r, w ∉ queried) := by
+    -- classical (Ω(r)): no correct Q-local certifier exists when Q.card + 1 < r
+    (∀ Q : Finset (Fin r), Q.card + 1 < r →
+        ¬ ∃ A : (Fin r → Bool) → Fin r, QLocal Q A ∧ CorrectSearch A) := by
   constructor
   · obtain ⟨t, ht0, htb, hsucc⟩ := completeGraph_search_upper_bound r (by omega)
     refine ⟨t, ht0, htb, ?_, hsucc⟩
     exact le_trans htb (quantum_cost_below_classical r hr)
-  · intro queried hlt
-    exact classical_search_lower_bound r queried hlt
+  · intro Q hlt
+    exact no_correct_QLocal_certifier Q (by rw [Fintype.card_fin]; exact hlt)
 
 /-- **`ml_structured_search_quantum_advantage_exact` — the flagship advantage,
 EXACT finite-`r` form.**
@@ -936,8 +1062,9 @@ cells of the configuration graph):
   gap `1/√r` of the reduced block `reducedH r` (`quantum_search_exact_amplitude`),
   with the amplitude `→ 1` as `r → ∞`, and
 
-* every **classical** query algorithm needs `Ω(r)` queries
-  (`classical_search_lower_bound`).
+* every **classical** query algorithm needs `Ω(r)` queries: no correct algorithm
+  can be `Q`-local for any queried set `Q` with `Q.card + 1 < r`
+  (`no_correct_QLocal_certifier`).
 
 The quantum cost is governed by the equitable-quotient dimension `r`, not the
 full (possibly enormous) configuration-space size — the reduction itself is the
@@ -947,13 +1074,13 @@ theorem ml_structured_search_quantum_advantage_exact (r : ℕ) (hr : 4 ≤ r) :
     (∃ t_q : ℝ, 0 ≤ t_q ∧ t_q ≤ (Real.pi / 2) * Real.sqrt r ∧
         Real.sqrt (1 / 2) ≤ exactSearchAmplitude r t_q)
     ∧
-    -- classical: < r queries cannot certify the marked configuration
-    (∀ queried : Finset (Fin r), queried.card < r → ∃ w : Fin r, w ∉ queried) := by
-  refine ⟨?_, ?_⟩
-  · obtain ⟨t, ht0, htb, _, hamp⟩ := quantum_search_exact_amplitude r (by omega)
-    exact ⟨t, ht0, htb, hamp⟩
-  · intro queried hlt
-    exact classical_search_lower_bound r queried hlt
+    -- classical (Ω(r)): no correct Q-local certifier exists when Q.card + 1 < r
+    (∀ Q : Finset (Fin r), Q.card + 1 < r →
+        ¬ ∃ A : (Fin r → Bool) → Fin r, QLocal Q A ∧ CorrectSearch A) := by
+  refine ⟨?_, fun Q hlt =>
+    no_correct_QLocal_certifier Q (by rw [Fintype.card_fin]; exact hlt)⟩
+  obtain ⟨t, ht0, htb, _, hamp⟩ := quantum_search_exact_amplitude r (by omega)
+  exact ⟨t, ht0, htb, hamp⟩
 
 end Headline
 

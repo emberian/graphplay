@@ -973,25 +973,36 @@ theorem irreducibility_floor (A : Matrix (Fin n) (Fin n) ℝ)
   rintro ⟨hdecomp, hR⟩
   exact absurd (no_cheap_exact_factorization A B cell R k hdecomp hR) (not_le.mpr hlt)
 
-/-- **DISCRETE-partition corollary: the floor is `rank A` (PROVEN, axiom-clean).**
+/-- **The residual must supply the rank the block part lacks (PROVEN, axiom-clean).**
 
-When the coarsest equitable partition is **discrete** — every cell a singleton, so
-`r = n`, the generic learned-attention case where no nontrivial block structure
-exists — the bound reads `n + k ≥ rank A`.  Since always `rank A ≤ n`, this says
-nothing is gained below the *trivial* discrete block part unless the rank-`k`
-correction itself supplies the rank: there is **no nontrivial exact compression**,
-the floor is `rank A` itself.
+The previous `discrete_irreducibility_floor` stated `A.rank ≤ n + k`, which is
+**vacuous**: `A.rank ≤ n` *always* holds (`Matrix.rank_le_width`), so the
+factorization hypotheses did no work whatsoever.  This corrected statement removes
+that slack by bounding `A.rank` against the **actual rank of the block-constant
+part** rather than the cell count `r` (or its `n` upper bound):
 
-Concretely: any exact `(discrete block) + (rank ≤ k)` factorization
-`A = equitablePart B cell + R` with `cell` injective (discrete, `r = n` cells) and
-`R.rank ≤ k` has `n + k ≥ rank A`.  This is the certificate of irreducibility for
-the generic case. -/
-theorem discrete_irreducibility_floor (A : Matrix (Fin n) (Fin n) ℝ)
+  `A.rank ≤ (equitablePart B cell).rank + k`.
+
+This is **not** vacuous — `(equitablePart B cell).rank + k` can be strictly below
+`n` (a rank-deficient block part plus a thin residual), in which case the bound
+genuinely constrains `A.rank`.  It says: across any exact factorization, the
+residual rank `k` must make up *exactly* the rank the block part fails to provide.
+For the **discrete** partition (`cell` injective, every cell a singleton) the block
+part `equitablePart B cell = B.submatrix cell cell` is a permutation-submatrix of
+`B`, so `(equitablePart B cell).rank = B.rank`; there is **no compression** from the
+partition itself — the floor is carried entirely by `B.rank` and the residual `k`.
+
+This is the sharp form of `no_cheap_exact_factorization` (which relaxes the block
+rank to its `r`-cell upper bound); it is exactly matrix-rank subadditivity
+(`matrix_rank_add_le`) applied to `A = equitablePart B cell + R`. -/
+theorem residual_rank_floor (A : Matrix (Fin n) (Fin n) ℝ)
     (B : Matrix (Fin n) (Fin n) ℝ) (cell : Fin n → Fin n)
     (R : Matrix (Fin n) (Fin n) ℝ) (k : ℕ)
     (hdecomp : A = equitablePart B cell + R) (hR : R.rank ≤ k) :
-    A.rank ≤ n + k :=
-  no_cheap_exact_factorization A B cell R k hdecomp hR
+    A.rank ≤ (equitablePart B cell).rank + k := by
+  calc A.rank = (equitablePart B cell + R).rank := by rw [hdecomp]
+    _ ≤ (equitablePart B cell).rank + R.rank := matrix_rank_add_le _ _
+    _ ≤ (equitablePart B cell).rank + k := Nat.add_le_add_left hR _
 
 /-! ## §2. Equitable ⊋ orbit: structure beyond groups
 

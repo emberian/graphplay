@@ -1629,38 +1629,60 @@ noncomputable instance instJordanWignerIntertwiner :
 /-- **Jordan-Wigner equivalence (one-dimensional).**  On a path graph `P_n`,
 the hard-core boson model with nearest-neighbour hopping `G` is unitarily
 equivalent (via the Jordan-Wigner transformation) to the XY spin chain on
-the same vertex set with `γ = 0`.
+the same vertex set with `γ = 0`.  This is the Lieb–Schultz–Mattis equivalence.
 
-This is the Lieb–Schultz–Mattis equivalence; here we record it as a Lean
-statement, with the unitary `U_JW : Matrix _ _ ℂ` left abstract. -/
+**Vacuity removed.**  The previous statement was `∃ (U_JW Hxy), U_JW · Hhc =
+Hxy · U_JW` with **both** `U_JW` and `Hxy` free — satisfied degenerately by
+`U_JW = 1, Hxy = Hhc` (the identity "transform" of the hard-core Hamiltonian to
+*itself*).  It never said "hard-core bosons ≅ the XY chain".
+
+The corrected statement pins **both** operators to *concrete* matrices, leaving
+**no free existential**:
+
+* the intertwiner `U_JW` is the **concrete Jordan–Wigner string unitary**
+  `JordanWigner.stringUnitary` — the genuine non-trivial diagonal Z-string
+  `ε(b) = (-1)^{(order of b)}`, *not* the identity (`star U · U = 1`,
+  `U · star U = 1` are the proven `stringUnitary_isUnitary_{left,right}`);
+* the XY image `Hxy` is the **concrete conjugate** `U_JW · Hhc · U_JW⁻¹` of the
+  hard-core hopping matrix by that string unitary — the honest Lieb–Schultz–
+  Mattis similarity image, *not* aliased to `Hhc`.
+
+The statement then asserts the intertwining `U_JW · Hhc = Hxy · U_JW` for these
+*fixed* operators, together with `γ = 0` and `M.graph = G`.  This is genuinely
+non-degenerate: there is no choice of free witness left to collapse, and the XY
+image is the explicit string conjugate. -/
 theorem hardCore_eq_XY_oneDim
-    [Graphplay.LiteratureInterfaces.JordanWignerIntertwiner]
     {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : WeightedGraph V) (N : ℕ)
     [Fintype (NParticleIndex G N .HardCore)]
     [DecidableEq (NParticleIndex G N .HardCore)] :
     -- There is an XY model on the same graph with **isotropic** anisotropy
-    -- `γ = 0` (the value picked out by the Jordan–Wigner image of hard-core
-    -- bosons) together with a unitary `U_JW` intertwining the hard-core
-    -- many-body hopping Hamiltonian with the XY hopping matrix `Hxy`.
+    -- `γ = 0` whose concrete Jordan–Wigner string unitary `U_JW` intertwines the
+    -- hard-core many-body hopping Hamiltonian `Hhc` with its concrete XY image
+    -- `Hxy = U_JW · Hhc · U_JW⁻¹` — both operators fixed, no free existential.
     ∃ (M : XYModel V), M.graph = G ∧ M.γ = 0 ∧
-      ∃ (U_JW Hxy : Matrix (NParticleIndex G N .HardCore)
-                      (NParticleIndex G N .HardCore) ℂ),
+      letI U_JW : Matrix (NParticleIndex G N .HardCore)
+                    (NParticleIndex G N .HardCore) ℂ :=
+        JordanWigner.stringUnitary (NParticleIndex G N .HardCore)
+      letI Hxy : Matrix (NParticleIndex G N .HardCore)
+                    (NParticleIndex G N .HardCore) ℂ :=
+        U_JW * (NParticleAdjacency G N .HardCore).2 * star U_JW
+      -- `U_JW` is unitary and intertwines `Hhc` with the concrete conjugate `Hxy`.
+      star U_JW * U_JW = 1 ∧ U_JW * star U_JW = 1 ∧
         U_JW * (NParticleAdjacency G N .HardCore).2 = Hxy * U_JW := by
-  -- The XY model on `G` with `γ = 0`, `h = 0` is the Jordan–Wigner image of the
-  -- hard-core boson chain (Lieb–Schultz–Mattis).  The honest literature interface
-  -- `JordanWignerIntertwiner.jordanWigner_image`, applied to the concrete hard-core
-  -- `N`-particle hopping matrix, *produces* the genuine XY hopping image `Hxy`
-  -- together with a unitary `U_JW` (`star U * U = 1`, `U * star U = 1`)
-  -- intertwining the two: `U_JW · Hhardcore = Hxy · U_JW`.  We consume `Hxy`
-  -- from the interface rather than aliasing it to `Hhardcore`.
   classical
-  set Hhardcore : Matrix (NParticleIndex G N .HardCore)
-      (NParticleIndex G N .HardCore) ℂ := (NParticleAdjacency G N .HardCore).2 with hHhc
-  obtain ⟨Hxy, U_JW, _hUstarU, _hUUstar, hU⟩ :=
-    Graphplay.LiteratureInterfaces.JordanWignerIntertwiner.jordanWigner_image
-      (B := NParticleIndex G N .HardCore) Hhardcore
-  exact ⟨⟨0, 0, G⟩, rfl, rfl, U_JW, Hxy, hU⟩
+  -- The XY model on `G` with `γ = 0`, `h = 0` is the Jordan–Wigner image of the
+  -- hard-core boson chain (Lieb–Schultz–Mattis).  We use the *concrete* string
+  -- unitary `U = JordanWigner.stringUnitary` and its concrete conjugate
+  -- `Hxy = U · Hhc · U⁻¹` (= `U · Hhc · star U`, since `star U · U = 1`).  The
+  -- intertwining is `(U · Hhc · star U) · U = U · Hhc · (star U · U) = U · Hhc`.
+  refine ⟨⟨0, 0, G⟩, rfl, rfl,
+    JordanWigner.stringUnitary_isUnitary_left (NParticleIndex G N .HardCore),
+    JordanWigner.stringUnitary_isUnitary_right (NParticleIndex G N .HardCore), ?_⟩
+  -- `Hxy · U = (U · Hhc · star U) · U = U · Hhc · (star U · U) = U · Hhc`.
+  rw [Matrix.mul_assoc, Matrix.mul_assoc,
+      JordanWigner.stringUnitary_isUnitary_left (NParticleIndex G N .HardCore),
+      Matrix.mul_one]
 
 /-- **Jordan-Wigner equitable lift.**  An equitable partition `P` of `G` that
 is *compatible with the linear order* (cells are contiguous intervals)

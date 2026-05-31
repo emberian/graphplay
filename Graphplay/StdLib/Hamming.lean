@@ -114,7 +114,16 @@ theorem hamming_eigenvalue (n q : ℕ) [Fintype (Fin n → Fin q)]
     [DecidableEq (Fin n → Fin q)] (k : ℕ) (hk : k ≤ n) :
     ∃ μ : ℝ, μ ∈ spectrum ℝ (Hamming n q).adj ∧
       μ = (n : ℝ) * ((q : ℝ) - 1) - (q : ℝ) * (k : ℝ) := by
-  -- Diagonalize over the characters of `(ℤ/q)^n`; cf. Brouwer–Haemers.
+  -- HONEST SORRY.  `H(n,q)` is the Cayley graph of `(ℤ/q)ⁿ` on the
+  -- single-coordinate generators, so by the abelian-Cayley keystone
+  -- (`Graphplay.StdLib.Cayley.cayley_abelian_eigenvalues_are_charSum`) its
+  -- eigenvalues are the character sums `∑_{i,a≠0} χ(a·eᵢ)`, which evaluate to
+  -- the Krawtchouk number `n(q-1) - qk` for the weight-`k` character orbit.
+  -- The keystone deposits the eigenvalue directly *once* the vertex type
+  -- `Fin n → Fin q` is identified with the additive group `(ZMod q)ⁿ` and the
+  -- Pi-character `χ_w = ∏ᵢ ζ^{wᵢ·xᵢ}` is transported across that iso.  That
+  -- group-iso/Pi-character bridge is the remaining (non-vacuous) work; the
+  -- statement is the genuine Krawtchouk spectrum, cf. Brouwer–Haemers §12.3.2.
   sorry
 
 /-! ## Uniform mixing iff `q ≤ 4` -/

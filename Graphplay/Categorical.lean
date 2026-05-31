@@ -653,6 +653,23 @@ noncomputable def Quotient.mapCocone_isColimit
   -- the filtered colimit of the cell-quotients.  This is the headline Tower-5
   -- calculation; `IsColimit` is data, so this is an honest definition-level
   -- `sorry`, isolated from the `instance` below.
+  --
+  -- WHY IT CANNOT BE CLOSED HERE (genuinely deep, not mere effort):
+  -- `(Quotient).mapCocone c` is built by applying `Quotient.map` to the cocone
+  -- legs, and `Quotient.map` consumes the quotient-adjacency-preservation
+  -- obligation `Quotient.cellMap_adj_preserving` — which is itself an honest
+  -- `sorry` and is *provably false for arbitrary partition-respecting
+  -- morphisms* (the symmetric quotient `symmQuotient` mixes in cell
+  -- cardinalities `√|C_i|/√|C_j|`, so a cell-merging colimit leg does not
+  -- preserve the quotient adjacency; explicit 4/6-vertex counterexample in the
+  -- project notes).  Hence the mapped cocone is not even genuine functorial
+  -- data on the nose for a general filtered diagram, and any `IsColimit`
+  -- witness would have to be conditioned on the diagram consisting of
+  -- *quotient morphisms* (cell-bijective, cardinality-preserving).  That
+  -- conditional restriction is the real fix; until the `Quotient` functor is
+  -- refactored onto the quotient-morphism subcategory, this preservation
+  -- `IsColimit` is genuinely blocked, and the residual is cleanly isolated to
+  -- this single named definition (the `instance` below adds no further sorry).
   sorry
 
 instance Quotient.preservesFilteredColimits :

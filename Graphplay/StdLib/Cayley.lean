@@ -27,6 +27,8 @@ list of abelian groups of order `≤ 32` admitting PST.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
+import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
+import Mathlib.Algebra.Algebra.Spectrum.Basic
 import Mathlib.Algebra.Group.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Data.ZMod.Basic
@@ -83,6 +85,34 @@ contain the group identity. -/
 def IsLooplessConn {G : Type u} [Group G] (S : Finset G) : Prop :=
   (1 : G) ∉ S
 
+/-! ## A vector-spectral helper -/
+
+/-- **Real eigenvalue ⇒ real spectrum.**  If a nonzero vector `v` satisfies
+`A *ᵥ v = (r : ℂ) • v` for a real scalar `r`, then `r` lies in the real
+spectrum `spectrum ℝ A`.  (No Hermiticity needed: a nonzero kernel of
+`r•1 − A` makes that matrix singular, hence not a unit of the ℝ-algebra of
+matrices.) -/
+theorem real_mem_spectrum_of_mulVec_smul
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {A : Matrix V V ℂ} {r : ℝ} {v : V → ℂ} (hv : v ≠ 0)
+    (hAv : A.mulVec v = (r : ℂ) • v) : r ∈ spectrum ℝ A := by
+  rw [spectrum.mem_iff]
+  intro hunit
+  -- `algebraMap ℝ (Matrix V V ℂ) r = (r : ℂ) • 1`.
+  set M : Matrix V V ℂ := algebraMap ℝ (Matrix V V ℂ) r - A with hM
+  -- `M *ᵥ v = 0`.
+  have hMv : M.mulVec v = 0 := by
+    rw [hM, Matrix.sub_mulVec, hAv]
+    have halg : (algebraMap ℝ (Matrix V V ℂ) r).mulVec v = (r : ℂ) • v := by
+      rw [Algebra.algebraMap_eq_smul_one, Matrix.smul_mulVec, Matrix.one_mulVec]
+      ext i; simp [Algebra.smul_def, algebraMap_smul]
+    rw [halg, sub_self]
+  -- A unit matrix has nonzero determinant; but a nonzero kernel forces `det = 0`.
+  have hdet : M.det ≠ 0 := by
+    have : IsUnit M.det := (Matrix.isUnit_iff_isUnit_det M).mp hunit
+    exact this.ne_zero
+  exact hdet (Matrix.exists_mulVec_eq_zero_iff.mp ⟨v, hv, hMv⟩)
+
 /-! ## Spectrum of abelian Cayley graphs -/
 
 /-- **Babai 1979 / Lovász 1975.**  For a finite abelian group `G` and a
@@ -95,8 +125,98 @@ theorem cayley_abelian_eigenvalues_are_charSum
     (χ : G →* ℂ) :
     ∃ μ : ℝ, μ ∈ spectrum ℝ (CayleyGraph S).adj ∧
       (μ : ℂ) = ∑ s ∈ S, χ s := by
-  -- Standard character-basis diagonalisation of the group algebra.
-  sorry
+  classical
+  -- Every character of a finite group has unit modulus (its values are roots
+  -- of unity), since `χ g ^ |G| = χ (g ^ |G|) = χ 1 = 1`.
+  have hcard : 0 < Fintype.card G := Fintype.card_pos
+  have hunit : ∀ g : G, ‖χ g‖ = 1 := by
+    intro g
+    have hpow : (χ g) ^ Fintype.card G = 1 := by
+      rw [← map_pow, pow_card_eq_one, map_one]
+    exact Complex.norm_eq_one_of_pow_eq_one hpow hcard.ne'
+  -- Conjugation: `conj (χ g) = χ g⁻¹`, because `χ g · χ g⁻¹ = χ 1 = 1` and
+  -- `|χ g| = 1`.
+  have hconj : ∀ g : G, (starRingEnd ℂ) (χ g) = χ g⁻¹ := by
+    intro g
+    have hprod : χ g * χ g⁻¹ = 1 := by rw [← map_mul, mul_inv_cancel, map_one]
+    have hne : χ g ≠ 0 := by
+      intro h; have := hunit g; rw [h, norm_zero] at this; exact one_ne_zero this.symm
+    have hstar : (starRingEnd ℂ) (χ g) * χ g = 1 := by
+      rw [mul_comm, Complex.mul_conj, Complex.normSq_eq_norm_sq, hunit g]; norm_num
+    -- `χ g · conj(χ g) = 1 = χ g · χ g⁻¹`, then cancel `χ g`.
+    have hstar' : χ g * (starRingEnd ℂ) (χ g) = χ g * χ g⁻¹ := by
+      rw [mul_comm (χ g), hstar, hprod]
+    exact mul_left_cancel₀ hne hstar'
+  -- The character sum `c := ∑_{s∈S} χ s` is real: conjugation reindexes by
+  -- `s ↦ s⁻¹`, which permutes the symmetric set `S`.
+  set c : ℂ := ∑ s ∈ S, χ s with hc
+  have him : c.im = 0 := by
+    have hconjsum : (starRingEnd ℂ) c = c := by
+      rw [hc, map_sum]
+      rw [Finset.sum_congr rfl (fun s _ => hconj s)]
+      -- `∑_{s∈S} χ s⁻¹ = ∑_{s∈S} χ s` by reindexing `s ↦ s⁻¹` (bijection of `S`).
+      apply Finset.sum_nbij' (fun s => s⁻¹) (fun s => s⁻¹)
+      · intro a ha; exact (hS a).mp ha
+      · intro a ha; exact (hS a⁻¹).mpr (by rwa [inv_inv])
+      · intro a _; exact inv_inv a
+      · intro a _; exact inv_inv a
+      · intro a _; rfl
+    exact (Complex.conj_eq_iff_im.mp hconjsum)
+  -- `(c.re : ℂ) = c` since `c.im = 0`.
+  have hce : (c.re : ℂ) = c := by
+    conv_rhs => rw [← Complex.re_add_im c]
+    rw [him]; simp
+  -- Set `r := Re c`; then `(r : ℂ) = c`.
+  refine ⟨c.re, ?_, by rw [hce]⟩
+  -- The character vector is a nonzero eigenvector with eigenvalue `c = r`.
+  set vχ : G → ℂ := fun g => χ g with hvχ
+  have hvne : vχ ≠ 0 := by
+    intro h
+    have h1 : vχ 1 = 0 := by rw [h]; rfl
+    have : (1 : ℂ) = 0 := by rw [← map_one χ]; exact h1
+    exact one_ne_zero this
+  -- The eigenvector equation `A *ᵥ vχ = c • vχ`.
+  have hAv : (CayleyGraph S).adj.mulVec vχ = (c.re : ℂ) • vχ := by
+    rw [hce]
+    funext g
+    simp only [Matrix.mulVec, dotProduct, CayleyGraph, Pi.smul_apply, smul_eq_mul]
+    -- Reduce the symmetric/loopless guard to the textbook one: `g⁻¹*h ∈ S`.
+    have hadj : ∀ h : G,
+        (if g ≠ h ∧ (g⁻¹ * h ∈ S ∨ h⁻¹ * g ∈ S) then (1 : ℂ) else 0)
+          = (if g⁻¹ * h ∈ S then (1 : ℂ) else 0) := by
+      intro h
+      by_cases hmem : g⁻¹ * h ∈ S
+      · -- `g⁻¹*h ∈ S` ⇒ guard holds (`g ≠ h` since `1 ∉ S`).
+        rw [if_pos hmem, if_pos]
+        refine ⟨?_, Or.inl hmem⟩
+        intro he; apply hL; rw [← he] at hmem; simpa using hmem
+      · -- `g⁻¹*h ∉ S` ⇒ also `h⁻¹*g ∉ S` (symmetry), so the guard fails.
+        rw [if_neg hmem, if_neg]
+        rintro ⟨_, hd⟩
+        rcases hd with hd | hd
+        · exact hmem hd
+        · apply hmem; rw [show g⁻¹ * h = (h⁻¹ * g)⁻¹ by group]; exact (hS _).mp hd
+    have hsummand : ∀ h : G,
+        (if g ≠ h ∧ (g⁻¹ * h ∈ S ∨ h⁻¹ * g ∈ S) then (1 : ℂ) else 0) * vχ h
+          = (if g⁻¹ * h ∈ S then vχ h else 0) := by
+      intro h; rw [hadj h, boole_mul]
+    rw [Finset.sum_congr rfl (fun h _ => hsummand h)]
+    -- Now `∑_h (if g⁻¹*h ∈ S then χ h else 0) = ∑_{s∈S} χ (g*s)`.
+    rw [← Finset.sum_filter]
+    -- `Finset.filter (g⁻¹*· ∈ S) univ` is the image of `S` under `s ↦ g*s`.
+    have hbij : (Finset.univ.filter (fun h : G => g⁻¹ * h ∈ S))
+        = S.image (fun s => g * s) := by
+      ext h
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_image]
+      constructor
+      · intro hmem; exact ⟨g⁻¹ * h, hmem, by group⟩
+      · rintro ⟨s, hs, rfl⟩; simpa using hs
+    rw [hbij, Finset.sum_image (by intro a _ b _ hab; exact mul_left_cancel hab)]
+    -- `∑_{s∈S} χ (g*s) = χ g * ∑_{s∈S} χ s = c * χ g`.
+    rw [Finset.sum_congr rfl (fun s _ => map_mul χ g s), ← Finset.mul_sum]
+    show χ g * ∑ s ∈ S, χ s = S.sum vχ * χ g
+    rw [mul_comm]
+  exact real_mem_spectrum_of_mulVec_smul hvne hAv
 
 /-! ## Bašić–Petković–Stevanović:
 PST iff rational eigenvalues + parity condition. -/

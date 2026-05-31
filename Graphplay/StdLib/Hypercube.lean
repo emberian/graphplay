@@ -140,8 +140,16 @@ theorem hypercube_uniformMixing (n : ℕ) (h : 1 ≤ n) :
 is the all-`1/2^n` constant matrix. -/
 theorem hypercube_averageUniformMixing (n : ℕ) (h : 1 ≤ n) :
     IsAverageUniformMixing (Hypercube n) := by
-  -- Follows from `hypercube_uniformMixing` plus the fact that uniform
-  -- mixing at any time implies average uniform mixing.
+  -- HONEST SORRY.  WARNING: this does *not* follow from
+  -- `hypercube_uniformMixing` — uniform mixing at a single time `τ = π/4`
+  -- says nothing about the Cesàro time-average `T⁻¹ ∫₀ᵀ |U(t)_{xy}|² dt`.
+  -- The genuine statement requires the average mixing matrix
+  -- `M̄_{xy} = ∑_λ ‖E_λ e_x‖² ‖E_λ e_y‖²` (sum over spectral idempotents),
+  -- which for the hypercube is uniform `= 1/2ⁿ` because every eigenvalue of
+  -- `Q_n` (the integers `n - 2|S|`) has a flat, sign-balanced eigenprojector
+  -- in the Hadamard basis.  Proving this needs the full character-basis
+  -- spectral decomposition of the hypercube (not yet built in this model on
+  -- `Fin (2ⁿ)`), so we leave a precise, non-vacuous honest `sorry`.
   sorry
 
 /-! ## Computable rational companions -/

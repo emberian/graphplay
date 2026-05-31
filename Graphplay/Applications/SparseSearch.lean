@@ -45,17 +45,25 @@ subspace — the "collapsed Hamming walk", a weighted path with binomial couplin
     the host-independent `Graphplay.twoLevel_optimal_timing` (exact `2×2` Rabi
     evolution) in `Search/CNO.lean`.
 
-* **Honest BLOCKED `sorry` — the perturbative 2D reduction ONLY.**  The literal
-  full-`2^d`-dimensional `IsOptimalSearch` (`hypercube_search_optimal_timing`)
-  requires reducing the full dynamics onto the proven 2-level subspace: the
-  remaining `d−1` collapsed-Hamming-chain modes contribute at order `O(1/Δ)` with
-  `Δ = O(1)` the constant CNO spectral gap (arXiv:2004.12686, Thm 1–2).  This
-  reduction is *exact* for `K_n` — and indeed the literal full-space
-  `IsOptimalSearch` on `K_n` is now itself PROVEN axiom-clean
-  (`Graphplay.complete_graph_optimal_search`, via the exact `2×2`
-  Cayley–Hamilton block evolution `cg_block_colSum`) — but genuinely
-  perturbative for `Q_d`, the single honest `-- BLOCKED:` step.  The dynamical
-  timing core it would feed is now PROVEN (`hypercube_twoLevel_optimal_timing`).
+* **GENUINELY DISCHARGED REGIME — `d = 1` (`Q_1 = K_2`), UNCONDITIONAL.**
+  `hypercube_search_optimal_d1` proves the literal full-space `IsOptimalCTQWSearch`
+  on `Q_1` outright (no chain hypothesis): `Q_1` is the complete graph `K_2`, so
+  the axiom-clean `Graphplay.complete_graph_optimal_search` applies.  This is a
+  real, fully-discharged regime of the `O(√N)` hypercube advantage.
+
+* **CONDITIONAL on an OPEN conjecture — general `d`.**  For general `d`, the literal
+  full-`2^d`-dimensional `IsOptimalSearch` (`hypercube_search_optimal_timing`) is
+  stated **conditional on the NAMED OPEN conjecture `HypercubeChainAmplitudeBound`**
+  (equivalently `HypercubeChainMassBound`) — a finite `2(d+1)×2(d+1)` Krawtchouk
+  chain-amplitude lower bound that is essentially the conclusion's own `O(√N)`
+  content and is **NEVER discharged in this development for general `d`**.  The
+  *reduction* (hypothesis → conclusion) is axiom-clean via `hammingCell_singleton`
+  + `Graphplay.optimal_search_of_chain_amplitude`; only the **hypothesis is open**.
+  So for `d ≥ 2` the hypercube `O(√N)` advantage is **ASSUMED, not proven** here.
+  (Contrast `K_n`, where the literal full-space `IsOptimalSearch` IS proven
+  axiom-clean, `Graphplay.complete_graph_optimal_search`.)  The 2-level dynamical
+  core is separately PROVEN (`hypercube_twoLevel_optimal_timing`), but that is a
+  statement about the 2-level *subspace*, not the literal `2^d`-dimensional space.
 
 ## Generalization (the "tower" thesis)
 
@@ -683,12 +691,38 @@ theorem hypercube_twoLevel_optimal_timing (d : ℕ) (hd : 1 ≤ d) :
   rw [Fintype.card_fin]
   exact Nat.one_le_two_pow
 
-/-! ### `hypercube_search_optimal_timing` — the frontier, now reduced to a finite chain bound.
+/-! ### `hypercube_search_optimal_timing` — CONDITIONAL on an OPEN chain bound.
+
+> **⚠ OPEN ASSUMPTION (NOT PROVEN in this development).**
+> For general `d`, the full-space `O(√N)` hypercube-search timing claim
+> (`hypercube_search_optimal_timing`) is **CONDITIONAL**: it takes as a *hypothesis*
+> the named open conjecture `HypercubeChainAmplitudeBound d w` (equivalently
+> `HypercubeChainMassBound d w`).  That hypothesis is the genuine Krawtchouk
+> chain-amplitude lower bound — essentially the conclusion's own `O(√N)` content,
+> relocated to a finite `2(d+1)×2(d+1)` spectral inequality — and it is **NEVER
+> discharged anywhere in this codebase for general `d`**.  So for general `d`,
+> "the hypercube achieves optimal `O(√N)` search" is here **ASSUMED, not proven**.
+>
+> What IS genuinely proven *unconditionally* (no chain hypothesis):
+> * `hypercube_search_optimal_d1` — the **`d = 1` regime**: `Q_1 = K_2`, and CTQW
+>   search on it is optimal, discharged via the axiom-clean
+>   `complete_graph_optimal_search`.  This is a real, fully-discharged regime.
+> * `hypercube_twoLevel_optimal_timing` — the effective-2-level Rabi idealization
+>   reaches amplitude `1` at `τ* = (π/2)√N` (a statement about the *2-level
+>   subspace*, NOT the literal `2^d`-dimensional space).
+> * the equitable reduction + sparsity (`hypercube_sparse_search_reduction`).
+>
+> A reader / `#print axioms` follower must NOT read the conditional
+> `hypercube_search_optimal_timing` as a proven *unconditional* `O(√N)`
+> achievement for general `d`: its `O(√N)` content lives entirely in the
+> undischarged hypothesis `HypercubeChainAmplitudeBound`.
 
 The full-space `O(√N)` **timing** claim: the literal `2^d`-dimensional hypercube
 search evolution reaches constant amplitude into the marked subspace in time
 `O(√N)`, i.e. it is optimal (`IsOptimalCTQWSearch`, the full-Hilbert-space
-`IsOptimalSearch` predicate).
+`IsOptimalSearch` predicate) — proven *unconditionally only for `d = 1`*
+(`hypercube_search_optimal_d1`), and **conditional on the OPEN
+`HypercubeChainAmplitudeBound`** for general `d`.
 
 **What is now PROVEN (axiom-clean), splitting off the dynamical core.**
 * `hypercube_twoLevel_optimal_timing`: the effective **two-level** Rabi evolution
@@ -757,13 +791,13 @@ close `hypercube_search_optimal_timing` is the finite chain amplitude inequality
 — concrete spectral data of an explicit `2(d+1)×2(d+1)` matrix, replacing the
 `2^d`-dimensional perturbation theory. -/
 theorem hypercube_optimal_of_chain_amplitude (d : ℕ) (w : Fin (2^d))
-    (γ τ C : ℝ) (hγ : 0 < γ) (hC : 0 ≤ C)
+    (γ τ C : ℝ) (hγ : 0 < γ) (hC : 0 ≤ C) (hCπ : C ≤ Real.pi)
     (hτ : τ ≤ C * Real.sqrt (Fintype.card (Fin (2^d))))
     (hampl : ‖Graphplay.chainSearchAmplitude (hammingPartition d w) w γ τ
               (markedSet_cellUniform d w)‖ ≥ 1 / Real.sqrt 2) :
     IsOptimalCTQWSearch (Hypercube d) w :=
   Graphplay.optimal_search_of_chain_amplitude (hammingPartition d w) w
-    (markedSet_cellUniform d w) (hammingCell_singleton d w) γ τ C hγ hC hτ hampl
+    (markedSet_cellUniform d w) (hammingCell_singleton d w) γ τ C hγ hC hCπ hτ hampl
 
 /-! ### The chain amplitude as an explicit cell-mass overlap.
 
@@ -788,7 +822,7 @@ success threshold `1/√2`, stated directly on the explicit cell-mass contractio
 restatement of the single remaining frontier input (a Hermitian
 `2(d+1)`-dimensional matrix-exponential inequality with binomial cell masses). -/
 def HypercubeChainMassBound (d : ℕ) (w : Fin (2^d)) : Prop :=
-  ∃ (γ τ C : ℝ), 0 < γ ∧ 0 ≤ C ∧
+  ∃ (γ τ C : ℝ), 0 < γ ∧ 0 ≤ C ∧ C ≤ Real.pi ∧
     τ ≤ C * Real.sqrt (Fintype.card (Fin (2^d))) ∧
     ‖(∑ ib : Graphplay.MarkedRefined (Fin (d + 1)),
         (Real.sqrt (((hammingPartition d w).refineByMarked
@@ -800,13 +834,22 @@ def HypercubeChainMassBound (d : ℕ) (w : Fin (2^d)) : Prop :=
               ib ((hammingPartition d w).cells w, true))
         / Real.sqrt (Fintype.card (Fin (2^d)))‖ ≥ 1 / Real.sqrt 2
 
-/-- **The finite chain spectral inequality that closes the hypercube frontier.**
-This is the precise, explicit, host-dimension-free remaining input: for some
-coupling `γ > 0` and time `τ = O(√N)`, the `2(d+1)`-dimensional collapsed-Hamming
-chain amplitude attains the success threshold `1/√2`.  It is what
-`hypercube_optimal_of_chain_amplitude` reduces the optimal-timing claim to. -/
+/-- **`HypercubeChainAmplitudeBound` — a NAMED OPEN CONJECTURE (NOT proven here).**
+The finite chain spectral inequality that *would* close the hypercube frontier:
+for some coupling `γ > 0` and time `τ = O(√N)`, the `2(d+1)`-dimensional
+collapsed-Hamming chain amplitude attains the success threshold `1/√2`.  It is
+what `hypercube_optimal_of_chain_amplitude` reduces the optimal-timing claim to.
+
+**WARNING — this is an OPEN conjecture, not a theorem.**  It is essentially the
+`O(√N)` content of the search conclusion itself (an `∃ γ τ C, τ ≤ C√N ∧
+‖chain amplitude‖ ≥ 1/√2`), relocated onto the finite Krawtchouk chain.  It is
+**NOT discharged anywhere in this development for general `d`** — it is genuinely
+the deep Childs–Goldstone spectral content.  It is discharged *only* for the
+`d = 1` regime, where `Q_1 = K_2` is complete (see `hypercube_search_optimal_d1`,
+which bypasses this hypothesis entirely).  Any theorem taking this as a hypothesis
+is therefore **CONDITIONAL on an unproven assumption** for general `d`. -/
 def HypercubeChainAmplitudeBound (d : ℕ) (w : Fin (2^d)) : Prop :=
-  ∃ (γ τ C : ℝ), 0 < γ ∧ 0 ≤ C ∧
+  ∃ (γ τ C : ℝ), 0 < γ ∧ 0 ≤ C ∧ C ≤ Real.pi ∧
     τ ≤ C * Real.sqrt (Fintype.card (Fin (2^d))) ∧
     ‖Graphplay.chainSearchAmplitude (hammingPartition d w) w γ τ
         (markedSet_cellUniform d w)‖ ≥ 1 / Real.sqrt 2
@@ -823,12 +866,12 @@ theorem hypercube_chain_massForm_iff (d : ℕ) (w : Fin (2^d)) :
     HypercubeChainMassBound d w ↔ HypercubeChainAmplitudeBound d w := by
   unfold HypercubeChainMassBound HypercubeChainAmplitudeBound
   constructor
-  · rintro ⟨γ, τ, C, hγ, hC, hτ, hampl⟩
-    refine ⟨γ, τ, C, hγ, hC, hτ, ?_⟩
+  · rintro ⟨γ, τ, C, hγ, hC, hCπ, hτ, hampl⟩
+    refine ⟨γ, τ, C, hγ, hC, hCπ, hτ, ?_⟩
     rw [Graphplay.chainSearchAmplitude_eq_massForm]
     exact hampl
-  · rintro ⟨γ, τ, C, hγ, hC, hτ, hampl⟩
-    refine ⟨γ, τ, C, hγ, hC, hτ, ?_⟩
+  · rintro ⟨γ, τ, C, hγ, hC, hCπ, hτ, hampl⟩
+    refine ⟨γ, τ, C, hγ, hC, hCπ, hτ, ?_⟩
     rw [Graphplay.chainSearchAmplitude_eq_massForm] at hampl
     exact hampl
 
@@ -860,22 +903,79 @@ theorem hypercube_refined_marked_cellCard (d : ℕ) (w : Fin (2^d)) :
     · rintro rfl
       simp
 
-/-- **`hypercube_search_optimal_timing` — now reduced to the finite chain
-inequality.**  The full-space `O(√N)` optimal-search timing on `Q_d`, taking as
-its single hypothesis the finite, explicit collapsed-Hamming-chain amplitude bound
-`HypercubeChainAmplitudeBound` (an inequality on a `2(d+1)×2(d+1)` matrix
-exponential).  The reduction itself is axiom-clean (`hammingCell_singleton` +
-`optimal_search_of_chain_amplitude`); the frontier is now exactly the finite
-spectral input, no longer `2^d`-dimensional perturbation theory.
+/-! ### A genuinely discharged regime: `d = 1` (`Q_1 = K_2`) — UNCONDITIONAL.
 
-(The unconditional form — discharging `HypercubeChainAmplitudeBound` from the
-explicit Krawtchouk chain spectrum / `2`-level effective reduction within the
-chain — is the remaining open clause, stated as the hypothesis.) -/
+For `d = 1` the hypercube `Q_1` has just two vertices `Fin (2^1) = Fin 2`, which
+differ in their single bit, hence are at Hamming distance `1` — i.e. adjacent.
+So `Q_1` is *exactly* the complete graph `K_2`, and the axiom-clean
+`Graphplay.complete_graph_optimal_search` discharges optimal CTQW search on it
+**with no chain hypothesis whatsoever**.  This is a real, fully-discharged regime
+of the hypercube search advantage (the genuine `O(√N)` timing for `N = 2`,
+unconditional on `HypercubeChainAmplitudeBound`). -/
+
+/-- In `Q_1 = K_2`, any two distinct vertices are adjacent (Hamming distance `1`),
+so the adjacency is `1` off-diagonal — `Q_1` is the complete graph. -/
+theorem hypercube_one_complete (x y : Fin (2^1)) (hxy : x ≠ y) :
+    (Hypercube 1).adj x y = 1 := by
+  show (if hammingDist 1 x y = 1 then (1 : ℂ) else 0) = 1
+  rw [if_pos]
+  -- distance ≤ 1, and distance 0 would force x = y; so distance = 1.
+  have hle : hammingDist 1 x y ≤ 1 := hammingDist_le x y
+  rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hle with h0 | h1
+  · -- distance 0 ⇒ empty difference set ⇒ all bits agree ⇒ x = y, contradiction.
+    exfalso
+    apply hxy
+    have hcard : (diffSet x y).card = 0 := by rw [diffSet_card]; exact h0
+    have hempty : diffSet x y = ∅ := Finset.card_eq_zero.mp hcard
+    apply Fin.ext
+    apply Nat.eq_of_testBit_eq
+    intro b
+    by_cases hb : b < 1
+    · have hmem : (⟨b, hb⟩ : Fin 1) ∉ diffSet x y := by
+        rw [hempty]; exact Finset.notMem_empty _
+      rw [mem_diffSet] at hmem
+      have hbit := not_not.mp hmem
+      rw [bitOf_eq, bitOf_eq] at hbit
+      exact hbit
+    · rw [Nat.testBit_eq_false_of_lt (lt_of_lt_of_le x.isLt
+            (Nat.pow_le_pow_right (by norm_num) (by omega))),
+          Nat.testBit_eq_false_of_lt (lt_of_lt_of_le y.isLt
+            (Nat.pow_le_pow_right (by norm_num) (by omega)))]
+  · exact h1
+
+/-- **`hypercube_search_optimal_d1` — the genuinely discharged `d = 1` regime
+(UNCONDITIONAL, axiom-clean).**  For `d = 1`, `Q_1 = K_2` is the complete graph on
+two vertices, so CTQW search on it is optimal `O(√N)` (`N = 2`) — proven outright
+via the axiom-clean `Graphplay.complete_graph_optimal_search`, with **no**
+`HypercubeChainAmplitudeBound` hypothesis.  This is a real, fully-discharged regime
+of the hypercube search advantage, NOT conditional on any open conjecture. -/
+theorem hypercube_search_optimal_d1 (w : Fin (2^1)) :
+    IsOptimalCTQWSearch (Hypercube 1) w :=
+  complete_graph_optimal_search (Hypercube 1) w
+    (⟨w⟩ : Nonempty (Fin (2^1)))
+    (by rw [Fintype.card_fin]; norm_num)
+    hypercube_one_complete
+
+/-- **`hypercube_search_optimal_timing` — CONDITIONAL on the OPEN chain bound.**
+
+⚠ For general `d` this theorem is **NOT** an unconditional `O(√N)` result: it takes
+as its hypothesis the **named open conjecture** `HypercubeChainAmplitudeBound d w`
+(an inequality on a `2(d+1)×2(d+1)` matrix exponential), which is **never
+discharged in this development for general `d`** and is essentially the `O(√N)`
+content of the very conclusion, relocated onto the finite Krawtchouk chain.  So
+this theorem reads: *"CONDITIONAL — assuming the (OPEN, unproven) Krawtchouk
+chain-amplitude bound, the hypercube achieves `O(√N)` search."*
+
+The *reduction* `HypercubeChainAmplitudeBound → IsOptimalCTQWSearch` is itself
+axiom-clean (`hammingCell_singleton` + `optimal_search_of_chain_amplitude`); it is
+the **hypothesis** that is open.  For the genuinely *unconditional* hypercube
+result see `hypercube_search_optimal_d1` (the `d = 1` / `K_2` regime, discharged
+with no chain hypothesis). -/
 theorem hypercube_search_optimal_timing (d : ℕ) (hd : 1 ≤ d) (w : Fin (2^d))
     (hchain : HypercubeChainAmplitudeBound d w) :
     IsOptimalCTQWSearch (Hypercube d) w := by
-  obtain ⟨γ, τ, C, hγ, hC, hτ, hampl⟩ := hchain
-  exact hypercube_optimal_of_chain_amplitude d w γ τ C hγ hC hτ hampl
+  obtain ⟨γ, τ, C, hγ, hC, hCπ, hτ, hampl⟩ := hchain
+  exact hypercube_optimal_of_chain_amplitude d w γ τ C hγ hC hCπ hτ hampl
 
 /-- **`hypercube_search_optimal_timing` from the explicit cell-mass inequality.**
 The same full-space `O(√N)` optimal search, now taking the *fully explicit*
@@ -1202,10 +1302,20 @@ This is the paper-worthy result, stated precisely with the dimension dependence
 explicit.  The proof is the deep Childs–Goldstone spectral integral — genuinely
 hard, blocked here. -/
 
-/-- **`lattice_search_dimension_threshold` — the honest headline (Childs–Goldstone,
-`quant-ph/0306054`).**  Continuous-time spatial search on the `d`-dimensional
-periodic lattice `Z_L^d` achieves the **optimal `Θ(√N)` running time if and only
-if `d > 4`**.  Concretely: for `d > 4` the marked-vertex CTQW search is optimal
+/-- **`lattice_search_dimension_threshold` — CONJECTURED/OPEN (Childs–Goldstone,
+`quant-ph/0306054`), proof `sorry`-ed.**
+
+> **⚠ UNPROVEN in this development.**  The entire biconditional below is closed by
+> a single `sorry` (the deep Childs–Goldstone spectral integral).  It is stated as
+> the genuine *conjectured* Childs–Goldstone threshold, NOT as a proven result;
+> any `#print axioms` will report `sorryAx`.  Downstream theorems that invoke it
+> (`lattice_search_optimal_high_dim`, `buildable_lattice_dynamical_contrast`) are
+> correspondingly **conditional / unproven** in their dynamical clauses.
+
+Continuous-time spatial search on the `d`-dimensional
+periodic lattice `Z_L^d` is conjectured to achieve the **optimal `Θ(√N)` running
+time if and only if `d > 4`**.  Concretely: for `d > 4` the marked-vertex CTQW
+search is optimal
 (`IsOptimalCTQWSearch`); for `d ≤ 4` no choice of coupling `γ` yields the optimal
 constant-amplitude `√N` search (`d ≤ 3` fails outright; `d = 4` loses a `√log N`
 factor and so still misses the *exact* `Θ(√N)` window).
@@ -1218,9 +1328,10 @@ critical dimension.  Above it, the spectral gap of the normalized search
 Hamiltonian is constant (the CNO ratio condition holds) and CG search is optimal;
 at and below it the gap closes and the amplitude saturates below `O(1)`.
 
-**Honest `sorry`.**  The spectral integral and its dimension-`4` IR-convergence
-threshold are the deep analytic content of Childs–Goldstone; we state the genuine
-biconditional and block exactly that step. -/
+**Honest `sorry` (OPEN).**  The spectral integral and its dimension-`4`
+IR-convergence threshold are the deep analytic content of Childs–Goldstone; we
+state the genuine *conjectured* biconditional and block exactly that step.  This
+theorem is therefore **not proven** — it is a labeled open conjecture. -/
 theorem lattice_search_dimension_threshold (d L : ℕ) [Fact (2 < L)]
     (w : LatticeVertex d L) :
     IsOptimalCTQWSearch (latticeGraph d L) w ↔ 4 < d := by
@@ -1228,10 +1339,12 @@ theorem lattice_search_dimension_threshold (d L : ℕ) [Fact (2 < L)]
   -- of the lattice Green's function `∫ dᵏ / ∑(1−cos kₐ)` (quant-ph/0306054).
   sorry
 
-/-- **High-dimensional lattices DO get the speedup (`d > 4`).**  The `d > 4`
-half of the threshold: above the critical dimension the lattice Green's function
-converges, the CNO spectral-ratio condition holds, and CTQW search is optimal.
-(Honest `sorry`, the forward direction of `lattice_search_dimension_threshold`.) -/
+/-- **High-dimensional lattices DO get the speedup (`d > 4`) — CONJECTURED/OPEN.**
+The `d > 4` half of the threshold: above the critical dimension the lattice
+Green's function converges, the CNO spectral-ratio condition holds, and CTQW
+search is conjectured optimal.  ⚠ **UNPROVEN**: this is the forward direction of
+the `sorry`-ed `lattice_search_dimension_threshold`, hence itself `sorryAx` (not a
+proven result). -/
 theorem lattice_search_optimal_high_dim (d L : ℕ) [Fact (2 < L)]
     (w : LatticeVertex d L) (hd : 4 < d) :
     IsOptimalCTQWSearch (latticeGraph d L) w :=

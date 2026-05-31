@@ -342,7 +342,7 @@ noncomputable def discriminantEntry (G : WeightedGraph V) (x y : V) : ℝ :=
   Real.sqrt (Complex.normSq (G.randomWalkOp x y) * Complex.normSq (G.randomWalkOp y x))
     |> Real.sqrt
 
-/-- **Szegedy spectral correspondence (Szegedy 2004, Thm 1).**  Every eigenvalue
+/-! **Szegedy spectral correspondence (Szegedy 2004, Thm 1).**  Every eigenvalue
 `μ` of the Grover walk operator `groverStep` is of the form
 `μ = e^{± i · arccos σ}` for some singular value `σ ∈ [0, 1]` of the Szegedy
 discriminant matrix of `G` — equivalently, an eigenvalue of the symmetric
@@ -351,17 +351,43 @@ transition operator `G.randomWalkOp` lying in `[-1, 1]`.  The map
 unit circle.
 
 Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3. -/
+
+/-- **Grover-walk 2×2 block correspondence (the deep SVD input).**  The single deep
+ingredient, isolated as a named lemma exactly as for the Szegedy walk
+(`Graphplay.WeightedGraph.szegedy_block_correspondence`).  In the basis adapted to
+the Grover coin reflections, `U = S·C` block-diagonalises into 2×2 planar rotations
+on the planes `span{|s_x⟩, S|s_x⟩}` indexed by the singular vectors of the
+discriminant `D = √P ∘ √Pᵀ`; on each plane the rotation angle `θ ∈ [0, π/2]` has
+`cos θ = σ`, the corresponding singular value, which is an eigenvalue of the
+symmetric transition operator `G.randomWalkOp`.  Casting the block decomposition as
+a *singular-value* statement needs the discriminant SVD, absent from Mathlib; this
+lemma is where that residual lives.  `groverStep_spectrum` is then pure
+trigonometric bookkeeping on top of it. -/
+theorem groverStep_block_correspondence (G : WeightedGraph V) (μ : ℂ)
+    (hμ : μ ∈ spectrum ℂ (groverStep V)) :
+    ∃ (σ : ℝ) (θ : ℝ) (s : Bool),
+      σ ∈ Set.Icc (0 : ℝ) 1 ∧
+      θ ∈ Set.Icc (0 : ℝ) Real.pi ∧
+      Real.cos θ = σ ∧
+      (σ : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
+      μ = Complex.exp ((if s then 1 else -1) * Complex.I * θ) := by
+  sorry
+
 theorem groverStep_spectrum (G : WeightedGraph V) (μ : ℂ)
     (hμ : μ ∈ spectrum ℂ (groverStep V)) :
     ∃ (σ : ℝ) (s : Bool),
       σ ∈ Set.Icc (0 : ℝ) 1 ∧
       (σ : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
       μ = Complex.exp ((if s then 1 else -1) * Complex.I * Real.arccos σ) := by
-  -- Szegedy's spectral lemma: in the basis adapted to the coin reflections, the
-  -- walk block-diagonalizes into 2×2 rotations by ±arccos σ on the planes
-  -- spanned by `{|s_x⟩, S|s_x⟩}` indexed by the singular vectors of `D`.  The
-  -- singular-value / arccos bookkeeping is the deep content; honest `sorry`.
-  sorry
+  -- Derived sorry-free from the single deep input `groverStep_block_correspondence`:
+  -- it supplies the rotation angle `θ ∈ [0, π]` with `cos θ = σ`, and `arccos_cos`
+  -- rewrites `θ = arccos σ`, giving the `exp(±i·arccos σ)` form.
+  obtain ⟨σ, θ, s, hσ, ⟨hθ0, hθpi⟩, hcos, hspec, hμeq⟩ :=
+    groverStep_block_correspondence G μ hμ
+  refine ⟨σ, s, hσ, hspec, ?_⟩
+  have harc : Real.arccos σ = θ := by
+    rw [← hcos, Real.arccos_cos hθ0 hθpi]
+  rw [hμeq, harc]
 
 /-! ## §6 Discrete-time equitable-partition / automorphism quotient
 

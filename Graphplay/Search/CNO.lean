@@ -431,12 +431,18 @@ singleton search succeeds with constant probability.  Phrased via the existing
 `≥ 1/√2` into the marked subspace), together with the `O(√N)` running-time
 budget on `τ`.
 
-The `√N` running time is the content of the quadratic speedup; the constant
-`τ ≤ C · √N` is recorded with an explicit existential `C`. -/
+The `√N` running time is the content of the quadratic speedup.  The timing
+budget is recorded with a **concrete universal constant** `C = π` (NO free
+existential): `τ ≤ π · √N`.  This is a genuine `O(√N)` budget — a fixed multiple
+of `√N`, not "some finite time" — so the timing conjunct is load-bearing.  The
+Childs–Goldstone flagship `complete_graph_optimal_search` achieves the tighter
+`τ* = (π/2)·√N ≤ π·√N`, so the bound is met with room to spare.  (We use `π`
+rather than the tight `π/2` to leave headroom for the quotient/bundle lifts, whose
+cell-inflate reparametrization can dilate the search time by a bounded factor.) -/
 def IsOptimalCTQWSearch (G : WeightedGraph V) (w : V) : Prop :=
-  ∃ (γ τ : ℝ) (C : ℝ),
-    0 < γ ∧ 0 ≤ C ∧
-    τ ≤ C * Real.sqrt (Fintype.card V) ∧
+  ∃ (γ τ : ℝ),
+    0 < γ ∧
+    τ ≤ Real.pi * Real.sqrt (Fintype.card V) ∧
     IsOptimalSearch G ({w} : Finset V) γ τ
 
 /-! ## The `|w⟩–|s⟩` matrix element and the Rabi frequency — axiom-clean.
@@ -1121,8 +1127,14 @@ theorem complete_graph_optimal_search
   have hNR : (0:ℝ) < N := by exact_mod_cast (by omega : 0 < N)
   have hsqrtpos : (0:ℝ) < Real.sqrt N := Real.sqrt_pos.mpr hNR
   -- Childs–Goldstone optimal coupling `γ = 1/N` and search time `τ* = (π/2)·√N`.
-  refine ⟨1 / N, (Real.pi / 2) * Real.sqrt N, Real.pi / 2,
-    by positivity, by positivity, le_of_eq (by ring), ?_⟩
+  -- The concrete budget `τ* = (π/2)·√N ≤ π·√N` is met with room to spare.
+  refine ⟨1 / N, (Real.pi / 2) * Real.sqrt N,
+    by positivity, ?_, ?_⟩
+  · -- `(π/2)·√N ≤ π·√N`, since `π/2 ≤ π` and `√N ≥ 0`.
+    rw [← hNdef]
+    apply mul_le_mul_of_nonneg_right _ (Real.sqrt_nonneg _)
+    have : (0:ℝ) ≤ Real.pi := Real.pi_pos.le
+    linarith
   -- `IsOptimalSearch` for the singleton collapses to `‖(∑_v U(τ)_{v,w})/√N‖ ≥ 1/√2`.
   set τ : ℝ := (Real.pi / 2) * Real.sqrt N with hτ
   have hcollapse : (∑ v, ∑ m, if m ∈ ({w} : Finset V)
@@ -1591,11 +1603,14 @@ theorem optimal_search_of_chain_amplitude {G : WeightedGraph V}
     (hM : ∀ x y : V, P.cells x = P.cells y →
       (x ∈ ({w} : Finset V) ↔ y ∈ ({w} : Finset V)))
     (hcell : ∀ x : V, P.cells x = P.cells w → x = w)
-    (γ τ C : ℝ) (hγ : 0 < γ) (hC : 0 ≤ C)
+    (γ τ C : ℝ) (hγ : 0 < γ) (_hC : 0 ≤ C) (hCπ : C ≤ Real.pi)
     (hτ : τ ≤ C * Real.sqrt (Fintype.card V))
     (hampl : ‖chainSearchAmplitude P w γ τ hM‖ ≥ 1 / Real.sqrt 2) :
     IsOptimalCTQWSearch G w := by
-  refine ⟨γ, τ, C, hγ, hC, hτ, ?_⟩
+  -- The supplied budget `C ≤ π` meets the concrete universal budget `π·√N`.
+  have hτπ : τ ≤ Real.pi * Real.sqrt (Fintype.card V) :=
+    hτ.trans (mul_le_mul_of_nonneg_right hCπ (Real.sqrt_nonneg _))
+  refine ⟨γ, τ, hγ, hτπ, ?_⟩
   -- `IsOptimalSearch G {w} γ τ` collapses to `‖(∑_v U(τ)_{v,w})/√N‖ ≥ 1/√2`.
   show ‖_‖ ≥ 1 / Real.sqrt 2
   have hcollapse : (∑ v, ∑ m, if m ∈ ({w} : Finset V)

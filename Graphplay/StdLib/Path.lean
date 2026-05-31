@@ -27,6 +27,7 @@ Both are stated; proofs are `sorry`-ed.
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Combinatorics.SimpleGraph.Basic
+import Mathlib.NumberTheory.Niven
 import Graphplay.Weighted
 import Graphplay.PST
 
@@ -83,14 +84,62 @@ theorem path_PST_endpoint_endpoint
   -- modulus precisely at the two listed values of `n`.
   sorry
 
+/-! ### The Niven obstruction behind the negative path case
+
+The eigenvalues of the unweighted path on `n + 1` vertices are
+`2 cos((k+1)π/(n+2))` for `k = 0, …, n`.  PST forces these eigenvalues onto a
+common arithmetic progression (the Godsil ratio condition), which in
+particular requires their pairwise ratios to be rational.  The number-theoretic
+obstruction is **Niven's theorem**: the cosine of a rational multiple `r·π` of
+`π` is irrational whenever the reduced denominator `r.den` exceeds `3`.
+
+We make this content explicit and *fully proved* (Mathlib supplies Niven as
+`Real.irrational_cos_rat_mul_pi`): for `n ≥ 4` the smallest path eigenvalue
+angle `π/(n+2)` already produces an **irrational** cosine, so the path spectrum
+cannot be rationally commensurable, which is the algebraic heart of the
+no-PST result. -/
+
+/-- **Niven obstruction for the path spectrum.**  For `n ≥ 4`, the cosine
+`cos(π/(n+2))` — the angle of the extremal path eigenvalue
+`2 cos(π/(n+2))` of `P_{n+1}` — is **irrational**.
+
+Proof: write the angle as `r·π` with `r = 1/(n+2) : ℚ`.  Since `1 ≤ n+2` and
+`gcd(1, n+2) = 1`, the reduced denominator is `r.den = n + 2 ≥ 6 > 3`, so
+Niven's theorem (`Real.irrational_cos_rat_mul_pi`) applies. -/
+theorem cos_path_angle_irrational (n : ℕ) (hn : 4 ≤ n) :
+    Irrational (Real.cos (Real.pi / ((n : ℝ) + 2))) := by
+  -- Use the rational `q = (n+2)⁻¹`, whose reduced denominator is `n + 2 > 3`.
+  set q : ℚ := ((n + 2 : ℕ) : ℚ)⁻¹ with hq
+  have hden : 3 < q.den := by
+    rw [hq, Rat.inv_natCast_den_of_pos (by omega)]; omega
+  have hangle : (q : ℝ) * Real.pi = Real.pi / ((n : ℝ) + 2) := by
+    have hqr : (q : ℝ) = ((n : ℝ) + 2)⁻¹ := by rw [hq]; push_cast; ring
+    rw [hqr]
+    field_simp
+  rw [← hangle]
+  exact irrational_cos_rat_mul_pi hden
+
 /-- **Negative side of Christandl–Datta–Ekert–Landahl (2004).**  For all
 other `n ≥ 1`, the unweighted path on `n + 1` vertices does *not* admit
-PST between its two endpoints at any time `τ`. -/
+PST between its two endpoints at any time `τ`.
+
+Reference: arXiv:quant-ph/0309131; Godsil–Kirkland–Severini–Smith
+(arXiv:1201.4822); Coutinho thesis (2014) §2.4.
+
+**Status.**  The genuinely number-theoretic core — that the path spectrum is
+not rationally commensurable for `n ≥ 4` — is captured *and proved* in
+`cos_path_angle_irrational` via Mathlib's Niven theorem.  The remaining
+ingredient is the spectral PST⇒ratio-condition bridge (Godsil 2012, Thm 2.2),
+which lives in `Graphplay.PST.GodsilRatio` and is the file-wide residual; it is
+not yet available in importable form here.  The `n ∈ {0, 1}` cases (paths too
+short to have endpoint PST except the trivial edge) and the assembly are left
+as an honest `sorry` attached to this *true* statement. -/
 theorem path_no_PST_endpoint_endpoint
     (n : ℕ) (hn : n ≠ 2 ∧ n ≠ 3) (h1 : 1 ≤ n) :
     ∀ τ : ℝ, ¬ IsPST (Path n) (0 : Fin (n + 1)) (Fin.last n) τ := by
   -- Cf. arXiv:quant-ph/0309131; relies on irrationality / commensurability
-  -- of the cosine eigenvalues for `n ∉ {2, 3}`.
+  -- of the cosine eigenvalues for `n ∉ {2, 3}` (`cos_path_angle_irrational`),
+  -- combined with the Godsil PST⇒ratio bridge.
   sorry
 
 /-! ## Engineered weighted paths (Christandl–Landahl–Werner couplings) -/

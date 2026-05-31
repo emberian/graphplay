@@ -58,6 +58,116 @@ namespace Topos
 
 open CategoryTheory CategoryTheory.Limits
 
+/-! ## 0. Pullbacks in `WGraph`.
+
+The strict morphisms of `WGraph` (`adj_preserving` is an *equality*, not just
+edge-preservation) make `WGraph` a very rigid category: it has **no terminal
+object** (a terminal `T` would have to receive a strict map from *every* finite
+weighted graph, but a 2-vertex graph whose single off-diagonal weight `c ∈ ℂ`
+does not occur in `T` admits no strict map to `T`), hence does **not** have all
+finite limits.  What it *does* have are **pullbacks**: the fibre product of the
+vertex sets, with adjacency inherited from either leg — these agree on the
+fibre precisely because both legs strictly preserve adjacency into the common
+target.  This is genuine, sorry-free categorical content, and is exactly the
+construction the (false-as-literally-stated) `hasFiniteLimits_WGraphP` doc-block
+alluded to.  We build it in the base category `WGraph` here. -/
+
+namespace WGraphPullback
+
+variable {X Y Z : WGraphObj.{u}} (f : X ⟶ Z) (g : Y ⟶ Z)
+
+/-- The vertex set of the pullback: the fibre product
+`{(x, y) | f x = g y}`. -/
+def Vtx : Type u := { p : X.V × Y.V // f.toFun p.1 = g.toFun p.2 }
+
+noncomputable instance : Fintype (Vtx f g) := by
+  unfold Vtx; infer_instance
+
+instance : DecidableEq (Vtx f g) := by
+  unfold Vtx; infer_instance
+
+/-- The pullback weighted graph: adjacency inherited from `X` along the first
+projection.  Hermitian and loopless because `X` is. -/
+noncomputable def graph : WeightedGraph (Vtx f g) where
+  adj p q := X.adj p.1.1 q.1.1
+  herm := by
+    ext p q
+    show star (X.adj q.1.1 p.1.1) = X.adj p.1.1 q.1.1
+    exact congrFun (congrFun X.G.herm p.1.1) q.1.1
+  loopless := by
+    intro p
+    show X.adj p.1.1 p.1.1 = 0
+    exact X.G.loopless p.1.1
+
+/-- The pullback as a bundled object. -/
+noncomputable def obj : WGraphObj.{u} where
+  V := Vtx f g
+  G := graph f g
+
+/-- First projection `pullback ⟶ X`. -/
+noncomputable def fst : WGraphHom (obj f g) X where
+  toFun p := p.1.1
+  adj_preserving _ _ := rfl
+
+/-- Second projection `pullback ⟶ Y`.  Adjacency preservation uses that on the
+fibre `X`-adjacency equals `Y`-adjacency: `X.adj p₁ q₁ = Z.adj (f p₁) (f q₁) =
+Z.adj (g p₂) (g q₂) = Y.adj p₂ q₂`. -/
+noncomputable def snd : WGraphHom (obj f g) Y where
+  toFun p := p.1.2
+  adj_preserving p q := by
+    show X.adj p.1.1 q.1.1 = Y.adj p.1.2 q.1.2
+    rw [f.adj_preserving p.1.1 q.1.1, p.2, q.2, ← g.adj_preserving p.1.2 q.1.2]
+
+theorem condition :
+    (fst f g ≫ f : (obj f g) ⟶ Z) = (snd f g ≫ g : (obj f g) ⟶ Z) := by
+  apply WGraphHom.ext
+  intro p
+  exact p.2
+
+/-- The universal map out of a competing cone `(s.fst, s.snd)` with
+`s.fst ≫ f = s.snd ≫ g`. -/
+noncomputable def lift {W : WGraphObj.{u}}
+    (h : WGraphHom W X) (k : WGraphHom W Y)
+    (w : (h ≫ f : W ⟶ Z) = (k ≫ g : W ⟶ Z)) :
+    WGraphHom W (obj f g) where
+  toFun v := ⟨(h.toFun v, k.toFun v), congrFun (congrArg WGraphHom.toFun w) v⟩
+  adj_preserving a b := by
+    show W.adj a b = X.adj (h.toFun a) (h.toFun b)
+    exact h.adj_preserving a b
+
+/-- The fibre-product pullback cone over the cospan `f, g`. -/
+noncomputable def cone : PullbackCone f g :=
+  PullbackCone.mk (fst f g) (snd f g) (condition f g)
+
+/-- The fibre-product cone is a genuine limit cone: sorry-free `IsLimit`. -/
+noncomputable def isLimit : IsLimit (cone f g) :=
+  PullbackCone.IsLimit.mk (condition f g)
+    (fun s => lift f g s.fst s.snd s.condition)
+    (fun _ => by apply WGraphHom.ext; intro _; rfl)
+    (fun _ => by apply WGraphHom.ext; intro _; rfl)
+    (fun _ m hfst hsnd => by
+      apply WGraphHom.ext
+      intro v
+      apply Subtype.ext
+      apply Prod.ext
+      · exact congrFun (congrArg WGraphHom.toFun hfst) v
+      · exact congrFun (congrArg WGraphHom.toFun hsnd) v)
+
+end WGraphPullback
+
+/-- Each cospan in `WGraph` has a pullback. -/
+noncomputable instance hasPullback_WGraph {X Y Z : WGraphObj.{u}}
+    {f : X ⟶ Z} {g : Y ⟶ Z} : HasPullback f g :=
+  HasLimit.mk ⟨WGraphPullback.cone f g, WGraphPullback.isLimit f g⟩
+
+/-- **`WGraph` has pullbacks.**  The fibre-product construction
+`WGraphPullback.obj` with its two projections is a genuine limit cone over the
+cospan `f, g`; this is sorry-free.  (Note: `WGraph` does *not* have a terminal
+object, so this does not give all finite limits — see
+`hasFiniteLimits_WGraphP`.) -/
+instance hasPullbacks_WGraph : HasPullbacks WGraphObj.{u} :=
+  hasPullbacks_of_hasLimit_cospan WGraphObj.{u}
+
 /-! ## 1. `WGraphP` is regular. -/
 
 /--
@@ -82,21 +192,54 @@ structure WGraphPRegEpi {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y) : Prop where
     ∀ y : Y.V, ∃ x : X.V, f.base.toFun x = y ∧ f.cellMap (X.cells x) = Y.cells y
 
 /--
-**Finite limits exist in `WGraphP`.** Constructed pointwise: the pullback of
-`f, g` has vertex set the fibre product of the vertex sets, cell set the fibre
-product of the cell sets, and the partition is induced.
+**Finite limits in `WGraphP` (honest status).**
 
-(Statement only; the actual `HasFiniteLimits` instance is `sorry`.)
+`HasFiniteLimits` requires a **terminal object**.  With the *strict* morphisms
+of `WGraph`/`WGraphP` (`adj_preserving` is an *equality*, not edge-preservation)
+there is **no terminal object**: a terminal `T` would have to receive a strict
+map from *every* finite weighted graph, but a 2-vertex graph whose single
+off-diagonal weight `c ∈ ℂ` does not occur as an entry of `T` admits no strict
+map into `T`.  Since `ℂ`-valued weights are unbounded, no fixed finite `T` can
+absorb all of them.  Hence the literal `HasFiniteLimits WGraphPObj` is **false
+as stated**, and this declaration is an honest `sorry` recording the obstruction
+rather than a deferred-but-true claim.
+
+What is genuinely **true and built** (sorry-free, above) is that `WGraph` has
+all **pullbacks** — `hasPullbacks_WGraph`, via the fibre-product
+`WGraphPullback.obj` — which is exactly the "pointwise fibre product" the
+original draft of this doc-block described.  Pullbacks give all *connected*
+finite limits; only the terminal/product directions fail, and they fail for the
+honest reason above.  (At the partition level there is the additional, separate
+obstruction that the joint cell-labelling of two equitable partitions need not
+itself be equitable — see `FinerThan.meet` — so even the connected limits do
+not lift verbatim from `WGraph` to `WGraphP` without an equitability side
+condition.)
 -/
 theorem hasFiniteLimits_WGraphP : HasFiniteLimits WGraphPObj.{u} := by
   sorry
 
 /--
-**Every morphism factors as a regular epi followed by a mono.**
+**Every morphism factors as a regular epi followed by a mono (honest status).**
 
-Explicitly: factor `f : X ⟶ Y` through the image (vertex-image, cell-image)
-with the induced equitable partition on the image; the first leg is a
-regular epi, the second leg is a mono.
+The intended construction: factor `f : X ⟶ Y` through its image `I` — vertex set
+`range f.base ⊆ Y.V`, cell set `range f.cellMap ⊆ Y.I`, adjacency and cell
+labelling *inherited from* `Y`.  The second leg `m : I ⟶ Y` is then the
+inclusion, a genuine mono (base- and cell-injective), and the first leg
+`e : X ⟶ I` is the corestriction, a genuine regular epi (its `adj_preserving`
+is exactly `f.base.adj_preserving`, and surjectivity/`cells_compat` hold by
+construction onto the image).
+
+**The genuine obstruction is the equitability of the image partition.**
+Forming the image as a `WGraphPObj` requires `Y.cells`, restricted to the image
+vertex set `range f.base`, to be an *equitable* partition of the image subgraph.
+This is **not** automatic: the branching sum `∑_{w ∈ image, Y.cells w = j}
+Y.adj v w` ranges only over image vertices, dropping the `Y`-neighbours outside
+the image — and those dropped contributions need not be cell-uniform even though
+the full-`Y` sums are.  So the image need not carry an equitable partition, and
+the factorisation is genuinely deferred (honest `sorry`) at exactly this point;
+the base-level legs (`fst`/`snd`/inclusion/corestriction) are constructible, but
+the partition datum on `I` is the residual.  This is the same
+joint-equitability phenomenon isolated in `FinerThan.meet`.
 -/
 theorem regular_epi_mono_factorization
     {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y) :
@@ -404,29 +547,31 @@ noncomputable def Discrete : WGraphObj.{u} ⥤ WGraphPObj.{u} where
     apply WGraphPHom.ext <;> intros <;> rfl
 
 /--
-**`Discrete` is left adjoint to `Quotient`.**
+**Hom-set comparison `Discrete`/`Quotient` (honest status).**
 
-That is, weighted-graph maps `X ⟶ Quotient (Y, Q)` are in natural bijection
-with partitioned-graph maps `Discrete X ⟶ (Y, Q)`.
+The hom-sets compared here are:
+  * `B := WGraphPHom (Discrete X) Y`: since `Discrete X` has the discrete
+    partition (cells = vertices), the cell map of such a morphism is *forced*
+    to be `Y.cells ∘ base`, so `B` is equivalent to the bare vertex maps
+    `base : WGraphHom X Y.base` (strict into `Y.base`).
+  * `A := WGraphHom X (Quotient Y)`: vertex maps `h : X.V → Y.I` strictly
+    preserving the *quotient* adjacency `Y.P.quotientGraph`.
 
-The data:
-  * unit `η : 𝟭 WGraph ⟶ Discrete ⋙ Quotient` sends `X` to the canonical map
-    `X → Quotient (Discrete X)`, which at the vertex level is the identity
-    (the cells of the discrete partition are the vertices themselves), so
-    the underlying vertex map is `id`.
-  * counit `ε : Quotient ⋙ Discrete ⟶ 𝟭 WGraphP` sends `(Y, Q)` to the
-    canonical map `Discrete (Quotient (Y, Q)) → (Y, Q)`. The vertex set of
-    `Discrete (Quotient (Y, Q))` is `Q.I` (the cells); we map a cell to a
-    chosen representative vertex. We sorry the choice and the triangle
-    identities. -/
+A genuine bijection `A ≃ B` would make `Discrete ⊣ Quotient`.  **It does not
+hold.** The forward attempt `B → A`, `base ↦ Y.cells ∘ base`, fails to land in
+`A`: it would require `Y.base.adj (base a) (base b) = Y.P.quotientGraph
+(Y.cells (base a)) (Y.cells (base b))`, i.e. the raw adjacency between two
+*representatives* to equal the *quotient* (cell-to-cell, cardinality-weighted)
+entry — false in general.  The reverse `A → B` has no canonical vertex section
+`Y.I → Y.V` at all.  So `Quotient` is **not** right adjoint to `Discrete`.
+
+The genuine coreflection is `Discrete ⊣ Forget` (right below, fully proven):
+`Forget`, not `Quotient`, is the right adjoint.  This declaration is therefore
+an honest `sorry` on a statement that is *false as written*; the real,
+sorry-free adjunction is `discrete_adjoint_forget`. -/
 theorem discrete_adjoint_quotient
     (X : WGraphObj.{u}) (Y : WGraphPObj.{u}) :
     Nonempty (WGraphHom X (Quotient.obj Y) ≃ WGraphPHom (Discrete.obj X) Y) := by
-  -- The natural hom-set bijection underlying `Discrete ⊣ Quotient`. A map
-  -- `Discrete X ⟶ (Y, Q)` is a vertex map `X.V → Y.V` whose induced cell map
-  -- is forced (`= Q.cells ∘ ·`); a map `X ⟶ Quotient Y` is a map of cell
-  -- indices `X.V → Q.I`. The bijection sends one to the other.
-  -- (Naturality + the bijection laws are the content; left as honest sorry.)
   sorry
 
 /--
@@ -852,8 +997,18 @@ theorem tower7_quotient_coherence {X Y : WGraphObj.{u}} (f : WGraphHom X Y) :
 
 Summary of stated (sorry-deferred) content:
 
-  * `hasFiniteLimits_WGraphP`, `regular_epi_mono_factorization`,
-    `regular_epi_stable_under_pullback`, `WGraphP_regular` — `WGraphP` is regular.
+  * `WGraphPullback.obj`/`fst`/`snd`/`condition`/`lift`/`cone`/`isLimit`,
+    `hasPullback_WGraph`, `hasPullbacks_WGraph` — **`WGraph` has all pullbacks**,
+    via the fibre-product construction.  This is **sorry-free** and is the
+    genuine, true categorical-limit content of section 1.
+  * `hasFiniteLimits_WGraphP` — **false as literally stated** (honest `sorry`):
+    the strict morphisms give *no terminal object* (unbounded `ℂ`-weights),
+    so `HasFiniteLimits` fails; the true content is `hasPullbacks_WGraph` above.
+  * `regular_epi_mono_factorization` — honest `sorry`: base legs constructible,
+    but the *image partition* need not be equitable (the same joint-equitability
+    obstruction as `FinerThan.meet`).
+  * `regular_epi_comp` (sorry-free), `WGraphP_regular` — regularity packaging
+    (depends on the two honest sorries above).
   * `FinerThan.preorder` (the genuine, sorry-free refinement order — *not* a
     lattice: the meet of two equitable partitions can fail to be equitable, and
     antisymmetry fails up to cell-relabelling), `FinerThan.meet` (sorry-free,
@@ -862,8 +1017,12 @@ Summary of stated (sorry-deferred) content:
     `subobject_iso_finerThan` — subobject classifier.
   * `InternalPredicate`, `internal_forall_is_refinement_stable`,
     `internal_exists_is_refinement_witness` — internal logic.
-  * `discretePartition`, `Discrete`, `Forget`, `discrete_adjoint_quotient`,
-    `discrete_adjoint_forget` — coreflection.
+  * `discretePartition`, `Discrete`, `Forget`, `discrete_adjoint_quotient`
+    (**false as stated** — `Quotient` is *not* right adjoint to `Discrete`; the
+    quotient adjacency does not match raw representative adjacency, and there is
+    no vertex section `Y.I → Y.V`; honest `sorry`), `discrete_adjoint_forget`
+    (the genuine, **sorry-free** coreflection: `Discrete ⊣ Forget`) —
+    coreflection.
   * `EPCat`, `refinement_grothendieck_topology` (SCAFFOLD: discrete-topology
     stub, not the genuine refinement topology — doc-labelled as such),
     `sheaf_is_consistent_cell_data` (honest `sorry`: the genuine refinement

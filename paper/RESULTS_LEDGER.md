@@ -12,34 +12,51 @@ below with the precise honest gap.
 (`/tmp/AxCheck.lean`) run with `lake env lean`. Audit-only: no `.lean` file was
 edited.
 
-**Date:** 2026-05-30 · **Mathlib:** local checkout at `/Users/ember/src/mathlib4`
+**Date:** 2026-05-31 (re-audited) · **Mathlib:** local checkout at `/Users/ember/src/mathlib4`
 (v4.30.0-era) · **Lean toolchain:** as pinned by the project.
+
+> **2026-05-31 re-audit.** `#print axioms` was re-run on every headline theorem AND
+> each was given an **adversarial statement-soundness read** — because a theorem can be
+> perfectly axiom-clean yet **vacuous** (`#print axioms` does NOT catch a hollow
+> statement). Both dimensions are now tracked. Several axiom-clean-but-hollow headline
+> statements were found and corrected with real content (no `sorry` introduced); see the
+> Statement-soundness table. **Process rule going forward: a result counts as a "headline"
+> only if it passes BOTH `#print axioms` (no `sorryAx`) AND an adversarial non-vacuity read.**
 
 ---
 
 ## TOP-LINE SUMMARY
 
-**42 headline theorems audited** (one listed entry, `pooledTokens_equitable`, is a
-`def` not a theorem — counted but flagged as not a proposition).
+### Dimension 1 — Axiom status (`sorryAx`)
 
-- **AXIOM-CLEAN: 38** (only `propext` / `Classical.choice` / `Quot.sound`).
-- **`sorryAx`-DEPENDENT (NOT clean): 4** — each with a single, named, honestly
-  documented open clause; the *rest* of each such theorem's conjuncts are proven.
+Of the previous ledger's **four** `sorryAx` headline gaps, **two are now CLOSED / CLEAN**:
+- `corrected_equitable_attention` (complex+real Eckart–Young) — **CLOSED, CLEAN** (the spectral-theorem truncation bound is now proven).
+- `bipartite_equitable_dirac_cone` (honeycomb Dirac cone) — **CLOSED, CLEAN** (all three conjuncts incl. local linearity now proven).
 
-### The 4 NON-clean headline theorems (the honest open gaps)
+That leaves the genuine axiom-status frontier:
 
-| # | Theorem | File | The open clause (everything else in the statement is proven) |
-|---|---------|------|--------------------------------------------------------------|
-| 1 | `corrected_equitable_attention` | `Graphplay/Integrations/EquitableMechanism.lean:259` | The *entire* statement is the open clause: the ε-approximate residual error bound needs **Eckart–Young rank-`k` truncation optimality**, absent from Mathlib v4.30.0. The matching EXACT lower bound (`no_cheap_exact_factorization`) IS proven clean. |
-| 2 | `hypercube_search_optimal_timing` | `Graphplay/Applications/SparseSearch.lean:631` | The whole statement is the open clause: `IsOptimalCTQWSearch (Hypercube d) w` (the O(√N) *timing*) is `sorry` — needs the **CNO spectral-ratio timing** core. The proven sparsity + equitable-reduction half is now the axiom-clean `hypercube_sparse_search_reduction` (no timing clause). |
-| 3 | `lattice_search_dimension_threshold` | `Graphplay/Applications/SparseSearch.lean:955` | Whole `↔` is `sorry`: the `d>4` threshold needs the **Childs–Goldstone spectral integral** (IR-convergence of the lattice Green's function `∫ dᵏ/∑(1−cos kₐ)`, quant-ph/0306054). |
-| 4 | `bipartite_equitable_dirac_cone` | `Graphplay/Dowsing/DiracLimit.lean:443` | Conjuncts (1) band-touching at `k=π` and (2) symmetric `±‖f(k)‖` bands are **proven clean**; only conjunct (3)'s **local linearity** of the Dirac cone is `sorry` — needs the small-`k` Taylor expansion `f(π+κ)=−iqκ+O(κ²)` / `O(κ²)` remainder control (no packaged Mathlib lemma). |
+| Theorem | Status | Honest note |
+|---------|--------|-------------|
+| `lattice_search_dimension_threshold` | **`sorryAx` (OPEN)** | the `d>4` threshold needs the Childs–Goldstone spectral integral (quant-ph/0306054). Labeled in-file as a conjecture; **do NOT claim it.** Its dependent `buildable_lattice_dynamical_contrast` inherits the `sorryAx`. |
+| `hypercube_search_optimal_timing` (general `d≥2`) | **CONDITIONAL (open hypothesis)** | NOT `sorryAx`, but axiom-clean *only modulo* the named OPEN hypothesis `HypercubeChainAmplitudeBound` (the Krawtchouk chain-amplitude bound), never discharged for `d≥2`. The `d=1` case `hypercube_search_optimal_d1` (`Q_1=K_2`) IS unconditionally CLEAN. Do not present general-`d` as proven-unconditional. |
 
-**Reachability note for closing.** None of these four is a trivial quick-win. All
-four route through genuine missing analysis/optimization infrastructure (Eckart–Young
-SVD truncation; CNO/Childs–Goldstone spectral-timing; small-angle Taylor remainder).
-Recommend keeping them as honestly-labelled frontier clauses, NOT claiming the
-sorried conjunct. No reachable trivial `sorry` was found among the headline set.
+The mathematical **spine, attention collapse, irreducibility floor, both Eckart–Young
+theorems, JW intertwiner, path cospectrality, chiral-K₄ mixing, and NTK subset are
+machine-verified CLEAN** (`[propext, Classical.choice, Quot.sound]` only).
+
+### Dimension 2 — Statement soundness (the vacuity audit, NEW 2026-05-31)
+
+An adversarial read found several headline statements that were axiom-clean but **hollow**.
+All corrected with real content (no `sorry` introduced):
+
+| Theorem | Was | Now |
+|---------|-----|-----|
+| `quantum_search_quadratic_advantage` (+ `_exact`, ML versions) | classical Ω(n) clause **VACUOUS** (`∀ Q, card Q < n → ∃ w ∉ Q` = pure pigeonhole, zero query content) | genuine **impossibility theorem** `no_correct_QLocal_certifier`: no `Q`-local correct certifier exists for `card Q < n−1`, via an indistinguishability lemma + a proven-nonempty algorithm class. Separation now honest on BOTH halves. |
+| `IsOptimalCTQWSearch` timing budget | `∃ C, τ ≤ C·√N` — free unbounded `C`, non-constraining | fixed `τ ≤ π·√N` (K_n achieves `π/2·√N`); the timing conjunct is now load-bearing. |
+| `discrete_irreducibility_floor` → `residual_rank_floor` | `rank A ≤ n+k` (trivially true) | `rank A ≤ rank(blockpart)+k` (genuinely below the `n` ceiling). |
+| `hardCore_eq_XY_oneDim` | `∃ Hxy U, U·H=Hxy·U` — free `Hxy`, degenerate witness `U=1,Hxy=H` | non-degenerate (pins the genuine string-unitary + concrete conjugate). **CAVEAT: the conjugate's identity with the textbook XY Hamiltonian `Σ(XX+YY)` is still an OPEN computation — do not yet claim "hard-core = XY".** |
+| `CHSH_correlator_bound` | false-as-stated (`12−16·win`) | corrected to `|8·win−4| ≤ 2√2`, proven via `TsirelsonBound`. |
+| 3× WLRefinement-int, 4× ML-headline | false-over-arbitrary-objects / vacuous existentials | restated to canonical objects / real content (chiral-K₄ mixing, ALiBi geometric tail), proven. |
 
 ---
 
@@ -62,7 +79,7 @@ Legend: **CLEAN** = `[propext, Classical.choice, Quot.sound]` only.
 
 | Theorem | File | Statement (1-line) | Clean? | Open gap |
 |---------|------|--------------------|--------|----------|
-| `QuantumAdvantage.quantum_search_quadratic_advantage` | `Integrations/QuantumAdvantage.lean:745` | ∃ quantum time ≤ 2√n hitting success 1, AND classical < n queries can't certify the marked vertex (the separation). | **CLEAN** | — |
+| `QuantumAdvantage.quantum_search_quadratic_advantage` | `Integrations/QuantumAdvantage.lean` | ∃ quantum time ≤ 2√n hitting success 1, AND the **genuine** classical lower bound: no `Q`-local correct certifier exists for `card Q < n−1` (`no_correct_QLocal_certifier`, impossibility — NOT the old pigeonhole vacuity). | **CLEAN** | — (classical half de-vacuoused 2026-05-31). |
 | `QuantumAdvantage.quantum_search_exact_amplitude` | `Integrations/QuantumAdvantage.lean:638` | Exact finite-`n` Rabi: ∃ t_q ≤ (π/2)√n with `exactSearchAmplitude n t_q ≥ √(1/2)` (no n→∞ idealization). | **CLEAN** | — |
 | `QuantumAdvantage.ml_structured_search_quantum_advantage_exact` | `Integrations/QuantumAdvantage.lean:949` | Structured-ML search: exact O(√r) quantum amplitude ≥ √(1/2) AND classical < r query lower bound. | **CLEAN** | — |
 | `QuantumAdvantage.completeGraph_2d_block` | `Integrations/QuantumAdvantage.lean:498` | Kₙ search evolution on the marked vertex equals the 2×2 reduced-block `exp(−iτ·reducedH)` entry. | **CLEAN** | — |
@@ -88,10 +105,10 @@ Legend: **CLEAN** = `[propext, Classical.choice, Quot.sound]` only.
 | Theorem | File | Statement (1-line) | Clean? | Open gap |
 |---------|------|--------------------|--------|----------|
 | `EquitableMechanism.no_cheap_exact_factorization` | `Integrations/EquitableMechanism.lean:342` | EXACT floor: `A = equitablePart + R`, `rank R ≤ k` ⇒ `rank A ≤ r+k` (irreducibility lower bound). | **CLEAN** | — |
-| `EquitableMechanism.discrete_irreducibility_floor` | `Integrations/EquitableMechanism.lean:382` | Discrete effective-width floor at `rank A` (the irreducibility meter as complexity floor). | **CLEAN** | — |
+| `EquitableMechanism.residual_rank_floor` (was `discrete_irreducibility_floor`) | `Integrations/EquitableMechanism.lean` | Sharp floor `rank A ≤ rank(blockpart)+k` (the old `≤ n+k` form was vacuous; now genuinely below `n`). | **CLEAN** | — (de-vacuoused 2026-05-31). |
 | `EquitableMechanism.equitable_strictly_generalizes_orbit` | `Integrations/EquitableMechanism.lean:448` | Equitable partitions strictly generalize orbit (automorphism) partitions. | **CLEAN** | — |
 | `EquitableMechanism.blockConstant_NTK_subset_spectrum` | `Integrations/EquitableMechanism.lean:512` | Block-constant NTK spectrum ⊆ host spectrum. | **CLEAN** | — |
-| `EquitableMechanism.corrected_equitable_attention` | `Integrations/EquitableMechanism.lean:259` | ε-approximate residual-corrected error bound. | **sorryAx** | **OPEN:** needs Eckart–Young rank-`k` SVD-truncation optimality (absent from Mathlib v4.30.0). Sole `sorry` at line 266. |
+| `EquitableMechanism.corrected_equitable_attention` (+ `_complex`) | `Integrations/EquitableMechanism.lean` | ε-approximate residual-corrected error bound (real + complex-Hermitian Eckart–Young). | **CLEAN** | — (now CLOSED via the spectral-theorem truncation bound). |
 
 ### NovelAttention
 
@@ -106,7 +123,8 @@ Legend: **CLEAN** = `[propext, Classical.choice, Quot.sound]` only.
 | Theorem | File | Statement (1-line) | Clean? | Open gap |
 |---------|------|--------------------|--------|----------|
 | `SparseSearch.hypercube_sparse_search_reduction` | `Applications/SparseSearch.lean:602` | Qᵈ: (1) regular+log-sparse + (2) equitable reduction to Hamming chain (NO timing clause). | **CLEAN** | — (axiom-clean: `propext, Classical.choice, Quot.sound`). |
-| `SparseSearch.hypercube_search_optimal_timing` | `Applications/SparseSearch.lean:631` | `IsOptimalCTQWSearch (Hypercube d) w` (the O(√N) *timing* only). | **sorryAx** | **OPEN:** whole statement — needs CNO spectral-ratio *timing*. `sorry` at line 633. |
+| `SparseSearch.hypercube_search_optimal_d1` | `Applications/SparseSearch.lean` | `IsOptimalCTQWSearch (Hypercube 1) w` — the **`d=1` regime** (`Q_1 = K_2`), UNCONDITIONAL. | **CLEAN** | — (axiom-clean: `propext, Classical.choice, Quot.sound`; via `complete_graph_optimal_search`). Genuinely discharged regime of the O(√N) advantage. |
+| `SparseSearch.hypercube_search_optimal_timing` | `Applications/SparseSearch.lean` | `IsOptimalCTQWSearch (Hypercube d) w` (the O(√N) *timing* only), for general `d`. | **CONDITIONAL** | **OPEN HYPOTHESIS:** takes `HypercubeChainAmplitudeBound d w` (a named open Krawtchouk chain-amplitude conjecture, NEVER discharged for general `d`). The reduction itself is axiom-clean; the *hypothesis* is open. NOT a proven unconditional result for `d≥2`. |
 | `SparseSearch.buildable_lattice_structural_contrast` | `Applications/SparseSearch.lean:1000` | Lattice `2d`-regular/`L^d` vertices + hypercube `e`-regular/`log₂N` (structural only). | **CLEAN** | — (axiom-clean). |
 | `SparseSearch.buildable_lattice_dynamical_contrast` | `Applications/SparseSearch.lean:1030` | Lattice NOT optimal (d≤3) WHILE hypercube IS optimal (dynamical contrast). | **sorryAx** | **OPEN:** both dynamical clauses — lattice via `lattice_search_dimension_threshold` (d≤3 half) + hypercube via `hypercube_search_optimal_timing`. |
 | `SparseSearch.lattice_search_dimension_threshold` | `Applications/SparseSearch.lean:955` | `IsOptimalCTQWSearch (latticeGraph d L) w ↔ 4 < d` (the dimension threshold). | **sorryAx** | **OPEN:** whole `↔` — needs Childs–Goldstone spectral integral / d>4 IR-convergence. `sorry` at line 960. |
@@ -153,7 +171,7 @@ Legend: **CLEAN** = `[propext, Classical.choice, Quot.sound]` only.
 | Theorem | File | Statement (1-line) | Clean? | Open gap |
 |---------|------|--------------------|--------|----------|
 | `DiracLimit.offDiagonalBloch_eigenvalues` | `Dowsing/DiracLimit.lean:324` | Off-diagonal Bloch Hamiltonian has eigenvalues `±‖f(k)‖`. | **CLEAN** | — |
-| `DiracLimit.bipartite_equitable_dirac_cone` | `Dowsing/DiracLimit.lean:443` | Honeycomb off-diagonal block: (1) band touching at k=π + (2) `±‖f(k)‖` bands + (3) Dirac cone. | **sorryAx** | **OPEN:** only conjunct (3)'s local-linearity — small-`k` Taylor `f(π+κ)=−iqκ+O(κ²)`, no packaged remainder lemma. Conjuncts (1),(2) proven clean. `sorry` at line 476. |
+| `DiracLimit.bipartite_equitable_dirac_cone` | `Dowsing/DiracLimit.lean` | Honeycomb off-diagonal block: (1) band touching at k=π + (2) `±‖f(k)‖` bands + (3) Dirac cone. | **CLEAN** | — (now CLOSED, all three conjuncts incl. the small-`k` local linearity). |
 | `DiracLimit.coinedWalk_continuum_dirac_conjecture` | `Dowsing/DiracLimit.lean` | **(`def` — OPEN CONJECTURE, not a proved theorem)** the rescaled coined-walk generator's `2×2` spinor block converges (in op-norm) to the massless Dirac Bloch generator `−i·H_Dirac(k)`. Genuine non-tautological statement (compares two *different* matrices). | n/a (conjecture `Prop`, unasserted) | **OPEN:** quantum-walk → Dirac scaling limit (Meyer/Bisio–D'Ariano–Tosini), no Mathlib scaling-limit calculus. Replaces the former tautological `coinedWalk_continuum_is_dirac` (`‖X−X‖≤ε`). |
 
 ### Negative-PST
@@ -173,22 +191,26 @@ Legend: **CLEAN** = `[propext, Classical.choice, Quot.sound]` only.
    equitable-quotient ⟺ PST keystone and its lifts — carry only the three standard
    foundational axioms. No `sorry` anywhere in the spine.
 
-2. **The quantum-advantage flagship is clean and finite-`n` exact.** Both the
-   asymptotic separation and the sharpened exact-amplitude Rabi statement
-   (`quantum_search_exact_amplitude`, with `≥ √(1/2)` at `t ≤ (π/2)√n`) are
-   axiom-clean — no n→∞ hand-waving.
+2. **The quantum-advantage flagship is clean, finite-`n` exact, AND honest on both
+   halves.** The quantum upper bound (`quantum_search_exact_amplitude`, `≥ √(1/2)` at
+   `t ≤ (π/2)√n`) is axiom-clean. The classical lower bound is now a **genuine
+   impossibility theorem** (`no_correct_QLocal_certifier`) — *not* the former pigeonhole
+   vacuity. So the √n-vs-n separation is real on both sides.
 
 3. **The attention/ML complexity-collapse results are clean.** The O(n²)→O(n·r)
    structural reduction, its correctness, the compiler-correctness square, and the
    training-step linearity are all axiom-clean.
 
-4. **Four headline theorems carry a single, named, honestly-documented open
-   clause each** (Eckart–Young SVD truncation; CNO search timing; Childs–Goldstone
-   lattice threshold; Dirac-cone local linearity). In every case the *structural*
-   content (sparsity, equitable reduction, band algebra, exact rank floor) is
-   proven clean, and only a known piece of missing analysis/optimization
-   infrastructure is sorried. **Do not claim the sorried conjunct.** These are
-   frontier items, not bugs.
+4. **The axiom-status frontier is now ONE genuine open `sorryAx` headline**
+   (`lattice_search_dimension_threshold`, the Childs–Goldstone d>4 threshold) **plus
+   one openly-CONDITIONAL headline** (`hypercube_search_optimal_timing` for `d≥2`,
+   modulo the named open Krawtchouk chain-amplitude hypothesis; the `d=1` case is
+   unconditionally clean). The previous "four open clauses" are down to these — Eckart–Young
+   and the Dirac cone are now CLOSED. **Do not claim the lattice threshold or the
+   general-`d` hypercube timing as proven.** Separately, a 2026-05-31 vacuity audit
+   corrected several axiom-clean-but-hollow statements (classical LB, optimal-timing
+   budget, rank floor, hard-core/XY) — see the Statement-soundness table. **`hardCore_eq_XY`
+   is non-degenerate but does NOT yet prove the XY-Hamiltonian identity; do not claim it.**
 
 ---
 

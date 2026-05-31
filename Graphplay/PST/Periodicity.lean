@@ -27,10 +27,11 @@ This module provides:
 * the structural facts that are *provable now*:
   - `evolve_zero` gives the trivial unit-modulus diagonal at `τ = 0`
     (used to characterize the `τ > 0` requirement),
-  - **`isPeriodicAt_two_mul_of_isPST`**: PST `u → v` at `τ` ⇒ periodic at `u`
-    at time `2τ`  (this is the easy half of Godsil's necessary condition;
-    proved here from `evolve_add` and unitarity),
-  - **`isPeriodic_of_isPST`**: the existential corollary,
+  - **`isPeriodicAt_two_mul_of_isPST`**: for a real-symmetric (`Aᵀ = A`, Godsil)
+    adjacency, PST `u → v` at `τ` ⇒ periodic at `u` at time `2τ`  (the easy half
+    of Godsil's necessary condition; proved from `evolve_add`, unitarity, and the
+    complex-symmetry `Uᵀ = U` of the real-symmetric evolution),
+  - **`isPeriodic_of_isPST`**: the existential corollary (real-symmetric),
 * and the *deep* classification statements, stated precisely with honest
   `sorry` proofs:
   - `isPeriodic_iff_eigenvalue_support_ratios_rational` (Godsil's integrality /
@@ -222,51 +223,24 @@ Concretely we show `‖U(2τ)_{u,u}‖ = 1` from `U(2τ) = U(τ)U(τ)` together 
 fact that PST at `τ` makes the off-diagonal `(u,v)` amplitude unimodular, hence
 the whole `v`-column is supported only at `u` (by the unit-column identity), so
 the matrix product concentrates on the `u → v → u` path. -/
-theorem isPeriodicAt_two_mul_of_isPST (G : WeightedGraph V) {u v : V} {τ : ℝ}
-    (h : IsPST G u v τ) : IsPeriodicAt G u (2 * τ) := by
-  -- `U(2τ)_{u,u} = (U(τ) U(τ))_{u,u} = ∑_w U(τ)_{u,w} U(τ)_{w,u}`.
-  unfold IsPeriodicAt
-  have hadd : G.evolve (2 * τ) = G.evolve τ * G.evolve τ := by
-    rw [show (2 * τ : ℝ) = τ + τ by ring, G.evolve_add]
-  -- The PST hypothesis: `‖U(τ)_{u,v}‖ = 1`.
-  have hUV : ‖G.evolve τ u v‖ = 1 := h
-  -- HONEST SORRY.  Row `u` of `U(τ)` is concentrated at `v` (this part IS pure
-  -- unitarity, `evolve_row_concentrated` below), so
-  -- `(U(τ)U(τ))_{u,u} = U(τ)_{u,v} · U(τ)_{v,u}` and
-  -- `‖U(2τ)_{u,u}‖ = ‖U(τ)_{v,u}‖`.  The remaining `‖U(τ)_{v,u}‖ = 1` is NOT a
-  -- consequence of unitarity alone — a cyclic permutation unitary `u→v→w→u`
-  -- satisfies row-`u`-at-`v` yet has `U_{v,u} = 0`.  It holds because
-  -- `U(τ) = exp(-iτ A)` is *complex symmetric* when `A` is real-symmetric
-  -- (`Uᵀ = U`, giving `U_{v,u} = U_{u,v}`); the closed real-symmetric version is
-  -- `isPeriodicAt_two_mul_of_isPST_of_symm` below.  In the genuinely
-  -- complex-Hermitian generality of `WeightedGraph`, `U` need not be symmetric
-  -- and the conclusion requires the spectral phase-alignment (Godsil's ratio
-  -- condition), so we keep the fully-general statement an honest `sorry`.
-  -- BLOCKED: false without real-symmetry; needs ‖U(τ)_{v,u}‖=1 which fails for
-  -- general Hermitian A (use isPeriodicAt_two_mul_of_isPST_of_symm instead).
-  sorry
+theorem isPeriodicAt_two_mul_of_isPST (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
+    {u v : V} {τ : ℝ} (h : IsPST G u v τ) : IsPeriodicAt G u (2 * τ) :=
+  -- For a real-symmetric (`Aᵀ = A`) adjacency — the classical Godsil weighted-graph
+  -- setting — the evolution `U(τ) = exp(-iτ A)` is complex symmetric (`Uᵀ = U`),
+  -- so `U(τ)_{v,u} = U(τ)_{u,v}` and the unimodular `(u,v)` amplitude propagates to
+  -- the `(v,u)` amplitude, giving `‖U(2τ)_{u,u}‖ = ‖U(τ)_{u,v}²‖ = 1`.  The
+  -- real-symmetry hypothesis is *necessary*: in the genuinely complex-Hermitian
+  -- generality of `WeightedGraph` the statement is false (a cyclic permutation
+  -- unitary `u→v→w→u` is row-`u`-concentrated at `v` yet has `U_{v,u} = 0`).
+  -- Discharged via the existing symmetric closed form.
+  isPeriodicAt_two_mul_of_isPST_of_isSymm G hsymm h
 
-/-- **PST ⇒ periodicity (existential form).**  Any PST vertex is periodic.
-This is the universal necessary condition: every graph admitting PST from `u`
-is periodic at `u`. -/
-theorem isPeriodic_of_isPST (G : WeightedGraph V) {u v : V} {τ : ℝ}
-    (hτ : 0 < τ) (h : IsPST G u v τ) : IsPeriodic G u :=
-  ⟨2 * τ, by linarith, isPeriodicAt_two_mul_of_isPST G h⟩
-
-/-- **Symmetry of the periodicity conclusion.**  PST `u → v` also makes the
-*target* `v` periodic at `2τ`, by the same argument applied to the `v`-column.
-(`IsPST` is not assumed symmetric here; we derive periodicity of `v` directly.) -/
-theorem isPeriodicAt_two_mul_of_isPST_target (G : WeightedGraph V) {u v : V}
-    {τ : ℝ} (h : IsPST G u v τ) : IsPeriodicAt G v (2 * τ) := by
-  -- HONEST SORRY, dual to `isPeriodicAt_two_mul_of_isPST`.  The column-`v`
-  -- concentration (`U(τ)_{w,v} = 0`, `w ≠ u`) is pure unitarity, giving
-  -- `U(2τ)_{v,v} = U(τ)_{v,u} · U(τ)_{u,v}`; the modulus is `1` once
-  -- `‖U(τ)_{v,u}‖ = 1`, which (as for the source) needs the real-symmetric
-  -- `Uᵀ = U` (see `isPeriodicAt_two_mul_of_isPST_target_of_symm`).  General
-  -- complex-Hermitian case: honest `sorry`.
-  -- BLOCKED: needs ‖U(τ)_{v,u}‖=1 (real-symmetry); use
-  -- isPeriodicAt_two_mul_of_isPST_target_of_symm for the symmetric case.
-  sorry
+/-- **PST ⇒ periodicity (existential form).**  Any PST vertex is periodic, for a
+real-symmetric (Godsil) adjacency.  This is the universal necessary condition:
+every (real-weighted) graph admitting PST from `u` is periodic at `u`. -/
+theorem isPeriodic_of_isPST (G : WeightedGraph V) (hsymm : G.adj.IsSymm) {u v : V}
+    {τ : ℝ} (hτ : 0 < τ) (h : IsPST G u v τ) : IsPeriodic G u :=
+  ⟨2 * τ, by linarith, isPeriodicAt_two_mul_of_isPST G hsymm h⟩
 
 /-- **PST ⇒ periodicity of the target at `2τ`, real-symmetric case (CLOSED).**
 Dual of `isPeriodicAt_two_mul_of_isPST_of_symm`: under pair-symmetry of the
@@ -310,6 +284,17 @@ theorem isPeriodicAt_two_mul_of_isPST_target_of_isSymm (G : WeightedGraph V)
     (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (h : IsPST G u v τ) :
     IsPeriodicAt G v (2 * τ) :=
   isPeriodicAt_two_mul_of_isPST_target_of_symm G h (evolve_symm_of_isSymm G hsymm τ u v)
+
+/-- **Symmetry of the periodicity conclusion.**  PST `u → v` also makes the
+*target* `v` periodic at `2τ`, by the same argument applied to the `v`-column,
+for a real-symmetric (`Aᵀ = A`, Godsil) adjacency.  Discharged via the existing
+symmetric closed form `…_target_of_isSymm`.  (The real-symmetry hypothesis is
+necessary: in the genuinely complex-Hermitian generality of `WeightedGraph` the
+evolution need not be complex-symmetric and `‖U(τ)_{v,u}‖ = 1` can fail.) -/
+theorem isPeriodicAt_two_mul_of_isPST_target (G : WeightedGraph V)
+    (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (h : IsPST G u v τ) :
+    IsPeriodicAt G v (2 * τ) :=
+  isPeriodicAt_two_mul_of_isPST_target_of_isSymm G hsymm h
 
 /-! ## The deep classification (Godsil integrality; universal PST) -/
 
@@ -367,11 +352,11 @@ def UniversalPST (G : WeightedGraph V) (u : V) : Prop :=
 `u`, then (taking any single target with positive transfer time) `u` is
 periodic.  This is the immediate corollary of `isPeriodic_of_isPST`, valid
 whenever there is a second vertex reachable at positive time. -/
-theorem isPeriodic_of_universalPST (G : WeightedGraph V) {u : V}
-    (_h : UniversalPST G u)
+theorem isPeriodic_of_universalPST (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
+    {u : V} (_h : UniversalPST G u)
     (hex : ∃ v τ, v ≠ u ∧ 0 < τ ∧ IsPST G u v τ) : IsPeriodic G u := by
   obtain ⟨v, τ, _, hτ, hpst⟩ := hex
-  exact isPeriodic_of_isPST G hτ hpst
+  exact isPeriodic_of_isPST G hsymm hτ hpst
 
 /-- A **switching automorphism** of `G` at the pair `(u, v)`: a permutation `σ`
 of the vertices that swaps `u ↔ v`, fixes the adjacency matrix (graph

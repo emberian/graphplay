@@ -47,6 +47,8 @@ Cross references:
 
 import Mathlib.Data.ZMod.Basic
 import Mathlib.Analysis.SpecialFunctions.Complex.Circle
+import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
+import Mathlib.Algebra.Algebra.Spectrum.Basic
 import Graphplay.Weighted
 import Graphplay.Product
 import Graphplay.Product.PST
@@ -213,6 +215,122 @@ theorem circulantEigenvalue_im_zero (n : ℕ) [NeZero n] (S : Finset (ZMod n))
   have hconj := circulantEigenvalue_conj_symm n S hS h
   rw [Complex.star_def, Complex.conj_eq_iff_im] at hconj
   exact hconj
+
+/-! ### The character sum is a genuine eigenvalue of the circulant -/
+
+/-- A vector-spectral helper: a nonzero vector `v` with `A *ᵥ v = (r : ℂ) • v`
+deposits the real scalar `r` into `spectrum ℝ A` (singular `r•1 − A`). -/
+theorem real_mem_spectrum_of_mulVec_smul {V : Type*} [Fintype V] [DecidableEq V]
+    {A : Matrix V V ℂ} {r : ℝ} {v : V → ℂ} (hv : v ≠ 0)
+    (hAv : A.mulVec v = (r : ℂ) • v) : r ∈ spectrum ℝ A := by
+  rw [spectrum.mem_iff]
+  intro hunit
+  set M : Matrix V V ℂ := algebraMap ℝ (Matrix V V ℂ) r - A with hM
+  have hMv : M.mulVec v = 0 := by
+    rw [hM, Matrix.sub_mulVec, hAv]
+    have halg : (algebraMap ℝ (Matrix V V ℂ) r).mulVec v = (r : ℂ) • v := by
+      rw [Algebra.algebraMap_eq_smul_one, Matrix.smul_mulVec, Matrix.one_mulVec]
+      ext i; simp [Algebra.smul_def, algebraMap_smul]
+    rw [halg, sub_self]
+  have hdet : M.det ≠ 0 :=
+    fun h => ((Matrix.isUnit_iff_isUnit_det M).mp hunit).ne_zero (by rw [h])
+  exact hdet (Matrix.exists_mulVec_eq_zero_iff.mp ⟨v, hv, hMv⟩)
+
+/-- **Multiplicativity of `chi` in the second argument.** -/
+theorem chi_add (n : ℕ) [NeZero n] (h a b : ZMod n) :
+    chi n h (a + b) = chi n h a * chi n h b := by
+  rw [chi_eq_zmodChar, chi_eq_zmodChar, chi_eq_zmodChar, mul_add,
+    LatticeGauge.zmodChar_add]
+
+/-- **`chi` at `0` is `1`.** -/
+@[simp] theorem chi_zero (n : ℕ) [NeZero n] (h : ZMod n) : chi n h 0 = 1 := by
+  rw [chi_eq_zmodChar, mul_zero]
+  unfold LatticeGauge.zmodChar; rw [ZMod.val_zero]; simp
+
+/-- **Character vector ⇒ eigenvector.**  For a symmetric, loopless connection
+set `S` (`-S = S` and `0 ∉ S`), the character `χ_h = chi n h` is an eigenvector
+of the circulant adjacency with eigenvalue the character sum
+`circulantEigenvalue n S h`:
+`A *ᵥ χ_h = (λ_h) • χ_h`. -/
+theorem circulantGraph_mulVec_chi (n : ℕ) [NeZero n] (S : Finset (ZMod n))
+    (hS : S.image (fun s => -s) = S) (hL : (0 : ZMod n) ∉ S) (h : ZMod n) :
+    (circulantGraph n S).adj.mulVec (fun j => chi n h j)
+      = (circulantEigenvalue n S h) • (fun j => chi n h j) := by
+  classical
+  funext i
+  simp only [Matrix.mulVec, dotProduct, circulantGraph_adj, Pi.smul_apply, smul_eq_mul]
+  -- Reduce the symmetric/loopless guard to `i - j ∈ S`.
+  have hadj : ∀ j : ZMod n,
+      (if i ≠ j ∧ (i - j ∈ S ∨ j - i ∈ S) then (1 : ℂ) else 0)
+        = (if i - j ∈ S then (1 : ℂ) else 0) := by
+    intro j
+    by_cases hmem : i - j ∈ S
+    · rw [if_pos hmem, if_pos]
+      refine ⟨?_, Or.inl hmem⟩
+      intro he; apply hL; rw [he] at hmem; simpa using hmem
+    · rw [if_neg hmem, if_neg]
+      rintro ⟨_, hd⟩
+      rcases hd with hd | hd
+      · exact hmem hd
+      · apply hmem; rw [show i - j = -(j - i) by ring]
+        have : -(j - i) ∈ S.image (fun s => -s) := Finset.mem_image_of_mem _ hd
+        rwa [hS] at this
+  have hsummand : ∀ j : ZMod n,
+      (if i ≠ j ∧ (i - j ∈ S ∨ j - i ∈ S) then (1 : ℂ) else 0) * chi n h j
+        = (if i - j ∈ S then chi n h j else 0) := by
+    intro j; rw [hadj j, boole_mul]
+  rw [Finset.sum_congr rfl (fun j _ => hsummand j)]
+  rw [← Finset.sum_filter]
+  -- `{j : i - j ∈ S}` is the image of `S` under `s ↦ i - s`.
+  have hbij : (Finset.univ.filter (fun j : ZMod n => i - j ∈ S))
+      = S.image (fun s => i - s) := by
+    ext j
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_image]
+    constructor
+    · intro hmem; exact ⟨i - j, hmem, by ring⟩
+    · rintro ⟨s, hs, rfl⟩; simpa using hs
+  rw [hbij, Finset.sum_image (by intro a _ b _ hab; simpa using hab)]
+  -- `∑_{s∈S} chi h (i - s) = chi h i · ∑_{s∈S} chi h (-s) = chi h i · λ_h`.
+  have hstep : ∀ s ∈ S, chi n h (i - s) = chi n h i * chi n h (-s) := by
+    intro s _; rw [show i - s = i + (-s) by ring, chi_add]
+  rw [Finset.sum_congr rfl hstep, ← Finset.mul_sum]
+  -- `∑_{s∈S} chi h (-s) = ∑_{s∈S} chi h s` by reindexing `s ↦ -s` over `-S = S`.
+  have hreindex : ∑ s ∈ S, chi n h (-s) = ∑ s ∈ S, chi n h s := by
+    apply Finset.sum_nbij' (fun s => -s) (fun s => -s)
+    · intro a ha
+      have : -a ∈ S.image (fun s => -s) := Finset.mem_image_of_mem _ ha
+      rwa [hS] at this
+    · intro a ha
+      have : -a ∈ S.image (fun s => -s) := Finset.mem_image_of_mem _ ha
+      rwa [hS] at this
+    · intro a _; exact neg_neg a
+    · intro a _; exact neg_neg a
+    · intro a _; rfl
+  rw [hreindex]
+  show chi n h i * circulantEigenvalue n S h = circulantEigenvalue n S h * chi n h i
+  rw [mul_comm]
+
+/-- **The character sum is a genuine eigenvalue (real-spectrum deposit).**  For a
+symmetric, loopless connection set, the real number `Re(λ_h)` lies in the real
+spectrum of the circulant adjacency.  (When `S` is symmetric, `λ_h` is already
+real, so this is the eigenvalue `λ_h` itself.)  This is the Pontryagin-duality
+diagonalisation specialised to the circulant: eigenvectors are the additive
+characters of `ZMod n`. -/
+theorem circulantEigenvalue_re_mem_spectrum (n : ℕ) [NeZero n] (S : Finset (ZMod n))
+    (hS : S.image (fun s => -s) = S) (hL : (0 : ZMod n) ∉ S) (h : ZMod n) :
+    (circulantEigenvalue n S h).re ∈ spectrum ℝ (circulantGraph n S).adj := by
+  apply real_mem_spectrum_of_mulVec_smul (v := fun j => chi n h j)
+  · -- `χ_h ≠ 0` since `χ_h 0 = 1`.
+    intro hcon
+    have : chi n h 0 = 0 := congrFun hcon 0
+    rw [chi_zero] at this; exact one_ne_zero this
+  · -- The eigenvector equation, with `(λ_h).re = λ_h` since `λ_h` is real.
+    have him := circulantEigenvalue_im_zero n S hS h
+    have hre : ((circulantEigenvalue n S h).re : ℂ) = circulantEigenvalue n S h := by
+      conv_rhs => rw [← Complex.re_add_im (circulantEigenvalue n S h)]
+      rw [him]; simp
+    rw [hre]
+    exact circulantGraph_mulVec_chi n S hS hL h
 
 /-! ## 2. Integral circulant graphs
 

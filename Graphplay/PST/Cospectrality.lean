@@ -26,9 +26,9 @@ The classical algebraic-graph-theoretic source for this notion is
 The deliverables of this file are:
 
 1. `IsStronglyCospectral`: parallelism of all eigenspace projections.
-2. `isStronglyCospectral_iff`: the equivalent "diagonal-of-projector and
-   matched off-diagonal entry" characterization familiar from
-   Godsil-Royle / Coutinho-Godsil.
+2. `isStronglyCospectral_iff_of_cospectral`: under cospectrality, the
+   equivalence with the textbook "matched off-diagonal entry" characterization
+   familiar from Godsil-Royle / Coutinho-Godsil.
 3. `IsStronglyCospectral.isPST_iff_godsilRatio`: the PST-existence
    characterization combining strong cospectrality with the Godsil ratio
    condition on eigenvalues (proof tagged for sibling L2).
@@ -312,44 +312,45 @@ theorem isStronglyCospectral_of_cospectral_matched (G : WeightedGraph V)
   -- and `√(d * d) = d` for `d = diag u ≥ 0`.
   rw [← hcosp lam hlam, Real.sqrt_mul_self (eigenProjDiag_nonneg G lam u)]
 
-/-- **Classical equivalence (Godsil-Royle / Coutinho-Godsil 2016).**
-`u, v` are strongly cospectral iff they are cospectral *and* for every
-eigenvalue `λ` the off-diagonal projector entry `⟨u, P_λ v⟩` equals a phase
-`ε_λ` of unit modulus times the (common) diagonal entry
+/-- **Classical equivalence (Godsil-Royle / Coutinho-Godsil 2016), under
+cospectrality (CLOSED).**  *Given* that `u, v` are cospectral, the geometric-mean
+form of strong cospectrality is equivalent to the textbook "matched off-diagonal"
+form: for every eigenvalue `λ` the off-diagonal projector entry `⟨u, P_λ v⟩`
+equals a unit-modulus phase `ε_λ` times the common diagonal entry
 `⟨u, P_λ u⟩ = ⟨v, P_λ v⟩`.
+
+The cospectrality hypothesis is *necessary*, not cosmetic: without it the `→`
+direction is genuinely false for the geometric-mean encoding used here.  Indeed
+a simple-spectrum graph makes *every* pair strongly cospectral
+(`isStronglyCospectral_of_simple_spectrum`) — the cross entry
+`(E_λ)_{u,v} = (eigU)_{u,i}\overline{(eigU)_{v,i}}` always saturates
+`|(E_λ)_{u,v}| = √((E_λ)_{u,u}(E_λ)_{v,v})` (parallelism) — yet the diagonals
+`(E_λ)_{u,u} = ‖(eigU)_{u,i}‖²` and `(E_λ)_{v,v} = ‖(eigU)_{v,i}‖²` differ for
+most pairs.  Parallelism does **not** imply cospectrality (Coutinho 2.5.2 lists
+them as independent hypotheses), so the honest equivalence is *conditional* on
+cospectrality, under which `√(d·d) = d` collapses both forms onto each other.
 
 This is the form used in the proof of the PST existence criterion
 (Coutinho-Godsil §2-3, Bachman-Tamon arXiv:1108.0339). -/
-theorem isStronglyCospectral_iff (G : WeightedGraph V) (u v : V) :
+theorem isStronglyCospectral_iff_of_cospectral (G : WeightedGraph V) (u v : V)
+    (hcosp : IsCospectral G u v) :
     IsStronglyCospectral G u v ↔
-      IsCospectral G u v ∧
         ∀ lam : ℝ, lam ∈ Set.range G.herm.eigenvalues →
           ∃ ε : ℂ, ‖ε‖ = 1 ∧
             eigenProjEntry G lam u v
               = ε * Complex.ofReal (eigenProjDiag G lam u) := by
-  -- The proof packages Cauchy-Schwarz equality (parallelism iff |cross|
-  -- saturates the geometric-mean bound) with the cospectrality identity
-  -- `diag u = diag v`.  Citation: Godsil-Royle AGT §8.2; Coutinho-Godsil
-  -- 2016 Theorem 3.4.1 / Corollary 2.5.2.
-  --
-  -- HONEST STATUS.  Only the `←` direction is unconditionally true for the
-  -- *geometric-mean* encoding of `IsStronglyCospectral` used here; it is
-  -- discharged by `isStronglyCospectral_of_cospectral_matched` below.  The
-  -- `→` direction is the genuinely deep half: the saturation
-  -- `|(E_λ)_{u,v}| = √((E_λ)_{u,u}(E_λ)_{v,v})` is exactly Cauchy-Schwarz
-  -- equality, i.e. *parallelism* `P_λ e_u ∥ P_λ e_v` (Coutinho's "parallel"),
-  -- which by Corollary 2.5.2 yields strong cospectrality only *together with*
-  -- cospectrality `(E_λ)_{u,u} = (E_λ)_{v,v}`.  Cospectrality does not follow
-  -- from parallelism alone (Coutinho 2.5.2 states them as independent
-  -- hypotheses), so `→` needs the idempotency/Gram input `(E_λ)_{u,v} =
-  -- ⟨P_λ e_u, P_λ e_v⟩` plus the cospectrality argument and is left sorried.
-  refine ⟨?_, ?_⟩
-  · -- `→`: parallelism ⇏ cospectrality without the extra Gram input. Deep.
-    -- BLOCKED: geometric-mean encoding loses cospectrality (E_λ)_{u,u}=(E_λ)_{v,v};
-    -- needs Gram identity (E_λ)_{u,v}=⟨P_λ e_u,P_λ e_v⟩, not in this def.
-    sorry
-  · -- `←`: cospectral + matched off-diagonal ⇒ geometric-mean form. Honest.
-    rintro ⟨hcosp, hmatch⟩
+  constructor
+  · -- `→`: under cospectrality `d_u = d_v`, the geometric mean `√(d_u d_v)`
+    -- collapses to `d_u`, so the geometric-mean form *is* the matched form.
+    intro hsc lam hlam
+    obtain ⟨ε, hε, heq⟩ := hsc lam hlam
+    refine ⟨ε, hε, ?_⟩
+    rw [heq]
+    congr 2
+    -- `√(d_u * d_v) = d_u` via `d_u = d_v` (cospectrality) and `√(d·d) = d`.
+    rw [← hcosp lam hlam, Real.sqrt_mul_self (eigenProjDiag_nonneg G lam u)]
+  · -- `←`: cospectral + matched off-diagonal ⇒ geometric-mean form.
+    intro hmatch
     exact isStronglyCospectral_of_cospectral_matched G u v hcosp hmatch
 
 /-! ## The PST existence criterion (Godsil ratio condition)

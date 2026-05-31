@@ -39,8 +39,9 @@ swaps amplitude with the *uniform* superposition over leaves, and the
 (eigenvalue `0`, no dynamics).  This is the genuine CTQW behind the
 "attention sink" — a sink that pools the whole context and re-emits it —
 and connects to the circuit-atlas **bos-sink** atom.  The relevant deep
-fact, the closed-form eigenvalues `±√n`, is left as an honest `sorry`; the
-rank-2 `A²` decomposition that *implies* it is proved.
+fact, the closed-form eigenvalue `√n`, is now **proved** below
+(`Star.exists_sqrt_eigenvalue`) by exhibiting the explicit hub/uniform-leaf
+eigenvector; the rank-2 `A²` decomposition that frames it is also proved.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -181,8 +182,8 @@ share at most the hub as a common neighbour, but a leaf-leaf pair `i, j` has
 exactly one common neighbour `0`, contributing `1`… — wait, leaves *do* share
 the hub).  We therefore state the *diagonal* entries, which are the genuine,
 provable spectral skeleton; the full off-diagonal description and the
-closed-form `±√n` eigenvalues are recorded below (the latter as honest
-`sorry`). -/
+closed-form `√n` eigenvalue are recorded below (the latter now **proved**
+via the explicit eigenvector). -/
 
 /-- The number of common neighbours of two distinct leaves is `1` (the hub),
 and of the hub with a leaf is `0`.  This is the entrywise content of `A²`.
@@ -238,22 +239,105 @@ theorem Star.adjSq_diag_leaf {n : ℕ} (i : Fin (n + 1)) (hi : i.val ≠ 0) :
   rw [this, Star.leaf_degree i hi]
   simp
 
-/-! ## Closed-form spectrum (honest `sorry`) -/
+/-! ## Closed-form spectrum -/
 
-/-- **Closed-form spectrum of the star `K_{1,n}` (honest `sorry`).**
+/-- The **explicit `√n`-eigenvector** of the star adjacency.  The hub `0`
+carries amplitude `√n`; every leaf carries amplitude `1`.  This lies in the
+two-dimensional hub/uniform-leaf invariant subspace, and satisfies
+`A · v = √n · v`:
+
+* at the **hub**, `A` sees the `n` leaves, each contributing `1`, giving
+  `n = √n · √n = √n · v_0`;
+* at each **leaf**, `A` sees only the hub, contributing `v_0 = √n = √n · 1
+  = √n · v_leaf`. -/
+noncomputable def Star.sqrtEigvec (n : ℕ) : Fin (n + 1) → ℂ :=
+  fun i => if i = 0 then (Real.sqrt (n : ℝ) : ℂ) else 1
+
+/-- The defining eigen-equation for `Star.sqrtEigvec`:
+`A · v = √n · v` for the star adjacency `A = (Star.weighted n).adj`. -/
+theorem Star.adj_mulVec_sqrtEigvec (n : ℕ) :
+    (Star.weighted n).adj.mulVec (Star.sqrtEigvec n)
+      = (Real.sqrt (n : ℝ) : ℂ) • (Star.sqrtEigvec n) := by
+  funext i
+  unfold Star.weighted SimpleGraph.toWeighted Star.sqrtEigvec
+  simp only [Pi.smul_apply, smul_eq_mul]
+  rw [SimpleGraph.adjMatrix_mulVec_apply]
+  by_cases hi : i = 0
+  · -- Hub row: sum over all `n` leaves of `1` is `n = √n · √n`.
+    subst hi
+    -- the neighbour finset of `0` is the set of leaves; each `vec u = 1`.
+    have hsum : ∑ u ∈ (Star n).neighborFinset 0,
+        (if u = 0 then (Real.sqrt (n : ℝ) : ℂ) else 1) = (n : ℂ) := by
+      have hne : ∀ u ∈ (Star n).neighborFinset 0, u ≠ 0 := by
+        intro u hu
+        rw [SimpleGraph.mem_neighborFinset] at hu
+        exact fun h => (h ▸ hu).1 rfl
+      rw [Finset.sum_congr rfl (fun u hu => by rw [if_neg (hne u hu)])]
+      rw [Finset.sum_const, Star.hub_degree]
+      simp
+    rw [hsum, if_pos rfl]
+    -- `n = √n · √n`.
+    rw [← Complex.ofReal_mul, Real.mul_self_sqrt (by positivity)]
+    push_cast
+    ring
+  · -- Leaf row: the only neighbour is the hub `0`, contributing `√n`.
+    have hival : i.val ≠ 0 := fun h => hi (Fin.ext h)
+    have hset : (Star n).neighborFinset i = {(0 : Fin (n + 1))} := by
+      ext j
+      simp only [SimpleGraph.mem_neighborFinset, Finset.mem_singleton]
+      constructor
+      · rintro ⟨_, h0 | h0⟩
+        · exact absurd h0 hival
+        · exact Fin.ext h0
+      · intro hj; subst hj; exact (Star.hub_adj_leaf i hival).symm
+    rw [hset, Finset.sum_singleton, if_pos rfl, if_neg hi, mul_one]
+
+/-- The `√n`-eigenvector is nonzero (its hub amplitude `√n` is positive for
+`n ≥ 1`). -/
+theorem Star.sqrtEigvec_ne_zero (n : ℕ) (hn : 1 ≤ n) :
+    Star.sqrtEigvec n ≠ 0 := by
+  intro h
+  have h0 : Star.sqrtEigvec n 0 = 0 := by rw [h]; rfl
+  rw [Star.sqrtEigvec, if_pos rfl] at h0
+  have : Real.sqrt (n : ℝ) = 0 := by exact_mod_cast h0
+  rw [Real.sqrt_eq_zero (by positivity)] at this
+  exact absurd this (by exact_mod_cast Nat.one_le_iff_ne_zero.mp hn ∘ (by exact_mod_cast ·))
+
+/-- **Closed-form spectrum of the star `K_{1,n}`.**
 The adjacency eigenvalues of `K_{1,n}` are `+√n`, `−√n`, and `0` with
 multiplicity `n − 1` (Brouwer–Haemers, *Spectra of Graphs*, §1.4.2; the star
 is the complete bipartite graph `K_{1,n}`, whose nonzero eigenvalues are
 `±√(1·n)`).  Concretely, for `n ≥ 1` there is a real eigenvalue of the
 Hamiltonian equal to `√n`.
 
-This is a genuinely non-vacuous spectral statement (it asserts that `√n` —
-*not* an arbitrary value — is an eigenvalue), and its proof is the
-two-dimensional hub/uniform-leaf diagonalization; left as an honest
-`sorry`. -/
+**Proof.**  We exhibit the explicit eigenvector `Star.sqrtEigvec n`
+(`√n` on the hub, `1` on each leaf), which satisfies `A · v = √n · v`
+(`Star.adj_mulVec_sqrtEigvec`) and is nonzero.  Hence `(√n : ℂ)` is an
+eigenvalue of `toLin' A`, so it lies in `spectrum ℂ A`.  By Mathlib's
+`IsHermitian.spectrum_eq_image_range`, the complex spectrum is the image of
+the real eigenvalue range under `ℝ ↪ ℂ`; injectivity of that embedding lifts
+`√n` back to the range of the real eigenvalue function. -/
 theorem Star.exists_sqrt_eigenvalue (n : ℕ) (hn : 1 ≤ n) :
     Real.sqrt (n : ℝ) ∈ Set.range (Star.weighted n).herm.eigenvalues := by
-  sorry
+  -- The eigenvector gives `√n ∈ spectrum ℂ A`.
+  have heig : Module.End.HasEigenvalue (Matrix.toLin' (Star.weighted n).adj)
+      (Real.sqrt (n : ℝ) : ℂ) := by
+    apply Module.End.hasEigenvalue_of_hasEigenvector
+      (x := Star.sqrtEigvec n)
+    refine ⟨?_, Star.sqrtEigvec_ne_zero n hn⟩
+    rw [Module.End.mem_eigenspace_iff, Matrix.toLin'_apply]
+    exact Star.adj_mulVec_sqrtEigvec n
+  have hspec : (Real.sqrt (n : ℝ) : ℂ) ∈ spectrum ℂ (Star.weighted n).adj := by
+    rw [← Matrix.spectrum_toLin']
+    exact heig.mem_spectrum
+  -- Translate to the real eigenvalue range via the Hermitian spectral theorem.
+  rw [(Star.weighted n).herm.spectrum_eq_image_range] at hspec
+  obtain ⟨r, hr_range, hr_eq⟩ := hspec
+  have : r = Real.sqrt (n : ℝ) := by
+    have hr : (r : ℂ) = (Real.sqrt (n : ℝ) : ℂ) := by
+      simpa using hr_eq
+    exact_mod_cast hr
+  rw [← this]; exact hr_range
 
 /-! ## Smoke tests -/
 

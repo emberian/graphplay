@@ -143,24 +143,97 @@ noncomputable def secondSmallestLaplacianEigenvalue
     (G : WeightedGraph V) (h : 2 ≤ Fintype.card V) : ℝ :=
   laplacianEigenvalues G ⟨Fintype.card V - 2, by omega⟩
 
-/-- **Fiedler's eigenvalue characterisation (statement).**  For real nonnegative
-edge weights the algebraic connectivity (Rayleigh-quotient infimum over `𝟙^⊥`)
-coincides with the second-smallest Laplacian eigenvalue.  This is Courant–Fischer
-applied to the Hermitian Laplacian, using that the smallest eigenvalue `0` is
-realised by the all-ones vector — which requires the row sums `D_{uu} = ∑_w
-A_{uw}` to genuinely annihilate `𝟙` (`L · 𝟙 = 0`), i.e. the real-weight
-hypothesis `RealNonnegWeights` — and projecting it out by the `orthToOnes`
-constraint.
+/-! ### Matrix-form bridge and the bottom eigenvector
 
-This is the one genuinely deep residual: Mathlib has the extremal-eigenvalue
-Rayleigh theory (`InnerProductSpace.Rayleigh`) but not the codimension-`1`
-Courant–Fischer min-max needed to identify `λ₂` with the constrained Rayleigh
-infimum.  The statement is true (Fiedler 1973); the proof is left as an honest
-`sorry`. -/
+To connect the concrete `laplacianForm`/`normSq`/`orthToOnes` vocabulary to
+Mathlib's spectral machinery (`IsHermitian.eigenvalues₀`), we rewrite the
+Laplacian quadratic form as the genuine Hermitian form `star x ⬝ᵥ (L *ᵥ x)`, and
+exhibit the all-ones vector as a bottom eigenvector (`L · 𝟙 = 0`).  These two
+facts are the *hinges* of the codimension-`1` Courant–Fischer argument: the form
+is what the Rayleigh quotient measures, and `𝟙` is the eigenvector we project
+out via `orthToOnes`. -/
+
+/-- **The Laplacian quadratic form is the Hermitian matrix form.**  `laplacianForm
+G x = star x ⬝ᵥ (L *ᵥ x)` where `L = G.laplacian.adj`.  This is just an
+unfolding of the double sum into `dotProduct`/`mulVec`, but it is what lets the
+Rayleigh-quotient infimum talk to `IsHermitian.eigenvalues₀`. -/
+theorem laplacianForm_eq_dotProduct (G : WeightedGraph V) (x : V → ℂ) :
+    laplacianForm G x = star x ⬝ᵥ (G.laplacian.adj *ᵥ x) := by
+  unfold laplacianForm
+  rw [dotProduct]
+  refine Finset.sum_congr rfl fun u _ => ?_
+  rw [Matrix.mulVec, dotProduct, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun w _ => ?_
+  rw [Pi.star_apply]
+  ring
+
+/-- **The all-ones vector is annihilated by the Laplacian** (real nonnegative
+weights).  `L · 𝟙 = 0`, because row `u` of `L` is `D_{uu} = ∑_w A_{uw}` on the
+diagonal minus the off-diagonal entries `A_{uw}`, and `D_{uu} = ∑_w A_{uw}` by
+definition of the degree.  Real weights make `D_{uu} = Re(degree) = degree`, so
+the cancellation is exact.  Hence `𝟙` is an eigenvector of `L` with eigenvalue
+`0`, the smallest eigenvalue of the PSD Laplacian. -/
+theorem laplacian_mulVec_onesVec (G : WeightedGraph V) (h : RealNonnegWeights G) :
+    G.laplacian.adj *ᵥ onesVec V = 0 := by
+  funext u
+  show ((Matrix.diagonal (fun v => ((G.degree v).re : ℂ)) - G.adj) *ᵥ onesVec V) u = (0 : V → ℂ) u
+  rw [Matrix.sub_mulVec, Pi.sub_apply, Pi.zero_apply]
+  -- Diagonal term: `D_{uu} · 1 = (Re (degree u))`.
+  have hdiag : ((Matrix.diagonal (fun v => ((G.degree v).re : ℂ))) *ᵥ onesVec V) u
+      = ((G.degree u).re : ℂ) := by
+    rw [Matrix.mulVec_diagonal]; simp [onesVec]
+  -- Off-diagonal term: `(A · 𝟙) u = ∑_w A_{uw} = degree u`.
+  have hoff : (G.adj *ᵥ onesVec V) u = G.degree u := by
+    rw [Matrix.mulVec]; simp [dotProduct, onesVec, WeightedGraph.degree]
+  rw [hdiag, hoff]
+  -- `degree u = ∑_w A_{uw}` is real, so `Re (degree u) = degree u`.
+  have hdeg_im : (G.degree u).im = 0 := by
+    unfold WeightedGraph.degree
+    rw [Complex.im_sum]
+    exact Finset.sum_eq_zero fun w _ => (h u w).1
+  have hre : ((G.degree u).re : ℂ) = G.degree u := by
+    apply Complex.ext <;> simp [hdeg_im]
+  rw [hre, sub_self]
+
+/-- **Fiedler's codimension-`1` Courant–Fischer (the single residual).**  For the
+Hermitian, PSD Laplacian `L` of a graph with real nonnegative weights, the
+second-smallest eigenvalue equals the infimum of the Rayleigh quotient over
+nonzero vectors orthogonal to the all-ones bottom eigenvector.
+
+This is the genuinely missing piece: Mathlib supplies the extremal-eigenvalue
+Rayleigh theory (`InnerProductSpace.Rayleigh`: the top/bottom eigenvalue is the
+`iSup`/`iInf` of the Rayleigh quotient) and the antitone eigenbasis
+(`IsHermitian.eigenvalues₀`), but **not** the codimension-`1` min-max that, after
+projecting out a known bottom eigenvector, identifies the *next* eigenvalue with
+the constrained Rayleigh infimum.  The statement is packaged in this file's
+concrete vocabulary (`laplacianForm`, `normSq`, `orthToOnes`) and is fed the two
+hinges proved above (the matrix form `laplacianForm_eq_dotProduct` and the bottom
+eigenvector `laplacian_mulVec_onesVec`); everything in
+`algebraicConnectivity_eq_secondSmallest` is then derived from it by definitional
+unfolding.
+
+It is TRUE (Fiedler 1973; Courant–Fischer min-max applied to the eigenbasis of
+`L` with `𝟙/√n` as the realised bottom eigenvector).  Proving it amounts to
+porting the codim-`1` Courant–Fischer development into Mathlib's matrix spectral
+API, which is a multi-lemma effort beyond the scope of this single-lemma wave; it
+is isolated here as one honest, Mathlib-shaped residual. -/
+theorem hermitian_secondEigenvalue_eq_rayleigh_inf_orthogonal
+    (G : WeightedGraph V) (h : 2 ≤ Fintype.card V) (hw : RealNonnegWeights G) :
+    sInf (rayleighSet G)
+      = laplacianEigenvalues G ⟨Fintype.card V - 2, by omega⟩ := by
+  sorry
+
+/-- **Fiedler's eigenvalue characterisation.**  For real nonnegative edge weights
+the algebraic connectivity (Rayleigh-quotient infimum over `𝟙^⊥`) coincides with
+the second-smallest Laplacian eigenvalue.  Now a one-line consequence of the
+codimension-`1` Courant–Fischer residual
+`hermitian_secondEigenvalue_eq_rayleigh_inf_orthogonal`, after unfolding
+`algebraicConnectivity` and `secondSmallestLaplacianEigenvalue`. -/
 theorem algebraicConnectivity_eq_secondSmallest
     (G : WeightedGraph V) (h : 2 ≤ Fintype.card V) (hw : RealNonnegWeights G) :
     algebraicConnectivity G = secondSmallestLaplacianEigenvalue G h := by
-  sorry
+  unfold algebraicConnectivity secondSmallestLaplacianEigenvalue
+  exact hermitian_secondEigenvalue_eq_rayleigh_inf_orthogonal G h hw
 
 /-! ## 2.5  Positive semidefiniteness for real, nonnegative edge weights
 
