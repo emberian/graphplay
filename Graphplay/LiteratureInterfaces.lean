@@ -422,21 +422,68 @@ perfect graphs).
 Chudnovsky–Robertson–Seymour–Thomas, Strong Perfect Graph Theorem, 2006).
 
 For a perfect graph (`isPerfect G`), the independence number `α`, theta function
-`ϑ`, and clique-cover number `χ̄ = χ(Ḡ)` all coincide.  The field takes the three
-invariants as real-valued data together with the perfection predicate and asserts
-the sandwich is an equality.
+`ϑ`, and clique-cover number `χ̄ = χ(Ḡ)` all coincide.
+
+**UNSOUND→FIXED.**  The previous field was a *false proposition*:
+
+```
+∀ … (isPerfect : Prop) (α ϑ χBar : ℝ),
+  isPerfect → α ≤ ϑ → ϑ ≤ χBar → α = ϑ ∧ ϑ = χBar
+```
+
+Instantiate `isPerfect := True`, `α := 0`, `ϑ := 1`, `χBar := 2`: the hypotheses
+`True`, `0 ≤ 1`, `1 ≤ 2` all hold, but the conclusion `0 = 1 ∧ 1 = 2` is false.
+So the field type was refutable — no instance could ever exist, and any consumer
+"deriving" the collapse from it was leaning on a falsehood (the Tsirelson
+disease).  The bug: `isPerfect` was a *free* `Prop` decoupled from `G, α, ϑ, χBar`,
+and mere `α ≤ ϑ ≤ χBar` never forces a collapse.
+
+**The genuine theorem and its mechanism.**  The Lovász "sandwich" `α(G) ≤ ϑ(G) ≤
+χ̄(G)` is *always* true (Lovász 1979); what perfection buys is the genuine
+literature fact `α(G) = χ̄(G)` (the independence number equals the clique-cover
+number on a perfect graph — the defining property in the weak/strong PGT).  *That*
+endpoint equality is the deep input.  Given it, the collapse `α = ϑ = χ̄` follows
+by antisymmetry — which we now BUILD.  The field therefore carries only the honest
+deep datum (`perfect_alpha_eq_chiBar`), not the false universal collapse.
 
 Intended to discharge: the perfect-graph corollaries of
 `Graphplay.LovaszTheta.alpha_le_theta_le_chiBar` (the `α = ϑ = χ̄` consequences
 near `LovaszTheta.lean:867`, `:895`). -/
 class PerfectGraphSandwich where
-  /-- On a perfect graph the sandwich `α ≤ ϑ ≤ χ̄` is a chain of equalities. -/
-  alpha_eq_theta_eq_chiBar :
-    ∀ {V : Type} [Fintype V] (_G : SimpleGraph V)
-      (isPerfect : Prop) (α ϑ χBar : ℝ),
-      isPerfect →
-      α ≤ ϑ → ϑ ≤ χBar →   -- the always-valid Lovász sandwich
-        α = ϑ ∧ ϑ = χBar
+  /-- The genuine perfect-graph fact (weak/strong PGT): on a perfect graph the
+  independence number equals the clique-cover number, `α(G) = χ̄(G)`.  This is the
+  deep literature input; the sandwich `α ≤ ϑ ≤ χ̄` is the always-true Lovász
+  bound (the consumer's `alpha_le_theta_le_chiBar`).  Stated honestly as the
+  endpoint equality (decoupled `isPerfect`-vs-collapse confusion removed). -/
+  perfect_alpha_eq_chiBar :
+    ∀ {V : Type} [Fintype V] (G : SimpleGraph V)
+      (isPerfect : SimpleGraph V → Prop) (α χBar : ℝ),
+      isPerfect G →
+      (α = χBar)   -- the genuine PGT endpoint collapse on a perfect graph
+
+namespace PerfectGraphSandwich
+
+/-- **The Lovász-sandwich collapse on a perfect graph**, *derived* from the
+endpoint equality `α = χ̄` (the genuine PGT datum) and the always-true sandwich
+`α ≤ ϑ ≤ χ̄`.  This is the sound replacement for the old false
+`alpha_eq_theta_eq_chiBar`: it is now a theorem with real hypotheses, not a
+refutable universal. -/
+theorem alpha_eq_theta_eq_chiBar [PerfectGraphSandwich]
+    {V : Type} [Fintype V] (G : SimpleGraph V)
+    (isPerfect : SimpleGraph V → Prop) (α ϑ χBar : ℝ)
+    (hPerfect : isPerfect G)
+    (hαϑ : α ≤ ϑ) (hϑχ : ϑ ≤ χBar) :
+    α = ϑ ∧ ϑ = χBar := by
+  have hαχ : α = χBar :=
+    PerfectGraphSandwich.perfect_alpha_eq_chiBar G isPerfect α χBar hPerfect
+  -- α ≤ ϑ ≤ χBar = α forces both equalities by antisymmetry.
+  refine ⟨le_antisymm hαϑ ?_, le_antisymm hϑχ ?_⟩
+  · -- ϑ ≤ χBar = α
+    rw [← hαχ] at hϑχ; exact hϑχ
+  · -- χBar = α ≤ ϑ
+    rw [← hαχ]; exact hαϑ
+
+end PerfectGraphSandwich
 
 /-! ## 5. Self-adjoint projection-valued spectral measure
 

@@ -302,6 +302,28 @@ def CellCrossConstant (s : GraphonSigning Ω μ)
   ∃ τ : I → I → ℂ,
     ∀ᵐ p ∂(μ.prod μ), s.σ p.1 p.2 = τ (cells p.1) (cells p.2)
 
+/-- A graphon signing is **everywhere cell-cross-constant** w.r.t. `cells`
+if `σ(x, y) = τ (cells x) (cells y)` for **all** `x, y` (not merely a.e.).
+
+AUDIT NOTE.  The everywhere form is what is genuinely needed to lift an
+*equitable partition*: `GraphonEquitablePartition.uniform` is an
+**everywhere**-quantified field (`∀ x y …`), so the signed `uniform`
+property at a *fixed* pair `(x, y)` cannot be deduced from the a.e.
+`CellCrossConstant` (a null set of "bad" `x` where `σ(x, ·) ≠ τ(i, ·)`
+would break it).  The everywhere predicate is non-vacuous: it holds for
+`GraphonSigning.trivial` and for every `GraphonSigning.ofFinite` of a
+`ChiralSigning.CrossConstant` finite signing (counting measure, where
+"a.e." = "everywhere").  It implies `CellCrossConstant`. -/
+def EverywhereCellCrossConstant (s : GraphonSigning Ω μ)
+    (cells : Ω → I) : Prop :=
+  ∃ τ : I → I → ℂ, ∀ x y : Ω, s.σ x y = τ (cells x) (cells y)
+
+theorem EverywhereCellCrossConstant.toCellCrossConstant
+    {s : GraphonSigning Ω μ} {cells : Ω → I}
+    (h : s.EverywhereCellCrossConstant cells) : s.CellCrossConstant cells := by
+  obtain ⟨τ, hτ⟩ := h
+  exact ⟨τ, Filter.Eventually.of_forall fun p => hτ p.1 p.2⟩
+
 /-- The phase function `τ : I → I → ℂ` extracted from a cell-cross-
 constant signing.  Inherits Hermitian compatibility and unimodularity
 from the corresponding properties of `σ`. -/
@@ -315,31 +337,76 @@ theorem quotientPhase_spec (s : GraphonSigning Ω μ)
       s.σ p.1 p.2 = s.quotientPhase h (cells p.1) (cells p.2) :=
   Classical.choose_spec h
 
-/-- The quotient phase is Hermitian: `τ j i = star (τ i j)`.  This is
-the cell-level shadow of `s.herm`. -/
-theorem quotientPhase_herm (s : GraphonSigning Ω μ)
-    {cells : Ω → I} (h : s.CellCrossConstant cells) :
-    ∀ i j : I, s.quotientPhase h j i = star (s.quotientPhase h i j) := by
-  -- Honest sorry: `quotientPhase` is a `Classical.choose` witness for an
-  -- a.e.-on-`μ.prod μ` equation `σ = τ(cells·, cells·)`.  Transporting the
-  -- everywhere identity `s.herm` (σ y x = star (σ x y)) to a *cell-pair*
-  -- identity `τ j i = star (τ i j)` requires picking a representative point in
-  -- the rectangle `C_i × C_j` where the a.e. equation holds simultaneously at
-  -- `(x,y)` and `(y,x)`.  That extraction is valid only when `μ(C_i)·μ(C_j) > 0`
-  -- (a positive-measure cell hypothesis); under bare `cells : Ω → I` with no
-  -- positivity the statement can fail (e.g. `μ = 0` makes `τ` unconstrained).
-  sorry
+/-- **Cell-pair representative extraction.**  AUDIT FIX: the original
+`quotientPhase_herm` / `quotientPhase_unimod` were stated for a *bare*
+`cells : Ω → I` with no measure hypothesis, where (as their own comments
+admitted) the conclusion is **false** (e.g. `μ = 0` leaves `τ`
+unconstrained on a `Classical.choose`).  The TRUE form requires the two
+cells to have positive measure.
 
-/-- The quotient phase is unimodular: `|τ i j| = 1`.  This is the
-cell-level shadow of `s.unimod`. -/
-theorem quotientPhase_unimod (s : GraphonSigning Ω μ)
-    {cells : Ω → I} (h : s.CellCrossConstant cells) :
-    ∀ i j : I, ‖s.quotientPhase h i j‖ = 1 := by
-  -- Honest sorry (same obstruction as `quotientPhase_herm`): `s.unimod` is an
-  -- a.e. fact, so extracting `‖τ i j‖ = 1` at the cell level needs a
-  -- positive-measure representative in `C_i × C_j`; false without a
-  -- positive-cell-measure hypothesis.
-  sorry
+Given that `μ(C_i) > 0` and `μ(C_j) > 0` and `μ` is s-finite, every property
+`Q` that holds `μ ⊗ μ`-a.e. and that — combined with the cross-constant
+identity — forces a cell-level fact, can be evaluated at a genuine
+representative point `(x, z) ∈ C_i × C_j`.  This is the concrete
+positive-measure ⇒ frequently ⇒ exists extraction. -/
+theorem CellCrossConstant.exists_rep [SFinite μ] (s : GraphonSigning Ω μ)
+    {cells : Ω → I} (h : s.CellCrossConstant cells) {i j : I}
+    (hi : 0 < μ (cells ⁻¹' {i})) (hj : 0 < μ (cells ⁻¹' {j}))
+    {Q : Ω × Ω → Prop} (hQ : ∀ᵐ p ∂(μ.prod μ), Q p) :
+    ∃ p : Ω × Ω, cells p.1 = i ∧ cells p.2 = j ∧
+      s.σ p.1 p.2 = s.quotientPhase h (cells p.1) (cells p.2) ∧ Q p := by
+  -- the rectangle `C_i × C_j` has positive product measure, so the predicate
+  -- "lands in the rectangle" happens frequently; AND-ing with the two a.e.
+  -- facts (cross-constant spec, and `Q`) yields a genuine witness.
+  have hrect : (μ.prod μ) ((cells ⁻¹' {i}) ×ˢ (cells ⁻¹' {j})) ≠ 0 := by
+    rw [Measure.prod_prod]
+    exact (ENNReal.mul_pos hi.ne' hj.ne').ne'
+  have hfreq : ∃ᵐ p ∂(μ.prod μ), p ∈ (cells ⁻¹' {i}) ×ˢ (cells ⁻¹' {j}) :=
+    frequently_ae_iff.2 hrect
+  obtain ⟨p, ⟨hmem, hspec⟩, hQp⟩ :=
+    ((hfreq.and_eventually (s.quotientPhase_spec h)).and_eventually hQ).exists
+  exact ⟨p, hmem.1, hmem.2, hspec, hQp⟩
+
+/-- The quotient phase is Hermitian: `τ j i = star (τ i j)`.  AUDIT FIX:
+now stated with the necessary positive-measure-cell hypotheses (the bare
+form was false).  This is the cell-level shadow of `s.herm`. -/
+theorem quotientPhase_herm [SFinite μ] (s : GraphonSigning Ω μ)
+    {cells : Ω → I} (h : s.CellCrossConstant cells) (i j : I)
+    (hi : 0 < μ (cells ⁻¹' {i})) (hj : 0 < μ (cells ⁻¹' {j})) :
+    s.quotientPhase h j i = star (s.quotientPhase h i j) := by
+  -- Pick a representative `(x, z) ∈ C_i × C_j` where both the cross-constant
+  -- spec at `(x,z)` and (via the `Q`-slot) the cross-constant spec at the
+  -- swapped point `(z,x) ∈ C_j × C_i` hold.  Then `s.herm z x` (everywhere)
+  -- bridges `τ j i` and `star (τ i j)`.
+  obtain ⟨p, hp1, hp2, hspec, hQ⟩ :=
+    h.exists_rep s hi hj
+      (Q := fun p => s.σ p.2 p.1 = s.quotientPhase h (cells p.2) (cells p.1))
+      (by
+        -- the swapped cross-constant spec is itself a.e. (pull back along the
+        -- measure-preserving `Prod.swap`)
+        have hpb := (Measure.measurePreserving_swap (μ := μ) (ν := μ)).quasiMeasurePreserving.ae
+          (s.quotientPhase_spec h)
+        filter_upwards [hpb] with q hq
+        simpa [Prod.swap] using hq)
+  -- `hspec : σ x z = τ (cells x) (cells z) = τ i j`
+  -- `hQ    : σ z x = τ (cells z) (cells x) = τ j i`
+  -- `s.herm x z : σ z x = star (σ x z)`
+  rw [hp1, hp2] at hspec
+  rw [hp1, hp2] at hQ
+  rw [← hQ, s.herm p.1 p.2, hspec]
+
+/-- The quotient phase is unimodular: `|τ i j| = 1`.  AUDIT FIX: now stated
+with the necessary positive-measure-cell hypotheses (the bare form was
+false).  This is the cell-level shadow of `s.unimod`. -/
+theorem quotientPhase_unimod [SFinite μ] (s : GraphonSigning Ω μ)
+    {cells : Ω → I} (h : s.CellCrossConstant cells) (i j : I)
+    (hi : 0 < μ (cells ⁻¹' {i})) (hj : 0 < μ (cells ⁻¹' {j})) :
+    ‖s.quotientPhase h i j‖ = 1 := by
+  -- A representative `(x, z) ∈ C_i × C_j` where the cross-constant spec and the
+  -- a.e. unimodularity `s.unimod` both hold gives `‖τ i j‖ = ‖σ x z‖ = 1`.
+  obtain ⟨p, hp1, hp2, hspec, hQ⟩ := h.exists_rep s hi hj (Q := fun p => ‖s.σ p.1 p.2‖ = 1) s.unimod
+  rw [hp1, hp2] at hspec
+  rw [← hspec, hQ]
 
 end GraphonSigning
 
@@ -362,16 +429,48 @@ both sides of `P.uniform` get multiplied by the same constant.
 
 Proof deferred (`sorry`); the obstructions are purely the
 measure-theoretic shadows of the finite combinatorial argument. -/
+/-- **Cell-`j` flux of a signed kernel factors the cross-constant phase.**
+For `x ∈ C_i` and an *everywhere* cross-constant signing `σ = τ ∘ cells`,
+$$ \int_z [\mathrm{cells}\,z = j]\, \sigma(x,z)\,W(x,z)\,d\mu
+   = \tau(i,j)\, \int_z [\mathrm{cells}\,z = j]\, W(x,z)\,d\mu. $$
+On the cell `C_j` the phase `σ(x,z) = τ(cells x)(cells z) = τ(i,j)` is a
+genuine constant, so it pulls out of the integral *exactly* (no a.e.). -/
+theorem signed_flux_factor {W : Graphon Ω μ} {cells : Ω → I}
+    (s : GraphonSigning Ω μ) {τ : I → I → ℂ}
+    (hτ : ∀ x y : Ω, s.σ x y = τ (cells x) (cells y))
+    (i j : I) (x : Ω) (hx : cells x = i) :
+    (∫ z, (if cells z = j then (W.signedBy s).kernel x z else 0) ∂μ)
+      = τ i j * ∫ z, (if cells z = j then W.kernel x z else 0) ∂μ := by
+  rw [← integral_const_mul]
+  refine integral_congr_ae (Filter.Eventually.of_forall fun z => ?_)
+  by_cases hz : cells z = j
+  · simp only [hz, if_true, Graphon.signedBy_kernel, hτ x z, hx]
+    ring
+  · simp only [hz, if_false, mul_zero]
+
+/-- **Chiral signing preserves a graphon equitable partition.**
+AUDIT FIX: stated for an **everywhere** cross-constant signing
+(`EverywhereCellCrossConstant`), which is what the everywhere-quantified
+`GraphonEquitablePartition.uniform` field genuinely needs.  The lifted
+partition keeps the same `cells` (hence the same `measurable_cells`,
+`cell_pos`, `cell_finite`); only `uniform` changes, and there the
+cross-constant phase `τ(i,j)` factors out of both cell-`j` fluxes by
+`signed_flux_factor`, multiplying both sides of `P.uniform` by the same
+constant.  This mirrors `Graphplay.WeightedGraph.signedBy_preserves_equitable`. -/
 theorem signedBy_preserves_equitable {W : Graphon Ω μ}
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (s : GraphonSigning Ω μ) (h : s.CellCrossConstant P.cells) :
-    -- The same cell map is again an equitable partition for the signed
-    -- graphon `W.signedBy s`: the cross-constant phase factors out of every
-    -- cell-restricted integral, so the uniform-row-sum property is preserved.
+    (s : GraphonSigning Ω μ) (h : s.EverywhereCellCrossConstant P.cells) :
     Nonempty (@GraphonEquitablePartition Ω _ μ I _ _ (W.signedBy s)) := by
-  -- The measure-theoretic shadow of the finite combinatorial argument
-  -- (`Graphplay.WeightedGraph.signedBy_preserves_equitable`): honest `sorry`.
-  sorry
+  obtain ⟨τ, hτ⟩ := h
+  refine ⟨{
+    cells := P.cells
+    measurable_cells := P.measurable_cells
+    cell_pos := P.cell_pos
+    cell_finite := P.cell_finite
+    uniform := ?_ }⟩
+  intro i j x y hxi hyi
+  rw [signed_flux_factor s hτ i j x hxi, signed_flux_factor s hτ i j y hyi]
+  exact congrArg _ (P.uniform i j x y hxi hyi)
 
 end Graphon
 
@@ -398,16 +497,18 @@ $$ P'.\mathrm{quotient}\ i\ j \;=\; \tau(i, j) \cdot P.\mathrm{quotient}\ i\ j. 
 -/
 theorem quotient_signedBy {W : Graphon Ω μ}
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (s : GraphonSigning Ω μ)
-    (h : s.CellCrossConstant P.cells) (i j : I) (x : Ω) (hx : P.cells x = i) :
-    -- The per-vertex cell-`j` flux of the **signed** kernel out of a
-    -- representative `x ∈ C_i` is `τ(i, j)` times the unsigned flux — the
-    -- integral-level shadow of `P'.quotient i j = τ(i, j) · P.quotient i j`.
+    {τ : I → I → ℂ} (hτ : ∀ x y : Ω, s.σ x y = τ (P.cells x) (P.cells y))
+    (i j : I) (x : Ω) (hx : P.cells x = i) :
+    -- AUDIT FIX: stated with the *everywhere* cross-constant phase `τ`
+    -- (witness of `EverywhereCellCrossConstant`), since the per-vertex flux at a
+    -- *fixed* representative `x` is only meaningful when the phase identity holds
+    -- at that very `x` (the a.e. `CellCrossConstant` witness can fail on the null
+    -- set containing `x`).  The per-vertex cell-`j` flux of the **signed** kernel
+    -- out of `x ∈ C_i` is `τ(i, j)` times the unsigned flux — the integral-level
+    -- shadow of `P'.quotient i j = τ(i, j) · P.quotient i j`.
     (∫ z, (if P.cells z = j then (W.signedBy s).kernel x z else 0) ∂μ)
-      = s.quotientPhase h i j
-        * ∫ z, (if P.cells z = j then W.kernel x z else 0) ∂μ := by
-  -- `∫_{C_j} σ(x,z)·W(x,z) = τ(i,j) · ∫_{C_j} W(x,z)`, since `σ(x,z) = τ(i,j)`
-  -- μ-a.e. for `z ∈ C_j` (cross-constant) — honest measure-theory `sorry`.
-  sorry
+      = τ i j * ∫ z, (if P.cells z = j then W.kernel x z else 0) ∂μ :=
+  Graphon.signed_flux_factor s hτ i j x hx
 
 end GraphonEquitablePartition
 
