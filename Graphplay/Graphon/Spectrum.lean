@@ -495,9 +495,35 @@ theorem xieTamon_exists_continuous_tail :
     ∃ (Ω : Type) (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
       (W : Graphon Ω μ),
       W.HasContinuousSpectrum ∧ W.HasContinuousTailSector := by
-  -- the explicit construction is `K_n + path-n` regularised; statement only
-  -- BLOCKED: needs spectral theory of multiplication operators (continuous spectrum)
-  -- not in Mathlib; a trivial witness cannot satisfy `HasContinuousSpectrum`.
+  -- the explicit construction is `K_n + path-n` regularised; statement only.
+  --
+  -- HONEST GAP — *not* wired to `SpectralMeasureSelfAdjoint`, and here is why.
+  -- The literature interface `Graphplay.LiteratureInterfaces.SpectralMeasureSelfAdjoint`
+  -- certifies the existence of *some* self-adjoint operator `T` on *some* abstract
+  -- Hilbert space `H` carrying a **single** no-eigenvector vector `v`
+  -- (`exists_continuous_sector : ∃ H T, IsSelfAdjoint T ∧ ∃ v ≠ 0, ∀ lam, T v ≠ lam • v`).
+  -- That is strictly weaker than what this theorem's conclusion demands:
+  --
+  --   * `HasContinuousTailSector` requires a *whole closed `W.op`-invariant
+  --     subspace* `S ≠ ⊥` in which **every** nonzero vector fails the eigenvalue
+  --     equation — the interface supplies one such vector, not an invariant
+  --     subspace of them, and `span{v}` is not `op`-invariant (precisely because
+  --     `T v` is not a scalar multiple of `v`);
+  --   * `HasContinuousSpectrum` requires `continuousSpectrum W ≠ ∅`, a property of
+  --     the *concrete graphon integral operator's* spectrum, whereas `T` lives on
+  --     an abstract `H` with no `Graphon.op W = T` realisation available (graphon
+  --     ops are integral operators with specific kernel structure; not every
+  --     self-adjoint operator is one).
+  --
+  -- The interface itself documents that wiring `T` to `Graphon.op` is the
+  -- consumer's remaining obligation.  Supplying that bridge in a form strong
+  -- enough to close the conclusion would have to additionally assume the
+  -- invariant-subspace / all-vectors-no-eigenvector data — i.e. essentially the
+  -- conclusion itself — which would be a *vacuous* threading.  We therefore leave
+  -- this honest: the genuine missing content is the spectral theory of
+  -- multiplication operators (purely continuous spectrum) for the concrete
+  -- `K_n + path-n` graphon, beyond both Mathlib and the abstract existence
+  -- certified by `SpectralMeasureSelfAdjoint`.
   sorry
 
 /-! ## 4. PST under a continuous spectrum: the cell-uniform sector decouples

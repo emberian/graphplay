@@ -139,6 +139,7 @@ import Graphplay.Integrations.StructuredAttention
 import Graphplay.Integrations.EquitableMechanism
 import Graphplay.Integrations.NovelAttention
 import Graphplay.Integrations.AliBiAttention
+import Graphplay.Integrations.ChiralPhaseCoherent
 
 -- Engineering toolkit
 import Graphplay.Toolkit

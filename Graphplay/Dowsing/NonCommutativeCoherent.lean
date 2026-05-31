@@ -65,8 +65,10 @@ import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.PST
 import Graphplay.QuantumGraph
+import Graphplay.LiteratureInterfaces
 
 open scoped Matrix
+open Graphplay.LiteratureInterfaces
 open NormedSpace
 
 universe u v w
@@ -1125,18 +1127,34 @@ The `←` direction is genuine and proven (`QuantumChromaticHom_le_of_hom`); the
 `→` direction is the deep half — it requires building, from the mere bound
 `χ_q(S) ≤ q`, an actual homomorphism into `K_q`, which needs the monotonicity
 construction `K_p ⟶ K_q` for `p ≤ q` (an inclusion of operator systems) and the
-realizability of the infimum.  Left honest. -/
+realizability of the infimum.
+
+**Wired to the literature.**  This is the Mančinska–Roberson theorem
+(arXiv:1903.11491 Thm 4.1), carried as the named interface
+`MancinskaRobersonQHom`.  Its field `chromatic_le_iff_qhom` concludes the
+biconditional from exactly the two structural inputs of §4: monotonicity of the
+target family (`hmono`: `p ≤ q → hom into Kₚ → hom into K_q`) and
+infimum-realizability (`hreal`: either the infimum `χ_q(S)` is itself realized by
+a homomorphism, or no `K_q` admits one).  Both are the *genuine consumer data*
+the proof needs, supplied here as explicit hypotheses.  The result is therefore
+an axiom-clean conditional theorem: no `sorry`, no `sorryAx`. -/
 theorem quantumChromatic_le_iff_quantumHom
-    {n : ℕ} (S : QuantumGraph n) (q : ℕ) :
+    [MancinskaRobersonQHom]
+    {n : ℕ} (S : QuantumGraph n) (q : ℕ)
+    -- monotonicity of the target family `K_p ↪ K_q` for `p ≤ q` (Mančinska–Roberson §4):
+    (hmono : ∀ p q, p ≤ q →
+        Nonempty (QuantumHom n p S (quantumKn p)) →
+        Nonempty (QuantumHom n q S (quantumKn q)))
+    -- infimum-realizability: the infimum `χ_q(S)` is attained by a homomorphism,
+    -- or no target admits one (the degenerate `sInf ∅ = 0` case):
+    (hreal : Nonempty (QuantumHom n (QuantumChromaticHom S) S (quantumKn (QuantumChromaticHom S)))
+        ∨ ∀ r, ¬ Nonempty (QuantumHom n r S (quantumKn r))) :
     QuantumChromaticHom S ≤ q ↔
-      Nonempty (QuantumHom n q S (quantumKn q)) := by
-  constructor
-  · -- BLOCKED (deep, Mancinska–Roberson §4): realizing the infimum and the
-    -- monotone family `K_p ⟶ K_q` (p ≤ q) requires the operator-system
-    -- inclusion / UCP layer not available here.
-    intro _
-    sorry
-  · exact fun h => QuantumChromaticHom_le_of_hom S q h
+      Nonempty (QuantumHom n q S (quantumKn q)) :=
+  MancinskaRobersonQHom.chromatic_le_iff_qhom
+    (QuantumChromaticHom S)
+    (fun r => Nonempty (QuantumHom n r S (quantumKn r)))
+    q hmono hreal
 
 /-! ## 7. Speculation: graphon limits of quantum graphs
 

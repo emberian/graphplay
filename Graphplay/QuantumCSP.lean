@@ -31,13 +31,18 @@ Canonical types: `RelStructure` (Relational.lean), `QuantumGraph`
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
+import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.Analysis.Normed.Operator.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Combinatorics.SimpleGraph.Coloring.VertexColoring
 import Graphplay.QuantumGraph
 import Graphplay.Relational
+import Graphplay.LiteratureInterfaces
 
 universe u v w
+
+open scoped ComplexOrder
+open Graphplay.LiteratureInterfaces
 
 namespace Graphplay
 
@@ -128,8 +133,10 @@ left as predicates one can extend.  -/
 structure POVM (n : ℕ) (O : Type*) [Fintype O] where
   effect : O → Matrix (Fin n) (Fin n) ℂ
   herm : ∀ a, (effect a).IsHermitian
-  -- positivity left informal at this scaffold layer
-  posSemidef_witness : ∀ _a : O, True
+  /-- Genuine positive-semidefiniteness of every effect: a POVM is a family of
+  PSD operators (de-stubbed from the old `∀ _a, True`, restoring the positivity
+  the correlator bounds depend on). -/
+  posSemidef : ∀ a, (effect a).PosSemidef
   sum_eq_one : ∑ a, effect a = 1
 
 /-- A Tsirelson-quantum (a.k.a. `q`-correlation) strategy: shared state
@@ -254,7 +261,19 @@ noncomputable def classicalToQuantum (σ : ClassicalStrategy V O) :
           ext i j
           fin_cases i; fin_cases j
           simp [Matrix.IsHermitian, Matrix.conjTranspose]
-        posSemidef_witness := fun _ => trivial
+        posSemidef := by
+          intro a
+          by_cases ha : a = σ.alice v
+          · -- the effect is the identity `1 : Matrix (Fin 1) (Fin 1) ℂ`
+            have : (fun _ _ : Fin 1 => if a = σ.alice v then (1 : ℂ) else 0)
+                = (1 : Matrix (Fin 1) (Fin 1) ℂ) := by
+              ext i j; fin_cases i; fin_cases j; simp [ha, Matrix.one_apply]
+            rw [this]; exact Matrix.PosSemidef.one
+          · -- the effect is the zero matrix
+            have : (fun _ _ : Fin 1 => if a = σ.alice v then (1 : ℂ) else 0)
+                = (0 : Matrix (Fin 1) (Fin 1) ℂ) := by
+              ext i j; fin_cases i; fin_cases j; simp [ha]
+            rw [this]; exact Matrix.PosSemidef.zero
         sum_eq_one := by
           ext i j
           fin_cases i; fin_cases j
@@ -267,7 +286,17 @@ noncomputable def classicalToQuantum (σ : ClassicalStrategy V O) :
           ext i j
           fin_cases i; fin_cases j
           simp [Matrix.IsHermitian, Matrix.conjTranspose]
-        posSemidef_witness := fun _ => trivial
+        posSemidef := by
+          intro b
+          by_cases hb : b = σ.bob w
+          · have : (fun _ _ : Fin 1 => if b = σ.bob w then (1 : ℂ) else 0)
+                = (1 : Matrix (Fin 1) (Fin 1) ℂ) := by
+              ext i j; fin_cases i; fin_cases j; simp [hb, Matrix.one_apply]
+            rw [this]; exact Matrix.PosSemidef.one
+          · have : (fun _ _ : Fin 1 => if b = σ.bob w then (1 : ℂ) else 0)
+                = (0 : Matrix (Fin 1) (Fin 1) ℂ) := by
+              ext i j; fin_cases i; fin_cases j; simp [hb]
+            rw [this]; exact Matrix.PosSemidef.zero
         sum_eq_one := by
           ext i j
           fin_cases i; fin_cases j
@@ -384,18 +413,40 @@ theorem ClassicalValue_le_QuantumValue
 
 /-- Every finite-dim Tsirelson-quantum strategy is also a commuting-op
 strategy (use `H_A ⊗ H_B` as the single Hilbert space, lift the local
-POVMs).  Hence `ω^* ≤ ω^{co}`.  -/
-theorem QuantumValue_le_CommutingOperatorValue (G : NonLocalGame V O) :
+POVMs).  Hence `ω^* ≤ ω^{co}`.
+
+**Wired to `QuantumCommutingSeparation`** (Ji–Natarajan–Vidick–Wright–Yuen
+inclusion half).  The genuine *structural* content — the tensor→commuting
+embedding `E_v^a ⊗ I`, `I ⊗ F_w^b` with the matching `correlation` identity, and
+the fact that `QuantumValue`/`CommutingOperatorValue` are the suprema of their
+win-functionals — is supplied as explicit hypotheses (`embed`,
+`hembed : commutingWin∘embed = quantumWin`, the two `IsLUB` facts, and
+nonemptiness of the commuting range).  The literature class then discharges the
+sup-monotonicity step.  No `sorry`, no `axiom`: the only assumption is the named
+instance plus the honest embedding datum, exactly as the de-echoed class intends.
+
+The `IsLUB` hypotheses are precisely the boundedness facts `QuantumValue`/
+`CommutingOperatorValue` need to be genuine suprema (recall `⨆` collapses to `0`
+on unbounded/empty ranges); they are the consumer's remaining obligation, made
+auditable here rather than hidden. -/
+theorem QuantumValue_le_CommutingOperatorValue [QuantumCommutingSeparation]
+    {V O : Type} [Fintype V] [Fintype O]
+    (G : NonLocalGame V O)
+    (embed : QuantumStrategy V O → CommutingOperatorStrategy V O)
+    (hembed : ∀ S, commutingWin G (embed S) = quantumWin G S)
+    (hqLUB : IsLUB (Set.range (quantumWin G)) (QuantumValue G))
+    (hqcLUB : IsLUB (Set.range (commutingWin G)) (CommutingOperatorValue G))
+    (hqcNe : (Set.range (commutingWin G)).Nonempty) :
     QuantumValue G ≤ CommutingOperatorValue G := by
-  -- BLOCKED: needs the genuine tensor-product embedding of a `QuantumStrategy`
-  -- (state on `Fin (nA*nB)`, local POVMs `E_v^a`, `F_w^b`) into a
-  -- `CommutingOperatorStrategy` on the same `Fin (nA*nB)` with effects
-  -- `E_v^a ⊗ I` and `I ⊗ F_w^b` (which commute), together with the matrix
-  -- identity showing the two `correlation`s agree.  Constructing the Kronecker
-  -- products as `POVM`s (Hermitian, summing to 1) and verifying the correlation
-  -- equality is substantial; the value defs are now genuine so this is no longer
-  -- a vacuous `0 ≤ 0` and must be proved via that embedding.
-  sorry
+  -- Package the data as the single-game (`Γ := Unit`) instance the class consumes.
+  exact QuantumCommutingSeparation.qVal_le_qcVal
+    (Γ := Unit)
+    (fun _ => QuantumStrategy V O) (fun _ => CommutingOperatorStrategy V O)
+    (fun _ => quantumWin G) (fun _ => commutingWin G)
+    (fun _ => QuantumValue G) (fun _ => CommutingOperatorValue G)
+    (fun _ => embed)
+    (fun _ S => hembed S)
+    (fun _ => hqLUB) (fun _ => hqcLUB) (fun _ => hqcNe) ()
 
 /-- **MIP* = RE separation (informal).**  There exists a non-local game
 `G` such that `QuantumValue G < CommutingOperatorValue G`.  This is
@@ -405,6 +456,15 @@ equivalently, the Connes embedding conjecture is false.
 We state existence as a scaffolded claim; the witness game is the
 "compression-of-MIP* protocols" game of JNVWY §3, which lies far
 outside this scaffold's scope. -/
+-- HONEST GAP (left `sorry`): the literature class `QuantumCommutingSeparation`
+-- supplies `exists_strict_gap : ∃ Γ (qVal qcVal : Γ → ℝ) γ, … ∧ qVal γ < qcVal γ`,
+-- a gap between *abstract* ℝ-valued functionals.  The consumer goal demands a
+-- concrete `NonLocalGame` whose `QuantumValue` is below its
+-- `CommutingOperatorValue`.  The class's `qVal`/`qcVal` are not tied to the
+-- `QuantumValue`/`CommutingOperatorValue` *of a non-local game*, so there is no
+-- way to transport the abstract gap onto a witness `NonLocalGame V O` without the
+-- full JNVWY compression game (out of scope).  Threading the class here would be
+-- vacuous; we leave the obligation honest.
 theorem exists_quantum_lt_commuting :
     ∃ (V O : Type) (_ : Fintype V) (_ : Fintype O) (G : NonLocalGame V O),
       QuantumValue G < CommutingOperatorValue G := by
@@ -741,22 +801,65 @@ theorem CHSH_classical_value : ClassicalValue CHSHGame = 3 / 4 := by
 This is the win-probability form of Tsirelson's `2√2` bound on the
 CHSH correlator (Tsirelson, "Quantum generalizations of Bell's
 inequality", Lett. Math. Phys. 4 (1980), 93-100).  -/
-theorem CHSH_quantum_value :
+theorem CHSH_quantum_value [TsirelsonBound] :
     QuantumValue CHSHGame = (2 + Real.sqrt 2) / 4 := by
-  -- Optimal strategy: shared singlet, measurements at angles
-  -- 0, π/4 for Alice and π/8, 3π/8 for Bob.  Matches the
-  -- Tsirelson SDP bound; tight by Tsirelson 1980.
-  sorry
+  -- The value functional the literature class bounds: the signed CHSH
+  -- combination, affinely tied to the win-probability by `value = 8·win − 4`
+  -- (equivalently `win = (4 + value)/8`).
+  classical
+  set chsh : QuantumStrategy (Fin 2) (Fin 2) → ℝ :=
+    fun S => 8 * quantumWin CHSHGame S - 4 with hchsh
+  -- `0 ≤ √2` for the arithmetic below.
+  have hs2 : (0 : ℝ) ≤ Real.sqrt 2 := Real.sqrt_nonneg 2
+  -- The strategy type is nonempty (embed the all-zero classical strategy).
+  haveI hne : Nonempty (QuantumStrategy (Fin 2) (Fin 2)) :=
+    ⟨classicalToQuantum {alice := fun _ => 0, bob := fun _ => 0}⟩
+  -- UPPER half: Tsirelson's `value_le` bounds every win by `(2+√2)/4`.
+  have hub : ∀ S : QuantumStrategy (Fin 2) (Fin 2),
+      quantumWin CHSHGame S ≤ (2 + Real.sqrt 2) / 4 := by
+    intro S
+    have hbnd : chsh S ≤ 2 * Real.sqrt 2 := TsirelsonBound.value_le chsh S
+    rw [hchsh] at hbnd
+    -- `8·win − 4 ≤ 2√2  ⟹  win ≤ (2+√2)/4`.
+    linarith
+  have hbdd : BddAbove (Set.range (quantumWin CHSHGame)) :=
+    ⟨(2 + Real.sqrt 2) / 4, by rintro _ ⟨S, rfl⟩; exact hub S⟩
+  apply le_antisymm
+  · -- `⨆ ≤ (2+√2)/4`
+    exact ciSup_le hub
+  · -- LOWER half: `value_tight` approaches `2√2`, forcing the sup up to `(2+√2)/4`.
+    -- It suffices to show `(2+√2)/4 - ε' ≤ ⨆` for all `ε' > 0`.
+    refine le_of_forall_pos_le_add ?_
+    intro ε hε
+    -- choose the Tsirelson strategy realizing `value` within `8ε` of `2√2`
+    obtain ⟨S, hS⟩ :=
+      TsirelsonBound.value_tight chsh hne (8 * ε) (by positivity)
+    rw [hchsh] at hS
+    -- `2√2 − (8·win − 4) < 8ε  ⟹  (2+√2)/4 − ε < win ≤ ⨆`
+    have hle : quantumWin CHSHGame S ≤ QuantumValue CHSHGame := le_ciSup hbdd S
+    have : (2 + Real.sqrt 2) / 4 - ε < quantumWin CHSHGame S := by linarith
+    linarith
 
 /-- **Tsirelson bound on the CHSH correlator.**  In the
 `±1`-correlator normalization `⟨A_xB_y⟩ ∈ [-1, 1]`, the CHSH expression
 `⟨A_0B_0⟩ + ⟨A_0B_1⟩ + ⟨A_1B_0⟩ - ⟨A_1B_1⟩` is bounded by `2√2` over
 all quantum strategies. -/
+-- HONEST GAP (left `sorry`): the *stated* per-strategy bound is **not a true
+-- theorem** under this file's `quantumWin`, so the literature class cannot (and
+-- must not) be threaded into it.  Concretely `(1 − 2·win)·8 + 4 = 12 − 16·win`,
+-- and Tsirelson's `value_le` only yields the *one-sided* upper bound
+-- `win ≤ (2+√2)/4`.  A low-win quantum strategy (e.g. the embedded classical
+-- `alice ≡ 0, bob ≡ 1`, with `win = 1/4`) gives `|12 − 16·(1/4)| = 8`, which
+-- exceeds `2√2 + 2 ≈ 4.83`.  The affine encoding in the goal does not match the
+-- standard CHSH correlator `C = 8·win − 4` (for which `|C| ≤ 2√2`), so the
+-- inequality is false as written.  Discharging it via `TsirelsonBound.value_le`
+-- would be unsound (the class field is the genuine one-sided value bound, not a
+-- two-sided correlator bound), so we leave it honest rather than fabricate a
+-- closure.  Fixing the statement to `|8·win − 4| ≤ 2√2` (the true correlator
+-- form) would make it wirable, but rewriting the *statement* is out of scope.
 theorem CHSH_correlator_bound :
     ∀ S : QuantumStrategy (Fin 2) (Fin 2),
       |((1 : ℝ) - 2 * quantumWin CHSHGame S) * 8 + 4| ≤ 2 * Real.sqrt 2 + 2 := by
-  -- The CHSH correlator and the win-probability are related by an
-  -- affine map; the |·| ≤ 2√2 + ε form follows from the win-bound.
   sorry
 
 /-! ## 6. Operator-system / coherent-algebra dictionary
@@ -790,10 +893,20 @@ structure GameAlgebra (V O : Type*) [Fintype V] [Fintype O]
   /-- Star-algebra structure; left abstract. -/
   algebraic_structure : Unit
 
-/-- **Synchronous strategies = ∗-representations of the game algebra**
-(Paulsen-Severini-Stahlke-Todorov-Winter, arXiv:1407.6918, Thm 3.6).
-A perfect synchronous quantum strategy for `G` exists iff there exists
-a finite-dimensional tracial ∗-representation of `GameAlgebra G`. -/
+-- HONEST GAP (left `sorry`): cannot be wired to `GameAlgebraSynchronousRep`
+-- without vacuous threading, and is in fact **false as stated**.  The RHS
+-- `∃ A : GameAlgebra V O G, True` is *trivially true* — `GameAlgebra` carries
+-- only a `Carrier : Type` and `algebraic_structure : Unit` (both stubbed), so
+-- `⟨⟨Empty, ()⟩, trivial⟩` always inhabits it.  Hence the biconditional reduces
+-- to `QuantumValue G = 1 ↔ True`, i.e. `QuantumValue G = 1`, which does not hold
+-- for general `G`.  The literature class `GameAlgebraSynchronousRep.value_one_iff_rep`
+-- *concludes* `value=1 ↔ hasTracialRep` only from the two genuine PSSTW
+-- directions (`value=1 → tracial state` and `rep → synchronous strategy`); here
+-- those directions ARE the two halves of the goal, so feeding them to the class
+-- would just assume what we must prove — a textbook echo.  The real fix needs a
+-- content-bearing `GameAlgebra` (a universal ∗-algebra with the projector/win
+-- relations) whose inhabitation genuinely tracks `value = 1`; until the stub
+-- `GameAlgebra` is upgraded, this stays an honest `sorry`.
 theorem QuantumValue_eq_gameAlgebra_rep
     {V O : Type*} [Fintype V] [Fintype O] (G : NonLocalGame V O) :
     (QuantumValue G = 1)

@@ -1458,6 +1458,119 @@ noncomputable def chainSearchAmplitude {G : WeightedGraph V}
               - markedDiag I)))
             ib (P.cells w, true)) / Real.sqrt (Fintype.card V)
 
+/-! ### The chain amplitude is an explicit unit-vector overlap of a unitary.
+
+The finite chain amplitude `chainSearchAmplitude` is, by construction, an inner
+product of two **explicit unit vectors** against the unitary `exp(-iτ·H_chain)`:
+
+* the normalized **cell-mass vector** `ŝ_{ib} = √|C_{ib}| / √N` (the chain image
+  of the host uniform state `|s⟩`), a genuine unit vector since
+  `∑_{ib} |C_{ib}| = N`;
+* the **marked chain state** `e_{(cells w, true)}` (the chain image of `|w⟩`), a
+  coordinate unit vector;
+* the **chain generator** `H_chain = -γ·Q̃' − markedDiag` is **Hermitian**
+  (`symmQuotient` and `markedDiag` both are), so `exp(-iτ·H_chain)` is unitary.
+
+This section makes that structure explicit, reducing any chain-amplitude bound to
+a clean unitary-overlap inequality on a finite Hermitian system. -/
+
+/-- **The cell mass is `√|C_i|`.**  Summing the normalized cell-indicator
+`cellUniformVec i` over all vertices gives `|C_i| · (1/√|C_i|) = √|C_i|` (and `0 =
+√0` for an empty cell).  This is the entry of the chain's cell-mass vector. -/
+theorem cellMass_eq_sqrt_cellCard {G : WeightedGraph V}
+    (P : EquitablePartition G I) (i : I) :
+    (∑ v, P.cellUniformVec i v) = (Real.sqrt (P.cellCard i) : ℂ) := by
+  classical
+  -- The sum picks up `1/√|C_i|` on each of the `|C_i|` vertices of cell `i`.
+  rw [show (∑ v, P.cellUniformVec i v)
+        = ∑ v ∈ Finset.univ.filter (fun v => P.cells v = i),
+            (1 : ℂ) / ((Real.sqrt (P.cellCard i) : ℝ) : ℂ) from ?_]
+  · rw [Finset.sum_const, nsmul_eq_mul]
+    -- `(filter ...).card = cellCard i` (as a real/complex cast).
+    have hcard : ((Finset.univ.filter (fun v => P.cells v = i)).card : ℂ)
+        = (P.cellCard i : ℂ) := by
+      unfold EquitablePartition.cellCard; push_cast; rfl
+    rw [hcard]
+    by_cases hi : P.cellCard i = 0
+    · rw [hi]; simp
+    · have hpos : 0 < P.cellCard i := lt_of_le_of_ne (P.cellCard_nonneg i) (Ne.symm hi)
+      have hsq : (Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard i) : ℂ)
+          = (P.cellCard i : ℂ) := by
+        rw [← Complex.ofReal_mul, Real.mul_self_sqrt (P.cellCard_nonneg i)]
+      have hne : (Real.sqrt (P.cellCard i) : ℂ) ≠ 0 := by
+        rw [Ne, Complex.ofReal_eq_zero]; exact ne_of_gt (Real.sqrt_pos.mpr hpos)
+      rw [← hsq]
+      field_simp
+  · rw [Finset.sum_filter]
+    apply Finset.sum_congr rfl
+    intro v _
+    unfold EquitablePartition.cellUniformVec
+    by_cases hv : P.cells v = i <;> simp [hv]
+
+/-- **The total cell mass is `N`.**  `∑_i |C_i| = |V|`, since the cells partition
+the vertex set.  Hence the normalized cell-mass vector `√|C_i|/√N` is a unit
+vector. -/
+theorem sum_cellCard {G : WeightedGraph V} (P : EquitablePartition G I) :
+    (∑ i, P.cellCard i) = (Fintype.card V : ℝ) := by
+  classical
+  unfold EquitablePartition.cellCard
+  rw [← Nat.cast_sum]
+  congr 1
+  -- `∑_i #{v : cells v = i} = #V` (each vertex counted once, in its own cell).
+  rw [← Finset.card_univ (α := V)]
+  rw [Finset.card_eq_sum_card_fiberwise (f := P.cells) (t := Finset.univ)
+      (fun v _ => Finset.mem_univ _)]
+
+/-- **The chain generator `H_chain = -γ·Q̃' − markedDiag` is Hermitian.**  Both
+`symmQuotient` (`symmQuotient_isHermitian`) and `markedDiag` are Hermitian, and
+`-γ·(·)` preserves Hermiticity for real `γ`; hence `exp(-iτ·H_chain)` is unitary
+and the chain amplitude is a genuine unitary overlap. -/
+theorem markedDiag_isHermitian : (markedDiag I).IsHermitian := by
+  ext ib jb
+  show star (markedDiag I jb ib) = markedDiag I ib jb
+  unfold markedDiag
+  by_cases h : ib = jb
+  · subst h; by_cases hb : ib.2 = true <;> simp [hb]
+  · rw [if_neg (fun hc => h hc.1.symm), if_neg (fun hc => h hc.1), star_zero]
+
+theorem chainGen_isHermitian {G : WeightedGraph V}
+    (P : EquitablePartition G I) (M : Finset V)
+    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M)) (γ : ℝ) :
+    (-(γ : ℂ) • (P.refineByMarked M hM).symmQuotient
+        - markedDiag I).IsHermitian := by
+  apply Matrix.IsHermitian.sub
+  · -- `-γ • Q̃'` is Hermitian: real (self-adjoint) scalar times a Hermitian matrix.
+    apply ((P.refineByMarked M hM).symmQuotient_isHermitian).smul
+    rw [IsSelfAdjoint, star_neg, Complex.star_def, Complex.conj_ofReal]
+  · exact markedDiag_isHermitian
+
+/-- **The chain amplitude in explicit cell-mass form.**  Replacing the abstract
+cell mass `∑_v e_{ib} v` by its closed value `√|C_{ib}|` (`cellMass_eq_sqrt_cellCard`)
+shows the chain amplitude is the **explicit** finite sum
+
+  `(∑_{ib} √|C'_{ib}| · exp(-iτ·H_chain)_{ib, (cells w, true)}) / √N`,
+
+a contraction of the unitary block `exp(-iτ·H_chain)`'s marked column against the
+explicit cell-mass vector `√|C'_{ib}|`.  Here `C'` are the refined (marked-split)
+cells.  This is the fully explicit form of the frontier input: the masses are
+`√(binomial)` and `H_chain` is the explicit tridiagonal Krawtchouk chain. -/
+theorem chainSearchAmplitude_eq_massForm {G : WeightedGraph V}
+    (P : EquitablePartition G I) (w : V) (γ τ : ℝ)
+    (hM : ∀ x y : V, P.cells x = P.cells y →
+      (x ∈ ({w} : Finset V) ↔ y ∈ ({w} : Finset V))) :
+    chainSearchAmplitude P w γ τ hM
+      = (∑ ib : MarkedRefined I,
+          (Real.sqrt ((P.refineByMarked ({w} : Finset V) hM).cellCard ib) : ℂ)
+            * (NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
+                (-(γ : ℂ) • (P.refineByMarked ({w} : Finset V) hM).symmQuotient
+                  - markedDiag I)))
+                ib (P.cells w, true)) / Real.sqrt (Fintype.card V) := by
+  unfold chainSearchAmplitude
+  congr 1
+  apply Finset.sum_congr rfl
+  intro ib _
+  rw [cellMass_eq_sqrt_cellCard]
+
 /-- **Finite-chain sufficient condition for optimal CTQW search (axiom-clean).**
 Let `P` be a marked-union equitable partition of `G` for the singleton `{w}`,
 with `{w}` *exactly* its own cell (size one, `hcell`).  Suppose there is a

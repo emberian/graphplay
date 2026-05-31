@@ -765,6 +765,41 @@ theorem hypercube_optimal_of_chain_amplitude (d : ℕ) (w : Fin (2^d))
   Graphplay.optimal_search_of_chain_amplitude (hammingPartition d w) w
     (markedSet_cellUniform d w) (hammingCell_singleton d w) γ τ C hγ hC hτ hampl
 
+/-! ### The chain amplitude as an explicit cell-mass overlap.
+
+`chainSearchAmplitude` is — by `Graphplay.chainSearchAmplitude_eq_massForm` — the
+**explicit** finite contraction
+
+  `(∑_{ib} √|C'_{ib}| · exp(-iτ·H_chain)_{ib,(0,true)}) / √N`,
+
+where `C'` are the refined (marked-split) Hamming cells, `H_chain = -γ·Q̃' −
+markedDiag` is the Hermitian collapsed-Hamming chain generator
+(`Graphplay.chainGen_isHermitian`), and `(0,true)` is the refined marked cell of
+`w`.  We record this explicit form as the **single, host-dimension-free spectral
+inequality** the hypercube frontier reduces to: nothing depends on `2^d` beyond
+the `√N` normalization, and every coefficient (`√|C'_{ib}|`, the matrix entries of
+`Q̃'`) is an explicit binomial / Krawtchouk datum of a `2(d+1)×2(d+1)` matrix. -/
+
+/-- **The explicit cell-mass form of the hypercube chain amplitude bound.**  The
+success threshold `1/√2`, stated directly on the explicit cell-mass contraction
+`(∑_{ib} √|C'_{ib}| · exp(-iτ·H_chain)_{ib,(0,true)})/√N` — the form produced by
+`chainSearchAmplitude_eq_massForm`.  By `hypercube_chain_massForm_iff` this is
+*equivalent* to `HypercubeChainAmplitudeBound`, so it is the genuinely explicit
+restatement of the single remaining frontier input (a Hermitian
+`2(d+1)`-dimensional matrix-exponential inequality with binomial cell masses). -/
+def HypercubeChainMassBound (d : ℕ) (w : Fin (2^d)) : Prop :=
+  ∃ (γ τ C : ℝ), 0 < γ ∧ 0 ≤ C ∧
+    τ ≤ C * Real.sqrt (Fintype.card (Fin (2^d))) ∧
+    ‖(∑ ib : Graphplay.MarkedRefined (Fin (d + 1)),
+        (Real.sqrt (((hammingPartition d w).refineByMarked
+              ({w} : Finset (Fin (2^d))) (markedSet_cellUniform d w)).cellCard ib) : ℂ)
+          * (NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
+              (-(γ : ℂ) • ((hammingPartition d w).refineByMarked
+                  ({w} : Finset (Fin (2^d))) (markedSet_cellUniform d w)).symmQuotient
+                - Graphplay.markedDiag (Fin (d + 1)))))
+              ib ((hammingPartition d w).cells w, true))
+        / Real.sqrt (Fintype.card (Fin (2^d)))‖ ≥ 1 / Real.sqrt 2
+
 /-- **The finite chain spectral inequality that closes the hypercube frontier.**
 This is the precise, explicit, host-dimension-free remaining input: for some
 coupling `γ > 0` and time `τ = O(√N)`, the `2(d+1)`-dimensional collapsed-Hamming
@@ -775,6 +810,55 @@ def HypercubeChainAmplitudeBound (d : ℕ) (w : Fin (2^d)) : Prop :=
     τ ≤ C * Real.sqrt (Fintype.card (Fin (2^d))) ∧
     ‖Graphplay.chainSearchAmplitude (hammingPartition d w) w γ τ
         (markedSet_cellUniform d w)‖ ≥ 1 / Real.sqrt 2
+
+/-- **`HypercubeChainMassBound ↔ HypercubeChainAmplitudeBound`.**  The explicit
+cell-mass form is *equivalent* to the abstract chain-amplitude form: the two
+amplitudes are *equal* term-by-term (`chainSearchAmplitude_eq_massForm` replaces
+each abstract cell mass `∑_v e_{ib} v` by its closed value `√|C'_{ib}|`).  So
+proving the explicit Hermitian-block inequality `HypercubeChainMassBound`
+discharges `HypercubeChainAmplitudeBound` and hence closes
+`hypercube_search_optimal_timing` — making the remaining frontier a single,
+fully-explicit, finite spectral fact. -/
+theorem hypercube_chain_massForm_iff (d : ℕ) (w : Fin (2^d)) :
+    HypercubeChainMassBound d w ↔ HypercubeChainAmplitudeBound d w := by
+  unfold HypercubeChainMassBound HypercubeChainAmplitudeBound
+  constructor
+  · rintro ⟨γ, τ, C, hγ, hC, hτ, hampl⟩
+    refine ⟨γ, τ, C, hγ, hC, hτ, ?_⟩
+    rw [Graphplay.chainSearchAmplitude_eq_massForm]
+    exact hampl
+  · rintro ⟨γ, τ, C, hγ, hC, hτ, hampl⟩
+    refine ⟨γ, τ, C, hγ, hC, hτ, ?_⟩
+    rw [Graphplay.chainSearchAmplitude_eq_massForm] at hampl
+    exact hampl
+
+/-- **The refined marked cell of `w` has cardinality `1`.**  The refined cell
+`((hammingPartition d w).cells w, true)` is exactly the singleton `{w}` (the
+distance-`0` shell intersected with the marked set `{w}`), so its cell mass entry
+is `√1 = 1`.  This pins down the *marked column index* `(0, true)` of the explicit
+chain block and shows the marked-cell mass coefficient is exactly `1`. -/
+theorem hypercube_refined_marked_cellCard (d : ℕ) (w : Fin (2^d)) :
+    ((hammingPartition d w).refineByMarked
+        ({w} : Finset (Fin (2^d))) (markedSet_cellUniform d w)).cellCard
+      ((hammingPartition d w).cells w, true) = 1 := by
+  classical
+  unfold EquitablePartition.cellCard
+  rw [show (Finset.univ.filter (fun x : Fin (2^d) =>
+        ((hammingPartition d w).refineByMarked ({w} : Finset (Fin (2^d)))
+            (markedSet_cellUniform d w)).cells x
+          = ((hammingPartition d w).cells w, true))) = {w} from ?_]
+  · simp
+  · ext x
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+    show ((hammingPartition d w).cells x, decide (x ∈ ({w} : Finset (Fin (2^d)))))
+        = ((hammingPartition d w).cells w, true) ↔ x = w
+    constructor
+    · intro hx
+      have hfst : (hammingPartition d w).cells x = (hammingPartition d w).cells w :=
+        congrArg Prod.fst hx
+      exact hammingCell_singleton d w x hfst
+    · rintro rfl
+      simp
 
 /-- **`hypercube_search_optimal_timing` — now reduced to the finite chain
 inequality.**  The full-space `O(√N)` optimal-search timing on `Q_d`, taking as
@@ -792,6 +876,19 @@ theorem hypercube_search_optimal_timing (d : ℕ) (hd : 1 ≤ d) (w : Fin (2^d))
     IsOptimalCTQWSearch (Hypercube d) w := by
   obtain ⟨γ, τ, C, hγ, hC, hτ, hampl⟩ := hchain
   exact hypercube_optimal_of_chain_amplitude d w γ τ C hγ hC hτ hampl
+
+/-- **`hypercube_search_optimal_timing` from the explicit cell-mass inequality.**
+The same full-space `O(√N)` optimal search, now taking the *fully explicit*
+cell-mass form `HypercubeChainMassBound` as its hypothesis — an inequality on the
+explicit contraction `(∑_{ib} √|C'_{ib}| · exp(-iτ·H_chain)_{ib,(0,true)})/√N` of a
+Hermitian `2(d+1)`-dimensional block (binomial cell masses, tridiagonal Krawtchouk
+chain).  Equivalent to `hypercube_search_optimal_timing` via
+`hypercube_chain_massForm_iff`, this is the cleanest statement of the single
+remaining frontier input. -/
+theorem hypercube_search_optimal_timing_of_massForm (d : ℕ) (hd : 1 ≤ d)
+    (w : Fin (2^d)) (hmass : HypercubeChainMassBound d w) :
+    IsOptimalCTQWSearch (Hypercube d) w :=
+  hypercube_search_optimal_timing d hd w ((hypercube_chain_massForm_iff d w).mp hmass)
 
 /-! ## Generalization (the "tower" thesis): the CNO frontier.
 

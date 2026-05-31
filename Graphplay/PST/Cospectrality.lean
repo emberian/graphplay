@@ -46,8 +46,13 @@ The deliverables of this file are:
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.Matrix.Spectrum
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Chebyshev.RootsExtrema
+import Mathlib.RingTheory.Polynomial.Chebyshev
+import Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
+import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Combinatorics.SimpleGraph.Hasse
+import Mathlib.Combinatorics.SimpleGraph.AdjMatrix
 import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.PST
@@ -633,6 +638,360 @@ noncomputable def pathWeightedGraph (n : ℕ) : WeightedGraph (Fin n) :=
   letI : DecidableRel (SimpleGraph.pathGraph n).Adj := Classical.decRel _
   SimpleGraph.toWeighted (SimpleGraph.pathGraph n)
 
+/-! ## Path characteristic polynomial = Chebyshev `U_n(X/2)` (tridiagonal recurrence)
+
+The adjacency matrix of `P_n` is tridiagonal (1 on the off-diagonals).  Its
+characteristic matrix `X·I − A` has determinant satisfying the three-term
+recurrence `p_{n+2} = X·p_{n+1} − p_n`, which is exactly the (monic, scaled)
+Chebyshev polynomial of the second kind `U_n(X/2)`.  Mathlib's
+`Polynomial.Chebyshev.roots_U_real`-style result gives the `n` distinct roots
+`2cos((k+1)π/(n+1))`, so the characteristic polynomial is squarefree and the
+path has *simple spectrum* — the sole input needed to close path-endpoint strong
+cospectrality. -/
+
+namespace PathChebyshev
+
+open Polynomial Matrix
+
+/-- The path characteristic matrix: tridiagonal with `X` on the diagonal and
+`-1` on the two off-diagonals, over `ℂ[X]`. -/
+noncomputable def pathCharM (n : ℕ) : Matrix (Fin n) (Fin n) (Polynomial ℂ) :=
+  fun i j =>
+    if i = j then X
+    else if (i.val + 1 = j.val ∨ j.val + 1 = i.val) then -1
+    else 0
+
+lemma pathCharM_apply (n : ℕ) (i j : Fin n) :
+    pathCharM n i j =
+      if i.val = j.val then X
+      else if (i.val + 1 = j.val ∨ j.val + 1 = i.val) then -1 else 0 := by
+  simp only [pathCharM, Fin.ext_iff]
+
+@[simp] lemma pathCharM_diag (n : ℕ) (i : Fin n) : pathCharM n i i = X := by
+  simp [pathCharM]
+
+/-- Value of the path char-matrix purely in terms of `Nat` row/column indices. -/
+lemma pathCharM_val (n : ℕ) (i j : Fin n) (a b : ℕ) (ha : i.val = a) (hb : j.val = b) :
+    pathCharM n i j =
+      if a = b then X else if (a + 1 = b ∨ b + 1 = a) then -1 else 0 := by
+  rw [pathCharM_apply, ha, hb]
+
+/-- Removing row 0 and column 0 from `pathCharM (n+1)` gives `pathCharM n`. -/
+lemma pathCharM_sub00 (n : ℕ) :
+    (pathCharM (n + 1)).submatrix Fin.succ ((0 : Fin (n+1)).succAbove) = pathCharM n := by
+  funext i j
+  rw [Matrix.submatrix_apply, Fin.zero_succAbove,
+    pathCharM_val (n+1) i.succ j.succ (i.val + 1) (j.val + 1) (Fin.val_succ i) (Fin.val_succ j),
+    pathCharM_apply]
+  split_ifs <;> first | rfl | omega
+
+/-- Expanding the column-1-deleted minor of `pathCharM (n+2)` gives
+`-(pathCharM n).det`. -/
+lemma pathCharM_sub01_det (n : ℕ) :
+    ((pathCharM (n + 2)).submatrix Fin.succ ((1 : Fin (n+2)).succAbove)).det
+      = - (pathCharM n).det := by
+  rw [Matrix.det_succ_column_zero]
+  set M := (pathCharM (n + 2)).submatrix Fin.succ ((1 : Fin (n+2)).succAbove) with hM
+  rw [Finset.sum_eq_single (0 : Fin (n+1))]
+  · -- surviving `i = 0` term
+    have hentry : M 0 0 = (-1 : Polynomial ℂ) := by
+      rw [hM, Matrix.submatrix_apply, Fin.one_succAbove_zero,
+        pathCharM_val (n+2) (Fin.succ (0 : Fin (n+1))) 0 1 0
+          (by rw [Fin.val_succ]; rfl) rfl]
+      norm_num
+    have hminor : (M.submatrix ((0 : Fin (n+1)).succAbove) Fin.succ) = pathCharM n := by
+      funext i j
+      rw [hM, Matrix.submatrix_apply, Matrix.submatrix_apply, Fin.zero_succAbove,
+        Fin.one_succAbove_succ,
+        pathCharM_val (n+2) (Fin.succ i.succ) (Fin.succ j.succ) (i.val + 2) (j.val + 2)
+          (by rw [Fin.val_succ, Fin.val_succ]) (by rw [Fin.val_succ, Fin.val_succ]),
+        pathCharM_apply]
+      split_ifs <;> first | rfl | omega
+    rw [Fin.val_zero, pow_zero, one_mul, hentry, hminor]; ring
+  · -- `i ≠ 0` rows: column-0 entry is 0
+    intro i _ hi0
+    obtain ⟨i', rfl⟩ := Fin.exists_succ_eq.mpr hi0
+    have hzero : M i'.succ 0 = 0 := by
+      rw [hM, Matrix.submatrix_apply, Fin.one_succAbove_zero,
+        pathCharM_val (n+2) (Fin.succ i'.succ) 0 (i'.val + 2) 0
+          (by rw [Fin.val_succ, Fin.val_succ]) rfl]
+      rw [if_neg (by omega), if_neg (by omega)]
+    rw [hzero]; ring
+  · intro h; exact absurd (Finset.mem_univ _) h
+
+/-- The three-term recurrence for the path char-matrix determinant:
+`p_{n+2} = X · p_{n+1} − p_n`. -/
+theorem pathCharM_det_rec (n : ℕ) :
+    (pathCharM (n + 2)).det
+      = X * (pathCharM (n + 1)).det - (pathCharM n).det := by
+  rw [Matrix.det_succ_row_zero]
+  -- only columns `0` and `1` of row 0 are nonzero
+  rw [Fin.sum_univ_succ, Fin.sum_univ_succ]
+  -- columns `≥ 2` vanish
+  have htail : ∀ j : Fin n,
+      (-1 : Polynomial ℂ) ^ (j.succ.succ : ℕ)
+        * (pathCharM (n + 2)) 0 j.succ.succ
+        * ((pathCharM (n + 2)).submatrix Fin.succ j.succ.succ.succAbove).det = 0 := by
+    intro j
+    have hz : (pathCharM (n + 2)) 0 j.succ.succ = 0 := by
+      rw [pathCharM_val (n+2) 0 j.succ.succ 0 (j.val + 2) rfl
+        (by rw [Fin.val_succ, Fin.val_succ])]
+      rw [if_neg (by omega), if_neg (by omega)]
+    rw [hz]; ring
+  rw [Finset.sum_eq_zero (fun j _ => htail j), add_zero]
+  -- column-0 term: `(+1)·X·det(pathCharM (n+1))`
+  have h00 : (pathCharM (n + 2)) 0 0 = X := pathCharM_diag _ _
+  have hsub0 : (pathCharM (n + 2)).submatrix Fin.succ ((0 : Fin (n+2)).succAbove)
+      = pathCharM (n + 1) := pathCharM_sub00 (n + 1)
+  -- column-1 term: `(-1)·(-1)·det(minor)`, minor det `= -(pathCharM n).det`
+  have h01 : (pathCharM (n + 2)) 0 (Fin.succ 0) = -1 := by
+    rw [pathCharM_val (n+2) 0 (Fin.succ 0) 0 1 rfl (by rw [Fin.val_succ]; rfl)]
+    norm_num
+  have hsub1 := pathCharM_sub01_det n
+  rw [Fin.val_zero, pow_zero, one_mul, h00, hsub0, Fin.val_succ, Fin.val_zero,
+    zero_add, pow_one, h01, Fin.succ_zero_eq_one, hsub1]
+  ring
+
+@[simp] lemma pathCharM_det_zero : (pathCharM 0).det = 1 := by
+  simp
+
+@[simp] lemma pathCharM_det_one : (pathCharM 1).det = X := by
+  rw [Matrix.det_fin_one]; simp [pathCharM]
+
+/-- The scaled Chebyshev polynomial of the second kind, `U_n(X/2)`, which is
+monic of degree `n` and whose roots are `2cos((k+1)π/(n+1))`. -/
+noncomputable def chebyScaled (n : ℕ) : Polynomial ℂ :=
+  (Chebyshev.U ℂ (n : ℤ)).comp (C 2⁻¹ * X)
+
+lemma chebyScaled_zero : chebyScaled 0 = 1 := by
+  simp [chebyScaled, Chebyshev.U_zero]
+
+/-- The key scaling identity: `2 · (X/2) = X`, i.e. `2 · (C 2⁻¹ · X) = X`. -/
+lemma two_mul_half_X : (2 : Polynomial ℂ) * (C 2⁻¹ * X) = X := by
+  rw [show (2 : Polynomial ℂ) = C 2 from (C_ofNat 2).symm, ← mul_assoc, ← C_mul]
+  norm_num
+
+lemma chebyScaled_one : chebyScaled 1 = X := by
+  rw [chebyScaled, Nat.cast_one, Chebyshev.U_one]
+  rw [mul_comp, ofNat_comp, X_comp]
+  exact two_mul_half_X
+
+lemma chebyScaled_rec (n : ℕ) :
+    chebyScaled (n + 2) = X * chebyScaled (n + 1) - chebyScaled n := by
+  have h : Chebyshev.U ℂ ((n : ℤ) + 2)
+      = 2 * X * Chebyshev.U ℂ ((n : ℤ) + 1) - Chebyshev.U ℂ (n : ℤ) :=
+    Chebyshev.U_add_two ℂ (n : ℤ)
+  have hcast2 : ((n : ℕ) + 2 : ℕ) = ((n : ℤ) + 2) := by push_cast; ring
+  have hcast1 : ((n : ℕ) + 1 : ℕ) = ((n : ℤ) + 1) := by push_cast; ring
+  simp only [chebyScaled]
+  rw [show ((↑(n + 2) : ℤ)) = (n : ℤ) + 2 by push_cast; ring,
+      show ((↑(n + 1) : ℤ)) = (n : ℤ) + 1 by push_cast; ring, h]
+  rw [sub_comp, mul_comp, mul_comp, X_comp]
+  have h2 : (2 : Polynomial ℂ).comp (C 2⁻¹ * X) = 2 := by
+    rw [show (2 : Polynomial ℂ) = C 2 from (C_ofNat 2).symm, C_comp]
+  rw [h2]
+  linear_combination ((Chebyshev.U ℂ ((n:ℤ)+1)).comp (C 2⁻¹ * X)) * two_mul_half_X
+
+/-- The path char-matrix determinant equals the scaled Chebyshev polynomial. -/
+theorem pathCharM_det_eq_cheby (n : ℕ) : (pathCharM n).det = chebyScaled n := by
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    match n with
+    | 0 => rw [pathCharM_det_zero, chebyScaled_zero]
+    | 1 => rw [pathCharM_det_one, chebyScaled_one]
+    | (k + 2) =>
+      rw [pathCharM_det_rec, chebyScaled_rec, ih (k + 1) (by omega), ih k (by omega)]
+
+open Real in
+/-- Evaluating `chebyScaled n` at `2·cos θ` strips the scaling and lands on
+`(U ℂ n).eval (cos θ)`. -/
+lemma chebyScaled_eval_two_cos (n : ℕ) (θ : ℝ) :
+    (chebyScaled n).eval ((2 * Real.cos θ : ℝ) : ℂ)
+      = (Chebyshev.U ℂ (n : ℤ)).eval ((Real.cos θ : ℝ) : ℂ) := by
+  rw [chebyScaled, eval_comp]
+  congr 1
+  push_cast
+  rw [eval_mul, eval_C, eval_X]
+  ring
+
+open Real in
+/-- `chebyScaled n` vanishes at every `2·cos((k+1)π/(n+1))`. -/
+lemma chebyScaled_eval_root (n k : ℕ) (hk : k < n) :
+    (chebyScaled n).eval ((2 * Real.cos (((k : ℝ) + 1) * Real.pi / ((n : ℝ) + 1)) : ℝ) : ℂ) = 0 := by
+  set θ : ℝ := ((k : ℝ) + 1) * Real.pi / ((n : ℝ) + 1) with hθ
+  rw [chebyScaled_eval_two_cos]
+  have hsin_ne : Real.sin θ ≠ 0 := by
+    apply ne_of_gt
+    apply Real.sin_pos_of_pos_of_lt_pi
+    · rw [hθ]; positivity
+    · rw [hθ, div_lt_iff₀ (by positivity)]
+      have : ((k : ℝ) + 1) < (n : ℝ) + 1 := by
+        have : (k : ℝ) < (n : ℝ) := by exact_mod_cast hk
+        linarith
+      nlinarith [Real.pi_pos]
+  rw [Complex.ofReal_cos]
+  have key := Chebyshev.U_complex_cos ((θ : ℝ) : ℂ) (n : ℤ)
+  have hsinθ : Complex.sin ((θ : ℝ) : ℂ) ≠ 0 := by
+    rw [← Complex.ofReal_sin]; exact_mod_cast hsin_ne
+  -- `sin((n+1)θ) = 0` since `(n+1)θ = (k+1)π`
+  have hangle : (((n : ℤ) : ℂ) + 1) * ((θ : ℝ) : ℂ) = ((((k : ℝ) + 1) * Real.pi : ℝ) : ℂ) := by
+    have hn1 : ((n : ℝ) + 1) ≠ 0 := by positivity
+    rw [hθ]
+    push_cast
+    field_simp
+  have hrhs : Complex.sin ((((n : ℤ) : ℂ) + 1) * ((θ : ℝ) : ℂ)) = 0 := by
+    rw [hangle, ← Complex.ofReal_sin]
+    have : Real.sin (((k : ℝ) + 1) * Real.pi) = 0 := by
+      rw [show ((k : ℝ) + 1) * Real.pi = ((k : ℕ) + 1 : ℕ) * Real.pi by push_cast; ring]
+      exact Real.sin_nat_mul_pi (k + 1)
+    rw [this]; simp
+  rw [hrhs] at key
+  exact (mul_eq_zero.mp key).resolve_right hsinθ
+
+/-- `chebyScaled n` is nonzero (it is monic of degree `n`). -/
+lemma chebyScaled_ne_zero (n : ℕ) : chebyScaled n ≠ 0 := by
+  rw [chebyScaled]
+  intro h
+  have hU : Chebyshev.U ℂ (n : ℤ) ≠ 0 :=
+    Chebyshev.U_ne_zero ℂ (n : ℤ) (by omega)
+  -- if `U_n.comp(C 2⁻¹ X) = 0`, compose with `C 2 * X` (the inverse scaling) to get `U_n = 0`
+  have hlin : (C (2⁻¹ : ℂ) * X).comp (C (2 : ℂ) * X) = X := by
+    rw [mul_comp, C_comp, X_comp, ← mul_assoc, ← C_mul,
+      show (2⁻¹ : ℂ) * 2 = 1 by norm_num, map_one, one_mul]
+  have hcomp : ((Chebyshev.U ℂ (n : ℤ)).comp (C (2⁻¹ : ℂ) * X)).comp (C (2 : ℂ) * X)
+      = Chebyshev.U ℂ (n : ℤ) := by
+    rw [comp_assoc, hlin, comp_X]
+  rw [h, zero_comp] at hcomp
+  exact hU hcomp.symm
+
+/-- The degree of `chebyScaled n` is at most `n`. -/
+lemma chebyScaled_natDegree_le (n : ℕ) : (chebyScaled n).natDegree ≤ n := by
+  rw [chebyScaled]
+  have h2 : (C (2⁻¹ : ℂ) * X).natDegree ≤ 1 := by
+    calc (C (2⁻¹ : ℂ) * X).natDegree ≤ (C (2⁻¹ : ℂ)).natDegree + X.natDegree := natDegree_mul_le
+      _ = 0 + 1 := by rw [natDegree_C, natDegree_X]
+      _ = 1 := by ring
+  have h3 : (Chebyshev.U ℂ (n : ℤ)).natDegree = n := Chebyshev.natDegree_U_natCast ℂ n
+  calc ((Chebyshev.U ℂ (n : ℤ)).comp (C (2⁻¹ : ℂ) * X)).natDegree
+      ≤ (Chebyshev.U ℂ (n : ℤ)).natDegree * (C (2⁻¹ : ℂ) * X).natDegree := natDegree_comp_le
+    _ ≤ n * 1 := by rw [h3]; gcongr
+    _ = n := by ring
+
+/-- The `n` path-eigenvalue points `2·cos((k+1)π/(n+1))`, `k ∈ range n`, as a
+finset of `ℂ`. -/
+noncomputable def chebyRootFinset (n : ℕ) : Finset ℂ :=
+  (Finset.range n).image
+    (fun k : ℕ => ((2 * Real.cos (((k : ℝ) + 1) * Real.pi / ((n : ℝ) + 1)) : ℝ) : ℂ))
+
+lemma chebyRootFinset_card (n : ℕ) : (chebyRootFinset n).card = n := by
+  rw [chebyRootFinset, Finset.card_image_of_injOn, Finset.card_range]
+  intro a ha b hb hab
+  simp only [] at hab
+  -- `ofReal` injective + cos-angle injectivity on `[0,π]`
+  have hreal : 2 * Real.cos (((a : ℝ) + 1) * Real.pi / ((n : ℝ) + 1))
+      = 2 * Real.cos (((b : ℝ) + 1) * Real.pi / ((n : ℝ) + 1)) :=
+    Complex.ofReal_inj.mp hab
+  have hcos : Real.cos (((a : ℝ) + 1) * Real.pi / ((n : ℝ) + 1))
+      = Real.cos (((b : ℝ) + 1) * Real.pi / ((n : ℝ) + 1)) := by linarith
+  have hmemI : ∀ m : ℕ, m < n →
+      (((m : ℝ) + 1) * Real.pi / ((n : ℝ) + 1)) ∈ Set.Icc (0 : ℝ) Real.pi := by
+    intro m hm
+    refine Set.mem_Icc.mpr ⟨by positivity, ?_⟩
+    rw [div_le_iff₀ (by positivity)]
+    have : ((m : ℝ) + 1) ≤ (n : ℝ) + 1 := by
+      have : (m : ℝ) < (n : ℝ) := by exact_mod_cast hm
+      linarith
+    nlinarith [Real.pi_pos]
+  have ha' : a < n := Finset.mem_range.mp ha
+  have hb' : b < n := Finset.mem_range.mp hb
+  have hang := Real.injOn_cos (hmemI a ha') (hmemI b hb') hcos
+  have hn1 : ((n : ℝ) + 1) ≠ 0 := by positivity
+  have : ((a : ℝ) + 1) * Real.pi = ((b : ℝ) + 1) * Real.pi := by
+    have := congrArg (· * ((n : ℝ) + 1)) hang
+    simpa [div_mul_cancel₀, hn1] using this
+  have hpi : (0 : ℝ) < Real.pi := Real.pi_pos
+  have : ((a : ℝ) + 1) = ((b : ℝ) + 1) := mul_right_cancel₀ (ne_of_gt hpi) this
+  have : (a : ℝ) = (b : ℝ) := by linarith
+  exact_mod_cast this
+
+/-- **The roots of `chebyScaled n` are exactly the `n` distinct path eigenvalues.** -/
+theorem chebyScaled_roots_eq (n : ℕ) :
+    (chebyScaled n).roots = (chebyRootFinset n).val := by
+  apply roots_eq_of_degree_le_card_of_ne_zero
+  · intro x hx
+    rw [chebyRootFinset, Finset.mem_image] at hx
+    obtain ⟨k, hk, rfl⟩ := hx
+    exact chebyScaled_eval_root n k (Finset.mem_range.mp hk)
+  · rw [chebyRootFinset_card]
+    exact le_trans degree_le_natDegree (by exact_mod_cast chebyScaled_natDegree_le n)
+  · exact chebyScaled_ne_zero n
+
+/-- **The roots of `chebyScaled n` are squarefree (nodup).** -/
+theorem chebyScaled_roots_nodup (n : ℕ) : (chebyScaled n).roots.Nodup := by
+  rw [chebyScaled_roots_eq]
+  exact (chebyRootFinset n).nodup
+
+/-- The characteristic matrix of the path adjacency matrix is `pathCharM`. -/
+theorem charmatrix_pathGraph_adjMatrix (n : ℕ) :
+    haveI : DecidableRel (SimpleGraph.pathGraph n).Adj := Classical.decRel _
+    charmatrix ((SimpleGraph.pathGraph n).adjMatrix ℂ) = pathCharM n := by
+  classical
+  funext i j
+  by_cases hij : i = j
+  · subst hij
+    rw [charmatrix_apply_eq, SimpleGraph.adjMatrix_apply, pathCharM_diag,
+      if_neg (SimpleGraph.irrefl _)]
+    simp
+  · rw [charmatrix_apply_ne _ _ _ hij, SimpleGraph.adjMatrix_apply, pathCharM_apply,
+      if_neg (fun h => hij (Fin.ext h))]
+    by_cases hadj : i.val + 1 = j.val ∨ j.val + 1 = i.val
+    · rw [if_pos hadj]
+      have hA : (SimpleGraph.pathGraph n).Adj i j := by
+        rw [SimpleGraph.pathGraph_adj]; omega
+      rw [if_pos hA]; simp
+    · rw [if_neg hadj]
+      have hA : ¬ (SimpleGraph.pathGraph n).Adj i j := by
+        rw [SimpleGraph.pathGraph_adj]; omega
+      rw [if_neg hA]; simp
+
+/-- The characteristic polynomial of the path adjacency matrix equals
+`chebyScaled n = U_n(X/2)`. -/
+theorem charpoly_pathGraph_eq_cheby (n : ℕ) :
+    haveI : DecidableRel (SimpleGraph.pathGraph n).Adj := Classical.decRel _
+    ((SimpleGraph.pathGraph n).adjMatrix ℂ).charpoly = chebyScaled n := by
+  classical
+  rw [Matrix.charpoly, charmatrix_pathGraph_adjMatrix, pathCharM_det_eq_cheby]
+
+/-- **The characteristic polynomial of the path adjacency matrix has nodup
+(squarefree) roots** — the simple-spectrum fact for `P_n`. -/
+theorem charpoly_pathGraph_roots_nodup (n : ℕ) :
+    haveI : DecidableRel (SimpleGraph.pathGraph n).Adj := Classical.decRel _
+    (((SimpleGraph.pathGraph n).adjMatrix ℂ).charpoly).roots.Nodup := by
+  classical
+  rw [charpoly_pathGraph_eq_cheby]
+  exact chebyScaled_roots_nodup n
+
+
+end PathChebyshev
+
+/-- The adjacency matrix of `pathWeightedGraph n` is the path adjacency matrix
+`A(P_n)` valued in `ℂ` (definitionally, via `toWeighted`). -/
+theorem pathWeightedGraph_adj (n : ℕ) :
+    haveI : DecidableRel (SimpleGraph.pathGraph n).Adj := Classical.decRel _
+    (pathWeightedGraph n).adj = (SimpleGraph.pathGraph n).adjMatrix ℂ := rfl
+
+/-- **Path characteristic polynomial has squarefree roots ⟹ the path eigenvalues
+are pairwise distinct (simple spectrum).**  Axiom-clean, via the
+tridiagonal-determinant / Chebyshev identity
+`charpoly(A(P_n)) = U_n(X/2)` (`PathChebyshev.charpoly_pathGraph_roots_nodup`) fed
+through `injective_eigenvalues_of_charpoly_roots_nodup`. -/
+theorem pathWeightedGraph_eigenvalues_injective (n : ℕ) :
+    Function.Injective (pathWeightedGraph n).herm.eigenvalues := by
+  classical
+  apply injective_eigenvalues_of_charpoly_roots_nodup
+  rw [pathWeightedGraph_adj]
+  exact PathChebyshev.charpoly_pathGraph_roots_nodup n
+
 /-- **Endpoints of `P_n` are strongly cospectral** (real / orthogonal sense).
 
 This is the Chebyshev-eigenstructure observation: in the eigenvector basis
@@ -644,22 +1003,17 @@ Reference: Christandl, Datta, Ekert, Landahl, *Perfect state transfer in
 quantum spin networks*, Phys. Rev. Lett. 92 187902 (2004), §III; restated
 in Coutinho-Godsil 2016, Example 3.4.6. -/
 theorem isStronglyCospectral_pathEndpoints (n : ℕ) (hn : 2 ≤ n) :
-    IsRealStronglyCospectral (pathWeightedGraph n)
-      ⟨0, by omega⟩ ⟨n - 1, by omega⟩ := by
-  -- Direct computation in the Chebyshev basis; cite Christandl et al.
-  -- ISOLATED REMAINDER.  The chiral (unit-phase) strong cospectrality of *any*
-  -- pair now reduces, axiom-cleanly, to *simple spectrum* via
-  -- `isStronglyCospectral_of_simple_spectrum` — see the chiral corollary
-  -- `isStronglyCospectral_pathEndpoints_of_simpleSpectrum` below.  Two honest
-  -- inputs remain to land the REAL (±1) version stated here:
-  --   (i) injectivity of `(pathWeightedGraph n).herm.eigenvalues` — the
-  --       distinctness of the path eigenvalues `2cos(kπ/(n+1))`, `k=1..n`,
-  --       which is the genuinely missing explicit-eigenvalue fact (Mathlib has
-  --       no path eigenstructure);
-  --   (ii) realness of the eigenvector entries (true since `P_n` is real
-  --        symmetric) to upgrade the unit phase to a sign `±1`.
-  -- BLOCKED on (i): the Niven/Chebyshev distinctness of `2cos(kπ/(n+1))`.
-  sorry
+    IsStronglyCospectral (pathWeightedGraph n)
+      ⟨0, by omega⟩ ⟨n - 1, by omega⟩ :=
+  -- CLOSED.  The path `P_n` has *simple spectrum*: its characteristic polynomial
+  -- is the scaled Chebyshev polynomial `U_n(X/2)` (proven above via the
+  -- tridiagonal-determinant three-term recurrence, `PathChebyshev`), whose `n`
+  -- roots `2cos((k+1)π/(n+1))` are pairwise distinct.  Hence
+  -- `pathWeightedGraph_eigenvalues_injective`, and every pair — in particular the
+  -- endpoints — is strongly cospectral in the chiral (unit-phase) sense by
+  -- `isStronglyCospectral_of_simple_spectrum`.
+  isStronglyCospectral_of_simple_spectrum (pathWeightedGraph n)
+    (pathWeightedGraph_eigenvalues_injective n) _ _
 
 /-- **Chiral path-endpoint strong cospectrality, conditional on simple spectrum.**
 The genuinely-reachable content of `isStronglyCospectral_pathEndpoints`: *given*

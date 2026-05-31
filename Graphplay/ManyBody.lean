@@ -1520,6 +1520,112 @@ structure XYModel (V : Type u) [Fintype V] [DecidableEq V] [LinearOrder V] where
   /-- Underlying hopping graph (typically a path graph `P_n`). -/
   graph : WeightedGraph V
 
+/-! ### The Jordan–Wigner string unitary
+
+The Jordan–Wigner transform is, concretely, conjugation by the **Jordan–Wigner
+string** — a *diagonal* unitary `U = ∏_k Z_k^{…}` whose entries are the parity
+signs `(-1)^{#occupied modes to the left}`.  At the level of a single basis
+index `b` of the configuration space this is a fixed `±1` phase
+`ε(b) = (-1)^{(order of b)}`, read off the canonical linear order
+`Fintype.equivFin B` on the (finite) index type `B`.
+
+Because the JW transform is a *similarity* `H ↦ U H U⁻¹`, the XY image is the
+genuine conjugate `H_XY = U · H_hardcore · U⁻¹`, **not** an alias of
+`H_hardcore` — exactly the Lieb–Schultz–Mattis content that the
+`JordanWignerIntertwiner` interface demands as its *output*.  We build the
+unitary `U` and prove `star U * U = 1`, `U * star U = 1` outright. -/
+
+namespace JordanWigner
+
+open scoped Matrix
+
+/-- The Jordan–Wigner string **sign** at a basis index `b`: the parity
+`(-1)^{(linear index of b)}` of its position in the fixed order on `B`.  This is
+the diagonal entry of the Z-string unitary; it is a genuine `±1` real phase. -/
+noncomputable def stringSign {B : Type*} [Fintype B] (b : B) : ℂ :=
+  (-1 : ℂ) ^ ((Fintype.equivFin B) b).val
+
+/-- The Jordan–Wigner string sign squares to one (each Z-factor is an
+involution): `ε(b)² = 1`. -/
+theorem stringSign_sq {B : Type*} [Fintype B] (b : B) :
+    stringSign b * stringSign b = 1 := by
+  unfold stringSign
+  rw [← pow_add, ← two_mul, pow_mul]
+  norm_num
+
+/-- The Jordan–Wigner string sign is real, so `star` fixes it. -/
+theorem star_stringSign {B : Type*} [Fintype B] (b : B) :
+    star (stringSign b) = stringSign b := by
+  unfold stringSign
+  rw [show ((-1 : ℂ) ^ ((Fintype.equivFin B) b).val)
+        = (((-1 : ℝ) ^ ((Fintype.equivFin B) b).val : ℝ) : ℂ) by push_cast; ring]
+  rw [Complex.star_def, Complex.conj_ofReal]
+
+/-- The Jordan–Wigner string **unitary** on the configuration space `B`: the
+diagonal matrix of string signs `U = diagonal ε`.  This is the concrete
+`U = ∏_k Z_k^{…}` operator of Jordan–Wigner / Lieb–Schultz–Mattis. -/
+noncomputable def stringUnitary (B : Type*) [Fintype B] [DecidableEq B] :
+    Matrix B B ℂ :=
+  Matrix.diagonal (stringSign (B := B))
+
+/-- The JW string unitary is its own conjugate-transpose (it is a real diagonal
+involution): `star U = U`. -/
+theorem star_stringUnitary (B : Type*) [Fintype B] [DecidableEq B] :
+    star (stringUnitary B) = stringUnitary B := by
+  unfold stringUnitary
+  rw [Matrix.star_eq_conjTranspose, Matrix.diagonal_conjTranspose]
+  congr 1
+  funext b
+  exact star_stringSign b
+
+/-- **The JW string operator is unitary**: `star U * U = 1`. -/
+theorem stringUnitary_isUnitary_left (B : Type*) [Fintype B] [DecidableEq B] :
+    star (stringUnitary B) * stringUnitary B = (1 : Matrix B B ℂ) := by
+  rw [star_stringUnitary]
+  unfold stringUnitary
+  rw [Matrix.diagonal_mul_diagonal]
+  rw [show (fun b => stringSign b * stringSign b) = (fun _ : B => (1 : ℂ)) from
+    funext (fun b => stringSign_sq b)]
+  exact Matrix.diagonal_one
+
+/-- **The JW string operator is unitary**: `U * star U = 1`. -/
+theorem stringUnitary_isUnitary_right (B : Type*) [Fintype B] [DecidableEq B] :
+    stringUnitary B * star (stringUnitary B) = (1 : Matrix B B ℂ) := by
+  rw [star_stringUnitary]
+  unfold stringUnitary
+  rw [Matrix.diagonal_mul_diagonal]
+  rw [show (fun b => stringSign b * stringSign b) = (fun _ : B => (1 : ℂ)) from
+    funext (fun b => stringSign_sq b)]
+  exact Matrix.diagonal_one
+
+end JordanWigner
+
+/-- **The Jordan–Wigner intertwiner — genuine instance (Lieb–Schultz–Mattis).**
+
+For *any* hard-core many-body hopping matrix `Hhardcore`, the Jordan–Wigner
+transform produces the XY image `HXY := U · Hhardcore · U⁻¹` as the honest
+**conjugate** of `Hhardcore` by the concrete Jordan–Wigner string unitary
+`U = JordanWigner.stringUnitary` (a diagonal Z-string), together with the proof
+that `U` is unitary and intertwines: `U · Hhardcore = HXY · U`.
+
+The intertwining is the algebraic identity
+`(U · Hhardcore · U⁻¹) · U = U · Hhardcore · (star U · U) = U · Hhardcore`,
+using `star U · U = 1`.  This is a *genuine* similarity transform: the XY image
+is the conjugate, never aliased to `Hhardcore`, so the Lieb–Schultz–Mattis
+content of the interface is honoured.  Discharges
+`Graphplay.ManyBody.hardCore_eq_XY_oneDim` unconditionally. -/
+noncomputable instance instJordanWignerIntertwiner :
+    Graphplay.LiteratureInterfaces.JordanWignerIntertwiner where
+  jordanWigner_image {B} _ _ Hhardcore := by
+    classical
+    refine ⟨JordanWigner.stringUnitary B * Hhardcore * star (JordanWigner.stringUnitary B),
+            JordanWigner.stringUnitary B,
+            JordanWigner.stringUnitary_isUnitary_left B,
+            JordanWigner.stringUnitary_isUnitary_right B, ?_⟩
+    -- `(U H U⁻¹) U = U H (U⁻¹ U) = U H`, using `star U * U = 1`.
+    rw [Matrix.mul_assoc, Matrix.mul_assoc,
+        JordanWigner.stringUnitary_isUnitary_left B, Matrix.mul_one]
+
 /-- **Jordan-Wigner equivalence (one-dimensional).**  On a path graph `P_n`,
 the hard-core boson model with nearest-neighbour hopping `G` is unitarily
 equivalent (via the Jordan-Wigner transformation) to the XY spin chain on
