@@ -352,17 +352,37 @@ unit circle.
 
 Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3. -/
 
-/-- **Grover-walk 2×2 block correspondence (the deep SVD input).**  The single deep
-ingredient, isolated as a named lemma exactly as for the Szegedy walk
-(`Graphplay.WeightedGraph.szegedy_block_correspondence`).  In the basis adapted to
-the Grover coin reflections, `U = S·C` block-diagonalises into 2×2 planar rotations
-on the planes `span{|s_x⟩, S|s_x⟩}` indexed by the singular vectors of the
-discriminant `D = √P ∘ √Pᵀ`; on each plane the rotation angle `θ ∈ [0, π/2]` has
-`cos θ = σ`, the corresponding singular value, which is an eigenvalue of the
-symmetric transition operator `G.randomWalkOp`.  Casting the block decomposition as
-a *singular-value* statement needs the discriminant SVD, absent from Mathlib; this
-lemma is where that residual lives.  `groverStep_spectrum` is then pure
-trigonometric bookkeeping on top of it. -/
+/-- **The irreducible SVD/Jordan residual of the Grover-walk spectral theorem.**
+The single deep fact, isolated exactly as for the Szegedy walk
+(`Graphplay.WeightedGraph.szegedy_discriminant_eigenvalue`): every Grover-walk
+eigenvalue `μ` is `exp(±i · arccos σ)` for a singular value `σ ∈ [0, 1]` of the
+discriminant `D = √P ∘ √Pᵀ`, equivalently a transition eigenvalue in
+`spectrum G.randomWalkOp`.  The content is **Jordan's lemma** (`U = S·C`, a product
+of two coin reflections, acts on each 2-D `span{|s_x⟩, S|s_x⟩}` plane as a rotation
+by twice the principal angle) plus the **discriminant SVD** supplying those angles
+as `arccos σ`.  Mathlib has singular *values* (`LinearMap.singularValues`) but no SVD
+*factorisation* and no Jordan-lemma block reduction, so this extraction cannot yet be
+derived; this is the honest minimal residual.  `groverStep_block_correspondence` and
+`groverStep_spectrum` are trigonometric bookkeeping on top of it.
+
+Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3; Jordan (1875) for
+the two-reflections lemma. -/
+theorem groverStep_discriminant_eigenvalue (G : WeightedGraph V) (μ : ℂ)
+    (hμ : μ ∈ spectrum ℂ (groverStep V)) :
+    ∃ (σ : ℝ) (s : Bool),
+      σ ∈ Set.Icc (0 : ℝ) 1 ∧
+      (σ : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
+      μ = Complex.exp ((if s then 1 else -1) * Complex.I * Real.arccos σ) := by
+  sorry
+
+/-- **Grover-walk 2×2 block correspondence.**  Every eigenvalue `μ` of `groverStep`
+is `exp(s·i·θ)` for a sign `s` and an angle `θ ∈ [0, π]` with `cos θ = σ`, where
+`σ ∈ [0,1]` is a singular value of the discriminant (a transition eigenvalue).
+
+Derived sorry-free from the irreducible residual `groverStep_discriminant_eigenvalue`
+by taking `θ := arccos σ ∈ [0, π]` (`Real.arccos_nonneg`, `Real.arccos_le_pi`) with
+`cos θ = σ` (`Real.cos_arccos`, using `0 ≤ σ ⇒ -1 ≤ σ`).  The genuinely deep block
+decomposition lives in the residual; this is pure trigonometric bookkeeping. -/
 theorem groverStep_block_correspondence (G : WeightedGraph V) (μ : ℂ)
     (hμ : μ ∈ spectrum ℂ (groverStep V)) :
     ∃ (σ : ℝ) (θ : ℝ) (s : Bool),
@@ -371,7 +391,10 @@ theorem groverStep_block_correspondence (G : WeightedGraph V) (μ : ℂ)
       Real.cos θ = σ ∧
       (σ : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
       μ = Complex.exp ((if s then 1 else -1) * Complex.I * θ) := by
-  sorry
+  obtain ⟨σ, s, hσ, hspec, hμeq⟩ := groverStep_discriminant_eigenvalue G μ hμ
+  refine ⟨σ, Real.arccos σ, s, hσ, ⟨Real.arccos_nonneg σ, Real.arccos_le_pi σ⟩, ?_,
+    hspec, hμeq⟩
+  exact Real.cos_arccos (le_trans (by norm_num) hσ.1) hσ.2
 
 theorem groverStep_spectrum (G : WeightedGraph V) (μ : ℂ)
     (hμ : μ ∈ spectrum ℂ (groverStep V)) :

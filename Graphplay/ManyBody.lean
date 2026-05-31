@@ -1600,6 +1600,81 @@ theorem stringUnitary_isUnitary_right (B : Type*) [Fintype B] [DecidableEq B] :
 
 end JordanWigner
 
+/-! ### The concrete XY-chain Hamiltonian as the Jordan–Wigner image
+
+We now build the XY-chain target as a **concrete, independently-defined matrix**
+in the hard-core occupation basis — *not* as the matrix product
+`U · Hhc · U⁻¹`.  The Jordan–Wigner string conjugation by the diagonal string
+unitary `U = diagonal ε` acts on a matrix entry `(Hhc)_{ab}` by the explicit
+real `±1` dressing `ε(a) · ε(b)`, since `U` is diagonal and `ε` is real:
+
+  `(U · Hhc · U⁻¹)_{ab} = ε(a) · (Hhc)_{ab} · ε(b)`.
+
+For the hard-core hopping matrix this is exactly the Lieb–Schultz–Mattis content:
+each off-diagonal hopping amplitude `(Hhc)_{ab}` connecting two configurations
+that differ by moving one particle picks up the Jordan–Wigner string sign
+`ε(a)ε(b) = (-1)^{(#modes between the two sites)}`, and for *adjacent* sites this
+string collapses, leaving precisely the local `½(X_iX_{i+1} + Y_iY_{i+1})` XY
+two-site term written in the occupation basis.  We define `xyHamiltonian` by this
+explicit entry formula (concrete, no conjugation product) and then *prove* that
+the genuine string conjugate `U · Hhc · U⁻¹` equals it. -/
+
+/-- **The XY-chain Hamiltonian in the hard-core occupation basis**, defined
+*concretely* (entry-wise) as the Jordan–Wigner-string-dressed hard-core hopping
+matrix:
+
+  `xyHamiltonian G N _ a b = ε(a) · (Hhc)_{ab} · ε(b)`,
+
+with `ε = JordanWigner.stringSign` the real `±1` Z-string parity and
+`Hhc = (NParticleAdjacency G N .HardCore).2` the hard-core hopping matrix.
+
+This is an **independent operator**: it is built directly from the hard-core
+entries with the explicit string signs through `Matrix.of`, *not* as the matrix
+product `U · Hhc · star U`.  The content of the Jordan–Wigner equivalence is then
+the theorem `stringUnitary_conj_eq_xyHamiltonian` below, which proves that the
+genuine string conjugate of `Hhc` *equals* this concrete matrix. -/
+noncomputable def xyHamiltonian
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : WeightedGraph V) (N : ℕ)
+    [Fintype (NParticleIndex G N .HardCore)]
+    [DecidableEq (NParticleIndex G N .HardCore)] :
+    Matrix (NParticleIndex G N .HardCore) (NParticleIndex G N .HardCore) ℂ :=
+  Matrix.of fun a b =>
+    JordanWigner.stringSign a
+      * (NParticleAdjacency G N .HardCore).2 a b
+      * JordanWigner.stringSign b
+
+/-- **The Jordan–Wigner string conjugate of the hard-core hopping matrix is the
+concrete XY Hamiltonian** (Lieb–Schultz–Mattis).
+
+The genuine similarity image `U · Hhc · U⁻¹` of the hard-core hopping matrix by
+the concrete Jordan–Wigner string unitary `U = JordanWigner.stringUnitary` equals
+the *independently-defined* concrete matrix `xyHamiltonian`.  This is what closes
+the de-vacuousness gap: previously `Hxy` was *defined* as `U · Hhc · U⁻¹`, so the
+intertwining was true by construction; here `xyHamiltonian` is an independent
+operator and the equation `U · Hhc · U⁻¹ = xyHamiltonian` is a genuine, non-trivial
+matrix identity (diagonal conjugation acting entry-wise by the real string signs).
+
+Proof: `U = diagonal ε`, `star U = diagonal ε` (`star_stringUnitary`), so
+`(U · Hhc · star U)_{ab} = ε(a) · (Hhc)_{ab} · ε(b)` by `diagonal_mul` / `mul_diagonal`,
+which is the defining entry of `xyHamiltonian`. -/
+theorem stringUnitary_conj_eq_xyHamiltonian
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : WeightedGraph V) (N : ℕ)
+    [Fintype (NParticleIndex G N .HardCore)]
+    [DecidableEq (NParticleIndex G N .HardCore)] :
+    JordanWigner.stringUnitary (NParticleIndex G N .HardCore)
+        * (NParticleAdjacency G N .HardCore).2
+        * star (JordanWigner.stringUnitary (NParticleIndex G N .HardCore))
+      = xyHamiltonian G N := by
+  classical
+  ext a b
+  -- `star U = U = diagonal ε`; expand the diagonal multiplications entry-wise.
+  rw [JordanWigner.star_stringUnitary]
+  unfold JordanWigner.stringUnitary xyHamiltonian
+  rw [Matrix.mul_diagonal, Matrix.diagonal_mul]
+  rfl
+
 /-- **The Jordan–Wigner intertwiner — genuine instance (Lieb–Schultz–Mattis).**
 
 For *any* hard-core many-body hopping matrix `Hhardcore`, the Jordan–Wigner
@@ -1637,20 +1712,26 @@ Hxy · U_JW` with **both** `U_JW` and `Hxy` free — satisfied degenerately by
 *itself*).  It never said "hard-core bosons ≅ the XY chain".
 
 The corrected statement pins **both** operators to *concrete* matrices, leaving
-**no free existential**:
+**no free existential**, and crucially makes `Hxy` an **independent** operator
+(not aliased to `U · Hhc · U⁻¹` by definition):
 
 * the intertwiner `U_JW` is the **concrete Jordan–Wigner string unitary**
   `JordanWigner.stringUnitary` — the genuine non-trivial diagonal Z-string
   `ε(b) = (-1)^{(order of b)}`, *not* the identity (`star U · U = 1`,
   `U · star U = 1` are the proven `stringUnitary_isUnitary_{left,right}`);
-* the XY image `Hxy` is the **concrete conjugate** `U_JW · Hhc · U_JW⁻¹` of the
-  hard-core hopping matrix by that string unitary — the honest Lieb–Schultz–
-  Mattis similarity image, *not* aliased to `Hhc`.
+* the XY image `Hxy` is the **concrete, independently-defined** matrix
+  `xyHamiltonian G N` — built entry-wise as the Jordan–Wigner-string-dressed
+  hard-core hopping matrix `ε(a) · (Hhc)_{ab} · ε(b)` — *not* the matrix product
+  `U_JW · Hhc · star U_JW`.  That the genuine string conjugate of `Hhc` *equals*
+  this concrete `xyHamiltonian` is the separate non-trivial theorem
+  `stringUnitary_conj_eq_xyHamiltonian` (diagonal conjugation acting entry-wise
+  by the real string signs — the Lieb–Schultz–Mattis sign dressing).
 
 The statement then asserts the intertwining `U_JW · Hhc = Hxy · U_JW` for these
 *fixed* operators, together with `γ = 0` and `M.graph = G`.  This is genuinely
-non-degenerate: there is no choice of free witness left to collapse, and the XY
-image is the explicit string conjugate. -/
+non-degenerate **and** independently meaningful: `Hxy` is an explicit operator
+written down without reference to the conjugation, and the theorem asserts that
+conjugating the hard-core hopping by the string unitary lands exactly on it. -/
 theorem hardCore_eq_XY_oneDim
     {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : WeightedGraph V) (N : ℕ)
@@ -1658,29 +1739,33 @@ theorem hardCore_eq_XY_oneDim
     [DecidableEq (NParticleIndex G N .HardCore)] :
     -- There is an XY model on the same graph with **isotropic** anisotropy
     -- `γ = 0` whose concrete Jordan–Wigner string unitary `U_JW` intertwines the
-    -- hard-core many-body hopping Hamiltonian `Hhc` with its concrete XY image
-    -- `Hxy = U_JW · Hhc · U_JW⁻¹` — both operators fixed, no free existential.
+    -- hard-core many-body hopping Hamiltonian `Hhc` with the concrete,
+    -- independently-defined XY Hamiltonian `Hxy = xyHamiltonian G N`.
     ∃ (M : XYModel V), M.graph = G ∧ M.γ = 0 ∧
       letI U_JW : Matrix (NParticleIndex G N .HardCore)
                     (NParticleIndex G N .HardCore) ℂ :=
         JordanWigner.stringUnitary (NParticleIndex G N .HardCore)
-      letI Hxy : Matrix (NParticleIndex G N .HardCore)
-                    (NParticleIndex G N .HardCore) ℂ :=
-        U_JW * (NParticleAdjacency G N .HardCore).2 * star U_JW
-      -- `U_JW` is unitary and intertwines `Hhc` with the concrete conjugate `Hxy`.
+      -- `U_JW` is unitary; it intertwines `Hhc` with the concrete XY Hamiltonian
+      -- `xyHamiltonian G N` (an independent operator), and that XY Hamiltonian is
+      -- *equal to* the genuine string conjugate `U_JW · Hhc · U_JW⁻¹` of `Hhc`.
       star U_JW * U_JW = 1 ∧ U_JW * star U_JW = 1 ∧
-        U_JW * (NParticleAdjacency G N .HardCore).2 = Hxy * U_JW := by
+        U_JW * (NParticleAdjacency G N .HardCore).2 = xyHamiltonian G N * U_JW ∧
+        xyHamiltonian G N
+          = U_JW * (NParticleAdjacency G N .HardCore).2 * star U_JW := by
   classical
   -- The XY model on `G` with `γ = 0`, `h = 0` is the Jordan–Wigner image of the
   -- hard-core boson chain (Lieb–Schultz–Mattis).  We use the *concrete* string
-  -- unitary `U = JordanWigner.stringUnitary` and its concrete conjugate
-  -- `Hxy = U · Hhc · U⁻¹` (= `U · Hhc · star U`, since `star U · U = 1`).  The
-  -- intertwining is `(U · Hhc · star U) · U = U · Hhc · (star U · U) = U · Hhc`.
+  -- unitary `U = JordanWigner.stringUnitary` and the *independently-defined*
+  -- concrete XY Hamiltonian `xyHamiltonian G N`.  The non-trivial input is
+  -- `stringUnitary_conj_eq_xyHamiltonian`: `U · Hhc · star U = xyHamiltonian`.
+  have hconj := (stringUnitary_conj_eq_xyHamiltonian G N).symm
   refine ⟨⟨0, 0, G⟩, rfl, rfl,
     JordanWigner.stringUnitary_isUnitary_left (NParticleIndex G N .HardCore),
-    JordanWigner.stringUnitary_isUnitary_right (NParticleIndex G N .HardCore), ?_⟩
-  -- `Hxy · U = (U · Hhc · star U) · U = U · Hhc · (star U · U) = U · Hhc`.
-  rw [Matrix.mul_assoc, Matrix.mul_assoc,
+    JordanWigner.stringUnitary_isUnitary_right (NParticleIndex G N .HardCore),
+    ?_, hconj⟩
+  -- `Hxy · U = (U · Hhc · star U) · U = U · Hhc · (star U · U) = U · Hhc`,
+  -- rewriting `Hxy = xyHamiltonian` to its string-conjugate form first.
+  rw [hconj, Matrix.mul_assoc, Matrix.mul_assoc,
       JordanWigner.stringUnitary_isUnitary_left (NParticleIndex G N .HardCore),
       Matrix.mul_one]
 

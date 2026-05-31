@@ -49,6 +49,7 @@ References:
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.Matrix.Spectrum
+import Mathlib.Analysis.InnerProductSpace.PiL2
 import Graphplay.Weighted
 import Graphplay.Loopy
 import Graphplay.Equitable

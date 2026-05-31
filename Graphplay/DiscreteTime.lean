@@ -432,21 +432,44 @@ noncomputable def randomWalkOp (G : WeightedGraph V) : Matrix V V ℂ :=
     let d := G.szRowSum x
     if d = 0 then 0 else G.adj x y / d
 
-/-- **Szegedy 2×2 block correspondence (the deep SVD input).**  This is the one
-genuinely deep ingredient of the spectral correspondence, isolated as a single
-named lemma.  It packages Szegedy's block-diagonalisation: `U_Sz = S·R` leaves
-invariant the 2-D planes `span{|φ_x⟩, S|φ_x⟩}` indexed by the singular vectors of
-the Szegedy discriminant `D = √P ∘ √Pᵀ`, and on each such plane acts as a planar
-rotation by an angle `θ` whose cosine is the corresponding eigenvalue `λ ∈ [-1,1]`
-of the symmetric random-walk operator.  Hence every spectral value `μ` of `U_Sz`
-is `exp(s·i·θ)` for a sign `s` and an angle `θ ∈ [0, π]` with `cos θ = λ`.
+/-- **The irreducible SVD/Jordan residual of Szegedy's theorem.**  This is the
+*single* deep fact that genuinely needs machinery Mathlib does not yet have, namely
+**Jordan's lemma** (the product of two reflections `S`, `R = 2Π − I` acts on each
+2-D `span{fix S, fix R}` plane as a rotation by twice the principal angle) together
+with the **discriminant singular-value decomposition** `D = √P ∘ √Pᵀ` that supplies
+those principal angles as `arccos λ`, with `λ` an eigenvalue of the symmetric
+random-walk operator.  Concretely: every Szegedy eigenvalue `μ` is
+`exp(±i · arccos λ)` for some random-walk eigenvalue `λ ∈ [-1, 1]`.
 
-The 2-D block reduction is now justified because the Szegedy projector is a genuine
-idempotent (the √-coin fix, `szReflectionProj_idem`), so `R = 2Π − I` is an honest
-reflection.  Turning the block decomposition into a *singular-value* statement
-requires the discriminant SVD, which is not yet available in Mathlib; this lemma is
-where that residual lives.  Everything downstream (`szegedy_spectrum`) is pure
-trigonometric bookkeeping built on top of it.
+The *idempotency* half of the input is already discharged sorry-free in this file
+(`szReflectionProj_idem`, the √-coin fix), so `R` and `S` are honest reflections —
+Jordan's lemma applies.  What remains is purely the matrix-SVD content: Mathlib has
+singular *values* (`LinearMap.singularValues`) but no SVD *factorisation* and no
+Jordan-lemma block reduction, so the extraction of `λ ∈ spectrum randomWalkOp` from
+`μ ∈ spectrum SzegedyWalk` cannot yet be derived.  This is the honest minimal
+residual; everything else (`szegedy_block_correspondence`, `szegedy_spectrum`) is
+trigonometric bookkeeping derived from it via `Real.arccos`.
+
+Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3; Jordan, "Essai sur
+la géométrie à n dimensions" (1875) for the two-reflections lemma. -/
+theorem szegedy_discriminant_eigenvalue (G : WeightedGraph V) (μ : ℂ)
+    (hμ : μ ∈ spectrum ℂ G.SzegedyWalk) :
+    ∃ (lam : ℝ) (s : Bool),
+      lam ∈ Set.Icc (-1 : ℝ) 1 ∧
+      (lam : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
+      μ = Complex.exp ((if s then 1 else -1) * Complex.I * Real.arccos lam) := by
+  sorry
+
+/-- **Szegedy 2×2 block correspondence.**  Every spectral value `μ` of `U_Sz` is
+`exp(s·i·θ)` for a sign `s` and an angle `θ ∈ [0, π]` with `cos θ = λ`, where
+`λ ∈ [-1,1]` is an eigenvalue of the symmetric random-walk operator.
+
+This is now *derived*, sorry-free, from the single irreducible SVD/Jordan residual
+`szegedy_discriminant_eigenvalue`: take `θ := arccos λ`, which lies in `[0, π]`
+(`Real.arccos_nonneg`, `Real.arccos_le_pi`) and satisfies `cos θ = λ`
+(`Real.cos_arccos`, valid on `[-1, 1]`).  The rotation-angle packaging is then pure
+trigonometric bookkeeping; the genuinely deep block decomposition lives in the
+residual.  Everything downstream (`szegedy_spectrum`) builds on this.
 
 Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3. -/
 theorem szegedy_block_correspondence (G : WeightedGraph V) (μ : ℂ)
@@ -457,7 +480,10 @@ theorem szegedy_block_correspondence (G : WeightedGraph V) (μ : ℂ)
       Real.cos θ = lam ∧
       (lam : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
       μ = Complex.exp ((if s then 1 else -1) * Complex.I * θ) := by
-  sorry
+  obtain ⟨lam, s, hlam, hspec, hμeq⟩ := szegedy_discriminant_eigenvalue G μ hμ
+  refine ⟨lam, Real.arccos lam, s, hlam, ⟨Real.arccos_nonneg lam, Real.arccos_le_pi lam⟩,
+    ?_, hspec, hμeq⟩
+  exact Real.cos_arccos hlam.1 hlam.2
 
 /-- **Spectral correspondence theorem (Szegedy 2004).**  Each eigenvalue `μ`
 of `G.SzegedyWalk` (acting on the invariant subspace) has the form
@@ -528,6 +554,27 @@ namespace EquitablePartition
 variable {V : Type u} [Fintype V] [DecidableEq V]
   {G : WeightedGraph V}
   {I : Type v} [Fintype I] [DecidableEq I]
+
+/-- The set of cells of `P` that contain at least one vertex. -/
+def nonemptyCells (P : EquitablePartition G I) : Set I :=
+  { i | ∃ x : V, P.cells x = i }
+
+/-- A chosen representative vertex of cell `i`.  For an empty cell this is an
+arbitrary (junk) vertex; the value is only used through `cellRep_cells`, which
+is conditioned on the cell being nonempty.  Requires `V` nonempty for the junk
+default, so the partition is over a nonempty vertex set. -/
+noncomputable def cellRep [Nonempty V] (P : EquitablePartition G I) (i : I) : V :=
+  open Classical in
+  if h : ∃ x : V, P.cells x = i then h.choose else Classical.arbitrary V
+
+/-- The chosen representative of a nonempty cell `i` lies in cell `i`. -/
+theorem cellRep_cells [Nonempty V] (P : EquitablePartition G I) (i : I)
+    (hi : i ∈ P.nonemptyCells) : P.cells (P.cellRep i) = i := by
+  classical
+  have hex : ∃ x : V, P.cells x = i := hi
+  unfold cellRep
+  rw [dif_pos hex]
+  exact hex.choose_spec
 
 /-- The doubled cell-uniform basis vector on `V × V`: the tensor product of
 `P.cellUniformVec i` (on the first factor) with `P.cellUniformVec j` (on the
@@ -601,38 +648,190 @@ theorem szSwap_preserves_doubled (P : EquitablePartition G I)
   | add x y _ _ hx hy => rw [Matrix.mulVec_add]; exact Submodule.add_mem _ hx hy
   | smul a x _ hx => rw [Matrix.mulVec_smul]; exact Submodule.smul_mem _ a hx
 
-/-- **The one combinatorial residual.**  This is the magnitude-equitability
-content of the DTQW lift: the Szegedy projector `Π` maps each doubled generator
-`e_i ⊗ e_j` back into the doubled cell-uniform subspace.
+/-- **Magnitude-equitability of `P` for `G`.**  The edge *magnitude*
+`‖A_{x y}‖` depends only on the pair of cells `(cells x, cells y)`.
 
-Unlike the CTQW lift (`cellUniformSubspace_invariant`), this does *not* follow
-from the equitable condition on the signed adjacency `G.adj` alone: the Szegedy
-coin amplitude `szCoinAmp x y = √(‖A_{x y}‖ / D_x)` is built from the edge
-*magnitudes* `‖A_{x y}‖` and the magnitude row-sums `D_x = ∑_y ‖A_{x y}‖`, not
-from the signed `G.adj`.  The lift holds exactly when these magnitude data are
-constant on cells — i.e. the partition is *magnitude-equitable*.  For 0/1 and
-nonnegative-weight graphs (where `‖A_{x y}‖ = A_{x y}` up to the cell-constant
-sign) this coincides with the ordinary equitable condition, recovering the
-classical Bachman–Tamon / Portugal lifting.
+This is the genuinely load-bearing hypothesis for the DTQW (Szegedy) lift, and
+it is strictly stronger than ordinary (signed) equitability.  The Szegedy coin
+amplitude `szCoinAmp x y = √(‖A_{x y}‖ / D_x)` involves a *square root* of the
+per-edge magnitude, so the *aggregate* equality supplied by the signed
+`EquitablePartition.uniform` condition (`∑_{z ∈ C_j} A_{x z}` cell-constant) is
+**not** enough — the `√` does not commute with the cell-sum.  What is needed is
+the *pointwise* magnitude-constancy stated here, under which the coin amplitude
+itself is a function of `(cells x, cells y)` only (`szCoinAmp_magEquitable`).
 
-This is the genuinely deep input; everything else in `dtqw_equitable_lift` is
-assembled from it together with `szSwap_preserves_doubled`. -/
-theorem szReflectionProj_preserves_doubled (P : EquitablePartition G I)
-    (i j : I) :
+For 0/1 adjacency and, more generally, weight-regular graphs (vertex-transitive,
+distance-regular, …) this holds for the orbit partition, recovering the
+classical Bachman–Tamon / Portugal lifting (arXiv:1108.0339; Portugal 2018
+§10.3).  Under `RealNonnegWeights` (real, nonnegative edge weights) one has
+`‖A_{x y}‖ = (A_{x y}).re`, so for such graphs magnitude-equitability is just the
+ordinary signed-equitable condition strengthened to hold *pointwise* on
+cell-pairs (the strengthening is genuinely needed: the coin's `√` does not
+commute with the cell-sum that signed equitability controls). -/
+def MagnitudeEquitable (P : EquitablePartition G I) : Prop :=
+  ∀ x y x' y' : V, P.cells x = P.cells x' → P.cells y = P.cells y' →
+    ‖G.adj x y‖ = ‖G.adj x' y'‖
+
+/-- Under magnitude-equitability, the magnitude row-sum `D_x = ∑_y ‖A_{x y}‖` is
+constant on cells. -/
+theorem szMagRowSum_magEquitable (P : EquitablePartition G I)
+    (hME : P.MagnitudeEquitable) {x x' : V} (hx : P.cells x = P.cells x') :
+    G.szMagRowSum x = G.szMagRowSum x' := by
+  unfold WeightedGraph.szMagRowSum
+  exact Finset.sum_congr rfl (fun y _ => hME x y x' y hx rfl)
+
+/-- Under magnitude-equitability, the Szegedy coin amplitude `szCoinAmp x y`
+depends only on the cells of `x` and `y`. -/
+theorem szCoinAmp_magEquitable (P : EquitablePartition G I)
+    (hME : P.MagnitudeEquitable) {x y x' y' : V}
+    (hx : P.cells x = P.cells x') (hy : P.cells y = P.cells y') :
+    G.szCoinAmp x y = G.szCoinAmp x' y' := by
+  unfold WeightedGraph.szCoinAmp
+  rw [szMagRowSum_magEquitable P hME hx, hME x y x' y' hx hy]
+
+/-- **Key decomposition: the coin row is cell-uniform.**  Under magnitude
+equitability, fixing the source cell (via `cells x = i`), the coin-amplitude
+function `y ↦ szCoinAmp x y` is a finite linear combination of the cell-uniform
+basis vectors `cellUniformVec k`.  Concretely the coefficient on cell `k` is
+`szCoinAmp x y_k · √|C_k|` for any representative `y_k ∈ C_k` (well-defined by
+`szCoinAmp_magEquitable`).  This is exactly the property that lets the Szegedy
+projector's second tensor factor land back in the cell-uniform subspace. -/
+theorem szCoinAmp_eq_cellUniform_combo [Nonempty V] (P : EquitablePartition G I)
+    (hME : P.MagnitudeEquitable) (x : V) :
+    (fun y => G.szCoinAmp x y)
+      = fun y => ∑ k, (G.szCoinAmp x (P.cellRep k) *
+          (Real.sqrt (P.cellCard k) : ℂ)) * P.cellUniformVec k y := by
+  funext y
+  set ky := P.cells y with hky
+  -- RHS: only the `k = ky` term survives (cellUniformVec k y ≠ 0 ⇒ cells y = k).
+  rw [Finset.sum_eq_single ky]
+  · -- value of cellUniformVec ky at y, and rep-independence of the amplitude.
+    have hcell : ky ∈ P.nonemptyCells := ⟨y, hky.symm⟩
+    have hvk : P.cellUniformVec ky y = (1 : ℂ) / (Real.sqrt (P.cellCard ky) : ℂ) := by
+      simp only [EquitablePartition.cellUniformVec]; rw [if_pos hky.symm]
+    have hpos : (0 : ℝ) < P.cellCard ky := by
+      unfold EquitablePartition.cellCard
+      rw [Nat.cast_pos, Finset.card_pos]; exact ⟨y, by simp [hky.symm]⟩
+    have hck : (Real.sqrt (P.cellCard ky) : ℂ) ≠ 0 := by
+      rw [Ne, Complex.ofReal_eq_zero]; exact ne_of_gt (Real.sqrt_pos.mpr hpos)
+    rw [hvk, szCoinAmp_magEquitable P hME (x := x) (y := y) (x' := x)
+        (y' := P.cellRep ky) rfl (hky.trans (P.cellRep_cells ky hcell).symm)]
+    field_simp
+  · -- `k ≠ ky` terms vanish: `cellUniformVec k y = 0`.
+    intro k _ hk
+    have : P.cellUniformVec k y = 0 := by
+      simp only [EquitablePartition.cellUniformVec]; rw [if_neg]
+      rw [← hky]; exact fun h => hk h.symm
+    rw [this, mul_zero]
+  · intro h; exact absurd (Finset.mem_univ ky) h
+
+/-- **The DTQW lift residual, now closed.**  Under magnitude-equitability of
+`P`, the Szegedy projector `Π` maps each doubled generator `e_i ⊗ e_j` back into
+the doubled cell-uniform subspace.
+
+Computation: `(Π ·ᵥ (e_i ⊗ e_j)) p
+  = (e_i)_{p.1} · (∑_y conj(φ_{p.1}(y))·(e_j)_y) · φ_{p.1}(p.2)`,
+and the middle scalar `t` and the row `y ↦ φ_{p.1}(y)` are both cell-functions
+(magnitude-equitability), so by `szCoinAmp_eq_cellUniform_combo` this is a finite
+combination `∑_k (t · c_{ik} √|C_k|) · (e_i ⊗ e_k)` of doubled generators.
+
+This recovers the classical Bachman–Tamon / Portugal lifting (arXiv:1108.0339,
+Thm 1; Portugal 2018 §10.3) under the honest magnitude-equitable hypothesis. -/
+theorem szReflectionProj_preserves_doubled [Nonempty V] (P : EquitablePartition G I)
+    (hME : P.MagnitudeEquitable) (i j : I) :
     (G.szReflectionProj).mulVec (P.doubledCellUniformVec i j)
       ∈ P.doubledCellUniformSubspace := by
-  sorry
+  -- Step 1: pointwise formula for the projector applied to the generator.
+  -- `(Π ·ᵥ ψ) p = (e_i)_{p.1} · t(p.1) · φ_{p.1}(p.2)`, with
+  -- `t(x) = ∑_y conj(φ_x y) · (e_j)_y`.
+  set t : V → ℂ := fun x => ∑ y, (starRingEnd ℂ) (G.szCoinAmp x y) *
+    P.cellUniformVec j y with ht
+  have hPi0 : ∀ p : V × V,
+      (G.szReflectionProj).mulVec (P.doubledCellUniformVec i j) p
+        = P.cellUniformVec i p.1 * t p.1 * G.szCoinAmp p.1 p.2 := by
+    intro p
+    simp only [Matrix.mulVec, dotProduct, WeightedGraph.szReflectionProj,
+      EquitablePartition.doubledCellUniformVec]
+    -- split the sum over `q = (a, b)`; the `[p.1 = a]` indicator pins `a = p.1`.
+    rw [Fintype.sum_prod_type]
+    have hcollapse : ∀ a : V, (∑ b : V,
+          (if p.1 = a then G.szCoinAmp p.1 p.2 *
+              (starRingEnd ℂ) (G.szCoinAmp p.1 b) else 0) *
+            (P.cellUniformVec i a * P.cellUniformVec j b))
+        = if p.1 = a then
+            P.cellUniformVec i a * (G.szCoinAmp p.1 p.2 *
+              ∑ b, (starRingEnd ℂ) (G.szCoinAmp p.1 b) * P.cellUniformVec j b)
+          else 0 := by
+      intro a
+      by_cases ha : p.1 = a
+      · simp only [if_pos ha, Finset.mul_sum]
+        apply Finset.sum_congr rfl; intro b _; ring
+      · simp only [if_neg ha, zero_mul, Finset.sum_const_zero]
+    rw [Finset.sum_congr rfl (fun a _ => hcollapse a)]
+    rw [Finset.sum_ite_eq Finset.univ p.1
+      (fun a => P.cellUniformVec i a * (G.szCoinAmp p.1 p.2 *
+        ∑ b, (starRingEnd ℂ) (G.szCoinAmp p.1 b) * P.cellUniformVec j b))]
+    rw [if_pos (Finset.mem_univ p.1)]
+    show _ = P.cellUniformVec i p.1 * t p.1 * G.szCoinAmp p.1 p.2
+    rw [ht]; ring
+  -- Step 2: rewrite `φ_{p.1}(p.2)` as a cell-uniform combination in `p.2`.
+  have hcombo := szCoinAmp_eq_cellUniform_combo P hME
+  -- The whole vector equals `∑ k, (coefficient) • doubledCellUniformVec i k`.
+  -- We prove it is in the span by exhibiting that combination, but the
+  -- coefficient `t(p.1)` is only cell-constant on cell `i`; outside cell `i`
+  -- the prefactor `(e_i)_{p.1}` is zero, so we may freely use the representative.
+  refine ?_
+  -- target vector as a function:
+  have hfun : (G.szReflectionProj).mulVec (P.doubledCellUniformVec i j)
+      = ∑ k, (t (P.cellRep i) *
+            (G.szCoinAmp (P.cellRep i) (P.cellRep k) *
+              (Real.sqrt (P.cellCard k) : ℂ))) •
+          P.doubledCellUniformVec i k := by
+    funext p
+    rw [hPi0 p]
+    -- evaluate the RHS sum at `p`.
+    simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul,
+      EquitablePartition.doubledCellUniformVec]
+    by_cases hpi : P.cells p.1 = i
+    · -- on cell `i`: replace `t (p.1)` and `φ_{p.1}` by representative-`i` values.
+      have hrepi : P.cells (P.cellRep i) = P.cells p.1 := by
+        rw [P.cellRep_cells i ⟨p.1, hpi⟩, hpi]
+      have htp : t p.1 = t (P.cellRep i) := by
+        rw [ht]; apply Finset.sum_congr rfl; intro y _
+        rw [szCoinAmp_magEquitable P hME (x := p.1) (y := y) hrepi.symm rfl]
+      have hφ : ∀ k, G.szCoinAmp p.1 (P.cellRep k)
+          = G.szCoinAmp (P.cellRep i) (P.cellRep k) := fun k =>
+        szCoinAmp_magEquitable P hME (x := p.1) (y := P.cellRep k) hrepi.symm rfl
+      -- `φ_{p.1}(p.2) = ∑_k (φ rep) √|C_k| · (e_k)_{p.2}`.
+      have hrow : G.szCoinAmp p.1 p.2
+          = ∑ k, (G.szCoinAmp (P.cellRep i) (P.cellRep k) *
+              (Real.sqrt (P.cellCard k) : ℂ)) * P.cellUniformVec k p.2 := by
+        have := congrFun (hcombo p.1) p.2
+        simp only at this
+        rw [this]; apply Finset.sum_congr rfl; intro k _; rw [hφ k]
+      rw [htp, hrow, Finset.mul_sum]
+      apply Finset.sum_congr rfl; intro k _; ring
+    · -- off cell `i`: `(e_i)_{p.1} = 0`, both sides vanish.
+      have hei : P.cellUniformVec i p.1 = 0 := by
+        simp only [EquitablePartition.cellUniformVec]; rw [if_neg hpi]
+      rw [hei]
+      simp only [zero_mul, mul_zero, Finset.sum_const_zero]
+  rw [hfun]
+  apply Submodule.sum_mem
+  intro k _
+  exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨(i, k), rfl⟩)
 
 /-- The projector preserves the whole doubled subspace, by `span_induction`
 from the generator case `szReflectionProj_preserves_doubled`. -/
-theorem szReflectionProj_preserves_doubled_subspace (P : EquitablePartition G I)
+theorem szReflectionProj_preserves_doubled_subspace [Nonempty V]
+    (P : EquitablePartition G I) (hME : P.MagnitudeEquitable)
     (ψ : (V × V) → ℂ) (hψ : ψ ∈ P.doubledCellUniformSubspace) :
     (G.szReflectionProj).mulVec ψ ∈ P.doubledCellUniformSubspace := by
   unfold doubledCellUniformSubspace at hψ
   induction hψ using Submodule.span_induction with
   | mem x hx =>
     obtain ⟨⟨i, j⟩, rfl⟩ := hx
-    exact szReflectionProj_preserves_doubled P i j
+    exact szReflectionProj_preserves_doubled P hME i j
   | zero => rw [Matrix.mulVec_zero]; exact Submodule.zero_mem _
   | add x y _ _ hx hy => rw [Matrix.mulVec_add]; exact Submodule.add_mem _ hx hy
   | smul a x _ hx => rw [Matrix.mulVec_smul]; exact Submodule.smul_mem _ a hx
@@ -640,11 +839,12 @@ theorem szReflectionProj_preserves_doubled_subspace (P : EquitablePartition G I)
 /-- The reflection `R = 2Π − I` preserves the doubled subspace: a linear
 combination of `Π ·ᵥ ψ` (in the subspace by
 `szReflectionProj_preserves_doubled_subspace`) and `ψ` itself. -/
-theorem szReflection_preserves_doubled (P : EquitablePartition G I)
+theorem szReflection_preserves_doubled [Nonempty V] (P : EquitablePartition G I)
+    (hME : P.MagnitudeEquitable)
     (ψ : (V × V) → ℂ) (hψ : ψ ∈ P.doubledCellUniformSubspace) :
     (G.szReflection).mulVec ψ ∈ P.doubledCellUniformSubspace := by
   have hPi : (G.szReflectionProj).mulVec ψ ∈ P.doubledCellUniformSubspace :=
-    szReflectionProj_preserves_doubled_subspace P ψ hψ
+    szReflectionProj_preserves_doubled_subspace P hME ψ hψ
   -- `R = 2Π − I`, so `R ·ᵥ ψ = (Π ·ᵥ ψ) + (Π ·ᵥ ψ) − ψ`.
   have heq : (G.szReflection).mulVec ψ
       = (G.szReflectionProj).mulVec ψ + (G.szReflectionProj).mulVec ψ - ψ := by
@@ -673,8 +873,8 @@ action `szReflectionProj_preserves_doubled`.
 
 Reference: the DTQW analogue of Bachman–Tamon (arXiv:1108.0339), Theorem 1;
 also Portugal (2018), §10.3 for the bipartite-doubled lifting. -/
-theorem dtqw_equitable_lift
-    (P : EquitablePartition G I) :
+theorem dtqw_equitable_lift [Nonempty V]
+    (P : EquitablePartition G I) (hME : P.MagnitudeEquitable) :
     ∀ (ψ : (V × V) → ℂ),
       ψ ∈ P.doubledCellUniformSubspace →
       ((G.SzegedyWalk).mulVec ψ) ∈ P.doubledCellUniformSubspace := by
@@ -682,7 +882,7 @@ theorem dtqw_equitable_lift
   -- `U_Sz ·ᵥ ψ = S ·ᵥ (R ·ᵥ ψ)`; apply the two factor lemmas in turn.
   unfold WeightedGraph.SzegedyWalk
   rw [← Matrix.mulVec_mulVec]
-  exact szSwap_preserves_doubled P _ (szReflection_preserves_doubled P ψ hψ)
+  exact szSwap_preserves_doubled P _ (szReflection_preserves_doubled P hME ψ hψ)
 
 end EquitablePartition
 
@@ -750,10 +950,11 @@ to Grover search on the quotient: the Grover walk preserves the cell-
 uniform subspace, the marked subspace lifts from the quotient, and the
 search amplitude is unchanged. -/
 theorem grover_search_equitable_reduction
-    {V : Type u} [Fintype V] [DecidableEq V]
+    {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : SimpleGraph V) [DecidableRel G.Adj] (M : Finset V)
     (G' : WeightedGraph V) (P : EquitablePartition G' I)
+    (hME : P.MagnitudeEquitable)
     (M_lift : Finset I)
     (_h : ∀ x : V, x ∈ M ↔ P.cells x ∈ M_lift) :
     -- GENUINE conclusion (replacing the former `: True`, proven by `trivial`,
@@ -764,7 +965,7 @@ theorem grover_search_equitable_reduction
       (G'.SzegedyWalk.mulVec ψ) ∈ P.doubledCellUniformSubspace := by
   -- This is exactly `dtqw_equitable_lift` for `G'`; the marked-set lift `_h` is what
   -- makes the *search* (as opposed to mere walk) descend, used in the amplitude bound.
-  exact EquitablePartition.dtqw_equitable_lift P
+  exact EquitablePartition.dtqw_equitable_lift P hME
 
 /-! ## §8 Continuous limit: Szegedy → CTQW
 
