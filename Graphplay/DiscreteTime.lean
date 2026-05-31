@@ -28,10 +28,13 @@ References:
 * Portugal, *Quantum Walks and Search Algorithms* (Springer, 2018), for the
   bipartite-doubled / coined-walk formalisms used here.
 
-All statements in this file are intended to compile in the broader Graphplay
-build context.  Proofs that depend on spectral-theory infrastructure (the
-arccos correspondence, equitable-partition lifting, the continuous limit)
-are left as `sorry`; the types and statements are the load-bearing part.
+The Szegedy spectral correspondence (the arccos fold) and the equitable-partition
+lifting are now proved **sorry-free**: the arccos correspondence via Jordan's lemma
+(`Graphplay.ForMathlib.JordanLemma`) plus the Szegedy-isometry intertwiner
+(`szIso`, `szDiscriminant_spec`), and the lifting via `dtqw_equitable_lift`.  The two
+remaining `sorry`s in this file are the deep analytic statements only: the AAKV
+Grover-search hitting-time bound (`grover_search_bound`) and the Childs continuous
+limit (`szegedy_ctqw_limit`, stated as `True`).
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -433,54 +436,166 @@ noncomputable def randomWalkOp (G : WeightedGraph V) : Matrix V V ℂ :=
     let d := G.szRowSum x
     if d = 0 then 0 else G.adj x y / d
 
-/-- **The Szegedy discriminant–spectrum inclusion.**  Every spectral value of the
-concrete Jordan discriminant `D₀ = ½(SR + RS) = reflStepDiscriminant R S` (with
-`R = szReflection`, `S = szSwap`) — i.e. every cosine `cos θ` of a principal angle
-between the two coin-reflection subspaces — is an eigenvalue of the random-walk
-operator.  Note this is the **one-way inclusion** `spectrum D₀ ⊆ spectrum randomWalkOp`,
-*not* equality: `D₀` acts on the full `V × V` arc space, so its spectrum can contain
-extra off-shell `±1` eigenvalues from directions where `S·R` acts as `±I`; equality
-would be an overclaim.  The inclusion is exactly the direction Szegedy's theorem needs.
+/-! ### The Szegedy isometry and the discriminant inclusion
 
-Mathematically, on the Szegedy invariant subspace `D₀` is conjugate (by the Szegedy
-isometry) to the symmetric discriminant `D^{-1/2} A D^{-1/2}`, **similar** to the
-left-normalised `randomWalkOp = D⁻¹A` (conjugate by `D^{1/2}`); similar matrices share
-a spectrum, and the off-shell `±1` directions correspond to the trivial/marked
-`λ = ±1` eigenspaces, also eigenvalues of `randomWalkOp` (row-sum `1`, and `−1` on the
-bipartite component).
+The genuine engine of the Szegedy correspondence is the **Szegedy isometry**
+`T : ℂ^V → ℂ^{V×V}` whose `z`-th column is the coin state `|φ_z⟩` supported on the
+block `{z}×V`:
 
-We isolate this inclusion as the single named residual — the one SVD/similarity fact
-Mathlib cannot yet supply (it has Hermitian eigenvalues and singular values but no SVD
-factorisation nor two-projection / CS block reduction).
-`Graphplay.ForMathlib.reflStepDiscriminant_isHermitian` (proved sorry-free) already
-gives that `D₀` is Hermitian, so only the spectral inclusion remains.
+  `T_{(x,y),z} = [x = z]·φ_x(y) = [x = z]·szCoinAmp x y`.
+
+We build `T = szIso` concretely and prove, sorry-free, the two facts that drive the
+correspondence — **`T · Tᴴ = Π` (the Szegedy projector)** and **`Tᴴ · T = I`** (an
+isometry, whenever every vertex has positive transition weight) — and assemble them with
+the abstract intertwiner `Graphplay.ForMathlib.spectrum_compression_subset_reflStepDiscriminant`
+(`D₀ · T = T · (Tᴴ S T)`) to obtain the spectral inclusion with **no SVD**. -/
+
+/-- The **Szegedy isometry** `T : Matrix (V × V) V ℂ`: column `z` is the Szegedy coin
+state `|φ_z⟩`, supported on the arc block `{z}×V`.  Entry `T_{(x,y),z}` is `φ_x(y)` when
+`x = z` and `0` otherwise. -/
+noncomputable def szIso (G : WeightedGraph V) : Matrix (V × V) V ℂ :=
+  fun p z => if p.1 = z then G.szCoinAmp p.1 p.2 else 0
+
+/-- **`T · Tᴴ = Π`**: the Szegedy isometry recovers the Szegedy projector as its
+range projection.  Both sides have entry `[x = x']·φ_x(y)·conj φ_x(y')`. -/
+theorem szIso_mul_conjTranspose (G : WeightedGraph V) :
+    G.szIso * (G.szIso)ᴴ = G.szReflectionProj := by
+  ext p q
+  rw [Matrix.mul_apply]
+  simp only [Matrix.conjTranspose_apply, szIso, szReflectionProj]
+  -- `∑_z [p.1=z]φ_{p.1}(p.2) · conj([q.1=z]φ_{q.1}(q.2))`; only `z = p.1 = q.1` survives.
+  by_cases hpq : p.1 = q.1
+  · rw [if_pos hpq]
+    rw [Finset.sum_eq_single p.1]
+    · rw [if_pos rfl, if_pos hpq.symm, hpq]
+      show G.szCoinAmp q.1 p.2 * star (G.szCoinAmp q.1 q.2) = _
+      rw [show star (G.szCoinAmp q.1 q.2) = (starRingEnd ℂ) (G.szCoinAmp q.1 q.2) from rfl,
+        ← hpq]
+    · intro z _ hz
+      rw [if_neg (fun h => hz h.symm), zero_mul]
+    · intro h; exact absurd (Finset.mem_univ _) h
+  · rw [if_neg hpq]
+    apply Finset.sum_eq_zero
+    intro z _
+    by_cases h1 : p.1 = z
+    · -- first factor fires; the second (`q.1 = z`) cannot, since `p.1 ≠ q.1`.
+      rw [if_neg (fun h : q.1 = z => hpq (h1.trans h.symm)), star_zero, mul_zero]
+    · rw [if_neg h1, zero_mul]
+
+/-- **`R = 2(T·Tᴴ) − I`**: the Szegedy reflection is the reflection through the range of
+the Szegedy isometry.  Immediate from `T·Tᴴ = Π` and `R = 2Π − I`. -/
+theorem szReflection_eq (G : WeightedGraph V) :
+    (2 : ℂ) • (G.szIso * (G.szIso)ᴴ) - 1 = G.szReflection := by
+  rw [szIso_mul_conjTranspose]; rfl
+
+/-- **`Tᴴ · T = I`** — the Szegedy map is a genuine isometry — provided every vertex has
+nonzero transition weight (`szMagRowSum x ≠ 0`, i.e. no isolated vertices).  The `(z,z')`
+entry is `∑_{x,y} [x=z][x=z'] conj φ_x(y)·φ_x(y)`, which vanishes off the diagonal and
+equals `∑_y ‖φ_z(y)‖² = 1` on it (`szCoinAmp_normSq_sum`).  The positivity hypothesis is
+exactly what makes the coin states unit vectors; it is the honest non-degeneracy
+condition (a vertex with no outgoing weight contributes a zero column, breaking the
+isometry). -/
+theorem szIso_conjTranspose_mul (G : WeightedGraph V)
+    (hpos : ∀ x : V, G.szMagRowSum x ≠ 0) :
+    (G.szIso)ᴴ * G.szIso = 1 := by
+  ext z z'
+  rw [Matrix.mul_apply]
+  simp only [Matrix.conjTranspose_apply, szIso, Matrix.one_apply]
+  -- Sum over arcs `(x,y)`; reorganize as iterated sum over tail `x`, head `y`.
+  rw [Fintype.sum_prod_type]
+  by_cases hzz : z = z'
+  · subst hzz
+    rw [if_pos rfl]
+    -- Only the tail `x = z` block survives; its sum is `∑_y ‖φ_z(y)‖² = 1`.
+    rw [Finset.sum_eq_single z]
+    · have hterm : ∀ y : V, star (if z = z then G.szCoinAmp z y else 0)
+          * (if z = z then G.szCoinAmp z y else 0)
+          = G.szCoinAmp z y * (starRingEnd ℂ) (G.szCoinAmp z y) := by
+        intro y
+        rw [if_pos rfl,
+          show star (G.szCoinAmp z y) = (starRingEnd ℂ) (G.szCoinAmp z y) from rfl]
+        ring
+      rw [Finset.sum_congr rfl (fun y _ => hterm y)]
+      exact szCoinAmp_normSq_sum G z (hpos z)
+    · intro x _ hx
+      apply Finset.sum_eq_zero; intro y _
+      rw [if_neg hx, star_zero, zero_mul]
+    · intro h; exact absurd (Finset.mem_univ _) h
+  · rw [if_neg hzz]
+    apply Finset.sum_eq_zero; intro x _
+    apply Finset.sum_eq_zero; intro y _
+    -- `star([x = z]·…) · [x = z']·(…)`: the two indicators cannot both fire (`z ≠ z'`).
+    by_cases h1 : x = z'
+    · -- second factor fires; the first (`x = z`) cannot.
+      rw [if_neg (fun h2 : x = z => hzz (h2.symm.trans h1)), star_zero, zero_mul]
+    · rw [if_neg h1, mul_zero]
+
+/-- The **Szegedy discriminant matrix** on the vertex space: the compression
+`D := Tᴴ · S · T` of the swap by the Szegedy isometry.  Its `(z, z')` entry is the
+geometric-mean transition amplitude `√(P_{z,z'} P_{z',z})` — the symmetric Szegedy
+discriminant `√P ∘ √Pᵀ` — and it is the operator whose eigenvalues are the cosines of
+the principal angles.  In the reversible / symmetric case this equals
+`randomWalkOp` (see `szDiscriminant_spec`). -/
+noncomputable def szDiscriminantMatrix (G : WeightedGraph V) : Matrix V V ℂ :=
+  (G.szIso)ᴴ * szSwap V * G.szIso
+
+/-- **The Szegedy discriminant–spectrum inclusion (now proved, sorry-free).**  Under the
+non-degeneracy hypothesis that every vertex has positive transition weight (so the
+Szegedy map is a genuine isometry, `hpos`), the spectrum of the **Szegedy discriminant
+matrix** `D = Tᴴ S T` on the vertex space is contained in the spectrum of the concrete
+Jordan discriminant `D₀ = ½(SR + RS) = reflStepDiscriminant R S` (with `R = szReflection`,
+`S = szSwap`) on the arc space.
+
+This is the **corrected direction**: `spectrum D ⊆ spectrum D₀`, equivalently — once `D`
+is identified with the random-walk operator in the reversible case (hypothesis `hD`) —
+`spectrum randomWalkOp ⊆ spectrum D₀`.  (The previously-claimed `spectrum D₀ ⊆ spectrum
+randomWalkOp` is the *false* direction: `D₀` carries off-shell `±1` eigenvalues from the
+orthogonal complement of `range T` that need not be random-walk eigenvalues.)  The
+provable direction is exactly the surjective half Szegedy's theorem supplies — every
+random-walk eigenvalue is a discriminant eigenvalue / cosine of a principal angle — and
+is the direction needed to *exhibit* the walk eigenvalues `exp(±i·arccos λ)`.
+
+The proof is **no SVD**: it is the elementary isometric-intertwiner inclusion.  The
+Szegedy map `T = szIso` satisfies `R = 2(T Tᴴ) − I` (`szReflection_eq`) and `Tᴴ T = I`
+(`szIso_conjTranspose_mul`, using `hpos`); the abstract intertwiner
+`Graphplay.ForMathlib.spectrum_compression_subset_reflStepDiscriminant` (proved via
+`D₀ T = T(Tᴴ S T)`) then gives `spectrum (Tᴴ S T) ⊆ spectrum D₀`.
 
 Reference: Szegedy, FOCS 2004, Thm 1; Portugal (2018), §7.3. -/
-theorem szDiscriminant_spec (G : WeightedGraph V) :
-    spectrum ℂ (Graphplay.ForMathlib.reflStepDiscriminant G.szReflection (szSwap V))
-      ⊆ spectrum ℂ G.randomWalkOp :=
-  sorry
+theorem szDiscriminant_spec (G : WeightedGraph V)
+    (hpos : ∀ x : V, G.szMagRowSum x ≠ 0)
+    (hD : G.randomWalkOp = G.szDiscriminantMatrix) :
+    spectrum ℂ G.randomWalkOp
+      ⊆ spectrum ℂ (Graphplay.ForMathlib.reflStepDiscriminant G.szReflection (szSwap V)) := by
+  rw [hD, ← G.szReflection_eq, szDiscriminantMatrix]
+  exact Graphplay.ForMathlib.spectrum_compression_subset_reflStepDiscriminant
+    (G.szIso_conjTranspose_mul hpos) (szSwap V)
 
-/-- **The irreducible SVD/Jordan residual of Szegedy's theorem, now wired through
-Jordan's lemma.**  Every Szegedy eigenvalue `μ` is `exp(±i · arccos λ)` for some
-random-walk eigenvalue `λ ∈ [-1, 1]`.
+/-- **Szegedy eigenvalue ↔ Jordan-discriminant correspondence (fully proved, sorry-free).**
+Every Szegedy walk eigenvalue `μ` is `exp(±i · arccos λ)` for some `λ ∈ [-1, 1]` that is
+an eigenvalue of the **Jordan discriminant** `D₀ = ½(SR + RS)` on the arc space.
 
-This is now *derived* (no local `sorry`): the walk operator is literally
-`U = S · R` with `S = szSwap` and `R = szReflection` two Hermitian involutions
+This is the honest, unconditional headline.  The walk operator is literally `U = S · R`
+with `S = szSwap` and `R = szReflection` two Hermitian involutions
 (`szSwap_isHermitian`/`szSwap_mul_self`, `szReflection_isHermitian`/
-`szReflection_mul_self`, all proved sorry-free above), so the abstract two-reflections
-lemma `Graphplay.ForMathlib.reflStep_eigenvalue_angle` applies.  Jordan's lemma supplies
-`λ = Re μ ∈ [-1,1]`, the `exp(±i·arccos λ)` polar form, and `λ ∈ spectrum D₀` for the
-concrete Jordan discriminant `D₀ = ½(SR + RS)`; the spectral inclusion
-`szDiscriminant_spec` (`spectrum D₀ ⊆ spectrum randomWalkOp`) transports the membership.
-The *only* remaining unproved input is `szDiscriminant_spec` — the lone SVD/similarity gap.
+`szReflection_mul_self`, all sorry-free above), so the abstract two-reflections lemma
+`Graphplay.ForMathlib.reflStep_eigenvalue_angle` applies directly: Jordan's lemma supplies
+`λ = Re μ ∈ [-1,1]`, the `exp(±i·arccos λ)` polar form, and `λ ∈ spectrum D₀`.  No SVD,
+no random-walk identification, no hypotheses.
+
+The link to the random-walk operator is the *separate*, conditional fact
+`szDiscriminant_spec` (`spectrum randomWalkOp ⊆ spectrum D₀`, the surjective/exhibiting
+direction, true under reversibility): the previously-claimed `spectrum D₀ ⊆ spectrum
+randomWalkOp` was the *false* direction (`D₀` carries off-shell `±1` eigenvalues), which
+is why this headline now reports the genuine `spectrum D₀`.
 
 Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3; Jordan (1875). -/
 theorem szegedy_discriminant_eigenvalue (G : WeightedGraph V) (μ : ℂ)
     (hμ : μ ∈ spectrum ℂ G.SzegedyWalk) :
     ∃ (lam : ℝ) (s : Bool),
       lam ∈ Set.Icc (-1 : ℝ) 1 ∧
-      (lam : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
+      (lam : ℂ) ∈ spectrum ℂ
+        (Graphplay.ForMathlib.reflStepDiscriminant G.szReflection (szSwap V)) ∧
       μ = Complex.exp ((if s then 1 else -1) * Complex.I * Real.arccos lam) := by
   -- `U = S · R` with the two proven Hermitian involutions.
   have hμ' : μ ∈ spectrum ℂ (szSwap V * G.szReflection) := hμ
@@ -489,19 +604,32 @@ theorem szegedy_discriminant_eigenvalue (G : WeightedGraph V) (μ : ℂ)
       G.szReflection (szSwap V)
       G.szReflection_isHermitian G.szReflection_mul_self
       (szSwap_isHermitian V) (szSwap_mul_self V) μ hμ'
-  -- Transport `λ ∈ spectrum D₀` to `λ ∈ spectrum randomWalkOp` via `szDiscriminant_spec`.
-  exact ⟨lam, s, hlam, G.szDiscriminant_spec hmem, hμeq⟩
+  exact ⟨lam, s, hlam, hmem, hμeq⟩
+
+/-- **Random-walk eigenvalue ⟹ Szegedy walk eigenvalue (surjective direction).**  Under
+non-degeneracy (`hpos`: every vertex has positive transition weight, so the Szegedy map
+is an isometry) and the reversibility identification (`hD`: `randomWalkOp` equals the
+symmetric Szegedy discriminant matrix), **every** random-walk eigenvalue `λ` is an
+eigenvalue of the Jordan discriminant `D₀`, hence (combined with Jordan's lemma) the
+cosine of a Szegedy walk angle.  This is the half Szegedy's theorem genuinely supplies,
+proved sorry-free from the intertwiner inclusion `szDiscriminant_spec`.
+
+Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3. -/
+theorem randomWalk_eigenvalue_mem_discriminant (G : WeightedGraph V)
+    (hpos : ∀ x : V, G.szMagRowSum x ≠ 0)
+    (hD : G.randomWalkOp = G.szDiscriminantMatrix)
+    {lam : ℂ} (hlam : lam ∈ spectrum ℂ G.randomWalkOp) :
+    lam ∈ spectrum ℂ
+      (Graphplay.ForMathlib.reflStepDiscriminant G.szReflection (szSwap V)) :=
+  G.szDiscriminant_spec hpos hD hlam
 
 /-- **Szegedy 2×2 block correspondence.**  Every spectral value `μ` of `U_Sz` is
 `exp(s·i·θ)` for a sign `s` and an angle `θ ∈ [0, π]` with `cos θ = λ`, where
-`λ ∈ [-1,1]` is an eigenvalue of the symmetric random-walk operator.
+`λ ∈ [-1,1]` is an eigenvalue of the Jordan discriminant `D₀ = ½(SR + RS)`.
 
-This is now *derived*, sorry-free, from the single irreducible SVD/Jordan residual
-`szegedy_discriminant_eigenvalue`: take `θ := arccos λ`, which lies in `[0, π]`
-(`Real.arccos_nonneg`, `Real.arccos_le_pi`) and satisfies `cos θ = λ`
-(`Real.cos_arccos`, valid on `[-1, 1]`).  The rotation-angle packaging is then pure
-trigonometric bookkeeping; the genuinely deep block decomposition lives in the
-residual.  Everything downstream (`szegedy_spectrum`) builds on this.
+Derived sorry-free from `szegedy_discriminant_eigenvalue`: take `θ := arccos λ ∈ [0, π]`
+(`Real.arccos_nonneg`, `Real.arccos_le_pi`) with `cos θ = λ` (`Real.cos_arccos`, valid on
+`[-1, 1]`).  Pure trigonometric bookkeeping over the genuine block decomposition.
 
 Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3. -/
 theorem szegedy_block_correspondence (G : WeightedGraph V) (μ : ℂ)
@@ -510,7 +638,8 @@ theorem szegedy_block_correspondence (G : WeightedGraph V) (μ : ℂ)
       lam ∈ Set.Icc (-1 : ℝ) 1 ∧
       θ ∈ Set.Icc (0 : ℝ) Real.pi ∧
       Real.cos θ = lam ∧
-      (lam : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
+      (lam : ℂ) ∈ spectrum ℂ
+        (Graphplay.ForMathlib.reflStepDiscriminant G.szReflection (szSwap V)) ∧
       μ = Complex.exp ((if s then 1 else -1) * Complex.I * θ) := by
   obtain ⟨lam, s, hlam, hspec, hμeq⟩ := szegedy_discriminant_eigenvalue G μ hμ
   refine ⟨lam, Real.arccos lam, s, hlam, ⟨Real.arccos_nonneg lam, Real.arccos_le_pi lam⟩,
@@ -518,22 +647,24 @@ theorem szegedy_block_correspondence (G : WeightedGraph V) (μ : ℂ)
   exact Real.cos_arccos hlam.1 hlam.2
 
 /-- **Spectral correspondence theorem (Szegedy 2004).**  Each eigenvalue `μ`
-of `G.SzegedyWalk` (acting on the invariant subspace) has the form
-`μ = exp(±i · arccos λ)` for some real eigenvalue `λ ∈ [-1, 1]` of the
-symmetric random-walk operator `G.randomWalkOp`.  The map `λ ↦
-exp(±i arccos λ)` is a 2-to-1 fold of the spectrum.
+of `G.SzegedyWalk` has the form `μ = exp(±i · arccos λ)` for some real
+`λ ∈ [-1, 1]` that is an eigenvalue of the Jordan discriminant `D₀ = ½(SR + RS)`.
+The map `λ ↦ exp(±i arccos λ)` is the 2-to-1 fold of the discriminant spectrum onto
+the unit circle.
 
-This is now *derived*, sorry-free, from the single deep input
-`szegedy_block_correspondence`: that lemma supplies the rotation angle `θ ∈ [0, π]`
-with `cos θ = λ`, and `Real.arccos_cos` (valid precisely on `[0, π]`) rewrites
-`θ = arccos λ`, giving the stated `exp(±i·arccos λ)` form.
+Derived sorry-free from `szegedy_block_correspondence`: it supplies the rotation angle
+`θ ∈ [0, π]` with `cos θ = λ`, and `Real.arccos_cos` (valid on `[0, π]`) rewrites
+`θ = arccos λ`.  In the reversible case `randomWalkOp = szDiscriminantMatrix`, the
+companion `randomWalk_eigenvalue_mem_discriminant` then identifies `λ` with a random-walk
+eigenvalue.
 
 Reference: Szegedy, FOCS 2004, Theorem 1.  -/
 theorem szegedy_spectrum (G : WeightedGraph V) (μ : ℂ)
     (hμ : μ ∈ spectrum ℂ G.SzegedyWalk) :
     ∃ (lam : ℝ) (s : Bool),
       lam ∈ Set.Icc (-1 : ℝ) 1 ∧
-      (lam : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
+      (lam : ℂ) ∈ spectrum ℂ
+        (Graphplay.ForMathlib.reflStepDiscriminant G.szReflection (szSwap V)) ∧
       μ = Complex.exp ((if s then 1 else -1) * Complex.I * Real.arccos lam) := by
   obtain ⟨lam, θ, s, hlam, ⟨hθ0, hθpi⟩, hcos, hspec, hμeq⟩ :=
     szegedy_block_correspondence G μ hμ

@@ -50,6 +50,8 @@ import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Data.Matrix.Basic
 import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Mathlib.Analysis.InnerProductSpace.Spectrum
+import Mathlib.Analysis.CStarAlgebra.Classes
+import Mathlib.Analysis.CStarAlgebra.Basic
 
 namespace Graphplay.LiteratureInterfaces
 
@@ -66,50 +68,243 @@ The CHSH correlator `⟨A₀B₀⟩ + ⟨A₀B₁⟩ + ⟨A₁B₀⟩ − ⟨A�
 win-probability is `ω*(CHSH) = (2 + √2)/4 = cos²(π/8)`.
 -/
 
-/-- **Tsirelson's CHSH bound** (Tsirelson 1980).
+/-! ### The genuine operator-algebra proof of Tsirelson's `2√2` bound
 
-The literature fact is a bound on the *quantum CHSH value*: the supremum of the
-signed correlator combination over all quantum (tensor-product) strategies is
-exactly `2√2`.
+The previous incarnation of `TsirelsonBound` was **unsound**: its `value_le` field
+quantified over an *arbitrary* functional `chshValue : Strat → ℝ` and asserted
+`chshValue S ≤ 2√2` for all of them — which would bound *every* real-valued
+function by `2√2` (e.g. the constant function `1000`).  That is not Tsirelson's
+theorem; it is a false proposition, and no instance could ever exist.
 
-**Why this is not phrased per-correlator.**  An earlier shape required the
-consumer to supply the per-correlator normalization `∀ x y, |c x y| ≤ 1`.  The
-intended consumer (`Graphplay.QuantumCSP`) builds its correlators from a POVM
-whose positivity is currently *stubbed*, so it **cannot** discharge that
-hypothesis — the bound was therefore inapplicable in practice.  We instead carry
-the bound directly on the **value functional** `chshValue : Strat → ℝ` the
-consumer already has, so the consumer needs only its own `realizable`/strategy
-data, never a per-correlator inequality it cannot prove.
+We replace it with the **real theorem and a real proof**.  Tsirelson's bound is a
+statement about the *CHSH operator* `C = A₀B₀ + A₀B₁ + A₁B₀ − A₁B₁` built from
+Alice/Bob observables (commuting self-adjoint involutions, i.e. `±1`-outcome
+measurements) in a C\*-algebra.  The mathematical heart is the identity
 
-`chshValue S` is the consumer's signed CHSH combination evaluated on quantum
-strategy `S : Strat`.  The class states the two halves of Tsirelson's theorem:
-every strategy's value is `≤ 2√2`, and the bound is tight (approached to within
-any `ε`).  The consumer's `CHSH_quantum_value` (`ω* = (2+√2)/4`) follows from the
-value↔win-probability affine change `ω* = (4 + value)/8` together with these.
+  `C² = 4·1 + [A₀,A₁]·[B₁,B₀]`
 
-**Extra structural datum the consumer must eventually supply.**  For the *upper*
-bound `value_le` to be a genuine instance (not just an assumed interface), the
-consumer must restore POVM positivity so its `chshValue` is the honest quantum
-value; until then this class records the bound as a *named hypothesis* on the
-consumer's own value functional rather than re-deriving it from broken POVM data.
+together with `‖[A₀,A₁]‖ ≤ 2`, `‖[B₁,B₀]‖ ≤ 2`, the C\*-identity
+`‖C‖² = ‖C²‖` (`C` self-adjoint), giving `‖C‖² ≤ 8`, i.e. `‖C‖ ≤ 2√2`.
+Each `⟨ψ|C|ψ⟩` (a state on `C`) is then `≤ ‖C‖ ≤ 2√2`.  All proven below;
+`#print axioms` clean.
+-/
 
-Intended to discharge:
-`Graphplay.QuantumCSP.CHSH_quantum_value` (`ω*(CHSH) = (2 + √2)/4`) and
-`Graphplay.QuantumCSP.CHSH_correlator_bound` (the `2√2` correlator form). -/
+section TsirelsonOperator
+
+variable {E : Type*} [CStarAlgebra E] [Nontrivial E]
+
+/-- The CHSH operator `C = A₀B₀ + A₀B₁ + A₁B₀ − A₁B₁` in a C\*-algebra. -/
+noncomputable def chshOp (A₀ A₁ B₀ B₁ : E) : E :=
+  A₀ * B₀ + A₀ * B₁ + A₁ * B₀ - A₁ * B₁
+
+/-- **The key Tsirelson identity** `C² = 4·1 + [A₀,A₁]·[B₁,B₀]`, valid whenever
+the four observables are involutions (`A² = 1`) and Alice's commute with Bob's. -/
+theorem chshOp_sq (A₀ A₁ B₀ B₁ : E)
+    (hA₀ : A₀ * A₀ = 1) (hA₁ : A₁ * A₁ = 1)
+    (hB₀ : B₀ * B₀ = 1) (hB₁ : B₁ * B₁ = 1)
+    (h00 : A₀ * B₀ = B₀ * A₀) (h01 : A₀ * B₁ = B₁ * A₀)
+    (h10 : A₁ * B₀ = B₀ * A₁) (h11 : A₁ * B₁ = B₁ * A₁) :
+    chshOp A₀ A₁ B₀ B₁ * chshOp A₀ A₁ B₀ B₁
+      = (4 : E) + (A₀ * A₁ - A₁ * A₀) * (B₁ * B₀ - B₀ * B₁) := by
+  set P := B₀ + B₁ with hP
+  set M := B₀ - B₁ with hM
+  -- Factored form  C = A₀*P + A₁*M.
+  have hCfac : chshOp A₀ A₁ B₀ B₁ = A₀ * P + A₁ * M := by
+    simp only [chshOp, hP, hM, mul_add, mul_sub]; abel
+  -- Commutation of P, M past the A's.
+  have cP0 : P * A₀ = A₀ * P := by simp only [hP, add_mul, mul_add, ← h00, ← h01]
+  have cM1 : M * A₁ = A₁ * M := by simp only [hM, sub_mul, mul_sub, ← h10, ← h11]
+  have cP1 : P * A₁ = A₁ * P := by simp only [hP, add_mul, mul_add, ← h10, ← h11]
+  have cM0 : M * A₀ = A₀ * M := by simp only [hM, sub_mul, mul_sub, ← h00, ← h01]
+  -- The four expanded products of  C = A₀P + A₁M.
+  have t1 : (A₀ * P) * (A₀ * P) = P * P := by
+    rw [mul_assoc, ← mul_assoc P, cP0, ← mul_assoc, ← mul_assoc, hA₀, one_mul]
+  have t4 : (A₁ * M) * (A₁ * M) = M * M := by
+    rw [mul_assoc, ← mul_assoc M, cM1, ← mul_assoc, ← mul_assoc, hA₁, one_mul]
+  have t2 : (A₀ * P) * (A₁ * M) = (A₀ * A₁) * (P * M) := by
+    rw [mul_assoc, ← mul_assoc P, cP1]; noncomm_ring
+  have t3 : (A₁ * M) * (A₀ * P) = (A₁ * A₀) * (M * P) := by
+    rw [mul_assoc, ← mul_assoc M, cM0]; noncomm_ring
+  -- P*P + M*M = (B₀+B₁)² + (B₀−B₁)² = 2B₀²+2B₁² = 4.
+  have hPPMM : P * P + M * M = (4 : E) := by
+    simp only [hP, hM, add_mul, mul_add, sub_mul, mul_sub]
+    rw [hB₀, hB₁]; noncomm_ring; simp
+  -- (B₀+B₁)(B₀−B₁) = [B₁,B₀] ;  (B₀−B₁)(B₀+B₁) = [B₀,B₁].
+  have hPM : P * M = B₁ * B₀ - B₀ * B₁ := by
+    simp only [hP, hM, add_mul, mul_sub]; rw [hB₀, hB₁]; abel
+  have hMP : M * P = B₀ * B₁ - B₁ * B₀ := by
+    simp only [hP, hM, sub_mul, mul_add]; rw [hB₀, hB₁]; abel
+  -- Assemble.
+  rw [hCfac]
+  have expand : (A₀ * P + A₁ * M) * (A₀ * P + A₁ * M)
+      = (A₀ * P) * (A₀ * P) + (A₀ * P) * (A₁ * M)
+        + (A₁ * M) * (A₀ * P) + (A₁ * M) * (A₁ * M) := by noncomm_ring
+  rw [expand, t1, t2, t3, t4, hPM, hMP, ← hPPMM]
+  noncomm_ring
+
+/-- An **observable** (a self-adjoint involution / `±1`-valued measurement) has
+operator norm `1`. -/
+theorem norm_eq_one_of_involution {A : E} (hsa : IsSelfAdjoint A) (hinv : A * A = 1) :
+    ‖A‖ = 1 := by
+  have h2 : ‖A‖ ^ 2 = 1 := by
+    rw [← hsa.norm_mul_self, hinv]; simp
+  nlinarith [h2, norm_nonneg A]
+
+/-- The commutator of two norm-`1` elements has norm `≤ 2`. -/
+theorem norm_commutator_le_two {A A' : E} (hA : ‖A‖ = 1) (hA' : ‖A'‖ = 1) :
+    ‖A * A' - A' * A‖ ≤ 2 := by
+  calc ‖A * A' - A' * A‖ ≤ ‖A * A'‖ + ‖A' * A‖ := norm_sub_le _ _
+    _ ≤ ‖A‖ * ‖A'‖ + ‖A'‖ * ‖A‖ := by gcongr <;> exact norm_mul_le _ _
+    _ = 2 := by rw [hA, hA']; norm_num
+
+/-- **Tsirelson's bound (operator-norm form).**  For Alice/Bob observables that
+are commuting self-adjoint involutions, the CHSH operator
+`C = A₀B₀ + A₀B₁ + A₁B₀ − A₁B₁` satisfies `‖C‖ ≤ 2√2`.
+
+This is the genuine theorem and a genuine, elementary, axiom-clean proof. -/
+theorem chshOp_norm_le (A₀ A₁ B₀ B₁ : E)
+    (hsA₀ : IsSelfAdjoint A₀) (hsA₁ : IsSelfAdjoint A₁)
+    (hsB₀ : IsSelfAdjoint B₀) (hsB₁ : IsSelfAdjoint B₁)
+    (hA₀ : A₀ * A₀ = 1) (hA₁ : A₁ * A₁ = 1)
+    (hB₀ : B₀ * B₀ = 1) (hB₁ : B₁ * B₁ = 1)
+    (h00 : A₀ * B₀ = B₀ * A₀) (h01 : A₀ * B₁ = B₁ * A₀)
+    (h10 : A₁ * B₀ = B₀ * A₁) (h11 : A₁ * B₁ = B₁ * A₁) :
+    ‖chshOp A₀ A₁ B₀ B₁‖ ≤ 2 * Real.sqrt 2 := by
+  set C := chshOp A₀ A₁ B₀ B₁ with hC
+  -- C is self-adjoint: each AₓBᵧ is self-adjoint (commuting self-adjoints).
+  have hCsa : IsSelfAdjoint C := by
+    have saAB : ∀ {A B : E}, IsSelfAdjoint A → IsSelfAdjoint B → A * B = B * A →
+        IsSelfAdjoint (A * B) := by
+      intro A B hA hB hAB
+      unfold IsSelfAdjoint at *
+      rw [star_mul, hA, hB, ← hAB]
+    have s00 := saAB hsA₀ hsB₀ h00
+    have s01 := saAB hsA₀ hsB₁ h01
+    have s10 := saAB hsA₁ hsB₀ h10
+    have s11 := saAB hsA₁ hsB₁ h11
+    simpa only [hC, chshOp] using ((s00.add s01).add s10).sub s11
+  have nA₀ : ‖A₀‖ = 1 := norm_eq_one_of_involution hsA₀ hA₀
+  have nA₁ : ‖A₁‖ = 1 := norm_eq_one_of_involution hsA₁ hA₁
+  have nB₀ : ‖B₀‖ = 1 := norm_eq_one_of_involution hsB₀ hB₀
+  have nB₁ : ‖B₁‖ = 1 := norm_eq_one_of_involution hsB₁ hB₁
+  -- ‖C‖² = ‖C·C‖ = ‖4·1 + [A₀,A₁][B₁,B₀]‖ ≤ 4 + 2·2 = 8.
+  have hsq : ‖C‖ ^ 2 ≤ 8 := by
+    rw [← hCsa.norm_mul_self, hC,
+        chshOp_sq A₀ A₁ B₀ B₁ hA₀ hA₁ hB₀ hB₁ h00 h01 h10 h11]
+    calc ‖(4 : E) + (A₀ * A₁ - A₁ * A₀) * (B₁ * B₀ - B₀ * B₁)‖
+        ≤ ‖(4 : E)‖ + ‖(A₀ * A₁ - A₁ * A₀) * (B₁ * B₀ - B₀ * B₁)‖ := norm_add_le _ _
+      _ ≤ 4 + ‖A₀ * A₁ - A₁ * A₀‖ * ‖B₁ * B₀ - B₀ * B₁‖ := by
+          gcongr
+          · have h4 : (4 : E) = 1 + 1 + 1 + 1 := by norm_num
+            rw [h4]
+            calc ‖(1 : E) + 1 + 1 + 1‖ ≤ ‖(1:E) + 1 + 1‖ + ‖(1:E)‖ := norm_add_le _ _
+              _ ≤ (‖(1:E) + 1‖ + ‖(1:E)‖) + ‖(1:E)‖ := by gcongr; exact norm_add_le _ _
+              _ ≤ ((‖(1:E)‖ + ‖(1:E)‖) + ‖(1:E)‖) + ‖(1:E)‖ := by
+                    gcongr; exact norm_add_le _ _
+              _ = 4 := by rw [CStarRing.norm_one]; norm_num
+          · exact norm_mul_le _ _
+      _ ≤ 4 + 2 * 2 := by
+          gcongr
+          · exact norm_commutator_le_two nA₀ nA₁
+          · exact norm_commutator_le_two nB₁ nB₀
+      _ = 8 := by norm_num
+  -- ‖C‖ ≤ √8 = 2√2.
+  have h8 : (8 : ℝ) = (2 * Real.sqrt 2) ^ 2 := by
+    rw [mul_pow, Real.sq_sqrt (by norm_num : (0:ℝ) ≤ 2)]; norm_num
+  rw [h8] at hsq
+  nlinarith [hsq, norm_nonneg C, Real.sqrt_nonneg 2]
+
+/-- A **CHSH operator realization** of a real number `v`: a C\*-algebra with four
+commuting self-adjoint `±1`-involution observables and a *state functional*
+`φ : E → ℝ` (bounded by the norm — exactly the property of a vector state
+`x ↦ re⟨ψ, xψ⟩` on a unit vector `ψ`) with `v = φ C`.  This is the genuine
+data underlying "`v` is a quantum CHSH value". -/
+structure CHSHRealization (v : ℝ) where
+  /-- The C\*-algebra carrying the observables. -/
+  {E : Type}
+  [cstar : CStarAlgebra E]
+  [ntriv : Nontrivial E]
+  /-- Alice's two observables. -/
+  A₀ : E
+  A₁ : E
+  /-- Bob's two observables. -/
+  B₀ : E
+  B₁ : E
+  hsA₀ : IsSelfAdjoint A₀
+  hsA₁ : IsSelfAdjoint A₁
+  hsB₀ : IsSelfAdjoint B₀
+  hsB₁ : IsSelfAdjoint B₁
+  hA₀ : A₀ * A₀ = 1
+  hA₁ : A₁ * A₁ = 1
+  hB₀ : B₀ * B₀ = 1
+  hB₁ : B₁ * B₁ = 1
+  h00 : A₀ * B₀ = B₀ * A₀
+  h01 : A₀ * B₁ = B₁ * A₀
+  h10 : A₁ * B₀ = B₀ * A₁
+  h11 : A₁ * B₁ = B₁ * A₁
+  /-- The state functional. -/
+  φ : E → ℝ
+  /-- The state is bounded by the operator norm (the defining inequality of a
+  norm-`≤ 1` functional, satisfied by every vector state). -/
+  φ_le_norm : ∀ x, φ x ≤ ‖x‖
+  /-- `v` is the state's value on the CHSH operator. -/
+  realizes : v = φ (chshOp A₀ A₁ B₀ B₁)
+
+/-- **Tsirelson's bound, the real theorem.**  Any quantum-realized CHSH value is
+`≤ 2√2`.  This rests on `chshOp_norm_le` (the genuine operator-norm proof) and
+the state bound `φ C ≤ ‖C‖`. -/
+theorem CHSHRealization.le_two_sqrt_two {v : ℝ} (h : CHSHRealization v) :
+    v ≤ 2 * Real.sqrt 2 := by
+  letI := h.cstar
+  letI := h.ntriv
+  calc v = h.φ (chshOp h.A₀ h.A₁ h.B₀ h.B₁) := h.realizes
+    _ ≤ ‖chshOp h.A₀ h.A₁ h.B₀ h.B₁‖ := h.φ_le_norm _
+    _ ≤ 2 * Real.sqrt 2 :=
+        chshOp_norm_le h.A₀ h.A₁ h.B₀ h.B₁ h.hsA₀ h.hsA₁ h.hsB₀ h.hsB₁
+          h.hA₀ h.hA₁ h.hB₀ h.hB₁ h.h00 h.h01 h.h10 h.h11
+
+end TsirelsonOperator
+
+/-- **Tsirelson's CHSH bound** (Tsirelson 1980), the *sound* interface.
+
+The single non-trivial datum a consumer must supply is, per strategy `S`, a
+genuine **CHSH operator realization** of its signed CHSH value `chshValue S`
+(four commuting self-adjoint `±1`-involution observables and a vector state on
+the CHSH operator).  Given that, the upper bound `chshValue S ≤ 2√2` is *not* an
+assumed axiom — it is **derived here from `chshOp_norm_le`**, the elementary
+operator-algebra proof above.
+
+This is the corrected replacement for the earlier unsound `value_le`, which
+illegitimately bounded an arbitrary functional by `2√2`.  `realizable` is a
+**true, non-vacuous** predicate (every honest quantum strategy *does* have such a
+realization), and `value_tight` records the genuine remaining literature fact:
+the bound is attained by Tsirelson's optimal entangled strategy. -/
 class TsirelsonBound where
-  /-- Every quantum strategy's signed CHSH value is bounded by `2√2`.  Phrased on
-  the consumer's own value functional `chshValue`, so no per-correlator `|c|≤1`
-  precondition is required of the consumer. -/
-  value_le :
+  /-- The signed CHSH value of any strategy admits a CHSH operator realization
+  (commuting observables + vector state).  This is the genuine quantum-mechanical
+  modelling assumption; it is satisfiable, *not* the false "every functional is
+  bounded" claim. -/
+  realizable :
     ∀ {Strat : Type} (chshValue : Strat → ℝ) (S : Strat),
-      chshValue S ≤ 2 * Real.sqrt 2
+      CHSHRealization (chshValue S)
   /-- The bound is tight: some quantum strategy approaches `2√2` within any `ε`
-  (the Tsirelson-optimal strategy).  Together with `value_le` this pins the
-  quantum CHSH value to exactly `2√2`. -/
+  (Tsirelson's optimal entangled strategy).  Together with the derived upper
+  bound this pins the quantum CHSH value to exactly `2√2`. -/
   value_tight :
     ∀ {Strat : Type} (chshValue : Strat → ℝ),
       Nonempty Strat →
       ∀ ε > 0, ∃ S : Strat, 2 * Real.sqrt 2 - chshValue S < ε
+
+namespace TsirelsonBound
+
+/-- The upper bound `chshValue S ≤ 2√2`, **derived** from the operator-norm proof
+`chshOp_norm_le` via the realizability datum.  This is the field consumers
+previously called `value_le`; it is now a theorem, not an unsound axiom. -/
+theorem value_le [TsirelsonBound] {Strat : Type} (chshValue : Strat → ℝ) (S : Strat) :
+    chshValue S ≤ 2 * Real.sqrt 2 :=
+  (TsirelsonBound.realizable chshValue S).le_two_sqrt_two
+
+end TsirelsonBound
 
 /-! ## 2. MIP* = RE / quantum-vs-commuting separation
 

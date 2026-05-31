@@ -338,4 +338,121 @@ theorem reflStep_eigenvalue_angle
     reflStep_re_mem_discriminant R S hR hRinv hS hSinv μ hμ
   exact ⟨μ.re, sgn, hre, hmem, hpolar⟩
 
+/-! ## The Szegedy intertwiner: spectral inclusion via an isometry
+
+The deep half of the Szegedy/Grover correspondence is *not* a full SVD: it is the
+statement that the random-walk operator embeds into the Jordan discriminant through
+the **Szegedy isometry** `T : ℂ^V ↪ ℂ^{V×V}`, `T |x⟩ = |φ_x⟩`, under which `D₀`
+*restricts* to the discriminant matrix.  We isolate the abstract linear-algebra core
+here, working with a rectangular `T : Matrix m n ℂ` satisfying `Tᴴ T = 1` (columns
+orthonormal — a genuine isometry) and the **intertwining relation** `D₀ · T = T · D`.
+
+The single fact we need is the *forward* spectral inclusion `spectrum D ⊆ spectrum D₀`:
+an isometric intertwiner pushes eigenvectors of `D` to nonzero eigenvectors of `D₀`.
+This is elementary (no SVD, no two-projection block reduction) and is proved sorry-free
+below; it is exactly the direction Szegedy's theorem needs (every random-walk eigenvalue
+is a discriminant eigenvalue / cosine of a principal angle). -/
+
+/-- An **isometry kills no vector**: if `Tᴴ · T = 1` then `T *ᵥ x = 0 ⇒ x = 0`.
+Proof: `(Tᴴ T) *ᵥ x = Tᴴ *ᵥ (T *ᵥ x) = Tᴴ *ᵥ 0 = 0`, but `(Tᴴ T) *ᵥ x = x`. -/
+theorem isometry_mulVec_ne_zero {m n : Type*} [Fintype m] [Fintype n] [DecidableEq n]
+    {T : Matrix m n ℂ} (hT : Tᴴ * T = 1) {x : n → ℂ} (hx : x ≠ 0) :
+    T *ᵥ x ≠ 0 := by
+  intro h
+  apply hx
+  have hone : (Tᴴ * T) *ᵥ x = x := by rw [hT]; exact Matrix.one_mulVec x
+  rw [← Matrix.mulVec_mulVec, h, Matrix.mulVec_zero] at hone
+  exact hone.symm
+
+/-- **Isometric-intertwiner spectral inclusion.**  Let `T : Matrix m n ℂ` be an
+isometry (`Tᴴ · T = 1`, i.e. orthonormal columns) intertwining `D : Matrix n n ℂ`
+with `D₀ : Matrix m m ℂ`: `D₀ · T = T · D`.  Then `spectrum D ⊆ spectrum D₀`.
+
+Proof: an eigenvector `D *ᵥ x = λ • x` (`x ≠ 0`) maps to `T *ᵥ x ≠ 0`
+(`isometry_mulVec_ne_zero`) with
+`D₀ *ᵥ (T *ᵥ x) = (D₀ T) *ᵥ x = (T D) *ᵥ x = T *ᵥ (D *ᵥ x) = λ • (T *ᵥ x)`,
+exhibiting `λ ∈ spectrum D₀`.  This is the elementary restriction/embedding fact —
+*not* an SVD — underlying the Szegedy discriminant correspondence. -/
+theorem spectrum_subset_of_isometry_intertwiner
+    {m n : Type*} [Fintype m] [DecidableEq m] [Fintype n] [DecidableEq n]
+    {T : Matrix m n ℂ} {D : Matrix n n ℂ} {D₀ : Matrix m m ℂ}
+    (hT : Tᴴ * T = 1) (hint : D₀ * T = T * D) :
+    spectrum ℂ D ⊆ spectrum ℂ D₀ := by
+  intro lam hlam
+  -- Extract a genuine nonzero eigenvector of `D` for `lam`.
+  rw [← Matrix.spectrum_toLin'] at hlam
+  have hev : Module.End.HasEigenvalue D.toLin' lam :=
+    Module.End.hasEigenvalue_iff_mem_spectrum.mpr hlam
+  obtain ⟨x, hxmem, hxne⟩ := hev.exists_hasEigenvector
+  have hxeig : D *ᵥ x = lam • x := by
+    have := Module.End.mem_eigenspace_iff.mp hxmem
+    rwa [Matrix.toLin'_apply] at this
+  -- `T *ᵥ x` is a nonzero `D₀`-eigenvector for `lam`.
+  have hTx_ne : T *ᵥ x ≠ 0 := isometry_mulVec_ne_zero hT hxne
+  have hD₀eig : D₀ *ᵥ (T *ᵥ x) = lam • (T *ᵥ x) := by
+    rw [Matrix.mulVec_mulVec, hint, ← Matrix.mulVec_mulVec, hxeig, Matrix.mulVec_smul]
+  -- Conclude `lam ∈ spectrum D₀`.
+  rw [← Matrix.spectrum_toLin']
+  apply Module.End.hasEigenvalue_iff_mem_spectrum.mp
+  apply Module.End.hasEigenvalue_of_hasEigenvector (x := T *ᵥ x)
+  exact ⟨by rw [Module.End.mem_eigenspace_iff, Matrix.toLin'_apply, hD₀eig], hTx_ne⟩
+
+/-- **The Jordan discriminant restricts along an isometry built from its own
+projector.**  Suppose `R = 2·(T·Tᴴ) − I` is the reflection through the range of an
+isometry `T` (`Tᴴ·T = 1`), and `S` is any matrix.  Then the Jordan discriminant
+`D₀ = ½(SR + RS)` intertwines with the **compressed** matrix `D := Tᴴ·S·T` via `T`:
+`D₀ · T = T · (Tᴴ S T)`.
+
+This is the concrete bridge for Szegedy/Grover: `R` is the coin reflection
+`2Π − I` with `Π = T Tᴴ` the Szegedy projector, `S` the swap/flip-flop, and
+`Tᴴ S T` the discriminant matrix.  Combined with
+`spectrum_subset_of_isometry_intertwiner`, it yields
+`spectrum (Tᴴ S T) ⊆ spectrum D₀` with no SVD.
+
+Computation: `RT = (2TTᴴ − I)T = 2T(TᴴT) − T = 2T − T = T`, so `SRT = ST`;
+`RST = 2TTᴴST − ST`; hence `(SR+RS)T = ST + 2TTᴴST − ST = 2T(TᴴST)`, and
+`D₀T = ½·2T(TᴴST) = T(TᴴST)`. -/
+theorem reflStepDiscriminant_intertwines_compression
+    {m n : Type*} [Fintype m] [DecidableEq m] [Fintype n] [DecidableEq n]
+    {T : Matrix m n ℂ} (hT : Tᴴ * T = 1) (S : Matrix m m ℂ) :
+    reflStepDiscriminant ((2 : ℂ) • (T * Tᴴ) - 1) S * T
+      = T * (Tᴴ * S * T) := by
+  set R : Matrix m m ℂ := (2 : ℂ) • (T * Tᴴ) - 1 with hR
+  -- `R · T = T`: `(2 TTᴴ − I)T = 2 T (TᴴT) − T = 2T − T = T`.
+  have hRT : R * T = T := by
+    rw [hR, Matrix.sub_mul, Matrix.smul_mul, Matrix.mul_assoc, hT, Matrix.mul_one,
+      Matrix.one_mul, two_smul, add_sub_cancel_right]
+  -- `R·S·T = (2 TTᴴ − I)·S·T = 2 T (Tᴴ S T) − S T`.
+  have hRST : R * S * T = (2 : ℂ) • (T * (Tᴴ * S * T)) - S * T := by
+    rw [hR, Matrix.sub_mul, Matrix.sub_mul, Matrix.smul_mul, Matrix.smul_mul,
+      Matrix.one_mul]
+    simp only [Matrix.mul_assoc]
+  -- `(S·R + R·S) · T = 2 · T · (Tᴴ S T)`.
+  unfold reflStepDiscriminant
+  rw [Matrix.smul_mul, Matrix.add_mul, Matrix.mul_assoc S, hRT, hRST]
+  -- `½ • (S·T + (2 • T(TᴴST) − S·T)) = T (Tᴴ S T)`.
+  rw [show S * T + ((2 : ℂ) • (T * (Tᴴ * S * T)) - S * T)
+      = (2 : ℂ) • (T * (Tᴴ * S * T)) by abel]
+  rw [smul_smul]
+  norm_num
+
+/-- **Szegedy discriminant inclusion (abstract, sorry-free).**  For an isometry `T`
+(`Tᴴ·T = 1`) and any matrix `S`, the spectrum of the compressed discriminant matrix
+`Tᴴ·S·T` is contained in the spectrum of the Jordan discriminant
+`D₀ = ½(SR + RS)` of the reflection `R = 2(TTᴴ) − I`.
+
+This is the genuine content of the Szegedy correspondence, with **no SVD and no
+two-projection block reduction**: every eigenvalue of the discriminant matrix
+(equivalently, every random-walk eigenvalue, once `TᴴST` is identified with the
+random-walk operator) is an eigenvalue of `D₀`.  Combines
+`reflStepDiscriminant_intertwines_compression` with
+`spectrum_subset_of_isometry_intertwiner`. -/
+theorem spectrum_compression_subset_reflStepDiscriminant
+    {m n : Type*} [Fintype m] [DecidableEq m] [Fintype n] [DecidableEq n]
+    {T : Matrix m n ℂ} (hT : Tᴴ * T = 1) (S : Matrix m m ℂ) :
+    spectrum ℂ (Tᴴ * S * T)
+      ⊆ spectrum ℂ (reflStepDiscriminant ((2 : ℂ) • (T * Tᴴ) - 1) S) :=
+  spectrum_subset_of_isometry_intertwiner hT
+    (reflStepDiscriminant_intertwines_compression hT S)
+
 end Graphplay.ForMathlib

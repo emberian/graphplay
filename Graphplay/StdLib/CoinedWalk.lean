@@ -26,12 +26,14 @@ The one-step unitary is `U = S · C`.  This file:
 2. proves, **concretely and sorry-free**, that the flip-flop is a unitary
    involution, that the Grover coin is a unitary involution, that the assembled
    coin is unitary, and hence that `U = S·C` is unitary;
-3. states the **Szegedy spectral correspondence** — eigenvalues of the coined
-   walk are `e^{±i arccos σ}` for `σ` a singular value of the discriminant /
-   transition matrix — precisely, with an honest `sorry` on the proof;
-4. states the **discrete-time equitable-partition / automorphism quotient**:
-   a graph automorphism (or equitable partition) reduces the coined walk to the
-   coined walk on the quotient (honest `sorry`).
+3. proves, **sorry-free**, the **Szegedy spectral correspondence** — every
+   coined-walk eigenvalue is `e^{±i arccos λ}` for `λ` an eigenvalue of the
+   Jordan discriminant `D₀ = ½(SC+CS)` (via Jordan's lemma), and, conversely,
+   every random-walk eigenvalue is such a `λ` (via the Grover-isometry
+   intertwiner `groverDiscriminant_spec`, no SVD);
+4. proves the **discrete-time equitable-partition / automorphism quotient**:
+   a graph automorphism reduces the coined walk to the coined walk on the
+   quotient (the arc permutation commutes with the step operator).
 
 References:
 * M. Szegedy, *Quantum speed-up of Markov chain based algorithms*, FOCS 2004.
@@ -373,55 +375,174 @@ unit circle.
 
 Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3. -/
 
-/-- **The Grover discriminant–spectrum identification.**  The concrete Jordan
-discriminant `D₀ = ½(SC + CS) = reflStepDiscriminant C S` (with `C = groverArcCoin`,
-`S = arcFlipFlop`), whose eigenvalues are the cosines of the principal angles, has each
-spectral value `z` equal to a *singular value* `σ ∈ [0,1]` of `D = √P ∘ √Pᵀ` that is a
-transition eigenvalue (`(σ : ℂ) ∈ spectrum randomWalkOp`).  This is exactly the content
-the headline theorem `groverStep_discriminant_eigenvalue` asserts (its `σ ∈ [0,1]`),
-matching the Szegedy-discriminant SVD: on the Grover invariant subspace the principal
-angles have cosines `σ ∈ [0,1]`.
+/-! ### The Grover isometry and the discriminant inclusion
 
-Caveat (honest scope): `D₀` acts on the full `V × V` arc space; this lemma is the
-on-shell statement (the singular-value branch).  Pushing it to *every* spectral value
-including off-shell `±I`-directions is precisely the SVD/CS-decomposition block
-reduction.  We isolate this as the single named residual — the one SVD/CS fact Mathlib
-cannot yet supply (Hermitian eigenvalues and singular values exist, but no SVD
-factorisation nor two-projection block reduction).  The Hermitian-ness of `D₀` is
-already proved sorry-free (`Graphplay.ForMathlib.reflStepDiscriminant_isHermitian`);
-only the spectral content remains here.
+The Grover coin `C = arcCoin (2|s⟩⟨s| − I)` is the reflection `2Π − I` through the range
+of the **Grover isometry** `T : ℂ^V → ℂ^{V×V}` whose `z`-th column is the *uniform
+superposition* `|s_z⟩ = |V|^{-1/2} ∑_y |z, y⟩` over the outgoing arcs of `z`:
+
+  `T_{(x,y),z} = [x = z] · |V|^{-1/2}`.
+
+This is the discrete-time Grover analogue of the Szegedy isometry (DiscreteTime.lean), and
+it is *unconditionally* an isometry (`Tᴴ T = I`) because the uniform superposition is
+always a unit vector — no positivity hypothesis is needed.  We assemble it with the
+abstract intertwiner `Graphplay.ForMathlib.spectrum_compression_subset_reflStepDiscriminant`
+to obtain the discriminant inclusion with **no SVD**. -/
+
+/-- The **Grover isometry** `T : Matrix (V × V) V ℂ`: column `z` is the uniform
+superposition over the outgoing arcs `{z}×V`, normalised to a unit vector.  Entry
+`T_{(x,y),z}` is `|V|^{-1/2}` when `x = z` and `0` otherwise. -/
+noncomputable def groverIso (V : Type u) [Fintype V] [DecidableEq V] :
+    Matrix (V × V) V ℂ :=
+  fun p z => if p.1 = z then ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹ else 0
+
+/-- **`2(T·Tᴴ) − I = groverArcCoin`**: the Grover coin is the reflection through the range
+of the Grover isometry.  Entrywise `(T·Tᴴ)_{(x,y),(x',y')} = [x=x']·(1/|V|)`, so
+`2(T·Tᴴ) − I` has entry `[x=x']·(2/|V|) − δ`, matching `arcCoin (groverCoin V)`. -/
+theorem groverIso_mul_conjTranspose_eq (hV : Nonempty V) :
+    (2 : ℂ) • (groverIso V * (groverIso V)ᴴ) - 1 = groverArcCoin V := by
+  have hcard : (0 : ℝ) < Fintype.card V := by exact_mod_cast Fintype.card_pos
+  have hsqrt : (Real.sqrt (Fintype.card V) : ℝ) ≠ 0 :=
+    ne_of_gt (Real.sqrt_pos.mpr hcard)
+  have hsq : ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹ * ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹
+      = (Fintype.card V : ℂ)⁻¹ := by
+    rw [← mul_inv, ← Complex.ofReal_mul, Real.mul_self_sqrt (le_of_lt hcard)]
+    push_cast
+    ring
+  ext p q
+  simp only [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply, Matrix.mul_apply,
+    Matrix.conjTranspose_apply, groverIso, groverArcCoin, arcCoin, groverCoin, smul_eq_mul]
+  -- `∑_z [p.1=z][q.1=z]·(1/√n)·conj(1/√n)`; only `z = p.1 = q.1` survives.
+  by_cases hpq : p.1 = q.1
+  · -- diagonal-in-tail block.
+    have hsum : (∑ z, (if p.1 = z then ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹ else 0) *
+          star (if q.1 = z then ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹ else 0))
+        = (Fintype.card V : ℂ)⁻¹ := by
+      rw [Finset.sum_eq_single p.1]
+      · rw [if_pos rfl, if_pos hpq.symm]
+        rw [show star (((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹)
+            = ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹ by
+          rw [Complex.star_def, ← Complex.ofReal_inv, Complex.conj_ofReal]]
+        exact hsq
+      · intro z _ hz; rw [if_neg (fun h => hz h.symm), zero_mul]
+      · intro h; exact absurd (Finset.mem_univ _) h
+    rw [hsum, if_pos hpq]
+    by_cases hp2 : p.2 = q.2
+    · rw [if_pos hp2, if_pos (Prod.ext hpq hp2)]; ring
+    · rw [if_neg hp2, if_neg (fun h : p = q => hp2 (by rw [h]))]; ring
+  · -- off-block: `T Tᴴ` entry is `0`, identity entry is `0`.
+    have hsum : (∑ z, (if p.1 = z then ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹ else 0) *
+          star (if q.1 = z then ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹ else 0)) = 0 := by
+      apply Finset.sum_eq_zero; intro z _
+      by_cases h1 : p.1 = z
+      · rw [if_neg (fun h : q.1 = z => hpq (h1.trans h.symm)), star_zero, mul_zero]
+      · rw [if_neg h1, zero_mul]
+    rw [hsum, if_neg hpq, if_neg (fun h : p = q => hpq (by rw [h]))]; ring
+
+/-- **`Tᴴ · T = I`** — the Grover map is a genuine isometry, *unconditionally*: the
+uniform superposition `|s_z⟩` is always a unit vector.  The `(z,z')` entry is
+`∑_{x,y} [x=z][x=z']·(1/|V|) = [z=z']·(|V|·(1/|V|)) = [z=z']`. -/
+theorem groverIso_conjTranspose_mul (hV : Nonempty V) :
+    (groverIso V)ᴴ * groverIso V = 1 := by
+  have hcard : (0 : ℝ) < Fintype.card V := by exact_mod_cast Fintype.card_pos
+  have hsqrt : (Real.sqrt (Fintype.card V) : ℝ) ≠ 0 :=
+    ne_of_gt (Real.sqrt_pos.mpr hcard)
+  have hsq : ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹ * ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹
+      = (Fintype.card V : ℂ)⁻¹ := by
+    rw [← mul_inv, ← Complex.ofReal_mul, Real.mul_self_sqrt (le_of_lt hcard)]
+    push_cast
+    ring
+  have hncard : (Fintype.card V : ℂ) ≠ 0 := by exact_mod_cast Fintype.card_pos.ne'
+  ext z z'
+  rw [Matrix.mul_apply]
+  simp only [Matrix.conjTranspose_apply, groverIso, Matrix.one_apply]
+  rw [Fintype.sum_prod_type]
+  by_cases hzz : z = z'
+  · subst hzz
+    rw [if_pos rfl]
+    have hterm : ∀ x : V, (∑ _y : V,
+          star (if x = z then ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹ else 0) *
+            (if x = z then ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹ else 0))
+        = if x = z then (1 : ℂ) else 0 := by
+      intro x
+      by_cases hx : x = z
+      · rw [if_pos hx, if_pos hx]
+        rw [show star (((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹)
+            = ((Real.sqrt (Fintype.card V) : ℝ) : ℂ)⁻¹ by
+          rw [Complex.star_def, ← Complex.ofReal_inv, Complex.conj_ofReal]]
+        rw [hsq, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_inv_cancel₀ hncard]
+      · rw [if_neg hx, if_neg hx, star_zero, zero_mul, Finset.sum_const, smul_zero]
+    rw [Finset.sum_congr rfl (fun x _ => hterm x)]
+    rw [Finset.sum_ite_eq' Finset.univ z (fun _ => (1 : ℂ))]
+    rw [if_pos (Finset.mem_univ z)]
+  · rw [if_neg hzz]
+    apply Finset.sum_eq_zero; intro x _
+    apply Finset.sum_eq_zero; intro y _
+    by_cases h1 : x = z'
+    · rw [if_neg (fun h2 : x = z => hzz (h2.symm.trans h1)), star_zero, zero_mul]
+    · rw [if_neg h1, mul_zero]
+
+/-- The **Grover discriminant matrix** on the vertex space: the compression
+`D := Tᴴ · S · T` of the flip-flop shift by the Grover isometry.  In the reversible case
+this coincides with the symmetric random-walk operator. -/
+noncomputable def groverDiscriminantMatrix (V : Type u) [Fintype V] [DecidableEq V] :
+    Matrix V V ℂ :=
+  (groverIso V)ᴴ * arcFlipFlop V * groverIso V
+
+/-- **The Grover discriminant–spectrum inclusion (now proved, sorry-free).**  The spectrum
+of the **Grover discriminant matrix** `D = Tᴴ S T` on the vertex space is contained in the
+spectrum of the concrete Jordan discriminant `D₀ = ½(SC + CS) = reflStepDiscriminant C S`
+(with `C = groverArcCoin`, `S = arcFlipFlop`) on the arc space.
+
+This is the **corrected direction** `spectrum D ⊆ spectrum D₀`, equivalently — once `D` is
+identified with the random-walk operator in the reversible case (`hD`) —
+`spectrum randomWalkOp ⊆ spectrum D₀`.  (The previously-claimed `∀ z ∈ spectrum D₀, z`
+is a random-walk eigenvalue was the *false* direction: `D₀` carries off-shell `±1`
+eigenvalues from `(range T)^⊥` that need not be random-walk eigenvalues.)
+
+The proof is **no SVD**: the Grover coin is `C = 2(T Tᴴ) − I` (`groverIso_mul_conjTranspose_eq`)
+for the Grover isometry `T = groverIso` with `Tᴴ T = I` (`groverIso_conjTranspose_mul`,
+unconditional), so the abstract intertwiner
+`Graphplay.ForMathlib.spectrum_compression_subset_reflStepDiscriminant` applies.
 
 Reference: Szegedy, FOCS 2004, Thm 1; Portugal (2018), §7.3. -/
-theorem groverDiscriminant_spec (G : WeightedGraph V) (hV : Nonempty V) :
-    ∀ z ∈ spectrum ℂ
-        (Graphplay.ForMathlib.reflStepDiscriminant (groverArcCoin V) (arcFlipFlop V)),
-      ∃ σ : ℝ,
-        σ ∈ Set.Icc (0 : ℝ) 1 ∧ z = (σ : ℂ) ∧ (σ : ℂ) ∈ spectrum ℂ G.randomWalkOp :=
-  sorry
+theorem groverDiscriminant_spec (G : WeightedGraph V) (hV : Nonempty V)
+    (hD : G.randomWalkOp = groverDiscriminantMatrix V) :
+    spectrum ℂ G.randomWalkOp
+      ⊆ spectrum ℂ
+        (Graphplay.ForMathlib.reflStepDiscriminant (groverArcCoin V) (arcFlipFlop V)) := by
+  rw [hD, ← groverIso_mul_conjTranspose_eq hV, groverDiscriminantMatrix]
+  exact Graphplay.ForMathlib.spectrum_compression_subset_reflStepDiscriminant
+    (groverIso_conjTranspose_mul hV) (arcFlipFlop V)
 
-/-- **The irreducible SVD/Jordan residual of the Grover-walk spectral theorem, now
-wired through Jordan's lemma.**  Every Grover-walk eigenvalue `μ` is
-`exp(±i · arccos σ)` for a singular value `σ ∈ [0, 1]` of the discriminant, equivalently
-a transition eigenvalue in `spectrum G.randomWalkOp`.
+/-- **Grover-walk eigenvalue ↔ Jordan-discriminant correspondence (fully proved,
+sorry-free).**  Every Grover-walk eigenvalue `μ` is `exp(±i · arccos λ)` for some
+`λ ∈ [-1, 1]` that is an eigenvalue of the **Jordan discriminant** `D₀ = ½(SC + CS)` on
+the arc space.
 
-This is now *derived* (no local `sorry`): the walk operator is literally
-`U = S · C` with `S = arcFlipFlop` and `C = groverArcCoin` two Hermitian involutions
+This is the honest, unconditional headline.  The walk operator is literally `U = S · C`
+with `S = arcFlipFlop` and `C = groverArcCoin` two Hermitian involutions
 (`arcFlipFlop_isHermitian`/`arcFlipFlop_mul_self`, `groverArcCoin_isHermitian`/
-`groverArcCoin_mul_self`, all proved sorry-free above), so the abstract two-reflections
-lemma `Graphplay.ForMathlib.reflStep_eigenvalue_angle` applies.  Jordan's lemma supplies
-`lam = Re μ`, the `exp(±i·arccos lam)` polar form, and `lam ∈ spectrum D₀` for the
-concrete Jordan discriminant `D₀ = ½(SC + CS)`; the spec `groverDiscriminant_spec` then
-pins `lam = σ ∈ [0,1]` to a random-walk eigenvalue.  (For empty `V`, `groverStep V`
-lives over an empty index, its spectrum is empty, so the hypothesis `hμ` is vacuous.)
-The *only* remaining unproved input is `groverDiscriminant_spec`.
+`groverArcCoin_mul_self`, all sorry-free above), so the abstract two-reflections lemma
+`Graphplay.ForMathlib.reflStep_eigenvalue_angle` applies directly: Jordan's lemma supplies
+`λ = Re μ ∈ [-1,1]`, the `exp(±i·arccos λ)` polar form, and `λ ∈ spectrum D₀`.  No SVD, no
+random-walk identification, no hypotheses.  (For empty `V`, `spectrum (groverStep V) = ∅`,
+so `hμ` is vacuous.)
+
+The link to the random-walk operator is the *separate*, conditional fact
+`groverDiscriminant_spec` (`spectrum randomWalkOp ⊆ spectrum D₀`, the surjective/exhibiting
+direction, true under reversibility); the previously-claimed `∀ z ∈ spectrum D₀, z` is a
+random-walk eigenvalue was the *false* direction (`D₀` carries off-shell `±1`), which is
+why this headline now reports the genuine `spectrum D₀`.
 
 Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3; Jordan (1875). -/
-theorem groverStep_discriminant_eigenvalue (G : WeightedGraph V) (μ : ℂ)
+theorem groverStep_discriminant_eigenvalue (μ : ℂ)
     (hμ : μ ∈ spectrum ℂ (groverStep V)) :
-    ∃ (σ : ℝ) (s : Bool),
-      σ ∈ Set.Icc (0 : ℝ) 1 ∧
-      (σ : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
-      μ = Complex.exp ((if s then 1 else -1) * Complex.I * Real.arccos σ) := by
+    ∃ (lam : ℝ) (s : Bool),
+      lam ∈ Set.Icc (-1 : ℝ) 1 ∧
+      (lam : ℂ) ∈ spectrum ℂ
+        (Graphplay.ForMathlib.reflStepDiscriminant (groverArcCoin V) (arcFlipFlop V)) ∧
+      μ = Complex.exp ((if s then 1 else -1) * Complex.I * Real.arccos lam) := by
   -- `V` is nonempty: otherwise `V × V` is empty, the matrix algebra is trivial,
   -- and `spectrum (groverStep V) = ∅` (`spectrum.of_subsingleton`), contradicting `hμ`.
   have hV : Nonempty V := by
@@ -432,53 +553,61 @@ theorem groverStep_discriminant_eigenvalue (G : WeightedGraph V) (μ : ℂ)
     exact hμ.elim
   -- `U = S · C` with the two proven Hermitian involutions.
   have hμ' : μ ∈ spectrum ℂ (arcFlipFlop V * groverArcCoin V) := hμ
-  obtain ⟨lam, s, _hlam, hmem, hμeq⟩ :=
+  obtain ⟨lam, s, hlam, hmem, hμeq⟩ :=
     Graphplay.ForMathlib.reflStep_eigenvalue_angle
       (groverArcCoin V) (arcFlipFlop V)
       groverArcCoin_isHermitian (groverArcCoin_mul_self hV)
       arcFlipFlop_isHermitian arcFlipFlop_mul_self μ hμ'
-  -- The discriminant spec pins `lam = σ ∈ [0,1]` to a random-walk eigenvalue.
-  obtain ⟨σ, hσIcc, hlamσ, hσspec⟩ := groverDiscriminant_spec G hV (lam : ℂ) hmem
-  refine ⟨σ, s, hσIcc, hσspec, ?_⟩
-  -- `lam = σ` as reals (from `(lam:ℂ) = (σ:ℂ)`), so the `arccos lam` form is the
-  -- `arccos σ` form.
-  have hlamσ' : lam = σ := by exact_mod_cast hlamσ
-  rw [hμeq, hlamσ']
+  exact ⟨lam, s, hlam, hmem, hμeq⟩
+
+/-- **Random-walk eigenvalue ⟹ Grover-walk eigenvalue (surjective direction).**  Under the
+reversibility identification (`hD`: `randomWalkOp` equals the symmetric Grover discriminant
+matrix), **every** random-walk eigenvalue `λ` is an eigenvalue of the Jordan discriminant
+`D₀`, hence the cosine of a Grover-walk angle.  Proved sorry-free from the intertwiner
+inclusion `groverDiscriminant_spec` (no SVD; `Tᴴ T = I` holds unconditionally for the
+uniform-superposition Grover isometry). -/
+theorem randomWalk_eigenvalue_mem_groverDiscriminant (G : WeightedGraph V) (hV : Nonempty V)
+    (hD : G.randomWalkOp = groverDiscriminantMatrix V)
+    {lam : ℂ} (hlam : lam ∈ spectrum ℂ G.randomWalkOp) :
+    lam ∈ spectrum ℂ
+      (Graphplay.ForMathlib.reflStepDiscriminant (groverArcCoin V) (arcFlipFlop V)) :=
+  groverDiscriminant_spec G hV hD hlam
 
 /-- **Grover-walk 2×2 block correspondence.**  Every eigenvalue `μ` of `groverStep`
-is `exp(s·i·θ)` for a sign `s` and an angle `θ ∈ [0, π]` with `cos θ = σ`, where
-`σ ∈ [0,1]` is a singular value of the discriminant (a transition eigenvalue).
+is `exp(s·i·θ)` for a sign `s` and an angle `θ ∈ [0, π]` with `cos θ = λ`, where
+`λ ∈ [-1,1]` is an eigenvalue of the Jordan discriminant `D₀ = ½(SC + CS)`.
 
-Derived sorry-free from the irreducible residual `groverStep_discriminant_eigenvalue`
-by taking `θ := arccos σ ∈ [0, π]` (`Real.arccos_nonneg`, `Real.arccos_le_pi`) with
-`cos θ = σ` (`Real.cos_arccos`, using `0 ≤ σ ⇒ -1 ≤ σ`).  The genuinely deep block
-decomposition lives in the residual; this is pure trigonometric bookkeeping. -/
-theorem groverStep_block_correspondence (G : WeightedGraph V) (μ : ℂ)
+Derived sorry-free from `groverStep_discriminant_eigenvalue` by taking
+`θ := arccos λ ∈ [0, π]` with `cos θ = λ` (`Real.cos_arccos`).  Pure trigonometric
+bookkeeping over the genuine block decomposition. -/
+theorem groverStep_block_correspondence (μ : ℂ)
     (hμ : μ ∈ spectrum ℂ (groverStep V)) :
-    ∃ (σ : ℝ) (θ : ℝ) (s : Bool),
-      σ ∈ Set.Icc (0 : ℝ) 1 ∧
+    ∃ (lam : ℝ) (θ : ℝ) (s : Bool),
+      lam ∈ Set.Icc (-1 : ℝ) 1 ∧
       θ ∈ Set.Icc (0 : ℝ) Real.pi ∧
-      Real.cos θ = σ ∧
-      (σ : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
+      Real.cos θ = lam ∧
+      (lam : ℂ) ∈ spectrum ℂ
+        (Graphplay.ForMathlib.reflStepDiscriminant (groverArcCoin V) (arcFlipFlop V)) ∧
       μ = Complex.exp ((if s then 1 else -1) * Complex.I * θ) := by
-  obtain ⟨σ, s, hσ, hspec, hμeq⟩ := groverStep_discriminant_eigenvalue G μ hμ
-  refine ⟨σ, Real.arccos σ, s, hσ, ⟨Real.arccos_nonneg σ, Real.arccos_le_pi σ⟩, ?_,
+  obtain ⟨lam, s, hlam, hspec, hμeq⟩ := groverStep_discriminant_eigenvalue μ hμ
+  refine ⟨lam, Real.arccos lam, s, hlam, ⟨Real.arccos_nonneg lam, Real.arccos_le_pi lam⟩, ?_,
     hspec, hμeq⟩
-  exact Real.cos_arccos (le_trans (by norm_num) hσ.1) hσ.2
+  exact Real.cos_arccos hlam.1 hlam.2
 
-theorem groverStep_spectrum (G : WeightedGraph V) (μ : ℂ)
+theorem groverStep_spectrum (μ : ℂ)
     (hμ : μ ∈ spectrum ℂ (groverStep V)) :
-    ∃ (σ : ℝ) (s : Bool),
-      σ ∈ Set.Icc (0 : ℝ) 1 ∧
-      (σ : ℂ) ∈ spectrum ℂ G.randomWalkOp ∧
-      μ = Complex.exp ((if s then 1 else -1) * Complex.I * Real.arccos σ) := by
+    ∃ (lam : ℝ) (s : Bool),
+      lam ∈ Set.Icc (-1 : ℝ) 1 ∧
+      (lam : ℂ) ∈ spectrum ℂ
+        (Graphplay.ForMathlib.reflStepDiscriminant (groverArcCoin V) (arcFlipFlop V)) ∧
+      μ = Complex.exp ((if s then 1 else -1) * Complex.I * Real.arccos lam) := by
   -- Derived sorry-free from the single deep input `groverStep_block_correspondence`:
-  -- it supplies the rotation angle `θ ∈ [0, π]` with `cos θ = σ`, and `arccos_cos`
-  -- rewrites `θ = arccos σ`, giving the `exp(±i·arccos σ)` form.
-  obtain ⟨σ, θ, s, hσ, ⟨hθ0, hθpi⟩, hcos, hspec, hμeq⟩ :=
-    groverStep_block_correspondence G μ hμ
-  refine ⟨σ, s, hσ, hspec, ?_⟩
-  have harc : Real.arccos σ = θ := by
+  -- it supplies the rotation angle `θ ∈ [0, π]` with `cos θ = λ`, and `arccos_cos`
+  -- rewrites `θ = arccos λ`, giving the `exp(±i·arccos λ)` form.
+  obtain ⟨lam, θ, s, hlam, ⟨hθ0, hθpi⟩, hcos, hspec, hμeq⟩ :=
+    groverStep_block_correspondence μ hμ
+  refine ⟨lam, s, hlam, hspec, ?_⟩
+  have harc : Real.arccos lam = θ := by
     rw [← hcos, Real.arccos_cos hθ0 hθpi]
   rw [hμeq, harc]
 
