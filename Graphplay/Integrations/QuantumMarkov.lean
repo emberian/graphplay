@@ -372,7 +372,18 @@ is a quotient QOMDP `Mq` whose goal-state reachability is equivalent to that of
 projection, so reachability is preserved under quotienting.
 
 Statement precise; the construction of `Mq` and the intertwining argument are
-the honest `sorry`. -/
+the honest `sorry`.
+
+NON-VACUITY FLAG.  As stated with a bare `∃ Mq, Mq.Reachable ↔ M.Reachable`, the
+conclusion is classically *weaker* than the intended theorem — one could in
+principle case-split on the (classically decidable) proposition `M.Reachable` and
+hand back a trivial `Mq` with the matching reachability, never touching the cell
+structure `S`.  The genuine content this `sorry` is reserved for is the
+*construction* of `Mq` as the **cell-averaged quotient** of `M` (Kraus operators
+averaged over cells via `S.cells`), with reachability equivalence proved through
+the cell-inflation intertwiner — not a decidability case-split.  A future
+strengthening should expose `Mq`'s cell-quotient data in the statement so the
+intended (non-vacuous) theorem is what gets discharged. -/
 theorem equitable_reduces_to_quotient
     {A : Type u} [Fintype A] {O : Type u} [Fintype O]
     (M : QOMDP d A O) {I : Type u} [Fintype I] [DecidableEq I]

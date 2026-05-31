@@ -751,15 +751,40 @@ structure EquitableCochain
       (coboundary X k) ((pullback X cellSimplex k) ψ)
         = (pullback X cellSimplex (k + 1)) (quotCobdry k ψ)
 
-/-- **Compatibility iff for both `d` and `d*`.** If a cell labelling is
-cochain-equitable (in the above sense, witnessed by `quotCobdry`), then
-the adjoint `d*` also descends to a quotient.  This is the chain-complex
-analogue of the symmetry of the equitable-partition condition on
-Hermitian matrices. -/
+/-- **The adjoint coboundary preserves cell-constant cochains.**  This is the
+combinatorial regularity hypothesis under which `d*` descends to the quotient:
+applying `d_k*` to any cell-constant `(k+1)`-cochain (a `pullback (k+1) ψ`) lands
+again in the cell-constant `k`-cochains (the range of `pullback k`).  Equivalently,
+the adjoint fibre-sums are cell-constant — the higher-dimensional analogue of the
+"every cell sees the same number of neighbours in each other cell" condition of an
+equitable partition.  WITHOUT this hypothesis no quotient adjoint exists, so it is
+exposed explicitly rather than asserted of every `EquitableCochain`. -/
+def EquitableCochain.AdjPreservesCells
+    {V : Type u} (X : SimplicialComplex V)
+    {I : ℕ → Type w} [∀ k, Fintype (I k)] [∀ k, DecidableEq (I k)]
+    (E : EquitableCochain X I) (k : ℕ) : Prop :=
+  ∀ ψ : I (k + 1) → ℂ,
+    (coboundaryAdj X k) ((pullback X E.cellSimplex (k + 1)) ψ)
+      ∈ LinearMap.range (pullback X E.cellSimplex k)
+
+/-- **Compatibility iff for both `d` and `d*` (TRUE-making hypothesis form).**
+If a cell labelling is cochain-equitable (witnessed by `quotCobdry`) **and** its
+adjoint preserves cell-constant cochains (`AdjPreservesCells`), then the adjoint
+`d*` descends to a quotient `d̄_k*` intertwining via the pullbacks:
+`d_k* ∘ pullback (k+1) = pullback k ∘ d̄_k*`.
+
+This is the chain-complex analogue of the symmetry of the equitable-partition
+condition on Hermitian matrices.  The previous formulation asserted this of an
+*arbitrary* `EquitableCochain`, which is **false** — without the fibre-uniformity
+regularity (`AdjPreservesCells`) the adjoint fibre-sums need not be cell-constant
+and no `quotAdj` exists.  The regularity hypothesis is now explicit; the genuine
+construction of the linear `quotAdj` from it (a fibre-sum quotient, requiring the
+combinatorial bookkeeping of the simplex incidence under the cell map) is the
+honest `sorry`. -/
 theorem EquitableCochain.adj_descends
     {V : Type u} (X : SimplicialComplex V)
     {I : ℕ → Type w} [∀ k, Fintype (I k)] [∀ k, DecidableEq (I k)]
-    (E : EquitableCochain X I) (k : ℕ) :
+    (E : EquitableCochain X I) (k : ℕ) (hreg : E.AdjPreservesCells X k) :
     -- There is a quotient adjoint coboundary `d̄_k* : (I (k+1) → ℂ) → (I k → ℂ)`
     -- intertwining the host adjoint with the pullbacks:
     --   `d_k* ∘ pullback (k+1) = pullback k ∘ d̄_k*`.
@@ -767,10 +792,10 @@ theorem EquitableCochain.adj_descends
       ∀ ψ : I (k + 1) → ℂ,
         (coboundaryAdj X k) ((pullback X E.cellSimplex (k + 1)) ψ)
           = (pullback X E.cellSimplex k) (quotAdj ψ) := by
-  -- DEEP: `d_k*` only descends to the quotient when each cell contains a
-  -- *uniform* number of simplices over each codim-1 cell face (so the adjoint
-  -- fibre-sum is cell-constant); that combinatorial regularity hypothesis is not
-  -- part of the bare `EquitableCochain` data, so no `quotAdj` is definable here.
+  -- With `hreg`, each `d_k* (pullback (k+1) ψ)` is in the range of `pullback k`,
+  -- so a (set-theoretic) choice of preimage exists pointwise; assembling these
+  -- into a *linear* `quotAdj` is the genuine construction (the fibre-sum quotient,
+  -- which is linear because `coboundaryAdj` and the pullbacks are).  Honest sorry.
   sorry
 
 /-- **Bridge to `RelEquitablePartition`.**  Any

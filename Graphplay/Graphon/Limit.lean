@@ -298,6 +298,7 @@ theorem ConsistentPartitionSequence.pst_time_convergence
               (nhds Plim.quotient))
     (i j : I) (τ : ℕ → ℝ) (τlim : ℝ)
     (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
+    (hmass : Plim.cellMass i = Plim.cellMass j)
     (h_pst : ∀ n, IsPST_finite (𝒮.quotient n) i j (τ n)) :
     IsCellUniformPST Wlim Plim i j τlim := by
   -- ANALYTIC CORE (now PROVEN): the finite-PST condition is closed under the
@@ -305,15 +306,22 @@ theorem ConsistentPartitionSequence.pst_time_convergence
   -- `Plim.quotient`.
   have hlim_raw : IsPST_finite Plim.quotient i j τlim :=
     IsPST_finite_of_tendsto h_lim i j hτ h_pst
-  -- RESIDUAL (single honest gap): convert raw-quotient finite-PST to symmetric-quotient
-  -- finite-PST (`cellUniformPST_iff_quotientPST` routes the conclusion through
-  -- `Plim.symmQuotient = D^{1/2} Q D^{-1/2}`).  Since `‖exp(-iτ·symmQuotient)_{ji}‖
-  -- = (√μ_j/√μ_i)·‖exp(-iτ·Q)_{ji}‖`, this step requires the cell-mass equality
-  -- `μ_i = μ_j` at the transferring cells (or, equivalently, a `CutNormTendsto`
-  -- hypothesis pinning `𝒮`'s masses to `Plim`'s).  This is the genuine missing
-  -- content; the analytic limit-passing above (`hlim_raw`) is now fully proven.
+  -- RAW → SYMMETRIC QUOTIENT BRIDGE (now CLOSED, given the cell-mass equality
+  -- `μ_i = μ_j` at the transferring cells, added as an explicit hypothesis).
+  -- `cellUniformPST_iff_quotientPST` routes the conclusion through
+  -- `Plim.symmQuotient = D^{1/2} Q D^{-1/2}`; the entrywise conjugation
+  -- `exp_symmQuotient_entry` gives `exp(-iτ·Q̃)_{ji} = √μ_j · exp(-iτ·Q)_{ji} · (√μ_i)⁻¹`,
+  -- and `μ_i = μ_j` makes the scalar prefactor `√μ_j/√μ_i` have modulus one — so the
+  -- two `‖·‖ = 1` PST conditions coincide.
   rw [cellUniformPST_iff_quotientPST]
-  sorry
+  unfold IsPST_finite at hlim_raw ⊢
+  rw [Plim.exp_symmQuotient_entry (-(Complex.I * (τlim : ℂ))) i j]
+  -- modulus of the prefactor `√μ_j · (√μ_i)⁻¹` is one because `μ_i = μ_j`.
+  rw [norm_mul, norm_mul, norm_inv, hlim_raw, mul_one,
+    Complex.norm_real, Complex.norm_real,
+    Real.norm_of_nonneg (Real.sqrt_nonneg _),
+    Real.norm_of_nonneg (Real.sqrt_nonneg _), hmass,
+    mul_inv_cancel₀ (ne_of_gt (Real.sqrt_pos.mpr (Plim.cellMass_pos j)))]
 
 /-- **Mixing-time convergence.**  Analogous statement for uniform mixing. -/
 theorem ConsistentPartitionSequence.mixing_time_convergence
@@ -325,18 +333,38 @@ theorem ConsistentPartitionSequence.mixing_time_convergence
               (nhds Plim.quotient))
     (i : I) (τ : ℕ → ℝ) (τlim : ℝ)
     (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
+    (hmass : ∀ j, Plim.cellMass i = Plim.cellMass j)
     (h_mix : ∀ n, IsUniformMixing_finite (𝒮.quotient n) i (τ n)) :
     IsCellUniformGraphonMixing Wlim Plim i τlim := by
   -- ANALYTIC CORE (now PROVEN): finite uniform mixing is closed under the matrix +
   -- time limit, so it passes from `𝒮.quotient n` to `Plim.quotient`.
   have hlim_raw : IsUniformMixing_finite Plim.quotient i τlim :=
     IsUniformMixing_finite_of_tendsto h_lim i hτ h_mix
-  -- RESIDUAL (single honest gap): same raw → symmetric quotient bridge as in
-  -- `pst_time_convergence` (the conclusion is routed through `Plim.symmQuotient` by
-  -- `cellUniformGraphonMixing_iff_quotientMixing`); needs the cell-mass equality.
-  -- The analytic limit-passing above (`hlim_raw`) is now fully proven.
+  -- RAW → SYMMETRIC QUOTIENT BRIDGE (now CLOSED, given the cell-mass equality
+  -- `μ_i = μ_j` for every target cell `j`, added as an explicit hypothesis — uniform
+  -- mixing ranges over all cells, so all transferring masses must agree).  Same
+  -- entrywise-conjugation mechanism as `pst_time_convergence`: by
+  -- `exp_symmQuotient_entry`, the `(j,i)` amplitude on `Q̃` is `√μ_j/√μ_i` times that
+  -- on `Q`, and `μ_i = μ_j` makes that scalar's modulus one, so the modulus² is
+  -- preserved cell by cell.
   rw [cellUniformGraphonMixing_iff_quotientMixing]
-  sorry
+  unfold IsUniformMixing_finite at hlim_raw ⊢
+  intro j
+  rw [Plim.exp_symmQuotient_entry (-(Complex.I * (τlim : ℂ))) i j]
+  -- the modulus of the `Q̃`-amplitude equals that of the `Q`-amplitude: the
+  -- `√μ_j/√μ_i = 1` prefactor (by `μ_i = μ_j`) drops out of `‖·‖`.
+  have hnorm : ‖(Real.sqrt (Plim.cellMass j) : ℂ)
+        * (NormedSpace.exp (-(Complex.I * (τlim : ℂ)) • Plim.quotient)) j i
+        * (Real.sqrt (Plim.cellMass i) : ℂ)⁻¹‖
+      = ‖(NormedSpace.exp (-(Complex.I * (τlim : ℂ)) • Plim.quotient)) j i‖ := by
+    rw [norm_mul, norm_mul, norm_inv,
+      Complex.norm_real, Complex.norm_real,
+      Real.norm_of_nonneg (Real.sqrt_nonneg _),
+      Real.norm_of_nonneg (Real.sqrt_nonneg _), hmass j,
+      mul_comm (Real.sqrt (Plim.cellMass j)) _, mul_assoc,
+      mul_inv_cancel₀ (ne_of_gt (Real.sqrt_pos.mpr (Plim.cellMass_pos j))), mul_one]
+  rw [hnorm]
+  exact hlim_raw j
 
 /-- **Search-time convergence.**  Spatial-search success times computed on
 finite quotients converge to the graphon-level cell-uniform search-success

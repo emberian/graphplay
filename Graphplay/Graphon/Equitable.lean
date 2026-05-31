@@ -460,6 +460,117 @@ need not vanish in general because the cell `C_i` is not a single point.
 We therefore do **not** assert `P.quotient i i = 0`.  It is the
 *off-diagonal* part of the quotient that captures cell-to-cell transitions. -/
 
+/-! ### The mass-diagonal similarity `Q̃ = D Q D⁻¹`
+
+The symmetric quotient `Q̃ = symmQuotient` is the conjugate of the raw quotient
+`Q` by the **mass diagonal** `D = diag(√μ(C_i))` (a genuine unit since every
+cell mass is positive).  This similarity is what lets us read off the `(j,i)`
+entry of the matrix exponential of `Q̃` from that of `Q`, up to the scalar
+`√μ_j/√μ_i` — which has modulus one exactly when the two cells have equal mass.
+-/
+
+/-- The **mass diagonal** `D = diag(√μ(C_i)) : Matrix I I ℂ`. -/
+noncomputable def massDiag {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) : Matrix I I ℂ :=
+  Matrix.diagonal (fun i => (Real.sqrt (P.cellMass i) : ℂ))
+
+/-- `massDiag` is a unit (invertible): its diagonal entries `√μ(C_i)` are all
+nonzero because cells have positive mass.  We package the unit explicitly so the
+matrix-exponential conjugation lemma `Matrix.exp_units_conj` applies. -/
+noncomputable def massDiagUnit {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) : (Matrix I I ℂ)ˣ where
+  val := P.massDiag
+  inv := Matrix.diagonal (fun i => (Real.sqrt (P.cellMass i) : ℂ)⁻¹)
+  val_inv := by
+    unfold GraphonEquitablePartition.massDiag
+    rw [Matrix.diagonal_mul_diagonal]
+    rw [show (fun i => (Real.sqrt (P.cellMass i) : ℂ) * (Real.sqrt (P.cellMass i) : ℂ)⁻¹)
+        = (fun _ => (1 : ℂ)) from ?_]
+    · exact Matrix.diagonal_one
+    · funext i
+      exact mul_inv_cancel₀ (by
+        simp only [Ne, Complex.ofReal_eq_zero]
+        exact ne_of_gt (Real.sqrt_pos.mpr (P.cellMass_pos i)))
+  inv_val := by
+    unfold GraphonEquitablePartition.massDiag
+    rw [Matrix.diagonal_mul_diagonal]
+    rw [show (fun i => (Real.sqrt (P.cellMass i) : ℂ)⁻¹ * (Real.sqrt (P.cellMass i) : ℂ))
+        = (fun _ => (1 : ℂ)) from ?_]
+    · exact Matrix.diagonal_one
+    · funext i
+      exact inv_mul_cancel₀ (by
+        simp only [Ne, Complex.ofReal_eq_zero]
+        exact ne_of_gt (Real.sqrt_pos.mpr (P.cellMass_pos i)))
+
+/-- The underlying matrix of `massDiagUnit` is `massDiag`. -/
+@[simp] theorem massDiagUnit_val {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    (P.massDiagUnit : Matrix I I ℂ) = P.massDiag := rfl
+
+/-- The inverse matrix of `massDiagUnit` is `diag(1/√μ)`. -/
+@[simp] theorem massDiagUnit_inv {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    (↑P.massDiagUnit⁻¹ : Matrix I I ℂ)
+      = Matrix.diagonal (fun i => (Real.sqrt (P.cellMass i) : ℂ)⁻¹) := rfl
+
+/-- **Mass-diagonal similarity.**  `symmQuotient = D · Q · D⁻¹` with
+`D = massDiag = diag(√μ)`: this is the defining `D^{1/2} Q D^{-1/2}` relation
+expressed as a genuine matrix conjugation. -/
+theorem symmQuotient_eq_massDiag_conj {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    P.symmQuotient
+      = (P.massDiagUnit : Matrix I I ℂ) * P.quotient * (↑P.massDiagUnit⁻¹ : Matrix I I ℂ) := by
+  rw [massDiagUnit_val, massDiagUnit_inv]
+  ext i j
+  -- LHS entry: `√μ_i · Q i j / √μ_j`.  RHS: `(D * Q * D⁻¹) i j = √μ_i · Q i j · (√μ_j)⁻¹`.
+  show (Real.sqrt (P.cellMass i) : ℂ) * P.quotient i j / (Real.sqrt (P.cellMass j) : ℂ)
+      = _
+  unfold GraphonEquitablePartition.massDiag
+  rw [Matrix.mul_assoc, Matrix.diagonal_mul, Matrix.mul_diagonal]
+  rw [div_eq_mul_inv]
+  ring
+
+/-- **Exponential of the symmetric quotient as a conjugate.**  For any scalar
+`c : ℂ`,
+$$ \exp(c \cdot \tilde Q) \;=\; D \cdot \exp(c \cdot Q) \cdot D^{-1},$$
+since `c · Q̃ = D (c · Q) D⁻¹` and the matrix exponential commutes with
+conjugation by a unit (`Matrix.exp_units_conj`). -/
+theorem exp_symmQuotient_eq_conj {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (c : ℂ) :
+    NormedSpace.exp (c • P.symmQuotient)
+      = (P.massDiagUnit : Matrix I I ℂ) * NormedSpace.exp (c • P.quotient)
+          * (↑P.massDiagUnit⁻¹ : Matrix I I ℂ) := by
+  -- `c • Q̃ = D (c • Q) D⁻¹`, then `exp` commutes with unit-conjugation.
+  have hscale : c • P.symmQuotient
+      = (P.massDiagUnit : Matrix I I ℂ) * (c • P.quotient)
+          * (↑P.massDiagUnit⁻¹ : Matrix I I ℂ) := by
+    rw [P.symmQuotient_eq_massDiag_conj, Matrix.mul_smul, Matrix.smul_mul]
+  rw [hscale]
+  exact Matrix.exp_units_conj P.massDiagUnit (c • P.quotient)
+
+/-- **Entrywise exponential conjugation.**  The `(j,i)` entry of
+`exp(c · Q̃)` is `√μ_j · (exp(c · Q))_{ji} · (√μ_i)⁻¹`. -/
+theorem exp_symmQuotient_entry {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    {I : Type v} [Fintype I] [DecidableEq I] {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (c : ℂ) (i j : I) :
+    (NormedSpace.exp (c • P.symmQuotient)) j i
+      = (Real.sqrt (P.cellMass j) : ℂ)
+          * (NormedSpace.exp (c • P.quotient)) j i
+          * (Real.sqrt (P.cellMass i) : ℂ)⁻¹ := by
+  rw [exp_symmQuotient_eq_conj, massDiagUnit_val, massDiagUnit_inv]
+  unfold GraphonEquitablePartition.massDiag
+  rw [Matrix.mul_assoc]
+  show (Matrix.diagonal (fun i => (Real.sqrt (P.cellMass i) : ℂ))
+      * (NormedSpace.exp (c • P.quotient)
+        * Matrix.diagonal (fun i => (Real.sqrt (P.cellMass i) : ℂ)⁻¹))) j i = _
+  rw [Matrix.diagonal_mul, Matrix.mul_diagonal, mul_assoc]
+
 end GraphonEquitablePartition
 
 namespace Graphon

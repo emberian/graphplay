@@ -60,6 +60,8 @@ downstream integration files. -/
 
 import Mathlib.Algebra.Algebra.Basic
 import Mathlib.LinearAlgebra.Matrix.Hermitian
+import Mathlib.Data.Matrix.PEquiv
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.MeasureTheory.Function.L2Space
 import Graphplay.Weighted
@@ -775,25 +777,80 @@ quantum-walk **return-amplitude observables** differ at some vertex: there is a
 vertex `v` whose return amplitude `⟨v|U(τ)|v⟩` differs between `G` and `H`.
 
 Genuine definition (replacing the previous `True`): the predicate is the actual
-observable-difference condition `∃ v, G.evolve τ v v ≠ H.evolve τ v v`. -/
+observable-difference condition `∃ v, G.evolve τ v v ≠ H.evolve τ v v`.
+
+NB.  This pointwise predicate is a genuine *detector* but is **not** by itself a
+non-isomorphism *certificate*: an isomorphism only permutes the diagonal
+return-amplitudes, so a per-vertex difference may be an artifact of relabelling.
+The conjugation-invariant *total* return amplitude (trace of `U(τ)`) is the
+honest certificate — see `CTQW_GI_trace_certifies` below. -/
 def CTQW_GI_heuristic (G H : WeightedGraph V) (τ : ℝ) : Prop :=
   ∃ v : V, G.evolve τ v v ≠ H.evolve τ v v
 
-/-- **Soundness of the CTQW GI heuristic.** If the heuristic fires at any time
-`τ` (the walk observables differ at some vertex), then `G` and `H` are **not
-isomorphic** — there is no vertex relabelling `e` carrying `G`'s adjacency to
-`H`'s.  (Isomorphic graphs have conjugate evolutions, hence identical
-return-amplitude observables, so a detected difference certifies
-non-isomorphism.) -/
-theorem CTQW_GI_heuristic_sound
-    (G H : WeightedGraph V) (τ : ℝ) :
-    CTQW_GI_heuristic G H τ →
-      ¬ ∃ e : V ≃ V, ∀ x y : V, H.adj (e x) (e y) = G.adj x y := by
-  -- An isomorphism `e` conjugates the Hamiltonians, hence `U_H(τ)` is the
-  -- `e`-conjugate of `U_G(τ)`, giving equal diagonal (return) amplitudes;
-  -- this contradicts the fired heuristic.  Deferred (needs `evolve` conjugation
-  -- under permutation similarity).
-  sorry
+/-- The permutation matrix `P = e.toPEquiv.toMatrix` of `e : V ≃ V` has the
+permutation matrix of `e.symm` as a (two-sided) inverse: `P * P⁻¹-witness = 1`. -/
+theorem permMatrix_mul_symm (e : V ≃ V) :
+    (e.toPEquiv.toMatrix : Matrix V V ℂ) * e.symm.toPEquiv.toMatrix = 1 := by
+  rw [← PEquiv.toMatrix_trans, ← Equiv.toPEquiv_trans,
+    Equiv.self_trans_symm, Equiv.toPEquiv_refl, PEquiv.toMatrix_refl]
+
+/-- **Evolutions of isomorphic graphs are conjugate** (permutation similarity).
+If `e : V ≃ V` carries `H`'s adjacency to `G`'s (`H.adj (e x) (e y) = G.adj x y`),
+then the CTQW propagator of `G` is the `P`-conjugate of that of `H`, where
+`P = e.toPEquiv.toMatrix` is the permutation matrix of `e`:
+`G.evolve τ = P * H.evolve τ * P⁻¹`.
+
+Proof: the hypothesis says `G.adj = P * H.adj * P⁻¹` (a permutation-similarity of
+the Hamiltonians), and the matrix exponential conjugates (`Matrix.exp_conj`). -/
+theorem evolve_isoConj (G H : WeightedGraph V) (τ : ℝ) (e : V ≃ V)
+    (he : ∀ x y : V, H.adj (e x) (e y) = G.adj x y) :
+    G.evolve τ = e.toPEquiv.toMatrix * H.evolve τ * (e.toPEquiv.toMatrix)⁻¹ := by
+  set P : Matrix V V ℂ := e.toPEquiv.toMatrix with hP
+  -- `P` has the permutation matrix of `e.symm` as right inverse, hence is a unit.
+  have hrinv : P * e.symm.toPEquiv.toMatrix = 1 := permMatrix_mul_symm e
+  have hlinv : e.symm.toPEquiv.toMatrix * P = 1 := mul_eq_one_comm.mp hrinv
+  have hPunit : IsUnit P := ⟨⟨P, e.symm.toPEquiv.toMatrix, hrinv, hlinv⟩, rfl⟩
+  have hinv : P⁻¹ = e.symm.toPEquiv.toMatrix := Matrix.inv_eq_right_inv hrinv
+  -- The adjacency conjugation: `G.adj = P * H.adj * P⁻¹`.
+  have hadj : G.adj = P * H.adj * P⁻¹ := by
+    rw [hinv, hP, PEquiv.toMatrix_toPEquiv_mul, PEquiv.mul_toMatrix_toPEquiv]
+    ext x y
+    simp only [Matrix.submatrix_apply, id_eq, Equiv.symm_symm]
+    exact (he x y).symm
+  -- Push the conjugation through the scalar and the exponential.
+  show NormedSpace.exp (-(Complex.I * (τ : ℂ)) • G.adj)
+      = P * NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H.adj) * P⁻¹
+  rw [← Matrix.exp_conj P _ hPunit]
+  congr 1
+  rw [hadj, Matrix.mul_smul, Matrix.smul_mul]
+
+/-- **Trace of the CTQW propagator is an isomorphism invariant.** If `e` is a
+graph isomorphism from `H` to `G` (`H.adj (e x) (e y) = G.adj x y`), then the
+total return amplitude `tr U(τ)` agrees: `(G.evolve τ).trace = (H.evolve τ).trace`.
+This is the conjugation-invariance of trace applied to `evolve_isoConj`. -/
+theorem evolve_trace_iso_invariant (G H : WeightedGraph V) (τ : ℝ) (e : V ≃ V)
+    (he : ∀ x y : V, H.adj (e x) (e y) = G.adj x y) :
+    (G.evolve τ).trace = (H.evolve τ).trace := by
+  rw [evolve_isoConj G H τ e he]
+  have hrinv : (e.toPEquiv.toMatrix : Matrix V V ℂ) * e.symm.toPEquiv.toMatrix = 1 :=
+    permMatrix_mul_symm e
+  have hlinv : e.symm.toPEquiv.toMatrix * (e.toPEquiv.toMatrix : Matrix V V ℂ) = 1 :=
+    mul_eq_one_comm.mp hrinv
+  have hPunit : IsUnit (e.toPEquiv.toMatrix : Matrix V V ℂ) :=
+    ⟨⟨_, e.symm.toPEquiv.toMatrix, hrinv, hlinv⟩, rfl⟩
+  exact Matrix.trace_conj hPunit (H.evolve τ)
+
+/-- **Trace certificate for the CTQW GI heuristic (PROVEN).** If the *total*
+return amplitudes differ — `tr U_G(τ) ≠ tr U_H(τ)` — then `G` and `H` are **not
+isomorphic**: there is no vertex relabelling `e` carrying `G`'s adjacency to
+`H`'s.  This is the conjugation-*invariant* form of the heuristic and is the
+genuine non-isomorphism certificate (a per-vertex diagonal difference is not, as
+isomorphism only permutes the diagonal). -/
+theorem CTQW_GI_trace_certifies (G H : WeightedGraph V) (τ : ℝ)
+    (h : (G.evolve τ).trace ≠ (H.evolve τ).trace) :
+    ¬ ∃ e : V ≃ V, ∀ x y : V, H.adj (e x) (e y) = G.adj x y := by
+  rintro ⟨e, he⟩
+  exact h (evolve_trace_iso_invariant G H τ e he)
 
 /-- **WL-bounded hardware design pattern.** For an engineered CTQW chip with
 `k` equitable cells, the WL design budget says `k ≤ WLCellCount G`. The chip's

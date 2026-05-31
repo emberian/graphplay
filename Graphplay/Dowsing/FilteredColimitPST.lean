@@ -145,12 +145,13 @@ theorem ConsistentPartitionSequence.pst_inherited
               (nhds Plim.quotient))
     (i j : I) (τ : ℕ → ℝ) (tau_lim : ℝ)
     (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim))
+    (hmass : Plim.cellMass i = Plim.cellMass j)
     (h_pst : ∀ n, Graphon.IsPST_finite (𝒮.quotient n) i j (τ n)) :
     Graphon.IsCellUniformPST Wlim Plim i j tau_lim := by
   -- This is precisely `Graphon.ConsistentPartitionSequence.pst_time_convergence`
-  -- applied to the same data.
+  -- applied to the same data (the cell-mass equality `μ_i = μ_j` threads through).
   exact Graphon.ConsistentPartitionSequence.pst_time_convergence
-    𝒮 Wlim Plim h_lim i j τ tau_lim hτ h_pst
+    𝒮 Wlim Plim h_lim i j τ tau_lim hτ hmass h_pst
 
 /-- **Mixing-inheritance corollary.**  Same hypotheses, swapping PST for
 uniform mixing.  The graphon-level cell-uniform mixing predicate is
@@ -164,10 +165,11 @@ theorem ConsistentPartitionSequence.mixing_inherited
               (nhds Plim.quotient))
     (i : I) (τ : ℕ → ℝ) (tau_lim : ℝ)
     (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim))
+    (hmass : ∀ j, Plim.cellMass i = Plim.cellMass j)
     (h_mix : ∀ n, Graphon.IsUniformMixing_finite (𝒮.quotient n) i (τ n)) :
     Graphon.IsCellUniformGraphonMixing Wlim Plim i tau_lim := by
   exact Graphon.ConsistentPartitionSequence.mixing_time_convergence
-    𝒮 Wlim Plim h_lim i τ tau_lim hτ h_mix
+    𝒮 Wlim Plim h_lim i τ tau_lim hτ hmass h_mix
 
 /-- **Search-inheritance corollary.**  Spatial-search times computed on the
 finite quotients lift to graphon-level cell-uniform search-success times. -/
@@ -411,14 +413,16 @@ theorem xie_tamon_pst_inheritance
               (nhds Plim.quotient))
     (i j : XieTamonIndex) (τ : ℕ → ℝ) (tau_lim : ℝ)
     (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim))
+    (hmass : Plim.cellMass i = Plim.cellMass j)
     (h_pst : ∀ m, Graphon.IsPST_finite ((K_n_plus_path n).quotient m) i j (τ m)) :
     Graphon.IsCellUniformPST Wlim Plim i j tau_lim :=
   -- The full Xie–Tamon corollary is exactly the master inheritance theorem
   -- `ConsistentPartitionSequence.pst_inherited` instantiated at the concrete
-  -- `𝒮 = K_n_plus_path n`.  The search version (the actual content of
-  -- arXiv:2301.07251) goes analogously through `search_inherited`.
+  -- `𝒮 = K_n_plus_path n` (the cell-mass equality `μ_i = μ_j` threads through).
+  -- The search version (the actual content of arXiv:2301.07251) goes analogously
+  -- through `search_inherited`.
   ConsistentPartitionSequence.pst_inherited (K_n_plus_path n) Wlim Plim h_lim
-    i j τ tau_lim hτ h_pst
+    i j τ tau_lim hτ hmass h_pst
 
 /-! ### `K_n + tree`
 
@@ -852,9 +856,10 @@ theorem ConsistentPartitionSequence.pst_rate_inheritance
               (nhds Plim.quotient))
     (i j : I) (τ : ℕ → ℝ) (tau_lim : ℝ)
     (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim))
+    (hmass : Plim.cellMass i = Plim.cellMass j)
     (h_pst : ∀ n, Graphon.IsPST_finite (𝒮.quotient n) i j (τ n)) :
     Graphon.IsCellUniformPST Wlim Plim i j tau_lim :=
-  ConsistentPartitionSequence.pst_inherited 𝒮 Wlim Plim h_lim i j τ tau_lim hτ h_pst
+  ConsistentPartitionSequence.pst_inherited 𝒮 Wlim Plim h_lim i j τ tau_lim hτ hmass h_pst
 
 /-! ### Matrix-exponential Lipschitz infrastructure
 
@@ -1321,6 +1326,7 @@ theorem ChiralConsistentPartitionSequence.pst_inherited
       (nhds Plim.quotient))
     (i j : I) (τ : ℕ → ℝ) (tau_lim : ℝ)
     (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim))
+    (hmass : Plim.cellMass i = Plim.cellMass j)
     (h_pst : ∀ n, Graphon.IsPST_finite
       (𝒮.toConsistentPartitionSequence.quotient n) i j (τ n)) :
     Graphon.IsCellUniformPST Wlim Plim i j tau_lim :=
@@ -1328,9 +1334,9 @@ theorem ChiralConsistentPartitionSequence.pst_inherited
   -- diagonal phase matrix on cells; operator-norm convergence and
   -- `IsPST_finite` are invariant under such conjugation, so the chiral
   -- inheritance reduces to the unsigned master theorem on the underlying
-  -- consistent partition sequence.
+  -- consistent partition sequence (the cell-mass equality threads through).
   ConsistentPartitionSequence.pst_inherited
-    𝒮.toConsistentPartitionSequence Wlim Plim h_lim i j τ tau_lim hτ h_pst
+    𝒮.toConsistentPartitionSequence Wlim Plim h_lim i j τ tau_lim hτ hmass h_pst
 
 /-! ## 7. Three open directions
 

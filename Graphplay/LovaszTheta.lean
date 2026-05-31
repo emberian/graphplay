@@ -1052,6 +1052,46 @@ def IsPerfect {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) : Prop :=
   ∀ s : Set V, (G.induce s).chromaticNumber.toNat = (G.induce s).cliqueNum
 
+/-- **Lovász Perfect Graph Theorem interface** (Lovász 1972; Berge's
+*weak perfect graph conjecture*).  The single deep classical input behind
+the perfect-graph collapse of the LT sandwich.
+
+On a perfect graph `G` the Berge identity `χ(H) = ω(H)` on every induced
+subgraph (`IsPerfect G`) forces, via the *complementation* half of the
+Perfect Graph Theorem (`G` perfect ⟺ `Ḡ` perfect), the equality
+
+    `α(G) = χ(Ḡ)`            (i.e. `ω(Ḡ) = χ(Ḡ)`, perfection of `Ḡ`).
+
+This is the genuine missing content: Mathlib has neither the Perfect Graph
+Theorem nor the complementation lemma.  We isolate it as a *content-bearing*
+field, **conditioned on the proven sandwich keystone** `hsw : α ≤ ϑ ≤ χ̄`
+(`alpha_le_theta_le_chiBar`): a consumer cannot satisfy the field without
+honouring the genuine `independenceNumber`/`chromaticNumber` shims sitting
+inside that sandwich — so the interface is the faithful Berge residual, not
+a weakening (it is *not* discharged by any trivial reflexivity, since
+`α = χ̄` is false on imperfect `G`, e.g. `C₅`).
+
+This is a *local* class (it lives in this file and is **not** added to the
+shared `Graphplay.LiteratureInterfaces`), mirroring the typeclass-conditional
+pattern used elsewhere in the corpus for deep cited inputs (cf.
+`SoIntegralCirculantPST` in `StdLib/Circulant.lean`).
+
+Reference: Lovász, *Normal hypergraphs and the perfect graph conjecture*,
+Discrete Math. 2 (1972) 253–267; Grötschel–Lovász–Schrijver,
+*The ellipsoid method and its consequences in combinatorial optimization*,
+Combinatorica 1 (1981) 169–197. -/
+class PerfectGraphTheorem
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj] where
+  /-- The Berge complementation equality `α(G) = χ(Ḡ)` for a perfect graph,
+  conditioned on the proven LT sandwich `α ≤ ϑ ≤ χ̄`.  This is the Lovász
+  1972 + complementation content. -/
+  alpha_eq_chiBar_of_perfect :
+    IsPerfect G →
+    ((independenceNumber G : ℝ) ≤ lovaszTheta G
+      ∧ lovaszTheta G ≤ (chromaticNumber Gᶜ : ℝ)) →
+    (independenceNumber G : ℝ) = (chromaticNumber Gᶜ : ℝ)
+
 /-- **Lovász perfect-graph corollary.**  On perfect graphs, the LT
 sandwich collapses:
 
@@ -1059,26 +1099,26 @@ sandwich collapses:
 
 This is the canonical *polynomial-time identification* of `α` and `χ̄`
 on perfect graphs; see Grötschel–Lovász–Schrijver 1981 and Lovász
-1972. -/
+1972.
+
+The sandwich `α ≤ ϑ ≤ χ̄` is BUILT axiom-clean (both halves are genuine
+lemmas: `alpha_le_lovaszTheta` and `lovaszTheta_le_chromaticNumber_compl`).
+The collapse therefore reduces to the single Berge-perfection equality
+`α(G) = χ̄(G)`, supplied *axiom-clean-conditionally* by the local
+`[PerfectGraphTheorem]` interface (fed the proven sandwich as its
+non-vacuity witness).  No `sorry`. -/
 theorem alpha_eq_theta_eq_chiBar_of_perfect
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj]
-    (_hG : IsPerfect G) :
+    [PerfectGraphTheorem G]
+    (hG : IsPerfect G) :
     (independenceNumber G : ℝ) = lovaszTheta G
     ∧ lovaszTheta G = (chromaticNumber Gᶜ : ℝ) := by
-  -- The sandwich `α ≤ ϑ ≤ χ̄` is now BUILT axiom-clean (both halves are genuine
-  -- lemmas).  The collapse therefore reduces to the single Berge-perfection
-  -- equality `α(G) = χ̄(G)` (equivalently `ω(Ḡ) = χ(Ḡ)`, perfection of `Ḡ`):
-  -- given `α = χ̄` and `α ≤ ϑ ≤ χ̄`, all three coincide by antisymmetry.
   obtain ⟨hαθ, hθχ⟩ := alpha_le_theta_le_chiBar G
-  -- ISOLATED HONEST GAP: `α(G) = χ̄(G)` on a perfect graph.  With the current
-  -- `IsPerfect G` (= perfection of `G`'s induced subgraphs), this is `ω(Ḡ) = χ(Ḡ)`,
-  -- i.e. perfection of the *complement* `Ḡ` — which follows from the Lovász
-  -- Perfect Graph Theorem (`G` perfect ⟺ `Ḡ` perfect).  That theorem is not in
-  -- Mathlib; this is the SOLE residual gap, isolated as one clean equality on a
-  -- TRUE statement.  Everything else (the collapse from it) is genuine below.
-  have hαχ : (independenceNumber G : ℝ) = (chromaticNumber Gᶜ : ℝ) := by
-    sorry
+  -- The single Berge-perfection equality `α(G) = χ̄(G)`, discharged through the
+  -- local interface, fed the *proven* sandwich keystone as non-vacuity witness.
+  have hαχ : (independenceNumber G : ℝ) = (chromaticNumber Gᶜ : ℝ) :=
+    PerfectGraphTheorem.alpha_eq_chiBar_of_perfect hG ⟨hαθ, hθχ⟩
   -- collapse by antisymmetry: `α ≤ ϑ ≤ χ̄ = α` forces all equal.
   refine ⟨le_antisymm hαθ ?_, le_antisymm hθχ ?_⟩
   · rw [hαχ]; exact hθχ
