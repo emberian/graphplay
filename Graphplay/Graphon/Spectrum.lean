@@ -379,22 +379,92 @@ fixed scalar `c` almost everywhere off the diagonal. -/
 def IsConstant (W : Graphon Ω μ) (c : ℂ) : Prop :=
   ∀ᵐ p ∂(μ.prod μ), p.1 ≠ p.2 → W.kernel p.1 p.2 = c
 
+/-- **Constant-graphon slice integral (atomless case).**  For a constant graphon
+`W ≡ c` over an *atomless* finite measure, the per-vertex flux slice integral is
+explicit:  `∫ y, W.kernel x y ∂μ = c · μ(Ω)` for `μ`-a.e. `x`.
+
+This is the genuine analytic core of the constant-graphon spectrum: the
+product-a.e. constancy hypothesis `IsConstant c` becomes, by Fubini
+(`Measure.ae_ae_of_ae_prod`), a per-row a.e. statement; under `[NoAtoms μ]`
+each singleton `{x}` is `μ`-null, so the diagonal exclusion `y ≠ x` drops out
+and the slice integrand is `c` for a.e. `y`.  The atomless hypothesis is genuine
+— on an atomic measure the diagonal `W.kernel x x = 0` (looplessness) contributes
+and the slice integral is `c · (μ(Ω) − μ{x})`, *not* `c · μ(Ω)`. -/
+theorem constant_op_slice [NoAtoms μ] (W : Graphon Ω μ) (c : ℂ)
+    (hW : W.IsConstant c) :
+    ∀ᵐ x ∂μ, (∫ y, W.kernel x y ∂μ) = c * (μ Set.univ).toReal := by
+  -- Fubini: from product-a.e. to per-row a.e.
+  have hrow : ∀ᵐ x ∂μ, ∀ᵐ y ∂μ, x ≠ y → W.kernel x y = c :=
+    Measure.ae_ae_of_ae_prod hW
+  filter_upwards [hrow] with x hx
+  -- Under `[NoAtoms μ]`, `{x}` is null, so `∀ᵐ y, y ≠ x`.
+  have hne : ∀ᵐ y ∂μ, y ≠ x := by
+    have : μ {x} = 0 := measure_singleton x
+    rw [ae_iff]
+    simpa only [not_not] using this
+  -- Combine: the integrand is `c` a.e.
+  have hae : (fun y => W.kernel x y) =ᵐ[μ] fun _ => c := by
+    filter_upwards [hx, hne] with y hyc hyne
+    exact hyc (Ne.symm hyne)
+  rw [integral_congr_ae hae, integral_const, Complex.real_smul]
+  show ((μ.real Set.univ : ℝ) : ℂ) * c = c * ((μ Set.univ).toReal : ℂ)
+  rw [show (μ.real Set.univ : ℝ) = (μ Set.univ).toReal from rfl]
+  ring
+
 /-- A constant non-zero graphon has a single non-zero L²-eigenvalue
 (the constant function `1`); the orthogonal complement has spectrum `{0}`,
-and the only invariant cell-uniform sector is one-dimensional. -/
-theorem constant_pointSpectrum (W : Graphon Ω μ) (c : ℂ) (hc : c ≠ 0)
-    (_hW : W.IsConstant c) (hμ : μ Set.univ ≠ ∞) :
+and the only invariant cell-uniform sector is one-dimensional.
+
+**Proven** for the canonical *atomless* constant graphon (the `K_n`-limit
+regime, e.g. Lebesgue measure on `[0,1]`): the witness is the constant
+function `1 ∈ L²(μ)` (`indicatorConstLp` over the whole space).  By
+`constant_op_slice` the slice integral `∫ y, W.kernel x y ∂μ = c · μ(Ω)` for
+a.e. `x`, so `W.op 1 = (c · μ(Ω)) • 1`.  The `[NoAtoms μ]` hypothesis is the
+genuine atomless requirement (see `constant_op_slice`). -/
+theorem constant_pointSpectrum [NoAtoms μ] (W : Graphon Ω μ) (c : ℂ) (_hc : c ≠ 0)
+    (hW : W.IsConstant c) (hμ : μ Set.univ ≠ ∞) (hμ0 : μ Set.univ ≠ 0) :
     (c * (μ Set.univ).toReal) ∈ W.pointSpectrum := by
-  -- HONEST SORRY (genuinely measure-theoretic `op` integral).  The witness is the
-  -- constant function `1 ∈ L²(μ)`: `W.op 1 = (c · μ(Ω)) • 1` because
-  -- `(W.op 1)(x) = ∫ y, W.kernel x y · 1 ∂μ = ∫ y, W.kernel x y ∂μ`, and by
-  -- `IsConstant c` (an a.e.-on-`μ.prod μ` hypothesis) this slice integral equals
-  -- `c · μ(Ω)` for a.e. `x` — a Fubini/Tonelli slice argument on the open
-  -- `op`-integral layer (the same still-open kernel-action integral underlying
-  -- `kernelIntegralFun_memLp`).  No vacuous weakening: the eigenvalue
-  -- `c · μ(Ω).toReal` is the genuine rank-one eigenvalue.
-  -- BLOCKED: open `op` slice integral (Fubini on product-a.e. kernel constancy).
-  sorry
+  classical
+  -- The constant function `1 ∈ L²(μ)` as `indicatorConstLp` over the whole space.
+  set one : Lp ℂ 2 μ := MeasureTheory.indicatorConstLp 2 MeasurableSet.univ hμ (1 : ℂ) with hone
+  refine ⟨one, ?_, ?_⟩
+  · -- `one ≠ 0`: its norm is `‖1‖ · μ(univ)^{1/2} ≠ 0` since `μ(univ) ≠ 0`.
+    intro h0
+    have hn : ‖one‖ = 0 := by rw [h0, norm_zero]
+    rw [hone, MeasureTheory.norm_indicatorConstLp (by norm_num) (by norm_num)] at hn
+    simp only [norm_one, one_mul] at hn
+    have : (μ Set.univ).toReal = 0 := by
+      have := Real.rpow_eq_zero_iff_of_nonneg ENNReal.toReal_nonneg |>.1 hn
+      exact this.1
+    exact hμ0 ((ENNReal.toReal_eq_zero_iff _).1 this |>.resolve_right hμ)
+  · -- `W.op one = (c · μ(univ)) • one`: compare coeFns a.e.
+    apply Lp.ext
+    -- LHS coeFn `=ᵐ opFun one`.
+    have hLHS : ⇑(W.op one) =ᵐ[μ] W.opFun ((one : Ω → ℂ)) := by
+      unfold Graphon.op
+      rw [Graphplay.ForMathlib.kernelIntegralCLM_apply]
+      exact (W.opFun_memLp one).coeFn_toLp
+    -- `one`'s coeFn is `=ᵐ fun _ => 1`.
+    have hone_coe : ⇑one =ᵐ[μ] fun _ => (1 : ℂ) := by
+      rw [hone]
+      filter_upwards [MeasureTheory.indicatorConstLp_coeFn
+        (hs := MeasurableSet.univ) (hμs := hμ) (c := (1 : ℂ))] with x hx
+      rw [hx, Set.indicator_of_mem (Set.mem_univ x)]
+    -- RHS coeFn `=ᵐ fun _ => (c·μ(univ)) · 1`.
+    have hRHS : ⇑((c * (μ Set.univ).toReal) • one)
+        =ᵐ[μ] fun _ => (c * (μ Set.univ).toReal) * (1 : ℂ) := by
+      filter_upwards [Lp.coeFn_smul (c * (μ Set.univ).toReal) one, hone_coe] with x hx hx2
+      rw [hx, Pi.smul_apply, hx2, smul_eq_mul]
+    -- the slice integral is constant a.e.
+    refine hLHS.trans (Filter.EventuallyEq.trans ?_ hRHS.symm)
+    filter_upwards [constant_op_slice W c hW, hone_coe] with x hslice hone_x
+    show (∫ y, W.kernel x y * (one : Ω → ℂ) y ∂μ) = (c * (μ Set.univ).toReal) * 1
+    rw [mul_one]
+    -- replace `one y` by `1` a.e. inside the integral, then apply the slice value.
+    have : (fun y => W.kernel x y * (one : Ω → ℂ) y) =ᵐ[μ] fun y => W.kernel x y := by
+      filter_upwards [hone_coe] with y hy
+      rw [hy, mul_one]
+    rw [integral_congr_ae this, hslice]
 
 /-! ### 3d. The Xie–Tamon graphon (`K_n + path-n`) — continuous tail sector.
 
@@ -608,6 +678,62 @@ theorem no_wavePacketTransfer_of_pure_continuous
   -- operators not available in Mathlib.
   sorry
 
+/-- **Constant-graphon quotient entry (atomless case).**  For a constant
+graphon `W ≡ c` over an atomless finite measure and *any* equitable partition
+`P`, the per-vertex cell-to-cell flux is `Q i j = c · μ(C_j)`.
+
+This is the genuine analytic step previously flagged as the open `op`/`quotient`
+slice integral.  It is `constant_op_slice` localised to the cell `C_j`: the
+slice integrand `[cells z = j] · W.kernel x z` equals `[cells z = j] · c` for
+a.e. `z` (by atomlessness + `IsConstant`), and the integral of the cell-`j`
+indicator times `c` is `c · μ(C_j)`.  Existence of a good representative
+`x ∈ C_i` uses that `C_i` has positive mass, so it meets the co-null good set. -/
+theorem constant_quotient_apply [NoAtoms μ] (W : Graphon Ω μ) (c : ℂ)
+    (hW : W.IsConstant c) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i j : I) :
+    P.quotient i j = c * (μ (P.cell j)).toReal := by
+  classical
+  -- Fubini: per-row a.e. constancy.
+  have hrow : ∀ᵐ x ∂μ, ∀ᵐ y ∂μ, x ≠ y → W.kernel x y = c :=
+    Measure.ae_ae_of_ae_prod hW
+  -- The "good x" set: those for which the slice integral over `C_j` is `c·μ(C_j)`.
+  have hgood : ∀ᵐ x ∂μ,
+      (∫ z, (if P.cells z = j then W.kernel x z else 0) ∂μ) = c * (μ (P.cell j)).toReal := by
+    filter_upwards [hrow] with x hx
+    have hne : ∀ᵐ y ∂μ, y ≠ x := by
+      rw [ae_iff]; simpa only [not_not] using measure_singleton x
+    -- the slice integrand is `[cells z = j] · c` for a.e. `z`.
+    have hae : (fun z => (if P.cells z = j then W.kernel x z else 0))
+        =ᵐ[μ] fun z => (if P.cells z = j then c else 0) := by
+      filter_upwards [hx, hne] with z hzc hzne
+      by_cases hzj : P.cells z = j
+      · rw [if_pos hzj, if_pos hzj, hzc (Ne.symm hzne)]
+      · rw [if_neg hzj, if_neg hzj]
+    rw [integral_congr_ae hae]
+    -- `∫ z, [cells z = j] • c = (∫ z, [cells z = j]) • c = c · μ(C_j)`.
+    have hind : (fun z => (if P.cells z = j then c else 0))
+        = fun z => (P.cell j).indicator (fun _ => c) z := by
+      funext z; unfold GraphonEquitablePartition.cell
+      by_cases hzj : P.cells z = j
+      · rw [if_pos hzj, Set.indicator_of_mem (show z ∈ P.cells ⁻¹' {j} from hzj)]
+      · rw [if_neg hzj, Set.indicator_of_notMem (show z ∉ P.cells ⁻¹' {j} from hzj)]
+    rw [hind, MeasureTheory.integral_indicator_const _ (P.measurableSet_cell j),
+      Complex.real_smul]
+    show ((μ.real (P.cell j) : ℝ) : ℂ) * c = c * ((μ (P.cell j)).toReal : ℂ)
+    rw [show (μ.real (P.cell j) : ℝ) = (μ (P.cell j)).toReal from rfl]; ring
+  -- A good representative `x₀ ∈ C_i` exists (good set is co-null, `C_i` has mass).
+  obtain ⟨x₀, hx₀good, hx₀mem⟩ : ∃ x₀, (∫ z, (if P.cells z = j then W.kernel x₀ z else 0) ∂μ)
+      = c * (μ (P.cell j)).toReal ∧ x₀ ∈ P.cell i := by
+    by_contra hcon
+    push_neg at hcon
+    -- then `C_i ⊆ {x | slice ≠ c·μ(C_j)}`, contradicting `C_i` positive and the good set co-null.
+    have hsub : P.cell i ⊆ {x | ¬ (∫ z, (if P.cells z = j then W.kernel x z else 0) ∂μ)
+        = c * (μ (P.cell j)).toReal} := fun x hx hslice => hcon x hslice hx
+    have hnull : μ {x | ¬ (∫ z, (if P.cells z = j then W.kernel x z else 0) ∂μ)
+        = c * (μ (P.cell j)).toReal} = 0 := hgood
+    have : μ (P.cell i) = 0 := measure_mono_null hsub hnull
+    exact (ne_of_gt (P.cell_pos i)) this
+  rw [P.quotient_apply_of_mem i j hx₀mem, hx₀good]
+
 /-- **Constant graphon: cell-uniform PST is trivial.**  For a constant
 graphon `W ≡ c` (the `K_n` limit), the only invariant cell-uniform
 subspace is the one-dimensional constants, so the only cell-uniform PST is
@@ -617,19 +743,22 @@ theorem constant_graphon_pst_trivial
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (i j : I) (τ : ℝ) (hτ : τ ≠ 0) :
     IsCellUniformPST W P i j τ → i = j := by
-  -- HONEST SORRY (blocked on the still-open `op`/`quotient` integral).
   -- Route: `cellUniformPST_iff_quotientPST` reduces this to finite PST on
-  -- `P.symmQuotient`.  For a constant graphon the flux out of any cell `i` into
-  -- cell `j` is `Q i j = c · μ(C_j)` (independent of the source cell), so
+  -- `P.symmQuotient`.  For a constant graphon the per-vertex flux out of cell `i`
+  -- into cell `j` is `Q i j = c · μ(C_j)` (independent of the source cell) — this
+  -- is now the PROVEN lemma `constant_quotient_apply` (under the genuine atomless
+  -- hypothesis; cf. `constant_op_slice`).  Hence
   -- `symmQuotient i j = √μ_i · c · μ_j / √μ_j = c · √μ_i · √μ_j` is **rank one**:
-  -- `M = (c · μ(Ω)) · |ψ⟩⟨ψ|` with `ψ_i = √(μ_i / μ(Ω))` unit.  Then
-  -- `exp(-iτM)_{ji} = δ_{ji} + (e^{-iτ c μ(Ω)} - 1) ψ_j ψ_i`, whose modulus is
-  -- `< 1` for `i ≠ j` (a finite rank-one computation), forcing `i = j`.
-  -- The finite tail is reachable; the **blocking** step is computing
-  -- `Q i j = c · μ(C_j)` from `IsConstant c`, which is exactly the open
-  -- measure-theoretic `op`/`quotient` slice integral (cf. `constant_pointSpectrum`).
-  -- No vacuous weakening: the conclusion `i = j` is the genuine PST-triviality.
-  -- BLOCKED: open `op`/`quotient` slice integral `Q i j = c·μ(C_j)` (cf. constant_pointSpectrum).
+  -- `M = (c · μ(Ω)) · |ψ⟩⟨ψ|` with `ψ_i = √(μ_i / μ(Ω))` unit, so
+  -- `exp(-iτM)_{ji} = δ_{ji} + (e^{-iτ c μ(Ω)} - 1) ψ_j ψ_i`.
+  -- The slice-integral blocker is thus closed; the genuine REMAINING gap is the
+  -- *finite* rank-one matrix-exponential analysis: showing this entry has modulus
+  -- `< 1` for `i ≠ j` is delicate (it can vanish when `ψ_j² = 1/2`, so the
+  -- triviality requires a sharper mass/timing argument than a bare off-diagonal
+  -- bound), and the full finite PST→triviality classification for rank-one
+  -- Hermitian generators is not yet formalised.
+  -- BLOCKED: finite rank-one exponential PST classification (slice integral
+  -- `Q i j = c·μ(C_j)` is now proven, see `constant_quotient_apply`).
   sorry
 
 /-! ## 6½. Matrix-level forward Godsil extraction (PST ⟹ strong cospectrality)

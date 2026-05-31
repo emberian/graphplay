@@ -50,8 +50,11 @@ subspace — the "collapsed Hamming walk", a weighted path with binomial couplin
   requires reducing the full dynamics onto the proven 2-level subspace: the
   remaining `d−1` collapsed-Hamming-chain modes contribute at order `O(1/Δ)` with
   `Δ = O(1)` the constant CNO spectral gap (arXiv:2004.12686, Thm 1–2).  This
-  reduction is *exact* for `K_n` (`completeGraph_2d_block`) but genuinely
-  perturbative for `Q_d` — the single honest `-- BLOCKED:` step.  The dynamical
+  reduction is *exact* for `K_n` — and indeed the literal full-space
+  `IsOptimalSearch` on `K_n` is now itself PROVEN axiom-clean
+  (`Graphplay.complete_graph_optimal_search`, via the exact `2×2`
+  Cayley–Hamilton block evolution `cg_block_colSum`) — but genuinely
+  perturbative for `Q_d`, the single honest `-- BLOCKED:` step.  The dynamical
   timing core it would feed is now PROVEN (`hypercube_twoLevel_optimal_timing`).
 
 ## Generalization (the "tower" thesis)

@@ -56,6 +56,9 @@ operator-algebra layer is up.
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.Analysis.Matrix.Normed
+import Mathlib.Analysis.Normed.Module.FiniteDimension
+import Mathlib.Topology.Instances.Matrix
 import Mathlib.Algebra.Algebra.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
@@ -346,18 +349,29 @@ proof tracks: a Hermitian on the quotient lifts to a Hermitian on the host
 via the inclusion `Q.algebra ↪ M_n(ℂ)`; matrix exponential commutes with the
 embedding (because the embedding is a ∗-algebra homomorphism); the cell-block
 trace formula intertwines `exp(-iτ M)_{ij}` with the host `pⱼ exp(-iτ H) pᵢ`
-after normalization. -/
+after normalization.
+
+The ∗-homomorphism/matrix-exponential **intertwining** step (the genuine
+analytic core, "embedding ∘ exp = exp ∘ embedding") is now discharged: see
+`QuantumHom.map_exp` and the walk-transport corollary `QuantumHom.map_walk`.
+What remains genuinely BLOCKED is the *construction* of the block-diagonal
+embedding `M_I(ℂ) ↪ Q.algebra`, `M ↦ ∑_{i,j} M_{i,j}·(pᵢ J pⱼ)`, as an honest
+∗-homomorphism: multiplicativity requires the cell structure constants
+`(pᵢ J pⱼ)·(pₖ J pₗ) = δⱼₖ · cⱼ · (pᵢ J pₗ)`, which are *not* part of the bare
+`QuantumEquitablePartition` data (only orthogonality of the `pᵢ`).  Supplying
+that datum (or constructing the embedding as a `QuantumHom` and invoking
+`map_walk`) would close this; left honest. -/
 theorem QuantumEquitablePartition.pst_lift
     {n : ℕ} (S : QuantumGraph n) {I : Type v} [Fintype I] [DecidableEq I]
     (Q : QuantumEquitablePartition n S I) (i j : I) (τ : ℝ) :
     IsPST_on_quotient Q.quotient i j τ →
       IsCellUniformPST_in S Q i j τ := by
-  -- BLOCKED (deep analytic).  Lift the quotient Hamiltonian to a Hermitian in
-  -- `Q.algebra ⊆ M_n(ℂ)` via the canonical block-diagonal embedding
-  -- `M ↦ ∑_{i,j} M_{i,j} · pᵢ J pⱼ`; `exp` commutes with the ∗-hom embedding;
-  -- conclude by the block-trace normalization.  Requires the matrix-exponential
-  -- / ∗-homomorphism-intertwining layer (embedding ∘ exp = exp ∘ embedding) not
-  -- available here.  Left honest.
+  -- BLOCKED (embedding construction, not the analytic intertwining).  The
+  -- ∗-hom/exp intertwining layer is available (`QuantumHom.map_exp`,
+  -- `QuantumHom.map_walk`); the remaining gap is building the block-diagonal
+  -- embedding `M_I(ℂ) ↪ Q.algebra` as a multiplicative ∗-hom, which needs the
+  -- cell-block structure constants not carried by `QuantumEquitablePartition`.
+  -- Left honest.
   sorry
 
 /-! ## 4. Mancinska–Roberson / Duan–Severini–Winter quantum homomorphisms
@@ -457,6 +471,90 @@ theorem QuantumHom.dsw_retraction
   have h1 : ψ.toLin (φ.toLin A) = A := hretr A hA
   have h2 : ψ.toLin (φ.toLin B) = B := hretr B hB
   rw [← h1, ← h2, hAB]
+
+/-! ### 4a. The ∗-homomorphism / matrix-exponential intertwining lemma
+
+The genuine analytic core underlying the non-commutative PST lift: a unital
+∗-homomorphism `φ : M_n(ℂ) → M_m(ℂ)` (a `QuantumHom`) commutes with the matrix
+exponential.  This is `NormedSpace.map_exp` specialized to the `RingHom`
+packaged from the `QuantumHom` data; the only analytic input is continuity of
+`φ`, which is automatic because `φ` is a ℂ-linear map between
+finite-dimensional spaces. -/
+
+namespace QuantumHom
+
+variable {n m : ℕ} {S : QuantumGraph n} {T : QuantumGraph m}
+
+/-- A `QuantumHom` is, in particular, a (unital) ring homomorphism of the
+underlying matrix algebras: it is additive (linear), multiplicative
+(`map_mul`), and unital (`map_one`).  We package this `RingHom` so that the
+general `NormedSpace.map_exp` lemma applies. -/
+noncomputable def toRingHom (φ : QuantumHom n m S T) :
+    Matrix (Fin n) (Fin n) ℂ →+* Matrix (Fin m) (Fin m) ℂ where
+  toFun := φ.toLin
+  map_one' := φ.map_one
+  map_mul' := φ.map_mul
+  map_zero' := by simpa using φ.toLin.map_zero
+  map_add' := φ.toLin.map_add
+
+@[simp] theorem coe_toRingHom (φ : QuantumHom n m S T) :
+    (φ.toRingHom : Matrix (Fin n) (Fin n) ℂ → Matrix (Fin m) (Fin m) ℂ) = φ.toLin :=
+  rfl
+
+/-- A `QuantumHom` is continuous in the product topology on matrices: each
+output entry `X ↦ (φ X) a b` is a ℂ-linear functional on a finite-dimensional
+space, hence continuous, and a matrix-valued map is continuous iff all entries
+are. -/
+theorem continuous_toLin (φ : QuantumHom n m S T) :
+    Continuous φ.toLin := by
+  apply continuous_matrix
+  intro a b
+  have hcomp : (fun X => φ.toLin X a b)
+      = (((LinearMap.proj b).comp (LinearMap.proj a)).comp φ.toLin) := by
+    funext X; rfl
+  rw [hcomp]
+  exact LinearMap.continuous_of_finiteDimensional _
+
+/-- **∗-homomorphism / matrix-exponential intertwining.**  A `QuantumHom`
+commutes with the matrix exponential: `φ(exp X) = exp(φ X)`.
+
+This is the honest analytic core of the non-commutative PST lift.  It follows
+from `NormedSpace.map_exp` applied to the `RingHom` `φ.toRingHom`, whose
+continuity is automatic by finite-dimensionality.  Concretely, `φ` carries the
+exponential power series `Σ Xⁿ/n!` termwise (it is linear and multiplicative)
+and the series converges, so the sum is preserved.
+
+The matrix-exponential `NormedSpace.exp` is norm-independent (it depends only on
+the product topology / topological-ring structure on matrices); we discharge the
+norm hypotheses of `NormedSpace.map_exp` by working under the scoped
+`L∞`-operator norm, whose topology coincides with the product topology, so the
+two exponentials agree. -/
+theorem map_exp (φ : QuantumHom n m S T) (X : Matrix (Fin n) (Fin n) ℂ) :
+    φ.toLin (NormedSpace.exp X) = NormedSpace.exp (φ.toLin X) := by
+  classical
+  have hcont : Continuous φ.toRingHom := by simpa using φ.continuous_toLin
+  open scoped Matrix.Norms.Operator in
+  have h := NormedSpace.map_exp φ.toRingHom hcont X
+  simpa using h
+
+/-- **Continuous-time quantum-walk transport.**  A `QuantumHom` `φ` carries the
+walk operator `U_τ(H) = exp(-(iτ)·H)` of a Hamiltonian `H` to the walk operator
+of the transported Hamiltonian `φ(H)`:
+  `φ(exp(-(iτ)·H)) = exp(-(iτ)·φ(H))`.
+
+This is the immediate, genuine consequence of the ∗-hom/exp intertwining
+(`map_exp`) and the ℂ-linearity of `φ` (`φ` commutes with the scalar `-(iτ)`),
+and it is the operator-level statement underlying any PST-transport along a
+quantum homomorphism: the evolution of the image system is the image of the
+evolution. -/
+theorem map_walk (φ : QuantumHom n m S T) (τ : ℝ) (H : Matrix (Fin n) (Fin n) ℂ) :
+    φ.toLin (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H))
+      = NormedSpace.exp (-(Complex.I * (τ : ℂ)) • φ.toLin H) := by
+  rw [φ.map_exp]
+  congr 1
+  rw [map_smul]
+
+end QuantumHom
 
 /-! ## 5. Concrete examples -/
 

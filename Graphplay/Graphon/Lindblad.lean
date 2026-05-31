@@ -478,6 +478,68 @@ noncomputable def quotientFiniteLindbladian
     Matrix I I ℂ :=
   P.symmQuotient
 
+/-! ### The dissipative-restriction (compression) map
+
+The missing piece of the open-system quotient is the **compression** of a
+bounded operator `X` on `L²(μ)` to a finite `I × I` matrix, taken in the
+orthonormal cell-indicator basis `{e_i}`:
+`(restrict X)_{i j} = ⟨e_i, X e_j⟩`.  This is the operator-theoretic
+`Bᴴ X B` with `B = cellUniformIsometry`, read off as a matrix.  It is exactly
+the finite datum the (still-open) `LindbladEvolution`-to-`noisyEvolve` bridge
+needs to descend a graphon Lindbladian's dissipative part to a `NoiseModel I`.
+
+We build it here as a genuine `def` and prove the two basic algebraic facts
+that make it the right object: it is `ℂ`-linear in `X`, and it sends
+self-adjoint operators to **Hermitian** matrices (so the compressed Hamiltonian
+/ jump operators stay physical). -/
+
+/-- **Dissipative-restriction (compression) map.**  The `(i, j)` entry is the
+matrix coefficient `⟨e_i, X e_j⟩` of `X` in the orthonormal cell-indicator
+basis. -/
+noncomputable def dissipativeRestriction
+    {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (X : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) : Matrix I I ℂ :=
+  fun i j => inner ℂ (P.cellIndicator i) (X (P.cellIndicator j))
+
+/-- The compression map is additive in the operator. -/
+theorem dissipativeRestriction_add
+    {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (X Y : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) :
+    dissipativeRestriction P (X + Y)
+      = dissipativeRestriction P X + dissipativeRestriction P Y := by
+  ext i j
+  simp only [dissipativeRestriction, ContinuousLinearMap.add_apply, inner_add_right,
+    Matrix.add_apply]
+
+/-- The compression map is `ℂ`-homogeneous in the operator. -/
+theorem dissipativeRestriction_smul
+    {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (c : ℂ) (X : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) :
+    dissipativeRestriction P (c • X) = c • dissipativeRestriction P X := by
+  ext i j
+  simp only [dissipativeRestriction, ContinuousLinearMap.smul_apply, inner_smul_right,
+    Matrix.smul_apply, smul_eq_mul]
+
+/-- **Compression of a self-adjoint operator is Hermitian.**  If `X` is
+self-adjoint then its cell-indicator compression `dissipativeRestriction P X`
+is a Hermitian matrix.  This is the finite physical-datum guarantee: the
+compressed Hamiltonian and jump operators remain Hermitian/dissipative. -/
+theorem dissipativeRestriction_isHermitian
+    {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (X : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (hX : IsSelfAdjoint X) :
+    (dissipativeRestriction P X).IsHermitian := by
+  ext i j
+  show star (dissipativeRestriction P X j i) = dissipativeRestriction P X i j
+  simp only [dissipativeRestriction]
+  -- `conj ⟨e_j, X e_i⟩ = ⟨X e_i, e_j⟩ = ⟨e_i, Xᴴ e_j⟩ = ⟨e_i, X e_j⟩`.
+  have h1 : star (inner ℂ (P.cellIndicator j) (X (P.cellIndicator i)))
+      = inner ℂ (X (P.cellIndicator i)) (P.cellIndicator j) := inner_conj_symm _ _
+  rw [h1, ← ContinuousLinearMap.adjoint_inner_right, hX.adjoint_eq]
+
 /-- **Bochner integral lands in a closed (complete) submodule.**  If `g α ∈ S`
 for every `α` and `S` is a complete submodule, then `∫ α, g α ∂ν ∈ S`.  Proved
 via the (continuous-linear) orthogonal `starProjection` onto `S`, which fixes
@@ -864,9 +926,16 @@ theorem GraphonLindblad.cellUniformPST_iff_quotientPST [IsFiniteMeasure μ]
       IsCellUniformLindbladPST LB P i j τ
         ↔ IsLindbladPST_finite (quotientFiniteLindbladian LB P) N i j τ := by
   -- specialise `GraphonLindblad.cellUniform_preserved` to the rank-1 cell-uniform
-  -- projectors; honest gap (needs the dissipative-restriction map + the
-  -- `LindbladEvolution`/`superoperator` interface, currently placeholders).
-  -- BLOCKED: dissipative-restriction map (graphon Lindbladian → NoiseModel I) missing.
+  -- projectors.  The operator-level compression `dissipativeRestriction` is now
+  -- BUILT (with `_add`/`_smul`/`_isHermitian`), so a finite `NoiseModel I` datum
+  -- can be read off the compressed jump operators.  The genuine REMAINING gap is
+  -- *not* the restriction map but the dynamical bridge: `LindbladEvolution` here
+  -- is the first-order generator flow `X + t·𝓛(X)` while `noisyEvolve` (the RHS)
+  -- is the finite *exact* GKLS semigroup `exp(t·𝓛_fin)`; the iff requires the
+  -- bounded-generator operator-exponential interface (cf. `LindbladEvolution_add`),
+  -- which is not yet specialised here.
+  -- BLOCKED: exact Lindblad semigroup (operator-exponential) bridge; the
+  -- dissipative-restriction map itself is now provided (`dissipativeRestriction`).
   sorry
 
 /-! ## Caruso noise-assisted speedup at Tower 4

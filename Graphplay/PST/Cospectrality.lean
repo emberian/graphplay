@@ -254,6 +254,36 @@ def IsCospectral (G : WeightedGraph V) (u v : V) : Prop :=
   ∀ lam : ℝ, lam ∈ Set.range G.herm.eigenvalues →
     eigenProjDiag G lam u = eigenProjDiag G lam v
 
+/-- **A graph automorphism gives cospectrality** (Godsil-Royle Lemma 8.2.1,
+the cospectral half).  If `σ` is an automorphism of `G` with `σ u = v`, then
+`u` and `v` are cospectral: every spectral projector has equal diagonal entries
+`(E_λ)_{u,u} = (E_λ)_{v,v}`.
+
+Proven axiom-cleanly via the sibling `eigenProj_aut_invariant`: an automorphism's
+permutation matrix commutes with `G.adj`, hence with the (unique) spectral
+projectors, so `(E_λ)_{σ u, σ u} = (E_λ)_{u,u}`.
+
+NOTE.  Cospectrality is *all* that a bare automorphism `σ u = v` yields: full
+strong cospectrality (parallelism of the projected rays) does **not** follow
+from the swap alone — in a vertex-transitive graph every pair admits such a `σ`
+yet most pairs are not strongly cospectral.  The extra input is that `σ` act as
+a scalar `±1` on each `λ`-eigenspace (as the path-flip does). -/
+theorem isCospectral_of_aut (G : WeightedGraph V) (u v : V)
+    (σ : V ≃ V) (hσ : ∀ x y, G.adj (σ x) (σ y) = G.adj x y) (huv : σ u = v) :
+    IsCospectral G u v := by
+  intro lam hlam
+  -- Bridge both diagonals to the `GodsilRatio` projector matrix, then use
+  -- automorphism invariance `(E_λ)_{σ u, σ u} = (E_λ)_{u,u}` at `σ u = v`.
+  have hinv := Graphplay.PST.eigenProj_aut_invariant G σ hσ lam hlam u u
+  rw [huv] at hinv
+  -- `(E_λ)_{v,v} = (E_λ)_{u,u}` as complex numbers; both are the (real) diagonals.
+  have hu : (Graphplay.PST.eigenProj G lam u u) = (eigenProjDiag G lam u : ℂ) := by
+    rw [Graphplay.PST.eigenProj_diag, ← eigenProjDiag_eq_local]
+  have hv : (Graphplay.PST.eigenProj G lam v v) = (eigenProjDiag G lam v : ℂ) := by
+    rw [Graphplay.PST.eigenProj_diag, ← eigenProjDiag_eq_local]
+  rw [hu, hv] at hinv
+  exact_mod_cast hinv.symm
+
 /-- **Reverse direction of the classical equivalence (Coutinho Cor. 2.5.2,
 `←`).** If `u, v` are cospectral and the off-diagonal projector entry matches
 a unit phase times the common diagonal entry, then `u, v` are strongly
@@ -465,6 +495,22 @@ theorem Hom.preserves_stronglyCospectral
   -- spectral projectors to G.adj projectors (sibling QuotientIff, also sorry).
   sorry
 
+/-- **Simple spectrum ⟹ strong cospectrality of every pair** (Coutinho–Godsil
+2021, Cor. 8.2).  If the eigenvalues of `G.adj` are pairwise distinct (each
+eigenspace is one-dimensional), then *any* two vertices are strongly cospectral,
+since each `λ`-eigenspace is a single ray and the two projected vectors are
+automatically parallel.  This is the structural mechanism behind path-endpoint
+strong cospectrality (the path `P_n` has the simple spectrum `2cos(kπ/(n+1))`).
+
+Proven axiom-cleanly by transporting the sibling
+`Graphplay.PST.isStronglyCospectral_of_injective_eigenvalues` through the
+projector bridge `isStronglyCospectral_iff_local`. -/
+theorem isStronglyCospectral_of_simple_spectrum (G : WeightedGraph V)
+    (hinj : Function.Injective G.herm.eigenvalues) (u v : V) :
+    IsStronglyCospectral G u v :=
+  (isStronglyCospectral_iff_local G u v).mpr
+    (Graphplay.PST.isStronglyCospectral_of_injective_eigenvalues G hinj u v)
+
 /-! ## Concrete examples
 
 The textbook example of strong cospectrality is the endpoint pair of a path
@@ -503,9 +549,32 @@ theorem isStronglyCospectral_pathEndpoints (n : ℕ) (hn : 2 ≤ n) :
     IsRealStronglyCospectral (pathWeightedGraph n)
       ⟨0, by omega⟩ ⟨n - 1, by omega⟩ := by
   -- Direct computation in the Chebyshev basis; cite Christandl et al.
-  -- BLOCKED: needs explicit path-graph Chebyshev eigenvector formula
-  -- ψ_k(j)=√(2/(n+1))sin(jkπ/(n+1)) and its endpoint sign symmetry (not in Mathlib).
+  -- ISOLATED REMAINDER.  The chiral (unit-phase) strong cospectrality of *any*
+  -- pair now reduces, axiom-cleanly, to *simple spectrum* via
+  -- `isStronglyCospectral_of_simple_spectrum` — see the chiral corollary
+  -- `isStronglyCospectral_pathEndpoints_of_simpleSpectrum` below.  Two honest
+  -- inputs remain to land the REAL (±1) version stated here:
+  --   (i) injectivity of `(pathWeightedGraph n).herm.eigenvalues` — the
+  --       distinctness of the path eigenvalues `2cos(kπ/(n+1))`, `k=1..n`,
+  --       which is the genuinely missing explicit-eigenvalue fact (Mathlib has
+  --       no path eigenstructure);
+  --   (ii) realness of the eigenvector entries (true since `P_n` is real
+  --        symmetric) to upgrade the unit phase to a sign `±1`.
+  -- BLOCKED on (i): the Niven/Chebyshev distinctness of `2cos(kπ/(n+1))`.
   sorry
+
+/-- **Chiral path-endpoint strong cospectrality, conditional on simple spectrum.**
+The genuinely-reachable content of `isStronglyCospectral_pathEndpoints`: *given*
+that the path eigenvalues are distinct (`Function.Injective (pathWeightedGraph
+n).herm.eigenvalues`, the explicit Chebyshev fact `2cos(kπ/(n+1))` distinct for
+`k = 1..n`), the endpoints — indeed *every* pair — are strongly cospectral in
+the chiral (unit-phase) sense.  Proven axiom-cleanly by
+`isStronglyCospectral_of_simple_spectrum`; isolates the path eigenvalue
+distinctness as the sole remaining input. -/
+theorem isStronglyCospectral_pathEndpoints_of_simpleSpectrum (n : ℕ) (hn : 2 ≤ n)
+    (hinj : Function.Injective (pathWeightedGraph n).herm.eigenvalues) :
+    IsStronglyCospectral (pathWeightedGraph n) ⟨0, by omega⟩ ⟨n - 1, by omega⟩ :=
+  isStronglyCospectral_of_simple_spectrum (pathWeightedGraph n) hinj _ _
 
 /-- **Endpoints of `P_n` PST iff `n ∈ {2, 3}`** (Christandl-Datta-Ekert-Landahl
 2004).  This is the corollary of `IsStronglyCospectral.isPST_iff_godsilRatio`
@@ -607,20 +676,29 @@ theorem IsStronglyCospectral.refl (G : WeightedGraph V) (u : V) :
   -- `diag = √(diag * diag)` because `diag ≥ 0`
   rw [Real.sqrt_mul_self (eigenProjDiag_nonneg G lam u)]
 
-/-- A graph automorphism swapping `u, v` implies strong cospectrality.  This
-is the "easy direction" of Godsil-Royle Lemma 8.2.1: any automorphism
-witnessing the swap commutes with `G.adj` and so permutes eigenspaces
-intra-eigenvalue. -/
+/-- A graph automorphism swapping `u, v`, **together with a simple spectrum**,
+implies strong cospectrality.
+
+HONEST CORRECTION.  A bare automorphism `σ u = v` does **not** suffice for strong
+cospectrality (in a vertex-transitive graph every pair admits such a `σ`, yet
+strong cospectrality is rare); the swap alone yields only *cospectrality*
+(`isCospectral_of_aut`, proven axiom-cleanly above).  The extra input that makes
+the conclusion true is that each eigenspace be one-dimensional, so that the
+automorphism — which commutes with every spectral projector — acts as a scalar
+on it (the path-flip is exactly this case).  Under `hinj`, the conclusion is
+*independent* of the automorphism (simple spectrum already forces every pair to
+be strongly cospectral, `isStronglyCospectral_of_simple_spectrum`); we keep the
+automorphism hypothesis for the Godsil-Royle 8.2.1 reading.
+
+Proven axiom-cleanly via the spectral-projector uniqueness developed in the
+sibling `GodsilRatio` (`eigenProj_aut_invariant`,
+`isStronglyCospectral_of_injective_eigenvalues`). -/
 theorem IsStronglyCospectral.of_aut
     (G : WeightedGraph V) (u v : V)
-    (σ : V ≃ V) (hσ : ∀ x y, G.adj (σ x) (σ y) = G.adj x y) (huv : σ u = v) :
-    IsStronglyCospectral G u v := by
-  -- `σ` permutes eigenspaces of `G.adj` within each eigenvalue; the orbit
-  -- structure gives the parallelism `P_λ u = P_λ (σ u) = P_λ v` up to a
-  -- root-of-unity phase.
-  -- BLOCKED: needs permutation-matrix/eigenbasis transport lemma
-  -- (Pσ commutes with A ⇒ permutes eigenspaces) relating eigenProjEntry at σu,σv;
-  -- no such spectral-uniqueness API available here.
-  sorry
+    (σ : V ≃ V) (_hσ : ∀ x y, G.adj (σ x) (σ y) = G.adj x y) (_huv : σ u = v)
+    (hinj : Function.Injective G.herm.eigenvalues) :
+    IsStronglyCospectral G u v :=
+  isStronglyCospectral_of_simple_spectrum G hinj u v
 
 end Graphplay
+

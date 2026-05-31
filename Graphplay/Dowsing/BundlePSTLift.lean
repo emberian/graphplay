@@ -249,15 +249,24 @@ theorem lexProduct_pst
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (GraphBundle.lexProduct G H) (u₁, w₁) (u₂, w₂) τ := by
-  -- BLOCKED (genuinely GGPT-hard; statement is NOT proven here).
-  -- Lex coupling = J = all-ones rectangular matrix, which is
-  -- (|W|, |W|)-biregular.  In the fiber quotient the off-diagonal is
-  -- `|W| · G.adj`, a positive rescaling of `G`, so PST in `G` at time `τ`
-  -- becomes PST in the quotient at the RESCALED time `τ / |W|`, not `τ`.
-  -- Matching the original `τ` requires the eigenvalue-lattice condition of
-  -- GGPT (arXiv:1009.1340 §4, Thm 2), which is not among the hypotheses of
-  -- this statement; without it the conclusion at the literal `τ` is false in
-  -- general.  Left as an honest sorry pending that spectral input.
+  -- BLOCKED: Kronecker PRODUCT cross-term `A_G ⊗ₖ J` does not factor through
+  -- the Cartesian Kronecker-SUM split, and the time rescale cannot be matched
+  -- to the literal `τ` without GGPT spectral input.
+  --
+  -- The lex adjacency is `A_{G[H]} = I_V ⊗ₖ A_H + A_G ⊗ₖ J_W`, where `J_W` is
+  -- the all-ones `W × W` matrix (the lex coupling is constant `G.adj v₁ v₂`
+  -- across every pair of `H`-coordinates).  With `H` `dH`-regular we DO get
+  -- `A_H · J_W = dH · J_W = J_W · A_H`, so the two summands commute and
+  -- `exp(s·A_{G[H]}) = (I ⊗ₖ exp(s·A_H)) · exp(s·(A_G ⊗ₖ J_W))`.
+  -- But the second factor is the exponential of a genuine Kronecker PRODUCT
+  -- `A_G ⊗ₖ J_W`, which (unlike a Kronecker SUM `A_G ⊗ I + I ⊗ A_H`, the
+  -- Cartesian case proven in `Product/PST.lean`) does NOT split as
+  -- `exp(A_G) ⊗ₖ exp(J_W)`: `exp(A ⊗ₖ B) ≠ exp A ⊗ₖ exp B`.
+  -- On the all-ones eigenvector of `J_W` (eigenvalue `|W|`) the factor acts as
+  -- `exp(|W|·s·A_G)`, i.e. PST in `G` at the RESCALED time `τ/|W|`, not `τ`;
+  -- matching the literal `τ` is exactly the eigenvalue-lattice condition of
+  -- GGPT (arXiv:1009.1340 §4, Thm 2), absent from these hypotheses.  Without
+  -- it the conclusion at the literal `τ` is false in general.
   sorry
 
 /-! ### 3.3 GGPT: Weak (= tensor / direct) product preserves PST -/
@@ -289,13 +298,16 @@ theorem tensorProduct_pst
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (tensorProduct G H) (u₁, w₁) (u₂, w₂) τ := by
-  -- BLOCKED (genuinely GGPT-hard; statement is NOT proven here).
-  -- The tensor adjacency is the Kronecker PRODUCT `A_G ⊗ₖ A_H`, whose
-  -- exponential does NOT factor as `exp(A_G) ⊗ₖ exp(A_H)` (unlike the
-  -- Cartesian/Kronecker-SUM case): `exp(A⊗B) ≠ exp A ⊗ exp B`.  GGPT
-  -- (arXiv:1009.1340 §3) instead require `H` circulant with odd eigenvalues
-  -- and `G` PST with spectrum in `π·ℤ`; those spectral hypotheses are not
-  -- present here.  Closing this needs the GGPT spectral-lattice argument.
+  -- BLOCKED: pure Kronecker PRODUCT — `exp` does not factor.
+  -- The tensor adjacency is the bare Kronecker PRODUCT `A_{G⊗H} = A_G ⊗ₖ A_H`
+  -- (no Kronecker-sum summand at all), whose exponential does NOT factor as
+  -- `exp(A_G) ⊗ₖ exp(A_H)`: `exp(A ⊗ₖ B) ≠ exp A ⊗ₖ exp B`.  The Cartesian
+  -- engine in `Product/PST.lean` works precisely because there the adjacency is
+  -- a Kronecker SUM `A_G ⊗ I + I ⊗ A_H` of commuting one-leg terms; here there
+  -- is no such split.  GGPT (arXiv:1009.1340 §3) instead require `H` circulant
+  -- with odd eigenvalues and `G` PST with spectrum in `π·ℤ`; those spectral
+  -- hypotheses are not present here, so the literal-`τ` conclusion is false in
+  -- general.  Genuinely not Cartesian-reducible.
   sorry
 
 /-! ### 3.4 Strong product (beyond GGPT) -/
@@ -309,12 +321,20 @@ theorem strongProduct_pst
     (u₁ u₂ : V) (w : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (GraphBundle.strongProduct G H) (u₁, w) (u₂, w) τ := by
-  -- BLOCKED (beyond GGPT; statement is NOT proven here).
-  -- The strong adjacency `A_{G⊠H} = A_G ⊗ I + I ⊗ A_H + A_G ⊗ₖ A_H` carries
-  -- the tensor (Kronecker-product) cross term, so its exponential does not
-  -- factor through a Cartesian-style Kronecker-sum split.  As in the tensor
-  -- case this needs a spectral-lattice / circulant hypothesis on `H` (cf.
-  -- arXiv:1009.1340 §3–§4) not present in the statement.
+  -- BLOCKED: Kronecker-SUM part factors, but the Kronecker-PRODUCT cross-term
+  -- does not.
+  -- The strong adjacency decomposes as Cartesian + tensor,
+  -- `A_{G⊠H} = (A_G ⊗ I + I ⊗ A_H) + A_G ⊗ₖ A_H`
+  -- (`strongProduct_adj_eq_cartesian_add_tensor`, Product.lean).  All three
+  -- summands pairwise COMMUTE — e.g. `(A_G⊗I)(A_G⊗A_H) = A_G²⊗A_H =
+  -- (A_G⊗A_H)(A_G⊗I)` — so `exp` of the sum is the product of the three
+  -- factor exponentials.  The Cartesian (Kronecker-sum) factor `exp(A_G⊗I) ·
+  -- exp(I⊗A_H)` does split into one-leg exponentials (the proven engine), BUT
+  -- the third factor `exp(A_G ⊗ₖ A_H)` is the exponential of a pure Kronecker
+  -- PRODUCT and does NOT split as `exp A_G ⊗ₖ exp A_H`.  So the total walk
+  -- amplitude is NOT a clean product of single-graph PST amplitudes.  Closing
+  -- needs the GGPT spectral-lattice / circulant hypothesis on `H`
+  -- (arXiv:1009.1340 §3–§4), absent here.
   sorry
 
 /-! ### 3.5 Conormal product (beyond GGPT) -/
@@ -347,11 +367,16 @@ theorem conormalProduct_pst
     (u₁ u₂ : V) (w : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (conormalProduct G H) (u₁, w) (u₂, w) τ := by
-  -- BLOCKED (beyond GGPT; statement is NOT proven here).
-  -- The conormal adjacency `A_G ⊕ A_H − A_G ⊗ₖ A_H` again contains a
-  -- Kronecker-product cross term, so the walk does not factor as a Cartesian
-  -- Kronecker sum; PST preservation requires the same spectral-lattice input
-  -- as the tensor/strong cases (cf. arXiv:1009.1340 §3).
+  -- BLOCKED: Kronecker-PRODUCT cross-term `−A_G ⊗ₖ A_H` does not factor.
+  -- The conormal/inclusion-exclusion adjacency is
+  -- `A_{G*H} = A_G ⊗ J_W + J_V ⊗ A_H − A_G ⊗ₖ A_H` (the entrywise
+  -- `G + H − G·H` realization of the logical OR; `J` the all-ones blocks).
+  -- Beyond carrying the same `A_G ⊗ J` / `J ⊗ A_H` Kronecker-product blocks as
+  -- the lex case, it has the explicit tensor cross-term `−A_G ⊗ₖ A_H`, whose
+  -- exponential does NOT split as `exp A_G ⊗ₖ exp A_H`.  Hence the walk does
+  -- not reduce to a Cartesian Kronecker-SUM factorization; PST preservation
+  -- needs the same spectral-lattice input as the tensor/strong cases
+  -- (arXiv:1009.1340 §3), absent here.  Genuinely not Cartesian-reducible.
   sorry
 
 /-! ### 3.6 Disjunctive product (beyond GGPT) -/
@@ -374,10 +399,10 @@ theorem disjunctiveProduct_pst
     (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
     (hG : IsPST G u₁ u₂ τ) :
     IsPST (disjunctiveProduct G H) (u₁, w₁) (u₂, w₂) τ := by
-  -- BLOCKED (beyond GGPT; statement is NOT proven here).
-  -- `disjunctiveProduct = conormalProduct`, so this reduces to
-  -- `conormalProduct_pst` and needs the same spectral-lattice input
-  -- (cf. arXiv:1009.1340 §3).  Left honest.
+  -- BLOCKED: definitionally `disjunctiveProduct = conormalProduct`, so it
+  -- inherits the same Kronecker-PRODUCT cross-term `−A_G ⊗ₖ A_H` that does not
+  -- factor (see `conormalProduct_pst`).  Needs the same spectral-lattice input
+  -- (arXiv:1009.1340 §3).  Genuinely not Cartesian-reducible.
   sorry
 
 end BundlePSTCorollaries
@@ -405,12 +430,15 @@ theorem templateJoin_pst_iff
     (∃ x : V i, ∃ y : V j,
         IsPST ((GraphBundle.ofTemplateJoin Q V).total) ⟨i, x⟩ ⟨j, y⟩ τ) ↔
     IsPST ((Graphplay.SimpleGraph.toWeighted Q)) i j (τ * n) := by
-  -- BLOCKED: the empty-fiber + all-ones-coupling bundle has biregular
-  -- couplings of constant row sum `n`, so the master theorem applies, but the
-  -- factor `n` enters via the row-sum rescaling between `quotient` and `Q`.
-  -- Matching the literal rescaled time `τ * n` against the master iff (stated
-  -- on `symmQuotient`, an orthogonal D^{1/2}-conjugation rather than a scalar
-  -- rescale) needs the GGPT eigenvalue-lattice input, not available here.
+  -- BLOCKED: time-rescale mismatch (`A_G ⊗ J` Kronecker-product block again).
+  -- The constant-fiber-size template join is the lex-style bundle whose every
+  -- coupling along a `Q`-edge is the all-ones `n × n` block `J`; its adjacency
+  -- carries the Kronecker-PRODUCT block `A_Q ⊗ₖ J` exactly as in
+  -- `lexProduct_pst`.  On the all-ones fiber eigenvector `J` acts as the scalar
+  -- `n`, giving PST on `Q` at the RESCALED time `τ·n`; but the master iff is
+  -- stated on `symmQuotient = D^{1/2} Q̃ D^{-1/2}`, an orthogonal conjugation,
+  -- NOT a scalar rescale of `A_Q`, so the literal `τ·n` cannot be matched
+  -- without the GGPT eigenvalue-lattice input absent from these hypotheses.
   sorry
 
 /-- **ColorCompletion PST iff complete-graph PST.**
@@ -430,12 +458,17 @@ theorem colorCompletion_pst_iff
     IsPST (GraphBundle.colorCompletion color) u v τ ↔
     (color u = color v ∨
      IsPST ((Graphplay.SimpleGraph.toWeighted (⊤ : SimpleGraph J))) (color u) (color v) τ) := by
-  -- BLOCKED: within a single color class the marginal evolution is trivial
-  -- (empty fiber); across color classes the master theorem reduces to the
-  -- complete graph on `J`, with the `∨` accounting for the "stay in same
-  -- color class" case.  Closing it needs the same quotient↔host time-matching
-  -- (symmQuotient vs scalar-rescaled `Q`) as `templateJoin_pst_iff`, which is
-  -- the GGPT spectral-lattice content absent from the hypotheses.
+  -- BLOCKED: same time-rescale / `symmQuotient`-vs-scalar mismatch as
+  -- `templateJoin_pst_iff`, specialized to the complete template `K_{|J|}`.
+  -- The color completion is the all-ones-coupling bundle over `⊤ : SimpleGraph J`
+  -- with empty fibers; its adjacency carries the Kronecker-PRODUCT coupling
+  -- block `A_{K_{|J|}} ⊗ₖ J_n` (constant block `n` per color edge).  Within a
+  -- color class the marginal evolution is trivial (empty fiber → the left `∨`
+  -- branch); across classes the master theorem reduces to `K_{|J|}`, but on the
+  -- all-ones fiber eigenvector the block scales time by `n`, giving PST on the
+  -- symmetric quotient `symmQuotient` (a `D^{1/2}`-conjugation) rather than on
+  -- a scalar rescale of `A_{K_{|J|}}`.  Matching the literal `τ` is the GGPT
+  -- eigenvalue-lattice content, absent from the hypotheses.
   sorry
 
 end GraphBundle

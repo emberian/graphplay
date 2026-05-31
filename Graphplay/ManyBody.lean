@@ -845,6 +845,177 @@ noncomputable def manyBodyCellLabel
               (fun k _ => Finset.mem_univ _)]
         simp⟩
 
+/-- The distinguishable `N`-particle adjacency entry, unfolded: a sum over the
+particle slot `k` of single-particle hops with the other coordinates frozen. -/
+theorem NParticleAdjacency_distinguishable_apply
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : WeightedGraph V) (N : ℕ) (x z : Fin N → V) :
+    (NParticleAdjacency G N .Distinguishable).2 x z
+      = ∑ k : Fin N, (if (∀ i ≠ k, x i = z i) then G.adj (x k) (z k) else 0) :=
+  rfl
+
+/-- **Branching factorization (distinguishable case).**  For distinguishable
+particles the lifted-cell branching number from a configuration `x` into a
+lifted cell `d : Fin N → I` factors as a sum over the particle slot `k` of:
+the single-particle branching number `P.branching (d k) (x k)` of the hopping
+particle, gated by the requirement that the *frozen* particles already sit in
+the cells prescribed by `d`.
+
+This is the second-quantized branching identity for distinguishable statistics;
+it makes the equitable lift a direct corollary of the single-particle equitable
+property (`P.branching` depends only on the source cell). -/
+theorem manyBody_distinguishable_branching_factor
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V}
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I) (N : ℕ) (d : Fin N → I) (x : Fin N → V) :
+    (∑ z : Fin N → V,
+      (if P.cells ∘ z = d then (NParticleAdjacency G N .Distinguishable).2 x z else 0))
+    = ∑ k : Fin N,
+        (if (∀ i ≠ k, P.cells (x i) = d i) then P.branching (d k) (x k) else 0) := by
+  classical
+  -- Unfold the matrix entry and push the cell indicator `[P∘z = d]` into the
+  -- `k`-sum, then swap the `z`-sum past the `k`-sum.
+  have hstep1 :
+      (∑ z : Fin N → V,
+        (if P.cells ∘ z = d then (NParticleAdjacency G N .Distinguishable).2 x z else 0))
+      = ∑ k : Fin N, ∑ z : Fin N → V,
+          (if P.cells ∘ z = d then
+            (if (∀ i ≠ k, x i = z i) then G.adj (x k) (z k) else 0) else 0) := by
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl (fun z _ => ?_)
+    rw [NParticleAdjacency_distinguishable_apply]
+    by_cases hp : P.cells ∘ z = d
+    · rw [if_pos hp]
+      exact Finset.sum_congr rfl (fun k _ => (if_pos hp).symm)
+    · rw [if_neg hp]
+      exact (Finset.sum_eq_zero (fun k _ => if_neg hp)).symm
+  rw [hstep1]
+  refine Finset.sum_congr rfl (fun k _ => ?_)
+  -- Per `k`: reindex the `z`-sum along the fiber `{z | ∀ i≠k, x i = z i}` (off the
+  -- fiber the summand is 0) by `z ↦ z k`, identifying the cell constraint
+  -- `P∘z = d` with `frozen-cells ∧ P(z k) = d k`.
+  have hreindex :
+      (∑ z : Fin N → V,
+        if P.cells ∘ z = d then
+          (if (∀ i ≠ k, x i = z i) then G.adj (x k) (z k) else 0) else 0)
+      = ∑ w : V,
+          if (∀ i ≠ k, P.cells (x i) = d i) ∧ P.cells w = d k
+            then G.adj (x k) w else 0 := by
+    rw [← Finset.sum_subset
+          (Finset.filter_subset (fun z : Fin N → V => ∀ i ≠ k, x i = z i) Finset.univ)
+          (by
+            -- off-fiber summands vanish: the inner indicator is false there.
+            intro z _ hz
+            rw [Finset.mem_filter, not_and] at hz
+            have hz' : ¬ (∀ i ≠ k, x i = z i) := hz (Finset.mem_univ _)
+            rw [if_neg hz', ite_self])]
+    refine Finset.sum_nbij' (i := fun z => z k) (j := Function.update x k)
+      ?_ ?_ ?_ ?_ ?_
+    · intro z _; exact Finset.mem_univ _
+    · intro w _
+      rw [Finset.mem_filter]
+      refine ⟨Finset.mem_univ _, fun i hi => ?_⟩
+      rw [Function.update_of_ne hi]
+    · intro z hz
+      rw [Finset.mem_filter] at hz
+      funext i
+      by_cases hi : i = k
+      · subst hi; rw [Function.update_self]
+      · rw [Function.update_of_ne hi]; exact hz.2 i hi
+    · intro w _; show Function.update x k w k = w; rw [Function.update_self]
+    · -- summand agreement under `z ↦ z k`: `F z = G (z k)`, where the outer
+      -- cell constraint `P∘z = d` matches `frozen-cells ∧ P(z k) = d k`.
+      intro z hz
+      rw [Finset.mem_filter] at hz
+      simp only []
+      by_cases hzd : P.cells ∘ z = d
+      · rw [if_pos hzd, if_pos hz.2, if_pos]
+        refine ⟨fun i hi => ?_, ?_⟩
+        · have hh := congrFun hzd i
+          rw [Function.comp_apply] at hh
+          rw [hz.2 i hi]; exact hh
+        · have hh := congrFun hzd k; rwa [Function.comp_apply] at hh
+      · rw [if_neg hzd, if_neg]
+        rintro ⟨hfr, hk⟩
+        apply hzd
+        funext i
+        by_cases hi : i = k
+        · subst hi; rw [Function.comp_apply]; exact hk
+        · rw [Function.comp_apply, ← hz.2 i hi]; exact hfr i hi
+  rw [hreindex]
+  -- Split off the frozen-cell indicator and recognise the branching sum.
+  by_cases hfrozen : (∀ i ≠ k, P.cells (x i) = d i)
+  · rw [if_pos hfrozen]
+    unfold EquitablePartition.branching
+    refine Finset.sum_congr rfl (fun w _ => ?_)
+    by_cases hw : P.cells w = d k
+    · rw [if_pos ⟨hfrozen, hw⟩, if_pos hw]
+    · rw [if_neg (fun h => hw h.2), if_neg hw]
+  · rw [if_neg hfrozen]
+    refine Finset.sum_eq_zero (fun w _ => ?_)
+    rw [if_neg (fun h => hfrozen h.1)]
+
+/-- **Many-body equitable lift — distinguishable particles (axiom-clean).**
+For *distinguishable* `N`-particle walks the lifted cell labelling
+`manyBodyCellLabel P N .Distinguishable = (P.cells ∘ ·)` is a genuine equitable
+partition of `(NParticleAdjacency G N .Distinguishable).2`: the branching number
+from a configuration into any lifted cell depends only on the lifted cell of the
+source.
+
+This is the fully second-quantized branching identity made rigorous: by
+`manyBody_distinguishable_branching_factor` the many-body branching factors as a
+sum over the hopping particle's slot `k` of single-particle branching numbers
+`P.branching (d k) (x k)`, each gated by the requirement that the *frozen*
+particles already occupy the cells prescribed by `d`.  Both the gate (a function
+of `P.cells ∘ x`) and each branching number (`P.branching` is constant on cells)
+depend only on the source's lifted cell, giving equitability.
+
+(The analogous *entrywise* statement is genuinely **false** for bosons and
+fermions, whose hop matrix elements carry occupation-dependent amplitudes
+`√((n_u+1)n_v)` resp. Jordan–Wigner signs that are *not* functions of the
+cell-occupation profile alone; the indistinguishable lift only holds on the
+cell-uniform subspace, not entrywise.  Hence the lift is stated and proved for
+the distinguishable statistics, where it is an honest equitable partition.) -/
+theorem manyBody_equitable_lift_distinguishable
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V}
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I) (N : ℕ) :
+    -- Phrased with the reducible index/cell types inlined
+    -- (`NParticleIndex G N .Distinguishable = Fin N → V`,
+    --  `ManyBodyCells P N .Distinguishable = Fin N → I`,
+    --  `manyBodyCellLabel _ x = P.cells ∘ x`) so the canonical `Pi` instances align.
+    ∀ (c d : Fin N → I) (x y : Fin N → V),
+      P.cells ∘ x = c → P.cells ∘ y = c →
+      (∑ z, (if P.cells ∘ z = d
+              then (NParticleAdjacency G N .Distinguishable).2 x z else 0))
+      = (∑ z, (if P.cells ∘ z = d
+              then (NParticleAdjacency G N .Distinguishable).2 y z else 0)) := by
+  classical
+  intro c d x y hx hy
+  -- The factorization helper rewrites each side's branching.
+  rw [manyBody_distinguishable_branching_factor P N d x,
+      manyBody_distinguishable_branching_factor P N d y]
+  -- `P.cells ∘ x = c = P.cells ∘ y`, so `P.cells (x i) = P.cells (y i)` for all `i`.
+  have hxy : (P.cells ∘ x : Fin N → I) = P.cells ∘ y := hx.trans hy.symm
+  have hcell : ∀ i : Fin N, P.cells (x i) = P.cells (y i) := by
+    intro i
+    have := congrFun hxy i
+    rwa [Function.comp_apply, Function.comp_apply] at this
+  refine Finset.sum_congr rfl (fun k _ => ?_)
+  -- The frozen-cell gate agrees (it only reads `P.cells (x i)`), and each
+  -- single-particle branching agrees by single-particle equitability.
+  have hgate : (∀ i ≠ k, P.cells (x i) = d i) ↔ (∀ i ≠ k, P.cells (y i) = d i) := by
+    constructor <;> intro h i hi
+    · rw [← hcell i]; exact h i hi
+    · rw [hcell i]; exact h i hi
+  have hbr : P.branching (d k) (x k) = P.branching (d k) (y k) :=
+    P.branching_eq (P.cells (x k)) (d k) (x k) (y k) rfl (hcell k).symm
+  by_cases hg : (∀ i ≠ k, P.cells (x i) = d i)
+  · rw [if_pos hg, if_pos (hgate.mp hg), hbr]
+  · rw [if_neg hg, if_neg (fun h => hg (hgate.mpr h))]
+
 /-- **Many-body equitable lift.**  If `P` is an equitable partition of `G`,
 then the labelling `manyBodyCellLabel P N s` is an equitable partition of the
 `N`-particle adjacency `NParticleAdjacency G N s`.  Cell-uniform `N`-particle
@@ -867,11 +1038,90 @@ theorem manyBody_equitable_lift
               then (NParticleAdjacency G N s).2 x z else 0))
       = (∑ z, (if manyBodyCellLabel P N s z = d
               then (NParticleAdjacency G N s).2 y z else 0)) := by
-  -- The branching number from a single basis state into a cell of the lifted
-  -- partition factors as a sum of single-particle branching numbers (via
-  -- second quantization), which depend only on the cell of the source by
-  -- the single-particle equitable property.  Detailed argument: deferred.
+  -- PROVED axiom-clean for the **distinguishable** statistics, where the lift is a
+  -- genuine entrywise equitable partition:
+  -- `manyBody_equitable_lift_distinguishable` (via the second-quantized branching
+  -- factorization `manyBody_distinguishable_branching_factor`).
+  --
+  -- The all-`s` form stated here is **false entrywise for bosons and fermions**:
+  -- their hop matrix elements carry occupation-dependent amplitudes
+  -- `√((n_u+1) n_v)` (resp. Jordan–Wigner signs) that are not functions of the
+  -- cell-occupation profile alone, so two configurations with the same lifted
+  -- cell can have different branching numbers.  For those statistics the lift
+  -- holds only on the cell-uniform subspace, not entrywise — see the
+  -- (subspace-level) `manyBody_quotient_factorization` below.  Genuinely BLOCKED
+  -- as stated for boson/fermion; the honest content is the distinguishable lift.
   sorry
+
+/-- **Cell-uniform reduction — distinguishable particles (axiom-clean).**  The
+distinguishable many-body adjacency **preserves the lifted cell-uniform
+subspace**: a wavefunction `ψ` constant on each lifted cell (i.e. constant on
+each fiber of `P.cells ∘ ·`) is mapped by `(NParticleAdjacency G N
+.Distinguishable).2` to one that is again constant on each lifted cell.
+
+This is the operational form of "many-body cell-uniform dynamics is governed by
+an `N`-body Hamiltonian on the quotient graph", and follows directly from the
+equitable lift `manyBody_equitable_lift_distinguishable`: grouping the
+matrix–vector sum by the target's lifted cell `d`, the `ψ`-value is constant on
+each fiber, and the residual cell-branching coefficient depends only on the
+source's lifted cell. -/
+theorem manyBody_quotient_factorization_distinguishable
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V}
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I) (N : ℕ) :
+    -- The matrix–vector action `(H_N ψ)(a) = ∑_z H_N(a,z) ψ(z)` is written as an
+    -- explicit sum (the `mulVec` of the many-body adjacency) over the concrete
+    -- index `Fin N → V`, to use its canonical `Pi` instances.
+    ∀ (ψ : (Fin N → V) → ℂ),
+      (∀ a b : Fin N → V, P.cells ∘ a = P.cells ∘ b → ψ a = ψ b) →
+      ∀ a b : Fin N → V, P.cells ∘ a = P.cells ∘ b →
+        (∑ z : Fin N → V, (NParticleAdjacency G N .Distinguishable).2 a z * ψ z)
+        = (∑ z : Fin N → V, (NParticleAdjacency G N .Distinguishable).2 b z * ψ z) := by
+  classical
+  intro ψ hψ a b hab
+  -- Abbreviate the many-body matrix.
+  set M : Matrix (Fin N → V) (Fin N → V) ℂ := (NParticleAdjacency G N .Distinguishable).2 with hM
+  -- `psiCell d`: the common `ψ`-value on the cell-fiber `d` (0 if the fiber is empty).
+  set psiCell : (Fin N → I) → ℂ :=
+    fun d => if h : ∃ z : Fin N → V, P.cells ∘ z = d then ψ h.choose else 0 with hpsiCell
+  -- Group the matrix–vector sum by the target's lifted cell `d = P.cells ∘ z`,
+  -- writing each fiber-branching as the cell-indicator sum used by the equitable
+  -- lift `manyBody_equitable_lift_distinguishable`.
+  have hgroup : ∀ w : Fin N → V,
+      (∑ z : Fin N → V, M w z * ψ z)
+      = ∑ d : Fin N → I, psiCell d *
+          (∑ z, if P.cells ∘ z = d then M w z else 0) := by
+    intro w
+    -- Fiberwise over the cell label `P.cells ∘ ·`.
+    rw [← Finset.sum_fiberwise Finset.univ (fun z : Fin N → V => P.cells ∘ z)
+          (fun z => M w z * ψ z)]
+    refine Finset.sum_congr rfl (fun d _ => ?_)
+    -- Rewrite the RHS cell-indicator sum into a filtered sum, then compare termwise
+    -- on the fiber `{z | P.cells ∘ z = d}`, where `ψ z = psiCell d`.
+    rw [Finset.mul_sum]
+    rw [show (∑ z : Fin N → V, psiCell d * if P.cells ∘ z = d then M w z else 0)
+          = ∑ z ∈ Finset.univ.filter (fun z : Fin N → V => P.cells ∘ z = d),
+              psiCell d * M w z by
+      rw [Finset.sum_filter]
+      refine Finset.sum_congr rfl (fun z _ => ?_)
+      by_cases hz : P.cells ∘ z = d
+      · rw [if_pos hz, if_pos hz]
+      · rw [if_neg hz, if_neg hz, mul_zero]]
+    refine Finset.sum_congr rfl (fun z hz => ?_)
+    rw [Finset.mem_filter] at hz
+    -- On the fiber, `ψ z = psiCell d`.
+    have hψz : ψ z = psiCell d := by
+      have hex : ∃ z' : Fin N → V, P.cells ∘ z' = d := ⟨z, hz.2⟩
+      simp only [psiCell, dif_pos hex]
+      exact hψ z hex.choose (hz.2.trans hex.choose_spec.symm)
+    rw [hψz]; ring
+  rw [hgroup a, hgroup b]
+  -- Each cell-branching coefficient depends only on the source's lifted cell;
+  -- since `P.cells ∘ a = P.cells ∘ b`, the two grouped sums agree term-by-term.
+  refine Finset.sum_congr rfl (fun d _ => ?_)
+  congr 1
+  exact manyBody_equitable_lift_distinguishable P N (P.cells ∘ a) d a b rfl hab.symm
 
 /-- **Cell-uniform reduction.**  The restriction of `NParticleAdjacency G N s`
 to its lifted cell-uniform subspace is unitarily equivalent to the
@@ -896,9 +1146,15 @@ theorem manyBody_quotient_factorization
       ∀ a b, manyBodyCellLabel P N s a = manyBodyCellLabel P N s b →
         ((NParticleAdjacency G N s).2.mulVec ψ) a
         = ((NParticleAdjacency G N s).2.mulVec ψ) b := by
-  -- Follows from `manyBody_equitable_lift`: the lifted partition is equitable,
-  -- and equitable partitions preserve cell-uniform vectors under the adjacency
-  -- action.  Detailed argument: deferred.
+  -- PROVED axiom-clean for the **distinguishable** statistics in
+  -- `manyBody_quotient_factorization_distinguishable` (grouping the matrix–vector
+  -- sum by the target's lifted cell and applying
+  -- `manyBody_equitable_lift_distinguishable`).
+  --
+  -- For boson/fermion the cell-uniform subspace is genuinely preserved, but the
+  -- argument needs the second-quantized characteristic isometry rather than the
+  -- entrywise equitable property (which fails there, see
+  -- `manyBody_equitable_lift`).  Deferred for those statistics.
   sorry
 
 /-! ## 4.  Feder's many-boson construction (PRL 97, 180502) -/

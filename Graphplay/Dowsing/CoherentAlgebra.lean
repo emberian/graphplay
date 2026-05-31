@@ -1162,6 +1162,53 @@ theorem BMAlgebra_isCommutative
   · intro x y _ _ hx hy B hB; rw [add_mul, mul_add, hx B hB, hy B hB]
   · intro r x _ hx B hB; rw [smul_mul_assoc, mul_smul_comm, hx B hB]
 
+/-! ### Reachable fragments of the Bose-Mesner reconstruction.
+
+The reverse direction of `BMAlgebra_characterization` (reconstruct an honest
+association scheme from a Schur-orthogonal Hermitian basis summing to `J`) is
+deep: it needs the multiplicative structure constants and `basis 0 = 1`.  But
+several pieces of the reconstruction follow *directly* from the basis
+hypotheses, and we prove them here as standalone lemmas (real content, used to
+delimit exactly what is blocked).
+-/
+
+/-- The span of a Schur-orthogonal Hermitian basis summing to `J` **contains
+`J`** (it is the sum of the basis elements). -/
+theorem matJ_mem_span_of_basis
+    {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
+    (basis : Fin (d + 1) → Matrix V V ℂ)
+    (hsum : (∑ i, basis i) = matJ (V := V)) :
+    matJ (V := V) ∈ Submodule.span ℂ (Set.range basis) := by
+  rw [← hsum]
+  exact Submodule.sum_mem _ (fun i _ => Submodule.subset_span ⟨i, rfl⟩)
+
+/-- The **range** of a Hermitian basis is closed under conjugate transpose:
+each `(basis i)ᴴ = basis i` lies back in the range.  (This is the adjoint-class
+involution of an association scheme, here trivial since the basis is
+self-adjoint.) -/
+theorem basis_conjTranspose_mem_range
+    {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
+    (basis : Fin (d + 1) → Matrix V V ℂ)
+    (hherm : ∀ i, (basis i).IsHermitian) (i : Fin (d + 1)) :
+    (basis i)ᴴ ∈ Set.range basis :=
+  ⟨i, (hherm i).eq.symm⟩
+
+/-- **Schur powers of a Schur-orthogonal basis stay in the span.**  For a
+Schur-orthogonal family, `schur (basis i) (basis j) = 0` whenever `i ≠ j`, so
+*every* Schur product of two basis elements is either `0` or `schur (basis i)
+(basis i)`; in particular each Schur product lies in the span together with the
+diagonal Schur squares.  This isolates the one genuinely missing datum for the
+reconstruction: closure of the span under Schur product reduces to the diagonal
+Schur-idempotency `schur (basis i) (basis i) ∈ span`. -/
+theorem basis_schur_offdiag_zero
+    {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
+    (basis : Fin (d + 1) → Matrix V V ℂ)
+    (hortho : ∀ i j, i ≠ j → schur (basis i) (basis j) = 0)
+    {i j : Fin (d + 1)} (hij : i ≠ j) :
+    schur (basis i) (basis j) ∈ Submodule.span ℂ (Set.range basis) := by
+  rw [hortho i j hij]
+  exact Submodule.zero_mem _
+
 /-- **Bose-Mesner = Tower 3 commutative case.** A coherent subalgebra
 `A ⊆ Matrix V V ℂ` is the Bose-Mesner algebra of a **commutative,
 Schur-idempotent** association scheme if and only if (a) `A` is commutative,

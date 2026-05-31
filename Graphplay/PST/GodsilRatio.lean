@@ -416,6 +416,28 @@ theorem eigenProjDiagLocal_nonneg (G : WeightedGraph V) (lam : ℝ) (u : V) :
   · simp only [h, if_true]; positivity
   · simp only [h, if_false, le_refl]
 
+/-- When the eigenvalues are distinct (**simple spectrum**), the projector cross
+entry collapses to the single eigenindex `i` with `eigenvalues i = lam`:
+`(E_λ)_{u,v} = (eigU)_{u,i} · conj (eigU)_{v,i}`. -/
+theorem eigenProjEntryLocal_of_injective (G : WeightedGraph V)
+    (hinj : Function.Injective G.herm.eigenvalues) (i : V) :
+    eigenProjEntryLocal G (G.herm.eigenvalues i) u v
+      = eigU G u i * star (eigU G v i) := by
+  rw [eigenProjEntryLocal, Finset.sum_eq_single i]
+  · rw [if_pos rfl]
+  · intro j _ hj; rw [if_neg (fun h => hj (hinj h))]
+  · intro h; exact absurd (Finset.mem_univ i) h
+
+/-- The diagonal collapse for a simple spectrum:
+`(E_λ)_{u,u} = ‖(eigU)_{u,i}‖²`. -/
+theorem eigenProjDiagLocal_of_injective (G : WeightedGraph V)
+    (hinj : Function.Injective G.herm.eigenvalues) (i : V) :
+    eigenProjDiagLocal G (G.herm.eigenvalues i) u = ‖eigU G u i‖ ^ 2 := by
+  rw [eigenProjDiagLocal, Finset.sum_eq_single i]
+  · rw [if_pos rfl]
+  · intro j _ hj; rw [if_neg (fun h => hj (hinj h))]
+  · intro h; exact absurd (Finset.mem_univ i) h
+
 /-- **Strong cospectrality** (Godsil–Royle; the spectral-parallelism
 characterization).  `u` and `v` are strongly cospectral in `G` if, for every
 real eigenvalue `λ`, the projections `E_λ e_u`, `E_λ e_v` are parallel: the
@@ -428,6 +450,53 @@ def IsStronglyCospectral (G : WeightedGraph V) (u v : V) : Prop :=
       eigenProjEntryLocal G lam u v
         = ε * Complex.ofReal
             (Real.sqrt (eigenProjDiagLocal G lam u * eigenProjDiagLocal G lam v))
+
+/-- **Simple spectrum ⟹ every pair is strongly cospectral.**  If the
+eigenvalues of `G.adj` are all distinct (each eigenspace is one-dimensional),
+then *any* two vertices `u, v` are strongly cospectral: each `λ`-eigenspace is a
+single ray, so the projected vectors `E_λ e_u, E_λ e_v` are automatically
+parallel.  Entrywise, the cross entry `(E_λ)_{u,v} = (eigU)_{u,i} conj (eigU)_{v,i}`
+has modulus exactly `‖(eigU)_{u,i}‖·‖(eigU)_{v,i}‖ = √((E_λ)_{u,u}(E_λ)_{v,v})`,
+saturating the geometric-mean bound.
+
+This is the structural reason endpoints of the path `P_n` are strongly
+cospectral (its spectrum `2cos(kπ/(n+1))`, `k=1..n`, is simple): see
+Coutinho–Godsil (2021), Cor. 8.2. -/
+theorem isStronglyCospectral_of_injective_eigenvalues
+    (G : WeightedGraph V) (hinj : Function.Injective G.herm.eigenvalues) (u v : V) :
+    IsStronglyCospectral G u v := by
+  rintro lam ⟨i, hi⟩
+  subst hi
+  rw [eigenProjEntryLocal_of_injective G hinj i,
+      eigenProjDiagLocal_of_injective G hinj i,
+      eigenProjDiagLocal_of_injective G hinj i]
+  set a : ℂ := eigU G u i with ha
+  set b : ℂ := eigU G v i with hb
+  -- Goal: `a * star b = ε * √(‖a‖²‖b‖²)` with `‖ε‖ = 1`.
+  have hsqrt : Real.sqrt (‖a‖ ^ 2 * ‖b‖ ^ 2) = ‖a‖ * ‖b‖ := by
+    rw [← mul_pow, Real.sqrt_sq (by positivity)]
+  rw [hsqrt]
+  by_cases hab : a = 0 ∨ b = 0
+  · -- One factor vanishes: cross entry is `0`, geometric mean is `0`, `ε = 1`.
+    refine ⟨1, by simp, ?_⟩
+    rcases hab with h | h <;>
+      simp [h]
+  · push_neg at hab
+    obtain ⟨ha0, hb0⟩ := hab
+    have hden : ((‖a‖ * ‖b‖ : ℝ) : ℂ) ≠ 0 := by
+      simp only [ne_eq, Complex.ofReal_eq_zero]
+      have : ‖a‖ ≠ 0 := norm_ne_zero_iff.mpr ha0
+      have : ‖b‖ ≠ 0 := norm_ne_zero_iff.mpr hb0
+      positivity
+    -- `ε := a star b / (‖a‖‖b‖)` has modulus 1.
+    refine ⟨a * star b / ((‖a‖ * ‖b‖ : ℝ) : ℂ), ?_, ?_⟩
+    · rw [norm_div, norm_mul, norm_star]
+      rw [show ‖((‖a‖ * ‖b‖ : ℝ) : ℂ)‖ = ‖a‖ * ‖b‖ from by
+            rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]]
+      have hane : ‖a‖ ≠ 0 := norm_ne_zero_iff.mpr ha0
+      have hbne : ‖b‖ ≠ 0 := norm_ne_zero_iff.mpr hb0
+      exact div_self (by positivity)
+    · rw [div_mul_cancel₀ _ hden]
 
 /-! ### Spectral projectors as matrices, and the forward PST extraction
 
@@ -529,6 +598,320 @@ theorem eigenProj_orthogonal (G : WeightedGraph V) (lam mu : ℝ) (h : lam ≠ m
   ext u w; rw [eigenProj_mul_entry, Matrix.zero_apply]
   apply Finset.sum_eq_zero; intro i _
   rw [if_neg]; rintro ⟨h1, h2⟩; exact h (h1 ▸ h2)
+
+/-! ### Eigenvalue relation, completeness, and uniqueness of the spectral
+projectors
+
+The next block records that each `eigenProj G lam` is a genuine spectral
+projector of `G.adj` onto its `lam`-eigenspace: it satisfies the *eigenvalue
+relation* `A · E_λ = λ · E_λ` (and on the left `E_λ · A = λ · E_λ`), the
+projectors are *complete* (`∑_λ E_λ = 1`), and these structural identities
+**characterize** the family `{E_λ}` uniquely.  Uniqueness is the engine for the
+automorphism / cospectrality transport below: a permutation that commutes with
+`A` carries the (unique) spectral resolution to itself entrywise. -/
+
+/-- The defining column relation of the eigenvector matrix: applying `G.adj`
+to the `i`-th eigenvector column multiplies it by the eigenvalue `λ_i`,
+entrywise `∑_w A_{u,w} (eigU)_{w,i} = λ_i (eigU)_{u,i}`. -/
+theorem adj_mulVec_eigU_col (G : WeightedGraph V) (i u : V) :
+    ∑ w : V, G.adj u w * eigU G w i
+      = (G.herm.eigenvalues i : ℂ) * eigU G u i := by
+  have h := G.herm.mulVec_eigenvectorBasis i
+  have hu := congrFun h u
+  -- `(A *ᵥ ψ_i) u = (λ_i • ψ_i) u`, expand both sides; `eigU G x i = ψ_i x`.
+  simp only [Matrix.mulVec, dotProduct, Pi.smul_apply, smul_eq_mul] at hu
+  simp only [eigU, G.herm.eigenvectorUnitary_apply]
+  exact hu
+
+/-- **Eigenvalue relation on the right.**  `G.adj · E_λ = λ · E_λ`: the columns
+of the spectral projector lie in the `λ`-eigenspace of `G.adj`. -/
+theorem adj_mul_eigenProj (G : WeightedGraph V) (lam : ℝ) :
+    G.adj * eigenProj G lam = (lam : ℂ) • eigenProj G lam := by
+  ext u w
+  rw [Matrix.mul_apply, Matrix.smul_apply, smul_eq_mul, eigenProj]
+  -- LHS: ∑_x A_{u,x} ∑_i [λ_i=lam] (eigU)_{x,i} (conj eigU)_{w,i}
+  -- swap order of summation, apply the column relation per `i`.
+  show (∑ x : V, G.adj u x *
+        ∑ i : V, if G.herm.eigenvalues i = lam then eigU G x i * star (eigU G w i) else 0)
+      = (lam : ℂ) * ∑ i : V, if G.herm.eigenvalues i = lam then eigU G u i * star (eigU G w i) else 0
+  simp_rw [Finset.mul_sum]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  by_cases h : G.herm.eigenvalues i = lam
+  · simp only [h, if_true]
+    -- ∑_x A_{u,x} * (eigU x i * conj eigU w i) = (∑_x A_{u,x} eigU x i) * conj eigU w i
+    --                                          = λ_i eigU u i * conj eigU w i
+    have hcol := adj_mulVec_eigU_col G i u
+    calc ∑ x : V, G.adj u x * (eigU G x i * star (eigU G w i))
+          = (∑ x : V, G.adj u x * eigU G x i) * star (eigU G w i) := by
+            rw [Finset.sum_mul]; refine Finset.sum_congr rfl (fun x _ => ?_); ring
+      _ = ((G.herm.eigenvalues i : ℂ) * eigU G u i) * star (eigU G w i) := by rw [hcol]
+      _ = (lam : ℂ) * (eigU G u i * star (eigU G w i)) := by rw [h]; ring
+  · simp only [h, if_false, mul_zero, Finset.sum_const_zero]
+
+/-- **Completeness** of the spectral projectors: `∑_λ E_λ = 1`.  Summing over
+the distinct eigenvalues collapses (by the `if`-partition over `i`) to
+`U Uᴴ = 1`. -/
+theorem sum_eigenProj (G : WeightedGraph V) :
+    ∑ lam ∈ Finset.univ.image G.herm.eigenvalues, eigenProj G lam = (1 : Matrix V V ℂ) := by
+  ext u w
+  rw [Matrix.sum_apply]
+  -- ∑_λ ∑_i [λ_i=λ] eigU u i conj eigU w i = ∑_i eigU u i conj eigU w i = (U Uᴴ)_{u,w}
+  have hpart : (∑ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        ∑ i : V, if G.herm.eigenvalues i = lam then eigU G u i * star (eigU G w i) else 0)
+      = ∑ i : V, eigU G u i * star (eigU G w i) := by
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    rw [Finset.sum_eq_single (G.herm.eigenvalues i)]
+    · rw [if_pos rfl]
+    · intro lam _ hne; rw [if_neg (fun h => hne h.symm)]
+    · intro hmem; exact absurd (Finset.mem_image_of_mem _ (Finset.mem_univ i)) hmem
+  simp only [eigenProj]
+  rw [hpart]
+  -- `∑_i eigU u i * conj eigU w i = (U Uᴴ)_{u,w} = δ`.
+  have h := eigU_mul_conjTranspose G
+  have huw := congrFun (congrFun h u) w
+  rw [Matrix.mul_apply] at huw
+  simp only [Matrix.conjTranspose_apply] at huw
+  rw [← huw]
+
+/-- The spectral projector is self-adjoint as a matrix: `(E_λ)ᴴ = E_λ`. -/
+theorem eigenProj_conjTranspose (G : WeightedGraph V) (lam : ℝ) :
+    (eigenProj G lam)ᴴ = eigenProj G lam := by
+  ext a b
+  rw [Matrix.conjTranspose_apply]
+  exact (eigenProj_conjTranspose_apply G lam b a).symm
+
+/-- **Eigenvalue relation on the left.**  `E_λ · G.adj = λ · E_λ` (the
+adjoint of `adj_mul_eigenProj`, using `Aᴴ = A` and `(E_λ)ᴴ = E_λ`). -/
+theorem eigenProj_mul_adj (G : WeightedGraph V) (lam : ℝ) :
+    eigenProj G lam * G.adj = (lam : ℂ) • eigenProj G lam := by
+  have h := congrArg Matrix.conjTranspose (adj_mul_eigenProj G lam)
+  simp only [Matrix.conjTranspose_mul, Matrix.conjTranspose_smul,
+    eigenProj_conjTranspose] at h
+  rw [show (G.adj)ᴴ = G.adj from G.herm] at h
+  rw [Complex.star_def, Complex.conj_ofReal] at h
+  exact h
+
+/-! ### Uniqueness of the spectral resolution, and automorphism transport
+
+If a matrix `P` is **unitary** (`Pᴴ P = 1`) and **conjugates `G.adj` to itself**
+(`Pᴴ · A · P = A`, equivalently `A · P = P · A`), then conjugating the spectral
+projector by `P` leaves it unchanged: `Pᴴ · E_λ · P = E_λ`.  This is the
+uniqueness of the spectral resolution: the conjugated family `F_λ := Pᴴ E_λ P`
+is *also* a complete family of orthogonal self-adjoint projectors satisfying
+`A F_λ = λ F_λ`, hence coincides with `{E_λ}`.  The cross-orthogonality
+`E_λ F_μ = 0` for `λ ≠ μ` (the heart of the argument) comes from
+`λ (E_λ F_μ) = (E_λ A) F_μ = E_λ (A F_μ) = μ (E_λ F_μ)`. -/
+
+/-- **Conjugation invariance of the spectral projector** under a unitary that
+commutes with `G.adj`.  If `Pᴴ P = 1` and `A P = P A`, then `Pᴴ E_λ P = E_λ`
+for every eigenvalue `λ ∈ image`. -/
+theorem conj_eigenProj_eq
+    (G : WeightedGraph V) (P : Matrix V V ℂ)
+    (hPunit : Pᴴ * P = 1) (hPcomm : G.adj * P = P * G.adj)
+    (lam : ℝ) (hlam : lam ∈ Finset.univ.image G.herm.eigenvalues) :
+    Pᴴ * eigenProj G lam * P = eigenProj G lam := by
+  classical
+  set spec := Finset.univ.image G.herm.eigenvalues with hspec
+  -- The conjugated family.
+  set F : ℝ → Matrix V V ℂ := fun mu => Pᴴ * eigenProj G mu * P with hF
+  -- `F mu` is self-adjoint.
+  have hFherm : ∀ mu, (F mu)ᴴ = F mu := by
+    intro mu
+    simp only [hF, Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose,
+      eigenProj_conjTranspose, mul_assoc]
+  -- Eigenvalue relation for `F`: `A · F mu = mu • F mu`.
+  have hAF : ∀ mu, G.adj * F mu = (mu : ℂ) • F mu := by
+    intro mu
+    simp only [hF]
+    -- A (Pᴴ E P) = Pᴴ (A E) P  because A commutes with P (hence with Pᴴ).
+    have hPAcomm : Pᴴ * G.adj = G.adj * Pᴴ := by
+      have := congrArg Matrix.conjTranspose hPcomm
+      simp only [Matrix.conjTranspose_mul] at this
+      rw [show (G.adj)ᴴ = G.adj from G.herm] at this
+      exact this
+    calc G.adj * (Pᴴ * eigenProj G mu * P)
+        = ((G.adj * Pᴴ) * eigenProj G mu) * P := by
+          rw [← mul_assoc, ← mul_assoc]
+      _ = ((Pᴴ * G.adj) * eigenProj G mu) * P := by rw [hPAcomm]
+      _ = Pᴴ * (G.adj * eigenProj G mu) * P := by rw [mul_assoc Pᴴ G.adj]
+      _ = Pᴴ * ((mu : ℂ) • eigenProj G mu) * P := by rw [adj_mul_eigenProj]
+      _ = (mu : ℂ) • (Pᴴ * eigenProj G mu * P) := by
+          rw [Matrix.mul_smul, Matrix.smul_mul]
+  -- Completeness for `F`: `∑_mu F mu = 1`.
+  have hFsum : ∑ mu ∈ spec, F mu = 1 := by
+    simp only [hF]
+    rw [← Finset.sum_mul, ← Finset.mul_sum, sum_eigenProj, mul_one, hPunit]
+  -- Cross-orthogonality: `E_λ · F_μ = 0` for `λ ≠ μ`.
+  have hcross : ∀ mu, mu ≠ lam → eigenProj G lam * F mu = 0 := by
+    intro mu hne
+    have key : (lam : ℂ) • (eigenProj G lam * F mu)
+        = (mu : ℂ) • (eigenProj G lam * F mu) := by
+      calc (lam : ℂ) • (eigenProj G lam * F mu)
+          = ((lam : ℂ) • eigenProj G lam) * F mu := by rw [Matrix.smul_mul]
+        _ = (eigenProj G lam * G.adj) * F mu := by rw [eigenProj_mul_adj]
+        _ = eigenProj G lam * (G.adj * F mu) := by rw [mul_assoc]
+        _ = eigenProj G lam * ((mu : ℂ) • F mu) := by rw [hAF]
+        _ = (mu : ℂ) • (eigenProj G lam * F mu) := by rw [Matrix.mul_smul]
+    -- `(lam - mu) • X = 0` with `lam ≠ mu` forces `X = 0`.
+    have hsub : ((lam : ℂ) - (mu : ℂ)) • (eigenProj G lam * F mu) = 0 := by
+      rw [sub_smul, key, sub_self]
+    have hne' : (lam : ℂ) - (mu : ℂ) ≠ 0 := by
+      rw [sub_ne_zero]
+      intro hc
+      exact hne ((Complex.ofReal_inj.mp hc).symm)
+    exact (smul_eq_zero.mp hsub).resolve_left hne'
+  -- `E_λ = E_λ · 1 = E_λ · ∑ F = E_λ · F_λ` (all cross terms vanish).
+  have hEF : eigenProj G lam = eigenProj G lam * F lam := by
+    calc eigenProj G lam
+        = eigenProj G lam * (∑ mu ∈ spec, F mu) := by rw [hFsum, mul_one]
+      _ = ∑ mu ∈ spec, eigenProj G lam * F mu := by rw [Finset.mul_sum]
+      _ = eigenProj G lam * F lam :=
+            Finset.sum_eq_single lam (fun mu _ hne => hcross mu hne)
+              (fun hmem => absurd hlam hmem)
+  -- Symmetrically, `F_λ = F_λ · E_λ`, hence (taking adjoints) `F_λ = E_λ`.
+  -- From `E_λ = E_λ F_λ`, take ᴴ: `E_λ = (E_λ F_λ)ᴴ = F_λ E_λ`.
+  have hFE : eigenProj G lam = F lam * eigenProj G lam := by
+    have h := congrArg Matrix.conjTranspose hEF
+    simp only [Matrix.conjTranspose_mul, eigenProj_conjTranspose, hFherm] at h
+    exact h
+  -- `F_λ - E_λ = F_λ(1) - (1)E_λ`; use both `E = E F` and `E = F E` plus
+  -- completeness of `F` to collapse `F_λ = F_λ · ∑ E?`...  Direct: from the
+  -- two relations and idempotency of `E`, derive `F_λ = E_λ`.
+  -- `F_λ = F_λ * 1`; expand `1 = ∑_μ E_μ` is unavailable here, but we instead
+  -- show `F_λ = E_λ` from `E_λ = E_λ F_λ = F_λ E_λ` and the analogous
+  -- self-relations for `F`.  We have `E = E F` and `E = F E`.  Multiply
+  -- `E = E F` on the left by `F`: `F E = F E F`, i.e. `E = E F` again under ᴴ.
+  -- Cleanest: `F_λ E_λ = E_λ` and `E_λ F_λ = E_λ`; combined with completeness
+  -- `∑_μ E_μ = 1` we get `F_λ = F_λ ∑_μ E_μ = ∑_μ F_λ E_μ`, and `F_λ E_μ = 0`
+  -- for `μ ≠ λ` by the symmetric cross argument; so `F_λ = F_λ E_λ = E_λ`.
+  have hcross' : ∀ mu, mu ≠ lam → F lam * eigenProj G mu = 0 := by
+    intro mu hne
+    have key : (lam : ℂ) • (F lam * eigenProj G mu)
+        = (mu : ℂ) • (F lam * eigenProj G mu) := by
+      have hFA : F lam * G.adj = (lam : ℂ) • F lam := by
+        have h := congrArg Matrix.conjTranspose (hAF lam)
+        simp only [Matrix.conjTranspose_mul, Matrix.conjTranspose_smul,
+          hFherm] at h
+        rw [show (G.adj)ᴴ = G.adj from G.herm] at h
+        rw [Complex.star_def, Complex.conj_ofReal] at h
+        exact h
+      calc (lam : ℂ) • (F lam * eigenProj G mu)
+          = ((lam : ℂ) • F lam) * eigenProj G mu := by rw [Matrix.smul_mul]
+        _ = (F lam * G.adj) * eigenProj G mu := by rw [hFA]
+        _ = F lam * (G.adj * eigenProj G mu) := by rw [mul_assoc]
+        _ = F lam * ((mu : ℂ) • eigenProj G mu) := by rw [adj_mul_eigenProj]
+        _ = (mu : ℂ) • (F lam * eigenProj G mu) := by rw [Matrix.mul_smul]
+    have hsub : ((lam : ℂ) - (mu : ℂ)) • (F lam * eigenProj G mu) = 0 := by
+      rw [sub_smul, key, sub_self]
+    have hne' : (lam : ℂ) - (mu : ℂ) ≠ 0 := by
+      rw [sub_ne_zero]
+      intro hc
+      exact hne ((Complex.ofReal_inj.mp hc).symm)
+    exact (smul_eq_zero.mp hsub).resolve_left hne'
+  have hFcollapse : F lam = F lam * eigenProj G lam := by
+    calc F lam
+        = F lam * (∑ mu ∈ spec, eigenProj G mu) := by rw [sum_eigenProj, mul_one]
+      _ = ∑ mu ∈ spec, F lam * eigenProj G mu := by rw [Finset.mul_sum]
+      _ = F lam * eigenProj G lam :=
+            Finset.sum_eq_single lam (fun mu _ hne => hcross' mu hne)
+              (fun hmem => absurd hlam hmem)
+  -- `F_λ = F_λ E_λ` and `E_λ = F_λ E_λ` (= hFE), so `F_λ = E_λ`.
+  show F lam = eigenProj G lam
+  rw [hFcollapse, ← hFE]
+
+/-- The **permutation matrix** of a vertex bijection `σ`: `(permMatrix σ)_{i,j} =
+1` iff `i = σ j` (so column `j` is the basis vector `e_{σ j}`). -/
+noncomputable def permMatrix (σ : V ≃ V) : Matrix V V ℂ :=
+  fun i j => if i = σ j then 1 else 0
+
+/-- Entry of the conjugate-transpose permutation matrix: `(permMatrix σ)ᴴ a b =
+1` iff `b = σ a` (entries are real `0/1`, so `star` is trivial). -/
+theorem permMatrix_conjTranspose_apply (σ : V ≃ V) (a b : V) :
+    (permMatrix σ)ᴴ a b = if b = σ a then 1 else 0 := by
+  rw [Matrix.conjTranspose_apply, permMatrix]
+  by_cases h : b = σ a
+  · simp [h]
+  · simp [h]
+
+/-- The permutation matrix is unitary: `(permMatrix σ)ᴴ · (permMatrix σ) = 1`. -/
+theorem permMatrix_conjTranspose_mul (σ : V ≃ V) :
+    (permMatrix σ)ᴴ * permMatrix σ = 1 := by
+  ext a b
+  rw [Matrix.mul_apply, Matrix.one_apply]
+  have hsum : (∑ i : V, (permMatrix σ)ᴴ a i * permMatrix σ i b)
+      = ∑ i : V, (if i = σ a then (1:ℂ) else 0) * (if i = σ b then (1:ℂ) else 0) := by
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    rw [permMatrix_conjTranspose_apply, permMatrix]
+  rw [hsum, Finset.sum_eq_single (σ a)]
+  · by_cases hab : a = b
+    · subst hab; simp
+    · rw [if_pos rfl, if_neg (fun h => hab (σ.injective h)), if_neg hab, mul_zero]
+  · intro i _ hi; rw [if_neg hi, zero_mul]
+  · intro h; exact absurd (Finset.mem_univ (σ a)) h
+
+/-- If `σ` is a graph automorphism (`G.adj (σ x) (σ y) = G.adj x y`), then its
+permutation matrix commutes with `G.adj`: `A · P = P · A`. -/
+theorem adj_mul_permMatrix_comm (G : WeightedGraph V) (σ : V ≃ V)
+    (hσ : ∀ x y, G.adj (σ x) (σ y) = G.adj x y) :
+    G.adj * permMatrix σ = permMatrix σ * G.adj := by
+  ext i j
+  rw [Matrix.mul_apply, Matrix.mul_apply]
+  simp only [permMatrix]
+  -- LHS: ∑_k A_{i,k} (if k = σ j) → A_{i, σ j}.
+  have hL : (∑ k : V, G.adj i k * (if k = σ j then (1:ℂ) else 0)) = G.adj i (σ j) := by
+    rw [Finset.sum_eq_single (σ j)]
+    · rw [if_pos rfl, mul_one]
+    · intro k _ hk; rw [if_neg hk, mul_zero]
+    · intro h; exact absurd (Finset.mem_univ (σ j)) h
+  -- RHS: ∑_k (if i = σ k) A_{k,j} → A_{σ⁻¹ i, j}.
+  have hR : (∑ k : V, (if i = σ k then (1:ℂ) else 0) * G.adj k j) = G.adj (σ.symm i) j := by
+    rw [Finset.sum_eq_single (σ.symm i)]
+    · rw [Equiv.apply_symm_apply, if_pos rfl, one_mul]
+    · intro k _ hk
+      rw [if_neg (fun h => hk (by rw [h, Equiv.symm_apply_apply])), zero_mul]
+    · intro h; exact absurd (Finset.mem_univ (σ.symm i)) h
+  rw [hL, hR]
+  -- `A_{i, σ j} = A_{σ⁻¹ i, j}` by the automorphism relation at `(σ⁻¹ i, j)`.
+  have := hσ (σ.symm i) j
+  rw [Equiv.apply_symm_apply] at this
+  exact this
+
+/-- Conjugating the projector matrix by an automorphism's permutation matrix
+shifts both indices by `σ`: `((permMatrix σ)ᴴ · E_λ · permMatrix σ)_{a,b} =
+(E_λ)_{σ a, σ b}`. -/
+theorem conjPerm_eigenProj_entry (G : WeightedGraph V) (σ : V ≃ V) (lam : ℝ)
+    (a b : V) :
+    ((permMatrix σ)ᴴ * eigenProj G lam * permMatrix σ) a b
+      = eigenProj G lam (σ a) (σ b) := by
+  -- `((Pᴴ E) P) a b = ∑_l (Pᴴ E)_{a,l} P_{l,b}`; only `l = σ b` survives.
+  rw [Matrix.mul_apply, Finset.sum_eq_single (σ b)]
+  · -- `(Pᴴ E)_{a, σ b} = ∑_k Pᴴ_{a,k} E_{k, σ b}`; only `k = σ a` survives.
+    rw [Matrix.mul_apply, Finset.sum_eq_single (σ a)]
+    · rw [permMatrix_conjTranspose_apply, if_pos rfl, one_mul,
+          show permMatrix σ (σ b) b = 1 from by rw [permMatrix, if_pos rfl], mul_one]
+    · intro k _ hk
+      rw [permMatrix_conjTranspose_apply, if_neg hk, zero_mul]
+    · intro h; exact absurd (Finset.mem_univ (σ a)) h
+  · intro k _ hk
+    rw [show permMatrix σ k b = 0 from by rw [permMatrix, if_neg hk], mul_zero]
+  · intro h; exact absurd (Finset.mem_univ (σ b)) h
+
+/-- **Automorphism invariance of the projector entries.**  If `σ` is a graph
+automorphism, then `(E_λ)_{σ a, σ b} = (E_λ)_{a, b}` for every eigenvalue
+`λ`.  This is the spectral content of Godsil-Royle Lemma 8.2.1: an
+automorphism commutes with every spectral projector. -/
+theorem eigenProj_aut_invariant (G : WeightedGraph V) (σ : V ≃ V)
+    (hσ : ∀ x y, G.adj (σ x) (σ y) = G.adj x y) (lam : ℝ)
+    (hlam : lam ∈ Set.range G.herm.eigenvalues) (a b : V) :
+    eigenProj G lam (σ a) (σ b) = eigenProj G lam a b := by
+  have hlam' : lam ∈ Finset.univ.image G.herm.eigenvalues := by
+    obtain ⟨i, hi⟩ := hlam
+    exact Finset.mem_image.mpr ⟨i, Finset.mem_univ i, hi⟩
+  have hconj := conj_eigenProj_eq G (permMatrix σ)
+    (permMatrix_conjTranspose_mul σ) (adj_mul_permMatrix_comm G σ hσ) lam hlam'
+  rw [← conjPerm_eigenProj_entry G σ lam a b, hconj]
 
 /-- The continuous-time evolution is the eigenvalue-weighted sum of spectral
 projectors: `U(τ) = ∑_λ e^{-iτλ} E_λ`. -/
@@ -1234,3 +1617,4 @@ theorem padic_quasiIntegral_iff (q : ℚ) :
 
 end PST
 end Graphplay
+

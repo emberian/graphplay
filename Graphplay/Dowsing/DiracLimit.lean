@@ -48,13 +48,20 @@ of the coined-walk continuum limit.  Genuinely proven, axiom-clean:
 * the **headline algebra** `offDiagonalBloch_eigenvalues`: an off-diagonal
   `2 × 2` Bloch Hamiltonian `[[0, f], [conj f, 0]]` has eigenvalues `±|f|`,
   with the two bands **touching at exactly the zeros of `f`** — the Dirac
-  band-touching condition (`offDiagonalBloch_band_touch`).
+  band-touching condition (`offDiagonalBloch_band_touch`);
+* the **local linearity of the cone** for the honeycomb/heavy-hex form factor
+  `f(k) = q·(1 + e^{ik})`: the exact gap profile `2‖f(k)‖ = 4‖q‖·|sin((k−π)/2)|`
+  (`honeycombFormFactor_norm`) together with **Jordan's inequality**
+  `(2/π)|x| ≤ |sin x| ≤ |x|` gives the two-sided LINEAR bound
+  `(4/π)‖q‖·|k−π| ≤ 2‖f(k)‖ ≤ 2‖q‖·|k−π|` near the Dirac point — a genuine
+  cone, not a parabola (`bipartite_equitable_dirac_cone`,
+  `heavyHex_hosts_dirac_cone`, both axiom-clean).
 
-What is **honestly `sorry` + `-- BLOCKED:`** is the *continuum analysis*: that
-the bands are *locally linear* near a touching point, and that the coined-walk
-continuum limit is literally the Dirac evolution.  These need a small-`k`
-Taylor / scaling-limit calculus that is not in Mathlib.  *Interacting*
-relativistic QFT is far-future and not attempted.
+What remains **honestly `sorry` + `-- BLOCKED:`** is only the *coined-walk
+scaling limit*: that the discrete-time coined walk's continuum limit is
+literally the Dirac evolution.  That needs a quantum-walk scaling-limit calculus
+not in Mathlib (recorded as an open conjecture, §7).  *Interacting* relativistic
+QFT is far-future and not attempted.
 
 References:
 
@@ -78,6 +85,8 @@ import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.Matrix.Spectrum
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
+import Mathlib.Analysis.Real.Pi.Bounds
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
@@ -386,8 +395,9 @@ bands are `±|f(k)|`, touching at the Dirac points `f(k) = 0`.
 The **algebraic / structural** half — off-diagonal quotient ⇒ `±|f(k)|`
 symmetric band with a zero at the touching point — is *fully proven* (§4).  The
 **continuum-analysis** half — that the gap is *locally linear* (an honest cone,
-not just a vanishing) — needs a small-`k` Taylor expansion of `f` that is not
-in Mathlib, and is an honest `sorry`. -/
+not just a vanishing) — is **now also fully proven** for the honeycomb form
+factor via the exact profile `2‖f(k)‖ = 4‖q‖·|sin((k−π)/2)|` and Jordan's
+inequality (`honeycombFormFactor_norm`, `bipartite_equitable_dirac_cone`). -/
 
 /-- A `2 × 2` symmetric quotient is **off-diagonal** with coupling `q` if it is
 `[[0, q], [q, 0]]` — the heavy-hex / graphene form.  Stated on `Fin 2`. -/
@@ -425,6 +435,59 @@ theorem honeycombFormFactor_dirac_point (q : ℂ) :
   rw [Complex.exp_pi_mul_I]
   ring
 
+/-! ### Local linearity of the honeycomb gap (the Dirac cone) -/
+
+/-- **The exact honeycomb gap profile.**  Writing `κ = k − π`, the honeycomb
+form factor satisfies `‖f(k)‖ = ‖q‖ · 2|sin(κ/2)|`.  This is the closed form of
+the Dirac dispersion `2‖f‖ = 4‖q‖·|sin((k−π)/2)|` near the band-touching point,
+the genuine small-`k` Taylor content: it is `≈ 2‖q‖|κ|` to leading order and the
+two-sided Jordan bounds on `sin` make the gap *linear* in `|κ|`. -/
+theorem honeycombFormFactor_norm (q : ℂ) (k : ℝ) :
+    ‖honeycombFormFactor q k‖ = ‖q‖ * (2 * |Real.sin ((k - Real.pi) / 2)|) := by
+  unfold honeycombFormFactor
+  rw [norm_mul]
+  congr 1
+  -- Reduce `1 + e^{ik}` to `1 − e^{iκ}` with `κ = k − π` via antiperiodicity.
+  set κ : ℝ := k - Real.pi with hκdef
+  have hk : (k : ℝ) = κ + Real.pi := by rw [hκdef]; ring
+  have hexp : Complex.exp (Complex.I * (k : ℂ))
+      = - Complex.exp (Complex.I * (κ : ℂ)) := by
+    rw [hk]
+    push_cast
+    rw [show Complex.I * ((κ : ℂ) + (Real.pi : ℂ))
+          = Complex.I * (κ : ℂ) + (Real.pi : ℂ) * Complex.I by ring,
+      Complex.exp_add, Complex.exp_pi_mul_I]
+    ring
+  rw [hexp,
+    show (1 : ℂ) + - Complex.exp (Complex.I * (κ : ℂ))
+        = 1 - Complex.exp (Complex.I * (κ : ℂ)) by ring]
+  -- `e^{iκ} = cos κ + i sin κ`, so `1 − e^{iκ} = (1 − cos κ) − i sin κ`.
+  rw [show Complex.I * (κ : ℂ) = (κ : ℂ) * Complex.I by ring, Complex.exp_mul_I]
+  -- Compute the norm via `normSq`: `‖z‖ = √(normSq z)`.
+  rw [Complex.norm_def]
+  have hns : Complex.normSq
+      (1 - (Complex.cos (κ : ℂ) + Complex.sin (κ : ℂ) * Complex.I))
+      = 2 - 2 * Real.cos κ := by
+    rw [← Complex.ofReal_cos, ← Complex.ofReal_sin]
+    rw [Complex.normSq_apply]
+    simp only [Complex.sub_re, Complex.sub_im, Complex.one_re, Complex.one_im,
+      Complex.add_re, Complex.add_im, Complex.mul_re, Complex.mul_im,
+      Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im]
+    have hpyth := Real.sin_sq_add_cos_sq κ
+    nlinarith [hpyth]
+  rw [hns]
+  -- `2 − 2 cos κ = 4 sin²(κ/2)`, hence `√(...) = 2|sin(κ/2)|`.
+  have hcos : Real.cos κ = 1 - 2 * Real.sin (κ / 2) ^ 2 := by
+    have h2 := Real.cos_two_mul (κ / 2)
+    rw [show 2 * (κ / 2) = κ by ring] at h2
+    have hpyth := Real.sin_sq_add_cos_sq (κ / 2)
+    nlinarith [h2, hpyth]
+  rw [hcos]
+  rw [show 2 - 2 * (1 - 2 * Real.sin (κ / 2) ^ 2)
+        = (2 * |Real.sin (κ / 2)|) ^ 2 by
+    have := sq_abs (Real.sin (κ / 2)); nlinarith [this]]
+  rw [Real.sqrt_sq (by positivity)]
+
 /-- **Headline (`bipartite_equitable_dirac_cone`).**  A bipartite graph with a
 2-cell equitable partition whose symmetric quotient is off-diagonal with
 coupling `q ≠ 0` (the heavy-hex `[[0, q], [q, 0]]` structure) exhibits, in its
@@ -435,11 +498,15 @@ honeycomb Bloch family `f(k) = q·(1 + e^{ik})`:
 2. **the symmetric `±|f(k)|` band pair away from the Dirac point** (the
    `gap = 2|f(k)|` Dirac structure) — *fully proven*;
 3. **local linearity of the bands near `k = π`** (an honest *cone*, `E ∼ ±vF
-   |k − π|`) — *honest `sorry`*: the small-`k` Taylor expansion of `f` is the
-   continuum-analysis content not available in Mathlib.
+   |k − π|`) — **now fully proven**: the exact gap profile
+   `2‖f(k)‖ = 4‖q‖·|sin((k−π)/2)|` (`honeycombFormFactor_norm`) together with
+   **Jordan's inequality** `(2/π)|x| ≤ |sin x| ≤ |x|` (`Real.mul_abs_le_abs_sin`,
+   `Real.abs_sin_le_abs`) yields the two-sided LINEAR bound
+   `(4/π)‖q‖·|k−π| ≤ 2‖f(k)‖ ≤ 2‖q‖·|k−π|` on `|k−π| < π` — Fermi velocities
+   `c₁ = (4/π)‖q‖`, `c₂ = 2‖q‖`, a genuine cone, not a parabola.
 
-The off-diagonal-quotient ⇒ `±|f|`-band-with-a-zero algebra (1 and 2) is the
-deliverable; the local-linearity cone (3) is the `BLOCKED` analytic leaf. -/
+All three clauses — the off-diagonal-quotient ⇒ `±|f|`-band-with-a-zero algebra
+(1, 2) *and* the local-linearity cone (3) — are now fully proven, axiom-clean. -/
 theorem bipartite_equitable_dirac_cone (q : ℂ) (hq : q ≠ 0) :
     -- (1) band touching at the Dirac point `k = π`:
     (offDiagonalBloch (honeycombFormFactor q)).HasBandTouching Real.pi ∧
@@ -466,14 +533,49 @@ theorem bipartite_equitable_dirac_cone (q : ℂ) (hq : q ≠ 0) :
       rw [offDiagonalGap_eq_zero_iff]
       exact honeycombFormFactor_dirac_point q
     · -- LOCAL LINEARITY: `c₁·|k−π| ≤ 2|f(k)| ≤ c₂·|k−π|` near `k = π`.
-      -- BLOCKED: continuum limit / local-linearity analysis.  Proving this
-      -- requires the small-`k` Taylor expansion `f(π + κ) = q·(1 + e^{i(π+κ)})
-      -- = q·(1 − e^{iκ}) = −iqκ + O(κ²)`, hence `2|f(π+κ)| = 2|q|·|κ| + O(κ²)`,
-      -- which is the conical (linear-in-|κ|) Dirac dispersion.  The two-sided
-      -- comparability `c₁|κ| ≤ 2|f| ≤ c₂|κ|` is exactly the leading-order
-      -- linearity, but the `O(κ²)` remainder control / `Real.exp`-`sin`
-      -- small-angle bookkeeping is not available as a packaged Mathlib lemma.
-      sorry
+      -- The exact gap is `2‖f(k)‖ = 4‖q‖·|sin((k−π)/2)|` (honeycombFormFactor_norm).
+      -- Jordan's inequality `(2/π)|x| ≤ |sin x| ≤ |x|` (for `|x| ≤ π/2`) gives the
+      -- two-sided LINEAR comparability with `c₁ = (4/π)‖q‖`, `c₂ = 2‖q‖`, `δ = π`:
+      --   c₁|κ| = (4/π)‖q‖|κ| = 4‖q‖·(2/π)|κ/2| ≤ 4‖q‖|sin(κ/2)| = gap k
+      --          ≤ 4‖q‖|κ/2| = 2‖q‖|κ| = c₂|κ|,    κ := k − π,  |κ| < π.
+      have hqpos : 0 < ‖q‖ := norm_pos_iff.mpr hq
+      refine ⟨(4 / Real.pi) * ‖q‖, 2 * ‖q‖, Real.pi, ?_, ?_, Real.pi_pos, ?_⟩
+      · positivity
+      · -- c₁ ≤ c₂ : (4/π)‖q‖ ≤ 2‖q‖  ⇐  4/π ≤ 2  ⇐  2 ≤ π.
+        have hpi : (4 : ℝ) / Real.pi ≤ 2 := by
+          rw [div_le_iff₀ Real.pi_pos]
+          nlinarith [Real.pi_gt_three]
+        nlinarith [hpi, hqpos]
+      · intro k hk
+        -- abbreviate κ := k − π and the half angle.
+        set κ : ℝ := k - Real.pi with hκdef
+        have habs : |κ / 2| = |κ| / 2 := by rw [abs_div]; norm_num
+        have hhalf : |κ| / 2 ≤ Real.pi / 2 := by
+          have : |κ| ≤ Real.pi := le_of_lt hk
+          linarith
+        -- gap k = 4‖q‖·|sin(κ/2)|.
+        have hgap : offDiagonalGap (honeycombFormFactor q) k
+            = 4 * ‖q‖ * |Real.sin (κ / 2)| := by
+          unfold offDiagonalGap
+          rw [honeycombFormFactor_norm]
+          rw [hκdef]; ring
+        rw [hgap]
+        -- Jordan two-sided bounds on |sin(κ/2)|.
+        have hlow : 2 / Real.pi * |κ / 2| ≤ |Real.sin (κ / 2)| :=
+          Real.mul_abs_le_abs_sin (by rw [habs]; exact hhalf)
+        have hupp : |Real.sin (κ / 2)| ≤ |κ / 2| := Real.abs_sin_le_abs
+        rw [habs] at hlow hupp
+        constructor
+        · -- lower: (4/π)‖q‖·|κ| ≤ 4‖q‖·|sin(κ/2)|.
+          have := mul_le_mul_of_nonneg_left hlow (by positivity : (0:ℝ) ≤ 4 * ‖q‖)
+          calc 4 / Real.pi * ‖q‖ * |κ|
+              = 4 * ‖q‖ * (2 / Real.pi * (|κ| / 2)) := by ring
+            _ ≤ 4 * ‖q‖ * |Real.sin (κ / 2)| := this
+        · -- upper: 4‖q‖·|sin(κ/2)| ≤ 2‖q‖·|κ|.
+          have := mul_le_mul_of_nonneg_left hupp (by positivity : (0:ℝ) ≤ 4 * ‖q‖)
+          calc 4 * ‖q‖ * |Real.sin (κ / 2)|
+              ≤ 4 * ‖q‖ * (|κ| / 2) := this
+            _ = 2 * ‖q‖ * |κ| := by ring
 
 /-! ## §6  Worked example: heavy-hex hosts a Dirac cone
 
@@ -519,8 +621,8 @@ data/flag bipartite partition — whose off-diagonal symmetric quotient is
 
 1. a band touching at the Dirac point `k = π` (proven);
 2. the symmetric `±|f(k)|` bands away from it (proven);
-3. local linearity of the cone (the `BLOCKED` analytic leaf, inherited from
-   `bipartite_equitable_dirac_cone`).
+3. local linearity of the cone — `(4/π)q·|k−π| ≤ 2‖f(k)‖ ≤ 2q·|k−π|` near
+   `k = π` (proven, inherited from `bipartite_equitable_dirac_cone`).
 
 This is the relativistic reading of `Applications.IBMHeavyHex`: the chip's
 data/flag sublattice structure makes it a *graphene-like* host of massless
@@ -688,16 +790,20 @@ phenomena:
 * **`bipartite_equitable_dirac_cone`** / **`heavyHex_hosts_dirac_cone`**
   (§5–6) — the headline and its IBM heavy-hex instance: the data/flag
   off-diagonal quotient `[[0, 2√(N−1)], [2√(N−1), 0]]` hosts an emergent
-  graphene-like Dirac cone.
+  graphene-like Dirac cone — band touching, `±|f|` bands, **and** the
+  *locally-linear* gap `(4/π)‖q‖·|k−π| ≤ 2‖f(k)‖ ≤ 2‖q‖·|k−π|` near `k = π`
+  (the cone, via `honeycombFormFactor_norm` + Jordan's inequality).  *All three
+  clauses are fully proven and axiom-clean.*
 * **`coinedWalk_continuum_dirac_conjecture`** (§7) — the discrete-time coined
   walk's continuum limit is the Dirac evolution, recorded as an OPEN CONJECTURE
   (`Prop`-valued statement, not a proved theorem): the `2 × 2`-spinor block of
   the rescaled walk generator converges to the massless Dirac Bloch generator.
 
 What is reachable now is the **single-particle** Dirac structure: the band
-algebra and the limit *statements*.  The continuum-analysis leaves (local
-linearity of the cone, the literal scaling limit of the coined walk) are honest
-`sorry`s marked `-- BLOCKED:`; interacting relativistic QFT is far-future.
+algebra *and the local linearity of the cone* (now fully proven).  The one
+remaining continuum-analysis leaf — the literal scaling limit of the coined
+walk — is recorded as an OPEN CONJECTURE (§7); interacting relativistic QFT is
+far-future.
 
 The dispersion is, throughout, a **property of the equitable quotient's band
 structure**: a quadratic (Schrödinger) quotient is non-relativistic, an
