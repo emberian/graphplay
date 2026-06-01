@@ -415,20 +415,6 @@ namespace Graphon
 variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- **Chiral signing preserves a graphon equitable partition.**
-
-If `P : GraphonEquitablePartition W` and `s : GraphonSigning Ω μ` is
-cell-cross-constant on the cells of `P`, then `P` is again an equitable
-partition for `W.signedBy s`.
-
-The argument exactly mirrors the finite proof of
-`Graphplay.WeightedGraph.signedBy_preserves_equitable` in `Chiral.lean`:
-on a cell `C_j`, the factor `s.σ x z = τ (cells x) (cells z) = τ (i, j)`
-is μ-a.e. constant in `z`, so it factors out of the inner integral and
-both sides of `P.uniform` get multiplied by the same constant.
-
-Proof deferred (`sorry`); the obstructions are purely the
-measure-theoretic shadows of the finite combinatorial argument. -/
 /-- **Cell-`j` flux of a signed kernel factors the cross-constant phase.**
 For `x ∈ C_i` and an *everywhere* cross-constant signing `σ = τ ∘ cells`,
 $$ \int_z [\mathrm{cells}\,z = j]\, \sigma(x,z)\,W(x,z)\,d\mu
@@ -445,7 +431,6 @@ theorem signed_flux_factor {W : Graphon Ω μ} {cells : Ω → I}
   refine integral_congr_ae (Filter.Eventually.of_forall fun z => ?_)
   by_cases hz : cells z = j
   · simp only [hz, if_true, Graphon.signedBy_kernel, hτ x z, hx]
-    ring
   · simp only [hz, if_false, mul_zero]
 
 /-- **Chiral signing preserves a graphon equitable partition.**
@@ -550,7 +535,7 @@ Tamon–Tucker–Zhan (2605.04414): a chiral signing yields graphon uniform
 mixing iff the corresponding *finite* chiral signing of the quotient does. -/
 theorem chiralGraphonMixing_iff_quotientChiralMixing [IsFiniteMeasure μ]
     {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (s : GraphonSigning Ω μ) (h : s.CellCrossConstant P.cells)
+    (s : GraphonSigning Ω μ) (h : s.EverywhereCellCrossConstant P.cells)
     (i : I) (t : ℝ) :
     -- Cell-uniform mixing of the signed graphon (on the lifted partition
     -- `P' := (signedBy_preserves_equitable P s h).some`) is equivalent to
@@ -559,7 +544,7 @@ theorem chiralGraphonMixing_iff_quotientChiralMixing [IsFiniteMeasure μ]
     IsCellUniformGraphonMixing (W.signedBy s)
         (signedBy_preserves_equitable P s h).some i t
       ↔ IsUniformMixing_finite
-          (fun a b => s.quotientPhase h a b * P.symmQuotient a b) i t := by
+          (fun a b => s.quotientPhase h.toCellCrossConstant a b * P.symmQuotient a b) i t := by
   -- The genuine content (the evolve-level intertwining lift of Levine et al.
   -- Theorem 1 in the continuum) is an honest theorem-level `sorry`.
   sorry
