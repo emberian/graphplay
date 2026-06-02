@@ -15,11 +15,17 @@ models three stronger / richer transfer phenomena studied in the literature:
    universal state transfer is essentially trivial (a single edge `K₂`, or a
    tightly constrained product).
 
-2. **Multiple state transfer** and **switching automorphisms**
+2. **Multiple state transfer** and **switching maps**
    (Kay, arXiv:1310.3885): a single time `τ` and an *automorphism-like*
-   involution that simultaneously transfers several pairs.  The PST unitary at
-   the transfer time is, up to a global phase, a graph automorphism that
-   realizes the swap — the *switching automorphism*.
+   involution that simultaneously transfers several pairs.  At the transfer
+   time the PST unitary carries each source state, up to a global phase, to its
+   target state — the operator-level *switching map* (`T = E₊ − E₋`).  Its
+   upgrade to a genuine 0/1 vertex-permutation automorphism (the *switching
+   automorphism* proper) holds only under the integer/simple-spectrum
+   hypotheses of Kay 1310.3885 — PST hosts need not be vertex-transitive — so
+   this file proves the unconditional *operator-level* content and keeps the
+   permutation upgrade as a (separately-hypothesised) structure, never as a
+   theorem from bare PST.
 
 3. **K-fractional revival** (Chan–Coutinho–Tamon–et al., arXiv:2004.01129):
    the generalization where the excitation, initially on a *subset* `K ⊆ V`,
@@ -30,12 +36,22 @@ models three stronger / richer transfer phenomena studied in the literature:
 
 Concrete content (sorry-free `def`/`structure`):
 * `IsUniversalStateTransfer G u`, `IsMultipleStateTransfer G pairs τ`;
-* `SwitchingAutomorphism G u v` (self-contained, to avoid coupling to the
-  sibling `Graphplay.PST.Periodicity` module which may be under edit);
+* `SwitchingUnitary G u v τ` — the *operator-level* switching map PST genuinely
+  supplies (a unitary carrying the `u`-state to a unit-phase multiple of the
+  `v`-state), with `switchingUnitary_of_isPST` proving its existence
+  axiom-clean and unconditionally;
+* `SwitchingAutomorphism G u v` — the genuine vertex-permutation upgrade, kept
+  as a *hypothesis-bearing structure* (it is **not** produced from bare PST: in
+  the complex-Hermitian generality of `WeightedGraph` a PST host need not be
+  vertex-transitive — see the caveat on the structure, and the canonical
+  sibling treatment `Graphplay.PST.Periodicity.{SwitchingUnitary,
+  switchingUnitary_of_isPST}`);
 * `periodicityBlock G K τ` (the `D_K` block), `IsKFractionalRevival G K τ`,
   and `IsKRatioCondition G K` (the ratio condition).
 
-Deep classification theorems are stated precisely with honest `sorry` proofs.
+The genuinely number-theoretic classification residuals are stated precisely
+with honest `sorry` proofs (and reduced to their irreducible Diophantine core
+where the spectral spine is available).
 
 References:
 * A. Kay, *The perfect state transfer graph limbo*, arXiv:1310.3885.
@@ -112,34 +128,103 @@ theorem isStronglyCospectral_of_globallyUniversal (G : WeightedGraph V)
     IsStronglyCospectral G u v :=
   isStronglyCospectral_of_universal G (isUniversalStateTransfer_of_global G h u) v hv
 
-/-- **Classification of universal state transfer (deep direction).**  A
-connected graph on `n ≥ 2` vertices admits universal state transfer only if it
-is extremely restricted: in the Cameron–Fallat–Godsil–Holmes classification the
-only graphs with (global) universal state transfer are `K₂` and a short list of
-highly symmetric products.  We state the cleanest necessary consequence:
-*global universal state transfer forces every vertex to be strongly cospectral
-to every other and the graph to have at most two distinct eigenvalues in each
-vertex support* — which, with connectivity, pins `n = 2` (the single edge).
+/-- **Universal PST equalizes eigenvector-entry moduli (simple-spectrum, CLOSED).**
+For a graph with simple spectrum (`G.herm.eigenvalues` injective), global
+universal state transfer forces, for *every* eigenindex `i` and *every* pair of
+vertices `u, v`, the equality of eigenvector-entry moduli
+`‖(eigU)_{u,i}‖ = ‖(eigU)_{v,i}‖`.
 
-Concretely: global universal state transfer on `≥ 3` vertices is impossible for
-a graph whose adjacency has all-distinct eigenvalues (the generic case); the
-full classification (`K₂` only, among connected simple graphs) is the deep
-content.
+This is the genuine, axiom-clean spectral precursor of the Cameron et al.
+classification (and of PST "monogamy"): under PST `u → v`, Godsil's
+cross-entry relation `(E_λ)_{u,v} = γ e^{iτλ} (E_λ)_{u,u}`
+(`isPST_imp_cross_eq_phase_diag`) collapses, on a simple spectrum, to
+`(eigU)_{u,i} · conj (eigU)_{v,i} = γ e^{iτλ_i} ‖(eigU)_{u,i}‖²`; taking moduli
+gives `‖(eigU)_{u,i}‖·‖(eigU)_{v,i}‖ = ‖(eigU)_{u,i}‖²`, and the same relation in
+the reverse PST direction `v → u` yields the two-sided modulus equality.
+
+Reference: Cameron, Fallat, Godsil, Holmes et al., LAA 455 (2014) 115–142;
+Coutinho–Godsil (2021), Ch. 8 (strong cospectrality / monogamy of PST). -/
+theorem eigU_norm_eq_of_globallyUniversal (G : WeightedGraph V)
+    (h : IsGloballyUniversalStateTransfer G)
+    (hsimple : Function.Injective G.herm.eigenvalues)
+    (u v : V) (i : V) :
+    ‖eigU G u i‖ = ‖eigU G v i‖ := by
+  -- One PST direction `a → b` gives `‖eigU a i‖ · ‖eigU b i‖ = ‖eigU a i‖²`.
+  have hdir : ∀ a b : V, a ≠ b →
+      ‖eigU G a i‖ * ‖eigU G b i‖ = ‖eigU G a i‖ ^ 2 := by
+    intro a b hab
+    obtain ⟨τ, hτ⟩ := h a b (by exact fun hba => hab hba.symm)
+    -- Unfold `IsPST` to the modulus equation so `simp` can use it as a rewrite.
+    have hτ' : ‖G.evolve τ a b‖ = 1 := hτ
+    have hmem : (G.herm.eigenvalues i) ∈ Set.range G.herm.eigenvalues := ⟨i, rfl⟩
+    -- Godsil cross-entry relation at the simple eigenvalue `λ_i`.
+    have hcross := isPST_imp_cross_eq_phase_diag G τ a b hτ' (G.herm.eigenvalues i) hmem
+    rw [eigenProjEntryLocal_of_injective G hsimple i,
+        eigenProjDiagLocal_of_injective G hsimple i] at hcross
+    -- `‖e^{iτλ_i}‖ = 1` (purely-imaginary exponent).
+    have hexp : ‖Complex.exp (Complex.I * (τ : ℂ) * ((G.herm.eigenvalues i : ℝ) : ℂ))‖ = 1 := by
+      rw [Complex.norm_exp]; simp
+    -- Take moduli of both sides; `‖γ‖ = 1` (PST), `‖e^{iτλ}‖ = 1`, `‖↑(‖a‖²)‖ = ‖a‖²`.
+    have hnorm := congrArg (‖·‖) hcross
+    simp only [norm_mul, norm_star, hexp, hτ', Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (sq_nonneg (‖eigU G a i‖))] at hnorm
+    -- `hnorm : ‖a‖·‖b‖ = 1·1·‖a‖²`; finish.
+    rw [hnorm]; ring
+  -- Symmetrize: `‖a‖² = ‖a‖·‖b‖ = ‖b‖²` when `u ≠ v`; trivial when `u = v`.
+  by_cases huv : u = v
+  · rw [huv]
+  · have h1 := hdir u v huv
+    have h2 := hdir v u (fun h => huv h.symm)
+    -- `‖u‖² = ‖u‖‖v‖` and `‖v‖² = ‖v‖‖u‖`, so `‖u‖² = ‖v‖²`, hence `‖u‖ = ‖v‖`.
+    have hsq : ‖eigU G u i‖ ^ 2 = ‖eigU G v i‖ ^ 2 := by
+      rw [← h1, ← h2]; ring
+    nlinarith [norm_nonneg (eigU G u i), norm_nonneg (eigU G v i), hsq]
+
+/-- **Classification of universal state transfer (deep direction; honest `sorry`
+on a TRUE, non-vacuous statement).**  In the Cameron–Fallat–Godsil–Holmes
+classification the only connected simple graphs with global universal state
+transfer are `K₂` (and a tightly constrained list of products): a vertex can
+perform PST with at most *one* partner ("monogamy" of PST), so `≥ 3` vertices
+all mutually transferring is impossible.
+
+We state the sharpest clean special case — **simple spectrum**: global universal
+state transfer on `≥ 3` vertices with all eigenvalues distinct is impossible.
+This is a genuine, non-vacuous theorem (each hypothesis is individually
+realizable — e.g. `K₂` is universal, `P₃` has simple spectrum, and `card ≥ 3`
+is open — yet they are jointly contradictory).
+
+**Reachable content extracted (axiom-clean).**  `eigU_norm_eq_of_globallyUniversal`
+proves that the hypotheses force every eigenvector column to have *all entries of
+equal modulus* (`‖(eigU)_{u,i}‖ = ‖(eigU)_{v,i}‖` for all `u, v, i`); since each
+column of `eigU` is a unit vector, this pins every entry to modulus
+`1/√(card V)` (in particular, all nonzero).
+
+**Irreducible residual (`sorry`).**  Converting that uniform-modulus eigenvector
+structure into the final contradiction is PST *monogamy*: the cross-phase
+relation `eigU v i / eigU u i = conj γ · e^{-iτλ_i}` over the simple spectrum,
+together with the orthonormality of the rows of `eigU`, over-determines the
+distinct eigenvalues `λ_i` — a `Real.Angle`/`AddCircle` Diophantine argument
+identical in nature to the open ratio-condition core
+`Graphplay.PST.GodsilRatio.isPST_exists_iff_strongCospectral_and_godsilRatio`
+(item C1) and `IsStronglyCospectral.isPST_iff_godsilRatio`.  Not developed here.
 
 Reference: Cameron, Fallat, Godsil, Holmes et al., *Universal state transfer on
-graphs*, LAA 455 (2014) 115–142, Theorem 1.1. -/
+graphs*, LAA 455 (2014) 115–142, Theorem 1.1; Coutinho–Godsil (2021), Ch. 8
+(monogamy of PST). -/
 theorem globallyUniversal_classification (G : WeightedGraph V)
     (h : IsGloballyUniversalStateTransfer G)
     (hsimple : Function.Injective G.herm.eigenvalues)
     (hcard : 3 ≤ Fintype.card V) :
     False := by
-  -- With all eigenvalues distinct, every vertex support is a singleton or full;
-  -- strong cospectrality of *all* pairs together with the Godsil ratio
-  -- condition on each pair over-determines the spectrum on `≥ 3` vertices,
-  -- contradicting injectivity.  This is the rigidity core of the Cameron et al.
-  -- classification; honest `sorry`.
-  -- BLOCKED: rigidity argument (all-pairs strong cospectrality + Godsil ratio
-  -- over-determine a simple spectrum) needs spectral-support machinery not present.
+  -- Reachable spectral content (used by the residual): the hypotheses force
+  -- every eigenvector column of `eigU` to have all entries of equal modulus.
+  have _hmod : ∀ u v i : V, ‖eigU G u i‖ = ‖eigU G v i‖ :=
+    fun u v i => eigU_norm_eq_of_globallyUniversal G h hsimple u v i
+  -- IRREDUCIBLE RESIDUAL (honest `sorry`): from uniform-modulus eigenvectors plus
+  -- row-orthonormality of `eigU`, PST monogamy forces the distinct eigenvalues to
+  -- collide — the `AddCircle`/Diophantine ratio core (cf. GodsilRatio C1), absent
+  -- here.  The statement is TRUE and non-vacuous; only this number-theoretic step
+  -- is missing.
   sorry
 
 /-! ## §2 Multiple state transfer and switching automorphisms (Kay 1310.3885) -/
@@ -201,13 +286,25 @@ theorem isMultipleStateTransfer_cons (G : WeightedGraph V) (p : V × V)
 
 /-- A **switching automorphism** of `G` exchanging `u` and `v`: a vertex
 permutation `σ` that (i) swaps `u ↔ v` and (ii) is a graph automorphism
-(preserves the weighted adjacency).  This is the combinatorial realization of
-the PST involution: at the transfer time the walk unitary acts, up to a global
-phase, as the permutation matrix of `σ`.
+(preserves the weighted adjacency).  This is the *combinatorial* upgrade of
+Kay's switching map — a genuine `Equiv.Perm V` adjacency automorphism.
+
+**Caveat — this is a hypothesis, not a consequence of PST.**  Kay's switching
+map `T = E₊ − E₋` (spectral idempotents split by the parity of `e^{−iτ θ_r}`)
+is an *orthogonal involution commuting with `A`* sending the `u`-state to the
+`v`-state, but it is a genuine 0/1 *permutation* matrix only under the
+integer/simple-spectrum hypotheses of Kay 1310.3885.  In the complex-Hermitian
+generality of `WeightedGraph` a PST host need **not** be vertex-transitive, so
+no `SwitchingAutomorphism` (genuine vertex permutation) need exist.  The
+unconditional, axiom-clean content PST *does* supply is the *operator-level*
+`SwitchingUnitary` below (`switchingUnitary_of_isPST`); there is deliberately no
+theorem deriving a `SwitchingAutomorphism` from bare PST.
 
 Defined self-containedly here (deliberately *not* importing the sibling
-`Graphplay.PST.Periodicity.SwitchingAutomorphism`, which may be under concurrent
-edit) so this module never couples to that file.
+`Graphplay.PST.Periodicity`, which may be under concurrent edit) so this module
+never couples to that file.  The sibling carries the identical honest treatment
+(`Graphplay.PST.Periodicity.{SwitchingAutomorphism, SwitchingUnitary,
+switchingUnitary_of_isPST}`).
 
 Reference: Kay, arXiv:1310.3885; Godsil's automorphism characterization of
 PST. -/
@@ -239,39 +336,85 @@ noncomputable def permMatrix (φ : SwitchingAutomorphism G u v) :
 
 end SwitchingAutomorphism
 
-/-- **Kay's switching-automorphism necessary condition (deep direction).**  If
-`G` has PST between `u` and `v` at time `τ`, then there is a switching
-automorphism of `G` exchanging `u` and `v`: at the transfer time the PST unitary
-is (up to a global phase) the permutation matrix of a genuine graph
-automorphism.
+/-- A **switching unitary** of `G` at the pair `(u, v)` and time `τ`: the
+*operator-level* content of Kay's switching map that PST genuinely supplies.  It
+is a *unitary* `W` on the vertex Hilbert space that carries the `u`-basis state
+to a unit-modulus phase multiple of the `v`-basis state — i.e. it swaps the two
+endpoints *as states* (up to a global phase), the modulus-1 amplitude witnessing
+perfect transfer.
 
-Reference: Kay, *The perfect state transfer graph limbo*, arXiv:1310.3885;
-Godsil's automorphism characterization. -/
-theorem switchingAutomorphism_of_isPST (G : WeightedGraph V) {u v : V} {τ : ℝ}
-    (h : IsPST G u v τ) : Nonempty (SwitchingAutomorphism G u v) := by
-  -- HONEST SORRY — irreducible content (constructing a *vertex permutation* from
-  -- the PST unitary) plus a statement-strength caveat: Kay's switching map
-  -- `T = E_+ - E_-` is an orthogonal involution commuting with `A`, a genuine
-  -- 0/1 permutation matrix only under the integer/simple-spectrum hypotheses of
-  -- Kay 1310.3885 (PST graphs need not be vertex-transitive, so an honest
-  -- `Equiv.Perm V` automorphism need not exist in this generality).  The
-  -- unitary→permutation-matrix (integer-spectrum) recovery argument is not
-  -- developed here.  Reference: Kay, arXiv:1310.3885; Godsil's automorphism
-  -- characterization of PST.
-  sorry
+This is exactly what `T = E₊ − E₋` does at the spectral level, *minus* the
+upgrade (unprovable in this Hermitian generality) to a 0/1 permutation matrix.
+The witness in `switchingUnitary_of_isPST` is the evolution `U(τ)` itself.
 
-/-- **Multiple state transfer ⇒ a common switching automorphism.**  If `G`
-exhibits multiple state transfer at a single time `τ` for a list of pairs, then
-the single PST unitary `U(τ)` realizes, up to phase, a graph automorphism
-swapping *all* the listed pairs at once.  We package the existence of a switching
-automorphism for the first pair (the others share the same `U(τ)`).
+Mirrors the canonical `Graphplay.PST.Periodicity.SwitchingUnitary` (kept local
+to avoid coupling to that possibly-under-edit sibling). -/
+structure SwitchingUnitary (G : WeightedGraph V) (u v : V) (τ : ℝ) where
+  /-- The underlying unitary on the vertex space. -/
+  mat : Matrix V V ℂ
+  /-- It is unitary: `Wᴴ W = 1`. -/
+  unitary : mat.conjTranspose * mat = 1
+  /-- The transfer phase (the `(u,v)` amplitude). -/
+  phase : ℂ
+  /-- The phase has unit modulus (perfect transfer). -/
+  phase_unit : ‖phase‖ = 1
+  /-- `W` sends the `u`-basis state to `phase · e_v`: the `u`-row of `W` is
+  concentrated at `v` with amplitude `phase`. -/
+  swaps_state : ∀ w : V, mat u w = if w = v then phase else 0
 
-Reference: Kay, arXiv:1310.3885, §IV (the "multiple transfer" automorphism). -/
-theorem switchingAutomorphism_of_multiple (G : WeightedGraph V)
+/-- **Kay's switching map, operator level (CLOSED).**  If `G` has PST between `u`
+and `v` at time `τ`, then the evolution unitary `U(τ)` is a *switching unitary*:
+a unitary on the vertex space carrying the `u`-state to a unit-modulus phase
+multiple of the `v`-state.  This is the genuine, hypothesis-free content of Kay's
+switching map `T = E₊ − E₋` at the operator level.
+
+Axiom-clean, no `sorry`: unitarity is `WeightedGraph.evolve_unitary`, and the
+state-swap is `evolve_eq_zero_of_isPST` (the `u`-row vanishes off `v`, the
+surviving `(u,v)` entry having modulus 1) packaged as the explicit `u`-row of
+`U(τ)`.
+
+**Honest-relabel note (was `switchingAutomorphism_of_isPST`).**  The previous
+statement claimed `Nonempty (SwitchingAutomorphism G u v)` — a genuine
+`Equiv.Perm V` adjacency automorphism — from bare PST, behind a `sorry`.  That
+is *false in this Hermitian generality*: PST hosts need not be vertex-transitive,
+so `T = E₊ − E₋` need not be a 0/1 permutation matrix (it is only under the
+integer/simple-spectrum hypotheses of Kay 1310.3885).  The conclusion is here
+weakened to the operator-level switching unitary, which PST does supply
+unconditionally, and the theorem is closed.  See the caveat on
+`SwitchingAutomorphism` and the canonical sibling
+`Graphplay.PST.Periodicity.switchingUnitary_of_isPST`.
+
+Reference: Kay, *The perfect state transfer graph limbo* (arXiv:1310.3885);
+Godsil's automorphism characterization of PST. -/
+theorem switchingUnitary_of_isPST (G : WeightedGraph V) {u v : V} {τ : ℝ}
+    (h : IsPST G u v τ) : Nonempty (SwitchingUnitary G u v τ) :=
+  ⟨{ mat := G.evolve τ
+     unitary := G.evolve_unitary τ
+     phase := G.evolve τ u v
+     phase_unit := h
+     swaps_state := fun w => by
+       by_cases hw : w = v
+       · subst hw; simp
+       · rw [if_neg hw]
+         exact evolve_eq_zero_of_isPST G τ u v h w hw }⟩
+
+/-- **Multiple state transfer ⇒ a common switching unitary.**  If `G` exhibits
+multiple state transfer at a single time `τ` for a list of pairs, then the single
+PST unitary `U(τ)` is, simultaneously, a switching unitary for *every* listed
+pair (they all share the one `U(τ)`).  We package the witness for an arbitrary
+member of the list.
+
+This is the operator-level content of Kay's "multiple transfer" map.  (It is
+*not* upgraded to a combinatorial graph automorphism: that upgrade needs the
+integer/simple-spectrum hypotheses of Kay 1310.3885 — see the caveat on
+`SwitchingAutomorphism`.)
+
+Reference: Kay, arXiv:1310.3885, §IV (the "multiple transfer" map). -/
+theorem switchingUnitary_of_multiple (G : WeightedGraph V)
     {pairs : List (V × V)} {τ : ℝ} {p : V × V}
     (hmem : p ∈ pairs) (h : IsMultipleStateTransfer G pairs τ) :
-    Nonempty (SwitchingAutomorphism G p.1 p.2) :=
-  switchingAutomorphism_of_isPST G (h p hmem)
+    Nonempty (SwitchingUnitary G p.1 p.2 τ) :=
+  switchingUnitary_of_isPST G (h p hmem)
 
 /-! ## §3 The K-fractional-revival subset framework (Chan–Coutinho–Tamon
 et al., 2004.01129)

@@ -550,11 +550,20 @@ theorem isPeriodic_of_universalPST (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
   obtain ⟨v, τ, _, hτ, hpst⟩ := hex
   exact isPeriodic_of_isPST G hsymm hτ hpst
 
-/-- A **switching automorphism** of `G` at the pair `(u, v)`: a permutation `σ`
-of the vertices that swaps `u ↔ v`, fixes the adjacency matrix (graph
-automorphism), and whose induced phase implements the PST involution.  We model
-the combinatorial core: a vertex permutation that is an adjacency automorphism
-and exchanges `u` and `v`. -/
+/-- A **switching (vertex-permutation) automorphism** of `G` at the pair
+`(u, v)`: a permutation `σ` of the vertices that swaps `u ↔ v` and fixes the
+adjacency matrix (graph automorphism).  This is the *combinatorial* upgrade of
+Kay's switching map — a genuine `Equiv.Perm V` adjacency automorphism.
+
+**Caveat (why no unconditional existence theorem from PST in this file).**  Kay's
+switching map `T = E₊ − E₋` (the spectral idempotents split by the parity of
+`e^{−iτ θ_r}`) is an *orthogonal involution commuting with `A`* and sending the
+`u`-state to the `v`-state, but it is a genuine 0/1 *permutation* matrix only
+under the integer/simple-spectrum hypotheses of Kay 1310.3885.  In the
+complex-Hermitian generality of `WeightedGraph` a PST host need not be
+vertex-transitive, so no `SwitchingAutomorphism` (genuine vertex permutation)
+need exist.  The provable operator-level content is captured by
+`SwitchingUnitary` and `switchingUnitary_of_isPST` below. -/
 structure SwitchingAutomorphism (G : WeightedGraph V) (u v : V) where
   /-- The underlying vertex permutation. -/
   perm : Equiv.Perm V
@@ -563,27 +572,56 @@ structure SwitchingAutomorphism (G : WeightedGraph V) (u v : V) where
   /-- It preserves the (Hermitian) adjacency matrix entrywise. -/
   preserves_adj : ∀ x y, G.adj (perm x) (perm y) = G.adj x y
 
-/-- **Kay's switching-automorphism necessary condition (deep direction).**  If
-`G` has PST between `u` and `v`, then there is a switching automorphism of `G`
-exchanging `u` and `v`: the PST unitary at the transfer time is (up to phase) a
-graph automorphism that swaps the endpoints.
+/-- A **switching unitary** of `G` at the pair `(u, v)` and time `τ`: the
+operator-level content of Kay's switching map that PST genuinely supplies.  It is
+a *unitary* `W` on the vertex Hilbert space that carries the `u`-basis state to a
+unit-modulus phase multiple of the `v`-basis state — i.e. it swaps the two
+endpoints *as states* (up to a global phase), the modulus-1 amplitude witnessing
+perfect transfer.
 
-Reference: Kay, *The perfect state transfer graph limbo* (arXiv:1310.3885),
-and Godsil's automorphism characterization of PST. -/
-theorem switchingAutomorphism_of_isPST (G : WeightedGraph V) {u v : V} {τ : ℝ}
-    (h : IsPST G u v τ) : Nonempty (SwitchingAutomorphism G u v) := by
-  -- HONEST SORRY — irreducible content (construction of a *vertex permutation*
-  -- from the PST unitary) PLUS a statement-strength caveat.  Kay's switching
-  -- "automorphism" `T = E_+ - E_-` (split by eigenvalue parity) is an
-  -- *orthogonal involution commuting with `A`*, NOT in general a permutation
-  -- matrix: PST graphs need not be vertex-transitive, and the present
-  -- conclusion demands a genuine adjacency automorphism `σ : Equiv.Perm V` with
-  -- `perm u = v`.  This holds only under the integer/simple-spectrum hypotheses
-  -- of Kay 1310.3885 (which pin `T` to a 0/1 permutation), absent from the
-  -- signature here.  Recovering `σ` from `U(τ)` needs the
-  -- unitary→permutation-matrix (integer-spectrum) recovery argument, not
-  -- developed in this codebase.  Reference: Kay, arXiv:1310.3885; Godsil's
-  -- automorphism characterization of PST.
-  sorry
+This is exactly what `T = E₊ − E₋` does at the spectral level, *minus* the
+unprovable (in this generality) upgrade to a 0/1 permutation matrix.  The witness
+in `switchingUnitary_of_isPST` is the evolution `U(τ)` itself. -/
+structure SwitchingUnitary (G : WeightedGraph V) (u v : V) (τ : ℝ) where
+  /-- The underlying unitary on the vertex space. -/
+  mat : Matrix V V ℂ
+  /-- It is unitary: `Wᴴ W = 1`. -/
+  unitary : mat.conjTranspose * mat = 1
+  /-- The transfer phase (the `(u,v)` amplitude). -/
+  phase : ℂ
+  /-- The phase has unit modulus (perfect transfer). -/
+  phase_unit : ‖phase‖ = 1
+  /-- `W` sends the `u`-basis state to `phase · e_v`: the `u`-row of `W` is
+  concentrated at `v` with amplitude `phase`. -/
+  swaps_state : ∀ w : V, mat u w = if w = v then phase else 0
+
+/-- **Kay's switching map, operator level (CLOSED).**  If `G` has PST between `u`
+and `v` at time `τ`, then the evolution unitary `U(τ)` is a *switching unitary*:
+a unitary on the vertex space carrying the `u`-state to a unit-modulus phase
+multiple of the `v`-state.  This is the genuine, hypothesis-free content of Kay's
+switching map `T = E₊ − E₋` at the operator level.
+
+Axiom-clean, no `sorry`: unitarity is `evolve_unitary`, and the state-swap is
+`evolve_row_concentrated` (the `u`-row concentrates at `v`, modulus 1) packaged
+as the explicit `u`-row of `U(τ)`.
+
+**Not strengthened to `SwitchingAutomorphism`** (a genuine `Equiv.Perm V`
+adjacency automorphism): that holds only under the integer/simple-spectrum
+hypotheses of Kay 1310.3885 (which pin `T` to a 0/1 permutation), absent here —
+PST hosts need not be vertex-transitive.  See the caveat on `SwitchingAutomorphism`.
+
+Reference: Kay, *The perfect state transfer graph limbo* (arXiv:1310.3885);
+Godsil's automorphism characterization of PST. -/
+theorem switchingUnitary_of_isPST (G : WeightedGraph V) {u v : V} {τ : ℝ}
+    (h : IsPST G u v τ) : Nonempty (SwitchingUnitary G u v τ) :=
+  ⟨{ mat := G.evolve τ
+     unitary := G.evolve_unitary τ
+     phase := G.evolve τ u v
+     phase_unit := h
+     swaps_state := fun w => by
+       by_cases hw : w = v
+       · subst hw; simp
+       · rw [if_neg hw]
+         exact evolve_row_concentrated G τ h hw }⟩
 
 end Graphplay

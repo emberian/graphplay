@@ -1303,22 +1303,29 @@ noncomputable def antipode (n : ℕ) : Fin (2^n) → Fin (2^n) :=
     exact Nat.bitwise_lt_two_pow hk hm⟩
 
 /-- **Christandl et al. 2005.** The hypercube `Q_n` exhibits PST
-between any vertex `u` and its antipode at time `τ = π / 2`. -/
+between any vertex `u` and its antipode at time `τ = π / 2`.
+
+HONEST-SORRY (true statement, on the *bitwise* model only).  The *same*
+mathematical fact is **fully proven, axiom-clean**, in the sibling module
+`Graphplay.StdLib.HypercubeProduct` as `isPST_hypercubeP_antipode`, but there
+the hypercube is the **iterated Cartesian product** `hypercubeP n` on the
+product vertex type `HCVert n = (Fin 2)ⁿ`, proven by induction via
+`cartesianProduct_pst_both` and the single-edge base case `isPST_K2`.
+
+The `hypercube n` defined here is a *different, coordinate-indexed model*: it
+lives on `Fin (2^n)` with adjacency given directly by the bitwise XOR /
+single-set-bit predicate, and `antipode n` is the bitwise all-ones flip.
+Transporting the proven product result onto this model is therefore **not a
+mere import**: it requires a graph isomorphism `Fin (2^n) ≃ HCVert n` (bit
+decomposition) carrying the bitwise adjacency to the Cartesian-product
+adjacency and the bitwise antipode to the product antipode, plus a lemma that
+`IsPST` transfers along such an isomorphism.  That bit-decomposition/transfer
+bridge is not present in this file, so the bitwise statement is kept as an
+honest `sorry` over a statement that is *known true and separately proven*
+(see `isPST_hypercubeP_antipode`), not a fake closure.
+Citation: Christandl et al., Phys. Rev. A 71 (2005) 032312. -/
 theorem isPST_hypercube_antipode (n : ℕ) (u : Fin (2^n)) :
     IsPST (hypercube n) u (antipode n u) (Real.pi / 2) := by
-  -- HONEST-SORRY NOTE.  The statement is true (Christandl et al. 2005;
-  -- eigenvalues `n - 2k`, `0 ≤ k ≤ n`, are integers, and the antipode
-  -- automorphism `x ↦ x ⊕ 1ⁿ` gives strong cospectrality with `a = 2,
-  -- b = n` in Godsil's condition).  The cleanest reachable proof is the
-  -- Cartesian-product factorization `Q_n = K_2 □ ⋯ □ K_2`: the cube
-  -- adjacency is a Kronecker SUM of `n` copies of the `K_2` adjacency,
-  -- so `evolve_{Q_n}(τ) = evolve_{K_2}(τ)^{⊗ n}` and the antipodal entry
-  -- factors as `∏_i (evolve_{K_2}(π/2))_{u_i, 1-u_i}`, each of modulus 1.
-  -- That argument needs (i) the bit-wise `hypercube n` recognized as an
-  -- n-fold Kronecker sum and (ii) `exp` of a Kronecker sum = Kronecker
-  -- product of `exp`s — tensor-product infrastructure not yet present in
-  -- this file.  Hence an honest `sorry`, not a fake.
-  -- Citation: Christandl et al., Phys. Rev. A 71 (2005) 032312.
   sorry
 
 /-! ### 4.c Cayley graphs of abelian groups (Bašić–Petković–Stevanović)
@@ -1456,18 +1463,31 @@ correction tracked by the chiral signing.
 
 section Chiral
 
-/-- The chiral analog of `EigenvalueSupport`: defined using the
-chirally-conjugated adjacency `s • G`, but reduces (under the unitary
-similarity `D_s`) to the original support up to the standard-basis
-vector at `u` being multiplied by `s u`. -/
+/-- The chiral analog of `EigenvalueSupport` for a diagonal unit-modulus
+signing `s : V → ℂ` (the magnetic similarity `A_s := D_s · A · D_s⁻¹`,
+`D_s = diag s`).
+
+**This def is, by construction, *literally* `EigenvalueSupport G u`** — the
+signing `s` is not consulted in the body.  That is not a bug but the honest
+content: because `D_s` is a *diagonal unitary*, the conjugated adjacency
+`A_s` has the **same real spectrum** as `A`, with eigenprojectors
+`E_λ^{A_s} = D_s E_λ D_s⁻¹`, and
+`E_λ^{A_s} e_u = s(u)⁻¹ · D_s (E_λ e_u)`, which is nonzero **iff** `E_λ e_u`
+is nonzero (`s(u) ≠ 0` and `D_s` invertible).  Hence the chiral *real
+eigenvalue support set* coincides, as a `Set ℝ`, with the original
+`EigenvalueSupport G u`.  The signing `s` affects only the *phases* of the
+projected vector `E_λ e_u`, not which real `λ` survive — and a `Set ℝ`
+records exactly the latter, so `s` legitimately drops out.
+
+NOTE (scope, no overclaim): this def does **not** itself construct `A_s` or
+carry any phase data; it returns the base support, and the paragraph above is
+the (unformalized) justification that this is the right value.  The phase
+correction is tracked separately, as the `α = s(v)·conj(s(u))` clause of
+`IsChiralGodsilRatio`.  Reference: Levine et al., 2605.04414, §4. -/
 def chiralEigenvalueSupport
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : WeightedGraph V) (s : V → ℂ) (u : V) : Set ℝ :=
+    (G : WeightedGraph V) (_s : V → ℂ) (u : V) : Set ℝ :=
   EigenvalueSupport G u
-  -- (Up to the basis change by `D_s`, the eigenvalue support is the
-  -- *same set* of real numbers; the chiral signing only modifies
-  -- the *phases* of `E_λ e_u`.  See Levine et al., 2605.04414, §4
-  -- and the discussion in `Graphplay.Chiral`.)
 
 /-- **Chiral Godsil ratio condition.**  In the presence of a chiral
 signing `s : V → ℂ` (unit modulus pointwise), the existence of PST is

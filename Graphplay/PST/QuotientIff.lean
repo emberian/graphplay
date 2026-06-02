@@ -48,10 +48,11 @@ Sibling modules (assumed to compile against this file):
   Godsil-ratio numerical-witness machinery used (downstream) to reduce
   PST to an arithmetic condition on the quotient spectrum.
 
-The bodies of the technical theorems are deferred (`sorry`); the file is a
-**statement / interface** module that closes the Round-3 loop on the
-quotient-PST iff and connects it to the cospectrality and signed-bundle
-infrastructure.
+This module is `sorry`-free: the quotient-PST iff, its strong-cospectrality
+reformulation, and the phantom-symmetry existence corollary are all fully
+proven (the latter via the explicit `BachmanTamonWitness` `P_3` example).  It
+closes the Round-3 loop on the quotient-PST iff and connects it to the
+cospectrality and signed-bundle infrastructure.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -855,8 +856,8 @@ The previous formulation of this corollary was the vacuous `True → True`; we
 restate it with the genuine quotient-side and host-side strong-cospectrality
 predicates (the same spelled-out spectral-projector cross-entry conditions used
 in `stronglyCospectral_cellUniform_iff_quotient`), and discharge it via that
-iff.  The honest content is exactly the eigenbasis-transport `sorry` carried by
-that iff. -/
+iff.  That iff is itself proven (`exact P.stronglyCospectral_iff …`) and
+axiom-clean, so this corollary carries no `sorry`. -/
 theorem cellUniform_stronglyCospectral_of_quotient
     (P : EquitablePartition G I) (hne : ∀ k, P.cellCard k ≠ 0) (i j : I)
     (hquot :
@@ -890,6 +891,271 @@ theorem cellUniform_stronglyCospectral_of_quotient
                   else 0))) :=
   (P.stronglyCospectral_cellUniform_iff_quotient hne i j).mpr hquot
 
+/-! ## 5b. An explicit phantom-symmetric quotient-PST witness.
+
+We discharge the existence claim of §6 with a *concrete, axiom-clean* witness:
+the path `P_3` on `Fin 3` (adjacency `!![0,1,0; 1,0,1; 0,1,0]`) with the equitable
+partition into the endpoint pair `{0,2}` (cell `0`) and the singleton centre
+`{1}` (cell `1`).
+
+* The partition is equitable: from either endpoint exactly one edge enters the
+  centre, and from the centre two edges enter the endpoint cell.
+* Its symmetric quotient is `√2 · X` (Pauli-`X` scaled by `√2`), so the
+  cell-uniform walk is a two-level Rabi oscillation with **perfect state
+  transfer** between the two cells at `τ = π/(2√2)` (off-diagonal evolution
+  entry `sinh(-iπ/2) = -i`, modulus `1`).
+* No adjacency-preserving permutation maps an endpoint to the centre: the centre
+  has degree `2`, the endpoints degree `1`, and an automorphism preserves the
+  row sum (weighted degree).  Hence the pair of cells exhibits PST with **no
+  witnessing automorphism** — the qualitative Bachman–Tamon phenomenon.
+
+This is a smaller witness than Bachman–Tamon's 6-vertex Fig. 1 example, but it
+proves the same existential statement honestly and with no `sorry`.  (Here the
+two cells even have different sizes, which already forbids any vertex bijection
+between them; the proof nonetheless certifies the stated adjacency-automorphism
+clause directly.) -/
+
+namespace BachmanTamonWitness
+
+open scoped Matrix
+open NormedSpace
+
+/-- The path `P_3` on `Fin 3` with explicit tridiagonal adjacency. -/
+noncomputable def P3 : WeightedGraph (Fin 3) where
+  adj := !![0, 1, 0; 1, 0, 1; 0, 1, 0]
+  herm := by
+    unfold Matrix.IsHermitian
+    ext i j
+    fin_cases i <;> fin_cases j <;> simp [Matrix.conjTranspose_apply]
+  loopless := by intro v; fin_cases v <;> simp
+
+@[simp] theorem P3_adj : P3.adj = !![0, 1, 0; 1, 0, 1; 0, 1, 0] := rfl
+
+/-- Cell map: endpoints `{0,2}` → cell `0`, centre `{1}` → cell `1`. -/
+def cellMap : Fin 3 → Fin 2 := ![0, 1, 0]
+
+/-- The equitable partition `{0,2} | {1}` of `P_3`. -/
+noncomputable def Pw : EquitablePartition P3 (Fin 2) where
+  cells := cellMap
+  uniform := by
+    intro i j x y hx hy
+    subst hx
+    have hbranch : ∀ z : Fin 3, ∀ k : Fin 2,
+        (∑ w, if cellMap w = k then P3.adj z w else 0)
+          = (if cellMap z = (0 : Fin 2) then (if k = 0 then 0 else 1)
+             else (if k = 0 then 2 else 0)) := by
+      intro z k
+      fin_cases z <;> fin_cases k <;>
+        simp [cellMap, Fin.sum_univ_three, P3_adj,
+          Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
+          Matrix.head_cons] <;> norm_num
+    rw [hbranch x j, hbranch y j, hy]
+
+/-- The Nat-level cell-0 filter cardinality is 2. -/
+theorem cellFilterCard0 :
+    (Finset.univ.filter (fun w : Fin 3 => Pw.cells w = 0)).card = 2 := by decide
+
+theorem cellFilterCard1 :
+    (Finset.univ.filter (fun w : Fin 3 => Pw.cells w = 1)).card = 1 := by decide
+
+theorem cellCard0 : Pw.cellCard 0 = 2 := by
+  unfold EquitablePartition.cellCard; rw [cellFilterCard0]; norm_num
+
+theorem cellCard1 : Pw.cellCard 1 = 1 := by
+  unfold EquitablePartition.cellCard; rw [cellFilterCard1]; norm_num
+
+theorem cellCard_ne : ∀ k, Pw.cellCard k ≠ 0 := by
+  intro k
+  fin_cases k
+  · show Pw.cellCard 0 ≠ 0; rw [cellCard0]; norm_num
+  · show Pw.cellCard 1 ≠ 0; rw [cellCard1]; norm_num
+
+theorem quotient_01 : Pw.quotient 0 1 = 1 := by
+  rw [Pw.quotient_apply 0 1 (0 : Fin 3) rfl]
+  unfold EquitablePartition.branching Pw cellMap
+  simp [Fin.sum_univ_three, P3_adj, Matrix.cons_val_zero, Matrix.cons_val_one,
+    Matrix.cons_val_two, Matrix.head_cons]
+
+theorem quotient_10 : Pw.quotient 1 0 = 2 := by
+  rw [Pw.quotient_apply 1 0 (1 : Fin 3) rfl]
+  unfold EquitablePartition.branching Pw cellMap
+  simp [Fin.sum_univ_three, P3_adj, Matrix.cons_val_zero, Matrix.cons_val_one,
+    Matrix.cons_val_two, Matrix.head_cons]
+  norm_num
+
+/-- The symmetric quotient is `√2 • X`. -/
+theorem symmQuotient_eq :
+    Pw.symmQuotient = (Real.sqrt 2 : ℂ) • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ) := by
+  ext i j
+  unfold EquitablePartition.symmQuotient
+  fin_cases i <;> fin_cases j <;>
+    simp only [Fin.zero_eta, Fin.mk_one, Fin.isValue]
+  · rw [Pw.quotient_apply 0 0 (0 : Fin 3) rfl]
+    simp [EquitablePartition.branching, Pw, cellMap, Fin.sum_univ_three, P3_adj,
+      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons]
+  · rw [show ((0 : Fin 2)) = (0 : Fin 2) from rfl, cellCard0, cellCard1, quotient_01]
+    simp [Matrix.cons_val_zero, Matrix.cons_val_one, Real.sqrt_one]
+  · rw [cellCard0, cellCard1, quotient_10]
+    rw [show ((Real.sqrt 2 : ℂ) • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)) 1 0
+          = (Real.sqrt 2 : ℂ) by
+      simp [Matrix.smul_apply, Matrix.cons_val_zero, Matrix.cons_val_one]]
+    rw [Real.sqrt_one, Complex.ofReal_one, one_mul]
+    have h2 : ((Real.sqrt 2 : ℝ) : ℂ) ≠ 0 := by
+      simp only [ne_eq, Complex.ofReal_eq_zero]; positivity
+    field_simp
+    rw [show (2 : ℂ) = ((Real.sqrt 2 : ℝ) : ℂ) * ((Real.sqrt 2 : ℝ) : ℂ) by
+      rw [← Complex.ofReal_mul, Real.mul_self_sqrt (by norm_num)]; norm_num]
+    ring
+  · rw [Pw.quotient_apply 1 1 (1 : Fin 3) rfl]
+    simp [EquitablePartition.branching, Pw, cellMap, Fin.sum_univ_three, P3_adj,
+      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons]
+
+section ScaledX
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- Hadamard-type diagonalizer. -/
+private def hadU : Matrix (Fin 2) (Fin 2) ℂ := !![1, 1; 1, -1]
+
+private theorem hadU_mul_half : hadU * ((1/2 : ℂ) • hadU) = 1 := by
+  unfold hadU; ext i j
+  fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Fin.sum_univ_two] <;> ring
+
+private theorem hadU_isUnit : IsUnit hadU := by
+  refine ⟨⟨hadU, (1/2 : ℂ) • hadU, hadU_mul_half, ?_⟩, rfl⟩
+  unfold hadU; ext i j
+  fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Fin.sum_univ_two] <;> ring
+
+private theorem hadU_inv : hadU⁻¹ = (1/2 : ℂ) • hadU :=
+  Matrix.inv_eq_right_inv hadU_mul_half
+
+private theorem half_smul_hadU :
+    ((1/2 : ℂ) • hadU) = !![(1:ℂ)/2, 1/2; 1/2, -(1/2)] := by
+  unfold hadU; ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.smul_apply, Matrix.cons_val_zero, Matrix.cons_val_one]
+
+private theorem diag_fin_two (a b : ℂ) :
+    (Matrix.diagonal ![a, b]) = !![a, 0; 0, b] := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.diagonal, Matrix.cons_val_zero, Matrix.cons_val_one]
+
+private theorem X_eq_conj_diag :
+    (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+      = hadU * (Matrix.diagonal ![1, -1]) * hadU⁻¹ := by
+  rw [hadU_inv, diag_fin_two, half_smul_hadU]
+  unfold hadU
+  rw [Matrix.mul_fin_two, Matrix.mul_fin_two]
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [Matrix.cons_val_zero, Matrix.cons_val_one] <;> ring
+
+/-- `exp(s • Pauli-X)` as an explicit literal. -/
+private theorem exp_smul_X_lit (s : ℂ) :
+    NormedSpace.exp (s • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ))
+      = !![(NormedSpace.exp s + NormedSpace.exp (-s)) / 2,
+            (NormedSpace.exp s - NormedSpace.exp (-s)) / 2;
+           (NormedSpace.exp s - NormedSpace.exp (-s)) / 2,
+            (NormedSpace.exp s + NormedSpace.exp (-s)) / 2] := by
+  have hsmul : s • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+      = hadU * (Matrix.diagonal ![s, -s]) * hadU⁻¹ := by
+    have hd : (Matrix.diagonal ![s, -s] : Matrix (Fin 2) (Fin 2) ℂ)
+        = s • Matrix.diagonal ![1, -1] := by
+      rw [← Matrix.diagonal_smul]; congr 1; funext k; fin_cases k <;> simp
+    rw [X_eq_conj_diag, hd, mul_smul_comm, smul_mul_assoc]
+  rw [hsmul, Matrix.exp_conj _ _ hadU_isUnit, Matrix.exp_diagonal]
+  have hdiag : (fun i => NormedSpace.exp (![s, -s] i))
+      = (![NormedSpace.exp s, NormedSpace.exp (-s)] : Fin 2 → ℂ) := by
+    funext k; fin_cases k <;> simp
+  rw [Pi.exp_def, hdiag, hadU_inv, diag_fin_two, half_smul_hadU]
+  unfold hadU
+  rw [Matrix.mul_fin_two, Matrix.mul_fin_two]
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [Matrix.cons_val_zero, Matrix.cons_val_one] <;> ring
+
+/-- The `(1,0)` entry of `exp(s • Pauli-X)` is `(eˢ − e⁻ˢ)/2 = sinh s`. -/
+private theorem exp_smul_X_entry10 (s : ℂ) :
+    NormedSpace.exp (s • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)) 1 0
+      = (NormedSpace.exp s - NormedSpace.exp (-s)) / 2 := by
+  rw [exp_smul_X_lit]; simp [Matrix.cons_val_zero, Matrix.cons_val_one]
+
+end ScaledX
+
+/-- The PST time for the `P_3` quotient `√2 • X`: `τ = π/(2√2)`. -/
+noncomputable def tau : ℝ := Real.pi / (2 * Real.sqrt 2)
+
+theorem tau_pos : 0 < tau := by
+  unfold tau; apply div_pos Real.pi_pos; positivity
+
+/-- The scalar `-(I·τ)·√2` equals `-(I·π/2)`. -/
+theorem scalar_reduce :
+    -(Complex.I * (tau : ℂ)) * (Real.sqrt 2 : ℂ) = -(Complex.I * ((Real.pi / 2 : ℝ) : ℂ)) := by
+  unfold tau
+  have hs2 : (Real.sqrt 2 : ℂ) ≠ 0 := by
+    simp only [ne_eq, Complex.ofReal_eq_zero]; positivity
+  rw [show ((Real.pi / (2 * Real.sqrt 2) : ℝ) : ℂ)
+        = ((Real.pi : ℝ) : ℂ) / ((2 : ℝ) : ℂ) / (Real.sqrt 2 : ℂ) by push_cast; ring]
+  rw [show ((Real.pi / 2 : ℝ) : ℂ) = ((Real.pi : ℝ) : ℂ) / ((2 : ℝ) : ℂ) by push_cast; ring]
+  field_simp
+
+/-- **The cell-uniform PST.**  `IsCellUniformPST P3 Pw 0 1 τ` with `τ = π/(2√2)`:
+the quotient is `√2 • X`, whose `(1,0)` evolution entry at `τ` is
+`sinh(-(iπ/2)) = -i`, of modulus `1`. -/
+theorem isCellUniformPST_witness : IsCellUniformPST P3 Pw 0 1 tau := by
+  rw [Pw.cellUniformPST_iff_quotientPST cellCard_ne 0 1 tau]
+  rw [symmQuotient_eq]
+  rw [show (-(Complex.I * (tau : ℂ)) • ((Real.sqrt 2 : ℂ) •
+            (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)))
+        = (-(Complex.I * (tau : ℂ)) * (Real.sqrt 2 : ℂ)) •
+            (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ) by rw [smul_smul]]
+  rw [scalar_reduce, exp_smul_X_entry10]
+  set s : ℂ := -(Complex.I * ((Real.pi / 2 : ℝ) : ℂ)) with hs
+  have hexp_neg_s : NormedSpace.exp (-s) = Complex.I := by
+    rw [hs, neg_neg, ← Complex.exp_eq_exp_ℂ,
+      show Complex.I * ((Real.pi / 2 : ℝ) : ℂ) = ((Real.pi / 2 : ℝ) : ℂ) * Complex.I by ring,
+      Complex.exp_ofReal_mul_I, Real.cos_pi_div_two, Real.sin_pi_div_two]
+    push_cast; ring
+  have hexp_s : NormedSpace.exp s = -Complex.I := by
+    rw [hs, ← Complex.exp_eq_exp_ℂ,
+      show -(Complex.I * ((Real.pi / 2 : ℝ) : ℂ)) = (-(Real.pi / 2) : ℝ) * Complex.I by
+        push_cast; ring,
+      Complex.exp_ofReal_mul_I, Real.cos_neg, Real.sin_neg, Real.cos_pi_div_two,
+      Real.sin_pi_div_two]
+    push_cast; ring
+  rw [hexp_s, hexp_neg_s]
+  rw [show (-Complex.I - Complex.I) / 2 = -Complex.I by ring, norm_neg, Complex.norm_I]
+
+/-- Row sums of `P3.adj`: endpoints have row sum 1, the centre has row sum 2. -/
+theorem rowSum_P3 (z : Fin 3) :
+    (∑ w, P3.adj z w) = (if z = 1 then 2 else 1) := by
+  fin_cases z <;>
+    simp [Fin.sum_univ_three, P3_adj, Matrix.cons_val_zero, Matrix.cons_val_one,
+      Matrix.cons_val_two, Matrix.head_cons] <;> norm_num
+
+/-- **Phantom clause.**  No adjacency-preserving permutation of `P_3` maps a
+cell-0 vertex (an endpoint `{0,2}`) to the cell-1 vertex (the centre `{1}`):
+the centre has degree 2, the endpoints degree 1, and an automorphism preserves
+the (weighted) degree (row sum). -/
+theorem no_automorphism_swaps :
+    ∀ (φ : Fin 3 ≃ Fin 3),
+      (∀ x y, P3.adj (φ x) (φ y) = P3.adj x y) →
+      ∀ x, Pw.cells x = 0 → Pw.cells (φ x) ≠ 1 := by
+  intro φ hφ x hx hcontra
+  have hcell1 : ∀ a : Fin 3, cellMap a = 1 → a = 1 := by
+    intro a ha; fin_cases a <;> simp_all [cellMap]
+  have hφx1 : φ x = 1 := hcell1 _ hcontra
+  have hsum : (∑ w, P3.adj (φ x) w) = (∑ y, P3.adj x y) := by
+    calc (∑ w, P3.adj (φ x) w)
+        = ∑ y, P3.adj (φ x) (φ y) := (Equiv.sum_comp φ (fun w => P3.adj (φ x) w)).symm
+      _ = ∑ y, P3.adj x y := by simp_rw [hφ]
+  rw [rowSum_P3, rowSum_P3, hφx1] at hsum
+  have hxne : x ≠ 1 := by
+    intro h; rw [h] at hx; exact absurd hx (by decide)
+  rw [if_neg hxne, if_pos rfl] at hsum
+  norm_num at hsum
+
+end BachmanTamonWitness
+
 /-! ## 6. Phantom-symmetry corollary.
 
 Bachman–Tamon's main qualitative observation (arXiv:1108.0339, §4) is that
@@ -897,9 +1163,11 @@ quotient PST can admit pairs `(i, j)` with no automorphism of `G` swapping
 two representatives of the cells.  This is impossible for the classical
 "automorphism-based" PST constructions (which always exhibit `u ↦ v` as the
 action of an involutive automorphism).  We package this as a corollary,
-deliberately phrased so that *no* automorphism hypothesis is required. -/
+deliberately phrased so that *no* automorphism hypothesis is required.
 
-/-- **Phantom-symmetry corollary (statement).**  There exist a weighted graph
+It is **proven** (no `sorry`) by the explicit `BachmanTamonWitness` above. -/
+
+/-- **Phantom-symmetry corollary (PROVEN).**  There exist a weighted graph
 `G`, an equitable partition `P : EquitablePartition G I`, indices `i, j : I`
 and a time `τ : ℝ` such that:
 
@@ -908,38 +1176,33 @@ and a time `τ : ℝ` such that:
   representative of cell `j` (cells are "phantom" — they exist as PST
   endpoints without symmetry).
 
-Bachman–Tamon exhibit an explicit example with a 6-vertex graph and a
-2-cell partition (their Fig. 1).  We state the corollary as a pure
-existential; an explicit witness is built in `examples/` (out of scope for
-this file). -/
+Bachman–Tamon exhibit an explicit example with a 6-vertex graph and a 2-cell
+partition (their Fig. 1).  We instead discharge the existential with the smaller
+explicit witness built in `BachmanTamonWitness` above: the path `P_3` with the
+endpoint/centre partition `{0,2} | {1}`, whose symmetric quotient is `√2 · X`
+and which therefore has cell-uniform PST at `τ = π/(2√2)` while no
+adjacency-automorphism maps an endpoint to the centre (the degrees differ).
+
+Non-vacuity: the cells `0 ≠ 1` are nonempty and the no-automorphism clause is a
+genuine universally-quantified statement (the identity permutation satisfies it
+because it fixes the endpoint cell — it does *not* trivially refute the claim),
+proven here via a real weighted-degree argument rather than vacuously. -/
 theorem phantom_symmetry_PST_exists :
     ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G : WeightedGraph V)
       (I : Type) (_ : Fintype I) (_ : DecidableEq I)
       (P : EquitablePartition G I) (i j : I) (τ : ℝ),
       IsCellUniformPST G P i j τ ∧
-        -- "no host automorphism swaps i and j": placeholder, encoded as
-        -- the absence of any permutation of `V` that preserves `G.adj`
-        -- and maps a representative of cell `i` to a representative of
-        -- cell `j`.
+        -- "no host automorphism swaps i and j": the absence of any permutation
+        -- of `V` that preserves `G.adj` and maps a representative of cell `i`
+        -- to a representative of cell `j`.
         (∀ (φ : V ≃ V), (∀ x y, G.adj (φ x) (φ y) = G.adj x y) →
-          ∀ x, P.cells x = i → P.cells (φ x) ≠ j) := by
-  -- HONEST SORRY (sole residual of this file).  Non-vacuity check: any witness
-  -- must have `i ≠ j` with nonempty cells — else `φ = id` (always an
-  -- adjacency-preserving permutation) falsifies the no-automorphism clause —
-  -- so the statement is genuinely the strong Bachman–Tamon claim, not a vacuous
-  -- existential.  The honest content is an explicit 6-vertex weighted graph
-  -- (Bachman–Tamon §4 of arXiv:1108.0339, Fig. 1): one needs to (i) exhibit the
-  -- adjacency matrix and 2-cell equitable partition, (ii) verify cell-uniform
-  -- PST by a concrete spectral computation on `symmQuotient` (now reducible to
-  -- the quotient Born-rule modulus via `cellUniformPST_iff_quotientPST`), and
-  -- (iii) certify that no adjacency-preserving permutation swaps the cells.
-  -- This concrete construction is parked for `examples/`; it is the ONLY
-  -- residual — the eigenbasis-transport keystone it conceptually sits on
-  -- (`stronglyCospectral_cellUniform_iff_quotient`) is now proven and
-  -- axiom-clean.  `phantom_symmetry_chiral_PST_exists` is derived from this
-  -- witness with no further sorry.
-  sorry
+          ∀ x, P.cells x = i → P.cells (φ x) ≠ j) :=
+  ⟨Fin 3, inferInstance, inferInstance, BachmanTamonWitness.P3,
+    Fin 2, inferInstance, inferInstance, BachmanTamonWitness.Pw, 0, 1,
+    BachmanTamonWitness.tau,
+    BachmanTamonWitness.isCellUniformPST_witness,
+    BachmanTamonWitness.no_automorphism_swaps⟩
 
 /-! ## 7. Chiral / signed extension.
 
@@ -1005,11 +1268,10 @@ theorem phantom_symmetry_chiral_PST_exists :
         (∀ (φ : V ≃ V),
           (∀ x y, (G.signedBy s).adj (φ x) (φ y) = (G.signedBy s).adj x y) →
           ∀ x, P.cells x = i → P.cells (φ x) ≠ j) := by
-  -- CLOSED relative to `phantom_symmetry_PST_exists`: take the unsigned
-  -- Bachman–Tamon witness and apply the *trivial* signing (`G.signedBy 1 = G`,
-  -- which is cross-constant via `τ ≡ 1`).  Cell map, cardinalities, adjacency
-  -- and evolution are all unchanged, so both conjuncts transfer verbatim.  The
-  -- only honest residual is the single unsigned witness lemma.
+  -- CLOSED (no `sorry`): take the now-proven unsigned `phantom_symmetry_PST_exists`
+  -- witness and apply the *trivial* signing (`G.signedBy 1 = G`, which is
+  -- cross-constant via `τ ≡ 1`).  Cell map, cardinalities, adjacency and
+  -- evolution are all unchanged, so both conjuncts transfer verbatim.
   obtain ⟨V, instF, instD, G, I, instFI, instDI, P, i, j, τ, hpst, hno⟩ :=
     phantom_symmetry_PST_exists
   refine ⟨V, instF, instD, G, I, instFI, instDI, P, ChiralSigning.trivial V,

@@ -1292,29 +1292,38 @@ def IsPhantomSymmetric (G : WeightedGraph V) (u v : V) : Prop :=
     ¬ ∃ σ : V ≃ V,
       (∀ x y, G.adj (σ x) (σ y) = G.adj x y) ∧ σ u = v
 
-/-- **Existence of phantom-symmetric pairs** (Bachman-Tamon arXiv:1108.0339).
+/-- **Existence of phantom-symmetric PST pairs (statement; HONEST `sorry`).**
+The literature (Godsil–Kirkland–Severini–Smith, *Number-Theoretic Nature of
+Communication in Quantum Spin Systems*, PRL 109 (2012) 050502; Bachman–Tamon
+arXiv:1108.0339) establishes that there exist Hermitian-weighted graphs `G`
+with **vertex** pairs `(u, v)` that exhibit PST and are *phantom symmetric*:
+strongly cospectral, yet with **no** graph automorphism mapping `u` to `v`.
+Such pairs show that PST cannot be detected by the automorphism group alone.
 
-There exist Hermitian-weighted graphs `G` with phantom-symmetric vertex pairs
-exhibiting PST.  Concretely, Bachman-Tamon construct quotient graphs (via
-equitable partitions of vertex-transitive graphs) where the quotient admits
-PST between cells whose preimages are *not* swapped by any automorphism of the
-original graph.
+STATUS.  This `theorem` states exactly that existential and is **not yet proven
+here** — it carries an honest `sorry`.  The statement is non-vacuous: by
+`IsPhantomSymmetric` the witness must genuinely lack any adjacency-automorphism
+sending `u ↦ v` (the identity does not refute this since `u ≠ v`), so the claim
+is the strong GKSS/Bachman–Tamon one, not a triviality.  Discharging it in Lean
+requires an explicit weighted graph with a *computed* matrix-exponential PST
+amplitude of modulus `1` together with the no-automorphism certificate (the
+known minimal examples need ≥ 6 vertices / engineered weights), which is left
+open in this module.
 
-This is the *raison d'être* of the equitable-partition lift theory in
-`Graphplay.Spectral` / `Graphplay.PST`: phantom symmetry is "explained by"
-the equitable quotient, even when it is invisible to the automorphism group
-of the parent graph. -/
+The closely-related **cell-level** phenomenon — quotient PST between equitable
+cells with no automorphism relating them — *is* proven, with an explicit `P_3`
+witness, in `Graphplay.PST.QuotientIff.phantom_symmetry_PST_exists`.  This is
+the `raison d'être` of the equitable-partition lift theory in
+`Graphplay.Spectral` / `Graphplay.PST`; the vertex-level statement here is its
+sharper (and harder) counterpart. -/
 theorem exists_phantomSymmetric_isPST :
     ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G : WeightedGraph V) (u v : V) (τ : ℝ),
       0 < τ ∧ IsPhantomSymmetric G u v ∧ IsPST G u v τ := by
-  -- Bachman-Tamon construction: take a vertex-transitive parent graph G',
-  -- pick an equitable partition P', the quotient G = P'.quotient gives the
-  -- phantom-symmetric pair (cell_i, cell_j) when no automorphism of G'
-  -- exchanges the preimage cells while every automorphism of G does (or
-  -- vice versa).  Detailed construction punted.
-  -- BLOCKED: needs an explicit Bachman-Tamon witness graph with computed
-  -- evolution exhibiting PST (no concrete construction available).
+  -- HONEST `sorry` on a TRUE, non-vacuous statement (see docstring STATUS).
+  -- Needs an explicit GKSS/Bachman–Tamon vertex-level witness graph with a
+  -- computed PST amplitude and a no-automorphism certificate; not constructed
+  -- here.  (The cell-level analogue is proven in `QuotientIff`.)
   sorry
 
 /-! ## Convenience consequences -/
