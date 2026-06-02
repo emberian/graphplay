@@ -224,27 +224,144 @@ def IsAdmissiblePotential (P : OptimalTransportProblem Ω)
 noncomputable def dual (P : OptimalTransportProblem Ω) (φ ψ : Ω → ℝ) : ℝ :=
   ∫ x, φ x ∂P.α + ∫ y, ψ y ∂P.β
 
-/-- **Kantorovich duality** (statement).  Under mild regularity (Polish space,
-lower-semicontinuous lower-bounded cost) the primal equals the dual:
+/-- **Strong Kantorovich duality** (deep, cited).  Under mild regularity (Polish
+space, lower-semicontinuous lower-bounded cost) the primal equals the dual:
   `value P = sup_{(φ,ψ) admissible} dual P φ ψ`.
 
-Reference: Villani, *OT: Old and New*, Thm. 5.10. -/
-theorem kantorovich_duality (P : OptimalTransportProblem Ω) :
+This is the genuine strong-duality *equality* and is the deep half (Villani,
+*OT: Old and New*, Thm. 5.10): it needs the lsc cost, a Polish-space
+minimax / Fenchel–Rockafellar argument, not available in Mathlib.  It is left an
+honest `sorry` on a **true** statement.  The elementary, always-true *weak*
+duality half is fully proven in the finite model below
+(`FiniteOT.weak_duality`, `FiniteOT.dualValue_le_value`) and abstractly in
+`kantorovich_weak_duality`. -/
+theorem kantorovich_strong_duality (P : OptimalTransportProblem Ω) :
     P.value =
       sSup {d : ℝ | ∃ φ ψ, P.IsAdmissiblePotential φ ψ ∧ P.dual φ ψ = d} := by
   -- DEEP (Villani Thm 5.10): Kantorovich strong duality; needs lsc cost,
-  -- Polish-space minimax / Fenchel–Rockafellar, not formalised here.
+  -- Polish-space minimax / Fenchel–Rockafellar, not formalised here.  TRUE
+  -- statement; honest cited residual.  (Weak duality `≤` is PROVEN below.)
   sorry
 
-/-- **Existence of an optimal plan** (statement).  Under lower semicontinuity
+/-- **Existence of an optimal plan** (deep, cited).  Under lower semicontinuity
 and lower-boundedness of the cost, the infimum in `value` is attained. -/
 theorem exists_optimal_coupling (P : OptimalTransportProblem Ω) :
     ∃ π, P.IsCoupling π ∧ P.kantorovich π = P.value := by
   -- DEEP: attainment of the Kantorovich infimum; needs tightness/weak
-  -- compactness of the coupling set (Prokhorov) and lsc of the cost.
+  -- compactness of the coupling set (Prokhorov) and lsc of the cost.  TRUE
+  -- statement; honest cited residual.
   sorry
 
 end OptimalTransportProblem
+
+/-! ### Finite Kantorovich–Rubinstein duality (elementary, PROVEN)
+
+The mandate's elementary target: the **finite/discrete** optimal-transport
+problem on a finite cost matrix `c : X → Y → ℝ`, with marginal mass vectors
+`α : X → ℝ`, `β : Y → ℝ`.  A **finite coupling** is a nonnegative matrix
+`π : X → Y → ℝ` whose row sums are `α` and column sums are `β`.  In this finite
+setting *weak* Kantorovich (LP) duality is elementary and fully proven here:
+every dual-feasible value is `≤` every primal-feasible value, hence the dual
+*sup* is `≤` the primal *inf*.  (The reverse — strong duality — is the LP
+strong-duality / Birkhoff–von Neumann content, the deep half of Villani 5.10.) -/
+
+namespace FiniteOT
+
+variable {X Y : Type u} [Fintype X] [Fintype Y]
+
+/-- A **finite coupling** of marginal mass vectors `α : X → ℝ`, `β : Y → ℝ`: a
+nonnegative matrix with prescribed row/column sums. -/
+structure FinCoupling (α : X → ℝ) (β : Y → ℝ) where
+  /-- The transport plan as a finite nonnegative matrix. -/
+  plan : X → Y → ℝ
+  /-- Nonnegativity of the plan. -/
+  nonneg : ∀ x y, 0 ≤ plan x y
+  /-- Row sums equal the source marginal. -/
+  marg_left : ∀ x, ∑ y, plan x y = α x
+  /-- Column sums equal the target marginal. -/
+  marg_right : ∀ y, ∑ x, plan x y = β y
+
+/-- The **finite Kantorovich (primal) functional** `∑_{x,y} c(x,y) · π(x,y)`. -/
+def finKantorovich (c : X → Y → ℝ) (π : X → Y → ℝ) : ℝ :=
+  ∑ x, ∑ y, c x y * π x y
+
+/-- The **finite dual functional** `∑_x φ(x)·α(x) + ∑_y ψ(y)·β(y)`. -/
+def finDual (α : X → ℝ) (β : Y → ℝ) (φ : X → ℝ) (ψ : Y → ℝ) : ℝ :=
+  (∑ x, φ x * α x) + ∑ y, ψ y * β y
+
+/-- A potential pair `(φ, ψ)` is **admissible** for the finite cost `c` if
+`φ(x) + ψ(y) ≤ c(x,y)` for all `x, y`. -/
+def FinAdmissible (c : X → Y → ℝ) (φ : X → ℝ) (ψ : Y → ℝ) : Prop :=
+  ∀ x y, φ x + ψ y ≤ c x y
+
+/-- **Finite weak Kantorovich–Rubinstein duality (PROVEN).**  For any finite
+coupling `π` of `(α, β)` and any admissible potential pair `(φ, ψ)`, the dual
+value is `≤` the primal cost:
+  `∑_x φ·α + ∑_y ψ·β  ≤  ∑_{x,y} c·π`.
+
+Proof: rewrite each marginal sum as a double sum against the plan (`marg_left`,
+`marg_right`), combine, and compare summand-by-summand using
+`(φ x + ψ y)·π x y ≤ c x y · π x y` (admissibility times the nonnegative mass
+`π x y ≥ 0`).  This is the genuine, elementary LP weak-duality inequality. -/
+theorem weak_duality (c : X → Y → ℝ) {α : X → ℝ} {β : Y → ℝ}
+    (π : FinCoupling α β) {φ : X → ℝ} {ψ : Y → ℝ}
+    (hadm : FinAdmissible c φ ψ) :
+    finDual α β φ ψ ≤ finKantorovich c π.plan := by
+  have hL : ∑ x, φ x * α x = ∑ x, ∑ y, φ x * π.plan x y := by
+    refine Finset.sum_congr rfl (fun x _ => ?_)
+    rw [← π.marg_left x, Finset.mul_sum]
+  have hR : ∑ y, ψ y * β y = ∑ y, ∑ x, ψ y * π.plan x y := by
+    refine Finset.sum_congr rfl (fun y _ => ?_)
+    rw [← π.marg_right y, Finset.mul_sum]
+  rw [finDual, hL, hR, Finset.sum_comm (s := Finset.univ) (t := Finset.univ)
+      (f := fun y x => ψ y * π.plan x y), ← Finset.sum_add_distrib, finKantorovich]
+  refine Finset.sum_le_sum (fun x _ => ?_)
+  rw [← Finset.sum_add_distrib]
+  refine Finset.sum_le_sum (fun y _ => ?_)
+  have h1 : φ x * π.plan x y + ψ y * π.plan x y = (φ x + ψ y) * π.plan x y := by ring
+  rw [h1]
+  exact mul_le_mul_of_nonneg_right (hadm x y) (π.nonneg x y)
+
+/-- The **finite primal value**: the infimum of the Kantorovich cost over all
+finite couplings (over the set of attainable primal costs). -/
+noncomputable def finValue (c : X → Y → ℝ) (α : X → ℝ) (β : Y → ℝ) : ℝ :=
+  sInf {v : ℝ | ∃ π : FinCoupling α β, finKantorovich c π.plan = v}
+
+/-- The **finite dual value**: the supremum of the dual functional over all
+admissible potential pairs. -/
+noncomputable def finDualValue (c : X → Y → ℝ) (α : X → ℝ) (β : Y → ℝ) : ℝ :=
+  sSup {d : ℝ | ∃ φ ψ, FinAdmissible c φ ψ ∧ finDual α β φ ψ = d}
+
+/-- **The finite dual value lower-bounds the finite primal value (PROVEN).**
+`finDualValue ≤ finValue` — the value-level form of finite weak LP duality.
+
+Proof: for *every* admissible `(φ,ψ)` and *every* coupling `π`,
+`finDual ≤ finKantorovich π` (`weak_duality`); so each dual value is a lower
+bound for the (nonempty) primal-cost set, hence `≤ finValue = sInf`; taking the
+sup over the (nonempty) dual-value set preserves the bound (`csSup_le`).
+
+The coupling-set nonemptiness `hcoup` makes `finValue` a genuine real infimum;
+the nonnegativity hypothesis `hc : 0 ≤ c` (natural for a cost/distance matrix)
+makes the trivial pair `(0, 0)` admissible, so the dual-value set is nonempty —
+both bounds are therefore non-vacuous real numbers. -/
+theorem dualValue_le_value (c : X → Y → ℝ) {α : X → ℝ} {β : Y → ℝ}
+    (hc : ∀ x y, 0 ≤ c x y) (hcoup : Nonempty (FinCoupling α β)) :
+    finDualValue c α β ≤ finValue c α β := by
+  obtain ⟨π0⟩ := hcoup
+  have hPnonempty : {v : ℝ | ∃ π : FinCoupling α β, finKantorovich c π.plan = v}.Nonempty :=
+    ⟨finKantorovich c π0.plan, π0, rfl⟩
+  -- the dual-value set is nonempty: the zero potentials are admissible (`0 ≤ c`)
+  have hDnonempty : {d : ℝ | ∃ φ ψ, FinAdmissible c φ ψ ∧ finDual α β φ ψ = d}.Nonempty := by
+    refine ⟨finDual α β (fun _ => 0) (fun _ => 0), (fun _ => 0), (fun _ => 0), ?_, rfl⟩
+    intro x y; simpa using hc x y
+  -- every dual value is `≤ finValue`; take the sup
+  refine csSup_le hDnonempty ?_
+  rintro d ⟨φ, ψ, hadm, rfl⟩
+  refine le_csInf hPnonempty ?_
+  rintro v ⟨π, rfl⟩
+  exact weak_duality c π hadm
+
+end FiniteOT
 
 /-! ## 3. Equitable-coarsening of transport plans
 

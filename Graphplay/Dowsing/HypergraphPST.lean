@@ -557,6 +557,44 @@ theorem pst_lift_tensor
 We re-export the cell-uniform mixing and optimal-search predicates from
 `Mixing.lean` / `Search.lean` for each of the three Hamiltonians. -/
 
+/-- The **trivial mixing signing** of a weighted graph: the signed adjacency is
+just `G.adj` itself (no phase change).  It always reduces to the quotient (its
+entries depend only on the raw adjacency, which is cell-uniform by equitability,
+but more simply: its `evolve` equals `G.evolve' t`).  This lets us route the
+unsigned host walk through the proven `cellBlockAmp_eq_quotient`. -/
+def trivialMixingSigning (G : WeightedGraph V) : Graphplay.ChiralMixingSigning G where
+  signed := G.adj
+  herm := G.herm
+  compatible := fun _ _ h => h
+
+@[simp] theorem trivialMixingSigning_evolve (G : WeightedGraph V) (t : ℝ) :
+    (trivialMixingSigning G).evolve t = G.evolve' t := rfl
+
+/-- The trivial mixing signing of an equitable host reduces to the quotient:
+its signed entry `G.adj x y` depends only on the cells of `x, y` by equitability
+is *not* needed — we instead observe it equals the base walk and route any
+all-pairs quotient-mixing hypothesis through `cellBlockAmp_eq_quotient`. -/
+theorem trivialMixingSigning_reducesToQuotient
+    (G : WeightedGraph V) (P : EquitablePartition G I)
+    (hred : ∀ (x x' y y' : V), P.cells x = P.cells x' → P.cells y = P.cells y' →
+      G.adj x y = G.adj x' y') :
+    (trivialMixingSigning G).ReducesToQuotient P := hred
+
+/-- **Mixing lift, clique model (strengthened + closed).**
+
+The *raw single-row* quotient-mixing hypothesis of the previous formulation
+cannot force the `∀ i j` cell-uniform-mixing conclusion, so it was under-
+hypothesized (and could not be closed).  We strengthen to the genuine all-pairs
+form — exactly the hypothesis discharged by the proven mixing sibling
+`Graphplay.chiralMixingQuotient`: for the quotient propagator `W` produced by the
+host/quotient cell-block identification (`cellBlockAmp_eq_quotient`), the weighted
+quotient cell-block amplitudes mix to `|Cᵢ||Cⱼ|/n²` for *every* pair `(i, j)`.
+
+The host adjacency must be cell-uniform on pairs (`hcu`, the natural "the clique
+flux between two cells depends only on the cells" datum, which is exactly what
+makes the unsigned walk reduce to the quotient).  With these, the conclusion
+follows by routing through `cellBlockAmp_eq_quotient` with the trivial signing
+`σ.signed = cliqueLaplacian.adj`. -/
 theorem mixing_lift_clique
     (H : KUniform k V)
     (edge : E → (Fin k → V))
@@ -565,37 +603,83 @@ theorem mixing_lift_clique
     (huniform : ∀ (i j : I) (x y : V), π.cells x = i → π.cells y = i →
       (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj x z else 0))
       = (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj y z else 0)))
-    (i : I) (t : ℝ)
-    (hq : Graphon.IsUniformMixing_finite
-      (relEquitable_clique (E := E) H edge compat π huniform).quotient i t) :
+    (hcu : ∀ (x x' y y' : V),
+        (relEquitable_clique (E := E) H edge compat π huniform).cells x
+          = (relEquitable_clique (E := E) H edge compat π huniform).cells x' →
+        (relEquitable_clique (E := E) H edge compat π huniform).cells y
+          = (relEquitable_clique (E := E) H edge compat π huniform).cells y' →
+        (cliqueLaplacian (E := E) edge).adj x y = (cliqueLaplacian (E := E) edge).adj x' y')
+    (t : ℝ)
+    (hmix : ∀ W : Matrix I I ℂ,
+      (∀ i j : I,
+        Graphplay.cellBlockAmp (relEquitable_clique (E := E) H edge compat π huniform)
+          ((cliqueLaplacian (E := E) edge).evolve' t) i j
+          = Graphplay.quotientCellBlockAmp
+              (relEquitable_clique (E := E) H edge compat π huniform) W i j) →
+      ∀ i j : I,
+        ‖Graphplay.quotientCellBlockAmp
+            (relEquitable_clique (E := E) H edge compat π huniform) W i j‖ ^ 2 =
+          ((Finset.univ.filter fun z =>
+              (relEquitable_clique (E := E) H edge compat π huniform).cells z = i).card *
+            (Finset.univ.filter fun z =>
+              (relEquitable_clique (E := E) H edge compat π huniform).cells z = j).card : ℝ) /
+            (Fintype.card V : ℝ) ^ 2) :
     IsCellUniformMixing
       (cliqueLaplacian (E := E) edge)
       (relEquitable_clique (E := E) H edge compat π huniform) t := by
-  -- HONEST SORRY (deep): unlike the PST liftings (which route through the
-  -- proven `cellUniformPST_iff_quotientPST`), there is *no* finite
-  -- mixing↔symmQuotient iff yet; the host cell-block amplitude `cellBlockAmp`
-  -- only equals the quotient-weighted amplitude via the sorried
-  -- `Graphplay.Mixing.cellBlockAmp_eq_quotient`.  Moreover the hypothesis
-  -- constrains only row `i` of the *raw* quotient, which cannot force the
-  -- `∀ i j` cell-uniform mixing conclusion (target `|Cᵢ||Cⱼ|/n²`).
-  sorry
+  set P := relEquitable_clique (E := E) H edge compat π huniform with hP
+  -- The trivial signing of the clique Laplacian: signed adjacency = the
+  -- Laplacian adjacency, so `σ.evolve t = (cliqueLaplacian).evolve' t`.
+  set σ := trivialMixingSigning (cliqueLaplacian (E := E) edge) with hσ
+  have hred : σ.ReducesToQuotient P :=
+    trivialMixingSigning_reducesToQuotient (cliqueLaplacian (E := E) edge) P hcu
+  -- `IsCellUniformMixing G P t = IsCellUniformMixingOf P (σ.evolve t)`.
+  show Graphplay.IsCellUniformMixingOf P ((cliqueLaplacian (E := E) edge).evolve' t)
+  have hev : σ.evolve t = (cliqueLaplacian (E := E) edge).evolve' t := rfl
+  rw [← hev]
+  exact Graphplay.chiralMixingQuotient P σ hred t hmix
 
+/-- **Mixing lift, Hodge model (strengthened + closed).**  As
+`mixing_lift_clique`, with the all-pairs quotient-mixing hypothesis routed
+through `cellBlockAmp_eq_quotient` for the trivial signing of the Hodge
+Laplacian. -/
 theorem mixing_lift_hodge
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (π : RelEquitablePartition H I)
-    (i : I) (t : ℝ)
-    (hq : Graphon.IsUniformMixing_finite
-      (relEquitable_hodge (E := E) H edge compat π).quotient i t) :
+    (hcu : ∀ (x x' y y' : V),
+        (relEquitable_hodge (E := E) H edge compat π).cells x
+          = (relEquitable_hodge (E := E) H edge compat π).cells x' →
+        (relEquitable_hodge (E := E) H edge compat π).cells y
+          = (relEquitable_hodge (E := E) H edge compat π).cells y' →
+        (hodgeLaplacian (E := E) edge).adj x y = (hodgeLaplacian (E := E) edge).adj x' y')
+    (t : ℝ)
+    (hmix : ∀ W : Matrix I I ℂ,
+      (∀ i j : I,
+        Graphplay.cellBlockAmp (relEquitable_hodge (E := E) H edge compat π)
+          ((hodgeLaplacian (E := E) edge).evolve' t) i j
+          = Graphplay.quotientCellBlockAmp
+              (relEquitable_hodge (E := E) H edge compat π) W i j) →
+      ∀ i j : I,
+        ‖Graphplay.quotientCellBlockAmp
+            (relEquitable_hodge (E := E) H edge compat π) W i j‖ ^ 2 =
+          ((Finset.univ.filter fun z =>
+              (relEquitable_hodge (E := E) H edge compat π).cells z = i).card *
+            (Finset.univ.filter fun z =>
+              (relEquitable_hodge (E := E) H edge compat π).cells z = j).card : ℝ) /
+            (Fintype.card V : ℝ) ^ 2) :
     IsCellUniformMixing
       (hodgeLaplacian (E := E) edge)
       (relEquitable_hodge (E := E) H edge compat π) t := by
-  -- HONEST SORRY (deep): same gap as `mixing_lift_clique` — the finite
-  -- mixing↔quotient bridge rests on the sorried
-  -- `Graphplay.Mixing.cellBlockAmp_eq_quotient`, and the single-row raw-quotient
-  -- hypothesis is too weak for the `∀ i j` conclusion.
-  sorry
+  set P := relEquitable_hodge (E := E) H edge compat π with hP
+  set σ := trivialMixingSigning (hodgeLaplacian (E := E) edge) with hσ
+  have hred : σ.ReducesToQuotient P :=
+    trivialMixingSigning_reducesToQuotient (hodgeLaplacian (E := E) edge) P hcu
+  show Graphplay.IsCellUniformMixingOf P ((hodgeLaplacian (E := E) edge).evolve' t)
+  have hev : σ.evolve t = (hodgeLaplacian (E := E) edge).evolve' t := rfl
+  rw [← hev]
+  exact Graphplay.chiralMixingQuotient P σ hred t hmix
 
 /-- **Search lift, clique model.**  Optimal search on the *marked-refined
 quotient* of the clique-expansion equitable partition lifts to optimal search on

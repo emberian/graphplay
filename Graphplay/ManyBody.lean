@@ -1017,42 +1017,54 @@ theorem manyBody_equitable_lift_distinguishable
   · rw [if_pos hg, if_pos (hgate.mp hg), hbr]
   · rw [if_neg hg, if_neg (fun h => hg (hgate.mpr h))]
 
-/-- **Many-body equitable lift.**  If `P` is an equitable partition of `G`,
-then the labelling `manyBodyCellLabel P N s` is an equitable partition of the
-`N`-particle adjacency `NParticleAdjacency G N s`.  Cell-uniform `N`-particle
-states reduce to (anti)symmetrized tensors of cell-uniform single-particle
-states. -/
+/-- **Many-body equitable lift (distinguishable statistics — axiom-clean).**  If
+`P` is an equitable partition of `G`, then the lifted cell labelling
+`manyBodyCellLabel P N .Distinguishable = (P.cells ∘ ·)` is a genuine equitable
+partition of the distinguishable `N`-particle adjacency
+`(NParticleAdjacency G N .Distinguishable).2`: the branching number from a
+configuration into any lifted cell `d` depends only on the lifted cell of the
+source.
+
+This is the fully second-quantized branching identity, closed via
+`manyBody_equitable_lift_distinguishable` (which uses the branching factorization
+`manyBody_distinguishable_branching_factor`).
+
+**Why this is stated for the distinguishable sector only — the all-`s` entrywise
+form is genuinely FALSE for bosons (and fermions).**  Their hop matrix elements
+carry occupation-dependent amplitudes `√((n_u+1) n_v)` (resp. Jordan–Wigner
+signs) that are *not* functions of the cell-occupation profile alone, so two
+configurations with the same lifted cell can have different branching numbers.
+Concrete bosonic counterexample (`N = 2`): on the path `a—b—c` with equitable
+cells `{a,c}` and `{b}`, the configurations `2·a` and `a+c` share the same
+cell-occupation, yet the row-sums of the bosonic hopping matrix are `√2` and `2`
+respectively (the `√((n_u+1)n_v)` amplitudes differ within the cell-occupation
+fiber).  Hence the *entrywise* equitable property holds only for the
+distinguishable statistics, where the hop element is the plain `G.adj` with no
+occupation amplitude; for bosons/fermions only the cell-uniform *subspace* is
+preserved on the Feder host (a graph-specific fact), not an entrywise equitable
+partition.  The honest, true content is therefore the distinguishable lift. -/
 theorem manyBody_equitable_lift
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
     {I : Type v} [Fintype I] [DecidableEq I]
-    (P : EquitablePartition G I) (N : ℕ) (s : ParticleStatistics)
-    [Fintype (NParticleIndex G N s)] [DecidableEq (NParticleIndex G N s)]
-    [Fintype (ManyBodyCells P N s)] [DecidableEq (ManyBodyCells P N s)] :
-    -- The lifted cell labelling `manyBodyCellLabel P N s` is equitable for the
-    -- many-body adjacency `(NParticleAdjacency G N s).2`: the branching number
-    -- from a basis state into any lifted cell `c` depends only on the lifted
-    -- cell of the source.
-    ∀ (c d : ManyBodyCells P N s) (x y : NParticleIndex G N s),
-      manyBodyCellLabel P N s x = c → manyBodyCellLabel P N s y = c →
-      (∑ z, (if manyBodyCellLabel P N s z = d
-              then (NParticleAdjacency G N s).2 x z else 0))
-      = (∑ z, (if manyBodyCellLabel P N s z = d
-              then (NParticleAdjacency G N s).2 y z else 0)) := by
-  -- PROVED axiom-clean for the **distinguishable** statistics, where the lift is a
-  -- genuine entrywise equitable partition:
-  -- `manyBody_equitable_lift_distinguishable` (via the second-quantized branching
-  -- factorization `manyBody_distinguishable_branching_factor`).
-  --
-  -- The all-`s` form stated here is **false entrywise for bosons and fermions**:
-  -- their hop matrix elements carry occupation-dependent amplitudes
-  -- `√((n_u+1) n_v)` (resp. Jordan–Wigner signs) that are not functions of the
-  -- cell-occupation profile alone, so two configurations with the same lifted
-  -- cell can have different branching numbers.  For those statistics the lift
-  -- holds only on the cell-uniform subspace, not entrywise — see the
-  -- (subspace-level) `manyBody_quotient_factorization` below.  Genuinely BLOCKED
-  -- as stated for boson/fermion; the honest content is the distinguishable lift.
-  sorry
+    (P : EquitablePartition G I) (N : ℕ) :
+    -- The lifted cell labelling `manyBodyCellLabel P N .Distinguishable` is
+    -- equitable for the distinguishable many-body adjacency: the branching number
+    -- from a basis state into any lifted cell `d` depends only on the lifted cell
+    -- of the source.  Phrased with the reducible index/cell types inlined
+    -- (`NParticleIndex G N .Distinguishable = Fin N → V`,
+    --  `ManyBodyCells P N .Distinguishable = Fin N → I`,
+    --  `manyBodyCellLabel _ x = P.cells ∘ x`, all definitional) so the canonical
+    -- `Pi` fintype/decidable instances are used — matching the helper.
+    ∀ (c d : Fin N → I) (x y : Fin N → V),
+      P.cells ∘ x = c → P.cells ∘ y = c →
+      (∑ z, (if P.cells ∘ z = d
+              then (NParticleAdjacency G N .Distinguishable).2 x z else 0))
+      = (∑ z, (if P.cells ∘ z = d
+              then (NParticleAdjacency G N .Distinguishable).2 y z else 0)) := by
+  -- This is exactly `manyBody_equitable_lift_distinguishable` (the lifted cell
+  -- labelling `manyBodyCellLabel P N .Distinguishable` is `P.cells ∘ ·`).
+  exact manyBody_equitable_lift_distinguishable P N
 
 /-- **Cell-uniform reduction — distinguishable particles (axiom-clean).**  The
 distinguishable many-body adjacency **preserves the lifted cell-uniform
@@ -1124,39 +1136,50 @@ theorem manyBody_quotient_factorization_distinguishable
   congr 1
   exact manyBody_equitable_lift_distinguishable P N (P.cells ∘ a) d a b rfl hab.symm
 
-/-- **Cell-uniform reduction.**  The restriction of `NParticleAdjacency G N s`
-to its lifted cell-uniform subspace is unitarily equivalent to the
-appropriate `N`-fold tensor / sym / wedge of the single-particle quotient
-`P.quotient`.  This is the headline statement of the many-body equitable
-lift: many-body cell-uniform dynamics is governed by an `N`-body Hamiltonian
-on the *quotient* graph. -/
+/-- **Cell-uniform reduction (distinguishable statistics — axiom-clean).**  The
+distinguishable many-body adjacency **preserves the lifted cell-uniform
+subspace**: a wavefunction `ψ` constant on each lifted cell (each fiber of
+`manyBodyCellLabel P N .Distinguishable = P.cells ∘ ·`) is mapped by
+`(NParticleAdjacency G N .Distinguishable).2` to one that is again constant on
+each lifted cell.  This is the operational form of "many-body cell-uniform
+dynamics is governed by an `N`-body Hamiltonian on the quotient graph", closed
+via `manyBody_quotient_factorization_distinguishable` (group the matrix–vector
+sum by the target's lifted cell, apply `manyBody_equitable_lift_distinguishable`).
+
+**Why the distinguishable sector only — the all-`s` form is genuinely FALSE for
+bosons.**  Preservation of the cell-uniform subspace is *not* an equitable-lift
+fact for bosons: the bosonic hopping amplitudes `√((n_u+1)n_v)` vary within a
+cell-occupation fiber.  Take `N = 2` on the path `a—b—c` with equitable cells
+`{a,c}`, `{b}`, and `ψ ≡ 1` (constant on every fiber).  Then `(Hψ)(2·a) = √2`
+while `(Hψ)(a+c) = 2`, although `2·a` and `a+c` lie in the same lifted cell —
+so the bosonic many-body adjacency does *not* preserve the cell-uniform subspace
+of an arbitrary equitable partition.  (Feder's PST is a *graph-specific* fact
+about the path→Johnson quotient, recovered here as `FederBosonicWalk` /
+`feder_bosonic_quotient_eq`, not a general cell-uniform-subspace reduction.)
+For distinguishable particles the hop element is the plain `G.adj` with no
+amplitude, so the reduction holds; that is the honest, true content. -/
 theorem manyBody_quotient_factorization
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
     {I : Type v} [Fintype I] [DecidableEq I]
-    (P : EquitablePartition G I) (N : ℕ) (s : ParticleStatistics)
-    [Fintype (NParticleIndex G N s)] [DecidableEq (NParticleIndex G N s)]
-    [Fintype (ManyBodyCells P N s)] [DecidableEq (ManyBodyCells P N s)] :
-    -- The many-body adjacency **preserves the lifted cell-uniform subspace**:
-    -- a wavefunction constant on each lifted cell is mapped by
-    -- `(NParticleAdjacency G N s).2` to one that is again constant on each
-    -- lifted cell.  This is the operational form of "many-body cell-uniform
-    -- dynamics is governed by an N-body Hamiltonian on the quotient graph".
-    ∀ (ψ : NParticleIndex G N s → ℂ),
-      (∀ a b, manyBodyCellLabel P N s a = manyBodyCellLabel P N s b → ψ a = ψ b) →
-      ∀ a b, manyBodyCellLabel P N s a = manyBodyCellLabel P N s b →
-        ((NParticleAdjacency G N s).2.mulVec ψ) a
-        = ((NParticleAdjacency G N s).2.mulVec ψ) b := by
-  -- PROVED axiom-clean for the **distinguishable** statistics in
-  -- `manyBody_quotient_factorization_distinguishable` (grouping the matrix–vector
-  -- sum by the target's lifted cell and applying
-  -- `manyBody_equitable_lift_distinguishable`).
-  --
-  -- For boson/fermion the cell-uniform subspace is genuinely preserved, but the
-  -- argument needs the second-quantized characteristic isometry rather than the
-  -- entrywise equitable property (which fails there, see
-  -- `manyBody_equitable_lift`).  Deferred for those statistics.
-  sorry
+    (P : EquitablePartition G I) (N : ℕ) :
+    -- The distinguishable many-body adjacency preserves the lifted cell-uniform
+    -- subspace.  Phrased with the index/cell types inlined
+    -- (`NParticleIndex G N .Distinguishable = Fin N → V`,
+    --  `manyBodyCellLabel _ a = P.cells ∘ a`, definitional) so the canonical `Pi`
+    -- fintype instance is used — matching the helper.
+    -- The matrix–vector action `(H_N ψ)(a) = ∑_z H_N(a,z) ψ(z)` is written as an
+    -- explicit sum over the concrete index `Fin N → V` (matching the helper, and
+    -- avoiding a `Fintype (NParticleAdjacency …).fst` synthesis on the dependent
+    -- sigma index that `Matrix.mulVec` would demand).
+    ∀ (ψ : (Fin N → V) → ℂ),
+      (∀ a b : Fin N → V, P.cells ∘ a = P.cells ∘ b → ψ a = ψ b) →
+      ∀ a b : Fin N → V, P.cells ∘ a = P.cells ∘ b →
+        (∑ z : Fin N → V, (NParticleAdjacency G N .Distinguishable).2 a z * ψ z)
+        = (∑ z : Fin N → V, (NParticleAdjacency G N .Distinguishable).2 b z * ψ z) := by
+  -- The labelling `manyBodyCellLabel P N .Distinguishable` is `P.cells ∘ ·`, so
+  -- this is exactly the distinguishable factorization.
+  exact manyBody_quotient_factorization_distinguishable P N
 
 /-! ## 4.  Feder's many-boson construction (PRL 97, 180502) -/
 

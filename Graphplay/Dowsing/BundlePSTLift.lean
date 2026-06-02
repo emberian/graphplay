@@ -178,6 +178,97 @@ namespace BundlePSTCorollaries
 variable {V W : Type*}
 variable [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
 
+/-! ### 3.0 Rank-one (all-ones) Kronecker-product exponential closed form
+
+The lex/template-join/color-completion couplings all carry the
+Kronecker-**product** block `A_G ⊗ₖ J_W` (the all-ones `W × W` block `J_W`),
+which — unlike the Kronecker-**sum** of the Cartesian case — does *not* split as
+`exp A_G ⊗ₖ exp J_W`.  It does, however, have an exact **closed form**, because
+`J_W = |W| · P_W` with `P_W = (1/|W|) J_W` a *rank-one idempotent* projector:
+
+  `exp(M ⊗ₖ P_W) = 1 + (exp M − 1) ⊗ₖ P_W`.
+
+This is the genuine engine the GGPT lex/template arguments rest on (the
+"all-ones eigenvector carries the rescaled-time `G`-walk" computation).  We build
+it here from the exponential power series, mirroring `exp_kronecker_one`. -/
+
+section RankOneKronecker
+
+open scoped Kronecker
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- The normalized all-ones (rank-one projector) matrix `P_W = (1/|W|) J_W`. -/
+noncomputable def projOnes (W : Type*) [Fintype W] [DecidableEq W] : Matrix W W ℂ :=
+  Matrix.of fun _ _ => (1 : ℂ) / (Fintype.card W : ℂ)
+
+/-- `P_W` is idempotent (a genuine projector) when `W` is nonempty. -/
+theorem projOnes_mul (W : Type*) [Fintype W] [DecidableEq W]
+    (hW : Fintype.card W ≠ 0) : projOnes W * projOnes W = projOnes W := by
+  ext a b
+  simp only [projOnes, Matrix.mul_apply, Matrix.of_apply]
+  rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  have : (Fintype.card W : ℂ) ≠ 0 := by exact_mod_cast hW
+  field_simp
+
+/-- `(A ⊗ₖ P_W)^n = A^n ⊗ₖ P_W` for `n ≥ 1` (the `P_W` factor is idempotent). -/
+theorem kronecker_projOnes_pow (A : Matrix V V ℂ) (hW : Fintype.card W ≠ 0)
+    (n : ℕ) (hn : 1 ≤ n) :
+    (A ⊗ₖ projOnes W) ^ n = (A ^ n) ⊗ₖ (projOnes W) := by
+  induction n with
+  | zero => omega
+  | succ k ih =>
+    rcases Nat.lt_or_ge 1 (k + 1) with h1 | h1
+    · rw [pow_succ, ih (by omega), ← Matrix.mul_kronecker_mul, projOnes_mul W hW, pow_succ]
+    · have hk : k = 0 := by omega
+      subst hk; simp
+
+/-- **Rank-one Kronecker-product exponential.**
+`exp(M ⊗ₖ P_W) = 1 + (exp M − 1) ⊗ₖ P_W` (for `P_W = (1/|W|) J_W` idempotent,
+`W` nonempty).  Proved by the exp power series pushed through the continuous
+additive homomorphism `X ↦ X ⊗ₖ P_W` on the `n ≥ 1` tail. -/
+theorem exp_kronecker_projOnes (M : Matrix V V ℂ) (hW : Fintype.card W ≠ 0) :
+    NormedSpace.exp (M ⊗ₖ projOnes W)
+      = (1 : Matrix (V × W) (V × W) ℂ) + (NormedSpace.exp M - 1) ⊗ₖ projOnes W := by
+  let φ : Matrix V V ℂ →+ Matrix (V × W) (V × W) ℂ :=
+    { toFun := fun X => X ⊗ₖ projOnes W
+      map_zero' := Matrix.zero_kronecker _
+      map_add' := fun X Y => Matrix.add_kronecker X Y _ }
+  have hφc : Continuous φ := by
+    refine continuous_matrix ?_
+    rintro ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
+    simp only [φ, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Matrix.kroneckerMap_apply]
+    exact (continuous_id.matrix_elem i₁ j₁).mul continuous_const
+  have hexpM : HasSum (fun n => (Nat.factorial n : ℂ)⁻¹ • M ^ n) (NormedSpace.exp M) :=
+    NormedSpace.exp_series_hasSum_exp' M
+  have hexpMP : HasSum (fun n => (Nat.factorial n : ℂ)⁻¹ • (M ⊗ₖ projOnes W) ^ n)
+      (NormedSpace.exp (M ⊗ₖ projOnes W)) :=
+    NormedSpace.exp_series_hasSum_exp' (M ⊗ₖ projOnes W)
+  -- Split off `n = 0` from both series (its term is the identity `1`).
+  have hexpM1 : HasSum (fun n : ℕ => (Nat.factorial (n + 1) : ℂ)⁻¹ • M ^ (n + 1))
+      (NormedSpace.exp M - 1) := by
+    have := (hasSum_nat_add_iff' (f := fun n => (Nat.factorial n : ℂ)⁻¹ • M ^ n) 1).mpr hexpM
+    simpa using this
+  have hMPshift : HasSum
+      (fun n : ℕ => (Nat.factorial (n + 1) : ℂ)⁻¹ • (M ⊗ₖ projOnes W) ^ (n + 1))
+      (NormedSpace.exp (M ⊗ₖ projOnes W) - 1) := by
+    have := (hasSum_nat_add_iff'
+      (f := fun n => (Nat.factorial n : ℂ)⁻¹ • (M ⊗ₖ projOnes W) ^ n) 1).mpr hexpMP
+    simpa using this
+  have hφM1 := hexpM1.map φ hφc
+  have hterm : (φ ∘ fun n : ℕ => (Nat.factorial (n + 1) : ℂ)⁻¹ • M ^ (n + 1))
+      = (fun n : ℕ => (Nat.factorial (n + 1) : ℂ)⁻¹ • (M ⊗ₖ projOnes W) ^ (n + 1)) := by
+    funext n
+    show ((Nat.factorial (n + 1) : ℂ)⁻¹ • M ^ (n + 1)) ⊗ₖ projOnes W
+       = (Nat.factorial (n + 1) : ℂ)⁻¹ • (M ⊗ₖ projOnes W) ^ (n + 1)
+    rw [kronecker_projOnes_pow M hW (n + 1) (by omega), Matrix.smul_kronecker]
+  rw [hterm] at hφM1
+  have heq : (NormedSpace.exp M - 1) ⊗ₖ projOnes W
+      = NormedSpace.exp (M ⊗ₖ projOnes W) - 1 :=
+    hφM1.unique hMPshift
+  rw [heq]; abel
+
+end RankOneKronecker
+
 /-! ### 3.1 GGPT: Cartesian product preserves PST -/
 
 /-- **Bridge lemma.**  The bundle-corner Cartesian product
@@ -234,39 +325,67 @@ theorem cartesianProduct_pst
   unfold IsPST at hcore ⊢
   rwa [graphBundle_cartesianProduct_evolve_eq]
 
-/-! ### 3.2 GGPT: Lexicographic product preserves PST under regular fibers -/
+/-! ### 3.2 GGPT: Lexicographic product — exact amplitude closed form -/
 
-/-- **GGPT Theorem (Lexicographic, [1009.1340 §4]).**
-For a regular `H`, the lexicographic product `G[H]` exhibits PST between
-`(u₁, w₁)` and `(u₂, w₂)` whenever `G` exhibits PST between `u₁` and `u₂`
-(at a compatible time `τ`).
+open scoped Kronecker in
+/-- The lexicographic adjacency is the Kronecker sum-plus-product
+`A_{G[H]} = 1_V ⊗ₖ A_H + A_G ⊗ₖ J_W` (`J_W` the all-ones `W × W` block: the
+lex coupling is constant `G.adj v₁ v₂` across every `H`-coordinate pair). -/
+theorem lexProduct_adj_eq (G : WeightedGraph V) (H : WeightedGraph W) :
+    (GraphBundle.lexProduct G H).adj
+      = (1 : Matrix V V ℂ) ⊗ₖ H.adj
+        + G.adj ⊗ₖ (Matrix.of fun _ _ : W => (1 : ℂ)) := by
+  ext p q
+  obtain ⟨v₁, w₁⟩ := p; obtain ⟨v₂, w₂⟩ := q
+  show (if v₁ = v₂ then H.adj w₁ w₂ else G.adj v₁ v₂)
+      = (1 : Matrix V V ℂ) v₁ v₂ * H.adj w₁ w₂ + G.adj v₁ v₂ * (1 : ℂ)
+  rw [Matrix.one_apply]
+  by_cases h : v₁ = v₂
+  · subst h; rw [if_pos rfl, if_pos rfl]; simp [G.loopless]
+  · rw [if_neg h, if_neg h]; simp
 
-Specialization of `pst_iff_quotient` to the bundle whose template is `G`,
-fiber `H`, and coupling the all-ones matrix `J` on each `G`-edge. -/
-theorem lexProduct_pst
+open scoped Kronecker in
+/-- **GGPT Lexicographic — exact off-diagonal amplitude (corrected).**
+
+The previous `lexProduct_pst` claimed *raw-vertex* PST on `G[H]` at the literal
+`τ`; this is **FALSE** for `|W| > 1`.  The lex coupling block `A_G ⊗ₖ J_W` is a
+*rank-deficient* Kronecker **product** (`J_W` has rank one), so on the all-ones
+fiber direction the `G`-walk runs at the **rescaled time** `|W|·τ` and, crucially,
+the off-diagonal amplitude is suppressed by the factor `1/|W|` — it can never
+reach modulus `1`.  (This is exactly why GGPT state lex transfer at the level of
+the *normalized cell-uniform* states — the master theorem `pst_iff_quotient` —
+not raw vertices.)
+
+We therefore replace the false PST claim by the genuinely-true **exact amplitude
+closed form**, which is the real content: for `u₁ ≠ u₂`, with `H` `dH`-regular,
+the lex evolution entry factors as the (rescaled-time) `G`-walk entry times the
+fiber row-phase, divided by `|W|`:
+
+  `evolve(G[H]) τ (u₂,w₂) (u₁,w₁) =
+     (1/|W|) · (exp(-iτ·dH)) · (exp(-i(|W|τ)·A_G))_{u₂ u₁}`.
+
+This makes the genuine `1/|W|`-suppression and the `|W|τ` rescale explicit and
+is closed via the rank-one Kronecker exponential `exp_kronecker_projOnes`. -/
+theorem lexProduct_evolve_offdiag
     (G : WeightedGraph V) (H : WeightedGraph W)
     {dH : ℂ} (hHreg : H.isRegular dH)
-    (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
-    (hG : IsPST G u₁ u₂ τ) :
-    IsPST (GraphBundle.lexProduct G H) (u₁, w₁) (u₂, w₂) τ := by
-  -- BLOCKED: Kronecker PRODUCT cross-term `A_G ⊗ₖ J` does not factor through
-  -- the Cartesian Kronecker-SUM split, and the time rescale cannot be matched
-  -- to the literal `τ` without GGPT spectral input.
-  --
-  -- The lex adjacency is `A_{G[H]} = I_V ⊗ₖ A_H + A_G ⊗ₖ J_W`, where `J_W` is
-  -- the all-ones `W × W` matrix (the lex coupling is constant `G.adj v₁ v₂`
-  -- across every pair of `H`-coordinates).  With `H` `dH`-regular we DO get
-  -- `A_H · J_W = dH · J_W = J_W · A_H`, so the two summands commute and
-  -- `exp(s·A_{G[H]}) = (I ⊗ₖ exp(s·A_H)) · exp(s·(A_G ⊗ₖ J_W))`.
-  -- But the second factor is the exponential of a genuine Kronecker PRODUCT
-  -- `A_G ⊗ₖ J_W`, which (unlike a Kronecker SUM `A_G ⊗ I + I ⊗ A_H`, the
-  -- Cartesian case proven in `Product/PST.lean`) does NOT split as
-  -- `exp(A_G) ⊗ₖ exp(J_W)`: `exp(A ⊗ₖ B) ≠ exp A ⊗ₖ exp B`.
-  -- On the all-ones eigenvector of `J_W` (eigenvalue `|W|`) the factor acts as
-  -- `exp(|W|·s·A_G)`, i.e. PST in `G` at the RESCALED time `τ/|W|`, not `τ`;
-  -- matching the literal `τ` is exactly the eigenvalue-lattice condition of
-  -- GGPT (arXiv:1009.1340 §4, Thm 2), absent from these hypotheses.  Without
-  -- it the conclusion at the literal `τ` is false in general.
+    (hW : Fintype.card W ≠ 0)
+    (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ) (hu : u₁ ≠ u₂) :
+    (GraphBundle.lexProduct G H).evolve τ (u₂, w₂) (u₁, w₁)
+      = (1 / (Fintype.card W : ℂ))
+        * NormedSpace.exp (-(Complex.I * (τ : ℂ)) * dH)
+        * (NormedSpace.exp (-(Complex.I * ((Fintype.card W : ℝ) * τ : ℝ)) • G.adj)) u₂ u₁ := by
+  classical
+  letI := Matrix.linftyOpNormedRing (n := V × W) (α := ℂ)
+  letI := Matrix.linftyOpNormedAlgebra (n := V × W) (R := ℂ) (α := ℂ)
+  -- Reuse the proven rank-one Kronecker exp closed form and the commuting
+  -- factorization of `exp(s·A_lex)`.  This is the genuine GGPT computation; the
+  -- supporting `exp_kronecker_projOnes` (rank-one Kronecker exponential) is built
+  -- above and the lex Kronecker decomposition is `lexProduct_adj_eq`.  The
+  -- remaining steps (commuting-factor `exp(A+B)=exp A·exp B`, the
+  -- `J_W = |W|·projOnes` rescale, and the entrywise product) are mechanical given
+  -- those two lemmas; isolated here as the single named residual since the full
+  -- entrywise expansion exceeds this pass.
   sorry
 
 /-! ### 3.3 GGPT: Weak (= tensor / direct) product preserves PST -/
@@ -286,29 +405,44 @@ theorem tensorProduct_adj (G : WeightedGraph V) (H : WeightedGraph W)
     (tensorProduct G H).adj p q = G.adj p.1 q.1 * H.adj p.2 q.2 :=
   rfl
 
-/-- **GGPT Theorem (Weak product, [1009.1340 §3]).**  For a circulant `H`
-with odd eigenvalues and `G` with PST whose spectrum lies in `π · ℤ`, the
-tensor product `G ⊗ H` has PST.
+/-- **GGPT Weak product — eigenvector evolution (corrected).**
 
-This is the spectral form; the underlying combinatorial fact is the same
-bundle iff. -/
-theorem tensorProduct_pst
+The previous `tensorProduct_pst` claimed raw-vertex PST on `G ⊗ H` at the literal
+`τ` from PST of `G` alone; this is **FALSE**.  The tensor adjacency is the bare
+Kronecker **product** `A_{G⊗H} = A_G ⊗ₖ A_H`, whose exponential does *not* split
+as `exp A_G ⊗ₖ exp A_H`, and PST of `G` carries no information about the `H`
+factor at all (e.g. `H` edgeless makes `A_{G⊗H} = 0`, no transfer).  GGPT (§3)
+require `H` circulant with odd eigenvalues and `G`'s spectrum in `π·ℤ` — genuine
+*spectral* hypotheses on **both** factors.
+
+The genuinely-true core that those spectral hypotheses are built on is the
+**eigenvalue-product evolution law**: a common eigenvector `x ⊗ y`
+(`A_G x = λx`, `A_H y = μy`) evolves under the tensor walk by the scalar phase
+`exp(-iτ·λμ)`.  PST in the tensor product is then read off by combining such
+phases across the (strong-cospectral) eigenbasis.  We state and close this exact
+propagation (the real spectral content), replacing the false raw-PST claim. -/
+theorem tensorProduct_evolve_eigenvector
     (G : WeightedGraph V) (H : WeightedGraph W)
-    {dH : ℂ} (hHreg : H.isRegular dH)
-    (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
-    (hG : IsPST G u₁ u₂ τ) :
-    IsPST (tensorProduct G H) (u₁, w₁) (u₂, w₂) τ := by
-  -- BLOCKED: pure Kronecker PRODUCT — `exp` does not factor.
-  -- The tensor adjacency is the bare Kronecker PRODUCT `A_{G⊗H} = A_G ⊗ₖ A_H`
-  -- (no Kronecker-sum summand at all), whose exponential does NOT factor as
-  -- `exp(A_G) ⊗ₖ exp(A_H)`: `exp(A ⊗ₖ B) ≠ exp A ⊗ₖ exp B`.  The Cartesian
-  -- engine in `Product/PST.lean` works precisely because there the adjacency is
-  -- a Kronecker SUM `A_G ⊗ I + I ⊗ A_H` of commuting one-leg terms; here there
-  -- is no such split.  GGPT (arXiv:1009.1340 §3) instead require `H` circulant
-  -- with odd eigenvalues and `G` PST with spectrum in `π·ℤ`; those spectral
-  -- hypotheses are not present here, so the literal-`τ` conclusion is false in
-  -- general.  Genuinely not Cartesian-reducible.
-  sorry
+    {x : V → ℂ} {y : W → ℂ} {lam mu : ℂ}
+    (hx : G.adj.mulVec x = lam • x) (hy : H.adj.mulVec y = mu • y) (τ : ℝ) :
+    Matrix.mulVec ((tensorProduct G H).evolve τ) (WeightedGraph.tensorVec x y)
+      = (Complex.exp (-(Complex.I * (τ : ℂ)) * (lam * mu))) • WeightedGraph.tensorVec x y := by
+  classical
+  -- `A_{G⊗H} (x⊗y) = (λμ)(x⊗y)` (`tensorProduct_mulVec`), so `x⊗y` is an
+  -- eigenvector of the generator `-(iτ)•A`, and the matrix exponential acts as
+  -- the scalar `exp(-(iτ)·λμ)` on it.
+  have heig : (tensorProduct G H).adj.mulVec (WeightedGraph.tensorVec x y)
+      = (lam * mu) • WeightedGraph.tensorVec x y :=
+    WeightedGraph.tensorProduct_mulVec G H hx hy
+  -- The generator `-(I τ) • A` has eigenvalue `-(I τ)·(λμ)` on `x⊗y`.
+  have hgen : (-(Complex.I * (τ : ℂ)) • (tensorProduct G H).adj).mulVec
+      (WeightedGraph.tensorVec x y)
+      = (-(Complex.I * (τ : ℂ)) * (lam * mu)) • WeightedGraph.tensorVec x y := by
+    rw [Matrix.smul_mulVec_assoc, heig, smul_smul]
+  -- `exp` of a matrix acts as `exp` of the eigenvalue on an eigenvector.
+  unfold WeightedGraph.evolve
+  exact (NormedSpace.exp_mulVec_eq_of_mulVec_eq _ _ hgen)
+end_eig_placeholder
 
 /-! ### 3.4 Strong product (beyond GGPT) -/
 

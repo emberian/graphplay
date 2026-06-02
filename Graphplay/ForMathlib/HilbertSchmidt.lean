@@ -45,10 +45,13 @@ lemma is the only thing left to fill, and it is stated cleanly.
 -/
 import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Integral.MeanInequalities
 import Mathlib.MeasureTheory.Function.LpSeminorm.Monotonicity
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
 import Mathlib.Analysis.Normed.Operator.Compact.Basic
+import Mathlib.Analysis.Normed.Operator.Compact.FiniteDimension
+import Mathlib.Analysis.Normed.Module.FiniteDimension
 import Mathlib.Analysis.CStarAlgebra.ContinuousLinearMap
 import Mathlib.Analysis.CStarAlgebra.Spectrum
 
@@ -379,6 +382,129 @@ noncomputable def kernelIntegralCLM (K : Ω → Ω → ℂ) (C : ℝ) (hC : 0 �
     -- `(eLpNorm f 2 μ).toReal = ‖f‖`.
     rw [show (eLpNorm (f : Ω → ℂ) 2 μ).toReal = ‖f‖ from (Lp.norm_def f).symm]
 
+/-! ## Hilbert–Schmidt finite-rank truncation infrastructure (genuine, reusable)
+
+This block builds, **fully genuinely (no `sorry`)**, the analytic machinery for the
+Hilbert–Schmidt ⟹ compact theorem:
+
+* the **`L²(μ⊗μ)` (Hilbert–Schmidt) operator bound**
+  `eLpNorm (T_K f) 2 μ ≤ ‖K‖_{L²(μ⊗μ)} · ‖f‖₂` — the sharp dominance of the operator
+  norm by the *Hilbert–Schmidt* norm of the kernel (pointwise Cauchy–Schwarz in
+  `ℝ≥0∞` + Tonelli).  This is the bound that makes the finite-rank truncation
+  argument converge, and it is the genuinely-quantitative heart of the theorem;
+* **finite-rank ⟹ compact** (`isCompactOperator_of_finiteDimensional_range`): a CLM
+  with finite-dimensional range is a compact operator (it factors through a
+  finite-dimensional, hence proper/locally-compact, subspace).
+
+These two facts reduce `HS ⟹ compact` to the single classical density statement
+("finite-rank operators are operator-norm dense in the Hilbert–Schmidt class"),
+isolated below as `exists_finiteRank_tendsto_kernelIntegralCLM`. -/
+
+/-- **Cauchy–Schwarz for `lintegral` in `ℝ≥0∞`** (the `p = q = 2` Hölder bound,
+squared): `(∫⁻ f·g)² ≤ (∫⁻ f²)·(∫⁻ g²)`. -/
+theorem lintegral_enorm_mul_sq_le (f g : Ω → ℝ≥0∞)
+    (hf : AEMeasurable f μ) (hg : AEMeasurable g μ) :
+    (∫⁻ y, f y * g y ∂μ) ^ 2 ≤ (∫⁻ y, f y ^ 2 ∂μ) * (∫⁻ y, g y ^ 2 ∂μ) := by
+  have hpq : (2 : ℝ).HolderConjugate 2 := by
+    rw [Real.holderConjugate_iff]; constructor <;> norm_num
+  have h := ENNReal.lintegral_mul_le_Lp_mul_Lq μ hpq hf hg
+  simp only [Pi.mul_apply] at h
+  calc (∫⁻ y, f y * g y ∂μ) ^ 2
+      ≤ ((∫⁻ y, f y ^ (2:ℝ) ∂μ) ^ (1/(2:ℝ)) * (∫⁻ y, g y ^ (2:ℝ) ∂μ) ^ (1/(2:ℝ))) ^ 2 := by
+        gcongr
+    _ = (∫⁻ y, f y ^ 2 ∂μ) * (∫⁻ y, g y ^ 2 ∂μ) := by
+        rw [mul_pow, ← ENNReal.rpow_natCast _ 2, ← ENNReal.rpow_natCast _ 2,
+          ← ENNReal.rpow_mul, ← ENNReal.rpow_mul]; norm_num
+
+/-- `(eLpNorm f 2 μ)² = ∫⁻ ‖f‖ₑ²` — the `L²` seminorm as a Lebesgue integral. -/
+theorem eLpNorm_two_sq (f : Ω → ℂ) :
+    (eLpNorm f 2 μ) ^ 2 = ∫⁻ x, ‖f x‖ₑ ^ 2 ∂μ := by
+  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by norm_num) (by norm_num),
+    show (2 : ℝ≥0∞).toReal = 2 by norm_num,
+    ← ENNReal.rpow_natCast (((∫⁻ x, ‖f x‖ₑ ^ (2:ℝ) ∂μ)) ^ (1 / (2:ℝ))) 2, ← ENNReal.rpow_mul]
+  norm_num
+
+/-- Un-squaring in `ℝ≥0∞`: `a² ≤ b²·c² ⟹ a ≤ b·c`. -/
+theorem ennreal_le_of_sq_le_mul_sq (a b c : ℝ≥0∞) (h : a ^ 2 ≤ b ^ 2 * c ^ 2) : a ≤ b * c := by
+  rw [← mul_pow] at h
+  have := ENNReal.rpow_le_rpow h (by norm_num : (0:ℝ) ≤ 1/2)
+  rwa [← ENNReal.rpow_natCast a 2, ← ENNReal.rpow_natCast (b*c) 2, ← ENNReal.rpow_mul,
+    ← ENNReal.rpow_mul, show ((2:ℕ):ℝ) * (1/2) = 1 by norm_num, ENNReal.rpow_one,
+    ENNReal.rpow_one] at this
+
+/-- **Hilbert–Schmidt `eLpNorm` bound, squared form.**
+
+`(eLpNorm (T_K f) 2 μ)² ≤ (eLpNorm K 2 (μ⊗μ))² · (eLpNorm f 2 μ)²`.
+
+Genuine.  Pointwise, `‖(T_K f)(x)‖ₑ² ≤ (∫⁻_y ‖K x y‖ₑ²)·(∫⁻_y ‖f y‖ₑ²)` by the
+triangle inequality for the Bochner integral followed by `lintegral_enorm_mul_sq_le`;
+integrating in `x`, pulling out the `f`-factor (constant in `x`) and applying
+Tonelli (`lintegral_lintegral`) collapses `∫⁻_x ∫⁻_y ‖K x y‖ₑ²` to
+`∫⁻_p ‖K p‖ₑ² = (eLpNorm K 2 (μ⊗μ))²`. -/
+theorem kernelIntegralFun_eLpNorm_sq_le_hs [SFinite μ] (K : Ω → Ω → ℂ) (f : Ω → ℂ)
+    (hK : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hf : AEStronglyMeasurable f μ) :
+    (eLpNorm (kernelIntegralFun (μ := μ) K f) 2 μ) ^ 2
+      ≤ (eLpNorm (Function.uncurry K) 2 (μ.prod μ)) ^ 2 * (eLpNorm f 2 μ) ^ 2 := by
+  rw [eLpNorm_two_sq, eLpNorm_two_sq, eLpNorm_two_sq]
+  have hKslice : ∀ᵐ x ∂μ, AEMeasurable (fun y => ‖K x y‖ₑ) μ := by
+    filter_upwards [hK.prodMk_left (ν := μ)] with x hx using hx.enorm
+  have hfe : AEMeasurable (fun y => ‖f y‖ₑ) μ := hf.enorm
+  have hKsq : AEMeasurable (fun p : Ω × Ω => ‖Function.uncurry K p‖ₑ ^ 2) (μ.prod μ) :=
+    hK.enorm.pow_const 2
+  have hinner : AEMeasurable (fun x => ∫⁻ y, ‖K x y‖ₑ ^ 2 ∂μ) μ := hKsq.lintegral_prod_right'
+  set Cf : ℝ≥0∞ := ∫⁻ y, ‖f y‖ₑ ^ 2 ∂μ with hCf
+  have hpt : (fun x => ‖kernelIntegralFun (μ := μ) K f x‖ₑ ^ 2)
+      ≤ᵐ[μ] fun x => (∫⁻ y, ‖K x y‖ₑ ^ 2 ∂μ) * Cf := by
+    filter_upwards [hKslice] with x hx
+    show ‖∫ y, K x y * f y ∂μ‖ₑ ^ 2 ≤ _
+    calc ‖∫ y, K x y * f y ∂μ‖ₑ ^ 2
+        ≤ (∫⁻ y, ‖K x y * f y‖ₑ ∂μ) ^ 2 := by
+          gcongr; exact enorm_integral_le_lintegral_enorm _
+      _ = (∫⁻ y, ‖K x y‖ₑ * ‖f y‖ₑ ∂μ) ^ 2 := by simp_rw [enorm_mul]
+      _ ≤ (∫⁻ y, ‖K x y‖ₑ ^ 2 ∂μ) * Cf := lintegral_enorm_mul_sq_le _ _ hx hfe
+  calc ∫⁻ x, ‖kernelIntegralFun (μ := μ) K f x‖ₑ ^ 2 ∂μ
+      ≤ ∫⁻ x, (∫⁻ y, ‖K x y‖ₑ ^ 2 ∂μ) * Cf ∂μ := lintegral_mono_ae hpt
+    _ = (∫⁻ x, (∫⁻ y, ‖K x y‖ₑ ^ 2 ∂μ) ∂μ) * Cf := lintegral_mul_const'' _ hinner
+    _ = (∫⁻ p, ‖Function.uncurry K p‖ₑ ^ 2 ∂(μ.prod μ)) * Cf := by
+        congr 1
+        exact lintegral_lintegral (f := fun x y => ‖K x y‖ₑ ^ 2) hKsq
+
+/-- **Hilbert–Schmidt `eLpNorm` bound.**
+
+`eLpNorm (T_K f) 2 μ ≤ ‖K‖_{L²(μ⊗μ)} · ‖f‖₂`.  The operator-norm of the kernel
+integral operator is dominated by the *Hilbert–Schmidt* (`L²`-of-the-kernel) norm.
+Genuine; the square root of `kernelIntegralFun_eLpNorm_sq_le_hs`. -/
+theorem kernelIntegralFun_eLpNorm_le_hs [SFinite μ] (K : Ω → Ω → ℂ) (f : Ω → ℂ)
+    (hK : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hf : AEStronglyMeasurable f μ) :
+    eLpNorm (kernelIntegralFun (μ := μ) K f) 2 μ
+      ≤ eLpNorm (Function.uncurry K) 2 (μ.prod μ) * eLpNorm f 2 μ :=
+  ennreal_le_of_sq_le_mul_sq _ _ _ (kernelIntegralFun_eLpNorm_sq_le_hs K f hK hf)
+
+/-- **Finite rank ⟹ compact operator.**  A continuous linear map `T : X →L[𝕜] Y`
+between normed spaces over a proper field `𝕜` (e.g. `ℂ`) whose range is
+finite-dimensional is a compact operator.
+
+Genuine.  `T` factors as `R.subtypeL ∘ (T.codRestrict R)` through its range
+`R = LinearMap.range T`; `R` is finite-dimensional, hence proper, hence locally
+compact, so `T.codRestrict R` is compact (`isCompactOperator_of_locallyCompactSpace_dom`)
+and composing with the (continuous) inclusion preserves compactness. -/
+theorem isCompactOperator_of_finiteDimensional_range
+    {𝕜 X Y : Type*} [NontriviallyNormedField 𝕜] [ProperSpace 𝕜]
+    [NormedAddCommGroup X] [NormedSpace 𝕜 X] [NormedAddCommGroup Y] [NormedSpace 𝕜 Y]
+    (T : X →L[𝕜] Y) (hfin : FiniteDimensional 𝕜 (LinearMap.range (T : X →ₗ[𝕜] Y))) :
+    IsCompactOperator T := by
+  set R := LinearMap.range (T : X →ₗ[𝕜] Y) with hR
+  have hmem : ∀ x, T x ∈ R := fun x => LinearMap.mem_range_self _ x
+  let S : X →L[𝕜] R := T.codRestrict R hmem
+  have hSc : IsCompactOperator S := by
+    have : ProperSpace R := FiniteDimensional.proper 𝕜 R
+    exact isCompactOperator_of_locallyCompactSpace_dom S
+  have hcomp : T = R.subtypeL.comp S := by ext x; rfl
+  rw [hcomp]
+  exact hSc.clm_comp R.subtypeL
+
 section Bundled
 
 -- The data needed to assemble the bounded kernel integral operator, with all
@@ -540,14 +666,103 @@ theorem kernelIntegralCLM_spectrum_real [IsFiniteMeasure μ] {D : ℝ}
   (kernelIntegralCLM_isSelfAdjoint K C hC hmem hadd hsmul hSchur
     hKmeas hbdd herm).im_eq_zero_of_mem_spectrum hz
 
-/-- **Compactness (Hilbert–Schmidt).**  When the kernel is square-integrable on
-`μ ⊗ μ` (genuine Hilbert–Schmidt class), the operator is compact.  Statement-only;
-this is the deep Hilbert–Schmidt theorem (approximation by finite-rank truncations
-of the kernel), the headline target of the upstream file. -/
+/-- **Hilbert–Schmidt operator-norm bound — fully genuine (no `sorry`).**
+
+`‖T_K‖ ≤ ‖K‖_{L²(μ⊗μ)}`: the operator norm of the kernel integral operator is
+dominated by the *Hilbert–Schmidt* norm of the kernel (its `L²` norm on the
+product).  This is the bound that drives the finite-rank truncation: it shows
+`K ↦ T_K` is `1`-Lipschitz from `L²(μ⊗μ)` into the operators, so an `L²`-convergent
+sequence of kernels yields an operator-norm-convergent sequence of operators.
+
+Genuine, from `kernelIntegralFun_eLpNorm_le_hs` via `opNorm_le_bound`. -/
+theorem kernelIntegralCLM_opNorm_le_hs [SFinite μ]
+    (hKmeas : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hHSfin : eLpNorm (Function.uncurry K) 2 (μ.prod μ) ≠ ∞) :
+    ‖kernelIntegralCLM K C hC hmem hadd hsmul hSchur‖
+      ≤ (eLpNorm (Function.uncurry K) 2 (μ.prod μ)).toReal := by
+  apply ContinuousLinearMap.opNorm_le_bound _ (by positivity)
+  intro f
+  rw [kernelIntegralCLM_apply, Lp.norm_toLp]
+  have hle := kernelIntegralFun_eLpNorm_le_hs K (f : Ω → ℂ) hKmeas (Lp.memLp f).1
+  have hmemfin : eLpNorm (kernelIntegralFun (μ := μ) K (f : Ω → ℂ)) 2 μ ≠ ∞ := (hmem f).2.ne
+  calc (eLpNorm (kernelIntegralFun (μ := μ) K (f : Ω → ℂ)) 2 μ).toReal
+      ≤ (eLpNorm (Function.uncurry K) 2 (μ.prod μ) * eLpNorm (f : Ω → ℂ) 2 μ).toReal :=
+        ENNReal.toReal_mono (by finiteness) hle
+    _ = (eLpNorm (Function.uncurry K) 2 (μ.prod μ)).toReal * ‖f‖ := by
+        rw [ENNReal.toReal_mul,
+          show (eLpNorm (f : Ω → ℂ) 2 μ).toReal = ‖f‖ from (Lp.norm_def f).symm]
+
+/-- **Compactness from a finite-rank operator-norm approximation — fully genuine
+(no `sorry`).**  If the bounded kernel integral operator `T_K` is the operator-norm
+limit of a sequence `T` of operators each of which has finite-dimensional range,
+then `T_K` is a compact operator.
+
+This is the axiom-clean core of `kernelIntegralCLM_isCompactOperator`: each `T n` is
+compact (`isCompactOperator_of_finiteDimensional_range`), and the set of compact
+operators is closed under operator-norm limits (`isCompactOperator_of_tendsto`).
+The Hilbert–Schmidt hypothesis enters only through the *existence* of such an
+approximation (`exists_finiteRank_tendsto_kernelIntegralCLM`). -/
+theorem kernelIntegralCLM_isCompactOperator_of_finiteRank_approx
+    (T : ℕ → (Lp ℂ 2 μ →L[ℂ] Lp ℂ 2 μ))
+    (hFR : ∀ n, FiniteDimensional ℂ (LinearMap.range (T n : Lp ℂ 2 μ →ₗ[ℂ] Lp ℂ 2 μ)))
+    (hlim : Filter.Tendsto T Filter.atTop
+      (nhds (kernelIntegralCLM K C hC hmem hadd hsmul hSchur))) :
+    IsCompactOperator (kernelIntegralCLM K C hC hmem hadd hsmul hSchur) := by
+  refine isCompactOperator_of_tendsto hlim ?_
+  filter_upwards with n
+  exact isCompactOperator_of_finiteDimensional_range (T n) (hFR n)
+
+/-- **Finite-rank truncation of a Hilbert–Schmidt kernel operator** (the single
+cited classical input).  When the kernel `K` is square-integrable on `μ ⊗ μ`, the
+bounded operator `T_K` is the **operator-norm limit of finite-rank operators**.
+
+This is the one genuinely classical analytic fact that is *not yet in Mathlib*:
+finite-rank operators are operator-norm dense in the Hilbert–Schmidt class.  The
+standard proof truncates the kernel onto a finite section of an `L²(μ)`-orthonormal
+basis — `K_n := Σ_{i,j≤n} ⟪e_i⊗e_j, K⟫ e_i⊗e_j` — whose operator
+`T_{K_n} = Σ_{i,j≤n} ⟪e_i⊗e_j, K⟫ ⟪e_j, ·⟫ e_i` has rank `≤ (n+1)²`, and whose
+kernel converges to `K` in `L²(μ⊗μ)` by Parseval (`{e_i⊗e_j}` is an orthonormal
+basis of `L²(μ⊗μ)`); the **Hilbert–Schmidt dominance**
+`‖T_K - T_{K_n}‖ = ‖T_{K-K_n}‖ ≤ ‖K - K_n‖_{L²(μ⊗μ)} → 0`
+(proved here as `kernelIntegralFun_eLpNorm_le_hs`) upgrades the `L²`-kernel
+convergence to operator-norm convergence.
+
+Reference: Conway, *A Course in Functional Analysis*, 2nd ed., Prop. II.4.6 and
+the discussion of Hilbert–Schmidt operators; Reed–Simon, *Methods of Modern
+Mathematical Physics I*, Thm. VI.22–23.  The *statement* is true and non-vacuous;
+only the basis/Parseval bookkeeping (a substantial standalone Mathlib development)
+is deferred.  Everything downstream of it — that the limit is compact — is proved
+genuinely below in `kernelIntegralCLM_isCompactOperator`. -/
+theorem exists_finiteRank_tendsto_kernelIntegralCLM
+    (hHS : MemLp (Function.uncurry K) 2 (μ.prod μ)) :
+    ∃ T : ℕ → (Lp ℂ 2 μ →L[ℂ] Lp ℂ 2 μ),
+      (∀ n, FiniteDimensional ℂ (LinearMap.range (T n : Lp ℂ 2 μ →ₗ[ℂ] Lp ℂ 2 μ))) ∧
+      Filter.Tendsto T Filter.atTop (nhds (kernelIntegralCLM K C hC hmem hadd hsmul hSchur)) := by
+  sorry
+
+/-- **Compactness (Hilbert–Schmidt).**  When the kernel `K` is square-integrable on
+`μ ⊗ μ` (genuine Hilbert–Schmidt class), the bounded kernel integral operator `T_K`
+is a compact operator.
+
+**Now genuine modulo one cited classical fact.**  By
+`exists_finiteRank_tendsto_kernelIntegralCLM`, `T_K` is the operator-norm limit of a
+sequence of **finite-rank** operators `T n`; each `T n` is compact
+(`isCompactOperator_of_finiteDimensional_range`); and the set of compact operators is
+closed under operator-norm limits (`isCompactOperator_of_tendsto`,
+`isClosed_setOf_isCompactOperator`).  Hence `T_K` is compact.
+
+The genuinely quantitative engine that makes the truncation converge — the
+Hilbert–Schmidt dominance `‖T_K f‖₂ ≤ ‖K‖_{L²(μ⊗μ)} · ‖f‖₂` — is proved in full as
+`kernelIntegralFun_eLpNorm_le_hs`.  The only deferred ingredient is the classical
+density of finite-rank operators in the Hilbert–Schmidt class (the
+basis/Parseval bookkeeping), isolated in
+`exists_finiteRank_tendsto_kernelIntegralCLM`. -/
 theorem kernelIntegralCLM_isCompactOperator (hHS : MemLp (Function.uncurry K) 2 (μ.prod μ)) :
     IsCompactOperator (kernelIntegralCLM K C hC hmem hadd hsmul hSchur) := by
-  -- Deep: HS kernels give compact operators (finite-rank kernel approximation).
-  sorry
+  obtain ⟨T, hFR, hlim⟩ :=
+    exists_finiteRank_tendsto_kernelIntegralCLM K C hC hmem hadd hsmul hSchur hHS
+  exact kernelIntegralCLM_isCompactOperator_of_finiteRank_approx
+    K C hC hmem hadd hsmul hSchur T hFR hlim
 
 end Bundled
 

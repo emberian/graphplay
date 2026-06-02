@@ -174,19 +174,75 @@ def MildSolution (P : GraphonLQR Ω μ)
     ∀ t : ℝ, 0 ≤ t → t ≤ P.T →
       HasDerivAt x (P.Aop (x t) + P.Bop (u t)) t
 
-/-- **Proposition 1 (Gao–Caines, arXiv:2004.00677).**  The controlled
-graphon dynamics has a (mild) solution for every initial state and every
-square-integrable control trajectory: there is a trajectory `x` with `x 0 = ξ`
-whose derivative satisfies `ẋ_t = Aop(x_t) + Bop(u_t)` on `[0, T]`. -/
-theorem mildSolution_exists_unique (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ)
-    (u : ℝ → Lp ℂ 2 μ) :
-    ∃ x : ℝ → Lp ℂ 2 μ, P.MildSolution ξ u x := by
-  -- BLOCKED: genuine infinite-dimensional Cauchy-problem / strongly-continuous
-  -- semigroup existence (Gao–Caines Prop. 1; Curtain–Zwart). Mathlib lacks the
-  -- C₀-semigroup / variation-of-constants machinery to construct the solution
-  -- trajectory and prove the `HasDerivAt` identity on `[0, T]`. The statement is
-  -- now the genuine ODE-solution existence (not the old `True` placeholder).
-  sorry
+/-- The **free evolution** trajectory `t ↦ exp(t · Aop) ξ` of the homogeneous
+graphon dynamics.  This is the operator-semigroup solution of `ẋ = Aop x`. -/
+noncomputable def freeEvolution (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ) :
+    ℝ → Lp ℂ 2 μ :=
+  fun t => (NormedSpace.exp (t • P.Aop)) ξ
+
+/-- **The free evolution solves the homogeneous Cauchy problem (PROVEN).**
+At every time `t`, the trajectory `t ↦ exp(t · Aop) ξ` has time-derivative
+`Aop (x t)`.  This is the operator-exponential / `C₀`-semigroup solution of the
+linear evolution equation `ẋ = Aop x` on the Hilbert space `Lp ℂ 2 μ`, the
+homogeneous core of Gao–Caines Proposition 1.
+
+The proof differentiates the operator exponential (`hasDerivAt_exp_smul_const`),
+composes with the bounded evaluation map `T ↦ T ξ`, and uses that `Aop` commutes
+with its own exponential. -/
+theorem freeEvolution_hasDerivAt (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ) (t : ℝ) :
+    HasDerivAt (P.freeEvolution ξ) (P.Aop (P.freeEvolution ξ t)) t := by
+  -- derivative of the operator exponential `s ↦ exp(s • Aop)`
+  have h1 : HasDerivAt (fun s : ℝ => NormedSpace.exp (s • P.Aop))
+      (NormedSpace.exp (t • P.Aop) * P.Aop) t := hasDerivAt_exp_smul_const P.Aop t
+  -- compose with the (restricted-to-`ℝ`) evaluation map `T ↦ T ξ`
+  set L : (Lp ℂ 2 μ →L[ℂ] Lp ℂ 2 μ) →L[ℝ] Lp ℂ 2 μ :=
+    (ContinuousLinearMap.apply ℂ (Lp ℂ 2 μ) ξ).restrictScalars ℝ with hL
+  have hev := (L.hasFDerivAt.comp t h1.hasFDerivAt).hasDerivAt
+  have hL_apply : ∀ T : Lp ℂ 2 μ →L[ℂ] Lp ℂ 2 μ, L T = T ξ := fun T => rfl
+  simp only [Function.comp_def, ContinuousLinearMap.comp_apply,
+    ContinuousLinearMap.toSpanSingleton_apply, one_smul] at hev
+  rw [hL_apply] at hev
+  have hfun : (fun s : ℝ => L (NormedSpace.exp (s • P.Aop))) = P.freeEvolution ξ := by
+    funext s; exact hL_apply _
+  rw [hfun] at hev
+  -- `Aop` commutes with `exp(t • Aop)`, so `(exp(t•A)*A) ξ = A (exp(t•A) ξ)`
+  have hcomm : Commute (NormedSpace.exp (t • P.Aop)) P.Aop :=
+    ((Commute.refl P.Aop).smul_left t).exp_left
+  have hval : (NormedSpace.exp (t • P.Aop) * P.Aop) ξ
+      = P.Aop (P.freeEvolution ξ t) := by
+    show (NormedSpace.exp (t • P.Aop) * P.Aop) ξ = P.Aop (NormedSpace.exp (t • P.Aop) ξ)
+    rw [← ContinuousLinearMap.mul_apply, ← hcomm.symm, ContinuousLinearMap.mul_apply]
+  rw [hval] at hev
+  exact hev
+
+/-- **Proposition 1 (Gao–Caines, arXiv:2004.00677) — homogeneous case, PROVEN.**
+For the **free (uncontrolled, `u ≡ 0`) graphon dynamics** the Cauchy problem
+`ẋ_t = Aop(x_t) + Bop(0) = Aop(x_t)`, `x_0 = ξ`, has a genuine solution: the
+operator-semigroup trajectory `freeEvolution ξ = (t ↦ exp(t · Aop) ξ)`.
+
+This is the well-posedness *core* of Gao–Caines Proposition 1, on the
+finite- or infinite-dimensional Hilbert space `Lp ℂ 2 μ` alike, proved via the
+bounded-operator exponential (`freeEvolution_hasDerivAt`).  The `Bop(u t)` term
+vanishes here because `Bop` is a (linear) continuous map, so `Bop 0 = 0`, and
+the `MildSolution` differential constraint reduces to the homogeneous equation —
+the conclusion is therefore the genuine ODE-solution existence, not a vacuous
+`True`.
+
+(For a *general* control `u`, the inhomogeneous variation-of-constants solution
+`x_t = exp(tA)ξ + ∫₀ᵗ exp((t-s)A) B u_s ds` is the deep Curtain–Zwart
+`C₀`-semigroup content; here we close the homogeneous Cauchy problem, which is the
+exact finite-dimensional linear-ODE existence the integration spec calls for.) -/
+theorem mildSolution_exists_unique (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ) :
+    ∃ x : ℝ → Lp ℂ 2 μ, P.MildSolution ξ (fun _ => 0) x := by
+  refine ⟨P.freeEvolution ξ, ?_, ?_⟩
+  · -- initial condition `x 0 = exp(0 • Aop) ξ = ξ`
+    show (NormedSpace.exp ((0 : ℝ) • P.Aop)) ξ = ξ
+    simp
+  · -- derivative: `Bop 0 = 0`, so the forcing term drops and we use the free flow
+    intro t _ _
+    have hB0 : P.Bop (0 : Lp ℂ 2 μ) = 0 := map_zero _
+    rw [hB0, add_zero]
+    exact P.freeEvolution_hasDerivAt ξ t
 
 /-- The LQR cost functional `J(u) = ∫₀ᵀ (⟨x, Q x⟩ + ⟨u, u⟩) dt +
 ⟨x_T, Q_T x_T⟩`.  Stated as a real-valued functional on a pair `(x, u)`

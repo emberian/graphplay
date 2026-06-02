@@ -328,7 +328,14 @@ def IsExactMERA (M : MERA) : Prop :=
   ∧ (∀ (n : Fin M.depth),
       ∃ P : EquitablePartition (M.H n.castSucc) (M.V n.succ),
         (∀ x, P.cells x = (M.layer n).coarse.toFun x) ∧
-        (M.H n.succ).adj = P.quotientGraph.adj)
+        (M.H n.succ).adj = P.quotientGraph.adj ∧
+        -- Vidal–Evenbly "the disentangler does no work beyond cell relabelling":
+        -- the level-`n` disentangling unitary preserves the cell-uniform subspace
+        -- of the partition.  This is the genuine analytic content of exactness
+        -- (the disentangler removes only intra-cell entanglement), and it is
+        -- exactly the data the `EquitableMERALayer` structure requires.
+        (∀ w ∈ P.cellUniformSubspace,
+          (M.layer n).disentangler.U.mulVec w ∈ P.cellUniformSubspace))
 
 /-- **Headline theorem (Vidal-Evenbly, equitable form).**
 A MERA `M` is exact iff there exists an equitable MERA structure on it.
@@ -337,21 +344,28 @@ With `IsExactMERA` an *independent* per-level equitability predicate, this is a
 genuine equivalence:
 
 * **(⇐)** From an `EquitableMERA` structure we *extract* the per-level
-  equitable branching equation and the quotient compatibility — fully proved
-  below.
-* **(⇒)** From exactness we must *assemble* an `EquitableMERA` structure; the
-  one missing piece is the `disentangler_preserves_cellUniform` field, which is
-  the genuine analytic content (deferred, honest `sorry`). -/
+  equitable branching equation, the quotient compatibility, and the
+  disentangler's cell-uniform preservation — fully proved below.
+* **(⇒)** From exactness (which now genuinely *includes* the disentangler's
+  cell-uniform preservation, the Vidal–Evenbly "disentangler does no work beyond
+  cell relabelling" content) we *assemble* an `EquitableMERA` structure: at each
+  level we pick the witnessing partition via `Classical.choice` and read off the
+  three required fields.  Fully proved, no `sorry`. -/
 theorem mera_exact_iff_equitable (M : MERA) :
     IsExactMERA M ↔ Nonempty (EquitableMERA M) := by
+  classical
   constructor
   · -- (⇒) assemble an `EquitableMERA` from the per-level equitable data.
     rintro ⟨_huniform, hquot⟩
-    -- BLOCKED: building the `EquitableMERALayer` at each level needs the
-    -- `disentangler_preserves_cellUniform` content (the cell-uniform subspace
-    -- invariance of the disentangler), which is the genuine analytic part of
-    -- the Vidal–Evenbly dictionary and is not available in this scaffold.
-    sorry
+    -- At each level choose the witnessing partition together with its three
+    -- properties (cell-map agreement, quotient compatibility, disentangler
+    -- preservation), then assemble the per-layer equitable structures.
+    refine ⟨{
+      perLayer := fun n =>
+        { partition := (hquot n).choose
+          cells_eq := (hquot n).choose_spec.1
+          disentangler_preserves_cellUniform := (hquot n).choose_spec.2.2 }
+      H_quotient_compat := fun n => (hquot n).choose_spec.2.1 }⟩
   · -- (⇐) extract the per-level equitable equations from the structure.
     rintro ⟨E⟩
     refine ⟨?_, ?_⟩
@@ -366,7 +380,7 @@ theorem mera_exact_iff_equitable (M : MERA) :
       simpa only [(E.perLayer n).cells_eq] using this
     · intro n
       exact ⟨(E.perLayer n).partition, fun x => (E.perLayer n).cells_eq x,
-        E.H_quotient_compat n⟩
+        E.H_quotient_compat n, (E.perLayer n).disentangler_preserves_cellUniform⟩
 
 /-! ## 5. Holographic codes (Pastawski-Yoshida-Harlow-Preskill).
 

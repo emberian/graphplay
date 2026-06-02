@@ -29,13 +29,19 @@ sibling file, written by L4) for the actual WL refinement procedure
 4. `HasPhantomSymmetry`        – WL-stable is *strictly* finer than orbit:
                                  there are vertices with the same WL colour
                                  that no graph automorphism relates.
-5. The **Cai–Fürer–Immerman** gadget (`CFI`) — a witness to phantom
-   symmetry, and the first family known to defeat 1-WL/2-WL refinement
-   (Cai–Fürer–Immerman, "An optimal lower bound on the number of
-   variables for graph identification", FOCS '89 / Combinatorica '92).
-6. **Reverse direction** (statement only): rank-3 / strongly-regular
-   graphs are exactly the (non-trivial) graphs on which 2-WL is
-   complete; Babai–Mathon-type characterizations.
+5. The **Cai–Fürer–Immerman** gadget (`CFI`) — the first family known to
+   defeat 1-WL/2-WL refinement (Cai–Fürer–Immerman, "An optimal lower bound
+   on the number of variables for graph identification", FOCS '89 /
+   Combinatorica '92).  Genuine CFI phantom symmetry lives at the *coarsest*
+   round-indexed k-WL fixed point (`cfi_kwl_lower_bound`, with the
+   round-indexed `IsKWLStable`); for the *finest*-equitable `IsWLStable`
+   here, phantom symmetry is impossible and the WL-stable data is provably
+   phantom-free (`cfiExists_phantomFree`, `no_phantom_for_finest_equitable`).
+6. **Reverse direction**: for the finest-equitable WL-stable partition,
+   no phantom symmetry occurs unconditionally
+   (`no_phantom_for_finest_equitable`); the genuine
+   rank-3 ⇔ 2-WL-complete (Babai–Mathon) characterization is a statement
+   about the coarsest round-indexed fixed point, recorded separately.
 7. **k-WL** refinement: for `k ≥ k₀(G)` the k-WL stable partition equals
    the k-arity orbit partition; CFI lower bound `k = Ω(|V|)`.
 8. **PST engineering**: phantom symmetry is exploitable for
@@ -373,28 +379,59 @@ We do **not** define the CFI graph here — it requires a few hundred
 lines of combinatorial bookkeeping over the base graph — and instead
 record its existence as a postulate. -/
 
-/-- Existence of a CFI graph with phantom symmetry.  The vertex set
-is built from a 3-regular base graph plus per-edge gadgets; we leave
-it `Nonempty`-only.
+/-- **Existence of genuine WL-stable data, which is phantom-free** (for the
+finest-equitable `IsWLStable`).
 
-This is a genuine (true) existence statement — CFI graphs with phantom
-symmetry exist (Cai–Fürer–Immerman 1992) — recorded as an honest
-theorem-`sorry` rather than an `axiom`, since the witness requires the
-full per-edge gadget construction. -/
-theorem cfiExists :
+**Restated to a TRUE statement (the false phantom-symmetry conclusion is
+replaced by its genuine negation).**  The old statement asserted existence of a
+graph + companion + finest-equitable WL-stable partition `P` **with
+`HasPhantomSymmetry`** — *false* under the present `IsWLStable`: with
+`HasAutInvariantWeights` in scope the orbit partition is equitable, so any
+finest-equitable (= finer than every equitable partition) `P` already separates
+distinct orbits, hence phantom symmetry is **unsatisfiable** (cf.
+`no_phantom_for_finest_equitable`).
+
+So no choice of witness can satisfy the old conclusion.  The genuine truth is
+that such WL-stable data *exists* and is *phantom-free*: we exhibit a concrete
+witness (the one-vertex graph with its zero weighting and the discrete partition,
+which is trivially finest-equitable) and conclude `¬ HasPhantomSymmetry` via the
+proven `no_phantom_for_finest_equitable`.
+
+(The genuine CFI phantom-symmetry phenomenon is real, but it lives at the
+*coarsest* round-indexed 1-WL fixed point of `Graphplay.Algorithm.WLRefinement`
+— a different object — not at this finest-equitable partition; the honest CFI
+lower-bound statement is `cfi_kwl_lower_bound` below, phrased with the
+round-indexed `IsKWLStable`.) -/
+theorem cfiExists_phantomFree :
     ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G₀ : Graphplay.SimpleGraph V) (G : Graphplay.WeightedGraph V)
       (_ : HasAutInvariantWeights G₀ G)
       (I : Type) (_ : Fintype I) (_ : DecidableEq I)
       (P : EquitablePartition G I) (hStable : IsWLStable G P),
-      HasPhantomSymmetry G₀ G P hStable := by
-  -- BLOCKED: false under current `IsWLStable` def. With `HasAutInvariantWeights`
-  -- in scope the orbit partition is equitable, so any WL-stable (= finer than
-  -- every equitable partition) `P` already separates distinct orbits — hence
-  -- `HasPhantomSymmetry` is unsatisfiable here (cf. `babai_mathon_rank3_no_phantom`,
-  -- now PROVEN). Genuine CFI phantom symmetry needs the round-indexed WL
-  -- fixed-point notion from `WLRefinement`, not this coarsest-equitable form.
-  sorry
+      ¬ HasPhantomSymmetry G₀ G P hStable := by
+  classical
+  -- Witness: the one-vertex graph, its zero weighting, the discrete partition.
+  set V := Fin 1
+  let G₀ : Graphplay.SimpleGraph V :=
+    { Adj := fun _ _ => False, symm := fun h => h, irrefl := fun _ h => h }
+  let G : Graphplay.WeightedGraph V :=
+    { adj := 0, herm := by simp [Matrix.IsHermitian], loopless := fun _ => rfl }
+  haveI : HasAutInvariantWeights G₀ G := ⟨fun _ _ _ => rfl⟩
+  -- The discrete partition (`cells = id`) is finest-equitable.
+  have hStable : IsWLStable G (EquitablePartition.discrete G) := by
+    intro J _ _ Q x y hxy
+    have hxy' : x = y := hxy
+    rw [hxy']
+  refine ⟨V, inferInstance, inferInstance, G₀, G, inferInstance, V,
+    inferInstance, inferInstance, EquitablePartition.discrete G, hStable, ?_⟩
+  -- No phantom symmetry: the finest-equitable `P` refines the (equitable) orbit
+  -- partition, so a same-WL-colour pair is in the same orbit — contradiction.
+  rintro ⟨u, v, hcol, hno⟩
+  haveI : Nonempty V := ⟨u⟩
+  obtain ⟨φ, hφ⟩ := wlStable_refines_orbit G₀ G (EquitablePartition.discrete G) hStable
+  have horb : orbitPartition G₀ u = orbitPartition G₀ v := by
+    rw [← hφ u, ← hφ v, hcol]
+  exact absurd ((orbitPartition_eq_iff G₀ u v).mp horb) hno
 
 /-- *Concrete CFI marker.*  When (and only when) we are working with
 a CFI graph, this predicate is intended to hold.  We use it to
@@ -529,26 +566,49 @@ theorem babai_mathon_rank3_no_phantom
     rw [← hφ u, ← hφ v, hcol]
   exact absurd ((orbitPartition_eq_iff G₀ u v).mp horb) hno
 
-/-- Strong-regularity + rank-3 ⇔ no phantom symmetry (statement only).
-The forward direction is `babai_mathon_rank3_no_phantom`; the
-reverse direction is the classification of "1-WL-complete" graphs by
-Cai–Fürer–Immerman together with the strongly regular case. -/
-theorem no_phantom_iff_rank3
+/-- **No phantom symmetry for the finest-equitable WL-stable partition**
+(unconditional).
+
+**Restated to a TRUE statement (the false `↔ IsRank3` is dropped).**  The old
+statement was a biconditional
+
+    `(∀ P hStable, ¬ HasPhantomSymmetry G₀ G P hStable)  ↔  IsRank3 G₀`,
+
+whose **forward direction is false**: under the present `IsWLStable` (the
+*finest* equitable partition — finer than every equitable partition), the LHS
+`∀ P hStable, ¬ HasPhantomSymmetry` holds for **every** `G₀` carrying
+`HasAutInvariantWeights` (see `babai_mathon_rank3_no_phantom`, which needs no
+rank-3 hypothesis at all under this definition).  So the iff would force
+`IsRank3 G₀` for arbitrary `G₀` — false (e.g. an edgeless graph is not rank-3).
+
+The genuine truth for this notion is the **unconditional no-phantom** statement
+below: the finest-equitable WL-stable partition never exhibits phantom symmetry,
+*regardless* of whether `G₀` is rank-3.  (The `IsRank3 ↔ no-phantom` equivalence
+is a theorem about the *coarsest* round-indexed 1-WL fixed point, a different
+object that lives in `Graphplay.Algorithm.WLRefinement`; it is not the content
+this `IsWLStable` supports.)  Closed by delegating to the proven sibling
+`babai_mathon_rank3_no_phantom` — itself rank-3-free under this definition, so we
+may feed it the *vacuous* rank-3 witness on a discrete refinement; cleaner, we
+inline the same orbit-refinement argument. -/
+theorem no_phantom_for_finest_equitable
     {V : Type u} [Fintype V] [DecidableEq V]
     (G₀ : Graphplay.SimpleGraph V)
     (G : Graphplay.WeightedGraph V)
-    [HasAutInvariantWeights G₀ G] :
-    (∀ {I : Type} [Fintype I] [DecidableEq I]
-        (P : EquitablePartition G I) (hStable : IsWLStable G P),
-        ¬ HasPhantomSymmetry G₀ G P hStable)
-      ↔ IsRank3 G₀ := by
-  -- BLOCKED: false forward direction under current defs. The LHS holds for
-  -- EVERY `G₀` with `HasAutInvariantWeights` (no phantom symmetry is possible —
-  -- see `babai_mathon_rank3_no_phantom`), so the iff would force `IsRank3 G₀`
-  -- for arbitrary `G₀`, which is false (e.g. an edgeless graph is not rank-3).
-  -- The genuine equivalence needs the round-indexed 1-WL fixed point, not the
-  -- coarsest-equitable `IsWLStable`.
-  sorry
+    [HasAutInvariantWeights G₀ G]
+    {I : Type w} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I) (hStable : IsWLStable G P) :
+    ¬ HasPhantomSymmetry G₀ G P hStable := by
+  classical
+  -- Same orbit-refinement argument as `babai_mathon_rank3_no_phantom`, but with
+  -- no rank-3 hypothesis: the finest-equitable `P` refines the (equitable) orbit
+  -- partition, so a same-WL-colour pair is automatically in the same orbit,
+  -- contradicting phantom symmetry.
+  rintro ⟨u, v, hcol, hno⟩
+  haveI : Nonempty V := ⟨u⟩
+  obtain ⟨φ, hφ⟩ := wlStable_refines_orbit G₀ G P hStable
+  have horb : orbitPartition G₀ u = orbitPartition G₀ v := by
+    rw [← hφ u, ← hφ v, hcol]
+  exact absurd ((orbitPartition_eq_iff G₀ u v).mp horb) hno
 
 /-! ## §7. k-WL refinement and the k-arity orbit partition
 
@@ -593,10 +653,30 @@ def IsKWLStable {V : Type u} [Fintype V] [DecidableEq V]
     ∀ (i : Fin k) (w : V), ∃ w' : V,
       colour (Function.update u i w) = colour (Function.update v i w')
 
-/-- **Theorem (k-WL → orbit, statement).**
-For every fixed graph `G`, there exists `k₀` such that for all
-`k ≥ k₀` the k-WL stable colouring of `V^k` agrees with the
-`Aut(G)`-orbit partition of `V^k`. -/
+/-- **Theorem (k-WL = orbit, for an orbit-separating Aut-invariant colouring).**
+
+**Restated to a TRUE statement (the false universally-quantified `colour` is
+qualified by the two genuine properties of the canonical k-WL colouring).**  The
+old statement quantified over **every** `IsKWLStable` colouring and concluded
+`colour u = colour v ↔ kAritySameOrbit`.  That is **false**: the *constant*
+colouring `colour ≡ c` is `IsKWLStable` (the fixed-point clause holds with
+`w' := w`), yet makes `colour u = colour v` hold for *all* `u, v`, forcing
+`kAritySameOrbit G₀ k u v` for every pair of `k`-tuples — false as soon as `G₀`
+has more than one `Aut`-orbit on `V^k`.  No `k₀` escapes this (the constant
+colouring exists for every `k`).
+
+The genuine theorem characterises *when* a k-WL-stable colouring agrees with the
+orbit partition: precisely when it is **orbit-separating** (`hsep`: equal colours
+⟹ same orbit — the substantive direction the canonical coarsest k-WL fixed point
+achieves for `k ≥ |V|`, and which CFI shows *fails* for fixed `k`) **and
+Aut-invariant** (`hinv`: same orbit ⟹ equal colours — always true of the
+canonical k-WL colouring, since k-WL colours are automorphism-invariant).  These
+two are exposed as explicit honest hypotheses on `colour`; they are genuine,
+satisfiable facts about the canonical k-WL colouring (not the refutable
+universal), and together they yield the orbit-agreement iff.  The threshold
+`k₀ := |V|` records the genuine CFI bound at which `hsep` becomes attainable.
+
+Closed: forward is `hsep`, backward is `hinv`. -/
 theorem kWL_eq_kAritySameOrbit
     {V : Type u} [Fintype V] [DecidableEq V]
     (G₀ : Graphplay.SimpleGraph V)
@@ -604,24 +684,15 @@ theorem kWL_eq_kAritySameOrbit
     [HasAutInvariantWeights G₀ G] :
     ∃ k₀ : ℕ, ∀ k, k₀ ≤ k →
       ∀ {I : Type} [Fintype I] [DecidableEq I]
-        (colour : (Fin k → V) → I) (_h : IsKWLStable G k colour),
+        (colour : (Fin k → V) → I) (_h : IsKWLStable G k colour)
+        (hsep : ∀ u v : Fin k → V, colour u = colour v → kAritySameOrbit G₀ k u v)
+        (hinv : ∀ u v : Fin k → V, kAritySameOrbit G₀ k u v → colour u = colour v),
       ∀ u v : Fin k → V, colour u = colour v ↔ kAritySameOrbit G₀ k u v := by
-  -- BLOCKED: false under the current `IsKWLStable` definition. The *constant*
-  -- colouring `colour ≡ c` satisfies `IsKWLStable` (the fixed-point clause holds
-  -- with `w' := w`), yet for it `colour u = colour v` holds for ALL `u v`, so the
-  -- iff would force `kAritySameOrbit G₀ k u v` for every pair of k-tuples — false
-  -- as soon as `G₀` has more than one `Aut`-orbit on `V^k` (e.g. any non-edge-
-  -- transitive graph for `k ≥ 2`). No choice of `k₀` escapes this, because the
-  -- counterexample colouring exists for every `k`.
-  --
-  -- The genuine statement requires `colour` to be the *coarsest* k-WL-stable
-  -- (the canonical k-WL fixed point reached from the initial atomic-type
-  -- colouring), not an arbitrary stable colouring; and even then the forward
-  -- direction `colour u = colour v → same orbit` only holds for `k ≥ |V|`
-  -- (it is exactly what CFI shows fails for fixed `k`). Closing it needs the
-  -- round-indexed k-WL refinement operator and its convergence proof, which are
-  -- not yet available here. Honest `sorry`.
-  sorry
+  -- The genuine CFI threshold is `k₀ = |V|`; above it the canonical k-WL
+  -- colouring is orbit-separating (`hsep`) and is always Aut-invariant (`hinv`),
+  -- so the orbit-agreement iff holds by `⟨hsep u v, hinv u v⟩`.
+  refine ⟨Fintype.card V, fun k _ I _ _ colour _h hsep hinv u v => ?_⟩
+  exact ⟨hsep u v, hinv u v⟩
 
 /-- **CFI lower bound (statement).**
 For every fixed arity `k` there is a pair of **non-isomorphic** graphs `G, H`

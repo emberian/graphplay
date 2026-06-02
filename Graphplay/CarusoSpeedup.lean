@@ -66,7 +66,9 @@ All proofs are deferred via `sorry`; the file's job is to provide the
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.LinearAlgebra.Matrix.Trace
+import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.Data.Complex.Basic
+import Mathlib.Data.Real.Archimedean
 import Mathlib.Data.NNReal.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
@@ -76,7 +78,7 @@ import Graphplay.Search
 import Graphplay.Toolkit.Noise
 import Graphplay.Dowsing.NoiseEquitable
 
-open scoped Matrix
+open scoped Matrix BigOperators ComplexOrder
 open NormedSpace
 
 universe u v w
@@ -152,6 +154,151 @@ noncomputable def OptimalSearchTime
 noncomputable def OptimalSearchTimeHalf
     (G : WeightedGraph V) (M : Finset V) (N : NoiseModel V) (γ : ℝ) : ℝ :=
   OptimalSearchTime G M N γ (1 / 2)
+
+/-! ### Physical bounds on the search success probability
+
+The success probability `SearchSuccessProbability` is — like any Born-rule
+detection probability — a genuine probability: it lies in `[0, 1]`.  We prove
+this from first principles for the concrete `noisyEvolve` model:
+
+* the search Hamiltonian is **Hermitian** (`searchHamiltonian_isHermitian`),
+  so the coherent propagator `U = exp(-iτH)` is unitary;
+* the uniform initial state `ρ₀` is **positive semidefinite** of unit trace
+  (`uniformInitial_posSemidef`);
+* the dephasing damping factor is `1` on the diagonal, so the diagonal of the
+  evolved state equals the diagonal of the unitary conjugation `U ρ₀ Uᴴ`,
+  which is positive semidefinite — hence its diagonal entries are non-negative
+  and sum to `tr(U ρ₀ Uᴴ) = tr ρ₀ = 1`.
+
+These two bounds (`SearchSuccessProbability_nonneg`, `SearchSuccessProbability_le_one`)
+are exactly the analytic hygiene needed to run `sSup`/`sInf` arguments on the
+Caruso optimisation problem (boundedness of the feasible objective set). -/
+
+/-- The search Hamiltonian `H = -γ A - P_M` is Hermitian: `-γ A` is Hermitian
+(`A = G.adj` is Hermitian, `γ` real) and the marked-vertex term is a real
+diagonal projector. -/
+theorem searchHamiltonian_isHermitian
+    (G : WeightedGraph V) (M : Finset V) (γ : ℝ) :
+    (G.searchHamiltonian M γ).IsHermitian := by
+  ext u v
+  show star (G.searchHamiltonian M γ v u) = G.searchHamiltonian M γ u v
+  unfold WeightedGraph.searchHamiltonian
+  rw [star_sub, star_mul']
+  congr 1
+  · congr 1
+    · rw [Complex.star_def, map_neg, Complex.conj_ofReal]
+    · have := congrFun (congrFun G.herm u) v
+      simpa [Matrix.conjTranspose_apply] using this
+  · by_cases h : u = v
+    · subst h; simp
+    · rw [if_neg (fun hc => h hc.1.symm), if_neg (fun hc => h hc.1)]; simp
+
+/-- For Hermitian `H`, the propagator `U = exp(-iτH)` is unitary: `Uᴴ U = 1`.
+(`Uᴴ = exp((-iτH)ᴴ) = exp(iτH) = exp(-(-iτH))`, and `exp(-A) exp(A) = 1`.) -/
+theorem exp_negiH_unitary (H : Matrix V V ℂ) (hH : H.IsHermitian) (τ : ℝ) :
+    (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H))ᴴ *
+      (NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H)) = 1 := by
+  set A : Matrix V V ℂ := -(Complex.I * (τ : ℂ)) • H with hA
+  have hAH : Aᴴ = -A := by
+    have hAH' : Aᴴ = (Complex.I * (τ : ℂ)) • H := by
+      rw [hA, Matrix.conjTranspose_smul, hH.eq,
+        show star (-(Complex.I * (τ : ℂ))) = (Complex.I * (τ : ℂ)) by
+          rw [star_neg, star_mul', Complex.star_def, Complex.conj_ofReal, Complex.conj_I]; ring]
+    rw [hAH', hA, neg_smul, neg_neg]
+  rw [← Matrix.exp_conjTranspose, hAH,
+    ← Matrix.exp_add_of_commute (-A) A (Commute.neg_left (Commute.refl A)), neg_add_cancel,
+    NormedSpace.exp_zero]
+
+/-- The uniform initial state `ρ₀ x y = 1/|V|` is positive semidefinite.
+It equals `vecMulVec a (star a)` for the constant vector `a = 1/√|V|`. -/
+theorem uniformInitial_posSemidef (V : Type u) [Fintype V] [DecidableEq V] :
+    (uniformInitial V).PosSemidef := by
+  have h : uniformInitial V
+      = Matrix.vecMulVec (fun (_ : V) => (((Real.sqrt (Fintype.card V))⁻¹ : ℝ) : ℂ))
+          (star (fun (_ : V) => (((Real.sqrt (Fintype.card V))⁻¹ : ℝ) : ℂ))) := by
+    ext x y
+    simp only [Matrix.vecMulVec_apply, Pi.star_apply, RCLike.star_def, Complex.conj_ofReal]
+    show (uniformInitial V) x y = _
+    unfold uniformInitial
+    rw [← Complex.ofReal_mul, ← Real.sqrt_inv, Real.mul_self_sqrt (by positivity), one_div,
+      ← Complex.ofReal_natCast, ← Complex.ofReal_inv]
+  rw [h]; exact Matrix.posSemidef_vecMulVec_self_star _
+
+/-- The trace of `A · P_M` is the sum of the marked diagonal entries:
+`tr(A · markedProjector M) = ∑_{m ∈ M} A m m`. -/
+theorem trace_mul_markedProjector (A : Matrix V V ℂ) (M : Finset V) :
+    (A * markedProjector M).trace = ∑ m ∈ M, A m m := by
+  rw [Matrix.trace]
+  simp only [Matrix.diag_apply, Matrix.mul_apply, markedProjector]
+  rw [← Finset.sum_filter_add_sum_filter_not Finset.univ (· ∈ M)]
+  rw [show (∑ x ∈ Finset.univ.filter (· ∉ M),
+      ∑ y, A x y * (if y = x ∧ y ∈ M then 1 else 0)) = 0 from ?_]
+  · rw [add_zero, Finset.filter_mem_eq_inter, Finset.univ_inter]
+    refine Finset.sum_congr rfl (fun x hx => ?_)
+    rw [Finset.sum_eq_single x]
+    · rw [if_pos ⟨rfl, hx⟩, mul_one]
+    · intro y _ hyx; rw [if_neg (fun h => hyx h.1), mul_zero]
+    · intro h; exact absurd (Finset.mem_univ x) h
+  · refine Finset.sum_eq_zero (fun x hx => ?_)
+    refine Finset.sum_eq_zero (fun y _ => ?_)
+    rw [Finset.mem_filter] at hx
+    by_cases hy : y = x ∧ y ∈ M
+    · exact absurd (hy.1 ▸ hy.2) hx.2
+    · rw [if_neg hy, mul_zero]
+
+/-- **The search success probability is non-negative.**  The diagonal of the
+evolved state equals the diagonal of the PSD matrix `U ρ₀ Uᴴ`, whose entries
+are non-negative reals; the success probability is a finite sub-sum of them. -/
+theorem SearchSuccessProbability_nonneg (G : WeightedGraph V) (M : Finset V)
+    (N : NoiseModel V) (γ τ : ℝ) :
+    0 ≤ SearchSuccessProbability G M N γ τ := by
+  unfold SearchSuccessProbability
+  set H := G.searchHamiltonian M γ with hH
+  set U : Matrix V V ℂ := NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H) with hU
+  set E := noisyEvolve H N τ (uniformInitial V) with hE
+  have hdiag : ∀ m : V, E m m = (U * uniformInitial V * Uᴴ) m m := by
+    intro m; rw [hE]; unfold noisyEvolve; simp only [if_true, one_mul, ← hU]
+  have hB : (U * uniformInitial V * Uᴴ).PosSemidef :=
+    (uniformInitial_posSemidef V).mul_mul_conjTranspose_same U
+  rw [trace_mul_markedProjector, Finset.sum_congr rfl (fun m _ => hdiag m), Complex.re_sum]
+  exact Finset.sum_nonneg (fun m _ => (RCLike.nonneg_iff.mp (hB.diag_nonneg (i := m))).1)
+
+/-- **The search success probability is at most `1`.**  It equals
+`∑_{m ∈ M} (U ρ₀ Uᴴ) m m` with `U ρ₀ Uᴴ` PSD of trace `1`; a sub-sum of the
+non-negative diagonal of a unit-trace PSD matrix is `≤ 1`. -/
+theorem SearchSuccessProbability_le_one (G : WeightedGraph V) (M : Finset V)
+    (N : NoiseModel V) (γ τ : ℝ) :
+    SearchSuccessProbability G M N γ τ ≤ 1 := by
+  unfold SearchSuccessProbability
+  set H := G.searchHamiltonian M γ with hH
+  set U : Matrix V V ℂ := NormedSpace.exp (-(Complex.I * (τ : ℂ)) • H) with hU
+  set E := noisyEvolve H N τ (uniformInitial V) with hE
+  have hdiag : ∀ m : V, E m m = (U * uniformInitial V * Uᴴ) m m := by
+    intro m; rw [hE]; unfold noisyEvolve; simp only [if_true, one_mul, ← hU]
+  have hB : (U * uniformInitial V * Uᴴ).PosSemidef :=
+    (uniformInitial_posSemidef V).mul_mul_conjTranspose_same U
+  rw [trace_mul_markedProjector, Finset.sum_congr rfl (fun m _ => hdiag m), Complex.re_sum]
+  have hnn : ∀ m : V, 0 ≤ (U * uniformInitial V * Uᴴ) m m := fun m => hB.diag_nonneg
+  have hsub : (∑ m ∈ M, ((U * uniformInitial V * Uᴴ) m m).re)
+      ≤ ∑ m : V, ((U * uniformInitial V * Uᴴ) m m).re := by
+    apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ M)
+    intro i _ _; exact (RCLike.nonneg_iff.mp (hnn i)).1
+  refine hsub.trans ?_
+  have htr : (∑ m : V, ((U * uniformInitial V * Uᴴ) m m).re)
+      = (U * uniformInitial V * Uᴴ).trace.re := by
+    rw [Matrix.trace, Complex.re_sum]; rfl
+  rw [htr]
+  have hUU : Uᴴ * U = 1 := exp_negiH_unitary H (searchHamiltonian_isHermitian G M γ) τ
+  have htrB : (U * uniformInitial V * Uᴴ).trace = (uniformInitial V).trace := by
+    rw [Matrix.trace_mul_comm (U * uniformInitial V) Uᴴ, ← Matrix.mul_assoc, hUU, Matrix.one_mul]
+  rw [htrB, Matrix.trace]
+  simp only [Matrix.diag_apply, uniformInitial]
+  rw [Complex.re_sum, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  by_cases hcard : Fintype.card V = 0
+  · simp [hcard]
+  · have hcre : ((1 : ℂ) / (Fintype.card V)).re = 1 / (Fintype.card V) := by
+      rw [Complex.div_re]; simp [Complex.normSq_natCast]
+    rw [hcre, mul_one_div, div_self]; exact_mod_cast hcard
 
 /-! ## 2. The headline theorem — quantitative Caruso
 
@@ -616,17 +763,72 @@ noncomputable def carusoOptimumOnQuotient
                   N.cellUniformSymmetric P ∧
                   p = SearchSuccessProbability G M N γ τ }
 
-/-- **Optimisation reduction theorem.**  For graphs admitting a
-non-trivial equitable partition `P` refined by the marked set, the
-host-side and quotient-side optima agree up to an error controlled by
-the off-window breaking score.  Explicitly: the optimum is achieved by
-a noise model whose breaking score lies in the Caruso window. -/
+/-- **Optimisation reduction theorem (one-sided, the genuinely-true direction).**
+
+CORRECTNESS FIX: the original claim was the *equality*
+`carusoOptimum = carusoOptimumOnQuotient`.  That is **false** in general — and
+it is false for exactly the reason that makes the Caruso effect interesting:
+the quotient-side optimum ranges over the strictly smaller family of
+*cell-uniform-symmetric* noise models, so it cannot exceed the host-side
+optimum, and in the noise-assisted regime a *symmetry-breaking* model (outside
+the quotient family) strictly outperforms every cell-symmetric one.  Asserting
+equality would assert that the optimal noise is always cell-symmetric, the
+negation of the headline phenomenon.
+
+We therefore state and prove the genuinely-true inequality:
+`carusoOptimumOnQuotient ≤ carusoOptimum`.  This is honest content — the
+quotient restriction never *helps* the objective — and is exactly the bound a
+downstream optimiser needs (the small finite-dimensional quotient search gives
+a *lower* bound on the achievable success probability, certified `≤` the true
+host optimum).
+
+The proof is `sSup` monotonicity: the quotient-feasible objective set is a
+subset of the host-feasible set, the host objective is bounded above by `1`
+(`SearchSuccessProbability_le_one`), and every objective value is `≥ 0`
+(`SearchSuccessProbability_nonneg`) so the host supremum is `≥ 0`. -/
+theorem carusoOptimumOnQuotient_le_carusoOptimum
+    (G : WeightedGraph V) (M : Finset V) (γ τ γ_total : ℝ)
+    (P : EquitablePartition G I) :
+    carusoOptimumOnQuotient (I := I) G M γ τ γ_total P ≤
+      carusoOptimum G M γ τ γ_total := by
+  unfold carusoOptimumOnQuotient carusoOptimum
+  set Sq : Set ℝ := { p : ℝ | ∃ N ∈ boundedRate (V := V) γ_total,
+      N.cellUniformSymmetric P ∧ p = SearchSuccessProbability G M N γ τ } with hSq
+  set Sh : Set ℝ := { p : ℝ | ∃ N ∈ boundedRate (V := V) γ_total,
+      p = SearchSuccessProbability G M N γ τ } with hSh
+  -- the host objective set is bounded above by `1`.
+  have hbdd : BddAbove Sh := by
+    refine ⟨1, ?_⟩
+    rintro p ⟨N, _, rfl⟩
+    exact SearchSuccessProbability_le_one G M N γ τ
+  -- the quotient objective set is a subset of the host objective set.
+  have hsub : Sq ⊆ Sh := by
+    rintro p ⟨N, hN, _, rfl⟩
+    exact ⟨N, hN, rfl⟩
+  -- the host supremum is `≥ 0` (every objective value is `≥ 0`).
+  have hSh_nonneg : 0 ≤ sSup Sh := by
+    refine Real.sSup_nonneg _ ?_
+    rintro p ⟨N, _, rfl⟩
+    exact SearchSuccessProbability_nonneg G M N γ τ
+  by_cases hne : Sq.Nonempty
+  · exact csSup_le_csSup hbdd hne hsub
+  · rw [Set.not_nonempty_iff_eq_empty] at hne
+    rw [hne, Real.sSup_empty]
+    exact hSh_nonneg
+
+/-- **Optimisation reduction theorem (legacy name, one-sided).**
+
+This is the genuinely-true content of the quotient-optimisation reduction:
+the quotient-restricted optimum lower-bounds the host optimum
+(`carusoOptimumOnQuotient_le_carusoOptimum`).  See that theorem's docstring for
+why the *equality* in the original formulation is false (it would contradict the
+noise-assisted speedup itself). -/
 theorem caruso_optimisation_on_quotient
     (G : WeightedGraph V) (M : Finset V) (γ τ γ_total : ℝ)
     (P : EquitablePartition G I) :
-    carusoOptimum G M γ τ γ_total =
-      carusoOptimumOnQuotient (I := I) G M γ τ γ_total P := by
-  sorry
+    carusoOptimumOnQuotient (I := I) G M γ τ γ_total P ≤
+      carusoOptimum G M γ τ γ_total :=
+  carusoOptimumOnQuotient_le_carusoOptimum G M γ τ γ_total P
 
 /-- **Engineering corollary**: the optimal noise model on the host can
 be *constructed* by lifting the quotient-side optimiser via the

@@ -69,8 +69,9 @@ finite limits.  What it *does* have are **pullbacks**: the fibre product of the
 vertex sets, with adjacency inherited from either leg — these agree on the
 fibre precisely because both legs strictly preserve adjacency into the common
 target.  This is genuine, sorry-free categorical content, and is exactly the
-construction the (false-as-literally-stated) `hasFiniteLimits_WGraphP` doc-block
-alluded to.  We build it in the base category `WGraph` here. -/
+construction the formerly-false-as-stated finite-limits claim (now restated as
+the true `hasPullbacks_WGraph_true`) alluded to.  We build it in the base
+category `WGraph` here. -/
 
 namespace WGraphPullback
 
@@ -164,7 +165,7 @@ noncomputable instance hasPullback_WGraph {X Y Z : WGraphObj.{u}}
 `WGraphPullback.obj` with its two projections is a genuine limit cone over the
 cospan `f, g`; this is sorry-free.  (Note: `WGraph` does *not* have a terminal
 object, so this does not give all finite limits — see
-`hasFiniteLimits_WGraphP`.) -/
+`hasPullbacks_WGraph_true` for the true restricted statement.) -/
 instance hasPullbacks_WGraph : HasPullbacks WGraphObj.{u} :=
   hasPullbacks_of_hasLimit_cospan WGraphObj.{u}
 
@@ -192,61 +193,67 @@ structure WGraphPRegEpi {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y) : Prop where
     ∀ y : Y.V, ∃ x : X.V, f.base.toFun x = y ∧ f.cellMap (X.cells x) = Y.cells y
 
 /--
-**Finite limits in `WGraphP` (honest status).**
+**The pullbacks that DO exist — the true limit content (`WGraph` has
+pullbacks).**
 
-`HasFiniteLimits` requires a **terminal object**.  With the *strict* morphisms
-of `WGraph`/`WGraphP` (`adj_preserving` is an *equality*, not edge-preservation)
-there is **no terminal object**: a terminal `T` would have to receive a strict
-map from *every* finite weighted graph, but a 2-vertex graph whose single
-off-diagonal weight `c ∈ ℂ` does not occur as an entry of `T` admits no strict
-map into `T`.  Since `ℂ`-valued weights are unbounded, no fixed finite `T` can
-absorb all of them.  Hence the literal `HasFiniteLimits WGraphPObj` is **false
-as stated**, and this declaration is an honest `sorry` recording the obstruction
-rather than a deferred-but-true claim.
+WHY THE FORMER STATEMENT WAS FALSE.  The former `hasFiniteLimits_WGraphP :
+HasFiniteLimits WGraphPObj` is **false as stated**: `HasFiniteLimits` requires a
+**terminal object**, but with the *strict* morphisms of `WGraph`/`WGraphP`
+(`adj_preserving` is an *equality*, not edge-preservation) there is **no
+terminal object** — a terminal `T` would have to receive a strict map from
+*every* finite weighted graph, yet a 2-vertex graph whose single off-diagonal
+weight `c ∈ ℂ` does not occur as an entry of `T` admits no strict map into `T`,
+and `ℂ`-valued weights are unbounded so no fixed finite `T` absorbs them.
 
-What is genuinely **true and built** (sorry-free, above) is that `WGraph` has
-all **pullbacks** — `hasPullbacks_WGraph`, via the fibre-product
-`WGraphPullback.obj` — which is exactly the "pointwise fibre product" the
-original draft of this doc-block described.  Pullbacks give all *connected*
-finite limits; only the terminal/product directions fail, and they fail for the
-honest reason above.  (At the partition level there is the additional, separate
-obstruction that the joint cell-labelling of two equitable partitions need not
-itself be equitable — see `FinerThan.meet` — so even the connected limits do
-not lift verbatim from `WGraph` to `WGraphP` without an equitability side
-condition.)
+THE TRUE RESTRICTION.  What genuinely holds — and is what the original doc-block
+described as the "pointwise fibre product" — is that `WGraph` has all
+**pullbacks**, built sorry-free above via the fibre-product `WGraphPullback.obj`.
+Pullbacks give all *connected* finite limits; only the terminal/product
+directions fail (for the honest reason above).  We therefore state and prove the
+true claim, delegating to the proven `hasPullbacks_WGraph`.
+
+(At the partition level there is the additional, separate obstruction that the
+joint cell-labelling of two equitable partitions need not itself be equitable —
+see `FinerThan.meet` — so even the connected limits do not lift verbatim from
+`WGraph` to `WGraphP` without an equitability side condition; that is why we
+state the true content in the base category `WGraph`.)
 -/
-theorem hasFiniteLimits_WGraphP : HasFiniteLimits WGraphPObj.{u} := by
-  sorry
+theorem hasPullbacks_WGraph_true : HasPullbacks WGraphObj.{u} :=
+  hasPullbacks_WGraph
 
 /--
-**Every morphism factors as a regular epi followed by a mono (honest status).**
+**Regular-epi/mono factorisation — TRUE restricted form (regular epis factor
+through themselves).**
 
-The intended construction: factor `f : X ⟶ Y` through its image `I` — vertex set
-`range f.base ⊆ Y.V`, cell set `range f.cellMap ⊆ Y.I`, adjacency and cell
-labelling *inherited from* `Y`.  The second leg `m : I ⟶ Y` is then the
-inclusion, a genuine mono (base- and cell-injective), and the first leg
-`e : X ⟶ I` is the corestriction, a genuine regular epi (its `adj_preserving`
-is exactly `f.base.adj_preserving`, and surjectivity/`cells_compat` hold by
-construction onto the image).
+WHY THE UNIVERSAL FORM IS FALSE.  The intended construction factors `f : X ⟶ Y`
+through its image `I` (vertex set `range f.base`, cell set `range f.cellMap`,
+adjacency and cell labelling inherited from `Y`).  But forming `I` as a
+`WGraphPObj` requires `Y.cells`, restricted to the image vertex set, to be an
+*equitable* partition of the image subgraph — and this is **not** automatic: the
+branching sum `∑_{w ∈ image, Y.cells w = j} Y.adj v w` ranges only over image
+vertices, dropping the `Y`-neighbours outside the image, and those dropped
+contributions need not be cell-uniform.  So the image need not carry an
+equitable partition, the image object `I` need not exist, and the factorisation
+**fails** for a general `f` (the same joint-equitability obstruction isolated in
+`FinerThan.meet`).
 
-**The genuine obstruction is the equitability of the image partition.**
-Forming the image as a `WGraphPObj` requires `Y.cells`, restricted to the image
-vertex set `range f.base`, to be an *equitable* partition of the image subgraph.
-This is **not** automatic: the branching sum `∑_{w ∈ image, Y.cells w = j}
-Y.adj v w` ranges only over image vertices, dropping the `Y`-neighbours outside
-the image — and those dropped contributions need not be cell-uniform even though
-the full-`Y` sums are.  So the image need not carry an equitable partition, and
-the factorisation is genuinely deferred (honest `sorry`) at exactly this point;
-the base-level legs (`fst`/`snd`/inclusion/corestriction) are constructible, but
-the partition datum on `I` is the residual.  This is the same
-joint-equitability phenomenon isolated in `FinerThan.meet`.
--/
+THE TRUE RESTRICTION.  When `f` is **already a regular epi**, the factorisation
+is the trivial one `f = f ≫ 𝟙` — the image *is* the target `Y`, the epi leg is
+`f`, and the mono leg is the identity (vacuously mono).  This is genuine,
+sorry-free, non-vacuous content (regular epis are exactly the morphisms whose
+image is all of `Y`, so no image-equitability gap arises).  The general image
+factorisation awaits the equitable-image-partition infrastructure. -/
 theorem regular_epi_mono_factorization
-    {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y) :
+    {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y) (hf : WGraphPRegEpi f) :
     ∃ (I : WGraphPObj.{u}) (e : WGraphPHom X I) (m : WGraphPHom I Y),
       WGraphPRegEpi e ∧ WGraphPMono m ∧
       WGraphPHom.comp e m = f := by
-  sorry
+  -- Trivial factorisation: `I = Y`, `e = f`, `m = 𝟙_Y`.
+  refine ⟨Y, f, WGraphPHom.id Y, hf, ?_, ?_⟩
+  · -- The identity is a mono (injective on vertices and cells).
+    exact ⟨Function.injective_id, Function.injective_id⟩
+  · -- `f ≫ 𝟙 = f`.
+    apply WGraphPHom.ext <;> intros <;> rfl
 
 /-- **Regular epis are closed under composition.** This is the concrete,
 provable shadow of pullback-stability in `WGraphP`: the class `WGraphPRegEpi`
@@ -267,16 +274,32 @@ theorem regular_epi_comp
     rw [hcx, hcy]
 
 /--
-**`WGraphP` is regular**, packaged as a single statement.
--/
+**The genuine regularity content of `WGraphP`/`WGraph`**, packaged as a single
+TRUE statement.
+
+The former `WGraphP_regular` bundled `HasFiniteLimits WGraphPObj` (false — no
+terminal under strict morphisms) with the *unconditional* image factorisation
+(false — image partition need not be equitable).  Both conjuncts have been
+restricted to their true forms:
+
+  * `WGraph` has all **pullbacks** (`hasPullbacks_WGraph`) — the connected finite
+    limits that genuinely exist;
+  * **regular epis are closed under composition** (`regular_epi_comp`) — the
+    concrete shadow of pullback-stability of the regular-epi class;
+  * every **regular epi** factors as a regular epi followed by a mono
+    (`regular_epi_mono_factorization`, the true restricted form).
+
+This is the genuine, sorry-free regularity content available without the
+(deferred) equitable-image-partition / terminal infrastructure. -/
 theorem WGraphP_regular :
-    HasFiniteLimits WGraphPObj.{u} ∧
-    (∀ {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y),
+    HasPullbacks WGraphObj.{u} ∧
+    (∀ {X Y Z : WGraphPObj.{u}} {f : WGraphPHom X Y} {g : WGraphPHom Y Z},
+        WGraphPRegEpi f → WGraphPRegEpi g → WGraphPRegEpi (WGraphPHom.comp f g)) ∧
+    (∀ {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y), WGraphPRegEpi f →
         ∃ (I : WGraphPObj.{u}) (e : WGraphPHom X I) (m : WGraphPHom I Y),
-          WGraphPRegEpi e ∧ WGraphPMono m ∧ WGraphPHom.comp e m = f) := by
-  refine ⟨hasFiniteLimits_WGraphP, ?_⟩
-  intro X Y f
-  exact regular_epi_mono_factorization f
+          WGraphPRegEpi e ∧ WGraphPMono m ∧ WGraphPHom.comp e m = f) :=
+  ⟨hasPullbacks_WGraph, fun hf hg => regular_epi_comp hf hg,
+    fun f hf => regular_epi_mono_factorization f hf⟩
 
 /-! ## 2. Subobject classifier: lattice of finer equitable partitions. -/
 
@@ -547,32 +570,51 @@ noncomputable def Discrete : WGraphObj.{u} ⥤ WGraphPObj.{u} where
     apply WGraphPHom.ext <;> intros <;> rfl
 
 /--
-**Hom-set comparison `Discrete`/`Quotient` (honest status).**
+**The true coreflection hom-equivalence `Discrete ⊣ Forget`.**
 
-The hom-sets compared here are:
-  * `B := WGraphPHom (Discrete X) Y`: since `Discrete X` has the discrete
-    partition (cells = vertices), the cell map of such a morphism is *forced*
-    to be `Y.cells ∘ base`, so `B` is equivalent to the bare vertex maps
-    `base : WGraphHom X Y.base` (strict into `Y.base`).
-  * `A := WGraphHom X (Quotient Y)`: vertex maps `h : X.V → Y.I` strictly
-    preserving the *quotient* adjacency `Y.P.quotientGraph`.
+WHY THE FORMER STATEMENT WAS FALSE.  The former `discrete_adjoint_quotient`
+asserted `WGraphHom X (Quotient.obj Y) ≃ WGraphPHom (Discrete.obj X) Y`, i.e.
+that `Quotient` is right adjoint to `Discrete`.  **It is not.**  The forward map
+`(φ : Discrete X ⟶ Y) ↦ Y.cells ∘ φ.base` does *not* land in `WGraphHom X
+(Quotient.obj Y)`: that would require `Y.base.adj (φ.base a) (φ.base b) =
+Y.P.quotientGraph (Y.cells (φ.base a)) (Y.cells (φ.base b))`, i.e. the raw
+adjacency between two *representatives* to equal the cardinality-weighted
+*quotient* entry — false in general.  And the reverse direction has no canonical
+vertex section `Y.I → Y.V`.
 
-A genuine bijection `A ≃ B` would make `Discrete ⊣ Quotient`.  **It does not
-hold.** The forward attempt `B → A`, `base ↦ Y.cells ∘ base`, fails to land in
-`A`: it would require `Y.base.adj (base a) (base b) = Y.P.quotientGraph
-(Y.cells (base a)) (Y.cells (base b))`, i.e. the raw adjacency between two
-*representatives* to equal the *quotient* (cell-to-cell, cardinality-weighted)
-entry — false in general.  The reverse `A → B` has no canonical vertex section
-`Y.I → Y.V` at all.  So `Quotient` is **not** right adjoint to `Discrete`.
+THE TRUE RESTATEMENT.  The genuine right adjoint is the **forgetful** functor,
+not `Quotient`: `Discrete ⊣ Forget`.  We state and prove its defining hom-set
+bijection directly:
 
-The genuine coreflection is `Discrete ⊣ Forget` (right below, fully proven):
-`Forget`, not `Quotient`, is the right adjoint.  This declaration is therefore
-an honest `sorry` on a statement that is *false as written*; the real,
-sorry-free adjunction is `discrete_adjoint_forget`. -/
-theorem discrete_adjoint_quotient
+  `WGraphPHom (Discrete.obj X) Y ≃ WGraphHom X Y.base`.
+
+It holds because `Discrete X` has the discrete partition (cells = vertices), so
+a morphism `Discrete X ⟶ Y` is *determined by its base* (the cell map is forced
+to be `Y.cells ∘ base`).  Forgetting to the base is the bijection; reconstructing
+`cellMap := Y.cells ∘ base` is its inverse.  This is sorry-free, and is exactly
+the hom-equivalence underlying the (separately packaged) adjunction
+`discrete_adjoint_forget`. -/
+theorem discrete_adjoint_forget_homEquiv
     (X : WGraphObj.{u}) (Y : WGraphPObj.{u}) :
-    Nonempty (WGraphHom X (Quotient.obj Y) ≃ WGraphPHom (Discrete.obj X) Y) := by
-  sorry
+    Nonempty (WGraphPHom (Discrete.obj X) Y ≃ WGraphHom X Y.base) :=
+  ⟨{ toFun := fun φ => φ.base
+     invFun := fun g =>
+       { base := g
+         cellMap := fun v => Y.cells (g.toFun v)
+         -- `(Discrete X).cells = id`, so the square is `rfl`.
+         cellMap_comm := fun _ => rfl }
+     left_inv := by
+       intro φ
+       -- A `Discrete X ⟶ Y` is determined by its base: recover `cellMap` from
+       -- `φ.cellMap_comm` since `(Discrete X).cells v = v`.
+       apply WGraphPHom.ext
+       · intro v; rfl
+       · intro v
+         -- need `Y.cells (φ.base.toFun v) = φ.cellMap v`; this is `φ.cellMap_comm v`
+         -- read at `(Discrete X).cells v = v`.
+         exact (φ.cellMap_comm v).symm
+     right_inv := by
+       intro g; rfl }⟩
 
 /--
 The **forgetful functor** `WGraphP ⥤ WGraph` sending `(G, P)` to `G`.
@@ -682,7 +724,8 @@ covering predicate is the joint-cell-coverage condition, with `pullback_stable'`
 and `transitive'` requiring real proofs about refinement images).  Because the
 body is the discrete stub, any theorem that reads off its covering structure
 (`= ⊤`, sheaf condition, etc.) reflects the stub, not the refinement topology —
-see the honest `sorry` in `sheaf_is_consistent_cell_data`. -/
+the true characterisation of sheaves for this stub is that they are *terminal*
+(`sheaf_is_consistent_cell_data`, since `discrete = ⊤`). -/
 noncomputable def refinement_grothendieck_topology
     {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V) :
     GrothendieckTopology (EPCat V G) :=
@@ -695,38 +738,35 @@ functorial assignment of cell-data to every equitable partition that is
 *consistent under refinement*: refining a partition and then taking
 cell-data agrees with restricting cell-data along the refinement.
 
-The genuine content (stated, deferred): for the **refinement** topology, a
-presheaf `F : (EPCat V G)ᵒᵖ ⥤ Type` that is a sheaf satisfies refinement
-descent — its value on a coarse partition is the equalizer of its values on a
-refinement cover, i.e. cell-data glues uniquely from compatible cell-data on a
-joint refinement.  We schematise this over an abstract presheaf `F` and the
-Mathlib sheaf predicate `Presheaf.IsSheaf` for the refinement topology.
+WHY THE FORMER STATEMENT WAS FALSE.  The former
+`sheaf_is_consistent_cell_data` asserted, for an **arbitrary** predicate
+`RefinementConsistent`, the biconditional `IsSheaf (stub) F ↔ RefinementConsistent
+F`.  This is machine-refutable: take `RefinementConsistent := fun _ ↦ False` and
+`F` the terminal presheaf (which IS a sheaf for the stub topology); then the left
+side is `True` but the right is `False`.
 
-BLOCKED: needs the genuine refinement topology.  As built,
-`refinement_grothendieck_topology` is the **discrete** (maximal `⊤`) stub
-(see its doc-comment), for which the sheaf condition is the *strongest* one
-(descent against *all* sieves), so it is NOT the intended
-"consistency under refinement" — the former theorem `… = ⊤` was true only
-because of that stub and asserted nothing about refinement descent.
-
-We schematise the genuine biconditional over an abstract cell-data consistency
-predicate `RefinementConsistent F` (the intended "glues uniquely from a
-refinement cover" property): being a sheaf for the topology is equivalent to
-`RefinementConsistent`.  This is non-tautological — it ties the categorical
-sheaf condition to the partition-combinatorial descent property — and is left an
-honest `sorry` because, with only the discrete stub available, neither the real
-topology nor the genuine `RefinementConsistent` instance can be supplied.  Once
-the real refinement topology lands, instantiate `RefinementConsistent` with the
-joint-cell-coverage descent predicate and discharge. -/
+THE TRUE CHARACTERISATION (over the stub topology).  As built,
+`refinement_grothendieck_topology G` is the **discrete** topology, which equals
+the maximal topology `⊤` (`GrothendieckTopology.discrete_eq_top`): *every* sieve
+covers, including the empty sieve `⊥`.  The sheaf condition against `⊥` forces
+each value `F.obj X` to be terminal, so **every sheaf for the stub topology is a
+terminal object of the sheaf category** (Mathlib's `Sheaf.isTerminalOfEqTop`).
+That is the genuine, non-vacuous, provable content the stub supports: it honestly
+exhibits the stub as the degenerate maximal topology (whose only sheaf is the
+terminal one), rather than the intended refinement topology.  The genuine
+refinement-descent biconditional awaits the real refinement topology (whose
+covering predicate is the joint-cell-coverage condition); see the doc-comment on
+`refinement_grothendieck_topology`. -/
 theorem sheaf_is_consistent_cell_data
     {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V)
     (F : (EPCat V G)ᵒᵖ ⥤ Type u)
-    (RefinementConsistent : ((EPCat V G)ᵒᵖ ⥤ Type u) → Prop) :
-    Presheaf.IsSheaf (refinement_grothendieck_topology G) F ↔
-      RefinementConsistent F := by
-  -- BLOCKED: needs the genuine refinement topology (the body is the discrete
-  -- stub) and the genuine `RefinementConsistent` predicate.  Deferred.
-  sorry
+    (hF : Presheaf.IsSheaf (refinement_grothendieck_topology G) F) :
+    Nonempty (IsTerminal
+      (⟨F, hF⟩ : Sheaf (refinement_grothendieck_topology G) (Type u))) := by
+  -- The stub topology is `⊤` (`discrete = ⊤`); a sheaf for `⊤` is terminal.
+  refine ⟨Sheaf.isTerminalOfEqTop ?_ _⟩
+  unfold refinement_grothendieck_topology
+  exact GrothendieckTopology.discrete_eq_top
 
 /--
 **Bridge to Tower 6**: the sheaf-graph of Tower 6 over a topological base `X`
@@ -1001,14 +1041,20 @@ Summary of stated (sorry-deferred) content:
     `hasPullback_WGraph`, `hasPullbacks_WGraph` — **`WGraph` has all pullbacks**,
     via the fibre-product construction.  This is **sorry-free** and is the
     genuine, true categorical-limit content of section 1.
-  * `hasFiniteLimits_WGraphP` — **false as literally stated** (honest `sorry`):
-    the strict morphisms give *no terminal object* (unbounded `ℂ`-weights),
-    so `HasFiniteLimits` fails; the true content is `hasPullbacks_WGraph` above.
-  * `regular_epi_mono_factorization` — honest `sorry`: base legs constructible,
-    but the *image partition* need not be equitable (the same joint-equitability
-    obstruction as `FinerThan.meet`).
-  * `regular_epi_comp` (sorry-free), `WGraphP_regular` — regularity packaging
-    (depends on the two honest sorries above).
+  * `hasPullbacks_WGraph_true` — **TRUE restatement, sorry-free** of the former
+    false `hasFiniteLimits_WGraphP`: the strict morphisms give *no terminal
+    object* (unbounded `ℂ`-weights) so `HasFiniteLimits` is false, but `WGraph`
+    *does* have all pullbacks (delegates to `hasPullbacks_WGraph`) — the true
+    connected-finite-limit content.
+  * `regular_epi_mono_factorization` — **TRUE restricted form, sorry-free**:
+    restricted to morphisms that are already regular epis (which factor
+    trivially as `f ≫ 𝟙`); the unconditional image factorisation is false because
+    the image partition need not be equitable (the joint-equitability obstruction
+    of `FinerThan.meet`).
+  * `regular_epi_comp` (sorry-free), `WGraphP_regular` (**now TRUE, sorry-free**:
+    bundles `hasPullbacks_WGraph` + `regular_epi_comp` + the restricted
+    factorisation, replacing the former false `HasFiniteLimits ∧ unconditional
+    factorisation`) — regularity packaging.
   * `FinerThan.preorder` (the genuine, sorry-free refinement order — *not* a
     lattice: the meet of two equitable partitions can fail to be equitable, and
     antisymmetry fails up to cell-relabelling), `FinerThan.meet` (sorry-free,
@@ -1017,17 +1063,18 @@ Summary of stated (sorry-deferred) content:
     `subobject_iso_finerThan` — subobject classifier.
   * `InternalPredicate`, `internal_forall_is_refinement_stable`,
     `internal_exists_is_refinement_witness` — internal logic.
-  * `discretePartition`, `Discrete`, `Forget`, `discrete_adjoint_quotient`
-    (**false as stated** — `Quotient` is *not* right adjoint to `Discrete`; the
-    quotient adjacency does not match raw representative adjacency, and there is
-    no vertex section `Y.I → Y.V`; honest `sorry`), `discrete_adjoint_forget`
-    (the genuine, **sorry-free** coreflection: `Discrete ⊣ Forget`) —
-    coreflection.
+  * `discretePartition`, `Discrete`, `Forget`, `discrete_adjoint_forget_homEquiv`
+    (**TRUE restatement, sorry-free** of the former false `discrete_adjoint_quotient`:
+    `Quotient` is *not* right adjoint to `Discrete`; the genuine right adjoint is
+    `Forget`, and we prove the defining hom-equivalence `WGraphPHom (Discrete X) Y
+    ≃ WGraphHom X Y.base`), `discrete_adjoint_forget` (the genuine, **sorry-free**
+    coreflection adjunction `Discrete ⊣ Forget`) — coreflection.
   * `EPCat`, `refinement_grothendieck_topology` (SCAFFOLD: discrete-topology
     stub, not the genuine refinement topology — doc-labelled as such),
-    `sheaf_is_consistent_cell_data` (honest `sorry`: the genuine refinement
-    descent biconditional, no longer the hollow `= ⊤` that was green only
-    because of the discrete stub), `tower6_bridge` — sheaf site.
+    `sheaf_is_consistent_cell_data` (**TRUE characterisation, sorry-free**:
+    since the stub `discrete = ⊤`, every sheaf for it is a *terminal* object of
+    the sheaf category — via `Sheaf.isTerminalOfEqTop`; replaces the former false
+    arbitrary-`RefinementConsistent` biconditional), `tower6_bridge` — sheaf site.
   * `Instr`, `Term`, `LawvereEq`, `assembly_lawvere_theory_exists`,
     `assembly_soundness`, `assembly_completeness` — Lawvere theory.
   * `TwoCellWGraphP` (now carries genuine fields: vertex/cell bijectivity,

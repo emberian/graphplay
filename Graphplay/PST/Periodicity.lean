@@ -434,32 +434,168 @@ theorem supported_phase_eq_diag (G : WeightedGraph V) (u : V) (τ : ℝ)
   simp only [Complex.ofReal_pow] at hconv
   rw [hconv, ← evolve_diag_convex G τ u]
 
-/-- **The backward (Diophantine) half of Godsil's periodicity criterion — the
-single isolated residual.**  If every ratio of differences of supported
-eigenvalues is rational, then `u` is periodic.  This is the genuine open piece:
-rational ratios mean the supported eigenvalues lie in an arithmetic progression
-`b + a·k`, and one must produce a *single* time `τ > 0` with `e^{-iτ θ_r}` equal
-across the (finite) support — a simultaneous Diophantine/Kronecker approximation
-(`τ = 2π/a` aligns all phases once the spacing `a` is extracted).  The phase
-*alignment ⇒ periodicity* step then reuses `convex_unit_saturate` /
-`evolve_diag_convex` in reverse.
+/-! ### The periodicity backward direction (CLOSED, axiom-clean)
 
-Honest `sorry`: needs the `AddCircle`/Kronecker simultaneous-approximation
-extraction of the common spacing `a` from the rational-ratio hypothesis, not yet
-developed.  Reference: Godsil, *Periodic graphs* (arXiv:1009.5375), Thm 6.1
-(sufficiency). -/
+The "deep Diophantine" backward half is *not* deep here: the eigenvalue support
+is a **finite** set of reals, so the rational-ratio hypothesis is *exact integer
+arithmetic*, not approximation.  Pick a reference difference `g = θ_s − θ_t ≠ 0`
+in the support; every supported `θ_r − θ_t` is `q_r · g` with `q_r ∈ ℚ`.  Clear
+the (finitely many) denominators with a single common denominator `D ∈ ℤ>0`, so
+`q_r · D = m_r ∈ ℤ`.  Setting `τ = 2π D / g` makes `τ (θ_r − θ_t) = 2π m_r ∈ 2πℤ`
+for every supported `r`, hence every supported phase `e^{-iτ θ_r}` equals the
+single value `e^{-iτ θ_t}`; the diagonal `U(τ)_{u,u} = ∑_r ‖U_{u,r}‖² e^{-iτθ_r}`
+(all weights nonneg, summing to 1) then collapses to that unit-modulus value.
+No `AddCircle`/Kronecker density is used — it is finite exact arithmetic. -/
+
+/-- If `q.den ∣ n` (as integers) then `q · n` is an integer. -/
+private theorem rat_mul_int_isInt (q : ℚ) (n : ℤ) (h : ((q.den : ℤ)) ∣ n) :
+    ∃ m : ℤ, q * (n : ℚ) = (m : ℚ) := by
+  obtain ⟨c, hc⟩ := h; subst hc
+  refine ⟨q.num * c, ?_⟩
+  have hstep : q * ((q.den : ℤ) * c : ℤ) = (q * (q.den : ℚ)) * (c : ℚ) := by push_cast; ring
+  rw [hstep, Rat.mul_den_eq_num]; push_cast; ring
+
+/-- A finite family of rationals has a single common denominator `D ∈ ℤ>0`:
+`q r · D ∈ ℤ` for every `r` in the (finite) index set. -/
+private theorem fin_common_den {ι : Type*} (s : Finset ι) (q : ι → ℚ) :
+    ∃ D : ℤ, 0 < D ∧ ∀ r ∈ s, ∃ m : ℤ, q r * (D : ℚ) = (m : ℚ) := by
+  classical
+  refine ⟨∏ r ∈ s, ((q r).den : ℤ), ?_, ?_⟩
+  · exact Finset.prod_pos (fun r _ => by exact_mod_cast (q r).pos)
+  · exact fun r hr =>
+      rat_mul_int_isInt _ _ (Finset.dvd_prod_of_mem (fun r => ((q r).den : ℤ)) hr)
+
+/-- **Reverse of `supported_phase_eq_diag`.**  If every *supported* eigenphase
+`e^{-iτ θ_r}` (those `r` with `U_{u,r} ≠ 0`) equals one common unit-modulus value
+`c`, then `‖U(τ)_{u,u}‖ = 1`: the diagonal is the convex combination
+`∑_r ‖U_{u,r}‖² e^{-iτθ_r}`, whose supported terms all equal `c` and whose
+weights sum to `1`, so the whole sum is `c`. -/
+theorem periodicAt_of_phases_const (G : WeightedGraph V) (u : V) (τ : ℝ) (c : ℂ)
+    (hc : ‖c‖ = 1)
+    (hall : ∀ r : V, PST.eigU G u r ≠ 0 →
+        Complex.exp (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues r : ℂ)) = c) :
+    IsPeriodicAt G u τ := by
+  have hconv := evolve_diag_convex G τ u
+  have hone : (∑ i : V, (‖PST.eigU G u i‖ ^ 2 : ℂ)) = 1 := by
+    have h2 : ((∑ i : V, ‖PST.eigU G u i‖ ^ 2 : ℝ) : ℂ) = ((1 : ℝ) : ℂ) := by
+      rw [eigU_row_normSq G u]
+    push_cast at h2 ⊢; convert h2 using 1
+  have hsum : G.evolve τ u u = c := by
+    rw [hconv]
+    have hcc : (∑ i : V, (‖PST.eigU G u i‖ ^ 2 : ℂ)
+              * Complex.exp (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues i : ℂ)))
+        = (∑ i : V, (‖PST.eigU G u i‖ ^ 2 : ℂ)) * c := by
+      rw [Finset.sum_mul]
+      refine Finset.sum_congr rfl (fun i _ => ?_)
+      by_cases hi : PST.eigU G u i = 0
+      · simp [hi]
+      · rw [hall i hi]
+    rw [hcc, hone, one_mul]
+  unfold IsPeriodicAt; rw [hsum, hc]
+
+/-- Equal-phase lemma: `τ(a − b) ∈ 2πℤ ⇒ e^{-iτa} = e^{-iτb}`. -/
+private theorem phase_eq_of_int_mul (τ a b : ℝ) (m : ℤ)
+    (hm : τ * (a - b) = 2 * Real.pi * m) :
+    Complex.exp (-(Complex.I * (τ : ℂ)) * (a : ℂ))
+      = Complex.exp (-(Complex.I * (τ : ℂ)) * (b : ℂ)) := by
+  have hmc : (τ : ℂ) * ((a : ℂ) - (b : ℂ)) = 2 * (Real.pi : ℂ) * (m : ℂ) := by
+    exact_mod_cast hm
+  have key : (-(Complex.I * (τ : ℂ)) * (a : ℂ))
+      = (-(Complex.I * (τ : ℂ)) * (b : ℂ))
+          + ((-m : ℤ) : ℂ) * (2 * (Real.pi : ℂ) * Complex.I) := by
+    push_cast; linear_combination (-Complex.I) * hmc
+  rw [key, Complex.exp_add, Complex.exp_int_mul_two_pi_mul_I, mul_one]
+
+/-- **The backward half of Godsil's periodicity criterion (CLOSED).**  If every
+ratio of differences of supported eigenvalues is rational, then `u` is periodic.
+Proven by *finite exact arithmetic* (no Diophantine approximation): extract a
+common denominator `D` across the finite support, set `τ = 2π D / g` for a fixed
+nonzero support difference `g`, which aligns every supported phase to the single
+value `e^{-iτ θ_t}` (`phase_eq_of_int_mul`), and conclude with the convex-sum
+collapse `periodicAt_of_phases_const`.  Reference: Godsil, *Periodic graphs*
+(arXiv:1009.5375), Thm 6.1 (sufficiency). -/
 theorem periodic_of_support_ratios_rational (G : WeightedGraph V) (u : V)
-    (_h : ∀ r₁ r₂ r₃ r₄ : V,
+    (h : ∀ r₁ r₂ r₃ r₄ : V,
         r₁ ∈ eigenvalueSupport G u → r₂ ∈ eigenvalueSupport G u →
         r₃ ∈ eigenvalueSupport G u → r₄ ∈ eigenvalueSupport G u →
         G.herm.eigenvalues r₃ ≠ G.herm.eigenvalues r₄ →
         ∃ q : ℚ, (G.herm.eigenvalues r₁ - G.herm.eigenvalues r₂)
                   = (q : ℝ) * (G.herm.eigenvalues r₃ - G.herm.eigenvalues r₄)) :
     IsPeriodic G u := by
-  -- BLOCKED: backward Diophantine direction (extract common spacing `a`, set
-  -- `τ = 2π/a`, align all supported phases) — AddCircle/Kronecker simultaneous
-  -- approximation, not yet developed.
-  sorry
+  classical
+  -- `r ∈ eigenvalueSupport G u ↔ eigU G u r ≠ 0` (definitional).
+  have hmem : ∀ r, r ∈ eigenvalueSupport G u ↔ PST.eigU G u r ≠ 0 := fun r => Iff.rfl
+  set ev := G.herm.eigenvalues with hev
+  set supp : Finset V := Finset.univ.filter (fun r => PST.eigU G u r ≠ 0) with hsupp
+  have hsmem : ∀ r, r ∈ supp ↔ PST.eigU G u r ≠ 0 := by intro r; rw [hsupp]; simp
+  -- The support is nonempty (the row has unit ℓ²-norm).
+  have hsupp_ne : supp.Nonempty := by
+    by_contra hne
+    rw [Finset.not_nonempty_iff_eq_empty] at hne
+    have hz := eigU_row_normSq G u
+    rw [Finset.sum_eq_zero (fun i _ => ?_)] at hz
+    · norm_num at hz
+    · have hi0 : PST.eigU G u i = 0 := by
+        by_contra hc0; exact absurd ((hsmem i).mpr hc0) (hne ▸ Finset.notMem_empty i)
+      rw [hi0]; simp
+  by_cases hconst : ∀ r ∈ supp, ∀ s ∈ supp, ev r = ev s
+  · -- All supported eigenvalues coincide: every τ works; take τ = 2π.
+    obtain ⟨r0, hr0⟩ := hsupp_ne
+    refine ⟨2 * Real.pi, by positivity, ?_⟩
+    have := periodicAt_of_phases_const G u (2 * Real.pi)
+      (Complex.exp (-(Complex.I * ((2 * Real.pi : ℝ) : ℂ)) * (ev r0 : ℂ)))
+      (by rw [Complex.norm_exp]; simp)
+      (fun r hr => by
+        rw [show (G.herm.eigenvalues r : ℂ) = (ev r0 : ℂ) from by
+              rw [← hev, hconst r ((hsmem r).mpr hr) r0 hr0]])
+    exact this
+  · -- Some two supported eigenvalues differ.
+    push_neg at hconst
+    obtain ⟨s, hs, t, ht, hst⟩ := hconst
+    have hq : ∀ r ∈ supp, ∃ q : ℚ, ev r - ev t = (q : ℝ) * (ev s - ev t) :=
+      fun r hr => h r t s t ((hmem r).mpr ((hsmem r).mp hr)) ((hmem t).mpr ((hsmem t).mp ht))
+        ((hmem s).mpr ((hsmem s).mp hs)) ((hmem t).mpr ((hsmem t).mp ht)) hst
+    choose! qf hqf using hq
+    obtain ⟨D, hDpos, hDden⟩ := fin_common_den supp qf
+    have hmr : ∀ r ∈ supp, ∃ m : ℤ, (qf r : ℝ) * (D : ℝ) = (m : ℝ) :=
+      fun r hr => by obtain ⟨m, hm⟩ := hDden r hr; exact ⟨m, by exact_mod_cast hm⟩
+    set g := ev s - ev t with hg
+    have hgne : g ≠ 0 := sub_ne_zero.mpr hst
+    -- Build the common phase value once `τ` is chosen.
+    -- We handle the two signs of `g` so that `τ > 0`.
+    rcases lt_or_gt_of_ne hgne with hgneg | hgpos
+    · refine ⟨-2 * Real.pi * (D : ℝ) / g, ?_, ?_⟩
+      · rw [div_pos_iff]; right
+        exact ⟨by nlinarith [Real.pi_pos, hDpos, (by exact_mod_cast hDpos : (0:ℝ) < (D:ℝ))],
+               by linarith⟩
+      · set τ := -2 * Real.pi * (D : ℝ) / g with hτ
+        have hτg : τ * g = -2 * Real.pi * (D : ℝ) := by rw [hτ]; field_simp
+        refine periodicAt_of_phases_const G u τ
+          (Complex.exp (-(Complex.I * (τ : ℂ)) * (ev t : ℂ)))
+          (by rw [Complex.norm_exp]; simp) (fun r hr => ?_)
+        have hrsupp : r ∈ supp := (hsmem r).mpr hr
+        obtain ⟨mr, hmrq⟩ := hmr r hrsupp
+        have hτdiff : τ * (ev r - ev t) = 2 * Real.pi * (-mr : ℤ) := by
+          rw [hqf r hrsupp, show τ * ((qf r : ℝ) * g) = (qf r : ℝ) * (τ * g) from by ring,
+            hτg, show (qf r : ℝ) * (-2 * Real.pi * (D : ℝ))
+                  = -2 * Real.pi * ((qf r : ℝ) * (D : ℝ)) from by ring, hmrq]
+          push_cast; ring
+        rw [show (G.herm.eigenvalues r : ℂ) = (ev r : ℂ) from by rw [← hev]]
+        exact phase_eq_of_int_mul τ (ev r) (ev t) (-mr) hτdiff
+    · refine ⟨2 * Real.pi * (D : ℝ) / g, by positivity, ?_⟩
+      set τ := 2 * Real.pi * (D : ℝ) / g with hτ
+      have hτg : τ * g = 2 * Real.pi * (D : ℝ) := by rw [hτ]; field_simp
+      refine periodicAt_of_phases_const G u τ
+        (Complex.exp (-(Complex.I * (τ : ℂ)) * (ev t : ℂ)))
+        (by rw [Complex.norm_exp]; simp) (fun r hr => ?_)
+      have hrsupp : r ∈ supp := (hsmem r).mpr hr
+      obtain ⟨mr, hmrq⟩ := hmr r hrsupp
+      have hτdiff : τ * (ev r - ev t) = 2 * Real.pi * (mr : ℤ) := by
+        rw [hqf r hrsupp, show τ * ((qf r : ℝ) * g) = (qf r : ℝ) * (τ * g) from by ring,
+          hτg, show (qf r : ℝ) * (2 * Real.pi * (D : ℝ))
+                = 2 * Real.pi * ((qf r : ℝ) * (D : ℝ)) from by ring, hmrq]
+      rw [show (G.herm.eigenvalues r : ℂ) = (ev r : ℂ) from by rw [← hev]]
+      exact phase_eq_of_int_mul τ (ev r) (ev t) mr hτdiff
 
 /-- **Godsil's integrality / rationality criterion.**  Vertex `u` is periodic iff
 the pairwise ratios of differences of eigenvalues in its support are rational;
@@ -527,6 +663,169 @@ theorem isPeriodic_iff_eigenvalue_support_ratios_rational (G : WeightedGraph V)
     field_simp
   · -- BACKWARD: rational ratios ⇒ periodic.  Isolated as a named residual.
     exact periodic_of_support_ratios_rational G u
+
+/-! ### Godsil's forward existence direction (real-symmetric, CLOSED)
+
+With the periodicity criterion now an axiom-clean *iff*, the FORWARD half of
+Godsil's PST-existence theorem — `IsPST ⇒ IsGodsilRatio` — is provable for
+real-symmetric adjacency by the periodicity route, with **no Diophantine
+approximation**.  PST forces periodicity at `u` (`isPeriodic_of_isPST`), which
+gives rational ratios of supported eigenvalue differences; cospectrality
+(`PST.isPST_imp_cospectral`) makes the supports of `u` and `v` coincide; and the
+finite rational-ratio data assembles into the arithmetic-progression form of
+`IsGodsilRatio` by clearing a single common denominator
+(`arithProg_of_ratios_rational`).  This is the (true) forward content of
+`PST.isPST_exists_iff_strongCospectral_and_godsilRatio`; the *backward* half is
+genuinely false in this `IsStronglyCospectral`-only generality (it needs the
+sign/parity-matching condition, absent from the predicate — see the note on
+that theorem).  -/
+
+/-- If `q.den ∣ n` (as integers) then `q · n` is an integer. -/
+private theorem rat_mul_int_isInt_godsil (q : ℚ) (n : ℤ) (h : ((q.den : ℤ)) ∣ n) :
+    ∃ m : ℤ, q * (n : ℚ) = (m : ℚ) := by
+  obtain ⟨c, hc⟩ := h; subst hc
+  refine ⟨q.num * c, ?_⟩
+  have hstep : q * ((q.den : ℤ) * c : ℤ) = (q * (q.den : ℚ)) * (c : ℚ) := by push_cast; ring
+  rw [hstep, Rat.mul_den_eq_num]; push_cast; ring
+
+/-- **Rational difference-ratios ⇒ arithmetic progression.**  A finite set `S`
+of reals in which every difference-ratio `(x − y)/(z − w)` (for `z ≠ w`) is
+rational is contained in a single arithmetic progression `b + a·ℤ` with `a > 0`.
+The proof is finite exact arithmetic: fix a nonzero gap `g = z₀ − w₀`, write each
+`x − w₀ = q_x · g` with `q_x ∈ ℚ`, clear the finitely many denominators with one
+common `D ∈ ℤ>0`, and take `a = |g|/D`.  No density/approximation. -/
+theorem arithProg_of_ratios_rational (S : Finset ℝ)
+    (hrat : ∀ x ∈ S, ∀ y ∈ S, ∀ z ∈ S, ∀ w ∈ S, z ≠ w →
+        ∃ q : ℚ, x - y = (q : ℝ) * (z - w)) :
+    ∃ a b : ℝ, 0 < a ∧ ∀ x ∈ S, ∃ k : ℤ, x = b + a * (k : ℝ) := by
+  classical
+  by_cases hS : ∃ z ∈ S, ∃ w ∈ S, z ≠ w
+  · obtain ⟨z, hz, w, hw, hzw⟩ := hS
+    set g := z - w with hg
+    have hgne : g ≠ 0 := sub_ne_zero.mpr hzw
+    have hq : ∀ x ∈ S, ∃ q : ℚ, x - w = (q : ℝ) * g :=
+      fun x hx => hrat x hx w hw z hz w hw hzw
+    choose! qf hqf using hq
+    obtain ⟨D, hDpos, hDden⟩ :
+        ∃ D : ℤ, 0 < D ∧ ∀ x ∈ S, ∃ m : ℤ, qf x * (D : ℚ) = (m : ℚ) :=
+      ⟨∏ x ∈ S, ((qf x).den : ℤ),
+        Finset.prod_pos (fun x _ => by exact_mod_cast (qf x).pos),
+        fun x hx => rat_mul_int_isInt_godsil _ _
+          (Finset.dvd_prod_of_mem (fun x => ((qf x).den : ℤ)) hx)⟩
+    have hDR : (0 : ℝ) < (D : ℝ) := by exact_mod_cast hDpos
+    have hxform : ∀ x ∈ S, ∃ m : ℤ, x = w + (g / (D : ℝ)) * (m : ℝ) := by
+      intro x hx
+      obtain ⟨m, hm⟩ := hDden x hx
+      have hmr : (qf x : ℝ) * (D : ℝ) = (m : ℝ) := by exact_mod_cast hm
+      refine ⟨m, ?_⟩
+      have hxw : x = w + (qf x : ℝ) * g := by have := hqf x hx; linarith
+      have hqfm : (qf x : ℝ) = (m : ℝ) / (D : ℝ) := by rw [eq_div_iff hDR.ne']; exact hmr
+      rw [hxw, hqfm]; field_simp
+    rcases lt_or_gt_of_ne hgne with hneg | hpos
+    · exact ⟨-g / (D : ℝ), w, div_pos (by linarith) hDR, fun x hx => by
+        obtain ⟨m, hm⟩ := hxform x hx; exact ⟨-m, by rw [hm]; push_cast; ring⟩⟩
+    · exact ⟨g / (D : ℝ), w, div_pos (by linarith) hDR, fun x hx => by
+        obtain ⟨m, hm⟩ := hxform x hx; exact ⟨m, hm⟩⟩
+  · push_neg at hS
+    by_cases hne : S.Nonempty
+    · obtain ⟨x0, hx0⟩ := hne
+      exact ⟨1, x0, one_pos, fun x hx => ⟨0, by rw [hS x hx x0 hx0]; ring⟩⟩
+    · rw [Finset.not_nonempty_iff_eq_empty] at hne
+      exact ⟨1, 0, one_pos, fun x hx => absurd hx (hne ▸ Finset.notMem_empty x)⟩
+
+/-- The (value) eigenvalue support `PST.EigenvalueSupport` is exactly the set of
+eigenvalues carrying nonzero diagonal projector mass `(E_λ)_{u,u} ≠ 0`. -/
+theorem mem_eigenvalueSupport_iff_diag (G : WeightedGraph V) (u : V) (lam : ℝ) :
+    lam ∈ PST.EigenvalueSupport G u ↔ PST.eigenProjDiagLocal G lam u ≠ 0 := by
+  unfold PST.EigenvalueSupport PST.eigenProjDiagLocal; rw [Set.mem_setOf_eq]
+  constructor
+  · rintro ⟨i, hi, hui⟩
+    intro hsum
+    have hnn : ∀ j ∈ Finset.univ,
+        0 ≤ (if G.herm.eigenvalues j = lam then ‖PST.eigU G u j‖ ^ 2 else 0) := by
+      intro j _; by_cases h : G.herm.eigenvalues j = lam
+      · simp only [h, if_true]; positivity
+      · simp only [h, if_false, le_refl]
+    have hpos : 0 < (if G.herm.eigenvalues i = lam then ‖PST.eigU G u i‖ ^ 2 else 0) := by
+      simp only [hi, if_true]; positivity
+    have hlt := Finset.sum_pos' hnn ⟨i, Finset.mem_univ i, hpos⟩
+    rw [hsum] at hlt; exact lt_irrefl 0 hlt
+  · intro hne; by_contra hcon; push_neg at hcon
+    apply hne; apply Finset.sum_eq_zero
+    intro i _; by_cases h : G.herm.eigenvalues i = lam
+    · simp only [h, if_true]; rw [hcon i h]; simp
+    · simp only [h, if_false]
+
+/-- **Cospectrality equalizes the eigenvalue supports.**  If the diagonal
+projector entries of `u` and `v` agree at every eigenvalue, then `u` and `v`
+have the same eigenvalue support. -/
+theorem eigenvalueSupport_eq_of_cospectral (G : WeightedGraph V) (u v : V)
+    (hcosp : ∀ mu, mu ∈ Set.range G.herm.eigenvalues →
+        PST.eigenProjDiagLocal G mu u = PST.eigenProjDiagLocal G mu v) :
+    PST.EigenvalueSupport G u = PST.EigenvalueSupport G v := by
+  ext lam
+  rw [mem_eigenvalueSupport_iff_diag, mem_eigenvalueSupport_iff_diag]
+  by_cases hr : lam ∈ Set.range G.herm.eigenvalues
+  · rw [hcosp lam hr]
+  · have hu0 : PST.eigenProjDiagLocal G lam u = 0 := by
+      unfold PST.eigenProjDiagLocal; apply Finset.sum_eq_zero; intro i _
+      have hni : G.herm.eigenvalues i ≠ lam := fun he => hr ⟨i, he⟩
+      simp only [hni, if_false]
+    have hv0 : PST.eigenProjDiagLocal G lam v = 0 := by
+      unfold PST.eigenProjDiagLocal; apply Finset.sum_eq_zero; intro i _
+      have hni : G.herm.eigenvalues i ≠ lam := fun he => hr ⟨i, he⟩
+      simp only [hni, if_false]
+    rw [hu0, hv0]
+
+/-- **Godsil's forward direction (real-symmetric), CLOSED and axiom-clean.**  If
+the adjacency is symmetric and PST occurs from `u` to `v` at a positive time `τ`,
+then the joint eigenvalue support satisfies the Godsil arithmetic-ratio
+condition `IsGodsilRatio G u v`.
+
+Proof: PST ⇒ periodicity at `u` (`isPeriodic_of_isPST`); periodicity ⇒ rational
+ratios of supported eigenvalue differences (forward of the periodicity iff);
+cospectrality (`PST.isPST_imp_cospectral`) makes `EigenvalueSupport G v =
+EigenvalueSupport G u`, so the *joint* support is one finite set, which the
+rational ratios force onto an arithmetic progression
+(`arithProg_of_ratios_rational`).  This is exact finite arithmetic — the
+"Diophantine bridge" that earlier waves deemed unreachable is, on a finite
+spectrum, elementary.  Reference: Godsil 2012 (Electron. J. Combin. 19 #P29),
+Thm 2.1/2.2. -/
+theorem isPST_imp_isGodsilRatio_of_isSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
+    {u v : V} {τ : ℝ} (hτ : 0 < τ) (hpst : IsPST G u v τ) :
+    PST.IsGodsilRatio G u v := by
+  classical
+  have hper : IsPeriodic G u := isPeriodic_of_isPST G hsymm hτ hpst
+  have hidx := (isPeriodic_iff_eigenvalue_support_ratios_rational G u).mp hper
+  have hcosp : ∀ mu, mu ∈ Set.range G.herm.eigenvalues →
+      PST.eigenProjDiagLocal G mu u = PST.eigenProjDiagLocal G mu v :=
+    fun mu hmu => PST.isPST_imp_cospectral G τ u v hpst mu hmu
+  have hsupeq : PST.EigenvalueSupport G u = PST.EigenvalueSupport G v :=
+    eigenvalueSupport_eq_of_cospectral G u v hcosp
+  set S : Finset ℝ := PST.eigenvalueSupportFinset G u with hS
+  have hwit : ∀ lam ∈ S, ∃ i : V, G.herm.eigenvalues i = lam ∧ i ∈ eigenvalueSupport G u := by
+    intro lam hlam
+    rw [hS, PST.mem_eigenvalueSupportFinset] at hlam
+    obtain ⟨i, hi, hui⟩ := hlam; exact ⟨i, hi, hui⟩
+  have hratS : ∀ x ∈ S, ∀ y ∈ S, ∀ z ∈ S, ∀ w ∈ S, z ≠ w →
+      ∃ q : ℚ, x - y = (q : ℝ) * (z - w) := by
+    intro x hx y hy z hz w hw hzw
+    obtain ⟨ix, hix, hixs⟩ := hwit x hx
+    obtain ⟨iy, hiy, hiys⟩ := hwit y hy
+    obtain ⟨iz, hiz, hizs⟩ := hwit z hz
+    obtain ⟨iw, hiw, hiws⟩ := hwit w hw
+    have hzw' : G.herm.eigenvalues iz ≠ G.herm.eigenvalues iw := by rw [hiz, hiw]; exact hzw
+    obtain ⟨q, hq⟩ := hidx ix iy iz iw hixs hiys hizs hiws hzw'
+    refine ⟨q, ?_⟩
+    rw [← hix, ← hiy, ← hiz, ← hiw]; exact hq
+  obtain ⟨a, b, ha, hAP⟩ := arithProg_of_ratios_rational S hratS
+  refine ⟨a, b, ha, fun lam hlam => ?_⟩
+  have hlamS : lam ∈ S := by
+    rw [hS, PST.mem_eigenvalueSupportFinset]
+    rcases hlam with h | h
+    · exact h
+    · rw [hsupeq]; exact h
+  exact hAP lam hlamS
 
 /-! ## Universal PST and switching automorphisms -/
 

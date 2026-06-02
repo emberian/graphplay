@@ -390,89 +390,243 @@ noncomputable def fiberPartitionSigned (B : ChiralBundle Q V)
       simp [hk]
     · intro h; exact absurd (Finset.mem_univ j) h
 
+/-! ### Headline chiral-bundle PST/PGST (singleton-fiber form below) -/
+/-- The cell cardinality of the fiber-partition of `totalSigned`: cell `i` is the
+fiber `V i`, so its cardinality is `Fintype.card (V i)`. -/
+theorem fiberPartitionSigned_cellCard (B : ChiralBundle Q V)
+    {d : I → ℂ} (hreg : B.HasRegularFibers d)
+    {α β : ∀ {i j : I}, Q.Adj i j → ℂ} (hbi : B.HasBiregularCouplings α β)
+    (i : I) :
+    (B.fiberPartitionSigned (α := α) (β := β) hreg hbi).cellCard i
+      = (Fintype.card (V i) : ℝ) := by
+  classical
+  unfold EquitablePartition.cellCard
+  -- The cell map is `Sigma.fst`; vertices with `.1 = i` biject with `V i`
+  -- (the embedding `w ↦ ⟨i, w⟩`).
+  have hcard : (Finset.univ.filter
+      (fun w : Σ k, V k => (B.fiberPartitionSigned (α := α) (β := β) hreg hbi).cells w = i)).card
+      = Fintype.card (V i) := by
+    have hmap : (Finset.univ.filter
+        (fun w : Σ k, V k => (B.fiberPartitionSigned (α := α) (β := β) hreg hbi).cells w = i)).card
+        = (Finset.univ.map
+            ⟨fun w : V i => (⟨i, w⟩ : Σ k, V k), fun a b h => by simpa using h⟩).card := by
+      congr 1
+      ext x
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_map,
+        Function.Embedding.coeFn_mk]
+      constructor
+      · intro h
+        -- `cells x = x.1 = i`.
+        have hx1 : x.1 = i := h
+        exact ⟨hx1 ▸ x.2, by obtain ⟨xi, xv⟩ := x; cases hx1; rfl⟩
+      · rintro ⟨w, _, rfl⟩; rfl
+    rw [hmap, Finset.card_map, Finset.card_univ]
+  rw [hcard]
+
+/-- **Singleton-fiber identity.**  When every fiber is a singleton
+(`Fintype.card (V i) = 1`), the chirally-signed quotient adjacency coincides
+*entrywise* with the genuinely-Hermitian symmetric quotient of the fiber
+partition: both equal the raw quotient (= cross-mass, since cells are singletons,
+so `|C_i| = 1`).  This is the precise statement that dissolves the cell-size
+normalization mismatch flagged in the headline docstring. -/
+theorem quotientSigned_eq_symmQuotient_of_singleton (B : ChiralBundle Q V)
+    {d : I → ℂ} (hreg : B.HasRegularFibers d)
+    {α β : ∀ {i j : I}, Q.Adj i j → ℂ} (hbi : B.HasBiregularCouplings α β)
+    (hsingle : ∀ i, Fintype.card (V i) = 1) :
+    B.quotientSigned.adj
+      = (B.fiberPartitionSigned (α := α) (β := β) hreg hbi).symmQuotient := by
+  classical
+  set P := B.fiberPartitionSigned (α := α) (β := β) hreg hbi with hP
+  -- Every cell has cardinality 1.
+  have hcc : ∀ i, P.cellCard i = 1 := by
+    intro i; rw [hP, fiberPartitionSigned_cellCard, hsingle i]; norm_num
+  have hsqrt : ∀ i, (Real.sqrt (P.cellCard i) : ℂ) = 1 := by
+    intro i; rw [hcc i, Real.sqrt_one]; norm_num
+  funext i j
+  -- Right side: `symmQuotient i j = √cc_i · Q i j / √cc_j = Q i j` (cc = 1).
+  rw [EquitablePartition.symmQuotient, hsqrt i, hsqrt j, one_mul, div_one]
+  -- `Q i j = crossMass i j / cc_i = crossMass i j` (cc = 1).
+  have hquot : P.quotient i j = P.crossMass i j := by
+    rw [EquitablePartition.crossMass_eq_card_mul_quotient, hcc i]; push_cast; ring
+  rw [hquot]
+  -- `crossMass i j = ∑∑ if cells x = i ∧ cells z = j then totalSigned x z`.
+  -- `quotientSigned.adj i j` is the same off-diagonal sum, and `0` on the diagonal.
+  show (if i = j then (0 : ℂ)
+      else ∑ x : Σ k, V k, ∑ z : Σ k, V k,
+        (if x.1 = i ∧ z.1 = j then B.totalSigned.adj x z else 0))
+      = P.crossMass i j
+  unfold EquitablePartition.crossMass
+  -- The cell map of `P` is `Sigma.fst`.
+  have hcells : ∀ x : Σ k, V k, P.cells x = x.1 := fun _ => rfl
+  by_cases hij : i = j
+  · -- Diagonal: both sides are `0` (singleton fiber + loopless `totalSigned`).
+    rw [if_pos hij]
+    symm
+    apply Finset.sum_eq_zero; intro x _
+    apply Finset.sum_eq_zero; intro z _
+    by_cases hxz : P.cells x = i ∧ P.cells z = j
+    · rw [if_pos hxz]
+      -- `x.1 = i`, `z.1 = j = i` and `V i` is a singleton ⇒ `x = z`; loopless gives `0`.
+      have hx1 : x.1 = i := hxz.1
+      have hz1 : z.1 = i := hij ▸ hxz.2
+      have hxz_eq : x = z := by
+        have hsub : Subsingleton (V i) := by
+          rw [← Fintype.card_le_one_iff_subsingleton, hsingle i]
+        obtain ⟨xi, xv⟩ := x; obtain ⟨zi, zv⟩ := z
+        simp only at hx1 hz1
+        cases hx1; cases hz1
+        exact Sigma.ext rfl (heq_of_eq (Subsingleton.elim xv zv))
+      rw [hxz_eq]; exact B.totalSigned.loopless z
+    · rw [if_neg hxz]
+  · -- Off-diagonal: the `quotientSigned` sum equals the cross-mass sum verbatim.
+    rw [if_neg hij]
+    refine Finset.sum_congr rfl (fun x _ => Finset.sum_congr rfl (fun z _ => ?_))
+    rw [hcells x, hcells z]
+
+/-- **Cell-uniform matrix-element = signed-quotient evolution entry (singleton
+fibers).**  Under singleton fibers, the normalized cell-uniform matrix element of
+`totalSigned`'s evolution between cells `i` and `j` at time `τ` equals the
+`(j, i)` entry of the *signed quotient* evolution `B.quotientSigned.evolve τ`.
+
+This is the precise intertwining that makes both `IsCellUniformPST` and
+`IsCellUniformPGST` on the host coincide with the corresponding `IsPST`/`IsPGST`
+on the signed quotient (at the swapped indices `j i`, matching Bachman–Tamon),
+without any cell-size rescale. -/
+theorem cellUniformElt_eq_quotientSigned_evolve (B : ChiralBundle Q V)
+    {d : I → ℂ} (hreg : B.HasRegularFibers d)
+    {α β : ∀ {i j : I}, Q.Adj i j → ℂ} (hbi : B.HasBiregularCouplings α β)
+    (hsingle : ∀ i, Fintype.card (V i) = 1)
+    (i j : I) (τ : ℝ) :
+    (∑ x, ∑ y, if (B.fiberPartitionSigned (α := α) (β := β) hreg hbi).cells x = i ∧
+        (B.fiberPartitionSigned (α := α) (β := β) hreg hbi).cells y = j
+        then B.totalSigned.evolve τ y x else 0) /
+        ((Real.sqrt ((B.fiberPartitionSigned (α := α) (β := β) hreg hbi).cellCard i) : ℂ) *
+          (Real.sqrt ((B.fiberPartitionSigned (α := α) (β := β) hreg hbi).cellCard j) : ℂ))
+      = B.quotientSigned.evolve τ j i := by
+  classical
+  set P := B.fiberPartitionSigned (α := α) (β := β) hreg hbi with hP
+  have hne : ∀ k, P.cellCard k ≠ 0 := by
+    intro k; rw [hP, fiberPartitionSigned_cellCard, hsingle k]; norm_num
+  -- Cell-uniform element `= (Bᴴ (evolve τ) B) j i`.
+  rw [P.cellUniform_matrixElement (B.totalSigned.evolve τ) i j]
+  -- `evolve τ = exp(s • totalSigned.adj)`; intertwine through `cellEmbed`.
+  set s : ℂ := -(Complex.I * (τ : ℂ)) with hs
+  have hev : B.totalSigned.evolve τ = NormedSpace.exp (s • B.totalSigned.adj) := rfl
+  rw [hev]
+  -- `Bᴴ * exp(s•adj) * B = Bᴴ * (B * exp(s•symmQuotient)) = exp(s•symmQuotient)`.
+  rw [Matrix.mul_assoc, P.exp_smul_adj_mul_cellEmbed s, ← Matrix.mul_assoc,
+    P.cellEmbed_conjTranspose_mul_cellEmbed hne, Matrix.one_mul]
+  -- `exp(s•symmQuotient) j i = exp(s • quotientSigned.adj) j i = quotientSigned.evolve τ j i`.
+  rw [show P.symmQuotient = B.quotientSigned.adj from
+    (quotientSigned_eq_symmQuotient_of_singleton B hreg hbi hsingle).symm]
+  rfl
+
 /--
-**Chiral bundle PST theorem (headline).**
+**Chiral bundle PST theorem (headline, singleton-fiber form).**
 
-Let `B : ChiralBundle Q V` be a chiral bundle whose underlying bundle has
-regular fibers (with degrees `d i`) and biregular couplings (with
-parameters `α, β`). Then for any two template vertices `i j : I` and any
-time `τ : ℝ`, the chirally-signed total adjacency `B.totalSigned`
-exhibits **cell-uniform PST** between cells `i` and `j` at time `τ` if and
-only if the **chirally-signed quotient** `B.quotientSigned` exhibits PST
-between vertices `i` and `j` at time `τ`.
+The previous statement was FALSE at the literal `τ` because of the cell-size
+normalization mismatch `quotientSigned.adj = |C_i|·quotient ≠ symmQuotient`
+(they differ by the scalar `|C_i|`, rescaling time by the fiber size).  We
+restrict to **singleton fibers** (`Fintype.card (V i) = 1`, i.e. `|C_i| = 1`),
+exactly the regime where `quotientSigned.adj` *equals* the genuinely-Hermitian
+`symmQuotient` (`quotientSigned_eq_symmQuotient_of_singleton`); there the
+biconditional holds at the **same** `τ`, with the standard Bachman–Tamon index
+swap `j i` on the quotient side.
 
-**Citations:**
+Both directions are now closed by the proven Bachman–Tamon iff
+(`cellUniform_matrixElement` + the exponential intertwining
+`exp_smul_adj_mul_cellEmbed`), via the shared identity
+`cellUniformElt_eq_quotientSigned_evolve`.  The singleton-fiber case is exactly
+the Levine et al. `Q = pt` base case (`levine_base_corollary`), lifted to an
+arbitrary template `Q`.
 
-* The unsigned predecessor is Bachman–Fernando–Lin–Pal–Tamon
-  arXiv:1108.0339, Theorem 3.2 (PST on quotient graphs).
-* The product/bundle PST framework is Ge–Greenberg–Perez–Tamon
-  arXiv:1009.1340 (cartesian and direct products via equitable partitions).
-* The chiral base case `Q = pt` is Levine–Mesapam–Mustico–Tamon–Tucker–Zhan
-  arXiv:2605.04414, Theorem 1.1 / Lemmas 2.1–2.3.
-
-**Proof sketch (deferred) and the residual obstruction.** The intended
-route factors `B.totalSigned` through `signedBy_preserves_equitable`,
-obtaining the fiber partition as equitable for the signed total, and then
-applies the characteristic-isometry intertwining
-`S^* exp(-i τ A_signed) S = exp(-i τ A_quot_signed)` of Bachman–Tamon §2
-(extended chirally as in Levine et al. Lemma 2.1).  The verified avatar of
-that intertwining is `EquitablePartition.pst_lift`, which establishes the
-`(⇐)` direction with the quotient operator taken to be the genuinely
-Hermitian symmetric quotient `P.symmQuotient` (= `crossMass /
-(√|C_i|·√|C_j|)`).
-
-The residual gap — and the reason this stays an honest `sorry` rather than
-a `pst_lift` one-liner — is a **cell-size normalization mismatch**, isolated
-to a single named identity:
-
-  `B.quotientSigned.adj i j  =  crossMass i j  =  √|C_i|·√|C_j| · symmQuotient i j`.
-
-`quotientSigned.adj` is the *raw* cross-mass (`|C_i| · quotient i j`), while
-the lift's quotient operator is `symmQuotient`.  For equinumerous fibers of
-common size `N` these differ by the scalar `N`, so the host-side cell-uniform
-PST at time `τ` corresponds to `symmQuotient`-PST at time `τ` but to
-`quotientSigned`-PST at the *rescaled* time `N·τ`.  Hence the biconditional
-at the **same** `τ` is provable only when `N = 1` (singleton fibers, the
-Levine `Q = pt` base case discharged in `levine_base_corollary`); the general
-same-`τ` statement is not true as written.  Closing this honestly requires
-either (i) adding the hypothesis `∀ k, (fiberPartitionSigned …).cellCard k = 1`
-and invoking `pst_lift` with `quotientSigned = symmQuotient`, or
-(ii) restating the RHS time as `(Fintype.card (V i)) • τ`.  We keep the
-headline general and leave the named residual explicit.  (`pst_lift` is also
-only the `(⇐)` half; the `(⇒)` half needs the reverse implication of the
-unitary intertwining, a second honest component.)
--/
+**Citations:** Bachman–Fernando–Lin–Pal–Tamon arXiv:1108.0339 Thm 3.2;
+Ge–Greenberg–Perez–Tamon arXiv:1009.1340; Levine–Mesapam–Mustico–Tamon–
+Tucker–Zhan arXiv:2605.04414 Thm 1.1. -/
 theorem pst_iff_quotient_signed_pst
     (B : ChiralBundle Q V)
     {d : I → ℂ} (hreg : B.HasRegularFibers d)
     {α β : ∀ {i j : I}, Q.Adj i j → ℂ} (hbi : B.HasBiregularCouplings α β)
+    (hsingle : ∀ i, Fintype.card (V i) = 1)
     (i j : I) (τ : ℝ) :
     IsCellUniformPST B.totalSigned (B.fiberPartitionSigned (α := α) (β := β) hreg hbi) i j τ ↔
-      IsPST B.quotientSigned i j τ := by
-  sorry
+      IsPST B.quotientSigned j i τ := by
+  classical
+  unfold IsCellUniformPST IsPST
+  rw [cellUniformElt_eq_quotientSigned_evolve B hreg hbi hsingle i j τ]
 
-/-- **PGST analogue.** Pretty-good cell-uniform state transfer on the
-chirally-signed bundle is equivalent to PGST on the chirally-signed
-quotient. Proof goes through `EquitablePartition.pgst_lift` plus a
-limit-and-quotient argument identical to the PST case.
+/-- Each entry of a CTQW propagator has modulus `≤ 1` (the propagator is
+unitary, so each column has unit `ℓ²`-norm). -/
+theorem evolve_entry_norm_le_one {W : Type*} [Fintype W] [DecidableEq W]
+    (G : WeightedGraph W) (t : ℝ) (u v : W) :
+    ‖G.evolve t u v‖ ≤ 1 := by
+  have hU : (G.evolve t)ᴴ * G.evolve t = (1 : Matrix W W ℂ) := G.evolve_unitary t
+  have hcol : ∑ w, ‖G.evolve t w v‖ ^ 2 = 1 := by
+    have h := congrFun (congrFun hU v) v
+    rw [Matrix.mul_apply] at h
+    simp only [Matrix.conjTranspose_apply, Matrix.one_apply_eq, Complex.star_def] at h
+    have h2 : ∀ w, (starRingEnd ℂ) (G.evolve t w v) * G.evolve t w v
+        = ((‖G.evolve t w v‖ ^ 2 : ℝ) : ℂ) := by
+      intro w
+      have hcm := Complex.normSq_eq_conj_mul_self (z := G.evolve t w v)
+      rw [Complex.normSq_eq_norm_sq] at hcm
+      rw [← hcm]
+    rw [Finset.sum_congr rfl (fun w _ => h2 w)] at h
+    have hcast : ((∑ w, ‖G.evolve t w v‖ ^ 2 : ℝ) : ℂ) = ((1 : ℝ) : ℂ) := by
+      push_cast at h ⊢; exact h
+    exact_mod_cast hcast
+  have hle : ‖G.evolve t u v‖ ^ 2 ≤ ∑ w, ‖G.evolve t w v‖ ^ 2 :=
+    Finset.single_le_sum (f := fun w => ‖G.evolve t w v‖ ^ 2)
+      (fun w _ => sq_nonneg _) (Finset.mem_univ u)
+  rw [hcol] at hle
+  nlinarith [norm_nonneg (G.evolve t u v), hle]
 
-Honest `sorry`, same residual as `pst_iff_quotient_signed_pst`: the verified
-`EquitablePartition.pgst_lift` discharges the `(⇐)` direction with the
-quotient operator `symmQuotient`, whereas `IsPGST B.quotientSigned` is the
-PGST of the *raw* cross-mass quotient `quotientSigned.adj = √|C_i|·√|C_j| ·
-symmQuotient`.  The two coincide only for singleton fibers; in general the
-PGST approximating-time families differ by the cell-size rescale, so the
-same-predicate biconditional is not provable as written without a
-`cellCard ≡ 1` hypothesis (and the `(⇒)` half additionally needs the reverse
-unitary intertwining). -/
+/-- **PGST analogue (singleton-fiber form).** Pretty-good cell-uniform state
+transfer on the chirally-signed bundle is equivalent to PGST on the chirally-
+signed quotient (at swapped indices `j i`), under the same singleton-fiber
+restriction as `pst_iff_quotient_signed_pst`.
+
+The previous statement was FALSE at the literal `τ` for the same cell-size
+normalization reason; restricting to `Fintype.card (V i) = 1` makes
+`quotientSigned.adj = symmQuotient`, so the per-`ε` modulus conditions on the two
+sides are the *same* condition on the *same* complex number
+(`cellUniformElt_eq_quotientSigned_evolve`), and the biconditional is exact. -/
 theorem pgst_iff_quotient_signed_pgst
     (B : ChiralBundle Q V)
     {d : I → ℂ} (hreg : B.HasRegularFibers d)
     {α β : ∀ {i j : I}, Q.Adj i j → ℂ} (hbi : B.HasBiregularCouplings α β)
+    -- Singleton-fiber restriction (`|C_i| = 1`): exactly the regime where the raw
+    -- cross-mass quotient `quotientSigned` and the genuinely-Hermitian
+    -- `symmQuotient` coincide, so the same-`τ` biconditional is TRUE.
+    (hsingle : ∀ i, Fintype.card (V i) = 1)
     (i j : I) :
     IsCellUniformPGST B.totalSigned (B.fiberPartitionSigned (α := α) (β := β) hreg hbi) i j ↔
-      IsPGST B.quotientSigned i j := by
-  sorry
+      IsPGST B.quotientSigned j i := by
+  classical
+  -- Both sides are the per-`ε` modulus condition on the SAME complex number
+  -- `M := B.quotientSigned.evolve τ j i`, via the shared identity; they differ
+  -- only by the non-strict (`≥ 1-ε`) vs strict (`|·-1| < ε`) wording, reconciled
+  -- using `‖M‖ ≤ 1` (`evolve_entry_norm_le_one`).
+  set Melt := fun τ : ℝ => B.quotientSigned.evolve τ j i with hMelt
+  have hbound : ∀ τ : ℝ, ‖Melt τ‖ ≤ 1 := fun τ =>
+    evolve_entry_norm_le_one B.quotientSigned τ j i
+  unfold IsCellUniformPGST IsPGST
+  constructor
+  · -- `‖cellElt‖ ≥ 1-ε`  ⇒  `|‖M‖-1| < ε`: apply the host PGST at `ε/2`.
+    intro hCU ε hε
+    obtain ⟨τ, hτ⟩ := hCU (ε / 2) (by linarith)
+    rw [cellUniformElt_eq_quotientSigned_evolve B hreg hbi hsingle i j τ] at hτ
+    refine ⟨τ, ?_⟩
+    -- `1 - ε/2 ≤ ‖M‖ ≤ 1`, so `|‖M‖ - 1| = 1 - ‖M‖ ≤ ε/2 < ε`.
+    rw [abs_lt]
+    constructor <;> [linarith [hbound τ]; linarith [hbound τ]]
+  · -- `|‖M‖-1| < ε`  ⇒  `‖cellElt‖ ≥ 1-ε`.
+    intro hQ ε hε
+    obtain ⟨τ, hτ⟩ := hQ ε hε
+    refine ⟨τ, ?_⟩
+    rw [cellUniformElt_eq_quotientSigned_evolve B hreg hbi hsingle i j τ]
+    have h := abs_lt.mp hτ
+    linarith [h.1]
 
 end ChiralBundle
 

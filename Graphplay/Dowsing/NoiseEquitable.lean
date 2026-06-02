@@ -743,19 +743,97 @@ We instantiate the criterion on the three standard textbook models. -/
 
 /-! ### 5.1 Depolarising noise — universally equitable -/
 
-/-- **Depolarising noise is universally equitable.**
+/-- The **empty weighted graph** on `V`: zero adjacency.  Hermitian, loopless,
+and `0`-regular.  Used as a universal probe host for the depolarising
+counterexample (its `indiscrete` partition lumps all vertices into one cell). -/
+def emptyWeighted (V : Type u) [Fintype V] [DecidableEq V] : WeightedGraph V where
+  adj := 0
+  herm := by simp [Matrix.IsHermitian]
+  loopless := fun _ => rfl
 
-Depolarising noise can be written with Lindblad operators that are the
-generalised Gell-Mann basis of `Mat_n(ℂ)` weighted equally.  As a
-*channel*, depolarising noise sends `ρ ↦ (1−p) ρ + p · 𝟙/n` — which
-acts trivially on cell-projector commutators.  Equivalently, the
-dissipative part of the Lindblad generator commutes with every projector.
--/
-theorem depolarizing_isUniversallyEquitable (rate : ℝ) :
-    (NoiseModel.depolarizingNoise V rate).IsUniversallyEquitable := by
-  -- requires the deferred concrete construction of `depolarizingNoise`;
-  -- once expanded, each `L_k` is in `centerMat V` after the natural rewriting.
-  sorry
+theorem emptyWeighted_isRegular (V : Type u) [Fintype V] [DecidableEq V] :
+    (emptyWeighted V).isRegular 0 := by
+  intro v; simp [emptyWeighted, WeightedGraph.degree]
+
+/-- **Depolarising noise is universally equitable iff `V` is a subsingleton
+(corrected, issue: matrix-unit jumps).**
+
+The previous statement `(depolarizingNoise V rate).IsUniversallyEquitable` is
+**FALSE** for `|V| ≥ 2`.  Depolarising noise's Lindblad set is the *full* matrix-
+unit basis `{ |u⟩⟨v| = single u v 1 : u, v ∈ V }` of `Mat_n(ℂ)` — including the
+*off-diagonal* units `|u⟩⟨v|` with `u ≠ v`.  An off-diagonal unit sends the
+all-ones (cell-uniform) vector `𝟙` to the indicator `e_u`, which is **not**
+constant on a cell containing both `u` and `v`; so it does not preserve the
+cell-uniform subspace of, e.g., the one-cell (`indiscrete`) partition of the
+`0`-regular empty host.  Universal equitability therefore forces every
+off-diagonal unit to vanish, i.e. forces `V` to be a subsingleton (no two
+distinct vertices).  Conversely, when `V` is a subsingleton every matrix is
+central (`Mat_1(ℂ) = ℂ·1`), so the whole jump set lies in `centerMat V` and
+universal equitability holds.
+
+This is the genuinely-true characterisation of `depolarizingNoise`; the
+"depolarising preserves all equitable structure" intuition is only correct for
+the *diagonal/dephasing* sub-generator (cf.
+`dephasing_cellUniformSymmetric_iff_singleton`), not the full matrix-unit set. -/
+theorem depolarizing_isUniversallyEquitable_iff_subsingleton (rate : ℝ) :
+    (NoiseModel.depolarizingNoise V rate).IsUniversallyEquitable ↔ Subsingleton V := by
+  classical
+  constructor
+  · -- universally equitable ⇒ subsingleton.
+    intro hUE
+    rw [← not_nontrivial_iff_subsingleton]
+    rintro ⟨u, v, huv⟩
+    -- `single u v 1` is a depolarising jump operator.
+    have hLmem : Matrix.single u v (1 : ℂ) ∈
+        (NoiseModel.depolarizingNoise V rate).lindblad_operators := by
+      simp only [NoiseModel.depolarizingNoise, Finset.mem_image, Finset.mem_product,
+        Finset.mem_univ, true_and, Prod.exists]
+      exact ⟨u, v, rfl⟩
+    -- Probe the `0`-regular empty host with a one-cell partition; the index type
+    -- and its universe are inferred to match the `IsUniversallyEquitable`
+    -- quantifier.
+    let P : EquitablePartition (emptyWeighted V) PUnit :=
+      { cells := fun _ => PUnit.unit
+        uniform := by intro i j x y _ _; rfl }
+    have hpres := hUE (emptyWeighted V) _ P _ hLmem
+    -- All vertices share the unique cell.
+    have hcell : ∀ x y : V, P.cells x = P.cells y := fun _ _ => rfl
+    -- Apply to the constant-`1` vector; entries at `u` and `v` must agree.
+    have hconst : ∀ a b : V, P.cells a = P.cells b →
+        (fun _ : V => (1 : ℂ)) a = (fun _ : V => (1 : ℂ)) b := fun _ _ _ => rfl
+    have key := hpres (fun _ => (1 : ℂ)) hconst u v (hcell u v)
+    -- `(single u v 1) *ᵥ 𝟙` is `1` at `u` and `0` at `v` (since `u ≠ v` ⇒ row `v` empty).
+    have hmu : (Matrix.single u v (1 : ℂ)).mulVec (fun _ => (1 : ℂ)) u = 1 := by
+      rw [Matrix.mulVec, dotProduct, Finset.sum_eq_single v]
+      · rw [Matrix.single_apply_same, mul_one]
+      · intro b _ hb
+        rw [Matrix.single_apply_of_col_ne u u (Ne.symm hb) (1 : ℂ), zero_mul]
+      · intro h; exact absurd (Finset.mem_univ v) h
+    have hmv : (Matrix.single u v (1 : ℂ)).mulVec (fun _ => (1 : ℂ)) v = 0 := by
+      rw [Matrix.mulVec, dotProduct]
+      apply Finset.sum_eq_zero; intro y _
+      rw [Matrix.single_apply_of_row_ne huv v y (1 : ℂ), zero_mul]
+    rw [hmu, hmv] at key
+    exact one_ne_zero key
+  · -- subsingleton ⇒ universally equitable (every jump operator is central,
+    -- hence preserves every cell-uniform subspace by `central_preservesCellUniform`).
+    -- We avoid the (sorried `⇒` half of) `isUniversallyEquitable_iff_central` and
+    -- route directly through the proven `central_preservesCellUniform`.
+    intro hSub G' I' _ _ P L _hL
+    haveI : Subsingleton V := hSub
+    -- On a subsingleton vertex type every matrix is central (`c • 1`).
+    have hLcentral : L ∈ centerMat V := by
+      intro N
+      funext x y
+      rw [Matrix.mul_apply, Matrix.mul_apply]
+      -- subsingleton: only the `x = y` summand survives and both sides agree.
+      rw [Finset.sum_eq_single x, Finset.sum_eq_single x]
+      · rw [Subsingleton.elim y x]; ring
+      · intro b _ hb; exact absurd (Subsingleton.elim b x) hb
+      · intro h; exact absurd (Finset.mem_univ x) h
+      · intro b _ hb; exact absurd (Subsingleton.elim b x) hb
+      · intro h; exact absurd (Finset.mem_univ x) h
+    exact central_preservesCellUniform P L hLcentral
 
 /-! ### 5.2 Site-dependent dephasing — cell-uniform-symmetric iff the partition is discrete
 

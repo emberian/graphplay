@@ -788,37 +788,225 @@ theorem constant_symmQuotient_eq [NoAtoms μ] (W : Graphon Ω μ) (c : ℂ)
   rw [hsq]
   field_simp
 
-/-- **Constant graphon: cell-uniform PST between distinct cells is *non-trivial***
-in general — `K_2` (two equal-mass cells) exhibits genuine PST, so the bare
-"PST ⟹ i = j" claim is **false** without an extra non-degeneracy hypothesis.
+/-! ### Rank-one matrix-exponential machinery for the constant graphon
 
-For a constant graphon `W ≡ c` (the `K_n` limit), the symmetric quotient is the
-rank-one outer product `symmQuotient = (c · μ(Ω)) · |ψ⟩⟨ψ|` with `ψ_i =
-√(μ_i / μ(Ω))` a unit vector (`constant_symmQuotient_eq`), so
-`exp(-iτ · symmQuotient)_{ji} = δ_{ji} + (e^{-iτ c μ(Ω)} − 1) ψ_j ψ_i`.  Its
-off-diagonal modulus is `|e^{-iτ c μ(Ω)} − 1| · ψ_j ψ_i ≤ 2 · ψ_j ψ_i ≤ 1`, with
-the **upper bound attained** precisely when `ψ_j = ψ_i = 1/√2` (two equal-mass
-cells) **and** the phase is `π` — i.e. the `K_2` configuration, where PST between
-the two distinct cells genuinely occurs.
+The constant-graphon symmetric quotient is `c · (v vᵀ)` with `v_i = √μ(C_i)` —
+a scalar multiple of a **rank-one idempotent** `E_{ij} = √μ_i √μ_j / s`
+(`s := Σ_k μ(C_k)`).  We prove the closed-form matrix exponential of a scalar
+multiple of any idempotent, then read off the off-diagonal modulus to get the
+non-degenerate triviality theorem below. -/
 
-So the triviality conclusion holds only away from that degenerate equal-mass
-pair; the honest statement needs a hypothesis ruling it out (e.g. `2 ≤ Fintype.card I`
-with strictly unequal masses, or `ψ_j ψ_i < 1/2`).  We therefore keep this an
-HONEST `sorry`: the conclusion `i = j` is *false as written* for `K_2`, and the
-correct non-degenerate version requires the finite rank-one PST classification
-(a sharp `|e^{iθ}−1| · ψ_jψ_i < 1` argument under the non-degeneracy hypothesis),
-which is not yet formalised.  The algebraic rank-one core is fully discharged in
-`constant_symmQuotient_eq`. -/
-theorem constant_graphon_pst_trivial
+/-- **Exponential of a scalar multiple of an idempotent matrix.**  If `E` is
+idempotent (`E * E = E`) then `exp(z • E) = 1 + (eᶻ − 1) • E`.  This is the
+honest analytic core of the rank-one constant-graphon spectrum: the exponential
+series telescopes because `(z • E)ⁿ = zⁿ • E` for `n ≥ 1`.  Proved entrywise in
+the native (entrywise-topology) matrix exponential via `exp_eq_tsum_rat`. -/
+theorem exp_smul_idempotent (E : Matrix I I ℂ) (hE : E * E = E) (z : ℂ) :
+    NormedSpace.exp (z • E) = 1 + (Complex.exp z - 1) • E := by
+  classical
+  have hpow : ∀ n : ℕ, (z • E) ^ (n + 1) = z ^ (n + 1) • E := by
+    intro n
+    induction n with
+    | zero => rw [zero_add, pow_one, pow_one]
+    | succ m ih => rw [pow_succ, ih, smul_mul_smul_comm, hE, ← pow_succ]
+  have hexp : NormedSpace.exp (z • E) = ∑' n : ℕ, ((Nat.factorial n : ℚ)⁻¹) • (z • E) ^ n := by
+    rw [NormedSpace.exp_eq_tsum_rat]
+  have hsumScalar : Summable (fun n => ((Nat.factorial n : ℚ)⁻¹) • z ^ n : ℕ → ℂ) :=
+    NormedSpace.expSeries_summable' (𝕂 := ℚ) z
+  have hsumG : Summable (fun n => (((Nat.factorial n : ℚ)⁻¹) • z ^ n) • E) :=
+    hsumScalar.smul_const E
+  have hsumCorr : Summable (fun n : ℕ => if n = 0 then (1 - E : Matrix I I ℂ) else 0) := by
+    apply summable_of_ne_finset_zero (s := {0})
+    intro n hn
+    rw [if_neg (by simpa using hn)]
+  have hfeq : (fun n => ((Nat.factorial n : ℚ)⁻¹) • (z • E) ^ n)
+      = fun n => (((Nat.factorial n : ℚ)⁻¹) • z ^ n) • E
+          + (if n = 0 then (1 - E : Matrix I I ℂ) else 0) := by
+    funext n
+    cases n with
+    | zero =>
+      rw [if_pos rfl, pow_zero, pow_zero, Nat.factorial_zero, Nat.cast_one, inv_one,
+        one_smul, one_smul, one_smul]
+      abel
+    | succ m =>
+      rw [hpow m, if_neg (Nat.succ_ne_zero m), add_zero, smul_assoc]
+  rw [hexp, hfeq, hsumG.tsum_add hsumCorr]
+  rw [Summable.tsum_smul_const hsumScalar E]
+  rw [(hasSum_ite_eq 0 (1 - E)).tsum_eq]
+  have hscalarval : (∑' n : ℕ, ((Nat.factorial n : ℚ)⁻¹) • z ^ n : ℂ) = Complex.exp z := by
+    rw [Complex.exp_eq_exp_ℂ, NormedSpace.exp_eq_tsum_rat]
+  rw [hscalarval, sub_smul, one_smul]
+  abel
+
+/-- `√μ_k · √μ_k = μ_k` (as a complex scalar); cells have positive mass. -/
+theorem sqrt_cellMass_mul_self (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (k : I) :
+    (Real.sqrt (P.cellMass k) : ℂ) * (Real.sqrt (P.cellMass k) : ℂ) = (P.cellMass k : ℂ) := by
+  rw [← Complex.ofReal_mul, Real.mul_self_sqrt (le_of_lt (P.cellMass_pos k))]
+
+/-- The **rank-one idempotent** `E_{ij} = √μ(C_i) · √μ(C_j) / (Σ_k μ(C_k))`
+underlying the constant-graphon symmetric quotient.  Equals `|ψ⟩⟨ψ|` with
+`ψ_i = √(μ_i / s)` a unit vector. -/
+noncomputable def constRankOne (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    Matrix I I ℂ :=
+  fun i j => (Real.sqrt (P.cellMass i) : ℂ) * (Real.sqrt (P.cellMass j) : ℂ)
+    / ((∑ k : I, P.cellMass k : ℝ) : ℂ)
+
+/-- `constRankOne` is genuinely idempotent: `E * E = E` (because `ψ` is a unit
+vector, `Σ_k μ_k / s = 1`). -/
+theorem constRankOne_idem [Nonempty I] (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    constRankOne P * constRankOne P = constRankOne P := by
+  classical
+  obtain ⟨k0⟩ := (inferInstance : Nonempty I)
+  have hs_ne : ((∑ k : I, P.cellMass k : ℝ) : ℂ) ≠ 0 := by
+    simp only [Ne, Complex.ofReal_eq_zero]
+    exact ne_of_gt (Finset.sum_pos (fun k _ => P.cellMass_pos k) ⟨k0, Finset.mem_univ k0⟩)
+  ext a b
+  rw [Matrix.mul_apply]
+  show (∑ m : I, ((Real.sqrt (P.cellMass a) : ℂ) * (Real.sqrt (P.cellMass m) : ℂ)
+        / ((∑ k : I, P.cellMass k : ℝ) : ℂ))
+      * ((Real.sqrt (P.cellMass m) : ℂ) * (Real.sqrt (P.cellMass b) : ℂ)
+        / ((∑ k : I, P.cellMass k : ℝ) : ℂ)))
+    = (Real.sqrt (P.cellMass a) : ℂ) * (Real.sqrt (P.cellMass b) : ℂ)
+        / ((∑ k : I, P.cellMass k : ℝ) : ℂ)
+  have hstep : ∀ m : I, ((Real.sqrt (P.cellMass a) : ℂ) * (Real.sqrt (P.cellMass m) : ℂ)
+        / ((∑ k : I, P.cellMass k : ℝ) : ℂ))
+      * ((Real.sqrt (P.cellMass m) : ℂ) * (Real.sqrt (P.cellMass b) : ℂ)
+        / ((∑ k : I, P.cellMass k : ℝ) : ℂ))
+      = ((Real.sqrt (P.cellMass a) : ℂ) * (Real.sqrt (P.cellMass b) : ℂ)
+          / ((∑ k : I, P.cellMass k : ℝ) : ℂ) / ((∑ k : I, P.cellMass k : ℝ) : ℂ))
+        * (P.cellMass m : ℂ) := by
+    intro m
+    rw [← sqrt_cellMass_mul_self P m]
+    ring
+  rw [Finset.sum_congr rfl (fun m _ => hstep m), ← Finset.mul_sum]
+  have hsum : (∑ m : I, (P.cellMass m : ℂ)) = ((∑ k : I, P.cellMass k : ℝ) : ℂ) := by
+    rw [Complex.ofReal_sum]
+  rw [hsum, div_mul_cancel₀ _ hs_ne]
+
+/-- For a constant graphon, the symmetric quotient is the **rank-one outer
+product** `symmQuotient = (c · s) • constRankOne` (`s = Σ_k μ(C_k)`). -/
+theorem constant_symmQuotient_eq_smul_rankOne [NoAtoms μ] (W : Graphon Ω μ) (c : ℂ)
+    (hW : W.IsConstant c) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    P.symmQuotient = (c * ((∑ k : I, P.cellMass k : ℝ) : ℂ)) • constRankOne P := by
+  classical
+  ext a b
+  rw [constant_symmQuotient_eq W c hW P a b]
+  show (c * (Real.sqrt (P.cellMass a) : ℂ) * (Real.sqrt (P.cellMass b) : ℂ))
+    = (c * ((∑ k : I, P.cellMass k : ℝ) : ℂ))
+      * ((Real.sqrt (P.cellMass a) : ℂ) * (Real.sqrt (P.cellMass b) : ℂ)
+        / ((∑ k : I, P.cellMass k : ℝ) : ℂ))
+  by_cases hI : Nonempty I
+  · obtain ⟨k0⟩ := hI
+    have hs_ne : ((∑ k : I, P.cellMass k : ℝ) : ℂ) ≠ 0 := by
+      simp only [Ne, Complex.ofReal_eq_zero]
+      exact ne_of_gt (Finset.sum_pos (fun k _ => P.cellMass_pos k) ⟨k0, Finset.mem_univ k0⟩)
+    field_simp
+  · exact absurd ⟨a⟩ hI
+
+/-- For a constant graphon over a nonempty cell index, the constant `c` is
+**real**: the symmetric quotient is Hermitian (`symmQuotient_isHermitian`), and
+its diagonal entry `c · μ_k` must then equal its own conjugate, forcing
+`conj c = c`. -/
+theorem constant_isReal [NoAtoms μ] (W : Graphon Ω μ) (c : ℂ)
+    (hW : W.IsConstant c) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (k : I) :
+    (starRingEnd ℂ) c = c := by
+  have hherm := P.symmQuotient_isHermitian
+  have hkk : star (P.symmQuotient k k) = P.symmQuotient k k := by
+    have := congrFun (congrFun hherm.eq k) k
+    rw [Matrix.conjTranspose_apply] at this
+    exact this
+  rw [constant_symmQuotient_eq W c hW P k k] at hkk
+  have hmk : (Real.sqrt (P.cellMass k) : ℂ) * (Real.sqrt (P.cellMass k) : ℂ) = (P.cellMass k : ℂ) :=
+    sqrt_cellMass_mul_self P k
+  rw [mul_assoc, hmk] at hkk
+  rw [star_mul', Complex.star_def, Complex.conj_ofReal] at hkk
+  have hμne : (P.cellMass k : ℂ) ≠ 0 := by
+    simp only [Ne, Complex.ofReal_eq_zero]; exact ne_of_gt (P.cellMass_pos k)
+  exact mul_right_cancel₀ hμne hkk
+
+/-- **Constant graphon: cell-uniform PST between distinct cells forces `i = j`,
+under a non-degeneracy hypothesis.**
+
+The bare claim "`PST ⟹ i = j`" is **FALSE** for the constant graphon: `K_2`
+(two equal-mass cells, phase `π`) exhibits genuine PST between its two distinct
+cells.  The off-diagonal modulus of `exp(-iτ · symmQuotient)` is
+`|e^{-iτ c s} − 1| · √μ_j √μ_i / s ≤ 2 √μ_i √μ_j / s` (`s = Σ_k μ(C_k)`), which
+attains the bound `1` exactly at the degenerate equal-mass `K_2` configuration.
+
+The genuine theorem adds the **non-degeneracy hypothesis** `hnd : 2 √μ_i √μ_j < s`
+(equivalently `√(μ_i μ_j) < s/2`, ruling out the equal-mass-`K_2` pair).  Then the
+off-diagonal modulus is *strictly* below `1`, so cell-uniform PST between distinct
+cells is impossible, forcing `i = j`.
+
+Proof: `symmQuotient = (c·s) • E` for the rank-one idempotent `E`
+(`constant_symmQuotient_eq_smul_rankOne`); `c` is real
+(`constant_isReal`) so the propagator phase `e^{-iτ c s}` has modulus one;
+`exp_smul_idempotent` gives `exp(-iτ·symmQuotient)_{ji} = (e^{-iτcs} − 1)·E_{ji}`
+for `i ≠ j`; its modulus is `≤ 2·√μ_i√μ_j/s < 1`, contradicting the PST
+unit-modulus condition. -/
+theorem constant_graphon_pst_trivial [NoAtoms μ]
     (W : Graphon Ω μ) (c : ℂ) (hW : W.IsConstant c)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (i j : I) (τ : ℝ) (hτ : τ ≠ 0) :
+    (i j : I) (τ : ℝ) (hτ : τ ≠ 0)
+    (hnd : 2 * Real.sqrt (P.cellMass i) * Real.sqrt (P.cellMass j) < ∑ k : I, P.cellMass k) :
     IsCellUniformPST W P i j τ → i = j := by
-  -- HONEST: false as stated for `K_2` (equal masses, phase `π`); see the docstring.
-  -- The rank-one structure `symmQuotient = c·√μ_i·√μ_j` is PROVEN in
-  -- `constant_symmQuotient_eq`; the missing piece is the finite rank-one PST
-  -- classification under a non-degeneracy hypothesis (not yet formalised).
-  sorry
+  classical
+  intro hpst
+  by_contra hij
+  haveI : Nonempty I := ⟨i⟩
+  set s : ℝ := ∑ k : I, P.cellMass k with hs_def
+  have hs_pos : 0 < s := Finset.sum_pos (fun k _ => P.cellMass_pos k) ⟨i, Finset.mem_univ i⟩
+  -- cell-uniform PST reduces to finite PST on the Hermitian symmetric quotient
+  have hfin : IsPST_finite P.symmQuotient i j τ :=
+    (Graphon.cellUniformPST_iff_quotientPST P i j τ).mp hpst
+  rw [Graphon.IsPST_finite] at hfin
+  -- symmQuotient = (c·s) • E  ⟹  the exponent is z • E
+  have hQ : P.symmQuotient = (c * (s : ℂ)) • constRankOne P :=
+    constant_symmQuotient_eq_smul_rankOne W c hW P
+  set z : ℂ := -(Complex.I * (τ : ℂ)) * (c * (s : ℂ)) with hz_def
+  have hexp_smul : -(Complex.I * (τ : ℂ)) • P.symmQuotient = z • constRankOne P := by
+    rw [hQ, smul_smul]
+  rw [hexp_smul, exp_smul_idempotent (constRankOne P) (constRankOne_idem P) z] at hfin
+  -- (j,i) entry: distinct cells, so the identity term vanishes
+  have hentry : (1 + (Complex.exp z - 1) • constRankOne P) j i
+      = (Complex.exp z - 1) * constRankOne P j i := by
+    rw [Matrix.add_apply, Matrix.one_apply_ne (Ne.symm hij), Matrix.smul_apply, smul_eq_mul,
+      zero_add]
+  rw [hentry] at hfin
+  -- read off ‖entry‖ = ‖eᶻ − 1‖ · (√μ_j √μ_i / s)
+  have hEji_nonneg : (0 : ℝ) ≤ Real.sqrt (P.cellMass j) * Real.sqrt (P.cellMass i) / s :=
+    div_nonneg (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)) (le_of_lt hs_pos)
+  have hEji : constRankOne P j i
+      = ((Real.sqrt (P.cellMass j) * Real.sqrt (P.cellMass i) / s : ℝ) : ℂ) := by
+    simp only [constRankOne, hs_def]
+    push_cast
+    ring
+  rw [hEji, norm_mul, Complex.norm_real, Real.norm_of_nonneg hEji_nonneg] at hfin
+  -- ‖eᶻ − 1‖ ≤ 2, because `c` real ⟹ `z` purely imaginary ⟹ ‖eᶻ‖ = 1
+  have hc_real : (starRingEnd ℂ) c = c := constant_isReal W c hW P i
+  have hz_re : z.re = 0 := by
+    rw [hz_def]
+    have hcim : c.im = 0 := Complex.conj_eq_iff_im.mp hc_real
+    simp only [Complex.mul_re, Complex.mul_im, Complex.neg_re, Complex.neg_im, Complex.I_re,
+      Complex.I_im, Complex.ofReal_re, Complex.ofReal_im, hcim]
+    ring
+  have hnorm_exp_z : ‖Complex.exp z‖ = 1 := by
+    rw [Complex.norm_exp, hz_re, Real.exp_zero]
+  have hle2 : ‖Complex.exp z - 1‖ ≤ 2 := by
+    calc ‖Complex.exp z - 1‖ ≤ ‖Complex.exp z‖ + ‖(1 : ℂ)‖ := norm_sub_le _ _
+      _ = 2 := by rw [hnorm_exp_z, norm_one]; norm_num
+  -- 1 = ‖eᶻ−1‖ · (√μ_j√μ_i/s) ≤ 2·√μ_i√μ_j/s < 1 — contradiction
+  have hbound : (1 : ℝ) ≤ 2 * (Real.sqrt (P.cellMass j) * Real.sqrt (P.cellMass i) / s) := by
+    rw [← hfin]
+    exact mul_le_mul_of_nonneg_right hle2 hEji_nonneg
+  have hlt : 2 * (Real.sqrt (P.cellMass j) * Real.sqrt (P.cellMass i) / s) < 1 := by
+    rw [mul_div_assoc'] at hbound ⊢
+    rw [div_lt_one hs_pos]
+    have hcomm : 2 * (Real.sqrt (P.cellMass j) * Real.sqrt (P.cellMass i))
+        = 2 * Real.sqrt (P.cellMass i) * Real.sqrt (P.cellMass j) := by ring
+    rw [hcomm]
+    exact hnd
+  linarith [hbound, hlt]
 
 /-! ## 6½. Matrix-level forward Godsil extraction (PST ⟹ strong cospectrality)
 

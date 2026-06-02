@@ -307,35 +307,136 @@ noncomputable def map {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y)
   toFun := f.cellMap
   adj_preserving := hpres
 
-/-- **The quotient-adjacency-preservation obligation** of a morphism, as a
-named statement.  This is the genuine "one-page calculation" content of the
-quotient functor's action on morphisms; it holds for *quotient morphisms*
-(cell-bijective, cardinality-preserving) but **not** for arbitrary
-partition-respecting morphisms (see `Quotient.map`).  Stated separately as an
-honest theorem so that the sorry-free `Quotient.map` (which takes the
-preservation as a hypothesis) does not depend on it.
+/-- **Quotient morphism.**  A partition-respecting morphism `f : X ⟶ Y` is a
+*quotient morphism* when its cell-index map is injective and matches the two
+ingredients of the symmetric quotient — cell cardinalities and raw branching —
+on the nose:
 
-The honest `sorry` here is the deep/conditional content; it is isolated from
-the `map` *definition*, whose data is sorry-free. -/
-theorem cellMap_adj_preserving {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y) :
+  * `cell_inj`     : `f.cellMap` is injective (no two `X`-cells are merged);
+  * `card_pres`    : `Y.cellCard (cellMap i) = X.cellCard i` (cardinalities
+                     are preserved);
+  * `branch_pres`  : `Y.P.quotient (cellMap i) (cellMap j) = X.P.quotient i j`
+                     (the raw branching/divisor matrix is preserved).
+
+These are exactly the conditions under which the cardinality-weighted symmetric
+quotient `symmQuotient = √|C_i| · Q i j / √|C_j|` is preserved — see
+`cellMap_adj_preserving`.  Isomorphisms of partitioned graphs (and, more
+generally, cell-bijective cardinality-preserving morphisms — the case relevant
+to the spectral lift) are quotient morphisms; arbitrary cell-merging morphisms
+are **not** (the merged off-diagonal weight collapses to the loopless diagonal
+`0`, while `symmQuotient i j ≠ 0`).  This is the genuine hypothesis that turns
+the false universal preservation claim into a true one. -/
+structure IsQuotientMorphism {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y) : Prop where
+  cell_inj : Function.Injective f.cellMap
+  card_pres : ∀ i, Y.P.cellCard (f.cellMap i) = X.P.cellCard i
+  branch_pres : ∀ i j, Y.P.quotient (f.cellMap i) (f.cellMap j) = X.P.quotient i j
+
+/-- **The quotient-adjacency-preservation theorem** (now TRUE, with the
+quotient-morphism hypothesis, and proved).
+
+The former statement was a *false universal*: for an arbitrary
+partition-respecting morphism the symmetric quotient `symmQuotient` mixes in the
+cell cardinalities `√|C_i|/√|C_j|`, and a cell-merging morphism collapses an
+off-diagonal weight `symmQuotient i j ≠ 0` to the loopless diagonal `0` of the
+target quotient — so `(obj X).adj i j = (obj Y).adj (cellMap i) (cellMap j)`
+fails (an explicit 4-vertex/6-vertex counterexample with injective `f.base` was
+recorded in the project notes).
+
+We therefore add the genuine `IsQuotientMorphism` hypothesis (cell-injective,
+cardinality-preserving, raw-branching-preserving) and **prove** the
+preservation from it: under those three conditions both ingredients of
+`symmQuotient` (`√|C_i|` and the raw `quotient i j`) transport, and injectivity
+aligns the loopless diagonals.  This is the genuine "one-page calculation"; it
+is now sorry-free, and is exactly what `Quotient.map` consumes. -/
+theorem cellMap_adj_preserving {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y)
+    (hf : IsQuotientMorphism f) :
     ∀ i j, (obj X).adj i j = (obj Y).adj (f.cellMap i) (f.cellMap j) := by
-  sorry
+  intro i j
+  -- `(obj X).adj i j = if i = j then 0 else X.P.symmQuotient i j`, and likewise
+  -- on the `Y` side with `cellMap i, cellMap j`.
+  show (if i = j then 0 else X.P.symmQuotient i j)
+      = (if f.cellMap i = f.cellMap j then 0 else Y.P.symmQuotient (f.cellMap i) (f.cellMap j))
+  -- Injectivity aligns the diagonal tests: `cellMap i = cellMap j ↔ i = j`.
+  have hiff : (f.cellMap i = f.cellMap j) ↔ (i = j) :=
+    ⟨fun h => hf.cell_inj h, fun h => by rw [h]⟩
+  by_cases hij : i = j
+  · rw [if_pos hij, if_pos (hiff.mpr hij)]
+  · rw [if_neg hij, if_neg (fun h => hij (hiff.mp h))]
+    -- Off the diagonal: transport `symmQuotient` via cardinality + branching.
+    unfold EquitablePartition.symmQuotient
+    rw [hf.card_pres i, hf.card_pres j, hf.branch_pres i j]
+
+/-- The identity morphism is a quotient morphism (cell map is `id`: injective,
+cardinality- and branching-preserving on the nose). -/
+theorem isQuotientMorphism_id (X : WGraphPObj.{u}) :
+    IsQuotientMorphism (WGraphPHom.id X) where
+  cell_inj := Function.injective_id
+  card_pres := fun _ => rfl
+  branch_pres := fun _ _ => rfl
+
+/-- Quotient morphisms are closed under composition. -/
+theorem isQuotientMorphism_comp {X Y Z : WGraphPObj.{u}}
+    {f : WGraphPHom X Y} {g : WGraphPHom Y Z}
+    (hf : IsQuotientMorphism f) (hg : IsQuotientMorphism g) :
+    IsQuotientMorphism (WGraphPHom.comp f g) where
+  cell_inj := by
+    -- `(comp f g).cellMap = g.cellMap ∘ f.cellMap`.
+    intro a b hab
+    exact hf.cell_inj (hg.cell_inj hab)
+  card_pres := fun i => by
+    show Z.P.cellCard (g.cellMap (f.cellMap i)) = X.P.cellCard i
+    rw [hg.card_pres (f.cellMap i), hf.card_pres i]
+  branch_pres := fun i j => by
+    show Z.P.quotient (g.cellMap (f.cellMap i)) (g.cellMap (f.cellMap j))
+        = X.P.quotient i j
+    rw [hg.branch_pres (f.cellMap i) (f.cellMap j), hf.branch_pres i j]
 
 end Quotient
 
-/-- **The Quotient functor.** Sends `(G, P)` to the cell-to-cell weighted graph
-on the index type, and partition-respecting morphisms to the induced cell-index
-maps.
+/-! ### The quotient-morphism (wide) subcategory `WGraphPQ`.
 
-The action on a morphism is `Quotient.map f` fed the quotient-adjacency
-preservation obligation `Quotient.cellMap_adj_preserving f`.  That obligation
-is genuinely conditional (see `Quotient.map`) and is the sole deferred content,
-isolated in the honest theorem `Quotient.cellMap_adj_preserving`; the
-sorry-free `Quotient.map` *definition* does not depend on it.  Functoriality
-(`map_id`, `map_comp`) is on the nose at the `toFun = cellMap` data level. -/
-noncomputable def Quotient : CategoryTheory.Functor WGraphPObj.{u} WGraphObj.{u} where
+The quotient-graph adjacency `Quotient.obj.adj` is cardinality-weighted
+(`symmQuotient = √|C_i|·Q i j/√|C_j|`), so a *general* partition-respecting
+morphism does **not** preserve it (cell-merging collapses an off-diagonal weight
+to the loopless diagonal `0`) — see `Quotient.cellMap_adj_preserving`.  The
+genuine domain on which the cell-quotient is a strict (adjacency-preserving)
+functor is therefore the **wide subcategory of quotient morphisms**: same
+objects as `WGraphP`, but only the `IsQuotientMorphism` maps (cell-injective,
+cardinality- and branching-preserving).  Restricting to this subcategory is the
+correct categorical fix that turns the formerly-`sorry`'d (and
+false-as-universal) functor action into a genuine, sorry-free strict functor.
+
+`WGraphPQ` is *definitionally* `WGraphPObj`, so the cell-quotient object map
+`Quotient.obj`/`Quotient.{u}.obj` still applies to bare `WGraphPObj` values (as
+used downstream in `LiftablePrimitive`, `TransformerDSL`, `TensorNetworks`). -/
+def WGraphPQ : Type (u + 1) := WGraphPObj.{u}
+
+/-- Category structure on the quotient-morphism subcategory: objects are
+partitioned weighted graphs, morphisms are quotient morphisms (the
+`IsQuotientMorphism` subtype of `WGraphPHom`). -/
+instance WGraphPQ.category : CategoryTheory.Category.{u, u + 1} WGraphPQ.{u} where
+  Hom (X Y : WGraphPObj.{u}) := { f : WGraphPHom X Y // Quotient.IsQuotientMorphism f }
+  id X := ⟨WGraphPHom.id X, Quotient.isQuotientMorphism_id X⟩
+  comp f g := ⟨WGraphPHom.comp f.1 g.1, Quotient.isQuotientMorphism_comp f.2 g.2⟩
+  id_comp f := by
+    apply Subtype.ext; apply WGraphPHom.ext <;> intros <;> rfl
+  comp_id f := by
+    apply Subtype.ext; apply WGraphPHom.ext <;> intros <;> rfl
+  assoc f g h := by
+    apply Subtype.ext; apply WGraphPHom.ext <;> intros <;> rfl
+
+/-- **The Quotient functor** on the quotient-morphism subcategory `WGraphPQ`.
+Sends `(G, P)` to the cell-to-cell weighted graph on the index type, and a
+*quotient* morphism to the induced cell-index map.
+
+The action on a morphism is `Quotient.map f.1` fed the (now **proven**, no
+longer `sorry`) quotient-adjacency preservation `Quotient.cellMap_adj_preserving
+f.1 f.2`, which holds precisely because `f.2 : IsQuotientMorphism f.1`.
+Functoriality (`map_id`, `map_comp`) is on the nose at the `toFun = cellMap`
+data level. -/
+noncomputable def Quotient : CategoryTheory.Functor WGraphPQ.{u} WGraphObj.{u} where
   obj := Quotient.obj
-  map f := Quotient.map f (Quotient.cellMap_adj_preserving f)
+  map f := Quotient.map f.1 (Quotient.cellMap_adj_preserving f.1 f.2)
   map_id := by
     intro X
     apply WGraphHom.ext
@@ -647,29 +748,28 @@ in that one named definition — so the preservation content is fully localized
 and the instance's only dependency is the explicitly-named `mapCocone_isColimit`. -/
 noncomputable def Quotient.mapCocone_isColimit
     {J : Type u} [Category.{u} J] [IsFiltered J]
-    (K : Functor J WGraphPObj.{u}) (c : Cocone K) (hc : IsColimit c) :
+    (K : Functor J WGraphPQ.{u}) (c : Cocone K) (hc : IsColimit c) :
     IsColimit ((Quotient.{u}).mapCocone c) := by
-  -- The cell-quotient of a filtered colimit of partitioned weighted graphs is
-  -- the filtered colimit of the cell-quotients.  This is the headline Tower-5
-  -- calculation; `IsColimit` is data, so this is an honest definition-level
-  -- `sorry`, isolated from the `instance` below.
+  -- The cell-quotient of a filtered colimit of partitioned weighted graphs (over
+  -- the quotient-morphism subcategory `WGraphPQ`) is the filtered colimit of the
+  -- cell-quotients.  This is the headline Tower-5 calculation; `IsColimit` is
+  -- data, so this is an honest definition-level `sorry`, isolated from the
+  -- `instance` below.
   --
-  -- WHY IT CANNOT BE CLOSED HERE (genuinely deep, not mere effort):
-  -- `(Quotient).mapCocone c` is built by applying `Quotient.map` to the cocone
-  -- legs, and `Quotient.map` consumes the quotient-adjacency-preservation
-  -- obligation `Quotient.cellMap_adj_preserving` — which is itself an honest
-  -- `sorry` and is *provably false for arbitrary partition-respecting
-  -- morphisms* (the symmetric quotient `symmQuotient` mixes in cell
-  -- cardinalities `√|C_i|/√|C_j|`, so a cell-merging colimit leg does not
-  -- preserve the quotient adjacency; explicit 4/6-vertex counterexample in the
-  -- project notes).  Hence the mapped cocone is not even genuine functorial
-  -- data on the nose for a general filtered diagram, and any `IsColimit`
-  -- witness would have to be conditioned on the diagram consisting of
-  -- *quotient morphisms* (cell-bijective, cardinality-preserving).  That
-  -- conditional restriction is the real fix; until the `Quotient` functor is
-  -- refactored onto the quotient-morphism subcategory, this preservation
-  -- `IsColimit` is genuinely blocked, and the residual is cleanly isolated to
-  -- this single named definition (the `instance` below adds no further sorry).
+  -- STATUS: GENUINELY TRUE, residual is depth-of-infrastructure (not falsity).
+  -- Now that `Quotient` is the *strict* functor on `WGraphPQ` (its legs are
+  -- quotient morphisms — cell-injective, cardinality- and branching-preserving —
+  -- so `Quotient.map` is the sorry-free `Quotient.cellMap_adj_preserving f.1
+  -- f.2`), the mapped cocone IS genuine functorial data on the nose, and the
+  -- preservation statement is a true theorem of the spectral story (the
+  -- cardinality-weighted symmetric quotient transports through filtered colimits
+  -- of quotient morphisms).  What remains is the explicit colimit/`IsColimit`
+  -- bookkeeping (constructing the comparison vertex map and its universal
+  -- property), which needs the concrete description of filtered colimits in
+  -- `WGraph` (the `chainColimit`/`Functor.ofSequence` machinery generalised to
+  -- arbitrary filtered shapes) — more infrastructure than fits this pass.  The
+  -- statement is no longer propped on a false morphism obligation; the single
+  -- residual `sorry` is on this genuinely-true `IsColimit` datum.
   sorry
 
 instance Quotient.preservesFilteredColimits :
@@ -679,19 +779,21 @@ instance Quotient.preservesFilteredColimits :
 
 /-- **Corollary (universal form of "no infinite tail beats optimality").**
 
-For any filtered diagram `D : I ⥤ WGraphP`, the quotient of the colimit is
-canonically isomorphic to the colimit of the pointwise quotients.
+For any filtered diagram `D : I ⥤ WGraphPQ` (a diagram of *quotient morphisms* of
+partitioned weighted graphs), the quotient of the colimit is canonically
+isomorphic to the colimit of the pointwise quotients.
 
 This is the categorical version of Xie–Tamon's result that taking an infinite
 tail of `K_n + path-n` cannot strictly improve over the best finite truncation:
 the partition quotient (which records the spectral content) commutes with the
 limiting procedure.
 
-This is now a one-liner via Mathlib's `preservesColimitIso`, using the
-`Quotient.preservesFilteredColimits` instance above. -/
+This is a one-liner via Mathlib's `preservesColimitIso`, using the
+`Quotient.preservesFilteredColimits` instance above (now over the genuine
+quotient-morphism subcategory `WGraphPQ`). -/
 noncomputable def quasi_infinite_limit
     {I : Type u} [Category.{u} I] [IsFiltered I]
-    (D : Functor I WGraphPObj.{u})
+    (D : Functor I WGraphPQ.{u})
     [HasColimit D] [HasColimit (D ⋙ Quotient.{u})] :
     Quotient.{u}.obj (colimit D) ≅ colimit (D ⋙ Quotient.{u}) :=
   preservesColimitIso (Quotient.{u}) D
@@ -804,15 +906,26 @@ definitions' data and `adj_preserving` fields a real proof):
     (`symmQuotient` mixes in cell cardinalities, so preservation fails for
     cell-merging morphisms; holds for quotient/iso morphisms).
 
-**Deferred content, isolated into named honest-`sorry` declarations** (the
-flagged `def`/`instance` data is sorry-free and depends only on these named
-items):
-  * `Quotient.cellMap_adj_preserving` — the conditional preservation obligation
-    fed to the `Quotient` functor's action on morphisms;
+**Now TRUE and sorry-free** (the formerly-false-as-universal preservation):
+  * `Quotient.IsQuotientMorphism` — the genuine quotient-morphism predicate
+    (cell-injective, cardinality- and branching-preserving);
+  * `Quotient.cellMap_adj_preserving` — **proved** from `IsQuotientMorphism`
+    (was a false universal `sorry`; now the genuine "one-page calculation"
+    transporting `symmQuotient` through a quotient morphism);
+  * `WGraphPQ` (the **wide subcategory of quotient morphisms**) and the
+    `Quotient` functor over it — the formerly-`sorry`'d/false-as-stated functor
+    action is now a genuine strict functor (its `map` consumes the proved
+    `cellMap_adj_preserving`), so `Quotient` is **axiom-clean**.
+
+**Deferred content, isolated into one named declaration** (genuinely TRUE, needs
+more infrastructure; the flagged `def`/`instance` data depends only on it):
   * `Quotient.mapCocone_isColimit` — the headline filtered-colimit-preservation
-    `IsColimit` data (`IsColimit` is data, not a `Prop`), from which the thin
-    wrapper `instance Quotient.preservesFilteredColimits` and the corollary
-    `quasi_infinite_limit` are built.
+    `IsColimit` data over `WGraphPQ` (`IsColimit` is data, not a `Prop`).  Now
+    that `Quotient` is the *strict* functor on the quotient-morphism subcategory,
+    this is a genuinely-true statement (no longer propped on a false morphism
+    obligation); the residual `sorry` is on the colimit/`IsColimit` bookkeeping.
+    From it the thin wrapper `instance Quotient.preservesFilteredColimits` and the
+    corollary `quasi_infinite_limit` are built.
 
 Other still-deferred statement-level content:
   * the `IsColimit` / `IsLimit` packaging for `UnionGraph`-style filtered
@@ -821,7 +934,9 @@ Other still-deferred statement-level content:
 
 What is **stated precisely** (and used in downstream towers):
   * the category structure on `WGraph` and `WGraphP`;
-  * the Quotient functor `Quotient : WGraphP ⥤ WGraph`;
+  * the Quotient functor `Quotient : WGraphPQ ⥤ WGraph` on the quotient-morphism
+    subcategory (its object map `Quotient.obj`/`Quotient.{u}.obj` still applies to
+    bare `WGraphPObj`, as `WGraphPQ` is definitionally `WGraphPObj`);
   * the `LiftablePrimitive` structure capturing PST/mixing/search lifting in
     one categorical idiom;
   * the corollary `quasi_infinite_limit` as the universal form of
