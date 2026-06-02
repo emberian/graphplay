@@ -31,22 +31,30 @@ rather than against the raw quotient graph.
   `cellEmbed_conjTranspose_mul_cellEmbed` via `Fintype.sum_prod_type`.
 * **§2** `szegedyQuotient` — real definition (compression).
 * **§3** `szegedyWalk_mul_doubledCellEmbed_col_mem` — **real body**: literally
-  `dtqw_equitable_lift` applied to each generator column.  The intertwiner
-  `szegedyWalk_mul_doubledCellEmbed` (★ `U_Sz·B⊗B = B⊗B·szegedyQuotient`) is
-  the lone `sorry` for the mechanical "range projector fixes its columns"
-  span bookkeeping (clean, not deep).  The power form
-  `szegedyWalk_pow_mul_doubledCellEmbed` and the compression identity
+  `dtqw_equitable_lift` applied to each generator column.  The "range projector
+  fixes the doubled subspace" fact `doubledCellEmbed_projFix` (span induction on
+  the generators via the isometry) and the intertwiner
+  `szegedyWalk_mul_doubledCellEmbed` (★ `U_Sz·B⊗B = B⊗B·szegedyQuotient`,
+  column-wise via `Matrix.ext_of_mulVec_single` + `projFix`) are **real bodies**
+  — all content sits in the proven `dtqw_equitable_lift` + the isometry.  The
+  power form `szegedyWalk_pow_mul_doubledCellEmbed` and the compression identity
   `doubledCellEmbedH_szegedyWalk_pow_doubledCellEmbed` are **real bodies**,
   proved by induction from (★) + isometry.
 * **§4** genuine, non-vacuous `‖·‖`-transfer predicates
   (`IsCellUniformSzegedyPST`, `IsQuotientSzegedyPST`,
   `IsCellUniformSzegedyMixing`) mirroring `IsCellUniformPST` / `dtqwMixing`.
-* **§5** the lift theorems: the bridge `cellUniformSzegedyBlock_eq_quotient`
-  is a `sorry` (doubled-`cellUniform_matrixElement` index bookkeeping); the
-  three named iff lifts `cellUniformSzegedyPST_iff_quotient`,
-  `quotientSzegedyPST_of_cellUniform`, `cellUniformSzegedyPST_of_quotient`
-  are **real bodies** (single rewrite through the bridge);
-  `cellUniformSzegedyMixing_iff_quotient` is a `sorry` (the `‖·‖²` analogue).
+  Both arc coordinates are cell-resolved (tail cells `(i,j)`, head cells
+  `(b,b')`), the head being summed as the DTQW history-marginal; a *free*
+  vertex-head sum is not walk-invariant, the cell-uniform head is.
+* **§5** the lift theorems, **all real bodies now**.  The general doubled
+  matrix-element `doubledCellUniform_matrixElement` (the literal doubled
+  `cellUniform_matrixElement`, pure index bookkeeping) powers the bridge
+  `cellUniformSzegedyBlock_eq_quotient` (per head cell, doubled matrix element +
+  the compression identity).  The three named PST iff lifts
+  `cellUniformSzegedyPST_iff_quotient`, `quotientSzegedyPST_of_cellUniform`,
+  `cellUniformSzegedyPST_of_quotient` and the `‖·‖²` analogue
+  `cellUniformSzegedyMixing_iff_quotient` all close by a single rewrite through
+  the bridge / matrix element.
 * **§6** `szegedyQuotient_eq_quotientWalk` — the **one genuinely-deep
   residue**: identifying the compression with the *intrinsic* Szegedy walk of
   the quotient graph (correct coin amplitudes, swap coordinates), gated on
@@ -195,6 +203,49 @@ theorem szegedyWalk_mul_doubledCellEmbed_col_mem [Nonempty V]
   exact dtqw_equitable_lift P hME _
     (Submodule.subset_span ⟨(i, j), rfl⟩)
 
+/-- The `(i,j)` column of `B ⊗ B`, as a `mulVec` against the standard basis
+vector `Pi.single (i,j) 1`, is the doubled generator `doubledCellUniformVec i j`.
+This is the `mulVec`-form of `doubledCellEmbed_col`, used to feed each column of
+`U_Sz·(B⊗B)` into the membership lemma and the range-projector identity. -/
+theorem doubledCellEmbed_mulVec_single (P : EquitablePartition G I) (i j : I) :
+    P.doubledCellEmbed.mulVec (Pi.single (i, j) 1) = P.doubledCellUniformVec i j := by
+  rw [Matrix.mulVec_single_one]
+  funext p
+  exact congrFun (doubledCellEmbed_col P i j) p
+
+/-- **The range projector fixes the doubled cell-uniform subspace.**  For any
+`v` in `doubledCellUniformSubspace`, the range projector `(B⊗B)(B⊗B)ᴴ` fixes it:
+`(B⊗B) ·ᵥ ((B⊗B)ᴴ ·ᵥ v) = v`.  This is the *mechanical* span/projector fact
+behind the intertwiner (★): a vector in the range of the isometry `B⊗B` is fixed
+by its range projector.  Proved by `span_induction` over the doubled generators,
+using only the isometry `(B⊗B)ᴴ(B⊗B) = 1` (`doubledCellEmbed_conjTranspose_mul`).
+On a generator `doubledCellUniformVec i j = (B⊗B) ·ᵥ e_{ij}`, the round-trip
+collapses via `(B⊗B)ᴴ(B⊗B) = 1`. -/
+theorem doubledCellEmbed_projFix (P : EquitablePartition G I)
+    (hne : ∀ k, P.cellCard k ≠ 0) (v : (V × V) → ℂ)
+    (hv : v ∈ P.doubledCellUniformSubspace) :
+    P.doubledCellEmbed.mulVec (P.doubledCellEmbedᴴ.mulVec v) = v := by
+  have hiso : P.doubledCellEmbedᴴ * P.doubledCellEmbed
+      = (1 : Matrix (I × I) (I × I) ℂ) := doubledCellEmbed_conjTranspose_mul P hne
+  unfold doubledCellUniformSubspace at hv
+  induction hv using Submodule.span_induction with
+  | mem x hx =>
+    obtain ⟨⟨i, j⟩, rfl⟩ := hx
+    -- `x = doubledCellUniformVec i j = (B⊗B) ·ᵥ e_{ij}`; round-trip via `(B⊗B)ᴴ(B⊗B)=1`.
+    show P.doubledCellEmbed.mulVec (P.doubledCellEmbedᴴ.mulVec (P.doubledCellUniformVec i j))
+      = P.doubledCellUniformVec i j
+    -- The inner round-trip `(B⊗B)ᴴ ·ᵥ doubledCellUniformVec i j = e_{ij}`: write
+    -- `doubledCellUniformVec i j = B⊗B ·ᵥ e_{ij}`, combine, and collapse via the isometry.
+    have hinner : P.doubledCellEmbedᴴ.mulVec (P.doubledCellUniformVec i j)
+        = (Pi.single (i, j) 1 : I × I → ℂ) := by
+      rw [← doubledCellEmbed_mulVec_single P i j, Matrix.mulVec_mulVec, hiso, Matrix.one_mulVec]
+    rw [hinner, doubledCellEmbed_mulVec_single]
+  | zero => rw [Matrix.mulVec_zero, Matrix.mulVec_zero]
+  | add x y _ _ hx hy =>
+    rw [Matrix.mulVec_add, Matrix.mulVec_add, hx, hy]
+  | smul a x _ hx =>
+    rw [Matrix.mulVec_smul, Matrix.mulVec_smul, hx]
+
 /-- **The Szegedy intertwiner** (★): `U_Sz · (B⊗B) = (B⊗B) · szegedyQuotient`.
 
 This is the DTQW analogue of `adj_mul_cellEmbed`
@@ -205,15 +256,33 @@ range projector `(B⊗B)(B⊗B)ᴴ` fixes the columns of `U_Sz·(B⊗B)`; combin
 the isometry `(B⊗B)ᴴ(B⊗B)=1` this gives `U_Sz·(B⊗B) = (B⊗B)(B⊗B)ᴴ U_Sz (B⊗B) =
 (B⊗B)·szegedyQuotient`.
 
-Carried as an honest `sorry`: the residual is the *mechanical* span/projector
-bookkeeping ("a vector in the range of an isometry is fixed by its range
-projector") — clean, not deep, and with no new mathematical content beyond the
-already-proven `dtqw_equitable_lift` + `doubledCellEmbed_conjTranspose_mul`. -/
+**Now proven** (sorry-free): column-wise via `Matrix.ext_of_mulVec_single`.
+Each column `U_Sz ·ᵥ (col_{ij} (B⊗B))` lands in the subspace
+(`szegedyWalk_mul_doubledCellEmbed_col_mem` = `dtqw_equitable_lift`), so the range
+projector fixes it (`doubledCellEmbed_projFix`); reassociating gives the
+`(B⊗B)·szegedyQuotient` column.  All mathematical content sits in the proven
+`dtqw_equitable_lift` + the isometry `doubledCellEmbed_conjTranspose_mul`. -/
 theorem szegedyWalk_mul_doubledCellEmbed [Nonempty V] (P : EquitablePartition G I)
     (hME : P.MagnitudeEquitable) (hne : ∀ k, P.cellCard k ≠ 0) :
     G.SzegedyWalk * P.doubledCellEmbed
       = P.doubledCellEmbed * P.szegedyQuotient := by
-  sorry
+  -- Column-wise: it suffices to match `· ·ᵥ Pi.single (i,j) 1` for every `(i,j)`.
+  apply Matrix.ext_of_mulVec_single
+  rintro ⟨i, j⟩
+  -- LHS column: `U_Sz ·ᵥ (col_{ij} (B⊗B)) = U_Sz ·ᵥ doubledCellUniformVec i j`.
+  rw [← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec, doubledCellEmbed_mulVec_single]
+  -- The image lies in the doubled cell-uniform subspace (the proven square).
+  have hmem : (G.SzegedyWalk).mulVec (P.doubledCellUniformVec i j)
+      ∈ P.doubledCellUniformSubspace := by
+    have := szegedyWalk_mul_doubledCellEmbed_col_mem P hME i j
+    rwa [doubledCellEmbed_col] at this
+  -- RHS column: `B⊗B ·ᵥ (szegedyQuotient ·ᵥ e_{ij})` unfolds to the range projector
+  -- applied to `U_Sz ·ᵥ doubledCellUniformVec i j`, which the projector fixes.
+  unfold szegedyQuotient
+  -- `(B⊗B · (B⊗Bᴴ · U · B⊗B)) ·ᵥ single = B⊗B ·ᵥ (B⊗Bᴴ ·ᵥ (U ·ᵥ (B⊗B ·ᵥ single)))`.
+  rw [← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec, doubledCellEmbed_mulVec_single]
+  -- Goal: `U ·ᵥ doubledCellUniformVec i j = B⊗B ·ᵥ (B⊗Bᴴ ·ᵥ (U ·ᵥ doubledCellUniformVec i j))`.
+  exact (doubledCellEmbed_projFix P hne _ hmem).symm
 
 /-- **Power form** of the intertwiner: `U_Sz^τ · (B⊗B) = (B⊗B) · szegedyQuotient^τ`.
 Proved by induction from the base intertwiner (★) and the isometry, exactly as
@@ -244,23 +313,40 @@ theorem doubledCellEmbedH_szegedyWalk_pow_doubledCellEmbed [Nonempty V]
 
 /-! ## §4 Genuine, non-vacuous DTQW transfer predicates
 
-These mirror `IsCellUniformPST` / `dtqwMixing` exactly: Born-modulus,
-`√(|C_i||C_j|)`-normalized, position-marginal (summed over the "history"
-coordinate `y` / quotient coordinate `b`).  They are NOT stubs — each is a
-genuine `‖·‖ = 1` (resp. `= 1/|I|`) transfer condition on the *normalized*
-amplitude. -/
+These mirror `IsCellUniformPST` / `dtqwMixing`: Born-modulus,
+`√(|C_·|)`-normalized amplitudes of the **doubled** cell-uniform sector (the
+sector the equitable lift preserves).  The Szegedy walker's two arc coordinates
+are *both* cell-resolved — the tail at cells `(i, j)`, the head at cells
+`(b, b')` — and the DTQW "history marginal" is the sum over the head cell(s),
+mirroring `IsDTQW_PST`'s `∑_y` but at the level of the doubled cell-uniform
+basis rather than raw vertices (a free vertex-head sum is *not* preserved by the
+walk; the cell-uniform head is).  They are NOT stubs — each is a genuine
+`‖·‖ = 1` (resp. `= 1/|I|`) transfer condition on the *normalized* amplitude;
+e.g. `IsCellUniformSzegedyPST i i 0` already fails for `|I| > 1`. -/
 
-/-- **Cell-uniform Szegedy PST.**  Born-modulus-1 of the normalized arc-block
-amplitude after `τ` steps: with the walker "at cell `i`" meaning its tail
-vertex `x ∈ C_i` and "at cell `j`" meaning the tail `x' ∈ C_j`, summed over the
-shared head coordinate `y`, normalized by `√(|C_i||C_j|)`.  This is the DTQW
-analogue of `IsCellUniformPST` (the Szegedy walk replacing `G.evolve`).  It is
-a genuine transfer condition (modulus exactly one of a normalized unit-vector
-amplitude), not a degenerate existential. -/
+/-- **Cell-uniform Szegedy PST.**  Born-modulus-1 of the normalized doubled
+arc-block amplitude after `τ` steps.  The Szegedy walker lives on the arc space
+`V × V` (tail, head); the *doubled cell-uniform arc state at `(i, b)`* is the
+tensor `e_i ⊗ e_b` of the tail-cell-uniform state on cell `i` with the
+head-cell-uniform state on cell `b`.  The amplitude here is
+
+  `∑_b ⟨e_j ⊗ e_b | U_Sz^τ | e_i ⊗ e_b⟩`,
+
+the position-marginal over the *head cell* `b` of the tail-`i` → tail-`j`
+transition: with the tail at cell `i`/`j` (vertices `x ∈ C_i`, `x' ∈ C_j`) and
+the head at the common cell `b` (vertices `y, y' ∈ C_b`), normalized by
+`√|C_i| √|C_j|` for the tails and `|C_b| = √|C_b|·√|C_b|` for the head.  Summing
+over `b` is the DTQW head-marginal exactly mirroring `IsDTQW_PST`'s `∑_y` (but
+*cell*-resolved, because the doubled cell-uniform sector is what the equitable
+lift preserves).  This is the DTQW analogue of `IsCellUniformPST` (the Szegedy
+walk replacing `G.evolve`).  It is a genuine transfer condition (modulus exactly
+one of a normalized unit-vector amplitude), not a degenerate existential. -/
 def IsCellUniformSzegedyPST (P : EquitablePartition G I) (i j : I) (τ : ℕ) : Prop :=
-  ‖(∑ x, ∑ x', ∑ y, if P.cells x = i ∧ P.cells x' = j
-      then (G.SzegedyWalk ^ τ) (x', y) (x, y) else 0) /
-      ((Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard j) : ℂ))‖ = 1
+  ‖∑ b, (∑ x, ∑ x', ∑ y, ∑ y',
+      if P.cells x = i ∧ P.cells x' = j ∧ P.cells y = b ∧ P.cells y' = b
+        then (G.SzegedyWalk ^ τ) (x', y') (x, y) else 0) /
+      ((Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard j) : ℂ) *
+        ((Real.sqrt (P.cellCard b) : ℂ) * (Real.sqrt (P.cellCard b) : ℂ)))‖ = 1
 
 /-- **Quotient Szegedy PST.**  Born-modulus-1 of the quotient arc-block
 amplitude `∑_b (szegedyQuotient^τ)_{(j,b),(i,b)}` — the position-marginal of the
@@ -269,14 +355,22 @@ predicate that the lift transfers from / to. -/
 def IsQuotientSzegedyPST (P : EquitablePartition G I) (i j : I) (τ : ℕ) : Prop :=
   ‖∑ b, (P.szegedyQuotient ^ τ) (j, b) (i, b)‖ = 1
 
-/-- **Cell-uniform Szegedy mixing.**  The `‖·‖²` (Born-probability) analogue:
-the cell-block of the doubled mixing matrix after `τ` steps equals `1/|I|`,
-the uniform distribution on the `|I|` quotient cells.  This is the DTQW
-analogue of `IsDTQW_UniformMixing` lifted to cells. -/
+/-- **Cell-uniform Szegedy mixing.**  The `‖·‖²` (Born-probability) analogue of
+`IsCellUniformSzegedyPST`: the total Born probability of the doubled
+cell-uniform tail-`i` → tail-`j` transition, summed over *all* head-cell pairs
+`(b, b')`, equals `1/|I|` — the uniform distribution on the `|I|` quotient cells.
+Each squared term is the modulus-squared of the same normalized doubled
+arc-block amplitude `⟨e_j ⊗ e_{b'} | U_Sz^τ | e_i ⊗ e_b⟩` whose un-squared,
+head-diagonal (`b = b'`) marginal drives `IsCellUniformSzegedyPST`.  This is the
+DTQW analogue of `IsDTQW_UniformMixing` lifted to the doubled cell-uniform
+sector. -/
 def IsCellUniformSzegedyMixing (P : EquitablePartition G I) (i j : I) (τ : ℕ) : Prop :=
-  (∑ x, ∑ x', ∑ y, if P.cells x = i ∧ P.cells x' = j
-      then ‖(G.SzegedyWalk ^ τ) (x', y) (x, y)‖ ^ 2 else 0) /
-      (P.cellCard i * P.cellCard j) = 1 / (Fintype.card I : ℝ)
+  (∑ b, ∑ b', ‖(∑ x, ∑ x', ∑ y, ∑ y',
+      if P.cells x = i ∧ P.cells x' = j ∧ P.cells y = b ∧ P.cells y' = b'
+        then (G.SzegedyWalk ^ τ) (x', y') (x, y) else 0) /
+      ((Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard j) : ℂ) *
+        ((Real.sqrt (P.cellCard b) : ℂ) * (Real.sqrt (P.cellCard b') : ℂ)))‖ ^ 2)
+      = 1 / (Fintype.card I : ℝ)
 
 /-! ## §5 The LIFT theorems
 
@@ -286,30 +380,106 @@ amplitude (the doubled `cellUniform_matrixElement`); the iff then follows by a
 single `congrArg norm` rewrite — exactly as the CTQW iff falls out of the
 compression identity. -/
 
+/-- **The doubled cell-uniform matrix element** (pure index bookkeeping, the
+DTQW analogue of `cellUniform_matrixElement`).  For any arc-space matrix
+`M : Matrix (V×V) (V×V) ℂ`, the `√`-normalized doubled arc-block sum over the
+tail cells `(i, j)` and head cells `(b, b')` equals the `((j,b'),(i,b))` entry
+of the compression `(B⊗B)ᴴ · M · (B⊗B)`.  No equitability is used; this is the
+literal doubled `cellUniform_matrixElement` (two factors of the proof, one per
+arc coordinate). -/
+theorem doubledCellUniform_matrixElement (P : EquitablePartition G I)
+    (M : Matrix (V × V) (V × V) ℂ) (i j b b' : I) :
+    (∑ x, ∑ x', ∑ y, ∑ y',
+        if P.cells x = i ∧ P.cells x' = j ∧ P.cells y = b ∧ P.cells y' = b'
+          then M (x', y') (x, y) else 0) /
+        ((Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard j) : ℂ) *
+          ((Real.sqrt (P.cellCard b) : ℂ) * (Real.sqrt (P.cellCard b') : ℂ)))
+      = (P.doubledCellEmbedᴴ * M * P.doubledCellEmbed) (j, b') (i, b) := by
+  classical
+  rw [Matrix.mul_apply]
+  -- RHS = ∑_q (B⊗Bᴴ·M)_{(j,b') q} (B⊗B)_{q (i,b)}
+  --     = ∑_q ∑_p star((B⊗B)_{p (j,b')}) M_{p q} (B⊗B)_{q (i,b)}.
+  have hRHS : (∑ q : V × V, (P.doubledCellEmbedᴴ * M) (j, b') q * P.doubledCellEmbed q (i, b))
+      = ∑ q : V × V, ∑ p : V × V,
+          star (P.doubledCellEmbed p (j, b')) * M p q * P.doubledCellEmbed q (i, b) := by
+    apply Finset.sum_congr rfl
+    intro q _
+    rw [Matrix.mul_apply, Finset.sum_mul]
+    apply Finset.sum_congr rfl
+    intro p _
+    rw [Matrix.conjTranspose_apply]
+  rw [hRHS]
+  -- Reindex both `q = (x, y)` and `p = (x', y')`, push the division through.
+  rw [Fintype.sum_prod_type]
+  rw [show (∑ x : V, ∑ y : V, ∑ p : V × V,
+        star (P.doubledCellEmbed p (j, b')) * M p (x, y) * P.doubledCellEmbed (x, y) (i, b))
+        = ∑ x : V, ∑ y : V, ∑ x' : V, ∑ y' : V,
+            star (P.doubledCellEmbed (x', y') (j, b')) * M (x', y') (x, y)
+              * P.doubledCellEmbed (x, y) (i, b) from by
+    apply Finset.sum_congr rfl; intro x _
+    apply Finset.sum_congr rfl; intro y _
+    rw [Fintype.sum_prod_type]]
+  -- Now both sides are sums over (x, y, x', y'); match termwise after the division.
+  -- LHS triple-sum is in order (x, x', y, y'); reorder to (x, y, x', y').
+  rw [show (∑ x : V, ∑ x' : V, ∑ y : V, ∑ y' : V,
+          if P.cells x = i ∧ P.cells x' = j ∧ P.cells y = b ∧ P.cells y' = b'
+            then M (x', y') (x, y) else 0)
+        = ∑ x : V, ∑ y : V, ∑ x' : V, ∑ y' : V,
+            if P.cells x = i ∧ P.cells x' = j ∧ P.cells y = b ∧ P.cells y' = b'
+              then M (x', y') (x, y) else 0 from by
+    apply Finset.sum_congr rfl; intro x _
+    rw [Finset.sum_comm]]
+  rw [Finset.sum_div]
+  apply Finset.sum_congr rfl; intro x _
+  rw [Finset.sum_div]
+  apply Finset.sum_congr rfl; intro y _
+  rw [Finset.sum_div]
+  apply Finset.sum_congr rfl; intro x' _
+  rw [Finset.sum_div]
+  apply Finset.sum_congr rfl; intro y' _
+  -- Pointwise: expand the doubled embeds, push `star` inside the real factors,
+  -- then split the four cell indicators and finish with field arithmetic.
+  simp only [doubledCellEmbed, cellUniformVec, star_mul', apply_ite (star : ℂ → ℂ),
+    star_zero, Complex.star_def, map_div₀, map_one, Complex.conj_ofReal]
+  split_ifs with h h1 h2 h3 h4 h5 h6 h7 <;>
+    first
+      | (exfalso; tauto)
+      | ring
+
 /-- **The bridge** (doubled `cellUniform_matrixElement`): the normalized
-host-side arc-block amplitude equals the quotient-side position-marginal
+host-side doubled arc-block amplitude equals the quotient-side position-marginal
 amplitude.  This is the DTQW analogue of `cellUniform_matrixElement` composed
 with the compression identity
 `doubledCellEmbedH_szegedyWalk_pow_doubledCellEmbed`.
 
-Carried as an honest `sorry`: the residual is the *mechanical* doubled-index
-bookkeeping that turns the `∑_{x∈C_i, x'∈C_j, y}` block sum (with its
-`√(|C_i||C_j|)` normalization) into the `∑_b (B⊗B)ᴴ U_Sz^τ (B⊗B)` entry sum —
-clean, not deep, the doubled version of the proven `cellUniform_matrixElement`. -/
+**Now proven** (sorry-free): per head cell `b`, the inner block sum is the
+doubled `cellUniform_matrixElement` of `U_Sz^τ` at tail cells `(i, j)` and head
+cells `(b, b)`, i.e. `((B⊗B)ᴴ U_Sz^τ (B⊗B))((j,b),(i,b))`; the compression
+identity `doubledCellEmbedH_szegedyWalk_pow_doubledCellEmbed` rewrites that
+matrix to `szegedyQuotient^τ`, and summing over `b` gives the position-marginal.
+All content is mechanical bookkeeping on top of the proven square. -/
 theorem cellUniformSzegedyBlock_eq_quotient [Nonempty V]
     (P : EquitablePartition G I) (hME : P.MagnitudeEquitable)
     (hne : ∀ k, P.cellCard k ≠ 0) (i j : I) (τ : ℕ) :
-    (∑ x, ∑ x', ∑ y, if P.cells x = i ∧ P.cells x' = j
-        then (G.SzegedyWalk ^ τ) (x', y) (x, y) else 0) /
-        ((Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard j) : ℂ))
+    (∑ b, (∑ x, ∑ x', ∑ y, ∑ y',
+        if P.cells x = i ∧ P.cells x' = j ∧ P.cells y = b ∧ P.cells y' = b
+          then (G.SzegedyWalk ^ τ) (x', y') (x, y) else 0) /
+        ((Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard j) : ℂ) *
+          ((Real.sqrt (P.cellCard b) : ℂ) * (Real.sqrt (P.cellCard b) : ℂ))))
       = ∑ b, (P.szegedyQuotient ^ τ) (j, b) (i, b) := by
-  sorry
+  apply Finset.sum_congr rfl
+  intro b _
+  -- Each summand is a doubled cell-uniform matrix element of `U_Sz^τ`, which the
+  -- compression identity rewrites to a `szegedyQuotient^τ` entry.
+  rw [doubledCellUniform_matrixElement P (G.SzegedyWalk ^ τ) i j b b,
+    ← doubledCellEmbedH_szegedyWalk_pow_doubledCellEmbed P hME hne τ]
 
 /-- **The DTQW PST iff lift** (DTQW analogue of `cellUniformPST_iff_quotientPST`):
 host-side cell-uniform Szegedy PST holds **iff** the Szegedy quotient exhibits
-quotient PST.  Proved sorry-free here by a single rewrite through the bridge —
-all the mathematical content sits in `dtqw_equitable_lift` (the square) and the
-two `sorry`s it is built on; neither *direction* of this iff is deep. -/
+quotient PST.  Proved sorry-free by a single rewrite through the (now proven)
+bridge `cellUniformSzegedyBlock_eq_quotient`; all the mathematical content sits
+in `dtqw_equitable_lift` (the square) + the doubled `cellUniform_matrixElement`.
+Neither *direction* of this iff is deep. -/
 theorem cellUniformSzegedyPST_iff_quotient [Nonempty V]
     (P : EquitablePartition G I) (hME : P.MagnitudeEquitable)
     (hne : ∀ k, P.cellCard k ≠ 0) (i j : I) (τ : ℕ) :
@@ -337,20 +507,43 @@ theorem cellUniformSzegedyPST_of_quotient [Nonempty V]
   (cellUniformSzegedyPST_iff_quotient P hME hne i j τ).mpr h
 
 /-- **The DTQW mixing iff lift.**  Host-side cell-uniform Szegedy mixing holds
-iff the Szegedy quotient's position-marginal mixing block equals `1/|I|`.  This
-is the `‖·‖²` analogue of `cellUniformSzegedyPST_iff_quotient`.
+iff the Szegedy quotient's doubled mixing block equals `1/|I|`.  This is the
+`‖·‖²` analogue of `cellUniformSzegedyPST_iff_quotient`.
 
-Carried as an honest `sorry`: the `‖·‖²` analogue of the bridge
-`cellUniformSzegedyBlock_eq_quotient` (the squared-modulus block sum equals the
-quotient mixing block) — the same mechanical doubled-index bookkeeping with
-`‖·‖²` in place of the bare amplitude. -/
+**Now proven** (sorry-free): the `‖·‖²` analogue of the bridge — applying the
+*same* doubled `cellUniform_matrixElement` + compression identity per head-cell
+pair `(b, b')` turns each normalized host block amplitude into the quotient
+entry `(szegedyQuotient^τ)((j,b'),(i,b))`; squaring the moduli and summing over
+`(b, b')` is then termwise identical on both sides.  Mechanical bookkeeping on
+top of the proven square, with `‖·‖²` in place of the bare amplitude. -/
 theorem cellUniformSzegedyMixing_iff_quotient [Nonempty V]
     (P : EquitablePartition G I) (hME : P.MagnitudeEquitable)
     (hne : ∀ k, P.cellCard k ≠ 0) (i j : I) (τ : ℕ) :
     P.IsCellUniformSzegedyMixing i j τ ↔
       (∑ b, ∑ b', ‖(P.szegedyQuotient ^ τ) (j, b') (i, b)‖ ^ 2)
         = 1 / (Fintype.card I : ℝ) := by
-  sorry
+  unfold IsCellUniformSzegedyMixing
+  -- Each host block amplitude is the quotient entry (doubled matrix element +
+  -- compression); squared moduli therefore match termwise.
+  have hterm : ∀ b b' : I,
+      ‖(∑ x, ∑ x', ∑ y, ∑ y',
+          if P.cells x = i ∧ P.cells x' = j ∧ P.cells y = b ∧ P.cells y' = b'
+            then (G.SzegedyWalk ^ τ) (x', y') (x, y) else 0) /
+          ((Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard j) : ℂ) *
+            ((Real.sqrt (P.cellCard b) : ℂ) * (Real.sqrt (P.cellCard b') : ℂ)))‖ ^ 2
+        = ‖(P.szegedyQuotient ^ τ) (j, b') (i, b)‖ ^ 2 := by
+    intro b b'
+    rw [doubledCellUniform_matrixElement P (G.SzegedyWalk ^ τ) i j b b',
+      ← doubledCellEmbedH_szegedyWalk_pow_doubledCellEmbed P hME hne τ]
+  rw [show (∑ b, ∑ b', ‖(∑ x, ∑ x', ∑ y, ∑ y',
+          if P.cells x = i ∧ P.cells x' = j ∧ P.cells y = b ∧ P.cells y' = b'
+            then (G.SzegedyWalk ^ τ) (x', y') (x, y) else 0) /
+          ((Real.sqrt (P.cellCard i) : ℂ) * (Real.sqrt (P.cellCard j) : ℂ) *
+            ((Real.sqrt (P.cellCard b) : ℂ) * (Real.sqrt (P.cellCard b') : ℂ)))‖ ^ 2)
+        = ∑ b, ∑ b', ‖(P.szegedyQuotient ^ τ) (j, b') (i, b)‖ ^ 2 from by
+    apply Finset.sum_congr rfl; intro b _
+    apply Finset.sum_congr rfl; intro b' _
+    exact hterm b b']
 
 /-! ## §6 The one genuinely-deep residue: identification with the intrinsic
 quotient Szegedy walk.
