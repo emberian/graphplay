@@ -136,6 +136,7 @@ import Graphplay.Integrations.MeanFieldGames
 import Graphplay.Integrations.Hodge
 import Graphplay.Integrations.LatticeDeduction
 import Graphplay.Integrations.LDTSoundness
+import Graphplay.Integrations.LDTCompleteness
 import Graphplay.Integrations.LatticeGauge
 import Graphplay.Integrations.WLRefinement
 import Graphplay.Integrations.QuantumMarkov
