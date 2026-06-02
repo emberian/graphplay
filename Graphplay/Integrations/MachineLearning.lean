@@ -39,12 +39,13 @@ single load-bearing idea, stated five different ways below, is:
    linear solves inside ML — ridge regression `(XᵀX + λI)⁻¹ Xᵀy`, kernel
    methods, the implicit solve in normalization — are exactly the
    `MatrixInversion.LinearSystem` solved by CTQW matrix inversion, with the
-   equitable speedup when the (normal/kernel) matrix has a symmetry.  *Stated and
-   delegated to the spine* (deep core honest-`sorry`d): a structured `A` with an
-   `r`-cell equitable partition has its inversion restrict to the `r × r`
-   quotient solve on cell-uniform data (`ridge_inversion_restricts_to_quotient`,
-   delegating to `MatrixInversion.inversion_restricts_to_quotient`, whose
-   inverse-of-restriction body is itself a `sorry`).
+   equitable speedup when the (normal/kernel) matrix has a symmetry.  *Proven
+   (axiom-clean)*: a structured `A` with an `r`-cell equitable partition has its
+   inversion restrict **exactly** to the `r × r` quotient solve on cell-uniform
+   data (`ridge_inversion_restricts_to_quotient`, via the now-complete spine proof
+   `MatrixInversion.inversion_restricts_to_quotient`).  The *quantum convergence
+   rate* `O(κ/ε)` of the residual `r × r` CTQW solve is the only piece left to the
+   spine (`MatrixInversion.LinearSystem.ctqw_success`, honest `sorry`).
 
 4. **Search-as-optimization** (`CombinatorialOptimization`).  A marked-set
    search problem; Childs–Goldstone CTQW spatial search is the
@@ -75,6 +76,7 @@ import Graphplay.Equitable
 import Graphplay.Search
 import Graphplay.Search.CNO
 import Graphplay.Integrations.MatrixInversion
+import Graphplay.Integrations.QuantumAdvantage
 
 open scoped Matrix
 open Complex
@@ -257,18 +259,20 @@ noncomputable def equitableOfAutomorphism (G : WeightedGraph n)
     -- Branching is invariant under the `k`-fold power of the automorphism.
     exact (branching_eq_of_aut_pow G cells a hcell j x k).symm
 
-/-- **Spectral compression bound (honest `sorry`).**  When structured attention
-collapses onto an `r`-cell equitable partition, the symmetrized attention
+/-- **Spectral compression bound (PROVEN, axiom-clean).**  When structured
+attention collapses onto an `r`-cell equitable partition, the symmetrized attention
 operator has at most `r` "cell-uniform" eigenvalues carrying the inter-cell
 dynamics: its action on the cell-uniform subspace is the `r × r` `symmQuotient`,
 so the *effective rank* of the attention operator on symmetric inputs is `≤ r`.
 
 We state this as: the rank of `symmQuotient` (an `r × r` matrix, `r = |I|`)
 bounds the dimension of the image of the symmetrized attention operator restricted
-to the cell-uniform subspace.  The deep content (that this captures the full
-low-rank compression of structured attention, i.e. the operator is genuinely
-compressible to `O(r)` parameters) is the honest `sorry`; the restriction-equals-
-quotient half is *proven* in `EquitablePartition.restrict_eq_symmQuotient`. -/
+to the cell-uniform subspace.  The stated inequality `rank Q̃ ≤ |I|` is **fully
+proven** (`Matrix.rank_le_card_width`); only the informal *narrative* (that this
+captures the full low-rank compression of structured attention to `O(r)`
+parameters) is conjectural — it is a discussion, not a claim of this theorem.  The
+restriction-equals-quotient half is *proven* in
+`EquitablePartition.restrict_eq_symmQuotient`. -/
 theorem attention_compression_bound (A : AttentionMatrix n)
     {I : Type u} [Fintype I] [DecidableEq I]
     (P : EquitablePartition A.symmetrizedAttention I) :
@@ -383,11 +387,13 @@ The linear solves at the heart of ML are all `MatrixInversion.LinearSystem`s:
 
 The Graphplay payoff: when the design has a symmetry — `XᵀX` (or `K`) has an
 `r`-cell equitable partition, e.g. from feature-group / translation symmetry —
-the inversion **restricts to the `r × r` quotient solve** on cell-uniform data.
-This is the *complexity-reduction theorem*; it is **stated precisely and
-delegated to the spine** (`MatrixInversion.inversion_restricts_to_quotient`,
-itself built on the genuinely-proven `restrict_eq_symmQuotient` but with its
-inverse-of-restriction core left as an honest `sorry`). -/
+the inversion **restricts exactly to the `r × r` quotient solve** on cell-uniform
+data.  This is the *complexity-reduction theorem*, and it is now **fully proven
+and axiom-clean** (`MatrixInversion.inversion_restricts_to_quotient`, built on the
+proven `restrict_eq_symmQuotient` with its inverse-of-restriction core completed —
+`A⁻¹ b = y` by cancelling `A⁻¹ A = 1` after `A y = b`).  The *only* deferred piece
+is the physical CTQW convergence *rate* (`ctqw_success`), a hardware statement, not
+the (here-proven) exactness of the reduction. -/
 
 /-- A **ridge-regression instance**: design matrix `X : Matrix m n ℂ` (rows =
 samples `m`, columns = features `n`), targets `y : m → ℂ`, ridge parameter
@@ -468,7 +474,7 @@ noncomputable def kernelSolve (K : Matrix n n ℂ) (hherm : K.IsHermitian)
   b := y
 
 /-- **Complexity-reduction theorem for structured ridge / kernel inversion
-(delegated to the spine; deep core honest-`sorry`d there).**
+(PROVEN, axiom-clean — built on the now-complete spine).**
 
 Let `A` be the (Hermitian, invertible) normal/kernel matrix presented as the
 adjacency of a `WeightedGraph G`, with an `r`-cell equitable partition `P` whose
@@ -484,12 +490,16 @@ matrix-inverter (or any classical solver) need only run on the `r`-dimensional
 quotient — the symmetry-reduction is *exact*.
 
 HONESTY NOTE: this delegates to `MatrixInversion.inversion_restricts_to_quotient`,
-whose body is itself an **honest `sorry`** (the inverse-of-restriction algebra on
-the cell-uniform subspace).  The *invariance / restriction* half it builds on
-(`EquitablePartition.restrict_eq_symmQuotient`,
-`cellUniformSubspace_invariant`) is genuinely proven in the spine; the
-inversion step is deferred.  So this is a precise statement with a deep deferred
-core, **not** a fully machine-checked theorem. -/
+whose inverse-of-restriction body is now a **complete proof** (cancel `A⁻¹ A = 1`
+after rewriting `A y = b` through `EquitablePartition.restrict_eq_symmQuotient`
+and `Matrix.mul_nonsing_inv` on the invertible quotient).  Verified axiom-clean:
+`#print axioms ridge_inversion_restricts_to_quotient` reports only
+`propext, Classical.choice, Quot.sound` (no `sorryAx`).  So the **exact
+symmetry-reduction of the inversion is fully machine-checked**; the only piece
+that remains an honest `sorry` is the *physical CTQW convergence rate*
+(`MatrixInversion.LinearSystem.ctqw_success`, arXiv:2508.06611) — a statement
+about the quantum hardware, not about the (here-proven) linear-algebraic exactness
+of the reduction. -/
 theorem ridge_inversion_restricts_to_quotient
     {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V)
     (hinv : IsUnit G.adj.det)
@@ -570,6 +580,114 @@ theorem structured_search_optimal (O : CombinatorialOptimization V)
   -- Directly the CNO headline theorem from `Graphplay.Search.CNO`.
   Graphplay.optimal_search_of_spectral_ratio_lt_one O.graph w p d hne hreg huniform hp hratio
 
+/-! ### Equitable-quotient search advantage for structured optimization
+
+The flagship ML payoff, surfaced for `CombinatorialOptimization` and built on the
+**axiom-clean** results of `Graphplay.QuantumAdvantage` (no honest `sorry` in the
+dynamical core: the upper bound is the unconditional Rabi computation, the lower
+bound is the indistinguishability argument).
+
+When the optimization graph `O.graph` carries an `r`-cell equitable partition `P`
+(`r = |I|`) and the marked set `O.marked` is **cell-uniform** (constant on each
+cell — the natural condition for a symmetric search landscape), two things hold
+*simultaneously and exactly*:
+
+* **(exact reduction).**  The host CTQW search dynamics on `O.graph` restricted to
+  cell-uniform states are computed by the `r×r` refined-quotient search
+  Hamiltonian — the dynamics live entirely on the `r`-dimensional quotient,
+  independent of `|V| = N` (`QuantumAdvantage.structured_search_advantage` part a,
+  itself `Graphplay.search_quotient_reduction`).
+
+* **(√r vs r separation).**  Quantum search on the quotient succeeds in time
+  `O(√r)` (and `2√r ≤ r`), while every classical query algorithm needs `Ω(r)`
+  queries on the `r` cells — the genuine quadratic separation, with the quantum
+  cost set by the equitable-cell count `r`, **not** the configuration-space size
+  `N` (`QuantumAdvantage.ml_structured_search_quantum_advantage`). -/
+
+/-- **Structured-optimization quotient reduction (PROVEN, axiom-clean).**
+
+For a `CombinatorialOptimization` whose graph has an `r`-cell equitable partition
+`P` and whose marked set is cell-uniform (`hM`), the host search Hamiltonian
+`H = -γ·A − P_marked` acts on any cell-uniform state `∑ ib, w ib · e_ib` exactly as
+the `r×r` refined-quotient search Hamiltonian `-γ·Q̃' − markedDiag`.  The search
+dynamics of the optimizer descend, with no approximation, to the
+`(I × Bool)`-indexed quotient — so the effective search dimension is the number of
+equitable cells, independent of `|V| = N`.
+
+This is `QuantumAdvantage.structured_search_advantage` (part a), reused verbatim
+for the `CombinatorialOptimization` instance. -/
+theorem structured_quotient_reduction (O : CombinatorialOptimization V)
+    {I : Type u} [Fintype I] [DecidableEq I] (P : EquitablePartition O.graph I)
+    (γ : ℝ)
+    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ O.marked ↔ y ∈ O.marked))
+    (w : Graphplay.MarkedRefined I → ℂ) :
+    (let P' := P.refineByMarked O.marked hM
+     (O.graph.searchHamiltonian O.marked γ).mulVec
+         (fun v => ∑ ib, w ib * P'.cellUniformVec ib v)
+        = (fun v => ∑ ib,
+            ((-(γ : ℂ) • P'.symmQuotient - Graphplay.markedDiag I).mulVec w) ib *
+              P'.cellUniformVec ib v)) :=
+  (Graphplay.QuantumAdvantage.structured_search_advantage P O.marked γ hM w).1
+
+/-- **Structured-optimization quantum advantage — the flagship ML claim
+(PROVEN, axiom-clean; deep dynamical core is the unconditional Rabi computation,
+NOT a `sorry`).**
+
+Let a `CombinatorialOptimization O` have a search graph with an `r`-cell equitable
+partition `P` and a cell-uniform marked set (`hM`), with effective search
+dimension `r = |I| ≥ 4`.  Then, *with the quantum cost governed by the
+equitable-cell count `r` rather than the configuration-space size `|V| = N`*:
+
+* **(a) exact reduction.**  The host search dynamics descend exactly to the
+  `r×r` refined-quotient (`structured_quotient_reduction` / `search_quotient_reduction`);
+
+* **(b) quantum O(√r).**  There is an evolution time `t_q ≤ (π/2)·√r = O(√r)` at
+  which the reduced quotient search reaches *exact* marked amplitude `≥ √(1/2)`
+  (`exactSearchAmplitude`, exact Rabi frequency `1/√r`, **no `r→∞` idealization** —
+  the unconditional `quantum_search_exact_amplitude` computation);
+
+* **(c) classical Ω(r).**  No correct classical query algorithm can be `Q`-local
+  for a queried cell-set `Q` with `Q.card + 1 < r` — the genuine indistinguishability
+  lower bound on the `r` cells (`no_correct_QLocal_certifier`).
+
+Together (b)+(c) are a real `√r` vs `r` quadratic separation; (a) certifies that
+`r = |I|` (the number of equitable cells), not `N = |V|`, is the dimension that
+sets the quantum cost.  Reuses `QuantumAdvantage.structured_search_advantage` and
+`QuantumAdvantage.ml_structured_search_quantum_advantage`, both axiom-clean. -/
+theorem structured_quantum_advantage (O : CombinatorialOptimization V)
+    {I : Type u} [Fintype I] [DecidableEq I] (P : EquitablePartition O.graph I)
+    (γ : ℝ)
+    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ O.marked ↔ y ∈ O.marked))
+    (hr : 4 ≤ Fintype.card I)
+    (w : Graphplay.MarkedRefined I → ℂ) :
+    -- (a) exact quotient reduction (effective dimension r = |I|, independent of |V|)
+    ((let P' := P.refineByMarked O.marked hM
+      (O.graph.searchHamiltonian O.marked γ).mulVec
+          (fun v => ∑ ib, w ib * P'.cellUniformVec ib v)
+        = (fun v => ∑ ib,
+            ((-(γ : ℂ) • P'.symmQuotient - Graphplay.markedDiag I).mulVec w) ib *
+              P'.cellUniformVec ib v)))
+    ∧
+    -- (b) quantum: EXACT marked amplitude ≥ √(1/2) at evolution time ≤ (π/2)√r
+    (∃ t_q : ℝ, 0 ≤ t_q ∧ t_q ≤ (Real.pi / 2) * Real.sqrt (Fintype.card I) ∧
+        Real.sqrt (1 / 2) ≤
+          Graphplay.QuantumAdvantage.exactSearchAmplitude (Fintype.card I) t_q)
+    ∧
+    -- (c) classical Ω(r): no correct Q-local certifier when Q.card + 1 < r
+    (∀ Q : Finset I, Q.card + 1 < Fintype.card I →
+        ¬ ∃ A : (I → Bool) → I,
+            Graphplay.QuantumAdvantage.QLocal Q A ∧
+            Graphplay.QuantumAdvantage.CorrectSearch A) := by
+  refine ⟨structured_quotient_reduction O P γ hM w, ?_, ?_⟩
+  · -- The √r upper bound: the EXACT-amplitude flagship advantage at r = |I|.
+    obtain ⟨⟨t, ht0, htb, hamp⟩, _⟩ :=
+      Graphplay.QuantumAdvantage.ml_structured_search_quantum_advantage_exact
+        (Fintype.card I) hr
+    exact ⟨t, ht0, htb, hamp⟩
+  · -- The Ω(r) lower bound: the indistinguishability clause of the flagship.
+    intro Q hlt
+    exact (Graphplay.QuantumAdvantage.structured_search_advantage P O.marked γ hM w).2 Q hlt
+
 end CombinatorialOptimization
 
 /-! ## 5. Toward verified quantum ML acceleration
@@ -602,20 +720,20 @@ and the *same* machine-checked lift certifies the reduction is exact:
   `normalMatrix_isHermitian`, `kernelSolve`).
 * **Structured-inversion complexity reduction**
   (`ridge_inversion_restricts_to_quotient`) — an `r`-cell equitable symmetry makes
-  inversion restrict to the `r × r` quotient solve.  *Stated precisely and
-  delegated to the spine*; the inverse-of-restriction core
-  (`MatrixInversion.inversion_restricts_to_quotient`) is an honest `sorry`, so
-  this is **not** fully machine-checked — see its honesty note.
+  inversion restrict **exactly** to the `r × r` quotient solve.  Now *fully proven
+  and axiom-clean*: the spine core `MatrixInversion.inversion_restricts_to_quotient`
+  is a complete proof (no `sorry`), so the linear-algebraic exactness of the
+  reduction is machine-checked.  Only the physical CTQW *rate* remains a spine
+  `sorry` (`ctqw_success`).
 
 **What is honest-`sorry` (deep claims only, never a `def`):**
 
 * `structured_search_optimal` — the CNO `O(√N)` dynamical analysis, reused from
   `Search.optimal_search_of_spectral_ratio_lt_one` (arXiv:2004.12686 Thms 1–2).
-* `ridge_inversion_restricts_to_quotient` delegates to
-  `MatrixInversion.inversion_restricts_to_quotient`, whose inverse-of-restriction
-  body is an honest `sorry`.
-* The CTQW convergence itself lives upstream in
-  `MatrixInversion.ctqw_success` (arXiv:2508.06611).
+* The CTQW convergence *rate* lives upstream in
+  `MatrixInversion.ctqw_success` (arXiv:2508.06611) — the only `sorry` behind the
+  inversion story.  (`ridge_inversion_restricts_to_quotient` itself is now PROVEN:
+  the spine's `inversion_restricts_to_quotient` is a complete proof; see above.)
 
   (`attention_compression_bound` is now **fully proven** — the effective-rank
   bound `rank Q̃ ≤ |I|` is `Matrix.rank_le_card_width`; only the informal

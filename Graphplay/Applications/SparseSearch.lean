@@ -78,6 +78,7 @@ import Graphplay.StdLib.Hypercube
 import Graphplay.Search
 import Graphplay.Search.CNO
 import Graphplay.Equitable
+import Graphplay.LiteratureInterfaces
 import Mathlib.Data.Nat.Log
 import Mathlib.Data.Nat.Bitwise
 import Mathlib.Data.ZMod.Basic
@@ -1034,13 +1035,22 @@ independent of `N = L^d`**: the hallmark of buildable hardware.
 
 The honest twist (this is the point of the file): Childs–Goldstone
 (`quant-ph/0306054`) proved that continuous-time spatial search on `Z_L^d` attains
-the optimal `Θ(√N)` running time **only for `d > 4`**; `d = 4` loses a `√log N`
-factor, and `d ≤ 3` — *every literal 2D/3D chip* — does **not** achieve the
-quadratic speedup at all.  The mechanism is an infrared (small-momentum)
-convergence threshold of the lattice Green's function `∑_k 1/(1−cos k)`, which is
-dimension-`4`-critical.  So the most *buildable* host (a 2D/3D grid) is precisely
-the one that does *not* win, while the hypercube `Q_d` — degree only `log₂N`, yet
-spectrally in the high-dimensional regime — threads the needle.
+the optimal `Θ(√N)` running time **only for `d > 4`** *in the asymptotic `N → ∞`
+limit*; `d = 4` loses a `√log N` factor, and `d ≤ 3` — *every literal 2D/3D chip* —
+does **not** achieve the quadratic speedup at all.  The mechanism is an infrared
+(small-momentum) convergence threshold of the lattice Green's function
+`∑_k 1/(1−cos k)`, which is dimension-`4`-critical.  So the most *buildable* host (a
+2D/3D grid) is precisely the one that does *not* win, while the hypercube `Q_d` —
+degree only `log₂N`, yet spectrally in the high-dimensional regime — threads the
+needle.
+
+Note the threshold is genuinely **asymptotic**, not a per-instance property of a
+single finite torus: e.g. `Z_3^1` is the complete graph `K_3` and *is* optimal
+(`lattice_d1_L3_optimal`) despite `d = 1`.  The dimension-`d` dependence only
+governs the `N → ∞` scaling.  Accordingly the Lean development keeps the threshold
+in its honest schematic form (`lattice_search_dimension_threshold`) and discharges
+the genuinely-finite complete-torus regime outright; the asymptotic Green's-function
+content is externalized to a named literature interface / explicit hypotheses.
 
 Throughout we require `[Fact (2 < L)]` (i.e. `L ≥ 3`): a periodic lattice with
 side `< 3` has the two `±1` neighbours along an axis collapse onto each other, so
@@ -1296,59 +1306,142 @@ theorem latticeSearchHamiltonian_apply (d L : ℕ) [Fact (2 < L)]
   unfold latticeSearchHamiltonian WeightedGraph.searchHamiltonian
   simp only [Finset.mem_singleton]
 
-/-! ### The HONEST headline: the dimension threshold.
+/-! ### A genuinely discharged lattice regime: `Z_3^1 = K_3` — UNCONDITIONAL.
 
-This is the paper-worthy result, stated precisely with the dimension dependence
-explicit.  The proof is the deep Childs–Goldstone spectral integral — genuinely
-hard, blocked here. -/
+Before the (asymptotic, open) dimension threshold, there is a fully-discharged
+lattice regime that ALSO serves as the explicit counterexample to any *naive
+per-instance* reading of that threshold.  For `d = 1`, `L = 3` the periodic
+lattice `Z_3^1` has three vertices `0, 1, 2`, and each is adjacent to the other
+two (`+1` and `−1` reach both), so `Z_3^1` is *exactly* the complete graph `K_3`.
+CTQW search on it is therefore optimal `O(√N)` (`N = 3`) by the axiom-clean
+`Graphplay.complete_graph_optimal_search`, **with no spectral hypothesis**.
 
-/-- **`lattice_search_dimension_threshold` — CONJECTURED/OPEN (Childs–Goldstone,
-`quant-ph/0306054`), proof `sorry`-ed.**
+This is the key honesty fact for the lattice section: a *per-instance* claim
+"`IsOptimalCTQWSearch (latticeGraph d L) w ↔ 4 < d`" is **FALSE** — `Z_3^1` is
+optimal yet `4 < 1` is false (and any `d ≤ 3` "non-advantage" claim is likewise
+refuted here).  The genuine Childs–Goldstone threshold is *asymptotic* (`N → ∞`),
+not a property of one finite graph; small complete tori win regardless of `d`.
+We therefore (i) record this discharged regime, (ii) state the threshold only in
+its honest schematic / family form, and (iii) make the downstream high-dim and
+contrast theorems take their dynamical clauses as explicit (open) hypotheses. -/
 
-> **⚠ UNPROVEN in this development.**  The entire biconditional below is closed by
-> a single `sorry` (the deep Childs–Goldstone spectral integral).  It is stated as
-> the genuine *conjectured* Childs–Goldstone threshold, NOT as a proven result;
-> any `#print axioms` will report `sorryAx`.  Downstream theorems that invoke it
-> (`lattice_search_optimal_high_dim`, `buildable_lattice_dynamical_contrast`) are
-> correspondingly **conditional / unproven** in their dynamical clauses.
+/-- The concrete side length `3 > 2`, so `Z_3^1` is a valid (loopless,
+distinct-neighbour) periodic lattice. -/
+instance instFact2Lt3 : Fact (2 < 3) := ⟨by norm_num⟩
 
-Continuous-time spatial search on the `d`-dimensional
-periodic lattice `Z_L^d` is conjectured to achieve the **optimal `Θ(√N)` running
-time if and only if `d > 4`**.  Concretely: for `d > 4` the marked-vertex CTQW
-search is optimal
-(`IsOptimalCTQWSearch`); for `d ≤ 4` no choice of coupling `γ` yields the optimal
-constant-amplitude `√N` search (`d ≤ 3` fails outright; `d = 4` loses a `√log N`
-factor and so still misses the *exact* `Θ(√N)` window).
+/-- In `Z_3^1` (the `d = 1`, `L = 3` torus), any two distinct vertices are
+adjacent: they differ in their single coordinate by some nonzero `s ∈ ZMod 3`,
+and every nonzero element of `ZMod 3` is `±1`, a nearest-neighbour shift.  Hence
+`Z_3^1` is the complete graph `K_3`. -/
+theorem lattice_d1_L3_complete (x y : LatticeVertex 1 3) (hxy : x ≠ y) :
+    (latticeGraph 1 3).adj x y = 1 := by
+  classical
+  show (if latticeAdjacent x y then (1 : ℂ) else 0) = 1
+  rw [if_pos]
+  -- `x ≠ y` on a single coordinate forces `x 0 ≠ y 0`.
+  have h0 : x 0 ≠ y 0 := by
+    intro h; apply hxy; funext i; fin_cases i; exact h
+  -- the shift `s = y 0 − x 0` is nonzero, hence `±1` in `ZMod 3`.
+  refine ⟨0, y 0 - x 0, ?_, ?_⟩
+  · have hne : y 0 - x 0 ≠ 0 := sub_ne_zero.mpr h0.symm
+    revert hne; generalize (y 0 - x 0) = a; revert a; decide
+  · funext i; fin_cases i
+    show y 0 = latticeShift 0 (y 0 - x 0) x 0
+    rw [latticeShift_self]; ring
 
-The mechanism is the infrared convergence of the lattice Green's function
-`G_d = (2π)^{-d} ∫_{[-π,π]^d} dᵏ / ∑_{a} (1 − cos kₐ)`, whose small-`k` integrand
-`~ ‖k‖^{-2}` is integrable exactly when `d > 4` (a `d/2 > 2` power-counting
-threshold) — the same `4`-critical dimension as the random-walk / φ⁴ upper
-critical dimension.  Above it, the spectral gap of the normalized search
-Hamiltonian is constant (the CNO ratio condition holds) and CG search is optimal;
-at and below it the gap closes and the amplitude saturates below `O(1)`.
+/-- **`lattice_d1_L3_optimal` — a genuinely discharged lattice regime
+(UNCONDITIONAL, axiom-clean).**  For `d = 1`, `L = 3`, the torus `Z_3^1 = K_3` is
+the complete graph on three vertices, so CTQW search on it is optimal `O(√N)`
+(`N = 3`) — proven outright via `Graphplay.complete_graph_optimal_search`, with no
+Childs–Goldstone / spectral hypothesis.
 
-**Honest `sorry` (OPEN).**  The spectral integral and its dimension-`4`
-IR-convergence threshold are the deep analytic content of Childs–Goldstone; we
-state the genuine *conjectured* biconditional and block exactly that step.  This
-theorem is therefore **not proven** — it is a labeled open conjecture. -/
-theorem lattice_search_dimension_threshold (d L : ℕ) [Fact (2 < L)]
-    (w : LatticeVertex d L) :
-    IsOptimalCTQWSearch (latticeGraph d L) w ↔ 4 < d := by
-  -- BLOCKED: Childs–Goldstone spectral integral / d>4 IR-convergence
-  -- of the lattice Green's function `∫ dᵏ / ∑(1−cos kₐ)` (quant-ph/0306054).
-  sorry
+This is BOTH a fully-discharged regime of buildable-lattice search AND the explicit
+witness that the per-instance biconditional `IsOptimalCTQWSearch (latticeGraph d L)
+w ↔ 4 < d` is FALSE (here the LHS holds but `4 < 1` is false): the genuine
+Childs–Goldstone threshold is asymptotic, not a property of a single finite
+torus. -/
+theorem lattice_d1_L3_optimal (w : LatticeVertex 1 3) :
+    IsOptimalCTQWSearch (latticeGraph 1 3) w :=
+  complete_graph_optimal_search (latticeGraph 1 3) w
+    (⟨fun _ => 0⟩ : Nonempty (LatticeVertex 1 3))
+    (by rw [latticeGraph_card]; norm_num)
+    lattice_d1_L3_complete
 
-/-- **High-dimensional lattices DO get the speedup (`d > 4`) — CONJECTURED/OPEN.**
-The `d > 4` half of the threshold: above the critical dimension the lattice
-Green's function converges, the CNO spectral-ratio condition holds, and CTQW
-search is conjectured optimal.  ⚠ **UNPROVEN**: this is the forward direction of
-the `sorry`-ed `lattice_search_dimension_threshold`, hence itself `sorryAx` (not a
-proven result). -/
+/-! ### The HONEST headline: the dimension threshold (schematic / asymptotic).
+
+The Childs–Goldstone (`quant-ph/0306054`) threshold — optimal `Θ(√N)` spatial
+search on `Z_L^d` iff `d > 4` — is an **asymptotic** (`N → ∞`) statement and is
+NOT a property of any single finite torus (witness `lattice_d1_L3_optimal`).  Its
+deep analytic content is the infrared convergence of the lattice Green's function
+`G_d = (2π)^{-d} ∫_{[-π,π]^d} dᵏ / ∑_a (1 − cos kₐ)`, whose small-`k` integrand
+`~ ‖k‖^{-2}` is integrable exactly when `d > 4` (the `d/2 > 2` power-counting /
+`φ⁴` upper-critical-dimension threshold): above it the normalized search
+Hamiltonian has a constant spectral gap (the CNO ratio condition) and CG search is
+optimal; at and below it the gap closes and the amplitude saturates below `O(1)`.
+
+We do NOT sorry a false per-instance biconditional.  Instead we state the genuine
+**deduction skeleton** honestly: the threshold `d > 4` follows from the two
+physical equivalences — (i) search-optimality ⇔ IR convergence and (ii) IR
+convergence ⇔ `d > 4` — supplied by the literature interface
+`Graphplay.LiteratureInterfaces.ChildsGoldstoneLatticeSearch` (a named, *open*
+carrier of the deep Green's-function analysis).  The proof is the axiom-clean
+chaining of those equivalences; the open analytic content lives entirely in the
+two supplied hypotheses + the (undischarged) typeclass instance. -/
+
+/-- **`lattice_search_dimension_threshold` — the schematic Childs–Goldstone
+deduction (axiom-clean, conditional on the literature interface).**
+
+Stated over an abstract dimension-indexed optimality predicate `isOptimalSearch :
+ℕ → Prop` (the family member at dimension `d`), the `d > 4` threshold follows from
+the two genuine physical equivalences:
+* `hopt_ir` : search-optimality ⇔ infrared convergence of the lattice Green's
+  function, and
+* `hir` : IR convergence ⇔ `4 < d` (the analytic power-counting threshold),
+via the literature interface `ChildsGoldstoneLatticeSearch`.
+
+This is the **honest** form of the Childs–Goldstone threshold: it is NOT the false
+per-instance biconditional `IsOptimalCTQWSearch (latticeGraph d L) w ↔ 4 < d`
+(refuted for `d = 1, L = 3` by `lattice_d1_L3_optimal`, since the threshold is
+asymptotic).  The reduction here is axiom-clean (`#print axioms` reports only
+`propext, Classical.choice, Quot.sound`); the deep Green's-function analysis is
+externalized to the two supplied equivalences and the (open, undischarged)
+typeclass instance. -/
+theorem lattice_search_dimension_threshold
+    [Graphplay.LiteratureInterfaces.ChildsGoldstoneLatticeSearch]
+    (isOptimalSearch irConverges : ℕ → Prop)
+    (hopt_ir : ∀ d, isOptimalSearch d ↔ irConverges d)
+    (hir : ∀ d, irConverges d ↔ 4 < d) :
+    ∀ d, isOptimalSearch d ↔ 4 < d :=
+  Graphplay.LiteratureInterfaces.ChildsGoldstoneLatticeSearch.optimal_iff_dim_gt_four
+    isOptimalSearch irConverges hopt_ir hir
+
+/-- The **above-critical lattice search conjecture** (`d > 4`): the named, *open*
+positive-direction Childs–Goldstone claim that for `d > 4` (above the critical
+dimension, where the lattice Green's function converges and the CNO spectral-ratio
+condition holds) the marked-vertex CTQW search on `Z_L^d` is optimal.  This is
+left as an explicit hypothesis predicate — it is the deep, asymptotic
+Green's-function content and is **not discharged** here. -/
+def LatticeOptimalAboveCritical (d L : ℕ) [Fact (2 < L)] (w : LatticeVertex d L) :
+    Prop :=
+  4 < d → IsOptimalCTQWSearch (latticeGraph d L) w
+
+/-- **High-dimensional lattices DO get the speedup (`d > 4`) — CONDITIONAL on the
+open above-critical conjecture.**  The `d > 4` half of the Childs–Goldstone
+threshold: above the critical dimension the lattice Green's function converges, the
+CNO spectral-ratio condition holds, and CTQW search is optimal.
+
+⚠ **CONDITIONAL, not unconditional.**  This is now an axiom-clean *reduction*: it
+takes the named open conjecture `LatticeOptimalAboveCritical d L w` (the positive
+Childs–Goldstone direction, the deep Green's-function content) as an explicit
+hypothesis and applies it at `4 < d`.  Unlike the previous form it does NOT rest on
+a `sorry`-ed false per-instance biconditional; the open analytic content is
+isolated in the hypothesis `hconj`.  `#print axioms` reports only
+`propext, Classical.choice, Quot.sound`. -/
 theorem lattice_search_optimal_high_dim (d L : ℕ) [Fact (2 < L)]
-    (w : LatticeVertex d L) (hd : 4 < d) :
+    (w : LatticeVertex d L) (hd : 4 < d)
+    (hconj : LatticeOptimalAboveCritical d L w) :
     IsOptimalCTQWSearch (latticeGraph d L) w :=
-  (lattice_search_dimension_threshold d L w).mpr hd
+  hconj hd
 
 /-! ### The honest CONTRAST: buildable vs advantageous are in tension.
 
@@ -1366,7 +1459,8 @@ advantage tension: the spatial lattice `Z_L^d` is `2d`-regular with `N = L^d`
 vertices (constant-degree, maximally buildable), while the Boolean hypercube
 `Q_e` is `e`-regular with `e = log₂N` (log-degree, also buildable).  Both
 sparsity facts are axiom-clean; this theorem makes **no** dynamical (timing /
-advantage) claim — that is `buildable_lattice_dynamical_contrast` (honest-`sorry`). -/
+advantage) claim — that is `buildable_lattice_dynamical_contrast` (an axiom-clean
+reduction taking both dynamical clauses as explicit open hypotheses). -/
 theorem buildable_lattice_structural_contrast
     (d L : ℕ) [Fact (2 < L)] (e : ℕ) :
     -- the lattice is `2d`-regular with `L^d` vertices (proven, axiom-clean):
@@ -1380,42 +1474,46 @@ theorem buildable_lattice_structural_contrast
     ⟨hypercube_isRegular e, hypercube_sparse e⟩⟩
 
 /-- **`buildable_lattice_dynamical_contrast` — the honest dynamical contrast
-(`sorry`-carrying).**  For every *physically spatial* lattice — dimension
-`d ≤ 3` (every realizable 2D/3D chip), with side `L ≥ 3` — continuous-time
-spatial search does **NOT** achieve the optimal `Θ(√N)` quadratic speedup, *even
-though the lattice is the most buildable host* (constant degree `2d`,
-nearest-neighbour).  Meanwhile the Boolean hypercube `Q_e` (degree `e = log₂N`,
-also buildable) **does** achieve it.
-
+(axiom-clean reduction, both dynamical clauses externalized).**  A *physically
+spatial* sub-critical lattice (the conjectured `d ≤ 4` regime, every realizable
+2D/3D chip) does **NOT** achieve the optimal `Θ(√N)` quadratic speedup — *even
+though it is the most buildable host* (constant degree `2d`, nearest-neighbour) —
+while the Boolean hypercube `Q_e` (degree `e = log₂N`, also buildable) **does**.
 Buildability and advantage are therefore in genuine tension: the literal spatial
-lattice is maximally buildable but search-suboptimal, while the hypercube's
-*logarithmic* dimensionality threads the needle.  Childs–Goldstone
-(`quant-ph/0306054`): optimal lattice search requires `d > 4`.
+lattice is maximally buildable but search-suboptimal, whereas the hypercube's
+*logarithmic* dimensionality threads the needle.
 
-Both dynamical clauses are honestly **unproven**: the lattice non-advantage is
-the `d ≤ 3` half of `lattice_search_dimension_threshold` (an honest `sorry`),
-and the hypercube advantage is `hypercube_search_optimal_timing` (also an honest
-`sorry`).  The axiom-clean structural facts are split off into
-`buildable_lattice_structural_contrast`. -/
+⚠ **Both dynamical clauses are EXPLICIT (open) hypotheses, not proven here.**
+
+* The lattice non-advantage is supplied as the hypothesis `hsub :
+  ¬ IsOptimalCTQWSearch (latticeGraph d L) w`.  This is the genuine, *asymptotic*
+  Childs–Goldstone sub-criticality (`quant-ph/0306054`, `d ≤ 4`).  It is crucially
+  **NOT** a per-instance consequence of `d ≤ 3`: the `d = 1, L = 3` torus is the
+  complete graph `K_3` and IS optimal (`lattice_d1_L3_optimal`), so the naive
+  per-instance claim "`d ≤ 3 ⇒ ¬ optimal`" is FALSE.  The hypothesis is the honest
+  carrier of the open analytic content (the IR-divergence of the lattice Green's
+  function in the genuine `N → ∞` limit).
+* The hypercube advantage is the (axiom-clean) reduction
+  `hypercube_search_optimal_timing` applied to the named finite chain-amplitude
+  bound `hchain`.
+
+The theorem itself is therefore an **axiom-clean reduction** assembling the two
+clauses (`#print axioms` reports only `propext, Classical.choice, Quot.sound`); the
+deep content lives in `hsub` and `hchain`.  The unconditional axiom-clean
+structural facts are split off into `buildable_lattice_structural_contrast`. -/
 theorem buildable_lattice_dynamical_contrast
-    (d L : ℕ) [Fact (2 < L)] (hd : d ≤ 3) (w : LatticeVertex d L)
+    (d L : ℕ) [Fact (2 < L)] (w : LatticeVertex d L)
+    (hsub : ¬ IsOptimalCTQWSearch (latticeGraph d L) w)
     (e : ℕ) (he : 1 ≤ e) (wQ : Fin (2 ^ e))
     (hchain : HypercubeChainAmplitudeBound e wQ) :
-    -- the buildable lattice does NOT get the advantage (d ≤ 3):
+    -- the buildable spatial lattice does NOT get the advantage (sub-critical regime):
     ¬ IsOptimalCTQWSearch (latticeGraph d L) w
     ∧
     -- WHILE the (also buildable, log-degree) hypercube DOES (given its finite
     -- collapsed-Hamming-chain amplitude bound, the now-explicit frontier input):
-    IsOptimalCTQWSearch (Hypercube e) wQ := by
-  refine ⟨?_, ?_⟩
-  · -- lattice not optimal for d ≤ 3: the negative half of the threshold.
-    -- BLOCKED: Childs–Goldstone d ≤ 4 sub-criticality (quant-ph/0306054); for
-    -- d ≤ 3 the lattice Green's function diverges in the IR and the search
-    -- amplitude saturates below the optimal constant.
-    rw [lattice_search_dimension_threshold d L w]
-    omega
-  · -- hypercube optimal: reduced to the finite chain amplitude bound.
-    exact hypercube_search_optimal_timing e he wQ hchain
+    IsOptimalCTQWSearch (Hypercube e) wQ :=
+  ⟨hsub, hypercube_search_optimal_timing e he wQ hchain⟩
 
 end SparseSearch
 end Graphplay
+

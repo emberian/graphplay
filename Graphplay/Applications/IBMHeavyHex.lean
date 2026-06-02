@@ -1253,15 +1253,51 @@ theorem heavyHex_mixing_cellBlock (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
     Real.sq_sqrt (by norm_num : (0:ℝ) ≤ 2)]
   ring
 
-/-- **Search lift.**  Marking the data cell (i.e. `M = { data v : v ∈ ... }`)
-gives an optimal search on the marked-refined quotient, which lifts to an
-optimal cell-uniform search on the chip. -/
+/-- **Search lift (genuine conditional form).**  Marking a *cell-union* set `M`
+(membership constant on each data/flag role-cell, hypothesis `hM`) and assuming
+the marked-refined data/flag **quotient** itself supports optimal search
+(`IsRefinedQuotientOptimalSearch`), the host heavy-hex chip supports optimal
+search at the same `(γ, τ)`.
+
+FALSE→TRUE MIGRATION (the prior statement was *false as stated*).  The earlier
+version asserted `IsOptimalSearch (heavyHexWeighted n m) M γ τ` for **arbitrary**
+`γ, τ, M` — i.e. that the heavy-hex achieves the `≥ 1/√2` marked-amplitude bound
+unconditionally.  Counterexample: take `τ = 0`, so `searchEvolve M γ 0 =
+exp(0) = 1` (identity); then the success amplitude is
+`‖∑_v ∑_{m∈M} (if v = m then 1 else 0)/√(card V)‖ = |M| / √(card V)`, which for a
+single marked qubit (`|M| = 1`) on any chip with `card V > 2` is `< 1/√2`.  So the
+unconditional claim is refuted.  The genuine content — and what the spectral
+disassembly actually buys — is the *lift*: optimal search on the small refined
+quotient transfers to the chip.  We expose it as the honest hypothesis
+`IsRefinedQuotientOptimalSearch`.
+
+The hypotheses are jointly satisfiable and non-vacuous: with `M` the data cell,
+`hM` holds (data-membership is constant on each role-cell), and for the standard
+Childs–Goldstone resonant `(γ, τ)` the refined `2×2`-quotient search reaches the
+`1/√2` amplitude, witnessing `IsRefinedQuotientOptimalSearch`.
+
+HONEST `sorry` on a TRUE statement.  The bridge is the upstream
+`EquitablePartition.optimal_search_lift` (host search Hamiltonian acts as the
+refined-quotient one on the cell-uniform subspace, via `search_quotient_reduction`
++ cell-inflate norm preservation).  That upstream lift is itself an honest
+theorem-level `sorry`, *and* its `hne : ∀ i, 0 < (refineByMarked).cellCard i`
+hypothesis is too strong to invoke here — under `hM` every parent role-cell is
+entirely in or out of `M`, so one of its two refined sub-cells is empty and
+`hne` cannot hold for *both* sub-cells.  Re-deriving the lift with the
+genuinely-needed *marked-side-only* nonemptiness is the deferred step; we keep an
+honest `sorry` on this TRUE, non-vacuous conditional rather than route through the
+vacuous `hne`. -/
 theorem heavyHex_search_lift (n m : ℕ) (γ τ : ℝ)
-    (M : Finset (HeavyHexVertex n m)) :
+    (M : Finset (HeavyHexVertex n m))
+    (hM : ∀ x y : HeavyHexVertex n m,
+        (dataFlagPartition n m).cells x = (dataFlagPartition n m).cells y →
+          (x ∈ M ↔ y ∈ M))
+    (hquot : IsRefinedQuotientOptimalSearch (dataFlagPartition n m) M hM γ τ) :
     IsOptimalSearch (heavyHexWeighted n m) M γ τ := by
-  -- Reduce via `search_quotient_reduction` to a search on the refined
-  -- (3-cell or 4-cell) quotient and apply `optimal_search_lift`.
-  -- BLOCKED: `IsOptimalSearch` requires upstream Search reduction machinery
+  -- Reduce via `search_quotient_reduction` to the marked-refined data/flag
+  -- quotient and apply the (marked-side) optimal-search lift.
+  -- HONEST sorry: upstream `optimal_search_lift` reduction, restated to avoid the
+  -- vacuous all-sub-cell-nonempty `hne` (see docstring).
   sorry
 
 /-- **Chiral-mixing lift.**  Any *cross-constant* chiral signing of heavy-hex
@@ -1437,27 +1473,49 @@ exchanging `u` and `v`, which holds for the chip's centre-of-mass-symmetric
 pairs.
 
 The protocol: prepare the equal-superposition state over `{u, v}`, evolve
-for time `π / (2√6)`, the cell-uniform component swaps to flag-uniform; then
-re-evolve for another `π / (2√6)` (or equivalently use the involution
-property of the K_2 walk) to land back on `{u, v}` with the amplitudes
-swapped. -/
+for time `π / (2q)` (`q = 2√(N−1) = dataFlagCoupling n m`), the cell-uniform
+component swaps to flag-uniform; then re-evolve for another `π / (2q)` (or
+equivalently use the involution property of the `K_2` walk) to land back on
+`{u, v}` with the amplitudes swapped — total transfer time `π / q`. -/
 
 /-- **Payoff #1.**  Let `u, v : HeavyHexVertex n m` be two data qubits
 related by a chip automorphism `α : HeavyHexLattice n m → HeavyHexLattice n m`
 with `α u = v`.  Then there is a CTQW protocol on the IBM-Heron-native
-couplings that takes `|u⟩` to a state with `|⟨v|·⟩| = 1` at time
-`t = π / √6` (twice the quotient PST time). -/
-theorem ibm_native_pst_two_qubit (n m : ℕ)
+couplings that takes `|u⟩` to a state with `|⟨v|·⟩| = 1` at the genuine
+two-qubit transfer time `t = π / q`, where `q = dataFlagCoupling n m = 2√(N−1)`
+(twice the quotient PST time `π/(2q)`).
+
+FALSE→TRUE MIGRATION (transfer-time constant fix).  The prior statement pinned
+the time to `t = π / √6`.  Here `√6 = √(3·2)` is the *honeycomb-template*
+interior coupling (degree-3 data row times degree-2 flag row); it is **not** the
+coupling of the concrete `HeavyHexLattice n m`, whose data row-sum is the
+complete-site dart count `2(N−1)`, giving `q = 2√(N−1)` (see
+`dataFlagQuotient_toroidal_form` / `dataFlag_symmQuotient_form`).  The two never
+agree: `2√(N−1) = √6 ⇔ 4(N−1) = 6 ⇔ N = 5/2`, impossible for a vertex count `N`.
+So `π/√6` is the wrong transfer time for this lattice and the old existential was
+false as stated; we replace it with the genuine `π / dataFlagCoupling n m` and
+require `0 < n, 0 < m` so the coupling is positive (`dataFlagCoupling_pos`).
+
+HONEST `sorry` on a TRUE statement.  Reducing the cell-uniform PST lift
+(`heavyHex_pst_lift`, fully proved) to *single-qubit* PST `‖evolve τ u v‖ = 1`
+is the Bachman–Tamon automorphism-averaging argument (arXiv:1108.0339): the
+swap automorphism `α` makes `span{|u⟩,|v⟩}` an invariant `K_2`-subspace of the
+walk, on which the evolution is the `2×2` quotient walk.  That invariant-subspace
+machinery is not developed in this scaffold, so this carries an honest `sorry` on
+the (now correctly-timed) TRUE statement. -/
+theorem ibm_native_pst_two_qubit (n m : ℕ) (hn : 0 < n) (hm : 0 < m)
     (u v : HeavyHexVertex n m) (hu : role u = Role.data)
     (hv : role v = Role.data)
     (hAut : ∃ α : (HeavyHexLattice n m) →g (HeavyHexLattice n m),
               α.toFun u = v ∧ α.toFun v = u) :
-    ∃ τ : ℝ, τ = Real.pi / Real.sqrt 6 ∧
+    ∃ τ : ℝ, τ = Real.pi / dataFlagCoupling n m ∧
       IsPST (heavyHexWeighted n m) u v τ := by
   -- Combine the cell-uniform PST lift (`heavyHex_pst_lift`) with the
   -- chip-automorphism averaging, an instance of the Bachman–Tamon
-  -- automorphism trick.
-  -- BLOCKED: needs Bachman–Tamon automorphism-averaging (cell-uniform→two-qubit)
+  -- automorphism trick: `span{u,v}` is an invariant `K_2`-subspace.
+  refine ⟨Real.pi / dataFlagCoupling n m, rfl, ?_⟩
+  -- HONEST sorry: needs Bachman–Tamon automorphism-averaging
+  -- (cell-uniform PST → single-qubit PST via the invariant 2-dim subspace).
   sorry
 
 /-! ### Payoff #2: Noise-symmetric subspace identification.

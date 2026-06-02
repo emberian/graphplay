@@ -653,11 +653,11 @@ theorem isKFractionalRevival_pair_of_isPST (G : WeightedGraph V)
   isKFractionalRevival_pair_of_isPST_of_isSymm G hsymm huv h
 
 /-- **Pair fractional revival from Godsil's PST-ready alignment (sufficiency),
-CLOSED and axiom-clean.**  On a real-symmetric graph, if the pair `(u, v)` carries
-Godsil's PST-ready spectral data — arithmetic alignment of the support
-(`λ = b + a·(kof λ)`, `a > 0`) with the parity-matched cross-projector structure
-`(E_λ)_{u,v} = (-1)^{kof λ}(E_λ)_{u,u}` — then fractional revival occurs on the
-antipodal pair `K = {u, v}` at the explicit time `τ = π/a`.
+explicit time `π/a`, CLOSED and axiom-clean.**  On a real-symmetric graph, if the
+pair `(u, v)` carries Godsil's PST-ready spectral data — arithmetic alignment of
+the support (`λ = b + a·(kof λ)`, `a > 0`) with the parity-matched cross-projector
+structure `(E_λ)_{u,v} = (-1)^{kof λ}(E_λ)_{u,u}` — then fractional revival occurs
+on the antipodal pair `K = {u, v}` at the **explicit time `τ = π/a`**.
 
 This is the *backward* (existence) content reachable from the rebuilt
 exact-period bridge: the alignment yields PST `u → v` at `τ = π/a`
@@ -667,17 +667,43 @@ symmetric graph is fractional revival on the pair
 `isKRatioCondition_of_fractionalRevival` (honest `sorry`, downstream periodicity)
 this closes the *sufficiency* half of the CCTVZ `|K| = 2` revival/ratio circle.
 
+**Honest-restatement note (was an unprovable `Classical.choose` pin).**  The prior
+form took the bundled `h : IsGodsilPSTReady G u v` and concluded revival at
+`π / (Classical.choose h)`.  That is a LANDMINE: `Classical.choose h` extracts the
+gap `a` from the *opaque* existential witness, and is **not** defeq to the `a`
+obtained by `obtain`-destructuring `h`, so the bridging `Classical.choose h = a`
+was an unprovable `sorry`.  We restate with the alignment data `(a, b, kof)`
+*unbundled* as explicit hypotheses, which (i) is the faithful "`τ = π/a`" content
+the docstring always advertised and (ii) is fully provable.  The bundled-`h`
+existential-time form is recorded as the corollary below.
+
 Reference: Chan–Coutinho–Tamon–Vinet–Zhan, arXiv:2004.01129; Godsil 2012. -/
+theorem isKFractionalRevival_pair_of_aligned_paritySigned (G : WeightedGraph V)
+    (hsymm : G.adj.IsSymm) {u v : V} (huv : u ≠ v)
+    (a b : ℝ) (ha : 0 < a) (kof : ℝ → ℤ)
+    (halign : ∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        lam = b + a * (kof lam : ℝ))
+    (hsign : ∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        eigenProjEntryLocal G lam u v
+          = ((-1 : ℂ) ^ (kof lam)) * (eigenProjDiagLocal G lam u : ℂ)) :
+    IsKFractionalRevival G {u, v} (Real.pi / a) :=
+  isKFractionalRevival_pair_of_isPST G hsymm huv
+    (isPST_of_aligned_paritySigned G u v a b ha kof halign hsign)
+
+/-- **Pair fractional revival from Godsil's PST-ready data (sufficiency, bundled
+existential time), CLOSED and axiom-clean.**  On a real-symmetric graph, if the
+pair `(u, v)` carries Godsil's PST-ready spectral data `IsGodsilPSTReady G u v`,
+then fractional revival occurs on `K = {u, v}` at *some* positive time.  This is
+the bundled-hypothesis companion of
+`isKFractionalRevival_pair_of_aligned_paritySigned`; the witnessing time is the
+`π/a` of the alignment gap.  Reference: CCTVZ arXiv:2004.01129; Godsil 2012. -/
 theorem isKFractionalRevival_pair_of_isGodsilPSTReady (G : WeightedGraph V)
     (hsymm : G.adj.IsSymm) {u v : V} (huv : u ≠ v)
     (h : IsGodsilPSTReady G u v) :
-    IsKFractionalRevival G {u, v} (Real.pi /
-      (Classical.choose h)) := by
-  obtain ⟨a, b, kof, ha, halign, hsign⟩ := id h
-  -- `Classical.choose h = a` by construction of the existential.
-  have hchoose : Classical.choose h = a := by
-    sorry
-  sorry
+    ∃ τ : ℝ, 0 < τ ∧ IsKFractionalRevival G {u, v} τ := by
+  obtain ⟨a, b, kof, ha, halign, hsign⟩ := h
+  exact ⟨Real.pi / a, by positivity,
+    isKFractionalRevival_pair_of_aligned_paritySigned G hsymm huv a b ha kof halign hsign⟩
 
 end PST
 end Graphplay

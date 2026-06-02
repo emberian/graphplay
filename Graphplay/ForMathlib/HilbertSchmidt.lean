@@ -521,6 +521,276 @@ theorem isCompactOperator_of_finiteDimensional_range
   rw [hcomp]
   exact hSc.clm_comp R.subtypeL
 
+/-! ## Tensor (separable) kernels and finite-rank operators (genuine, no `sorry`)
+
+This block carries out, **fully genuinely**, the reduction promised by the
+finite-rank truncation argument:
+
+* a **rank-one tensor kernel** `K(x,y) = g x · conj (h y)` (with `g, h ∈ L²(μ)`)
+  has kernel operator **equal** to the Mathlib rank-one operator
+  `InnerProductSpace.rankOne ℂ g h` (the action identity
+  `(T_K f)(x) = g x · ⟪h, f⟫ = (rankOne ℂ g h f)(x)`), which is finite-rank;
+* a **finite-tensor (separable) kernel** `K_r(x,y) = Σ_{i<r} g_i x · conj (h_i y)`
+  has operator `Σ_{i<r} rankOne ℂ (g_i) (h_i)`, whose range lies in the finite-
+  dimensional span of `{g_i}`, hence is finite-rank.
+
+Together with the already-proven Hilbert–Schmidt Lipschitz bound
+`kernelIntegralFun_eLpNorm_le_hs`, this reduces the finite-rank density of
+`T_K` (the only deferred input of `kernelIntegralCLM_isCompactOperator`) to the
+**`L²(μ⊗μ)` density of separable kernels** — a clean, standalone classical fact,
+isolated below as `exists_separable_tendsto_kernel`.  Everything here is
+axiom-clean. -/
+
+section Tensor
+
+open InnerProductSpace
+
+variable [SFinite μ]
+
+/-- The separable (rank-one tensor) kernel attached to `g, h : Ω → ℂ`:
+`tensorKernel g h x y = g x · conj (h y)`. -/
+noncomputable def tensorKernel (g h : Ω → ℂ) : Ω → Ω → ℂ :=
+  fun x y => g x * conj (h y)
+
+@[simp] theorem tensorKernel_apply (g h : Ω → ℂ) (x y : Ω) :
+    tensorKernel g h x y = g x * conj (h y) := rfl
+
+/-- A tensor kernel built from a.e.-strongly-measurable factors is a.e. strongly
+measurable on the product. -/
+theorem tensorKernel_aestronglyMeasurable {g h : Ω → ℂ}
+    (hg : AEStronglyMeasurable g μ) (hh : AEStronglyMeasurable h μ) :
+    AEStronglyMeasurable (Function.uncurry (tensorKernel g h)) (μ.prod μ) :=
+  (hg.comp_fst).mul ((hh.star).comp_snd)
+
+/-- **A rank-one tensor kernel is Hilbert–Schmidt (`L²(μ⊗μ)`).**  For `g, h ∈ L²(μ)`,
+the separable kernel `g ⊗ conj h` is square-integrable on the product, with
+`(‖g⊗conj h‖_{L²(μ⊗μ)})² = ‖g‖₂² · ‖h‖₂²`.
+
+Genuine: `(eLpNorm)²` of the uncurried kernel is `∫⁻_p ‖g p.1‖ₑ²·‖h p.2‖ₑ²`
+(`eLpNorm_two_sq` + `enorm_mul`/`RCLike.enorm_conj`), which Tonelli
+(`lintegral_lintegral_mul`) factors as `(∫⁻‖g‖ₑ²)(∫⁻‖h‖ₑ²) = ‖g‖₂²·‖h‖₂² < ∞`; a
+function whose squared `L²`-seminorm is finite is `MemLp 2`. -/
+theorem tensorKernel_memLp (g h : Lp ℂ 2 μ) :
+    MemLp (Function.uncurry (tensorKernel (g : Ω → ℂ) (h : Ω → ℂ))) 2 (μ.prod μ) := by
+  refine ⟨tensorKernel_aestronglyMeasurable (Lp.memLp g).1 (Lp.memLp h).1, ?_⟩
+  -- compute the squared `L²` seminorm and show it is finite
+  have hsq : (eLpNorm (Function.uncurry (tensorKernel (g : Ω → ℂ) (h : Ω → ℂ))) 2 (μ.prod μ)) ^ 2
+      = (eLpNorm (g : Ω → ℂ) 2 μ) ^ 2 * (eLpNorm (h : Ω → ℂ) 2 μ) ^ 2 := by
+    rw [eLpNorm_two_sq, eLpNorm_two_sq, eLpNorm_two_sq]
+    have hge : AEMeasurable (fun x => ‖(g : Ω → ℂ) x‖ₑ ^ 2) μ := (Lp.memLp g).1.enorm.pow_const 2
+    have hhe : AEMeasurable (fun y => ‖(h : Ω → ℂ) y‖ₑ ^ 2) μ := (Lp.memLp h).1.enorm.pow_const 2
+    -- pointwise `‖g x · conj(h y)‖ₑ² = ‖g x‖ₑ²·‖h y‖ₑ²`
+    have hpt : ∀ p : Ω × Ω, ‖Function.uncurry (tensorKernel (g : Ω → ℂ) (h : Ω → ℂ)) p‖ₑ ^ 2
+        = ‖(g : Ω → ℂ) p.1‖ₑ ^ 2 * ‖(h : Ω → ℂ) p.2‖ₑ ^ 2 := by
+      intro p
+      simp only [Function.uncurry, tensorKernel, enorm_mul, RCLike.enorm_conj]
+      ring
+    simp_rw [hpt]
+    -- Tonelli: `∫⁻ over prod = ∫⁻∫⁻`, then factor
+    rw [← lintegral_lintegral_mul hge hhe]
+    exact (lintegral_lintegral
+      (f := fun x y => ‖(g : Ω → ℂ) x‖ₑ ^ 2 * ‖(h : Ω → ℂ) y‖ₑ ^ 2)
+      ((hge.comp_fst).mul (hhe.comp_snd))).symm
+  -- finiteness of the squared seminorm ⟹ finiteness of the seminorm
+  have hfin : (eLpNorm (Function.uncurry (tensorKernel (g : Ω → ℂ) (h : Ω → ℂ))) 2 (μ.prod μ)) ^ 2
+      ≠ ∞ := by
+    rw [hsq]
+    exact ENNReal.mul_ne_top (ENNReal.pow_ne_top (Lp.eLpNorm_ne_top g))
+      (ENNReal.pow_ne_top (Lp.eLpNorm_ne_top h))
+  by_contra htop
+  rw [not_lt, top_le_iff] at htop
+  exact hfin (by rw [htop]; simp)
+
+/-- **Rank-one action identity (pointwise).**  For `g : Ω → ℂ` and `h, f ∈ L²(μ)`
+on a finite measure space, the kernel action of the rank-one tensor kernel
+`g ⊗ conj h` is, *for every* `x`, `g x · ⟪h, f⟫`:
+`(T_{g⊗conj h} f)(x) = g x · ∫ conj (h y) · f y ∂μ = g x · ⟪h, f⟫`.
+
+Genuine: the inner factor `∫ conj (h y) · f y ∂μ` is constant in `x`, so
+`integral_const_mul` pulls `g x` out of the `y`-integral; the resulting integral is
+exactly the `L²` inner product `⟪h, f⟫` by `L2.inner_def` (`⟪a,b⟫_ℂ = conj a · b`). -/
+theorem kernelIntegralFun_tensor_eq [IsFiniteMeasure μ] (g : Ω → ℂ) (h f : Lp ℂ 2 μ) (x : Ω) :
+    kernelIntegralFun (μ := μ) (tensorKernel g (h : Ω → ℂ)) (f : Ω → ℂ) x
+      = g x * inner ℂ h f := by
+  rw [kernelIntegralFun_apply]
+  simp only [tensorKernel_apply]
+  rw [show (fun y => g x * conj ((h : Ω → ℂ) y) * (f : Ω → ℂ) y)
+        = (fun y => g x * (conj ((h : Ω → ℂ) y) * (f : Ω → ℂ) y)) from by ext y; ring,
+    integral_const_mul, L2.inner_def]
+  congr 1
+  refine integral_congr_ae (Filter.Eventually.of_forall fun y => ?_)
+  simp only [RCLike.inner_apply', starRingEnd_apply]
+
+/-- **Rank-one operator = tensor-kernel operator (a.e. on `L²`).**  For `g, h ∈ L²(μ)`
+on a finite measure space, the Mathlib rank-one operator `rankOne ℂ g h` acts on
+`f ∈ L²(μ)` exactly as the kernel action of the separable kernel `g ⊗ conj h`:
+`⇑(rankOne ℂ g h f) =ᵐ[μ] kernelIntegralFun (g ⊗ conj h) f`.
+
+Genuine, from the pointwise action identity `kernelIntegralFun_tensor_eq`
+(`(T_{g⊗conj h} f)(x) = g x · ⟪h,f⟫`) and `rankOne ℂ g h f = ⟪h,f⟫ • g`
+(`rankOne_apply`), pushed through `Lp.coeFn_smul`. -/
+theorem rankOne_coeFn_eq_kernelIntegralFun [IsFiniteMeasure μ] (g h f : Lp ℂ 2 μ) :
+    ⇑((rankOne ℂ (g : Lp ℂ 2 μ) h) f)
+      =ᵐ[μ] kernelIntegralFun (μ := μ) (tensorKernel (g : Ω → ℂ) (h : Ω → ℂ)) (f : Ω → ℂ) := by
+  rw [rankOne_apply]
+  filter_upwards [Lp.coeFn_smul (inner ℂ (h : Lp ℂ 2 μ) f) g] with x hx
+  rw [hx, kernelIntegralFun_tensor_eq]
+  simp only [Pi.smul_apply, smul_eq_mul]
+  ring
+
+/-! ### Finite-tensor (separable) kernels
+
+A finite family `g, h : ι → L²(μ)` indexed over a `Finset S` assembles into the
+**separable kernel** `K_S(x,y) = Σ_{i∈S} g_i x · conj (h_i y)`, whose operator is the
+finite sum of rank-one operators `Σ_{i∈S} rankOne ℂ (g_i) (h_i)` — manifestly
+finite-rank (its range lies in the span of `{g_i}`). -/
+
+/-- The finite-tensor (separable) kernel of a family indexed by a `Finset S`:
+`finsetTensorKernel g h S x y = Σ_{i∈S} g i x · conj (h i y)`. -/
+noncomputable def finsetTensorKernel {ι : Type*} (g h : ι → (Ω → ℂ)) (S : Finset ι) :
+    Ω → Ω → ℂ :=
+  fun x y => ∑ i ∈ S, tensorKernel (g i) (h i) x y
+
+@[simp] theorem finsetTensorKernel_apply {ι : Type*} (g h : ι → (Ω → ℂ)) (S : Finset ι) (x y : Ω) :
+    finsetTensorKernel g h S x y = ∑ i ∈ S, g i x * conj (h i y) := by
+  simp [finsetTensorKernel, tensorKernel]
+
+/-- **A finite-tensor (separable) kernel is Hilbert–Schmidt (`L²(μ⊗μ)`).**  For finite
+families `g, h : ι → L²(μ)` and a `Finset S`, the separable kernel `K_S` is square-
+integrable on the product.  Genuine: it is the finite sum (`memLp_finsetSum`) of the
+rank-one tensor kernels `g_i ⊗ conj h_i`, each `L²(μ⊗μ)` by `tensorKernel_memLp`. -/
+theorem finsetTensorKernel_memLp {ι : Type*} (g h : ι → Lp ℂ 2 μ) (S : Finset ι) :
+    MemLp (Function.uncurry
+      (finsetTensorKernel (fun i => (g i : Ω → ℂ)) (fun i => (h i : Ω → ℂ)) S)) 2 (μ.prod μ) := by
+  have huncurry : (Function.uncurry
+      (finsetTensorKernel (fun i => (g i : Ω → ℂ)) (fun i => (h i : Ω → ℂ)) S))
+      = fun p => ∑ i ∈ S, Function.uncurry (tensorKernel (g i : Ω → ℂ) (h i : Ω → ℂ)) p := by
+    funext p
+    simp only [Function.uncurry, finsetTensorKernel, tensorKernel]
+  rw [huncurry]
+  exact memLp_finsetSum S (fun i _ => tensorKernel_memLp (g i) (h i))
+
+/-- The slice `y ↦ Σ_{i∈S} g_i x · conj (h_i y)` of a finite-tensor kernel is in
+`L²(μ)`: it is a finite ℂ-combination of the `L²` functions `conj (h_i ·)`. -/
+theorem finsetTensorKernel_slice_memLp {ι : Type*} (g : ι → (Ω → ℂ)) (h : ι → Lp ℂ 2 μ)
+    (S : Finset ι) (x : Ω) :
+    MemLp (fun y => ∑ i ∈ S, g i x * conj ((h i : Ω → ℂ) y)) 2 μ := by
+  refine memLp_finsetSum S (fun i _ => ?_)
+  exact ((Lp.memLp (h i)).star.const_mul (g i x))
+
+/-- **Action of a finite-tensor kernel = finite sum of rank-one actions (pointwise).**
+For families `g : ι → (Ω → ℂ)`, `h : ι → L²(μ)` on a finite measure space and
+`f ∈ L²(μ)`, the kernel action of the separable kernel `K_S` is, for *every* `x`,
+the finite sum `Σ_{i∈S} g_i x · ⟪h_i, f⟫`.
+
+Genuine: each summand's slice `conj (h_i ·) · f` is integrable (`L² · L² ⊆ L¹`), so
+`integral_finsetSum` splits the `y`-integral over the finite sum; each term is then
+the single-tensor identity `kernelIntegralFun_tensor_eq`. -/
+theorem kernelIntegralFun_finsetTensor_eq [IsFiniteMeasure μ] {ι : Type*}
+    (g : ι → (Ω → ℂ)) (h : ι → Lp ℂ 2 μ) (S : Finset ι) (f : Lp ℂ 2 μ) (x : Ω) :
+    kernelIntegralFun (μ := μ) (finsetTensorKernel g (fun i => (h i : Ω → ℂ)) S) (f : Ω → ℂ) x
+      = ∑ i ∈ S, g i x * inner ℂ (h i) f := by
+  rw [kernelIntegralFun_apply]
+  -- split the integral over the finite sum (each summand integrable)
+  have hint : ∀ i ∈ S, Integrable
+      (fun y => g i x * conj ((h i : Ω → ℂ) y) * (f : Ω → ℂ) y) μ := by
+    intro i _
+    have hmul : MemLp ((f : Ω → ℂ) * star (h i : Ω → ℂ)) 1 μ :=
+      (Lp.memLp (h i)).star.mul (Lp.memLp f) (r := 1) (q := 2) (p := 2)
+    have hi1 : Integrable (fun y => conj ((h i : Ω → ℂ) y) * (f : Ω → ℂ) y) μ := by
+      refine (hmul.integrable le_rfl).congr ?_
+      filter_upwards with y
+      simp only [Pi.mul_apply, Pi.star_apply, RCLike.star_def]
+      ring
+    simpa [mul_assoc] using hi1.const_mul (g i x)
+  rw [show (fun y => finsetTensorKernel g (fun i => (h i : Ω → ℂ)) S x y * (f : Ω → ℂ) y)
+        = (fun y => ∑ i ∈ S, g i x * conj ((h i : Ω → ℂ) y) * (f : Ω → ℂ) y) from by
+      ext y; rw [finsetTensorKernel_apply, Finset.sum_mul],
+    integral_finsetSum S hint]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  have hti := kernelIntegralFun_tensor_eq (μ := μ) (g i) (h i) f x
+  rw [kernelIntegralFun_apply] at hti
+  simp only [tensorKernel_apply] at hti
+  rw [← hti]
+
+/-- **Finite sum of rank-one operators acts as the finite-tensor kernel (a.e.).**
+For `g, h : ι → L²(μ)` on a finite measure space and `f ∈ L²(μ)`,
+`⇑((Σ_{i∈S} rankOne ℂ (g i) (h i)) f) =ᵐ[μ] kernelIntegralFun (K_S) f`,
+where `K_S` is the separable kernel `finsetTensorKernel g h S`.
+
+Genuine, by `Finset.induction` on `S`: the empty sum is `0` (coeFn `=ᵐ 0 =
+kernelIntegralFun 0`), and the inductive step combines `Lp.coeFn_add` with the
+single rank-one identity `rankOne_coeFn_eq_kernelIntegralFun` and the additivity of
+the kernel action in the kernel. -/
+theorem finsetSumRankOne_coeFn_eq [IsFiniteMeasure μ] {ι : Type*} [DecidableEq ι]
+    (g h : ι → Lp ℂ 2 μ) (S : Finset ι) (f : Lp ℂ 2 μ) :
+    ⇑((∑ i ∈ S, rankOne ℂ (g i) (h i)) f)
+      =ᵐ[μ] kernelIntegralFun (μ := μ)
+        (finsetTensorKernel (fun i => (g i : Ω → ℂ)) (fun i => (h i : Ω → ℂ)) S) (f : Ω → ℂ) := by
+  -- The L² element `(Σ rankOne) f` has coeFn `=ᵐ fun x => Σ g_i x · ⟪h_i, f⟫` (induction on `S`).
+  have hop : ⇑((∑ i ∈ S, rankOne ℂ (g i) (h i)) f)
+      =ᵐ[μ] fun x => ∑ i ∈ S, (g i : Ω → ℂ) x * inner ℂ (h i) f := by
+    induction S using Finset.induction with
+    | empty =>
+        simp only [Finset.sum_empty, ContinuousLinearMap.zero_apply]
+        filter_upwards [Lp.coeFn_zero (E := ℂ) (p := 2) (μ := μ)] with x hx
+        rw [hx, Pi.zero_apply]
+    | insert i S hi ih =>
+        rw [Finset.sum_insert hi, ContinuousLinearMap.add_apply]
+        filter_upwards [Lp.coeFn_add ((rankOne ℂ (g i) (h i)) f)
+            ((∑ j ∈ S, rankOne ℂ (g j) (h j)) f),
+          rankOne_coeFn_eq_kernelIntegralFun (μ := μ) (g i) (h i) f, ih] with x hadd hone hsum
+        rw [hadd, Pi.add_apply, hone, kernelIntegralFun_tensor_eq, hsum, Finset.sum_insert hi]
+  -- The kernel action equals the same explicit finite-sum value.
+  have hker : ∀ x, kernelIntegralFun (μ := μ)
+      (finsetTensorKernel (fun i => (g i : Ω → ℂ)) (fun i => (h i : Ω → ℂ)) S) (f : Ω → ℂ) x
+        = ∑ i ∈ S, (g i : Ω → ℂ) x * inner ℂ (h i) f :=
+    fun x => kernelIntegralFun_finsetTensor_eq (μ := μ) (fun i => (g i : Ω → ℂ)) h S f x
+  exact hop.trans (Filter.Eventually.of_forall fun x => (hker x).symm)
+
+/-- **A finite sum of rank-one operators is finite-rank.**  For any inner-product
+space `E` over `ℂ`, families `g h : ι → E` and a `Finset S`, the operator
+`Σ_{i∈S} rankOne ℂ (g i) (h i)` has finite-dimensional range: its range lies in
+the (finite-dimensional) span of the finite image set `g '' S`.
+
+Genuine: each value `(Σ rankOne) v = Σ_{i∈S} ⟪h_i, v⟫ • g_i` lies in `span ℂ (g '' S)`
+(`Submodule.sum_mem`/`smul_mem`/`subset_span`), so the range is `≤` that span, which
+is finite-dimensional by `FiniteDimensional.span_of_finite`. -/
+theorem finiteDimensional_range_finsetSumRankOne {ι : Type*}
+    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+    (g h : ι → E) (S : Finset ι) :
+    FiniteDimensional ℂ
+      (LinearMap.range ((∑ i ∈ S, rankOne ℂ (g i) (h i)) : E →ₗ[ℂ] E)) := by
+  set p : Submodule ℂ E := Submodule.span ℂ (g '' (S : Set ι)) with hp
+  have hpfin : FiniteDimensional ℂ p :=
+    FiniteDimensional.span_of_finite (K := ℂ) (Set.Finite.image g S.finite_toSet)
+  refine Submodule.finiteDimensional_of_le (S₂ := p) ?_
+  rintro y ⟨v, rfl⟩
+  -- `(Σ_{i∈S} rankOne ℂ (g i) (h i)) v = Σ_{i∈S} ⟪h_i, v⟫ • g_i ∈ span (g '' S)`.
+  rw [LinearMap.coe_sum, Finset.sum_apply]
+  refine Submodule.sum_mem _ fun i hi => ?_
+  simp only [ContinuousLinearMap.coe_coe, rankOne_apply]
+  exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, hi, rfl⟩)
+
+/-- **Slicewise linearity of the kernel action in the kernel (integrability form).**
+If both slice integrands `K₁ x · · f` and `K₂ x · · f` are integrable (for a.e. `x`),
+then `T_{K₁} f - T_{K₂} f =ᵐ T_{K₁-K₂} f`.  This is the same identity as
+`kernelIntegralFun_sub_ae` but powered by *integrability* rather than boundedness, so
+it applies when one kernel is an (unbounded) separable `L²` kernel and the other is a
+bounded graphon. -/
+theorem kernelIntegralFun_sub_ae_of_integrable
+    (K₁ K₂ : Ω → Ω → ℂ) (f : Ω → ℂ)
+    (hi₁ : ∀ᵐ x ∂μ, Integrable (fun y => K₁ x y * f y) μ)
+    (hi₂ : ∀ᵐ x ∂μ, Integrable (fun y => K₂ x y * f y) μ) :
+    kernelIntegralFun (μ := μ) K₁ f - kernelIntegralFun (μ := μ) K₂ f
+      =ᵐ[μ] kernelIntegralFun (μ := μ) (fun x y => K₁ x y - K₂ x y) f := by
+  filter_upwards [hi₁, hi₂] with x hx₁ hx₂
+  simp only [Pi.sub_apply, kernelIntegralFun_apply]
+  rw [← integral_sub hx₁ hx₂]
+  congr 1; ext y; ring
+
+end Tensor
+
 section Bundled
 
 -- The data needed to assemble the bounded kernel integral operator, with all
@@ -548,6 +818,94 @@ Genuine — `LinearMap.mkContinuous_norm_le`. -/
 theorem kernelIntegralCLM_norm_le :
     ‖kernelIntegralCLM K C hC hmem hadd hsmul hSchur‖ ≤ C :=
   LinearMap.mkContinuous_norm_le _ hC _
+
+/-- **Finite-rank approximation bound (the Hilbert–Schmidt distance estimate).**
+For a *bounded* kernel `K` and a finite separable family `g, h : ι → L²(μ)`,
+the distance between the finite-rank operator `Σ_{i∈S} rankOne ℂ (g i) (h i)` and the
+kernel operator `T_K` is dominated by the **Hilbert–Schmidt** norm of the kernel
+difference:
+`‖Σ rankOne - T_K‖ ≤ ‖K_S - K‖_{L²(μ⊗μ)}`,   `K_S := finsetTensorKernel g h S`.
+
+This is the genuine quantitative engine of the finite-rank truncation, fully
+**axiom-clean**.  Per `f`: the finite-rank operator acts a.e. as `kernelIntegralFun K_S f`
+(`finsetSumRankOne_coeFn_eq`) and `T_K` as `kernelIntegralFun K f`; their difference is
+`kernelIntegralFun (K_S - K) f` (slicewise `integral_sub`, licensed by integrability of
+the separable slice in `L²` and of the bounded-kernel slice via `kernel_mul_integrable`);
+its `L²` norm is then `≤ ‖K_S - K‖_{HS} · ‖f‖` by the proven Hilbert–Schmidt dominance
+`kernelIntegralFun_eLpNorm_le_hs`. -/
+theorem norm_finsetSumRankOne_sub_kernelIntegralCLM_le [IsFiniteMeasure μ] {ι : Type*}
+    [DecidableEq ι] (g h : ι → Lp ℂ 2 μ) (S : Finset ι) {D : ℝ}
+    (hKmeas : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ D)
+    (hKsHS : MemLp (Function.uncurry
+      (finsetTensorKernel (fun i => (g i : Ω → ℂ)) (fun i => (h i : Ω → ℂ)) S)) 2 (μ.prod μ)) :
+    ‖(∑ i ∈ S, InnerProductSpace.rankOne ℂ (g i) (h i))
+        - kernelIntegralCLM K C hC hmem hadd hsmul hSchur‖
+      ≤ (eLpNorm (fun p : Ω × Ω =>
+          finsetTensorKernel (fun i => (g i : Ω → ℂ)) (fun i => (h i : Ω → ℂ)) S p.1 p.2
+            - Function.uncurry K p) 2 (μ.prod μ)).toReal := by
+  -- abbreviations
+  set Ks : Ω → Ω → ℂ :=
+    finsetTensorKernel (fun i => (g i : Ω → ℂ)) (fun i => (h i : Ω → ℂ)) S with hKs
+  have hKsmeas : AEStronglyMeasurable (Function.uncurry Ks) (μ.prod μ) := hKsHS.1
+  have hdmeas : AEStronglyMeasurable
+      (Function.uncurry fun x y => Ks x y - Function.uncurry K (x, y)) (μ.prod μ) :=
+    hKsmeas.sub hKmeas
+  apply ContinuousLinearMap.opNorm_le_bound _ (by positivity)
+  intro f
+  rw [ContinuousLinearMap.sub_apply]
+  -- coeFn of the finite-rank operator and of `T_K` as kernel actions
+  have hrank : ⇑((∑ i ∈ S, InnerProductSpace.rankOne ℂ (g i) (h i)) f)
+      =ᵐ[μ] kernelIntegralFun (μ := μ) Ks (f : Ω → ℂ) :=
+    finsetSumRankOne_coeFn_eq (μ := μ) g h S f
+  have hTK : ⇑((kernelIntegralCLM K C hC hmem hadd hsmul hSchur) f)
+      =ᵐ[μ] kernelIntegralFun (μ := μ) K (f : Ω → ℂ) := by
+    rw [kernelIntegralCLM_apply]; exact (hmem f).coeFn_toLp
+  -- slice integrabilities for the difference identity
+  have hsiKs : ∀ᵐ x ∂μ, Integrable (fun y => Ks x y * (f : Ω → ℂ) y) μ := by
+    filter_upwards with x
+    have hmem2 : MemLp (fun y => Ks x y) 2 μ := finsetTensorKernel_slice_memLp _ h S x
+    have hmul : MemLp ((f : Ω → ℂ) * fun y => Ks x y) 1 μ :=
+      hmem2.mul (Lp.memLp f) (r := 1) (q := 2) (p := 2)
+    refine (hmul.integrable le_rfl).congr ?_
+    filter_upwards with y; simp only [Pi.mul_apply]; ring
+  have hsiK : ∀ᵐ x ∂μ, Integrable (fun y => K x y * (f : Ω → ℂ) y) μ :=
+    (kernel_mul_integrable hKmeas hbdd f).prod_right_ae
+  -- the difference of the two kernel actions is the action of the difference kernel
+  have hdiff : kernelIntegralFun (μ := μ) Ks (f : Ω → ℂ)
+        - kernelIntegralFun (μ := μ) K (f : Ω → ℂ)
+      =ᵐ[μ] kernelIntegralFun (μ := μ) (fun x y => Ks x y - K x y) (f : Ω → ℂ) :=
+    kernelIntegralFun_sub_ae_of_integrable Ks K (f : Ω → ℂ) hsiKs hsiK
+  -- assemble: ‖(Σ rankOne - T_K) f‖ = (eLpNorm of the difference action).toReal
+  have hcoe : ⇑((∑ i ∈ S, InnerProductSpace.rankOne ℂ (g i) (h i)) f
+        - (kernelIntegralCLM K C hC hmem hadd hsmul hSchur) f)
+      =ᵐ[μ] kernelIntegralFun (μ := μ) (fun x y => Ks x y - K x y) (f : Ω → ℂ) := by
+    filter_upwards [Lp.coeFn_sub ((∑ i ∈ S, InnerProductSpace.rankOne ℂ (g i) (h i)) f)
+        ((kernelIntegralCLM K C hC hmem hadd hsmul hSchur) f), hrank, hTK, hdiff]
+      with x hsub hr ht hd
+    rw [hsub, Pi.sub_apply, hr, ht, ← Pi.sub_apply, hd]
+  rw [Lp.norm_def, eLpNorm_congr_ae hcoe]
+  -- now bound by the HS norm of the difference kernel
+  have hle := kernelIntegralFun_eLpNorm_le_hs (fun x y => Ks x y - K x y) (f : Ω → ℂ)
+    hdmeas (Lp.memLp f).1
+  have hffin : eLpNorm (f : Ω → ℂ) 2 μ ≠ ∞ := Lp.eLpNorm_ne_top f
+  -- the difference kernel is `L²`: `Ks ∈ L²(μ⊗μ)` (hypothesis) and `K` bounded ⟹ `K ∈ L²` on
+  -- the finite product `μ⊗μ`, so their difference is `L²`.
+  have hKHS : MemLp (Function.uncurry K) 2 (μ.prod μ) :=
+    MemLp.of_bound hKmeas D hbdd
+  have hdfin : eLpNorm (Function.uncurry fun x y => Ks x y - K x y) 2 (μ.prod μ) ≠ ∞ := by
+    have : MemLp (Function.uncurry fun x y => Ks x y - K x y) 2 (μ.prod μ) := by
+      have := hKsHS.sub hKHS
+      simpa [Function.uncurry, hKs] using this
+    exact this.2.ne
+  calc (eLpNorm (kernelIntegralFun (μ := μ) (fun x y => Ks x y - K x y) (f : Ω → ℂ)) 2 μ).toReal
+      ≤ (eLpNorm (Function.uncurry fun x y => Ks x y - K x y) 2 (μ.prod μ)
+          * eLpNorm (f : Ω → ℂ) 2 μ).toReal := ENNReal.toReal_mono (by finiteness) hle
+    _ = (eLpNorm (fun p : Ω × Ω => Ks p.1 p.2 - Function.uncurry K p) 2 (μ.prod μ)).toReal
+          * ‖f‖ := by
+        rw [ENNReal.toReal_mul,
+          show (eLpNorm (f : Ω → ℂ) 2 μ).toReal = ‖f‖ from (Lp.norm_def f).symm]
+        rfl
 
 /-! ## Self-adjointness from a Hermitian kernel
 
@@ -728,55 +1086,129 @@ theorem kernelIntegralCLM_isCompactOperator_of_finiteRank_approx
   filter_upwards with n
   exact isCompactOperator_of_finiteDimensional_range (T n) (hFR n)
 
-/-- **Finite-rank truncation of a Hilbert–Schmidt kernel operator** (the single
-cited classical input).  When the kernel `K` is square-integrable on `μ ⊗ μ`, the
-bounded operator `T_K` is the **operator-norm limit of finite-rank operators**.
+/-- **Separable (finite-tensor) kernels are `L²(μ⊗μ)`-dense in the Hilbert–Schmidt
+class** — the irreducible analytic core, isolated and honestly `sorry`d on its TRUE
+statement.
 
-This is the one genuinely classical analytic fact that is *not yet in Mathlib*:
-finite-rank operators are operator-norm dense in the Hilbert–Schmidt class.  The
-standard proof truncates the kernel onto a finite section of an `L²(μ)`-orthonormal
-basis — `K_n := Σ_{i,j≤n} ⟪e_i⊗e_j, K⟫ e_i⊗e_j` — whose operator
-`T_{K_n} = Σ_{i,j≤n} ⟪e_i⊗e_j, K⟫ ⟪e_j, ·⟫ e_i` has rank `≤ (n+1)²`, and whose
-kernel converges to `K` in `L²(μ⊗μ)` by Parseval (`{e_i⊗e_j}` is an orthonormal
-basis of `L²(μ⊗μ)`); the **Hilbert–Schmidt dominance**
-`‖T_K - T_{K_n}‖ = ‖T_{K-K_n}‖ ≤ ‖K - K_n‖_{L²(μ⊗μ)} → 0`
-(proved here as `kernelIntegralFun_eLpNorm_le_hs`) upgrades the `L²`-kernel
-convergence to operator-norm convergence.
+When `K ∈ L²(μ⊗μ)`, there is a sequence of **finite separable kernels**
+`K_n(x,y) = Σ_{i<r n} g_{n,i} x · conj (h_{n,i} y)` (each `g_{n,i}, h_{n,i} ∈ L²(μ)`)
+converging to `K` in `L²(μ⊗μ)`:
+`eLpNorm (K_n - K) 2 (μ⊗μ) → 0`.
 
-Reference: Conway, *A Course in Functional Analysis*, 2nd ed., Prop. II.4.6 and
-the discussion of Hilbert–Schmidt operators; Reed–Simon, *Methods of Modern
-Mathematical Physics I*, Thm. VI.22–23.  The *statement* is true and non-vacuous;
-only the basis/Parseval bookkeeping (a substantial standalone Mathlib development)
-is deferred.  Everything downstream of it — that the limit is compact — is proved
-genuinely below in `kernelIntegralCLM_isCompactOperator`. -/
-theorem exists_finiteRank_tendsto_kernelIntegralCLM
+This is the classical statement that *finite sums of simple tensors are dense in the
+Hilbert space `L²(μ⊗μ) ≅ L²(μ) ⊗̂ L²(μ)`* (equivalently: the algebraic tensor product
+`L²(μ) ⊗ L²(μ)` is dense in its Hilbert completion).  The standard proof truncates the
+kernel against an `L²(μ)`-orthonormal basis `{e_i}` to `K_n := Σ_{i,j≤n} ⟪e_i⊗e_j,K⟫
+e_i⊗e_j` and applies Parseval for the product basis `{e_i⊗e_j}` of `L²(μ⊗μ)`.  The
+*statement* is true and non-vacuous (`K_n` is honestly separable and `L²`-convergent);
+only the basis/Parseval bookkeeping — a substantial standalone Mathlib development — is
+deferred.  Reference: Conway, *A Course in Functional Analysis* II.4; Reed–Simon I,
+VI.22–23.
+
+Everything from here — that `T_K` is an operator-norm limit of finite-rank operators,
+hence compact — is proved **genuinely** below
+(`exists_finiteRank_tendsto_of_separable_density`,
+`kernelIntegralCLM_isCompactOperator`), driven by the proven Hilbert–Schmidt distance
+bound `norm_finsetSumRankOne_sub_kernelIntegralCLM_le`. -/
+theorem exists_separable_tendsto_kernel [IsFiniteMeasure μ]
+    (hHS : MemLp (Function.uncurry K) 2 (μ.prod μ)) :
+    ∃ (r : ℕ → ℕ) (g h : ∀ n, Fin (r n) → Lp ℂ 2 μ),
+      Filter.Tendsto (fun n => eLpNorm (fun p : Ω × Ω =>
+        finsetTensorKernel (fun i => (g n i : Ω → ℂ)) (fun i => (h n i : Ω → ℂ))
+          Finset.univ p.1 p.2 - Function.uncurry K p) 2 (μ.prod μ)) Filter.atTop (nhds 0) := by
+  sorry
+
+/-- **Finite-rank operator-norm approximation from separable `L²`-density — fully
+genuine (no `sorry`).**  Given a sequence of finite separable families whose kernels
+converge to `K` in `L²(μ⊗μ)` (the conclusion of `exists_separable_tendsto_kernel`), the
+bounded kernel operator `T_K` is the operator-norm limit of the finite-rank operators
+`T_n := Σ_{i} rankOne ℂ (g_{n,i}) (h_{n,i})`.
+
+Genuine: each `T_n` is finite-rank (`finiteDimensional_range_finsetSumRankOne`), and
+`‖T_n - T_K‖ ≤ ‖K_n - K‖_{L²(μ⊗μ)}` (`norm_finsetSumRankOne_sub_kernelIntegralCLM_le`,
+itself driven by the proven Hilbert–Schmidt dominance), whose right side tends to `0` by
+hypothesis; `squeeze_zero` + `tendsto_iff_norm_sub_tendsto_zero` upgrade this to
+operator-norm convergence. -/
+theorem exists_finiteRank_tendsto_of_separable_density [IsFiniteMeasure μ] {D : ℝ}
+    (hKmeas : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ D)
+    (r : ℕ → ℕ) (g h : ∀ n, Fin (r n) → Lp ℂ 2 μ)
+    (hconv : Filter.Tendsto (fun n => eLpNorm (fun p : Ω × Ω =>
+        finsetTensorKernel (fun i => (g n i : Ω → ℂ)) (fun i => (h n i : Ω → ℂ))
+          Finset.univ p.1 p.2 - Function.uncurry K p) 2 (μ.prod μ)) Filter.atTop (nhds 0)) :
+    ∃ T : ℕ → (Lp ℂ 2 μ →L[ℂ] Lp ℂ 2 μ),
+      (∀ n, FiniteDimensional ℂ (LinearMap.range (T n : Lp ℂ 2 μ →ₗ[ℂ] Lp ℂ 2 μ))) ∧
+      Filter.Tendsto T Filter.atTop (nhds (kernelIntegralCLM K C hC hmem hadd hsmul hSchur)) := by
+  classical
+  refine ⟨fun n => ∑ i : Fin (r n), InnerProductSpace.rankOne ℂ (g n i) (h n i), fun n => ?_, ?_⟩
+  · -- each approximant is finite-rank
+    have hfd := finiteDimensional_range_finsetSumRankOne (g n) (h n)
+      (Finset.univ : Finset (Fin (r n)))
+    rw [ContinuousLinearMap.coe_sum]
+    exact hfd
+  · -- operator-norm convergence via the Hilbert–Schmidt distance bound
+    rw [tendsto_iff_norm_sub_tendsto_zero]
+    -- the `L²`-norm of each separable kernel (it is `L²` as a finite sum of tensors)
+    have hHSn : ∀ n, MemLp (Function.uncurry
+        (finsetTensorKernel (fun i => (g n i : Ω → ℂ)) (fun i => (h n i : Ω → ℂ))
+          (Finset.univ : Finset (Fin (r n))))) 2 (μ.prod μ) :=
+      fun n => finsetTensorKernel_memLp (g n) (h n) Finset.univ
+    -- explicit upper bound: the `L²(μ⊗μ)` norm of the kernel difference
+    set B : ℕ → ℝ := fun n => (eLpNorm (fun p : Ω × Ω =>
+        finsetTensorKernel (fun i => (g n i : Ω → ℂ)) (fun i => (h n i : Ω → ℂ))
+          Finset.univ p.1 p.2 - Function.uncurry K p) 2 (μ.prod μ)).toReal with hB
+    have hBtendsto : Filter.Tendsto B Filter.atTop (nhds 0) := by
+      have := (ENNReal.tendsto_toReal (by simp : (0 : ℝ≥0∞) ≠ ∞)).comp hconv
+      simpa [hB, Function.comp] using this
+    refine squeeze_zero (fun n => norm_nonneg _) (fun n => ?_) hBtendsto
+    exact norm_finsetSumRankOne_sub_kernelIntegralCLM_le K C hC hmem hadd hsmul hSchur
+      (g n) (h n) Finset.univ hKmeas hbdd (hHSn n)
+
+/-- **Finite-rank truncation of a Hilbert–Schmidt kernel operator — genuine modulo the
+single isolated `L²`-density core.**  For a *bounded* kernel `K ∈ L²(μ⊗μ)`, the operator
+`T_K` is the operator-norm limit of finite-rank operators.
+
+This is now a **theorem, not a `sorry`**: it combines the isolated separable-density
+core `exists_separable_tendsto_kernel` with the fully-genuine reduction
+`exists_finiteRank_tendsto_of_separable_density` (which builds the explicit finite-rank
+approximants `Σ rankOne` and proves operator-norm convergence via the proven
+Hilbert–Schmidt distance bound). Only `exists_separable_tendsto_kernel` carries a
+`sorry`, on a TRUE and non-vacuous statement. -/
+theorem exists_finiteRank_tendsto_kernelIntegralCLM [IsFiniteMeasure μ] {D : ℝ}
+    (hKmeas : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ D)
     (hHS : MemLp (Function.uncurry K) 2 (μ.prod μ)) :
     ∃ T : ℕ → (Lp ℂ 2 μ →L[ℂ] Lp ℂ 2 μ),
       (∀ n, FiniteDimensional ℂ (LinearMap.range (T n : Lp ℂ 2 μ →ₗ[ℂ] Lp ℂ 2 μ))) ∧
       Filter.Tendsto T Filter.atTop (nhds (kernelIntegralCLM K C hC hmem hadd hsmul hSchur)) := by
-  sorry
+  obtain ⟨r, g, h, hconv⟩ := exists_separable_tendsto_kernel K hHS
+  exact exists_finiteRank_tendsto_of_separable_density K C hC hmem hadd hsmul hSchur
+    hKmeas hbdd r g h hconv
 
-/-- **Compactness (Hilbert–Schmidt).**  When the kernel `K` is square-integrable on
-`μ ⊗ μ` (genuine Hilbert–Schmidt class), the bounded kernel integral operator `T_K`
-is a compact operator.
+/-- **Compactness (Hilbert–Schmidt).**  When the kernel `K` is bounded and
+square-integrable on `μ ⊗ μ` (genuine Hilbert–Schmidt class), the bounded kernel
+integral operator `T_K` is a compact operator.
 
-**Now genuine modulo one cited classical fact.**  By
+**Genuine modulo the single isolated `L²`-density core.**  By
 `exists_finiteRank_tendsto_kernelIntegralCLM`, `T_K` is the operator-norm limit of a
 sequence of **finite-rank** operators `T n`; each `T n` is compact
-(`isCompactOperator_of_finiteDimensional_range`); and the set of compact operators is
-closed under operator-norm limits (`isCompactOperator_of_tendsto`,
-`isClosed_setOf_isCompactOperator`).  Hence `T_K` is compact.
+(`isCompactOperator_of_finiteDimensional_range`); the set of compact operators is closed
+under operator-norm limits (`isCompactOperator_of_tendsto`). Hence `T_K` is compact.
 
 The genuinely quantitative engine that makes the truncation converge — the
-Hilbert–Schmidt dominance `‖T_K f‖₂ ≤ ‖K‖_{L²(μ⊗μ)} · ‖f‖₂` — is proved in full as
-`kernelIntegralFun_eLpNorm_le_hs`.  The only deferred ingredient is the classical
-density of finite-rank operators in the Hilbert–Schmidt class (the
-basis/Parseval bookkeeping), isolated in
-`exists_finiteRank_tendsto_kernelIntegralCLM`. -/
-theorem kernelIntegralCLM_isCompactOperator (hHS : MemLp (Function.uncurry K) 2 (μ.prod μ)) :
+Hilbert–Schmidt dominance `‖T_K f‖₂ ≤ ‖K‖_{L²(μ⊗μ)} · ‖f‖₂` — is proved in full
+(`kernelIntegralFun_eLpNorm_le_hs`), as is the identification of each separable-kernel
+operator with a finite sum of rank-one operators (`finsetSumRankOne_coeFn_eq`,
+`finiteDimensional_range_finsetSumRankOne`). The only deferred ingredient is the
+classical `L²(μ⊗μ)`-density of separable kernels, isolated in
+`exists_separable_tendsto_kernel`. -/
+theorem kernelIntegralCLM_isCompactOperator [IsFiniteMeasure μ] {D : ℝ}
+    (hKmeas : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
+    (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ D)
+    (hHS : MemLp (Function.uncurry K) 2 (μ.prod μ)) :
     IsCompactOperator (kernelIntegralCLM K C hC hmem hadd hsmul hSchur) := by
   obtain ⟨T, hFR, hlim⟩ :=
-    exists_finiteRank_tendsto_kernelIntegralCLM K C hC hmem hadd hsmul hSchur hHS
+    exists_finiteRank_tendsto_kernelIntegralCLM K C hC hmem hadd hsmul hSchur hKmeas hbdd hHS
   exact kernelIntegralCLM_isCompactOperator_of_finiteRank_approx
     K C hC hmem hadd hsmul hSchur T hFR hlim
 
@@ -882,3 +1314,4 @@ theorem kernelIntegralCLM_sub_opNorm_le [IsFiniteMeasure μ]
 end Lipschitz
 
 end Graphplay.ForMathlib
+

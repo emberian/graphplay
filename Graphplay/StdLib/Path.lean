@@ -32,6 +32,12 @@ Two pre-designed quotient families live here:
 
 Proof status (honest):
 
+* `P₂ = K₂` endpoint PST (`path_P2_PST_residual`) is **fully proved** here, by an
+  explicit `2×2` diagonalize-and-exponentiate (`X = U·diag(1,-1)·U⁻¹`,
+  `Matrix.exp_conj` + `Matrix.exp_diagonal`, then the `(0,1)` entry evaluates to
+  `-i` at `τ = π/2`).  This is the smallest unweighted-path endpoint PST and the
+  `n = 1` case of the classification; it is also the Godsil-backward-bridge case
+  (spectrum `{+1,-1}` on `λ = 1 + 2k`, recorded as `path_P2_isPST_exists`).
 * `P₃` endpoint PST (`path_P3_PST_residual`) is **fully proved** here, by an
   explicit `3×3` diagonalize-and-exponentiate (`A = U·diag(√2,0,-√2)·U⁻¹`,
   `Matrix.exp_conj` + `Matrix.exp_diagonal`, then the `(0,2)` entry evaluates
@@ -87,12 +93,14 @@ noncomputable def Path (n : ℕ) : WeightedGraph (Fin (n + 1)) where
     simp
 
 /-- The PST time `τ_n` for the unweighted path `Path n` between its two
-endpoints, when PST is possible.  The only nontrivial unweighted-path endpoint
-PST in this file is `P₃` (`n = 2`), at the Christandl–Datta–Ekert–Landahl time
-`τ₂ = π / √2`.  (For all other `n` we set the value to `0` as a placeholder; no
-PST claim is attached.  In particular `P₄`, `n = 3`, has **no** endpoint PST, so
-no genuine time exists there — see `path_P4_no_PST`.) -/
+endpoints, when PST is possible.  The unweighted-path endpoint-PST cases are
+`P₂ = K₂` (`n = 1`, the single edge), at the textbook time `τ₁ = π / 2`, and
+`P₃` (`n = 2`), at the Christandl–Datta–Ekert–Landahl time `τ₂ = π / √2`.  (For
+all other `n` we set the value to `0` as a placeholder; no PST claim is attached.
+In particular `P₄`, `n = 3`, has **no** endpoint PST, so no genuine time exists
+there — see `path_P4_no_PST`.) -/
 noncomputable def pathPSTTime : ℕ → ℝ
+  | 1 => Real.pi / 2
   | 2 => Real.pi / Real.sqrt 2
   | _ => 0
 
@@ -267,6 +275,175 @@ theorem path_P3_PST_residual :
   rw [show (Fin.last 2 : Fin 3) = 2 from rfl]
   rw [path2_entry02_at_time, norm_neg, norm_one]
 
+/-! ### `P₂ = K₂` endpoint PST: the explicit `2×2` diagonalize-and-exponentiate
+
+The unweighted path `Path 1` on two vertices `Fin 2` is the single edge `K₂`,
+with adjacency the Pauli-`X` matrix `!![0,1;1,0]`.  Its spectrum is `{+1, -1}`
+with orthonormal eigenvectors `(1,1)/√2`, `(1,-1)/√2`; diagonalizing
+`X = U·diag(1,-1)·U⁻¹` (Hadamard-type `U = !![1,1;1,-1]`) and exponentiating
+(`Matrix.exp_conj` + `Matrix.exp_diagonal`), the endpoint `(0,1)` amplitude of
+`exp(s·X)` is `(e^{s}-e^{-s})/2 = sinh s`, which at `s = -i(π/2)` equals
+`-i·sin(π/2) = -i`, of modulus `1`.  This is the textbook one-edge PST at
+`τ = π/2` (Christandl–Datta–Ekert–Landahl).  Everything below is the genuine
+finite computation; nothing is `sorry`-ed.
+
+This is the `n = 1` endpoint case of the Christandl et al. classification (path
+on `n + 1 = 2` vertices), the smallest unweighted-path endpoint PST.  It is the
+companion to `path_P3_PST_residual` (`n = 2`).  The result is *also* an instance
+of the now-closed Godsil backward bridge `isPST_exists_of_isGodsilPSTReady`
+(`Graphplay.PST.GodsilRatio`): the spectrum `{+1, -1}` sits on the arithmetic
+progression `λ = 1 + 2·k` (`a = 2`, `b = 1`, `kof(+1) = 0`, `kof(-1) = -1`) with
+the parity-signed cross-projector structure required, giving PST at `τ = π/a =
+π/2` — exactly the time computed here directly.  We give the *explicit* finite
+exponential (a concrete time, strictly stronger than the existence form the
+bridge alone yields) and record the bridge-existence corollary below. -/
+
+section P2Diag
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- The diagonalizing (Hadamard-type) matrix `U = !![1,1;1,-1]` of `A(P₂) = X`,
+satisfying `U·((1/2)·U) = 1`, hence invertible with `U⁻¹ = (1/2)·U`. -/
+private def hadU2 : Matrix (Fin 2) (Fin 2) ℂ := !![1, 1; 1, -1]
+
+private theorem hadU2_mul_half : hadU2 * ((1/2 : ℂ) • hadU2) = 1 := by
+  unfold hadU2
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.mul_apply, Fin.sum_univ_two] <;> ring
+
+private theorem hadU2_isUnit : IsUnit hadU2 := by
+  refine ⟨⟨hadU2, (1/2 : ℂ) • hadU2, hadU2_mul_half, ?_⟩, rfl⟩
+  unfold hadU2
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.mul_apply, Fin.sum_univ_two] <;> ring
+
+private theorem hadU2_inv : hadU2⁻¹ = (1/2 : ℂ) • hadU2 :=
+  Matrix.inv_eq_right_inv hadU2_mul_half
+
+private theorem half_smul_hadU2 :
+    ((1/2 : ℂ) • hadU2) = !![(1:ℂ)/2, 1/2; 1/2, -(1/2)] := by
+  unfold hadU2
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.smul_apply, Matrix.cons_val_zero, Matrix.cons_val_one]
+
+/-- The diagonal `2×2` literal `diagonal ![a, b] = !![a,0;0,b]`. -/
+private theorem diag_fin_two2 (a b : ℂ) :
+    (Matrix.diagonal ![a, b]) = !![a, 0; 0, b] := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.cons_val_zero, Matrix.cons_val_one]
+
+/-- `X = U · diag(1,-1) · U⁻¹`. -/
+private theorem X2_eq_conj_diag :
+    (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+      = hadU2 * (Matrix.diagonal ![1, -1]) * hadU2⁻¹ := by
+  rw [hadU2_inv, diag_fin_two2, half_smul_hadU2]
+  unfold hadU2
+  rw [Matrix.mul_fin_two, Matrix.mul_fin_two]
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.cons_val_zero, Matrix.cons_val_one] <;> ring
+
+/-- `s • X = U · diag(s, -s) · U⁻¹`. -/
+private theorem smul_X2_eq_conj_diag (s : ℂ) :
+    s • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+      = hadU2 * (Matrix.diagonal ![s, -s]) * hadU2⁻¹ := by
+  have hd : (Matrix.diagonal ![s, -s] : Matrix (Fin 2) (Fin 2) ℂ)
+      = s • Matrix.diagonal ![1, -1] := by
+    rw [← Matrix.diagonal_smul]
+    congr 1
+    funext k
+    fin_cases k <;> simp
+  rw [X2_eq_conj_diag, hd, mul_smul_comm, smul_mul_assoc]
+
+/-- `exp(s • X) = U · diag(exp s, exp (-s)) · U⁻¹`. -/
+private theorem exp_smul_X2 (s : ℂ) :
+    NormedSpace.exp (s • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ))
+      = hadU2 * (Matrix.diagonal ![NormedSpace.exp s, NormedSpace.exp (-s)]) * hadU2⁻¹ := by
+  rw [smul_X2_eq_conj_diag, Matrix.exp_conj _ _ hadU2_isUnit, Matrix.exp_diagonal]
+  have : (fun i => NormedSpace.exp (![s, -s] i))
+      = (![NormedSpace.exp s, NormedSpace.exp (-s)] : Fin 2 → ℂ) := by
+    funext k; fin_cases k <;> simp
+  rw [Pi.exp_def, this]
+
+/-- The `(0,1)` entry of `exp(s • X)` is `(exp s - exp (-s))/2 = sinh s`. -/
+private theorem exp_smul_X2_entry01 (s : ℂ) :
+    NormedSpace.exp (s • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)) 0 1
+      = (NormedSpace.exp s - NormedSpace.exp (-s)) / 2 := by
+  rw [exp_smul_X2, hadU2_inv, diag_fin_two2, half_smul_hadU2]
+  unfold hadU2
+  rw [Matrix.mul_fin_two, Matrix.mul_fin_two]
+  simp [Matrix.cons_val_zero, Matrix.cons_val_one]
+  ring
+
+/-- At `s = -(iπ/2)` the off-diagonal value `(exp s - exp (-s))/2` equals `-i`:
+`exp s = cos(π/2) - i·sin(π/2) = -i` and `exp (-s) = cos(π/2) + i·sin(π/2) = i`,
+so `(-i - i)/2 = -i`. -/
+private theorem X2_entry01_at_time :
+    NormedSpace.exp (-(Complex.I * ((Real.pi / 2 : ℝ) : ℂ))
+        • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)) 0 1
+      = -Complex.I := by
+  set s : ℂ := -(Complex.I * ((Real.pi / 2 : ℝ) : ℂ)) with hs
+  rw [exp_smul_X2_entry01]
+  have hexp_neg_s : NormedSpace.exp (-s) = Complex.I := by
+    rw [hs, neg_neg, ← Complex.exp_eq_exp_ℂ,
+      show Complex.I * ((Real.pi / 2 : ℝ) : ℂ) = ((Real.pi / 2 : ℝ) : ℂ) * Complex.I by ring,
+      Complex.exp_ofReal_mul_I, Real.cos_pi_div_two, Real.sin_pi_div_two]
+    push_cast; ring
+  have hexp_s : NormedSpace.exp s = -Complex.I := by
+    rw [hs, ← Complex.exp_eq_exp_ℂ,
+      show -(Complex.I * ((Real.pi / 2 : ℝ) : ℂ)) = (-(Real.pi / 2) : ℝ) * Complex.I by
+        push_cast; ring,
+      Complex.exp_ofReal_mul_I, Real.cos_neg, Real.sin_neg, Real.cos_pi_div_two,
+      Real.sin_pi_div_two]
+    push_cast; ring
+  rw [hexp_s, hexp_neg_s]
+  ring
+
+end P2Diag
+
+/-- **`P₂ = K₂` endpoint PST — PROVEN.**  `‖exp(-i(π/2)·A(P₂))₀₁‖ = 1`.
+
+The `2×2` path Hamiltonian `A(P₂) = !![0,1;1,0]` (Pauli-`X`) has spectrum
+`{+1, -1}`; diagonalizing `X = U·diag(1,-1)·U⁻¹` and exponentiating, the
+endpoint `(0,1)` amplitude of `exp(s·X)` is `sinh s`, which at `s = -i(π/2)`
+equals `-i`, of modulus `1`.  True and non-vacuous (the amplitude is *exactly*
+`-i`).  This is the smallest unweighted-path endpoint PST (the `n = 1` case of
+the Christandl et al. classification).
+
+Genuine finite diagonalize-and-exponentiate (`X2_entry01_at_time`); no `sorry`.
+
+Reference: Christandl, Datta, Ekert, Landahl, arXiv:quant-ph/0309131; the
+one-edge PST at `τ = π/2`. -/
+theorem path_P2_PST_residual :
+    IsPST (Path 1) (0 : Fin 2) (Fin.last 1) (pathPSTTime 1) := by
+  unfold IsPST WeightedGraph.evolve pathPSTTime
+  rw [show (Path 1).adj = !![0, 1; 1, 0] by
+    ext i j; fin_cases i <;> fin_cases j <;>
+      simp [Path, Matrix.cons_val_zero, Matrix.cons_val_one]]
+  rw [show (Fin.last 1 : Fin 2) = 1 from rfl]
+  rw [X2_entry01_at_time, norm_neg, Complex.norm_I]
+
+/-- **`P₂ = K₂` endpoint PST exists (Godsil-bridge form).**  There is a time `τ`
+at which the unweighted path on two vertices has endpoint PST.  This is the
+existence form delivered by Godsil's backward bridge
+`Graphplay.PST.isPST_exists_of_isGodsilPSTReady`: the `P₂` spectrum `{+1, -1}`
+sits on the arithmetic progression `λ = 1 + 2·k` (`a = 2`, `b = 1`,
+`kof(+1) = 0`, `kof(-1) = -1`) with the required parity-signed cross-projector
+structure `(E_λ)_{0,1} = (-1)^{kof λ}(E_λ)_{0,0}`, so `IsGodsilPSTReady (Path 1)
+0 1` holds and PST follows at `τ = π/a = π/2`.
+
+We discharge it from the *explicit* finite computation `path_P2_PST_residual`
+(which pins the time to `τ = π/2` and the amplitude to exactly `-i` — strictly
+stronger than the bare existence the bridge yields), so the proof is axiom-clean
+and does not route through Mathlib's opaque eigenvector unitary. -/
+theorem path_P2_isPST_exists :
+    ∃ τ : ℝ, IsPST (Path 1) (0 : Fin 2) (Fin.last 1) τ :=
+  ⟨pathPSTTime 1, path_P2_PST_residual⟩
+
 /-- **`P₄` has NO endpoint PST** (corrected statement; an earlier draft of this
 file falsely asserted `P₄` PST at `τ = π/√5`).
 
@@ -288,20 +465,22 @@ theorem path_P4_no_PST :
 
 /-- **Christandl–Datta–Ekert–Landahl (2004), positive side.**  The unweighted
 path on `n + 1` vertices admits endpoint-to-endpoint PST at time `pathPSTTime n`
-for `n = 2` (i.e. `P₃`, at `τ = π/√2`).
+for `n ∈ {1, 2}` — i.e. for `P₂ = K₂` (`n = 1`, at `τ = π/2`) and `P₃`
+(`n = 2`, at `τ = π/√2`).
 
 The full CDEL classification is that uniformly coupled endpoint PST holds for
-chains of exactly `2` or `3` vertices — `P₂ = K₂` (`n = 1`, proven separately as
-`Graphplay.StdLib.HypercubeProduct.isPST_K2`, at `τ = π/2`) and `P₃` (`n = 2`,
-here).  `P₄` (`n = 3`) and all longer chains have **no** endpoint PST
-(`path_P4_no_PST`, `path_no_PST_endpoint_endpoint`).
+chains of exactly `2` or `3` vertices — `P₂ = K₂` (`n = 1`, here as
+`path_P2_PST_residual`; also `Graphplay.StdLib.HypercubeProduct.isPST_K2`) and
+`P₃` (`n = 2`, `path_P3_PST_residual`).  `P₄` (`n = 3`) and all longer chains
+have **no** endpoint PST (`path_P4_no_PST`, `path_no_PST_endpoint_endpoint`).
 
 Reference: arXiv:quant-ph/0309131, Theorem 1. -/
 theorem path_PST_endpoint_endpoint
-    (n : ℕ) (hn : n = 2) :
+    (n : ℕ) (hn : n = 1 ∨ n = 2) :
     IsPST (Path n) (0 : Fin (n + 1)) (Fin.last n) (pathPSTTime n) := by
-  subst hn
-  exact path_P3_PST_residual
+  rcases hn with hn | hn <;> subst hn
+  · exact path_P2_PST_residual
+  · exact path_P3_PST_residual
 
 /-! ### The Niven obstruction behind the negative path case
 
@@ -494,8 +673,13 @@ example : Matrix.trace (Path.adjMatrixℚ 4) = 0 := by native_decide
 #eval (Path.adjMatrixℚ 4) ⟨0, by decide⟩ ⟨1, by decide⟩
 #eval Matrix.trace (Path.adjMatrixℚ 4)
 
+/-- The path on two vertices (`P_2 = K_2` in graph-theory notation), the single
+edge, the smallest graph of all that exhibits endpoint-to-endpoint PST (at
+`τ = π/2`). -/
+noncomputable def P2 : WeightedGraph (Fin 2) := Path 1
+
 /-- The path on three vertices (`P_3` in graph-theory notation), the
-smallest unweighted graph that exhibits endpoint-to-endpoint PST. -/
+smallest *unweighted multi-edge* graph that exhibits endpoint-to-endpoint PST. -/
 noncomputable def P3 : WeightedGraph (Fin 3) := Path 2
 
 /-- The path on four vertices (`P_4`).  Unlike `P₃`, `P₄` has **no**
@@ -503,9 +687,13 @@ endpoint-to-endpoint PST (golden-ratio spectrum `{±φ, ±1/φ}` is not rational
 commensurable; see `P4_no_PST`). -/
 noncomputable def P4 : WeightedGraph (Fin 4) := Path 3
 
+/-- **PST on `P_2 = K_2`** at `τ = π/2` (proven, via `path_P2_PST_residual`). -/
+theorem P2_PST : IsPST P2 (0 : Fin 2) (Fin.last 1) (Real.pi / 2) :=
+  path_P2_PST_residual
+
 /-- PST on `P_3` at `τ = π / √2` (proven, via `path_P3_PST_residual`). -/
 theorem P3_PST : IsPST P3 (0 : Fin 3) (Fin.last 2) (Real.pi / Real.sqrt 2) :=
-  path_PST_endpoint_endpoint 2 rfl
+  path_PST_endpoint_endpoint 2 (Or.inr rfl)
 
 /-- **No PST on `P_4`** at any time `τ` (corrected: an earlier draft falsely
 claimed `P₄` PST at `τ = π/√5`).  The golden-ratio spectrum is not rationally

@@ -44,11 +44,15 @@ star `K_{1,2}`; the full closed-form Chebyshev spectrum is not needed for it.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
+import Mathlib.LinearAlgebra.Matrix.Notation
+import Mathlib.Analysis.SpecialFunctions.Exponential
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
+import Graphplay.PST
 import Graphplay.ForMathlib.CourantFischer
 
-open scoped Matrix
+open scoped Matrix Real
 open NormedSpace
 
 universe u
@@ -417,6 +421,218 @@ theorem Tree.exists_large_eigenvalue (d : ℕ) (hd : 2 ≤ d) :
   exact ⟨(Tree.weighted d).herm.eigenvalues i, ⟨i, rfl⟩, le_trans hi (le_abs_self _)⟩
 
 end TreeRayleigh
+
+/-! ## Leaf-to-leaf PST on the smallest tree `T₂ = K_{1,2}`
+
+The depth-2 complete binary tree `T₂` has `2² − 1 = 3` vertices: the root `0`
+and its two leaves `1, 2`, with edges `0—1` and `0—2` (and `1 ̸~ 2`).  As an
+abstract graph this is the star `K_{1,2}`, i.e. the path `1—0—2` with the root
+at the centre — so it is isomorphic to `P₃`, and exhibits **leaf-to-leaf**
+perfect state transfer between the two leaves `1` and `2`.
+
+Concretely `A(T₂) = !![0,1,1; 1,0,0; 1,0,0]`, with spectrum `{√2, 0, -√2}`
+(eigenvectors `(√2,1,1)`, `(0,-1,1)`, `(-√2,1,1)`).  Diagonalizing
+`A = U·diag(√2,0,-√2)·U⁻¹` and exponentiating (`Matrix.exp_conj` +
+`Matrix.exp_diagonal`), the leaf-to-leaf `(1,2)` amplitude of `exp(s·A)` is
+`(e^{s√2}+e^{-s√2})/4 − 1/2`, which at `s = -i(π/√2)` equals `-1`, of modulus
+`1`.  This is the tree avatar of `P₃` endpoint PST: the hierarchical-reach atom
+routes a state perfectly between the two depth-1 leaves through the root in time
+`τ = π/√2`.
+
+It is *also* an instance of Godsil's backward bridge
+`Graphplay.PST.isPST_exists_of_isGodsilPSTReady`: the spectrum `{√2, 0, -√2}`
+sits on the arithmetic progression `λ = 0 + √2·k` (`a = √2`, `b = 0`,
+`kof(√2)=1`, `kof(0)=0`, `kof(-√2)=-1`) with the parity-signed cross-projector
+structure, giving PST at `τ = π/a = π/√2` — exactly the time computed here
+directly.  We give the *explicit* finite exponential (a concrete time), the
+strictly-stronger form. -/
+
+section Tree2PST
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- `√2` as a complex scalar; the nonzero eigenvalue of `A(T₂)`. -/
+private noncomputable def tr2 : ℂ := (Real.sqrt 2 : ℝ)
+
+private theorem tr2_sq : tr2 * tr2 = 2 := by
+  unfold tr2
+  rw [← Complex.ofReal_mul, Real.mul_self_sqrt (by norm_num)]
+  norm_num
+
+/-- The adjacency matrix of `T₂` is `!![0,1,1; 1,0,0; 1,0,0]` (star `K_{1,2}`,
+the path `1—0—2` rooted at the centre). -/
+private theorem tree2_adj :
+    (Tree.weighted 2).adj = !![0, 1, 1; 1, 0, 0; 1, 0, 0] := by
+  have hval : ∀ i j : Fin (Tree.numVertices 2),
+      (Tree.weighted 2).adj i j = if Tree.AdjNat i.val j.val then (1 : ℂ) else 0 := by
+    intro i j
+    show (Tree 2).adjMatrix ℂ i j = _
+    rw [SimpleGraph.adjMatrix_apply]; rfl
+  ext i j
+  fin_cases i <;> fin_cases j <;> (rw [hval]; rfl)
+
+/-- Eigenvector matrix of `A(T₂)`: columns `(√2,1,1)`, `(0,-1,1)`, `(-√2,1,1)`
+(for eigenvalues `√2, 0, -√2`). -/
+private noncomputable def UT2 : Matrix (Fin 3) (Fin 3) ℂ :=
+  !![tr2, 0, -tr2; 1, -1, 1; 1, 1, 1]
+
+/-- The explicit inverse `U⁻¹ = !![√2/4,1/4,1/4; 0,-1/2,1/2; -√2/4,1/4,1/4]`. -/
+private noncomputable def UT2inv : Matrix (Fin 3) (Fin 3) ℂ :=
+  !![tr2/4, 1/4, 1/4; 0, -1/2, 1/2; -tr2/4, 1/4, 1/4]
+
+set_option maxHeartbeats 1000000 in
+private theorem UT2_mul_inv : UT2 * UT2inv = 1 := by
+  unfold UT2 UT2inv
+  rw [Matrix.mul_fin_three]
+  have h2 : tr2 * tr2 = 2 := tr2_sq
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.one_apply, Matrix.cons_val_zero, Matrix.cons_val_one] <;>
+    first | linear_combination (1/2 : ℂ) * h2 | linear_combination (-1/2 : ℂ) * h2
+          | ring | norm_num
+
+set_option maxHeartbeats 1000000 in
+private theorem UT2_isUnit : IsUnit UT2 :=
+  ⟨⟨UT2, UT2inv, UT2_mul_inv, by
+    unfold UT2 UT2inv
+    rw [Matrix.mul_fin_three]
+    have h2 : tr2 * tr2 = 2 := tr2_sq
+    ext i j
+    fin_cases i <;> fin_cases j <;>
+      simp [Matrix.one_apply, Matrix.cons_val_zero, Matrix.cons_val_one] <;>
+      first | linear_combination (1/4 : ℂ) * h2 | linear_combination (-1/4 : ℂ) * h2
+            | ring | norm_num⟩, rfl⟩
+
+private theorem UT2inv_eq : UT2⁻¹ = UT2inv :=
+  Matrix.inv_eq_right_inv UT2_mul_inv
+
+set_option maxHeartbeats 1000000 in
+/-- `A(T₂) = U·diag(√2,0,-√2)·U⁻¹`. -/
+private theorem tree2_eq_conj_diag :
+    (!![0, 1, 1; 1, 0, 0; 1, 0, 0] : Matrix (Fin 3) (Fin 3) ℂ)
+      = UT2 * (Matrix.diagonal ![tr2, 0, -tr2]) * UT2inv := by
+  have h2 : tr2 * tr2 = 2 := tr2_sq
+  unfold UT2 UT2inv
+  rw [show (Matrix.diagonal ![tr2, 0, -tr2] : Matrix (Fin 3) (Fin 3) ℂ)
+        = !![tr2, 0, 0; 0, 0, 0; 0, 0, -tr2] by
+    ext i j; fin_cases i <;> fin_cases j <;>
+      simp [Matrix.diagonal, Matrix.cons_val_zero, Matrix.cons_val_one]]
+  rw [Matrix.mul_fin_three, Matrix.mul_fin_three]
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.cons_val_zero, Matrix.cons_val_one] <;>
+    first | linear_combination (1/2 : ℂ) * h2 | linear_combination (-1/2 : ℂ) * h2
+          | ring | norm_num
+
+/-- Scaled diagonalization: `s • A = U·diag(s√2, 0, -s√2)·U⁻¹`. -/
+private theorem smul_tree2_eq_conj_diag (s : ℂ) :
+    s • (!![0, 1, 1; 1, 0, 0; 1, 0, 0] : Matrix (Fin 3) (Fin 3) ℂ)
+      = UT2 * (Matrix.diagonal ![s * tr2, 0, -(s * tr2)]) * UT2inv := by
+  have hd : (Matrix.diagonal ![s * tr2, 0, -(s * tr2)] : Matrix (Fin 3) (Fin 3) ℂ)
+      = s • Matrix.diagonal ![tr2, 0, -tr2] := by
+    rw [← Matrix.diagonal_smul]
+    congr 1
+    funext k
+    fin_cases k <;> simp
+  rw [tree2_eq_conj_diag, hd, mul_smul_comm, smul_mul_assoc]
+
+/-- `exp(s • A) = U·diag(exp(s√2), exp 0, exp(-s√2))·U⁻¹`. -/
+private theorem exp_smul_tree2 (s : ℂ) :
+    NormedSpace.exp (s • (!![0, 1, 1; 1, 0, 0; 1, 0, 0] : Matrix (Fin 3) (Fin 3) ℂ))
+      = UT2 * (Matrix.diagonal
+          ![NormedSpace.exp (s * tr2), NormedSpace.exp 0, NormedSpace.exp (-(s * tr2))])
+          * UT2inv := by
+  rw [smul_tree2_eq_conj_diag, ← UT2inv_eq, Matrix.exp_conj _ _ UT2_isUnit,
+    Matrix.exp_diagonal]
+  have hvec : (fun i => NormedSpace.exp (![s * tr2, 0, -(s * tr2)] i))
+      = (![NormedSpace.exp (s * tr2), NormedSpace.exp 0, NormedSpace.exp (-(s * tr2))]
+          : Fin 3 → ℂ) := by
+    funext k; fin_cases k <;> simp
+  rw [Pi.exp_def, hvec]
+
+set_option maxHeartbeats 1000000 in
+/-- The `(1,2)` (leaf-to-leaf) entry of `exp(s • A(T₂))` is
+`(exp(s√2) + exp(-s√2))/4 − 1/2`. -/
+private theorem exp_smul_tree2_entry12 (s : ℂ) :
+    NormedSpace.exp (s • (!![0, 1, 1; 1, 0, 0; 1, 0, 0] : Matrix (Fin 3) (Fin 3) ℂ)) 1 2
+      = (NormedSpace.exp (s * tr2) + NormedSpace.exp (-(s * tr2))) / 4 - 1/2 := by
+  rw [exp_smul_tree2]
+  unfold UT2 UT2inv
+  rw [show (Matrix.diagonal
+        ![NormedSpace.exp (s * tr2), NormedSpace.exp 0, NormedSpace.exp (-(s * tr2))]
+        : Matrix (Fin 3) (Fin 3) ℂ)
+      = !![NormedSpace.exp (s*tr2), 0, 0; 0, NormedSpace.exp 0, 0;
+           0, 0, NormedSpace.exp (-(s*tr2))] by
+    ext i j; fin_cases i <;> fin_cases j <;>
+      simp [Matrix.diagonal, Matrix.cons_val_zero, Matrix.cons_val_one]]
+  rw [Matrix.mul_fin_three, Matrix.mul_fin_three]
+  simp [Matrix.cons_val_zero, Matrix.cons_val_one, NormedSpace.exp_zero]
+  ring
+
+/-- At `s = -i(π/√2)` the `(1,2)` entry of `exp(s•A(T₂))` equals `-1`. -/
+private theorem tree2_entry12_at_time :
+    NormedSpace.exp (-(Complex.I * ((Real.pi / Real.sqrt 2 : ℝ) : ℂ))
+        • (!![0, 1, 1; 1, 0, 0; 1, 0, 0] : Matrix (Fin 3) (Fin 3) ℂ)) 1 2
+      = -1 := by
+  set s : ℂ := -(Complex.I * ((Real.pi / Real.sqrt 2 : ℝ) : ℂ)) with hs
+  rw [exp_smul_tree2_entry12]
+  have hsr2 : s * tr2 = -(Complex.I * (Real.pi : ℂ)) := by
+    rw [hs]
+    unfold tr2
+    rw [show ((Real.pi / Real.sqrt 2 : ℝ) : ℂ) = (Real.pi : ℂ) / (Real.sqrt 2 : ℂ) by
+      push_cast; ring]
+    have hsqrt_ne : (Real.sqrt 2 : ℂ) ≠ 0 := by
+      rw [Ne, Complex.ofReal_eq_zero]; positivity
+    field_simp
+  rw [hsr2]
+  have he1 : NormedSpace.exp (-(Complex.I * (Real.pi : ℂ))) = -1 := by
+    rw [← Complex.exp_eq_exp_ℂ,
+      show -(Complex.I * (Real.pi : ℂ)) = (-Real.pi : ℝ) * Complex.I by push_cast; ring,
+      Complex.exp_ofReal_mul_I, Real.cos_neg, Real.sin_neg, Real.cos_pi, Real.sin_pi]
+    push_cast; ring
+  have he2 : NormedSpace.exp (-(-(Complex.I * (Real.pi : ℂ)))) = -1 := by
+    rw [neg_neg, ← Complex.exp_eq_exp_ℂ,
+      show Complex.I * (Real.pi : ℂ) = (Real.pi : ℝ) * Complex.I by push_cast; ring,
+      Complex.exp_ofReal_mul_I, Real.cos_pi, Real.sin_pi]
+    push_cast; ring
+  rw [he1, he2]
+  norm_num
+
+end Tree2PST
+
+/-- **`T₂ = K_{1,2}` leaf-to-leaf PST — PROVEN.**
+`‖exp(-i(π/√2)·A(T₂))₁₂‖ = 1`.
+
+The depth-2 complete binary tree `T₂` (root `0`, leaves `1, 2`,
+`A = !![0,1,1; 1,0,0; 1,0,0]`) is the star `K_{1,2}` = path `1—0—2`; diagonalizing
+`A = U·diag(√2,0,-√2)·U⁻¹` and exponentiating, its leaf-to-leaf `(1,2)` amplitude
+is `(e^{s√2}+e^{-s√2})/4 − 1/2`, which at `s = -i(π/√2)` equals `-1`, of modulus
+`1`.  True and non-vacuous (the amplitude is *exactly* `-1`): the two leaves of
+the smallest tree are connected by perfect state transfer through the root.
+
+Genuine finite diagonalize-and-exponentiate (`tree2_entry12_at_time`); no
+`sorry`.  This is the tree analogue of `Graphplay.StdLib.path_P3_PST_residual`
+(`T₂ ≅ P₃`).
+
+Reference: Christandl–Datta–Ekert–Landahl, arXiv:quant-ph/0309131 (`P₃` PST);
+Childs et al., quant-ph/0209131 (tree walks). -/
+theorem Tree.leaf_PST_T2 :
+    IsPST (Tree.weighted 2) (1 : Fin 3) (2 : Fin 3) (Real.pi / Real.sqrt 2) := by
+  unfold IsPST WeightedGraph.evolve
+  rw [tree2_adj]
+  change ‖NormedSpace.exp (-(Complex.I * ((Real.pi / Real.sqrt 2 : ℝ) : ℂ))
+      • (!![0, 1, 1; 1, 0, 0; 1, 0, 0] : Matrix (Fin 3) (Fin 3) ℂ)) 1 2‖ = 1
+  rw [tree2_entry12_at_time, norm_neg, norm_one]
+
+/-- **`T₂ = K_{1,2}` leaf-to-leaf PST exists (Godsil-bridge form).**  There is a
+time `τ` at which the smallest complete binary tree has leaf-to-leaf PST between
+its two leaves.  This is the existence form delivered by Godsil's backward bridge
+`Graphplay.PST.isPST_exists_of_isGodsilPSTReady` (spectrum `{√2,0,-√2}` on the
+progression `λ = √2·k`, giving `τ = π/a = π/√2`); we discharge it from the
+explicit finite computation `Tree.leaf_PST_T2`, axiom-clean. -/
+theorem Tree.leaf_isPST_exists_T2 :
+    ∃ τ : ℝ, IsPST (Tree.weighted 2) (1 : Fin 3) (2 : Fin 3) τ :=
+  ⟨Real.pi / Real.sqrt 2, Tree.leaf_PST_T2⟩
 
 /-! ## Computable rational companion -/
 
