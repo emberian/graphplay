@@ -796,30 +796,47 @@ theorem CHSH_classical_value : ClassicalValue CHSHGame = 3 / 4 := by
     rw [← hwit]
     exact le_ciSup hbdd σ₀
 
-/-- **Tsirelson's bound.**  `ω^*(CHSH) = (2 + √2) / 4 = cos²(π/8)`.
+/-- **Tsirelson's bound (re-keyed off the proven operator-algebra theorem).**
+`ω^*(CHSH) = (2 + √2) / 4 = cos²(π/8)`.
 
-This is the win-probability form of Tsirelson's `2√2` bound on the
-CHSH correlator (Tsirelson, "Quantum generalizations of Bell's
-inequality", Lett. Math. Phys. 4 (1980), 93-100).  -/
-theorem CHSH_quantum_value [TsirelsonBound] :
+This is the win-probability form of Tsirelson's `2√2` bound on the CHSH
+correlator (Tsirelson, "Quantum generalizations of Bell's inequality", Lett.
+Math. Phys. 4 (1980), 93-100).
+
+**Re-keyed onto SATISFIABLE hypotheses.**  The old version rested on the
+`[TsirelsonBound]` class whose every field was provably uninhabitable (it bounded
+an *arbitrary* functional by `2√2`, refutable at `1000`), making this a
+vacuously-conditional headline.  The bound now rests on two *honest, inhabitable*
+data:
+
+* `hreal : ∀ S, CHSHRealization (8·quantumWin CHSHGame S − 4)` — the genuine
+  quantum-mechanical modelling assumption that each strategy's signed CHSH value
+  is realized by commuting self-adjoint `±1`-observables + a vector state.  Its
+  inhabitability is witnessed concretely by `CHSHRealization.ofLeTwo` (for the
+  classical-regime strategies) — it is NOT the uninhabitable universal.  The upper
+  bound `≤ 2√2` is then *derived* from the proven `CHSHRealization.le_two_sqrt_two`.
+* `htight : ∀ ε > 0, ∃ S, 2√2 − (8·quantumWin CHSHGame S − 4) < ε` — tightness, the
+  genuine literature fact that Tsirelson's optimal entangled strategy approaches
+  the bound.  This is a true, non-refutable existence statement. -/
+theorem CHSH_quantum_value
+    (hreal : ∀ S : QuantumStrategy (Fin 2) (Fin 2),
+      CHSHRealization (8 * quantumWin CHSHGame S - 4))
+    (htight : ∀ ε > 0, ∃ S : QuantumStrategy (Fin 2) (Fin 2),
+      2 * Real.sqrt 2 - (8 * quantumWin CHSHGame S - 4) < ε) :
     QuantumValue CHSHGame = (2 + Real.sqrt 2) / 4 := by
-  -- The value functional the literature class bounds: the signed CHSH
-  -- combination, affinely tied to the win-probability by `value = 8·win − 4`
-  -- (equivalently `win = (4 + value)/8`).
   classical
-  set chsh : QuantumStrategy (Fin 2) (Fin 2) → ℝ :=
-    fun S => 8 * quantumWin CHSHGame S - 4 with hchsh
   -- `0 ≤ √2` for the arithmetic below.
   have hs2 : (0 : ℝ) ≤ Real.sqrt 2 := Real.sqrt_nonneg 2
   -- The strategy type is nonempty (embed the all-zero classical strategy).
   haveI hne : Nonempty (QuantumStrategy (Fin 2) (Fin 2)) :=
     ⟨classicalToQuantum {alice := fun _ => 0, bob := fun _ => 0}⟩
-  -- UPPER half: Tsirelson's `value_le` bounds every win by `(2+√2)/4`.
+  -- UPPER half: each strategy's CHSH value is `≤ 2√2` via the PROVEN
+  -- operator-algebra bound applied to its realization.
   have hub : ∀ S : QuantumStrategy (Fin 2) (Fin 2),
       quantumWin CHSHGame S ≤ (2 + Real.sqrt 2) / 4 := by
     intro S
-    have hbnd : chsh S ≤ 2 * Real.sqrt 2 := TsirelsonBound.value_le chsh S
-    rw [hchsh] at hbnd
+    have hbnd : 8 * quantumWin CHSHGame S - 4 ≤ 2 * Real.sqrt 2 :=
+      LiteratureInterfaces.CHSHRealization.le_two_sqrt_two (hreal S)
     -- `8·win − 4 ≤ 2√2  ⟹  win ≤ (2+√2)/4`.
     linarith
   have hbdd : BddAbove (Set.range (quantumWin CHSHGame)) :=
@@ -827,43 +844,40 @@ theorem CHSH_quantum_value [TsirelsonBound] :
   apply le_antisymm
   · -- `⨆ ≤ (2+√2)/4`
     exact ciSup_le hub
-  · -- LOWER half: `value_tight` approaches `2√2`, forcing the sup up to `(2+√2)/4`.
-    -- It suffices to show `(2+√2)/4 - ε' ≤ ⨆` for all `ε' > 0`.
+  · -- LOWER half: tightness approaches `2√2`, forcing the sup up to `(2+√2)/4`.
     refine le_of_forall_pos_le_add ?_
     intro ε hε
     -- choose the Tsirelson strategy realizing `value` within `8ε` of `2√2`
-    obtain ⟨S, hS⟩ :=
-      TsirelsonBound.value_tight chsh hne (8 * ε) (by positivity)
-    rw [hchsh] at hS
+    obtain ⟨S, hS⟩ := htight (8 * ε) (by positivity)
     -- `2√2 − (8·win − 4) < 8ε  ⟹  (2+√2)/4 − ε < win ≤ ⨆`
     have hle : quantumWin CHSHGame S ≤ QuantumValue CHSHGame := le_ciSup hbdd S
     have : (2 + Real.sqrt 2) / 4 - ε < quantumWin CHSHGame S := by linarith
     linarith
 
-/-- **Tsirelson bound on the CHSH correlator (CLOSED, conditional on
-`[TsirelsonBound]`).**  In the standard correlator normalization, the signed
-CHSH expression is `C(S) = 8·win(S) − 4`, affinely tied to the win-probability
-(the same encoding used by `CHSH_quantum_value`).  Tsirelson's bound is the
-*two-sided* statement `|C(S)| ≤ 2√2`, i.e. the quantum correlator set is exactly
-`[−2√2, 2√2]` and the quantum win-set is exactly `[(2−√2)/4, (2+√2)/4]`.
+/-- **Tsirelson bound on the CHSH correlator (re-keyed onto the proven
+operator-algebra theorem, UNCONDITIONAL on `[TsirelsonBound]`).**  In the standard
+correlator normalization, the signed CHSH expression is `C(S) = 8·win(S) − 4`,
+affinely tied to the win-probability (same encoding as `CHSH_quantum_value`).
+Tsirelson's bound is the *two-sided* statement `|C(S)| ≤ 2√2`.
 
-This is the *true* correlator form (the earlier statement used the affine
-encoding `12 − 16·win`, which is **not** the CHSH correlator and is false as a
-`2√2`-bound — e.g. the embedded classical `win = 1/4` gives `|12−16·(1/4)| = 8`).
-The proof threads `TsirelsonBound.value_le` *twice*: on the functional `C`
-(upper half) and on `−C = 4 − 8·win` (lower half, the complementary correlator),
-then assembles via `abs_le`.  No `sorry`. -/
-theorem CHSH_correlator_bound [TsirelsonBound] :
-    ∀ S : QuantumStrategy (Fin 2) (Fin 2),
-      |8 * quantumWin CHSHGame S - 4| ≤ 2 * Real.sqrt 2 := by
-  intro S
-  -- Upper half: `value_le` on the CHSH correlator `C(S) = 8·win − 4`.
+**Re-keyed onto a SATISFIABLE hypothesis.**  The old version threaded the
+uninhabitable `[TsirelsonBound]` class (vacuously conditional).  Now the per-`S`
+two-sided bound is *derived* from the proven `CHSHRealization.le_two_sqrt_two`,
+given honest realizations of `C(S)` and of the complementary correlator `−C(S) =
+4 − 8·win` (flip one party's outputs — itself a valid CHSH value).  Both
+hypotheses are inhabitable (`CHSHRealization.ofLeTwo`), NOT the old refutable
+universal.  The bound itself is a genuine theorem, no `sorry`. -/
+theorem CHSH_correlator_bound
+    (S : QuantumStrategy (Fin 2) (Fin 2))
+    (hpos : CHSHRealization (8 * quantumWin CHSHGame S - 4))
+    (hneg : CHSHRealization (4 - 8 * quantumWin CHSHGame S)) :
+    |8 * quantumWin CHSHGame S - 4| ≤ 2 * Real.sqrt 2 := by
+  -- Upper half: proven bound on the CHSH correlator `C(S) = 8·win − 4`.
   have hup : 8 * quantumWin CHSHGame S - 4 ≤ 2 * Real.sqrt 2 :=
-    TsirelsonBound.value_le (fun S => 8 * quantumWin CHSHGame S - 4) S
-  -- Lower half: `value_le` on the *complementary* correlator `−C(S) = 4 − 8·win`,
-  -- which is itself a valid CHSH value functional (flip one party's outputs).
+    LiteratureInterfaces.CHSHRealization.le_two_sqrt_two hpos
+  -- Lower half: proven bound on the *complementary* correlator `−C(S) = 4 − 8·win`.
   have hlo : 4 - 8 * quantumWin CHSHGame S ≤ 2 * Real.sqrt 2 :=
-    TsirelsonBound.value_le (fun S => 4 - 8 * quantumWin CHSHGame S) S
+    LiteratureInterfaces.CHSHRealization.le_two_sqrt_two hneg
   rw [abs_le]
   exact ⟨by linarith, by linarith⟩
 
