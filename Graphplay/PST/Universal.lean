@@ -626,41 +626,22 @@ theorem isKFractionalRevival_pair_of_isPST_of_isSymm (G : WeightedGraph V)
     rw [hk]
     exact evolve_col_eq_zero_of_isPST G τ u v hUV j hju
 
-/-- **PST is `K`-fractional revival on an antipodal pair (`|K| = 2`).**  Perfect
-state transfer `u → v` at time `τ` implies fractional revival on `K = {u, v}` at
-time `τ`: the only nonzero amplitudes out of `{u, v}` stay within `{u, v}`.
+/-- **PST is `K`-fractional revival on an antipodal pair (`|K| = 2`), for a
+real-symmetric graph.**  For `G` with `Aᵀ = A`, perfect state transfer `u → v` at
+time `τ` implies fractional revival on `K = {u, v}` at time `τ`: the only nonzero
+amplitudes out of `{u, v}` stay within `{u, v}`.
 
-This is the bridge identifying PST as the antidiagonal special case of the
-`K = {u, v}` revival framework.  The closed, axiom-clean proof under the
-classical real-symmetric (`Aᵀ = A`) hypothesis is
-`isKFractionalRevival_pair_of_isPST_of_isSymm`.
+The `IsSymm` hypothesis is essential, not cosmetic: for general non-symmetric
+Hermitian `A` the `k = u` leak is genuinely possible — a directed triangle
+`u → v → w → u` realizes `‖U_{u,v}‖ = 1` yet leaks `‖U_{w,u}‖ = 1` with
+`w ∉ {u, v}`.  So this is the correct, true statement; it delegates to the
+axiom-clean `isKFractionalRevival_pair_of_isPST_of_isSymm`.
 
-Reference: Chan et al., arXiv:2004.01129, Example 2.x (PST as fractional
-revival). -/
-theorem isKFractionalRevival_pair_of_isPST (G : WeightedGraph V) {u v : V}
-    {τ : ℝ} (huv : u ≠ v) (h : IsPST G u v τ) :
-    IsKFractionalRevival G {u, v} τ := by
-  have hUV : ‖G.evolve τ u v‖ = 1 := h
-  intro k hk j hj
-  simp only [Finset.mem_insert, Finset.mem_singleton] at hk
-  have hju : j ≠ u := fun hju => hj (by simp [hju])
-  have hjv : j ≠ v := fun hjv => hj (by simp [hjv])
-  rcases hk with hk | hk
-  · -- `k = u` leak: needs `‖U(τ)_{·,u}‖ = 1` (target-side PST `v → u`), the
-    -- spectral-symmetry half of Godsil's theorem.  This is *genuinely false* for
-    -- general (non-symmetric) Hermitian `A` — the chiral / directed triangle
-    -- `u → v → w → u` realizes `‖U_{u,v}‖ = 1` yet leaks `‖U_{w,u}‖ = 1` with
-    -- `w ∉ {u,v}`.  Closed under the classical real-symmetric (`Aᵀ = A`)
-    -- hypothesis by `isKFractionalRevival_pair_of_isPST_of_isSymm`.
-    -- ISOLATED RESIDUAL (false in this Hermitian generality; TRUE-making
-    -- hypothesis `G.adj.IsSymm` available in the sibling lemma):
-    rw [hk]
-    sorry
-  · -- `k = v` leak: CLOSED by pure unitarity.  The `v`-column of `U(τ)` is
-    -- concentrated at `u` (its unit `ℓ²`-mass is already saturated by the
-    -- modulus-1 `(u,v)` entry), so every other entry vanishes.
-    rw [hk]
-    exact evolve_col_eq_zero_of_isPST G τ u v hUV j hju
+Reference: Chan et al., arXiv:2004.01129 (PST as fractional revival). -/
+theorem isKFractionalRevival_pair_of_isPST (G : WeightedGraph V)
+    (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (huv : u ≠ v) (h : IsPST G u v τ) :
+    IsKFractionalRevival G {u, v} τ :=
+  isKFractionalRevival_pair_of_isPST_of_isSymm G hsymm huv h
 
 end PST
 end Graphplay
