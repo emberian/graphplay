@@ -141,10 +141,20 @@ pairs that can be removed).  Iterating that many times reaches a fixed point.  A
 is **solved** when every cell is a singleton (one candidate left); `acSolves?` reports
 whether the fixpoint from `⊤F` is solved — the computable kind-discriminator. -/
 
-/-- Iterate `acStepF` `n` times. -/
+/-- Iterate `acStepF` `n` times.
+
+**Memoization (essential for evaluation).**  We materialize each intermediate state
+into a `List` via `List.ofFn` before recursing.  Without it, `acStepF`'s support test
+reads the *whole* previous state, so the nested `acStepF (acStepF …)` thunks
+re-evaluate exponentially and `#eval`/`decide` take *minutes*; `List.ofFn` forces each
+cell exactly once, making iteration linear (seconds).  The materialized state
+`fun i => mat.getD i.val ∅` is extensionally `acStepF Fs a` (indices `i.val < k` always
+hit a real cell), so the computed result is unchanged. -/
 def acIterate (Fs : List (Finset (Fin k → V))) : ℕ → AbsF V k → AbsF V k
   | 0,     a => a
-  | n + 1, a => acIterate Fs n (acStepF Fs a)
+  | n + 1, a =>
+    let mat : List (Finset V) := List.ofFn (acStepF Fs a)
+    acIterate Fs n (fun i => mat.getD i.val ∅)
 
 /-- **The arc-consistency fixpoint from the full grid.**  Iterate `acStepF` for the
 lattice height `k * card V` — a sound bound: each non-fixpoint step strictly removes at
@@ -268,34 +278,50 @@ def xorF : List (Finset (Fin 3 → Bool)) := [xC1F, xC2F, xC3F]
 --   XOR    →  false  (matches `acStep_xor_abstains`)
 -- ─────────────────────────────────────────────────────────────────────────────
 
-/-- The chain is **solved** by AC deduction (computed). -/
+-- The chain is solved by AC deduction (computed):
 #eval acSolves? chainF        -- expected: true
 
-/-- The XOR system is **not solved** — AC deduction abstains (computed). -/
+-- The XOR system is not solved — AC deduction abstains (computed):
 #eval acSolves? xorF          -- expected: false
 
 -- Finer-grained executable views (the fixpoint domains themselves), for inspection:
 
-/-- The chain's AC fixpoint pins `(false, false)` — each cell a singleton. -/
+-- The chain's AC fixpoint pins (false, false) — each cell a singleton:
 #eval (List.ofFn (fun i : Fin 2 => (acFixpoint chainF i).sort (· ≤ ·)))
                               -- expected: [[false], [false]]
 
-/-- The XOR system's AC fixpoint is still the full grid — both values live in every
-cell: the global parity coupling is invisible to per-cell, per-constraint reasoning. -/
+-- The XOR system's AC fixpoint is still the full grid — both values live in every
+-- cell: the global parity coupling is invisible to per-cell, per-constraint reasoning:
 #eval (List.ofFn (fun i : Fin 3 => (acFixpoint xorF i).sort (· ≤ ·)))
                               -- expected: [[false, true], [false, true], [false, true]]
 
-/-! ## 6.  The classifier's verdicts.
+/-! ## 6.  The classifier's verdicts, proved.
 
-The `#eval`s above *run* the classifier: `acSolves? chainF` prints `true`,
-`acSolves? xorF` prints `false` — the runnable mirror of
-`LDTCompleteness.ac_kind_discriminates`.  We deliberately do **not** re-prove these
-`Bool` outputs as theorems: `decide` reduces the `Finset` fixpoint in the kernel
-(pathologically slow — minutes), and `native_decide` would inject the `ofReduceBool`
-axiom.  Neither is worth it, because the *mathematics* of the verdicts is already
-proven, axiom-clean, on the `Set` side — `acStep_chain_solves`, `acStep_xor_abstains`,
-`ac_kind_discriminates`.  This file is the **executable demonstration**; those
-theorems are the **proof**. -/
+The `#eval`s above *run* the classifier; these theorems *prove* the same `Bool`
+outputs by `decide`.  Because the memoized `acIterate` makes the fixpoint computation
+linear (not exponential), `decide` reduces them in well under a second — so the
+executable verdicts are machine-checked, **axiom-clean** facts (no `native_decide`),
+agreeing with the independently-proven `Set`-side theorems `acStep_chain_solves` /
+`acStep_xor_abstains`. -/
+
+-- `decide` reduces the memoized fixpoint in the kernel; raise the recursion-depth
+-- ceiling (the computation is fast — linear — but nested deeper than the default 512).
+set_option maxRecDepth 100000
+
+/-- **The classifier solves the chain**: `acSolves? chainF = true`, matching the
+`Set`-side `acStep_chain_solves`. -/
+theorem acSolves_chain : acSolves? chainF = true := by decide
+
+/-- **The classifier abstains on XOR**: `acSolves? xorF = false`, matching the
+`Set`-side `acStep_xor_abstains`. -/
+theorem acSolves_xor : acSolves? xorF = false := by decide
+
+/-- **The discriminator, end to end (computable side).**  One executable operator
+returns `true` on the width-1 chain and `false` on the affine XOR system — the
+runnable, machine-checked mirror of `LDTCompleteness.ac_kind_discriminates`. -/
+theorem acSolves_kind_discriminates :
+    acSolves? chainF = true ∧ acSolves? xorF = false :=
+  ⟨acSolves_chain, acSolves_xor⟩
 
 /-! ## 7.  End-of-file inventory.
 
@@ -311,10 +337,10 @@ theorems are the **proof**. -/
     `toAbs_acStepF`.
   * §5 — the two concrete CSPs `chainF`, `xorF` (allowed-tuple `Finset`s) and the
     **`#eval` demonstrations**: `acSolves? chainF` ⇒ `true`, `acSolves? xorF` ⇒ `false`.
-  * §6 — the verdicts are *run* by the `#eval`s (chain ⇒ `true`, XOR ⇒ `false`) and
-    *proved* axiom-clean on the `Set` side (`acStep_chain_solves`,
-    `acStep_xor_abstains`); not re-proved by `decide` (kernel-slow on `Finset`) nor
-    `native_decide` (would add an axiom).
+  * §6 — **`acSolves_chain`** (`= true`), **`acSolves_xor`** (`= false`),
+    `acSolves_kind_discriminates` — the executable verdicts, **proved by `decide`**
+    (fast and axiom-clean thanks to the memoized `acIterate`), matching the `Set`-side
+    `acStep_chain_solves` / `acStep_xor_abstains`.
 
 **HONEST SCOPE / what is NOT claimed:**
   * The proved bridge is **single-step** (`acStepF_mem_iff`): the executable step's

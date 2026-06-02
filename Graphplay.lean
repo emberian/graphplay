@@ -140,6 +140,7 @@ import Graphplay.Integrations.LDTCompleteness
 import Graphplay.Integrations.LDTPolymorphism
 import Graphplay.Integrations.LDTSoundnessRun
 import Graphplay.Integrations.LDTHierarchy
+import Graphplay.Integrations.LDTKindChecker
 import Graphplay.Integrations.LatticeGauge
 import Graphplay.Integrations.WLRefinement
 import Graphplay.Integrations.QuantumMarkov

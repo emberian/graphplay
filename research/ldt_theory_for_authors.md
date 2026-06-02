@@ -121,6 +121,7 @@ train kind-0 versus kind-2, and watch the affine wall.
   `acStep_xor_sound_but_abstains`, `acStep_chain_solves`, `ac_kind_discriminates`.
 - `Graphplay/Integrations/LDTPolymorphism.lean` — `xor_affine`, `xor_no_majority`,
   `chain_semilattice`, `famCons_closed_meet`.
-- `Graphplay/Integrations/LDTKindChecker.lean` — a runnable (`#eval`-able) classifier `acSolves?`.
+- `Graphplay/Integrations/LDTKindChecker.lean` — a runnable (`#eval`-able) classifier
+  `acSolves?` (chain ⇒ `true`, XOR ⇒ `false`), with verdicts proved by `decide`.
 - `Graphplay/Tower9.lean` — the Cousot interface: `gfp_transfer`, `ldt_lossy`,
   `ldt_deduction_run_sound`.

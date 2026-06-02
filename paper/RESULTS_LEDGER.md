@@ -53,6 +53,19 @@ edited.
 >   width-1 chain). All axiom-clean. Conclusion: soundness is free/training-independent; the real
 >   bound is COMPLETENESS = problem width vs lattice expressiveness (bounded-width CSP dichotomy).
 >   Author-facing writeup: `research/ldt_theory_for_authors.md`.
+> - **LDT theory — full layer (all axiom-clean, self-verified `#print axioms`).**
+>   `LDTSoundnessRun.lean`: sound refutation (`conflict_implies_unsat`), a training-checkable
+>   soundness criterion (`sound_of_dominates_dedP`), the correct-or-abstains pair
+>   (`never_confidently_wrong`, `no_false_refutation`), `SoundStep` compositionality (`comp_assoc`),
+>   trace-level correctness (`certified_trace_correct`).  `LDTPolymorphism.lean`: the algebraic
+>   signature of the kinds — `xor_affine` (Maltsev), `xor_no_majority`, `chain_semilattice` (+ the
+>   defining identities) and `famCons_closed_meet` (a semilattice polymorphism closes the solution
+>   set under meet).  `LDTHierarchy.lean`: the pair domain is strictly richer than per-cell
+>   (`alpha_eq_top` vs `gammaPair_alphaPair_eq`, `pair_strictly_richer_than_cell`,
+>   `pair_narrows_where_cell_stuck`).  `LDTKindChecker.lean`: a **runnable** (`#eval`) classifier
+>   `acSolves?` (chain ⇒ `true`, XOR ⇒ `false`), verdicts proved by `decide` — fixed from a 35-min
+>   hang to ~10s by memoizing the fixpoint iteration (the slowness was exponential thunk
+>   re-evaluation, not the math).
 > - **ML (walkformer track, behavioral):** the 1-WL irreducibility rank-floor is now *measured*
 >   (`restrans/WALK_DISTILLATION_FINDINGS.md`): grafting pure walk operators onto a trained
 >   pythia-70m recovers 0.93→0.69 of positional-head function vs 0.44→0.23 for content heads (a
