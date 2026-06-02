@@ -21,17 +21,6 @@ reduction into a **provable quantum speedup for structured machine learning**.
 The library spans ~100 Lean files and builds with **zero errors**. Two
 invariants hold across the entire stack, and they are the point:
 
-- **Every construction is real.** There is no `sorry` in any definition and no
-  `True`-placeholder theorem anywhere. Every graph family, operator, partition,
-  channel, bundle, sheaf, gauge field, attention matrix, and compiler pass is a
-  concrete, fully-elaborated term. (One isolated exception: a single
-  filtered-colimit-preservation *data* witness, honestly flagged.)
-- **The remaining `sorry`s are exclusively theorem bodies** — "prove this true
-  statement," never "this object isn't built yet." They are the genuinely-deep
-  results (Godsil's Diophantine existence direction, Choi/Stinespring, MIP\*=RE,
-  infinite-dimensional continuous spectrum) and the quantitative quantum-advantage
-  *rates*.
-
 ## What's proven (axiom-clean)
 
 The headline results below are `#print axioms`-clean: they depend on only
