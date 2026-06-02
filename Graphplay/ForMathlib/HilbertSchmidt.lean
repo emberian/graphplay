@@ -53,14 +53,22 @@ lemma is the only thing left to fill, and it is stated cleanly.
 * `isCompactOperator_of_finiteDimensional_range` — **genuine**: finite-rank ⟹ compact.
 * `kernelIntegralCLM_isCompactOperator_of_finiteRank_approx` — **genuine**: a kernel
   operator that is an operator-norm limit of finite-rank operators is compact.
-* `kernelIntegralCLM_isCompactOperator` — **HS ⟹ compact, closed** by combining the
-  above genuine facts with the one cited classical input
-  `exists_finiteRank_tendsto_kernelIntegralCLM` (finite-rank operators are
-  operator-norm dense in the Hilbert–Schmidt class; Conway II.4.6 / Reed–Simon
-  VI.22–23), which carries the file's only `sorry`.
+* `kernelIntegralCLM_isCompactOperator` — **HS ⟹ compact, fully closed (no `sorry`)** by
+  combining the above genuine facts with `exists_finiteRank_tendsto_kernelIntegralCLM`
+  (finite-rank operators are operator-norm dense in the Hilbert–Schmidt class; Conway
+  II.4.6 / Reed–Simon VI.22–23).  The classical density input
+  `exists_separable_tendsto_kernel` (finite separable kernels are `L²(μ⊗μ)`-dense) is now
+  **proved** here via the measurable-rectangle set-semiring + in-measure approximation +
+  `MemLp.induction_dense` (see the `SeparableDensity` section).  This file is now entirely
+  `sorry`-free; the HS ⟹ compact headline is axiom-clean.
 -/
 import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Measure.MeasuredSets
+import Mathlib.MeasureTheory.MeasurableSpace.Prod
+import Mathlib.MeasureTheory.Function.SimpleFuncDenseLp
+import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
+import Mathlib.Order.Partition.Finpartition
 import Mathlib.MeasureTheory.Integral.MeanInequalities
 import Mathlib.MeasureTheory.Function.LpSeminorm.Monotonicity
 import Mathlib.Analysis.InnerProductSpace.Adjoint
@@ -791,6 +799,329 @@ theorem kernelIntegralFun_sub_ae_of_integrable
 
 end Tensor
 
+/-! ## `L²(μ ⊗ μ)`-density of separable kernels (the compactness density core)
+
+This block proves, **fully genuinely (no `sorry`)**, the single classical input that the
+Hilbert–Schmidt ⟹ compact headline reduces to: *finite separable (rank-one tensor)
+kernels are dense in `L²(μ ⊗ μ)`*.  Concretely, for `K ∈ L²(μ ⊗ μ)` there is a sequence of
+finite separable kernels `K_n(x,y) = Σ_{i} g_{n,i} x · conj (h_{n,i} y)` converging to `K`
+in `L²(μ ⊗ μ)` (`exists_separable_tendsto_kernel`, at the very end of this file).
+
+The argument is the textbook one (Conway II.4 / Reed–Simon VI.22–23), carried out via
+Mathlib's `MemLp.induction_dense`: it suffices to approximate the indicator of an
+arbitrary finite-measure measurable set `s ⊆ Ω × Ω` (scaled by a constant `c`) by a
+separable function in `L²`.  For that we use:
+
+* **measurable rectangles form a set semiring** (`isSetSemiring_measurableRectangle`), whose
+  hard clause `(A×B) \ (A'×B') = A×(B\B') ⊎ (A\A')×(B∩B')` (two disjoint rectangles) is
+  `Set.prod_diff_prod`-adjacent;
+* **in-measure approximation by the generating semiring**
+  (`MeasureTheory.exists_measure_symmDiff_lt_of_generateFrom_isSetSemiring`): `s` is
+  `μ⊗μ`-symmetric-difference-approximated by a finite union of rectangles, which (semiring
+  ⟹ `mem_supClosure_iff`) is a finite **disjoint** union of rectangles `⨆ Rᵢ`;
+* the indicator of a disjoint union of rectangles is the **sum** of the rectangle
+  indicators (`indicator_finpartition_eq_sum`), and each rectangle indicator
+  `1_{A×B}(x,y) = 1_A(x) · conj (1_B(y))` is **rank-one separable**;
+* `eLpNorm (c·1_t - c·1_s) 2 (μ⊗μ) = ‖c‖ₑ · (μ⊗μ (t ∆ s))^{1/2}`
+  (`eLpNorm_indicator_sub_indicator` + `eLpNorm_indicator_const`) is then made `≤ ε`.
+
+Everything here is axiom-clean. -/
+section SeparableDensity
+
+open MeasureTheory Set
+open scoped symmDiff
+
+variable [SFinite μ]
+
+/-- The predicate "`R` is a measurable rectangle `A ×ˢ B`" on the product space, recorded
+with explicit measurable factors so they can be extracted for separability. -/
+def IsMeasurableRectangle (R : Set (Ω × Ω)) : Prop :=
+  ∃ A B : Set Ω, MeasurableSet A ∧ MeasurableSet B ∧ R = A ×ˢ B
+
+theorem isMeasurableRectangle_empty : IsMeasurableRectangle (∅ : Set (Ω × Ω)) :=
+  ⟨∅, ∅, MeasurableSet.empty, MeasurableSet.empty, by simp⟩
+
+theorem MeasurableSet.of_isMeasurableRectangle {R : Set (Ω × Ω)} (hR : IsMeasurableRectangle R) :
+    MeasurableSet R := by
+  obtain ⟨A, B, hA, hB, rfl⟩ := hR
+  exact hA.prod hB
+
+/-- The set of measurable rectangles coincides with Mathlib's generating set of "boxes"
+`image2 (· ×ˢ ·) {MeasurableSet} {MeasurableSet}`. -/
+theorem setOf_isMeasurableRectangle_eq_image2 :
+    {R : Set (Ω × Ω) | IsMeasurableRectangle R}
+      = Set.image2 (· ×ˢ ·) {s : Set Ω | MeasurableSet s} {t : Set Ω | MeasurableSet t} := by
+  ext R
+  constructor
+  · rintro ⟨A, B, hA, hB, rfl⟩; exact ⟨A, hA, B, hB, rfl⟩
+  · rintro ⟨A, hA, B, hB, rfl⟩; exact ⟨A, B, hA, hB, rfl⟩
+
+/-- **Measurable rectangles form a set semiring.**  The intersection of two rectangles is a
+rectangle, and the difference `(A×B) \ (A'×B')` is the disjoint union of the two rectangles
+`A×(B\B')` and `(A\A')×(B∩B')`. -/
+theorem isSetSemiring_measurableRectangle :
+    MeasureTheory.IsSetSemiring {R : Set (Ω × Ω) | IsMeasurableRectangle R} where
+  empty_mem := isMeasurableRectangle_empty
+  inter_mem := by
+    rintro _ ⟨A, B, hA, hB, rfl⟩ _ ⟨A', B', hA', hB', rfl⟩
+    exact ⟨A ∩ A', B ∩ B', hA.inter hA', hB.inter hB', by rw [Set.prod_inter_prod]⟩
+  diff_eq_sUnion' := by
+    classical
+    rintro _ ⟨A, B, hA, hB, rfl⟩ _ ⟨A', B', hA', hB', rfl⟩
+    refine ⟨{A ×ˢ (B \ B'), (A \ A') ×ˢ (B ∩ B')}, ?_, ?_, ?_⟩
+    · -- the two pieces are measurable rectangles
+      intro R hR
+      simp only [Finset.coe_insert, Finset.coe_singleton, Set.mem_insert_iff,
+        Set.mem_singleton_iff] at hR
+      rcases hR with rfl | rfl
+      · exact ⟨A, B \ B', hA, hB.diff hB', rfl⟩
+      · exact ⟨A \ A', B ∩ B', hA.diff hA', hB.inter hB', rfl⟩
+    · -- pairwise disjoint: the y-coordinates `B \ B'` and `B ∩ B'` are disjoint
+      have hdisj : Disjoint (A ×ˢ (B \ B')) ((A \ A') ×ˢ (B ∩ B')) := by
+        refine Set.disjoint_left.mpr ?_
+        rintro ⟨x, y⟩ hx hx'
+        simp only [Set.mem_prod, Set.mem_diff, Set.mem_inter_iff] at hx hx'
+        exact hx.2.2 hx'.2.2
+      intro R hR R' hR' hne
+      simp only [Finset.coe_insert, Finset.coe_singleton, Set.mem_insert_iff,
+        Set.mem_singleton_iff] at hR hR'
+      rcases hR with rfl | rfl <;> rcases hR' with rfl | rfl
+      · exact absurd rfl hne
+      · exact hdisj
+      · exact hdisj.symm
+      · exact absurd rfl hne
+    · -- the union identity `(A×B) \ (A'×B') = A×(B\B') ⊎ (A\A')×(B∩B')`
+      simp only [Finset.coe_insert, Finset.coe_singleton, Set.sUnion_insert, Set.sUnion_singleton]
+      ext ⟨x, y⟩
+      simp only [Set.mem_diff, Set.mem_prod, Set.mem_union, Set.mem_inter_iff]
+      grind
+
+/-- **Indicator of a finite disjoint union (finpartition) = sum of part-indicators.**  For a
+`Finpartition t` of a set `t` (parts pairwise disjoint, `⋃₀ parts = t`) and any `f`, the
+indicator `t.indicator f` is the finite sum `Σ_{p ∈ parts} p.indicator f`. -/
+theorem indicator_finpartition_eq_sum {β : Type*} [AddCommMonoid β] {t : Set (Ω × Ω)}
+    (P : Finpartition t) (f : (Ω × Ω) → β) :
+    t.indicator f = ∑ p ∈ P.parts, Set.indicator p f := by
+  classical
+  ext z
+  rw [Finset.sum_apply (g := fun p => Set.indicator p f)]
+  by_cases hz : z ∈ t
+  · -- exactly one part contains `z`
+    obtain ⟨p₀, hp₀mem, hzp₀⟩ : ∃ p ∈ P.parts, z ∈ p := by
+      have : z ∈ P.parts.sup id := by rw [P.sup_parts]; exact hz
+      simpa only [Finset.sup_id_set_eq_sUnion, Set.mem_sUnion, Finset.mem_coe] using this
+    rw [Set.indicator_of_mem hz]
+    refine (Finset.sum_eq_single_of_mem p₀ hp₀mem ?_).trans (Set.indicator_of_mem hzp₀ f) |>.symm
+    intro p hpmem hpne
+    exact Set.indicator_of_notMem
+      (fun hzp => Set.disjoint_left.mp (P.disjoint hpmem hp₀mem hpne) hzp hzp₀) f
+  · -- `z` is in no part
+    rw [Set.indicator_of_notMem hz]
+    refine (Finset.sum_eq_zero fun p hpmem => ?_).symm
+    refine Set.indicator_of_notMem (fun hzp => hz ?_) f
+    have : z ∈ P.parts.sup id := by
+      rw [Finset.sup_id_set_eq_sUnion]; exact Set.mem_sUnion.mpr ⟨p, Finset.mem_coe.mpr hpmem, hzp⟩
+    rwa [P.sup_parts] at this
+
+/-- The indicator of a measurable rectangle, scaled by `c`, is **rank-one separable**:
+`(A ×ˢ B).indicator (fun _ => c) = uncurry (tensorKernel (c • 1_A) 1_B)`, i.e. pointwise
+`c · 1_{A×B}(x,y) = (c · 1_A x) · conj (1_B y)` (`1_B` is real, so `conj` is inert). -/
+theorem indicator_rectangle_eq_tensorKernel (c : ℂ) (A B : Set Ω) :
+    (A ×ˢ B).indicator (fun _ => c)
+      = Function.uncurry (tensorKernel (c • A.indicator (fun _ => (1 : ℂ)))
+          (B.indicator (fun _ => (1 : ℂ)))) := by
+  ext ⟨x, y⟩
+  simp only [Function.uncurry, tensorKernel, Pi.smul_apply, smul_eq_mul]
+  by_cases hx : x ∈ A <;> by_cases hy : y ∈ B <;>
+    simp [Set.indicator_of_mem, Set.indicator_of_notMem, hx, hy, Set.mem_prod]
+
+/-- **Reindex a finite-tensor kernel from a `Finset ι` to `Fin (S.card)` over `univ`.**  For
+families `g, h : ι → Lp ℂ 2 μ` and a `Finset S`, the separable kernel over `S` equals the
+separable kernel over `Finset.univ : Finset (Fin #S)` of the families reindexed along the
+canonical enumeration `e : Fin #S ≃ {x // x ∈ S}`. -/
+theorem finsetTensorKernel_reindex_fin {ι : Type*} (g h : ι → Lp ℂ 2 μ) (S : Finset ι) :
+    Function.uncurry
+        (finsetTensorKernel (fun i => (g i : Ω → ℂ)) (fun i => (h i : Ω → ℂ)) S)
+      = Function.uncurry (finsetTensorKernel
+          (fun j : Fin (S.card) => ((g (S.equivFin.symm j) : Ω → ℂ)))
+          (fun j : Fin (S.card) => ((h (S.equivFin.symm j) : Ω → ℂ))) Finset.univ) := by
+  funext p
+  obtain ⟨x, y⟩ := p
+  simp only [Function.uncurry, finsetTensorKernel_apply]
+  rw [← Finset.sum_attach S (fun i => g i x * conj (h i y))]
+  exact (Equiv.sum_comp S.equivFin.symm
+    (fun i : {x // x ∈ S} => g (i : ι) x * conj (h (i : ι) y))).symm
+
+/-- **A function is a finite separable (rank-one tensor) kernel.**  `F = Σ_{i<n} g_i ⊗ conj h_i`
+for finite families `g, h : Fin n → L²(μ)`, written as a `finsetTensorKernel` over
+`Finset.univ`.  This is the predicate fed to `MemLp.induction_dense`. -/
+def IsSeparableKernelFun (F : (Ω × Ω) → ℂ) : Prop :=
+  ∃ (n : ℕ) (g h : Fin n → Lp ℂ 2 μ),
+    F = Function.uncurry (finsetTensorKernel
+      (fun i => (g i : Ω → ℂ)) (fun i => (h i : Ω → ℂ)) Finset.univ)
+
+/-- The zero function is separable (empty family). -/
+theorem isSeparableKernelFun_zero : IsSeparableKernelFun (μ := μ) 0 := by
+  refine ⟨0, ![], ![], ?_⟩
+  funext p; obtain ⟨x, y⟩ := p
+  simp [Function.uncurry, finsetTensorKernel, tensorKernel]
+
+/-- A separable kernel function is a.e. strongly measurable on `μ ⊗ μ`
+(it is `L²(μ⊗μ)` by `finsetTensorKernel_memLp`). -/
+theorem IsSeparableKernelFun.aestronglyMeasurable {F : (Ω × Ω) → ℂ}
+    (hF : IsSeparableKernelFun (μ := μ) F) :
+    AEStronglyMeasurable F (μ.prod μ) := by
+  obtain ⟨n, g, h, rfl⟩ := hF
+  exact (finsetTensorKernel_memLp g h Finset.univ).1
+
+/-- **Separable kernel functions are closed under addition.**  Concatenating the two finite
+families (via `finSumFinEquiv : Fin n ⊕ Fin m ≃ Fin (n+m)`) realizes `F + G` as a single
+`finsetTensorKernel` over `Finset.univ`. -/
+theorem IsSeparableKernelFun.add {F G : (Ω × Ω) → ℂ}
+    (hF : IsSeparableKernelFun (μ := μ) F) (hG : IsSeparableKernelFun (μ := μ) G) :
+    IsSeparableKernelFun (μ := μ) (F + G) := by
+  classical
+  obtain ⟨n, g₁, h₁, rfl⟩ := hF
+  obtain ⟨m, g₂, h₂, rfl⟩ := hG
+  refine ⟨n + m, fun k => Sum.elim g₁ g₂ (finSumFinEquiv.symm k),
+    fun k => Sum.elim h₁ h₂ (finSumFinEquiv.symm k), ?_⟩
+  funext p; obtain ⟨x, y⟩ := p
+  simp only [Pi.add_apply, Function.uncurry, finsetTensorKernel_apply]
+  rw [← Equiv.sum_comp finSumFinEquiv
+    (fun k : Fin (n + m) => Sum.elim g₁ g₂ (finSumFinEquiv.symm k) x
+      * conj (Sum.elim h₁ h₂ (finSumFinEquiv.symm k) y))]
+  simp only [Equiv.symm_apply_apply, Fintype.sum_sum_type, Sum.elim_inl, Sum.elim_inr]
+
+/-- An `=ᵐ[μ]` between `L²` slice-factors lifts to `=ᵐ[μ⊗μ]` between their tensor kernels:
+if `(a : Ω → ℂ) =ᵐ[μ] a'` and `b =ᵐ[μ] b'`, then `a ⊗ conj b =ᵐ[μ⊗μ] a' ⊗ conj b'`.
+(The factor a.e.-equalities are pulled back along the quasi-measure-preserving projections.) -/
+theorem tensorKernel_ae_congr {a a' b b' : Ω → ℂ} (ha : a =ᵐ[μ] a') (hb : b =ᵐ[μ] b') :
+    Function.uncurry (tensorKernel a b) =ᵐ[μ.prod μ] Function.uncurry (tensorKernel a' b') := by
+  have hfst : (fun p : Ω × Ω => a p.1) =ᵐ[μ.prod μ] fun p => a' p.1 :=
+    (Measure.quasiMeasurePreserving_fst (μ := μ) (ν := μ)).tendsto_ae.eventually ha
+  have hsnd : (fun p : Ω × Ω => b p.2) =ᵐ[μ.prod μ] fun p => b' p.2 :=
+    (Measure.quasiMeasurePreserving_snd (μ := μ) (ν := μ)).tendsto_ae.eventually hb
+  filter_upwards [hfst, hsnd] with p hp hq
+  simp only [Function.uncurry, tensorKernel, hp, hq]
+
+/-- **The separable-approximation of a scaled indicator (the `h0P` engine).**
+
+For a measurable set `s ⊆ Ω × Ω` of finite `μ⊗μ`-measure, a scalar `c`, and any `ε ≠ 0`,
+there is a finite **separable** kernel function `F` (a `finsetTensorKernel`) with
+`eLpNorm (F - s.indicator (fun _ => c)) 2 (μ⊗μ) ≤ ε`.
+
+This is the heart of the density theorem and the *only* place the genuine analytic input —
+rectangle approximation in measure (`isSetSemiring_measurableRectangle` +
+`exists_measure_symmDiff_lt_of_generateFrom_isSetSemiring`) — is used.  The approximant is the
+sum of rank-one tensor indicators over the rectangle pieces of a finpartition of the
+approximating set `t`, and `eLpNorm (F - c·1_s) = eLpNorm (c·1_t - c·1_s)
+= ‖c‖ₑ · (μ⊗μ (t ∆ s))^{1/2} ≤ ε`. -/
+theorem exists_separable_eLpNorm_indicator_le [IsFiniteMeasure μ]
+    (c : ℂ) {s : Set (Ω × Ω)} (hs : MeasurableSet s) (hsμ : (μ.prod μ) s < ∞)
+    {ε : ℝ≥0∞} (hε : ε ≠ 0) :
+    ∃ F : (Ω × Ω) → ℂ,
+      eLpNorm (F - s.indicator (fun _ => c)) 2 (μ.prod μ) ≤ ε ∧ IsSeparableKernelFun (μ := μ) F := by
+  classical
+  -- Trivial case `c = 0`: the zero separable kernel works.
+  rcases eq_or_ne c 0 with rfl | hc
+  · refine ⟨0, ?_, isSeparableKernelFun_zero⟩
+    simp
+  -- generating data: rectangles generate the product σ-algebra and cover it mod 0.
+  have hgen : (Prod.instMeasurableSpace : MeasurableSpace (Ω × Ω))
+      = MeasurableSpace.generateFrom {R : Set (Ω × Ω) | IsMeasurableRectangle R} := by
+    rw [setOf_isMeasurableRectangle_eq_image2]; exact generateFrom_prod.symm
+  have hcover : ∃ D : Set (Set (Ω × Ω)), D.Countable
+      ∧ D ⊆ {R : Set (Ω × Ω) | IsMeasurableRectangle R} ∧ (μ.prod μ) (⋃₀ D)ᶜ = 0 := by
+    refine ⟨{Set.univ}, Set.countable_singleton _, ?_, ?_⟩
+    · rintro R hR; rw [Set.mem_singleton_iff] at hR; subst hR
+      exact ⟨Set.univ, Set.univ, MeasurableSet.univ, MeasurableSet.univ, (Set.univ_prod_univ).symm⟩
+    · simp
+  -- the symmetric-difference tolerance: `δ = (ε / ‖c‖ₑ)²`.
+  set δ : ℝ≥0∞ := (ε / ‖c‖ₑ) ^ 2 with hδ
+  have hcne : ‖c‖ₑ ≠ 0 := by simpa [enorm_eq_zero] using hc
+  have hcnetop : ‖c‖ₑ ≠ ∞ := enorm_ne_top
+  have hεcpos : 0 < ε / ‖c‖ₑ := ENNReal.div_pos hε hcnetop
+  have hδpos : 0 < δ := by rw [hδ]; exact ENNReal.pow_pos hεcpos 2
+  -- approximate `s` by a finite union of rectangles `t`, with `μ⊗μ (t ∆ s) < δ`.
+  obtain ⟨t, htsup, htlt⟩ :=
+    exists_measure_symmDiff_lt_of_generateFrom_isSetSemiring isSetSemiring_measurableRectangle
+      hcover hgen hs hδpos
+  obtain ⟨P, hPsub⟩ := (isSetSemiring_measurableRectangle.mem_supClosure_iff).mp htsup
+  have htmeas : MeasurableSet t := by
+    rw [← P.sup_parts, Finset.sup_id_set_eq_sUnion]
+    exact MeasurableSet.sUnion P.parts.countable_toSet
+      (fun p hp => MeasurableSet.of_isMeasurableRectangle (hPsub hp))
+  -- per-part rectangle factors `A p, B p`, made into TOTAL **measurable** functions of `p`
+  -- (junk `∅` off the partition).
+  choose! A₀ B₀ hA₀ hB₀ hAB₀ using fun p (hp : p ∈ P.parts) => hPsub hp
+  set A : Set (Ω × Ω) → Set Ω := fun p => if p ∈ P.parts then A₀ p else ∅ with hAdef
+  set B : Set (Ω × Ω) → Set Ω := fun p => if p ∈ P.parts then B₀ p else ∅ with hBdef
+  have hA : ∀ p, MeasurableSet (A p) := by
+    intro p
+    by_cases hp : p ∈ P.parts
+    · simpa only [hAdef, if_pos hp] using hA₀ p hp
+    · simp only [hAdef, if_neg hp]; exact MeasurableSet.empty
+  have hB : ∀ p, MeasurableSet (B p) := by
+    intro p
+    by_cases hp : p ∈ P.parts
+    · simpa only [hBdef, if_pos hp] using hB₀ p hp
+    · simp only [hBdef, if_neg hp]; exact MeasurableSet.empty
+  have hAB : ∀ p ∈ P.parts, p = A p ×ˢ B p := by
+    intro p hp; simp only [hAdef, hBdef, if_pos hp]; exact hAB₀ p hp
+  -- the `L²` factor families (toLp of the indicator factors), total in `p`.
+  set gfun : Set (Ω × Ω) → Lp ℂ 2 μ := fun p =>
+    (((memLp_indicator_const 2 (hA p) (1 : ℂ) (Or.inr (measure_ne_top μ _))).const_smul c)).toLp
+      (c • (A p).indicator (fun _ => (1 : ℂ))) with hgfun
+  set hfun : Set (Ω × Ω) → Lp ℂ 2 μ := fun p =>
+    ((memLp_indicator_const 2 (hB p) (1 : ℂ) (Or.inr (measure_ne_top μ _)))).toLp
+      ((B p).indicator (fun _ => (1 : ℂ))) with hhfun
+  -- the separable approximant `F = Σ_{p ∈ parts} g_p ⊗ conj h_p`.
+  refine ⟨Function.uncurry (finsetTensorKernel
+      (fun p => (gfun p : Ω → ℂ)) (fun p => (hfun p : Ω → ℂ)) P.parts), ?_, ?_⟩
+  · -- the `eLpNorm` estimate
+    -- per-part product a.e.-equality, lifted to the product measure
+    have hpt : ∀ p ∈ P.parts,
+        Function.uncurry (tensorKernel (gfun p : Ω → ℂ) (hfun p : Ω → ℂ))
+        =ᵐ[μ.prod μ] Set.indicator p (fun _ => c) := by
+      intro p hp
+      refine (tensorKernel_ae_congr (a' := c • (A p).indicator (fun _ => (1 : ℂ)))
+        (b' := (B p).indicator (fun _ => (1 : ℂ)))
+        (MemLp.coeFn_toLp _) (MemLp.coeFn_toLp _)).trans ?_
+      -- `uncurry (tensorKernel (c•1_A) 1_B) = (A×ˢB).indicator c = p.indicator c`
+      refine Filter.EventuallyEq.of_eq ?_
+      rw [← indicator_rectangle_eq_tensorKernel c (A p) (B p), ← hAB p hp]
+    -- `F = Σ_p uncurry (tensorKernel (g_p)(h_p))`, then a.e.-equate to `Σ_p p.indicator c`.
+    have hFt : Function.uncurry (finsetTensorKernel
+        (fun p => (gfun p : Ω → ℂ)) (fun p => (hfun p : Ω → ℂ)) P.parts)
+        =ᵐ[μ.prod μ] t.indicator (fun _ => c) := by
+      rw [indicator_finpartition_eq_sum P (fun _ => c)]
+      have hunc : Function.uncurry (finsetTensorKernel
+          (fun p => (gfun p : Ω → ℂ)) (fun p => (hfun p : Ω → ℂ)) P.parts)
+          = ∑ p ∈ P.parts, Function.uncurry
+              (tensorKernel (gfun p : Ω → ℂ) (hfun p : Ω → ℂ)) := by
+        funext z; obtain ⟨x, y⟩ := z
+        simp only [Function.uncurry, finsetTensorKernel_apply, Finset.sum_apply, tensorKernel]
+      rw [hunc]
+      exact eventuallyEq_sum fun p hp => hpt p hp
+    -- the resulting `eLpNorm` collapses to the symmetric-difference indicator bound.
+    rw [eLpNorm_congr_ae (hFt.sub (Filter.EventuallyEq.refl _ (s.indicator (fun _ => c)))),
+      eLpNorm_indicator_sub_indicator,
+      eLpNorm_indicator_const (htmeas.symmDiff hs) (by norm_num) (by norm_num)]
+    have hexp : (1 / (2 : ℝ≥0∞).toReal) = (1 / (2 : ℝ)) := by norm_num
+    rw [hexp]
+    have hmul : ‖c‖ₑ * δ ^ (1 / (2 : ℝ)) = ε := by
+      rw [hδ, ← ENNReal.rpow_natCast (ε / ‖c‖ₑ) 2, ← ENNReal.rpow_mul,
+        show ((2 : ℕ) : ℝ) * (1 / (2 : ℝ)) = 1 by norm_num, ENNReal.rpow_one,
+        ENNReal.mul_div_cancel hcne hcnetop]
+    have hbound : ‖c‖ₑ * ((μ.prod μ) (t ∆ s)) ^ (1 / (2 : ℝ)) ≤ ‖c‖ₑ * δ ^ (1 / (2 : ℝ)) :=
+      mul_le_mul_left' (ENNReal.rpow_le_rpow htlt.le (by norm_num)) _
+    exact hbound.trans hmul.le
+  · -- separability: reindex the parts-finset to `Fin (#parts)` over `univ`.
+    rw [finsetTensorKernel_reindex_fin gfun hfun P.parts]
+    exact ⟨_, _, _, rfl⟩
+
+end SeparableDensity
+
 section Bundled
 
 -- The data needed to assemble the bounded kernel integral operator, with all
@@ -1087,8 +1418,7 @@ theorem kernelIntegralCLM_isCompactOperator_of_finiteRank_approx
   exact isCompactOperator_of_finiteDimensional_range (T n) (hFR n)
 
 /-- **Separable (finite-tensor) kernels are `L²(μ⊗μ)`-dense in the Hilbert–Schmidt
-class** — the irreducible analytic core, isolated and honestly `sorry`d on its TRUE
-statement.
+class** — the classical density core of HS ⟹ compact, now **proved (no `sorry`)**.
 
 When `K ∈ L²(μ⊗μ)`, there is a sequence of **finite separable kernels**
 `K_n(x,y) = Σ_{i<r n} g_{n,i} x · conj (h_{n,i} y)` (each `g_{n,i}, h_{n,i} ∈ L²(μ)`)
@@ -1096,14 +1426,21 @@ converging to `K` in `L²(μ⊗μ)`:
 `eLpNorm (K_n - K) 2 (μ⊗μ) → 0`.
 
 This is the classical statement that *finite sums of simple tensors are dense in the
-Hilbert space `L²(μ⊗μ) ≅ L²(μ) ⊗̂ L²(μ)`* (equivalently: the algebraic tensor product
-`L²(μ) ⊗ L²(μ)` is dense in its Hilbert completion).  The standard proof truncates the
-kernel against an `L²(μ)`-orthonormal basis `{e_i}` to `K_n := Σ_{i,j≤n} ⟪e_i⊗e_j,K⟫
-e_i⊗e_j` and applies Parseval for the product basis `{e_i⊗e_j}` of `L²(μ⊗μ)`.  The
-*statement* is true and non-vacuous (`K_n` is honestly separable and `L²`-convergent);
-only the basis/Parseval bookkeeping — a substantial standalone Mathlib development — is
-deferred.  Reference: Conway, *A Course in Functional Analysis* II.4; Reed–Simon I,
-VI.22–23.
+Hilbert space `L²(μ⊗μ) ≅ L²(μ) ⊗̂ L²(μ)`*.  Rather than the orthonormal-basis/Parseval
+route, the proof here is the measure-theoretic one:
+
+* `MemLp.induction_dense` reduces density of the separable functions `IsSeparableKernelFun`
+  to approximating an arbitrary indicator `c·1_s` (`s` measurable, finite measure) in `L²`;
+* `exists_separable_eLpNorm_indicator_le` does exactly that, using that **measurable
+  rectangles form a set semiring** (`isSetSemiring_measurableRectangle`) and
+  `MeasureTheory.exists_measure_symmDiff_lt_of_generateFrom_isSetSemiring`: `s` is
+  `μ⊗μ`-approximated by a finite **disjoint** union of rectangles `⨆ Rᵢ`, whose indicator
+  `Σ 1_{Aᵢ}(x)·conj 1_{Bᵢ}(y)` is rank-one separable; and
+* the `1/(n+1)`-approximants give the convergent sequence by `squeeze`.
+
+The statement is true and non-vacuous (`K_n` is honestly separable and genuinely
+`L²`-convergent to `K`).  Reference: Conway, *A Course in Functional Analysis* II.4;
+Reed–Simon I, VI.22–23.
 
 Everything from here — that `T_K` is an operator-norm limit of finite-rank operators,
 hence compact — is proved **genuinely** below
@@ -1116,7 +1453,45 @@ theorem exists_separable_tendsto_kernel [IsFiniteMeasure μ]
       Filter.Tendsto (fun n => eLpNorm (fun p : Ω × Ω =>
         finsetTensorKernel (fun i => (g n i : Ω → ℂ)) (fun i => (h n i : Ω → ℂ))
           Finset.univ p.1 p.2 - Function.uncurry K p) 2 (μ.prod μ)) Filter.atTop (nhds 0) := by
-  sorry
+  classical
+  -- For each `n`, separable density (`MemLp.induction_dense` with `P = IsSeparableKernelFun`)
+  -- gives a finite separable kernel within `1/(n+1)` of `K` in `L²(μ⊗μ)`.
+  have hstep : ∀ n : ℕ, ∃ (rn : ℕ) (gn hn : Fin rn → Lp ℂ 2 μ),
+      eLpNorm (fun p : Ω × Ω =>
+        finsetTensorKernel (fun i => (gn i : Ω → ℂ)) (fun i => (hn i : Ω → ℂ))
+          Finset.univ p.1 p.2 - Function.uncurry K p) 2 (μ.prod μ) ≤ 1 / (n + 1) := by
+    intro n
+    have hεn : (1 : ℝ≥0∞) / (n + 1) ≠ 0 := by
+      simp [ENNReal.div_eq_zero_iff]
+    obtain ⟨G, hGle, rn, gn, hn, hGeq⟩ :=
+      MemLp.induction_dense (μ := μ.prod μ) (p := 2) (by norm_num)
+        (IsSeparableKernelFun (μ := μ))
+        (fun c s hsm hsμ {ε} hε => exists_separable_eLpNorm_indicator_le c hsm hsμ hε)
+        (fun f g hf hg => hf.add hg)
+        (fun f hf => hf.aestronglyMeasurable)
+        hHS hεn
+    refine ⟨rn, gn, hn, ?_⟩
+    -- `G =ᵐ uncurry (finsetTensorKernel ...)`, and `eLpNorm (uncurry K - G) ≤ 1/(n+1)`.
+    have hcomm : eLpNorm (fun p : Ω × Ω =>
+        finsetTensorKernel (fun i => (gn i : Ω → ℂ)) (fun i => (hn i : Ω → ℂ))
+          Finset.univ p.1 p.2 - Function.uncurry K p) 2 (μ.prod μ)
+        = eLpNorm (Function.uncurry K - G) 2 (μ.prod μ) := by
+      rw [← eLpNorm_neg]
+      refine eLpNorm_congr_ae (Filter.EventuallyEq.of_eq ?_)
+      funext p
+      simp only [Pi.neg_apply, Pi.sub_apply, hGeq, Function.uncurry, neg_sub]
+    rw [hcomm]
+    exact hGle
+  -- extract the families and assemble the convergence from the `1/(n+1)` bound.
+  choose r g h hbound using hstep
+  refine ⟨r, g, h, ?_⟩
+  -- squeeze against `1/(n+1) → 0`.
+  have hzero : Filter.Tendsto (fun n : ℕ => (1 : ℝ≥0∞) / (n + 1)) Filter.atTop (nhds 0) := by
+    have hcomp := ENNReal.tendsto_inv_nat_nhds_zero.comp (Filter.tendsto_add_atTop_nat 1)
+    refine hcomp.congr (fun n => ?_)
+    simp [one_div, Function.comp, Nat.cast_add]
+  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hzero
+    (fun n => zero_le') hbound
 
 /-- **Finite-rank operator-norm approximation from separable `L²`-density — fully
 genuine (no `sorry`).**  Given a sequence of finite separable families whose kernels
@@ -1168,12 +1543,11 @@ theorem exists_finiteRank_tendsto_of_separable_density [IsFiniteMeasure μ] {D :
 single isolated `L²`-density core.**  For a *bounded* kernel `K ∈ L²(μ⊗μ)`, the operator
 `T_K` is the operator-norm limit of finite-rank operators.
 
-This is now a **theorem, not a `sorry`**: it combines the isolated separable-density
-core `exists_separable_tendsto_kernel` with the fully-genuine reduction
+This is a **theorem, fully proved (no `sorry`)**: it combines the now-proved separable-
+density core `exists_separable_tendsto_kernel` with the fully-genuine reduction
 `exists_finiteRank_tendsto_of_separable_density` (which builds the explicit finite-rank
 approximants `Σ rankOne` and proves operator-norm convergence via the proven
-Hilbert–Schmidt distance bound). Only `exists_separable_tendsto_kernel` carries a
-`sorry`, on a TRUE and non-vacuous statement. -/
+Hilbert–Schmidt distance bound). -/
 theorem exists_finiteRank_tendsto_kernelIntegralCLM [IsFiniteMeasure μ] {D : ℝ}
     (hKmeas : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
     (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ D)
@@ -1199,9 +1573,9 @@ The genuinely quantitative engine that makes the truncation converge — the
 Hilbert–Schmidt dominance `‖T_K f‖₂ ≤ ‖K‖_{L²(μ⊗μ)} · ‖f‖₂` — is proved in full
 (`kernelIntegralFun_eLpNorm_le_hs`), as is the identification of each separable-kernel
 operator with a finite sum of rank-one operators (`finsetSumRankOne_coeFn_eq`,
-`finiteDimensional_range_finsetSumRankOne`). The only deferred ingredient is the
-classical `L²(μ⊗μ)`-density of separable kernels, isolated in
-`exists_separable_tendsto_kernel`. -/
+`finiteDimensional_range_finsetSumRankOne`). The classical `L²(μ⊗μ)`-density of separable
+kernels (`exists_separable_tendsto_kernel`) is also proved here (measurable-rectangle
+semiring + `MemLp.induction_dense`), so this theorem is **fully axiom-clean, no `sorry`.** -/
 theorem kernelIntegralCLM_isCompactOperator [IsFiniteMeasure μ] {D : ℝ}
     (hKmeas : AEStronglyMeasurable (Function.uncurry K) (μ.prod μ))
     (hbdd : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K p‖ ≤ D)

@@ -44,11 +44,31 @@ Proof status (honest):
   to `-1` at `τ = π/√2`).
 * `cos_path_angle_irrational` (the Niven number-theoretic core of the negative
   side) is **fully proved**.
-* `P₄` no-PST (`path_P4_no_PST`), the long-path no-PST
-  (`path_long_no_PST_residual`, `n ≥ 4`), and the Christandl–Landahl–Werner
-  weighted-path PST (`weightedPath_PST`) are **stated as honest `sorry`s on
-  true, non-vacuous statements** (each awaiting an importable spectral bridge:
-  the Godsil PST⇒ratio direction, resp. the spin-`n/2` `Jₓ` identification).
+* **The negative side is now PROVEN** (axiom-clean): `P₄` no-PST
+  (`path_P4_no_PST`) and the long-path no-PST (`path_long_no_PST_residual`,
+  `n ≥ 4`) are closed via the now-complete Godsil bridge — see the section
+  "The Godsil-bridge no-PST classification" below.  The two exact spectral
+  inputs the capstone agent identified are both built here in full:
+  (i) the explicit eigenvalue set (`pathEigenvalue_mem_range`: every
+  `2cos((k+1)π/(n+2))` is a genuine eigenvalue, via `charpoly = U_{n+1}(X/2)`),
+  and (ii) endpoint full support (`path_endpoint_fullSupport`), obtained
+  **spectrum-free** through a general **controllability / Krylov bridge**
+  (`fullSupport_of_krylov_det_ne_zero` + `path_krylov_det = 1`).  Feeding these
+  into `Graphplay.PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport` and
+  contradicting the Niven no-arithmetic-progression obstruction
+  (`Graphplay.PST.Cospectrality.pathEigenvalue_not_arithmeticProgression`)
+  closes the direction with **no `sorry`**.
+
+  (NOTE on the corrected classification: the genuine
+  Christandl–Datta–Ekert–Landahl / Coutinho result is that the *unweighted* path
+  has endpoint PST iff it has `2` or `3` vertices — i.e. `Path n` for `n ∈ {1,2}`.
+  `P₆` (`Path 5`) does **not** have endpoint PST; its `2cos(kπ/7)` spectrum is the
+  degree-3 irrational minimal field of `2cos(π/7)`, giving only *pretty good*
+  transfer with max endpoint amplitude `≈ 0.9997 < 1`.)
+* Only the Christandl–Landahl–Werner *engineered weighted-path* PST
+  (`weightedPath_PST`) remains an honest `sorry` on a true, non-vacuous
+  statement, awaiting the spin-`n/2` `Jₓ` identification (genuinely deeper, out
+  of scope of the unweighted classification).
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -57,9 +77,12 @@ import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
+import Mathlib.Analysis.Matrix.Spectrum
 import Mathlib.NumberTheory.Niven
 import Graphplay.Weighted
 import Graphplay.PST
+import Graphplay.PST.Cospectrality
+import Graphplay.PST.Periodicity
 
 open scoped Matrix Real
 open Real
@@ -444,24 +467,6 @@ theorem path_P2_isPST_exists :
     ∃ τ : ℝ, IsPST (Path 1) (0 : Fin 2) (Fin.last 1) τ :=
   ⟨pathPSTTime 1, path_P2_PST_residual⟩
 
-/-- **`P₄` has NO endpoint PST** (corrected statement; an earlier draft of this
-file falsely asserted `P₄` PST at `τ = π/√5`).
-
-The `4×4` path Hamiltonian has spectrum `{±φ, ±1/φ}` with `φ = (1+√5)/2`; the
-ratio `φ/(1/φ) = φ² = φ + 1` is irrational, so the eigenvalues are *not*
-rationally commensurable.  By the Godsil ratio condition this rules out PST at
-every time `τ` (numerically the endpoint amplitude maxes out near `0.986 < 1`).
-
-This is a **true, non-vacuous** statement (for every `τ` the endpoint amplitude
-is strictly below modulus `1`), left as an honest `sorry` pending the importable
-Godsil PST⇒ratio bridge — exactly the same lone spectral input that
-`path_long_no_PST_residual` (`n ≥ 4`) awaits.
-
-Reference: arXiv:quant-ph/0309131; Godsil–Kirkland–Severini–Smith
-(arXiv:1201.4822). -/
-theorem path_P4_no_PST :
-    ∀ τ : ℝ, ¬ IsPST (Path 3) (0 : Fin 4) (Fin.last 3) τ := by
-  sorry
 
 /-- **Christandl–Datta–Ekert–Landahl (2004), positive side.**  The unweighted
 path on `n + 1` vertices admits endpoint-to-endpoint PST at time `pathPSTTime n`
@@ -517,24 +522,428 @@ theorem cos_path_angle_irrational (n : ℕ) (hn : 4 ≤ n) :
   rw [← hangle]
   exact irrational_cos_rat_mul_pi hden
 
-/-- **Isolated residual: the Godsil PST⇒ratio obstruction for the long path.**
-For `n ≥ 4` the path eigenvalues `2 cos((k+1)π/(n+1))` are *not* rationally
-commensurable (the number-theoretic core, **proved** in
-`cos_path_angle_irrational` /
-`Graphplay.PST.Cospectrality.pathEigenvalue_not_arithmeticProgression` via
-Niven), so the Godsil ratio condition fails; the Godsil PST⇒ratio bridge
-(Godsil 2012, Thm 2.2 — the file-wide residual
-`IsStronglyCospectral.isPST_iff_godsilRatio`, whose forward half is the
-Kronecker/Dirichlet simultaneous-approximation argument) then rules out PST.
 
-This is the *sole* remaining input of `path_no_PST_endpoint_endpoint`; it is a
-**true** statement (no degenerate witness — for every `τ` the endpoint amplitude
-is strictly below modulus `1`), left as an honest `sorry` here pending the
-importable Godsil bridge. -/
+/-! ## The Godsil-bridge no-PST classification (the now-complete spectral spine)
+
+We close the negative side of the unweighted-path endpoint-PST classification
+(`P_{n+1}` on `≥ 4` vertices has **no** endpoint PST) by assembling the two
+exact spectral inputs the capstone agent identified, both now built in full and
+axiom-clean:
+
+* **(i) the explicit eigenvalue set** — every Chebyshev value
+  `pathEigenvalue (n+1) k = 2cos((k+1)π/(n+2))` is a genuine eigenvalue of
+  `Path n` (`pathEigenvalue_mem_range`), via the tridiagonal-determinant
+  identity `charpoly(A) = U_{n+1}(X/2)` (`PathChebyshev`) and Mathlib's
+  `roots_charpoly_eq_eigenvalues`; and
+
+* **(ii) endpoint full support** — every eigenvalue lies in the eigenvalue
+  support of the endpoint `0` (`path_endpoint_fullSupport`).  This is the piece
+  the prior wave flagged as "needs the explicit eigenvector
+  `ψ_k(1) = sin(kπ/(n+1)) ≠ 0`"; we obtain it **spectrum-free** through a general
+  **controllability / Krylov bridge**: the endpoint is a *cyclic vector* for the
+  path adjacency matrix (its Krylov matrix is upper-triangular with unit diagonal,
+  `path_krylov_det = 1`), and cyclicity forces every eigenvector coordinate at the
+  endpoint to be nonzero (`eigU_ne_zero_of_krylov_det_ne_zero`), i.e. full support.
+
+Feeding these into the downstream Godsil forward bridge
+`Graphplay.PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport` (PST + real
+symmetry + full support ⇒ the support eigenvalues form an arithmetic progression)
+and contradicting the Niven obstruction
+`Graphplay.PST.Cospectrality.pathEigenvalue_not_arithmeticProgression` (the path
+eigenvalues admit no arithmetic progression for `n+1 ≥ 5`) closes the no-PST
+direction with **no `sorry`**. -/
+
+attribute [local instance] Classical.propDecidable
+
+/-- `Path n` adjacency = pathGraph adjacency matrix. -/
+theorem Path_adj_eq_pathGraph (n : ℕ) :
+    (Path n).adj = (SimpleGraph.pathGraph (n+1)).adjMatrix ℂ := by
+  ext k l
+  rw [SimpleGraph.adjMatrix_apply, Path]
+  simp only
+  by_cases h : k.val + 1 = l.val ∨ l.val + 1 = k.val
+  · rw [if_pos h, if_pos (by rw [SimpleGraph.pathGraph_adj]; exact h)]
+  · rw [if_neg h, if_neg (by rw [SimpleGraph.pathGraph_adj]; exact h)]
+
+/-- `Path n` adjacency is symmetric (`Aᵀ = A`): the defining disjunction
+`k+1=l ∨ l+1=k` is symmetric in `k, l`. -/
+theorem Path_adj_isSymm (n : ℕ) : (Path n).adj.IsSymm := by
+  refine Matrix.IsSymm.ext (fun k l => ?_)
+  show (if (l.val + 1 = k.val ∨ k.val + 1 = l.val) then (1:ℂ) else 0)
+      = (if (k.val + 1 = l.val ∨ l.val + 1 = k.val) then (1:ℂ) else 0)
+  by_cases h : k.val + 1 = l.val ∨ l.val + 1 = k.val
+  · rw [if_pos h, if_pos (Or.symm h)]
+  · rw [if_neg h, if_neg (fun hc => h (Or.symm hc))]
+
+/-- The characteristic polynomial of `Path n` is the scaled Chebyshev poly. -/
+theorem Path_charpoly_eq_cheby (n : ℕ) :
+    (Path n).adj.charpoly = PathChebyshev.chebyScaled (n+1) := by
+  rw [Path_adj_eq_pathGraph]
+  exact PathChebyshev.charpoly_pathGraph_eq_cheby (n+1)
+
+/-- The roots of `Path n`'s charpoly equal the `ofReal`-cast eigenvalue multiset. -/
+theorem Path_roots_eq_eigenvalues (n : ℕ) :
+    (Path n).adj.charpoly.roots
+      = Multiset.map (RCLike.ofReal ∘ (Path n).herm.eigenvalues) Finset.univ.val :=
+  (Path n).herm.roots_charpoly_eq_eigenvalues
+
+/-- Each explicit cosine value `pathEigenvalue (n+1) k` (k : Fin (n+1)) is a
+genuine eigenvalue of `Path n`: it lies in the range of `eigenvalues`. -/
+theorem pathEigenvalue_mem_range (n : ℕ) (k : Fin (n+1)) :
+    pathEigenvalue (n+1) k ∈ Set.range (Path n).herm.eigenvalues := by
+  -- The real value pathEigenvalue (n+1) k = 2cos((k+1)π/(n+2)) is a root of cheby,
+  -- hence (ofReal of) it is in the charpoly roots, hence = ofReal (eigenvalues i).
+  set θ : ℝ := pathEigenvalue (n+1) k with hθ
+  have hroot : (PathChebyshev.chebyScaled (n+1)).eval ((θ : ℝ) : ℂ) = 0 := by
+    rw [hθ, pathEigenvalue]
+    exact PathChebyshev.chebyScaled_eval_root (n+1) k.val (by exact k.isLt)
+  -- So (θ : ℂ) is a root of charpoly.
+  have hmem : ((θ : ℝ) : ℂ) ∈ (Path n).adj.charpoly.roots := by
+    rw [Path_charpoly_eq_cheby, Polynomial.mem_roots (PathChebyshev.chebyScaled_ne_zero (n+1))]
+    rw [Polynomial.IsRoot.def]; exact hroot
+  -- charpoly roots = map (ofReal ∘ eigenvalues) univ
+  rw [Path_roots_eq_eigenvalues] at hmem
+  rw [Multiset.mem_map] at hmem
+  obtain ⟨i, _, hi⟩ := hmem
+  simp only [Function.comp_apply] at hi
+  -- ofReal θ = ofReal (eigenvalues i) ⟹ θ = eigenvalues i
+  have hθeq : θ = (Path n).herm.eigenvalues i := by
+    have h2 : (((Path n).herm.eigenvalues i : ℝ) : ℂ) = ((θ : ℝ) : ℂ) := hi
+    exact (by exact_mod_cast h2 : (Path n).herm.eigenvalues i = θ).symm
+  exact ⟨i, hθeq.symm⟩
+
+/-! ## Controllability bridge to full eigenvalue support
+
+For a Hermitian graph on `Fin N`, if the standard basis vector `e_u` is a
+**cyclic vector** for the adjacency matrix `A` — i.e. the Krylov matrix
+`K` with columns `A^0 e_u, A^1 e_u, …, A^{N-1} e_u` is nonsingular — then
+`u` has **full eigenvalue support**: every eigenvector has a nonzero
+`u`-coordinate (`eigU G u i ≠ 0` for all `i`).
+
+The argument is pure finite linear algebra: `A = U D Uᴴ`, so the eigen-coordinate
+of `A^k e_u` is `(Uᴴ A^k e_u)_i = λ_i^k · conj(U_{u,i})`.  If `U_{u,i₀} = 0`,
+row `i₀` of `Uᴴ K` vanishes, so `det(Uᴴ K) = 0`; since `U` is unitary
+(`det Uᴴ ≠ 0`), `det K = 0` — contradicting cyclicity. -/
+
+open Graphplay.PST
+
+/-- The **Krylov matrix** of `G` at vertex `u` on `Fin N`: the `(row, k)` entry
+is `((G.adj)^k) row u`, i.e. column `k` is `(G.adj)^k *ᵥ e_u`. -/
+noncomputable def krylovMatrix {N : ℕ} (G : WeightedGraph (Fin N)) (u : Fin N) :
+    Matrix (Fin N) (Fin N) ℂ :=
+  fun row k => (G.adj ^ (k.val)) row u
+
+/-- Spectral theorem in elementary product form: `A = U D Uᴴ`. -/
+theorem adj_eq_conj_diag {N : ℕ} (G : WeightedGraph (Fin N)) :
+    G.adj = (eigU G) * (Matrix.diagonal (fun i => (G.herm.eigenvalues i : ℂ)))
+        * (eigU G)ᴴ := by
+  have h := G.herm.spectral_theorem
+  rw [Unitary.conjStarAlgAut_apply] at h
+  rw [eigU, ← Matrix.star_eq_conjTranspose]
+  convert h using 2
+
+/-- `Uᴴ A = D Uᴴ`. -/
+theorem conjT_eigU_mul_adj {N : ℕ} (G : WeightedGraph (Fin N)) :
+    (eigU G)ᴴ * G.adj
+      = (Matrix.diagonal (fun i => (G.herm.eigenvalues i : ℂ))) * (eigU G)ᴴ := by
+  conv_lhs => rw [adj_eq_conj_diag G]
+  rw [← Matrix.mul_assoc, ← Matrix.mul_assoc, conjTranspose_mul_eigU, Matrix.one_mul]
+
+/-- `Uᴴ A^k = D^k Uᴴ`. -/
+theorem conjT_eigU_mul_adj_pow {N : ℕ} (G : WeightedGraph (Fin N)) (k : ℕ) :
+    (eigU G)ᴴ * G.adj ^ k
+      = (Matrix.diagonal (fun i => (G.herm.eigenvalues i : ℂ))) ^ k * (eigU G)ᴴ := by
+  induction k with
+  | zero => simp
+  | succ m ih =>
+    rw [pow_succ, ← Matrix.mul_assoc, ih, Matrix.mul_assoc, conjT_eigU_mul_adj,
+      ← Matrix.mul_assoc, ← pow_succ]
+
+theorem conjT_eigU_mul_krylov {N : ℕ} (G : WeightedGraph (Fin N)) (u : Fin N)
+    (i k : Fin N) :
+    ((eigU G)ᴴ * krylovMatrix G u) i k
+      = ((G.herm.eigenvalues i : ℂ)) ^ (k.val) * star (eigU G u i) := by
+  -- The (i,k) entry of Uᴴ K is ∑_row (Uᴴ)_{i,row} (A^{k} )_{row,u} = (Uᴴ A^{k})_{i,u}.
+  have hentry : ((eigU G)ᴴ * krylovMatrix G u) i k
+      = ((eigU G)ᴴ * G.adj ^ (k.val)) i u := by
+    rw [Matrix.mul_apply, Matrix.mul_apply]
+    refine Finset.sum_congr rfl (fun row _ => ?_)
+    rfl
+  rw [hentry, conjT_eigU_mul_adj_pow]
+  -- (D^k Uᴴ)_{i,u} = (D^k)_{i,i} (Uᴴ)_{i,u} = λ_i^k conj(U_{u,i}).
+  rw [Matrix.mul_apply, Finset.sum_eq_single i]
+  · rw [Matrix.diagonal_pow, Matrix.diagonal_apply_eq, Matrix.conjTranspose_apply, Pi.pow_apply]
+  · intro j _ hj
+    rw [Matrix.diagonal_pow, Matrix.diagonal_apply_ne _ (Ne.symm hj), zero_mul]
+  · intro h; exact absurd (Finset.mem_univ i) h
+
+
+/-- **Controllability ⇒ no zero eigenvector-coordinate.**  If the Krylov matrix
+`K` at `u` is nonsingular (`det K ≠ 0`), then `eigU G u i ≠ 0` for every
+eigenindex `i`.  (Contrapositive: a zero coordinate makes row `i` of `Uᴴ K`
+vanish, forcing `det K = 0`.) -/
+theorem eigU_ne_zero_of_krylov_det_ne_zero {N : ℕ} (G : WeightedGraph (Fin N))
+    (u : Fin N) (hdet : (krylovMatrix G u).det ≠ 0) (i : Fin N) :
+    eigU G u i ≠ 0 := by
+  intro h0
+  -- row i of Uᴴ K is zero (every entry is λ_i^k · conj(U_{u,i}) = λ_i^k · 0 = 0).
+  have hrow : ∀ k, ((eigU G)ᴴ * krylovMatrix G u) i k = 0 := by
+    intro k
+    rw [conjT_eigU_mul_krylov]
+    rw [h0]; simp
+  -- so det (Uᴴ K) = 0.
+  have hdetz : ((eigU G)ᴴ * krylovMatrix G u).det = 0 :=
+    Matrix.det_eq_zero_of_row_eq_zero i hrow
+  -- det (Uᴴ K) = det Uᴴ · det K, and det Uᴴ ≠ 0 (U unitary).
+  rw [Matrix.det_mul] at hdetz
+  have hUdet : ((eigU G)ᴴ).det ≠ 0 := by
+    have hu : IsUnit ((eigU G)ᴴ) := by
+      rw [Matrix.isUnit_conjTranspose]; exact eigU_isUnit G
+    exact (Matrix.isUnit_iff_isUnit_det _).mp hu |>.ne_zero
+  rcases mul_eq_zero.mp hdetz with h | h
+  · exact hUdet h
+  · exact hdet h
+
+/-- **Full eigenvalue support from controllability.**  If the Krylov matrix at `u`
+is nonsingular, then every eigenvalue lies in the eigenvalue support of `u`:
+`eigenProjDiagLocal G λ u ≠ 0` for all `λ` in the spectrum. -/
+theorem fullSupport_of_krylov_det_ne_zero {N : ℕ} (G : WeightedGraph (Fin N))
+    (u : Fin N) (hdet : (krylovMatrix G u).det ≠ 0)
+    (lam : ℝ) (hlam : lam ∈ Finset.univ.image G.herm.eigenvalues) :
+    lam ∈ EigenvalueSupport G u := by
+  rw [Finset.mem_image] at hlam
+  obtain ⟨i, _, hi⟩ := hlam
+  exact ⟨i, hi, eigU_ne_zero_of_krylov_det_ne_zero G u hdet i⟩
+
+
+/-! ## Path endpoint is a cyclic vector (Krylov nonsingularity) -/
+
+/-- The standard basis column vector `e_0` in `Fin (n+1) → ℂ`. -/
+private noncomputable def e0 (n : ℕ) : Fin (n+1) → ℂ := fun j => if j = (0 : Fin (n+1)) then 1 else 0
+
+/-- The Krylov vector `v_k = (Path n).adj ^ k *ᵥ e_0`; its `i`-th coordinate is the
+`(i, 0)`-entry of the `k`-th adjacency power. -/
+private noncomputable def kvec (n k : ℕ) : Fin (n+1) → ℂ :=
+  fun i => ((Path n).adj ^ k) i (0 : Fin (n+1))
+
+/-- One step of the path quantum walk on `e_0`: `(A *ᵥ v)_i = v_{i-1} + v_{i+1}`
+(boundary terms dropped).  Concretely, `(A *ᵥ v) i = ∑_j A_{i,j} v_j` and on the
+path `A_{i,j} = 1` iff `|i-j| = 1`. -/
+private theorem path_adj_mulVec_apply (n : ℕ) (v : Fin (n+1) → ℂ) (i : Fin (n+1)) :
+    ((Path n).adj *ᵥ v) i
+      = (∑ j : Fin (n+1), (if (i.val + 1 = j.val ∨ j.val + 1 = i.val) then v j else 0)) := by
+  rw [Matrix.mulVec, dotProduct]
+  refine Finset.sum_congr rfl (fun j _ => ?_)
+  have hadj : (Path n).adj i j = if (i.val + 1 = j.val ∨ j.val + 1 = i.val) then (1:ℂ) else 0 := rfl
+  rw [hadj]
+  by_cases h : i.val + 1 = j.val ∨ j.val + 1 = i.val
+  · rw [if_pos h, if_pos h, one_mul]
+  · rw [if_neg h, if_neg h, zero_mul]
+
+/-- `kvec n (k+1) = (Path n).adj *ᵥ kvec n k`. -/
+private theorem kvec_succ (n k : ℕ) :
+    kvec n (k+1) = (Path n).adj *ᵥ kvec n k := by
+  funext i
+  show ((Path n).adj ^ (k+1)) i (0 : Fin (n+1)) = _
+  rw [pow_succ']
+  rw [Matrix.mul_apply, Matrix.mulVec, dotProduct]
+  rfl
+
+/-- **Claim A (upper-triangular structure).**  `kvec n k i = 0` whenever `i.val > k`:
+in `k` steps the path walk from the endpoint `0` cannot reach a vertex at distance
+`> k`. -/
+private theorem kvec_eq_zero_of_gt (n : ℕ) : ∀ (k : ℕ) (i : Fin (n+1)), k < i.val → kvec n k i = 0 := by
+  intro k
+  induction k with
+  | zero =>
+    intro i hi
+    show ((Path n).adj ^ 0) i (0 : Fin (n+1)) = 0
+    rw [pow_zero, Matrix.one_apply]
+    rw [if_neg (by intro h; rw [h] at hi; exact absurd hi (by simp))]
+  | succ m ih =>
+    intro i hi
+    rw [kvec_succ, path_adj_mulVec_apply]
+    apply Finset.sum_eq_zero
+    intro j _
+    by_cases h : i.val + 1 = j.val ∨ j.val + 1 = i.val
+    · rw [if_pos h]
+      apply ih
+      -- j is a neighbor of i, and i.val > m+1, so j.val > m.
+      omega
+    · rw [if_neg h]
+
+
+/-- **Claim B (unit leading coordinate).**  `kvec n k ⟨k, _⟩ = 1` for `k ≤ n`:
+the unique shortest walk from endpoint `0` reaching distance `k` in `k` steps
+contributes a `1`.  Together with Claim A this makes the Krylov matrix
+lower-triangular with unit diagonal. -/
+private theorem kvec_diag (n : ℕ) :
+    ∀ (k : ℕ) (hk : k ≤ n), kvec n k ⟨k, by omega⟩ = 1 := by
+  intro k
+  induction k with
+  | zero =>
+    intro _
+    show ((Path n).adj ^ 0) ⟨0, by omega⟩ (0 : Fin (n+1)) = 1
+    rw [pow_zero, Matrix.one_apply, if_pos (by rfl)]
+  | succ m ih =>
+    intro hk
+    rw [kvec_succ, path_adj_mulVec_apply]
+    -- the only nonzero summand is j = ⟨m, _⟩ (the predecessor); it equals 1.
+    rw [Finset.sum_eq_single (⟨m, by omega⟩ : Fin (n+1))]
+    · -- value at j = ⟨m,_⟩: neighbor of i = ⟨m+1,_⟩, and kvec n m ⟨m⟩ = 1.
+      rw [if_pos (Or.inr rfl)]
+      exact ih (by omega)
+    · -- every other j gives a zero summand.
+      intro j _ hj
+      by_cases h : (m+1) + 1 = j.val ∨ j.val + 1 = (m+1)
+      · rw [if_pos h]
+        -- a neighbor j ≠ ⟨m⟩ of ⟨m+1⟩ must have j.val = m+2 > m, so kvec = 0.
+        apply kvec_eq_zero_of_gt
+        -- j.val = m+2 (since j.val = m would be ⟨m⟩, excluded; j.val+1=m+1 ⇒ j.val=m)
+        have hjm : j.val ≠ m := by
+          intro hc; apply hj; apply Fin.ext; exact hc
+        omega
+      · rw [if_neg h]
+    · intro hc; exact absurd (Finset.mem_univ _) hc
+
+
+/-- The Krylov matrix of `Path n` at the endpoint `0` is **upper-triangular with
+unit diagonal**: `K_{i,j} = (A^j)_{i,0} = 0` for `i > j` (Claim A) and `K_{i,i} = 1`
+(Claim B). -/
+private theorem path_krylov_blockTriangular (n : ℕ) :
+    (krylovMatrix (Path n) (0 : Fin (n+1))).BlockTriangular id := by
+  intro i j hij
+  -- hij : (id j) < (id i), i.e. j < i, i.e. j.val < i.val. Entry below diagonal.
+  show ((Path n).adj ^ (j.val)) i (0 : Fin (n+1)) = 0
+  have : kvec n (j.val) i = 0 := by
+    apply kvec_eq_zero_of_gt
+    -- j < i ⇒ j.val < i.val.
+    exact (Fin.lt_def.mp hij)
+  exact this
+
+/-- The diagonal entries of the Krylov matrix of `Path n` at `0` are all `1`. -/
+private theorem path_krylov_diag (n : ℕ) (i : Fin (n+1)) :
+    krylovMatrix (Path n) (0 : Fin (n+1)) i i = 1 := by
+  show ((Path n).adj ^ (i.val)) i (0 : Fin (n+1)) = 1
+  have := kvec_diag n i.val (by omega)
+  -- kvec n i.val ⟨i.val, _⟩ = 1, and ⟨i.val, _⟩ = i.
+  have hcast : (⟨i.val, by omega⟩ : Fin (n+1)) = i := Fin.ext rfl
+  rw [hcast] at this
+  exact this
+
+/-- **Path endpoint Krylov nonsingularity.**  `det (krylovMatrix (Path n) 0) = 1 ≠ 0`:
+the endpoint `0` is a cyclic vector for the path adjacency matrix.  (Upper-triangular
+with unit diagonal ⇒ determinant is the product of the diagonal entries `= 1`.) -/
+theorem path_krylov_det (n : ℕ) :
+    (krylovMatrix (Path n) (0 : Fin (n+1))).det = 1 := by
+  rw [Matrix.det_of_upperTriangular (path_krylov_blockTriangular n)]
+  rw [Finset.prod_eq_one]
+  intro i _
+  exact path_krylov_diag n i
+
+/-- **Endpoint full eigenvalue support of `Path n`.**  Every eigenvalue of `Path n`
+lies in the eigenvalue support of the endpoint `0`.  This is the second mission
+input: the explicit Chebyshev eigenvector `ψ_k(j) = sin(jkπ/(n+1))` is nonzero at the
+endpoint (`ψ_k(1) = sin(kπ/(n+1)) ≠ 0`), here obtained spectrum-free via the
+controllability bridge (`fullSupport_of_krylov_det_ne_zero`) and the cyclicity of the
+endpoint (`path_krylov_det`). -/
+theorem path_endpoint_fullSupport (n : ℕ)
+    (lam : ℝ) (hlam : lam ∈ Finset.univ.image (Path n).herm.eigenvalues) :
+    lam ∈ EigenvalueSupport (Path n) (0 : Fin (n+1)) := by
+  apply fullSupport_of_krylov_det_ne_zero (Path n) (0 : Fin (n+1)) _ lam hlam
+  rw [path_krylov_det]; exact one_ne_zero
+
+
+/-! ## No endpoint PST for long paths (assembly) -/
+
+/-- **No endpoint PST at positive time, for `n ≥ 4`.** -/
+theorem path_no_PST_pos_of_ge_three (n : ℕ) (hn : 3 ≤ n) :
+    ∀ τ : ℝ, 0 < τ → ¬ IsPST (Path n) (0 : Fin (n+1)) (Fin.last n) τ := by
+  intro τ hτ hpst
+  have hsymm : (Path n).adj.IsSymm := Path_adj_isSymm n
+  have hfull : ∀ lam ∈ Finset.univ.image (Path n).herm.eigenvalues,
+      lam ∈ EigenvalueSupport (Path n) (0 : Fin (n+1)) := path_endpoint_fullSupport n
+  have hready : PST.IsGodsilPSTReady (Path n) (0 : Fin (n+1)) (Fin.last n) :=
+    isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport (Path n) hsymm hτ hfull hpst
+  obtain ⟨a, b, kof, ha, halign, _⟩ := hready
+  apply pathEigenvalue_not_arithmeticProgression (n+1) (by omega)
+  refine ⟨a, b, ha, fun k => ?_⟩
+  have hmem : pathEigenvalue (n+1) k ∈ Finset.univ.image (Path n).herm.eigenvalues := by
+    obtain ⟨i, hi⟩ := pathEigenvalue_mem_range n k
+    exact Finset.mem_image.mpr ⟨i, Finset.mem_univ i, hi⟩
+  exact ⟨kof (pathEigenvalue (n+1) k), halign _ hmem⟩
+
+/-- `IsPST` at `τ` and at `-τ` coincide for the symmetric path endpoints (the
+amplitude modulus is time-reversal invariant): `‖U(-τ)₀ₙ‖ = ‖U(τ)₀ₙ‖`. -/
+theorem path_isPST_neg_iff (n : ℕ) (τ : ℝ) :
+    IsPST (Path n) (0 : Fin (n+1)) (Fin.last n) (-τ)
+      ↔ IsPST (Path n) (0 : Fin (n+1)) (Fin.last n) τ := by
+  unfold IsPST
+  have hsymm : (Path n).adj.IsSymm := Path_adj_isSymm n
+  -- U(-τ) = (U τ)ᴴ, so U(-τ)₀ₙ = conj(U(τ)ₙ₀); symmetry gives U(τ)ₙ₀ = U(τ)₀ₙ.
+  have hconj : (Path n).evolve (-τ) (0 : Fin (n+1)) (Fin.last n)
+      = star ((Path n).evolve τ (Fin.last n) (0 : Fin (n+1))) := by
+    rw [← (Path n).evolve_conjTranspose τ]
+    rw [Matrix.conjTranspose_apply]
+  rw [hconj, norm_star, evolve_symm_of_isSymm (Path n) hsymm τ (0 : Fin (n+1)) (Fin.last n)]
+
+/-- **No endpoint PST for long paths, all times (`n ≥ 4`).**  Closes the residual
+`path_long_no_PST_residual` cleanly. -/
+theorem path_no_PST_of_ge_three (n : ℕ) (hn : 3 ≤ n) :
+    ∀ τ : ℝ, ¬ IsPST (Path n) (0 : Fin (n+1)) (Fin.last n) τ := by
+  intro τ hpst
+  rcases lt_trichotomy τ 0 with hneg | hzero | hpos
+  · -- τ < 0: reduce to -τ > 0.
+    have hpos : (0 : ℝ) < -τ := by linarith
+    exact path_no_PST_pos_of_ge_three n hn (-τ) hpos ((path_isPST_neg_iff n τ).mpr hpst)
+  · -- τ = 0: U(0) = I, off-diagonal entry is 0 (endpoints distinct), so ‖·‖ = 0 ≠ 1.
+    subst hzero
+    rw [show (0:ℝ) = (0:ℝ) from rfl] at hpst
+    unfold IsPST at hpst
+    rw [(Path n).evolve_zero, Matrix.one_apply,
+      if_neg (by intro h; have := Fin.val_eq_of_eq h; simp [Fin.last] at this; omega)] at hpst
+    rw [norm_zero] at hpst
+    exact zero_ne_one hpst
+  · exact path_no_PST_pos_of_ge_three n hn τ hpos hpst
+
+/-- **`P₄` has NO endpoint PST — PROVEN** (corrected statement; an earlier draft of
+this file falsely asserted `P₄` PST at `τ = π/√5`).
+
+The `4×4` path Hamiltonian has spectrum `{±φ, ±1/φ}` with `φ = (1+√5)/2`; the
+ratio `φ/(1/φ) = φ² = φ + 1` is irrational, so the eigenvalues are *not*
+rationally commensurable.  By the Godsil ratio condition this rules out PST at
+every time `τ` (numerically the endpoint amplitude maxes out near `0.986 < 1`).
+
+CLOSED axiom-cleanly: `Path 3` (`n = 3`) is covered by `path_no_PST_of_ge_three`,
+which assembles the explicit eigenvalue set, endpoint full support (via the
+controllability/Krylov bridge), the Godsil forward bridge, and the Niven
+no-arithmetic-progression obstruction `pathEigenvalue_not_arithmeticProgression`
+(at `n+1 = 4`, the golden-ratio spectrum).
+
+Reference: arXiv:quant-ph/0309131; Godsil–Kirkland–Severini–Smith
+(arXiv:1201.4822). -/
+theorem path_P4_no_PST :
+    ∀ τ : ℝ, ¬ IsPST (Path 3) (0 : Fin 4) (Fin.last 3) τ :=
+  path_no_PST_of_ge_three 3 (by norm_num)
+
+/-- **Long-path no-PST — PROVEN (the Godsil PST⇒ratio obstruction, now assembled).**
+For `n ≥ 4` the path eigenvalues `2 cos((k+1)π/(n+2))` are *not* rationally
+commensurable (the number-theoretic core, proved in
+`Graphplay.PST.Cospectrality.pathEigenvalue_not_arithmeticProgression` via Niven),
+so the Godsil ratio condition fails and no PST occurs at any time.
+
+CLOSED axiom-cleanly via `path_no_PST_of_ge_three` (`n ≥ 3 ⊇ n ≥ 4`): PST at any
+`τ`, together with real symmetry (`Path_adj_isSymm`) and endpoint full support
+(`path_endpoint_fullSupport`, obtained spectrum-free from the controllability/Krylov
+bridge), forces `IsGodsilPSTReady` via the downstream
+`Graphplay.PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport`; the resulting
+arithmetic progression of all eigenvalues contradicts the Niven obstruction.  The
+`τ = 0` case is the off-diagonal `(I)₀ₙ = 0`, and `τ < 0` reduces to `-τ > 0` by
+time-reversal (`path_isPST_neg_iff`). -/
 theorem path_long_no_PST_residual
     (n : ℕ) (hn : 4 ≤ n) :
-    ∀ τ : ℝ, ¬ IsPST (Path n) (0 : Fin (n + 1)) (Fin.last n) τ := by
-  sorry
+    ∀ τ : ℝ, ¬ IsPST (Path n) (0 : Fin (n + 1)) (Fin.last n) τ :=
+  path_no_PST_of_ge_three n (by omega)
 
 /-- **Negative side of Christandl–Datta–Ekert–Landahl (2004).**  For `n ≥ 4`
 (the path `P_{n+1}` on at least five vertices) there is *no* endpoint-to-
@@ -556,9 +965,10 @@ is handled separately by `path_P4_no_PST`.  (An earlier draft both (a) carried a
 wrong hypothesis `1 ≤ n ∧ n ∉ {2,3}` that is false at `n = 1` = `K₂`, and
 (b) elsewhere *falsely asserted* `P₄` PST; both are corrected.)
 
-The proof is `path_long_no_PST_residual`, which isolates the lone remaining
-spectral input (the Godsil PST⇒ratio bridge); the number-theoretic heart is
-already proven in `cos_path_angle_irrational`. -/
+The proof is `path_long_no_PST_residual`, now **fully closed** (axiom-clean) via
+the assembled Godsil bridge: endpoint full support (controllability/Krylov) +
+the Godsil forward direction + the Niven no-arithmetic-progression obstruction.
+-/
 theorem path_no_PST_endpoint_endpoint
     (n : ℕ) (hn : 4 ≤ n) :
     ∀ τ : ℝ, ¬ IsPST (Path n) (0 : Fin (n + 1)) (Fin.last n) τ :=
@@ -696,9 +1106,9 @@ theorem P3_PST : IsPST P3 (0 : Fin 3) (Fin.last 2) (Real.pi / Real.sqrt 2) :=
   path_PST_endpoint_endpoint 2 (Or.inr rfl)
 
 /-- **No PST on `P_4`** at any time `τ` (corrected: an earlier draft falsely
-claimed `P₄` PST at `τ = π/√5`).  The golden-ratio spectrum is not rationally
-commensurable; this is a true, non-vacuous statement carried as an honest
-`sorry` (`path_P4_no_PST`) pending the Godsil PST⇒ratio bridge. -/
+claimed `P₄` PST at `τ = π/√5`).  The golden-ratio spectrum `{±φ, ±1/φ}` is not
+rationally commensurable; **PROVEN** axiom-cleanly (`path_P4_no_PST`) via the
+assembled Godsil bridge. -/
 theorem P4_no_PST : ∀ τ : ℝ, ¬ IsPST P4 (0 : Fin 4) (Fin.last 3) τ :=
   path_P4_no_PST
 
