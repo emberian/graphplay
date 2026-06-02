@@ -148,6 +148,76 @@ theorem acStep_xor_sound_but_abstains :
     ∧ Abstains (famCons xorCs) (acStep xorCs) :=    -- yet AC-deduction abstains
   ⟨acStep_reductive xorCs, xor_unique, acStep_xor_abstains⟩
 
+/-! ## 3.  The contrast: arc consistency DOES solve bounded-width problems.
+
+The *same* operator, on a "chain" (`x₀ = false`, `x₀ = x₁`) — a width-1 / kind-0
+problem — propagates to the solution in two steps.  So the projection lattice
+genuinely **discriminates** kind-0 (solved) from kind-2 affine (abstained): the
+obstruction is the problem's *width*, not the deduction.  The honest stratification
+behind the "framework of kinds." -/
+
+/-- `x₀ = false` (unary). -/
+def cU0 : Set (Str Bool 2) := {t | t 0 = false}
+/-- `x₀ = x₁`. -/
+def cE01 : Set (Str Bool 2) := {t | t 0 = t 1}
+/-- The chain family `{x₀ = false, x₀ = x₁}`. -/
+def chainCs : Set (Set (Str Bool 2)) := {cU0, cE01}
+
+/-- The chain has the unique solution `(false, false)`. -/
+theorem chain_unique : famCons chainCs = {fun _ => false} := by
+  ext t
+  simp only [famCons, chainCs, Set.mem_insert_iff, Set.mem_singleton_iff,
+    forall_eq_or_imp, forall_eq, cU0, cE01, Set.mem_setOf_eq]
+  constructor
+  · rintro ⟨h0, h01⟩
+    have h1 : t 1 = false := by rw [← h01]; exact h0
+    funext i; fin_cases i
+    · exact h0
+    · exact h1
+  · rintro rfl; exact ⟨rfl, rfl⟩
+
+/-- **Step 1:** one AC step from `⊤` narrows cell 0 to `{false}` (the unary
+constraint fires); cell 1 is still unconstrained. -/
+theorem acStep_chain_step1 :
+    acStep chainCs (⊤ : Abs Bool 2)
+      = (fun i => if i = 0 then ({false} : Set Bool) else Set.univ) := by
+  funext i; ext v
+  simp only [acStep, chainCs, cU0, cE01, Set.top_eq_univ, Pi.top_apply,
+    Set.mem_setOf_eq, Set.mem_univ, true_and, Set.mem_insert_iff,
+    Set.mem_singleton_iff, forall_eq_or_imp, forall_eq, forall_const]
+  fin_cases i <;> cases v <;> simp <;> decide
+
+/-- **Step 2:** the second AC step propagates `x₀ = false` along `x₀ = x₁` to pin
+cell 1 — reaching the fully solved state `(false, false)`. -/
+theorem acStep_chain_step2 :
+    acStep chainCs (fun i => if i = 0 then ({false} : Set Bool) else Set.univ)
+      = (fun _ => {false}) := by
+  funext i; ext v
+  simp only [acStep, chainCs, cU0, cE01, Set.mem_setOf_eq, Set.mem_insert_iff,
+    Set.mem_singleton_iff, forall_eq_or_imp, forall_eq]
+  fin_cases i <;> cases v <;> simp <;> decide
+
+/-- **Arc consistency solves the chain.**  Two iterations from `⊤` reach the solved
+state pinning `(false,false)`, which passes the constraint check — so the
+AC-deduction solver returns the (correct) answer.  Contrast `acStep_xor_abstains`:
+same operator, same lattice, *solvable* problem — the difference is width. -/
+theorem acStep_chain_solves :
+    Solves (famCons chainCs) (fun a => acStep chainCs (acStep chainCs a)) := by
+  refine ⟨fun _ => false, ?_, ?_⟩
+  · show Solved (acStep chainCs (acStep chainCs ⊤)) (fun _ => false)
+    rw [acStep_chain_step1, acStep_chain_step2]
+    intro _; rfl
+  · rw [chain_unique]; rfl
+
+/-- **The lattice is the discriminator (the framework of kinds, in miniature).**
+One arc-consistency operator: it **solves** the width-1 chain but **abstains** on
+the affine XOR system.  Both soundly; the difference is the problem's width versus
+the per-cell lattice's expressiveness — *not* correctness. -/
+theorem ac_kind_discriminates :
+    Solves (famCons chainCs) (fun a => acStep chainCs (acStep chainCs a))
+    ∧ Abstains (famCons xorCs) (acStep xorCs) :=
+  ⟨acStep_chain_solves, acStep_xor_abstains⟩
+
 end LatticeDeduction
 end Integrations
 end Graphplay
