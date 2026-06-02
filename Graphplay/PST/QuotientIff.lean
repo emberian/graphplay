@@ -57,8 +57,12 @@ infrastructure.
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.LinearAlgebra.Span.Basic
+import Mathlib.Analysis.Matrix.Spectrum
+import Mathlib.Analysis.Matrix.HermitianFunctionalCalculus
+import Mathlib.LinearAlgebra.Lagrange
 import Graphplay.Weighted
 import Graphplay.Equitable
+import Graphplay.Spectral
 import Graphplay.PST
 import Graphplay.Chiral
 -- Sibling Round-3 modules (assumed APIs):
@@ -430,12 +434,374 @@ spectrum as `P.quotient`.  Strong cospectrality of `|C_i⟩, |C_j⟩` in the hos
 is therefore equivalent to strong cospectrality of `e_i, e_j` in `P.quotient`.
 -/
 
+/-! ### Keystone spectral-projector transport machinery (ported, axiom-clean).
+
+The following block builds the eigenbasis-transport keystone
+`stronglyCospectral_iff` from scratch: host spectral projector `hostProj`,
+quotient projector `quotProj`, the polynomial functional-calculus transport
+`Bᴴ · hostProj · B = quotProj` (via Lagrange interpolation + Mathlib's matrix
+Hermitian `cfc`), and the cross/diagonal bridges to the spelled-out
+strong-cospectrality predicates.  Cells must be nonempty (`hne`) for the
+cell-embedding `B` to be an isometry; this is the same hypothesis the rest of
+the PST cluster carries.
+-/
+
+/-- Host spectral projector onto the `lam`-eigenspace of `G.herm`. -/
+noncomputable def hostProj (G : WeightedGraph V) (lam : ℝ) : Matrix V V ℂ :=
+  fun y x => ∑ k, if G.herm.eigenvalues k = lam
+    then G.herm.eigenvectorBasis k y * star (G.herm.eigenvectorBasis k x) else 0
+
+/-- Quotient spectral projector onto the `lam`-eigenspace of `symmQuotient`. -/
+noncomputable def quotProj (P : EquitablePartition G I) (lam : ℝ) : Matrix I I ℂ :=
+  fun b a => ∑ k, if P.symmQuotient_isHermitian.eigenvalues k = lam
+    then P.symmQuotient_isHermitian.eigenvectorBasis k b
+      * star (P.symmQuotient_isHermitian.eigenvectorBasis k a) else 0
+
+-- STEP 1: Bᴴ * A^n * B = Q̃^n.
+theorem cellEmbedH_adj_pow_cellEmbed (P : EquitablePartition G I)
+    (hne : ∀ k, P.cellCard k ≠ 0) (n : ℕ) :
+    P.cellEmbedᴴ * G.adj ^ n * P.cellEmbed = P.symmQuotient ^ n := by
+  have hAB : G.adj ^ n * P.cellEmbed = P.cellEmbed * P.symmQuotient ^ n := by
+    induction n with
+    | zero => simp
+    | succ m ih =>
+      rw [pow_succ, pow_succ, Matrix.mul_assoc, P.adj_mul_cellEmbed,
+        ← Matrix.mul_assoc, ih, Matrix.mul_assoc]
+  rw [Matrix.mul_assoc, hAB, ← Matrix.mul_assoc,
+    P.cellEmbed_conjTranspose_mul_cellEmbed hne, Matrix.one_mul]
+
+-- STEP 2: hostProj = cfc of the indicator.  Generic version for any Hermitian.
+theorem cfc_indicator_eq_proj {n : Type*} [Fintype n] [DecidableEq n]
+    {A : Matrix n n ℂ} (hA : A.IsHermitian) (lam : ℝ) :
+    hA.cfc (fun μ => if μ = lam then (1 : ℝ) else 0)
+      = fun y x => ∑ k, if hA.eigenvalues k = lam
+          then hA.eigenvectorBasis k y * star (hA.eigenvectorBasis k x) else 0 := by
+  rw [Matrix.IsHermitian.cfc]
+  funext y x
+  rw [Unitary.conjStarAlgAut_apply, Matrix.mul_assoc, Matrix.mul_apply]
+  apply Finset.sum_congr rfl
+  intro a _
+  rw [Matrix.mul_apply]
+  -- (diagonal d * star U) a x = ∑ b, diagonal d a b * (star U) b x = d a * star(U x a)
+  rw [Finset.sum_eq_single a]
+  · simp only [Matrix.diagonal_apply_eq, Function.comp_apply]
+    -- U y a = eigenvectorBasis a y ; star U a x = star (U x a) = star (eigenvectorBasis a x)
+    rw [Matrix.IsHermitian.eigenvectorUnitary_apply,
+      show (star (hA.eigenvectorUnitary : Matrix n n ℂ)) a x
+        = star ((hA.eigenvectorUnitary : Matrix n n ℂ) x a) from rfl,
+      Matrix.IsHermitian.eigenvectorUnitary_apply]
+    by_cases h : hA.eigenvalues a = lam
+    · simp [h, mul_comm, mul_assoc, mul_left_comm]
+    · simp [h]
+  · intro b _ hb
+    rw [Matrix.diagonal_apply_ne _ (fun h => hb h.symm), zero_mul]
+  · intro h; exact absurd (Finset.mem_univ a) h
+
+-- STEP 3: every quotient eigenvalue is a host eigenvalue.
+theorem quot_eigenvalue_mem_host (P : EquitablePartition G I)
+    (hne : ∀ k, P.cellCard k ≠ 0) (k : I) :
+    P.symmQuotient_isHermitian.eigenvalues k ∈ Set.range G.herm.eigenvalues := by
+  have hnz : ∀ i, 0 < P.cellCard i := fun i => lt_of_le_of_ne (P.cellCard_nonneg i)
+    (fun h => hne i h.symm)
+  -- real eigenvalue ∈ spectrum ℝ Q̃ → cast to ℂ spectrum → spectrum_subset → host range.
+  have hmemR : P.symmQuotient_isHermitian.eigenvalues k ∈ spectrum ℝ P.symmQuotient :=
+    P.symmQuotient_isHermitian.eigenvalues_mem_spectrum_real k
+  have hmemC : ((P.symmQuotient_isHermitian.eigenvalues k : ℝ) : ℂ) ∈ spectrum ℂ P.symmQuotient := by
+    rw [show ((P.symmQuotient_isHermitian.eigenvalues k : ℝ) : ℂ)
+          = algebraMap ℝ ℂ (P.symmQuotient_isHermitian.eigenvalues k) from rfl,
+      spectrum.algebraMap_mem_iff]
+    exact hmemR
+  have hsub := P.spectrum_subset hnz hmemC
+  rw [G.spectrum_subset_real] at hsub
+  obtain ⟨r, hr, hreq⟩ := hsub
+  have hreq' : ((r : ℝ) : ℂ) = ((P.symmQuotient_isHermitian.eigenvalues k : ℝ) : ℂ) := hreq
+  have : r = P.symmQuotient_isHermitian.eigenvalues k := Complex.ofReal_inj.mp hreq'
+  rw [← this]; exact hr
+
+-- STEP 4: existence of an interpolating polynomial agreeing with the indicator
+-- on all host eigenvalues.  The SAME polynomial then agrees with the indicator
+-- on all quotient eigenvalues (by STEP 3).
+theorem exists_interp_poly (G : WeightedGraph V) (lam : ℝ) :
+    ∃ q : Polynomial ℝ, ∀ k : V,
+      q.eval (G.herm.eigenvalues k) = (if G.herm.eigenvalues k = lam then 1 else 0) := by
+  classical
+  -- Interpolate over the finite set of distinct host eigenvalues with node map `id`.
+  set S : Finset ℝ := (Finset.univ.image G.herm.eigenvalues) with hS
+  refine ⟨Lagrange.interpolate S id (fun μ => if μ = lam then (1:ℝ) else 0), ?_⟩
+  intro k
+  have hmem : G.herm.eigenvalues k ∈ S := by
+    rw [hS]; exact Finset.mem_image_of_mem _ (Finset.mem_univ k)
+  have := Lagrange.eval_interpolate_at_node (s := S) (v := id)
+    (r := fun μ => if μ = lam then (1:ℝ) else 0) (Set.injOn_id _) hmem
+  simpa using this
+
+-- STEP 5: Bᴴ * (aeval A q) * B = aeval Q̃ q for any real polynomial q.
+theorem cellEmbedH_aeval_cellEmbed (P : EquitablePartition G I)
+    (hne : ∀ k, P.cellCard k ≠ 0) (q : Polynomial ℝ) :
+    P.cellEmbedᴴ * (Polynomial.aeval G.adj q) * P.cellEmbed
+      = Polynomial.aeval P.symmQuotient q := by
+  induction q using Polynomial.induction_on' with
+  | add p r hp hr =>
+    rw [map_add, map_add, Matrix.mul_add, Matrix.add_mul, hp, hr]
+  | monomial n c =>
+    rw [Polynomial.aeval_monomial, Polynomial.aeval_monomial]
+    -- algebraMap ℝ (Matrix _ _ ℂ) c = c • 1, so the term is c • A^n.
+    rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
+      smul_one_mul, smul_one_mul, Matrix.mul_smul, Matrix.smul_mul,
+      P.cellEmbedH_adj_pow_cellEmbed hne n]
+
+-- STEP 6: a Hermitian matrix's indicator-cfc equals aeval of an interpolating poly.
+theorem cfc_indicator_eq_aeval {n : Type*} [Fintype n] [DecidableEq n]
+    {A : Matrix n n ℂ} (hA : A.IsHermitian) (lam : ℝ) (q : Polynomial ℝ)
+    (hq : ∀ k : n, q.eval (hA.eigenvalues k) = (if hA.eigenvalues k = lam then 1 else 0)) :
+    hA.cfc (fun μ => if μ = lam then (1 : ℝ) else 0) = Polynomial.aeval A q := by
+  have hsa : IsSelfAdjoint A := hA.isSelfAdjoint
+  -- cfc f A = cfc q.eval A  (EqOn the spectrum) = aeval A q.
+  rw [← Matrix.IsHermitian.cfc_eq hA]
+  rw [show (Polynomial.aeval A q : Matrix n n ℂ) = cfc q.eval A from (cfc_polynomial q A).symm]
+  apply cfc_congr
+  intro x hx
+  -- spectrum ℝ A = range eigenvalues.
+  rw [Matrix.IsHermitian.spectrum_real_eq_range_eigenvalues hA] at hx
+  obtain ⟨k, rfl⟩ := hx
+  simpa using (hq k).symm
+
+-- STEP 7: THE TRANSPORT.  Bᴴ * hostProj * B = quotProj.
+theorem cellEmbedH_hostProj_cellEmbed (P : EquitablePartition G I)
+    (hne : ∀ k, P.cellCard k ≠ 0) (lam : ℝ) :
+    P.cellEmbedᴴ * hostProj G lam * P.cellEmbed = quotProj P lam := by
+  obtain ⟨q, hq⟩ := exists_interp_poly G lam
+  -- hostProj = aeval A q.
+  have hH : hostProj G lam = Polynomial.aeval G.adj q := by
+    rw [show hostProj G lam = G.herm.cfc (fun μ => if μ = lam then (1:ℝ) else 0) from
+      (cfc_indicator_eq_proj G.herm lam).symm]
+    exact cfc_indicator_eq_aeval G.herm lam q hq
+  -- quotProj = aeval Q̃ q  (same q; valid since quot eigenvalues are host eigenvalues).
+  have hQ : quotProj P lam = Polynomial.aeval P.symmQuotient q := by
+    rw [show quotProj P lam
+          = P.symmQuotient_isHermitian.cfc (fun μ => if μ = lam then (1:ℝ) else 0) from
+        (cfc_indicator_eq_proj P.symmQuotient_isHermitian lam).symm]
+    apply cfc_indicator_eq_aeval P.symmQuotient_isHermitian lam q
+    intro k
+    -- q.eval (quot eigenvalue) = indicator: the quot eigenvalue is some host eigenvalue.
+    obtain ⟨k', hk'⟩ := P.quot_eigenvalue_mem_host hne k
+    rw [← hk', hq k']
+  rw [hH, hQ, P.cellEmbedH_aeval_cellEmbed hne q]
+
+-- STEP 8a: statement host cross-entry = (Bᴴ * hostProj * B) j i.
+theorem host_cross_eq_matrixElement (P : EquitablePartition G I) (lam : ℝ) (i j : I) :
+    (∑ k : V, if G.herm.eigenvalues k = lam
+        then (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec i x)
+          * star (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec j x)
+        else 0)
+      = (P.cellEmbedᴴ * hostProj G lam * P.cellEmbed) j i := by
+  classical
+  -- Canonical triple-sum normal form, in (x,y,k) order.
+  set T : ℂ := ∑ x : V, ∑ y : V, ∑ k : V, if G.herm.eigenvalues k = lam
+      then star (P.cellUniformVec j y)
+        * (G.herm.eigenvectorBasis k y * star (G.herm.eigenvectorBasis k x))
+        * P.cellUniformVec i x else 0 with hT
+  -- LHS = T.
+  have hL : (∑ k : V, if G.herm.eigenvalues k = lam
+        then (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec i x)
+          * star (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec j x)
+        else 0) = T := by
+    rw [hT]
+    -- Expand each k-term to ∑ x ∑ y, then reorder ∑ k ∑ x ∑ y → ∑ x ∑ y ∑ k.
+    rw [show (∑ k : V, if G.herm.eigenvalues k = lam
+            then (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec i x)
+              * star (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec j x)
+            else 0)
+          = ∑ k : V, ∑ x : V, ∑ y : V, if G.herm.eigenvalues k = lam
+              then star (P.cellUniformVec j y)
+                * (G.herm.eigenvectorBasis k y * star (G.herm.eigenvectorBasis k x))
+                * P.cellUniformVec i x else 0 by
+      apply Finset.sum_congr rfl
+      intro k _
+      by_cases h : G.herm.eigenvalues k = lam
+      · simp only [if_pos h]
+        rw [star_sum, Finset.sum_mul_sum]
+        apply Finset.sum_congr rfl
+        intro x _
+        apply Finset.sum_congr rfl
+        intro y _
+        rw [star_mul', star_star]; ring
+      · simp only [if_neg h, Finset.sum_const, smul_zero]]
+    rw [Finset.sum_comm (γ := V)]
+    apply Finset.sum_congr rfl
+    intro x _
+    rw [Finset.sum_comm (γ := V)]
+  -- RHS = T.
+  have hR : (P.cellEmbedᴴ * hostProj G lam * P.cellEmbed) j i = T := by
+    rw [Matrix.mul_apply, hT]
+    apply Finset.sum_congr rfl
+    intro x _
+    rw [Matrix.mul_apply, Finset.sum_mul]
+    apply Finset.sum_congr rfl
+    intro y _
+    simp only [Matrix.conjTranspose_apply, cellEmbed, hostProj]
+    rw [Finset.mul_sum, Finset.sum_mul]
+    apply Finset.sum_congr rfl
+    intro k _
+    split_ifs with h <;> ring
+  rw [hL, hR]
+
+-- STEP 8b: quotient cross-entry = (quotProj) i j  (definitional).
+theorem quot_cross_eq_quotProj (P : EquitablePartition G I) (lam : ℝ) (i j : I) :
+    (∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
+        then P.symmQuotient_isHermitian.eigenvectorBasis k i
+          * star (P.symmQuotient_isHermitian.eigenvectorBasis k j)
+        else 0) = quotProj P lam i j := rfl
+
+-- STEP 8c: host diagonal sum (a real ∑ of normSq) casts to (quotProj) i i.
+theorem host_diag_eq_quotProj (P : EquitablePartition G I)
+    (hne : ∀ k, P.cellCard k ≠ 0) (lam : ℝ) (i : I) :
+    ((∑ k : V, if G.herm.eigenvalues k = lam
+        then Complex.normSq (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec i x)
+        else 0 : ℝ) : ℂ)
+      = quotProj P lam i i := by
+  rw [← P.cellEmbedH_hostProj_cellEmbed hne lam, ← P.host_cross_eq_matrixElement lam i i]
+  push_cast
+  apply Finset.sum_congr rfl
+  intro k _
+  split_ifs with h
+  · rw [Complex.star_def, ← Complex.mul_conj]
+  · rfl
+
+-- STEP 8d: quotient diagonal sum casts to (quotProj) i i.
+theorem quot_diag_eq_quotProj (P : EquitablePartition G I) (lam : ℝ) (i : I) :
+    ((∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
+        then Complex.normSq (P.symmQuotient_isHermitian.eigenvectorBasis k i)
+        else 0 : ℝ) : ℂ)
+      = quotProj P lam i i := by
+  rw [quotProj]
+  push_cast
+  apply Finset.sum_congr rfl
+  intro k _
+  split_ifs with h
+  · rw [Complex.star_def, ← Complex.mul_conj]
+  · rfl
+
+-- STEP 9: quotProj is Hermitian in its indices.
+theorem quotProj_conj_symm (P : EquitablePartition G I) (lam : ℝ) (i j : I) :
+    quotProj P lam j i = star (quotProj P lam i j) := by
+  rw [quotProj, quotProj, star_sum]
+  apply Finset.sum_congr rfl
+  intro k _
+  split_ifs with h
+  · rw [star_mul', star_star]; ring
+  · rw [star_zero]
+
+-- STEP 10: off-spectrum quotient eigenvalue ⇒ quotProj = 0.
+theorem quotProj_eq_zero_of_not_mem (P : EquitablePartition G I) (lam : ℝ)
+    (hlam : lam ∉ Set.range P.symmQuotient_isHermitian.eigenvalues) (i j : I) :
+    quotProj P lam i j = 0 := by
+  rw [quotProj]
+  apply Finset.sum_eq_zero
+  intro k _
+  rw [if_neg]
+  intro h
+  exact hlam ⟨k, h⟩
+
+-- A small ε-predicate transfer: Born condition preserved under conjugating cross.
+theorem born_conj {c d : ℂ} (hd : ∃ r : ℝ, d = (r : ℂ))
+    (h : ∃ ε : ℂ, ‖ε‖ = 1 ∧ c = ε * d) :
+    ∃ ε : ℂ, ‖ε‖ = 1 ∧ star c = ε * d := by
+  obtain ⟨r, rfl⟩ := hd
+  obtain ⟨ε, hε, hc⟩ := h
+  refine ⟨star ε, by rw [norm_star]; exact hε, ?_⟩
+  rw [hc, star_mul']
+  rw [show star ((r : ℂ)) = (r : ℂ) from Complex.conj_ofReal r]
+
+-- Abbreviation for the host/quotient diagonal real sums.
+noncomputable def hostDiag (P : EquitablePartition G I) (lam : ℝ) (i : I) : ℝ :=
+  ∑ k : V, if G.herm.eigenvalues k = lam
+    then Complex.normSq (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec i x)
+    else 0
+
+noncomputable def quotDiag (P : EquitablePartition G I) (lam : ℝ) (i : I) : ℝ :=
+  ∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
+    then Complex.normSq (P.symmQuotient_isHermitian.eigenvectorBasis k i) else 0
+
+theorem hostDiag_eq_quotDiag (P : EquitablePartition G I)
+    (hne : ∀ k, P.cellCard k ≠ 0) (lam : ℝ) (i : I) :
+    hostDiag P lam i = quotDiag P lam i := by
+  have h1 := P.host_diag_eq_quotProj hne lam i
+  have h2 := P.quot_diag_eq_quotProj lam i
+  rw [hostDiag, quotDiag]
+  exact Complex.ofReal_inj.mp (h1.trans h2.symm)
+
+/-- **THE KEYSTONE.**  Host cell-uniform strong cospectrality iff quotient strong
+cospectrality, both in spelled-out spectral-projector cross-entry form. -/
+theorem stronglyCospectral_iff (P : EquitablePartition G I)
+    (hne : ∀ k, P.cellCard k ≠ 0) (i j : I) :
+    (∀ lam : ℝ, lam ∈ Set.range G.herm.eigenvalues →
+      ∃ ε : ℂ, ‖ε‖ = 1 ∧
+        (∑ k : V, if G.herm.eigenvalues k = lam
+            then (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec i x)
+              * star (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec j x)
+            else 0)
+          = ε * Complex.ofReal (Real.sqrt (hostDiag P lam i * hostDiag P lam j)))
+      ↔
+    (∀ lam : ℝ, lam ∈ Set.range P.symmQuotient_isHermitian.eigenvalues →
+      ∃ ε : ℂ, ‖ε‖ = 1 ∧
+        (∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
+            then P.symmQuotient_isHermitian.eigenvectorBasis k i
+              * star (P.symmQuotient_isHermitian.eigenvectorBasis k j)
+            else 0)
+          = ε * Complex.ofReal (Real.sqrt (quotDiag P lam i * quotDiag P lam j))) := by
+  -- Rewrite host cross → quotProj j i, quot cross → quotProj i j, diags interchangeable.
+  have hcrossH : ∀ lam, (∑ k : V, if G.herm.eigenvalues k = lam
+        then (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec i x)
+          * star (∑ x, star (G.herm.eigenvectorBasis k x) * P.cellUniformVec j x)
+        else 0) = quotProj P lam j i := fun lam => by
+    rw [P.host_cross_eq_matrixElement lam i j, P.cellEmbedH_hostProj_cellEmbed hne lam]
+  constructor
+  · -- forward: quotient eigenvalue is host eigenvalue; use host condition + conj.
+    intro hH lam hlam
+    have hlamH : lam ∈ Set.range G.herm.eigenvalues := by
+      obtain ⟨k, rfl⟩ := hlam; exact P.quot_eigenvalue_mem_host hne k
+    obtain ⟨ε, hε, heq⟩ := hH lam hlamH
+    rw [hcrossH lam] at heq
+    -- heq : quotProj j i = ε * ofReal(√(hostDiag_i·hostDiag_j)).
+    rw [P.quot_cross_eq_quotProj lam i j,
+      ← P.hostDiag_eq_quotDiag hne lam i, ← P.hostDiag_eq_quotDiag hne lam j]
+    -- heq : quotProj j i = ε * D.  born_conj gives star (quotProj j i) = ε' * D.
+    obtain ⟨ε', hε', heq'⟩ := born_conj (c := quotProj P lam j i)
+      (d := Complex.ofReal (Real.sqrt (hostDiag P lam i * hostDiag P lam j)))
+      ⟨Real.sqrt (hostDiag P lam i * hostDiag P lam j), rfl⟩ ⟨ε, hε, heq⟩
+    -- star (quotProj j i) = quotProj i j.
+    refine ⟨ε', hε', ?_⟩
+    rwa [P.quotProj_conj_symm lam i j, star_star] at heq'
+  · -- backward: host eigenvalue.  Two cases on quot-spectrum membership.
+    intro hQ lam hlam
+    by_cases hmem : lam ∈ Set.range P.symmQuotient_isHermitian.eigenvalues
+    · obtain ⟨ε, hε, heq⟩ := hQ lam hmem
+      rw [P.quot_cross_eq_quotProj lam i j] at heq
+      rw [hcrossH lam, P.hostDiag_eq_quotDiag hne lam i, P.hostDiag_eq_quotDiag hne lam j]
+      -- goal: quotProj j i = ε' * ofReal(√(quotDiag..)); heq : quotProj i j = ε * D.
+      obtain ⟨ε', hε', heq'⟩ := born_conj (c := quotProj P lam i j)
+        (d := Complex.ofReal (Real.sqrt (quotDiag P lam i * quotDiag P lam j)))
+        ⟨Real.sqrt (quotDiag P lam i * quotDiag P lam j), rfl⟩ ⟨ε, hε, heq⟩
+      -- star (quotProj i j) = quotProj j i.
+      exact ⟨ε', hε', (P.quotProj_conj_symm lam i j).trans heq'⟩
+    · -- off quotient spectrum: quotProj = 0, host cross = 0, RHS = ε·0; pick ε=1.
+      refine ⟨1, by simp, ?_⟩
+      rw [hcrossH lam, P.quotProj_eq_zero_of_not_mem lam hmem]
+      -- 0 = 1 * ofReal(√(hostDiag·hostDiag)); but hostDiag = quotDiag = quotProj diag = 0.
+      rw [P.hostDiag_eq_quotDiag hne lam i, P.hostDiag_eq_quotDiag hne lam j]
+      have hdi : quotDiag P lam i = 0 := by
+        have := P.quot_diag_eq_quotProj lam i
+        rw [P.quotProj_eq_zero_of_not_mem lam hmem] at this
+        exact_mod_cast this
+      rw [hdi, zero_mul, Real.sqrt_zero, Complex.ofReal_zero, mul_zero]
+
 /-- The sibling cospectrality predicate, instantiated on cell-uniform pairs.
 We state the equivalence between *vertex* strong cospectrality of `e_i, e_j`
 on the quotient and *vector* strong cospectrality of `|C_i⟩, |C_j⟩` on the
 host. -/
 theorem stronglyCospectral_cellUniform_iff_quotient
-    (P : EquitablePartition G I) (i j : I) :
+    (P : EquitablePartition G I) (hne : ∀ k, P.cellCard k ≠ 0) (i j : I) :
     -- Host-side: `|C_i⟩` and `|C_j⟩` are strongly cospectral as *vectors*.
     -- For every eigenvalue `λ` of `G.adj`, the spectral projector of `G.adj`
     -- onto the `λ`-eigenspace sends `cellUniformVec i` and `cellUniformVec j`
@@ -475,12 +841,10 @@ theorem stronglyCospectral_cellUniform_iff_quotient
                * (∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
                   then Complex.normSq (P.symmQuotient_isHermitian.eigenvectorBasis k j)
                   else 0)))) := by
-  -- HONEST SORRY: requires an explicit isometry between the host eigenbasis
-  -- `G.herm.eigenvectorBasis` and the quotient eigenbasis
-  -- `P.symmQuotient_isHermitian.eigenvectorBasis` (via `cellInflateVec`),
-  -- equating the two spectral-projector cross-entries.  No such eigenbasis
-  -- transport lemma exists yet in the infrastructure.
-  sorry
+  -- CLOSED.  The spelled-out diagonal sums are definitionally `hostDiag`/`quotDiag`;
+  -- the keystone `stronglyCospectral_iff` discharges the iff via the
+  -- polynomial-functional-calculus eigenbasis transport `Bᴴ · hostProj · B = quotProj`.
+  exact P.stronglyCospectral_iff hne i j
 
 /-- **Automatic strong cospectrality (corollary).**  For an equitable
 partition `P`, the cell-uniform vectors `|C_i⟩` and `|C_j⟩` are strongly
@@ -494,7 +858,7 @@ in `stronglyCospectral_cellUniform_iff_quotient`), and discharge it via that
 iff.  The honest content is exactly the eigenbasis-transport `sorry` carried by
 that iff. -/
 theorem cellUniform_stronglyCospectral_of_quotient
-    (P : EquitablePartition G I) (i j : I)
+    (P : EquitablePartition G I) (hne : ∀ k, P.cellCard k ≠ 0) (i j : I)
     (hquot :
       ∀ lam : ℝ, lam ∈ Set.range P.symmQuotient_isHermitian.eigenvalues →
         ∃ ε : ℂ, ‖ε‖ = 1 ∧
@@ -524,7 +888,7 @@ theorem cellUniform_stronglyCospectral_of_quotient
                   then Complex.normSq (∑ x, star (G.herm.eigenvectorBasis k x)
                         * P.cellUniformVec j x)
                   else 0))) :=
-  (P.stronglyCospectral_cellUniform_iff_quotient i j).mpr hquot
+  (P.stronglyCospectral_cellUniform_iff_quotient hne i j).mpr hquot
 
 /-! ## 6. Phantom-symmetry corollary.
 
@@ -560,8 +924,21 @@ theorem phantom_symmetry_PST_exists :
         -- cell `j`.
         (∀ (φ : V ≃ V), (∀ x y, G.adj (φ x) (φ y) = G.adj x y) →
           ∀ x, P.cells x = i → P.cells (φ x) ≠ j) := by
-  -- The explicit Bachman–Tamon 6-vertex graph (§4 of 1108.0339) witnesses
-  -- this; its construction is parked in `examples/`.
+  -- HONEST SORRY (sole residual of this file).  Non-vacuity check: any witness
+  -- must have `i ≠ j` with nonempty cells — else `φ = id` (always an
+  -- adjacency-preserving permutation) falsifies the no-automorphism clause —
+  -- so the statement is genuinely the strong Bachman–Tamon claim, not a vacuous
+  -- existential.  The honest content is an explicit 6-vertex weighted graph
+  -- (Bachman–Tamon §4 of arXiv:1108.0339, Fig. 1): one needs to (i) exhibit the
+  -- adjacency matrix and 2-cell equitable partition, (ii) verify cell-uniform
+  -- PST by a concrete spectral computation on `symmQuotient` (now reducible to
+  -- the quotient Born-rule modulus via `cellUniformPST_iff_quotientPST`), and
+  -- (iii) certify that no adjacency-preserving permutation swaps the cells.
+  -- This concrete construction is parked for `examples/`; it is the ONLY
+  -- residual — the eigenbasis-transport keystone it conceptually sits on
+  -- (`stronglyCospectral_cellUniform_iff_quotient`) is now proven and
+  -- axiom-clean.  `phantom_symmetry_chiral_PST_exists` is derived from this
+  -- witness with no further sorry.
   sorry
 
 /-! ## 7. Chiral / signed extension.
@@ -628,10 +1005,32 @@ theorem phantom_symmetry_chiral_PST_exists :
         (∀ (φ : V ≃ V),
           (∀ x y, (G.signedBy s).adj (φ x) (φ y) = (G.signedBy s).adj x y) →
           ∀ x, P.cells x = i → P.cells (φ x) ≠ j) := by
-  -- Witness: take the unsigned Bachman–Tamon graph from
-  -- `phantom_symmetry_PST_exists` and apply the trivial signing.  A more
-  -- striking witness uses `unitaryHammingChiralK4`; see `examples/`.
-  sorry
+  -- CLOSED relative to `phantom_symmetry_PST_exists`: take the unsigned
+  -- Bachman–Tamon witness and apply the *trivial* signing (`G.signedBy 1 = G`,
+  -- which is cross-constant via `τ ≡ 1`).  Cell map, cardinalities, adjacency
+  -- and evolution are all unchanged, so both conjuncts transfer verbatim.  The
+  -- only honest residual is the single unsigned witness lemma.
+  obtain ⟨V, instF, instD, G, I, instFI, instDI, P, i, j, τ, hpst, hno⟩ :=
+    phantom_symmetry_PST_exists
+  refine ⟨V, instF, instD, G, I, instFI, instDI, P, ChiralSigning.trivial V,
+    ⟨fun _ _ => 1, fun _ _ => rfl⟩, i, j, τ, ?_, ?_⟩
+  · -- `G.signedBy 1 = G`, and the preserved partition has the same cells/cards.
+    -- `IsCellUniformPST` depends only on `adj` (via `evolve`) and `cellCard`,
+    -- both invariant; the signed graph reduces to `G`.
+    have hcard : ∀ k, (G.signedBy_preserves_equitable P (ChiralSigning.trivial V)
+        ⟨fun _ _ => 1, fun _ _ => rfl⟩).cellCard k = P.cellCard k := fun k => rfl
+    have hev : (G.signedBy (ChiralSigning.trivial V)).evolve τ = G.evolve τ :=
+      congrArg (fun (H : WeightedGraph V) => H.evolve τ) (WeightedGraph.signedBy_trivial G)
+    unfold IsCellUniformPST
+    simp only [hcard, hev]
+    exact hpst
+  · intro φ hφ x hx
+    -- The signed-graph adjacency equals `G.adj` (trivial signing), so the
+    -- automorphism hypothesis is exactly the unsigned one.
+    apply hno φ ?_ x hx
+    intro a b
+    have := hφ a b
+    simpa only [WeightedGraph.signedBy_trivial] using this
 
 /-! ## 8. Index lemma for downstream files. -/
 

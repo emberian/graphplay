@@ -51,6 +51,7 @@ import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Analysis.Matrix.Normed
 import Graphplay.Weighted
 import Graphplay.PST
+import Graphplay.PST.GodsilRatio
 
 open scoped Matrix
 open NormedSpace
@@ -302,14 +303,179 @@ theorem isPeriodicAt_two_mul_of_isPST_target (G : WeightedGraph V)
 `θ_r` of `G.adj` for which the spectral idempotent `E_r` does not annihilate the
 standard basis vector `e_u`.  We package it as the subset of eigenvalue *indices*
 `r` whose eigenvector overlaps `u`.  (Concretely `r` is in the support iff the
-`u`-coordinate of the `r`-th eigenvector is nonzero.) -/
+`u`-coordinate of the `r`-th eigenvector is nonzero, i.e. the `(u, r)` entry of
+the eigenvector unitary `U` — equivalently `eigU G u r` — is nonzero.  This is
+the genuine per-vertex support `E_{θ_r} e_u ≠ 0`: the `u`-diagonal of the
+spectral projector is `∑_{i : θ_i = θ_r} ‖U_{u,i}‖²`, nonzero iff some such
+`U_{u,i} ≠ 0`.) -/
 def eigenvalueSupport (G : WeightedGraph V) (u : V) : Set V :=
-  {r | G.herm.eigenvectorUnitary r u ≠ 0}
+  {r | G.herm.eigenvectorUnitary u r ≠ 0}
 
-/-- **Godsil's integrality / rationality criterion (deep direction).**  Vertex
-`u` is periodic iff the pairwise ratios of differences of eigenvalues in its
-support are rational; equivalently, after a uniform rescaling the support
-eigenvalues are integers.  This is the spectral classification of periodicity.
+/-! ### The periodicity forward direction (CLOSED, axiom-clean)
+
+The forward half of Godsil's rationality criterion is now genuinely proven.
+Its analytic core is a *convex-combination equality* lemma: if a finite convex
+combination `∑ w_i ζ_i` of unit-modulus complex numbers `ζ_i` (`w_i ≥ 0`,
+`∑ w_i = 1`) again has modulus `1`, then every `ζ_i` with `w_i > 0` equals the
+combination.  Applied to the eigenbasis expansion
+`U(τ)_{u,u} = ∑_i ‖U_{u,i}‖² e^{-iτ θ_i}` (weights the row-`u` Born
+probabilities, which sum to `1`), periodicity `‖U(τ)_{u,u}‖ = 1` forces every
+*supported* phase `e^{-iτ θ_r}` to equal the single value `U(τ)_{u,u}` — hence
+all supported phases coincide, giving `τ(θ_r - θ_s) ∈ 2πℤ` and rational ratios.
+-/
+
+/-- **Convex-combination equality** (the analytic spine).  A finite convex
+combination of unit-modulus complex numbers that itself has modulus `1` is
+"saturated": every term with positive weight equals the combination.  Proof:
+`Re(\bar S · ζ_i) ≤ 1` with weighted sum `= Re(\bar S S) = ‖S‖² = 1` and total
+weight `1`, so each positive-weight term saturates `Re = 1`, forcing
+`\bar S ζ_i = 1`, i.e. `ζ_i = S`. -/
+theorem convex_unit_saturate {ι : Type*} (s : Finset ι) (w : ι → ℝ) (z : ι → ℂ)
+    (hw : ∀ i ∈ s, 0 ≤ w i) (hsum : ∑ i ∈ s, w i = 1)
+    (hz : ∀ i ∈ s, ‖z i‖ = 1)
+    (hnorm : ‖∑ i ∈ s, (w i : ℂ) * z i‖ = 1) :
+    ∀ i ∈ s, 0 < w i → z i = ∑ j ∈ s, (w j : ℂ) * z j := by
+  set S : ℂ := ∑ j ∈ s, (w j : ℂ) * z j with hS
+  have hSS : star S * S = ((‖S‖ ^ 2 : ℝ) : ℂ) := by
+    rw [Complex.star_def, mul_comm, Complex.mul_conj, Complex.normSq_eq_norm_sq]
+  have hexpand : (star S * S).re = ∑ i ∈ s, w i * (star S * z i).re := by
+    conv_lhs => rw [hS]
+    rw [Finset.mul_sum, Complex.re_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [show star S * ((w i : ℂ) * z i) = (w i : ℂ) * (star S * z i) by ring,
+       Complex.re_ofReal_mul]
+  have hkey : ∑ i ∈ s, w i * (star S * z i).re = 1 := by
+    rw [← hexpand, hSS, Complex.ofReal_re, hnorm]; norm_num
+  have hbound : ∀ i ∈ s, w i * (star S * z i).re ≤ w i := by
+    intro i hi
+    have h1 : (star S * z i).re ≤ ‖star S * z i‖ := Complex.re_le_norm _
+    have h2 : ‖star S * z i‖ = 1 := by rw [norm_mul, norm_star, hnorm, hz i hi, mul_one]
+    rw [h2] at h1; nlinarith [hw i hi, h1]
+  have hzero : ∀ i ∈ s, w i - w i * (star S * z i).re = 0 := by
+    have hsum2 : ∑ i ∈ s, (w i - w i * (star S * z i).re) = 0 := by
+      rw [Finset.sum_sub_distrib, hsum, hkey]; ring
+    intro i hi
+    have hnn : ∀ j ∈ s, 0 ≤ w j - w j * (star S * z j).re := fun j hj => by
+      linarith [hbound j hj]
+    exact (Finset.sum_eq_zero_iff_of_nonneg hnn).mp hsum2 i hi
+  intro i hi hpos
+  have hre1 : (star S * z i).re = 1 := by
+    have hz0 := hzero i hi
+    have hfac : w i * (1 - (star S * z i).re) = 0 := by ring_nf; linarith [hz0]
+    rcases mul_eq_zero.mp hfac with h | h
+    · exact absurd h (ne_of_gt hpos)
+    · linarith [h]
+  have hw1 : star S * z i = 1 := by
+    set t : ℂ := star S * z i with ht
+    have hn : ‖t‖ = 1 := by rw [ht, norm_mul, norm_star, hnorm, hz i hi, mul_one]
+    have h2 : t.re ^ 2 + t.im ^ 2 = 1 := by
+      have hsq := Complex.normSq_eq_norm_sq t
+      rw [Complex.normSq_apply] at hsq; rw [hn] at hsq; nlinarith [hsq]
+    have him : t.im = 0 := by nlinarith [sq_nonneg t.im, hre1]
+    apply Complex.ext
+    · rw [hre1]; rfl
+    · rw [him]; rfl
+  have hSstar : S * star S = 1 := by
+    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hnorm]; norm_num
+  calc z i = (S * star S) * z i := by rw [hSstar, one_mul]
+    _ = S * (star S * z i) := by ring
+    _ = S * 1 := by rw [hw1]
+    _ = S := by rw [mul_one]
+
+/-- The row-`u` Born probabilities `‖U_{u,i}‖²` (eigenbasis amplitudes) sum to
+`1`: it is the `(u,u)` diagonal of `U Uᴴ = 1`. -/
+theorem eigU_row_normSq (G : WeightedGraph V) (u : V) :
+    ∑ i : V, ‖PST.eigU G u i‖ ^ 2 = 1 := by
+  have h := PST.eigU_mul_conjTranspose G
+  have huu := congrFun (congrFun h u) u
+  rw [Matrix.mul_apply, Matrix.one_apply_eq] at huu
+  have hcast : (∑ x : V, PST.eigU G u x * (PST.eigU G)ᴴ x u)
+      = ((∑ x : V, ‖PST.eigU G u x‖ ^ 2 : ℝ) : ℂ) := by
+    push_cast
+    refine Finset.sum_congr rfl (fun x _ => ?_)
+    rw [Matrix.conjTranspose_apply, Complex.star_def, Complex.mul_conj,
+      Complex.normSq_eq_norm_sq]
+    push_cast; ring
+  rw [hcast] at huu
+  exact_mod_cast huu
+
+/-- The walk diagonal as a convex combination of eigenphases:
+`U(τ)_{u,u} = ∑_i ‖U_{u,i}‖² e^{-iτ θ_i}`. -/
+theorem evolve_diag_convex (G : WeightedGraph V) (τ : ℝ) (u : V) :
+    G.evolve τ u u = ∑ i : V, (‖PST.eigU G u i‖ ^ 2 : ℂ)
+      * Complex.exp (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues i : ℂ)) := by
+  rw [PST.evolve_eq_eigU_sum]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  rw [Complex.star_def]
+  rw [show PST.eigU G u i
+        * Complex.exp (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues i : ℂ))
+        * (starRingEnd ℂ) (PST.eigU G u i)
+      = (PST.eigU G u i * (starRingEnd ℂ) (PST.eigU G u i))
+        * Complex.exp (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues i : ℂ)) by ring]
+  congr 1
+  rw [Complex.mul_conj, Complex.normSq_eq_norm_sq]; push_cast; ring
+
+/-- **Periodicity collapses all supported phases.**  If `‖U(τ)_{u,u}‖ = 1`, then
+for every eigenindex `r` in the support of `u` (`U_{u,r} ≠ 0`) the eigenphase
+`e^{-iτ θ_r}` equals the single value `U(τ)_{u,u}`.  Immediate from
+`convex_unit_saturate` applied to the convex expansion `evolve_diag_convex`. -/
+theorem supported_phase_eq_diag (G : WeightedGraph V) (u : V) (τ : ℝ)
+    (hper : ‖G.evolve τ u u‖ = 1) (r : V) (hr : PST.eigU G u r ≠ 0) :
+    Complex.exp (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues r : ℂ))
+      = G.evolve τ u u := by
+  have hconv := convex_unit_saturate (Finset.univ) (fun i => ‖PST.eigU G u i‖ ^ 2)
+    (fun i => Complex.exp (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues i : ℂ)))
+    (fun i _ => sq_nonneg _)
+    (by simpa using eigU_row_normSq G u)
+    (fun i _ => by rw [Complex.norm_exp]; simp)
+    (by simp only [Complex.ofReal_pow]; rw [← evolve_diag_convex G τ u]; exact hper)
+    r (Finset.mem_univ r) (by positivity)
+  simp only [Complex.ofReal_pow] at hconv
+  rw [hconv, ← evolve_diag_convex G τ u]
+
+/-- **The backward (Diophantine) half of Godsil's periodicity criterion — the
+single isolated residual.**  If every ratio of differences of supported
+eigenvalues is rational, then `u` is periodic.  This is the genuine open piece:
+rational ratios mean the supported eigenvalues lie in an arithmetic progression
+`b + a·k`, and one must produce a *single* time `τ > 0` with `e^{-iτ θ_r}` equal
+across the (finite) support — a simultaneous Diophantine/Kronecker approximation
+(`τ = 2π/a` aligns all phases once the spacing `a` is extracted).  The phase
+*alignment ⇒ periodicity* step then reuses `convex_unit_saturate` /
+`evolve_diag_convex` in reverse.
+
+Honest `sorry`: needs the `AddCircle`/Kronecker simultaneous-approximation
+extraction of the common spacing `a` from the rational-ratio hypothesis, not yet
+developed.  Reference: Godsil, *Periodic graphs* (arXiv:1009.5375), Thm 6.1
+(sufficiency). -/
+theorem periodic_of_support_ratios_rational (G : WeightedGraph V) (u : V)
+    (_h : ∀ r₁ r₂ r₃ r₄ : V,
+        r₁ ∈ eigenvalueSupport G u → r₂ ∈ eigenvalueSupport G u →
+        r₃ ∈ eigenvalueSupport G u → r₄ ∈ eigenvalueSupport G u →
+        G.herm.eigenvalues r₃ ≠ G.herm.eigenvalues r₄ →
+        ∃ q : ℚ, (G.herm.eigenvalues r₁ - G.herm.eigenvalues r₂)
+                  = (q : ℝ) * (G.herm.eigenvalues r₃ - G.herm.eigenvalues r₄)) :
+    IsPeriodic G u := by
+  -- BLOCKED: backward Diophantine direction (extract common spacing `a`, set
+  -- `τ = 2π/a`, align all supported phases) — AddCircle/Kronecker simultaneous
+  -- approximation, not yet developed.
+  sorry
+
+/-- **Godsil's integrality / rationality criterion.**  Vertex `u` is periodic iff
+the pairwise ratios of differences of eigenvalues in its support are rational;
+equivalently, after a uniform rescaling the support eigenvalues are integers.
+This is the spectral classification of periodicity.
+
+The **forward direction is fully proven** here (axiom-clean): periodicity forces
+all supported eigenphases equal (`supported_phase_eq_diag`), so for supported
+`r, s` we have `e^{-iτ θ_r} = e^{-iτ θ_s}`, i.e. `τ(θ_r - θ_s) ∈ 2πℤ`
+(`Complex.exp_eq_exp_iff_exists_int`); writing each supported difference as an
+integer multiple of the common quantum `2π/τ` makes every ratio rational.
+
+The **backward direction** (rational ratios ⇒ a common `τ` aligning every
+supported phase, by simultaneous Diophantine / Kronecker approximation) is the
+single remaining residual, isolated in the named lemma
+`periodic_of_support_ratios_rational` below.
 
 Reference: Godsil, *Periodic graphs* (arXiv:1009.5375), Theorem 6.1. -/
 theorem isPeriodic_iff_eigenvalue_support_ratios_rational (G : WeightedGraph V)
@@ -321,20 +487,46 @@ theorem isPeriodic_iff_eigenvalue_support_ratios_rational (G : WeightedGraph V)
         G.herm.eigenvalues r₃ ≠ G.herm.eigenvalues r₄ →
         ∃ q : ℚ, (G.herm.eigenvalues r₁ - G.herm.eigenvalues r₂)
                   = (q : ℝ) * (G.herm.eigenvalues r₃ - G.herm.eigenvalues r₄) := by
-  -- HONEST SORRY (both directions are the deep Kronecker/Diophantine content).
-  -- ⇒: periodicity `‖U(τ)_{u,u}‖ = ‖∑_r e^{-iτθ_r} d_r‖ = 1` with `d_r ≥ 0`,
-  --    `∑ d_r = 1` forces all supported phases `e^{-iτθ_r}` equal, i.e.
-  --    `τ(θ_r - θ_s) ∈ 2πℤ` for every supported pair, whence all ratios of
-  --    eigenvalue differences are rational.
-  -- ⇐: rational ratios ⇒ a common `τ` aligning every phase, by simultaneous
-  --    rational approximation (`AddCircle` dense-orbit / Kronecker).
-  -- Both halves need the `Real.Angle`/`AddCircle` `2π`-periodicity extraction
-  -- not yet developed; left an honest `sorry`.  The *unitarity* scaffolding it
-  -- builds on (`evolve_col_sq_norm_eq_one`, row/column concentration) is closed
-  -- above.  Reference: Godsil, *Periodic graphs* (arXiv:1009.5375), Thm 6.1.
-  -- BLOCKED: needs Real.Angle/AddCircle 2π-periodicity + Kronecker simultaneous
-  -- approximation (both directions of the Diophantine criterion).
-  sorry
+  constructor
+  · -- FORWARD (CLOSED): periodicity ⇒ rational ratios of supported differences.
+    rintro ⟨τ, hτpos, hper⟩ r₁ r₂ r₃ r₄ h₁ h₂ h₃ h₄ hne34
+    -- All supported phases equal `U(τ)_{u,u}`; pairwise equal phases give
+    -- `τ(θ_r - θ_s) ∈ 2πℤ`.
+    have hphase : ∀ {a b : V}, a ∈ eigenvalueSupport G u → b ∈ eigenvalueSupport G u →
+        ∃ n : ℤ, τ * (G.herm.eigenvalues a - G.herm.eigenvalues b) = 2 * Real.pi * n := by
+      intro a b ha hb
+      have hea := supported_phase_eq_diag G u τ hper a ha
+      have heb := supported_phase_eq_diag G u τ hper b hb
+      have heq : Complex.exp (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues a : ℂ))
+          = Complex.exp (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues b : ℂ)) := by
+        rw [hea, heb]
+      rw [Complex.exp_eq_exp_iff_exists_int] at heq
+      obtain ⟨n, hn⟩ := heq
+      refine ⟨-n, ?_⟩
+      have himeq : (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues a : ℂ)).im
+          = (-(Complex.I * (τ : ℂ)) * (G.herm.eigenvalues b : ℂ)
+              + n * (2 * Real.pi * Complex.I)).im := by rw [hn]
+      simp [Complex.mul_im, Complex.add_im, Complex.ofReal_im, Complex.ofReal_re] at himeq
+      push_cast; nlinarith [himeq]
+    obtain ⟨n12, h12⟩ := hphase h₁ h₂
+    obtain ⟨n34, h34⟩ := hphase h₃ h₄
+    have hπ : (0 : ℝ) < Real.pi := Real.pi_pos
+    have hn34 : n34 ≠ 0 := by
+      intro h0; rw [h0] at h34; simp at h34
+      rcases h34 with h | h
+      · exact absurd h (ne_of_gt hτpos)
+      · exact hne34 (by linarith [h])
+    have hn34R : (n34 : ℝ) ≠ 0 := Int.cast_ne_zero.mpr hn34
+    refine ⟨(n12 : ℚ) / (n34 : ℚ), ?_⟩
+    have hd12 : G.herm.eigenvalues r₁ - G.herm.eigenvalues r₂ = 2 * Real.pi * n12 / τ := by
+      rw [eq_div_iff (ne_of_gt hτpos)]; linarith [h12]
+    have hd34 : G.herm.eigenvalues r₃ - G.herm.eigenvalues r₄ = 2 * Real.pi * n34 / τ := by
+      rw [eq_div_iff (ne_of_gt hτpos)]; linarith [h34]
+    rw [hd12, hd34, Rat.cast_div]
+    push_cast
+    field_simp
+  · -- BACKWARD: rational ratios ⇒ periodic.  Isolated as a named residual.
+    exact periodic_of_support_ratios_rational G u
 
 /-! ## Universal PST and switching automorphisms -/
 
@@ -380,11 +572,18 @@ Reference: Kay, *The perfect state transfer graph limbo* (arXiv:1310.3885),
 and Godsil's automorphism characterization of PST. -/
 theorem switchingAutomorphism_of_isPST (G : WeightedGraph V) {u v : V} {τ : ℝ}
     (h : IsPST G u v τ) : Nonempty (SwitchingAutomorphism G u v) := by
-  -- PST at `τ` makes `U(τ)` a symmetric unitary swapping `e_u ↔ e_v` up to a
-  -- global phase; on a graph with simple eigenvalue support this is realized by
-  -- a genuine adjacency automorphism (the "switching" map).
-  -- BLOCKED: extracting a vertex permutation from the PST unitary needs the
-  -- unitary→permutation-matrix recovery (simple-spectrum) argument, unavailable.
+  -- HONEST SORRY — irreducible content (construction of a *vertex permutation*
+  -- from the PST unitary) PLUS a statement-strength caveat.  Kay's switching
+  -- "automorphism" `T = E_+ - E_-` (split by eigenvalue parity) is an
+  -- *orthogonal involution commuting with `A`*, NOT in general a permutation
+  -- matrix: PST graphs need not be vertex-transitive, and the present
+  -- conclusion demands a genuine adjacency automorphism `σ : Equiv.Perm V` with
+  -- `perm u = v`.  This holds only under the integer/simple-spectrum hypotheses
+  -- of Kay 1310.3885 (which pin `T` to a 0/1 permutation), absent from the
+  -- signature here.  Recovering `σ` from `U(τ)` needs the
+  -- unitary→permutation-matrix (integer-spectrum) recovery argument, not
+  -- developed in this codebase.  Reference: Kay, arXiv:1310.3885; Godsil's
+  -- automorphism characterization of PST.
   sorry
 
 end Graphplay

@@ -840,19 +840,124 @@ noncomputable def IsFlat (s : GraphonSigning Ω μ) {cells : Ω → I}
     (h : s.CellCrossConstant cells) : Prop :=
   ∀ (p : List I), p.head? = p.getLast? → holonomy s h p = 1
 
+/-- **Coboundary telescoping of holonomy.**  If the quotient phase is a
+*coboundary* `τ i j = star (φ i) · φ j` with `φ` unimodular, then the
+holonomy of any non-empty path `a :: l` collapses to the boundary term
+`star (φ a) · φ (last)`.  This is the algebraic engine of the easy
+direction of `flat_iff_trivial_modulo_cell_phases`. -/
+theorem holonomy_coboundary
+    (s : GraphonSigning Ω μ) {cells : Ω → I}
+    (h : s.CellCrossConstant cells) {φ : I → ℂ}
+    (hu : ∀ i, ‖φ i‖ = 1)
+    (hφ : ∀ i j : I, s.quotientPhase h i j = star (φ i) * φ j) :
+    ∀ (a : I) (l : List I),
+      holonomy s h (a :: l) = star (φ a) * φ (l.getLastD a) := by
+  intro a l
+  induction l generalizing a with
+  | nil =>
+    -- `holonomy [a] = 1` and `star (φ a) · φ a = ‖φ a‖² = 1`.
+    simp only [holonomy, List.getLastD_nil]
+    rw [← starRingEnd_apply, RCLike.conj_mul (K := ℂ), hu a]; norm_num
+  | cons b t ih =>
+    -- `holonomy (a :: b :: t) = τ a b · holonomy (b :: t)`.
+    rw [show holonomy s h (a :: b :: t)
+          = s.quotientPhase h a b * holonomy s h (b :: t) from rfl,
+        ih b, hφ a b, List.getLastD_cons]
+    -- regroup `star (φ a) · φ b · (star (φ b) · φ …) = star (φ a) · φ …`
+    have hb : φ b * star (φ b) = 1 := by
+      rw [← starRingEnd_apply, RCLike.mul_conj (K := ℂ), hu b]; norm_num
+    linear_combination (star (φ a) * φ (t.getLastD b)) * hb
+
 /-- **Flat U(1) signings are gauge-equivalent to the trivial signing.**
 
 If a cell-cross-constant signing `s` is flat, then there exists a phase
 function `φ : I → ℂ` with `|φ i| = 1` such that
-`s.quotientPhase h i j = star (φ i) · φ j` for all `i, j : I`.  The
-finite-dimensional Hodge/flatness argument is standard. -/
-theorem flat_iff_trivial_modulo_cell_phases
+`s.quotientPhase h i j = star (φ i) · φ j` for all `i, j : I`.
+
+AUDIT FIX.  The bare statement (no measure hypotheses) is **false** in the
+`→` direction: without `SFinite μ` and positive-measure cells, the quotient
+phase is an *unconstrained* `Classical.choose` (cf. `quotientPhase_herm` /
+`quotientPhase_unimod`, which were themselves corrected to require those
+hypotheses), so flatness does not force unimodularity of `τ` and the
+coboundary witness `φ` cannot have `‖φ i‖ = 1`.  The TRUE form supplies the
+positive-measure-cell hypothesis `hpos`, which unlocks `quotientPhase_herm`
+and `quotientPhase_unimod`; the argument is then the finite-dimensional
+Hodge/holonomy transport: fix a base cell `b`, set `φ j := τ b j`, and
+read off the coboundary identity from flatness of the triangle
+`[i, b, j, i]`.  Both directions are proven; non-vacuous on
+`GraphonSigning.trivial` (any positive-measure partition), whose quotient
+phase is `≡ 1 = star 1 · 1`. -/
+theorem flat_iff_trivial_modulo_cell_phases [SFinite μ]
     (s : GraphonSigning Ω μ) {cells : Ω → I}
-    (h : s.CellCrossConstant cells) :
+    (h : s.CellCrossConstant cells)
+    (hpos : ∀ i, 0 < μ (cells ⁻¹' {i})) :
     IsFlat s h ↔ ∃ φ : I → ℂ,
       (∀ i, ‖φ i‖ = 1) ∧
       (∀ i j : I, s.quotientPhase h i j = star (φ i) * φ j) := by
-  sorry
+  constructor
+  · -- (→) flatness builds the cell-phase coboundary by base-point transport.
+    intro hflat
+    rcases isEmpty_or_nonempty I with hI | hI
+    · -- vacuous on an empty cell-index: any `φ` works.
+      exact ⟨fun i => (hI.false i).elim, fun i => (hI.false i).elim,
+        fun i => (hI.false i).elim⟩
+    · -- pick a base cell `b`; set `φ j := τ b j`.
+      obtain ⟨b⟩ := hI
+      refine ⟨fun j => s.quotientPhase h b j, ?_, ?_⟩
+      · intro j; exact s.quotientPhase_unimod h b j (hpos b) (hpos j)
+      · intro i j
+        -- flatness of the closed triangle `[i, b, j, i]`:
+        --   `τ i b · τ b j · τ j i = 1`.
+        have hclosed : (([i, b, j, i] : List I)).head? = ([i, b, j, i] : List I).getLast? := by
+          simp
+        have htri : holonomy s h [i, b, j, i] = 1 := hflat _ hclosed
+        -- evaluate the holonomy product explicitly.
+        have hval : holonomy s h [i, b, j, i]
+            = s.quotientPhase h i b * s.quotientPhase h b j
+                * s.quotientPhase h j i := by
+          simp only [holonomy]; ring
+        rw [hval] at htri
+        -- `τ j i = star (τ i j)` and `τ i j · τ j i = 1` (unimodularity).
+        have hherm : s.quotientPhase h j i = star (s.quotientPhase h i j) :=
+          s.quotientPhase_herm h i j (hpos i) (hpos j)
+        have hunit : s.quotientPhase h i j * s.quotientPhase h j i = 1 := by
+          rw [hherm, ← starRingEnd_apply, RCLike.mul_conj (K := ℂ),
+            s.quotientPhase_unimod h i j (hpos i) (hpos j)]; norm_num
+        -- from `τ i b · τ b j · τ j i = 1` and `τ i j · τ j i = 1`:
+        --   `τ i j = τ i b · τ b j = star (τ b i) · τ b j`.
+        have hbi : star (s.quotientPhase h b i) = s.quotientPhase h i b :=
+          (s.quotientPhase_herm h b i (hpos b) (hpos i)).symm
+        rw [hbi]
+        -- cancel `τ j i` from both `… · τ j i = 1`.
+        have hcancel : s.quotientPhase h i b * s.quotientPhase h b j
+            = s.quotientPhase h i j := by
+          have h1 : (s.quotientPhase h i b * s.quotientPhase h b j)
+              * s.quotientPhase h j i = 1 := htri
+          have h2 : s.quotientPhase h i j * s.quotientPhase h j i = 1 := hunit
+          -- multiply both `… · τ j i = 1` facts: equal products with the
+          -- same nonzero right factor ⇒ equal left factors.
+          have hjne : s.quotientPhase h j i ≠ 0 := by
+            intro hz
+            rw [hz, mul_zero] at h2; exact one_ne_zero h2.symm
+          have := h1.trans h2.symm
+          exact mul_right_cancel₀ hjne this
+        rw [hcancel]
+  · -- (←) the coboundary form is flat by telescoping.
+    rintro ⟨φ, hu, hφ⟩ p hp
+    -- a closed path `p` has `head? = getLast?`; telescope its holonomy.
+    cases p with
+    | nil => simp [holonomy]
+    | cons a l =>
+      rw [holonomy_coboundary s h hu hφ a l]
+      -- `head? (a::l) = some a`, `getLast? (a::l) = some (l.getLastD a)`.
+      have hhead : (a :: l).head? = some a := rfl
+      have hlast : (a :: l).getLast? = some (l.getLastD a) := by
+        simp [List.getLast?_cons]
+      rw [hhead, hlast] at hp
+      have heq : a = l.getLastD a := Option.some.inj hp
+      rw [← heq]
+      -- `star (φ a) · φ a = ‖φ a‖² = 1`.
+      rw [← starRingEnd_apply, RCLike.conj_mul (K := ℂ), hu a]; norm_num
 
 /-- **Chiral content of a graphon signing.**  The U(1) Wilson-loop sum
 $$ W(s) \;=\; \sum_{\text{triangles } (i, j, k)} \mathrm{Re}\,

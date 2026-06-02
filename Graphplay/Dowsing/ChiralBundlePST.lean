@@ -410,15 +410,37 @@ between vertices `i` and `j` at time `τ`.
 * The chiral base case `Q = pt` is Levine–Mesapam–Mustico–Tamon–Tucker–Zhan
   arXiv:2605.04414, Theorem 1.1 / Lemmas 2.1–2.3.
 
-**Proof sketch (deferred):** factor `B.totalSigned` through
-`signedBy_preserves_equitable` to get the fiber partition as equitable
-for the signed total; then apply `EquitablePartition.pst_lift` together
-with the characteristic-isometry intertwining
+**Proof sketch (deferred) and the residual obstruction.** The intended
+route factors `B.totalSigned` through `signedBy_preserves_equitable`,
+obtaining the fiber partition as equitable for the signed total, and then
+applies the characteristic-isometry intertwining
+`S^* exp(-i τ A_signed) S = exp(-i τ A_quot_signed)` of Bachman–Tamon §2
+(extended chirally as in Levine et al. Lemma 2.1).  The verified avatar of
+that intertwining is `EquitablePartition.pst_lift`, which establishes the
+`(⇐)` direction with the quotient operator taken to be the genuinely
+Hermitian symmetric quotient `P.symmQuotient` (= `crossMass /
+(√|C_i|·√|C_j|)`).
 
-  `S^* exp(-i τ A_signed) S = exp(-i τ A_quot_signed)`
+The residual gap — and the reason this stays an honest `sorry` rather than
+a `pst_lift` one-liner — is a **cell-size normalization mismatch**, isolated
+to a single named identity:
 
-of Bachman–Tamon §2 (extended chirally as in Levine et al. Lemma 2.1).
-The two PST predicates are then equivalent by the unitarity of `S`.
+  `B.quotientSigned.adj i j  =  crossMass i j  =  √|C_i|·√|C_j| · symmQuotient i j`.
+
+`quotientSigned.adj` is the *raw* cross-mass (`|C_i| · quotient i j`), while
+the lift's quotient operator is `symmQuotient`.  For equinumerous fibers of
+common size `N` these differ by the scalar `N`, so the host-side cell-uniform
+PST at time `τ` corresponds to `symmQuotient`-PST at time `τ` but to
+`quotientSigned`-PST at the *rescaled* time `N·τ`.  Hence the biconditional
+at the **same** `τ` is provable only when `N = 1` (singleton fibers, the
+Levine `Q = pt` base case discharged in `levine_base_corollary`); the general
+same-`τ` statement is not true as written.  Closing this honestly requires
+either (i) adding the hypothesis `∀ k, (fiberPartitionSigned …).cellCard k = 1`
+and invoking `pst_lift` with `quotientSigned = symmQuotient`, or
+(ii) restating the RHS time as `(Fintype.card (V i)) • τ`.  We keep the
+headline general and leave the named residual explicit.  (`pst_lift` is also
+only the `(⇐)` half; the `(⇒)` half needs the reverse implication of the
+unitary intertwining, a second honest component.)
 -/
 theorem pst_iff_quotient_signed_pst
     (B : ChiralBundle Q V)
@@ -432,7 +454,17 @@ theorem pst_iff_quotient_signed_pst
 /-- **PGST analogue.** Pretty-good cell-uniform state transfer on the
 chirally-signed bundle is equivalent to PGST on the chirally-signed
 quotient. Proof goes through `EquitablePartition.pgst_lift` plus a
-limit-and-quotient argument identical to the PST case. -/
+limit-and-quotient argument identical to the PST case.
+
+Honest `sorry`, same residual as `pst_iff_quotient_signed_pst`: the verified
+`EquitablePartition.pgst_lift` discharges the `(⇐)` direction with the
+quotient operator `symmQuotient`, whereas `IsPGST B.quotientSigned` is the
+PGST of the *raw* cross-mass quotient `quotientSigned.adj = √|C_i|·√|C_j| ·
+symmQuotient`.  The two coincide only for singleton fibers; in general the
+PGST approximating-time families differ by the cell-size rescale, so the
+same-predicate biconditional is not provable as written without a
+`cellCard ≡ 1` hypothesis (and the `(⇒)` half additionally needs the reverse
+unitary intertwining). -/
 theorem pgst_iff_quotient_signed_pgst
     (B : ChiralBundle Q V)
     {d : I → ℂ} (hreg : B.HasRegularFibers d)
@@ -593,7 +625,21 @@ some time `τ`: this is the additive combination of in-fiber Levine mixing
 with classical path PST, derived from `pst_iff_quotient_signed_pst` applied to
 `chiralHammingBundle`.  We state the genuine PST predicate on the quotient;
 the existence of the concrete time `π/(3√3) + τ_{P_m}` is an honest
-theorem-level `sorry`. -/
+theorem-level `sorry`.
+
+Audit note on non-vacuity and scope.  The quotient
+`(chiralHammingBundle n m).quotientSigned` is the *weighted path* `n² · P_m`
+(off-diagonal cross-mass between Q-adjacent path vertices is `n²`, from the
+all-ones `n×n` coupling with trivial phase).  As stated the claim ranges over
+**arbitrary** `i j : Fin m`.  For `i = j` it is true at `τ = 0`
+(`evolve 0 = 1`, so the diagonal entry has modulus `1`); but for *distinct*
+`i, j` it is the classical path-PST existence problem, which fails for generic
+endpoints (PST on `P_m` requires the antipodal pair and specific `m`, per
+Christandl et al. math/0309131).  So the universally-quantified statement is
+**not** provable as written without restricting `(i, j)` to a PST-admissible
+pair of the underlying weighted path; this stays an honest `sorry` and is the
+single named residual.  The only unconditionally reachable fragment is the
+diagonal `i = j` case via `τ = 0`. -/
 theorem chiralHammingBundle_pst_time (n m : ℕ) [NeZero n] [NeZero m]
     (hn : 4 ≤ n)
     (i j : Fin m) :

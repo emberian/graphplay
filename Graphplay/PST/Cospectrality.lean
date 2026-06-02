@@ -404,6 +404,48 @@ theorem eigenProjDiag_eq_zero_of_not_mem_range (G : WeightedGraph V) (lam : ℝ)
     intro he; exact h ⟨i, he⟩
   simp only [this, if_false, Complex.zero_re]
 
+/-- **Support spellings agree.**  This module's `eigenSupport` (defined via the
+`eigenvectorBasis` projector mass `eigenProjDiag G lam u ≠ 0`) coincides
+pointwise with the sibling `GodsilRatio.EigenvalueSupport` (defined via the
+`eigU`-coordinate witness `∃ i, eigenvalues i = lam ∧ eigU G u i ≠ 0`).  Both
+record exactly "`λ` is an eigenvalue carrying nonzero `u`-spectral mass".  The
+bridge is `eigenProjDiag_eq_local` (the two projector diagonals agree) plus the
+elementary fact that a finite sum of squared norms is nonzero iff one summand
+is. -/
+theorem eigenSupport_eq_eigenvalueSupport (G : WeightedGraph V) (u : V) :
+    eigenSupport G u = Graphplay.PST.EigenvalueSupport G u := by
+  ext lam
+  unfold eigenSupport Graphplay.PST.EigenvalueSupport
+  simp only [Set.mem_setOf_eq]
+  rw [eigenProjDiag_eq_local]
+  unfold Graphplay.PST.eigenProjDiagLocal
+  constructor
+  · rintro ⟨_, hne⟩
+    -- nonzero sum of nonneg terms ⇒ some term nonzero
+    by_contra hcon
+    push_neg at hcon
+    apply hne
+    apply Finset.sum_eq_zero
+    intro i _
+    by_cases h : G.herm.eigenvalues i = lam
+    · simp only [h, if_true]
+      have := hcon i h
+      rw [this]; simp
+    · simp only [h, if_false]
+  · rintro ⟨i, hi, hui⟩
+    refine ⟨⟨i, hi⟩, ?_⟩
+    -- the `i`-th term is strictly positive, all terms nonneg ⇒ sum ≠ 0
+    intro hsum
+    have hnn : ∀ j ∈ Finset.univ, 0 ≤ (if G.herm.eigenvalues j = lam then ‖Graphplay.PST.eigU G u j‖ ^ 2 else 0) := by
+      intro j _; by_cases h : G.herm.eigenvalues j = lam
+      · simp only [h, if_true]; positivity
+      · simp only [h, if_false, le_refl]
+    have hpos : 0 < (if G.herm.eigenvalues i = lam then ‖Graphplay.PST.eigU G u i‖ ^ 2 else 0) := by
+      simp only [hi, if_true]; positivity
+    have hlt := (Finset.sum_pos' hnn ⟨i, Finset.mem_univ i, hpos⟩)
+    rw [hsum] at hlt
+    exact lt_irrefl 0 hlt
+
 /-- The **Godsil ratio condition** on the eigenvalue support of a pair
 `(u, v)`: pick any reference eigenvalue `μ_0` in the support; then every
 ratio `(λ - μ_0)/(μ - μ_0)` over `λ, μ` in the joint support is rational.

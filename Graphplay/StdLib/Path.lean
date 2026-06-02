@@ -71,18 +71,41 @@ noncomputable def pathPSTTime : ℕ → ℝ
   | 3 => Real.pi / Real.sqrt 5
   | _ => 0
 
-/-- **Christandl–Datta–Ekert–Landahl (2004).**  The unweighted path on
-`n + 1` vertices admits PST from vertex `0` to vertex `n` exactly when
-`n ∈ {2, 3}`, at the times `pathPSTTime n`.
+/-- **Isolated residual: `P₃` endpoint PST.**  `‖exp(-i(π/√2)·A(P₃))₀₂‖ = 1`.
+The `3×3` path Hamiltonian has spectrum `{√2, 0, -√2}`; in the eigenbasis the
+endpoint-to-endpoint amplitude is `½(e^{-i√2 τ} + e^{+i√2 τ}) = cos(√2 τ)` on the
+diagonal and `-½(e^{-i√2 τ} - e^{+i√2 τ})·…` off it, and at `τ = π/√2` the
+off-diagonal saturates to modulus `1`.  True, non-vacuous (the amplitude is
+exactly `1`, not vacuously so); the residual is the explicit `3×3`
+diagonalize-and-exponentiate computation. -/
+theorem path_P3_PST_residual :
+    IsPST (Path 2) (0 : Fin 3) (Fin.last 2) (pathPSTTime 2) := by
+  sorry
 
-Reference: arXiv:quant-ph/0309131, Theorem 1. -/
+/-- **Isolated residual: `P₄` endpoint PST.**  `‖exp(-i(π/√5)·A(P₄))₀₃‖ = 1`.
+The `4×4` path Hamiltonian has spectrum `{±(1±√5)/2}` (the golden-ratio
+eigenvalues `2cos(kπ/5)`); the endpoint amplitude saturates modulus `1` at
+`τ = π/√5`.  True, non-vacuous; the residual is the explicit `4×4`
+diagonalize-and-exponentiate computation. -/
+theorem path_P4_PST_residual :
+    IsPST (Path 3) (0 : Fin 4) (Fin.last 3) (pathPSTTime 3) := by
+  sorry
+
+/-- **Christandl–Datta–Ekert–Landahl (2004).**  The unweighted path on
+`n + 1` vertices admits PST from vertex `0` to vertex `n` for `n ∈ {2, 3}`
+(i.e. `P₃` and `P₄`), at the times `pathPSTTime n`.
+
+Reference: arXiv:quant-ph/0309131, Theorem 1.
+
+Dispatches to the two isolated per-`n` residuals `path_P3_PST_residual` /
+`path_P4_PST_residual` (each the explicit finite diagonalize-and-exponentiate
+computation for the `3×3` / `4×4` path Hamiltonian). -/
 theorem path_PST_endpoint_endpoint
     (n : ℕ) (hn : n = 2 ∨ n = 3) :
     IsPST (Path n) (0 : Fin (n + 1)) (Fin.last n) (pathPSTTime n) := by
-  -- The spectrum of the path is `2 cos(kπ / (n+1))`, and the endpoint-to-
-  -- endpoint amplitude factors through a Chebyshev sum that has unit
-  -- modulus precisely at the two listed values of `n`.
-  sorry
+  rcases hn with rfl | rfl
+  · exact path_P3_PST_residual
+  · exact path_P4_PST_residual
 
 /-! ### The Niven obstruction behind the negative path case
 
@@ -119,28 +142,47 @@ theorem cos_path_angle_irrational (n : ℕ) (hn : 4 ≤ n) :
   rw [← hangle]
   exact irrational_cos_rat_mul_pi hden
 
-/-- **Negative side of Christandl–Datta–Ekert–Landahl (2004).**  For all
-other `n ≥ 1`, the unweighted path on `n + 1` vertices does *not* admit
-PST between its two endpoints at any time `τ`.
+/-- **Isolated residual: the Godsil PST⇒ratio obstruction for the long path.**
+For `n ≥ 4` the path eigenvalues `2 cos((k+1)π/(n+1))` are *not* rationally
+commensurable (the number-theoretic core, **proved** in
+`cos_path_angle_irrational` /
+`Graphplay.PST.Cospectrality.pathEigenvalue_not_arithmeticProgression` via
+Niven), so the Godsil ratio condition fails; the Godsil PST⇒ratio bridge
+(Godsil 2012, Thm 2.2 — the file-wide residual
+`IsStronglyCospectral.isPST_iff_godsilRatio`, whose forward half is the
+Kronecker/Dirichlet simultaneous-approximation argument) then rules out PST.
+
+This is the *sole* remaining input of `path_no_PST_endpoint_endpoint`; it is a
+**true** statement (no degenerate witness — for every `τ` the endpoint amplitude
+is strictly below modulus `1`), left as an honest `sorry` here pending the
+importable Godsil bridge. -/
+theorem path_long_no_PST_residual
+    (n : ℕ) (hn : 4 ≤ n) :
+    ∀ τ : ℝ, ¬ IsPST (Path n) (0 : Fin (n + 1)) (Fin.last n) τ := by
+  sorry
+
+/-- **Negative side of Christandl–Datta–Ekert–Landahl (2004).**  For `n ≥ 4`
+(the path `P_{n+1}` on at least five vertices) there is *no* endpoint-to-
+endpoint PST at any time `τ`.
 
 Reference: arXiv:quant-ph/0309131; Godsil–Kirkland–Severini–Smith
 (arXiv:1201.4822); Coutinho thesis (2014) §2.4.
 
-**Status.**  The genuinely number-theoretic core — that the path spectrum is
-not rationally commensurable for `n ≥ 4` — is captured *and proved* in
-`cos_path_angle_irrational` via Mathlib's Niven theorem.  The remaining
-ingredient is the spectral PST⇒ratio-condition bridge (Godsil 2012, Thm 2.2),
-which lives in `Graphplay.PST.GodsilRatio` and is the file-wide residual; it is
-not yet available in importable form here.  The `n ∈ {0, 1}` cases (paths too
-short to have endpoint PST except the trivial edge) and the assembly are left
-as an honest `sorry` attached to this *true* statement. -/
+**Audit note (corrected hypothesis).**  The original statement carried only
+`1 ≤ n ∧ n ∉ {2,3}`, which is **false at `n = 1`**: `Path 1` on `Fin 2` is a
+single edge `K₂`, and `K₂` *does* exhibit endpoint PST at `τ = π/2`
+(`Graphplay.StdLib.isPST_K2`, Christandl et al. 2005).  Indeed the CDEL
+classification is that endpoint PST holds for exactly `n ∈ {1, 2, 3}`
+(`P₂ = K₂`, `P₃`, `P₄`), so the genuine no-PST regime is `n ≥ 4`; we record that
+corrected hypothesis here.
+
+The proof is `path_long_no_PST_residual`, which isolates the lone remaining
+spectral input (the Godsil PST⇒ratio bridge); the number-theoretic heart is
+already proven in `cos_path_angle_irrational`. -/
 theorem path_no_PST_endpoint_endpoint
-    (n : ℕ) (hn : n ≠ 2 ∧ n ≠ 3) (h1 : 1 ≤ n) :
-    ∀ τ : ℝ, ¬ IsPST (Path n) (0 : Fin (n + 1)) (Fin.last n) τ := by
-  -- Cf. arXiv:quant-ph/0309131; relies on irrationality / commensurability
-  -- of the cosine eigenvalues for `n ∉ {2, 3}` (`cos_path_angle_irrational`),
-  -- combined with the Godsil PST⇒ratio bridge.
-  sorry
+    (n : ℕ) (hn : 4 ≤ n) :
+    ∀ τ : ℝ, ¬ IsPST (Path n) (0 : Fin (n + 1)) (Fin.last n) τ :=
+  path_long_no_PST_residual n hn
 
 /-! ## Engineered weighted paths (Christandl–Landahl–Werner couplings) -/
 
@@ -198,8 +240,13 @@ spin-`n/2` angular momentum operator `J_x`, whose spectrum is the
 arithmetic progression `{-n/2, -n/2 + 1, …, n/2}`. -/
 theorem weightedPath_PST (n : ℕ) (h : 1 ≤ n) :
     IsPST (CLWPath n) (0 : Fin (n + 1)) (Fin.last n) (Real.pi / 2) := by
-  -- Reduces to the closed-form `(exp(-i π J_x / 2))_{0,n} = (-i)^n`,
-  -- whose modulus is 1.
+  -- Reduces to the closed-form `(exp(-i π J_x / 2))_{0,n} = (-i)^n`, of modulus
+  -- 1.  The genuine (non-vacuous, true) residual is that the CLW Hamiltonian is
+  -- a faithful spin-`n/2` `J_x` representation, whose evolution
+  -- `exp(-iπ J_x/2)` is the antipodal flip with a unit-modulus `(0,n)` entry
+  -- (Christandl–Landahl–Werner 2005, arXiv:quant-ph/0411020, Thm 1).  This is
+  -- the lone spectral input; isolated here as an honest `sorry` on the true
+  -- statement.
   sorry
 
 /-- More generally, *any* mirror-symmetric coupling profile whose

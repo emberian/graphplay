@@ -40,6 +40,7 @@ References:
 -/
 
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.Analysis.Complex.Trigonometric
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
@@ -236,31 +237,191 @@ spectral idempotents `{E₀,...,E_d}` is governed by a permutation-of-order-2
 class together with congruence conditions on the spectrum.
 -/
 
-/-- The Bose-Mesner FR theorem (statement).  Let `G` be a weighted graph
-whose adjacency lies in `BoseMesner S` for an association scheme `S`, and
-let `θ : Fin (d+1) → ℝ` be its real spectrum.  Then `G` admits
-`eⁱᶻ (α, β)`-fractional revival from `u` to `v` at time `τ` iff:
+/-! #### Association-scheme entry facts
 
-(a) there is a unique class `A_q` with `(A_q)_{u,v} = 1`, and `A_q` is a
-    permutation matrix of order 2; and
-(b) for every `r` with `A_q E_r = +E_r` we have `(θ_r - θ_0) τ ≡ 0 (mod 2π)`,
-    and for every `r` with `A_q E_r = -E_r` we have
-    `(θ_r - θ_0) τ ≡ 2 arccos α   (mod 2π)`.
+The `0/1`/disjoint-support combinatorial data of an association scheme is
+carried by the `schur` and `sum_is_J`/`zero_is_one` fields.  These two small
+lemmas extract what the Bose-Mesner FR closed form needs about the entries of
+the associate matrices: each entry is idempotent (so lies in `{0,1}`), and the
+diagonal of every *non-identity* associate vanishes. -/
 
-When the conditions hold, FR occurs on *every* pair determined by `A_q`,
-i.e. we get an `IsFRSystem`.
+/-- Each entry of an associate matrix is idempotent: `(A i) x y² = (A i) x y`.
+This is the entrywise content of the Schur-product law `A i ∘ A i = A i`. -/
+theorem AssociationScheme.entry_idem
+    {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
+    (S : AssociationScheme V d) (i : Fin (d + 1)) (x y : V) :
+    (S.A i) x y * (S.A i) x y = (S.A i) x y := by
+  have h := S.schur i i
+  rw [if_pos rfl] at h
+  have := congrFun (congrFun h x) y
+  simpa [schurProduct] using this
 
-(See 1907.04729, Theorem 3.1.) -/
+/-- An idempotent complex number is `0` or `1`. -/
+theorem AssociationScheme.idem_eq_zero_or_one {z : ℂ} (h : z * z = z) :
+    z = 0 ∨ z = 1 := by
+  have hz : z * (z - 1) = 0 := by linear_combination h
+  rcases mul_eq_zero.mp hz with h0 | h1
+  · exact Or.inl h0
+  · exact Or.inr (by linear_combination h1)
+
+/-- The diagonal of every non-identity associate matrix vanishes: for `i ≠ 0`,
+`(A i) x x = 0`.  Proof: the diagonal entries are idempotent (so `0/1`), the
+identity class `A 0` contributes a `1`, and the diagonal entries sum to `1`
+(`sum_is_J`); since all are nonnegative reals, every non-identity entry is `0`. -/
+theorem AssociationScheme.diag_zero_of_ne
+    {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
+    (S : AssociationScheme V d) (i : Fin (d + 1)) (hi : i ≠ 0) (x : V) :
+    (S.A i) x x = 0 := by
+  have hidem : ∀ j, (S.A j) x x = 0 ∨ (S.A j) x x = 1 := fun j =>
+    AssociationScheme.idem_eq_zero_or_one (S.entry_idem j x x)
+  have hzero : (S.A 0) x x = 1 := by rw [S.zero_is_one]; simp [Matrix.one_apply_eq]
+  have hsum : (∑ j, (S.A j) x x) = 1 := by
+    have := congrFun (congrFun S.sum_is_J x) x
+    simpa [Matrix.sum_apply] using this
+  have hrest : (∑ j ∈ Finset.univ.erase (0 : Fin (d + 1)), (S.A j) x x) = 0 := by
+    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ 0), hzero] at hsum
+    linear_combination hsum
+  have hre : (∑ j ∈ Finset.univ.erase (0 : Fin (d + 1)), ((S.A j) x x).re) = 0 := by
+    have := congrArg Complex.re hrest
+    rwa [Complex.re_sum, Complex.zero_re] at this
+  have hnonneg : ∀ j ∈ Finset.univ.erase (0 : Fin (d + 1)), 0 ≤ ((S.A j) x x).re := by
+    intro j _; rcases hidem j with h | h <;> rw [h] <;> simp
+  have heach : ∀ j ∈ Finset.univ.erase (0 : Fin (d + 1)), ((S.A j) x x).re = 0 :=
+    (Finset.sum_eq_zero_iff_of_nonneg hnonneg).mp hre
+  have hire : ((S.A i) x x).re = 0 := heach i (Finset.mem_erase.mpr ⟨hi, Finset.mem_univ i⟩)
+  rcases hidem i with h | h
+  · exact h
+  · rw [h] at hire; simp at hire
+
+/-- **Bose-Mesner FR — converse (the reachable algebraic direction).**
+If the propagator takes the scheme closed form
+`U(τ) = exp(iζ)(α·1 + β·A_q)` with `(A_q)_{v,u} = 1` and `u ≠ v`, then `G`
+exhibits `exp(iζ)(α, β)`-fractional revival from `u` to `v` at time `τ`.
+
+This is the genuinely-finite half of Chan-Coutinho-Tamon-Vinet-Zhan Theorem
+3.1: the three on-support amplitudes are read straight off the closed form
+(using `diag_zero_of_ne` for `(A_q)_{u,u} = 0`, since `(A_q)_{v,u} = 1 ≠ 0`
+forces `q ≠ 0`), and the off-support annihilation `U(τ)_{w,u} = 0` for
+`w ∉ {u,v}` follows from **unitarity of the propagator**: the `u`-column of a
+unitary has unit norm, and the two on-support entries already carry the full
+norm `|α|² + |β|² = 1`, so every other column entry must vanish. -/
+theorem bose_mesner_fr_of_closed_form
+    {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
+    (S : AssociationScheme V d) (G : WeightedGraph V)
+    (u v : V) (huv : u ≠ v) (τ : ℝ) (α β : ℂ) (ζ : ℝ)
+    (hnorm : Complex.normSq α + Complex.normSq β = 1)
+    (q : Fin (d + 1)) (hq : (S.A q) v u = 1)
+    (hclosed : G.evolve τ = (Complex.exp (Complex.I * ζ) * α) • (1 : Matrix V V ℂ)
+                  + (Complex.exp (Complex.I * ζ) * β) • S.A q) :
+    IsFR G u v τ (Complex.exp (Complex.I * ζ) * α) (Complex.exp (Complex.I * ζ) * β) := by
+  set ph := Complex.exp (Complex.I * ζ) with hph
+  have hemod : Complex.normSq ph = 1 := by
+    rw [hph, Complex.normSq_eq_norm_sq,
+      show Complex.I * (ζ : ℂ) = (ζ : ℂ) * Complex.I by ring,
+      Complex.norm_exp_ofReal_mul_I]; norm_num
+  have hq0 : q ≠ 0 := by
+    intro h
+    rw [h, S.zero_is_one, Matrix.one_apply_ne (fun e => huv e.symm)] at hq
+    exact one_ne_zero hq.symm
+  -- the (w,u) entry formula for w ≠ u
+  have hentry : ∀ w : V, w ≠ u → G.evolve τ w u = ph * β * (S.A q) w u := by
+    intro w hwu
+    rw [hclosed]
+    simp only [Matrix.add_apply, Matrix.smul_apply, smul_eq_mul, Matrix.one_apply_ne hwu]
+    rw [mul_zero, zero_add]
+  -- the diagonal amplitude
+  have hdiag : G.evolve τ u u = ph * α := by
+    rw [hclosed]
+    simp only [Matrix.add_apply, Matrix.smul_apply, smul_eq_mul, Matrix.one_apply_eq]
+    rw [S.diag_zero_of_ne q hq0 u, mul_zero, mul_one, add_zero]
+  -- the off-diagonal amplitude
+  have hoff : G.evolve τ v u = ph * β := by
+    rw [hentry v (fun e => huv e.symm), hq, mul_one]
+  refine ⟨?_, hdiag, hoff, ?_⟩
+  · rw [map_mul, map_mul, hemod, one_mul, one_mul, hnorm]
+  · -- annihilation off `{u,v}` via unitarity of the `u`-column
+    intro w hwu hwv
+    rw [hentry w hwu]
+    -- it suffices that the column-`u` norm-sum already saturates at `{u,v}`
+    have hunit := G.evolve_unitary τ
+    have hcolnorm : (∑ x : V, Complex.normSq (G.evolve τ x u) : ℂ) = 1 := by
+      have := congrArg (fun M : Matrix V V ℂ => M u u) hunit
+      simp only [Matrix.mul_apply, Matrix.conjTranspose_apply, Matrix.one_apply_eq] at this
+      rw [← this]
+      refine Finset.sum_congr rfl (fun x _ => ?_)
+      rw [Complex.normSq_eq_conj_mul_self, ← Complex.star_def]
+    have hcolnormR : (∑ x : V, Complex.normSq (G.evolve τ x u)) = 1 := by
+      exact_mod_cast hcolnorm
+    -- the two on-support entries already carry the full norm 1
+    have hpair : (∑ x ∈ ({u, v} : Finset V), Complex.normSq (G.evolve τ x u)) = 1 := by
+      rw [Finset.sum_pair huv, hdiag, hoff, map_mul, map_mul, hemod, one_mul, one_mul, hnorm]
+    have hmem : ({u, v} : Finset V) ⊆ Finset.univ := Finset.subset_univ _
+    have hrest0 : (∑ x ∈ Finset.univ \ ({u, v} : Finset V),
+        Complex.normSq (G.evolve τ x u)) = 0 := by
+      have hsplit : (∑ x ∈ ({u, v} : Finset V), Complex.normSq (G.evolve τ x u))
+          + (∑ x ∈ Finset.univ \ ({u, v} : Finset V), Complex.normSq (G.evolve τ x u))
+          = ∑ x : V, Complex.normSq (G.evolve τ x u) := by
+        rw [add_comm, Finset.sum_sdiff hmem]
+      rw [hpair, hcolnormR] at hsplit
+      linarith [hsplit]
+    have hwmem : w ∈ Finset.univ \ ({u, v} : Finset V) := by
+      simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+        Finset.mem_singleton]
+      push_neg; exact ⟨hwu, hwv⟩
+    have hwnorm : Complex.normSq (G.evolve τ w u) = 0 :=
+      (Finset.sum_eq_zero_iff_of_nonneg (fun y _ => Complex.normSq_nonneg _)).mp hrest0 w hwmem
+    have hwzero : G.evolve τ w u = 0 := Complex.normSq_eq_zero.mp hwnorm
+    rw [hentry w hwu] at hwzero
+    exact hwzero
+
+/-- **Bose-Mesner FR — forward (the deep spectral direction).**  From FR on a
+Bose-Mesner graph one recovers the unique swap class `A_q` and the closed form
+`U(τ) = exp(iζ)(α·1 + β·A_q)`.  This is the eigenprojector half of
+Chan-Coutinho-Tamon-Vinet-Zhan Theorem 3.1: FR only constrains the `u`-column
+of `U(τ)`, and turning that into the *global* operator identity uses the
+primitive idempotent decomposition of the (commutative) Bose-Mesner algebra and
+the resulting spectral congruences on the times `τ`.  That apparatus is not yet
+formalised in Graphplay, so this is left as the single honest residual of
+`bose_mesner_fr_iff`.
+
+(Genuinely deep: requires the spectral / Krawtchouk eigenprojector API of
+1907.04729 §3.) -/
+theorem bose_mesner_fr_closed_form_of_fr
+    {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
+    (S : AssociationScheme V d) (G : WeightedGraph V)
+    (hG : G.adj ∈ BoseMesner S)
+    (u v : V) (huv : u ≠ v) (τ : ℝ) (α β : ℂ) (ζ : ℝ)
+    (hphase : α.im = 0)
+    (hnorm : Complex.normSq α + Complex.normSq β = 1) :
+    IsFR G u v τ (Complex.exp (Complex.I * ζ) * α) (Complex.exp (Complex.I * ζ) * β) →
+    (∃ q : Fin (d + 1),
+       (S.A q) v u = 1 ∧
+       (∀ q' ≠ q, (S.A q') v u = 0) ∧
+       G.evolve τ = (Complex.exp (Complex.I * ζ) * α) • (1 : Matrix V V ℂ)
+                  + (Complex.exp (Complex.I * ζ) * β) • S.A q) := by
+  sorry
+
+/-- The Bose-Mesner FR theorem.  Let `G` be a weighted graph whose adjacency
+lies in `BoseMesner S` for an association scheme `S`.  Then (for `u ≠ v`) `G`
+admits `eⁱᶻ (α, β)`-fractional revival from `u` to `v` at time `τ` iff there is
+a unique class `A_q` realising the swap `u ↔ v` and the propagator takes the
+closed form `U(τ) = exp(iζ)(α·1 + β·A_q)`.
+
+The **converse** (closed-form ⇒ FR) is fully proved here, by
+`bose_mesner_fr_of_closed_form` (finite algebra + unitarity of the propagator).
+
+The **forward** direction (FR ⇒ closed-form, with the unique swap class and the
+spectral congruences on the primitive idempotents that pin `τ`) is the deep
+half of 1907.04729 Theorem 3.1; it requires the eigenprojector / Krawtchouk
+spectral apparatus and is isolated as the single named residual
+`bose_mesner_fr_closed_form_of_fr`. -/
 theorem bose_mesner_fr_iff
     {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
     (S : AssociationScheme V d) (G : WeightedGraph V)
     (hG : G.adj ∈ BoseMesner S)
-    (u v : V) (τ : ℝ) (α β : ℂ) (ζ : ℝ)
+    (u v : V) (huv : u ≠ v) (τ : ℝ) (α β : ℂ) (ζ : ℝ)
     (hphase : α.im = 0)              -- WLOG α is real (1907.04729 §2)
     (hnorm : Complex.normSq α + Complex.normSq β = 1) :
-    -- The full biconditional has both directions; we package it as a
-    -- one-sided implication here so that the file type-checks without
-    -- pulling in the full eigenprojector API.
     (IsFR G u v τ (Complex.exp (Complex.I * ζ) * α) (Complex.exp (Complex.I * ζ) * β))
     ↔
     (-- (a) a unique class `A_q` realising the swap `u ↔ v`...
@@ -273,9 +434,14 @@ theorem bose_mesner_fr_iff
        -- which encodes the spectral congruences on the primitive idempotents).
        G.evolve τ = (Complex.exp (Complex.I * ζ) * α) • (1 : Matrix V V ℂ)
                   + (Complex.exp (Complex.I * ζ) * β) • S.A q) := by
-  -- The forward direction is 1907.04729 Theorem 3.1; the converse is also
-  -- Theorem 3.1.  Both hinge on the Bose-Mesner being commutative.
-  sorry
+  constructor
+  · -- Forward: deep half of 1907.04729 Theorem 3.1 (eigenprojector spectral
+    -- congruences); isolated as the single named residual.
+    exact bose_mesner_fr_closed_form_of_fr S G hG u v huv τ α β ζ hphase hnorm
+  · -- Converse: read the amplitudes off the closed form; off-support entries
+    -- die by unitarity.  Fully proved.
+    rintro ⟨q, hq, _huniq, hclosed⟩
+    exact bose_mesner_fr_of_closed_form S G u v huv τ α β ζ hnorm q hq hclosed
 
 /-! ### 1.3 The FR lifting theorem (Tower-2 headline)
 
@@ -760,19 +926,57 @@ def chiralKn_fr_conjecture (n : ℕ) : Prop :=
     u ≠ v ∧ α ≠ 0 ∧ β ≠ 0 ∧
     IsFR (chiralKn n s) u v τ α β
 
-/-- **Partial witness (statement only).**  For the specific signing
-`unitaryHammingChiralK4Signing` of `Graphplay.Chiral`, the resulting
-chirally-signed `K_4` admits non-trivial fractional revival between
-vertex `0` and vertex `2` (the antipode of the conical reduction
-`K_1 + K̄_3`) at some time `τ ∈ (0, π)`.
+/-- The `0`-column of the chiral-`K_4` walk closed form: off the diagonal every
+entry is the common scalar `(-i·sin(√3 τ)/√3)·B_{w,0}`, which by
+`chiralK4Matrix` equals `(-i·sin(√3 τ)/√3)·i` for **all** `w ≠ 0`.  This is the
+algebraic root of the uniform-mixing phenomenon and the obstruction to FR. -/
+private theorem chiralK4_evolve_col0 (τ : ℝ) (w : Fin 4) (hw : w ≠ 0) :
+    unitaryHammingChiralK4.evolve τ w 0
+      = (-(Complex.I) * (Real.sin (Real.sqrt 3 * τ) : ℂ) / (Real.sqrt 3 : ℂ))
+          * chiralK4Matrix w 0 := by
+  rw [chiralK4_evolve]
+  simp only [Matrix.add_apply, Matrix.smul_apply, smul_eq_mul, Matrix.one_apply_ne hw]
+  rw [mul_zero, zero_add]
 
-(The numerical evidence in 2605.04414 §2 is consistent with this; a
-rigorous spectral analysis is left as future work.) -/
-theorem unitaryHammingChiralK4_fr_partial :
-    ∃ τ : ℝ, ∃ α β : ℂ,
-      α ≠ 0 ∧ β ≠ 0 ∧
-      IsFR unitaryHammingChiralK4 (0 : Fin 4) (2 : Fin 4) τ α β := by
-  sorry
+private theorem chiralK4Matrix_col0_eq_I (w : Fin 4) (hw : w ≠ 0) :
+    chiralK4Matrix w 0 = Complex.I := by
+  fin_cases w <;> simp_all [chiralK4Matrix]
+
+/-- **No genuine fractional revival on the chiral `K_4` from vertex `0`
+(true non-vacuous result; corrects the earlier false "partial witness").**
+
+The `unitaryHammingChiralK4` of `Graphplay.Chiral` admits *uniform mixing* at
+`π/(3√3)` (`unitaryHammingChiralK4_uniformMixing`), and it is exactly this
+uniformity that **forbids** fractional revival between vertex `0` and any single
+other vertex: the entire off-diagonal of the `0`-column of `U(τ)` is the *same*
+scalar `(-i sin(√3 τ)/√3)·i` (`chiralK4_evolve_col0` + `chiralK4Matrix_col0_eq_I`),
+so requiring it to vanish off `{0, v}` forces that scalar to be `0`, which kills
+the `(v,0)` amplitude `β` as well.
+
+Hence any `(α, β)`-FR from `0` to `2` necessarily has `β = 0` — i.e. there is no
+*non-trivial* FR (the original `β ≠ 0` claim was false).  This is the honest,
+proved replacement: the chiral `K_4` is a uniform mixer, not an FR graph, from
+vertex `0`.
+
+(The closed form is `chiralK4_evolve` from `Graphplay.Chiral`; the spectral
+facts `chiralK4Matrix_sq` / `chiralK4Involution` feed it.) -/
+theorem unitaryHammingChiralK4_no_nontrivial_fr_from_zero
+    (τ : ℝ) (α β : ℂ) (h : IsFR unitaryHammingChiralK4 (0 : Fin 4) (2 : Fin 4) τ α β) :
+    β = 0 := by
+  obtain ⟨_, _, hβ, hrest⟩ := h
+  -- the `(1,0)` entry is annihilated (1 ∉ {0,2})
+  have h10 : unitaryHammingChiralK4.evolve τ 1 0 = 0 :=
+    hrest 1 (by decide) (by decide)
+  -- but `(1,0)` and `(2,0)` are the *same* scalar `c·i`
+  have e10 : unitaryHammingChiralK4.evolve τ 1 0
+      = (-(Complex.I) * (Real.sin (Real.sqrt 3 * τ) : ℂ) / (Real.sqrt 3 : ℂ)) * Complex.I := by
+    rw [chiralK4_evolve_col0 τ 1 (by decide), chiralK4Matrix_col0_eq_I 1 (by decide)]
+  have e20 : unitaryHammingChiralK4.evolve τ 2 0
+      = (-(Complex.I) * (Real.sin (Real.sqrt 3 * τ) : ℂ) / (Real.sqrt 3 : ℂ)) * Complex.I := by
+    rw [chiralK4_evolve_col0 τ 2 (by decide), chiralK4Matrix_col0_eq_I 2 (by decide)]
+  -- so `c·i = 0`, hence `β = evolve τ 2 0 = c·i = 0`
+  rw [e10] at h10
+  rw [← hβ, e20, h10]
 
 /-! ## 5.  Open directions
 

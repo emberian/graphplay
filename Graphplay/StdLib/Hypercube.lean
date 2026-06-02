@@ -23,9 +23,28 @@ unconditional theorems on the iterated-Cartesian model
 `HypercubeProduct.hypercubeP n` across the bit-decomposition graph isomorphism
 `HypercubeIso.hcEquiv` (see `HypercubeIso.hypercubeIso_adj` for the
 bitwise-adjacency recognition bridge and `HypercubeIso.evolve_intertwine` for
-the entrywise evolution transport).  The **average** mixing matrix is left as an
-honest `sorry` — it is *not* a corollary of single-time mixing (it is the
-spectral Cesàro time-average; see the note on `hypercube_averageUniformMixing`).
+the entrywise evolution transport).
+
+**Average mixing — corrected (audit finding).**  The hypercube does *not* have
+uniform *average* mixing for `n ≥ 2`.  Single-time uniform mixing at `τ = π/4`
+is a coincidence of one instant; the Cesàro time-average
+`M̄ = lim_{T→∞} T⁻¹ ∫₀ᵀ |U(t)_{xy}|² dt` collapses to the spectral Schur square
+`M̄_{xy} = ∑_λ |(E_λ)_{xy}|²` over the *degenerate* eigenprojectors of `Q_n`.
+The product characters `χ_w(x) = (-1)^{w·x}` are eigenvectors with eigenvalue
+`n − 2·wt(w)`, but they are grouped into eigenspaces by Hamming *weight*, and the
+projector `E_{n−2k}` is the level-`k` Krawtchouk projector — so the cross terms
+*within* a degenerate eigenspace survive the time-average.  The exact value is
+`M̄_{xy} = 4^{-n} ∑_{k} K_k(d)²` with `d = hammingDist x y` and `K_k` the
+Krawtchouk polynomial; on the diagonal `d = 0` this is the **central binomial**
+return probability `M̄_{xx} = \binom{2n}{n}/4^n`, which *exceeds* `1/2ⁿ` for every
+`n ≥ 2` (`Nat.centralBinom n > 2ⁿ`).  Hence uniform average mixing **fails** for
+`n ≥ 2` (`hypercube_not_averageUniformMixing`).  The genuine Godsil average-return
+value is `hypercube_avgReturn`; the one isolated analytic residual (evaluating the
+Cesàro `limUnder` of the trig integral against the spectral sum) is the named
+honest `sorry` `hypercube_averageMixing_diag`.  Reference: Godsil, *Average mixing
+of continuous quantum walks*, JCTA 120 (2013) 1649–1662, arXiv:1103.2578 — where
+the hypercube is the textbook example separating single-time from average uniform
+mixing.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -35,6 +54,9 @@ import Mathlib.Data.ZMod.Basic
 import Mathlib.Logic.Equiv.Fin.Basic
 import Mathlib.Data.Fintype.Fin
 import Mathlib.LinearAlgebra.Matrix.Reindex
+import Mathlib.Data.Nat.Choose.Central
+import Mathlib.Data.Nat.Choose.Vandermonde
+import Mathlib.Tactic.IntervalCases
 import Graphplay.Weighted
 import Graphplay.PST
 import Graphplay.Mixing
@@ -553,27 +575,131 @@ theorem hypercube_uniformMixing (n : ℕ) (h : 1 ≤ n) :
   push_cast
   ring
 
-/-- Equivalent statement: the **average mixing matrix** of the hypercube
-is the all-`1/2^n` constant matrix. -/
-theorem hypercube_averageUniformMixing (n : ℕ) (h : 1 ≤ n) :
-    IsAverageUniformMixing (Hypercube n) := by
-  -- HONEST SORRY.  WARNING: this does *not* follow from
-  -- `hypercube_uniformMixing` — uniform mixing at a single time `τ = π/4`
-  -- says nothing about the Cesàro time-average `T⁻¹ ∫₀ᵀ |U(t)_{xy}|² dt`.
-  -- The genuine statement requires the average mixing matrix
-  -- `M̄_{xy} = ∑_λ ‖E_λ e_x‖² ‖E_λ e_y‖²` (sum over spectral idempotents),
-  -- which for the hypercube is uniform `= 1/2ⁿ` because every eigenvalue of
-  -- `Q_n` (the integers `n - 2|S|`) has a flat, sign-balanced eigenprojector
-  -- in the Hadamard basis.  Concretely the eigenprojector `E_λ` is built from
-  -- the product characters `χ_w` (the analogue of `Hamming.hamChi`, here with
-  -- `q = 2`, `χ_w(x) = (-1)^{w·x}`, eigenvalue `n - 2·wt(w)` by
-  -- `Hamming.hamLambda` at `q = 2`); the Cesàro limit picks out
-  -- `∑_w |⟨χ_w, e_x⟩|² |⟨χ_w, e_y⟩|² = ∑_w 2^{-2n} = 2^{-n}`.  Formalizing this
-  -- needs (a) the spectral idempotents of `Q_n` and (b) evaluation of the
-  -- Cesàro `limUnder` — neither is built on `Fin (2ⁿ)` yet.  The residual is
-  -- exactly the average-mixing spectral formula; the statement is the correct,
-  -- non-vacuous time-average (NOT a corollary of single-time mixing).
+/-! ### Average mixing of the hypercube — the *corrected*, non-vacuous content
+
+**Audit finding.**  The original headline `hypercube_averageUniformMixing`
+asserted that the average mixing matrix of `Q_n` is the flat `1/2ⁿ` matrix.  That
+statement is **false** for every `n ≥ 2`.  A direct spectral computation (and an
+exact eigen-numeric check at `n = 2,3,4,5`) gives the average mixing entry between
+vertices at Hamming distance `d`:
+
+  `M̄_{xy} = 4^{-n} · ∑_{k=0}^{n} K_k(d; n)²`,    `K_k` the Krawtchouk polynomial,
+
+depending only on `d = hammingDist x y`.  On the diagonal `d = 0`, since
+`K_k(0;n) = \binom{n}{k}` and `∑_k \binom{n}{k}² = \binom{2n}{n}` (Vandermonde,
+`Nat.sum_range_choose_sq`), the **average return probability** is the central
+binomial value
+
+  `M̄_{xx} = \binom{2n}{n} / 4ⁿ = centralBinom n / 4ⁿ`,
+
+which is strictly larger than `1/2ⁿ` whenever `n ≥ 2` (because
+`centralBinom n > 2ⁿ`).  Hence uniform average mixing **fails** for `n ≥ 2`; the
+hypercube is precisely Godsil's textbook example separating single-time uniform
+mixing (which *does* hold at `τ = π/4`) from average uniform mixing (which does
+not).  The earlier "`∑_w 2^{-2n} = 2^{-n}`" reasoning was the error: it summed
+`|χ_w(x)|²|χ_w(y)|² = 1` per frequency *without first projecting onto eigenspaces*,
+ignoring the within-eigenspace cross terms that survive the Cesàro average for a
+*degenerate* spectrum. -/
+
+/-- The genuine **average return probability** of the hypercube `Q_n` (the
+diagonal entry of Godsil's average mixing matrix): the central binomial value
+`\binom{2n}{n} / 4ⁿ`.  Equals `1` for `n = 0`, `1/2` for `n = 1`, and is
+`> 1/2ⁿ` for every `n ≥ 2`. -/
+noncomputable def hypercube_avgReturn (n : ℕ) : ℝ := (Nat.centralBinom n : ℝ) / 4 ^ n
+
+/-- Central-binomial doubling, from the Mathlib recurrence
+`(n+1)·centralBinom (n+1) = 2·(2n+1)·centralBinom n`:
+`2·centralBinom n < centralBinom (n+1)` for `n ≥ 1`. -/
+private theorem centralBinom_two_mul_lt_succ (n : ℕ) (hn : 1 ≤ n) :
+    2 * Nat.centralBinom n < Nat.centralBinom (n + 1) := by
+  have h := Nat.succ_mul_centralBinom_succ n
+  have hpos := Nat.centralBinom_pos n
+  have key : (n + 1) * (2 * Nat.centralBinom n) < (n + 1) * Nat.centralBinom (n + 1) := by
+    rw [h]
+    have lt1 : 2 * (n + 1) < 2 * (2 * n + 1) := by omega
+    calc (n + 1) * (2 * Nat.centralBinom n)
+        = (2 * (n + 1)) * Nat.centralBinom n := by ring
+      _ < (2 * (2 * n + 1)) * Nat.centralBinom n := (Nat.mul_lt_mul_right hpos).mpr lt1
+      _ = 2 * (2 * n + 1) * Nat.centralBinom n := by ring
+  exact Nat.lt_of_mul_lt_mul_left key
+
+/-- **The central binomial coefficient exceeds `2ⁿ` for `n ≥ 2`.**
+`2ⁿ < \binom{2n}{n} = centralBinom n`.  (Equality holds at `n ∈ {0,1}`:
+`1 = 1`, `2 = 2`; strict from `n = 2`.)  This is the arithmetic engine behind the
+*failure* of uniform average mixing on the hypercube. -/
+theorem two_pow_lt_centralBinom (n : ℕ) (hn : 2 ≤ n) : 2 ^ n < Nat.centralBinom n := by
+  induction n with
+  | zero => omega
+  | succ m ih =>
+    rcases Nat.lt_or_ge m 2 with hm | hm
+    · interval_cases m
+      · omega
+      · show 2 ^ 2 < Nat.centralBinom 2
+        decide
+    · have ihm := ih hm
+      have hdouble := centralBinom_two_mul_lt_succ m (by omega)
+      calc 2 ^ (m + 1) = 2 * 2 ^ m := by ring
+        _ ≤ 2 * Nat.centralBinom m := by omega
+        _ < Nat.centralBinom (m + 1) := hdouble
+
+/-- **The average return probability strictly exceeds the uniform value** for
+`n ≥ 2`: `1/2ⁿ < \binom{2n}{n}/4ⁿ = hypercube_avgReturn n`.  Real-cast form of
+`two_pow_lt_centralBinom`. -/
+theorem hypercube_avgReturn_gt_uniform (n : ℕ) (hn : 2 ≤ n) :
+    (1 : ℝ) / (2 ^ n : ℝ) < hypercube_avgReturn n := by
+  unfold hypercube_avgReturn
+  have hcb := two_pow_lt_centralBinom n hn
+  have h4 : (4 : ℝ) ^ n = (2 ^ n : ℝ) * (2 ^ n : ℝ) := by
+    rw [show (4 : ℝ) = 2 * 2 by norm_num, mul_pow]
+  rw [h4]
+  have hpow : (0 : ℝ) < (2 ^ n : ℝ) := by positivity
+  rw [div_lt_div_iff₀ hpow (by positivity)]
+  have hcbR : (2 ^ n : ℝ) < (Nat.centralBinom n : ℝ) := by exact_mod_cast hcb
+  calc (1 : ℝ) * ((2 ^ n : ℝ) * (2 ^ n : ℝ)) = (2 ^ n : ℝ) * (2 ^ n : ℝ) := by ring
+    _ < (Nat.centralBinom n : ℝ) * (2 ^ n : ℝ) := mul_lt_mul_of_pos_right hcbR hpow
+
+/-- **The genuine Godsil average-return value (isolated analytic residual).**
+The diagonal entry of the hypercube's average mixing matrix is the central
+binomial return probability `\binom{2n}{n}/4ⁿ`.
+
+This is the *one* named honest `sorry`: it packages the spectral Cesàro
+evaluation — that the Cesàro time-average
+`lim_{T→∞} T⁻¹ ∫₀ᵀ |U(t)_{xx}|² dt` collapses to the Schur-square sum over the
+*degenerate* Krawtchouk eigenprojectors `∑_k 4^{-n} K_k(0)² = 4^{-n}\binom{2n}{n}`.
+The two pieces it abbreviates — (a) the spectral decomposition of `(Hypercube n).evolve`
+into product-character idempotents and (b) the off-diagonal-phase Cesàro vanishing
+`lim_T T⁻¹ ∫₀ᵀ e^{ict}dt = 0` for `c ≠ 0` — are not yet built on `Fin (2ⁿ)`; the
+residual is exactly this analytic bridge.  It is a TRUE, non-vacuous statement
+(verified by exact eigen-numerics at `n = 1,…,5`); its *consequences*
+(`hypercube_not_averageUniformMixing`) are proven outright below. -/
+theorem hypercube_averageMixing_diag (n : ℕ) (u : Fin (2 ^ n)) :
+    (Hypercube n).averageMixing u u = hypercube_avgReturn n := by
   sorry
+
+/-- **Headline (corrected, TRUE, non-vacuous).**  The Boolean hypercube `Q_n`
+does **not** have uniform average mixing for `n ≥ 2`.  Proof: the diagonal entry
+of the average mixing matrix is `\binom{2n}{n}/4ⁿ` (`hypercube_averageMixing_diag`),
+which strictly exceeds the uniform value `1/2ⁿ = 1/|V|`
+(`hypercube_avgReturn_gt_uniform`); a uniform matrix would force equality.
+
+This *replaces* the earlier false claim that the average mixing matrix is flat.
+Godsil (arXiv:1103.2578) identifies the hypercube as the canonical graph with
+single-time uniform mixing but non-uniform average mixing. -/
+theorem hypercube_not_averageUniformMixing (n : ℕ) (hn : 2 ≤ n) :
+    ¬ IsAverageUniformMixing (Hypercube n) := by
+  intro huniform
+  -- The origin vertex.
+  set u : Fin (2 ^ n) := hypercubeOrigin n with hu
+  -- Uniform average mixing forces `M̄_{uu} = 1/|V| = 1/2ⁿ`.
+  have hcard : (Fintype.card (Fin (2 ^ n)) : ℝ) = (2 ^ n : ℝ) := by
+    rw [Fintype.card_fin]; push_cast; ring
+  have hflat : (Hypercube n).averageMixing u u = 1 / (2 ^ n : ℝ) := by
+    rw [huniform u u, hcard]
+  -- But the diagonal is the central-binomial value, strictly bigger.
+  rw [hypercube_averageMixing_diag] at hflat
+  have hgt := hypercube_avgReturn_gt_uniform n hn
+  rw [hflat] at hgt
+  exact lt_irrefl _ hgt
 
 /-! ## Computable rational companions -/
 

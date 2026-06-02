@@ -249,12 +249,15 @@ Reference: Kay, *The perfect state transfer graph limbo*, arXiv:1310.3885;
 Godsil's automorphism characterization. -/
 theorem switchingAutomorphism_of_isPST (G : WeightedGraph V) {u v : V} {τ : ℝ}
     (h : IsPST G u v τ) : Nonempty (SwitchingAutomorphism G u v) := by
-  -- PST at `τ` makes `U(τ)` a symmetric unitary swapping `e_u ↔ e_v` up to a
-  -- global phase; on graphs with simple eigenvalue support this is realized by
-  -- a genuine adjacency automorphism (the "switching" map).  The construction of
-  -- the permutation from the unitary is the deep content; honest `sorry`.
-  -- BLOCKED: recovering a vertex permutation from the PST unitary needs the
-  -- unitary→permutation-matrix (simple-spectrum) recovery argument, unavailable.
+  -- HONEST SORRY — irreducible content (constructing a *vertex permutation* from
+  -- the PST unitary) plus a statement-strength caveat: Kay's switching map
+  -- `T = E_+ - E_-` is an orthogonal involution commuting with `A`, a genuine
+  -- 0/1 permutation matrix only under the integer/simple-spectrum hypotheses of
+  -- Kay 1310.3885 (PST graphs need not be vertex-transitive, so an honest
+  -- `Equiv.Perm V` automorphism need not exist in this generality).  The
+  -- unitary→permutation-matrix (integer-spectrum) recovery argument is not
+  -- developed here.  Reference: Kay, arXiv:1310.3885; Godsil's automorphism
+  -- characterization of PST.
   sorry
 
 /-- **Multiple state transfer ⇒ a common switching automorphism.**  If `G`
@@ -494,14 +497,27 @@ revival). -/
 theorem isKFractionalRevival_pair_of_isPST (G : WeightedGraph V) {u v : V}
     {τ : ℝ} (huv : u ≠ v) (h : IsPST G u v τ) :
     IsKFractionalRevival G {u, v} τ := by
-  -- The `k = v` leak is pure unitarity (`evolve_col_eq_zero_of_isPST`); the
-  -- `k = u` leak needs `‖U(τ)_{·,u}‖ = 1`, i.e. target-side PST `v → u`, which is
-  -- the spectral-symmetry half of Godsil's theorem and is *false* for general
-  -- (non-symmetric) Hermitian `A`.  The real-symmetric case is closed in
-  -- `isKFractionalRevival_pair_of_isPST_of_isSymm`.
-  -- BLOCKED: `k = u` leak requires target-side PST (false for general Hermitian A);
-  -- use isKFractionalRevival_pair_of_isPST_of_isSymm for the symmetric case.
-  sorry
+  have hUV : ‖G.evolve τ u v‖ = 1 := h
+  intro k hk j hj
+  simp only [Finset.mem_insert, Finset.mem_singleton] at hk
+  have hju : j ≠ u := fun hju => hj (by simp [hju])
+  have hjv : j ≠ v := fun hjv => hj (by simp [hjv])
+  rcases hk with hk | hk
+  · -- `k = u` leak: needs `‖U(τ)_{·,u}‖ = 1` (target-side PST `v → u`), the
+    -- spectral-symmetry half of Godsil's theorem.  This is *genuinely false* for
+    -- general (non-symmetric) Hermitian `A` — the chiral / directed triangle
+    -- `u → v → w → u` realizes `‖U_{u,v}‖ = 1` yet leaks `‖U_{w,u}‖ = 1` with
+    -- `w ∉ {u,v}`.  Closed under the classical real-symmetric (`Aᵀ = A`)
+    -- hypothesis by `isKFractionalRevival_pair_of_isPST_of_isSymm`.
+    -- ISOLATED RESIDUAL (false in this Hermitian generality; TRUE-making
+    -- hypothesis `G.adj.IsSymm` available in the sibling lemma):
+    rw [hk]
+    sorry
+  · -- `k = v` leak: CLOSED by pure unitarity.  The `v`-column of `U(τ)` is
+    -- concentrated at `u` (its unit `ℓ²`-mass is already saturated by the
+    -- modulus-1 `(u,v)` entry), so every other entry vanishes.
+    rw [hk]
+    exact evolve_col_eq_zero_of_isPST G τ u v hUV j hju
 
 end PST
 end Graphplay

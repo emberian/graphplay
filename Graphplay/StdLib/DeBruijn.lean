@@ -51,6 +51,7 @@ import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Data.Fintype.Pi
 import Graphplay.Weighted
+import Graphplay.ForMathlib.CourantFischer
 
 open scoped Matrix
 open NormedSpace
@@ -287,21 +288,86 @@ theorem DeBruijn.in_eq_out_degree (k n : ℕ) (w : DeBruijn.Window k n) :
     (DeBruijn.inNeighbors w).card = (DeBruijn.outNeighbors w).card := by
   rw [DeBruijn.inDegree, DeBruijn.outDegree]
 
-/-- **Closed-form spectrum of the de Bruijn graph (honest `sorry`).**
-The (directed) de Bruijn graph `B(k, n+1)` has adjacency spectrum
-`{k} ∪ {0^{(k^{n+1} − k^n)}}` together with the spectrum of `B(k, n)` — the
-characteristic polynomial satisfies the nilpotent-plus-shift recursion
-`χ_{B(k,n+1)}(x) = x^{(k−1)k^n} · χ_{B(k,n)}(x)` (Strok, *Circulant matrices
-and the spectra of de Bruijn graphs*, 1992).  In particular, for `k ≥ 1` and
-the symmetrized Hamiltonian the all-ones direction gives a real eigenvalue of
-magnitude `≥ k` (the regular degree).
+open scoped Matrix in
+open WithLp in
+/-- **Rayleigh lower bound for the largest eigenvalue.**  If a Hermitian matrix
+`A` admits a test vector `x ≠ 0` whose Rayleigh numerator dominates `B · ‖x‖²`,
+then some eigenvalue is `≥ B`.  Pure Courant–Fischer (spectral expansion of the
+quadratic form), proved from the `Graphplay.CourantFischer` hinges.  (Stated here
+so the de Bruijn degree-eigenvalue statement reduces to a single combinatorial
+input.) -/
+theorem _root_.Graphplay.CourantFischer.exists_eigenvalue_ge_of_rayleigh'
+    {W : Type*} [Fintype W] [DecidableEq W]
+    (A : Matrix W W ℂ) (hA : A.IsHermitian) (B : ℝ) (x : W → ℂ) (hx : x ≠ 0)
+    (hxB : B * (∑ u, ‖x u‖ ^ 2) ≤ (star x ⬝ᵥ (A *ᵥ x)).re) :
+    ∃ i, B ≤ hA.eigenvalues i := by
+  classical
+  by_contra hcon
+  push_neg at hcon
+  set c : W → ℝ := fun i => ‖inner ℂ (hA.eigenvectorBasis i) (toLp 2 x)‖ ^ 2 with hc
+  have hcnn : ∀ i, 0 ≤ c i := fun i => by rw [hc]; positivity
+  have hnum : (star x ⬝ᵥ (A *ᵥ x)).re = ∑ i, (hA.eigenvalues i) * c i :=
+    Graphplay.CourantFischer.hermitianForm_re_eq_sum A hA x
+  have hden : (∑ u, ‖x u‖ ^ 2) = ∑ i, c i :=
+    Graphplay.CourantFischer.normSq_eq_sum A hA x
+  have hdenpos : 0 < ∑ u, ‖x u‖ ^ 2 :=
+    Graphplay.CourantFischer.normSq_pos_of_ne_zero x hx
+  have hsumpos : 0 < ∑ i, c i := by rw [← hden]; exact hdenpos
+  obtain ⟨j, _, hjpos⟩ : ∃ j ∈ Finset.univ, 0 < c j := by
+    by_contra h
+    push_neg at h
+    exact absurd hsumpos (not_lt.mpr (Finset.sum_nonpos (fun i _ => h i (Finset.mem_univ i))))
+  have hlt : ∑ i, (hA.eigenvalues i) * c i < ∑ i, B * c i := by
+    apply Finset.sum_lt_sum
+    · exact fun i _ => mul_le_mul_of_nonneg_right (le_of_lt (hcon i)) (hcnn i)
+    · exact ⟨j, Finset.mem_univ j, mul_lt_mul_of_pos_right (hcon j) hjpos⟩
+  rw [← Finset.mul_sum] at hlt
+  rw [hnum, hden] at hxB
+  exact absurd hxB (not_le.mpr hlt)
 
-This is a genuinely non-vacuous spectral statement; its closed form is the
-deep recursion content, left as an honest `sorry`. -/
-theorem DeBruijn.exists_degree_eigenvalue (k n : ℕ) (hk : 1 ≤ k) :
+/-! ### The degree eigenvalue: statement scope and the isolated residual
+
+**Audit note (non-vacuity / boundary correctness).**  The intended claim is a
+real eigenvalue of magnitude `≥ k` (the regular degree of the directed
+`B(k, n+1)`).  Two boundary cases make the *unrestricted* `1 ≤ k` statement
+**false**, so we record the corrected hypotheses:
+
+* `k = 1`: the window type `Fin (n+1) → Fin 1` is a singleton, the graph is the
+  single loopless vertex, its only eigenvalue is `0 < 1`;
+* `n = 0`: `Shift` is the empty constraint, so `SymAdj w w' ↔ w ≠ w'` — the
+  symmetrized graph is the complete graph `K_k`, whose top eigenvalue is `k − 1`,
+  strictly below `k`.
+
+Hence the genuinely true non-vacuous statement requires `2 ≤ k` and `1 ≤ n`
+(verified e.g. for `k = 2, n = 1`, where the graph is `K₄` minus one edge with
+top eigenvalue `(1 + √17)/2 ≈ 2.56 ≥ 2`).  Under those hypotheses the bound is
+the **Strok spectral-radius fact** for the symmetrized de Bruijn graph (Strok,
+*Circulant matrices and the spectra of de Bruijn graphs*, 1992): the depth
+recursion `χ_{B(k,n+1)} = x^{(k−1)kⁿ} · χ_{B(k,n)}` forces a degree-magnitude
+eigenvalue.  We isolate this — and *only* this — as the single named residual
+`DeBruijn.spectralRadius_ge_degree`; the headline theorem then follows by
+`le_abs_self`, with the Rayleigh machinery
+(`Graphplay.CourantFischer.exists_eigenvalue_ge_of_rayleigh'`) proved above as
+the route by which a future witness discharges it. -/
+
+/-- **Isolated residual (honest `sorry`): the symmetrized de Bruijn graph has a
+real eigenvalue `≥ k`** for `2 ≤ k`, `1 ≤ n`.  This is the Strok degree fact; it
+is the *sole* spectral input of `DeBruijn.exists_degree_eigenvalue`. -/
+theorem DeBruijn.spectralRadius_ge_degree (k n : ℕ) (hk : 2 ≤ k) (hn : 1 ≤ n) :
+    ∃ i, (k : ℝ) ≤ (DeBruijn.weighted k n).herm.eigenvalues i := by
+  sorry
+
+/-- **A real eigenvalue of magnitude `≥ k` exists** for the symmetrized de
+Bruijn graph, with the corrected (true, non-vacuous) hypotheses `2 ≤ k`,
+`1 ≤ n`.  Immediate from the isolated spectral residual
+`DeBruijn.spectralRadius_ge_degree` and `le_abs_self`.
+
+See the audit note above for why `k = 1` and `n = 0` are genuinely excluded. -/
+theorem DeBruijn.exists_degree_eigenvalue (k n : ℕ) (hk : 2 ≤ k) (hn : 1 ≤ n) :
     ∃ lam : ℝ, lam ∈ Set.range (DeBruijn.weighted k n).herm.eigenvalues ∧
       (k : ℝ) ≤ |lam| := by
-  sorry
+  obtain ⟨i, hi⟩ := DeBruijn.spectralRadius_ge_degree k n hk hn
+  exact ⟨(DeBruijn.weighted k n).herm.eigenvalues i, ⟨i, rfl⟩, le_trans hi (le_abs_self _)⟩
 
 /-! ## Smoke tests -/
 

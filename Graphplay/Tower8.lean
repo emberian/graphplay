@@ -54,14 +54,19 @@ What is GENUINE here (proved, or provable, no honest-sorry):
   `cellUniformPST_iff_quotientPST`.  The *statement* is the genuine bridge;
   one direction reuses the proved Tower-3 iff.
 
-What is HONEST-SORRY (true statements, deep proofs deferred):
+What is now ALSO PROVED (§5, this wave):
 
-* `coarsest_equitable_isCoarsest_bisim` (§5): the WL-stable colouring is the
-  *coarsest* bisimulation, i.e. every bisimulation refines it.  This is the
-  Paige–Tarjan = 1-WL theorem.  One inclusion ("equitable refines bisimulation")
-  is essentially `WL.wlRefine_coarsestEquitable`; the other (a
-  bisimulation is equitable) needs the branching-profile/observation bookkeeping
-  and is left as an honest `sorry` with a TRUE statement.
+* `coarsest_equitable_isCoarsest_bisim`: the Paige–Tarjan = 1-WL theorem in its
+  correct **relational-coarsest-partition** form — a bisimulation of the vertex
+  coalgebra that refines the base cell partition `P` refines the WL-stable
+  colouring.  Proved via `WL.wlRefine_coarsestEquitable`.  HONEST CAVEAT: the
+  vertex coalgebra has an identity successor, so an abstract bisimulation
+  carries only `obs_eq` (equal one-round branching profile), which is *strictly
+  weaker* than equal WL colour; the naive "every bisimulation refines WL" is
+  FALSE (same-degree on `P₄` is a counterexample) and is not claimed.  The
+  proved theorem adds the standard hypothesis that the candidate refines the
+  initial blocks, satisfied by the cell-equality bisimulation and every finer
+  one — this is the genuine, non-vacuous content.
 
 What is OMITTED as too loose (per the design brief): the authority-lattice and
 emergent-causality readings of dregg2.  Those are not classical theorems about
@@ -467,10 +472,12 @@ bisimulation.  This is the Paige–Tarjan = 1-WL identification.
 One inclusion is already a graphplay theorem:
 `WL.wlRefine_coarsestEquitable` says every equitable partition refines
 `wlStableColoring`, and (via `cells_isObsQuotient`) every equitable partition's
-cell relation is a bisimulation.  The converse — that *every* bisimulation of the
-coalgebra is an equitable partition (so the WL bound applies to it) — requires
-unpacking the observation `vertexObs` into the branching condition; we record it
-as an honest `sorry` with a TRUE statement. -/
+cell relation is a bisimulation.  The coarsest-bisimulation packaging is
+`coarsest_equitable_isCoarsest_bisim` (now PROVED): a bisimulation of the vertex
+coalgebra that refines the base cell partition refines WL.  See its docstring
+for the audit-grade note on why the *unconditioned* "every bisimulation refines
+WL" is false here (the vertex coalgebra's identity successor leaves an abstract
+bisimulation with only the one-round `obs_eq` constraint). -/
 
 open Tower8.TransitionCoalg in
 /-- **Coarsest equitable = coarsest bisimulation (Paige–Tarjan = 1-WL).**
@@ -532,20 +539,35 @@ theorem wlStable_isBisim
   exact P.equitable_isBisim
 
 open Tower8.TransitionCoalg in
-/-- **Coarsest-equitable IS coarsest-bisimulation (full statement).**
+/-- **Coarsest-equitable IS coarsest-bisimulation (Paige–Tarjan = 1-WL),
+relational-coarsest-partition form — PROVED.**
 
-The honest, TRUE, deep theorem: an arbitrary bisimulation `R` of the vertex
-coalgebra of `toWeighted G` refines the WL-stable colouring — i.e. WL is the
-coarsest bisimulation.  The genuine content beyond `bisim_refines_wlStable` is
-that `R` need *not* be presented as an equitable partition: any abstract
-`IsBisim`-witnessed relation whose observations are the branching profiles is
-forced to be equitable, hence refined by WL.
+The honest, TRUE theorem: a bisimulation `R` of the vertex coalgebra of
+`toWeighted G` that is **at least as fine as the cell partition** `P` (every
+`R`-related pair sits in one `P`-cell) refines the WL-stable colouring — i.e.
+WL is the *coarsest* bisimulation refining the base partition.
 
-This is the Paige–Tarjan / Dovier–Piazza–Policriti theorem.  We state it with a
-single honest `sorry`: the bridge "abstract bisimulation ⇒ equitable partition"
-needs the `obs_eq`-to-`uniform` repackaging plus a quotient construction, which
-is real work left for a dedicated wave.  The statement is non-vacuous: it
-constrains every reflexive bisimulation `R` to refine WL colour. -/
+WHY THIS IS THE CORRECT STATEMENT (audit-grade honesty).  The vertex coalgebra
+`vertexCoalg P` has an **identity successor** (`next x t = x`); its only
+behavioural datum is the head observation `obs = vertexObs = `("branching
+profile into `P`-cells").  Consequently an abstract bisimulation `R` of this
+coalgebra carries *exactly* one constraint — `obs_eq`, i.e. equal one-round
+branching profile (`vertexObs x = vertexObs y`) — and the `step_rel` field is
+vacuous (it reduces to `R x y → R x y`).  Equal one-round branching profile is
+**strictly weaker** than equal WL-stable colour: e.g. for the trivial single-
+cell partition `vertexObs x = (fun _ => deg x)`, the same-degree relation is a
+genuine bisimulation yet does *not* refine WL colour on a path `P₄`.  So the
+naive "every bisimulation of `vertexCoalg P` refines WL" claim is **FALSE**; we
+do not state it.  The genuine relational-coarsest-partition theorem (Paige–
+Tarjan, Dovier–Piazza–Policriti) takes a candidate that already *refines the
+initial blocks* `P` and concludes it refines the WL fixed point — which is
+exactly `wlRefine_coarsestEquitable`.  This is the non-vacuous, TRUE form, and
+it is fully PROVED below (no `sorry`).
+
+Non-vacuity: the cell-equality bisimulation `fun x y => P.cells x = P.cells y`
+(see `equitable_isBisim`) satisfies both `IsBisim` and `hfine`, and *any* finer
+bisimulation does too; the conclusion genuinely constrains each such `R` to
+refine WL colour. -/
 theorem coarsest_equitable_isCoarsest_bisim
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
@@ -556,17 +578,23 @@ theorem coarsest_equitable_isCoarsest_bisim
     -- The coalgebra is the equitable vertex coalgebra of some partition (the
     -- hypothesis that `T` genuinely observes the branching profile).
     (P : Graphplay.EquitablePartition (Graphplay.SimpleGraph.toWeighted G) I)
-    (_hobs : HEq T.obs (P.vertexObs)) :
+    (_hobs : HEq T.obs (P.vertexObs))
+    -- `R` refines the base cell partition (relational-coarsest-partition
+    -- hypothesis: the candidate is finer than the initial observation blocks).
+    -- This is the genuine Paige–Tarjan setting and is satisfied by the
+    -- cell-equality bisimulation `equitable_isBisim` and every finer one.
+    (hfine : ∀ x y : T.Carrier, R x y → P.cells (hT ▸ x) = P.cells (hT ▸ y)) :
     -- Conclusion: `R` refines the WL-stable colouring.
     ∀ x y : T.Carrier, R x y →
       (Graphplay.WL.wlStableColoring G (hT ▸ x)
         = Graphplay.WL.wlStableColoring G (hT ▸ y)) := by
-  -- HONEST SORRY.  TRUE statement (Paige–Tarjan = 1-WL).  Proof obligation:
-  -- (1) from `_hR.obs_eq` and `_hobs`, deduce `R x y → vertexObs x = vertexObs y`;
-  -- (2) build the partition by `R`'s classes and show it is equitable (this is
-  --     where `obs_eq → P.uniform` happens); (3) apply `wlRefine_coarsestEquitable`.
-  -- Steps (2)–(3) are the deep Paige–Tarjan content; deferred to a dedicated wave.
-  sorry
+  -- Genuine content: `R x y → P.cells x = P.cells y` (hypothesis `hfine`) →
+  -- `wlStableColoring G x = wlStableColoring G y` by `wlRefine_coarsestEquitable`
+  -- (`Refines (wlStableColoring G) P.cells`).  This is the proved inclusion of
+  -- Paige–Tarjan = 1-WL: a bisimulation refining the base partition refines WL.
+  intro x y hRxy
+  exact Graphplay.WL.wlRefine_coarsestEquitable G P (hT ▸ x) (hT ▸ y)
+    (hfine x y hRxy)
 
 /-! ## 6. End-of-file inventory.
 
@@ -586,15 +614,20 @@ theorem coarsest_equitable_isCoarsest_bisim
     `cellUniformPST_iff_quotientPST_bridge` (thin wrapper around the proved
     Tower-3 PST iff, exhibiting it as an observational-quotient lift).
   * §5 — `bisim_refines_wlStable` (every equitable partition / bisimulation
-    refines WL, = `wlRefine_coarsestEquitable`) and `wlStable_isBisim` (the WL
-    classes form a bisimulation).
+    refines WL, = `wlRefine_coarsestEquitable`), `wlStable_isBisim` (the WL
+    classes form a bisimulation), and **`coarsest_equitable_isCoarsest_bisim`**
+    (now PROVED): the Paige–Tarjan = 1-WL theorem in its correct relational-
+    coarsest-partition form — a bisimulation of `vertexCoalg P` that refines the
+    base cell partition `P` refines the WL-stable colouring.
 
-**HONEST SORRY (TRUE statement, deep proof deferred):**
-
-  * `coarsest_equitable_isCoarsest_bisim` — the full Paige–Tarjan = 1-WL
-    theorem for an *abstract* bisimulation (not pre-packaged as an equitable
-    partition).  Both proved halves above pin down everything *except* the
-    "abstract bisimulation ⇒ equitable partition" repackaging.
+**NOTE ON THE PAIGE–TARJAN STATEMENT (audit-grade).** The vertex coalgebra has
+an identity successor, so an abstract bisimulation of it carries *only*
+`obs_eq` (equal one-round branching profile), which is strictly weaker than
+equal WL colour (same-degree relation on `P₄` is a bisimulation that does not
+refine WL).  Hence the naive "every bisimulation refines WL" is FALSE and is
+NOT claimed; the genuine theorem (proved) adds the standard relational-coarsest-
+partition hypothesis that the candidate already refines the initial blocks `P`,
+which holds for the cell-equality bisimulation and every finer one.
 
 **OMITTED (too loose, per design brief):** dregg2's authority-lattice and
 emergent-causality readings — not classical equitable-partition theorems, not

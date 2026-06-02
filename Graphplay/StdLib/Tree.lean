@@ -36,14 +36,17 @@ Cleve–Deotto–Farhi–Gutmann–Spielman "glued-trees" speedup
 (STOC 2003, quant-ph/0209131) is the canonical instance: a CTQW traverses
 a tree exponentially faster than any classical walk.
 
-Reachable structural facts are proved here with real proofs; the
-closed-form spectrum of the complete binary tree (Chebyshev-like, governed
-by the depth recursion) is left as an honest `sorry`.
+Reachable structural facts are proved here with real proofs.  The *non-vacuity*
+of the spectrum — a real adjacency eigenvalue of magnitude `≥ √2` for depth
+`d ≥ 2` — is now **fully proved** (`Tree.exists_large_eigenvalue`, axiom-clean)
+via the Rayleigh / Courant–Fischer lower bound applied to the embedded depth-1
+star `K_{1,2}`; the full closed-form Chebyshev spectrum is not needed for it.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
+import Graphplay.ForMathlib.CourantFischer
 
 open scoped Matrix
 open NormedSpace
@@ -187,23 +190,233 @@ example : Tree.roleDegree 3 1 = 3 := by decide
 /-- Smoke value: in `T_3` (7 vertices) vertex `4` is a leaf, role-degree `1`. -/
 example : Tree.roleDegree 3 4 = 1 := by decide
 
-/-! ## Spectrum (honest `sorry`) -/
+/-! ## Spectrum: a √2 eigenvalue via the Rayleigh / Courant–Fischer bound
 
-/-- **Closed-form spectrum of the complete binary tree (honest `sorry`).**
-The adjacency eigenvalues of `T_d` are governed by the depth recursion: the
-spectrum is the union, over levels `k = 1, …, d`, of the roots of a degree-`k`
-Chebyshev-type polynomial `p_k`, with multiplicities `2^{d−k} − 2^{d−k−1}`
-(Rojo–Robbiano, *On the spectra of some weighted rooted trees*, Linear
-Algebra Appl. 420 (2007) 310–328).  Concretely there is a real number `λ`
-in the spectrum of the Hamiltonian with `|λ| ≥ √2` for `d ≥ 2`.
+The closed-form *spectrum* of `T_d` (the deep Rojo–Robbiano Chebyshev recursion)
+is not needed for the headline non-vacuity claim — a real eigenvalue of
+magnitude `≥ √2`.  That follows from the **Rayleigh / Courant–Fischer lower
+bound**: any test vector `x ≠ 0` with `⟨x, A x⟩ ≥ √2 · ‖x‖²` forces some
+eigenvalue `≥ √2`.  We exhibit the explicit witness supported on the root `0`
+and its two children `1, 2` (the embedded `K_{1,2}` star whose top eigenvalue is
+exactly `√2`): `x₀ = √2, x₁ = x₂ = 1`, all other coordinates `0`.  A direct
+computation gives `⟨x, A x⟩ = 4√2` and `‖x‖² = 4`, so the Rayleigh quotient is
+exactly `√2`.
+-/
 
-This is a genuinely non-vacuous spectral statement (it asserts a real
-eigenvalue of magnitude ≥ √2 exists), and its closed form is the deep
-Chebyshev-recursion content — left as an honest `sorry`. -/
+open scoped Matrix in
+open WithLp in
+/-- **Rayleigh lower bound for the largest eigenvalue.**  If a Hermitian matrix
+`A` admits a test vector `x ≠ 0` whose Rayleigh numerator dominates `B · ‖x‖²`,
+then some eigenvalue is `≥ B`.  Pure Courant–Fischer (spectral expansion of the
+quadratic form), proved from the `Graphplay.CourantFischer` hinges. -/
+theorem _root_.Graphplay.CourantFischer.exists_eigenvalue_ge_of_rayleigh
+    {W : Type*} [Fintype W] [DecidableEq W]
+    (A : Matrix W W ℂ) (hA : A.IsHermitian) (B : ℝ) (x : W → ℂ) (hx : x ≠ 0)
+    (hxB : B * (∑ u, ‖x u‖ ^ 2) ≤ (star x ⬝ᵥ (A *ᵥ x)).re) :
+    ∃ i, B ≤ hA.eigenvalues i := by
+  classical
+  by_contra hcon
+  push_neg at hcon
+  set c : W → ℝ := fun i => ‖inner ℂ (hA.eigenvectorBasis i) (toLp 2 x)‖ ^ 2 with hc
+  have hcnn : ∀ i, 0 ≤ c i := fun i => by rw [hc]; positivity
+  have hnum : (star x ⬝ᵥ (A *ᵥ x)).re = ∑ i, (hA.eigenvalues i) * c i :=
+    Graphplay.CourantFischer.hermitianForm_re_eq_sum A hA x
+  have hden : (∑ u, ‖x u‖ ^ 2) = ∑ i, c i :=
+    Graphplay.CourantFischer.normSq_eq_sum A hA x
+  have hdenpos : 0 < ∑ u, ‖x u‖ ^ 2 :=
+    Graphplay.CourantFischer.normSq_pos_of_ne_zero x hx
+  have hsumpos : 0 < ∑ i, c i := by rw [← hden]; exact hdenpos
+  obtain ⟨j, _, hjpos⟩ : ∃ j ∈ Finset.univ, 0 < c j := by
+    by_contra h
+    push_neg at h
+    exact absurd hsumpos (not_lt.mpr (Finset.sum_nonpos (fun i _ => h i (Finset.mem_univ i))))
+  have hlt : ∑ i, (hA.eigenvalues i) * c i < ∑ i, B * c i := by
+    apply Finset.sum_lt_sum
+    · exact fun i _ => mul_le_mul_of_nonneg_right (le_of_lt (hcon i)) (hcnn i)
+    · exact ⟨j, Finset.mem_univ j, mul_lt_mul_of_pos_right (hcon j) hjpos⟩
+  rw [← Finset.mul_sum] at hlt
+  rw [hnum, hden] at hxB
+  exact absurd hxB (not_le.mpr hlt)
+
+section TreeRayleigh
+
+open scoped Matrix
+open WithLp Graphplay.CourantFischer
+
+/-- For `d ≥ 2`, `T_d` has at least 3 vertices, so heap indices `0, 1, 2` exist. -/
+private theorem tree_three_le (d : ℕ) (hd : 2 ≤ d) : 3 ≤ Tree.numVertices d := by
+  unfold Tree.numVertices
+  have : 4 ≤ 2 ^ d := by
+    calc (4 : ℕ) = 2 ^ 2 := by norm_num
+      _ ≤ 2 ^ d := Nat.pow_le_pow_right (by norm_num) hd
+  omega
+
+/-- The Rayleigh witness: `√2` on the root, `1` on its two children, `0` else. -/
+private noncomputable def treeWitness (d : ℕ) : Fin (Tree.numVertices d) → ℂ :=
+  fun i => if i.val = 0 then (Real.sqrt 2 : ℂ)
+           else if i.val = 1 then 1
+           else if i.val = 2 then 1
+           else 0
+
+private theorem treeWitness_eq_zero (d : ℕ) (i : Fin (Tree.numVertices d))
+    (h0 : i.val ≠ 0) (h1 : i.val ≠ 1) (h2 : i.val ≠ 2) : treeWitness d i = 0 := by
+  unfold treeWitness; rw [if_neg h0, if_neg h1, if_neg h2]
+
+private noncomputable def treeSupp (d : ℕ) (hd : 2 ≤ d) :
+    Finset (Fin (Tree.numVertices d)) :=
+  {⟨0, by have := tree_three_le d hd; omega⟩,
+   ⟨1, by have := tree_three_le d hd; omega⟩,
+   ⟨2, by have := tree_three_le d hd; omega⟩}
+
+private theorem sum_mul_treeWitness_restrict (d : ℕ) (hd : 2 ≤ d)
+    (f : Fin (Tree.numVertices d) → ℂ) :
+    (∑ j, f j * treeWitness d j) = ∑ j ∈ treeSupp d hd, f j * treeWitness d j := by
+  apply (Finset.sum_subset (Finset.subset_univ _) ?_).symm
+  intro j _ hj
+  have : j.val ≠ 0 ∧ j.val ≠ 1 ∧ j.val ≠ 2 := by
+    refine ⟨?_, ?_, ?_⟩ <;> intro hv <;> apply hj <;>
+      (simp only [treeSupp, Finset.mem_insert, Finset.mem_singleton]; first
+        | (left; apply Fin.ext; simpa using hv)
+        | (right; left; apply Fin.ext; simpa using hv)
+        | (right; right; apply Fin.ext; simpa using hv))
+  rw [treeWitness_eq_zero d j this.1 this.2.1 this.2.2, mul_zero]
+
+private theorem tree_adj_val (d : ℕ) (i j : Fin (Tree.numVertices d)) :
+    (Tree.weighted d).adj i j = if Tree.AdjNat i.val j.val then 1 else 0 := by
+  show (Tree d).adjMatrix ℂ i j = _
+  rw [SimpleGraph.adjMatrix_apply]; rfl
+
+private theorem tree_mulVec (d : ℕ) (hd : 2 ≤ d) (i : Fin (Tree.numVertices d)) :
+    ((Tree.weighted d).adj *ᵥ treeWitness d) i
+      = ∑ j ∈ treeSupp d hd, (Tree.weighted d).adj i j * treeWitness d j := by
+  rw [Matrix.mulVec]
+  exact sum_mul_treeWitness_restrict d hd (fun j => (Tree.weighted d).adj i j)
+
+private theorem treeSupp_expand (d : ℕ) (hd : 2 ≤ d)
+    (g : Fin (Tree.numVertices d) → ℂ) :
+    (∑ j ∈ treeSupp d hd, g j)
+      = g ⟨0, by have := tree_three_le d hd; omega⟩
+        + g ⟨1, by have := tree_three_le d hd; omega⟩
+        + g ⟨2, by have := tree_three_le d hd; omega⟩ := by
+  unfold treeSupp
+  rw [Finset.sum_insert (by simp [Fin.ext_iff]),
+    Finset.sum_insert (by simp [Fin.ext_iff]), Finset.sum_singleton]; ring
+
+private theorem treeWitness_v0 (d : ℕ) (hd : 2 ≤ d) :
+    treeWitness d ⟨0, by have := tree_three_le d hd; omega⟩ = (Real.sqrt 2 : ℂ) := by
+  unfold treeWitness; rw [if_pos rfl]
+private theorem treeWitness_v1 (d : ℕ) (hd : 2 ≤ d) :
+    treeWitness d ⟨1, by have := tree_three_le d hd; omega⟩ = 1 := by
+  unfold treeWitness; norm_num
+private theorem treeWitness_v2 (d : ℕ) (hd : 2 ≤ d) :
+    treeWitness d ⟨2, by have := tree_three_le d hd; omega⟩ = 1 := by
+  unfold treeWitness; norm_num
+
+private theorem star_treeWitness (d : ℕ) (i : Fin (Tree.numVertices d)) :
+    star (treeWitness d i) = treeWitness d i := by
+  unfold treeWitness
+  by_cases h0 : i.val = 0
+  · simp only [if_pos h0, Complex.star_def, Complex.conj_ofReal]
+  · by_cases h1 : i.val = 1
+    · simp only [if_neg h0, if_pos h1, star_one]
+    · by_cases h2 : i.val = 2
+      · simp only [if_neg h0, if_neg h1, if_pos h2, star_one]
+      · simp only [if_neg h0, if_neg h1, if_neg h2, star_zero]
+
+private theorem sum_star_treeWitness_restrict (d : ℕ) (hd : 2 ≤ d)
+    (g : Fin (Tree.numVertices d) → ℂ) :
+    (∑ i, star (treeWitness d i) * g i)
+      = ∑ i ∈ treeSupp d hd, star (treeWitness d i) * g i := by
+  apply (Finset.sum_subset (Finset.subset_univ _) ?_).symm
+  intro i _ hi
+  have : i.val ≠ 0 ∧ i.val ≠ 1 ∧ i.val ≠ 2 := by
+    refine ⟨?_, ?_, ?_⟩ <;> intro hv <;> apply hi <;>
+      (simp only [treeSupp, Finset.mem_insert, Finset.mem_singleton]; first
+        | (left; apply Fin.ext; simpa using hv)
+        | (right; left; apply Fin.ext; simpa using hv)
+        | (right; right; apply Fin.ext; simpa using hv))
+  rw [star_treeWitness, treeWitness_eq_zero d i this.1 this.2.1 this.2.2, zero_mul]
+
+/-- The Rayleigh numerator `⟨x, A x⟩ = 4√2` (real). -/
+private theorem tree_numerator (d : ℕ) (hd : 2 ≤ d) :
+    (star (treeWitness d) ⬝ᵥ ((Tree.weighted d).adj *ᵥ treeWitness d)).re
+      = 4 * Real.sqrt 2 := by
+  have hnum : (star (treeWitness d) ⬝ᵥ ((Tree.weighted d).adj *ᵥ treeWitness d))
+      = ∑ i, star (treeWitness d i) * ((Tree.weighted d).adj *ᵥ treeWitness d) i := by
+    rw [dotProduct]; rfl
+  rw [hnum, sum_star_treeWitness_restrict d hd, treeSupp_expand d hd]
+  simp only [tree_mulVec d hd, treeSupp_expand d hd]
+  simp only [tree_adj_val, star_treeWitness]
+  have a00 : ¬ Tree.AdjNat 0 0 := Tree.adjNat_irrefl 0
+  have a11 : ¬ Tree.AdjNat 1 1 := by unfold Tree.AdjNat; omega
+  have a22 : ¬ Tree.AdjNat 2 2 := by unfold Tree.AdjNat; omega
+  have a01 : Tree.AdjNat 0 1 := by unfold Tree.AdjNat; omega
+  have a10 : Tree.AdjNat 1 0 := by unfold Tree.AdjNat; omega
+  have a02 : Tree.AdjNat 0 2 := by unfold Tree.AdjNat; omega
+  have a20 : Tree.AdjNat 2 0 := by unfold Tree.AdjNat; omega
+  have a12 : ¬ Tree.AdjNat 1 2 := by unfold Tree.AdjNat; omega
+  have a21 : ¬ Tree.AdjNat 2 1 := by unfold Tree.AdjNat; omega
+  simp only [if_neg a00, if_neg a11, if_neg a22, if_pos a01, if_pos a10, if_pos a02,
+    if_pos a20, if_neg a12, if_neg a21]
+  rw [treeWitness_v0 d hd, treeWitness_v1 d hd, treeWitness_v2 d hd]
+  have hcast : (↑(Real.sqrt 2) * (0 * ↑(Real.sqrt 2) + 1 * 1 + 1 * 1)
+        + 1 * (1 * ↑(Real.sqrt 2) + 0 * 1 + 0 * 1)
+        + 1 * (1 * ↑(Real.sqrt 2) + 0 * 1 + 0 * 1) : ℂ)
+      = ((4 * Real.sqrt 2 : ℝ) : ℂ) := by push_cast; ring
+  rw [hcast, Complex.ofReal_re]
+
+/-- The Rayleigh denominator `‖x‖² = 4`. -/
+private theorem tree_denominator (d : ℕ) (hd : 2 ≤ d) :
+    (∑ u, ‖treeWitness d u‖ ^ 2) = 4 := by
+  have hrestrict : (∑ u, ‖treeWitness d u‖ ^ 2)
+      = ∑ u ∈ treeSupp d hd, ‖treeWitness d u‖ ^ 2 := by
+    apply (Finset.sum_subset (Finset.subset_univ _) ?_).symm
+    intro u _ hu
+    have : u.val ≠ 0 ∧ u.val ≠ 1 ∧ u.val ≠ 2 := by
+      refine ⟨?_, ?_, ?_⟩ <;> intro hv <;> apply hu <;>
+        (simp only [treeSupp, Finset.mem_insert, Finset.mem_singleton]; first
+          | (left; apply Fin.ext; simpa using hv)
+          | (right; left; apply Fin.ext; simpa using hv)
+          | (right; right; apply Fin.ext; simpa using hv))
+    rw [treeWitness_eq_zero d u this.1 this.2.1 this.2.2]; simp
+  rw [hrestrict]
+  unfold treeSupp
+  rw [Finset.sum_insert (by simp [Fin.ext_iff]),
+    Finset.sum_insert (by simp [Fin.ext_iff]), Finset.sum_singleton]
+  rw [show (⟨0, _⟩ : Fin (Tree.numVertices d))
+        = ⟨0, by have := tree_three_le d hd; omega⟩ from rfl,
+    treeWitness_v0 d hd, treeWitness_v1 d hd, treeWitness_v2 d hd]
+  rw [Complex.norm_real, Real.norm_eq_abs, norm_one, sq_abs, Real.sq_sqrt (by norm_num)]
+  norm_num
+
+private theorem treeWitness_ne_zero (d : ℕ) (hd : 2 ≤ d) : treeWitness d ≠ 0 := by
+  intro h
+  have := congrArg (fun f => f ⟨1, by have := tree_three_le d hd; omega⟩) h
+  simp only [Pi.zero_apply] at this
+  rw [treeWitness_v1 d hd] at this
+  exact one_ne_zero this
+
+/-- **A real eigenvalue of magnitude `≥ √2` exists for `d ≥ 2`** (the structural
+non-vacuity of the tree spectrum).  Proved by the Rayleigh / Courant–Fischer
+lower bound applied to the embedded-star witness `treeWitness`: the quotient is
+`(4√2)/4 = √2`, so some eigenvalue is `≥ √2`, hence has `|λ| ≥ √2`.
+
+This is the genuine reachable content behind the closed-form spectrum of the
+complete binary tree (Rojo–Robbiano, *On the spectra of some weighted rooted
+trees*, Linear Algebra Appl. 420 (2007) 310–328): the depth-1 star `K_{1,2}`
+sits as an induced subgraph and interlaces the spectrum from below by `√2`. -/
 theorem Tree.exists_large_eigenvalue (d : ℕ) (hd : 2 ≤ d) :
     ∃ lam : ℝ, lam ∈ Set.range (Tree.weighted d).herm.eigenvalues ∧
       Real.sqrt 2 ≤ |lam| := by
-  sorry
+  have hray : Real.sqrt 2 * (∑ u, ‖treeWitness d u‖ ^ 2)
+      ≤ (star (treeWitness d) ⬝ᵥ ((Tree.weighted d).adj *ᵥ treeWitness d)).re := by
+    rw [tree_numerator d hd, tree_denominator d hd, mul_comm]
+  obtain ⟨i, hi⟩ := Graphplay.CourantFischer.exists_eigenvalue_ge_of_rayleigh
+    (Tree.weighted d).adj (Tree.weighted d).herm (Real.sqrt 2) (treeWitness d)
+    (treeWitness_ne_zero d hd) hray
+  exact ⟨(Tree.weighted d).herm.eigenvalues i, ⟨i, rfl⟩, le_trans hi (le_abs_self _)⟩
+
+end TreeRayleigh
 
 /-! ## Computable rational companion -/
 
