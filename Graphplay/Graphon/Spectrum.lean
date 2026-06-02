@@ -298,6 +298,105 @@ theorem cellUniform_pointSpectrum [IsFiniteMeasure μ]
     exact hv_ne (P.cellUniformIsometry.injective (by rw [h0, map_zero]))
   · rw [Graphon.op_restrict_eq_quotient P v, hv_eig, map_smul]
 
+/-! ### 3a′. Spectral convergence of the symmetric-quotient sequence
+
+The freshly-proven matrix+time continuity lemmas of `Graphon/Limit.lean`
+(`IsPST_finite_of_tendsto`, …) pass *amplitude* conditions to a limit.  The
+companion **spectral** fact — that the eigenvalue set of a convergent matrix
+sequence is itself limit-closed — is pure finite-dimensional matrix analysis and
+is genuinely reachable here, because for an `n × n` matrix the spectrum is the
+**zero set of the characteristic determinant** `λ ↦ det(λ•1 − H)`, a polynomial
+in `(H, λ)` and hence jointly continuous.  Zeros of a continuous family pass to
+the limit, so the spectrum is closed under simultaneous matrix/eigenvalue
+convergence.
+
+This is the spectral analogue of the Limit-file convergence theorems, and the
+bridge to `pointSpectrum`: when the matrices are the **symmetric quotients**
+`H n = P_n.symmQuotient` of a graphon equitable-partition sequence converging to
+`Plim.symmQuotient`, any convergent sequence of their (real) eigenvalues lands in
+`spectrum ℂ Plim.symmQuotient`, hence — by `cellUniform_pointSpectrum` — in
+`pointSpectrum Wlim`.  No spectral-measure machinery is required, and the proof
+is axiom-clean. -/
+
+/-- **The spectrum is closed under simultaneous matrix + eigenvalue limits.**  If
+`H n → Hlim` (entrywise) in `Matrix I I ℂ` and `lam n ∈ spectrum ℂ (H n)` with
+`lam n → lamlim`, then `lamlim ∈ spectrum ℂ Hlim`.
+
+The engine is `λ ∈ spectrum ℂ H ↔ det(λ•1 − H) = 0` (over the field `ℂ`,
+`spectrum.mem_iff` + `Matrix.isUnit_iff_isUnit_det` + `isUnit_iff_ne_zero`)
+together with joint continuity of `(H, λ) ↦ det(λ•1 − H)`
+(`Continuous.matrix_det`).  Pure matrix-analytic, axiom-clean. -/
+theorem spectrum_isClosed_of_tendsto
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {H : ℕ → Matrix I I ℂ} {Hlim : Matrix I I ℂ}
+    (hH : Filter.Tendsto H Filter.atTop (nhds Hlim))
+    {lam : ℕ → ℂ} {lamlim : ℂ}
+    (hlam : Filter.Tendsto lam Filter.atTop (nhds lamlim))
+    (h_spec : ∀ n, lam n ∈ spectrum ℂ (H n)) :
+    lamlim ∈ spectrum ℂ Hlim := by
+  classical
+  -- The characteristic determinant `g (M, z) = det(z•1 − M)`.
+  set g : Matrix I I ℂ × ℂ → ℂ :=
+    fun p => Matrix.det ((p.2 • (1 : Matrix I I ℂ)) - p.1) with hg
+  -- `z ∈ spectrum ℂ M ↔ g (M, z) = 0`, over the field `ℂ`.
+  have hmem : ∀ (M : Matrix I I ℂ) (z : ℂ),
+      z ∈ spectrum ℂ M ↔ g (M, z) = 0 := by
+    intro M z
+    rw [spectrum.mem_iff, Algebra.algebraMap_eq_smul_one, hg]
+    rw [Matrix.isUnit_iff_isUnit_det, isUnit_iff_ne_zero, not_not]
+  -- Each `g (H n, lam n) = 0`.
+  have hzero : ∀ n, g (H n, lam n) = 0 := fun n => (hmem (H n) (lam n)).mp (h_spec n)
+  -- `g` is continuous: `det` of the continuous family `(M, z) ↦ z•1 − M`.
+  have hg_cont : Continuous g := by
+    refine Continuous.matrix_det ?_
+    exact ((continuous_snd.smul continuous_const).sub continuous_fst)
+  -- `(H n, lam n) → (Hlim, lamlim)`, so `g (H n, lam n) → g (Hlim, lamlim)`.
+  have hpair : Filter.Tendsto (fun n => (H n, lam n)) Filter.atTop
+      (nhds (Hlim, lamlim)) := hH.prodMk_nhds hlam
+  have hgt : Filter.Tendsto (fun n => g (H n, lam n)) Filter.atTop (nhds (g (Hlim, lamlim))) :=
+    (hg_cont.tendsto _).comp hpair
+  -- The sequence is constantly `0`; by uniqueness of limits `g (Hlim, lamlim) = 0`.
+  have hg0 : g (Hlim, lamlim) = 0 := by
+    have hconst : Filter.Tendsto (fun n => g (H n, lam n)) Filter.atTop (nhds 0) := by
+      simp only [hzero]; exact tendsto_const_nhds
+    exact tendsto_nhds_unique hgt hconst
+  exact (hmem Hlim lamlim).mpr hg0
+
+/-- **Eigenvalue convergence into the graphon point spectrum.**  Let
+`P_n : GraphonEquitablePartition (W_n)` be a sequence whose symmetric quotients
+`H n = P_n.symmQuotient` converge to the symmetric quotient `Plim.symmQuotient`
+of a limit graphon `(Wlim, Plim)`.  If `lam n` is a (real) eigenvalue of `H n`
+for each `n` and `lam n → lamlim`, then the limiting eigenvalue `lamlim` is a
+genuine **L²-eigenvalue** of the limit graphon operator: `lamlim ∈
+pointSpectrum Wlim`.
+
+This composes the pure-matrix `spectrum_isClosed_of_tendsto` with the
+cell-uniform spectral bridge `cellUniform_pointSpectrum` (which embeds the finite
+symmetric-quotient spectrum into the graphon point spectrum via the cell-uniform
+isometry).  It is the spectral counterpart of `pst_time_convergence`: amplitudes
+*and* eigenvalues both transport to the graphon limit.  Axiom-clean. -/
+theorem pointSpectrum_tendsto_of_symmQuotient_tendsto
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {Wlim : Graphon Ω μ} (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
+    {H : ℕ → Matrix I I ℂ}
+    (hH : Filter.Tendsto H Filter.atTop (nhds Plim.symmQuotient))
+    {lam : ℕ → ℂ} {lamlim : ℂ}
+    (hlam : Filter.Tendsto lam Filter.atTop (nhds lamlim))
+    (h_spec : ∀ n, lam n ∈ spectrum ℂ (H n)) :
+    lamlim ∈ Wlim.pointSpectrum := by
+  -- Step 1: the limit eigenvalue is in the spectrum of the limit symmetric quotient.
+  have hlim_spec : lamlim ∈ spectrum ℂ Plim.symmQuotient :=
+    spectrum_isClosed_of_tendsto hH hlam h_spec
+  -- Step 2: `spectrum ℂ symmQuotient = spectrum ℂ (toEuclideanLin symmQuotient)`
+  -- (`toEuclideanLin` is `toLin` in the standard orthonormal basis, and matrix→End
+  -- in a fixed basis is an algebra equivalence, which preserves the spectrum), then
+  -- embed into `pointSpectrum` via the cell-uniform isometry bridge.
+  have hlin_spec : lamlim ∈ spectrum ℂ (Matrix.toEuclideanLin Plim.symmQuotient) := by
+    rw [Matrix.toEuclideanLin_eq_toLin_orthonormal, Matrix.spectrum_toLin]
+    exact hlim_spec
+  exact cellUniform_pointSpectrum Plim hlin_spec
+
 /-! ### 3b. Step graphons (finite weighted graphs) — purely discrete -/
 
 /-- A **step graphon** is one whose kernel is constant on the blocks of a
@@ -611,8 +710,10 @@ vectors), and is the right Tower-4 shape of the finite Godsil criterion.
 
 The `HasPointSpectrum` hypothesis is recorded for context (in the pure-point
 regime the phase `α` is computed from the eigenvalue ratios, the Godsil
-condition); the equivalence itself holds generally for unit vectors.  Honest
-`sorry` (Cauchy–Schwarz equality characterisation in `Lp`). -/
+condition); the equivalence itself holds generally for unit vectors.  **Proven**
+axiom-cleanly via the `Lp` Cauchy–Schwarz equality characterisation
+`norm_inner_eq_norm_iff` (colinearity with a unit-modulus scalar) plus the
+unitarity of `evolve`. -/
 theorem isWavePacketTransfer_pointSpectrum
     (W : Graphon Ω μ) (phi0 phi1 : Lp ℂ 2 μ) (τ : ℝ)
     (_h : W.HasPointSpectrum)
@@ -682,27 +783,67 @@ possible "transfer" is the identity.
 The canonical example is the constant-edge graphon limit of `K_n` modulo
 its 1-dimensional constant sector. -/
 
-/-- **PST impossibility under purely continuous spectrum.**  If `W.op` has
-empty point spectrum (no L²-eigenvectors at all), then no wave-packet PST
-between distinct orthogonal states is possible at any non-trivial time.
+/-- **Wave-packet transfer forces the return amplitude to vanish.**  If two
+normalised L²-states `φ₀ ⊥ φ₁` exhibit wave-packet PST at time `τ`, then the
+*return amplitude* `⟨φ₀, W.evolve τ φ₀⟩` is **zero**: the evolved state has left
+the initial direction entirely (it sits on the `φ₁` ray).
 
-More precisely: if `pointSpectrum W = ∅` then for any orthogonal pair of
-normalised L²-states `φ₀ ⊥ φ₁`, the wave-packet transfer
-`IsWavePacketTransfer W φ₀ φ₁ τ` is false for every `τ ≠ 0`.
+**False→true migration.**  The original headline here —
+*"if `pointSpectrum W = ∅` then no wave-packet PST between orthogonal states at
+any `τ ≠ 0`"* — is **FALSE** as stated, and the "BLOCKED on spectral measures"
+note was masking a genuine counterexample, not just a missing Mathlib lemma:
 
-(Sketch: in the purely continuous regime, `W.evolve τ φ₀` has a
-non-degenerate spectral measure spread over the continuous spectrum, so its
-projection onto any single orthogonal direction `φ₁` has norm `< 1`.) -/
-theorem no_wavePacketTransfer_of_pure_continuous
-    (W : Graphon Ω μ) (hW : W.pointSpectrum = (∅ : Set ℂ))
+  Take `W.op` unitarily equivalent to multiplication by `x` on `L²([0,1])`
+  (purely **continuous** spectrum, so `pointSpectrum W = ∅`), and `φ₀` the
+  constant `1`.  Its spectral measure is Lebesgue on `[0,1]`, whose
+  characteristic function `⟨φ₀, evolve τ φ₀⟩ = ∫₀¹ e^{-iτx} dx = (e^{-iτ}-1)/(-iτ)`
+  **vanishes** at `τ = 2π`.  Set `φ₁ := W.evolve (2π) φ₀`.  Then `‖φ₁‖ = 1`
+  (unitarity), `⟨φ₀, φ₁⟩ = 0` (the integral above is `0`), so `φ₀ ⊥ φ₁` is an
+  orthogonal normalised pair — yet `‖⟨φ₁, evolve (2π) φ₀⟩‖ = ‖⟨φ₁,φ₁⟩‖ = 1`, i.e.
+  wave-packet PST **holds** at `τ = 2π ≠ 0`.  Pure continuity does **not**
+  preclude wave-packet transfer.
+
+The genuine content surviving this counterexample is the **necessary condition**
+stated here, and it is exactly the spectral fact the false claim was groping at:
+wave-packet PST is the Cauchy–Schwarz equality case for unit vectors, which
+forces `W.evolve τ φ₀` to be a unit-modulus multiple of `φ₁`; orthogonality
+`φ₀ ⊥ φ₁` then kills the overlap with `φ₀`.  No spectral-measure machinery is
+needed — `evolve` unitarity plus the `Lp` equality case suffice, and the proof
+is axiom-clean.  (In the counterexample this reads: `⟨φ₀, evolve(2π) φ₀⟩ = 0`,
+which is precisely the vanishing of the characteristic function.) -/
+theorem wavePacketTransfer_imp_returnAmplitude_zero
+    (W : Graphon Ω μ)
     (phi0 phi1 : Lp ℂ 2 μ) (hphi : inner ℂ phi0 phi1 = (0 : ℂ))
-    (τ : ℝ) (hτ : τ ≠ 0) :
-    ¬ W.IsWavePacketTransfer phi0 phi1 τ := by
-  -- spectral-measure argument: a purely continuous spectral measure
-  -- spreads `evolve τ φ₀` strictly across the spectrum
-  -- BLOCKED: spectral measure / projection-valued measure of self-adjoint
-  -- operators not available in Mathlib.
-  sorry
+    (τ : ℝ) (hwp : W.IsWavePacketTransfer phi0 phi1 τ) :
+    (inner ℂ phi0 (W.evolve τ phi0) : ℂ) = 0 := by
+  obtain ⟨hphi0, hphi1, hpst⟩ := hwp
+  -- `W.evolve τ` is norm-preserving (unitary), so `‖evolve τ φ₀‖ = 1`.
+  have hnorm_evolve : ‖W.evolve τ phi0‖ = 1 := by
+    have hinner : (inner ℂ (W.evolve τ phi0) (W.evolve τ phi0) : ℂ)
+        = (inner ℂ phi0 phi0 : ℂ) := by
+      rw [← ContinuousLinearMap.adjoint_inner_right]
+      have hu := congrFun (congrArg
+        (fun (T : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) => (T : Lp ℂ 2 μ → Lp ℂ 2 μ))
+        (W.evolve_isUnitary τ)) phi0
+      simp only [ContinuousLinearMap.coe_comp', Function.comp_apply,
+        ContinuousLinearMap.id_apply] at hu
+      rw [hu]
+    have h2 : ((‖W.evolve τ phi0‖ : ℂ)) ^ 2 = ((‖phi0‖ : ℂ)) ^ 2 := by
+      rw [inner_self_eq_norm_sq_to_K (𝕜 := ℂ), inner_self_eq_norm_sq_to_K (𝕜 := ℂ)] at hinner
+      exact hinner
+    have h3 : ‖W.evolve τ phi0‖ ^ 2 = ‖phi0‖ ^ 2 := by exact_mod_cast h2
+    rw [hphi0] at h3
+    nlinarith [norm_nonneg (W.evolve τ phi0), h3]
+  -- Cauchy–Schwarz equality case: `evolve τ φ₀ = r • φ₁` for some scalar `r`.
+  have hphi1_ne : phi1 ≠ 0 := by
+    intro h; rw [h, norm_zero] at hphi1; exact zero_ne_one hphi1
+  have hev_ne : W.evolve τ phi0 ≠ 0 := by
+    intro h; rw [h, norm_zero] at hnorm_evolve; exact zero_ne_one hnorm_evolve
+  have heq : ‖(inner ℂ phi1 (W.evolve τ phi0) : ℂ)‖ = ‖phi1‖ * ‖W.evolve τ phi0‖ := by
+    rw [hpst, hphi1, hnorm_evolve, mul_one]
+  obtain ⟨r, _hr_ne, hr⟩ := (norm_inner_eq_norm_iff hphi1_ne hev_ne).1 heq
+  -- `⟨φ₀, evolve τ φ₀⟩ = ⟨φ₀, r • φ₁⟩ = r · ⟨φ₀, φ₁⟩ = r · 0 = 0`.
+  rw [hr, inner_smul_right, hphi, mul_zero]
 
 /-- **Constant-graphon quotient entry (atomless case).**  For a constant
 graphon `W ≡ c` over an atomless finite measure and *any* equitable partition

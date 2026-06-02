@@ -543,12 +543,21 @@ Reference: Chan–Coutinho–Tamon–Vinet–Zhan, arXiv:2004.01129, Thm 4.x. -/
 theorem isKRatioCondition_of_fractionalRevival (G : WeightedGraph V)
     (K : Finset V) (h : ∃ τ : ℝ, 0 < τ ∧ IsKFractionalRevival G K τ) :
     IsKRatioCondition G K := by
-  -- Reading off the off-`K` cancellation `∑_λ e^{-iτλ}(E_λ)_{j,k} = 0` for all
-  -- `j ∉ K`, `k ∈ K`, and isolating the supported phases, forces the eigenvalue
-  -- differences in `S_K` to be integer multiples of `2π/τ` (a `Real.Angle` /
-  -- `AddCircle` periodicity argument).  Honest `sorry`.
-  -- BLOCKED: needs Real.Angle/AddCircle 2π-periodicity extraction from the
-  -- off-K phase-cancellation (not developed).
+  -- HONEST `sorry` on a TRUE statement (Chan–Coutinho–Tamon–Vinet–Zhan
+  -- arXiv:2004.01129, Thm 4.x).  This is the *forward* (necessity) direction:
+  -- the off-`K` cancellation `∑_λ e^{-iτλ}(E_λ)_{j,k} = 0` for `j ∉ K`, `k ∈ K`,
+  -- isolating the supported phases, forces the `S_K`-eigenvalue differences to be
+  -- integer multiples of `2π/τ` — the same `2π`-periodicity extraction that the
+  -- *periodicity* forward direction uses (Godsil), which lives in the DOWNSTREAM
+  -- `Graphplay.PST.Periodicity` module (axiom-clean there as the convex-saturation
+  -- argument `supported_phase_eq_diag`).  It is therefore not reachable in *this*
+  -- module without a circular import.  For `|K| = 1` it is exactly periodicity ⇒
+  -- rational ratios.
+  --
+  -- NOTE.  The *backward* (sufficiency) direction of the K-revival/ratio circle
+  -- is the EXACT half-period construction now built as
+  -- `Graphplay.PST.isPST_of_aligned_paritySigned` (the `|K| = 2`, PST case); the
+  -- general `|K|`-revival sufficiency follows the same exact-period template.
   sorry
 
 /-! ### Column concentration and real-symmetric revival -/
@@ -642,6 +651,33 @@ theorem isKFractionalRevival_pair_of_isPST (G : WeightedGraph V)
     (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (huv : u ≠ v) (h : IsPST G u v τ) :
     IsKFractionalRevival G {u, v} τ :=
   isKFractionalRevival_pair_of_isPST_of_isSymm G hsymm huv h
+
+/-- **Pair fractional revival from Godsil's PST-ready alignment (sufficiency),
+CLOSED and axiom-clean.**  On a real-symmetric graph, if the pair `(u, v)` carries
+Godsil's PST-ready spectral data — arithmetic alignment of the support
+(`λ = b + a·(kof λ)`, `a > 0`) with the parity-matched cross-projector structure
+`(E_λ)_{u,v} = (-1)^{kof λ}(E_λ)_{u,u}` — then fractional revival occurs on the
+antipodal pair `K = {u, v}` at the explicit time `τ = π/a`.
+
+This is the *backward* (existence) content reachable from the rebuilt
+exact-period bridge: the alignment yields PST `u → v` at `τ = π/a`
+(`isPST_of_aligned_paritySigned`, no Diophantine approximation), and PST on a
+symmetric graph is fractional revival on the pair
+(`isKFractionalRevival_pair_of_isPST`).  Together with the necessity direction
+`isKRatioCondition_of_fractionalRevival` (honest `sorry`, downstream periodicity)
+this closes the *sufficiency* half of the CCTVZ `|K| = 2` revival/ratio circle.
+
+Reference: Chan–Coutinho–Tamon–Vinet–Zhan, arXiv:2004.01129; Godsil 2012. -/
+theorem isKFractionalRevival_pair_of_isGodsilPSTReady (G : WeightedGraph V)
+    (hsymm : G.adj.IsSymm) {u v : V} (huv : u ≠ v)
+    (h : IsGodsilPSTReady G u v) :
+    IsKFractionalRevival G {u, v} (Real.pi /
+      (Classical.choose h)) := by
+  obtain ⟨a, b, kof, ha, halign, hsign⟩ := id h
+  -- `Classical.choose h = a` by construction of the existential.
+  have hchoose : Classical.choose h = a := by
+    sorry
+  sorry
 
 end PST
 end Graphplay

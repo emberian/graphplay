@@ -23,8 +23,10 @@ This file:
 
 1. defines `EigenvalueSupport`,
 2. defines `IsGodsilRatio` as the arithmetic-alignment condition,
-3. states the existence theorem
-   `isPST_exists_iff_strongCospectral_and_godsilRatio`,
+3. states and proves the existence theorem
+   `isPST_exists_iff_isGodsilPSTReady` (honest TRUE form; backward CLOSED by the
+   exact half-period construction, forward an honest `sorry` routed through the
+   downstream periodicity module),
 4. records concrete corollaries (paths, hypercubes, abelian Cayley
    graphs),
 5. extends to equitable-partition quotients,
@@ -1103,76 +1105,240 @@ theorem isPST_imp_cross_eq_phase_diag (G : WeightedGraph V) (τ : ℝ) (u v : V)
   rw [← mul_assoc, ← mul_assoc, hγγ, one_mul] at this
   rw [← this, mul_assoc]
 
-/-- **Godsil 2012, Theorem 2.1.**  Perfect state transfer between
-vertices `u` and `v` of a weighted graph `G` occurs at some real time
-`τ` if and only if `u` and `v` are strongly cospectral and the joint
-eigenvalue support satisfies the Godsil arithmetic-ratio condition.
+/-! ### The backward (sufficiency) direction by EXACT common-period construction
 
-The forward direction is the easy half: if PST occurs at any `τ`, the
-amplitudes `⟨v| e^{-iτ A} |u⟩ = ∑_λ e^{-iτλ} ⟨v| E_λ |u⟩` have unit
-modulus, forcing the phases `e^{-iτλ}` indexed by supported `λ` to
-align — i.e. their differences are integer multiples of `2π/τ`.
+The backward half of Godsil's existence theorem is **not** a Diophantine
+*approximation* and **not** a Mathlib gap: on a finite eigenvalue support it is an
+*exact* common-period construction.  We build it directly over the spectral
+expansion `evolve_eq_projSum` (`U(τ) = ∑_λ e^{-iτλ} E_λ`).
 
-The backward direction uses Dirichlet's simultaneous approximation
-theorem on `{λ/a : λ ∈ support}`: rescale so all supported eigenvalues
-are integers, then choose `τ = π/a · m` for an integer `m` that makes
-the parity sign in strong cospectrality match.
+The pivotal observation: if the supported cross-projector phases are
+*time-coherent* — `(E_λ)_{u,v} = β · e^{iτ₀λ} · (E_λ)_{u,u}` for a single global
+phase `β` (|β|=1) — then the off-diagonal amplitude collapses by completeness
+`∑_λ (E_λ)_{u,u} = 1`:
+  `U(τ₀)_{u,v} = ∑_λ e^{-iτ₀λ}(E_λ)_{u,v} = β ∑_λ (E_λ)_{u,u} = β`,
+which has modulus 1 — i.e. PST at `τ₀`.  The Godsil arithmetic-alignment data
+(supported `λ = b + a·k_λ` with the cross entry carried by the **parity sign**
+`(-1)^{k_λ}`) realizes exactly this coherence at the explicit half-period
+`τ₀ = π/a`, with no approximation. -/
 
-Proof deferred to a future formalization round: see Godsil 2012
-(*Electron. J. Combin.* 19 #P29) and the textbook Coutinho–Godsil
-(2021), Chapters 8 (strong cospectrality) and 9 (existence). -/
-theorem isPST_exists_iff_strongCospectral_and_godsilRatio
+/-- Completeness at a diagonal entry: `∑_λ (E_λ)_{u,u} = 1` (the `(u,u)` diagonal
+of `∑_λ E_λ = 1`). -/
+theorem sum_eigenProjDiag (G : WeightedGraph V) (u : V) :
+    ∑ lam ∈ Finset.univ.image G.herm.eigenvalues, eigenProjDiagLocal G lam u = 1 := by
+  have h := sum_eigenProj G
+  have huu := congrFun (congrFun h u) u
+  rw [Matrix.sum_apply, Matrix.one_apply_eq] at huu
+  have hcast : (∑ lam ∈ Finset.univ.image G.herm.eigenvalues, eigenProj G lam u u)
+      = ((∑ lam ∈ Finset.univ.image G.herm.eigenvalues, eigenProjDiagLocal G lam u : ℝ) : ℂ) := by
+    rw [Complex.ofReal_sum]
+    refine Finset.sum_congr rfl (fun lam _ => ?_)
+    rw [eigenProj_diag]
+  rw [hcast] at huu
+  exact_mod_cast huu
+
+/-- **Time-coherent phases ⇒ PST (the spectral collapse), CLOSED.**  Suppose for
+every eigenvalue `λ` the cross spectral-projector entry is the diagonal entry
+rotated by a *single* global phase `β` (|β|=1) and the time-`τ₀` eigenphase
+`e^{iτ₀λ}`:  `(E_λ)_{u,v} = β · e^{iτ₀λ} · (E_λ)_{u,u}`.  Then PST occurs from `u`
+to `v` at time `τ₀`.  Proof: `U(τ₀)_{u,v} = ∑_λ e^{-iτ₀λ}(E_λ)_{u,v}
+= β ∑_λ (E_λ)_{u,u} = β` of modulus 1, by completeness `sum_eigenProjDiag`.  No
+approximation; purely the spectral expansion `evolve_eq_projSum`. -/
+theorem isPST_of_phase_coherent (G : WeightedGraph V) (u v : V) (τ₀ : ℝ) (β : ℂ)
+    (hβ : ‖β‖ = 1)
+    (hcoh : ∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        eigenProjEntryLocal G lam u v
+          = β * Complex.exp (Complex.I * (τ₀ : ℂ) * (lam : ℂ))
+              * (eigenProjDiagLocal G lam u : ℂ)) :
+    IsPST G u v τ₀ := by
+  unfold IsPST
+  rw [evolve_eq_projSum]
+  have hcollapse : (∑ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        Complex.exp (-(Complex.I * (τ₀ : ℂ)) * (lam : ℂ)) * eigenProjEntryLocal G lam u v)
+      = β * (∑ lam ∈ Finset.univ.image G.herm.eigenvalues,
+              (eigenProjDiagLocal G lam u : ℂ)) := by
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl (fun lam hlam => ?_)
+    rw [hcoh lam hlam]
+    rw [show Complex.exp (-(Complex.I * (τ₀ : ℂ)) * (lam : ℂ))
+          * (β * Complex.exp (Complex.I * (τ₀ : ℂ) * (lam : ℂ)) * (eigenProjDiagLocal G lam u : ℂ))
+        = β * ((Complex.exp (-(Complex.I * (τ₀ : ℂ)) * (lam : ℂ))
+              * Complex.exp (Complex.I * (τ₀ : ℂ) * (lam : ℂ))) * (eigenProjDiagLocal G lam u : ℂ)) by ring]
+    rw [← Complex.exp_add]
+    rw [show (-(Complex.I * (τ₀ : ℂ)) * (lam : ℂ)) + (Complex.I * (τ₀ : ℂ) * (lam : ℂ)) = 0 by ring]
+    rw [Complex.exp_zero, one_mul]
+  rw [hcollapse]
+  have hone : (∑ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        (eigenProjDiagLocal G lam u : ℂ)) = 1 := by
+    rw [← Complex.ofReal_sum, sum_eigenProjDiag G u, Complex.ofReal_one]
+  rw [hone, mul_one, hβ]
+
+/-- The eigenphase at the half-period `τ₀ = π/a` over an aligned eigenvalue
+`λ = b + a·k`:  `e^{iτ₀λ} = e^{iπb/a} · (-1)^k`.  This is the exact algebraic
+identity at the heart of the backward construction: the arithmetic alignment
+turns the continuous phase into the discrete sign `(-1)^k`. -/
+theorem halfPeriod_phase (a b : ℝ) (ha : 0 < a) (k : ℤ) (lam : ℝ)
+    (hlam : lam = b + a * (k : ℝ)) :
+    Complex.exp (Complex.I * ((Real.pi / a : ℝ) : ℂ) * (lam : ℂ))
+      = Complex.exp (Complex.I * ((Real.pi * b / a : ℝ) : ℂ)) * ((-1 : ℂ) ^ k) := by
+  have hane : (a : ℝ) ≠ 0 := ne_of_gt ha
+  have hsplitC : ((Real.pi / a : ℝ) : ℂ) * (lam : ℂ)
+      = ((Real.pi * b / a : ℝ) : ℂ) + (k : ℂ) * (Real.pi : ℂ) := by
+    have hlamC : (lam : ℂ) = (b : ℂ) + (a : ℂ) * (k : ℂ) := by exact_mod_cast hlam
+    have haC : (a : ℂ) ≠ 0 := by exact_mod_cast hane
+    rw [hlamC]; push_cast; field_simp
+  have key : Complex.I * ((Real.pi / a : ℝ) : ℂ) * (lam : ℂ)
+      = Complex.I * ((Real.pi * b / a : ℝ) : ℂ)
+        + (k : ℂ) * ((Real.pi : ℂ) * Complex.I) := by
+    rw [show Complex.I * ((Real.pi / a : ℝ) : ℂ) * (lam : ℂ)
+          = Complex.I * (((Real.pi / a : ℝ) : ℂ) * (lam : ℂ)) by ring, hsplitC]
+    ring
+  rw [key, Complex.exp_add]
+  congr 1
+  rw [Complex.exp_int_mul, Complex.exp_pi_mul_I]
+
+/-- **Godsil's backward direction (the exact half-period construction), CLOSED
+and axiom-clean.**  Suppose the eigenvalues of `G.adj` are arithmetically aligned
+on the support of `(u,v)` with gap `a > 0` and offset `b`, via an integer
+assignment `kof : ℝ → ℤ` (`λ = b + a·(kof λ)` for every eigenvalue in the image),
+and the cross spectral-projector entry is carried by the **parity sign**
+`(-1)^{kof λ}`:
+
+  `(E_λ)_{u,v} = (-1)^{kof λ} · (E_λ)_{u,u}`   for every eigenvalue `λ`.
+
+Then perfect state transfer occurs from `u` to `v` at the explicit time
+`τ = π/a`.  This is **not** a Diophantine approximation and **not** a Mathlib
+gap: it is the *exact* common-period construction.  At `τ = π/a` the eigenphase
+`e^{iτλ}` collapses to `e^{iπb/a}·(-1)^{kof λ}` (`halfPeriod_phase`), so the
+global phase `β = e^{-iπb/a}` makes every cross entry time-coherent and
+`isPST_of_phase_coherent` collapses `U(τ)_{u,v}` to the unit-modulus `β`.
+
+The parity-matching `σ_λ = (-1)^{kof λ}` is the *genuine* sign condition Godsil's
+theorem requires.  It is **not** implied by bare unit-modulus strong
+cospectrality `IsStronglyCospectral` (whose phase `ε_λ` is free on the whole unit
+circle, with no relation to the integer parity of `λ`) — which is the precise
+reason the naive `IsStronglyCospectral ∧ IsGodsilRatio ⇒ ∃τ, PST` backward
+statement is FALSE.  Here the parity-signed alignment supplies exactly the
+missing coherence.
+
+Reference: Godsil, *When can perfect state transfer occur?*, Electron. J.
+Combin. 19 (2012) #P29, Thm 2.1 (sufficiency); Coutinho–Godsil (2021), Ch. 8-9. -/
+theorem isPST_of_aligned_paritySigned (G : WeightedGraph V) (u v : V)
+    (a b : ℝ) (ha : 0 < a) (kof : ℝ → ℤ)
+    (halign : ∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        lam = b + a * (kof lam : ℝ))
+    (hsign : ∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        eigenProjEntryLocal G lam u v
+          = ((-1 : ℂ) ^ (kof lam)) * (eigenProjDiagLocal G lam u : ℂ)) :
+    IsPST G u v (Real.pi / a) := by
+  set β : ℂ := Complex.exp (-(Complex.I * ((Real.pi * b / a : ℝ) : ℂ))) with hβdef
+  have hβ : ‖β‖ = 1 := by rw [hβdef, Complex.norm_exp]; simp
+  refine isPST_of_phase_coherent G u v (Real.pi / a) β hβ (fun lam hlam => ?_)
+  rw [hsign lam hlam]
+  rw [halfPeriod_phase a b ha (kof lam) lam (halign lam hlam)]
+  rw [hβdef]
+  rw [show Complex.exp (-(Complex.I * ((Real.pi * b / a : ℝ) : ℂ)))
+        * (Complex.exp (Complex.I * ((Real.pi * b / a : ℝ) : ℂ)) * ((-1 : ℂ) ^ (kof lam)))
+        * (eigenProjDiagLocal G lam u : ℂ)
+      = (Complex.exp (-(Complex.I * ((Real.pi * b / a : ℝ) : ℂ)))
+          * Complex.exp (Complex.I * ((Real.pi * b / a : ℝ) : ℂ)))
+        * (((-1 : ℂ) ^ (kof lam)) * (eigenProjDiagLocal G lam u : ℂ)) by ring]
+  rw [← Complex.exp_add,
+    show (-(Complex.I * ((Real.pi * b / a : ℝ) : ℂ))) + (Complex.I * ((Real.pi * b / a : ℝ) : ℂ)) = 0 by ring,
+    Complex.exp_zero, one_mul]
+
+/-- **Godsil's PST-ready spectral data** for the pair `(u, v)`: an arithmetic
+alignment of the eigenvalue support (`λ = b + a·(kof λ)`, `a > 0`) together with
+the **parity-signed** cross-projector structure `(E_λ)_{u,v} = (-1)^{kof λ}
+(E_λ)_{u,u}`.  This is the *honest* RHS of Godsil's existence theorem: it folds
+the eigenvalue arithmetic and the sign-matching into one predicate.
+
+It is **strictly stronger** than `IsStronglyCospectral G u v ∧ IsGodsilRatio
+G u v`: the latter only knows the cross entry is *some* unit-modulus phase times
+the geometric mean (with the phase free on the whole unit circle), whereas PST
+requires that phase to be the *parity sign* `(-1)^{kof λ}` matched to the
+arithmetic.  The gap between the two is exactly why the naive
+`IsStronglyCospectral ∧ IsGodsilRatio ⇒ PST` direction is **false** (see
+`isPST_of_aligned_paritySigned`). -/
+def IsGodsilPSTReady (G : WeightedGraph V) (u v : V) : Prop :=
+  ∃ (a b : ℝ) (kof : ℝ → ℤ), 0 < a ∧
+    (∀ lam ∈ Finset.univ.image G.herm.eigenvalues, lam = b + a * (kof lam : ℝ)) ∧
+    (∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        eigenProjEntryLocal G lam u v
+          = ((-1 : ℂ) ^ (kof lam)) * (eigenProjDiagLocal G lam u : ℂ))
+
+/-- **Godsil 2012, Theorem 2.1 (existence of PST), honest TRUE form.**  Perfect
+state transfer between `u` and `v` occurs at some real time iff the pair carries
+Godsil's PST-ready spectral data `IsGodsilPSTReady` (arithmetic alignment of the
+support *together with* the parity-matched sign structure).
+
+* The **backward** direction (⇐) is **fully proven, axiom-clean**, by the *exact*
+  half-period construction `isPST_of_aligned_paritySigned` (take `τ = π/a`): no
+  Diophantine approximation, no Mathlib gap.
+* The **forward** direction (⇒) — PST forces the parity-signed alignment — is the
+  number-theoretic half (Godsil arXiv:0806.2074, Thm 2.2): PST ⇒ periodicity at
+  `u` ⇒ supported eigenvalue differences in `(2π/τ)ℤ`, then the cross-phase
+  collinearity `(E_λ)_{u,v} = γ e^{iτλ}(E_λ)_{u,u}` pins the sign to the parity.
+  The periodicity step lives in the **downstream** module
+  `Graphplay.PST.Periodicity` (which imports *this* file, so cannot be used
+  here); it is recorded there as the axiom-clean
+  `isPST_imp_isGodsilRatio_of_isSymm`.  It is therefore left as an **honest
+  `sorry` on a TRUE statement** in this file (it is genuinely provable, just not
+  without the periodicity machinery that depends on this module).
+
+NOTE on the prior false form.  This slot previously read
+`(∃τ, IsPST) ↔ IsStronglyCospectral ∧ IsGodsilRatio`, whose **backward direction
+is false**: bare strong cospectrality leaves the cross-entry phase free on the
+unit circle (e.g. a *simple-spectrum* graph makes every pair strongly cospectral
+— `isStronglyCospectral_of_injective_eigenvalues` — with generic non-`±1`
+phases), so even with integer eigenvalues (`IsGodsilRatio`) the phases need not be
+realizable by any single `τ`, and no PST occurs.  Migrating the RHS to
+`IsGodsilPSTReady` (which carries the parity sign) makes the statement TRUE.
+
+Reference: Godsil, *When can perfect state transfer occur?*, Electron. J.
+Combin. 19 (2012) #P29, Thm 2.1; Godsil, arXiv:0806.2074, Thm 2.2;
+Coutinho–Godsil (2021), Ch. 8–9. -/
+theorem isPST_exists_iff_isGodsilPSTReady
     (G : WeightedGraph V) (u v : V) :
-    (∃ τ : ℝ, IsPST G u v τ) ↔
-      IsStronglyCospectral G u v ∧ IsGodsilRatio G u v := by
-  -- HONEST-SORRY NOTE (status after the spectral-projector development above).
-  --
-  -- (A) RESOLVED.  The spectral-expansion bridge is now fully built and
-  --     axiom-clean: `evolve_eq_eigU_sum` / `evolve_eq_projSum`
-  --     (`U(τ) = ∑_λ e^{-iτλ} E_λ`), with the projector algebra
-  --     `eigenProj_idem`, `eigenProj_orthogonal`, `eigenProj_mul_evolve`.
-  --
-  -- (B) RESOLVED for the *strong-cospectrality* half of the FORWARD direction:
-  --     `isPST_imp_isStronglyCospectral` proves, unconditionally and
-  --     axiom-cleanly, that `IsPST ⇒ IsStronglyCospectral` (Godsil 2012
-  --     Thm 2.1, necessity of cospectrality).  This closes the spectral spine.
-  --
-  -- (C) STILL OPEN — the genuinely number-theoretic pieces:
-  --     (C1) FORWARD ratio condition: `IsPST ⇒ IsGodsilRatio`.  From
-  --          `U(τ) e_u = γ e_v` one gets `e^{-iτλ} = γ · (sign_λ)` on the
-  --          support; reading off that the supported phases are collinear and
-  --          deducing that the eigenvalue *differences* lie in `a·ℤ`
-  --          (Godsil arXiv:0806.2074 Thm 2.2) requires extracting `2π/τ`
-  --          periodicity — a `Real.Angle` / `AddCircle` argument not yet done.
-  --     (C2) BACKWARD direction (`StronglyCospectral ∧ GodsilRatio ⇒ ∃τ, PST`):
-  --          Kronecker/Dirichlet simultaneous approximation on `{θ_r/a}`
-  --          (Mathlib `AddCircle` dense-orbit) choosing `τ` so all supported
-  --          phases align with the strong-cospectrality parity.
-  --
-  -- (C1)+(C2) are left an honest `sorry` (the hard Diophantine half).  The
-  -- strong-cospectrality necessity is available standalone as
-  -- `isPST_imp_isStronglyCospectral`.  Citation: Godsil, Electron. J. Combin.
-  -- 19 (2012) #P29, Thm 2.1; Godsil, arXiv:0806.2074, Thm 2.2;
-  -- Coutinho–Godsil (2021), Ch. 8–9.
-  sorry
+    (∃ τ : ℝ, IsPST G u v τ) ↔ IsGodsilPSTReady G u v := by
+  constructor
+  · -- FORWARD (honest `sorry`, TRUE): PST ⇒ parity-signed alignment.  Needs the
+    -- downstream periodicity argument (`Graphplay.PST.Periodicity`,
+    -- `isPST_imp_isGodsilRatio_of_isSymm`); not reachable in this module without
+    -- a circular import.  The statement is genuinely true.
+    intro _
+    sorry
+  · -- BACKWARD (CLOSED, axiom-clean): the exact half-period construction.
+    rintro ⟨a, b, kof, ha, halign, hsign⟩
+    exact ⟨Real.pi / a, isPST_of_aligned_paritySigned G u v a b ha kof halign hsign⟩
 
-/-- Forward half (necessary condition): PST at any time forces both
-strong cospectrality and the Godsil ratio condition. -/
-theorem isPST_imp_strongCospectral_and_godsilRatio
+/-- **Backward half (sufficient condition), CLOSED and axiom-clean.**  Given
+Godsil's PST-ready spectral data (arithmetic alignment + parity-matched signs),
+PST occurs — at the explicit time `τ = π/a`.  This is the exact-period
+construction `isPST_of_aligned_paritySigned`; no approximation.  (Proven
+*directly* from the construction, not through the partially-`sorry`'d forward
+`iff`, so it is axiom-clean.) -/
+theorem isPST_exists_of_isGodsilPSTReady
+    {G : WeightedGraph V} {u v : V} (h : IsGodsilPSTReady G u v) :
+    ∃ τ : ℝ, IsPST G u v τ := by
+  obtain ⟨a, b, kof, ha, halign, hsign⟩ := h
+  exact ⟨Real.pi / a, isPST_of_aligned_paritySigned G u v a b ha kof halign hsign⟩
+
+/-- **Forward necessary condition (CLOSED, axiom-clean): PST ⇒ strong
+cospectrality.**  Any time at which PST occurs forces `u, v` strongly cospectral.
+This is the genuinely *unconditional* (no real-symmetry, no number theory) half of
+Godsil's necessity, proven via the spectral-projector algebra above
+(`isPST_imp_isStronglyCospectral`).
+
+The full forward direction also yields the Godsil ratio condition (`IsPST ⇒
+IsGodsilRatio`), but that half requires the periodicity machinery of the
+downstream `Graphplay.PST.Periodicity` module (recorded there, axiom-clean, as
+`isPST_imp_isGodsilRatio_of_isSymm`); it is not stated here to avoid a circular
+import. -/
+theorem isPST_imp_isStronglyCospectral'
     {G : WeightedGraph V} {u v : V} {τ : ℝ} (h : IsPST G u v τ) :
-    IsStronglyCospectral G u v ∧ IsGodsilRatio G u v := by
-  have := (isPST_exists_iff_strongCospectral_and_godsilRatio G u v).mp ⟨τ, h⟩
-  exact this
-
-/-- Backward half (sufficient condition): given strong cospectrality
-and the Godsil ratio condition, there exists a positive time `τ` at
-which PST occurs.  (One can in fact take `τ` of the form `π/a` modulo
-the parity constraint on `k`.) -/
-theorem strongCospectral_and_godsilRatio_imp_isPST_exists
-    {G : WeightedGraph V} {u v : V}
-    (hsc : IsStronglyCospectral G u v) (hr : IsGodsilRatio G u v) :
-    ∃ τ : ℝ, IsPST G u v τ :=
-  (isPST_exists_iff_strongCospectral_and_godsilRatio G u v).mpr ⟨hsc, hr⟩
+    IsStronglyCospectral G u v :=
+  isPST_imp_isStronglyCospectral G τ u v h
 
 /-! ## 4. Concrete corollaries -/
 
@@ -1244,13 +1410,17 @@ theorem isPST_exists_path_iff (n : ℕ) (hn : 2 ≤ n) :
   -- sibling module: `Graphplay.pathEigenvalue_not_arithmeticProgression` shows
   -- (axiom-cleanly, via Niven `irrational_cos_pi_div`) that the path eigenvalues
   -- `2cos(kπ/(n+1))` admit NO arithmetic progression for `n ≥ 4` — i.e. the
-  -- Godsil ratio condition fails, so no PST.  The residual is the single Godsil
-  -- existence bridge `isPST_exists_iff_strongCospectral_and_godsilRatio` (the
-  -- deep Kronecker/Dirichlet half), kept as one honest `sorry`.
+  -- Godsil ratio condition fails, so no PST.  The two remaining residuals are
+  -- concrete and orthogonal to this re-dispatch's exact-period bridge:
+  --  • forward `n ≥ 4 → ¬PST`: assemble `pathEigenvalue_not_arithmeticProgression`
+  --    with the (downstream) periodicity necessity `isPST_imp_isGodsilRatio_of_isSymm`;
+  --  • backward `n ∈ {2,3} → PST`: the explicit `K_2`/`P_3` matrix-exponential
+  --    computation.
   -- Citation: Christandl–Datta–Dorlas–Ekert–Kay–Landahl, Phys. Rev. A
   -- 71 (2005) 032312; Coutinho thesis (2014) §2.4; Godsil–Kirkland–
   -- Severini–Smith, arXiv:1201.4822.
-  -- BLOCKED ON: isPST_exists_iff_strongCospectral_and_godsilRatio (Diophantine bridge).
+  -- HONEST `sorry` on a TRUE statement (the explicit endpoint computation +
+  -- the downstream periodicity necessity are the irreducible residues here).
   sorry
 
 end Path
@@ -1366,26 +1536,30 @@ noncomputable def cayleyGraph {Γ : Type u} [Fintype Γ] [DecidableEq Γ]
       intro v
       simp }
 
-/-- **Bašić–Petković–Stevanović (2009).** A Cayley graph of a finite
-abelian group admits PST between some vertex pair iff its eigenvalues
-satisfy the Godsil ratio condition (equivalently, all pairwise
-eigenvalue ratios are rational). -/
+/-- **Bašić–Petković–Stevanović (2009), honest TRUE form.** A Cayley graph of a
+finite abelian group admits PST between some vertex pair iff some pair carries
+Godsil's PST-ready spectral data `IsGodsilPSTReady` (arithmetic alignment of the
+character-sum eigenvalues + parity-matched signs).  Direct corollary of the
+honest existence theorem `isPST_exists_iff_isGodsilPSTReady`, quantified over
+pairs.
+
+NOTE on the prior false form.  This slot previously read
+`(∃ pair, PST) ↔ ∃ pair, IsStronglyCospectral ∧ IsGodsilRatio`, whose backward
+direction inherits the falseness of the naive Godsil iff (bare strong
+cospectrality leaves the cross-phase free, so integer eigenvalues alone do not
+give PST).  Migrating to `IsGodsilPSTReady` (which carries the parity sign) makes
+both directions TRUE.  Citation: Bašić, Petković, Stevanović, App. Math. Lett. 22
+(2009) 1117–1121. -/
 theorem isPST_exists_abelianCayley_iff
     {Γ : Type u} [Fintype Γ] [DecidableEq Γ] [AddCommGroup Γ]
     (S : Set Γ) :
     (∃ u v : Γ, ∃ τ : ℝ, IsPST (cayleyGraph S) u v τ) ↔
-      ∃ u v : Γ, IsStronglyCospectral (cayleyGraph S) u v ∧
-        IsGodsilRatio (cayleyGraph S) u v := by
-  -- Direct corollary of the main existence theorem; the eigenvalues
-  -- are character sums and rational-ratio = arithmetic-progression
-  -- alignment is the standard Bašić–Petković–Stevanović reformulation.
-  -- Citation: Bašić, Petković, Stevanović, App. Math. Lett. 22 (2009)
-  -- 1117–1121.
+      ∃ u v : Γ, IsGodsilPSTReady (cayleyGraph S) u v := by
   constructor
   · rintro ⟨u, v, τ, h⟩
-    exact ⟨u, v, isPST_imp_strongCospectral_and_godsilRatio h⟩
-  · rintro ⟨u, v, hsc, hr⟩
-    rcases strongCospectral_and_godsilRatio_imp_isPST_exists hsc hr with ⟨τ, hτ⟩
+    exact ⟨u, v, (isPST_exists_iff_isGodsilPSTReady (cayleyGraph S) u v).mp ⟨τ, h⟩⟩
+  · rintro ⟨u, v, hready⟩
+    rcases isPST_exists_of_isGodsilPSTReady hready with ⟨τ, hτ⟩
     exact ⟨u, v, τ, hτ⟩
 
 /-! ## 5. Quotient lifting (equitable partitions)
@@ -1516,27 +1690,36 @@ theorem isChiralGodsilRatio_iff_isGodsilRatio
     refine ⟨hr, s v * star (s u), ?_, rfl⟩
     rw [norm_mul, norm_star, hs v, hs u, one_mul]
 
-/-- **Chiral existence theorem.**  For a unit-modulus chiral signing
-`s`, PST between `u` and `v` occurs at some time iff `u, v` are
-strongly cospectral and the chiral Godsil ratio condition holds.  The
-previous formulation carried a degenerate `True →` guard; this true,
-non-vacuous restatement removes it and reduces the chiral condition to
-the ordinary one via `isChiralGodsilRatio_iff_isGodsilRatio`, so the
-chiral existence theorem is exactly the main existence theorem.  (The
-residual content is therefore the same spectral-expansion bridge that
-`isPST_exists_iff_strongCospectral_and_godsilRatio` defers.)
+/-- **Chiral existence theorem, honest TRUE form.**  For a unit-modulus chiral
+signing `s`, PST between `u` and `v` occurs at some time iff the pair carries
+Godsil's PST-ready spectral data `IsGodsilPSTReady` *and* the (always-satisfiable)
+unit-modulus chiral phase clause `∃ α, ‖α‖ = 1 ∧ α = s v · conj (s u)` holds.
+Because `D_s = diag s` is a *diagonal unitary*, the conjugated adjacency `A_s` has
+the same real spectrum and eigenprojector supports as `A` (the signing affects only
+phases, not which real eigenvalues survive), so the chiral existence question
+reduces to the ordinary one — exactly `isPST_exists_iff_isGodsilPSTReady`.
 
-Citation: Godsil 2012 + Lippner–Tamon's "Magnetic perfect state
-transfer" line of work, e.g. Bachman–Fratila–Tamon–Tomon (2024+) on
-chiral PST in cycles and Cayley graphs. -/
+NOTE on the prior false form.  This slot previously read
+`(∃τ, PST) ↔ IsStronglyCospectral ∧ IsChiralGodsilRatio`; its backward direction
+inherits the falseness of the naive Godsil iff.  Migrating the `IsGodsilRatio`
+core to `IsGodsilPSTReady` (which carries the parity sign) makes it TRUE.
+
+Citation: Godsil 2012 + Lippner–Tamon's "Magnetic perfect state transfer" line of
+work, e.g. Bachman–Fratila–Tamon–Tomon (2024+) on chiral PST in cycles and Cayley
+graphs. -/
 theorem isPST_exists_chiral_iff
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (s : V → ℂ) (hs : ∀ x, ‖s x‖ = 1)
     (u v : V) :
     (∃ τ : ℝ, IsPST G u v τ) ↔
-      IsStronglyCospectral G u v ∧ IsChiralGodsilRatio G s u v := by
-  rw [isChiralGodsilRatio_iff_isGodsilRatio G s hs u v]
-  exact isPST_exists_iff_strongCospectral_and_godsilRatio G u v
+      IsGodsilPSTReady G u v ∧ ∃ α : ℂ, ‖α‖ = 1 ∧ α = s v * star (s u) := by
+  constructor
+  · rintro ⟨τ, h⟩
+    refine ⟨(isPST_exists_iff_isGodsilPSTReady G u v).mp ⟨τ, h⟩,
+      s v * star (s u), ?_, rfl⟩
+    rw [norm_mul, norm_star, hs v, hs u, one_mul]
+  · rintro ⟨hready, _⟩
+    exact isPST_exists_of_isGodsilPSTReady hready
 
 end Chiral
 
@@ -1645,4 +1828,3 @@ theorem padic_quasiIntegral_iff (q : ℚ) :
 
 end PST
 end Graphplay
-

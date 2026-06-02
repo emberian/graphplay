@@ -431,6 +431,91 @@ theorem CellConstant.apply {I : Type u} [Fintype I] [DecidableEq I]
   obtain ⟨K, hK, rfl⟩ := hM
   exact ((hC K hK).mul hρ).mul (hC K hK).conjTranspose
 
+/-! ### Trace descent: cell-constant observables read only the quotient data
+
+The concrete analytic substance behind "the controlled dynamics descends to the
+`|I|`-dimensional cell quotient" is that **a scalar built from cell-constant
+matrices is a function of the cell (quotient) data alone**.  The load-bearing
+instance is the *trace of a product of two cell-constant matrices*, which is the
+shape of every `goalProb` (`tr(E_g · runState π)`).  We prove the exact
+**fiber-weighted quotient formula** for it: choosing any representative `rep i`
+of each cell `i`, the trace collapses to a finite double sum over the cell index
+`I`, each term weighted by the product of the two cell cardinalities and carrying
+only the quotient entries `A (rep i) (rep j)`, `B (rep j) (rep i)`.
+
+This is genuinely non-vacuous: representatives are used *only on occupied cells*
+(empty cells are annihilated by their zero cardinality factor), and the formula
+exhibits the trace as living on the `|I| × |I|` quotient — exactly the descent
+that makes the cell-uniform reachability computation an `|I|`-state object. -/
+
+/-- **Trace descent for cell-constant matrices.**  For cell-constant `A`, `B` and
+any cell-representative function `rep` (with `rep i` in cell `i` whenever cell `i`
+is occupied), the trace of the product factors through the cell index:
+`tr(A·B) = ∑_{i,j} |C_i|·|C_j| · A(rep i)(rep j) · B(rep j)(rep i)`.
+
+The right-hand side depends on `A`, `B` only through their quotient entries, so
+`tr(A·B)` is a function of the cell (divisor) data alone.  Empty cells contribute
+`0` (their cardinality vanishes), so the representative is only consulted where it
+is meaningful. -/
+theorem trace_mul_cellConstant_descent {I : Type u} [Fintype I] [DecidableEq I]
+    {cells : d → I} {A B : Matrix d d ℂ}
+    (hA : CellConstant cells A) (hB : CellConstant cells B)
+    (rep : I → d) (hrep : ∀ i, (∃ v, cells v = i) → cells (rep i) = i) :
+    (A * B).trace
+      = ∑ i, ∑ j,
+          (Fintype.card {v // cells v = i} : ℂ) * (Fintype.card {z // cells z = j} : ℂ)
+            * (A (rep i) (rep j) * B (rep j) (rep i)) := by
+  -- `(A*B).trace = ∑_v ∑_z A v z * B z v`.
+  have hexpand : (A * B).trace = ∑ v, ∑ z, A v z * B z v := by
+    rw [Matrix.trace]
+    refine Finset.sum_congr rfl (fun v _ => ?_)
+    rw [Matrix.diag_apply, Matrix.mul_apply]
+  rw [hexpand]
+  -- group the outer sum by `cells v`.
+  rw [← Fintype.sum_fiberwise cells (fun v => ∑ z, A v z * B z v)]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  -- group the inner sum by `cells z`.
+  have step1 : ∀ v : {v // cells v = i},
+      (∑ z, A v.1 z * B z v.1)
+        = ∑ j, ∑ z : {z // cells z = j}, A v.1 z.1 * B z.1 v.1 := by
+    intro v
+    rw [← Fintype.sum_fiberwise cells (fun z => A v.1 z * B z v.1)]
+  rw [Finset.sum_congr rfl (fun v _ => step1 v)]
+  -- swap `∑_{v∈C_i} ∑_j → ∑_j ∑_{v∈C_i}`.
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl (fun j _ => ?_)
+  by_cases hi : ∃ v, cells v = i
+  · by_cases hj : ∃ z, cells z = j
+    · have hri : cells (rep i) = i := hrep i hi
+      have hrj : cells (rep j) = j := hrep j hj
+      -- each summand collapses to the quotient value by cell-constancy.
+      have hconst : ∀ (v : {v // cells v = i}) (z : {z // cells z = j}),
+          A v.1 z.1 * B z.1 v.1 = A (rep i) (rep j) * B (rep j) (rep i) := by
+        intro v z
+        rw [hA v.1 z.1 (rep i) (rep j) (by rw [v.2, hri]) (by rw [z.2, hrj]),
+            hB z.1 v.1 (rep j) (rep i) (by rw [z.2, hrj]) (by rw [v.2, hri])]
+      calc ∑ v : {v // cells v = i}, ∑ z : {z // cells z = j}, A v.1 z.1 * B z.1 v.1
+          = ∑ _v : {v // cells v = i}, ∑ _z : {z // cells z = j},
+              A (rep i) (rep j) * B (rep j) (rep i) :=
+            Finset.sum_congr rfl (fun v _ =>
+              Finset.sum_congr rfl (fun z _ => hconst v z))
+        _ = (Fintype.card {v // cells v = i} : ℂ) * (Fintype.card {z // cells z = j} : ℂ)
+              * (A (rep i) (rep j) * B (rep j) (rep i)) := by
+            simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+            ring
+    · -- cell `j` empty: inner sum vacuous and `|C_j| = 0`.
+      have hjempty : IsEmpty {z // cells z = j} := ⟨fun z => hj ⟨z.1, z.2⟩⟩
+      simp only [Finset.sum_of_isEmpty, Finset.sum_const_zero]
+      rw [show (Fintype.card {z // cells z = j} : ℂ) = 0 by
+        rw [Fintype.card_eq_zero_iff.mpr hjempty]; exact Nat.cast_zero]
+      ring
+  · -- cell `i` empty: outer sum vacuous and `|C_i| = 0`.
+    have hiempty : IsEmpty {v // cells v = i} := ⟨fun v => hi ⟨v.1, v.2⟩⟩
+    simp only [Finset.sum_of_isEmpty]
+    rw [show (Fintype.card {v // cells v = i} : ℂ) = 0 by
+      rw [Fintype.card_eq_zero_iff.mpr hiempty]; exact Nat.cast_zero]
+    ring
+
 namespace QOMDP
 
 variable {A : Type u} [Fintype A] {O : Type u} [Fintype O]
@@ -465,6 +550,36 @@ theorem equitable_runState_cellConstant
   | cons a rest ih =>
     rw [runState_cons]
     exact CellConstant.apply (M.channel a) (S.kraus_cellConstant a) ih
+
+/-- **Equitable reduction — goal-success probability descends to the cell quotient
+(PROVEN, non-vacuous).**  Under an equitable symmetry `S` of `M`, the
+goal-success probability `goalProb π = tr(E_g · runState π)` of *every* policy is
+a **finite double sum over the cell index `I`** of the quotient data: choosing any
+cell-representative function `rep`, it equals
+`∑_{i,j} |C_i|·|C_j| · E_g(rep i)(rep j) · runState(rep j)(rep i)`.
+
+This is the QOMDP-level payoff of `equitable_runState_cellConstant`: it certifies
+that the goal-success probability — and hence reachability (`goalProb π = 1`) —
+reads only the `|I| × |I|` quotient entries of the goal effect and the run-state,
+*never* the full `d × d` matrices.  It is the concrete descent statement standing
+behind the (still-open) explicit construction of the quotient machine `Mq`: both
+factors of the goalProb trace are cell-constant (`S.goal_cellConstant` and the
+run-state), so `trace_mul_cellConstant_descent` applies directly.
+
+NON-VACUITY: the right-hand side genuinely only involves the cell index `I` and
+the quotient entries; empty cells drop out via their zero cardinality, so `rep` is
+consulted only on occupied cells. -/
+theorem equitable_goalProb_descent
+    (M : QOMDP d A O) {I : Type u} [Fintype I] [DecidableEq I]
+    (S : EquitableSymmetry M I) (π : Policy A)
+    (rep : I → d) (hrep : ∀ i, (∃ v, S.cells v = i) → S.cells (rep i) = i) :
+    M.goalProb π
+      = ∑ i, ∑ j,
+          (Fintype.card {v // S.cells v = i} : ℂ) * (Fintype.card {z // S.cells z = j} : ℂ)
+            * (M.goal (rep i) (rep j) * M.runState π (rep j) (rep i)) := by
+  unfold goalProb
+  exact trace_mul_cellConstant_descent S.goal_cellConstant
+    (M.equitable_runState_cellConstant S π) rep hrep
 
 /-- **Equitable reduction (statement of the full quotient theorem).**  A QOMDP
 with an equitable symmetry on its state index reduces to a *quotient QOMDP* on the
@@ -501,11 +616,22 @@ end QOMDP
   `runState`, `goalProb`, `Reachable`, `runState_nil`/`cons`),
   `QOMDP.IsClassical`, `reductionDim`, `ReductionAction`, `ReductionObs`,
   `ReductionFamily`, `CellConstant`, `EquitableSymmetry`.
+* **Proven equitable-descent content (axiom-clean):**
+  the cell-constant algebra (`CellConstant.{mul,conjTranspose,zero,add,listSum,
+  apply}`), `equitable_runState_cellConstant` (every policy's run-state is
+  cell-constant), `trace_mul_cellConstant_descent` (the trace of a product of
+  cell-constant matrices is the fiber-weighted quotient bilinear form), and
+  `equitable_goalProb_descent` (the goal-success probability of every policy is
+  the `|I| × |I|` quotient sum — reachability reads only the cell data).
 * **Honest `sorry` (deep theorem bodies only):**
   `classical_reachable_decidable` (the classical decision procedure),
   `qomdp_reachability_undecidable` (the PCP / matrix-mortality reduction —
-  Barry–Barry–Aaronson's main theorem), and `equitable_reduces_to_quotient`
-  (the cell-averaging intertwining).
+  Barry–Barry–Aaronson's main theorem; an *irreducible* cited-classical
+  undecidability result, kept honest by directive), and the *explicit
+  construction* in `equitable_reduces_to_quotient` (the cell-averaged quotient
+  machine `Mq` + bidirectional reachability transport through the cell-inflation
+  intertwiner — its dynamical substance, the cell-quotient descent of `goalProb`,
+  is now PROVEN in `equitable_goalProb_descent`).
 -/
 
 end QuantumMarkov

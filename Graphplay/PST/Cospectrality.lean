@@ -29,9 +29,13 @@ The deliverables of this file are:
 2. `isStronglyCospectral_iff_of_cospectral`: under cospectrality, the
    equivalence with the textbook "matched off-diagonal entry" characterization
    familiar from Godsil-Royle / Coutinho-Godsil.
-3. `IsStronglyCospectral.isPST_iff_godsilRatio`: the PST-existence
-   characterization combining strong cospectrality with the Godsil ratio
-   condition on eigenvalues (proof tagged for sibling L2).
+3. `IsStronglyCospectral.isPST_iff_godsilPSTReady`: the PST-existence
+   characterization (honest TRUE form) over `IsGodsilPSTReady` — arithmetic
+   alignment + parity-matched signs.  Backward CLOSED by the exact half-period
+   construction; forward an honest `sorry` routed through the downstream
+   periodicity module.  (The earlier `… ↔ IsStronglyCospectral ∧
+   GodsilRatioCondition` form had a FALSE backward direction — bare strong
+   cospectrality leaves the cross-phase free of the eigenvalue parity.)
 4. `Hom.preserves_stronglyCospectral`: equitable-partition functoriality:
    an equitable partition whose cell map separates `u` and `v` lifts
    strong cospectrality from `u, v` upstairs to `cells u, cells v`
@@ -458,33 +462,77 @@ def GodsilRatioCondition (G : WeightedGraph V) (u v : V) : Prop :=
     mu ≠ mu0 →
     ∃ q : ℚ, (lam - mu0) = (q : ℝ) * (mu - mu0)
 
-/-- **Strong cospectrality + Godsil ratio iff PST exists at some time.**
+/-- **Godsil's PST-ready spectral data** for the pair `(u, v)`, in this module's
+projector language: an arithmetic alignment of the eigenvalue support
+(`λ = b + a·(kof λ)`, `a > 0`) together with the **parity-signed** cross-projector
+structure `(E_λ)_{u,v} = (-1)^{kof λ} (E_λ)_{u,u}`.  This is the *honest* RHS of
+Godsil's existence theorem; see `Graphplay.PST.IsGodsilPSTReady` in the sibling
+`GodsilRatio` module, to which it is definitionally equal via the projector
+bridge.  It is **strictly stronger** than
+`IsStronglyCospectral ∧ GodsilRatioCondition`: the latter leaves the cross-entry
+phase free on the whole unit circle, whereas PST requires it to be the *parity
+sign* matched to the eigenvalue arithmetic. -/
+def IsGodsilPSTReady (G : WeightedGraph V) (u v : V) : Prop :=
+  ∃ (a b : ℝ) (kof : ℝ → ℤ), 0 < a ∧
+    (∀ lam ∈ Finset.univ.image G.herm.eigenvalues, lam = b + a * (kof lam : ℝ)) ∧
+    (∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        eigenProjEntry G lam u v
+          = ((-1 : ℂ) ^ (kof lam)) * (eigenProjDiag G lam u : ℂ))
 
-This is the load-bearing PST existence theorem of Coutinho-Godsil 2016
-(Theorem 4.1.1), originally folklore in Godsil's earlier papers
-(see arXiv:0806.2074 and the references in Bachman-Tamon arXiv:1108.0339).
-The proof factors through:
+/-- This module's PST-ready predicate coincides with the sibling `GodsilRatio`
+one (the projector entries are bridged by `eigenProjEntry_eq_local` /
+`eigenProjDiag_eq_local`). -/
+theorem isGodsilPSTReady_iff_local (G : WeightedGraph V) (u v : V) :
+    IsGodsilPSTReady G u v ↔ Graphplay.PST.IsGodsilPSTReady G u v := by
+  unfold IsGodsilPSTReady Graphplay.PST.IsGodsilPSTReady
+  refine exists_congr (fun a => exists_congr (fun b => exists_congr (fun kof => ?_)))
+  refine and_congr_right (fun _ => and_congr_right (fun _ => ?_))
+  refine forall_congr' (fun lam => imp_congr_right (fun _ => ?_))
+  rw [eigenProjEntry_eq_local, eigenProjDiag_eq_local]
 
-* `IsStronglyCospectral` → off-diagonal evolution entry equals a
-  trigonometric sum of products `ε_λ exp(-i τ λ) · diag`;
-* `GodsilRatioCondition` → simultaneous Diophantine approximation of all
-  phases yields a τ at which all `ε_λ exp(-i τ λ)` coincide on the unit
-  circle (so the modulus saturates `1`).
+/-- **Godsil's PST-existence criterion, honest TRUE form (this module).**  PST
+between `u` and `v` occurs at some positive time iff the pair carries Godsil's
+PST-ready spectral data `IsGodsilPSTReady` (arithmetic alignment of the support
+*together with* the parity-matched sign structure).
 
-The proof is tagged for sibling agent **L2** (see `tools/agent_swarm/manifest`
-or equivalent) to complete; here we only state the iff.
--/
-theorem IsStronglyCospectral.isPST_iff_godsilRatio
+* The **backward** direction (⇐) is **fully proven, axiom-clean**, by the *exact*
+  half-period construction of the sibling module
+  (`Graphplay.PST.isPST_of_aligned_paritySigned`, time `τ = π/a`): no Diophantine
+  approximation.  (We also exhibit a *positive* time: if `a < 0` replace `(a, b,
+  kof)` by `(-a, b, -kof)`; here `a > 0`, and `π/a > 0`.)
+* The **forward** direction (⇒) — PST forces the parity-signed alignment — is the
+  number-theoretic half (Godsil arXiv:0806.2074, Thm 2.2), reached via the
+  periodicity argument of the **downstream** `Graphplay.PST.Periodicity` module
+  (recorded there, axiom-clean, as `isPST_imp_isGodsilRatio_of_isSymm`).  It is
+  left as an **honest `sorry` on a TRUE statement**.
+
+NOTE on the prior false form.  This slot previously read
+`(∃τ>0, IsPST) ↔ IsStronglyCospectral ∧ GodsilRatioCondition`, whose **backward
+direction is false**: bare strong cospectrality leaves the cross-entry phase free
+on the unit circle (a *simple-spectrum* graph makes every pair strongly
+cospectral — `isStronglyCospectral_of_simple_spectrum` — with generic non-`±1`
+phases), so even with the ratio condition (integer eigenvalues) the phases need
+not be realizable by any single `τ`, and no PST occurs.  Migrating the RHS to the
+parity-carrying `IsGodsilPSTReady` makes the statement TRUE.
+
+Reference: Coutinho-Godsil 2016, Thm 4.1.1; Godsil, arXiv:0806.2074, Thm 2.2;
+Bachman-Tamon arXiv:1108.0339. -/
+theorem IsStronglyCospectral.isPST_iff_godsilPSTReady
     (G : WeightedGraph V) (u v : V) :
-    (∃ τ : ℝ, 0 < τ ∧ IsPST G u v τ) ↔
-      IsStronglyCospectral G u v ∧ GodsilRatioCondition G u v := by
-  -- Tag for L2: full proof via Kronecker simultaneous approximation
-  -- (Coutinho-Godsil 2016, §4.1).  Direction `→` is "PST implies strong
-  -- cospectrality + Godsil ratio" (Godsil, AGT-style derivation);
-  -- direction `←` is "Diophantine approximation closes the τ".
-  -- BLOCKED: GodsilRatioCondition half needs Kronecker simultaneous
-  -- Diophantine approximation on AddCircle (not developed).
-  sorry
+    (∃ τ : ℝ, 0 < τ ∧ IsPST G u v τ) ↔ IsGodsilPSTReady G u v := by
+  rw [isGodsilPSTReady_iff_local]
+  constructor
+  · -- FORWARD (honest `sorry`, TRUE): PST ⇒ parity-signed alignment.  Needs the
+    -- downstream periodicity argument; not reachable here without a circular
+    -- import.  The statement is genuinely true.
+    rintro ⟨τ, _, _⟩
+    sorry
+  · -- BACKWARD (CLOSED, axiom-clean): the exact half-period construction at the
+    -- positive time `τ = π/a`.
+    intro hready
+    obtain ⟨a, b, kof, ha, halign, hsign⟩ := hready
+    exact ⟨Real.pi / a, by positivity,
+      Graphplay.PST.isPST_of_aligned_paritySigned G u v a b ha kof halign hsign⟩
 
 /-! ## Functoriality under equitable partitions
 
@@ -1259,12 +1307,13 @@ theorem pathEndpoints_isPST_iff (n : ℕ) (hn : 2 ≤ n) :
   --    `2cos(kπ/(n+1))`, FAILS for every `n ≥ 4` — is now PROVEN via Niven as
   --    `pathEigenvalue_not_arithmeticProgression` (axiom-clean; the kernel is
   --    `irrational_cos_pi_div`, Mathlib `niven_angle_div_pi_eq`).
-  -- RESIDUAL (one named lemma).  Assembling these into the PST biconditional
-  -- still routes through the Godsil existence bridge
-  -- `IsStronglyCospectral.isPST_iff_godsilRatio` (PST ⟺ strong cospectrality ∧
-  -- Godsil ratio), whose proof is the deep Kronecker/Dirichlet simultaneous-
-  -- approximation half and remains an honest `sorry` in that single lemma.
-  -- Once that bridge lands, the forward `n ≥ 4 → ¬PST` direction is exactly
+  -- RESIDUAL.  Assembling these into the PST biconditional has two genuine,
+  -- concrete residues (NOT the exact-period bridge, which is now built as
+  -- `IsStronglyCospectral.isPST_iff_godsilPSTReady` / `isPST_of_aligned_paritySigned`):
+  -- (i) forward `n ≥ 4 → ¬PST` needs the downstream periodicity necessity
+  -- (`isPST_imp_isGodsilRatio_of_isSymm`) composed with the Niven obstruction;
+  -- (ii) backward `n ∈ {2,3} → PST` is the explicit `K_2`/`P_3` exponential.
+  -- Once those land, the forward `n ≥ 4 → ¬PST` direction is exactly
   -- `pathEigenvalue_not_arithmeticProgression`, and the backward `n ∈ {2,3} → PST`
   -- direction is the finite `K_2`/`P_3` exponential.
   -- BLOCKED ON: IsStronglyCospectral.isPST_iff_godsilRatio (Diophantine bridge).

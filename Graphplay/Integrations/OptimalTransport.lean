@@ -224,6 +224,56 @@ def IsAdmissiblePotential (P : OptimalTransportProblem Ω)
 noncomputable def dual (P : OptimalTransportProblem Ω) (φ ψ : Ω → ℝ) : ℝ :=
   ∫ x, φ x ∂P.α + ∫ y, ψ y ∂P.β
 
+/-- **Abstract (measure-theoretic) weak Kantorovich duality (PROVEN).**  For any
+coupling `π` of `(α, β)` and any admissible potential pair `(φ, ψ)`
+(`φ x + ψ y ≤ c x y`), the dual value is `≤` the primal cost:
+  `∫ φ ∂α + ∫ ψ ∂β  ≤  ∫ c ∂π`,  i.e.  `P.dual φ ψ ≤ P.kantorovich π`.
+
+This is the continuous analogue of `FiniteOT.weak_duality`, and the inequality
+the strong-duality docstring above refers to.
+
+Proof (the elementary half of Villani 5.10): push the marginals through `π`
+(`integral_map` with `π.map fst = α`, `π.map snd = β`) to rewrite the two dual
+integrals as integrals over `π` of `φ ∘ fst` and `ψ ∘ snd`; add them
+(`integral_add`); then compare with `∫ c ∂π` pointwise via `integral_mono`, using
+admissibility `φ p.1 + ψ p.2 ≤ c p.1 p.2`.
+
+The integrability hypotheses are genuinely needed (the Bochner integral is
+junk-valued `0` on non-integrable functions, which would break the bound): `φ`
+integrable against `α`, `ψ` against `β`, and the cost against `π`.  They are the
+minimal regularity for the *statement* to assert anything; for a probability
+measure `π` and a bounded continuous cost they hold automatically. -/
+theorem kantorovich_weak_duality (P : OptimalTransportProblem Ω)
+    {π : Measure (Ω × Ω)} (hπ : P.IsCoupling π)
+    {φ ψ : Ω → ℝ} (hadm : P.IsAdmissiblePotential φ ψ)
+    (hφ : Integrable φ P.α) (hψ : Integrable ψ P.β)
+    (hc : Integrable (Function.uncurry P.cost) π) :
+    P.dual φ ψ ≤ P.kantorovich π := by
+  haveI : IsProbabilityMeasure π := hπ.prob
+  -- the two marginal pushforwards
+  have hmapfst : π.map Prod.fst = P.α := hπ.marginal_left
+  have hmapsnd : π.map Prod.snd = P.β := hπ.marginal_right
+  -- rewrite `∫ φ ∂α` as `∫ φ(p.1) ∂π` via `integral_map`
+  have hLfst : ∫ x, φ x ∂P.α = ∫ p, φ p.1 ∂π := by
+    rw [← hmapfst, integral_map measurable_fst.aemeasurable]
+    rw [hmapfst]; exact hφ.aestronglyMeasurable
+  have hLsnd : ∫ y, ψ y ∂P.β = ∫ p, ψ p.2 ∂π := by
+    rw [← hmapsnd, integral_map measurable_snd.aemeasurable]
+    rw [hmapsnd]; exact hψ.aestronglyMeasurable
+  -- integrability of the two composites against `π`
+  have hφπ : Integrable (fun p : Ω × Ω => φ p.1) π := by
+    rw [← hmapfst] at hφ
+    exact (integrable_map_measure hφ.aestronglyMeasurable measurable_fst.aemeasurable).1 hφ
+  have hψπ : Integrable (fun p : Ω × Ω => ψ p.2) π := by
+    rw [← hmapsnd] at hψ
+    exact (integrable_map_measure hψ.aestronglyMeasurable measurable_snd.aemeasurable).1 hψ
+  -- the dual is the π-integral of `φ ∘ fst + ψ ∘ snd`
+  rw [OptimalTransportProblem.dual, hLfst, hLsnd, ← integral_add hφπ hψπ,
+    OptimalTransportProblem.kantorovich]
+  -- pointwise admissibility, then `integral_mono`
+  refine integral_mono (hφπ.add hψπ) hc (fun p => ?_)
+  exact hadm p.1 p.2
+
 /-- **Strong Kantorovich duality** (deep, cited).  Under mild regularity (Polish
 space, lower-semicontinuous lower-bounded cost) the primal equals the dual:
   `value P = sup_{(φ,ψ) admissible} dual P φ ψ`.
@@ -361,6 +411,96 @@ theorem dualValue_le_value (c : X → Y → ℝ) {α : X → ℝ} {β : Y → �
   rintro v ⟨π, rfl⟩
   exact weak_duality c π hadm
 
+/-! ### Data processing: coarsening a coupling through a quotient (PROVEN)
+
+The **equitable-partition / data-processing** content of the mandate, in its
+elementary finite form.  Given quotient maps `qX : X → I`, `qY : Y → J` (think:
+the cell-membership maps of equitable partitions of the two ground sets), a finite
+coupling `π` of `(α, β)` *coarsens* to a finite coupling of the **pushforward
+marginals** `α' i = ∑_{a : qX a = i} α a`, `β' j = ∑_{b : qY b = j} β b`, by summing
+the plan over each cell rectangle.  This is exactly the statement that the
+*quotient* of a transport plan is again a transport plan (between quotient
+marginals) — the discrete shape of `transportPlan_equitable_decomp` and the
+elementary half of the OT data-processing inequality. -/
+
+/-- The **pushforward marginal** of `α : X → ℝ` through a quotient map `q : X → I`:
+the cell-mass vector `i ↦ ∑_{a : q a = i} α a`. -/
+def pushMarginal {Z K : Type u} [Fintype Z] [DecidableEq K]
+    (q : Z → K) (α : Z → ℝ) : K → ℝ :=
+  fun k => ∑ a ∈ Finset.univ.filter (fun a => q a = k), α a
+
+/-- The **coarsened plan** of a finite plan `π : X → Y → ℝ` through quotient maps
+`qX : X → I`, `qY : Y → J`: sum the plan over each cell rectangle
+`{a : qX a = i} × {b : qY b = j}`. -/
+def coarsenPlan {X Y I J : Type u} [Fintype X] [Fintype Y]
+    [DecidableEq I] [DecidableEq J]
+    (qX : X → I) (qY : Y → J) (π : X → Y → ℝ) : I → J → ℝ :=
+  fun i j => ∑ a ∈ Finset.univ.filter (fun a => qX a = i),
+               ∑ b ∈ Finset.univ.filter (fun b => qY b = j), π a b
+
+/-- **Coarsening a coupling through quotient maps gives a coupling of the
+pushforward marginals (PROVEN).**  This is the finite, fully-elementary
+data-processing structure theorem for optimal transport: the cell-quotient of a
+transport plan is a transport plan between the cell-quotient marginals.
+
+Proof: nonnegativity is a double sum of nonnegatives; the row/column marginal
+identities are fiberwise reassemblies — `∑ j, ∑_{b∈cell j} = ∑ b` via
+`Finset.sum_fiberwise_of_maps_to` — after which the original `marg_left` /
+`marg_right` of `π` reassemble the cell sum of `α`/`β`. -/
+def coarsen {X Y I J : Type u} [Fintype X] [Fintype Y] [Fintype I] [Fintype J]
+    [DecidableEq I] [DecidableEq J] {α : X → ℝ} {β : Y → ℝ}
+    (π : FinCoupling α β) (qX : X → I) (qY : Y → J) :
+    FinCoupling (pushMarginal qX α) (pushMarginal qY β) where
+  plan := coarsenPlan qX qY π.plan
+  nonneg i j := by
+    refine Finset.sum_nonneg (fun a _ => Finset.sum_nonneg (fun b _ => π.nonneg a b))
+  marg_left i := by
+    -- `∑ j, ∑_{a∈Xi} ∑_{b∈Yj} π a b = ∑_{a∈Xi} ∑_b π a b = ∑_{a∈Xi} α a`.
+    show (∑ j : J, ∑ a ∈ Finset.univ.filter (fun a => qX a = i),
+            ∑ b ∈ Finset.univ.filter (fun b => qY b = j), π.plan a b)
+        = pushMarginal qX α i
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl (fun a _ => ?_)
+    rw [Finset.sum_fiberwise_of_maps_to (g := qY) (t := Finset.univ)
+        (fun b _ => Finset.mem_univ _) (f := fun b => π.plan a b)]
+    exact π.marg_left a
+  marg_right j := by
+    -- `∑ i, ∑_{a∈Xi} ∑_{b∈Yj} π a b = ∑_{b∈Yj} ∑_a π a b = ∑_{b∈Yj} β b`.
+    show (∑ i : I, ∑ a ∈ Finset.univ.filter (fun a => qX a = i),
+            ∑ b ∈ Finset.univ.filter (fun b => qY b = j), π.plan a b)
+        = pushMarginal qY β j
+    rw [Finset.sum_fiberwise_of_maps_to (g := qX) (t := Finset.univ)
+        (fun a _ => Finset.mem_univ _)
+        (f := fun a => ∑ b ∈ Finset.univ.filter (fun b => qY b = j), π.plan a b)]
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl (fun b _ => ?_)
+    exact π.marg_right b
+
+/-- **The pushforward marginals sum to the same total mass** as the originals: the
+coarsening is mass-preserving, `∑ i, α' i = ∑ a, α a`.  (A sanity/non-vacuity
+companion to `coarsen`: the quotient does not lose or create mass.) -/
+theorem sum_pushMarginal {Z K : Type u} [Fintype Z] [Fintype K] [DecidableEq K]
+    (q : Z → K) (α : Z → ℝ) :
+    ∑ k : K, pushMarginal q α k = ∑ a : Z, α a := by
+  show (∑ k : K, ∑ a ∈ Finset.univ.filter (fun a => q a = k), α a) = ∑ a : Z, α a
+  exact Finset.sum_fiberwise_of_maps_to (g := q) (t := Finset.univ)
+    (fun a _ => Finset.mem_univ _) (f := α)
+
+/-- **Data-processing for finite optimal transport (PROVEN, Prop form).**  The
+coarsened plan `coarsenPlan qX qY π.plan` is a *bona-fide* finite coupling of the
+pushforward marginals: it is nonnegative and has the correct row/column sums.
+This is the propositional restatement of `coarsen`; it certifies that pushing a
+transport plan through a (cell-)quotient yields a transport plan between the
+quotient marginals — the elementary finite core of the OT data-processing
+inequality. -/
+theorem coarsenPlan_isCoupling {X Y I J : Type u} [Fintype X] [Fintype Y]
+    [Fintype I] [Fintype J] [DecidableEq I] [DecidableEq J]
+    {α : X → ℝ} {β : Y → ℝ} (π : FinCoupling α β) (qX : X → I) (qY : Y → J) :
+    (∀ i j, 0 ≤ coarsenPlan qX qY π.plan i j) ∧
+      (∀ i, ∑ j, coarsenPlan qX qY π.plan i j = pushMarginal qX α i) ∧
+      (∀ j, ∑ i, coarsenPlan qX qY π.plan i j = pushMarginal qY β j) :=
+  ⟨(coarsen π qX qY).nonneg, (coarsen π qX qY).marg_left, (coarsen π qX qY).marg_right⟩
+
 end FiniteOT
 
 /-! ## 3. Equitable-coarsening of transport plans
@@ -397,27 +537,79 @@ noncomputable def residualKernel
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (x y : Ω) : ℂ :=
   W.kernel x y - P.quotient (P.cells x) (P.cells y)
 
-/-- **Residual cell-integral lemma** (restated).
+/-- **Residual cell-integral lemma** (restated and PROVEN, false→true migrated).
 
 The original statement claimed the residual `R(x,y) = W(x,y) - B(cells x, cells y)`
-integrates to *zero* over each cell `C_j`.  That is FALSE as written: `P.quotient`
-is the *per-vertex* flux `B_{ij} = ∫_{C_j} W(x,·)` (NOT divided by `μ(C_j)`), so the
-true cell-integral of the residual is
-`∫_{C_j} R(x,·) = B_{cells x, j} − B_{cells x, j}·μ(C_j) = B_{cells x, j}·(1 − μ(C_j))`,
-which vanishes only when `μ(C_j) = 1`.  We restate the correct identity.
+integrates to *zero* over each cell `C_j`.  That is FALSE as written on two counts:
+
+1.  `P.quotient` is the *per-vertex* flux `B_{ij} = ∫_{C_j} W(x,·)` (NOT divided by
+    `μ(C_j)`), so even when everything is integrable the true cell-integral of the
+    residual is
+    `∫_{C_j} R(x,·) = B_{cells x, j} − B_{cells x, j}·μ(C_j) = B_{cells x, j}·(1 − μ(C_j))`,
+    which vanishes only when `μ(C_j) = 1`.
+2.  For an *arbitrary fixed* `x` the slice `W(x, ·)` need not be integrable on `C_j`
+    (the graphon `bounded` field only controls `W` `μ⊗μ`-a.e., and a single slice is
+    `μ⊗μ`-null), in which case the LHS Bochner integral is junk-valued and the
+    identity fails for the trivial reason that the two sides are unrelated.
+
+We therefore restate the **correct** identity and add the minimal genuine
+hypothesis `hxj` that makes the integral split valid (cell-restricted slice
+integrability — automatic for a.e. `x` from the Hilbert–Schmidt bound of
+`Graphon.Equitable`, and stated here as a local assumption since that machinery is
+not re-exported).  The proof: inside the `cells y = j` indicator the quotient
+argument collapses to the constant `B_{cells x, j}`, so the integrand splits as
+`[cells y = j]·W(x,·) − [cells y = j]·B_{cells x, j}`; `integral_sub` separates
+them; the first integral is `B_{cells x, j}` (`quotient_apply_of_mem`, since
+`x ∈ C_{cells x}`) and the second is `B_{cells x, j}·μ(C_j) = B_{cells x, j}·cellMass j`
+(`integral_indicator` + `setIntegral_const`).
 
 (The genuine *zero-mean* residual is obtained with the mass-normalised quotient
 `B_{ij}/μ(C_j)`; with the raw per-vertex `P.quotient` the residual carries the
 factor `1 − μ(C_j)`.) -/
 theorem residualKernel_cell_integral_zero
-    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (x : Ω) (j : I) :
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (x : Ω) (j : I)
+    (hxj : Integrable (fun y => if P.cells y = j then W.kernel x y else 0) μ) :
     ∫ y, (if P.cells y = j then residualKernel P x y else 0) ∂μ
       = P.quotient (P.cells x) j * (1 - (P.cellMass j : ℂ)) := by
-  -- Honest sorry: the split `∫(W − B) = ∫ W − B·μ(C_j)` needs the cell-restricted
-  -- integrability of `W x ·` (Hilbert–Schmidt / finite-measure infrastructure of
-  -- `Graphon.Equitable`), which is not re-exported here; the displayed value is
-  -- the genuine (corrected) identity, replacing the false `= 0`.
-  sorry
+  classical
+  set c : ℂ := P.quotient (P.cells x) j with hc
+  -- inside the `cells y = j` indicator, `residualKernel P x y = W x y − c`.
+  have hsplit : ∀ y, (if P.cells y = j then residualKernel P x y else 0)
+      = (if P.cells y = j then W.kernel x y else 0) - (if P.cells y = j then c else 0) := by
+    intro y
+    by_cases hy : P.cells y = j
+    · rw [if_pos hy, if_pos hy, if_pos hy]
+      show W.kernel x y - P.quotient (P.cells x) (P.cells y) = W.kernel x y - c
+      rw [hc, hy]
+    · rw [if_neg hy, if_neg hy, if_neg hy, sub_zero]
+  -- the constant indicator is integrable on a finite-measure cell.
+  have hCj : MeasurableSet (P.cell j) := P.measurableSet_cell j
+  have hconstint : Integrable (fun y => if P.cells y = j then c else 0) μ := by
+    have : (fun y => if P.cells y = j then c else 0)
+        = (P.cell j).indicator (fun _ => c) := by
+      funext y; by_cases hy : P.cells y = j
+      · rw [if_pos hy, Set.indicator_of_mem (show y ∈ P.cell j from hy)]
+      · rw [if_neg hy, Set.indicator_of_notMem (show y ∉ P.cell j from hy)]
+    rw [this]
+    exact (integrableOn_const (C := c) (ne_of_lt (P.cell_finite j))).integrable_indicator hCj
+  -- split the integral.
+  rw [integral_congr_ae (Filter.Eventually.of_forall hsplit), integral_sub hxj hconstint]
+  -- first integral: the per-vertex flux out of `x ∈ C_{cells x}`.
+  have hfst : ∫ y, (if P.cells y = j then W.kernel x y else 0) ∂μ = c := by
+    rw [hc]; exact (P.quotient_apply_of_mem (P.cells x) j (x := x) rfl).symm
+  -- second integral: `c · μ(C_j) = c · cellMass j`.
+  have hsnd : ∫ y, (if P.cells y = j then c else 0) ∂μ = (P.cellMass j : ℂ) * c := by
+    have : (fun y => if P.cells y = j then c else 0)
+        = (P.cell j).indicator (fun _ => c) := by
+      funext y; by_cases hy : P.cells y = j
+      · rw [if_pos hy, Set.indicator_of_mem (show y ∈ P.cell j from hy)]
+      · rw [if_neg hy, Set.indicator_of_notMem (show y ∉ P.cell j from hy)]
+    rw [this, integral_indicator hCj, setIntegral_const]
+    show (μ.real (P.cell j)) • c = (P.cellMass j : ℂ) * c
+    rw [Complex.real_smul]
+    rfl
+  rw [hfst, hsnd, hc]
+  ring
 
 /-- **Equitable coarsening of a transport plan.**  Given a (nonneg-real)
 graphon `W` with an equitable partition `P`, the associated sub-stochastic
@@ -444,17 +636,77 @@ noncomputable def quotientTransportPlan
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) : Matrix I I ℝ :=
   fun i j => (P.quotient i j).re
 
-/-- **The coarse plan inherits sub-stochasticity** of the host transport
-plan: the row sums of `P.quotientTransportPlan` are bounded by `1` (up to
-cell-mass weights).  Statement only. -/
+/-- **The coarse plan inherits sub-stochasticity** of the host transport plan
+(PROVEN, false→true migrated).
+
+The original statement claimed `∑_j μ(C_j) · Re(B_{ij}) ≤ 1`.  That carries a
+spurious cell-mass weight: `P.quotient` is already the **per-vertex** flux
+`B_{ij} = ∫_{C_j} W(x,·)` (`quotient_apply_of_mem`), so the row sum that equals
+the marginal is the *unweighted* `∑_j Re(B_{ij}) = ∫_Ω Re W(x,·) = marginal(x)`,
+**not** `∑_j μ(C_j)·Re(B_{ij})`.  (Counterexample to the old form: the constant
+graphon `W ≡ 1` with two equal cells of mass `1/2` has `B_{ij} = 1/2`, marginal
+`1`; the old LHS is `∑_j (1/2)(1/2) = 1/2 ≠ 1`, while the corrected LHS is
+`∑_j 1/2 = 1`.)  We restate the **correct, unweighted** identity and prove it.
+
+Per the honest-statement discipline we state it for a *representative*
+`x ∈ C_i` with the (genuinely needed, a.e.-automatic) integrability of its real
+slice, rather than extracting such a representative from the a.e.
+`IsSubStochastic` hypothesis.  Proof: `Re(B_{ij}) = ∫_{C_j} Re W(x,·)`
+(`quotient_apply_of_mem` + `RCLike.integral_re`); the cells partition `Ω`
+(`⋃_j C_j = univ`, pairwise disjoint), so `integral_iUnion_fintype` reassembles
+`∑_j ∫_{C_j} Re W(x,·) = ∫_Ω Re W(x,·) = marginal x ≤ 1`. -/
 theorem quotientTransportPlan_subStochastic
-    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (_hW : IsNonnegReal W)
-    (_hsub : IsSubStochastic W) :
-    ∀ i : I, ∑ j, P.cellMass j * quotientTransportPlan P i j ≤ 1 := by
-  -- DEEP: `∑_j μ(C_j)·B_{ij} = ∫_Ω W(x,·)·= marginal(x) ≤ 1` for `x ∈ C_i` by
-  -- sub-stochasticity; needs the cell-decomposition of the marginal integral
-  -- (finite-measure integrability infrastructure of `Graphon.Equitable`).
-  sorry
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i : I)
+    {x : Ω} (hxi : P.cells x = i)
+    (hint : Integrable (fun y => W.kernel x y) μ)
+    (hmarg : W.marginal x ≤ 1) :
+    ∑ j, quotientTransportPlan P i j ≤ 1 := by
+  classical
+  -- abbreviation: the real slice and its integrability
+  have hintre : Integrable (fun y => (W.kernel x y).re) μ := hint.re
+  -- `B_{ij} = ∫_{C_j} W(x,·)` (complex set integral), for each cell `j`.
+  have hBcell : ∀ j : I,
+      P.quotient i j = ∫ y in P.cell j, W.kernel x y ∂μ := by
+    intro j
+    have hxmem : x ∈ P.cell i := hxi
+    rw [P.quotient_apply_of_mem i j hxmem]
+    -- collapse the `cells z = j` indicator into a set integral over `C_j`.
+    have hind : (fun z => if P.cells z = j then W.kernel x z else 0)
+        = (P.cell j).indicator (fun z => W.kernel x z) := by
+      funext z; by_cases hz : P.cells z = j
+      · rw [if_pos hz, Set.indicator_of_mem (show z ∈ P.cell j from hz)]
+      · rw [if_neg hz, Set.indicator_of_notMem (show z ∉ P.cell j from hz)]
+    rw [hind, integral_indicator (P.measurableSet_cell j)]
+  -- `Re(B_{ij}) = ∫_{C_j} Re W(x,·)` for each cell `j`.  Push `Re = Complex.reCLM`
+  -- through the (set) integral via `ContinuousLinearMap.integral_comp_comm`.
+  have hcell : ∀ j : I,
+      quotientTransportPlan P i j = ∫ y in P.cell j, (W.kernel x y).re ∂μ := by
+    intro j
+    show (P.quotient i j).re = ∫ y in P.cell j, (W.kernel x y).re ∂μ
+    rw [hBcell j]
+    simp only [← Complex.reCLM_apply]
+    exact (ContinuousLinearMap.integral_comp_comm Complex.reCLM
+      (hint.integrableOn (s := P.cell j))).symm
+  -- the cells partition `Ω`: pairwise disjoint, union is `univ`.
+  have hdisj : Pairwise (Function.onFun Disjoint (fun j : I => P.cell j)) := by
+    intro a b hab
+    refine Set.disjoint_left.2 (fun z hza hzb => ?_)
+    exact hab (by rw [← (show P.cells z = a from hza), (show P.cells z = b from hzb)])
+  have hunion : ⋃ j : I, P.cell j = Set.univ := by
+    refine Set.eq_univ_of_forall (fun z => ?_)
+    exact Set.mem_iUnion.2 ⟨P.cells z, rfl⟩
+  -- `IntegrableOn (Re W x ·) (C_j)` for each cell, from the global real-slice integrability.
+  have hIntOn : ∀ j : I, IntegrableOn (fun y => (W.kernel x y).re) (P.cell j) μ :=
+    fun j => hintre.integrableOn
+  -- reassemble: `∑_j ∫_{C_j} Re W = ∫_Ω Re W = marginal x`.
+  calc ∑ j, quotientTransportPlan P i j
+      = ∑ j, ∫ y in P.cell j, (W.kernel x y).re ∂μ := by
+        exact Finset.sum_congr rfl (fun j _ => hcell j)
+    _ = ∫ y in (⋃ j : I, P.cell j), (W.kernel x y).re ∂μ :=
+        (integral_iUnion_fintype (fun j => P.measurableSet_cell j) hdisj hIntOn).symm
+    _ = ∫ y, (W.kernel x y).re ∂μ := by rw [hunion, setIntegral_univ]
+    _ = W.marginal x := rfl
+    _ ≤ 1 := hmarg
 
 end Graphon
 

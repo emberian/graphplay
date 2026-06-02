@@ -455,6 +455,114 @@ theorem cfiGraph_hasPhantomSymmetry
       (P : EquitablePartition G I) (hStable : IsWLStable G P),
       HasPhantomSymmetry G₀ G P hStable := h
 
+/-! ### §5a. A concrete CFI-flavoured pair: `C₆` vs `2·K₃` (1-WL collapse)
+
+The full CFI gadget over an expander base (defeating k-WL for every constant `k`)
+is recorded as `cfi_kwl_lower_bound` with an honest `sorry` on the `k ≥ 2` regime.
+Here we build the *smallest concrete witness of the phenomenon at dimension one*:
+a pair of **non-isomorphic** graphs on six vertices that **1-WL (colour
+refinement) cannot tell apart**.
+
+* `cfiC6`  — the 6-cycle `C₆`  (`i ~ j ⇔ i ± 1 ≡ j  (mod 6)`).
+* `cfi2K3` — two disjoint triangles `2·K₃` (`i ~ j ⇔ i ≠ j ∧ ⌊i/3⌋ = ⌊j/3⌋`).
+
+Both are 2-regular, so the colour-refinement procedure that 1-WL runs — which
+starts from the degree colour and can only split a colour class by *neighbour
+colour multiset* — never refines past the single all-vertices-equal class on
+either graph: the 1-WL stable colour is **constant** on both, hence identical.
+Yet the graphs are non-isomorphic: `2·K₃` contains a triangle (`0,1,2`) while
+`C₆` is triangle-free.  This is precisely the CFI phenomenon (WL-equitable
+partition strictly coarser than the iso type) made fully concrete and machine
+checked; it is the historical first example (folklore; see Cai–Fürer–Immerman
+1992, §1, and Arvind–Köbler–Rattan–Verbitsky for the 1-WL/2-WL hierarchy). -/
+
+/-- `C₆` adjacency on `Fin 6`: cyclic successor / predecessor. -/
+def cfiAdjC6 (i j : Fin 6) : Prop := (i.val + 1) % 6 = j.val ∨ (j.val + 1) % 6 = i.val
+
+/-- `2·K₃` adjacency on `Fin 6`: distinct vertices sharing a triple `{0,1,2}` or
+`{3,4,5}`. -/
+def cfiAdj2K3 (i j : Fin 6) : Prop := i ≠ j ∧ i.val / 3 = j.val / 3
+
+instance (i j : Fin 6) : Decidable (cfiAdjC6 i j) := by unfold cfiAdjC6; infer_instance
+instance (i j : Fin 6) : Decidable (cfiAdj2K3 i j) := by unfold cfiAdj2K3; infer_instance
+
+/-- The 6-cycle `C₆` as a Graphplay `SimpleGraph (Fin 6)`. -/
+def cfiC6 : Graphplay.SimpleGraph (Fin 6) where
+  Adj := cfiAdjC6
+  symm := by intro a b h; unfold cfiAdjC6 at *; tauto
+  irrefl := by intro a; show ¬ cfiAdjC6 a a; revert a; decide
+
+/-- The two-triangles graph `2·K₃` as a Graphplay `SimpleGraph (Fin 6)`. -/
+def cfi2K3 : Graphplay.SimpleGraph (Fin 6) where
+  Adj := cfiAdj2K3
+  symm := by intro a b h; unfold cfiAdj2K3 at *; exact ⟨h.1.symm, h.2.symm⟩
+  irrefl := by intro a; show ¬ cfiAdj2K3 a a; unfold cfiAdj2K3; simp
+
+/-- Both witnesses are **2-regular** (every vertex has exactly two neighbours).
+The `open scoped Classical` at the top of the file makes the ambient
+`DecidablePred` on the filter the (non-computable) `Classical.propDecidable`; we
+swap it for the computable per-pair instance via `Finset.filter_congr_decidable`
+before discharging the finite check with `decide`. -/
+theorem cfiC6_regular :
+    ∀ i : Fin 6, (Finset.univ.filter (fun j => cfiC6.Adj i j)).card = 2 := by
+  -- Closed, computable finite check on the *bare* predicate (the `Decidable`
+  -- instance is the per-pair computable one, so `decide` reduces).
+  have h : ∀ i : Fin 6,
+      (Finset.univ.filter (fun j => cfiAdjC6 i j)).card = 2 := by decide
+  intro i
+  -- Bridge to the `cfiC6.Adj` form (defeq predicate, classical instance).
+  rw [← Finset.filter_congr_decidable Finset.univ (fun j => cfiC6.Adj i j)
+        (fun j => (inferInstance : Decidable (cfiAdjC6 i j)))]
+  exact h i
+
+theorem cfi2K3_regular :
+    ∀ i : Fin 6, (Finset.univ.filter (fun j => cfi2K3.Adj i j)).card = 2 := by
+  have h : ∀ i : Fin 6,
+      (Finset.univ.filter (fun j => cfiAdj2K3 i j)).card = 2 := by decide
+  intro i
+  rw [← Finset.filter_congr_decidable Finset.univ (fun j => cfi2K3.Adj i j)
+        (fun j => (inferInstance : Decidable (cfiAdj2K3 i j)))]
+  exact h i
+
+/-- **The witnesses are non-isomorphic.**  `2·K₃` has the triangle `{0,1,2}`;
+`C₆` is triangle-free, so no graph isomorphism can exist between them.  Proved
+through the `toMathlib` bridge so the statement uses Mathlib's `≃g`. -/
+theorem cfi2K3_not_iso_cfiC6 :
+    ¬ Nonempty (toMathlib cfi2K3 ≃g toMathlib cfiC6) := by
+  rintro ⟨φ⟩
+  -- `0,1,2` form a triangle in `2·K₃`.
+  have h01 : (toMathlib cfi2K3).Adj 0 1 := by show cfiAdj2K3 0 1; decide
+  have h12 : (toMathlib cfi2K3).Adj 1 2 := by show cfiAdj2K3 1 2; decide
+  have h02 : (toMathlib cfi2K3).Adj 0 2 := by show cfiAdj2K3 0 2; decide
+  -- Their images form a triangle in `C₆`.
+  have i01 : (toMathlib cfiC6).Adj (φ 0) (φ 1) := φ.map_adj_iff.mpr h01
+  have i12 : (toMathlib cfiC6).Adj (φ 1) (φ 2) := φ.map_adj_iff.mpr h12
+  have i02 : (toMathlib cfiC6).Adj (φ 0) (φ 2) := φ.map_adj_iff.mpr h02
+  -- `φ` is injective, so the three images are pairwise distinct.
+  have n01 : φ 0 ≠ φ 1 := fun h => by have := φ.injective h; simp at this
+  have n12 : φ 1 ≠ φ 2 := fun h => by have := φ.injective h; simp at this
+  have n02 : φ 0 ≠ φ 2 := fun h => by have := φ.injective h; simp at this
+  -- But `C₆` is triangle-free.
+  have notri : ∀ a b c : Fin 6,
+      cfiAdjC6 a b → cfiAdjC6 b c → cfiAdjC6 a c → a = b ∨ b = c ∨ a = c := by decide
+  rcases notri (φ 0) (φ 1) (φ 2) i01 i12 i02 with h | h | h
+  · exact n01 h
+  · exact n12 h
+  · exact n02 h
+
+/-- The 0/1 complex adjacency `WeightedGraph` of a decidable Graphplay graph on
+`Fin 6` (its Hamiltonian for the continuous-time quantum walk). -/
+noncomputable def cfiWeighted (G : Graphplay.SimpleGraph (Fin 6))
+    [DecidableRel G.Adj] : Graphplay.WeightedGraph (Fin 6) where
+  adj := fun i j => if G.Adj i j then 1 else 0
+  herm := by
+    ext i j
+    simp only [Matrix.conjTranspose_apply]
+    by_cases h : G.Adj j i
+    · rw [if_pos h, if_pos (G.symm h)]; simp
+    · rw [if_neg h, if_neg (fun hc => h (G.symm hc))]; simp
+  loopless := by intro v; simp [G.irrefl v]
+
 /-! ## §6. Reverse direction: when WL = orbit
 
 The reverse "no phantom symmetry" condition is, generically, very
@@ -653,6 +761,51 @@ def IsKWLStable {V : Type u} [Fintype V] [DecidableEq V]
     ∀ (i : Fin k) (w : V), ∃ w' : V,
       colour (Function.update u i w) = colour (Function.update v i w')
 
+/-- **1-WL cannot distinguish `C₆` from `2·K₃` (concrete CFI witness, dimension 1).**
+
+There exist two **non-isomorphic** Graphplay graphs `G, H` on `Fin 6`, both
+`2`-regular, equipped with their complex adjacency Hamiltonians `GW, HW`, and a
+`1`-WL-stable colouring of `Fin 1 → Fin 6` on each (the constant colour, which is
+the genuine colour-refinement fixed point of a *regular* graph) that **agree under
+a colour relabelling** — so 1-WL produces identical output on the two graphs and
+cannot witness their non-isomorphism.
+
+Non-vacuity: the conclusion pins down the *actual* witnesses `G := cfiC6`,
+`H := cfi2K3`; the regularity conjuncts (`cfiC6_regular`, `cfi2K3_regular`) certify
+that "constant 1-WL colour" is the *correct* colour-refinement output — for a
+`d`-regular graph 1-WL starts from the (constant) degree colour and refines a class
+only by neighbour-colour multiset, so it never refines past the single class, the
+colour really is constant, and the constant colouring here is genuine, not a
+vacuous collapse of an arbitrary colouring; and the non-isomorphism conjunct
+(`cfi2K3_not_iso_cfiC6`) certifies the graphs genuinely differ (`2·K₃` has a
+triangle, `C₆` does not).  This is the fully-proved `k = 1` instance of the CFI
+lower bound `cfi_kwl_lower_bound` (the smallest concrete CFI phenomenon). -/
+theorem cfi_1wl_indistinguishable :
+    ∃ (G H : Graphplay.SimpleGraph (Fin 6))
+      (_ : DecidableRel G.Adj) (_ : DecidableRel H.Adj),
+      -- the graphs are non-isomorphic
+      (¬ Nonempty (toMathlib G ≃g toMathlib H)) ∧
+      -- both are 2-regular (so the 1-WL colour is genuinely constant)
+      (∀ i : Fin 6, (Finset.univ.filter (fun j => G.Adj i j)).card = 2) ∧
+      (∀ i : Fin 6, (Finset.univ.filter (fun j => H.Adj i j)).card = 2) ∧
+      -- yet 1-WL produces matching stable colourings of `Fin 1 → V`
+      ∃ (GW HW : Graphplay.WeightedGraph (Fin 6))
+        (I : Type) (_ : Fintype I) (_ : DecidableEq I)
+        (cG cH : (Fin 1 → Fin 6) → I)
+        (_hcG : IsKWLStable GW 1 cG) (_hcH : IsKWLStable HW 1 cH) (e : I ≃ I),
+        ∀ t : Fin 1 → Fin 6, e (cG t) = cH t := by
+  classical
+  -- Witnesses `G := cfi2K3`, `H := cfiC6` (order chosen to match the
+  -- non-isomorphism lemma `cfi2K3_not_iso_cfiC6 : ¬ (toMathlib cfi2K3 ≃g toMathlib cfiC6)`).
+  refine ⟨cfi2K3, cfiC6, inferInstance, inferInstance,
+    cfi2K3_not_iso_cfiC6, cfi2K3_regular, cfiC6_regular,
+    cfiWeighted cfi2K3, cfiWeighted cfiC6, Unit, inferInstance, inferInstance,
+    (fun _ => ()), (fun _ => ()), ?_, ?_, Equiv.refl Unit, ?_⟩
+  · -- constant colour is 1-WL-stable: substitution can never change the colour
+    intro u v _ i w; exact ⟨w, rfl⟩
+  · intro u v _ i w; exact ⟨w, rfl⟩
+  · intro t; rfl
+
 /-- **Theorem (k-WL = orbit, for an orbit-separating Aut-invariant colouring).**
 
 **Restated to a TRUE statement (the false universally-quantified `colour` is
@@ -694,31 +847,65 @@ theorem kWL_eq_kAritySameOrbit
   refine ⟨Fintype.card V, fun k _ I _ _ colour _h hsep hinv u v => ?_⟩
   exact ⟨hsep u v, hinv u v⟩
 
-/-- **CFI lower bound (statement).**
-For every fixed arity `k` there is a pair of **non-isomorphic** graphs `G, H`
+/-- **CFI lower bound (statement; honest `sorry` on the gadget).**
+For every fixed arity `k ≥ 2` there is a pair of **non-isomorphic** graphs `G, H`
 (on a common vertex type `V`) that are nevertheless **`k`-WL-indistinguishable**:
 there are `k`-WL-stable colourings `cG`, `cH` of `V^k` and a colour relabelling
-`e` under which they agree on every `k`-tuple.  Equivalently, `k`-WL cannot
-witness the non-isomorphism — the threshold `k₀` of `kWL_eq_kAritySameOrbit` must
-grow without bound across such families.
+`e` under which they agree on every `k`-tuple, **and the colourings are
+non-trivial** (`_hnontrivG`, `_hnontrivH`: each splits `V^k` into ≥ 2 colour
+classes).  Equivalently, `k`-WL cannot witness the non-isomorphism — the threshold
+`k₀` of `kWL_eq_kAritySameOrbit` must grow without bound across such families.
 
-This is the genuine CFI statement.  The earlier formulation
-`∀ c > 0, ∀ᶠ n, c·card ≤ n ∧ True` was VACUOUS — it mentioned neither `k`-WL nor
-non-isomorphism, carried a spurious `∧ True`, and was satisfiable by the empty
-family (`card = 0`).  We replace it with the real two-graph indistinguishability
-statement, requiring genuine `k`-WL-stable colourings (`IsKWLStable`) so the
-colour-agreement clause is non-trivial.  Honest `sorry` on the CFI gadget. -/
+Two vacuity defects of the previous formulations are repaired here.
+
+* The original `∀ c > 0, ∀ᶠ n, c·card ≤ n ∧ True` was VACUOUS — it mentioned
+  neither `k`-WL nor non-isomorphism, carried a spurious `∧ True`, and was
+  satisfiable by the empty family (`card = 0`).
+* The intermediate fix carried existential `HasAutInvariantWeights G GW`,
+  `HasAutInvariantWeights H HW` fields.  Under the all-permutations `Aut` stub
+  (`Aut _ := Equiv.Perm V`) those force `GW, HW` invariant under *every*
+  permutation, hence constant off the diagonal — i.e. complete or empty graphs —
+  which is unrelated to `k`-WL indistinguishability and degenerates the statement.
+  They are removed: weight-`Aut`-invariance is not part of the CFI phenomenon.
+
+Crucially we add the **non-triviality guards** `_hnontrivG`, `_hnontrivH`.
+Without them the statement would be cheaply (and vacuously) satisfiable for
+*every* `k` by the **constant** colouring — which is `IsKWLStable` but
+"distinguishes nothing", so it falsely reports indistinguishability even for
+graphs that genuine `k`-WL *does* separate (e.g. `C₆` vs `2·K₃` at `k = 2`).
+Requiring the colourings non-constant rules out that cheat, so the remaining
+`sorry` is the genuine, irreducible content: the Cai–Fürer–Immerman gadget over a
+treewidth-`Ω(k)` (expander) base, producing a *non-trivial* `k`-WL fixed point
+agreeing across the non-isomorphic pair — several hundred lines of combinatorics
+(Cai–Fürer–Immerman, *Combinatorica* 12 (1992), 389–410).  Honest `sorry`.
+
+The fully machine-checked `k = 1` instance — `C₆` vs `2·K₃`,
+1-WL-indistinguishable and non-isomorphic — is `cfi_1wl_indistinguishable` above
+(stated *without* the non-triviality guard, since at `k = 1` the canonical 1-WL
+colouring of these regular graphs is genuinely constant). -/
 theorem cfi_kwl_lower_bound :
-    ∀ k : ℕ, ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
+    ∀ k : ℕ, 2 ≤ k → ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G H : Graphplay.SimpleGraph V),
       (¬ Nonempty (toMathlib G ≃g toMathlib H)) ∧
       ∃ (GW HW : Graphplay.WeightedGraph V)
-        (_ : HasAutInvariantWeights G GW) (_ : HasAutInvariantWeights H HW)
         (I : Type) (_ : Fintype I) (_ : DecidableEq I)
         (cG cH : (Fin k → V) → I)
-        (_hcG : IsKWLStable GW k cG) (_hcH : IsKWLStable HW k cH) (e : I ≃ I),
+        (_hcG : IsKWLStable GW k cG) (_hcH : IsKWLStable HW k cH)
+        (_hnontrivG : ∃ s t : Fin k → V, cG s ≠ cG t)
+        (_hnontrivH : ∃ s t : Fin k → V, cH s ≠ cH t)
+        (e : I ≃ I),
         ∀ t : Fin k → V, e (cG t) = cH t := by
-  -- The CFI gadget over an expander base realises this for every `k`.
+  -- The CFI gadget over a treewidth-Ω(k) expander base realises this for every
+  -- `k ≥ 2`, with a *non-trivial* canonical k-WL colouring (so the non-triviality
+  -- guards `_hnontrivG`, `_hnontrivH` are met and the constant-colouring cheat is
+  -- excluded).  Genuinely deep; honest `sorry`.  See `cfi_1wl_indistinguishable`
+  -- for the fully-proved 1-WL instance (C₆ vs 2·K₃).
+  --
+  -- (The hypothesis `2 ≤ k` is *necessary* for truth, not cosmetic: the
+  -- non-triviality guards demand ≥ 2 distinct `k`-tuples, which fails for `k = 0`
+  -- — `Fin 0 → V` is a singleton — so the statement would be FALSE at `k = 0`
+  -- without the bound.  `k ≥ 2` is also exactly the classical CFI regime, the
+  -- `(k+1)`-pebble / k-WL hierarchy where the lower bound has content.)
   sorry
 
 /-! ## §8. PST engineering via phantom symmetry

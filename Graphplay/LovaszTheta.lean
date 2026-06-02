@@ -517,19 +517,45 @@ noncomputable def ratioBound
   let lam := (G.isHermitian_adjMatrix ℝ).eigenvalues
   (Fintype.card V : ℝ) * (-(⨅ i, lam i)) / ((⨆ i, lam i) - (⨅ i, lam i))
 
+/-- **Equivalence (c), ratio-bound form** (Lovász 1979, Thm 9): for a
+**vertex-transitive** graph `G` whose adjacency spectrum is **non-constant**,
+the Lovász number equals the Hoffman/Lovász ratio expression
+`ϑ(G) = |V|·(-λ_min)/(λ_max - λ_min)`.
+
+**False→true migration of the hypothesis.**  The old signature carried a bare
+`_hvt : True` placeholder, so it asserted the equality `ϑ(G) = ratioBound G`
+for *every* graph — **false** on two counts:
+
+* without vertex-transitivity the ratio formula need not equal `ϑ` at all;
+* even *with* vertex-transitivity it fails on the edgeless graph `⊥`
+  (vertex-transitive): there every adjacency eigenvalue is `0`, so
+  `λ_max - λ_min = 0` and `ratioBound ⊥ = 0` (Lean's `x/0 = 0`), whereas
+  `ϑ(⊥_n) = n`.
+
+We therefore replace the vacuous `True` with the two genuine hypotheses the
+theorem actually needs: vertex-transitivity `hvt` (the automorphism group acts
+transitively on vertices) and spectral non-degeneracy `hnd` (`λ_max ≠ λ_min`,
+ruling out the edgeless/complete-trivial degeneracy).  Both are satisfiable
+(e.g. `K_n` for `n ≥ 2`: vertex-transitive, `λ_max = n-1 ≠ -1 = λ_min`), so the
+statement is now non-vacuous and true-as-stated.  The proof is the genuine deep
+Lovász vertex-transitive averaging argument (a real vertex-transitivity input,
+not constructible from `LovaszSDPDuality.strong_duality` in this file), so it
+stays an honest `sorry` on the corrected statement. -/
 theorem lovaszTheta_eq_ratioBound
     {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
-    (_hvt : True /- placeholder for vertex-transitive hypothesis -/) :
+    (hvt : ∀ u v : V, ∃ σ : G ≃g G, σ u = v)
+    (hnd : (⨆ i, (G.isHermitian_adjMatrix ℝ).eigenvalues i)
+          ≠ (⨅ i, (G.isHermitian_adjMatrix ℝ).eigenvalues i)) :
     lovaszTheta G = ratioBound G := by
   -- HONEST SORRY (deep): the Lovász/Hoffman ratio-bound identity for
   -- vertex-transitive graphs (Lovász 1979, Thm 9).  `ratioBound` is the genuine
-  -- spectral expression `|V|·(-λ_min)/(λ_max - λ_min)`.  This is the equality
-  -- form covered in spirit by `LovaszSDPDuality.strong_duality`, but discharging
-  -- it via that field requires the concrete primal-SDP / eigenvalue-dual families
-  -- and the vertex-transitive averaging argument (and a real vertex-transitivity
-  -- hypothesis, currently the `True` placeholder `_hvt`) — none of which is
-  -- constructible in this file.  Cannot be wired to the field non-circularly.
+  -- spectral expression `|V|·(-λ_min)/(λ_max - λ_min)`; the hypotheses `hvt`
+  -- (vertex-transitivity) and `hnd` (`λ_max ≠ λ_min`) are exactly the conditions
+  -- under which it equals `ϑ`.  The averaging proof needs the orbit structure of
+  -- `hvt` and the concrete primal-SDP / eigenvalue-dual families, none of which
+  -- is constructible here; it cannot be wired to `LovaszSDPDuality.strong_duality`
+  -- non-circularly, so it remains an honest deep sorry on the corrected statement.
   sorry
 
 /-! ## The Lovász sandwich theorem
@@ -958,6 +984,50 @@ noncomputable def EquitablePartition.quotientLTGraph
     exact ⟨hne.symm, hQ.symm⟩
   loopless := ⟨fun _ ⟨hne, _⟩ => hne rfl⟩
 
+/-- The quotient matrix of the **discrete** (singleton) partition of
+`SimpleGraph.toWeighted G` is exactly the `0/1` adjacency matrix of `G`: each
+cell is a single vertex, so the branching number from `i` into `{j}` is the
+single edge weight `(G.adjMatrix ℂ) i j`.  Axiom-clean. -/
+theorem EquitablePartition.discrete_toWeighted_quotient_apply
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] (i j : V) :
+    (EquitablePartition.discrete (SimpleGraph.toWeighted G)).quotient i j
+      = (G.adjMatrix ℂ) i j := by
+  classical
+  rw [EquitablePartition.quotient_apply _ i j i rfl]
+  simp only [EquitablePartition.branching, EquitablePartition.discrete, id_eq]
+  rw [Finset.sum_eq_single j]
+  · simp [SimpleGraph.toWeighted]
+  · intro z _ hzj; simp [hzj]
+  · simp
+
+/-- The `quotientLTGraph` of the **discrete** (singleton) equitable partition
+of `G` is `G` itself.  Each cell is a singleton, the branching matrix is the
+`0/1` adjacency, so `quotient i j ≠ 0 ↔ G.Adj i j`, and the symmetrised
+non-zero-branching relation collapses back to `G.Adj`.  Axiom-clean; the
+operational meaning is that the finest equitable partition recovers the graph
+on the nose. -/
+theorem EquitablePartition.discrete_toWeighted_quotientLTGraph_eq
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    (EquitablePartition.discrete (SimpleGraph.toWeighted G)).quotientLTGraph = G := by
+  classical
+  have hQne : ∀ i j : V,
+      (EquitablePartition.discrete (SimpleGraph.toWeighted G)).quotient i j ≠ 0
+        ↔ G.Adj i j := by
+    intro i j
+    rw [EquitablePartition.discrete_toWeighted_quotient_apply G i j]
+    by_cases h : G.Adj i j <;> simp [SimpleGraph.adjMatrix_apply, h]
+  ext i j
+  simp only [EquitablePartition.quotientLTGraph]
+  constructor
+  · rintro ⟨_hne, h⟩
+    rcases h with h | h
+    · exact (hQne i j).mp h
+    · exact ((hQne j i).mp h).symm
+  · intro hadj
+    exact ⟨G.ne_of_adj hadj, Or.inl ((hQne i j).mpr hadj)⟩
+
 /-- The bridge: `ϑ` of the quotient graph lower-bounds `ϑ` of the
 original.  Equivalently, equitable coarsening can only *decrease* (or
 preserve) the LT number.  This is the spectral version of Bachman–Tamon
@@ -1053,31 +1123,49 @@ noncomputable def quantumLovaszTheta
     (G : SimpleGraph V) [DecidableRel G.Adj] : ℝ :=
   lovaszTheta G
 
-/-- **The quantum-chromatic chain.**  For every finite simple graph `G`,
+/-- **The quantum-chromatic upper chain** (complement-consistent form):
 
-    χ_f(G) ≤ ϑ(G) ≤ χ_q(G) ≤ χ(G).
+    `ϑ(G) ≤ χ_q(Ḡ) ≤ χ(Ḡ)`.
 
-The first inequality is the LP–SDP relaxation gap (every
-fractional-colouring witness lifts to an SDP-feasible point of
-comparable objective).  The second is Mancinska–Roberson
-(arXiv:1212.1724, Theorem 1.1).  The third is the trivial quantum-vs-
-classical comparison: every classical colouring is in particular a
-quantum colouring. -/
-theorem chi_q_le_theta_le_chi
+This is the upper half of the Lovász sandwich refined through the *quantum*
+chromatic number of the complement.
+
+**False→true migration.**  The old statement asserted the chain in the
+*non-complemented* direction, `χ_f(G) ≤ ϑ(G) ≤ χ_q(G) ≤ χ(G)`, which is
+**false on both nontrivial inequalities** under this file's faithful (non-stub)
+definitions:
+
+* `χ_f(G) ≤ ϑ(G)` fails on `K_n` (`n ≥ 2`): `χ_f(K_n) = n` but `ϑ(K_n) = 1`;
+* `ϑ(G) ≤ χ_q(G)` (= `χ(G)`) fails on the **edgeless** graph `⊥` (`n ≥ 2`):
+  `ϑ(⊥_n) = n` (squeezed by `α(⊥)=n ≤ ϑ(⊥) ≤ χ(⊥ᶜ)=χ(K_n)=n`) but
+  `χ(⊥_n) = 1`.
+
+The correct Lovász/Knuth chain places the chromatic terms on the **complement**
+`Ḡ` (so that `ϑ(G)` sits *below* the cover/colouring numbers of `Ḡ`), giving
+the genuinely-true `ϑ(G) ≤ χ_q(Ḡ) ≤ χ(Ḡ)`.  Both inequalities are now proven
+axiom-clean:
+
+* `ϑ(G) ≤ χ_q(Ḡ)`: the weak-duality covering bound `lovaszTheta_le_chromaticNumber_compl`
+  (`ϑ(G) ≤ χ(Ḡ)`), since the `quantumChromaticNumber` surrogate is `χ`;
+* `χ_q(Ḡ) ≤ χ(Ḡ)`: every classical colouring is a quantum colouring (here an
+  equality of the surrogate definitions).
+
+(The genuinely-deep *lower* refinement `ϑ(G) ≤ χ_f(Ḡ)` — fractional chromatic
+of the complement upper-bounding `ϑ` — is the LP↔SDP relaxation gap and is left
+to the honest sorry on its own true statement, not asserted in the wrong
+direction here.) -/
+theorem theta_le_quantumChromatic_compl_le_chromatic_compl
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] :
-    fractionalChromaticNumber G ≤ lovaszTheta G
-    ∧ lovaszTheta G ≤ (quantumChromaticNumber G : ℝ)
-    ∧ (quantumChromaticNumber G : ℝ) ≤ (chromaticNumber G : ℝ) := by
-  -- HONEST SORRY (deep).  With the current surrogate defs `quantumChromaticNumber
-  -- := χ` and `chromaticNumber := χ`, the *third* conjunct is `χ ≤ χ` (trivial),
-  -- but the first (`χ_f ≤ ϑ`, the LP→SDP relaxation gap) and the middle
-  -- (`ϑ ≤ χ`, the SDP→colouring bound) are both genuinely deep inequalities.
-  -- They are the inequality directions of the SDP relaxation chain, NOT the
-  -- equality conclusion of `LovaszSDPDuality.strong_duality`, so that field does
-  -- not discharge them (and no concrete LP/colouring→SDP maps are built here).
-  -- (The prior "false-as-stated, χ_q := 0" note was stale: χ_q is `χ` here, not 0.)
-  sorry
+    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj] :
+    lovaszTheta G ≤ (quantumChromaticNumber Gᶜ : ℝ)
+    ∧ (quantumChromaticNumber Gᶜ : ℝ) ≤ (chromaticNumber Gᶜ : ℝ) := by
+  classical
+  -- `quantumChromaticNumber Gᶜ = Gᶜ.chromaticNumber.toNat = chromaticNumber Gᶜ`
+  -- definitionally (both surrogates unfold to the same `ENat.toNat`).
+  have hqeq : quantumChromaticNumber Gᶜ = chromaticNumber Gᶜ := rfl
+  refine ⟨?_, ?_⟩
+  · rw [hqeq]; exact lovaszTheta_le_chromaticNumber_compl G
+  · rw [hqeq]
 
 /-- **Mancinska–Roberson identification.**  On vertex-transitive graphs,
 the classical and quantum Lovász theta numbers coincide:
@@ -1203,7 +1291,17 @@ LT bound exactly: there exists an equitable partition `P` of `G` such
 that `lovaszTheta P.quotientLTGraph = lovaszTheta G`.
 
 This is the *operational* form of perfection in the Graphplay tower
-hierarchy. -/
+hierarchy.
+
+**Now proven axiom-clean.**  The witness is the *discrete* (singleton)
+equitable partition `EquitablePartition.discrete`, which always exists and
+whose `quotientLTGraph` is `G` on the nose
+(`EquitablePartition.discrete_toWeighted_quotientLTGraph_eq`): the finest
+equitable refinement recovers the graph itself, so its `ϑ` matches exactly.
+(The `IsPerfect` hypothesis is not needed for this existence statement — the
+discrete partition is tight for *every* graph; perfection is the stronger
+condition under which a *coarse* tight partition exists, which is the genuine
+deep content and is not asserted here.) -/
 theorem exists_equitablePartition_tight_of_perfect
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
@@ -1212,10 +1310,14 @@ theorem exists_equitablePartition_tight_of_perfect
       (P : EquitablePartition (SimpleGraph.toWeighted G) I)
       (_ : DecidableRel P.quotientLTGraph.Adj),
       lovaszTheta P.quotientLTGraph = lovaszTheta G := by
-  -- HONEST SORRY (deep): existence of a tight equitable partition on a perfect
-  -- graph.  No assigned literature interface covers this construction
-  -- (`quotientLTGraph` is now a genuine `SimpleGraph`, not a `⊥` stub).
-  sorry
+  classical
+  refine ⟨V, inferInstance, inferInstance,
+    EquitablePartition.discrete (SimpleGraph.toWeighted G), Classical.decRel _, ?_⟩
+  -- The discrete partition's quotient graph is `G` itself; transport `ϑ`
+  -- across the graph equality (the `DecidableRel` instances are subsingletons,
+  -- so `congr 1` discharges the instance side condition automatically).
+  have hGeq := EquitablePartition.discrete_toWeighted_quotientLTGraph_eq G
+  congr 1
 
 /-! ## Engineering use: spectral lower bound on `χ` and on cell count
 
@@ -1250,36 +1352,36 @@ theorem lovaszTheta_complement_le_chromaticNumber
   -- coerced bound transfers.
   exact h
 
-/-- **Engineering corollary: spectral lower bound on cell count.**
+/-- **Engineering corollary: SDP granularity bound on the equitable quotient.**
 
-Any equitable partition `P` of (the weighted form of) `G` has at least
-`⌈ϑ(Ḡ)⌉` cells.
+For any equitable partition `P` of (the weighted form of) `G` into `I` cells,
+the Lovász number of the **complement of the quotient graph** is at most the
+cell count `|I|`:
 
-The proof chain:
+    `ϑ((G/P)ᶜ) ≤ |I|`.
 
-  1. `P` equitable ⟹ `lovaszTheta P.quotientLTGraph ≤ lovaszTheta G`
-     (monotonicity, `lovaszTheta_via_equitable_partition`),
-  2. `lovaszTheta (Ḡ) ≤ χ(G)` (sandwich, applied to `Ḡ`),
-  3. `chromaticNumber P.quotientLTGraph ≤ |I|`
-     (trivially, since the quotient has `|I|` vertices), and
-  4. an appeal to `chi_q_le_theta_le_chi`.
+Operationally: the spectral lower bound computed on the equitable quotient can
+never exceed the number of cells — so a partition into few cells caps the
+granularity of any `ϑ`-certificate read off the quotient.
 
-We bundle the chain as a single statement here.  The proof is left as
-`sorry` pending the genuine definitions of `chromaticNumber` and
-`independenceNumber`. -/
-theorem card_cells_ge_lovaszTheta_complement
+**False→true migration.**  The old statement asserted `ϑ(Ḡ) ≤ |I|` (the
+theta-of-complement of the *original* graph bounded by the cell count).  That
+is **false**: take `G = K_n` (which is `(n-1)`-regular, so the single-cell
+partition `|I| = 1` is equitable via `EquitablePartition.indiscrete`); then
+`Gᶜ = ⊥` and `ϑ(⊥_n) = n`, giving the absurd `n ≤ 1` for `n ≥ 2`.  The bug is
+that `ϑ`-of-complement is **not** monotone *upward* under coarsening — coarsening
+the partition shrinks `|I|` while `ϑ(Ḡ)` is fixed.  The genuinely-true
+granularity statement bounds the theta of the complement of the **quotient**
+(a graph on the `|I|` cells), which is `≤ |I|` by the universal structural
+bound `lovaszTheta_le_card`.  Proven axiom-clean. -/
+theorem lovaszTheta_quotient_compl_le_card_cells
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type u} [Fintype I] [DecidableEq I]
-    (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj]
-    (_P : EquitablePartition (SimpleGraph.toWeighted G) I) :
-    lovaszTheta Gᶜ ≤ (Fintype.card I : ℝ) := by
-  -- See the docstring for the proof chain.  The covering bound `ϑ ≤ χ̄` is now
-  -- BUILT (`lovaszTheta_le_chromaticNumber_compl`), so the only remaining gap is
-  -- equitable-quotient monotonicity of `ϑ`, isolated as the single named honest
-  -- lemma `lovaszTheta_via_equitable_partition` (still `sorry`).  Once that lemma
-  -- is discharged this corollary follows by the quotient/colouring chain; until
-  -- then it remains conditional on exactly that one named lemma.
-  sorry
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (P : EquitablePartition (SimpleGraph.toWeighted G) I)
+    [DecidableRel P.quotientLTGraph.Adj] [DecidableRel P.quotientLTGraphᶜ.Adj] :
+    lovaszTheta P.quotientLTGraphᶜ ≤ (Fintype.card I : ℝ) :=
+  lovaszTheta_le_card P.quotientLTGraphᶜ
 
 /-! ## Tower-3 connection: `ϑ` and the coherent algebra
 

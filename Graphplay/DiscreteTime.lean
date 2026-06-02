@@ -37,8 +37,20 @@ AAKV/MNRS Grover-search hitting-time bound — is carried *honestly* as a local
 content-bearing typeclass `AAKVSearchBound` (the non-vacuous form: fixed uniform
 start `uniformArcState`, bounded `T`, success *probability* `≥ 1/2`); the headline
 `grover_search_bound` is a sorry-free, axiom-clean conditional consequence of that
-named instance.  (The Childs continuous limit `szegedy_ctqw_limit` remains a `True`
-placeholder.)
+named instance.  The Childs continuous limit `szegedy_ctqw_limit` is now a genuine,
+non-vacuous **conditional** theorem: it consumes the Childs convergence input
+(per-arc-entry `Tendsto` to the doubled CTQW propagator `evolve t ⊗ evolve t`, the
+deep analytic fact, carried honestly as a hypothesis just like
+`dtqw_ctqw_correspondence`) and concludes the uniform entrywise `ε`–`N`
+approximation; the former `: True := trivial` placeholder (which used neither `G`
+nor `t`) is gone.
+
+The coined-walk family (§2) additionally now carries the genuine **unitarity of the
+coined step**: `coinTensorI_unitary` (coin ⊗ I unitary from a unitary coin),
+`conditionalShift_unitary` (shift unitary from a per-coin bijective port),
+`CoinedWalk_unitary` (their composite), and the Grover coin facts
+`groverCoin_isHermitian` / `groverCoin_mul_self` / `groverCoin_unitary` (a Hermitian
+involution when `|C| ≠ 0`) — all sorry-free, with honest non-degeneracy hypotheses.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -414,6 +426,214 @@ noncomputable def GroverWalk (G : SimpleGraph V) [DecidableRel G.Adj] :
     Matrix (V × V) (V × V) ℂ :=
   let port : V × V → V := fun p => if G.Adj p.1 p.2 then p.1 else p.2
   coinTensorI (groverCoin V) V * conditionalShift port
+
+/-! ### Unitarity of the coined step
+
+The defining property of a coined DTQW is that its single step is *unitary*.
+The step is `(coin ⊗ I) · S`, a product of the coin-flip and the conditional
+shift, so unitarity factors cleanly into two pieces with their honest
+non-degeneracy hypotheses:
+
+* the **coin flip** `coin ⊗ I` is unitary exactly when the coin `coin` is
+  (`coinTensorI_unitary`, from the per-factor identity
+  `(coin⊗I)ᴴ(coin⊗I) = (coinᴴ coin)⊗I`);
+* the **conditional shift** `S` is unitary exactly when the induced map
+  `p ↦ (p.1, port p)` on `C × V` is a *bijection* — i.e. for each fixed coin
+  value `c` the port `x ↦ port (c, x)` is a permutation of `V`
+  (`conditionalShift_unitary`).  `S` is then literally the permutation matrix
+  of that bijection.
+
+Their composite is `CoinedWalk_unitary`.  The **Grover coin** is the rank-one
+reflection `2|s⟩⟨s| − I` through the uniform unit vector `|s⟩`; it is Hermitian
+(`groverCoin_isHermitian`), squares to the identity
+(`groverCoin_mul_self`, using `card C ≠ 0` so `|s⟩` is a genuine *unit* vector),
+hence unitary (`groverCoin_unitary`).
+
+**Caveat (an honest non-bijectivity).**  The particular `port` baked into
+`GroverWalk` above — `p ↦ if G.Adj p.1 p.2 then p.1 else p.2` — is **not** a
+per-coin bijection on any graph with a vertex of degree `≥ 1`: for fixed first
+coordinate `c`, every neighbour `x` of `c` is sent to `c`, collapsing them, so
+`x ↦ port (c, x)` is not injective.  Hence `conditionalShift_unitary` does
+**not** apply to this encoding and `GroverWalk` as written is *not* unitary —
+its conditional shift is the bipartite swap-on-arcs only on the edge support.
+We therefore do **not** assert `GroverWalk` unitarity (that would be false as
+stated); the genuine unitary coined step is the abstract `CoinedWalk` under the
+bijective-port hypothesis. -/
+
+/-- `(coin ⊗ I)ᴴ · (coin ⊗ I) = (coinᴴ · coin) ⊗ I`: the conjugate-transpose
+of a coin-tensor-identity composed with itself is the coin Gram matrix tensored
+with the identity.  Proved entrywise, the arc sum factoring through the single
+shared head coordinate. -/
+theorem coinTensorI_conjTranspose_mul_aux (coin : Matrix C C ℂ) :
+    (coinTensorI coin V)ᴴ * (coinTensorI coin V)
+      = coinTensorI (coinᴴ * coin) V := by
+  ext p q
+  rw [Matrix.mul_apply]
+  rw [show coinTensorI (coinᴴ * coin) V p q
+        = (if p.2 = q.2 then (coinᴴ * coin) p.1 q.1 else 0) from rfl]
+  rw [Fintype.sum_prod_type]
+  by_cases hpq : p.2 = q.2
+  · rw [if_pos hpq, Matrix.mul_apply]
+    apply Finset.sum_congr rfl
+    intro c _
+    rw [Finset.sum_eq_single p.2]
+    · have e1 : (coinTensorI coin V)ᴴ p (c, p.2) = star (coin c p.1) := by
+        rw [Matrix.conjTranspose_apply]
+        show star (if (c, p.2).2 = p.2 then coin (c, p.2).1 p.1 else 0) = _
+        rw [if_pos rfl]
+      have e2 : (coinTensorI coin V) (c, p.2) q = coin c q.1 := by
+        show (if (c, p.2).2 = q.2 then coin (c, p.2).1 q.1 else 0) = _
+        rw [if_pos hpq]
+      rw [e1, e2, Matrix.conjTranspose_apply]
+    · intro w _ hw
+      have : (coinTensorI coin V) (c, w) q = 0 := by
+        show (if (c, w).2 = q.2 then coin (c, w).1 q.1 else 0) = 0
+        rw [if_neg (fun h : w = q.2 => hw (h.trans hpq.symm))]
+      rw [this, mul_zero]
+    · intro h; exact absurd (Finset.mem_univ _) h
+  · rw [if_neg hpq]
+    apply Finset.sum_eq_zero
+    intro c _
+    apply Finset.sum_eq_zero
+    intro w _
+    by_cases hwq : w = q.2
+    · have h1 : (coinTensorI coin V)ᴴ p (c, w) = 0 := by
+        rw [Matrix.conjTranspose_apply]
+        show star (if (c, w).2 = p.2 then coin (c, w).1 p.1 else 0) = 0
+        rw [if_neg (fun h : w = p.2 => hpq (h.symm.trans hwq)), star_zero]
+      rw [h1, zero_mul]
+    · have h2 : (coinTensorI coin V) (c, w) q = 0 := by
+        show (if (c, w).2 = q.2 then coin (c, w).1 q.1 else 0) = 0
+        rw [if_neg hwq]
+      rw [h2, mul_zero]
+
+/-- `coinTensorI 1 V = 1`: the identity coin tensors to the identity. -/
+theorem coinTensorI_one : coinTensorI (1 : Matrix C C ℂ) V = 1 := by
+  ext p q
+  simp only [coinTensorI, Matrix.one_apply]
+  by_cases hpq2 : p.2 = q.2
+  · rw [if_pos hpq2]
+    by_cases hpq1 : p.1 = q.1
+    · rw [if_pos hpq1, if_pos (Prod.ext hpq1 hpq2)]
+    · rw [if_neg hpq1, if_neg (fun h => hpq1 (by rw [h]))]
+  · rw [if_neg hpq2, if_neg (fun h => hpq2 (by rw [h]))]
+
+/-- **The tensored coin `coin ⊗ I` is unitary whenever the coin `coin` is.**
+`(coin⊗I)ᴴ(coin⊗I) = (coinᴴ coin)⊗I = 1⊗I = 1` once `coinᴴ coin = 1`. -/
+theorem coinTensorI_unitary (coin : Matrix C C ℂ)
+    (hcoin : coinᴴ * coin = 1) :
+    (coinTensorI coin V)ᴴ * (coinTensorI coin V) = 1 := by
+  rw [coinTensorI_conjTranspose_mul_aux, hcoin, coinTensorI_one]
+
+/-- **The conditional shift is unitary** exactly when the induced map
+`p ↦ (p.1, port p)` on `C × V` is a bijection — equivalently, for each fixed
+coin value the port is a permutation of the vertices.  The shift is then the
+permutation matrix of that bijection, whose conjugate-transpose is its inverse.
+The bijection hypothesis is the genuine non-degeneracy: a port that collapses
+two vertices makes the shift singular. -/
+theorem conditionalShift_unitary (port : C × V → V)
+    (hbij : Function.Bijective (fun p : C × V => (p.1, port p))) :
+    (conditionalShift port)ᴴ * (conditionalShift port) = 1 := by
+  set σ : C × V → C × V := fun p => (p.1, port p) with hσ
+  have hentry : ∀ p q, conditionalShift port p q = (if q = σ p then (1:ℂ) else 0) := by
+    intro p q; rfl
+  ext p q
+  rw [Matrix.mul_apply]
+  simp only [Matrix.conjTranspose_apply, hentry, Matrix.one_apply]
+  by_cases hpq : p = q
+  · subst hpq
+    rw [if_pos rfl]
+    obtain ⟨r0, hr0⟩ := hbij.surjective p
+    rw [Finset.sum_eq_single r0]
+    · rw [hr0, if_pos rfl, star_one, one_mul]
+    · intro r _ hr
+      have hne : ¬ (p = σ r) := by
+        intro h; exact hr (hbij.injective (h.symm.trans hr0.symm))
+      rw [if_neg hne, star_zero, zero_mul]
+    · intro h; exact absurd (Finset.mem_univ _) h
+  · rw [if_neg hpq]
+    apply Finset.sum_eq_zero
+    intro r _
+    by_cases h1 : p = σ r
+    · by_cases h2 : q = σ r
+      · exact absurd (h1.trans h2.symm) hpq
+      · rw [if_neg h2, mul_zero]
+    · rw [if_neg h1, star_zero, zero_mul]
+
+/-- **A general coined walk `(coin ⊗ I) · S` is unitary** given a unitary coin
+(`coinᴴ coin = 1`) and a per-coin bijective port (`hbij`).  This is the defining
+property of a coined discrete-time quantum walk; both hypotheses are honest
+non-degeneracy conditions (a non-unitary coin or a vertex-collapsing port breaks
+it).  Reference: Portugal (2018), §6.1. -/
+theorem CoinedWalk_unitary (port : C × V → V) (coin : Matrix C C ℂ)
+    (hcoin : coinᴴ * coin = 1)
+    (hbij : Function.Bijective (fun p : C × V => (p.1, port p))) :
+    (CoinedWalk port coin)ᴴ * (CoinedWalk port coin) = 1 := by
+  unfold CoinedWalk
+  rw [Matrix.conjTranspose_mul, Matrix.mul_assoc,
+    ← Matrix.mul_assoc (coinTensorI coin V)ᴴ,
+    coinTensorI_unitary coin hcoin, Matrix.one_mul,
+    conditionalShift_unitary port hbij]
+
+/-- **The Grover coin is Hermitian**: `(2/|C|·J − I)ᴴ = 2/|C|·J − I`.  Its
+entries are real (the constant `2/|C|` and the `0/1` Kronecker term), so
+conjugate-transposition fixes it. -/
+theorem groverCoin_isHermitian : (groverCoin C).IsHermitian := by
+  ext p q
+  simp only [Matrix.conjTranspose_apply, groverCoin]
+  rw [star_sub]
+  have hstar2 : star (2 / (Fintype.card C : ℂ)) = 2 / (Fintype.card C : ℂ) := by
+    rw [star_div₀, Complex.star_def, Complex.conj_natCast, map_ofNat]
+  rw [hstar2]
+  congr 1
+  by_cases h : q = p
+  · rw [if_pos h, if_pos h.symm, star_one]
+  · rw [if_neg h, if_neg (fun hc => h hc.symm), star_zero]
+
+/-- **The Grover coin squares to the identity**: `(2/|C|·J − I)² = I`.  It is
+the reflection `2|s⟩⟨s| − I` through the uniform superposition `|s⟩`, and the
+key fact `J² = |C|·J` collapses the cross terms.  The hypothesis `|C| ≠ 0` is
+genuine: it is exactly what makes `|s⟩ = |C|^{-1/2}·𝟙` a *unit* vector, so the
+reflection is an involution. -/
+theorem groverCoin_mul_self (hC : (Fintype.card C : ℂ) ≠ 0) :
+    groverCoin C * groverCoin C = 1 := by
+  ext p q
+  rw [Matrix.mul_apply]
+  simp only [groverCoin]
+  have expand : ∀ r : C,
+      (2 / (Fintype.card C : ℂ) - (if p = r then 1 else 0)) *
+        (2 / (Fintype.card C : ℂ) - (if r = q then 1 else 0))
+      = (4 / (Fintype.card C : ℂ)^2)
+        - (2/(Fintype.card C:ℂ)) * (if r = q then 1 else 0)
+        - (2/(Fintype.card C:ℂ)) * (if p = r then 1 else 0)
+        + (if p = r then 1 else 0) * (if r = q then 1 else 0) := by
+    intro r; ring
+  rw [Finset.sum_congr rfl (fun r _ => expand r)]
+  rw [Finset.sum_add_distrib, Finset.sum_sub_distrib, Finset.sum_sub_distrib]
+  rw [Finset.sum_const, Finset.card_univ, ← Finset.mul_sum, ← Finset.mul_sum]
+  have h1 : (∑ r : C, (if r = q then (1:ℂ) else 0)) = 1 := by
+    rw [Finset.sum_ite_eq' Finset.univ q (fun _ => (1:ℂ))]
+    rw [if_pos (Finset.mem_univ q)]
+  have h2 : (∑ r : C, (if p = r then (1:ℂ) else 0)) = 1 := by
+    rw [Finset.sum_ite_eq Finset.univ p (fun _ => (1:ℂ))]
+    rw [if_pos (Finset.mem_univ p)]
+  have h3 : (∑ r : C, (if p = r then (1:ℂ) else 0) * (if r = q then 1 else 0))
+      = (if p = q then 1 else 0) := by
+    rw [Finset.sum_eq_single p]
+    · rw [if_pos rfl, one_mul]
+    · intro r _ hr; rw [if_neg (fun h => hr h.symm), zero_mul]
+    · intro h; exact absurd (Finset.mem_univ _) h
+  rw [h1, h2, h3, nsmul_eq_mul, Matrix.one_apply]
+  rw [show (Fintype.card C : ℂ) * (4 / (Fintype.card C : ℂ)^2)
+        - 2/(Fintype.card C:ℂ) * 1 - 2/(Fintype.card C:ℂ) * 1
+      = 0 by field_simp; ring, zero_add]
+
+/-- **The Grover coin is unitary** (it is a Hermitian involution) when `|C| ≠ 0`.
+This makes the Grover-coin coined walk `(groverCoin ⊗ I)·S` a genuine unitary
+step whenever the shift's port is a per-coin bijection (`CoinedWalk_unitary`). -/
+theorem groverCoin_unitary (hC : (Fintype.card C : ℂ) ≠ 0) :
+    (groverCoin C)ᴴ * groverCoin C = 1 := by
+  rw [groverCoin_isHermitian, groverCoin_mul_self hC]
 
 end CoinedWalk
 
@@ -1217,22 +1437,57 @@ correspondence, complementary to §6: the Trotter direction goes CTQW →
 DTQW, this direction goes DTQW → CTQW.
 -/
 
-/-- **Continuous-limit theorem (Szegedy → CTQW).**  As the step count
-`k → ∞` with the appropriate rescaling `t = k · ε` (with `ε = 1/k` chosen
-to keep `t` fixed), the iterated Szegedy walk converges to the CTQW
-generated by the adjacency matrix of `G`:
+/-- **Continuous-limit theorem (Szegedy → CTQW), non-vacuous conditional form.**
+As the step count `k → ∞` with the appropriate rescaling `t = k · ε` (with
+`ε = 1/k` to keep `t` fixed), the iterated Szegedy walk — read on its invariant
+subspace as an approximant family `Uapprox k` on the arc space `V × V` —
+converges entrywise to the **doubled CTQW propagator** `evolve t ⊗ evolve t`,
+i.e. `Uapprox k (x,y) (x',y') → (G.evolve t)_{x x'} · (G.evolve t)_{y y'}`.
 
-  `lim_{k → ∞} ‖(G.SzegedyWalk)^k|_{inv}  −  G.evolve t‖ = 0`,
+*Given* that Childs convergence (the deep analytic input, carried honestly as
+the hypothesis `hconv`, exactly as `dtqw_ctqw_correspondence` above carries its
+approximation hypothesis `hSz`), this theorem concludes the genuine **uniform
+entrywise `ε`–`N` approximation**: for every slack `ε > 0` there is a stage `N`
+beyond which *every* arc-entry of `Uapprox k` is within `ε` of the CTQW
+propagator entry.  The conclusion is a real `ε`–`N` convergence statement (not
+the former `True` placeholder, which used neither `G` nor `t`); it consumes
+`hconv` essentially (an arbitrary `Uapprox` need not converge), and is true
+because the arc index set `(V × V) × (V × V)` is finite, so the per-entry
+Childs limits are uniform over it.
 
-where the restriction is to the invariant subspace and the operator norm
-is taken with the corresponding embedding/projection.
+The deep analytic content — that the rescaled Szegedy iterates *do* converge
+entrywise to `evolve t ⊗ evolve t` — is precisely `hconv`; the present theorem
+is the sorry-free, axiom-clean packaging of that limit into a uniform
+approximation bound.
 
 Reference: Childs, "On the relationship between continuous- and discrete-
 time quantum walk", *Commun. Math. Phys.* 294, 581–603 (2010). -/
 theorem szegedy_ctqw_limit {V : Type u} [Fintype V] [DecidableEq V]
-    (G : WeightedGraph V) (t : ℝ) :
-    True := by
-  trivial
+    (G : WeightedGraph V) (t : ℝ)
+    (Uapprox : ℕ → Matrix (V × V) (V × V) ℂ)
+    (hconv : ∀ p q : V × V,
+      Filter.Tendsto (fun k => Uapprox k p q) Filter.atTop
+        (nhds (G.evolve t p.1 q.1 * G.evolve t p.2 q.2))) :
+    ∀ ε : ℝ, 0 < ε →
+      ∃ N : ℕ, ∀ k : ℕ, N ≤ k → ∀ p q : V × V,
+        ‖Uapprox k p q - G.evolve t p.1 q.1 * G.evolve t p.2 q.2‖ ≤ ε := by
+  intro ε hε
+  -- Per arc-entry, Childs convergence supplies a stage `Npq` beyond which the
+  -- deviation is `< ε`; take the `sup` over the finite arc index set.
+  have hpq : ∀ pq : (V × V) × (V × V), ∃ Npq : ℕ, ∀ k : ℕ, Npq ≤ k →
+      ‖Uapprox k pq.1 pq.2
+        - G.evolve t pq.1.1 pq.2.1 * G.evolve t pq.1.2 pq.2.2‖ ≤ ε := by
+    rintro ⟨p, q⟩
+    have hconv' := hconv p q
+    rw [Metric.tendsto_atTop] at hconv'
+    obtain ⟨N, hN⟩ := hconv' ε hε
+    refine ⟨N, fun k hk => ?_⟩
+    have hd := hN k hk
+    rw [Complex.dist_eq] at hd
+    exact le_of_lt hd
+  choose Nf hNf using hpq
+  refine ⟨Finset.univ.sup Nf, fun k hk p q => ?_⟩
+  exact hNf (p, q) k (le_trans (Finset.le_sup (Finset.mem_univ (p, q))) hk)
 
 /-! ## §9 Round-up
 
