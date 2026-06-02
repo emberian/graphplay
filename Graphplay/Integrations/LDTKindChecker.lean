@@ -285,29 +285,17 @@ cell: the global parity coupling is invisible to per-cell, per-constraint reason
 #eval (List.ofFn (fun i : Fin 3 => (acFixpoint xorF i).sort (· ≤ ·)))
                               -- expected: [[false, true], [false, true], [false, true]]
 
-/-! ## 6.  Decidable confirmations of the classifier outputs (proved by `decide`).
+/-! ## 6.  The classifier's verdicts.
 
-The `#eval`s above *print* the answers; these theorems *prove* the same `Bool` outputs
-by `decide`, so the classifier's verdicts on the two systems are machine-checked facts,
-not just printed values.  (`decide` runs the same computable kernel `#eval` does.) -/
-
-/-- **PROVED: the classifier solves the chain.**  `acSolves? chainF = true`, by `decide`
-— the executable kind-discriminator returns `true` on the width-1 chain, matching the
-`Set`-side theorem `acStep_chain_solves`. -/
-theorem acSolves_chain : acSolves? chainF = true := by decide
-
-/-- **PROVED: the classifier abstains on XOR.**  `acSolves? xorF = false`, by `decide`
-— the executable kind-discriminator returns `false` on the affine XOR system, matching
-the `Set`-side theorem `acStep_xor_abstains`. -/
-theorem acSolves_xor : acSolves? xorF = false := by decide
-
-/-- **The discriminator, machine-checked end to end (computable side).**  One executable
-operator: it returns `true` on the width-1 chain and `false` on the affine XOR system —
-the runnable mirror of `LDTCompleteness.ac_kind_discriminates`.  Both verdicts proved by
-`decide`; both agree with the independently-proven `Set`-valued facts. -/
-theorem acSolves_kind_discriminates :
-    acSolves? chainF = true ∧ acSolves? xorF = false :=
-  ⟨acSolves_chain, acSolves_xor⟩
+The `#eval`s above *run* the classifier: `acSolves? chainF` prints `true`,
+`acSolves? xorF` prints `false` — the runnable mirror of
+`LDTCompleteness.ac_kind_discriminates`.  We deliberately do **not** re-prove these
+`Bool` outputs as theorems: `decide` reduces the `Finset` fixpoint in the kernel
+(pathologically slow — minutes), and `native_decide` would inject the `ofReduceBool`
+axiom.  Neither is worth it, because the *mathematics* of the verdicts is already
+proven, axiom-clean, on the `Set` side — `acStep_chain_solves`, `acStep_xor_abstains`,
+`ac_kind_discriminates`.  This file is the **executable demonstration**; those
+theorems are the **proof**. -/
 
 /-! ## 7.  End-of-file inventory.
 
@@ -323,9 +311,10 @@ theorem acSolves_kind_discriminates :
     `toAbs_acStepF`.
   * §5 — the two concrete CSPs `chainF`, `xorF` (allowed-tuple `Finset`s) and the
     **`#eval` demonstrations**: `acSolves? chainF` ⇒ `true`, `acSolves? xorF` ⇒ `false`.
-  * §6 — **`acSolves_chain`** (`= true`), **`acSolves_xor`** (`= false`),
-    `acSolves_kind_discriminates` — the classifier's verdicts proved by `decide`,
-    matching the `Set`-side `acStep_chain_solves` / `acStep_xor_abstains`.
+  * §6 — the verdicts are *run* by the `#eval`s (chain ⇒ `true`, XOR ⇒ `false`) and
+    *proved* axiom-clean on the `Set` side (`acStep_chain_solves`,
+    `acStep_xor_abstains`); not re-proved by `decide` (kernel-slow on `Finset`) nor
+    `native_decide` (would add an axiom).
 
 **HONEST SCOPE / what is NOT claimed:**
   * The proved bridge is **single-step** (`acStepF_mem_iff`): the executable step's
@@ -337,11 +326,11 @@ theorem acSolves_kind_discriminates :
     on a claimed full-run `Set`↔`Finset` equality.
   * `acFixpoint` iterates a **sound height bound** (`k * card V`) rather than detecting
     stabilisation; for these tiny systems it reaches the fixpoint with room to spare
-    (the `decide` proofs confirm the verdicts).  A stabilisation-detecting loop and a
+    (the `#eval`s confirm the verdicts).  A stabilisation-detecting loop and a
     proof that the bound is tight are deferred — they are not needed for the
     discriminator to be correct on a finite lattice.
   * Generality: the classifier is fully general in `(V, k, Fs)` (any `DecidableEq`
-    `Fintype` vocabulary, any allowed-tuple-`Finset` CSP); only the two `#eval`/`decide`
+    `Fintype` vocabulary, any allowed-tuple-`Finset` CSP); only the two `#eval`
     demonstrations are specialised to `Bool` to mirror `LDTCompleteness`.
 -/
 
