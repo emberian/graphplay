@@ -35,14 +35,22 @@ This file does four things:
    `knPlusPathWG` is built genuinely too, but its distance partition has a
    growing number of cells, so the *sequence* carrier `Kn_plus_pathn_skeleton`
    is an explicitly-labelled single-cell cardinality placeholder.) The
-   per-family "satisfies Conjecture 9.3" claims are stated **honestly**: the
-   both-halves-true families as conditionals on the open forward direction, and
-   the both-sides-false `Cayley(S_n)` family is proven *genuinely* (a
-   `False ↔ False`) using the family-specific algebra-strictly-larger fact.
+   per-family chiral-half claims are stated **honestly** and **proven**: the
+   single-cell families (`K_n^σ`, `H(n,q)`, Heawood, `K_n+P_n` placeholder)
+   have their cross-constant chiral half *disproven* (a single cell forces the
+   trivial signing); the genuine `Fin 4` family `K_{n,n,n,n}` has its chiral half
+   *proven constructively*; and the both-sides-false `Cayley(S_n)` family is
+   proven `Conjecture93_weak` *genuinely* (a `False ↔ False`).
 
-4. States the two clean **sufficient conditions** as corollaries (algebra
-   equality alone, and association-scheme-uniformity) and the four
-   currently-known failure modes (necessary conditions).
+   **The naive forward/iff directions are FALSE** as universal statements and are
+   *refuted* (`weak_forward_not_universal`, `weak_iff_not_universal`): algebra
+   coincidence does NOT imply the cross-constant chiral half (the empty
+   single-cell sequence is a counterexample).  `Conjecture93_weak` therefore
+   remains a genuine open conjecture (a `Prop` def), correctly *not* a theorem.
+
+4. States the **genuinely-provable sufficient condition** (algebra coincidence
+   under the precise association-scheme-uniformity hypothesis is PROVEN) and the
+   four currently-known failure modes (necessary conditions).
 
 5. Distinguishes a **strong** version (any unitary signing) from a **weak**
    version (`U(1)` phases / cross-constant signings only). The weak version
@@ -70,9 +78,15 @@ This file does four things:
 * Borgs-Chayes-Lovász-Sós-Vesztergombi style cut-norm graphon convergence,
   see `Graphplay/Graphon/Limit.lean`.
 
-Every nontrivial proof here is `sorry`. The file is a *specification*; the
-intent of the round-2 exploration is to nail down (i) the right statement,
-(ii) where it is known to hold, and (iii) where it is suspected to fail.
+The file is now `sorry`-free.  The conjecture itself (`Conjecture93_weak`) is a
+genuine open `Prop`; what is *proven* is the surrounding scaffold — the genuine
+graph/family constructions, the per-family chiral-half facts (proven true or
+false), the refutation of the naive universal forward/iff directions, the
+necessary-condition failure modes, and the genuinely-provable sufficient
+condition (algebra coincidence from precise association-scheme uniformity).
+The intent of the round-2 exploration was to nail down (i) the right statement,
+(ii) where it is known to hold, and (iii) where it is suspected to fail; the
+audit-corrected version additionally records where the *naive* forms are false.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -303,6 +317,44 @@ noncomputable def partitionProjectorAlgebra
     { M : Matrix (𝒮.V n) (𝒮.V n) ℂ |
         ∃ q : I → I → ℂ, ∀ x y, M x y = q (𝒮.cells n x) (𝒮.cells n y) }
 
+/-! ### The empty-graph single-cell sequence (a genuine refutation witness)
+
+The complete-graph and Hamming/Cayley builders above all have *non-constant*
+adjacency, so on a single (`Fin 1`) cell their `finiteAdjAlgebra` is strictly
+larger than the projector algebra (algebra coincidence *fails*).  The opposite
+extreme — the **empty graph** (zero adjacency) on a single cell — has its
+adjacency already cell-pair-constant (`0`), so there `finiteAdjAlgebra`
+coincides with the projector algebra (`span {0} = ⊥`, and `⊥ ⊔ proj = proj`).
+
+This makes the empty single-cell sequence a **genuine, non-vacuous witness**:
+it satisfies the RHS of the weak conjecture (`eventuallyAlgebraCoincidence`) yet,
+being single-cell, admits **no** cross-constant chiral speedup
+(`fin1Cell_no_chiral_speedup`).  It is exactly the object that refutes the naive
+universally-quantified forward direction (see `weak_forward_not_universal`). -/
+
+/-- The **empty weighted graph** (zero adjacency) on `Fin m`. -/
+noncomputable def emptyWG (m : ℕ) : WeightedGraph (Fin m) where
+  adj := 0
+  herm := Matrix.isHermitian_zero
+  loopless := by intro v; rfl
+
+/-- The empty graph is (trivially) regular: every row sum is `0`. -/
+theorem emptyWG_rowsum_const (m : ℕ) (x y : Fin m) :
+    ∑ z, (emptyWG m).adj x z = ∑ z, (emptyWG m).adj y z := by
+  simp [emptyWG]
+
+/-- The **empty single-cell `Fin 1` sequence** on `Fin (m n)` with zero
+adjacency at every stage and the canonical embedding.  Regular (all row sums
+`0`), so the single cell is equitable. -/
+noncomputable def emptySeqFin1 (m : ℕ → ℕ) (hmono : ∀ n, m n ≤ m (n + 1)) :
+    Graphon.ConsistentPartitionSequence (Fin 1 : Type) :=
+  singleCellRegularSeqFin1
+    (fun n => Fin (m n))
+    (fun _ => inferInstance) (fun _ => inferInstance)
+    (fun n => emptyWG (m n))
+    (fun n x => Fin.castLE (hmono n) x)
+    (fun n => emptyWG_rowsum_const (m n))
+
 /-! ## 2. The two halves of the conjecture
 
 We give precise propositional content to "(a) admits a graphon limit on the
@@ -382,6 +434,26 @@ def eventuallyAlgebraCoincidence
     (𝒮 : Graphon.ConsistentPartitionSequence I) : Prop :=
   ∃ N, ∀ n ≥ N, algebraCoincidence 𝒮 n
 
+/-- For the empty single-cell sequence the adjacency is the **zero matrix**, so
+`finiteAdjAlgebra = span {0} ⊔ proj = ⊥ ⊔ proj = proj = partitionProjectorAlgebra`:
+**algebra coincidence holds at every stage.** -/
+theorem emptySeqFin1_algebraCoincidence
+    (m : ℕ → ℕ) (hmono : ∀ n, m n ≤ m (n + 1)) (n : ℕ) :
+    algebraCoincidence (emptySeqFin1 m hmono) n := by
+  letI := (emptySeqFin1 m hmono).finV n
+  letI := (emptySeqFin1 m hmono).decV n
+  unfold algebraCoincidence finiteAdjAlgebra partitionProjectorAlgebra
+  -- the adjacency of `emptySeqFin1 … n` is the zero matrix
+  have hadj : ((emptySeqFin1 m hmono).G n).adj = 0 := rfl
+  rw [hadj, Set.singleton_zero, Submodule.span_zero, bot_sup_eq]
+
+/-- The empty single-cell sequence satisfies the **right-hand side** of the
+weak conjecture: algebra coincidence holds at every stage, hence eventually. -/
+theorem emptySeqFin1_eventuallyAlgebraCoincidence
+    (m : ℕ → ℕ) (hmono : ∀ n, m n ≤ m (n + 1)) :
+    eventuallyAlgebraCoincidence (emptySeqFin1 m hmono) :=
+  ⟨0, fun n _ => emptySeqFin1_algebraCoincidence m hmono n⟩
+
 /-! ## 4. The conjecture, in two strengths
 
 We give the **weak** version (the one we believe is true) and the
@@ -420,77 +492,170 @@ def Conjecture93_strong (𝒮 : Graphon.ConsistentPartitionSequence.{u, v} I) : 
   (@admitsGraphonLimit.{u, v} I _ _ 𝒮 ∧ admitsAnyChiralSpeedupOnPartition 𝒮)
     ↔ eventuallyAlgebraCoincidence 𝒮
 
-/-! ## 5. Decomposition into forward and reverse implications -/
+/-- **Single-cell partitions admit no cross-constant chiral speedup.**
 
-/-- **Forward direction (weak):** algebra coincidence implies both halves.
-This is the easier direction: a Bose-Mesner algebra acts diagonally
-across cells, so chiral signings respecting the partition descend to
-phase-multiplications on the quotient, which is the speedup mechanism. -/
-theorem conjecture93_weak_forward
-    (𝒮 : Graphon.ConsistentPartitionSequence I) :
-    eventuallyAlgebraCoincidence 𝒮 →
-      admitsGraphonLimit 𝒮 ∧ admitsChiralSpeedupOnPartition 𝒮 := by
-  sorry
+For any sequence whose cell-index type `J` is a `Subsingleton` (a single cell at
+every stage, e.g. `Unit` or `Fin 1`), the chiral-speedup predicate is *false*: a
+chiral signing that is cross-constant on a single cell is forced to be the trivial
+all-ones signing.  Indeed cross-constancy makes `σ x y = τ (c x) (c y)` for all
+`x, y`, and since all cell labels coincide this equals `τ (c x) (c x) = σ x x = 1`
+(diagonal unimodularity), contradicting the required nontriviality
+`∃ x y, σ x y ≠ 1`.
 
-/-- **Reverse direction (weak):** the existence of a chiral speedup on the
-partition **and** a graphon limit on the same partition forces the
-Bose-Mesner algebra to coincide with the partition-projector algebra.
+(Hoisted above section 5 because the refutations `weak_forward_not_universal` /
+`weak_iff_not_universal` depend on it.) -/
+theorem subsingletonCell_no_chiral_speedup
+    {J : Type} [Fintype J] [DecidableEq J] [Subsingleton J]
+    (𝒮 : Graphon.ConsistentPartitionSequence J) :
+    ¬ admitsChiralSpeedupOnPartition 𝒮 := by
+  rintro ⟨s, hcc, _hcons, ⟨n, x, y, hxy⟩, _⟩
+  -- `s n` is cross-constant on the single cell.
+  obtain ⟨τ, hτ⟩ := hcc n
+  -- all cell labels coincide (`J` subsingleton), so `σ a b = τ (c a) (c b)`.
+  have hconst : ∀ a b, (s n).σ a b = τ (𝒮.cells n a) (𝒮.cells n b) := hτ
+  have hcell : ∀ a b : 𝒮.V n, 𝒮.cells n a = 𝒮.cells n b := fun _ _ => Subsingleton.elim _ _
+  -- the diagonal value `σ x x = 1` pins `τ (cells x) (cells x) = 1`.
+  have hdiag : τ (𝒮.cells n x) (𝒮.cells n x) = 1 := by
+    rw [← hconst x x]; exact (s n).diag x
+  -- `σ x y = τ (cells x) (cells y) = τ (cells x) (cells x) = 1`, contradicting `hxy`.
+  exact hxy (by
+    rw [hconst x y, hcell y x, hdiag])
 
-This is the hard direction. The expected proof: the chiral speedup
-constraint forces `(𝒮.G n).adj` to lie in a *commutative* subalgebra of
-`Matrix (V n) (V n) ℂ` that contains the partition projector; the graphon
-limit then forces this subalgebra to be at most the partition-projector
-algebra. -/
-theorem conjecture93_weak_reverse
-    (𝒮 : Graphon.ConsistentPartitionSequence I) :
-    (admitsGraphonLimit 𝒮 ∧ admitsChiralSpeedupOnPartition 𝒮) →
-      eventuallyAlgebraCoincidence 𝒮 := by
-  sorry
+/-- Single-`Fin 1`-cell specialisation of `subsingletonCell_no_chiral_speedup`. -/
+theorem fin1Cell_no_chiral_speedup
+    (𝒮 : Graphon.ConsistentPartitionSequence (Fin 1 : Type)) :
+    ¬ admitsChiralSpeedupOnPartition 𝒮 :=
+  subsingletonCell_no_chiral_speedup 𝒮
 
-/-- Putting the two halves together. -/
-theorem conjecture93_weak_iff
-    (𝒮 : Graphon.ConsistentPartitionSequence I) :
-    Conjecture93_weak 𝒮 := by
-  refine Iff.intro ?fwd ?rev
-  · intro h
-    exact conjecture93_weak_reverse 𝒮 h
-  · intro h
-    exact conjecture93_weak_forward 𝒮 h
+/-! ## 5. Decomposition into forward and reverse implications
 
-/-! ## 6. Sufficient conditions (corollaries of the forward direction) -/
+**Audit note (2026-06).**  The two "directions" of Conjecture 9.3 are *not*
+theorems in the naive universally-quantified form — they are genuinely **false**
+as stated for *every* `𝒮`, and we now record that honestly rather than carrying
+a `sorry` on a false statement.
 
-/-- **Corollary.** If `algebraCoincidence` holds at every stage, both
-halves of the conjecture hold. -/
-theorem both_halves_of_algebra_coincidence
-    (𝒮 : Graphon.ConsistentPartitionSequence I)
-    (h : ∀ n, algebraCoincidence 𝒮 n) :
-    admitsGraphonLimit 𝒮 ∧ admitsChiralSpeedupOnPartition 𝒮 := by
-  apply conjecture93_weak_forward
-  exact ⟨0, fun n _ => h n⟩
+The obstruction is the chiral half.  `admitsChiralSpeedupOnPartition` requires a
+**nontrivial cross-constant** signing that genuinely changes an edge; but on a
+*single-cell* partition (index type a `Subsingleton`, e.g. `Fin 1`) every
+cross-constant signing is forced trivial (`fin1Cell_no_chiral_speedup`).  Meanwhile
+algebra coincidence can hold there (the empty graph, `emptySeqFin1`, has
+`adj = 0`, already cell-pair-constant, so `finiteAdjAlgebra = projectorAlgebra`).
+So algebra coincidence neither implies nor is implied by the chiral half: both
+the forward implication and the full biconditional fail on the empty single-cell
+witness.
 
-/-- **Association scheme uniformity:** an additional assumption on the
-sequence that each `(𝒮.G n)` lies in the Bose-Mesner algebra of an
-association scheme **refining** the partition `𝒮.cells n`. Schemes are
-parametrized by `d n : ℕ`. -/
+We therefore (i) **refute** the universal forward/iff forms (genuine theorems,
+`weak_forward_not_universal`, `weak_iff_not_universal`), and (ii) keep the genuine
+positive content as the right-hand-side fact `algebraCoincidence_of_assocSchemeUniform`
+(§6, proven).  The real open conjecture survives unchanged as the
+**`Conjecture93_weak` def**; what fails is only the claim that it is a *theorem
+for all `𝒮`*. -/
+
+/-- **The naive forward direction is FALSE** (genuine refutation, no `sorry`).
+
+There is no implication "eventual algebra coincidence ⇒ both halves" valid for
+*every* consistent partition sequence: the empty single-cell sequence
+`emptySeqFin1` (vertex counts `n ↦ n + 2`, so ≥ 2 vertices) has algebra
+coincidence at every stage (`emptySeqFin1_eventuallyAlgebraCoincidence`) yet
+admits **no** cross-constant chiral speedup, because its single `Fin 1` cell
+forces every cross-constant signing to be trivial (`fin1Cell_no_chiral_speedup`).
+
+This is the precise sense in which the chiral half does **not** follow from
+algebra coincidence: the conjecture genuinely needs a non-degeneracy hypothesis
+(at least two cells with a nontrivial edge-changing cross-constant signing). -/
+theorem weak_forward_not_universal :
+    ¬ ∀ (𝒮 : Graphon.ConsistentPartitionSequence.{0, 0} (Fin 1)),
+        eventuallyAlgebraCoincidence 𝒮 →
+          @admitsGraphonLimit.{0, 0} (Fin 1) _ _ 𝒮
+            ∧ admitsChiralSpeedupOnPartition 𝒮 := by
+  intro hAll
+  -- the empty single-cell witness with ≥ 2 vertices at every stage
+  have hmono : ∀ n, n + 2 ≤ (n + 1) + 2 := fun n => by omega
+  set 𝒮 := emptySeqFin1 (fun n => n + 2) hmono with h𝒮
+  have hcoinc : eventuallyAlgebraCoincidence 𝒮 :=
+    emptySeqFin1_eventuallyAlgebraCoincidence (fun n => n + 2) hmono
+  -- the forward direction would supply a chiral speedup, contradicting the
+  -- single-cell impossibility.
+  exact fin1Cell_no_chiral_speedup 𝒮 (hAll 𝒮 hcoinc).2
+
+/-- **The naive biconditional is FALSE** (genuine refutation, no `sorry`).
+
+`Conjecture93_weak 𝒮` does **not** hold for every `𝒮`: on the empty single-cell
+witness the right-hand side (`eventuallyAlgebraCoincidence`) is *true* while the
+left-hand side is *false* (no chiral speedup on the single cell), so the
+biconditional `LHS ↔ RHS` fails.  Hence `Conjecture93_weak` is a genuine *open
+conjecture* requiring non-degeneracy hypotheses, **not** a theorem for all `𝒮`. -/
+theorem weak_iff_not_universal :
+    ¬ ∀ (𝒮 : Graphon.ConsistentPartitionSequence.{0, 0} (Fin 1)),
+        Conjecture93_weak.{0, 0} 𝒮 := by
+  intro hAll
+  have hmono : ∀ n, n + 2 ≤ (n + 1) + 2 := fun n => by omega
+  set 𝒮 := emptySeqFin1 (fun n => n + 2) hmono with h𝒮
+  have hcoinc : eventuallyAlgebraCoincidence 𝒮 :=
+    emptySeqFin1_eventuallyAlgebraCoincidence (fun n => n + 2) hmono
+  -- `Conjecture93_weak 𝒮` is `(lim ∧ chiral) ↔ coinc`; `mpr` applied to `coinc`
+  -- would yield the chiral speedup, impossible on the single cell.
+  exact fin1Cell_no_chiral_speedup 𝒮 ((hAll 𝒮).mpr hcoinc).2
+
+/-! ## 6. Sufficient conditions: the genuine positive content
+
+Since the forward direction is false as a universal statement
+(`weak_forward_not_universal`), algebra coincidence does **not** supply the
+chiral half; so there is no honest "both halves from algebra coincidence"
+corollary.  The genuine positive content that *is* provable is the
+right-hand-side fact: under the precise association-scheme-uniformity hypothesis,
+**algebra coincidence holds at every stage**
+(`algebraCoincidence_of_assocSchemeUniform`, proven below).  The family
+corollaries (§8) state, per family, only the genuinely-true chiral-half fact
+(disproven for single-cell carriers, proven for `K_{n,n,n,n}`). -/
+
+/-- **Association scheme uniformity (precise form).**  At every stage there is an
+association scheme on `𝒮.V n` whose **Bose–Mesner algebra coincides with the
+partition-projector algebra** and **contains the adjacency** `(𝒮.G n).adj`.
+
+This is the genuine "scheme refining the partition" hypothesis of
+Chan–Coutinho–Tamon–Vinet–Zhan (1907.04729): the scheme classes refine the
+partition (so `BoseMesner S = partitionProjectorAlgebra`) and the graph is a
+scheme element (`adj ∈ BoseMesner S`).  Unlike the previous vacuous form (mere
+existence of *some* scheme, which holds even for the Cayley counterexample where
+algebra coincidence fails), this version genuinely pins the algebra. -/
 def AssocSchemeUniform
     (𝒮 : Graphon.ConsistentPartitionSequence I) : Prop :=
-  ∀ n, ∃ d : ℕ,
-    haveI := 𝒮.finV n
-    haveI := 𝒮.decV n
-    Nonempty (AssociationScheme (𝒮.V n) d)
+  ∀ n,
+    letI := 𝒮.finV n
+    letI := 𝒮.decV n
+    ∃ (d : ℕ) (S : AssociationScheme (𝒮.V n) d),
+      BoseMesner S = partitionProjectorAlgebra 𝒮 n ∧
+      (𝒮.G n).adj ∈ BoseMesner S
 
-/-- **Corollary.** Association-scheme-uniform sequences satisfy
-algebra coincidence at every stage (Bose-Mesner = partition-projector
-when the scheme classes refine the partition), hence both halves of
-Conjecture 9.3 hold. -/
-theorem both_halves_of_assocSchemeUniform
+/-- **Algebra coincidence under association-scheme uniformity (PROVEN).**
+Association-scheme-uniform sequences (in the precise sense above) satisfy
+**algebra coincidence at every stage**: `finiteAdjAlgebra = partitionProjectorAlgebra`.
+
+Proof: `finiteAdjAlgebra = span{adj} ⊔ projectorAlgebra`.  The scheme hypothesis
+gives `adj ∈ BoseMesner S = projectorAlgebra`, so `span{adj} ≤ projectorAlgebra`
+and the join collapses to `projectorAlgebra`.  This is the genuine
+linear-algebra content (and it is TRUE), replacing the former unsound "both
+halves" conclusion (which silently assumed the false forward direction, see
+`weak_forward_not_universal`). -/
+theorem algebraCoincidence_of_assocSchemeUniform
     (𝒮 : Graphon.ConsistentPartitionSequence I)
-    (_h : AssocSchemeUniform 𝒮) :
-    admitsGraphonLimit 𝒮 ∧ admitsChiralSpeedupOnPartition 𝒮 := by
-  -- HONEST SORRY (deep): requires "assoc-scheme refining the partition ⇒
-  -- Bose-Mesner = partition-projector algebra at every stage" plus the
-  -- unproven forward direction `conjecture93_weak_forward`.
-  sorry
+    (h : AssocSchemeUniform 𝒮) :
+    ∀ n, algebraCoincidence 𝒮 n := by
+  intro n
+  obtain ⟨d, S, hBM, hadj⟩ := h n
+  letI := 𝒮.finV n
+  letI := 𝒮.decV n
+  -- `adj ∈ BoseMesner S = projectorAlgebra`, so `span{adj} ≤ projectorAlgebra`.
+  have hadj' : (𝒮.G n).adj ∈ partitionProjectorAlgebra 𝒮 n := hBM ▸ hadj
+  unfold algebraCoincidence finiteAdjAlgebra
+  -- the RHS span in `finiteAdjAlgebra` is exactly `partitionProjectorAlgebra`
+  have hspan : Submodule.span ℂ
+      { M : Matrix (𝒮.V n) (𝒮.V n) ℂ |
+          ∃ q : I → I → ℂ, ∀ x y, M x y = q (𝒮.cells n x) (𝒮.cells n y) }
+        = partitionProjectorAlgebra 𝒮 n := rfl
+  rw [hspan, sup_eq_right.mpr]
+  rwa [Submodule.span_le, Set.singleton_subset_iff, SetLike.mem_coe]
 
 /-! ## 7. Necessary conditions (failure modes that block one half) -/
 
@@ -552,10 +717,14 @@ We list six explicit families and the `Prop` indicating which side of the
 iff each is conjectured to satisfy. Each underlying graph is now a **genuine,
 distinct object** with an honestly-proven equitable partition (regularity for
 the single-cell families; the genuine part partition for `K_{n,n,n,n}`); no
-family `def` contains a `sorry`. The per-family theorems are stated honestly:
-either as conditionals on the open forward direction
-(`conjecture93_weak_forward`), or — for `Cayley(S_n)` — proven genuinely from
-the family-specific algebra-strictly-larger fact (`False ↔ False`).
+family `def` contains a `sorry`. The per-family theorems are stated honestly and
+**proven**: the single-cell families have their cross-constant chiral half
+*disproven* (`subsingletonCell_no_chiral_speedup`); the genuine `Fin 4` family
+`K_{n,n,n,n}` has its chiral half *proven constructively*
+(`K4multipartite_admits_chiral_speedup`); and `Cayley(S_n)` is proven genuinely
+`Conjecture93_weak` from the family-specific algebra-strictly-larger fact
+(`False ↔ False`).  None routes through the (false-as-universal) forward
+direction.
 -/
 
 /-! ### 8.1. `K_n^σ`: chirally-signed complete graphs (Levine et al. 2605.04414).
@@ -574,23 +743,24 @@ noncomputable def Kn_constSign (n : ℕ → ℕ) (_hn : ∀ k, 0 < n k)
     Graphon.ConsistentPartitionSequence (Unit : Type) :=
   singleCellCompleteSeq n h_embed
 
-/-- **Claim (test family 1), stated honestly via the structural hypothesis.**
-`K_n^σ` is a genuine single-cell *complete* graph (the underlying graph really
-is `K_{n k}`), with algebra coincidence `ℂ · I + ℂ · J = ℂ · I + ℂ · J`.  Given
-the structurally-expected eventual algebra coincidence, both halves follow
-through the (open, honestly sorried) forward direction.  We do **not** hollow-
-apply the full `iff`.
+/-- **Test family 1, honest Lean state: no cross-constant chiral speedup.**
+`K_n^σ` is realised here as a genuine single-cell *complete* graph (the
+underlying graph really is `K_{n k}`) with the trivial **`Unit`** partition.  In
+this single-cell model the chiral half of Conjecture 9.3 **provably fails**:
+cross-constancy on one cell forces the trivial signing
+(`subsingletonCell_no_chiral_speedup`), so no edge-changing cross-constant signing
+exists.
 
-NOTE on the chiral half in *this* model: with the single-cell `Unit` partition,
-cross-constancy forces the trivial signing (cf. `fin1Cell_no_chiral_speedup`),
-so the speedup must come from algebra coincidence supplying it via the forward
-direction — exactly what this conditional records. -/
-theorem Kn_constSign_both_halves_of_coincidence
-    (n : ℕ → ℕ) (hn : ∀ k, 0 < n k) (h_embed : ∀ k, n k ≤ n (k + 1))
-    (hcoinc : eventuallyAlgebraCoincidence (Kn_constSign n hn h_embed)) :
-    admitsGraphonLimit (Kn_constSign n hn h_embed)
-      ∧ admitsChiralSpeedupOnPartition (Kn_constSign n hn h_embed) :=
-  conjecture93_weak_forward _ hcoinc
+This is the genuine, true content (it does **not** assume the false forward
+direction).  The Levine et al. `K_n^σ` speedup lives in the *larger* unitary
+signing space (`admitsAnyChiralSpeedupOnPartition`), not the cross-constant one
+captured here, and is not asserted by this theorem.  Algebra coincidence
+`ℂ·I + ℂ·J = ℂ·I + ℂ·J` is structurally expected but, being single-cell, does
+**not** supply the chiral half (cf. `weak_forward_not_universal`). -/
+theorem Kn_constSign_no_chiral_speedup
+    (n : ℕ → ℕ) (hn : ∀ k, 0 < n k) (h_embed : ∀ k, n k ≤ n (k + 1)) :
+    ¬ admitsChiralSpeedupOnPartition (Kn_constSign n hn h_embed) :=
+  subsingletonCell_no_chiral_speedup _
 
 /-! ### 8.2. Hamming graphs `H(n, q)` with chiral signing (Hamming scheme).
 
@@ -674,17 +844,21 @@ noncomputable def Hammingq (q : ℕ) [NeZero q] :
     (fun _ x => Fin.cons 0 x)
     (fun n => hammingWG_regular n q)
 
-/-- **Claim (test family 2), stated honestly via the structural hypothesis.**
-The Hamming scheme is an association scheme refining the distance partition,
-so the structurally-expected input is *eventual algebra coincidence*.  Given
-that input, both halves of the conjecture hold — through the (open, honestly
-sorried) forward direction `conjecture93_weak_forward`.  We do **not** assert
-the full `iff` of this family for free; the conditional records exactly which
-open ingredient is used. -/
-theorem Hammingq_both_halves_of_coincidence (q : ℕ) [NeZero q]
-    (hcoinc : eventuallyAlgebraCoincidence (Hammingq q)) :
-    admitsGraphonLimit (Hammingq q) ∧ admitsChiralSpeedupOnPartition (Hammingq q) :=
-  conjecture93_weak_forward _ hcoinc
+/-- **Test family 2, honest Lean state: no cross-constant chiral speedup.**
+`H(n, q)` is realised here with the genuine Hamming adjacency but the single-cell
+(`Fin 1`) coarsening of the distance partition.  In this single-cell model the
+chiral half **provably fails**: cross-constancy on one cell forces the trivial
+signing (`subsingletonCell_no_chiral_speedup`).
+
+The richer distance-from-`0^n` partition (where the Hamming scheme is an
+association scheme and algebra coincidence is exact) is *not* the partition of
+this single-cell carrier, so neither "both halves" nor algebra coincidence is
+claimed here for free — that finer-partition content is the genuine open
+conjectural part.  This theorem states only the true single-cell no-speedup
+fact, with no hidden dependence on the (false) forward direction. -/
+theorem Hammingq_no_chiral_speedup (q : ℕ) [NeZero q] :
+    ¬ admitsChiralSpeedupOnPartition (Hammingq q) :=
+  fin1Cell_no_chiral_speedup _
 
 /-! ### 8.3. `K_n + path_n` (Xie-Tamon 2301.07251).
 
@@ -762,35 +936,6 @@ noncomputable def Kn_plus_pathn_skeleton :
   singleCellCompleteSeqFin1 (fun n => 2 * n + 2)
     (fun n => by simp only; omega)
 
-/-- **Single-cell partitions admit no cross-constant chiral speedup.**
-
-For any `singleCellCompleteSeqFin1` family (a single `Fin 1` cell at every
-stage), the chiral-speedup predicate is *false*: a chiral signing that is
-cross-constant on a single cell is forced to be the trivial all-ones signing.
-Indeed cross-constancy makes `σ x y = τ 0 0` for *all* `x, y` (including the
-diagonal), while `σ x x = 1` forces `τ 0 0 = 1`, so `σ ≡ 1`, contradicting the
-required nontriviality `∃ x y, σ x y ≠ 1`.
-
-This corrects the earlier `sorry`: the claim `¬ admitsChiralSpeedupOnPartition`
-is in fact *true* for the single-cell realisation (the earlier comment's
-assertion that a nontrivial cross-constant signing exists was mistaken — diag
-unimodularity rules it out). -/
-theorem fin1Cell_no_chiral_speedup
-    (𝒮 : Graphon.ConsistentPartitionSequence (Fin 1 : Type)) :
-    ¬ admitsChiralSpeedupOnPartition 𝒮 := by
-  rintro ⟨s, hcc, _hcons, ⟨n, x, y, hxy⟩, _⟩
-  -- `s n` is cross-constant on the single `Fin 1` cell.
-  obtain ⟨τ, hτ⟩ := hcc n
-  -- every cell label is `0 : Fin 1`, so `σ a b = τ (c a) (c b)` with all `c · = 0`.
-  have hconst : ∀ a b, (s n).σ a b = τ (𝒮.cells n a) (𝒮.cells n b) := hτ
-  have hcell : ∀ a, 𝒮.cells n a = (0 : Fin 1) := fun _ => Subsingleton.elim _ _
-  -- the diagonal value `σ x x = 1` pins `τ (cells x) (cells x) = 1`.
-  have hdiag : τ (𝒮.cells n x) (𝒮.cells n x) = 1 := by
-    rw [← hconst x x]; exact (s n).diag x
-  -- `σ x y = τ (cells x) (cells y) = τ (cells x) (cells x) = 1`, contradicting `hxy`.
-  exact hxy (by
-    rw [hconst x y, hcell y, ← hcell x, hdiag])
-
 /-- Specialisation to the complete-graph single-cell builder. -/
 theorem singleCellFin1_no_chiral_speedup
     (m : ℕ → ℕ) (hmono : ∀ n, m n ≤ m (n + 1)) :
@@ -867,20 +1012,51 @@ noncomputable def K4multipartite (n : ℕ → ℕ) (hn : ∀ k, 0 < n k)
     -- both `x` and `y` lie in part `i`, so `hcell` gives the same value.
     rw [hcell x, hcell y, hx, hy]
 
-/-- **Claim (test family 4), stated honestly via the structural hypothesis.**
-The four-part complete multipartite graph `K_{n,n,n,n}` is a genuine, distinct
-object (real "different part" adjacency, genuine `Fin 4` part partition proven
-equitable above — not a complete-graph skeleton).  Its Bose–Mesner algebra is
-rank `2` and equals the part-partition projector algebra, so the structurally
-expected input is *eventual algebra coincidence*.  Given that input, both halves
-hold through the (open, honestly sorried) forward direction
-`conjecture93_weak_forward`.  We do **not** hollow-apply the full `iff`. -/
-theorem K4multipartite_both_halves_of_coincidence
-    (n : ℕ → ℕ) (hn : ∀ k, 0 < n k) (h_mono : ∀ k, n k ≤ n (k + 1))
-    (hcoinc : eventuallyAlgebraCoincidence (K4multipartite n hn h_mono)) :
-    admitsGraphonLimit (K4multipartite n hn h_mono)
-      ∧ admitsChiralSpeedupOnPartition (K4multipartite n hn h_mono) :=
-  conjecture93_weak_forward _ hcoinc
+/-- **Test family 4, STRENGTHENED: the chiral half is proven GENUINELY.**
+Unlike the single-cell families, `K_{n,n,n,n}` has a genuine **`Fin 4`** part
+partition with ≥ 2 cells, so a nontrivial cross-constant signing *does* exist:
+signing every cross-part edge by `-1` (`τ(i,j) = if i = j then 1 else -1`).  This
+signing is unimodular (`±1`), Hermitian (real symmetric), diagonal-`1`,
+cross-constant on the part partition, consistent under the part-preserving
+embedding, nontrivial (parts `0` and `1` are populated since `n k > 0`), and
+genuinely changes a cross-part edge (`(-1)·1 ≠ 1`).  Hence
+`admitsChiralSpeedupOnPartition` holds — a real constructive witness, not the
+(false) algebra-coincidence ⇒ chiral inference.
+
+(The graphon-limit half is the separate deep analytic part and is **not** claimed
+here; cf. `weak_forward_not_universal`, which shows it does not follow from
+algebra coincidence.) -/
+theorem K4multipartite_admits_chiral_speedup
+    (n : ℕ → ℕ) (hn : ∀ k, 0 < n k) (h_mono : ∀ k, n k ≤ n (k + 1)) :
+    admitsChiralSpeedupOnPartition (K4multipartite n hn h_mono) := by
+  -- the sign-cross-part-edges-by-(-1) signing `σ x y = if x.1 = y.1 then 1 else -1`
+  -- (cross-constant via `τ i j = if i = j then 1 else -1`)
+  refine ⟨fun _ =>
+    { σ := fun x y => if x.1 = y.1 then (1 : ℂ) else -1
+      unimod := fun x y => by by_cases h : x.1 = y.1 <;> simp [h]
+      herm := fun x y => by
+        by_cases h : x.1 = y.1
+        · rw [if_pos h, if_pos h.symm]; norm_num
+        · rw [if_neg h, if_neg (fun he => h he.symm)]; norm_num
+      diag := fun x => by simp }, ?_, ?_, ?_, ?_⟩
+  · -- cross-constant on the part cells `x ↦ x.1`
+    exact fun _ => ⟨fun i j => if i = j then (1 : ℂ) else -1, fun _ _ => rfl⟩
+  · -- consistency under the part-preserving embedding (it preserves `.1`)
+    intro k x y; rfl
+  · -- nontrivial: parts 0 and 1 are populated, and the phase there is `-1 ≠ 1`
+    refine ⟨0, ((0 : Fin 4), (⟨0, hn 0⟩ : Fin (n 0))),
+              ((1 : Fin 4), (⟨0, hn 0⟩ : Fin (n 0))), ?_⟩
+    show (if (0 : Fin 4) = (1 : Fin 4) then (1 : ℂ) else -1) ≠ 1
+    rw [if_neg (by decide : ¬ (0 : Fin 4) = (1 : Fin 4))]; norm_num
+  · -- speedup: on the cross-part edge, `σ · adj = (-1)·1 = -1 ≠ 1 = adj`
+    refine ⟨0, ((0 : Fin 4), (⟨0, hn 0⟩ : Fin (n 0))),
+              ((1 : Fin 4), (⟨0, hn 0⟩ : Fin (n 0))), ?_⟩
+    show (if (0 : Fin 4) = (1 : Fin 4) then (1 : ℂ) else -1)
+          * (if (0 : Fin 4) ≠ (1 : Fin 4) then (1 : ℂ) else 0)
+        ≠ (if (0 : Fin 4) ≠ (1 : Fin 4) then (1 : ℂ) else 0)
+    rw [if_neg (by decide : ¬ (0 : Fin 4) = (1 : Fin 4)),
+      if_pos (by decide : (0 : Fin 4) ≠ (1 : Fin 4))]
+    norm_num
 
 /-! ### 8.5. Surface Heawood envelope `g → ∞`.
 
@@ -913,22 +1089,19 @@ noncomputable def heawoodEnvelope :
     Graphon.ConsistentPartitionSequence (Unit : Type) :=
   singleCellCompleteSeq heawoodNumber heawoodNumber_mono
 
-/-- **Claim (test family 5), stated honestly via the structural hypothesis.**
+/-- **Test family 5, honest Lean state: no cross-constant chiral speedup.**
 The Heawood envelope is a genuine single-cell *complete* graph `K_{H(g)}` (its
-adjacency really is `completeWG (H g)`), with the trivial single-cell partition;
-both the Bose–Mesner and the projector algebra are `ℂ · I + ℂ · J`, so algebra
-coincidence is structurally expected.  Given eventual algebra coincidence as
-input, both halves hold through the (open, honestly sorried) forward direction
-`conjecture93_weak_forward`.  We do **not** hollow-apply the full `iff`.
+adjacency really is `completeWG (H g)`) with the trivial **`Unit`** partition.
+As for `K_n^σ`, this single-cell model **provably** admits no cross-constant
+chiral speedup: cross-constancy on one cell forces the trivial signing
+(`subsingletonCell_no_chiral_speedup`).
 
-NOTE: as for `K_n^σ`, the single-`Unit`-cell partition forces any cross-constant
-signing to be trivial, so the chiral half is supplied only via the forward
-direction — exactly what this conditional records. -/
-theorem heawoodEnvelope_both_halves_of_coincidence
-    (hcoinc : eventuallyAlgebraCoincidence heawoodEnvelope) :
-    admitsGraphonLimit heawoodEnvelope
-      ∧ admitsChiralSpeedupOnPartition heawoodEnvelope :=
-  conjecture93_weak_forward _ hcoinc
+Algebra coincidence `ℂ·I + ℂ·J = ℂ·I + ℂ·J` is structurally expected, but (as
+`weak_forward_not_universal` shows) it does **not** supply the chiral half on a
+single cell.  This theorem states only the genuinely-true no-speedup fact. -/
+theorem heawoodEnvelope_no_chiral_speedup :
+    ¬ admitsChiralSpeedupOnPartition heawoodEnvelope :=
+  subsingletonCell_no_chiral_speedup _
 
 /-! ### 8.6. **Tight counterexample candidate:** Cayley graphs of `S_n`.
 
@@ -1159,33 +1332,50 @@ theorem strong_failure_requires_nonCrossConstant
 
 /-! ## 10. Summary table (commented out, for the paper notes)
 
+**Audit-corrected (2026-06).**  The earlier table recorded a "T-T-T conditional
+on fwd dir" status for the positive families, routed through
+`conjecture93_weak_forward`.  That direction is now known to be **false** as a
+universal statement (`weak_forward_not_universal`): on the *cross-constant*
+signing model the chiral half is **not** implied by algebra coincidence, and is
+in fact *false* for every single-cell carrier.  The Lean status below reflects
+only what is genuinely proven.
+
 ```
-family                    | graphon | chiral (weak) | alg coinc | conj93_weak | Lean status
---------------------------|---------|---------------|-----------|-------------|-------------------------
-K_n^σ (constant sign)     | yes     | yes           | yes       | yes (T-T-T) | conditional on fwd dir
-H(n, q) (Hamming dist)    | yes     | yes           | yes       | yes (T-T-T) | conditional on fwd dir
-K_n + path_n  (skeleton)  | yes     | no            | no        | yes (F-F)   | no-speedup proven genuinely
-K_{n,n,n,n}               | yes     | yes           | yes       | yes (T-T-T) | conditional on fwd dir
-Heawood envelope          | yes     | yes (trivial) | yes       | yes (T-T-T) | conditional on fwd dir
-Cayley(S_n) by transp.    | yes     | no            | no        | yes (F-F)   | PROVEN GENUINELY (F↔F)
+family                    | graphon | cross-const chiral (weak) | alg coinc | Lean status (proven)
+--------------------------|---------|---------------------------|-----------|------------------------------
+K_n^σ (Unit cell)         | open    | NO (single cell)          | open      | _no_chiral_speedup PROVEN
+H(n, q) (Fin 1 cell)      | open    | NO (single cell)          | open      | _no_chiral_speedup PROVEN
+K_n + path_n  (Fin 1)     | open    | NO (single cell)          | no        | _no_chiral_speedup PROVEN
+K_{n,n,n,n}  (Fin 4)      | open    | YES (sign cross-part −1)  | open      | _admits_chiral_speedup PROVEN
+Heawood envelope (Unit)   | open    | NO (single cell)          | open      | _no_chiral_speedup PROVEN
+Cayley(S_n) by transp.    | open    | NO (single cell)          | no (>)    | Conjecture93_weak PROVEN (F↔F)
 ```
 
-The right column records the **honest Lean status**, NOT a hollow application
-of the (open, sorried) `conjecture93_weak_iff`:
+The right column records the **honest Lean status**, NOT a hollow application of
+the (false-as-universal) forward direction:
 
-* The four both-halves-true families (`K_n^σ`, `H(n,q)`, `K_{n,n,n,n}`,
-  Heawood) are stated as theorems
-  `..._both_halves_of_coincidence : eventuallyAlgebraCoincidence 𝒮 → (both halves)`,
-  routed through the (legitimately open) forward direction
-  `conjecture93_weak_forward`. They do not over-claim the full iff.
+* The single-cell families (`K_n^σ`, `H(n,q)`, Heawood, the `K_n+P_n`
+  placeholder) have their cross-constant chiral half **disproven** genuinely
+  (`subsingletonCell_no_chiral_speedup` / `fin1Cell_no_chiral_speedup`): a
+  cross-constant signing on one cell is forced trivial.  (The Levine et al.
+  `K_n^σ` speedup uses the *larger* non-cross-constant signing space, not modelled
+  by `admitsChiralSpeedupOnPartition`.)
+* `K_{n,n,n,n}` (genuine `Fin 4` partition, ≥ 2 cells) has its chiral half
+  **proven** constructively (`K4multipartite_admits_chiral_speedup`): the
+  sign-cross-part-edges-by-`-1` signing is a genuine nontrivial cross-constant
+  edge-changing witness.
 * `Cayley(S_n)` is proven **genuinely** as `Conjecture93_weak cayleyS_n`
-  (`cayleyS_n_satisfies_conj93`): both sides of the iff are *false*
-  (no chiral speedup on the single cell; algebra strictly larger because the
-  genuine Cayley adjacency is non-constant), an honest `False ↔ False` that
-  does **not** invoke the sorried halves.
+  (`cayleyS_n_satisfies_conj93`): both sides of the iff are *false* (no chiral
+  speedup on the single cell; algebra strictly larger because the genuine Cayley
+  adjacency is non-constant), an honest `False ↔ False`.
 * `K_n + P_n` is realised by the explicitly-labelled cardinality placeholder
   `Kn_plus_pathn_skeleton`; the genuine Xie–Tamon graph is `knPlusPathWG`, and
   `Kn_plus_pathn_no_chiral_speedup` is proven genuinely.
+* The forward/iff *universal* claims are **refuted** (`weak_forward_not_universal`,
+  `weak_iff_not_universal`) via the empty single-cell witness `emptySeqFin1`
+  (algebra coincidence holds, chiral speedup impossible).  `Conjecture93_weak`
+  remains a genuine open conjecture (a `Prop` def), now correctly *not* asserted
+  as a theorem for all `𝒮`.
 
 All six families are genuine, distinct objects with honestly-proven equitable
 partitions. The conjecture is consistent with `chan2019fractional`

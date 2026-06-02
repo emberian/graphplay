@@ -978,10 +978,16 @@ noncomputable def chiralContent (s : GraphonSigning Ω μ)
 
 end U1Gauge
 
-/-! ## 8. Three open theorems / next-step directions
+/-! ## 8. Open direction + honest-state companions
 
-We close the file with three explicit open theorems that we believe
-sharpen the present framework. -/
+We close the file with one genuine open theorem
+(`open_cut_distance_classifies_chirality`, honest theorem-level `sorry`)
+together with two honestly-stated companions whose *names match exactly
+what is proven*: `iteratedHammingChiral_kernel_not_real` (a complex-entry
+obstruction, not a mixing-time speedup) and `exists_nondegenerate_cdf`
+(a non-degenerate-CDF existential sentinel, not the Benjamini–Schramm
+spectral-limit content).  The deeper intended statements are recorded in
+their docstrings as next-step directions. -/
 
 namespace OpenDirections
 
@@ -1013,22 +1019,24 @@ theorem open_cut_distance_classifies_chirality
   -- theorem-level `sorry`.
   sorry
 
-/-- **Open theorem 2 (chiral PST optimality on the iterated Hamming
-graphon).**
+/-- **The iterated-Hamming chiral kernel is not a real (non-chiral)
+kernel.**
 
-Building on `iteratedHammingChiral_mixing_time`: the iterated Hamming
-chiral graphon achieves *strictly faster* uniform mixing than every
-real (non-chiral) graphon obtained from an unoriented dense graph
-sequence.
+The kernel of `ChiralGraphonExamples.iteratedHammingChiral` is *not* the
+complex cast of any real-valued kernel `R : Fin 4 → Fin 4 → ℝ`: its
+`(0, 1)`-entry equals `-i`, which has nonzero imaginary part.
 
-This would lift the Levine–…–Tamon "speedup over unoriented Hamming"
-result from the finite to the asymptotic regime. -/
-theorem open_iteratedHammingChiral_strict_speedup :
-    -- The (open) strict speedup: no real-valued symmetric kernel can match the
-    -- iterated-Hamming chiral kernel — i.e. the chiral kernel is genuinely
-    -- complex (some entry has nonzero imaginary part), which is the kernel-level
-    -- obstruction to being a real (non-chiral) graphon and is what drives the
-    -- strictly-faster-than-`π/(3√3)` mixing over all unoriented dense limits.
+This is the kernel-level *obstruction* to the iterated-Hamming chiral
+graphon being a real (non-chiral) graphon — the complex-entry fact that a
+strict mixing-time speedup over unoriented dense limits would build on.
+We record only this complex-entry obstruction here; the actual asymptotic
+mixing-time inequality (strictly faster than `π/(3√3)` over all unoriented
+dense limits) is **not** proven in this development. -/
+theorem iteratedHammingChiral_kernel_not_real :
+    -- The chiral kernel is genuinely complex: no real-valued kernel `R` casts to
+    -- it, because its `(0, 1)`-entry is `-i` (imaginary part `-1 ≠ 0`).  This is
+    -- the kernel-level obstruction to being a real (non-chiral) graphon — NOT a
+    -- mixing-time comparison.
     ¬ (∀ R : Fin 4 → Fin 4 → ℝ,
         ChiralGraphonExamples.iteratedHammingChiral.kernel
           = fun x y => (R x y : ℂ)) := by
@@ -1049,28 +1057,26 @@ theorem open_iteratedHammingChiral_strict_speedup :
   rw [hentry] at hreal
   simp at hreal
 
-/-- **Open theorem 3 (Anantharaman et al. — quantum graphs in
-Benjamini–Schramm limits).**
+/-- **A non-degenerate cumulative distribution function exists.**
 
-For a Benjamini–Schramm-convergent sequence of finite quantum graphs
-`(G_n, μ_n)` with uniformly bounded vertex degrees and chiral signings
-`σ_n`, the spectral measures of the corresponding chiral CTQW
-generators converge (vaguely) to a limiting spectral measure on the
-*Benjamini–Schramm random rooted quantum graph*.
+There is a function `F : ℝ → ℝ` that is monotone, valued in `[0, 1]`, and
+non-degenerate in the sense that it attains both `0` (somewhere) and `1`
+(somewhere) — i.e. a bona-fide non-degenerate CDF (here an explicit
+Heaviside step).
 
-This connects our graphon framework (dense limit) with the BS
-framework (sparse limit) and the Anantharaman et al. line of work on
-quantum graph spectra in Benjamini–Schramm limits.  The chiral analogue
-is open: even the *unsigned* version is delicate; the chiral version
-requires correct handling of the unitary signing along the random
-rooted graph. -/
-theorem open_anantharaman_BS_chiral :
-    -- The (open) Benjamini–Schramm chiral spectral limit, recorded as the
-    -- existence of a limiting spectral cumulative distribution function `F`:
-    -- monotone, valued in `[0,1]`, and non-degenerate (`F → 0` below the
-    -- spectrum and `F → 1` above it).  The actual vague-convergence content
-    -- (random rooted quantum graphs, chiral CTQW generators) is not formalised
-    -- in this development.
+CONTEXT (sentinel only): the *intended* statement of this slot is the
+Anantharaman-et-al. Benjamini–Schramm chiral spectral limit — that the
+spectral measures of chiral CTQW generators of a BS-convergent sequence of
+finite quantum graphs converge vaguely to a limiting spectral measure on
+the random rooted quantum graph.  That deep vague-convergence content
+(random rooted quantum graphs, chiral CTQW generators) is **not** formalised
+in this development; this theorem records only the degenerate existential
+shape (existence of a non-degenerate CDF) as a structural sentinel. -/
+theorem exists_nondegenerate_cdf :
+    -- Existence of a non-degenerate cumulative distribution function `F`:
+    -- monotone, valued in `[0,1]`, attaining both `0` and `1`.  This is the
+    -- *shape* of a limiting spectral CDF, NOT the Benjamini–Schramm vague-
+    -- convergence content (which is not formalised here).
     ∃ F : ℝ → ℝ, Monotone F ∧ (∀ x, 0 ≤ F x ∧ F x ≤ 1) ∧
       (∃ a, F a = 0) ∧ (∃ b, F b = 1) := by
   -- The deep vague-convergence content (random rooted quantum graphs, chiral
@@ -1109,6 +1115,8 @@ end OpenDirections
 | Iterated Hamming chiral limit       | `H(n, 4)^σ`                                       | `ChiralGraphonExamples.iteratedHammingChiral`                |
 | U(1) gauge interpretation           | (folklore)                                        | `U1Gauge.gaugeField` / `holonomy` / `IsFlat`                 |
 
-Three open directions are recorded in `OpenDirections`. -/
+One genuine open direction (`open_cut_distance_classifies_chirality`) plus
+two honest-state companions (`iteratedHammingChiral_kernel_not_real`,
+`exists_nondegenerate_cdf`) are recorded in `OpenDirections`. -/
 
 end Graphplay

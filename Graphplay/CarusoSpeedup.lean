@@ -686,14 +686,47 @@ theorem caruso_quantitative_formula
           C₂ * Real.sqrt (Fintype.card V) * (s + Δ ^ 2 / s) / γ := by
   sorry
 
-/-- **Optimal breaking score** (closed-form): the unique
-`s_* = darkSpectralGap G M γ` minimising the search time. -/
+/-- **Optimal breaking score** (closed-form minimisation): the leading-order
+Caruso time shape `f(s) = s + Δ²/s` (the bracket of `caruso_quantitative_formula`,
+with `Δ := darkSpectralGap G M γ`) is *minimised* over breaking scores `s > 0`
+at the **unique** minimiser `s_* = Δ`, where it takes the value `2Δ`.
+
+Concretely, for `Δ > 0` we prove:
+ * lower bound / optimality: `∀ s > 0, 2·Δ ≤ s + Δ²/s` (so `f(Δ) = 2Δ` is the min);
+ * uniqueness: any `s > 0` attaining the minimum `s + Δ²/s = 2Δ` equals `Δ`.
+
+This is the anti-Zeno AM-GM optimum: `s + Δ²/s ≥ 2√(s·Δ²/s) = 2Δ`, with equality
+iff `s = Δ`.  (Caruso et al. 2010, the minimisation underlying Eq. (12)–(15).) -/
 theorem caruso_optimal_breakingScore
-    (G : WeightedGraph V) (M : Finset V) (γ : ℝ) :
-    -- the (unique) minimiser of the Caruso formula is `s_* = Δ`.
+    (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
+    (hΔ : 0 < darkSpectralGap G M γ) :
     let Δ := darkSpectralGap G M γ
-    Δ = Δ := by
-  intro Δ; rfl
+    -- value at the minimiser is `2Δ`
+    (Δ + Δ ^ 2 / Δ = 2 * Δ) ∧
+    -- optimality: `2Δ` lower-bounds `f(s)` for every positive breaking score
+    (∀ s : ℝ, 0 < s → 2 * Δ ≤ s + Δ ^ 2 / s) ∧
+    -- uniqueness of the minimiser
+    (∀ s : ℝ, 0 < s → s + Δ ^ 2 / s = 2 * Δ → s = Δ) := by
+  intro Δ
+  have hΔ' : (0 : ℝ) < Δ := hΔ
+  refine ⟨?_, ?_, ?_⟩
+  · -- `Δ + Δ²/Δ = Δ + Δ = 2Δ`
+    rw [sq, mul_div_assoc, div_self (ne_of_gt hΔ'), mul_one]; ring
+  · -- optimality from `(s - Δ)² ≥ 0`: `s + Δ²/s - 2Δ = (s - Δ)²/s ≥ 0`
+    intro s hs
+    have hid : s + Δ ^ 2 / s - 2 * Δ = (s - Δ) ^ 2 / s := by
+      field_simp; ring
+    have hnn : 0 ≤ (s - Δ) ^ 2 / s := div_nonneg (sq_nonneg _) hs.le
+    rw [← hid] at hnn
+    linarith
+  · -- uniqueness: `s + Δ²/s = 2Δ` ⇒ `(s - Δ)² = 0` ⇒ `s = Δ`
+    intro s hs heq
+    have hsne : s ≠ 0 := ne_of_gt hs
+    have hkey : s ^ 2 + Δ ^ 2 = 2 * Δ * s := by
+      have := heq
+      field_simp at this
+      nlinarith [this]
+    nlinarith [sq_nonneg (s - Δ), hkey]
 
 /-! ## 8. Open: graphon Caruso speedup
 
@@ -709,32 +742,38 @@ breaking scores converge to a value in the graphon's Caruso window.
 This is the analogue of `ghost_symmetry_open_analogue` (D8, §8.3) for
 the *Caruso quantitative formula*, and is left open. -/
 
-/-- **Open conjecture (graphon Caruso speedup).**  Let `G_n` be a
-sequence of `d_n`-regular weighted graphs converging in cut-distance to
-a graphon `W`, each with marked sets `M_n` whose normalised sizes
-converge to `μ ∈ (0, 1)`, and let `N_n` be noise models whose breaking
-scores converge to `s_inf ∈ ℝ_{>0}`.
+/-- **Sentinel (graphon Caruso speedup — NOT the speedup theorem).**
 
-If `s_inf` lies in the graphon's Caruso window (suitably defined), then
+This is *only* a placeholder asserting the existence of a positive real
+constant `∃ C : ℝ, 0 < C` given positive `γ`, `μ ∈ (0,1)`, `s_inf > 0`.
+It carries **no graphon content and no speedup content** — the witness is
+the trivial `C = 1`.
+
+The intended (unproven, open) statement is the *graphon Caruso speedup*: for
+a sequence `G_n` of `d_n`-regular weighted graphs converging in cut-distance
+to a graphon `W`, with marked sets `M_n` of normalised size `→ μ ∈ (0,1)` and
+noise models `N_n` of breaking score `→ s_inf > 0` lying in the graphon's
+Caruso window,
 
   `lim_n OptimalSearchTimeHalf G_n M_n N_n γ / √|V_n| ≤ C`
 
-for a graph-independent constant `C` depending only on `W`, `μ`, `γ`,
-and `s_inf`.
-
-Statement-only; combining `Graphplay.Graphon` with the finite case
-above. -/
-theorem graphon_caruso_speedup_open
+for a graph-independent `C = C(W, μ, γ, s_inf)`.  Stating that requires the
+graphon framework of `Graphplay.Graphon` and is left open; this declaration
+exists purely as a downstream dispatch sentinel and must not be cited as the
+speedup result. -/
+theorem graphon_caruso_speedup_sentinel
     (γ μ s_inf : ℝ) (_hγ : 0 < γ) (_hμ : 0 < μ ∧ μ < 1) (_hs : 0 < s_inf) :
-    -- placeholder existence of a uniform constant; the actual statement
-    -- requires the graphon framework of `Graphplay.Graphon`.
+    -- sentinel only: a positive constant exists (trivially `C = 1`).
     ∃ C : ℝ, 0 < C := by
   exact ⟨1, by norm_num⟩
 
-/-- **Open direction (combined L15 + this file).**  A `Tendsto` form of
-the graphon Caruso speedup, parameterised by a graphon-equitable
-partition.  Provided as a sentinel for downstream graphon files. -/
-theorem graphon_caruso_tendsto_open :
+/-- **Sentinel (`True`) — placeholder, proves nothing.**  Marks the intended
+open direction: a `Tendsto` form of the graphon Caruso speedup, parameterised
+by a graphon-equitable partition (combining `Graphplay.Graphon` L15 with the
+finite quantitative formula of this file).  The body is `trivial : True` and
+carries no mathematical content; it exists only as a downstream graphon-file
+dispatch sentinel and must not be cited as a theorem. -/
+theorem graphon_caruso_tendsto_sentinel :
     True := by
   trivial
 

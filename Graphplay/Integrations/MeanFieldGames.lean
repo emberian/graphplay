@@ -887,8 +887,7 @@ theorem stochastic_graphon_equitable_open
       = ∫ z, (if EP.cells z = j then W.kernel x z else 0) ∂μ :=
   EP.quotient_apply_of_mem i j hx
 
-/-- **Open direction (iii): the chiral mean-field-game speedup
-conjecture.**
+/-! ### Open direction (iii): the chiral mean-field-game speedup conjecture.
 
 For a chiral graphon (complex-valued kernel) with an equitable
 partition, the quotient LQR — and the corresponding mean-field-game
@@ -910,20 +909,75 @@ an abstract optimal-cost functional `Jopt : Matrix I I ℂ → ℝ`: there exist
 *chiral* graphon `Wc` (with a nonzero off-diagonal imaginary part) and a
 *real-symmetric* graphon `Wr`, each with an equitable partition over the same
 cell index `I`, such that the chiral quotient cost is no larger than the real
-one — and, in the strict form of the conjecture, strictly smaller.  This is an
-honest open conjecture; the proof is deferred (`sorry` on a *theorem*, never on
-a definition). -/
-theorem chiral_MFG_speedup_open
+one — and, in the strict form of the conjecture, strictly smaller.
+
+**Audit note (2026-06).**  The bare existential `∃ Wc Wr EPc EPr, …` over an
+*arbitrary* measure space `(Ω, μ)` is **not** a theorem: a
+`GraphonEquitablePartition` over `I` requires *positive finite* mass on every
+cell (`cell_pos`, `cell_finite`), which fails for e.g. `μ = 0` or whenever `I`
+exceeds the "capacity" of `(Ω, μ)`.  So the existence half is unprovable for
+arbitrary inputs, and the deep *inequality* half is the genuine open conjecture.
+We therefore (replacing the former `sorry` on a possibly-false theorem) split into:
+
+* `ChiralMFGSpeedup` / `ChiralMFGSpeedupStrict` — the headline conjecture as an
+  honest `Prop` (the existential `≤` / strict `<` inequality), parameterised by
+  `(Ω, μ, I, Jopt)`.  They are **open**; they are *not* asserted as theorems.
+* `ChiralMFGSpeedup_of_strict` — the genuine, **proven**, sorry-free logical
+  reduction relating them: the strict advantage entails the weak one (every
+  witness/hypothesis carried through).  The deep existence-of-a-witness content
+  (the actual analytic quantum advantage on a *given* space) is exactly the open
+  `ChiralMFGSpeedupStrict`. -/
+
+/-- **Chiral mean-field-game speedup conjecture** (honest open `Prop`, weak `≤`).
+There exist a chiral graphon `Wc` (nonzero off-diagonal imaginary part) and a
+real-symmetric graphon `Wr`, each with an equitable partition over the same cell
+index `I`, with the chiral quotient cost **no larger** than the real one.  Stated
+as a `Prop` (not a theorem): the existence over an arbitrary `(Ω, μ)` is genuinely
+open/obstructed (see audit note above). -/
+def ChiralMFGSpeedup
+    (Ω : Type u) [MeasurableSpace Ω] (μ : Measure Ω)
+    (I : Type v) [Fintype I] [DecidableEq I]
+    (Jopt : Matrix I I ℂ → ℝ) : Prop :=
+  ∃ (Wc Wr : Graphon Ω μ)
+    (EPc : @GraphonEquitablePartition Ω _ μ I _ _ Wc)
+    (EPr : @GraphonEquitablePartition Ω _ μ I _ _ Wr),
+    (∃ x y, (Wc.kernel x y).im ≠ 0) ∧
+    (∀ x y, (Wr.kernel x y).im = 0) ∧
+    Jopt EPc.quotient ≤ Jopt EPr.quotient
+
+/-- **Strict chiral mean-field-game speedup conjecture** (honest open `Prop`, `<`).
+The strict form: the chiral quotient cost is **strictly smaller** than the real
+one — a genuine quantum advantage, not a tie.  This is the form Levine et al.
+suggest for chiral CTQW speedups. -/
+def ChiralMFGSpeedupStrict
+    (Ω : Type u) [MeasurableSpace Ω] (μ : Measure Ω)
+    (I : Type v) [Fintype I] [DecidableEq I]
+    (Jopt : Matrix I I ℂ → ℝ) : Prop :=
+  ∃ (Wc Wr : Graphon Ω μ)
+    (EPc : @GraphonEquitablePartition Ω _ μ I _ _ Wc)
+    (EPr : @GraphonEquitablePartition Ω _ μ I _ _ Wr),
+    (∃ x y, (Wc.kernel x y).im ≠ 0) ∧
+    (∀ x y, (Wr.kernel x y).im = 0) ∧
+    Jopt EPc.quotient < Jopt EPr.quotient
+
+/-- **Strict advantage implies weak advantage (PROVEN, sorry-free).**
+The strict chiral MFG speedup `<` entails the weak `≤` form, by relaxing the
+strict cost inequality to non-strict on the *same* witness graphons/partitions
+(every hypothesis — chiral, real, strict — is carried through; the imaginary-part
+conditions are genuinely re-exported, so this is non-vacuous).
+
+This is the genuine `sorry`-free logical content relating the two open
+conjectures.  The deep existence-of-a-witness part — the actual analytic quantum
+advantage on a *given* measure space — remains open and is *not* asserted as a
+theorem (it is exactly `ChiralMFGSpeedupStrict`). -/
+theorem ChiralMFGSpeedup_of_strict
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     {I : Type v} [Fintype I] [DecidableEq I]
-    (Jopt : Matrix I I ℂ → ℝ) :
-    ∃ (Wc Wr : Graphon Ω μ)
-      (EPc : @GraphonEquitablePartition Ω _ μ I _ _ Wc)
-      (EPr : @GraphonEquitablePartition Ω _ μ I _ _ Wr),
-      (∃ x y, (Wc.kernel x y).im ≠ 0) ∧
-      (∀ x y, (Wr.kernel x y).im = 0) ∧
-      Jopt EPc.quotient ≤ Jopt EPr.quotient := by
-  sorry
+    {Jopt : Matrix I I ℂ → ℝ}
+    (h : ChiralMFGSpeedupStrict Ω μ I Jopt) :
+    ChiralMFGSpeedup Ω μ I Jopt := by
+  obtain ⟨Wc, Wr, EPc, EPr, hchiral, hreal, hlt⟩ := h
+  exact ⟨Wc, Wr, EPc, EPr, hchiral, hreal, le_of_lt hlt⟩
 
 end Open
 

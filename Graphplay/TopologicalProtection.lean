@@ -681,49 +681,64 @@ These are addressed (statement-only) in I7 §10 (Open directions);
 this file stops at the U(1) version.
 -/
 
-/-- **Open conjecture (statement only).**  The headline theorem
-`phantomSymmetry_iff_flatOnCells` extends *verbatim* to matrix-valued
-gauge fields: an `SU(N)` lattice gauge perturbation preserves the
-phantom symmetry of `(G, P)` iff it is matrix-cross-constant on
-`P.cells`.
+/-- **Placeholder (no content proven).**  This declaration records, at
+the trivially-true `Prop` level, that the headline theorem
+`phantomSymmetry_iff_flatOnCells` is *intended* to extend to
+matrix-valued (`SU(N)`) gauge fields — but it proves **nothing** about
+that extension.
 
-This is the **non-abelian topological protection theorem**, and
-formalizes "topological protection in non-abelian Yang-Mills lattice
-gauge theory".  Connects directly to the Kitaev honeycomb model
-(Kitaev 2006) and SU(2) topological insulators with spin-orbit
-coupling (Goldman, Juzeliūnas, Öhberg, Spielman, 2014). -/
-theorem nonabelian_phantomSymmetry_iff_flatOnCells_conjecture
+What we *want* (and have NOT formalized) is the iff
+
+> an `SU(N)` lattice gauge perturbation preserves the phantom symmetry
+> of `(G, P)` ↔ it is matrix-cross-constant on `P.cells`.
+
+That statement is currently unreachable: stating it requires a
+**matrix-weighted graph** type and a matrix-valued `signedBy`/phantom-
+symmetry notion, neither of which exists in Graphplay yet (see the §8
+discussion above).  The hypotheses below are merely the data such a
+theorem would quantify over; the conclusion is the placeholder `True`,
+so this carries no topological-protection content.
+
+The genuine non-abelian topological-protection theorem (the eventual
+target, connecting to the Kitaev honeycomb model, Kitaev 2006, and
+SU(2) topological insulators with spin-orbit coupling, Goldman et al.
+2014) is left for future work. -/
+theorem nonabelian_phantomSymmetry_iff_flatOnCells_statement_placeholder
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {SG : SimpleGraph V} (N : ℕ) (G : WeightedGraph V)
     (P : EquitablePartition G I)
     (_F : LatticeGauge.MatrixGaugeField V SG N) :
-    -- Statement schema:  preserving-phantom-symmetry-of-(G, P)
-    --                  ↔  F.CrossConstant P.cells
+    -- Intended (NOT proven) schema:
+    --     preserving-phantom-symmetry-of-(G, P)  ↔  F.CrossConstant P.cells
     -- in the matrix-valued setting.  Both sides require non-abelian
-    -- analogs of the §2-§3 machinery, which are not yet formalized.
+    -- analogs of the §2-§3 machinery, which are not yet formalized, so
+    -- the conclusion is the placeholder `True`.
     True := by
-  -- See I7 §7, `matrix_gauge_field_preserves_equitable` for the
-  -- equitable-preservation half; the phantom-symmetric half awaits a
-  -- matrix-weighted graph type.  Recorded at `Prop`-level `True`.
   trivial
 
-/-- **Companion statement: non-abelian Chern number on cells.**  For
-SU(N) lattice gauge fields, the relevant integer invariant on the
-cell quotient is the **second Chern class** (or its SU(2) restriction
-to a winding number on `S³`).  We package the statement that this
-extends the U(1) `ChernNumberOnCells` to SU(N) bundles. -/
-theorem nonabelian_chernNumber_extension_conjecture
+/-- **Placeholder (no invariant constructed).**  This declaration
+records, at the trivially-true `Prop` level, the *aspiration* that the
+U(1) `ChernNumberOnCells` extend to SU(N) gauge fields via a second
+Chern class `c₂ ∈ ℤ` (or its SU(2) winding-number restriction on `S³`).
+
+It proves **nothing**: no non-abelian invariant is defined here, no
+`∃ c₂ : ℤ` is asserted, and the §7 robustness theorem is **not**
+extended.  A genuine statement would need a non-abelian Wilson-loop
+(path-ordered, see §8) and the corresponding integrality argument;
+the conclusion below is the placeholder `True`.  Left for future
+work. -/
+theorem nonabelian_chernNumber_extension_statement_placeholder
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {SG : SimpleGraph V} (N : ℕ) (G : WeightedGraph V)
     (P : EquitablePartition G I)
     (_F : LatticeGauge.MatrixGaugeField V SG N)
     (_basis : List (QuotientCycle I)) :
-    -- A non-abelian integer invariant `c₂ ∈ ℤ` exists, generalizing
-    -- `ChernNumberOnCells` to SU(N) gauge fields on the cell quotient,
-    -- and the robustness theorem of §7 extends with `c₂` in place of
-    -- the first Chern number.
+    -- Intended (NOT proven): a non-abelian integer invariant `c₂ ∈ ℤ`
+    -- generalizing `ChernNumberOnCells` to SU(N) gauge fields on the
+    -- cell quotient, with the §7 robustness theorem extending with `c₂`
+    -- in place of the first Chern number.  Recorded as placeholder `True`.
     True := by
   trivial
 

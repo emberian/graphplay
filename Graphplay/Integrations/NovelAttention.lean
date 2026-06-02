@@ -18,14 +18,15 @@ The four bets, in increasing speculativeness:
    `WeightedGraph` — Hermitian, loopless (inherited from `WeightedGraph.signedBy`);
    and (b) **a cross-constant phase descends to the equitable quotient**
    (`chiralAttention_descends`, reusing `signedBy_preserves_equitable`): phased
-   attention still lifts to the small quotient.  **Payoff hook (now PROVEN as a
-   concrete instance):** the Levine chiral `K₄` signing reaches *probabilistic
-   uniform mixing* at the speedup time `π/(3√3)`
-   (`chiralAttention_mixing_speedup_hook`, via
+   attention still lifts to the small quotient.  **Payoff (PROVEN as a
+   concrete instance):** the genuinely chiral Levine `K₄` graph
+   `unitaryHammingChiralK4` reaches *probabilistic uniform mixing* at the time
+   `π/(3√3)` (`chiralK4_attention_achieves_uniformMixing`, via
    `unitaryHammingChiralK4_uniformMixing`) — every propagator entry has modulus
    `1/√4`.  *Grounded:* Hermiticity, quotient descent, and the concrete uniform
-   mixing.  *Not claimed here:* the deep *strict-variational* beat over every
-   unsigned head.  *Speculative:* that learned chiral phases help in practice.
+   mixing.  *Not claimed here (note the name says "achieves", not "speedup"):* the
+   deep *strict-variational* beat over every unsigned head.  *Speculative:* that
+   learned chiral phases help in practice.
 
 2. **PST routing attention** (`pstRoutingAttention`).  Attention as a *lossless
    routing layer*: a two-group bundle (source tokens `false`, target tokens
@@ -68,13 +69,13 @@ The four bets, in increasing speculativeness:
 ## Honest `sorry`
 
 * **None.**  Every construction is a genuine weighted graph / operator / cost,
-  and the chiral payoff `chiralAttention_mixing_speedup_hook` is now *proven* as
-  the concrete uniform-mixing instance (the Levine `K₄` signing reaches uniform
-  mixing at `π/(3√3)`), reusing `unitaryHammingChiralK4_uniformMixing`.  The deep
-  *strict-variational* claim — that this beats *every* unsigned head — is
+  and the chiral payoff `chiralK4_attention_achieves_uniformMixing` is *proven* as
+  the concrete uniform-mixing instance (the genuinely chiral Levine `K₄` graph
+  reaches uniform mixing at `π/(3√3)`), reusing `unitaryHammingChiralK4_uniformMixing`.
+  The deep *strict-variational* claim — that this beats *every* unsigned head — is
   deliberately **not asserted** (it is the open spectral-optimization content of
-  Levine et al. 2605.04414); the theorem states only the falsifiable, proven
-  achievement.
+  Levine et al. 2605.04414); the theorem name says "achieves", not "speedup", and
+  states only the falsifiable, proven achievement.
 
 ## References
 
@@ -177,53 +178,59 @@ the phase only re-weights couplings, it does not move tokens between cells. -/
     (s : ChiralSigning n) (h : s.CrossConstant P.cells) :
     (chiralAttention_descends A P s h).cells = P.cells := rfl
 
-/-- **Payoff hook — chiral mixing speedup, the concrete Levine instance (PROVEN,
-axiom-clean).**
+/-- **Payoff — the chiral `K₄` attention head achieves uniform mixing (PROVEN,
+axiom-clean).**  *(Honestly relabeled from `chiralAttention_mixing_speedup_hook`:
+the old name advertised a "speedup" the Lean state does not prove, and its
+existential signing witness was `ChiralSigning.trivial`, which `signedBy` collapses
+to the identity — so the chiral/signing wrapper was decorative. This statement now
+carries exactly what is proven, with the chiral structure load-bearing inside the
+graph itself.)*
 
-The QW reason to phase attention is *faster mixing*: Levine et al. (2605.04414)
-exhibit a U(1) signing of `K₄` (the conical reduction `K₄ → K₁ + K₃`) that reaches
-**probabilistic uniform mixing** at the speedup time `τ = π/(3√3)`.  Transported to
-attention, the chiral *phasing* (a `ChiralSigning`) on the `K₄` token graph yields
-a head whose continuous-time quantum walk is *exactly uniform* at that time: every
-propagator entry has modulus `1/2 = 1/√(card (Fin 4))`.
+The QW motivation for phasing attention is *faster mixing*.  Levine et al.
+(2605.04414, Fig. 2) exhibit the U(1) signing of `K₄` (the conical reduction
+`K₄ → K₁ + K̄₃`) realized here as the genuinely chiral graph
+`unitaryHammingChiralK4` — its adjacency *is* the non-cross-constant Levine signing
+`unitaryHammingChiralK4Signing` (e.g. the exceptional `{1,3}` pair carries the
+opposite chirality `±i`, so the signing is *not* trivial and *not* cross-constant).
+This chiral token graph reaches **probabilistic uniform mixing** at the concrete
+positive time `τ = π/(3√3)`: every propagator entry has modulus
+`1/2 = 1/√(card (Fin 4))`.
 
-This restates the hook with **genuine content**, not an existential escape hatch.
-The witnessed phasing is the *actual* Levine chiral signing
-(`unitaryHammingChiralK4Signing`) and the witnessed time `τ_chiral = π/(3√3)` is a
-*concrete positive* value; the carried claim is the strong uniform-mixing
-predicate `∀ u v, ‖U(τ)_{uv}‖ = 1/√(card)`.  That predicate is **non-vacuous**: a
-degenerate witness (e.g. the identity propagator, or a generic signing) *fails* it
-— most graphs never reach uniform mixing at all, and none with a nonconstant
-propagator have all entries equal in modulus by default.  It is proven by direct
-reuse of the closed-form chiral-`K₄` walk `unitaryHammingChiralK4_uniformMixing`.
+The carried claim is the strong uniform-mixing predicate
+`∀ u v, ‖U(τ)_{uv}‖ = 1/√(card)`, which is **non-vacuous**: a degenerate propagator
+(e.g. the identity) *fails* it — most graphs never reach uniform mixing, and none
+with a nonconstant propagator have all entries equal in modulus by default.  It is
+proven by direct reuse of the closed-form chiral-`K₄` walk
+`unitaryHammingChiralK4_uniformMixing`.  The chirality is load-bearing: the *plain*
+(unsigned) `K₄` does **not** mix uniformly at `π/(3√3)`; it is precisely the Levine
+signing baked into `unitaryHammingChiralK4` that produces the `±√3` spectrum and
+hence this mixing time.
 
-The *strict variational* speedup (that `π/(3√3)` beats *every* unsigned Hamming
-time) is the deep eigenvalue-placement content of Levine et al. (2605.04414, Thm
-2); it is orthogonal to the equitable spine and is *not* asserted here.  What is
-asserted — and proven — is that the chiral construction provably *achieves* uniform
-mixing at this concrete time, the falsifiable core of the payoff. -/
-theorem chiralAttention_mixing_speedup_hook
+What is **not** asserted (no "speedup" in the name): the *strict variational* beat
+— that `π/(3√3)` is faster than *every* unsigned Hamming time.  That is the deep
+eigenvalue-placement content of Levine et al. (2605.04414, Thm 2), orthogonal to
+the equitable spine.  This theorem asserts only the falsifiable, proven
+*achievement* of uniform mixing at this concrete chiral time. -/
+theorem chiralK4_attention_achieves_uniformMixing
     (_A : MachineLearning.AttentionMatrix n) :
-    ∃ (s : ChiralSigning (Fin 4)) (τ_chiral : ℝ),
+    ∃ τ_chiral : ℝ,
       0 < τ_chiral ∧
       (∀ u v : Fin 4,
-        ‖(unitaryHammingChiralK4.signedBy s).evolve τ_chiral u v‖
+        ‖unitaryHammingChiralK4.evolve τ_chiral u v‖
           = 1 / Real.sqrt (Fintype.card (Fin 4))) := by
-  -- Witness: the *actual* Levine chiral signing and the proven speedup time.
-  -- The trivial signing (`σ ≡ 1`) leaves `unitaryHammingChiralK4` unchanged, so we
-  -- reuse the closed-form chiral-K₄ uniform-mixing result directly.
-  refine ⟨ChiralSigning.trivial (Fin 4), Real.pi / (3 * Real.sqrt 3), ?_, ?_⟩
+  -- The genuinely chiral Levine `K₄` (its adjacency *is* the non-trivial signing)
+  -- and the proven mixing time `π/(3√3)`.
+  refine ⟨Real.pi / (3 * Real.sqrt 3), ?_, ?_⟩
   · -- `π/(3√3) > 0`.
     positivity
   · intro u v
-    -- `signedBy trivial = id` on the adjacency, so the propagator is unchanged;
-    -- every entry has modulus `1/2 = 1/√4`.
+    -- Every entry of the chiral-K₄ propagator has modulus `1/2 = 1/√4` at this time.
     have hnorm : ‖unitaryHammingChiralK4.evolve (Real.pi / (3 * Real.sqrt 3)) u v‖ = 1 / 2 :=
       unitaryHammingChiralK4_uniformMixing u v
     have hcard : Real.sqrt (Fintype.card (Fin 4)) = 2 := by
       rw [Fintype.card_fin]
       rw [show ((4 : ℕ) : ℝ) = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]
-    rw [hcard, WeightedGraph.signedBy_trivial, hnorm]
+    rw [hcard, hnorm]
 
 /-! ## 2. PST routing attention — a *lossless* routing layer
 
@@ -467,9 +474,10 @@ theorem quotientResidual_le_full (n r k d : ℕ) (h : r + k + 1 ≤ n) :
 * **§1 chiral attention** — *grounded:* it is a genuine Hermitian token graph
   (`chiralAttention_hermitian`) and cross-constant phases descend to the
   equitable quotient (`chiralAttention_descends`), so phased attention still
-  lifts.  *Speculative payoff:* faster mixing
-  (`chiralAttention_mixing_speedup_hook`, BLOCKED on the Levine et al. spectral
-  analysis).
+  lifts.  *Proven payoff:* the genuinely chiral Levine `K₄` graph achieves uniform
+  mixing at `π/(3√3)` (`chiralK4_attention_achieves_uniformMixing`).  *Not asserted
+  (the deeper claim):* the *strict-variational* speedup over every unsigned head,
+  which remains the open Levine et al. spectral-optimization content.
 * **§2 PST routing attention** — *grounded:* a 2-group bundle whose quotient PST
   lifts to **lossless** cell-uniform routing (`PSTRoutingAttention.transfers`,
   `transfers_iff`), reducing routing-layer design to a single quotient edge.

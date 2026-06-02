@@ -383,7 +383,7 @@ theorem compiled_positive_breakingScore_exists :
   have hxy : (dataFlagPartition 2 2).cells x₀ ≠ (dataFlagPartition 2 2).cells y₀ := by
     rw [hx₀, hy₀]; decide
   obtain ⟨_, N₁, _, hN₁⟩ :=
-    NoiseEquitable.noise_assisted_speedup_conjecture (dataFlagPartition 2 2) x₀ y₀ hxy
+    NoiseEquitable.exists_zero_and_positive_breaking_model (dataFlagPartition 2 2) x₀ y₀ hxy
   exact ⟨N₁, hN₁⟩
 
 /-! ## 5. End-to-end summary fact.
