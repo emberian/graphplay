@@ -12,10 +12,22 @@ below with the precise honest gap.
 (`/tmp/AxCheck.lean`) run with `lake env lean`. Audit-only: no `.lean` file was
 edited.
 
-**Date:** 2026-05-31 (re-audited) · **Mathlib:** local checkout at `/Users/ember/src/mathlib4`
-(v4.30.0-era) · **Lean toolchain:** as pinned by the project.
+**Date:** 2026-06-01 (re-audited) · **Mathlib:** local checkout at `/Users/ember/src/mathlib4`
+(v4.30.0-era) · **Lean toolchain:** as pinned by the project (leanprover/lean4 v4.30.0).
 
-> **2026-05-31 re-audit.** `#print axioms` was re-run on every headline theorem AND
+> **2026-06-01 re-audit.** Full `lake build Graphplay` (3952 jobs) + `#print axioms` re-run
+> on every headline theorem via scratch files (`/tmp/AxCheck*.lean`, run with `lake env
+> lean`). **Build note:** one *non-headline* leaf, `Graphplay.Dowsing.Conjecture93`, is
+> currently RED (a parallel agent's mid-refactor: unknown identifiers
+> `conjecture93_weak_forward` / `fin1Cell_no_chiral_speedup`); Lake builds all other targets,
+> and every headline below built and was axiom-checked successfully. This re-audit promotes
+> three groups whose status changed since 2026-05-31:
+> - **CHSH/Tsirelson** → now GENUINE & UNCONDITIONAL (the uninhabitable `[TsirelsonBound]`
+>   class was deleted/fixed; `CHSH_correlator_bound` carries no typeclass);
+> - **Tower-8** (equitable-partition = bisimulation) → exists, axiom-clean;
+> - **hypercube PST + uniform mixing** → axiom-clean.
+>
+> **2026-05-31 re-audit (prior).** `#print axioms` was re-run on every headline theorem AND
 > each was given an **adversarial statement-soundness read** — because a theorem can be
 > perfectly axiom-clean yet **vacuous** (`#print axioms` does NOT catch a hollow
 > statement). Both dimensions are now tracked. Several axiom-clean-but-hollow headline
@@ -33,7 +45,18 @@ Of the previous ledger's **four** `sorryAx` headline gaps, **two are now CLOSED 
 - `corrected_equitable_attention` (complex+real Eckart–Young) — **CLOSED, CLEAN** (the spectral-theorem truncation bound is now proven).
 - `bipartite_equitable_dirac_cone` (honeycomb Dirac cone) — **CLOSED, CLEAN** (all three conjuncts incl. local linearity now proven).
 
-That leaves the genuine axiom-status frontier:
+**New CLEAN headlines promoted 2026-06-01** (axiom-checked this re-audit):
+- `CHSH_correlator_bound` + the Tsirelson stack (`CHSHRealization.le_two_sqrt_two`,
+  `chshOp_norm_le`, `ofAbsLeTwo`, `CHSH_quantum_value`) — **GENUINE & UNCONDITIONAL**
+  (the uninhabitable `[TsirelsonBound]` class was fixed; the correlator bound carries no
+  typeclass). See the CHSH/Tsirelson section + its non-vacuity caveat.
+- Tower-8 `equitable_isBisim`, `coarsest_equitable_isCoarsest_bisim`, `stepInv_preserved`
+  (+ wrappers) — **CLEAN**, no `sorry` token in the file (deep converse carried as an
+  explicit hypothesis, not a `sorry`).
+- `hypercube_PST_antipodal` (origin→antipode PST at `τ=π/2`) and `hypercube_uniformMixing`
+  (instantaneous uniform mixing at `τ=π/4`) — **CLEAN**.
+
+That leaves the genuine axiom-status frontier (unchanged from 2026-05-31):
 
 | Theorem | Status | Honest note |
 |---------|--------|-------------|
@@ -55,7 +78,7 @@ All corrected with real content (no `sorry` introduced):
 | `IsOptimalCTQWSearch` timing budget | `∃ C, τ ≤ C·√N` — free unbounded `C`, non-constraining | fixed `τ ≤ π·√N` (K_n achieves `π/2·√N`); the timing conjunct is now load-bearing. |
 | `discrete_irreducibility_floor` → `residual_rank_floor` | `rank A ≤ n+k` (trivially true) | `rank A ≤ rank(blockpart)+k` (genuinely below the `n` ceiling). |
 | `hardCore_eq_XY_oneDim` | `∃ Hxy U, U·H=Hxy·U` — free `Hxy`, degenerate witness `U=1,Hxy=H` | non-degenerate (pins the genuine string-unitary + concrete conjugate). **CAVEAT: the conjugate's identity with the textbook XY Hamiltonian `Σ(XX+YY)` is still an OPEN computation — do not yet claim "hard-core = XY".** |
-| `CHSH_correlator_bound` | false-as-stated (`12−16·win`) | corrected to `|8·win−4| ≤ 2√2`, proven via `TsirelsonBound`. |
+| `CHSH_correlator_bound` | false-as-stated (`12−16·win`); then briefly routed through the uninhabitable `[TsirelsonBound]` class (vacuously conditional) | corrected to `|8·win−4| ≤ 2√2` and **UNCONDITIONAL** — no typeclass; the bound is now *derived* from the proven operator-algebra theorem `CHSHRealization.le_two_sqrt_two` (= `chshOp_norm_le`) given inhabitable realization hypotheses. See the dedicated CHSH/Tsirelson section. |
 | 3× WLRefinement-int, 4× ML-headline | false-over-arbitrary-objects / vacuous existentials | restated to canonical objects / real content (chiral-K₄ mixing, ALiBi geometric tail), proven. |
 
 ---
@@ -83,6 +106,72 @@ Legend: **CLEAN** = `[propext, Classical.choice, Quot.sound]` only.
 | `QuantumAdvantage.quantum_search_exact_amplitude` | `Integrations/QuantumAdvantage.lean:638` | Exact finite-`n` Rabi: ∃ t_q ≤ (π/2)√n with `exactSearchAmplitude n t_q ≥ √(1/2)` (no n→∞ idealization). | **CLEAN** | — |
 | `QuantumAdvantage.ml_structured_search_quantum_advantage_exact` | `Integrations/QuantumAdvantage.lean:949` | Structured-ML search: exact O(√r) quantum amplitude ≥ √(1/2) AND classical < r query lower bound. | **CLEAN** | — |
 | `QuantumAdvantage.completeGraph_2d_block` | `Integrations/QuantumAdvantage.lean:498` | Kₙ search evolution on the marked vertex equals the 2×2 reduced-block `exp(−iτ·reducedH)` entry. | **CLEAN** | — |
+
+### CHSH / Tsirelson (NEW SECTION — promoted to GENUINE & UNCONDITIONAL 2026-06-01)
+
+**Status change.** The CHSH/Tsirelson headlines were previously **vacuously
+conditional**: the bound rested on a `[TsirelsonBound]` typeclass whose every field
+was *provably uninhabitable* (it bounded an arbitrary functional by `2√2`, refutable
+at `1000`). That class was rebuilt; the genuine bound now lives in a proven
+operator-algebra theorem and the headline correlator bound carries **no typeclass at
+all**. All entries below are axiom-checked CLEAN (`[propext, Classical.choice,
+Quot.sound]`), verified 2026-06-01.
+
+| Theorem | File | Statement (1-line) | Clean? | Open gap |
+|---------|------|--------------------|--------|----------|
+| `Graphplay.CHSH_correlator_bound` | `QuantumCSP.lean:870` | Two-sided Tsirelson bound `\|8·win(S)−4\| ≤ 2√2` on the signed CHSH correlator. **UNCONDITIONAL** (no `[TsirelsonBound]`); derived from `CHSHRealization.le_two_sqrt_two` given honest realizations of `±(8·win−4)`. | **CLEAN** | — (de-vacuoused; was briefly routed through the uninhabitable class). |
+| `LiteratureInterfaces.CHSHRealization.le_two_sqrt_two` | `LiteratureInterfaces.lean:256` | **Tsirelson's bound, the real theorem.** Any quantum-realized CHSH value (4 commuting self-adjoint ±1 involutions + a norm-≤1 state) is `≤ 2√2`. Rests on the genuine operator-norm proof `chshOp_norm_le`. | **CLEAN** | — |
+| `LiteratureInterfaces.chshOp_norm_le` | `LiteratureInterfaces.lean:165` | The operator-norm bound `‖A₀B₀+A₀B₁+A₁B₀−A₁B₁‖ ≤ 2√2` (the C\*-algebra core of Tsirelson). | **CLEAN** | — |
+| `LiteratureInterfaces.CHSHRealization.ofAbsLeTwo` | `LiteratureInterfaces.lean:278` | **Inhabitability witness:** every value with `\|v\|≤2` has an explicit `CHSHRealization` (algebra `ℂ`, observables `1`, state `(v/2)·Re`). Proves the corrected interface is satisfiable. | **CLEAN** | — (covers the classical regime `win∈[0.25,0.75]`; see non-vacuity caveat). |
+| `Graphplay.CHSH_quantum_value` | `QuantumCSP.lean:821` | `QuantumValue CHSHGame = (2+√2)/4 = cos²(π/8)` (win-probability form), given inhabitable realization + tightness hypotheses; upper half discharged via the proven `le_two_sqrt_two`. | **CLEAN** | — (hypotheses inhabitable, not the old uninhabitable universal). |
+
+**Non-vacuity caveat (honest).** `CHSH_correlator_bound` / `CHSH_quantum_value` take
+`CHSHRealization` *hypotheses*. Those hypotheses are genuinely **inhabitable** —
+`ofAbsLeTwo` exhibits a concrete witness for every `\|v\|≤2` (the entire classical
+regime), so this is **not** the old vacuity. The witness for the strictly-quantum tail
+`v∈(2, 2√2]` (Tsirelson's optimal *entangled* strategy on `ℂ²⊗ℂ²`) is the **one
+deferred `sorry`** in the `TsirelsonBound` *instance's* `value_tight` field
+(`LiteratureInterfaces.lean:391`) — it needs a matrix-`C*`-algebra instance Mathlib
+does not yet provide, on a *true* proposition. **Neither headline theorem routes
+through that instance or its `sorry`** (both are axiom-clean). So: the *bound* is real,
+unconditional, and proven; the only deferred piece is a constructive Lean *witness*
+that the bound is *tight*. The class itself is now genuinely INHABITED (the `v=2`
+realization discharges `value_tight` for all `ε > 2√2−2 ≈ 0.83`).
+
+### Tower-8 — equitable partition = bisimulation (NEW SECTION 2026-06-01)
+
+`Graphplay/Tower8.lean` (+ `Tower8/DistributedQuotient.lean`) identifies the
+classical *equitable partition* with the *coarsest bisimulation* of the graph-as-Moore-
+coalgebra (Milner–Park bisimulation / Paige–Tarjan relational-coarsest-partition / 1-WL
+colour refinement). All entries axiom-checked CLEAN 2026-06-01. **There is no actual
+`sorry` token in either file**; the genuinely-deep Paige–Tarjan *converse pairing* (that
+an arbitrary abstract bisimulation on the vertex coalgebra is *itself* an equitable
+partition) is **isolated as an explicit hypothesis** rather than left as `sorry` — see
+the honesty note below.
+
+| Theorem | File | Statement (1-line) | Clean? | Open gap |
+|---------|------|--------------------|--------|----------|
+| `EquitablePartition.equitable_isBisim` | `Tower8.lean:310` | **Keystone:** cell-equality `cells x = cells y` is a genuine bisimulation of the vertex coalgebra; the `obs_eq` obligation is *literally* `P.uniform`. | **CLEAN** | — |
+| `Tower8.bisim_refines_wlStable` | `Tower8.lean:498` | Every equitable partition (hence its cell-bisimulation) refines the WL-stable colouring (= `WL.wlRefine_coarsestEquitable`). | **CLEAN** | — |
+| `Tower8.wlStable_isBisim` | `Tower8.lean:527` | The WL classes themselves form a bisimulation (coarsest-ness, the other direction). | **CLEAN** | — |
+| `Tower8.coarsest_equitable_isCoarsest_bisim` | `Tower8.lean:571` | **Paige–Tarjan = 1-WL** in its correct relational-coarsest-partition form: a bisimulation of `vertexCoalg P` that **refines the base cell partition** refines WL. | **CLEAN** | — (PROVED; see converse note). |
+| `Tower8.TransitionCoalg.stepInv_preserved` | `Tower8.lean:372` | Safety preservation (mirror of dregg2 `stepComplete_preserves`): a one-step-invariant predicate holds along any reachable run. | **CLEAN** (no axioms at all) | — |
+| `EquitablePartition.cellUniformPST_iff_quotientPST_bridge` | `Tower8.lean:453` | Re-exports the Tower-3 PST iff through the Tower-8 observational-quotient lens (thin wrapper, no new obligation). | **CLEAN** | — |
+
+> **Tower-8 honesty note (the "one honest converse" gap).** The deep half of
+> Paige–Tarjan is the *converse pairing*: that an arbitrary abstract bisimulation `R`
+> on the vertex coalgebra (not assumed to come from an equitable partition) is in fact
+> an equitable partition, so `bisim_refines_wlStable` applies. The vertex coalgebra has
+> an **identity successor**, so an abstract bisimulation of it carries *only* the
+> one-round `obs_eq` constraint — which is **strictly weaker** than equal WL colour (the
+> same-degree relation on `P₄` is a bisimulation that does not refine WL). The naive
+> "every bisimulation refines WL" is therefore **FALSE and is not claimed.**
+> `coarsest_equitable_isCoarsest_bisim` instead adds the standard relational-coarsest-
+> partition hypothesis (`hfine`: the candidate already refines the initial blocks `P`),
+> satisfied by the cell-equality bisimulation and every finer one — the genuine,
+> non-vacuous, PROVED content. The full converse formalization (turning an arbitrary
+> `R`'s `obs_eq` into `P.uniform` and quotienting) is **TRUE but deferred**; it is the
+> single honest gap of the rung, carried as an explicit hypothesis, **not** as a `sorry`.
 
 ### AttentionComplexity
 
@@ -117,6 +206,24 @@ Legend: **CLEAN** = `[propext, Classical.choice, Quot.sound]` only.
 | `NovelAttention.chiralAttention_descends` | `Integrations/NovelAttention.lean:162` | Chiral attention descends to the quotient (def + descent lemma `_cells`). | **CLEAN** | — |
 | `NovelAttention.PSTRoutingAttention.transfers` | `Integrations/NovelAttention.lean:251` | PST-routing attention transfers state perfectly between routed tokens. | **CLEAN** | — |
 | `NovelAttention.quotientResidualAttention_cost` | `Integrations/NovelAttention.lean:421` | Quotient+residual attention cost bound O(n·(r+k)·d). | **CLEAN** (only `propext`) | — |
+
+### Hypercube — PST + uniform mixing (StdLib, CLEAN 2026-06-01)
+
+These are **exact, finite-`n`, unconditional** structural facts about the hypercube
+`Qₙ`, distinct from the *search-timing* results below (which remain conditional/open).
+Both axiom-checked CLEAN 2026-06-01.
+
+| Theorem | File | Statement (1-line) | Clean? | Open gap |
+|---------|------|--------------------|--------|----------|
+| `StdLib.hypercube_PST_antipodal` | `StdLib/Hypercube.lean:405` | `Qₙ` (`n≥1`) has **PST** from origin to antipode at `τ = π/2` (Christandl et al.; via the `n`-fold `K₂` product model). | **CLEAN** | — |
+| `StdLib.hypercube_uniformMixing` | `StdLib/Hypercube.lean:561` | `Qₙ` (`n≥1`) achieves **instantaneous uniform mixing** at `τ = π/4` — every evolution entry has squared modulus `1/2ⁿ = 1/card`. | **CLEAN** | — |
+
+> Note: the **average**-mixing headline on `Qₙ` was found false-as-originally-stated
+> (the average mixing matrix is *not* the flat `1/2ⁿ` matrix for `n≥2`); the file now
+> carries the corrected non-vacuous content (`hypercube_avgReturn_gt_uniform`,
+> `hypercube_not_averageUniformMixing`) plus one named honest `sorry`
+> (`hypercube_averageMixing_diag`, the spectral Cesàro packaging) — those are
+> *non-headline*; the two PST/mixing headlines above do not route through it.
 
 ### SparseSearch
 
@@ -201,18 +308,83 @@ Legend: **CLEAN** = `[propext, Classical.choice, Quot.sound]` only.
    structural reduction, its correctness, the compiler-correctness square, and the
    training-step linearity are all axiom-clean.
 
-4. **The axiom-status frontier is now ONE genuine open `sorryAx` headline**
+4. **The CHSH/Tsirelson `2√2` bound is now GENUINE & UNCONDITIONAL.** The headline
+   `CHSH_correlator_bound` (`|8·win−4| ≤ 2√2`) carries **no typeclass** — the prior
+   uninhabitable `[TsirelsonBound]` class was rebuilt, and the bound is derived from the
+   proven operator-algebra theorem `chshOp_norm_le` / `CHSHRealization.le_two_sqrt_two`.
+   Its realization hypotheses are inhabitable (`ofAbsLeTwo`, the whole classical regime),
+   so this is **not** the old vacuity; the only deferred piece is a constructive Lean
+   *witness* that the bound is *tight* (Tsirelson's entangled `ℂ²⊗ℂ²` strategy), isolated
+   as a single honest `sorry` in the `TsirelsonBound` *instance* — which neither headline
+   routes through.
+
+5. **Tower-8 (equitable partition = bisimulation) is clean.** The keystone
+   `equitable_isBisim` (cell-equality is a bisimulation, proof = `P.uniform`), the
+   Paige–Tarjan = 1-WL inclusion in its correct relational-coarsest-partition form
+   (`coarsest_equitable_isCoarsest_bisim`), and the safety keystone `stepInv_preserved`
+   are all axiom-clean, with **no `sorry` token** in the file. The deep Paige–Tarjan
+   *converse pairing* is honestly carried as an explicit hypothesis (`hfine`), not as a
+   `sorry` — see the Tower-8 honesty note. The **hypercube** PST (`τ=π/2`, origin→antipode)
+   and instantaneous uniform mixing (`τ=π/4`) headlines are likewise CLEAN.
+
+6. **The axiom-status frontier is now ONE genuine open `sorryAx` headline**
    (`lattice_search_dimension_threshold`, the Childs–Goldstone d>4 threshold) **plus
    one openly-CONDITIONAL headline** (`hypercube_search_optimal_timing` for `d≥2`,
    modulo the named open Krawtchouk chain-amplitude hypothesis; the `d=1` case is
    unconditionally clean). The previous "four open clauses" are down to these — Eckart–Young
    and the Dirac cone are now CLOSED. **Do not claim the lattice threshold or the
-   general-`d` hypercube timing as proven.** Separately, a 2026-05-31 vacuity audit
-   corrected several axiom-clean-but-hollow statements (classical LB, optimal-timing
-   budget, rank floor, hard-core/XY) — see the Statement-soundness table. **`hardCore_eq_XY`
-   is non-degenerate but does NOT yet prove the XY-Hamiltonian identity; do not claim it.**
+   general-`d` hypercube timing as proven.** Separately, the vacuity audit corrected
+   several axiom-clean-but-hollow statements (classical LB, optimal-timing budget, rank
+   floor, hard-core/XY) — see the Statement-soundness table. **`hardCore_eq_XY` is
+   non-degenerate but does NOT yet prove the XY-Hamiltonian identity; do not claim it.**
 
 ---
 
-*Generated by audit-only verification pass (no `.lean` edits). Scratch axiom-check
-files were created outside `Graphplay/` (`/tmp/AxCheck*.lean`).*
+## POSITIONING — prior art vs. OUR contribution (honest boundary)
+
+**This is a "certificate-and-unification", NOT a "first-contact-novelty", contribution.
+State it exactly this way.** The PST-quotient lift is not new mathematics:
+
+- **PST / equitable-quotient lift** = **Bachman–Tamon, arXiv:1108.0339 (2011)**
+  ("Perfect state transfer on quotient graphs"). The spine keystone
+  `cellUniformPST_iff_quotientPST` and its CTQW lifts (PST, mixing, spectrum, search,
+  Cartesian product) are the *mechanization* of that paper's content, not a new theorem.
+- **DTQW / Szegedy quotient (aggregation–quantization) square** = **Doliwa et al.,
+  arXiv:2603.14269 (2026)**. The discrete-time *subspace-invariance* / quotient square is
+  theirs.
+
+**OUR contribution is therefore exactly four things, and we claim only these:**
+
+1. **Mechanization** — the full equitable-quotient ⇒ PST spine, machine-checked
+   axiom-clean in Lean 4 + Mathlib (the five spine theorems carry only the three
+   foundational axioms).
+2. **Unification** — one `EquitablePartition` interface that simultaneously realizes the
+   classical/CTQW lift (Bachman–Tamon), the discrete-time/Szegedy square (Doliwa et al.),
+   the bisimulation/Paige–Tarjan rung (Tower-8), and the attention/ML complexity collapse,
+   under a single mechanism.
+3. **The DTQW PST / mixing / search lifts that the prior work leaves open** — the
+   discrete-time analogues of the CTQW iff (`Graphplay/StdLib/SzegedyQuotientLift.lean`:
+   `cellUniformSzegedyPST_iff_quotient`, `cellUniformSzegedyMixing_iff_quotient`).
+   **HONEST STATUS (not a headline yet):** these DTQW lifts are *currently `sorry`-blocked*
+   — the file has **four open code `sorry`s** (the compression-vs-intrinsic-Szegedy-walk
+   identification `szegedyQuotient_eq_quotientWalk`, the block-identity
+   `cellUniformSzegedyBlock_eq_quotient`, the mixing iff, and `szegedyWalk_mul_doubledCellEmbed`).
+   The *shape* mirrors the proven CTQW iff line-for-line, but the amplitude-level
+   identification of the compressed operator with the quotient's intrinsic Szegedy walk is
+   the genuinely-deep residue. **Do NOT present the DTQW lifts as proven; present them as
+   the open frontier we have set up and partially discharged.**
+4. **The verified certificate** — the per-theorem two-dimension audit in this ledger
+   (axiom-status AND non-vacuity), which is itself the deliverable: precision as
+   credibility.
+
+**Framing rule:** lead with "we mechanize and unify the Bachman–Tamon / Doliwa quotient
+picture and supply a machine-verified certificate", *not* "we discovered the quotient
+lift". Novelty claims are limited to (3)'s open-frontier setup and the verification
+artifact.
+
+---
+
+*Verification pass: full `lake build Graphplay` (3952 jobs; one non-headline leaf
+`Conjecture93` RED, all headlines built) + `#print axioms` on each headline via
+`lake env lean` on scratch files outside `Graphplay/` (`/tmp/AxCheck*.lean`). No
+`Graphplay/*.lean` headline file was edited by this audit.*
