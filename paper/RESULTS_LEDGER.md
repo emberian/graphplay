@@ -12,9 +12,26 @@ below with the precise honest gap.
 (`/tmp/AxCheck.lean`) run with `lake env lean`. Audit-only: no `.lean` file was
 edited.
 
-**Date:** 2026-06-01 (re-audited) · **Mathlib:** local checkout at `/Users/ember/src/mathlib4`
+**Date:** 2026-06-02 (re-audited) · **Mathlib:** local checkout at `/Users/ember/src/mathlib4`
 (v4.30.0-era) · **Lean toolchain:** as pinned by the project (leanprover/lean4 v4.30.0).
 
+> **2026-06-02 re-audit.** Full `lake build` GREEN (7894 jobs, exit 0 — no `error:` lines;
+> `Conjecture93` recovered, every remaining `sorry` an honest leaf). Three new CLEAN-headline
+> groups this pass, each `#print axioms`-verified `[propext, Classical.choice, Quot.sound]`:
+> - **DTQW Szegedy lifts** — `cellUniformSzegedyPST_iff_quotient`,
+>   `cellUniformSzegedyMixing_iff_quotient` PROVEN in `DiscreteTime/Lifts.lean` (the
+>   Doliwa-open discrete-time analogue). One honest deep residue
+>   `szegedyQuotient_eq_quotientWalk` (compression = quotient's intrinsic Szegedy walk)
+>   that the lifts provably do NOT depend on; the predicates were re-keyed onto the honest
+>   *doubled* form after a free-vertex-head fake-closure was caught; orphan
+>   `StdLib/SzegedyQuotientLift.lean` deleted.
+> - **LDT soundness** — `alpha_gc_gamma` (graphplay's **first** `GaloisConnection`),
+>   `dedRun_preserves_solutions`, `solved_state_is_correct` in
+>   `Integrations/LatticeDeduction.lean`: verified soundness skeleton for Lattice Deduction
+>   Transformers (arXiv:2605.08605), the Knaster–Tarski lfp/gfp DUAL of the refinement quotient.
+> - **Application honesty** — false hardware-fit claims relabeled true
+>   (`heavyHexAsBundle_dataVertex_equiv`, `…_satisfies_dropCount`, dephasing `…_iff_singleton`).
+>
 > **2026-06-01 re-audit.** Full `lake build Graphplay` (3952 jobs) + `#print axioms` re-run
 > on every headline theorem via scratch files (`/tmp/AxCheck*.lean`, run with `lake env
 > lean`). **Build note:** one *non-headline* leaf, `Graphplay.Dowsing.Conjecture93`, is
@@ -362,29 +379,51 @@ State it exactly this way.** The PST-quotient lift is not new mathematics:
    classical/CTQW lift (Bachman–Tamon), the discrete-time/Szegedy square (Doliwa et al.),
    the bisimulation/Paige–Tarjan rung (Tower-8), and the attention/ML complexity collapse,
    under a single mechanism.
-3. **The DTQW PST / mixing / search lifts that the prior work leaves open** — the
-   discrete-time analogues of the CTQW iff (`Graphplay/StdLib/SzegedyQuotientLift.lean`:
-   `cellUniformSzegedyPST_iff_quotient`, `cellUniformSzegedyMixing_iff_quotient`).
-   **HONEST STATUS (not a headline yet):** these DTQW lifts are *currently `sorry`-blocked*
-   — the file has **four open code `sorry`s** (the compression-vs-intrinsic-Szegedy-walk
-   identification `szegedyQuotient_eq_quotientWalk`, the block-identity
-   `cellUniformSzegedyBlock_eq_quotient`, the mixing iff, and `szegedyWalk_mul_doubledCellEmbed`).
-   The *shape* mirrors the proven CTQW iff line-for-line, but the amplitude-level
-   identification of the compressed operator with the quotient's intrinsic Szegedy walk is
-   the genuinely-deep residue. **Do NOT present the DTQW lifts as proven; present them as
-   the open frontier we have set up and partially discharged.**
+3. **The DTQW PST / mixing lifts that the prior work leaves open** — the discrete-time
+   analogues of the CTQW iff, now **PROVEN axiom-clean** in `Graphplay/DiscreteTime/Lifts.lean`:
+   `cellUniformSzegedyPST_iff_quotient` and `cellUniformSzegedyMixing_iff_quotient` (both
+   `#print axioms` = `[propext, Classical.choice, Quot.sound]`, verified 2026-06-02). PST /
+   uniform-mixing of a cell-uniform Szegedy walk holds iff the *compression* `szegedyQuotient`
+   has the transfer property — proven via the doubled cell-matrix element
+   `doubledCellUniform_matrixElement` + the compression identity
+   `doubledCellEmbedH_szegedyWalk_pow_doubledCellEmbed`.
+   **Honesty correction in this pass:** the original predicates summed a *free vertex-head*
+   `∑_y U((x',y),(x,y))`, which is **not** walk-invariant and does **not** equal the
+   compression for general `U` — forcing the old bridge would have been a *fake closure*.
+   The predicates `IsCellUniformSzegedy{PST,Mixing}` were re-keyed onto the honest **doubled
+   form** (cell-resolved head marginal; non-vacuity checked — `IsCellUniformSzegedyPST i i 0`
+   fails for `|I|>1`). **One honest deep residue remains:** `szegedyQuotient_eq_quotientWalk`
+   identifies the compression with the *quotient graph's intrinsic* Szegedy walk (the step that
+   would complete the "run it on the small graph" dimension-reduction story; no CTQW shortcut —
+   the √-coin doesn't commute with cell-sums). It stays an honest `sorry`, and **the lifts
+   above provably do NOT depend on it** (axiom-clean confirms). The redundant `sorry`-blocked
+   orphan `Graphplay/StdLib/SzegedyQuotientLift.lean` was deleted.
+
+   **(3′) LDT soundness (NEW 2026-06-02)** — `Graphplay/Integrations/LatticeDeduction.lean`:
+   a verified soundness skeleton for Lattice Deduction Transformers (arXiv:2605.08605).
+   `alpha_gc_gamma` is graphplay's **first** `GaloisConnection` (α⊣γ between per-cell candidate
+   sets and concrete strings); `dedRun_preserves_solutions` lifts Tower-8 `stepInv_preserved`
+   to whole-run soundness; headline `solved_state_is_correct`: a reachable *solved* state on a
+   satisfiable instance has `cons = {s}`. All axiom-clean. Honestly a *connection*, not an
+   *insertion* (α∘γ ≠ id); models the "returns a correct answer" half, not the abstain/branch
+   completeness layer. Companion memo `research/refinement_deduction_duality.md` pins this as
+   the **Knaster–Tarski lfp/gfp DUAL** of the WL refinement quotient (not an instance); the
+   quantum deduction-dual is a NO.
 4. **The verified certificate** — the per-theorem two-dimension audit in this ledger
    (axiom-status AND non-vacuity), which is itself the deliverable: precision as
    credibility.
 
 **Framing rule:** lead with "we mechanize and unify the Bachman–Tamon / Doliwa quotient
 picture and supply a machine-verified certificate", *not* "we discovered the quotient
-lift". Novelty claims are limited to (3)'s open-frontier setup and the verification
-artifact.
+lift". Novelty claims are limited to the *mechanization-grade* contributions: (3) the
+discrete-time Szegedy PST/mixing lifts (now proven to the compression, with the one
+intrinsic-quotient-walk residue honestly open), (3′) the LDT soundness skeleton, and the
+verification artifact. None is new mathematics; all are first-machine-checked.
 
 ---
 
-*Verification pass: full `lake build Graphplay` (3952 jobs; one non-headline leaf
-`Conjecture93` RED, all headlines built) + `#print axioms` on each headline via
-`lake env lean` on scratch files outside `Graphplay/` (`/tmp/AxCheck*.lean`). No
-`Graphplay/*.lean` headline file was edited by this audit.*
+*Verification pass (re-run 2026-06-02): full `lake build` GREEN (7894 jobs, exit 0;
+no `error:` lines — every remaining `sorry` is an honest leaf) + `#print axioms` on
+each headline via `lake env lean` on scratch files outside `Graphplay/`. The DTQW lifts
+(`cellUniformSzegedy{PST,Mixing}_iff_quotient`) and LDT soundness (`alpha_gc_gamma`,
+`dedRun_preserves_solutions`, `solved_state_is_correct`) re-verified axiom-clean this pass.*
