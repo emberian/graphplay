@@ -73,6 +73,7 @@ import Graphplay.CarusoSpeedup
 import Graphplay.QuantumCSP
 import Graphplay.ManyBody
 import Graphplay.DiscreteTime
+import Graphplay.DiscreteTime.Lifts
 
 -- PST foundations (γ-loops L1, L2, L3)
 import Graphplay.PST.Cospectrality
