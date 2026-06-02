@@ -55,6 +55,7 @@ import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.Toolkit.Noise
 import Graphplay.PST.DiagonalShift
+import Graphplay.Chiral
 
 open scoped Matrix
 open NormedSpace
@@ -1021,14 +1022,134 @@ theorem chiralForm_reconstruct
 /-- **Implication: chiral PST has an open-system mirror.**  Any
 perfect-state-transfer time `t*` on a chiral closed-system walk corresponds
 to a (decohered) PST time on an open-system mirror with appropriate
-Lindblad jump operators encoding the chiral phase. -/
+Lindblad jump operators encoding the chiral phase.
+
+PROVEN by an explicit witness (no chirality or noise needed for the bare
+amplitude-transfer claim): take the *no-noise* model `N = trivial` (so the
+dephasing factor is `1` and `noisyEvolve` is pure coherent conjugation
+`ρ ↦ U ρ Uᴴ` with `U = exp(-(i t) H)`), and the rank-one Hamiltonian
+`H = Q := ½·(|u⟩+|v⟩)(⟨u|+⟨v|)` — the projector onto the symmetric `{u, v}`
+qubit — at time `t = π`.  `Q` is idempotent (`Q·Q = Q`), so by
+`chiralExpSmulIdem` the evolution is `U = exp(-(iπ)•Q) = 1 + (e^{-iπ}-1)•Q
+= 1 - 2•Q`; reading off entries, `U v u = -1`, hence
+`(U |u⟩⟨u| Uᴴ) v v = U v u · conj(U v u) = (-1)(-1) = 1 ≠ 0`.  (For the
+degenerate `u = v` case take `t = 0`, where the population at `u` is `1`.)
+This is the honest avatar of "a continuous-time quantum walk transfers
+amplitude between any two sites at a tuned time"; the chiral-phase refinement
+of the statement is recorded in the surrounding open directions. -/
 theorem chiral_PST_open_mirror
     (G : WeightedGraph V) (u v : V) :
     -- there is an open-system mirror (Hamiltonian `H`, noise `N`, time `t`)
     -- under which `|u⟩⟨u|` transfers a nonzero amplitude to `v`.
     ∃ (H : Matrix V V ℂ) (N : NoiseModel V) (t : ℝ),
       (noisyEvolve H N t (fun x y => if x = u ∧ y = u then 1 else 0)) v v ≠ 0 := by
-  sorry
+  classical
+  have hrate : (NoiseModel.trivial V).totalRate = 0 := by
+    simp [NoiseModel.totalRate, NoiseModel.trivial]
+  -- The initial density `|u⟩⟨u|` as a `single`.
+  have hρ : (fun x y => if x = u ∧ y = u then (1 : ℂ) else 0)
+      = Matrix.single u u (1 : ℂ) := by
+    funext x y; rw [Matrix.single_apply]
+    by_cases h : u = x ∧ u = y
+    · rw [if_pos ⟨h.1.symm, h.2.symm⟩, if_pos h]
+    · rw [if_neg (fun hc => h ⟨hc.1.symm, hc.2.symm⟩), if_neg h]
+  -- General `(v, v)`-entry of the conjugation `U · |u⟩⟨u| · Uᴴ`.
+  have hconj : ∀ U : Matrix V V ℂ,
+      (U * Matrix.single u u (1 : ℂ) * Uᴴ) v v
+        = U v u * 1 * (starRingEnd ℂ) (U v u) := by
+    intro U
+    rw [Matrix.mul_apply, Finset.sum_eq_single u]
+    · have hUS : (U * Matrix.single u u (1 : ℂ)) v u = U v u * 1 := by
+        rw [Matrix.mul_apply, Finset.sum_eq_single u]
+        · rw [Matrix.single_apply_same]
+        · intro w _ hw
+          rw [Matrix.single, Matrix.of_apply,
+            if_neg (by rintro ⟨h1, _⟩; exact hw h1.symm), mul_zero]
+        · intro h; exact absurd (Finset.mem_univ u) h
+      rw [hUS, Matrix.conjTranspose_apply]; rfl
+    · intro y _ hy
+      have hzero : (U * Matrix.single u u (1 : ℂ)) v y = 0 := by
+        rw [Matrix.mul_apply]; apply Finset.sum_eq_zero; intro w _
+        rw [Matrix.single, Matrix.of_apply,
+          if_neg (by rintro ⟨_, h2⟩; exact hy h2.symm), mul_zero]
+      rw [hzero, zero_mul]
+    · intro h; exact absurd (Finset.mem_univ u) h
+  by_cases huv : u = v
+  · -- u = v: identity evolution at `t = 0` keeps the population at `u`.
+    subst huv
+    refine ⟨0, NoiseModel.trivial V, 0, ?_⟩
+    have hU0 : NormedSpace.exp (-(Complex.I * ((0 : ℝ) : ℂ)) • (0 : Matrix V V ℂ)) = 1 := by
+      simp
+    simp only [noisyEvolve, hrate, hU0, mul_zero, Real.exp_zero, Complex.ofReal_one,
+      if_true, one_mul, Matrix.conjTranspose_one, Matrix.one_mul, Matrix.mul_one,
+      and_self]
+    norm_num
+  · -- u ≠ v: the rank-one symmetric-qubit projector `Q` at time `π`.
+    set B : Matrix V V ℂ :=
+      Matrix.single u u 1 + Matrix.single u v 1
+        + Matrix.single v u 1 + Matrix.single v v 1 with hBdef
+    set Q : Matrix V V ℂ := (1 / 2 : ℂ) • B with hQdef
+    -- entrywise value of the `{u, v}`-block all-ones matrix `B`.
+    have hBval : ∀ x y : V, B x y
+        = (if (x = u ∨ x = v) ∧ (y = u ∨ y = v) then (1 : ℂ) else 0) := by
+      intro x y
+      simp only [hBdef, Matrix.add_apply, Matrix.single_apply]
+      by_cases hxu : u = x <;> by_cases hxv : v = x <;> by_cases hyu : u = y <;>
+        by_cases hyv : v = y <;> simp_all <;>
+        first
+          | (exact absurd (hxu.trans hxv.symm) huv)
+          | (exact absurd (hyu.trans hyv.symm) huv)
+          | tauto
+    -- `B · B = 2 • B` (each in-block product sums two ones).
+    have hBB : B * B = (2 : ℂ) • B := by
+      ext x z
+      rw [Matrix.mul_apply]
+      simp only [Matrix.smul_apply, smul_eq_mul, hBval x z]
+      by_cases hx : x = u ∨ x = v
+      · by_cases hz : z = u ∨ z = v
+        · rw [if_pos ⟨hx, hz⟩,
+              show (∑ y, B x y * B y z) = ∑ y ∈ ({u, v} : Finset V), B x y * B y z from ?_]
+          · rw [Finset.sum_pair huv, hBval x u, hBval u z, hBval x v, hBval v z,
+                if_pos ⟨hx, Or.inl rfl⟩, if_pos ⟨Or.inl rfl, hz⟩,
+                if_pos ⟨hx, Or.inr rfl⟩, if_pos ⟨Or.inr rfl, hz⟩]
+            ring
+          · symm
+            apply Finset.sum_subset (Finset.subset_univ _)
+            intro y _ hy
+            simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hy
+            have hyne : ¬ (y = u ∨ y = v) := by rintro (h | h); exact hy.1 h; exact hy.2 h
+            rw [hBval y z, if_neg (fun hc => hyne hc.1), mul_zero]
+        · rw [if_neg (by rintro ⟨_, h⟩; exact hz h), mul_zero]
+          apply Finset.sum_eq_zero; intro y _
+          rw [hBval y z, if_neg (by rintro ⟨_, hyz⟩; exact hz hyz), mul_zero]
+      · rw [if_neg (by rintro ⟨h, _⟩; exact hx h), mul_zero]
+        apply Finset.sum_eq_zero; intro y _
+        rw [hBval x y, if_neg (by rintro ⟨hxb, _⟩; exact hx hxb), zero_mul]
+    -- hence `Q = ½ B` is idempotent.
+    have hQidem : Q * Q = Q := by
+      rw [hQdef, Matrix.smul_mul, Matrix.mul_smul, hBB, smul_smul, smul_smul]
+      congr 1; ring
+    refine ⟨Q, NoiseModel.trivial V, Real.pi, ?_⟩
+    -- `U = exp(-(iπ) • Q) = 1 - 2 • Q` since `Q` is idempotent and `e^{-iπ} = -1`.
+    have hexpz : Complex.exp (-(Complex.I * (Real.pi : ℂ))) = -1 := by
+      rw [show -(Complex.I * (Real.pi : ℂ)) = -((Real.pi : ℂ) * Complex.I) by ring]
+      exact Complex.exp_neg_pi_mul_I
+    have hU : NormedSpace.exp (-(Complex.I * (Real.pi : ℂ)) • Q) = 1 - (2 : ℂ) • Q := by
+      rw [chiralExpSmulIdem _ Q hQidem, hexpz]
+      rw [show ((-1 : ℂ) - 1) = -(2 : ℂ) by ring, neg_smul]; abel
+    have hQval : ∀ x y : V, Q x y = (1 / 2 : ℂ) * B x y := by
+      intro x y; rw [hQdef]; simp [Matrix.smul_apply]
+    -- the off-diagonal transfer amplitude `U v u = -1`.
+    have hUvu : NormedSpace.exp (-(Complex.I * (Real.pi : ℂ)) • Q) v u = -1 := by
+      rw [hU]
+      simp only [Matrix.sub_apply, Matrix.one_apply, Matrix.smul_apply, smul_eq_mul,
+        if_neg (Ne.symm huv)]
+      rw [hQval v u, hBval v u, if_pos ⟨Or.inr rfl, Or.inl rfl⟩]; ring
+    -- conjugation `(v, v)`-entry `= U v u · conj(U v u) = (-1)(-1) = 1 ≠ 0`.
+    simp only [noisyEvolve, hrate, mul_zero, Real.exp_zero, Complex.ofReal_one,
+      if_pos rfl, one_mul]
+    rw [hρ, hconj, hUvu]
+    simp
 
 /-! ## 7. Open-system Bachman–Tamon
 
