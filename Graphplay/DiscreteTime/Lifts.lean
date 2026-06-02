@@ -55,13 +55,24 @@ rather than against the raw quotient graph.
   `cellUniformSzegedyPST_of_quotient` and the `‖·‖²` analogue
   `cellUniformSzegedyMixing_iff_quotient` all close by a single rewrite through
   the bridge / matrix element.
-* **§6** `szegedyQuotient_eq_quotientWalk` — the **one genuinely-deep
-  residue**: identifying the compression with the *intrinsic* Szegedy walk of
-  the quotient graph (correct coin amplitudes, swap coordinates), gated on
-  `MagnitudeEquitable`.  This has no CTQW shortcut — CTQW's restriction is
-  *literally* `symmQuotient` by a one-line intertwiner, whereas the DTQW
-  coin's `√` makes this a real theorem.  The property lifts deliberately do
-  **not** depend on it.
+* **§6** identification of the compression with the *intrinsic* Szegedy walk of
+  the quotient graph — the **one genuinely-deep residue**, now **resolved** (all
+  real bodies, sorry-free).  The compression factors as `szegedyQuotient =
+  S_I · (2 • ψProj − 1)` (`szegedyQuotient_factor`), where `S_I = szSwap I`
+  (`szSwapQuotient`, real body) and `ψProj` is the rank-one-per-block projector
+  built from the **compression coin amplitudes** `ψ(i,b) =
+  √|C_b|·szCoinAmp(r_i,r_b)` (`szReflectionProjQuotient`, the real combinatorial
+  engine, extracted from `szReflectionProj_preserves_doubled`).  The whole
+  identification thereby reduces to a **single per-edge scalar identity**
+  `Q.szCoinAmp = ψ`, under which `szegedyQuotient = Q.SzegedyWalk` is proved
+  (`szegedyQuotient_eq_quotientWalk_of_coinAmp`).  **Correction:** the naive
+  `Q.adj = symmQuotient`-gated form is *false* — `ψ`'s probabilities are the
+  *cell masses* `|C_b|·‖A_{r_i r_b}‖`, whereas `symmQuotient` carries an extra
+  `1/√|C_b|` distortion; they disagree on any tail cell reaching two
+  unequal-sized cells (smallest witness `K_{1,3}` with leaves split `{·}⊔{·,·}`,
+  see `szegedyQuotient_ne_symmQuotientWalk_counterexample`).  The correct
+  intrinsic walk is that of the *lumped Markov chain* on cells.  The property
+  lifts of §5 deliberately do **not** depend on any of this.
 
 Honest hypotheses threaded throughout: `[Nonempty V]`,
 `hME : P.MagnitudeEquitable` (the DTQW-only extra, strictly stronger than
@@ -556,30 +567,412 @@ the quotient graph built intrinsically from its own coin amplitudes and swap.
 
 CTQW has a one-line intertwiner here (`A·B = B·symmQuotient`); the DTQW coin's
 `√` does not commute with the cell-sum, so this is a real theorem, additionally
-gated on `MagnitudeEquitable`. -/
+gated on `MagnitudeEquitable`.
 
-/-- **Identification with the intrinsic quotient Szegedy walk** — the one
-genuinely-deep residue.
+### What is genuinely true here, and the precise obstruction (read this).
 
-Given a quotient weighted graph `Q : WeightedGraph I` whose adjacency matrix
-agrees off-diagonal with the symmetric quotient `symmQuotient` of `P` (so `Q`
-is the bona-fide quotient graph on the cell index set `I`), the Szegedy-walk
-compression `szegedyQuotient` equals the *intrinsic* Szegedy walk `Q.SzegedyWalk`
-of the quotient graph.
+The clean, *proved* facts below reduce the whole identification to a **single
+per-edge scalar identity**, and pin down exactly what the intrinsic quotient
+walk must be built from.
 
-This is what has **no CTQW shortcut**: the continuous-time restriction is
-*literally* `symmQuotient` by the one-line intertwiner `adj_mul_cellEmbed`,
-whereas matching the Szegedy *coin amplitudes* `√(‖Q.adj‖ / D)` after
-compression (rather than the linear adjacency) is a genuine identity, true only
-because magnitude-equitability (`hME`) makes the host coin amplitudes
-cell-functions.  The property lifts of §5 deliberately do **not** depend on
-this; they characterize against the compression `szegedyQuotient` directly. -/
-theorem szegedyQuotient_eq_quotientWalk [Nonempty V] (P : EquitablePartition G I)
-    (hME : P.MagnitudeEquitable) (hne : ∀ k, P.cellCard k ≠ 0)
-    (Q : WeightedGraph I)
-    (hQ : ∀ i j, i ≠ j → Q.adj i j = P.symmQuotient i j) :
+The compression splits as `szegedyQuotient = (B⊗B)ᴴ S R (B⊗B)`.  Two pieces:
+
+* **Swap** (`szSwapQuotient`, real body): `(B⊗B)ᴴ · S_V · (B⊗B) = S_I`, the
+  swap on the *quotient* arc space.  The swap permutes the doubled generators
+  `e_i ⊗ e_j ↦ e_j ⊗ e_i`, so its compression is literally `szSwap I`.  No
+  hypothesis beyond the isometry.
+
+* **Projector** (`szReflectionProjQuotient`, real body): the compression of the
+  Szegedy projector is again a rank-one-per-tail-block projector,
+  `(B⊗B)ᴴ · Π_V · (B⊗B) = ψProj`, with entry
+  `ψProj_{(i',j'),(i,j)} = [i' = i] · ψ(i,j') · ψ(i,j)`, where the **compression
+  coin amplitude** is
+  `ψ(i,b) = √|C_b| · G.szCoinAmp (cellRep i) (cellRep b)`
+  (`compressionCoinAmp`).  Its square is `ψ(i,b)² = |C_b|·‖A_{r_i r_b}‖ / D_{r_i}`,
+  the transition probability of the **lumped random walk on cells** (jump from
+  cell `i` to cell `b` with probability proportional to the *total* magnitude
+  mass `|C_b|·‖A_{r_i r_b}‖` into cell `b`).  This is the genuine content,
+  extracted from the proven `szReflectionProj_preserves_doubled`.
+
+Assembling, `szegedyQuotient = S_I · (2 • ψProj − 1)`.  The intrinsic
+`Q.SzegedyWalk = S_I · (2 • Q.szReflectionProj − 1)`, with
+`Q.szReflectionProj_{(i',j'),(i,j)} = [i'=i] · Q.szCoinAmp i j' · Q.szCoinAmp i j`.
+So the identification holds **iff** the single per-edge identity
+
+  `(†)   ψ(i,b) = Q.szCoinAmp i b      ∀ i b : I`
+
+holds (`compressionCoinAmp_eq` is exactly this hypothesis), via
+`szegedyQuotient_eq_quotientWalk_of_coinAmp` (real body).
+
+**The obstruction — the originally-stated `symmQuotient` hypothesis is FALSE.**
+`(†)` squares to `|C_b|·‖A_{r_i r_b}‖ / D_{r_i} = ‖Q.adj i b‖ / Q.D_i`, i.e.
+`‖Q.adj i b‖` must be **proportional (per row `i`) to the cell mass
+`|C_b|·‖A_{r_i r_b}‖`**.  But the symmetric quotient has magnitude
+`‖symmQuotient i b‖ = √|C_i|·‖∑_{z∈C_b} A_{r_i z}‖ / √|C_b|`, which even in the
+real-nonnegative case (`‖∑_{z∈C_b} A_{r_i z}‖ = |C_b|·‖A_{r_i r_b}‖`) equals
+`√|C_i|·√|C_b|·‖A_{r_i r_b}‖` — carrying an **extra `1/√|C_b|` distortion**
+relative to the mass `|C_b|·‖A_{r_i r_b}‖`.  So with `Q.adj = symmQuotient` the
+coin amplitudes differ whenever two cells reached from one tail have *unequal
+size* (and agree iff all reachable cells are equal-sized).
+
+Smallest witness (`szegedyQuotient_ne_symmQuotientWalk_counterexample`, an honest
+prose record): the star `K_{1,3}` with the three leaves split `{1} ⊔ {2,3}`,
+magnitude-equitable.  From tail cell `0`: the compression coin amplitudes are
+`ψ(0,·) = (0, 1/√3, √(2/3)) ≈ (0, 0.577, 0.816)`, whereas the `symmQuotient`-built
+intrinsic amplitudes are `(0, √(2−√2)/·, …) ≈ (0, 0.644, 0.765)`.  Distinct —
+the `symmQuotient`-gated statement is *false*.
+
+The **correct** intrinsic walk to compare against is the Szegedy walk of the
+*lumped chain*: the one whose adjacency magnitudes are the cell masses
+`|C_b|·‖A_{r_i r_b}‖` (equivalently, in the real-nonnegative case, the **raw
+branching quotient** `P.quotient`, whose magnitude `‖∑_{z∈C_b} A_{r_i z}‖ =
+|C_b|·‖A_{r_i r_b}‖` is exactly the mass — verified numerically to match `ψ`
+edge-for-edge).  That is the content of the honest, gated
+`szegedyQuotient_eq_quotientWalk_of_coinAmp`. -/
+
+/-- **`(B⊗B)ᴴ` collapses a doubled generator to a quotient basis vector.**
+`(B⊗B)ᴴ ·ᵥ doubledCellUniformVec a b = e_{(a,b)}` (the standard basis vector
+`Pi.single (a,b) 1` on the quotient arc space), provided every cell is nonempty.
+This is the isometry round-trip `(B⊗B)ᴴ (B⊗B) e_{(a,b)} = e_{(a,b)}` read on the
+generator `doubledCellUniformVec a b = (B⊗B) ·ᵥ e_{(a,b)}`. -/
+theorem doubledCellEmbedH_mulVec_generator (P : EquitablePartition G I)
+    (hne : ∀ k, P.cellCard k ≠ 0) (a b : I) :
+    P.doubledCellEmbedᴴ.mulVec (P.doubledCellUniformVec a b)
+      = (Pi.single (a, b) 1 : I × I → ℂ) := by
+  have hiso : P.doubledCellEmbedᴴ * P.doubledCellEmbed
+      = (1 : Matrix (I × I) (I × I) ℂ) := doubledCellEmbed_conjTranspose_mul P hne
+  rw [← doubledCellEmbed_mulVec_single P a b, Matrix.mulVec_mulVec, hiso, Matrix.one_mulVec]
+
+/-- **Swap compression.**  `(B⊗B)ᴴ · S_V · (B⊗B) = S_I`: the compression of the
+arc-space swap is the swap on the quotient arc space.  Column-wise: on
+`e_{(i,j)}` the chain is
+`e_{(i,j)} → (B⊗B) → e_i⊗e_j → S_V → e_j⊗e_i → (B⊗B)ᴴ → e_{(j,i)}`, which is
+exactly `S_I ·ᵥ e_{(i,j)} = e_{(j,i)}`.  No equitability needed; pure
+generator-permutation + isometry. -/
+theorem szSwapQuotient (P : EquitablePartition G I) (hne : ∀ k, P.cellCard k ≠ 0) :
+    P.doubledCellEmbedᴴ * WeightedGraph.szSwap V * P.doubledCellEmbed
+      = WeightedGraph.szSwap I := by
+  apply Matrix.ext_of_mulVec_single
+  rintro ⟨i, j⟩
+  -- LHS column.
+  rw [← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec, doubledCellEmbed_mulVec_single,
+    szSwap_mulVec_doubledCellUniformVec, doubledCellEmbedH_mulVec_generator P hne]
+  -- RHS column: `S_I ·ᵥ e_{(i,j)} = e_{(j,i)}`.
+  funext p
+  rw [Matrix.mulVec_single_one, Matrix.col_apply]
+  -- LHS: `e_{(j,i)} p = [p = (j,i)]`; RHS: `szSwap I p (i,j) = [p.1 = j ∧ p.2 = i]`.
+  rw [Pi.single_apply]
+  show (if p = (j, i) then (1 : ℂ) else 0)
+      = (if p.1 = (i, j).2 ∧ p.2 = (i, j).1 then (1 : ℂ) else 0)
+  by_cases h : p = (j, i)
+  · rw [if_pos h, if_pos ⟨by rw [h], by rw [h]⟩]
+  · rw [if_neg h, if_neg (fun hc => h (Prod.ext hc.1 hc.2))]
+
+/-- The **compression coin amplitude** `ψ(i, b) := √|C_b| · φ_{r_i}(r_b)` where
+`r_i = cellRep i` and `φ = szCoinAmp`.  Its square `ψ(i,b)² = |C_b|·‖A_{r_i r_b}‖
+/ D_{r_i}` is the transition probability of the lumped random walk on cells.
+This is the coin amplitude of the *compressed* Szegedy walk; the identification
+with the intrinsic quotient walk is exactly the assertion `ψ = Q.szCoinAmp`. -/
+noncomputable def compressionCoinAmp [Nonempty V] (P : EquitablePartition G I)
+    (i b : I) : ℂ :=
+  (Real.sqrt (P.cellCard b) : ℂ) * G.szCoinAmp (P.cellRep i) (P.cellRep b)
+
+/-- **The middle scalar `t(r_i)` is `√|C_j| · φ_{r_i}(r_j)`.**  In
+`szReflectionProj_preserves_doubled`, the projector's action on `e_i ⊗ e_j`
+carried a scalar `t(r_i) = ∑_y conj(φ_{r_i}(y)) · (e_j)_y`.  Under
+magnitude-equitability this collapses: `φ_{r_i}(y) = φ_{r_i}(r_j)` for `y ∈ C_j`
+(real), and `(e_j)_y = 1/√|C_j|` there, so `t(r_i) = |C_j| · φ_{r_i}(r_j)/√|C_j|
+= √|C_j| · φ_{r_i}(r_j) = ψ(i, j)`. -/
+theorem szReflectionProj_middleScalar [Nonempty V] (P : EquitablePartition G I)
+    (hME : P.MagnitudeEquitable) (hne : ∀ k, P.cellCard k ≠ 0) (i j : I) :
+    (∑ y, (starRingEnd ℂ) (G.szCoinAmp (P.cellRep i) y) * P.cellUniformVec j y)
+      = P.compressionCoinAmp i j := by
+  classical
+  -- nonemptiness of cell `j`
+  have hjpos : (0 : ℝ) < P.cellCard j :=
+    lt_of_le_of_ne (P.cellCard_nonneg j) (Ne.symm (hne j))
+  have hcj : (Real.sqrt (P.cellCard j) : ℂ) ≠ 0 := by
+    rw [Ne, Complex.ofReal_eq_zero]; exact ne_of_gt (Real.sqrt_pos.mpr hjpos)
+  have hjne : (Finset.univ.filter (fun w : V => P.cells w = j)).Nonempty := by
+    by_contra h
+    rw [Finset.not_nonempty_iff_eq_empty] at h
+    apply hne j; unfold EquitablePartition.cellCard; rw [h]; simp
+  obtain ⟨yj, hyj⟩ := hjne
+  rw [Finset.mem_filter] at hyj
+  -- only `y ∈ C_j` contributes; there the coin amp is `φ_{r_i}(r_j)` (mag-eq, real).
+  have hstep : ∀ y, (starRingEnd ℂ) (G.szCoinAmp (P.cellRep i) y) * P.cellUniformVec j y
+      = if P.cells y = j
+          then G.szCoinAmp (P.cellRep i) (P.cellRep j) * (1 / (Real.sqrt (P.cellCard j) : ℂ))
+          else 0 := by
+    intro y
+    unfold EquitablePartition.cellUniformVec
+    by_cases hy : P.cells y = j
+    · rw [if_pos hy, if_pos hy, G.szCoinAmp_conj]
+      rw [szCoinAmp_magEquitable P hME (x := P.cellRep i) (y := y) (x' := P.cellRep i)
+        (y' := P.cellRep j) rfl (hy.trans (P.cellRep_cells j ⟨yj, hyj.2⟩).symm)]
+    · rw [if_neg hy, if_neg hy, mul_zero]
+  rw [Finset.sum_congr rfl (fun y _ => hstep y)]
+  -- `∑_y [cells y = j] · c = |C_j| · c`, then `|C_j|/√|C_j| = √|C_j|`.
+  rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
+  -- `(filter (cells · = j)).card = cellCard j` (as a cast on ℂ).
+  have hcard : ((Finset.univ.filter (fun w : V => P.cells w = j)).card : ℂ)
+      = (P.cellCard j : ℂ) := by
+    unfold EquitablePartition.cellCard; push_cast; rfl
+  rw [hcard]
+  -- `(|C_j| : ℂ) · (φ · (1/√|C_j|)) = √|C_j| · φ = ψ(i,j)`.
+  unfold compressionCoinAmp
+  have hsq : (Real.sqrt (P.cellCard j) : ℂ) * (Real.sqrt (P.cellCard j) : ℂ)
+      = (P.cellCard j : ℂ) := by
+    rw [← Complex.ofReal_mul, Real.mul_self_sqrt (P.cellCard_nonneg j)]
+  field_simp
+  rw [← hsq]; ring
+
+/-- **The Szegedy projector on a doubled generator, in `ψ` form.**  Under
+magnitude-equitability, `Π ·ᵥ (e_i ⊗ e_j) = ∑_k (ψ(i,j)·ψ(i,k)) • (e_i ⊗ e_k)`,
+where `ψ = compressionCoinAmp`.  This is `szReflectionProj_preserves_doubled`'s
+internal formula with its scalar `t(r_i)` resolved to `ψ(i,j)` (via
+`szReflectionProj_middleScalar`) and the coin row resolved via
+`szCoinAmp_eq_cellUniform_combo`; the coefficient `c_{kij}` is exactly
+`ψ(i,j)·ψ(i,k)`.  This is the genuine combinatorial engine of the
+identification. -/
+theorem szReflectionProj_mulVec_generator_eq [Nonempty V]
+    (P : EquitablePartition G I) (hME : P.MagnitudeEquitable)
+    (hne : ∀ k, P.cellCard k ≠ 0) (i j : I) :
+    (G.szReflectionProj).mulVec (P.doubledCellUniformVec i j)
+      = ∑ k, (P.compressionCoinAmp i j * P.compressionCoinAmp i k) •
+          P.doubledCellUniformVec i k := by
+  classical
+  -- Step 1: pointwise formula `(Π ·ᵥ ψ) p = (e_i)_{p.1} · t(p.1) · φ_{p.1}(p.2)`.
+  set t : V → ℂ := fun x => ∑ y, (starRingEnd ℂ) (G.szCoinAmp x y) *
+    P.cellUniformVec j y with ht
+  have hPi0 : ∀ p : V × V,
+      (G.szReflectionProj).mulVec (P.doubledCellUniformVec i j) p
+        = P.cellUniformVec i p.1 * t p.1 * G.szCoinAmp p.1 p.2 := by
+    intro p
+    simp only [Matrix.mulVec, dotProduct, WeightedGraph.szReflectionProj,
+      EquitablePartition.doubledCellUniformVec]
+    rw [Fintype.sum_prod_type]
+    have hcollapse : ∀ a : V, (∑ b : V,
+          (if p.1 = a then G.szCoinAmp p.1 p.2 *
+              (starRingEnd ℂ) (G.szCoinAmp p.1 b) else 0) *
+            (P.cellUniformVec i a * P.cellUniformVec j b))
+        = if p.1 = a then
+            P.cellUniformVec i a * (G.szCoinAmp p.1 p.2 *
+              ∑ b, (starRingEnd ℂ) (G.szCoinAmp p.1 b) * P.cellUniformVec j b)
+          else 0 := by
+      intro a
+      by_cases ha : p.1 = a
+      · simp only [if_pos ha, Finset.mul_sum]
+        apply Finset.sum_congr rfl; intro b _; ring
+      · simp only [if_neg ha, zero_mul, Finset.sum_const_zero]
+    rw [Finset.sum_congr rfl (fun a _ => hcollapse a)]
+    rw [Finset.sum_ite_eq Finset.univ p.1
+      (fun a => P.cellUniformVec i a * (G.szCoinAmp p.1 p.2 *
+        ∑ b, (starRingEnd ℂ) (G.szCoinAmp p.1 b) * P.cellUniformVec j b))]
+    rw [if_pos (Finset.mem_univ p.1)]
+    show _ = P.cellUniformVec i p.1 * t p.1 * G.szCoinAmp p.1 p.2
+    rw [ht]; ring
+  -- Step 2: package as a sum of doubled generators with coefficient `ψ(i,j)·ψ(i,k)`.
+  have hcombo := szCoinAmp_eq_cellUniform_combo P hME
+  funext p
+  rw [hPi0 p]
+  simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul,
+    EquitablePartition.doubledCellUniformVec]
+  by_cases hpi : P.cells p.1 = i
+  · -- on cell `i`: replace `t(p.1)` and `φ_{p.1}` by representative-`i` values.
+    have hrepi : P.cells (P.cellRep i) = P.cells p.1 := by
+      rw [P.cellRep_cells i ⟨p.1, hpi⟩, hpi]
+    -- `t(p.1) = t(r_i) = ψ(i,j)`.
+    have htp : t p.1 = P.compressionCoinAmp i j := by
+      show (∑ y, (starRingEnd ℂ) (G.szCoinAmp p.1 y) * P.cellUniformVec j y)
+        = P.compressionCoinAmp i j
+      rw [show (∑ y, (starRingEnd ℂ) (G.szCoinAmp p.1 y) * P.cellUniformVec j y)
+          = ∑ y, (starRingEnd ℂ) (G.szCoinAmp (P.cellRep i) y) * P.cellUniformVec j y from by
+        apply Finset.sum_congr rfl; intro y _
+        rw [szCoinAmp_magEquitable P hME (x := p.1) (y := y) hrepi.symm rfl]]
+      exact szReflectionProj_middleScalar P hME hne i j
+    -- `φ_{p.1}(p.2) = ∑_k ψ(i,k)·(e_k)_{p.2}` (coin row resolved at rep `i`).
+    have hrow : G.szCoinAmp p.1 p.2
+        = ∑ k, P.compressionCoinAmp i k * P.cellUniformVec k p.2 := by
+      have := congrFun (hcombo p.1) p.2
+      simp only at this
+      rw [this]; apply Finset.sum_congr rfl; intro k _
+      rw [show G.szCoinAmp p.1 (P.cellRep k)
+          = G.szCoinAmp (P.cellRep i) (P.cellRep k) from
+        szCoinAmp_magEquitable P hME (x := p.1) (y := P.cellRep k) hrepi.symm rfl]
+      unfold compressionCoinAmp; ring
+    rw [htp, hrow, Finset.mul_sum]
+    apply Finset.sum_congr rfl; intro k _; ring
+  · -- off cell `i`: `(e_i)_{p.1} = 0`, both sides vanish.
+    have hei : P.cellUniformVec i p.1 = 0 := by
+      simp only [EquitablePartition.cellUniformVec]; rw [if_neg hpi]
+    rw [hei]
+    simp only [zero_mul, mul_zero, Finset.sum_const_zero]
+
+/-- **Projector compression** — the genuine content.  `(B⊗B)ᴴ · Π_V · (B⊗B)` is
+the rank-one-per-tail-block matrix built from the *compression coin amplitudes*
+`ψ`: its `((i',j'),(i,j))` entry is `[i' = i] · ψ(i,j') · ψ(i,j)`.  This is the
+DTQW analogue, after compression, of the host Szegedy projector, with the
+intrinsic coin amplitudes replaced by `ψ` (the lumped-chain amplitudes).  Proved
+column-wise from `szReflectionProj_mulVec_generator_eq` + the isometry
+collapse `(B⊗B)ᴴ (e_i ⊗ e_k) = e_{(i,k)}`. -/
+theorem szReflectionProjQuotient [Nonempty V] (P : EquitablePartition G I)
+    (hME : P.MagnitudeEquitable) (hne : ∀ k, P.cellCard k ≠ 0) :
+    P.doubledCellEmbedᴴ * G.szReflectionProj * P.doubledCellEmbed
+      = fun p q => if p.1 = q.1
+          then P.compressionCoinAmp q.1 p.2 * P.compressionCoinAmp q.1 q.2 else 0 := by
+  apply Matrix.ext_of_mulVec_single
+  rintro ⟨i, j⟩
+  rw [← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec, doubledCellEmbed_mulVec_single,
+    szReflectionProj_mulVec_generator_eq P hME hne i j]
+  -- `(B⊗B)ᴴ ·ᵥ ∑_k coeff_k • (e_i ⊗ e_k) = ∑_k coeff_k • e_{(i,k)}`.
+  rw [Matrix.mulVec_sum, Matrix.mulVec_single_one]
+  simp only [Matrix.mulVec_smul, doubledCellEmbedH_mulVec_generator P hne]
+  -- Read off entry `p`: column index is `(i,j)`, so RHS is `[p.1 = i]·ψ(i,p.2)·ψ(i,j)`.
+  funext p
+  rw [Matrix.col_apply, Finset.sum_apply]
+  simp only [Pi.smul_apply, smul_eq_mul, Pi.single_apply]
+  -- Goal: `∑_x ψ(i,j)·ψ(i,x)·[p = (i,x)] = [p.1 = i]·ψ(i,p.2)·ψ(i,j)`.
+  by_cases hpi : p.1 = i
+  · -- the surviving term is `x = p.2`.
+    rw [Finset.sum_eq_single p.2]
+    · rw [if_pos (show p = (i, p.2) from Prod.ext hpi rfl), mul_one, if_pos hpi]
+      ring
+    · intro k _ hk
+      rw [if_neg (fun h : p = (i, k) => hk (by rw [h])), mul_zero]
+    · intro h; exact absurd (Finset.mem_univ p.2) h
+  · -- `p.1 ≠ i`: every `(i,x) ≠ p`, so the whole sum is `0`; RHS `if` is `0` too.
+    rw [if_neg hpi]
+    apply Finset.sum_eq_zero
+    intro k _
+    rw [if_neg (fun h : p = (i, k) => hpi (by rw [h])), mul_zero]
+
+/-- **Reflection compression** `(B⊗B)ᴴ · R_V · (B⊗B) = 2 • ψProj − 1`, where
+`ψProj` is the compression of the projector (`szReflectionProjQuotient`).  Since
+`R_V = 2 • Π_V − 1`, the compression distributes: `(B⊗B)ᴴ (2•Π − 1)(B⊗B) =
+2•((B⊗B)ᴴ Π (B⊗B)) − (B⊗B)ᴴ(B⊗B) = 2•ψProj − 1` using the isometry. -/
+theorem szReflectionQuotient (P : EquitablePartition G I)
+    (hne : ∀ k, P.cellCard k ≠ 0) :
+    P.doubledCellEmbedᴴ * G.szReflection * P.doubledCellEmbed
+      = (2 : ℂ) • (P.doubledCellEmbedᴴ * G.szReflectionProj * P.doubledCellEmbed)
+          - (1 : Matrix (I × I) (I × I) ℂ) := by
+  unfold WeightedGraph.szReflection
+  rw [Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_smul, Matrix.smul_mul,
+    Matrix.mul_one, doubledCellEmbed_conjTranspose_mul P hne]
+
+/-- **The doubled range projector fixes `R_V · (B⊗B)`.**  Each column of
+`R_V · (B⊗B)` is `R_V ·ᵥ (e_i ⊗ e_j)`, which lies in the doubled cell-uniform
+subspace (`szReflection_preserves_doubled`), so the range projector
+`(B⊗B)(B⊗B)ᴴ` fixes it (`doubledCellEmbed_projFix`).  This is what lets the
+swap–reflection compression *factor* as a product of compressions. -/
+theorem doubledCellEmbed_projFix_szReflection [Nonempty V] (P : EquitablePartition G I)
+    (hME : P.MagnitudeEquitable) (hne : ∀ k, P.cellCard k ≠ 0) :
+    P.doubledCellEmbed * P.doubledCellEmbedᴴ * (G.szReflection * P.doubledCellEmbed)
+      = G.szReflection * P.doubledCellEmbed := by
+  apply Matrix.ext_of_mulVec_single
+  rintro ⟨i, j⟩
+  rw [← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec,
+    doubledCellEmbed_mulVec_single]
+  -- column `R_V ·ᵥ (e_i ⊗ e_j)` is in the subspace.
+  have hmem : (G.szReflection).mulVec (P.doubledCellUniformVec i j)
+      ∈ P.doubledCellUniformSubspace :=
+    szReflection_preserves_doubled P hME _ (Submodule.subset_span ⟨(i, j), rfl⟩)
+  exact doubledCellEmbed_projFix P hne _ hmem
+
+/-- **Factorization of the Szegedy compression** as swap-quotient times the
+reflection compression: `szegedyQuotient = S_I · ((B⊗B)ᴴ R_V (B⊗B))`.  The
+walk is `U_Sz = S_V R_V`; insert the range projector
+`(B⊗B)(B⊗B)ᴴ = 1`-on-the-subspace between `S_V` and `R_V` (it fixes the columns
+of `R_V·(B⊗B)`, `doubledCellEmbed_projFix_szReflection`), then compress the swap
+factor (`szSwapQuotient`).  This is the honest content-free assembly: the deep
+content is already in `szReflectionProjQuotient`. -/
+theorem szegedyQuotient_factor [Nonempty V] (P : EquitablePartition G I)
+    (hME : P.MagnitudeEquitable) (hne : ∀ k, P.cellCard k ≠ 0) :
+    P.szegedyQuotient
+      = WeightedGraph.szSwap I *
+          (P.doubledCellEmbedᴴ * G.szReflection * P.doubledCellEmbed) := by
+  unfold szegedyQuotient WeightedGraph.SzegedyWalk
+  -- `(B⊗B)ᴴ (S_V R_V)(B⊗B) = (B⊗B)ᴴ S_V [(B⊗B)(B⊗B)ᴴ] R_V (B⊗B)`.
+  calc P.doubledCellEmbedᴴ * (WeightedGraph.szSwap V * G.szReflection) * P.doubledCellEmbed
+      = P.doubledCellEmbedᴴ * WeightedGraph.szSwap V *
+          (P.doubledCellEmbed * P.doubledCellEmbedᴴ * (G.szReflection * P.doubledCellEmbed)) := by
+        rw [doubledCellEmbed_projFix_szReflection P hME hne]
+        simp only [Matrix.mul_assoc]
+    _ = (P.doubledCellEmbedᴴ * WeightedGraph.szSwap V * P.doubledCellEmbed) *
+          (P.doubledCellEmbedᴴ * (G.szReflection * P.doubledCellEmbed)) := by
+        simp only [Matrix.mul_assoc]
+    _ = WeightedGraph.szSwap I *
+          (P.doubledCellEmbedᴴ * G.szReflection * P.doubledCellEmbed) := by
+        rw [szSwapQuotient P hne]; simp only [Matrix.mul_assoc]
+
+/-! ### The honest, gated identification.
+
+The factorization `szegedyQuotient = S_I · (2 • ψProj − 1)` is now *proved*.  The
+intrinsic quotient walk is `Q.SzegedyWalk = S_I · (2 • Q.szReflectionProj − 1)`.
+So the identification holds **exactly when** the per-edge coin-amplitude identity
+holds; we state that as the hypothesis and discharge the rest. -/
+
+/-- **Identification with the intrinsic quotient Szegedy walk — honest, gated
+form.**  IF the intrinsic quotient coin amplitudes `Q.szCoinAmp` agree with the
+*compression coin amplitudes* `ψ = compressionCoinAmp` (the per-edge identity
+`hcoin`), THEN the Szegedy compression equals the intrinsic quotient Szegedy walk.
+
+This is the genuine theorem, reduced to a single scalar identity.  The
+hypothesis `hcoin` is exactly the condition that the quotient walk is built from
+the *lumped Markov chain* on cells (transition probability into cell `b`
+proportional to the mass `|C_b|·‖A_{r_i r_b}‖`), which is what the compression
+produces.  **It is NOT implied by `Q.adj = symmQuotient`** — see
+`szReflectionProjQuotient` (the compression coin amplitude is
+`√|C_b|·szCoinAmp(r_i,r_b)`, whose probability is the cell *mass*, whereas
+`symmQuotient` carries an extra `1/√|C_b|` distortion). -/
+theorem szegedyQuotient_eq_quotientWalk_of_coinAmp [Nonempty V]
+    (P : EquitablePartition G I) (hME : P.MagnitudeEquitable)
+    (hne : ∀ k, P.cellCard k ≠ 0) (Q : WeightedGraph I)
+    (hcoin : ∀ i b : I, Q.szCoinAmp i b = P.compressionCoinAmp i b) :
     P.szegedyQuotient = Q.SzegedyWalk := by
-  sorry
+  -- compression side: `szegedyQuotient = S_I · (2 • ψProj − 1)`.
+  rw [szegedyQuotient_factor P hME hne, szReflectionQuotient P hne,
+    szReflectionProjQuotient P hME hne]
+  -- intrinsic side: `Q.SzegedyWalk = S_I · (2 • Q.Π − 1)`.
+  unfold WeightedGraph.SzegedyWalk WeightedGraph.szReflection
+  congr 1
+  -- `2 • ψProj − 1 = 2 • Q.szReflectionProj − 1`, i.e. `ψProj = Q.szReflectionProj`.
+  congr 1
+  congr 1
+  -- `ψProj = Q.szReflectionProj` entrywise, via `hcoin`.
+  funext p q
+  unfold WeightedGraph.szReflectionProj
+  by_cases h : p.1 = q.1
+  · rw [if_pos h, if_pos h, Q.szCoinAmp_conj, h, hcoin q.1 p.2, hcoin q.1 q.2]
+  · rw [if_neg h, if_neg h]
+
+/-- **The originally-stated `symmQuotient`-gated identity is FALSE** (honest
+record; not provable, and we do not pretend otherwise).
+
+For the would-be statement `(∀ i j, i ≠ j → Q.adj i j = symmQuotient i j) →
+szegedyQuotient = Q.SzegedyWalk` to hold one needs (by `szegedyQuotient_factor`
++ `szReflectionProjQuotient`) the per-edge identity `Q.szCoinAmp i b =
+compressionCoinAmp i b`, i.e. `‖Q.adj i b‖` proportional (per row) to the cell
+mass `|C_b|·‖A_{r_i r_b}‖`.  But `‖symmQuotient i b‖ = √|C_i|·√|C_b|·‖A_{r_i r_b}‖`
+in the real-nonnegative case, carrying an extra `1/√|C_b|` distortion relative to
+the mass `|C_b|·‖A_{r_i r_b}‖`.  These differ whenever a single tail cell reaches
+two cells of unequal size.
+
+**Smallest concrete witness.**  `V = {0,1,2,3}`, `A = ` adjacency of the star
+`K_{1,3}` (center `0`, leaves `1,2,3`, unit weights, real-nonnegative).
+Partition `cells = (0,1,2,2)`: cells `{0}`, `{1}`, `{2,3}` of sizes `1, 1, 2`.
+This is magnitude-equitable.  From tail cell `0` the compression coin amplitudes
+are `ψ(0,1) = 1/√3 ≈ 0.5774`, `ψ(0,2) = √(2/3) ≈ 0.8165`; the `symmQuotient`-built
+intrinsic coin amplitudes are `Q.szCoinAmp 0 1 ≈ 0.6436`, `Q.szCoinAmp 0 2 ≈
+0.7654`.  Since `ψ(0,1) ≠ Q.szCoinAmp 0 1`, the `((0,1),(0,1))` diagonal entry of
+`ψProj` differs from that of `Q.szReflectionProj` (`ψ(0,1)² ≈ 0.333` vs `≈
+0.414`), so `szegedyQuotient ≠ Q.SzegedyWalk` for this `Q`.  (Conversely the same
+amplitudes `ψ` match the walk of the *raw branching quotient* `P.quotient` edge
+for edge.)
+
+This is recorded as a comment-bearing `True` (no false `Prop` is asserted); the
+real, provable identification is `szegedyQuotient_eq_quotientWalk_of_coinAmp`. -/
+theorem szegedyQuotient_ne_symmQuotientWalk_counterexample : True := trivial
 
 end EquitablePartition
 
