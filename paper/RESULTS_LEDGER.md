@@ -20,15 +20,28 @@ edited.
 > groups this pass, each `#print axioms`-verified `[propext, Classical.choice, Quot.sound]`:
 > - **DTQW Szegedy lifts** — `cellUniformSzegedyPST_iff_quotient`,
 >   `cellUniformSzegedyMixing_iff_quotient` PROVEN in `DiscreteTime/Lifts.lean` (the
->   Doliwa-open discrete-time analogue). One honest deep residue
->   `szegedyQuotient_eq_quotientWalk` (compression = quotient's intrinsic Szegedy walk)
->   that the lifts provably do NOT depend on; the predicates were re-keyed onto the honest
->   *doubled* form after a free-vertex-head fake-closure was caught; orphan
->   `StdLib/SzegedyQuotientLift.lean` deleted.
+>   Doliwa-open discrete-time analogue; predicates re-keyed onto the honest *doubled* form
+>   after a free-vertex-head fake-closure was caught; orphan `StdLib/SzegedyQuotientLift.lean`
+>   deleted). **Residue RESOLVED (later same day):** the deep `szegedyQuotient_eq_quotientWalk`,
+>   *as previously stated* (gated on `Q.adj = P.symmQuotient`), is **FALSE** — the compression
+>   is the *lumped* cell-chain, not the symmQuotient-weighted walk (extra `1/√|C_b|`;
+>   counterexample `K_{1,3}` with leaves split `{1}⊔{2,3}`, ‖Δ‖ = 0.237 ≠ 0). The
+>   genuinely-correct decomposition `szegedyQuotient_factor` +
+>   `szegedyQuotient_eq_quotientWalk_of_coinAmp` (under `hcoin : Q.szCoinAmp = compression
+>   amplitude`, satisfied non-vacuously by the raw branching quotient `Q.adj = P.quotient`) is
+>   PROVEN **axiom-clean**; the lifts never depended on the residue (re-verified).
 > - **LDT soundness** — `alpha_gc_gamma` (graphplay's **first** `GaloisConnection`),
 >   `dedRun_preserves_solutions`, `solved_state_is_correct` in
 >   `Integrations/LatticeDeduction.lean`: verified soundness skeleton for Lattice Deduction
 >   Transformers (arXiv:2605.08605), the Knaster–Tarski lfp/gfp DUAL of the refinement quotient.
+> - **Tower-9** — `Graphplay/Tower9.lean`: the `AbstractInterpretation` interface (a Galois
+>   connection + the Cousot `lfp_transfer`/`gfp_transfer` theorems) with BOTH legs as
+>   instances — `ldtAbstraction` (deduction, a lossy *connection*: `ldt_lossy`, `α∘γ ≠ id`) and
+>   `partitionAbstraction` (refinement, an exact *insertion*: `partition_is_insertion`,
+>   `α∘γ = id`, via Mathlib `Setoid.gi`). `refinement_deduction_duality` machine-states the
+>   same-interface/opposite-species duality; LDT run-soundness re-derives as a `gfp_transfer`
+>   corollary. All axiom-clean. Honest scope: the specific `wlStep`-gfp =
+>   `wlRefine_coarsestEquitable` identity is documented future work.
 > - **Application honesty** — false hardware-fit claims relabeled true
 >   (`heavyHexAsBundle_dataVertex_equiv`, `…_satisfies_dropCount`, dephasing `…_iff_singleton`).
 >
@@ -392,12 +405,29 @@ State it exactly this way.** The PST-quotient lift is not new mathematics:
    compression for general `U` — forcing the old bridge would have been a *fake closure*.
    The predicates `IsCellUniformSzegedy{PST,Mixing}` were re-keyed onto the honest **doubled
    form** (cell-resolved head marginal; non-vacuity checked — `IsCellUniformSzegedyPST i i 0`
-   fails for `|I|>1`). **One honest deep residue remains:** `szegedyQuotient_eq_quotientWalk`
-   identifies the compression with the *quotient graph's intrinsic* Szegedy walk (the step that
-   would complete the "run it on the small graph" dimension-reduction story; no CTQW shortcut —
-   the √-coin doesn't commute with cell-sums). It stays an honest `sorry`, and **the lifts
-   above provably do NOT depend on it** (axiom-clean confirms). The redundant `sorry`-blocked
-   orphan `Graphplay/StdLib/SzegedyQuotientLift.lean` was deleted.
+   fails for `|I|>1`). **The deep residue is now RESOLVED — with a correctness catch.** The
+   identification of the compression with the *quotient graph's intrinsic* Szegedy walk, *as
+   previously stated* (`szegedyQuotient_eq_quotientWalk`, gated on `Q.adj = P.symmQuotient`), is
+   **FALSE**: an adversarial reduction to a single per-edge scalar identity shows the compression
+   is the **lumped Markov chain on cells**, carrying an extra `1/√|C_b|` distortion vs
+   `symmQuotient` (counterexample: star `K_{1,3}`, leaves split `{1}⊔{2,3}`, magnitude-equitable,
+   `‖szegedyQuotient − symmQuotientWalk‖ = 0.237 ≠ 0`). The genuinely-correct decomposition is
+   PROVEN axiom-clean: `szegedyQuotient_factor` (`= S_I·(2·ψProj−1)`) and
+   `szegedyQuotient_eq_quotientWalk_of_coinAmp` (`= Q.SzegedyWalk` under the honest per-edge
+   hypothesis `hcoin : Q.szCoinAmp = compression amplitude`, satisfied non-vacuously by the raw
+   branching quotient `Q.adj = P.quotient`). The §5 PST/mixing lifts never depended on this
+   residue (re-verified axiom-clean). The redundant `sorry`-blocked orphan
+   `Graphplay/StdLib/SzegedyQuotientLift.lean` was deleted.
+
+   **(3″) Tower-9 abstract-interpretation interface (NEW 2026-06-02)** —
+   `Graphplay/Tower9.lean`: makes the refinement⊣deduction duality a machine-checked object.
+   `AbstractInterpretation` (Galois connection between complete lattices) + the Cousot
+   `lfp_transfer`/`gfp_transfer` theorems; the LDT deduction leg (`ldtAbstraction`, a lossy
+   *connection*) and the partition/equivalence leg (`partitionAbstraction`, an exact *insertion*
+   via Mathlib `Setoid.gi`) as two instances; `refinement_deduction_duality` states the
+   same-interface/opposite-species result; LDT run-soundness re-derives as a `gfp_transfer`
+   corollary. All axiom-clean. The specific `wlStep`-gfp = `wlRefine_coarsestEquitable` identity
+   is documented future work (the colour type grows each round).
 
    **(3′) LDT soundness (NEW 2026-06-02)** — `Graphplay/Integrations/LatticeDeduction.lean`:
    a verified soundness skeleton for Lattice Deduction Transformers (arXiv:2605.08605).
