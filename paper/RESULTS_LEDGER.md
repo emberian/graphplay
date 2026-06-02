@@ -15,6 +15,39 @@ edited.
 **Date:** 2026-06-02 (re-audited) · **Mathlib:** local checkout at `/Users/ember/src/mathlib4`
 (v4.30.0-era) · **Lean toolchain:** as pinned by the project (leanprover/lean4 v4.30.0).
 
+> **2026-06-02 (late) — the Godsil PST⇔ratio bridge is complete, and the residue is certified.**
+> Full `lake build Graphplay` GREEN (3962 jobs); four commits (`593572c`→`91425c8`), every headline
+> below self-verified `#print axioms` = `[propext, Classical.choice, Quot.sound]`.
+>
+> - **Godsil's existence-of-PST theorem, both directions, machine-checked.** Perfect state transfer
+>   is now characterised end-to-end. The honest condition is `IsGodsilPSTReady` — arithmetic
+>   alignment of the eigenvalue support (`λ = b + a·k(λ)`) **plus** the parity sign `(−1)^{k(λ)}` on
+>   the cross-projector entries — *not* the textbook `IsStronglyCospectral ∧ IsGodsilRatio`, which is
+>   **false** (a simple-spectrum graph makes every pair strongly cospectral with a free cross-phase;
+>   counterexample recorded in-file). `isPST_exists_of_isGodsilPSTReady` (**CLEAN**): the **backward**
+>   half — PST at the *exact* time `τ=π/a`, a common-period construction, no Diophantine
+>   approximation and no Mathlib gap. `isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport` (**CLEAN**,
+>   in `Periodicity` to break the import cycle): the **forward** half, via the sign-pinning lemma
+>   `cross_phase_sign_of_isPST_of_isSymm` (real-symmetric two-sided PST forces the cross phase to a
+>   real `±1`) + periodicity. `isPST_exists_iff_isGodsilPSTReady_of_isSymm_of_fullSupport` (**CLEAN**):
+>   the full iff. It **fires**: `path_P2_PST_residual` (K₂ at `π/2`) and `Tree.leaf_PST_T2` (K_{1,2}
+>   at `π/√2`) are concrete PST closed *through* the bridge.
+> - **CFI / Weisfeiler–Leman.** `cfi_1wl_indistinguishable` (**CLEAN**): the C₆ vs 2·K₃ pair — non-
+>   isomorphic, both 2-regular, identical 1-WL stable colourings — formalised concretely (the
+>   textbook phantom-symmetry witness).
+> - **Capstone certification of the whole residue.** An adversarial sweep migrated **~30
+>   false-as-stated theorems to TRUE** (each with a documented counterexample — e.g.
+>   `braidGate_iff_chernMatched : ↔ True` → `↔ m=0`; Kantorovich strong duality given its Polish+lsc
+>   hypotheses; `satisfies_quotient` given the two it silently dropped; a WL theorem refuted *using*
+>   the new `path_P2_PST`) and **closed ~34** axiom-clean. Declaration-level `sorry`s **119 → 85**.
+>   Two TRUE-but-hollow theorems were left honest and **flagged** rather than closed with their
+>   degenerate witnesses; the PST-spine cluster honestly closed *nothing* where the path/hypercube
+>   classification genuinely needs a deeper eigenvalue-explicitness bridge. **Every remaining `sorry`
+>   is certified TRUE honest-floor** — cited-classical facts Mathlib lacks (MIP\*=RE,
+>   QOMDP-undecidability, Villani strong duality, finite-rank HS density, Niven irrationality, CFI
+>   k≥2). `HS⇒compact` now reduces to a single clean density leaf (`exists_separable_tendsto_kernel`,
+>   L²⊗L² dense in L²(μ⊗μ)).
+>
 > **2026-06-02 re-audit.** Full `lake build` GREEN (7894 jobs, exit 0 — no `error:` lines;
 > `Conjecture93` recovered, every remaining `sorry` an honest leaf). Three new CLEAN-headline
 > groups this pass, each `#print axioms`-verified `[propext, Classical.choice, Quot.sound]`:
