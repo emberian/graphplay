@@ -51,6 +51,7 @@ import Graphplay.Tower6
 import Graphplay.Tower7
 import Graphplay.Tower8
 import Graphplay.Tower8.DistributedQuotient
+import Graphplay.Tower9
 
 -- Computable substrate + surface embeddings + demo
 import Graphplay.Computable
