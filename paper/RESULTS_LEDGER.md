@@ -44,9 +44,21 @@ edited.
 >   degenerate witnesses; the PST-spine cluster honestly closed *nothing* where the path/hypercube
 >   classification genuinely needs a deeper eigenvalue-explicitness bridge. **Every remaining `sorry`
 >   is certified TRUE honest-floor** — cited-classical facts Mathlib lacks (MIP\*=RE,
->   QOMDP-undecidability, Villani strong duality, finite-rank HS density, Niven irrationality, CFI
->   k≥2). `HS⇒compact` now reduces to a single clean density leaf (`exists_separable_tendsto_kernel`,
->   L²⊗L² dense in L²(μ⊗μ)).
+>   QOMDP-undecidability, Villani strong duality, Niven irrationality, CFI k≥2).
+>
+> - **Inward close-out (the last reachable infra).** `kernelIntegralCLM_isCompactOperator`
+>   (**HS ⟹ compact**) is now **fully axiom-clean — no `sorryAx` anywhere**: the density leaf
+>   `exists_separable_tendsto_kernel` (L²⊗L² dense in L²(μ⊗μ)) is proved via the measurable-rectangle
+>   `IsSetSemiring` + Mathlib's in-measure rectangle approximation. The **path endpoint-PST
+>   classification** is closed on the no-PST side (`path_P4_no_PST`, `path_long_no_PST_residual`,
+>   **CLEAN**) through a new, reusable eigenvalue + Krylov-controllability bridge
+>   (`pathEigenvalue_mem_range` from `charpoly = Chebyshev U`, `path_endpoint_fullSupport` from a
+>   unit-determinant Krylov matrix) feeding the Godsil forward bridge — and **corrected a folklore
+>   slip**: unweighted `Path n` has endpoint PST iff **n ∈ {1,2}** (2–3 vertices, Coutinho), *not* a
+>   longer list (the mistaken `P₆` PST target was numerically refuted — max amplitude ≈ 0.9997 — and
+>   **not** proved). Two flagged-hollow OT theorems de-hollowed (`quantum_sampler_existence` under
+>   `‖start‖=1, t>0`; `sinkhorn_rate_quotient_bound` pinned to the Birkhoff projective-metric
+>   coefficient `tanh(Δ/4)`). Declaration-level `sorry`s now **81**, all certified honest-floor.
 >
 > **2026-06-02 re-audit.** Full `lake build` GREEN (7894 jobs, exit 0 — no `error:` lines;
 > `Conjecture93` recovered, every remaining `sorry` an honest leaf). Three new CLEAN-headline
