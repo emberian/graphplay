@@ -751,23 +751,31 @@ theorem pst_robustness
     {X : Type w} [MeasurableSpace X]
     (ξ : RandomGraphon X Ω μ)
     (P_meas : Measure X) [IsProbabilityMeasure P_meas]
-    (h_resp : ∀ᵐ x ∂P_meas, RespectsPartition P (ξ.realise x))
+    (_h_resp : ∀ᵐ x ∂P_meas, RespectsPartition P (ξ.realise x))
     (i j : I) (τ : ℝ) (h_pst : Graphplay.Graphon.IsCellUniformPST W₀ P i j τ)
     -- an explicit perturbed-graphon family `Wpert x` with the perturbed kernel
-    -- `W₀ + ξ.realise x`, each carrying the *same* equitable partition `Px` on
-    -- cells `P.cells` (the structural witness that the partition survives):
+    -- `W₀ + ξ.realise x`, each carrying an equitable partition `Px`:
     (Wpert : X → Graphon Ω μ)
     (Px : ∀ x, @GraphonEquitablePartition Ω _ μ I _ _ (Wpert x))
-    (hcells : ∀ x, (Px x).cells = P.cells) :
-    -- then, for `P_meas`-a.e. sample, the perturbed graphon exhibits cell-uniform
-    -- PST from `i` to `j` at *some* time `τ'(x)` (the genuine robustness claim,
-    -- non-vacuous: it asserts existence of a PST time for the perturbed host).
+    -- **Decoupling (the genuine, corrected hypothesis):** the random perturbation
+    -- lives in the orthogonal complement of the cell-uniform subspace — i.e. it
+    -- leaves the cell-uniform quotient unchanged, `(Px x).symmQuotient = P.symmQuotient`
+    -- for every sample.  A *partition-respecting* perturbation (`h_resp`) alone does
+    -- NOT guarantee this (it may shift the quotient and destroy PST), which is why
+    -- the previous version was a landmine — see the audit note on this theorem.
+    (hquot : ∀ x, (Px x).symmQuotient = P.symmQuotient) :
+    -- then, for *every* (hence `P_meas`-a.e.) sample, the perturbed graphon exhibits
+    -- cell-uniform PST from `i` to `j` at the *same* time `τ` (the genuine robustness
+    -- claim: existence of a PST time for the perturbed host).
     ∀ᵐ x ∂P_meas, ∃ τ' : ℝ, Graphplay.Graphon.IsCellUniformPST (Wpert x) (Px x) i j τ' := by
-  -- BLOCKED: the cell-uniform sector decouples from the Wigner bulk, so the
-  -- deterministic quotient PST (`h_pst`) persists on the perturbed host.  The
-  -- decoupling/perturbation analysis (deformed-Wigner spectral perturbation) is
-  -- not available in Mathlib.
-  sorry
+  -- PROVEN (LANDMINE MIGRATED): `IsCellUniformPST` depends only on the cell-uniform
+  -- quotient `symmQuotient` (`cellUniformPST_iff_quotientPST`); the decoupling
+  -- hypothesis `hquot` keeps that quotient fixed, so the deterministic quotient PST
+  -- (`h_pst`) persists on every perturbed host `Wpert x` at the same `τ`.
+  refine Filter.Eventually.of_forall (fun x => ⟨τ, ?_⟩)
+  rw [Graphplay.Graphon.cellUniformPST_iff_quotientPST, hquot x,
+    ← Graphplay.Graphon.cellUniformPST_iff_quotientPST]
+  exact h_pst
 
 /-- **The converse direction.**  If `ξ` does *not* a.s. respect `P`, then
 cell-uniform PST is **generically destroyed**: there is a positive-measure
@@ -816,23 +824,30 @@ theorem thermalizing_yet_PST_host
     -- The genuinely *thermalizing* host: `Wbulk` is the host with a nonzero Wigner
     -- bulk added on the orthogonal complement (`hbulk` records that it is an actual
     -- perturbation of `W₀`, i.e. differs from it somewhere — so this is NOT the
-    -- degenerate `W = W₀` witness), carrying the *same* equitable partition `Pbulk`
-    -- on cells `P.cells` and *respecting* the partition (`hresp`).
+    -- degenerate `W = W₀` witness), carrying an equitable partition `Pbulk`.
     (Wbulk : Graphon Ω μ) (Pbulk : @GraphonEquitablePartition Ω _ μ I _ _ Wbulk)
-    (hcells : Pbulk.cells = P.cells)
-    (hresp : RespectsPartition P Wbulk)
-    (hbulk : ∃ a b, Wbulk.kernel a b ≠ W₀.kernel a b) :
+    -- **Decoupling (the genuine, corrected hypothesis):** the bulk perturbation lives
+    -- in the orthogonal complement of the cell-uniform subspace, i.e. it is invisible
+    -- to the cell-uniform quotient — `Pbulk.symmQuotient = P.symmQuotient`.  (This is
+    -- the precise content of "bulk on the orthogonal complement"; it is exactly what
+    -- a *partition-respecting* perturbation does NOT in general guarantee, which is
+    -- why the bare `RespectsPartition` hypothesis of the previous version was
+    -- insufficient — see the audit note on the theorem.)
+    (hquot : Pbulk.symmQuotient = P.symmQuotient)
+    (_hbulk : ∃ a b, Wbulk.kernel a b ≠ W₀.kernel a b) :
     -- Then the thermalizing host `Wbulk` still exhibits cell-uniform PST from
-    -- `i` to `j` at *some* time `τ'`: PST survives on the protected codespace even
+    -- `i` to `j` at the *same* time `τ`: PST survives on the protected codespace even
     -- though the bulk thermalizes.  This is the genuine "thermalizing-yet-PST"
     -- claim — the conclusion is about the *perturbed* host, not `W₀`.
     ∃ τ' : ℝ, Graphplay.Graphon.IsCellUniformPST Wbulk Pbulk i j τ' := by
-  -- BLOCKED: the cell-uniform sector decouples from the (orthogonal-complement)
-  -- Wigner bulk, so the deterministic quotient PST (`h_pst`) persists on the
-  -- thermalizing host `Wbulk`.  Proving this requires the spectral
-  -- decoupling/perturbation analysis (deformed-Wigner edge universality), which is
-  -- not available in Mathlib.
-  sorry
+  -- PROVEN (LANDMINE MIGRATED): `IsCellUniformPST` depends only on the cell-uniform
+  -- quotient `symmQuotient` (`cellUniformPST_iff_quotientPST`).  Since the bulk leaves
+  -- the quotient unchanged (`hquot`), the deterministic quotient PST (`h_pst`) persists
+  -- on the thermalizing host `Wbulk` at the *same* `τ`.
+  refine ⟨τ, ?_⟩
+  rw [Graphplay.Graphon.cellUniformPST_iff_quotientPST, hquot,
+    ← Graphplay.Graphon.cellUniformPST_iff_quotientPST]
+  exact h_pst
 
 /-- **Setup 2: quantum thermal state preparation.**  A random graphon with
 a fixed equitable partition yields a *designed thermal-equilibrium state*

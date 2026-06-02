@@ -36,6 +36,7 @@ import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Analysis.Complex.Exponential
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Finset.Basic
 import Graphplay.Weighted
@@ -145,6 +146,146 @@ def Matrix.preservesCellUniform'
   ∀ ψ : V → ℂ, (∀ x y : V, P.cells x = P.cells y → ψ x = ψ y) →
     ∀ x y : V, P.cells x = P.cells y → (M.mulVec ψ) x = (M.mulVec ψ) y
 
+/-! ### Closure properties of `preservesCellUniform'`
+
+The cell-uniform-preserving matrices form a (real/complex) subalgebra; we record
+the closure facts needed for the adiabatic-schedule reduction: `•` and `+`, and
+the fact that the graph adjacency itself preserves the subspace (the equitable
+condition).  These let the linear adiabatic path `(1-s)•(-A) + s•(-P_M)` inherit
+the invariance from its endpoints. -/
+
+/-- Cell-uniform preservation is closed under scalar multiplication. -/
+theorem Matrix.preservesCellUniform'.smul
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
+    {A : Matrix V V ℂ} {P : EquitablePartition G I}
+    (hA : Matrix.preservesCellUniform' A P) (c : ℂ) :
+    Matrix.preservesCellUniform' (c • A) P := by
+  intro ψ hψ x y hxy
+  rw [Matrix.smul_mulVec, Pi.smul_apply, Pi.smul_apply, hA ψ hψ x y hxy]
+
+/-- Cell-uniform preservation is closed under addition. -/
+theorem Matrix.preservesCellUniform'.add
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
+    {A B : Matrix V V ℂ} {P : EquitablePartition G I}
+    (hA : Matrix.preservesCellUniform' A P) (hB : Matrix.preservesCellUniform' B P) :
+    Matrix.preservesCellUniform' (A + B) P := by
+  intro ψ hψ x y hxy
+  rw [Matrix.add_mulVec, Pi.add_apply, Pi.add_apply, hA ψ hψ x y hxy, hB ψ hψ x y hxy]
+
+/-- Cell-uniform preservation is closed under matrix multiplication. -/
+theorem Matrix.preservesCellUniform'.mul
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
+    {A B : Matrix V V ℂ} {P : EquitablePartition G I}
+    (hA : Matrix.preservesCellUniform' A P) (hB : Matrix.preservesCellUniform' B P) :
+    Matrix.preservesCellUniform' (A * B) P := by
+  intro ψ hψ x y hxy
+  rw [← Matrix.mulVec_mulVec]
+  exact hA (B.mulVec ψ) (fun a b hab => hB ψ hψ a b hab) x y hxy
+
+/-- The identity preserves the cell-uniform subspace. -/
+theorem Matrix.preservesCellUniform'.one
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I) :
+    Matrix.preservesCellUniform' (1 : Matrix V V ℂ) P := by
+  intro ψ hψ x y hxy
+  rw [Matrix.one_mulVec]; exact hψ x y hxy
+
+section ExpClosure
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- **Cell-uniform preservation is closed under the matrix exponential.**  If `A`
+preserves the cell-uniform subspace, so does `exp A`.  Proof (mirroring the
+`cg_exp_intertwine` technique): for fixed same-cell `x, y`, the map
+`M ↦ (M·ψ) x − (M·ψ) y` is a *continuous additive functional* vanishing on every
+partial sum of the `exp` series (each `(k!)⁻¹·Aᵏ` preserves cell-constancy, by
+power closure); pushing the `exp`-series `HasSum` through this functional shows it
+vanishes on `exp A` too. -/
+theorem Matrix.preservesCellUniform'.exp
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
+    {A : Matrix V V ℂ} {P : EquitablePartition G I}
+    (hA : Matrix.preservesCellUniform' A P) :
+    Matrix.preservesCellUniform' (NormedSpace.exp A) P := by
+  intro ψ hψ x y hxy
+  -- powers preserve cell-constancy
+  have hpow : ∀ k : ℕ, Matrix.preservesCellUniform' (A ^ k) P := by
+    intro k
+    induction k with
+    | zero =>
+      rw [pow_zero]; exact Matrix.preservesCellUniform'.one P
+    | succ n ih => rw [pow_succ]; exact ih.mul hA
+  -- the continuous additive functional `M ↦ (M·ψ) x − (M·ψ) y`
+  let φ : Matrix V V ℂ →+ ℂ :=
+    { toFun := fun M => (M.mulVec ψ) x - (M.mulVec ψ) y
+      map_zero' := by simp
+      map_add' := fun M N => by
+        simp only [Matrix.add_mulVec, Pi.add_apply]; ring }
+  have hφc : Continuous φ :=
+    Continuous.sub
+      ((continuous_apply x).comp (continuous_id.matrix_mulVec continuous_const))
+      ((continuous_apply y).comp (continuous_id.matrix_mulVec continuous_const))
+  have hterm0 : ∀ k : ℕ, φ ((Nat.factorial k : ℂ)⁻¹ • A ^ k) = 0 := by
+    intro k
+    show (((Nat.factorial k : ℂ)⁻¹ • A ^ k).mulVec ψ) x
+        - (((Nat.factorial k : ℂ)⁻¹ • A ^ k).mulVec ψ) y = 0
+    rw [Matrix.smul_mulVec, Pi.smul_apply, Pi.smul_apply, smul_eq_mul, smul_eq_mul,
+      hpow k ψ hψ x y hxy]
+    ring
+  have hsum : HasSum (fun k => (Nat.factorial k : ℂ)⁻¹ • A ^ k) (NormedSpace.exp A) :=
+    NormedSpace.exp_series_hasSum_exp' _
+  have hzero : HasSum (fun k : ℕ => φ ((Nat.factorial k : ℂ)⁻¹ • A ^ k)) 0 := by
+    simp only [hterm0]; exact hasSum_zero
+  have hφ0 : φ (NormedSpace.exp A) = 0 := (hsum.map φ hφc).unique hzero
+  show ((NormedSpace.exp A).mulVec ψ) x = ((NormedSpace.exp A).mulVec ψ) y
+  exact sub_eq_zero.mp hφ0
+
+end ExpClosure
+
+/-- **The graph adjacency preserves the cell-uniform subspace.**  This is the
+matrix-level form of the equitable condition: for a cell-constant vector `ψ`,
+`(A·ψ)` is again cell-constant, because `(A·ψ) w = ∑_j (branching j w)·ψ̄_j`
+depends on `w` only through its cell (by `branching_eq`). -/
+theorem WeightedGraph.adj_preservesCellUniform'
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I) :
+    Matrix.preservesCellUniform' G.adj P := by
+  classical
+  intro ψ hψ x y hxy
+  -- `(A·ψ) w = ∑_j (branching j w) · ψ̄_j`, with `ψ̄_j` a cell-representative value.
+  have key : ∀ w : V, (G.adj.mulVec ψ) w
+      = ∑ j : I, P.branching j w * (if h : ∃ z, P.cells z = j then ψ h.choose else 0) := by
+    intro w
+    simp only [Matrix.mulVec, dotProduct]
+    rw [← Finset.sum_fiberwise_of_maps_to (g := P.cells) (fun z _ => Finset.mem_univ _)]
+    apply Finset.sum_congr rfl
+    intro j _
+    by_cases hj : ∃ z, P.cells z = j
+    · rw [dif_pos hj]
+      simp only [EquitablePartition.branching]
+      rw [show (∑ z, if P.cells z = j then G.adj w z else 0)
+            = ∑ z ∈ Finset.univ.filter (fun z => P.cells z = j), G.adj w z from
+          (Finset.sum_filter _ _).symm, Finset.sum_mul]
+      apply Finset.sum_congr rfl
+      intro z hz
+      rw [Finset.mem_filter] at hz
+      have : ψ z = ψ hj.choose := hψ z hj.choose (by rw [hz.2, hj.choose_spec])
+      rw [this]
+    · rw [dif_neg hj, mul_zero]
+      have hempty : (Finset.univ.filter (fun z => P.cells z = j)) = ∅ := by
+        rw [Finset.filter_eq_empty_iff]
+        intro z _ hz; exact hj ⟨z, hz⟩
+      rw [hempty, Finset.sum_empty]
+  rw [key x, key y]
+  apply Finset.sum_congr rfl
+  intro j _
+  rw [P.branching_eq (P.cells x) j x y rfl hxy.symm]
+
 /-- A `Schedule` is **cell-uniform-invariant** when every pointwise
 Hamiltonian preserves the cell-uniform subspace. -/
 def Schedule.cellUniformInvariant
@@ -244,6 +385,41 @@ This unifies the static (`staticSchedule`), Trotter (`trotterSchedule`), and
 magnetic-flux (`magneticFluxSchedule`) cases: the equitable-partition
 reduction is robust to time-dependent driving, *provided every snapshot of
 the drive respects the partition*. -/
+section EvolvePreserves
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- A left-multiplication fold of cell-uniform-preserving factors onto a
+preserving initial matrix preserves the cell-uniform subspace. -/
+theorem foldl_mul_preservesCellUniform
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
+    {ι : Type*} (P : EquitablePartition G I) (f : ι → Matrix V V ℂ)
+    (hf : ∀ k, Matrix.preservesCellUniform' (f k) P)
+    (l : List ι) (init : Matrix V V ℂ)
+    (hinit : Matrix.preservesCellUniform' init P) :
+    Matrix.preservesCellUniform' (l.foldl (fun acc k => f k * acc) init) P := by
+  induction l generalizing init with
+  | nil => simp only [List.foldl_nil]; exact hinit
+  | cons a t ih => rw [List.foldl_cons]; exact ih _ ((hf a).mul hinit)
+
+/-- The finite Trotter-product evolution preserves the cell-uniform subspace
+whenever every pointwise Hamiltonian does. -/
+theorem Schedule.evolveTrotter_preserves_cellUniform
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
+    {S : Schedule V} {P : EquitablePartition G I}
+    (hS : S.cellUniformInvariant P) (t₀ t₁ : ℝ) (N : ℕ) :
+    Matrix.preservesCellUniform' (S.evolveTrotter t₀ t₁ N) P := by
+  rw [Schedule.evolveTrotter]
+  refine foldl_mul_preservesCellUniform P
+    (fun k : ℝ => S.sliceProp (t₀ + k * ((t₁ - t₀) / (N : ℝ))) ((t₁ - t₀) / (N : ℝ)))
+    (fun k => ?_) _ 1 (Matrix.preservesCellUniform'.one P)
+  -- each slice `sliceProp t Δ = exp(-(iΔ)•H(t))` preserves: `H(t)` does (`hS`),
+  -- then smul + exp closure.
+  unfold Schedule.sliceProp
+  exact (Matrix.preservesCellUniform'.smul (hS _) _).exp
+
 theorem Schedule.evolve_preserves_cellUniform
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
@@ -252,12 +428,14 @@ theorem Schedule.evolve_preserves_cellUniform
     -- the evolution operator preserves the cell-uniform subspace, i.e. maps
     -- cell-constant vectors to cell-constant vectors.
     Matrix.preservesCellUniform' (S.evolve t₀ t₁) P := by
-  -- Each Trotter slice `sliceProp t Δ = exp(-iΔ H(t))` preserves the
-  -- cell-uniform subspace because `H(t)` does (`hS`), and `exp` is a limit of
-  -- polynomials in `H(t)`; the product of subspace-preserving maps preserves
-  -- the subspace.  A full proof needs `exp` continuity on the (closed)
-  -- cell-uniform subspace; deferred as an honest theorem-level `sorry`.
-  sorry
+  -- Each Trotter slice `sliceProp t Δ = exp(-iΔ H(t))` preserves the cell-uniform
+  -- subspace because `H(t)` does (`hS`) and `exp` is a limit of polynomials in
+  -- `H(t)` (`Matrix.preservesCellUniform'.exp`); the left-mult product of
+  -- subspace-preserving maps preserves the subspace.
+  rw [Schedule.evolve]
+  exact Schedule.evolveTrotter_preserves_cellUniform hS t₀ t₁ Schedule.trotterSteps
+
+end EvolvePreserves
 
 /-! ## Adiabatic search
 
@@ -276,6 +454,35 @@ noncomputable def markedProjector
 noncomputable def markedSetProjector
     {V : Type u} [Fintype V] [DecidableEq V] (M : Finset V) : Matrix V V ℂ :=
   Matrix.of (fun x y => if x = y ∧ x ∈ M then (1 : ℂ) else 0)
+
+/-- The marked-set projector acts diagonally: `(P_M·ψ) x = ψ x` if `x ∈ M`,
+else `0`. -/
+theorem markedSetProjector_mulVec
+    {V : Type u} [Fintype V] [DecidableEq V] (M : Finset V) (ψ : V → ℂ) (x : V) :
+    ((markedSetProjector M).mulVec ψ) x = if x ∈ M then ψ x else 0 := by
+  simp only [markedSetProjector, Matrix.mulVec, dotProduct, Matrix.of_apply]
+  rw [Finset.sum_eq_single x]
+  · by_cases hx : x ∈ M <;> simp [hx]
+  · intro b _ hb; rw [if_neg (by tauto), zero_mul]
+  · intro h; exact absurd (Finset.mem_univ x) h
+
+/-- **The marked-set projector preserves the cell-uniform subspace when the
+marked set is a union of cells.**  If `cells x = cells y` and `x ∈ M ⟹ y ∈ M`
+(both directions, i.e. `M` is `P`-saturated), then `(P_M·ψ)` is cell-constant
+whenever `ψ` is: same-cell vertices are either both marked (giving `ψ x = ψ y`)
+or both unmarked (giving `0 = 0`). -/
+theorem markedSetProjector_preservesCellUniform'
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
+    (M : Finset V) (P : EquitablePartition G I)
+    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M)) :
+    Matrix.preservesCellUniform' (markedSetProjector M) P := by
+  intro ψ hψ x y hxy
+  rw [markedSetProjector_mulVec, markedSetProjector_mulVec]
+  by_cases hx : x ∈ M
+  · rw [if_pos hx, if_pos ((hM x y hxy).mp hx)]
+    exact hψ x y hxy
+  · rw [if_neg hx, if_neg (fun hy => hx ((hM x y hxy).mpr hy))]
 
 /-- The **adiabatic search schedule**.  Linearly interpolates between
 `H_initial = - G.adj` (or, in a richer variant, the graph Laplacian) and
@@ -330,14 +537,27 @@ theorem adiabatic_search_reduction
     -- (so the reduction lands an adiabatic schedule of equal duration on the
     -- smaller index set).
     ((adiabatic_search_schedule G M τ).quotient P).endpoints = (0, τ) := by
+  -- `M` saturated upward + symmetry of `cells x = cells y` gives the `↔` form.
+  have hMiff : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M) := by
+    intro x y hxy
+    exact ⟨_marked_is_union_of_cells x y hxy,
+      _marked_is_union_of_cells y x hxy.symm⟩
   refine ⟨?_, ?_⟩
-  · -- Cell-uniform invariance: both endpoint Hamiltonians (`-G.adj` and
-    -- `-markedSetProjector M`) preserve the cell-uniform subspace — the former
-    -- by equitability of `P`, the latter because `M` is a union of cells —
-    -- hence so does each convex combination along the linear path.  A full
-    -- proof needs the matrix-level invariance lemmas; deferred as an honest
-    -- theorem-level `sorry`.
-    sorry
+  · -- Cell-uniform invariance.  Each pointwise Hamiltonian is the convex
+    -- combination `(1-s)•(-A) + s•(-P_M)`; both `-A` (equitability) and `-P_M`
+    -- (M a union of cells) preserve the cell-uniform subspace, and that property
+    -- is closed under `•` and `+`.
+    intro t
+    show Matrix.preservesCellUniform'
+      ((1 - ((((t - 0) / (τ - 0) : ℝ)) : ℂ)) • (-(G.adj))
+        + ((((t - 0) / (τ - 0) : ℝ)) : ℂ) • (-(markedSetProjector M))) P
+    have hA : Matrix.preservesCellUniform' (-(G.adj)) P := by
+      have := (G.adj_preservesCellUniform' P).smul (-1)
+      rwa [neg_one_smul] at this
+    have hPM : Matrix.preservesCellUniform' (-(markedSetProjector M)) P := by
+      have := (markedSetProjector_preservesCellUniform' M P hMiff).smul (-1)
+      rwa [neg_one_smul] at this
+    exact (hA.smul _).add (hPM.smul _)
   · -- The quotient inherits the V-schedule's interval `(0, τ)` by definition of
     -- `Schedule.quotient` and `linearAdiabatic`.
     rfl

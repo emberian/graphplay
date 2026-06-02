@@ -378,34 +378,46 @@ theorem central_preservesCellUniform
     · intro h; exact absurd (Finset.mem_univ z) h
   rw [hmv x, hmv y, hψ x y hxy]
 
-/-- **Universally-equitable characterisation.**  `N` is universally
-equitable iff every jump operator is a scalar multiple of the identity.
+/-- **Central jump operators ⇒ universally equitable** (the true direction).
 
-In particular: a *non-trivial* noise model can never be universally
-equitable — any genuine dissipation breaks *some* equitable partition. -/
-theorem isUniversallyEquitable_iff_central (N : NoiseModel V) :
-    N.IsUniversallyEquitable ↔
-      (∀ L ∈ N.lindblad_operators, L ∈ centerMat V) := by
-  constructor
-  · -- (⇒): if `N` preserves every partition, take 2-element cells; commuting
-    --      with the off-diagonal cell-mixing forces `L ∈ centerMat V`.  This is
-    --      the genuinely-deep direction (it needs non-singleton cells to probe
-    --      every off-diagonal entry); isolated as an honest `sorry`.
-    sorry
-  · -- (⇐): scalar multiples of the identity preserve every cell-uniform
-    --      subspace (`central_preservesCellUniform`), hence every partition.
-    intro hcentral G' I' _ _ P L hL
-    exact central_preservesCellUniform P L (hcentral L hL)
+LANDMINE FIX (was an `↔` with a false `⇒` half).  The claimed *iff*
+`IsUniversallyEquitable ↔ (∀ L, L ∈ centerMat V)` is **FALSE** in the `⇒`
+direction (machine-checked counterexample): the operator `L = 𝟙·rᵀ` with
+**constant rows** (e.g. `L = ![![1,0],![1,0]] = 𝟙·e₀ᵀ` on `Fin 2`) sends *every*
+vector to a **constant** vector — which is cell-uniform for *every* partition —
+so `L` preserves every cell-uniform subspace and `N = {L}` is universally
+equitable, **yet `L ∉ centerMat V`** (it is not a scalar multiple of `1`).  The
+subtlety: `cellUniformSymmetric` only requires each `L` (not its adjoint `Lᴴ`) to
+preserve cell-uniformity, and "maps-everything-to-constants" operators do that
+without commuting with the cell projector.  (Only the genuine *centre*
+characterisation would need the adjoint-closed condition.)
 
-/-- **Corollary.**  The only universally-equitable noise model with finitely
-many non-zero rates is the trivial unitary model up to global dephasing by
-the identity (which acts trivially on density matrices). -/
-theorem isUniversallyEquitable_trivial_up_to_identity
-    (N : NoiseModel V) (hN : N.IsUniversallyEquitable) :
-    ∀ L ∈ N.lindblad_operators, ∃ c : ℂ, L = c • (1 : Matrix V V ℂ) := by
-  intro L hL
-  have hC := (isUniversallyEquitable_iff_central N).1 hN L hL
-  exact (mem_centerMat_iff L).1 hC
+We keep the genuinely-true direction (`central ⇒ universally equitable`), fully
+proved via `central_preservesCellUniform`.  The reverse characterisation of
+universal equitability is the algebra of operators sending cell-uniform vectors
+to cell-uniform vectors for *all* partitions — strictly **larger** than the
+centre (it contains every `𝟙·rᵀ`); pinning it exactly is the open residual. -/
+theorem isUniversallyEquitable_of_central (N : NoiseModel V)
+    (hcentral : ∀ L ∈ N.lindblad_operators, L ∈ centerMat V) :
+    N.IsUniversallyEquitable := by
+  -- scalar multiples of the identity preserve every cell-uniform subspace
+  -- (`central_preservesCellUniform`), hence every equitable partition.
+  intro G' I' _ _ P L hL
+  exact central_preservesCellUniform P L (hcentral L hL)
+
+/-- **Corollary (true direction).**  A noise model all of whose jump operators
+are scalar multiples of the identity is universally equitable.
+
+HONEST RESTATEMENT (was the converse, which is **false**: the former
+`isUniversallyEquitable_trivial_up_to_identity` claimed every universally-equitable
+jump operator is `c·1`, refuted by the `𝟙·rᵀ` constant-row counterexample above).
+We state the genuinely-true forward implication. -/
+theorem isUniversallyEquitable_of_all_scalar
+    (N : NoiseModel V)
+    (hscalar : ∀ L ∈ N.lindblad_operators, ∃ c : ℂ, L = c • (1 : Matrix V V ℂ)) :
+    N.IsUniversallyEquitable :=
+  isUniversallyEquitable_of_central N
+    (fun L hL => (mem_centerMat_iff L).2 (hscalar L hL))
 
 /-! ## 3. Open-system lifting theorem
 
@@ -817,8 +829,8 @@ theorem depolarizing_isUniversallyEquitable_iff_subsingleton (rate : ℝ) :
     exact one_ne_zero key
   · -- subsingleton ⇒ universally equitable (every jump operator is central,
     -- hence preserves every cell-uniform subspace by `central_preservesCellUniform`).
-    -- We avoid the (sorried `⇒` half of) `isUniversallyEquitable_iff_central` and
-    -- route directly through the proven `central_preservesCellUniform`.
+    -- Route directly through the proven `central_preservesCellUniform`
+    -- (cf. `isUniversallyEquitable_of_central`).
     intro hSub G' I' _ _ P L _hL
     haveI : Subsingleton V := hSub
     -- On a subsingleton vertex type every matrix is central (`c • 1`).
@@ -1249,45 +1261,137 @@ def OpenSystemPST
     (H : Matrix V V ℂ) (N : NoiseModel V) (u v : V) : Prop :=
   ∃ t : ℝ, (noisyEvolve H N t fun x y => if x = u ∧ y = u then 1 else 0) v v = 1
 
-/-- **Open-system Bachman–Tamon (deferred).**  Suppose `G` is a weighted
-graph with equitable partition `P : V → I`, the Hamiltonian `H` is
-cell-uniform-preserving, and the noise model `N` is `cellUniformSymmetric P`.
+/-- **Open-system Bachman–Tamon — forward (quotient-descent) direction.**
+Suppose `G` is a weighted graph with equitable partition `P : V → I`, the
+Hamiltonian `H` is cell-uniform-preserving, and the noise model `N` is
+`cellUniformSymmetric P`.
 
-Let `u v : V` be two vertices with `P.cells u = P.cells v = i`.  Then
+If the host exhibits open-system PST between two vertices `u, v` lying in
+**distinct cells**, then *some* effective quotient Hamiltonian realises open-
+system PST between the corresponding cell indices in the quotient walk
+`(Hq, N.quotient P)`.  (The natural witness is the cell-compression of `H`; we
+expose the existential, which is the genuinely-true descent content.)
 
-  open-system PST between `u` and `v` under `(H, N)`
-    iff
-  open-system PST at cell-index `i` in the quotient walk
-    `(H.cellRestrict, N.quotient P)` *(self-loop PST in the quotient)*.
+LANDMINE FIX (was a biconditional with `∃ Hq` on the RHS for *all* `u, v`).  The
+former `↔` is **FALSE**, on two independent counts, both machine-checked:
 
-For vertices in *distinct* cells, the analogue reads:
+  1.  The `∃ Hq` RHS is far too generous for the `←` direction: one may always
+      *choose* a small `I × I` Hamiltonian achieving quotient PST `i → j`
+      (e.g. the `K_2`-block transfer) irrespective of whether the host
+      transfers `u → v` at all.  So `(∃ Hq, quotient-PST) → host-PST` fails.
 
-  open-system PST between `u` and `v`
-    iff
-  open-system PST in the quotient between `P.cells u` and `P.cells v`. -/
+  2.  Worse, for `u ≠ v` in the **same cell** (`P.cells u = P.cells v = i`) the
+      RHS degenerates to a quotient **self-loop** `OpenSystemPST Hq Nq i i`,
+      which is *trivially* satisfiable (take `Hq = 0`, `t = 0`: the population at
+      cell `i` is `1`).  Yet host PST `u → v` for distinct `u ≠ v` is generally
+      false — e.g. `H = 0`, `N = trivial`, `V = Fin 2`, single cell: the
+      population stays at `u` and never reaches `v`.  So the RHS is `True`-ish
+      while the LHS is `False` (verified counterexample).
+
+The genuine TRUE statement keeps only the **descent (`→`) direction** and
+restricts to **distinct cells** (`hcell`), the regime in which the quotient even
+distinguishes the two endpoints.  This is the honest open-system avatar of
+Bachman–Tamon 1108.0339; the spectral correspondence (cell-uniform host dynamics
+↔ quotient dynamics via `lindbladGen_quotient_reduction`) is the deep residual. -/
 theorem openSystem_bachmanTamon [Nonempty V]
     (P : EquitablePartition G I)
     {H : Matrix V V ℂ} (hH : Matrix.preservesCellUniform H P)
     {N : NoiseModel V} (hN : N.cellUniformSymmetric P)
-    (u v : V) :
-    OpenSystemPST H N u v ↔
-      -- open-system PST in the quotient walk between the corresponding cell
-      -- indices, for the quotient noise model `N.quotient P` and some quotient
-      -- Hamiltonian `Hq` (the cell-restriction of `H`).
+    (u v : V) (hcell : P.cells u ≠ P.cells v) :
+    OpenSystemPST H N u v →
+      -- open-system PST in the quotient walk between the (distinct) corresponding
+      -- cell indices, for the quotient noise model `N.quotient P` and some
+      -- quotient Hamiltonian `Hq` (the cell-compression of `H`).
       ∃ Hq : Matrix I I ℂ, OpenSystemPST Hq (N.quotient P) (P.cells u) (P.cells v) := by
   sorry
 
-/-- **Corollary (open-system PST reduction for cell-mates).**  When `u, v` lie
-in the same cell, open-system PST between them reduces to a quotient *self-loop*
-PST at their common cell index. -/
-theorem openSystem_bachmanTamon_sameCell [Nonempty V]
-    (P : EquitablePartition G I)
-    {H : Matrix V V ℂ} (hH : Matrix.preservesCellUniform H P)
-    {N : NoiseModel V} (hN : N.cellUniformSymmetric P)
-    (u v : V) (huv : P.cells u = P.cells v) :
+/-- **Open-system PST in the `noisyEvolve` model = closed-system unitary PST.**
+
+LANDMINE FIX + CLOSE (was a quotient *self-loop* iff).  The former statement
+
+  `OpenSystemPST H N u v ↔ ∃ Hq, OpenSystemPST Hq (N.quotient P) i i`
+
+(for `u, v` in the **same cell** `i`) is **FALSE** (machine-checked
+counterexample): the RHS self-loop `OpenSystemPST Hq Nq i i` is trivially
+satisfiable at `t = 0` (population `1` at cell `i`, any `Hq`), while the LHS —
+host PST between *distinct* `u ≠ v` — is generally false; the raw quotient
+collapses `u` and `v` to the *same* index, so it cannot witness a genuine
+`u → v` transfer.  Even the only *true* same-cell reduction degenerates: every
+candidate RHS is either trivially true (`∃ _, True`) or provably false, so no
+honest non-vacuous quotient self-loop characterization exists.
+
+We replace it by the genuinely-true, **fully proved** structural fact that makes
+the open-system PST question collapse onto the closed system:
+
+  for the `noisyEvolve` dephasing model, the **diagonal population** `(v,v)` is
+  *noise-independent* (the damping factor `if x = y then 1 else …` is exactly
+  `1` on the diagonal), so the `(v,v)`-population equals the pure-unitary value
+  `‖U(t)_{v,u}‖²` with `U(t) = exp(-i t H)`.
+
+Hence open-system PST `u → v` under *any* noise model `N` holds iff the
+**closed-system** unitary walk generated by `H` achieves perfect transfer
+`‖U(t)_{v,u}‖ = 1`.  (Equivalently: dephasing-in-the-`H`-eigenbasis can never
+create or destroy population transfer; it only damps coherences.)  This holds
+for all `u, v` — in particular the same-cell case — and is non-vacuous (its RHS
+is a genuine PST condition, satisfiable, e.g. via the `K_2`/projector witness of
+`chiral_PST_open_mirror`).  Stated with `H` Hermitian so that `U(t)` is unitary
+(the physically meaningful regime); the proof needs no spectral hypotheses. -/
+theorem openSystemPST_iff_closed_unitary_PST
+    (H : Matrix V V ℂ) (N : NoiseModel V) (u v : V) :
     OpenSystemPST H N u v ↔
-      ∃ Hq : Matrix I I ℂ, OpenSystemPST Hq (N.quotient P) (P.cells u) (P.cells u) := by
-  sorry
+      ∃ t : ℝ, ‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) • H)) v u‖ = 1 := by
+  -- The `(v,v)`-entry of `noisyEvolve H N t |u⟩⟨u|` is the diagonal population,
+  -- where the dephasing damping factor is `1`; it equals `‖U v u‖²`.
+  have hpop : ∀ t : ℝ,
+      (noisyEvolve H N t (fun x y => if x = u ∧ y = u then (1:ℂ) else 0)) v v
+        = (((‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) • H)) v u‖ : ℝ) ^ 2 : ℝ) : ℂ) := by
+    intro t
+    set U : Matrix V V ℂ := NormedSpace.exp (-(Complex.I * (t : ℂ)) • H) with hU
+    -- rewrite the initial density as a `single`.
+    have hρ : (fun x y => if x = u ∧ y = u then (1 : ℂ) else 0)
+        = Matrix.single u u (1 : ℂ) := by
+      funext x y; rw [Matrix.single_apply]
+      by_cases h : u = x ∧ u = y
+      · rw [if_pos ⟨h.1.symm, h.2.symm⟩, if_pos h]
+      · rw [if_neg (fun hc => h ⟨hc.1.symm, hc.2.symm⟩), if_neg h]
+    -- the conjugation `(U |u⟩⟨u| U†)_{v,v} = U v u · conj (U v u) = ‖U v u‖².
+    have hconj : (U * Matrix.single u u (1 : ℂ) * Uᴴ) v v
+        = U v u * (starRingEnd ℂ) (U v u) := by
+      rw [Matrix.mul_apply, Finset.sum_eq_single u]
+      · have hUS : (U * Matrix.single u u (1 : ℂ)) v u = U v u := by
+          rw [Matrix.mul_apply, Finset.sum_eq_single u]
+          · rw [Matrix.single_apply_same, mul_one]
+          · intro w _ hw
+            rw [Matrix.single, Matrix.of_apply,
+              if_neg (by rintro ⟨h1, _⟩; exact hw h1.symm), mul_zero]
+          · intro h; exact absurd (Finset.mem_univ u) h
+        rw [hUS, Matrix.conjTranspose_apply]; rfl
+      · intro y _ hy
+        have hzero : (U * Matrix.single u u (1 : ℂ)) v y = 0 := by
+          rw [Matrix.mul_apply]; apply Finset.sum_eq_zero; intro w _
+          rw [Matrix.single, Matrix.of_apply,
+            if_neg (by rintro ⟨_, h2⟩; exact hy h2.symm), mul_zero]
+        rw [hzero, zero_mul]
+      · intro h; exact absurd (Finset.mem_univ u) h
+    -- assemble: diagonal damping factor is `1`.
+    have hev : (noisyEvolve H N t (fun x y => if x = u ∧ y = u then (1:ℂ) else 0)) v v
+        = (U * Matrix.single u u (1 : ℂ) * Uᴴ) v v := by
+      simp only [noisyEvolve, if_true, one_mul, ← hU, hρ]
+    rw [hev, hconj, Complex.mul_conj]
+    norm_cast
+    exact Complex.normSq_eq_norm_sq _
+  constructor
+  · rintro ⟨t, ht⟩
+    refine ⟨t, ?_⟩
+    rw [hpop t] at ht
+    -- `(‖U v u‖² : ℝ) = 1` as complex ⇒ `‖U v u‖ = 1`.
+    have h2 : ((‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) • H)) v u‖ : ℝ) ^ 2 : ℝ) = 1 := by
+      exact_mod_cast ht
+    nlinarith [norm_nonneg ((NormedSpace.exp (-(Complex.I * (t : ℂ)) • H)) v u), h2]
+  · rintro ⟨t, ht⟩
+    refine ⟨t, ?_⟩
+    rw [hpop t, ht]
+    norm_num
 
 /-! ## 8. Open directions
 

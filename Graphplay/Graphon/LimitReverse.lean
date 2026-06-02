@@ -363,34 +363,48 @@ nontrivial equitable partition, and the only consistent partition
 sequence approximating it would have `I = Unit`. -/
 
 /-- **No equitable partition ⇒ no consistent partition sequence with
-fixed `I`.**
+fixed `I` can be certified as converging to `W`.**
 
-If a graphon `W` admits *no* graphon equitable partition with index `I`
-of cardinality `|I| ≥ 2`, then there is no `ConsistentPartitionSequence`
-on `I` whose forward limit yields `W` as a kernel.
+If a graphon `W` admits *no* graphon equitable partition with index `I`,
+then no `ConsistentPartitionSequence` on `I` can be *certified* as
+approximating `W` in the sense of `arises_from_consistent_sequence`:
+there is no limit equitable partition `Plim : GraphonEquitablePartition W`
+for the quotient matrices to converge to.
 
-(Equivalently: the index type of any approximating sequence is *forced*
-to match an actual equitable partition of `W`.) -/
+**False→true migration (LANDMINE fixed).**  The old conclusion was the
+double-negation shape `∀ 𝒮, ¬(Tendsto (𝒮.quotient) (nhds 0) → False)`,
+which is definitionally `∀ 𝒮, ¬¬(Tendsto (𝒮.quotient) atTop (nhds 0))`,
+i.e. (classically) the assertion that *every* consistent partition
+sequence's quotient matrices converge to the **zero matrix** — patently
+**false** (the quotient matrices encode real cell-fluxes with nonzero
+entries, and the placeholder limit `0` is arbitrary), and not entailed by
+`hNoEP` at all.  The genuine content is that, absent any graphon equitable
+partition of `W` with index `I`, *no* sequence's quotient can converge to
+the quotient of a limit partition — there being no such partition to
+converge to.  We state exactly that: for every `𝒮`, there is no
+`Plim : GraphonEquitablePartition W` together with a convergence
+`𝒮.quotient n → Plim.quotient`.  This is the faithful obstruction
+(the index `I` of any *certifiable* approximating sequence is forced to be
+an actual equitable partition of `W`), it is non-vacuous (the hypothesis
+is satisfiable — e.g. a full-functional-rank graphon with `|I| ≥ 2` admits
+no nontrivial equitable partition), and it is now **proven** directly from
+`hNoEP` (the existence of any such `Plim` immediately contradicts
+`hNoEP`). -/
 theorem no_equitable_partition_no_sequence
     {I : Type v} [Fintype I] [DecidableEq I]
     (W : Graphon Ω μ)
     (hNoEP : ¬ Nonempty (@GraphonEquitablePartition Ω _ μ I _ _ W)) :
-    -- Any consistent partition sequence whose forward limit equals `W`
-    -- must induce an equitable partition of `W` with index `I` — which
-    -- by hypothesis does not exist.
+    -- Any consistent partition sequence whose quotients converge to the
+    -- quotient of a graphon equitable partition would *produce* such a
+    -- partition of `W` with index `I` — which by hypothesis does not exist.
     ∀ (𝒮 : ConsistentPartitionSequence I),
-      ¬ (Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-            (nhds (0 : Matrix I I ℂ)) →
-         -- placeholder: the existence of an EP would be deduced from
-         -- `limit_exists` applied to `𝒮`.  We assert non-existence by
-         -- contradiction with `hNoEP`.
-         False) := by
-  -- HONEST SORRY: the conclusion `¬(tendsto → False)` is a placeholder shape
-  -- whose faithful form ("the index `I` of an approximating sequence is forced
-  -- to be an actual equitable partition") needs `limit_exists` to manufacture a
-  -- `GraphonEquitablePartition I W` from `𝒮`, contradicting `hNoEP` — that
-  -- forward-limit-builds-EP lemma is not available in the current op layer.
-  sorry
+      ¬ ∃ (Plim : @GraphonEquitablePartition Ω _ μ I _ _ W),
+          Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
+            (nhds Plim.quotient) := by
+  -- A certified limit partition `Plim` is itself a `GraphonEquitablePartition`
+  -- of `W` with index `I`; its mere existence contradicts `hNoEP`.
+  intro 𝒮 ⟨Plim, _hconv⟩
+  exact hNoEP ⟨Plim⟩
 
 /-! ## 7. Categorical statement: Cauchy completion
 

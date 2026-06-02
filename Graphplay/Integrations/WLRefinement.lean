@@ -563,40 +563,152 @@ unsatisfiable `univ ≠ univ`.  We delegate to the honest spectral definition.) 
 abbrev EigenvalueSupport (G : WeightedGraph V) (u : V) : Set ℝ :=
   Graphplay.PST.EigenvalueSupport G u
 
-/-- **PST necessity**: PST from `u` to `v` at some time implies (i) `u, v`
-share their WL stable colour and (ii) their eigenvalue supports agree. -/
-theorem pst_requires_WL_and_eigenSupport
-    (G : WeightedGraph V) (u v : V)
-    {C : Type v} [DecidableEq C] [Fintype C] (c : Colouring V C)
-    (hc : IsWLStable G c) :
+/-- **A real eigenvalue `λ` lies in `EigenvalueSupport G u` iff the diagonal
+spectral-projector weight `(E_λ)_{u,u}` is nonzero.**  Both sides express "the
+projection of `e_u` onto the `λ`-eigenspace is nonzero": the support records a
+witness eigenindex `i` with `eigU u i ≠ 0`, while the diagonal weight
+`eigenProjDiagLocal G λ u = ∑_i [eigenvalues i = λ] ‖eigU u i‖²` is a sum of
+nonnegative terms that is positive exactly when such a witness exists.  (Holds
+unconditionally: when `λ` is not an eigenvalue both sides are vacuously false.) -/
+theorem mem_eigenvalueSupport_iff_diag_ne_zero (G : WeightedGraph V) (u : V) (lam : ℝ) :
+    lam ∈ EigenvalueSupport G u ↔ Graphplay.PST.eigenProjDiagLocal G lam u ≠ 0 := by
+  unfold EigenvalueSupport Graphplay.PST.EigenvalueSupport
+  rw [Graphplay.PST.eigenProjDiagLocal]
+  constructor
+  · -- a witness `i` makes the `i`-summand strictly positive, so the (nonneg) sum is `> 0`.
+    rintro ⟨i, hi, hne⟩
+    have hpos : 0 < ‖Graphplay.PST.eigU G u i‖ ^ 2 := by positivity
+    have hsum_pos : 0 < ∑ j : V,
+        if G.herm.eigenvalues j = lam then ‖Graphplay.PST.eigU G u j‖ ^ 2 else 0 := by
+      refine Finset.sum_pos' (fun j _ => ?_) ⟨i, Finset.mem_univ i, ?_⟩
+      · by_cases h : G.herm.eigenvalues j = lam
+        · simp only [h, if_true]; positivity
+        · simp only [h, if_false, le_refl]
+      · simp only [hi, if_true]; exact hpos
+    exact ne_of_gt hsum_pos
+  · -- contrapositive: no witness ⇒ every summand is `0` ⇒ the sum vanishes.
+    intro hsum
+    by_contra hcon
+    rw [Set.mem_setOf_eq] at hcon
+    push_neg at hcon
+    apply hsum
+    refine Finset.sum_eq_zero (fun j _ => ?_)
+    by_cases h : G.herm.eigenvalues j = lam
+    · simp only [h, if_true]
+      rw [hcon j h]; simp
+    · simp only [h, if_false]
+
+/-- **PST necessity (eigenvalue-support form).**  PST from `u` to `v` at some
+time forces the two vertices to have **equal eigenvalue supports**:
+`EigenvalueSupport G u = EigenvalueSupport G v`.
+
+This is the genuine, axiom-clean necessity half of Godsil's PST theory: PST
+forces `U(τ) e_u = γ e_v` with `‖γ‖ = 1`, so applying each spectral projector
+`E_λ` and taking norms gives `‖E_λ e_u‖ = ‖E_λ e_v‖` for every eigenvalue `λ`
+(`isPST_imp_cospectral`); hence the *supports* — the eigenvalues whose projector
+acts nontrivially on the basis vector — coincide.
+
+WHY THE OLD STATEMENT WAS FALSE.  The previous version additionally claimed
+`WLSameColour G c u v` (i.e. `c u = c v`) for an *arbitrary* `IsWLStable`
+colouring `c`.  That is false: the **injective** colouring `c = id` (the terminal
+fixpoint used to *prove* `exists_WLStable`, hence genuinely `IsWLStable`) has
+`c u = c v ↔ u = v`, yet PST routinely occurs between **distinct** vertices
+(e.g. the endpoints of `P₂ = K₂`, `Graphplay.StdLib.Path.path_P2_PST`).  So the
+hypothesis `∃ τ, IsPST G u v τ` is satisfiable with `u ≠ v` while the conjunct
+`WLSameColour G c u v` is false — a landmine.  (Moreover even cospectral
+vertices need not be 1-WL-equivalent, so no canonical-colouring repair recovers
+the colour conjunct.)  We keep only the genuinely-true eigenvalue-support
+equality, which is the real spectral content of PST necessity. -/
+theorem pst_requires_eigenSupport
+    (G : WeightedGraph V) (u v : V) :
     (∃ τ : ℝ, IsPST G u v τ) →
-      (WLSameColour G c u v ∧ EigenvalueSupport G u = EigenvalueSupport G v) := by
-  -- Genuine necessity: with the honest `EigenvalueSupport`, condition (ii) is
-  -- now real (PST ⇒ strong cospectrality ⇒ equal eigenvalue supports, Godsil).
-  -- BLOCKED: needs the PST ⇒ strong-cospectrality bridge from
-  -- `Graphplay.PST.Cospectrality` together with WL-colour stability transport.
-  sorry
+      EigenvalueSupport G u = EigenvalueSupport G v := by
+  rintro ⟨τ, hpst⟩
+  -- PST ⇒ equal diagonal spectral weights at every eigenvalue (Godsil necessity).
+  ext lam
+  rw [mem_eigenvalueSupport_iff_diag_ne_zero, mem_eigenvalueSupport_iff_diag_ne_zero]
+  by_cases hmem : lam ∈ Set.range G.herm.eigenvalues
+  · -- genuine eigenvalue: the diagonals agree, so the nonvanishing conditions agree.
+    have hdiag : Graphplay.PST.eigenProjDiagLocal G lam u
+        = Graphplay.PST.eigenProjDiagLocal G lam v :=
+      Graphplay.PST.isPST_imp_cospectral G τ u v hpst lam hmem
+    rw [hdiag]
+  · -- non-eigenvalue: both diagonal weights vanish, so both memberships are false.
+    have hzero : ∀ w : V, Graphplay.PST.eigenProjDiagLocal G lam w = 0 := by
+      intro w
+      rw [Graphplay.PST.eigenProjDiagLocal]
+      refine Finset.sum_eq_zero (fun j _ => ?_)
+      have hjne : G.herm.eigenvalues j ≠ lam := by
+        intro hj; exact hmem ⟨j, hj⟩
+      simp only [hjne, if_false]
+    rw [hzero u, hzero v]
 
-/-- **Phantom symmetry**: there exist graphs where `WLSameColour` holds but
-the eigenvalue supports differ, hence no PST. (Now a genuine existence claim:
-with the honest `EigenvalueSupport`, the differing-supports clause is a real,
-satisfiable condition rather than the previously-unsatisfiable `univ ≠ univ`.)
+/-- **WL-stable same-colour vertices are graph twins (PROVEN).**  In *this file's*
+refinement model, two vertices receiving the same colour under an `IsWLStable`
+colouring have **identical adjacency rows**: `∀ w, G.adj u w = G.adj v w`.
 
-These are the "WL-twins" that motivate Mancinska–Roberson's *quantum*
-isomorphism: classically WL-equivalent vertices that are *quantum-but-not-
-classically* permuted. -/
-theorem phantom_symmetries_exist :
-    ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
-      (G : WeightedGraph V) (u v : V)
-      (C : Type) (_ : DecidableEq C) (_ : Fintype C) (c : Colouring V C),
-      IsWLStable G c ∧ WLSameColour G c u v ∧
-        EigenvalueSupport G u ≠ EigenvalueSupport G v := by
-  -- BLOCKED: requires constructing an explicit WL-regular but
-  -- not-strongly-cospectral graph (a WL-twin pair) — the canonical example is a
-  -- vertex-pair that 1-WL identifies yet whose spectral projectors differ at
-  -- `u` vs `v`.  Building such a graph and computing both `EigenvalueSupport`s
-  -- is a concrete but substantial spectral computation.  Honest theorem-sorry.
-  sorry
+The reason is structural: this file's `refineStep` records, at each vertex `v`,
+the *entire* neighbour function `fun w => (c w, G.adj v w)` (not merely the
+*multiset* of neighbour colours used by genuine 1-WL).  Hence WL-stability forces
+`c u = c v → refineStep u = refineStep v`, whose second component evaluated at
+each `w` yields `G.adj u w = G.adj v w`.  So same-colour ⇒ twin neighbourhoods. -/
+theorem twins_of_WLStable_sameColour
+    (G : WeightedGraph V) {C : Type v} [DecidableEq C]
+    (c : Colouring V C) (hc : IsWLStable G c) {u v : V}
+    (huv : WLSameColour G c u v) :
+    ∀ w : V, G.adj u w = G.adj v w := by
+  intro w
+  -- WL-stability turns equal colour into equal refinement steps …
+  have hstep : refineStep G c u = refineStep G c v := (hc u v).mpr huv
+  -- … and the second component is the full neighbour signature.
+  have hsig : neighbourSignature G c u = neighbourSignature G c v :=
+    congrArg Prod.snd hstep
+  have hw := congrFun hsig w
+  -- `(c w, G.adj u w) = (c w, G.adj v w)`; project the second coordinate.
+  exact congrArg Prod.snd hw
+
+/-- **No phantom symmetries in this model (the original existence claim was a
+LANDMINE) — kernel core.**  For row-identical vertices `u, v` (`∀ w, G.adj u w =
+G.adj v w`) of a Hermitian-weighted graph, `e_u - e_v` is a `0`-eigenvector:
+`G.adj (e_u − e_v) = 0`.
+
+WHY THE OLD `phantom_symmetries_exist` WAS FALSE.  It asserted the existence of
+`IsWLStable G c` with `WLSameColour G c u v` yet `EigenvalueSupport G u ≠
+EigenvalueSupport G v`.  But by `twins_of_WLStable_sameColour`, same-colour
+vertices here have **identical adjacency rows** — they are graph *twins*, far
+stronger than genuine 1-WL equivalence (which matches only the *multiset* of
+neighbour colours).  Identical rows make `e_u − e_v` a `0`-eigenvector (this
+theorem), forcing `E_λ e_u = E_λ e_v` for every `λ ≠ 0`, and (a short
+orthogonality computation at `λ = 0`, using `⟨e_u, e_v⟩ = 0`) the diagonal
+weights to agree at `λ = 0` too — hence **equal** eigenvalue supports.  So the
+conjunction the old theorem asserted is *unsatisfiable* in this model: a
+vacuously-false landmine.  We replace it with the honest forward twin fact above
+and this kernel core, the spectral heart of "no phantom".
+
+(The genuine literature phenomenon — WL-equivalent-but-spectrally-distinct
+"phantom" vertices — is real, but lives in the *multiset* 1-WL model
+`Graphplay.Algorithm.WLRefinement` / `WLOrbit`, not in this file's strictly finer
+twin-collapsing `IsWLStable`; see `HasPhantomSymmetry` there.) -/
+theorem noPhantom_zeroEigvec_of_twin_rows
+    (G : WeightedGraph V) {u v : V}
+    (hrows : ∀ w : V, G.adj u w = G.adj v w) :
+    G.adj.mulVec
+        (fun x => (if x = u then (1 : ℂ) else 0) - (if x = v then 1 else 0)) = 0 := by
+  -- Row `w`: `∑_x A_{w x}(δ_{xu} − δ_{xv}) = A_{w u} − A_{w v}`.
+  funext w
+  simp only [Matrix.mulVec, dotProduct, mul_sub, Finset.sum_sub_distrib,
+    mul_ite, mul_one, mul_zero, Pi.zero_apply]
+  rw [Finset.sum_ite_eq' Finset.univ u, Finset.sum_ite_eq' Finset.univ v]
+  simp only [Finset.mem_univ, if_true]
+  -- Goal: `G.adj w u − G.adj w v = 0`, i.e. `G.adj w u = G.adj w v`,
+  -- obtained from `hrows` transported across Hermiticity.
+  have hwu : G.adj w u = star (G.adj u w) := by
+    have h := congrFun (congrFun G.herm.eq w) u
+    rw [Matrix.conjTranspose_apply] at h; exact h.symm
+  have hwv : G.adj w v = star (G.adj v w) := by
+    have h := congrFun (congrFun G.herm.eq w) v
+    rw [Matrix.conjTranspose_apply] at h; exact h.symm
+  rw [hwu, hwv, hrows w, sub_self]
 
 /-! ## 8. Quantum (non-commutative) WL — Mancinska–Roberson
 

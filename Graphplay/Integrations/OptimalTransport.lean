@@ -43,6 +43,7 @@ References:
 -/
 
 import Mathlib.MeasureTheory.Function.L2Space
+import Mathlib.MeasureTheory.Function.LpSeminorm.LpNorm
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.Topology.MetricSpace.Basic
@@ -274,32 +275,51 @@ theorem kantorovich_weak_duality (P : OptimalTransportProblem Ω)
   refine integral_mono (hφπ.add hψπ) hc (fun p => ?_)
   exact hadm p.1 p.2
 
-/-- **Strong Kantorovich duality** (deep, cited).  Under mild regularity (Polish
-space, lower-semicontinuous lower-bounded cost) the primal equals the dual:
+/-- **Strong Kantorovich duality** (deep, cited; regularity hypotheses now explicit).
+On a **Polish** space with a **lower-semicontinuous**, lower-bounded cost the primal
+equals the dual:
   `value P = sup_{(φ,ψ) admissible} dual P φ ψ`.
 
-This is the genuine strong-duality *equality* and is the deep half (Villani,
-*OT: Old and New*, Thm. 5.10): it needs the lsc cost, a Polish-space
-minimax / Fenchel–Rockafellar argument, not available in Mathlib.  It is left an
-honest `sorry` on a **true** statement.  The elementary, always-true *weak*
-duality half is fully proven in the finite model below
-(`FiniteOT.weak_duality`, `FiniteOT.dualValue_le_value`) and abstractly in
-`kantorovich_weak_duality`. -/
-theorem kantorovich_strong_duality (P : OptimalTransportProblem Ω) :
+This is the genuine strong-duality *equality*, the deep half (Villani, *OT: Old and
+New*, Thm. 5.10): it needs the lsc cost and a Polish-space minimax /
+Fenchel–Rockafellar argument, not available in Mathlib.  Honest `sorry` on a **true**
+statement.
+
+**Regularity hypotheses made explicit (audit 2026-06).**  Lower-semicontinuity of
+the cost is *not optional*: Kantorovich strong duality genuinely **fails** for a
+merely-measurable cost (there are non-lsc costs with a strictly positive duality gap
+`sup dual < inf primal`, so the bare `OptimalTransportProblem` — which only carries
+`cost_measurable` + `cost_lb` — does **not** entail the equality).  We therefore
+expose `[TopologicalSpace Ω] [PolishSpace Ω] [OpensMeasurableSpace Ω]` and the lsc
+hypothesis `hlsc`; the always-true *weak* half (`≤`) needs none of these and is fully
+proven (`kantorovich_weak_duality`, `FiniteOT.dualValue_le_value`). -/
+theorem kantorovich_strong_duality [TopologicalSpace Ω] [PolishSpace Ω]
+    [OpensMeasurableSpace Ω] (P : OptimalTransportProblem Ω)
+    (hlsc : LowerSemicontinuous (Function.uncurry P.cost)) :
     P.value =
       sSup {d : ℝ | ∃ φ ψ, P.IsAdmissiblePotential φ ψ ∧ P.dual φ ψ = d} := by
-  -- DEEP (Villani Thm 5.10): Kantorovich strong duality; needs lsc cost,
-  -- Polish-space minimax / Fenchel–Rockafellar, not formalised here.  TRUE
-  -- statement; honest cited residual.  (Weak duality `≤` is PROVEN below.)
+  -- DEEP (Villani Thm 5.10): Kantorovich strong duality; needs the lsc cost (`hlsc`)
+  -- and the Polish-space minimax / Fenchel–Rockafellar argument, not formalised here.
+  -- TRUE statement under these hypotheses; honest cited residual.  (Weak duality `≤`
+  -- is PROVEN below, with no regularity.)
   sorry
 
-/-- **Existence of an optimal plan** (deep, cited).  Under lower semicontinuity
-and lower-boundedness of the cost, the infimum in `value` is attained. -/
-theorem exists_optimal_coupling (P : OptimalTransportProblem Ω) :
+/-- **Existence of an optimal plan** (deep, cited; regularity hypotheses now explicit).
+On a Polish space with a lower-semicontinuous, lower-bounded cost the infimum in
+`value` is attained by an optimal coupling (Villani, Thm. 4.1).
+
+**Regularity hypotheses made explicit (audit 2026-06).**  Attainment requires lsc of
+the cost together with tightness/weak-compactness of the coupling set (Prokhorov on
+the Polish space); for a merely-measurable cost the infimum need not be attained, so
+the bare `OptimalTransportProblem` does not suffice.  `[PolishSpace Ω]` +
+`OpensMeasurableSpace` + `hlsc` are the genuine Villani 4.1 hypotheses. -/
+theorem exists_optimal_coupling [TopologicalSpace Ω] [PolishSpace Ω]
+    [OpensMeasurableSpace Ω] (P : OptimalTransportProblem Ω)
+    (hlsc : LowerSemicontinuous (Function.uncurry P.cost)) :
     ∃ π, P.IsCoupling π ∧ P.kantorovich π = P.value := by
-  -- DEEP: attainment of the Kantorovich infimum; needs tightness/weak
-  -- compactness of the coupling set (Prokhorov) and lsc of the cost.  TRUE
-  -- statement; honest cited residual.
+  -- DEEP (Villani Thm 4.1): attainment of the Kantorovich infimum; needs tightness/
+  -- weak compactness of the coupling set (Prokhorov) and lsc of the cost (`hlsc`).
+  -- TRUE statement under these hypotheses; honest cited residual.
   sorry
 
 end OptimalTransportProblem
@@ -864,26 +884,39 @@ theorem sinkhorn_quotient_commutes
     exact hcong Pk Pk0 (hck.trans hc0.symm)
   · refine ⟨0, fun Pk hck => absurd ⟨Pk, hck⟩ h⟩
 
-/-- **Sinkhorn convergence rate.**  The Sinkhorn iteration on `W` converges to
-a doubly stochastic graphon `Wlim`, with convergence rate at least as fast as the
-finite Sinkhorn iteration on `P.quotient`.
+/-- **Sinkhorn convergence (total mass) — LANDMINE MIGRATED.**  The total mass of
+the Sinkhorn iterates converges to a real limit.
 
-The finite Sinkhorn rate is governed by the Hilbert projective contraction
-constant `(1 - exp(-d_H(B)))` where `d_H(B)` is the *Hilbert diameter* of `B`
-(Franklin–Lorenz 1989; Carlier 2022).  We record only the existence-and-rate
-statement. -/
+**Audit (2026-06).**  The previous statement asserted geometric convergence of the
+iterate total mass to a **doubly-stochastic** limit `Wlim`
+(`IsStochastic Wlim ∧ |totalMass(Sₖ) − totalMass(Wlim)| ≤ Cρ^k`).  That is **FALSE**
+for the constant-scaling surrogate `sinkhornStep` actually defined here (which the
+surrogate's own docstring concedes is *not* the genuine per-row Sinkhorn): each step
+scales the kernel by a constant in `(0,1]`, so `totalMass(Sₖ) = Pₖ · totalMass(W)`
+with `Pₖ ↘ P∞ ∈ [0,1]`; the geometric bound forces
+`totalMass(Wlim) = lim totalMass(Sₖ) = P∞ · totalMass(W)`, while a *stochastic*
+`Wlim` has `totalMass(Wlim) = μ(Ω)`.  Concrete counterexample: the **zero graphon**
+`W` over a probability measure has `totalMass(Sₖ) = 0` for all `k`, so the bound
+demands a stochastic `Wlim` with `totalMass(Wlim) = 0 ≠ 1 = μ(Ω)` — impossible.
+
+We migrate to the genuinely-true convergence content: the (monotone, bounded) total
+mass sequence `k ↦ totalMass(Sₖ)` converges to **some** real limit.  (The genuine
+doubly-stochastic Sinkhorn limit with a Hilbert-projective geometric rate —
+Franklin–Lorenz 1989, Carlier 2022 — is the deferred deep content, and requires a
+*genuine* per-row normalisation in place of the surrogate.)  Honest residual: the
+monotone-bounded convergence proof needs the `scaleKernel` total-mass factoring and
+`marginal` integrability not re-exported by the lightweight `Graphon` signature. -/
 theorem sinkhorn_convergence
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    ∃ (Wlim : Graphon Ω μ) (ρ C : ℝ),
-      0 ≤ ρ ∧ ρ < 1 ∧
-      IsStochastic Wlim ∧
-      -- geometric convergence of the total mass to the bistochastic limit at
-      -- rate `ρ`: `|totalMass(Sₖ W) - totalMass(W_lim)| ≤ C · ρ^k`.
-      ∀ k : ℕ, |(sinkhornIterate W k).totalMass - Wlim.totalMass| ≤ C * ρ ^ k := by
-  -- DEEP: existence of the doubly-stochastic Sinkhorn limit with geometric rate;
-  -- needs the IPF/Hilbert-projective contraction convergence theorem
-  -- (Franklin–Lorenz, Carlier 2022), and a genuine per-row normalisation rather
-  -- than the constant-scaling surrogate used by `sinkhornStep`.
+    ∃ L : ℝ,
+      Filter.Tendsto (fun k : ℕ => (sinkhornIterate W k).totalMass)
+        Filter.atTop (nhds L) := by
+  -- DEEP (honest, on a now-TRUE statement): the surrogate iterates scale the kernel
+  -- by constants in `(0,1]`, so `totalMass(Sₖ) = Pₖ · totalMass(W)` is a monotone
+  -- bounded real sequence, hence convergent.  Formalising this needs the
+  -- `totalMass(scaleKernel W c) = c · totalMass W` factoring (pushing the real scalar
+  -- through the double integral, requiring `marginal` integrability), not re-exported
+  -- by the lightweight signature; left as the honest residual.
   sorry
 
 /-- **Quotient lower bound on the Sinkhorn rate.**  The Sinkhorn convergence
@@ -981,15 +1014,26 @@ noncomputable def sinkhornConvergenceTime
   ⌈Real.log (P.quotientSpread + 1) - Real.log ε⌉₊
 
 /-- **Conjecture (mixing ↔ Sinkhorn).**  For an equitable-partition graphon
-on `n := Fintype.card I` cells, the cell-uniform CTQW mixing time is related
+on `n := Fintype.card I ≥ 2` cells, the cell-uniform CTQW mixing time is related
 to the Sinkhorn entropic-regularisation convergence time by
 
   `cellUniformMixingTime P ε  ≈  sinkhornConvergenceTime P ε · log n / n`.
 
 The constant is independent of the graphon.  This relates the *quantum*
-sampling rate of an engineered graphon to its *classical* OT rate. -/
+sampling rate of an engineered graphon to its *classical* OT rate.
+
+**Audit (2026-06) — `n ≥ 2` hypothesis added (landmine removed).**  The `log n / n`
+factor *vanishes at `n = 1`* (`Real.log 1 = 0`), forcing the RHS to `0`; but the LHS
+`cellUniformMixingTime P ε = sInf {t ≥ 0 | exp(-t)·spread ≤ ε}` is **strictly
+positive** whenever `spread > ε` (e.g. a one-cell partition of a constant graphon
+`W ≡ c` over a probability measure has `spread ≈ c`; pick `ε < c`).  So for `n = 1`
+the original statement asserted `0 < (positive) ≤ 0`, which is **FALSE**.  We restrict
+to `2 ≤ Fintype.card I` (where `log n > 0`), the regime the conjecture actually
+concerns.  The genuine `log n / n` dictionary remains the deep open conjecture
+(no proof, classical or quantum, is known); honest residual. -/
 theorem mixing_sinkhorn_conjecture
-    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (hI : 2 ≤ Fintype.card I) :
     ∀ ε > 0,
       ∃ C : ℝ, 0 < C ∧
         cellUniformMixingTime P ε ≤
@@ -997,7 +1041,8 @@ theorem mixing_sinkhorn_conjecture
             Real.log (Fintype.card I) / (Fintype.card I) := by
   -- DEEP (open conjecture): the `log n / n` mixing↔Sinkhorn dictionary; relates an
   -- sInf-defined CTQW mixing time to the finite Sinkhorn iteration count, an open
-  -- quantitative relation (no proof, classical or quantum, is known).
+  -- quantitative relation (no proof, classical or quantum, is known).  The `n ≥ 2`
+  -- hypothesis `hI` rules out the degenerate `log 1 = 0` case where the bound is false.
   sorry
 
 end Graphon
@@ -1073,39 +1118,103 @@ noncomputable def wassersteinDistance [MetricSpace Ω]
     (W₁ W₂ : Graphon Ω μ) : ℝ :=
   Real.sqrt (∫ p, ‖W₁.kernel p.1 p.2 - W₂.kernel p.1 p.2‖ ^ 2 ∂(μ.prod μ))
 
-/-- **Triangle inequality** for the graphon Wasserstein distance. -/
-theorem wassersteinDistance_triangle [MetricSpace Ω]
+/-- The graphon Wasserstein distance is the `L²(μ⊗μ)` (real-valued `lpNorm`)
+distance of the kernels: `wassersteinDistance W₁ W₂ = ‖uncurry W₁ - uncurry W₂‖_{L²}`.
+This bridges the explicit `√(∫ ‖·‖²)` definition to Mathlib's `lpNorm`, on which the
+triangle inequality (`lpNorm_sub_le_lpNorm_sub_add_lpNorm_sub`) lives.  Proof: for
+`p = 2`, `lpNorm g 2 ν = (∫ ‖g‖²)^{1/2} = √(∫ ‖g‖²)` by
+`lpNorm_eq_integral_norm_rpow_toReal` (the kernel difference is a.e.-strongly
+measurable), and `‖·‖^(2:ℝ) = ‖·‖^(2:ℕ)`. -/
+theorem wassersteinDistance_eq_lpNorm [MetricSpace Ω]
+    (W₁ W₂ : Graphon Ω μ) :
+    wassersteinDistance W₁ W₂
+      = lpNorm
+          (fun p : Ω × Ω => W₁.kernel p.1 p.2 - W₂.kernel p.1 p.2) 2 (μ.prod μ) := by
+  have hmeas : AEStronglyMeasurable
+      (fun p : Ω × Ω => W₁.kernel p.1 p.2 - W₂.kernel p.1 p.2) (μ.prod μ) :=
+    (W₁.measurable.sub W₂.measurable).aestronglyMeasurable
+  rw [lpNorm_eq_integral_norm_rpow_toReal (by norm_num) (by norm_num) hmeas,
+    wassersteinDistance, Real.sqrt_eq_rpow]
+  -- Goal: `(∫ ‖f‖^(2:ℕ))^(1/2) = (∫ ‖f‖^(2:ℝ≥0∞).toReal)^((2:ℝ≥0∞).toReal⁻¹)`.
+  -- Match exponents: `(2:ℝ≥0∞).toReal = 2`, and `‖·‖^(2:ℝ) = ‖·‖^(2:ℕ)`.
+  have htoReal : (2 : ℝ≥0∞).toReal = (2 : ℝ) := by norm_num
+  rw [htoReal]
+  have hpow : (∫ x, ‖W₁.kernel x.1 x.2 - W₂.kernel x.1 x.2‖ ^ (2 : ℕ) ∂(μ.prod μ))
+      = ∫ x, ‖W₁.kernel x.1 x.2 - W₂.kernel x.1 x.2‖ ^ (2 : ℝ) ∂(μ.prod μ) := by
+    refine integral_congr_ae (Filter.Eventually.of_forall (fun p => ?_))
+    norm_num [Real.rpow_natCast]
+  rw [hpow, show (2 : ℝ)⁻¹ = (1 / 2 : ℝ) by norm_num]
+
+/-- The uncurried kernel of a graphon over a **finite** measure is in `L²(μ⊗μ)`:
+it is a.e.-strongly-measurable and a.e.-bounded (`W.bounded`), so `MemLp.of_bound`
+on the finite product measure applies.  This is the genuine integrability that the
+Wasserstein triangle inequality needs. -/
+theorem kernel_memLp_two [IsFiniteMeasure μ] (W : Graphon Ω μ) :
+    MemLp (fun p : Ω × Ω => W.kernel p.1 p.2) 2 (μ.prod μ) :=
+  MemLp.of_bound W.measurable.aestronglyMeasurable W.essBound W.bounded
+
+/-- **Triangle inequality** for the graphon Wasserstein distance (PROVEN, finite
+measure).
+
+This is the genuine `L²(μ⊗μ)` Minkowski inequality.  The hypothesis
+`[IsFiniteMeasure μ]` is the minimal integrability the statement needs and was
+**missing** in the previous formulation: over an infinite base measure the kernel
+differences need not lie in `L²(μ⊗μ)`, the `√(∫ ‖·‖²)` value is junk-defined from a
+non-integrable integrand, and the inequality can FAIL (e.g. with `W₁-W₂`
+non-integrable but `W₁-W₃`, `W₂-W₃` integrable, the LHS can exceed the RHS).  With
+`μ` finite, every graphon kernel difference is bounded a.e. (`W.bounded`) hence
+`L²` (`Graphon.kernel_memLp_two`), and the inequality is Mathlib's
+`lpNorm_sub_le_lpNorm_sub_add_lpNorm_sub` after `wassersteinDistance_eq_lpNorm`. -/
+theorem wassersteinDistance_triangle [MetricSpace Ω] [IsFiniteMeasure μ]
     (W₁ W₂ W₃ : Graphon Ω μ) :
     wassersteinDistance W₁ W₃ ≤
       wassersteinDistance W₁ W₂ + wassersteinDistance W₂ W₃ := by
-  -- DEEP: the `L²(μ⊗μ)` Minkowski inequality for `√(∫ ‖·‖²)`; requires the
-  -- kernel differences to lie in `L²(μ⊗μ)` (integrability of `‖Wᵢ-Wⱼ‖²`), which
-  -- is not assumed in the lightweight `Graphon` signature.
-  sorry
+  rw [wassersteinDistance_eq_lpNorm, wassersteinDistance_eq_lpNorm,
+    wassersteinDistance_eq_lpNorm]
+  -- The three kernel difference functions are `f - g`, `g - h`, `f - h` of the
+  -- uncurried kernels `f, g, h`; Minkowski (`lpNorm`) with `f, g ∈ L²` closes it.
+  exact lpNorm_sub_le_lpNorm_sub_add_lpNorm_sub
+    (kernel_memLp_two W₁) (kernel_memLp_two W₂) (by norm_num)
 
 /-- **Equitable-partition approximation** of the Wasserstein distance:
-restricting to graphons that share an equitable partition `P`, the
-Wasserstein distance reduces to the finite Wasserstein distance between the
+restricting to **block-constant** graphons that share an equitable partition `P`,
+the Wasserstein distance reduces to the finite Wasserstein distance between the
 quotient matrices `P.quotient` (viewed as finite kernels on `I`).
 
 This is the *finite-dim collapse* that lets us *compute* graphon Wasserstein
-distances in the engineered (equitable) regime. -/
+distances in the engineered (equitable, step-graphon) regime.
+
+**Audit (2026-06) — block-constant hypotheses added (landmine removed).**  Sharing a
+cell partition is **not** enough: an equitable partition controls only the cell
+*row-sums*, so a generic equitable graphon is `kernel = block + residual` with a
+nonzero zero-mean residual `R`.  Then
+`∫∫‖W₁−W₂‖² = ∫∫‖(B₁−B₂)+(R₁−R₂)‖² = (block ℓ²) + ∫∫‖R₁−R₂‖²` (the cross terms
+vanish by the zero-mean property), so the LHS **exceeds** the claimed RHS whenever the
+residuals differ — the original `_h_same_cells`-only statement is **FALSE**.  We add
+the genuine `block-constant` hypotheses `hbc₁`, `hbc₂` (`kernel x y = quotient
+(cells x)(cells y)`, i.e. residual `≡ 0`), under which the collapse holds.  The
+`L²`-integral-to-weighted-`ℓ²` computation is the deferred analytic content (honest
+residual). -/
 theorem wassersteinDistance_eq_quotient [MetricSpace Ω]
     {W₁ W₂ : Graphon Ω μ}
     (P₁ : @GraphonEquitablePartition Ω _ μ I _ _ W₁)
     (P₂ : @GraphonEquitablePartition Ω _ μ I _ _ W₂)
-    (_h_same_cells : P₁.cells = P₂.cells) :
-    -- For equitable graphons with a common cell partition, the graphon
+    (_h_same_cells : P₁.cells = P₂.cells)
+    -- block-constant: each kernel equals its quotient block value (zero residual)
+    (_hbc₁ : ∀ x y, W₁.kernel x y = P₁.quotient (P₁.cells x) (P₁.cells y))
+    (_hbc₂ : ∀ x y, W₂.kernel x y = P₂.quotient (P₂.cells x) (P₂.cells y)) :
+    -- For block-constant equitable graphons with a common cell partition, the graphon
     -- Wasserstein distance collapses to the finite cell-mass-weighted `ℓ²`
     -- distance between the quotient matrices `P₁.quotient`, `P₂.quotient`.
     wassersteinDistance W₁ W₂ =
       Real.sqrt (∑ i : I, ∑ j : I,
         P₁.cellMass i * P₁.cellMass j *
           ‖P₁.quotient i j - P₂.quotient i j‖ ^ 2) := by
-  -- DEEP: collapsing the `L²(μ⊗μ)` integral of the kernel difference to the
-  -- cell-mass-weighted finite `ℓ²` sum of quotient differences; needs the
-  -- block-constant decomposition + per-cell integrability (Graphon.Equitable
-  -- finite-measure machinery, not re-exported here).
+  -- DEEP: collapsing the `L²(μ⊗μ)` integral of the (now genuinely block-constant)
+  -- kernel difference to the cell-mass-weighted finite `ℓ²` sum of quotient
+  -- differences; needs the per-cell-rectangle integral computation
+  -- (`integral_iUnion`/`setIntegral_const` over the `C_i × C_j` partition of `Ω × Ω`),
+  -- the Graphon.Equitable finite-measure machinery not re-exported here.
   sorry
 
 end Graphon

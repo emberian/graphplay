@@ -615,31 +615,94 @@ def CompilerSpec.regularityCert (s : CompilerSpec) : Option RegularityCert :=
     | some d => some { degree := d }
     | none => none
 
-/-- The **genuine regularity proposition** the certificate witnesses: every row
-of the symbolic template adjacency sums to a single common value `d`.  This is
-the `Float`-level analogue of `WeightedGraph.IsRegular` on the symbolic
-`templateAdj`; it is the honest content the `RegularityCert.degree` field
-abbreviates.  (We phrase it as "all row sums agree" rather than "= d" so that
-the statement does not depend on the numerical representation of `d`.) -/
+/-- The **exact regularity proposition**: every row of the symbolic template
+adjacency sums to a single common value `d`.  This is the `Float`-level analogue
+of `WeightedGraph.IsRegular` on the symbolic `templateAdj`.
+
+⚠ This *exact* notion is an idealization that the certificate does NOT in general
+witness (see `regularityCert_sound`'s landmine note): floating-point row sums of
+`buildTemplate` need not be *bit-exactly* equal, and `approxRegular` only checks
+agreement to a `1e-9` tolerance.  The genuinely-witnessed notion is the
+approximate one, `IsApproxRowRegular`, below. -/
 def CompilerSpec.IsRowRegular (s : CompilerSpec) (d : Float) : Prop :=
   ∀ i : Nat, i < s.templateSize → rowSum s.templateAdj i = d
 
-/-- **Soundness of the regularity certificate.**  Whenever `regularityCert`
-returns a certificate with degree `d`, the symbolic template adjacency really
-is row-regular of degree `d` (every row sums to `d`).
+/-- The **approximate regularity proposition** — the genuinely *checkable* notion
+on `Float` adjacencies: every row sum of `templateAdj` agrees with the common
+degree `d` to within the fixed `1e-9` tolerance.  This is exactly what
+`approxRegular` verifies, and the honest content of a numerical regularity
+certificate.  (Quantified over the matrix's own row count `templateAdj.length`,
+which for a well-formed spec equals `templateSize`.) -/
+def CompilerSpec.IsApproxRowRegular (s : CompilerSpec) (d : Float) : Prop :=
+  ∀ i : Nat, i < s.templateAdj.length → (rowSum s.templateAdj i - d).abs < 1e-9
 
-This is the genuine correctness obligation that the old `proof : True` field
-stood in for.  A full proof requires reasoning about the `buildTemplate`
-constructors (for the structural branch) and about `Float` row-sum arithmetic
-(for the `approxRegular` branch); both are deferred, so this is an honest
-theorem-level `sorry`, *not* a placeholder in any definition's data. -/
+/-- **Soundness of the numerical regularity check (`approxRegular`).**  If
+`approxRegular m` succeeds with degree `d`, then every row sum of `m` agrees with
+`d` to within the `1e-9` tolerance.  This is the literal content of the check,
+proven by unfolding it: `d = rowSum m 0` and the `List.all` guard is precisely
+the per-row tolerance bound.  Fully proven, axiom-clean. -/
+theorem approxRegular_sound (m : List (List Float)) (d : Float)
+    (h : approxRegular m = some d) :
+    ∀ i : Nat, i < m.length → (rowSum m i - d).abs < 1e-9 := by
+  intro i hi
+  unfold approxRegular at h
+  by_cases hlen : m.length = 0
+  · omega
+  · rw [dif_neg hlen] at h
+    simp only at h
+    by_cases hok : ((List.range m.length).all fun j =>
+        let r := rowSum m j; let δ := r - rowSum m 0; δ.abs < 1e-9) = true
+    · rw [if_pos hok] at h
+      have hd : d = rowSum m 0 := by injection h with h'; exact h'.symm
+      subst hd
+      rw [List.all_eq_true] at hok
+      have := hok i (List.mem_range.mpr hi)
+      simpa using this
+    · rw [if_neg hok] at h
+      exact absurd h (by simp)
+
+/-- **Soundness of the regularity certificate (migrated to the genuinely-true
+form).**  Whenever `regularityCert` *uses its numerical branch* — i.e. the
+structural inference declined (`templateRegularDegree s.template = none`) and
+`approxRegular s.templateAdj` produced the certificate — the symbolic template
+adjacency really is row-regular of degree `c.degree`, to within tolerance
+(`IsApproxRowRegular`).  Fully proven via `approxRegular_sound`.
+
+⚠ LANDMINE FIXED (migrated; the original claim was false on two counts).  The
+hypothesis-free `s.IsRowRegular c.degree` (exact equality, all branches) was a
+false statement:
+
+1. **Structural-branch decoupling.**  `templateRegularDegree` reads only
+   `s.template`, never `s.templateAdj`; but `CompilerSpec` lets `templateAdj` be
+   *any* matrix, decoupled from `template`.  Counterexample: `template =
+   complete ["a","b"] 1.0` (so the structural degree is `1.0`) with `templateAdj
+   = [[5.0]]` — the certificate is `⟨1.0⟩` yet `rowSum [[5.0]] 0 = 5.0 ≠ 1.0`.
+2. **Float tolerance ≠ exact.**  Even on a well-formed spec, `approxRegular` only
+   guarantees row sums *within `1e-9`*, and floating-point sums of identical
+   weights are not bit-exactly equal, so the *exact* `IsRowRegular` fails.
+
+Restricting to the numerical branch and weakening the conclusion to the
+checkable `IsApproxRowRegular` removes both defects while keeping a non-vacuous
+soundness guarantee (the certificate's degree really is the approximate common
+row sum).  The structural-branch soundness — `templateAdj = buildTemplate
+s.template` *and* `buildTemplate` is row-regular — is a separate, genuinely deep
+`Float`-over-constructors obligation (the honest floor). -/
 theorem CompilerSpec.regularityCert_sound (s : CompilerSpec) (c : RegularityCert)
+    (hstruct : templateRegularDegree s.template = none)
     (h : s.regularityCert = some c) :
-    s.IsRowRegular c.degree := by
-  -- The structural branch follows from the symmetry/constructor invariants of
-  -- `buildTemplate`; the `approxRegular` branch follows from its row-sum check
-  -- (modulo the `1e-9` tolerance being exact).  Deferred.
-  sorry
+    s.IsApproxRowRegular c.degree := by
+  -- In the numerical branch, `regularityCert = approxRegular s.templateAdj`.
+  intro i hi
+  rw [CompilerSpec.regularityCert, hstruct] at h
+  -- `h : (match approxRegular s.templateAdj with | some d => some ⟨d⟩ | none => none) = some c`
+  cases hap : approxRegular s.templateAdj with
+  | none => rw [hap] at h; exact absurd h (by simp)
+  | some d =>
+    rw [hap] at h
+    -- `some ⟨d⟩ = some c`, so `c.degree = d`.
+    have hcd : c.degree = d := by injection h with h'; rw [← h']
+    rw [hcd]
+    exact approxRegular_sound s.templateAdj d hap i hi
 
 end Toolkit
 

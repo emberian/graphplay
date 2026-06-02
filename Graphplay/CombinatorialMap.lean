@@ -212,17 +212,59 @@ theorem card_E_eq_two_mul_numEdges (M : CombinatorialMap V E) :
 
 /-- **Euler-Poincaré identity for orientable embeddings.**  When the
 combinatorial map represents a connected cellular embedding on the orientable
-surface of genus `g`, `V - E + F = 2 - 2g`.  Stated, not proved. -/
-theorem eulerChar_eq (M : CombinatorialMap V E) :
+surface of genus `g`, `V - E + F = 2 - 2g`.
+
+⚠ LANDMINE FIXED (migrated; the hypothesis-free form was false).  Since `genus`
+is *defined* as the integer-truncated quotient `(2 - χ)/2`, the round-trip
+`χ = 2 - 2·genus` holds **iff `χ` is even** — exactly the combinatorial shadow of
+"`M` is a valid connected cellular orientable embedding" (for which Euler's
+formula forces `χ = 2 - 2g`, even).  For a *general* rotation system `χ` can be
+odd, and the truncating division then breaks the identity.
+
+Concrete counterexample to the old hypothesis-free claim: `V = Fin 1`, `E = Fin 2`,
+`σ = swap 0 1`, `ρ = 1`, `vert ≡ 0`.  Then `V = 1`, `numEdges = 1`,
+`facePerm = swap` (one 2-cycle), `numFaces = 1`, so `χ = 1 − 1 + 1 = 1` (odd) and
+`genus = (2 − 1)/2 = 0`, giving `2 − 2·genus = 2 ≠ 1 = χ`.  The `Even M.eulerChar`
+hypothesis rules this out and is genuinely satisfiable (e.g. `K2OnSphere`, `χ = 2`).
+-/
+theorem eulerChar_eq (M : CombinatorialMap V E) (heven : Even M.eulerChar) :
     M.eulerChar = 2 - 2 * M.genus := by
-  sorry
+  -- `genus = (2 - χ)/2`.  `Even χ ⟹ 2 ∣ (2 - χ) ⟹ 2·((2-χ)/2) = 2 - χ`.
+  unfold genus
+  have h2 : (2 : ℤ) ∣ (2 - M.eulerChar) := by
+    have : (2 : ℤ) ∣ M.eulerChar := heven.two_dvd
+    omega
+  rw [Int.mul_ediv_cancel' h2]
+  ring
 
 /-- The face cycles partition the dart set together with the fixed-point set
 of `ρ ∘ σ`. -/
 theorem darts_partition_by_faces (M : CombinatorialMap V E) :
     (M.faceCycles.sum (fun c => c.support.card)) + M.faceFixedPoints.card
       = Fintype.card E := by
-  sorry
+  classical
+  -- The cycle-factor supports are pairwise disjoint and biUnion to `φ.support`.
+  have hdisj : (M.faceCycles : Set (Equiv.Perm E)).PairwiseDisjoint
+      (fun c => c.support) := by
+    intro a ha b hb hab
+    exact Equiv.Perm.disjoint_iff_disjoint_support.mp
+      (M.facePerm.cycleFactorsFinset_pairwise_disjoint ha hb hab)
+  have hbiUnion : M.faceCycles.biUnion (fun c => c.support) = M.facePerm.support := by
+    ext x
+    simp only [Finset.mem_biUnion]
+    exact (Equiv.Perm.mem_support_iff_mem_support_of_mem_cycleFactorsFinset).symm
+  -- Hence the sum of support cards equals `card φ.support`.
+  have hsum : M.faceCycles.sum (fun c => c.support.card) = M.facePerm.support.card := by
+    rw [← Finset.card_biUnion hdisj, hbiUnion]
+  -- The fixed-point set is the complement of the support.
+  have hfix : M.faceFixedPoints = M.facePerm.supportᶜ := by
+    unfold faceFixedPoints
+    ext e
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_compl,
+      Equiv.Perm.mem_support, not_not]
+  rw [hsum, hfix, Finset.card_compl]
+  have hle : M.facePerm.support.card ≤ Fintype.card E := Finset.card_le_univ _
+  omega
 
 /-- Each face cycle is in fact a cycle (non-trivial cyclic permutation). -/
 theorem faceCycles_isCycle (M : CombinatorialMap V E) :
@@ -233,7 +275,22 @@ theorem faceCycles_isCycle (M : CombinatorialMap V E) :
 /-- `numFaces` is the total number of `(ρ ∘ σ)`-orbits, including monogons. -/
 theorem numFaces_pos (M : CombinatorialMap V E) [Nonempty E] :
     1 ≤ M.numFaces := by
-  sorry
+  classical
+  -- `E` is nonempty, so there is at least one dart, hence at least one orbit.
+  have hcardE : 1 ≤ Fintype.card E := Fintype.card_pos
+  have hpart : (M.faceCycles.sum (fun c => c.support.card)) + M.faceFixedPoints.card
+      = Fintype.card E := M.darts_partition_by_faces
+  unfold numFaces
+  by_contra h
+  rw [Nat.not_le, Nat.lt_one_iff] at h
+  -- `numFaces = 0` forces both summands to be `0`.
+  have hc0 : M.faceCycles.card = 0 := by omega
+  have hf0 : M.faceFixedPoints.card = 0 := by omega
+  -- empty `faceCycles` ⟹ the support-card sum is `0` ⟹ `card E = 0`, contradiction.
+  have hsum0 : M.faceCycles.sum (fun c => c.support.card) = 0 := by
+    rw [Finset.card_eq_zero] at hc0
+    rw [hc0]; rfl
+  omega
 
 /-! ## Convenience constructors -/
 

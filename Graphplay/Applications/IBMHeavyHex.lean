@@ -1448,13 +1448,20 @@ quotient walk is implementable on the same hardware (it sits on the
 chip's tunable-coupler frame). -/
 theorem heavyHex_quotient_satisfies (n m : ℕ)
     (embed : HeavyHexVertex n m → ℝ × ℝ)
-    (hG : (heavyHexWeighted n m).satisfies ibmHeronSpec embed) :
+    (hG : (heavyHexWeighted n m).satisfies ibmHeronSpec embed)
+    -- the two genuine hypotheses the migrated `satisfies_quotient` now requires:
+    -- every role-cell is realised by a qubit (no empty-cell qubit-count blow-up),
+    -- and the real-rescaled quotient couplings stay inside the hardware phase set.
+    (hsurj : Function.Surjective (dataFlagPartition n m).cells)
+    (hphase : ∀ i j : Role,
+      ((dataFlagPartition n m).quotientHWGraph).adj i j ≠ 0 →
+        ((dataFlagPartition n m).quotientHWGraph).adj i j ∈ ibmHeronSpec.allowedPhaseSet) :
     -- The data/flag quotient graph satisfies the relaxed (quotient) spec under
     -- some induced (centroid) embedding of the two role-cells.
     ∃ embed_quotient : Role → ℝ × ℝ,
       ((dataFlagPartition n m).quotientHWGraph).satisfies
         ibmHeronSpec.quotient embed_quotient :=
-  WeightedGraph.satisfies_quotient hG (dataFlagPartition n m)
+  WeightedGraph.satisfies_quotient hG (dataFlagPartition n m) hsurj hphase
 
 /-! ## 7. Three concrete engineering payoffs.
 

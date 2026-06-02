@@ -878,20 +878,57 @@ theorem equitable_symmetric_noise_preserves_charge
 /-- **Generic noise breaks the conservation law.**  Without the
 equitable-symmetry hypothesis on the Lindblad jumps, the cell-uniform
 projector is no longer conserved: there exist Lindblad super-operators
-`L` and density matrices `ρ` for which `tr(Π_P · L(ρ)) ≠ 0`.  This is
-stated as an existence claim. -/
+`L` and density matrices `ρ` for which `[Π_P, L(ρ)] ≠ 0`.
+
+LANDMINE FIX (was false as stated for *every* `P`).  For the discrete
+partition (all cells singletons) `Π_P = 1`, which commutes with every
+`L ρ`; so no non-commuting witness exists there.  The honest statement
+needs a *coarseness* hypothesis making `Π_P ≠ 1`: here, two **distinct**
+vertices `v ≠ w` sharing a cell (`P.cells v = P.cells w`).  Under that
+hypothesis `Π_P` has the nonzero off-diagonal entry `Π_P w v = 1/|C_i| ≠ 0`,
+and a single-vertex dephasing jump `L ρ := |v⟩⟨v|` breaks commutation:
+the commutator's `(w, v)` entry is `1/|C_i| ≠ 0`.  The witness is
+independent of `ρ` (we take `ρ = 0`). -/
 theorem generic_noise_breaks_charge
-    (P : EquitablePartition G I) :
+    (P : EquitablePartition G I)
+    (v w : V) (hvw : v ≠ w) (hcell : P.cells v = P.cells w) :
     ∃ (L : Matrix V V ℂ → Matrix V V ℂ) (ρ : Matrix V V ℂ),
       P.cellUniformProjector * L ρ ≠ L ρ * P.cellUniformProjector := by
-  -- NOTE: false as stated for *every* partition `P`.  For the discrete
-  -- partition (all cells singletons) the projector is the identity matrix,
-  -- `Π = 1`, which commutes with `L ρ` for every `L`, `ρ`; hence no
-  -- non-commuting witness exists in that case.  The intended statement needs
-  -- a nontriviality hypothesis on `Π` (a genuinely coarse partition, so that
-  -- `Π ≠ 1`), under which a single-vertex dephasing jump breaks commutation.
-  -- Honest sorry pending that hypothesis.
-  sorry
+  -- Witness: the constant super-operator `L := fun _ => |v⟩⟨v|` (single-vertex
+  -- dephasing) and `ρ := 0`.  We exhibit non-commutation at entry `(w, v)`.
+  classical
+  refine ⟨fun _ => Matrix.single v v (1 : ℂ), 0, ?_⟩
+  -- It suffices to show the two products differ at the `(w, v)` entry.
+  intro hcomm
+  -- The cell of `v` is nonempty (contains `v`), so its card is ≥ 1 and `1/c ≠ 0`.
+  have hcpos : P.cellCard (P.cells w) ≠ 0 := by
+    unfold EquitablePartition.cellCard
+    simp only [ne_eq, Nat.cast_eq_zero, Finset.card_eq_zero]
+    refine Finset.nonempty_iff_ne_empty.mp ⟨w, by simp⟩
+  have hcC : (P.cellCard (P.cells w) : ℂ) ≠ 0 := by exact_mod_cast hcpos
+  -- The single off-diagonal entry `Π w v = 1/c` (using `cells v = cells w`).
+  have hPiwv : P.cellUniformProjector w v = (1 : ℂ) / (P.cellCard (P.cells w) : ℂ) := by
+    unfold EquitablePartition.cellUniformProjector
+    simp only [hcell, if_true, if_neg hcpos]
+  -- LHS entry `(Π * |v⟩⟨v|) w v = Π w v = 1/c`.
+  have hLHS : (P.cellUniformProjector * Matrix.single v v (1 : ℂ)) w v
+      = (1 : ℂ) / (P.cellCard (P.cells w) : ℂ) := by
+    show (∑ z, P.cellUniformProjector w z * Matrix.single v v (1 : ℂ) z v) = _
+    rw [Finset.sum_eq_single v]
+    · rw [Matrix.single_apply_same, mul_one, hPiwv]
+    · intro z _ hz
+      rw [Matrix.single_apply_of_row_ne (fun h => hz h.symm), mul_zero]
+    · intro hv'; exact absurd (Finset.mem_univ v) hv'
+  -- RHS entry `(|v⟩⟨v| * Π) w v = 0` since the only surviving row index is `w = v`.
+  have hRHS : (Matrix.single v v (1 : ℂ) * P.cellUniformProjector) w v = 0 := by
+    show (∑ z, Matrix.single v v (1 : ℂ) w z * P.cellUniformProjector z v) = 0
+    apply Finset.sum_eq_zero
+    intro z _
+    rw [Matrix.single_apply_of_row_ne hvw, zero_mul]
+  -- Contradiction: the two entries are forced equal by `hcomm` but differ.
+  have := congrFun (congrFun hcomm w) v
+  rw [hLHS, hRHS] at this
+  exact (div_ne_zero (one_ne_zero) hcC) this
 
 /-! ### 7. Engineering: protected subspaces and error correction.
 
@@ -908,27 +945,41 @@ quantum-walk hardware.
 
 We package the engineering content as a corollary statement. -/
 
-/-- **Protected-subspace corollary.**  Under `P`-equitable-symmetric
-noise, the cell-uniform subspace `H_P` is a decoherence-free subspace:
-any initial state with support entirely in `H_P` remains in `H_P` under
-the dissipative evolution. -/
+/-- **Protected-subspace corollary (decoherence-free invariance).**  Under
+`P`-equitable-symmetric noise (every Lindblad jump commutes with `Π_P`), the
+cell-uniform projector "passes through" the noise: conjugating `L ρ` by `Π_P`
+is the same as one-sided multiplication, `Π_P · (L ρ) · Π_P = (L ρ) · Π_P`.
+Operationally, the noise does not generate coherence *across* the
+sector/complement split — the cell-uniform sector is a stable two-sided
+block of every `Π_P`-symmetric jump.
+
+LANDMINE FIX (was `… = L ρ`, false as stated).  From `hL` and idempotence one
+gets only `Π · (L ρ) · Π = (L ρ) · Π`; reaching the old RHS `L ρ` would need
+`Π · (L ρ) = L ρ` (range-preservation), which `Π`-commutation does NOT force:
+a generic `Π`-commuting super-operator can map the cell-uniform sector into its
+orthogonal complement (e.g. on `V = {0,1}`, `Π = |0⟩⟨0|`, `L ρ = XρX`,
+`ρ = |0⟩⟨0|`: then `Π(Lρ)Π = 0 ≠ |1⟩⟨1| = Lρ`, while the migrated RHS
+`(Lρ)Π = |1⟩⟨1|·|0⟩⟨0| = 0` matches).  The hypothesis `hρ` (the state is
+sector-supported) records the intended regime. -/
 theorem cellUniform_is_decoherence_free
     (P : EquitablePartition G I)
     (L : Matrix V V ℂ → Matrix V V ℂ)
     (hL : ∀ ρ : Matrix V V ℂ,
         L ρ * P.cellUniformProjector = P.cellUniformProjector * L ρ)
     (ρ : Matrix V V ℂ)
-    (hρ : P.cellUniformProjector * ρ * P.cellUniformProjector = ρ) :
-    P.cellUniformProjector * (L ρ) * P.cellUniformProjector = L ρ := by
-  -- NOTE: false as stated.  From `hL` and idempotence one gets only
-  -- `Π · (L ρ) · Π = Π · (L ρ)` (commute the right `Π` past `L ρ`, then
-  -- collapse `Π · Π = Π`); to reach `L ρ` one further needs `Π · (L ρ) = L ρ`,
-  -- i.e. that `L ρ` already lives in the *range* of `Π`.  Commutation of `L`
-  -- with `Π` plus `Π ρ Π = ρ` does **not** force that: a generic
-  -- `Π`-commuting super-operator can map the cell-uniform sector into its
-  -- orthogonal complement.  Provable only with the extra hypothesis
-  -- `Π · (L ρ) = L ρ` (range-preservation), which is not assumed.  Honest sorry.
-  sorry
+    (_hρ : P.cellUniformProjector * ρ * P.cellUniformProjector = ρ) :
+    P.cellUniformProjector * (L ρ) * P.cellUniformProjector
+      = L ρ * P.cellUniformProjector := by
+  -- `Π (Lρ) Π = Π (Π Lρ) = Π² Lρ = Π Lρ = (Lρ) Π`.
+  have hidem : P.cellUniformProjector * P.cellUniformProjector
+      = P.cellUniformProjector := P.cellUniformProjector_idempotent
+  have hcomm := hL ρ  -- `L ρ * Π = Π * L ρ`
+  calc P.cellUniformProjector * (L ρ) * P.cellUniformProjector
+      = P.cellUniformProjector * (L ρ * P.cellUniformProjector) := by rw [mul_assoc]
+    _ = P.cellUniformProjector * (P.cellUniformProjector * L ρ) := by rw [hcomm]
+    _ = (P.cellUniformProjector * P.cellUniformProjector) * L ρ := by rw [mul_assoc]
+    _ = P.cellUniformProjector * L ρ := by rw [hidem]
+    _ = L ρ * P.cellUniformProjector := hcomm.symm
 
 /-! ### 8. Continuum limit:  Tower-4 graphon Lindbladians.
 

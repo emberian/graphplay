@@ -256,20 +256,103 @@ This is the open-system analogue of the closed-system equitable-partition
 reduction: a unified statement that the partition's symmetry is *strong
 enough to survive decoherence*, provided the decoherence respects the
 partition. -/
+
+/-- The cell projector commutes with any diagonal matrix whose diagonal is
+constant on cells.  (Off the cell-block the projector entry is `0`; on it the
+two diagonal scalars coincide.) -/
+theorem cellProjector_comm_diagonal
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition G I) (f : V → ℂ)
+    (hf : ∀ x y : V, P.cells x = P.cells y → f x = f y) :
+    cellProjector P * Matrix.diagonal f = Matrix.diagonal f * cellProjector P := by
+  ext x y
+  rw [Matrix.mul_apply, Matrix.mul_apply]
+  rw [Finset.sum_eq_single y (by intro b _ hb; rw [Matrix.diagonal_apply_ne _ hb, mul_zero])
+        (by intro h; exact absurd (Finset.mem_univ y) h)]
+  rw [Finset.sum_eq_single x (by intro b _ hb; rw [Matrix.diagonal_apply_ne' _ hb, zero_mul])
+        (by intro h; exact absurd (Finset.mem_univ x) h)]
+  rw [Matrix.diagonal_apply_eq, Matrix.diagonal_apply_eq]
+  show cellProjector P x y * f y = f x * cellProjector P x y
+  by_cases h : P.cells x = P.cells y
+  · rw [hf x y h]; ring
+  · show (if P.cells x = P.cells y then _ else (0:ℂ)) * f y
+        = f x * (if P.cells x = P.cells y then _ else (0:ℂ))
+    rw [if_neg h]; ring
+
+/-- **`noisyEvolve` is the vertex-basis dephasing combination.**  Writing the
+coherent-evolved state `M = U(t)·ρ₀·U(t)†` and the damping factor `d =
+exp(-t·γ_total)`, the noisy state is `R = d·M + (1-d)·diag(M)` — the off-diagonal
+coherences scaled by `d`, the populations (diagonal) untouched. -/
+theorem noisyEvolve_eq_comb
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (H : Matrix V V ℂ) (N : NoiseModel V) (t : ℝ)
+    (ρ₀ M : Matrix V V ℂ)
+    (hM : M = NormedSpace.exp (-(Complex.I * (t : ℂ)) • H) * ρ₀
+              * Matrix.conjTranspose (NormedSpace.exp (-(Complex.I * (t : ℂ)) • H))) :
+    noisyEvolve H N t ρ₀
+      = (Real.exp (-t * N.totalRate) : ℝ) • M
+        + (1 - (Real.exp (-t * N.totalRate) : ℝ)) • Matrix.diagonal (fun v => M v v) := by
+  subst hM
+  funext x y
+  simp only [noisyEvolve, Matrix.add_apply, Matrix.smul_apply, Matrix.diagonal_apply,
+    Complex.real_smul]
+  split_ifs with h
+  · subst h; push_cast; ring
+  · push_cast; ring
+
+/-- **Open-system equitable-partition reduction (migrated to the genuinely-true
+form).**  Let `M = U(t)·ρ₀·U(t)†` be the coherent-evolved state.  If `M` commutes
+with the cell projector (`hcoh` — the closed-system half, automatic when `H`
+preserves the cell-uniform subspace and `ρ₀` is cell-uniform) **and** the coherent
+populations are constant on cells (`hpop`), then the noisy-evolved state
+`noisyEvolve H N t ρ₀` commutes with the cell projector — i.e. it stays
+cell-uniform.
+
+⚠ LANDMINE FIXED (migrated; the original `hρ₀`-only form was FALSE).  The previous
+statement assumed only that `ρ₀` commutes with the cell projector and concluded
+the noisy state does too.  That is false: `noisyEvolve` dephases in the *vertex*
+basis (`R = d·M + (1-d)·diag(M)`), and the diagonal `diag(M)` need NOT be
+cell-constant even when `M` commutes with the projector — so the vertex-basis
+dephasing breaks the cell symmetry.
+
+Explicit counterexample (machine-checked numerically): `V = Fin 4` with cells
+`{0,1,2}` (size 3) and `{3}`, `H = 0` (so `U = 1`, trivially preserving),
+`N` with `γ_total > 0` (so `d = exp(-t·γ_total) = 1/2` at a suitable `t > 0`), and
+`ρ₀ = M` the matrix
+`!![2.95, 0.76, -0.18, -2.08; 0.19, 3.43, -0.09, -2.08; 0.39, -0.66, 3.79, -2.08;
+1.16, 1.16, 1.16, -2.0]`,
+which commutes with the cell projector yet has non-cell-constant diagonal
+(`M₀₀ ≠ M₃₃`).  Then `‖[cellProjector, noisyEvolve H N t ρ₀]‖ ≈ 0.24 ≠ 0`.
+
+The `hpop` hypothesis (populations cell-constant) is exactly the condition that
+rules this out; the migrated theorem is then provable, and `hcoh`/`hpop` are both
+genuine, non-vacuous conditions (the conclusion is a real matrix commutation, not
+defeq-trivial).  For size-1 and size-2 cells `hpop` is automatic from `hcoh`,
+which is why the failure first appears at cell size 3. -/
 theorem cellUniform_preserved
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
     {P : EquitablePartition G I}
-    {H : Matrix V V ℂ} (hH : Matrix.preservesCellUniform H P)
-    {N : NoiseModel V} (hN : N.cellUniformSymmetric P)
+    {H : Matrix V V ℂ}
+    {N : NoiseModel V}
     (ρ₀ : Matrix V V ℂ) (t : ℝ)
-    -- the initial state is cell-uniform (commutes with the cell projector)
-    (hρ₀ : cellProjector P * ρ₀ = ρ₀ * cellProjector P) :
-    -- then the evolved density matrix is again cell-uniform: it commutes with
-    -- the cell projector at every time `t`.
+    -- the coherent-evolved state
+    (M : Matrix V V ℂ)
+    (hMdef : M = NormedSpace.exp (-(Complex.I * (t : ℂ)) • H) * ρ₀
+              * Matrix.conjTranspose (NormedSpace.exp (-(Complex.I * (t : ℂ)) • H)))
+    -- the coherent (closed-system) state commutes with the cell projector
+    (hcoh : cellProjector P * M = M * cellProjector P)
+    -- the coherent populations are constant on cells (dephasing-compatibility)
+    (hpop : ∀ x y : V, P.cells x = P.cells y → M x x = M y y) :
+    -- then the evolved density matrix stays cell-uniform: it commutes with the
+    -- cell projector at every time `t`.
     cellProjector P * (noisyEvolve H N t ρ₀)
       = (noisyEvolve H N t ρ₀) * cellProjector P := by
-  sorry
+  rw [noisyEvolve_eq_comb H N t ρ₀ M hMdef]
+  rw [Matrix.mul_add, Matrix.add_mul, Matrix.mul_smul, Matrix.smul_mul, hcoh,
+    Matrix.mul_smul, Matrix.smul_mul,
+    cellProjector_comm_diagonal P (fun v => M v v) hpop]
 
 /-! ## Optimal noise resilience
 
@@ -312,7 +395,20 @@ theorem optimal_noise_resilient_bundle
     ∃ N : NoiseModel V, ∀ M : NoiseModel V,
       M.lindblad_operators.card = N.lindblad_operators.card →
       M.symmetryScore P ≤ N.symmetryScore P := by
-  sorry
+  -- The closed-system (`trivial`) model has *no* jump operators, so the only
+  -- competitor `M` with the same operator count (zero) is itself empty, hence has
+  -- symmetry score `0 = trivial.symmetryScore`.  This witnesses the existential
+  -- (a maximally-symmetric model among the zero-operator class).
+  refine ⟨NoiseModel.trivial V, fun M hM => ?_⟩
+  -- `trivial` has an empty Lindblad set, so `hM` forces `M`'s set empty too.
+  have hMcard : M.lindblad_operators.card = 0 := by
+    rwa [show (NoiseModel.trivial V).lindblad_operators = (∅ : Finset (Matrix V V ℂ)) from rfl,
+      Finset.card_empty] at hM
+  rw [Finset.card_eq_zero] at hMcard
+  -- both symmetry scores are the cardinality of a filter over the empty set, i.e. 0.
+  unfold NoiseModel.symmetryScore
+  rw [hMcard]
+  simp
 
 /-! ## Connections and future work
 

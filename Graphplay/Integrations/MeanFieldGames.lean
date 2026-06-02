@@ -758,24 +758,53 @@ def congestionFixedPoint
     ∀ φ ∈ EP.cellUniformSubspace,
       (payoff ψ φ).re ≤ (payoff ψ ψ).re
 
-/-- **Existence of a cell-uniform congestion equilibrium.**  Under
-suitable continuity/compactness conditions on the payoff functional,
-the cell-uniform-restricted best-response map has a fixed point (by
-Brouwer / Kakutani on `EuclideanSpace ℂ I`). -/
+/-- A **congestion equilibrium over a strategy set `K`**: a state `ψ ∈ K` that is
+its own best response among competitors *in `K`*.  This is the domain-restricted
+form of `congestionFixedPoint` needed for a genuine (Nash/Brouwer) existence
+statement: the unrestricted form quantifies competitors over the *whole*
+(non-compact) cell-uniform subspace, against which no equilibrium need exist. -/
+def congestionFixedPointOn
+    {W : Graphon Ω μ} (_EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ) (K : Set (Lp ℂ 2 μ)) (ψ : Lp ℂ 2 μ) :
+    Prop :=
+  ψ ∈ K ∧ ∀ φ ∈ K, (payoff ψ φ).re ≤ (payoff ψ ψ).re
+
+/-- **Existence of a cell-uniform congestion equilibrium (LANDMINE MIGRATED).**
+
+The original statement `∃ ψ, congestionFixedPoint EP payoff ψ` for an **arbitrary**
+`payoff` is **FALSE**: the competitor set is the *entire* cell-uniform subspace, which
+is non-compact, so for a payoff with no upper bound on the second slot no best
+response — hence no equilibrium — exists.  (Explicit counterexample: with
+`payoff a b := (‖b‖² : ℂ)`, the inner objective `φ ↦ (payoff ψ φ).re = ‖φ‖²` is
+unbounded above on the subspace whenever it is nontrivial — which it is, as `I` must
+be nonempty to partition a nonempty `Ω` and then `cellIndicator` is a nonzero
+member — so *no* `ψ` is a maximiser and `∃ ψ, congestionFixedPoint EP payoff ψ`
+fails.)
+
+We migrate to the genuine **Nash/Brouwer** statement: over a **nonempty, compact,
+convex** strategy set `K` inside the (finite-dimensional) cell-uniform subspace,
+with the payoff **jointly continuous** and **quasiconcave in the response slot**, a
+congestion equilibrium on `K` exists.  These are exactly the Nash-existence
+hypotheses; on the finite-dimensional `EuclideanSpace ℂ I` the conclusion is true.
+The hypotheses are satisfiable (e.g. `K =` a closed ball, `payoff` bilinear), so the
+statement is non-vacuous.  The proof is the deep Brouwer/Kakutani fixed-point
+argument, absent from Mathlib — an honest residual on a now-**true** statement. -/
 theorem congestion_equilibrium_exists
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ) :
-    -- There is a *genuine* cell-uniform congestion equilibrium: a state `ψ` that
-    -- is its own best response among cell-uniform competitors.  Membership in the
-    -- subspace is now part of `congestionFixedPoint` itself, so this is no longer
-    -- the vacuous `0 ∈ subspace ∧ True`.
-    ∃ ψ : Lp ℂ 2 μ, congestionFixedPoint EP payoff ψ := by
-  -- BLOCKED: existence of a Nash / best-response fixed point requires a
-  -- Brouwer/Kakutani fixed-point argument on the finite-dimensional cell-uniform
-  -- subspace `EuclideanSpace ℂ I` together with continuity/compactness of the
-  -- payoff-induced best-response map — not available for an *arbitrary* `payoff`.
-  -- (For an arbitrary payoff with no structure, the statement may even fail; the
-  -- intended development imposes continuity/quasiconcavity hypotheses.)
+    (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ)
+    (K : Set (Lp ℂ 2 μ))
+    (_hKsub : K ⊆ (EP.cellUniformSubspace : Set (Lp ℂ 2 μ)))
+    (_hKne : K.Nonempty) (_hKcompact : IsCompact K) (_hKconvex : Convex ℝ K)
+    (_hcont : Continuous (Function.uncurry payoff))
+    (_hquasi : ∀ ψ ∈ K, ∀ c : ℝ, Convex ℝ {φ ∈ K | c ≤ (payoff ψ φ).re}) :
+    -- There is a *genuine* cell-uniform congestion equilibrium on `K`: a state `ψ ∈ K`
+    -- that is its own best response among cell-uniform competitors in `K`.
+    ∃ ψ : Lp ℂ 2 μ, congestionFixedPointOn EP payoff K ψ := by
+  -- BLOCKED (honest, on a now-TRUE statement): existence of a Nash / best-response
+  -- fixed point on the nonempty compact convex `K ⊆ EuclideanSpace ℂ I` follows from
+  -- the Brouwer/Kakutani fixed-point theorem applied to the (uhc, convex-valued by
+  -- `hquasi`) best-response correspondence of the continuous `payoff`.  Mathlib lacks
+  -- Brouwer/Kakutani, so this is the genuine cited residual.
   sorry
 
 /-- **Optimal quantum routing on a chiral graphon.**  The strategic control

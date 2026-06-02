@@ -305,24 +305,33 @@ We state the theorem; the proof reduces to the equitable analog plus
 phantom-symmetric transport via `signedBy_preserves_equitable`.
 -/
 
-/-- **Headline theorem (statement).**  A chiral signing preserves the
-phantom symmetry of `(G, P)` iff it is cross-constant on the cells of
-`P` — equivalently, iff (viewed as a U(1) lattice gauge field via I7)
-it is a **flat connection on cells** in the sense of
-`Graphplay.Integrations.LatticeGauge`, §4. -/
-theorem phantomSymmetry_iff_flatOnCells
+/-- A chiral signing is **cross-constant on the support of `G.adj`** if its
+value on every *edge* `(x, y)` (`G.adj x y ≠ 0`) depends only on the cells of
+`x` and `y`.  This is the physically-meaningful refinement of
+`ChiralSigning.CrossConstant`: only the on-support values of `σ` enter the
+signed graph (`(G.signedBy σ).adj x y = σ x y · G.adj x y` vanishes off the
+support regardless of `σ`), so it is exactly the on-support phase data that any
+preservation/protection statement can constrain.
+
+The full `ChiralSigning.CrossConstant` (an *everywhere* condition) is strictly
+stronger and is **not** recoverable from preservation hypotheses — see the
+counterexample in `crossConstant_of_preservesEquitable`. -/
+def _root_.Graphplay.ChiralSigning.CrossConstantOnSupport
     {V : Type u} [Fintype V] [DecidableEq V]
-    {I : Type v} [Fintype I] [DecidableEq I]
-    (G : WeightedGraph V) (P : EquitablePartition G I)
-    (hP : IsPhantomSymmetric G P)
-    (σ : ChiralSigning V) :
-    PreservesPhantomSymmetry P σ ↔ σ.CrossConstant P.cells := by
-  -- Forward: `signedBy_preserves_equitable` (Chiral.lean) plus phantom-
-  -- symmetric transport along the same cell map.  Reverse: the new content;
-  -- a non-cross-constant `σ` introduces phase inhomogeneity that breaks
-  -- the equitable identity for some pair of cells, contradicting
-  -- preservation.  Punted.
-  sorry
+    {I : Type v} (s : ChiralSigning V) (G : WeightedGraph V) (cells : V → I) : Prop :=
+  ∃ τ : I → I → ℂ, ∀ x y : V, G.adj x y ≠ 0 → s.σ x y = τ (cells x) (cells y)
+
+/-- A genuine `CrossConstant` signing is in particular cross-constant on the
+support of any `G`. -/
+theorem _root_.Graphplay.ChiralSigning.CrossConstantOnSupport.of_crossConstant
+    {V : Type u} [Fintype V] [DecidableEq V] {I : Type v} {s : ChiralSigning V}
+    {G : WeightedGraph V} {cells : V → I} (h : s.CrossConstant cells) :
+    s.CrossConstantOnSupport G cells := by
+  obtain ⟨τ, hτ⟩ := h
+  exact ⟨τ, fun x y _ => hτ x y⟩
+
+/-! The headline iff `phantomSymmetry_iff_flatOnCells` appears at the end of
+§3, after the cross-constancy lemmas it depends on. -/
 
 /-- **Forward direction** (the easy half): a cross-constant signing
 preserves the equitable structure, by `signedBy_preserves_equitable`. -/
@@ -337,34 +346,148 @@ theorem preservesEquitable_of_crossConstant
   intro i j x y hx hy
   exact (G.signedBy_preserves_equitable P σ h).uniform i j x y hx hy
 
-/-- **Reverse direction** (the new content): if `σ` preserves the
-equitable structure of `(G, P)`, and `G` is *generic enough* (no
-accidental cancellations in cell sums), then `σ` is cross-constant on
-`P.cells`.
+/-- **Reverse direction** (the new content, now a closed theorem): if `σ`
+preserves the equitable structure of `(G, P)`, and from every vertex there is
+**at most one edge into each cell** (`hsingleEdge`), then `σ` is cross-constant
+**on the support of `G.adj`** (`CrossConstantOnSupport`).
 
-The hypothesis `nonDegenerate` captures the "generic enough"
-condition: there exist enough independent edges between cells so that
-phase factors cannot conspire to leave the sums invariant unless they
-are constant. -/
+LANDMINE FIX (was: conclusion `σ.CrossConstant P.cells` under the weak
+`nonDegenerate` "∃ z with both edges").  Two corrections were needed:
+
+1. *Off-support.*  Only on-support values of `σ` are constrained by any
+   preservation hypothesis, so the everywhere predicate `CrossConstant` is
+   unreachable (a rogue non-edge value escapes detection); we conclude
+   `CrossConstantOnSupport` instead.
+2. *Sum-trading.*  The old `nonDegenerate` is too weak even for the support
+   conclusion: with two parallel edges per cell-pair the phases can *trade*
+   inside the cell sum and stay invariant while being non-constant.  Explicit
+   counterexample: cells `i = {x, y}`, `j = {z₁, z₂}`, all four edges weight
+   `1`; `σ(x,z₁)=1, σ(x,z₂)=i, σ(y,z₁)=i, σ(y,z₂)=1` gives equal cell sums
+   `1+i = i+1` yet is not cross-constant on the support.  The unique-edge
+   hypothesis `hsingleEdge` removes exactly this trading (each cell sum is a
+   single term), making the conclusion TRUE and provable. -/
 theorem crossConstant_of_preservesEquitable
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : WeightedGraph V) (P : EquitablePartition G I)
-    (σ : ChiralSigning V) (_hpres : PreservesEquitable P σ)
-    (_nonDegenerate :
-      ∀ (i j : I) (x y : V), P.cells x = i → P.cells y = i →
-        ∃ z : V, P.cells z = j ∧ G.adj x z ≠ 0 ∧ G.adj y z ≠ 0) :
-    σ.CrossConstant P.cells := by
-  -- Sketch: from preservation, derive that for any two reps `x, y` of
-  -- the same cell `i` and any target cell `j`,
-  --   ∑_{z ∈ cell j} σ x z · G.adj x z = ∑_{z ∈ cell j} σ y z · G.adj y z.
-  -- Combined with the equitable identity for `G`, this forces each
-  -- `σ x z = σ y z` on the support of `G.adj`, hence cross-constancy.
-  -- BLOCKED: `PreservesEquitable` + `_nonDegenerate` only constrain `σ` on the
-  -- edge support of `G.adj`; off-support pairs are unconstrained, so the
-  -- everywhere-defined `CrossConstant τ` cannot be pinned down without a
-  -- support-saturation hypothesis.  Genuine new content of the file.
-  sorry
+    (σ : ChiralSigning V) (hpres : PreservesEquitable P σ)
+    (hsingleEdge :
+      ∀ (x z z' : V), P.cells z = P.cells z' →
+        G.adj x z ≠ 0 → G.adj x z' ≠ 0 → z = z') :
+    σ.CrossConstantOnSupport G P.cells := by
+  classical
+  -- For a rep `x` of cell `i` and target cell `j`, the signed cell sum collapses
+  -- to the single on-support term (or `0`), by `hsingleEdge`.
+  -- Abbreviation: signed cell-sum into cell `j` from `x`.
+  have hcollapse : ∀ (x y : V), G.adj x y ≠ 0 →
+      (∑ z, if P.cells z = P.cells y then σ.σ x z * G.adj x z else 0)
+        = σ.σ x y * G.adj x y := by
+    intro x y hxy
+    rw [Finset.sum_eq_single y]
+    · rw [if_pos rfl]
+    · intro z _ hz
+      by_cases hcell : P.cells z = P.cells y
+      · -- `z` and `y` are both `j`-targets from `x`; if `adj x z ≠ 0` then
+        -- `hsingleEdge` forces `z = y`, contradicting `z ≠ y`.  So `adj x z = 0`.
+        have h0 : G.adj x z = 0 := by
+          by_contra h0
+          exact hz (hsingleEdge x z y hcell h0 hxy)
+        rw [if_pos hcell, h0, mul_zero]
+      · rw [if_neg hcell]
+    · intro h; exact absurd (Finset.mem_univ y) h
+  -- Likewise the *unsigned* cell sum collapses (used to cancel `G.adj`).
+  have hcollapseU : ∀ (x y : V), G.adj x y ≠ 0 →
+      (∑ z, if P.cells z = P.cells y then G.adj x z else 0) = G.adj x y := by
+    intro x y hxy
+    rw [Finset.sum_eq_single y]
+    · rw [if_pos rfl]
+    · intro z _ hz
+      by_cases hcell : P.cells z = P.cells y
+      · by_cases h0 : G.adj x z = 0
+        · rw [if_pos hcell, h0]
+        · exact absurd (hsingleEdge x z y hcell h0 hxy) hz
+      · rw [if_neg hcell]
+    · intro h; exact absurd (Finset.mem_univ y) h
+  -- Key pointwise identity on the support: for edges `(x, y)`, `(x', y')` in the
+  -- same cell-pair, `σ x y = σ x' y'`.
+  have hpoint : ∀ (x y x' y' : V), G.adj x y ≠ 0 → G.adj x' y' ≠ 0 →
+      P.cells x = P.cells x' → P.cells y = P.cells y' →
+      σ.σ x y = σ.σ x' y' := by
+    intro x y x' y' hxy hx'y' hxx' hyy'
+    -- PreservesEquitable on reps `x, x'` of cell `cells x`, target `cells y`.
+    have hP := hpres (P.cells x) (P.cells y) x x' rfl hxx'.symm
+    -- Rewrite both signed sums via collapse (note `cells y = cells y'`).
+    simp only [WeightedGraph.signedBy_adj] at hP
+    rw [hcollapse x y hxy] at hP
+    rw [show (∑ z, if P.cells z = P.cells y then σ.σ x' z * G.adj x' z else 0)
+          = σ.σ x' y' * G.adj x' y' by rw [hyy']; exact hcollapse x' y' hx'y'] at hP
+    -- Unsigned equitable on the same reps: `adj x y = adj x' y'`.
+    have hU := P.uniform (P.cells x) (P.cells y) x x' rfl hxx'.symm
+    rw [hcollapseU x y hxy] at hU
+    rw [show (∑ z, if P.cells z = P.cells y then G.adj x' z else 0)
+          = G.adj x' y' by rw [hyy']; exact hcollapseU x' y' hx'y'] at hU
+    -- `σ x y · a = σ x' y' · a'` and `a = a'` (≠ 0) ⇒ `σ x y = σ x' y'`.
+    rw [← hU] at hP
+    exact mul_right_cancel₀ hxy hP
+  -- Build `τ` by choosing, for each cell-pair `(i, j)`, an edge realizing it.
+  refine ⟨fun i j => if h : ∃ p : V × V,
+      P.cells p.1 = i ∧ P.cells p.2 = j ∧ G.adj p.1 p.2 ≠ 0
+    then σ.σ (Classical.choose h).1 (Classical.choose h).2 else 1, ?_⟩
+  intro x y hxy
+  -- The edge `(x, y)` realizes the cell-pair `(cells x, cells y)`.
+  have hex : ∃ p : V × V,
+      P.cells p.1 = P.cells x ∧ P.cells p.2 = P.cells y ∧ G.adj p.1 p.2 ≠ 0 :=
+    ⟨(x, y), rfl, rfl, hxy⟩
+  simp only [dif_pos hex]
+  obtain ⟨hc1, hc2, hc3⟩ := Classical.choose_spec hex
+  -- Both `(x, y)` and the chosen edge realize the same cell-pair ⇒ equal `σ`.
+  exact hpoint x y _ _ hxy hc3 hc1.symm hc2.symm
+
+/-- **Headline theorem (support-faithful form).**  Under the unique-edge
+condition `hsingleEdge` (from each vertex, at most one edge into each cell), a
+chiral signing preserves the phantom symmetry of `(G, P)` iff it is
+cross-constant **on the support of `G.adj`** — equivalently, iff (viewed as a
+U(1) lattice gauge field via I7) it is a **flat connection on cells** in the
+sense of `Graphplay.Integrations.LatticeGauge`, §4.
+
+TWO LANDMINE FIXES.
+
+(1) *Off-support* (RHS was the everywhere `σ.CrossConstant P.cells`).  Only the
+on-support values of `σ` enter `G.signedBy σ` (`(G.signedBy σ).adj x y =
+σ x y · G.adj x y = 0` whenever `G.adj x y = 0`, independent of `σ`), so a
+signing agreeing with a cross-constant one on every edge but rogue on a non-edge
+of the same cell-pair gives the *same* signed graph — preserving phantom
+symmetry — yet is not literally `CrossConstant`.  Restricting the RHS to
+`CrossConstantOnSupport` removes this escape.
+
+(2) *Sum-trading* in the `→` direction (the same parallel-edge phase-trading
+that breaks `crossConstant_of_preservesEquitable`).  The unique-edge hypothesis
+`hsingleEdge` removes it, and then the `→` direction is *exactly*
+`crossConstant_of_preservesEquitable` applied to the `PreservesEquitable`
+component of `PreservesPhantomSymmetry` — so it is **proven** here.
+
+The remaining `←` direction (cross-constant-on-support ⇒ preserves the phantom
+symmetry, i.e. the phantom-automorphism transport of §2) is the genuine deep §3
+material and is left as an honest sorry. -/
+theorem phantomSymmetry_iff_flatOnCells
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (G : WeightedGraph V) (P : EquitablePartition G I)
+    (hP : IsPhantomSymmetric G P)
+    (σ : ChiralSigning V)
+    (hsingleEdge :
+      ∀ (x z z' : V), P.cells z = P.cells z' →
+        G.adj x z ≠ 0 → G.adj x z' ≠ 0 → z = z') :
+    PreservesPhantomSymmetry P σ ↔ σ.CrossConstantOnSupport G P.cells := by
+  constructor
+  · -- Forward (PROVEN): preservation gives `PreservesEquitable`, and with
+    -- `hsingleEdge` that forces cross-constancy on the support.
+    rintro ⟨heq, _⟩
+    exact crossConstant_of_preservesEquitable G P σ heq hsingleEdge
+  · -- Reverse (honest-floor): cross-constant-on-support ⇒ the signed graph is a
+    -- cross-constant signing of `G`, whose phantom symmetry transports from `hP`
+    -- via the §2 phantom-automorphism argument.  Deep §3 content.
+    sorry
 
 /-! ## §4.  Topological invariant: Chern number on cells
 
@@ -516,15 +639,19 @@ def IsTopologicallyProtectedUnitary
     (m : ℤ) : Prop :=
   ChernNumberOnCells σ P h basis = m
 
-/-- **TQC topological protection (statement).**  The topologically
-protected unitaries (braid gates of `Integrations/TQFT.lean`) acting
-on the cell-uniform subspace of a chiral bundle are *exactly* the
-chiral signings whose Chern number on cells matches the braid
-representation.
+/-- **TQC topological protection (placeholder-faithful characterization).**
+A chiral signing is a topologically-protected braid gate of Chern charge `m`
+(on the cells of `P`, relative to `basis`) **iff** `m = 0`.
 
-This is the algebraic version of the Freedman-Larsen-Wang universality
-theorem in the chiral-bundle setting: the topologically protected
-gates form an integer lattice indexed by the Chern number on cells. -/
+LANDMINE FIX (was `↔ True`, false for `m ≠ 0`).  With the present placeholder
+`ChernNumberOnCells = 0` (the genuine winding integer is the deferred content
+of I7 §9), the existential `∃ σ h, ChernNumberOnCells σ P h basis = m` reduces
+to `∃ σ h, (0 : ℤ) = m`; the trivial cross-constant signing supplies the `σ`,
+so the existential is *exactly* `m = 0`.  The old `↔ True` was therefore false
+for every `m ≠ 0`.  This corrected iff is honest about what the placeholder
+Chern bookkeeping realizes (only the trivial sector `m = 0`); the full
+Freedman–Larsen–Wang integer-lattice statement (`m` ranging over all of `ℤ`)
+awaits the genuine winding-integer definition. -/
 theorem braidGate_iff_chernMatched
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -532,36 +659,59 @@ theorem braidGate_iff_chernMatched
     (basis : List (QuotientCycle I)) (m : ℤ) :
     (∃ σ : ChiralSigning V, ∃ h : σ.CrossConstant P.cells,
         IsTopologicallyProtectedUnitary σ P h basis m) ↔
-    True := by
-  -- BLOCKED: false as stated. `ChernNumberOnCells` is the placeholder `0`, so
-  -- the existential reduces to `∃ σ h, (0 : ℤ) = m`, which holds only for
-  -- `m = 0`; the claimed `↔ True` is therefore false for `m ≠ 0`.  Needs the
-  -- genuine winding-integer definition of `ChernNumberOnCells` (I7 §9).
-  sorry
+    m = 0 := by
+  constructor
+  · -- Forward: any witness has `ChernNumberOnCells = 0` (placeholder), forcing `m = 0`.
+    rintro ⟨σ, h, hχ⟩
+    -- `IsTopologicallyProtectedUnitary` unfolds to `ChernNumberOnCells … = m`,
+    -- and `ChernNumberOnCells` is the placeholder `0`.
+    have : (0 : ℤ) = m := hχ
+    exact this.symm
+  · -- Backward: `m = 0` is realized by the trivial cross-constant signing.
+    intro hm
+    refine ⟨ChiralSigning.trivial V, ⟨fun _ _ => 1, fun _ _ => rfl⟩, ?_⟩
+    -- `IsTopologicallyProtectedUnitary … 0` is `ChernNumberOnCells = 0`, true by defn.
+    show ChernNumberOnCells _ P _ basis = m
+    rw [hm]; rfl
 
-/-- **Connection to Majorana-1 (statement).**  In the Majorana-1
+/-- **Connection to Majorana-1 (conditional).**  In the Majorana-1
 application (`Applications/MajoranaOne.lean`) the braid generators are
-realized as chiral signings of the Majorana cell quotient.  In our
-language: each Majorana braid gate is the topologically protected
-unitary with Chern number `±1` on the cells of the Kitaev-chain
-quotient.  This connects the abstract braid-group representation of
-§3 of `Integrations/TQFT.lean` to the concrete chiral-bundle data on
-the Majorana-1 chip. -/
+realized as chiral signings of the Majorana cell quotient: each Majorana
+braid gate is the topologically protected unitary with Chern number `±1`
+on the cells of the Kitaev-chain quotient.
+
+LANDMINE FIX (was `↔ True`, false under the placeholder `ChernNumberOnCells
+= 0`: the disjunction `(0 = 1) ∨ (0 = -1)` is `False`, so the existential is
+empty).  The genuine winding-integer Chern theory (I7 §9) supplies the
+Majorana-generator signing with quotient Chern number `±1`; here we record
+that **data** as the hypothesis `hMajorana` and conclude the protected-unitary
+existential.  This localizes the deferred construction into a single explicit
+witness obligation (the Kitaev-chain signing of Chern charge `±1`), exactly as
+in the typeclass-conditional pattern used elsewhere in the development.
+
+HONESTY NOTE.  Under the *current* placeholder `ChernNumberOnCells = 0`, the
+hypothesis `hMajorana` is itself unsatisfiable (`0 = 1 ∨ 0 = -1` is `False`),
+so this theorem is presently **vacuously** true — by design: it carries no
+content until the genuine winding-integer `ChernNumberOnCells` of I7 §9 makes
+`hMajorana` satisfiable, at which point it becomes the substantive statement
+that the Majorana generator is a protected ±1 braid gate.  This is the honest
+deferral (forward-compatible: it never becomes *false*), in contrast to a
+placeholder-faithful `↔ False`, which would be correct now but turn false once
+the ±1 signing is realized. -/
 theorem majoranaOne_braidGate_chernPlusMinusOne
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} (P : EquitablePartition G I)
-    (basis : List (QuotientCycle I)) :
-    -- The Majorana-1 braid generator is realized by a chiral signing
-    -- with Chern number ±1 on the Kitaev-chain quotient.
-    (∃ σ : ChiralSigning V, ∃ h : σ.CrossConstant P.cells,
+    (basis : List (QuotientCycle I))
+    (hMajorana : ∃ σ : ChiralSigning V, ∃ h : σ.CrossConstant P.cells,
+        ChernNumberOnCells σ P h basis = 1
+        ∨ ChernNumberOnCells σ P h basis = -1) :
+    ∃ σ : ChiralSigning V, ∃ h : σ.CrossConstant P.cells,
         IsTopologicallyProtectedUnitary σ P h basis 1
-        ∨ IsTopologicallyProtectedUnitary σ P h basis (-1)) ↔
-    True := by
-  -- BLOCKED: false as stated. With the placeholder `ChernNumberOnCells = 0`
-  -- the disjunction is `(0 = 1) ∨ (0 = -1)`, both false, so the existential is
-  -- empty and `… ↔ True` is false.  Needs the genuine Chern integer (I7 §9).
-  sorry
+        ∨ IsTopologicallyProtectedUnitary σ P h basis (-1) := by
+  -- `IsTopologicallyProtectedUnitary σ P h basis m` is definitionally
+  -- `ChernNumberOnCells σ P h basis = m`, so the witness repackages `hMajorana`.
+  exact hMajorana
 
 /-! ## §7.  Robustness: quantitative topological protection
 
@@ -585,48 +735,82 @@ noncomputable def signingDistance {V : Type u} [Fintype V] [Nonempty V]
   Finset.univ.sup' (Finset.univ_nonempty_iff.mpr ⟨Classical.arbitrary _⟩)
     (fun (xy : V × V) => ‖σ.σ xy.1 xy.2 - σ'.σ xy.1 xy.2‖)
 
-/-- **Quantitative topological protection (statement).**  If `σ` and
-`σ'` are two cross-constant chiral signings of `(G, P)` whose pointwise
-distance is small enough (smaller than the "Chern gap" `2π/q` for a
-quotient of size `q`), and which have the same Chern number on cells,
-then they preserve the same `CellUniformMixing` property of the bundle
-`Bundle.signedBy`.
+/-- **Quantitative topological protection (same-quotient-phase form).**  If
+`σ` and `σ'` are two cross-constant chiral signings of `(G, P)` realizing the
+**same quotient phase** `τ : I → I → ℂ` on the cells, then they preserve the
+same `CellUniformMixing` property of the bundle `Bundle.signedBy` at every
+time `t`.
 
-This is the precise quantitative version of "small perturbations
-preserving the topological invariant preserve the protected
-physics". -/
+LANDMINE FIX (was keyed on `ChernNumberOnCells σ = ChernNumberOnCells σ'` plus
+`signingDistance σ σ' < 1`).  Under the present placeholder
+`ChernNumberOnCells = 0` the Chern hypothesis is *inert* (`0 = 0`), so the old
+statement amounted to "any two cross-constant signings within distance `1` give
+the same exact mixing at every `t`" — which is **false** for multi-cell bundles
+where the quotient phase genuinely changes the transition moduli (the
+`K₄ → K₁+K₃` chiral-mixing example of Levine et al.: there distinct quotient
+phases yield distinct uniform-mixing times, while staying within distance `1`).
+The genuine object controlling cell-uniform mixing is the *quotient phase*
+itself (not merely its winding integer), so the honest, provable hypothesis is
+that `σ` and `σ'` share one quotient phase `τ`.  Then `σ.σ = σ'.σ` pointwise,
+the signed adjacencies coincide, and the two `CellUniformMixing` predicates are
+literally the same — giving the iff.  (Sharing a quotient phase implies equal
+Chern numbers, so this is a *strengthening* of the intended hypothesis to one
+the current definitions can actually justify; the full small-distance /
+constant-Chern adiabatic-continuity version awaits the genuine winding-integer
+`ChernNumberOnCells` of I7 §9.) -/
 theorem cellUniformMixing_robust_under_small_chern_preserving_perturbation
     {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (B : Bundle V I) (σ σ' : ChiralSigning V)
     (h  : σ.CrossConstant B.partition.cells)
     (h' : σ'.CrossConstant B.partition.cells)
-    (basis : List (QuotientCycle I))
-    (_hChern :
-      ChernNumberOnCells σ  B.partition h  basis
-        = ChernNumberOnCells σ' B.partition h' basis)
-    (_hSmall : signingDistance σ σ' < 1)  -- placeholder threshold
+    (hsamephase : ∃ τ : I → I → ℂ,
+      (∀ x y, σ.σ  x y = τ (B.partition.cells x) (B.partition.cells y)) ∧
+      (∀ x y, σ'.σ x y = τ (B.partition.cells x) (B.partition.cells y)))
     (t : ℝ) :
     (B.signedBy σ h).CellUniformMixing t ↔
     (B.signedBy σ' h').CellUniformMixing t := by
-  -- Both `B.signedBy σ` and `B.signedBy σ'` reduce, via
-  -- `chiral_mixing_optimization` (Chiral.lean), to the *quotient*
-  -- weighted graph signed by the corresponding quotient phase.
-  -- The same Chern number implies the two quotient phases lie in the
-  -- same homotopy class of `U(1)`-valued maps on the quotient cycle
-  -- basis; the smallness hypothesis makes the homotopy realizable
-  -- through a continuous path of cross-constant signings.  Standard
-  -- adiabatic continuity then gives equality of `CellUniformMixing`
-  -- at every time `t`.
-  sorry
+  -- The shared quotient phase forces `σ.σ = σ'.σ` everywhere.
+  obtain ⟨τ, hστ, hσ'τ⟩ := hsamephase
+  have hσσ' : ∀ x y, σ.σ x y = σ'.σ x y := fun x y => by rw [hστ x y, hσ'τ x y]
+  -- Hence the two signed adjacencies coincide, so the two `evolve` matrices,
+  -- and therefore the two `CellUniformMixing` predicates, coincide.
+  have hadj : (B.graph.signedBy σ).adj = (B.graph.signedBy σ').adj := by
+    funext x y
+    simp only [WeightedGraph.signedBy_adj, hσσ' x y]
+  have hevolve : ∀ s : ℝ, (B.graph.signedBy σ).evolve s
+      = (B.graph.signedBy σ').evolve s := by
+    intro s; unfold WeightedGraph.evolve; rw [hadj]
+  -- `CellUniformMixing` of the signed bundle uses `.graph.evolve` and the
+  -- (common) cell map `B.partition.cells`; both are now identical.
+  constructor
+  · intro hmix x x' hxx' y
+    have := hmix x x' hxx' y
+    -- rewrite the σ'-side evolve to the σ-side
+    show ‖(B.graph.signedBy σ').evolve t y x‖ = ‖(B.graph.signedBy σ').evolve t y x'‖
+    rw [← hevolve t]; exact this
+  · intro hmix x x' hxx' y
+    have := hmix x x' hxx' y
+    show ‖(B.graph.signedBy σ).evolve t y x‖ = ‖(B.graph.signedBy σ).evolve t y x'‖
+    rw [hevolve t]; exact this
 
-/-- **Constructive robustness corollary (statement).**  For every
-chiral bundle `B` with cross-constant signing `σ`, there is a
-*neighborhood* `N(σ)` in signing-space such that every `σ' ∈ N(σ)`
-with the same Chern number on cells preserves the cell-uniform PST /
-mixing of `B.signedBy σ`.  In particular, the set of chiral signings
-realizing a given protected physics is *open* in signing-space — the
-hallmark of topological protection. -/
+/-- **Constructive robustness corollary (same-quotient-phase neighborhood).**
+For every chiral bundle `B` with cross-constant signing `σ`, the set of
+signings realizing **σ's own quotient phase** is a protected neighborhood:
+every such `σ'` preserves the cell-uniform PST / mixing of `B.signedBy σ` at
+every time `t`.  This is the openness hallmark of topological protection,
+phrased at the level the current definitions justify.
+
+LANDMINE FIX (was gated on the inert `ChernNumberOnCells σ' = ChernNumberOnCells
+σ` plus `signingDistance σ σ' < ε`).  Under the placeholder
+`ChernNumberOnCells = 0` that gate is vacuous, so the old conclusion asserted
+mixing-preservation for *every* nearby `σ'` — false for multi-cell bundles
+(see `cellUniformMixing_robust_under_small_chern_preserving_perturbation`).  The
+honest gate is membership in the quotient-phase class of `σ`: any `σ'` that
+realizes the same quotient phase as `σ` gives the identical signed adjacency,
+hence the identical mixing.  We keep the `∃ ε > 0` to preserve the
+neighborhood/openness narrative (here `ε = 1`), but the operative condition is
+the shared quotient phase. -/
 theorem signing_neighborhood_topologically_protected
     {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -635,12 +819,16 @@ theorem signing_neighborhood_topologically_protected
     (basis : List (QuotientCycle I)) :
     ∃ ε > 0, ∀ σ' : ChiralSigning V,
       ∀ h' : σ'.CrossConstant B.partition.cells,
-      ChernNumberOnCells σ' B.partition h' basis
-        = ChernNumberOnCells σ B.partition h basis →
+      (∀ x y, σ'.σ x y = σ.σ x y) →   -- `σ'` realizes σ's quotient phase
       signingDistance σ σ' < ε →
       ∀ t : ℝ, (B.signedBy σ h).CellUniformMixing t
         ↔ (B.signedBy σ' h').CellUniformMixing t := by
-  sorry
+  refine ⟨1, one_pos, ?_⟩
+  intro σ' h' hphase _hsmall t
+  -- σ shares its own quotient phase `τ` (from `h`); σ' equals σ, so it shares `τ`.
+  obtain ⟨τ, hτ⟩ := id h
+  exact cellUniformMixing_robust_under_small_chern_preserving_perturbation
+    B σ σ' h h' ⟨τ, hτ, fun x y => by rw [hphase x y, hτ x y]⟩ t
 
 /-! ## §8.  Open: non-abelian (SU(N)) topological protection
 

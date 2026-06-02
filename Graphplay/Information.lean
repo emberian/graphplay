@@ -14,14 +14,18 @@ cell-uniform sector.  The PST / mixing / search reduction theorems
 > in the orthogonal complement.
 
 This file gives this slogan its information-theoretic formulation.  We
-introduce a `CompressionRate`, an `isLossless` predicate, a (sorry-only)
+introduce a `CompressionRate`, an `isLossless` predicate, a
 `QuantumChannel` interpretation of the quotient map, the Schumacher
 typical-subspace interpretation of the cell-uniform projector, and the
 hardware corollary: the classical capacity of the quotient channel is a
 fundamental limit on parallel distinguishable graphplay-host computations.
 
-All proofs are deferred (`sorry`); statements compile against the canonical
-`Graphplay.WeightedGraph` and `Graphplay.EquitablePartition`.
+All statements compile against the canonical `Graphplay.WeightedGraph` and
+`Graphplay.EquitablePartition`, and all are proven (this file is sorry-free);
+the substantive dynamical fact `not_isLossless_outside_cellUniform` (a vector
+outside the cell-uniform subspace never re-enters it under the unitary flow)
+is discharged from `noLeakage_of_equitable` together with reversibility of
+`evolve`.
 
 References inside `references/`:
 * `1108.0339.txt` — Bachman & Tamon, PST equivalence with the quotient.
@@ -149,18 +153,34 @@ theorem isLossless_cellUniform (P : EquitablePartition G I) :
   intro v hv t
   exact P.noLeakage_of_equitable t v hv
 
-/-- Conversely, any strict superset of `cellUniformSubspace` that contains
-a generic non-cell-uniform vector is *not* lossless.  (We do not formalise
-"generic" here; this is recorded as a stated theorem.) -/
+/-- Conversely, a vector outside the cell-uniform subspace **never** enters it
+under the unitary flow: for every time `t`, `G.evolve t *ᵥ v ∉
+cellUniformSubspace`.  Hence any set `S ⊋ cellUniformSubspace` that contains
+such a `v` is not lossless (the evolution carries `v` permanently outside the
+sector).
+
+LANDMINE FIX (strengthened `∃ t` → `∀ t`).  The original `∃ t, evolve t *ᵥ v ∉
+…` is **trivially true** via `t = 0` (`evolve 0 = 1`, so `evolve 0 *ᵥ v = v ∉
+…` is just `hv` restated) — a vacuity/triviality: it captures no dynamical
+content despite the "leaves the subspace" wording.  The genuine, non-trivial
+statement is the universally-quantified one, which is also provable: the
+subspace is `evolve`-invariant at *every* time (`noLeakage_of_equitable`), and
+`evolve` is invertible (`evolve (-t)` undoes `evolve t`), so if `evolve t *ᵥ v`
+were in the sector then `v = evolve(-t) *ᵥ (evolve t *ᵥ v)` would be too —
+contradicting `hv`.  No spectral/orthogonal-complement machinery is needed. -/
 theorem not_isLossless_outside_cellUniform (P : EquitablePartition G I)
     (v : V → ℂ) (hv : v ∉ P.cellUniformSubspace) :
-    ∃ t : ℝ, G.evolve t *ᵥ v ∉ P.cellUniformSubspace := by
-  -- DEEP: requires the spectral fact that a vector with nonzero component in
-  -- the orthogonal complement of the (`G.adj`-reducing) cell-uniform subspace
-  -- generically leaves it under the unitary flow.  This is a genuine analytic
-  -- non-invariance statement, not available from the leakage API.  Honest sorry.
-  -- BLOCKED: analytic generic non-invariance under unitary flow; not in Mathlib.
-  sorry
+    ∀ t : ℝ, G.evolve t *ᵥ v ∉ P.cellUniformSubspace := by
+  intro t hmem
+  -- If `evolve t *ᵥ v ∈ subspace`, undo the flow with `evolve (-t)` (no leakage),
+  -- recovering `v ∈ subspace`, contradicting `hv`.
+  apply hv
+  have hback : G.evolve (-t) *ᵥ (G.evolve t *ᵥ v) ∈ P.cellUniformSubspace :=
+    P.noLeakage_of_equitable (-t) _ hmem
+  have hid : G.evolve (-t) *ᵥ (G.evolve t *ᵥ v) = v := by
+    rw [Matrix.mulVec_mulVec, ← G.evolve_add, neg_add_cancel, G.evolve_zero,
+      Matrix.one_mulVec]
+  rwa [hid] at hback
 
 /-! ## 3. Quantum-channel interpretation -/
 

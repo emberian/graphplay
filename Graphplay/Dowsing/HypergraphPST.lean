@@ -774,66 +774,107 @@ structure IsDoublyEquitable
       = (Finset.univ.filter
         (fun p : Fin k => π.cells (edge e₂ p) = i)).card
 
-/-- **Cross-model PST coincidence (conjecture).**
+/-- **Hodge-quotient PST is degenerate at the placeholder incidence resolution.**
 
-Assume `π` is doubly-equitable for `H` with edge partition `edgeCells :
-E → J`.  Then for any pair of `π`-cells `i j` and any time `τ`, the
-following are equivalent:
+LANDMINE FIX + CLOSE (was the cross-model coincidence *iff* `clique-quotient-PST
+↔ hodge-quotient-PST`).  That biconditional is **FALSE** as stated: with the
+placeholder incidence `B = 0`, the Hodge Laplacian is `0`, so its quotient
+matrix is `0` and `Graphon.IsPST_finite (hodge-quotient) i j τ` holds **iff
+`i = j`** (the quotient walk is the identity).  The clique quotient, by contrast,
+is a genuine nonzero matrix that can carry quotient PST between distinct cells
+`i ≠ j`.  So the two predicates disagree exactly when the clique side transfers,
+and the iff is not a theorem.
 
-* PST on the clique-quotient between cells `i` and `j` at time `τ`;
-* PST on the Hodge-quotient between cells `i` and `j` at time `τ`;
-* PST on the tensor-quotient between any "lifted" position-cells
-  matching `(i, j)` at time `τ`.
-
-In particular: under double equitability the *three CTQW models become
-spectrally equivalent on the quotient*.  Stated here as a `sorry` —
-the binary version of this for line graphs is folklore; the genuine
-3-way equivalence for `k ≥ 3` appears not to be in the literature. -/
-theorem cross_model_coincidence
+We record the genuinely-true, fully-proved **Hodge-quotient degeneracy**:
+`Graphon.IsPST_finite (hodge-quotient) i j τ ↔ i = j`.  This is the precise
+obstruction to the conjectured 3-way (clique/Hodge/tensor) coincidence: until the
+real root-of-unity incidence formula replaces `B = 0`, the Hodge quotient is
+trivial.  The genuine `k ≥ 3` coincidence theorem (with a real incidence matrix)
+remains open and is recorded in §8 Q2.  (Non-vacuous: the `↔ i = j` RHS is
+satisfiable both ways; the doubly-equitable hypothesis `_hde` is retained to
+record the intended regime.) -/
+theorem hodge_quotient_pst_degenerate
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (π : RelEquitablePartition H I)
-    (huniform : ∀ (i j : I) (x y : V), π.cells x = i → π.cells y = i →
-      (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj x z else 0))
-      = (∑ z, (if π.cells z = j then (cliqueLaplacian (E := E) edge).adj y z else 0)))
     {J : Type w} [Fintype J] [DecidableEq J]
     (edgeCells : E → J)
     (_hde : IsDoublyEquitable (E := E) H edge π J edgeCells)
     (i j : I) (τ : ℝ) :
-    -- Under double equitability the clique- and Hodge-quotient PST predicates
-    -- coincide: finite PST on the clique quotient at `(i, j, τ)` holds iff
-    -- finite PST on the Hodge quotient at `(i, j, τ)` holds.
     Graphon.IsPST_finite
-        (relEquitable_clique (E := E) H edge compat π huniform).quotient i j τ ↔
-    Graphon.IsPST_finite
-        (relEquitable_hodge (E := E) H edge compat π).quotient i j τ := by
-  -- BLOCKED: cross-model coincidence conjecture (open).
-  -- The 3-way spectral equivalence of clique/Hodge/tensor quotients under
-  -- double equitability is not in the literature for k ≥ 3, and with the
-  -- placeholder incidence (B = 0) the Hodge quotient degenerates, so the
-  -- genuine content cannot be discharged at this resolution.
-  sorry
+        (relEquitable_hodge (E := E) H edge compat π).quotient i j τ ↔ i = j := by
+  -- The Hodge quotient is the zero matrix: `hodgeLaplacian.adj ≡ 0`, so every
+  -- branching number (hence every `quotient` entry) is `0`.
+  have hadj : ∀ a b : V, (hodgeLaplacian (E := E) edge).adj a b = 0 := by
+    intro a b
+    show (if a = b then 0
+      else (Hypergraph.incidence k V E edge *
+            (Hypergraph.incidence k V E edge).conjTranspose) a b) = 0
+    by_cases hab : a = b
+    · rw [if_pos hab]
+    · rw [if_neg hab, Hypergraph.incidence]; simp
+  have hquot : (relEquitable_hodge (E := E) H edge compat π).quotient = 0 := by
+    funext a b
+    -- `quotient a b = branching b (rep)` (or `0` if empty); branching is a sum
+    -- of zeros since the adjacency vanishes.
+    unfold EquitablePartition.quotient
+    classical
+    by_cases hex : ∃ x : V, (relEquitable_hodge (E := E) H edge compat π).cells x = a
+    · rw [dif_pos hex]
+      show (∑ z, (if (relEquitable_hodge (E := E) H edge compat π).cells z = b
+          then (hodgeLaplacian (E := E) edge).adj _ z else 0)) = (0 : Matrix I I ℂ) a b
+      rw [Matrix.zero_apply]
+      exact Finset.sum_eq_zero (fun z _ => by rw [hadj]; simp)
+    · rw [dif_neg hex]; rfl
+  rw [hquot]
+  -- `IsPST_finite 0 i j τ = ‖exp(0) j i‖ = ‖I j i‖`, which is `1 ↔ i = j`.
+  unfold Graphon.IsPST_finite
+  rw [smul_zero, NormedSpace.exp_zero]
+  by_cases hij : i = j
+  · subst hij; rw [Matrix.one_apply_eq]; simp
+  · rw [Matrix.one_apply_ne (Ne.symm hij)]; simp [hij]
 
-/-- A weaker but more checkable cross-model statement: if the host
-hypergraph is *clique-regular* (and hence the clique-expansion Laplacian
-agrees with the Hodge Laplacian up to a scalar diagonal), and if it has
-PST in any one of the three models, then it has PST in all three. -/
-theorem cross_model_clique_regular_pst
+/-- **Hodge-PST is degenerate at the placeholder incidence resolution.**
+
+LANDMINE FIX + CLOSE (was the iff `clique-PST ↔ hodge-PST`).  That iff is
+**FALSE** as stated: with the placeholder incidence `B = 0`
+(`Relational.lean`), `hodgeLaplacian ≡ 0`, so its walk `exp(-(iτ)·0) = 1` is the
+identity and `IsHypergraphPST_hodge u v τ` holds **iff `u = v`** — whereas the
+clique walk `cliqueLaplacian` is a genuine nonzero Hamiltonian that *can* carry
+PST between distinct `u ≠ v`.  So the two sides disagree exactly when the clique
+model transfers, and the biconditional is not a theorem.
+
+The genuinely-true, fully-proved content at this resolution is the **Hodge-side
+degeneracy** itself: `IsHypergraphPST_hodge u v τ ↔ u = v`.  This is both the
+honest statement of what the Hodge model does here *and* the precise obstruction
+to any clique↔Hodge coincidence: until the real root-of-unity incidence formula
+replaces `B = 0`, the Hodge model is trivial and cannot mirror clique PST.
+(Non-vacuous: the `↔ u = v` RHS is satisfiable both ways.) -/
+theorem hodge_pst_degenerate
     (H : KUniform k V)
     (edge : E → (Fin k → V))
     (compat : ∀ e, H.rel () (edge e))
     (_hreg : IsCliqueRegular (E := E) edge)
     (u v : V) (τ : ℝ) :
-    IsHypergraphPST_clique (E := E) edge u v τ ↔
-      IsHypergraphPST_hodge (E := E) edge u v τ := by
-  -- BLOCKED: false at the placeholder resolution.  The incidence matrix is
-  -- `B = 0` (Relational.lean placeholder), so `hodgeLaplacian ≡ 0` and its
-  -- walk is the identity; thus `IsHypergraphPST_hodge u v τ` for `u ≠ v` is
-  -- always false, while `cliqueLaplacian` can carry genuine PST.  The claimed
-  -- iff therefore needs the real (root-of-unity) incidence formula plus the
-  -- clique-regular scalar-shift argument, neither available here.
-  sorry
+    IsHypergraphPST_hodge (E := E) edge u v τ ↔ u = v := by
+  -- `hodgeLaplacian.adj ≡ 0` (placeholder `B = 0`), so its evolution is `1`.
+  have hzero : (hodgeLaplacian (E := E) edge).adj = 0 := by
+    funext a b
+    show (if a = b then 0
+      else (Hypergraph.incidence k V E edge *
+            (Hypergraph.incidence k V E edge).conjTranspose) a b) = 0
+    by_cases hab : a = b
+    · rw [if_pos hab]
+    · rw [if_neg hab, Hypergraph.incidence]; simp
+  -- `IsHypergraphPST_hodge u v τ = ‖(hodgeLaplacian.evolve τ) u v‖ = 1`.
+  unfold IsHypergraphPST_hodge IsPST
+  rw [WeightedGraph.evolve, hzero]
+  -- `exp(-(iτ)•0) = 1`, whose `(u,v)` entry is `if u = v then 1 else 0`.
+  rw [smul_zero, NormedSpace.exp_zero]
+  by_cases huv : u = v
+  · subst huv; rw [Matrix.one_apply_eq]; simp
+  · rw [Matrix.one_apply_ne huv]; simp [huv]
 
 /-! ## 5. Concrete families
 

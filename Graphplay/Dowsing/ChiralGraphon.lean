@@ -457,6 +457,74 @@ theorem signedBy_preserves_equitable {W : Graphon Ω μ}
   rw [signed_flux_factor s hτ i j x hxi, signed_flux_factor s hτ i j y hyi]
   exact congrArg _ (P.uniform i j x y hxi hyi)
 
+/-- **The explicit lifted partition** of `W.signedBy s` from an everywhere
+cross-constant signing.  Same as the witness of `signedBy_preserves_equitable`,
+but returned *as a value* (not merely `Nonempty`) so its quotient can be related
+to `P`'s.  Keeps `cells := P.cells` definitionally. -/
+noncomputable def signedBy_liftPartition {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (s : GraphonSigning Ω μ) {τ : I → I → ℂ}
+    (hτ : ∀ x y : Ω, s.σ x y = τ (P.cells x) (P.cells y)) :
+    @GraphonEquitablePartition Ω _ μ I _ _ (W.signedBy s) where
+  cells := P.cells
+  measurable_cells := P.measurable_cells
+  cell_pos := P.cell_pos
+  cell_finite := P.cell_finite
+  uniform := by
+    intro i j x y hxi hyi
+    rw [signed_flux_factor s hτ i j x hxi, signed_flux_factor s hτ i j y hyi]
+    exact congrArg _ (P.uniform i j x y hxi hyi)
+
+@[simp] theorem signedBy_liftPartition_cells {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (s : GraphonSigning Ω μ) {τ : I → I → ℂ}
+    (hτ : ∀ x y : Ω, s.σ x y = τ (P.cells x) (P.cells y)) :
+    (signedBy_liftPartition P s hτ).cells = P.cells := rfl
+
+/-- **The lifted quotient picks up the cross-constant phase.**
+`(signedBy_liftPartition).quotient i j = τ(i,j) · P.quotient i j`, since the
+signed kernel's cell-`j` flux out of any representative of cell `i` factors the
+phase `τ(i,j)` (`signed_flux_factor`). -/
+theorem signedBy_liftPartition_quotient {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (s : GraphonSigning Ω μ) {τ : I → I → ℂ}
+    (hτ : ∀ x y : Ω, s.σ x y = τ (P.cells x) (P.cells y)) (i j : I) :
+    (signedBy_liftPartition P s hτ).quotient i j = τ i j * P.quotient i j := by
+  set P' := signedBy_liftPartition P s hτ with hP'
+  -- A cell of positive measure is nonempty: pick a representative `x ∈ cell i`.
+  have hne : (P.cell i).Nonempty := by
+    rw [Set.nonempty_iff_ne_empty]
+    intro hempty
+    have : μ (P.cell i) = 0 := by rw [hempty]; exact measure_empty
+    exact (P.cell_pos i).ne' this
+  obtain ⟨x, hx⟩ := hne
+  have hxi : P.cells x = i := hx
+  -- `P'.cell i = P.cell i` (same `cells`), so `x ∈ P'.cell i` as well.
+  have hxi' : x ∈ P'.cell i := hx
+  -- Evaluate both quotients on the representative `x`.
+  rw [P'.quotient_apply_of_mem i j hxi', P.quotient_apply_of_mem i j hx]
+  -- The signed flux out of `x` factors the phase `τ(i,j)` (`signed_flux_factor`).
+  show (∫ z, (if P.cells z = j then (W.signedBy s).kernel x z else 0) ∂μ)
+      = τ i j * ∫ z, (if P.cells z = j then W.kernel x z else 0) ∂μ
+  exact Graphon.signed_flux_factor s hτ i j x hxi
+
+/-- **The lifted symmetric quotient picks up the cross-constant phase.**
+`(signedBy_liftPartition).symmQuotient i j = τ(i,j) · P.symmQuotient i j`.  The
+cell masses are unchanged (same `cells`), so the `D^{1/2}·_·D^{-1/2}` rescaling
+is identical and the phase passes straight through from `..._quotient`. -/
+theorem signedBy_liftPartition_symmQuotient [SFinite μ] {W : Graphon Ω μ}
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (s : GraphonSigning Ω μ) {τ : I → I → ℂ}
+    (hτ : ∀ x y : Ω, s.σ x y = τ (P.cells x) (P.cells y)) (i j : I) :
+    (signedBy_liftPartition P s hτ).symmQuotient i j
+      = τ i j * P.symmQuotient i j := by
+  -- `cellMass` depends only on `cells`, which is shared; so the masses agree.
+  have hmass : ∀ k : I, (signedBy_liftPartition P s hτ).cellMass k = P.cellMass k :=
+    fun _ => rfl
+  unfold GraphonEquitablePartition.symmQuotient
+  rw [signedBy_liftPartition_quotient P s hτ i j, hmass i, hmass j]
+  ring
+
 end Graphon
 
 /-! ## 4. The chiral quotient: explicit formula
@@ -513,64 +581,91 @@ namespace Graphon
 variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- **Headline: chiral cell-uniform mixing on a graphon ↔ finite chiral
+/-- **Headline (PROVED): chiral cell-uniform mixing on a graphon ↔ finite chiral
 uniform mixing on the chirally-signed quotient.**
 
 Let `W : Graphon Ω μ`, `P : GraphonEquitablePartition W`,
-`s : GraphonSigning Ω μ` cell-cross-constant on `P.cells` with phase
-function `τ`, and `t : ℝ`.  Let
-`P' := Graphon.signedBy_preserves_equitable P s h` and let
-`Qσ := P'.quotient` (which by `quotient_signedBy` equals `τ · P.quotient`).
-Then for every `i : I`:
+`s : GraphonSigning Ω μ` *everywhere* cross-constant on `P.cells` with phase
+witness `τ` (`hτ : ∀ x y, s.σ x y = τ (cells x) (cells y)`), and `t : ℝ`.  On the
+**explicit** lifted partition `P' := signedBy_liftPartition P s hτ` (the genuine
+value, not an opaque `Nonempty.some`), for every `i : I`:
 
 `IsCellUniformGraphonMixing (W.signedBy s) P' i t`
    ↔
-`IsUniformMixing_finite Qσ i t`.
+`IsUniformMixing_finite (τ ⊙ Q̃) i t`,
 
-In particular: **optimal chiral phasing for cell-uniform graphon mixing
-reduces to a finite chiral optimization on the quotient matrix.**
+where `Q̃ = P.symmQuotient`.
 
 This is the graphon-limit version of Theorem 1 of Levine–Mesapam–Mustico–
-Tamon–Tucker–Zhan (2605.04414): a chiral signing yields graphon uniform
-mixing iff the corresponding *finite* chiral signing of the quotient does. -/
+Tamon–Tucker–Zhan (2605.04414): a chiral signing yields graphon uniform mixing
+iff the corresponding *finite* chiral signing of the quotient does.
+
+**Now fully proved.**  The graphon side reduces (via the proved
+`cellUniformGraphonMixing_iff_quotientMixing`) to uniform mixing of
+`P'.symmQuotient`, and `signedBy_liftPartition_symmQuotient` identifies
+`P'.symmQuotient = τ ⊙ P.symmQuotient` entrywise — so the two finite mixing
+conditions are literally the same.  (The earlier version used the opaque
+`(signedBy_preserves_equitable …).some`, through which `P'.symmQuotient` was
+unprovable; switching to the explicit `signedBy_liftPartition` unblocks it.) -/
 theorem chiralGraphonMixing_iff_quotientChiralMixing [IsFiniteMeasure μ]
     {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (s : GraphonSigning Ω μ) (h : s.EverywhereCellCrossConstant P.cells)
+    (s : GraphonSigning Ω μ) {τ : I → I → ℂ}
+    (hτ : ∀ x y : Ω, s.σ x y = τ (P.cells x) (P.cells y))
     (i : I) (t : ℝ) :
-    -- Cell-uniform mixing of the signed graphon (on the lifted partition
-    -- `P' := (signedBy_preserves_equitable P s h).some`) is equivalent to
-    -- ordinary uniform mixing of the chirally-signed finite quotient matrix
-    -- `Qσ = τ ⊙ Q̃` (the phase function entrywise times the symmetric quotient).
     IsCellUniformGraphonMixing (W.signedBy s)
-        (signedBy_preserves_equitable P s h).some i t
+        (signedBy_liftPartition P s hτ) i t
       ↔ IsUniformMixing_finite
-          (fun a b => s.quotientPhase h.toCellCrossConstant a b * P.symmQuotient a b) i t := by
-  -- The genuine content (the evolve-level intertwining lift of Levine et al.
-  -- Theorem 1 in the continuum) is an honest theorem-level `sorry`.
-  sorry
+          (fun a b => τ a b * P.symmQuotient a b) i t := by
+  -- Graphon mixing ↔ finite mixing of `P'.symmQuotient`, and the latter matrix
+  -- equals `τ ⊙ P.symmQuotient` entrywise, so the two conditions coincide.
+  rw [cellUniformGraphonMixing_iff_quotientMixing]
+  have heq : (signedBy_liftPartition P s hτ).symmQuotient
+      = (fun a b => τ a b * P.symmQuotient a b) := by
+    funext a b; exact signedBy_liftPartition_symmQuotient P s hτ a b
+  rw [heq]
 
-/-- **Existence of an optimal chiral phasing on the quotient.**
+/-- **Existence of a *time-optimal* chiral phasing on the quotient.**
 
-Among all cell-cross-constant chiral signings of `W` (with phase function
-ranging over Hermitian unimodular `I × I → ℂ`), the infimum of the
-**first uniform-mixing time** is attained by some finite `τ : I → I → ℂ`.
+LANDMINE FIX.  The former statement claimed *unconditional* existence of a
+Hermitian unimodular phasing `τ` and time `t` at which `τ ⊙ Q̃` exhibits uniform
+mixing from cell `i`.  This is **FALSE**: take the **zero graphon** `W ≡ 0` with
+any partition into `|I| ≥ 2` cells.  Then `P.symmQuotient = 0`, so for *every*
+phasing `τ` the matrix `τ ⊙ Q̃ = 0`, hence `exp(-(it)·0) = 1` and
+`‖1_{j,i}‖² ∈ {0, 1}`, never `1/|I| = 1/2 < 1`.  So **no** phasing achieves
+uniform mixing — there is nothing to optimise, and the unconditional existence is
+not a theorem.  (Uniform mixing is a genuinely non-trivial dynamical property; it
+is not achievable on every quotient.)
 
-This is the algorithmic content of the Levine–…–Tamon technique: the
-search for optimal chiral graphon mixing reduces to a finite-dimensional
-optimisation on the compact torus `(U(1))^{|I| · (|I| - 1) / 2}` of
-phase choices on cell pairs. -/
+The genuinely-true content (and the actual Levine–…–Tamon *optimisation* claim)
+is the **attainment of the optimum *conditional on feasibility***: *if* some
+Hermitian unimodular phasing achieves uniform mixing at some time (`hfeas`),
+*then* the infimum first-mixing time is **attained** by an optimal phasing —
+because the uniform-mixing-time functional is lower semicontinuous on the
+**compact** phase torus `(U(1))^{|I|(|I|-1)/2}`.  We state that optimal-attainment
+form (`hfeas → ∃ optimal (τ*, t*)` with `t*` minimal among all feasible mixing
+times); the compactness/lower-semicontinuity argument is the honest residual.
+Non-vacuous: `hfeas` is satisfiable (e.g. `|I| = 1`, or `Q̃` a `K₂`-block with a
+Hadamard time), and the conclusion adds the genuine minimality. -/
 theorem exists_optimal_chiral_phasing
-    (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i : I) :
-    -- There exists a Hermitian, unimodular phase function `τ : I → I → ℂ` and a
-    -- time `t` at which the chirally-phased finite quotient `τ ⊙ Q̃` exhibits
-    -- uniform mixing from cell `i` — the finite-dimensional optimum on the
-    -- compact phase torus that the graphon problem reduces to.
+    (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i : I)
+    (hfeas : ∃ τ : I → I → ℂ,
+      (∀ a b, τ b a = star (τ a b)) ∧ (∀ a b, ‖τ a b‖ = 1) ∧
+      ∃ t : ℝ, 0 ≤ t ∧
+        IsUniformMixing_finite (fun a b => τ a b * P.symmQuotient a b) i t) :
+    -- the time-minimal optimum is attained on the compact phase torus (the
+    -- minimal *nonnegative* mixing time — the "first uniform-mixing time"):
     ∃ τ : I → I → ℂ,
       (∀ a b, τ b a = star (τ a b)) ∧ (∀ a b, ‖τ a b‖ = 1) ∧
-      ∃ t : ℝ, IsUniformMixing_finite
-        (fun a b => τ a b * P.symmQuotient a b) i t := by
-  -- Existence by lower semicontinuity of the uniform-mixing-time functional on
-  -- the compact torus `(U(1))^{|I|(|I|-1)/2}`: honest theorem-level `sorry`.
+      ∃ t : ℝ, 0 ≤ t ∧
+        IsUniformMixing_finite (fun a b => τ a b * P.symmQuotient a b) i t ∧
+        -- `t` is the minimal nonnegative mixing time over all feasible
+        -- Hermitian-unimodular phasings (the attained optimum):
+        (∀ (τ' : I → I → ℂ), (∀ a b, τ' b a = star (τ' a b)) → (∀ a b, ‖τ' a b‖ = 1) →
+          ∀ t' : ℝ, 0 ≤ t' →
+            IsUniformMixing_finite (fun a b => τ' a b * P.symmQuotient a b) i t' →
+            t ≤ t') := by
+  -- Attainment by lower semicontinuity of the (feasible) uniform-mixing-time
+  -- functional on the compact torus `(U(1))^{|I|(|I|-1)/2}`: honest residual.
   sorry
 
 end Graphon

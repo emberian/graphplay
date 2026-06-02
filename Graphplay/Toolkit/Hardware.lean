@@ -258,7 +258,56 @@ theorem WeightedGraph.satisfies_intersect
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (H K : HardwareSpec) (embed : V → ℝ × ℝ) :
     G.satisfies (H.intersect K) embed ↔ G.satisfies H embed ∧ G.satisfies K embed := by
-  sorry
+  -- Unfold both sides.  Of the five conjuncts of `satisfies`, the
+  -- distance/genus/regularity ones are `True` placeholders (so contribute
+  -- nothing on either side); the genuine content is the qubit-count bound
+  -- (`min` on the `Option ℕ`) and the allowed-phase set (`∩`).
+  simp only [WeightedGraph.satisfies, HardwareSpec.intersect]
+  constructor
+  · rintro ⟨_hd, _hg, hq, hph, _hr⟩
+    -- Split the qubit-count and phase content; the placeholders are trivial.
+    refine ⟨⟨?_, ?_, ?_, ?_, ?_⟩, ⟨?_, ?_, ?_, ?_, ?_⟩⟩
+    · -- H distance placeholder
+      intro x y _; rcases H.maxCouplingDistance with _ | _ <;> trivial
+    · -- H genus placeholder
+      rcases H.surfaceGenus with _ | _ <;> trivial
+    · -- H qubit-count: from `card ≤ min m n` (or one-sided) deduce `card ≤ m`.
+      revert hq
+      rcases hm : H.qubitCountBound with _ | m <;> rcases hn : K.qubitCountBound with _ | n <;>
+        simp_all
+    · -- H phase: `adj ∈ HₚK` gives `adj ∈ Hₚ`.
+      intro x y hxy; exact (Set.mem_inter_iff _ _ _|>.mp (hph x y hxy)).1
+    · -- H regularity placeholder
+      rcases H.requiredRegularity with _ | _ <;> trivial
+    · -- K distance placeholder
+      intro x y _; rcases K.maxCouplingDistance with _ | _ <;> trivial
+    · -- K genus placeholder
+      rcases K.surfaceGenus with _ | _ <;> trivial
+    · -- K qubit-count
+      revert hq
+      rcases hm : H.qubitCountBound with _ | m <;> rcases hn : K.qubitCountBound with _ | n <;>
+        simp_all
+    · -- K phase
+      intro x y hxy; exact (Set.mem_inter_iff _ _ _|>.mp (hph x y hxy)).2
+    · -- K regularity placeholder
+      rcases K.requiredRegularity with _ | _ <;> trivial
+  · rintro ⟨⟨_hHd, _hHg, hHq, hHph, _hHr⟩, ⟨_hKd, _hKg, hKq, hKph, _hKr⟩⟩
+    refine ⟨?_, ?_, ?_, ?_, ?_⟩
+    · -- intersect distance placeholder
+      intro x y _
+      rcases H.maxCouplingDistance with _ | r <;> rcases K.maxCouplingDistance with _ | s <;> trivial
+    · -- intersect genus placeholder
+      rcases H.surfaceGenus with _ | g <;> rcases K.surfaceGenus with _ | h <;> trivial
+    · -- intersect qubit-count: `card ≤ m` and `card ≤ n` give `card ≤ min m n`.
+      revert hHq hKq
+      rcases hm : H.qubitCountBound with _ | m <;> rcases hn : K.qubitCountBound with _ | n <;>
+        simp_all
+    · -- intersect phase: `adj ∈ Hₚ ∧ adj ∈ Kₚ` gives `adj ∈ Hₚ ∩ Kₚ`.
+      intro x y hxy
+      exact Set.mem_inter (hHph x y hxy) (hKph x y hxy)
+    · -- intersect regularity placeholder
+      rcases H.requiredRegularity with _ | d <;> rcases K.requiredRegularity with _ | e <;>
+        first | trivial | (split <;> trivial)
 
 /-! ## Quotient hardware specs
 
@@ -328,16 +377,72 @@ which the quotient graph `P.quotientHWGraph` satisfies the relaxed spec
 This is the slogan that "hardware constraints survive the
 equitable-partition lift": if you can physically build the big walk, you can
 physically build (an at most equally constrained version of) the small
-quotient walk. -/
+quotient walk.
+
+⚠ LANDMINE FIXED (migrated; was previously false-as-stated).  The hypothesis-free
+form was a *false* statement, defeated by two independent counterexamples:
+
+1. **Qubit-count blow-up.**  `EquitablePartition` does NOT require `cells` to be
+   surjective (empty cells are allowed), so `Fintype.card I` can *exceed*
+   `Fintype.card V`.  Counterexample: `V = Fin 1`, `H = sizeBoundedSpec 1`
+   (`qubitCountBound = some 1`), `I = Fin 2` with both vertices labelled cell `0`.
+   Then `G.satisfies H embed` holds (`card V = 1 ≤ 1`), yet *every*
+   `embed_quotient` fails `H.quotient`'s qubit-count conjunct, which demands
+   `card I = 2 ≤ 1`.  Fixed by hypothesis `hsurj : Function.Surjective P.cells`
+   (every cell is realised by a vertex — the physically meaningful case), giving
+   `card I ≤ card V` via `Fintype.card_le_of_surjective`.
+
+2. **Phase escape.**  The quotient adjacency `symmQuotient i j =
+   √|C_i|·Q(i,j)/√|C_j|` is a *real-rescaled sum* of host couplings, so it
+   generically leaves `H.allowedPhaseSet` even when every host weight lies inside
+   it (e.g. a sum of two unit phases has modulus `≠ 1`, escaping
+   `{‖z‖ = 1}`).  `HardwareSpec.quotient` deliberately keeps the *same* phase set
+   (the multiplicative-closure refinement is flagged as future work), so the
+   conjunct is genuinely unprovable without an assumption.  Fixed by the
+   checkable hypothesis `hphase`: the realised quotient weights stay in the set.
+
+Both hypotheses keep `H.quotient` a *non-vacuous* spec (the qubit-count and phase
+conjuncts remain genuine constraints on the produced quotient graph). -/
 theorem WeightedGraph.satisfies_quotient
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V} {H : HardwareSpec} {embed : V → ℝ × ℝ}
     (hG : G.satisfies H embed)
     {I : Type v} [Fintype I] [DecidableEq I]
-    (P : EquitablePartition G I) :
+    (P : EquitablePartition G I)
+    -- every cell is realised by some vertex (so the quotient is no larger than
+    -- the host) — defeats the empty-cell qubit-count counterexample:
+    (hsurj : Function.Surjective P.cells)
+    -- the realised quotient weights stay inside the hardware phase set (the
+    -- quotient is a real-rescaled *sum* of host couplings, so this is a genuine
+    -- assumption, not automatic) — defeats the phase-escape counterexample:
+    (hphase : ∀ i j : I,
+      (P.quotientHWGraph).adj i j ≠ 0 →
+        (P.quotientHWGraph).adj i j ∈ H.allowedPhaseSet) :
     ∃ embed_quotient : I → ℝ × ℝ,
       (P.quotientHWGraph).satisfies H.quotient embed_quotient := by
-  sorry
+  -- The induced embedding is irrelevant to the surviving conjuncts (distance is
+  -- relaxed to `none`); any choice works, e.g. the constant map.
+  refine ⟨fun _ => (0, 0), ?_⟩
+  -- `H.quotient` has distance/regularity `none` and genus/qubitCount/phase
+  -- inherited; unfold to expose the match-on-`H`-fields structure.
+  simp only [WeightedGraph.satisfies, HardwareSpec.quotient]
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · -- distance: `none`, placeholder.
+    intro i j _; trivial
+  · -- genus: placeholder regardless of `some`/`none`.
+    rcases H.surfaceGenus with _ | g <;> trivial
+  · -- qubit count: `card I ≤ card V ≤ n`, using surjectivity of `cells`.
+    have hIV : Fintype.card I ≤ Fintype.card V := Fintype.card_le_of_surjective _ hsurj
+    -- extract the host qubit bound from `hG`.
+    obtain ⟨_, _, hq, _, _⟩ := hG
+    revert hq
+    rcases H.qubitCountBound with _ | n
+    · intro _; trivial
+    · intro hVn; exact le_trans hIV hVn
+  · -- phase: exactly the supplied hypothesis.
+    exact hphase
+  · -- regularity: `none`, placeholder.
+    trivial
 
 /-! ## Open questions / future work
 

@@ -632,26 +632,37 @@ def _root_.SimpleGraph.toRelStructure
     {V : Type*} (G : SimpleGraph V) : RelStructure Signature.graph V :=
   RelStructure.ofSimpleGraph G
 
-/-- **Mancinska-Roberson characterization of `χ_q`** (arXiv:1212.1724,
-Theorem 1).  For a finite simple graph `G` and `k : ℕ`,
+/-- **Mancinska-Roberson, the "easy" half via games (PROVEN).**  A classical
+`k`-coloring of `G` forces the quantum value of the `(G,k)`-coloring game up to
+(at least) `1`: `(∃ c : G.Coloring (Fin k)) → 1 ≤ ω^*(GraphColoringGame G k)`,
+given the boundedness `BddAbove` that makes the supremum genuine.  Indeed a
+coloring is a perfect *classical* strategy (`classical_value_eq_one`), and every
+classical strategy embeds as a quantum one with the same win
+(`ClassicalValue_le_QuantumValue`), so `1 = ω(game) ≤ ω^*(game)`.
 
-    χ_q(G) ≤ k  ↔  ω^*(GraphColoringGame G k) = 1.
-
-This is the loop-closing statement: it links the
-operator-system / Tower-3 chromatic invariant
-(`quantumChromaticNumber`) to a *correlation-theoretic* / Tsirelson
-quantity.  -/
-theorem quantumChromaticNumber_via_game
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] (k : ℕ) :
-    CSP.quantumChromaticNumber G.toRelStructure ≤ k
-      ↔ QuantumValue (GraphColoringGame G k) = 1 := by
-  -- Mancinska-Roberson §3: a perfect Tsirelson strategy
-  -- `{E_v^a}, {F_w^b}` for the (G,k)-coloring game is the same data as a
-  -- projective representation of the *quantum graph homomorphism algebra*
-  -- `Hom_q(G, K_k)`, which in turn is what `quantumChromaticNumber`
-  -- numerically captures.
-  sorry
+WHY THE OLD STATEMENT WAS FALSE.  The previous version asserted the full
+biconditional `χ_q(G) ≤ k ↔ ω^*(GraphColoringGame G k) = 1` against the canonical
+`CSP.quantumChromaticNumber`, which is **currently a `0`-stub** (Relational.lean,
+statement-shape placeholder).  With `χ_q := 0` the left side `0 ≤ k` is
+*definitionally `True`*, so the `↔` collapses to the unconditional claim
+`ω^*(GraphColoringGame G k) = 1` — **false** already at `k = 0` (for nonempty `V`
+the strategy type `QuantumStrategy V (Fin 0)` is empty, so the value is the empty
+supremum `0 ≠ 1`), and false generally for `k < χ_q(G)`.  The full MR
+biconditional is genuine literature, but is unprovable here while `χ_q` is a stub
+and would be a *landmine* against it; we record instead the honest, true,
+stub-independent half. -/
+theorem quantumColorable_imp_one_le_quantumValue
+    {V : Type*} [Fintype V] [DecidableEq V] [Nonempty V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] (k : ℕ)
+    (hbdd : BddAbove (Set.range (quantumWin (GraphColoringGame G k))))
+    (hcol : ∃ c : G.Coloring (Fin k), True) :
+    1 ≤ QuantumValue (GraphColoringGame G k) := by
+  -- A coloring makes the classical value `1`; classical ≤ quantum lifts it.
+  have hcv : ClassicalValue (GraphColoringGame G k) = 1 :=
+    (GraphColoringGame.classical_value_eq_one G k).mpr hcol
+  calc (1 : ℝ) = ClassicalValue (GraphColoringGame G k) := hcv.symm
+    _ ≤ QuantumValue (GraphColoringGame G k) :=
+        ClassicalValue_le_QuantumValue (GraphColoringGame G k) hbdd
 
 /-- **Commuting-operator chromatic number.**  Define `χ_qc(G)` as the
 least `k` with `CommutingOperatorValue (GraphColoringGame G k) = 1`.
@@ -683,38 +694,98 @@ of `G` itself.  This is the loop closure with L6 (the "phantom
 symmetry → quantum coloring" speculation).
 -/
 
-/-- A *phantom symmetry witness* on `G`: data of an operator-system
-homomorphism `M_{|V|}(ℂ) → M_k(ℂ)` lifting a classical
-`k`-coloring of a quotient that does *not* lift to a classical
-`k`-coloring of `G`.
+/-- A *phantom symmetry witness* on `G`: the **operational** data of the
+quantum-advantage regime for the `(G, k)`-coloring game — a perfect
+Tsirelson-quantum strategy (a `QuantumStrategy` winning with probability `1`,
+together with the normalization bound `win ≤ 1` that the win-probability
+encoding satisfies) for a graph `G` that admits **no** classical `k`-coloring.
+
+WHY THE OLD STRUCTURE WAS A LANDMINE-ENABLER.  The previous version carried only
+an inert `data : Unit` and `quotient_classical : True`, so `PhantomSymmetry G k`
+was inhabited for **any** non-`k`-colorable `G` (e.g. `K_{k+1}`) with
+`data := ()` — *without any quantum strategy existing*.  That made
+`phantomSymmetry_to_quantumStrategy` (which concludes `QuantumValue = 1`) **false
+as stated**: take `G = K_{k+1}`; it has `χ_q = k+1 > k`, so no perfect quantum
+strategy and `QuantumValue (GraphColoringGame K_{k+1} k) < 1`, yet the hypothesis
+was satisfiable.  We repair by giving the structure genuine content: it now
+*carries* the perfect strategy (and its normalization bound), so its inhabitation
+is exactly the quantum-advantage assertion `χ_q(G) ≤ k < χ(G)` it is meant to
+package, and the theorem below becomes a genuine, axiom-clean consequence.
 
 (We do not formalize `QuantumEquitablePartition` here — that's
-`NonCommutativeCoherent.lean`; we package what we need.) -/
+`NonCommutativeCoherent.lean`; we package the strategy it produces.) -/
 structure PhantomSymmetry {V : Type*} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (k : ℕ) where
-  /-- Witness operator-system map (sketch). -/
-  data : Unit
-  /-- The quotient admits a classical `k`-coloring. -/
-  quotient_classical : True
+  /-- The perfect Tsirelson-quantum strategy realized by the phantom symmetry. -/
+  strategy : NonLocalGame.QuantumStrategy V (Fin k)
+  /-- It wins the `(G, k)`-coloring game with probability `1`. -/
+  strategy_perfect : NonLocalGame.quantumWin (GraphColoringGame G k) strategy = 1
+  /-- The win probability is normalized: no strategy exceeds `1` (the genuine
+  upper bound the win-probability encoding satisfies; it makes the supremum a
+  genuine value rather than an artifact). -/
+  win_le_one : ∀ S : NonLocalGame.QuantumStrategy V (Fin k),
+    NonLocalGame.quantumWin (GraphColoringGame G k) S ≤ 1
   /-- `G` itself does *not* admit a classical `k`-coloring (so we're
   in the genuinely-quantum regime). -/
   no_classical_coloring : ¬ ∃ c : G.Coloring (Fin k), True
 
-/-- **Phantom symmetry → quantum strategy.**  A `PhantomSymmetry G k`
-witness produces a perfect Tsirelson-quantum strategy for the
-`(G, k)`-coloring game, witnessing `χ_q(G) ≤ k < χ(G)`.
+/-- **Phantom symmetry → quantum advantage (PROVEN).**  A `PhantomSymmetry G k`
+witness produces the quantum-advantage gap `ω^*(GraphColoringGame G k) = 1`
+(perfect quantum strategy) while `ω(GraphColoringGame G k) < 1` (no perfect
+classical strategy), witnessing `χ_q(G) ≤ k < χ(G)`.
 
-This is the *quantum advantage* phenomenon — the original example is
-the orthogonality graph on `ℝ^4`, where `χ_q = 4 < χ = 5`
-(Mancinska-Roberson §5, building on Cubitt-Mancinska-Roberson-Severini-
-Stahlke-Winter).  -/
+This is the *quantum advantage* phenomenon — the original example is the
+orthogonality graph on `ℝ^4`, where `χ_q = 4 < χ = 5` (Mancinska-Roberson §5,
+building on Cubitt-Mancinska-Roberson-Severini-Stahlke-Winter).
+
+Now genuinely proven: the carried perfect strategy attains the (normalized)
+quantum value `1`, and the *absence* of a classical `k`-coloring forces the
+classical value strictly below `1` via `GraphColoringGame.classical_value_eq_one`.
+-/
 theorem phantomSymmetry_to_quantumStrategy
-    {V : Type*} [Fintype V] [DecidableEq V]
+    {V : Type*} [Fintype V] [DecidableEq V] [Nonempty V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (k : ℕ)
-    (_ : PhantomSymmetry G k) :
+    (P : PhantomSymmetry G k) :
     QuantumValue (GraphColoringGame G k) = 1
       ∧ ClassicalValue (GraphColoringGame G k) < 1 := by
-  sorry
+  classical
+  -- The carried strategy witnesses nonemptiness of the quantum-strategy type.
+  haveI hQne : Nonempty (QuantumStrategy V (Fin k)) := ⟨P.strategy⟩
+  refine ⟨?_, ?_⟩
+  · -- Quantum value is exactly `1`: the carried perfect strategy attains it, and
+    -- `win_le_one` is an upper bound (so the supremum equals `1`).
+    have hbdd : BddAbove (Set.range (quantumWin (GraphColoringGame G k))) :=
+      ⟨1, by rintro _ ⟨S, rfl⟩; exact P.win_le_one S⟩
+    refine le_antisymm (ciSup_le P.win_le_one) ?_
+    rw [← P.strategy_perfect]
+    exact le_ciSup hbdd P.strategy
+  · -- Classical value is `< 1`: no `k`-coloring ⟹ value `≠ 1`; and value `≤ 1`.
+    -- `classical_value_eq_one` gives `ClassicalValue = 1 ↔ ∃ coloring`.
+    have hne1 : ClassicalValue (GraphColoringGame G k) ≠ 1 := by
+      intro hval
+      exact P.no_classical_coloring
+        ((GraphColoringGame.classical_value_eq_one G k).mp hval)
+    -- `ClassicalValue ≤ 1` (every classical win is `≤ 1`); handle empty case too.
+    have hub : ∀ σ : ClassicalStrategy V (Fin k),
+        classicalWin (GraphColoringGame G k) σ ≤ 1 := by
+      intro σ
+      unfold classicalWin
+      rw [div_le_one (by
+        have : 0 < Fintype.card V := Fintype.card_pos
+        positivity)]
+      calc ((Finset.univ.filter (fun p : V × V =>
+              (GraphColoringGame G k).verifier p (σ.alice p.1, σ.bob p.2))).card : ℝ)
+          ≤ (Fintype.card (V × V) : ℝ) := by exact_mod_cast Finset.card_filter_le _ _
+        _ = (Fintype.card V : ℝ) * (Fintype.card V : ℝ) := by
+            push_cast [Fintype.card_prod]; ring
+    have hle1 : ClassicalValue (GraphColoringGame G k) ≤ 1 := by
+      by_cases hCne : Nonempty (ClassicalStrategy V (Fin k))
+      · exact ciSup_le hub
+      · -- empty strategy type ⟹ `ClassicalValue = sSup ∅ = 0 ≤ 1`.
+        rw [not_nonempty_iff] at hCne
+        simp only [ClassicalValue, Real.iSup_of_isEmpty]
+        norm_num
+    exact lt_of_le_of_ne hle1 hne1
 
 /-! ## 5. The CHSH game as a sanity check
 
