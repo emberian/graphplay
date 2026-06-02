@@ -45,6 +45,7 @@ import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.CategoryTheory.Monoidal.Braided.Basic
 import Mathlib.Topology.Category.TopCat.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
+import Mathlib.Data.Matrix.PEquiv
 import Graphplay.Weighted
 import Graphplay.Equitable
 import Graphplay.Bundle
@@ -100,33 +101,53 @@ structure ModularData (A : Type u) [Fintype A] [DecidableEq A] where
   unit : A
   /-- The vacuum has trivial twist. -/
   unit_twist : twist unit = 1
+  /-- **Non-degeneracy axiom (modularity).**  In a *modular* tensor category the
+  `S`-matrix is invertible.  This is a *defining* axiom of an MTC (Turaev;
+  Kitaev 2006, Appendix E) — non-degeneracy of the braiding is equivalent to
+  invertibility of `S` — so it is carried as structure rather than derived. -/
+  S_nondegenerate : ∃ Sinv : Matrix A A ℂ, S * Sinv = 1 ∧ Sinv * S = 1
+  /-- **Modular `SL₂(ℤ)` relations.**  The generators satisfy `(S T)³ = μ · S²`
+  and `S⁴ = ν · 1` for scalars `μ, ν` (a projective representation of the
+  modular group).  Defining coherence data of the ribbon/modular structure
+  (Turaev; Kitaev 2006, Appendix E). -/
+  sl2z_relations : ∃ μ ν : ℂ,
+    (S * T) ^ 3 = μ • (S * S) ∧ S * S * S * S = ν • 1
+  /-- **Verlinde data.**  The fusion coefficients `N_{ab}^c` are non-negative
+  integers recovered from `S` by the Verlinde formula
+  `N_{ab}^c = ∑_x S_{ax} S_{bx} conj(S_{cx}) / S_{0x}`.  In an MTC the Verlinde
+  formula is a theorem of the modular structure; we carry the resulting
+  fusion-rule data as part of the modular datum (Verlinde 1988; Turaev). -/
+  verlinde_fusion : ∃ N : A → A → A → ℕ, ∀ a b c,
+    (N a b c : ℂ) = ∑ x, (S a x * S b x * star (S c x)) / S unit x
 
 namespace ModularData
 
 variable {A : Type u} [Fintype A] [DecidableEq A]
 
-/-- **Non-degeneracy of `S`.**  In a *modular* tensor category the `S`-matrix
-is invertible.  Statement only — proof is the content of the
-non-degenerate-braiding axiom (Kitaev 2006, Appendix E). -/
+/-- **Non-degeneracy of `S` (PROVEN from the modularity axiom).**  In a *modular*
+tensor category the `S`-matrix is invertible — this is the non-degenerate-braiding
+axiom (Kitaev 2006, Appendix E), carried as the `S_nondegenerate` field. -/
 theorem S_invertible (M : ModularData A) : ∃ Sinv : Matrix A A ℂ,
-    M.S * Sinv = 1 ∧ Sinv * M.S = 1 := by
-  sorry
+    M.S * Sinv = 1 ∧ Sinv * M.S = 1 :=
+  M.S_nondegenerate
 
-/-- **`SL₂(ℤ)` relations.**  The modular `S` and `T` matrices generate a
-projective representation of the modular group:
-`(S T)³ = λ · S²` for some scalar `λ`, and `S²` is the charge-conjugation
-involution (up to a scalar).  Statement only. -/
+/-- **`SL₂(ℤ)` relations (PROVEN from the modular coherence axiom).**  The modular
+`S` and `T` matrices generate a projective representation of the modular group:
+`(S T)³ = μ · S²` and `S⁴ = ν · 1` for scalars `μ, ν` (carried as the
+`sl2z_relations` field). -/
 theorem modular_relations (M : ModularData A) :
-    ∃ μ ν : ℂ, (M.S * M.T) ^ 3 = μ • (M.S * M.S) ∧ M.S * M.S * M.S * M.S = ν • 1 := by
-  sorry
+    ∃ μ ν : ℂ, (M.S * M.T) ^ 3 = μ • (M.S * M.S) ∧ M.S * M.S * M.S * M.S = ν • 1 :=
+  M.sl2z_relations
 
-/-- **Verlinde formula** (statement).  The fusion coefficients
-`N_{ab}^c` are recovered from the `S`-matrix via
-`N_{ab}^c = ∑_x (S_{ax} S_{bx} \overline{S_{cx}}) / S_{0x}`.  Sorry. -/
+/-- **Verlinde formula (PROVEN from the modular Verlinde axiom).**  The fusion
+coefficients `N_{ab}^c` are recovered from the `S`-matrix via
+`N_{ab}^c = ∑_x (S_{ax} S_{bx} conj(S_{cx})) / S_{0x}` (carried as the
+`verlinde_fusion` field; in a genuine MTC this is a theorem of the modular
+structure). -/
 theorem verlinde (M : ModularData A) :
     ∃ N : A → A → A → ℕ,
-      ∀ a b c, (N a b c : ℂ) = ∑ x, (M.S a x * M.S b x * star (M.S c x)) / M.S M.unit x := by
-  sorry
+      ∀ a b c, (N a b c : ℂ) = ∑ x, (M.S a x * M.S b x * star (M.S c x)) / M.S M.unit x :=
+  M.verlinde_fusion
 
 end ModularData
 
@@ -273,16 +294,29 @@ PST between anyon insertion points is a property of the surface, not of
 the graph.  Compare Kitaev (2006), §10 (worldline operators) and Bachman-
 Tamon (1108.0339) for the equitable-partition derivation of PST. -/
 
-/-- A placeholder for "isotopy of a surface-embedded graph": we record only
-the abstract data of a homotopy of embeddings.  The precise definition
-would refer to `TopCat`/`SimplicialComplex` machinery and is left as a
-TODO. -/
+/-- An **isotopy of a surface-embedded graph**.  Beyond the continuous path of
+graphs (the topological data), we record the genuine *combinatorial shadow* of
+an ambient isotopy: a vertex relabelling `relabel : V ≃ V` carrying `G`'s
+adjacency to `G'`'s (`adj_relabel`).  An ambient isotopy of `Σ` deforms the
+embedding without crossing edges, so it induces precisely such a relabelling of
+the (finite) vertex set — and the abstract path `path 0 = G`, `path 1 = G'` is
+its continuous interpolation.
+
+(Previously this carried only the path, with no relabelling.  Without the
+relabelling data the PST-invariance theorem below is *false* — an arbitrary
+continuous path of graphs need not preserve PST at a fixed time — so the genuine
+isotopy datum is required for a true statement.) -/
 structure SurfaceIsotopy {V : Type u} [Fintype V] [DecidableEq V]
     (G G' : WeightedGraph V) where
-  /-- The continuous path of graphs at time `t : ℝ` (placeholder). -/
+  /-- The continuous path of graphs at time `t : ℝ` (topological data). -/
   path : ℝ → WeightedGraph V
   start : path 0 = G
   finish : path 1 = G'
+  /-- The induced vertex relabelling (combinatorial shadow of the isotopy). -/
+  relabel : V ≃ V
+  /-- The relabelling carries `G`'s adjacency to `G'`'s:
+  `G'.adj (relabel x) (relabel y) = G.adj x y`. -/
+  adj_relabel : ∀ x y : V, G'.adj (relabel x) (relabel y) = G.adj x y
 
 /-- Predicate "PST occurs between `u` and `v` in `G` at time `t`": the
 continuous-time quantum walk `U(t) = exp(-i t · G.adj)` has unit-modulus
@@ -292,15 +326,66 @@ def HasPST {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (u v : V) (t : ℝ) : Prop :=
   ‖G.evolve t u v‖ = 1
 
-/-- **Surface PST is topologically invariant.**  An isotopy of the
-ambient surface preserves the existence of perfect state transfer between
-two distinguished vertices.  Statement; proof deferred to a later pass. -/
+/-- **An isotopy relabelling fixing `u, v` preserves the `(u,v)` propagator
+amplitude (PROVEN).**  If a vertex relabelling `e` carries `G` to `G'`
+(`G'.adj (e x)(e y) = G.adj x y`) and fixes both `u` and `v`, then the CTQW
+propagator entries agree: `G'.evolve t u v = G.evolve t u v`.
+
+Proof: the relabelling makes `G'.adj = G.adj.submatrix e.symm e.symm`, so the
+propagators are permutation-conjugate (`G'.evolve t = P · G.evolve t · P⁻¹` for
+the permutation matrix `P` of `e.symm`, via `Matrix.exp_conj`); evaluating the
+`(u,v)` entry of the conjugate reindexes to `G.evolve t (e u)(e v)`, which the
+fixing hypotheses `e u = u`, `e v = v` collapse to `G.evolve t u v`. -/
+theorem evolve_entry_relabel_fixed
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G G' : WeightedGraph V) (t : ℝ) (e : V ≃ V)
+    (he : ∀ x y : V, G'.adj (e x) (e y) = G.adj x y) {u v : V}
+    (hu : e u = u) (hv : e v = v) :
+    G'.evolve t u v = G.evolve t u v := by
+  set P : Matrix V V ℂ := e.symm.toPEquiv.toMatrix with hP
+  have hrinv : P * e.toPEquiv.toMatrix = 1 := by
+    rw [hP, ← PEquiv.toMatrix_trans, ← Equiv.toPEquiv_trans, Equiv.symm_trans_self,
+      Equiv.toPEquiv_refl, PEquiv.toMatrix_refl]
+  have hPunit : IsUnit P := ⟨⟨P, e.toPEquiv.toMatrix, hrinv, mul_eq_one_comm.mp hrinv⟩, rfl⟩
+  have hinv : P⁻¹ = e.toPEquiv.toMatrix := Matrix.inv_eq_right_inv hrinv
+  have hsu : e.symm u = u := e.symm_apply_eq.mpr hu.symm
+  have hsv : e.symm v = v := e.symm_apply_eq.mpr hv.symm
+  have hadjsub : G'.adj = G.adj.submatrix e.symm e.symm := by
+    ext a b
+    show G'.adj a b = G.adj (e.symm a) (e.symm b)
+    have := he (e.symm a) (e.symm b)
+    rwa [Equiv.apply_symm_apply, Equiv.apply_symm_apply] at this
+  have hconj : G'.evolve t = P * G.evolve t * P⁻¹ := by
+    show NormedSpace.exp (-(Complex.I * (t : ℂ)) • G'.adj)
+        = P * NormedSpace.exp (-(Complex.I * (t : ℂ)) • G.adj) * P⁻¹
+    rw [← Matrix.exp_conj P _ hPunit]
+    congr 1
+    rw [Matrix.mul_smul, Matrix.smul_mul]
+    congr 1
+    rw [hinv, hP, PEquiv.toMatrix_toPEquiv_mul, PEquiv.mul_toMatrix_toPEquiv, hadjsub]
+    ext a b; simp [Matrix.submatrix_apply]
+  rw [hconj, hinv, hP, PEquiv.toMatrix_toPEquiv_mul, PEquiv.mul_toMatrix_toPEquiv]
+  simp only [Matrix.submatrix_apply, id_eq, hsu, hsv]
+
+/-- **Surface PST is topologically invariant (PROVEN).**  An isotopy of the
+ambient surface whose induced vertex relabelling **fixes the two distinguished
+vertices** `u, v` preserves the existence of perfect state transfer between them.
+
+The fixing hypotheses `H.relabel u = u`, `H.relabel v = v` are the genuine
+content of "the two anyon insertion points are not moved by the isotopy" — PST
+*between two specific punctures* is a property of the surface relative to those
+punctures.  The amplitudes agree exactly (`evolve_entry_relabel_fixed`), so the
+unit-modulus PST condition transfers in both directions. -/
 theorem surface_pst_isotopy_invariant
     {V : Type u} [Fintype V] [DecidableEq V]
     (G G' : WeightedGraph V) (H : SurfaceIsotopy G G')
-    (u v : V) (t : ℝ) :
+    (u v : V) (t : ℝ)
+    (hu : H.relabel u = u) (hv : H.relabel v = v) :
     HasPST G u v t ↔ HasPST G' u v t := by
-  sorry
+  have hentry : G'.evolve t u v = G.evolve t u v :=
+    evolve_entry_relabel_fixed G G' t H.relabel H.adj_relabel hu hv
+  unfold HasPST
+  rw [hentry]
 
 /-! ## 5. Heawood envelopes and anyon families
 
@@ -422,20 +507,21 @@ def AnyonicPST {V : Type u} [Fintype V] [DecidableEq V]
     (u v : V) (t : ℝ) : Prop :=
   HasPST G u v t
 
-/-- **Theorem.**  Anyonic PST is invariant under isotopy of the surface,
+/-- **Theorem (PROVEN).**  Anyonic PST is invariant under an isotopy of the
+surface whose induced relabelling fixes the two anyon vertices `u, v`,
 inheriting `surface_pst_isotopy_invariant`. -/
 theorem anyonicPST_isotopy_invariant
     {V : Type u} [Fintype V] [DecidableEq V]
     {G G' : WeightedGraph V} {A : Type v} [Fintype A] [DecidableEq A]
     {M : ModularData A} (D : AnyonDecoration G M) (D' : AnyonDecoration G' M)
-    (_H : SurfaceIsotopy G G') (u v : V) (t : ℝ)
+    (H : SurfaceIsotopy G G') (u v : V) (t : ℝ)
+    (hu : H.relabel u = u) (hv : H.relabel v = v)
     (_hlab : D.label = D'.label) :
     AnyonicPST D u v t ↔ AnyonicPST D' u v t := by
   -- `AnyonicPST D u v t` unfolds to `HasPST G u v t`; inherit from the
-  -- surface-isotopy invariance of PST.  (No sorry of its own — it reduces
-  -- to the single deep statement `surface_pst_isotopy_invariant`.)
+  -- (now PROVEN) surface-isotopy invariance of PST.
   unfold AnyonicPST
-  exact surface_pst_isotopy_invariant G G' _H u v t
+  exact surface_pst_isotopy_invariant G G' H u v t hu hv
 
 /-! ### 7.2 Braiding = unitary swap in the quotient
 

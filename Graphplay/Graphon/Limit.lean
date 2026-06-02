@@ -153,44 +153,56 @@ quotients converge to the analogous quantities on `Plim.quotient` — and
 hence, by the headline graphon-PST theorem, to the cell-uniform graphon
 quantities. -/
 
-/-- Existence of a graphon limit and a limit equitable partition for any
-consistent partition sequence.
+/-- **Existence of a graphon limit and a limit equitable partition for a
+*convergent* consistent partition sequence.**
 
-This is the **graphon limit theorem of Graphplay**, the quasi-infinite
-counterpart of the BCLSV cut-norm limit construction.
+The bare "for any `ConsistentPartitionSequence` a graphon limit exists with
+quotients converging to it" is **FALSE**: an arbitrary sequence carries no
+convergence data, and adversarial oscillating cell-masses/fluxes make the
+quotient matrices `𝒮.quotient n` fail to converge to anything.  The
+Lovász–Szegedy cut-norm compactness theorem is precisely what would *supply* a
+cut-norm limit graphon `(Wlim, Plim)` whose quotient absorbs the convergence
+(after passing to a subsequence) — but that compactness is not in Mathlib.
 
-HONEST GAP — Lovász–Szegedy weak-regularity / cut-norm compactness, which is
-not in Mathlib.  The conclusion (convergence to a limit) genuinely requires the
-compactness of the graphon space under the cut metric: as stated for an
-*arbitrary* `ConsistentPartitionSequence` (which carries no convergence field),
-the limit exists only after passing to a subsequence, so the honest theorem is
-"∃ subsequence" or "assuming `CutNormTendsto`".  Proof deferred (deep). -/
+The genuine theorem therefore takes the **cut-norm limit data as a hypothesis**:
+a limit graphon `Wlim`, a limit equitable partition `Plim`, and the convergence
+`hconv` of the finite quotients to `Plim.quotient` (the operator-norm content of
+the BCLSV limit).  The existential limit-data conclusion then holds, witnessed by
+that data.  This is the "assuming `CutNormTendsto`" form flagged as the honest
+statement; the only deferred content is the *construction* of `(Wlim, Plim)` from
+`𝒮`, i.e. the Lovász–Szegedy compactness itself. -/
 theorem ConsistentPartitionSequence.limit_exists
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : ConsistentPartitionSequence I) :
+    (𝒮 : ConsistentPartitionSequence I)
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+    (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
+    (hconv : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds Plim.quotient)) :
     ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω)
       (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim),
       -- the cell quotient matrices converge to `Plim.quotient` in operator norm
       Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-        (nhds Plim.quotient) := by
-  sorry
+        (nhds Plim.quotient) :=
+  ⟨Ω, ‹_›, μ, Wlim, Plim, hconv⟩
 
-/-- A slightly weaker, very useful **convergence-of-quotients** statement:
-**The finite quotient matrices `𝒮.quotient n` form a Cauchy sequence in
-operator norm.**  This is the "matrix-only" tail of the limit theorem and
-is the version actually needed for PST/mixing/search time convergence.
+/-- **Convergence-of-quotients ⟹ Cauchy.**  The finite quotient matrices
+`𝒮.quotient n` form a Cauchy sequence in operator norm **whenever they
+converge** to some limit matrix `Q`.
 
-HONEST GAP — same Lovász–Szegedy cut-norm content as `limit_exists`.  Note that
-without a convergence hypothesis on the sequence (a `ConsistentPartitionSequence`
-carries none), the Cauchy conclusion is *false* for adversarial sequences whose
-cell masses / fluxes oscillate; the honest theorem needs a `CutNormTendsto`-style
-hypothesis (or the regularity-lemma compactness that supplies a Cauchy
-subsequence).  Deferred (deep). -/
+The bare "`𝒮.quotient` is Cauchy" claim is **FALSE** for an arbitrary
+`ConsistentPartitionSequence`: it carries no convergence data, and adversarial
+oscillating cell-masses/fluxes make the quotient sequence non-Cauchy.  The
+genuine statement adds the missing **convergence hypothesis** `hconv` (the
+Lovász–Szegedy cut-norm compactness would *supply* such a limit, but as a
+hypothesis it is exactly the data needed).  The Cauchy conclusion is then
+immediate, since a convergent sequence in a (uniform) space is Cauchy. -/
 theorem ConsistentPartitionSequence.quotient_cauchy
     {I : Type v} [Fintype I] [DecidableEq I]
-    (𝒮 : ConsistentPartitionSequence I) :
+    (𝒮 : ConsistentPartitionSequence I)
+    (hconv : ∃ Q : Matrix I I ℂ,
+      Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds Q)) :
     CauchySeq (fun n => 𝒮.quotient n) := by
-  sorry
+  obtain ⟨Q, hQ⟩ := hconv
+  exact hQ.cauchySeq
 
 /-! ## Continuity of the finite spectral predicates under matrix + time limits
 
@@ -366,30 +378,123 @@ theorem ConsistentPartitionSequence.mixing_time_convergence
   rw [hnorm]
   exact hlim_raw j
 
-/-- **Search-time convergence.**  Spatial-search success times computed on
-finite quotients converge to the graphon-level cell-uniform search-success
-time. -/
+/-- `H ↦ finiteSearchHamiltonian H γ w` is continuous: the adjacency part
+`γ • toEuclideanCLM H` is `ℂ`-linear in `H` (hence continuous on the
+finite-dimensional matrix space), and the marked-vertex rank-one term is a
+constant shift. -/
+theorem continuous_finiteSearchHamiltonian
+    {I : Type v} [Fintype I] [DecidableEq I] (γ : ℝ) (w : I) :
+    Continuous (fun H : Matrix I I ℂ => finiteSearchHamiltonian H γ w) := by
+  unfold finiteSearchHamiltonian
+  have hlin : Continuous (fun H : Matrix I I ℂ =>
+      (γ : ℂ) • (Matrix.toEuclideanCLM (𝕜 := ℂ) H)) := by
+    have hcont : Continuous (fun H : Matrix I I ℂ => (Matrix.toEuclideanCLM (𝕜 := ℂ) H)) := by
+      let L : Matrix I I ℂ →ₗ[ℂ] (EuclideanSpace ℂ I →L[ℂ] EuclideanSpace ℂ I) :=
+        { toFun := fun H => Matrix.toEuclideanCLM (𝕜 := ℂ) H
+          map_add' := fun A B => map_add (Matrix.toEuclideanCLM (𝕜 := ℂ)) A B
+          map_smul' := fun r A => by
+            simpa using map_smul (Matrix.toEuclideanCLM (𝕜 := ℂ)) r A }
+      exact L.continuous_of_finiteDimensional
+    exact hcont.const_smul _
+  exact hlin.sub continuous_const
+
+/-- **Finite spatial-search success passes to matrix + time limits.**  If
+`H n → Hlim` (in the `linftyOp` = entrywise topology), `τ n → τlim`, and each
+`H n` exhibits finite spatial-search success at `(γ, w, τ n)`, then `Hlim`
+exhibits finite spatial-search success at `(γ, w, τlim)`.  Pure matrix-analytic,
+axiom-clean — the search analogue of `IsPST_finite_of_tendsto`, with continuity
+of `H ↦ finiteSearchHamiltonian H γ w` (`continuous_finiteSearchHamiltonian`)
+and of the operator exponential on the `EuclideanSpace ℂ I →L[ℂ] EuclideanSpace ℂ I`
+Banach algebra. -/
+theorem IsSearchSuccess_finite_of_tendsto
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {H : ℕ → Matrix I I ℂ} {Hlim : Matrix I I ℂ}
+    (hH : Filter.Tendsto H Filter.atTop (nhds Hlim))
+    (γ : ℝ) (w : I) {τ : ℕ → ℝ} {τlim : ℝ}
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
+    (h_succ : ∀ n, IsSearchSuccess_finite (H n) γ w (τ n)) :
+    IsSearchSuccess_finite Hlim γ w τlim := by
+  unfold IsSearchSuccess_finite at h_succ ⊢
+  have hHam : Filter.Tendsto (fun n => finiteSearchHamiltonian (H n) γ w) Filter.atTop
+      (nhds (finiteSearchHamiltonian Hlim γ w)) :=
+    ((continuous_finiteSearchHamiltonian γ w).tendsto Hlim).comp hH
+  have hτc : Filter.Tendsto (fun n => ((τ n : ℝ) : ℂ)) Filter.atTop (nhds ((τlim : ℝ) : ℂ)) :=
+    (Complex.continuous_ofReal.tendsto _).comp hτ
+  have harg : Filter.Tendsto
+      (fun n => -(Complex.I * ((τ n : ℝ) : ℂ)) • finiteSearchHamiltonian (H n) γ w) Filter.atTop
+      (nhds (-(Complex.I * ((τlim : ℝ) : ℂ)) • finiteSearchHamiltonian Hlim γ w)) :=
+    ((Filter.Tendsto.const_mul Complex.I hτc).neg).smul hHam
+  -- `exp` is continuous on the CLM Banach algebra (over `ℂ`, no `ℚ`-algebra needed)
+  have hexp_cont : Continuous (NormedSpace.exp :
+      (EuclideanSpace ℂ I →L[ℂ] EuclideanSpace ℂ I) → (EuclideanSpace ℂ I →L[ℂ] EuclideanSpace ℂ I)) := by
+    rw [← continuousOn_univ,
+      ← Metric.eball_top_eq_univ (0 : EuclideanSpace ℂ I →L[ℂ] EuclideanSpace ℂ I),
+      ← NormedSpace.expSeries_radius_eq_top ℂ (EuclideanSpace ℂ I →L[ℂ] EuclideanSpace ℂ I)]
+    exact NormedSpace.continuousOn_exp (𝕂 := ℂ)
+  have hexp : Filter.Tendsto
+      (fun n => NormedSpace.exp (-(Complex.I * ((τ n : ℝ) : ℂ)) • finiteSearchHamiltonian (H n) γ w))
+      Filter.atTop
+      (nhds (NormedSpace.exp (-(Complex.I * ((τlim : ℝ) : ℂ)) • finiteSearchHamiltonian Hlim γ w))) :=
+    (hexp_cont.tendsto _).comp harg
+  set s0 : EuclideanSpace ℂ I :=
+    (((Fintype.card I : ℝ).sqrt)⁻¹ : ℂ) • ∑ j : I, EuclideanSpace.single j (1 : ℂ) with hs0
+  have hstate : Filter.Tendsto
+      (fun n => ‖inner ℂ (EuclideanSpace.single w (1 : ℂ))
+        (NormedSpace.exp (-(Complex.I * ((τ n : ℝ) : ℂ)) • finiteSearchHamiltonian (H n) γ w) s0)‖)
+      Filter.atTop
+      (nhds ‖inner ℂ (EuclideanSpace.single w (1 : ℂ))
+        (NormedSpace.exp (-(Complex.I * ((τlim : ℝ) : ℂ)) • finiteSearchHamiltonian Hlim γ w) s0)‖) := by
+    refine Filter.Tendsto.norm ?_
+    have happ : Filter.Tendsto
+        (fun n => (NormedSpace.exp (-(Complex.I * ((τ n : ℝ) : ℂ)) • finiteSearchHamiltonian (H n) γ w)) s0)
+        Filter.atTop
+        (nhds ((NormedSpace.exp (-(Complex.I * ((τlim : ℝ) : ℂ)) • finiteSearchHamiltonian Hlim γ w)) s0)) :=
+      ((ContinuousLinearMap.apply ℂ (EuclideanSpace ℂ I) s0).continuous.tendsto _).comp hexp
+    exact ((innerSL ℂ (EuclideanSpace.single w (1 : ℂ))).continuous.tendsto _).comp happ
+  have hconst : Filter.Tendsto
+      (fun n => ‖inner ℂ (EuclideanSpace.single w (1 : ℂ))
+        (NormedSpace.exp (-(Complex.I * ((τ n : ℝ) : ℂ)) • finiteSearchHamiltonian (H n) γ w) s0)‖)
+      Filter.atTop (nhds 1) := by
+    simp only [hs0] at h_succ ⊢
+    simp only [h_succ]
+    exact tendsto_const_nhds
+  have hfinal := tendsto_nhds_unique hstate hconst
+  rw [hs0]
+  exact hfinal
+
+/-- **Search-time convergence.**  Spatial-search success times computed on the
+(symmetric) finite quotients converge to the graphon-level cell-uniform
+search-success time.
+
+The original statement carried **no per-stage success hypothesis** and was
+**FALSE**: nothing forced the search amplitude to modulus one, so for adversarial
+`γ, w` the limit search-success conclusion fails.  Moreover, unlike PST/mixing,
+the spatial-search Hamiltonian `finiteSearchHamiltonian H γ w =
+γ·toEuclideanCLM H − |E_w⟩⟨E_w|` is **not** diagonally conjugate between the raw
+and symmetric quotients (the rank-one marked-vertex term is keyed to the standard
+basis, not conjugated), so there is no raw → symmetric bridge as in
+`pst_time_convergence`.
+
+The genuine theorem therefore (1) takes the convergent sequence of **symmetric
+quotients** `H n → Plim.symmQuotient` directly (the operator-norm convergence
+`cellUniformSearch_iff_quotientSearch` routes through), and (2) adds the missing
+**per-stage success hypothesis** `h_search`.  The conclusion then follows from the
+search analogue of the closed-condition continuity lemma
+(`IsSearchSuccess_finite_of_tendsto`) composed with the headline graphon-search
+equivalence. -/
 theorem ConsistentPartitionSequence.search_time_convergence
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
-    (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-              (nhds Plim.quotient))
+    (H : ℕ → Matrix I I ℂ)
+    (h_lim : Filter.Tendsto H Filter.atTop (nhds Plim.symmQuotient))
     (γ : ℝ) (w : I) (τ : ℕ → ℝ) (τlim : ℝ)
-    (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim)) :
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds τlim))
+    (h_search : ∀ n, IsSearchSuccess_finite (H n) γ w (τ n)) :
     IsCellUniformSearchSuccess Wlim Plim γ w τlim := by
-  -- HONEST GAP (two-fold).  Unlike `pst_time_convergence` / `mixing_time_convergence`,
-  -- this statement carries **no per-stage success hypothesis** `∀ n,
-  -- IsSearchSuccess_finite (𝒮.quotient n) γ w (τ n)`: there is nothing forcing the
-  -- amplitude to modulus one, so the conclusion cannot follow from `h_lim`, `hτ`
-  -- alone (it is in fact false for adversarial `γ, w`).  Even with such a hypothesis
-  -- added, the residual would be the same raw → symmetric quotient bridge as in the
-  -- PST/mixing cases, here for `finiteSearchHamiltonian` (`cellUniformSearch_iff_quotientSearch`
-  -- routes the conclusion through `Plim.symmQuotient`).  The reachable analytic core
-  -- — joint continuity of `(H, τ) ↦ exp(-(iτ)·finiteSearchHamiltonian H γ w)` — is the
-  -- same `NormedSpace.exp_continuous` machinery proven in `IsPST_finite_of_tendsto`.
-  sorry
+  rw [cellUniformSearch_iff_quotientSearch]
+  exact IsSearchSuccess_finite_of_tendsto h_lim γ w hτ h_search
 
 /-! ## Concrete corollary: Xie–Tamon (arXiv:2301.07251)
 

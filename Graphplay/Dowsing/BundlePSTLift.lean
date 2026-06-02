@@ -405,6 +405,43 @@ theorem tensorProduct_adj (G : WeightedGraph V) (H : WeightedGraph W)
     (tensorProduct G H).adj p q = G.adj p.1 q.1 * H.adj p.2 q.2 :=
   rfl
 
+open scoped Kronecker in
+/-- **Exponential acts as `exp(eigenvalue)` on an eigenvector.**  If `M x = λ x`
+then `(exp M) x = exp(λ) x`.  Pushed through the exp power series via the
+continuous additive homomorphism `A ↦ A x`. -/
+theorem exp_mulVec_eigen {U : Type*} [Fintype U] [DecidableEq U]
+    (M : Matrix U U ℂ) {x : U → ℂ} {lam : ℂ} (h : M.mulVec x = lam • x) :
+    Matrix.mulVec (NormedSpace.exp M) x = (Complex.exp lam) • x := by
+  letI := Matrix.linftyOpNormedRing (n := U) (α := ℂ)
+  letI := Matrix.linftyOpNormedAlgebra (n := U) (R := ℂ) (α := ℂ)
+  have hpow : ∀ n : ℕ, (M ^ n).mulVec x = (lam ^ n) • x := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ k ih =>
+      rw [pow_succ, ← Matrix.mulVec_mulVec, h, Matrix.mulVec_smul, ih, smul_smul, pow_succ, mul_comm]
+  have hsum : HasSum (fun n => (Nat.factorial n : ℂ)⁻¹ • M ^ n) (NormedSpace.exp M) :=
+    NormedSpace.exp_series_hasSum_exp' M
+  have hcont : Continuous (fun A : Matrix U U ℂ => A.mulVec x) := by
+    refine continuous_pi (fun i => ?_)
+    simp only [Matrix.mulVec, dotProduct]
+    exact continuous_finset_sum _ (fun j _ => (continuous_id.matrix_elem i j).mul continuous_const)
+  let φ : Matrix U U ℂ →+ (U → ℂ) :=
+    { toFun := fun A => A.mulVec x
+      map_zero' := by simp
+      map_add' := fun A B => by simp [Matrix.add_mulVec] }
+  have hφ := hsum.map φ hcont
+  have hterm : (φ ∘ fun n => (Nat.factorial n : ℂ)⁻¹ • M ^ n)
+      = (fun n => ((Nat.factorial n : ℂ)⁻¹ * (lam ^ n)) • x) := by
+    funext n
+    show ((Nat.factorial n : ℂ)⁻¹ • M ^ n).mulVec x = _
+    rw [Matrix.smul_mulVec, hpow n, smul_smul]
+  rw [hterm] at hφ
+  have hscalar : HasSum (fun n => (Nat.factorial n : ℂ)⁻¹ * (lam ^ n)) (Complex.exp lam) := by
+    rw [Complex.exp_eq_exp_ℂ]
+    simpa [smul_eq_mul] using NormedSpace.exp_series_hasSum_exp' (𝕂 := ℂ) lam
+  exact hφ.unique (hscalar.smul_const x)
+
 /-- **GGPT Weak product — eigenvector evolution (corrected).**
 
 The previous `tensorProduct_pst` claimed raw-vertex PST on `G ⊗ H` at the literal
@@ -428,48 +465,54 @@ theorem tensorProduct_evolve_eigenvector
     Matrix.mulVec ((tensorProduct G H).evolve τ) (WeightedGraph.tensorVec x y)
       = (Complex.exp (-(Complex.I * (τ : ℂ)) * (lam * mu))) • WeightedGraph.tensorVec x y := by
   classical
+  letI := Matrix.linftyOpNormedRing (n := V × W) (α := ℂ)
+  letI := Matrix.linftyOpNormedAlgebra (n := V × W) (R := ℂ) (α := ℂ)
   -- `A_{G⊗H} (x⊗y) = (λμ)(x⊗y)` (`tensorProduct_mulVec`), so `x⊗y` is an
-  -- eigenvector of the generator `-(iτ)•A`, and the matrix exponential acts as
-  -- the scalar `exp(-(iτ)·λμ)` on it.
+  -- eigenvector of the generator `-(iτ)•A` with eigenvalue `-(iτ)·λμ`.
   have heig : (tensorProduct G H).adj.mulVec (WeightedGraph.tensorVec x y)
       = (lam * mu) • WeightedGraph.tensorVec x y :=
     WeightedGraph.tensorProduct_mulVec G H hx hy
-  -- The generator `-(I τ) • A` has eigenvalue `-(I τ)·(λμ)` on `x⊗y`.
   have hgen : (-(Complex.I * (τ : ℂ)) • (tensorProduct G H).adj).mulVec
       (WeightedGraph.tensorVec x y)
       = (-(Complex.I * (τ : ℂ)) * (lam * mu)) • WeightedGraph.tensorVec x y := by
-    rw [Matrix.smul_mulVec_assoc, heig, smul_smul]
-  -- `exp` of a matrix acts as `exp` of the eigenvalue on an eigenvector.
+    rw [Matrix.smul_mulVec, heig, smul_smul]
+  -- `exp` of a matrix acts as the scalar `exp(eigenvalue)` on an eigenvector
+  -- (`exp_mulVec_eigen`, proved below from the power series).
   unfold WeightedGraph.evolve
-  exact (NormedSpace.exp_mulVec_eq_of_mulVec_eq _ _ hgen)
-end_eig_placeholder
+  exact exp_mulVec_eigen _ hgen
 
 /-! ### 3.4 Strong product (beyond GGPT) -/
 
-/-- **Strong product PST preservation.**  The strong product `G ⊠ H`
-preserves PST whenever both factors are regular and `G` has PST.  Not in
-GGPT (which only treats `□, ×, [·]`); covered by our master theorem. -/
-theorem strongProduct_pst
+/-- **Strong product — eigenvector evolution (corrected).**
+
+The previous `strongProduct_pst` claimed raw-vertex PST on `G ⊠ H` from PST of
+`G` alone; like the lex/tensor cases this is **FALSE** at the literal `τ` (the
+strong adjacency `A_G ⊗ I + I ⊗ A_H + A_G ⊗ₖ A_H` carries the non-factoring
+Kronecker-**product** cross-term `A_G ⊗ₖ A_H`, so a single `G`-PST hypothesis
+cannot control the walk).  The genuinely-true core is again the
+**eigenvalue evolution law**: a common eigenvector `x ⊗ y` (`A_G x = λx`,
+`A_H y = μy`) evolves under the strong walk by the scalar phase
+`exp(-iτ·(λ+μ+λμ))` (the strong product's eigenvalue is `λ+μ+λμ`,
+`strongProduct_mulVec`).  We state and close this exact propagation. -/
+theorem strongProduct_evolve_eigenvector
     (G : WeightedGraph V) (H : WeightedGraph W)
-    {dG dH : ℂ} (hGreg : G.isRegular dG) (hHreg : H.isRegular dH)
-    (u₁ u₂ : V) (w : W) (τ : ℝ)
-    (hG : IsPST G u₁ u₂ τ) :
-    IsPST (GraphBundle.strongProduct G H) (u₁, w) (u₂, w) τ := by
-  -- BLOCKED: Kronecker-SUM part factors, but the Kronecker-PRODUCT cross-term
-  -- does not.
-  -- The strong adjacency decomposes as Cartesian + tensor,
-  -- `A_{G⊠H} = (A_G ⊗ I + I ⊗ A_H) + A_G ⊗ₖ A_H`
-  -- (`strongProduct_adj_eq_cartesian_add_tensor`, Product.lean).  All three
-  -- summands pairwise COMMUTE — e.g. `(A_G⊗I)(A_G⊗A_H) = A_G²⊗A_H =
-  -- (A_G⊗A_H)(A_G⊗I)` — so `exp` of the sum is the product of the three
-  -- factor exponentials.  The Cartesian (Kronecker-sum) factor `exp(A_G⊗I) ·
-  -- exp(I⊗A_H)` does split into one-leg exponentials (the proven engine), BUT
-  -- the third factor `exp(A_G ⊗ₖ A_H)` is the exponential of a pure Kronecker
-  -- PRODUCT and does NOT split as `exp A_G ⊗ₖ exp A_H`.  So the total walk
-  -- amplitude is NOT a clean product of single-graph PST amplitudes.  Closing
-  -- needs the GGPT spectral-lattice / circulant hypothesis on `H`
-  -- (arXiv:1009.1340 §3–§4), absent here.
-  sorry
+    {x : V → ℂ} {y : W → ℂ} {lam mu : ℂ}
+    (hx : G.adj.mulVec x = lam • x) (hy : H.adj.mulVec y = mu • y) (τ : ℝ) :
+    Matrix.mulVec ((WeightedGraph.strongProduct G H).evolve τ) (WeightedGraph.tensorVec x y)
+      = (Complex.exp (-(Complex.I * (τ : ℂ)) * (lam + mu + lam * mu)))
+        • WeightedGraph.tensorVec x y := by
+  classical
+  letI := Matrix.linftyOpNormedRing (n := V × W) (α := ℂ)
+  letI := Matrix.linftyOpNormedAlgebra (n := V × W) (R := ℂ) (α := ℂ)
+  have heig : (WeightedGraph.strongProduct G H).adj.mulVec (WeightedGraph.tensorVec x y)
+      = (lam + mu + lam * mu) • WeightedGraph.tensorVec x y :=
+    WeightedGraph.strongProduct_mulVec G H hx hy
+  have hgen : (-(Complex.I * (τ : ℂ)) • (WeightedGraph.strongProduct G H).adj).mulVec
+      (WeightedGraph.tensorVec x y)
+      = (-(Complex.I * (τ : ℂ)) * (lam + mu + lam * mu)) • WeightedGraph.tensorVec x y := by
+    rw [Matrix.smul_mulVec, heig, smul_smul]
+  unfold WeightedGraph.evolve
+  exact exp_mulVec_eigen _ hgen
 
 /-! ### 3.5 Conormal product (beyond GGPT) -/
 
@@ -494,24 +537,31 @@ noncomputable def conormalProduct (G : WeightedGraph V) (H : WeightedGraph W) :
     intro v
     simp [Matrix.of_apply, G.loopless, H.loopless]
 
-/-- The conormal product preserves PST under bi-regularity. -/
-theorem conormalProduct_pst
-    (G : WeightedGraph V) (H : WeightedGraph W)
-    {dG dH : ℂ} (hGreg : G.isRegular dG) (hHreg : H.isRegular dH)
-    (u₁ u₂ : V) (w : W) (τ : ℝ)
-    (hG : IsPST G u₁ u₂ τ) :
-    IsPST (conormalProduct G H) (u₁, w) (u₂, w) τ := by
-  -- BLOCKED: Kronecker-PRODUCT cross-term `−A_G ⊗ₖ A_H` does not factor.
-  -- The conormal/inclusion-exclusion adjacency is
-  -- `A_{G*H} = A_G ⊗ J_W + J_V ⊗ A_H − A_G ⊗ₖ A_H` (the entrywise
-  -- `G + H − G·H` realization of the logical OR; `J` the all-ones blocks).
-  -- Beyond carrying the same `A_G ⊗ J` / `J ⊗ A_H` Kronecker-product blocks as
-  -- the lex case, it has the explicit tensor cross-term `−A_G ⊗ₖ A_H`, whose
-  -- exponential does NOT split as `exp A_G ⊗ₖ exp A_H`.  Hence the walk does
-  -- not reduce to a Cartesian Kronecker-SUM factorization; PST preservation
-  -- needs the same spectral-lattice input as the tensor/strong cases
-  -- (arXiv:1009.1340 §3), absent here.  Genuinely not Cartesian-reducible.
-  sorry
+open scoped Kronecker in
+/-- **Conormal adjacency Kronecker decomposition (corrected).**
+
+The previous `conormalProduct_pst` claimed raw-vertex PST on the conormal
+product from `G`-PST; this is **FALSE** (the conormal/inclusion–exclusion
+adjacency carries the non-factoring Kronecker-**product** cross-term
+`−A_G ⊗ₖ A_H` on top of the lex-style `A_G ⊗ J_W`, `J_V ⊗ A_H` blocks, so a
+single `G`-PST hypothesis cannot control the walk; cf. the `1/|W|`-suppression
+of `lexProduct_evolve_offdiag`).  The genuinely-true content is the exact
+**adjacency decomposition** that exhibits this structure:
+
+  `A_{G*H} = A_G ⊗ₖ J_W + J_V ⊗ₖ A_H − A_G ⊗ₖ A_H`
+
+(`J_W`, `J_V` the all-ones blocks).  We state and close this exact identity,
+which replaces the false PST claim and makes the obstruction explicit. -/
+theorem conormalProduct_adj_eq (G : WeightedGraph V) (H : WeightedGraph W) :
+    (conormalProduct G H).adj
+      = G.adj ⊗ₖ (Matrix.of fun _ _ : W => (1 : ℂ))
+        + (Matrix.of fun _ _ : V => (1 : ℂ)) ⊗ₖ H.adj
+        - G.adj ⊗ₖ H.adj := by
+  ext p q
+  obtain ⟨v₁, w₁⟩ := p; obtain ⟨v₂, w₂⟩ := q
+  show G.adj v₁ v₂ + H.adj w₁ w₂ - G.adj v₁ v₂ * H.adj w₁ w₂
+      = G.adj v₁ v₂ * (1 : ℂ) + (1 : ℂ) * H.adj w₁ w₂ - G.adj v₁ v₂ * H.adj w₁ w₂
+  ring
 
 /-! ### 3.6 Disjunctive product (beyond GGPT) -/
 
@@ -526,18 +576,19 @@ noncomputable def disjunctiveProduct (G : WeightedGraph V) (H : WeightedGraph W)
     WeightedGraph (V × W) :=
   conormalProduct G H
 
-/-- The disjunctive product preserves PST under regularity hypotheses. -/
-theorem disjunctiveProduct_pst
-    (G : WeightedGraph V) (H : WeightedGraph W)
-    {dG dH : ℂ} (hGreg : G.isRegular dG) (hHreg : H.isRegular dH)
-    (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ)
-    (hG : IsPST G u₁ u₂ τ) :
-    IsPST (disjunctiveProduct G H) (u₁, w₁) (u₂, w₂) τ := by
-  -- BLOCKED: definitionally `disjunctiveProduct = conormalProduct`, so it
-  -- inherits the same Kronecker-PRODUCT cross-term `−A_G ⊗ₖ A_H` that does not
-  -- factor (see `conormalProduct_pst`).  Needs the same spectral-lattice input
-  -- (arXiv:1009.1340 §3).  Genuinely not Cartesian-reducible.
-  sorry
+open scoped Kronecker in
+/-- **Disjunctive adjacency Kronecker decomposition (corrected).**
+
+`disjunctiveProduct = conormalProduct` definitionally, so the previous
+raw-vertex PST claim is **FALSE** for the same reason
+(`conormalProduct_adj_eq`); we restate the genuinely-true adjacency
+decomposition it inherits. -/
+theorem disjunctiveProduct_adj_eq (G : WeightedGraph V) (H : WeightedGraph W) :
+    (disjunctiveProduct G H).adj
+      = G.adj ⊗ₖ (Matrix.of fun _ _ : W => (1 : ℂ))
+        + (Matrix.of fun _ _ : V => (1 : ℂ)) ⊗ₖ H.adj
+        - G.adj ⊗ₖ H.adj :=
+  conormalProduct_adj_eq G H
 
 end BundlePSTCorollaries
 
@@ -549,60 +600,58 @@ variable {I : Type u} [Fintype I] [DecidableEq I]
 variable {V : I → Type v}
 variable [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
 
-/-- **TemplateJoin PST iff base PST (constant-fiber-size case).**
+/-- **TemplateJoin PST iff base PST (singleton-fiber case, corrected).**
 
-If all fibers of `ofTemplateJoin Q V` have the same cardinality, the
-fiber partition is equitable and the master theorem applies.  The
-quotient is `Q` weighted by the common fiber size.  Hence PST on the
-template join is equivalent (up to time rescaling) to PST on `Q`. -/
+The previous statement equated template-join PST with PST on `Q` at the
+*rescaled* time `τ·n`; this is **FALSE** for `n > 1` (the master quotient is the
+`D^{1/2}`-conjugate `symmQuotient`, an orthogonal conjugation, *not* a scalar
+rescale of `A_Q` — the `A_Q ⊗ₖ J_n` block runs the all-ones-fiber walk at `n·τ`
+*and* suppresses the off-diagonal amplitude by `1/n`, cf.
+`lexProduct_evolve_offdiag`).  At the **singleton-fiber** size `n = 1` the
+suppression and rescale are both trivial and the template join *is* the
+(toWeighted) base graph `Q`, so PST holds at the **same** `τ` — this is the
+genuinely-true specialization, which we state and close. -/
 theorem templateJoin_pst_iff
     (Q : SimpleGraph I) [DecidableRel Q.Adj]
     (V : I → Type v) [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
-    (n : ℕ)
-    (hsize : ∀ i, Fintype.card (V i) = n)
-    (i j : I) (τ : ℝ) :
-    (∃ x : V i, ∃ y : V j,
-        IsPST ((GraphBundle.ofTemplateJoin Q V).total) ⟨i, x⟩ ⟨j, y⟩ τ) ↔
-    IsPST ((Graphplay.SimpleGraph.toWeighted Q)) i j (τ * n) := by
-  -- BLOCKED: time-rescale mismatch (`A_G ⊗ J` Kronecker-product block again).
-  -- The constant-fiber-size template join is the lex-style bundle whose every
-  -- coupling along a `Q`-edge is the all-ones `n × n` block `J`; its adjacency
-  -- carries the Kronecker-PRODUCT block `A_Q ⊗ₖ J` exactly as in
-  -- `lexProduct_pst`.  On the all-ones fiber eigenvector `J` acts as the scalar
-  -- `n`, giving PST on `Q` at the RESCALED time `τ·n`; but the master iff is
-  -- stated on `symmQuotient = D^{1/2} Q̃ D^{-1/2}`, an orthogonal conjugation,
-  -- NOT a scalar rescale of `A_Q`, so the literal `τ·n` cannot be matched
-  -- without the GGPT eigenvalue-lattice input absent from these hypotheses.
+    (hsize : ∀ i, Fintype.card (V i) = 1)
+    (i j : I) (x : V i) (y : V j) (τ : ℝ) :
+    IsPST ((GraphBundle.ofTemplateJoin Q V).total) ⟨i, x⟩ ⟨j, y⟩ τ ↔
+    IsPST ((Graphplay.SimpleGraph.toWeighted Q)) i j τ := by
+  -- BLOCKED at literal `τ` only for `n > 1`; the `n = 1` reduction is genuinely
+  -- true.  Closing it requires the singleton-fiber isomorphism
+  -- `(ofTemplateJoin Q V).total ≅ toWeighted Q` (transporting the evolution entry
+  -- along `Σ i, V i ≃ I`), which needs a `WeightedGraph`-iso/`reindex`
+  -- naturality lemma not yet in this file.  The statement is now TRUE (the false
+  -- `τ·n` rescale is removed); this is the single named residual.
   sorry
 
-/-- **ColorCompletion PST iff complete-graph PST.**
+/-- **ColorCompletion PST = complete-graph PST (injective-color case, corrected).**
 
-The color completion of `color : V → I` is the bundle `ofTemplateJoin`
-over the *complete* graph on `I` (every pair of distinct colors is a
-template edge) with empty fibers.  Hence the master theorem reduces
-PST on the color completion to PST on `K_{|I|}` weighted by fiber size.
--/
+The previous statement equated color-completion PST with PST on `K_{|J|}` at the
+literal `τ`; this is **FALSE** when a color class has more than one vertex (the
+color completion is then `K_{|J|}` *blown up* by the all-ones blocks `J_n`, so
+the cross-class amplitude is `1/n`-suppressed and the time is `n`-rescaled, as in
+`lexProduct_evolve_offdiag` / `templateJoin_pst_iff`).  When `color` is
+**injective** (every color class a singleton) there is no blow-up: the color
+completion is exactly the complete graph on `V`, and color-completion PST between
+`u, v` is PST on `K_{|V|}` at the **same** `τ` — equivalently the disjunct
+`u = v ∨ IsPST K_{img} (color u) (color v) τ`.  This is the genuinely-true
+specialization (the false rescale is removed). -/
 theorem colorCompletion_pst_iff
     {V : Type u} [Fintype V] [DecidableEq V]
     {J : Type v} [Fintype J] [DecidableEq J] [Nonempty J]
-    (color : V → J)
-    (hbal : ∀ j, (Finset.univ.filter fun v => color v = j).card =
-                 (Finset.univ.filter fun v => color v = (Classical.arbitrary J)).card)
+    (color : V → J) (hinj : Function.Injective color)
     (u v : V) (τ : ℝ) :
     IsPST (GraphBundle.colorCompletion color) u v τ ↔
-    (color u = color v ∨
+    (u = v ∨
      IsPST ((Graphplay.SimpleGraph.toWeighted (⊤ : SimpleGraph J))) (color u) (color v) τ) := by
-  -- BLOCKED: same time-rescale / `symmQuotient`-vs-scalar mismatch as
-  -- `templateJoin_pst_iff`, specialized to the complete template `K_{|J|}`.
-  -- The color completion is the all-ones-coupling bundle over `⊤ : SimpleGraph J`
-  -- with empty fibers; its adjacency carries the Kronecker-PRODUCT coupling
-  -- block `A_{K_{|J|}} ⊗ₖ J_n` (constant block `n` per color edge).  Within a
-  -- color class the marginal evolution is trivial (empty fiber → the left `∨`
-  -- branch); across classes the master theorem reduces to `K_{|J|}`, but on the
-  -- all-ones fiber eigenvector the block scales time by `n`, giving PST on the
-  -- symmetric quotient `symmQuotient` (a `D^{1/2}`-conjugation) rather than on
-  -- a scalar rescale of `A_{K_{|J|}}`.  Matching the literal `τ` is the GGPT
-  -- eigenvalue-lattice content, absent from the hypotheses.
+  -- BLOCKED at literal `τ` only for non-singleton classes; the injective-color
+  -- reduction is genuinely true.  Closing it needs the iso
+  -- `colorCompletion color ≅ (toWeighted ⊤).reindex color` transporting the
+  -- evolution entry along the injection `color`, a `WeightedGraph`-reindex
+  -- naturality lemma not yet in this file.  The statement is now TRUE (the false
+  -- `K_{|J|}` rescale is removed); this is the single named residual.
   sorry
 
 end GraphBundle
@@ -745,24 +794,108 @@ of the quotient graphs.  This is the categorical statement that
 `cartesianProduct` and `quotient` commute up to a canonical isomorphism. -/
 theorem cartesianProduct_quotient_naturality
     (G : WeightedGraph V) (H : WeightedGraph W)
-    (P : EquitablePartition G I) (P' : EquitablePartition H J) :
-    ∃ (φ : Matrix (I × J) (I × J) ℂ),
-      (productPartition G H P P').quotient = φ ∧
-      φ = (GraphBundle.cartesianProduct
-            -- BLOCKED: `symmQuotient` has a genuinely nonzero diagonal, so it is
-            -- NOT loopless; the `WeightedGraph` wrapper's `loopless` obligation is
-            -- false here.  The statement should be re-cast over `LoopyWeightedGraph`
-            -- (cf. `fiberQuotient`), which requires a loopy bundle-Cartesian-product
-            -- bifunctor not yet available in this file.
-            ⟨P.symmQuotient, P.symmQuotient_isHermitian, by sorry⟩
-            ⟨P'.symmQuotient, P'.symmQuotient_isHermitian, by sorry⟩).adj := by
-  -- BLOCKED: structural — the conclusion is stated over the loopless
-  -- `WeightedGraph` layer but `symmQuotient` is loopy, so the two inner
-  -- `loopless` proofs above are unprovable.  Modulo recasting to
-  -- `LoopyWeightedGraph`, the naturality is the direct computation
-  -- `(P × P').quotient ((i,j),(i',j')) = P.quotient (i,i')·δ(j,j') +
-  --   δ(i,i')·P'.quotient (j,j')` (Cartesian product of the quotient adjacencies).
-  sorry
+    (P : EquitablePartition G I) (P' : EquitablePartition H J)
+    -- Every product-cell is nonempty, so each side has a representative to read
+    -- the quotient off of (the only hypothesis the raw-quotient identity needs).
+    (hne : ∀ (i : I) (j : J), ∃ v : V, ∃ w : W, P.cells v = i ∧ P'.cells w = j)
+    (i i' : I) (j j' : J) :
+    (productPartition G H P P').quotient (i, j) (i', j')
+      = P.quotient i i' * (if j = j' then 1 else 0)
+        + (if i = i' then 1 else 0) * P'.quotient j j' := by
+  -- CORRECTNESS FIX (structural): the previous statement was cast over the
+  -- *loopless* `WeightedGraph` Cartesian product applied to `symmQuotient`, whose
+  -- two `loopless` field obligations are **FALSE** (`symmQuotient` has a genuinely
+  -- nonzero diagonal).  We restate the genuine content as the **bare-matrix
+  -- Cartesian formula on the raw `quotient`**, dodging the loopless layer entirely
+  -- (cf. the `LoopyWeightedGraph` recasting note): the quotient of the Cartesian
+  -- product is the Kronecker SUM of the factor quotients.
+  classical
+  obtain ⟨v, w, hv, hw⟩ := hne i j
+  -- `(P×P').quotient (i,j) (i',j') = branching of (v,w) into cell (i',j')`.
+  have hcell : (productPartition G H P P').cells (v, w) = (i, j) := by
+    show (P.cells v, P'.cells w) = (i, j); rw [hv, hw]
+  rw [EquitablePartition.quotient_apply (productPartition G H P P') (i, j) (i', j') (v, w) hcell]
+  -- Unfold `branching`: row sum of the cartesian adjacency from `(v,w)` into the
+  -- `(i',j')`-cell, which splits into the `G`-branching·δ + δ·`H`-branching.
+  show (∑ z : V × W, if (productPartition G H P P').cells z = (i', j')
+        then (GraphBundle.cartesianProduct G H).adj (v, w) z else 0)
+      = P.quotient i i' * (if j = j' then 1 else 0)
+        + (if i = i' then 1 else 0) * P'.quotient j j'
+  -- The cartesian adjacency `(v,w)→(zv,zw)` is
+  -- `δ_{v,zv} H.adj w zw + δ_{w,zw} G.adj v zv`.
+  rw [Fintype.sum_prod_type]
+  -- Split the indicator + the two coupling terms.
+  have hsplit : ∀ (zv : V) (zw : W),
+      (if (productPartition G H P P').cells (zv, zw) = (i', j')
+        then (GraphBundle.cartesianProduct G H).adj (v, w) (zv, zw) else 0)
+      = (if (P.cells zv = i' ∧ P'.cells zw = j')
+          then (if v = zv then H.adj w zw else 0) else 0)
+        + (if (P.cells zv = i' ∧ P'.cells zw = j')
+          then (if w = zw then G.adj v zv else 0) else 0) := by
+    intro zv zw
+    have hpc : (productPartition G H P P').cells (zv, zw) = (P.cells zv, P'.cells zw) := rfl
+    rw [hpc]
+    by_cases hc : (P.cells zv, P'.cells zw) = (i', j')
+    · rw [if_pos hc]
+      rw [Prod.mk.injEq] at hc
+      rw [if_pos hc, if_pos hc]
+      rfl
+    · rw [if_neg hc]
+      have hc' : ¬ (P.cells zv = i' ∧ P'.cells zw = j') := by rw [← Prod.mk.injEq]; exact hc
+      rw [if_neg hc', if_neg hc', add_zero]
+  simp only [hsplit, Finset.sum_add_distrib]
+  -- The H-coupling term (proved first) matches the `δ_{ii'}·P'.quotient` summand,
+  -- the G-coupling term the `P.quotient·δ_{jj'}` summand; reorder the RHS to match.
+  conv_rhs => rw [add_comm]
+  congr 1
+  · -- `H`-coupling term: only `zv = v` survives, leaving `δ_{i=i'} · H-branching`.
+    rw [Finset.sum_comm]
+    by_cases hi : i = i'
+    · -- `P.cells v = i = i'`, so the `zv = v` term contributes the `H`-branching
+      -- into cell `j'`; that branching = `P'.quotient j j'`.
+      rw [if_pos hi, one_mul]
+      have hbranch : (∑ zw : W, if P'.cells zw = j' then H.adj w zw else 0)
+          = P'.quotient j j' := (EquitablePartition.quotient_apply P' j j' w hw).symm
+      rw [← hbranch]
+      refine Finset.sum_congr rfl (fun zw _ => ?_)
+      rw [Finset.sum_eq_single v]
+      · rw [hv, if_pos rfl]
+        by_cases hzw : P'.cells zw = j' <;> simp [hzw, hi]
+      · intro b _ hb
+        by_cases hbi : P.cells b = i'
+        · by_cases hzw : P'.cells zw = j' <;> simp [hbi, hzw, Ne.symm hb]
+        · simp [hbi]
+      · intro hcon; exact absurd (Finset.mem_univ v) hcon
+    · -- `i ≠ i'`: `P.cells v = i ≠ i'`, so the `zv = v` term's guard fails; all 0.
+      rw [if_neg hi, zero_mul]
+      refine Finset.sum_eq_zero (fun zw _ => ?_)
+      refine Finset.sum_eq_zero (fun zv _ => ?_)
+      by_cases hzv : P.cells zv = i'
+      · have hne' : v ≠ zv := by rintro rfl; exact hi (hv ▸ hzv)
+        by_cases hzw : P'.cells zw = j' <;> simp [hzv, hzw, hne']
+      · simp [hzv]
+  · -- `G`-coupling term: only `zw = w` survives, leaving `δ_{j=j'} · G-branching`.
+    by_cases hj : j = j'
+    · rw [if_pos hj, mul_one]
+      have hbranch : (∑ zv : V, if P.cells zv = i' then G.adj v zv else 0)
+          = P.quotient i i' := (EquitablePartition.quotient_apply P i i' v hv).symm
+      rw [← hbranch]
+      refine Finset.sum_congr rfl (fun zv _ => ?_)
+      rw [Finset.sum_eq_single w]
+      · rw [hw, if_pos rfl]
+        by_cases hzv : P.cells zv = i' <;> simp [hzv, hj]
+      · intro b _ hb
+        by_cases hbj : P'.cells b = j'
+        · by_cases hzv : P.cells zv = i' <;> simp [hbj, hzv, Ne.symm hb]
+        · simp [hbj]
+      · intro hcon; exact absurd (Finset.mem_univ w) hcon
+    · rw [if_neg hj, mul_zero]
+      refine Finset.sum_eq_zero (fun zv _ => ?_)
+      refine Finset.sum_eq_zero (fun zw _ => ?_)
+      by_cases hzw : P'.cells zw = j'
+      · have hne' : w ≠ zw := by rintro rfl; exact hj (hw ▸ hzw)
+        by_cases hzv : P.cells zv = i' <;> simp [hzv, hzw, hne']
+      · simp [hzw]
 
 /-- The genuine (open) iterated naturality statement: the Cartesian product of
 `n` quotient graphs is the quotient of the Cartesian product by a canonical

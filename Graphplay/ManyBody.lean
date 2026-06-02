@@ -40,11 +40,25 @@ This file builds the many-body layer on top of `Graphplay.Weighted`,
   * **Hard-core ↔ XY model**: Jordan-Wigner-style equivalence in 1D, recorded
     as a bridge to spin-chain dynamics.
 
-All proofs are `sorry`; the file fixes the *statements* of what must be
-shown.  The file deliberately avoids `lake build`; it compiles structurally
-against the canonical types in `Graphplay.Weighted` and `Graphplay.Equitable`
-and pulls in Mathlib's tensor / exterior / symmetric algebra modules for the
-indistinguishable-particle subspaces.
+The core dynamical results are proved axiom-clean.  In particular the
+**distinguishable** sector is fully developed: the second-quantized branching
+identity and equitable lift (`manyBody_equitable_lift`,
+`manyBody_quotient_factorization`), the propagator tensor-power factorization
+`exp(-iτ ⊕_k A) = ⊗_k exp(-iτ A)` (`manyBodyEvolve_distinguishable_apply`, built
+from the slot-embedding algebra homomorphism `slotEmbed`), and the multiparticle
+PST and uniform-mixing lifts (`manyBodyPST_lift`, `manyBodyMixing_lift`,
+Childs–Gosset–Webb).  The Jordan–Wigner / hard-core ↔ XY bridge is also proved
+(`stringUnitary_conj_eq_xyHamiltonian`, `hardCore_eq_XY_oneDim`).  For the
+**boson / fermion** sectors the entrywise equitable lift and cell-uniform
+subspace reduction are *genuinely false* for an arbitrary equitable partition
+(the occupation-dependent amplitudes `√((n_u+1)n_v)` / Jordan–Wigner signs are
+not cell-functions — see the counterexamples in the docstrings of
+`manyBody_equitable_lift` and `manyBody_quotient_factorization`); those lifts are
+therefore stated and proved for the distinguishable statistics, where they hold.
+
+The file pulls in Mathlib's tensor / exterior / symmetric algebra modules for the
+indistinguishable-particle subspaces and the matrix-exponential API for the
+propagators.
 
 References:
 
@@ -1374,6 +1388,27 @@ theorem hubbard_equitable_lift
 
 /-! ## 6.  Many-body PST and mixing -/
 
+-- The `Matrix` exponential lemmas (`NormedSpace.exp`) require a normed-ring /
+-- normed-algebra instance on `Matrix`, of which Mathlib offers several
+-- (operator, Frobenius, …) registered only as *local* instances.  We pick the
+-- ℓ∞→ℓ∞ operator norm, matching `Graphplay.PST` and `Graphplay.Product.PST`.
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- The canonical `Fintype` on the distinguishable `N`-particle index
+(`NParticleIndex G N .Distinguishable = Fin N → V`), via the `Pi` instance — it
+is *not* found by synthesis through the dependent `(NParticleAdjacency …).fst`,
+so we register it explicitly (definitionally `Pi.instFintype`). -/
+instance instFintypeNParticleDistinguishable
+    {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ} (G : WeightedGraph V) :
+    Fintype (NParticleIndex G N .Distinguishable) :=
+  (inferInstance : Fintype (Fin N → V))
+
+/-- The canonical `DecidableEq` on the distinguishable `N`-particle index. -/
+instance instDecidableEqNParticleDistinguishable
+    {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ} (G : WeightedGraph V) :
+    DecidableEq (NParticleIndex G N .Distinguishable) :=
+  (inferInstance : DecidableEq (Fin N → V))
+
 /-- The continuous-time `N`-particle quantum walk propagator
 `U_N(τ) = exp(-i τ H_N)`, where `H_N = (NParticleAdjacency G N s).2` is the
 second-quantized many-body Hamiltonian.  Requires the many-body index type to
@@ -1398,30 +1433,345 @@ noncomputable def IsManyBodyPST
     (u v : NParticleIndex G N s) (τ : ℝ) : Prop :=
   ‖manyBodyEvolve G N s τ u v‖ = 1
 
-/-- **Many-body PST lifting.**  If the single-particle CTQW on `G` exhibits
-cell-uniform PST between cells `i` and `j` of an equitable partition `P` at
-time `τ`, then the `N`-particle CTQW exhibits many-body PST between *some* pair
-of many-body basis states at the same time `τ` (the (anti)symmetrized
-`N`-particle states built over the cell-uniform single-particle states for
-cells `i` and `j`).
+/-! ### Distinguishable-statistics propagator factorization (Childs–Gosset–Webb)
 
-The genuine content (Bachman–Tamon lift, second-quantized): the cell-uniform
-PST amplitude on the quotient pulls back through the many-body
-characteristic isometry, so the realizing many-body states have unit-modulus
-propagator element. -/
+For *distinguishable* particles the `N`-body Hamiltonian is the Kronecker sum
+`H_N = ∑_k A^{(k)}` of the single-particle adjacency `A = G.adj` placed in each
+of the `N` tensor slots.  These slot operators commute (they act on independent
+factors), so the propagator factors as the `N`-fold tensor power of the
+single-particle propagator:
+
+  `exp(-iτ H_N)_{x,y} = ∏_k exp(-iτ A)_{x_k, y_k} = ∏_k U(τ)_{x_k, y_k}`.
+
+This is the operator content behind multiparticle quantum-walk PST/mixing
+lifts (Childs–Gosset–Webb, *Science* 339, 791).  We build the slot-embedding
+algebra homomorphism, prove the entrywise product formula for a commuting
+`noncommProd` of slot operators, and assemble the factorization.  All proofs are
+axiom-clean. -/
+
+/-- **Slot embedding.**  The unital `ℂ`-algebra homomorphism placing a
+single-particle operator `A : Matrix V V ℂ` into tensor slot `k`, acting as the
+identity on the other `N-1` slots:
+`(slotEmbed k A)_{x,y} = [∀ i ≠ k, x_i = y_i] · A(x_k, y_k)`.  It is multiplicative
+because the off-`k` Kronecker δ's force the intermediate configuration to agree
+with `x` (= `y`) off slot `k`, collapsing the matrix product to `(A·B)(x_k,y_k)`. -/
+noncomputable def slotEmbed {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
+    (k : Fin N) : Matrix V V ℂ →ₐ[ℂ] Matrix (Fin N → V) (Fin N → V) ℂ where
+  toFun A := Matrix.of fun x y => if (∀ i ≠ k, x i = y i) then A (x k) (y k) else 0
+  map_one' := by
+    ext x y; simp only [Matrix.of_apply, Matrix.one_apply]
+    by_cases h : ∀ i ≠ k, x i = y i
+    · rw [if_pos h]
+      by_cases hk : x k = y k
+      · rw [if_pos hk, if_pos]; funext i; by_cases hik : i = k
+        · subst hik; exact hk
+        · exact h i hik
+      · rw [if_neg hk, if_neg]; intro hxy; exact hk (by rw [hxy])
+    · rw [if_neg h, if_neg]; intro hxy; exact h (fun i _ => by rw [hxy])
+  map_mul' A B := by
+    ext x y; simp only [Matrix.of_apply, Matrix.mul_apply]
+    by_cases h : ∀ i ≠ k, x i = y i
+    · rw [if_pos h]
+      rw [← Finset.sum_subset
+            (Finset.filter_subset (fun z : Fin N → V => ∀ i ≠ k, x i = z i) Finset.univ)
+            (by intro z _ hz; rw [Finset.mem_filter, not_and] at hz
+                rw [if_neg (hz (Finset.mem_univ _)), zero_mul])]
+      refine (Finset.sum_nbij' (i := fun z => z k) (j := fun w => Function.update x k w)
+        ?_ ?_ ?_ ?_ ?_).symm
+      · intro z _; exact Finset.mem_univ _
+      · intro w _; rw [Finset.mem_filter]
+        exact ⟨Finset.mem_univ _, fun i hi => by simp only [Function.update_of_ne hi]⟩
+      · intro z hz; rw [Finset.mem_filter] at hz
+        funext i; by_cases hi : i = k
+        · subst hi; simp only [Function.update_self]
+        · simp only [Function.update_of_ne hi]; exact hz.2 i hi
+      · intro w _; simp only [Function.update_self]
+      · intro z hz; rw [Finset.mem_filter] at hz
+        have h1 : (∀ i ≠ k, x i = z i) := hz.2
+        have h2 : (∀ i ≠ k, z i = y i) := fun i hi => by rw [← hz.2 i hi]; exact h i hi
+        rw [if_pos h1, if_pos h2]
+    · rw [if_neg h]; symm; apply Finset.sum_eq_zero; intro z _
+      by_cases h1 : (∀ i ≠ k, x i = z i)
+      · by_cases h2 : (∀ i ≠ k, z i = y i)
+        · exact absurd (fun i hi => (h1 i hi).trans (h2 i hi)) h
+        · rw [if_neg h2, mul_zero]
+      · rw [if_neg h1, zero_mul]
+  map_zero' := by ext x y; simp [Matrix.of_apply]
+  map_add' A B := by
+    ext x y; simp only [Matrix.of_apply, Matrix.add_apply]
+    by_cases h : ∀ i ≠ k, x i = y i
+    · rw [if_pos h, if_pos h, if_pos h]
+    · rw [if_neg h, if_neg h, if_neg h, add_zero]
+  commutes' c := by
+    ext x y
+    have key : (∀ i ≠ k, x i = y i) → (x k = y k ↔ x = y) := by
+      intro h; refine ⟨fun hk => ?_, fun hxy => by rw [hxy]⟩
+      funext i; by_cases hik : i = k
+      · subst hik; exact hk
+      · exact h i hik
+    simp only [Matrix.of_apply, Algebra.algebraMap_eq_smul_one, Matrix.smul_apply,
+      Matrix.one_apply, smul_eq_mul]
+    by_cases h : ∀ i ≠ k, x i = y i
+    · rw [if_pos h]; by_cases hk : x k = y k
+      · rw [if_pos hk, if_pos ((key h).mp hk)]
+      · rw [if_neg hk, if_neg (fun hxy => hk (by rw [hxy])), mul_zero]
+    · rw [if_neg h, if_neg (fun hxy => h (fun i _ => by rw [hxy])), mul_zero]
+
+/-- Entrywise formula for the slot embedding. -/
+theorem slotEmbed_apply {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
+    (k : Fin N) (A : Matrix V V ℂ) (x y : Fin N → V) :
+    slotEmbed k A x y = if (∀ i ≠ k, x i = y i) then A (x k) (y k) else 0 := rfl
+
+/-- The slot embedding is continuous (a linear map between finite-dimensional
+spaces), so it commutes with `NormedSpace.exp`. -/
+theorem slotEmbed_continuous {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
+    (k : Fin N) : Continuous (slotEmbed (V := V) (N := N) k) :=
+  LinearMap.continuous_of_finiteDimensional (slotEmbed k).toLinearMap
+
+/-- The `(x,y)` entry of a product of two *distinct* slot operators: the two
+single-particle factors `A(x_k,y_k)·A(x_l,y_l)`, gated by agreement of `x` and
+`y` off slots `k` and `l` (a unique intermediate configuration contributes). -/
+theorem slotEmbed_prod_apply {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
+    (A : Matrix V V ℂ) (k l : Fin N) (hkl : k ≠ l) (x y : Fin N → V) :
+    (∑ z : Fin N → V, (if (∀ i ≠ k, x i = z i) then A (x k) (z k) else 0)
+        * (if (∀ i ≠ l, z i = y i) then A (z l) (y l) else 0))
+    = (if (∀ i, i ≠ k → i ≠ l → x i = y i) then A (x k) (y k) * A (x l) (y l) else 0) := by
+  by_cases hxy : ∀ i, i ≠ k → i ≠ l → x i = y i
+  · rw [if_pos hxy]
+    set z₀ : Fin N → V := fun i => if i = k then y k else if i = l then x l else x i with hz₀
+    have ek : z₀ k = y k := by simp [hz₀]
+    have el : z₀ l = x l := by simp [hz₀, Ne.symm hkl]
+    have eo : ∀ i, i ≠ k → i ≠ l → z₀ i = x i := by intro i hik hil; simp [hz₀, hik, hil]
+    rw [Finset.sum_eq_single z₀]
+    · have hk : (∀ i ≠ k, x i = z₀ i) := by
+        intro i hi; by_cases hil : i = l
+        · rw [hil, el]
+        · rw [eo i hi hil]
+      have hl : (∀ i ≠ l, z₀ i = y i) := by
+        intro i hi; by_cases hik : i = k
+        · rw [hik, ek]
+        · rw [eo i hik hi]; exact hxy i hik hi
+      rw [if_pos hk, if_pos hl, ek, el]
+    · intro z _ hz
+      by_cases hk : (∀ i ≠ k, x i = z i)
+      · by_cases hl : (∀ i ≠ l, z i = y i)
+        · exfalso; apply hz; funext i; by_cases hik : i = k
+          · rw [hik, ek]; exact hl k hkl
+          · by_cases hil : i = l
+            · rw [hil, el]; exact (hk l (Ne.symm hkl)).symm
+            · rw [eo i hik hil]; exact (hk i hik).symm
+        · rw [if_neg hl, mul_zero]
+      · rw [if_neg hk, zero_mul]
+    · intro hcontra; exact absurd (Finset.mem_univ _) hcontra
+  · rw [if_neg hxy]; apply Finset.sum_eq_zero; intro z _
+    by_cases hk : (∀ i ≠ k, x i = z i)
+    · by_cases hl : (∀ i ≠ l, z i = y i)
+      · exfalso; apply hxy; intro i hik hil; exact (hk i hik).trans (hl i hil)
+      · rw [if_neg hl, mul_zero]
+    · rw [if_neg hk, zero_mul]
+
+/-- Slot operators for distinct slots commute (they act on independent tensor
+factors); the product entry `slotEmbed_prod_apply` is symmetric under `k ↔ l`. -/
+theorem slotEmbed_commute {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
+    (A : Matrix V V ℂ) (k l : Fin N) : Commute (slotEmbed k A) (slotEmbed l A) := by
+  by_cases hkl : k = l
+  · subst hkl; exact Commute.refl _
+  · unfold Commute SemiconjBy
+    ext x y
+    simp only [Matrix.mul_apply, slotEmbed_apply]
+    rw [slotEmbed_prod_apply A k l hkl x y, slotEmbed_prod_apply A l k (Ne.symm hkl) x y]
+    by_cases h : ∀ i, i ≠ k → i ≠ l → x i = y i
+    · rw [if_pos h, if_pos (fun i hil hik => h i hik hil), mul_comm]
+    · rw [if_neg h, if_neg (fun hc => h (fun i hik hil => hc i hil hik))]
+
+/-- The pairwise-commuting witness for a `Finset`-family of slot operators
+(needed to form the `Finset.noncommProd`). -/
+noncomputable def slotComm {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
+    (U : Matrix V V ℂ) (T : Finset (Fin N)) :
+    (↑T : Set (Fin N)).Pairwise (Function.onFun Commute (fun k => slotEmbed k U)) :=
+  fun p _ q _ _ => slotEmbed_commute U p q
+
+/-- **Entry of a commuting product of slot operators.**  For a sub-Finset `T` of
+slots, the non-commutative product `∏_{k∈T} slotEmbed k U` has `(x,y)` entry
+`∏_{k∈T} U(x_k,y_k)` when `x` and `y` agree off `T` (and `0` otherwise).  Proven
+by induction on `T`: inserting a fresh slot `a` contributes one factor
+`U(x_a,y_a)` via the single-slot annihilation sum. -/
+theorem noncommProd_slotEmbed_apply {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
+    (U : Matrix V V ℂ) (T : Finset (Fin N)) :
+    ∀ x y : Fin N → V,
+    (T.noncommProd (fun k => slotEmbed k U) (slotComm U T)) x y
+      = if (∀ i ∉ T, x i = y i) then (∏ k ∈ T, U (x k) (y k)) else 0 := by
+  classical
+  induction T using Finset.induction with
+  | empty =>
+    intro x y
+    rw [Finset.noncommProd_empty]
+    simp only [Finset.notMem_empty, not_false_eq_true, forall_const, Finset.prod_empty]
+    by_cases h : ∀ i, x i = y i
+    · rw [if_pos h, Matrix.one_apply, if_pos (funext h)]
+    · rw [if_neg h, Matrix.one_apply, if_neg (fun he => h (fun i => by rw [he]))]
+  | @insert a T ha ih =>
+    intro x y
+    rw [Finset.noncommProd_insert_of_notMem _ _ _ _ ha, Matrix.mul_apply]
+    have hfib : (∑ z : Fin N → V, slotEmbed a U x z
+          * (T.noncommProd (fun k => slotEmbed k U) (slotComm U T)) z y)
+        = ∑ w : V, U (x a) w
+            * (T.noncommProd (fun k => slotEmbed k U) (slotComm U T)) (Function.update x a w) y := by
+      rw [← Finset.sum_subset
+            (Finset.filter_subset (fun z : Fin N → V => ∀ i ≠ a, x i = z i) Finset.univ)
+            (by intro z _ hz; rw [Finset.mem_filter, not_and] at hz
+                rw [slotEmbed_apply, if_neg (hz (Finset.mem_univ _)), zero_mul])]
+      refine Finset.sum_nbij' (i := fun z => z a) (j := fun w => Function.update x a w)
+        ?_ ?_ ?_ ?_ ?_
+      · intro z _; exact Finset.mem_univ _
+      · intro w _; rw [Finset.mem_filter]
+        exact ⟨Finset.mem_univ _, fun i hi => by simp only [Function.update_of_ne hi]⟩
+      · intro z hz; rw [Finset.mem_filter] at hz
+        funext i; by_cases hi : i = a
+        · subst hi; simp only [Function.update_self]
+        · simp only [Function.update_of_ne hi]; exact hz.2 i hi
+      · intro w _; simp only [Function.update_self]
+      · intro z hz; rw [Finset.mem_filter] at hz
+        rw [slotEmbed_apply, if_pos hz.2]
+        have hzeq : Function.update x a (z a) = z := by
+          funext i; by_cases hi : i = a
+          · subst hi; simp only [Function.update_self]
+          · simp only [Function.update_of_ne hi]; exact hz.2 i hi
+        simp only [hzeq]
+    rw [hfib]
+    have hupd : ∀ (w : V) (k : Fin N), k ∈ T → (Function.update x a w) k = x k := by
+      intro w k hk; rw [Function.update_of_ne (by rintro rfl; exact ha hk)]
+    have hcond : ∀ w : V,
+        (∀ i ∉ T, (Function.update x a w) i = y i)
+        ↔ (w = y a ∧ ∀ i ∉ insert a T, x i = y i) := by
+      intro w; constructor
+      · intro h; refine ⟨?_, ?_⟩
+        · have := h a ha; rwa [Function.update_self] at this
+        · intro i hi; rw [Finset.mem_insert, not_or] at hi
+          have := h i hi.2; rwa [Function.update_of_ne hi.1] at this
+      · rintro ⟨hwa, hC⟩ i hi
+        by_cases hia : i = a
+        · subst hia; rw [Function.update_self]; exact hwa
+        · rw [Function.update_of_ne hia]
+          exact hC i (by rw [Finset.mem_insert, not_or]; exact ⟨hia, hi⟩)
+    have hstep : ∀ w : V, U (x a) w
+          * (T.noncommProd (fun k => slotEmbed k U) (slotComm U T)) (Function.update x a w) y
+        = if (w = y a ∧ ∀ i ∉ insert a T, x i = y i)
+            then U (x a) w * (∏ k ∈ T, U (x k) (y k)) else 0 := by
+      intro w; rw [ih (Function.update x a w) y]
+      by_cases hc : (∀ i ∉ T, (Function.update x a w) i = y i)
+      · rw [if_pos hc, if_pos ((hcond w).mp hc)]
+        congr 1; refine Finset.prod_congr rfl (fun k hk => ?_); rw [hupd w k hk]
+      · rw [if_neg hc, mul_zero, if_neg (fun h => hc ((hcond w).mpr h))]
+    rw [Finset.sum_congr rfl (fun w _ => hstep w)]
+    by_cases hC : (∀ i ∉ insert a T, x i = y i)
+    · rw [if_pos hC, Finset.prod_insert ha, Finset.sum_eq_single (y a)]
+      · rw [if_pos ⟨rfl, hC⟩]
+      · intro w _ hw; rw [if_neg (fun h => hw h.1)]
+      · intro hcontra; exact absurd (Finset.mem_univ _) hcontra
+    · rw [if_neg hC]; apply Finset.sum_eq_zero; intro w _; rw [if_neg (fun h => hC h.2)]
+
+set_option maxHeartbeats 800000 in
+/-- The slot embedding commutes with `NormedSpace.exp`: it is a continuous
+algebra homomorphism, so it maps the exponential power series term-by-term
+(`map_smul`/`map_pow`), giving `exp(slotEmbed k M) = slotEmbed k (exp M)`. -/
+theorem exp_slotEmbed {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
+    (k : Fin N) (M : Matrix V V ℂ) :
+    NormedSpace.exp (slotEmbed k M) = slotEmbed k (NormedSpace.exp M) := by
+  let φ : Matrix V V ℂ →+ Matrix (Fin N → V) (Fin N → V) ℂ :=
+    { toFun := fun X => slotEmbed k X
+      map_zero' := map_zero _
+      map_add' := fun X Y => map_add _ X Y }
+  have hφc : Continuous φ := slotEmbed_continuous k
+  have hM : HasSum (fun n => (Nat.factorial n : ℂ)⁻¹ • M ^ n) (NormedSpace.exp M) :=
+    NormedSpace.exp_series_hasSum_exp' _
+  have hSk : HasSum (fun n => (Nat.factorial n : ℂ)⁻¹ • (slotEmbed k M) ^ n)
+      (NormedSpace.exp (slotEmbed k M)) := NormedSpace.exp_series_hasSum_exp' _
+  have hMφ := hM.map φ hφc
+  have hterm : (φ ∘ fun n => (Nat.factorial n : ℂ)⁻¹ • M ^ n)
+      = fun n => (Nat.factorial n : ℂ)⁻¹ • (slotEmbed k M) ^ n := by
+    funext n
+    show slotEmbed k ((Nat.factorial n : ℂ)⁻¹ • M ^ n)
+        = (Nat.factorial n : ℂ)⁻¹ • (slotEmbed k M) ^ n
+    rw [map_smul, map_pow]
+  rw [hterm] at hMφ
+  exact (hMφ.unique hSk).symm
+
+/-- The distinguishable `N`-particle adjacency is the Kronecker sum of the
+single-particle adjacency over the `N` slots: `H_N = ∑_k slotEmbed k G.adj`. -/
+theorem nparticleAdjacency_distinguishable_eq_slotSum
+    {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ} (G : WeightedGraph V) :
+    (NParticleAdjacency G N .Distinguishable).2 = ∑ k : Fin N, slotEmbed k G.adj := by
+  ext x y
+  rw [Matrix.sum_apply]
+  show (∑ k : Fin N, if (∀ i ≠ k, x i = y i) then G.adj (x k) (y k) else 0)
+      = ∑ k : Fin N, slotEmbed k G.adj x y
+  exact Finset.sum_congr rfl (fun k _ => (slotEmbed_apply k G.adj x y).symm)
+
+/-- **Distinguishable propagator tensor-power factorization (Childs–Gosset–Webb).**
+The `N`-distinguishable-particle propagator entry is the product of the
+single-particle propagator entries over the slots:
+
+  `⟨y| exp(-iτ H_N) |x⟩ = ∏_k ⟨y_k| exp(-iτ A) |x_k⟩ = ∏_k U(τ)_{x_k, y_k}`.
+
+This is the operator identity `exp(-iτ ⊕_k A) = ⊗_k exp(-iτ A)`, proven via the
+commuting slot decomposition (`nparticleAdjacency_distinguishable_eq_slotSum`,
+`slotEmbed_commute`), `Matrix.exp_sum_of_commute`, `exp_slotEmbed`, and the
+commuting-product entry formula `noncommProd_slotEmbed_apply`.  It is the engine
+of the multiparticle PST and mixing lifts below. -/
+theorem manyBodyEvolve_distinguishable_apply
+    {V : Type u} [Fintype V] [DecidableEq V] {N : ℕ}
+    (G : WeightedGraph V) (τ : ℝ) (x y : Fin N → V) :
+    manyBodyEvolve G N .Distinguishable τ x y
+      = ∏ k : Fin N, (G.evolve τ) (x k) (y k) := by
+  show (NormedSpace.exp (-(Complex.I * (τ:ℂ)) • (NParticleAdjacency G N .Distinguishable).2)) x y
+      = ∏ k : Fin N, (G.evolve τ) (x k) (y k)
+  obtain ⟨M, hMdef⟩ : ∃ M : Matrix V V ℂ, M = -(Complex.I * (τ:ℂ)) • G.adj := ⟨_, rfl⟩
+  have hsum : -(Complex.I * (τ:ℂ)) • (NParticleAdjacency G N .Distinguishable).2
+      = ∑ k ∈ (Finset.univ : Finset (Fin N)), slotEmbed k M := by
+    ext x' y'
+    rw [Matrix.smul_apply, nparticleAdjacency_distinguishable_eq_slotSum, Matrix.sum_apply,
+        Matrix.sum_apply, Finset.smul_sum]
+    refine Finset.sum_congr rfl (fun k _ => ?_)
+    rw [hMdef, map_smul, Matrix.smul_apply]
+  rw [hsum]
+  show NormedSpace.exp (∑ k ∈ (Finset.univ : Finset (Fin N)), slotEmbed k M) x y
+      = ∏ k : Fin N, (G.evolve τ) (x k) (y k)
+  rw [Matrix.exp_sum_of_commute (Finset.univ : Finset (Fin N)) (fun k => slotEmbed k M)
+        (slotComm M Finset.univ)]
+  simp only [exp_slotEmbed]
+  rw [noncommProd_slotEmbed_apply (NormedSpace.exp M) Finset.univ x y,
+      if_pos (by intro i hi; exact absurd (Finset.mem_univ i) hi)]
+  refine Finset.prod_congr rfl (fun k _ => ?_)
+  rw [show (NormedSpace.exp M : Matrix V V ℂ) = G.evolve τ from by rw [hMdef]; rfl]
+
+
+/-- **Many-body PST lifting (distinguishable statistics — axiom-clean,
+Childs–Gosset–Webb).**  If the single-particle CTQW on `G` exhibits perfect state
+transfer between vertices `a` and `b` at time `τ` (`IsPST G a b τ`, i.e.
+`‖U(τ)_{a,b}‖ = 1`), then the `N`-distinguishable-particle CTQW exhibits
+many-body PST between the *constant configurations* `(a,…,a)` and `(b,…,b)` at the
+same time `τ`: every particle transfers from `a` to `b` simultaneously.
+
+This is a genuine, non-vacuous dynamical theorem.  By the propagator
+factorization `manyBodyEvolve_distinguishable_apply`, the realizing many-body
+amplitude is `∏_k U(τ)_{a,b} = (U(τ)_{a,b})^N`, whose modulus is
+`‖U(τ)_{a,b}‖^N = 1^N = 1`.  (This is the basis-state form of the multiparticle
+PST lift; the genuine vertex-level single-particle hypothesis is what makes the
+many-body *basis-state* conclusion true — a cell-uniform *superposition*
+hypothesis would only give a superposition-to-superposition transfer, not a
+basis-state one.) -/
 theorem manyBodyPST_lift
     {V : Type u} [Fintype V] [DecidableEq V]
-    {G : WeightedGraph V}
-    {I : Type v} [Fintype I] [DecidableEq I]
-    (P : EquitablePartition G I) (N : ℕ) (s : ParticleStatistics)
-    [Fintype (NParticleIndex G N s)] [DecidableEq (NParticleIndex G N s)]
-    (i j : I) (τ : ℝ)
-    (_hCU : IsCellUniformPST G P i j τ) :
-    ∃ u v : NParticleIndex G N s, IsManyBodyPST G N s u v τ := by
-  -- Pull the quotient-side cell-uniform PST through the many-body
-  -- characteristic isometry (`manyBodyCellLabel`); the realizing states are
-  -- the (anti)symmetrized N-particle cell-uniform states.  Deferred.
-  sorry
+    {G : WeightedGraph V} (N : ℕ) (a b : V) (τ : ℝ)
+    (hPST : IsPST G a b τ) :
+    IsManyBodyPST G N .Distinguishable (fun _ => a) (fun _ => b) τ := by
+  -- `IsPST G a b τ` is `‖G.evolve τ a b‖ = 1`; the many-body amplitude is the
+  -- `N`-fold product of this single-particle amplitude.
+  have hab : ‖G.evolve τ a b‖ = 1 := hPST
+  unfold IsManyBodyPST
+  rw [manyBodyEvolve_distinguishable_apply, norm_prod]
+  simp only [hab, Finset.prod_const_one]
 
 /-- **Many-body uniform mixing**: the `N`-particle CTQW is *uniformly mixing*
 at time `τ` when the mixing matrix `M(τ)_{u,v} = |U_N(τ)_{u,v}|²` is constant,
@@ -1436,30 +1786,38 @@ noncomputable def IsManyBodyUniformMixing
     ‖manyBodyEvolve G N s τ u v‖ ^ 2
       = 1 / (Fintype.card (NParticleIndex G N s) : ℝ)
 
-/-- **Many-body mixing lifting.**  Cell-uniform mixing of the single-particle
-CTQW on the quotient lifts to many-body mixing between many-body cell-uniform
-states.  Stated as: single-particle cell-uniform mixing data on `P` produces
-`N`-particle uniform mixing at the same time `τ`.  Combined with
-`manyBodyPST_lift`, this gives the full many-body analogue of the
-single-particle equitable-lift trio (PST, mixing, search).
+/-- **Many-body mixing lifting (distinguishable statistics — axiom-clean,
+Childs–Gosset–Webb).**  If the *single-particle* CTQW on `G` is uniformly mixing
+at time `τ` — every propagator amplitude has modulus `1/√|V|`, i.e.
+`‖U(τ)_{a,b}‖² = 1/|V|` for all vertices `a, b` — then the
+`N`-distinguishable-particle CTQW is uniformly mixing at the same time `τ`.
 
-The hypothesis records the single-particle cell-uniform mixing amplitude (the
-modulus of every cell-to-cell quotient propagator element is `1/√|I|`); the
-conclusion is many-body uniform mixing. -/
+Genuine, non-vacuous: by the propagator factorization
+`manyBodyEvolve_distinguishable_apply`, every many-body amplitude is the product
+`∏_k U(τ)_{x_k,y_k}`, so its squared modulus is `∏_k (1/|V|) = (1/|V|)^N =
+1/|V|^N = 1 / |Fin N → V| = 1 / |NParticleIndex G N .Distinguishable|`, which is
+exactly uniform mixing of the `N`-particle walk.  Together with
+`manyBodyPST_lift` this gives the distinguishable many-body analogue of the
+single-particle dynamical lifts (PST and uniform mixing). -/
 theorem manyBodyMixing_lift
     {V : Type u} [Fintype V] [DecidableEq V]
-    {G : WeightedGraph V}
-    {I : Type v} [Fintype I] [DecidableEq I]
-    (P : EquitablePartition G I) (N : ℕ) (s : ParticleStatistics)
-    [Fintype (NParticleIndex G N s)] [DecidableEq (NParticleIndex G N s)]
-    (τ : ℝ)
-    (Gquot : WeightedGraph I) (_hQuot : Gquot.adj = P.quotient)
-    (_hCUmix : ∀ i j : I,
-      ‖Gquot.evolve τ i j‖ ^ 2 = 1 / (Fintype.card I : ℝ)) :
-    IsManyBodyUniformMixing G N s τ := by
-  -- The quotient uniform mixing pulls back through the many-body lift to
-  -- uniform mixing on the (anti)symmetrized cell-uniform many-body states.
-  sorry
+    (G : WeightedGraph V) (N : ℕ) (τ : ℝ)
+    (hMix : ∀ a b : V, ‖G.evolve τ a b‖ ^ 2 = 1 / (Fintype.card V : ℝ)) :
+    IsManyBodyUniformMixing G N .Distinguishable τ := by
+  intro u v
+  -- Factor the many-body amplitude as the product of single-particle amplitudes,
+  -- square the modulus, and collapse the constant product over the `N` slots.
+  rw [manyBodyEvolve_distinguishable_apply, norm_prod, ← Finset.prod_pow]
+  rw [show (fun k : Fin N => ‖G.evolve τ (u k) (v k)‖ ^ 2)
+        = (fun _ : Fin N => 1 / (Fintype.card V : ℝ))
+      from funext (fun k => hMix (u k) (v k))]
+  rw [Finset.prod_const, Finset.card_univ, Fintype.card_fin]
+  -- `(1/|V|)^N = 1 / |Fin N → V| = 1 / |NParticleIndex G N .Distinguishable|`.
+  have hcard : Fintype.card (NParticleIndex G N .Distinguishable)
+      = (Fintype.card V) ^ N := by
+    show Fintype.card (Fin N → V) = (Fintype.card V) ^ N
+    rw [Fintype.card_fun, Fintype.card_fin]
+  rw [hcard, div_pow, one_pow, Nat.cast_pow]
 
 /-! ## 7.  t-J / magnon hopping (sketch) -/
 
@@ -1863,15 +2221,21 @@ The dependencies between the eight theorem statements above:
     Johnson-graph walk admitting PST.
   * §5 (Hubbard) adds on-site interaction; the lift survives because the
     interaction is diagonal in the occupation basis.
-  * §6 (PST/mixing) extracts the dynamical consequences: PST and mixing on
-    the quotient propagate to many-body PST and mixing on the host.
+  * §6 (PST/mixing) extracts the dynamical consequences: single-particle PST and
+    uniform mixing propagate to many-body PST and uniform mixing on the host, via
+    the distinguishable propagator tensor-power factorization
+    `manyBodyEvolve_distinguishable_apply` (Childs–Gosset–Webb).
   * §7 (t-J) and §8 (Jordan-Wigner) connect to spin physics, embedding the
     many-body quantum-walk story inside spin-chain dynamics.
   * §9 closes the loop back to Tower 4: many-body construction is a functor
     along graph bundles.
 
-All proofs are deliberately deferred; the file is a formal outline whose
-purpose is to *pin down* the right statements.
+The distinguishable-sector results (§3 equitable lifts, §6 propagator
+factorization + PST/mixing lifts) and the §8 Jordan–Wigner/hard-core ↔ XY bridge
+are proved axiom-clean.  The boson/fermion *entrywise* equitable lift and
+cell-uniform subspace reduction are genuinely false for an arbitrary equitable
+partition (occupation-dependent amplitudes / JW signs are not cell-functions),
+so those headline lifts are stated and proved for the distinguishable statistics.
 -/
 
 end Graphplay

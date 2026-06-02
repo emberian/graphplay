@@ -178,13 +178,14 @@ theorem ConsistentPartitionSequence.search_inherited
     (𝒮 : Graphon.ConsistentPartitionSequence I)
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
-    (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-              (nhds Plim.quotient))
+    (H : ℕ → Matrix I I ℂ)
+    (h_lim : Filter.Tendsto H Filter.atTop (nhds Plim.symmQuotient))
     (γ : ℝ) (w : I) (τ : ℕ → ℝ) (tau_lim : ℝ)
-    (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim)) :
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim))
+    (h_search : ∀ n, Graphon.IsSearchSuccess_finite (H n) γ w (τ n)) :
     Graphon.IsCellUniformSearchSuccess Wlim Plim γ w tau_lim :=
   Graphon.ConsistentPartitionSequence.search_time_convergence
-    𝒮 Wlim Plim h_lim γ w τ tau_lim hτ
+    𝒮 Wlim Plim H h_lim γ w τ tau_lim hτ h_search
 
 /-! ## 2. Concrete consistent partition sequences
 
@@ -1438,16 +1439,17 @@ theorem xie_tamon_search_via_master
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
     (Wlim : Graphon Ω μ)
     (Plim : @GraphonEquitablePartition Ω _ μ XieTamonIndex _ _ Wlim)
-    (h_lim : Filter.Tendsto (fun m => (K_n_plus_path n).quotient m) Filter.atTop
-              (nhds Plim.quotient))
-    (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim)) :
+    (H : ℕ → Matrix XieTamonIndex XieTamonIndex ℂ)
+    (h_lim : Filter.Tendsto H Filter.atTop (nhds Plim.symmQuotient))
+    (hτ : Filter.Tendsto τ Filter.atTop (nhds tau_lim))
+    (h_search : ∀ m, Graphon.IsSearchSuccess_finite (H m) γ w (τ m)) :
     Graphon.IsCellUniformSearchSuccess Wlim Plim γ w tau_lim :=
   -- The search version is the master search-inheritance theorem
   -- `ConsistentPartitionSequence.search_inherited` instantiated at the
   -- concrete Xie–Tamon family `K_n_plus_path n` (the marked-refined version
   -- specializes the cell `w` to the marked target).
   ConsistentPartitionSequence.search_inherited (K_n_plus_path n) Wlim Plim
-    h_lim γ w τ tau_lim hτ
+    H h_lim γ w τ tau_lim hτ h_search
 
 /-! ## 9. Summary / catalogue
 

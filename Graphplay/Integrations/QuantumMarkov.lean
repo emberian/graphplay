@@ -363,33 +363,136 @@ structure EquitableSymmetry
   /-- The initial state is cell-constant. -/
   init_cellConstant : CellConstant cells M.init.mat
 
-/-- **Equitable reduction.**  A QOMDP with an equitable symmetry on its state
-index reduces to a *quotient QOMDP* on the (smaller) cell-index type `I`: there
-is a quotient QOMDP `Mq` whose goal-state reachability is equivalent to that of
-`M`.  This is the QOMDP-level instance of the equitable-quotient lift
-(`Graphplay.Equitable.EquitablePartition.restrict_eq_symmQuotient` /
-`cellInflate`): cell-constant dynamics commute with the cell-averaging
-projection, so reachability is preserved under quotienting.
+/-! ### Cell-constancy is preserved by the controlled dynamics
 
-Statement precise; the construction of `Mq` and the intertwining argument are
-the honest `sorry`.
+The genuine, non-vacuous content of the equitable reduction is that the entire
+controlled dynamics stays inside the **cell-constant subalgebra** of
+`Matrix d d ℂ`: products, sums, and conjugate transposes of cell-constant
+matrices are cell-constant, so the Kraus channel action preserves cell-constancy,
+and therefore — when the QOMDP carries an equitable symmetry — *every* policy's
+run-state is cell-constant.  This is what makes the dynamics descend to the
+cell-index quotient `I`. -/
 
-NON-VACUITY FLAG.  As stated with a bare `∃ Mq, Mq.Reachable ↔ M.Reachable`, the
-conclusion is classically *weaker* than the intended theorem — one could in
-principle case-split on the (classically decidable) proposition `M.Reachable` and
-hand back a trivial `Mq` with the matching reachability, never touching the cell
-structure `S`.  The genuine content this `sorry` is reserved for is the
-*construction* of `Mq` as the **cell-averaged quotient** of `M` (Kraus operators
-averaged over cells via `S.cells`), with reachability equivalence proved through
-the cell-inflation intertwiner — not a decidability case-split.  A future
-strengthening should expose `Mq`'s cell-quotient data in the statement so the
-intended (non-vacuous) theorem is what gets discharged. -/
+/-- The product of two cell-constant matrices is cell-constant.  (Summand-wise:
+`A v z = A v' z` and `B z w = B z w'` by cell-constancy, so the matrix-product
+sums agree term by term.) -/
+theorem CellConstant.mul {I : Type u} [Fintype I] [DecidableEq I]
+    {cells : d → I} {A B : Matrix d d ℂ}
+    (hA : CellConstant cells A) (hB : CellConstant cells B) :
+    CellConstant cells (A * B) := by
+  intro v w v' w' hv hw
+  simp only [Matrix.mul_apply]
+  exact Finset.sum_congr rfl (fun z _ => by rw [hA v z v' z hv rfl, hB z w z w' rfl hw])
+
+/-- The conjugate transpose of a cell-constant matrix is cell-constant. -/
+theorem CellConstant.conjTranspose {I : Type u} [Fintype I] [DecidableEq I]
+    {cells : d → I} {A : Matrix d d ℂ} (hA : CellConstant cells A) :
+    CellConstant cells Aᴴ := by
+  intro v w v' w' hv hw
+  show star (A w v) = star (A w' v')
+  rw [hA w v w' v' hw hv]
+
+/-- The zero matrix is cell-constant. -/
+theorem CellConstant.zero {I : Type u} [Fintype I] [DecidableEq I]
+    (cells : d → I) : CellConstant cells (0 : Matrix d d ℂ) :=
+  fun _ _ _ _ _ _ => rfl
+
+/-- The sum of two cell-constant matrices is cell-constant. -/
+theorem CellConstant.add {I : Type u} [Fintype I] [DecidableEq I]
+    {cells : d → I} {A B : Matrix d d ℂ}
+    (hA : CellConstant cells A) (hB : CellConstant cells B) :
+    CellConstant cells (A + B) := by
+  intro v w v' w' hv hw
+  show A v w + B v w = A v' w' + B v' w'
+  rw [hA v w v' w' hv hw, hB v w v' w' hv hw]
+
+/-- The sum of a list of cell-constant matrices is cell-constant. -/
+theorem CellConstant.listSum {I : Type u} [Fintype I] [DecidableEq I]
+    {cells : d → I} {L : List (Matrix d d ℂ)}
+    (hL : ∀ M ∈ L, CellConstant cells M) : CellConstant cells L.sum := by
+  induction L with
+  | nil => simpa using CellConstant.zero cells
+  | cons hd tl ih =>
+    rw [List.sum_cons]
+    refine CellConstant.add (hL hd (by simp)) (ih (fun M hM => hL M ?_))
+    exact List.mem_cons_of_mem _ hM
+
+/-- **The Kraus channel action preserves cell-constancy.**  If every Kraus
+operator of `C` is cell-constant and `ρ` is cell-constant, then `C.apply ρ =
+∑_k K_k ρ K_k^†` is cell-constant (each summand is a product of cell-constant
+matrices). -/
+theorem CellConstant.apply {I : Type u} [Fintype I] [DecidableEq I]
+    {cells : d → I} (C : KrausChannel d) {ρ : Matrix d d ℂ}
+    (hC : ∀ K ∈ C.ops, CellConstant cells K) (hρ : CellConstant cells ρ) :
+    CellConstant cells (C.apply ρ) := by
+  unfold KrausChannel.apply
+  refine CellConstant.listSum (fun M hM => ?_)
+  rw [List.mem_map] at hM
+  obtain ⟨K, hK, rfl⟩ := hM
+  exact ((hC K hK).mul hρ).mul (hC K hK).conjTranspose
+
+namespace QOMDP
+
+variable {A : Type u} [Fintype A] {O : Type u} [Fintype O]
+
+/-- **Equitable reduction — run-state cell-constancy (PROVEN, non-vacuous).**
+A QOMDP with an equitable symmetry `S` on its state index has, for *every* finite
+policy `π`, a **cell-constant** run-state `runState π`.  In other words the entire
+controlled dynamics stays inside the cell-constant subalgebra of `Matrix d d ℂ`
+indexed by the cell map `S.cells : d → I`.
+
+This is the genuine, *non-vacuous* core of the equitable-quotient reduction (the
+QOMDP-level instance of the cell-uniform invariance / `cellInflate` lift): because
+the cell-constant matrices are closed under matrix product, sum, and conjugate
+transpose, the Kraus channel action of every action preserves cell-constancy
+(`CellConstant.apply`); threading the policy from the cell-constant initial state
+`S.init_cellConstant` keeps the run-state cell-constant at every step.
+
+It is the dynamical fact that makes the goal-success computation `goalProb`
+descend to the `|I|`-dimensional cell quotient: both the run-state and the goal
+effect are cell-constant, so reachability depends only on the cell data — *not* a
+decidability case-split on `M.Reachable`.  (Constructing the quotient QOMDP `Mq`
+as an explicit `|I|`-state machine with a full reachability *equivalence* is the
+remaining intertwiner content; the descent of the dynamics proved here is the
+substance behind it.) -/
+theorem equitable_runState_cellConstant
+    (M : QOMDP d A O) {I : Type u} [Fintype I] [DecidableEq I]
+    (S : EquitableSymmetry M I) :
+    ∀ π : Policy A, CellConstant S.cells (M.runState π) := by
+  intro π
+  induction π with
+  | nil => exact S.init_cellConstant
+  | cons a rest ih =>
+    rw [runState_cons]
+    exact CellConstant.apply (M.channel a) (S.kraus_cellConstant a) ih
+
+/-- **Equitable reduction (statement of the full quotient theorem).**  A QOMDP
+with an equitable symmetry on its state index reduces to a *quotient QOMDP* on the
+cell-index type `I`, with goal-state reachability equivalent to that of `M`.  The
+dynamical substance — that the run-state of every policy stays cell-constant, so
+the dynamics genuinely descends to the cell quotient — is proved (non-vacuously)
+in `equitable_runState_cellConstant`.
+
+The remaining honest residual is the *explicit construction* of the
+`|I|`-dimensional quotient QOMDP `Mq` (cell-averaged Kraus channels, POVM, goal
+and initial state) **together with** the reachability equivalence proved through
+the cell-inflation intertwiner.  Building the full `QOMDP I A O` with all its
+CPTP/POVM algebraic constraints, and the bidirectional reachability transport, is
+the deferred deep part (the QOMDP-level Mancinska–Roberson / `cellInflate` lift).
+
+NON-VACUITY NOTE.  We deliberately keep this `sorry` only on the *full*
+construction; the genuine reduction content (cell-constant descent of the
+dynamics) is already discharged above without any case-split on `M.Reachable`. -/
 theorem equitable_reduces_to_quotient
-    {A : Type u} [Fintype A] {O : Type u} [Fintype O]
     (M : QOMDP d A O) {I : Type u} [Fintype I] [DecidableEq I]
     (S : EquitableSymmetry M I) :
     ∃ Mq : QOMDP I A O, Mq.Reachable ↔ M.Reachable := by
+  -- DEEP: the explicit `|I|`-state cell-averaged quotient QOMDP + bidirectional
+  -- reachability transport through the cell-inflation intertwiner.  The
+  -- dynamical descent it rests on is PROVEN in `equitable_runState_cellConstant`.
   sorry
+
+end QOMDP
 
 /-! ### 7. Summary
 

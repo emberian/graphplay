@@ -448,7 +448,7 @@ theorem graphonEquitablePartition_is_cauchy_completion
   -- produced by the forward theorem).
   rcases GraphonEquitablePartition.arises_from_consistent_sequence W P with
     ⟨𝒮, h_lim, _⟩
-  exact ⟨𝒮, 𝒮.quotient_cauchy, h_lim⟩
+  exact ⟨𝒮, 𝒮.quotient_cauchy ⟨P.quotient, h_lim⟩, h_lim⟩
 
 /-! ## Summary table
 

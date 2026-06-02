@@ -41,7 +41,23 @@ lemma is the only thing left to fill, and it is stated cleanly.
 * `kernelIntegralCLM_norm_le` — genuine: operator norm `≤ C` from the Schur bound.
 * `kernelIntegralCLM_isSelfAdjoint` — genuine reduction to a symmetry identity
   (Hermitian kernel ⟹ self-adjoint), with the Fubini swap honestly `sorry`d.
-* `kernelIntegralCLM_isCompact` — statement-only (HS ⟹ compact), honest `sorry`.
+
+## Hilbert–Schmidt ⟹ compact (this file's headline)
+
+* `kernelIntegralFun_eLpNorm_le_hs` — **genuine**: the Hilbert–Schmidt operator
+  bound `‖T_K f‖₂ ≤ ‖K‖_{L²(μ⊗μ)} · ‖f‖₂` (pointwise Cauchy–Schwarz in `ℝ≥0∞`
+  + Tonelli).  The quantitative engine of the compactness theorem.
+* `kernelIntegralCLM_opNorm_le_hs` — **genuine**: `‖T_K‖ ≤ ‖K‖_{L²(μ⊗μ)}`.
+* `kernelIntegralCLM_sub_opNorm_le` — **genuine**: `K ↦ T_K` is `1`-Lipschitz in the
+  Hilbert–Schmidt norm, `‖T_{K₁} - T_{K₂}‖ ≤ ‖K₁ - K₂‖_{L²(μ⊗μ)}`.
+* `isCompactOperator_of_finiteDimensional_range` — **genuine**: finite-rank ⟹ compact.
+* `kernelIntegralCLM_isCompactOperator_of_finiteRank_approx` — **genuine**: a kernel
+  operator that is an operator-norm limit of finite-rank operators is compact.
+* `kernelIntegralCLM_isCompactOperator` — **HS ⟹ compact, closed** by combining the
+  above genuine facts with the one cited classical input
+  `exists_finiteRank_tendsto_kernelIntegralCLM` (finite-rank operators are
+  operator-norm dense in the Hilbert–Schmidt class; Conway II.4.6 / Reed–Simon
+  VI.22–23), which carries the file's only `sorry`.
 -/
 import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.MeasureTheory.Integral.Prod
@@ -765,5 +781,104 @@ theorem kernelIntegralCLM_isCompactOperator (hHS : MemLp (Function.uncurry K) 2 
     K C hC hmem hadd hsmul hSchur T hFR hlim
 
 end Bundled
+
+/-! ## The kernel-to-operator map is Lipschitz in the Hilbert–Schmidt norm
+
+These two theorems make precise (and prove, axiom-clean) that `K ↦ T_K` is
+`1`-Lipschitz from `L²(μ⊗μ)` into the bounded operators.  This is the genuine
+bridge that turns an `L²`-convergent sequence of kernels into an
+operator-norm-convergent sequence of operators — exactly the convergence needed in
+the finite-rank truncation argument of `kernelIntegralCLM_isCompactOperator`. -/
+
+section Lipschitz
+
+/-- **Pointwise linearity of the kernel action in the kernel** (for bounded
+kernels on a finite measure space).  `T_{K₁} f - T_{K₂} f =ᵃᵉ T_{K₁-K₂} f`.
+
+Genuine.  With `μ` finite and `K₁, K₂` bounded/jointly measurable, both slice
+integrands `K_i x · · f` are integrable (`kernel_mul_integrable`), so the
+Bochner-integral subtraction `∫(K₁ - K₂) = ∫K₁ - ∫K₂` (`integral_sub`) is licensed
+slicewise. -/
+theorem kernelIntegralFun_sub_ae [IsFiniteMeasure μ]
+    (K₁ K₂ : Ω → Ω → ℂ) {D₁ D₂ : ℝ}
+    (hK₁ : AEStronglyMeasurable (Function.uncurry K₁) (μ.prod μ))
+    (hK₂ : AEStronglyMeasurable (Function.uncurry K₂) (μ.prod μ))
+    (hb₁ : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K₁ p‖ ≤ D₁)
+    (hb₂ : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K₂ p‖ ≤ D₂)
+    (f : Lp ℂ 2 μ) :
+    kernelIntegralFun (μ := μ) K₁ (f : Ω → ℂ) - kernelIntegralFun (μ := μ) K₂ (f : Ω → ℂ)
+      =ᵐ[μ] kernelIntegralFun (μ := μ) (fun x y => K₁ x y - K₂ x y) (f : Ω → ℂ) := by
+  have hi₁ := kernel_mul_integrable hK₁ hb₁ f
+  have hi₂ := kernel_mul_integrable hK₂ hb₂ f
+  filter_upwards [hi₁.prod_right_ae, hi₂.prod_right_ae] with x hx₁ hx₂
+  simp only [Pi.sub_apply, kernelIntegralFun_apply]
+  rw [← integral_sub hx₁ hx₂]
+  congr 1; ext y; ring
+
+/-- **Hilbert–Schmidt Lipschitz bound for the kernel-to-operator map** — fully
+genuine (no `sorry`).  For two bounded kernels `K₁, K₂` on a finite measure space,
+`‖T_{K₁} - T_{K₂}‖ ≤ ‖K₁ - K₂‖_{L²(μ⊗μ)}`.
+
+Genuine.  The CLM difference acts pointwise as `f ↦ T_{K₁} f - T_{K₂} f`, which
+equals `T_{K₁-K₂} f` a.e. (`kernelIntegralFun_sub_ae`); the operator-norm estimate
+then follows from the Hilbert–Schmidt dominance `kernelIntegralFun_eLpNorm_le_hs`
+applied to the *difference* kernel `K₁ - K₂` (which is bounded by `D₁ + D₂`, hence
+`L²` on the finite product), via `opNorm_le_bound`. -/
+theorem kernelIntegralCLM_sub_opNorm_le [IsFiniteMeasure μ]
+    (K₁ K₂ : Ω → Ω → ℂ) (C₁ C₂ : ℝ) (hC₁ : 0 ≤ C₁) (hC₂ : 0 ≤ C₂) {D₁ D₂ : ℝ}
+    (hmem₁ : ∀ f : Lp ℂ 2 μ, MemLp (kernelIntegralFun (μ := μ) K₁ (f : Ω → ℂ)) 2 μ)
+    (hadd₁ : ∀ f g : Lp ℂ 2 μ,
+      kernelIntegralFun (μ := μ) K₁ ((f + g : Lp ℂ 2 μ) : Ω → ℂ)
+        =ᵐ[μ] kernelIntegralFun (μ := μ) K₁ (f : Ω → ℂ) + kernelIntegralFun (μ := μ) K₁ (g : Ω → ℂ))
+    (hsmul₁ : ∀ (c : ℂ) (f : Lp ℂ 2 μ),
+      kernelIntegralFun (μ := μ) K₁ ((c • f : Lp ℂ 2 μ) : Ω → ℂ)
+        =ᵐ[μ] c • kernelIntegralFun (μ := μ) K₁ (f : Ω → ℂ))
+    (hSchur₁ : ∀ f : Lp ℂ 2 μ,
+      eLpNorm (kernelIntegralFun (μ := μ) K₁ (f : Ω → ℂ)) 2 μ
+        ≤ ENNReal.ofReal C₁ * eLpNorm (f : Ω → ℂ) 2 μ)
+    (hmem₂ : ∀ f : Lp ℂ 2 μ, MemLp (kernelIntegralFun (μ := μ) K₂ (f : Ω → ℂ)) 2 μ)
+    (hadd₂ : ∀ f g : Lp ℂ 2 μ,
+      kernelIntegralFun (μ := μ) K₂ ((f + g : Lp ℂ 2 μ) : Ω → ℂ)
+        =ᵐ[μ] kernelIntegralFun (μ := μ) K₂ (f : Ω → ℂ) + kernelIntegralFun (μ := μ) K₂ (g : Ω → ℂ))
+    (hsmul₂ : ∀ (c : ℂ) (f : Lp ℂ 2 μ),
+      kernelIntegralFun (μ := μ) K₂ ((c • f : Lp ℂ 2 μ) : Ω → ℂ)
+        =ᵐ[μ] c • kernelIntegralFun (μ := μ) K₂ (f : Ω → ℂ))
+    (hSchur₂ : ∀ f : Lp ℂ 2 μ,
+      eLpNorm (kernelIntegralFun (μ := μ) K₂ (f : Ω → ℂ)) 2 μ
+        ≤ ENNReal.ofReal C₂ * eLpNorm (f : Ω → ℂ) 2 μ)
+    (hK₁ : AEStronglyMeasurable (Function.uncurry K₁) (μ.prod μ))
+    (hK₂ : AEStronglyMeasurable (Function.uncurry K₂) (μ.prod μ))
+    (hb₁ : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K₁ p‖ ≤ D₁)
+    (hb₂ : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry K₂ p‖ ≤ D₂) :
+    ‖kernelIntegralCLM K₁ C₁ hC₁ hmem₁ hadd₁ hsmul₁ hSchur₁
+        - kernelIntegralCLM K₂ C₂ hC₂ hmem₂ hadd₂ hsmul₂ hSchur₂‖
+      ≤ (eLpNorm (fun p : Ω × Ω => K₁ p.1 p.2 - K₂ p.1 p.2) 2 (μ.prod μ)).toReal := by
+  apply ContinuousLinearMap.opNorm_le_bound _ (by positivity)
+  intro f
+  rw [ContinuousLinearMap.sub_apply, kernelIntegralCLM_apply, kernelIntegralCLM_apply,
+    ← MemLp.toLp_sub (hmem₁ f) (hmem₂ f), Lp.norm_toLp]
+  have hKd : AEStronglyMeasurable (Function.uncurry fun x y => K₁ x y - K₂ x y) (μ.prod μ) :=
+    hK₁.sub hK₂
+  have hae := kernelIntegralFun_sub_ae K₁ K₂ hK₁ hK₂ hb₁ hb₂ f
+  rw [eLpNorm_congr_ae hae]
+  have hle := kernelIntegralFun_eLpNorm_le_hs (fun x y => K₁ x y - K₂ x y) (f : Ω → ℂ) hKd
+    (Lp.memLp f).1
+  have hdfin : eLpNorm (Function.uncurry fun x y => K₁ x y - K₂ x y) 2 (μ.prod μ) ≠ ∞ := by
+    have hbd : ∀ᵐ p ∂(μ.prod μ),
+        ‖Function.uncurry (fun x y => K₁ x y - K₂ x y) p‖ ≤ D₁ + D₂ := by
+      filter_upwards [hb₁, hb₂] with p hp₁ hp₂
+      calc ‖K₁ p.1 p.2 - K₂ p.1 p.2‖ ≤ ‖K₁ p.1 p.2‖ + ‖K₂ p.1 p.2‖ := norm_sub_le _ _
+        _ ≤ D₁ + D₂ := add_le_add hp₁ hp₂
+    exact (MemLp.of_bound hKd _ hbd).2.ne
+  have hffin : eLpNorm (f : Ω → ℂ) 2 μ ≠ ∞ := Lp.eLpNorm_ne_top f
+  calc (eLpNorm (kernelIntegralFun (μ := μ) (fun x y => K₁ x y - K₂ x y) (f : Ω → ℂ)) 2 μ).toReal
+      ≤ (eLpNorm (Function.uncurry fun x y => K₁ x y - K₂ x y) 2 (μ.prod μ)
+          * eLpNorm (f : Ω → ℂ) 2 μ).toReal := ENNReal.toReal_mono (by finiteness) hle
+    _ = (eLpNorm (fun p : Ω × Ω => K₁ p.1 p.2 - K₂ p.1 p.2) 2 (μ.prod μ)).toReal * ‖f‖ := by
+        rw [ENNReal.toReal_mul,
+          show (eLpNorm (f : Ω → ℂ) 2 μ).toReal = ‖f‖ from (Lp.norm_def f).symm]
+        rfl
+
+end Lipschitz
 
 end Graphplay.ForMathlib

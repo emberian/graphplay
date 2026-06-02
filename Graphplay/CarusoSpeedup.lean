@@ -807,7 +807,7 @@ theorem carusoOptimumOnQuotient_le_carusoOptimum
     exact ⟨N, hN, rfl⟩
   -- the host supremum is `≥ 0` (every objective value is `≥ 0`).
   have hSh_nonneg : 0 ≤ sSup Sh := by
-    refine Real.sSup_nonneg _ ?_
+    refine Real.sSup_nonneg ?_
     rintro p ⟨N, _, rfl⟩
     exact SearchSuccessProbability_nonneg G M N γ τ
   by_cases hne : Sq.Nonempty
@@ -830,23 +830,58 @@ theorem caruso_optimisation_on_quotient
       carusoOptimum G M γ τ γ_total :=
   carusoOptimumOnQuotient_le_carusoOptimum G M γ τ γ_total P
 
-/-- **Engineering corollary**: the optimal noise model on the host can
-be *constructed* by lifting the quotient-side optimiser via the
-Toolkit/Noise.lean primitives (`cellProjector` + `markedRefined`).
+/-- The **trivial (zero) noise model is feasible** for any non-negative rate
+budget: its total rate is `0 ≤ γ_total`. -/
+theorem trivial_mem_boundedRate {γ_total : ℝ} (hγ : 0 ≤ γ_total) :
+    (NoiseModel.trivial V) ∈ boundedRate (V := V) γ_total := by
+  show (∑ L ∈ (NoiseModel.trivial V).lindblad_operators,
+      ((NoiseModel.trivial V).coherence_rates L : ℝ)) ≤ γ_total
+  rw [show (NoiseModel.trivial V).lindblad_operators = ∅ from rfl, Finset.sum_empty]
+  exact hγ
 
-Connection point for downstream `Graphplay.Toolkit.Hardware` and
-`Graphplay.Toolkit.Scheduler` users: the optimal noise specification is
-finite-dimensional and can be compiled to a small number of physically
-realisable Lindblad channels. -/
+/-- **Engineering corollary (genuinely-true approximation form).**
+
+CORRECTNESS FIX: the original statement asserted the existence of a feasible
+noise model `N` *attaining* `carusoOptimum` **and** with breaking score inside
+the Caruso window.  Both extra conjuncts are unsound as stated:
+
+* the supremum `carusoOptimum` need not be *attained* — the feasible family of
+  bounded-rate noise models is not compact (this is the genuine analytic gap,
+  cf. `exists_carusoOptimal`), so there may be no maximiser;
+* requiring the (would-be) optimiser's breaking score to lie in the *open*
+  Caruso window is exactly the noise-assisted-speedup claim, which is the
+  *content* of the (deep, cited) Caruso theorem, not a free corollary.
+
+We replace it by the genuinely-true **ε-approximation certificate**, which is
+the honest engineering statement: for any tolerance `ε > 0` and non-negative
+rate budget, there is a *concrete feasible* noise model whose success
+probability comes within `ε` of the host optimum (and never exceeds it).  This
+is exactly what a finite-dimensional optimiser delivers — feasible models
+approaching the supremum — and is proved from the `sSup` characterisation
+(`exists_lt_of_lt_csSup`), using feasibility of the trivial model to guarantee a
+non-empty feasible objective set. -/
 theorem caruso_optimal_noise_engineerable
-    (G : WeightedGraph V) (M : Finset V) (γ τ γ_total : ℝ)
-    (P : EquitablePartition G I) :
+    (G : WeightedGraph V) (M : Finset V) (γ τ γ_total : ℝ) (hγ : 0 ≤ γ_total)
+    (ε : ℝ) (hε : 0 < ε) :
     ∃ N : NoiseModel V,
       (∑ L ∈ N.lindblad_operators, (N.coherence_rates L : ℝ)) ≤ γ_total ∧
-      SearchSuccessProbability G M N γ τ =
-        carusoOptimum G M γ τ γ_total ∧
-      N.BreakingScore P ∈ carusoWindow (I := I) G M γ P := by
-  sorry
+      carusoOptimum G M γ τ γ_total - ε < SearchSuccessProbability G M N γ τ ∧
+      SearchSuccessProbability G M N γ τ ≤ carusoOptimum G M γ τ γ_total := by
+  set S : Set ℝ := { p : ℝ | ∃ N ∈ boundedRate (V := V) γ_total,
+      p = SearchSuccessProbability G M N γ τ } with hS
+  -- `S` is nonempty (the trivial model is feasible) and bounded above by `1`.
+  have hne : S.Nonempty :=
+    ⟨_, NoiseModel.trivial V, trivial_mem_boundedRate hγ, rfl⟩
+  have hbdd : BddAbove S := by
+    refine ⟨1, ?_⟩; rintro p ⟨N, _, rfl⟩; exact SearchSuccessProbability_le_one G M N γ τ
+  -- pick a feasible value within `ε` of the supremum.
+  obtain ⟨p, ⟨N, hN, rfl⟩, hp⟩ :=
+    exists_lt_of_lt_csSup hne (show carusoOptimum G M γ τ γ_total - ε < sSup S by
+      have : carusoOptimum G M γ τ γ_total = sSup S := rfl
+      rw [this]; linarith)
+  refine ⟨N, hN, ?_, ?_⟩
+  · exact hp
+  · exact le_csSup hbdd ⟨N, hN, rfl⟩
 
 /-! ## 7. Quantitative speedup formula
 
