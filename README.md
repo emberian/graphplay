@@ -245,6 +245,12 @@ Godsil (when PST occurs; average mixing), Coutinho–Godsil (the book), Chan et 
 (fractional revival), Xie–Tamon (no infinite tail beats optimal search), and the
 chiral-mixing line, alongside the classical-ML anchors the bridge cites.
 
+## License
+
+The software content is licensed under the terms of both the MIT license and the
+Apache License (Version 2.0). The portions ForMathlib are CC0.
+
 ---
 
 *The big matrix whispers what its quotient already knew.* ( ◕‿◕ )
+

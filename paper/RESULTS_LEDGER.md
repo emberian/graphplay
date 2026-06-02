@@ -42,6 +42,22 @@ edited.
 >   same-interface/opposite-species duality; LDT run-soundness re-derives as a `gfp_transfer`
 >   corollary. All axiom-clean. Honest scope: the specific `wlStep`-gfp =
 >   `wlRefine_coarsestEquitable` identity is documented future work.
+> - **LDT soundness/completeness deepening** — `Integrations/LDTSoundness.lean`:
+>   `checkedSolve_sound` (soundness = output verification, holds for an *arbitrary* solver / any
+>   trained net — training-independent, the SAT-solver guarantee), `id_sound_but_useless`
+>   (soundness ⟂ power), `certifiedStep_sound`/`certifiedSoundStep` (proof-carrying per-step
+>   soundness), `dedP_certified`. And `Integrations/LDTCompleteness.lean`: `acStep` (generalized
+>   arc consistency, a `certifiedSoundStep` — sound for free), and the **machine-checked
+>   incompleteness witness** `acStep_xor_sound_but_abstains` (one sound AC operator, stuck at ⊤
+>   on a solvable XOR system → abstains) vs `ac_kind_discriminates` (same operator *solves* a
+>   width-1 chain). All axiom-clean. Conclusion: soundness is free/training-independent; the real
+>   bound is COMPLETENESS = problem width vs lattice expressiveness (bounded-width CSP dichotomy).
+>   Author-facing writeup: `research/ldt_theory_for_authors.md`.
+> - **ML (walkformer track, behavioral):** the 1-WL irreducibility rank-floor is now *measured*
+>   (`restrans/WALK_DISTILLATION_FINDINGS.md`): grafting pure walk operators onto a trained
+>   pythia-70m recovers 0.93→0.69 of positional-head function vs 0.44→0.23 for content heads (a
+>   3–4× expressibility gap by head type); honest caveat — the signal is recovered-fraction, not a
+>   raw-perplexity cliff; NOT a universal compressor.
 > - **Application honesty** — false hardware-fit claims relabeled true
 >   (`heavyHexAsBundle_dataVertex_equiv`, `…_satisfies_dropCount`, dephasing `…_iff_singleton`).
 >
