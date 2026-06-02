@@ -49,6 +49,8 @@ import Graphplay.Categorical.Topos
 -- Higher towers
 import Graphplay.Tower6
 import Graphplay.Tower7
+import Graphplay.Tower8
+import Graphplay.Tower8.DistributedQuotient
 
 -- Computable substrate + surface embeddings + demo
 import Graphplay.Computable

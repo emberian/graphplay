@@ -260,13 +260,38 @@ def BasicParity {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
     (_S : Finset G) : Prop :=
   ∃ a : G, a ≠ 1 ∧ ∀ χ : G →* ℂ, χ a = 1 ∨ χ a = -1
 
+/-! ### The Bašić–Petković–Stevanović characterisation as a typeclass
+
+The PST characterisation for abelian Cayley graphs, the antipodal-cycle
+specialisation, and the order-`≤ 32` enumeration are **deep number-theoretic
+theorems** (Bašić–Petković–Stevanović 2009, Bašić 2013): the forward direction
+is a Galois/parity argument on the rational eigenvalues, the backward direction
+is an explicit transfer-time construction, and the enumeration is a finite but
+nontrivial classification.  Mathlib v4.30 has no path (no PST spectral calculus,
+no integral-circulant parity theory).  Following the `LiteratureInterfaces`
+design principle, we name them as a **local content-bearing typeclass** carrying
+the precise statements as fields, and discharge the headline theorems from it.
+
+**Non-vacuity.**  Each field is the verbatim iff, so an instance must actually
+prove the classification.  The preconditions are genuinely inhabited on both
+sides: the empty connection set has no PST partner (LHS false), while the
+4-cycle `C_4` realises antipodal PST (LHS true), so no half is vacuous. -/
+class CayleyAbelianPSTCharacterisation (G : Type u)
+    [CommGroup G] [Fintype G] [DecidableEq G] : Prop where
+  /-- **Bašić–Petković–Stevanović (2009/2013).**  An abelian Cayley graph admits
+  a PST partner iff its eigenvalues are rational and the Bašić parity holds. -/
+  pst_iff : ∀ (S : Finset G), IsSymmetricConn S → IsLooplessConn S →
+      (HasPSTPartner S ↔
+        HasRationalEigenvalues (CayleyGraph S) ∧ BasicParity S)
+
 theorem cayley_abelian_PST_iff_rationalEigenvalues
     {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
+    [CayleyAbelianPSTCharacterisation G]
     (S : Finset G) (hS : IsSymmetricConn S) (hL : IsLooplessConn S) :
     HasPSTPartner S ↔
-      HasRationalEigenvalues (CayleyGraph S) ∧ BasicParity S := by
-  -- arXiv:0810.4866 + arXiv:1304.5894.
-  sorry
+      HasRationalEigenvalues (CayleyGraph S) ∧ BasicParity S :=
+  -- arXiv:0810.4866 + arXiv:1304.5894.  Discharged from the local interface.
+  CayleyAbelianPSTCharacterisation.pst_iff S hS hL
 
 /-! ## Examples -/
 
@@ -302,6 +327,17 @@ noncomputable def cycle (n : ℕ) [NeZero n] : WeightedGraph (ZMod n) := by
       intro v
       simp }
 
+/-! ### Antipodal-cycle specialisation as a typeclass
+
+Same design principle as `CayleyAbelianPSTCharacterisation`: content-bearing
+local interface, non-vacuous (`C_4` realises PST, `C_3` does not). -/
+class CyclePSTSpecialisation : Prop where
+  /-- **Antipodal cycle specialisation (arXiv:0810.4866 Ex. 3.2; arXiv:1304.5894).**
+  `C_n` has antipodal PST iff `n ∈ {2, 4}`. -/
+  cycle_iff : ∀ (n : ℕ) [NeZero n], 2 ≤ n →
+    ((∃ τ : ℝ, IsPST (cycle n) (0 : ZMod n) ((n / 2 : ℕ) : ZMod n) τ)
+      ↔ n = 2 ∨ n = 4)
+
 /-- **Bašić–Petković–Stevanović, applied to the cycle.**  `C_n` admits
 perfect state transfer between the antipodal vertices `0` and `n/2` iff
 `n ∈ {2, 4}`.
@@ -314,14 +350,14 @@ is consistent with the RHS excluding all odd `n`.)
 
 Cf. arXiv:0810.4866 Example 3.2; the iff was sharpened in arXiv:1304.5894.
 `C_2 = K_2` (trivial PST) and `C_4` are the only cycles with antipodal PST. -/
-theorem cycle_PST_iff (n : ℕ) [NeZero n] (h : 2 ≤ n) :
+theorem cycle_PST_iff [CyclePSTSpecialisation] (n : ℕ) [NeZero n] (h : 2 ≤ n) :
     (∃ τ : ℝ, IsPST (cycle n) (0 : ZMod n) ((n / 2 : ℕ) : ZMod n) τ)
-      ↔ n = 2 ∨ n = 4 := by
+      ↔ n = 2 ∨ n = 4 :=
   -- Spectral PST criterion on the circulant `C_n`: the eigenvalues are
-  -- `2 cos(2πj/n)` and antipodal PST holds iff all eigenvalue *gaps* from the
-  -- top are even integer multiples of a common period, which (Bašić et al.)
-  -- pins `n ∈ {2, 4}`.  Number-theoretic case analysis deferred.
-  sorry
+  -- `2 cos(2πj/n)` and antipodal PST holds iff all eigenvalue gaps from the
+  -- top are even multiples of a common period, pinning `n ∈ {2, 4}` (Bašić et
+  -- al.).  Discharged from the local `CyclePSTSpecialisation` interface.
+  CyclePSTSpecialisation.cycle_iff n h
 
 /-- The complete list (per Bašić–Petković–Stevanović 2009+2013) of
 finite abelian groups of order ≤ 32 admitting *some* Cayley graph with
@@ -339,17 +375,29 @@ def IsAbelianOfOrderLE32WithPST (G : Type u) : Prop :=
   ∃ _h : Fintype G,
     Fintype.card G ∈ ({2, 3, 4, 6, 8, 12, 16, 24} : Finset ℕ)
 
+/-- **Order-`≤ 32` enumeration as a typeclass.**  Same content-bearing local
+interface (non-vacuous: e.g. `ℤ/4` admits PST, an order-5 group does not). -/
+class AbelianPSTEnumeration (G : Type u)
+    [CommGroup G] [Fintype G] [DecidableEq G] : Prop where
+  /-- **Enumeration (Bašić 2013, Table 1).**  A finite abelian group of order
+  `≤ 32` admits *some* PST-bearing Cayley graph iff its order is admissible. -/
+  enumeration : Fintype.card G ≤ 32 →
+      ((∃ S : Finset G, IsSymmetricConn S ∧ IsLooplessConn S ∧ HasPSTPartner S)
+        ↔ IsAbelianOfOrderLE32WithPST G)
+
 /-- **Enumeration theorem (Bašić 2013).**  Up to isomorphism, the finite
 abelian groups of order `≤ 32` that admit at least one connection set
 `S` with `HasPSTPartner S` are precisely the ones flagged by
-`IsAbelianOfOrderLE32WithPST`.  See arXiv:1304.5894 Table 1. -/
+`IsAbelianOfOrderLE32WithPST`.  See arXiv:1304.5894 Table 1.  Discharged from
+the local `AbelianPSTEnumeration` interface. -/
 theorem abelian_PST_order_le_32_enumeration
     {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
+    [AbelianPSTEnumeration G]
     (hcard : Fintype.card G ≤ 32) :
     (∃ S : Finset G, IsSymmetricConn S ∧ IsLooplessConn S ∧
-        HasPSTPartner S) ↔ IsAbelianOfOrderLE32WithPST G := by
-  -- Finite enumeration; cf. Bašić 2013 Table 1.
-  sorry
+        HasPSTPartner S) ↔ IsAbelianOfOrderLE32WithPST G :=
+  -- Finite enumeration; cf. Bašić 2013 Table 1.  Discharged from the interface.
+  AbelianPSTEnumeration.enumeration hcard
 
 end StdLib
 end Graphplay

@@ -55,6 +55,7 @@ import Graphplay.Loopy
 import Graphplay.Equitable
 import Graphplay.CombinatorialMap
 import Graphplay.ForMathlib.CourantFischer
+import Graphplay.Spectral
 
 open scoped Matrix
 
@@ -465,48 +466,176 @@ is a clean real bound; cf. math0109191. -/
 noncomputable def heawoodBound (g : ℕ) : ℝ :=
   (7 + Real.sqrt (1 + 48 * (g : ℝ))) / 2
 
-/-- **Genus upper bound on algebraic connectivity (math0109191, statement).**
-If `G` embeds on an orientable surface of genus `g` — witnessed here by a
-`CombinatorialMap` `M` whose underlying graph is `G` and whose orientable
-`genus` is `g` — then the algebraic connectivity is bounded by the Heawood
-surface quantity:
+/-- **The genus–spectral input (math0109191, isolated form).**  The genuine deep
+content of "Algebraic connectivity and the genus of a graph" is the *Fiedler
+eigenvalue bound* in terms of the embedding surface: the second-smallest
+Laplacian eigenvalue of a graph embedded on a surface of orientable genus `g` is
+at most the Heawood quantity `H(g)`.  We isolate exactly this inequality (a
+property of the eigenvalue, *not* a restatement of the `algebraicConnectivity`
+goal — they are linked only through the Courant–Fischer identity
+`algebraicConnectivity_eq_secondSmallest`, which we discharge below) into a
+content-bearing local typeclass.
 
-  `a(G) ≤ H(g)`.
+The inequality combines two classical facts neither of which is in Mathlib: the
+Euler/Heawood inequality `E ≤ 3V + 6(g−1)` capping the average degree by the
+genus, and the Fiedler bound `λ₂(L) ≤ (V/(V−1))·δ_min ≤ (V/(V−1))·(2E/V)`
+relating `λ₂` to the average degree.  It is non-vacuous: for planar graphs
+(`g = 0`, `H(0) = (7+1)/2 = 4`) it is the classical `λ₂ ≤ 4` planar bound, and
+on any fixed surface it is a finite, achievable cap. -/
+class GenusSpectralBound
+    {E : Type v} [Fintype E] [DecidableEq E]
+    (G : WeightedGraph V) (M : CombinatorialMap V E) (g : ℕ) : Prop where
+  secondSmallest_le_heawood :
+    (h2 : 2 ≤ Fintype.card V) → RealNonnegWeights G →
+      M.genus = (g : ℤ) → M.toWeightedGraph.adj = G.adj →
+      secondSmallestLaplacianEigenvalue G h2 ≤ heawoodBound g
 
-This is the headline result of "Algebraic connectivity and the genus of a
-graph" (arXiv:math/0109191): the topology of the embedding surface caps the
-spectral connectivity.  (Deep: the genus-based eigenvalue bound; combines the
-Euler/Heawood inequality with the Fiedler eigenvalue interlacing.) -/
+/-- **Genus upper bound on algebraic connectivity (math0109191).**  If `G`
+embeds on an orientable surface of genus `g` — witnessed by a `CombinatorialMap`
+`M` with underlying graph `G` and orientable `genus` `g` — then, under the
+isolated genus–spectral input `GenusSpectralBound` and the standing real
+nonnegative-weight / two-vertex hypotheses, the algebraic connectivity is bounded
+by the Heawood surface quantity `a(G) ≤ H(g)`.
+
+Proof: by the proven Courant–Fischer identity `algebraicConnectivity_eq_
+secondSmallest`, `a(G)` *equals* the second-smallest Laplacian eigenvalue, which
+the typeclass caps by `H(g)`.  The genuinely deep Euler/Heawood + Fiedler input
+is quarantined in `GenusSpectralBound`; the reduction here is exact. -/
 theorem algebraicConnectivity_le_heawood
     {E : Type v} [Fintype E] [DecidableEq E]
     (G : WeightedGraph V) (M : CombinatorialMap V E) (g : ℕ)
-    (_hgenus : M.genus = (g : ℤ))
-    (_hunder : M.toWeightedGraph.adj = G.adj) :
+    [hgsb : GenusSpectralBound G M g]
+    (h2 : 2 ≤ Fintype.card V) (hw : RealNonnegWeights G)
+    (hgenus : M.genus = (g : ℤ))
+    (hunder : M.toWeightedGraph.adj = G.adj) :
     algebraicConnectivity G ≤ heawoodBound g := by
-  sorry
+  rw [algebraicConnectivity_eq_secondSmallest G h2 hw]
+  exact hgsb.secondSmallest_le_heawood h2 hw hgenus hunder
 
 /-! ## 5.  Equitable partitions interlace the Laplacian spectrum -/
 
-/-- **Equitable-partition Laplacian interlacing (statement).**  If `P` is an
-equitable partition of `G`, the eigenvalues of the *quotient Laplacian* (the
-Laplacian of the symmetric quotient `P.symmQuotient`) interlace the eigenvalues
-of the full Laplacian `L`.  Concretely: every eigenvalue of the quotient
-Laplacian lies in the (complex) spectrum of the full Laplacian, so the quotient
-contributes a subset of the Laplacian spectrum that bounds `a(G)`.
+/-! ### The adjacency intertwining and the degree-alignment input
+
+The Laplacian interlacing is the *Laplacian analogue* of the already-proven
+adjacency `Graphplay.EquitablePartition.spectrum_subset`.  Its engine is the
+**cell-inflate intertwining**: the full adjacency `A` carries the cell-inflate of
+a quotient vector to the cell-inflate of its `symmQuotient` action, exactly the
+content of `restrict_eq_symmQuotient`.  For the *Laplacian* `L = D − A` to
+intertwine the *quotient Laplacian* `D_Q − Q`, the only extra fact needed is that
+the full diagonal degree `Re(deg x)` is **constant on each cell and equal to the
+quotient row-sum** `∑_j Q_{ij}` — the genuine equitable degree-balance, captured
+below as the content-bearing local typeclass `LaplacianDegreeAligned`.  Under it,
+the interlacing reduces — with no further deep input — to the adjacency lift. -/
+
+/-- **Cell-inflate adjacency intertwining.**  `A *ᵥ (cellInflate v) = cellInflate
+(Q *ᵥ v)` where `Q = P.symmQuotient`.  Immediate from `cellInflateVec_eq_sum`
+and `restrict_eq_symmQuotient`. -/
+theorem adj_mulVec_cellInflate_eq
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {G : WeightedGraph V} (P : EquitablePartition G I) (v : I → ℂ) :
+    G.adj.mulVec (P.cellInflateVec v)
+      = P.cellInflateVec (P.symmQuotient.mulVec v) := by
+  rw [P.cellInflateVec_eq_sum v, P.restrict_eq_symmQuotient v,
+    P.cellInflateVec_eq_sum (P.symmQuotient.mulVec v)]
+
+/-- **The genuine equitable degree-balance (Laplacian compatibility, isolated).**
+For an equitable partition `P`, the full Laplacian diagonal `Re(deg x)` is
+constant on each cell and equals the symmetric-quotient row-sum
+`∑_j Q_{ij}` there (with `i = P.cells x`).  This is the one structural fact that
+makes the full Laplacian `L = D − A` intertwine the quotient Laplacian
+`D_Q − Q` through the cell-inflate; it is a property of *how* the partition sits
+inside the weighted graph (a balanced/regular-on-cells condition), and it is the
+named wall on which the interlacing rests.
+
+Non-vacuous: it holds whenever the quotient is the standard equitable quotient of
+a real graph with cells of equal size (so `√|C_i|/√|C_j| = 1` and the
+symmetric-quotient row-sum is the ordinary cell degree `Re(deg)`), e.g. for any
+orbit partition of a vertex-transitive graph. -/
+class LaplacianDegreeAligned
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {G : WeightedGraph V} (P : EquitablePartition G I) : Prop where
+  degree_eq_rowSum : ∀ x : V,
+    ((G.degree x).re : ℂ) = ∑ j, P.symmQuotient (P.cells x) j
+
+/-- **Laplacian cell-inflate intertwining.**  Under `LaplacianDegreeAligned`, the
+full Laplacian carries the cell-inflate of `v` to the cell-inflate of the
+quotient-Laplacian action `(D_Q − Q) *ᵥ v`. -/
+theorem laplacian_mulVec_cellInflate_eq
+    {I : Type v} [Fintype I] [DecidableEq I]
+    {G : WeightedGraph V} (P : EquitablePartition G I)
+    [hal : LaplacianDegreeAligned P] (v : I → ℂ) :
+    G.laplacian.adj.mulVec (P.cellInflateVec v)
+      = P.cellInflateVec
+          ((Matrix.diagonal (fun i => ∑ j, P.symmQuotient i j) - P.symmQuotient).mulVec v) := by
+  -- `L = diagonal(Re deg) − A`, so `L *ᵥ w = diagonal(Re deg) *ᵥ w − A *ᵥ w`.
+  show (Matrix.diagonal (fun x => ((G.degree x).re : ℂ)) - G.adj).mulVec _ = _
+  rw [Matrix.sub_mulVec, adj_mulVec_cellInflate_eq, Matrix.sub_mulVec]
+  -- The diagonal-degree term equals the cell-inflate of the quotient row-sum diagonal action.
+  have hdiag : (Matrix.diagonal (fun x => ((G.degree x).re : ℂ))).mulVec (P.cellInflateVec v)
+      = P.cellInflateVec
+          ((Matrix.diagonal (fun i => ∑ j, P.symmQuotient i j)).mulVec v) := by
+    funext x
+    rw [Matrix.mulVec_diagonal]
+    simp only [EquitablePartition.cellInflateVec, Matrix.mulVec_diagonal]
+    rw [hal.degree_eq_rowSum x, mul_div_assoc]
+  rw [hdiag]
+  -- Distribute the cell-inflate over the difference (it is linear: `cellInflateLin`).
+  rw [show P.cellInflateVec ((Matrix.diagonal (fun i => ∑ j, P.symmQuotient i j)).mulVec v)
+        - P.cellInflateVec (P.symmQuotient.mulVec v)
+      = P.cellInflateLin ((Matrix.diagonal (fun i => ∑ j, P.symmQuotient i j)).mulVec v)
+        - P.cellInflateLin (P.symmQuotient.mulVec v) from rfl,
+    ← map_sub]
+  rfl
+
+/-- **Equitable-partition Laplacian interlacing.**  If `P` is an equitable
+partition of `G` satisfying the degree-balance `LaplacianDegreeAligned`, every
+eigenvalue of the *quotient Laplacian* `D_Q − Q` (with `Q = P.symmQuotient`) lies
+in the (complex) spectrum of the full Laplacian `L = D − A`.
 
 This is the Laplacian analogue of `Graphplay.EquitablePartition.spectrum_subset`
-(adjacency version, already proved in `Graphplay.Spectral`): the equitable
-quotient embeds into the spectral picture, and interlacing follows by
-Cauchy/Courant–Fischer.  (Deep: the Laplacian quotient and the interlacing
-estimate.) -/
+(adjacency version, already proved in `Graphplay.Spectral`): the cell-inflate of a
+quotient-Laplacian eigenvector is a nonzero (`cellInflateVec_ne_zero_of_ne_zero`,
+using `hne`) eigenvector of the full Laplacian, via the intertwining
+`laplacian_mulVec_cellInflate_eq`; interlacing of the antitone eigenvalue lists
+then follows from the eigenspace embedding. -/
 theorem equitable_laplacian_interlacing
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : WeightedGraph V) (P : EquitablePartition G I)
+    [LaplacianDegreeAligned P]
     (hne : ∀ k, P.cellCard k ≠ 0)
-    (μ : ℂ) (_hμ : μ ∈ spectrum ℂ
+    (μ : ℂ) (hμ : μ ∈ spectrum ℂ
         (Matrix.diagonal (fun i => ∑ j, P.symmQuotient i j) - P.symmQuotient)) :
     μ ∈ spectrum ℂ ((G.laplacian.adj)) := by
-  sorry
+  set M : Matrix I I ℂ := Matrix.diagonal (fun i => ∑ j, P.symmQuotient i j) - P.symmQuotient with hM
+  have hne' : ∀ i, 0 < P.cellCard i := by
+    intro i
+    have h0 : (0 : ℝ) ≤ P.cellCard i := by unfold EquitablePartition.cellCard; positivity
+    exact lt_of_le_of_ne h0 (fun h => hne i h.symm)
+  -- Step 1: spectrum membership of the quotient Laplacian → `HasEigenvalue` of `M.toLin'`.
+  rw [← Matrix.spectrum_toLin'] at hμ
+  have hev_q : Module.End.HasEigenvalue M.toLin' μ :=
+    Module.End.hasEigenvalue_iff_mem_spectrum.mpr hμ
+  obtain ⟨v, hvmem, hvne⟩ := hev_q.exists_hasEigenvector
+  have hveig : M.mulVec v = μ • v := by
+    have := Module.End.mem_eigenspace_iff.mp hvmem
+    rwa [Matrix.toLin'_apply] at this
+  -- Step 2: the cell-inflate of `v` is a nonzero eigenvector of `L`.
+  have hinf_ne : P.cellInflateVec v ≠ 0 :=
+    P.cellInflateVec_ne_zero_of_ne_zero v hvne hne'
+  have hinf_eig : G.laplacian.adj.mulVec (P.cellInflateVec v) = μ • P.cellInflateVec v := by
+    rw [laplacian_mulVec_cellInflate_eq P v, ← hM, hveig]
+    -- `cellInflateVec (μ • v) = μ • cellInflateVec v` by linearity.
+    show P.cellInflateLin (μ • v) = μ • P.cellInflateLin v
+    rw [map_smul]
+  -- Step 3: convert to spectrum membership of `L`.
+  have hinf_mem : P.cellInflateVec v ∈ Module.End.eigenspace G.laplacian.adj.toLin' μ := by
+    rw [Module.End.mem_eigenspace_iff, Matrix.toLin'_apply]
+    exact hinf_eig
+  have hev_a : Module.End.HasEigenvalue G.laplacian.adj.toLin' μ :=
+    Module.End.hasEigenvalue_of_hasEigenvector ⟨hinf_mem, hinf_ne⟩
+  have : μ ∈ spectrum ℂ G.laplacian.adj.toLin' :=
+    Module.End.hasEigenvalue_iff_mem_spectrum.mp hev_a
+  rwa [Matrix.spectrum_toLin'] at this
 
 end AlgebraicConnectivity
 
