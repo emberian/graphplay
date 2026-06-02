@@ -756,13 +756,16 @@ theorem depolarizing_isUniversallyEquitable (rate : ℝ) :
   -- once expanded, each `L_k` is in `centerMat V` after the natural rewriting.
   sorry
 
-/-! ### 5.2 Site-dependent dephasing — equitable iff cells are vertex-orbits
+/-! ### 5.2 Site-dependent dephasing — cell-uniform-symmetric iff the partition is discrete
 
-Site dephasing has one Lindblad per vertex: `L_v = |v⟩⟨v|`.  Each `L_v`
-preserves `cellUniform P` iff the cell of `v` is a singleton OR the
-collection of cells defined by `P` is invariant under permutations
-permuting vertices within a cell — i.e. the cells coincide with the orbits
-of the vertex-permutation symmetry group of the host graph. -/
+Site dephasing has one Lindblad per vertex: `L_v = |v⟩⟨v|`.  Against the
+concrete `preservesCellUniform` notion, the whole noise model is
+cell-uniform-symmetric for `P` iff **every cell is a singleton** (the discrete
+partition): `|v⟩⟨v|` sends the all-ones vector to the indicator `e_v`, which is
+constant on `v`'s cell only when that cell is `{v}`.  (The naive "cells are
+vertex-orbits" guess is strictly too weak — see the `CORRECTNESS FIX` note on
+`dephasing_cellUniformSymmetric_iff_singleton` below.  The orbit predicate
+`isVertexOrbitPartition` is retained as a separate, weaker notion.) -/
 
 /-- The vertex-permutation symmetry group of the host graph (informal:
 graph automorphisms).  Encoded as the *partition into orbits* of any
@@ -788,7 +791,7 @@ cell to be a singleton — strictly stronger than `isVertexOrbitPartition`, whic
 already holds for e.g. the single-cell partition of `K₂` (swap automorphism) yet
 there dephasing is *not* cell-uniform-symmetric.  We state and prove the
 genuinely-true singleton characterisation. -/
-theorem dephasing_cellUniformSymmetric_iff_orbit
+theorem dephasing_cellUniformSymmetric_iff_singleton
     (G : WeightedGraph V) (P : EquitablePartition G I) (rate : ℝ) :
     (NoiseModel.dephasingNoise V rate).cellUniformSymmetric P ↔
       (∀ v w : V, P.cells w = P.cells v → w = v) := by
