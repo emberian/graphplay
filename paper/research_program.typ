@@ -37,20 +37,15 @@ statement that the spine *would prove* if certain identified holes
 (coherent-algebra commutativity, sheaf-of-$*$-algebras infrastructure,
 $infinity$-categorical Mathlib library) were closed.
 
-#emph[Status note (this revision).] An earlier draft of this companion
-described the whole catalog with a single blanket sentence --- "statements
-complete, proofs sorried." That is now stale, and we replace it with an
-itemized status per file. A substantial fraction of the headline content is
-now #emph[proven axiom-clean] (e.g. D4's equitable--coherent dictionary, D5's
-quantum-homomorphism lift, I7's chiral $eq.triple U(1)$ gauge equivalence with
-zero `sorry`, the new TransformerDSL compiler-correctness theorem). A further
-band is #emph[de-stubbed but honestly sorried at one deep step] (Tower-4 graphon
-spectral timing, MERA exactness, RMT thermalizing-yet-PST). The genuinely #emph[open
-mathematical frontier] is the two halves of Conjecture 9.3 and the higher towers
-(6/7), which remain honest scaffolds awaiting $infinity$-categorical / sheaf-of-$*$-algebras
-Mathlib. We flag each item's actual state below. Throughout, the statements
-typecheck against the rest of Graphplay; what has changed is how many of the
-proofs are now real.
+#emph[Status.] Each file carries an itemized status. A substantial fraction of
+the headline content is #emph[proven axiom-clean] (e.g. D4's equitable--coherent
+dictionary, D5's quantum-homomorphism lift, I7's chiral $eq.triple U(1)$ gauge
+equivalence, the TransformerDSL compiler-correctness theorem). A further band is
+proven up to one deep `sorry` (Tower-4 graphon spectral timing, MERA exactness,
+RMT thermalizing-yet-PST). The #emph[open mathematical frontier] is the two
+halves of Conjecture 9.3 and the higher towers (6/7), which are scaffolds
+awaiting $infinity$-categorical / sheaf-of-$*$-algebras Mathlib. Every statement
+typechecks against the rest of Graphplay.
 
 The metaphor we use throughout is the *dowsing rod*. A dowsing-rod file
 picks out a thesis-sized open problem, formulates it as a Lean `theorem` (or
@@ -83,9 +78,8 @@ catalog --- enough to decide where to dig next.
 #emph[The ten files under `Graphplay/Dowsing/` each formulate a single
 thesis-sized open theorem at the boundary of the spine. Each item below
 carries a #strong[Status] line recording its current Lean state: which
-headline statements are now proven axiom-clean, which are honest-sorry
-(deep or missing-Mathlib), and which definitions have been de-stubbed from
-earlier `True`/skeleton placeholders into genuine objects.]
+headline statements are proven axiom-clean, and which carry a `sorry` (deep or
+missing-Mathlib).]
 
 #heading(level: 2, "D1. ChiralBundlePST.lean --- Chiral PST on Graph Bundles")
 
@@ -120,8 +114,8 @@ Heawood bundles.
 
 #strong[Status.] Carrier structures (`ChiralBundle`, the three concrete
 bundle families, the phase-equitable refinement) are concrete and typecheck;
-the headline intertwining `pst_iff_quotient_signed_pst` remains an honest
-sorry, reduced to the chiral characteristic-isometry lemma plus the proven
+the headline intertwining `pst_iff_quotient_signed_pst` remains an open
+`sorry`, reduced to the chiral characteristic-isometry lemma plus the proven
 spine `EquitablePartition.pst_lift`.
 
 #heading(level: 2, "D2. BundlePSTLift.lean --- Universal Bundle PST Lift")
@@ -150,7 +144,7 @@ preservation statement.
 
 #strong[Status.] The product corollaries land on the proven spine product
 bridge (`Graphplay/Product/PST.lean`, the GGPT Cartesian/lex/tensor cases);
-`pst_iff_quotient` is the honest-sorry universal statement, with the
+`pst_iff_quotient` is the open universal statement, with the
 non-regular `stratified_pst_lift` and the naturality square as the remaining
 deep steps.
 
@@ -181,10 +175,9 @@ conjectural Anantharaman--Sabri-style chiral connection in
 Benjamini--Schramm limits.
 
 #strong[Status.] The chirality predicate, measurable signings, and the
-chiral-quotient phase formula are de-stubbed into genuine measurable
-constructions; the analytic headlines (`chiralGraphonMixing_iff_quotientChiralMixing`
-and the two limit families) remain honest sorries, the most analysis-heavy
-of the dowsing-rod files, awaiting the Tower-4 measurable spectral-timing
+chiral-quotient phase formula are genuine measurable constructions; the analytic
+headlines (`chiralGraphonMixing_iff_quotientChiralMixing` and the two limit
+families) remain open, awaiting the Tower-4 measurable spectral-timing
 infrastructure.
 
 #heading(level: 2, "D4. CoherentAlgebra.lean --- Tower 3 Commutative Equivalence")
@@ -210,15 +203,12 @@ algebra of an association scheme as the maximally symmetric case of a
 commutative coherent algebra. The file ends with a quantum-chromatic-number
 bridge `quantumChromatic_le_chromatic` that is the entry point to D5.
 
-#strong[Status --- largely proven.] This is one of the most complete
-dowsing-rod files. The Schur-product algebraic structure (commutativity,
-associativity, $J_n$-unitality, bilinearity, Hermitian compatibility) is
-de-stubbed and proven directly; the headline dictionary
-`equitablePartition_iff_coherentSubalgebraContaining` and the WL refinement
-chain (`WLAlgebra_mono`, monotonicity / stabilization) are proven. A single
-deep step remains an honest sorry (the maximal-symmetry Bose--Mesner
-identification). The earlier $*$-algebra-closure placeholders are now genuine
-`IsCoherent` obligations.
+#strong[Status --- largely proven.] One of the most complete dowsing-rod files.
+The Schur-product algebraic structure (commutativity, associativity,
+$J_n$-unitality, bilinearity, Hermitian compatibility), the headline dictionary
+`equitablePartition_iff_coherentSubalgebraContaining`, and the WL refinement
+chain (`WLAlgebra_mono`, monotonicity / stabilization) are proven. A single deep
+step remains an open `sorry` (the maximal-symmetry Bose--Mesner identification).
 
 #heading(level: 2, "D5. NonCommutativeCoherent.lean --- Tower 3 Non-Commutative Quantum Equitable Partitions")
 
@@ -245,14 +235,13 @@ powers, quantum Cayley graphs for non-abelian groups. The file closes with
 three open directions, including the GNW chain
 $chi_f lt.eq theta lt.eq chi_q lt.eq chi$ and quantum graphon limits.
 
-#strong[Status --- de-stubbed, headline lift proven.] `QuantumHom` was
-hollow in the earlier draft; it now carries genuine `map_mul` and `map_trace`
-fields, and `QuantumHom.lifts_to_quotient` is proven from them (the
+#strong[Status --- headline lift proven.] `QuantumHom` carries `map_mul` and
+`map_trace` fields, and `QuantumHom.lifts_to_quotient` is proven from them (the
 quantum-graph-homomorphism lift). The non-commutative coherent algebra
-`ncCoherentAlgebra` is a genuine `sInf` of coherent algebras, proven closed
-(an `IsCoherentAlgebra`), and `WLFix` is genuinely coherent rather than a
-`True` placeholder. The remaining honest sorries are the quantum
-`pst_lift` spectral step and the generic-non-commutativity Cayley statement.
+`ncCoherentAlgebra` is an `sInf` of coherent algebras, proven closed
+(an `IsCoherentAlgebra`), and `WLFix` is coherent. The remaining open `sorry`s
+are the quantum `pst_lift` spectral step and the generic-non-commutativity
+Cayley statement.
 
 #heading(level: 2, "D6. FractionalRevivalNC.lean --- Fractional Revival on Coherent Algebras and Graphons")
 
@@ -283,7 +272,7 @@ $pi/(3 sqrt(3))$ uniform-mixing time.
 #strong[Status.] The FR predicates and the three carrier settings (Tower 2/3/4)
 are concrete; the lifting theorems (`EquitablePartition.fr_lift`,
 `ncfr_commutative_reduction`, `Graphon.fr_limit`) and the chiral $K_n^sigma$
-FR statement remain honest sorries at the spectral-characterization step.
+FR statement remain open at the spectral-characterization step.
 
 #heading(level: 2, "D7. HypergraphPST.lean --- Three CTQW Models on Hypergraphs and the Doubly-Equitable Conjecture")
 
@@ -314,7 +303,7 @@ equitable partition close the file with `hypergraphon_pst_lift`.
 #strong[Status.] The three CTQW Hamiltonian constructions and the
 `RelEquitablePartition` quotient machinery are concrete and partly proven
 (several mixing/lift reductions discharge onto the spine); the cross-model
-coincidence conjecture and the design-family conjectures remain honest sorries.
+coincidence conjecture and the design-family conjectures remain open.
 
 #heading(level: 2, "D8. NoiseEquitable.lean --- Commutant Criterion and Caruso Noise-Assisted Speedup")
 
@@ -326,12 +315,13 @@ partition algebra* --- and characterize the *universal* case (preserves
 every equitable partition of every host) via
 `isUniversallyEquitable_iff_central`: the noise generators must lie in the
 center $ZZ(M_n(CC)) = CC dot 1$. Equivalently the only universally
-equitable noise is depolarizing. Q2 (Caruso noise-assisted speedup): we
+equitable noise is depolarizing. Q2 (noise-assisted speedup): we
 define a *breaking score* for a noise model as the $L^2$ distance of its
-commutant from the projector algebra of $P$, and state the *Caruso
-conjecture* `caruso_leading_order_speedup`: optimal noise-assisted speedup
-occurs at a non-trivial breaking score, strictly between fully symmetric and
-fully disruptive noise.
+commutant from the projector algebra of $P$, and state, for a scalar-dephasing
+toy model, that optimal speedup occurs at a non-trivial breaking score
+(`caruso_leading_order_speedup`) --- a finite scalar model in the spirit of the
+Caruso et al. noise-assisted-transport phenomenon, not the open-system CDHHP
+result itself.
 
 Three concrete models are analyzed for their breaking scores: depolarizing
 (universally equitable, score zero), site dephasing (equitable iff cells
@@ -343,11 +333,11 @@ open-system analogues of the Bachman--Tamon closed PST quotient theorem,
 plus `ghost_symmetry_open_analogue`, an open-system version of the
 Bick--Sclosa ghost-of-symmetry phenomenon (arXiv:2110.13686).
 
-#strong[Status.] The commutant criterion and the three concrete noise-model
-breaking scores are concrete; the central-noise characterization
-`isUniversallyEquitable_iff_central` and the dephasing/orbit theorem are
-the proven anchors, while the Caruso speedup conjecture and the open-system
-Bachman--Tamon analogues remain honest sorries (deep / open-system spectral).
+#strong[Status.] The commutant criterion, the three concrete noise-model
+breaking scores, the central-noise characterization
+`isUniversallyEquitable_iff_central`, the dephasing/orbit theorem, and the
+scalar-dephasing `caruso_leading_order_speedup` are proven. The open-system
+Bachman--Tamon analogues remain sorries pending an open-system spectral theory.
 
 #heading(level: 2, "D9. FilteredColimitPST.lean --- Generalized Xie--Tamon: PST and Search Over Filtered Colimits")
 
@@ -380,13 +370,12 @@ the present setup.
 
 #strong[Status --- master theorem proven.] The headline
 `ConsistentPartitionSequence.pst_inherited` is proven, and the Xie--Tamon
-$K_n + "path"$ family is a genuine proven instance of it. The cofiltered dual
-`InversePartitionSequence` was formerly a hollow $P -> P$ identity; it is now
-a genuine inverse-limit structure with a real projective-stage quotient
-(`InversePartitionSequence.quotient`), though its lift theorem
-`pst_lifted` and the quantitative-rate refinement are honestly restated as
-sorries awaiting the convergence-rate spine lemma. The three failure-mode
-conjectures remain honest sorries by design.
+$K_n + "path"$ family is a proven instance of it. The cofiltered dual
+`InversePartitionSequence` is an inverse-limit structure with a projective-stage
+quotient (`InversePartitionSequence.quotient`); its lift theorem `pst_lifted`
+and the quantitative-rate refinement are open `sorry`s awaiting the
+convergence-rate spine lemma. The three failure-mode conjectures are open by
+design.
 
 #heading(level: 2, "D10. Conjecture93.lean --- The Flagship Falsifiable Conjecture")
 
@@ -399,9 +388,9 @@ partition-projector algebra. This is *the first conjecture in the program
 that ties together Tower 2 (chiral), Tower 3 (Bose--Mesner / association
 schemes), and Tower 4 (graphons) in one falsifiable iff*.
 
-#strong[Status --- six genuine families, two halves honestly open.] The six
-test families are now #emph[genuine, distinct graph objects] (no `sorry` in
-any family `def`), each with an honestly-proven equitable partition: the
+#strong[Status --- six genuine families, two halves open.] The six
+test families are #emph[distinct graph objects] (no `sorry` in
+any family `def`), each with a proven equitable partition: the
 chirally-signed complete graph $K_n^sigma$, the genuine Hamming graph
 $H(n, q)$ on $"Fin" n -> ZZ_q$ with single-coordinate-flip adjacency, the
 genuine Xie--Tamon $K_n + "path"$, the four-part complete multipartite
@@ -409,7 +398,7 @@ $K_(n, n, n, n)$, the Heawood envelope, and the #emph[real transposition Cayley
 graph] $"Cay"(S_n, "transpositions")$ --- the last carrying a #emph[proven]
 algebra-strictly-larger lemma (`cayleyS_n_algebra_strictly_larger`). The two
 halves of the conjecture itself, `conjecture93_weak_forward` and
-`conjecture93_weak_reverse`, remain #emph[genuinely open] (honest sorry); see
+`conjecture93_weak_reverse`, remain #emph[genuinely open] (open `sorry`); see
 §4.
 
 #v(0.5em)
@@ -419,8 +408,7 @@ halves of the conjecture itself, `conjecture93_weak_forward` and
 #emph[Each file under `Graphplay/Integrations/` is a research-program seed
 pointing to a neighboring field where the spine applies and where the
 equitable-partition idiom is, we contend, currently underexploited. As with
-the dowsing-rod files, each item carries a #strong[Status] line; several
-integration headlines have advanced from skeleton to de-stubbed or proven.]
+the dowsing-rod files, each item carries a #strong[Status] line.]
 
 #heading(level: 2, "I1. TQFT.lean --- Anyons, Modular Tensor Categories, and Surface Envelopes")
 
@@ -453,7 +441,7 @@ Reshetikhin--Turaev TQFT predicts a finite anyon count.
 #strong[Status.] `ModularData`, the Verlinde formula, and the
 sector-decomposition / equitable-partition correspondence are concrete; the
 headline `anyonic_equitable_partition` and the three downstream results
-remain honest sorries, and the Heawood--anyon match is open by design.
+remain open, and the Heawood--anyon match is open by design.
 
 #heading(level: 2, "I2. RMT.lean --- Wigner Plus Equitable: Thermalizing-Yet-PST Hosts")
 
@@ -487,11 +475,10 @@ the program.
 
 #strong[Status.] The spectral-decomposition scaffolding
 (`AlmostSurelyEquitable`, `wignerGraphon_spectrum_semicircle`,
-`graphonOp_is_free_semicircular`) is concrete; the headline
-`thermalizing_yet_PST_host` is now #emph[honestly restated] --- it names the
-genuine thermalizing host $W_"bulk"$ with a real nonzero Wigner bulk and a
-deterministically PST-active cell-uniform sector, with the proof reduced to a
-single honest sorry at the GUE-spectrum step, rather than asserted vacuously.
+`graphonOp_is_free_semicircular`) is concrete. The headline
+`thermalizing_yet_PST_host` names the thermalizing host $W_"bulk"$ with a
+nonzero Wigner bulk and a deterministically PST-active cell-uniform sector; the
+proof reduces to a single open `sorry` at the GUE-spectrum step.
 
 #heading(level: 2, "I3. TensorNetworks.lean --- MERA Exact iff Iterated Equitable; Holographic Codes")
 
@@ -521,12 +508,11 @@ include `open_conjecture_gapped_equitable_tower` (gapped local Hamiltonians
 have MERA-exact equitable towers) and `open_conjecture_graphon_mera_limit`
 (the graphon limit of a MERA tower is the graphon-MERA of `Graphon/Limit.lean`).
 
-#strong[Status --- headline genuine.] `IsExactMERA` was formerly a vacuous
-placeholder; it now carries an #emph[independent] per-level equitability
-definition, so `mera_exact_iff_equitable` (and its holographic specialization
-`holographic_code_equitable`, plus the constructive `tensor_network_compiler`
-reverse direction) carry genuine content rather than being true by definition.
-The graphon-limit and gapped-tower conjectures remain honest sorries.
+#strong[Status.] `IsExactMERA` carries an independent per-level equitability
+definition, so `mera_exact_iff_equitable` (with its holographic specialization
+`holographic_code_equitable` and the constructive `tensor_network_compiler`
+reverse direction) is non-trivial. The graphon-limit and gapped-tower
+conjectures remain open.
 
 #heading(level: 2, "I4. OptimalTransport.lean --- Sinkhorn Respects Equitable; OT as a Design Primitive")
 
@@ -554,11 +540,12 @@ prescribed transport plan, a host CTQW whose uniform-mixing dynamics
 realizes the plan up to the $log n slash n$ entropic-mixing factor of the
 conjecture.
 
-#strong[Status.] The Sinkhorn/quotient carrier structure is concrete; the
-preservation and rate-bound headlines (`sinkhorn_preserves_equitable`,
-`sinkhorn_rate_quotient_bound`, `wassersteinDistance_eq_quotient`) and the
-constructive `quantum_sampler_existence` remain honest sorries at the
-entropic-mixing analysis.
+#strong[Status.] The Sinkhorn/quotient carrier structure is concrete. The
+duality and contraction steps are carried as cited typeclass assumptions ---
+Villani strong Kantorovich duality for `wassersteinDistance_eq_quotient`, and
+Birkhoff--Hilbert contraction for the Sinkhorn rate bound --- on which
+`sinkhorn_preserves_equitable`, `sinkhorn_rate_quotient_bound`, and the
+constructive `quantum_sampler_existence` are conditioned.
 
 #heading(level: 2, "I5. MeanFieldGames.lean --- Gao--Caines LQR as the Classical-Control Analog")
 
@@ -585,14 +572,12 @@ brachistochrone on the quotient --- the entry point to a verified
 non-stationary equitable LQR, stochastic graphon equitable evolution, and
 chiral mean-field-game speedup (`chiral_MFG_speedup_open`).
 
-#strong[Status --- de-poisoned.] The `MildSolution` predicate was formerly a
-vacuous `True` (under which #emph[every] trajectory was a solution, poisoning
-the existence/optimality theorems); it now carries the genuine ODE-solution
+#strong[Status.] The `MildSolution` predicate carries genuine ODE-solution
 content (initial condition + `HasDerivAt` dynamics law). The cell-uniform
 invariance theorems (`schrodinger_cellUniform_invariant`,
-`lindblad_cellUniform_invariant`) quantify over #emph[actual] solutions, and the
-Schrödinger law is the real `HasDerivAt` evolution. The remaining honest
-sorries are the LQR-reduction and brachistochrone optimality steps.
+`lindblad_cellUniform_invariant`) quantify over actual solutions, with the
+Schrödinger law the `HasDerivAt` evolution. The remaining open `sorry`s are the
+LQR-reduction and brachistochrone optimality steps.
 
 #heading(level: 2, "I6. Hodge.lean --- Equitable Hodge Decomposition and Harmonic Qubit Encoding")
 
@@ -627,7 +612,7 @@ analysis of D8.
 via the proven series) is a real theorem rather than a definitional identity.
 The Hodge-Laplacian self-adjointness and coboundary-transpose lemmas are also
 proven; the `hodgeQuotient` descent and the TDA / encoding downstream results
-remain honest sorries.
+remain open.
 
 #heading(level: 2, "I7. LatticeGauge.lean --- Chiral = U(1) Lattice Gauge; Cross-Constant = Flat; Hofstadter Quantization")
 
@@ -697,7 +682,7 @@ GI bound (`Babai_GI_quasipolynomial`) gives the complexity-theoretic hook
 design-budget bound are concrete; the proven anchors are the structural
 WL-stability lemmas, while the graphon-WL cut-metric convergence, the
 Cai--Fürer--Immerman strict hierarchy, and the phantom-symmetry existence
-statement remain honest sorries (deep combinatorics).
+statement remain open (deep combinatorics).
 
 #v(0.5em)
 
@@ -730,14 +715,13 @@ in $x_0$, which is the operator-algebraic version of the noise-perturbation
 guarantee. `adiabatic_is_section` recasts the adiabatic theorem as a section
 of the sheaf graph.
 
-#strong[Status --- honest scaffold.] Tower 6 is an honest scaffold of precise
+#strong[Status --- scaffold.] Tower 6 is a scaffold of precise
 statements. The one fully-`sorry`-free anchor is the #emph[skyscraper-sheaf]
 single-stalk constant-sheaf construction (a genuine `TopCat.Sheaf UStarAlgCat X`);
 the substantive `sheaf_spectral_lift`, the global-section colimit preservation,
-and the cell-uniform-stalk existence remain honest sorries, blocked on the
-missing Mathlib bundling of $*$-algebra-valued sheaves (see §5). Earlier
-`True`-valued "hollow green" recovery statements have been narrowed to carry
-their genuine witnesses where available.
+and the cell-uniform-stalk existence remain open, blocked on the missing Mathlib
+bundling of $*$-algebra-valued sheaves (see §5). The recovery statements carry
+their witnesses where available.
 
 #heading(level: 2, "Tower 7 --- $infinity$-Categorical and Bicategorical Truncation")
 
@@ -764,19 +748,16 @@ connecting to I1 above). The flagship corollary is
 `topological_invariance_corollary`: under the topological-invariance
 conjecture `TopologicalInvarianceConjecture` (sorried), the
 $infinity$-categorical PST predicate depends *only on the homotopy type of
-the base*, not on the underlying graph. The file is honest about its limit:
-*almost everything is sorried, because the supporting Mathlib library does
-not yet exist*.
+the base*, not on the underlying graph. Almost everything in the file is
+sorried, awaiting the supporting Mathlib library.
 
-#strong[Status --- honest scaffold, unchanged frontier.] Tower 7 remains the
+#strong[Status --- scaffold.] Tower 7 remains the
 genuinely open higher tower. The `InfinityCategory` / `StableInfinityCategory`
 carriers are opaque placeholders and `infinity_pst_lift`, `pst_as_Ext0`,
 `coherent_quasi_infinite_limit`, and the topological-invariance corollary are
-honest sorries by design. The bicategorical truncation `bicategorical_lift`
-is the highest layer that typechecks today; the previous draft's stray
-`True`-valued conveniences have been converted to honest sorries so the file
-no longer reads as "trivially proven" where it is in fact awaiting an
-$infinity$-categorical Mathlib (see §5).
+open `sorry`s by design. The bicategorical truncation `bicategorical_lift`
+is the highest layer that typechecks today, awaiting an $infinity$-categorical
+Mathlib (see §5).
 
 #v(0.5em)
 
@@ -843,12 +824,10 @@ the Bose--Mesner algebra is generated by partition projectors.
 #heading(level: 2, "Worked Examples (Six Test Families)")
 
 `Graphplay/Dowsing/Conjecture93.lean` records six families covering the
-expected positive and negative cells of the truth table. #emph[Each family is now a
-genuine, distinct graph object] --- no family `def` contains a `sorry`, and each
-carries an honestly-proven equitable partition (regularity for the single-cell
-families, the genuine part partition for $K_(n,n,n,n)$, the conjugacy structure
-for Cayley). This is a correction over an earlier draft in which several families
-were complete-graph stand-ins. We summarize each:
+positive and negative cells of the truth table. Each family is a distinct graph
+object --- no family `def` contains a `sorry` --- with a proven equitable
+partition (regularity for the single-cell families, the part partition for
+$K_(n,n,n,n)$, the conjugacy structure for Cayley). We summarize each:
 
 #emph[4.1 $K_n^sigma$ with constant phase (both halves hold).] Trivial
 single-cell partition; Bose--Mesner algebra $= CC dot I + CC dot J$ equals
@@ -877,9 +856,9 @@ arbitrary quotient phases descend.
 #emph[4.5 Heawood envelope $g -> infinity$ (both halves hold trivially).]
 $K_(H(g))$ with single-cell partition reduces to $K_n$.
 
-#emph[4.6 Cayley$(S_n)$ by transpositions (both halves false).] Genuine
-transposition Cayley graph (the identity is #emph[not] adjacent to a 3-cycle;
-the adjacency is honestly non-constant), proven regular by left translation.
+#emph[4.6 Cayley$(S_n)$ by transpositions (both halves false).] Transposition
+Cayley graph (the identity is #emph[not] adjacent to a 3-cycle; the adjacency is
+non-constant), proven regular by left translation.
 Conjugacy partition. The Cayley Bose--Mesner contains the full group algebra
 $CC[S_n]$ of dimension $n!$, while the projector algebra has dimension
 $p(n)^2$. For $n gt.eq 5$ these differ --- and #emph[this strict-larger gap is
@@ -950,7 +929,7 @@ the original D/I/Tower list. The first two are #strong[applications] (under
 (under `Graphplay/Integrations/`), and the fourth is a #strong[new dowsing-rod
 file] (under `Graphplay/Dowsing/`) opening the relativistic frontier with its
 combinatorial band-touching half proven and its analytic continuum half an
-honest sorry.]
+open `sorry`.]
 
 #heading(level: 2, "5.1 SparseSearch.lean --- Quadratic Search on a Buildable Host")
 
@@ -969,28 +948,28 @@ the equitable partition `hammingPartition_equitable`, its $d+1$ cell count, the
 $d$-regularity / sparsity (`hypercube_degree`, `hypercube_sparse`), and the
 collapsed-chain quotient reduction `search_quotient_reduction` are all proven.
 The $O(sqrt(N))$ running-time clause leans on the CNO spectral-ratio criterion
-and is an honest sorry (the single deep spectral-timing step). The file further
+and is an open `sorry` (the single deep spectral-timing step). The file further
 records the $d$-dimensional periodic lattice $ZZ_L^d$ as the buildable-but-usually-non-advantageous
 host, with the #emph[dimensional threshold] $d > 4$ for optimal $Theta(sqrt(N))$
 search (the $d = 4$ marginal case loses a $sqrt(log N)$ factor, tied to the
 convergence threshold of the lattice Green's function $sum_k 1 slash (1 - cos k)$);
-the strongly-regular case is recorded as an honest sorry
+the strongly-regular case is recorded as an open `sorry`
 (`strongly_regular_sparse_search`).
 
-#heading(level: 2, "5.2 CompileML.lean --- A Falsifiable Chip Experiment")
+#heading(level: 2, "5.2 CompileML.lean --- A Falsifiable Hardware Experiment")
 
-Where `Graphplay/Applications/IBMHeavyHex.lean` runs the #emph[disassembly]
-direction (chip $arrow$ equitable quotient $arrow$ CTQW primitive, with the
-axiom-clean heavy-hex $2 times 2$ quotient and `heavyHex_pst_lift`),
+Where `Graphplay/Applications/IBMHeavyHex.lean` runs the read-off direction
+(host $arrow$ equitable quotient $arrow$ CTQW primitive, with the axiom-clean
+data/flag $2 times 2$ quotient and `heavyHex_pst_lift`),
 `Graphplay/Applications/CompileML.lean` runs the #emph[inverse], compilation
 direction: an ML primitive (a two-class structured-attention / associative-recall
 task, where recall $=$ perfect transfer between a query-uniform and a key-uniform
 state) compiles to native IBM-Heron coupling weights plus a static CTQW schedule
 via `compileToHeavyHex : MLTarget -> "HardwareSpec" times "Schedule"` (and a
-Majorana-tetron variant `compileToMajorana`). The compilation-correctness theorems
+parity-sector variant `compileToMajorana`). The compilation-correctness theorems
 (`compileToHeavyHex_wellFormed`, `compiled_cellUniform_realizes_target`,
-`compiled_schedule_realizes_target`) are genuinely proven, reusing the axiom-clean
-heavy-hex PST lift. The payoff is `compiled_experiment_prediction`: a
+`compiled_schedule_realizes_target`) are proven, reusing the axiom-clean
+data/flag PST lift. The payoff is `compiled_experiment_prediction`: a
 #emph[falsifiable lab prediction] --- prepare the query-uniform state, run the
 emitted schedule for $t = pi slash (2 q)$ ($q = 2 sqrt(N - 1)$), and the key
 population follows the predicted amplitude-squared curve, with ideal recall at the
@@ -1028,23 +1007,19 @@ computed exactly (`offDiagonalBloch_eigenvalues`) with the band-touching
 criterion $f(k_0) = 0$ proven (`offDiagonalBloch_band_touch`,
 `offDiagonalGap_eq_zero_iff`).
 
-#strong[Status --- de-stubbed, band-touching proven, continuum limit honest-sorry.]
-Contrary to an earlier draft that recorded this as "not yet present in Lean,"
-the file now exists and the #emph[combinatorial / spectral half is proven
-axiom-clean]: `honeycombFormFactor_dirac_point` (the honeycomb form factor
-vanishes at the Dirac point), the headline
-`bipartite_equitable_dirac_cone` (a bipartite-equitable host's off-diagonal
-quotient #emph[has] a band-touching Dirac point), and its worked example
-`heavyHex_hosts_dirac_cone` (the IBM heavy-hex quotient hosts a Dirac cone)
-all discharge their band-touching content from the proven off-diagonal layer.
-What remains an honest sorry --- flagged `-- BLOCKED:` inline --- is the
-genuinely analytic #emph[continuum half]: the linear-slope / small-$k$ Taylor
-expansion certifying #emph[linear] (not merely touching) dispersion, and the
-coined-walk $arrow$ Dirac-operator scaling limit `coinedWalk_continuum_is_dirac`,
-for which Mathlib has no scaling-limit calculus. The Schrödinger-side
-coined-walk infrastructure is `Graphplay/StdLib/CoinedWalk.lean`; the
-relativistic enrichment now sits beside it. The remaining analytic step joins
-the open-boundary list of §6.
+#strong[Status --- band-touching proven, continuum limit open.] The
+combinatorial / spectral half is proven axiom-clean:
+`honeycombFormFactor_dirac_point` (the honeycomb form factor vanishes at the
+Dirac point), the headline `bipartite_equitable_dirac_cone` (a bipartite-equitable
+host's off-diagonal quotient has a band-touching Dirac point), and its worked
+example `heavyHex_hosts_dirac_cone` discharge their band-touching content from
+the off-diagonal layer. The analytic continuum half is open: the linear-slope /
+small-$k$ Taylor expansion certifying linear (not merely touching) dispersion,
+and the coined-walk $arrow$ Dirac-operator scaling limit
+`coinedWalk_continuum_is_dirac`, for which Mathlib has no scaling-limit calculus.
+The Schrödinger-side coined-walk infrastructure is
+`Graphplay/StdLib/CoinedWalk.lean`. The remaining analytic step joins the
+open-boundary list of §6.
 
 #v(0.5em)
 
@@ -1150,13 +1125,13 @@ locations.
 - `Graphplay/Applications/SparseSearch.lean` --- §5.1, hypercube $Q_d$
   quadratic search and the $d > 4$ lattice threshold.
 - `Graphplay/Applications/CompileML.lean` --- §5.2, the falsifiable
-  compile-to-chip experiment (with `Graphplay/Applications/IBMHeavyHex.lean`
-  for the disassembly direction).
+  compile-to-hardware experiment (with `Graphplay/Applications/IBMHeavyHex.lean`
+  for the read-off direction).
 - `Graphplay/Integrations/TransformerDSL.lean` --- §5.3, the verified
   (zero-`sorry`) functor-stack ML$arrow$quantum compiler.
 - `Graphplay/Dowsing/DiracLimit.lean` --- §5.4, the Dirac / relativistic
   enrichment (proven band-touching `bipartite_equitable_dirac_cone` /
-  `heavyHex_hosts_dirac_cone`; honest-sorry continuum scaling limit
+  `heavyHex_hosts_dirac_cone`; open continuum scaling limit
   `coinedWalk_continuum_is_dirac`), beside the Schrödinger-side
   `Graphplay/StdLib/CoinedWalk.lean`.
 

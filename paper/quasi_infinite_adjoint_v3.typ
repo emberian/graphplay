@@ -42,18 +42,18 @@ $sqrt((n-1) slash n)$ on the complete graph in time $O(sqrt(n))$ against a
 matching classical lower bound --- lifted to structured machine-learning
 search, together with the verified sparsity-and-equitable-reduction half of the
 *sparse, buildable* hypercube search (the $O(sqrt(N))$ optimal timing is split
-off as an honest open clause) and an honest statement of the $d > 4$ lattice
-threshold.
+off as an open clause) and a stated $d > 4$ lattice threshold.
 
-We then disassemble two real devices in Lean: IBM's heavy-hex lattice (a
-$2 times 2$ data/flag quotient with eigenvalues $plus.minus 2 sqrt(N-1)$ and
-three engineering payoffs) and Microsoft's Majorana 1 (a parity-sector
-quantum equitable partition). Finally we propose --- as the paper's last and
-most speculative move --- a falsifiable on-device experiment that the
-compiler emits for IBM Heron. We are scrupulous throughout about the boundary
-between what is proven and what is conjectured; the open frontier
-(Conjecture 9.3, the relativistic enrichment, the $infinity$-categorical
-towers) is flagged as open.
+We then model two hardware-named hosts in Lean as equitable quotients. The
+first is a complete-site subdivision graph carrying IBM data/flag labels,
+whose data/flag quotient is a $2 times 2$ Hermitian matrix with eigenvalues
+$plus.minus 2 sqrt(N-1)$. The second is a parity-projector construction
+carrying Microsoft Majorana 1 labels, for which we prove the parity
+projectors are Hermitian and sum to the identity. Finally we give a
+falsifiable on-device protocol that the compiler emits for IBM Heron. Each
+theorem states its hypotheses; the open frontier (Conjecture 9.3, the
+relativistic enrichment, the $infinity$-categorical towers) is stated as
+open.
 
 #heading("1. Introduction")
 
@@ -83,19 +83,18 @@ with the same semantics", "this search reaches the marked state in $O(sqrt(n))$
 with amplitude exactly $sqrt((n-1) slash n)$" --- are the kind of claim that is
 easy to assert and hard to get exactly right. By making each one the statement
 of a Lean theorem that `lake build` checks, we turn the assertions into
-artifacts. The honest cost is that some deep *rate* clauses (the spectral-gap
-timing of search on sparse hosts, the $d > 4$ lattice convergence) remain
-honest `sorry`s; we mark them as such and never lean on them.
+artifacts. Some deep *rate* clauses (the spectral-gap timing of search on
+sparse hosts, the $d > 4$ lattice convergence) remain open `sorry`s, marked as
+such and not relied on downstream.
 
 #emph[Structure.]
 Section 2 states the verified spine and its lift theorems.
 Section 3 gives the three novel verified results: the exact attention
 reduction, the verified ML-to-host compiler, and the exact finite-$n$ search
 advantage plus its sparse-host versions.
-Section 4 disassembles two real chips.
-Section 5 proposes the on-device experiment (deliberately last; it is the one
-part that is a proposal, not a proof).
-Section 6 is the honest related-work and novelty accounting: we are a
+Section 4 models two hardware-named hosts as equitable quotients.
+Section 5 gives the on-device experiment (a proposal, not a proof).
+Section 6 is the related-work and novelty accounting: we are a
 *certificate, not a first contact*.
 Section 7 is the open frontier.
 
@@ -167,15 +166,12 @@ that lets a *symmetry* in a model (weight-tying, permutation-equivariance)
 become a *quotient* we can reduce against --- the hook Section 3 uses for
 attention.
 
-#emph[2.5 The verified-results ledger.] The honesty firewall of this paper is a
-per-theorem axiom audit: a headline theorem is *axiom-clean* exactly when
-`#print axioms` reports only the three standard Lean/Mathlib foundational axioms
-(`propext`, `Classical.choice`, `Quot.sound`) --- no `sorryAx`. We audited 42
-headline entries (one is a `def`, not a proposition). *38 are axiom-clean*; the
-*4* that are not each carry a *single, named, honestly documented* open clause,
-with every other conjunct of the statement proven. The table below is that ledger
-at a glance; "open clause" names the precise gap and the missing infrastructure.
-Nothing the paper writes "we prove" depends on a `sorry`.
+#emph[2.5 The verified-results ledger.] A headline theorem is *axiom-clean*
+when `#print axioms` reports only the standard Lean/Mathlib foundational axioms
+(`propext`, `Classical.choice`, `Quot.sound`) and no `sorryAx`. Of 42 headline
+entries, 38 are axiom-clean; the remaining 4 each carry a single named open
+clause with every other conjunct proven. The "open clause" column names the
+precise gap and the missing infrastructure.
 
 #set text(size: 9.5pt)
 #table(
@@ -204,14 +200,14 @@ Nothing the paper writes "we prove" depends on a `sorry`.
   [`training_step_linear_under_equitable`], [#proven], [—],
   [`segment_attention_exact_reduction`], [#proven], [—],
   [`circulant_banded_cost`], [#proven], [—],
-  [`no_cheap_exact_factorization` (exact rank floor)], [#proven], [—],
+  [`no_cheap_exact_factorization` (generic matrix-rank lower bound)], [#proven], [—],
   [`discrete_irreducibility_floor`], [#proven], [—],
   [`chiralAttention_descends`, `PSTRoutingAttention.transfers`], [#proven], [—],
   [`compile_denote_commutes`, `compiler_guarantee`], [#proven], [—],
   [`compiled_cellUniform_realizes_target`, `compile_recall_to_heron`], [#proven], [—],
   [`corrected_equitable_attention`], [#opentag], [whole statement: ε-approx residual bound needs Eckart--Young rank-$k$ SVD-truncation optimality (absent from Mathlib). The matching *exact* lower bound is the proven `no_cheap_exact_factorization`.],
 
-  table.cell(colspan: 3, fill: luma(238))[*Applications* (sparse hosts + real chips)],
+  table.cell(colspan: 3, fill: luma(238))[*Applications* (sparse hosts + hardware-named quotients)],
   [`hypercube_sparse_search_reduction` (sparsity + reduction)], [#proven], [—],
   [`buildable_lattice_structural_contrast`], [#proven], [—],
   [`latticeGraph_isRegular`], [#proven], [—],
@@ -224,7 +220,7 @@ Nothing the paper writes "we prove" depends on a `sorry`.
   [`lattice_search_dimension_threshold`], [#opentag], [whole $<-->$: the $d > 4$ threshold needs the Childs--Goldstone spectral integral (IR-convergence).],
   [`buildable_lattice_dynamical_contrast`], [#opentag], [both dynamical clauses route through the two timing `sorry`s above.],
 
-  table.cell(colspan: 3, fill: luma(238))[*Negative results* (honest no-go's)],
+  table.cell(colspan: 3, fill: luma(238))[*Negative results* (no-go's)],
   [`dataFlag_chiral_no_speedup` (no chiral speedup)], [#proven], [—],
   [`dominatingVertex_no_PST`, `cone_apex_no_PST`], [#proven], [—],
 
@@ -235,11 +231,9 @@ Nothing the paper writes "we prove" depends on a `sorry`.
 )
 #set text(size: 11pt)
 
-The four non-clean entries are not quick wins: each routes through genuinely
-missing analysis/optimization infrastructure (Eckart--Young SVD truncation;
-CNO / Childs--Goldstone spectral-timing; small-angle Taylor remainder). We keep
-them as honestly-labelled frontier clauses and *never claim the sorried
-conjunct*.
+Each non-clean entry routes through missing analysis infrastructure
+(Eckart--Young SVD truncation; CNO / Childs--Goldstone spectral-timing;
+small-angle Taylor remainder), and we condition only on the proven conjuncts.
 
 #heading("3. Novel Verified Results")
 
@@ -270,22 +264,17 @@ The reduction is verified through *training*, not just inference:
   (`training_step_linear_under_equitable`, #proven).
 
 Lean: `Graphplay/Integrations/AttentionComplexity.lean`. The structural
-identity is exact and sorry-free; we make *no* claim about a deeper
-"quantum-rate" composition here (the speculative `attention_quantum_composition`
-clause carries an honest `sorry` and is not used).
+identity is exact and sorry-free; the reduction is conditioned only on it.
 
 #emph[Scope of the precondition.]
-The exact reduction has a precondition, and honesty requires stating where it
-fires and where it does not. The reduction requires the attention to be
-*equitable* in the relevant axis. It therefore does *not* apply to vanilla,
-fully-dense, *learned* attention: a content-dependent score matrix has, in
-general, no nontrivial automorphism, so its finest equitable partition is the
-discrete one ($r = n$) and the reduction degenerates to the identity. We say
-this plainly --- it is the honest boundary of the theorem.
+The reduction fires when the attention is *equitable* in the relevant axis.
+A content-dependent dense *learned* score matrix has, generically, no
+nontrivial automorphism, so its finest equitable partition is the discrete one
+($r = n$) and the reduction is the identity. The theorem bites where the score
+pattern is structured.
 
-But efficiency pressure has already pushed *production* attention toward
-structured, hence equitable, patterns, and it is worth separating these by
-*which* reduction each enables, because they are not the same reduction.
+Efficiency pressure has pushed *production* attention toward structured, hence
+equitable, patterns. These split by *which* reduction each enables.
 
 #table(
   columns: (auto, auto, auto, auto),
@@ -316,38 +305,27 @@ structured, hence equitable, patterns, and it is worth separating these by
   [in progress],
 )
 
-The token-axis case is the literal subject of this section: the block apply is
-exact when $A[i][j]$ depends only on the *cells* of $i$ and $j$. The banded /
-Toeplitz case is a *real* win --- it is what sliding-window models exploit ---
-but it is a *different* reduction, riding *translation* (circulant-equitability
-under the cyclic group) rather than the cell structure, and we are careful not
-to conflate the two; conflating $O(n w)$ with $O(n r)$ would be exactly the kind
-of sleight-of-hand we are writing this section to avoid. The head-axis case is
-the current, proven `multiHead_restrict_eq_symmQuotient` of §3.2. And the
-positional schemes matter because relative position (RoPE, ALiBi) *restores* the
-translation- and rotation-equivariance that learned *absolute* position
-embeddings destroy: the architectural trend --- RoPE, sliding-window attention,
-grouped-query attention --- is, for efficiency reasons of its own, moving
-production attention *toward* the equitable regime.
+The token-axis block apply is exact when $A[i][j]$ depends only on the *cells*
+of $i$ and $j$. The banded / Toeplitz case is a distinct reduction riding
+*translation* (circulant-equitability under the cyclic group), an $O(n w)$ cost
+that should not be conflated with the cell-structure $O(n r)$. The head-axis
+case is the proven `multiHead_restrict_eq_symmQuotient` of §3.2. Relative
+position (RoPE, ALiBi) restores the translation- and rotation-equivariance that
+learned *absolute* embeddings break, so the architectural trend --- RoPE,
+sliding-window attention, grouped-query attention --- moves production attention
+toward the equitable regime.
 
-The residual fully-dense-learned case is then the *$epsilon$-equitable
-frontier.* Here we do *not* claim the exact reduction. Instead we claim that the
-equitability *defect* --- the distance from the realized score pattern to the
-nearest equitable partition --- is *measurable* and the resulting error
-*bounded*. The empirical instrument for this is the catgrad equitability-defect
-probe (see `paper/catgrad_integration.md`), which computes the equitable
-partition of a model's actual attention hypergraph and reports the defect; the
-structured cases of the table above are formalized as explicit equitable
-partitions in `Graphplay/Integrations/StructuredAttention.lean`: segment-uniform
-($O(n r)$, `segment_attention_exact_reduction`, #proven axiom-clean) and
-grouped/pooled (the `pooledTokens_equitable` partition construction, a well-formed
-`def`) are in place, as is the banded translation reduction
-($O(n w)$, `circulant_banded_cost`, #proven axiom-clean); only the deep FFT
-spectral-cost is left an honest `sorry`.
-
-The takeaway is one line: the theorem bites on a real and growing slice of
-production attention, and for the rest the paper supplies a *measurement*, not a
-hand-wave.
+For the residual dense-learned case the exact reduction does not fire; instead
+the equitability *defect* --- distance from the realized score pattern to the
+nearest equitable partition --- is measurable and bounds the resulting error.
+The catgrad equitability-defect probe (see `paper/catgrad_integration.md`)
+computes the equitable partition of a model's attention hypergraph and reports
+the defect. The structured cases are formalized as explicit equitable partitions
+in `Graphplay/Integrations/StructuredAttention.lean`: segment-uniform
+($O(n r)$, `segment_attention_exact_reduction`, #proven axiom-clean), grouped/
+pooled (the `pooledTokens_equitable` construction), and the banded translation
+reduction ($O(n w)$, `circulant_banded_cost`, #proven axiom-clean); the FFT
+spectral-cost step is an open `sorry`.
 
 #emph[3.2 The functor stack is a verified compiler.]
 We define a small typed transformer DSL (`TransformerProgram`) with a
@@ -409,84 +387,75 @@ degree.
   off as a *separate* theorem, `hypercube_search_optimal_timing`, whose entire
   content (`IsOptimalCTQWSearch (Hypercube d) w`) leans on the
   Childs--Goldstone / CNO spectral-ratio analysis (arXiv:2004.12686) and is an
-  honest `sorry`. We mark it #opentag and do not use it downstream.
+  open `sorry`. We mark it #opentag and do not use it downstream.
 
-- *Lattice threshold (honest).* The $d$-dimensional lattice is $2d$-regular
+- *Lattice threshold.* The $d$-dimensional lattice is $2d$-regular
   (`latticeGraph_isRegular`, #proven). The *structural* contrast between lattice
   and hypercube --- lattice $2d$-regular on $L^d$ vertices versus hypercube
   $e$-regular on $log_2 N$ vertices --- is sorry-free
   (`buildable_lattice_structural_contrast`, #proven, axiom-clean). The
   *dynamical* contrast (`buildable_lattice_dynamical_contrast`) --- that the
-  lattice is *not* an optimal search host for $d <= 3$ while the hypercube *is*
-  optimal --- is stated but #opentag: both of its dynamical clauses route through
-  open `sorry`s (the lattice half through `lattice_search_dimension_threshold`,
-  the hypercube half through `hypercube_search_optimal_timing`). The threshold
-  itself, `lattice_search_dimension_threshold` --- that the advantage appears for
-  $d > 4$ and fails below --- is a genuine formalized $<-->$ statement whose
-  *entire* equivalence is an honest `sorry` (#opentag), pending the
-  Childs--Goldstone spectral integral (the $d > 4$ IR-convergence of the lattice
-  Green's function). This is the honest Childs--Goldstone $d = 4$ threshold,
-  *stated*, not a claimed proof of it.
+  lattice is not an optimal search host for $d <= 3$ while the hypercube is
+  optimal --- is stated #opentag: both dynamical clauses route through open
+  `sorry`s (the lattice half through `lattice_search_dimension_threshold`, the
+  hypercube half through `hypercube_search_optimal_timing`). The threshold
+  itself, `lattice_search_dimension_threshold` --- the advantage appears for
+  $d > 4$ and fails below --- is a formalized $<-->$ statement whose equivalence
+  is an open `sorry` (#opentag), pending the Childs--Goldstone spectral integral
+  (the $d > 4$ IR-convergence of the lattice Green's function).
 
-Lean: `Graphplay/Applications/SparseSearch.lean`. The honesty here is itself
-the point: the *structural* reductions are verified; the *dynamical timing* of
-search is exactly where the open mathematics lives, and we put the `sorry`
-there in plain sight.
+Lean: `Graphplay/Applications/SparseSearch.lean`. The *structural* reductions
+are verified; the *dynamical timing* of search is where the open mathematics
+lives, and the `sorry` sits there.
 
-#heading("4. Applications: Verified Spectral Disassembly of Real Chips")
+#heading("4. Modeling Hardware-Named Hosts as Equitable Quotients")
 
-The spine runs *backward* too: given a real device Hamiltonian, recover its
-equitable structure and read off the small quotient. We do this for two chips,
-in Lean.
+The spine runs in reverse: given a host Hamiltonian, read off its equitable
+quotient. We carry out two such constructions in Lean. Both use device names
+for orientation; each is a graph-theoretic model, not a fabricated chip.
 
-#emph[4.1 IBM heavy-hex.]
-The heavy-hex lattice admits a data/flag equitable partition. Its symmetric
-quotient is a $2 times 2$ Hermitian matrix whose spectrum we compute exactly:
+#emph[4.1 A complete-site subdivision with data/flag labels.]
+On the complete-site subdivision graph $K_N$ with a two-cell data/flag
+labeling, the data/flag partition is equitable, and its symmetric quotient is
+the $2 times 2$ Hermitian matrix with spectrum
 
 #block(fill: luma(245), inset: 8pt, radius: 4pt, width: 100%)[
 $ "spec"(tilde(Q)_("data/flag")) = { plus.minus 2 sqrt(N - 1) }, wide
-  N = abs("HoneyVertex") = 2 n m $
+  N = 2 n m $
 (`dataFlagQuotient_eigenvalues`, #proven, sorry-free).
 ]
 
-The idealized toroidal *template* has the toy value $plus.minus sqrt(6)$
-(the weighted $K_2$ with edge $sqrt(6)$); the concrete site-subdivided chip
-corrects this to the proven $plus.minus 2 sqrt(N-1)$. Three engineering payoffs
-follow on the quotient (`Graphplay/Applications/IBMHeavyHex.lean`):
-+ *PST* between the data cell and the flag cell, via `heavyHex_pst_lift`
-  (#proven), at the quotient PST time;
-+ *uniform mixing* on the quotient at the corresponding mixing time;
-+ *dephasing robustness*: a data/flag-symmetric dephasing channel preserves the
-  partition (`dephasing_preserves_dataFlag`, #proven), and the real
-  (non-chiral) data/flag quotient gives *no* search speedup
-  (`dataFlag_chiral_no_speedup`, #proven) --- an honest negative result.
+This is a degree-$(N{-}1)$ host, not the degree-3 honeycomb topology of the
+physical heavy-hex lattice. On the $2 times 2$ quotient
+(`Graphplay/Applications/IBMHeavyHex.lean`):
++ *PST* between the data and flag cells at the quotient PST time
+  (`heavyHex_pst_lift`, #proven);
++ a data/flag-symmetric dephasing channel preserves the partition
+  (`dephasing_preserves_dataFlag`, #proven), and the real data/flag quotient
+  gives no search speedup (`dataFlag_chiral_no_speedup`, #proven).
 
-#emph[4.2 Majorana 1.]
-The Microsoft Majorana 1 fabric is parity-conserving. We build the
-parity-sector projectors and prove they resolve the identity
-(`sectorProjector_sum`, #proven), assemble them into a *quantum* equitable
-partition (`parityQuantumEquitablePartition`, #proven), and show a
-parity-respecting noise model preserves it
-(`payoff2_parity_noise_preserves_partition`, #proven). This is the Tower-3
-(operator-algebra) face of the spine: the partition is by a $*$-subalgebra of
-parity sectors, not by vertex cells. Lean:
-`Graphplay/Applications/MajoranaOne.lean`. We flag the physical caveat
-(Majorana zero modes are, on current superconducting hardware, *simulated*
-rather than natively realized; cf. Nature Commun. 2023) and treat this disassembly
-as a verified *modeling* exercise.
+#emph[4.2 Parity projectors with Majorana labels.]
+For a parity-conserving model carrying Majorana 1 labels we construct the
+parity-sector projectors and prove they are Hermitian and sum to the identity
+(`sectorProjector_sum`, #proven), and that a parity-respecting noise model
+preserves the resulting decomposition
+(`payoff2_parity_noise_preserves_partition`, #proven). Lean:
+`Graphplay/Applications/MajoranaOne.lean`. The proven content is the
+resolution-of-identity for the parity projectors; no effective single-tetron
+Hamiltonian is derived.
 
-#heading("5. Proposed Experiment (a Proposal, Not a Proof)")
+#heading("5. A Falsifiable On-Device Protocol")
 
-Everything above is proven. This section is the one part that is a *proposal*:
-a falsifiable experiment the compiler emits for existing hardware. We place it
-last on purpose.
+This section is a proposal: a falsifiable experiment the compiler emits for
+existing hardware.
 
 #emph[The CompileML protocol on IBM Heron.] Compile a key--value recall task to
-a heavy-hex CTQW host (`compile_recall_to_heron`, #proven, as a Lean object).
+the data/flag CTQW host of §4.1 (`compile_recall_to_heron`, #proven, as a Lean
+object).
 The on-device protocol is:
 + *Prepare* a query-uniform initial state (uniform over the data cell);
-+ *Evolve* under the native heavy-hex CTQW for time $pi slash (2 q)$, where $q$
-  is the quotient coupling;
++ *Evolve* under the native CTQW for time $pi slash (2 q)$, where $q$ is the
+  quotient coupling;
 + *Measure* the key-uniform (flag-cell) population.
 
 The compiler's prediction (`compiled_experiment_prediction`, #proven as the
@@ -501,12 +470,12 @@ the partition hypothesis on the real chip rather than assuming it. Lean:
 program to this protocol runs through the catgrad frontend
 (`paper/catgrad_integration.md`, planned).
 
-#heading("6. Related Work and Honest Novelty")
+#heading("6. Related Work and Novelty")
 
 We are a *certificate, not a first contact*. The mathematics of our spine, and
 of every physical phenomenon we lift, is prior art; our wedge is the
 machine-checked exactness, the verified compiler, and the falsifiable
-experiment. We attribute carefully.
+experiment.
 
 #emph[The spine.] The equitable-partition-to-quotient lift, and PST-iff-quotient
 in particular, is *Bachman--Fredette--Fuller--Landry--Opperman--Tamon--Tollefson*
@@ -536,14 +505,12 @@ inductive bias or a precomputed feature; neither claims, let alone proves, an
 exact complexity reduction, and both retain $O(n^2)$ attention. The bare bridge
 is theirs; we cite it as motivation, not competition.
 
-#emph[Our wedge, in one sentence.] We are the first to (a) cast structured
-attention itself as the equitable token-graph operator and *machine-check* its
-exact $O(n^2) -> O(n r)$ reduction across forward, backward, and training step;
-(b) expose that as a *typed ML-to-host compiler with a proven commuting
-semantics*; and (c) emit from the same compiler a *falsifiable on-device PST
-experiment*. The honesty about which clauses are `sorry`-ed (the deep search
-*rates*) is itself part of the contribution: it is what distinguishes a
-certificate from a slogan.
+#emph[Our wedge, in one sentence.] We (a) cast structured attention as the
+equitable token-graph operator and machine-check its exact
+$O(n^2) -> O(n r)$ reduction across forward, backward, and training step;
+(b) expose that as a typed ML-to-host compiler with a proven commuting
+semantics; and (c) emit from the same compiler a falsifiable on-device PST
+experiment.
 
 #heading("7. Open Frontier")
 
@@ -555,7 +522,7 @@ A consistent family $(G_n, pi_n)$ admits *both* a graphon quasi-infinite limit
 *and* a strict chiral-signing mixing speedup #emph[iff] its Bose--Mesner algebra
 eventually coincides with the partition-projector algebra $cal(P)(pi_n)$. The
 Lean apparatus (`Graphplay/Dowsing/Conjecture93.lean`) builds *six genuine test
-families* as real `WeightedGraph` objects with honestly-proven equitable
+families* as real `WeightedGraph` objects with proven equitable
 partitions --- $K_n^sigma$, the Heawood envelope, Hamming schemes,
 $K_(n,n,n,n)$, $K_n + P_n$, and $"Cayley"(S_n)$ by transpositions. But *both
 halves of the conjecture itself are `sorry`* (`Conjecture93_weak` and its
@@ -570,7 +537,7 @@ honeycomb off-diagonal Bloch block, the $plus.minus norm(f(k))$ band structure
 the *band-touching at $k = pi$* and the *symmetric bands* are proven axiom-clean;
 only that theorem's third conjunct --- the *local linearity* of the Dirac cone,
 the small-$k$ Taylor expansion $f(pi + kappa) = -i q kappa + O(kappa^2)$ --- is an
-honest `sorry` (#opentag), no packaged Mathlib remainder lemma. The full
+open `sorry` (#opentag), no packaged Mathlib remainder lemma. The full
 quantum-walk $-->$ continuum-Dirac scaling limit is stated as a genuine *open
 conjecture*, `coinedWalk_continuum_dirac_conjecture` (#opentag) --- a
 non-tautological op-norm convergence of the rescaled coined-walk generator to the
@@ -585,12 +552,17 @@ irreducible `sorry` blocked on missing Mathlib $infinity$-categorical
 infrastructure. These towers are *not proven* and we make no theorem-level claim
 about them. #opentag
 
-#emph[7.4 Other deferred analytic content.] We record, as open, the
-graphon self-adjoint spectral-measure gaps (some Tower-4 spectral statements
-carry `sorry`s on the measure side), the Tsirelson bound (the quantum CHSH value;
-note the *classical* CHSH value $3 slash 4$ #emph[is] proven,
-`CHSH_classical_value`, in `Graphplay/QuantumCSP.lean`), and the Lovász-$theta$
-SDP-duality direction.
+#emph[7.4 Externals carried as cited hypotheses.] Several results are
+conditioned on deep external theorems we state as typeclass assumptions rather
+than reprove: Lovász-$theta$ SDP strong duality, the Choi and Stinespring
+representation theorems, the FKLW topological-order theorem, Villani strong
+duality and Birkhoff contraction for the transport integration, the BCLSV
+graphon cut-limit, MIP$""^* = "RE"$, and HHL convergence. Each names the cited
+result and conditions the downstream statement on it. The Lovász sandwich
+$alpha lt.eq theta lt.eq overline(chi)$, the Tsirelson bound $2 sqrt(2)$, and
+the classical CHSH value $3 slash 4$ (`CHSH_classical_value`,
+`Graphplay/QuantumCSP.lean`) are proven. Some Tower-4 spectral statements
+carry `sorry`s on the measure side.
 
 #emph[7.5 Toward the practical frontend.] The intended path to use is a
 Graphplay backend under *catgrad* (hellas.ai): lower its open-hypergraph
@@ -603,12 +575,10 @@ beyond the cell-uniform invariance already proven.
 #v(0.6em)
 #line(length: 100%, stroke: 0.4pt)
 #v(0.3em)
-#emph[A closing note.] The pleasure of this project was watching analytic
-miracles --- transfer at an integer time, search that finds in $sqrt(N)$ steps
---- dissolve into small finite calculations seen through the right partition,
-and then watching Lean agree. What we offer is not a new miracle but a ledger:
-here is the structure, here is the proof, and here, marked in the open, is the
-part we have not yet earned.
+#emph[A closing note.] Transfer at an integer time and search that finds in
+$sqrt(N)$ steps both dissolve into small finite calculations seen through the
+right partition; Lean checks the calculation. What we offer is a ledger: the
+structure, the proof, and a clear mark on what remains open.
 
 #heading("References")
 

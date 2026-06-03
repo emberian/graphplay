@@ -1,6 +1,14 @@
-# Applied spectral disassembly: IBM heavy-hex
+# Applied: the data/flag subdivision quotient (IBM heavy-hex motivation)
 
-*A worked example of Graphplay applied to a real superconducting processor.*
+*A worked example of the equitable-quotient lift on a data/flag bipartition,
+motivated by IBM superconducting-processor connectivity.*
+
+**Scope.** The formalized host is the **2-cell data/flag subdivision**: a graph in which
+flag vertices subdivide data–data edges, with the two roles forming the equitable partition.
+The proven quotient spectrum is `±2√(N−1)` (`dataFlagQuotient_eigenvalues`), the spectrum of
+subdividing the complete graph K_N. The honest content is the equitable-quotient PST / noise /
+chiral lift on this data/flag bipartition. The degree-3 honeycomb connectivity of the physical
+heavy-hex chip is the motivation, not what the Lean development formalizes.
 
 ## 1. The Graphplay framework in one paragraph
 
@@ -42,8 +50,10 @@ girth 12. The design originates from Chamberland–Zhu–Yoder–Hertzberg–Cro
 surface-code stabiliser measurements, and the 3-regular data sublattice
 keeps qubit-frequency crowding manageable.
 
-In Graphplay terms: **heavy-hex = edge-subdivision of the honeycomb**, and
-that is the only combinatorial fact we need to disassemble it.
+The data/flag role split — flag vertices subdividing data–data edges — is the equitable
+partition the development uses. The formalized host carries this bipartition on a
+complete-site subdivision (spectrum `±2√(N−1)`); the honeycomb adjacency itself is not
+reproduced.
 
 ## 3. The data/flag equitable partition and its quotient
 
@@ -55,91 +65,55 @@ P (data v)   = data
 P (flag u v) = flag
 ```
 
-On the *toroidal* / *interior-only* honeycomb (every data qubit has
-degree 3) this is straightforwardly equitable. Every data qubit sees 3
-flag qubits and 0 data qubits; every flag qubit sees 2 data qubits and
-0 flag qubits. The quotient matrix is
+The data/flag role split is equitable on any data/flag subdivision graph: every flag vertex
+sees its two endpoint data vertices, and (when each data vertex is incident to the same number
+of flags) the role partition has constant cross-cell row sums. The proven quotient spectrum is
+`±2√(N−1)` (`dataFlagQuotient_eigenvalues`), the spectrum of subdividing the complete graph
+K_N; the degree-3 honeycomb is one special template (`λ² = 6`, `±√6`).
 
-```
-        data  flag
-data  [   0    3  ]
-flag  [   2    0  ]
-```
+On a boundary-truncated chip the bare 2-cell partition is only almost equitable — boundary
+data vertices have a smaller flag row sum than interior ones — and the equitable refinement
+separates the degree classes. The 2-cell partition is exhibited in the Lean file as
+`dataFlagPartition`; the boundary refinement is sketched.
 
-a 2 × 2 matrix with characteristic polynomial `λ² = 6` and eigenvalues
-`±√6`.
+## 4. Payoffs on the data/flag quotient
 
-On a *boundary-truncated* chip (real Eagle / Heron / Condor), the 2-cell
-partition is only **almost** equitable: boundary data qubits have row sum
-2 into the flag cell, while interior data qubits have row sum 3. The fix
-is a 3-cell refinement that separates `(data, deg=3)`,
-`(data, deg=2)`, and `(flag)`. Both partitions are exhibited in the Lean
-file as `dataFlagPartition` and (sketched) `refined_chiral_speedup`.
+Three theorems on the data/flag bipartition. Each is proven axiom-clean: the quotient
+spectrum, the cell-uniform PST lift, and both noise and chiral payoffs. The remaining `sorry`s
+are upstream (boundary-truncation embedding; the `Mixing`/`Search` lifts blocked on upstream
+identities), flagged at their sites and not feeding the payoffs.
 
-## 4. Engineering payoffs
+### Payoff #1 — cell-uniform PST
 
-The Lean file gives three concrete `theorem` statements representing the
-engineering payoffs of the disassembly. As of the current proof state, the
-core of all three is **proven, axiom-clean**: the exact quotient spectrum,
-the cell-uniform PST lift, and both halves of the noise and chiral payoffs
-are fully discharged. The only remaining `sorry`s are honest upstream gaps
-(boundary-truncation embedding, and the `Mixing`/`Search` lifts that route
-through still-`sorry`'d upstream identities); they are flagged at their
-sites and never feed the payoffs below.
+`dataFlagQuotient_eigenvalues` proves (axiom-clean) the data/flag subdivision quotient has
+spectrum `±2√(N−1)` (the spectrum of subdividing K_N; the degree-3 honeycomb template gives
+`±√6`). The symmetric quotient `Q̃ = q·X`, `q = 2√(N−1)`, has PST at time `π/(2q)`;
+`heavyHex_pst_lift` lifts this to cell-uniform PST between the data-uniform and flag-uniform
+states via `EquitablePartition.pst_lift`. Promoting cell-uniform PST to two-qubit PST between
+individual data vertices `u, v` requires an automorphism-symmetrisation step
+(`ibm_native_pst_two_qubit`, `sorry`).
 
-### Payoff #1 — PST between two specified data qubits (PROVEN)
+### Payoff #2 — Noise-symmetric subspaces
 
-The exact quotient spectrum is now a theorem:
-`dataFlagQuotient_eigenvalues` proves (axiom-clean) that the data/flag
-quotient has spectrum exactly `{±2√(N−1)}`, `N = |HoneyVertex| = 2nm` (the
-toroidal-template special case is the textbook `±√6`). The symmetric
-quotient `Q̃ = q·X`, `q = 2√(N−1)`, exhibits perfect state transfer at time
-`π / (2q)`; `heavyHex_pst_lift` then proves (axiom-clean) that this lifts to
-*cell-uniform* PST between the data-uniform state and the flag-uniform state,
-via `EquitablePartition.pst_lift`. A further chip-automorphism average —
-concretely, any reflection or rotation symmetry of the chip exchanging a pair
-of data qubits `u, v` — promotes cell-uniform PST to two-qubit PST between
-`|u⟩` and `|v⟩` (`ibm_native_pst_two_qubit`, still `sorry`: needs the
-automorphism-symmetrisation step). The protocol uses only the chip's native
-couplings: Heron's tunable couplers suffice.
+A noise model preserves the data/flag partition iff each of its Lindblad operators commutes
+with the cell projector. Per-vertex dephasing and amplitude damping (each `|x⟩⟨x|` projector
+supported on a single cell) and per-edge crosstalk with role-only rates are symmetric.
+`Graphplay.Toolkit.Noise.cellUniform_preserved`: a cell-uniform state under any cell-uniform-
+symmetric noise model stays cell-uniform, with evolution given by the noisy 2×2 quotient. This
+is `dephasing_preserves_dataFlag` and `amplitudeDamping_preserves_dataFlag`, both proven
+axiom-clean under the discrete-cells hypothesis (which is load-bearing for cells of size > 1;
+`perEdge_crossTalk_may_break_dataFlag` exhibits a per-edge crosstalk model outside it).
 
-### Payoff #2 — Noise-symmetric subspaces (PROVEN)
+### Payoff #3 — Chiral signing on the 2-cell quotient
 
-A noise model preserves the data/flag partition iff each of its Lindblad
-operators commutes with the cell projector. Working out three standard
-models:
-
-* **Per-vertex dephasing** at uniform rate: each `|x⟩⟨x|` projector
-  is supported on a single cell, so the noise is **cell-uniform-symmetric**.
-* **Per-vertex amplitude damping** at uniform rate: same conclusion.
-* **Per-edge crosstalk** with rates depending only on `(role, role)`:
-  symmetric. **Arbitrary** per-edge crosstalk: not symmetric.
-
-`Graphplay.Toolkit.Noise.cellUniform_preserved` then says: a *cell-uniform
-initial state* under any cell-uniform-symmetric noise model remains
-cell-uniform for all time, and its evolution is the noisy evolution of
-the 2 × 2 quotient. This is the engineering content of
-`dephasing_preserves_dataFlag` and `amplitudeDamping_preserves_dataFlag`,
-both now **proven (axiom-clean)** under the genuinely-needed discrete-cells
-hypothesis (the unconditional bare-vector statement is *false* for cells of
-size `> 1`, and the file proves that obstruction as a separate theorem,
-`perEdge_crossTalk_may_break_dataFlag` — a real per-edge crosstalk noise
-model that breaks the partition).
-
-### Payoff #3 — Chiral-signing optimisation for fast mixing (negative half PROVEN)
-
-Here we get an interesting *negative result*, and it is now **proven
-(axiom-clean)**: on the 2-cell data/flag quotient, chiral signings
-(cross-constant unitary phases τ : Role → Role → ℂ) cannot speed up uniform
-mixing. `dataFlag_chiral_no_speedup` proves the signed off-diagonal magnitude
-`‖τ·q‖` equals the unsigned `‖q‖`, and `dataFlag_chiral_spectrum_phase_independent`
-proves the full spectral statement: the signed symmetric quotient
-`[[0, e^{iφ}·q], [e^{-iφ}·q, 0]]` has spectrum exactly `{±q}`, `q = 2√(N−1)`,
-*independent of the phase* `φ` — so the spectral radius (hence the mixing
-time) is `φ`-invariant. The matrix-level engine is `roleHermitian_spectrum`
-(any zero-diagonal Hermitian `2×2` `Role`-matrix has spectrum `{±r}` depending
-on its off-diagonal *only through the modulus* `r`). The 2-cell quotient is
-*too coarse* for the Levine et al. (arXiv:2605.04414) chiral speedup to bite.
+On the 2-cell data/flag quotient, chiral signing leaves uniform mixing unchanged.
+`dataFlag_chiral_no_speedup`: the signed off-diagonal magnitude `‖τ·q‖` equals `‖q‖`.
+`dataFlag_chiral_spectrum_phase_independent`: the signed symmetric quotient
+`[[0, e^{iφ}·q], [e^{-iφ}·q, 0]]` has spectrum `±q`, `q = 2√(N−1)`, independent of `φ`, so the
+mixing time is phase-invariant. The engine is `roleHermitian_spectrum` (a zero-diagonal
+Hermitian 2×2 matrix has spectrum `±r`, depending on its off-diagonal only through the modulus
+`r`). The 2-cell quotient is too coarse for the Levine et al. (arXiv:2605.04414) chiral
+speedup; a finer refinement carries more phase freedom.
 The positive half (`refined_chiral_speedup`, still `sorry`: needs the 3-cell
 boundary refinement + upstream `CellUniformMixing`):
 on the 3-cell refinement (`data-3`, `data-2`, `flag`), the chiral

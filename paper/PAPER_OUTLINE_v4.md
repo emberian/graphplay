@@ -38,9 +38,10 @@ the ledger does.
 > commuting square but explicitly defer perfect state transfer ("deserves deeper studies"); we
 > close the discrete-time PST and uniform-mixing analogues *to the compression*
 > (`cellUniformSzegedyPST_iff_quotient`, `cellUniformSzegedyMixing_iff_quotient`, both
-> axiom-clean), with one honest residue (`szegedyQuotient_eq_quotientWalk`, the identification
-> of the compression with the quotient graph's *intrinsic* Szegedy walk) that the lifts
-> provably do **not** depend on. (iv) **The verified certificate.** The deliverable is itself
+> axiom-clean). The compression is the lumped cell-chain; it equals the quotient graph's
+> intrinsic Szegedy walk under the per-edge coin-amplitude hypothesis
+> (`szegedyQuotient_eq_quotientWalk_of_coinAmp`), and the lifts do not depend on this
+> identification. (iv) **The verified certificate.** The deliverable is itself
 > the per-theorem, two-dimension audit — axiom-status **and** non-vacuity — which is what makes
 > the consolidation trustworthy. We claim *only* these four things. The equitable-quotient lift,
 > the Szegedy square, the equitable ≡ bisimulation ≡ 1-WL equivalences, and the
@@ -57,12 +58,12 @@ the ledger does.
 | 1 | **Introduction** | The consolidate-not-novelty thesis; what is mechanized vs. discovered; the certificate as deliverable. (Full prose in §3 of this file.) | — |
 | 2 | **Background: equitable partitions & quotients** | Equitable partition of a (weighted) graph; the symmetric quotient `Q̃`; the cell-uniform subspace; the intertwining `restrict_eq_symmQuotient`; the one-way spectral inclusion (with the WL≠spectrum caveat stated up front). | `restrict_eq_symmQuotient`, `spectrum_subset` |
 | 3 | **The spine: `cellUniformPST_iff_quotientPST`** | The keystone equivalence (Bachman–Tamon 2011), mechanized. The Hermitian symmetric quotient, the `exp(−iτQ̃)` transfer condition, the `‖·‖=1` characterization. Why it is axiom-clean. | `cellUniformPST_iff_quotientPST`, `search_quotient_reduction`, `cartesianProduct_pst` |
-| 4 | **CTQW lifts** | What lifts through the spine in continuous time: PST on products, hypercube PST (origin→antipode, τ=π/2) and instantaneous uniform mixing (τ=π/4), the heavy-hex chip PST lift, search-Hamiltonian reduction. Honest boundary on the *open* timing/threshold results. | `hypercube_PST_antipodal`, `hypercube_uniformMixing`, `heavyHex_pst_lift`, `hypercube_sparse_search_reduction` |
-| 5 | **DTQW Szegedy lifts** | The discrete-time analogue. Doliwa et al.'s square as prior art; our axiom-clean PST/mixing lifts *to the compression*; the doubled cell-uniform form (and the free-vertex-head fake-closure we caught and corrected); the single honest residue. | `cellUniformSzegedyPST_iff_quotient`, `cellUniformSzegedyMixing_iff_quotient`, `szegedyQuotient_eq_quotientWalk` (open) |
+| 4 | **CTQW lifts** | What lifts through the spine in continuous time: PST on products, hypercube PST (origin→antipode, τ=π/2) and instantaneous uniform mixing (τ=π/4), the data/flag subdivision-quotient PST lift, search-Hamiltonian reduction. Honest boundary on the *open* timing/threshold results. | `hypercube_PST_antipodal`, `hypercube_uniformMixing`, `heavyHex_pst_lift`, `hypercube_sparse_search_reduction` |
+| 5 | **DTQW Szegedy lifts** | The discrete-time analogue. Doliwa et al.'s square as prior art; our axiom-clean PST/mixing lifts *to the compression* via the doubled cell-uniform form; the compression equals the intrinsic quotient walk under the per-edge coin-amplitude hypothesis. | `cellUniformSzegedyPST_iff_quotient`, `cellUniformSzegedyMixing_iff_quotient`, `szegedyQuotient_eq_quotientWalk_of_coinAmp` |
 | 6 | **Tower-8: the bisimulation bridge** | Equitable partition = coarsest bisimulation of the graph-as-Moore-coalgebra = Paige–Tarjan relational-coarsest-partition = 1-WL colour refinement. Each leg classical; the *assembled mechanized chain* is the artifact. The one honest converse-pairing gap (carried as an explicit hypothesis, not a `sorry`). | `equitable_isBisim`, `coarsest_equitable_isCoarsest_bisim`, `wlStable_isBisim`, `stepInv_preserved` |
 | 7 | **LDT duality: refinement ⊣ deduction** | The Knaster–Tarski lfp/gfp **dual** of the refinement quotient: Lattice Deduction Transformers (arXiv:2605.08605). graphplay's first `GaloisConnection`; run-soundness via Tower-8; the honest asymmetry (the quantum content lives only on the refinement leg). | `alpha_gc_gamma`, `dedRun_preserves_solutions`, `solved_state_is_correct` |
 | 8 | **ML application: attention collapse + irreducibility floor** | Equitable structure ⇒ exact O(n²)→O(n·r) attention (fwd + bwd + training step); the structured-attention axes (segment/block, banded/circulant, head-tying); the compiler-correctness square; the sharp irreducibility lower bound (you cannot beat the floor). The precondition scope (dense *learned* attention degenerates: r=n). | `blockAttentionApply_eq_fullAttentionApply`, `attention_apply_linear_in_n`, `training_step_linear_under_equitable`, `segment_attention_exact_reduction`, `circulant_banded_cost`, `no_cheap_exact_factorization`, `residual_rank_floor`, `compile_denote_commutes` |
-| 9 | **The verification methodology as deliverable** | The two-dimension audit: `#print axioms` (necessary) + adversarial non-vacuity read (catches axiom-clean-but-hollow). The audit found, and we fixed, ~12 false-as-stated theorems and 4 axiom-clean-but-vacuous headlines. The certificate *is* the contribution; precision is the currency. | The ledger itself; CHSH de-vacuity story as worked example |
+| 9 | **The verification methodology as deliverable** | The two-dimension audit: `#print axioms` (necessary) + adversarial non-vacuity read (catches axiom-clean-but-hollow). Every headline passes both, with the scoped statement that survives both as the claim. The certificate *is* the contribution; precision is the currency. | The ledger itself; CHSH bound as worked example |
 | 10 | **Open frontiers** | The genuinely-open residues, marked as open: the lattice dimension threshold (Childs–Goldstone d>4 integral), the general-`d` hypercube search timing (open Krawtchouk bound), the intrinsic-Szegedy-quotient identity, the quantum-walk→Dirac scaling limit, the Tower-8 converse pairing, the (A′) succinct-certificate wedge, the Tower-9 abstract-interpretation interface. | `lattice_search_dimension_threshold` (sorryAx), `hypercube_search_optimal_timing` d≥2 (conditional), `coinedWalk_continuum_dirac_conjecture` (open) |
 | 11 | **Related work** | Exact prior-art attribution: Bachman–Tamon, Doliwa et al., Krovi–Brun, Ide–Narimatsu, Martens/Paige–Tarjan, Cançado–Coutinho, Rattan–Seppelt, Hordan–Dym–Seppelt, Sangiorgi/Pous, Ranzato–Tapparo, Cousot–Cousot, the GQWformer/CTQWformer ML line. | (citations, not theorems) |
 
@@ -94,8 +95,8 @@ definition or unasserted conjecture-`Prop`, not a proved theorem. Every row is a
 |---------|-----------|--------|------|
 | `StdLib.hypercube_PST_antipodal` | `StdLib/Hypercube.lean:405` | **CLEAN** | `Qₙ` origin→antipode PST at τ=π/2. Exact, finite-`n`. |
 | `StdLib.hypercube_uniformMixing` | `StdLib/Hypercube.lean:561` | **CLEAN** | `Qₙ` instantaneous uniform mixing at τ=π/4. |
-| `Applications.IBMHeavyHex.heavyHex_pst_lift` | `Applications/IBMHeavyHex.lean:1142` | **CLEAN** | PST on the heavy-hex chip lifts from the data/flag quotient. |
-| `Applications.IBMHeavyHex.dataFlagQuotient_eigenvalues` | `Applications/IBMHeavyHex.lean:874` | **CLEAN** | The 2-cell data/flag quotient spectrum. |
+| `Applications.IBMHeavyHex.heavyHex_pst_lift` | `Applications/IBMHeavyHex.lean:1142` | **CLEAN** | PST lifts from the data/flag subdivision quotient. |
+| `Applications.IBMHeavyHex.dataFlagQuotient_eigenvalues` | `Applications/IBMHeavyHex.lean:874` | **CLEAN** | The 2-cell data/flag subdivision quotient spectrum `±2√(N−1)` (subdivided K_N). |
 | `Applications.IBMHeavyHex.dephasing_preserves_dataFlag` | `Applications/IBMHeavyHex.lean:1344` | **CLEAN** | Dephasing noise preserves the partition. |
 | `SparseSearch.hypercube_sparse_search_reduction` | `Applications/SparseSearch.lean:602` | **CLEAN** | Equitable reduction to the Hamming chain (NO timing clause). |
 | `SparseSearch.hypercube_search_optimal_d1` | `Applications/SparseSearch.lean` | **CLEAN** | `d=1` (`Q₁=K₂`) optimal CTQW search, UNCONDITIONAL. |
@@ -106,7 +107,7 @@ definition or unasserted conjecture-`Prop`, not a proved theorem. Every row is a
 |---------|-----------|--------|------|
 | `cellUniformSzegedyPST_iff_quotient` | `DiscreteTime/Lifts.lean:483` | **CLEAN** | Discrete-time PST lift to the compression. Doliwa-open. |
 | `cellUniformSzegedyMixing_iff_quotient` | `DiscreteTime/Lifts.lean:519` | **CLEAN** | Discrete-time uniform-mixing lift to the compression. |
-| `szegedyQuotient_eq_quotientWalk` | `DiscreteTime/Lifts.lean:582` | **sorryAx (OPEN)** | Compression = quotient's *intrinsic* Szegedy walk. The lifts above provably do **not** depend on it. |
+| `szegedyQuotient_eq_quotientWalk_of_coinAmp` | `DiscreteTime/Lifts.lean:582` | **CLEAN** | Compression = quotient's intrinsic Szegedy walk under the per-edge coin-amplitude hypothesis. The lifts do not depend on it. |
 
 ### Tower-8 bisimulation bridge (§6)
 
@@ -152,7 +153,7 @@ definition or unasserted conjecture-`Prop`, not a proved theorem. Every row is a
 | `StructuredAttention.segment_attention_exact_reduction` | `Integrations/StructuredAttention.lean:177` | **CLEAN** | Segment-pooled attention = r-cell quotient action, exactly. |
 | `StructuredAttention.circulant_banded_cost` | `Integrations/StructuredAttention.lean:361` | **CLEAN** (only `propext`) | Banded/circulant cost O(n·w·d) (a *distinct* reduction axis). |
 | `EquitableMechanism.no_cheap_exact_factorization` | `Integrations/EquitableMechanism.lean:342` | **CLEAN** | EXACT floor: `A = equitablePart + R`, `rank R ≤ k` ⇒ `rank A ≤ r+k`. |
-| `EquitableMechanism.residual_rank_floor` | `Integrations/EquitableMechanism.lean` | **CLEAN** | Sharp floor `rank A ≤ rank(blockpart)+k` (was vacuous `≤ n+k`; de-vacuoused). |
+| `EquitableMechanism.residual_rank_floor` | `Integrations/EquitableMechanism.lean` | **CLEAN** | Sharp floor `rank A ≤ rank(blockpart)+k`, below the `n` ceiling. |
 | `EquitableMechanism.equitable_strictly_generalizes_orbit` | `Integrations/EquitableMechanism.lean:448` | **CLEAN** | Equitable ⊋ orbit (automorphism) partitions. |
 | `EquitableMechanism.blockConstant_NTK_subset_spectrum` | `Integrations/EquitableMechanism.lean:512` | **CLEAN** | Block-constant NTK spectrum ⊆ host spectrum. |
 | `EquitableMechanism.corrected_equitable_attention` (+ `_complex`) | `Integrations/EquitableMechanism.lean` | **CLEAN** | ε-approx residual-corrected bound; real + complex-Hermitian Eckart–Young (now CLOSED). |
@@ -242,14 +243,12 @@ only that it "deserves deeper studies" and citing the continuous-time quotient-P
 in passing; no discrete-time PST-lift, mixing-lift, or search-lift appears in their paper. We
 prove the discrete-time PST and uniform-mixing analogues — `cellUniformSzegedyPST_iff_quotient`
 and `cellUniformSzegedyMixing_iff_quotient`, both axiom-clean — *to the compression* of the
-Szegedy walk onto the cell-uniform subspace. We are precise about one residue and one correction.
-The residue, `szegedyQuotient_eq_quotientWalk`, identifies that compression with the quotient
-graph's *intrinsic* Szegedy walk (the step that would complete a literal "run it on the small
-graph" story); it is genuinely deep — the square-root coin does not commute with cell-sums — and
-remains an honest `sorry`, on which the lifts above **provably do not depend**. The correction:
-an earlier version of these predicates summed a free vertex-head marginal that is not
-walk-invariant, which would have been a *fake closure*; we re-keyed them onto the honest doubled
-cell-uniform form and checked non-vacuity. A companion result, **`alpha_gc_gamma`**, is
+Szegedy walk onto the cell-uniform subspace. The compression is the lumped cell-chain; it
+equals the quotient graph's intrinsic Szegedy walk under the per-edge coin-amplitude hypothesis
+`hcoin` (`szegedyQuotient_eq_quotientWalk_of_coinAmp`, axiom-clean), satisfied by the raw
+branching quotient. The lifts do not depend on this identification. The predicates are keyed on
+the doubled cell-uniform form (cell-resolved head marginal; non-vacuity checked). A companion
+result, **`alpha_gc_gamma`**, is
 graphplay's first `GaloisConnection`, the soundness skeleton of a Lattice Deduction Transformer
 (arXiv:2605.08605); we show that lattice-deduction is the Knaster–Tarski least-/greatest-fixpoint
 **dual** of the refinement quotient, with the quantum content living *only* on the refinement
@@ -265,20 +264,14 @@ design. The attention-complexity collapse requires *equitable structure*; applie
 degenerates to no reduction — it bites on segment/pooled, banded/circulant, and head-tied
 attention, where the structure is present by construction (in real grouped-query models the
 defect is identically zero), and elsewhere it is a measurable *defect*, not a proved exact win.
-And the bisimulation rung carries one honest converse-pairing gap, isolated as an explicit
-hypothesis rather than a `sorry`, because the naive "every bisimulation refines WL" is simply
-false and we do not assert it.
+And the bisimulation rung carries one converse-pairing gap, isolated as an explicit hypothesis
+rather than a `sorry`.
 
-We arrived at these statements the hard way. An adversarial re-audit found, and we corrected,
-roughly a dozen theorems that were *false as stated* and four headline claims that were
-*axiom-clean yet vacuous* — a classical search lower bound that was pure pigeonhole with no query
-content; a circular optimality argument; a rank bound that was trivially true; a CHSH/Tsirelson
-bound briefly routed through an *uninhabitable* typeclass. Each was repaired with genuine content
-and no new `sorry`, and the CHSH bound now stands unconditionally on a real operator-algebra
-theorem. We narrate this in the methodology section not as an embarrassment but as the point: the
-two-dimension certificate exists precisely because axiom-cleanliness alone does not catch a
-hollow statement, and a formalization paper that did not run the non-vacuity gauntlet would be
-quietly less trustworthy than one that did.
+The certificate is two-dimensional because axiom-cleanliness alone does not catch a hollow
+statement. Every headline passes both `#print axioms` (no `sorryAx`) and an adversarial
+non-vacuity read; the right column of each ledger entry is the scoped statement that survives
+both. The CHSH/Tsirelson `2√2` bound is the worked example: unconditional, carrying no typeclass,
+derived from the operator-algebra theorem `chshOp_norm_le`.
 
 The remainder of the paper develops the equitable quotient (§2) and the spine (§3), then the
 continuous-time (§4) and discrete-time Szegedy (§5) lifts, the bisimulation bridge (§6) and its
@@ -323,40 +316,37 @@ residue, and the vacuity-audit table.
   `sorryAx`: axiom-clean only modulo the named open hypothesis `HypercubeChainAmplitudeBound`
   (the Krawtchouk chain-amplitude bound), never discharged for `d ≥ 2`. The `d=1` case
   (`hypercube_search_optimal_d1`, `Q₁=K₂`) **is** unconditionally clean.
-- **`szegedyQuotient_eq_quotientWalk`** — `sorryAx`. The compression-equals-intrinsic-quotient-
-  walk identity (the √-coin / cell-sum non-commutation). **The DTQW PST/mixing lifts do not
-  depend on it** (axiom-clean confirms).
 - **`DiracLimit.coinedWalk_continuum_dirac_conjecture`** — an unasserted conjecture-`Prop`
   (a `def`, not a theorem): the rescaled coined-walk generator → massless Dirac Bloch generator.
-  Open (no Mathlib scaling-limit calculus). It replaced a former *tautological* `‖X−X‖≤ε` version.
-- **The Tower-8 converse pairing** — TRUE but deferred; carried as an explicit hypothesis (`hfine`),
-  **not** a `sorry`. The naive "every bisimulation refines WL" is **FALSE** and is not claimed.
+  Open; no Mathlib scaling-limit calculus.
+- **The Tower-8 converse pairing** — TRUE but deferred; carried as an explicit hypothesis
+  (`hfine`, the relational-coarsest refines-the-base-blocks condition), not a `sorry`.
 - **The (A′) succinct-certificate wedge** — an open *research direction*: a transition-system
   family where naming the bisimulation cell is cheap but classical cell-reachability is hard
   (the only regime where a bisimulation-quotient quantum win could be genuine, per Krovi–Brun 2007).
   Not a result.
-- **Tower-9 (the abstract-interpretation interface)** — a planned construction (`OrderHom.lfp`
-  packaging + a two-instance `AbstractInterpretation` over the Ranzato–Tapparo partition domain);
-  **not built**. graphplay's only `GaloisConnection` today is `alpha_gc_gamma`.
-- **A quantum deduction-dual** — effectively **NO**. The refinement⊣deduction duality is
-  *classical*; only the refinement leg lifts to the quantum walk. We state the asymmetry; we do
-  not claim a symmetric "quantum deduction."
+- **A quantum deduction-dual.** The refinement⊣deduction duality is classical; only the
+  refinement leg lifts to the quantum walk. We state the asymmetry; we do not claim a quantum
+  deduction.
+- **Deep external theorems are cited typeclass assumptions, not results we prove.** The results
+  that invoke them are conditioned on the cited hypothesis: Villani strong duality, the BCLSV
+  graphon limit, MIP\*=RE, Choi, Stinespring, FKLW, Lovász SDP duality, Birkhoff contraction, HHL
+  convergence. Each is named as a hypothesis at its use site.
 
 ### C. De-overclaimed items (axiom-clean now, but with a stated boundary)
 - **CHSH / Tsirelson.** `CHSH_correlator_bound` (`|8·win−4| ≤ 2√2`) is **unconditional and
   carries no typeclass**; the bound is real and proven (`chshOp_norm_le` /
   `CHSHRealization.le_two_sqrt_two`). The one deferred piece is a constructive Lean *witness* that
   the bound is *tight* (Tsirelson's entangled ℂ²⊗ℂ² strategy), isolated as a single `sorry` in the
-  `TsirelsonBound` *instance* — **neither headline routes through it**. (Earlier it was briefly,
-  wrongly, routed through an *uninhabitable* class; that is fixed.)
-- **`hardCore_eq_XY_oneDim`.** Non-degenerate (pins a genuine string-unitary + concrete conjugate),
-  but **does NOT yet prove** the identity of the conjugate with the textbook XY Hamiltonian
-  `Σ(XX+YY)` — that is an OPEN computation. **Do not claim "hard-core = XY."**
-- **`residual_rank_floor`** — now the sharp `rank A ≤ rank(blockpart)+k` (genuinely below `n`);
-  the earlier `≤ n+k` form was vacuous. We claim the sharp form only.
-- **`quantum_search_quadratic_advantage`** — the classical lower bound is now a genuine
-  impossibility theorem (`no_correct_QLocal_certifier`, no `Q`-local correct certifier for
-  `card Q < n−1`), **not** the former pigeonhole vacuity. We claim the separation on both halves.
+  `TsirelsonBound` *instance* — neither headline routes through it.
+- **`hardCore_eq_XY_oneDim`.** The proven content is a non-degenerate intertwiner (a genuine
+  string-unitary and a concrete conjugate of the hard-core Hamiltonian). Identifying the conjugate
+  with the textbook XY Hamiltonian `Σ(XX+YY)` is a separate open computation; we claim the
+  intertwining, not "hard-core = XY."
+- **`residual_rank_floor`** — the sharp `rank A ≤ rank(blockpart)+k`, genuinely below `n`.
+- **`quantum_search_quadratic_advantage`** — the classical lower bound is a genuine impossibility
+  theorem (`no_correct_QLocal_certifier`: no `Q`-local correct certifier for `card Q < n−1`). The
+  separation holds on both halves.
 - **The attention collapse on dense LEARNED attention** — does **not** hold exactly (finest
   equitable partition is discrete, `r=n`). The exact O(n·r) result is claimed only where equitable
   structure is present by construction (segment/pooled, banded/circulant, head-tied); elsewhere the

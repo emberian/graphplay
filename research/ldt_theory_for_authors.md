@@ -3,16 +3,15 @@
 **For** Liam Davis, Leopold Haller, Alberto Alfarano, Mark Santolucito.
 **From** the graphplay formalization effort. **Date** 2026-06-02.
 
-You wrapped a clean abstract-interpretation construction — the Galois connection α ⊣ γ,
-the best transformer dedₚ, gfp Kleene descent — around a small looped transformer, and
-defended it with the empirical line *"correct or abstains."* We machine-checked the theory
-around that claim (Lean 4 / Mathlib). It says something sharper than the defense:
+LDT wraps an abstract-interpretation construction — the Galois connection α ⊣ γ, the best
+transformer dedₚ, gfp Kleene descent — around a small looped transformer, with the empirical
+line *"correct or abstains."* We machine-checked the theory around that claim (Lean 4 / Mathlib):
 
-> **Soundness is free from output checking and training-independent. The real quantity is the
-> abstention map — which problems your lattice can *complete* — and that map is the classical
+> **Soundness is a property of output checking, training-independent. The quantity that depends
+> on the lattice is the abstention map — which problems it can *complete* — and that map is the
 > bounded-width CSP dichotomy.**
 
-Theorem names below are clickable in the repo; the relevant files are listed at the end.
+Theorem names below are clickable in the repo; files are listed at the end.
 
 ## 1. Soundness is not a property of the trained net
 
@@ -21,30 +20,27 @@ the pinned assignment and returning it **only if it satisfies the constraints**,
 Then `checkedSolve_sound` holds for *any* `solve`, with no hypothesis on it: if it returns `s`,
 then `s` is a genuine solution. The proof uses nothing about the net.
 
-That is the SAT-solver guarantee, stated exactly: a `SAT` answer is believed because the
-assignment is *checkable*, not because the search is *trusted*. Training cannot break soundness —
-it can only change how often you abstain. `id_sound_but_useless` makes it sharp: the identity map
-is a perfectly sound deduction that solves nothing.
+This is the SAT-solver guarantee: a `SAT` answer is believed because the assignment is
+*checkable*, not because the search is *trusted*. Training changes only how often you abstain.
+`id_sound_but_useless`: the identity map is a sound deduction that solves nothing.
 
-If you want to trust the *intermediate trace* (early abstention, proof extraction, composing LDT
-with another reasoner) rather than just the final answer, per-step soundness comes the same way —
-from a verifier, not the net: `certifiedStep_sound` shows a certificate-checked narrowing is sound
-for arbitrary `f`. Either way, soundness lives in the check.
+For the *intermediate trace* (early abstention, proof extraction, composing LDT with another
+reasoner) rather than the final answer, per-step soundness comes the same way — from a verifier:
+`certifiedStep_sound` shows a certificate-checked narrowing is sound for arbitrary `f`.
 
 ## 2. The real quantity is completeness — and the lattice bounds it
 
-Soundness being free, the question that matters is whether the loop reaches a checkable answer at
-all: completeness, i.e. the abstention rate. This is where the projection lattice bites.
-`ldt_lossy` is the machine-checked fact that per-cell candidate sets forget inter-cell correlation
-(α ∘ γ ≠ id — your domain is a Galois *connection*, not an insertion). That lossiness is the entire
-story of abstention.
+With soundness in the check, the quantity that matters is whether the loop reaches a checkable
+answer at all: completeness, i.e. the abstention rate. This is where the projection lattice bites.
+`ldt_lossy`: per-cell candidate sets forget inter-cell correlation (α ∘ γ ≠ id — a Galois
+*connection*, not an insertion), and that lossiness governs abstention.
 
-And it has a name. dedₚ is arc-/k-consistency propagation, and *which* problems pure propagation
-solves is the **bounded-width dichotomy**: local consistency solves exactly the bounded-width CSPs
-(Feder–Vardi; Barto–Kozik), while affine/linear systems — XOR over GF(2) — are unbounded width:
-invisible to deduction, solvable only by branching or linear algebra. So your deduction leg solves
-precisely the bounded-width fragment; abstention on everything else is forced by the lattice, not by
-any error. "Which problems generalize" is the bounded-width map, and it is a theorem.
+dedₚ is arc-/k-consistency propagation, and *which* problems pure propagation solves is the
+**bounded-width dichotomy**: local consistency solves exactly the bounded-width CSPs (Feder–Vardi;
+Barto–Kozik), while affine systems — XOR over GF(2) — are unbounded width, solvable only by
+branching or linear algebra. So the deduction leg solves precisely the bounded-width fragment;
+abstention elsewhere is forced by the lattice. "Which problems generalize" is the bounded-width
+map, and it is a theorem.
 
 ## 3. Soundness ⟂ completeness, machine-checked
 
@@ -88,11 +84,10 @@ abstention rate.
 | kind-0, deduction-only | ≈ 0 |
 | kind-2 (XOR), deduction-only | ≈ 1 — sound on every instance, solving none |
 
-The sharp prediction is the second row: deduction-only on 3-XOR should abstain on essentially every
-instance while remaining perfectly sound — `acStep_xor_sound_but_abstains` at scale. **If a
-branch-ablated LDT solves 3-XOR at a nontrivial rate, the framework is wrong**: it would mean the
-per-cell operator is doing linear algebra the bounded-width account forbids. We predict it does not;
-if it does, that is the result worth knowing.
+The sharp prediction is the second row: deduction-only on 3-XOR abstains on essentially every
+instance while remaining sound — `acStep_xor_sound_but_abstains` at scale. A branch-ablated LDT
+that solves 3-XOR at a nontrivial rate would mean the per-cell operator is doing linear algebra
+the bounded-width account forbids — the result worth knowing if it happens.
 
 The whole picture lives in one Cousot frame: dedₚ's run-soundness is an instance of the general
 fixpoint-transfer theorem (`Tower9.gfp_transfer`, `ldt_deduction_run_sound`), and refinement
@@ -100,8 +95,8 @@ fixpoint-transfer theorem (`Tower9.gfp_transfer`, `ldt_deduction_run_sound`), an
 
 ---
 
-**The gift, in one line.** Stop defending soundness — it is free from checking. Measure abstention,
-train kind-0 versus kind-2, and watch the affine wall.
+**In one line.** Soundness is in the check; measure abstention. Train kind-0 versus kind-2 and
+watch the affine wall.
 
 ### References
 - Davis, Haller, Alfarano, Santolucito. *Lattice Deduction Transformers.* arXiv:2605.08605, 2026.

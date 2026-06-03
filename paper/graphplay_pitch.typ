@@ -32,25 +32,26 @@ denotes, and is strictly cheaper. (3) Verified quantum-search advantage on a
 *sparse, physically buildable* host: the Boolean hypercube's
 Hamming-distance equitable quotient collapses marked search to a
 $(d{+}1)$-dimensional chain, with sparsity and the exact equitable reduction
-proven axiom-clean (`hypercube_sparse_search_reduction`); we are honest that the
-$O(sqrt(N))$ *optimal-timing* statement is a *separate* theorem
+proven axiom-clean (`hypercube_sparse_search_reduction`). The $O(sqrt(N))$
+*optimal-timing* statement is a separate theorem
 (`hypercube_search_optimal_timing`, an open `sorry`), as is the $d > 4$ lattice
-threshold (`lattice_search_dimension_threshold`), both deferred to the
-Chakraborty--Novo--Roland spectral criterion. (4) Verified spectral
-disassembly of real chips --- IBM heavy-hex (`dataFlagQuotient_eigenvalues`)
-and the Microsoft Majorana-1 parity sectors (`sectorProjector_sum`) --- as
-equitable quotients. (5) A falsifiable on-device experiment
+threshold (`lattice_search_dimension_threshold`), both conditioned on the
+Chakraborty--Novo--Roland spectral criterion. (4) Two hardware-named hosts modeled as
+equitable quotients: a complete-site subdivision $K_N$ with data/flag labels,
+whose $2 times 2$ quotient spectrum is computed exactly
+(`dataFlagQuotient_eigenvalues`), and a parity-projector construction with
+Majorana-1 labels whose projectors are proven to resolve the identity
+(`sectorProjector_sum`). (5) A falsifiable on-device experiment
 (`compiled_experiment_prediction`) emitted by the same compiler, predicting a
 key population from a verified amplitude on IBM Heron hardware.
 
-#emph[The honest claim.] The *mathematics* of equitable-quotient quantum walks
-is not ours: it is Godsil, Bachman--Tamon, Ide--Narimatsu, Childs--Goldstone,
-and Janmark--Meyer--Wong (#sym.section 4). The walk-as-attention idea is
-concurrent classical work (GQWformer, CTQWformer). Our contribution is the
-*certificate*: the first machine-checked, end-to-end stack from an exact
-verified attention reduction, through a typed hardware compiler with a proven
-commuting semantics, to a falsifiable on-chip prediction. We seek
-collaborators.
+#emph[The claim.] The *mathematics* of equitable-quotient quantum walks is not
+ours: it is Godsil, Bachman--Tamon, Ide--Narimatsu, Childs--Goldstone, and
+Janmark--Meyer--Wong (#sym.section 4). The walk-as-attention idea is concurrent
+classical work (GQWformer, CTQWformer). Our contribution is the *certificate*:
+the first machine-checked, end-to-end stack from an exact verified attention
+reduction, through a typed hardware compiler with a proven commuting semantics,
+to a falsifiable on-chip prediction. We seek collaborators.
 
 #heading("1. Five results, stated precisely")
 
@@ -71,15 +72,11 @@ This is `blockAttentionApply_eq_fullAttentionApply` in
 `Graphplay/Integrations/AttentionComplexity.lean` --- sorry-free, with the
 forward apply, the backward pass (`blockGrad_apply`), and a training step
 (`training_step_linear_under_equitable`) all linear in $n$. The reduction is
-*exact*: no rank truncation, no kernel approximation. (The separate
-`attention_quantum_composition` carries an honest `sorry` on a deep
-quantum-rate clause; the structural reduction does not depend on it.)
-The precondition is honest and bounded: the exact reduction fires on
-*equitable* attention --- block/segment, grouped-query (GQA/MQA), and
+*exact*: no rank truncation, no kernel approximation. The exact reduction fires
+on *equitable* attention --- block/segment, grouped-query (GQA/MQA), and
 relative-position (RoPE, sliding-window) patterns that production transformers
-already use for efficiency --- and not on fully-dense *learned* attention, for
-which we instead measure the equitability defect rather than claim the
-reduction (#sym.section 3.1, "Scope of the precondition").
+already use for efficiency. On fully-dense *learned* attention it degenerates to
+the identity, and we instead measure the equitability defect.
 
 #emph[Result 2 --- A verified ML#sym.arrow.r chip compiler. #text(fill: rgb("#1a7f37"))[proven].]
 `Graphplay/Integrations/TransformerDSL.lean` defines a small typed language of
@@ -102,41 +99,39 @@ frontend for emitting these programs from real models.)
 axiom-clean, that the Boolean hypercube $Q_d$ is (a) $d$-regular with $d = log_2 N$
 --- log-degree, hence sparse and physically realizable, unlike $K_N$'s degree
 $N{-}1$ --- and (b) that its Hamming-distance partition is equitable and
-collapses marked CTQW search exactly to a $(d{+}1)$-dimensional chain (this
-theorem carries *no* timing clause). The $O(sqrt(N))$ *optimal-timing* statement
-is a *separate* theorem, `hypercube_search_optimal_timing`, whose whole content is
-a single honest `sorry`, deferred to the Chakraborty--Novo--Roland spectral-ratio
-criterion (arXiv:2004.12686) --- the same dynamical core deferred by the $K_n$
-flagship. The structural lattice-vs-hypercube contrast is itself proven axiom-clean
-(`buildable_lattice_structural_contrast`); the general lattice *threshold* is
-stated as `lattice_search_dimension_threshold`: a $d$-dimensional lattice supports
-the advantage iff $d > 4$ (Childs--Goldstone); the statement is written, its
-*entire* equivalence deferred (as is the dynamical contrast
+collapses marked CTQW search exactly to a $(d{+}1)$-dimensional chain. The
+$O(sqrt(N))$ *optimal-timing* statement is a separate theorem,
+`hypercube_search_optimal_timing`, an open `sorry` conditioned on the
+Chakraborty--Novo--Roland spectral-ratio criterion (arXiv:2004.12686) --- the
+same dynamical core deferred by the $K_n$ flagship. The structural
+lattice-vs-hypercube contrast is proven axiom-clean
+(`buildable_lattice_structural_contrast`); the general lattice *threshold*,
+`lattice_search_dimension_threshold` --- a $d$-dimensional lattice supports the
+advantage iff $d > 4$ (Childs--Goldstone) --- is stated, its equivalence
+deferred (as is the dynamical contrast
 `buildable_lattice_dynamical_contrast`). The exact finite-$n$ $K_n$
 amplitude `quantum_search_exact_amplitude` is fully proven.
 
-#emph[Result 4 --- Verified disassembly of real chips. #text(fill: rgb("#1a7f37"))[proven].]
-We model two real devices as equitable quotients and check the spectral data in
-Lean. The IBM heavy-hex lattice has a 2-cell data/flag equitable partition;
+#emph[Result 4 --- Hardware-named hosts as equitable quotients. #text(fill: rgb("#1a7f37"))[proven].]
+Two graph-theoretic models, with device names for orientation. On the
+complete-site subdivision $K_N$ with a data/flag labeling,
 `dataFlagQuotient_eigenvalues` (`Applications/IBMHeavyHex.lean`) computes the
-quotient spectrum, from which cell-uniform PST timing on the chip's *native*
-couplings is read off. Microsoft's Majorana-1 tetron has a joint-parity-sector
-partition; `sectorProjector_sum` (`Applications/MajoranaOne.lean`) proves the
-sector projectors resolve the identity, i.e. the parity sectors are a genuine
-orthogonal decomposition. (Majorana-1 honesty: present hardware *simulates*
-Majorana modes rather than realizing native topological qubits; this file is a
-modeling exercise, flagged as such.)
+$2 times 2$ quotient spectrum $plus.minus 2 sqrt(N-1)$, from which cell-uniform
+PST timing is read off; this is a degree-$(N{-}1)$ host, not the degree-3
+honeycomb of the physical heavy-hex lattice. For a parity-conserving model with
+Majorana-1 labels, `sectorProjector_sum` (`Applications/MajoranaOne.lean`)
+proves the parity projectors are Hermitian and sum to the identity. The proven
+content is the resolution of identity; no effective single-tetron Hamiltonian is
+derived.
 
 #emph[Result 5 --- A falsifiable on-Heron experiment. #text(fill: rgb("#1a7f37"))[proven structural form].]
-From the heavy-hex disassembly the compiler emits a concrete prediction:
+From the data/flag quotient the compiler emits a concrete prediction:
 `compiled_experiment_prediction` (`Applications/CompileML.lean`) ties a
 predicted measured key-population to the squared amplitude of the verified
 quotient walk (`predictedKeyPopulation_eq_amplitude_sq`). A companion witness
-`compiled_positive_breakingScore_exists` exhibits a configuration whose
-breaking-score is nonzero --- i.e. a *falsifier*: an experiment that, run on IBM
-Heron, would disconfirm the prediction if the cell-uniform structure is broken.
-A verified prediction with a built-in way to be wrong is the experimental teeth
-of the whole stack.
+`compiled_positive_breakingScore_exists` exhibits a configuration with nonzero
+breaking-score: an experiment that, run on IBM Heron, disconfirms the prediction
+if the cell-uniform structure is broken.
 
 #heading("2. The spine: equitable-quotient lifts, mechanized")
 
@@ -157,28 +152,25 @@ $P$ and symmetric quotient $A slash pi$:
 
 The point of the formalization is that *the same three lemmas* are reused
 verbatim by the attention reduction (Result 1), the search collapse (Result 3),
-and the chip disassemblies (Results 4--5). The library builds end-to-end on a
+and the hardware-named quotient models (Results 4--5). The library builds end-to-end on a
 current Mathlib; the load-bearing theorems named in #sym.section 1 are
 sorry-free or have explicitly-flagged single deferred clauses. Larger
 "dowsing-rod" extension files (graphon limits, $infinity$-categorical towers)
 carry precise statements with proofs in progress --- these are the research
 frontier, not the load-bearing claims.
 
-#heading("3. Why a certificate, in this domain, is the whole point")
+#heading("3. Why a certificate, in this domain")
 
 Two failure modes plague quantum-walk-for-ML and quantum-hardware claims:
 silently approximate "exact" reductions, and speedups that evaporate under
 state-preparation/readout caveats (Aaronson, *Read the fine print*). A
 machine-checked proof closes the first: `blockAttentionApply_eq_fullAttentionApply`
-*cannot* be an approximation that was rounded into an equality, because Lean
-would reject it. And by tracking every `sorry`, we make the second mode
-auditable: the deferred clauses (CNO timing, the $d>4$ spectral half) are named
-and isolated, so a reader sees exactly where the physics input is assumed rather
-than proven. The honesty is itself the contribution: a transparent
-proven/deferred ledger is something the empirical and pencil-and-paper
-literature structurally cannot provide.
+is an equality Lean checks, not an approximation rounded into one. Tracking
+every `sorry` exposes the second: the deferred clauses (CNO timing, the $d>4$
+spectral half) are named and isolated, so a reader sees exactly where physics
+input is assumed rather than proven.
 
-#heading("4. Honest novelty --- what is prior art, what is ours")
+#heading("4. Novelty --- what is prior art, what is ours")
 
 We are a *certificate*, not first contact. The mathematics is established and we
 attribute it explicitly:
@@ -253,7 +245,7 @@ The repository builds with `lake build` on a current Mathlib. By audience:
   `TransformerProgram`s from real models so the verified compiler runs on
   production attention patterns.
 - *Quantum-hardware engineers.* Run `compiled_experiment_prediction` on IBM
-  Heron; adversarially read the heavy-hex and Majorana-1 disassemblies.
+  Heron; adversarially read the data/flag and parity-sector quotient models.
 - *Mathlib contributors.* The operator-system / quantum-graph and graphon-
   spectrum infrastructure are clean upstream candidates.
 
