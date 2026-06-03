@@ -16,13 +16,16 @@ that captures simultaneously:
 
 The two Tower 3 statements that we expose here are:
 
-  1. **Tower 3 equitable-partition projector properties** (`tower3_equitable_partition`):
-     for an equitable partition `P` of `G`, the partition projector `Π_P` (onto the
-     constant-on-cells subspace) commutes with `G.adj`, is idempotent, and is
-     Hermitian — the forward map's image in the operator-algebraic correspondence.
-     (This is the projector half only; the *full data-bijection* between equitable
-     partitions and unital *-subalgebras-with-a-rank-`|I|`-projector is NOT proven
-     here — see the scope note on the theorem, and `Dowsing/CoherentAlgebra.lean`.)
+  1. **Tower 3 equitable-partition projector properties**
+     (`tower3_equitable_partition_projector`): for an equitable partition `P` of
+     `G`, the partition projector `Π_P` (onto the constant-on-cells subspace)
+     commutes with `G.adj`, is idempotent, and is Hermitian — the forward map's
+     image in the operator-algebraic correspondence.  The name now says exactly
+     what is proven: the *projector* half only.  The *full data-bijection* between
+     equitable partitions and unital *-subalgebras-with-a-rank-`|I|`-projector is
+     NOT proven here — see the scope note on the theorem, and
+     `Dowsing/CoherentAlgebra.lean`.  (A deprecated alias `tower3_equitable_partition`
+     is kept so existing cross-references resolve.)
 
   2. **Bose-Mesner = Tower 3 commutative case** (`BoseMesner.isCoherentAlgebra`,
      `BoseMesner.comm`): the commutative coherent algebra of an association scheme is
@@ -319,7 +322,7 @@ such an algebra) and injectivity/surjectivity (up to relabelling `I`) are not
 formalized here.  The rank-`|I|` characterization of `Π_P` and the full
 data-equivalence are deferred to `Graphplay.Dowsing.CoherentAlgebra`.
 -/
-theorem tower3_equitable_partition
+theorem tower3_equitable_partition_projector
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : WeightedGraph V) (P : EquitablePartition G I) :
@@ -394,6 +397,21 @@ theorem tower3_equitable_partition
   · -- Hermitian: `Π = B Bᴴ` and `(B Bᴴ)ᴴ = B Bᴴ`.
     rw [hfac]
     exact Matrix.isHermitian_mul_conjTranspose_self B
+
+/-- Deprecated alias for `tower3_equitable_partition_projector`.  The theorem was
+renamed so its identifier states exactly what it proves — the three *projector*
+identities (commutation with `G.adj`, idempotency, self-adjointness) — rather
+than the full (unproven) equitable-partition ↔ `*`-algebra data-bijection that
+the bare name `tower3_equitable_partition` could be read to advertise. -/
+@[deprecated tower3_equitable_partition_projector (since := "2026-06-03")]
+theorem tower3_equitable_partition
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (G : WeightedGraph V) (P : EquitablePartition G I) :
+    (P.projector * G.adj = G.adj * P.projector) ∧
+    (P.projector * P.projector = P.projector) ∧
+    P.projector.IsHermitian :=
+  tower3_equitable_partition_projector G P
 
 /-! ## Bose-Mesner algebras
 

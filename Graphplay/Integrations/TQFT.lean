@@ -36,8 +36,16 @@ spine of Graphplay (the `EquitablePartition` and its cell-uniform subspace)
 * V. Turaev.  *Quantum Invariants of Knots and 3-Manifolds.*  De Gruyter.
   Modular categories and their `S`/`T` matrices.
 
-All proofs are deferred; this file is structural scaffolding that pins
-down the statements connecting Graphplay to TQFT.
+This file connects Graphplay to TQFT with genuine, `#print-axioms`-clean
+content: the modular-data accessors, the anyonic equitable-partition
+construction, the braid-factoring locality theorem, the topologically-invariant
+surface-PST theorem (`surface_pst_isotopy_invariant`), the braid-word unitarity
+group homomorphism (`BraidRepresentation.wordMatrix_unitary`), and the modular
+`SL₂(ℤ)`-action capstone are all proven.  The genuinely-external classical
+inputs (the modular-data MTC axioms; the **Freedman–Larsen–Wang braid-gate
+density theorem**) are carried as `structure` data or as the `Prop`-valued
+typeclass `BraidGateUniversal` — *never* as bare `axiom`s or `sorry`s — so every
+theorem below is either axiom-clean or honestly conditional on a cited interface.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -243,6 +251,143 @@ structure BraidRepresentation
   yang_baxter : ∀ i : Fin n, ∀ h : i.val + 1 < n,
     σ i * σ ⟨i.val + 1, h⟩ * σ i =
       σ ⟨i.val + 1, h⟩ * σ i * σ ⟨i.val + 1, h⟩
+
+namespace BraidRepresentation
+
+variable {V : Type u} [Fintype V] [DecidableEq V]
+  {G : WeightedGraph V} {A : Type v} [Fintype A] [DecidableEq A]
+  {M : ModularData A} {D : AnyonDecoration G M} {n : ℕ}
+
+/-- The elementary braids of a `BraidRepresentation` are unitary in the genuine
+two-sided sense `σᵢ σᵢᴴ = 1 = σᵢᴴ σᵢ`.  Over a finite vertex type the right
+inverse `(σ i)ᴴ` recorded in the `unitary` field is automatically a left inverse
+as well (`Matrix.mul_eq_one_comm`); this packages both. -/
+theorem sigma_unitary_two_sided (R : BraidRepresentation D n) (i : Fin n) :
+    (R.σ i) * (R.σ i)ᴴ = 1 ∧ (R.σ i)ᴴ * (R.σ i) = 1 :=
+  ⟨R.unitary i, mul_eq_one_comm.mp (R.unitary i)⟩
+
+/-- A **braid word** of length `ℓ` in the elementary generators of a braid
+representation: a list of `(generator-index, sign)` letters, each letter being a
+generator `σᵢ` (`sign = false`) or its inverse `σᵢ⁻¹ = σᵢᴴ` (`sign = true`).
+This is the genuine free-group-on-generators datum whose image under the
+representation is a braid-gate. -/
+abbrev Word (_R : BraidRepresentation D n) : Type :=
+  List (Fin n × Bool)
+
+/-- The matrix realizing a single braid letter: `σᵢ` for `sign = false`,
+its unitary inverse `σᵢᴴ` for `sign = true`. -/
+noncomputable def letterMatrix (R : BraidRepresentation D n) (l : Fin n × Bool) :
+    Matrix V V ℂ :=
+  if l.2 then (R.σ l.1)ᴴ else R.σ l.1
+
+/-- The representation of a braid word: the ordered matrix product of its
+letters (the identity on the empty word).  This is the image of the word under
+the braid-group representation `ρ : B_n → U(ℋ)`. -/
+noncomputable def wordMatrix (R : BraidRepresentation D n) : R.Word → Matrix V V ℂ
+  | [] => 1
+  | l :: w => R.letterMatrix l * R.wordMatrix w
+
+@[simp] theorem wordMatrix_nil (R : BraidRepresentation D n) :
+    R.wordMatrix [] = 1 := rfl
+
+@[simp] theorem wordMatrix_cons (R : BraidRepresentation D n)
+    (l : Fin n × Bool) (w : R.Word) :
+    R.wordMatrix (l :: w) = R.letterMatrix l * R.wordMatrix w := rfl
+
+/-- Each braid letter is unitary (both `σᵢ` and `σᵢᴴ` are). -/
+theorem letterMatrix_unitary (R : BraidRepresentation D n) (l : Fin n × Bool) :
+    (R.letterMatrix l) * (R.letterMatrix l)ᴴ = 1 ∧
+    (R.letterMatrix l)ᴴ * (R.letterMatrix l) = 1 := by
+  obtain ⟨hru, hlu⟩ := R.sigma_unitary_two_sided l.1
+  unfold letterMatrix
+  by_cases hb : l.2
+  · simp only [hb, if_true, Matrix.conjTranspose_conjTranspose]
+    exact ⟨hlu, hru⟩
+  · simp only [hb, Bool.false_eq_true, if_false]
+    exact ⟨hru, hlu⟩
+
+/-- **Braid words act by unitaries (PROVEN).**  The representation of every braid
+word is a unitary matrix: `ρ(w) · ρ(w)ᴴ = 1 = ρ(w)ᴴ · ρ(w)`.  This is the genuine
+group-homomorphism content — the image of `B_n` lands in the unitary group `U(V)`
+— proved by induction on the word from the (two-sided) unitarity of the
+generators.  It is exactly what makes a braid word a legitimate quantum gate. -/
+theorem wordMatrix_unitary (R : BraidRepresentation D n) (w : R.Word) :
+    (R.wordMatrix w) * (R.wordMatrix w)ᴴ = 1 ∧
+    (R.wordMatrix w)ᴴ * (R.wordMatrix w) = 1 := by
+  induction w with
+  | nil => simp
+  | cons l w ih =>
+    obtain ⟨ihr, ihl⟩ := ih
+    obtain ⟨hlr, hll⟩ := R.letterMatrix_unitary l
+    rw [wordMatrix_cons, Matrix.conjTranspose_mul]
+    refine ⟨?_, ?_⟩
+    · -- (ML · MW)(ML · MW)ᴴ = ML (MW MWᴴ) MLᴴ = ML · MLᴴ = 1
+      rw [Matrix.mul_assoc, ← Matrix.mul_assoc (R.wordMatrix w), ihr,
+        Matrix.one_mul, hlr]
+    · -- (ML · MW)ᴴ(ML · MW) = MWᴴ (MLᴴ ML) MW = MWᴴ MW = 1
+      rw [Matrix.mul_assoc, ← Matrix.mul_assoc ((R.letterMatrix l)ᴴ), hll,
+        Matrix.one_mul, ihl]
+
+/-- The word representation is multiplicative under concatenation:
+`ρ(v ++ w) = ρ(v) · ρ(w)`.  (Functoriality of the braid-group representation.) -/
+theorem wordMatrix_append (R : BraidRepresentation D n) (v w : R.Word) :
+    R.wordMatrix (v ++ w) = R.wordMatrix v * R.wordMatrix w := by
+  induction v with
+  | nil => simp
+  | cons l v ih => rw [List.cons_append, wordMatrix_cons, wordMatrix_cons, ih,
+      Matrix.mul_assoc]
+
+end BraidRepresentation
+
+/-! ### 3.1.  FKLW braid-gate universality (the genuine density theorem)
+
+The **Freedman–Larsen–Wang density theorem** (Bull. AMS 40 (2003), building on
+Freedman–Kitaev–Larsen–Wang) is the mathematical heart of the topological
+quantum-computation universality claim.  For the anyon models that matter —
+e.g. Fibonacci anyons, and more generally the Jones/`SU(2)_k` representations
+for `k ≠ 1, 2, 4` — the image of the braid group `B_n` under its unitary
+representation `ρ` is **dense** in the (projective) unitary group of the
+fusion-space.  Equivalently: every target unitary gate `U` can be approximated
+to arbitrary precision `ε > 0` by the image `ρ(w)` of some braid word `w`.
+
+Density (not exact reachability) is the correct statement: the braid-group
+image is a *countable* subgroup, so it can never equal the full continuous
+unitary group — but it is dense, which is exactly what universal quantum
+computation requires (Solovay–Kitaev then gives efficient approximation).
+
+This is a genuinely *external* classical theorem.  Following the project's
+typeclass-conditional discipline (cf. `LovaszVertexTransitiveRatioBound`,
+`LiteratureInterfaces`), we capture it as a `Prop`-valued **typeclass
+assumption** `BraidGateUniversal`, *not* a bare `axiom` or `sorry`.  No instance
+is provided: the density theorem requires the concrete Jones-representation
+analysis (Lie-theoretic closure of the braid image) which is not constructible
+here.  A theorem taking `[BraidGateUniversal R]` is `#print axioms`-clean and
+honestly conditional on the cited result. -/
+
+/-- **FKLW braid-gate universality interface** (Freedman–Kitaev–Larsen–Wang
+2003; Freedman–Larsen–Wang density theorem).
+
+For a braid representation `R` whose anyon model is braiding-universal, the
+image `{ρ(w) : w a braid word}` is **dense in the unitary group** on `V`: every
+unitary target `U` is approximated entrywise to any precision `ε > 0` by some
+braid word's representation `R.wordMatrix w`.
+
+The entrywise sup-distance `∀ a b, ‖U a b − ρ(w) a b‖ < ε` is the genuine
+finite-dimensional metric content of "ρ(w) → U"; over the finite `V` it is
+equivalent to operator-norm density.  This is precisely the FLW density theorem
+restricted to the cell-uniform/fusion representation `R`. -/
+class BraidGateUniversal
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : WeightedGraph V} {A : Type v} [Fintype A] [DecidableEq A]
+    {M : ModularData A} {D : AnyonDecoration G M} {n : ℕ}
+    (R : BraidRepresentation D n) : Prop where
+  /-- **Density of the braid image in the unitary group** (FLW 2003).  For every
+  unitary target `U` (`U Uᴴ = 1 = Uᴴ U`) and every `ε > 0` there is a braid word
+  `w` whose representation `R.wordMatrix w` is within `ε` of `U` entrywise. -/
+  dense_in_unitary :
+    ∀ (U : Matrix V V ℂ), U * Uᴴ = 1 → Uᴴ * U = 1 →
+      ∀ ε : ℝ, 0 < ε →
+        ∃ w : R.Word, ∀ a b : V, ‖U a b - R.wordMatrix w a b‖ < ε
 
 /-- **Topological-sector lifting theorem.**  Let `D` be an anyonic
 decoration on `G` whose sector partition is equitable (so we have a
@@ -544,30 +689,45 @@ structure BraidGate {V : Type u} [Fintype V] [DecidableEq V]
   /-- Realization time. -/
   τ : ℝ
 
-/-- **Theorem (braid-gate realization, statement).**  Given a braid gate
-`B` on an equitable partition `P`, there exists a CTQW evolution time `t`
-and a Hamiltonian `H` in the cell-uniform-invariant subalgebra of
-`Matrix V V ℂ` such that `exp(-it · H)` restricted to the cell-uniform
-subspace equals `B.gate`.  Statement; proof is a normal-form result for
-the quotient action.  See Freedman-Kitaev-Larsen-Wang (2003), Theorem 2.1. -/
+/-- **Braid-gate approximate realizability (PROVEN, FKLW-conditional).**
+
+Given a braiding-universal braid representation `R` (`[BraidGateUniversal R]`),
+**every** unitary target gate `U` on the fusion space `V` is realized to any
+precision `ε > 0` by an actual braid word: there is a word `w` whose
+representation `R.wordMatrix w` is
+
+  * **genuinely unitary** (`R.wordMatrix w · (R.wordMatrix w)ᴴ = 1` and
+    conversely — `wordMatrix_unitary`, proven outright), and
+  * **within `ε` of `U` entrywise** (`∀ a b, ‖U a b − ρ(w) a b‖ < ε`).
+
+This is the faithful topological-quantum-computation payoff: braiding alone
+(no measurement, no fine-tuned Hamiltonian) approximates an arbitrary logical
+gate, which is exactly the universality content of Freedman–Kitaev–Larsen–Wang
+(2003) and the Freedman–Larsen–Wang density theorem.
+
+HONESTY NOTE.  This *replaces* a previous `braid_gate_realizable` whose
+statement was **false**: it claimed an arbitrary unitary `B.gate` is realized
+**exactly** by a single CTQW `exp(−itH)` on the cell-uniform subspace.  That is
+mathematically impossible in general — the spectrum of `exp(−itH)` restricted to
+an invariant subspace lies on a one-parameter subgroup of the unit circle, so it
+cannot equal the spectrum of an arbitrary unitary — and the claim was closed by
+`sorry`.  The genuine FKLW statement is *density / approximation* by braid
+**words** (a discrete, countable subgroup), not exact reachability by a single
+exponential; that is what we prove here, conditional on the cited density
+theorem packaged as `[BraidGateUniversal R]`. -/
 theorem braid_gate_realizable
     {V : Type u} [Fintype V] [DecidableEq V]
-    {G : WeightedGraph V} {I : Type v} [Fintype I] [DecidableEq I]
-    {P : EquitablePartition G I} (B : BraidGate P) :
-    -- There is a Hermitian Hamiltonian `H` and a time `t` whose CTQW evolution,
-    -- pushed through the cell-uniform isometry `cellUniformVec`, implements the
-    -- braid gate `B.gate` on the quotient: for every quotient weight vector `w`,
-    --   `exp(-i t H) · (∑ i, w i · e_i)  =  ∑ i, (B.gate ·ᵥ w) i · e_i`.
-    -- The matching equation is the genuine (non-vacuous) content; its proof is
-    -- the FKLW normal-form result (FKLW 2003 Thm 2.1).
-    ∃ (H : Matrix V V ℂ) (t : ℝ), H.IsHermitian ∧
-      ∀ w : I → ℂ,
-        (NormedSpace.exp (-(Complex.I * (t : ℂ)) • H)).mulVec
-            (fun v => ∑ i, w i * P.cellUniformVec i v)
-          = (fun v => ∑ i, (B.gate.mulVec w) i * P.cellUniformVec i v) := by
-  -- DEEP: construction of the realising Hamiltonian from the quotient normal
-  -- form (Freedman-Kitaev-Larsen-Wang 2003 Thm 2.1).
-  sorry
+    {G : WeightedGraph V} {A : Type v} [Fintype A] [DecidableEq A]
+    {M : ModularData A} {D : AnyonDecoration G M} {n : ℕ}
+    (R : BraidRepresentation D n) [hU : BraidGateUniversal R]
+    (U : Matrix V V ℂ) (hUr : U * Uᴴ = 1) (hUl : Uᴴ * U = 1)
+    {ε : ℝ} (hε : 0 < ε) :
+    ∃ w : R.Word,
+      (R.wordMatrix w * (R.wordMatrix w)ᴴ = 1 ∧
+        (R.wordMatrix w)ᴴ * R.wordMatrix w = 1) ∧
+      ∀ a b : V, ‖U a b - R.wordMatrix w a b‖ < ε := by
+  obtain ⟨w, hw⟩ := hU.dense_in_unitary U hUr hUl ε hε
+  exact ⟨w, R.wordMatrix_unitary w, hw⟩
 
 /-! ### 7.3 Fusion = refinement of an equitable partition
 
@@ -672,20 +832,26 @@ engineer braid gates on Graphplay hardware using the chiral
 A magnetic-flux schedule modulates per-edge phases; in a surface-embedded
 chiral CTQW, threading a quantum of flux through a face induces an
 Aharonov-Bohm phase that braids the worldlines of anyons localized to
-opposite sides of the face.  This is the hardware analogue of the
-`BraidGate` machinery above. -/
+opposite sides of the face.  This is the hardware analogue of the braiding
+machinery above.
+
+FAITHFUL RESTATEMENT.  The open question is whether flux-driven CTQW phase
+gates generate a **braiding-universal** representation — i.e. whether some
+`BraidRepresentation R` realizable by `magneticFluxSchedule`-style chiral
+evolutions satisfies `BraidGateUniversal R` (its braid-word image is dense in
+the unitary group).  The previous formulation asked for *exact* single-CTQW
+realization of an arbitrary cell-index unitary, which is **false** (see the
+honesty note on `braid_gate_realizable`); the genuine TQC target is the
+*approximation / density* property below. -/
 def openQ3_FluxBraidGates : Prop :=
-  -- For every `BraidGate B`, there exists a Hermitian Hamiltonian `H` and a
-  -- time `t` whose CTQW evolution implements `B.gate` on the cell-uniform
-  -- subspace (the realizability conclusion of `braid_gate_realizable`).
-  ∀ {V : Type} [Fintype V] [DecidableEq V]
-    {G : WeightedGraph V} {I : Type} [Fintype I] [DecidableEq I]
-    {P : EquitablePartition G I} (B : BraidGate P),
-    ∃ (H : Matrix V V ℂ) (t : ℝ), H.IsHermitian ∧
-      ∀ w : I → ℂ,
-        (NormedSpace.exp (-(Complex.I * (t : ℂ)) • H)).mulVec
-            (fun v => ∑ i, w i * P.cellUniformVec i v)
-          = (fun v => ∑ i, (B.gate.mulVec w) i * P.cellUniformVec i v)
+  -- Is there a (flux-realizable) braiding-universal braid representation?
+  -- I.e. a braid representation whose braid-word image is dense in `U(V)`,
+  -- so that every logical unitary is approximated to any precision `ε`.
+  ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
+    (G : WeightedGraph V) (A : Type) (_ : Fintype A) (_ : DecidableEq A)
+    (M : ModularData A) (D : AnyonDecoration G M) (n : ℕ)
+    (R : BraidRepresentation D n),
+    BraidGateUniversal R
 
 /-! ## 9. Mapping-class group action on cell-uniform subspace
 
@@ -744,8 +910,11 @@ Putting the pieces together:
 
 Together these statements pin down the precise dictionary between
 Graphplay (an equitable-partition / CTQW formalism) and TQFT (an MTC /
-anyonic formalism).  Filling in the sorries amounts to porting standard
-MTC and TQC results into Mathlib.
+anyonic formalism).  The braiding/TQC layer (§3, §3.1, §7.2) is now genuine: the
+braid-word representation is a proven unitary group homomorphism, and the
+universality payoff `braid_gate_realizable` is an axiom-clean theorem conditional
+on the cited Freedman–Larsen–Wang density theorem `[BraidGateUniversal R]`,
+rather than a `sorry`-closed (and, as stated, false) exact-realization claim.
 -/
 
 end TQFT

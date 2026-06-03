@@ -312,7 +312,151 @@ theorem quotient_isSymm (Q : QuantumEquitablePartition n S I) :
   · rw [dif_pos hz, dif_pos (Or.symm hz)]
   · rw [dif_neg hz, dif_neg (fun h => hz (Or.symm h)), hnum j i, mul_comm dⱼ.re dᵢ.re]
 
+/-! ### 2a. Hamiltonian compression and the effective (block) Hamiltonian
+
+The quotient of §2 traces a *fixed* witness (the unit `1`) against the cell
+projectors, producing only the projector overlap/Gram matrix `tr(p_i p_j)/√…`,
+which is independent of any dynamics.  The genuine "effective Hamiltonian on the
+cells" requires a **designated Hamiltonian** `H` to compress: the `(i, j)`-block
+is `p_i · H · p_j`, and the effective quotient entry is its normalized block
+trace `blockTrace H i j`.
+
+The key *equitable* structural theorem is **block-diagonalization**: when `H`
+commutes with every cell projector (the operator-algebraic equitable / locality
+condition — for the Majorana chip this is parity conservation), the compression
+is block-diagonal, `p_i · H · p_j = 0` for `i ≠ j`, and the diagonal blocks
+`p_i · H · p_i = H · p_i = p_i · H` are the genuine sector-restricted
+Hamiltonians.  This is what makes the disassembly a real theorem rather than a
+projector-overlap bookkeeping matrix. -/
+
+/-- The **effective Hamiltonian** (effective quotient) of a designated host
+Hamiltonian `H` along the cell decomposition `Q`: the `I × I` matrix whose
+`(i, j)` entry is the normalized block trace `tr(p_i · H · p_j)/√(d_i d_j)`.
+Unlike `quotient` (which is `effectiveHamiltonian 1`, the projector Gram
+matrix), this *depends on `H`* and is the genuine compressed dynamics. -/
+noncomputable def effectiveHamiltonian (Q : QuantumEquitablePartition n S I)
+    (H : Matrix (Fin n) (Fin n) ℂ) : Matrix I I ℂ :=
+  fun i j => Q.blockTrace H i j
+
+/-- The projector-Gram `quotient` is exactly the effective Hamiltonian of the
+*unit* — making explicit that `quotient` carries **no** dynamical information. -/
+theorem quotient_eq_effectiveHamiltonian_one (Q : QuantumEquitablePartition n S I) :
+    Q.quotient = Q.effectiveHamiltonian (1 : Matrix (Fin n) (Fin n) ℂ) := rfl
+
+/-- **Off-diagonal blocks vanish under projector commutation.**  If the host
+Hamiltonian `H` commutes with each cell projector (`H * p_i = p_i * H`), then for
+distinct cells `i ≠ j` the compression block is zero:
+`p_i · H · p_j = H · p_i · p_j = H · 0 = 0`.  This is the genuine equitable
+content — the cells do not mix under `H` — and it *uses* the commutation
+hypothesis essentially. -/
+theorem block_offdiag_eq_zero (Q : QuantumEquitablePartition n S I)
+    {H : Matrix (Fin n) (Fin n) ℂ}
+    (hcomm : ∀ i : I, H * Q.cells.p i = Q.cells.p i * H)
+    {i j : I} (hij : i ≠ j) :
+    Q.block H i j = 0 := by
+  unfold QuantumEquitablePartition.block
+  -- `p_i · H · p_j = p_i · (H · p_j) = p_i · (p_j · H) = (p_i · p_j) · H = 0`.
+  rw [Matrix.mul_assoc, hcomm j, ← Matrix.mul_assoc, Q.cells.orth i j hij,
+    Matrix.zero_mul]
+
+/-- **The diagonal block is the sector-restricted Hamiltonian.**  Under projector
+commutation the diagonal compression collapses to `p_i · H` (equivalently
+`H · p_i`): the genuine restriction of `H` to the parity sector `i`.  (Uses
+`p_i² = p_i`.) -/
+theorem block_diag_eq (Q : QuantumEquitablePartition n S I)
+    {H : Matrix (Fin n) (Fin n) ℂ}
+    (hcomm : ∀ i : I, H * Q.cells.p i = Q.cells.p i * H) (i : I) :
+    Q.block H i i = Q.cells.p i * H := by
+  unfold QuantumEquitablePartition.block
+  -- `p_i · H · p_i = p_i · (p_i · H) = (p_i · p_i) · H = p_i · H`.
+  rw [Matrix.mul_assoc, hcomm i, ← Matrix.mul_assoc, Q.cells.idem i]
+
+/-- **Effective Hamiltonian is block-diagonal under projector commutation.**  The
+off-diagonal entries of the effective quotient vanish: `effectiveHamiltonian H`
+is a *diagonal* `I × I` matrix when `H` commutes with the projectors.  This is
+the precise statement that a parity-conserving Hamiltonian disassembles into one
+independent block per sector — the de-hollowed disassembly headline. -/
+theorem effectiveHamiltonian_isDiag (Q : QuantumEquitablePartition n S I)
+    {H : Matrix (Fin n) (Fin n) ℂ}
+    (hcomm : ∀ i : I, H * Q.cells.p i = Q.cells.p i * H) :
+    ∀ i j : I, i ≠ j → Q.effectiveHamiltonian H i j = 0 := by
+  intro i j hij
+  unfold QuantumEquitablePartition.effectiveHamiltonian
+    QuantumEquitablePartition.blockTrace
+  -- The numerator `(block H i j).trace = 0` because the block itself is `0`.
+  rw [Q.block_offdiag_eq_zero hcomm hij]
+  simp
+
+/-- **The effective Hamiltonian is Hermitian when `H` is.**  Each entry
+`tr(p_i H p_j)/√(d_i d_j)` of the effective quotient satisfies
+`star (entry j i) = entry i j` when `Hᴴ = H`: the numerator transforms as
+`star tr(p_j H p_i) = tr((p_j H p_i)ᴴ) = tr(p_i H p_j)` (using `p_kᴴ = p_k` and
+`Hᴴ = H`), the normalizer is a real square root, and `√(d_j d_i) = √(d_i d_j)`.
+So the compressed effective Hamiltonian is a genuine Hermitian matrix on the
+cells. -/
+theorem effectiveHamiltonian_isHermitian (Q : QuantumEquitablePartition n S I)
+    {H : Matrix (Fin n) (Fin n) ℂ} (hH : H.IsHermitian) :
+    (Q.effectiveHamiltonian H).IsHermitian := by
+  classical
+  apply Matrix.IsHermitian.ext
+  intro i j
+  show star (Q.blockTrace H j i) = Q.blockTrace H i j
+  unfold QuantumEquitablePartition.blockTrace QuantumEquitablePartition.block
+  -- Numerator reality/symmetry: `star tr(p_j H p_i) = tr(p_i H p_j)`.
+  have hnum : ∀ a b : I,
+      star ((Q.cells.p a * H * Q.cells.p b).trace)
+        = (Q.cells.p b * H * Q.cells.p a).trace := by
+    intro a b
+    rw [← Matrix.trace_conjTranspose, Matrix.conjTranspose_mul,
+      Matrix.conjTranspose_mul, (Q.cells.herm a).eq, (Q.cells.herm b).eq, hH.eq]
+    -- LHS is `(p_b * (H * p_a)).trace`; reassociate to `((p_b * H) * p_a).trace`.
+    rw [← Matrix.mul_assoc]
+  set dᵢ : ℂ := (Q.cells.p i).trace
+  set dⱼ : ℂ := (Q.cells.p j).trace
+  by_cases hz : dⱼ = 0 ∨ dᵢ = 0
+  · rw [dif_pos hz, dif_pos (Or.symm hz), star_zero]
+  · rw [dif_neg hz, dif_neg (fun h => hz (Or.symm h)), star_div₀, hnum,
+      mul_comm dⱼ.re dᵢ.re, Complex.star_def, Complex.conj_ofReal]
+
 end QuantumEquitablePartition
+
+/-! ### 2b. Sharpness: the commutation hypothesis is load-bearing
+
+The block-diagonalization `block_offdiag_eq_zero` *requires* that `H` commute with
+the cell projectors.  Without it, an off-diagonal compression block can be
+**nonzero**.  We exhibit the minimal witness in `M₂(ℂ)`: with the two standard
+rank-1 diagonal projectors `p₀ = E₀₀`, `p₁ = E₁₁` and the off-diagonal Pauli
+`X = E₀₁ + E₁₀` (which does *not* commute with `p₀, p₁`), the `(0,1)`-block
+`p₀ · X · p₁ = E₀₁ ≠ 0`.  This certifies that the disassembly headline is
+**non-vacuous**: the parity-conservation hypothesis cannot be dropped. -/
+
+/-- The standard rank-1 diagonal projector `Eᵢᵢ` on `M₂(ℂ)`. -/
+private noncomputable def stdProj (i : Fin 2) : Matrix (Fin 2) (Fin 2) ℂ :=
+  Matrix.single i i (1 : ℂ)
+
+/-- **Sharpness witness.**  For the Pauli-`X` Hamiltonian `X = E₀₁ + E₁₀` (which
+does not commute with the diagonal projectors), the `(0,1)` compression block
+`p₀ · X · p₁` is the *nonzero* matrix unit `E₀₁`.  Hence the commutation
+hypothesis of `block_offdiag_eq_zero` / `effectiveHamiltonian_isDiag` is genuinely
+needed — the off-diagonal blocks do **not** vanish for a generic Hamiltonian, only
+for a parity-conserving one. -/
+theorem block_offdiag_nonzero_without_commute :
+    stdProj 0 * (Matrix.single 0 1 (1 : ℂ) + Matrix.single 1 0 (1 : ℂ)) * stdProj 1
+      = Matrix.single 0 1 (1 : ℂ) ∧
+    (Matrix.single 0 1 (1 : ℂ) : Matrix (Fin 2) (Fin 2) ℂ) ≠ 0 := by
+  refine ⟨?_, ?_⟩
+  · -- `E₀₀ · X · E₁₁ = E₀₁ · (X 0 1) = E₀₁`, since the Pauli-`X` has `X 0 1 = 1`.
+    unfold stdProj
+    rw [Matrix.single_mul_mul_single]
+    -- `single 0 1 (1 * X 0 1 * 1) = single 0 1 1`: the inner scalar is `X 0 1 = 1`.
+    congr 1
+    simp [Matrix.add_apply, Matrix.single_apply,
+      (by decide : ¬((1 : Fin 2) = 0 ∧ (0 : Fin 2) = 1))]
+  · -- `E₀₁ ≠ 0`: its `(0,1)` entry is `1 ≠ 0`.
+    intro h
+    have := congrFun (congrFun h 0) 1
+    rw [Matrix.single_apply_same] at this
+    exact one_ne_zero this
 
 /-! ## 3. Headline: non-commutative PST lifting
 

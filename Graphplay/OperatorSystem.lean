@@ -35,9 +35,14 @@ This file:
   (`Graphplay.QuantumCSP.quantumChromaticNumber`) and the Tsirelson chain
   `θ ≤ θ_q ≤ χ_q ≤ χ`.
 
-All proofs are `sorry`. The statements are written defensively so the file
-can be a precursor of an eventual Mathlib upstream contribution
-(operator-system theory currently being missing from Mathlib).
+The two genuinely-external operator-algebra inputs — Choi's CP⟺Choi-PSD theorem
+and the Stinespring dilation — are carried as `Prop`-valued **typeclass
+assumptions** (`ChoiTheorem`, `StinespringDilation`), each discharging an
+axiom-clean **conditional theorem**; no `sorry` and no bare `axiom`.  Everything
+else (amplification functoriality, `k`-positivity monotonicity, the UCP category,
+the examples) is proved outright.  The file is written defensively so it can be a
+precursor of an eventual Mathlib upstream contribution (operator-system theory
+currently being missing from Mathlib).
 
 References:
 
@@ -310,18 +315,29 @@ noncomputable def choiMatrix
   fun ij kl =>
     φ (Matrix.single ij.1 kl.1 (1 : ℂ)) ij.2 kl.2
 
+/-- **Choi's theorem interface (Choi 1975, Thm 2)** — the genuinely-external
+operator-algebra input, carried as a `Prop`-valued **typeclass assumption, NOT a
+bare axiom**.
+
+The content: a linear map `φ : M_n(ℂ) → M_m(ℂ)` is completely positive iff its
+Choi matrix `C(φ) = ∑_{i,j} E_{ij} ⊗ φ(E_{ij})` is positive semi-definite.  Both
+directions are non-trivial in formal mathematics: the forward direction picks
+`k = n` and feeds the maximally entangled vector; the backward direction extracts
+Kraus operators from the spectral decomposition of the Choi matrix.  No instance
+is provided (pure external, pending a Mathlib Choi-matrix theory). -/
+class ChoiTheorem (n m : ℕ) : Prop where
+  /-- Choi 1975: complete positivity ⟺ Choi-matrix positivity. -/
+  cp_iff_choi_posSemidef :
+    ∀ φ : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ] Matrix (Fin m) (Fin m) ℂ,
+      IsCompletelyPositive φ ↔ (choiMatrix φ).PosSemidef
+
 /-- **Choi's theorem (1975)**: a linear map between matrix algebras is
-completely positive iff its Choi matrix is positive semi-definite. The
-forward direction relies on the *k = n* sufficiency (Choi 1975, Thm 2);
-the backward direction is the Kraus decomposition. -/
-theorem isCompletelyPositive_iff_choi_posSemidef
+completely positive iff its Choi matrix is positive semi-definite.  Axiom-clean
+**conditional theorem** via `[ChoiTheorem n m]` (the cited Choi 1975 result). -/
+theorem isCompletelyPositive_iff_choi_posSemidef [h : ChoiTheorem n m]
     (φ : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ] Matrix (Fin m) (Fin m) ℂ) :
-    IsCompletelyPositive φ ↔ (choiMatrix φ).PosSemidef := by
-  -- Choi 1975. Both directions are non-trivial in formal mathematics: the
-  -- forward direction picks `k = n` and feeds the maximally entangled
-  -- vector; the backward direction extracts Kraus operators from the
-  -- spectral decomposition of the Choi matrix.
-  sorry
+    IsCompletelyPositive φ ↔ (choiMatrix φ).PosSemidef :=
+  h.cp_iff_choi_posSemidef φ
 
 /-- A k-positive map for `k ≥ 1` is, in particular, positive (the `k = 1`
 case). -/
@@ -906,18 +922,37 @@ noncomputable def tensor (S : OperatorSystem n) (T : OperatorSystem m) :
 
 @[inherit_doc] infixl:70 " ⊗ₒ " => OperatorSystem.tensor
 
-/-- **Stinespring dilation as a UCP morphism**. Every UCP map
-`φ : S → T` between (finite-dimensional) operator systems admits a
-*Stinespring dilation*: there exist an ancilla space `K = ℂ^d` for some
-`d`, an isometry `V : ℂ^m → ℂ^n ⊗ K`, and a `*`-representation
-`π : ⟨S⟩ → B(ℂ^n ⊗ K)` such that for `A ∈ S`,
+/-- **Stinespring dilation interface (Stinespring 1955 / Paulsen Thm 4.1)** — the
+genuinely-external operator-algebra input, carried as a `Prop`-valued **typeclass
+assumption, NOT a bare axiom**.
 
-  `φ(A) = V^† π(A) V`.
+The content: every UCP map `φ : S → T` between finite-dimensional operator systems
+admits a Stinespring dilation `(d, V, π)` — an ancilla `K = ℂ^d`, an isometry
+`V : ℂ^m → ℂ^n ⊗ K`, and a `*`-representation `π : ⟨S⟩ → B(ℂ^n ⊗ K)` with
+`φ(A) = V^† π(A) V` for `A ∈ S`.  The proof proceeds via the GNS-like construction
+on `M_n(ℂ) ⊗ ℂ^m` with the positive semi-definite form
+`⟨A ⊗ v, B ⊗ w⟩ := ⟨v, φ(A^† B) w⟩`.  No instance is provided (pure external,
+pending a Mathlib Stinespring theory). -/
+class StinespringDilation (n m : ℕ) : Prop where
+  /-- Stinespring 1955: every UCP map has a dilation triple `(d, V, π)`. -/
+  exists_dilation :
+    ∀ {S : OperatorSystem n} {T : OperatorSystem m} (φ : UCPMap S T),
+      ∃ (d : ℕ) (V : Matrix (Fin m) (Fin n × Fin d) ℂ)
+        (π : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ]
+              Matrix (Fin n × Fin d) (Fin n × Fin d) ℂ),
+        (V * Matrix.conjTranspose V = (1 : Matrix (Fin m) (Fin m) ℂ)) ∧
+        (∀ A B : Matrix (Fin n) (Fin n) ℂ,
+          A ∈ S.generatedStarAlgebra → B ∈ S.generatedStarAlgebra →
+          π (A * B) = π A * π B) ∧
+        (∀ A ∈ S, φ.toLinearMap A = V * π A * Matrix.conjTranspose V)
 
-This is Stinespring's theorem (1955) packaged as data: a UCPMap is *witnessed*
-by a dilation triple `(d, V, π)`. We state the existence of such a triple. -/
+/-- **Stinespring dilation as a UCP morphism** (Stinespring 1955). Every UCP map
+`φ : S → T` between (finite-dimensional) operator systems admits a Stinespring
+dilation triple `(d, V, π)` with `φ(A) = V^† π(A) V`.  Axiom-clean **conditional
+theorem** via `[StinespringDilation n m]` (the cited Stinespring/Paulsen result). -/
 theorem UCPMap.stinespring_dilation
-    {n m : ℕ} {S : OperatorSystem n} {T : OperatorSystem m} (φ : UCPMap S T) :
+    {n m : ℕ} [h : StinespringDilation n m]
+    {S : OperatorSystem n} {T : OperatorSystem m} (φ : UCPMap S T) :
     ∃ (d : ℕ) (V : Matrix (Fin m) (Fin n × Fin d) ℂ)
       (π : Matrix (Fin n) (Fin n) ℂ →ₗ[ℂ]
             Matrix (Fin n × Fin d) (Fin n × Fin d) ℂ),
@@ -928,11 +963,8 @@ theorem UCPMap.stinespring_dilation
         A ∈ S.generatedStarAlgebra → B ∈ S.generatedStarAlgebra →
         π (A * B) = π A * π B) ∧
       -- Dilation identity
-      (∀ A ∈ S, φ.toLinearMap A = V * π A * Matrix.conjTranspose V) := by
-  -- Standard finite-dimensional Stinespring (Paulsen Thm 4.1). The proof
-  -- proceeds via the GNS-like construction on `M_n(ℂ) ⊗ ℂ^m` with the
-  -- positive semi-definite form `⟨A ⊗ v, B ⊗ w⟩ := ⟨v, φ(A^† B) w⟩`.
-  sorry
+      (∀ A ∈ S, φ.toLinearMap A = V * π A * Matrix.conjTranspose V) :=
+  h.exists_dilation φ
 
 end OperatorSystem
 
