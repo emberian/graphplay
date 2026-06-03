@@ -30,12 +30,15 @@ The deliverables of this file are:
    equivalence with the textbook "matched off-diagonal entry" characterization
    familiar from Godsil-Royle / Coutinho-Godsil.
 3. `IsStronglyCospectral.isPST_iff_godsilPSTReady`: the PST-existence
-   characterization (honest TRUE form) over `IsGodsilPSTReady` — arithmetic
-   alignment + parity-matched signs.  Backward CLOSED by the exact half-period
-   construction; forward an honest `sorry` routed through the downstream
-   periodicity module.  (The earlier `… ↔ IsStronglyCospectral ∧
-   GodsilRatioCondition` form had a FALSE backward direction — bare strong
-   cospectrality leaves the cross-phase free of the eigenvalue parity.)
+   characterization (honest TRUE form, real-symmetric + full-support) over
+   `IsGodsilPSTReady` — arithmetic alignment + parity-matched signs.  **Fully
+   CLOSED axiom-clean**: backward by the exact half-period construction, forward by
+   transporting the *upstream* `GodsilRatio` sign-pinning bridge
+   `isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport` (no `sorry`, no circular
+   import).  (The earlier `… ↔ IsStronglyCospectral ∧ GodsilRatioCondition` form
+   had a FALSE backward direction — bare strong cospectrality leaves the cross-phase
+   free of the eigenvalue parity; and the unconditional `IsGodsilPSTReady` form was
+   false-forward — the `K₂ ⊔ H` obstruction.)
 4. `Hom.preserves_stronglyCospectral`: equitable-partition functoriality:
    an equitable partition whose cell map separates `u` and `v` lifts
    strong cospectrality from `u, v` upstairs to `cells u, cells v`
@@ -490,43 +493,46 @@ theorem isGodsilPSTReady_iff_local (G : WeightedGraph V) (u v : V) :
   refine forall_congr' (fun lam => imp_congr_right (fun _ => ?_))
   rw [eigenProjEntry_eq_local, eigenProjDiag_eq_local]
 
-/-- **Godsil's PST-existence criterion, honest TRUE form (this module).**  PST
-between `u` and `v` occurs at some positive time iff the pair carries Godsil's
-PST-ready spectral data `IsGodsilPSTReady` (arithmetic alignment of the support
-*together with* the parity-matched sign structure).
+/-- **Godsil's PST-existence criterion, honest TRUE form (this module) — fully
+CLOSED, axiom-clean.**  On a real-symmetric graph (`Aᵀ = A`) with `u` of full
+eigenvalue support, PST between `u` and `v` occurs at some positive time iff the
+pair carries Godsil's PST-ready spectral data `IsGodsilPSTReady` (arithmetic
+alignment of the support *together with* the parity-matched sign structure).
 
-* The **backward** direction (⇐) is **fully proven, axiom-clean**, by the *exact*
-  half-period construction of the sibling module
-  (`Graphplay.PST.isPST_of_aligned_paritySigned`, time `τ = π/a`): no Diophantine
-  approximation.  (We also exhibit a *positive* time: if `a < 0` replace `(a, b,
-  kof)` by `(-a, b, -kof)`; here `a > 0`, and `π/a > 0`.)
-* The **forward** direction (⇒) — PST forces the parity-signed alignment — is the
-  number-theoretic half (Godsil arXiv:0806.2074, Thm 2.2), reached via the
-  periodicity argument of the **downstream** `Graphplay.PST.Periodicity` module
-  (recorded there, axiom-clean, as `isPST_imp_isGodsilRatio_of_isSymm`).  It is
-  left as an **honest `sorry` on a TRUE statement**.
+* The **backward** direction (⇐) is the *exact* half-period construction of the
+  sibling module (`Graphplay.PST.isPST_of_aligned_paritySigned`, time `τ = π/a >
+  0`): no Diophantine approximation.  Unconditional in `hsymm`/`hfull`.
+* The **forward** direction (⇒) — PST forces the parity-signed alignment — is now
+  proven axiom-clean by transporting the sibling sign-pinning bridge
+  `Graphplay.PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport` (proven
+  *upstream* in `GodsilRatio` from the projector algebra) through the projector
+  bridge `isGodsilPSTReady_iff_local`.  (Earlier this was an honest `sorry`, on the
+  mistaken belief the proof had to live in the downstream periodicity module.)
 
-NOTE on the prior false form.  This slot previously read
-`(∃τ>0, IsPST) ↔ IsStronglyCospectral ∧ GodsilRatioCondition`, whose **backward
-direction is false**: bare strong cospectrality leaves the cross-entry phase free
-on the unit circle (a *simple-spectrum* graph makes every pair strongly
-cospectral — `isStronglyCospectral_of_simple_spectrum` — with generic non-`±1`
-phases), so even with the ratio condition (integer eigenvalues) the phases need
-not be realizable by any single `τ`, and no PST occurs.  Migrating the RHS to the
-parity-carrying `IsGodsilPSTReady` makes the statement TRUE.
+**Why `hsymm` + `hfull`, not unconditional.**  The forward is **false** without
+them: `IsGodsilPSTReady` aligns the *whole* spectrum, while PST constrains only the
+*supported* eigenvalues (the `K₂ ⊔ H` counterexample).  Real symmetry pins the
+cross phase to a real `±1`; full support extends the alignment to every spectral
+eigenvalue.  The earlier *unconditional* form
+`(∃τ>0, IsPST) ↔ IsGodsilPSTReady` was therefore false-forward (as was its
+predecessor `… ↔ IsStronglyCospectral ∧ GodsilRatioCondition`, whose *backward*
+half also fails — a simple-spectrum graph makes every pair strongly cospectral with
+generic non-`±1` phases).
 
 Reference: Coutinho-Godsil 2016, Thm 4.1.1; Godsil, arXiv:0806.2074, Thm 2.2;
 Bachman-Tamon arXiv:1108.0339. -/
 theorem IsStronglyCospectral.isPST_iff_godsilPSTReady
-    (G : WeightedGraph V) (u v : V) :
+    (G : WeightedGraph V) (hsymm : G.adj.IsSymm) {u v : V}
+    (hfull : ∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        lam ∈ Graphplay.PST.EigenvalueSupport G u) :
     (∃ τ : ℝ, 0 < τ ∧ IsPST G u v τ) ↔ IsGodsilPSTReady G u v := by
   rw [isGodsilPSTReady_iff_local]
   constructor
-  · -- FORWARD (honest `sorry`, TRUE): PST ⇒ parity-signed alignment.  Needs the
-    -- downstream periodicity argument; not reachable here without a circular
-    -- import.  The statement is genuinely true.
-    rintro ⟨τ, _, _⟩
-    sorry
+  · -- FORWARD (CLOSED, axiom-clean): PST ⇒ parity-signed alignment, via the
+    -- upstream `GodsilRatio` sign-pinning bridge (no circular import).
+    rintro ⟨τ, hτ, hpst⟩
+    exact Graphplay.PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport
+      G hsymm hτ hfull hpst
   · -- BACKWARD (CLOSED, axiom-clean): the exact half-period construction at the
     -- positive time `τ = π/a`.
     intro hready

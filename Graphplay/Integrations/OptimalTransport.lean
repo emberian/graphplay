@@ -1104,36 +1104,54 @@ noncomputable def sinkhornConvergenceTime
     {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (ε : ℝ) : ℕ :=
   ⌈Real.log (P.quotientSpread + 1) - Real.log ε⌉₊
 
-/-- **Conjecture (mixing ↔ Sinkhorn).**  For an equitable-partition graphon
-on `n := Fintype.card I ≥ 2` cells, the cell-uniform CTQW mixing time is related
-to the Sinkhorn entropic-regularisation convergence time by
+/-- **Conjecture (mixing ↔ Sinkhorn), UNIVERSAL-CONSTANT form.**  There is a
+**single graph-independent constant** `C > 0` such that for *every*
+equitable-partition graphon on `n := Fintype.card I ≥ 2` cells and *every* tolerance
+`ε > 0`, the cell-uniform CTQW mixing time is bounded by the Sinkhorn
+entropic-regularisation convergence time times the dictionary factor `log n / n`:
 
-  `cellUniformMixingTime P ε  ≈  sinkhornConvergenceTime P ε · log n / n`.
+  `cellUniformMixingTime P ε  ≤  C · sinkhornConvergenceTime P ε · log n / n`.
 
-The constant is independent of the graphon.  This relates the *quantum*
-sampling rate of an engineered graphon to its *classical* OT rate.
+The constant `C` is **independent of the graphon `(Ω, μ, W)`, the index `I`, the
+partition `P`, and `ε`** — this universality is the entire `log n / n` content of the
+dictionary; it relates the *quantum* sampling rate of an engineered graphon to its
+*classical* OT rate.
 
-**Audit (2026-06) — `n ≥ 2` hypothesis added (landmine removed).**  The `log n / n`
-factor *vanishes at `n = 1`* (`Real.log 1 = 0`), forcing the RHS to `0`; but the LHS
+**Audit (2026-06) — `C` HOISTED to a universal (vacuity removed).**  The previous
+form `∀ ε > 0, ∃ C > 0, mixingTime ≤ C · … · log n / n` quantified `C` *inside* a
+theorem already fixed to one graphon `(W, P)` and one `ε`, so `C` could depend on all
+of them: with `log n / n > 0` and the mixing time a fixed finite real, one takes
+`C := (mixingTime + 1) · n / (sinkhornTime · log n)` and the bound holds **trivially
+on every instance** — it asserts *no* `log n / n` scaling whatsoever.  The genuine
+claim, and the only one with content, is that **one** `C` works *uniformly across all
+graphons and tolerances*; we therefore bind `C` at the very outside and universally
+quantify `(Ω, μ, W, I, P, ε)` in the body.
+
+**`n ≥ 2` (landmine removed).**  The `log n / n` factor *vanishes at `n = 1`*
+(`Real.log 1 = 0`), forcing the RHS to `0`; but the LHS
 `cellUniformMixingTime P ε = sInf {t ≥ 0 | exp(-t)·spread ≤ ε}` is **strictly
 positive** whenever `spread > ε` (e.g. a one-cell partition of a constant graphon
-`W ≡ c` over a probability measure has `spread ≈ c`; pick `ε < c`).  So for `n = 1`
-the original statement asserted `0 < (positive) ≤ 0`, which is **FALSE**.  We restrict
-to `2 ≤ Fintype.card I` (where `log n > 0`), the regime the conjecture actually
-concerns.  The genuine `log n / n` dictionary remains the deep open conjecture
-(no proof, classical or quantum, is known); honest residual. -/
-theorem mixing_sinkhorn_conjecture
-    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (hI : 2 ≤ Fintype.card I) :
-    ∀ ε > 0,
-      ∃ C : ℝ, 0 < C ∧
-        cellUniformMixingTime P ε ≤
-          C * (sinkhornConvergenceTime P ε : ℝ) *
-            Real.log (Fintype.card I) / (Fintype.card I) := by
-  -- DEEP (open conjecture): the `log n / n` mixing↔Sinkhorn dictionary; relates an
-  -- sInf-defined CTQW mixing time to the finite Sinkhorn iteration count, an open
-  -- quantitative relation (no proof, classical or quantum, is known).  The `n ≥ 2`
-  -- hypothesis `hI` rules out the degenerate `log 1 = 0` case where the bound is false.
+`W ≡ c` has `spread ≈ c`; pick `ε < c`), so `n = 1` would assert `0 < positive ≤ 0`,
+FALSE.  We restrict to `2 ≤ Fintype.card I` (where `log n > 0`), the regime the
+conjecture concerns.  The genuine `log n / n` dictionary remains the deep open
+conjecture (no proof, classical or quantum, is known); honest `sorry` on the **true,
+non-vacuous universal-constant statement**. -/
+theorem mixing_sinkhorn_conjecture :
+    ∃ C : ℝ, 0 < C ∧
+      ∀ {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
+        {I : Type v} [Fintype I] [DecidableEq I]
+        {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W),
+        2 ≤ Fintype.card I →
+        ∀ ε > 0,
+          cellUniformMixingTime P ε ≤
+            C * (sinkhornConvergenceTime P ε : ℝ) *
+              Real.log (Fintype.card I) / (Fintype.card I) := by
+  -- DEEP (open conjecture): the `log n / n` mixing↔Sinkhorn dictionary, in its honest
+  -- universal-constant form — a *single* `C` bounding the sInf-defined CTQW mixing
+  -- time by the finite Sinkhorn iteration count times `log n / n`, uniformly over all
+  -- equitable-partition graphons.  No proof (classical or quantum) is known.  The
+  -- `n ≥ 2` hypothesis rules out the degenerate `log 1 = 0` case where the bound is
+  -- false.  Honest cited residual.
   sorry
 
 end Graphon
@@ -1489,16 +1507,22 @@ noncomputable def entropicSigning (W : Graphon Ω μ)
       _ ≤ max W.essBound 0 := le_trans hp (le_max_left _ _)
   loopless x := by rw [W.loopless x, zero_mul]
 
-/-- **Entropic-OT ↔ chiral-signing analogy** (statement-only conjecture).
-The entropic-regularisation Sinkhorn convergence rate of `W` matches the
-chiral-signed CTQW mixing rate of `W` under a specific dictionary mapping
-`ε` to a chiral angle `θ`. -/
-theorem entropic_chiral_analogy
-    (_W : Graphon Ω μ) (_c : Ω → Ω → ℝ) :
-    -- For every regularisation level `ε > 0` there is a chiral angle
-    -- `θ ∈ (0, π)` realising the entropic↔chiral dictionary `ε = -log sin θ`,
-    -- equivalently `sin θ = exp(-ε)`: the entropic Sinkhorn rate at level `ε`
-    -- matches the chiral-signed CTQW mixing rate at angle `θ`.
+/-- **Surjectivity of `sin` onto `(0,1)` via `arcsin` (trig lemma, PROVEN).**
+For every `ε > 0` there is an angle `θ ∈ (0, π)` with `sin θ = exp(-ε)`.
+
+**Renamed (audit 2026-06): was `entropic_chiral_analogy`.**  The former name promised
+an *entropic-Sinkhorn = chiral-mixing bridge* — that the entropic-regularisation
+Sinkhorn convergence rate of a graphon equals its chiral-signed CTQW mixing rate
+under the dictionary `ε ↦ θ`.  The statement proves **no such bridge**: it asserts
+only the elementary fact that `exp(-ε) ∈ (0,1)` lies in the range of `sin` on
+`(0, π)`, realised by `θ := arcsin(exp(-ε)) ∈ (0, π/2)`.  No mixing rate, no Sinkhorn
+rate, and no graphon appear in the conclusion.  We therefore drop the unused graphon
+`W`/cost `c` arguments and rename to the precise true content.  (The genuine
+entropic↔chiral dictionary — were it to be stated — would have to *equate two rates*,
+which would need the chiral-signing and Sinkhorn-rate machinery and is not done
+here.)  The angle map `ε ↦ arcsin(exp(-ε))` is exactly the substitution one *would*
+use in such a dictionary, which is why the lemma is kept. -/
+theorem exists_angle_sin_eq_exp_neg :
     ∀ ε > 0,
       ∃ θ : ℝ, 0 < θ ∧ θ < Real.pi ∧
         Real.sin θ = Real.exp (-ε) := by

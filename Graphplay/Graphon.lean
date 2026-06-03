@@ -140,8 +140,10 @@ the function `x ↦ ∫ W.kernel x y · f y ∂μ` is again in `L²(μ; ℂ)`.
 
 This is `ForMathlib.kernelIntegralFun_memLp` specialised to the graphon kernel
 (jointly measurable `W.measurable`, essentially bounded `W.bounded`).  The deep
-Cauchy–Schwarz/Hilbert–Schmidt analytic core remains the single honest `sorry`
-inside `kernelIntegralFun_memLp`; here it is consumed cleanly. -/
+Cauchy–Schwarz/Hilbert–Schmidt analytic core (`kernelIntegralFun_memLp`) is
+**fully proven** (`sorry`-free) — the pointwise Cauchy–Schwarz bound
+`kernelIntegralFun_ae_norm_le` plus `MemLp.of_bound` on the finite measure — and
+here it is consumed cleanly. -/
 theorem opFun_memLp [IsFiniteMeasure μ] (W : Graphon Ω μ) (f : Lp ℂ 2 μ) :
     MemLp (W.opFun (f : Ω → ℂ)) 2 μ :=
   kernelIntegralFun_memLp (measure_ne_top μ Set.univ) W.measurable.aestronglyMeasurable
@@ -238,13 +240,71 @@ theorem op_isSelfAdjoint [IsFiniteMeasure μ] (W : Graphon Ω μ) :
   Graphplay.ForMathlib.kernelIntegralCLM_isSelfAdjoint (μ := μ) W.kernel _ _ _ _ _ _
     W.measurable.aestronglyMeasurable W.bounded W.herm
 
+open Graphplay.ForMathlib in
 /-- The graphon operator has operator norm at most `essBound · μ(Ω)`.
 
-This is the easy `L¹ → L^∞` bound; sharper Hilbert–Schmidt bounds are available
-under stronger square-integrability assumptions on the kernel. -/
+This is the easy `L¹ → L^∞` (Schur) bound; sharper Hilbert–Schmidt bounds are
+available under stronger square-integrability assumptions on the kernel.
+
+**Genuine** (`sorry`-free): the per-`f` operator-norm inequality is the
+`sorry`-free Hilbert–Schmidt `eLpNorm` bound
+`ForMathlib.kernelIntegralFun_eLpNorm_le_mul` (with `M := W.essBound`), pushed
+through `ENNReal.toReal` exactly as in the `mkContinuous` bound of
+`kernelIntegralCLM`, then fed to `ContinuousLinearMap.opNorm_le_bound`.  The only
+subtlety is the nonnegativity of the constant `essBound · μ(Ω)`: the structure
+field `essBound` is not asserted nonnegative, but the a.e. bound `W.bounded`
+forces `0 ≤ essBound` whenever `μ ≠ 0` (a nonzero measure has a point where
+`0 ≤ ‖kernel‖ ≤ essBound`), and when `μ = 0` the constant is `essBound · 0 = 0`;
+either way `0 ≤ essBound · μ(Ω)`. -/
 theorem op_norm_le [IsFiniteMeasure μ] (W : Graphon Ω μ) (hμ : μ Set.univ ≠ ∞) :
     ‖W.op‖ ≤ W.essBound * (μ Set.univ).toReal := by
-  sorry
+  -- Nonnegativity of `essBound` off the zero measure: a nonzero `μ` makes
+  -- `μ ⊗ μ ≠ 0`, and the a.e. bound `‖uncurry kernel‖ ≤ essBound` then has a
+  -- witness `p` with `0 ≤ ‖uncurry kernel p‖ ≤ essBound`.
+  have hess : μ = 0 ∨ 0 ≤ W.essBound := by
+    rcases eq_or_ne μ 0 with hμ0 | hμ0
+    · exact Or.inl hμ0
+    · refine Or.inr ?_
+      -- `μ ≠ 0 ⟹ μ ⊗ μ ≠ 0 ⟹ ae(μ⊗μ) is NeBot`, so the a.e. bound has a witness.
+      haveI : (ae (μ.prod μ)).NeBot := by
+        rw [ae_neBot]
+        intro hz
+        apply hμ0
+        have huniv : (μ.prod μ) Set.univ = 0 := by rw [hz]; rfl
+        rw [← Set.univ_prod_univ, Measure.prod_prod, mul_self_eq_zero] at huniv
+        exact Measure.measure_univ_eq_zero.mp huniv
+      obtain ⟨p, hp⟩ := W.bounded.exists
+      exact le_trans (norm_nonneg _) hp
+  -- The constant `essBound · μ(Ω)` is nonnegative.
+  have hCnn : 0 ≤ W.essBound * (μ Set.univ).toReal := by
+    rcases hess with hμ0 | hpos
+    · simp [hμ0]
+    · exact mul_nonneg hpos ENNReal.toReal_nonneg
+  refine ContinuousLinearMap.opNorm_le_bound _ hCnn (fun f => ?_)
+  -- `W.op f = (opFun_memLp f).toLp (kernelIntegralFun kernel f)`; read off its norm.
+  rw [show ‖W.op f‖ = (eLpNorm (kernelIntegralFun (μ := μ) W.kernel (f : Ω → ℂ)) 2 μ).toReal from
+    by unfold Graphon.op; rw [kernelIntegralCLM_apply, Lp.norm_toLp]]
+  -- The Schur bound, with `M := max essBound 0` (nonneg, dominates the kernel).
+  have hbdd' : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry W.kernel p‖ ≤ max W.essBound 0 :=
+    W.bounded.mono fun p hp => hp.trans (le_max_left _ _)
+  have hle := kernelIntegralFun_eLpNorm_le_mul (μ := μ) hμ (M := max W.essBound 0)
+    (le_max_right _ _) W.measurable.aestronglyMeasurable hbdd' f
+  have hfin : eLpNorm (f : Ω → ℂ) 2 μ ≠ ∞ := Lp.eLpNorm_ne_top f
+  have hmemfin : eLpNorm (kernelIntegralFun (μ := μ) W.kernel (f : Ω → ℂ)) 2 μ ≠ ∞ :=
+    (W.opFun_memLp f).2.ne
+  have key : (eLpNorm (kernelIntegralFun (μ := μ) W.kernel (f : Ω → ℂ)) 2 μ).toReal
+      ≤ (ENNReal.ofReal (max W.essBound 0 * (μ Set.univ).toReal)
+          * eLpNorm (f : Ω → ℂ) 2 μ).toReal :=
+    ENNReal.toReal_mono (by finiteness) hle
+  refine key.trans ?_
+  rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal
+    (mul_nonneg (le_max_right _ _) ENNReal.toReal_nonneg),
+    show (eLpNorm (f : Ω → ℂ) 2 μ).toReal = ‖f‖ from (Lp.norm_def f).symm]
+  -- collapse `max essBound 0 = essBound`: off the zero measure `essBound ≥ 0`;
+  -- on the zero measure both `‖f‖ = 0` and `μ(Ω).toReal = 0`.
+  rcases hess with hμ0 | hpos
+  · subst hμ0; simp
+  · rw [max_eq_left hpos]
 
 /-! ### Continuous-time quantum walk on a graphon
 

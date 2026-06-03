@@ -46,8 +46,23 @@ Mathlib references used in statements:
   eigenstates (we do not formalise distributions here, only state the
   L²-eigenvalue condition).
 
-Statement-only file: every theorem proof is `sorry`, but the definitions
-typecheck and the propositional shape matches the finite predecessor.
+Status (this header was previously stale): the file is **substantially proven**,
+not statement-only.  The spectral-decomposition theorems
+(`spectrum_eq_point_union_continuous`, `residualSpectrum_empty`,
+`pointSpectrum_subset_spectrum`), the cell-uniform spectral bridge
+(`cellUniform_pointSpectrum`, `cellUniformSubspace_finiteDimensional`), the
+matrix-limit spectral closure (`spectrum_isClosed_of_tendsto`,
+`pointSpectrum_tendsto_of_symmQuotient_tendsto`), the step-graphon pure-point
+result (`isStepGraphon_hasPointSpectrum`), the constant-graphon point spectrum
+(`constant_pointSpectrum`, `constant_op_slice`), the PST-decoupling theorem
+(`cellUniformPST_decouples_from_continuous`), and the wave-packet transfer
+equivalence (`isWavePacketTransfer_pointSpectrum`) are all **fully proven**
+(`#print axioms` clean).  The single remaining `sorry` is
+`xieTamon_exists_continuous_tail` — the existence of a graphon with a genuine
+continuous tail sector — which is an honest gap requiring the spectral theory of
+multiplication operators (purely continuous spectrum) beyond Mathlib; its
+docstring documents precisely why the abstract `SpectralMeasureSelfAdjoint`
+interface is insufficient to close it.
 
 References for the spectral content:
 

@@ -35,13 +35,76 @@ noncomputable def WeightedGraph.searchEvolve {V : Type u} [Fintype V] [Decidable
     (G : WeightedGraph V) (M : Finset V) (γ τ : ℝ) : Matrix V V ℂ :=
   NormedSpace.exp (-(Complex.I * (τ : ℂ)) • G.searchHamiltonian M γ)
 
-/-- Optimal spatial search: there is a starting "uniform" state from which the
-search Hamiltonian evolves into the marked subspace with constant amplitude in
-time `τ`.  The constant is taken as `1/√2` here for concreteness. -/
+/-- **The search Hamiltonian is symmetric when the adjacency is.**  For a graph
+with *symmetric* adjacency (`G.adj u v = G.adj v u`, i.e. real-symmetric — the
+standard 0/1 or real-weighted undirected case), `H = -γ·A − P_M` is a symmetric
+matrix (`Hᵀ = H`); the diagonal projector `P_M` is symmetric and `A` is by
+hypothesis. -/
+theorem WeightedGraph.searchHamiltonian_transpose_of_symm
+    {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V) (M : Finset V)
+    (γ : ℝ) (hsymm : ∀ u v : V, G.adj u v = G.adj v u) :
+    Matrix.transpose (G.searchHamiltonian M γ) = G.searchHamiltonian M γ := by
+  ext u v
+  simp only [Matrix.transpose_apply, WeightedGraph.searchHamiltonian]
+  rw [hsymm v u]
+  by_cases h : u = v
+  · subst h; simp
+  · rw [if_neg (fun hc => h hc.1.symm), if_neg (fun hc => h hc.1)]
+
+/-- **The search evolution is symmetric when the adjacency is.**  Since
+`H = -γ·A − P_M` is symmetric (`searchHamiltonian_transpose_of_symm`), and
+matrix exponential commutes with transpose (`Matrix.exp_transpose`), the
+propagator `U(τ) = exp(-iτ·H)` is a *symmetric* matrix: `U(τ)ᵀ = U(τ)`.  (It is
+unitary by Hermiticity; here it is additionally symmetric, hence *orthogonal up
+to phase* — the real-symmetric-Hamiltonian special case.) -/
+theorem WeightedGraph.searchEvolve_transpose_of_symm
+    {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V) (M : Finset V)
+    (γ τ : ℝ) (hsymm : ∀ u v : V, G.adj u v = G.adj v u) :
+    Matrix.transpose (G.searchEvolve M γ τ) = G.searchEvolve M γ τ := by
+  unfold WeightedGraph.searchEvolve
+  rw [← Matrix.exp_transpose, Matrix.transpose_smul,
+    G.searchHamiltonian_transpose_of_symm M γ hsymm]
+
+/-- **Entrywise symmetry of the search propagator** for symmetric adjacency:
+`U(τ)_{u,v} = U(τ)_{v,u}`.  This is what makes the genuine row success
+amplitude `∑_v U_{m,v}` (the Childs–Goldstone `⟨w|U|s⟩` functional) coincide
+with the column sum `∑_v U_{v,m}` for the real-symmetric search graphs
+(complete graph, hypercube, lattice, …). -/
+theorem WeightedGraph.searchEvolve_apply_comm_of_symm
+    {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V) (M : Finset V)
+    (γ τ : ℝ) (hsymm : ∀ u v : V, G.adj u v = G.adj v u) (u v : V) :
+    G.searchEvolve M γ τ u v = G.searchEvolve M γ τ v u := by
+  have h := congrFun (congrFun (G.searchEvolve_transpose_of_symm M γ τ hsymm) v) u
+  rwa [Matrix.transpose_apply] at h
+
+/-- Optimal spatial search: starting from the **uniform** state
+`|s⟩ = 𝟙/√N` (`N = card V`), the search evolution `U(τ)` reaches the marked
+subspace with constant success amplitude in time `τ`.  The constant is taken
+as `1/√2` here for concreteness.
+
+**Marked-subspace success functional (Childs–Goldstone).**  The success
+amplitude is the marked-block projection of `U(τ)|s⟩`:
+
+  `⟨w|U(τ)|s⟩ = ∑_{m∈M} (U(τ)·s)_m = ∑_{m∈M} (∑_v U(τ)_{m,v})/√N`,
+
+i.e. the genuine matrix element of `U(τ)` between the uniform start `|s⟩` and
+the (unnormalised) marked indicator `|M⟩ = ∑_{m∈M}|m⟩`.  The amplitude is
+`Real.sqrt N`-normalised (only on the start `|s⟩`; the marked indicator is
+*not* renormalised, exactly as in Childs–Goldstone, so the constant `1/√2` is
+the standard `Θ(1)` success threshold).
+
+**(Correction.)**  The previous definition summed `U(τ)_{v,m}` over *both*
+indices including all non-marked rows `v`:
+`‖∑_v ∑_{m∈M} U(τ)_{v,m}/√N‖ = ‖⟨s|U(τ)|M⟩‖`.  That is the success amplitude
+of the *time-reversed* search (`|M⟩ → |s⟩`), equal to the genuine
+`‖⟨w|U(τ)|s⟩‖` only when `U(τ)` is *symmetric* (real-symmetric adjacency).
+Since `WeightedGraph.adj` is merely *Hermitian*, the two differ in general,
+so the row form below — the genuine `⟨w|U|s⟩` projection — is the faithful
+Childs–Goldstone functional. -/
 def IsOptimalSearch {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (M : Finset V) (γ τ : ℝ) : Prop :=
-  ‖(∑ v, ∑ m, if m ∈ M
-              then (G.searchEvolve M γ τ v m) / Real.sqrt (Fintype.card V)
+  ‖(∑ m, if m ∈ M
+              then (∑ v, G.searchEvolve M γ τ m v) / Real.sqrt (Fintype.card V)
               else 0)‖ ≥ 1 / Real.sqrt 2
 
 /-! ### Marked-refined equitable partitions

@@ -530,13 +530,17 @@ Below we sketch:
 * a relational chromatic number with the standard hierarchy of
   relaxations.
 
-The hierarchy theorems are stated with `sorry` proofs; they are the
-relational generalisation of the binary inequality
+The four chromatic invariants (`fractionalChromaticNumber`, `lovaszTheta`,
+`quantumChromaticNumber`, `chromaticNumber`) are **placeholder `0` / `0.0`
+definitions** at this scaffold layer.  The relational generalisation of the binary
+sandwich inequality
 
     χ_f (G) ≤ θ(Ḡ) ≤ χ_q (G) ≤ χ (G)
 
-(fractional chromatic ≤ Lovász theta ≤ quantum chromatic ≤
-classical chromatic), which is the Tower-3 lifting target. -/
+(fractional chromatic ≤ Lovász theta ≤ quantum chromatic ≤ classical chromatic) is
+the Tower-3 lifting target, but it is **not stated as a theorem here**: against the
+`0` stubs it would be the contentless `0 ≤ 0` chain (see the note where
+`chromatic_hierarchy` was deleted, below the four definitions). -/
 
 namespace CSP
 
@@ -600,31 +604,23 @@ noncomputable def quantumChromaticNumber {V : Type v} [Fintype V]
     (_A : RelStructure σ V) : ℕ :=
   0
 
-/-- **Hierarchy theorem (statement).**  For any finite relational
-structure `A`,
+/-! **Hierarchy theorem — NOT stated here (deleted as contentless).**
 
-    fractionalChromaticNumber A
-      ≤ lovaszTheta A
-      ≤ quantumChromaticNumber A
-      ≤ chromaticNumber A.
+The relational Lovász sandwich
 
-The fractional and Lovász bounds are real-valued; the quantum and
-classical chromatic numbers are integer-valued.  Combined with
-Tower-2's spectral lifting, this is the bridge by which an equitable
-partition of `A` gives lower bounds for *every* element of the chain.
-
-Proof: `sorry`; this is the relational generalisation of the standard
-Lovász sandwich theorem. -/
-theorem chromatic_hierarchy {V : Type v} [Fintype V]
-    (A : RelStructure σ V) :
     fractionalChromaticNumber A ≤ lovaszTheta A
-    ∧ lovaszTheta A ≤ (quantumChromaticNumber A : ℝ)
-    ∧ quantumChromaticNumber A ≤ chromaticNumber A := by
-  -- With the current statement-shape placeholders all four invariants are
-  -- definitionally `0`, so every inequality is `0 ≤ 0`.
-  refine ⟨?_, ?_, ?_⟩ <;>
-    simp only [fractionalChromaticNumber, lovaszTheta, quantumChromaticNumber,
-      chromaticNumber, Nat.cast_zero, le_refl]
+      ≤ quantumChromaticNumber A ≤ chromaticNumber A
+
+is the intended headline, but all four invariants above are currently the `0` /
+`0.0` placeholder definitions.  Against those stubs the chain is literally
+`0 ≤ 0 ∧ 0 ≤ 0 ∧ 0 ≤ 0`, provable by `simp` — it asserts **nothing** about the
+real sandwich inequality its name would claim, so a theorem `chromatic_hierarchy`
+here would be a landmine.  It has been **deleted** rather than left as a vacuous
+`0 ≤ 0` (and rather than dressed up with a `sorry`, which would equally misrepresent
+it).  The genuine, stub-independent fragment of this chain — a colouring forces the
+quantum game value to `1` — is `Graphplay.QuantumCSP.quantumColorable_imp_one_le_quantumValue`;
+the full sandwich awaits real bodies for these four invariants (the SDP / nonlocal-game
+development in Tower 2 / Tower 3). -/
 
 /-- The "quantum CSP" of a template at parameter `n`: existence of an
 `n`-dimensional operator-system homomorphism into the template's

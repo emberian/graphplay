@@ -40,10 +40,13 @@ We carry all four threads:
 1.  A `TetronChip` structure modelling `k` tetrons on a small base graph,
     with `4k`-dimensional fermionic Hilbert space organized as cells indexed
     by joint parity sectors (§2).
-2.  A spectral disassembly: the chip's Hamiltonian sits in the Tower-3
-    non-commutative coherent algebra of D5; the parity-sector partition is a
-    `QuantumEquitablePartition` whose quotient is a 2×2 effective Hamiltonian
-    per tetron, dressed by the inter-tetron couplings (§3).
+2.  A spectral disassembly: the chip's operator system sits in the Tower-3
+    non-commutative coherent algebra of D5, and the parity-sector partition is a
+    genuine `QuantumEquitablePartition` (§3).  **Honest caveat:** the
+    *per-tetron 2×2 effective-Hamiltonian* disassembly is **not** formalized —
+    the available quotient object is the parity-projector Gram/overlap matrix
+    (`parityProjectorGram`), independent of the chip Hamiltonian; see the §3
+    scope note.
 3.  A braiding/quotient-gate correspondence: every protected braid sequence
     induces a unitary on the quotient parity Hilbert space via the
     `TQFT.BraidRepresentation` of `Graphplay/Integrations/TQFT.lean` (§4).
@@ -677,14 +680,27 @@ end TetronChip
 
 /-! ## §3.  Spectral disassembly: parity-sector quantum equitable partition
 
-The Tower-3 statement is that the parity-sector decomposition is a
-`QuantumEquitablePartition` of the chip's operator system, with quotient an
-effective Hamiltonian on the parity-sector index.
+The Tower-3 statement that *is* formalized here: the parity-sector decomposition
+is a `QuantumEquitablePartition` of the chip's operator system
+(`parityQuantumEquitablePartition`, under parity conservation).
 
 The conceptual content: the chip Hamiltonian is *parity-conserving* — it
 commutes with every `parityOp v` — and hence preserves each joint-parity
 sector.  This is *exactly* the operator-algebraic equitable condition with
 cells = joint-parity sectors.
+
+**HONEST SCOPE (what is NOT formalized).**  The advertised "disassemble the chip
+into a 2×2 effective Hamiltonian per tetron, dressed by the inter-tetron
+couplings" is **not** carried out below.  The only quotient object available in
+this scaffold is `parityProjectorGram` — the *Gram/overlap matrix of the sector
+projectors* `tr(p_s p_t)/√(d_s d_t)` — which is built from the projectors alone
+and is independent of the chip Hamiltonian and its couplings.  The genuine
+effective Hamiltonian would require a designated `H ∈ opSystem` to trace against
+(not the fixed unit `1` used by `QuantumEquitablePartition.quotient`) and the
+Karzig `Mat₂(ℂ)` logical algebra; see `parityProjectorGram_isHermitian` for the
+precise honest statement.  (The §2 `CellProjectorSystem` of sector projectors —
+`cellProjectorSystem`, with full Hermitian/idempotent/orthogonal/complete proofs
+— is genuine and is the real Tower-3 content of this file.)
 -/
 
 namespace TetronChip
@@ -724,37 +740,51 @@ noncomputable def parityQuantumEquitablePartition (_ : C.IsParityConserving) :
   mul_mem := fun _ _ _ _ => Submodule.mem_top
   cells_mem := fun _ => Submodule.mem_top
 
-/-- The **quotient Hamiltonian** at the parity-sector level: a matrix on
-`ParitySector C.layout`-indexed cells whose entries are the inter-sector
-coupling amplitudes.  By parity conservation, this matrix is *block-diagonal*
-on the joint-total-parity sectors. -/
-noncomputable def quotientHamiltonian (hPC : C.IsParityConserving) :
+/-- The **parity-projector Gram (overlap) matrix** at the parity-sector level:
+the `ParitySector C.layout × ParitySector C.layout` matrix whose `(s, t)` entry
+is the normalized projector overlap `tr(p_s · p_t) / √(d_s d_t)`
+(`QuantumEquitablePartition.quotient` evaluates `blockTrace` on the fixed unit
+`1`, so `p_s · 1 · p_t = p_s · p_t`).
+
+HONEST NAMING (was `quotientHamiltonian`).  This matrix is the **Gram matrix of
+the sector projectors**, *not* an effective chip Hamiltonian: it is built from
+`C.sectorProjector` alone and does **not** depend on the chip's couplings,
+operator system `opSystem`, or the parity-conservation witness `hPC` in any way
+(`hPC` only certifies that the sector partition is a `QuantumEquitablePartition`;
+it never enters the entries).  Because the sector projectors are *orthogonal*
+(`sectorProjector_orth`), this Gram matrix is in fact diagonal with entries
+`tr(p_s)/tr(p_s) = √(d_s)` on equal sectors — it is a normalization/overlap
+bookkeeping matrix.  The genuine inter-sector coupling matrix (an effective
+Hamiltonian) would require evaluating `blockTrace` on the actual chip
+Hamiltonian, which this scaffold does not carry as a single
+`Matrix (Fin n) (Fin n) ℂ`; see the note on `parityProjectorGram_isHermitian`. -/
+noncomputable def parityProjectorGram (hPC : C.IsParityConserving) :
     Matrix (ParitySector C.layout) (ParitySector C.layout) ℂ :=
   (C.parityQuantumEquitablePartition hPC).quotient
 
-/-- The quotient Hamiltonian is Hermitian. -/
-theorem quotientHamiltonian_isHermitian (hPC : C.IsParityConserving) :
-    (C.quotientHamiltonian hPC).IsHermitian :=
+/-- **The parity-projector Gram matrix is Hermitian.**
+
+HONEST RETRACTION (was `quotient_per_tetron_2x2`, "2×2-per-tetron block
+structure").  The advertised headline — "disassemble the chip into a 2×2
+effective Hamiltonian per tetron" — is **NOT** formalized by this statement and
+has been retracted.  What is actually proved is only the self-adjointness of the
+parity-projector Gram matrix `parityProjectorGram` (each entry
+`tr(p_s p_t)/√(d_s d_t)` is real and symmetric in `s, t`), which depends on the
+sector projectors alone and is independent of the chip Hamiltonian, the
+couplings, and `hPC`.
+
+The genuine per-tetron `2×2` disassembly is **not reachable in this scaffold**:
+it would require (i) a designated chip Hamiltonian `H : Matrix (Fin n) (Fin n) ℂ`
+inside `opSystem` to evaluate `blockTrace H` (rather than the fixed unit `1`),
+and (ii) an exhibition of the single-tetron logical algebra as a genuine
+`Mat₂(ℂ)` generated by the Karzig logical Paulis `X_log = iγ₁γ₃`,
+`Z_log = iγ₁γ₂` (Karzig et al. 2017, Sec. III) — neither of which the
+`TetronChip` structure provides.  Stating the disassembly honestly would need
+those data as explicit hypotheses; until they are built, we record only the
+true, non-vacuous Hermiticity of the overlap matrix. -/
+theorem parityProjectorGram_isHermitian (hPC : C.IsParityConserving) :
+    (C.parityProjectorGram hPC).IsHermitian :=
   (C.parityQuantumEquitablePartition hPC).quotient_isHermitian
-
-/-- **Theorem (2×2-per-tetron block structure).**  Within each
-joint-total-parity sector, the quotient Hamiltonian is a *direct sum* of
-2×2 effective tetron Hamiltonians dressed by the two-tetron couplings on the
-trijunction edges.
-
-The honest content: in the logical (all-`+1`) sector of a single tetron the
-operator algebra is `Mat₂(ℂ)`, generated by the logical Pauli operators
-`X_log = iγ₁γ₃`, `Z_log = iγ₁γ₂` (Karzig et al. 2017, Sec. III).  Coupling
-two tetrons by a trijunction edge introduces an off-diagonal term in the
-joint Pauli algebra.  Statement only. -/
-theorem quotient_per_tetron_2x2 (hPC : C.IsParityConserving) :
-    -- The per-tetron `2×2` decomposition is governed by a **Hermitian**
-    -- quotient Hamiltonian whose diagonal blocks (each joint-parity sector)
-    -- are the effective per-tetron `Mat₂(ℂ)` algebras.  We record the genuine
-    -- self-adjointness of the quotient Hamiltonian — the well-formedness of
-    -- the block decomposition — which holds whenever `C` is parity-conserving.
-    (C.quotientHamiltonian hPC).IsHermitian :=
-  C.quotientHamiltonian_isHermitian hPC
 
 end TetronChip
 

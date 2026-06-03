@@ -952,34 +952,29 @@ theorem harmonicEvolve_eq_self
   apply Subtype.ext
   exact hodgePropFun_harmonic X k t φ.1 φ.2
 
-/-- **Hodge-quotient theorem (statement).**
+/-- **Harmonic states are stationary under the Hodge flow.**  Under any
+cochain-equitable partition `E`, the harmonic-restricted CTQW `harmonicEvolve X k t`
+fixes every harmonic `k`-cochain, for every time `t`.
 
-Under any cochain-equitable partition `E`, the harmonic subspace
-splits orthogonally as
+**Renamed (audit 2026-06): was `hodgeQuotient`.**  The former *Hodge-quotient
+theorem* name promised the orthogonal split
+`harmonic X k = pullback(quotientHarmonic E k) ⊕ cellInternalHarmonic E k` together
+with the identification of the pullback-restricted CTQW with the *quotient
+complex's* harmonic CTQW.  The body proves **none of that decomposition**: it
+establishes only that `harmonicEvolve X k t φ = φ` for every harmonic `φ` and every
+`t` (harmonic stationarity, from `harmonicEvolve_eq_self`).  Stationarity is the fact
+that *makes* harmonics invariant under the flow — a genuine ingredient — but it is
+**not** the quotient decomposition or the quotient-CTQW identification, and notably
+the partition `E` is unused (`_E`).  We align the name to what is proven; the genuine
+quotient split (which needs `quotientHarmonic`/`cellInternalHarmonic`) is not claimed
+here.
 
-    harmonic X k  =  pullback(quotientHarmonic E k)  ⊕  cellInternalHarmonic E k
-
-where:
-
-* `quotientHarmonic E k` is the harmonic subspace of the quotient
-  Hodge Laplacian on `I k → ℂ`;
-* `cellInternalHarmonic E k` is the orthogonal complement.
-
-Furthermore the harmonic-restricted CTQW commutes with this
-decomposition, and its restriction to the pullback of the quotient
-harmonic is **exactly** the harmonic CTQW of the quotient complex.
-
-Reference: Lim, *Hodge Laplacians on graphs*, SIAM Review 62 (2020),
-Section 6, for the binary version; the higher-arity extension is
-the natural one. -/
-theorem hodgeQuotient
+Reference: Lim, *Hodge Laplacians on graphs*, SIAM Review 62 (2020), Section 6, for
+the binary version of the (unproven-here) quotient decomposition. -/
+theorem hodgeHarmonic_stationary
     {V : Type u} (X : SimplicialComplex V)
     {I : ℕ → Type w} [∀ k, Fintype (I k)] [∀ k, DecidableEq (I k)]
     (_E : EquitableCochain X I) (k : ℕ) :
-    -- The harmonic-restricted CTQW fixes every harmonic cochain (stationarity
-    -- of harmonic states under the Hodge flow), and in particular it commutes
-    -- with the cell-uniform decomposition: any quotient-harmonic state pulled
-    -- back to the host stays harmonic and is left invariant by the dynamics.
     (∀ (t : ℝ) (φ : harmonic X k), harmonicEvolve X k t φ = φ) := by
   intro t φ
   exact harmonicEvolve_eq_self X k t φ
@@ -1027,31 +1022,28 @@ structure EquitablePersistent
   lives in the same cell `partition i v.cells` at every stage `i`. -/
   cells_eq  : ∀ i j v, (partition i).cells v = (partition j).cells v
 
-/-- **Persistent-Hodge / equitable-persistence theorem (statement).**
+/-- **An equitable-persistent filtration has a single common cell labelling.**  For
+an equitable-persistent filtration with cell space `I`, there is a
+*stage-independent* cell map `c : V → I` agreeing with every stage's equitable
+partition: `(eqp.partition i).cells v = c v` for all stages `i` and vertices `v`.
 
-For an equitable-persistent filtration with common cell space `I`, the
-persistent Hodge spectrum at each dimension `k` decomposes as
-
-    "symmetric (quotient) persistent spectrum"  ⊎
-    "internal (cell-private) persistent spectrum",
-
-and the persistent Betti numbers — the dimensions of the persistent
-harmonic subspaces — split correspondingly.
+**Renamed (audit 2026-06): was `persistent_hodge_equitable`.**  The former
+*persistent-Hodge / equitable-persistence theorem* name promised the spectral
+decomposition of the *persistent Hodge spectrum* into a symmetric (quotient) part ⊎
+an internal (cell-private) part, with the persistent Betti numbers splitting
+correspondingly.  The body proves **no spectrum and no Betti split**: only the
+existence of the common cell labelling `c` (extracted from `eqp.cells_eq`), which is
+the structural fact that *would let* the per-stage quotient Hodge spectra assemble
+into one persistent spectrum.  We align the name to that genuine, proven core; the
+persistent-spectrum decomposition itself is the deferred deep part.
 
 Reference: Carlsson, *Topology and data* (Bull. AMS 46, 2009) for the
-persistent-homology context; the equitable-partition decomposition is
-the higher-dimensional analogue of Tower 2's spectral-lifting. -/
-theorem persistent_hodge_equitable
+persistent-homology context of the (unproven-here) decomposition. -/
+theorem persistentFiltration_common_cellLabelling
     {V : Type u} [Fintype V] [DecidableEq V] {k : ℕ}
     (F : Filtration (V := V) k)
     {I : Type w} [Fintype I] [DecidableEq I]
     (eqp : EquitablePersistent F I) :
-    -- The persistent harmonic decomposition is driven by a *single* common
-    -- cell labelling `c : V → I` shared by every stage of the filtration —
-    -- this is precisely what makes the per-stage quotient Hodge spectra
-    -- assemble into one persistent (quotient) spectrum.  We state the genuine
-    -- core: there is a stage-independent cell map agreeing with every stage's
-    -- equitable partition.
     ∃ c : V → I, ∀ (i : Fin (F.length + 1)) (v : V),
       (eqp.partition i).cells v = c v := by
   refine ⟨(eqp.partition ⟨0, Nat.succ_pos _⟩).cells, ?_⟩
@@ -1072,7 +1064,8 @@ Tower 2 together with the Hodge-quotient theorem above, one can:
 2. run the CTQW on the harmonic subspace,
 3. read off persistent Betti numbers from the harmonic spectrum,
 4. *and* obtain an `O(|I|)` speedup when an equitable partition is
-   available — exactly the speedup recorded by `hodgeQuotient`.
+   available — the harmonic-stationarity ingredient is `hodgeHarmonic_stationary`
+   (the full quotient speedup decomposition is deferred, see that theorem's note).
 
 This is the "Topological data analysis via hypergraph CTQW with
 equitable-partition speedup" use case.
@@ -1113,11 +1106,20 @@ def HarmonicEncoding
   -- here we pin the genuine finite-rank condition on the host harmonic space.
   Module.finrank ℂ (harmonic X 1) = d
 
-/-- **Engineering theorem (statement).**  Any cell-uniform equitable
-cochain on a simplicial complex gives a topological-qubit encoding in
-the harmonic subspace of dimension equal to the quotient harmonic
-dimension.  Error channels supported in `cellInternalHarmonic` act
-trivially on the encoded information. -/
+/-- **Harmonic encoding is stationary under the Hodge flow.**  Given a harmonic
+encoding of logical dimension `d` (`henc : HarmonicEncoding X E d`, i.e. the degree-1
+harmonic space has finite dimension `d`), the degree-1 harmonic logical space indeed
+has dimension `d`, and every encoded (harmonic) state is left **invariant** by the
+harmonic CTQW `harmonicEvolve X 1 t` for all `t`.
+
+**Scope (audit 2026-06).**  The conclusion proved is exactly
+`finrank ℂ (harmonic X 1) = d ∧ ∀ t φ, harmonicEvolve X 1 t φ = φ`: the dimension
+identity (re-exposing the `henc` hypothesis) and harmonic stationarity (from
+`harmonicEvolve_eq_self`).  The earlier docstring also claimed that *error channels
+supported in `cellInternalHarmonic` act trivially on the encoded information* — that
+is **not** proven here (no error channel, and no `cellInternalHarmonic`, appears in
+the statement), so that sentence is removed.  What is genuinely established is that
+the *Hodge-flow* dynamics fixes the code, i.e. the encoded states are stationary. -/
 theorem harmonic_encoding_preserved
     {V : Type u} (X : SimplicialComplex V)
     {I : ℕ → Type w} [∀ k, Fintype (I k)] [∀ k, DecidableEq (I k)]

@@ -141,6 +141,55 @@ noncomputable def ConsistentPartitionSequence.quotient
         ∑ z ∈ Finset.univ.filter (fun z : 𝒮.V n => 𝒮.cells n z = j),
           (𝒮.G n).adj x z
 
+/-! ## The Lovász–Szegedy stepping-operator limit (named external axiom)
+
+The single genuinely-missing analytic input of the entire limit/Cauchy-completion
+story is the **stepping-operator cut-norm compactness** of Borgs–Chayes–Lovász–
+Sós–Vesztergombi: every graphon `W` is the cut-norm limit of step-function
+graphons arising from finite measurable partitions of `Ω`, and when `W` carries an
+equitable partition `P`, the approximating partitions can be chosen to refine the
+cells of `P`, producing a *finite equitable spine* — a `ConsistentPartitionSequence`
+whose quotient matrices converge to `P.quotient`.
+
+This theorem is **proven in the literature but absent from Mathlib v4.30.0**.  Rather
+than bury it as an anonymous `sorry` inside each consumer proof (which would poison
+the whole file's axiom set opaquely), we name it **once**, as the explicit external
+axiom below, citing its source.  Every limit theorem then *honestly* depends on
+`lovaszSzegedy_graphon_limit` (visible under `#print axioms`), and the day Mathlib
+grows the stepping operator this axiom is replaced by a theorem with no edits to the
+consumers.
+
+Reference: **Borgs–Chayes–Lovász–Sós–Vesztergombi**, *Convergent sequences of dense
+graphs II: Multiway cuts and statistical physics*, arXiv:1003.5588, §3 (the stepping
+operator and the cut-norm density of step graphons); see also **Lovász**, *Large
+Networks and Graph Limits* (AMS Colloq. Publ. 60, 2012), Thm. 9.23 (cut-norm density
+of step graphons) and Prop. 14.13 (refining sequences). -/
+
+/-- **The Lovász–Szegedy / BCLSV stepping-operator limit (external axiom).**
+
+For every graphon equitable partition `(W, P)` there exist:
+
+* a `ConsistentPartitionSequence 𝒮` over the same index type `I` (the finite
+  equitable spine), and
+* a sequence of step-function graphons `Wstep : ℕ → Graphon Ω μ`,
+
+such that the step graphons converge to `W` in **cut norm** (`CutNormTendsto`,
+i.e. `cutNormDiff (Wstep n) W → 0`) and the finite quotient matrices
+`𝒮.quotient n` converge to `P.quotient` in operator norm.
+
+This is the precise content of BCLSV §3 (stepping operator + cut-norm density),
+specialised to refine the cells of `P`.  It is the *only* deferred analytic
+construction in the limit/Cauchy-completion development; everything downstream is
+proven from it.  Citation: BCLSV arXiv:1003.5588 §3; Lovász, *Large Networks and
+Graph Limits*, Thm. 9.23. -/
+axiom lovaszSzegedy_graphon_limit
+    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    ∃ (𝒮 : ConsistentPartitionSequence I) (Wstep : ℕ → Graphon Ω μ),
+      CutNormTendsto Wstep W ∧
+      Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds P.quotient)
+
 /-! ## **The limit theorem (statement only)**
 
 For a consistent partition sequence `𝒮`, the step graphons converge in cut

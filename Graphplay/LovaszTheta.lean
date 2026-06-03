@@ -1167,22 +1167,28 @@ theorem theta_le_quantumChromatic_compl_le_chromatic_compl
   · rw [hqeq]; exact lovaszTheta_le_chromaticNumber_compl G
   · rw [hqeq]
 
-/-- **Mancinska–Roberson identification.**  On vertex-transitive graphs,
-the classical and quantum Lovász theta numbers coincide:
+/-- **`ϑ_q = ϑ` by definition** (the Mancinska–Roberson identification is *baked into*
+the surrogate `quantumLovaszTheta`).
 
-    `G` vertex-transitive ⟹ `ϑ(G) = ϑ_q(G)`.
-
-This is arXiv:1212.1724, Theorem 1.1 (and its strengthening to the
-equality `ϑ = ϑ⁺` from Cubitt–Mancinska–Roberson–Severini–Stahlke–Winter,
-arXiv:1404.3401). -/
-theorem lovaszTheta_eq_quantumLovaszTheta_of_vertexTransitive
+**Renamed (audit 2026-06): was `lovaszTheta_eq_quantumLovaszTheta_of_vertexTransitive`,
+with an unused `_hvt : True` "vertex-transitive" placeholder.**  The former name and
+hypothesis advertised the genuine arXiv:1212.1724 *theorem* `G vertex-transitive ⟹
+ϑ(G) = ϑ_q(G)` (in fact Mancinska–Roberson prove `ϑ_q = ϑ` with **no**
+vertex-transitivity).  But here `quantumLovaszTheta G` is *defined* to be
+`lovaszTheta G` (the operator-valued SDP needs `B(H)` infrastructure not in this
+repo — see `quantumLovaszTheta`'s note), so the equality is a **definitional `rfl`**,
+not the SDP theorem: no vertex-transitivity is used, and the `True` placeholder was
+vacuous.  We drop the placeholder hypothesis and rename to state the honest content —
+this is the *definitional* identification recording where the genuine MR result is
+assumed, **not** a proof of it.  (The real `ϑ_q = ϑ`, and its `ϑ = ϑ⁺` strengthening
+from Cubitt–Mancinska–Roberson–Severini–Stahlke–Winter, arXiv:1404.3401, would
+require the operator-valued relaxation and are not formalised here.) -/
+theorem quantumLovaszTheta_eq_lovaszTheta_def
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj]
-    (_hvt : True /- placeholder: `G` is vertex-transitive -/) :
-    lovaszTheta G = quantumLovaszTheta G := by
-  -- `quantumLovaszTheta G` is *definitionally* `lovaszTheta G` (the documented
-  -- Mancinska–Roberson identification, arXiv:1212.1724, baked into the def), so
-  -- this is a genuine `rfl`.  Axiom-clean, no `sorry`.
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    lovaszTheta G = quantumLovaszTheta G :=
+  -- `quantumLovaszTheta G` is *definitionally* `lovaszTheta G` (the MR identification
+  -- is baked into the def, arXiv:1212.1724), so this is a genuine `rfl`.
   rfl
 
 /-! ## Perfect graphs

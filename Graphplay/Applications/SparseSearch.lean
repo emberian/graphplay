@@ -797,8 +797,15 @@ theorem hypercube_optimal_of_chain_amplitude (d : ℕ) (w : Fin (2^d))
     (hampl : ‖Graphplay.chainSearchAmplitude (hammingPartition d w) w γ τ
               (markedSet_cellUniform d w)‖ ≥ 1 / Real.sqrt 2) :
     IsOptimalCTQWSearch (Hypercube d) w :=
+  -- The hypercube has symmetric (real 0/1) adjacency (`hammingDist_comm`), so the
+  -- genuine row success amplitude `⟨w|U|s⟩` equals the chain (column) amplitude.
   Graphplay.optimal_search_of_chain_amplitude (hammingPartition d w) w
-    (markedSet_cellUniform d w) (hammingCell_singleton d w) γ τ C hγ hC hCπ hτ hampl
+    (markedSet_cellUniform d w) (hammingCell_singleton d w)
+    (fun u v => by
+      show (if hammingDist d u v = 1 then (1 : ℂ) else 0)
+          = (if hammingDist d v u = 1 then (1 : ℂ) else 0)
+      rw [hammingDist_comm d u v])
+    γ τ C hγ hC hCπ hτ hampl
 
 /-! ### The chain amplitude as an explicit cell-mass overlap.
 

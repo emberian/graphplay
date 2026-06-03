@@ -24,9 +24,11 @@ This file:
 1. defines `EigenvalueSupport`,
 2. defines `IsGodsilRatio` as the arithmetic-alignment condition,
 3. states and proves the existence theorem
-   `isPST_exists_iff_isGodsilPSTReady` (honest TRUE form; backward CLOSED by the
-   exact half-period construction, forward an honest `sorry` routed through the
-   downstream periodicity module),
+   `isPST_exists_iff_isGodsilPSTReady` (honest TRUE form, real-symmetric +
+   full-support, **fully CLOSED axiom-clean**: backward by the exact half-period
+   construction, forward by the upstream sign-pinning bridge
+   `isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport` — no `sorry`, no circular
+   import),
 4. records concrete corollaries (paths, hypercubes, abelian Cayley
    graphs),
 5. extends to equitable-partition quotients,
@@ -1267,50 +1269,362 @@ def IsGodsilPSTReady (G : WeightedGraph V) (u v : V) : Prop :=
         eigenProjEntryLocal G lam u v
           = ((-1 : ℂ) ^ (kof lam)) * (eigenProjDiagLocal G lam u : ℂ))
 
-/-- **Godsil 2012, Theorem 2.1 (existence of PST), honest TRUE form.**  Perfect
-state transfer between `u` and `v` occurs at some real time iff the pair carries
+/-! ### The forward (necessity) direction, real-symmetric + full-support (CLOSED)
+
+The FORWARD half of Godsil's existence theorem — PST ⇒ the parity-signed
+arithmetic alignment `IsGodsilPSTReady` — was historically left as an honest
+`sorry` here, on the *false* premise that it is unconditional and that the proof
+is "downstream" in `Graphplay.PST.Periodicity` (a circular import).  Both halves
+of that premise were wrong: (i) the unconditional forward is **false** — PST only
+constrains the *supported* eigenvalues, while `IsGodsilPSTReady` demands the
+alignment over the *whole* spectrum (the disjoint-union `K₂ ⊔ H` counterexample);
+(ii) the proof needs only the *real-symmetry* `Aᵀ = A` plus full eigenvalue
+support of `u`, and — crucially — **all** of its analytic ingredients are already
+available *in this module* (`eigenProj_col_relation`, `isPST_imp_cospectral`,
+`isPST_imp_cross_eq_phase_diag`, the projector algebra), so the forward is in fact
+provable *upstream*.  We close it here, axiom-clean, with the honest hypotheses.
+
+This makes `Graphplay.PST.Periodicity`'s
+`isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport` (which carries an identical
+statement) a *downstream re-proof* through the periodicity route; the canonical
+upstream proof now lives here.  (The two coexist in different namespaces:
+`Graphplay.PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport` here vs.
+`Graphplay.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport` there.) -/
+
+/-- **The evolution is complex-symmetric when the adjacency is symmetric.**  If
+`A = G.adj` is symmetric (`Aᵀ = A`, the classical Godsil real-weighted setting),
+then `U(τ) = exp(-iτ A)` satisfies `U(τ)ᵀ = U(τ)`.  Proof: `(c • A)ᵀ = c • A` and
+`Matrix.exp_transpose`.  (Named `…_adjSymm` to avoid a clash with the identical
+`Graphplay.PST.evolve_symm_of_isSymm` in the sibling `Universal` module.) -/
+theorem evolve_transpose_of_adjSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
+    (τ : ℝ) : (G.evolve τ)ᵀ = G.evolve τ := by
+  unfold WeightedGraph.evolve
+  rw [← Matrix.exp_transpose]
+  congr 1
+  rw [Matrix.transpose_smul, hsymm]
+
+/-- Entrywise form: real-symmetric adjacency gives `U(τ)_{v,u} = U(τ)_{u,v}`. -/
+theorem evolve_symm_of_adjSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
+    (τ : ℝ) (u v : V) : G.evolve τ v u = G.evolve τ u v := by
+  have h := congrFun (congrFun (evolve_transpose_of_adjSymm G hsymm τ) u) v
+  rwa [Matrix.transpose_apply] at h
+
+/-- The value eigenvalue support `EigenvalueSupport` is exactly the set of
+eigenvalues carrying nonzero diagonal projector mass `(E_λ)_{u,u} ≠ 0`. -/
+theorem mem_eigenvalueSupport_iff_diag (G : WeightedGraph V) (u : V) (lam : ℝ) :
+    lam ∈ EigenvalueSupport G u ↔ eigenProjDiagLocal G lam u ≠ 0 := by
+  unfold EigenvalueSupport eigenProjDiagLocal; rw [Set.mem_setOf_eq]
+  constructor
+  · rintro ⟨i, hi, hui⟩
+    intro hsum
+    have hnn : ∀ j ∈ Finset.univ,
+        0 ≤ (if G.herm.eigenvalues j = lam then ‖eigU G u j‖ ^ 2 else 0) := by
+      intro j _; by_cases h : G.herm.eigenvalues j = lam
+      · simp only [h, if_true]; positivity
+      · simp only [h, if_false, le_refl]
+    have hpos : 0 < (if G.herm.eigenvalues i = lam then ‖eigU G u i‖ ^ 2 else 0) := by
+      simp only [hi, if_true]; positivity
+    have hlt := Finset.sum_pos' hnn ⟨i, Finset.mem_univ i, hpos⟩
+    rw [hsum] at hlt; exact lt_irrefl 0 hlt
+  · intro hne; by_contra hcon; push_neg at hcon
+    apply hne; apply Finset.sum_eq_zero
+    intro i _; by_cases h : G.herm.eigenvalues i = lam
+    · simp only [h, if_true]; rw [hcon i h]; simp
+    · simp only [h, if_false]
+
+/-- **Sign-pinning (the analytic core), CLOSED.**  On a real-symmetric graph
+(`Aᵀ = A`), if PST occurs from `u` to `v` at time `τ` (`‖U(τ)_{u,v}‖ = 1`,
+`γ := U(τ)_{u,v}`), then for every eigenvalue `μ` *in the support of `u`* (i.e.
+`(E_μ)_{u,u} ≠ 0`) the cross phase `σ_μ := γ · e^{iτμ}` is a **real sign**:
+`γ · e^{iτμ} = 1` or `= -1`.
+
+Real symmetry gives `U(τ)_{v,u} = U(τ)_{u,v} = γ`, so PST holds both ways at the
+same `τ`.  The column relation at `a = u` (direction `u→v`) and at `a = v`
+(direction `v→u`), together with cospectrality `(E_μ)_{u,u} = (E_μ)_{v,v}` and
+self-adjointness `(E_μ)_{v,u} = \overline{(E_μ)_{u,v}}`, force the cross entry to
+be its own conjugate (real); hence `σ_μ` is a real unit, namely `±1`.
+Axiom-clean. -/
+theorem cross_phase_sign_of_isPST_of_isSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
+    {u v : V} {τ : ℝ} (hpst : IsPST G u v τ) (mu : ℝ)
+    (hmu : mu ∈ Set.range G.herm.eigenvalues)
+    (hsupp : eigenProjDiagLocal G mu u ≠ 0) :
+    G.evolve τ u v * Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) = 1 ∨
+      G.evolve τ u v * Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) = -1 := by
+  set γ := G.evolve τ u v with hγ
+  have hγnorm : ‖γ‖ = 1 := hpst
+  set p := Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) with hp
+  have hpnorm : ‖p‖ = 1 := by rw [hp, Complex.norm_exp]; simp
+  -- two-sided PST: `U(τ)_{v,u} = γ`, of modulus 1.
+  have hsym : G.evolve τ v u = γ := by rw [hγ, evolve_symm_of_adjSymm G hsymm τ u v]
+  have hVU : ‖G.evolve τ v u‖ = 1 := by rw [hsym]; exact hγnorm
+  -- cospectrality: `(E_μ)_{u,u} = (E_μ)_{v,v}`.
+  have hcosp := isPST_imp_cospectral G τ u v hpst mu hmu
+  -- column relation, `u→v` at `a = u`: `p·(E_μ)_{u,u} = \bar γ·(E_μ)_{u,v}`.
+  have hu := eigenProj_col_relation G τ u v hpst mu hmu u
+  rw [eigenProj_diag, eigenProj_apply] at hu
+  -- column relation, `v→u` at `a = v`: `p·(E_μ)_{v,v} = \bar(U_{v,u})·(E_μ)_{v,u}`.
+  have hv := eigenProj_col_relation G τ v u hVU mu hmu v
+  rw [eigenProj_diag, eigenProj_conjTranspose_apply, hsym] at hv
+  set E := eigenProjEntryLocal G mu u v with hE
+  set d := eigenProjDiagLocal G mu u with hd
+  have hdv : eigenProjDiagLocal G mu v = d := (hcosp).symm
+  rw [hdv] at hv
+  -- `hu : p * (d:ℂ) = star γ * E`, `hv : p * (d:ℂ) = star γ * star E`.
+  have hγstar : (star γ : ℂ) ≠ 0 := by
+    rw [star_ne_zero]; intro h0; rw [h0, norm_zero] at hγnorm; exact one_ne_zero hγnorm.symm
+  have hγγ : γ * star γ = 1 := by
+    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hγnorm]; norm_num
+  have hEreal : E = star E := by
+    have hh : star γ * E = star γ * star E := by rw [← hu]; exact hv
+    exact mul_left_cancel₀ hγstar hh
+  -- From `hu`, `E = γ * p * (d:ℂ)` (using `γ * star γ = 1`).
+  have hEval : E = γ * p * (d : ℂ) := by
+    calc E = 1 * E := (one_mul E).symm
+      _ = (γ * star γ) * E := by rw [hγγ]
+      _ = γ * (star γ * E) := by ring
+      _ = γ * (p * (d : ℂ)) := by rw [← hu]
+      _ = γ * p * (d : ℂ) := by ring
+  -- `σ = γ p` is real (since `E = σ·d`, `d` real, `E` real, `d ≠ 0`).
+  have hdc : (d : ℂ) ≠ 0 := by exact_mod_cast hsupp
+  set σ := γ * p with hσ
+  have hσreal : σ = star σ := by
+    have h1 : σ * (d : ℂ) = star (σ * (d : ℂ)) := by rw [← hEval]; exact hEreal
+    have hdstar : star ((d : ℝ) : ℂ) = ((d : ℝ) : ℂ) := by
+      rw [Complex.star_def, Complex.conj_ofReal]
+    have hEd : σ * (d : ℂ) = star σ * (d : ℂ) := by
+      calc σ * (d : ℂ) = star (σ * (d : ℂ)) := h1
+        _ = star σ * star (d : ℂ) := by rw [star_mul']
+        _ = star σ * (d : ℂ) := by rw [hdstar]
+    exact mul_right_cancel₀ hdc hEd
+  have hσnorm : ‖σ‖ = 1 := by rw [hσ, norm_mul, hγnorm, hpnorm, one_mul]
+  -- A complex `σ` with `σ = \bar σ` and `‖σ‖ = 1` is `±1`.
+  have hσim : σ.im = 0 := by
+    have := hσreal
+    rw [Complex.ext_iff] at this
+    simp only [Complex.star_def, Complex.conj_im] at this
+    linarith [this.2]
+  have hσsq : σ.re ^ 2 = 1 := by
+    have hsq := Complex.normSq_eq_norm_sq σ
+    rw [Complex.normSq_apply, hσnorm, hσim] at hsq
+    nlinarith [hsq]
+  have hre : σ.re = 1 ∨ σ.re = -1 :=
+    mul_self_eq_one_iff.mp (by nlinarith [hσsq] : σ.re * σ.re = 1)
+  rcases hre with h | h
+  · left; apply Complex.ext <;> simp [h, hσim]
+  · right; apply Complex.ext <;> simp [h, hσim]
+
+/-- **Parity extraction.**  Two unit signs `s, t ∈ {±1}` whose ratio is a pure
+phase `s · \overline{t} = e^{iθ}` (real `θ`) force `θ` to be an integer multiple
+of `π`, with the sign tracking the **parity** of that integer:
+`∃ n : ℤ, θ = π·n ∧ s = (-1)^n · t`.  Arithmetic spine of Godsil's parity-matched
+alignment. -/
+private theorem int_and_sign_of_unit_signs (θ : ℝ) (s t : ℂ)
+    (hs : s = 1 ∨ s = -1) (ht : t = 1 ∨ t = -1)
+    (hratio : s * star t = Complex.exp (Complex.I * (θ : ℂ))) :
+    ∃ n : ℤ, θ = Real.pi * (n : ℝ) ∧ s = ((-1 : ℂ) ^ n) * t := by
+  have htt : t * star t = 1 := by rcases ht with h | h <;> rw [h] <;> simp
+  have hprod : s * star t = 1 ∨ s * star t = -1 := by
+    rcases hs with h | h <;> rcases ht with h' | h' <;> rw [h, h'] <;> simp
+  rw [hratio] at hprod
+  rcases hprod with hone | hneg
+  · rw [Complex.exp_eq_one_iff] at hone
+    obtain ⟨m, hm⟩ := hone
+    have hθ : θ = Real.pi * (2 * m : ℝ) := by
+      have hcast : ((θ : ℝ) : ℂ) * Complex.I
+          = ((Real.pi * (2 * m : ℝ) : ℝ) : ℂ) * Complex.I := by
+        rw [show ((θ : ℝ) : ℂ) * Complex.I = Complex.I * (θ : ℂ) by ring, hm]
+        push_cast; ring
+      have := mul_right_cancel₀ Complex.I_ne_zero hcast
+      exact_mod_cast this
+    refine ⟨2 * m, by push_cast; linarith [hθ], ?_⟩
+    have hsstart : s * star t = 1 := by
+      rw [hratio, hm, Complex.exp_int_mul_two_pi_mul_I]
+    have hst : s = t := by
+      calc s = s * (t * star t) := by rw [htt, mul_one]
+        _ = (s * star t) * t := by ring
+        _ = 1 * t := by rw [hsstart]
+        _ = t := one_mul t
+    rw [hst, show ((-1 : ℂ) ^ (2 * m)) = 1 by
+      rw [zpow_mul]; norm_num, one_mul]
+  · have hπ : Complex.exp (Complex.I * (θ : ℂ)) = Complex.exp (Complex.I * (Real.pi : ℂ)) := by
+      rw [hneg]; rw [show Complex.I * (Real.pi : ℂ) = (Real.pi : ℂ) * Complex.I by ring,
+        Complex.exp_pi_mul_I]
+    rw [Complex.exp_eq_exp_iff_exists_int] at hπ
+    obtain ⟨m, hm⟩ := hπ
+    have hθ : θ = Real.pi * (2 * m + 1 : ℝ) := by
+      have hcast : ((θ : ℝ) : ℂ) * Complex.I
+          = ((Real.pi * (2 * m + 1 : ℝ) : ℝ) : ℂ) * Complex.I := by
+        rw [show ((θ : ℝ) : ℂ) * Complex.I = Complex.I * (θ : ℂ) by ring, hm]
+        push_cast; ring
+      have := mul_right_cancel₀ Complex.I_ne_zero hcast
+      exact_mod_cast this
+    refine ⟨2 * m + 1, by push_cast; linarith [hθ], ?_⟩
+    have hst : s = -t := by
+      have h1 : (s * star t) * t = (-1) * t := by rw [hratio, hneg]
+      rw [mul_assoc, mul_comm (star t) t, htt, mul_one] at h1
+      rw [h1]; ring
+    rw [hst, show ((-1 : ℂ) ^ (2 * m + 1)) = -1 by
+      rw [zpow_add₀ (by norm_num : (-1 : ℂ) ≠ 0), zpow_mul]; norm_num]
+    ring
+
+/-- **Godsil's forward existence direction at the parity-signed level (CLOSED,
+axiom-clean).**  On a real-symmetric graph (`Aᵀ = A`), if PST occurs from `u` to
+`v` at a positive time `τ` **and `u` has full eigenvalue support** (every
+eigenvalue of `G.adj` overlaps `u`, i.e. `(E_λ)_{u,u} ≠ 0` for every spectral
+`λ`), then `(u, v)` carries Godsil's PST-ready spectral data `IsGodsilPSTReady`:
+arithmetic alignment of the support (`λ = b + a·(kof λ)`, `a > 0`) together with
+the parity-matched cross-projector structure
+`(E_λ)_{u,v} = (-1)^{kof λ} (E_λ)_{u,u}`.
+
+This is the canonical upstream completion of the FORWARD half of
+`isPST_exists_iff_isGodsilPSTReady` (and, via the projector bridge, of
+`Cospectrality`'s `IsStronglyCospectral.isPST_iff_godsilPSTReady`).
+
+**Why full support is necessary (FALSE→TRUE migration).**  Unconditional
+`IsPST → IsGodsilPSTReady` is **false**: `IsGodsilPSTReady` demands the alignment
+over the *entire* spectrum `Finset.univ.image G.herm.eigenvalues`, not merely the
+support of `(u,v)`.  Counterexample: on `K₂ ⊔ H` with `K₂` on `{u, v}`
+(eigenvalues `{1, -1}`) and `H` carrying an eigenvalue like `π` disjoint from
+`u, v`, PST `u → v` occurs at `τ = π/2`, yet `π` is *unsupported* and lies on no
+arithmetic progression rationally commensurate with `{1, -1}`.  Full support rules
+out exactly this disconnected-junk obstruction (and holds for `K₂`, complete
+graphs, connected vertex-transitive hosts, path endpoints, etc.).
+
+**Proof.**  Real symmetry makes the cross phase `σ_λ := γ·e^{iτλ}`
+(`γ = U(τ)_{u,v}`) a real sign `±1` at every supported `λ`
+(`cross_phase_sign_of_isPST_of_isSymm`).  Fixing a base eigenvalue `λ₀`, the ratio
+`σ_λ·\overline{σ_{λ₀}} = e^{iτ(λ-λ₀)}` is `±1`, so `τ(λ-λ₀) = π·n_λ` with the sign
+tracking the parity of `n_λ` (`int_and_sign_of_unit_signs`).  That *is* the
+arithmetic progression with quantum `a = π/τ`, and the cross entry
+`(E_λ)_{u,v} = σ_λ·(E_λ)_{u,u}` (`isPST_imp_cross_eq_phase_diag`) becomes
+`(-1)^{kof λ}(E_λ)_{u,u}` after a uniform parity shift absorbing `σ_{λ₀}`.  No
+Diophantine approximation — finite exact spectral algebra.
+
+Reference: Godsil, Electron. J. Combin. 19 (2012) #P29, Thm 2.1 (necessity);
+Godsil, arXiv:0806.2074, Thm 2.2. -/
+theorem isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport
+    (G : WeightedGraph V) (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (hτ : 0 < τ)
+    (hfull : ∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        lam ∈ EigenvalueSupport G u)
+    (hpst : IsPST G u v τ) :
+    IsGodsilPSTReady G u v := by
+  classical
+  set img : Finset ℝ := Finset.univ.image G.herm.eigenvalues with himg
+  set γ := G.evolve τ u v with hγ
+  have hγnorm : ‖γ‖ = 1 := hpst
+  set σ : ℝ → ℂ := fun lam => γ * Complex.exp (Complex.I * (τ : ℂ) * (lam : ℂ)) with hσdef
+  have hrange : ∀ lam ∈ img, lam ∈ Set.range G.herm.eigenvalues := by
+    intro lam hlam; rw [himg, Finset.mem_image] at hlam
+    obtain ⟨i, _, hi⟩ := hlam; exact ⟨i, hi⟩
+  have hsupp : ∀ lam ∈ img, eigenProjDiagLocal G lam u ≠ 0 := by
+    intro lam hlam
+    have := hfull lam hlam
+    exact (mem_eigenvalueSupport_iff_diag G u lam).mp this
+  have hsign : ∀ lam ∈ img, σ lam = 1 ∨ σ lam = -1 := by
+    intro lam hlam
+    exact cross_phase_sign_of_isPST_of_isSymm G hsymm hpst lam (hrange lam hlam) (hsupp lam hlam)
+  have hcross : ∀ lam ∈ img,
+      eigenProjEntryLocal G lam u v = σ lam * (eigenProjDiagLocal G lam u : ℂ) := by
+    intro lam hlam
+    have h := isPST_imp_cross_eq_phase_diag G τ u v hpst lam (hrange lam hlam)
+    simpa only [hσdef] using h
+  by_cases hne : img.Nonempty
+  · obtain ⟨lam0, hlam0⟩ := hne
+    have hσ0 : σ lam0 = 1 ∨ σ lam0 = -1 := hsign lam0 hlam0
+    have hextract : ∀ lam ∈ img, ∃ n : ℤ,
+        τ * (lam - lam0) = Real.pi * (n : ℝ) ∧ σ lam = ((-1 : ℂ) ^ n) * σ lam0 := by
+      intro lam hlam
+      have hstarexp : star (Complex.exp (Complex.I * (τ : ℂ) * (lam0 : ℂ)))
+          = Complex.exp (-(Complex.I * (τ : ℂ) * (lam0 : ℂ))) := by
+        rw [Complex.star_def, ← Complex.exp_conj]
+        congr 1
+        rw [map_mul, map_mul, Complex.conj_I, Complex.conj_ofReal, Complex.conj_ofReal]
+        ring
+      have hγγ1 : γ * star γ = 1 := by
+        rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hγnorm]; norm_num
+      have hratio : σ lam * star (σ lam0)
+          = Complex.exp (Complex.I * ((τ * (lam - lam0) : ℝ) : ℂ)) := by
+        show γ * Complex.exp (Complex.I * (τ : ℂ) * (lam : ℂ))
+            * star (γ * Complex.exp (Complex.I * (τ : ℂ) * (lam0 : ℂ)))
+          = Complex.exp (Complex.I * ((τ * (lam - lam0) : ℝ) : ℂ))
+        rw [star_mul', hstarexp]
+        rw [show γ * Complex.exp (Complex.I * (τ : ℂ) * (lam : ℂ))
+              * (star γ * Complex.exp (-(Complex.I * (τ : ℂ) * (lam0 : ℂ))))
+            = (γ * star γ) * (Complex.exp (Complex.I * (τ : ℂ) * (lam : ℂ))
+                * Complex.exp (-(Complex.I * (τ : ℂ) * (lam0 : ℂ)))) by ring]
+        rw [hγγ1, one_mul, ← Complex.exp_add]
+        congr 1
+        push_cast; ring
+      exact int_and_sign_of_unit_signs _ (σ lam) (σ lam0) (hsign lam hlam) hσ0 hratio
+    choose! nf hnf1 hnf2 using hextract
+    set shift : ℤ := if σ lam0 = -1 then 1 else 0 with hshift
+    set a : ℝ := Real.pi / τ with ha
+    have hapos : 0 < a := by rw [ha]; positivity
+    set b : ℝ := lam0 - a * (shift : ℝ) with hb
+    refine ⟨a, b, fun lam => nf lam + shift, hapos, ?_, ?_⟩
+    · intro lam hlam
+      have h1 : τ * (lam - lam0) = Real.pi * (nf lam : ℝ) := hnf1 lam hlam
+      have hτne : (τ : ℝ) ≠ 0 := ne_of_gt hτ
+      have hlamval : lam = lam0 + a * (nf lam : ℝ) := by
+        have hdiff : lam - lam0 = a * (nf lam : ℝ) := by
+          rw [ha]; field_simp; linarith [h1]
+        linarith [hdiff]
+      rw [hb]; push_cast; linear_combination hlamval
+    · intro lam hlam
+      rw [hcross lam hlam, hnf2 lam hlam]
+      congr 1
+      rcases hσ0 with h0 | h0
+      · have : shift = 0 := by rw [hshift, if_neg (by rw [h0]; norm_num)]
+        rw [this, h0]; push_cast; ring
+      · have hsh : shift = 1 := by rw [hshift, if_pos h0]
+        rw [hsh, h0, zpow_add₀ (by norm_num : (-1 : ℂ) ≠ 0)]; push_cast; ring
+  · rw [Finset.not_nonempty_iff_eq_empty] at hne
+    refine ⟨1, 0, fun _ => 0, one_pos, ?_, ?_⟩ <;>
+      · intro lam hlam; exact absurd (hne ▸ hlam) (Finset.notMem_empty lam)
+
+/-- **Godsil 2012, Theorem 2.1 (existence of PST), honest TRUE form — fully CLOSED,
+axiom-clean.**  On a real-symmetric graph (`Aᵀ = A`, the classical Godsil
+weighted-graph setting) with `u` of full eigenvalue support, perfect state
+transfer between `u` and `v` occurs at some *positive* time iff the pair carries
 Godsil's PST-ready spectral data `IsGodsilPSTReady` (arithmetic alignment of the
 support *together with* the parity-matched sign structure).
 
-* The **backward** direction (⇐) is **fully proven, axiom-clean**, by the *exact*
-  half-period construction `isPST_of_aligned_paritySigned` (take `τ = π/a`): no
-  Diophantine approximation, no Mathlib gap.
-* The **forward** direction (⇒) — PST forces the parity-signed alignment — is the
-  number-theoretic half (Godsil arXiv:0806.2074, Thm 2.2): PST ⇒ periodicity at
-  `u` ⇒ supported eigenvalue differences in `(2π/τ)ℤ`, then the cross-phase
-  collinearity `(E_λ)_{u,v} = γ e^{iτλ}(E_λ)_{u,u}` pins the sign to the parity.
-  The periodicity step lives in the **downstream** module
-  `Graphplay.PST.Periodicity` (which imports *this* file, so cannot be used
-  here); it is recorded there as the axiom-clean
-  `isPST_imp_isGodsilRatio_of_isSymm`.  It is therefore left as an **honest
-  `sorry` on a TRUE statement** in this file (it is genuinely provable, just not
-  without the periodicity machinery that depends on this module).
+* **Backward** (⇐): the *exact* half-period construction
+  `isPST_of_aligned_paritySigned` (`τ = π/a > 0`) — no Diophantine approximation,
+  no Mathlib gap.  Unconditional in `hsymm`/`hfull`.
+* **Forward** (⇒): the sign-pinning bridge
+  `isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport`, proven *upstream in this
+  module* from the projector algebra — finite exact spectral arithmetic, no
+  periodicity-module dependency, no circular import.  (Earlier this was an honest
+  `sorry`, on the doubly-mistaken belief that the forward is unconditional and that
+  its proof must live downstream in `Graphplay.PST.Periodicity`.)
 
-NOTE on the prior false form.  This slot previously read
-`(∃τ, IsPST) ↔ IsStronglyCospectral ∧ IsGodsilRatio`, whose **backward direction
-is false**: bare strong cospectrality leaves the cross-entry phase free on the
-unit circle (e.g. a *simple-spectrum* graph makes every pair strongly cospectral
-— `isStronglyCospectral_of_injective_eigenvalues` — with generic non-`±1`
-phases), so even with integer eigenvalues (`IsGodsilRatio`) the phases need not be
-realizable by any single `τ`, and no PST occurs.  Migrating the RHS to
-`IsGodsilPSTReady` (which carries the parity sign) makes the statement TRUE.
+**Why `hsymm` + `hfull` + positive time, not unconditional.**  The forward is
+**false** without them: `IsGodsilPSTReady` aligns the *whole* spectrum, while PST
+only constrains the *supported* eigenvalues (the `K₂ ⊔ H` counterexample — see
+`isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport`).  Real symmetry pins the
+cross phase to a real `±1`; full support extends the alignment to every spectral
+eigenvalue; `0 < τ` matches the genuine necessity.  The earlier *unconditional*
+`(∃τ, IsPST) ↔ IsGodsilPSTReady` form was therefore false-forward.
 
 Reference: Godsil, *When can perfect state transfer occur?*, Electron. J.
 Combin. 19 (2012) #P29, Thm 2.1; Godsil, arXiv:0806.2074, Thm 2.2;
 Coutinho–Godsil (2021), Ch. 8–9. -/
 theorem isPST_exists_iff_isGodsilPSTReady
-    (G : WeightedGraph V) (u v : V) :
-    (∃ τ : ℝ, IsPST G u v τ) ↔ IsGodsilPSTReady G u v := by
+    (G : WeightedGraph V) (hsymm : G.adj.IsSymm) {u v : V}
+    (hfull : ∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        lam ∈ EigenvalueSupport G u) :
+    (∃ τ : ℝ, 0 < τ ∧ IsPST G u v τ) ↔ IsGodsilPSTReady G u v := by
   constructor
-  · -- FORWARD (honest `sorry`, TRUE): PST ⇒ parity-signed alignment.  Needs the
-    -- downstream periodicity argument (`Graphplay.PST.Periodicity`,
-    -- `isPST_imp_isGodsilRatio_of_isSymm`); not reachable in this module without
-    -- a circular import.  The statement is genuinely true.
-    intro _
-    sorry
-  · -- BACKWARD (CLOSED, axiom-clean): the exact half-period construction.
+  · -- FORWARD (CLOSED, axiom-clean): PST ⇒ parity-signed alignment, via the
+    -- now-upstream `isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport`.
+    rintro ⟨τ, hτ, hpst⟩
+    exact isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport G hsymm hτ hfull hpst
+  · -- BACKWARD (CLOSED, axiom-clean): the exact half-period construction at the
+    -- positive time `τ = π/a`.  (Unconditional in `hsymm`/`hfull`.)
     rintro ⟨a, b, kof, ha, halign, hsign⟩
-    exact ⟨Real.pi / a, isPST_of_aligned_paritySigned G u v a b ha kof halign hsign⟩
+    exact ⟨Real.pi / a, by positivity,
+      isPST_of_aligned_paritySigned G u v a b ha kof halign hsign⟩
 
 /-- **Backward half (sufficient condition), CLOSED and axiom-clean.**  Given
 Godsil's PST-ready spectral data (arithmetic alignment + parity-matched signs),
@@ -1536,31 +1850,61 @@ noncomputable def cayleyGraph {Γ : Type u} [Fintype Γ] [DecidableEq Γ]
       intro v
       simp }
 
-/-- **Bašić–Petković–Stevanović (2009), honest TRUE form.** A Cayley graph of a
-finite abelian group admits PST between some vertex pair iff some pair carries
-Godsil's PST-ready spectral data `IsGodsilPSTReady` (arithmetic alignment of the
-character-sum eigenvalues + parity-matched signs).  Direct corollary of the
-honest existence theorem `isPST_exists_iff_isGodsilPSTReady`, quantified over
-pairs.
+/-- The abelian Cayley adjacency is real-symmetric (`Aᵀ = A`): the defining
+predicate `u ≠ v ∧ (u-v ∈ S ∨ v-u ∈ S)` is invariant under swapping `u, v`, and
+the entries are real `0/1`. -/
+theorem cayleyGraph_adj_isSymm {Γ : Type u} [Fintype Γ] [DecidableEq Γ]
+    [AddCommGroup Γ] (S : Set Γ) : (cayleyGraph S).adj.IsSymm := by
+  classical
+  refine Matrix.IsSymm.ext (fun i j => ?_)
+  show (if j ≠ i ∧ (j - i ∈ S ∨ i - j ∈ S) then (1:ℂ) else 0)
+      = (if i ≠ j ∧ (i - j ∈ S ∨ j - i ∈ S) then (1:ℂ) else 0)
+  have hsymm : (j ≠ i ∧ (j - i ∈ S ∨ i - j ∈ S))
+        ↔ (i ≠ j ∧ (i - j ∈ S ∨ j - i ∈ S)) := by
+    constructor
+    · rintro ⟨hne, hd⟩; exact ⟨fun e => hne e.symm, hd.symm⟩
+    · rintro ⟨hne, hd⟩; exact ⟨fun e => hne e.symm, hd.symm⟩
+  by_cases hc : i ≠ j ∧ (i - j ∈ S ∨ j - i ∈ S)
+  · rw [if_pos (hsymm.mpr hc), if_pos hc]
+  · rw [if_neg (fun hh => hc (hsymm.mp hh)), if_neg hc]
 
-NOTE on the prior false form.  This slot previously read
-`(∃ pair, PST) ↔ ∃ pair, IsStronglyCospectral ∧ IsGodsilRatio`, whose backward
-direction inherits the falseness of the naive Godsil iff (bare strong
-cospectrality leaves the cross-phase free, so integer eigenvalues alone do not
-give PST).  Migrating to `IsGodsilPSTReady` (which carries the parity sign) makes
-both directions TRUE.  Citation: Bašić, Petković, Stevanović, App. Math. Lett. 22
-(2009) 1117–1121. -/
+/-- **Bašić–Petković–Stevanović (2009), honest TRUE form (real-symmetric +
+full-support).**  A Cayley graph of a finite abelian group admits PST between
+some vertex pair *at a positive time* iff some pair carries Godsil's PST-ready
+spectral data `IsGodsilPSTReady` (arithmetic alignment of the character-sum
+eigenvalues + parity-matched signs).  Direct corollary of the honest existence
+theorem `isPST_exists_iff_isGodsilPSTReady`, quantified over pairs.
+
+The Cayley graph is real-symmetric for free (`cayleyGraph_adj_isSymm`); the
+remaining honest hypothesis `hfull` is *full eigenvalue support* — every
+eigenvalue of the adjacency overlaps every vertex.  This is automatic for
+**connected** Cayley graphs (vertex-transitivity makes the eigenvalue support a
+graph invariant, and connectivity forces it to be the whole spectrum), and is
+genuinely *needed* for the forward direction: a disconnected Cayley graph can
+carry an unsupported eigenvalue off no arithmetic progression while still hosting
+PST inside one connected piece (the `K₂ ⊔ H` obstruction).
+
+NOTE on the prior form.  This slot previously asserted the *unconditional* iff
+`(∃ pair, PST) ↔ ∃ pair, IsGodsilPSTReady`, whose **forward** direction is false
+for exactly the disconnected-junk reason above (PST only constrains the supported
+spectrum, `IsGodsilPSTReady` constrains all of it).  Adding the full-support
+hypothesis and the positive-time qualifier makes both directions TRUE.  Citation:
+Bašić, Petković, Stevanović, App. Math. Lett. 22 (2009) 1117–1121. -/
 theorem isPST_exists_abelianCayley_iff
     {Γ : Type u} [Fintype Γ] [DecidableEq Γ] [AddCommGroup Γ]
-    (S : Set Γ) :
-    (∃ u v : Γ, ∃ τ : ℝ, IsPST (cayleyGraph S) u v τ) ↔
+    (S : Set Γ)
+    (hfull : ∀ w : Γ, ∀ lam ∈ Finset.univ.image (cayleyGraph S).herm.eigenvalues,
+        lam ∈ EigenvalueSupport (cayleyGraph S) w) :
+    (∃ u v : Γ, ∃ τ : ℝ, 0 < τ ∧ IsPST (cayleyGraph S) u v τ) ↔
       ∃ u v : Γ, IsGodsilPSTReady (cayleyGraph S) u v := by
   constructor
-  · rintro ⟨u, v, τ, h⟩
-    exact ⟨u, v, (isPST_exists_iff_isGodsilPSTReady (cayleyGraph S) u v).mp ⟨τ, h⟩⟩
+  · rintro ⟨u, v, τ, hτ, h⟩
+    exact ⟨u, v, (isPST_exists_iff_isGodsilPSTReady (cayleyGraph S)
+      (cayleyGraph_adj_isSymm S) (hfull u)).mp ⟨τ, hτ, h⟩⟩
   · rintro ⟨u, v, hready⟩
-    rcases isPST_exists_of_isGodsilPSTReady hready with ⟨τ, hτ⟩
-    exact ⟨u, v, τ, hτ⟩
+    obtain ⟨a, b, kof, ha, halign, hsign⟩ := hready
+    exact ⟨u, v, Real.pi / a, by positivity,
+      isPST_of_aligned_paritySigned (cayleyGraph S) u v a b ha kof halign hsign⟩
 
 /-! ## 5. Quotient lifting (equitable partitions)
 
@@ -1690,36 +2034,46 @@ theorem isChiralGodsilRatio_iff_isGodsilRatio
     refine ⟨hr, s v * star (s u), ?_, rfl⟩
     rw [norm_mul, norm_star, hs v, hs u, one_mul]
 
-/-- **Chiral existence theorem, honest TRUE form.**  For a unit-modulus chiral
-signing `s`, PST between `u` and `v` occurs at some time iff the pair carries
-Godsil's PST-ready spectral data `IsGodsilPSTReady` *and* the (always-satisfiable)
-unit-modulus chiral phase clause `∃ α, ‖α‖ = 1 ∧ α = s v · conj (s u)` holds.
-Because `D_s = diag s` is a *diagonal unitary*, the conjugated adjacency `A_s` has
-the same real spectrum and eigenprojector supports as `A` (the signing affects only
-phases, not which real eigenvalues survive), so the chiral existence question
-reduces to the ordinary one — exactly `isPST_exists_iff_isGodsilPSTReady`.
+/-- **Chiral existence theorem, honest TRUE form (real-symmetric + full-support).**
+For a unit-modulus chiral signing `s` on a real-symmetric host with `u` of full
+eigenvalue support, PST between `u` and `v` occurs at some *positive* time iff the
+pair carries Godsil's PST-ready spectral data `IsGodsilPSTReady` *and* the
+(always-satisfiable) unit-modulus chiral phase clause
+`∃ α, ‖α‖ = 1 ∧ α = s v · conj (s u)` holds.  Because `D_s = diag s` is a
+*diagonal unitary*, the conjugated adjacency `A_s` has the same real spectrum and
+eigenprojector supports as `A` (the signing affects only phases, not which real
+eigenvalues survive), so the chiral existence question reduces to the ordinary one
+— exactly `isPST_exists_iff_isGodsilPSTReady`.
 
-NOTE on the prior false form.  This slot previously read
-`(∃τ, PST) ↔ IsStronglyCospectral ∧ IsChiralGodsilRatio`; its backward direction
-inherits the falseness of the naive Godsil iff.  Migrating the `IsGodsilRatio`
-core to `IsGodsilPSTReady` (which carries the parity sign) makes it TRUE.
+NOTE on the prior form.  This slot previously asserted the *unconditional* iff
+`(∃τ, PST) ↔ IsGodsilPSTReady ∧ (chiral phase)`, whose forward direction is false
+unless the host is real-symmetric and `u` is full-support (PST constrains only the
+supported spectrum, `IsGodsilPSTReady` constrains all of it — the `K₂ ⊔ H`
+obstruction).  Adding `hsymm`, `hfull`, and the positive-time qualifier makes both
+directions TRUE.  (The chiral phase clause is, as before, vacuously satisfiable for
+a unit-modulus signing, so it carries no extra constraint — it merely records the
+transfer phase `s v · conj (s u)`.)
 
 Citation: Godsil 2012 + Lippner–Tamon's "Magnetic perfect state transfer" line of
 work, e.g. Bachman–Fratila–Tamon–Tomon (2024+) on chiral PST in cycles and Cayley
 graphs. -/
 theorem isPST_exists_chiral_iff
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : WeightedGraph V) (s : V → ℂ) (hs : ∀ x, ‖s x‖ = 1)
-    (u v : V) :
-    (∃ τ : ℝ, IsPST G u v τ) ↔
+    (G : WeightedGraph V) (hsymm : G.adj.IsSymm) (s : V → ℂ) (hs : ∀ x, ‖s x‖ = 1)
+    {u v : V}
+    (hfull : ∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
+        lam ∈ EigenvalueSupport G u) :
+    (∃ τ : ℝ, 0 < τ ∧ IsPST G u v τ) ↔
       IsGodsilPSTReady G u v ∧ ∃ α : ℂ, ‖α‖ = 1 ∧ α = s v * star (s u) := by
   constructor
-  · rintro ⟨τ, h⟩
-    refine ⟨(isPST_exists_iff_isGodsilPSTReady G u v).mp ⟨τ, h⟩,
+  · rintro ⟨τ, hτ, h⟩
+    refine ⟨(isPST_exists_iff_isGodsilPSTReady G hsymm hfull).mp ⟨τ, hτ, h⟩,
       s v * star (s u), ?_, rfl⟩
     rw [norm_mul, norm_star, hs v, hs u, one_mul]
   · rintro ⟨hready, _⟩
-    exact isPST_exists_of_isGodsilPSTReady hready
+    obtain ⟨a, b, kof, ha, halign, hsign⟩ := hready
+    exact ⟨Real.pi / a, by positivity,
+      isPST_of_aligned_paritySigned G u v a b ha kof halign hsign⟩
 
 end Chiral
 

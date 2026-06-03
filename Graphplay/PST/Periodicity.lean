@@ -734,27 +734,11 @@ theorem arithProg_of_ratios_rational (S : Finset ℝ)
       exact ⟨1, 0, one_pos, fun x hx => absurd hx (hne ▸ Finset.notMem_empty x)⟩
 
 /-- The (value) eigenvalue support `PST.EigenvalueSupport` is exactly the set of
-eigenvalues carrying nonzero diagonal projector mass `(E_λ)_{u,u} ≠ 0`. -/
+eigenvalues carrying nonzero diagonal projector mass `(E_λ)_{u,u} ≠ 0`.
+Re-export of the upstream `PST.mem_eigenvalueSupport_iff_diag`. -/
 theorem mem_eigenvalueSupport_iff_diag (G : WeightedGraph V) (u : V) (lam : ℝ) :
-    lam ∈ PST.EigenvalueSupport G u ↔ PST.eigenProjDiagLocal G lam u ≠ 0 := by
-  unfold PST.EigenvalueSupport PST.eigenProjDiagLocal; rw [Set.mem_setOf_eq]
-  constructor
-  · rintro ⟨i, hi, hui⟩
-    intro hsum
-    have hnn : ∀ j ∈ Finset.univ,
-        0 ≤ (if G.herm.eigenvalues j = lam then ‖PST.eigU G u j‖ ^ 2 else 0) := by
-      intro j _; by_cases h : G.herm.eigenvalues j = lam
-      · simp only [h, if_true]; positivity
-      · simp only [h, if_false, le_refl]
-    have hpos : 0 < (if G.herm.eigenvalues i = lam then ‖PST.eigU G u i‖ ^ 2 else 0) := by
-      simp only [hi, if_true]; positivity
-    have hlt := Finset.sum_pos' hnn ⟨i, Finset.mem_univ i, hpos⟩
-    rw [hsum] at hlt; exact lt_irrefl 0 hlt
-  · intro hne; by_contra hcon; push_neg at hcon
-    apply hne; apply Finset.sum_eq_zero
-    intro i _; by_cases h : G.herm.eigenvalues i = lam
-    · simp only [h, if_true]; rw [hcon i h]; simp
-    · simp only [h, if_false]
+    lam ∈ PST.EigenvalueSupport G u ↔ PST.eigenProjDiagLocal G lam u ≠ 0 :=
+  PST.mem_eigenvalueSupport_iff_diag G u lam
 
 /-- **Cospectrality equalizes the eigenvalue supports.**  If the diagonal
 projector entries of `u` and `v` agree at every eigenvalue, then `u` and `v`
@@ -862,171 +846,34 @@ theorem cross_phase_sign_of_isPST_of_isSymm (G : WeightedGraph V) (hsymm : G.adj
     (hmu : mu ∈ Set.range G.herm.eigenvalues)
     (hsupp : PST.eigenProjDiagLocal G mu u ≠ 0) :
     G.evolve τ u v * Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) = 1 ∨
-      G.evolve τ u v * Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) = -1 := by
-  set γ := G.evolve τ u v with hγ
-  have hγnorm : ‖γ‖ = 1 := hpst
-  set p := Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) with hp
-  have hpnorm : ‖p‖ = 1 := by rw [hp, Complex.norm_exp]; simp
-  -- two-sided PST: `U(τ)_{v,u} = γ`, of modulus 1.
-  have hsym : G.evolve τ v u = γ := by rw [hγ, evolve_symm_of_isSymm G hsymm τ u v]
-  have hVU : ‖G.evolve τ v u‖ = 1 := by rw [hsym]; exact hγnorm
-  -- cospectrality: `(E_μ)_{u,u} = (E_μ)_{v,v}`.
-  have hcosp := PST.isPST_imp_cospectral G τ u v hpst mu hmu
-  -- column relation, `u→v` at `a = u`: `p·(E_μ)_{u,u} = \bar γ·(E_μ)_{u,v}`.
-  have hu := PST.eigenProj_col_relation G τ u v hpst mu hmu u
-  rw [PST.eigenProj_diag, PST.eigenProj_apply] at hu
-  -- column relation, `v→u` at `a = v`: `p·(E_μ)_{v,v} = \bar(U_{v,u})·(E_μ)_{v,u}`.
-  have hv := PST.eigenProj_col_relation G τ v u hVU mu hmu v
-  rw [PST.eigenProj_diag, PST.eigenProj_conjTranspose_apply, hsym] at hv
-  set E := PST.eigenProjEntryLocal G mu u v with hE
-  set d := PST.eigenProjDiagLocal G mu u with hd
-  have hdv : PST.eigenProjDiagLocal G mu v = d := (hcosp).symm
-  rw [hdv] at hv
-  -- `hu : p * (d:ℂ) = star γ * E`, `hv : p * (d:ℂ) = star γ * star E`.
-  -- Subtract: `star γ * E = star γ * star E`; `star γ ≠ 0` ⟹ `E = star E` (E real).
-  have hγstar : (star γ : ℂ) ≠ 0 := by
-    rw [star_ne_zero]; intro h0; rw [h0, norm_zero] at hγnorm; exact one_ne_zero hγnorm.symm
-  have hγγ : γ * star γ = 1 := by
-    rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hγnorm]; norm_num
-  have hEreal : E = star E := by
-    have hh : star γ * E = star γ * star E := by rw [← hu]; exact hv
-    exact mul_left_cancel₀ hγstar hh
-  -- From `hu`, `E = γ * p * (d:ℂ)` (using `γ * star γ = 1`).
-  have hEval : E = γ * p * (d : ℂ) := by
-    calc E = 1 * E := (one_mul E).symm
-      _ = (γ * star γ) * E := by rw [hγγ]
-      _ = γ * (star γ * E) := by ring
-      _ = γ * (p * (d : ℂ)) := by rw [← hu]
-      _ = γ * p * (d : ℂ) := by ring
-  -- `σ = γ p` is real (since `E = σ·d`, `d` real, `E` real, `d ≠ 0`).
-  have hdc : (d : ℂ) ≠ 0 := by exact_mod_cast hsupp
-  set σ := γ * p with hσ
-  have hσreal : σ = star σ := by
-    -- `σ * d = E = star E = star(σ * d) = (star σ) * d`, then cancel `d ≠ 0`.
-    have h1 : σ * (d : ℂ) = star (σ * (d : ℂ)) := by rw [← hEval]; exact hEreal
-    have hdstar : star ((d : ℝ) : ℂ) = ((d : ℝ) : ℂ) := by
-      rw [Complex.star_def, Complex.conj_ofReal]
-    have hEd : σ * (d : ℂ) = star σ * (d : ℂ) := by
-      calc σ * (d : ℂ) = star (σ * (d : ℂ)) := h1
-        _ = star σ * star (d : ℂ) := by rw [star_mul']
-        _ = star σ * (d : ℂ) := by rw [hdstar]
-    exact mul_right_cancel₀ hdc hEd
-  have hσnorm : ‖σ‖ = 1 := by rw [hσ, norm_mul, hγnorm, hpnorm, one_mul]
-  -- A complex `σ` with `σ = \bar σ` and `‖σ‖ = 1` is `±1`.
-  have hσim : σ.im = 0 := by
-    have := hσreal
-    rw [Complex.ext_iff] at this
-    simp only [Complex.star_def, Complex.conj_im] at this
-    linarith [this.2]
-  have hσsq : σ.re ^ 2 = 1 := by
-    have hsq := Complex.normSq_eq_norm_sq σ
-    rw [Complex.normSq_apply, hσnorm, hσim] at hsq
-    nlinarith [hsq]
-  have hre : σ.re = 1 ∨ σ.re = -1 :=
-    mul_self_eq_one_iff.mp (by nlinarith [hσsq] : σ.re * σ.re = 1)
-  rcases hre with h | h
-  · left; apply Complex.ext <;> simp [h, hσim]
-  · right; apply Complex.ext <;> simp [h, hσim]
-
-/-- **Parity extraction.**  Two unit signs `s, t ∈ {±1}` whose ratio is a pure
-phase `s · \overline{t} = e^{iθ}` (real `θ`) force `θ` to be an *integer multiple
-of `π`*, with the sign tracking the **parity** of that integer:
-`∃ n : ℤ, θ = π·n ∧ s = (-1)^n · t`.  (Even `n` ↔ `s = t`; odd `n` ↔ `s = -t`.)
-This is the arithmetic spine of Godsil's parity-matched alignment. -/
-private theorem int_and_sign_of_unit_signs (θ : ℝ) (s t : ℂ)
-    (hs : s = 1 ∨ s = -1) (ht : t = 1 ∨ t = -1)
-    (hratio : s * star t = Complex.exp (Complex.I * (θ : ℂ))) :
-    ∃ n : ℤ, θ = Real.pi * (n : ℝ) ∧ s = ((-1 : ℂ) ^ n) * t := by
-  -- `t * star t = 1` (since `t = ±1`).
-  have htt : t * star t = 1 := by rcases ht with h | h <;> rw [h] <;> simp
-  -- `s * star t ∈ {±1}`.
-  have hprod : s * star t = 1 ∨ s * star t = -1 := by
-    rcases hs with h | h <;> rcases ht with h' | h' <;> rw [h, h'] <;> simp
-  rw [hratio] at hprod
-  rcases hprod with hone | hneg
-  · -- `e^{iθ} = 1` ⟹ `θ = 2π m`; take `n = 2m` (even), `s = t`.
-    rw [Complex.exp_eq_one_iff] at hone
-    obtain ⟨m, hm⟩ := hone
-    -- imaginary parts: `θ = 2π m`.  Cast both sides of `hm` into `(· : ℂ) * I`.
-    have hθ : θ = Real.pi * (2 * m : ℝ) := by
-      have hcast : ((θ : ℝ) : ℂ) * Complex.I
-          = ((Real.pi * (2 * m : ℝ) : ℝ) : ℂ) * Complex.I := by
-        rw [show ((θ : ℝ) : ℂ) * Complex.I = Complex.I * (θ : ℂ) by ring, hm]
-        push_cast; ring
-      have := mul_right_cancel₀ Complex.I_ne_zero hcast
-      exact_mod_cast this
-    refine ⟨2 * m, by push_cast; linarith [hθ], ?_⟩
-    -- `s * star t = 1` ⟹ `s = t`; and `(-1)^(2m) = 1`.
-    have hsstart : s * star t = 1 := by
-      rw [hratio, hm, Complex.exp_int_mul_two_pi_mul_I]
-    have hst : s = t := by
-      calc s = s * (t * star t) := by rw [htt, mul_one]
-        _ = (s * star t) * t := by ring
-        _ = 1 * t := by rw [hsstart]
-        _ = t := one_mul t
-    rw [hst, show ((-1 : ℂ) ^ (2 * m)) = 1 by
-      rw [zpow_mul]; norm_num, one_mul]
-  · -- `e^{iθ} = -1 = e^{iπ}` ⟹ `θ = π + 2π m`; take `n = 2m+1` (odd), `s = -t`.
-    have hπ : Complex.exp (Complex.I * (θ : ℂ)) = Complex.exp (Complex.I * (Real.pi : ℂ)) := by
-      rw [hneg]; rw [show Complex.I * (Real.pi : ℂ) = (Real.pi : ℂ) * Complex.I by ring,
-        Complex.exp_pi_mul_I]
-    rw [Complex.exp_eq_exp_iff_exists_int] at hπ
-    obtain ⟨m, hm⟩ := hπ
-    have hθ : θ = Real.pi * (2 * m + 1 : ℝ) := by
-      have hcast : ((θ : ℝ) : ℂ) * Complex.I
-          = ((Real.pi * (2 * m + 1 : ℝ) : ℝ) : ℂ) * Complex.I := by
-        rw [show ((θ : ℝ) : ℂ) * Complex.I = Complex.I * (θ : ℂ) by ring, hm]
-        push_cast; ring
-      have := mul_right_cancel₀ Complex.I_ne_zero hcast
-      exact_mod_cast this
-    refine ⟨2 * m + 1, by push_cast; linarith [hθ], ?_⟩
-    have hst : s = -t := by
-      have h1 : (s * star t) * t = (-1) * t := by rw [hratio, hneg]
-      rw [mul_assoc, mul_comm (star t) t, htt, mul_one] at h1
-      rw [h1]; ring
-    rw [hst, show ((-1 : ℂ) ^ (2 * m + 1)) = -1 by
-      rw [zpow_add₀ (by norm_num : (-1 : ℂ) ≠ 0), zpow_mul]; norm_num]
-    ring
+      G.evolve τ u v * Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) = -1 :=
+  -- Re-export of the canonical *upstream* proof in `GodsilRatio` (all of its
+  -- analytic ingredients are projector-algebra lemmas native to that module, so it
+  -- lives there; this avoids duplicating the ~70-line proof).
+  PST.cross_phase_sign_of_isPST_of_isSymm G hsymm hpst mu hmu hsupp
 
 /-- **Godsil's forward existence direction at the parity-signed level (CLOSED,
-axiom-clean).**  On a real-symmetric graph (`Aᵀ = A`, the classical Godsil
-weighted-graph setting), if PST occurs from `u` to `v` at a positive time `τ`
-**and `u` has full eigenvalue support** (every eigenvalue of `G.adj` overlaps
-`u`, i.e. `(E_λ)_{u,u} ≠ 0` for every `λ` in the spectrum), then the pair `(u, v)`
-carries Godsil's **PST-ready spectral data** `IsGodsilPSTReady G u v`: an
-arithmetic alignment of the support (`λ = b + a·(kof λ)`, `a > 0`) *together with*
-the parity-matched cross-projector structure
-`(E_λ)_{u,v} = (-1)^{kof λ} (E_λ)_{u,u}`.
+axiom-clean) — downstream re-export.**  On a real-symmetric graph (`Aᵀ = A`), if
+PST occurs from `u` to `v` at a positive time `τ` **and `u` has full eigenvalue
+support**, then `(u, v)` carries Godsil's **PST-ready spectral data**
+`IsGodsilPSTReady G u v` (arithmetic alignment `λ = b + a·(kof λ)`, `a > 0`,
+*together with* the parity-matched cross structure
+`(E_λ)_{u,v} = (-1)^{kof λ} (E_λ)_{u,u}`).
 
-This completes the FORWARD half of Godsil's existence theorem
-`isPST_exists_iff_isGodsilPSTReady` (whose forward direction is an honest `sorry`
-upstream in `Graphplay.PST.GodsilRatio`, unreachable there without this downstream
-periodicity machinery — a circular import).
+The canonical proof lives **upstream** in `Graphplay.PST.GodsilRatio` as
+`PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport`: all of its analytic
+ingredients are projector-algebra lemmas native to that module, so — contrary to
+an earlier belief that this forward direction was a "downstream-only" `sorry` —
+it is provable upstream with no circular import.  This `Graphplay`-namespace
+theorem is a thin re-export of that proof, retained for the public API consumed by
+`Graphplay.StdLib.Path` and the universal/path corollaries.
 
-**Why the full-support hypothesis is *necessary* (FALSE→TRUE migration).**  The
-unconditional `IsPST → IsGodsilPSTReady` is **false**, because
-`IsGodsilPSTReady` demands the arithmetic alignment over the *entire* spectrum
-`Finset.univ.image G.herm.eigenvalues`, not merely the support of `(u,v)`.
-Counterexample: on the disjoint union `K₂ ⊔ H` with `K₂` on `{u, v}` (eigenvalues
-`{1, -1}`, in arithmetic progression) and `H` carrying an eigenvalue like `π` on
-vertices disjoint from `u, v`, PST `u → v` still occurs at `τ = π/2`, yet `π` is
-*unsupported* and lies on **no** arithmetic progression rationally commensurate
-with `{1, -1}` — so no single `a > 0, b` aligns all of `{1, -1, π}`.  The
-full-support hypothesis rules out exactly this disconnected-junk obstruction and
-is genuinely satisfiable (`K₂`, complete graphs, any connected vertex-transitive
-host, etc.).  For unsupported `λ` the cross entry `(E_λ)_{u,v}` vanishes (so the
-sign clause is harmless there), but the *alignment* clause genuinely fails — hence
-the hypothesis is on the alignment side, not cosmetic.
-
-**Proof.**  Real symmetry makes the cross phase `σ_λ := γ·e^{iτλ}`
-(`γ = U(τ)_{u,v}`) a real sign `±1` at every supported `λ`
-(`cross_phase_sign_of_isPST_of_isSymm`).  Fixing a base eigenvalue `λ₀`, the ratio
-`σ_λ·\overline{σ_{λ₀}} = e^{iτ(λ-λ₀)}` is `±1`, so `τ(λ-λ₀) = π·n_λ` with the sign
-tracking the parity of `n_λ` (`int_and_sign_of_unit_signs`).  This *is* the
-arithmetic progression with quantum `a = π/τ`, and the cross entry
-`(E_λ)_{u,v} = σ_λ·(E_λ)_{u,u}` (`isPST_imp_cross_eq_phase_diag`) becomes
-`(-1)^{kof λ}(E_λ)_{u,u}` after a uniform parity shift absorbing `σ_{λ₀}`.  No
-Diophantine approximation — finite exact spectral algebra.
+**Why full support is necessary (FALSE→TRUE migration).**  The unconditional
+`IsPST → IsGodsilPSTReady` is **false**: `IsGodsilPSTReady` aligns the *entire*
+spectrum `Finset.univ.image G.herm.eigenvalues`, while PST constrains only the
+*supported* eigenvalues (the disjoint-union `K₂ ⊔ H` counterexample — see the
+upstream proof's docstring).  Full support rules out exactly this disconnected-junk
+obstruction.
 
 Reference: Godsil, *When can perfect state transfer occur?*, Electron. J. Combin.
 19 (2012) #P29, Thm 2.1 (necessity / forward); Godsil, arXiv:0806.2074, Thm 2.2. -/
@@ -1035,97 +882,8 @@ theorem isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport
     (hfull : ∀ lam ∈ Finset.univ.image G.herm.eigenvalues,
         lam ∈ PST.EigenvalueSupport G u)
     (hpst : IsPST G u v τ) :
-    PST.IsGodsilPSTReady G u v := by
-  classical
-  set img : Finset ℝ := Finset.univ.image G.herm.eigenvalues with himg
-  -- `γ = U(τ)_{u,v}`, `‖γ‖ = 1`.
-  set γ := G.evolve τ u v with hγ
-  have hγnorm : ‖γ‖ = 1 := hpst
-  -- The cross phase function.
-  set σ : ℝ → ℂ := fun lam => γ * Complex.exp (Complex.I * (τ : ℂ) * (lam : ℂ)) with hσdef
-  -- Helpers: range membership and support membership from `img`.
-  have hrange : ∀ lam ∈ img, lam ∈ Set.range G.herm.eigenvalues := by
-    intro lam hlam; rw [himg, Finset.mem_image] at hlam
-    obtain ⟨i, _, hi⟩ := hlam; exact ⟨i, hi⟩
-  have hsupp : ∀ lam ∈ img, PST.eigenProjDiagLocal G lam u ≠ 0 := by
-    intro lam hlam
-    have := hfull lam hlam
-    exact (mem_eigenvalueSupport_iff_diag G u lam).mp this
-  -- Each supported phase is a real sign.
-  have hsign : ∀ lam ∈ img, σ lam = 1 ∨ σ lam = -1 := by
-    intro lam hlam
-    exact cross_phase_sign_of_isPST_of_isSymm G hsymm hpst lam (hrange lam hlam) (hsupp lam hlam)
-  -- The cross entry is the phase times the diagonal entry.
-  have hcross : ∀ lam ∈ img,
-      PST.eigenProjEntryLocal G lam u v = σ lam * (PST.eigenProjDiagLocal G lam u : ℂ) := by
-    intro lam hlam
-    have h := PST.isPST_imp_cross_eq_phase_diag G τ u v hpst lam (hrange lam hlam)
-    simpa only [hσdef] using h
-  -- Empty-spectrum case: `img = ∅` (impossible since `u : V`), still handle uniformly.
-  by_cases hne : img.Nonempty
-  · obtain ⟨lam0, hlam0⟩ := hne
-    -- Base sign `σ₀ ∈ {±1}`.
-    have hσ0 : σ lam0 = 1 ∨ σ lam0 = -1 := hsign lam0 hlam0
-    -- For each `λ ∈ img`: extract the integer `n_λ` and the parity relation.
-    have hextract : ∀ lam ∈ img, ∃ n : ℤ,
-        τ * (lam - lam0) = Real.pi * (n : ℝ) ∧ σ lam = ((-1 : ℂ) ^ n) * σ lam0 := by
-      intro lam hlam
-      -- `σ lam * star (σ lam0) = exp(I * (τ*(lam - lam0)))`.
-      have hstarexp : star (Complex.exp (Complex.I * (τ : ℂ) * (lam0 : ℂ)))
-          = Complex.exp (-(Complex.I * (τ : ℂ) * (lam0 : ℂ))) := by
-        rw [Complex.star_def, ← Complex.exp_conj]
-        congr 1
-        rw [map_mul, map_mul, Complex.conj_I, Complex.conj_ofReal, Complex.conj_ofReal]
-        ring
-      have hγγ1 : γ * star γ = 1 := by
-        rw [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq, hγnorm]; norm_num
-      have hratio : σ lam * star (σ lam0)
-          = Complex.exp (Complex.I * ((τ * (lam - lam0) : ℝ) : ℂ)) := by
-        show γ * Complex.exp (Complex.I * (τ : ℂ) * (lam : ℂ))
-            * star (γ * Complex.exp (Complex.I * (τ : ℂ) * (lam0 : ℂ)))
-          = Complex.exp (Complex.I * ((τ * (lam - lam0) : ℝ) : ℂ))
-        rw [star_mul', hstarexp]
-        rw [show γ * Complex.exp (Complex.I * (τ : ℂ) * (lam : ℂ))
-              * (star γ * Complex.exp (-(Complex.I * (τ : ℂ) * (lam0 : ℂ))))
-            = (γ * star γ) * (Complex.exp (Complex.I * (τ : ℂ) * (lam : ℂ))
-                * Complex.exp (-(Complex.I * (τ : ℂ) * (lam0 : ℂ)))) by ring]
-        rw [hγγ1, one_mul, ← Complex.exp_add]
-        congr 1
-        push_cast; ring
-      exact int_and_sign_of_unit_signs _ (σ lam) (σ lam0) (hsign lam hlam) hσ0 hratio
-    -- Build the integer function and its properties.
-    choose! nf hnf1 hnf2 using hextract
-    -- Parity shift to absorb the base sign `σ₀`.
-    set shift : ℤ := if σ lam0 = -1 then 1 else 0 with hshift
-    set a : ℝ := Real.pi / τ with ha
-    have hapos : 0 < a := by rw [ha]; positivity
-    set b : ℝ := lam0 - a * (shift : ℝ) with hb
-    refine ⟨a, b, fun lam => nf lam + shift, hapos, ?_, ?_⟩
-    · -- arithmetic alignment: `lam = b + a*(nf lam + shift)`.
-      intro lam hlam
-      have h1 : τ * (lam - lam0) = Real.pi * (nf lam : ℝ) := hnf1 lam hlam
-      have hτne : (τ : ℝ) ≠ 0 := ne_of_gt hτ
-      have hlamval : lam = lam0 + a * (nf lam : ℝ) := by
-        have hdiff : lam - lam0 = a * (nf lam : ℝ) := by
-          rw [ha]; field_simp; linarith [h1]
-        linarith [hdiff]
-      rw [hb]; push_cast; linear_combination hlamval
-    · -- parity-signed cross structure.
-      intro lam hlam
-      rw [hcross lam hlam, hnf2 lam hlam]
-      -- `((-1)^(nf lam) * σ lam0) = (-1)^(nf lam + shift)`.
-      congr 1
-      rcases hσ0 with h0 | h0
-      · -- σ₀ = 1: shift = 0.
-        have : shift = 0 := by rw [hshift, if_neg (by rw [h0]; norm_num)]
-        rw [this, h0]; push_cast; ring
-      · -- σ₀ = -1: shift = 1, and `(-1)^(n+1) = (-1)^n * (-1)`.
-        have hsh : shift = 1 := by rw [hshift, if_pos h0]
-        rw [hsh, h0, zpow_add₀ (by norm_num : (-1 : ℂ) ≠ 0)]; push_cast; ring
-  · -- `img` empty: both clauses vacuous; provide trivial alignment data.
-    rw [Finset.not_nonempty_iff_eq_empty] at hne
-    refine ⟨1, 0, fun _ => 0, one_pos, ?_, ?_⟩ <;>
-      · intro lam hlam; exact absurd (hne ▸ hlam) (Finset.notMem_empty lam)
+    PST.IsGodsilPSTReady G u v :=
+  PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport G hsymm hτ hfull hpst
 
 /-- **Godsil 2012 existence theorem, downstream full `iff` (CLOSED).**  On a
 real-symmetric graph with `u` of full eigenvalue support, PST `u → v` exists at

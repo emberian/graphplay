@@ -1135,17 +1135,26 @@ theorem complete_graph_optimal_search
     apply mul_le_mul_of_nonneg_right _ (Real.sqrt_nonneg _)
     have : (0:ℝ) ≤ Real.pi := Real.pi_pos.le
     linarith
-  -- `IsOptimalSearch` for the singleton collapses to `‖(∑_v U(τ)_{v,w})/√N‖ ≥ 1/√2`.
+  -- `IsOptimalSearch` for the singleton collapses to `‖(∑_v U(τ)_{w,v})/√N‖ ≥ 1/√2`
+  -- (the genuine Childs–Goldstone row success amplitude `⟨w|U|s⟩`).  The complete
+  -- graph has *symmetric* adjacency, so the genuine row sum equals the column sum
+  -- `∑_v U(τ)_{v,w}` that the `2×2` machinery (`cg_colSum`) computes.
   set τ : ℝ := (Real.pi / 2) * Real.sqrt N with hτ
-  have hcollapse : (∑ v, ∑ m, if m ∈ ({w} : Finset V)
-        then (G.searchEvolve {w} (1 / N) τ) v m / Real.sqrt (Fintype.card V) else 0)
+  -- Symmetry of the complete-graph adjacency (off-diagonal `= 1`, diagonal `= 0`).
+  have hsymm : ∀ u v : V, G.adj u v = G.adj v u := by
+    intro u v
+    by_cases h : u = v
+    · rw [h]
+    · rw [hcomplete u v h, hcomplete v u (Ne.symm h)]
+  have hcollapse : (∑ m, if m ∈ ({w} : Finset V)
+        then (∑ v, (G.searchEvolve {w} (1 / N) τ) m v) / Real.sqrt (Fintype.card V) else 0)
       = (∑ v, (G.searchEvolve {w} (1 / N) τ) v w) / Real.sqrt N := by
-    rw [Finset.sum_div]
-    apply Finset.sum_congr rfl
-    intro v _
     rw [Finset.sum_eq_single w]
-    · simp [hNdef]
-    · intro b _ hb; simp [Finset.mem_singleton, hb]
+    · rw [if_pos (Finset.mem_singleton_self w), ← hNdef]
+      congr 1
+      exact Finset.sum_congr rfl
+        (fun v _ => G.searchEvolve_apply_comm_of_symm {w} (1 / N) τ hsymm w v)
+    · intro b _ hb; rw [if_neg (by simpa [Finset.mem_singleton] using hb)]
     · intro h; exact absurd (Finset.mem_univ w) h
   show ‖_‖ ≥ 1 / Real.sqrt 2
   rw [hcollapse]
@@ -1603,6 +1612,12 @@ theorem optimal_search_of_chain_amplitude {G : WeightedGraph V}
     (hM : ∀ x y : V, P.cells x = P.cells y →
       (x ∈ ({w} : Finset V) ↔ y ∈ ({w} : Finset V)))
     (hcell : ∀ x : V, P.cells x = P.cells w → x = w)
+    -- Symmetric (real) adjacency: the genuine Childs–Goldstone *row* success
+    -- amplitude `⟨w|U|s⟩ = ∑_v U_{w,v}/√N` then equals the *column* sum
+    -- `∑_v U_{v,w}/√N` that the chain machinery (`search_colSum_eq_chain`)
+    -- computes.  Every concrete search host here (complete graph, hypercube,
+    -- lattice) has symmetric adjacency, so this is supplied for free.
+    (hsymm : ∀ u v : V, G.adj u v = G.adj v u)
     (γ τ C : ℝ) (hγ : 0 < γ) (_hC : 0 ≤ C) (hCπ : C ≤ Real.pi)
     (hτ : τ ≤ C * Real.sqrt (Fintype.card V))
     (hampl : ‖chainSearchAmplitude P w γ τ hM‖ ≥ 1 / Real.sqrt 2) :
@@ -1611,17 +1626,18 @@ theorem optimal_search_of_chain_amplitude {G : WeightedGraph V}
   have hτπ : τ ≤ Real.pi * Real.sqrt (Fintype.card V) :=
     hτ.trans (mul_le_mul_of_nonneg_right hCπ (Real.sqrt_nonneg _))
   refine ⟨γ, τ, hγ, hτπ, ?_⟩
-  -- `IsOptimalSearch G {w} γ τ` collapses to `‖(∑_v U(τ)_{v,w})/√N‖ ≥ 1/√2`.
+  -- `IsOptimalSearch G {w} γ τ` collapses to `‖(∑_v U(τ)_{w,v})/√N‖ ≥ 1/√2`
+  -- (genuine row amplitude); via symmetry, `= ‖(∑_v U(τ)_{v,w})/√N‖`.
   show ‖_‖ ≥ 1 / Real.sqrt 2
-  have hcollapse : (∑ v, ∑ m, if m ∈ ({w} : Finset V)
-        then (G.searchEvolve {w} γ τ) v m / Real.sqrt (Fintype.card V) else 0)
+  have hcollapse : (∑ m, if m ∈ ({w} : Finset V)
+        then (∑ v, (G.searchEvolve {w} γ τ) m v) / Real.sqrt (Fintype.card V) else 0)
       = (∑ v, (G.searchEvolve {w} γ τ) v w) / Real.sqrt (Fintype.card V) := by
-    rw [Finset.sum_div]
-    apply Finset.sum_congr rfl
-    intro v _
     rw [Finset.sum_eq_single w]
-    · simp
-    · intro b _ hb; simp [Finset.mem_singleton, hb]
+    · rw [if_pos (Finset.mem_singleton_self w)]
+      congr 1
+      exact Finset.sum_congr rfl
+        (fun v _ => G.searchEvolve_apply_comm_of_symm {w} γ τ hsymm w v)
+    · intro b _ hb; rw [if_neg (by simpa [Finset.mem_singleton] using hb)]
     · intro h; exact absurd (Finset.mem_univ w) h
   rw [hcollapse, search_colSum_eq_chain P w γ τ hM hcell]
   exact hampl

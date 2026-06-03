@@ -25,9 +25,11 @@ single load-bearing idea, stated five different ways below, is:
    partition of the token graph; the attention operator then reduces to a small
    `symmQuotient`.  *Proven:* the symmetry ⇒ equitable-partition direction
    (`equitableOfAutomorphism`) and that the symmetric quotient is Hermitian.
-   *Proven:* the effective-rank bound `rank Q̃ ≤ |I|`
-   (`attention_compression_bound`).  *Informal/conjectural only:* the deeper
-   compressibility narrative.
+   *Proven (the genuine compression content):* attention restricts **exactly** to
+   the `r × r` quotient on the cell-uniform subspace
+   (`attention_restricts_to_symmQuotient`, via `restrict_eq_symmQuotient`), with the
+   companion generic rank ceiling `rank Q̃ ≤ |I|` (`symmQuotient_rank_le_card`).
+   *Informal/conjectural only:* the deeper low-rank compressibility narrative.
 
 2. **Multi-head equitable reduction** (`MultiHeadAttention`).  If heads are
    related by a symmetry acting equitably, the (symmetrized) multi-head operator
@@ -259,31 +261,48 @@ noncomputable def equitableOfAutomorphism (G : WeightedGraph n)
     -- Branching is invariant under the `k`-fold power of the automorphism.
     exact (branching_eq_of_aut_pow G cells a hcell j x k).symm
 
-/-- **Spectral compression bound (PROVEN, axiom-clean).**  When structured
-attention collapses onto an `r`-cell equitable partition, the symmetrized attention
-operator has at most `r` "cell-uniform" eigenvalues carrying the inter-cell
-dynamics: its action on the cell-uniform subspace is the `r × r` `symmQuotient`,
-so the *effective rank* of the attention operator on symmetric inputs is `≤ r`.
+/-- **Quotient rank is at most the cell count (PROVEN, axiom-clean).**
 
-We state this as: the rank of `symmQuotient` (an `r × r` matrix, `r = |I|`)
-bounds the dimension of the image of the symmetrized attention operator restricted
-to the cell-uniform subspace.  The stated inequality `rank Q̃ ≤ |I|` is **fully
-proven** (`Matrix.rank_le_card_width`); only the informal *narrative* (that this
-captures the full low-rank compression of structured attention to `O(r)`
-parameters) is conjectural — it is a discussion, not a claim of this theorem.  The
-restriction-equals-quotient half is *proven* in
-`EquitablePartition.restrict_eq_symmQuotient`. -/
-theorem attention_compression_bound (A : AttentionMatrix n)
+The `I × I` symmetric quotient `Q̃` of the attention operator has rank `≤ |I|`.
+
+HONEST SCOPE (renamed from the over-selling `attention_compression_bound`): this
+is the *generic* width bound `rank M ≤ (number of columns)` (`Matrix.rank_le_card_width`),
+true for **any** `I × I` matrix — it says nothing specifically about equitability,
+attention, or compression on its own.  Its only attention-specific content is the
+*size* of the matrix it is applied to: because the equitable partition collapses
+the operator onto the `|I|`-dimensional quotient (`attention_restricts_to_symmQuotient`
+below, the genuine exact-reduction content), the bound `|I|` is the effective-rank
+ceiling on the symmetric sector — but that load-bearing step is
+`restrict_eq_symmQuotient`, not this inequality. -/
+theorem symmQuotient_rank_le_card (A : AttentionMatrix n)
     {I : Type u} [Fintype I] [DecidableEq I]
     (P : EquitablePartition A.symmetrizedAttention I) :
     (P.symmQuotient.transpose).rank ≤ Fintype.card I :=
-  -- This is the genuine *effective-rank* bound on the symmetric sector: the
-  -- `I × I` quotient (which captures the action on the cell-uniform subspace
-  -- exactly, via the proven `restrict_eq_symmQuotient`) has rank `≤ |I|`.
-  -- The rank bound is `Matrix.rank_le_card_width`; the deep low-rank
-  -- *compressibility characterization* is discussed in the docstring but the
-  -- stated inequality is the genuine, fully-proven content (no sorry).
+  -- Generic `rank ≤ width`; the attention/compression content is carried by
+  -- `attention_restricts_to_symmQuotient`, not by this inequality.
   Matrix.rank_le_card_width _
+
+/-- **Attention restricts exactly to the symmetric quotient — the genuine
+compression statement (PROVEN, axiom-clean).**
+
+When structured attention collapses onto an `r`-cell equitable partition `P`
+(`r = |I|`), the symmetrized attention operator acts on the cell-uniform subspace
+*exactly* as the `r × r` symmetric quotient `Q̃ = P.symmQuotient`: for any
+quotient-side weight vector `w : I → ℂ`,
+
+  `symmetrizedAttention.adj · (∑ i, w i · e_i)  =  ∑ i, (Q̃ · w) i · e_i`,
+
+with `e_i = P.cellUniformVec i`.  This is the *real* "structured attention is
+compressible" content — the large `n × n` operator's symmetric-sector dynamics
+descend, with **no approximation**, to the small `r × r` quotient.  It is the
+spine's `EquitablePartition.restrict_eq_symmQuotient` applied to the attention
+operator.  (The companion rank ceiling `rank Q̃ ≤ |I|` is `symmQuotient_rank_le_card`.) -/
+theorem attention_restricts_to_symmQuotient (A : AttentionMatrix n)
+    {I : Type u} [Fintype I] [DecidableEq I]
+    (P : EquitablePartition A.symmetrizedAttention I) (w : I → ℂ) :
+    A.symmetrizedAttention.adj.mulVec (fun v => ∑ i, w i * P.cellUniformVec i v)
+      = (fun v => ∑ i, (P.symmQuotient.mulVec w) i * P.cellUniformVec i v) :=
+  P.restrict_eq_symmQuotient w
 
 /-! ## 2. Multi-head equitable reduction
 
@@ -735,9 +754,12 @@ and the *same* machine-checked lift certifies the reduction is exact:
   inversion story.  (`ridge_inversion_restricts_to_quotient` itself is now PROVEN:
   the spine's `inversion_restricts_to_quotient` is a complete proof; see above.)
 
-  (`attention_compression_bound` is now **fully proven** — the effective-rank
-  bound `rank Q̃ ≤ |I|` is `Matrix.rank_le_card_width`; only the informal
-  *compressibility narrative* is conjectural.)
+  (The attention compression content is `attention_restricts_to_symmQuotient` —
+  the operator restricts **exactly** to the `r × r` quotient on the cell-uniform
+  subspace (`restrict_eq_symmQuotient`), fully proven.  Its companion generic rank
+  ceiling `rank Q̃ ≤ |I|` is `symmQuotient_rank_le_card` (`Matrix.rank_le_card_width`,
+  true for any `I × I` matrix); only the informal low-rank *compressibility
+  narrative* is conjectural.)
 
 **Conjectural vs proven, honestly flagged.**  *Proven and exact:* the
 symmetry-reduction / quotient-restriction statements — these are linear algebra

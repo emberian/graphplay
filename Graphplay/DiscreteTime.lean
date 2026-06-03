@@ -414,18 +414,44 @@ noncomputable def CoinedWalk
     Matrix (C × V) (C × V) ℂ :=
   coinTensorI coin V * conditionalShift port
 
-/-- **The Grover walk** on a simple graph `G`, with coin space taken to be
-`V` itself (each vertex is its own coin index; in the bipartite-doubled
-picture this is `V × V`, sliced to the edges of `G`).  Encoded here with
-coin `C := V` and a port that swaps coordinates on adjacent pairs; for
-non-adjacent pairs the port is the identity (so the off-shell component is
-inert).
+/-- **The Grover walk** on the arc space `V × V`, with coin space taken to be
+`V` itself (each vertex is its own coin index).  This is the canonical
+**flip-flop coined walk** `U = S · C`:
 
-Reference: Portugal (2018), §6.2. -/
+* the coin `C := coinTensorI (groverCoin V) V` applies the Grover reflection
+  `2|s⟩⟨s| − I` on the *coin* coordinate (the first factor), fixing the
+  position coordinate; and
+* the shift `S := szSwap V` is the **flip-flop** `|x, y⟩ ↦ |y, x⟩` on the arc
+  space.
+
+Both factors are unitary involutions (`szSwap_mul_self`/`szSwap_isHermitian`
+and `coinTensorI_unitary` via `groverCoin_unitary`), so the composite is
+genuinely unitary (`GroverWalk_unitary`, needs `Nonempty V` to keep the
+Grover normalisation `2/|V|` well-defined).  This matches the gold-standard
+`CoinedWalk.groverStep = arcFlipFlop · groverArcCoin` of
+`Graphplay.StdLib.CoinedWalk`.
+
+The graph `G` enters only as the *support* of live arcs (the dynamics on the
+full arc space restrict to the edge support of `G`); the operator itself is
+graph-independent, exactly as `CoinedWalk.groverStep` is.  The `[DecidableRel
+G.Adj]` instance is retained for downstream `SimpleGraph`-indexed API
+(`AAKVSearchBound`, `grover_search_bound`).
+
+**History (an honest correction).**  The previous encoding used
+`coinTensorI (groverCoin V) V * conditionalShift port` with
+`port p = if G.Adj p.1 p.2 then p.1 else p.2`.  That `port` is **not** a
+per-coin bijection on any graph with a vertex of degree `≥ 1` (every
+neighbour of a fixed coin `c` is sent to `c`, collapsing them), so its
+`conditionalShift` is *singular* and the walk was **not norm-preserving** —
+yet it was the operator under `grover_search_bound`, making "success
+probability `≥ ½`" a probability of an un-normalised vector.  The flip-flop
+shift `szSwap V` used here is a genuine involution, restoring unitarity.
+
+Reference: Portugal (2018), §6.2; Aharonov–Ambainis–Kempe–Vazirani
+(STOC 2001). -/
 noncomputable def GroverWalk (G : SimpleGraph V) [DecidableRel G.Adj] :
     Matrix (V × V) (V × V) ℂ :=
-  let port : V × V → V := fun p => if G.Adj p.1 p.2 then p.1 else p.2
-  coinTensorI (groverCoin V) V * conditionalShift port
+  WeightedGraph.szSwap V * coinTensorI (groverCoin V) V
 
 /-! ### Unitarity of the coined step
 
@@ -449,16 +475,13 @@ reflection `2|s⟩⟨s| − I` through the uniform unit vector `|s⟩`; it is He
 (`groverCoin_mul_self`, using `card C ≠ 0` so `|s⟩` is a genuine *unit* vector),
 hence unitary (`groverCoin_unitary`).
 
-**Caveat (an honest non-bijectivity).**  The particular `port` baked into
-`GroverWalk` above — `p ↦ if G.Adj p.1 p.2 then p.1 else p.2` — is **not** a
-per-coin bijection on any graph with a vertex of degree `≥ 1`: for fixed first
-coordinate `c`, every neighbour `x` of `c` is sent to `c`, collapsing them, so
-`x ↦ port (c, x)` is not injective.  Hence `conditionalShift_unitary` does
-**not** apply to this encoding and `GroverWalk` as written is *not* unitary —
-its conditional shift is the bipartite swap-on-arcs only on the edge support.
-We therefore do **not** assert `GroverWalk` unitarity (that would be false as
-stated); the genuine unitary coined step is the abstract `CoinedWalk` under the
-bijective-port hypothesis. -/
+The two abstract pieces (`coinTensorI_unitary`, `conditionalShift_unitary`)
+cover *general* coined steps `(coin ⊗ I) · S` for any bijective port.  The
+concrete `GroverWalk` defined above does **not** use a `conditionalShift`: it
+uses the **flip-flop** `szSwap V` (`|x,y⟩ ↦ |y,x⟩`), a genuine swap involution
+that is manifestly unitary without any port-bijectivity hypothesis.  Its
+unitarity `GroverWalk_unitary` is therefore unconditional (beyond `Nonempty V`,
+needed only to keep the Grover normalisation `2/|V|` finite). -/
 
 /-- `(coin ⊗ I)ᴴ · (coin ⊗ I) = (coinᴴ · coin) ⊗ I`: the conjugate-transpose
 of a coin-tensor-identity composed with itself is the coin Gram matrix tensored
@@ -634,6 +657,28 @@ step whenever the shift's port is a per-coin bijection (`CoinedWalk_unitary`). -
 theorem groverCoin_unitary (hC : (Fintype.card C : ℂ) ≠ 0) :
     (groverCoin C)ᴴ * groverCoin C = 1 := by
   rw [groverCoin_isHermitian, groverCoin_mul_self hC]
+
+/-- **The Grover walk is unitary**: `Uᴴ · U = 1`.  `GroverWalk = S · C` with
+`S = szSwap V` the flip-flop swap involution (`szSwap_isHermitian`,
+`szSwap_mul_self`) and `C = coinTensorI (groverCoin V) V` the Grover coin-flip,
+unitary by `coinTensorI_unitary (groverCoin_unitary …)`.  Their product is
+unitary: `(SC)ᴴ(SC) = Cᴴ(SᴴS)C = Cᴴ·1·C = CᴴC = 1`.  The `Nonempty V`
+hypothesis keeps the Grover normalisation `2/|V|` well-defined (so the coin is a
+genuine reflection through a *unit* vector); it is the sole, honest
+non-degeneracy condition.  This is the unitarity that makes the
+`grover_search_bound` "success probability `≥ ½`" a probability of a genuinely
+normalised state. -/
+theorem GroverWalk_unitary (G : SimpleGraph V) [DecidableRel G.Adj]
+    [Nonempty V] :
+    (GroverWalk G)ᴴ * GroverWalk G = 1 := by
+  have hcard : (Fintype.card V : ℂ) ≠ 0 := by
+    have : 0 < Fintype.card V := Fintype.card_pos
+    exact_mod_cast this.ne'
+  unfold GroverWalk
+  rw [Matrix.conjTranspose_mul, Matrix.mul_assoc,
+    ← Matrix.mul_assoc (WeightedGraph.szSwap V)ᴴ,
+    WeightedGraph.szSwap_isHermitian V, WeightedGraph.szSwap_mul_self V,
+    Matrix.one_mul, coinTensorI_unitary (groverCoin V) (groverCoin_unitary hcard)]
 
 end CoinedWalk
 
@@ -910,10 +955,21 @@ is the analogous statement on the entrywise squared modulus of `U_Sz^τ`.
 /-- Discrete-time perfect state transfer on the Szegedy walk between
 vertices `u` and `v` at step `τ : ℕ`.  Formalised by summing amplitudes
 over the doubled coordinate: the walker is "at `u`" iff it lives in the
-slice `{u} × V`, and "at `v`" iff in `{v} × V`. -/
+slice `{u} × V`, and "at `v`" iff in `{v} × V`.
+
+**Born-modulus normalisation (gold standard).**  The condition is unit
+modulus of the *normalised* head-marginal amplitude
+`⟨v-slice | U_Sz^τ | u-slice⟩ / √n` (with `n = card V`), exactly mirroring
+the continuous-time `IsPST := ‖evolve τ u v‖ = 1` and the corrected doubled
+`IsCellUniformSzegedyPST` (`DiscreteTime/Lifts.lean`).  Dividing by `√n`
+makes the two slices unit vectors, so `= 1` is the genuine Born-rule transfer
+probability `1` of a normalised amplitude — not a `= n` raw-amplitude
+artifact.  (The previous `‖∑_y …‖ = (card V : ℝ)` used the wrong
+normalisation: it asserted the *un-normalised* head-marginal had modulus `n`,
+which is not the unit-modulus transfer condition the corpus uses.) -/
 def IsDTQW_PST {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (u v : V) (τ : ℕ) : Prop :=
-  ‖∑ y, ((G.SzegedyWalk ^ τ) (u, y) (v, y))‖ = (Fintype.card V : ℝ)
+  ‖(∑ y, ((G.SzegedyWalk ^ τ) (u, y) (v, y))) / Real.sqrt (Fintype.card V)‖ = 1
 
 /-- Mixing matrix at step `τ` for the Szegedy walk: traced over the
 "history" coordinate. -/
@@ -1351,11 +1407,15 @@ This is the **non-vacuous** form of the bound: the only existential is the
 *bounded* step count `T`; the initial state is the **fixed** flat superposition
 (not a free `ψ` one could set to a marked spike), and the conclusion is a genuine
 *probability* `∑_{p.1 ∈ M} ‖(U^T|s⟩)_p‖² ≥ 1/2` — the sum of marked-block squared
-amplitudes, the literal success probability of measuring a marked vertex.  A
-graph that is too sparse/disconnected for amplitude amplification to reach `1/2`
-simply lacks the instance; the typeclass is the honest, auditable carrier of the
-analytic hypothesis-bundle (connectivity + spectral gap + marked fraction) under
-which AAKV/MNRS prove the bound.
+amplitudes, the literal success probability of measuring a marked vertex.  This
+is a probability of a *genuinely normalised* state: `GroverWalk G` is now a
+**unitary** operator (`GroverWalk_unitary`), so `U^T|s⟩` is a unit vector (`|s⟩`
+is, by `uniformArcState_unit`) and `∑_{p.1∈M}‖·‖² ≤ 1` is a true probability —
+not, as in the earlier non-unitary `GroverWalk` encoding, a squared-amplitude
+sum of an un-normalised vector.  A graph that is too sparse/disconnected for
+amplitude amplification to reach `1/2` simply lacks the instance; the typeclass
+is the honest, auditable carrier of the analytic hypothesis-bundle (connectivity
++ spectral gap + marked fraction) under which AAKV/MNRS prove the bound.
 
 This is a **local** interface (kept here, not in the shared
 `LiteratureInterfaces.lean`) because it is specific to this file's `GroverWalk`

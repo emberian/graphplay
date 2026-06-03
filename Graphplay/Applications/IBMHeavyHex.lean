@@ -10,6 +10,29 @@ every edge has been subdivided by a degree-2 "flag" qubit.  Data qubits sit at
 honeycomb vertices and have degree at most 3; flag qubits sit on subdivided
 edges and have degree exactly 2.  The resulting graph is bipartite and planar.
 
+> **HONEST SCOPE — READ FIRST.**  Despite the IBM-hardware framing, *what this
+> file actually builds and proves theorems about is **not** the honeycomb
+> heavy-hex chip.*  The graph `HeavyHexLattice n m` realized and analyzed below
+> is the **edge-subdivision of the complete graph `K_N`** on the `N = 2nm`
+> sites (a flag qubit on **every** ordered distinct pair of sites), so each data
+> site has degree `2(N−1)` and the symmetric quotient coupling is `2√(N−1)` —
+> **not** the honeycomb interior degree `3` / coupling `√6` advertised in the
+> physics paragraph above.  Concretely this is *a generic `K_N`-site-subdivision
+> equitable result wearing hardware names*: the data/flag equitable partition,
+> the exact `2×2` quotient, the PST/mixing/spectrum theorems are all faithful to
+> the `K_N`-subdivision they are stated on, and they are honestly worth having
+> as a worked equitable-disassembly example — but the **honeycomb degree-3
+> topology is not built**.  The genuine honeycomb template `HoneycombAdj` /
+> `HoneycombLattice` *is* defined (and is the truncated honeycomb), but it is
+> used **only** as the base of `heavyHexAsBundle` (with trivial `Unit` fibers,
+> so it carries no flag qubits and does not reconstruct the chip); it is **never
+> used as the chip adjacency**.  Matching the real honeycomb degrees / the real
+> physical qubit counts would require the boundary-truncated subdivision and a
+> hardware-truncation vertex subset, neither of which is developed here.  Every
+> docstring below that mentions `3`, `√6`, or "honeycomb interior degree" as the
+> realized value is describing the *template* it is **not** building; the
+> realized values are the `K_N` ones `2(N−1)` / `2√(N−1)`.
+
 References (public):
 
 * C. Chamberland, G. Zhu, T. Yoder, J. Hertzberg, A. Cross,
@@ -20,23 +43,27 @@ References (public):
 * IBM Quantum hardware documentation:
   <https://docs.quantum.ibm.com/guides/processor-types>.
 
-The combinatorial content extracted in this file is that the heavy-hex graph
-is the **edge-subdivision** of a honeycomb lattice.  This presentation buys
-us, for free, a 2-cell equitable partition (data / flag), a 2x2 quotient
-matrix, a graph-bundle structure over the underlying honeycomb template, and
-all of the lifting theorems from `Graphplay.PST`, `Graphplay.Mixing`,
-`Graphplay.Search`, and `Graphplay.Chiral`.
+The combinatorial content extracted in this file is that the realized graph is
+an **edge-subdivision** with a data/flag bipartition (the `K_N`-site
+subdivision, per the scope note above — not the honeycomb subdivision).  This
+presentation buys us, for free, a 2-cell equitable partition (data / flag), an
+exact 2x2 quotient matrix, a (data-only, `Unit`-fiber) graph-bundle handle over
+the honeycomb template, and all of the lifting theorems from `Graphplay.PST`,
+`Graphplay.Mixing`, `Graphplay.Search`, and `Graphplay.Chiral`.
 
 ## Layout of the file
 
 1. `HoneycombLattice n m` — a finite honeycomb-lattice `SimpleGraph` on
    an `n × m` brick-wall coordinate grid.
-2. `HeavyHexLattice n m` — its edge-subdivision: the data/flag heavy-hex.
+2. `HeavyHexLattice n m` — the realized chip graph: the **complete-site**
+   edge-subdivision (a flag on every ordered distinct pair of sites), data/flag
+   tagged.  (This is `K_N`-subdivision, not honeycomb-subdivision; see scope.)
 3. **Spectral disassembly**:
    - `dataFlagPartition` — the role partition into data vs. flag qubits.
    - `dataFlagQuotient` — the 2x2 quotient matrix.
-   - `heavyHexAsBundle` — heavy-hex as `GraphBundle Q V` over the honeycomb
-     template with two-vertex "subdivision fibers".
+   - `heavyHexAsBundle` — a `GraphBundle` over the honeycomb template with
+     **trivial `Unit` fibers** (so it models only the *data* sublattice, not the
+     flag qubits — see its docstring; it is NOT a faithful chip model).
 4. **Lifting** — PST / mixing / search / chiral statements on the quotient
    lifting to cell-uniform statements on the chip.
 5. **Hardware spec** — a concrete `HardwareSpec` matching IBM Heron / Eagle.
@@ -464,10 +491,14 @@ def dataFlagPartition (n m : ℕ) :
             rw [Equiv.swap_apply_left]
     rw [← hπ, branching_liftPerm]
 
-/-- The 2 x 2 quotient matrix of the data/flag role partition on a 3-regular
-honeycomb.  Entry `(data, flag)` is the honeycomb interior degree (3); entry
-`(flag, data)` is 2; the diagonal is 0.  Concrete numerical content lifted
-into `ℂ`. -/
+/-- The 2 x 2 quotient matrix of the data/flag role partition of the realized
+`K_N`-site-subdivision graph.  Its proven entries (see
+`dataFlagQuotient_toroidal_form`) are: `(data, flag) = 2(N−1)` (the dart count
+at a data site, `N = |HoneyVertex| = 2nm`), `(flag, data) = 2`, diagonal `0`.
+
+(NB: this is the `K_N` value `2(N−1)`, **not** the honeycomb interior degree `3`
+— see the file-header scope note; the boundary-truncated honeycomb template is
+not the graph realized here.)  Concrete numerical content lifted into `ℂ`. -/
 noncomputable def dataFlagQuotient (n m : ℕ) : Matrix Role Role ℂ :=
   (dataFlagPartition n m).quotient
 
@@ -928,25 +959,34 @@ theorem dataFlagQuotient_eigenvalues (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
   -- After folding `s = √(N−1)` the two sides coincide.
   rw [hfactor, hs]
 
-/-! ### Heavy-hex as a `GraphBundle`.
+/-! ### Heavy-hex as a `GraphBundle` (data-sublattice only).
 
-The heavy-hex lattice has a clean bundle structure over the honeycomb
-template: each honeycomb edge contributes a 2-vertex "subdivision fiber"
-(the inserted flag together with one of its endpoints), and the template
-edges of the honeycomb are realised as biregular `[1] × [1]` couplings.
+*Motivation (the intended, not-yet-built structure).*  A faithful heavy-hex
+bundle over the honeycomb template would give each honeycomb edge a 2-vertex
+"subdivision fiber" (the inserted flag together with one of its endpoints), with
+the honeycomb template edges realised as biregular `[1] × [1]` couplings.
 
-The cleanest packaging is **bundle-over-edges**: take `Q` to be the
-honeycomb's line graph, fibers to be single flag qubits, and reconstruct
-heavy-hex as the union with data-qubit star joins.  We expose the
-intermediate combinatorial identity directly. -/
+**What is actually realized here is weaker.**  The `heavyHexAsBundle` below uses
+**trivial `Unit` fibers**, so it carries no flag qubits and models *only the
+data sublattice* (the honeycomb sites), not the subdivision graph.  We therefore
+do **not** claim a bundle-level equivalence with `heavyHexWeighted`; the only
+honest content is the *vertex* bijection onto the data sublattice
+(`heavyHexAsBundle_dataVertex_equiv`).  A genuine flag-carrying subdivision
+bundle (two-vertex fibers, as in the motivation) is left to future work. -/
 
-/-- Heavy-hex realised as a `GraphBundle` over the honeycomb template.  Each
-fiber is a single flag qubit; couplings carry the "flag adjacent to data"
-information.
+/-- A `GraphBundle` over the honeycomb template with **trivial `Unit` fibers**.
 
-We do not prove the equivalence with `heavyHexWeighted n m` here; the
-statement is the bundle's `.total` agrees with `heavyHexWeighted` up to a
-canonical re-indexing. -/
+HONEST SCOPE (the name over-promises).  This is **not** a faithful bundle model
+of the heavy-hex chip.  Its fibers are `fun _ => Unit` — singletons that carry
+**no** flag qubits — so the total space is just `Σ _ : HoneyVertex, Unit ≃
+HoneyVertex` (the data sublattice), and the total adjacency is the honeycomb
+*template join* on data sites, not the data–flag subdivision graph.  In
+particular it does **not** agree with `heavyHexWeighted n m` (cardinalities
+already differ: `N` vs `N + N(N−1)`), and we do **not** claim that equivalence.
+The only honest content recovered is the *vertex* bijection onto the data
+sublattice, stated and proved in `heavyHexAsBundle_dataVertex_equiv`.  A
+flag-carrying realisation needs a genuine subdivision bundle (two-vertex
+fibers), which is not developed here. -/
 noncomputable def heavyHexAsBundle (n m : ℕ) :
     GraphBundle (HoneycombLattice n m) (fun _ => Unit) := by
   classical
@@ -992,7 +1032,16 @@ theorem heavyHexAsBundle_dataVertex_equiv (n m : ℕ) :
 We now state which CTQW primitives the quotient supports, and that they lift
 to cell-uniform primitives on the chip.
 
-For the 2 x 2 quotient `Q = [[0, 3], [2, 0]]`:
+(SCOPE: as flagged in the file header, the realized graph is the `K_N`-site
+subdivision, so the raw quotient is `Q = [[0, 2(N−1)], [2, 0]]` and the
+symmetric quotient is `Q̃ = [[0, q], [q, 0]]` with coupling `q = 2√(N−1)`.  The
+`[[0, 3], …]` / `√6` honeycomb-template values written in the *illustrative*
+list below are **not** the realized ones — they are the boundary-truncated
+honeycomb template that this file does not build; substitute `q = 2√(N−1)`
+throughout for the actual statements, which are the theorems that follow.)
+
+Illustrative honeycomb-template form (NOT realized here), 2×2 quotient
+`Q = [[0, 3], [2, 0]]`:
 
 * **PST**: the symmetric symmetrization `Q̃ = [[0, √6], [√6, 0]]` has perfect
   state transfer at time `π / (2√6)` between the data-cell and the flag-cell.
@@ -1002,7 +1051,10 @@ For the 2 x 2 quotient `Q = [[0, 3], [2, 0]]`:
   uniform states.
 * **Search**: marking the data cell, the search Hamiltonian
   `-γ Q - P_{data}` on the quotient has spectral gap optimised at
-  `γ = 1/√6`. -/
+  `γ = 1/√6`.
+
+The *realized* `K_N` statements below carry `q = dataFlagCoupling n m =
+2√(N−1)` (PST at `π/(2q)`, mixing at `π/(4q)`). -/
 
 /-- The single coupling of the symmetric data/flag quotient, `q = 2√(N−1)`. -/
 noncomputable def dataFlagCoupling (n m : ℕ) : ℝ :=
@@ -1617,9 +1669,11 @@ theorem perEdge_crossTalk_may_break_dataFlag :
 
 This is the heavy-hex analogue of the K_4 chiral signing of Levine et al.
 (arXiv:2605.04414).  On the 2 x 2 data/flag quotient, the only nontrivial
-unitary signing is `Q' = [[0, 3·e^{iφ}], [2·e^{-iφ}, 0]]` for some real
-phase `φ`.  Its mixing time depends on the **magnitude** of the spectral
-gap, which is `‖e^{iφ} · √6‖ = √6` — invariant under `φ`!
+unitary signing is `Q' = [[0, q·e^{iφ}], [q·e^{-iφ}, 0]]` for some real
+phase `φ`, with the *realized* coupling `q = dataFlagCoupling n m = 2√(N−1)`
+(the `K_N`-subdivision value — **not** the honeycomb-template `√6`; see the file
+header).  Its mixing time depends on the **magnitude** of the spectral
+gap, which is `‖e^{iφ} · q‖ = q` — invariant under `φ`!
 
 This means: chiral signings of the 2 x 2 quotient achieve no mixing-time
 speedup over the unsigned walk.  This is a *negative* result and is itself

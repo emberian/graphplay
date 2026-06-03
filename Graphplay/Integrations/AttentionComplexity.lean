@@ -44,11 +44,15 @@ the gradient update **by construction**.  General *learned* attention is only
 cell-constant.  Extending the exact linear collapse to that regime requires
 **ε-equitable partition theory** — an ε-cell-constant `A` quotients to an `r × r`
 problem with a *controlled error* — which is the open frontier and is **not**
-formalized here.  The quantum clause (`attention_quantum_composition`) references
-the quotient-inversion reduction (`ridge_inversion_restricts_to_quotient`) and the
-CTQW rate (`MatrixInversion.LinearSystem.walkTime`, `ctqw_success`); the
-quantum-*rate* part is the only honest `sorry` (it cites an unproven advantage
-rate), while the classical linear-in-`n` collapse it composes with is fully proven.
+formalized here.  The quantum clause (`attention_quantum_composition`) composes the
+proven classical collapse with two facts about the `r × r` quotient: the exact
+inversion-reduction (`ridge_inversion_restricts_to_quotient`, proven) and the CTQW
+**convergence** guarantee (`MatrixInversion.LinearSystem.ctqw_success` — an output
+within `ε` of the normalized solution; an honest upstream `sorry`, arXiv:2508.06611).
+The convergence part is the only honest `sorry`; the classical linear-in-`n` collapse
+it composes with is fully proven.  (Earlier this clause carried a vacuous
+`walkTime ε = κ/ε` conjunct, which is `rfl` by the definition of `walkTime` and
+asserts nothing; it was replaced by the genuine `ctqw_success` convergence witness.)
 
 ## References
 
@@ -218,14 +222,17 @@ linear in `n` (§2 correctness + §3 counts).  The *hard* part that remains — 
 normalization, ridge/kernel heads, etc.) — is exactly the
 `MatrixInversion.LinearSystem` on the quotient, which the equitable spine reduces to
 the `r`-dimensional problem (`MachineLearning.ridge_inversion_restricts_to_quotient`,
-`EquitablePartition.restrict_eq_symmQuotient`) and which the CTQW inverter solves in
-`walkTime = O(κ/ε)` (`MatrixInversion.LinearSystem.ctqw_success`).
+`EquitablePartition.restrict_eq_symmQuotient`) and which the CTQW inverter solves to
+within `ε` of the exact solution (`MatrixInversion.LinearSystem.ctqw_success`, with
+walk schedule `walkTime = κ/ε`, `n`-independent).
 
 So the `O(n²)` dense apply becomes `O(n·r·d)` linear-in-`n` *plus* a `poly(r)`
 (quantum-accelerated) quotient operation: the quadratic-in-`n` cost is gone, and the
 residual hard work shrinks from `n` to `r`.  We state this composition; the
-*classical linear-in-`n`* clause is genuinely proven, while the *quantum rate* clause
-references the (unproven-here) advantage rate and is the honest `sorry`. -/
+*classical linear-in-`n`* clause is genuinely proven, while the *quantum convergence*
+clause references the (unproven-here) `ctqw_success` guarantee and is the honest
+`sorry`.  (The clause states a real `ε`-convergence on the quotient, not the vacuous
+definitional identity `walkTime ε = κ/ε`.) -/
 
 /-- **End-to-end composition (statement).**  Package the answer to "does the
 structure-speedup compose with attention's quadraticity to give a linear algorithm,
@@ -236,16 +243,26 @@ with the hard part quantum-accelerated?":
    in cost `blockCost n r d = n·(r·d + d)`, **linear in `n`** (`attention_apply_linear_in_n`),
    versus the naive `fullCost n d = n²·d`.
 
-2. *(REFERENCED quantum rate, honest `sorry`.)*  The residual `r × r` quotient solve
-   (the structurally-hard part, now of size `r`, not `n`) admits a CTQW inverter whose
-   walk time is `O(κ/ε)` in the quotient's condition number `κ` — independent of `n`.
-   We express the rate clause via `MatrixInversion.LinearSystem.walkTime` of the
-   quotient system; the genuine advantage rate is the deep upstream
-   `MatrixInversion.LinearSystem.ctqw_success`, referenced not re-proven.
+2. *(REFERENCED quantum convergence, honest `sorry`.)*  The residual `r × r` quotient
+   solve (the structurally-hard part, now of size `r`, not `n`) is a genuine CTQW
+   `LinearSystem` on the quotient that (i) the inversion restricts to **exactly** (no
+   approximation — `ridge_inversion_restricts_to_quotient`), and (ii) the CTQW inverter
+   solves to within `ε` of the normalized exact solution
+   (`MatrixInversion.LinearSystem.ctqw_success`, the deep upstream convergence theorem,
+   an honest `sorry`; arXiv:2508.06611).  Its walk schedule `walkTime ε = κ/ε` depends
+   only on the quotient condition number `κ`, **not** on `n`.
+
+HONESTY NOTE.  The previous version of clause (2) carried a conjunct
+`Sq.walkTime ε = Sq.conditionNumber / ε`.  That is `rfl` — `walkTime` is *defined* as
+`conditionNumber / ε` — so it merely restates the definition and asserts **nothing**
+about convergence or any rate.  It has been replaced by the genuine convergence
+witness from `ctqw_success`: there is a CTQW output `ψ` for the quotient system within
+`ε` of the normalized solution.  That is a real (deferred) claim about the quantum
+solver, `n`-independent because the system `Sq` is the `r × r` quotient.
 
 The conjunction below states exactly this: the proven linear-`n` equalities, AND the
-existence of a quotient linear-system whose quantum walk time witnesses the
-`n`-independent residual cost. -/
+existence of a quotient linear-system that the inversion restricts to exactly and whose
+CTQW solve converges to within `ε` — the honest `n`-independent residual-cost content. -/
 theorem attention_quantum_composition
     (A : Matrix (Fin n) (Fin n) ℝ) (B : Matrix (Fin r) (Fin r) ℝ)
     (cell : Fin n → Fin r) (V : Fin n → Fin d → ℝ)
@@ -258,30 +275,37 @@ theorem attention_quantum_composition
     (blockAttentionApply B cell V = fullAttentionApply A V ∧
       blockCost n r d = n * (r * d + d)) ∧
     -- (2) quantum: the residual hard part is the r-dimensional quotient solve,
-    -- exact-restricted to the quotient and solved by a CTQW inverter at rate O(κ/ε),
-    -- with κ the *quotient* condition number (n-independent).
+    -- which the inversion restricts to *exactly* (no approximation) and which the
+    -- CTQW inverter solves to within ε of the normalized exact solution.  Both
+    -- facts are about the r × r quotient system, hence n-independent.
     (∃ (Sq : MatrixInversion.LinearSystem I),
       Sq.A = P.symmQuotient ∧
       Sq.b = bcoord ∧
-      -- the CTQW walk time for the quotient solve depends only on the quotient
-      -- condition number and ε — not on n (the residual cost is n-independent)
-      Sq.walkTime ε = Sq.conditionNumber / ε ∧
-      -- and the inversion restricts *exactly* to this quotient (no approximation)
-      (G.adj⁻¹).mulVec (fun v => ∑ i, bcoord i * P.cellUniformVec i v)
-        = (fun v => ∑ i, (P.symmQuotient⁻¹.mulVec bcoord) i * P.cellUniformVec i v)) := by
+      -- the inversion restricts *exactly* to this quotient (no approximation)
+      ((G.adj⁻¹).mulVec (fun v => ∑ i, bcoord i * P.cellUniformVec i v)
+        = (fun v => ∑ i, (P.symmQuotient⁻¹.mulVec bcoord) i * P.cellUniformVec i v)) ∧
+      -- the CTQW solver converges on the quotient: an output ψ within ε of the
+      -- normalized exact solution (the genuine, n-independent rate guarantee —
+      -- `ctqw_success`, an honest upstream `sorry`).  This is NOT the old vacuous
+      -- `walkTime ε = κ/ε` definitional restatement; it is a real convergence claim.
+      (∃ ψ : I → ℂ,
+        (∑ i, ‖ψ i - MatrixInversion.LinearSystem.normalize Sq.solution i‖ ^ 2 : ℝ).sqrt
+          ≤ ε)) := by
   refine ⟨⟨blockAttentionApply_eq_fullAttentionApply A B cell V hblock,
       attention_apply_linear_in_n n r d⟩, ?_⟩
   -- Build the quotient linear system; need it Hermitian (symmQuotient is) + invertible.
   refine ⟨{ A := P.symmQuotient
             herm := P.symmQuotient_isHermitian
             inv := hQinv
-            b := bcoord }, rfl, rfl, rfl, ?_⟩
-  -- The exact restriction is the spine's quotient-inversion lift, surfaced in
-  -- MachineLearning.ridge_inversion_restricts_to_quotient (gated on the hypothesis
-  -- `hGinv : IsUnit G.adj.det`, now in scope).  The *deep* quantum-rate guarantee
-  -- (that walkTime O(κ/ε) suffices) remains upstream in ctqw_success; here the
-  -- restriction equality is discharged directly by the spine lemma.
-  exact MachineLearning.ridge_inversion_restricts_to_quotient G hGinv P hQinv bcoord
+            b := bcoord }, rfl, rfl, ?_, ?_⟩
+  · -- The exact restriction is the spine's quotient-inversion lift, surfaced in
+    -- MachineLearning.ridge_inversion_restricts_to_quotient (gated on the hypothesis
+    -- `hGinv : IsUnit G.adj.det`, now in scope).
+    exact MachineLearning.ridge_inversion_restricts_to_quotient G hGinv P hQinv bcoord
+  · -- The CTQW convergence on the r × r quotient: the deep upstream `ctqw_success`
+    -- (honest `sorry`; arXiv:2508.06611).  This is the genuine n-independent rate
+    -- guarantee, replacing the old vacuous `walkTime ε = κ/ε` (= `rfl`) conjunct.
+    exact MatrixInversion.LinearSystem.ctqw_success _ hε
 
 /-! ## 5. Training step: forward AND backward are linear in `n`
 

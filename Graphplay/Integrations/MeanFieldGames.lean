@@ -340,30 +340,28 @@ theorem Bop_cellUniform_invariant [IsFiniteMeasure μ]
   refine Submodule.add_mem _ (Submodule.smul_mem _ _ hf) (Submodule.smul_mem _ _ ?_)
   exact Graphon.cellUniformSubspaceInvariant EP f hf
 
-/-- **Mean-field common-state theorem (graphon LQR version).**
+/-- **Mean-field LQR generator invariance (graphon version).**
 
-If the LQR problem `P` is cell-uniform-compatible with `EP`, the
-initial state is cell-uniform, and the control trajectory is
-cell-uniform at every time, then the optimal trajectory `x_t` is
-cell-uniform at every time `t ∈ [0, T]`.
+If the LQR problem `P` is cell-uniform-compatible with `EP`, and both the state `x`
+and the control `u` are cell-uniform, then the *generator image* `Aop x + Bop u`
+stays in the cell-uniform subspace.
 
-This is the graphon-equitable analogue of Gao–Caines's
-arXiv:2004.00677, Theorem 1 / Proposition 4 (the invariant subspace
-decomposition theorem), specialised to `S = cellUniformSubspace`.  In
-the classical (Huang–Caines–Malhamé) mean-field setting, the trivial
-equitable partition with a single cell is the universal one; our
-statement is the genuinely heterogeneous extension.
+This is the **infinitesimal core** of the graphon-equitable analogue of Gao–Caines's
+arXiv:2004.00677, Theorem 1 / Proposition 4 (the invariant-subspace decomposition
+theorem), specialised to `S = cellUniformSubspace`.  In the classical
+(Huang–Caines–Malhamé) mean-field setting, the trivial single-cell equitable
+partition is the universal one; the heterogeneous (multi-cell) case is the genuine
+extension.
 
-**Honest statement.**  The schematic `MildSolution` predicate is a `True`
-placeholder (the Bochner-integral mild-solution analysis is deferred), so the
-trajectory `x` carries no constraint and the literal "the trajectory stays
-cell-uniform" claim would be unprovable for an *arbitrary* `x`.  We therefore
-state the genuine structural content that *makes* the trajectory cell-uniform:
-the infinitesimal generator of the dynamics, `f ↦ Aop f + Bop u`, maps
-cell-uniform states (and cell-uniform controls) back into the cell-uniform
-subspace.  This is exactly the invariance hypothesis that the
-semigroup/Bochner-integral argument propagates to all times; it is proved here
-genuinely from `Aop_cellUniform_invariant` and `Bop_cellUniform_invariant`. -/
+**Scope (honest).**  This theorem proves *only* the one-step generator invariance
+`Aop x + Bop u ∈ cellUniformSubspace`; it does **not** assert that the optimal
+trajectory `x_t` stays cell-uniform *for all* `t ∈ [0, T]`.  (The schematic
+`MildSolution` predicate is a `True` placeholder — the Bochner-integral mild-solution
+analysis is deferred — so an arbitrary trajectory `x` carries no constraint and the
+all-time claim would be unprovable here.)  The generator invariance proved here is
+exactly the hypothesis that the semigroup/Bochner-integral argument *would* propagate
+to all times; that propagation is the deferred deep part.  Proved genuinely from
+`Aop_cellUniform_invariant` and `Bop_cellUniform_invariant`. -/
 theorem cellUniform_invariant_under_LQR [IsFiniteMeasure μ]
     (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W)
     {x : Lp ℂ 2 μ} (hx : x ∈ EP.cellUniformSubspace)
@@ -567,24 +565,22 @@ theorem schrodinger_cellUniform_invariant_allTime
   -- real `HasDerivAt` Schrödinger law (not the former `True` placeholder).
   sorry
 
-/-- **Open-quantum mean-field theorem (graphon Lindblad).**
+/-- **The cell-uniform subspace is closed** (the topological prerequisite of the
+open-quantum mean-field reduction).
 
-Statement-only: when a Lindblad generator `𝓛 : ℝ → (Lp ℂ 2 μ) →L[ℂ]
-(Lp ℂ 2 μ)` on density operators (here modelled abstractly) preserves
-the cell-uniform subspace — for instance when all its dissipators are
-`cellUniformSymmetric` (D8 in `Graphplay/Toolkit/Noise.lean`) — the
-open-system dynamics descends to a finite-dimensional Lindblad equation
-on `EuclideanSpace ℂ I`.
-
-This is the **open quantum mean-field game** analogue of Gao–Caines's
-reduction. -/
-theorem lindblad_cellUniform_invariant
+**Renamed (audit 2026-06): was `lindblad_cellUniform_invariant`.**  The former name
+promised *Lindblad invariance* of the cell-uniform subspace — that a
+`cellUniformSymmetric` Lindblad generator maps the subspace into itself and the open
+dynamics descends to a finite Lindblad equation on `EuclideanSpace ℂ I`.  The body
+proves **none of that**: it establishes only that `EP.cellUniformSubspace` is a
+*closed* (hence legitimate invariant-subspace candidate) subset of `L²(μ;ℂ)`.  That
+closedness is the genuine topological prerequisite the open-system descent rests on,
+but it is *not* the invariance/descent statement; we therefore align the name to what
+is proven.  The full open-system descent (a `cellUniformSymmetric` GKLS generator
+preserving the subspace, see `Graphplay/Toolkit/Noise.lean`) is the deferred deep
+part and is **not** asserted here. -/
+theorem lindblad_cellUniformSubspace_isClosed
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    -- The genuine structural fact the open-system (Lindblad) reduction rests on:
-    -- the cell-uniform subspace — onto which a `cellUniformSymmetric` Lindblad
-    -- generator descends — is a *closed* (finite-dimensional) subspace of
-    -- `L²(μ;ℂ)`, hence a legitimate invariant subspace for the open dynamics.
-    -- The full open-system descent (see Noise.lean) is the deferred deep part.
     IsClosed (EP.cellUniformSubspace : Set (Lp ℂ 2 μ)) :=
   Graphplay.Graphon.cellUniformSubspace_isClosed EP
 
@@ -600,32 +596,34 @@ operators.  Consequently:
 > *Large noisy quantum networks with equitable structure are tractable
 > to control-optimise via the quotient.*
 
-This is the engineering corollary that motivates the entire bridge.
-We state it as `EquitableLQR.tractable`. -/
+This is the engineering corollary that motivates the entire bridge.  Its
+*prerequisite* — that the quotient LQR data is a genuine finite `|I| × |I|` matrix
+instance — is recorded as `EquitableLQR.quotientLQRData_isFiniteMatrix` (the
+stabilising-Riccati-solution existence itself is the deferred finite-dim control
+theory). -/
 
 namespace EquitableLQR
 
 variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- The **quotient LQR is solvable**: for any cell-uniform-compatible
-graphon LQR problem `P`, the optimal control on the cell-uniform
-subspace can be computed by solving the finite `|I| × |I|` operator
-Riccati equation for `AopQuotient, BopQuotient, QQuotient, QTQuotient`.
+/-- **The quotient LQR data is a finite `|I| × |I|` matrix instance** (the
+tractability *prerequisite* — finite-dimensionality of the quotient Riccati data).
 
-Concretely, given inputs of sizes polynomial in `|I|`, the quotient
-Riccati can be solved with linear-algebra routines.  No infinite-
-dimensional analysis is needed.
-
-This is the **tractability theorem**. -/
-theorem tractable [IsFiniteMeasure μ] (P : GraphonLQR Ω μ)
+**Renamed (audit 2026-06): was `tractable`.**  The former name claimed the
+*tractability theorem* — that the optimal control is *computable by solving the
+finite Riccati equation* (existence of a stabilising Riccati solution via
+linear-algebra routines).  The body proves **no Riccati solvability**: it only
+exhibits the quotient state/control operators `AopQuotient EP`, `BopQuotient EP` as
+genuine `|I| × |I|` complex matrices (`∃ A B, A = AopQuotient EP ∧ B = BopQuotient
+EP`, discharged by `rfl`).  That is the honest content — the quotient data lives on
+the *finite* index `I`, not on the infinite-dimensional `L²(μ)` — which is the
+*prerequisite* for tractability, but the stabilising-Riccati-solution existence
+itself (standard finite-dim control theory) is **not** formalised here.  We align the
+name to what is proven. -/
+theorem quotientLQRData_isFiniteMatrix [IsFiniteMeasure μ] (P : GraphonLQR Ω μ)
     (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W)
     (_hP : P.cellUniformCompatible EP) :
-    -- The quotient LQR data lives on the *finite* index `I`: the quotient
-    -- state-operator `AopQuotient` and control-operator `BopQuotient` are
-    -- genuine `|I| × |I|` matrices (the finite Riccati instance).  The
-    -- stabilising-Riccati-solution existence is the standard finite-dim theory,
-    -- here recorded by exhibiting the genuine finite operators it runs on.
     ∃ (A B : Matrix I I ℂ),
       A = P.AopQuotient EP ∧ B = P.BopQuotient EP :=
   ⟨P.AopQuotient EP, P.BopQuotient EP, rfl, rfl⟩
@@ -649,19 +647,22 @@ namespace MeanFieldODE
 variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- The **cell-occupation ODE**.  Statement-only: under an equitable
-partition of the graphon, the mean-field PDE on the cell distribution becomes
-a finite system of ODEs on the per-cell occupations.
+/-- **Existence of a cell-occupation trajectory with prescribed initial value.**
 
-The matrix driving the ODE is the partition's `quotient`, exactly the operator
-on `EuclideanSpace ℂ I` from `Graphplay/Graphon/Equitable.lean`. -/
-theorem cell_occupation_ODE
+**Renamed (audit 2026-06): was `cell_occupation_ODE`.**  The former name claimed the
+*cell-occupation ODE* — that under an equitable partition the mean-field PDE reduces
+to the finite ODE system `d/dt mᵢ = Σⱼ Re(EP.quotient i j) · mⱼ` on the per-cell
+occupations.  The body asserts and proves **no ODE/dynamics at all**: only that there
+*exists* a trajectory `m : ℝ → I → ℝ` matching the initial occupation `m(0) = m0`
+(discharged by the constant trajectory `fun _ => m0`).  So the genuine content is just
+the initial-value existence on the finite index `I`; the *dynamics* (Picard–Lindelöf
+for the quotient-driven ODE) is the deferred deep part and is not claimed here.  We
+align the name to what is proven.  (The intended driving matrix is the partition's
+`quotient`, the operator on `EuclideanSpace ℂ I` from
+`Graphplay/Graphon/Equitable.lean`.) -/
+theorem exists_cellOccupation_withInitialValue
     {W : Graphon Ω μ} (_EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (m0 : I → ℝ) :
-    -- There exists `m : ℝ → I → ℝ` with the prescribed initial occupation
-    -- `m(0) = m0`.  The genuine (non-`True`) content is the initial-condition
-    -- constraint; the *dynamics* `d/dt m_i = Σ_j Re(EP.quotient i j) · m_j`
-    -- (Picard–Lindelöf on `EuclideanSpace ℝ I`) is the deferred deep part.
     ∃ m : ℝ → I → ℝ, m 0 = m0 :=
   ⟨fun _ => m0, rfl⟩
 
@@ -688,25 +689,26 @@ namespace Brachistochrone
 variable {V : Type u} [Fintype V] [DecidableEq V]
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- **Quantum brachistochrone reduction via equitable partition.**
+/-- **The brachistochrone schedule preserves the cell-uniform subspace** (the
+generator-level premise of the equitable brachistochrone reduction).
 
-If a `Schedule` is cell-uniform-invariant for an equitable partition,
-the brachistochrone (minimum-time-to-target) problem on the host graph
-reduces to the brachistochrone on the quotient schedule.  The
-target-state cell-uniform-image is the natural target for the quotient
-problem; the lift is via `cellUniformIsometry`.
+**Renamed (audit 2026-06): was `brachistochrone_reduction`.**  The former name
+claimed the *reduction itself* — that the minimum-time-to-target (brachistochrone)
+problem on the host graph reduces to the brachistochrone on the quotient schedule.
+The body proves **only the generator-level premise**: at the given time `t` the
+schedule's Hamiltonian `S.hamiltonianAt t` preserves the cell-uniform subspace
+(`Matrix.preservesCellUniform'`), extracted directly from the
+`cellUniformInvariant` hypothesis.  That invariance is what *would* let the dynamics
+descend, but the minimum-time *equality* on the quotient — the actual reduction — is
+the deferred deep optimisation content and is **not** proven here.  We align the name
+to what is established.
 
-Cite: Carlini–Hosoya–Koike–Okudaira (arXiv:quant-ph/0511039) for the
-classical quantum brachistochrone formulation; the equitable-partition
-descent is, to our knowledge, new. -/
-theorem brachistochrone_reduction
+Cite: Carlini–Hosoya–Koike–Okudaira (arXiv:quant-ph/0511039) for the classical
+quantum brachistochrone formulation; the equitable-partition descent is, to our
+knowledge, new. -/
+theorem brachistochrone_schedule_preservesCellUniform
     {G : WeightedGraph V} (P : EquitablePartition G I)
     {S : Schedule V} (hS : S.cellUniformInvariant P) (t : ℝ) :
-    -- The genuine structural premise of the reduction: at every time `t` the
-    -- schedule's Hamiltonian preserves the cell-uniform subspace, so the whole
-    -- brachistochrone dynamics descends to the quotient schedule.  (The
-    -- minimum-time *equality* on the quotient is the deferred deep optimisation
-    -- content.)
     Matrix.preservesCellUniform' (S.hamiltonianAt t) P :=
   hS t
 

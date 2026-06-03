@@ -3,6 +3,43 @@
 
 **Round-3 loop-closer: Quantitative Caruso noise-assisted speedup.**
 
+────────────────────────────────────────────────────────────────────────
+⚠ **TOY-MODEL DISCLAIMER (read before citing anything in this file).**
+
+This file is a **scalar-dephasing toy model**, *not* a formalisation of the
+Caruso–Chin–Datta–Huelga–Plenio (CDHHP) open-system result.  Specifically:
+
+* **The evolution `noisyEvolve` (imported from `Graphplay/Toolkit/Noise.lean`) is
+  NOT a Lindblad generator.**  It is the *unitary conjugation `ρ ↦ U ρ U†`
+  followed by a single scalar off-diagonal damping factor `exp(-t·γ_total)`* — a
+  uniform-dephasing-in-the-vertex-basis channel.  The genuine CDHHP dynamics is a
+  GKLS/Lindblad master equation with per-site jump operators; that semigroup is
+  **not** what runs here.  Consequences proved here (e.g. that the success
+  probability is a genuine Born probability in `[0,1]`) are facts about *this toy
+  channel*, and are honest as such.
+
+* **The breaking-score thresholds `toyMinBreakingScore`, `toyMaxBreakingScore`
+  and the interval `toyCarusoWindow` are INVENTED scalar surrogates**, not CDHHP
+  quantities.  Their formulas (`gap²/(|γ|+1)`, `+ γ²/(gap+1)`) are placeholder
+  closed forms chosen only to be non-negative with a non-degenerate window; they
+  carry *no* claim to reproduce the CDHHP optimal-dephasing rate.  (The input
+  `NoiseModel.BreakingScore P` from D8 — the rate-weighted L² distance to the
+  partition commutant — IS a genuine definition; only the *threshold formulas*
+  built from it here are toy.)
+
+* **The headline scaling theorems are honestly `sorry`-deferred and stated with
+  the constants hoisted to graph-independent universals** (so they are not
+  trivially closeable per-instance).  They claim the *√n vs n* dichotomy as a
+  cited CDHHP/Childs–Goldstone target, conditioned on this toy window — they do
+  **not** assert it is derived from a Lindblad analysis.
+
+In short: the inequalities are real and the probabilities are genuine, but the
+*physics names* (`Caruso`, `breaking score window`, `anti-Zeno`) sit on a
+scalar-dephasing surrogate that obeys a √n-type bound, **not** on the CDHHP
+open-system master equation.  Do not cite this file as a proof of the
+Caruso–Chin–Datta–Huelga–Plenio theorem.
+────────────────────────────────────────────────────────────────────────
+
 D8 (`Graphplay.Dowsing.NoiseEquitable`) introduced
 `NoiseModel.BreakingScore P` — the rate-weighted L² distance of a noise
 model's Lindblad generator from the partition algebra's commutant — and
@@ -363,39 +400,55 @@ noncomputable def minSpectralGap
   let pos := gaps.filter (fun g => 0 < g)
   if h : pos.Nonempty then pos.min' h else 0
 
-/-- The graph-dependent **minimum useful breaking score**:
-the smallest breaking score sufficient to lift accidental dark-state
+/-- **TOY surrogate** for the graph-dependent *minimum useful breaking score* —
+the smallest breaking score that should suffice to lift accidental dark-state
 degeneracies in the closed-system spectrum at coupling `γ`.
 
-Leading-order `s_min ∼ Δ²_dark / |γ|`, where `Δ_dark = minSpectralGap` is the
-gap between the (dark) ground state and the first non-dark eigenstate.  Below
-this value noise is "too weak" to escape the symmetric dark subspace. -/
-noncomputable def minBreakingScore
+⚠ This is an **invented scalar closed form** `gap²/(|γ|+1)`, NOT the CDHHP
+threshold.  It is chosen only to be non-negative and to sit below
+`toyMaxBreakingScore`; it carries no claim to reproduce the physical
+optimal-dephasing onset.  (Renamed from `minBreakingScore`, audit 2026-06, to
+flag the toy-model status — see the file banner.)
+
+The intended physical reading was `s_min ∼ Δ²_dark / |γ|`, with `Δ_dark =
+minSpectralGap` the gap between the (dark) ground state and the first non-dark
+eigenstate; below `s_min` noise is "too weak" to escape the symmetric dark
+subspace. -/
+noncomputable def toyMinBreakingScore
     (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
     (P : EquitablePartition G I) : ℝ :=
   (minSpectralGap G M γ) ^ 2 / (|γ| + 1)
 
-/-- The graph-dependent **maximum useful breaking score**:
-the largest breaking score below which coherent oscillation between the
-uniform initial state and the marked subspace survives over a time
-`τ ≃ √|V| / γ`.
+/-- **TOY surrogate** for the graph-dependent *maximum useful breaking score* —
+the largest breaking score below which coherent oscillation between the uniform
+initial state and the marked subspace should survive over a time `τ ≃ √|V| / γ`.
 
-Leading-order `s_max ∼ γ²/Δ_dark` (the inverse of the coherent-recurrence
-time); above this value noise dephases the search amplitude faster than it can
-build up and the walk classicalises.  We add `minBreakingScore` to guarantee
-`s_min ≤ s_max` (a degenerate spectrum collapses the window to a point). -/
-noncomputable def maxBreakingScore
+⚠ Like `toyMinBreakingScore`, this is an **invented scalar closed form**
+(`toyMinBreakingScore + γ²/(gap+1)`), NOT the CDHHP decoherence threshold.  The
+added `γ²/(gap+1)` term exists only to guarantee a strictly-positive window width
+when `γ ≠ 0` (a degenerate spectrum collapses the window to a point).  (Renamed
+from `maxBreakingScore`, audit 2026-06.)
+
+The intended physical reading was `s_max ∼ γ²/Δ_dark` (the inverse coherent-
+recurrence time); above it noise dephases the search amplitude faster than it
+builds up and the walk classicalises. -/
+noncomputable def toyMaxBreakingScore
     (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
     (P : EquitablePartition G I) : ℝ :=
-  minBreakingScore (I := I) G M γ P
+  toyMinBreakingScore (I := I) G M γ P
     + γ ^ 2 / (minSpectralGap G M γ + 1)
 
-/-- The **Caruso speedup window** — the (open) interval of breaking
-scores producing Grover-rate search. -/
-def carusoWindow
+/-- **TOY surrogate** for the *Caruso speedup window* — the (open) interval of
+breaking scores that should produce Grover-rate search.
+
+⚠ Built from the two **invented** thresholds `toyMinBreakingScore`,
+`toyMaxBreakingScore` (see their notes and the file banner): it is a placeholder
+interval, NOT the physical CDHHP window.  (Renamed from `carusoWindow`, audit
+2026-06.) -/
+def toyCarusoWindow
     (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
     (P : EquitablePartition G I) : Set ℝ :=
-  Set.Ioo (minBreakingScore (I := I) G M γ P) (maxBreakingScore (I := I) G M γ P)
+  Set.Ioo (toyMinBreakingScore (I := I) G M γ P) (toyMaxBreakingScore (I := I) G M γ P)
 
 /-- A **regular graph** in the standard sense: every vertex has the same
 weighted degree.  Equivalent to `WeightedGraph.isRegular` (defined in
@@ -412,10 +465,10 @@ from D8 for a single marker).
 
 For any noise model `N`:
 
-* if `BreakingScore N P ∈ carusoWindow G M γ P`, then
+* if `BreakingScore N P ∈ toyCarusoWindow G M γ P`, then
   `OptimalSearchTimeHalf G M N γ ≤ C · √n` for a graph-independent
   constant `C`;
-* if `BreakingScore N P ∉ closure (carusoWindow G M γ P)`, then
+* if `BreakingScore N P ∉ closure (toyCarusoWindow G M γ P)`, then
   `OptimalSearchTimeHalf G M N γ ≥ c · n` for a graph-independent
   constant `c > 0`.
 
@@ -450,10 +503,10 @@ theorem search_speedup_via_partial_symmetry_breaking :
         (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
         (P : EquitablePartition G I) (_hReg : isRegular G) (N : NoiseModel V),
         -- Grover-rate regime: universal constant `C`
-        (N.BreakingScore P ∈ carusoWindow (I := I) G M γ P →
+        (N.BreakingScore P ∈ toyCarusoWindow (I := I) G M γ P →
           OptimalSearchTimeHalf G M N γ ≤ C * Real.sqrt (Fintype.card V)) ∧
         -- Classical regime: universal constant `c`, for searches that genuinely run
-        (N.BreakingScore P ∉ closure (carusoWindow (I := I) G M γ P) →
+        (N.BreakingScore P ∉ closure (toyCarusoWindow (I := I) G M γ P) →
           0 < OptimalSearchTimeHalf G M N γ →
           OptimalSearchTimeHalf G M N γ ≥ c * (Fintype.card V : ℝ)) := by
   sorry
@@ -491,7 +544,7 @@ search, a fast noisy search) and are satisfiable; the conclusion is a genuine st
 theorem caruso_speedup_factor
     (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
     (P : EquitablePartition G I) (_hReg : isRegular G) (N : NoiseModel V)
-    (_hN : N.BreakingScore P ∈ carusoWindow (I := I) G M γ P)
+    (_hN : N.BreakingScore P ∈ toyCarusoWindow (I := I) G M γ P)
     (c_cl C_g : ℝ) (hc_cl : 0 < c_cl) (hC_g : 0 < C_g)
     -- closed-system search is classical-rate `Ω(|V|)`
     (hclassical : c_cl * (Fintype.card V : ℝ) ≤
@@ -546,7 +599,7 @@ theorem anti_zeno_mechanism
     -- noise produces cell-information broadcast iff breaking score is positive
     0 < N.BreakingScore P →
     -- and produces speedup iff the rate is in the Caruso window
-    (N.BreakingScore P ∈ carusoWindow (I := I) G M γ P →
+    (N.BreakingScore P ∈ toyCarusoWindow (I := I) G M γ P →
       ∃ τ : ℝ, 0 < τ ∧
         SearchSuccessProbability G M N γ τ >
           closedSystemSuccessProbability G M γ τ) := by
@@ -560,8 +613,8 @@ closed-system dark subspace persists. -/
 theorem zeno_antiZeno_boundary
     (G : WeightedGraph V) (M : Finset V) (γ : ℝ) (hγ : γ ≠ 0)
     (P : EquitablePartition G I) :
-    0 ≤ minBreakingScore (I := I) G M γ P ∧
-      minBreakingScore (I := I) G M γ P < maxBreakingScore (I := I) G M γ P := by
+    0 ≤ toyMinBreakingScore (I := I) G M γ P ∧
+      toyMinBreakingScore (I := I) G M γ P < toyMaxBreakingScore (I := I) G M γ P := by
   -- CORRECTNESS FIX: the strict `<` is FALSE without a `γ ≠ 0` hypothesis — the
   -- window width is `γ²/(gap+1)`, which collapses to `0` when `γ = 0`.  We add
   -- `hγ : γ ≠ 0` (the genuinely-needed hypothesis) and prove both conjuncts.
@@ -577,11 +630,11 @@ theorem zeno_antiZeno_boundary
   have hden1 : (0 : ℝ) < |γ| + 1 := by positivity
   have hden2 : (0 : ℝ) < minSpectralGap G M γ + 1 := by linarith
   refine ⟨?_, ?_⟩
-  · -- `minBreakingScore = gap²/(|γ|+1) ≥ 0`.
-    unfold minBreakingScore
+  · -- `toyMinBreakingScore = gap²/(|γ|+1) ≥ 0`.
+    unfold toyMinBreakingScore
     positivity
   · -- `min < max = min + γ²/(gap+1)`, and `γ²/(gap+1) > 0` since `γ ≠ 0`.
-    unfold maxBreakingScore
+    unfold toyMaxBreakingScore
     have hγsq : (0 : ℝ) < γ ^ 2 := by positivity
     have : (0 : ℝ) < γ ^ 2 / (minSpectralGap G M γ + 1) := div_pos hγsq hden2
     linarith
@@ -1025,7 +1078,7 @@ CORRECTNESS FIX (two distinct unsoundnesses in the original per-instance form):
 We therefore hoist `C₁, C₂` **out** of all instance data (genuinely universal
 constants), and restrict to the regime where the formula is actually valid:
 
-* `N.BreakingScore P ∈ carusoWindow …` — the **Caruso window**.  The scaling
+* `N.BreakingScore P ∈ toyCarusoWindow …` — the **(toy) Caruso window**.  The scaling
   `τ_opt ≈ √|V|·(s+Δ²/s)/γ` is the *Grover-rate* formula and holds **only inside the
   window**.  Outside it (classical regime) the search runs in `Θ(|V|)` time, so
   `T/(√|V|·(s+Δ²/s)/γ) = Θ(√|V|) → ∞` and **no** universal upper constant `C₂` can
@@ -1044,7 +1097,7 @@ theorem caruso_quantitative_formula :
       ∀ {V : Type u} [Fintype V] [DecidableEq V] {I : Type v} [Fintype I] [DecidableEq I]
         (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
         (P : EquitablePartition G I) (N : NoiseModel V),
-        N.BreakingScore P ∈ carusoWindow (I := I) G M γ P →
+        N.BreakingScore P ∈ toyCarusoWindow (I := I) G M γ P →
         0 < N.BreakingScore P → 0 < darkSpectralGap G M γ → 0 < γ →
         0 < OptimalSearchTimeHalf G M N γ →
           C₁ * Real.sqrt (Fintype.card V)
@@ -1111,40 +1164,18 @@ breaking scores converge to a value in the graphon's Caruso window.
 This is the analogue of `ghost_symmetry_open_analogue` (D8, §8.3) for
 the *Caruso quantitative formula*, and is left open. -/
 
-/-- **Sentinel (graphon Caruso speedup — NOT the speedup theorem).**
-
-This is *only* a placeholder asserting the existence of a positive real
-constant `∃ C : ℝ, 0 < C` given positive `γ`, `μ ∈ (0,1)`, `s_inf > 0`.
-It carries **no graphon content and no speedup content** — the witness is
-the trivial `C = 1`.
-
-The intended (unproven, open) statement is the *graphon Caruso speedup*: for
-a sequence `G_n` of `d_n`-regular weighted graphs converging in cut-distance
-to a graphon `W`, with marked sets `M_n` of normalised size `→ μ ∈ (0,1)` and
-noise models `N_n` of breaking score `→ s_inf > 0` lying in the graphon's
-Caruso window,
-
-  `lim_n OptimalSearchTimeHalf G_n M_n N_n γ / √|V_n| ≤ C`
-
-for a graph-independent `C = C(W, μ, γ, s_inf)`.  Stating that requires the
-graphon framework of `Graphplay.Graphon` and is left open; this declaration
-exists purely as a downstream dispatch sentinel and must not be cited as the
-speedup result. -/
-theorem graphon_caruso_speedup_sentinel
-    (γ μ s_inf : ℝ) (_hγ : 0 < γ) (_hμ : 0 < μ ∧ μ < 1) (_hs : 0 < s_inf) :
-    -- sentinel only: a positive constant exists (trivially `C = 1`).
-    ∃ C : ℝ, 0 < C := by
-  exact ⟨1, by norm_num⟩
-
-/-- **Sentinel (`True`) — placeholder, proves nothing.**  Marks the intended
-open direction: a `Tendsto` form of the graphon Caruso speedup, parameterised
-by a graphon-equitable partition (combining `Graphplay.Graphon` L15 with the
-finite quantitative formula of this file).  The body is `trivial : True` and
-carries no mathematical content; it exists only as a downstream graphon-file
-dispatch sentinel and must not be cited as a theorem. -/
-theorem graphon_caruso_tendsto_sentinel :
-    True := by
-  trivial
+-- **Graphon Caruso speedup — intentionally NOT stated as a theorem.**
+-- The intended (unproven, open) statement is: for a sequence `G_n` of `d_n`-regular
+-- weighted graphs converging in cut-distance to a graphon `W`, with marked sets
+-- `M_n` of normalised size `→ μ ∈ (0,1)` and noise models `N_n` of breaking score
+-- `→ s_inf > 0` lying in the graphon's (toy) Caruso window,
+--   `lim_n OptimalSearchTimeHalf G_n M_n N_n γ / √|V_n| ≤ C(W, μ, γ, s_inf)`.
+-- Stating it faithfully requires the graphon framework of `Graphplay.Graphon` and is
+-- left open.  (Audit 2026-06: the two former placeholder "sentinels" here —
+-- `graphon_caruso_speedup_sentinel : ∃ C, 0 < C` with `C` free, and
+-- `graphon_caruso_tendsto_sentinel : True` — were vacuous, carried no graphon/speedup
+-- content, and were uncited; they are removed rather than left as `True`/free-`C`
+-- tails.  This comment records the open direction in their place.)
 
 /-! ## 9. Cross-file sentinels
 
