@@ -51,14 +51,6 @@ converges to `W` *in cut norm* iff `‖W_n − W‖_\square → 0`.
 
 This is the standard convergence of the BCLSV–Lovász theory. -/
 
-/-- The **cut norm** of a graphon kernel difference (real-valued).  Defined
-as the sup over measurable rectangles `S × T` of the absolute value of the
-integral of `W.kernel` over that rectangle. -/
-noncomputable def cutNorm {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-    (W : Graphon Ω μ) : ℝ :=
-  ⨆ (S : Set Ω) (_ : MeasurableSet S) (T : Set Ω) (_ : MeasurableSet T),
-    ‖∫ x in S, ∫ y in T, W.kernel x y ∂μ ∂μ‖
-
 /-- The **cut norm of a difference of two graphon kernels** (real-valued):
 the sup over measurable rectangles `S × T` of the absolute value of the
 integral of `W.kernel - Wlim.kernel` over that rectangle.  We work directly
@@ -141,7 +133,7 @@ noncomputable def ConsistentPartitionSequence.quotient
         ∑ z ∈ Finset.univ.filter (fun z : 𝒮.V n => 𝒮.cells n z = j),
           (𝒮.G n).adj x z
 
-/-! ## The Lovász–Szegedy stepping-operator limit (named external axiom)
+/-! ## The Lovász–Szegedy stepping-operator limit (named external typeclass)
 
 The single genuinely-missing analytic input of the entire limit/Cauchy-completion
 story is the **stepping-operator cut-norm compactness** of Borgs–Chayes–Lovász–
@@ -151,13 +143,14 @@ equitable partition `P`, the approximating partitions can be chosen to refine th
 cells of `P`, producing a *finite equitable spine* — a `ConsistentPartitionSequence`
 whose quotient matrices converge to `P.quotient`.
 
-This theorem is **proven in the literature but absent from Mathlib v4.30.0**.  Rather
-than bury it as an anonymous `sorry` inside each consumer proof (which would poison
-the whole file's axiom set opaquely), we name it **once**, as the explicit external
-axiom below, citing its source.  Every limit theorem then *honestly* depends on
-`lovaszSzegedy_graphon_limit` (visible under `#print axioms`), and the day Mathlib
-grows the stepping operator this axiom is replaced by a theorem with no edits to the
-consumers.
+This theorem is **proven in the literature but absent from Mathlib v4.30.0**.  We
+package it as a **`Prop`-valued typeclass** `LovaszSzegedyLimit Ω μ I` carrying the
+single field `stepping_limit` — the exact cited statement.  Every limit theorem
+*takes* `[LovaszSzegedyLimit Ω μ I]` and derives its conclusion from
+`LovaszSzegedyLimit.stepping_limit`; the result is `#print axioms`-clean and honestly
+conditional on a named, cited hypothesis.  We provide **no instance** — it is a pure
+external assumption (BCLSV §3), discharged the day Mathlib grows the stepping
+operator.
 
 Reference: **Borgs–Chayes–Lovász–Sós–Vesztergombi**, *Convergent sequences of dense
 graphs II: Multiway cuts and statistical physics*, arXiv:1003.5588, §3 (the stepping
@@ -165,12 +158,11 @@ operator and the cut-norm density of step graphons); see also **Lovász**, *Larg
 Networks and Graph Limits* (AMS Colloq. Publ. 60, 2012), Thm. 9.23 (cut-norm density
 of step graphons) and Prop. 14.13 (refining sequences). -/
 
-/-- **The Lovász–Szegedy / BCLSV stepping-operator limit (external axiom).**
+/-- **The Lovász–Szegedy / BCLSV stepping-operator limit (external typeclass).**
 
-For every graphon equitable partition `(W, P)` there exist:
+For every graphon equitable partition `(W, P)` over the index type `I` there exist:
 
-* a `ConsistentPartitionSequence 𝒮` over the same index type `I` (the finite
-  equitable spine), and
+* a `ConsistentPartitionSequence 𝒮` over `I` (the finite equitable spine), and
 * a sequence of step-function graphons `Wstep : ℕ → Graphon Ω μ`,
 
 such that the step graphons converge to `W` in **cut norm** (`CutNormTendsto`,
@@ -180,15 +172,20 @@ i.e. `cutNormDiff (Wstep n) W → 0`) and the finite quotient matrices
 This is the precise content of BCLSV §3 (stepping operator + cut-norm density),
 specialised to refine the cells of `P`.  It is the *only* deferred analytic
 construction in the limit/Cauchy-completion development; everything downstream is
-proven from it.  Citation: BCLSV arXiv:1003.5588 §3; Lovász, *Large Networks and
-Graph Limits*, Thm. 9.23. -/
-axiom lovaszSzegedy_graphon_limit
-    {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω} [IsFiniteMeasure μ]
-    {I : Type v} [Fintype I] [DecidableEq I]
-    (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    ∃ (𝒮 : ConsistentPartitionSequence I) (Wstep : ℕ → Graphon Ω μ),
-      CutNormTendsto Wstep W ∧
-      Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds P.quotient)
+derived from the `stepping_limit` field.  **No instance is provided** — it is a pure
+external assumption.  Citation: BCLSV arXiv:1003.5588 §3; Lovász, *Large Networks and
+Graph Limits*, Thm. 9.23 and Prop. 14.13. -/
+class LovaszSzegedyLimit
+    (Ω : Type u) [MeasurableSpace Ω] (μ : Measure Ω) [IsFiniteMeasure μ]
+    (I : Type v) [Fintype I] [DecidableEq I] : Prop where
+  /-- The stepping-operator cut-norm compactness: every graphon equitable partition
+  `(W, P)` has a finite equitable spine `𝒮` and a step-graphon sequence converging
+  to `W` in cut norm, with `𝒮.quotient n → P.quotient`.  (BCLSV arXiv:1003.5588 §3.) -/
+  stepping_limit :
+    ∀ (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W),
+      ∃ (𝒮 : ConsistentPartitionSequence.{u, v} I) (Wstep : ℕ → Graphon Ω μ),
+        CutNormTendsto Wstep W ∧
+        Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds P.quotient)
 
 /-! ## **The limit theorem (statement only)**
 
@@ -442,7 +439,7 @@ theorem continuous_finiteSearchHamiltonian
         { toFun := fun H => Matrix.toEuclideanCLM (𝕜 := ℂ) H
           map_add' := fun A B => map_add (Matrix.toEuclideanCLM (𝕜 := ℂ)) A B
           map_smul' := fun r A => by
-            simpa using map_smul (Matrix.toEuclideanCLM (𝕜 := ℂ)) r A }
+            simp [map_smul (Matrix.toEuclideanCLM (𝕜 := ℂ)) r A] }
       exact L.continuous_of_finiteDimensional
     exact hcont.const_smul _
   exact hlin.sub continuous_const
@@ -569,28 +566,47 @@ matrices.
 
 We package this as the following corollary. -/
 
+/-- **The Xie–Tamon "no infinite tail" obstruction (external typeclass).**
+
+The explicit `K_n + path-n` consistent partition sequence has a graphon limit
+`(Wlim, Plim)` whose continuous tail sector (`Graphon/Spectrum.lean`,
+`HasContinuousTailSector`) obstructs cell-uniform PST between two distinct cells at
+*every* time `τ`.  The construction of the half-line tail graphon and the
+multiplication-operator continuous-spectrum impossibility proof are external to
+Mathlib v4.30.0; we name this content as a `Prop`-valued typeclass with the single
+field `no_pst` (the exact cited conclusion), parameterised by the index type `I`.
+
+**No instance is provided** — it is a pure external assumption mirroring
+`XieTamonContinuousTail` in `Graphon/Spectrum.lean` (sibling file, no import edge).
+
+Reference: **Xie–Tamon**, arXiv:2301.07251; **Reed–Simon** I, Thm. VII.5. -/
+class XieTamonNoInfiniteTail.{u', v'} (I : Type v') [Fintype I] [DecidableEq I]
+    [Nontrivial I] : Prop where
+  /-- The `K_n + path-n` graphon limit has two distinct cells with no cell-uniform
+  PST at any time.  (Xie–Tamon arXiv:2301.07251.) -/
+  no_pst :
+    ∃ (𝒮 : ConsistentPartitionSequence.{u', v'} I)
+      (Ω : Type u') (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
+      (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
+      (i j : I), i ≠ j ∧ (∀ τ : ℝ, ¬ IsCellUniformPST Wlim Plim i j τ)
+
 /-- **Xie–Tamon as a corollary of the limit theorem.**  There is a consistent
 partition sequence (concretely `G_n = K_n + P_n` with `P_n =
 distance-from-K_n`) and a graphon limit `(Wlim, Plim)` of it for which PST
 between two **distinct** cells `i ≠ j` is impossible at *every* time `τ` —
 recovering the Xie–Tamon "no infinite tail beats optimality" result.
 
-The statement is now genuine (no `True`): it asserts the existence of the
-sequence, its limit, two distinct cells, and the all-time PST-impossibility
-`∀ τ, ¬ IsCellUniformPST Wlim Plim i j τ`.  The explicit `K_n + path-n`
-construction and the impossibility proof (via the continuous tail sector of
-`Graphon/Spectrum.lean`) are deferred as an honest `sorry`. -/
+Conditional on the named external interface `[XieTamonNoInfiniteTail I]` (the
+`K_n + path-n` construction + the continuous-tail impossibility proof); the
+statement is `#print axioms`-clean. -/
 theorem xie_tamon_no_infinite_tail
-    (I : Type v) [Fintype I] [DecidableEq I] [Nontrivial I] :
-    ∃ (𝒮 : ConsistentPartitionSequence I)
+    (I : Type v) [Fintype I] [DecidableEq I] [Nontrivial I]
+    [XieTamonNoInfiniteTail.{u, v} I] :
+    ∃ (𝒮 : ConsistentPartitionSequence.{u, v} I)
       (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
       (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
-      (i j : I), i ≠ j ∧ (∀ τ : ℝ, ¬ IsCellUniformPST Wlim Plim i j τ) := by
-  -- the precise witness is the explicit `K_n + path-n` consistent partition
-  -- sequence; its graphon limit has a continuous tail sector
-  -- (`Graphon/Spectrum.lean`, `HasContinuousTailSector`) that obstructs
-  -- cell-uniform PST.  Construction + impossibility proof deferred.
-  sorry
+      (i j : I), i ≠ j ∧ (∀ τ : ℝ, ¬ IsCellUniformPST Wlim Plim i j τ) :=
+  XieTamonNoInfiniteTail.no_pst
 
 end Graphon
 

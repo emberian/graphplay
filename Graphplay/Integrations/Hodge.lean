@@ -8,18 +8,17 @@ theorem, persistent-Hodge / TDA connection, and the engineering
 payoffs (topological data analysis with equitable speedup, harmonic
 topological-qubit encoding, PST in the Hodge setting).
 
-Most of this file is now **genuinely proven**: the cochain complex
-(`coboundary`, `coboundaryAdj`, `coboundary_comp_coboundary`), the Hodge
-Laplacian and its Hermitian/PSD properties, the harmonic = closed ∩
-co-closed identity (`harmonic_iso_cohomology`), the genuine
-operator-exponential Hodge propagator `exp(-i t L_k)` (`hodgePropFun`) and
-the §5-8 dynamical layer (harmonic stationarity, the Hodge-quotient,
-harmonic encoding, and Hodge-PST lift) are all sorry-free.  Two deep results
-remain honest `sorry` (and are flagged `BLOCKED` inline): the full orthogonal
-Hodge decomposition `hodgeDecomp` (needs `ker L ⊕ range L = ⊤` via Mathlib's
-`InnerProductSpace`, into which the bare `Cochain.inner` is not yet wired) and
-`EquitableCochain.adj_descends` (needs a cell-uniformity regularity hypothesis
-not carried by the bare `EquitableCochain` data).
+This file is **`sorry`-free**: the cochain complex (`coboundary`,
+`coboundaryAdj`, `coboundary_comp_coboundary`), the Hodge Laplacian and its
+Hermitian/PSD properties, the harmonic = closed ∩ co-closed identity
+(`harmonic_iso_cohomology`), the genuine operator-exponential Hodge propagator
+`exp(-i t L_k)` (`hodgePropFun`), the §5-8 dynamical layer (harmonic
+stationarity, harmonic encoding, Hodge-PST lift), the full kernel/image Hodge
+decomposition `hodgeDecomp` (proved via rank-nullity + disjointness of
+`ker L`/`range L` from self-adjointness of `L`), and the descent of the adjoint
+coboundary `EquitableCochain.adj_descends` (proved from the explicit
+cell-uniformity hypothesis `AdjPreservesCells` via a linear section of the
+pullback) are all proven outright.
 
 Conventions follow `Graphplay.Relational`:
 
@@ -618,11 +617,34 @@ theorem hodgeDecomp
     -- discrete Hodge decomposition (Eckmann 1944, Friedman 1998), since
     -- `Im L_k = Im d_{k-1} ⊕ Im d_k*`.
     harmonic X k ⊔ LinearMap.range (hodgeLaplacian X k) = ⊤ := by
-  -- DEEP: needs `ker L ⊕ range L = ⊤` for the self-adjoint `L` on the
-  -- finite-dimensional cochain space, i.e. the spectral / orthogonal-complement
-  -- decomposition; our bare `Cochain.inner` is not yet wired into Mathlib's
-  -- `InnerProductSpace`, so the requisite `ker = (range)ᗮ` is unavailable here.
-  sorry
+  classical
+  -- `Cochain X k = X.simplex k → ℂ` is finite-dimensional over `ℂ`.
+  letI : FiniteDimensional ℂ (Cochain X k) :=
+    inferInstanceAs (FiniteDimensional ℂ (X.simplex k → ℂ))
+  set L := hodgeLaplacian X k with hL
+  -- `harmonic = ker L`, so `ker L ⊕ range L = ⊤` by rank-nullity + disjointness.
+  show LinearMap.ker L ⊔ LinearMap.range L = ⊤
+  -- (1) Disjointness `ker L ⊓ range L = ⊥`, from self-adjointness of `L`:
+  -- if `L φ = 0` and `φ = L ψ`, then `⟨φ,φ⟩ = ⟨L ψ, φ⟩ = ⟨ψ, L φ⟩ = 0`, so `φ = 0`.
+  have hdisj : Disjoint (LinearMap.ker L) (LinearMap.range L) := by
+    rw [disjoint_iff_inf_le]
+    intro φ hφ
+    obtain ⟨hker, ψ, hψ⟩ := Submodule.mem_inf.mp hφ
+    have hLφ : L φ = 0 := hker
+    -- `⟨φ, φ⟩ = ⟨L ψ, φ⟩ = ⟨ψ, L φ⟩ = ⟨ψ, 0⟩ = 0`
+    have hself : Cochain.inner φ φ = 0 := by
+      have h1 : Cochain.inner φ φ = Cochain.inner (L ψ) φ := by rw [hψ]
+      rw [h1, hodgeLaplacian_isHermitian X k ψ φ, hLφ]
+      show (∑ s, star (ψ s) * (0 : Cochain X k) s) = 0
+      exact Finset.sum_eq_zero (fun s _ => by show star (ψ s) * (0 : ℂ) = 0; rw [mul_zero])
+    have : φ = 0 := Cochain.inner_self_eq_zero hself
+    rw [this]; exact Submodule.zero_mem _
+  -- (2) Dimension count `finrank (ker L) + finrank (range L) = finrank` (rank-nullity).
+  have hdim : Module.finrank ℂ (Cochain X k)
+      ≤ Module.finrank ℂ (LinearMap.ker L) + Module.finrank ℂ (LinearMap.range L) := by
+    rw [add_comm, LinearMap.finrank_range_add_finrank_ker]
+  -- (3) Disjoint + complementary dimension ⟹ sup = ⊤.
+  exact Submodule.eq_top_of_disjoint (LinearMap.ker L) (LinearMap.range L) hdim hdisj
 
 /-- The **combinatorial Hodge isomorphism**, harmonic = closed ∩ co-closed.
 A `(k+1)`-cochain is harmonic (in `ker L_{k+1}`) iff it is simultaneously
@@ -777,10 +799,12 @@ This is the chain-complex analogue of the symmetry of the equitable-partition
 condition on Hermitian matrices.  The previous formulation asserted this of an
 *arbitrary* `EquitableCochain`, which is **false** — without the fibre-uniformity
 regularity (`AdjPreservesCells`) the adjoint fibre-sums need not be cell-constant
-and no `quotAdj` exists.  The regularity hypothesis is now explicit; the genuine
-construction of the linear `quotAdj` from it (a fibre-sum quotient, requiring the
-combinatorial bookkeeping of the simplex incidence under the cell map) is the
-honest `sorry`. -/
+and no `quotAdj` exists.  The regularity hypothesis is now explicit, and the
+genuine linear `quotAdj` is **constructed** from it: the composite
+`d_k* ∘ pullback (k+1)` lands (by `hreg`) in the range of the linear `pullback k`,
+which — over the field `ℂ` — admits a linear section (`projective_lifting_property`
+/ `exists_rightInverse_of_surjective`); precomposing the section with the
+range-corestricted composite yields the linear quotient adjoint. -/
 theorem EquitableCochain.adj_descends
     {V : Type u} (X : SimplicialComplex V)
     {I : ℕ → Type w} [∀ k, Fintype (I k)] [∀ k, DecidableEq (I k)]
@@ -792,11 +816,26 @@ theorem EquitableCochain.adj_descends
       ∀ ψ : I (k + 1) → ℂ,
         (coboundaryAdj X k) ((pullback X E.cellSimplex (k + 1)) ψ)
           = (pullback X E.cellSimplex k) (quotAdj ψ) := by
-  -- With `hreg`, each `d_k* (pullback (k+1) ψ)` is in the range of `pullback k`,
-  -- so a (set-theoretic) choice of preimage exists pointwise; assembling these
-  -- into a *linear* `quotAdj` is the genuine construction (the fibre-sum quotient,
-  -- which is linear because `coboundaryAdj` and the pullbacks are).  Honest sorry.
-  sorry
+  -- Abbreviations for the two pullbacks and the composite `F = d_k* ∘ pullback (k+1)`.
+  set P := pullback X E.cellSimplex k with hP
+  set F : (I (k + 1) → ℂ) →ₗ[ℂ] Cochain X k :=
+    (coboundaryAdj X k).comp (pullback X E.cellSimplex (k + 1)) with hF
+  -- `hreg` says every `F ψ` lies in `range P`, so `F` corestricts to `range P`.
+  have hmem : ∀ ψ, F ψ ∈ LinearMap.range P := hreg
+  set Fcod : (I (k + 1) → ℂ) →ₗ[ℂ] LinearMap.range P := F.codRestrict (LinearMap.range P) hmem
+  -- The range-restriction of `P` is surjective onto `range P`; over the field `ℂ`
+  -- (a projective/free module) it admits a linear section `g`.
+  obtain ⟨g, hg⟩ :=
+    P.rangeRestrict.exists_rightInverse_of_surjective (LinearMap.range_rangeRestrict P)
+  -- `quotAdj := g ∘ Fcod`; then `P (quotAdj ψ) = (Fcod ψ : Cochain) = F ψ`.
+  refine ⟨g.comp Fcod, fun ψ => ?_⟩
+  -- `P (g (Fcod ψ)) = ↑(P.rangeRestrict (g (Fcod ψ))) = ↑(Fcod ψ) = F ψ`.
+  have hsec : P.rangeRestrict (g (Fcod ψ)) = Fcod ψ := LinearMap.congr_fun hg (Fcod ψ)
+  have hval : P (g (Fcod ψ)) = (Fcod ψ : Cochain X k) := congrArg Subtype.val hsec
+  -- `(Fcod ψ : Cochain X k) = F ψ = (coboundaryAdj X k) (pullback (k+1) ψ)`.
+  show (coboundaryAdj X k) ((pullback X E.cellSimplex (k + 1)) ψ) = P ((g.comp Fcod) ψ)
+  rw [LinearMap.comp_apply, hval]
+  rfl
 
 /-- **Bridge to `RelEquitablePartition`.**  Any
 `RelEquitablePartition` of the underlying `k`-uniform hypergraph

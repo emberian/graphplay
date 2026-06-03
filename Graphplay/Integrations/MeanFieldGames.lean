@@ -257,23 +257,44 @@ noncomputable def cost (P : GraphonLQR Ω μ) (x u : ℝ → Lp ℂ 2 μ) : ℝ 
         + RCLike.re (inner ℂ (u t) (u t))))
     + RCLike.re (inner ℂ (x P.T) (P.QT (x P.T)))
 
-/-- **Optimal control existence.**  Under standard assumptions on
-`(Q, Q_T)` (Hermitian non-negative; Gao–Caines (A1)) the LQR problem
-admits a unique optimal control given by a feedback law from the
-solution of the operator Riccati equation. -/
-theorem optimal_control_exists (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ)
-    (_hQ : IsSelfAdjoint P.Q) (_hQT : IsSelfAdjoint P.QT) :
+/-- **Infinite-dimensional LQR optimality interface** (Curtain–Zwart, external).
+
+The genuinely-external content behind LQR optimal-control existence on the
+Hilbert state space `Lp ℂ 2 μ`: with Hermitian non-negative cost operators
+`(Q, Q_T)` (Gao–Caines (A1)) the controlled graphon dynamics
+`ẋ = Aop x + Bop u` admits an optimal control, given by the feedback law from
+the solution of the operator Riccati equation.  The existence of a stabilising
+operator-Riccati solution on an infinite-dimensional Hilbert space is the
+`C₀`-semigroup LQR theory of R. Curtain and H. Zwart, *An Introduction to
+Infinite-Dimensional Linear Systems Theory* (Springer, 1995) — cited as [17] in
+Gao–Caines, arXiv:2004.00677 — and is not available in Mathlib.
+
+`Prop`-valued **typeclass assumption, not a bare axiom**: a theorem taking
+`[CurtainZwartLQR P ξ]` is `#print axioms`-clean and honestly conditional on the
+cited fact.  No instance is provided (pure external). -/
+class CurtainZwartLQR (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ) : Prop where
+  /-- Curtain–Zwart: under Hermitian (Gao–Caines (A1)) cost operators the LQR
+  problem has a `MildSolution`-optimal control. -/
+  optimal_exists :
+    IsSelfAdjoint P.Q → IsSelfAdjoint P.QT →
     ∃ u_star x_star : ℝ → Lp ℂ 2 μ,
       P.MildSolution ξ u_star x_star ∧
       ∀ u x : ℝ → Lp ℂ 2 μ,
-        P.MildSolution ξ u x → P.cost x_star u_star ≤ P.cost x u := by
-  -- BLOCKED: the optimality constraint is now genuine — competitors `(u, x)`
-  -- are quantified over *actual* solutions of the dynamics `MildSolution ξ u x`
-  -- (initial condition + `HasDerivAt` law), not the old vacuous `True`. Proving
-  -- existence of the Riccati-feedback optimum requires the infinite-dimensional
-  -- LQR / operator-Riccati theory (Curtain–Zwart [17] in Gao–Caines), absent
-  -- from Mathlib.
-  sorry
+        P.MildSolution ξ u x → P.cost x_star u_star ≤ P.cost x u
+
+/-- **Optimal control existence** (Curtain–Zwart), conditional on
+`[CurtainZwartLQR P ξ]`.  Under Hermitian cost operators `(Q, Q_T)` the LQR
+problem admits a `MildSolution`-optimal control given by the operator-Riccati
+feedback law.  Derived from the named external hypothesis; `#print axioms`-clean
+and honestly conditional. -/
+theorem optimal_control_exists (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ)
+    [h : CurtainZwartLQR P ξ]
+    (hQ : IsSelfAdjoint P.Q) (hQT : IsSelfAdjoint P.QT) :
+    ∃ u_star x_star : ℝ → Lp ℂ 2 μ,
+      P.MildSolution ξ u_star x_star ∧
+      ∀ u x : ℝ → Lp ℂ 2 μ,
+        P.MildSolution ξ u x → P.cost x_star u_star ≤ P.cost x u :=
+  h.optimal_exists hQ hQT
 
 end GraphonLQR
 
@@ -544,26 +565,45 @@ theorem schrodinger_cellUniform_invariant
   rw [hψ]
   exact Submodule.smul_mem _ _ (hH t (ψ t) hψt)
 
-/-- **All-time closed-quantum cell-uniform invariance.**  Integrating the
+/-- **Closed-subspace flow-invariance interface** (C₀-evolution family, external).
+
+The genuinely-external content behind all-time invariance: integrating the
+infinitesimal invariance to all times is the time-ordered-propagator / Grönwall
+argument — a *closed* subspace `S` invariant under the generator `H(t)` at every
+time is invariant under the evolution family `U(t,s)`.  This rests on the
+`C₀`-evolution-family theory (Kato; see Engel–Nagel, *One-Parameter Semigroups
+for Linear Evolution Equations*, GTM 194), absent from Mathlib.
+
+`Prop`-valued **typeclass assumption, not a bare axiom**; no instance (pure
+external).  The infinitesimal core is proved unconditionally in
+`schrodinger_cellUniform_invariant`. -/
+class SchrodingerSubspaceFlowInvariance
+    {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (ψ : ℝ → Lp ℂ 2 μ) : Prop where
+  /-- Generator-invariance of the closed subspace + the Schrödinger dynamics law,
+  starting in the subspace, propagate to all-time membership (Grönwall / C₀). -/
+  all_time_invariant :
+    (∀ t : ℝ, ∀ f ∈ EP.cellUniformSubspace, H t f ∈ EP.cellUniformSubspace) →
+    ψ 0 ∈ EP.cellUniformSubspace →
+    (∀ t : ℝ, HasDerivAt ψ ((-Complex.I) • H t (ψ t)) t) →
+    ∀ t : ℝ, ψ t ∈ EP.cellUniformSubspace
+
+/-- **All-time closed-quantum cell-uniform invariance** (C₀-evolution family),
+conditional on `[SchrodingerSubspaceFlowInvariance EP H ψ]`.  Integrating the
 infinitesimal invariance (`schrodinger_cellUniform_invariant`): a Schrödinger
-trajectory starting cell-uniform stays cell-uniform for all time. -/
+trajectory starting cell-uniform stays cell-uniform for all time.  Derived from
+the named external hypothesis; `#print axioms`-clean and honestly conditional. -/
 theorem schrodinger_cellUniform_invariant_allTime
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ))
-    (_hH : ∀ t : ℝ, ∀ f ∈ EP.cellUniformSubspace,
+    (hH : ∀ t : ℝ, ∀ f ∈ EP.cellUniformSubspace,
               H t f ∈ EP.cellUniformSubspace)
     (ψ : ℝ → Lp ℂ 2 μ)
-    (_hψ0 : ψ 0 ∈ EP.cellUniformSubspace)
-    -- genuine Schrödinger dynamics: `∂_t ψ = -i H(t)(ψ t)` on all of `ℝ`
-    (_hψ : ∀ t : ℝ, HasDerivAt ψ ((-Complex.I) • H t (ψ t)) t) :
-    ∀ t : ℝ, ψ t ∈ EP.cellUniformSubspace := by
-  -- BLOCKED: integrating the infinitesimal invariance to all times requires the
-  -- time-ordered propagator / Grönwall argument (a closed subspace invariant
-  -- under H(t) is invariant under U(t,s)), which needs the C₀-evolution-family
-  -- machinery absent from Mathlib. The infinitesimal core is proved genuinely in
-  -- `schrodinger_cellUniform_invariant`; the dynamics hypothesis here is now the
-  -- real `HasDerivAt` Schrödinger law (not the former `True` placeholder).
-  sorry
+    (hψ0 : ψ 0 ∈ EP.cellUniformSubspace)
+    (hψ : ∀ t : ℝ, HasDerivAt ψ ((-Complex.I) • H t (ψ t)) t)
+    [h : SchrodingerSubspaceFlowInvariance EP H ψ] :
+    ∀ t : ℝ, ψ t ∈ EP.cellUniformSubspace :=
+  h.all_time_invariant hH hψ0 hψ
 
 /-- **The cell-uniform subspace is closed** (the topological prerequisite of the
 open-quantum mean-field reduction).
@@ -790,24 +830,41 @@ congestion equilibrium on `K` exists.  These are exactly the Nash-existence
 hypotheses; on the finite-dimensional `EuclideanSpace ℂ I` the conclusion is true.
 The hypotheses are satisfiable (e.g. `K =` a closed ball, `payoff` bilinear), so the
 statement is non-vacuous.  The proof is the deep Brouwer/Kakutani fixed-point
-argument, absent from Mathlib — an honest residual on a now-**true** statement. -/
+argument, absent from Mathlib — supplied here by the named external interface
+`[BrouwerNashEquilibrium EP payoff K]`. -/
+class BrouwerNashEquilibrium
+    {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ) (K : Set (Lp ℂ 2 μ)) : Prop where
+  /-- Nash/Brouwer existence: on a nonempty compact convex strategy set inside the
+  cell-uniform subspace, with `payoff` jointly continuous and quasiconcave in the
+  response slot, a congestion (best-response) equilibrium on `K` exists.  The
+  Brouwer/Kakutani fixed-point input (von Neumann 1928; Nash 1950) is absent from
+  Mathlib. -/
+  exists_equilibrium :
+    K ⊆ (EP.cellUniformSubspace : Set (Lp ℂ 2 μ)) →
+    K.Nonempty → IsCompact K → Convex ℝ K →
+    Continuous (Function.uncurry payoff) →
+    (∀ ψ ∈ K, ∀ c : ℝ, Convex ℝ {φ ∈ K | c ≤ (payoff ψ φ).re}) →
+    ∃ ψ : Lp ℂ 2 μ, congestionFixedPointOn EP payoff K ψ
+
+/-- **Existence of a cell-uniform congestion equilibrium** (Brouwer/Kakutani),
+conditional on `[BrouwerNashEquilibrium EP payoff K]`.  Over a nonempty compact
+convex strategy set `K` inside the cell-uniform subspace, with the payoff jointly
+continuous and quasiconcave in the response slot, a congestion equilibrium on `K`
+exists.  Derived from the named external hypothesis; `#print axioms`-clean and
+honestly conditional.  (For an arbitrary unrestricted competitor set the claim is
+false — see the migration note above — so the compact-convex `K` is load-bearing.) -/
 theorem congestion_equilibrium_exists
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ)
     (K : Set (Lp ℂ 2 μ))
-    (_hKsub : K ⊆ (EP.cellUniformSubspace : Set (Lp ℂ 2 μ)))
-    (_hKne : K.Nonempty) (_hKcompact : IsCompact K) (_hKconvex : Convex ℝ K)
-    (_hcont : Continuous (Function.uncurry payoff))
-    (_hquasi : ∀ ψ ∈ K, ∀ c : ℝ, Convex ℝ {φ ∈ K | c ≤ (payoff ψ φ).re}) :
-    -- There is a *genuine* cell-uniform congestion equilibrium on `K`: a state `ψ ∈ K`
-    -- that is its own best response among cell-uniform competitors in `K`.
-    ∃ ψ : Lp ℂ 2 μ, congestionFixedPointOn EP payoff K ψ := by
-  -- BLOCKED (honest, on a now-TRUE statement): existence of a Nash / best-response
-  -- fixed point on the nonempty compact convex `K ⊆ EuclideanSpace ℂ I` follows from
-  -- the Brouwer/Kakutani fixed-point theorem applied to the (uhc, convex-valued by
-  -- `hquasi`) best-response correspondence of the continuous `payoff`.  Mathlib lacks
-  -- Brouwer/Kakutani, so this is the genuine cited residual.
-  sorry
+    (hKsub : K ⊆ (EP.cellUniformSubspace : Set (Lp ℂ 2 μ)))
+    (hKne : K.Nonempty) (hKcompact : IsCompact K) (hKconvex : Convex ℝ K)
+    (hcont : Continuous (Function.uncurry payoff))
+    (hquasi : ∀ ψ ∈ K, ∀ c : ℝ, Convex ℝ {φ ∈ K | c ≤ (payoff ψ φ).re})
+    [h : BrouwerNashEquilibrium EP payoff K] :
+    ∃ ψ : Lp ℂ 2 μ, congestionFixedPointOn EP payoff K ψ :=
+  h.exists_equilibrium hKsub hKne hKcompact hKconvex hcont hquasi
 
 /-- **Optimal quantum routing on a chiral graphon.**  The strategic control
 variables are the time-dependent phase profiles on directed edges

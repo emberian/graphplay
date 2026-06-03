@@ -1016,7 +1016,7 @@ Reference: Janmark–Meyer–Wong, *Global symmetry is unnecessary for fast quan
 search* (PRL 2014), arXiv:1403.2228.  Sorried at the CNO dynamical core
 (`optimal_search_of_spectral_ratio_lt_one`). -/
 theorem strongly_regular_sparse_search
-    {V : Type*} [Fintype V] [DecidableEq V]
+    {V : Type*} [Fintype V] [DecidableEq V] [Graphplay.CNOOptimalSearch V]
     (G : WeightedGraph V) (w p : V) (deg : ℂ)
     (hne : Nonempty V)
     (hreg : G.isRegular deg)

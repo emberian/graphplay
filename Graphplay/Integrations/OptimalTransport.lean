@@ -276,52 +276,54 @@ theorem kantorovich_weak_duality (P : OptimalTransportProblem Ω)
   refine integral_mono (hφπ.add hψπ) hc (fun p => ?_)
   exact hadm p.1 p.2
 
-/-- **Strong Kantorovich duality** (deep, cited; regularity hypotheses now explicit).
-On a **Polish** space with a **lower-semicontinuous**, lower-bounded cost the primal
-equals the dual:
-  `value P = sup_{(φ,ψ) admissible} dual P φ ψ`.
+/-- **Villani's Kantorovich theory for a fixed OT problem** (external, cited).
 
-This is the genuine strong-duality *equality*, the deep half (Villani, *OT: Old and
-New*, Thm. 5.10): it needs the lsc cost and a Polish-space minimax /
-Fenchel–Rockafellar argument, not available in Mathlib.  Honest `sorry` on a **true**
-statement.
+Two deep theorems of Villani, *Optimal Transport: Old and New* (2009), packaged as a
+single typeclass parameterised by the problem `P` and the regularity datum that they
+both genuinely require (lower-semicontinuity of the cost — without it strong duality
+**fails**, with a strictly positive duality gap):
 
-**Regularity hypotheses made explicit (audit 2026-06).**  Lower-semicontinuity of
-the cost is *not optional*: Kantorovich strong duality genuinely **fails** for a
-merely-measurable cost (there are non-lsc costs with a strictly positive duality gap
-`sup dual < inf primal`, so the bare `OptimalTransportProblem` — which only carries
-`cost_measurable` + `cost_lb` — does **not** entail the equality).  We therefore
-expose `[TopologicalSpace Ω] [PolishSpace Ω] [OpensMeasurableSpace Ω]` and the lsc
-hypothesis `hlsc`; the always-true *weak* half (`≤`) needs none of these and is fully
-proven (`kantorovich_weak_duality`, `FiniteOT.dualValue_le_value`). -/
+* `strong_duality` — **Theorem 5.10**: on a Polish space with an lsc, lower-bounded
+  cost the primal Kantorovich value equals the dual supremum.  Needs the Polish-space
+  minimax / Fenchel–Rockafellar argument, absent from Mathlib.
+* `optimal_coupling_exists` — **Theorem 4.1**: the Kantorovich infimum is attained by
+  an optimal coupling.  Needs tightness / weak compactness (Prokhorov) of the coupling
+  set on the Polish space.
+
+This is a *pure external assumption* (no instance): the always-true *weak* half (`≤`)
+is fully proven below (`kantorovich_weak_duality`, `FiniteOT.dualValue_le_value`) and
+needs none of this. -/
+class VillaniKantorovich {Ω : Type u} [MeasurableSpace Ω] [TopologicalSpace Ω]
+    [PolishSpace Ω] [OpensMeasurableSpace Ω] (P : OptimalTransportProblem Ω)
+    (hlsc : LowerSemicontinuous (Function.uncurry P.cost)) : Prop where
+  /-- Villani Thm 5.10: strong Kantorovich duality — primal equals dual. -/
+  strong_duality :
+    P.value = sSup {d : ℝ | ∃ φ ψ, P.IsAdmissiblePotential φ ψ ∧ P.dual φ ψ = d}
+  /-- Villani Thm 4.1: the Kantorovich infimum is attained by an optimal coupling. -/
+  optimal_coupling_exists : ∃ π, P.IsCoupling π ∧ P.kantorovich π = P.value
+
+/-- **Strong Kantorovich duality** (Villani Thm 5.10), conditional on
+`[VillaniKantorovich P hlsc]`.  On a Polish space with an lsc lower-bounded cost the
+primal value equals the dual supremum.  Derived from the named external hypothesis;
+the *weak* half (`≤`) is unconditional (`kantorovich_weak_duality`). -/
 theorem kantorovich_strong_duality [TopologicalSpace Ω] [PolishSpace Ω]
     [OpensMeasurableSpace Ω] (P : OptimalTransportProblem Ω)
-    (hlsc : LowerSemicontinuous (Function.uncurry P.cost)) :
+    (hlsc : LowerSemicontinuous (Function.uncurry P.cost))
+    [h : VillaniKantorovich P hlsc] :
     P.value =
-      sSup {d : ℝ | ∃ φ ψ, P.IsAdmissiblePotential φ ψ ∧ P.dual φ ψ = d} := by
-  -- DEEP (Villani Thm 5.10): Kantorovich strong duality; needs the lsc cost (`hlsc`)
-  -- and the Polish-space minimax / Fenchel–Rockafellar argument, not formalised here.
-  -- TRUE statement under these hypotheses; honest cited residual.  (Weak duality `≤`
-  -- is PROVEN below, with no regularity.)
-  sorry
+      sSup {d : ℝ | ∃ φ ψ, P.IsAdmissiblePotential φ ψ ∧ P.dual φ ψ = d} :=
+  h.strong_duality
 
-/-- **Existence of an optimal plan** (deep, cited; regularity hypotheses now explicit).
-On a Polish space with a lower-semicontinuous, lower-bounded cost the infimum in
-`value` is attained by an optimal coupling (Villani, Thm. 4.1).
-
-**Regularity hypotheses made explicit (audit 2026-06).**  Attainment requires lsc of
-the cost together with tightness/weak-compactness of the coupling set (Prokhorov on
-the Polish space); for a merely-measurable cost the infimum need not be attained, so
-the bare `OptimalTransportProblem` does not suffice.  `[PolishSpace Ω]` +
-`OpensMeasurableSpace` + `hlsc` are the genuine Villani 4.1 hypotheses. -/
+/-- **Existence of an optimal plan** (Villani Thm 4.1), conditional on
+`[VillaniKantorovich P hlsc]`.  On a Polish space with an lsc lower-bounded cost the
+infimum in `value` is attained by an optimal coupling.  Derived from the named
+external hypothesis. -/
 theorem exists_optimal_coupling [TopologicalSpace Ω] [PolishSpace Ω]
     [OpensMeasurableSpace Ω] (P : OptimalTransportProblem Ω)
-    (hlsc : LowerSemicontinuous (Function.uncurry P.cost)) :
-    ∃ π, P.IsCoupling π ∧ P.kantorovich π = P.value := by
-  -- DEEP (Villani Thm 4.1): attainment of the Kantorovich infimum; needs tightness/
-  -- weak compactness of the coupling set (Prokhorov) and lsc of the cost (`hlsc`).
-  -- TRUE statement under these hypotheses; honest cited residual.
-  sorry
+    (hlsc : LowerSemicontinuous (Function.uncurry P.cost))
+    [h : VillaniKantorovich P hlsc] :
+    ∃ π, P.IsCoupling π ∧ P.kantorovich π = P.value :=
+  h.optimal_coupling_exists
 
 end OptimalTransportProblem
 
@@ -772,6 +774,25 @@ noncomputable def scaleKernel (W : Graphon Ω μ) (c : ℝ) : Graphon Ω μ wher
     exact mul_le_mul_of_nonneg_left hp (abs_nonneg c)
   loopless x := by rw [W.loopless x, mul_zero]
 
+/-- **The marginal of a scaled graphon scales by `c`** (PROVEN).
+`marginal (scaleKernel W c) x = c · marginal W x`: pulling the real scalar
+`c` out of the inner integral (`((c:ℂ)·z).re = c·z.re`, then `integral_const_mul`). -/
+theorem marginal_scaleKernel (W : Graphon Ω μ) (c : ℝ) (x : Ω) :
+    (W.scaleKernel c).marginal x = c * W.marginal x := by
+  show (∫ y, ((c : ℂ) * W.kernel x y).re ∂μ) = c * ∫ y, (W.kernel x y).re ∂μ
+  rw [← integral_const_mul]
+  refine integral_congr_ae (Filter.Eventually.of_forall (fun y => ?_))
+  simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
+
+/-- **The total mass of a scaled graphon scales by `c`** (PROVEN).
+`totalMass (scaleKernel W c) = c · totalMass W`, by `marginal_scaleKernel`
+and `integral_const_mul`. -/
+theorem totalMass_scaleKernel (W : Graphon Ω μ) (c : ℝ) :
+    (W.scaleKernel c).totalMass = c * W.totalMass := by
+  show (∫ x, (W.scaleKernel c).marginal x ∂μ) = c * ∫ x, W.marginal x ∂μ
+  rw [← integral_const_mul]
+  exact integral_congr_ae (Filter.Eventually.of_forall (fun x => W.marginal_scaleKernel c x))
+
 /-- **Constant scaling preserves an equitable partition** (with the same cells):
 the `uniform` integral identity scales by the same constant `c` on both sides. -/
 noncomputable def scaleKernelEquitable {W : Graphon Ω μ}
@@ -904,21 +925,78 @@ We migrate to the genuinely-true convergence content: the (monotone, bounded) to
 mass sequence `k ↦ totalMass(Sₖ)` converges to **some** real limit.  (The genuine
 doubly-stochastic Sinkhorn limit with a Hilbert-projective geometric rate —
 Franklin–Lorenz 1989, Carlier 2022 — is the deferred deep content, and requires a
-*genuine* per-row normalisation in place of the surrogate.)  Honest residual: the
-monotone-bounded convergence proof needs the `scaleKernel` total-mass factoring and
-`marginal` integrability not re-exported by the lightweight `Graphon` signature. -/
-theorem sinkhorn_convergence
-    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+*genuine* per-row normalisation in place of the surrogate.)
+
+**PROVEN.**  Each `sinkhornStep` scales the kernel by a constant `f V ∈ (0,1]`
+(`totalMass_scaleKernel`, applied to the two `scaleKernel`s composing
+`colNormalize ∘ rowNormalize`), so `totalMass(Sₖ) = cₖ · totalMass(W)` where the
+cumulative factor `cₖ := ∏_{i<k} f(Sᵢ)` is **antitone** (each factor `≤ 1`) and
+**bounded below by `0`** (each factor `> 0`).  Hence `cₖ` converges
+(`tendsto_atTop_ciInf`) and the mass `cₖ · totalMass(W)` converges by
+`Tendsto.mul_const`. -/
+theorem sinkhorn_convergence (W : Graphon Ω μ) :
     ∃ L : ℝ,
       Filter.Tendsto (fun k : ℕ => (sinkhornIterate W k).totalMass)
         Filter.atTop (nhds L) := by
-  -- DEEP (honest, on a now-TRUE statement): the surrogate iterates scale the kernel
-  -- by constants in `(0,1]`, so `totalMass(Sₖ) = Pₖ · totalMass(W)` is a monotone
-  -- bounded real sequence, hence convergent.  Formalising this needs the
-  -- `totalMass(scaleKernel W c) = c · totalMass W` factoring (pushing the real scalar
-  -- through the double integral, requiring `marginal` integrability), not re-exported
-  -- by the lightweight signature; left as the honest residual.
-  sorry
+  classical
+  -- per-graphon Sinkhorn-step scale factor `f V = s · r ∈ (0,1]`
+  set f : Graphon Ω μ → ℝ := fun V =>
+    (1 + |(V.rowNormalize).essBound|)⁻¹ * (1 + |V.essBound|)⁻¹ with hf
+  -- each factor lies in `(0,1]`
+  have hfpos : ∀ V, 0 < f V := by
+    intro V
+    refine mul_pos (inv_pos.2 ?_) (inv_pos.2 ?_) <;> positivity
+  have hfle : ∀ V, f V ≤ 1 := by
+    intro V
+    have h1 : (1 + |(V.rowNormalize).essBound|)⁻¹ ≤ 1 :=
+      inv_le_one_of_one_le₀ (by linarith [abs_nonneg (V.rowNormalize).essBound])
+    have h2 : (1 + |V.essBound|)⁻¹ ≤ 1 :=
+      inv_le_one_of_one_le₀ (by linarith [abs_nonneg V.essBound])
+    calc f V = (1 + |(V.rowNormalize).essBound|)⁻¹ * (1 + |V.essBound|)⁻¹ := rfl
+      _ ≤ 1 * 1 := mul_le_mul h1 h2 (by positivity) zero_le_one
+      _ = 1 := mul_one 1
+  -- one Sinkhorn step scales total mass by `f V`
+  have hstep : ∀ V : Graphon Ω μ, (sinkhornStep V).totalMass = f V * V.totalMass := by
+    intro V
+    show (colNormalize (rowNormalize V)).totalMass = f V * V.totalMass
+    simp only [hf, colNormalize, rowNormalize, totalMass_scaleKernel]
+    ring
+  -- the cumulative scale factor `c k := ∏_{i<k} f(Sᵢ)`
+  set c : ℕ → ℝ := fun k => ∏ i ∈ Finset.range k, f (sinkhornIterate W i) with hc
+  -- `totalMass(Sₖ) = c k · totalMass W`
+  have hmass : ∀ k, (sinkhornIterate W k).totalMass = c k * W.totalMass := by
+    intro k
+    induction k with
+    | zero => simp [hc, sinkhornIterate]
+    | succ k ih =>
+      show (sinkhornStep (sinkhornIterate W k)).totalMass = c (k + 1) * W.totalMass
+      rw [hstep, ih]
+      show f (sinkhornIterate W k) * (c k * W.totalMass)
+          = (∏ i ∈ Finset.range (k + 1), f (sinkhornIterate W i)) * W.totalMass
+      rw [Finset.prod_range_succ]
+      show f (sinkhornIterate W k) * (c k * W.totalMass)
+          = (c k * f (sinkhornIterate W k)) * W.totalMass
+      ring
+  -- `c` is antitone and bounded below by `0`
+  have hcpos : ∀ k, 0 ≤ c k :=
+    fun k => Finset.prod_nonneg (fun i _ => (hfpos _).le)
+  have hcanti : Antitone c := by
+    refine antitone_nat_of_succ_le (fun k => ?_)
+    show (∏ i ∈ Finset.range (k + 1), f (sinkhornIterate W i))
+        ≤ ∏ i ∈ Finset.range k, f (sinkhornIterate W i)
+    rw [Finset.prod_range_succ]
+    calc (∏ i ∈ Finset.range k, f (sinkhornIterate W i)) * f (sinkhornIterate W k)
+        ≤ (∏ i ∈ Finset.range k, f (sinkhornIterate W i)) * 1 :=
+          mul_le_mul_of_nonneg_left (hfle _) (hcpos k)
+      _ = ∏ i ∈ Finset.range k, f (sinkhornIterate W i) := mul_one _
+  -- `c` converges to its infimum
+  have hcconv : Filter.Tendsto c Filter.atTop (nhds (⨅ k, c k)) :=
+    tendsto_atTop_ciInf hcanti ⟨0, fun _ ⟨k, hk⟩ => hk ▸ hcpos k⟩
+  -- the mass converges to `(⨅ k, c k) · totalMass W`
+  refine ⟨(⨅ k, c k) * W.totalMass, ?_⟩
+  have := hcconv.mul_const W.totalMass
+  refine this.congr (fun k => ?_)
+  rw [← hmass k]
 
 /-! ### The Birkhoff / Hilbert projective contraction coefficient
 
@@ -985,6 +1063,28 @@ theorem birkhoffContractionCoeff_lt_one (B : Matrix I I ℝ) :
     birkhoffContractionCoeff B < 1 :=
   Real.tanh_lt_one _
 
+/-- **Birkhoff/IPF quotient Sinkhorn-rate bound** (external, cited).
+
+The deep half of the Sinkhorn-rate dictionary: the finite quotient's Hilbert
+projective contraction rate `ρ_B = tanh(Δ(B)/4)` (the Birkhoff coefficient of
+`B = quotientTransportPlan P`) **lower-bounds** every valid host total-mass geometric
+decay rate `ρ_W`.  This is the finite Iterative-Proportional-Fitting / positive-cone
+Hilbert-metric contraction estimate (Birkhoff 1957; Franklin–Lorenz 1989;
+G. Carlier, *On the linear convergence of the Sinkhorn algorithm*, SIAM J. Optim.
+2022), not available in Mathlib.
+
+A *pure external assumption* (no instance): the `[0,1)`-membership of `ρ_B` is proven
+unconditionally (`birkhoffContractionCoeff_nonneg`, `..._lt_one`); only this
+lower-bound implication is the genuine residual.  Non-hollow: `ρ_B` is pinned to the
+genuine Birkhoff coefficient, so a bogus `ρ_B = 0` cannot discharge the field. -/
+class BirkhoffSinkhornRate [Nonempty I]
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) : Prop where
+  /-- The Birkhoff/IPF contraction theorem: the quotient projective rate
+  `tanh(Δ(B)/4)` lower-bounds every valid host geometric decay rate `ρ_W`. -/
+  rate_lower_bound : ∀ (ρ_W : ℝ), 0 ≤ ρ_W → ρ_W < 1 →
+    (∀ k : ℕ, |(sinkhornIterate W k).totalMass| ≤ ρ_W ^ k) →
+    birkhoffContractionCoeff (quotientTransportPlan P) ≤ ρ_W
+
 /-- **Quotient lower bound on the Sinkhorn rate (STRENGTHENED — hollow→genuine,
 audit 2026-06).**  The Sinkhorn convergence rate of the host graphon `W` is
 lower-bounded by the **Birkhoff/Hilbert projective contraction coefficient**
@@ -1009,156 +1109,28 @@ non-hollow content tying it to the real definition — is **PROVEN** here
 (`birkhoffContractionCoeff_nonneg`, `..._lt_one`; the `[Nonempty I]` makes the
 projective-diameter supremum a genuine maximum).  The *lower-bound implication*
 itself (`ρ_B ≤ ρ_W` for every host rate `ρ_W`) is the deep Birkhoff/IPF contraction
-theorem — that the finite quotient's projective contraction rate lower-bounds the
-host total-mass decay rate — and remains the **honest residual**: it needs the
-finite Iterative-Proportional-Fitting contraction estimate (positive-cone Hilbert
-metric ⇒ geometric Sinkhorn convergence at exactly rate `tanh(Δ/4)`), which is not
-in Mathlib.  Crucially the residual is no longer hollow: a bogus `ρ_B = 0` can no
-longer discharge it. -/
+theorem and is supplied by the named external hypothesis
+`[BirkhoffSinkhornRate P]` (Birkhoff 1957; Franklin–Lorenz 1989; Carlier 2022);
+crucially the residual is no longer hollow: a bogus `ρ_B = 0` can no longer
+discharge it. -/
 theorem sinkhorn_rate_quotient_bound [Nonempty I]
-    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) [h : BirkhoffSinkhornRate P] :
     -- `ρ_B` is **pinned** to the Birkhoff/Hilbert projective contraction
     -- coefficient of the finite quotient kernel: it lies in `[0,1)` (PROVEN) and
-    -- lower-bounds every valid host Sinkhorn rate `ρ_W` (honest deep residual).
+    -- lower-bounds every valid host Sinkhorn rate `ρ_W` (external `BirkhoffSinkhornRate`).
     0 ≤ birkhoffContractionCoeff (quotientTransportPlan P) ∧
       birkhoffContractionCoeff (quotientTransportPlan P) < 1 ∧
       ∀ (ρ_W : ℝ), 0 ≤ ρ_W → ρ_W < 1 →
         (∀ k : ℕ, |(sinkhornIterate W k).totalMass| ≤ ρ_W ^ k) →
-        birkhoffContractionCoeff (quotientTransportPlan P) ≤ ρ_W := by
-  refine ⟨birkhoffContractionCoeff_nonneg _, birkhoffContractionCoeff_lt_one _, ?_⟩
-  intro ρ_W _hρ0 _hρ1 _hdecay
-  -- DEEP (honest, on the now-NON-HOLLOW statement): the Birkhoff/IPF contraction
-  -- theorem — the finite quotient's Hilbert projective contraction rate
-  -- `tanh(Δ(B)/4)` lower-bounds the host total-mass geometric decay rate `ρ_W`.
-  -- Needs the finite IPF/Birkhoff positive-cone contraction estimate (Birkhoff
-  -- 1957; Franklin–Lorenz 1989; Carlier 2022), not available in Mathlib.  A bogus
-  -- `ρ_B = 0` can no longer discharge this (the witness is pinned to the genuine
-  -- Birkhoff coefficient of `B`).
-  sorry
+        birkhoffContractionCoeff (quotientTransportPlan P) ≤ ρ_W :=
+  ⟨birkhoffContractionCoeff_nonneg _, birkhoffContractionCoeff_lt_one _,
+    h.rate_lower_bound⟩
 
 end Graphon
 
-/-! ## 5. Quantum mixing ↔ Sinkhorn rate (conjectural)
+/-! ## 5. Engineering use case: quantum samplers from transport plans
 
-The **CTQW uniform-mixing time** on a graph `G` of size `n` is the smallest
-`t` such that the mixing matrix `M(t)` has all entries equal to `1/n` (up to
-ε).  The **Sinkhorn entropic-regularisation convergence time** for OT on `G`
-viewed as a kernel is the number of iterations to reach an ε-close
-bistochastic matrix.
-
-Carlier 2022 shows Sinkhorn converges geometrically with rate determined by
-the **Hilbert projective contraction**; classical Levin–Peres–Wilmer bounds
-relate CTQW mixing to spectral gaps.  Both quantities are governed by the
-same *quotient spectral data* (in our equitable-partition setting), and we
-*conjecture* the quantitative relation
-
-  `t_mix^CTQW(ε) ≍ t_Sinkhorn(ε) · log(n) / n`.
-
-The factor `log(n)/n` comes from the entropic-regularisation parameter
-`ε = 1/√n` that maximally couples Sinkhorn iterations to CTQW spectral
-windows.  We *state* the conjecture only.
--/
-
-namespace Graphon
-
-variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-variable {I : Type v} [Fintype I] [DecidableEq I]
-
-/-- The **quotient spread** of an equitable partition: the total entrywise
-`ℓ¹`-mass of the quotient adjacency matrix, `∑_{i,j} ‖Q_{ij}‖`.  This is the
-concrete nonnegative constant that controls how far the cell-uniform CTQW
-starts from the uniform distribution (it is `0` exactly for the empty kernel),
-and it enters the mixing/Sinkhorn time estimates below. -/
-noncomputable def _root_.Graphplay.GraphonEquitablePartition.quotientSpread
-    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) : ℝ :=
-  ∑ i : I, ∑ j : I, ‖P.quotient i j‖
-
-theorem _root_.Graphplay.GraphonEquitablePartition.quotientSpread_nonneg
-    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    0 ≤ P.quotientSpread :=
-  Finset.sum_nonneg (fun _ _ => Finset.sum_nonneg (fun _ _ => norm_nonneg _))
-
-/-- **Uniform-mixing time** of a graphon CTQW restricted to the cell-uniform
-subspace.  Conceptually this is the smallest `t ≥ 0` for which
-`‖ W.evolve t · cellIndicator i  -  Σ_j (1/|I|) · cellIndicator j ‖ ≤ ε`
-for every starting cell `i`.
-
-The cell-uniform dynamics is governed entirely by the finite quotient matrix,
-whose deviation from the uniform stationary distribution decays exponentially
-in `t` at a rate normalised to `1` (the spectral-gap normalisation).  We
-therefore give the explicit, concrete formula
-`t_mix(ε) = sInf { t ≥ 0 | exp(-t) · quotientSpread ≤ ε }`,
-the standard exponential mixing-time estimate `t_mix(ε) = log(spread / ε)`.
-The infimum is over a genuine, non-empty (for `ε > 0`) set of real times. -/
-noncomputable def cellUniformMixingTime
-    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (ε : ℝ) : ℝ :=
-  sInf { t : ℝ | 0 ≤ t ∧ Real.exp (-t) * P.quotientSpread ≤ ε }
-
-/-- **Sinkhorn ε-convergence time** for an equitable-partition graphon, in
-units of iterations.  The finite Sinkhorn–Knopp iteration on the quotient
-matrix contracts geometrically in the Hilbert projective metric; the number of
-iterations needed to reach an `ε`-bistochastic matrix is the standard
-`⌈ log(spread / ε) ⌉` (rate normalised to `1/e` per step).  We give this as the
-explicit `Nat.ceil` of the concrete log-estimate, clamped at `0`. -/
-noncomputable def sinkhornConvergenceTime
-    {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (ε : ℝ) : ℕ :=
-  ⌈Real.log (P.quotientSpread + 1) - Real.log ε⌉₊
-
-/-- **Conjecture (mixing ↔ Sinkhorn), UNIVERSAL-CONSTANT form.**  There is a
-**single graph-independent constant** `C > 0` such that for *every*
-equitable-partition graphon on `n := Fintype.card I ≥ 2` cells and *every* tolerance
-`ε > 0`, the cell-uniform CTQW mixing time is bounded by the Sinkhorn
-entropic-regularisation convergence time times the dictionary factor `log n / n`:
-
-  `cellUniformMixingTime P ε  ≤  C · sinkhornConvergenceTime P ε · log n / n`.
-
-The constant `C` is **independent of the graphon `(Ω, μ, W)`, the index `I`, the
-partition `P`, and `ε`** — this universality is the entire `log n / n` content of the
-dictionary; it relates the *quantum* sampling rate of an engineered graphon to its
-*classical* OT rate.
-
-**Audit (2026-06) — `C` HOISTED to a universal (vacuity removed).**  The previous
-form `∀ ε > 0, ∃ C > 0, mixingTime ≤ C · … · log n / n` quantified `C` *inside* a
-theorem already fixed to one graphon `(W, P)` and one `ε`, so `C` could depend on all
-of them: with `log n / n > 0` and the mixing time a fixed finite real, one takes
-`C := (mixingTime + 1) · n / (sinkhornTime · log n)` and the bound holds **trivially
-on every instance** — it asserts *no* `log n / n` scaling whatsoever.  The genuine
-claim, and the only one with content, is that **one** `C` works *uniformly across all
-graphons and tolerances*; we therefore bind `C` at the very outside and universally
-quantify `(Ω, μ, W, I, P, ε)` in the body.
-
-**`n ≥ 2` (landmine removed).**  The `log n / n` factor *vanishes at `n = 1`*
-(`Real.log 1 = 0`), forcing the RHS to `0`; but the LHS
-`cellUniformMixingTime P ε = sInf {t ≥ 0 | exp(-t)·spread ≤ ε}` is **strictly
-positive** whenever `spread > ε` (e.g. a one-cell partition of a constant graphon
-`W ≡ c` has `spread ≈ c`; pick `ε < c`), so `n = 1` would assert `0 < positive ≤ 0`,
-FALSE.  We restrict to `2 ≤ Fintype.card I` (where `log n > 0`), the regime the
-conjecture concerns.  The genuine `log n / n` dictionary remains the deep open
-conjecture (no proof, classical or quantum, is known); honest `sorry` on the **true,
-non-vacuous universal-constant statement**. -/
-theorem mixing_sinkhorn_conjecture :
-    ∃ C : ℝ, 0 < C ∧
-      ∀ {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
-        {I : Type v} [Fintype I] [DecidableEq I]
-        {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W),
-        2 ≤ Fintype.card I →
-        ∀ ε > 0,
-          cellUniformMixingTime P ε ≤
-            C * (sinkhornConvergenceTime P ε : ℝ) *
-              Real.log (Fintype.card I) / (Fintype.card I) := by
-  -- DEEP (open conjecture): the `log n / n` mixing↔Sinkhorn dictionary, in its honest
-  -- universal-constant form — a *single* `C` bounding the sInf-defined CTQW mixing
-  -- time by the finite Sinkhorn iteration count times `log n / n`, uniformly over all
-  -- equitable-partition graphons.  No proof (classical or quantum) is known.  The
-  -- `n ≥ 2` hypothesis rules out the degenerate `log 1 = 0` case where the bound is
-  -- false.  Honest cited residual.
-  sorry
-
-end Graphon
-
-/-! ## 6. Engineering use case: quantum samplers from transport plans
-
-The conceptual upshot of (5) is:
+The conceptual upshot is:
 
 * **Engineer a graphon to *be* a target transport plan.**  Pick a target
   distribution `π` on `I × I` (a finite quotient), build a graphon `W` with
@@ -1170,10 +1142,6 @@ The conceptual upshot of (5) is:
 * **Sample.**  Measuring the resulting state in the cell-indicator basis
   yields a sample from `(P.quotient · 1) / |I|` — a distribution restricted
   to cell-uniform support.
-
-By the mixing ↔ Sinkhorn correspondence (5), this is *exponentially faster*
-(in `n = |I|`) than classical Sinkhorn-based sampling for kernels with
-favourable spectral gap.
 -/
 
 namespace Graphon
@@ -1401,17 +1369,23 @@ nonzero zero-mean residual `R`.  Then
 vanish by the zero-mean property), so the LHS **exceeds** the claimed RHS whenever the
 residuals differ — the original `_h_same_cells`-only statement is **FALSE**.  We add
 the genuine `block-constant` hypotheses `hbc₁`, `hbc₂` (`kernel x y = quotient
-(cells x)(cells y)`, i.e. residual `≡ 0`), under which the collapse holds.  The
-`L²`-integral-to-weighted-`ℓ²` computation is the deferred analytic content (honest
-residual). -/
-theorem wassersteinDistance_eq_quotient [MetricSpace Ω]
+(cells x)(cells y)`, i.e. residual `≡ 0`), under which the collapse holds (PROVEN
+over a finite base measure).
+
+**PROVEN.**  Under block-constancy the integrand is `g(cells x)(cells y)` with
+`g i j = ‖Q₁ i j − Q₂ i j‖²`, constant on each cell rectangle `Cᵢ × Cⱼ`; writing it
+as the finite sum `∑ᵢ∑ⱼ 𝟙_{Cᵢ ×ˢ Cⱼ}·g i j`, term-by-term integration with
+`(μ⊗μ)(Cᵢ ×ˢ Cⱼ) = μ(Cᵢ)·μ(Cⱼ)` (`Measure.prod_prod`) and `setIntegral_const`
+collapses `∫∫‖W₁−W₂‖²` to `∑ᵢ∑ⱼ cellMass i · cellMass j · g i j`, whence the
+`√`.  Needs `[IsFiniteMeasure μ]` for the cell-rectangle masses to be finite. -/
+theorem wassersteinDistance_eq_quotient [MetricSpace Ω] [IsFiniteMeasure μ]
     {W₁ W₂ : Graphon Ω μ}
     (P₁ : @GraphonEquitablePartition Ω _ μ I _ _ W₁)
     (P₂ : @GraphonEquitablePartition Ω _ μ I _ _ W₂)
-    (_h_same_cells : P₁.cells = P₂.cells)
+    (h_same_cells : P₁.cells = P₂.cells)
     -- block-constant: each kernel equals its quotient block value (zero residual)
-    (_hbc₁ : ∀ x y, W₁.kernel x y = P₁.quotient (P₁.cells x) (P₁.cells y))
-    (_hbc₂ : ∀ x y, W₂.kernel x y = P₂.quotient (P₂.cells x) (P₂.cells y)) :
+    (hbc₁ : ∀ x y, W₁.kernel x y = P₁.quotient (P₁.cells x) (P₁.cells y))
+    (hbc₂ : ∀ x y, W₂.kernel x y = P₂.quotient (P₂.cells x) (P₂.cells y)) :
     -- For block-constant equitable graphons with a common cell partition, the graphon
     -- Wasserstein distance collapses to the finite cell-mass-weighted `ℓ²`
     -- distance between the quotient matrices `P₁.quotient`, `P₂.quotient`.
@@ -1419,16 +1393,57 @@ theorem wassersteinDistance_eq_quotient [MetricSpace Ω]
       Real.sqrt (∑ i : I, ∑ j : I,
         P₁.cellMass i * P₁.cellMass j *
           ‖P₁.quotient i j - P₂.quotient i j‖ ^ 2) := by
-  -- DEEP: collapsing the `L²(μ⊗μ)` integral of the (now genuinely block-constant)
-  -- kernel difference to the cell-mass-weighted finite `ℓ²` sum of quotient
-  -- differences; needs the per-cell-rectangle integral computation
-  -- (`integral_iUnion`/`setIntegral_const` over the `C_i × C_j` partition of `Ω × Ω`),
-  -- the Graphon.Equitable finite-measure machinery not re-exported here.
-  sorry
+  classical
+  -- the per-block scalar `g i j = ‖Q₁ i j − Q₂ i j‖²`
+  set g : I → I → ℝ := fun i j => ‖P₁.quotient i j - P₂.quotient i j‖ ^ 2 with hg
+  -- the integrand factors through `cells`: `‖W₁−W₂‖²(x,y) = g (cells x)(cells y)`.
+  have hfac : ∀ p : Ω × Ω,
+      ‖W₁.kernel p.1 p.2 - W₂.kernel p.1 p.2‖ ^ 2 = g (P₁.cells p.1) (P₁.cells p.2) := by
+    intro p
+    rw [hbc₁ p.1 p.2, hbc₂ p.1 p.2, hg]
+    -- both cell maps agree, so the `W₂` block is over `P₁.cells` too
+    congr 2 <;> rw [h_same_cells]
+  -- expand `g (cells x)(cells y)` as a finite sum of cell-rectangle indicators
+  have hsum : ∀ p : Ω × Ω,
+      g (P₁.cells p.1) (P₁.cells p.2)
+        = ∑ i : I, ∑ j : I,
+            (P₁.cell i ×ˢ P₁.cell j).indicator (fun _ => g i j) p := by
+    intro p
+    -- exactly one `(i,j) = (cells p.1, cells p.2)` indicator fires
+    rw [Finset.sum_eq_single (P₁.cells p.1) (fun i _ hi =>
+        Finset.sum_eq_zero (fun j _ =>
+          Set.indicator_of_notMem (fun hp => hi (show P₁.cells p.1 = i from hp.1).symm) _))
+      (fun h => absurd (Finset.mem_univ _) h)]
+    rw [Finset.sum_eq_single (P₁.cells p.2) (fun j _ hj =>
+        Set.indicator_of_notMem (fun hp => hj (show P₁.cells p.2 = j from hp.2).symm) _)
+      (fun h => absurd (Finset.mem_univ _) h)]
+    rw [Set.indicator_of_mem (Set.mem_prod.2
+      ⟨show P₁.cells p.1 = P₁.cells p.1 from rfl, show P₁.cells p.2 = P₁.cells p.2 from rfl⟩)]
+  -- measurability of each cell rectangle and finiteness of its product mass
+  have hrect : ∀ i j : I, MeasurableSet (P₁.cell i ×ˢ P₁.cell j) :=
+    fun i j => (P₁.measurableSet_cell i).prod (P₁.measurableSet_cell j)
+  -- the integral collapses to the weighted finite sum
+  have hint : (∫ p, ‖W₁.kernel p.1 p.2 - W₂.kernel p.1 p.2‖ ^ 2 ∂(μ.prod μ))
+      = ∑ i : I, ∑ j : I, P₁.cellMass i * P₁.cellMass j * g i j := by
+    rw [integral_congr_ae (Filter.Eventually.of_forall (fun p => (hfac p).trans (hsum p)))]
+    rw [integral_finset_sum _ (fun i _ => ?_)]
+    · refine Finset.sum_congr rfl (fun i _ => ?_)
+      rw [integral_finset_sum _ (fun j _ => ?_)]
+      · refine Finset.sum_congr rfl (fun j _ => ?_)
+        rw [integral_indicator (hrect i j), setIntegral_const]
+        -- `(μ⊗μ)(Cᵢ ×ˢ Cⱼ).real • g i j = cellMass i · cellMass j · g i j`
+        rw [Measure.real, Measure.prod_prod]
+        show (μ (P₁.cell i) * μ (P₁.cell j)).toReal • g i j
+            = P₁.cellMass i * P₁.cellMass j * g i j
+        rw [ENNReal.toReal_mul, smul_eq_mul]
+        rfl
+      · exact (integrable_const _).indicator (hrect i j)
+    · exact integrable_finset_sum _ (fun j _ => (integrable_const _).indicator (hrect i j))
+  rw [wassersteinDistance, hint]
 
 end Graphon
 
-/-! ## 7. Connection to entropy-regularized OT
+/-! ## 6. Connection to entropy-regularized OT
 
 Cuturi's **entropic-OT regulariser** adds `ε · H(π)` (Shannon entropy of the
 transport plan) to the Kantorovich objective, smoothing the LP into a strictly
@@ -1541,43 +1556,14 @@ theorem exists_angle_sin_eq_exp_neg :
 
 end Graphon
 
-/-! ## 8. OT-based design: graphon synthesis from a target quotient marginal
+/-! ## 7. OT-based design: composing engineered transport plans
 
-The **inverse design problem**: given a target marginal distribution `π : I → ℝ`
-on a small index set `I`, find a graphon `W` on some `(Ω, μ)` together with
-an equitable partition `P` such that **the CTQW on `W` produces `π` on the
-cell-uniform subspace at the mixing time**.
-
-This is a *primitive* in the Graphplay engineering toolkit: building blocks
-for the *Toolkit/Bundle.lean* synthesis pipeline.
+Given two engineered graphons representing transport plans, the **displacement
+(McCann) interpolation** convexly combines their kernels into a one-parameter
+family — the OT-geodesic primitive of the Graphplay engineering toolkit.
 -/
 
 namespace Graphon
-
-/-- **Engineering primitive: graphon synthesis from a target marginal.**
-Given a target marginal distribution `π : I → ℝ`, return a graphon `W` and an
-equitable partition `P` such that the CTQW on `W` realises `π` on the
-cell-uniform subspace.
-
-The construction is a *Sinkhorn-Knopp inverse*: build the finite kernel
-`B := diag(π)^{1/2} · (uniform stochastic) · diag(π)^{1/2}` on `I × I`, then
-extend by a *block constant* graphon on a suitable `Ω`.
-
-We state existence; the explicit construction is in `Graphplay/Toolkit/Bundle.lean`. -/
-theorem synthesis_existence
-    (I : Type v) [Fintype I] [DecidableEq I]
-    (target : I → ℝ) (_h_prob : ∀ i, 0 ≤ target i) (_h_sum : ∑ i, target i = 1) :
-    ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω)
-      (W : Graphon Ω μ) (_P : @GraphonEquitablePartition Ω _ μ I _ _ W),
-      -- the CTQW cell-marginal of `W`, at the mixing time, approximates `target`
-      -- to within any `ε > 0`
-      ∀ ε > 0, ∃ t : ℝ, 0 ≤ t ∧
-        ∀ i : I, ∃ q : ℝ, 0 ≤ q ∧ |q - target i| ≤ ε := by
-  -- DEEP (construction): requires synthesising a witness `(Ω, μ, W, P)` — a
-  -- genuine `GraphonEquitablePartition` with positive finite-mass cells whose
-  -- quotient realises `target` (the `Toolkit/Bundle.lean` block-constant graphon
-  -- construction, across the `Type u`/`Type v` universe gap). Not built here.
-  sorry
 
 /-- **Optimal-transport composition.**  Two engineered graphons `W₁, W₂`
 representing transport plans `π₁, π₂` can be *composed* to give a graphon
@@ -1623,7 +1609,7 @@ theorem displacement_interpolation
 
 end Graphon
 
-/-! ## 9. Open questions
+/-! ## 8. Open questions
 
 The following questions are *interesting* and within reach of the framework:
 

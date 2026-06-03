@@ -92,23 +92,24 @@ equitable partition is "stranded" without a finite spine.
 
 The proof is the BCLSV stepping operator applied to `W` along a refining
 sequence of finite measurable partitions of `Ω` whose blocks refine the cells
-of `P`; this construction is the named external axiom
-`Graphon.lovaszSzegedy_graphon_limit` (BCLSV arXiv:1003.5588 §3; Lovász,
+of `P`; this construction is the named external typeclass
+`[Graphon.LovaszSzegedyLimit Ω μ I]` (BCLSV arXiv:1003.5588 §3; Lovász,
 *Large Networks and Graph Limits*, Thm. 9.23 and Prop. 14.13).  Consuming that
-axiom, the existential below holds **with no `sorry`**; the only deferred content
-is the stepping-operator construction itself, now an explicit, named, auditable
-dependency. -/
+interface's `stepping_limit` field, the existential below holds **with no `sorry`**
+and `#print axioms`-clean; the only deferred content is the stepping-operator
+construction itself, now an explicit, named, conditional dependency. -/
 theorem GraphonEquitablePartition.arises_from_consistent_sequence
     {I : Type v} [Fintype I] [DecidableEq I]
+    [Graphon.LovaszSzegedyLimit Ω μ I]
     (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
-    ∃ (𝒮 : ConsistentPartitionSequence I) (Wstep : ℕ → Graphon Ω μ),
+    ∃ (𝒮 : ConsistentPartitionSequence.{u, v} I) (Wstep : ℕ → Graphon Ω μ),
       -- the underlying step graphons converge to `W` in cut norm …
       CutNormTendsto Wstep W ∧
       -- … and the finite quotient matrices converge to `P.quotient`
       -- (the rearrangement-invariant fingerprint of the limit).
       Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds P.quotient) :=
-  -- The BCLSV stepping-operator limit, named as `lovaszSzegedy_graphon_limit`.
-  Graphon.lovaszSzegedy_graphon_limit W P
+  -- The BCLSV stepping-operator limit, named as `[LovaszSzegedyLimit]`.
+  Graphon.LovaszSzegedyLimit.stepping_limit W P
 
 /-! ## 2. Approximation rate
 
@@ -138,8 +139,8 @@ while the finite quotient matrices of `𝒮` converge to `P.quotient`.
 
 This is the **genuine quantitative** form (no `True` tail): the conclusion is
 the explicit cut-norm inequality `cutNormDiff (Wstep N) W ≤ ε`.  It follows
-from the BCLSV stepping-operator limit (`Graphon.lovaszSzegedy_graphon_limit`):
-that axiom supplies `CutNormTendsto Wstep W`, i.e. `cutNormDiff (Wstep n) W → 0`,
+from the BCLSV stepping-operator limit (`[Graphon.LovaszSzegedyLimit Ω μ I]`):
+that interface supplies `CutNormTendsto Wstep W`, i.e. `cutNormDiff (Wstep n) W → 0`,
 so for `n` large the cut-norm difference drops below the threshold `ε` — pick
 `N` from the convergence.
 
@@ -148,9 +149,10 @@ with `‖W.kernel‖_∞ ≤ M` one can take `N = exp(C(M)/ε²)` (the weak regu
 bound); we extract *some* sufficient `N` from the qualitative convergence. -/
 theorem stepFunction_approximation_rate
     {I : Type v} [Fintype I] [DecidableEq I]
+    [Graphon.LovaszSzegedyLimit Ω μ I]
     (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (ε : ℝ) (hε : 0 < ε) :
-    ∃ (𝒮 : ConsistentPartitionSequence I) (Wstep : ℕ → Graphon Ω μ) (N : ℕ),
+    ∃ (𝒮 : ConsistentPartitionSequence.{u, v} I) (Wstep : ℕ → Graphon Ω μ) (N : ℕ),
       cutNormDiff (Wstep N) W ≤ ε ∧
       Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds P.quotient) := by
   -- Extract the spine `𝒮`, the step graphons `Wstep`, the cut-norm convergence,
@@ -213,119 +215,22 @@ theorem ConsistentPartitionSequence.unique_mod_mpr
   -- `Q = P.quotient` and `Q' = P.quotient` by uniqueness of limits, so `Q = Q'`.
   rw [tendsto_nhds_unique hQ h𝒮, tendsto_nhds_unique hQ' h𝒮']
 
-/-! ## 4. Bidirectional quasi-infinite limit theorem
+/-! ## 4. The forward limit direction
 
-Combining the forward theorem (`ConsistentPartitionSequence.limit_exists`)
-with the reverse theorem (`arises_from_consistent_sequence`) gives a
-bidirectional equivalence:
+The genuine, faithful "finite spine ⟹ graphon" direction is the limit theorem
+`ConsistentPartitionSequence.pst_time_convergence` (and its mixing analogue),
+stated in `Graphon/Limit.lean`: *if the finite quotients `𝒮.quotient n` exhibit
+PST at times `τ_n → τ` and the cell masses of the transferring cells agree, then
+the graphon limit `(W, P)` exhibits cell-uniform PST at `τ`.*
 
-> *Cell-uniform PST on a graphon `(W, P)` is equivalent to (eventual) PST
-> in the quotient of any consistent partition sequence approximating
-> `(W, P)`.*
-
-This is the strongest form of the "graphon PST ↔ finite PST" duality:
-no graphon PST behaviour is invisible to the finite spine, and no finite
-PST behaviour is invisible to the graphon limit. -/
-
-/-- **Bidirectional quasi-infinite limit theorem for PST.**
-
-For a graphon equitable partition `(W, P)`, the following are equivalent:
-
-1. `(W, P)` exhibits cell-uniform PST from `i` to `j` at time `τ`
-   (i.e., `IsCellUniformPST W P i j τ`).
-2. *Some* consistent partition sequence `𝒮` approximating `(W, P)` has
-   the property that, for `n` sufficiently large, the finite quotient
-   `𝒮.quotient n` exhibits PST from `i` to `j` at time `τ_n`, with
-   `τ_n → τ`.
-
-The forward direction `(2) ⇒ (1)` is `pst_time_convergence`.  The reverse
-direction `(1) ⇒ (2)` is new and uses `arises_from_consistent_sequence`. -/
-theorem cellUniformPST_iff_consistent_quotientPST
-    {I : Type v} [Fintype I] [DecidableEq I]
-    (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (i j : I) (τ : ℝ) :
-    IsCellUniformPST W P i j τ ↔
-      ∃ (𝒮 : ConsistentPartitionSequence I) (τfin : ℕ → ℝ),
-        Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-          (nhds P.quotient) ∧
-        Filter.Tendsto τfin Filter.atTop (nhds τ) ∧
-        ∀ᶠ n in Filter.atTop, IsPST_finite (𝒮.quotient n) i j (τfin n) := by
-  -- The (⇐) direction is `ConsistentPartitionSequence.pst_time_convergence`
-  -- (with eventually-PST upgraded to genuine PST via continuity of `exp`
-  -- in operator norm).  The (⇒) direction extracts a sequence via
-  -- `arises_from_consistent_sequence` and lifts cell-uniform PST through
-  -- the spectral continuity of `Plim.quotient ↦ exp(-i τ Plim.quotient)`.
-  sorry
-
-/-- **Bidirectional limit for uniform mixing.**  Analogue of the PST
-biconditional. -/
-theorem cellUniformMixing_iff_consistent_quotientMixing
-    {I : Type v} [Fintype I] [DecidableEq I]
-    (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (i : I) (τ : ℝ) :
-    IsCellUniformGraphonMixing W P i τ ↔
-      ∃ (𝒮 : ConsistentPartitionSequence I) (τfin : ℕ → ℝ),
-        Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-          (nhds P.quotient) ∧
-        Filter.Tendsto τfin Filter.atTop (nhds τ) ∧
-        ∀ᶠ n in Filter.atTop, IsUniformMixing_finite (𝒮.quotient n) i (τfin n) := by
-  sorry
-
-/-! ## 5. Concrete corollaries
-
-### 5.1 PST graphons arise as limits of PST finite graphs.
-
-If `W` is a graphon with cell-uniform PST, then *every* approximating
-consistent partition sequence (in particular: one produced by
-`arises_from_consistent_sequence`) has the property that its finite
-quotients eventually have finite PST.  In particular, every PST graphon
-arises as a cut-norm limit of finite PST graphs (with a suitably chosen
-equitable partition). -/
-
-/-- **Every cell-uniform PST graphon is the cut-norm limit of a sequence
-of finite PST graphs.** -/
-theorem pst_graphon_is_limit_of_finite_pst
-    {I : Type v} [Fintype I] [DecidableEq I]
-    (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (i j : I) (τ : ℝ) (hPST : IsCellUniformPST W P i j τ) :
-    ∃ (𝒮 : ConsistentPartitionSequence I) (τfin : ℕ → ℝ),
-      Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-        (nhds P.quotient) ∧
-      Filter.Tendsto τfin Filter.atTop (nhds τ) ∧
-      ∀ᶠ n in Filter.atTop, IsPST_finite (𝒮.quotient n) i j (τfin n) := by
-  -- Immediate from the (⇒) direction of `cellUniformPST_iff_consistent_quotientPST`.
-  rcases (cellUniformPST_iff_consistent_quotientPST W P i j τ).1 hPST with
-    ⟨𝒮, τfin, hQ, hτ, hPST_eventually⟩
-  exact ⟨𝒮, τfin, hQ, hτ, hPST_eventually⟩
-
-/-- **Every graphon mixing time is a limit of finite mixing times.** -/
-theorem graphon_mixing_time_is_limit
-    {I : Type v} [Fintype I] [DecidableEq I]
-    (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
-    (i : I) (τ : ℝ) (hMix : IsCellUniformGraphonMixing W P i τ) :
-    ∃ (𝒮 : ConsistentPartitionSequence I) (τfin : ℕ → ℝ),
-      Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
-        (nhds P.quotient) ∧
-      Filter.Tendsto τfin Filter.atTop (nhds τ) ∧
-      ∀ᶠ n in Filter.atTop, IsUniformMixing_finite (𝒮.quotient n) i (τfin n) := by
-  rcases (cellUniformMixing_iff_consistent_quotientMixing W P i τ).1 hMix with
-    ⟨𝒮, τfin, hQ, hτ, hMix_eventually⟩
-  exact ⟨𝒮, τfin, hQ, hτ, hMix_eventually⟩
-
-/-! ### 5.2 Chiral graphon speedup (stated in the chiral file, not here).
-
-The analogous corollary for **chiral** mixing speedup —
-"every chiral graphon mixing speedup is the limit of finite chiral speedups along
-a consistent partition sequence approximating `(W, P)`" — would require importing
-`Graphplay/Dowsing/ChiralGraphon.lean`
-(`chiralGraphonMixing_iff_quotientChiralMixing`), creating an import cycle with
-`Graphon/Limit.lean → Graphon/PST.lean`.
-
-Rather than leave a vacuous `True`-stub here, the chiral corollary is **stated
-where it belongs** — in the chiral file, which already imports this module and so
-can consume `arises_from_consistent_sequence` and the mixing biconditional
-`cellUniformMixing_iff_consistent_quotientMixing` directly.  (Deleting the former
-`True`-placeholder: it formalized nothing.) -/
+There is **no faithful converse** of the form "graphon PST ⟹ eventual finite
+PST along the spine": perfect state transfer is **not an open condition**, so a
+limit graphon exhibiting cell-uniform PST does *not* force its finite
+approximants `𝒮.quotient n` to exhibit (raw-quotient) PST for large `n` — the
+amplitude can approach modulus one only in the limit.  (A would-be biconditional
+`IsCellUniformPST ↔ ∃ 𝒮, …` would therefore be false in the `⇒` direction; we do
+not state it.)  The honest one-directional content lives entirely in
+`pst_time_convergence` / `mixing_time_convergence`. -/
 
 /-! ## 6. Failure mode: graphons with no equitable partition
 
@@ -427,12 +332,13 @@ equitable partition has a Cauchy approximating sequence, and the
 forward theorem identifies its limit. -/
 theorem graphonEquitablePartition_is_cauchy_completion
     {I : Type v} [Fintype I] [DecidableEq I]
+    [Graphon.LovaszSzegedyLimit Ω μ I]
     (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) :
     -- Density side: there exists a consistent partition sequence whose
     -- finite quotient matrices form a Cauchy sequence (automatic by
     -- `quotient_cauchy`) and whose limit is `P.quotient` (reverse
     -- theorem).
-    ∃ 𝒮 : ConsistentPartitionSequence I,
+    ∃ 𝒮 : ConsistentPartitionSequence.{u, v} I,
       CauchySeq (fun n => 𝒮.quotient n) ∧
       Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
         (nhds P.quotient) := by
@@ -451,7 +357,7 @@ theorem graphonEquitablePartition_is_cauchy_completion
 | Reverse   | `(W, P) ⇒ 𝒮`                                           | `arises_from_consistent_sequence` (this file)   |
 | Rate      | cut-norm distance `≤ ε` at finite stage                | `stepFunction_approximation_rate` (this file)   |
 | Unique    | mod measure-preserving rearrangements                  | `unique_mod_mpr` (this file)                    |
-| Both      | cell-uniform PST ↔ eventual finite PST                  | `cellUniformPST_iff_consistent_quotientPST`     |
+| Fwd PST   | eventual finite PST ⟹ graphon PST (one-directional)    | `pst_time_convergence` (`Graphon/Limit.lean`)   |
 | Cat.      | `GraphonEquitablePartition = Cauchy(EquitablePartition_fin)` | `graphonEquitablePartition_is_cauchy_completion` |
 
 References (combined):

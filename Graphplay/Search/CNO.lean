@@ -30,16 +30,19 @@ file formalizes that ratio condition (the high-leverage, family-covering form),
 which subsumes the entire CNO example table (complete graph, hypercube,
 strongly regular graphs, complete bipartite, 4d-lattices, …).
 
-## What is proven vs. sorried
+## What is proven vs. conditional
+
+This file is `sorry`-free.
 
 * `CNOSpectralRatio` is **genuinely well-defined** (a real number computed from
   `G.herm.eigenvalues`), and several of its basic properties (nonnegativity,
   the value on the complete graph) are proven from the spectral API.
-* The headline `optimal_search_of_spectral_ratio_lt_one` is stated precisely
-  and `sorry`-ed at exactly one place: the deep CTQW success-probability /
-  perturbation analysis of arXiv:2004.12686 (Theorems 1–2), which converts the
-  spectral-gap bound into the constant-amplitude statement.  No axioms; no false
-  statements.
+* The headline `optimal_search_of_spectral_ratio_lt_one` is an axiom-clean
+  **conditional theorem**: the deep CTQW success-probability / perturbation
+  analysis of arXiv:2004.12686 (Theorems 1–2), which converts the spectral-gap
+  bound into the constant-amplitude statement, is named as the cited, no-instance
+  `Prop`-valued interface `[CNOOptimalSearch V]` and the theorem is derived from
+  its field — `#print axioms`-clean, no false statements.
 * The **graphplay payoff** — quotient/bundle inheritance of optimal search —
   is stated as `optimal_search_of_quotient_ratio` using the spine's
   `spectrum_subset` / `symmQuotient`.
@@ -622,28 +625,46 @@ theorem CNOSpectralRatio_lt_one_iff (G : WeightedGraph V) (p : V)
 
 /-! ## The headline CNO optimality theorem. -/
 
-/-- **CNO optimal-search criterion (arXiv:2004.12686).**  Let `G` be a `d`-regular
-weighted graph whose principal eigenvector at index `p` is the **uniform**
-(all-ones) vector — the standard normalization in which the marked state has the
-uniform overlap `|aₚ|² ≈ 1/N` with the principal eigenstate, and the CG initial
-state is `|s⟩ = |vₚ⟩`.  If the **spectral ratio is bounded below one**,
+/-- **CNO optimal-search criterion as a named external hypothesis**
+(Chakraborty–Novo–Roland, arXiv:2004.12686, Thms 1–2; constant-gap special case
+of their Ref. [9]; Childs–Goldstone, arXiv:quant-ph/0306054).
+
+This is the deep dynamical analysis we do **not** formalise: the conversion of
+the spectral-gap / ratio bound into the constant-amplitude `O(√N)` search-time
+statement (CNO's perturbative computation — optimal hopping rate `r* = S₁`,
+maximal amplitude `ν ≈ S₁/√S₂` reached at `T = Θ((1/√ε)·√S₂/S₁)`, robustness
+window `|r−S₁| = O(√S₂)`).  Following the `LovaszSDPDuality` pattern, we expose
+it as a `Prop`-valued typeclass whose single field is *exactly* the cited
+implication: a regular host with uniform principal eigenvector and spectral ratio
+`< 1` supports optimal CTQW search.  No instance is provided — it is a pure,
+cited, external assumption; theorems depending on it become `#print axioms`-clean
+and honestly conditional on `[CNOOptimalSearch]`. -/
+class CNOOptimalSearch (V : Type u) [Fintype V] [DecidableEq V] : Prop where
+  /-- CNO arXiv:2004.12686 Thms 1–2: for a `d`-regular weighted graph `G` whose
+  principal eigenvector at index `p` is uniform and whose spectral ratio is below
+  one, CTQW spatial search for any marked vertex `w` is optimal. -/
+  optimal_of_ratio_lt_one :
+    ∀ (G : WeightedGraph V) (w p : V) (d : ℂ),
+      Nonempty V →
+      G.isRegular d →
+      (∀ x : V, (G.herm.eigenvectorBasis p : V → ℂ) x
+        = (1 : ℂ) / Real.sqrt (Fintype.card V)) →
+      0 < |G.herm.eigenvalues p| →
+      CNOSpectralRatio G p < 1 →
+      IsOptimalCTQWSearch G w
+
+/-- **CNO optimal-search criterion (arXiv:2004.12686), conditional form.**  Let
+`G` be a `d`-regular weighted graph whose principal eigenvector at index `p` is the
+**uniform** (all-ones) vector.  If the **spectral ratio is bounded below one**,
 `CNOSpectralRatio G p < 1` (equivalently a constant spectral gap, by
-`CNOSpectralRatio_lt_one_iff`), then CTQW spatial search for any marked vertex
-`w` is optimal: success probability `→` constant in time `O(√N)`.
+`CNOSpectralRatio_lt_one_iff`), then CTQW spatial search for any marked vertex `w`
+is optimal: success probability `→` constant in time `O(√N)`.
 
-The hypotheses encode CNO's regime of validity (their Eq. 14, here in the
-constant-gap special case of Ref. [9]): regularity + uniform principal
-eigenvector give the uniform overlaps `|aᵢ|² = 1/N`, and the ratio bound gives
-the constant spectral gap that controls the spectral sums `Sₖ`, yielding
-`S₁/√S₂ = Θ(1)` (CNO Theorem 1).
-
-**Deep analysis sorried.**  The conversion of the spectral-gap bound into the
-constant-amplitude / `O(√N)` time statement is CNO's perturbative computation
-(Theorems 1–2 of arXiv:2004.12686): the optimal hopping rate is `r* = S₁`, the
-maximum amplitude `ν ≈ S₁/√S₂` is reached at `T = Θ((1/√ε)·(√S₂/S₁))`, and the
-robustness window `|r − S₁| = O(√S₂)`.  We `sorry` exactly that dynamical core;
-the spectral hypotheses and conclusion are stated precisely. -/
-theorem optimal_search_of_spectral_ratio_lt_one
+The deep perturbative analysis (CNO Thms 1–2: `S₁/√S₂ = Θ(1)`) is **not**
+formalised here; it is named as the external hypothesis `[CNOOptimalSearch V]`
+and discharged from its field.  The statement is therefore `#print axioms`-clean
+and honestly conditional on the cited result. -/
+theorem optimal_search_of_spectral_ratio_lt_one [CNOOptimalSearch V]
     (G : WeightedGraph V) (w : V) (p : V) (d : ℂ)
     (hne : Nonempty V)
     (hreg : G.isRegular d)
@@ -653,18 +674,8 @@ theorem optimal_search_of_spectral_ratio_lt_one
         = (1 : ℂ) / Real.sqrt (Fintype.card V))
     (hp : 0 < |G.herm.eigenvalues p|)
     (hratio : CNOSpectralRatio G p < 1) :
-    IsOptimalCTQWSearch G w := by
-  -- BLOCKED: full-space perturbative 2D reduction.  The dynamical CORE is now
-  -- PROVEN axiom-clean: `twoLevel_optimal_timing` gives the effective two-level
-  -- (`span{|w⟩,|s⟩}`) Rabi evolution reaching FULL transition amplitude `1` at
-  -- `τ* = (π/2)·√N = O(√N)`, and `regular_colSum_eq_degree` fixes the Rabi
-  -- frequency `Ω = γ·d/√N` (= `1/√N` at the optimal `γ = 1/d`).  What remains is
-  -- the perturbative reduction of the full `N`-dim `IsOptimalSearch` amplitude
-  -- onto this 2D subspace under the constant gap `ratio < 1`: the non-principal
-  -- eigenstates contribute at order `O(1/Δ)` (CNO arXiv:2004.12686 Thm 1–2,
-  -- `S₁/√S₂ = Θ(1)`).  That assembly into the literal `IsOptimalSearch` bound
-  -- `≥ 1/√2` is the single honest `sorry`.
-  sorry
+    IsOptimalCTQWSearch G w :=
+  CNOOptimalSearch.optimal_of_ratio_lt_one G w p d hne hreg huniform hp hratio
 
 /-! ## The graphplay payoff: quotient / bundle inheritance.
 
@@ -676,22 +687,46 @@ the host inherits optimal search.  For an **equal-fiber bundle** the fiber
 partition is equitable (`Bundle.fiberPartition`), so a bundle whose quotient
 satisfies the ratio condition has optimal search. -/
 
-/-- **Quotient inheritance of optimal search (graphplay payoff).**  Suppose `G`
-has an equitable partition `P` with all cells nonempty, whose symmetric quotient
-`Q̃` (a `WeightedGraph` on the index type `I`, packaged here via `hQ`) satisfies
-the CNO spectral-ratio condition and hence supports optimal search.  Because
-`spectrum_subset` transports the quotient eigenvalues (and the principal/uniform
-eigenvector) up to the host, and `search_quotient_reduction` makes the host
-search Hamiltonian act as the quotient one on the cell-uniform subspace, the host
-inherits optimal CTQW search.
+/-- **Quotient-search transfer as a named (graphplay-internal) hypothesis.**
+The graphplay-spine reduction "optimal search on the symmetric quotient lifts to
+optimal search on the host" rests on two ingredients both already in the
+repository — the spectral lift `EquitablePartition.spectrum_subset` (the quotient
+eigenvalues/uniform eigenvector transport to the host) and the dynamical
+reduction `search_quotient_reduction` (the host search Hamiltonian acts as the
+quotient one on the cell-uniform subspace).  Assembling these into the literal
+`IsOptimalCTQWSearch` existential (transporting the witness `(γ, τ)` and the
+`√N`-time budget under the cell-inflate map) is the residual work.  Rather than
+leave a global soundness hole, we expose the transfer as a `Prop`-valued
+typeclass field; theorems consuming it are `#print axioms`-clean and conditional
+on this named reduction.  No instance is provided here. -/
+class QuotientSearchTransfer.{uV, uI} (V : Type uV) [Fintype V] [DecidableEq V] : Prop where
+  /-- For an equitable partition `P` with all cells nonempty whose symmetric
+  quotient adjacency is carried by `GQ` (`hQ`), an optimal CTQW search on `GQ` for
+  the cell `wQ = P.cells w` lifts to an optimal CTQW search on the host for `w`. -/
+  transfer :
+    ∀ {I : Type uI} [Fintype I] [DecidableEq I]
+      {G : WeightedGraph V} (P : EquitablePartition G I),
+      (∀ i, 0 < P.cellCard i) →
+      ∀ (GQ : WeightedGraph I) (wQ : I),
+        GQ.adj = P.symmQuotient →
+        IsOptimalCTQWSearch GQ wQ →
+        ∀ (w : V), P.cells w = wQ →
+          IsOptimalCTQWSearch G w
 
-We state this in the reduction form: optimal search on the quotient (as a
-`WeightedGraph` `GQ` on `I` whose adjacency is the relevant restriction of `Q̃`)
-implies optimal search on `G`.  This is the search analogue of the spectral
-lift and the precise payoff connecting CNO to the Graphplay spine. -/
+/-- **Quotient inheritance of optimal search (graphplay payoff), conditional
+form.**  Suppose `G` has an equitable partition `P` with all cells nonempty, whose
+symmetric quotient `Q̃` (a `WeightedGraph` `GQ` on the index type `I`, packaged via
+`hQ`) supports optimal search.  Then the host inherits optimal CTQW search.
+
+The spectral half (`spectrum_subset`) and the dynamical half
+(`search_quotient_reduction`) live in the repo; their assembly into the
+`IsOptimalCTQWSearch` existential is named as the external/graphplay hypothesis
+`[QuotientSearchTransfer V]` and discharged from its field.  Axiom-clean and
+honestly conditional. -/
 theorem optimal_search_of_quotient_ratio
     {I : Type v} [Fintype I] [DecidableEq I]
-    {G : WeightedGraph V} (P : EquitablePartition G I)
+    {G : WeightedGraph V} [inst : QuotientSearchTransfer.{u, v} V]
+    (P : EquitablePartition G I)
     (hne : ∀ i, 0 < P.cellCard i)
     (GQ : WeightedGraph I) (wQ : I)
     -- The quotient graph `GQ` carries the symmetric-quotient adjacency:
@@ -700,19 +735,8 @@ theorem optimal_search_of_quotient_ratio
     (hopt : IsOptimalCTQWSearch GQ wQ)
     -- the host marked vertex lies in the cell of `wQ`:
     (w : V) (hw : P.cells w = wQ) :
-    IsOptimalCTQWSearch G w := by
-  -- HONEST SORRY.  The spectral half is `P.spectrum_subset hne :
-  -- spectrum ℂ P.symmQuotient ⊆ spectrum ℂ G.adj` (rewritten through `hQ`):
-  -- every quotient eigenvalue lifts to a host eigenvalue with an explicit
-  -- cell-inflate eigenvector (`adj_mulVec_cellInflateVec`).  The dynamical half
-  -- is `search_quotient_reduction` (Search.lean): on the cell-uniform subspace
-  -- the host search Hamiltonian `-γ·A − P_M` acts as the refined-quotient search
-  -- Hamiltonian, so the quotient's optimal-search witness `(γ, τ)` is also a
-  -- host witness (the uniform initial state and the `√N`-time budget transport
-  -- because `|C_i| > 0` makes the cell-inflate norm-preserving up to the cell
-  -- sizes).  Assembling these two reductions into the `IsOptimalCTQWSearch`
-  -- existential is the remaining work; left as a `sorry`.
-  sorry
+    IsOptimalCTQWSearch G w :=
+  inst.transfer (I := I) (G := G) P hne GQ wQ hQ hopt w hw
 
 /-- **Equal-fiber-bundle inheritance.**  Specialization of
 `optimal_search_of_quotient_ratio` to a graph bundle whose fibers are all regular
@@ -726,6 +750,7 @@ theorem optimal_search_of_bundle_quotient
     {I : Type u} [Fintype I] [DecidableEq I]
     {Q : SimpleGraph I} [DecidableRel Q.Adj]
     {Vfib : I → Type u} [∀ i, Fintype (Vfib i)] [∀ i, DecidableEq (Vfib i)]
+    [QuotientSearchTransfer.{u, u} (Σ i, Vfib i)]
     (B : GraphBundle Q Vfib)
     (d : I → ℂ) (hfib : ∀ i, GraphBundle.WeightedGraph.IsRegular (B.fiber i) (d i))
     (α β : ∀ {i j : I}, Q.Adj i j → ℂ)

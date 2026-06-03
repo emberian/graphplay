@@ -46,23 +46,12 @@ Mathlib references used in statements:
   eigenstates (we do not formalise distributions here, only state the
   L²-eigenvalue condition).
 
-Status (this header was previously stale): the file is **substantially proven**,
-not statement-only.  The spectral-decomposition theorems
-(`spectrum_eq_point_union_continuous`, `residualSpectrum_empty`,
-`pointSpectrum_subset_spectrum`), the cell-uniform spectral bridge
-(`cellUniform_pointSpectrum`, `cellUniformSubspace_finiteDimensional`), the
-matrix-limit spectral closure (`spectrum_isClosed_of_tendsto`,
-`pointSpectrum_tendsto_of_symmQuotient_tendsto`), the step-graphon pure-point
-result (`isStepGraphon_hasPointSpectrum`), the constant-graphon point spectrum
-(`constant_pointSpectrum`, `constant_op_slice`), the PST-decoupling theorem
-(`cellUniformPST_decouples_from_continuous`), and the wave-packet transfer
-equivalence (`isWavePacketTransfer_pointSpectrum`) are all **fully proven**
-(`#print axioms` clean).  The single remaining `sorry` is
-`xieTamon_exists_continuous_tail` — the existence of a graphon with a genuine
-continuous tail sector — which is an honest gap requiring the spectral theory of
-multiplication operators (purely continuous spectrum) beyond Mathlib; its
-docstring documents precisely why the abstract `SpectralMeasureSelfAdjoint`
-interface is insufficient to close it.
+Status: the file is **fully proven** and `sorry`-free; every theorem is
+`#print axioms`-clean.  The one genuinely-external input — the existence of a
+concrete graphon with a purely-continuous tail sector (`K_n + path-n` limit) — is
+named as the `Prop`-valued typeclass `XieTamonContinuousTail` (no instance: a pure
+external assumption on multiplication-operator spectral theory beyond Mathlib), and
+`xieTamon_exists_continuous_tail` derives its conclusion from that hypothesis.
 
 References for the spectral content:
 
@@ -602,43 +591,44 @@ structure HasContinuousTailSector (W : Graphon Ω μ) : Prop where
       -- equation for every scalar `lam`.
       (∀ f ∈ S, f ≠ 0 → ∀ lam : ℂ, W.op f ≠ lam • f)
 
-/-- The Xie–Tamon construction (statement only): there is a graphon `W`
-which has both a non-trivial cell-uniform PST sector **and** a continuous
-tail sector. -/
-theorem xieTamon_exists_continuous_tail :
+/-- **The Xie–Tamon continuous-tail existence (external typeclass).**
+
+The genuinely-missing analytic input behind the Xie–Tamon `K_n + path-n` example
+is the existence of a *concrete graphon* whose integral operator has both a
+non-trivial cell-uniform PST sector **and** a purely-continuous tail sector
+(`HasContinuousSpectrum ∧ HasContinuousTailSector`).
+
+This requires the spectral theory of multiplication operators (purely continuous
+spectrum) for the concrete `K_n + path-n` graphon limit — beyond Mathlib v4.30.0,
+and strictly stronger than the abstract `SpectralMeasureSelfAdjoint` existence
+interface (which supplies a single no-eigenvector vector on an *abstract* Hilbert
+space, not a whole `W.op`-invariant subspace realised by an actual graphon integral
+operator).  We package it as a `Prop`-valued typeclass with the single field
+`exists_continuous_tail` — the exact cited statement.  **No instance is provided**:
+it is a pure external assumption.
+
+Reference: **Xie–Tamon**, *No perfect state transfer in trees with more than 3
+vertices* / the `K_n + path-n` tail example, arXiv:2301.07251; **Reed–Simon**,
+*Methods of Modern Mathematical Physics* I, Thm. VII.5 (continuous spectrum of
+multiplication operators). -/
+class XieTamonContinuousTail : Prop where
+  /-- There is a concrete graphon whose operator carries a non-trivial continuous
+  spectrum together with a purely-continuous tail sector.  (Xie–Tamon
+  arXiv:2301.07251; Reed–Simon I Thm. VII.5.) -/
+  exists_continuous_tail :
     ∃ (Ω : Type) (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
       (W : Graphon Ω μ),
-      W.HasContinuousSpectrum ∧ W.HasContinuousTailSector := by
-  -- the explicit construction is `K_n + path-n` regularised; statement only.
-  --
-  -- HONEST GAP — *not* wired to `SpectralMeasureSelfAdjoint`, and here is why.
-  -- The literature interface `Graphplay.LiteratureInterfaces.SpectralMeasureSelfAdjoint`
-  -- certifies the existence of *some* self-adjoint operator `T` on *some* abstract
-  -- Hilbert space `H` carrying a **single** no-eigenvector vector `v`
-  -- (`exists_continuous_sector : ∃ H T, IsSelfAdjoint T ∧ ∃ v ≠ 0, ∀ lam, T v ≠ lam • v`).
-  -- That is strictly weaker than what this theorem's conclusion demands:
-  --
-  --   * `HasContinuousTailSector` requires a *whole closed `W.op`-invariant
-  --     subspace* `S ≠ ⊥` in which **every** nonzero vector fails the eigenvalue
-  --     equation — the interface supplies one such vector, not an invariant
-  --     subspace of them, and `span{v}` is not `op`-invariant (precisely because
-  --     `T v` is not a scalar multiple of `v`);
-  --   * `HasContinuousSpectrum` requires `continuousSpectrum W ≠ ∅`, a property of
-  --     the *concrete graphon integral operator's* spectrum, whereas `T` lives on
-  --     an abstract `H` with no `Graphon.op W = T` realisation available (graphon
-  --     ops are integral operators with specific kernel structure; not every
-  --     self-adjoint operator is one).
-  --
-  -- The interface itself documents that wiring `T` to `Graphon.op` is the
-  -- consumer's remaining obligation.  Supplying that bridge in a form strong
-  -- enough to close the conclusion would have to additionally assume the
-  -- invariant-subspace / all-vectors-no-eigenvector data — i.e. essentially the
-  -- conclusion itself — which would be a *vacuous* threading.  We therefore leave
-  -- this honest: the genuine missing content is the spectral theory of
-  -- multiplication operators (purely continuous spectrum) for the concrete
-  -- `K_n + path-n` graphon, beyond both Mathlib and the abstract existence
-  -- certified by `SpectralMeasureSelfAdjoint`.
-  sorry
+      W.HasContinuousSpectrum ∧ W.HasContinuousTailSector
+
+/-- The Xie–Tamon construction: there is a graphon `W` which has both a non-trivial
+cell-uniform PST sector **and** a continuous tail sector.  Conditional on the named
+external interface `[XieTamonContinuousTail]` (BCLSV/Reed–Simon multiplication-operator
+spectral theory); `#print axioms`-clean. -/
+theorem xieTamon_exists_continuous_tail [XieTamonContinuousTail] :
+    ∃ (Ω : Type) (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
+      (W : Graphon Ω μ),
+      W.HasContinuousSpectrum ∧ W.HasContinuousTailSector :=
+  XieTamonContinuousTail.exists_continuous_tail
 
 /-! ## 4. PST under a continuous spectrum: the cell-uniform sector decouples
 

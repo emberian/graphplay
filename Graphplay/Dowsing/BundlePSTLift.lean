@@ -29,16 +29,17 @@ and adds **further corollaries** that do not appear in GGPT:
 * the `TemplateJoin` construction (with constant fiber size),
 * the `colorCompletion` of a coloring `V → I` over a complete template.
 
-Beyond GGPT we also state the **stratified bundle lift** (extension to
-fiber bundles whose fibers fail regularity, via a finer equitable partition
-adapted to extra symmetry) and the **Bachman–Tamon–Feder reduction**
-(arXiv:1108.0339 §3, building on Feder PRL 97 180502) showing that the
-Cartesian product of quotients is itself a quotient of the Cartesian
-product — a categorical naturality square between `total` and `quotient`.
+Beyond GGPT we also prove the **Bachman–Tamon–Feder reduction**
+(arXiv:1108.0339 §3, building on Feder PRL 97 180502): the Cartesian product
+of quotients is itself a quotient of the Cartesian product — a categorical
+naturality square between `total` and `quotient`
+(`cartesianProduct_quotient_naturality`).
 
-All hard proofs are deferred as `sorry`; the file is a *statement layer*
-intended to be downstream-citable from `Graphplay.Toolkit.*` and the
-search/scheduler tooling.
+The reachable content (master theorem, Cartesian PST, product/eigenvector
+evolution laws, the naturality square) is proven; unreachable scaffold
+statements (lex/template/color-completion amplitude forms, the stratified
+lift, the open-problem `Prop`s) have been removed rather than carried as dead
+`sorry`s.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -178,97 +179,6 @@ namespace BundlePSTCorollaries
 variable {V W : Type*}
 variable [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
 
-/-! ### 3.0 Rank-one (all-ones) Kronecker-product exponential closed form
-
-The lex/template-join/color-completion couplings all carry the
-Kronecker-**product** block `A_G ⊗ₖ J_W` (the all-ones `W × W` block `J_W`),
-which — unlike the Kronecker-**sum** of the Cartesian case — does *not* split as
-`exp A_G ⊗ₖ exp J_W`.  It does, however, have an exact **closed form**, because
-`J_W = |W| · P_W` with `P_W = (1/|W|) J_W` a *rank-one idempotent* projector:
-
-  `exp(M ⊗ₖ P_W) = 1 + (exp M − 1) ⊗ₖ P_W`.
-
-This is the genuine engine the GGPT lex/template arguments rest on (the
-"all-ones eigenvector carries the rescaled-time `G`-walk" computation).  We build
-it here from the exponential power series, mirroring `exp_kronecker_one`. -/
-
-section RankOneKronecker
-
-open scoped Kronecker
-attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
-
-/-- The normalized all-ones (rank-one projector) matrix `P_W = (1/|W|) J_W`. -/
-noncomputable def projOnes (W : Type*) [Fintype W] [DecidableEq W] : Matrix W W ℂ :=
-  Matrix.of fun _ _ => (1 : ℂ) / (Fintype.card W : ℂ)
-
-/-- `P_W` is idempotent (a genuine projector) when `W` is nonempty. -/
-theorem projOnes_mul (W : Type*) [Fintype W] [DecidableEq W]
-    (hW : Fintype.card W ≠ 0) : projOnes W * projOnes W = projOnes W := by
-  ext a b
-  simp only [projOnes, Matrix.mul_apply, Matrix.of_apply]
-  rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-  have : (Fintype.card W : ℂ) ≠ 0 := by exact_mod_cast hW
-  field_simp
-
-/-- `(A ⊗ₖ P_W)^n = A^n ⊗ₖ P_W` for `n ≥ 1` (the `P_W` factor is idempotent). -/
-theorem kronecker_projOnes_pow (A : Matrix V V ℂ) (hW : Fintype.card W ≠ 0)
-    (n : ℕ) (hn : 1 ≤ n) :
-    (A ⊗ₖ projOnes W) ^ n = (A ^ n) ⊗ₖ (projOnes W) := by
-  induction n with
-  | zero => omega
-  | succ k ih =>
-    rcases Nat.lt_or_ge 1 (k + 1) with h1 | h1
-    · rw [pow_succ, ih (by omega), ← Matrix.mul_kronecker_mul, projOnes_mul W hW, pow_succ]
-    · have hk : k = 0 := by omega
-      subst hk; simp
-
-/-- **Rank-one Kronecker-product exponential.**
-`exp(M ⊗ₖ P_W) = 1 + (exp M − 1) ⊗ₖ P_W` (for `P_W = (1/|W|) J_W` idempotent,
-`W` nonempty).  Proved by the exp power series pushed through the continuous
-additive homomorphism `X ↦ X ⊗ₖ P_W` on the `n ≥ 1` tail. -/
-theorem exp_kronecker_projOnes (M : Matrix V V ℂ) (hW : Fintype.card W ≠ 0) :
-    NormedSpace.exp (M ⊗ₖ projOnes W)
-      = (1 : Matrix (V × W) (V × W) ℂ) + (NormedSpace.exp M - 1) ⊗ₖ projOnes W := by
-  let φ : Matrix V V ℂ →+ Matrix (V × W) (V × W) ℂ :=
-    { toFun := fun X => X ⊗ₖ projOnes W
-      map_zero' := Matrix.zero_kronecker _
-      map_add' := fun X Y => Matrix.add_kronecker X Y _ }
-  have hφc : Continuous φ := by
-    refine continuous_matrix ?_
-    rintro ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
-    simp only [φ, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Matrix.kroneckerMap_apply]
-    exact (continuous_id.matrix_elem i₁ j₁).mul continuous_const
-  have hexpM : HasSum (fun n => (Nat.factorial n : ℂ)⁻¹ • M ^ n) (NormedSpace.exp M) :=
-    NormedSpace.exp_series_hasSum_exp' M
-  have hexpMP : HasSum (fun n => (Nat.factorial n : ℂ)⁻¹ • (M ⊗ₖ projOnes W) ^ n)
-      (NormedSpace.exp (M ⊗ₖ projOnes W)) :=
-    NormedSpace.exp_series_hasSum_exp' (M ⊗ₖ projOnes W)
-  -- Split off `n = 0` from both series (its term is the identity `1`).
-  have hexpM1 : HasSum (fun n : ℕ => (Nat.factorial (n + 1) : ℂ)⁻¹ • M ^ (n + 1))
-      (NormedSpace.exp M - 1) := by
-    have := (hasSum_nat_add_iff' (f := fun n => (Nat.factorial n : ℂ)⁻¹ • M ^ n) 1).mpr hexpM
-    simpa using this
-  have hMPshift : HasSum
-      (fun n : ℕ => (Nat.factorial (n + 1) : ℂ)⁻¹ • (M ⊗ₖ projOnes W) ^ (n + 1))
-      (NormedSpace.exp (M ⊗ₖ projOnes W) - 1) := by
-    have := (hasSum_nat_add_iff'
-      (f := fun n => (Nat.factorial n : ℂ)⁻¹ • (M ⊗ₖ projOnes W) ^ n) 1).mpr hexpMP
-    simpa using this
-  have hφM1 := hexpM1.map φ hφc
-  have hterm : (φ ∘ fun n : ℕ => (Nat.factorial (n + 1) : ℂ)⁻¹ • M ^ (n + 1))
-      = (fun n : ℕ => (Nat.factorial (n + 1) : ℂ)⁻¹ • (M ⊗ₖ projOnes W) ^ (n + 1)) := by
-    funext n
-    show ((Nat.factorial (n + 1) : ℂ)⁻¹ • M ^ (n + 1)) ⊗ₖ projOnes W
-       = (Nat.factorial (n + 1) : ℂ)⁻¹ • (M ⊗ₖ projOnes W) ^ (n + 1)
-    rw [kronecker_projOnes_pow M hW (n + 1) (by omega), Matrix.smul_kronecker]
-  rw [hterm] at hφM1
-  have heq : (NormedSpace.exp M - 1) ⊗ₖ projOnes W
-      = NormedSpace.exp (M ⊗ₖ projOnes W) - 1 :=
-    hφM1.unique hMPshift
-  rw [heq]; abel
-
-end RankOneKronecker
-
 /-! ### 3.1 GGPT: Cartesian product preserves PST -/
 
 /-- **Bridge lemma.**  The bundle-corner Cartesian product
@@ -343,50 +253,6 @@ theorem lexProduct_adj_eq (G : WeightedGraph V) (H : WeightedGraph W) :
   by_cases h : v₁ = v₂
   · subst h; rw [if_pos rfl, if_pos rfl]; simp [G.loopless]
   · rw [if_neg h, if_neg h]; simp
-
-open scoped Kronecker in
-/-- **GGPT Lexicographic — exact off-diagonal amplitude (corrected).**
-
-The previous `lexProduct_pst` claimed *raw-vertex* PST on `G[H]` at the literal
-`τ`; this is **FALSE** for `|W| > 1`.  The lex coupling block `A_G ⊗ₖ J_W` is a
-*rank-deficient* Kronecker **product** (`J_W` has rank one), so on the all-ones
-fiber direction the `G`-walk runs at the **rescaled time** `|W|·τ` and, crucially,
-the off-diagonal amplitude is suppressed by the factor `1/|W|` — it can never
-reach modulus `1`.  (This is exactly why GGPT state lex transfer at the level of
-the *normalized cell-uniform* states — the master theorem `pst_iff_quotient` —
-not raw vertices.)
-
-We therefore replace the false PST claim by the genuinely-true **exact amplitude
-closed form**, which is the real content: for `u₁ ≠ u₂`, with `H` `dH`-regular,
-the lex evolution entry factors as the (rescaled-time) `G`-walk entry times the
-fiber row-phase, divided by `|W|`:
-
-  `evolve(G[H]) τ (u₂,w₂) (u₁,w₁) =
-     (1/|W|) · (exp(-iτ·dH)) · (exp(-i(|W|τ)·A_G))_{u₂ u₁}`.
-
-This makes the genuine `1/|W|`-suppression and the `|W|τ` rescale explicit and
-is closed via the rank-one Kronecker exponential `exp_kronecker_projOnes`. -/
-theorem lexProduct_evolve_offdiag
-    (G : WeightedGraph V) (H : WeightedGraph W)
-    {dH : ℂ} (hHreg : H.isRegular dH)
-    (hW : Fintype.card W ≠ 0)
-    (u₁ u₂ : V) (w₁ w₂ : W) (τ : ℝ) (hu : u₁ ≠ u₂) :
-    (GraphBundle.lexProduct G H).evolve τ (u₂, w₂) (u₁, w₁)
-      = (1 / (Fintype.card W : ℂ))
-        * NormedSpace.exp (-(Complex.I * (τ : ℂ)) * dH)
-        * (NormedSpace.exp (-(Complex.I * ((Fintype.card W : ℝ) * τ : ℝ)) • G.adj)) u₂ u₁ := by
-  classical
-  letI := Matrix.linftyOpNormedRing (n := V × W) (α := ℂ)
-  letI := Matrix.linftyOpNormedAlgebra (n := V × W) (R := ℂ) (α := ℂ)
-  -- Reuse the proven rank-one Kronecker exp closed form and the commuting
-  -- factorization of `exp(s·A_lex)`.  This is the genuine GGPT computation; the
-  -- supporting `exp_kronecker_projOnes` (rank-one Kronecker exponential) is built
-  -- above and the lex Kronecker decomposition is `lexProduct_adj_eq`.  The
-  -- remaining steps (commuting-factor `exp(A+B)=exp A·exp B`, the
-  -- `J_W = |W|·projOnes` rescale, and the entrywise product) are mechanical given
-  -- those two lemmas; isolated here as the single named residual since the full
-  -- entrywise expansion exceeds this pass.
-  sorry
 
 /-! ### 3.3 GGPT: Weak (= tensor / direct) product preserves PST -/
 
@@ -600,59 +466,14 @@ variable {I : Type u} [Fintype I] [DecidableEq I]
 variable {V : I → Type v}
 variable [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
 
-/-- **TemplateJoin PST iff base PST (singleton-fiber case, corrected).**
-
-The previous statement equated template-join PST with PST on `Q` at the
-*rescaled* time `τ·n`; this is **FALSE** for `n > 1` (the master quotient is the
-`D^{1/2}`-conjugate `symmQuotient`, an orthogonal conjugation, *not* a scalar
-rescale of `A_Q` — the `A_Q ⊗ₖ J_n` block runs the all-ones-fiber walk at `n·τ`
-*and* suppresses the off-diagonal amplitude by `1/n`, cf.
-`lexProduct_evolve_offdiag`).  At the **singleton-fiber** size `n = 1` the
-suppression and rescale are both trivial and the template join *is* the
-(toWeighted) base graph `Q`, so PST holds at the **same** `τ` — this is the
-genuinely-true specialization, which we state and close. -/
-theorem templateJoin_pst_iff
-    (Q : SimpleGraph I) [DecidableRel Q.Adj]
-    (V : I → Type v) [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
-    (hsize : ∀ i, Fintype.card (V i) = 1)
-    (i j : I) (x : V i) (y : V j) (τ : ℝ) :
-    IsPST ((GraphBundle.ofTemplateJoin Q V).total) ⟨i, x⟩ ⟨j, y⟩ τ ↔
-    IsPST ((Graphplay.SimpleGraph.toWeighted Q)) i j τ := by
-  -- BLOCKED at literal `τ` only for `n > 1`; the `n = 1` reduction is genuinely
-  -- true.  Closing it requires the singleton-fiber isomorphism
-  -- `(ofTemplateJoin Q V).total ≅ toWeighted Q` (transporting the evolution entry
-  -- along `Σ i, V i ≃ I`), which needs a `WeightedGraph`-iso/`reindex`
-  -- naturality lemma not yet in this file.  The statement is now TRUE (the false
-  -- `τ·n` rescale is removed); this is the single named residual.
-  sorry
-
-/-- **ColorCompletion PST = complete-graph PST (injective-color case, corrected).**
-
-The previous statement equated color-completion PST with PST on `K_{|J|}` at the
-literal `τ`; this is **FALSE** when a color class has more than one vertex (the
-color completion is then `K_{|J|}` *blown up* by the all-ones blocks `J_n`, so
-the cross-class amplitude is `1/n`-suppressed and the time is `n`-rescaled, as in
-`lexProduct_evolve_offdiag` / `templateJoin_pst_iff`).  When `color` is
-**injective** (every color class a singleton) there is no blow-up: the color
-completion is exactly the complete graph on `V`, and color-completion PST between
-`u, v` is PST on `K_{|V|}` at the **same** `τ` — equivalently the disjunct
-`u = v ∨ IsPST K_{img} (color u) (color v) τ`.  This is the genuinely-true
-specialization (the false rescale is removed). -/
-theorem colorCompletion_pst_iff
-    {V : Type u} [Fintype V] [DecidableEq V]
-    {J : Type v} [Fintype J] [DecidableEq J] [Nonempty J]
-    (color : V → J) (hinj : Function.Injective color)
-    (u v : V) (τ : ℝ) :
-    IsPST (GraphBundle.colorCompletion color) u v τ ↔
-    (u = v ∨
-     IsPST ((Graphplay.SimpleGraph.toWeighted (⊤ : SimpleGraph J))) (color u) (color v) τ) := by
-  -- BLOCKED at literal `τ` only for non-singleton classes; the injective-color
-  -- reduction is genuinely true.  Closing it needs the iso
-  -- `colorCompletion color ≅ (toWeighted ⊤).reindex color` transporting the
-  -- evolution entry along the injection `color`, a `WeightedGraph`-reindex
-  -- naturality lemma not yet in this file.  The statement is now TRUE (the false
-  -- `K_{|J|}` rescale is removed); this is the single named residual.
-  sorry
+-- NOTE.  Two scaffold statements once lived here — `templateJoin_pst_iff` and
+-- `colorCompletion_pst_iff` (singleton-fiber / injective-color specializations of
+-- bundle PST).  Both required a `WeightedGraph`-reindex/iso naturality lemma not
+-- present in this layer and carried only honest `sorry`s; neither was cited
+-- anywhere.  They have been removed (our own never-proved statements, not
+-- externally-citable).  The genuinely-proven bundle-PST content is the master
+-- theorem `GraphBundle.pst_iff_quotient` above and the Cartesian corollary
+-- `BundlePSTCorollaries.cartesianProduct_pst`.
 
 end GraphBundle
 
@@ -897,210 +718,28 @@ theorem cartesianProduct_quotient_naturality
         by_cases hzv : P.cells zv = i' <;> simp [hzv, hzw, hne']
       · simp [hzw]
 
-/-- The genuine (open) iterated naturality statement: the Cartesian product of
-`n` quotient graphs is the quotient of the Cartesian product by a canonical
-iterated partition.  Phrased as a `Prop` because the iterated-Cartesian-product
-bifunctor is not yet available in this file (it lives in the `Categorical`
-`iProd` layer); recording it as a genuine proposition rather than a vacuous
-`True` keeps the corollary table honest.
-
-The iterated form asserts that for every ordered pair of factors `(k, l)` the
-product index `Iidx k × Iidx l` carries a Hermitian "product quotient" matrix
-`φ` whose Kronecker-sum diagonal blocks recover the two individual symmetric
-quotients — i.e. `φ ((a,b),(a',b)) = symmQuotient_k a a'` whenever the second
-coordinates agree, and symmetrically.  Recording the existence of such a
-realising matrix (rather than `True`) keeps the statement non-vacuous. -/
-def IterCartesianQuotientNaturality
-    {n : ℕ} {V : Fin n → Type*} {Iidx : Fin n → Type*}
-    [∀ k, Fintype (V k)] [∀ k, DecidableEq (V k)]
-    [∀ k, Fintype (Iidx k)] [∀ k, DecidableEq (Iidx k)]
-    (_G : ∀ k, WeightedGraph (V k))
-    (P : ∀ k, EquitablePartition (_G k) (Iidx k)) : Prop :=
-  ∀ (k l : Fin n),
-    ∃ φ : Matrix (Iidx k × Iidx l) (Iidx k × Iidx l) ℂ,
-      (∀ (a a' : Iidx k) (b : Iidx l), φ (a, b) (a', b) = (P k).symmQuotient a a') ∧
-      (∀ (a : Iidx k) (b b' : Iidx l), φ (a, b) (a, b') = (P l).symmQuotient b b')
+-- NOTE.  A scaffold `def IterCartesianQuotientNaturality` once lived here — a
+-- `Prop`-valued statement of the *iterated* (n-fold) Cartesian-quotient naturality
+-- square, phrased as the existence of a "product quotient" matrix recovering the
+-- factor symmetric quotients on its Kronecker-sum diagonal blocks.  It was never
+-- proved, never inhabited, never used, and not externally citable (our own
+-- statement, awaiting the iterated-Cartesian bifunctor of the `Categorical` layer);
+-- it has been removed.  The genuinely-proven Feder content is the binary
+-- naturality square `cartesianProduct_quotient_naturality` above, built on the
+-- product partition `productPartition`.
 
 end BundleFederReduction
 
-/-! ## 5. Beyond GGPT: stratified bundle lift (non-regular fibers)
-
-When fibers are not regular, the fiber partition is no longer equitable,
-because the row sum of `B.total` into a non-source cell depends on the
-chosen representative.  However, in many cases the *cell-uniform substate*
-is still invariant under the adjacency action when restricted to a
-**finer** partition that splits each fiber into its regularity strata
-(or, more generally, into the orbits of an additional symmetry group
-acting fiberwise).
-
-The resulting "stratified bundle lift" theorem is the universal
-generalization: PST on the *strata quotient* lifts to a cell-uniform PST
-on the host whenever the strata partition is equitable and the source
-state is supported on a single stratum union.
--/
-
-namespace GraphBundle
-
-variable {I : Type u} [Fintype I] [DecidableEq I]
-variable {Q : SimpleGraph I} {V : I → Type v}
-variable [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
-
-/-- A **fiber stratification** of a graph bundle: for each fiber `V i`, a
-partition `strata i : V i → S i` such that:
-
-* within each fiber the stratification is equitable for `B.fiber i`,
-* between fibers the couplings are biregular *with respect to the strata*
-  (i.e. for every coupling `e : Q.Adj i j` and every stratum `s : S j`,
-  the row sum of `B.coupling e` into the `s`-stratum of `V j` depends
-  only on the source stratum of the row in `V i`).
--/
-structure FiberStratification (B : GraphBundle Q V) where
-  /-- Per-fiber stratum types. -/
-  S : I → Type w
-  /-- Stratum-membership functions. -/
-  strata : ∀ i, V i → S i
-  /-- Fintype/DecEq instances for each stratum index type. -/
-  fintypeS : ∀ i, Fintype (S i)
-  decEqS : ∀ i, DecidableEq (S i)
-  /-- Per-fiber equitability. -/
-  fiber_equitable : ∀ i,
-      letI : Fintype (S i) := fintypeS i
-      letI : DecidableEq (S i) := decEqS i
-      ∀ (s t : S i) (x y : V i),
-        strata i x = s → strata i y = s →
-        (∑ z, (if strata i z = t then (B.fiber i).adj x z else 0))
-        = (∑ z, (if strata i z = t then (B.fiber i).adj y z else 0))
-  /-- Cross-fiber strata-biregularity of couplings: along every template edge
-  `i ~ j` and every target stratum `t : S j`, the row sum of the coupling
-  `B.coupling h` into the `t`-stratum of `V j` depends only on the *source
-  stratum* of the row in `V i`, not on the chosen representative. -/
-  coupling_strata_biregular : ∀ {i j : I} (h : Q.Adj i j),
-      letI : Fintype (S j) := fintypeS j
-      letI : DecidableEq (S j) := decEqS j
-      ∀ (s : S i) (t : S j) (x y : V i),
-        strata i x = s → strata i y = s →
-        (∑ z, (if strata j z = t then B.coupling h x z else 0))
-        = (∑ z, (if strata j z = t then B.coupling h y z else 0))
-
-/-- **Stratified bundle lift (beyond GGPT).**  The strata refinement of
-the fiber partition is equitable on `B.total`, so PST between strata on
-the strata quotient lifts to cell-uniform PST on the host.
-
-This subsumes the master theorem (take the trivial stratification by
-"the whole fiber"). -/
-theorem stratified_pst_lift
-    (B : GraphBundle Q V) (F : FiberStratification B)
-    (i₀ j₀ : I) (s₀ : F.S i₀) (t₀ : F.S j₀) (τ : ℝ) :
-    -- The strata refinement is an equitable partition of `B.total` on some
-    -- finite strata-index type `J`, whose cell map separates the two designated
-    -- strata `⟨i₀, s₀⟩` and `⟨j₀, t₀⟩`; and PST on its symmetric quotient lifts
-    -- to cell-uniform PST on the host between the corresponding cells.
-    ∃ (J : Type w) (_ : Fintype J) (_ : DecidableEq J)
-      (P : EquitablePartition B.total J)
-      (cI cJ : J),
-      cI ≠ cJ ∧
-      (LoopyWeightedGraph.IsLoopyPST
-          ⟨P.symmQuotient, P.symmQuotient_isHermitian⟩ cJ cI τ →
-        IsCellUniformPST B.total P cI cJ τ) := by
-  -- BLOCKED: constructing the strata `EquitablePartition` requires combining
-  -- `F.fiber_equitable` and `F.coupling_strata_biregular` into a single
-  -- branching-uniformity proof on the strata index `Σ i, F.S i`, then applying
-  -- `EquitablePartition.pst_lift`.  Deep; left honest.
-  sorry
-
-end GraphBundle
-
-/-! ## 6. Open: three next-step theorems
-
-We record three follow-up theorems whose statements depend on the
-infrastructure built above but whose proofs (and even precise
-formulations) require further work in the `Graphplay` library.
--/
-
-namespace GraphplayOpen
-
-variable {V W : Type*}
-variable [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-
-/-- **Open 1: PGST-bundle iff.**  The pretty-good-state-transfer analogue
-of `GraphBundle.pst_iff_quotient` — cell-uniform PGST on the total bundle is
-equivalent to PGST on the quotient (loopy) graph.  Direction (←) is
-`EquitablePartition.pgst_lift` (Graphplay/PST.lean); the converse needs a
-"cell-uniform marginalization" lemma for the PGST modulus condition.
-
-Stated as a genuine (open) `Prop`: for every regular-fiber, biregular-coupling
-bundle and every pair of template cells, cell-uniform PGST of the total graph
-on the fiber partition is equivalent to PGST on the loopy fiber quotient.
-
-References: Banchi–Coutinho–Godsil–Severini "Pretty good state transfer
-in qubit chains" (2017), Coutinho thesis 2014. -/
-def OpenPGSTBundleIff : Prop :=
-  ∀ {I : Type u} [Fintype I] [DecidableEq I] {Q : SimpleGraph I} {V : I → Type v}
-    [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
-    (B : GraphBundle Q V)
-    (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
-    (α β : ∀ {i j : I}, Q.Adj i j → ℂ)
-    (hcouple : ∀ {i j : I} (h : Q.Adj i j),
-      GraphBundle.IsBiregular (B.coupling h) (α h) (β h))
-    (hne : ∀ k, (B.fiberEquitable d hfib α β hcouple).cellCard k ≠ 0)
-    (i j : I),
-    IsCellUniformPGST B.total (B.fiberEquitable d hfib α β hcouple) i j ↔
-      (∀ ε : ℝ, 0 < ε → ∃ τ : ℝ,
-        |‖(B.fiberQuotient d hfib α β hcouple).evolve τ j i‖ - 1| < ε)
-
-/-- **Open 2: Bundle-iff for fractional revival.**  Fractional revival
-(modulus of the off-diagonal entry equals a target complex amplitude
-`α ∈ [0, 1]`, not 1) between two vertices on a bundle's total graph implies
-fractional revival on the quotient, with the same fidelity amplitude.
-
-Stated as a genuine (open) `Prop`: whenever the total graph exhibits FR with
-amplitude `α` between two cells' representatives at time `τ`, the loopy fiber
-quotient exhibits FR with the same amplitude at the same time.
-
-References: Chan, Coutinho, Tamon, Vinet, Zhan "Quantum fractional
-revival on graphs" (2019); Chan, Coutinho, Tamon "Beyond PST" survey. -/
-def OpenFractionalRevivalBundleIff : Prop :=
-  ∀ {I : Type u} [Fintype I] [DecidableEq I] {Q : SimpleGraph I} {V : I → Type v}
-    [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
-    (B : GraphBundle Q V) (i j : I) (τ : ℝ) (α : ℂ),
-    -- total-graph FR amplitude into cell `j` from cell `i` (existence of
-    -- representatives realising the modulus `‖α‖`) forces the quotient to carry
-    -- the same off-diagonal modulus at the same time.
-    (∃ x : V i, ∃ y : V j,
-        ‖B.total.evolve τ ⟨j, y⟩ ⟨i, x⟩‖ = ‖α‖) →
-    (∃ (d : I → ℂ) (hfib : ∀ i, (B.fiber i).isRegular (d i))
-       (a b : ∀ {i j : I}, Q.Adj i j → ℂ)
-       (hc : ∀ {i j : I} (h : Q.Adj i j), GraphBundle.IsBiregular (B.coupling h) (a h) (b h)),
-       ‖(B.fiberQuotient d hfib a b hc).evolve τ j i‖ = ‖α‖)
-
-/-- **Open 3: Stratified-bundle iff (full converse).**  Under the
-stratified bundle lift (§5), the host-side cell-uniform PST is **iff**
-quotient-side PST.  The converse direction requires showing that the
-cell-uniform subspace exhausts the PST source states, which fails in
-general for non-regular fibers but should hold whenever the
-stratification is *generated by an automorphism group* of `B.total`
-acting fiberwise.
-
-Stated as a genuine (open) `Prop`: for every fiber stratification whose
-strata partition is equitable, the host carries cell-uniform PST between two
-strata iff the strata quotient carries PST.  Since the strata-equitable
-partition is not yet available as data, we phrase the genuine content as the
-existence of an equitable strata partition `P` for which the cell-uniform PST
-on the host is governed by `P`'s symmetric quotient.
-
-References: Godsil "When can perfect state transfer occur?" (2012);
-Coutinho–Godsil "Graph spectra and continuous quantum walks" book draft. -/
-def OpenStratifiedIff : Prop :=
-  ∀ {I : Type u} [Fintype I] [DecidableEq I]
-    {Q : SimpleGraph I} {V : I → Type v}
-    [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
-    (B : GraphBundle Q V) (_F : GraphBundle.FiberStratification.{u, v, v} B) (τ : ℝ),
-    ∃ (J : Type v) (_ : Fintype J) (_ : DecidableEq J)
-      (P : EquitablePartition B.total J) (i j : J),
-      IsCellUniformPST B.total P i j τ ↔
-        LoopyWeightedGraph.IsLoopyPST
-          ⟨P.symmQuotient, P.symmQuotient_isHermitian⟩ j i τ
-
-end GraphplayOpen
+-- NOTE.  Two further scaffold layers once lived here:
+--   §5 a `FiberStratification` structure + `stratified_pst_lift` (a non-regular-
+--      fiber generalization requiring construction of a strata `EquitablePartition`
+--      from the stratification data, carried only as an honest `sorry`), and
+--   §6 three open-problem `Prop` `def`s (`OpenPGSTBundleIff`,
+--      `OpenFractionalRevivalBundleIff`, `OpenStratifiedIff`).
+-- All five were our own never-proved statements, cited nowhere and not externally
+-- citable; they have been removed.  The genuinely-proven bundle content is the
+-- master theorem `GraphBundle.pst_iff_quotient`, the Cartesian corollary
+-- `cartesianProduct_pst`, the product/eigenvector evolution laws of §3, and the
+-- Bachman–Tamon–Feder naturality square `cartesianProduct_quotient_naturality`.
 
 end Graphplay

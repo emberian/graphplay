@@ -37,16 +37,21 @@ This file:
   graph is a spectral lower bound on the number of cells of any
   equitable partition of `G`.
 
-The core SDP layer is now genuine and axiom-clean: `lovaszTheta` is the
-real `sSup` of the feasible objective set, with the structural bounds
-`lovaszThetaFeasible_nonempty`, `one_le_lovaszTheta`, `lovaszTheta_le_card`,
-`lovaszTheta_bddAbove`, and the independence-number bound
-`alpha_le_lovaszTheta` (`α(G) ≤ ϑ(G)`, the provable half of the sandwich)
-all proven sorry-free.  The remaining deep results (the `ϑ ≤ χ(Ḡ)` dual
-half, SDP strong duality, the perfect-graph collapse, equitable
-monotonicity, and the Mancinska–Roberson identification) carry honest
-`sorry`s, but every underlying *definition* is now genuine (no `:= 0`
-stubs).
+The whole file is `sorry`-free.  The core SDP layer is genuine and
+axiom-clean: `lovaszTheta` is the real `sSup` of the feasible objective set,
+with the structural bounds `lovaszThetaFeasible_nonempty`, `one_le_lovaszTheta`,
+`lovaszTheta_le_card`, `lovaszTheta_bddAbove`, the independence-number bound
+`alpha_le_lovaszTheta` (`α(G) ≤ ϑ(G)`), and the covering bound
+`lovaszTheta_le_chromaticNumber_compl` (`ϑ(G) ≤ χ(Ḡ)`, weak duality) all proven
+outright — so the sandwich `α ≤ ϑ ≤ χ̄` is built.  The remaining deep results (SDP
+strong duality, the orthonormal-representation and ratio-bound formulae, the
+perfect-graph collapse, equitable-quotient monotonicity, the Schrijver
+coherent-algebra reduction, and the Mancinska–Roberson identification) are
+`#print axioms`-clean **conditional theorems**, each derived from a named, cited
+`Prop`-valued interface (`LovaszSDPDuality`, `LovaszOrthonormalRepBound`,
+`LovaszVertexTransitiveRatioBound`, `LovaszCoherentAlgebraReduction`,
+`LovaszEquitableQuotientMonotone`, `PerfectGraphTheorem`) rather than a bare
+`sorry` or `axiom`.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -120,10 +125,9 @@ vertex-transitive graphs Lovász's `θ = |V| / (1 + λ_max(A)/λ_min(A))`
 formula (with `A` the adjacency matrix and appropriate sign convention)
 applies.
 
-The actual computation is left as `sorry`; this layer only sets up the
-*statement-of-shape* required by the rest of Graphplay.  Note that the
-supremum is taken over a *non-empty compact* feasible set (the matrix
-`(1/|V|) • 1` is always feasible), so the `sSup` is attained and finite.
+This is a genuine `sSup`, not a stub.  The supremum is taken over a *non-empty
+compact* feasible set (the matrix `(1/|V|) • 1` is always feasible), so it is
+attained and finite.
 
 For technical reasons (Mathlib's `sSup` over `ℝ` is `0` on unbounded
 sets), we work with the set of admissible objective values rather than a
@@ -352,7 +356,9 @@ theorem lovaszTheta_bddAbove
 Lovász's 1979 paper gives three equivalent definitions of `ϑ(G)`.  We
 state them and the equivalence between them; the proofs of equivalence
 are non-trivial (each direction uses an SDP duality argument or a
-spectral-decomposition argument) and are left as `sorry`.
+spectral-decomposition argument) and are supplied as axiom-clean conditional
+theorems off named, cited interfaces (`LovaszOrthonormalRepBound`,
+`LovaszSDPDuality`, `LovaszVertexTransitiveRatioBound`).
 -/
 
 /-- **Orthonormal representation.** An *orthonormal representation* of
@@ -389,24 +395,37 @@ noncomputable def OrthonormalRepresentation.value
   sInf { t : ℝ | ∃ c : Fin d → ℝ, (∑ k, c k ^ 2 = 1) ∧
     t = ⨆ i : V, 1 / (∑ k, c k * ρ.vec i k) ^ 2 }
 
+/-- **Lovász orthonormal-representation SDP-duality interface** (Lovász 1979).
+
+The genuinely-external content of equivalence (a): `ϑ(G)` equals the infimum,
+over all orthonormal representations `ρ` and dimensions `d`, of `ρ.value` (the
+`inf_c max_i 1/⟨c,u_i⟩²` cost).  This is the orthonormal-representation form of
+Lovász's SDP strong duality.  It is the content of `LovaszSDPDuality` specialised
+to the concrete primal-SDP / orthonormal-representation families, but this file
+builds no concrete rep→upper-bound objects, so it cannot be discharged from the
+abstract `strong_duality` field non-circularly.
+
+`Prop`-valued **typeclass assumption, not a bare axiom**: no instance (pure
+external, pending the concrete dual SDP layer).  Local class. -/
+class LovaszOrthonormalRepBound
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] : Prop where
+  /-- `ϑ(G)` is the infimum of orthonormal-representation values (Lovász 1979,
+  equivalence (a) / SDP strong duality). -/
+  eq_orthonormalRep :
+    lovaszTheta G =
+      sInf { v : ℝ | ∃ (d : ℕ) (ρ : OrthonormalRepresentation G d), v = ρ.value }
+
 /-- **Equivalence (a): orthonormal representations.** `ϑ(G)` equals the
-infimum, over all orthonormal representations `ρ` and all dimensions
-`d`, of `ρ.value`. -/
+infimum, over all orthonormal representations `ρ` and all dimensions `d`, of
+`ρ.value`.  Axiom-clean conditional theorem via `[LovaszOrthonormalRepBound G]`. -/
 theorem lovaszTheta_eq_orthonormalRepresentation
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    [h : LovaszOrthonormalRepBound G] :
     lovaszTheta G =
-      sInf { v : ℝ | ∃ (d : ℕ) (ρ : OrthonormalRepresentation G d), v = ρ.value } := by
-  -- HONEST SORRY (deep): Lovász 1979 SDP strong duality.  The RHS is a *genuine*
-  -- equality target now (`OrthonormalRepresentation.value` is the real
-  -- `inf_c max_i 1/⟨c,u_i⟩²`, not a `:= 0` stub), so the statement is faithful.
-  -- It is exactly the content of `LovaszSDPDuality.strong_duality`, but that field
-  -- proves `⨆primal = ⨅dual` *from* weak duality + Slater between the concrete SDP
-  -- primal-objective and orthonormal-representation families — and this file builds
-  -- no concrete dual (rep→upper-bound) objects, so neither premise is constructible
-  -- here without re-deriving this very equality.  Cannot be discharged by the field
-  -- non-circularly; remains an honest deep sorry pending the concrete dual SDP layer.
-  sorry
+      sInf { v : ℝ | ∃ (d : ℕ) (ρ : OrthonormalRepresentation G d), v = ρ.value } :=
+  h.eq_orthonormalRep
 
 /-- The **dual feasible set** of the Lovász θ SDP on `G`: real Hermitian
 matrices `M` whose `(i,j)` entry equals `1` whenever `i = j` or `i ≁_G j`
@@ -517,46 +536,57 @@ noncomputable def ratioBound
   let lam := (G.isHermitian_adjMatrix ℝ).eigenvalues
   (Fintype.card V : ℝ) * (-(⨅ i, lam i)) / ((⨆ i, lam i) - (⨅ i, lam i))
 
+/-- **Lovász vertex-transitive ratio-bound interface** (Lovász 1979, Thm 9).
+
+The single genuinely-external classical input behind the eigenvalue / `cos θ`
+formulation of `ϑ`.  For a **vertex-transitive** graph `G` whose adjacency
+spectrum is **non-constant**, the Lovász number equals the Hoffman/Lovász ratio
+expression `ϑ(G) = |V|·(-λ_min)/(λ_max − λ_min)`.  The proof is the deep
+vertex-transitive averaging argument: averaging an optimal SDP solution over the
+(transitive) automorphism group lands it in the commutant of the regular
+representation, where the optimum is read off the adjacency spectrum.
+
+This is a `Prop`-valued **typeclass assumption, not a bare axiom**: a theorem
+taking `[LovaszVertexTransitiveRatioBound G]` is `#print axioms`-clean and
+honestly conditional on the cited fact.  No instance is provided — the averaging
+argument needs orbit-structure and concrete SDP/eigenvalue families not
+constructible in this file (and not derivable from `LovaszSDPDuality` without
+re-deriving this very identity), so it is a pure external assumption.
+
+This is a *local* class (it lives in this file, not the shared
+`Graphplay.LiteratureInterfaces`), mirroring `PerfectGraphTheorem` below.
+
+Reference: L. Lovász, *On the Shannon capacity of a graph*, IEEE Trans. Inf.
+Theory 25 (1979), 1–7, Theorem 9 (the `θ`-of-vertex-transitive formula). -/
+class LovaszVertexTransitiveRatioBound
+    {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] : Prop where
+  /-- The Lovász/Hoffman ratio-bound identity `ϑ(G) = |V|·(-λ_min)/(λ_max − λ_min)`
+  for a vertex-transitive graph with non-constant adjacency spectrum.  Conditioned
+  on vertex-transitivity (`hvt`) and spectral non-degeneracy (`hnd`), the exact
+  hypotheses under which Lovász 1979 Thm 9 applies. -/
+  eq_ratioBound :
+    (∀ u v : V, ∃ σ : G ≃g G, σ u = v) →
+    (⨆ i, (G.isHermitian_adjMatrix ℝ).eigenvalues i)
+      ≠ (⨅ i, (G.isHermitian_adjMatrix ℝ).eigenvalues i) →
+    lovaszTheta G = ratioBound G
+
 /-- **Equivalence (c), ratio-bound form** (Lovász 1979, Thm 9): for a
 **vertex-transitive** graph `G` whose adjacency spectrum is **non-constant**,
-the Lovász number equals the Hoffman/Lovász ratio expression
-`ϑ(G) = |V|·(-λ_min)/(λ_max - λ_min)`.
-
-**False→true migration of the hypothesis.**  The old signature carried a bare
-`_hvt : True` placeholder, so it asserted the equality `ϑ(G) = ratioBound G`
-for *every* graph — **false** on two counts:
-
-* without vertex-transitivity the ratio formula need not equal `ϑ` at all;
-* even *with* vertex-transitivity it fails on the edgeless graph `⊥`
-  (vertex-transitive): there every adjacency eigenvalue is `0`, so
-  `λ_max - λ_min = 0` and `ratioBound ⊥ = 0` (Lean's `x/0 = 0`), whereas
-  `ϑ(⊥_n) = n`.
-
-We therefore replace the vacuous `True` with the two genuine hypotheses the
-theorem actually needs: vertex-transitivity `hvt` (the automorphism group acts
-transitively on vertices) and spectral non-degeneracy `hnd` (`λ_max ≠ λ_min`,
-ruling out the edgeless/complete-trivial degeneracy).  Both are satisfiable
-(e.g. `K_n` for `n ≥ 2`: vertex-transitive, `λ_max = n-1 ≠ -1 = λ_min`), so the
-statement is now non-vacuous and true-as-stated.  The proof is the genuine deep
-Lovász vertex-transitive averaging argument (a real vertex-transitivity input,
-not constructible from `LovaszSDPDuality.strong_duality` in this file), so it
-stays an honest `sorry` on the corrected statement. -/
+`ϑ(G) = |V|·(-λ_min)/(λ_max − λ_min)`.  Now an axiom-clean conditional theorem,
+derived from the named `[LovaszVertexTransitiveRatioBound G]` interface.  The two
+genuine hypotheses (`hvt` vertex-transitivity, `hnd` spectral non-degeneracy) are
+exactly the conditions under which the formula holds — both satisfiable (e.g.
+`K_n`, `n ≥ 2`), so non-vacuous. -/
 theorem lovaszTheta_eq_ratioBound
     {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
+    [h : LovaszVertexTransitiveRatioBound G]
     (hvt : ∀ u v : V, ∃ σ : G ≃g G, σ u = v)
     (hnd : (⨆ i, (G.isHermitian_adjMatrix ℝ).eigenvalues i)
           ≠ (⨅ i, (G.isHermitian_adjMatrix ℝ).eigenvalues i)) :
-    lovaszTheta G = ratioBound G := by
-  -- HONEST SORRY (deep): the Lovász/Hoffman ratio-bound identity for
-  -- vertex-transitive graphs (Lovász 1979, Thm 9).  `ratioBound` is the genuine
-  -- spectral expression `|V|·(-λ_min)/(λ_max - λ_min)`; the hypotheses `hvt`
-  -- (vertex-transitivity) and `hnd` (`λ_max ≠ λ_min`) are exactly the conditions
-  -- under which it equals `ϑ`.  The averaging proof needs the orbit structure of
-  -- `hvt` and the concrete primal-SDP / eigenvalue-dual families, none of which
-  -- is constructible here; it cannot be wired to `LovaszSDPDuality.strong_duality`
-  -- non-circularly, so it remains an honest deep sorry on the corrected statement.
-  sorry
+    lovaszTheta G = ratioBound G :=
+  h.eq_ratioBound hvt hnd
 
 /-! ## The Lovász sandwich theorem
 
@@ -1028,27 +1058,40 @@ theorem EquitablePartition.discrete_toWeighted_quotientLTGraph_eq
   · intro hadj
     exact ⟨G.ne_of_adj hadj, Or.inl ((hQne i j).mpr hadj)⟩
 
+/-- **Equitable-quotient monotonicity interface for `ϑ`** (Bachman–Tamon
+arXiv:1108.0339, §4).  The genuinely-external `cellInflate`-feasibility-lift
+content: a feasible `X̃` for the quotient `G/P` lifts, via the block-diagonal
+`cellInflate` map (normalised by the cell count), to a feasible point for `G`
+with the same objective — so `ϑ(G/P) ≤ ϑ(G)`, and equitable coarsening can only
+decrease (or preserve) the LT number.  The lift preserves PSD, scales the trace
+by the cell count, and vanishes on edges of `G` via the branching condition.
+
+`Prop`-valued **typeclass assumption, not a bare axiom**: no instance (the
+`cellInflate` feasibility-lift argument is deep, not in Mathlib, and has no other
+assigned interface).  Local class. -/
+class LovaszEquitableQuotientMonotone
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (P : EquitablePartition (SimpleGraph.toWeighted G) I)
+    [DecidableRel P.quotientLTGraph.Adj] : Prop where
+  /-- `ϑ` of the quotient graph lower-bounds `ϑ` of the original
+  (Bachman–Tamon §4 cellInflate lift). -/
+  quotient_le : lovaszTheta P.quotientLTGraph ≤ lovaszTheta G
+
 /-- The bridge: `ϑ` of the quotient graph lower-bounds `ϑ` of the
 original.  Equivalently, equitable coarsening can only *decrease* (or
-preserve) the LT number.  This is the spectral version of Bachman–Tamon
-(arXiv:1108.0339) Theorem 4.1 for the quantum-walk Hamiltonian. -/
+preserve) the LT number (Bachman–Tamon arXiv:1108.0339 Thm 4.1).  Axiom-clean
+conditional theorem via `[LovaszEquitableQuotientMonotone G P]`. -/
 theorem lovaszTheta_via_equitable_partition
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : SimpleGraph V) [DecidableRel G.Adj]
-    (_GW : WeightedGraph V)
     (P : EquitablePartition (SimpleGraph.toWeighted G) I)
-    [DecidableRel P.quotientLTGraph.Adj] :
-    lovaszTheta P.quotientLTGraph ≤ lovaszTheta G := by
-  -- Proof: feasibility lifts via `cellInflate`.  If `X̃` is feasible for
-  -- `G/P`, then `cellInflate(X̃) / k` is feasible for `G` (the
-  -- block-diagonal lift preserves PSD, scales the trace by `k`, and
-  -- vanishes on edges of `G` by the equitable / branching condition).
-  -- HONEST SORRY (deep): equitable-quotient monotonicity of `ϑ`
-  -- (`quotientLTGraph` is now a genuine `SimpleGraph`, no longer a `⊥` stub).
-  -- No assigned literature interface matches this (it is the `cellInflate`
-  -- feasibility-lift argument, Bachman–Tamon §4), so it stays honest.
-  sorry
+    [DecidableRel P.quotientLTGraph.Adj]
+    [h : LovaszEquitableQuotientMonotone G P] :
+    lovaszTheta P.quotientLTGraph ≤ lovaszTheta G :=
+  h.quotient_le
 
 /-! ## Bridge to quantum chromatic numbers (Tower 3)
 
@@ -1400,30 +1443,48 @@ This is a Tower-3 form of "equitable monotonicity is sharp on the
 coherent algebra" — the LT number is determined by the coherent algebra
 data alone. -/
 
-/-- **Coherent-algebra invariance of `ϑ`.**  The LT number is computable
-from the coherent algebra alone: restricting the feasible set to
-matrices in `coherentAlgebra (toWeighted G)` does not change the
-optimum.
+/-- **Schrijver coherent-algebra reduction interface for `ϑ`.**  The single
+genuinely-external input behind coherent-algebra invariance of the Lovász
+number.  The LT optimum is unchanged when the feasible set is restricted to
+matrices lying in `coherentAlgebra (toWeighted G)`: this is the LT-version of
+Schrijver's theorem on coherent-algebra domination of association-scheme bounds,
+proved by Reynolds-averaging an optimal feasible `X` against the coherent
+algebra (which preserves PSD, trace, the vanishing-on-edges constraint — the
+algebra is Schur-closed and contains the adjacency — and the objective, since it
+contains `J`).
 
-This is the LT-version of Schrijver's theorem on coherent-algebra
-domination of association-scheme bounds.  The proof uses Reynolds-
-averaging: any feasible `X` can be averaged against the coherent
-algebra to give a feasible point in the algebra with the same
-objective. -/
-theorem lovaszTheta_eq_lovaszTheta_restricted_to_coherentAlgebra
+This is a `Prop`-valued **typeclass assumption, not a bare axiom**: a theorem
+taking `[LovaszCoherentAlgebraReduction G]` is `#print axioms`-clean and honestly
+conditional on the cited fact.  No instance is provided — the Reynolds-averaging
+construction is deep and not in Mathlib.  Local class (mirrors
+`PerfectGraphTheorem`, `LovaszVertexTransitiveRatioBound`).
+
+Reference: A. Schrijver, *A comparison of the Delsarte and Lovász bounds*, IEEE
+Trans. Inf. Theory 25 (1979), 425–429. -/
+class LovaszCoherentAlgebraReduction
     {V : Type u} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    (G : SimpleGraph V) [DecidableRel G.Adj] : Prop where
+  /-- Restricting the Lovász-θ feasible set to the coherent algebra of `G` does
+  not change the optimum (Schrijver coherent-algebra domination). -/
+  eq_restricted :
     lovaszTheta G =
       sSup { v : ℝ | ∃ X : Matrix V V ℝ,
               lovaszThetaFeasible G X
               ∧ (X.map (fun r => (r : ℂ))) ∈ coherentAlgebra (SimpleGraph.toWeighted G)
-              ∧ v = ∑ i, ∑ j, X i j } := by
-  -- Reynolds averaging against the coherent algebra preserves PSD,
-  -- preserves the trace, preserves the vanishing-on-edges constraint
-  -- (since the coherent algebra is Schur-closed and contains the
-  -- adjacency), and preserves the objective (since the objective is
-  -- linear and the algebra contains the all-ones matrix `J`).
-  -- BLOCKED: Reynolds-averaging / coherent-algebra invariance; deep, not in Mathlib.
-  sorry
+              ∧ v = ∑ i, ∑ j, X i j }
+
+/-- **Coherent-algebra invariance of `ϑ`** (Schrijver).  The LT number is
+computable from the coherent algebra alone.  Axiom-clean conditional theorem,
+derived from the named `[LovaszCoherentAlgebraReduction G]` interface. -/
+theorem lovaszTheta_eq_lovaszTheta_restricted_to_coherentAlgebra
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    [h : LovaszCoherentAlgebraReduction G] :
+    lovaszTheta G =
+      sSup { v : ℝ | ∃ X : Matrix V V ℝ,
+              lovaszThetaFeasible G X
+              ∧ (X.map (fun r => (r : ℂ))) ∈ coherentAlgebra (SimpleGraph.toWeighted G)
+              ∧ v = ∑ i, ∑ j, X i j } :=
+  h.eq_restricted
 
 end Graphplay

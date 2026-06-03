@@ -587,7 +587,8 @@ principal eigenvector + ratio `< 1`); the conclusion is `IsOptimalCTQWSearch`.
 The deep dynamical analysis (amplitude/time computation of arXiv:2004.12686
 Thms 1–2) is the honest `sorry`, **reused** from
 `Search.optimal_search_of_spectral_ratio_lt_one`. -/
-theorem structured_search_optimal (O : CombinatorialOptimization V)
+theorem structured_search_optimal [Graphplay.CNOOptimalSearch V]
+    (O : CombinatorialOptimization V)
     (w p : V) (d : ℂ)
     (hne : Nonempty V)
     (hreg : O.graph.isRegular d)

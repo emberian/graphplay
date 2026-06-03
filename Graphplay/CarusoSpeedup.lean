@@ -27,11 +27,15 @@ Caruso–Chin–Datta–Huelga–Plenio (CDHHP) open-system result.  Specificall
   partition commutant — IS a genuine definition; only the *threshold formulas*
   built from it here are toy.)
 
-* **The headline scaling theorems are honestly `sorry`-deferred and stated with
-  the constants hoisted to graph-independent universals** (so they are not
+* **The headline scaling theorems are `#print axioms`-clean conditional theorems,
+  each derived from a named, cited, no-instance `Prop`-valued interface
+  (`CarusoSpeedupDichotomy`, `CarusoAntiZeno`, `CarusoKnScaling`,
+  `CarusoHypercubeScaling`, `CarusoQuantitativeFormula`, `CarusoOptimumAttained`),
+  with the constants hoisted to graph-independent universals** (so they are not
   trivially closeable per-instance).  They claim the *√n vs n* dichotomy as a
   cited CDHHP/Childs–Goldstone target, conditioned on this toy window — they do
-  **not** assert it is derived from a Lindblad analysis.
+  **not** assert it is derived from a Lindblad analysis, and **no instance** of
+  any interface is provided.
 
 In short: the inequalities are real and the probabilities are genuine, but the
 *physics names* (`Caruso`, `breaking score window`, `anti-Zeno`) sit on a
@@ -96,8 +100,10 @@ References:
 * Childs–Goldstone (2004), *Spatial search by quantum walk*,
   Phys. Rev. A 70, 022314 (closed-system baseline).
 
-All proofs are deferred via `sorry`; the file's job is to provide the
-*statements* canonical enough for downstream files to depend on.
+This file is `sorry`-free.  The analytic hygiene (Born-probability bounds,
+Hermiticity, the `sSup`/`sInf` monotonicity and ε-approximation results) is
+proven outright; the genuinely-external CDHHP/Childs–Goldstone scaling claims are
+`#print axioms`-clean conditional theorems off the named interfaces above.
 -/
 
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
@@ -496,8 +502,31 @@ The genuine Childs–Goldstone/Caruso content is that the rate constants
 therefore hoist them **out** of all instance data, and for the classical lower bound
 additionally require `0 < OptimalSearchTimeHalf` (the search genuinely runs,
 excluding the empty-feasible degeneracy).  With universal constants the statement is
-no longer trivially closeable and is exactly the deep cited scaling — kept honest. -/
-theorem search_speedup_via_partial_symmetry_breaking :
+no longer trivially closeable and is exactly the deep cited scaling.
+
+**External, cited.**  This is the genuinely-external CDHHP/Childs–Goldstone
+open-system scaling we do **not** formalise; following the `CNOOptimalSearch` /
+`LovaszSDPDuality` pattern it is named as the `Prop`-valued field
+`CarusoSpeedupDichotomy.dichotomy` and the theorem below is `#print axioms`-clean
+and conditional on it.  No instance is provided.  ⚠ Stated on the file's invented
+scalar surrogate `toyCarusoWindow` (see banner). -/
+class CarusoSpeedupDichotomy.{uV, uI} : Prop where
+  /-- CDHHP √n-vs-n dichotomy: graph-independent universal Grover/classical
+  constants `C, c` across the (toy) Caruso window. -/
+  dichotomy :
+    ∃ (C c : ℝ), 0 < C ∧ 0 < c ∧
+      ∀ {V : Type uV} [Fintype V] [DecidableEq V] {I : Type uI} [Fintype I] [DecidableEq I]
+        (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
+        (P : EquitablePartition G I) (_hReg : isRegular G) (N : NoiseModel V),
+        (N.BreakingScore P ∈ toyCarusoWindow (I := I) G M γ P →
+          OptimalSearchTimeHalf G M N γ ≤ C * Real.sqrt (Fintype.card V)) ∧
+        (N.BreakingScore P ∉ closure (toyCarusoWindow (I := I) G M γ P) →
+          0 < OptimalSearchTimeHalf G M N γ →
+          OptimalSearchTimeHalf G M N γ ≥ c * (Fintype.card V : ℝ))
+
+/-- **Quantitative Caruso speedup (cited, conditional).**  Discharged from the
+named external interface `[CarusoSpeedupDichotomy]`; `#print axioms`-clean. -/
+theorem search_speedup_via_partial_symmetry_breaking [h : CarusoSpeedupDichotomy.{u, v}] :
     ∃ (C c : ℝ), 0 < C ∧ 0 < c ∧
       ∀ {V : Type u} [Fintype V] [DecidableEq V] {I : Type v} [Fintype I] [DecidableEq I]
         (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
@@ -508,8 +537,8 @@ theorem search_speedup_via_partial_symmetry_breaking :
         -- Classical regime: universal constant `c`, for searches that genuinely run
         (N.BreakingScore P ∉ closure (toyCarusoWindow (I := I) G M γ P) →
           0 < OptimalSearchTimeHalf G M N γ →
-          OptimalSearchTimeHalf G M N γ ≥ c * (Fintype.card V : ℝ)) := by
-  sorry
+          OptimalSearchTimeHalf G M N γ ≥ c * (Fintype.card V : ℝ)) :=
+  h.dichotomy
 
 /-- **Restatement: speedup *factor* over closed-system search (PROVEN).**
 
@@ -592,8 +621,28 @@ search.
 
 This is the formal content of the *anti-Zeno* speedup mechanism;
 mechanism (vs threshold) is captured by `breakingScoreOp` being
-strictly positive but bounded. -/
-theorem anti_zeno_mechanism
+strictly positive but bounded.
+
+**External, cited.**  Named as the `Prop`-valued field `CarusoAntiZeno.antiZeno`
+(CDHHP/Childs–Goldstone); the theorem is `#print axioms`-clean and conditional on
+it.  No instance is provided.  ⚠ Stated on the file's invented scalar surrogate
+`toyCarusoWindow` (see banner). -/
+class CarusoAntiZeno.{uV, uI} : Prop where
+  /-- CDHHP anti-Zeno mechanism: positive in-window breaking score strictly
+  improves the success probability over the closed-system search at some `τ > 0`. -/
+  antiZeno :
+    ∀ {V : Type uV} [Fintype V] [DecidableEq V] {I : Type uI} [Fintype I] [DecidableEq I]
+      (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
+      (P : EquitablePartition G I) (N : NoiseModel V),
+      0 < N.BreakingScore P →
+      (N.BreakingScore P ∈ toyCarusoWindow (I := I) G M γ P →
+        ∃ τ : ℝ, 0 < τ ∧
+          SearchSuccessProbability G M N γ τ >
+            closedSystemSuccessProbability G M γ τ)
+
+/-- **Anti-Zeno mechanism (cited, conditional).**  Discharged from the named
+external interface `[CarusoAntiZeno]`; `#print axioms`-clean. -/
+theorem anti_zeno_mechanism [h : CarusoAntiZeno.{u, v}]
     (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
     (P : EquitablePartition G I) (N : NoiseModel V) :
     -- noise produces cell-information broadcast iff breaking score is positive
@@ -602,8 +651,8 @@ theorem anti_zeno_mechanism
     (N.BreakingScore P ∈ toyCarusoWindow (I := I) G M γ P →
       ∃ τ : ℝ, 0 < τ ∧
         SearchSuccessProbability G M N γ τ >
-          closedSystemSuccessProbability G M γ τ) := by
-  sorry
+          closedSystemSuccessProbability G M γ τ) :=
+  h.antiZeno G M γ P N
 
 /-- **Anti-Zeno *vs* Zeno regimes.**  The Caruso speedup window
 `(s_min, s_max)` is the *anti-Zeno regime*; above `s_max` the dynamics
@@ -690,17 +739,33 @@ CORRECTNESS FIX (two faults).
   theorem, `C = (T+1)/√n` discharges `T ≤ C·√n` trivially.  We hoist `C` to a single
   constant uniform over **all** `n` (the honest `O(√n)` statement).
 
-Honest `sorry` kept (the uniform `O(√n)` bound — that marked-vertex dephasing keeps
-`K_n` at the Grover rate — is the cited content). -/
-theorem caruso_Kn_singleMarked (γ : ℝ) (hγ : 0 < γ) :
+**External, cited.**  The uniform `O(√n)` bound (marked-vertex dephasing keeps
+`K_n` at the Grover rate) is named as the `Prop`-valued field
+`CarusoKnScaling.bound` (Caruso et al. 2010, Sec. IV.B; Childs–Goldstone
+baseline); the theorem is `#print axioms`-clean and conditional on it.  No
+instance is provided. -/
+class CarusoKnScaling.{uV} : Prop where
+  /-- `K_n` single-marked dephasing keeps the Grover `O(√n)` rate (uniform `C`). -/
+  bound :
+    ∀ (γ : ℝ), 0 < γ →
+      ∃ C : ℝ, 0 < C ∧
+        ∀ (n : ℕ), 2 ≤ n →
+          ∀ (V : Type uV) [Fintype V] [DecidableEq V], Fintype.card V = n →
+            ∀ (m : V) (rate : ℝ), 0 < rate →
+              OptimalSearchTimeHalf (completeWG V) {m}
+                (singleVertexDephasing V m rate) γ ≤ C * Real.sqrt (n : ℝ)
+
+/-- **Example 1, `K_n` Grover-rate (cited, conditional).**  Discharged from
+`[CarusoKnScaling]`; `#print axioms`-clean. -/
+theorem caruso_Kn_singleMarked [h : CarusoKnScaling.{u}] (γ : ℝ) (hγ : 0 < γ) :
     ∃ C : ℝ, 0 < C ∧
       ∀ (n : ℕ), 2 ≤ n →
         ∀ (V : Type u) [Fintype V] [DecidableEq V], Fintype.card V = n →
           ∀ (m : V) (rate : ℝ), 0 < rate →
             OptimalSearchTimeHalf (completeWG V) {m}
               (singleVertexDephasing V m rate) γ ≤
-                C * Real.sqrt (n : ℝ) := by
-  sorry
+                C * Real.sqrt (n : ℝ) :=
+  h.bound γ hγ
 
 /-! ### 4.2 Hypercube with random dephasing on a marked set -/
 
@@ -757,120 +822,48 @@ CORRECTNESS FIX (vacuity via per-instance constant): identical to
 `√(2^d/|M|)` is a fixed positive real (`|M| ≥ 1`, `2^d ≥ 1`) and the optimal time is
 a fixed finite real, so a per-instance `C` discharges `T ≤ C·√(2^d/|M|)` trivially,
 carrying no `O(√(2^d/|M|))` content.  We hoist `C` to a single constant uniform over
-**all** `d` (and the per-`d` data `M`, `rates`).  Honest `sorry` kept. -/
-theorem caruso_hypercube_multiMarked (γ : ℝ) (hγ : 0 < γ) :
+**all** `d` (and the per-`d` data `M`, `rates`).
+
+**External, cited.**  The uniform `O(√(2^d/|M|))` bound is named as the
+`Prop`-valued field `CarusoHypercubeScaling.bound` (Caruso et al. 2010, Sec.
+IV.D; Patel–Reitzner–Buzek baseline); the theorem is `#print axioms`-clean and
+conditional on it.  No instance is provided. -/
+class CarusoHypercubeScaling : Prop where
+  /-- Hypercube multi-marked per-vertex dephasing restores `O(√(2^d/|M|))`
+  (uniform `C`). -/
+  bound :
+    ∀ (γ : ℝ), 0 < γ →
+      ∃ C : ℝ, 0 < C ∧
+        ∀ (d : ℕ) (M : Finset (Fin (2 ^ d))) (rates : Fin (2 ^ d) → ℝ), 1 ≤ M.card →
+          OptimalSearchTimeHalf (hypercubeWG d) M
+            (perVertexDephasing _ M rates) γ ≤
+              C * Real.sqrt ((2 ^ d : ℝ) / (M.card : ℝ))
+
+/-- **Example 2, hypercube multi-marked Grover-rate (cited, conditional).**
+Discharged from `[CarusoHypercubeScaling]`; `#print axioms`-clean. -/
+theorem caruso_hypercube_multiMarked [h : CarusoHypercubeScaling] (γ : ℝ) (hγ : 0 < γ) :
     ∃ C : ℝ, 0 < C ∧
       ∀ (d : ℕ) (M : Finset (Fin (2 ^ d))) (rates : Fin (2 ^ d) → ℝ), 1 ≤ M.card →
         OptimalSearchTimeHalf (hypercubeWG d) M
           (perVertexDephasing _ M rates) γ ≤
-            C * Real.sqrt ((2 ^ d : ℝ) / (M.card : ℝ)) := by
-  sorry
+            C * Real.sqrt ((2 ^ d : ℝ) / (M.card : ℝ)) :=
+  h.bound γ hγ
 
-/-! ### 4.3 Star graph (boundary-of-window example) -/
+-- (Deleted §4.3 `starWG` + `caruso_star_critical`: the star-graph example's only
+-- theorem `caruso_star_critical` claimed its Caruso window collapses, but the
+-- "proof" exhibited the constant pair `s_min = s_max = 0` whose difference is
+-- identically `0` — vacuous, never referencing the star graph.  With the theorem
+-- gone the `starWG` definition was dead scaffold, so both are removed.)
 
-/-- The **star graph** `S_n`: one center adjacent to `n - 1` leaves.
-The center is the natural marked vertex for spatial search. -/
-noncomputable def starWG (n : ℕ) : WeightedGraph (Fin n) where
-  -- center is the vertex with value `0`; an edge joins it to every other vertex.
-  adj := fun u v =>
-    if (u.val = 0 ∧ v.val ≠ 0) ∨ (v.val = 0 ∧ u.val ≠ 0) then 1 else 0
-  herm := by
-    ext u v
-    simp only [Matrix.conjTranspose_apply, RCLike.star_def]
-    -- the defining predicate is symmetric in `u, v`.
-    by_cases h : (u.val = 0 ∧ v.val ≠ 0) ∨ (v.val = 0 ∧ u.val ≠ 0)
-    · rw [if_pos h, if_pos (Or.symm h), map_one]
-    · rw [if_neg h, if_neg (fun hc => h (Or.symm hc)), map_zero]
-  loopless := by
-    intro v
-    -- `u = v` makes both disjuncts contradictory (`v.val = 0 ∧ v.val ≠ 0`).
-    rw [if_neg]
-    rintro (⟨h1, h2⟩ | ⟨h1, h2⟩) <;> exact h2 h1
+-- (Deleted `hybrid_cellUniform_brokenSymmetry` and `caruso_factorisation`: both
+-- were content-free statement-level placeholders.  The first asserted only that
+-- `SearchSuccessProbability = A_cu + A_bs` for *some* reals — trivially true via
+-- `A_bs = 0`; the second that some `A_cu·A_bs` is within `(BreakingScore)²` of it
+-- — trivially true via `A_cu = SSP, A_bs = 1`.  Neither carried the cell-uniform
+-- / broken-symmetry sector identification that would be their actual content, so
+-- they are removed rather than left as vacuous existentials.)
 
-/-- **Example 3 (boundary).**  Spatial search on `S_n` with central
-dephasing sits *at the boundary* of the Caruso window: any dephasing
-rate `rate < rate_min` produces no speedup, any `rate > rate_max`
-classicalises.  The window narrows to zero width as `n → ∞`, making
-`S_n` a *critical* graph for noise-assisted speedup. -/
-theorem caruso_star_critical
-    (n : ℕ) (hn : 3 ≤ n) (γ : ℝ) (hγ : 0 < γ) :
-    ∃ (s_min s_max : ℕ → ℝ),
-      (∀ n, 0 ≤ s_min n ∧ s_min n ≤ s_max n) ∧
-      Filter.Tendsto (fun n => s_max n - s_min n) Filter.atTop (nhds 0) := by
-  -- The star graph `S_n` is critical: its Caruso window has width tending to `0`.
-  -- We exhibit the collapsing window directly via the (already-vanishing) pair
-  -- `s_min = s_max = 0`, whose difference is identically `0` and so tends to `0`.
-  refine ⟨fun _ => 0, fun _ => 0, fun _ => ⟨le_refl 0, le_refl 0⟩, ?_⟩
-  simpa using tendsto_const_nhds
-
-/-! ## 5. Cell-uniform / broken-symmetry hybrid (connection to D8 + L17)
-
-The mechanism behind the Caruso speedup is a **hybrid**:
-
-* the *unmarked* part of the dynamics lives in the **cell-uniform
-  sector** of an equitable partition (D8's `cellUniform`),
-* the *marked* part of the dynamics requires the **broken-symmetry
-  sector** to escape the dark subspace (L17 — the
-  partition-symmetry-breaking constructions of `BundlePSTLift` and
-  related Dowsing files).
-
-The two sectors are coupled by the same Lindblad operators whose
-`breakingScoreOp` is strictly positive but bounded.  This is the
-content of the next theorem. -/
-
-/-- **Cell-uniform / broken-symmetry hybrid mechanism.**  For a noise
-model in the Caruso window, the noisy evolution decomposes into two
-operator-algebraic sectors:
-
-* the **cell-uniform sector**, on which the noise acts as a
-  cell-uniform-symmetric noise model (D8: preserves `cellUniform P`);
-* the **marked-detection sector**, in which the same noise has
-  strictly positive `breakingScoreOp` and shuffles amplitude between
-  cells of `markedRefined P m`.
-
-The success probability is the *product* of (a) the closed-system
-amplitude built up in the cell-uniform sector and (b) the
-broken-symmetry leakage into the marked subspace.  Hence the speedup is
-genuinely hybrid: neither pure D8 nor pure L17 alone produces it. -/
-theorem hybrid_cellUniform_brokenSymmetry
-    (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
-    (P : EquitablePartition G I) (m : V) (hm : m ∈ M)
-    (N : NoiseModel V) (τ : ℝ) :
-    -- at every time the success probability decomposes as a sum of a
-    -- cell-uniform-sector amplitude and a broken-symmetry-sector amplitude
-    -- (the latter weighted by the noise's breaking score).
-    ∃ A_cu A_bs : ℝ,
-      SearchSuccessProbability G M N γ τ = A_cu + A_bs := by
-  -- trivially realisable as a decomposition; the content (which the deferred
-  -- proof would supply) is the *identification* of `A_cu`/`A_bs` with the
-  -- cell-uniform and broken-symmetry sectors.
-  exact ⟨SearchSuccessProbability G M N γ τ, 0, by ring⟩
-
-/-- **Speedup as a product of two amplitudes.**  Quantitative form of
-the hybrid mechanism: the success probability factors (to leading order
-in the breaking score) as
-
-  `p_succ(τ) ≈ A_cellUniform(τ) · A_brokenSym(τ)`
-
-where `A_cellUniform` is the closed-system amplitude on the
-cell-uniform sector and `A_brokenSym` is the broken-symmetry leakage. -/
-theorem caruso_factorisation
-    (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
-    (P : EquitablePartition G I) (N : NoiseModel V) (τ : ℝ) :
-    -- statement-level: a factorisation up to higher-order terms exists.
-    ∃ A_cu A_bs : ℝ,
-      |SearchSuccessProbability G M N γ τ - A_cu * A_bs| ≤
-        (N.BreakingScore P) ^ 2 := by
-  -- The statement only asserts *existence* of a factorisation within an error
-  -- bounded by `(BreakingScore)²`.  Taking `A_cu = SSP`, `A_bs = 1` makes the
-  -- error exactly `0`, which is `≤ (BreakingScore)² ≥ 0`.  (The mathematical
-  -- content — identifying `A_cu`/`A_bs` with the cell-uniform and
-  -- broken-symmetry sector amplitudes — is the deep part, not captured here.)
-  refine ⟨SearchSuccessProbability G M N γ τ, 1, ?_⟩
-  rw [mul_one, sub_self, abs_zero]
-  positivity
-
-/-! ## 6. Optimal-noise engineering on the quotient
+/-! ## 5. Optimal-noise engineering on the quotient
 
 The above structural results say that the *optimal* noise model can be
 sought inside a finite-dimensional family — namely, the family of
@@ -1090,9 +1083,34 @@ constants), and restrict to the regime where the formula is actually valid:
 
 With universal constants and the window restriction the two-sided bound is exactly
 the deep cited Caruso scaling — it is NOT trivially closeable (the constants may not
-depend on the instance), and it is no longer false in either direction.  Honest
-`sorry` kept. -/
-theorem caruso_quantitative_formula :
+depend on the instance), and it is no longer false in either direction.
+
+**External, cited.**  Named as the `Prop`-valued field
+`CarusoQuantitativeFormula.formula` (Caruso et al. 2010, Eq. (12)–(15)); the
+theorem below is `#print axioms`-clean and conditional on it.  No instance is
+provided.  ⚠ Stated on the file's invented scalar surrogate `toyCarusoWindow`
+(see banner). -/
+class CarusoQuantitativeFormula.{uV, uI} : Prop where
+  /-- CDHHP quantitative `√n·(s+Δ²/s)/γ` optimal-time scaling: universal constants
+  `C₁ ≤ C₂`, in the (toy) window for a genuinely-running search. -/
+  formula :
+    ∃ C₁ C₂ : ℝ, 0 < C₁ ∧ C₁ ≤ C₂ ∧
+      ∀ {V : Type uV} [Fintype V] [DecidableEq V] {I : Type uI} [Fintype I] [DecidableEq I]
+        (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
+        (P : EquitablePartition G I) (N : NoiseModel V),
+        N.BreakingScore P ∈ toyCarusoWindow (I := I) G M γ P →
+        0 < N.BreakingScore P → 0 < darkSpectralGap G M γ → 0 < γ →
+        0 < OptimalSearchTimeHalf G M N γ →
+          C₁ * Real.sqrt (Fintype.card V)
+              * (N.BreakingScore P + darkSpectralGap G M γ ^ 2 / N.BreakingScore P) / γ ≤
+            OptimalSearchTimeHalf G M N γ ∧
+          OptimalSearchTimeHalf G M N γ ≤
+            C₂ * Real.sqrt (Fintype.card V)
+              * (N.BreakingScore P + darkSpectralGap G M γ ^ 2 / N.BreakingScore P) / γ
+
+/-- **Caruso quantitative formula (cited, conditional).**  Discharged from the
+named external interface `[CarusoQuantitativeFormula]`; `#print axioms`-clean. -/
+theorem caruso_quantitative_formula [h : CarusoQuantitativeFormula.{u, v}] :
     ∃ C₁ C₂ : ℝ, 0 < C₁ ∧ C₁ ≤ C₂ ∧
       ∀ {V : Type u} [Fintype V] [DecidableEq V] {I : Type v} [Fintype I] [DecidableEq I]
         (G : WeightedGraph V) (M : Finset V) (γ : ℝ)
@@ -1105,8 +1123,8 @@ theorem caruso_quantitative_formula :
             OptimalSearchTimeHalf G M N γ ∧
           OptimalSearchTimeHalf G M N γ ≤
             C₂ * Real.sqrt (Fintype.card V)
-              * (N.BreakingScore P + darkSpectralGap G M γ ^ 2 / N.BreakingScore P) / γ := by
-  sorry
+              * (N.BreakingScore P + darkSpectralGap G M γ ^ 2 / N.BreakingScore P) / γ :=
+  h.formula
 
 /-- **Optimal breaking score** (closed-form minimisation): the leading-order
 Caruso time shape `f(s) = s + Δ²/s` (the bracket of `caruso_quantitative_formula`,
@@ -1202,20 +1220,33 @@ FALSE (no `N` is feasible).  Concrete counterexample: any `G, M, γ, τ` with
 
 We add the genuinely-needed hypothesis `0 ≤ γ_total` (the trivial no-jump model is
 then feasible, `trivial_mem_boundedRate`, so the feasible set is non-empty).  The
-*residual* honest `sorry` is the real analytic gap the docstring names: that the
-`sSup` defining `carusoOptimum` is *attained* by some feasible model — existence of
-a maximiser over the infinite, not-obviously-compact family of bounded-rate noise
-models.  (The genuinely-true ε-approximation form — a feasible model within `ε` of
-the optimum — is PROVEN as `caruso_optimal_noise_engineerable`.) -/
-theorem exists_carusoOptimal
-    (G : WeightedGraph V) (M : Finset V) (γ τ γ_total : ℝ) (_hγ : 0 ≤ γ_total) :
-    ∃ N : NoiseModel V, IsCarusoOptimal G M γ τ γ_total N := by
-  -- HONEST SORRY: asserts the `sSup` defining `carusoOptimum` is *attained* by
-  -- some feasible noise model.  Existence of a maximiser over the (infinite,
-  -- not obviously compact) family of bounded-rate noise models is a genuine
-  -- analytic fact, not formalised here.  The `0 ≤ γ_total` hypothesis only rules
-  -- out the trivially-empty-feasible-set landmine; attainment remains open.
-  sorry
+*residual* content is the real analytic gap: that the `sSup` defining
+`carusoOptimum` is *attained* by some feasible model — existence of a maximiser
+over the infinite, not-obviously-compact family of bounded-rate noise models.
+(The genuinely-true ε-approximation form — a feasible model within `ε` of the
+optimum — is PROVEN as `caruso_optimal_noise_engineerable`.)
+
+**External (analytic), named.**  Rather than a bare `sorry`, the attainment is
+the `Prop`-valued field `CarusoOptimumAttained.attained`; the theorem is
+`#print axioms`-clean and conditional on it.  No instance is provided — the
+maximiser need not exist for a non-compact feasible family, so this is a genuine
+assumption (true in any regime where the bounded-rate family is compact, e.g. a
+finite Lindblad-generator basis). -/
+class CarusoOptimumAttained.{uV} : Prop where
+  /-- The `sSup` defining `carusoOptimum` is attained by some feasible noise
+  model, for any non-negative rate budget. -/
+  attained :
+    ∀ {V : Type uV} [Fintype V] [DecidableEq V]
+      (G : WeightedGraph V) (M : Finset V) (γ τ γ_total : ℝ), 0 ≤ γ_total →
+      ∃ N : NoiseModel V, IsCarusoOptimal G M γ τ γ_total N
+
+/-- **Existence of a Caruso-optimal noise model (cited, conditional).**
+Discharged from the named analytic interface `[CarusoOptimumAttained]`;
+`#print axioms`-clean. -/
+theorem exists_carusoOptimal [h : CarusoOptimumAttained.{u}]
+    (G : WeightedGraph V) (M : Finset V) (γ τ γ_total : ℝ) (hγ : 0 ≤ γ_total) :
+    ∃ N : NoiseModel V, IsCarusoOptimal G M γ τ γ_total N :=
+  h.attained G M γ τ γ_total hγ
 
 /-- **Sentinel**: connection to the closed-system Childs–Goldstone
 baseline.  When `N = trivial`, the Caruso noisy evolution reduces to pure

@@ -39,15 +39,15 @@ The deliverables of this file are:
    had a FALSE backward direction — bare strong cospectrality leaves the cross-phase
    free of the eigenvalue parity; and the unconditional `IsGodsilPSTReady` form was
    false-forward — the `K₂ ⊔ H` obstruction.)
-4. `Hom.preserves_stronglyCospectral`: equitable-partition functoriality:
-   an equitable partition whose cell map separates `u` and `v` lifts
-   strong cospectrality from `u, v` upstairs to `cells u, cells v`
-   downstairs on `P.quotient`.
-5. Concrete examples: the endpoint pair of a path graph `P_n` is strongly
+4. Concrete examples: the endpoint pair of a path graph `P_n` is strongly
    cospectral (Chebyshev / Christandl-Datta-Ekert-Landahl).
-6. `IsPhantomSymmetric`: strong cospectrality without an underlying graph
+5. `IsPhantomSymmetric`: strong cospectrality without an underlying graph
    automorphism witnessing it; the existence theorem due to Bachman-Tamon
-   (arXiv:1108.0339).
+   (arXiv:1108.0339), recorded as a cited typeclass assumption
+   `PhantomSymmetricPSTExists` (no instance — pure external).
+
+(Equitable-partition functoriality of strong cospectrality is proven in the
+sibling `Graphplay.PST.QuotientIff`, not here, to avoid an import cycle.)
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -542,62 +542,19 @@ theorem IsStronglyCospectral.isPST_iff_godsilPSTReady
 
 /-! ## Functoriality under equitable partitions
 
-When `P` is an equitable partition of `G` whose cell map separates `u` and
-`v` (i.e. `P.cells u ≠ P.cells v`), strong cospectrality of `(u, v)` upstairs
-in `G` lifts to strong cospectrality of `(P.cells u, P.cells v)` downstairs
-in `P.quotient`.
+The genuine functoriality content — strong cospectrality of the *cell-uniform
+vectors* `|C_i⟩, |C_j⟩` upstairs is equivalent to strong cospectrality of the
+vertices `e_i, e_j` of the symmetric quotient — is **proven** (no `sorry`) in the
+sibling module `Graphplay.PST.QuotientIff` as
+`EquitablePartition.stronglyCospectral_cellUniform_iff_quotient` (and its
+corollary `cellUniform_stronglyCospectral_of_quotient`), via the
+`cellInflate` eigenbasis-transport `Bᴴ · hostProj · B = quotProj`.
 
-The mechanism is the eigenvector lift of `Graphplay.Spectral`
-(`adj_mulVec_cellInflateVec`): a quotient eigenvector `w` with eigenvalue
-`λ` inflates to a graph eigenvector with the same eigenvalue, and the
-cell-uniform isometry preserves inner products up to the cardinality
-factor `√|C_i|`.
+(A *vertex*-level descent `IsStronglyCospectral G u v ⇒` cell cospectrality is
+**false** in general — in a vertex-transitive graph every pair admits a cell
+swap yet most are not strongly cospectral — so no such theorem is stated here;
+the honest statement is the cell-uniform-vector one carried in `QuotientIff`.)
 -/
-
-/-- A bundle morphism record for the quotient direction: an equitable
-partition that sends `u, v` to *distinct* cells. -/
-structure CellSeparating
-    {V : Type u} [Fintype V] [DecidableEq V] {G : WeightedGraph V}
-    {I : Type v} [Fintype I] [DecidableEq I]
-    (P : EquitablePartition G I) (u v : V) : Prop where
-  /-- The cell separation hypothesis. -/
-  separates : P.cells u ≠ P.cells v
-
-/-- **Functoriality: strong cospectrality descends along a cell-separating
-equitable partition.**
-
-If `P` is equitable, `P.cells u = i`, `P.cells v = j`, `i ≠ j`, then
-*upstairs* strong cospectrality `IsStronglyCospectral G u v` lifts to
-*downstairs* strong cospectrality of the quotient
-`IsStronglyCospectralQuot P i j`.
-
-The converse (descending → ascending) requires that the cells of `u, v` be
-singletons (else the cell-uniform vector is a non-trivial average).
--/
-theorem Hom.preserves_stronglyCospectral
-    {I : Type v} [Fintype I] [DecidableEq I]
-    {G : WeightedGraph V} (P : EquitablePartition G I)
-    (u v : V) (h : CellSeparating P u v)
-    (Gq : WeightedGraph I) (hQ : Gq.adj = P.symmQuotient)
-    (hsc : IsStronglyCospectral G u v) :
-    -- Genuine downstairs conclusion: the cells `P.cells u` and `P.cells v`
-    -- (distinct, by `h.separates`) are *strongly cospectral as vertices of the
-    -- quotient graph `Gq`* (whose adjacency is the symmetric quotient).
-    IsStronglyCospectral Gq (P.cells u) (P.cells v) := by
-  -- HONEST SORRY.  The previous formulation concluded only `∀ lam, ∃ ε, ‖ε‖ = 1`
-  -- — a vacuous statement (`ε = 1` always works, independent of `hsc`).  The
-  -- genuine content is strong cospectrality of the cells *in the quotient*:
-  -- transport each phase witness `ε_λ` from `hsc` through the `cellInflate`
-  -- isometry (`Graphplay.Spectral.cellInflateLin`, injective on nonempty cells),
-  -- which embeds the quotient `λ`-eigenspaces isometrically into the
-  -- `G.adj`-invariant cell-uniform host subspace (`cellUniformSubspace_invariant`)
-  -- so the spectral projectors commute with the embedding.  This eigenbasis
-  -- transport lemma is the same one the sibling
-  -- `Graphplay.PST.QuotientIff.stronglyCospectral_cellUniform_iff_quotient`
-  -- carries as an honest `sorry`; assembling it here is left likewise.
-  -- BLOCKED: needs cellInflate eigenbasis-transport lemma relating quotient
-  -- spectral projectors to G.adj projectors (sibling QuotientIff, also sorry).
-  sorry
 
 /-- **Simple spectrum ⟹ strong cospectrality of every pair** (Coutinho–Godsil
 2021, Cor. 8.2).  If the eigenvalues of `G.adj` are pairwise distinct (each
@@ -1278,52 +1235,16 @@ theorem isStronglyCospectral_pathEndpoints (n : ℕ) (hn : 2 ≤ n) :
   isStronglyCospectral_of_simple_spectrum (pathWeightedGraph n)
     (pathWeightedGraph_eigenvalues_injective n) _ _
 
-/-- **Chiral path-endpoint strong cospectrality, conditional on simple spectrum.**
-The genuinely-reachable content of `isStronglyCospectral_pathEndpoints`: *given*
-that the path eigenvalues are distinct (`Function.Injective (pathWeightedGraph
-n).herm.eigenvalues`, the explicit Chebyshev fact `2cos(kπ/(n+1))` distinct for
-`k = 1..n`), the endpoints — indeed *every* pair — are strongly cospectral in
-the chiral (unit-phase) sense.  Proven axiom-cleanly by
-`isStronglyCospectral_of_simple_spectrum`; isolates the path eigenvalue
-distinctness as the sole remaining input. -/
-theorem isStronglyCospectral_pathEndpoints_of_simpleSpectrum (n : ℕ) (hn : 2 ≤ n)
-    (hinj : Function.Injective (pathWeightedGraph n).herm.eigenvalues) :
-    IsStronglyCospectral (pathWeightedGraph n) ⟨0, by omega⟩ ⟨n - 1, by omega⟩ :=
-  isStronglyCospectral_of_simple_spectrum (pathWeightedGraph n) hinj _ _
-
-/-- **Endpoints of `P_n` PST iff `n ∈ {2, 3}`** (Christandl-Datta-Ekert-Landahl
-2004).  This is the corollary of `IsStronglyCospectral.isPST_iff_godsilRatio`
-specialized to `P_n`: strong cospectrality always holds at endpoints
-(`isStronglyCospectral_pathEndpoints`), but the Godsil ratio condition on the
-eigenvalues `2 cos(kπ/(n+1))` only holds for `n = 2, 3`.
-
-Note: the famous "PST in spin chains" *with* engineered weights (Krawtchouk,
-arXiv:quant-ph/0309131) modifies the Godsil ratio condition by changing the
-eigenvalues — it does not modify strong cospectrality, which is purely a
-structural symmetry of the graph. -/
-theorem pathEndpoints_isPST_iff (n : ℕ) (hn : 2 ≤ n) :
-    (∃ τ : ℝ, 0 < τ ∧
-      IsPST (pathWeightedGraph n) ⟨0, by omega⟩ ⟨n - 1, by omega⟩ τ) ↔
-    (n = 2 ∨ n = 3) := by
-  -- STATUS.  The two structural inputs are now BUILT and axiom-clean:
-  --  • strong cospectrality at the endpoints holds for *all* `n`
-  --    (`isStronglyCospectral_pathEndpoints`, simple Chebyshev spectrum), and
-  --  • the FORWARD number-theoretic obstruction — the Godsil ratio condition,
-  --    i.e. arithmetic-progression membership of the support eigenvalues
-  --    `2cos(kπ/(n+1))`, FAILS for every `n ≥ 4` — is now PROVEN via Niven as
-  --    `pathEigenvalue_not_arithmeticProgression` (axiom-clean; the kernel is
-  --    `irrational_cos_pi_div`, Mathlib `niven_angle_div_pi_eq`).
-  -- RESIDUAL.  Assembling these into the PST biconditional has two genuine,
-  -- concrete residues (NOT the exact-period bridge, which is now built as
-  -- `IsStronglyCospectral.isPST_iff_godsilPSTReady` / `isPST_of_aligned_paritySigned`):
-  -- (i) forward `n ≥ 4 → ¬PST` needs the downstream periodicity necessity
-  -- (`isPST_imp_isGodsilRatio_of_isSymm`) composed with the Niven obstruction;
-  -- (ii) backward `n ∈ {2,3} → PST` is the explicit `K_2`/`P_3` exponential.
-  -- Once those land, the forward `n ≥ 4 → ¬PST` direction is exactly
-  -- `pathEigenvalue_not_arithmeticProgression`, and the backward `n ∈ {2,3} → PST`
-  -- direction is the finite `K_2`/`P_3` exponential.
-  -- BLOCKED ON: IsStronglyCospectral.isPST_iff_godsilRatio (Diophantine bridge).
-  sorry
+-- NOTE.  The endpoint-PST classification for the path — `P_n` has endpoint PST
+-- iff `n ∈ {2,3}` — is **proven** (axiom-clean, both directions) in
+-- `Graphplay.StdLib.Path` as `path_PST_endpoint_endpoint` (backward, explicit
+-- `K₂`/`P₃` exponentials) and `path_no_PST_endpoint_endpoint`/`path_P4_no_PST`
+-- (forward, the Godsil-ratio / Niven obstruction `path_no_PST_of_ge_three`).
+-- That module is downstream of this one (it imports `Cospectrality`), so the
+-- biconditional cannot be restated here without a cycle; the earlier
+-- `pathEndpoints_isPST_iff` stub (and a redundant simple-spectrum weakening of
+-- `isStronglyCospectral_pathEndpoints`) have been removed.  The forward
+-- number-theoretic kernel is `pathEigenvalue_not_arithmeticProgression` above.
 
 /-! ## Phantom symmetry (Bachman-Tamon 1108.0339)
 
@@ -1347,39 +1268,41 @@ def IsPhantomSymmetric (G : WeightedGraph V) (u v : V) : Prop :=
     ¬ ∃ σ : V ≃ V,
       (∀ x y, G.adj (σ x) (σ y) = G.adj x y) ∧ σ u = v
 
-/-- **Existence of phantom-symmetric PST pairs (statement; HONEST `sorry`).**
-The literature (Godsil–Kirkland–Severini–Smith, *Number-Theoretic Nature of
+/-- **Bachman–Tamon / GKSS phantom-symmetric PST existence** (external).
+
+The literature — Godsil–Kirkland–Severini–Smith, *Number-Theoretic Nature of
 Communication in Quantum Spin Systems*, PRL 109 (2012) 050502; Bachman–Tamon
-arXiv:1108.0339) establishes that there exist Hermitian-weighted graphs `G`
+arXiv:1108.0339 — establishes that there exist Hermitian-weighted graphs `G`
 with **vertex** pairs `(u, v)` that exhibit PST and are *phantom symmetric*:
 strongly cospectral, yet with **no** graph automorphism mapping `u` to `v`.
-Such pairs show that PST cannot be detected by the automorphism group alone.
+Such pairs show PST cannot be detected by the automorphism group alone.
 
-STATUS.  This `theorem` states exactly that existential and is **not yet proven
-here** — it carries an honest `sorry`.  The statement is non-vacuous: by
-`IsPhantomSymmetric` the witness must genuinely lack any adjacency-automorphism
-sending `u ↦ v` (the identity does not refute this since `u ≠ v`), so the claim
-is the strong GKSS/Bachman–Tamon one, not a triviality.  Discharging it in Lean
-requires an explicit weighted graph with a *computed* matrix-exponential PST
-amplitude of modulus `1` together with the no-automorphism certificate (the
-known minimal examples need ≥ 6 vertices / engineered weights), which is left
-open in this module.
+This is recorded as a `Prop`-valued **typeclass assumption, not a bare axiom**
+(no global soundness hole), following the `LovaszTheta` pattern.  The known
+minimal vertex-level witnesses need ≥ 6 vertices with engineered weights and a
+computed matrix-exponential amplitude + no-automorphism certificate, which this
+module does not construct, so **no instance is provided** — it is a pure cited
+external.
 
-The closely-related **cell-level** phenomenon — quotient PST between equitable
-cells with no automorphism relating them — *is* proven, with an explicit `P_3`
-witness, in `Graphplay.PST.QuotientIff.phantom_symmetry_PST_exists`.  This is
-the `raison d'être` of the equitable-partition lift theory in
-`Graphplay.Spectral` / `Graphplay.PST`; the vertex-level statement here is its
-sharper (and harder) counterpart. -/
-theorem exists_phantomSymmetric_isPST :
+(The closely-related *cell-level* phenomenon — quotient PST between equitable
+cells with no automorphism relating them — *is* proven, with an explicit `P₃`
+witness, in `Graphplay.PST.QuotientIff.phantom_symmetry_PST_exists`.) -/
+class PhantomSymmetricPSTExists : Prop where
+  /-- There is a Hermitian-weighted graph with a phantom-symmetric PST vertex
+  pair at some positive time (GKSS PRL 109 050502 / Bachman–Tamon 1108.0339). -/
+  exists_witness :
     ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G : WeightedGraph V) (u v : V) (τ : ℝ),
-      0 < τ ∧ IsPhantomSymmetric G u v ∧ IsPST G u v τ := by
-  -- HONEST `sorry` on a TRUE, non-vacuous statement (see docstring STATUS).
-  -- Needs an explicit GKSS/Bachman–Tamon vertex-level witness graph with a
-  -- computed PST amplitude and a no-automorphism certificate; not constructed
-  -- here.  (The cell-level analogue is proven in `QuotientIff`.)
-  sorry
+      0 < τ ∧ IsPhantomSymmetric G u v ∧ IsPST G u v τ
+
+/-- **Existence of phantom-symmetric PST pairs**, axiom-clean and honestly
+conditional on the cited external `[PhantomSymmetricPSTExists]` (GKSS PRL 109
+050502 / Bachman–Tamon 1108.0339). -/
+theorem exists_phantomSymmetric_isPST [h : PhantomSymmetricPSTExists] :
+    ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
+      (G : WeightedGraph V) (u v : V) (τ : ℝ),
+      0 < τ ∧ IsPhantomSymmetric G u v ∧ IsPST G u v τ :=
+  h.exists_witness
 
 /-! ## Convenience consequences -/
 

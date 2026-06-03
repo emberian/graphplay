@@ -65,10 +65,11 @@ Proof status (honest):
   `P₆` (`Path 5`) does **not** have endpoint PST; its `2cos(kπ/7)` spectrum is the
   degree-3 irrational minimal field of `2cos(π/7)`, giving only *pretty good*
   transfer with max endpoint amplitude `≈ 0.9997 < 1`.)
-* Only the Christandl–Landahl–Werner *engineered weighted-path* PST
-  (`weightedPath_PST`) remains an honest `sorry` on a true, non-vacuous
-  statement, awaiting the spin-`n/2` `Jₓ` identification (genuinely deeper, out
-  of scope of the unweighted classification).
+* The Christandl–Landahl–Werner *engineered weighted-path* PST is recorded as a
+  cited **typeclass assumption** `CLWPathPST` (no instance — pure external,
+  arXiv:quant-ph/0411020 Thm 1): `weightedPath_PST` is axiom-clean and honestly
+  conditional on it, since the spin-`n/2` `Jₓ` identification is genuinely
+  deeper and out of scope of the unweighted classification.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -1020,32 +1021,41 @@ the weighted path with edge weights `J_k = √(k(n - k + 1))`. -/
 noncomputable def CLWPath (n : ℕ) : WeightedGraph (Fin (n + 1)) :=
   WeightedPath n (CLWCouplings n)
 
-/-- **Christandl–Landahl–Werner (2005).**  The engineered weighted path
-with couplings `J_k = √(k(n - k + 1))` exhibits PST between the two
-endpoints `0` and `n` at time `τ = π / 2`, for every `n ≥ 1`.
+/-- **Christandl–Landahl–Werner (2005) engineered-path PST** (external).
 
-Reference: arXiv:quant-ph/0411020, Theorem 1.  The proof factors through
-the observation that the Hamiltonian is a faithful representation of the
-spin-`n/2` angular momentum operator `J_x`, whose spectrum is the
-arithmetic progression `{-n/2, -n/2 + 1, …, n/2}`. -/
-theorem weightedPath_PST (n : ℕ) (h : 1 ≤ n) :
-    IsPST (CLWPath n) (0 : Fin (n + 1)) (Fin.last n) (Real.pi / 2) := by
-  -- Reduces to the closed-form `(exp(-i π J_x / 2))_{0,n} = (-i)^n`, of modulus
-  -- 1.  The genuine (non-vacuous, true) residual is that the CLW Hamiltonian is
-  -- a faithful spin-`n/2` `J_x` representation, whose evolution
-  -- `exp(-iπ J_x/2)` is the antipodal flip with a unit-modulus `(0,n)` entry
-  -- (Christandl–Landahl–Werner 2005, arXiv:quant-ph/0411020, Thm 1).  This is
-  -- the lone spectral input; isolated here as an honest `sorry` on the true
-  -- statement.
-  sorry
+The engineered weighted path with couplings `J_k = √(k(n - k + 1))` exhibits PST
+between the two endpoints `0` and `n` at time `τ = π / 2`, for every `n ≥ 1`.
+The proof factors through the observation that the Hamiltonian is a faithful
+representation of the spin-`n/2` angular momentum operator `J_x`, whose evolution
+`exp(-iπ J_x/2)` is the antipodal flip with a unit-modulus `(0,n)` entry; its
+spectrum is the arithmetic progression `{-n/2, …, n/2}`.
 
-/-- More generally, *any* mirror-symmetric coupling profile whose
-single-excitation spectrum has integer commensurable gaps yields PST at
-some time `τ` (Karbach–Stolze 2005, Yung 2006).  We state the
-specialization to CLW. -/
-theorem weightedPath_PST_modulus_eq_one (n : ℕ) (h : 1 ≤ n) :
+Recorded as a `Prop`-valued **typeclass assumption, not a bare axiom** (following
+the `LovaszTheta` pattern): the spin-`n/2` `J_x` identification is a genuinely
+deeper representation-theoretic input not built in this module, so **no instance
+is provided** — pure cited external (arXiv:quant-ph/0411020, Thm 1). -/
+class CLWPathPST : Prop where
+  /-- The Christandl–Landahl–Werner engineered path has endpoint PST at `π/2`
+  for every `n ≥ 1` (arXiv:quant-ph/0411020, Thm 1). -/
+  pst : ∀ (n : ℕ), 1 ≤ n →
+    IsPST (CLWPath n) (0 : Fin (n + 1)) (Fin.last n) (Real.pi / 2)
+
+/-- **Christandl–Landahl–Werner (2005).**  The engineered weighted path with
+couplings `J_k = √(k(n - k + 1))` exhibits PST between the two endpoints `0` and
+`n` at time `τ = π / 2`, for every `n ≥ 1`.  Axiom-clean and honestly conditional
+on the cited external `[CLWPathPST]` (arXiv:quant-ph/0411020, Thm 1). -/
+theorem weightedPath_PST [h : CLWPathPST] (n : ℕ) (hn : 1 ≤ n) :
+    IsPST (CLWPath n) (0 : Fin (n + 1)) (Fin.last n) (Real.pi / 2) :=
+  h.pst n hn
+
+/-- The endpoint amplitude of the CLW engineered path reaches modulus `1` at
+`τ = π/2` (the modulus form of `weightedPath_PST`), conditional on `[CLWPathPST]`.
+More generally *any* mirror-symmetric coupling profile whose single-excitation
+spectrum has integer commensurable gaps yields PST (Karbach–Stolze 2005, Yung
+2006); here specialized to CLW. -/
+theorem weightedPath_PST_modulus_eq_one [CLWPathPST] (n : ℕ) (hn : 1 ≤ n) :
     ‖(CLWPath n).evolve (Real.pi / 2) 0 (Fin.last n)‖ = 1 :=
-  weightedPath_PST n h
+  weightedPath_PST n hn
 
 /-! ## Convenience aliases -/
 
