@@ -339,7 +339,7 @@ an unsatisfiable hypothesis (vacuously conditional).
 **The corrected, inhabitable interface.**  The genuine upper bound now lives
 entirely in the proven operator-algebra theorem `CHSHRealization.le_two_sqrt_two`
 (consumers re-key off *that*, supplying a per-strategy realization — itself
-demonstrably inhabitable, see `CHSHRealization.ofLeTwo`).  What remains as honest
+demonstrably inhabitable, see `CHSHRealization.ofAbsLeTwo`).  What remains as honest
 literature content is **tightness**: there is a sequence of *genuine
 realizations* whose values approach `2√2` (Tsirelson's optimal entangled
 family).  Stated over realizations (not arbitrary functionals), this is
@@ -353,6 +353,28 @@ class TsirelsonBound where
   value_tight :
     ∀ ε > 0, ∃ (v : ℝ), Nonempty (CHSHRealization v) ∧ 2 * Real.sqrt 2 - v < ε
 
+/-- **Tsirelson optimal-entangled tightness tail** (Tsirelson 1980).
+
+The genuinely-external content of Tsirelson's theorem that Mathlib v4.30.0 cannot
+yet support: there is a genuine `CHSHRealization` of a value in the *quantum
+regime* `(2, 2√2]` arbitrarily close to the maximum `2√2`.  The witness is
+Tsirelson's optimal entangled strategy — Pauli observables on `ℂ² ⊗ ℂ²` with the
+Bell state — which requires a `CStarAlgebra (Matrix _ _ ℂ)` instance that Mathlib
+lacks.
+
+This is a **typeclass assumption, NOT an axiom**: no instance is provided (the
+matrix C\*-algebra construction is the missing external content), so a theorem
+assuming `[TsirelsonTightnessTail]` is a sorry-free conditional theorem honestly
+listing the cited literature fact as a named hypothesis.  The classical-regime
+tail (values within `2√2 − 2 ≈ 0.83` of the max) is discharged *without* this
+class by the genuine `v = 2` realization — see the `TsirelsonBound` instance. -/
+class TsirelsonTightnessTail : Prop where
+  /-- For every `δ > 0` there is an honest `CHSHRealization` of a value within `δ`
+  of `2√2` whose value already exceeds `2` (i.e. lies in the genuine quantum
+  regime, beyond every classically-embeddable strategy). -/
+  exists_quantum_realization_near :
+    ∀ δ > 0, ∃ v : ℝ, Nonempty (CHSHRealization v) ∧ 2 < v ∧ 2 * Real.sqrt 2 - v < δ
+
 namespace TsirelsonBound
 
 /-- The upper bound on **any genuinely-realized** CHSH value, routed directly
@@ -365,30 +387,29 @@ theorem value_le_of_realization {v : ℝ} (h : CHSHRealization v) :
 
 end TsirelsonBound
 
-/-- **A genuine `TsirelsonBound` instance** — the class is INHABITED (no longer the
-old refutable shape).  The tightness field is a *true* theorem: by
-`CHSHRealization.ofLeTwo` the value `2` (the trivial product strategy's CHSH
-value) is honestly realized, discharging `value_tight` for every
-`ε > 2√2 − 2 ≈ 0.83`.
+/-- **`TsirelsonBound` from the named tightness tail** — axiom-clean, no `sorry`.
 
-The remaining small-`ε` slice — realizing values in `(2, 2√2]` arbitrarily close
-to the Tsirelson maximum — is Tsirelson's optimal *entangled* construction (Pauli
-observables on `ℂ² ⊗ ℂ²` with the Bell state).  That construction needs a
-non-commutative C\*-algebra of matrices, and Mathlib v4.30.0 carries **no
-`CStarAlgebra (Matrix _ _ ℂ)` instance**, so it cannot yet be built here.  The
-statement is TRUE (Tsirelson 1980), so this is an honest `sorry` on a true
-proposition, NOT a false/refutable field — the class is genuinely inhabitable and
-this instance witnesses it (the `2`-realization is real and non-vacuous; only the
-tight tail is deferred). -/
-noncomputable instance : TsirelsonBound where
+The class is INHABITED (no longer the old refutable shape) the moment the
+genuinely-external Tsirelson tightness tail `[TsirelsonTightnessTail]` is
+supplied.  The split is honest:
+
+* the classical-regime slice `ε > 2√2 − 2 ≈ 0.83` is discharged *unconditionally*
+  by the genuine `v = 2` realization (`CHSHRealization.nonempty_two`);
+* the small-`ε` quantum slice (values in `(2, 2√2]` approaching the Tsirelson
+  maximum) is discharged from `TsirelsonTightnessTail`, the cited literature fact
+  whose witness — Tsirelson's optimal entangled Pauli strategy on `ℂ² ⊗ ℂ²` —
+  needs a `CStarAlgebra (Matrix _ _ ℂ)` instance Mathlib v4.30.0 lacks.
+
+No bare `axiom` and no `sorry`: the only assumption is the named, cited class. -/
+noncomputable instance [h : TsirelsonTightnessTail] : TsirelsonBound where
   value_tight := by
     intro ε hε
     by_cases hbig : 2 * Real.sqrt 2 - 2 < ε
     · -- discharged by the genuine `v = 2` realization
       exact ⟨2, CHSHRealization.nonempty_two, hbig⟩
-    · -- the tight tail: TRUE (Tsirelson optimal entangled strategy), but needs a
-      -- matrix C*-algebra Mathlib does not provide.  Honest `sorry` on a true claim.
-      sorry
+    · -- the tight tail: routed through the named literature class
+      obtain ⟨v, hv, _, hclose⟩ := h.exists_quantum_realization_near ε hε
+      exact ⟨v, hv, hclose⟩
 
 
 /-! ## 2. MIP* = RE / quantum-vs-commuting separation

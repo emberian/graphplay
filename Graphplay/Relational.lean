@@ -522,25 +522,15 @@ relational structures: a *template* is a relational structure on a
 finite alphabet, and a CSP instance asks whether an input structure
 admits a homomorphism into the template.
 
-Below we sketch:
+Below we keep the two honest, stub-free CSP primitives:
 
-* the (classical) homomorphism-CSP,
-* its quantum analogue via Tower 3's operator-system graph (path
-  reference only),
-* a relational chromatic number with the standard hierarchy of
-  relaxations.
+* the (classical) homomorphism-CSP (`Solvable`),
+* the relational `Coloring` (homomorphism into the complete structure).
 
-The four chromatic invariants (`fractionalChromaticNumber`, `lovaszTheta`,
-`quantumChromaticNumber`, `chromaticNumber`) are **placeholder `0` / `0.0`
-definitions** at this scaffold layer.  The relational generalisation of the binary
-sandwich inequality
-
-    χ_f (G) ≤ θ(Ḡ) ≤ χ_q (G) ≤ χ (G)
-
-(fractional chromatic ≤ Lovász theta ≤ quantum chromatic ≤ classical chromatic) is
-the Tower-3 lifting target, but it is **not stated as a theorem here**: against the
-`0` stubs it would be the contentless `0 ≤ 0` chain (see the note where
-`chromatic_hierarchy` was deleted, below the four definitions). -/
+The placeholder `0`-stub chromatic invariants and their `0 ≤ 0`-against-stub
+"sandwich" theorem have been **deleted** as contentless (see the note at the end
+of this section); the genuine invariants live in `Graphplay.LovaszTheta` and the
+nonlocal-game development of `Graphplay.QuantumCSP`. -/
 
 namespace CSP
 
@@ -564,72 +554,27 @@ more interesting "colorings". -/
 def Coloring {V : Type v} (A : RelStructure σ V) (C : Type w) : Type _ :=
   RelStructure.Hom A (RelStructure.complete σ C)
 
-/-- The (classical) chromatic number of a relational structure:
-the least cardinality `n` of a color set admitting a coloring of `A`,
-where the template encoding the "no-monochromatic-tuple" rule is
-implicit.
+/-! **Chromatic invariants + hierarchy theorem — DELETED as contentless.**
 
-This scaffold uses the `RelStructure.complete σ C` template as a
-placeholder; the *useful* relational chromatic number uses a
-"not-all-equal" template, but encoding that here would obscure the
-hierarchy.  See `Graphplay/QuantumGraph.lean` for the operator-system
-counterpart. -/
-noncomputable def chromaticNumber {V : Type v} [Fintype V]
-    (A : RelStructure σ V) : ℕ :=
-  -- `Nat.find` over `n` such that `Nonempty (Coloring A (Fin n))`,
-  -- if such an `n` exists; otherwise `0`.  Sorry the actual
-  -- definition — this layer is statements-of-shape only.
-  0
-
-/-- The fractional chromatic number: the infimum of `m / k` over
-fractional `(k:m)`-colorings.  In the binary case this collapses to
-the standard graph fractional chromatic number; in the relational
-case the same convex-relaxation definition applies. -/
-noncomputable def fractionalChromaticNumber {V : Type v} [Fintype V]
-    (_A : RelStructure σ V) : ℝ :=
-  0
-
-/-- The Lovász θ number of a relational structure, defined via the
-Tower-2 SDP (semidefinite programming) relaxation on the relation
-matrix.  Statement reference only — the actual SDP-flavored
-definition lives in Tower 2 / Tower 3. -/
-noncomputable def lovaszTheta {V : Type v} [Fintype V]
-    (_A : RelStructure σ V) : ℝ :=
-  0
-
-/-- The *quantum* chromatic number, defined via Tower 3's
-operator-system / quantum-graph framework (see
-`Graphplay/QuantumGraph.lean`).  Statement reference only. -/
-noncomputable def quantumChromaticNumber {V : Type v} [Fintype V]
-    (_A : RelStructure σ V) : ℕ :=
-  0
-
-/-! **Hierarchy theorem — NOT stated here (deleted as contentless).**
-
-The relational Lovász sandwich
+Four placeholder invariants (`chromaticNumber`, `fractionalChromaticNumber`,
+`lovaszTheta`, `quantumChromaticNumber`, all `0`/`0.0` stubs) and the relational
+Lovász sandwich
 
     fractionalChromaticNumber A ≤ lovaszTheta A
       ≤ quantumChromaticNumber A ≤ chromaticNumber A
 
-is the intended headline, but all four invariants above are currently the `0` /
-`0.0` placeholder definitions.  Against those stubs the chain is literally
-`0 ≤ 0 ∧ 0 ≤ 0 ∧ 0 ≤ 0`, provable by `simp` — it asserts **nothing** about the
-real sandwich inequality its name would claim, so a theorem `chromatic_hierarchy`
-here would be a landmine.  It has been **deleted** rather than left as a vacuous
-`0 ≤ 0` (and rather than dressed up with a `sorry`, which would equally misrepresent
-it).  The genuine, stub-independent fragment of this chain — a colouring forces the
-quantum game value to `1` — is `Graphplay.QuantumCSP.quantumColorable_imp_one_le_quantumValue`;
-the full sandwich awaits real bodies for these four invariants (the SDP / nonlocal-game
-development in Tower 2 / Tower 3). -/
+once lived here.  Against the `0` stubs the chain is literally `0 ≤ 0 ∧ 0 ≤ 0 ∧
+0 ≤ 0`, asserting **nothing** about the real sandwich its name claims — a
+landmine, and the stub defs had no genuine consumers.  Removed (bias toward
+deletion) rather than left as vacuous `0 ≤ 0` against the stubs.
 
-/-- The "quantum CSP" of a template at parameter `n`: existence of an
-`n`-dimensional operator-system homomorphism into the template's
-operator-system avatar.  See `Graphplay/QuantumGraph.lean` for the
-operator-system / quantum-graph constructions used here.  Statement
-shape only; the precise definition (and its connection to the quantum
-chromatic number) is the responsibility of Tower 3. -/
-def quantumCSP {T : Type w} (_template : RelStructure σ T) (_n : ℕ) : Prop :=
-  True  -- placeholder; see Graphplay/QuantumGraph.lean
+What is kept: the honest, stub-free relational CSP content `Solvable` and
+`Coloring` above.  The genuine, stub-independent fragment of the sandwich — a
+colouring forces the quantum game value to `1` — is
+`Graphplay.QuantumCSP.quantumColorable_imp_one_le_quantumValue`.  The real
+invariants live, with genuine bodies, in `Graphplay.LovaszTheta` (the SDP
+`lovaszTheta`, `chromaticNumber`, `quantumChromaticNumber`) and the nonlocal-game
+development of `Graphplay.QuantumCSP`. -/
 
 end CSP
 

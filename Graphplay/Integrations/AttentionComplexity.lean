@@ -243,14 +243,15 @@ with the hard part quantum-accelerated?":
    in cost `blockCost n r d = n·(r·d + d)`, **linear in `n`** (`attention_apply_linear_in_n`),
    versus the naive `fullCost n d = n²·d`.
 
-2. *(REFERENCED quantum convergence, honest `sorry`.)*  The residual `r × r` quotient
-   solve (the structurally-hard part, now of size `r`, not `n`) is a genuine CTQW
-   `LinearSystem` on the quotient that (i) the inversion restricts to **exactly** (no
-   approximation — `ridge_inversion_restricts_to_quotient`), and (ii) the CTQW inverter
-   solves to within `ε` of the normalized exact solution
+2. *(REFERENCED quantum convergence, typeclass-conditional.)*  The residual `r × r`
+   quotient solve (the structurally-hard part, now of size `r`, not `n`) is a genuine
+   CTQW `LinearSystem` on the quotient that (i) the inversion restricts to **exactly**
+   (no approximation — `ridge_inversion_restricts_to_quotient`), and (ii) the CTQW
+   inverter solves to within `ε` of the normalized exact solution
    (`MatrixInversion.LinearSystem.ctqw_success`, the deep upstream convergence theorem,
-   an honest `sorry`; arXiv:2508.06611).  Its walk schedule `walkTime ε = κ/ε` depends
-   only on the quotient condition number `κ`, **not** on `n`.
+   now axiom-clean conditional on the named literature class `CTQWInversionSuccess`;
+   arXiv:2508.06611).  Its walk schedule `walkTime ε = κ/ε` depends only on the quotient
+   condition number `κ`, **not** on `n`.
 
 HONESTY NOTE.  The previous version of clause (2) carried a conjunct
 `Sq.walkTime ε = Sq.conditionNumber / ε`.  That is `rfl` — `walkTime` is *defined* as
@@ -270,7 +271,14 @@ theorem attention_quantum_composition
     {V' : Type} [Fintype V'] [DecidableEq V'] (G : WeightedGraph V')
     (hGinv : IsUnit G.adj.det)
     {I : Type} [Fintype I] [DecidableEq I] (P : EquitablePartition G I)
-    (hQinv : IsUnit P.symmQuotient.det) (bcoord : I → ℂ) (ε : ℝ) (hε : 0 < ε) :
+    (hQinv : IsUnit P.symmQuotient.det) (bcoord : I → ℂ) (ε : ℝ) (hε : 0 < ε)
+    -- The deep CTQW convergence on the r × r quotient is the genuinely-external
+    -- HHL/arXiv:2508.06611 analysis, supplied as the named upstream literature
+    -- class `MatrixInversion.LinearSystem.CTQWInversionSuccess` for the quotient
+    -- system (never an axiom; honestly conditional).
+    [hctqw : MatrixInversion.LinearSystem.CTQWInversionSuccess
+      ({ A := P.symmQuotient, herm := P.symmQuotient_isHermitian,
+         inv := hQinv, b := bcoord } : MatrixInversion.LinearSystem I)] :
     -- (1) classical: linear apply is correct and linear in n
     (blockAttentionApply B cell V = fullAttentionApply A V ∧
       blockCost n r d = n * (r * d + d)) ∧
@@ -302,9 +310,10 @@ theorem attention_quantum_composition
     -- MachineLearning.ridge_inversion_restricts_to_quotient (gated on the hypothesis
     -- `hGinv : IsUnit G.adj.det`, now in scope).
     exact MachineLearning.ridge_inversion_restricts_to_quotient G hGinv P hQinv bcoord
-  · -- The CTQW convergence on the r × r quotient: the deep upstream `ctqw_success`
-    -- (honest `sorry`; arXiv:2508.06611).  This is the genuine n-independent rate
-    -- guarantee, replacing the old vacuous `walkTime ε = κ/ε` (= `rfl`) conjunct.
+  · -- The CTQW convergence on the r × r quotient: the deep upstream `ctqw_success`,
+    -- now axiom-clean conditional on the named class `[CTQWInversionSuccess]`
+    -- (arXiv:2508.06611), supplied as `hctqw`.  This is the genuine n-independent
+    -- rate guarantee, replacing the old vacuous `walkTime ε = κ/ε` (= `rfl`) conjunct.
     exact MatrixInversion.LinearSystem.ctqw_success _ hε
 
 /-! ## 5. Training step: forward AND backward are linear in `n`

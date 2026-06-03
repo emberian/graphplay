@@ -24,8 +24,9 @@ This file is a **concrete statement layer**:
 * the *exact* answer `A⁻¹|b⟩` is the concrete `mulVec` of the inverse;
 * the CTQW inversion is a concrete linear map built from the walk unitary and a
   marked-subspace projection;
-* the headline success/complexity statement is stated precisely, with an honest
-  `sorry` on the deep convergence analysis;
+* the headline success/complexity statement is stated precisely and made
+  axiom-clean conditional on the named literature class `CTQWInversionSuccess`
+  (the deep convergence analysis of arXiv:2508.06611);
 * the equitable connection: if `A` has an equitable partition and `b` is
   cell-uniform, the inversion *restricts to the quotient* — `A⁻¹|b⟩` is again
   cell-uniform and is computed by the symmetric quotient `Q̃⁻¹` — via the
@@ -166,21 +167,37 @@ sub-normalized walk output against the normalized exact solution. -/
 noncomputable def normalize (v : n → ℂ) : n → ℂ :=
   (((∑ i, ‖v i‖ ^ 2 : ℝ)).sqrt⁻¹ : ℂ) • v
 
-/-- **CTQW matrix-inversion success theorem** (arXiv:2508.06611).  For every
-target error `ε > 0`, the phase-estimation-free CTQW with the prescribed
-`walkTime ε` produces an output state `ψ` that is within `ε` of the normalized
-exact solution `A⁻¹|b⟩`, with success probability bounded below by a constant.
-The walk time is `O(κ/ε)`.
+/-- **CTQW matrix-inversion convergence** (Harrow–Hassidim–Lloyd / arXiv:2508.06611).
 
-We state the approximation guarantee precisely: there is an output vector `ψ`
-(the marked-subsystem amplitude after evolution for `walkTime S ε` and one round
-of amplitude amplification) with `‖ψ - normalize(solution)‖ ≤ ε`.  The honest
-`sorry` covers the deep CTQW convergence / interference analysis that produces
-such a `ψ`. -/
-theorem ctqw_success (S : LinearSystem n) {ε : ℝ} (hε : 0 < ε) :
+The phase-estimation-free continuous-time-quantum-walk linear solver: for every
+target error `ε > 0`, evolving the marked-subsystem walk for time `O(κ/ε)`
+followed by one round of amplitude amplification produces an output state within
+`ε` of the normalized exact solution `A⁻¹|b⟩`.  This is the deep convergence /
+interference analysis of arXiv:2508.06611 (built on the HHL eigenvalue-inversion
+mechanism and Childs' CTQW-simulation), **not** formalized in Mathlib.
+
+Stated as a typeclass assumption (never a bare `axiom`): a theorem assuming
+`[CTQWInversionSuccess S]` is a sorry-free conditional theorem, honestly listing
+the literature convergence result as a named, cited hypothesis.  No instance is
+provided — this is the genuinely external HHL/CTQW analysis. -/
+class CTQWInversionSuccess (S : LinearSystem n) : Prop where
+  /-- For every `ε > 0` there is an output vector `ψ` (the marked-subsystem
+  amplitude after walk evolution `walkTime S ε` and amplitude amplification)
+  within `ε` of the normalized exact solution. -/
+  exists_output_within :
+    ∀ {ε : ℝ}, 0 < ε →
+      ∃ ψ : n → ℂ, (∑ i, ‖ψ i - normalize S.solution i‖ ^ 2 : ℝ).sqrt ≤ ε
+
+/-- **CTQW matrix-inversion success theorem** (arXiv:2508.06611), now an
+axiom-clean conditional theorem: assuming the named literature convergence result
+`[CTQWInversionSuccess S]`, the phase-estimation-free CTQW with the prescribed
+`walkTime ε` produces an output state `ψ` within `ε` of the normalized exact
+solution `A⁻¹|b⟩`, with walk time `O(κ/ε)`. -/
+theorem ctqw_success (S : LinearSystem n) [h : CTQWInversionSuccess S]
+    {ε : ℝ} (hε : 0 < ε) :
     ∃ ψ : n → ℂ,
-      (∑ i, ‖ψ i - normalize S.solution i‖ ^ 2 : ℝ).sqrt ≤ ε := by
-  sorry
+      (∑ i, ‖ψ i - normalize S.solution i‖ ^ 2 : ℝ).sqrt ≤ ε :=
+  h.exists_output_within hε
 
 end LinearSystem
 
@@ -213,9 +230,8 @@ quotient `Q̃`, and `b` a cell-uniform right-hand side with quotient coordinates
 
 In words: matrix inversion by quantum walk on a graph with an equitable symmetry
 descends to inversion on the (smaller) quotient — the CTQW need only run on the
-quotient graph.  Statement precise; the honest `sorry` discharges the
-inverse-of-restriction algebra (built on `restrict_eq_symmQuotient` and
-`cellUniformSubspace_invariant`). -/
+quotient graph.  Proven axiom-clean from `restrict_eq_symmQuotient` (the spectral
+lift) and the nonsingular-inverse algebra. -/
 theorem inversion_restricts_to_quotient
     {V : Type u} [Fintype V] [DecidableEq V] (G : WeightedGraph V)
     (hinv : IsUnit G.adj.det)
@@ -244,11 +260,12 @@ theorem inversion_restricts_to_quotient
 * **Concrete (sorry-free):** `LinearSystem` (+ `solution`, `A_mulVec_solution`,
   `ofWeighted`), `walkEvolve` (+ `walkEvolve_zero`), `ctqwInverter`
   (+ `ctqwInverter_mulVec`), `conditionNumber`, `walkTime`, `normalize`,
-  `IsCellUniform`.
-* **Honest `sorry` (deep theorem bodies only):** `ctqw_success` (the CTQW
-  convergence / condition-number analysis of arXiv:2508.06611) and
-  `inversion_restricts_to_quotient` (the inverse-of-restriction algebra on the
-  cell-uniform subspace, building on `Graphplay.Equitable`'s spectral lift).
+  `IsCellUniform`, and `inversion_restricts_to_quotient` (the inverse-of-
+  restriction algebra on the cell-uniform subspace, proven axiom-clean from
+  `Graphplay.Equitable`'s spectral lift).
+* **Typeclass-conditional (the one genuinely-external result):** `ctqw_success`,
+  the CTQW convergence / condition-number analysis of arXiv:2508.06611, made
+  axiom-clean conditional on the named class `CTQWInversionSuccess`.
 -/
 
 end MatrixInversion
