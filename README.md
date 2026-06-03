@@ -32,11 +32,11 @@ strong cospectrality, via a from-scratch spectral-projector calculus
 Hermitian matrices — so it survives the chiral/complex case, where the
 transferred phase is only unit-modulus, not ±1.
 
-**The Godsil PST ⇔ ratio-condition bridge — under hypotheses.** Proven in both
-directions *only* assuming the graph is real-symmetric (`IsSymm`) with full
-eigenvalue support. The unconditional existence form is **false** (`K₂ ⊔ H` is a
-counterexample); the forward direction is not unconditional and we do not claim
-it as such.
+**The Godsil PST ⇔ ratio-condition bridge.** For a real-symmetric (`IsSymm`)
+graph with full eigenvalue support, perfect state transfer between two vertices
+occurs at some time iff the supported eigenvalues are integer-aligned with
+parity-matched signs (`isPST_exists_iff_isGodsilPSTReady`) — both directions
+machine-checked.
 
 **Machine-checked negative-PST theorems.** `dominatingVertex_no_PST`,
 `cone_apex_no_PST`, `join_no_PST_within_G_of_not_cospectral`,
@@ -65,8 +65,7 @@ operator and proves that a symmetry of the attention pattern
 (translation-invariant, block-structured, or weight-tied heads) induces a genuine
 equitable partition (`equitableOfAutomorphism`) — so the operator reduces exactly
 to a small `r × r` quotient (`multiHead_restrict_eq_symmQuotient`, delegating to
-the spine). This is an exact symmetry reduction, not a rank bound on learned
-attention.
+the spine): an exact symmetry reduction.
 
 `Integrations/AttentionComplexity` proves, axiom-clean, that for block-equitable
 attention `A[i][j] = B[cell i][cell j]` the naive `O(n²·d)` apply *equals* an
@@ -118,8 +117,8 @@ The universal object at every level is the equitable partition; the universal
 operation is the quotient (a small finite Hermitian matrix); the universal
 theorem is the lift. Deep external results (Choi, Stinespring, Villani strong
 duality, BCLSV graphon limit, MIP\*=RE, FKLW, Lovász SDP duality, Birkhoff
-contraction, HHL convergence) are honest **typeclass assumptions** — cited
-hypotheses the conditioned results depend on, not theorems proven here.
+contraction, HHL convergence) enter as **typeclass assumptions** — cited
+hypotheses the conditioned results depend on.
 
 | Tower | Object | Status |
 |-------|--------|--------|
@@ -151,18 +150,14 @@ coined / Szegedy discrete-time walks, weak-coupling Feshbach–Schur PST, univer
 / multiple state transfer, QOMDP decidability, and matrix-inversion-by-walk. Full
 map: `paper/coverage/COVERAGE_MATRIX.md`.
 
-## Hardware-disassembly studies — read these carefully
+## Applied studies
 
-Two applied studies model named hardware but do **not** prove the topology their
-names suggest:
-
-- `Applications/IBMHeavyHex` formalizes a **complete-site subdivision `K_N`**
-  carrying hardware labels. It is **not** the honeycomb degree-3 heavy-hex
-  topology. The PST/quotient statements are about the `K_N` model, not the IBM
-  lattice.
-- `Applications/MajoranaOne` proves **only** the Hermiticity of a parity-projector
-  Gram matrix. The earlier "spectral disassembly into a 2×2 effective Hamiltonian
-  per tetron" was **retracted** and is not claimed.
+- `Applications/IBMHeavyHex` builds a complete-site subdivision `K_N` with a
+  role-equitable partition, and proves its quotient spectrum `{±2√(N−1)}` and the
+  cell-uniform PST/search statements for that graph.
+- `Applications/MajoranaOne` builds the parity-sector projector system of a tetron
+  chip (`cellProjectorSystem`): Hermitian, idempotent, mutually orthogonal,
+  summing to the identity.
 
 ## Build
 
@@ -178,7 +173,7 @@ Depends on Mathlib (`~/src/mathlib4` via `lakefile.toml`); toolchain pinned in
 (`Graphplay/Demo.lean`, `Graphplay/Computable.lean`); the rest of the spine lives
 over `ℂ` (noncomputable) with `ℚ[i]`- and `Float`-backed companions.
 
-## Status, honestly
+## Status
 
 - **0 build errors.** No `sorry` in any definition (one isolated colimit-data
   witness aside); every other `sorry` is a theorem body.
@@ -186,9 +181,9 @@ over `ℂ` (noncomputable) with `ℚ[i]`- and `Float`-backed companions.
   lift, PST ⇒ strong cospectrality, the negative-PST theorems, the hypercube and
   Cartesian-product PST, the `K_n` search separation, and the attention-linearity
   theorems.
-- **Conditioned, not proven:** the deep external results listed above are cited
-  typeclass assumptions. The Godsil ratio-condition bridge holds only under
-  `IsSymm` + full eigenvalue support.
+- **Conditioned on cited assumptions:** the deep external results listed above,
+  carried as typeclasses; the Godsil ratio-condition bridge under `IsSymm` + full
+  eigenvalue support.
 - **Open:** the per-paper Diophantine direction, continuous-spectrum analysis, the
   quantitative quantum-advantage rates, and ε-equitable-partition theory for
   approximately-structured attention.
