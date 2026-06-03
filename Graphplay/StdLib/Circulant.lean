@@ -25,20 +25,27 @@ This file:
 
 1. defines `circulantGraph n S` (concretely, with `herm`/`loopless`),
 2. defines the integral-circulant predicate `IsIntegralCirculant`,
-3. states the integral-circulant PST classification
-   (`isPST_integralCirculant_iff`), with an honest `sorry`,
+3. proves the spectral keystone `circulantEigenvalue_re_mem_spectrum`
+   (every character sum is a genuine real-spectrum eigenvalue of the
+   circulant), and states the integral-circulant PST classification
+   `isPST_integralCirculant_iff` conditional on the **local** interface
+   `SoIntegralCirculantPST` (Bašić Thm 22) — no `sorry`; the deep
+   `2`-adic Diophantine residual is isolated into the named typeclass,
 4. defines the **bunkbed graph** `bunkbedGraph G := G □ K₂` (Cartesian
-   product with the single edge), and states a bunkbed PST/mixing result.
+   product with the single edge), and proves a bunkbed PST result.
 
 Cross references:
 * Bašić, Petković, Stevanović, "Perfect state transfer in integral
-  circulant graphs", Appl. Math. Lett. 22 (2009) 1117–1121.
-* Bašić, Petković, "Some classes of integral circulant graphs either
-  allowing or not allowing perfect state transfer", Appl. Math. Lett. 22
-  (2009) 1609–1615.
+  circulant graphs", Appl. Math. Lett. 22 (2009) 1117–1121
+  (arXiv:0907.2148, companion).
+* Bašić, "Characterization of quantum circulant networks having perfect
+  state transfer", Quantum Inf. Process. 12 (2013) 345–364, arXiv:1104.1825
+  — the **complete** characterisation (Theorem 22), encoded here as
+  `IsBPSDivisorCondition`.
+* So, "Integral circulant graphs", Discrete Math. 306 (2006) 153–158 — the
+  gcd-class integrality characterisation (`gcdClassConn`).
 * Saxena, Severini, Shparlinski, "Parameters of integral circulant graphs
-  and periodic quantum dynamics", Int. J. Quantum Inf. 5 (2007) 417–430,
-  arXiv:0905.xxxx-companion line.
+  and periodic quantum dynamics", Int. J. Quantum Inf. 5 (2007) 417–430.
 * Coutinho, Godsil, *Graph Spectra and Continuous Quantum Walks* (2021),
   Ch. 10 (circulants), Ch. 12 (products / bunkbeds).
 * The Cayley-graph pattern follows `Graphplay.PST.GodsilRatio.cayleyGraph`
@@ -358,121 +365,159 @@ theorem isIntegralCirculant_empty (n : ℕ) :
   unfold circulantEigenvalue
   simp
 
-/-! ## 3. The integral-circulant PST classification
+/-! ## 3. The integral-circulant PST classification (Bašić 2011)
 
 The connection-set normalization: for a divisor `d ∣ n`, write
-`S_n(d) := {x ∈ ZMod n : gcd(x.val, n) = d}`.  So's theorem says a
-circulant is integral iff `S = ⋃_{d ∈ D} S_n(d)` for some set `D` of
-divisors of `n`.  Bašić–Petković–Stevanović then prove:
+`S_n(d) := {x ∈ ZMod n : gcd(x.val, n) = d}`.  **So's theorem** (Discrete
+Math. 306 (2006) 153–158) says a circulant is integral iff its connection
+set is a union of `gcd`-classes `S = ⋃_{d ∈ D} S_n(d)` for a set `D` of
+divisors `d ∣ n`, `d < n`.  Such a graph is the **integral circulant graph**
+`ICG_n(D)`: vertices `a, b ∈ ZMod n` adjacent iff `gcd(a − b, n) ∈ D`.
 
-> An integral circulant `ICG_n(D)` has PST **iff** `n ∈ 4ℕ` (i.e. `4 ∣ n`)
-> and `D` (the divisor set) satisfies the parity/divisor condition that
-> `{d ∈ D : n/d ≡ 0 (mod 4)}` is *exactly* the set of `d ∈ D` with
-> `n/d ≡ 0 (mod 4)`... more precisely (BPS 2009, Theorem):
-> `ICG_n(D)` has PST iff `4 ∣ n` and
-> `D ∩ {d : 2-adic-val(n/d) = 1}` and the structure of `D` modulo the
-> `2`-part of `n` matches the antipodal-symmetry condition.
+**Bašić's complete characterisation** (arXiv:1104.1825, *Characterization
+of quantum circulant networks having perfect state transfer*, Quantum Inf.
+Process. 12 (2013) 345–364, **Theorem 22**).  Write `S₂(m)` for the `2`-adic
+valuation of `m` and stratify the divisor set by it:
+  `Dᵢ := {d ∈ D | S₂(n/d) = i}`,  `D₁* := D₁ \ {n/2}`,  `D₂* := D₂ \ {n/4}`,
+and `kD := {k·d | d ∈ D}`.  Then
 
-We package the (necessary part of the) divisor condition as the predicate
-`IsBPSDivisorCondition`, stated concretely on the connection set, and state
-the classification biconditional with an honest `sorry`.
+> `ICG_n(D)` has PST  ⟺  `4 ∣ n`  ∧  `D₁* = 2·D₂*`  ∧  `D₀ = 4·D₂*`
+>                       ∧  (`n/4 ∈ D` ∨ `n/2 ∈ D`).
 
-The simplest faithful concrete form of the divisor condition we can state
-without the full `gcd`-class decomposition: PST in an integral circulant
-occurs between antipodal vertices `j` and `j + n/2` (so `n` is even), and
-requires that the connection set `S` *separate parities* in the precise
-sense below — every `s ∈ S` whose character at the antipodal frequency
-`n/2` is `+1` versus `-1` is controlled by `4 ∣ n`. -/
+The bare `4 ∣ n` (the old field) is **necessary but very far from
+sufficient**: it is the easy necessary clause (Saxena–Severini–Shparlinski
+2007; refined to `n ∈ 4ℕ`, not merely `n ∈ 4ℕ+2`, by Bašić et al.), but most
+divisor sets on a multiple of `4` violate the `2`-adic alignment
+`D₁* = 2D₂*, D₀ = 4D₂*` and the antipodal-divisor clause and so have **no**
+PST.  We therefore encode the full Theorem-22 predicate below.
+
+The eigenvalues of `ICG_n(D)` are the Ramanujan/von-Sterneck sums
+`λ_j = ∑_{d ∈ D} c(j, n/d)` (Klotz–Sander); the `2`-adic strata `Dᵢ` are
+exactly what controls the parities `λ_{2j+1}` that PST (via the
+Godsil/Bašić integer-gap criterion) constrains. -/
 
 /-- **Antipodal vertex** of `j` in `ZMod n` for even `n`: `j + n/2`.  PST in
-even circulants is always antipodal (Bašić–Petković–Stevanović). -/
+even circulants is always antipodal (Bašić, arXiv:1104.1825, Thm 4: if PST
+occurs between `0` and `a` then `a = n/2`). -/
 noncomputable def antipodal (n : ℕ) (j : ZMod n) : ZMod n := j + ((n / 2 : ℕ) : ZMod n)
 
-/-- **BPS divisor condition** (concrete necessary-form).  For an integral
-circulant to admit perfect state transfer, BPS require `4 ∣ n` together
-with a parity condition on the connection set: the character of every
-connection element `s ∈ S` at the antipodal frequency `n/2` must be the
-*same* sign as dictated by `4 ∣ n`.  We encode the headline divisibility
-`4 ∣ n` (the cleanest, provably-necessary part of the BPS condition) as a
-concrete `Prop`; the full divisor-class refinement is deferred to the proof
-of the classification. -/
-def IsBPSDivisorCondition (n : ℕ) (_S : Finset (ZMod n)) : Prop :=
-  4 ∣ n
+/-- The **`2`-adic divisor stratum** `Dᵢ = {d ∈ D | S₂(n/d) = i}` of a divisor
+set `D ⊆ {d : d ∣ n}` (Bašić, arXiv:1104.1825, §3).  `S₂(m) = padicValNat 2 m`
+is the exponent of `2` in `m`. -/
+def divisorStratum (n i : ℕ) (D : Finset ℕ) : Finset ℕ :=
+  D.filter (fun d => padicValNat 2 (n / d) = i)
 
-/-- **So's integral-circulant PST classification, as a local content-bearing
-interface** (Bašić–Petković–Stevanović 2009; Saxena–Severini–Shparlinski 2007;
-So 2005).
+/-- **Genuine BPS divisor-class condition** (Bašić, arXiv:1104.1825,
+**Theorem 22**).  For the integral circulant `ICG_n(D)` defined by the divisor
+set `D ⊆ {d : d ∣ n, d < n}`, this is the *exact* condition characterising
+perfect state transfer:
 
-The full classification rests on two deep number-theoretic inputs that are not
-yet formalized in this corpus:
+  `4 ∣ n`  ∧  `D₁* = 2·D₂*`  ∧  `D₀ = 4·D₂*`  ∧  (`n/4 ∈ D` ∨ `n/2 ∈ D`),
 
-* **So's theorem (2005)**: a circulant `C_n(S)` is integral iff `S` is a union
-  of `gcd`-classes `S_n(d) = {x : gcd(x.val, n) = d}` over a set of divisors of
-  `n`; and
-* the **BPS Diophantine alignment**: the antipodal PST amplitude has modulus
-  one iff `4 ∣ n` and the divisor classes satisfy the parity condition.
+where `Dᵢ = {d ∈ D | S₂(n/d) = i}`, `D₁* = D₁ \ {n/2}`, `D₂* = D₂ \ {n/4}`,
+and `2·X = {2d | d ∈ X}`, `4·X = {4d | d ∈ X}`.
 
-Rather than `sorry` the headline biconditional or assume it opaquely, we package
-exactly this missing content as a *local* typeclass.  The field is **not
-vacuous**: it must respect the genuine spectral structure of the circulant —
-the hypothesis `hspec` feeds in the *proven* fact that the adjacency eigenvalues
-are the character sums `circulantEigenvalue n S h` (the keystone
-`circulantEigenvalue_re_mem_spectrum` of this file).  A consumer cannot satisfy
-the field without honouring So's gcd-class decomposition of *those* eigenvalues,
-so the interface is the faithful Diophantine residual, not a weakening.
+This **replaces** the old `IsBPSDivisorCondition := 4 ∣ n`, which was a false
+gutting of the characterisation: `4 ∣ n` alone is satisfied by infinitely many
+integral circulants with *no* PST (e.g. on `n = 8` the divisor set `D = {1}`
+gives `D₀ = ∅` but `n/4 = 2 ∉ D` and `n/2 = 4 ∉ D`, so the antipodal clause
+fails and `ICG₈({1})` — the cube `Q₃`'s complement-type graph — has no PST,
+yet `4 ∣ 8`).  The full predicate is genuinely hard to satisfy: it pins the
+three lower strata to dilates of `D₂*` and forces an antipodal divisor. -/
+def IsBPSDivisorCondition (n : ℕ) (D : Finset ℕ) : Prop :=
+  4 ∣ n ∧
+  divisorStratum n 1 D \ {n / 2} = (divisorStratum n 2 D \ {n / 4}).image (fun d => 2 * d) ∧
+  divisorStratum n 0 D = (divisorStratum n 2 D \ {n / 4}).image (fun d => 4 * d) ∧
+  (n / 4 ∈ D ∨ n / 2 ∈ D)
 
-This is a *local* class (it lives in this file and is not added to the shared
-`Graphplay.LiteratureInterfaces`), mirroring the typeclass-conditional pattern
-used elsewhere in the corpus for deep cited inputs.
+/-- **So's gcd-class connection set** `S = ⋃_{d ∈ D} S_n(d)` where
+`S_n(d) = {x ∈ ZMod n : gcd(x.val, n) = d}` (So 2006).  The integral circulant
+`ICG_n(D)` is `circulantGraph n (gcdClassConn n D)`.  Every integral circulant
+arises this way, and conversely every such `S` yields an integral circulant. -/
+def gcdClassConn (n : ℕ) [NeZero n] (D : Finset ℕ) : Finset (ZMod n) :=
+  Finset.univ.filter (fun x : ZMod n => Nat.gcd x.val n ∈ D)
 
-Reference: So, *Integral circulant graphs*, Discrete Math. 306 (2005) 153–158;
-Bašić–Petković–Stevanović, Appl. Math. Lett. 22 (2009) 1117–1121, Thm 2.2;
+/-- **Bašić's integral-circulant PST classification, as a local content-bearing
+interface** (Bašić, arXiv:1104.1825, Theorem 22; So 2006;
+Saxena–Severini–Shparlinski 2007).
+
+The classification rests on two deep number-theoretic inputs that are not yet
+formalised in this corpus:
+
+* **So's theorem (2006)**: a circulant `C_n(S)` is integral iff `S` is a union
+  of `gcd`-classes `S_n(d) = {x : gcd(x.val, n) = d}` over a set `D` of divisors
+  of `n` — i.e. `S = gcdClassConn n D` for some `D`; and
+* **Bašić's Diophantine characterisation (Theorem 22)**: the integral circulant
+  `ICG_n(D)` admits PST iff the divisor set `D` satisfies the genuine
+  `2`-adic-stratum condition `IsBPSDivisorCondition n D`.
+
+We package exactly this missing content as a *local* typeclass.  The field is
+the **existential** headline that Bašić actually proves — quantifying over the
+divisor set `D` whose gcd-class connection set is the circulant's — rather than
+a per-`S` biconditional (the old `4 ∣ n` form was a false per-`S` gutting: it
+made the right-hand side independent of which integral circulant on `n` we took,
+forcing a biconditional that fails for the many divisor sets satisfying `4 ∣ n`
+but not the stratum alignment).  The hypothesis `hspec` feeds in the *proven*
+spectral keystone (`circulantEigenvalue_re_mem_spectrum`): every adjacency
+eigenvalue is realised by a character sum, the very `λ_j` that the `2`-adic
+strata constrain.  A consumer must honour So's gcd-class decomposition of those
+eigenvalues, so the interface is the faithful Diophantine residual.
+
+This is a *local* class (not added to the shared `Graphplay.LiteratureInterfaces`),
+mirroring the typeclass-conditional pattern used for deep cited inputs.
+
+Reference: So, *Integral circulant graphs*, Discrete Math. 306 (2006) 153–158;
+Bašić, *Characterization of quantum circulant networks having perfect state
+transfer*, Quantum Inf. Process. 12 (2013) 345–364 (arXiv:1104.1825), Thm 22;
 Saxena–Severini–Shparlinski, Int. J. Quantum Inf. 5 (2007) 417–430. -/
 class SoIntegralCirculantPST where
-  /-- The classification biconditional, conditioned on the proven spectral input
-  `hspec` that every adjacency eigenvalue of the circulant is realized by a
-  character sum.  This is the So-2005 + BPS-2009 Diophantine content. -/
-  pst_iff_integral_and_divisor :
-    ∀ (n : ℕ) [NeZero n] (S : Finset (ZMod n)),
-      (∀ h : ZMod n, (circulantEigenvalue n S h).re ∈
-          spectrum ℝ (circulantGraph n S).adj) →
-      ((∃ u v : ZMod n, ∃ τ : ℝ, IsPST (circulantGraph n S) u v τ) ↔
-        (IsIntegralCirculant n S ∧ IsBPSDivisorCondition n S))
+  /-- **Bašić Theorem 22 (existential form).**  Among the integral circulants on
+  `n` vertices, *some* `ICG_n(D)` admits PST iff *some* divisor set `D` (of
+  divisors `< n`) satisfies the genuine `2`-adic divisor-class condition.  The
+  `hspec` hypothesis carries the proven fact that the candidate connection set's
+  eigenvalues are its character sums.  This is the So-2006 + Bašić-2013 content. -/
+  exists_pst_iff_exists_divisor :
+    ∀ (n : ℕ) [NeZero n],
+      (∀ (D : Finset ℕ) (h : ZMod n),
+          (circulantEigenvalue n (gcdClassConn n D) h).re ∈
+            spectrum ℝ (circulantGraph n (gcdClassConn n D)).adj) →
+      ((∃ D : Finset ℕ, (∀ d ∈ D, d ∣ n ∧ d < n) ∧
+          ∃ u v : ZMod n, ∃ τ : ℝ,
+            IsPST (circulantGraph n (gcdClassConn n D)) u v τ) ↔
+        (∃ D : Finset ℕ, (∀ d ∈ D, d ∣ n ∧ d < n) ∧ IsBPSDivisorCondition n D))
 
-/-- **Integral-circulant PST classification** (Bašić–Petković–Stevanović
-2009; Saxena–Severini–Shparlinski 2007), *conditional on the local
-`SoIntegralCirculantPST` interface*.
+/-- **Integral-circulant PST classification** (Bašić, arXiv:1104.1825,
+Theorem 22; So 2006), *conditional on the local `SoIntegralCirculantPST`
+interface*.
 
-A circulant `C_n(S)` admits perfect state transfer at some time `τ`
-between some pair of vertices **iff** it is integral *and* the BPS divisor
-condition holds (in particular `4 ∣ n`).
+Among all integral circulants on `n` vertices, some `ICG_n(D)` admits perfect
+state transfer **iff** some admissible divisor set `D` satisfies the genuine
+BPS `2`-adic divisor-class condition (which in particular forces `4 ∣ n` and an
+antipodal divisor `n/4 ∈ D` or `n/2 ∈ D`).
 
-Forward direction: PST forces the eigenvalues onto an arithmetic
-progression (Godsil's ratio condition); for a circulant the eigenvalues
-are the character sums, and the ratio condition collapses (via So's
-theorem) to integrality plus the `4 ∣ n` divisor condition.  Backward
-direction: when `4 ∣ n` and the divisor classes align, `τ = π/2` (suitably
-scaled) realizes antipodal PST.
+This is the **existential** headline Bašić proves, *not* a per-`S`
+biconditional: the deep gcd-class decomposition (So) and the `2`-adic Diophantine
+alignment (Bašić Thm 22) are supplied by the `[SoIntegralCirculantPST]` instance.
+The theorem discharges the classification *axiom-clean-conditionally* by feeding
+that interface the proven spectral keystone `circulantEigenvalue_re_mem_spectrum`.
 
-The deep So-2005 gcd-class decomposition and the BPS Diophantine alignment are
-supplied by the `[SoIntegralCirculantPST]` instance; this theorem discharges the
-classification *axiom-clean-conditionally* by feeding that interface the proven
-spectral keystone `circulantEigenvalue_re_mem_spectrum`.
-
-Reference: Bašić–Petković–Stevanović, Appl. Math. Lett. 22 (2009)
-1117–1121, Theorem 2.2; Saxena–Severini–Shparlinski, Int. J. Quantum Inf.
-5 (2007) 417–430. -/
-theorem isPST_integralCirculant_iff [SoIntegralCirculantPST]
-    (n : ℕ) [NeZero n] (S : Finset (ZMod n))
-    (hS : S.image (fun s => -s) = S) (hL : (0 : ZMod n) ∉ S) :
-    (∃ u v : ZMod n, ∃ τ : ℝ, IsPST (circulantGraph n S) u v τ) ↔
-      (IsIntegralCirculant n S ∧ IsBPSDivisorCondition n S) :=
+Reference: Bašić, Quantum Inf. Process. 12 (2013) 345–364 (arXiv:1104.1825),
+Theorem 22; So, Discrete Math. 306 (2006) 153–158;
+Saxena–Severini–Shparlinski, Int. J. Quantum Inf. 5 (2007) 417–430. -/
+theorem isPST_integralCirculant_iff [SoIntegralCirculantPST] (n : ℕ) [NeZero n]
+    (hSymm : ∀ D : Finset ℕ, (gcdClassConn n D).image (fun s => -s) = gcdClassConn n D)
+    (hLoop : ∀ D : Finset ℕ, (0 : ZMod n) ∉ gcdClassConn n D) :
+    (∃ D : Finset ℕ, (∀ d ∈ D, d ∣ n ∧ d < n) ∧
+        ∃ u v : ZMod n, ∃ τ : ℝ,
+          IsPST (circulantGraph n (gcdClassConn n D)) u v τ) ↔
+      (∃ D : Finset ℕ, (∀ d ∈ D, d ∣ n ∧ d < n) ∧ IsBPSDivisorCondition n D) :=
   -- Discharge the deep biconditional through the local interface, feeding it the
   -- *proven* spectral input: every character sum is a genuine adjacency
   -- eigenvalue (`circulantEigenvalue_re_mem_spectrum`).  This is the faithful
   -- Diophantine residual, isolated to one named interface — no `sorry`.
-  SoIntegralCirculantPST.pst_iff_integral_and_divisor n S
-    (fun h => circulantEigenvalue_re_mem_spectrum n S hS hL h)
+  SoIntegralCirculantPST.exists_pst_iff_exists_divisor n
+    (fun D h => circulantEigenvalue_re_mem_spectrum n (gcdClassConn n D)
+      (hSymm D) (hLoop D) h)
 
 /-! ## 4. The bunkbed graph `G □ K₂`
 

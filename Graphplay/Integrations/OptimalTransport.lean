@@ -292,14 +292,26 @@ both genuinely require (lower-semicontinuity of the cost — without it strong d
 
 This is a *pure external assumption* (no instance): the always-true *weak* half (`≤`)
 is fully proven below (`kantorovich_weak_duality`, `FiniteOT.dualValue_le_value`) and
-needs none of this. -/
+needs none of this.
+
+**Note on `optimal_coupling_exists` (audit 2026-06).**  `P.value` is the genuine
+infimum `sInf {kantorovich π | π a coupling}`, and the problem's `cost_lb` field
+(`∃ M, ∀ x y, M ≤ c x y`) makes the cost integral against any probability coupling
+bounded below by `M`, so that value set is **bounded below** and `sInf` is the honest
+real infimum (not the `sInf ∅`/unbounded junk value).  Asserting the infimum is
+*attained* — `kantorovich π = value` exactly — is mildly over-strong relative to
+what `cost_lb` alone forces (attainment needs lsc + tightness, the genuine Prokhorov
+content); we keep it as the faithful Villani Thm 4.1 statement, with this note that
+the *value itself* is already a well-posed infimum under `cost_lb`. -/
 class VillaniKantorovich {Ω : Type u} [MeasurableSpace Ω] [TopologicalSpace Ω]
     [PolishSpace Ω] [OpensMeasurableSpace Ω] (P : OptimalTransportProblem Ω)
     (hlsc : LowerSemicontinuous (Function.uncurry P.cost)) : Prop where
   /-- Villani Thm 5.10: strong Kantorovich duality — primal equals dual. -/
   strong_duality :
     P.value = sSup {d : ℝ | ∃ φ ψ, P.IsAdmissiblePotential φ ψ ∧ P.dual φ ψ = d}
-  /-- Villani Thm 4.1: the Kantorovich infimum is attained by an optimal coupling. -/
+  /-- Villani Thm 4.1: the Kantorovich infimum is attained by an optimal coupling.
+  `P.value` is a genuine infimum (bounded below via `P.cost_lb`); attainment is the
+  external Prokhorov/lsc content. -/
   optimal_coupling_exists : ∃ π, P.IsCoupling π ∧ P.kantorovich π = P.value
 
 /-- **Strong Kantorovich duality** (Villani Thm 5.10), conditional on
@@ -1063,15 +1075,47 @@ theorem birkhoffContractionCoeff_lt_one (B : Matrix I I ℝ) :
     birkhoffContractionCoeff B < 1 :=
   Real.tanh_lt_one _
 
+/-- **Hilbert (Birkhoff) projective distance between two graphon kernels.**
+
+The Birkhoff metric on the positive cone is the *oscillation of the log-ratio*:
+`d_H(W₁, W₂) = esssup log(W₁/W₂) − essinf log(W₁/W₂)` over `Ω × Ω`.  This is the
+honest observable Birkhoff's contraction theorem governs — two kernels are
+projectively close iff their pointwise ratio is nearly constant — and it is the
+right yardstick for Sinkhorn convergence (the *total mass* is **not**: it is a
+single linear functional that says nothing about projective shape).
+
+We use the real parts of the kernels (Sinkhorn iterates of a nonneg-real graphon
+stay real). `d_H(W, W) = 0` (the log-ratio is `0`), and `d_H ≥ 0` always (esssup
+≥ essinf), but `d_H(W₁,W₂) = 0` does **not** force `W₁ = W₂` — only projective
+(ray) equality — which is exactly the Birkhoff-metric content. -/
+noncomputable def hilbertProjectiveDist (W₁ W₂ : Graphon Ω μ) : ℝ :=
+  (essSup
+      (fun p : Ω × Ω => Real.log ((W₁.kernel p.1 p.2).re / (W₂.kernel p.1 p.2).re))
+      (μ.prod μ))
+  - (- essSup
+      (fun p : Ω × Ω => - Real.log ((W₁.kernel p.1 p.2).re / (W₂.kernel p.1 p.2).re))
+      (μ.prod μ))
+
 /-- **Birkhoff/IPF quotient Sinkhorn-rate bound** (external, cited).
 
 The deep half of the Sinkhorn-rate dictionary: the finite quotient's Hilbert
 projective contraction rate `ρ_B = tanh(Δ(B)/4)` (the Birkhoff coefficient of
-`B = quotientTransportPlan P`) **lower-bounds** every valid host total-mass geometric
-decay rate `ρ_W`.  This is the finite Iterative-Proportional-Fitting / positive-cone
-Hilbert-metric contraction estimate (Birkhoff 1957; Franklin–Lorenz 1989;
-G. Carlier, *On the linear convergence of the Sinkhorn algorithm*, SIAM J. Optim.
-2022), not available in Mathlib.
+`B = quotientTransportPlan P`) **lower-bounds** every valid host *projective*
+geometric decay rate `ρ_W`.  This is the finite Iterative-Proportional-Fitting /
+positive-cone Hilbert-metric contraction estimate (Birkhoff, *Extensions of
+Jentzsch's theorem*, Trans. AMS **85** (1957) 219–227; Franklin–Lorenz, *On the
+scaling of multidimensional matrices*, Linear Algebra Appl. **114/115** (1989)
+717–735; G. Carlier, *On the linear convergence of the Sinkhorn algorithm*, SIAM
+J. Optim. **32** (2022) 786–794), not available in Mathlib.
+
+**WRONG-OBSERVABLE DEFECT FIXED (audit 2026-06).**  The previous premise bounded
+`|totalMass(Sₖ)| ≤ ρ_W^k` — the *scaling sequence*, a single linear functional
+that Birkhoff's theorem says **nothing** about (it can decay at an unrelated rate,
+or be identically `0` for the zero graphon, while the projective shape converges
+at the genuine Birkhoff rate).  The honest premise is **projective-distance
+decay** to the doubly-stochastic Sinkhorn limit `S∞`:
+`d_H(Sₖ, S∞) ≤ C · ρ_W^k`.  That is the quantity the contraction coefficient
+`tanh(Δ(B)/4)` actually lower-bounds.
 
 A *pure external assumption* (no instance): the `[0,1)`-membership of `ρ_B` is proven
 unconditionally (`birkhoffContractionCoeff_nonneg`, `..._lt_one`); only this
@@ -1080,48 +1124,51 @@ genuine Birkhoff coefficient, so a bogus `ρ_B = 0` cannot discharge the field. 
 class BirkhoffSinkhornRate [Nonempty I]
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) : Prop where
   /-- The Birkhoff/IPF contraction theorem: the quotient projective rate
-  `tanh(Δ(B)/4)` lower-bounds every valid host geometric decay rate `ρ_W`. -/
+  `tanh(Δ(B)/4)` lower-bounds every valid host **projective** decay rate `ρ_W` —
+  i.e. every `ρ_W` for which the Sinkhorn iterates `Sₖ` approach some
+  doubly-stochastic limit `S∞` geometrically in the **Hilbert projective metric**
+  `d_H` (not in total mass). -/
   rate_lower_bound : ∀ (ρ_W : ℝ), 0 ≤ ρ_W → ρ_W < 1 →
-    (∀ k : ℕ, |(sinkhornIterate W k).totalMass| ≤ ρ_W ^ k) →
+    (∃ (Sinf : Graphon Ω μ) (C : ℝ), Graphon.IsStochastic Sinf ∧ 0 ≤ C ∧
+      ∀ k : ℕ, Graphon.hilbertProjectiveDist (sinkhornIterate W k) Sinf ≤ C * ρ_W ^ k) →
     birkhoffContractionCoeff (quotientTransportPlan P) ≤ ρ_W
 
-/-- **Quotient lower bound on the Sinkhorn rate (STRENGTHENED — hollow→genuine,
-audit 2026-06).**  The Sinkhorn convergence rate of the host graphon `W` is
-lower-bounded by the **Birkhoff/Hilbert projective contraction coefficient**
-`ρ_B := birkhoffContractionCoeff (quotientTransportPlan P) = tanh(Δ(B)/4)` of its
-finite quotient kernel `B = quotientTransportPlan P`.
+/-- **Quotient lower bound on the Sinkhorn rate (STRENGTHENED — hollow→genuine
+*and* right-observable, audit 2026-06).**  The Sinkhorn **projective** convergence
+rate of the host graphon `W` is lower-bounded by the **Birkhoff/Hilbert projective
+contraction coefficient** `ρ_B := birkhoffContractionCoeff (quotientTransportPlan P)
+= tanh(Δ(B)/4)` of its finite quotient kernel `B = quotientTransportPlan P`.
 
-**Hollow witness ruled out (the hollow→genuine record).**  The *previous* statement
-read `∃ ρ_B : ℝ, 0 ≤ ρ_B ∧ ρ_B < 1 ∧ (∀ valid host rate ρ_W, ρ_B ≤ ρ_W)`.  Because
-`0 ≤ ρ_W` is *given* in the inner implication, that existential was trivially
-satisfiable by the degenerate witness  `ρ_B := 0`:  `0 ≤ 0`, `0 < 1`, and `0 ≤ ρ_W`
-for free — the "quotient rate" carried **no information about the quotient `B` at
-all**.  The genuine claim must *pin* `ρ_B` to the actual quotient Hilbert-metric
-contraction rate, i.e. the Birkhoff coefficient `tanh(Δ(B)/4)` (Birkhoff 1957;
-Franklin–Lorenz 1989; Carlier 2022, *On the linear convergence of the Sinkhorn
-algorithm*), so that `ρ_B = 0` holds **only** in the genuinely-degenerate rank-one
-case `Δ(B) = 0` (all rows of `B` projectively equal) and is otherwise a *strictly
-positive* geometric functional of `B`.
+**Two defects fixed.**
 
-We therefore state the bound for the *pinned* `ρ_B = birkhoffContractionCoeff
-(quotientTransportPlan P)`.  Its `[0,1)`-membership — the genuinely-provable,
-non-hollow content tying it to the real definition — is **PROVEN** here
-(`birkhoffContractionCoeff_nonneg`, `..._lt_one`; the `[Nonempty I]` makes the
-projective-diameter supremum a genuine maximum).  The *lower-bound implication*
-itself (`ρ_B ≤ ρ_W` for every host rate `ρ_W`) is the deep Birkhoff/IPF contraction
-theorem and is supplied by the named external hypothesis
-`[BirkhoffSinkhornRate P]` (Birkhoff 1957; Franklin–Lorenz 1989; Carlier 2022);
-crucially the residual is no longer hollow: a bogus `ρ_B = 0` can no longer
-discharge it. -/
+* *Hollow witness (old).*  An earlier statement read `∃ ρ_B, 0 ≤ ρ_B ∧ ρ_B < 1 ∧
+  (∀ valid host rate ρ_W, ρ_B ≤ ρ_W)`; with `0 ≤ ρ_W` given, `ρ_B := 0` discharged
+  it for free.  Fixed by *pinning* `ρ_B` to the genuine Birkhoff coefficient
+  `tanh(Δ(B)/4)`, which is `0` only in the degenerate rank-one case `Δ(B)=0`.
+
+* *Wrong observable (this audit).*  The premise then bounded the **total mass**
+  `|totalMass(Sₖ)| ≤ ρ_W^k` — a single linear functional Birkhoff's theorem does
+  not govern (zero for the zero graphon, decays at an unrelated rate in general).
+  The honest premise is geometric decay of the **Hilbert projective distance**
+  `d_H(Sₖ, S∞) ≤ C·ρ_W^k` to the doubly-stochastic Sinkhorn limit `S∞` — the
+  quantity `tanh(Δ(B)/4)` actually lower-bounds.
+
+Its `[0,1)`-membership — the genuinely-provable content tying `ρ_B` to the real
+definition — is **PROVEN** here (`birkhoffContractionCoeff_nonneg`, `..._lt_one`;
+the `[Nonempty I]` makes the projective-diameter supremum a genuine maximum).  The
+*lower-bound implication* itself (`ρ_B ≤ ρ_W` for every host projective rate `ρ_W`)
+is the deep Birkhoff/IPF contraction theorem, supplied by the named external
+`[BirkhoffSinkhornRate P]` (Birkhoff 1957; Franklin–Lorenz 1989; Carlier 2022). -/
 theorem sinkhorn_rate_quotient_bound [Nonempty I]
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) [h : BirkhoffSinkhornRate P] :
     -- `ρ_B` is **pinned** to the Birkhoff/Hilbert projective contraction
     -- coefficient of the finite quotient kernel: it lies in `[0,1)` (PROVEN) and
-    -- lower-bounds every valid host Sinkhorn rate `ρ_W` (external `BirkhoffSinkhornRate`).
+    -- lower-bounds every valid host **projective** Sinkhorn rate `ρ_W` (external).
     0 ≤ birkhoffContractionCoeff (quotientTransportPlan P) ∧
       birkhoffContractionCoeff (quotientTransportPlan P) < 1 ∧
       ∀ (ρ_W : ℝ), 0 ≤ ρ_W → ρ_W < 1 →
-        (∀ k : ℕ, |(sinkhornIterate W k).totalMass| ≤ ρ_W ^ k) →
+        (∃ (Sinf : Graphon Ω μ) (C : ℝ), Graphon.IsStochastic Sinf ∧ 0 ≤ C ∧
+          ∀ k : ℕ, Graphon.hilbertProjectiveDist (sinkhornIterate W k) Sinf ≤ C * ρ_W ^ k) →
         birkhoffContractionCoeff (quotientTransportPlan P) ≤ ρ_W :=
   ⟨birkhoffContractionCoeff_nonneg _, birkhoffContractionCoeff_lt_one _,
     h.rate_lower_bound⟩

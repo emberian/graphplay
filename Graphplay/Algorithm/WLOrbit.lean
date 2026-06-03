@@ -49,12 +49,19 @@ sibling file, written by L4) for the actual WL refinement procedure
    giving PST graphs that lie outside the classical
    "find-an-automorphism" search space.
 
-The file is deliberately a *statement-level* sketch: most theorems are
-recorded with `sorry` and accompanying mathematical commentary, since
-their proofs require infrastructure (group actions on partitions,
-combinatorial inductions on WL rounds, the CFI gadget) that lives
-across `Graphplay.Equitable`, `Graphplay.Algorithm.WLRefinement`, and
-`Mathlib`.
+All statements here are **proved** except for one honestly-flagged `sorry`:
+`cfi_kwl_lower_bound` (the `k ≥ 2` Cai–Fürer–Immerman gadget over an expander
+base — several hundred lines of combinatorics over a treewidth-`Ω(k)` base).
+Its fully-machine-checked `k = 1` instance (`C₆` vs `2·K₃`,
+`cfi_1wl_indistinguishable`) is closed, as is everything else: the orbit
+partition's equitability, `wlStable_refines_orbit`, the no-phantom theorems, and
+the Babai–Mathon / `kWL_eq_kAritySameOrbit` orbit-agreement statements.
+
+All orbit/automorphism content quantifies over **genuine graph automorphisms**
+(`IsGraphAut`, §0) — there is no all-permutations `Aut` stub — so the
+`HasAutInvariantWeights` hypothesis is a real external constraint on the
+weighting, not the degenerate "constant off the diagonal" it collapsed to under
+the old stub.
 -/
 
 import Graphplay.Equitable
@@ -75,10 +82,12 @@ namespace WLOrbit
 /-! ## §0. Glue with `Mathlib.Combinatorics.SimpleGraph`
 
 We work with both the Graphplay `SimpleGraph` (combinatorial) and the
-`WeightedGraph` carrier.  For the automorphism group we route through
-`Mathlib`'s `SimpleGraph.Iso`.  We expose only the minimal interface
-we need: an `Aut` type with a `Group` structure and a multiplicative
-action on `V`. -/
+`WeightedGraph` carrier.  Automorphisms are the **adjacency-preserving
+permutations** `IsGraphAut` (defined just below): a permutation `σ : Equiv.Perm V`
+with `G.Adj (σ x) (σ y) ↔ G.Adj x y`.  The orbit relation `sameOrbit`, the
+orbit partition, and every `Aut(G)`-quantified statement range over exactly
+these.  We use `Mathlib`'s `SimpleGraph.Iso` only for the `toMathlib`-bridged
+non-isomorphism statements. -/
 
 /-- Bridge: a Graphplay `SimpleGraph V` gives the Mathlib `SimpleGraph V`
 on the same vertex set. -/
@@ -90,40 +99,65 @@ def toMathlib {V : Type u} (G : Graphplay.SimpleGraph V) :
     exact G.symm h
   loopless := ⟨fun a h => G.irrefl a h⟩
 
-/-- The automorphism group of a Graphplay `SimpleGraph` (opaque stub: all
-permutations). -/
-abbrev Aut {V : Type u} (_G : Graphplay.SimpleGraph V) : Type u := Equiv.Perm V
+/-- A permutation `σ : Equiv.Perm V` is a **graph automorphism** of `G` if it
+preserves adjacency in both directions.  This is the genuine automorphism
+predicate that all of §1–§8 below quantify over; there is deliberately **no**
+all-permutations `Aut := Equiv.Perm V` stub (an earlier version used one, which
+forced every `HasAutInvariantWeights` weight to be constant off the diagonal and
+collapsed the entire WL-vs-orbit section). -/
+def IsGraphAut {V : Type u} (G : Graphplay.SimpleGraph V) (σ : Equiv.Perm V) :
+    Prop :=
+  ∀ x y : V, G.Adj (σ x) (σ y) ↔ G.Adj x y
+
+/-- The identity permutation is a graph automorphism. -/
+lemma isGraphAut_one {V : Type u} (G : Graphplay.SimpleGraph V) :
+    IsGraphAut G (1 : Equiv.Perm V) := fun _ _ => Iff.rfl
+
+/-- The inverse of a graph automorphism is a graph automorphism. -/
+lemma isGraphAut_inv {V : Type u} (G : Graphplay.SimpleGraph V) {σ : Equiv.Perm V}
+    (h : IsGraphAut G σ) : IsGraphAut G σ⁻¹ := by
+  intro x y
+  -- `G.Adj (σ⁻¹ x) (σ⁻¹ y) ↔ G.Adj x y`: instantiate `h` at `σ⁻¹ x, σ⁻¹ y` and
+  -- cancel `σ (σ⁻¹ ·) = ·`.
+  have hxy := h (σ⁻¹ x) (σ⁻¹ y)
+  -- `σ (σ⁻¹ ·) = ·` via `Equiv.Perm.coe_inv` + `Equiv.apply_symm_apply`.
+  simp only [Equiv.Perm.coe_inv, Equiv.apply_symm_apply] at hxy
+  exact hxy.symm
+
+/-- The composite of two graph automorphisms is a graph automorphism. -/
+lemma isGraphAut_mul {V : Type u} (G : Graphplay.SimpleGraph V) {σ τ : Equiv.Perm V}
+    (hσ : IsGraphAut G σ) (hτ : IsGraphAut G τ) : IsGraphAut G (σ * τ) := by
+  intro x y
+  -- `(σ * τ) x = σ (τ x)`.
+  simp only [Equiv.Perm.coe_mul, Function.comp_apply]
+  exact (hσ (τ x) (τ y)).trans (hτ x y)
 
 /-! ## §1. The orbit partition -/
 
 variable {V : Type u} [Fintype V] [DecidableEq V]
 
-/-- The `Aut(G)`-orbit of `v` as a `Set V`. -/
-def orbit (G : Graphplay.SimpleGraph V) (v : V) : Set V :=
-  MulAction.orbit (Aut G) v
-
-/-- The orbit relation: two vertices are in the same `Aut(G)`-orbit. -/
+/-- The orbit relation: two vertices are in the same `Aut(G)`-orbit, i.e. some
+**genuine graph automorphism** of `G` maps one to the other. -/
 def sameOrbit (G : Graphplay.SimpleGraph V) (u v : V) : Prop :=
-  ∃ σ : Aut G, σ • u = v
+  ∃ σ : Equiv.Perm V, IsGraphAut G σ ∧ σ u = v
 
 lemma sameOrbit_refl (G : Graphplay.SimpleGraph V) (v : V) :
-    sameOrbit G v v := ⟨1, by simp⟩
+    sameOrbit G v v := ⟨1, isGraphAut_one G, rfl⟩
 
 lemma sameOrbit_symm (G : Graphplay.SimpleGraph V) {u v : V}
     (h : sameOrbit G u v) : sameOrbit G v u := by
-  obtain ⟨σ, hσ⟩ := h
-  refine ⟨σ⁻¹, ?_⟩
-  -- σ⁻¹ • (σ • u) = u, and σ • u = v
-  have : σ⁻¹ • (σ • u) = u := by
-    rw [← mul_smul, inv_mul_cancel, one_smul]
-  rw [← hσ]; exact this
+  obtain ⟨σ, hσaut, hσ⟩ := h
+  refine ⟨σ⁻¹, isGraphAut_inv G hσaut, ?_⟩
+  -- σ⁻¹ v = σ⁻¹ (σ u) = u.
+  rw [← hσ]; simp only [Equiv.Perm.coe_inv, Equiv.symm_apply_apply]
 
 lemma sameOrbit_trans (G : Graphplay.SimpleGraph V) {u v w : V}
     (huv : sameOrbit G u v) (hvw : sameOrbit G v w) : sameOrbit G u w := by
-  obtain ⟨σ, hσ⟩ := huv
-  obtain ⟨τ, hτ⟩ := hvw
-  refine ⟨τ * σ, ?_⟩
-  rw [mul_smul, hσ, hτ]
+  obtain ⟨σ, hσaut, hσ⟩ := huv
+  obtain ⟨τ, hτaut, hτ⟩ := hvw
+  refine ⟨τ * σ, isGraphAut_mul G hτaut hσaut, ?_⟩
+  -- `(τ * σ) u = τ (σ u) = τ v = w`.
+  rw [Equiv.Perm.coe_mul, Function.comp_apply, hσ, hτ]
 
 /-- The orbit equivalence relation. -/
 def orbitSetoid (G : Graphplay.SimpleGraph V) : Setoid V where
@@ -160,15 +194,23 @@ lemma orbitPartition_eq_iff (G : Graphplay.SimpleGraph V) (u v : V) :
 /-! ## §2. The orbit partition of a *weighted* graph -/
 
 /-- For the equitable-partition statement we need the orbit data on a
-`WeightedGraph`.  We assume the weight `G.adj` is `Aut`-invariant for
-some action.  In our intended use, the weighted graph is the complex
-adjacency matrix of a real `SimpleGraph`, and `Aut(G)` acts naturally;
-the invariance is automatic. -/
+`WeightedGraph`.  We assume the weight `G.adj` is invariant under **genuine
+graph automorphisms** of the companion combinatorial graph `G₀` — *not* under
+all permutations of `V`.  In the intended use, the weighted graph is the complex
+adjacency matrix of `G₀` (or any matrix function of it), and `IsGraphAut`-maps
+permute its entries; the invariance then holds.
+
+This is a genuine external hypothesis: the quantifier ranges only over the
+permutations `σ` that actually preserve `G₀.Adj` (`IsGraphAut G₀ σ`), so it does
+**not** force `G.adj` to be constant off the diagonal.  (An earlier version
+quantified over *all* `σ : Equiv.Perm V`, which — being satisfiable only by the
+constant-off-diagonal weightings — collapsed every orbit to all of `V` and made
+the entire WL-vs-orbit section degenerate.) -/
 class HasAutInvariantWeights {V : Type u} [Fintype V] [DecidableEq V]
     (G₀ : Graphplay.SimpleGraph V) (G : Graphplay.WeightedGraph V) :
     Prop where
-  invariant : ∀ (σ : Aut G₀) (x y : V),
-    G.adj (σ • x) (σ • y) = G.adj x y
+  invariant : ∀ (σ : Equiv.Perm V), IsGraphAut G₀ σ → ∀ x y : V,
+    G.adj (σ x) (σ y) = G.adj x y
 
 /-- **Theorem (orbit partition is equitable).**
 If a weighted graph `G` has `Aut(G₀)`-invariant weights for a
@@ -190,32 +232,32 @@ noncomputable def orbitPartition_isEquitable
   refine
     { cells := orbitPartition G₀
       uniform := ?_ }
-  -- The index-swap argument: `x, y` lie in the same orbit cell, so there is
-  -- an automorphism `σ` with `σ • x = y`.  Reindexing the cell-`j` sum at `y`
-  -- by `z ↦ σ • z` (a bijection of `V`) restores the cell-`j` sum at `x`,
-  -- because (a) `σ` permutes orbits, so `cells (σ • z) = cells z`, and (b) the
-  -- weights are `Aut`-invariant: `G.adj y (σ • z) = G.adj (σ • x) (σ • z) =
+  -- The index-swap argument: `x, y` lie in the same orbit cell, so there is a
+  -- genuine graph automorphism `σ` with `σ x = y`.  Reindexing the cell-`j` sum
+  -- at `y` by `z ↦ σ z` (a bijection of `V`) restores the cell-`j` sum at `x`,
+  -- because (a) `σ` permutes orbits, so `cells (σ z) = cells z`, and (b) the
+  -- weights are automorphism-invariant: `G.adj y (σ z) = G.adj (σ x) (σ z) =
   -- G.adj x z`.
   intro i j x y hx hy
   -- `x, y` are in the same orbit.
   have hxy : sameOrbit G₀ x y := by
     rw [← orbitPartition_eq_iff]; rw [hx, hy]
-  obtain ⟨σ, hσ⟩ := hxy
+  obtain ⟨σ, hσaut, hσ⟩ := hxy
   -- Reindex the RHS sum along the bijection `σ`.
   rw [← Equiv.sum_comp σ (fun z => if orbitPartition G₀ z = j then G.adj y z else 0)]
   -- Now both sums range over `z`; show the summands agree termwise.
   refine Finset.sum_congr rfl (fun z _ => ?_)
   -- `σ z` is in the same orbit as `z`, so the cell label matches.
-  have hsmul : σ • z = σ z := rfl
   have hcell : orbitPartition G₀ (σ z) = orbitPartition G₀ z := by
     rw [orbitPartition_eq_iff]
-    exact ⟨σ⁻¹, by rw [← hsmul, ← mul_smul, inv_mul_cancel, one_smul]⟩
+    exact ⟨σ⁻¹, isGraphAut_inv G₀ hσaut,
+      by simp only [Equiv.Perm.coe_inv, Equiv.symm_apply_apply]⟩
   simp only [hcell]
   by_cases hzj : orbitPartition G₀ z = j
   · rw [if_pos hzj, if_pos hzj]
-    -- `G.adj y (σ z) = G.adj (σ • x) (σ • z) = G.adj x z`.
-    have hinv : G.adj (σ • x) (σ • z) = G.adj x z :=
-      HasAutInvariantWeights.invariant σ x z
+    -- `G.adj y (σ z) = G.adj (σ x) (σ z) = G.adj x z`.
+    have hinv : G.adj (σ x) (σ z) = G.adj x z :=
+      HasAutInvariantWeights.invariant σ hσaut x z
     have : G.adj y (σ z) = G.adj x z := by
       rw [← hσ]; exact hinv
     rw [this]
@@ -350,15 +392,16 @@ theorem hasPhantomSymmetry_iff
     (P : EquitablePartition G I)
     (hStable : IsWLStable G P) :
     HasPhantomSymmetry G₀ G P hStable ↔
-      ∃ u v : V, P.cells u = P.cells v ∧ ∀ σ : Aut G₀, σ • u ≠ v := by
+      ∃ u v : V, P.cells u = P.cells v ∧
+        ∀ σ : Equiv.Perm V, IsGraphAut G₀ σ → σ u ≠ v := by
   unfold HasPhantomSymmetry sameOrbit
   constructor
   · rintro ⟨u, v, hcol, hno⟩
     refine ⟨u, v, hcol, ?_⟩
-    intro σ hσ; exact hno ⟨σ, hσ⟩
+    intro σ hσaut hσ; exact hno ⟨σ, hσaut, hσ⟩
   · rintro ⟨u, v, hcol, hno⟩
     refine ⟨u, v, hcol, ?_⟩
-    rintro ⟨σ, hσ⟩; exact hno σ hσ
+    rintro ⟨σ, hσaut, hσ⟩; exact hno σ hσaut hσ
 
 /-! ## §5. Cai–Fürer–Immerman gadgets
 
@@ -416,7 +459,10 @@ theorem cfiExists_phantomFree :
     { Adj := fun _ _ => False, symm := fun h => h, irrefl := fun _ h => h }
   let G : Graphplay.WeightedGraph V :=
     { adj := 0, herm := by simp [Matrix.IsHermitian], loopless := fun _ => rfl }
-  haveI : HasAutInvariantWeights G₀ G := ⟨fun _ _ _ => rfl⟩
+  -- The zero weighting is automorphism-invariant (`0 = 0`); this is a *genuine*
+  -- witness for the now-`IsGraphAut`-gated field, not a trivial inhabitant of
+  -- the (uninhabitable-for-generic-weights) class.
+  haveI : HasAutInvariantWeights G₀ G := ⟨fun _ _ _ _ => rfl⟩
   -- The discrete partition (`cells = id`) is finest-equitable.
   have hStable : IsWLStable G (EquitablePartition.discrete G) := by
     intro J _ _ Q x y hxy
@@ -604,12 +650,6 @@ structure IsStronglyRegular
     ∀ u v : V, u ≠ v → ¬ G.Adj u v →
       (Finset.univ.filter (fun w => G.Adj u w ∧ G.Adj v w)).card = mu
 
-/-- A permutation `σ : Equiv.Perm V` is a **graph automorphism** of `G₀` if it
-preserves adjacency in both directions. -/
-def IsGraphAut {V : Type u} (G₀ : Graphplay.SimpleGraph V) (σ : Equiv.Perm V) :
-    Prop :=
-  ∀ x y : V, G₀.Adj (σ x) (σ y) ↔ G₀.Adj x y
-
 /-- Two ordered pairs are in the same **automorphism orbit on `V × V`** if some
 graph automorphism maps one to the other componentwise (the diagonal action of
 `Aut(G₀)` on pairs). -/
@@ -730,10 +770,10 @@ non-isomorphic.  Concretely, the family `{CFI(H_n)}` for a sequence
 of expanders `H_n` requires k = Ω(n)-WL to distinguish. -/
 
 /-- The k-arity orbit partition: two k-tuples are equivalent iff
-some automorphism maps one to the other componentwise. -/
+some **genuine graph automorphism** maps one to the other componentwise. -/
 def kAritySameOrbit {V : Type u} (G : Graphplay.SimpleGraph V) (k : ℕ)
     (u v : Fin k → V) : Prop :=
-  ∃ σ : Aut G, ∀ i, σ • (u i) = v i
+  ∃ σ : Equiv.Perm V, IsGraphAut G σ ∧ ∀ i, σ (u i) = v i
 
 /-- `colour` is a **k-WL-stable** colouring of `V^k`: it is a fixed point of
 the k-WL refinement step.
@@ -924,19 +964,22 @@ twisted product gadgets, and rank-≥ 4 association schemes can host
 PST pairs that lie outside the classical "find an automorphism"
 search heuristic. -/
 
-/-- **Bachman–Tamon design principle (honest `sorry`).**  A phantom pair admits a
-perfect-state-transfer window even though no automorphism swaps the endpoints.
+/-- **Bachman–Tamon design principle (vacuously closed under finest-equitable WL).**
+A phantom pair would admit a perfect-state-transfer window even though no
+automorphism swaps the endpoints: a pair `(u, v)` in distinct `Aut(G₀)`-orbits
+but with the same WL colour, *and* a time `τ` with `‖G.evolve τ u v‖ = 1` (the
+PST window — the equitable-partition spectral-idempotent test of Bachman–Tamon,
+arXiv:1108.0339).
 
-Given phantom symmetry, there is a pair `(u, v)` in distinct `Aut(G₀)`-orbits but
-with the same WL colour *and* a time `τ` at which the continuous-time quantum
-walk transfers perfectly between them: `‖G.evolve τ u v‖ = 1` (the PST window).
-
-The PST conjunct is the genuine, deep content of Bachman–Tamon (arXiv:1108.0339):
-it is the equitable-partition spectral-idempotent test, NOT something that
-follows from phantom symmetry alone.  The earlier version of this theorem dropped
-the PST conjunct entirely and merely re-derived the phantom pair from the
-hypothesis (`hPhantom → hPhantom`), which said nothing beyond its own assumption.
-We restore the PST window and leave the spectral argument as an honest `sorry`. -/
+Under the *present* `IsWLStable` (the finest equitable partition), the antecedent
+`HasPhantomSymmetry` is **unsatisfiable** (the orbit partition is equitable, so a
+same-WL-colour pair is automatically in the same orbit — `no_phantom_for_finest_
+equitable`).  Hence this theorem is **proved vacuously**: from the impossible
+hypothesis the whole conclusion, PST window included, follows immediately — there
+is no `sorry`.  The genuine, deep spectral content of Bachman–Tamon lives where
+phantom symmetry can actually occur (the *coarsest* round-indexed k-WL fixed
+point, `Graphplay.Algorithm.WLRefinement`), not at this finest-equitable
+partition. -/
 theorem bachman_tamon_pst_via_phantom
     {V : Type u} [Fintype V] [DecidableEq V]
     (G₀ : Graphplay.SimpleGraph V)

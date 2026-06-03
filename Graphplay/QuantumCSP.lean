@@ -462,10 +462,12 @@ assuming `[QuantumCommutingGameSeparation]` is a sorry-free conditional theorem
 listing the cited theorem as a named hypothesis.
 
 The abstract `LiteratureInterfaces.QuantumCommutingSeparation.exists_strict_gap`
-gives only a gap between *arbitrary* ℝ-functionals, which cannot be transported
-onto a witness game's `QuantumValue`/`CommutingOperatorValue` without the
+states the genuine separation over an *abstract* game family (opaque `Γ`, with
+the values pinned as suprema of payoff functionals and a payoff-preserving
+tensor↪commuting embedding), but it lives over types we cannot identify with this
+file's concrete `NonLocalGame`/`QuantumValue`/`CommutingOperatorValue` without the
 compression game itself; this class states the separation directly at the
-game level, exactly as `exists_quantum_lt_commuting` needs it. -/
+concrete game level, exactly as `exists_quantum_lt_commuting` needs it. -/
 class QuantumCommutingGameSeparation : Prop where
   /-- There is a concrete non-local game with a strict tensor-vs-commuting gap. -/
   exists_game_gap :

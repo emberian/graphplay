@@ -225,10 +225,11 @@ we expose that integrality input as the hypothesis `hgap`: there is a time `τ`
 at which the apex–apex amplitude attains unit modulus.  (This is strictly weaker
 than assuming `IsPST` outright — it is the modulus condition that the spectral
 argument verifies arithmetically.)  Producing `τ` from `d` and the spectrum of
-`G` alone is the Diophantine eigenvalue-gap computation, left as an honest
-`sorry` below in `doubleCone_apex_PST_of_integral`.
+`G` alone is the Diophantine eigenvalue-gap computation; it is supplied — under
+the explicit integral-gap hypothesis — by the `[DoubleConeApexPST]` external
+interface in `doubleCone_apex_PST_of_integral` below.
 
-Reference: arXiv:0907.2148, Theorem 3.x (join / double-cone PST). -/
+Reference: arXiv:0907.2148, Thm 1 / §3 (join / double-cone PST). -/
 theorem doubleCone_apex_PST (G : WeightedGraph V) {d : ℂ} (_hreg : G.isRegular d)
     (τ : ℝ) (hgap : ‖(doubleCone G).evolve τ (apex G 0) (apex G 1)‖ = 1) :
     ∃ τ : ℝ, IsPST (doubleCone G) (apex G 0) (apex G 1) τ :=
@@ -237,49 +238,73 @@ theorem doubleCone_apex_PST (G : WeightedGraph V) {d : ℂ} (_hreg : G.isRegular
 /-- **The Angeles-Canul double-cone integrality interface, as a local
 content-bearing typeclass.**
 
-The unconditional double-cone PST existence rests on the Angeles-Canul
-Diophantine eigenvalue-gap argument: for a regular `G`, the two apexes span a
-`2`-dimensional `G`-invariant subspace whose two eigenvalues differ by an
-integer-multiple gap, producing a PST time `τ`.  This arithmetic is not yet
-formalized.
+For a `d`-regular `G` on `n = |V|` vertices, the two apexes of the double cone
+together with the all-ones `G`-eigenvector span a `3`-dimensional invariant
+subspace; restricted to the apex–apex symmetric/antisymmetric pair, the relevant
+adjacency eigenvalues are the two roots of `μ² − d·μ − 2n = 0`, namely
 
-We package exactly this residual as a *local* typeclass.  The field is **not
-vacuous**: it consumes the genuine *regularity* witness `G.isRegular d` (the same
-hypothesis the headline theorem advertises) and must produce a PST time for the
-*actual* double-cone apexes.  A consumer cannot satisfy it without honouring the
-regular-graph apex spectral structure — it is the faithful Diophantine residual,
-not a weakening.
+  `μ± = (d ± √(d² + 8n)) / 2`,
+
+so the apex eigenvalue **gap** is the surd `√(d² + 8n)`.  Angeles-Canul et al.
+show that apex PST occurs **exactly when** this gap (and the differences to the
+remaining `G`-eigenvalues) satisfies the Diophantine *integrality* condition that
+makes the phase `exp(-iτμ)` simultaneously rephase — i.e. when there is a time at
+which the apex–apex amplitude attains unit modulus.
+
+**Bare regularity is NOT enough** (the old field was the too-strong unconditional
+claim): a regular `G` whose surd `√(d²+8n)` is irrational has eigenvalue
+*ratios* failing the periodicity criterion, and Godsil's obstruction then forbids
+apex PST at every time.  We therefore make the integral-gap input *explicit*: the
+field consumes the regularity witness **and** the genuine integrality hypothesis
+`hint` (the apex eigenvalues lie on a common integer lattice scaled by a fixed
+`σ > 0`, i.e. the surd is integer-aligned), and only then must produce the PST
+time.
+
+The field is **non-vacuous and genuinely hard**: even with `hint` in hand one
+still has to run the spectral phase-coincidence argument on the *actual*
+double-cone apexes; no one-line witness inhabits it, and dropping `hint` makes it
+outright false (irrational-gap regular graphs are counterexamples).
 
 Reference: Angeles-Canul, Norton, Opperman, Paribello, Russell, Tamon,
-*Perfect state transfer, integral circulants, and join of graphs*
-(arXiv:0907.2148). -/
+*Perfect state transfer, integral circulants, and join of graphs*,
+Quantum Inf. Comput. **10** (2010) 325–342 (arXiv:0907.2148), Thm 1 / §3. -/
 class DoubleConeApexPST.{u'} where
-  /-- For a regular graph `G`, the Angeles-Canul integrality argument produces a
-  PST time between the two apexes of the double cone. -/
+  /-- For a `d`-regular graph `G` on `n` vertices whose apex eigenvalue gap
+  `√(d² + 8n)` is integer-aligned — there is a scale `σ > 0` and integers `m₊, m₋`
+  realizing the two apex roots `(d ± √(d²+8n))/2 = σ·m±` — the Angeles-Canul
+  phase-coincidence argument produces a PST time between the two apexes of the
+  double cone.  Without the integrality witness `hint`, no PST need exist. -/
   apex_pst_of_regular :
     ∀ {V : Type u'} [Fintype V] [DecidableEq V]
-      (G : WeightedGraph V) {d : ℂ}, G.isRegular d →
+      (G : WeightedGraph V) {d : ℝ}, G.isRegular (d : ℂ) →
+      (hint : ∃ (σ : ℝ) (mp mq : ℤ), 0 < σ ∧ mp ≠ mq ∧
+        (d + Real.sqrt (d ^ 2 + 8 * Fintype.card V)) / 2 = σ * mp ∧
+        (d - Real.sqrt (d ^ 2 + 8 * Fintype.card V)) / 2 = σ * mq) →
       ∃ τ : ℝ, IsPST (doubleCone G) (apex G 0) (apex G 1) τ
 
-/-- **Unconditional double-cone PST**, *conditional on the local
-`DoubleConeApexPST` interface*.  For a *regular* graph `G`, the two apex vertices
-of `G + 2K₁` admit perfect state transfer — the eigenvalue-gap time `τ` exists
-and is produced from the spectrum of `G` and the degree `d` by the Angeles-Canul
-integrality argument.  This is the genuine existence statement (no spectral
-hypothesis smuggled in): regularity alone suffices for the double cone, because
-the two apexes span a `2`-dimensional `G`-invariant subspace whose two
-eigenvalues differ by an integer-multiple gap.
+/-- **Double-cone apex PST under the integral-gap condition**, *conditional on
+the local `DoubleConeApexPST` interface*.  For a `d`-regular graph `G` on `n`
+vertices **whose apex eigenvalue gap `√(d²+8n)` is integer-aligned** (`hint`), the
+two apex vertices of `G + 2K₁` admit perfect state transfer at the Angeles-Canul
+phase-coincidence time `τ`.
 
-The deep Diophantine eigenvalue-gap arithmetic is supplied by the
-`[DoubleConeApexPST]` instance; this theorem discharges existence
-*axiom-clean-conditionally* by feeding that interface the regularity witness.
+The integrality hypothesis `hint` is *load-bearing*, not decorative: regularity
+alone does **not** force apex PST — a regular `G` with an irrational gap fails the
+Godsil periodicity criterion and has no apex PST at any time.  The deep
+phase-coincidence arithmetic on the apex pair is supplied by the
+`[DoubleConeApexPST]` interface; this theorem discharges existence
+*axiom-clean-conditionally* by feeding that interface both the regularity witness
+and the integrality witness.
 
-Reference: arXiv:0907.2148. -/
+Reference: arXiv:0907.2148, Thm 1 / §3. -/
 theorem doubleCone_apex_PST_of_integral [inst : DoubleConeApexPST.{u}]
-    (G : WeightedGraph V) {d : ℂ}
-    (hreg : G.isRegular d) :
+    (G : WeightedGraph V) {d : ℝ}
+    (hreg : G.isRegular (d : ℂ))
+    (hint : ∃ (σ : ℝ) (mp mq : ℤ), 0 < σ ∧ mp ≠ mq ∧
+      (d + Real.sqrt (d ^ 2 + 8 * Fintype.card V)) / 2 = σ * mp ∧
+      (d - Real.sqrt (d ^ 2 + 8 * Fintype.card V)) / 2 = σ * mq) :
     ∃ τ : ℝ, IsPST (doubleCone G) (apex G 0) (apex G 1) τ :=
-  inst.apex_pst_of_regular (V := V) G hreg
+  inst.apex_pst_of_regular (V := V) G hreg hint
 
 /-- **Modulus form of cone-tip PST.**  Unfolding `IsPST` to its definition: if
 the apex–apex evolution amplitude has unit modulus at `τ`, then there is PST at

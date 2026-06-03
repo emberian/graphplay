@@ -9,10 +9,12 @@ norm, and PST / mixing / spatial-search times converge.
 
 This is the quantitative bridge between Tower 4 (graphons) and the finite
 spectral graph theory of Towers 1–3.  A concrete consequence is the
-**Xie–Tamon "no infinite tail beats optimality"** result: for the family
+**continuous-tail no-PST obstruction** on the `K_n + path-n` family: for the family
 `G_n = K_n + P_n` (complete graph plus a path of length `n`) with the
-distance-from-`K_n` equitable partition, the limit graphon yields the same
-PST optimality bound as Xie–Tamon prove for the finite case.
+distance-from-`K_n` equitable partition (Bernard–Tamon–Vinet–Xie, arXiv:2211.14704,
+who show finite-graph PST *persists*), the limit graphon carries a
+continuous-spectrum tail sector on which cell-uniform PST between distinct cells
+fails at every time — the Reed–Simon multiplication-operator obstruction.
 
 References:
 
@@ -22,7 +24,10 @@ References:
 * Lovász, *Large Networks and Graph Limits* — the standard reference for
   graphon convergence and cut-norm.
 * Gao–Caines, arXiv:2004.00677 — graphon limit of LQR control problems.
-* Xie–Tamon, arXiv:2301.07251 — the concrete corollary we obtain.
+* Bernard–Tamon–Vinet–Xie, arXiv:2211.14704 (Lin. Alg. Appl. 2025) — the concrete
+  `K_n + attached-path` family and finite-graph PST *persistence*.
+* Reed–Simon, *Methods of Modern Mathematical Physics* I, Thm. VII.5 — the
+  continuous-spectrum (no-PST) obstruction at the graphon limit.
 -/
 
 import Graphplay.Graphon.PST
@@ -158,6 +163,82 @@ operator and the cut-norm density of step graphons); see also **Lovász**, *Larg
 Networks and Graph Limits* (AMS Colloq. Publ. 60, 2012), Thm. 9.23 (cut-norm density
 of step graphons) and Prop. 14.13 (refining sequences). -/
 
+/-- **The step graphon of a refining measurable cell map.**
+
+`stepGraphonOfCells c Q hsymm hdiag` is the genuine step graphon on `(Ω, μ)` whose
+kernel is the matrix entry `Q (c x) (c y)`.  `c : Ω → I` is a measurable cell map
+and `Q` a Hermitian step matrix with **zero diagonal** (`Q i i = 0`, the loopless
+finite-graph convention); the result is constant on each `(c)`-block-pair, i.e. it
+is exactly a *step function* in the sense of `IsStepGraphon`, and is loopless
+because within a block `kernel x x = Q (c x) (c x) = 0`.  This is the concrete
+output of the BCLSV stepping operator at one stage. -/
+noncomputable def stepGraphonOfCells
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (c : Ω → I) (hc : @Measurable _ _ _ (⊤ : MeasurableSpace I) c)
+    (Q : Matrix I I ℂ) (hQ : Q.IsHermitian) (hdiag : ∀ i, Q i i = 0) :
+    Graphon Ω μ where
+  kernel x y := Q (c x) (c y)
+  measurable := by
+    -- The inner map `g : Ω × Ω → I × I`, `g p = (c p.1, c p.2)`, is measurable
+    -- into the discrete (top) σ-algebra on the *finite, hence countable* index
+    -- `I × I` (each fibre `g⁻¹{(a,b)} = (c∘fst)⁻¹{a} ∩ (c∘snd)⁻¹{b}` is
+    -- measurable since `c` is `⊤`-measurable).  Composing with the matrix
+    -- evaluation `Q : (I × I, ⊤) → ℂ` (measurable from `⊤`) gives the kernel.
+    letI : MeasurableSpace I := ⊤
+    letI : MeasurableSpace (I × I) := ⊤
+    have hcfst : Measurable (fun p : Ω × Ω => c p.1) := hc.comp measurable_fst
+    have hcsnd : Measurable (fun p : Ω × Ω => c p.2) := hc.comp measurable_snd
+    -- target the *full* discrete σ-algebra `⊤` on `I × I` (forced by the `letI`
+    -- above), so that the matrix evaluation, measurable from `⊤`, composes.
+    have hg : Measurable (fun p : Ω × Ω => (c p.1, c p.2)) :=
+      measurable_to_countable' (fun q => by
+        have : (fun p : Ω × Ω => (c p.1, c p.2)) ⁻¹' {q}
+            = (fun p => c p.1) ⁻¹' {q.1} ∩ (fun p => c p.2) ⁻¹' {q.2} := by
+          ext p; simp [Prod.ext_iff]
+        rw [this]
+        exact (hcfst (measurableSet_singleton _)).inter (hcsnd (measurableSet_singleton _)))
+    exact (measurable_from_top (f := fun q : I × I => Q q.1 q.2)).comp hg
+  herm x y := (hQ.apply (c y) (c x)).symm
+  essBound := ⨆ p : I × I, ‖Q p.1 p.2‖
+  bounded := by
+    refine Filter.Eventually.of_forall (fun p => ?_)
+    simp only [Function.uncurry]
+    exact le_ciSup (f := fun q : I × I => ‖Q q.1 q.2‖)
+      (Finite.bddAbove_range _) (c p.1, c p.2)
+  loopless x := hdiag (c x)
+
+/-- **The spine-coupled step graphon predicate.**
+
+`IsSpineStepGraphon Wstep 𝒮 P` says the step-graphon sequence `Wstep` is the
+genuine BCLSV stepping-operator output **of the spine `𝒮`, refining `P`**: at each
+stage `n` there is a finite refinement index `I × Fin m` and a measurable cell map
+`c : Ω → I × Fin m` that *refines* `P.cells` (its coarse projection
+`Prod.fst ∘ c = P.cells`), and `Wstep n` equals the step graphon
+`stepGraphonOfCells` of that refined map, with the *coarse* `I`-quotient of the
+step matrix equal to `𝒮.quotient n`.
+
+This is the genuine coupling: it forbids the two trivial inhabitants of the old
+field.  `Wstep ≡ W` is excluded unless `W` is already a step graphon refining `P`;
+a constant `𝒮` is excluded unless the step-matrix coarse quotient is itself
+constant.  The step approximant and the spine are now *one object* — the spine
+`𝒮.quotient n` is literally read off the blocks of `Wstep n`. -/
+def IsSpineStepGraphon
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (Wstep : ℕ → Graphon Ω μ) (𝒮 : ConsistentPartitionSequence.{u, v} I)
+    (P : @GraphonEquitablePartition Ω _ μ I _ _ W) : Prop :=
+  ∀ n, ∃ (m : ℕ) (c : Ω → I × Fin m)
+        (hc : @Measurable _ _ _ (⊤ : MeasurableSpace (I × Fin m)) c)
+        (Qr : Matrix (I × Fin m) (I × Fin m) ℂ) (hQr : Qr.IsHermitian)
+        (hdiag : ∀ p, Qr p p = 0),
+      -- the refined cell map refines the cells of `P` (coarse projection = `P.cells`)
+      (∀ x, (c x).1 = P.cells x) ∧
+      -- `Wstep n` IS the step graphon of the refined cell map
+      Wstep n = stepGraphonOfCells c hc Qr hQr hdiag ∧
+      -- the coarse `I`-quotient of the refined step matrix is the spine quotient:
+      -- collapsing the `Fin m`-refinement on a representative block recovers
+      -- `𝒮.quotient n`
+      (∀ i j : I, ∃ a b : Fin m, Qr (i, a) (j, b) = 𝒮.quotient n i j)
+
 /-- **The Lovász–Szegedy / BCLSV stepping-operator limit (external typeclass).**
 
 For every graphon equitable partition `(W, P)` over the index type `I` there exist:
@@ -166,26 +247,35 @@ For every graphon equitable partition `(W, P)` over the index type `I` there exi
 * a sequence of step-function graphons `Wstep : ℕ → Graphon Ω μ`,
 
 such that the step graphons converge to `W` in **cut norm** (`CutNormTendsto`,
-i.e. `cutNormDiff (Wstep n) W → 0`) and the finite quotient matrices
-`𝒮.quotient n` converge to `P.quotient` in operator norm.
+i.e. `cutNormDiff (Wstep n) W → 0`), the finite quotient matrices `𝒮.quotient n`
+converge to `P.quotient` in operator norm, **and the step graphons are coupled to
+the spine** by `IsSpineStepGraphon`: each `Wstep n` is literally the step graphon
+of a measurable refinement of `P` whose coarse `I`-quotient is `𝒮.quotient n`.
 
 This is the precise content of BCLSV §3 (stepping operator + cut-norm density),
-specialised to refine the cells of `P`.  It is the *only* deferred analytic
-construction in the limit/Cauchy-completion development; everything downstream is
-derived from the `stepping_limit` field.  **No instance is provided** — it is a pure
-external assumption.  Citation: BCLSV arXiv:1003.5588 §3; Lovász, *Large Networks and
-Graph Limits*, Thm. 9.23 and Prop. 14.13. -/
+specialised to refine the cells of `P`.  The coupling `IsSpineStepGraphon` is what
+makes the field **non-vacuous**: without it, `Wstep ≡ W` with a constant `𝒮` would
+inhabit the statement; with it, the step approximant and the finite spine are the
+*same* object (the spine quotient is read off the step graphon's blocks).  It is the
+*only* deferred analytic construction in the limit/Cauchy-completion development;
+everything downstream is derived from the `stepping_limit` field.  **No instance is
+provided** — it is a pure external assumption.  Citation: BCLSV arXiv:1003.5588 §3;
+Lovász, *Large Networks and Graph Limits*, Thm. 9.23 and Prop. 14.13. -/
 class LovaszSzegedyLimit
     (Ω : Type u) [MeasurableSpace Ω] (μ : Measure Ω) [IsFiniteMeasure μ]
     (I : Type v) [Fintype I] [DecidableEq I] : Prop where
   /-- The stepping-operator cut-norm compactness: every graphon equitable partition
   `(W, P)` has a finite equitable spine `𝒮` and a step-graphon sequence converging
-  to `W` in cut norm, with `𝒮.quotient n → P.quotient`.  (BCLSV arXiv:1003.5588 §3.) -/
+  to `W` in cut norm, with `𝒮.quotient n → P.quotient`, **and** the step graphons
+  coupled to the spine via `IsSpineStepGraphon` (each `Wstep n` is the step graphon
+  of a measurable refinement of `P` whose coarse quotient is `𝒮.quotient n`).
+  (BCLSV arXiv:1003.5588 §3.) -/
   stepping_limit :
     ∀ (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W),
       ∃ (𝒮 : ConsistentPartitionSequence.{u, v} I) (Wstep : ℕ → Graphon Ω μ),
         CutNormTendsto Wstep W ∧
-        Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds P.quotient)
+        Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds P.quotient) ∧
+        IsSpineStepGraphon Wstep 𝒮 P
 
 /-! ## **The limit theorem (statement only)**
 
@@ -542,71 +632,85 @@ theorem ConsistentPartitionSequence.search_time_convergence
   rw [cellUniformSearch_iff_quotientSearch]
   exact IsSearchSuccess_finite_of_tendsto h_lim γ w hτ h_search
 
-/-! ## Concrete corollary: Xie–Tamon (arXiv:2301.07251)
+/-! ## Concrete corollary: the `K_n + path-n` continuous-tail obstruction
 
-The Xie–Tamon paper *No infinite tail beats optimality* (2023) considers the
-graph family `G_n = K_n + path-n` (a complete graph `K_n` joined by an edge to
-a path of `n` vertices), with the equitable partition `P_n` given by distance
-from `K_n`.  They prove that the PST time on `G_n` is bounded below by a
-universal constant for all `n`, *no matter how long the tail*.
+**Correct attribution (sign + citation, M2 fix).**  The relevant Tamon-group
+result on the `K_n + path-n` family is **Bernard–Tamon–Vinet–Xie**,
+arXiv:2211.14704 (Lin. Alg. Appl. 2025): on the *finite* graph (`K_n` with an
+attached path), PST between the apex vertices **survives** the tail — a
+*persistence* statement.  It is **not** a no-PST result, and the old corpus
+attribution `XieTamonNoInfiniteTail.no_pst : ∀τ, ¬PST` to "Xie–Tamon
+arXiv:2301.07251" inverted the sign **and** cited a non-resolving identifier.
 
-This is the special case `𝒮 = (G_n, P_n)` of our limit theorem.  The graphon
-limit `Wlim` is concretely the **half-line graphon**:
+What genuinely produces **no** state transfer is a *different*, purely analytic
+phenomenon at the graphon limit: the half-line tail of the limit graphon
+`(Wlim, Plim)` of the `K_n + path-n` spine `𝒮` carries a **continuous-spectrum
+sector** (no L²-eigenvectors), and on such a sector cell-uniform PST between two
+distinct cells fails at every time.  This continuous-spectrum obstruction is a
+multiplication-operator fact of **Reed–Simon** (I, Thm. VII.5), *not* a
+Tamon-group result.
 
-* `Ω = {0} ∪ (0, ∞)` with the disjoint union measure (Dirac at `0` plus
-  Lebesgue on `(0, ∞)`);
-* the kernel is `1` on the `(0,0)` cell (the limit of `K_n`), `1` between `0`
-  and any `x ∈ (0,1]` (the limit of the joining edge), `1` between
-  consecutive segments of the tail, and `0` elsewhere.
+We therefore (i) rename the interface to `ContinuousTailNoPST` (no Tamon no-PST
+attribution), (ii) **couple** the no-PST witness `(Wlim, Plim)` to the consistent
+sequence `𝒮` — it must be the genuine cut-norm limit of `𝒮` (quotients
+converging, the `limit_exists` data), so an arbitrary unrelated graphon no longer
+inhabits the field — and (iii) gate the no-PST on the named continuous-tail
+hypothesis, correctly cited.  The genuine analytic content (the half-line tail
+construction + the Reed–Simon continuous-spectrum impossibility proof) is external
+to Mathlib v4.30.0. -/
 
-The Xie–Tamon optimality bound is then exactly the inequality
-`‖exp(-i τ Plim.quotient)‖ ≥ c > 0` for all `τ`, where `Plim.quotient` is the
-**infinite tridiagonal matrix** that is the limit of the path quotient
-matrices.
+/-- **The continuous-tail no-PST obstruction on the `K_n + path-n` limit
+(external typeclass).**
 
-We package this as the following corollary. -/
+For the `K_n + path-n` consistent partition sequence `𝒮` (`Bernard–Tamon–Vinet–Xie`
+arXiv:2211.14704 supply this concrete family), its cut-norm graphon limit
+`(Wlim, Plim)` — *bound to `𝒮` by the operator-norm quotient convergence
+`𝒮.quotient n → Plim.quotient`* — has a continuous-spectrum tail sector that
+obstructs cell-uniform PST between two distinct cells `i ≠ j` at *every* time `τ`.
 
-/-- **The Xie–Tamon "no infinite tail" obstruction (external typeclass).**
-
-The explicit `K_n + path-n` consistent partition sequence has a graphon limit
-`(Wlim, Plim)` whose continuous tail sector (`Graphon/Spectrum.lean`,
-`HasContinuousTailSector`) obstructs cell-uniform PST between two distinct cells at
-*every* time `τ`.  The construction of the half-line tail graphon and the
-multiplication-operator continuous-spectrum impossibility proof are external to
-Mathlib v4.30.0; we name this content as a `Prop`-valued typeclass with the single
-field `no_pst` (the exact cited conclusion), parameterised by the index type `I`.
+The field is **genuinely non-vacuous**: the witness `Plim` is not free — it is
+pinned to `𝒮` by `hconv` (`𝒮.quotient n → Plim.quotient`), so the constant graphon
+with an arbitrary unrelated `𝒮` no longer inhabits it.  The no-PST half is the
+Reed–Simon continuous-spectrum impossibility, a real spectral obstruction.
 
 **No instance is provided** — it is a pure external assumption mirroring
 `XieTamonContinuousTail` in `Graphon/Spectrum.lean` (sibling file, no import edge).
 
-Reference: **Xie–Tamon**, arXiv:2301.07251; **Reed–Simon** I, Thm. VII.5. -/
-class XieTamonNoInfiniteTail.{u', v'} (I : Type v') [Fintype I] [DecidableEq I]
+Reference: concrete `K_n + attached-path` family and finite-graph PST persistence —
+**Bernard–Tamon–Vinet–Xie**, arXiv:2211.14704 (Lin. Alg. Appl. 2025); the
+continuous-spectrum (no-PST) gate — **Reed–Simon** I, Thm. VII.5. -/
+class ContinuousTailNoPST.{u', v'} (I : Type v') [Fintype I] [DecidableEq I]
     [Nontrivial I] : Prop where
-  /-- The `K_n + path-n` graphon limit has two distinct cells with no cell-uniform
-  PST at any time.  (Xie–Tamon arXiv:2301.07251.) -/
+  /-- The `K_n + path-n` graphon limit `(Wlim, Plim)` *of the sequence `𝒮`* (pinned
+  by quotient convergence `hconv`) has two distinct cells with no cell-uniform PST
+  at any time — the continuous-spectrum obstruction of **Reed–Simon** I, Thm. VII.5
+  on the Bernard–Tamon–Vinet–Xie family (arXiv:2211.14704). -/
   no_pst :
     ∃ (𝒮 : ConsistentPartitionSequence.{u', v'} I)
       (Ω : Type u') (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
-      (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
-      (i j : I), i ≠ j ∧ (∀ τ : ℝ, ¬ IsCellUniformPST Wlim Plim i j τ)
+      (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim),
+      Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds Plim.quotient) ∧
+      ∃ (i j : I), i ≠ j ∧ (∀ τ : ℝ, ¬ IsCellUniformPST Wlim Plim i j τ)
 
-/-- **Xie–Tamon as a corollary of the limit theorem.**  There is a consistent
-partition sequence (concretely `G_n = K_n + P_n` with `P_n =
-distance-from-K_n`) and a graphon limit `(Wlim, Plim)` of it for which PST
-between two **distinct** cells `i ≠ j` is impossible at *every* time `τ` —
-recovering the Xie–Tamon "no infinite tail beats optimality" result.
+/-- **Continuous-tail no-PST as a corollary of the limit theorem.**  There is a
+consistent partition sequence (concretely `G_n = K_n + P_n` with `P_n =
+distance-from-K_n`, the Bernard–Tamon–Vinet–Xie family arXiv:2211.14704) and a
+graphon limit `(Wlim, Plim)` *of it* (quotients converging, so `Plim` is pinned to
+`𝒮`) for which PST between two **distinct** cells `i ≠ j` is impossible at *every*
+time `τ` — the Reed–Simon continuous-spectrum obstruction (I, Thm. VII.5).
 
-Conditional on the named external interface `[XieTamonNoInfiniteTail I]` (the
+Conditional on the named external interface `[ContinuousTailNoPST I]` (the
 `K_n + path-n` construction + the continuous-tail impossibility proof); the
 statement is `#print axioms`-clean. -/
-theorem xie_tamon_no_infinite_tail
+theorem continuous_tail_no_pst
     (I : Type v) [Fintype I] [DecidableEq I] [Nontrivial I]
-    [XieTamonNoInfiniteTail.{u, v} I] :
+    [ContinuousTailNoPST.{u, v} I] :
     ∃ (𝒮 : ConsistentPartitionSequence.{u, v} I)
       (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
-      (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim)
-      (i j : I), i ≠ j ∧ (∀ τ : ℝ, ¬ IsCellUniformPST Wlim Plim i j τ) :=
-  XieTamonNoInfiniteTail.no_pst
+      (Wlim : Graphon Ω μ) (Plim : @GraphonEquitablePartition Ω _ μ I _ _ Wlim),
+      Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds Plim.quotient) ∧
+      ∃ (i j : I), i ≠ j ∧ (∀ τ : ℝ, ¬ IsCellUniformPST Wlim Plim i j τ) :=
+  ContinuousTailNoPST.no_pst
 
 end Graphon
 

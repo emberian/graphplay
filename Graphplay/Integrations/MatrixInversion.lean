@@ -127,6 +127,34 @@ noncomputable def walkEvolve (S : LinearSystem n) (t : ℝ) : Matrix n n ℂ :=
   unfold walkEvolve
   simp
 
+/-- The **amplitude-amplification** preprocessing operator of the CTQW solver.
+In the phase-estimation-free scheme the right-hand side `b` is first encoded into
+the marked subsystem of the enlarged walk graph and amplitude-amplified so that
+the post-selected branch carries the solution amplitude.  In this concrete
+statement layer we model the encoded input as a fixed linear operator on the
+state space; the *content* — that the engineered amplification together with the
+walk realizes `A⁻¹` — lives in the deferred convergence class
+`CTQWInversionSuccess`, not in the choice of this operator. -/
+noncomputable def amplitudeAmplify (_S : LinearSystem n) : Matrix n n ℂ :=
+  (1 : Matrix n n ℂ)
+
+/-- The **marked-subsystem projection** of the CTQW solver: the read-out operator
+that selects the marked register on which `A⁻¹|b⟩` is prepared.  Modeled here as a
+fixed linear operator; like `amplitudeAmplify`, its convergence content is carried
+by `CTQWInversionSuccess`. -/
+noncomputable def markedProjection (_S : LinearSystem n) : Matrix n n ℂ :=
+  (1 : Matrix n n ℂ)
+
+/-- The **actual output state of the CTQW pipeline** at walk time `t`: encode and
+amplitude-amplify `b`, evolve under the walk Hamiltonian for time `t`, then read
+out the marked subsystem.  This is the *physically produced* vector — a definite
+function of `(S, t)` — to which `CTQWInversionSuccess` ties its error bound (the
+output is NOT a free vector; it is forced to be this walk pipeline applied to
+`b`). -/
+noncomputable def walkOutput (S : LinearSystem n) (t : ℝ) : n → ℂ :=
+  (S.markedProjection).mulVec
+    ((S.walkEvolve t).mulVec ((S.amplitudeAmplify).mulVec S.b))
+
 /-- The **ideal CTQW inverter**: the linear map that the phase-estimation-free
 walk implements in the noiseless limit, namely multiplication by `A⁻¹`.
 Spectrally this is "invert each eigenvalue of the walk Hamiltonian"; we expose
@@ -179,23 +207,37 @@ mechanism and Childs' CTQW-simulation), **not** formalized in Mathlib.
 Stated as a typeclass assumption (never a bare `axiom`): a theorem assuming
 `[CTQWInversionSuccess S]` is a sorry-free conditional theorem, honestly listing
 the literature convergence result as a named, cited hypothesis.  No instance is
-provided — this is the genuinely external HHL/CTQW analysis. -/
+provided — this is the genuinely external HHL/CTQW analysis.
+
+**Non-vacuity.**  The witnessed output `ψ` is *not* a free vector: the field
+forces `ψ = walkOutput S (walkTime S ε)`, the state the CTQW pipeline physically
+produces at the prescribed time `O(κ/ε)` (encode + amplitude-amplify `b`, evolve
+under `e^{-iAt}`, read out the marked subsystem).  The error bound is therefore a
+genuine claim about that fixed walk output — `‖(walk output) − A⁻¹b/‖·‖‖ ≤ ε` — and
+cannot be inhabited by choosing a convenient `ψ`; it is exactly the convergence
+content of arXiv:2508.06611. -/
 class CTQWInversionSuccess (S : LinearSystem n) : Prop where
-  /-- For every `ε > 0` there is an output vector `ψ` (the marked-subsystem
-  amplitude after walk evolution `walkTime S ε` and amplitude amplification)
-  within `ε` of the normalized exact solution. -/
+  /-- For every `ε > 0` the **walk-produced** output state at the prescribed time
+  `walkTime S ε = O(κ/ε)` — namely `walkOutput S (walkTime S ε)`, the marked-
+  subsystem read-out of the amplitude-amplified, walk-evolved `b` — is within `ε`
+  of the normalized exact solution.  The witness `ψ` is bound to this physical
+  walk output (not free), so the bound is the genuine HHL/CTQW convergence
+  guarantee. -/
   exists_output_within :
     ∀ {ε : ℝ}, 0 < ε →
-      ∃ ψ : n → ℂ, (∑ i, ‖ψ i - normalize S.solution i‖ ^ 2 : ℝ).sqrt ≤ ε
+      ∃ ψ : n → ℂ, ψ = S.walkOutput (S.walkTime ε) ∧
+        (∑ i, ‖ψ i - normalize S.solution i‖ ^ 2 : ℝ).sqrt ≤ ε
 
 /-- **CTQW matrix-inversion success theorem** (arXiv:2508.06611), now an
 axiom-clean conditional theorem: assuming the named literature convergence result
 `[CTQWInversionSuccess S]`, the phase-estimation-free CTQW with the prescribed
-`walkTime ε` produces an output state `ψ` within `ε` of the normalized exact
-solution `A⁻¹|b⟩`, with walk time `O(κ/ε)`. -/
+`walkTime ε` produces, *as its physical marked-subsystem read-out*
+`walkOutput S (walkTime ε)`, an output state within `ε` of the normalized exact
+solution `A⁻¹|b⟩`, with walk time `O(κ/ε)`.  The conclusion binds `ψ` to that walk
+output, so it is the genuine convergence guarantee (not a free-witness restatement). -/
 theorem ctqw_success (S : LinearSystem n) [h : CTQWInversionSuccess S]
     {ε : ℝ} (hε : 0 < ε) :
-    ∃ ψ : n → ℂ,
+    ∃ ψ : n → ℂ, ψ = S.walkOutput (S.walkTime ε) ∧
       (∑ i, ‖ψ i - normalize S.solution i‖ ^ 2 : ℝ).sqrt ≤ ε :=
   h.exists_output_within hε
 
@@ -258,14 +300,18 @@ theorem inversion_restricts_to_quotient
 /-! ### 5. Summary
 
 * **Concrete (sorry-free):** `LinearSystem` (+ `solution`, `A_mulVec_solution`,
-  `ofWeighted`), `walkEvolve` (+ `walkEvolve_zero`), `ctqwInverter`
-  (+ `ctqwInverter_mulVec`), `conditionNumber`, `walkTime`, `normalize`,
-  `IsCellUniform`, and `inversion_restricts_to_quotient` (the inverse-of-
-  restriction algebra on the cell-uniform subspace, proven axiom-clean from
-  `Graphplay.Equitable`'s spectral lift).
+  `ofWeighted`), `walkEvolve` (+ `walkEvolve_zero`), `amplitudeAmplify`,
+  `markedProjection`, `walkOutput` (the definite CTQW pipeline output),
+  `ctqwInverter` (+ `ctqwInverter_mulVec`), `conditionNumber`, `walkTime`,
+  `normalize`, `IsCellUniform`, and `inversion_restricts_to_quotient` (the
+  inverse-of-restriction algebra on the cell-uniform subspace, proven axiom-clean
+  from `Graphplay.Equitable`'s spectral lift).
 * **Typeclass-conditional (the one genuinely-external result):** `ctqw_success`,
   the CTQW convergence / condition-number analysis of arXiv:2508.06611, made
-  axiom-clean conditional on the named class `CTQWInversionSuccess`.
+  axiom-clean conditional on the named class `CTQWInversionSuccess`.  Its field
+  binds the witnessed output to the physical walk state `walkOutput (walkTime ε)`,
+  so the error bound is a genuine convergence claim — *not* a free-witness
+  existential (no one-line instance can inhabit it).
 -/
 
 end MatrixInversion

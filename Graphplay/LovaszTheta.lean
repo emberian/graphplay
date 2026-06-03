@@ -388,22 +388,49 @@ This is a *genuine* definition: for each candidate unit "handle" vector
 `c : Fin d → ℝ`, the per-handle cost is `⨆ i, 1 / ⟨c, ρ.vec i⟩²` (the
 worst vertex), and the value is the infimum of that cost over all unit
 handle vectors.  We range the infimum over the set of admissible per-
-handle costs cut out by the unit-norm constraint on `c`. -/
+handle costs cut out by the unit-norm constraint on `c`.
+
+**Finiteness guard (`∀ i, ⟨c, ρ.vec i⟩ ≠ 0`).**  Classically the cost at a
+handle `c` orthogonal to some `u_i` is `+∞` (the optimal `c` is never
+orthogonal to any vertex vector), so such `c` are excluded from the `min`.
+Over `ℝ`, Lean's `1/0 = 0` would instead make that vertex contribute `0` to
+`⨆ i`, *undercounting* the worst case: e.g. on `⊥₂` (with `ϑ = 2`), the rep
+`u_0 = (1,0)`, `u_1 = (0,1)` and the handle `c = (1,0)` would give
+`⨆ = max (1/1) (1/0) = max 1 0 = 1`, putting `t = 1 < 2 = ϑ` into the set and
+*refuting* the bound.  We therefore restrict the handle set to those `c` with
+`∀ i, ⟨c, ρ.vec i⟩ ≠ 0`, so every `1/⟨c, u_i⟩²` is a genuine finite cost and
+the `⨆ i` is the faithful worst-vertex value.  (On `⊥₂` this excludes the
+axis handles and the infimum is attained at `c = (1/√2, 1/√2)`, value `2`.) -/
 noncomputable def OrthonormalRepresentation.value
     {V : Type u} [Fintype V] {G : SimpleGraph V} {d : ℕ}
     (ρ : OrthonormalRepresentation G d) : ℝ :=
   sInf { t : ℝ | ∃ c : Fin d → ℝ, (∑ k, c k ^ 2 = 1) ∧
+    (∀ i : V, (∑ k, c k * ρ.vec i k) ≠ 0) ∧
     t = ⨆ i : V, 1 / (∑ k, c k * ρ.vec i k) ^ 2 }
 
-/-- **Lovász orthonormal-representation SDP-duality interface** (Lovász 1979).
+/-- **Lovász orthonormal-representation SDP-duality interface**
+(Lovász, *On the Shannon capacity of a graph*, IEEE Trans. Inf. Theory 25 (1979),
+1–7; Theorem 3, the `ϑ = min over orthonormal representations` identity).
 
 The genuinely-external content of equivalence (a): `ϑ(G)` equals the infimum,
 over all orthonormal representations `ρ` and dimensions `d`, of `ρ.value` (the
-`inf_c max_i 1/⟨c,u_i⟩²` cost).  This is the orthonormal-representation form of
-Lovász's SDP strong duality.  It is the content of `LovaszSDPDuality` specialised
-to the concrete primal-SDP / orthonormal-representation families, but this file
-builds no concrete rep→upper-bound objects, so it cannot be discharged from the
-abstract `strong_duality` field non-circularly.
+`min_c max_i 1/⟨c,u_i⟩²` cost, with `c` ranging over unit handles non-orthogonal
+to every vertex vector).  This is the orthonormal-representation form of Lovász's
+SDP strong duality.  It is the content of `LovaszSDPDuality` specialised to the
+concrete primal-SDP / orthonormal-representation families, but this file builds no
+concrete rep→upper-bound objects, so it cannot be discharged from the abstract
+`strong_duality` field non-circularly.
+
+**Non-vacuity.**  The field equates two independently-defined real numbers:
+`lovaszTheta G` (a genuine `sSup` over the PSD-SDP feasible set, with
+`1 ≤ lovaszTheta G`) and `sInf { ρ.value }` (a genuine `sInf` over orthonormal
+reps, whose inner `ρ.value` is now guarded so the `1/⟨c,u_i⟩²` are finite — see
+`OrthonormalRepresentation.value`).  There is no generic proof that an
+`sSup`-of-SDP equals an `sInf`-of-orthonormal-reps; that equality is precisely
+Lovász's theorem, so no one-line instance inhabits this field.  (Were `value` left
+unguarded, the field would be *uninhabitable*: on `⊥₂` the unguarded `sInf` is
+`≤ 1 < 2 = lovaszTheta`, so no instance could ever satisfy it — the guard is what
+makes the assumption faithful rather than self-refuting.)
 
 `Prop`-valued **typeclass assumption, not a bare axiom**: no instance (pure
 external, pending the concrete dual SDP layer).  Local class. -/

@@ -105,9 +105,12 @@ theorem GraphonEquitablePartition.arises_from_consistent_sequence
     ∃ (𝒮 : ConsistentPartitionSequence.{u, v} I) (Wstep : ℕ → Graphon Ω μ),
       -- the underlying step graphons converge to `W` in cut norm …
       CutNormTendsto Wstep W ∧
-      -- … and the finite quotient matrices converge to `P.quotient`
-      -- (the rearrangement-invariant fingerprint of the limit).
-      Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds P.quotient) :=
+      -- … the finite quotient matrices converge to `P.quotient`
+      -- (the rearrangement-invariant fingerprint of the limit) …
+      Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds P.quotient) ∧
+      -- … and the step graphons are the genuine stepping-operator output of the
+      -- spine `𝒮` refining `P` (the BCLSV coupling, `IsSpineStepGraphon`).
+      Graphon.IsSpineStepGraphon Wstep 𝒮 P :=
   -- The BCLSV stepping-operator limit, named as `[LovaszSzegedyLimit]`.
   Graphon.LovaszSzegedyLimit.stepping_limit W P
 
@@ -157,7 +160,7 @@ theorem stepFunction_approximation_rate
       Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop (nhds P.quotient) := by
   -- Extract the spine `𝒮`, the step graphons `Wstep`, the cut-norm convergence,
   -- and the quotient convergence from the BCLSV stepping-operator limit.
-  obtain ⟨𝒮, Wstep, hcut, hquot⟩ :=
+  obtain ⟨𝒮, Wstep, hcut, hquot, _hcouple⟩ :=
     GraphonEquitablePartition.arises_from_consistent_sequence W P
   -- `cutNormDiff (Wstep n) W → 0`, so eventually `cutNormDiff (Wstep n) W < ε`,
   -- hence `≤ ε`.  Pick such an `n` as the stage `N`.
@@ -346,7 +349,7 @@ theorem graphonEquitablePartition_is_cauchy_completion
   -- `quotient_cauchy` (the Cauchy property holds for *every* sequence
   -- produced by the forward theorem).
   rcases GraphonEquitablePartition.arises_from_consistent_sequence W P with
-    ⟨𝒮, _Wstep, _hcut, h_lim⟩
+    ⟨𝒮, _Wstep, _hcut, h_lim, _hcouple⟩
   exact ⟨𝒮, 𝒮.quotient_cauchy ⟨P.quotient, h_lim⟩, h_lim⟩
 
 /-! ## Summary table

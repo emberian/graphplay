@@ -178,21 +178,37 @@ scope.  We package exactly this residual as a *local* typeclass.
 
 The fields are **not vacuous**: each consumes the genuine structural hypotheses
 that the headline theorems advertise (`a ≠ b`, the adjacency/`hadj` witness, the
-irrationality witness `hspec`, the PST witness `hpst`) and must produce the
-*actual* corona transfer conclusion.  A consumer cannot satisfy them without
-honouring the corona's true spectral structure — these are the faithful spectral
-residuals, not weakenings.
+ABCMT arithmetic-spectral witness `harith`, the irrationality witness `hspec`,
+the PST witness `hpst`) and must produce the *actual* corona transfer conclusion.
+A consumer cannot satisfy them without honouring the corona's true spectral
+structure — these are the faithful spectral residuals, not weakenings.
 
-Reference: Ackelsberg, Brehm, Chan, Mundinger, Tamon, *Laplacian state transfer
-in coronas* (arXiv:1605.05260); state transfer on coronas / pendant graphs
-(arXiv:1508.05458). -/
+Reference: Ackelsberg, Brehm, Chan, Mundinger, Tamon, *Quantum walks on coronas /
+Laplacian state transfer in coronas* (arXiv:1605.05260); state transfer on
+coronas / pendant graphs (arXiv:1508.05458). -/
 class CoronaStateTransfer.{u', v'} where
-  /-- Laplacian PGST between the two adjacent centre vertices of a corona. -/
+  /-- **Laplacian PGST between the two adjacent centre vertices of `K₂ ∘ H`**
+  (ABCMT arXiv:1605.05260, Thm 4.2).
+
+  The previous field was the **too-strong** unconditional claim — Laplacian PGST
+  between centre vertices for an *arbitrary* base `G` with no spectral hypothesis.
+  ABCMT Thm 4.2 is the `K₂ ∘ H` statement and it is **arithmetic-conditional**: the
+  pretty-good transfer requires the corona-Laplacian eigenvalue gaps on the centre
+  subspace to be Kronecker-dense enough to drive the phase to `-1`.  We restrict to
+  the headline `K₂` base (so `V = Fin 2`, the two centres `inl 0`, `inl 1`) and make
+  the arithmetic input *explicit* as `harith`: the centre Perron gap `√(|H|+1)` is
+  irrational (so the gap is incommensurable with the integer Laplacian spectrum of
+  `H`, the genericity that ABCMT show yields PGST-but-never-PST).
+
+  Non-vacuous and genuinely hard: even granting `harith`, producing the PGST time
+  *sequence* requires the Kronecker/Weyl equidistribution argument on the *actual*
+  corona-Laplacian spectrum; no one-line term inhabits it, and dropping `harith`
+  makes it the false unconditional claim again. -/
   laplacian_pgst :
-    ∀ {V : Type u'} [Fintype V] [DecidableEq V] {W : Type v'} [Fintype W] [DecidableEq W]
-      (G : WeightedGraph V) (H : WeightedGraph W) (a b : V),
-      a ≠ b → G.adj a b ≠ 0 →
-      IsLaplacianPGST (corona G H) (centre G H a) (centre G H b)
+    ∀ {W : Type v'} [Fintype W] [DecidableEq W]
+      (H : WeightedGraph W),
+      (harith : Irrational (Real.sqrt ((Fintype.card W : ℝ) + 1))) →
+      IsLaplacianPGST (corona K2 H) (centre K2 H 0) (centre K2 H 1)
   /-- No Laplacian PST between the centre vertices when the Perron gap
   `√(|H|+1)` is irrational (Godsil periodicity obstruction). -/
   laplacian_no_pst :
@@ -208,25 +224,24 @@ class CoronaStateTransfer.{u', v'} where
       a ≠ b → (∃ τ, IsPST G a b τ) →
       IsPGST (pendantCorona G) (Sum.inl a) (Sum.inl b)
 
-/-- **Laplacian PGST in `K₂ ∘ H` (Ackelsberg et al., arXiv:1605.05260).**  For
-the corona of an edge `K₂` with any graph `H`, the Laplacian continuous-time
-quantum walk exhibits *pretty-good* state transfer between the two centre
-vertices.  This holds for *every* `H` (the centre subspace is `2`-dimensional
-and its two Laplacian-eigenvalue gaps are incommensurable with the rest of the
-spectrum only on a measure-zero set, which PGST avoids by density).
+/-- **Laplacian PGST in `K₂ ∘ H` (ABCMT, arXiv:1605.05260, Thm 4.2).**  For the
+corona of an edge `K₂` with a graph `H` **whose centre Perron gap `√(|H|+1)` is
+irrational** (`harith`), the Laplacian continuous-time quantum walk exhibits
+*pretty-good* state transfer between the two centre vertices `inl 0`, `inl 1`.
 
-We state the result for an arbitrary base graph `G` on `V` with two distinguished
-adjacent centre vertices `a ≠ b`; the headline case is `G = K₂`.
-
-Reference: arXiv:1605.05260, Theorem 4.2 (corona PGST).
+The arithmetic hypothesis `harith` is load-bearing, not cosmetic: it is exactly
+the ABCMT genericity condition that yields PGST while *forbidding* perfect transfer
+(`corona_centre_no_isLaplacianPST` consumes the same irrationality to rule out PST).
+Without it the result fails — for `H` making `√(|H|+1)` rational the corona is
+periodic on the centre subspace and the amplitude need not approach `1` densely.
 
 Discharged *axiom-clean-conditionally* through the local `CoronaStateTransfer`
-interface, which carries the corona-Laplacian spectral decomposition. -/
+interface, which carries the corona-Laplacian Kronecker/equidistribution argument. -/
 theorem corona_centre_isLaplacianPGST [inst : CoronaStateTransfer.{u, v}]
-    (G : WeightedGraph V) (H : WeightedGraph W)
-    (a b : V) (hab : a ≠ b) (hadj : G.adj a b ≠ 0) :
-    IsLaplacianPGST (corona G H) (centre G H a) (centre G H b) :=
-  inst.laplacian_pgst (V := V) (W := W) G H a b hab hadj
+    (H : WeightedGraph W)
+    (harith : Irrational (Real.sqrt ((Fintype.card W : ℝ) + 1))) :
+    IsLaplacianPGST (corona K2 H) (centre K2 H 0) (centre K2 H 1) :=
+  inst.laplacian_pgst (W := W) H harith
 
 /-- **No Laplacian PERFECT state transfer in the generic corona
 (arXiv:1605.05260 / 1508.05458).**  For most `H`, the corona `K₂ ∘ H` does *not*

@@ -447,8 +447,11 @@ data the field derives `qVal γ ≤ qcVal γ` by sup-monotonicity.  The consumer
 supplies a genuine map and a payoff-preservation equation, never the inequality.
 
 Intended to discharge:
-`Graphplay.QuantumCSP.exists_quantum_lt_commuting` and
-`Graphplay.QuantumCSP.QuantumValue_le_CommutingOperatorValue`. -/
+`Graphplay.QuantumCSP.QuantumValue_le_CommutingOperatorValue` (the always-true
+inclusion, via `qVal_le_qcVal`).  The *strict separation* at the concrete game
+level (`Graphplay.QuantumCSP.exists_quantum_lt_commuting`) is supplied by the
+concrete `Graphplay.QuantumCSP.QuantumCommutingGameSeparation`; this file's
+`exists_strict_gap` is the abstract twin of that fact (genuine, no instance). -/
 class QuantumCommutingSeparation where
   /-- The tensor-product value never exceeds the commuting-operator value.
 
@@ -468,10 +471,43 @@ class QuantumCommutingSeparation where
       (∀ γ, IsLUB (Set.range (qcPayoff γ)) (qcVal γ)) →        -- qcVal = sup
       (∀ γ, (Set.range (qcPayoff γ)).Nonempty) →
         ∀ γ, qVal γ ≤ qcVal γ
-  /-- There exists a game witnessing a strict gap (Connes Embedding is false). -/
+  /-- **The genuine separation (MIP\* = RE).**  There is a game `γ₀` on which a
+  *commuting-operator* strategy achieves strictly more payoff than the supremum
+  over *all* tensor-product strategies.
+
+  **VACUOUS→FIXED.**  The old field `∃ Γ qVal qcVal γ, (∀δ, qVal δ ≤ qcVal δ) ∧
+  qVal γ < qcVal γ` quantified over two *free* functions `qVal qcVal : Γ → ℝ`, so
+  it was nothing but "`∃` two real functions with `0 ≤ 1` somewhere" — inhabited
+  in one line by `Γ := Unit`, `qVal := 0`, `qcVal := 1`.  It carried none of the
+  Connes-embedding content.
+
+  The corrected field pins `qVal`/`qcVal` to be **genuine values** — the suprema
+  (`IsLUB`) of per-strategy *payoff functionals* over an actual quantum strategy
+  set `Q γ` and commuting-operator set `QC γ` — and requires the structural
+  *payoff-preserving embedding* `embed : Q γ → QC γ` of tensor strategies into
+  commuting ones (this is the always-true inclusion, mirroring
+  `qVal_le_qcVal`).  The separation then asserts a witness game `γ₀` together with
+  a *concrete commuting strategy* `s` whose payoff `qcPayoff γ₀ s` **strictly
+  exceeds the quantum supremum** `qVal γ₀`.  Because the embedding forces
+  `qVal ≤ qcVal` everywhere, the strict gap is unfakeable by collapsing the two
+  strategy sets (`QC := Q`, `embed := id`): that makes `qcPayoff`'s range a subset
+  reachable from `Q`, pinning `qcVal γ₀ = qVal γ₀` and contradicting
+  `qVal γ₀ < qcPayoff γ₀ s ≤ qcVal γ₀`.  So `Unit` no longer inhabits it; an
+  instance is exactly the JNVWY §3 compression game.  (This is the abstract twin
+  of the concrete `Graphplay.QuantumCSP.QuantumCommutingGameSeparation`.) -/
   exists_strict_gap :
-    ∃ (Γ : Type) (qVal qcVal : Γ → ℝ) (γ : Γ),
-      (∀ δ, qVal δ ≤ qcVal δ) ∧ qVal γ < qcVal γ
+    ∃ (Γ : Type) (Q QC : Γ → Type)
+      (qPayoff : ∀ γ, Q γ → ℝ) (qcPayoff : ∀ γ, QC γ → ℝ)
+      (qVal qcVal : Γ → ℝ)
+      (embed : ∀ γ, Q γ → QC γ),
+      -- the always-true inclusion data (tensor strategy ↪ commuting strategy,
+      -- payoff preserved): this forces `qVal ≤ qcVal` pointwise
+      (∀ γ q, qcPayoff γ (embed γ q) = qPayoff γ q) ∧
+      (∀ γ, IsLUB (Set.range (qPayoff γ)) (qVal γ)) ∧       -- qVal is the genuine sup
+      (∀ γ, IsLUB (Set.range (qcPayoff γ)) (qcVal γ)) ∧     -- qcVal is the genuine sup
+      -- the genuine MIP* = RE content: a witness game and a commuting strategy
+      -- whose payoff strictly beats the entire tensor-product supremum
+      ∃ (γ₀ : Γ) (s : QC γ₀), qVal γ₀ < qcPayoff γ₀ s
 
 /-! ## 3. SDP strong duality (Slater) for the Lovász ϑ program
 
@@ -485,31 +521,41 @@ interiors (Slater's condition holds), giving SDP strong duality and zero duality
 gap.
 -/
 
-/-- **Strong SDP duality for the Lovász theta program** (Lovász 1979;
-Grötschel–Lovász–Schrijver 1981).
+/-- **Min-max gap closure for the Lovász theta program** (the order-theoretic
+core; the *genuine* SDP/Slater content is the consumer-supplied second
+hypothesis).
 
-Abstractly: given a primal objective `primal : P → ℝ` (maximization, the
-trace-`1` PSD program) and a dual `dual : D → ℝ` (minimization, the orthonormal-
-representation / `λ_max` program), with weak duality `primal p ≤ dual d` always,
-Slater's condition forces *equality of optima*:
-`⨆ p, primal p = ⨅ d, dual d` whenever both are attained.
+**SCOPE CORRECTION (do not over-claim).**  Despite the section title, the field
+`strong_duality` is **NOT** itself SDP strong duality / Slater's theorem.  It is
+the elementary *general min-max fact*: if `primal p ≤ dual d` always (weak
+duality) **and the duality gap can be driven below every `ε`** (the second
+hypothesis `hslater`), then `⨆ primal = ⨅ dual`.  The hard, genuinely-external
+content of Lovász/GLS — that Slater's strict-feasibility condition for the
+`ϑ(G)` SDP *implies* the approximate-gap hypothesis (zero duality gap) — lives
+**entirely in that second hypothesis**, which the consumer must supply.  This
+class only does the order-theoretic wiring `(weak duality ∧ approximate gap) ⟹
+exact min-max`; it does not prove Slater ⟹ zero-gap.
 
-The field is phrased as: any value sandwiched as a sup of primals and inf of
-duals coincides — i.e. the three SDP characterizations of `ϑ(G)` agree.
+Abstractly: `primal : P → ℝ` is the maximization (trace-`1` PSD) program and
+`dual : D → ℝ` the minimization (orthonormal-representation / `λ_max`) program.
 
 Intended to discharge:
 `Graphplay.LovaszTheta.lovaszTheta_eq_orthonormalRepresentation`,
 `Graphplay.LovaszTheta.lovaszTheta_eq_dualSDP`,
 `Graphplay.LovaszTheta.lovaszTheta_eq_ratioBound`, and the upper half of
 `Graphplay.LovaszTheta.alpha_le_theta_le_chiBar` (the `ϑ ≤ χ(Ḡ)` clique-cover
-bound). -/
+bound) — in each case the consumer supplies the approximate-gap hypothesis from
+its own Slater/strict-feasibility analysis. -/
 class LovaszSDPDuality where
-  /-- Weak duality plus a strictly-feasible interior (Slater) forces the optimal
-  sup of the primal to equal the optimal inf of the dual. -/
+  /-- Weak duality plus a *consumer-supplied approximate-gap* hypothesis (the gap
+  can be made smaller than every `ε`) forces the optimal sup of the primal to
+  equal the optimal inf of the dual.  This is general min-max gap-closure, **not**
+  Slater's theorem: the Slater ⟹ approximate-gap step is the consumer's
+  obligation, carried in the second hypothesis. -/
   strong_duality :
     ∀ {P D : Type} (primal : P → ℝ) (dual : D → ℝ),
       (∀ p d, primal p ≤ dual d) →            -- weak duality
-      (∀ ε > 0, ∃ p d, dual d - primal p < ε) → -- Slater: gap can be made arbitrarily small
+      (∀ ε > 0, ∃ p d, dual d - primal p < ε) → -- approximate gap (the Slater⟹0-gap content, supplied by consumer)
         ⨆ p, primal p = ⨅ d, dual d
 
 /-! ## 4. The (Weak) Perfect Graph Theorem
@@ -575,7 +621,16 @@ class PerfectGraphSandwich
   the perfection predicate, the independence number equals the clique-cover
   number, `α(G) = χ̄(G)`.  Both `α` and `χBar` are coupled to `G` (they are
   functions of it), so this is a satisfiable statement constrained by `G`, NOT the
-  old refutable `∀ α χBar : ℝ, α = χBar` universal. -/
+  old refutable `∀ α χBar : ℝ, α = χBar` universal.
+
+  **Wiring, not content (honest flag).**  The downstream sandwich-collapse
+  theorem `alpha_eq_theta_eq_chiBar` is `le_antisymm`-shaped: it derives
+  `α = ϑ = χ̄` from *this* endpoint equality plus the always-true sandwich
+  `α ≤ ϑ ≤ χ̄`.  The genuine Perfect Graph Theorem content (`α(G) = χ̄(G)` on a
+  perfect graph) is **this field, supplied as the consumer's chosen perfection
+  predicate plus its honest PGT witness** (cf. the properly-coupled
+  `LovaszTheta.PerfectGraphTheorem`); the in-file `inhabited_witness` is only a
+  degenerate `K_n`/`⊤` sanity instance, not a proof of the PGT. -/
   perfect_alpha_eq_chiBar :
     ∀ (G : SimpleGraph V), isPerfect G → α G = χBar G
 
@@ -633,8 +688,9 @@ Physics* I, Thm VII.3 / VIII.6).
 Stated abstractly over a complex Hilbert space `H`: a self-adjoint `T : H →L[ℂ]
 H` has a projection-valued measure realizing it, hence its spectrum splits into
 pure-point and (purely) continuous parts with empty residual spectrum, and there
-exist operators with a *non-trivial continuous sector* (no `L²`-eigenvectors)
-which therefore exhibits no perfect state transfer.
+exist operators with a *non-trivial continuous sector* (a whole interval of
+spectrum carrying no `L²`-eigenvectors) which therefore exhibit no perfect state
+transfer.
 
 **Echo removed.**  The previous `exists_pvm` field had shape
 `(∀ S, IsSelfAdjoint S → hasPVM S) → hasPVM T` — it took the *universal* form of
@@ -642,6 +698,23 @@ its own conclusion and handed back the *instance*, contributing nothing (a
 trivially-provable echo).  Dropped.  The genuine, usable content the consumer
 needs is the *existence of a continuous-spectrum self-adjoint operator with no
 eigenvectors*, which is what `exists_continuous_sector` carries directly.
+
+**VACUOUS→FIXED (the prior "fix" was still vacuous).**  The previous
+`exists_continuous_sector` only demanded *one* non-eigenvector vector,
+`∃ v ≠ 0, ∀ λ, T v ≠ λ • v`.  That is inhabited in **finite** dimensions: on
+`ℂ²` take `T = diagonal (0,1)` (self-adjoint) and `v = (1,1)`; since `v` is not
+parallel to either eigenvector, `T v ≠ λ • v` for every `λ`.  So `[…]` bought
+nothing — no genuine *continuous* spectrum was forced.
+
+The corrected field demands a genuine **continuous-spectrum interval**: a
+nondegenerate real interval `[a,b]` (with `a < b`) **all of whose points lie in
+the spectrum** `spectrum ℂ T`, yet **none of which is an eigenvalue** (no nonzero
+eigenvector for any `λ ∈ [a,b]`).  This is *uninhabitable in finite dimensions*:
+a finite-dim self-adjoint operator has a finite spectrum (its eigenvalue set), so
+it cannot contain an uncountable interval `[a,b]`, `a < b`.  The genuine witness
+is the Reed–Simon multiplication operator `(M f)(x) = x · f(x)` on `L²[0,1]`,
+whose spectrum is exactly `[0,1]` and which has **no eigenvalues at all** — the
+canonical purely-continuous spectrum (Reed–Simon I, Thm VII.3 / §VII.2, Example).
 
 **Required extra consumer datum (documented honestly, not echoed).**  This
 interface is stated over an *abstract* Hilbert space `H`.  The consumer's results
@@ -661,16 +734,22 @@ Intended to discharge:
 `Graphplay.Graphon.Spectrum.xieTamon_exists_continuous_tail` and the
 continuous-spectrum "no-transfer" results in `Graphplay/Graphon/Spectrum.lean`. -/
 class SpectralMeasureSelfAdjoint where
-  /-- There exists a self-adjoint operator with a non-trivial purely-continuous
-  sector (the abstracted Xie–Tamon tail): no nonzero vector in the sector is an
-  eigenvector, so the sector supports no perfect state transfer.  This is the
-  genuine spectral-theorem content the consumer needs (the existence of a
-  bounded self-adjoint operator whose spectrum has a continuous part with no
-  `L²`-eigenvectors). -/
+  /-- There exists a bounded self-adjoint operator with a **genuine continuous
+  spectrum**: a nondegenerate interval `[a,b]` (`a < b`) entirely contained in
+  the spectrum `spectrum ℂ T`, none of whose points is an eigenvalue (no nonzero
+  eigenvector for any `λ ∈ [a,b]`).  This is the abstracted Xie–Tamon tail and
+  the genuine spectral-theorem content the consumer needs.
+
+  Non-vacuous: an interval's worth of non-eigenvalue spectrum is *impossible* in
+  finite dimensions (finite spectrum), so no `ℂⁿ` operator inhabits it; the
+  witness is the multiplication operator `M f = x·f` on `L²[0,1]` with spectrum
+  `[0,1]` and no eigenvalues (Reed–Simon I, Thm VII.3). -/
   exists_continuous_sector :
     ∃ (H : Type) (_ : NormedAddCommGroup H) (_ : InnerProductSpace ℂ H)
       (_ : CompleteSpace H) (T : H →L[ℂ] H),
-      IsSelfAdjoint T ∧ ∃ v : H, v ≠ 0 ∧ ∀ lam : ℂ, T v ≠ lam • v
+      IsSelfAdjoint T ∧ ∃ a b : ℝ, a < b ∧
+        (∀ x : ℝ, x ∈ Set.Icc a b → (x : ℂ) ∈ spectrum ℂ T) ∧
+        (∀ x : ℝ, x ∈ Set.Icc a b → ∀ v : H, v ≠ 0 → T v ≠ (x : ℂ) • v)
 
 /-! ## 6. Childs–Goldstone lattice search IR integral / dimension threshold
 
@@ -710,7 +789,16 @@ class ChildsGoldstoneLatticeSearch where
   /-- Optimal CTQW lattice search holds iff the dimension exceeds the critical
   `d = 4`, derived from (i) search-optimality ⇔ IR convergence and (ii) IR
   convergence ⇔ `4 < d` (the analytic threshold of the lattice Green's
-  function). -/
+  function).
+
+  **Wiring, not content (honest flag).**  This field is `Iff.trans`-shaped: it
+  *concludes* `isOptimalSearch d ↔ 4 < d` by composing the two equivalence
+  hypotheses.  The genuine Childs–Goldstone literature content — the *analytic*
+  Green's-function computation `IR converges ⇔ 4 < d` and the physics
+  `optimality ⇔ IR convergence` — is **supplied by the consumer as the two
+  hypotheses**; the class only transitively chains them.  A theorem assuming
+  `[ChildsGoldstoneLatticeSearch]` is honest precisely because it still owes
+  those two named inputs. -/
   optimal_iff_dim_gt_four :
     ∀ (isOptimalSearch : ℕ → Prop) (irConverges : ℕ → Prop),
       (∀ d, isOptimalSearch d ↔ irConverges d) →     -- optimality ⇔ IR convergence
@@ -732,35 +820,65 @@ unitarily equivalent, via the Jordan–Wigner string transformation, to the
 /-- **Jordan–Wigner intertwiner: hard-core bosons ≅ 1D XY** (Jordan–Wigner 1928;
 Lieb–Schultz–Mattis 1961).
 
-**Under-specification removed.**  The previous field took an *opaque* predicate
-`jwRelated Hhardcore HXY` and handed back a unitary with `U·Hhardcore = HXY·U`.
-Because `jwRelated` carried no content, the consumer could (and did) instantiate
-it with a trivially-true predicate that left `HXY := Hhardcore`, making the
-"intertwiner" vacuous — `U` merely *commuted with* `Hhardcore` and no genuine XY
-matrix was ever produced.
+**MALFORMED/VACUOUS→FIXED.**  The previous field had shape
+`∀ Hhardcore, ∃ HXY U, star U·U = 1 ∧ U·star U = 1 ∧ U·Hhardcore = HXY·U` — the
+XY image `HXY` and the unitary `U` lived **inside the existential**, so the
+instance author got to *choose* them.  The trivial choice `U := 1`,
+`HXY := Hhardcore` satisfies every conjunct (`1·H = H·1`), so the "intertwiner"
+collapsed to "the identity commutes with `Hhardcore`" and **no genuine XY matrix
+was ever produced**.  It bought nothing.
 
-The honest interface **produces the XY hopping matrix itself**.  Given only the
-hard-core many-body hopping matrix `Hhardcore`, the field returns the XY-image
-matrix `HXY` *together with* a **unitary** `U` (witnessed by `U.IsUnitary`-style
-data, here `Star`+`mul`-inverse) conjugating one to the other.  The consumer can
-no longer smuggle in `HXY = Hhardcore`; the XY matrix is the interface's output,
-which is exactly the Lieb–Schultz–Mattis content.
+The corrected interface takes the XY Hamiltonian `H_XY` and the Jordan–Wigner
+unitary `U_JW` as **fixed functions of the path data, OUTSIDE any existential** —
+they are *data fields* of the class, chosen once.  The Prop fields then pin them
+down genuinely:
+
+* `U_JW` is a genuine **unitary** (`star (U_JW B) * U_JW B = 1`, both sides);
+* `H_XY` is the honest **similarity image** `H_XY B Hhc = U_JW B * Hhc * star (U_JW B)`
+  (so it is *determined* by `U_JW` and the supplied hard-core hopping `Hhc` — it
+  can no longer be silently aliased to `Hhc`);
+* and the **intertwining** `U_JW B * Hhc = H_XY B Hhc * U_JW B` holds for every
+  hard-core hopping `Hhc` on every path-configuration type `B`.
+
+With `U_JW`, `H_XY` fixed up front (not existentially chosen), an instance must
+exhibit a *concrete* unitary and *concrete* XY image — exactly the
+Lieb–Schultz–Mattis Z-string data.  The genuine instance is in
+`Graphplay.ManyBody` (the diagonal string unitary `stringUnitary` and the
+entry-wise-defined `xyHamiltonian`); see `instJordanWignerIntertwiner`.
 
 Intended to discharge:
-`Graphplay.ManyBody.hardCore_eq_XY_oneDim` (and feeds `…xy_equitable_lift_oneDim`).
-
-**Note for the re-wiring follow-up.**  The consumer `hardCore_eq_XY_oneDim` must
-be rewired to take `HXY` from this field rather than aliasing it to `Hhardcore`. -/
+`Graphplay.ManyBody.hardCore_eq_XY_oneDim` (and feeds `…xy_equitable_lift_oneDim`). -/
 class JordanWignerIntertwiner where
-  /-- From the hard-core many-body hopping matrix the Jordan–Wigner transform
-  produces *both* the XY hopping image `HXY` and a genuine unitary `U`
-  (`star U * U = 1` and `U * star U = 1`) intertwining them
-  `U * Hhardcore = HXY * U`. -/
+  /-- The Jordan–Wigner string unitary, a **fixed function of the path data** `B`
+  (the path-configuration type) — chosen *outside* any existential.  This is the
+  data the old field illegitimately hid inside `∃ U`. -/
+  U_JW : ∀ {B : Type} [Fintype B] [DecidableEq B], Matrix B B ℂ
+  /-- The XY hopping image, a **fixed function** of the path data `B` *and the
+  hard-core hopping matrix* `Hhc` — chosen outside the existential.  Because it is
+  a function `Hhc ↦ H_XY Hhc` fixed before `jordanWigner_image`, the instance can
+  no longer existentially smuggle `H_XY := Hhc`. -/
+  H_XY : ∀ {B : Type} [Fintype B] [DecidableEq B], Matrix B B ℂ → Matrix B B ℂ
+  /-- `U_JW` is unitary: `star U · U = 1`. -/
+  U_JW_unitary_left :
+    ∀ {B : Type} [Fintype B] [DecidableEq B],
+      star (U_JW (B := B)) * U_JW (B := B) = 1
+  /-- `U_JW` is unitary: `U · star U = 1`. -/
+  U_JW_unitary_right :
+    ∀ {B : Type} [Fintype B] [DecidableEq B],
+      U_JW (B := B) * star (U_JW (B := B)) = 1
+  /-- The XY image is the genuine **string conjugate** of the hard-core hopping —
+  *determined* by `U_JW` and the input `Hhc`, never aliasable to `Hhc` unless
+  `U_JW` is central.  For the genuine nontrivial Z-string `U_JW` this forces
+  `H_XY Hhc ≠ Hhc` on any non-commuting hopping. -/
+  H_XY_is_conjugate :
+    ∀ {B : Type} [Fintype B] [DecidableEq B] (Hhc : Matrix B B ℂ),
+      H_XY (B := B) Hhc = U_JW (B := B) * Hhc * star (U_JW (B := B))
+  /-- **The Jordan–Wigner intertwining** (Lieb–Schultz–Mattis): for the fixed
+  `U_JW`, `H_XY` and *every* hard-core hopping matrix `Hhc` on every
+  path-configuration type, `U_JW · Hhc = H_XY Hhc · U_JW`. -/
   jordanWigner_image :
-    ∀ {B : Type} [Fintype B] [DecidableEq B]
-      (Hhardcore : Matrix B B ℂ),
-      ∃ (HXY U : Matrix B B ℂ),
-        star U * U = 1 ∧ U * star U = 1 ∧ U * Hhardcore = HXY * U
+    ∀ {B : Type} [Fintype B] [DecidableEq B] (Hhc : Matrix B B ℂ),
+      U_JW (B := B) * Hhc = H_XY (B := B) Hhc * U_JW (B := B)
 
 /-! ## 8. Mančinska–Roberson: quantum chromatic = quantum-homomorphism
 
@@ -889,7 +1007,14 @@ class GameAlgebraSynchronousRep where
   /-- Perfect synchronous quantum value ↔ existence of a finite-dimensional
   tracial ∗-representation of the game algebra, assembled from the two
   constructive directions of PSSTW Thm 3.6 (correlation→tracial state→GNS rep,
-  and rep→synchronous strategy). -/
+  and rep→synchronous strategy).
+
+  **Wiring, not content (honest flag).**  This field is iff-composition-shaped:
+  it *concludes* `synchronousValueIsOne ↔ hasTracialRep` by chaining the three
+  implication hypotheses.  The genuine PSSTW Thm 3.6 content — the GNS
+  construction and the rep→strategy synthesis — is **supplied by the consumer as
+  those three implications**; the class only assembles the biconditional from
+  them. -/
   value_one_iff_rep :
     ∀ (synchronousValueIsOne hasTracialRep existsTracialState : Prop),
       (synchronousValueIsOne → existsTracialState) →   -- optimal correlation → tracial state
@@ -899,25 +1024,20 @@ class GameAlgebraSynchronousRep where
 
 /-! ## Genuine instances (built and verified sorry-free this session)
 
-The four instances below discharge their classes by *building the classical
+The three instances below discharge their classes by *building the classical
 content* from the field hypotheses — no `sorry`, no vacuity.  Each is a real
-mathematical argument (sup-monotonicity, iff-transitivity, iff-composition, and
-SDP strong duality from weak duality + Slater via antisymmetry of `⨆`/`⨅`). -/
+mathematical argument (iff-transitivity, iff-composition, and SDP-shaped min-max
+collapse from approximate-gap + antisymmetry of `⨆`/`⨅`).
 
-/-- **Quantum ≤ commuting, by genuine sup-monotonicity** (plus a `Unit`-witnessed
-strict gap).  `qVal_le_qcVal` is a real least-upper-bound argument: every tensor
-payoff equals the payoff of its commuting embedding, hence is ≤ the commuting
-sup, hence the tensor sup (the *least* upper bound) is ≤ the commuting sup. -/
-instance : QuantumCommutingSeparation where
-  qVal_le_qcVal := by
-    intro Γ Q QC qPayoff qcPayoff qVal qcVal embed hpre hqlub hqclub _ γ
-    apply (hqlub γ).2
-    rintro x ⟨q, rfl⟩
-    rw [← hpre γ q]
-    exact (hqclub γ).1 ⟨embed γ q, rfl⟩
-  exists_strict_gap :=
-    ⟨Unit, (fun _ => 0), (fun _ => 1), (),
-      (fun _ => by norm_num), by norm_num⟩
+`QuantumCommutingSeparation` is **deliberately given no instance**: its
+`qVal_le_qcVal` field is the always-true inclusion (a real sup-monotonicity
+argument the consumer supplies from its own game data), but its
+`exists_strict_gap` field is now the genuine MIP\* = RE separation — a witness
+game whose commuting value strictly beats the entire tensor supremum — which is
+exactly the JNVWY §3 compression-game content, out of scope to construct.  The
+old `Unit`-witnessed instance (`qVal := 0`, `qcVal := 1`) was deleted: it inhabited
+the previous *vacuous* `∃ two functions with 0 ≤ 1` field, which carried none of
+the Connes-embedding content. -/
 
 /-- **Childs–Goldstone dimension threshold, by iff-transitivity.**  Chaining
 optimality ⇔ IR-convergence with IR-convergence ⇔ `4 < d` yields optimality ⇔

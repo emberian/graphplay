@@ -57,12 +57,14 @@ References for the spectral content:
 
 * Reed–Simon, *Methods of Modern Mathematical Physics* I, Theorem VII.5
   (decomposition of self-adjoint spectra into pure-point, absolutely
-  continuous, singular continuous parts);
+  continuous, singular continuous parts) — the source of the no-PST
+  continuous-spectrum obstruction below;
 * Lovász, *Large Networks and Graph Limits*, §7.5 (graphon operator
   spectrum as a limit of finite spectra);
-* Xie–Tamon, arXiv:2301.07251 (no infinite PST tail), the canonical
-  reference for the path-tail-of-`K_n` example whose graphon limit has a
-  non-trivial continuous tail-sector spectrum.
+* Bernard–Tamon–Vinet–Xie, arXiv:2211.14704 (Lin. Alg. Appl. 2025), the
+  canonical reference for the path-tail-of-`K_n` family (where finite-graph PST
+  *persists*) whose graphon limit has a non-trivial continuous tail-sector
+  spectrum.
 -/
 
 import Mathlib.MeasureTheory.Function.L2Space
@@ -569,14 +571,23 @@ theorem constant_pointSpectrum [NoAtoms μ] (W : Graphon Ω μ) (c : ℂ) (_hc :
       rw [hy, mul_one]
     rw [integral_congr_ae this, hslice]
 
-/-! ### 3d. The Xie–Tamon graphon (`K_n + path-n`) — continuous tail sector.
+/-! ### 3d. The `K_n + path-n` graphon — continuous tail sector.
 
-Xie–Tamon (arXiv:2301.07251) showed that augmenting `K_n` with a path of
-length `n` destroys PST on the original cell-uniform sector.  In the
-graphon limit, the path-tail becomes a **continuous-spectrum sector**:
-the operator restricted to the tail is unitarily equivalent to a
-multiplication operator on `L²([0,1])`, which has purely continuous
-spectrum.
+**Correct attribution (sign and citation fixed).**  Bernard–Tamon–Vinet–Xie
+(arXiv:2211.14704, *Quantum state transfer on a class of dynamical systems* /
+graphs with attached tails, Lin. Alg. Appl. 2025) study `K_n` augmented by an
+attached path and show that, on the *finite* graph, PST between the apex
+vertices **survives** the tail (it does not destroy the discrete-sector
+transfer).  So the finite result is a *persistence* statement, not a no-PST one.
+
+What genuinely produces **no** state transfer is a different, purely analytic
+phenomenon at the graphon limit: the path-tail becomes a **continuous-spectrum
+sector**.  The operator restricted to the tail is unitarily equivalent to a
+multiplication operator on `L²([0,1])`, which has purely continuous spectrum and
+hence **no L²-eigenvectors** — this is the standard multiplication-operator fact
+of **Reed–Simon** (*Methods of Modern Mathematical Physics* I, Thm. VII.5), not a
+Tamon-group result.  The no-PST content below is therefore attributed to
+Reed–Simon; Bernard–Tamon–Vinet–Xie supply the concrete `K_n + tail` family.
 
 We record only the existence statement. -/
 structure HasContinuousTailSector (W : Graphon Ω μ) : Prop where
@@ -591,39 +602,49 @@ structure HasContinuousTailSector (W : Graphon Ω μ) : Prop where
       -- equation for every scalar `lam`.
       (∀ f ∈ S, f ≠ 0 → ∀ lam : ℂ, W.op f ≠ lam • f)
 
-/-- **The Xie–Tamon continuous-tail existence (external typeclass).**
+/-- **The continuous-tail existence gate (external typeclass).**
 
-The genuinely-missing analytic input behind the Xie–Tamon `K_n + path-n` example
-is the existence of a *concrete graphon* whose integral operator has both a
-non-trivial cell-uniform PST sector **and** a purely-continuous tail sector
+The genuinely-missing analytic input behind the `K_n + path-n` example is the
+existence of a *concrete graphon* whose integral operator has both a non-trivial
+cell-uniform PST sector **and** a purely-continuous tail sector
 (`HasContinuousSpectrum ∧ HasContinuousTailSector`).
 
-This requires the spectral theory of multiplication operators (purely continuous
-spectrum) for the concrete `K_n + path-n` graphon limit — beyond Mathlib v4.30.0,
-and strictly stronger than the abstract `SpectralMeasureSelfAdjoint` existence
-interface (which supplies a single no-eigenvector vector on an *abstract* Hilbert
-space, not a whole `W.op`-invariant subspace realised by an actual graphon integral
-operator).  We package it as a `Prop`-valued typeclass with the single field
-`exists_continuous_tail` — the exact cited statement.  **No instance is provided**:
-it is a pure external assumption.
+The hard, no-PST half is the **continuous-spectrum / no-L²-eigenvector** content of
+the tail sector — a multiplication-operator fact (**Reed–Simon** I, Thm. VII.5),
+*not* a Tamon-group result (the Tamon-group result, Bernard–Tamon–Vinet–Xie
+arXiv:2211.14704, is the *opposite*: finite-graph PST persists).  It requires the
+spectral theory of multiplication operators for the concrete `K_n + path-n` graphon
+limit — beyond Mathlib v4.30.0, and strictly stronger than the abstract
+`SpectralMeasureSelfAdjoint` existence interface (which supplies a single
+no-eigenvector vector on an *abstract* Hilbert space, not a whole `W.op`-invariant
+subspace realised by an actual graphon integral operator).  We package it as a
+`Prop`-valued typeclass with the single field `exists_continuous_tail` — the exact
+cited statement.  **No instance is provided**: it is a pure external assumption, and
+genuinely non-vacuous (the `HasContinuousTailSector` field demands an
+`W.op`-invariant non-`⊥` closed subspace on which the eigenvalue equation fails for
+*every* nonzero vector and *every* scalar — a real spectral obstruction, not a
+default-inhabitable `True`).
 
-Reference: **Xie–Tamon**, *No perfect state transfer in trees with more than 3
-vertices* / the `K_n + path-n` tail example, arXiv:2301.07251; **Reed–Simon**,
-*Methods of Modern Mathematical Physics* I, Thm. VII.5 (continuous spectrum of
-multiplication operators). -/
+Reference for the continuous-tail (no-PST) gate: **Reed–Simon**, *Methods of Modern
+Mathematical Physics* I, Thm. VII.5 (purely continuous spectrum of multiplication
+operators).  Concrete `K_n + attached-path` family and the finite-graph PST
+*persistence*: **Bernard–Tamon–Vinet–Xie**, arXiv:2211.14704 (Lin. Alg. Appl.
+2025). -/
 class XieTamonContinuousTail : Prop where
   /-- There is a concrete graphon whose operator carries a non-trivial continuous
-  spectrum together with a purely-continuous tail sector.  (Xie–Tamon
-  arXiv:2301.07251; Reed–Simon I Thm. VII.5.) -/
+  spectrum together with a purely-continuous tail sector — the continuous-spectrum
+  no-eigenvector gate of **Reed–Simon** I, Thm. VII.5 (concrete `K_n + tail` family:
+  Bernard–Tamon–Vinet–Xie arXiv:2211.14704). -/
   exists_continuous_tail :
     ∃ (Ω : Type) (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
       (W : Graphon Ω μ),
       W.HasContinuousSpectrum ∧ W.HasContinuousTailSector
 
-/-- The Xie–Tamon construction: there is a graphon `W` which has both a non-trivial
-cell-uniform PST sector **and** a continuous tail sector.  Conditional on the named
-external interface `[XieTamonContinuousTail]` (BCLSV/Reed–Simon multiplication-operator
-spectral theory); `#print axioms`-clean. -/
+/-- The `K_n + path-n` continuous-tail construction: there is a graphon `W` which
+has both a non-trivial cell-uniform PST sector **and** a continuous tail sector.
+Conditional on the named external interface `[XieTamonContinuousTail]` (Reed–Simon
+multiplication-operator spectral theory, I Thm. VII.5; concrete family
+Bernard–Tamon–Vinet–Xie arXiv:2211.14704); `#print axioms`-clean. -/
 theorem xieTamon_exists_continuous_tail [XieTamonContinuousTail] :
     ∃ (Ω : Type) (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
       (W : Graphon Ω μ),

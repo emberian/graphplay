@@ -300,9 +300,9 @@ refined cell-uniform basis because each refined cell is wholly in/out of `M`).
 
 In particular, if the refined-quotient search Hamiltonian has optimal search at
 `(γ, τ)`, then the host does too — spatial search runs equivalently on the
-quotient.  Xie–Tamon (arXiv:2301.07251) obtain the attached-tail / infinite-tail
-special case as a filtered colimit over distance-from-attachment partitions;
-this is its finite parent. -/
+quotient.  Bernard–Tamon–Vinet–Xie (arXiv:2211.14704, Lin. Alg. Appl. 2025) study
+the attached-tail / `K_n + path` family (where transfer *persists* along the tail);
+the attached-tail special case here is its finite parent. -/
 theorem search_quotient_reduction
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -406,13 +406,13 @@ theorem optimal_search_lift
     IsOptimalSearch G M γ τ := by
   sorry
 
-/-- The infinite-attached-tail special case (Xie–Tamon 2301.07251): the
-distance-from-attachment partitions on an infinite tail form a filtered
-diagram of equitable partitions whose colimit recovers the full-tail walk.
-Optimal search persists in the limit when it holds uniformly along the
-diagram.
+/-- The infinite-attached-tail special case (Bernard–Tamon–Vinet–Xie,
+arXiv:2211.14704): the distance-from-attachment partitions on an infinite tail
+form a filtered diagram of equitable partitions whose colimit recovers the
+full-tail walk.  Optimal search persists in the limit when it holds uniformly
+along the diagram (matching the BTVX finite-graph *persistence* direction).
 
-Honest finite-parent form.  The genuine Xie–Tamon statement is about an
+Honest finite-parent form.  The genuine unbounded-tail statement is about an
 *unbounded* tail and requires an `InverseLimit`/`UnionGraph` extension not
 present here.  What is genuinely provable at this finite level is the *quotient
 lift* itself: given a family of marked-refined partitions `P n` all sharing the

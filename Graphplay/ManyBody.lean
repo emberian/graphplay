@@ -2058,27 +2058,31 @@ theorem stringUnitary_conj_eq_xyHamiltonian
 
 /-- **The Jordan–Wigner intertwiner — genuine instance (Lieb–Schultz–Mattis).**
 
-For *any* hard-core many-body hopping matrix `Hhardcore`, the Jordan–Wigner
-transform produces the XY image `HXY := U · Hhardcore · U⁻¹` as the honest
-**conjugate** of `Hhardcore` by the concrete Jordan–Wigner string unitary
-`U = JordanWigner.stringUnitary` (a diagonal Z-string), together with the proof
-that `U` is unitary and intertwines: `U · Hhardcore = HXY · U`.
+Supplies the corrected `JordanWignerIntertwiner` interface with **fixed, concrete
+functions of the path data** (chosen outside any existential, as the de-vacuoused
+class demands):
 
-The intertwining is the algebraic identity
-`(U · Hhardcore · U⁻¹) · U = U · Hhardcore · (star U · U) = U · Hhardcore`,
-using `star U · U = 1`.  This is a *genuine* similarity transform: the XY image
-is the conjugate, never aliased to `Hhardcore`, so the Lieb–Schultz–Mattis
-content of the interface is honoured.  Discharges
+* `U_JW B := JordanWigner.stringUnitary B` — the concrete diagonal Z-string
+  unitary (a *genuine* non-central unitary, not `1`);
+* `H_XY B Hhc := U · Hhc · star U` — the honest string **conjugate** of the
+  supplied hard-core hopping `Hhc`, *determined* by `U_JW` (so `H_XY_is_conjugate`
+  is `rfl`), never aliased to `Hhc`.
+
+The unitarity fields are the proven `stringUnitary_isUnitary_{left,right}`, and
+the intertwining `U · Hhc = (U · Hhc · U⁻¹) · U` is the algebraic identity
+`U · Hhc · (star U · U) = U · Hhc`, using `star U · U = 1`.  Discharges
 `Graphplay.ManyBody.hardCore_eq_XY_oneDim` unconditionally. -/
 noncomputable instance instJordanWignerIntertwiner :
     Graphplay.LiteratureInterfaces.JordanWignerIntertwiner where
+  U_JW {B} _ _ := JordanWigner.stringUnitary B
+  H_XY {B} _ _ := fun Hhc =>
+    JordanWigner.stringUnitary B * Hhc * star (JordanWigner.stringUnitary B)
+  U_JW_unitary_left {B} _ _ := JordanWigner.stringUnitary_isUnitary_left B
+  U_JW_unitary_right {B} _ _ := JordanWigner.stringUnitary_isUnitary_right B
+  H_XY_is_conjugate {B} _ _ := fun _ => rfl
   jordanWigner_image {B} _ _ Hhardcore := by
     classical
-    refine ⟨JordanWigner.stringUnitary B * Hhardcore * star (JordanWigner.stringUnitary B),
-            JordanWigner.stringUnitary B,
-            JordanWigner.stringUnitary_isUnitary_left B,
-            JordanWigner.stringUnitary_isUnitary_right B, ?_⟩
-    -- `(U H U⁻¹) U = U H (U⁻¹ U) = U H`, using `star U * U = 1`.
+    -- `U · Hhc = (U · Hhc · star U) · U = U · Hhc · (star U · U) = U · Hhc`.
     rw [Matrix.mul_assoc, Matrix.mul_assoc,
         JordanWigner.stringUnitary_isUnitary_left B, Matrix.mul_one]
 

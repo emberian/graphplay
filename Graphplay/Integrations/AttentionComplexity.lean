@@ -47,12 +47,17 @@ problem with a *controlled error* — which is the open frontier and is **not**
 formalized here.  The quantum clause (`attention_quantum_composition`) composes the
 proven classical collapse with two facts about the `r × r` quotient: the exact
 inversion-reduction (`ridge_inversion_restricts_to_quotient`, proven) and the CTQW
-**convergence** guarantee (`MatrixInversion.LinearSystem.ctqw_success` — an output
-within `ε` of the normalized solution; an honest upstream `sorry`, arXiv:2508.06611).
-The convergence part is the only honest `sorry`; the classical linear-in-`n` collapse
-it composes with is fully proven.  (Earlier this clause carried a vacuous
-`walkTime ε = κ/ε` conjunct, which is `rfl` by the definition of `walkTime` and
-asserts nothing; it was replaced by the genuine `ctqw_success` convergence witness.)
+**convergence** guarantee (`MatrixInversion.LinearSystem.ctqw_success`, arXiv:2508.06611
+— the *walk-produced* output `walkOutput (walkTime ε)` is within `ε` of the normalized
+solution).  That convergence guarantee is a sorry-free conditional theorem: it is
+discharged from the named external literature class
+`MatrixInversion.LinearSystem.CTQWInversionSuccess` (the deep HHL/CTQW analysis,
+supplied as a typeclass hypothesis, never an in-file `axiom` or `sorry`); the
+classical linear-in-`n` collapse it composes with is fully proven.  (Earlier this
+clause carried a vacuous `walkTime ε = κ/ε` conjunct, which is `rfl` by the
+definition of `walkTime` and asserts nothing — and even after that fix the witness
+`ψ` was left *free* (one-line-inhabitable by `ψ := normalize solution`); the field
+now binds `ψ` to the physical walk output, making it the genuine convergence claim.)
 
 ## References
 
@@ -292,11 +297,14 @@ theorem attention_quantum_composition
       -- the inversion restricts *exactly* to this quotient (no approximation)
       ((G.adj⁻¹).mulVec (fun v => ∑ i, bcoord i * P.cellUniformVec i v)
         = (fun v => ∑ i, (P.symmQuotient⁻¹.mulVec bcoord) i * P.cellUniformVec i v)) ∧
-      -- the CTQW solver converges on the quotient: an output ψ within ε of the
-      -- normalized exact solution (the genuine, n-independent rate guarantee —
-      -- `ctqw_success`, an honest upstream `sorry`).  This is NOT the old vacuous
-      -- `walkTime ε = κ/ε` definitional restatement; it is a real convergence claim.
-      (∃ ψ : I → ℂ,
+      -- the CTQW solver converges on the quotient: the *walk-produced* output
+      -- `Sq.walkOutput (Sq.walkTime ε)` (marked read-out of the amplitude-amplified,
+      -- walk-evolved `b̃` at the prescribed time `O(κ/ε)`) is within ε of the
+      -- normalized exact solution.  The witness ψ is BOUND to that physical walk
+      -- output (not free): the genuine, n-independent HHL/CTQW rate guarantee
+      -- (`ctqw_success`, arXiv:2508.06611).  This is NOT the old vacuous
+      -- `walkTime ε = κ/ε` definitional restatement, nor a free-witness existential.
+      (∃ ψ : I → ℂ, ψ = Sq.walkOutput (Sq.walkTime ε) ∧
         (∑ i, ‖ψ i - MatrixInversion.LinearSystem.normalize Sq.solution i‖ ^ 2 : ℝ).sqrt
           ≤ ε)) := by
   refine ⟨⟨blockAttentionApply_eq_fullAttentionApply A B cell V hblock,

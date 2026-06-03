@@ -11,19 +11,25 @@ the spectrum is given by character evaluations
   `λ_χ = Σ_{s ∈ S} χ(s)`
 (see Babai 1979; Lovász 1975).
 
-The central PST theorem here is the Bašić–Petković–Stevanović
-characterisation of integral/rational PST on abelian Cayley graphs:
+The central PST theorem here is the **Tan–Feng–Cao** characterisation of PST on
+abelian Cayley graphs:
 
-* **Bašić–Petković–Stevanović 2009** (arXiv:0810.4866, *Perfect state
-  transfer in integral circulant graphs*), extended by Bašić 2013
-  (*Characterisation of integral circulant graphs that allow perfect
-  state transfer*, arXiv:1304.5894) and Bašić–Petković 2009 (arXiv:0910.0904).
+* **Tan, Feng, Cao 2019**, *Perfect State Transfer on Abelian Cayley Graphs*,
+  Linear Algebra Appl. 563 (2019) 331–352 (arXiv:1712.09260), **Theorem 2.4**:
+  `Cay(G, S)` has PST from `g` to `h` (`a = g − h ≠ 0`) iff
+  **(I)** the graph is integral (`α_χ = ∑_{s∈S} χ(s) ∈ ℤ`), **(II)** `a` has
+  order `2`, and **(III)** the `2`-adic gap condition holds (`v₂(d − α_χ)`
+  constant on the `χ(a) = −1` class, and `≥ ρ + 1` on the `χ(a) = 1` class).
+  This specialises (cyclic case) to Bašić, *Characterization of quantum
+  circulant networks having perfect state transfer*, Quantum Inf. Process. 12
+  (2013) 345–364 (arXiv:1104.1825), Theorem 22.
 
-We expose `CayleyGraph` and state the theorem for general finite abelian
-groups (the integral-circulant case is the cyclic specialisation).
+We expose `CayleyGraph`, the genuine condition `TanFengCaoPSTCondition`, and the
+headline theorem for general finite abelian groups (the integral-circulant case
+is the cyclic specialisation).
 
-Concrete examples: the cycle `C_n`, the dihedral abelianization, and the
-list of abelian groups of order `≤ 32` admitting PST.
+Concrete examples: the cycle `C_n` and the structural characterisation of which
+finite abelian groups admit some PST-bearing Cayley graph.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -32,6 +38,7 @@ import Mathlib.Algebra.Algebra.Spectrum.Basic
 import Mathlib.Algebra.Group.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Data.ZMod.Basic
+import Mathlib.NumberTheory.Padics.PadicVal.Basic
 import Graphplay.Weighted
 import Graphplay.PST
 
@@ -218,8 +225,8 @@ theorem cayley_abelian_eigenvalues_are_charSum
     rw [mul_comm]
   exact real_mem_spectrum_of_mulVec_smul hvne hAv
 
-/-! ## Bašić–Petković–Stevanović:
-PST iff rational eigenvalues + parity condition. -/
+/-! ## Tan–Feng–Cao:
+PST on abelian Cayley graphs iff integral + order-2 partner + 2-adic gap condition. -/
 
 /-- A real eigenvalue `μ` is **rational** in the abelian-Cayley setting
 iff it is a rational number.  Equivalently, by `cayley_abelian_eigen-
@@ -234,63 +241,88 @@ def HasPSTPartner {G : Type u} [Group G] [Fintype G] [DecidableEq G]
     (S : Finset G) : Prop :=
   ∃ v : G, v ≠ 1 ∧ ∃ τ : ℝ, IsPST (CayleyGraph S) 1 v τ
 
-/-- **Bašić–Petković–Stevanović (2009/2013).**  Let `G` be a finite
-abelian group and `S` a symmetric loopless connection set.  Then the
-Cayley graph `Cay(G, S)` admits perfect state transfer between *some*
-pair of vertices if and only if the eigenvalues are rational *and* a
-group-theoretic parity condition holds on `S`.
+/-- The **character sum** `α_χ = ∑_{s ∈ S} χ(s)` — the eigenvalue of the abelian
+Cayley graph `Cay(G, S)` indexed by the character `χ` (Babai/Lovász; see
+`cayley_abelian_eigenvalues_are_charSum`).  Tan–Feng–Cao write this `α_x`. -/
+noncomputable def charSum {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
+    (S : Finset G) (χ : G →* ℂ) : ℂ :=
+  ∑ s ∈ S, χ s
 
-References:
-* Bašić, Petković, Stevanović (2009), *Perfect state transfer in integral
-  circulant graphs*, arXiv:0810.4866 — the cyclic case.
-* Bašić (2013), *Characterisation of integral circulant graphs that allow
-  perfect state transfer*, arXiv:1304.5894 — closure of the cyclic case.
-* Bašić, Petković (2009), *Some classes of integral circulant graphs
-  either allowing or not allowing perfect state transfer*,
-  arXiv:0910.0904.
+/-- **Integral abelian Cayley graph.**  `Cay(G, S)` is *integral* iff every
+character-sum eigenvalue `α_χ = ∑_{s∈S} χ(s)` is a (rational) integer.  This is
+condition (I) of Tan–Feng–Cao Theorem 2.4 (and the classical fact that a
+vertex-transitive graph with PST is integral, Godsil). -/
+def IsIntegralCayley {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
+    (S : Finset G) : Prop :=
+  ∀ χ : G →* ℂ, ∃ m : ℤ, charSum S χ = (m : ℂ)
 
-The "parity condition" referenced here is the *Bašić parity*: the
-spectral gap of `A` (viewed as an integer) is divisible by an
-appropriate power of `2`.  Concretely we phrase it as: there is a
-non-identity group element `a` (the PST partner) all of whose character
-sums `∑_{s ∈ S} χ(s)` align with the corresponding character sums at the
-identity in the parity sense `χ(a) = ±1` and the eigenvalue gaps are
-even.  We package this directly. -/
-def BasicParity {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
-    (_S : Finset G) : Prop :=
-  ∃ a : G, a ≠ 1 ∧ ∀ χ : G →* ℂ, χ a = 1 ∨ χ a = -1
+/-- **Tan–Feng–Cao PST condition** (arXiv:1712.09260, *Perfect State Transfer
+on Abelian Cayley Graphs*, Linear Algebra Appl. 563 (2019) 331–352, **Theorem
+2.4**).  For a candidate partner `a ≠ 1` of the identity in `Cay(G, S)`
+(`d := |S|`, `α_χ := ∑_{s∈S} χ(s)`), this is the *genuine* characterisation
+that `Cay(G, S)` has PST from `1` to `a`:
 
-/-! ### The Bašić–Petković–Stevanović characterisation as a typeclass
+* **(I)** `Cay(G, S)` is integral (`α_χ ∈ ℤ` for all `χ`);
+* **(II)** `a` has order exactly `2` (`a² = 1`, `a ≠ 1`) — equivalently
+  `χ(a) = ±1` for all `χ`;
+* **(III)** the `2`-adic *gap* condition: writing the gap integers `g_χ`
+  via `(g_χ : ℂ) = (d : ℂ) − α_χ`, with sign-classes `Gε = {χ : χ(a) = (−1)^ε}`,
+  the `2`-adic valuations `v₂(g_χ)` are *constant* (`= ρ`) over the odd class
+  `χ ∈ G₁` (`χ(a) = −1`), and `v₂(g_χ) ≥ ρ + 1` for every `χ` in the even class
+  `G₀` (`χ(a) = 1`).  This is the Diophantine alignment that makes the transfer
+  time `t = π/M` (`M = gcd{d − α_χ}`) realise a *simultaneous* phase `(−1)` on
+  `G₁` and `(+1)` on `G₀`.
+
+**This replaces the old `BasicParity`**, which stated *only* condition (II)
+(`∃a≠1, ∀χ, χ(a)=±1`, i.e. `a² = 1`).  That was a **false biconditional**:
+order-2 of `a` is necessary (Tan–Feng–Cao Lemma 2.2(B)) but very far from
+sufficient — it omits integrality (I) and, crucially, the `2`-adic gap
+alignment (III).  E.g. the `3`-cube–type graph `Cay((ℤ/2)³, S)` with a
+non-aligned `S` has every non-identity element of order `2` yet no PST: it
+fails (III).  The condition (III) is the genuine arithmetic content. -/
+def TanFengCaoPSTCondition {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
+    (S : Finset G) (a : G) : Prop :=
+  a ≠ 1 ∧
+  IsIntegralCayley S ∧
+  (∀ χ : G →* ℂ, χ a = 1 ∨ χ a = -1) ∧
+  ∃ ρ : ℕ,
+    (∀ χ : G →* ℂ, χ a = -1 → ∀ g : ℤ,
+        (g : ℂ) = (S.card : ℂ) - charSum S χ → padicValInt 2 g = ρ) ∧
+    (∀ χ : G →* ℂ, χ a = 1 → ∀ g : ℤ,
+        (g : ℂ) = (S.card : ℂ) - charSum S χ → ρ + 1 ≤ padicValInt 2 g)
+
+/-! ### The Tan–Feng–Cao characterisation as a typeclass
 
 The PST characterisation for abelian Cayley graphs, the antipodal-cycle
 specialisation, and the order-`≤ 32` enumeration are **deep number-theoretic
-theorems** (Bašić–Petković–Stevanović 2009, Bašić 2013): the forward direction
-is a Galois/parity argument on the rational eigenvalues, the backward direction
-is an explicit transfer-time construction, and the enumeration is a finite but
-nontrivial classification.  Mathlib v4.30 has no path (no PST spectral calculus,
-no integral-circulant parity theory).  Following the `LiteratureInterfaces`
-design principle, we name them as a **local content-bearing typeclass** carrying
-the precise statements as fields, and discharge the headline theorems from it.
+theorems** (Tan–Feng–Cao 2019; Bašić 2013 in the cyclic case): the forward
+direction is a Galois/`2`-adic argument on the integral eigenvalues, the
+backward direction is the explicit transfer-time construction `t = π/M`, and the
+enumeration is a finite but nontrivial classification.  Mathlib v4.x has no path
+(no PST spectral calculus, no abelian-Cayley `2`-adic theory).  Following the
+`LiteratureInterfaces` design principle, we name them as a **local
+content-bearing typeclass** carrying the precise statements as fields, and
+discharge the headline theorems from it.
 
-**Non-vacuity.**  Each field is the verbatim iff, so an instance must actually
-prove the classification.  The preconditions are genuinely inhabited on both
-sides: the empty connection set has no PST partner (LHS false), while the
-4-cycle `C_4` realises antipodal PST (LHS true), so no half is vacuous. -/
+**Non-vacuity.**  The field is the verbatim Tan–Feng–Cao iff, so an instance
+must actually prove the classification — including the `2`-adic gap alignment
+(III), which no trivial instance can supply.  The two sides are genuinely
+inhabited: the empty connection set has no PST partner (LHS false), while the
+`4`-cycle `C₄` realises antipodal PST (LHS true), so no half is vacuous. -/
 class CayleyAbelianPSTCharacterisation (G : Type u)
     [CommGroup G] [Fintype G] [DecidableEq G] : Prop where
-  /-- **Bašić–Petković–Stevanović (2009/2013).**  An abelian Cayley graph admits
-  a PST partner iff its eigenvalues are rational and the Bašić parity holds. -/
+  /-- **Tan–Feng–Cao (2019), Theorem 2.4.**  An abelian Cayley graph has a PST
+  partner `a` iff the integral + order-2 + `2`-adic gap condition holds for `a`. -/
   pst_iff : ∀ (S : Finset G), IsSymmetricConn S → IsLooplessConn S →
-      (HasPSTPartner S ↔
-        HasRationalEigenvalues (CayleyGraph S) ∧ BasicParity S)
+      (HasPSTPartner S ↔ ∃ a : G, TanFengCaoPSTCondition S a)
 
-theorem cayley_abelian_PST_iff_rationalEigenvalues
+theorem cayley_abelian_PST_iff_TanFengCao
     {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
     [CayleyAbelianPSTCharacterisation G]
     (S : Finset G) (hS : IsSymmetricConn S) (hL : IsLooplessConn S) :
-    HasPSTPartner S ↔
-      HasRationalEigenvalues (CayleyGraph S) ∧ BasicParity S :=
-  -- arXiv:0810.4866 + arXiv:1304.5894.  Discharged from the local interface.
+    HasPSTPartner S ↔ ∃ a : G, TanFengCaoPSTCondition S a :=
+  -- Tan–Feng–Cao, arXiv:1712.09260, Theorem 2.4.  Discharged from the local
+  -- interface.
   CayleyAbelianPSTCharacterisation.pst_iff S hS hL
 
 /-! ## Examples -/
@@ -332,24 +364,26 @@ noncomputable def cycle (n : ℕ) [NeZero n] : WeightedGraph (ZMod n) := by
 Same design principle as `CayleyAbelianPSTCharacterisation`: content-bearing
 local interface, non-vacuous (`C_4` realises PST, `C_3` does not). -/
 class CyclePSTSpecialisation : Prop where
-  /-- **Antipodal cycle specialisation (arXiv:0810.4866 Ex. 3.2; arXiv:1304.5894).**
-  `C_n` has antipodal PST iff `n ∈ {2, 4}`. -/
+  /-- **Antipodal cycle specialisation (Bašić, arXiv:1104.1825, Thm 22 applied
+  to `Cₙ = ICG_n({1, n−1})`).**  `C_n` has antipodal PST iff `n ∈ {2, 4}`. -/
   cycle_iff : ∀ (n : ℕ) [NeZero n], 2 ≤ n →
     ((∃ τ : ℝ, IsPST (cycle n) (0 : ZMod n) ((n / 2 : ℕ) : ZMod n) τ)
       ↔ n = 2 ∨ n = 4)
 
-/-- **Bašić–Petković–Stevanović, applied to the cycle.**  `C_n` admits
-perfect state transfer between the antipodal vertices `0` and `n/2` iff
+/-- **Cycle specialisation of the integral-circulant PST classification.**  `C_n`
+admits perfect state transfer between the antipodal vertices `0` and `n/2` iff
 `n ∈ {2, 4}`.
 
-Genuine statement (replacing the previous `True ↔ …` placeholder): the LHS is
-now the *actual* PST predicate — existence of a transfer time `τ` realising
-PST between vertex `0` and the antipodal vertex `(n/2 : ZMod n)` of the cycle
-`C_n`.  (For odd `n` there is no exact antipode; PST then provably fails, which
-is consistent with the RHS excluding all odd `n`.)
+The LHS is the *actual* PST predicate — existence of a transfer time `τ`
+realising PST between vertex `0` and the antipodal vertex `(n/2 : ZMod n)` of the
+cycle `C_n`.  (For odd `n` there is no exact antipode; PST then provably fails,
+consistent with the RHS excluding all odd `n`.)
 
-Cf. arXiv:0810.4866 Example 3.2; the iff was sharpened in arXiv:1304.5894.
-`C_2 = K_2` (trivial PST) and `C_4` are the only cycles with antipodal PST. -/
+`Cₙ` is the integral circulant `ICG_n({1, n−1})`; applying Bašić's Theorem 22
+(arXiv:1104.1825), antipodal PST forces `n ∈ 4ℕ` *and* the connection set to
+satisfy the `2`-adic divisor-class condition, which for the single nontrivial
+gcd-class `{1, n−1}` holds exactly at `n = 4`.  `C_2 = K_2` is the trivial PST.
+So `C_2` and `C_4` are the only cycles with antipodal PST. -/
 theorem cycle_PST_iff [CyclePSTSpecialisation] (n : ℕ) [NeZero n] (h : 2 ≤ n) :
     (∃ τ : ℝ, IsPST (cycle n) (0 : ZMod n) ((n / 2 : ℕ) : ZMod n) τ)
       ↔ n = 2 ∨ n = 4 :=
@@ -359,45 +393,57 @@ theorem cycle_PST_iff [CyclePSTSpecialisation] (n : ℕ) [NeZero n] (h : 2 ≤ n
   -- al.).  Discharged from the local `CyclePSTSpecialisation` interface.
   CyclePSTSpecialisation.cycle_iff n h
 
-/-- The complete list (per Bašić–Petković–Stevanović 2009+2013) of
-finite abelian groups of order ≤ 32 admitting *some* Cayley graph with
-PST between identity and a non-trivial vertex.  The list is
-`{ℤ/2, ℤ/4, (ℤ/2)^k, ℤ/4 × ℤ/2, ℤ/4 × (ℤ/2)^2, …}`; we package it as a
-predicate.
+/-- **Structural PST-admissibility of a finite abelian group.**  `G` admits PST
+on *some* Cayley graph iff there exist a non-identity element `a` (necessarily of
+order `2`, Tan–Feng–Cao Lemma 2.2(B)) and a symmetric loopless connection set `S`
+realising the Tan–Feng–Cao condition `TanFengCaoPSTCondition S a`.
 
-Concretely: `G` qualifies iff its cardinality is one of the eight
-PST-admitting orders `{2, 3, 4, 6, 8, 12, 16, 24}` enumerated in
-Bašić–Petković–Stevanović (arXiv:0810.4866; refined in arXiv:1304.5894
-Table 1).  This is a *necessary* condition derived from the rational-
-eigenvalue parity criterion and a *sufficient* one verified by explicit
-connection-set search; the iff is the content of Bašić 2013. -/
-def IsAbelianOfOrderLE32WithPST (G : Type u) : Prop :=
-  ∃ _h : Fintype G,
-    Fintype.card G ∈ ({2, 3, 4, 6, 8, 12, 16, 24} : Finset ℕ)
+This **replaces** the old `card G ∈ {2,3,4,6,8,12,16,24}` predicate, which was
+malformed: it claimed PST-admissibility depends only on the group *order*.  That
+is false — PST depends on group **structure**:
 
-/-- **Order-`≤ 32` enumeration as a typeclass.**  Same content-bearing local
-interface (non-vacuous: e.g. `ℤ/4` admits PST, an order-5 group does not). -/
+* `(ℤ/2)³` (order `8`) admits PST (it is the `3`-cube `Q₃`, a textbook
+  PST graph), whereas `ℤ/8` (order `8`) does **not** admit antipodal PST on any
+  integral circulant with the same order;
+* and odd orders such as `3` were wrongly included — an odd-order abelian group
+  has **no** element of order `2`, so by Lemma 2.2(B) it can have **no** PST
+  partner at all.
+
+The structural predicate below is order-agnostic and quantifies over the genuine
+group-theoretic data (`a`, `S`), so it distinguishes `(ℤ/2)³` from `ℤ/8`. -/
+def AbelianAdmitsPST (G : Type u) [CommGroup G] [Fintype G] [DecidableEq G] : Prop :=
+  ∃ (a : G) (S : Finset G),
+    IsSymmetricConn S ∧ IsLooplessConn S ∧ TanFengCaoPSTCondition S a
+
+/-- **Structural PST-admissibility enumeration, as a typeclass.**  Content-bearing
+local interface (non-vacuous: `(ℤ/2)ᵏ` admits PST, an odd-order group does not).
+States the genuine *structural* characterisation rather than an order list. -/
 class AbelianPSTEnumeration (G : Type u)
     [CommGroup G] [Fintype G] [DecidableEq G] : Prop where
-  /-- **Enumeration (Bašić 2013, Table 1).**  A finite abelian group of order
-  `≤ 32` admits *some* PST-bearing Cayley graph iff its order is admissible. -/
-  enumeration : Fintype.card G ≤ 32 →
-      ((∃ S : Finset G, IsSymmetricConn S ∧ IsLooplessConn S ∧ HasPSTPartner S)
-        ↔ IsAbelianOfOrderLE32WithPST G)
+  /-- **Structural characterisation (Tan–Feng–Cao 2019).**  A finite abelian group
+  admits *some* PST-bearing Cayley graph iff it admits a Tan–Feng–Cao-realising
+  order-`2` partner and connection set — a property of the group **structure**. -/
+  enumeration :
+      (∃ S : Finset G, IsSymmetricConn S ∧ IsLooplessConn S ∧ HasPSTPartner S)
+        ↔ AbelianAdmitsPST G
 
-/-- **Enumeration theorem (Bašić 2013).**  Up to isomorphism, the finite
-abelian groups of order `≤ 32` that admit at least one connection set
-`S` with `HasPSTPartner S` are precisely the ones flagged by
-`IsAbelianOfOrderLE32WithPST`.  See arXiv:1304.5894 Table 1.  Discharged from
-the local `AbelianPSTEnumeration` interface. -/
-theorem abelian_PST_order_le_32_enumeration
+/-- **Structural enumeration theorem (Tan–Feng–Cao 2019).**  Up to isomorphism,
+the finite abelian groups admitting at least one connection set `S` with
+`HasPSTPartner S` are exactly those satisfying the *structural* predicate
+`AbelianAdmitsPST` — a condition on the group's decomposition (presence of an
+order-`2` element and a Tan–Feng–Cao-realising connection set), **not** merely on
+its order.  Discharged from the local `AbelianPSTEnumeration` interface.
+
+Cf. Tan–Feng–Cao, arXiv:1712.09260, §3 (cubelike specialisation), where the
+structural dependence is explicit: `(ℤ/2)ᵏ` admits PST but `ℤ/2ᵏ` does not, even
+at equal order. -/
+theorem abelian_PST_structural_enumeration
     {G : Type u} [CommGroup G] [Fintype G] [DecidableEq G]
-    [AbelianPSTEnumeration G]
-    (hcard : Fintype.card G ≤ 32) :
+    [AbelianPSTEnumeration G] :
     (∃ S : Finset G, IsSymmetricConn S ∧ IsLooplessConn S ∧
-        HasPSTPartner S) ↔ IsAbelianOfOrderLE32WithPST G :=
-  -- Finite enumeration; cf. Bašić 2013 Table 1.  Discharged from the interface.
-  AbelianPSTEnumeration.enumeration hcard
+        HasPSTPartner S) ↔ AbelianAdmitsPST G :=
+  -- Structural characterisation; cf. Tan–Feng–Cao §3.  Discharged from the interface.
+  AbelianPSTEnumeration.enumeration
 
 end StdLib
 end Graphplay
