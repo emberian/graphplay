@@ -202,19 +202,96 @@ theorem pow (h : Intertwines P M MQ) : ∀ k : ℕ, Intertwines P (M ^ k) (MQ ^ 
 
 end Intertwines
 
-/-- **The quantum walk reduces to the quotient walk.**  `U(t) = exp(-itA)` carries
-the cell-inflate to the inflate of the quotient walk `exp(-it Q̃)`.
+/-- The cell-inflate as a (rectangular) `V × I` matrix: column `i` is the
+normalized cell-`i` indicator.  `cellInflateVec v = cellInflateMat *ᵥ v`. -/
+noncomputable def cellInflateMat (P : EquitablePartition G I) : Matrix V I ℂ :=
+  fun x i => P.cellUniformVec i x
 
-The polynomial approximants intertwine exactly (`Intertwines.pow` applied to the
-truncated exponential series); this is their analytic limit.  We record it as the
-named *quantum* instance of the bridge; the proof is the standard
-functional-calculus closure (`exp` is the locally-uniform limit of the
-intertwining partial sums), which Mathlib does not yet package for the rectangular
-cell-inflate. -/
+theorem cellInflateVec_eq_mulVec (P : EquitablePartition G I) (v : I → ℂ) :
+    P.cellInflateVec v = cellInflateMat P *ᵥ v := by
+  funext x
+  rw [P.cellInflateVec_eq_sum v]
+  simp only [Matrix.mulVec, dotProduct, cellInflateMat]
+  exact Finset.sum_congr rfl (fun i _ => mul_comm _ _)
+
+/-- **Intertwining in matrix form.**  `Intertwines P M MQ ↔ M · B = B · MQ` where
+`B = cellInflateMat` — the bridge between the vector-level reduction and matrix
+algebra (used for the two-sided Lyapunov/Sylvester argument). -/
+theorem intertwines_iff_mat (P : EquitablePartition G I)
+    (M : Matrix V V ℂ) (MQ : Matrix I I ℂ) :
+    Intertwines P M MQ ↔ M * cellInflateMat P = cellInflateMat P * MQ := by
+  have hbridge : Intertwines P M MQ ↔
+      ∀ v, (M * cellInflateMat P) *ᵥ v = (cellInflateMat P * MQ) *ᵥ v := by
+    unfold Intertwines
+    refine forall_congr' (fun v => ?_)
+    rw [cellInflateVec_eq_mulVec, cellInflateVec_eq_mulVec, Matrix.mulVec_mulVec,
+      Matrix.mulVec_mulVec]
+  rw [hbridge]
+  constructor
+  · intro h; ext x i
+    have hx := congrFun (h (Pi.single i 1)) x
+    simpa [Matrix.mulVec_single] using hx
+  · intro h v; rw [h]
+
+/-- Right-multiplication by a fixed vector, as a linear map on square matrices —
+used to push the matrix exponential through `mulVec`. -/
+noncomputable def mulVecRightLin {n : Type*} [Fintype n] (w : n → ℂ) :
+    Matrix n n ℂ →ₗ[ℂ] (n → ℂ) where
+  toFun M := M *ᵥ w
+  map_add' M N := Matrix.add_mulVec M N w
+  map_smul' c M := Matrix.smul_mulVec c M w
+
+@[simp] theorem mulVecRightLin_apply {n : Type*} [Fintype n] (w : n → ℂ) (M : Matrix n n ℂ) :
+    mulVecRightLin w M = M *ᵥ w := rfl
+
+/-- **A diagonal operator intertwines its quotient diagonal**, provided its
+diagonal is constant on the cells of `P`.  This is the ingredient that lets the
+intrinsic-frequency rotation `diag(ω)` (constant per brain region in Deco et al.)
+descend to the connectome. -/
+theorem Intertwines.diagonal_of_cellConst {P : EquitablePartition G I}
+    (ω : V → ℂ) (ωQ : I → ℂ) (hω : ∀ x, ω x = ωQ (P.cells x)) :
+    Intertwines P (Matrix.diagonal ω) (Matrix.diagonal ωQ) := by
+  intro v
+  funext x
+  simp only [Matrix.mulVec_diagonal, EquitablePartition.cellInflateVec]
+  rw [hω x, mul_div_assoc]
+
+open scoped Matrix.Norms.Operator in
+/-- **Intertwining is closed under the matrix exponential** — hence under the
+entire holomorphic functional calculus, the *quantum* end of the bridge.  If `M`
+intertwines `MQ`, then `exp M` intertwines `exp MQ`: the exponential is the
+`HasSum` of the (intertwining, by `Intertwines.pow`) powers, and the
+finite-dimensional cell-inflate and `mulVec` maps — automatically continuous —
+push through the sum (`HasSum.mapL`), with uniqueness of sums closing it. -/
+theorem Intertwines.exp {P : EquitablePartition G I} {M : Matrix V V ℂ} {MQ : Matrix I I ℂ}
+    (h : Intertwines P M MQ) :
+    Intertwines P (NormedSpace.exp M) (NormedSpace.exp MQ) := by
+  intro v
+  have hpow : ∀ k, M ^ k *ᵥ P.cellInflateVec v = P.cellInflateVec (MQ ^ k *ᵥ v) :=
+    fun k => h.pow k v
+  have key1 : HasSum (fun k : ℕ => (k.factorial⁻¹ : ℂ) • P.cellInflateVec (MQ ^ k *ᵥ v))
+      (NormedSpace.exp M *ᵥ P.cellInflateVec v) := by
+    have hh := (NormedSpace.exp_series_hasSum_exp' (𝕂 := ℂ) M).mapL
+      (LinearMap.toContinuousLinearMap (mulVecRightLin (P.cellInflateVec v)))
+    simp only [LinearMap.coe_toContinuousLinearMap', map_smul, mulVecRightLin_apply] at hh
+    simp_rw [hpow] at hh
+    exact hh
+  have key2 : HasSum (fun k : ℕ => (k.factorial⁻¹ : ℂ) • P.cellInflateVec (MQ ^ k *ᵥ v))
+      (P.cellInflateVec (NormedSpace.exp MQ *ᵥ v)) := by
+    have hh := ((NormedSpace.exp_series_hasSum_exp' (𝕂 := ℂ) MQ).mapL
+        (LinearMap.toContinuousLinearMap (mulVecRightLin v))).mapL
+        (LinearMap.toContinuousLinearMap P.cellInflateLin)
+    simp only [LinearMap.coe_toContinuousLinearMap', map_smul, mulVecRightLin_apply] at hh
+    exact hh
+  exact key1.unique key2
+
+/-- **The quantum walk reduces to the quotient walk.**  `U(t) = exp(-itA)` carries
+the cell-inflate to the inflate of the quotient walk `exp(-it Q̃)` — the unitary
+corollary of `Intertwines.exp` applied to the adjacency. -/
 theorem intertwines_evolve (P : EquitablePartition G I) (t : ℝ) :
     Intertwines P (G.evolve t)
-      (NormedSpace.exp (-(Complex.I * (t : ℂ)) • P.symmQuotient)) := by
-  sorry
+      (NormedSpace.exp (-(Complex.I * (t : ℂ)) • P.symmQuotient)) :=
+  ((Intertwines.adj P).smul (-(Complex.I * (t : ℂ)))).exp
 
 end Intertwining
 
@@ -559,6 +636,149 @@ theorem stationaryFC_reduces_along_quotient {G : WeightedGraph V}
   have hL : Intertwines P G.laplacian.adj (quotientLaplacian P) := fun v =>
     laplacian_mulVec_cellInflate_eq P v
   exact ((hL.sub (Intertwines.scalar P (a : ℂ))).inv hunit hunitQ).smul _
+
+/-! ### The full rotating Jacobian (`ω ≠ 0`)
+
+Deco et al.'s Jacobian (Eq. 8) is the `2M × 2M` real block `[[aI−L, diag ω], [−diag ω,
+aI−L]]`, the real representation of the **complex** drift `(aI−L) − i·diag(ω)` acting
+on `z = x + iy`.  Their intrinsic frequency `ω_j` is *per brain region* — constant on
+the cells of the regional partition — so the rotation descends too, and the entire
+(rotating) dynamics reduce to the connectome.  This removes the `ω = 0` restriction
+at the level of the drift and the time-evolution. -/
+
+/-- The **full linearised Stuart–Landau drift** at the edge of bifurcation, with
+the intrinsic-frequency rotation kept: the complex representation
+`J = (a·I − L) − i·diag(ω)` of Deco et al.'s Eq. 8 block Jacobian. -/
+noncomputable def ouDriftC (G : WeightedGraph V) (a : ℝ) (ω : V → ℂ) : Matrix V V ℂ :=
+  ((a : ℂ) • 1 - G.laplacian.adj) - Complex.I • Matrix.diagonal ω
+
+/-- **The rotating drift reduces to the connectome drift.**  When `ω` is constant on
+cells (per-region, as in Deco et al.), the full `ω ≠ 0` Jacobian intertwines the
+quotient Jacobian built from the connectome Laplacian and the per-region frequency. -/
+theorem ouDriftC_intertwines {G : WeightedGraph V} (P : EquitablePartition G I)
+    [LaplacianDegreeAligned P] (a : ℝ) (ω : V → ℂ) (ωQ : I → ℂ)
+    (hω : ∀ x, ω x = ωQ (P.cells x)) :
+    Intertwines P (ouDriftC G a ω)
+      (((a : ℂ) • 1 - quotientLaplacian P) - Complex.I • Matrix.diagonal ωQ) := by
+  have hL : Intertwines P G.laplacian.adj (quotientLaplacian P) := fun v =>
+    laplacian_mulVec_cellInflate_eq P v
+  exact ((Intertwines.scalar P (a : ℂ)).sub hL).sub
+    ((Intertwines.diagonal_of_cellConst ω ωQ hω).smul Complex.I)
+
+/-- **The full rotating propagator reduces.**  `e^{tJ}` for the rotating drift carries
+the cell-inflate to the inflate of the quotient propagator — the `ω ≠ 0`
+generalisation of `intertwines_evolve`, via `Intertwines.exp`. -/
+theorem ouPropagatorC_reduces {G : WeightedGraph V} (P : EquitablePartition G I)
+    [LaplacianDegreeAligned P] (a : ℝ) (ω : V → ℂ) (ωQ : I → ℂ)
+    (hω : ∀ x, ω x = ωQ (P.cells x)) (t : ℝ) :
+    Intertwines P (NormedSpace.exp ((t : ℂ) • ouDriftC G a ω))
+      (NormedSpace.exp ((t : ℂ) •
+        (((a : ℂ) • 1 - quotientLaplacian P) - Complex.I • Matrix.diagonal ωQ))) :=
+  ((ouDriftC_intertwines P a ω ωQ hω).smul (t : ℂ)).exp
+
+/-- **The full (two-sided, `ω ≠ 0`) stationary covariance reduces.**  For any drift
+`J` intertwining `JQ` (with `Jᵀ` intertwining `JQᵀ`) and isotropic-or-intertwining
+noise `Q`, the Lyapunov solutions `K`, `KQ` satisfy `Intertwines P K KQ` — i.e. the
+whole-brain stationary covariance reduces to the connectome covariance, *with the
+rotation kept*.  The error `D = K·B − B·KQ` solves the **homogeneous** Sylvester
+equation `J·D + D·JQᵀ = 0`, so it vanishes by Sylvester uniqueness (`hsylv`).
+
+`hsylv` is the one analytic input — uniqueness of the Lyapunov/Sylvester solution,
+equivalent to `J` being Hurwitz (stable), which holds at Deco et al.'s stable fixed
+point (`a < 0`).  It is a recognized gap in Mathlib (matrix-exponential decay); we
+isolate it as a single clean hypothesis rather than fake it. -/
+theorem stationaryCov_reduces {G : WeightedGraph V} (P : EquitablePartition G I)
+    (J : Matrix V V ℂ) (JQ : Matrix I I ℂ) (K : Matrix V V ℂ) (KQ : Matrix I I ℂ)
+    (Q : Matrix V V ℂ) (QQ : Matrix I I ℂ)
+    (hJ : Intertwines P J JQ) (hJt : Intertwines P Jᵀ JQᵀ) (hQ : Intertwines P Q QQ)
+    (hlyap : J * K + K * Jᵀ + Q = 0) (hlyapQ : JQ * KQ + KQ * JQᵀ + QQ = 0)
+    (hsylv : ∀ D : Matrix V I ℂ, J * D + D * JQᵀ = 0 → D = 0) :
+    Intertwines P K KQ := by
+  rw [intertwines_iff_mat]
+  have hJm : J * cellInflateMat P = cellInflateMat P * JQ := (intertwines_iff_mat P J JQ).mp hJ
+  have hJtm : Jᵀ * cellInflateMat P = cellInflateMat P * JQᵀ :=
+    (intertwines_iff_mat P Jᵀ JQᵀ).mp hJt
+  have hQm : Q * cellInflateMat P = cellInflateMat P * QQ := (intertwines_iff_mat P Q QQ).mp hQ
+  set B := cellInflateMat P with hB
+  have hJKt : J * K + K * Jᵀ = -Q := eq_neg_of_add_eq_zero_left hlyap
+  have hJKtQ : JQ * KQ + KQ * JQᵀ = -QQ := eq_neg_of_add_eq_zero_left hlyapQ
+  have h1 : J * (K * B) + (K * B) * JQᵀ = (-Q) * B := by
+    rw [← Matrix.mul_assoc J K B, Matrix.mul_assoc K B JQᵀ, ← hJtm, ← Matrix.mul_assoc K Jᵀ B,
+      ← Matrix.add_mul, hJKt]
+  have h2 : J * (B * KQ) + (B * KQ) * JQᵀ = B * (-QQ) := by
+    rw [← Matrix.mul_assoc J B KQ, hJm, Matrix.mul_assoc B JQ KQ, Matrix.mul_assoc B KQ JQᵀ,
+      ← Matrix.mul_add, hJKtQ]
+  have hsol : J * (K * B - B * KQ) + (K * B - B * KQ) * JQᵀ = 0 := by
+    rw [Matrix.mul_sub, Matrix.sub_mul,
+      show J * (K * B) - J * (B * KQ) + ((K * B) * JQᵀ - (B * KQ) * JQᵀ)
+        = (J * (K * B) + (K * B) * JQᵀ) - (J * (B * KQ) + (B * KQ) * JQᵀ) from by abel,
+      h1, h2, Matrix.neg_mul, Matrix.mul_neg, hQm]
+    abel
+  exact sub_eq_zero.mp (hsylv (K * B - B * KQ) hsol)
+
+/-! ### Energy: the COCO entropy-production cost
+
+Deco et al.'s energy result (their Fig. 3E) uses the COCO framework: at the
+non-equilibrium steady state, **energy consumption = entropy-production rate**
+
+  `Φ = tr(Jᵀ Q⁻¹ (J K − K Jᵀ))`,
+
+built from the stationary probability **current** `J K − K Jᵀ` (Nartallo-Kaluarachchi
+et al., *Phys. Rev. E* 107 024121 (2023); Deco et al., COCO, bioRxiv
+2025.06.18.660368).  The current vanishes when the drift is symmetric (detailed
+balance), so the cost is a genuinely `ω ≠ 0`, non-equilibrium phenomenon — which is
+exactly why our exact `ω = 0` reduction has **zero** energy, and the brain's energy
+lives in the rotation. -/
+
+/-- The **entropy-production / energy-consumption rate** (COCO; PRE 107 024121):
+`tr(Jᵀ Q⁻¹ (J K − K Jᵀ))`, the trace against the stationary current `J K − K Jᵀ`. -/
+noncomputable def entropyProduction (J K Q : Matrix V V ℂ) : ℂ :=
+  (Jᵀ * Q⁻¹ * (J * K - K * Jᵀ)).trace
+
+/-- **No energy without rotation.**  A symmetric drift that commutes with the
+covariance has zero current, hence zero entropy production / energy — matching
+COCO's "symmetric `J` + isotropic noise ⇒ equilibrium." -/
+theorem entropyProduction_eq_zero_of_commute (J K Q : Matrix V V ℂ)
+    (hsymm : Jᵀ = J) (hcomm : J * K = K * J) :
+    entropyProduction J K Q = 0 := by
+  unfold entropyProduction
+  rw [hsymm, hcomm, sub_self, Matrix.mul_zero, Matrix.trace_zero]
+
+/-- **The exact `ω = 0` reduction has zero energy cost.**  The symmetric drift
+`J = a·I − L` and its resolvent covariance commute (both products equal
+`−(σ²/2)·I`), so the entropy production vanishes.  The brain's nonzero energy
+(Fig. 3E) is therefore not captured by — and does not contradict — the symmetric
+reduction; it requires the `ω ≠ 0` rotation. -/
+theorem stationaryFC_entropyProduction_eq_zero (G : WeightedGraph V) (a σ2 : ℝ)
+    (hunit : IsUnit (G.laplacian.adj - (a : ℂ) • 1).det)
+    (hsymm : (G.laplacian.adj)ᵀ = G.laplacian.adj) :
+    entropyProduction (ouDrift G a) (stationaryFC G a σ2) (((σ2 : ℝ) : ℂ) • 1) = 0 := by
+  refine entropyProduction_eq_zero_of_commute _ _ _ ?_ ?_
+  · show (ouDrift G a)ᵀ = ouDrift G a
+    unfold ouDrift
+    rw [Matrix.transpose_sub, Matrix.transpose_smul, Matrix.transpose_one, hsymm]
+  · have hSinv1 : (G.laplacian.adj - (a : ℂ) • 1) * (G.laplacian.adj - (a : ℂ) • 1)⁻¹ = 1 :=
+      Matrix.mul_nonsing_inv _ hunit
+    have hSinv2 : (G.laplacian.adj - (a : ℂ) • 1)⁻¹ * (G.laplacian.adj - (a : ℂ) • 1) = 1 :=
+      Matrix.nonsing_inv_mul _ hunit
+    have hdrift : ouDrift G a = -(G.laplacian.adj - (a : ℂ) • 1) := by rw [ouDrift, neg_sub]
+    have e1 : ouDrift G a * stationaryFC G a σ2 = -(((σ2 / 2 : ℝ) : ℂ) • 1) := by
+      rw [hdrift]; unfold stationaryFC
+      rw [Matrix.neg_mul, mul_smul_comm, hSinv1]
+    have e2 : stationaryFC G a σ2 * ouDrift G a = -(((σ2 / 2 : ℝ) : ℂ) • 1) := by
+      rw [hdrift]; unfold stationaryFC
+      rw [smul_mul_assoc, mul_neg, hSinv2, smul_neg]
+    rw [e1, e2]
+
+/-- **The stationary probability current reduces along the quotient.**  The
+irreversible current `J K − K Jᵀ` — the source of the energy cost — intertwines the
+connectome current `JQ KQ − KQ JQᵀ`.  So even though the total energy is an extensive
+full-network trace, its physical generator descends to the connectome. -/
+theorem current_reduces {G : WeightedGraph V} (P : EquitablePartition G I)
+    {J : Matrix V V ℂ} {JQ : Matrix I I ℂ} {K : Matrix V V ℂ} {KQ : Matrix I I ℂ}
+    (hJ : Intertwines P J JQ) (hJt : Intertwines P Jᵀ JQᵀ) (hK : Intertwines P K KQ) :
+    Intertwines P (J * K - K * Jᵀ) (JQ * KQ - KQ * JQᵀ) :=
+  (hJ.mul hK).sub (hK.mul hJt)
 
 end GeneralReduction
 

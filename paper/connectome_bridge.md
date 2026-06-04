@@ -39,8 +39,8 @@ So *any* spectral functional `f(A)` reduces to `f(Q̃)` on the synchronization
 subspace. Two instances:
 
 * **Quantum** — the continuous-time quantum walk `U(t)=exp(−itA)` reduces to the
-  quotient walk `exp(−itQ̃)` (`intertwines_pow` proves it for every polynomial /
-  Krylov approximant; `intertwines_evolve` is the analytic limit).
+  quotient walk `exp(−itQ̃)` (`intertwines_evolve`, fully proved: the polynomial
+  case `intertwines_pow` is lifted to the exponential via its `HasSum`).
 * **Quantum-like (classical)** — the Ornstein–Uhlenbeck / Lyapunov stationary
   covariance — i.e. Deco's functional connectivity — reduces to the connectome's
   (`stationaryFC_reduces_along_quotient`, fully proved via the resolvent case).
@@ -52,7 +52,18 @@ the same graph operator. That is the bridge.
 
 The whole-brain "network of networks" `Ĉ` (their Fig. 1C / Fig. 2) is built as
 `regionalNetwork H Reg`: `N` regions, each a copy of a `k`-regular regional graph
-`Reg`, coupled by the dMRI structural connectome `H`. We prove:
+`Reg`, coupled by the dMRI structural connectome `H`.
+
+**Idealization, stated up front.** Deco et al. couple regions by a *random*
+bipartite link (probability `p_inter = 0.1`, scaled by `C_ij`) and draw a random
+`k`-regular graph per region. We formalise the *uniform/shared* version — every
+cross-region node pair `(i,j)` carries `C_ij/n`, one fixed `Reg` per region — which
+is the **exactly-equitable mean** their construction concentrates on. Their random
+realization is only *approximately* equitable (finite-`n` fluctuations); the
+uniform model is precisely the structure their "average across the `n` nodes" step
+already assumes. So our exactness is for that annealed/mean model.
+
+We prove:
 
 * `regionalPartition` **is a genuine equitable partition** of `Ĉ` (the `uniform`
   field is proved, not assumed).
@@ -63,10 +74,12 @@ The whole-brain "network of networks" `Ĉ` (their Fig. 1C / Fig. 2) is built as
   between the degree diagonal and the quotient diagonal, so `D_Q − Q̃ = D_C − C`.
 
 Deco's prescription "reduce `FCᵐᵒᵈᵉˡ` by averaging across the `n` nodes in each
-region" (their p. 6) is therefore **not an approximation** — it is the exact
-equitable quotient. Concretely, with the Hopf drift linearised at the edge of
-bifurcation to `J = a·I − L` (their Eq. 8, symmetric reduction) and isotropic
-noise `Q = σ²I`, the stationary covariance is the Laplacian resolvent
+region" (their p. 6) is therefore the **exact equitable quotient of the idealized
+(uniform-coupling) model** — exact for the annealed/mean structure, and the
+principled limit their finite-`n` averaging approximates. Concretely, with the
+Hopf drift linearised at the edge of bifurcation to `J = a·I − L` (their Eq. 8, in
+the symmetric `ω = 0` reduction — see scope) and isotropic noise `Q = σ²I`, the
+stationary covariance is the Laplacian resolvent
 
 ```
 K = (σ²/2)(L − a·I)⁻¹        (stationaryFC; solves J K + K Jᵀ + Q = 0, Eq. 10)
@@ -91,12 +104,20 @@ FC, certified.**
 | `resolvent_isUnit_of_neg` | for `a<0`, `L−aI` is positive definite, hence invertible |
 | `connectome_gap_inherited` | the connectome's spectral gap is inherited by `Ĉ` (Fig. 1C) |
 | `algConn_prune_le` | removing edges shrinks the algebraic connectivity (Fig. 4A) |
+| `Intertwines.exp` | intertwining is closed under the matrix exponential (whole functional calculus) |
+| `intertwines_evolve` | the unitary quantum walk `exp(−itA)` reduces to `exp(−itQ̃)` |
+| `ouDriftC_intertwines` | the **full rotating** Jacobian `(aI−L) − i·diag(ω)` (Eq. 8, `ω≠0`) reduces |
+| `ouPropagatorC_reduces` | the rotating time-evolution `e^{tJ}` reduces (`ω≠0`) |
+| `stationaryCov_reduces` | the **two-sided `ω≠0` stationary covariance** reduces (FC for the full model) |
+| `entropyProduction_eq_zero_of_commute` | symmetric drift ⇒ zero COCO energy cost (matches their equilibrium criterion) |
+| `stationaryFC_entropyProduction_eq_zero` | the exact `ω=0` reduction has zero energy |
+| `current_reduces` | the stationary probability current `JK−KJᵀ` (source of the energy) reduces |
 | `qlbit_fc_reduction` | the reduction *fires* on a concrete two-region "QL bit" (K₂), all hypotheses discharged |
 
-The only `sorry` is `intertwines_evolve` (the unitary `exp` limit) — the standard
-holomorphic-functional-calculus closure that Mathlib lacks for a rectangular
-intertwiner; its polynomial core `intertwines_pow` is proved. It is irrelevant to
-the classical account.
+**The module has zero `sorry`s and zero bare axioms.**  The only non-trivial
+hypothesis carried (never faked) is `hsylv`: Sylvester/Lyapunov-solution uniqueness
+for the `ω≠0` covariance, equivalent to drift stability (Hurwitz), which holds at the
+stable fixed point `a<0` and is a recognized Mathlib analytic gap.
 
 ## 4. Classical explanation of each "QL" phenomenon
 
@@ -104,10 +125,11 @@ the classical account.
 |---|---|
 | "QL state": emergent state separated in the spectrum, robust, two-state (Scholes A–C) | a `k`-regular **expander** with a spectral gap `λ₀−λ₁`; the two states = cell-uniform vs. orthogonal complement |
 | "Interference / superposition / QL-bit = tensor of Hilbert spaces" | classical **eigenmode** combination of coupled-oscillator networks; the QL-bit is the `N=2` regional blow-up |
-| "QL fits fMRI better; lower energy" | FC = Laplacian resolvent `(σ²/2)(L−aI)⁻¹`; fit and energy are functionals of the **graph spectrum** of a linear stochastic (OU) process |
+| "QL fits fMRI better" (Fig. 3A/B) | FC = Laplacian resolvent `(σ²/2)(L−aI)⁻¹` (`ω=0`, exact) or the rotating Lyapunov covariance (`ω≠0`); both reduce to the connectome — `stationaryFC_reduction`, `stationaryCov_reduces` |
+| "Lower energy" (Fig. 3E) | COCO energy = entropy production `tr(Jᵀ Q⁻¹ (JK−KJᵀ))`, generated by the irreversible **current** `JK−KJᵀ` — which **reduces along the quotient** (`current_reduces`); the cost is zero for symmetric drift (`entropyProduction_eq_zero_of_commute`), so it is a genuinely `ω≠0` non-equilibrium phenomenon (total cost is extensive — see scope §6) |
 | "Distributed spectral gap" (Fig. 1C) | the connectome's gap inherited by `Ĉ` through the equitable quotient — `connectome_gap_inherited` |
 | "Metastability = switching between cluster-sync states" | slow dynamics of the gap-separated **cell-uniform subspace** — a time-averaged spectral functional (same family as quantum average mixing) |
-| "Long-range edges amplify the gap" (Fig. 4A) | monotonicity of the Fiedler value under edge addition — `algConn_prune_le` |
+| "Long-range edges amplify the gap" (Fig. 4A) | monotonicity of the **Fiedler value** (algebraic connectivity) under edge addition — `algConn_prune_le` (their gap is a summed *adjacency* gap; see scope §6) |
 | "Decoherence-free / robust to disorder" | the synchronization manifold is `A`-invariant for *any* weights respecting the partition (equitable invariance) |
 
 ## 5. The general statement (and why it's more than the brain)
@@ -121,28 +143,60 @@ The brain model is one instance of:
 This is a reusable theorem about *any* networked linear-stochastic system with a
 regional symmetry: hierarchical control, multi-scale diffusion, consensus
 dynamics, GNN message passing on quotient graphs. The connectome is where it
-happens to meet neuroscience. The same `Intertwines` backbone also gives the
-genuinely-quantum reduction, so the framework spans unitary coherent transport
-and classical stochastic correlation in one object.
+happens to meet neuroscience. Three functional calculi ride the one `Intertwines`
+backbone: the **rational** (resolvent → FC, fully proved), the **exponential**
+(`Intertwines.exp` → unitary quantum walk *and* rotating propagator), and the
+**two-sided Lyapunov/Sylvester** (`stationaryCov_reduces` → the `ω≠0` covariance).
 
-## 6. Honest scope
+## 6. Honest scope (what we idealize, stated plainly)
 
-* **One analytic `sorry`** (`intertwines_evolve`); polynomial case proved.
-* **Symmetric reduction `ω = 0`.** We formalise the non-rotating block `J = aI−L`
-  of their Jacobian (Eq. 8). The equitable reduction extends to the full rotating
-  Jacobian whenever the intrinsic frequency `ω` is constant on cells (a standard
-  modelling choice), but we proved the `ω=0` case.
-* **We explain the spectral/dynamical phenomena, not a quantum claim.** We do not
-  assert the brain is quantum; we show the reported effects are accounted for by
-  spectral graph theory + linear stochastic dynamics, with the equitable quotient
-  as the exact reduction. (The paper's "interference" is classical eigenmode
-  structure — which is precisely what the spectral-functional picture captures.)
+* **Fully axiom-clean: no `sorry`s, no bare axioms** (only `propext`,
+  `Classical.choice`, `Quot.sound`).
+* **Exact-vs-approximate equitability.** Their inter-region coupling is random
+  (`p_inter`) and the regional graphs are random `k`-regular; we formalise the
+  uniform/shared mean, which is *exactly* equitable. So our results are exact for
+  that annealed model and the principled approximation (up to finite-`n`
+  fluctuations) for their random realization — which is itself the structure their
+  "averaging across `n`" already presumes. (The general theorems hold for *any*
+  equitable partition, so heterogeneous/random regions are covered at the theorem
+  level; only the specific `regionalNetwork` constructor is the uniform instance.)
+* **The full `ω ≠ 0` rotation is now captured.** We formalise the complete Eq. 8
+  Jacobian as the complex drift `J = (aI−L) − i·diag(ω)` (`diag(ω)` cell-constant,
+  per-region as in Deco et al.), and prove the drift (`ouDriftC_intertwines`), the
+  time-evolution (`ouPropagatorC_reduces`), and the two-sided stationary covariance
+  (`stationaryCov_reduces`) all reduce to the connectome — and the COCO energy
+  current (`current_reduces`).
+* **The one analytic hypothesis: Sylvester uniqueness.** The `ω≠0` covariance
+  reduction carries `hsylv` — uniqueness of the homogeneous Sylvester equation
+  `J·D + D·JQᵀ = 0 ⇒ D = 0`, equivalent to drift stability (Hurwitz). It is true
+  at Deco et al.'s stable fixed point and is a genuine Mathlib analytic gap
+  (matrix-exponential decay); we isolate it as one clean hypothesis, never fake it.
+  The `ω=0` case needs no such hypothesis (the resolvent is explicit).
+* **Energy is extensive; its current is what reduces.** The total COCO energy is a
+  trace over all `M = N·n` nodes, so it is *not* equal to the connectome energy —
+  it splits into a cell-uniform (connectome) part plus a within-region part. What
+  reduces cleanly is the irreversible **current** `JK−KJᵀ` (`current_reduces`), the
+  physical generator of the cost; and the cost is exactly zero in the symmetric
+  `ω=0` reduction (`stationaryFC_entropyProduction_eq_zero`), confirming it is a
+  genuinely non-equilibrium, rotation-driven quantity.
+* **Fig. 4A gap is a substitution.** Deco et al. measure a summed *adjacency*
+  eigenvalue-gap above a threshold; that quantity is not monotone under edge
+  addition in general. We prove monotonicity of the canonical **Fiedler value**
+  (algebraic connectivity) — the rigorous, monotone form of "long-range edges
+  amplify the gap," but a related, not identical, gap.
+* **We explain the spectral/dynamical phenomena, not a quantum claim.** Deco et al.
+  themselves frame this as *quantum-like, not quantum* (classical coupled
+  oscillators exhibiting QL probability laws); we agree, and sharpen it: the QL
+  structure is the equitable cell-uniform subspace, and the reported fit/gap/energy
+  effects are accounted for by spectral graph theory + linear stochastic dynamics.
 
 ## 7. What this buys
 
-1. **Compute.** The exact quotient turns an `O((N·n)²)` whole-brain Lyapunov solve
-   into an `O(N²)` connectome solve **with a correctness certificate** — useful for
-   the Deco/Kringelbach pipeline as-is.
+1. **Compute.** For the equitable (mean) model the quotient turns an `O((N·n)²)`
+   whole-brain Lyapunov solve into an `O(N²)` connectome solve **with a correctness
+   certificate**; for their random realization it is the principled annealed
+   approximation. (Exact once the `ω ≠ 0` extension is formalised, since `ω` is
+   per-region.)
 2. **Credibility.** It isolates the unimpeachable content (a spectral-gap /
    resolvent statement about expanders) from the contestable QL metaphysics —
    precision as credibility.
