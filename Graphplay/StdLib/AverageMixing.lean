@@ -268,6 +268,250 @@ theorem avgMixing_rational (G : WeightedGraph V) [GaloisRationalSchur G]
   refine Finset.sum_congr rfl (fun lam hlam => ?_)
   rw [dif_pos hlam, hq lam hlam]
 
+/-! ### Discharging `GaloisRationalSchur` on the integer-spectrum scope (Lagrange
+idempotent).
+
+The class field — every per-eigenvalue Schur square `‖(E_λ)_{u,v}‖²` is rational
+— is a *theorem* on the genuinely classical scope of Godsil's rationality
+theorem: an **integer adjacency matrix with integral spectrum**.  We prove it,
+not via the deep Galois-orbit argument, but through the elementary **Lagrange
+idempotent**: with all eigenvalues `μ₁ < ⋯ < μ_d` integers, the spectral
+projector is
+
+  `E_λ = (∏_{μ ≠ λ}(λ − μ))⁻¹ · ∏_{μ ≠ λ} (A − μ·1)`,
+
+an explicit polynomial in `A` with **rational coefficients**.  Both the matrix
+product `M_λ = ∏_{μ≠λ}(A − μ·1)` (a product of integer-entry matrices) and the
+scalar `c_λ = ∏_{μ≠λ}(λ − μ)` (a nonzero integer) are integral, so every entry of
+`E_λ = c_λ⁻¹ M_λ` is a *real rational*, whence `‖(E_λ)_{u,v}‖² = (E_λ)_{u,v}² ∈ ℚ`.
+
+This reuses the in-tree spectral engine (`adj_mul_eigenProj`, `sum_eigenProj`,
+`eigenProj_orthogonal`) to identify `E_λ` with the rescaled product — the
+operator-theoretic Lagrange interpolation — with no functional-calculus
+dependency. -/
+
+/-- A complex matrix **has integer entries** if every entry is the cast of an
+integer.  This is the closure class that the integer-Lagrange product lives in. -/
+def HasIntEntries (M : Matrix V V ℂ) : Prop := ∀ u v, ∃ z : ℤ, M u v = (z : ℂ)
+
+theorem HasIntEntries.one : HasIntEntries (1 : Matrix V V ℂ) := by
+  intro u v; rw [Matrix.one_apply]
+  by_cases h : u = v
+  · exact ⟨1, by simp [h]⟩
+  · exact ⟨0, by simp [h]⟩
+
+theorem HasIntEntries.mul {A B : Matrix V V ℂ}
+    (hA : HasIntEntries A) (hB : HasIntEntries B) : HasIntEntries (A * B) := by
+  intro u v; rw [Matrix.mul_apply]
+  have hsum : ∀ x : V, ∃ z : ℤ, A u x * B x v = (z : ℂ) := fun x => by
+    obtain ⟨za, hza⟩ := hA u x; obtain ⟨zb, hzb⟩ := hB x v
+    exact ⟨za * zb, by rw [hza, hzb]; push_cast; ring⟩
+  choose zf hzf using hsum
+  refine ⟨∑ x, zf x, ?_⟩
+  rw [Finset.sum_congr rfl (fun x _ => hzf x), ← Complex.ofReal_intCast]; push_cast; rfl
+
+theorem HasIntEntries.intSmul {A : Matrix V V ℂ} (k : ℤ) (hA : HasIntEntries A) :
+    HasIntEntries ((k : ℂ) • A) := by
+  intro u v; obtain ⟨za, hza⟩ := hA u v
+  exact ⟨k * za, by rw [Matrix.smul_apply, smul_eq_mul, hza]; push_cast; ring⟩
+
+theorem HasIntEntries.sub {A B : Matrix V V ℂ}
+    (hA : HasIntEntries A) (hB : HasIntEntries B) : HasIntEntries (A - B) := by
+  intro u v; obtain ⟨za, hza⟩ := hA u v; obtain ⟨zb, hzb⟩ := hB u v
+  exact ⟨za - zb, by rw [Matrix.sub_apply, hza, hzb]; push_cast; ring⟩
+
+/-- The Lagrange linear factor `A − μ·1`. -/
+noncomputable def matFactor (G : WeightedGraph V) (mu : ℝ) : Matrix V V ℂ :=
+  G.adj - (Complex.ofReal mu) • (1 : Matrix V V ℂ)
+
+/-- The Lagrange product `∏_{μ ∈ L} (A − μ·1)` over a list `L` of (other)
+eigenvalues. -/
+noncomputable def prodFactorL (G : WeightedGraph V) (L : List ℝ) : Matrix V V ℂ :=
+  (L.map (matFactor G)).prod
+
+/-- **Action of the Lagrange product on a projector.**
+`(∏_{μ∈L}(A − μ·1)) · E_λ = (∏_{μ∈L}(λ − μ)) · E_λ`, by peeling factors and the
+right-eigenvalue relation `A · E_λ = λ · E_λ`. -/
+theorem prodFactorL_mul_eigenProj (G : WeightedGraph V) (L : List ℝ) (lam : ℝ) :
+    prodFactorL G L * eigenProj G lam
+      = (L.map (fun mu => Complex.ofReal lam - Complex.ofReal mu)).prod • eigenProj G lam := by
+  classical
+  induction L with
+  | nil => simp [prodFactorL]
+  | cons a l ih =>
+      unfold prodFactorL
+      rw [List.map_cons, List.prod_cons, List.map_cons, List.prod_cons, Matrix.mul_assoc]
+      change matFactor G a * (prodFactorL G l * eigenProj G lam) = _
+      rw [ih, Matrix.mul_smul, matFactor, Matrix.sub_mul, Matrix.smul_mul, Matrix.one_mul,
+        adj_mul_eigenProj, smul_sub, smul_smul, smul_smul, ← sub_smul]
+      congr 1; ring
+
+/-- The distinct eigenvalues other than `λ`, as a list (the Lagrange index set). -/
+noncomputable def specEraseList (G : WeightedGraph V) (lam : ℝ) : List ℝ :=
+  ((Finset.univ.image G.herm.eigenvalues).erase lam).toList
+
+/-- The Lagrange scalar `c_λ = ∏_{μ ≠ λ}(λ − μ)`. -/
+noncomputable def cScalar (G : WeightedGraph V) (lam : ℝ) : ℝ :=
+  ((specEraseList G lam).map (fun mu => lam - mu)).prod
+
+theorem cScalar_cast (G : WeightedGraph V) (lam : ℝ) :
+    (Complex.ofReal (cScalar G lam))
+      = ((specEraseList G lam).map (fun mu => Complex.ofReal lam - Complex.ofReal mu)).prod := by
+  unfold cScalar
+  rw [show Complex.ofReal (((specEraseList G lam).map (fun mu => lam - mu)).prod)
+        = Complex.ofRealHom (((specEraseList G lam).map (fun mu => lam - mu)).prod) from rfl]
+  rw [map_list_prod Complex.ofRealHom, List.map_map]
+  congr 1; ext mu; simp [Complex.ofRealHom]
+
+/-- `c_λ ≠ 0`: every factor `λ − μ` is nonzero since `μ ≠ λ` on the erase-list. -/
+theorem cScalar_ne_zero (G : WeightedGraph V) (lam : ℝ) : cScalar G lam ≠ 0 := by
+  unfold cScalar specEraseList
+  intro hz
+  rw [List.prod_eq_zero_iff, List.mem_map] at hz
+  obtain ⟨mu, hmu, hmuz⟩ := hz
+  rw [Finset.mem_toList, Finset.mem_erase] at hmu
+  exact (sub_ne_zero.mpr (fun h => hmu.1 h.symm)) hmuz
+
+/-- A product of integer differences `∏(λ − μ)` over a list of integers is an
+integer. -/
+theorem listProd_sub_isInt (lam : ℝ) (L : List ℝ)
+    (hlam : ∃ z : ℤ, lam = (z : ℝ)) (hL : ∀ mu ∈ L, ∃ z : ℤ, mu = (z : ℝ)) :
+    ∃ cz : ℤ, (L.map (fun mu => lam - mu)).prod = (cz : ℝ) := by
+  obtain ⟨zl, rfl⟩ := hlam
+  induction L with
+  | nil => exact ⟨1, by simp⟩
+  | cons a l ih =>
+      obtain ⟨za, rfl⟩ := hL a (by simp)
+      obtain ⟨zrest, hzrest⟩ := ih (fun mu hmu => hL mu (by simp [hmu]))
+      refine ⟨(zl - za) * zrest, ?_⟩
+      rw [List.map_cons, List.prod_cons, hzrest]
+      push_cast; ring
+
+/-- `c_λ` is an integer when `λ` and all other eigenvalues are integers. -/
+theorem cScalar_isInt (G : WeightedGraph V) (lam : ℝ)
+    (hlamInt : ∃ z : ℤ, lam = (z : ℝ))
+    (hLint : ∀ mu ∈ specEraseList G lam, ∃ z : ℤ, mu = (z : ℝ)) :
+    ∃ cz : ℤ, cScalar G lam = (cz : ℝ) :=
+  listProd_sub_isInt lam (specEraseList G lam) hlamInt hLint
+
+/-- **Lagrange idempotent identity.**  When `λ` is an eigenvalue,
+`∏_{μ ≠ λ}(A − μ·1) = c_λ · E_λ`: distribute over `∑_μ E_μ = 1`; the `μ ≠ λ`
+terms vanish (a zero factor `(μ − μ)`), the `μ = λ` term is `c_λ · E_λ`. -/
+theorem prodFactorL_specErase_eq (G : WeightedGraph V) (lam : ℝ)
+    (hlam : lam ∈ Finset.univ.image G.herm.eigenvalues) :
+    prodFactorL G (specEraseList G lam)
+      = (Complex.ofReal (cScalar G lam)) • eigenProj G lam := by
+  classical
+  have h1 : prodFactorL G (specEraseList G lam)
+      = prodFactorL G (specEraseList G lam) *
+          (∑ mu ∈ Finset.univ.image G.herm.eigenvalues, eigenProj G mu) := by
+    rw [sum_eigenProj, Matrix.mul_one]
+  rw [h1, Finset.mul_sum, Finset.sum_eq_single lam]
+  · rw [prodFactorL_mul_eigenProj, cScalar_cast]
+  · intro mu hmu hne
+    rw [prodFactorL_mul_eigenProj]
+    have hmuL : mu ∈ specEraseList G lam := by
+      unfold specEraseList; rw [Finset.mem_toList, Finset.mem_erase]; exact ⟨hne, hmu⟩
+    have hzero : ((specEraseList G lam).map
+        (fun mu' => Complex.ofReal mu - Complex.ofReal mu')).prod = 0 := by
+      apply List.prod_eq_zero; rw [List.mem_map]; exact ⟨mu, hmuL, by simp⟩
+    rw [hzero, zero_smul]
+  · intro h; exact absurd hlam h
+
+/-- The Lagrange linear factor has integer entries (integer `A`, integer `μ`). -/
+theorem matFactor_hasIntEntries (G : WeightedGraph V) (mu : ℝ)
+    (hA : HasIntEntries G.adj) (hmu : ∃ z : ℤ, mu = (z : ℝ)) :
+    HasIntEntries (matFactor G mu) := by
+  unfold matFactor
+  obtain ⟨z, rfl⟩ := hmu
+  apply HasIntEntries.sub hA
+  rw [show (Complex.ofReal ((z : ℝ))) = ((z : ℤ) : ℂ) by push_cast; rfl]
+  exact HasIntEntries.intSmul z HasIntEntries.one
+
+/-- The whole Lagrange product has integer entries. -/
+theorem prodFactorL_hasIntEntries (G : WeightedGraph V) (L : List ℝ)
+    (hA : HasIntEntries G.adj) (hL : ∀ mu ∈ L, ∃ z : ℤ, mu = (z : ℝ)) :
+    HasIntEntries (prodFactorL G L) := by
+  unfold prodFactorL
+  induction L with
+  | nil => simpa using HasIntEntries.one
+  | cons a l ih =>
+      rw [List.map_cons, List.prod_cons]
+      exact HasIntEntries.mul (matFactor_hasIntEntries G a hA (hL a (by simp)))
+        (ih (fun mu hmu => hL mu (by simp [hmu])))
+
+/-- **The Schur-square rationality theorem on the integer scope (PROVEN).**
+If `G` has integer adjacency and integral spectrum, then every per-eigenvalue
+Schur square `‖(E_λ)_{u,v}‖²` is rational — discharging the
+`GaloisRationalSchur` field on its genuine classical hypothesis, via the
+Lagrange idempotent (no Galois machinery, no `sorry`). -/
+theorem schur_rational_of_integral (G : WeightedGraph V)
+    (hA : HasIntEntries G.adj)
+    (hSpec : ∀ i, ∃ k : ℤ, G.herm.eigenvalues i = (k : ℝ))
+    (lam : ℝ) (u v : V) (hlamInt : ∃ k : ℤ, lam = (k : ℝ)) :
+    ∃ q : ℚ, ‖eigenProj G lam u v‖ ^ 2 = (q : ℝ) := by
+  classical
+  by_cases hlam : lam ∈ Finset.univ.image G.herm.eigenvalues
+  · -- `λ` is an eigenvalue: `(E_λ)_{u,v} = c_λ⁻¹ · (M_λ)_{u,v}` is a real rational.
+    have hLint : ∀ mu ∈ specEraseList G lam, ∃ z : ℤ, mu = (z : ℝ) := by
+      intro mu hmu
+      unfold specEraseList at hmu
+      rw [Finset.mem_toList, Finset.mem_erase, Finset.mem_image] at hmu
+      obtain ⟨_, i, _, rfl⟩ := hmu
+      exact hSpec i
+    obtain ⟨m, hm⟩ := prodFactorL_hasIntEntries G (specEraseList G lam) hA hLint u v
+    obtain ⟨cz, hcz⟩ := cScalar_isInt G lam hlamInt hLint
+    -- `(M_λ)_{u,v} = c_λ · (E_λ)_{u,v}` from the Lagrange identity.
+    have hdecuv := congrFun (congrFun (prodFactorL_specErase_eq G lam hlam) u) v
+    rw [Matrix.smul_apply, smul_eq_mul, hm, hcz] at hdecuv
+    -- so `(E_λ)_{u,v} = (m : ℂ)/(cz : ℂ)`, a real rational since `cz ≠ 0`.
+    have hcne : (cz : ℝ) ≠ 0 := by
+      rw [← hcz]; exact cScalar_ne_zero G lam
+    have hczc : (Complex.ofReal ((cz : ℝ))) ≠ 0 := by
+      rw [Complex.ofReal_ne_zero]; exact hcne
+    have hEval : eigenProj G lam u v = (m : ℂ) / (Complex.ofReal ((cz : ℝ))) := by
+      rw [eq_div_iff hczc, mul_comm]
+      exact hdecuv.symm
+    have hEreal : eigenProj G lam u v = (Complex.ofReal ((m : ℝ) / (cz : ℝ))) := by
+      rw [hEval, Complex.ofReal_div]; norm_cast
+    rw [hEreal, Complex.norm_real, Real.norm_eq_abs, sq_abs]
+    exact ⟨((m : ℚ) / (cz : ℚ)) ^ 2, by push_cast; ring⟩
+  · -- `λ` not an eigenvalue: `E_λ = 0`, so the entry is `0`.
+    have hz : eigenProj G lam = 0 := by
+      ext a b
+      rw [eigenProj_apply, eigenProjEntryLocal, Matrix.zero_apply]
+      apply Finset.sum_eq_zero
+      intro i _
+      apply if_neg
+      intro he
+      exact hlam (he ▸ Finset.mem_image_of_mem _ (Finset.mem_univ i))
+    rw [hz, Matrix.zero_apply, norm_zero]
+    exact ⟨0, by norm_num⟩
+
+/-- **Non-vacuous instance: the edgeless graph.**  The graph with no edges has
+integer adjacency `0` and integral spectrum (all eigenvalues `0`), so
+`GaloisRationalSchur` holds — and the discharge runs the genuine Lagrange
+machinery (single eigenvalue `0`, `E₀ = 1`, the empty Lagrange product), giving
+the correct rational average-mixing matrix (the identity).  This witnesses that
+`schur_rational_of_integral` is non-vacuous. -/
+noncomputable def edgelessWG (W : Type*) [Fintype W] [DecidableEq W] : WeightedGraph W where
+  adj := 0
+  herm := by unfold Matrix.IsHermitian; simp
+  loopless := by intro v; simp
+
+theorem edgelessWG_eigenvalues_zero (i : V) : (edgelessWG V).herm.eigenvalues i = 0 := by
+  have hne : Nonempty V := ⟨i⟩
+  have hmem : (edgelessWG V).herm.eigenvalues i ∈ spectrum ℝ (0 : Matrix V V ℂ) :=
+    (edgelessWG V).herm.eigenvalues_mem_spectrum_real i
+  rw [spectrum.zero_eq] at hmem
+  simpa using hmem
+
+instance edgelessWG_galoisRationalSchur : GaloisRationalSchur (edgelessWG V) where
+  schur_rational lam u v hlamInt := by
+    refine schur_rational_of_integral (edgelessWG V) ?_ ?_ lam u v hlamInt
+    · intro a b; exact ⟨0, by simp [edgelessWG]⟩
+    · intro i; exact ⟨0, by rw [edgelessWG_eigenvalues_zero i]; norm_num⟩
+
 /-- **Average uniform mixing.**  A graph admits *uniform average mixing*
 when `M̂` is the flat doubly-stochastic matrix `J / |V|` (every entry
 `1/|V|`).  Godsil (2013) showed this is extremely restrictive (essentially

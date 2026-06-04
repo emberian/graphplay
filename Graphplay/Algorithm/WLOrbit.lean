@@ -61,7 +61,13 @@ All orbit/automorphism content quantifies over **genuine graph automorphisms**
 (`IsGraphAut`, §0) — there is no all-permutations `Aut` stub — so the
 `HasAutInvariantWeights` hypothesis is a real external constraint on the
 weighting, not the degenerate "constant off the diagonal" it collapsed to under
-the old stub.
+the old stub.  The class also carries a **faithfulness** field
+(`support_faithful : G.adj x y ≠ 0 ↔ G₀.Adj x y`) tying the weighting's support
+exactly to `G₀`'s edge set; this is what makes the class non-vacuous — without
+it the constant-zero weighting `G.adj ≡ 0` would inhabit it for *every* `G₀`
+(including ones with edges), so an "orbit partition of `G₀`" statement would
+carry no information about `G₀`.  With faithfulness, `G.adj ≡ 0` forces `G₀` to
+be edgeless, so the class genuinely reflects `G₀`'s adjacency.
 -/
 
 import Graphplay.Equitable
@@ -194,23 +200,41 @@ lemma orbitPartition_eq_iff (G : Graphplay.SimpleGraph V) (u v : V) :
 /-! ## §2. The orbit partition of a *weighted* graph -/
 
 /-- For the equitable-partition statement we need the orbit data on a
-`WeightedGraph`.  We assume the weight `G.adj` is invariant under **genuine
-graph automorphisms** of the companion combinatorial graph `G₀` — *not* under
-all permutations of `V`.  In the intended use, the weighted graph is the complex
-adjacency matrix of `G₀` (or any matrix function of it), and `IsGraphAut`-maps
-permute its entries; the invariance then holds.
+`WeightedGraph`.  We require two things of the weight `G.adj` relative to the
+companion combinatorial graph `G₀`.
 
-This is a genuine external hypothesis: the quantifier ranges only over the
-permutations `σ` that actually preserve `G₀.Adj` (`IsGraphAut G₀ σ`), so it does
-**not** force `G.adj` to be constant off the diagonal.  (An earlier version
-quantified over *all* `σ : Equiv.Perm V`, which — being satisfiable only by the
-constant-off-diagonal weightings — collapsed every orbit to all of `V` and made
-the entire WL-vs-orbit section degenerate.) -/
+* `invariant`: `G.adj` is invariant under **genuine graph automorphisms** of
+  `G₀` — *not* under all permutations of `V`.  In the intended use the weighted
+  graph is the complex adjacency matrix of `G₀` (or any matrix function of it),
+  and `IsGraphAut`-maps permute its entries, so the invariance holds.  The
+  quantifier ranges only over the permutations `σ` that actually preserve
+  `G₀.Adj` (`IsGraphAut G₀ σ`), so it does **not** force `G.adj` to be constant
+  off the diagonal.  (An earlier version quantified over *all*
+  `σ : Equiv.Perm V`, which — being satisfiable only by the constant-off-diagonal
+  weightings — collapsed every orbit to all of `V`.)
+
+* `support_faithful`: the weighting is **supported exactly on `G₀`'s edges**:
+  `G.adj x y ≠ 0 ↔ G₀.Adj x y`.  This is the genuine **faithfulness** field that
+  ties the weighting to `G₀`'s structure, and it is what makes the class
+  non-vacuous.  Without it the class is satisfiable for an *arbitrary* `G₀` by
+  the **constant-zero** weighting `G.adj ≡ 0` (which is `invariant` for free,
+  `0 = 0`), so an "orbit-equitable" statement about `G₀` would carry no
+  information about `G₀` at all.  With `support_faithful`, `G.adj ≡ 0` forces
+  `G₀.Adj x y` to be `False` for every `x, y` (since `0 ≠ 0` is `False`), i.e.
+  `G₀` must be **edgeless**; so the zero weighting can only inhabit the class for
+  the edgeless `G₀`, and the class genuinely constrains the weighting to reflect
+  `G₀`'s adjacency on every edge.  The standard 0/1-or-Hamiltonian weightings
+  (`cfiWeighted`, any `if G₀.Adj then c else 0` with `c ≠ 0`) satisfy it. -/
 class HasAutInvariantWeights {V : Type u} [Fintype V] [DecidableEq V]
     (G₀ : Graphplay.SimpleGraph V) (G : Graphplay.WeightedGraph V) :
     Prop where
   invariant : ∀ (σ : Equiv.Perm V), IsGraphAut G₀ σ → ∀ x y : V,
     G.adj (σ x) (σ y) = G.adj x y
+  /-- The weighted graph is supported **exactly** on `G₀`'s edges: a nonzero
+  weight occurs precisely on adjacent pairs.  This faithfulness constraint
+  defeats the constant-zero-weighting vacuity inhabitant for any `G₀` with an
+  edge. -/
+  support_faithful : ∀ x y : V, G.adj x y ≠ 0 ↔ G₀.Adj x y
 
 /-- **Theorem (orbit partition is equitable).**
 If a weighted graph `G` has `Aut(G₀)`-invariant weights for a
@@ -459,10 +483,19 @@ theorem cfiExists_phantomFree :
     { Adj := fun _ _ => False, symm := fun h => h, irrefl := fun _ h => h }
   let G : Graphplay.WeightedGraph V :=
     { adj := 0, herm := by simp [Matrix.IsHermitian], loopless := fun _ => rfl }
-  -- The zero weighting is automorphism-invariant (`0 = 0`); this is a *genuine*
-  -- witness for the now-`IsGraphAut`-gated field, not a trivial inhabitant of
-  -- the (uninhabitable-for-generic-weights) class.
-  haveI : HasAutInvariantWeights G₀ G := ⟨fun _ _ _ _ => rfl⟩
+  -- The zero weighting is automorphism-invariant (`0 = 0`) **and** faithful here:
+  -- `G₀` is the *edgeless* graph, so `support_faithful` reads `0 ≠ 0 ↔ False`,
+  -- which holds.  This is a *genuine* joint witness — the faithfulness field is
+  -- satisfied precisely because `G₀` has no edges (the only `G₀` for which the
+  -- zero weighting can inhabit the now-faithful class), not by fiat.
+  haveI : HasAutInvariantWeights G₀ G :=
+    { invariant := fun _ _ _ _ => rfl
+      support_faithful := by
+        intro x y
+        -- `G.adj x y = (0 : Matrix _ _ ℂ) x y = 0`, so the LHS `≠ 0` is `False`;
+        -- `G₀.Adj x y` is `False` by construction (`G₀` is edgeless).
+        simp only [G, Matrix.zero_apply, ne_eq, not_true_eq_false, false_iff]
+        exact fun h => h }
   -- The discrete partition (`cells = id`) is finest-equitable.
   have hStable : IsWLStable G (EquitablePartition.discrete G) := by
     intro J _ _ Q x y hxy

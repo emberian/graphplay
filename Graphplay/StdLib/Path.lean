@@ -975,6 +975,144 @@ theorem path_no_PST_endpoint_endpoint
     ∀ τ : ℝ, ¬ IsPST (Path n) (0 : Fin (n + 1)) (Fin.last n) τ :=
   path_long_no_PST_residual n hn
 
+/-! ## The full unweighted-path endpoint-PST biconditional (assembled here)
+
+Both halves of the Christandl–Datta–Ekert–Landahl / Coutinho endpoint-PST
+classification are now in-corpus and axiom-clean:
+
+* **backward** (`n ∈ {1,2}` ⇒ PST) — `path_PST_endpoint_endpoint`, the explicit
+  `K₂`/`P₃` diagonalize-and-exponentiate;
+* **forward** (`n ≥ 3` ⇒ no PST) — `path_no_PST_of_ge_three`, the assembled
+  Godsil bridge (endpoint full support via the controllability/Krylov determinant
+  + the Godsil forward direction + the Niven no-arithmetic-progression
+  obstruction `pathEigenvalue_not_arithmeticProgression`).
+
+The biconditional below is the *relocation* of the slot
+`Graphplay.PST.isPST_exists_path_iff`, which could only be left as an honest
+`sorry` in `GodsilRatio` because the Niven obstruction
+`pathEigenvalue_not_arithmeticProgression` lives **downstream** in
+`Graphplay.PST.Cospectrality` (importing `GodsilRatio`), so assembling it there
+would be circular.  `Path.lean` imports *both* `GodsilRatio` and `Cospectrality`,
+so the assembly is sound here.  No new mathematics — pure assembly. -/
+
+/-- **`IsPST` is an adjacency-only invariant.**  Two `WeightedGraph`s with equal
+adjacency matrices have identical quantum-walk evolution, hence identical PST.
+Used to transport the `Path n`/`pathGraph (n+1)` endpoint classification across
+the two equivalent unweighted-path models. -/
+theorem isPST_congr_adj {N : ℕ} {G H : WeightedGraph (Fin N)} (hadj : G.adj = H.adj)
+    (u v : Fin N) (τ : ℝ) : IsPST G u v τ ↔ IsPST H u v τ := by
+  unfold IsPST WeightedGraph.evolve
+  rw [hadj]
+
+/-! ### `IsPST` transports along any graph isomorphism
+
+The continuous-time quantum walk is *natural* in the vertex set: if a vertex
+relabelling `e : W ≃ V` carries `H.adj` to `G.adj` entrywise
+(`H.adj a b = G.adj (e a) (e b)`, i.e. `H` is the `e`-relabelling of `G`), then
+the whole propagator `exp(-iτ A)` transports — `H.evolve τ a b = G.evolve τ (e a)
+(e b)` — because conjugation by the permutation matrix is a *continuous algebra
+automorphism* of the matrix algebra, and `NormedSpace.exp` commutes with every
+continuous ring homomorphism (`NormedSpace.map_exp`).  Consequently PST is a
+graph-isomorphism invariant.  This is the reusable "transfer along iso" lemma
+that lets PST results proven on one model (e.g. an iterated-product hypercube)
+be carried to any isomorphic model. -/
+section TransferAlongEquiv
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- Exponential commutes with reindexing by an equivalence:
+`exp (M.submatrix e e) = (exp M).submatrix e e`.  Here `M.submatrix e e` is the
+`e`-relabelling, equal to the (continuous) algebra automorphism
+`reindexAlgEquiv ℂ ℂ e.symm` applied to `M`, so `NormedSpace.map_exp` applies. -/
+theorem exp_submatrix_equiv {V W : Type u} [Fintype V] [Fintype W] [DecidableEq V]
+    [DecidableEq W] (e : W ≃ V) (M : Matrix V V ℂ) :
+    NormedSpace.exp (M.submatrix e e) = (NormedSpace.exp M).submatrix e e := by
+  have hcont : Continuous (Matrix.reindexAlgEquiv ℂ ℂ e.symm) :=
+    LinearMap.continuous_of_finiteDimensional (Matrix.reindexAlgEquiv ℂ ℂ e.symm).toLinearMap
+  have hsm : ∀ X : Matrix V V ℂ, X.submatrix e e = (Matrix.reindexAlgEquiv ℂ ℂ e.symm) X := by
+    intro X; rw [Matrix.reindexAlgEquiv_apply, Matrix.reindex_apply, Equiv.symm_symm]
+  rw [hsm M, hsm (NormedSpace.exp M)]
+  exact (NormedSpace.map_exp (Matrix.reindexAlgEquiv ℂ ℂ e.symm) hcont M).symm
+
+/-- **Evolution transports along a graph isomorphism (entrywise).**  If
+`e : W ≃ V` relabels `H` to `G` (`H.adj a b = G.adj (e a) (e b)`), then
+`H.evolve τ a b = G.evolve τ (e a) (e b)`. -/
+theorem evolve_transfer_equiv {V W : Type u} [Fintype V] [Fintype W] [DecidableEq V]
+    [DecidableEq W] (G : WeightedGraph V) (H : WeightedGraph W) (e : W ≃ V)
+    (hadj : ∀ a b, H.adj a b = G.adj (e a) (e b)) (τ : ℝ) (a b : W) :
+    H.evolve τ a b = G.evolve τ (e a) (e b) := by
+  unfold WeightedGraph.evolve
+  have hscale : (-(Complex.I * (τ : ℂ)) • H.adj)
+      = (-(Complex.I * (τ : ℂ)) • G.adj).submatrix e e := by
+    ext a b
+    simp only [Matrix.submatrix_apply, Matrix.smul_apply, smul_eq_mul]
+    rw [hadj a b]
+  rw [hscale, exp_submatrix_equiv, Matrix.submatrix_apply]
+
+/-- **PST transports along a graph isomorphism.**  If `e : W ≃ V` relabels `H`
+to `G`, then `IsPST H a b τ ↔ IsPST G (e a) (e b) τ`. -/
+theorem isPST_transfer_equiv {V W : Type u} [Fintype V] [Fintype W] [DecidableEq V]
+    [DecidableEq W] (G : WeightedGraph V) (H : WeightedGraph W) (e : W ≃ V)
+    (hadj : ∀ a b, H.adj a b = G.adj (e a) (e b)) (a b : W) (τ : ℝ) :
+    IsPST H a b τ ↔ IsPST G (e a) (e b) τ := by
+  unfold IsPST
+  rw [evolve_transfer_equiv G H e hadj τ a b]
+
+end TransferAlongEquiv
+
+/-- **Unweighted-path endpoint PST classification — `Path n` form (CLOSED).**  The
+unweighted path `Path n` on `n + 1` vertices admits endpoint-to-endpoint PST at
+*some* time iff `n ∈ {1, 2}` (i.e. `P₂ = K₂` or `P₃`).
+
+Backward via `path_PST_endpoint_endpoint` (the explicit `K₂`/`P₃` exponential);
+forward via `path_no_PST_of_ge_three` (the Godsil-bridge + Niven obstruction).
+Fully assembled, axiom-clean.
+
+Reference: Christandl–Datta–Ekert–Landahl, arXiv:quant-ph/0309131, Thm 1;
+Coutinho thesis (2014) §2.4. -/
+theorem isPST_exists_Path_iff (n : ℕ) (hn : 1 ≤ n) :
+    (∃ τ : ℝ, IsPST (Path n) (0 : Fin (n + 1)) (Fin.last n) τ) ↔ (n = 1 ∨ n = 2) := by
+  constructor
+  · rintro ⟨τ, hpst⟩
+    by_contra hcon
+    push_neg at hcon
+    obtain ⟨h1, h2⟩ := hcon
+    -- `n ≥ 1`, `n ≠ 1`, `n ≠ 2` ⇒ `n ≥ 3`, so no PST.
+    exact path_no_PST_of_ge_three n (by omega) τ hpst
+  · intro hn'
+    exact ⟨pathPSTTime n, path_PST_endpoint_endpoint n hn'⟩
+
+/-- **Unweighted-path endpoint PST classification — `pathGraph n` form (CLOSED).**
+The genuine `SimpleGraph.pathGraph n` (promoted to a `WeightedGraph` on `Fin n`)
+admits endpoint-to-endpoint PST between `pathLeft` (`= 0`) and `pathRight`
+(`= n - 1`) at some time iff `n ∈ {2, 3}`.
+
+This is the relocated and now-**closed** statement of the former
+`Graphplay.PST.isPST_exists_path_iff` sorry: `pathGraph n` and `Path (n-1)` have
+equal adjacency (both are the 0/1 nearest-neighbour matrix on `Fin n`), their
+endpoints `pathLeft`/`pathRight` coincide with `0`/`Fin.last (n-1)`, and the
+classification then transports across `isPST_congr_adj` from `isPST_exists_Path_iff`.
+
+Reference: Christandl–Datta–Ekert–Landahl, arXiv:quant-ph/0309131, Thm 1;
+Coutinho thesis (2014) §2.4; Godsil–Kirkland–Severini–Smith, arXiv:1201.4822. -/
+theorem isPST_exists_pathGraph_iff (n : ℕ) (hn : 2 ≤ n) :
+    (∃ τ : ℝ, IsPST (PST.pathGraph n) (PST.pathLeft (by omega)) (PST.pathRight (by omega)) τ)
+      ↔ (n = 2 ∨ n = 3) := by
+  obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+  -- adjacency equality `pathGraph (m+1) = Path m`, endpoint identifications.
+  have hadj : (PST.pathGraph (m + 1)).adj = (Path m).adj := by
+    rw [Path_adj_eq_pathGraph]; unfold PST.pathGraph; rfl
+  have hL : (PST.pathLeft (n := m + 1) (by omega) : Fin (m + 1)) = (0 : Fin (m + 1)) := rfl
+  have hR : (PST.pathRight (n := m + 1) (by omega) : Fin (m + 1)) = Fin.last m := rfl
+  rw [hL, hR]
+  -- transport the existential through `isPST_congr_adj`, then apply the `Path m`
+  -- classification (`m + 1 = 2 ∨ m + 1 = 3 ↔ m = 1 ∨ m = 2`).
+  have htrans : (∃ τ : ℝ, IsPST (PST.pathGraph (m + 1)) (0 : Fin (m + 1)) (Fin.last m) τ)
+      ↔ (∃ τ : ℝ, IsPST (Path m) (0 : Fin (m + 1)) (Fin.last m) τ) :=
+    exists_congr (fun τ => isPST_congr_adj hadj _ _ τ)
+  rw [htrans, isPST_exists_Path_iff m (by omega)]
+  omega
+
 /-! ## Engineered weighted paths (Christandl–Landahl–Werner couplings) -/
 
 /-- An **engineered weighted path** on `Fin (n + 1)` with edge weights

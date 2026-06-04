@@ -302,7 +302,23 @@ real infimum (not the `sInf ∅`/unbounded junk value).  Asserting the infimum i
 *attained* — `kantorovich π = value` exactly — is mildly over-strong relative to
 what `cost_lb` alone forces (attainment needs lsc + tightness, the genuine Prokhorov
 content); we keep it as the faithful Villani Thm 4.1 statement, with this note that
-the *value itself* is already a well-posed infimum under `cost_lb`. -/
+the *value itself* is already a well-posed infimum under `cost_lb`.
+
+**Reachability assessment (audit 2026-06, item 4).**  Attainment is **not**
+assemblable from current Mathlib and stays honestly external.  The genuine proof
+chain is: (i) tightness of the coupling set `Π(α,β)` from tightness of the two
+marginals (each automatically tight on a Polish space by Ulam); (ii) Prokhorov
+`⟹` relative weak-sequential compactness of `Π(α,β)` — Mathlib *does* have
+`MeasureTheory.IsTightMeasureSet` / `Prokhorov` (`Mathlib/MeasureTheory/Measure/
+Prokhorov.lean`, `…/Tight.lean`), but **not** the tightness-of-couplings transfer
+nor the closedness of `Π(α,β)` under weak convergence; (iii) lower-semicontinuity
+of `π ↦ ∫ c ∂π` along weak limits, from the lsc cost via the portmanteau theorem
+(`…/Portmanteau.lean` has the half-space portmanteau but not the `∫`-lsc corollary
+for unbounded lsc integrands); (iv) the infimum-attainment glue.  Each of (ii)–(iv)
+is a substantial missing piece; we therefore keep `optimal_coupling_exists` external
+(no instance) rather than fake it.  *The finite/discrete analogue is in reach* and is
+the de-externalisation we deliver instead (`FiniteOT.strong_duality`,
+`FiniteOT.exists_optimal_finCoupling`). -/
 class VillaniKantorovich {Ω : Type u} [MeasurableSpace Ω] [TopologicalSpace Ω]
     [PolishSpace Ω] [OpensMeasurableSpace Ω] (P : OptimalTransportProblem Ω)
     (hlsc : LowerSemicontinuous (Function.uncurry P.cost)) : Prop where

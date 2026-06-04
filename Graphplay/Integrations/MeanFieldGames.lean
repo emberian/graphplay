@@ -83,6 +83,8 @@ body of theorems.
 import Graphplay.Graphon
 import Graphplay.Graphon.Equitable
 import Graphplay.Toolkit.Scheduler
+import Mathlib.Analysis.ODE.Gronwall
+import Mathlib.Analysis.InnerProductSpace.Projection.Basic
 
 open scoped MeasureTheory ENNReal Complex BigOperators
 open MeasureTheory
@@ -565,18 +567,151 @@ theorem schrodinger_cellUniform_invariant
   rw [hψ]
   exact Submodule.smul_mem _ _ (hH t (ψ t) hψt)
 
+/-- **All-time closed-quantum cell-uniform invariance — GENUINELY PROVEN
+(finite/infinite-dim Grönwall), under a uniform generator operator-norm bound.**
+
+This is the real mathematical content the `SchrodingerSubspaceFlowInvariance`
+interface abstracts: when the time-dependent generator `H(t)` (i) preserves the
+*closed* cell-uniform subspace `S` at every time and (ii) is **uniformly bounded
+in operator norm**, `‖H t‖ ≤ M` for some `M`, then a Schrödinger trajectory
+`∂_t ψ = -i H(t) ψ` that starts in `S` stays in `S` for all time.
+
+**Proof (Grönwall / ODE-uniqueness).**  Let `Q := starProjection Sᗮ` be the
+orthogonal projection onto the orthogonal complement (a genuine continuous-linear
+idempotent, available because `S` is closed in the complete space `L²(μ;ℂ)`, hence
+`CompleteSpace ↥S`, hence `HasOrthogonalProjection`).  Set the *defect*
+`y t := Q (ψ t)`; then `y` has time-derivative `Q (∂_t ψ) = -i Q(H t (ψ t))`.
+Because `H t` preserves `S` and `ψ t - y t ∈ S` (it is `Q`-killed by
+idempotency), `Q (H t (ψ t - y t)) = 0`, so `y' t = -i Q(H t (y t)) =: v t (y t)`
+is a **closed linear ODE in the defect alone**.  The field `v t : w ↦ -i Q(H t w)`
+is a continuous-linear map of operator norm `≤ ‖Q‖·‖H t‖ ≤ M`, hence
+`LipschitzWith M.toNNReal` *uniformly in t* (this is exactly where the bound is
+load-bearing — without it there is no uniform Lipschitz constant and uniqueness
+can fail).  The zero trajectory also solves `y' = v t y`, and `y 0 = 0` since
+`ψ 0 ∈ S`; Grönwall ODE-uniqueness (`ODE_solution_unique_univ`) forces `y ≡ 0`,
+i.e. `ψ t ∈ S` for all `t`.
+
+The uniform-bound hypothesis is satisfied, e.g., by any **time-independent**
+generator (`GeneratorOpNormBounded.of_const` / the instance below), the canonical
+case for a fixed graphon Hamiltonian; it is the minimal honest regularity making
+the propagation a theorem rather than an assumption. -/
+theorem schrodinger_cellUniform_invariant_allTime_of_opNorm_bound
+    {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ))
+    (hH : ∀ t : ℝ, ∀ f ∈ EP.cellUniformSubspace, H t f ∈ EP.cellUniformSubspace)
+    {M : ℝ} (hM : ∀ t : ℝ, ‖H t‖ ≤ M)
+    (ψ : ℝ → Lp ℂ 2 μ)
+    (hψ0 : ψ 0 ∈ EP.cellUniformSubspace)
+    (hψ : ∀ t : ℝ, HasDerivAt ψ ((-Complex.I) • H t (ψ t)) t) :
+    ∀ t : ℝ, ψ t ∈ EP.cellUniformSubspace := by
+  classical
+  set K := EP.cellUniformSubspace with hK
+  -- closed ⇒ complete ⇒ admits an orthogonal projection
+  have hcl : IsClosed (K : Set (Lp ℂ 2 μ)) :=
+    Graphplay.Graphon.cellUniformSubspace_isClosed EP
+  haveI : CompleteSpace K := hcl.completeSpace_coe
+  -- `Q` = orthogonal projection onto `Sᗮ`, a CLM
+  set Q : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) := Kᗮ.starProjection with hQ
+  have hmemK : ∀ v : Lp ℂ 2 μ, Q v = 0 ↔ v ∈ K := by
+    intro v
+    rw [hQ, Submodule.starProjection_apply_eq_zero_iff, Submodule.orthogonal_orthogonal]
+  -- the defect trajectory `y t = Q (ψ t)`
+  set y : ℝ → Lp ℂ 2 μ := fun t => Q (ψ t) with hy
+  have hyderiv : ∀ t : ℝ, HasDerivAt y (Q ((-Complex.I) • H t (ψ t))) t := by
+    intro t
+    -- compose the CLM `Q` (restricted to `ℝ`-scalars, to match the real-time
+    -- derivative) with the trajectory derivative (cf. `freeEvolution_hasDerivAt`)
+    have h := ((Q.restrictScalars ℝ).hasFDerivAt.comp t (hψ t).hasFDerivAt).hasDerivAt
+    simpa [hy, Function.comp] using h
+  -- `Q` is idempotent: `Q (Q v) = Q v`
+  have hidem : ∀ v : Lp ℂ 2 μ, Q (Q v) = Q v := by
+    intro v
+    have hI := Kᗮ.isIdempotentElem_starProjection
+    have := congrArg (fun (T : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) => T v) hI
+    simpa [hQ, ContinuousLinearMap.mul_apply] using this
+  -- `ψ t - y t` lies in `S` (it is killed by `Q`)
+  have hsplit : ∀ t : ℝ, ψ t - y t ∈ K := by
+    intro t
+    rw [← hmemK, map_sub, hy, hidem, sub_self]
+  -- the closed linear ODE in the defect:  v t w = -i • Q (H t w)
+  set v : ℝ → (Lp ℂ 2 μ) → (Lp ℂ 2 μ) := fun t w => (-Complex.I) • Q (H t w) with hv
+  have hvfield : ∀ t : ℝ, Q ((-Complex.I) • H t (ψ t)) = v t (y t) := by
+    intro t
+    rw [hv, map_smul]
+    congr 1
+    have hdecomp : ψ t = (ψ t - y t) + y t := by abel
+    rw [hdecomp, map_add, map_add]
+    rw [(hmemK _).mpr (hH t _ (hsplit t)), zero_add]
+  have hy_ode : ∀ t : ℝ, HasDerivAt y (v t (y t)) t := fun t => (hvfield t) ▸ hyderiv t
+  have hzero_ode : ∀ t : ℝ, HasDerivAt (fun _ : ℝ => (0 : Lp ℂ 2 μ)) (v t 0) t := by
+    intro t
+    have h0 : v t 0 = 0 := by rw [hv]; simp
+    rw [h0]; exact hasDerivAt_const t 0
+  -- `v t` is the CLM `w ↦ -i • Q (H t w)`; its operator norm is `≤ M`, uniformly in t
+  have hvbound : ∀ t : ℝ, ∀ w : Lp ℂ 2 μ, ‖v t w‖ ≤ M * ‖w‖ := by
+    intro t w
+    rw [hv, norm_smul]
+    have hi : ‖(-Complex.I)‖ = 1 := by rw [norm_neg, Complex.norm_I]
+    rw [hi, one_mul]
+    calc ‖Q (H t w)‖ ≤ ‖Q‖ * ‖H t w‖ := Q.le_opNorm _
+      _ ≤ 1 * ‖H t w‖ :=
+          mul_le_mul_of_nonneg_right Kᗮ.starProjection_norm_le (norm_nonneg _)
+      _ = ‖H t w‖ := one_mul _
+      _ ≤ ‖H t‖ * ‖w‖ := (H t).le_opNorm _
+      _ ≤ M * ‖w‖ := mul_le_mul_of_nonneg_right (hM t) (norm_nonneg _)
+  have hvlip : ∀ t : ℝ, LipschitzWith M.toNNReal (v t) := by
+    intro t
+    -- realise `v t` as a CLM and apply the additive-hom Lipschitz-from-bound lemma
+    set L : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ) :=
+      ((-Complex.I) • ContinuousLinearMap.id ℂ (Lp ℂ 2 μ)).comp (Q.comp (H t)) with hL
+    have hLeq : (v t) = (L : (Lp ℂ 2 μ) → (Lp ℂ 2 μ)) := by
+      funext w; simp [hL, hv]
+    rw [hLeq]
+    refine AddMonoidHomClass.lipschitz_of_bound L M (fun w => ?_)
+    rw [← hLeq]; exact hvbound t w
+  have hy0 : y 0 = 0 := (hmemK (ψ 0)).mpr hψ0
+  have huniq : y = (fun _ : ℝ => (0 : Lp ℂ 2 μ)) :=
+    ODE_solution_unique_univ (K := M.toNNReal) (v := v) (s := fun _ => Set.univ)
+      (t₀ := 0) (fun t => (hvlip t).lipschitzOnWith)
+      (fun t => ⟨hy_ode t, trivial⟩) (fun t => ⟨hzero_ode t, trivial⟩) hy0
+  intro t
+  rw [← hmemK]
+  show y t = 0
+  rw [huniq]
+
+/-- **Uniform operator-norm bound on a time-dependent generator** — the minimal
+honest regularity making the all-time Schrödinger invariance a *theorem* (via
+`schrodinger_cellUniform_invariant_allTime_of_opNorm_bound`).  Carried as a
+`Prop`-valued typeclass so that the bounded case can be discharged with a genuine
+`instance` (below), rather than left external. -/
+class GeneratorOpNormBounded (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) : Prop where
+  /-- A uniform operator-norm bound `‖H t‖ ≤ M` over all times `t`. -/
+  bound : ∃ M : ℝ, ∀ t : ℝ, ‖H t‖ ≤ M
+
+/-- **Every time-independent generator is uniformly operator-norm bounded.**  The
+canonical fixed-graphon Hamiltonian `H t = H₀` satisfies the bound with `M = ‖H₀‖`
+(a genuine, non-vacuous witness). -/
+instance GeneratorOpNormBounded.of_const (H₀ : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) :
+    GeneratorOpNormBounded (fun _ : ℝ => H₀) :=
+  ⟨‖H₀‖, fun _ => le_refl _⟩
+
 /-- **Closed-subspace flow-invariance interface** (C₀-evolution family, external).
 
-The genuinely-external content behind all-time invariance: integrating the
+The genuinely-external content behind all-time invariance *for an arbitrary,
+possibly operator-norm-unbounded and time-irregular generator*: integrating the
 infinitesimal invariance to all times is the time-ordered-propagator / Grönwall
 argument — a *closed* subspace `S` invariant under the generator `H(t)` at every
-time is invariant under the evolution family `U(t,s)`.  This rests on the
-`C₀`-evolution-family theory (Kato; see Engel–Nagel, *One-Parameter Semigroups
-for Linear Evolution Equations*, GTM 194), absent from Mathlib.
+time is invariant under the evolution family `U(t,s)`.  In full generality this
+rests on the `C₀`-evolution-family theory (Kato; see Engel–Nagel, *One-Parameter
+Semigroups for Linear Evolution Equations*, GTM 194), absent from Mathlib.
 
-`Prop`-valued **typeclass assumption, not a bare axiom**; no instance (pure
-external).  The infinitesimal core is proved unconditionally in
-`schrodinger_cellUniform_invariant`. -/
+`Prop`-valued **typeclass assumption, not a bare axiom**.  Unlike the previous
+"pure external, no instance" framing, the **bounded** subclass is now genuinely
+discharged: `instance [GeneratorOpNormBounded H] : SchrodingerSubspaceFlowInvariance
+EP H ψ` proves `all_time_invariant` from the Grönwall theorem
+`schrodinger_cellUniform_invariant_allTime_of_opNorm_bound`.  The bare class
+remains as the interface for the genuinely-unbounded/irregular residue; the
+infinitesimal core is proved unconditionally in `schrodinger_cellUniform_invariant`. -/
 class SchrodingerSubspaceFlowInvariance
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (ψ : ℝ → Lp ℂ 2 μ) : Prop where
@@ -587,6 +722,24 @@ class SchrodingerSubspaceFlowInvariance
     ψ 0 ∈ EP.cellUniformSubspace →
     (∀ t : ℝ, HasDerivAt ψ ((-Complex.I) • H t (ψ t)) t) →
     ∀ t : ℝ, ψ t ∈ EP.cellUniformSubspace
+
+/-- **The bounded-generator case discharges the flow-invariance interface with a
+genuine `instance`.**  Whenever the generator `H` is uniformly operator-norm
+bounded (`[GeneratorOpNormBounded H]`), the all-time cell-uniform invariance is the
+*proven* Grönwall theorem
+`schrodinger_cellUniform_invariant_allTime_of_opNorm_bound`, so the class field is
+discharged by a real proof — not an aliased/vacuous witness.  In particular every
+time-independent generator (`GeneratorOpNormBounded.of_const`) gets this instance.
+This de-externalises the previously "pure external, no instance" interface on its
+entire bounded subclass. -/
+instance SchrodingerSubspaceFlowInvariance.ofOpNormBounded
+    {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (ψ : ℝ → Lp ℂ 2 μ)
+    [hb : GeneratorOpNormBounded H] :
+    SchrodingerSubspaceFlowInvariance EP H ψ where
+  all_time_invariant hH hψ0 hψ := by
+    obtain ⟨M, hM⟩ := hb.bound
+    exact schrodinger_cellUniform_invariant_allTime_of_opNorm_bound EP H hH hM ψ hψ0 hψ
 
 /-- **All-time closed-quantum cell-uniform invariance** (C₀-evolution family),
 conditional on `[SchrodingerSubspaceFlowInvariance EP H ψ]`.  Integrating the
@@ -865,6 +1018,72 @@ theorem congestion_equilibrium_exists
     [h : BrouwerNashEquilibrium EP payoff K] :
     ∃ ψ : Lp ℂ 2 μ, congestionFixedPointOn EP payoff K ψ :=
   h.exists_equilibrium hKsub hKne hKcompact hKconvex hcont hquasi
+
+/-- **A congestion game is a *potential game* via a real potential `Φ` (exact
+potential, Monderer–Shapley).**  The payoff admits an **exact potential** `Φ` on
+the strategy set `K` if every unilateral change of the response slot moves the
+payoff exactly as it moves `Φ`:
+
+  `(payoff ψ φ).re − (payoff ψ ψ).re = Φ φ − Φ ψ`   for all `ψ, φ ∈ K`.
+
+This is the defining Monderer–Shapley identity; it holds for the **bilinear**
+congestion corpus examples (e.g. `payoff a b := ⟪b, A b⟫` for a fixed self-adjoint
+`A`, with `Φ b := (⟪b, A b⟫).re`, where the response payoff does not depend on the
+opponent `ψ` and the identity is immediate). -/
+def IsExactPotential
+    (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ) (K : Set (Lp ℂ 2 μ)) (Φ : Lp ℂ 2 μ → ℝ) :
+    Prop :=
+  ∀ ψ ∈ K, ∀ φ ∈ K, (payoff ψ φ).re - (payoff ψ ψ).re = Φ φ - Φ ψ
+
+/-- **Potential-game congestion equilibrium via Weierstrass (PROVEN — no Brouwer).**
+
+For a congestion game with an **exact potential** `Φ` that is **continuous on** a
+**nonempty compact** strategy set `K`, a congestion equilibrium on `K` *exists*,
+unconditionally — discharged by the extreme value theorem
+(`IsCompact.exists_isMaxOn`) rather than the external Brouwer/Kakutani interface.
+
+**Why this de-externalises the corpus examples.**  Potential games (Monderer–Shapley
+1996) — and in particular the *bilinear* congestion models in the corpus — collapse
+the Nash fixed-point problem to a *single scalar maximisation* of the potential `Φ`:
+a maximiser `ψ` of `Φ` over `K` satisfies, for every competitor `φ ∈ K`,
+`(payoff ψ φ).re − (payoff ψ ψ).re = Φ φ − Φ ψ ≤ 0`, i.e. `ψ` is its own best
+response.  No fixed-point theorem is needed; Weierstrass on the compact `K`
+suffices.  The general (non-potential) Nash case still needs Brouwer
+(`BrouwerNashEquilibrium`); this theorem covers exactly the potential subclass.
+
+The convexity of `K` is *not even required* (the potential reduction sidesteps the
+quasiconcavity-in-the-response-slot hypothesis); only nonemptiness, compactness, and
+continuity of the potential are used — the minimal Weierstrass data. -/
+theorem congestion_equilibrium_of_potential
+    {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
+    (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ)
+    (K : Set (Lp ℂ 2 μ)) (Φ : Lp ℂ 2 μ → ℝ)
+    (hpot : IsExactPotential payoff K Φ)
+    (hΦcont : ContinuousOn Φ K)
+    (hKne : K.Nonempty) (hKcompact : IsCompact K) :
+    ∃ ψ : Lp ℂ 2 μ, congestionFixedPointOn EP payoff K ψ := by
+  -- Weierstrass: the continuous potential attains its maximum on the compact `K`.
+  obtain ⟨ψ, hψK, hψmax⟩ := hKcompact.exists_isMaxOn hKne hΦcont
+  refine ⟨ψ, hψK, fun φ hφK => ?_⟩
+  -- exact-potential identity turns `Φ φ ≤ Φ ψ` into the best-response inequality
+  have hΦle : Φ φ ≤ Φ ψ := hψmax hφK
+  have hid : (payoff ψ φ).re - (payoff ψ ψ).re = Φ φ - Φ ψ := hpot ψ hψK φ hφK
+  linarith [hid, hΦle]
+
+/-- **The bilinear congestion corpus model is a potential game (PROVEN
+non-vacuity witness).**  For the canonical bilinear payoff
+`payoff a b := ⟪b, A b⟫` with a fixed continuous-linear `A` (the corpus
+congestion model — the response payoff is the quadratic form of the *response*
+state, independent of the opponent), the real quadratic form `Φ b := (⟪b, A b⟫).re`
+is an exact potential on *every* strategy set `K`.  This certifies that
+`IsExactPotential` (hence `congestion_equilibrium_of_potential`) is **non-vacuous**:
+the hypotheses are satisfied by an honest, standard model. -/
+theorem isExactPotential_bilinear
+    (A : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (K : Set (Lp ℂ 2 μ)) :
+    IsExactPotential (fun _ b => inner ℂ b (A b)) K
+      (fun b => (inner ℂ b (A b)).re) := by
+  intro ψ _ φ _
+  rfl
 
 /-- **Optimal quantum routing on a chiral graphon.**  The strategic control
 variables are the time-dependent phase profiles on directed edges

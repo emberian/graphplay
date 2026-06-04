@@ -155,6 +155,7 @@ import Graphplay.Integrations.EquitableMechanism
 import Graphplay.Integrations.NovelAttention
 import Graphplay.Integrations.AliBiAttention
 import Graphplay.Integrations.ChiralPhaseCoherent
+import Graphplay.Integrations.Connectome
 
 -- Engineering toolkit
 import Graphplay.Toolkit

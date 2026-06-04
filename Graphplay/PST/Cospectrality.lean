@@ -1268,25 +1268,320 @@ def IsPhantomSymmetric (G : WeightedGraph V) (u v : V) : Prop :=
     ¬ ∃ σ : V ≃ V,
       (∀ x y, G.adj (σ x) (σ y) = G.adj x y) ∧ σ u = v
 
-/-- **Bachman–Tamon / GKSS phantom-symmetric PST existence** (external).
+/-! ### An explicit phantom-symmetric PST witness — the **signed double cone** `DC₄`
+
+Godsil's question — *is a graph automorphism necessary for perfect state
+transfer?* — is answered **NO** by an explicit `4`-vertex Hermitian-weighted
+graph.  Take the edge `{0,1}` (the PST pair) and "cone" it with two apex
+vertices `2, 3`, but with **opposite signatures**: apex `2` attaches
+*symmetrically* (weights `+w, +w` to `0, 1`) while apex `3` attaches
+*antisymmetrically* (weights `+W, -W`).  Concretely, with `w = 1/√2`,
+`W = √2`, the adjacency is
+
+  `A = !![0, 0, 1/√2, √2;  0, 0, 1/√2, -√2;  1/√2, 1/√2, 0, 0;  √2, -√2, 0, 0]`.
+
+This is the literature **double-cone** carrying a sign twist on one apex; it is
+the smallest vertex-level realization of the Bachman–Tamon / GKSS phenomenon.
+
+* **Integer spectrum.**  `A = U · diag(1, -1, 2, -2) · U⁻¹` for the explicit
+  orthogonal `U` whose columns are the (`±`-symmetric / `±`-antisymmetric)
+  eigenvectors.  The spectrum `{-2, -1, 1, 2}` is integral, hence Godsil-ratio
+  aligned (`a = 1`, `b = 0`).
+* **PST `0 ⇝ 1` at `τ = π`.**  Diagonalize-and-exponentiate gives the off-diagonal
+  amplitude `(eˢ + e⁻ˢ - e²ˢ - e⁻²ˢ)/4`, which at `s = -iπ` is **exactly** `-1`
+  (modulus `1`).  Genuine finite computation, no `sorry`.
+* **No witnessing automorphism.**  The symmetric and antisymmetric apexes make
+  the weighted degrees of `0` and `1` *unequal* (`deg 0 = 3/√2`, `deg 1 = -1/√2`),
+  and an adjacency automorphism preserves the weighted row sum, so **none** can
+  send `0` to `1`.  (The `0 ↔ 1` reflection that swaps the eigenvalue signs is a
+  *spectral* symmetry, not a vertex permutation of `A` — exactly a *phantom*
+  symmetry.)
+* **Strong cospectrality** of `(0,1)` then follows for free from PST via
+  `isStronglyCospectral_of_isPST`.
+
+So `(0, 1)` is a phantom-symmetric PST pair, and the class
+`PhantomSymmetricPSTExists` below is discharged with a **genuine instance**.
+-/
+
+namespace SignedDoubleCone
+
+open scoped Matrix
+open NormedSpace
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- `√2`, as a complex scalar. -/
+private noncomputable def r2 : ℂ := (Real.sqrt 2 : ℝ)
+
+private theorem r2_sq : r2 * r2 = 2 := by
+  unfold r2
+  rw [← Complex.ofReal_mul, Real.mul_self_sqrt (by norm_num)]
+  norm_num
+
+private theorem r2_ne_zero : r2 ≠ 0 := by
+  unfold r2; rw [Ne, Complex.ofReal_eq_zero]; positivity
+
+/-- The signed-double-cone adjacency matrix `A`.  Real-symmetric, loopless;
+apex `2` symmetric (weights `1/√2, 1/√2`), apex `3` antisymmetric
+(weights `√2, -√2`). -/
+private noncomputable def Amat : Matrix (Fin 4) (Fin 4) ℂ :=
+  !![0, 0, r2/2, r2;
+     0, 0, r2/2, -r2;
+     r2/2, r2/2, 0, 0;
+     r2, -r2, 0, 0]
+
+/-- The weighted graph `DC₄`. -/
+noncomputable def DC4 : WeightedGraph (Fin 4) where
+  adj := Amat
+  herm := by
+    unfold Matrix.IsHermitian Amat
+    ext i j
+    fin_cases i <;> fin_cases j <;>
+      simp [Matrix.conjTranspose_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
+        Complex.conj_ofReal, r2, Complex.star_def]
+  loopless := by intro v; fin_cases v <;> simp [Amat]
+
+@[simp] theorem DC4_adj : DC4.adj = Amat := rfl
+
+/-! #### The no-automorphism certificate via the weighted-degree invariant -/
+
+/-- The weighted degree (row sum) of vertex `0` is `3/√2 = 3·r2/4`. -/
+private theorem deg_zero : (∑ w, DC4.adj 0 w) = 3 * r2 / 2 := by
+  simp only [DC4_adj, Amat, Fin.sum_univ_four, Matrix.cons_val_zero, Matrix.cons_val_one,
+    Matrix.head_cons, Matrix.cons_val_two, Matrix.tail_cons, Matrix.cons_val_three]
+  ring
+
+/-- The weighted degree (row sum) of vertex `1` is `-1/√2 = -r2/2`. -/
+private theorem deg_one : (∑ w, DC4.adj 1 w) = -(r2 / 2) := by
+  simp only [DC4_adj, Amat, Fin.sum_univ_four, Matrix.cons_val_zero, Matrix.cons_val_one,
+    Matrix.head_cons, Matrix.cons_val_two, Matrix.tail_cons]
+  ring
+
+/-- The two PST endpoints have **different** weighted degree. -/
+private theorem deg_zero_ne_deg_one :
+    (∑ w, DC4.adj 0 w) ≠ (∑ w, DC4.adj 1 w) := by
+  rw [deg_zero, deg_one]
+  intro h
+  -- `3·r2/2 = -(r2/2)` would force `4·r2 = 0`, but `r2 ≠ 0`.
+  have : (4 : ℂ) * r2 = 0 := by linear_combination (2 : ℂ) * h
+  have h4 : (4 : ℂ) ≠ 0 := by norm_num
+  exact r2_ne_zero (by
+    rcases mul_eq_zero.mp this with h0 | h0
+    · exact absurd h0 h4
+    · exact h0)
+
+/-- **No adjacency automorphism of `DC₄` sends `0` to `1`.**  An automorphism
+preserves the weighted row sum (`∑_y adj (σ x) y = ∑_y adj x y`, reindexing the
+sum by the bijection `σ`), but vertices `0` and `1` have different weighted
+degree.  This is the *phantom* certificate: the spectral `0↔1` symmetry is not
+realized by any permutation of the weighted adjacency. -/
+theorem no_aut_zero_to_one :
+    ¬ ∃ σ : Fin 4 ≃ Fin 4,
+      (∀ x y, DC4.adj (σ x) (σ y) = DC4.adj x y) ∧ σ 0 = 1 := by
+  rintro ⟨σ, hσ, h01⟩
+  -- row-sum preservation: ∑_y adj (σ 0) (σ y) = ∑_y adj 0 y, and reindexing
+  -- the LHS by the bijection σ gives ∑_w adj (σ 0) w.
+  have hsum : (∑ w, DC4.adj (σ 0) w) = (∑ y, DC4.adj 0 y) := by
+    calc (∑ w, DC4.adj (σ 0) w)
+        = ∑ y, DC4.adj (σ 0) (σ y) := (Equiv.sum_comp σ (fun w => DC4.adj (σ 0) w)).symm
+      _ = ∑ y, DC4.adj 0 y := by
+          exact Finset.sum_congr rfl (fun y _ => hσ 0 y)
+  rw [h01] at hsum
+  exact deg_zero_ne_deg_one hsum.symm
+
+/-! #### The explicit diagonalization `A = U · diag(1,-1,2,-2) · U⁻¹` -/
+
+/-- Eigenvector matrix `U`: columns `(1,1,√2,0)`, `(1,1,-√2,0)`, `(1,-1,0,√2)`,
+`(1,-1,0,-√2)` for eigenvalues `1, -1, 2, -2`. -/
+private noncomputable def U : Matrix (Fin 4) (Fin 4) ℂ :=
+  !![1, 1, 1, 1;
+     1, 1, -1, -1;
+     r2, -r2, 0, 0;
+     0, 0, r2, -r2]
+
+/-- The explicit inverse `U⁻¹ = (1/4)·!![1,1,√2,0; 1,1,-√2,0; 1,-1,0,√2; 1,-1,0,-√2]`. -/
+private noncomputable def Uinv : Matrix (Fin 4) (Fin 4) ℂ :=
+  !![1/4, 1/4, r2/4, 0;
+     1/4, 1/4, -r2/4, 0;
+     1/4, -1/4, 0, r2/4;
+     1/4, -1/4, 0, -r2/4]
+
+set_option maxHeartbeats 1600000 in
+private theorem U_mul_inv : U * Uinv = 1 := by
+  unfold U Uinv
+  have h2 : r2 * r2 = 2 := r2_sq
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.mul_apply, Fin.sum_univ_four,
+      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      Matrix.cons_val_two, Matrix.tail_cons, Matrix.cons_val_three] <;>
+    first
+      | linear_combination (1/4 : ℂ) * h2
+      | linear_combination (-(1/4) : ℂ) * h2
+      | ring
+
+set_option maxHeartbeats 1600000 in
+private theorem inv_mul_U : Uinv * U = 1 := by
+  unfold U Uinv
+  have h2 : r2 * r2 = 2 := r2_sq
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.mul_apply, Fin.sum_univ_four,
+      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      Matrix.cons_val_two, Matrix.tail_cons, Matrix.cons_val_three] <;>
+    first
+      | linear_combination (1/4 : ℂ) * h2
+      | linear_combination (-(1/4) : ℂ) * h2
+      | ring
+
+private theorem U_isUnit : IsUnit U :=
+  ⟨⟨U, Uinv, U_mul_inv, inv_mul_U⟩, rfl⟩
+
+private theorem Uinv_eq : U⁻¹ = Uinv :=
+  Matrix.inv_eq_right_inv U_mul_inv
+
+set_option maxHeartbeats 1600000 in
+/-- The signed double cone diagonalizes: `A = U·diag(1,-1,2,-2)·U⁻¹`. -/
+private theorem Amat_eq_conj_diag :
+    Amat = U * (Matrix.diagonal ![1, -1, 2, -2]) * Uinv := by
+  have h2 : r2 * r2 = 2 := r2_sq
+  have h2pow : r2 ^ 2 = 2 := by rw [sq]; exact h2
+  unfold Amat U Uinv
+  rw [show (Matrix.diagonal ![1, -1, 2, -2] : Matrix (Fin 4) (Fin 4) ℂ)
+        = !![1, 0, 0, 0; 0, -1, 0, 0; 0, 0, 2, 0; 0, 0, 0, -2] by
+    ext i j; fin_cases i <;> fin_cases j <;>
+      simp [Matrix.diagonal, Matrix.cons_val_zero, Matrix.cons_val_one,
+        Matrix.head_cons, Matrix.cons_val_two, Matrix.tail_cons,
+        Matrix.cons_val_three]]
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.mul_apply, Fin.sum_univ_four,
+      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      Matrix.cons_val_two, Matrix.tail_cons, Matrix.cons_val_three] <;>
+    first
+      | linear_combination (1/2 : ℂ) * h2
+      | linear_combination (-(1/2) : ℂ) * h2
+      | linear_combination (1/2 : ℂ) * h2pow
+      | linear_combination (-(1/2) : ℂ) * h2pow
+      | ring
+
+/-- Scaled diagonalization: `s • A = U·diag(s,-s,2s,-2s)·U⁻¹`. -/
+private theorem smul_Amat_eq_conj_diag (s : ℂ) :
+    s • Amat = U * (Matrix.diagonal ![s, -s, 2*s, -(2*s)]) * Uinv := by
+  have hd : (Matrix.diagonal ![s, -s, 2*s, -(2*s)] : Matrix (Fin 4) (Fin 4) ℂ)
+      = s • Matrix.diagonal ![1, -1, 2, -2] := by
+    rw [← Matrix.diagonal_smul]
+    congr 1
+    funext k
+    fin_cases k <;> simp <;> ring
+  rw [Amat_eq_conj_diag, hd, mul_smul_comm, smul_mul_assoc]
+
+/-- `exp(s • A) = U·diag(exp s, exp(-s), exp(2s), exp(-2s))·U⁻¹`. -/
+private theorem exp_smul_Amat (s : ℂ) :
+    NormedSpace.exp (s • Amat)
+      = U * (Matrix.diagonal
+          ![NormedSpace.exp s, NormedSpace.exp (-s),
+            NormedSpace.exp (2*s), NormedSpace.exp (-(2*s))]) * Uinv := by
+  rw [smul_Amat_eq_conj_diag, ← Uinv_eq, Matrix.exp_conj _ _ U_isUnit, Matrix.exp_diagonal]
+  have hvec : (fun i => NormedSpace.exp (![s, -s, 2*s, -(2*s)] i))
+      = (![NormedSpace.exp s, NormedSpace.exp (-s),
+           NormedSpace.exp (2*s), NormedSpace.exp (-(2*s))] : Fin 4 → ℂ) := by
+    funext k; fin_cases k <;> simp
+  rw [Pi.exp_def, hvec]
+
+set_option maxHeartbeats 1600000 in
+/-- The `(0,1)` entry of `exp(s • A)` is `(exp s + exp(-s) - exp(2s) - exp(-2s))/4`. -/
+private theorem exp_smul_Amat_entry01 (s : ℂ) :
+    NormedSpace.exp (s • Amat) 0 1
+      = (NormedSpace.exp s + NormedSpace.exp (-s)
+          - NormedSpace.exp (2*s) - NormedSpace.exp (-(2*s))) / 4 := by
+  rw [exp_smul_Amat]
+  unfold U Uinv
+  rw [show (Matrix.diagonal
+        ![NormedSpace.exp s, NormedSpace.exp (-s),
+          NormedSpace.exp (2*s), NormedSpace.exp (-(2*s))]
+        : Matrix (Fin 4) (Fin 4) ℂ)
+      = !![NormedSpace.exp s, 0, 0, 0; 0, NormedSpace.exp (-s), 0, 0;
+           0, 0, NormedSpace.exp (2*s), 0; 0, 0, 0, NormedSpace.exp (-(2*s))] by
+    ext i j; fin_cases i <;> fin_cases j <;>
+      simp [Matrix.diagonal, Matrix.cons_val_zero, Matrix.cons_val_one,
+        Matrix.head_cons, Matrix.cons_val_two, Matrix.tail_cons,
+        Matrix.cons_val_three]]
+  simp [Matrix.mul_apply, Fin.sum_univ_four,
+    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+    Matrix.cons_val_two, Matrix.tail_cons, Matrix.cons_val_three]
+  ring
+
+/-- At `s = -iπ` the `(0,1)` entry of `exp(s • A)` equals `-1`.
+`exp(-iπ) = exp(iπ) = -1` and `exp(-2iπ) = exp(2iπ) = 1`, so
+`(-1 + -1 - 1 - 1)/4 = -1`. -/
+private theorem Amat_entry01_at_time :
+    NormedSpace.exp (-(Complex.I * ((Real.pi : ℝ) : ℂ)) • Amat) 0 1 = -1 := by
+  set s : ℂ := -(Complex.I * ((Real.pi : ℝ) : ℂ)) with hs
+  rw [exp_smul_Amat_entry01]
+  have he_s : NormedSpace.exp s = -1 := by
+    rw [hs, ← Complex.exp_eq_exp_ℂ,
+      show -(Complex.I * ((Real.pi : ℝ) : ℂ)) = ((-Real.pi : ℝ) : ℂ) * Complex.I by
+        push_cast; ring,
+      Complex.exp_ofReal_mul_I, Real.cos_neg, Real.sin_neg, Real.cos_pi, Real.sin_pi]
+    push_cast; ring
+  have he_neg_s : NormedSpace.exp (-s) = -1 := by
+    rw [hs, neg_neg, ← Complex.exp_eq_exp_ℂ,
+      show Complex.I * ((Real.pi : ℝ) : ℂ) = ((Real.pi : ℝ) : ℂ) * Complex.I by ring,
+      Complex.exp_ofReal_mul_I, Real.cos_pi, Real.sin_pi]
+    push_cast; ring
+  have he_2s : NormedSpace.exp (2*s) = 1 := by
+    rw [hs, ← Complex.exp_eq_exp_ℂ,
+      show 2 * -(Complex.I * ((Real.pi : ℝ) : ℂ)) = ((-(2*Real.pi) : ℝ) : ℂ) * Complex.I by
+        push_cast; ring,
+      Complex.exp_ofReal_mul_I, Real.cos_neg, Real.sin_neg,
+      Real.cos_two_pi, Real.sin_two_pi]
+    push_cast; ring
+  have he_neg_2s : NormedSpace.exp (-(2*s)) = 1 := by
+    rw [hs, ← Complex.exp_eq_exp_ℂ,
+      show -(2 * -(Complex.I * ((Real.pi : ℝ) : ℂ))) = ((2*Real.pi : ℝ) : ℂ) * Complex.I by
+        push_cast; ring,
+      Complex.exp_ofReal_mul_I, Real.cos_two_pi, Real.sin_two_pi]
+    push_cast; ring
+  rw [he_s, he_neg_s, he_2s, he_neg_2s]
+  norm_num
+
+/-- **`DC₄` exhibits PST `0 ⇝ 1` at `τ = π`.**  The off-diagonal evolution
+amplitude is exactly `-1`, of modulus `1`.  Genuine finite diagonalize-and-
+exponentiate; no `sorry`. -/
+theorem DC4_isPST : IsPST DC4 0 1 Real.pi := by
+  unfold IsPST WeightedGraph.evolve
+  rw [DC4_adj, Amat_entry01_at_time, norm_neg, norm_one]
+
+/-- **The pair `(0, 1)` of `DC₄` is phantom symmetric.**  Strong cospectrality
+comes for free from the PST `DC4_isPST` (via `isStronglyCospectral_of_isPST`);
+the no-automorphism clause is the weighted-degree certificate `no_aut_zero_to_one`. -/
+theorem DC4_isPhantomSymmetric : IsPhantomSymmetric DC4 0 1 :=
+  ⟨isStronglyCospectral_of_isPST DC4 0 1 Real.pi DC4_isPST, no_aut_zero_to_one⟩
+
+end SignedDoubleCone
+
+/-- **Bachman–Tamon / GKSS phantom-symmetric PST existence.**
 
 The literature — Godsil–Kirkland–Severini–Smith, *Number-Theoretic Nature of
 Communication in Quantum Spin Systems*, PRL 109 (2012) 050502; Bachman–Tamon
 arXiv:1108.0339 — establishes that there exist Hermitian-weighted graphs `G`
 with **vertex** pairs `(u, v)` that exhibit PST and are *phantom symmetric*:
 strongly cospectral, yet with **no** graph automorphism mapping `u` to `v`.
-Such pairs show PST cannot be detected by the automorphism group alone.
+Such pairs show PST cannot be detected by the automorphism group alone, settling
+Godsil's question *"is a graph automorphism necessary for PST?"* in the negative.
 
 This is recorded as a `Prop`-valued **typeclass assumption, not a bare axiom**
-(no global soundness hole), following the `LovaszTheta` pattern.  The known
-minimal vertex-level witnesses need ≥ 6 vertices with engineered weights and a
-computed matrix-exponential amplitude + no-automorphism certificate, which this
-module does not construct, so **no instance is provided** — it is a pure cited
-external.
+(no global soundness hole), following the `LovaszTheta` pattern — but it is now
+**discharged with a genuine instance** (`instance : PhantomSymmetricPSTExists`
+below) by the explicit `4`-vertex **signed double cone** `SignedDoubleCone.DC4`:
+integer spectrum `{-2,-1,1,2}`, PST `0 ⇝ 1` at `τ = π` (off-diagonal amplitude
+exactly `-1`), and no automorphism sending `0` to `1` (the weighted-degree
+invariant `3/√2 ≠ -1/√2`).
 
 (The closely-related *cell-level* phenomenon — quotient PST between equitable
-cells with no automorphism relating them — *is* proven, with an explicit `P₃`
-witness, in `Graphplay.PST.QuotientIff.phantom_symmetry_PST_exists`.) -/
+cells with no automorphism relating them — is proven with an explicit `P₃`
+witness in `Graphplay.PST.QuotientIff.phantom_symmetry_PST_exists`.) -/
 class PhantomSymmetricPSTExists : Prop where
   /-- There is a Hermitian-weighted graph with a phantom-symmetric PST vertex
   pair at some positive time (GKSS PRL 109 050502 / Bachman–Tamon 1108.0339). -/
@@ -1294,6 +1589,17 @@ class PhantomSymmetricPSTExists : Prop where
     ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G : WeightedGraph V) (u v : V) (τ : ℝ),
       0 < τ ∧ IsPhantomSymmetric G u v ∧ IsPST G u v τ
+
+/-- **The phantom-symmetric PST existence is a THEOREM**, discharged by the
+explicit signed-double-cone witness `SignedDoubleCone.DC4`: a `4`-vertex
+Hermitian-weighted graph with PST `0 ⇝ 1` at `τ = π`, integer spectrum
+`{-2,-1,1,2}`, and **no** adjacency automorphism mapping `0` to `1`.  This
+de-externalizes "PST without symmetry" — Godsil's question — answering it
+**NO**: an automorphism is *not* necessary for perfect state transfer. -/
+instance : PhantomSymmetricPSTExists where
+  exists_witness :=
+    ⟨Fin 4, inferInstance, inferInstance, SignedDoubleCone.DC4, 0, 1, Real.pi,
+      Real.pi_pos, SignedDoubleCone.DC4_isPhantomSymmetric, SignedDoubleCone.DC4_isPST⟩
 
 /-- **Existence of phantom-symmetric PST pairs**, axiom-clean and honestly
 conditional on the cited external `[PhantomSymmetricPSTExists]` (GKSS PRL 109

@@ -364,11 +364,237 @@ theorem search_quotient_reduction
   simp only [Pi.smul_apply, smul_eq_mul]
   ring
 
-/-- **Optimal search on the refined quotient** (genuine hypothesis form).  This
-is the cell-uniform success amplitude of the *refined-quotient* search evolution
-`exp(-iτ·(-γ·Q̃' − markedDiag))` applied to the uniform initial state on the
-quotient index `MarkedRefined I`, projected onto the marked (`(·, true)`) cells.
-It is the quotient-side analogue of `IsOptimalSearch` (amplitude `≥ 1/√2`). -/
+/-! ### The cell-embedding isometry and the evolution-level intertwining.
+
+`search_quotient_reduction` is the *generator*-level statement (`H_search` acts as
+the refined-quotient generator on the cell-uniform subspace).  To lift *optimal
+search* we need the same identity for the *evolution* `U(τ) = exp(-iτ·H_search)`,
+obtained by intertwining the matrix exponential through the **cell-embedding
+matrix** `E'` (columns = normalized cell indicators), and then projecting onto the
+marked rows.  The genuine host start `|s⟩ = 𝟙/√N` is the cell-embedding image of
+the **cell-mass vector** `m̂_{ib} = √|C'_{ib}|` (each normalized cell indicator
+rescaled to the raw indicator), so the host success amplitude is *exactly* the
+refined-quotient block amplitude contracted against the cell masses on both the
+start and the marked projection — the genuine quotient-side functional. -/
+
+section CellEmbedLift
+
+open NormedSpace
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+variable {V : Type u} [Fintype V] [DecidableEq V]
+  {I : Type v} [Fintype I] [DecidableEq I]
+  {G : WeightedGraph V}
+
+/-- The **cell-embedding matrix** of an equitable partition: the `V × I` matrix
+whose `(v, i)` entry is `cellUniformVec i v`.  Its columns are the normalized cell
+indicators; `mulVec` is the canonical cell-uniform combination map. -/
+noncomputable def cellEmbed (P : EquitablePartition G I) : Matrix V I ℂ :=
+  fun v i => P.cellUniformVec i v
+
+/-- `cellEmbed.mulVec w` is the cell-uniform combination `∑ i, w i · e_i`. -/
+theorem cellEmbed_mulVec (P : EquitablePartition G I) (w : I → ℂ) :
+    (cellEmbed P).mulVec w = fun v => ∑ i, w i * P.cellUniformVec i v := by
+  funext v
+  simp only [cellEmbed, Matrix.mulVec, dotProduct]
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [mul_comm]
+
+/-- The **cell-mass vector** `m̂_i = √|C_i|`: the chain image of the host uniform
+state's *unnormalized* weights. -/
+noncomputable def massVec (P : EquitablePartition G I) : I → ℂ :=
+  fun i => (Real.sqrt (P.cellCard i) : ℂ)
+
+/-- **The cell-embedding of the cell-mass vector is the all-ones vector.**  Each
+normalized cell indicator `e_i = 𝟙_{C_i}/√|C_i|`, rescaled by `√|C_i|`, is the raw
+indicator `𝟙_{C_i}`; summing the raw indicators over all cells gives `𝟙`.  Hence
+`E·m̂ = 𝟙`, i.e. the host uniform start `|s⟩ = 𝟙/√N` is the cell-embedding image of
+`m̂/√N` — the chain image of the uniform state. -/
+theorem cellEmbed_mulVec_massVec (P : EquitablePartition G I)
+    (hne : ∀ i, 0 < P.cellCard i) :
+    (cellEmbed P).mulVec (massVec P) = (fun _ => (1 : ℂ)) := by
+  funext v
+  rw [cellEmbed_mulVec]
+  simp only [massVec]
+  rw [Finset.sum_eq_single (P.cells v)]
+  · unfold EquitablePartition.cellUniformVec
+    rw [if_pos rfl]
+    have hne' : (Real.sqrt (P.cellCard (P.cells v)) : ℂ) ≠ 0 := by
+      rw [Ne, Complex.ofReal_eq_zero]
+      exact ne_of_gt (Real.sqrt_pos.mpr (hne (P.cells v)))
+    field_simp
+  · intro i _ hi
+    unfold EquitablePartition.cellUniformVec
+    rw [if_neg (fun h => hi h.symm), mul_zero]
+  · intro h; exact absurd (Finset.mem_univ _) h
+
+/-- **Generator-level search intertwining through the cell-embedding.**  Packaging
+`search_quotient_reduction` as a matrix identity (one column per refined cell):
+the host search Hamiltonian acts on the refined cell-uniform subspace as the
+refined-quotient generator `H_chain = -γ·Q̃' − markedDiag`. -/
+theorem searchH_mul_cellEmbed (P : EquitablePartition G I) (M : Finset V) (γ : ℝ)
+    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M)) :
+    let P' := P.refineByMarked M hM
+    G.searchHamiltonian M γ * cellEmbed P'
+      = cellEmbed P' * (-(γ : ℂ) • P'.symmQuotient - markedDiag I) := by
+  intro P'
+  apply Matrix.ext_of_mulVec_single
+  intro jb
+  rw [← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec]
+  rw [cellEmbed_mulVec P' (Pi.single jb (1 : ℂ))]
+  rw [search_quotient_reduction P M γ hM (Pi.single jb (1 : ℂ))]
+  rw [cellEmbed_mulVec P' ((-(γ : ℂ) • P'.symmQuotient - markedDiag I).mulVec (Pi.single jb 1))]
+
+/-- **Generic exponential intertwining through a rectangular embedding.**  If
+`H · E = E · M` (intertwining at the generator level), then
+`exp(s•H) · E = E · exp(s•M)`.  Pushes the power intertwining through the
+convergent `exp` series. -/
+theorem exp_intertwine_cellEmbed (H : Matrix V V ℂ) (E : Matrix V I ℂ)
+    (M : Matrix I I ℂ) (s : ℂ) (hHE : H * E = E * M) :
+    NormedSpace.exp (s • H) * E = E * NormedSpace.exp (s • M) := by
+  have hpow : ∀ k : ℕ, (s • H) ^ k * E = E * (s • M) ^ k := by
+    intro k
+    induction k with
+    | zero => simp
+    | succ n ih =>
+      have hstep : (s • H) * E = E * (s • M) := by
+        rw [Matrix.smul_mul, Matrix.mul_smul, hHE]
+      rw [pow_succ, pow_succ, Matrix.mul_assoc, hstep, ← Matrix.mul_assoc, ih, Matrix.mul_assoc]
+  let φ : Matrix V V ℂ →+ Matrix V I ℂ :=
+    { toFun := fun A => A * E, map_zero' := Matrix.zero_mul _,
+      map_add' := fun A C => Matrix.add_mul A C _ }
+  have hφc : Continuous φ := Continuous.matrix_mul continuous_id continuous_const
+  let ψ : Matrix I I ℂ →+ Matrix V I ℂ :=
+    { toFun := fun N => E * N, map_zero' := Matrix.mul_zero _,
+      map_add' := fun M₁ M₂ => Matrix.mul_add _ M₁ M₂ }
+  have hψc : Continuous ψ := Continuous.matrix_mul continuous_const continuous_id
+  have hH : HasSum (fun k => (Nat.factorial k : ℂ)⁻¹ • (s • H) ^ k)
+      (NormedSpace.exp (s • H)) := exp_series_hasSum_exp' _
+  have hM : HasSum (fun k => (Nat.factorial k : ℂ)⁻¹ • (s • M) ^ k)
+      (NormedSpace.exp (s • M)) := exp_series_hasSum_exp' _
+  have hHφ := hH.map φ hφc
+  have hMψ := hM.map ψ hψc
+  have hterm : (φ ∘ fun k => (Nat.factorial k : ℂ)⁻¹ • (s • H) ^ k)
+      = (ψ ∘ fun k => (Nat.factorial k : ℂ)⁻¹ • (s • M) ^ k) := by
+    funext k
+    show ((Nat.factorial k : ℂ)⁻¹ • (s • H) ^ k) * E
+        = E * ((Nat.factorial k : ℂ)⁻¹ • (s • M) ^ k)
+    rw [Matrix.smul_mul, Matrix.mul_smul, hpow k]
+  rw [hterm] at hHφ
+  exact hHφ.unique hMψ
+
+/-- **Evolution-level search intertwining through the cell-embedding.**  The full
+search evolution `U(τ) = exp(-iτ·H_search)`, restricted to the refined cell-uniform
+subspace, is the refined-quotient chain evolution `exp(-iτ·H_chain)`:
+`U(τ) · E' = E' · exp(-iτ·H_chain)`. -/
+theorem searchEvolve_mul_cellEmbed (P : EquitablePartition G I) (M : Finset V) (γ τ : ℝ)
+    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M)) :
+    let P' := P.refineByMarked M hM
+    G.searchEvolve M γ τ * cellEmbed P'
+      = cellEmbed P'
+        * NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
+            (-(γ : ℂ) • P'.symmQuotient - markedDiag I)) := by
+  intro P'
+  unfold WeightedGraph.searchEvolve
+  exact exp_intertwine_cellEmbed _ _ _ _ (searchH_mul_cellEmbed P M γ hM)
+
+/-- **Marked-row projection of a refined cell-uniform combination.**  Summing a
+cell-uniform combination `E'·z` over the marked rows `m ∈ M` contracts `z` against
+the cell masses `√|C'_{ib}|` over the *marked* refined cells `(·, true)` — because
+each refined cell lies wholly in or out of `M`, the marked rows are exactly the
+union of the `(·, true)` cells, and summing the value `z_{ib}/√|C'_{ib}|` over the
+`|C'_{ib}|` vertices of a marked cell gives `√|C'_{ib}|·z_{ib}`. -/
+theorem markedProj_cellEmbed (P : EquitablePartition G I) (M : Finset V)
+    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M)) (z : MarkedRefined I → ℂ) :
+    let P' := P.refineByMarked M hM
+    (∑ m, if m ∈ M then ((cellEmbed P').mulVec z) m else 0)
+      = ∑ ib : MarkedRefined I,
+          (if ib.2 = true then (Real.sqrt (P'.cellCard ib) : ℂ) * z ib else 0) := by
+  intro P'
+  classical
+  -- Pointwise, `(E'·z) m = z (cell m) · e_{cell m} m`, only the own-cell term survives.
+  have hpt : ∀ m : V, ((cellEmbed P').mulVec z) m
+      = z (P'.cells m) * P'.cellUniformVec (P'.cells m) m := by
+    intro m
+    rw [cellEmbed_mulVec]
+    simp only
+    rw [Finset.sum_eq_single (P'.cells m)]
+    · intro ib _ hib
+      have : P'.cellUniformVec ib m = 0 := by
+        unfold EquitablePartition.cellUniformVec
+        rw [if_neg (fun h => hib h.symm)]
+      rw [this, mul_zero]
+    · intro h; exact absurd (Finset.mem_univ _) h
+  have hev : ∀ m : V, P'.cellUniformVec (P'.cells m) m
+      = (1 : ℂ) / (Real.sqrt (P'.cellCard (P'.cells m)) : ℂ) := by
+    intro m; unfold EquitablePartition.cellUniformVec; rw [if_pos rfl]
+  -- Rewrite the LHS as a sum depending only on `P'.cells m`, gated by `(cells m).2`.
+  rw [show (∑ m, if m ∈ M then ((cellEmbed P').mulVec z) m else 0)
+        = ∑ m, (if (P'.cells m).2 = true
+                  then z (P'.cells m) * (1 / (Real.sqrt (P'.cellCard (P'.cells m)) : ℂ)) else 0)
+      from ?_]
+  · -- Group by cell; each marked cell `ib` contributes `|C'_ib|·z_ib/√|C'_ib| = √|C'_ib|·z_ib`.
+    rw [← Finset.sum_fiberwise_of_maps_to (g := P'.cells)
+        (fun m _ => Finset.mem_univ (P'.cells m))]
+    apply Finset.sum_congr rfl
+    intro ib _
+    by_cases hb : ib.2 = true
+    · rw [if_pos hb]
+      have hconst : ∀ m ∈ Finset.univ.filter (fun m => P'.cells m = ib),
+          (if (P'.cells m).2 = true
+              then z (P'.cells m) * (1 / (Real.sqrt (P'.cellCard (P'.cells m)) : ℂ)) else 0)
+            = z ib * (1 / (Real.sqrt (P'.cellCard ib) : ℂ)) := by
+        intro m hm; rw [Finset.mem_filter] at hm; rw [hm.2, if_pos hb]
+      rw [Finset.sum_congr rfl hconst, Finset.sum_const, nsmul_eq_mul]
+      have hcardeq : ((Finset.univ.filter (fun m => P'.cells m = ib)).card : ℂ)
+          = (P'.cellCard ib : ℂ) := by
+        unfold EquitablePartition.cellCard; push_cast; rfl
+      rw [hcardeq]
+      by_cases hc0 : P'.cellCard ib = 0
+      · rw [hc0]; simp
+      · have hpos : 0 < P'.cellCard ib :=
+          lt_of_le_of_ne (P'.cellCard_nonneg ib) (Ne.symm hc0)
+        have hsqne : (Real.sqrt (P'.cellCard ib) : ℂ) ≠ 0 := by
+          rw [Ne, Complex.ofReal_eq_zero]; exact ne_of_gt (Real.sqrt_pos.mpr hpos)
+        have hsq : (Real.sqrt (P'.cellCard ib) : ℂ) * (Real.sqrt (P'.cellCard ib) : ℂ)
+            = (P'.cellCard ib : ℂ) := by
+          rw [← Complex.ofReal_mul, Real.mul_self_sqrt (P'.cellCard_nonneg ib)]
+        rw [← hsq]; field_simp
+    · rw [if_neg hb]
+      apply Finset.sum_eq_zero
+      intro m hm; rw [Finset.mem_filter] at hm; rw [hm.2, if_neg hb]
+  · apply Finset.sum_congr rfl
+    intro m _
+    rw [hpt m, hev m]
+    have hmem : (m ∈ M) ↔ (P'.cells m).2 = true := by
+      show (m ∈ M) ↔ (P.cells m, decide (m ∈ M)).2 = true; simp
+    by_cases hmM : m ∈ M
+    · rw [if_pos hmM, if_pos (hmem.mp hmM)]
+    · rw [if_neg hmM, if_neg (fun h => hmM (hmem.mpr h))]
+
+end CellEmbedLift
+
+/-- **Optimal search on the refined quotient** (genuine, host-faithful hypothesis
+form).  This is the **exact** refined-quotient image of the host's uniform-overlap
+success amplitude `⟨𝟙_M | U(τ) | 𝟙⟩/√N`.
+
+The host start `|s⟩ = 𝟙/√N` is the cell-embedding image of the cell-mass weights
+`m̂'_{jb} = √|C'_{jb}|` (`cellEmbed_mulVec_massVec`), and the marked indicator
+`𝟙_M` projects a refined cell-uniform combination onto the cell masses over the
+*marked* cells `(·, true)` (`markedProj_cellEmbed`).  Hence the genuine quotient
+amplitude is the refined-quotient block evolution `exp(-iτ·(-γ·Q̃' − markedDiag))`
+applied to the cell-mass vector, contracted against the cell masses on the marked
+cells, normalized by `√N`:
+
+  `‖(∑_{ib.2=true} √|C'_{ib}| · (exp(-iτ·H_chain)·m̂')_{ib}) / √N‖ ≥ 1/√2`.
+
+This `√|C'|`-weighting on *both* the start (`m̂'`) and the marked projection is the
+correct chain image of the host functional; the previous formulation used a
+`1/√(2|I|)` uniform-over-quotient-cells weighting, which is the host functional
+only when all cells are equal-sized — a mis-formalization this restatement fixes.
+It is the host-faithful quotient-side analogue of `IsOptimalSearch`. -/
 def IsRefinedQuotientOptimalSearch
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -376,25 +602,38 @@ def IsRefinedQuotientOptimalSearch
     (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M))
     (γ τ : ℝ) : Prop :=
   let P' := P.refineByMarked M hM
-  ‖(∑ ib : MarkedRefined I, ∑ jb : MarkedRefined I,
-      if jb.2 = true then
-        (NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
-            (-(γ : ℂ) • P'.symmQuotient - markedDiag I))) jb ib /
-          Real.sqrt (Fintype.card (MarkedRefined I))
-      else 0)‖ ≥ 1 / Real.sqrt 2
+  ‖(∑ ib : MarkedRefined I,
+      if ib.2 = true then
+        (Real.sqrt (P'.cellCard ib) : ℂ) *
+          ((NormedSpace.exp (-(Complex.I * (τ : ℂ)) •
+              (-(γ : ℂ) • P'.symmQuotient - markedDiag I))).mulVec
+                (fun jb => (Real.sqrt (P'.cellCard jb) : ℂ))) ib
+      else 0) / Real.sqrt (Fintype.card V)‖ ≥ 1 / Real.sqrt 2
 
 /-- **Optimal search on the refined quotient lifts to optimal search on the
 host.**  Given that the marked set is a union of cells (`hM`, so the marked-
-refined partition is equitable and `search_quotient_reduction` applies), if the
-refined quotient supports optimal search then so does the host.
+refined partition is equitable and `search_quotient_reduction` applies) and all
+refined cells are nonempty (`hne`), if the refined quotient supports optimal
+search (in the host-faithful `IsRefinedQuotientOptimalSearch` sense) then so does
+the host.
 
-The previous formulation carried a vacuous `True →` placeholder hypothesis; this
-replaces it with the genuine quotient-side optimal-search predicate
-`IsRefinedQuotientOptimalSearch`.  The bridge is `search_quotient_reduction`
-(the host search Hamiltonian acts as the refined-quotient one on the
-cell-uniform subspace), combined with the norm-preservation of the cell-inflate
-on nonempty cells; assembling these into the `IsOptimalSearch` amplitude bound
-is the remaining deep step, left as an honest `sorry`. -/
+**Now proven axiom-clean (no `sorry`).**  The proof is the exact transport of the
+host success amplitude onto the finite refined-quotient chain:
+
+* `∑_{m∈M} ∑_v U(τ)_{m,v} = ∑_{m∈M} (U(τ)·𝟙)_m` — the host functional is the
+  marked-row projection of `U(τ)` applied to the all-ones vector `𝟙`;
+* `𝟙 = E'·m̂'` with `m̂'_{ib} = √|C'_{ib}|` (`cellEmbed_mulVec_massVec`, using
+  `hne`) — the uniform start is the cell-embedding image of the cell-mass vector;
+* `U(τ)·E' = E'·exp(-iτ·H_chain)` (`searchEvolve_mul_cellEmbed`, the evolution-level
+  intertwining built from `search_quotient_reduction`), so
+  `U(τ)·𝟙 = E'·(exp(-iτ·H_chain)·m̂')`;
+* `∑_{m∈M} (E'·z)_m = ∑_{ib.2=true} √|C'_{ib}|·z_{ib}` (`markedProj_cellEmbed`,
+  each refined cell wholly in/out of `M`).
+
+Composing these makes the host amplitude `‖∑_{m∈M}∑_v U_{m,v}/√N‖` *definitionally*
+equal to the `IsRefinedQuotientOptimalSearch` amplitude, so the `≥ 1/√2` bound
+transfers verbatim.  No symmetry of the adjacency is needed: the host functional
+here is the genuine `⟨𝟙_M|U(τ)|𝟙⟩` row projection. -/
 theorem optimal_search_lift
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -404,7 +643,45 @@ theorem optimal_search_lift
     (γ τ : ℝ)
     (hquot : IsRefinedQuotientOptimalSearch P M hM γ τ) :
     IsOptimalSearch G M γ τ := by
-  sorry
+  classical
+  set P' := P.refineByMarked M hM with hP'
+  set s : ℂ := -(Complex.I * (τ : ℂ)) with hs
+  set Hc : Matrix (MarkedRefined I) (MarkedRefined I) ℂ :=
+    -(γ : ℂ) • P'.symmQuotient - markedDiag I with hHc
+  set U := G.searchEvolve M γ τ with hU
+  set mhat : MarkedRefined I → ℂ := fun jb => (Real.sqrt (P'.cellCard jb) : ℂ) with hmhat
+  -- The refined-quotient block column at the cell-mass start.
+  set z : MarkedRefined I → ℂ := (NormedSpace.exp (s • Hc)).mulVec mhat with hz
+  -- Fold the (host-faithful) quotient hypothesis to the `z`/`mhat`/`Hc` abbreviations.
+  rw [IsRefinedQuotientOptimalSearch] at hquot
+  simp only [← hP', ← hs, ← hHc, ← hmhat, ← hz] at hquot
+  unfold IsOptimalSearch
+  -- Step A: pull `/√N` out and rewrite the inner row sum `∑_v U_{m,v}` as `(U·𝟙)_m`.
+  rw [show (∑ m, if m ∈ M then (∑ v, U m v) / Real.sqrt (Fintype.card V) else 0)
+        = (∑ m, if m ∈ M then (U.mulVec (fun _ => (1 : ℂ))) m else 0)
+            / Real.sqrt (Fintype.card V) from ?_]
+  · -- Step C: `U·𝟙 = E'·z` via `𝟙 = E'·m̂'` and the evolution intertwining.
+    have hone : (cellEmbed P').mulVec (massVec P') = (fun _ => (1 : ℂ)) :=
+      cellEmbed_mulVec_massVec P' hne
+    have hUone : U.mulVec (fun _ => (1 : ℂ)) = (cellEmbed P').mulVec z := by
+      rw [← hone, Matrix.mulVec_mulVec]
+      have hint : U * cellEmbed P' = cellEmbed P' * NormedSpace.exp (s • Hc) := by
+        rw [hU, hHc, hs]; exact searchEvolve_mul_cellEmbed P M γ τ hM
+      rw [hint, ← Matrix.mulVec_mulVec]; rfl
+    rw [show (∑ m, if m ∈ M then (U.mulVec (fun _ => (1 : ℂ))) m else 0)
+          = (∑ m, if m ∈ M then ((cellEmbed P').mulVec z) m else 0) from by rw [hUone]]
+    -- Step D: marked-row projection onto the cell masses over the `(·, true)` cells.
+    -- The result is exactly the (folded) `IsRefinedQuotientOptimalSearch` amplitude.
+    rw [markedProj_cellEmbed P M hM z]
+    exact hquot
+  · -- Step A side goal: `∑_v U_{m,v} = (U·𝟙)_m` (all-ones), and factor `/√N`.
+    rw [Finset.sum_div]
+    apply Finset.sum_congr rfl
+    intro m _
+    by_cases h : m ∈ M
+    · rw [if_pos h, if_pos h]
+      simp only [Matrix.mulVec, dotProduct, mul_one]
+    · rw [if_neg h, if_neg h, zero_div]
 
 /-- The infinite-attached-tail special case (Bernard–Tamon–Vinet–Xie,
 arXiv:2211.14704): the distance-from-attachment partitions on an infinite tail

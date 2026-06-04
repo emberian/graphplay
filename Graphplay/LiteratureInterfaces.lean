@@ -820,44 +820,74 @@ unitarily equivalent, via the Jordan–Wigner string transformation, to the
 /-- **Jordan–Wigner intertwiner: hard-core bosons ≅ 1D XY** (Jordan–Wigner 1928;
 Lieb–Schultz–Mattis 1961).
 
-**MALFORMED/VACUOUS→FIXED.**  The previous field had shape
-`∀ Hhardcore, ∃ HXY U, star U·U = 1 ∧ U·star U = 1 ∧ U·Hhardcore = HXY·U` — the
-XY image `HXY` and the unitary `U` lived **inside the existential**, so the
-instance author got to *choose* them.  The trivial choice `U := 1`,
-`HXY := Hhardcore` satisfies every conjunct (`1·H = H·1`), so the "intertwiner"
-collapsed to "the identity commutes with `Hhardcore`" and **no genuine XY matrix
-was ever produced**.  It bought nothing.
+**VACUOUS→FIXED (twice).**  The first version had shape
+`∀ Hhardcore, ∃ HXY U, star U·U = 1 ∧ U·star U = 1 ∧ U·Hhardcore = HXY·U` — `HXY`
+and `U` lived **inside the existential**, so `U := 1, HXY := Hhardcore` satisfied
+every conjunct.  The second "fix" hoisted `U_JW, H_XY` to *data fields* but then
+**defined** `H_XY Hhc := U_JW · Hhc · star U_JW` (the `H_XY_is_conjugate` field)
+and asked only for the intertwining `U_JW · Hhc = (U_JW · Hhc · star U_JW) · U_JW`.
+Using `star U_JW · U_JW = 1` that collapses to `U_JW · Hhc = U_JW · Hhc` — a
+**tautology valid for every unitary**, including `U_JW := 1` (then `H_XY = id`).
+So the class STILL bought nothing: conjugation-then-unconjugation can never pin a
+concrete XY chain, and the adversarial inhabitant `U_JW := 1, H_XY := id` typechecks
+axiom-clean.  *No genuine XY matrix was ever forced.*
 
-The corrected interface takes the XY Hamiltonian `H_XY` and the Jordan–Wigner
-unitary `U_JW` as **fixed functions of the path data, OUTSIDE any existential** —
-they are *data fields* of the class, chosen once.  The Prop fields then pin them
-down genuinely:
+**The genuine, non-vacuous interface.**  We pin the XY image to the **actual
+string-dressed chain**, *not* a conjugation alias, and we pin `U_JW` to the
+diagonal of a genuine Jordan–Wigner string sign:
 
-* `U_JW` is a genuine **unitary** (`star (U_JW B) * U_JW B = 1`, both sides);
-* `H_XY` is the honest **similarity image** `H_XY B Hhc = U_JW B * Hhc * star (U_JW B)`
-  (so it is *determined* by `U_JW` and the supplied hard-core hopping `Hhc` — it
-  can no longer be silently aliased to `Hhc`);
-* and the **intertwining** `U_JW B * Hhc = H_XY B Hhc * U_JW B` holds for every
-  hard-core hopping `Hhc` on every path-configuration type `B`.
+* a sign field `epsilon : B → ℂ` that is a **genuine `±1` Z-string**
+  (`epsilon_sq : ε(b)² = 1`, `epsilon_real : star (ε b) = ε b`) — the data the
+  old version never had;
+* `U_JW` is **forced** to be `Matrix.diagonal epsilon` (`U_JW_eq_diagonal`), so it
+  is unitary *because* `ε² = 1` (the unitarity fields are derivable, but stated for
+  the consumer);
+* `H_XY` is the **entrywise string dressing** `H_XY Hhc a b = ε(a) · Hhc(a,b) · ε(b)`
+  (`H_XY_apply`), an **independent matrix** written down by an explicit entry
+  formula — it is *not* the product `U_JW · Hhc · star U_JW` by fiat (though it
+  equals it, as a *theorem*: `stringUnitary_conj_eq_xyHamiltonian` in ManyBody);
+* the **intertwining** `U_JW · Hhc = H_XY Hhc · U_JW` (`jordanWigner_image`);
+* and the decisive **non-degeneracy** `string_noncentral`: there *exists* a config
+  type `B` and a hopping `Hhc` with `U_JW · Hhc ≠ Hhc · U_JW`.  Because the
+  identity commutes with everything, `string_noncentral` makes `U_JW := 1`
+  **impossible** — the genuine Z-string is non-central.  (Equivalently it forces
+  `ε` non-constant: a constant `ε = ±1` gives `U_JW = ±1`, central.)
 
-With `U_JW`, `H_XY` fixed up front (not existentially chosen), an instance must
-exhibit a *concrete* unitary and *concrete* XY image — exactly the
-Lieb–Schultz–Mattis Z-string data.  The genuine instance is in
-`Graphplay.ManyBody` (the diagonal string unitary `stringUnitary` and the
-entry-wise-defined `xyHamiltonian`); see `instJordanWignerIntertwiner`.
+With `H_XY` pinned to the explicit `ε`-dressing and `U_JW` forced non-central, the
+old `U_JW := 1, H_XY := id` adversary is refuted: it fails `string_noncentral`.
+An instance must exhibit a concrete *non-central* string unitary and the *genuine
+dressed XY chain* — exactly the Lieb–Schultz–Mattis Z-string data.  The genuine
+instance is in `Graphplay.ManyBody` (`stringUnitary = diagonal stringSign`,
+`xyHamiltonian` the entrywise dressing); see `instJordanWignerIntertwiner`, whose
+non-centrality witness is a concrete `Fin 2` hop that the `Z`-string anticommutes
+with.
 
 Intended to discharge:
 `Graphplay.ManyBody.hardCore_eq_XY_oneDim` (and feeds `…xy_equitable_lift_oneDim`). -/
 class JordanWignerIntertwiner where
+  /-- The Jordan–Wigner string **sign** at a configuration index `b`: a genuine
+  `±1` real Z-string phase (pinned by `epsilon_sq`/`epsilon_real`).  This is the
+  data the tautological version lacked — without it `U_JW` could collapse to `1`. -/
+  epsilon : ∀ {B : Type} [Fintype B] [DecidableEq B], B → ℂ
   /-- The Jordan–Wigner string unitary, a **fixed function of the path data** `B`
-  (the path-configuration type) — chosen *outside* any existential.  This is the
-  data the old field illegitimately hid inside `∃ U`. -/
+  — forced to be `diagonal epsilon` (`U_JW_eq_diagonal`). -/
   U_JW : ∀ {B : Type} [Fintype B] [DecidableEq B], Matrix B B ℂ
-  /-- The XY hopping image, a **fixed function** of the path data `B` *and the
-  hard-core hopping matrix* `Hhc` — chosen outside the existential.  Because it is
-  a function `Hhc ↦ H_XY Hhc` fixed before `jordanWigner_image`, the instance can
-  no longer existentially smuggle `H_XY := Hhc`. -/
+  /-- The XY hopping image: an **independent matrix** fixed entrywise by the
+  string-sign dressing formula (`H_XY_apply`), *not* the conjugation product. -/
   H_XY : ∀ {B : Type} [Fintype B] [DecidableEq B], Matrix B B ℂ → Matrix B B ℂ
+  /-- The string sign squares to one: `ε(b)² = 1`.  Pins `ε` to a genuine `±1`. -/
+  epsilon_sq :
+    ∀ {B : Type} [Fintype B] [DecidableEq B] (b : B),
+      epsilon (B := B) b * epsilon (B := B) b = 1
+  /-- The string sign is real: `star (ε b) = ε b`. -/
+  epsilon_real :
+    ∀ {B : Type} [Fintype B] [DecidableEq B] (b : B),
+      star (epsilon (B := B) b) = epsilon (B := B) b
+  /-- `U_JW` is the **diagonal** of the string sign — the concrete `∏ₖ Zₖ^{…}`
+  Z-string operator, not a free matrix. -/
+  U_JW_eq_diagonal :
+    ∀ {B : Type} [Fintype B] [DecidableEq B],
+      U_JW (B := B) = Matrix.diagonal (epsilon (B := B))
   /-- `U_JW` is unitary: `star U · U = 1`. -/
   U_JW_unitary_left :
     ∀ {B : Type} [Fintype B] [DecidableEq B],
@@ -866,19 +896,29 @@ class JordanWignerIntertwiner where
   U_JW_unitary_right :
     ∀ {B : Type} [Fintype B] [DecidableEq B],
       U_JW (B := B) * star (U_JW (B := B)) = 1
-  /-- The XY image is the genuine **string conjugate** of the hard-core hopping —
-  *determined* by `U_JW` and the input `Hhc`, never aliasable to `Hhc` unless
-  `U_JW` is central.  For the genuine nontrivial Z-string `U_JW` this forces
-  `H_XY Hhc ≠ Hhc` on any non-commuting hopping. -/
-  H_XY_is_conjugate :
-    ∀ {B : Type} [Fintype B] [DecidableEq B] (Hhc : Matrix B B ℂ),
-      H_XY (B := B) Hhc = U_JW (B := B) * Hhc * star (U_JW (B := B))
+  /-- **The XY image is the explicit string-sign dressing** of the hard-core
+  hopping, entry by entry: `H_XY Hhc a b = ε(a) · Hhc(a,b) · ε(b)`.  This is the
+  genuine, *independently-written* XY chain Hamiltonian (the local
+  `½(XᵢXᵢ₊₁ + YᵢYᵢ₊₁)` term in the occupation basis), **not** the tautological
+  conjugation product `U · Hhc · star U`.  (That the two coincide is the *theorem*
+  `stringUnitary_conj_eq_xyHamiltonian` — not a definitional alias here.) -/
+  H_XY_apply :
+    ∀ {B : Type} [Fintype B] [DecidableEq B] (Hhc : Matrix B B ℂ) (a b : B),
+      H_XY (B := B) Hhc a b = epsilon (B := B) a * Hhc a b * epsilon (B := B) b
   /-- **The Jordan–Wigner intertwining** (Lieb–Schultz–Mattis): for the fixed
-  `U_JW`, `H_XY` and *every* hard-core hopping matrix `Hhc` on every
-  path-configuration type, `U_JW · Hhc = H_XY Hhc · U_JW`. -/
+  `U_JW`, the explicitly-dressed `H_XY`, and *every* hard-core hopping matrix `Hhc`
+  on every path-configuration type, `U_JW · Hhc = H_XY Hhc · U_JW`. -/
   jordanWigner_image :
     ∀ {B : Type} [Fintype B] [DecidableEq B] (Hhc : Matrix B B ℂ),
       U_JW (B := B) * Hhc = H_XY (B := B) Hhc * U_JW (B := B)
+  /-- **Non-degeneracy: the Z-string is non-central.**  There is a config type and
+  a hopping the string unitary fails to commute with.  Since the identity commutes
+  with everything, this **refutes** the old adversary `U_JW := 1` (equivalently it
+  forces `ε` non-constant — the genuine Jordan–Wigner string flips sign).  This is
+  the field that makes the class buy something. -/
+  string_noncentral :
+    ∃ (B : Type) (_ : Fintype B) (_ : DecidableEq B) (Hhc : Matrix B B ℂ),
+      U_JW (B := B) * Hhc ≠ Hhc * U_JW (B := B)
 
 /-! ## 8. Mančinska–Roberson: quantum chromatic = quantum-homomorphism
 
@@ -933,20 +973,39 @@ structure constants `pᵢⱼᵏ` with `Aᵢ Aⱼ = ∑ₖ pᵢⱼᵏ Aₖ`.
 Given a Schur-orthogonal family of Hermitian `0/1` matrices `basis : Fin (d+1) →
 Matrix V V ℂ` summing to `J = matJ`, this reconstructs an association scheme.
 
-**Opaque-predicate echo removed + spanning added.**  The previous field took an
-*opaque* `isAssocBasis basis` predicate (unfillable, hence a hidden echo) and
-returned identity + structure constants — but **not** the fact that the basis
-*spans* the Bose–Mesner algebra, which is precisely what the consumer
-(`Graphplay.Dowsing.CoherentAlgebra`, whose `S` is a `Submodule.span`) needs to
-identify the coherent subalgebra `S` with the scheme's algebra.  Now the field:
+**HONEST-EXTERNAL — and the stated antecedents are OVER-STRONG (documented,
+NOT silently faked).**  The field as written takes only `{Hermitian,
+Schur-orthogonal, sum = J, span = S}` and concludes the Bose–Mesner structure
+constants and the identity class.  An audit (this session) found those four
+antecedents are **insufficient — the conclusion is genuinely refutable**.
 
-* takes the *genuine structural hypotheses* of CCTVZ §3 directly — each `basis i`
-  is Hermitian (`(basis i)ᴴ = basis i`), the family is Schur(Hadamard)-orthogonal
-  (`basis i ∘ basis j = 0` for `i ≠ j`), and `∑ i, basis i = matJ` — instead of an
-  opaque predicate; and
-* returns identity class, nonnegative-integer structure constants (Bose–Mesner
-  closure under matrix product), **and** the spanning datum `bmSpan`: the basis
-  spans the coherent algebra `S` the consumer passes in.
+*Concrete counterexample (machine-checked).*  On `V = Fin 3` take the three
+classes `A₀ = I`, `A₁ = {0,1}`-edge, `A₂ = {0,2}∪{1,2}`-edges.  All three are
+Hermitian `0/1` matrices with disjoint supports (Schur-orthogonal) summing to
+`J`, and span `S := span{A₀,A₁,A₂}` — *every* stated antecedent holds.  But
+`A₁ · A₁ = E₀₀ + E₁₁`, whose `(0,0)`-entry is `1` while its `(2,2)`-entry is `0`;
+if it were `∑ₖ p₁₁ₖ • Aₖ` then comparing those two entries forces `p₁₁₀ = 1`
+*and* `p₁₁₀ = 0` — contradiction.  So **no** structure constants exist for this
+basis: the algebra is *not closed under matrix product*.
+
+*What is genuinely missing.*  Matrix-product closure (`Aᵢ Aⱼ ∈ S`) and "one class
+is the identity `I`" are **separate defining axioms of an association scheme /
+coherent configuration**; they do not follow from a Hermitian Schur-orthogonal
+`0/1` partition of `J`.  The genuine CCTVZ §3 theorem assumes them (the consumer
+holds product-closure via its `IsCoherent A` datum, and the identity-is-a-class
+fact is the scheme's `A₀ = I` axiom).  *Given* closure, the structure constants
+**are** non-negative integers (path-counts of the `0/1` classes) — that fragment
+is provable; only the closure and identity axioms are external.
+
+This class is therefore **deliberately given no instance** (none should be
+forged): a theorem assuming `[AssociationSchemeReconstruction]` is an *honest
+conditional theorem* listing the cited literature fact, but the present field
+shape is over-strong.  **Follow-up (touches the non-owned consumer call):** thread
+the product-closure hypothesis `(∀ i j, basis i * basis j ∈ span (range basis))`
+and the identity witness `(∃ i₀, basis i₀ = 1)` into the field — both already
+available at `CoherentAlgebra.BMAlgebra_characterization` from `hA : IsCoherent A`
+and the scheme axioms — so the structure-constant half becomes provable and the
+field becomes sound (non-refutable).
 
 Intended to discharge: the reverse direction of
 `Graphplay.Dowsing.CoherentAlgebra` association-scheme ↔ Bose–Mesner iff
@@ -955,7 +1014,15 @@ class AssociationSchemeReconstruction where
   /-- A Schur-orthogonal Hermitian `0/1` basis summing to `J` carries the
   multiplicative (Bose–Mesner) structure constants of an association scheme,
   including a distinguished identity class, **and spans** the coherent algebra
-  `S` it generates. -/
+  `S` it generates.
+
+  **OVER-STRONG (refutable) as stated** — see the class docstring for the
+  machine-checked `Fin 3` counterexample.  Matrix-product closure (the
+  coherent-algebra axiom) and "one class is `I`" are genuinely additional
+  association-scheme axioms, omitted from the antecedents below; *given* them the
+  ℕ-structure-constant extraction is provable, so the honest repair threads them
+  in (a follow-up touching the non-owned consumer call).  No instance is provided
+  (none should be: it would have to be vacuous on the refuting basis). -/
   reconstruct_structure_constants :
     ∀ {V : Type} [Fintype V] [DecidableEq V] (d : ℕ)
       (basis : Fin (d + 1) → Matrix V V ℂ)
@@ -1037,7 +1104,15 @@ game whose commuting value strictly beats the entire tensor supremum — which i
 exactly the JNVWY §3 compression-game content, out of scope to construct.  The
 old `Unit`-witnessed instance (`qVal := 0`, `qcVal := 1`) was deleted: it inhabited
 the previous *vacuous* `∃ two functions with 0 ≤ 1` field, which carried none of
-the Connes-embedding content. -/
+the Connes-embedding content.
+
+`AssociationSchemeReconstruction` is likewise **deliberately given no instance** —
+and its single field is *over-strong* (the conclusion is refutable from the stated
+antecedents; see its docstring for the machine-checked `Fin 3` counterexample).
+Forging an instance would mean inhabiting a refutable field, i.e. vacuity.  The
+genuinely-external content (matrix-product closure + the identity-class axiom of
+an association scheme) is named there, with the honest field-soundness repair
+flagged as a follow-up (it touches the non-owned consumer call). -/
 
 /-- **Childs–Goldstone dimension threshold, by iff-transitivity.**  Chaining
 optimality ⇔ IR-convergence with IR-convergence ⇔ `4 < d` yields optimality ⇔

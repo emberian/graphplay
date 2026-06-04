@@ -1979,6 +1979,98 @@ theorem stringUnitary_isUnitary_right (B : Type*) [Fintype B] [DecidableEq B] :
     funext (fun b => stringSign_sq b)]
   exact Matrix.diagonal_one
 
+/-- **The string-sign dressing of an arbitrary hopping matrix**: the entrywise
+real `±1` dressing `(xyDressing H) a b = ε(a) · H(a,b) · ε(b)`.  This is the
+*independently-written* XY-image operator — an explicit entry formula, **not** the
+conjugation product `U · H · star U`.  (That the two coincide is the theorem
+`stringUnitary_conj_eq_xyDressing` below; the class-level `H_XY` is pinned to this
+entry formula precisely so it can never be a tautological conjugation alias.) -/
+noncomputable def xyDressing {B : Type*} [Fintype B] [DecidableEq B]
+    (H : Matrix B B ℂ) : Matrix B B ℂ :=
+  Matrix.of fun a b => stringSign a * H a b * stringSign b
+
+@[simp] theorem xyDressing_apply {B : Type*} [Fintype B] [DecidableEq B]
+    (H : Matrix B B ℂ) (a b : B) :
+    xyDressing H a b = stringSign a * H a b * stringSign b := rfl
+
+/-- **The string-conjugate equals the entrywise dressing** (general form): the
+genuine similarity image `U · H · star U` of *any* matrix by the diagonal string
+unitary equals its explicit entrywise `±1` dressing.  This is the diagonal-
+conjugation-acts-entrywise fact; the hard-core specialisation
+`stringUnitary_conj_eq_xyHamiltonian` is the `H := NParticleAdjacency` case. -/
+theorem stringUnitary_conj_eq_xyDressing {B : Type*} [Fintype B] [DecidableEq B]
+    (H : Matrix B B ℂ) :
+    stringUnitary B * H * star (stringUnitary B) = xyDressing H := by
+  ext a b
+  rw [star_stringUnitary]
+  unfold stringUnitary xyDressing
+  rw [Matrix.mul_diagonal, Matrix.diagonal_mul]
+  rfl
+
+/-- **The Jordan–Wigner intertwining, general form** (Lieb–Schultz–Mattis): the
+diagonal string unitary intertwines *any* hopping matrix with its entrywise XY
+dressing, `U · H = (xyDressing H) · U`.  Proof: entrywise `ε(a) · H(a,b)` on both
+sides, since `ε(b)² = 1` cancels the trailing string factor on the right. -/
+theorem stringUnitary_intertwine {B : Type*} [Fintype B] [DecidableEq B]
+    (H : Matrix B B ℂ) :
+    stringUnitary B * H = xyDressing H * stringUnitary B := by
+  unfold stringUnitary xyDressing
+  ext a b
+  rw [Matrix.diagonal_mul, Matrix.mul_diagonal, Matrix.of_apply, mul_assoc,
+      stringSign_sq, mul_one]
+
+/-! #### The non-centrality witness (the Z-string genuinely fails to commute)
+
+The decisive non-vacuity datum for `JordanWignerIntertwiner.string_noncentral`:
+on any configuration type with `≥ 2` elements, the genuine Jordan–Wigner string
+unitary `U = diagonal ε` does **not** commute with a single off-diagonal hop
+between two sign-opposite configurations.  Concretely the `Fintype.equivFin`
+order singles out an index-`0` config (string sign `+1`) and an index-`1` config
+(string sign `−1`); the elementary hop `E` between them satisfies
+`(U·E)` carrying `ε(+) = +1` while `(E·U)` carries `ε(−) = −1`, so they differ.
+This is what refutes the old `U_JW := 1` adversary (the identity commutes with
+everything). -/
+
+/-- The index-`0` configuration in the fixed `equivFin` order (string sign `+1`). -/
+noncomputable def stringConfig0 (B : Type*) [Fintype B] [DecidableEq B] [Nonempty B] : B :=
+  (Fintype.equivFin B).symm ⟨0, by
+    have : 0 < Fintype.card B := Fintype.card_pos; omega⟩
+
+/-- The index-`1` configuration in the fixed `equivFin` order (string sign `−1`),
+available once `B` has at least two configurations. -/
+noncomputable def stringConfig1 (B : Type*) [Fintype B] [DecidableEq B]
+    (h2 : 2 ≤ Fintype.card B) : B :=
+  (Fintype.equivFin B).symm ⟨1, by omega⟩
+
+theorem stringSign_config0 (B : Type*) [Fintype B] [DecidableEq B] [Nonempty B] :
+    stringSign (stringConfig0 B) = 1 := by
+  unfold stringSign stringConfig0; rw [Equiv.apply_symm_apply]; simp
+
+theorem stringSign_config1 (B : Type*) [Fintype B] [DecidableEq B]
+    (h2 : 2 ≤ Fintype.card B) :
+    stringSign (stringConfig1 B h2) = -1 := by
+  unfold stringSign stringConfig1; rw [Equiv.apply_symm_apply]; simp
+
+/-- The elementary single-hop matrix `E_{0,1}` supported on the ordered pair
+`(stringConfig0, stringConfig1)` — a concrete hard-core-style hopping the string
+unitary fails to commute with. -/
+noncomputable def stringHop (B : Type*) [Fintype B] [DecidableEq B] [Nonempty B]
+    (h2 : 2 ≤ Fintype.card B) : Matrix B B ℂ :=
+  Matrix.of fun i j => if i = stringConfig0 B ∧ j = stringConfig1 B h2 then 1 else 0
+
+/-- **The Jordan–Wigner string unitary is non-central** (`≥ 2` configurations):
+`U · E ≠ E · U` for the elementary sign-opposite hop `E`.  This is the genuine
+non-degeneracy that refutes `U_JW := 1` in `JordanWignerIntertwiner`. -/
+theorem stringUnitary_noncentral (B : Type*) [Fintype B] [DecidableEq B] [Nonempty B]
+    (h2 : 2 ≤ Fintype.card B) :
+    stringUnitary B * stringHop B h2 ≠ stringHop B h2 * stringUnitary B := by
+  intro h
+  have key := congrFun (congrFun h (stringConfig0 B)) (stringConfig1 B h2)
+  unfold stringUnitary stringHop at key
+  rw [Matrix.diagonal_mul, Matrix.mul_diagonal, Matrix.of_apply,
+      if_pos ⟨rfl, rfl⟩, stringSign_config0, stringSign_config1] at key
+  norm_num at key
+
 end JordanWigner
 
 /-! ### The concrete XY-chain Hamiltonian as the Jordan–Wigner image
@@ -2058,33 +2150,44 @@ theorem stringUnitary_conj_eq_xyHamiltonian
 
 /-- **The Jordan–Wigner intertwiner — genuine instance (Lieb–Schultz–Mattis).**
 
-Supplies the corrected `JordanWignerIntertwiner` interface with **fixed, concrete
-functions of the path data** (chosen outside any existential, as the de-vacuoused
-class demands):
+Supplies the de-vacuoused `JordanWignerIntertwiner` interface with **fixed,
+concrete functions of the path data** that make the class buy something:
 
-* `U_JW B := JordanWigner.stringUnitary B` — the concrete diagonal Z-string
-  unitary (a *genuine* non-central unitary, not `1`);
-* `H_XY B Hhc := U · Hhc · star U` — the honest string **conjugate** of the
-  supplied hard-core hopping `Hhc`, *determined* by `U_JW` (so `H_XY_is_conjugate`
-  is `rfl`), never aliased to `Hhc`.
+* `epsilon B := JordanWigner.stringSign` — the genuine `±1` Z-string parity
+  `ε(b) = (−1)^{(order of b)}` (`epsilon_sq`/`epsilon_real` are the proven
+  `stringSign_sq`/`star_stringSign`);
+* `U_JW B := JordanWigner.stringUnitary B = diagonal stringSign` (so
+  `U_JW_eq_diagonal` is `rfl`) — a *genuine non-central* unitary, **not** `1`;
+* `H_XY B Hhc := JordanWigner.xyDressing Hhc` — the XY image written down by the
+  explicit **entrywise dressing** `ε(a)·Hhc(a,b)·ε(b)` (so `H_XY_apply` is `rfl`),
+  an independent operator that is *not* the tautological conjugation product
+  (that it equals `U · Hhc · star U` is the separate theorem
+  `stringUnitary_conj_eq_xyDressing`, not a definitional alias).
 
-The unitarity fields are the proven `stringUnitary_isUnitary_{left,right}`, and
-the intertwining `U · Hhc = (U · Hhc · U⁻¹) · U` is the algebraic identity
-`U · Hhc · (star U · U) = U · Hhc`, using `star U · U = 1`.  Discharges
+The intertwining `U · Hhc = (xyDressing Hhc) · U` is the genuine matrix identity
+`stringUnitary_intertwine` (entrywise `ε(a)·Hhc(a,b)`, using `ε(b)² = 1`).  The
+decisive `string_noncentral` field is the genuine non-degeneracy witness
+`stringUnitary_noncentral` on `B := Fin 2` (the Z-string fails to commute with a
+sign-opposite hop), which **refutes** the old `U_JW := 1` adversary.  Discharges
 `Graphplay.ManyBody.hardCore_eq_XY_oneDim` unconditionally. -/
 noncomputable instance instJordanWignerIntertwiner :
     Graphplay.LiteratureInterfaces.JordanWignerIntertwiner where
+  epsilon {B} _ _ := JordanWigner.stringSign
   U_JW {B} _ _ := JordanWigner.stringUnitary B
-  H_XY {B} _ _ := fun Hhc =>
-    JordanWigner.stringUnitary B * Hhc * star (JordanWigner.stringUnitary B)
+  H_XY {B} _ _ := JordanWigner.xyDressing
+  epsilon_sq {B} _ _ := JordanWigner.stringSign_sq
+  epsilon_real {B} _ _ := JordanWigner.star_stringSign
+  U_JW_eq_diagonal {B} _ _ := rfl
   U_JW_unitary_left {B} _ _ := JordanWigner.stringUnitary_isUnitary_left B
   U_JW_unitary_right {B} _ _ := JordanWigner.stringUnitary_isUnitary_right B
-  H_XY_is_conjugate {B} _ _ := fun _ => rfl
-  jordanWigner_image {B} _ _ Hhardcore := by
-    classical
-    -- `U · Hhc = (U · Hhc · star U) · U = U · Hhc · (star U · U) = U · Hhc`.
-    rw [Matrix.mul_assoc, Matrix.mul_assoc,
-        JordanWigner.stringUnitary_isUnitary_left B, Matrix.mul_one]
+  H_XY_apply {B} _ _ := fun _ _ _ => rfl
+  jordanWigner_image {B} _ _ := JordanWigner.stringUnitary_intertwine
+  string_noncentral :=
+    -- the genuine non-centrality witness on `Fin 2`: the Z-string fails to
+    -- commute with the elementary sign-opposite hop, so `U_JW ≠ 1`.
+    ⟨Fin 2, inferInstance, inferInstance,
+      JordanWigner.stringHop (Fin 2) (by simp),
+      JordanWigner.stringUnitary_noncentral (Fin 2) (by simp)⟩
 
 /-- **Jordan-Wigner equivalence (one-dimensional).**  On a path graph `P_n`,
 the hard-core boson model with nearest-neighbour hopping `G` is unitarily

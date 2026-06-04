@@ -557,6 +557,98 @@ class LaplacianDegreeAligned
   degree_eq_rowSum : ∀ x : V,
     ((G.degree x).re : ℂ) = ∑ j, P.symmQuotient (P.cells x) j
 
+/-! ### Discharging `LaplacianDegreeAligned`: the degree-balance is a *theorem*
+on the equal-cell-size scope.
+
+The class field is **not** a universal fact about all equitable partitions: with
+unequal cell sizes the symmetric-normalization factor `√|C_i|/√|C_j|` does *not*
+cancel, so `∑_j Q̃_{ij} ≠ ∑_j Q_{ij} = deg`.  But it *is* a genuine theorem on
+the all-cells-equal-size scope, and the canonical witness is the **discrete
+partition** (every cell a singleton, `cells = id`), for which `Q̃ = Q = A`
+exactly, so the symmetric-quotient row-sum is literally the degree.  Under real
+weights `Re(deg) = deg`, discharging the field with a real (non-aliased) proof.
+
+We build the discrete partition, prove `Q̃ = A` for it from first principles
+(`branching` collapses to the single off-cell vertex), and supply a concrete,
+non-vacuous `instance` for any `SimpleGraph.toWeighted` host (real `0/1`
+weights). -/
+
+/-- The **discrete partition** of `G`: index type `I = V`, `cells = id`, every
+cell a singleton.  Equitable trivially (the branching condition is reflexive
+once `cells x = cells y = i` forces `x = y`). -/
+noncomputable def discretePartition (G : WeightedGraph V) : EquitablePartition G V where
+  cells := id
+  uniform := by
+    intro i j x y hx hy
+    simp only [id] at hx hy
+    subst hx; subst hy
+    rfl
+
+/-- Every cell of the discrete partition is a singleton: `|C_i| = 1`. -/
+theorem discretePartition_cellCard (G : WeightedGraph V) (i : V) :
+    (discretePartition G).cellCard i = 1 := by
+  unfold EquitablePartition.cellCard discretePartition
+  simp only [id]
+  rw [Finset.filter_eq']
+  simp
+
+/-- The raw quotient of the discrete partition is the adjacency matrix itself:
+`Q i j = branching j i = ∑_z [z = j] A_{iz} = A_{ij}`. -/
+theorem discretePartition_quotient (G : WeightedGraph V) (i j : V) :
+    (discretePartition G).quotient i j = G.adj i j := by
+  rw [EquitablePartition.quotient_apply (discretePartition G) i j i rfl]
+  show (∑ z, if (id z : V) = j then G.adj i z else 0) = G.adj i j
+  rw [Finset.sum_eq_single j]
+  · simp
+  · intro b _ hbj; simp only [id_eq]; rw [if_neg hbj]
+  · intro h; exact absurd (Finset.mem_univ j) h
+
+/-- The symmetric quotient of the discrete partition is also the adjacency matrix:
+`Q̃ = D^{1/2} Q D^{-1/2}` with `D = diag(1)` is the identity rescaling. -/
+theorem discretePartition_symmQuotient (G : WeightedGraph V) (i j : V) :
+    (discretePartition G).symmQuotient i j = G.adj i j := by
+  unfold EquitablePartition.symmQuotient
+  rw [discretePartition_cellCard, discretePartition_cellCard, discretePartition_quotient]
+  simp
+
+/-- Hence the symmetric-quotient row-sum at `x` is exactly `degree x`. -/
+theorem discretePartition_rowSum (G : WeightedGraph V) (x : V) :
+    ∑ j, (discretePartition G).symmQuotient ((discretePartition G).cells x) j
+      = G.degree x := by
+  have hcx : (discretePartition G).cells x = x := rfl
+  rw [hcx, Finset.sum_congr rfl (fun j _ => discretePartition_symmQuotient G x j)]
+  rfl
+
+/-- **The degree-balance theorem on the discrete partition (real weights).**
+`(Re deg x : ℂ) = ∑_j Q̃_{(cells x) j}` — the exact `LaplacianDegreeAligned`
+field, proved (not aliased): the row-sum is `deg x` and `RealNonnegWeights`
+forces `deg x` real, so `Re(deg x) = deg x`. -/
+theorem discretePartition_degree_eq_rowSum (G : WeightedGraph V)
+    (hw : RealNonnegWeights G) (x : V) :
+    ((G.degree x).re : ℂ)
+      = ∑ j, (discretePartition G).symmQuotient ((discretePartition G).cells x) j := by
+  rw [discretePartition_rowSum]
+  have hdeg_im : (G.degree x).im = 0 := by
+    unfold WeightedGraph.degree
+    rw [Complex.im_sum]
+    exact Finset.sum_eq_zero fun w _ => (hw x w).1
+  apply Complex.ext <;> simp [hdeg_im]
+
+/-- **Non-vacuous instance.**  For any simple graph's `toWeighted` host (genuine
+real `0/1` weights), the discrete partition satisfies `LaplacianDegreeAligned`.
+The proof is the real degree-balance `discretePartition_degree_eq_rowSum`, with
+`RealNonnegWeights` discharged from the `0/1` adjacency — so the interlacing
+`equitable_laplacian_interlacing` applies to an actual graph, not vacuously. -/
+instance discretePartition_laplacianDegreeAligned
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
+    LaplacianDegreeAligned (discretePartition (Graphplay.SimpleGraph.toWeighted G)) where
+  degree_eq_rowSum x := by
+    refine discretePartition_degree_eq_rowSum _ ?_ x
+    intro u w
+    show ((G.adjMatrix ℂ) u w).im = 0 ∧ 0 ≤ ((G.adjMatrix ℂ) u w).re
+    rw [_root_.SimpleGraph.adjMatrix_apply]
+    by_cases h : G.Adj u w <;> simp [h]
+
 /-- **Laplacian cell-inflate intertwining.**  Under `LaplacianDegreeAligned`, the
 full Laplacian carries the cell-inflate of `v` to the cell-inflate of the
 quotient-Laplacian action `(D_Q − Q) *ᵥ v`. -/

@@ -1690,52 +1690,35 @@ def pathLeft {n : ℕ} (hn : 1 ≤ n) : Fin n := ⟨0, by omega⟩
 /-- The "right" endpoint `n - 1` of `pathGraph n`, valid for `n ≥ 1`. -/
 def pathRight {n : ℕ} (hn : 1 ≤ n) : Fin n := ⟨n - 1, by omega⟩
 
-/-- **Corrected statement.** The placeholder `True ↔ (n + 1) ∣ 6` that
-previously occupied this slot is *false* (e.g. at `n = 3` it reads
-`True ↔ (4 ∣ 6)`, i.e. `True ↔ False`), and the `(n+1) ∣ 6` folklore
-refers to a *different normalization* (it counts edges/qubits, not
-vertices, and conflates PST with PGST).  The genuine
-Christandl–Datta–Dorlas–Ekert–Kay–Landahl (2005) / Godsil classification
-of *endpoint-to-endpoint* perfect state transfer on the **unweighted**
-path is:
+/-! **Endpoint-to-endpoint PST classification of the unweighted path — RELOCATED
+and CLOSED (axiom-clean) in `Graphplay.StdLib.Path`.**
 
-> `P_n` (the path on `n` vertices, `n ≥ 2`) admits endpoint PST at some
-> time `τ` **iff** `n = 2` or `n = 3`.
+The genuine Christandl–Datta–Dorlas–Ekert–Kay–Landahl (2005) / Coutinho result is
 
-(Coutinho's thesis 2014, p. 2: "`P_n` admits perfect state transfer if
-and only if `n = 2` or `n = 3`"; Godsil–Kirkland–Severini–Smith,
-arXiv:1201.4822, show every longer unweighted path has at best *pretty
-good* state transfer.)
+> `P_n` (the path on `n` vertices, `n ≥ 2`) admits endpoint PST at some time `τ`
+> **iff** `n = 2` or `n = 3`.
 
-We state the mathematically-correct biconditional.  Its forward
-direction is the ratio-condition obstruction (Godsil 2012, Thm 2.2:
-PST forces all path eigenvalues `2 cos(kπ/(n+1))` onto a common
-arithmetic progression, which by Niven's theorem fails for `n ≥ 4`);
-its backward direction is the explicit `K_2` / `P_3` matrix-exponential
-computation.  Both directions need the spectral-decomposition bridge
-`evolve τ = ∑_θ e^{-iτθ} E_θ` in coordinates, which lives in the
-sibling `Graphplay.PST.Cospectrality` module that is not yet
-importable here; hence the proof is an *honest* `sorry` attached to a
-*true* statement (a strict improvement over the previous false one). -/
-theorem isPST_exists_path_iff (n : ℕ) (hn : 2 ≤ n) :
-    (∃ τ : ℝ, IsPST (pathGraph n) (pathLeft (by omega)) (pathRight (by omega)) τ)
-      ↔ (n = 2 ∨ n = 3) := by
-  -- STATUS.  The forward number-theoretic obstruction is now PROVEN in the
-  -- sibling module: `Graphplay.pathEigenvalue_not_arithmeticProgression` shows
-  -- (axiom-cleanly, via Niven `irrational_cos_pi_div`) that the path eigenvalues
-  -- `2cos(kπ/(n+1))` admit NO arithmetic progression for `n ≥ 4` — i.e. the
-  -- Godsil ratio condition fails, so no PST.  The two remaining residuals are
-  -- concrete and orthogonal to this re-dispatch's exact-period bridge:
-  --  • forward `n ≥ 4 → ¬PST`: assemble `pathEigenvalue_not_arithmeticProgression`
-  --    with the (downstream) periodicity necessity `isPST_imp_isGodsilRatio_of_isSymm`;
-  --  • backward `n ∈ {2,3} → PST`: the explicit `K_2`/`P_3` matrix-exponential
-  --    computation.
-  -- Citation: Christandl–Datta–Dorlas–Ekert–Kay–Landahl, Phys. Rev. A
-  -- 71 (2005) 032312; Coutinho thesis (2014) §2.4; Godsil–Kirkland–
-  -- Severini–Smith, arXiv:1201.4822.
-  -- HONEST `sorry` on a TRUE statement (the explicit endpoint computation +
-  -- the downstream periodicity necessity are the irreducible residues here).
-  sorry
+Its forward direction is the Godsil ratio obstruction (PST forces all path
+eigenvalues `2cos(kπ/(n+1))` onto a common arithmetic progression, which by
+Niven's theorem fails for `n ≥ 4`), and its backward direction is the explicit
+`K₂`/`P₃` matrix-exponential.  The Niven obstruction
+`pathEigenvalue_not_arithmeticProgression` lives **downstream** of this module
+(in `Graphplay.PST.Cospectrality`, which imports `GodsilRatio`), so assembling
+the full biconditional *here* would be circular.
+
+It is therefore stated and **fully proven** (no `sorry`) one level down, in
+`Graphplay.StdLib.Path`, which imports *both* `GodsilRatio` and `Cospectrality`:
+* `Graphplay.StdLib.isPST_exists_Path_iff` — the `Path n` (`Fin (n+1)`) form, and
+* `Graphplay.StdLib.isPST_exists_pathGraph_iff` — the `pathGraph n` (`Fin n`) form,
+  i.e. the exact statement this slot used to hold, transported across
+  `isPST_congr_adj`.
+
+(Earlier this slot carried an honest `sorry` on the true biconditional; the
+relocation discharges it genuinely.)
+
+Reference: Christandl–Datta–Dorlas–Ekert–Kay–Landahl, Phys. Rev. A 71 (2005)
+032312; Coutinho thesis (2014) §2.4; Godsil–Kirkland–Severini–Smith,
+arXiv:1201.4822. -/
 
 end Path
 
