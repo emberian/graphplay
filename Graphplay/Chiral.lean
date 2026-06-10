@@ -30,6 +30,7 @@ import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Graphplay.Weighted
 import Graphplay.Equitable
+import Graphplay.Spectral
 
 universe u v w
 
@@ -237,44 +238,59 @@ def CellUniformMixing (B : Bundle V I) (t : ℝ) : Prop :=
     ∀ y : V, ‖B.graph.evolve t y x‖ = ‖B.graph.evolve t y x'‖
 
 /--
-**Chiral PST/mixing optimization theorem (statement).**
+**Chiral mixing/PST optimization theorem (characteristic-isometry intertwining).**
 
-Let `B` be a bundle with regular fibers and biregular couplings. Then for
-any chiral signing `s` that is cross-constant on the cells of `B` (so
-phases depend only on the quotient pair) and any time `t ≥ 0`, the signed
-bundle `B.signedBy s _` is cell-uniformly mixing at time `t` iff the
-*quotient* chiral phasing `τ : I → I → ℂ` induces (cell-)uniform mixing of
-the quotient weighted graph at time `t`.
+Let `B` be a bundle (regular fibers, biregular couplings) and let `s` be a
+chiral signing that is cross-constant on the cells of `B`, so its phases
+depend only on the quotient pair. By `signedBy_preserves_equitable` the cell
+partition stays equitable for the *signed* graph, so the signed bundle
+`B.signedBy s h` carries its own quotient and symmetric quotient
+`Q̃ = D^{1/2} Q D^{-1/2}`.
 
-In particular, the **optimal chiral phasing for cell-uniform PST/mixing of
-a bundle is determined by a chiral phasing on the quotient.**
+The theorem is the **characteristic-isometry intertwining** `S^* U(t) S =
+U_{quot}(t)` of Lemma 2 of Levine et al. (2605.04414), realized at the level
+of cell-inflated vectors: for every quotient-side vector `v : I → ℂ` and time
+`t`, the *signed host* walk acting on the inflation of `v` equals the
+inflation of the *signed quotient* walk acting on `v`,
 
-This is the new theorem motivated by Levine et al. (2605.04414): there the
-specific quotient is `K_4 → K_1 + K_3`, and the optimal `K_4` signing is
-*precisely* the one matching the conical-reduction trick (Theorem 2 there).
-The proof, via the characteristic-isometry intertwining `S^* U(t) S =
-U_{quot}(t)` and the equitable-preservation lemma above, is deferred.
--/
+  `U_host(t) · (Inflate v) = Inflate (exp(-i t Q̃) · v)`.
+
+Equivalently, the cell-uniform subspace is invariant under the signed host
+evolution, and the restricted dynamics is *exactly* the quotient walk driven by
+the chiral phasing on `Q̃`. Thus the **cell-uniform chiral mixing/PST behaviour
+of the bundle is determined entirely by a chiral phasing on the quotient** —
+the algebraic content motivated by Levine et al., whose `K_4 → K_1 + K_3`
+example is the optimal instance.
+
+Provenance note. An earlier formulation stated this as an *iff* between the
+per-vertex predicate `CellUniformMixing` (equal transition *modulus*
+`‖U(t) y x‖ = ‖U(t) y x'‖` for within-cell sources `x, x'`) and modulus-flat
+columns of the quotient evolution. That iff is **false**: equitable partitions
+control the cell-uniform *subspace* (the inflated vectors below), not the
+individual per-vertex amplitudes. The degenerate witness is the singleton
+(discrete) partition `I = V`: its `CellUniformMixing` is vacuously true (a
+within-cell pair forces `x = x'`), while its `symmQuotient` is the full host
+adjacency, whose evolution has non-flat column moduli at generic `t`
+(e.g. a `K_2` host has column moduli `cos t` vs `sin t`). The intertwining
+below is the genuine, unconditional statement these two sides were reaching
+for. -/
 theorem chiral_mixing_optimization
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (B : Bundle V I) (s : ChiralSigning V)
-    (h : s.CrossConstant B.partition.cells) (t : ℝ) :
-    (B.signedBy s h).CellUniformMixing t ↔
-      -- "the chirally-signed quotient `Q̃ = D^{1/2} Q D^{-1/2}` achieves
-      -- cell-uniform mixing": the quotient evolution
-      -- `exp(-i t Q̃)` has equal-modulus column entries, i.e. every two
-      -- quotient vertices `k, k'` send the same modulus into each `l`.
-      (∀ k k' l : I,
-        ‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) •
-            (B.signedBy s h).partition.symmQuotient)) l k‖
-          = ‖(NormedSpace.exp (-(Complex.I * (t : ℂ)) •
-            (B.signedBy s h).partition.symmQuotient)) l k'‖) := by
-  -- The real content (the characteristic-isometry intertwining
-  -- `S^* U(t) S = U_quot(t)` of Lemma 2 of Levine et al., combined with the
-  -- equitable-preservation lemma `signedBy_preserves_equitable`) is deferred:
-  -- this is an honest theorem-level `sorry`.
-  sorry
+    (h : s.CrossConstant B.partition.cells) (t : ℝ) (v : I → ℂ) :
+    ((B.signedBy s h).graph.evolve t).mulVec
+        ((B.signedBy s h).partition.cellInflateVec v)
+      = (B.signedBy s h).partition.cellInflateVec
+          ((NormedSpace.exp (-(Complex.I * (t : ℂ)) •
+              (B.signedBy s h).partition.symmQuotient)).mulVec v) := by
+  -- The signed host evolution `exp(-i t A^σ)` and `evolve_cellInflateVec` of the
+  -- (equitable, by `signedBy_preserves_equitable`) signed partition coincide up
+  -- to the scalar identity `-(I·t) = -t·I`; this is the intertwining.
+  have hscal : -(Complex.I * (t : ℂ)) = -(t : ℂ) * Complex.I := by ring
+  unfold WeightedGraph.evolve
+  rw [hscal]
+  exact (B.signedBy s h).partition.evolve_cellInflateVec v t
 
 end Bundle
 

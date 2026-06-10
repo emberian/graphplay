@@ -250,6 +250,182 @@ noncomputable def cellInflate (P : EquitablePartition G I) (M : Matrix I I ℂ) 
   funext v w
   simp [cellInflate]
 
+/-! ### The `cellInflate` algebra.
+
+`cellInflate` is — up to the support idempotent of empty cells — an embedding
+of the quotient matrix algebra into `Matrix V V ℂ`: it is ℂ-linear, it sends
+products to products through the **support matrix** `cellSupport` (the
+diagonal idempotent remembering which cells are inhabited), and its range is
+closed under `conjTranspose`.  These closure laws are what let open-system
+(Lindblad) generators built from inflated operators be read off on the
+quotient; see `Graphplay.Dowsing.NoiseEquitable`. -/
+
+/-- The cell of an actual vertex is nonempty, so its cardinality is positive. -/
+theorem cellCard_cells_pos (P : EquitablePartition G I) (v : V) :
+    0 < P.cellCard (P.cells v) := by
+  unfold cellCard
+  rw [Nat.cast_pos, Finset.card_pos]
+  exact ⟨v, by simp⟩
+
+/-- Entrywise formula for `cellInflate`: the `if`-guard in the definition never
+fires, because the cell of the (actual) column vertex `w` contains `w`. -/
+theorem cellInflate_apply (P : EquitablePartition G I) (M : Matrix I I ℂ) (v w : V) :
+    P.cellInflate M v w
+      = M (P.cells v) (P.cells w) / ((P.cellCard (P.cells w) : ℝ) : ℂ) := by
+  show (if P.cellCard (P.cells w) = 0 then 0
+      else M (P.cells v) (P.cells w) / ((P.cellCard (P.cells w) : ℝ) : ℂ)) = _
+  rw [if_neg (P.cellCard_cells_pos w).ne']
+
+/-- `cellInflate` is additive. -/
+theorem cellInflate_add (P : EquitablePartition G I) (A B : Matrix I I ℂ) :
+    P.cellInflate (A + B) = P.cellInflate A + P.cellInflate B := by
+  funext v w
+  simp only [cellInflate_apply, Matrix.add_apply]
+  rw [add_div]
+
+/-- `cellInflate` respects subtraction. -/
+theorem cellInflate_sub (P : EquitablePartition G I) (A B : Matrix I I ℂ) :
+    P.cellInflate (A - B) = P.cellInflate A - P.cellInflate B := by
+  funext v w
+  simp only [cellInflate_apply, Matrix.sub_apply]
+  rw [sub_div]
+
+/-- `cellInflate` commutes with scalar multiplication. -/
+theorem cellInflate_smul (P : EquitablePartition G I) (c : ℂ) (A : Matrix I I ℂ) :
+    P.cellInflate (c • A) = c • P.cellInflate A := by
+  funext v w
+  simp only [cellInflate_apply, Matrix.smul_apply, smul_eq_mul, mul_div_assoc]
+
+/-- The **support idempotent** of the partition: the diagonal `I × I` matrix
+that is `1` on inhabited cells and `0` on empty ones.  When `cells` is
+surjective (no empty cells) this is the identity, and `cellInflate` is then a
+genuine multiplicative map (`cellInflate_mul`). -/
+noncomputable def cellSupport (P : EquitablePartition G I) : Matrix I I ℂ :=
+  Matrix.diagonal (fun k => if P.cellCard k = 0 then 0 else 1)
+
+/-- **Multiplicative closure law.**  The product of two inflated matrices is
+again inflated, with quotient-level product taken through the support
+idempotent: `cellInflate A * cellInflate B = cellInflate (A * cellSupport * B)`.
+
+The `(v, w)` entry of the product is a sum over `z` grouped by cells; the
+`|C_k|` vertices of cell `k` each contribute `A (cells v) k / |C_k| ·
+B k (cells w) / |C_(cells w)|`, so the cell sizes cancel and only the
+*inhabited* cells `k` survive — which is exactly multiplication through
+`cellSupport` on the quotient. -/
+theorem cellInflate_mul (P : EquitablePartition G I) (A B : Matrix I I ℂ) :
+    P.cellInflate A * P.cellInflate B = P.cellInflate (A * P.cellSupport * B) := by
+  classical
+  funext v w
+  rw [Matrix.mul_apply, cellInflate_apply]
+  -- Expand the quotient-side numerator through the diagonal support.
+  have hRHS : (A * P.cellSupport * B) (P.cells v) (P.cells w)
+      = ∑ k, A (P.cells v) k * (if P.cellCard k = 0 then 0 else 1) * B k (P.cells w) := by
+    rw [Matrix.mul_apply]
+    exact Finset.sum_congr rfl fun k _ => by rw [cellSupport, Matrix.mul_diagonal]
+  rw [hRHS, Finset.sum_div]
+  -- Group the vertex-side sum by cells.
+  rw [show (∑ z, P.cellInflate A v z * P.cellInflate B z w)
+      = ∑ k, ∑ z ∈ Finset.univ.filter (fun z : V => P.cells z = k),
+          P.cellInflate A v z * P.cellInflate B z w from (Finset.sum_fiberwise _ _ _).symm]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  -- Each fiber is constant; its size is `|C_k|`, cancelling the `1/|C_k|`.
+  have hterm : ∀ z ∈ Finset.univ.filter (fun z : V => P.cells z = k),
+      P.cellInflate A v z * P.cellInflate B z w
+        = A (P.cells v) k / ((P.cellCard k : ℝ) : ℂ)
+            * (B k (P.cells w) / ((P.cellCard (P.cells w) : ℝ) : ℂ)) := by
+    intro z hz
+    rw [Finset.mem_filter] at hz
+    rw [cellInflate_apply, cellInflate_apply, hz.2]
+  rw [Finset.sum_congr rfl hterm, Finset.sum_const]
+  have hcard : P.cellCard k
+      = ((Finset.univ.filter (fun z : V => P.cells z = k)).card : ℝ) := rfl
+  by_cases hk : P.cellCard k = 0
+  · -- empty cell: zero vertices on the left, support kills it on the right.
+    have h0 : (Finset.univ.filter (fun z : V => P.cells z = k)).card = 0 := by
+      exact_mod_cast hcard ▸ hk
+    rw [h0, if_pos hk]
+    simp
+  · -- inhabited cell: `|C_k| · (A/|C_k|) · (B/|C_j|) = A·B/|C_j|`.
+    rw [if_neg hk, nsmul_eq_mul]
+    have hkC : ((P.cellCard k : ℝ) : ℂ) ≠ 0 := by
+      simpa using hk
+    rw [show ((Finset.univ.filter (fun z : V => P.cells z = k)).card : ℂ)
+        = ((P.cellCard k : ℝ) : ℂ) by rw [hcard]; norm_cast]
+    field_simp
+
+/-- The quotient-side companion of `conjTranspose` under `cellInflate`:
+`cellAdjoint M = D · Mᴴ · D⁻¹` on the inhabited cells, where `D = diag |C_i|`
+(empty-cell rows are zeroed).  See `cellInflate_conjTranspose`. -/
+noncomputable def cellAdjoint (P : EquitablePartition G I) (M : Matrix I I ℂ) :
+    Matrix I I ℂ :=
+  Matrix.of fun i j =>
+    if P.cellCard i = 0 then 0
+    else ((P.cellCard j : ℝ) : ℂ) * star (M j i) / ((P.cellCard i : ℝ) : ℂ)
+
+/-- **Adjoint closure law.**  The conjugate-transpose of an inflated matrix is
+again inflated: `(cellInflate M)ᴴ = cellInflate (cellAdjoint M)`.  (`cellInflate`
+does not commute with `ᴴ` on the nose because of the `1/|C_j|` column
+normalization; `cellAdjoint` is exactly the `D`-conjugated adjoint that
+absorbs it.) -/
+theorem cellInflate_conjTranspose (P : EquitablePartition G I) (M : Matrix I I ℂ) :
+    (P.cellInflate M)ᴴ = P.cellInflate (P.cellAdjoint M) := by
+  funext v w
+  rw [Matrix.conjTranspose_apply, cellInflate_apply, cellInflate_apply, cellAdjoint,
+    Matrix.of_apply, if_neg (P.cellCard_cells_pos v).ne']
+  rw [star_div₀, show star (((P.cellCard (P.cells v) : ℝ)) : ℂ)
+      = ((P.cellCard (P.cells v) : ℝ) : ℂ) from Complex.conj_ofReal _]
+  have hw : ((P.cellCard (P.cells w) : ℝ) : ℂ) ≠ 0 := by
+    simpa using (P.cellCard_cells_pos w).ne'
+  have hv : ((P.cellCard (P.cells v) : ℝ) : ℂ) ≠ 0 := by
+    simpa using (P.cellCard_cells_pos v).ne'
+  field_simp
+
+/-- The vertex–cell **inclusion matrix** `C : Matrix V I ℂ`,
+`C v k = [cells v = k]`.  Columns are the (unnormalized) cell indicators. -/
+def cellInclusion (P : EquitablePartition G I) : Matrix V I ℂ :=
+  Matrix.of fun v k => if P.cells v = k then 1 else 0
+
+/-- **Intertwining law**: an inflated operator acts on the inclusion through
+its quotient, `cellInflate M * cellInclusion = cellInclusion * (M * cellSupport)`.
+This is the matrix form of "the columns of `cellInclusion` span an invariant
+subspace on which `cellInflate M` acts as `M`" (up to the support idempotent),
+and is what pushes through the exponential series for spectral descent. -/
+theorem cellInflate_mul_cellInclusion (P : EquitablePartition G I) (M : Matrix I I ℂ) :
+    P.cellInflate M * P.cellInclusion = P.cellInclusion * (M * P.cellSupport) := by
+  classical
+  funext v k
+  rw [Matrix.mul_apply, Matrix.mul_apply]
+  -- Right side: the inclusion picks out the row `cells v` of `M * cellSupport`.
+  have hRHS : (∑ l, P.cellInclusion v l * (M * P.cellSupport) l k)
+      = M (P.cells v) k * (if P.cellCard k = 0 then 0 else 1) := by
+    rw [Finset.sum_eq_single (P.cells v)]
+    · rw [cellInclusion, Matrix.of_apply, if_pos rfl, one_mul, cellSupport,
+        Matrix.mul_diagonal]
+    · intro l _ hl
+      rw [cellInclusion, Matrix.of_apply, if_neg (fun h => hl h.symm), zero_mul]
+    · intro h; exact absurd (Finset.mem_univ _) h
+  rw [hRHS]
+  -- Left side: sum the row-`v` entries of `cellInflate M` over the cell `C_k`.
+  have hterm : ∀ w : V, P.cellInflate M v w * P.cellInclusion w k
+      = if P.cells w = k then M (P.cells v) k / ((P.cellCard k : ℝ) : ℂ) else 0 := by
+    intro w
+    rw [cellInflate_apply, cellInclusion, Matrix.of_apply]
+    by_cases hw : P.cells w = k
+    · rw [if_pos hw, if_pos hw, hw, mul_one]
+    · rw [if_neg hw, if_neg hw, mul_zero]
+  rw [Finset.sum_congr rfl (fun w _ => hterm w), ← Finset.sum_filter, Finset.sum_const]
+  have hcard : P.cellCard k
+      = ((Finset.univ.filter (fun w : V => P.cells w = k)).card : ℝ) := rfl
+  by_cases hk : P.cellCard k = 0
+  · have h0 : (Finset.univ.filter (fun w : V => P.cells w = k)).card = 0 := by
+      exact_mod_cast hcard ▸ hk
+    rw [h0, if_pos hk, zero_smul, mul_zero]
+  · rw [if_neg hk, nsmul_eq_mul, mul_one]
+    have hkC : ((P.cellCard k : ℝ) : ℂ) ≠ 0 := by simpa using hk
+    rw [show ((Finset.univ.filter (fun w : V => P.cells w = k)).card : ℂ)
+        = ((P.cellCard k : ℝ) : ℂ) by rw [hcard]; norm_cast]
+    field_simp
+
 /-! ### Invariance of the cell-uniform subspace.
 
 The combinatorial heart of the theory.  The statement below says: applying

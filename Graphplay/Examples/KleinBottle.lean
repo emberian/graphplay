@@ -9,18 +9,15 @@ encode a Klein-bottle embedding we need a *signed rotation system*,
 adjoining to each edge an orientation-reversal flag (the "twist" or
 "signature").
 
-This file introduces a lightweight `SignedCombinatorialMap` structure
-(placeholder — the face-cycle computation requires walking signed faces
-rather than the orbits of `ρ ∘ σ`), together with one concrete example: the
-standard 4-vertex Klein-bottle map obtained by identifying opposite sides
-of a square with one pair reversed.
+This file introduces a lightweight `SignedCombinatorialMap` structure with
+face counting via the orientation double cover (faces are `signedFacePerm`
+orbits on `E × Bool`, halved), together with one concrete example: the
+1-vertex 2-edge Klein-bottle map obtained by identifying opposite sides
+of a square with one pair reversed (`abab⁻¹`).
 
-We do *not* attempt to compute faces or genus in the non-orientable case
-here; that needs a small extension to the orbit machinery.  We only:
-
-* introduce the type `SignedCombinatorialMap`,
-* expose the example,
-* state the expected Euler characteristic.
+Main result: `klein_eulerChar` — the signed Euler characteristic of this map
+is `0`, proved by exhibiting the explicit two-cycle decomposition of its
+signed face permutation on the 8-element double cover.
 
 References: Mohar-Thomassen *Graphs on Surfaces* §3.3; Gross-Tucker
 *Topological Graph Theory* §3.2 (signed rotation projection).
@@ -246,22 +243,75 @@ example : kleinMap.numNegativeEdges = 1 := by decide
 /-- Expected Euler characteristic of the Klein bottle. -/
 def expectedEulerChar : ℤ := 0
 
-/-- The Klein bottle has non-orientable genus `2` (and Euler char `0`).
+/-! ### The explicit cycle decomposition of the signed face permutation
 
-With the concrete `numFacesSigned` (orientation-double-cover orbit count / 2)
-this is now a genuine arithmetic claim: `χ = |V| - |E|/2 + F = 1 - 2 + F`, so
-`χ = 0` is equivalent to `F = 1`, i.e. `numFacesSigned kleinMap = 1`.  The face
-count reduces to counting the `signedFacePerm`-orbits on the 8-element double
-cover `Fin 4 × Bool` and halving; tracing the single `abab⁻¹` boundary walk
-gives the two orientation-reversed orbits of one geometric face.
+Tracing `signedFacePerm kleinMap` on all eight signed darts of the orientation
+double cover `Fin 4 × Bool` yields exactly two disjoint 4-cycles — the two
+orientation-reversed lifts of the single `abab⁻¹` face:
 
-The orbit count goes through `Equiv.Perm.cycleFactorsFinset`, which is
-`noncomputable`, so this last numeric reduction is not a kernel `decide`; we
-record it as an honest theorem-`sorry`. -/
+* `(0,+) → (3,+) → (0,−) → (2,−) → (0,+)`
+* `(1,+) → (2,+) → (1,−) → (3,−) → (1,+)`.
+
+`Equiv.Perm.cycleFactorsFinset` is noncomputable, so instead of `decide` we
+exhibit the two cycles as `List.formPerm`s, check the (decidable) equality of
+permutations pointwise, and pin the cycle-factor count via the
+`Disjoint.cycleFactorsFinset_mul_eq_union` API. -/
+
+/-- First lift of the unique face: the 4-cycle `(0,+) (3,+) (0,−) (2,−)`. -/
+def faceCycleA : Equiv.Perm (D × Bool) :=
+  [((0 : D), true), ((3 : D), true), ((0 : D), false), ((2 : D), false)].formPerm
+
+/-- Second (orientation-reversed) lift: the 4-cycle `(1,+) (2,+) (1,−) (3,−)`. -/
+def faceCycleB : Equiv.Perm (D × Bool) :=
+  [((1 : D), true), ((2 : D), true), ((1 : D), false), ((3 : D), false)].formPerm
+
+/-- The signed face permutation of the Klein-bottle map is exactly the product
+of the two explicit face-lift cycles. -/
+theorem signedFacePerm_eq_cycles :
+    kleinMap.signedFacePerm = faceCycleA * faceCycleB :=
+  Equiv.ext (by decide)
+
+theorem faceCycleA_isCycle : faceCycleA.IsCycle :=
+  List.isCycle_formPerm (by decide) (by decide)
+
+theorem faceCycleB_isCycle : faceCycleB.IsCycle :=
+  List.isCycle_formPerm (by decide) (by decide)
+
+theorem faceCycles_disjoint : Equiv.Perm.Disjoint faceCycleA faceCycleB :=
+  Equiv.Perm.disjoint_iff_eq_or_eq.mpr (by decide)
+
+/-- The signed face permutation has exactly two cycle factors: the two
+orientation-reversed lifts of the single face. -/
+theorem klein_cycleFactors_card :
+    kleinMap.signedFacePerm.cycleFactorsFinset.card = 2 := by
+  rw [signedFacePerm_eq_cycles,
+    faceCycles_disjoint.cycleFactorsFinset_mul_eq_union,
+    faceCycleA_isCycle.cycleFactorsFinset_eq_singleton,
+    faceCycleB_isCycle.cycleFactorsFinset_eq_singleton]
+  have hne : faceCycleA ≠ faceCycleB := fun h =>
+    absurd (congrArg (fun p => p ((0 : D), true)) h) (by decide)
+  simp [hne]
+
+/-- The Klein-bottle map has one face: two `signedFacePerm`-orbits on the
+double cover (and no fixed points), halved. -/
+theorem klein_numFacesSigned : kleinMap.numFacesSigned = 1 := by
+  have hfix : ((Finset.univ : Finset (D × Bool)).filter
+      (fun x => kleinMap.signedFacePerm x = x)).card = 0 := by decide
+  show (kleinMap.signedFacePerm.cycleFactorsFinset.card +
+    ((Finset.univ : Finset (D × Bool)).filter
+      (fun x => kleinMap.signedFacePerm x = x)).card) / 2 = 1
+  rw [klein_cycleFactors_card, hfix]
+
+/-- The Klein bottle has Euler characteristic `0` (non-orientable genus `2`):
+`χ = |V| - |E| + F = 1 - 2 + 1 = 0`, with the face count obtained from the
+explicit two-cycle decomposition of the signed face permutation on the
+orientation double cover. -/
 theorem klein_eulerChar : SignedCombinatorialMap.eulerCharSigned kleinMap
     = expectedEulerChar := by
-  -- Reduces to `numFacesSigned kleinMap = 1`; see the docstring.
-  sorry
+  show (Fintype.card V : ℤ) - (Fintype.card D / 2 : ℤ)
+      + (kleinMap.numFacesSigned : ℤ) = expectedEulerChar
+  rw [klein_numFacesSigned]
+  rfl
 
 end KleinBottle
 end Examples

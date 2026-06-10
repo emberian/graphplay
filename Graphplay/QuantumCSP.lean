@@ -23,8 +23,9 @@ The headline references are:
 * Tsirelson, "Quantum generalizations of Bell's inequality" (1980) —
   the `2√2` bound on CHSH.
 
-Every nontrivial claim is `sorry`; this scaffold lays out the *shape*
-of the loop closure between non-local-game value and the χ_q chain.
+The deep external results enter as cited typeclass hypotheses (no bare
+`sorry`s); this file lays out the *shape* of the loop closure between
+non-local-game value and the χ_q chain.
 
 Canonical types: `RelStructure` (Relational.lean), `QuantumGraph`
 (QuantumGraph.lean), `quantumChromaticNumber` (Relational.lean).

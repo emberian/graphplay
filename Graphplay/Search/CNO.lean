@@ -1266,21 +1266,9 @@ attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebr
 
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- **The cell-embedding matrix** of an equitable partition: the `V × I` matrix
-whose `(v, i)` entry is `cellUniformVec i v`.  Its columns are the normalized
-cell indicators; `E.mulVec w = ∑ i w i • e_i` is the canonical cell-uniform
-combination map. -/
-noncomputable def cellEmbed {G : WeightedGraph V} (P : EquitablePartition G I) :
-    Matrix V I ℂ := fun v i => P.cellUniformVec i v
-
-/-- `cellEmbed.mulVec w` is exactly the cell-uniform combination `∑ i, w i · e_i`. -/
-theorem cellEmbed_mulVec {G : WeightedGraph V} (P : EquitablePartition G I) (w : I → ℂ) :
-    (cellEmbed P).mulVec w = fun v => ∑ i, w i * P.cellUniformVec i v := by
-  funext v
-  simp only [cellEmbed, Matrix.mulVec, dotProduct]
-  apply Finset.sum_congr rfl
-  intro i _
-  rw [mul_comm]
+/- The cell-embedding matrix `cellEmbed` and its `mulVec` lemma now live in
+`Graphplay.Search` (imported); the intertwining theorems
+`searchH_mul_cellEmbed` / `searchEvolve_mul_cellEmbed` likewise. -/
 
 /-- **Generic exponential intertwining through a rectangular embedding.**  If
 `H * E = E * M` (intertwining at the generator level), then
@@ -1319,47 +1307,6 @@ theorem exp_intertwine_embed (H : Matrix V V ℂ) (E : Matrix V I ℂ)
     rw [Matrix.smul_mul, Matrix.mul_smul, hpow k]
   rw [hterm] at hHφ
   exact hHφ.unique hMψ
-
-/-- **Generator-level search intertwining through the cell-embedding.**  For a
-marked-union equitable partition `P` (marked set `M`, hypothesis `hM`), the host
-search Hamiltonian `H = -γ·A − P_M`, restricted to the refined cell-uniform
-subspace, is the refined-quotient search Hamiltonian `H_chain = -γ·Q̃' −
-markedDiag`: `H_search · E' = E' · H_chain`, where `E' = cellEmbed P'` is the
-embedding of the refined partition.  This is `search_quotient_reduction` packaged
-as a matrix identity (one column per refined cell). -/
-theorem searchH_mul_cellEmbed {G : WeightedGraph V}
-    (P : EquitablePartition G I) (M : Finset V) (γ : ℝ)
-    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M)) :
-    let P' := P.refineByMarked M hM
-    G.searchHamiltonian M γ * cellEmbed P'
-      = cellEmbed P' * (-(γ : ℂ) • P'.symmQuotient - markedDiag I) := by
-  intro P'
-  apply Matrix.ext_of_mulVec_single
-  intro jb
-  rw [← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec]
-  -- `E'.mulVec (e_jb) = e_jb`-cell-uniform vec; apply `search_quotient_reduction`
-  -- to the single-cell weight family `w = Pi.single jb 1`.
-  rw [cellEmbed_mulVec P' (Pi.single jb (1 : ℂ))]
-  rw [search_quotient_reduction P M γ hM (Pi.single jb (1 : ℂ))]
-  rw [cellEmbed_mulVec P' ((-(γ : ℂ) • P'.symmQuotient - markedDiag I).mulVec (Pi.single jb 1))]
-
-/-- **Evolution-level search intertwining through the cell-embedding.**  The full
-search evolution `U(τ) = exp(-iτ·H_search)`, restricted to the refined
-cell-uniform subspace, is the refined-quotient chain evolution
-`exp(-iτ·H_chain)`: `U(τ) · E' = E' · exp(-iτ·H_chain)`.  Obtained from
-`searchH_mul_cellEmbed` by `exp_intertwine_embed`.  This is the *exact* (no
-perturbation) statement that the full `N`-dimensional search dynamics live on the
-finite `2·|I|`-dimensional refined-quotient chain. -/
-theorem searchEvolve_mul_cellEmbed {G : WeightedGraph V}
-    (P : EquitablePartition G I) (M : Finset V) (γ τ : ℝ)
-    (hM : ∀ x y : V, P.cells x = P.cells y → (x ∈ M ↔ y ∈ M)) :
-    let P' := P.refineByMarked M hM
-    G.searchEvolve M γ τ * cellEmbed P'
-      = cellEmbed P'
-        * NormedSpace.exp (-(Complex.I * (τ : ℂ)) • (-(γ : ℂ) • P'.symmQuotient - markedDiag I)) := by
-  intro P'
-  unfold WeightedGraph.searchEvolve
-  exact exp_intertwine_embed _ _ _ _ (searchH_mul_cellEmbed P M γ hM)
 
 end ChainReduction
 

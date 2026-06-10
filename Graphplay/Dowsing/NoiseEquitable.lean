@@ -40,9 +40,11 @@ References inside `references/`:
   graph iff PST on the equitable quotient.  We state and conjecture its
   open-system extension.
 
-All cell-level proofs are deferred via `sorry`.  Statements compile against
-the existing `Graphplay.WeightedGraph`, `EquitablePartition`, and
-`NoiseModel` types.
+Everything below is fully proved (zero `sorry`): the cell-level algebra is
+supplied by the `cellInflate` closure laws of `Graphplay.Equitable`
+(`cellInflate_mul`, `cellInflate_conjTranspose`, `cellInflate_mul_cellInclusion`),
+and the statements compile against the existing `Graphplay.WeightedGraph`,
+`EquitablePartition`, and `NoiseModel` types.
 -/
 
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
@@ -533,29 +535,76 @@ theorem lindbladGen_preserves_cellUniform
     unfold Matrix.IsCellUniformDensity at this
     exact this
 
+/-! ### The inflated-range predicate.
+
+`Graphplay.Equitable` provides the `cellInflate` closure laws
+(`cellInflate_mul` through the support idempotent `cellSupport`,
+`cellInflate_conjTranspose` via `cellAdjoint`, and ℂ-linearity); packaging them
+as closure of the *range* of `cellInflate` under all the matrix operations a
+Lindblad generator is built from is exactly what the quotient reduction needs. -/
+
+/-- `M` is **inflated** (block-constant for `P`): it lies in the range of
+`P.cellInflate`. -/
+def IsInflated (P : EquitablePartition G I) (M : Matrix V V ℂ) : Prop :=
+  ∃ Mbar : Matrix I I ℂ, M = P.cellInflate Mbar
+
+theorem IsInflated.zero (P : EquitablePartition G I) : IsInflated P 0 :=
+  ⟨0, P.cellInflate_zero.symm⟩
+
+theorem IsInflated.add {P : EquitablePartition G I} {A B : Matrix V V ℂ}
+    (hA : IsInflated P A) (hB : IsInflated P B) : IsInflated P (A + B) := by
+  obtain ⟨Abar, rfl⟩ := hA; obtain ⟨Bbar, rfl⟩ := hB
+  exact ⟨Abar + Bbar, (P.cellInflate_add Abar Bbar).symm⟩
+
+theorem IsInflated.sub {P : EquitablePartition G I} {A B : Matrix V V ℂ}
+    (hA : IsInflated P A) (hB : IsInflated P B) : IsInflated P (A - B) := by
+  obtain ⟨Abar, rfl⟩ := hA; obtain ⟨Bbar, rfl⟩ := hB
+  exact ⟨Abar - Bbar, (P.cellInflate_sub Abar Bbar).symm⟩
+
+theorem IsInflated.smul {P : EquitablePartition G I} {A : Matrix V V ℂ}
+    (hA : IsInflated P A) (c : ℂ) : IsInflated P (c • A) := by
+  obtain ⟨Abar, rfl⟩ := hA
+  exact ⟨c • Abar, (P.cellInflate_smul c Abar).symm⟩
+
+/-- Products of inflated matrices are inflated — the multiplicative closure law
+`cellInflate A * cellInflate B = cellInflate (A * cellSupport * B)`. -/
+theorem IsInflated.mul {P : EquitablePartition G I} {A B : Matrix V V ℂ}
+    (hA : IsInflated P A) (hB : IsInflated P B) : IsInflated P (A * B) := by
+  obtain ⟨Abar, rfl⟩ := hA; obtain ⟨Bbar, rfl⟩ := hB
+  exact ⟨Abar * P.cellSupport * Bbar, (P.cellInflate_mul Abar Bbar)⟩
+
+theorem IsInflated.conjTranspose {P : EquitablePartition G I} {A : Matrix V V ℂ}
+    (hA : IsInflated P A) : IsInflated P Aᴴ := by
+  obtain ⟨Abar, rfl⟩ := hA
+  exact ⟨P.cellAdjoint Abar, (P.cellInflate_conjTranspose Abar)⟩
+
+theorem IsInflated.sum {P : EquitablePartition G I} {α : Type*} {s : Finset α}
+    {f : α → Matrix V V ℂ} (hf : ∀ a ∈ s, IsInflated P (f a)) :
+    IsInflated P (∑ a ∈ s, f a) :=
+  Finset.sum_induction f (IsInflated P) (fun _ _ => IsInflated.add)
+    (IsInflated.zero P) hf
+
 /-- **Quotient reduction.**  When the Hamiltonian and every jump operator are
 themselves *inflated* from the quotient (`H = cellInflate Hbar`, each
 `L = cellInflate Lbar`), the generator action on an inflated density matrix is
 again inflated: there is a quotient-level matrix `K` with
 `lindbladGen H N (cellInflate rhobar) = cellInflate K`.
 
-CORRECTNESS NOTE (issue #53): the original hypotheses `preservesCellUniform H P`
-and `cellUniformSymmetric P` are **insufficient** for this conclusion.  Those give
-only that the output *commutes with the projector* (`IsCellUniformDensity`,
+CORRECTNESS NOTE (issue #53): the hypotheses `preservesCellUniform H P` and
+`cellUniformSymmetric P` would be **insufficient** for this conclusion.  Those
+give only that the output *commutes with the projector* (`IsCellUniformDensity`,
 proved in `lindbladGen_preserves_cellUniform`), which is **strictly weaker** than
 being *block-constant* (in `range cellInflate`).  E.g. on a single cell the
 projector-commuting permutation matrix is not block-constant, so it is not in the
 range of `cellInflate`.  Block-constancy of the output genuinely requires `H` and
-the `L`'s to be block-constant operators (inflated from the quotient), which we
-add as hypotheses.
+the `L`'s to be block-constant operators (inflated from the quotient), which are
+the hypotheses here.
 
-HONEST RESIDUAL: the remaining `sorry` is isolated to a single missing piece of
-infrastructure — a *multiplicative closure law for `cellInflate`*, i.e. that
-`cellInflate A * cellInflate B` and conjugates `cellInflate A * M * cellInflate B`
-are again inflated matrices with an explicit quotient-level product (the
-density-matrix analogue of `Equitable.adj_mulVec_cellInflateVec`).  That algebra
-is not yet developed in `Graphplay.Equitable`; once it lands, `K` is read off
-term by term. -/
+PROOF: the generator is a non-commutative polynomial in `H`, the `L`'s, their
+adjoints, and the state — all inflated — so every term (Hamiltonian commutator
+and jump terms alike) stays in the range of `cellInflate` by the closure laws of
+`Graphplay.Equitable` (`cellInflate_mul`, `cellInflate_conjTranspose`,
+linearity); the quotient generator `K` is read off term by term. -/
 theorem lindbladGen_quotient_reduction
     (P : EquitablePartition G I)
     {H : Matrix V V ℂ} {Hbar : Matrix I I ℂ} (hH : H = P.cellInflate Hbar)
@@ -564,8 +613,17 @@ theorem lindbladGen_quotient_reduction
     (rhobar : Matrix I I ℂ) :
     ∃ K : Matrix I I ℂ,
       lindbladGen H N (P.cellInflate rhobar) = P.cellInflate K := by
-  -- Reduces to the `cellInflate` multiplicative-closure law (see HONEST RESIDUAL).
-  sorry
+  show IsInflated P (lindbladGen H N (P.cellInflate rhobar))
+  have hρ : IsInflated P (P.cellInflate rhobar) := ⟨rhobar, rfl⟩
+  have hHi : IsInflated P H := ⟨Hbar, hH⟩
+  unfold lindbladGen lindbladSuperop
+  refine IsInflated.add (((hHi.mul hρ).sub (hρ.mul hHi)).smul _)
+    (IsInflated.sum fun L hL => ?_)
+  obtain ⟨Lbar, hLbar⟩ := hN L hL
+  have hLi : IsInflated P L := ⟨Lbar, hLbar⟩
+  exact (((hLi.mul hρ).mul hLi.conjTranspose).sub
+    ((((hLi.conjTranspose.mul hLi).mul hρ).add
+      ((hρ.mul hLi.conjTranspose).mul hLi)).smul _)).smul _
 
 /-- **Time-evolved corollary.**  The semigroup `exp(t · ℒ)` solving the
 Lindblad master equation `dρ/dt = ℒ(ρ)` preserves the cell-uniform
@@ -1250,9 +1308,11 @@ PST reduction:
 > vertices `u, v` in the **same cell** iff the *quotient* `P.quotient`
 > admits PST between the corresponding cell-indices.
 
-We state the open-system extension: PST in an open system is equivalent
-to PST in the *noisy quotient* — provided the noise is
-`cellUniformSymmetric P`. -/
+We prove the **descent direction** of the open-system extension: host PST
+descends to PST of the *cell-compressed* Hamiltonian on the quotient walk,
+under the genuine Bachman–Tamon hypotheses (block-constant Hamiltonian,
+singleton source cell) — see `openSystem_bachmanTamon` below for why each
+hypothesis is forced. -/
 
 /-- The (statement-only) **open-system PST predicate**: there exists a time
 `t` such that the time-`t` evolution of `|u⟩⟨u|` under `(H, N)` has its
@@ -1261,49 +1321,42 @@ def OpenSystemPST
     (H : Matrix V V ℂ) (N : NoiseModel V) (u v : V) : Prop :=
   ∃ t : ℝ, (noisyEvolve H N t fun x y => if x = u ∧ y = u then 1 else 0) v v = 1
 
-/-- **Open-system Bachman–Tamon — forward (quotient-descent) direction.**
-Suppose `G` is a weighted graph with equitable partition `P : V → I`, the
-Hamiltonian `H` is cell-uniform-preserving, and the noise model `N` is
-`cellUniformSymmetric P`.
-
-If the host exhibits open-system PST between two vertices `u, v` lying in
-**distinct cells**, then *some* effective quotient Hamiltonian realises open-
-system PST between the corresponding cell indices in the quotient walk
-`(Hq, N.quotient P)`.  (The natural witness is the cell-compression of `H`; we
-expose the existential, which is the genuinely-true descent content.)
-
-LANDMINE FIX (was a biconditional with `∃ Hq` on the RHS for *all* `u, v`).  The
-former `↔` is **FALSE**, on two independent counts, both machine-checked:
-
-  1.  The `∃ Hq` RHS is far too generous for the `←` direction: one may always
-      *choose* a small `I × I` Hamiltonian achieving quotient PST `i → j`
-      (e.g. the `K_2`-block transfer) irrespective of whether the host
-      transfers `u → v` at all.  So `(∃ Hq, quotient-PST) → host-PST` fails.
-
-  2.  Worse, for `u ≠ v` in the **same cell** (`P.cells u = P.cells v = i`) the
-      RHS degenerates to a quotient **self-loop** `OpenSystemPST Hq Nq i i`,
-      which is *trivially* satisfiable (take `Hq = 0`, `t = 0`: the population at
-      cell `i` is `1`).  Yet host PST `u → v` for distinct `u ≠ v` is generally
-      false — e.g. `H = 0`, `N = trivial`, `V = Fin 2`, single cell: the
-      population stays at `u` and never reaches `v`.  So the RHS is `True`-ish
-      while the LHS is `False` (verified counterexample).
-
-The genuine TRUE statement keeps only the **descent (`→`) direction** and
-restricts to **distinct cells** (`hcell`), the regime in which the quotient even
-distinguishes the two endpoints.  This is the honest open-system avatar of
-Bachman–Tamon 1108.0339; the spectral correspondence (cell-uniform host dynamics
-↔ quotient dynamics via `lindbladGen_quotient_reduction`) is the deep residual. -/
-theorem openSystem_bachmanTamon [Nonempty V]
-    (P : EquitablePartition G I)
-    {H : Matrix V V ℂ} (hH : Matrix.preservesCellUniform H P)
-    {N : NoiseModel V} (hN : N.cellUniformSymmetric P)
-    (u v : V) (hcell : P.cells u ≠ P.cells v) :
-    OpenSystemPST H N u v →
-      -- open-system PST in the quotient walk between the (distinct) corresponding
-      -- cell indices, for the quotient noise model `N.quotient P` and some
-      -- quotient Hamiltonian `Hq` (the cell-compression of `H`).
-      ∃ Hq : Matrix I I ℂ, OpenSystemPST Hq (N.quotient P) (P.cells u) (P.cells v) := by
-  sorry
+/-- **Exponential intertwining.**  A rectangular intertwining `A·C = C·Q` of
+generators propagates to the matrix exponentials: `exp A · C = C · exp Q`.
+Each power intertwines by induction, and the exponential series follows by
+continuity of multiplication by the fixed matrix `C`. -/
+theorem exp_mul_intertwine {J : Type*} [Fintype J] [DecidableEq J]
+    {A : Matrix V V ℂ} {Q : Matrix J J ℂ} {C : Matrix V J ℂ}
+    (h : A * C = C * Q) :
+    NormedSpace.exp A * C = C * NormedSpace.exp Q := by
+  have hpow : ∀ n : ℕ, A ^ n * C = C * Q ^ n := by
+    intro n
+    induction n with
+    | zero => rw [pow_zero, pow_zero, Matrix.one_mul, Matrix.mul_one]
+    | succ n ih =>
+      rw [pow_succ, pow_succ, Matrix.mul_assoc, h, ← Matrix.mul_assoc, ih, Matrix.mul_assoc]
+  have hsumA : Summable (fun n : ℕ => ((n.factorial : ℂ))⁻¹ • A ^ n) :=
+    open scoped Matrix.Norms.Operator in NormedSpace.expSeries_summable' (𝕂 := ℂ) A
+  have hsumQ : Summable (fun n : ℕ => ((n.factorial : ℂ))⁻¹ • Q ^ n) :=
+    open scoped Matrix.Norms.Operator in NormedSpace.expSeries_summable' (𝕂 := ℂ) Q
+  rw [NormedSpace.exp_eq_tsum (𝕂 := ℂ) (𝔸 := Matrix V V ℂ),
+    NormedSpace.exp_eq_tsum (𝕂 := ℂ) (𝔸 := Matrix J J ℂ)]
+  have h1 : HasSum (fun n : ℕ => (((n.factorial : ℂ))⁻¹ • A ^ n) * C)
+      ((∑' n : ℕ, ((n.factorial : ℂ))⁻¹ • A ^ n) * C) :=
+    hsumA.hasSum.map
+      (AddMonoidHom.mk' (fun X : Matrix V V ℂ => X * C) (fun X Y => Matrix.add_mul X Y C))
+      (continuous_id.matrix_mul continuous_const)
+  have h2 : HasSum (fun n : ℕ => C * (((n.factorial : ℂ))⁻¹ • Q ^ n))
+      (C * ∑' n : ℕ, ((n.factorial : ℂ))⁻¹ • Q ^ n) :=
+    hsumQ.hasSum.map
+      (AddMonoidHom.mk' (fun Y : Matrix J J ℂ => C * Y) (fun X Y => Matrix.mul_add C X Y))
+      (continuous_const.matrix_mul continuous_id)
+  have hfun : (fun n : ℕ => (((n.factorial : ℂ))⁻¹ • A ^ n) * C)
+      = fun n : ℕ => C * (((n.factorial : ℂ))⁻¹ • Q ^ n) := by
+    funext n
+    rw [Matrix.smul_mul, hpow n, Matrix.mul_smul]
+  rw [hfun] at h1
+  exact h1.unique h2
 
 /-- **Open-system PST in the `noisyEvolve` model = closed-system unitary PST.**
 
@@ -1392,6 +1445,98 @@ theorem openSystemPST_iff_closed_unitary_PST
     refine ⟨t, ?_⟩
     rw [hpop t, ht]
     norm_num
+
+/-- **Open-system Bachman–Tamon — descent direction, with the natural
+witness.**  Suppose the host Hamiltonian is **block-constant** for the
+equitable partition `P` (`H = P.cellInflate Hbar`, the open-system analogue of
+"`H` is a polynomial in the quotient", cf. `lindbladGen_quotient_reduction`),
+and the source vertex `u` forms a **singleton cell** (`hu`) — the regime of
+Bachman–Tamon 1108.0339, where PST endpoints are singleton cells of the
+distance partition.  If the host exhibits open-system PST `u → v` between
+distinct cells, then the **cell-compression** `Hbar * cellSupport` of `H`
+exhibits open-system PST between the corresponding cell indices in the
+quotient walk, for the quotient noise model `N.quotient P` — at the *same*
+transfer time.  The conclusion pins the natural witness (no bare existential):
+this is the genuine spectral correspondence, proved by pushing the inclusion
+intertwining `H · C = C · (Hbar · cellSupport)`
+(`cellInflate_mul_cellInclusion`) through the exponential series
+(`exp_mul_intertwine`) and reading off the `(v, cell u)` entry, where the
+singleton source cell collapses the column sum to the single host amplitude.
+
+Both strengthenings of the hypotheses are forced, not cosmetic:
+
+  * **Block-constancy** (was `preservesCellUniform H P`): a merely
+    projector-commuting `H` does not determine any quotient dynamics — only
+    inflated operators descend (`lindbladGen_quotient_reduction`'s CORRECTNESS
+    NOTE).  Inflated Hamiltonians are realizable: any `Hbar` inflates, and for
+    the discrete partition `cellInflate` is essentially the identity, so the
+    hypothesis class contains genuine PST instances (e.g. the `K₂` projector
+    walk of `chiral_PST_open_mirror`).
+  * **Singleton source cell** (`hu`): for `|C_u| = c > 1` the intertwining
+    gives quotient amplitude `= c ·` (host amplitude), since the column of
+    `U(t)` out of `u` is summed over the whole source cell; quotient PST at
+    norm `1` then fails even though host PST holds.  For Hermitian `H`
+    unitarity forces `c = 1` anyway, so `hu` is exactly the honest boundary.
+
+LANDMINE FIX (was a biconditional with a bare `∃ Hq` RHS, hypotheses only
+`preservesCellUniform` + `cellUniformSymmetric`, and a `sorry`).  The former
+`↔` is **FALSE**: the `∃ Hq` RHS is satisfiable irrespective of host transfer
+(choose the `K₂`-block quotient Hamiltonian), and for same-cell `u ≠ v` the RHS
+degenerates to a trivially-true quotient self-loop while host PST fails (e.g.
+`H = 0`).  The descent direction with a *pinned* witness stated here is the
+non-vacuous content; noise plays no role because diagonal populations in the
+`noisyEvolve` model are dephasing-independent
+(`openSystemPST_iff_closed_unitary_PST`). -/
+theorem openSystem_bachmanTamon [Nonempty V]
+    (P : EquitablePartition G I)
+    {H : Matrix V V ℂ} {Hbar : Matrix I I ℂ} (hH : H = P.cellInflate Hbar)
+    (N : NoiseModel V)
+    (u v : V) (hcell : P.cells u ≠ P.cells v)
+    (hu : P.cellCard (P.cells u) = 1) :
+    OpenSystemPST H N u v →
+      OpenSystemPST (Hbar * P.cellSupport) (N.quotient P) (P.cells u) (P.cells v) := by
+  intro hpst
+  rw [openSystemPST_iff_closed_unitary_PST] at hpst ⊢
+  obtain ⟨t, ht⟩ := hpst
+  refine ⟨t, ?_⟩
+  -- Generator-level intertwining through the inclusion matrix.
+  have hgen : (-(Complex.I * (t : ℂ)) • H) * P.cellInclusion
+      = P.cellInclusion * (-(Complex.I * (t : ℂ)) • (Hbar * P.cellSupport)) := by
+    rw [Matrix.smul_mul, Matrix.mul_smul, hH, P.cellInflate_mul_cellInclusion]
+  have hentry := congrFun (congrFun (exp_mul_intertwine hgen) v) (P.cells u)
+  -- The singleton source cell `{u}` collapses the column sum on the left.
+  have hsingleton :
+      Finset.univ.filter (fun w : V => P.cells w = P.cells u) = {u} := by
+    have hcard1 :
+        (Finset.univ.filter (fun w : V => P.cells w = P.cells u)).card = 1 := by
+      have hc : P.cellCard (P.cells u)
+          = ((Finset.univ.filter (fun w : V => P.cells w = P.cells u)).card : ℝ) := rfl
+      exact_mod_cast hc ▸ hu
+    obtain ⟨a, ha⟩ := Finset.card_eq_one.mp hcard1
+    have hu_mem : u ∈ Finset.univ.filter (fun w : V => P.cells w = P.cells u) := by
+      simp
+    rw [ha] at hu_mem ⊢
+    rw [Finset.mem_singleton] at hu_mem
+    rw [hu_mem]
+  have hL : (NormedSpace.exp (-(Complex.I * (t : ℂ)) • H) * P.cellInclusion) v (P.cells u)
+      = NormedSpace.exp (-(Complex.I * (t : ℂ)) • H) v u := by
+    rw [Matrix.mul_apply]
+    simp only [EquitablePartition.cellInclusion, Matrix.of_apply, mul_ite, mul_one, mul_zero]
+    rw [← Finset.sum_filter, hsingleton, Finset.sum_singleton]
+  -- On the right, the inclusion picks out the row `cells v` of the quotient walk.
+  have hR : (P.cellInclusion
+        * NormedSpace.exp (-(Complex.I * (t : ℂ)) • (Hbar * P.cellSupport))) v (P.cells u)
+      = NormedSpace.exp (-(Complex.I * (t : ℂ)) • (Hbar * P.cellSupport))
+          (P.cells v) (P.cells u) := by
+    rw [Matrix.mul_apply, Finset.sum_eq_single (P.cells v)]
+    · rw [EquitablePartition.cellInclusion, Matrix.of_apply, if_pos rfl, one_mul]
+    · intro l _ hl
+      rw [EquitablePartition.cellInclusion, Matrix.of_apply,
+        if_neg (fun hc => hl hc.symm), zero_mul]
+    · intro hmem; exact absurd (Finset.mem_univ _) hmem
+  rw [hL, hR] at hentry
+  rw [← hentry]
+  exact ht
 
 /-! ## 8. Open directions
 

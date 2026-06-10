@@ -20,8 +20,9 @@ Goals of this file:
     `Quotient.op`, encompassing PST, mixing and search lifting;
   * sketch the embedding into graphons (cut-norm topology, BCLSV 1003.5588).
 
-Almost every proof is `sorry`; the file is a categorical scaffold whose
-*statements* are precise and whose proofs are deferred.
+The file is sorry-free: the category structures, the Quotient functor on the
+quotient-morphism subcategory `WGraphPQ`, and the headline filtered-colimit
+preservation theorem are all proved.
 -/
 
 import Mathlib.CategoryTheory.Category.Basic
@@ -711,8 +712,6 @@ end WGraph
 
 /-! ## 6. Headline categorical theorems.
 
-These are the punchline statements; proofs are deferred.
-
 ### The Quotient functor preserves filtered colimits.
 
 In categorical terms: the cell-quotient of a directed/filtered union of
@@ -724,53 +723,300 @@ partitioned by distance from the attachment as a special case. -/
 
 open CategoryTheory CategoryTheory.Limits
 
-/-- **The Quotient functor preserves filtered colimits.**
+/-! ### Cell restriction: the test object behind filtered-colimit preservation.
 
-That is, the quotient of a filtered colimit of partitioned weighted graphs is
-the filtered colimit of their quotients.
+The engine of `Quotient.preservesFilteredColimits` is a counting argument.
+Every leg of a cocone in `WGraphPQ` is a quotient morphism, so its cell map is
+injective, and the cell counts of a diagram admitting a cocone are bounded by
+the (finite) cell count of the cocone vertex.  Pick `j₀` of maximal cell
+count.  Filteredness forces the cell image of every leg of a colimit cocone
+`c` into the cell image `U` of the leg at `j₀`; the cells of `U`, taken
+*whole*, induce a partitioned weighted graph `c.pt.restrictCells U` — all
+branching sums, cell cardinalities and quotient entries are untouched — and it
+is the vertex of a competing cocone over the same diagram.  The descent
+morphism supplied by the universal property has an injective cell map
+`c.pt.I → U`, so the colimit vertex carries no surplus cells:
+`(c.ι.app j₀).cellMap` is a bijection (`Quotient.exists_bijective_leg`), and
+the colimit property of the mapped cocone follows directly. -/
+
+section RestrictCells
+
+variable (X : WGraphPObj.{u}) (U : Finset X.I)
+
+/-- Cell-local sums in the restriction agree with cell-local sums in the
+ambient graph: a `U`-cell survives the restriction *whole*. -/
+private theorem WGraphPObj.restrictCells_sum_aux (j : X.I) (hj : j ∈ U) (x : X.V) :
+    (∑ z : {v : X.V // X.cells v ∈ U},
+        (if (⟨X.cells z.1, z.2⟩ : {i : X.I // i ∈ U}) = ⟨j, hj⟩
+          then X.base.G.adj x z.1 else 0))
+      = ∑ z, (if X.cells z = j then X.base.G.adj x z else 0) := by
+  have h1 : ∀ z : {v : X.V // X.cells v ∈ U},
+      (if (⟨X.cells z.1, z.2⟩ : {i : X.I // i ∈ U}) = ⟨j, hj⟩
+        then X.base.G.adj x z.1 else 0)
+      = (if X.cells z.1 = j then X.base.G.adj x z.1 else 0) := by
+    intro z
+    by_cases h : X.cells z.1 = j
+    · rw [if_pos h, if_pos (Subtype.ext h)]
+    · rw [if_neg h, if_neg (fun hc => h (congrArg Subtype.val hc))]
+  calc (∑ z : {v : X.V // X.cells v ∈ U},
+          (if (⟨X.cells z.1, z.2⟩ : {i : X.I // i ∈ U}) = ⟨j, hj⟩
+            then X.base.G.adj x z.1 else 0))
+      = ∑ z : {v : X.V // X.cells v ∈ U},
+          (if X.cells z.1 = j then X.base.G.adj x z.1 else 0) :=
+        Finset.sum_congr rfl (fun z _ => h1 z)
+    _ = ∑ z ∈ Finset.univ.filter (fun v : X.V => X.cells v ∈ U),
+          (if X.cells z = j then X.base.G.adj x z else 0) :=
+        (Finset.sum_subtype (Finset.univ.filter (fun v : X.V => X.cells v ∈ U))
+          (fun v => by simp) (fun z => if X.cells z = j then X.base.G.adj x z else 0)).symm
+    _ = ∑ z, (if X.cells z = j then X.base.G.adj x z else 0) := by
+        apply Finset.sum_subset (Finset.filter_subset _ _)
+        intro z _ hz
+        have hzj : X.cells z ≠ j := fun hcz =>
+          hz (Finset.mem_filter.mpr ⟨Finset.mem_univ z, by rw [hcz]; exact hj⟩)
+        rw [if_neg hzj]
+
+/-- **Cell restriction.**  The partitioned weighted graph induced on the union
+of the cells of `X` indexed by `U`.  Cells are taken whole, so equitability is
+inherited and every branching sum, cell cardinality and quotient entry over `U`
+agrees with that of `X` (`restrictCells_cellCard`, `restrictCells_quotient`). -/
+noncomputable def WGraphPObj.restrictCells : WGraphPObj.{u} where
+  base :=
+    { V := {v : X.V // X.cells v ∈ U}
+      G :=
+        { adj := fun a b => X.base.G.adj a.1 b.1
+          herm := by
+            ext a b
+            show star (X.base.G.adj b.1 a.1) = X.base.G.adj a.1 b.1
+            exact X.base.G.herm.apply a.1 b.1
+          loopless := fun v => X.base.G.loopless v.1 } }
+  I := {i : X.I // i ∈ U}
+  P :=
+    { cells := fun v => ⟨X.cells v.1, v.2⟩
+      uniform := by
+        rintro ⟨i, hi⟩ ⟨j, hj⟩ x y hx hy
+        have hx' : X.cells x.1 = i := congrArg Subtype.val hx
+        have hy' : X.cells y.1 = i := congrArg Subtype.val hy
+        calc (∑ z : {v : X.V // X.cells v ∈ U},
+                (if (⟨X.cells z.1, z.2⟩ : {i' : X.I // i' ∈ U}) = ⟨j, hj⟩
+                  then X.base.G.adj x.1 z.1 else 0))
+            = ∑ z, (if X.cells z = j then X.base.G.adj x.1 z else 0) :=
+              WGraphPObj.restrictCells_sum_aux X U j hj x.1
+          _ = ∑ z, (if X.cells z = j then X.base.G.adj y.1 z else 0) :=
+              X.P.uniform i j x.1 y.1 hx' hy'
+          _ = ∑ z : {v : X.V // X.cells v ∈ U},
+                (if (⟨X.cells z.1, z.2⟩ : {i' : X.I // i' ∈ U}) = ⟨j, hj⟩
+                  then X.base.G.adj y.1 z.1 else 0) :=
+              (WGraphPObj.restrictCells_sum_aux X U j hj y.1).symm }
+
+/-- Restriction preserves the cardinality of every surviving cell. -/
+theorem WGraphPObj.restrictCells_cellCard (i : X.I) (hi : i ∈ U) :
+    (X.restrictCells U).P.cellCard ⟨i, hi⟩ = X.P.cellCard i := by
+  have hcard :
+      (Finset.univ.filter
+          (fun w : (X.restrictCells U).V =>
+            (X.restrictCells U).P.cells w = ⟨i, hi⟩)).card
+        = (Finset.univ.filter (fun w : X.V => X.P.cells w = i)).card := by
+    apply Finset.card_bij (fun (a : (X.restrictCells U).V) _ => a.1)
+    · intro a ha
+      rw [Finset.mem_filter] at ha ⊢
+      exact ⟨Finset.mem_univ _, congrArg Subtype.val ha.2⟩
+    · intro a _ b _ hab
+      exact Subtype.ext hab
+    · intro b hb
+      rw [Finset.mem_filter] at hb
+      refine ⟨⟨b, ?_⟩, ?_, rfl⟩
+      · show X.cells b ∈ U
+        rw [show X.cells b = i from hb.2]
+        exact hi
+      · rw [Finset.mem_filter]
+        exact ⟨Finset.mem_univ _, Subtype.ext hb.2⟩
+  exact congrArg (fun n : ℕ => (n : ℝ)) hcard
+
+/-- Restriction preserves every quotient (branching) entry over surviving
+cells: the branching sums range over whole cells, all of which survive. -/
+theorem WGraphPObj.restrictCells_quotient (i j : X.I) (hi : i ∈ U) (hj : j ∈ U) :
+    (X.restrictCells U).P.quotient ⟨i, hi⟩ ⟨j, hj⟩ = X.P.quotient i j := by
+  by_cases hex : ∃ x : X.V, X.P.cells x = i
+  · obtain ⟨x, hx⟩ := hex
+    have hxU : X.cells x ∈ U := by
+      show X.P.cells x ∈ U
+      rw [hx]; exact hi
+    have hxZ : (X.restrictCells U).P.cells ⟨x, hxU⟩ = ⟨i, hi⟩ := Subtype.ext hx
+    rw [EquitablePartition.quotient_apply (X.restrictCells U).P ⟨i, hi⟩ ⟨j, hj⟩
+        ⟨x, hxU⟩ hxZ,
+      EquitablePartition.quotient_apply X.P i j x hx]
+    show (∑ z : {v : X.V // X.cells v ∈ U},
+        (if (⟨X.cells z.1, z.2⟩ : {i' : X.I // i' ∈ U}) = ⟨j, hj⟩
+          then X.base.G.adj x z.1 else 0))
+      = ∑ z, (if X.cells z = j then X.base.G.adj x z else 0)
+    exact WGraphPObj.restrictCells_sum_aux X U j hj x
+  · have hexZ : ¬∃ xZ : (X.restrictCells U).V,
+        (X.restrictCells U).P.cells xZ = ⟨i, hi⟩ := by
+      rintro ⟨xZ, hxZ⟩
+      exact hex ⟨xZ.1, congrArg Subtype.val hxZ⟩
+    unfold EquitablePartition.quotient
+    rw [dif_neg hexZ, dif_neg hex]
+
+end RestrictCells
+
+/-- Pointwise cell-map form of the cocone commutation law in `WGraphPQ`. -/
+theorem Quotient.cocone_cellMap_eq {J : Type u} [Category.{u} J]
+    (K : Functor J WGraphPQ.{u}) (c : Cocone K) {a b : J} (u : a ⟶ b)
+    (i : (K.obj a).I) :
+    (c.ι.app a).1.cellMap i = (c.ι.app b).1.cellMap ((K.map u).1.cellMap i) :=
+  (congrArg (fun (f : K.obj a ⟶ c.pt) => f.1.cellMap i) (c.w u)).symm
+
+/-- **A colimit vertex in `WGraphPQ` carries no surplus cells.**  For a
+filtered diagram of quotient morphisms with a colimit cocone, the leg at any
+object of maximal cell count has a *bijective* cell map: every leg's cell image
+lands in its image `U` (filteredness plus injectivity of quotient-morphism cell
+maps), the cells of `U` assemble into the restricted vertex
+`c.pt.restrictCells U` of a competing cocone, and the descent morphism's
+injective cell map pins `Fintype.card c.pt.I` down to `U.card`. -/
+theorem Quotient.exists_bijective_leg {J : Type u} [Category.{u} J] [IsFiltered J]
+    (K : Functor J WGraphPQ.{u}) (c : Cocone K) (hc : IsColimit c) :
+    ∃ j₀ : J, Function.Bijective (c.ι.app j₀).1.cellMap := by
+  classical
+  haveI : Nonempty J := IsFiltered.nonempty
+  -- A maximizer of the (bounded) cell counts.
+  obtain ⟨j₀, hj₀⟩ :
+      ∃ j₀ : J, ∀ j : J, Fintype.card (K.obj j).I ≤ Fintype.card (K.obj j₀).I := by
+    have hbdd : BddAbove (Set.range fun j : J => Fintype.card (K.obj j).I) :=
+      ⟨Fintype.card c.pt.I, by
+        rintro x ⟨j, rfl⟩
+        exact Fintype.card_le_of_injective _ (c.ι.app j).2.cell_inj⟩
+    obtain ⟨j₀, hj₀⟩ :=
+      Nat.sSup_mem (Set.range_nonempty fun j : J => Fintype.card (K.obj j).I) hbdd
+    refine ⟨j₀, fun j => ?_⟩
+    have h1 : Fintype.card (K.obj j).I
+        ≤ sSup (Set.range fun j : J => Fintype.card (K.obj j).I) :=
+      le_csSup hbdd ⟨j, rfl⟩
+    have h2 : Fintype.card (K.obj j₀).I
+        = sSup (Set.range fun j : J => Fintype.card (K.obj j).I) := hj₀
+    omega
+  -- Every leg's cell image factors through the leg at `j₀`.
+  have hsub : ∀ (j : J) (i : (K.obj j).I),
+      ∃ i₀ : (K.obj j₀).I,
+        (c.ι.app j).1.cellMap i = (c.ι.app j₀).1.cellMap i₀ := by
+    intro j i
+    have hinj : Function.Injective (K.map (IsFiltered.leftToMax j₀ j)).1.cellMap :=
+      (K.map (IsFiltered.leftToMax j₀ j)).2.cell_inj
+    have hcards : Fintype.card (K.obj j₀).I
+        = Fintype.card (K.obj (IsFiltered.max j₀ j)).I :=
+      le_antisymm (Fintype.card_le_of_injective _ hinj) (hj₀ _)
+    have hbij : Function.Bijective (K.map (IsFiltered.leftToMax j₀ j)).1.cellMap :=
+      (Fintype.bijective_iff_injective_and_card _).mpr ⟨hinj, hcards⟩
+    obtain ⟨i₀, hi₀⟩ := hbij.2 ((K.map (IsFiltered.rightToMax j₀ j)).1.cellMap i)
+    refine ⟨i₀, ?_⟩
+    rw [Quotient.cocone_cellMap_eq K c (IsFiltered.rightToMax j₀ j) i, ← hi₀,
+      ← Quotient.cocone_cellMap_eq K c (IsFiltered.leftToMax j₀ j) i₀]
+  -- The restricted competing cocone.
+  let U : Finset c.pt.I := Finset.univ.image (c.ι.app j₀).1.cellMap
+  have hmem : ∀ (j : J) (i : (K.obj j).I), (c.ι.app j).1.cellMap i ∈ U := by
+    intro j i
+    obtain ⟨i₀, h⟩ := hsub j i
+    rw [h]
+    exact Finset.mem_image_of_mem _ (Finset.mem_univ i₀)
+  have hbase_mem : ∀ (j : J) (x : (K.obj j).base.V),
+      c.pt.cells ((c.ι.app j).1.base.toFun x) ∈ U := by
+    intro j x
+    have h : (c.ι.app j).1.cellMap ((K.obj j).cells x)
+        = c.pt.cells ((c.ι.app j).1.base.toFun x) := (c.ι.app j).1.cellMap_comm x
+    rw [← h]
+    exact hmem j _
+  let d : Cocone K :=
+    { pt := c.pt.restrictCells U
+      ι :=
+        { app := fun j =>
+            ⟨{ base :=
+                { toFun := fun x => ⟨(c.ι.app j).1.base.toFun x, hbase_mem j x⟩
+                  adj_preserving := fun a b => (c.ι.app j).1.base.adj_preserving a b }
+               cellMap := fun i => ⟨(c.ι.app j).1.cellMap i, hmem j i⟩
+               cellMap_comm := fun x => Subtype.ext ((c.ι.app j).1.cellMap_comm x) },
+             ⟨fun a b hab => (c.ι.app j).2.cell_inj (congrArg Subtype.val hab),
+              fun i => (c.pt.restrictCells_cellCard U _ (hmem j i)).trans
+                ((c.ι.app j).2.card_pres i),
+              fun i i' => (c.pt.restrictCells_quotient U _ _ (hmem j i) (hmem j i')).trans
+                ((c.ι.app j).2.branch_pres i i')⟩⟩
+          naturality := fun a b u => Subtype.ext (WGraphPHom.ext
+            (fun x => Subtype.ext
+              (congrArg (fun (f : K.obj a ⟶ c.pt) => f.1.base.toFun x) (c.w u)))
+            (fun i => Subtype.ext
+              (congrArg (fun (f : K.obj a ⟶ c.pt) => f.1.cellMap i) (c.w u)))) } }
+  -- Counting via the descent morphism: no surplus cells.
+  have hcount : Fintype.card c.pt.I ≤ Fintype.card (K.obj j₀).I := by
+    calc Fintype.card c.pt.I
+        ≤ Fintype.card (c.pt.restrictCells U).I :=
+          Fintype.card_le_of_injective _ (hc.desc d).2.cell_inj
+      _ = U.card := Fintype.card_of_subtype U (fun _ => Iff.rfl)
+      _ = Finset.univ.card :=
+          Finset.card_image_of_injective _ (c.ι.app j₀).2.cell_inj
+      _ = Fintype.card (K.obj j₀).I := Finset.card_univ
+  exact ⟨j₀, (Fintype.bijective_iff_injective_and_card _).mpr
+    ⟨(c.ι.app j₀).2.cell_inj,
+      le_antisymm (Fintype.card_le_of_injective _ (c.ι.app j₀).2.cell_inj) hcount⟩⟩
+
+/-- **The Quotient functor preserves filtered colimits** — the `IsColimit`
+data: the cell-quotient of a filtered colimit of partitioned weighted graphs
+(over the quotient-morphism subcategory `WGraphPQ`) is the filtered colimit of
+the cell-quotients.
 
 This is the categorical heart of the spectral story: passing to a filtered
-limit (e.g. taking a "long enough" tail of cells) commutes with quotienting
+colimit (e.g. taking a "long enough" tail of cells) commutes with quotienting
 out a partition, so no infinite tail can do strictly better than a finite
 truncation.
 
-The cleanest semantic path: factor `Quotient` through the partition-data
-functor and the forgetful functor `Forget : WGraphP → WGraph`, both of which
-preserve filtered colimits.
-
-**Restructure.** The `IsColimit` *data* witnessing that the cell-quotient of a
-filtered colimit of partitioned weighted graphs is the filtered colimit of the
-cell-quotients is isolated in the single named definition
-`Quotient.mapCocone_isColimit` below (the deep Tower-5 calculation, an honest
-`sorry` since `IsColimit` is data, not a `Prop`).  The `instance` is then a
-thin wrapper: it adds **no** new `sorry` of its own — every deferred byte lives
-in that one named definition — so the preservation content is fully localized
-and the instance's only dependency is the explicitly-named `mapCocone_isColimit`. -/
+Proof shape: by `Quotient.exists_bijective_leg` some leg `c.ι.app j₀` has a
+bijective cell map, so `Quotient.map` sends it to an isomorphism of weighted
+graphs (cardinality- and branching-preservation transport the symmetric
+quotient along the bijection).  Descent through the inverse of that
+isomorphism, with the factorization law supplied by filteredness (`max`,
+`leftToMax`, `rightToMax`) and uniqueness by surjectivity of the leg. -/
 noncomputable def Quotient.mapCocone_isColimit
     {J : Type u} [Category.{u} J] [IsFiltered J]
     (K : Functor J WGraphPQ.{u}) (c : Cocone K) (hc : IsColimit c) :
-    IsColimit ((Quotient.{u}).mapCocone c) := by
-  -- The cell-quotient of a filtered colimit of partitioned weighted graphs (over
-  -- the quotient-morphism subcategory `WGraphPQ`) is the filtered colimit of the
-  -- cell-quotients.  This is the headline Tower-5 calculation; `IsColimit` is
-  -- data, so this is an honest definition-level `sorry`, isolated from the
-  -- `instance` below.
-  --
-  -- STATUS: GENUINELY TRUE, residual is depth-of-infrastructure (not falsity).
-  -- Now that `Quotient` is the *strict* functor on `WGraphPQ` (its legs are
-  -- quotient morphisms — cell-injective, cardinality- and branching-preserving —
-  -- so `Quotient.map` is the sorry-free `Quotient.cellMap_adj_preserving f.1
-  -- f.2`), the mapped cocone IS genuine functorial data on the nose, and the
-  -- preservation statement is a true theorem of the spectral story (the
-  -- cardinality-weighted symmetric quotient transports through filtered colimits
-  -- of quotient morphisms).  What remains is the explicit colimit/`IsColimit`
-  -- bookkeeping (constructing the comparison vertex map and its universal
-  -- property), which needs the concrete description of filtered colimits in
-  -- `WGraph` (the `chainColimit`/`Functor.ofSequence` machinery generalised to
-  -- arbitrary filtered shapes) — more infrastructure than fits this pass.  The
-  -- statement is no longer propped on a false morphism obligation; the single
-  -- residual `sorry` is on this genuinely-true `IsColimit` datum.
-  sorry
+    IsColimit ((Quotient.{u}).mapCocone c) :=
+  let hex := Quotient.exists_bijective_leg K c hc
+  let j₀ : J := hex.choose
+  let e : (K.obj j₀).I ≃ c.pt.I := Equiv.ofBijective _ hex.choose_spec
+  let ginv : WGraphHom (Quotient.obj c.pt) (Quotient.obj (K.obj j₀)) :=
+    { toFun := e.symm
+      adj_preserving := fun a b => by
+        have h : (Quotient.obj (K.obj j₀)).adj (e.symm a) (e.symm b)
+            = (Quotient.obj c.pt).adj ((c.ι.app j₀).1.cellMap (e.symm a))
+                ((c.ι.app j₀).1.cellMap (e.symm b)) :=
+          Quotient.cellMap_adj_preserving (c.ι.app j₀).1 (c.ι.app j₀).2
+            (e.symm a) (e.symm b)
+        rw [h, show (c.ι.app j₀).1.cellMap (e.symm a) = a from e.apply_symm_apply a,
+          show (c.ι.app j₀).1.cellMap (e.symm b) = b from e.apply_symm_apply b] }
+  { desc := fun s => WGraphHom.comp ginv (s.ι.app j₀)
+    fac := fun s j => by
+      apply WGraphHom.ext
+      intro x
+      show (s.ι.app j₀).toFun (e.symm ((c.ι.app j).1.cellMap x)) = (s.ι.app j).toFun x
+      have hsw : ∀ {a b : J} (u : a ⟶ b) (i : (K.obj a).I),
+          (s.ι.app a).toFun i = (s.ι.app b).toFun ((K.map u).1.cellMap i) :=
+        fun u i => (congrArg
+          (fun (f : (K ⋙ Quotient.{u}).obj _ ⟶ s.pt) => f.toFun i) (s.w u)).symm
+      have hkey : (K.map (IsFiltered.leftToMax j₀ j)).1.cellMap
+            (e.symm ((c.ι.app j).1.cellMap x))
+          = (K.map (IsFiltered.rightToMax j₀ j)).1.cellMap x := by
+        apply (c.ι.app (IsFiltered.max j₀ j)).2.cell_inj
+        rw [← Quotient.cocone_cellMap_eq K c (IsFiltered.leftToMax j₀ j),
+          ← Quotient.cocone_cellMap_eq K c (IsFiltered.rightToMax j₀ j)]
+        exact e.apply_symm_apply ((c.ι.app j).1.cellMap x)
+      rw [hsw (IsFiltered.leftToMax j₀ j) (e.symm ((c.ι.app j).1.cellMap x)), hkey,
+        ← hsw (IsFiltered.rightToMax j₀ j) x]
+    uniq := fun s m w => by
+      apply WGraphHom.ext
+      intro i
+      show m.toFun i = (s.ι.app j₀).toFun (e.symm i)
+      calc m.toFun i
+          = m.toFun ((c.ι.app j₀).1.cellMap (e.symm i)) := by
+            rw [show (c.ι.app j₀).1.cellMap (e.symm i) = i from e.apply_symm_apply i]
+        _ = (s.ι.app j₀).toFun (e.symm i) :=
+            congrArg (fun (f : (K ⋙ Quotient.{u}).obj j₀ ⟶ s.pt) =>
+              f.toFun (e.symm i)) (w j₀) }
 
 instance Quotient.preservesFilteredColimits :
     Limits.PreservesFilteredColimits (Quotient.{u}) :=
@@ -983,17 +1229,20 @@ definitions' data and `adj_preserving` fields a real proof):
     action is now a genuine strict functor (its `map` consumes the proved
     `cellMap_adj_preserving`), so `Quotient` is **axiom-clean**.
 
-**Deferred content, isolated into one named declaration** (genuinely TRUE, needs
-more infrastructure; the flagged `def`/`instance` data depends only on it):
-  * `Quotient.mapCocone_isColimit` — the headline filtered-colimit-preservation
-    `IsColimit` data over `WGraphPQ` (`IsColimit` is data, not a `Prop`).  Now
-    that `Quotient` is the *strict* functor on the quotient-morphism subcategory,
-    this is a genuinely-true statement (no longer propped on a false morphism
-    obligation); the residual `sorry` is on the colimit/`IsColimit` bookkeeping.
-    From it the thin wrapper `instance Quotient.preservesFilteredColimits` and the
-    corollary `quasi_infinite_limit` are built.
+**Headline, now proved** (sorry-free):
+  * `WGraphPObj.restrictCells` (+ `restrictCells_cellCard`,
+    `restrictCells_quotient`) — restriction of a partitioned weighted graph to
+    a set of whole cells, the test object that detects surplus cells in a
+    colimit vertex;
+  * `Quotient.exists_bijective_leg` — a colimit vertex in `WGraphPQ` carries no
+    surplus cells: some leg of maximal cell count has a bijective cell map
+    (counting argument through the restricted competing cocone);
+  * `Quotient.mapCocone_isColimit` — the filtered-colimit-preservation
+    `IsColimit` data over `WGraphPQ`, built directly from that bijection.
+    From it the thin wrapper `instance Quotient.preservesFilteredColimits` and
+    the corollary `quasi_infinite_limit` are built.
 
-Other still-deferred statement-level content:
+Still-deferred statement-level content:
   * the `IsColimit` / `IsLimit` packaging for `UnionGraph`-style filtered
     colimits and `InverseLimitGraph`-style cofiltered limits.
 

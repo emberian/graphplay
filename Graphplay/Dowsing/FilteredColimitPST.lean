@@ -793,25 +793,27 @@ theorem InversePartitionSequence.pst_simultaneous
     ∀ n, Graphon.IsPST_finite (𝒮.quotient n) i j τ :=
   h_pst
 
-/-- **Inverse-limit master theorem (HONEST RESTATEMENT, `sorry`).**  The genuine
-cofiltered/inverse-limit dual of `pst_inherited`.
+/-- **Inverse-limit master theorem.**  The genuine cofiltered/inverse-limit dual
+of `pst_inherited`: given an inverse-limit graphon `Wlim` with equitable
+partition `Plim` whose quotient is the operator-norm limit of the stage
+quotients `𝒮.quotient n`, simultaneous finite PST (at a fixed time `τ`) on
+every stage quotient lifts to cell-uniform PST on the limit at the same time.
 
-The infinite-state quantum Markov chain on `varprojlim_n G_n` should carry a
-well-defined cell-uniform PST predicate via the *inverse-limit quotient operator*,
-equivalent to simultaneous finite PST on every stage quotient.  Stating that
-genuinely requires an inverse-limit graphon `Wlim` and equitable partition `Plim`
-together with operator-norm convergence of the stage quotients to `Plim.quotient`
-— the cofiltered analogue of `ConsistentPartitionSequence.pst_inherited`.  Given
-that data, the conclusion would be `Graphon.IsCellUniformPST Wlim Plim i j τ`.
+The proof is by *closedness* of the finite-PST predicate: `IsPST_finite M i j τ`
+is a closed condition in `M` (the map `M ↦ ‖exp(-(iτ)·M) j i‖` is continuous —
+`exp` is continuous on the matrix Banach algebra, entry evaluation and the norm
+are continuous), so `Graphon.IsPST_finite_of_tendsto` (with the constant time
+sequence) transports the stagewise condition along `h_lim` to `Plim.quotient`.
+The raw→symmetric-quotient bridge `cellUniformPST_iff_quotientPST` then needs
+the transferring cells to have equal mass (`hmass`), exactly as in the forward
+`pst_inherited`: by `exp_symmQuotient_entry` the `(j,i)` amplitude on
+`Plim.symmQuotient` is `√μ_j/√μ_i` times that on `Plim.quotient`, and
+`μ_i = μ_j` makes that scalar's modulus one.
 
-BLOCKED: no inverse-limit graphon / equitable-partition construction exists in
-the codebase (`Graphplay/Categorical.lean` provides only the unweighted
-`InverseLimitGraph` cochain limit, with no measurable graphon quotient and no
-operator-norm convergence of `𝒮.quotient n`).  Until that cofiltered limit
-machinery is built — mirroring `Graphon.Limit` for the filtered case — the
-genuine lift cannot be discharged.  We therefore state it honestly with the
-limit data as hypotheses and an honest `sorry` for the (currently unavailable)
-cofiltered convergence step. -/
+Note the cofiltered (bond-direction) structure of `𝒮` plays no role beyond
+producing the stage quotients: PST inheritance is a statement about the
+quotient *matrices*, and operator-norm convergence + stagewise PST is precisely
+the data needed, in either the filtered or the cofiltered direction. -/
 theorem InversePartitionSequence.pst_lifted
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : InversePartitionSequence I)
@@ -820,12 +822,24 @@ theorem InversePartitionSequence.pst_lifted
     (h_lim : Filter.Tendsto (fun n => 𝒮.quotient n) Filter.atTop
               (nhds Plim.quotient))
     (i j : I) (τ : ℝ)
+    (hmass : Plim.cellMass i = Plim.cellMass j)
     (h_pst : ∀ n, Graphon.IsPST_finite (𝒮.quotient n) i j τ) :
     Graphon.IsCellUniformPST Wlim Plim i j τ := by
-  -- BLOCKED: needs the cofiltered-limit PST-time-convergence theorem (the
-  -- inverse-limit analogue of `Graphon.ConsistentPartitionSequence.pst_time_convergence`),
-  -- which does not exist; no inverse-limit graphon quotient machinery is in scope.
-  sorry
+  -- Closedness of finite PST: pass the (constant-time) stage condition to the
+  -- operator-norm limit `Plim.quotient`.
+  have hlim_raw : Graphon.IsPST_finite Plim.quotient i j τ :=
+    Graphon.IsPST_finite_of_tendsto h_lim i j
+      (tendsto_const_nhds (x := τ)) h_pst
+  -- Raw → symmetric quotient: the `(j,i)` amplitude picks up the scalar
+  -- `√μ_j · (√μ_i)⁻¹`, whose modulus is one by `hmass`.
+  rw [Graphon.cellUniformPST_iff_quotientPST]
+  unfold Graphon.IsPST_finite at hlim_raw ⊢
+  rw [Plim.exp_symmQuotient_entry (-(Complex.I * (τ : ℂ))) i j]
+  rw [norm_mul, norm_mul, norm_inv, hlim_raw, mul_one,
+    Complex.norm_real, Complex.norm_real,
+    Real.norm_of_nonneg (Real.sqrt_nonneg _),
+    Real.norm_of_nonneg (Real.sqrt_nonneg _), hmass,
+    mul_inv_cancel₀ (ne_of_gt (Real.sqrt_pos.mpr (Plim.cellMass_pos j)))]
 
 /-! ## 4. Quantitative convergence-rate refinement
 
@@ -1476,7 +1490,8 @@ Statements introduced in this file:
     * `InversePartitionSequence`
     * `InversePartitionSequence.quotient` (genuine cell-flux quotient)
     * `InversePartitionSequence.pst_simultaneous` (identity transport, proved)
-    * `InversePartitionSequence.pst_lifted` (honest inverse-limit lift, `sorry`)
+    * `InversePartitionSequence.pst_lifted` (inverse-limit lift, proved by
+      closedness of the finite-PST predicate)
 
   Quantitative rate (Section 4):
     * `ConsistentPartitionSequence.pst_rate_inheritance`
@@ -1501,10 +1516,11 @@ Statements introduced in this file:
     * `xie_tamon_search_via_master`
 
 Master inheritance theorems, the `completeCPS` constructions and their quotient
-formulas/divergence, the failure modes, the open-problem backbone facts, and the
-identity `InversePartitionSequence.pst_simultaneous` are fully proved.  The
-forward `pst_inherited` and `pst_rate_inheritance` are genuine (delegating to the
-honestly-deferred `Graphon.…pst_time_convergence`).
+formulas/divergence, the failure modes, the open-problem backbone facts, the
+identity `InversePartitionSequence.pst_simultaneous`, and the inverse-limit lift
+`InversePartitionSequence.pst_lifted` are fully proved.  The forward
+`pst_inherited` and `pst_rate_inheritance` are genuine (delegating to
+`Graphon.…pst_time_convergence`).
 
 **`pst_rate_tradeoff` is now CLOSED** (axiom-clean): the matrix-exponential
 Lipschitz bound `‖exp x − exp y‖ ≤ ‖x − y‖ · exp(max ‖x‖ ‖y‖)` is proved from the
@@ -1513,11 +1529,10 @@ exponential series via the non-commutative telescoping identity
 `norm_exp_sub_exp_le`), then specialised to the `L²`-operator (CStar) matrix norm
 via `l2_entry_le_norm`, `l2_norm_single_le`, `l2_norm_le_card_sq_mul`.
 
-The single remaining honest `sorry` is:
-  * `InversePartitionSequence.pst_lifted` — needs cofiltered/inverse-limit
-    graphon quotient machinery (not in the codebase) for the genuine lift.
-`InversePartitionSequence.quotient` is the genuine cell-mass-averaged cell-flux,
-no longer the zero-matrix stub. -/
+This file is `sorry`-free.  `InversePartitionSequence.quotient` is the genuine
+cell-mass-averaged cell-flux, no longer the zero-matrix stub, and `pst_lifted`
+transports stagewise PST along the quotient convergence by closedness of the
+finite-PST predicate (the same mechanism as the forward direction). -/
 
 end FilteredColimitPST
 

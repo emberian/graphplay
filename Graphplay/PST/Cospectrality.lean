@@ -1347,14 +1347,16 @@ noncomputable def DC4 : WeightedGraph (Fin 4) where
 
 /-- The weighted degree (row sum) of vertex `0` is `3/√2 = 3·r2/4`. -/
 private theorem deg_zero : (∑ w, DC4.adj 0 w) = 3 * r2 / 2 := by
-  simp only [DC4_adj, Amat, Fin.sum_univ_four, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.head_cons, Matrix.cons_val_two, Matrix.tail_cons, Matrix.cons_val_three]
+  simp only [DC4_adj, Amat, Fin.sum_univ_four, Matrix.cons_val', Matrix.cons_val_zero,
+    Matrix.cons_val_one, Matrix.head_cons, Matrix.cons_val_two, Matrix.tail_cons,
+    Matrix.cons_val_three, Matrix.of_apply, Matrix.empty_val', Matrix.cons_val_fin_one]
   ring
 
 /-- The weighted degree (row sum) of vertex `1` is `-1/√2 = -r2/2`. -/
 private theorem deg_one : (∑ w, DC4.adj 1 w) = -(r2 / 2) := by
-  simp only [DC4_adj, Amat, Fin.sum_univ_four, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.head_cons, Matrix.cons_val_two, Matrix.tail_cons]
+  simp only [DC4_adj, Amat, Fin.sum_univ_four, Matrix.cons_val', Matrix.cons_val_zero,
+    Matrix.cons_val_one, Matrix.head_cons, Matrix.cons_val_two, Matrix.tail_cons,
+    Matrix.cons_val_three, Matrix.of_apply, Matrix.empty_val', Matrix.cons_val_fin_one]
   ring
 
 /-- The two PST endpoints have **different** weighted degree. -/
@@ -1413,11 +1415,14 @@ private theorem U_mul_inv : U * Uinv = 1 := by
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [Matrix.mul_apply, Fin.sum_univ_four,
-      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
-      Matrix.cons_val_two, Matrix.tail_cons, Matrix.cons_val_three] <;>
+      Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      Matrix.cons_val_two, Matrix.tail_cons, Matrix.cons_val_three,
+      Matrix.of_apply, Matrix.empty_val', Matrix.cons_val_fin_one] <;>
     first
+      | rfl
       | linear_combination (1/4 : ℂ) * h2
       | linear_combination (-(1/4) : ℂ) * h2
+      | linear_combination (1/2 : ℂ) * h2
       | ring
 
 set_option maxHeartbeats 1600000 in
@@ -1427,11 +1432,14 @@ private theorem inv_mul_U : Uinv * U = 1 := by
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [Matrix.mul_apply, Fin.sum_univ_four,
-      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
-      Matrix.cons_val_two, Matrix.tail_cons, Matrix.cons_val_three] <;>
+      Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      Matrix.cons_val_two, Matrix.tail_cons, Matrix.cons_val_three,
+      Matrix.of_apply, Matrix.empty_val', Matrix.cons_val_fin_one] <;>
     first
+      | rfl
       | linear_combination (1/4 : ℂ) * h2
       | linear_combination (-(1/4) : ℂ) * h2
+      | linear_combination (1/2 : ℂ) * h2
       | ring
 
 private theorem U_isUnit : IsUnit U :=

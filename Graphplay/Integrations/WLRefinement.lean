@@ -55,8 +55,11 @@ References:
 * Chan, Coutinho, Tamon, Vinet, Zhan, arXiv:1907.04729 — coherent algebras
   for PST.
 
-All proofs are `sorry`; the file is intended to compile and to be cited by
-downstream integration files. -/
+The file carries zero `sorry`s: every statement is either proven, conditioned
+on an explicitly documented per-graph hypothesis, or recorded as a named
+def-conjecture (`CFIStrictHierarchy`, `GraphonWLConverges`, the Open Problems
+below), with machine-checked refutations where the original placeholder
+statements were false. -/
 
 import Mathlib.Algebra.Algebra.Basic
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -252,6 +255,23 @@ theorem exists_KWLStable (G : WeightedGraph V) (k : ℕ) :
     have hxy : x = y := e.injective h
     rw [hxy]
 
+/-- Every **injective** tuple colouring is `IsKWLStable`: both sides of the
+defining iff reduce to equality of the underlying tuples, since the first
+component of `kRefineStep` is the old colour.  Note that `kRefineStep` never
+consults the graph, so a single injective colouring is stable for *every*
+graph on `V` simultaneously — the stability predicate alone carries no graph
+content.  This is the structural fact behind the refutations below. -/
+theorem isKWLStable_of_injective (G : WeightedGraph V) (k : ℕ)
+    {C : Type v} [DecidableEq C] (c : TupleColouring V k C)
+    (hc : Function.Injective c) : IsKWLStable G k c := by
+  intro x y
+  constructor
+  · intro h
+    have := congrArg Prod.fst h
+    simpa only [kRefineStep] using this
+  · intro h
+    rw [hc h]
+
 /-! ## 3. The WL chain refines
 
 The chain `WL_1 ⊑ WL_2 ⊑ WL_3 ⊑ ⋯` of fixed points refines each step: any
@@ -302,38 +322,103 @@ def TupleColourHistEquiv {W : Type} [Fintype W] [DecidableEq W] {k : ℕ}
     (Finset.univ.filter (fun t : Fin k → W => cG t = a)).card =
       (Finset.univ.filter (fun t : Fin k → W => cH t = e a)).card
 
-/-- **Cai–Fürer–Immerman lower bound**: the WL hierarchy is *strict*.
+/-- **Arbitrary stable colour pairs always have matching histograms
+(machine-checked refutation of the old `CFI_strict_hierarchy`).**
 
-Genuine statement (replacing the previous `True` placeholder): for every `k`
-there is a finite vertex type `W` carrying two weighted graphs `G, H` together
-with `k`-WL-stable colourings `cG, cH` whose colour **histograms agree**
-(`k`-WL cannot distinguish `G` from `H`), yet for which **no** `(k+1)`-WL-stable
-colour pair has matching histograms (`(k+1)`-WL *does* distinguish them).  This
-is the strictness of the chain `WL₁ ⊑ WL₂ ⊑ ⋯` (Cai–Fürer–Immerman 1992). -/
-theorem CFI_strict_hierarchy :
-    ∀ k : ℕ, ∃ (W : Type) (_ : Fintype W) (_ : DecidableEq W)
-      (G H : WeightedGraph W),
-      (∃ (CG CH : Type) (_ : Fintype CG) (_ : DecidableEq CG)
-          (_ : Fintype CH) (_ : DecidableEq CH)
-          (cG : (Fin k → W) → CG) (cH : (Fin k → W) → CH),
-        @IsKWLStable W _ _ G CG _ k cG ∧ @IsKWLStable W _ _ H CH _ k cH ∧
-          TupleColourHistEquiv cG cH) ∧
-      (¬ ∃ (CG CH : Type) (_ : Fintype CG) (_ : DecidableEq CG)
-          (_ : Fintype CH) (_ : DecidableEq CH)
-          (cG : (Fin (k+1) → W) → CG) (cH : (Fin (k+1) → W) → CH),
-        @IsKWLStable W _ _ G CG _ (k+1) cG ∧ @IsKWLStable W _ _ H CH _ (k+1) cH ∧
-          TupleColourHistEquiv cG cH) := by
-  -- The CFI gadgets over a sequence of expanders realise this strictness for
-  -- every level `k` (Cai–Fürer–Immerman 1992).  Full gadget construction
-  -- deferred to an honest theorem-`sorry`.
-  sorry
+For *every* arity `k` and *every* pair of weighted graphs `G, H` on a common
+finite vertex type there is a pair of `k`-WL-stable colourings with matching
+colour histograms: take the *same injective* colouring for both graphs.
+Injective colourings are `IsKWLStable` (`isKWLStable_of_injective`), the
+refinement step never consults the graph, and identical colourings have
+identical histograms under the identity colour bijection.
+
+Consequently a strictness statement whose negative clause quantifies over
+**arbitrary** stable colour pairs — as the old `CFI_strict_hierarchy` did,
+asserting *no* `(k+1)`-WL-stable pair has matching histograms — is false for
+every `k` and every `G, H`.  Genuine CFI strictness compares the **canonical
+(coarsest) stable** colourings; see `IsCanonicalKWL` and the def-conjecture
+`CFIStrictHierarchy` below. -/
+theorem stable_histEquiv_pair_always_exists (k : ℕ) (W : Type) [Fintype W]
+    [DecidableEq W] (G H : WeightedGraph W) :
+    ∃ (CG CH : Type) (_ : Fintype CG) (_ : DecidableEq CG)
+      (_ : Fintype CH) (_ : DecidableEq CH)
+      (cG : (Fin k → W) → CG) (cH : (Fin k → W) → CH),
+      IsKWLStable G k cG ∧ IsKWLStable H k cH ∧ TupleColourHistEquiv cG cH := by
+  classical
+  obtain ⟨e⟩ := Fintype.truncEquivFin (Fin k → W)
+  exact ⟨Fin (Fintype.card (Fin k → W)), Fin (Fintype.card (Fin k → W)),
+    inferInstance, inferInstance, inferInstance, inferInstance,
+    fun x => e x, fun x => e x,
+    isKWLStable_of_injective G k _ (fun _ _ h => e.injective h),
+    isKWLStable_of_injective H k _ (fun _ _ h => e.injective h),
+    Equiv.refl _, fun _ => rfl⟩
+
+/-- A `k`-tuple colouring is a **canonical (coarsest) `k`-WL-stable colouring**
+of `G`: it is stable, it *refines the initial atomic-type colouring* (equal
+colour forces equal patterns of adjacency weights and coordinate equalities),
+and it is **coarsest** among such — every stable colouring refining the initial
+colouring makes at least the distinctions that `c` makes.
+
+This pins down the genuine WL fixpoint.  Arbitrary `IsKWLStable` colourings
+include both the injective colouring (maximally fine, stable for every graph)
+and, on suitable graphs, colourings that ignore the graph entirely; neither is
+the object the WL hierarchy is about.  The canonical object exists in this
+model: stable initial-refining colourings are closed under common coarsening
+(stability transports along substitution chains), and the tuple set is finite. -/
+def IsCanonicalKWL (G : WeightedGraph V) (k : ℕ) {C : Type v} [DecidableEq C]
+    (c : TupleColouring V k C) : Prop :=
+  IsKWLStable G k c ∧
+  (∀ x y : Fin k → V, c x = c y → ∀ i j : Fin k,
+    G.adj (x i) (x j) = G.adj (y i) (y j) ∧ (x i = x j ↔ y i = y j)) ∧
+  ∀ (C' : Type v) [DecidableEq C'] (c' : TupleColouring V k C'),
+    IsKWLStable G k c' →
+    (∀ x y : Fin k → V, c' x = c' y → ∀ i j : Fin k,
+      G.adj (x i) (x j) = G.adj (y i) (y j) ∧ (x i = x j ↔ y i = y j)) →
+    ∀ x y : Fin k → V, c' x = c' y → c x = c y
+
+/-- **Cai–Fürer–Immerman strict hierarchy (def-conjecture).**  For every `k`
+there are graphs `G, H` on a common finite vertex type whose **canonical**
+`k`-WL-stable colourings have matching colour histograms (`k`-WL cannot tell
+them apart) while every pair of canonical `(k+1)`-WL-stable colourings has
+non-matching histograms (`(k+1)`-WL distinguishes them).  This is the
+strictness of the chain `WL₁ ⊑ WL₂ ⊑ ⋯` (Cai–Fürer–Immerman 1992, Combinatorica
+12, 389–410; Grohe 2017 §IV).
+
+Carried as a named `Prop` per the repo's def-conjecture convention
+(`Graphplay.Dowsing.Conjecture93`): the CFI gadget construction over a sequence
+of expanders is genuinely deep and not formalized here.  Note the comparison is
+anchored to `IsCanonicalKWL` — quantifying over arbitrary stable colourings
+instead makes the negative clause universally false
+(`stable_histEquiv_pair_always_exists`), which is exactly the landmine the old
+`CFI_strict_hierarchy` theorem stepped on.  A further honest caveat: this
+file's signature is *function-valued* (per-coordinate substitution functions),
+strictly finer than the genuine multiset `k`-WL signature, so the conjecture as
+stated is the model-internal analogue of CFI strictness. -/
+def CFIStrictHierarchy : Prop :=
+  ∀ k : ℕ, ∃ (W : Type) (_ : Fintype W) (_ : DecidableEq W)
+    (G H : WeightedGraph W),
+    (∃ (CG CH : Type) (_ : Fintype CG) (_ : DecidableEq CG)
+        (_ : Fintype CH) (_ : DecidableEq CH)
+        (cG : (Fin k → W) → CG) (cH : (Fin k → W) → CH),
+      @IsCanonicalKWL W _ _ G k CG _ cG ∧ @IsCanonicalKWL W _ _ H k CH _ cH ∧
+        TupleColourHistEquiv cG cH) ∧
+    (∀ (CG CH : Type) (_ : Fintype CG) (_ : DecidableEq CG)
+        (_ : Fintype CH) (_ : DecidableEq CH)
+        (cG : (Fin (k+1) → W) → CG) (cH : (Fin (k+1) → W) → CH),
+      @IsCanonicalKWL W _ _ G (k+1) CG _ cG → @IsCanonicalKWL W _ _ H (k+1) CH _ cH →
+        ¬ TupleColourHistEquiv cG cH)
 
 /-! ## 4. Coherent algebra ↔ 2-WL stable
 
-Theorem (folklore, see Chan–Coutinho–Tamon–Vinet–Zhan 1907.04729 §3 and
-Godsil–Royle Chapter 9): the **2-WL stable partition** of `V × V` is exactly
-the partition into Schur-product-minimal idempotents of `coherentAlgebra G`,
-and the linear span of its cell-indicator matrices is `coherentAlgebra G`. -/
+Folklore theorem (Chan–Coutinho–Tamon–Vinet–Zhan 1907.04729 §3, Godsil–Royle
+Chapter 9): the coarsest **multiset** 2-WL stable partition of `V × V` is
+exactly the partition into Schur-product-minimal idempotents of
+`coherentAlgebra G`, and the linear span of its cell-indicator matrices is
+`coherentAlgebra G`.  In this file's model the bridge is carried as the
+per-graph hypothesis `TwoWLCellsCoherent` (see its docstring for why it is not
+a theorem here), the containment direction is proved conditionally
+(`twoWL_span_le_coherentAlgebra`), and the necessity of the hypothesis is
+machine-checked (`exists_stable_twoWL_span_not_le_coherentAlgebra`). -/
 
 /-- A chosen 2-WL-stable colouring of `V × V`, packaged as a colour type with
 its decidable equality and a stable tuple-colouring on `Fin 2 → V`.  Existence
@@ -367,37 +452,162 @@ noncomputable def cellIndicator {α : Type w} [DecidableEq α]
     (R : V × V → α) (r : α) : Matrix V V ℂ :=
   fun x y => if R (x, y) = r then 1 else 0
 
-/-- **2-WL → coherent algebra (containment)**: the ℂ-linear span of the
-cell-indicator matrices of the *genuine* 2-WL stable partition is **contained
-in** `coherentAlgebra G`.
+/-- The **trivial coherent algebra** on `V`: the space `{a•I + b•J}` of linear
+combinations of the identity and the all-ones matrix.  It is a coherent algebra
+(`J·J = |V|·J`, `I∘J = I`, `J∘J = J`, both generators Hermitian) and, since
+every coherent algebra contains `I` and `J`, it is the *smallest* coherent
+algebra on `V`.  It is the witness that `coherentAlgebra G` can be a **proper**
+subspace of `Matrix V V ℂ`: see `exists_stable_twoWL_span_not_le_coherentAlgebra`. -/
+def trivialCoherentAlgebra (V : Type u) [Fintype V] [DecidableEq V] :
+    Submodule ℂ (Matrix V V ℂ) where
+  carrier := {M | ∃ a b : ℂ,
+    M = a • (1 : Matrix V V ℂ) + b • (Matrix.of fun _ _ => (1 : ℂ))}
+  zero_mem' := ⟨0, 0, by simp⟩
+  add_mem' := by
+    rintro M N ⟨a, b, hM⟩ ⟨c, d, hN⟩
+    refine ⟨a + c, b + d, ?_⟩
+    rw [hM, hN, add_smul, add_smul]
+    abel
+  smul_mem' := by
+    rintro t M ⟨a, b, hM⟩
+    refine ⟨t * a, t * b, ?_⟩
+    rw [hM, smul_add, smul_smul, smul_smul]
 
-This is the honest, correct direction of the folklore Bose–Mesner / cellular-
-algebra correspondence (Chan–Coutinho–Tamon–Vinet–Zhan 1907.04729 §3;
-Godsil–Royle Ch. 9): each 2-WL cell indicator is a coherent-algebra element
-(the coherent algebra contains the Bose–Mesner basis), so their span sits inside
-the coherent algebra.  The reverse containment (equality) additionally needs
-that 2-WL is *stable* enough to generate the whole algebra under Schur and
-matrix products; that direction is the deep part.
+theorem mem_trivialCoherentAlgebra_iff {M : Matrix V V ℂ} :
+    M ∈ trivialCoherentAlgebra V ↔ ∃ a b : ℂ,
+      M = a • (1 : Matrix V V ℂ) + b • (Matrix.of fun _ _ => (1 : ℂ)) :=
+  Iff.rfl
 
-NB: the previous statement asserted **equality** with the span of the *discrete*
-(`stablePartition2 := id`) partition, whose cell indicators span **all** of
-`Matrix V V ℂ` — strictly larger than `coherentAlgebra G` in general, so that
-equality was *false as stated* and survived only via `sorry`.  We restate to the
-true containment for the genuine 2-WL partition. -/
-theorem twoWL_span_le_coherentAlgebra (G : WeightedGraph V) :
+/-- `trivialCoherentAlgebra` is a coherent algebra: all five closure laws hold
+for `{a•I + b•J}` (`J·J = |V|·J`; entrywise `δ² = δ` for the Schur laws). -/
+theorem trivialCoherentAlgebra_isCoherentAlgebra :
+    IsCoherentAlgebra (trivialCoherentAlgebra V) := by
+  refine ⟨⟨1, 0, by simp⟩, ⟨0, 1, by simp; rfl⟩, ?_, ?_, ?_⟩
+  · -- conjugate transpose: `(a•I + b•J)ᴴ = (star a)•I + (star b)•J`.
+    rintro A ⟨a, b, hA⟩
+    refine ⟨star a, star b, ?_⟩
+    rw [hA, Matrix.conjTranspose_add, Matrix.conjTranspose_smul, Matrix.conjTranspose_smul,
+      Matrix.conjTranspose_one]
+    congr 1
+    ext x y
+    simp [Matrix.conjTranspose_apply]
+  · -- matrix product: entrywise, `(aδ+b)(cδ+d)` summed over the middle index.
+    rintro A ⟨a, b, hA⟩ B ⟨c, d, hB⟩
+    refine ⟨a * c, a * d + b * c + b * d * (Fintype.card V : ℂ), ?_⟩
+    rw [hA, hB]
+    ext x y
+    simp only [Matrix.add_apply, Matrix.smul_apply, Matrix.mul_apply, Matrix.one_apply,
+      smul_eq_mul, add_mul, mul_add, ite_mul, mul_ite, mul_zero, zero_mul, mul_one,
+      Finset.sum_add_distrib, Finset.sum_ite_eq, Finset.sum_ite_eq', Finset.mem_univ,
+      if_true]
+    by_cases h : x = y <;> simp [h] <;> ring
+  · -- Schur product: entrywise `(aδ+b)(cδ+d) = (ac+ad+bc)δ + bd` since `δ² = δ`.
+    rintro A ⟨a, b, hA⟩ B ⟨c, d, hB⟩
+    refine ⟨a * c + a * d + b * c, b * d, ?_⟩
+    rw [hA, hB]
+    ext x y
+    by_cases h : x = y
+    · simp [schurProduct, h]
+      ring
+    · simp [schurProduct, h]
+
+/-- The all-zero (edgeless) weighted graph on `V`. -/
+def zeroWeightedGraph (V : Type u) [Fintype V] [DecidableEq V] : WeightedGraph V :=
+  ⟨0, Matrix.isHermitian_zero, fun _ => rfl⟩
+
+/-- The coherent algebra of a zero-adjacency graph is contained in the trivial
+coherent algebra `{a•I + b•J}` (in fact equals it, but containment is all the
+refutation below needs). -/
+theorem coherentAlgebra_le_trivial_of_adj_zero (G : WeightedGraph V)
+    (h : G.adj = 0) : coherentAlgebra G ≤ trivialCoherentAlgebra V :=
+  sInf_le ⟨trivialCoherentAlgebra_isCoherentAlgebra,
+    by rw [h]; exact Submodule.zero_mem _⟩
+
+/-- **The 2-WL ↔ coherent-algebra bridge hypothesis** for `G`: every cell
+indicator of the chosen 2-WL stable partition lies in `coherentAlgebra G`.
+
+This is a *per-graph hypothesis*, not a theorem, for two structural reasons:
+
+* `stablePartition2 G` is extracted by choice from `exists_KWLStable G 2`, and
+  `IsKWLStable` alone does not constrain the witness — the injective colouring
+  is stable for every graph (`isKWLStable_of_injective`), and its cell
+  indicators are the matrix units, which span all of `Matrix V V ℂ` and escape
+  any proper coherent algebra
+  (`exists_stable_twoWL_span_not_le_coherentAlgebra`).
+* Even the canonical (coarsest stable) colouring of *this* file's model fails
+  the bridge in general: the function-valued signature forces same-coloured
+  pairs to have twin coordinates, so on twin-free graphs the canonical
+  partition is discrete, while `coherentAlgebra G` is typically proper.
+
+The genuine folklore theorem — the cell indicators of the coarsest **multiset**
+2-WL partition span exactly `coherentAlgebra G` (Chan–Coutinho–Tamon–Vinet–Zhan
+1907.04729 §3; Godsil–Royle Ch. 9) — lives in the multiset refinement model,
+which needs a canonical iterated multiset `k`-WL object not yet built here. -/
+def TwoWLCellsCoherent (G : WeightedGraph V) : Prop :=
+  ∀ r : Colour2 G, cellIndicator (stablePartition2 G) r ∈ coherentAlgebra G
+
+/-- **2-WL → coherent algebra (conditional containment)**: under the bridge
+hypothesis `TwoWLCellsCoherent G` — each 2-WL cell indicator is a coherent-
+algebra element — the ℂ-linear span of the cell indicators of the 2-WL stable
+partition is contained in `coherentAlgebra G`.
+
+The hypothesis is exactly what the cellular-algebra construction of the
+literature supplies for the coarsest multiset 2-WL partition (Chan et al. §3,
+Godsil–Royle Ch. 9) and is *not* derivable from `IsKWLStable` alone — see
+`TwoWLCellsCoherent` and the machine-checked refutation
+`exists_stable_twoWL_span_not_le_coherentAlgebra`. -/
+theorem twoWL_span_le_coherentAlgebra (G : WeightedGraph V)
+    (hcells : TwoWLCellsCoherent G) :
     Submodule.span ℂ (Set.range (fun r : Colour2 G => cellIndicator
         (stablePartition2 G) r)) ≤ coherentAlgebra G := by
-  -- Each 2-WL cell indicator lies in `coherentAlgebra G` (the coherent algebra
-  -- contains the cellular/Bose–Mesner basis of the 2-WL stable partition), and
-  -- a submodule span of a set inside a submodule is inside that submodule.
-  -- The membership of each cell indicator is the cellular-algebra construction
-  -- (Chan et al. §3, Godsil–Royle Ch. 9).
   rw [Submodule.span_le]
   rintro M ⟨r, rfl⟩
-  -- BLOCKED: `cellIndicator (stablePartition2 G) r ∈ coherentAlgebra G` is the
-  -- Bose–Mesner membership of each 2-WL cell, which requires the cellular-
-  -- algebra closure construction not yet formalized here.  Honest theorem-sorry.
-  sorry
+  exact hcells r
+
+/-- **Stability alone does not give the bridge (machine-checked).**  There is a
+graph (the zero graph on two vertices) and a 2-WL-stable colouring of its pairs
+(the injective one) whose cell-indicator span is **not** contained in the
+coherent algebra: the cell indicators are matrix units, and the matrix unit
+`E₀₁` escapes `coherentAlgebra = {a•I + b•J}` because its two off-diagonal
+entries differ.  This is why `twoWL_span_le_coherentAlgebra` must carry the
+`TwoWLCellsCoherent` hypothesis. -/
+theorem exists_stable_twoWL_span_not_le_coherentAlgebra :
+    ∃ (W : Type) (_ : Fintype W) (_ : DecidableEq W) (G : WeightedGraph W)
+      (C : Type) (_ : DecidableEq C) (c : TupleColouring W 2 C),
+      IsKWLStable G 2 c ∧
+      ¬ Submodule.span ℂ (Set.range (fun r : C => cellIndicator
+          (fun p : W × W => c fun i => if i = 0 then p.1 else p.2) r))
+        ≤ coherentAlgebra G := by
+  classical
+  refine ⟨Fin 2, inferInstance, inferInstance, zeroWeightedGraph (Fin 2),
+    Fin 2 → Fin 2, inferInstance, id,
+    isKWLStable_of_injective _ 2 id Function.injective_id, ?_⟩
+  intro hle
+  -- The cell of the tuple `(0,1)` is the matrix unit `E₀₁`.
+  have hmem := hle (Submodule.subset_span
+    ⟨(fun i => if i = 0 then (0 : Fin 2) else 1), rfl⟩)
+  obtain ⟨a, b, hab⟩ := mem_trivialCoherentAlgebra_iff.mp
+    (coherentAlgebra_le_trivial_of_adj_zero (zeroWeightedGraph (Fin 2)) rfl hmem)
+  -- Tuple-equality on `Fin 2` reduces to the two component equations.
+  have hfun : ∀ x y : Fin 2,
+      ((fun i : Fin 2 => if i = 0 then x else y)
+        = fun i : Fin 2 => if i = 0 then (0 : Fin 2) else 1) ↔ (x = 0 ∧ y = 1) := by
+    intro x y
+    constructor
+    · intro h
+      exact ⟨by simpa using congrFun h 0,
+        by simpa [show (1 : Fin 2) ≠ 0 by decide] using congrFun h 1⟩
+    · rintro ⟨rfl, rfl⟩
+      rfl
+  -- Entry `(0,1)` of `a•I + b•J` is `b`, and the indicator there is `1`.
+  have h01 := congrFun (congrFun hab 0) 1
+  -- Entry `(1,0)` of `a•I + b•J` is `b`, and the indicator there is `0`.
+  have h10 := congrFun (congrFun hab 1) 0
+  simp only [cellIndicator, id_eq, hfun, Matrix.add_apply, Matrix.smul_apply,
+    Matrix.one_apply, Matrix.of_apply, smul_eq_mul] at h01 h10
+  norm_num at h01 h10
+  -- `h01 : 1 = b`, `h10 : 0 = b`.
+  exact one_ne_zero (h01.trans h10.symm)
 
 /-- **1-WL stable = coarsest equitable partition (Tower 3 / Hole D4)**.
 
@@ -468,31 +678,34 @@ noncomputable def graphonRefineStep {C : Type v} [DecidableEq C] [Fintype C]
     Σ (C' : Type v), GraphonColouring Ω C' :=
   ⟨C × (C → ℂ), fun x => (c x, graphonNeighbourSignature W c x)⟩
 
-/-- **Graphon WL convergence (open conjecture)**. The iterated graphon WL
-chain converges to a `GraphonEquitablePartition` that is a **fixed point** of
-the graphon refinement step.
+/-- **Graphon WL convergence (named conjecture — suspected FALSE as stated).**
+There is a finite-indexed `GraphonEquitablePartition P` of `W` whose cell map
+is a fixed point of the graphon refinement step: any two points `x, y` in the
+same `P`-cell have **equal graphon neighbour signatures** (per-cell kernel
+integrals), so the refinement `x ↦ (P.cells x, graphonNeighbourSignature W
+P.cells x)` separates nothing further.
 
-Genuine statement (replacing the previous embedded `True`): there is a
-`GraphonEquitablePartition P` of `W` whose cell map is `graphonRefineStep`-
-stable — applying one more graphon refinement round does not separate points
-inside a cell.  Concretely, any two points `x, y` in the same `P`-cell have
-**equal graphon neighbour signatures** (per-cell kernel integrals), so the
-refinement step `x ↦ (P.cells x, graphonNeighbourSignature W P.cells x)` keeps
-them identified.  This fixed-point property is the L²-limit content of the
-iterated chain; the analytic cut-metric convergence remains open. -/
+Suspected counterexample to the universal claim
+(`OpenProblem3_graphon_WL_limit`): on `[0,1]` with Lebesgue measure take the
+rank-one kernel `W(x,y) = x·y` (zeroed on the null diagonal).  Against any
+finite partition the signature of `x` is `cl ↦ x · m_cl`, where `m_cl` is the
+first moment of cell `cl`; the moments sum to `1/2 ≠ 0`, so some `m_cl ≠ 0`
+and the signature separates *every* pair of distinct points sharing a cell —
+yet any finite partition of `[0,1]` has a cell containing two distinct points.
+The *pointwise* fixed-point demand made here is thus too strong; the honest
+open question is the **a.e./mod-null** version (cells and signature equality
+up to `μ`-null sets), where binning the L² signature against a lattice can
+plausibly converge (Borgs–Chayes–Lovász–Sós–Vesztergombi cut-metric framework;
+`Graphplay.Graphon.Equitable`).
+
+Carried as a def-conjecture per the repo convention
+(`Graphplay.Dowsing.Conjecture93`); no theorem in this development asserts it. -/
 def GraphonWLConverges (W : Graphon Ω μ) : Prop :=
   ∃ (I : Type) (_ : Fintype I) (_ : DecidableEq I)
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W),
     ∀ x y : Ω, P.cells x = P.cells y →
       graphonNeighbourSignature W P.cells x =
         graphonNeighbourSignature W P.cells y
-
-/-- **Statement of the WL graphon limit conjecture.** -/
-theorem graphonWL_limit_conjecture (W : Graphon Ω μ) :
-    GraphonWLConverges W := by
-  -- Open. See discussion in Borgs-Chayes-Lovász-Sós-Vesztergombi (cut metric)
-  -- and the L² graphon-equitable framework of `Graphplay.Graphon.Equitable`.
-  sorry
 
 end Graphon
 
@@ -1034,8 +1247,11 @@ refinement always converge to a `GraphonEquitablePartition`?
 
 Genuine `Prop` form (replacing the previous `True`): for **every** graphon `W`
 on every measure space, `GraphonWLConverges W` holds (a graphon-WL fixed-point
-equitable partition exists).  A positive answer yields a **graphon GI
-hierarchy** parallel to the finite WL hierarchy; see `graphonWL_limit_conjecture`. -/
+equitable partition exists).  In this pointwise form the universal claim is
+suspected **false** — see the rank-one counterexample sketch in the docstring
+of `GraphonWLConverges`; the live open question is its a.e./mod-null variant.
+A positive answer there yields a **graphon GI hierarchy** parallel to the
+finite WL hierarchy. -/
 def OpenProblem3_graphon_WL_limit : Prop :=
   ∀ (Ω : Type) (_ : MeasurableSpace Ω) (μ : Measure Ω) (W : Graphon Ω μ),
     GraphonWLConverges W

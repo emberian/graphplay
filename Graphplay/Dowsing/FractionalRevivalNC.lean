@@ -25,11 +25,21 @@ This file lays out the FR theory in three increasingly non-classical settings:
    bridging finite FR sequences to their graphon limits.
 
 We also collect three explicit families: FR on Cartesian products of cycles
-(Tamon-clique example), FR on Hamming `H(n, q)`, and a fresh conjectural
-statement about FR on the *chirally-signed* complete graph `K_n^σ`.
+(Tamon-clique example), FR on the Hamming scheme `H(n, 2)` (the hypercube
+`Q_n`), and a fresh conjectural statement about FR on the *chirally-signed*
+complete graph `K_n^σ`.
 
-The file is statements + sorries throughout — proofs are intentionally
-deferred (cf. the rest of `Graphplay`'s scaffolding).
+For the hypercube the file proves the **propagator product formula**
+(`hammingGraph_two_evolve_apply`: the `(x, y)` amplitude is
+`(cos τ)^(n−d) (−i sin τ)^d` for `d` the Hamming distance) and from it the
+**FR rigidity theorem** (`hammingGraph_two_no_nontrivial_fr`): for `n ≥ 2`
+the unweighted `Q_n` admits *no* fractional revival with both coefficients
+nonzero — annihilation off `{u, v}` forces `sin τ · cos τ = 0`, which kills
+one coefficient.  The boundary `n = 1` genuinely has balanced FR
+(`hammingGraph_one_balanced_fr`), and the full `q = 2` closed-form
+characterization is `hammingGraph_fr_iff`.  The one genuinely deep external
+input (the primitive-idempotent half of CCTVZ Theorem 3.1) is carried by the
+cited typeclass `CCTVZBoseMesnerFR`.
 
 References:
   - Chan-Coutinho-Tamon-Vinet-Zhan, arXiv:1907.04729 (FR + Bose-Mesner).
@@ -51,6 +61,7 @@ import Graphplay.Chiral
 import Graphplay.Graphon
 import Graphplay.Product
 import Graphplay.Product.PST
+import Graphplay.StdLib.Hypercube
 
 open scoped Matrix ENNReal
 open MeasureTheory
@@ -375,19 +386,52 @@ theorem bose_mesner_fr_of_closed_form
     rw [hentry w hwu] at hwzero
     exact hwzero
 
+/-- **Cited interface: Chan–Coutinho–Tamon–Vinet–Zhan, arXiv:1907.04729,
+Theorem 3.1 (forward / spectral half).**  From FR on a Bose-Mesner graph one
+recovers a unique swap class `A_q` and the global closed form
+`U(τ) = exp(iζ)(α·1 + β·A_q)`.
+
+The proof in 1907.04729 §3 runs through the primitive-idempotent calculus of
+the commutative Bose-Mesner algebra — simultaneous diagonalization of the
+commuting family `{A₀, …, A_d}` of normal matrices, plus the spectral
+congruences on `τ` that promote the FR-pinned `u`-column to a global operator
+identity.  Mathlib v4.30 has no simultaneous-diagonalization API for commuting
+normal families, so following the repo's `LiteratureInterfaces` design (cf.
+`HammingMixingClassification` in `Graphplay.StdLib.Hamming`) we carry the cited
+theorem as a content-bearing typeclass: the field is the *verbatim* statement,
+so any instance must genuinely prove it — there is no degenerate witness.
+
+**Non-vacuity.**  The converse direction `bose_mesner_fr_of_closed_form` is
+proved unconditionally above, and the hypothesis side of the field is genuinely
+inhabited (balanced FR on `H(1,2) = K₂` is exhibited by
+`hammingGraph_one_balanced_fr` below), so neither side of the conditioned
+equivalence `bose_mesner_fr_iff` is vacuous. -/
+class CCTVZBoseMesnerFR : Prop where
+  /-- Verbatim forward half of 1907.04729 Theorem 3.1. -/
+  closed_form_of_fr :
+    ∀ {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
+      (S : AssociationScheme V d) (G : WeightedGraph V),
+      G.adj ∈ BoseMesner S →
+      ∀ (u v : V), u ≠ v →
+      ∀ (τ : ℝ) (α β : ℂ) (ζ : ℝ), α.im = 0 →
+      Complex.normSq α + Complex.normSq β = 1 →
+      IsFR G u v τ (Complex.exp (Complex.I * ζ) * α) (Complex.exp (Complex.I * ζ) * β) →
+      ∃ q : Fin (d + 1),
+        (S.A q) v u = 1 ∧
+        (∀ q' ≠ q, (S.A q') v u = 0) ∧
+        G.evolve τ = (Complex.exp (Complex.I * ζ) * α) • (1 : Matrix V V ℂ)
+                   + (Complex.exp (Complex.I * ζ) * β) • S.A q
+
 /-- **Bose-Mesner FR — forward (the deep spectral direction).**  From FR on a
 Bose-Mesner graph one recovers the unique swap class `A_q` and the closed form
 `U(τ) = exp(iζ)(α·1 + β·A_q)`.  This is the eigenprojector half of
 Chan-Coutinho-Tamon-Vinet-Zhan Theorem 3.1: FR only constrains the `u`-column
 of `U(τ)`, and turning that into the *global* operator identity uses the
-primitive idempotent decomposition of the (commutative) Bose-Mesner algebra and
-the resulting spectral congruences on the times `τ`.  That apparatus is not yet
-formalised in Graphplay, so this is left as the single honest residual of
-`bose_mesner_fr_iff`.
-
-(Genuinely deep: requires the spectral / Krawtchouk eigenprojector API of
-1907.04729 §3.) -/
-theorem bose_mesner_fr_closed_form_of_fr
+primitive-idempotent decomposition of the (commutative) Bose-Mesner algebra and
+the resulting spectral congruences on the times `τ`.  That apparatus is the
+cited content of the `CCTVZBoseMesnerFR` interface, from which this theorem is
+discharged. -/
+theorem bose_mesner_fr_closed_form_of_fr [CCTVZBoseMesnerFR.{u}]
     {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
     (S : AssociationScheme V d) (G : WeightedGraph V)
     (hG : G.adj ∈ BoseMesner S)
@@ -399,8 +443,8 @@ theorem bose_mesner_fr_closed_form_of_fr
        (S.A q) v u = 1 ∧
        (∀ q' ≠ q, (S.A q') v u = 0) ∧
        G.evolve τ = (Complex.exp (Complex.I * ζ) * α) • (1 : Matrix V V ℂ)
-                  + (Complex.exp (Complex.I * ζ) * β) • S.A q) := by
-  sorry
+                  + (Complex.exp (Complex.I * ζ) * β) • S.A q) :=
+  CCTVZBoseMesnerFR.closed_form_of_fr S G hG u v huv τ α β ζ hphase hnorm
 
 /-- The Bose-Mesner FR theorem.  Let `G` be a weighted graph whose adjacency
 lies in `BoseMesner S` for an association scheme `S`.  Then (for `u ≠ v`) `G`
@@ -416,7 +460,7 @@ spectral congruences on the primitive idempotents that pin `τ`) is the deep
 half of 1907.04729 Theorem 3.1; it requires the eigenprojector / Krawtchouk
 spectral apparatus and is isolated as the single named residual
 `bose_mesner_fr_closed_form_of_fr`. -/
-theorem bose_mesner_fr_iff
+theorem bose_mesner_fr_iff [CCTVZBoseMesnerFR.{u}]
     {V : Type u} [Fintype V] [DecidableEq V] {d : ℕ}
     (S : AssociationScheme V d) (G : WeightedGraph V)
     (hG : G.adj ∈ BoseMesner S)
@@ -893,62 +937,640 @@ def hammingGraph (n q : ℕ) : WeightedGraph (Fin n → Fin q) where
     show (if hammingDist x x = 1 then (1:ℂ) else 0) = 0
     rw [hzero]; simp
 
-/-- **FR exists on the Hamming scheme `H(n, 2)`** (1907.04729 §4–5;
-honest-floor deep result).
+/-! #### Hamming-distance toolkit
 
-LANDMINE FIX (statement).  The former statement claimed **balanced** FR
-`(1/√2, i/√2)` between *antipodal* pairs of `H(n, 2)` at the specific time
-`τ = π/(2n)` for every `4 ∣ n`.  That is **FALSE** for every `n ≥ 2`, by the
-hypercube product structure.  `H(n, 2)` is the `n`-cube `Q_n = K₂^{□n}`, so its
-propagator factorizes coordinatewise:
-`U(τ) = ∏ᵢ exp(-iτ Xᵢ)`, and the `u`-column amplitude at a string `v` is
-`∏ᵢ (cos τ if vᵢ = uᵢ else -i sin τ)`.
+Small combinatorial facts about `hammingDist` on `Fin n → Fin q` (and the
+binary coordinate flip for `q = 2`) feeding the `H(n, 2)` propagator product
+formula and the FR rigidity theorem below. -/
 
-  * The diagonal amplitude is `(cos τ)ⁿ`, **not** `1/√2` (for `n ≥ 2` and
-    `τ = π/(2n)` it is `cos(π/(2n))ⁿ ≠ 1/√2`).
-  * Worse, any `v` with **mixed** coordinates (differing from `u` in some but
-    not all positions — which exists for `n ≥ 2`) has amplitude
-    `(cos τ)^{#same} · (-i sin τ)^{#diff} ≠ 0`, yet `v ∉ {u, ū}`.  So the FR
-    *annihilation* condition fails: there is no FR pair `u → ū` at all.
-    (Algebraically: balanced FR forces `U(τ) = α·I + β·A_q` for a single
-    distance class, impossible when `A` has `n + 1 > 2` distinct eigenvalues,
-    i.e. for `n ≥ 2`.)
+/-- Hamming distance vanishes exactly on equal strings. -/
+theorem hammingDist_eq_zero_iff {n q : ℕ} (x y : Fin n → Fin q) :
+    hammingDist x y = 0 ↔ x = y := by
+  unfold hammingDist
+  rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+  constructor
+  · intro h
+    funext i
+    exact not_not.mp (h (Finset.mem_univ i))
+  · rintro rfl i _
+    exact fun h => h rfl
 
-The genuinely-true content (Chan–Coutinho–Tamon–Vinet–Zhan) is that the Hamming
-scheme graph `H(n, 2)` *does* admit **some** non-trivial FR — between vertices at
-a suitable distance, at a Krawtchouk-spectrum-determined time, with
-scheme-determined coefficients — **not** the blanket antipodal `(1/√2, i/√2)` at
-`π/(2n)`.  We state that honest existence (non-vacuous: nontrivial `α, β ≠ 0`,
-distinct `u ≠ v`); it is the deep §4–5 Krawtchouk computation, left as an honest
-residual.  Requires `n ≥ 2` (for `n ≤ 1` the only FR is the trivial `(1,0)`). -/
-theorem hammingGraph_fr_exists (n : ℕ) (hn : 2 ≤ n) :
-    ∃ (u v : Fin n → Fin 2) (τ : ℝ) (α β : ℂ),
-      u ≠ v ∧ α ≠ 0 ∧ β ≠ 0 ∧ IsFR (hammingGraph n 2) u v τ α β := by
-  -- 1907.04729 §4–5: the Krawtchouk-eigenvalue closed form `U(τ) = α I + β A_q`
-  -- for a distance class `q` of the Hamming scheme (honest deep residual).
-  sorry
+/-- Hamming distance is symmetric. -/
+theorem hammingDist_symm {n q : ℕ} (x y : Fin n → Fin q) :
+    hammingDist x y = hammingDist y x := by
+  unfold hammingDist
+  congr 1
+  ext i
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+  exact ⟨fun h => fun e => h e.symm, fun h => fun e => h e.symm⟩
 
-/-- A more general statement: the Hamming graph `H(n, q)` lies in the
-Hamming association scheme, so the `bose_mesner_fr_iff` characterisation
-applies, and `g, h` can be read off the Krawtchouk-eigenvalue formula
-`θ_r = n(q-1) - q r`. -/
-theorem hammingGraph_fr_iff (n q : ℕ) (u v : Fin n → Fin q)
-    (τ : ℝ) (α β : ℂ) :
-    IsFR (hammingGraph n q) u v τ α β ↔
-      -- (normalisation) together with the Krawtchouk spectral characterisation:
-      -- for the distance class `r₀ = d(u, v)`, the propagator takes the
-      -- association-scheme FR closed form `U(τ) = α·1 + β·A_{r₀}`, where
-      -- `A_{r₀}` is the distance-`r₀` class matrix `[d(x,y) = r₀]`.  (The times
-      -- `τ` realising this are exactly those satisfying the congruence
-      -- conditions on the Krawtchouk eigenvalues `θ_r = n(q-1) - q r`.)
+/-- Hamming distance is at most the string length. -/
+theorem hammingDist_le {n q : ℕ} (x y : Fin n → Fin q) : hammingDist x y ≤ n := by
+  unfold hammingDist
+  calc (Finset.univ.filter (fun i : Fin n => x i ≠ y i)).card
+      ≤ (Finset.univ : Finset (Fin n)).card := Finset.card_filter_le _ _
+    _ = n := by simp
+
+/-- Peeling the leading coordinate off the Hamming distance. -/
+theorem hammingDist_succ {n q : ℕ} (x y : Fin (n + 1) → Fin q) :
+    hammingDist x y
+      = (if x 0 = y 0 then 0 else 1) + hammingDist (Fin.tail x) (Fin.tail y) := by
+  unfold hammingDist
+  rw [Finset.card_filter, Finset.card_filter, Fin.sum_univ_succ]
+  congr 1
+  by_cases h : x 0 = y 0 <;> simp [h]
+
+/-- The coordinate flip on the binary alphabet. -/
+def flip2 : Fin 2 → Fin 2 := fun c => if c = 0 then 1 else 0
+
+theorem flip2_ne : ∀ c : Fin 2, flip2 c ≠ c := by decide
+
+theorem eq_flip2_of_ne : ∀ a b : Fin 2, a ≠ b → a = flip2 b := by decide
+
+/-- The antipode (all-coordinates flip) of a binary string. -/
+def hammingAntipode (n : ℕ) (u : Fin n → Fin 2) : Fin n → Fin 2 :=
+  fun i => flip2 (u i)
+
+/-- The antipode is at full Hamming distance `n`. -/
+theorem hammingDist_antipode (n : ℕ) (u : Fin n → Fin 2) :
+    hammingDist u (hammingAntipode n u) = n := by
+  unfold hammingDist
+  have hall : (Finset.univ.filter (fun i : Fin n => u i ≠ hammingAntipode n u i))
+      = Finset.univ :=
+    Finset.filter_true_of_mem fun i _ => (flip2_ne (u i)).symm
+  rw [hall, Finset.card_univ, Fintype.card_fin]
+
+/-- Full Hamming distance pins the partner to the antipode (binary alphabet). -/
+theorem eq_antipode_of_hammingDist_eq (n : ℕ) (u w : Fin n → Fin 2)
+    (h : hammingDist u w = n) : w = hammingAntipode n u := by
+  have hfull : (Finset.univ.filter (fun i : Fin n => u i ≠ w i)) = Finset.univ := by
+    apply Finset.eq_univ_of_card
+    rw [Fintype.card_fin]
+    exact h
+  funext i
+  have hmem : i ∈ Finset.univ.filter (fun j : Fin n => u j ≠ w j) := by
+    rw [hfull]
+    exact Finset.mem_univ i
+  have hi : u i ≠ w i := (Finset.mem_filter.mp hmem).2
+  exact eq_flip2_of_ne (w i) (u i) hi.symm
+
+/-- Flipping one coordinate moves Hamming distance exactly `1`. -/
+theorem hammingDist_update (n : ℕ) (u : Fin n → Fin 2) (i : Fin n) :
+    hammingDist (Function.update u i (flip2 (u i))) u = 1 := by
+  unfold hammingDist
+  have hfilter : Finset.univ.filter
+      (fun j : Fin n => Function.update u i (flip2 (u i)) j ≠ u j) = {i} := by
+    ext j
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton,
+      Function.update_apply]
+    by_cases hj : j = i
+    · subst hj
+      simp [flip2_ne]
+    · simp [hj]
+  rw [hfilter, Finset.card_singleton]
+
+/-! #### The `H(n, 2) = Q_n` propagator product formula
+
+`H(n, 2)` is the `n`-cube `Q_n = K₂^{□n}`: peeling the leading coordinate
+(`Fin (n+1) → Fin 2 ≃ Fin 2 × (Fin n → Fin 2)`) identifies its adjacency with
+the Kronecker sum `K₂ □ H(n−1, 2)`, the propagator transports entrywise across
+the identification (`exp` commutes with `reindex`), and the Cartesian-product
+factorization `evolve_cartesianProduct_apply` peels one `exp(-iτX)` factor per
+coordinate.  Result: the `(x, y)` amplitude is
+`(cos τ)^(n−d) · (−i sin τ)^d` for `d = hammingDist x y`
+(`hammingGraph_two_evolve_apply`).  This single identity drives everything
+below: the `n = 1` balanced-FR witness, the `n ≥ 2` FR refutation, and the
+`q = 2` closed-form characterization. -/
+
+section HammingTwoPropagator
+
+open StdLib.HypercubeProduct
+
+attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebra
+
+/-- Entrywise transport of the quantum-walk propagator across an
+adjacency-preserving equivalence of vertex sets: `exp` commutes with
+`Matrix.reindex` (`StdLib.HypercubeIso.exp_reindex`), so equal adjacencies
+(up to relabeling) give equal evolutions (up to the same relabeling). -/
+theorem WeightedGraph.evolve_transport {V : Type u} {W : Type v}
+    [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G : WeightedGraph V) (H : WeightedGraph W) (e : V ≃ W)
+    (hadj : ∀ x y : V, G.adj x y = H.adj (e x) (e y)) (τ : ℝ) (x y : V) :
+    G.evolve τ x y = H.evolve τ (e x) (e y) := by
+  unfold WeightedGraph.evolve
+  have hsub : G.adj = H.adj.submatrix e e := by
+    ext a b
+    exact hadj a b
+  have hsmul : (-(Complex.I * (τ : ℂ))) • (H.adj.submatrix e e)
+      = Matrix.reindex e.symm e.symm ((-(Complex.I * (τ : ℂ))) • H.adj) := by
+    ext i j
+    simp [Matrix.submatrix_apply, Matrix.smul_apply]
+  rw [hsub, hsmul, StdLib.HypercubeIso.exp_reindex, Matrix.reindex_apply,
+    Matrix.submatrix_apply]
+  simp
+
+/- The `2×2` Hadamard-diagonalization of `exp(s·X)`, reproduced here (the
+sibling copies in `StdLib.HypercubeProduct` / `StdLib.HypercubeBridge` are
+`private`). -/
+
+private def hadFR : Matrix (Fin 2) (Fin 2) ℂ := !![1, 1; 1, -1]
+
+private theorem hadFR_mul_half : hadFR * ((1 / 2 : ℂ) • hadFR) = 1 := by
+  unfold hadFR; ext i j
+  fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Fin.sum_univ_two] <;> ring
+
+private theorem hadFR_isUnit : IsUnit hadFR := by
+  refine ⟨⟨hadFR, (1 / 2 : ℂ) • hadFR, hadFR_mul_half, ?_⟩, rfl⟩
+  unfold hadFR; ext i j
+  fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Fin.sum_univ_two] <;> ring
+
+private theorem hadFR_inv : hadFR⁻¹ = (1 / 2 : ℂ) • hadFR := by
+  apply Matrix.inv_eq_right_inv; exact hadFR_mul_half
+
+private theorem diag_fin_two_FR (a b : ℂ) :
+    (Matrix.diagonal ![a, b]) = !![a, 0; 0, b] := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp [Matrix.cons_val_zero, Matrix.cons_val_one]
+
+private theorem half_smul_hadFR :
+    ((1 / 2 : ℂ) • hadFR) = !![(1 : ℂ) / 2, 1 / 2; 1 / 2, -(1 / 2)] := by
+  unfold hadFR; ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.smul_apply, Matrix.cons_val_zero, Matrix.cons_val_one]
+
+private theorem X_eq_conj_diag_FR :
+    (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+      = hadFR * (Matrix.diagonal ![1, -1]) * hadFR⁻¹ := by
+  rw [hadFR_inv, diag_fin_two_FR, half_smul_hadFR]
+  unfold hadFR
+  rw [Matrix.mul_fin_two, Matrix.mul_fin_two]
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [Matrix.cons_val_zero, Matrix.cons_val_one] <;> ring
+
+private theorem exp_smul_X_lit_FR (s : ℂ) :
+    NormedSpace.exp (s • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ))
+      = !![(NormedSpace.exp s + NormedSpace.exp (-s)) / 2,
+            (NormedSpace.exp s - NormedSpace.exp (-s)) / 2;
+           (NormedSpace.exp s - NormedSpace.exp (-s)) / 2,
+            (NormedSpace.exp s + NormedSpace.exp (-s)) / 2] := by
+  have hsmul : s • (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+      = hadFR * (Matrix.diagonal ![s, -s]) * hadFR⁻¹ := by
+    have hd : (Matrix.diagonal ![s, -s] : Matrix (Fin 2) (Fin 2) ℂ)
+        = s • Matrix.diagonal ![1, -1] := by
+      rw [← Matrix.diagonal_smul]; congr 1; funext k; fin_cases k <;> simp
+    rw [X_eq_conj_diag_FR, hd, mul_smul_comm, smul_mul_assoc]
+  rw [hsmul, Matrix.exp_conj _ _ hadFR_isUnit, Matrix.exp_diagonal]
+  have hdiag : (fun i => NormedSpace.exp (![s, -s] i))
+      = (![NormedSpace.exp s, NormedSpace.exp (-s)] : Fin 2 → ℂ) := by
+    funext k; fin_cases k <;> simp
+  rw [Pi.exp_def, hdiag, hadFR_inv, diag_fin_two_FR, half_smul_hadFR]
+  unfold hadFR
+  rw [Matrix.mul_fin_two, Matrix.mul_fin_two]
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [Matrix.cons_val_zero, Matrix.cons_val_one] <;> ring
+
+/-- The single-edge propagator in closed form: `K₂.evolve τ` is `cos τ` on the
+diagonal and `−i·sin τ` off it (Euler's formula on the `±1` eigenvalues of the
+Pauli-`X` adjacency). -/
+theorem K2_evolve_apply (τ : ℝ) (a b : Fin 2) :
+    K2.evolve τ a b
+      = if a = b then ((Real.cos τ : ℝ) : ℂ)
+        else -Complex.I * ((Real.sin τ : ℝ) : ℂ) := by
+  have h1 : Complex.exp (Complex.I * ((τ : ℝ) : ℂ))
+      = ((Real.cos τ : ℝ) : ℂ) + ((Real.sin τ : ℝ) : ℂ) * Complex.I := by
+    rw [show Complex.I * ((τ : ℝ) : ℂ) = ((τ : ℝ) : ℂ) * Complex.I by ring,
+      Complex.exp_ofReal_mul_I]
+  have h2 : Complex.exp (-(Complex.I * ((τ : ℝ) : ℂ)))
+      = ((Real.cos τ : ℝ) : ℂ) - ((Real.sin τ : ℝ) : ℂ) * Complex.I := by
+    rw [show -(Complex.I * ((τ : ℝ) : ℂ)) = ((-τ : ℝ) : ℂ) * Complex.I by push_cast; ring,
+      Complex.exp_ofReal_mul_I, Real.cos_neg, Real.sin_neg]
+    push_cast; ring
+  have hdval : (NormedSpace.exp (-(Complex.I * ((τ : ℝ) : ℂ)))
+      + NormedSpace.exp (-(-(Complex.I * ((τ : ℝ) : ℂ))))) / 2
+      = ((Real.cos τ : ℝ) : ℂ) := by
+    rw [neg_neg, ← Complex.exp_eq_exp_ℂ, h1, h2]
+    ring
+  have hoval : (NormedSpace.exp (-(Complex.I * ((τ : ℝ) : ℂ)))
+      - NormedSpace.exp (-(-(Complex.I * ((τ : ℝ) : ℂ))))) / 2
+      = -Complex.I * ((Real.sin τ : ℝ) : ℂ) := by
+    rw [neg_neg, ← Complex.exp_eq_exp_ℂ, h1, h2]
+    ring
+  unfold WeightedGraph.evolve
+  rw [K2_adj, exp_smul_X_lit_FR]
+  fin_cases a <;> fin_cases b <;>
+    simp only [Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one,
+      Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.of_apply,
+      Fin.zero_eta, Fin.mk_one, reduceIte, Fin.reduceEq, if_true, if_false]
+  · exact hdval
+  · exact hoval
+  · exact hoval
+  · exact hdval
+
+/-- Peeling the leading coordinate of a binary string. -/
+private def consFR (n : ℕ) : (Fin (n + 1) → Fin 2) ≃ Fin 2 × (Fin n → Fin 2) where
+  toFun x := (x 0, Fin.tail x)
+  invFun p := Fin.cons p.1 p.2
+  left_inv x := Fin.cons_self_tail x
+  right_inv p := by
+    obtain ⟨a, f⟩ := p
+    simp [Fin.tail_cons]
+
+private theorem consFR_apply (n : ℕ) (x : Fin (n + 1) → Fin 2) :
+    consFR n x = (x 0, Fin.tail x) := rfl
+
+private theorem K2_adj_apply (a b : Fin 2) :
+    K2.adj a b = if a = b then (0 : ℂ) else 1 := by
+  fin_cases a <;> fin_cases b <;> simp [K2_adj]
+
+/-- Peeling one coordinate identifies the `H(n+1, 2)` adjacency with the
+Kronecker sum `K₂ □ H(n, 2)` across `consFR`. -/
+private theorem hammingGraph_succ_adj (n : ℕ) (x y : Fin (n + 1) → Fin 2) :
+    (hammingGraph (n + 1) 2).adj x y
+      = (WeightedGraph.cartesianProduct K2 (hammingGraph n 2)).adj
+          (consFR n x) (consFR n y) := by
+  rw [consFR_apply, consFR_apply, WeightedGraph.cartesianProduct_adj_eq, K2_adj_apply]
+  show (if hammingDist x y = 1 then (1 : ℂ) else 0)
+      = (if Fin.tail x = Fin.tail y then (if x 0 = y 0 then (0 : ℂ) else 1) else 0)
+        + (if x 0 = y 0
+            then (if hammingDist (Fin.tail x) (Fin.tail y) = 1 then (1 : ℂ) else 0) else 0)
+  rw [hammingDist_succ x y]
+  by_cases h0 : x 0 = y 0
+  · by_cases ht : Fin.tail x = Fin.tail y
+    · have hdt : hammingDist (Fin.tail x) (Fin.tail y) = 0 :=
+        (hammingDist_eq_zero_iff _ _).mpr ht
+      simp only [if_pos h0, if_pos ht, hdt]
+      norm_num
+    · simp only [if_pos h0, if_neg ht, zero_add]
+  · by_cases ht : Fin.tail x = Fin.tail y
+    · have hdt : hammingDist (Fin.tail x) (Fin.tail y) = 0 :=
+        (hammingDist_eq_zero_iff _ _).mpr ht
+      simp only [if_neg h0, if_pos ht, hdt, add_zero]
+      norm_num
+    · have hdt : hammingDist (Fin.tail x) (Fin.tail y) ≠ 0 :=
+        fun h => ht ((hammingDist_eq_zero_iff _ _).mp h)
+      simp only [if_neg h0, if_neg ht, add_zero]
+      rw [if_neg (by omega : ¬(1 + hammingDist (Fin.tail x) (Fin.tail y) = 1))]
+
+/-- **The `H(n, 2) = Q_n` propagator product formula.**  The `(x, y)` amplitude
+of the hypercube quantum walk is `(cos τ)^(n−d) · (−i sin τ)^d` for
+`d = hammingDist x y`: the propagator factorizes coordinatewise into `n`
+single-edge factors, each contributing `cos τ` on an agreeing coordinate and
+`−i sin τ` on a differing one. -/
+theorem hammingGraph_two_evolve_apply :
+    ∀ (n : ℕ) (τ : ℝ) (x y : Fin n → Fin 2),
+      (hammingGraph n 2).evolve τ x y
+        = ((Real.cos τ : ℝ) : ℂ) ^ (n - hammingDist x y)
+          * (-Complex.I * ((Real.sin τ : ℝ) : ℂ)) ^ hammingDist x y
+  | 0, τ, x, y => by
+      have hxy : x = y := funext fun i => i.elim0
+      subst hxy
+      have hd : hammingDist x x = 0 := by unfold hammingDist; simp
+      have hadj : (hammingGraph 0 2).adj = 0 := by
+        ext f g
+        have hd' : hammingDist f g = 0 := by unfold hammingDist; simp
+        show (if hammingDist f g = 1 then (1 : ℂ) else 0) = 0
+        rw [hd']
+        norm_num
+      unfold WeightedGraph.evolve
+      rw [hadj, smul_zero, NormedSpace.exp_zero, Matrix.one_apply_eq, hd]
+      norm_num
+  | (n + 1), τ, x, y => by
+      rw [WeightedGraph.evolve_transport (hammingGraph (n + 1) 2)
+          (WeightedGraph.cartesianProduct K2 (hammingGraph n 2)) (consFR n)
+          (hammingGraph_succ_adj n) τ x y,
+        consFR_apply, consFR_apply, WeightedGraph.evolve_cartesianProduct_apply,
+        K2_evolve_apply, hammingGraph_two_evolve_apply n τ (Fin.tail x) (Fin.tail y),
+        hammingDist_succ x y]
+      have hle := hammingDist_le (Fin.tail x) (Fin.tail y)
+      by_cases h0 : x 0 = y 0
+      · simp only [if_pos h0, zero_add]
+        have hexp : n + 1 - hammingDist (Fin.tail x) (Fin.tail y)
+            = (n - hammingDist (Fin.tail x) (Fin.tail y)) + 1 := by omega
+        rw [hexp]
+        ring
+      · simp only [if_neg h0]
+        have hexp : n + 1 - (1 + hammingDist (Fin.tail x) (Fin.tail y))
+            = n - hammingDist (Fin.tail x) (Fin.tail y) := by omega
+        rw [hexp]
+        ring
+
+end HammingTwoPropagator
+
+/-- The diagonal of the `H(n, 2)` propagator: `U(τ)_{xx} = (cos τ)ⁿ`. -/
+theorem hammingGraph_two_evolve_diag (n : ℕ) (τ : ℝ) (x : Fin n → Fin 2) :
+    (hammingGraph n 2).evolve τ x x = ((Real.cos τ : ℝ) : ℂ) ^ n := by
+  rw [hammingGraph_two_evolve_apply, (hammingDist_eq_zero_iff x x).mpr rfl]
+  simp
+
+/-- **Balanced fractional revival on `H(1, 2) = K₂`** at `τ = π/4`: the walk
+sends `|0⟩` to `(√2/2)|0⟩ + (−i√2/2)|1⟩` — both coefficients nonzero, of equal
+modulus.  This is the boundary case of the rigidity theorem below: on a single
+edge there is no third vertex, so the annihilation clause is vacuous and the
+mixed amplitude survives.  (It also witnesses non-vacuity of the FR hypothesis
+in the `CCTVZBoseMesnerFR` interface.) -/
+theorem hammingGraph_one_balanced_fr :
+    ∃ (u v : Fin 1 → Fin 2) (α β : ℂ),
+      u ≠ v ∧ α ≠ 0 ∧ β ≠ 0 ∧ ‖α‖ = ‖β‖ ∧
+        IsFR (hammingGraph 1 2) u v (Real.pi / 4) α β := by
+  have hcosne : Real.cos (Real.pi / 4) ≠ 0 := by
+    rw [Real.cos_pi_div_four]; positivity
+  have hsinne : Real.sin (Real.pi / 4) ≠ 0 := by
+    rw [Real.sin_pi_div_four]; positivity
+  have hd : hammingDist (fun _ : Fin 1 => (1 : Fin 2)) (fun _ : Fin 1 => (0 : Fin 2)) = 1 := by
+    decide
+  refine ⟨fun _ => 0, fun _ => 1,
+    ((Real.cos (Real.pi / 4) : ℝ) : ℂ),
+    -Complex.I * ((Real.sin (Real.pi / 4) : ℝ) : ℂ),
+    ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · intro h
+    exact absurd (congrFun h 0) (by decide)
+  · exact Complex.ofReal_ne_zero.mpr hcosne
+  · exact mul_ne_zero (neg_ne_zero.mpr Complex.I_ne_zero) (Complex.ofReal_ne_zero.mpr hsinne)
+  · rw [norm_mul, norm_neg, Complex.norm_I, one_mul, Complex.norm_real, Complex.norm_real,
+      Real.norm_eq_abs, Real.norm_eq_abs, Real.cos_pi_div_four, Real.sin_pi_div_four]
+  · -- normalisation: `cos² + sin² = 1`
+    rw [Complex.normSq_mul, Complex.normSq_neg, Complex.normSq_I, one_mul,
+      Complex.normSq_ofReal, Complex.normSq_ofReal]
+    nlinarith [Real.sin_sq_add_cos_sq (Real.pi / 4)]
+  · rw [hammingGraph_two_evolve_diag, pow_one]
+  · rw [hammingGraph_two_evolve_apply, hd]
+    simp
+  · -- annihilation is vacuous: `H(1, 2)` has only the two vertices
+    intro w hwu hwv
+    exfalso
+    have hcases : ∀ c : Fin 2, c = 0 ∨ c = 1 := by decide
+    rcases hcases (w 0) with h | h
+    · exact hwu (funext fun i => by rw [Subsingleton.elim i (0 : Fin 1)]; exact h)
+    · exact hwv (funext fun i => by rw [Subsingleton.elim i (0 : Fin 1)]; exact h)
+
+/-- **FR rigidity of the unweighted hypercube (machine-checked refutation).**
+For `n ≥ 2` the Hamming graph `H(n, 2) = Q_n` admits **no** fractional revival
+with both coefficients nonzero, at any time, between any vertex pair.
+
+This *refutes* the once-conjectured "FR exists on `H(n, 2)`" slot: by the
+product formula, `α = U(τ)_{uu} = (cos τ)ⁿ ≠ 0` forces `cos τ ≠ 0` and
+`β = U(τ)_{vu} = (cos τ)^{n−d}(−i sin τ)^d ≠ 0` (with `d = d(v,u) ≥ 1`) forces
+`sin τ ≠ 0`; but then a one-coordinate flip `w` of `u` avoiding `v` (which
+exists since `u` has `n ≥ 2` neighbours) carries amplitude
+`(cos τ)^{n−1}(−i sin τ) ≠ 0`, violating the annihilation clause off `{u, v}`.
+
+The genuinely-true Chan–Coutinho–Tamon–Vinet–Zhan content (1907.04729 §4–5) is
+that two-coefficient FR lives on **weighted** graphs in the Hamming/path
+schemes — e.g. weighted paths from `Q_n` quotients, or `Q_n` with tuned edge
+weights — never on the *unweighted* `Q_n` itself for `n ≥ 2`; the boundary
+`n = 1` (a single edge, `hammingGraph_one_balanced_fr`) is the only unweighted
+survivor. -/
+theorem hammingGraph_two_no_nontrivial_fr (n : ℕ) (hn : 2 ≤ n) :
+    ¬ ∃ (u v : Fin n → Fin 2) (τ : ℝ) (α β : ℂ),
+        u ≠ v ∧ α ≠ 0 ∧ β ≠ 0 ∧ IsFR (hammingGraph n 2) u v τ α β := by
+  rintro ⟨u, v, τ, α, β, huv, hα, hβ, hnorm, hαe, hβe, hann⟩
+  -- `α ≠ 0` forces `cos τ ≠ 0`
+  have hcos : Real.cos τ ≠ 0 := by
+    intro hc
+    apply hα
+    rw [← hαe, hammingGraph_two_evolve_diag, hc, Complex.ofReal_zero,
+      zero_pow (by omega : n ≠ 0)]
+  -- `β ≠ 0` forces `sin τ ≠ 0`
+  have hsin : Real.sin τ ≠ 0 := by
+    intro hs
+    apply hβ
+    have hd : hammingDist v u ≠ 0 :=
+      fun h => huv ((hammingDist_eq_zero_iff v u).mp h).symm
+    rw [← hβe, hammingGraph_two_evolve_apply, hs, Complex.ofReal_zero, mul_zero,
+      zero_pow hd, mul_zero]
+  -- a one-coordinate flip of `u` avoiding `v` (u has `n ≥ 2` distinct neighbours)
+  obtain ⟨i, hi⟩ : ∃ i : Fin n, Function.update u i (flip2 (u i)) ≠ v := by
+    by_contra hcon
+    push_neg at hcon
+    have h01 : (⟨0, by omega⟩ : Fin n) ≠ ⟨1, by omega⟩ := Fin.ne_of_val_ne (by norm_num)
+    have heq := (hcon ⟨0, by omega⟩).trans (hcon ⟨1, by omega⟩).symm
+    have h0 := congrFun heq ⟨0, by omega⟩
+    rw [Function.update_self, Function.update_of_ne h01] at h0
+    exact flip2_ne _ h0
+  have hwu : Function.update u i (flip2 (u i)) ≠ u := by
+    intro h
+    have h0 := congrFun h i
+    rw [Function.update_self] at h0
+    exact flip2_ne (u i) h0
+  -- annihilation at the flip contradicts the product formula
+  have h0 := hann _ hwu hi
+  rw [hammingGraph_two_evolve_apply, hammingDist_update, pow_one] at h0
+  rcases mul_eq_zero.mp h0 with h | h
+  · exact hcos (Complex.ofReal_eq_zero.mp (pow_eq_zero_iff'.mp h).1)
+  · rcases mul_eq_zero.mp h with h' | h'
+    · exact Complex.I_ne_zero (neg_eq_zero.mp h')
+    · exact hsin (Complex.ofReal_eq_zero.mp h')
+
+/-- **The `q = 2` Hamming-scheme FR characterization, in closed form (proved
+outright; no scheme axioms, no cited interface).**  For `n ≥ 2` and `u ≠ v`,
+`H(n, 2)` exhibits `(α, β)`-FR from `u` to `v` at `τ` **iff** the propagator is
+*globally* the scheme element `α·1 + β·A_{d(u,v)}` (with the normalisation).
+The product formula makes both sides extremely rigid: they hold exactly in the
+two degenerate regimes `sin τ = 0` (scalar walk `U = (cos τ)ⁿ·1`, `β = 0`) and
+`cos τ = 0` (antipodal permutation `U = (−i sin τ)ⁿ·A_n`, `α = 0`, `v = ū`) —
+the `q = 2` instance of CCTVZ Theorem 3.1 where the congruence conditions on
+the Krawtchouk eigenvalues `θ_r = n − 2r` collapse to `sin τ cos τ = 0`.
+
+The hypothesis `u ≠ v` is genuinely needed: at `u = v` the right-hand side is
+satisfiable (`τ = 0`, `α = 1`, `β = 0`) while `IsFR G u u τ 1 0` forces the
+contradictory `α = β`.  For general alphabet `q ≥ 3` see
+`hammingGraph_fr_iff_conjecture`. -/
+theorem hammingGraph_fr_iff (n : ℕ) (hn : 2 ≤ n) (u v : Fin n → Fin 2)
+    (huv : u ≠ v) (τ : ℝ) (α β : ℂ) :
+    IsFR (hammingGraph n 2) u v τ α β ↔
       (Complex.normSq α + Complex.normSq β = 1 ∧
-        (hammingGraph n q).evolve τ
-          = α • (1 : Matrix (Fin n → Fin q) (Fin n → Fin q) ℂ)
-          + β • (Matrix.of fun x y : Fin n → Fin q =>
+        (hammingGraph n 2).evolve τ
+          = α • (1 : Matrix (Fin n → Fin 2) (Fin n → Fin 2) ℂ)
+          + β • (Matrix.of fun x y : Fin n → Fin 2 =>
               if hammingDist x y = hammingDist u v then (1 : ℂ) else 0)) := by
-  -- Forward and converse are 1907.04729 §4–5 (Hamming-scheme FR), reducing to
-  -- `bose_mesner_fr_iff` via the Krawtchouk eigenvalues `θ_r = n(q-1) - q r`.
-  sorry
+  have hr0 : hammingDist u v ≠ 0 := fun h => huv ((hammingDist_eq_zero_iff u v).mp h)
+  have hrle : hammingDist u v ≤ n := hammingDist_le u v
+  constructor
+  · rintro ⟨hnorm, hαe, hβe, hann⟩
+    refine ⟨hnorm, ?_⟩
+    by_cases hs : Real.sin τ = 0
+    · -- scalar regime: `U(τ) = (cos τ)ⁿ • 1` and `β = 0`
+      have hβ0 : β = 0 := by
+        have hd : hammingDist v u ≠ 0 :=
+          fun h => huv ((hammingDist_eq_zero_iff v u).mp h).symm
+        rw [← hβe, hammingGraph_two_evolve_apply, hs, Complex.ofReal_zero, mul_zero,
+          zero_pow hd, mul_zero]
+      have hα' : α = ((Real.cos τ : ℝ) : ℂ) ^ n := by
+        rw [← hαe, hammingGraph_two_evolve_diag]
+      ext x y
+      simp only [Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply, Matrix.of_apply,
+        smul_eq_mul]
+      rw [hammingGraph_two_evolve_apply]
+      by_cases hxy : x = y
+      · subst hxy
+        rw [(hammingDist_eq_zero_iff x x).mpr rfl, Nat.sub_zero, pow_zero, mul_one,
+          if_pos rfl, mul_one, if_neg (fun h : (0 : ℕ) = hammingDist u v => hr0 h.symm),
+          mul_zero, add_zero, hα']
+      · have hd0 : hammingDist x y ≠ 0 :=
+          fun h => hxy ((hammingDist_eq_zero_iff x y).mp h)
+        rw [hs, Complex.ofReal_zero, mul_zero, zero_pow hd0, mul_zero, if_neg hxy,
+          mul_zero, hβ0, zero_mul, add_zero]
+    · by_cases hc : Real.cos τ = 0
+      · -- antipodal regime: `U(τ) = (−i sin τ)ⁿ • A_n`, `α = 0`, `v = ū`
+        have hα0 : α = 0 := by
+          rw [← hαe, hammingGraph_two_evolve_diag, hc, Complex.ofReal_zero,
+            zero_pow (by omega : n ≠ 0)]
+        have hvant : v = hammingAntipode n u := by
+          by_contra hne
+          have hau : hammingAntipode n u ≠ u := by
+            intro h
+            exact flip2_ne (u ⟨0, by omega⟩) (congrFun h ⟨0, by omega⟩)
+          have h0 := hann (hammingAntipode n u) hau (fun h => hne h.symm)
+          rw [hammingGraph_two_evolve_apply, hammingDist_symm, hammingDist_antipode,
+            Nat.sub_self, pow_zero, one_mul] at h0
+          rcases mul_eq_zero.mp (pow_eq_zero_iff'.mp h0).1 with h' | h'
+          · exact Complex.I_ne_zero (neg_eq_zero.mp h')
+          · exact hs (Complex.ofReal_eq_zero.mp h')
+        have hrn : hammingDist u v = n := by
+          rw [hvant]; exact hammingDist_antipode n u
+        have hβval : β = (-Complex.I * ((Real.sin τ : ℝ) : ℂ)) ^ n := by
+          rw [← hβe, hammingGraph_two_evolve_apply, hammingDist_symm, hrn, Nat.sub_self,
+            pow_zero, one_mul]
+        ext x y
+        simp only [Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply, Matrix.of_apply,
+          smul_eq_mul]
+        rw [hammingGraph_two_evolve_apply, hα0, zero_mul, zero_add, hrn]
+        by_cases hd : hammingDist x y = n
+        · rw [hd, Nat.sub_self, pow_zero, one_mul, if_pos rfl, mul_one, hβval]
+        · rw [if_neg hd, mul_zero, hc, Complex.ofReal_zero,
+            zero_pow (show n - hammingDist x y ≠ 0 by have := hammingDist_le x y; omega),
+            zero_mul]
+      · -- `sin τ · cos τ ≠ 0`: FR is impossible (every entry of the column is nonzero)
+        exfalso
+        obtain ⟨w, hwu, hwv⟩ : ∃ w : Fin n → Fin 2, w ≠ u ∧ w ≠ v := by
+          by_contra hcon
+          push_neg at hcon
+          have hsub : (Finset.univ : Finset (Fin n → Fin 2)) ⊆ {u, v} := by
+            intro w _
+            rcases eq_or_ne w u with h | h
+            · simp [h]
+            · simp [hcon w h]
+          have hcard := Finset.card_le_card hsub
+          rw [Finset.card_univ, Fintype.card_fun, Fintype.card_fin, Fintype.card_fin]
+            at hcard
+          have hpow : 4 ≤ 2 ^ n := by
+            calc (4 : ℕ) = 2 ^ 2 := by norm_num
+              _ ≤ 2 ^ n := Nat.pow_le_pow_right (by norm_num) hn
+          have hpair : ({u, v} : Finset (Fin n → Fin 2)).card ≤ 2 := by
+            apply le_trans (Finset.card_insert_le _ _)
+            simp
+          omega
+        have h0 := hann w hwu hwv
+        rw [hammingGraph_two_evolve_apply] at h0
+        rcases mul_eq_zero.mp h0 with h | h
+        · exact hc (Complex.ofReal_eq_zero.mp (pow_eq_zero_iff'.mp h).1)
+        · rcases mul_eq_zero.mp (pow_eq_zero_iff'.mp h).1 with h' | h'
+          · exact Complex.I_ne_zero (neg_eq_zero.mp h')
+          · exact hs (Complex.ofReal_eq_zero.mp h')
+  · rintro ⟨hnorm, hcf⟩
+    have hent : ∀ x y : Fin n → Fin 2,
+        (hammingGraph n 2).evolve τ x y
+          = (if x = y then α else 0)
+            + (if hammingDist x y = hammingDist u v then β else 0) := by
+      intro x y
+      rw [hcf]
+      simp only [Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply, Matrix.of_apply,
+        smul_eq_mul, mul_ite, mul_one, mul_zero]
+    refine ⟨hnorm, ?_, ?_, ?_⟩
+    · -- `U(τ)_{uu} = α`
+      rw [hent u u, if_pos rfl, (hammingDist_eq_zero_iff u u).mpr rfl,
+        if_neg (fun h : (0 : ℕ) = hammingDist u v => hr0 h.symm), add_zero]
+    · -- `U(τ)_{vu} = β`
+      rw [hent v u, if_neg (fun h => huv h.symm), if_pos (hammingDist_symm v u), zero_add]
+    · -- annihilation off `{u, v}`
+      intro w hwu hwv
+      rw [hent w u, if_neg hwu, zero_add]
+      by_cases hβ0 : β = 0
+      · rw [hβ0, ite_self]
+      · -- with `β ≠ 0` the closed form forces a degenerate regime
+        have hi0 : (0 : ℕ) < n := by omega
+        have hsc : Real.sin τ = 0 ∨ Real.cos τ = 0 := by
+          rcases eq_or_ne (hammingDist u v) n with hr | hr
+          · -- swap class is antipodal: test a distance-1 pair
+            have hd1 : hammingDist u (Function.update u ⟨0, hi0⟩ (flip2 (u ⟨0, hi0⟩))) = 1 := by
+              rw [hammingDist_symm]
+              exact hammingDist_update n u _
+            have hne : u ≠ Function.update u ⟨0, hi0⟩ (flip2 (u ⟨0, hi0⟩)) := by
+              intro h
+              rw [← h] at hd1
+              have := (hammingDist_eq_zero_iff u u).mpr rfl
+              omega
+            have he := hent u (Function.update u ⟨0, hi0⟩ (flip2 (u ⟨0, hi0⟩)))
+            rw [hammingGraph_two_evolve_apply, hd1, pow_one, if_neg hne,
+              if_neg (by omega : ¬(1 : ℕ) = hammingDist u v), add_zero] at he
+            rcases mul_eq_zero.mp he with h | h
+            · exact Or.inr (Complex.ofReal_eq_zero.mp (pow_eq_zero_iff'.mp h).1)
+            · rcases mul_eq_zero.mp h with h' | h'
+              · exact absurd (neg_eq_zero.mp h') Complex.I_ne_zero
+              · exact Or.inl (Complex.ofReal_eq_zero.mp h')
+          · -- swap class is not antipodal: test the antipodal pair
+            have hd := hammingDist_antipode n u
+            have hne : u ≠ hammingAntipode n u := by
+              intro h
+              exact flip2_ne (u ⟨0, hi0⟩) (congrFun h ⟨0, hi0⟩).symm
+            have he := hent u (hammingAntipode n u)
+            rw [hammingGraph_two_evolve_apply, hd, Nat.sub_self, pow_zero, one_mul,
+              if_neg hne, if_neg (fun hh : (n : ℕ) = hammingDist u v => hr hh.symm),
+              add_zero] at he
+            rcases mul_eq_zero.mp (pow_eq_zero_iff'.mp he).1 with h' | h'
+            · exact absurd (neg_eq_zero.mp h') Complex.I_ne_zero
+            · exact Or.inl (Complex.ofReal_eq_zero.mp h')
+        rcases hsc with hs | hc
+        · -- `sin τ = 0` makes the `(v, u)` entry vanish, killing `β`
+          exfalso
+          have hdvu : hammingDist v u ≠ 0 :=
+            fun h => huv ((hammingDist_eq_zero_iff v u).mp h).symm
+          have he := hent v u
+          rw [hammingGraph_two_evolve_apply, hs, Complex.ofReal_zero, mul_zero,
+            zero_pow hdvu, mul_zero, if_neg (fun h => huv h.symm),
+            if_pos (hammingDist_symm v u), zero_add] at he
+          exact hβ0 he.symm
+        · -- `cos τ = 0` pins `v = ū`; then `d(w, u) = n` would force `w = ū = v`
+          have hrn : hammingDist u v = n := by
+            by_contra hr
+            have hdvu : hammingDist v u = hammingDist u v := hammingDist_symm v u
+            have hlt := hammingDist_le u v
+            have he := hent v u
+            rw [hammingGraph_two_evolve_apply, hc, Complex.ofReal_zero,
+              zero_pow (show n - hammingDist v u ≠ 0 by omega), zero_mul,
+              if_neg (fun h => huv h.symm), if_pos hdvu, zero_add] at he
+            exact hβ0 he.symm
+          have hvant : v = hammingAntipode n u :=
+            eq_antipode_of_hammingDist_eq n u v hrn
+          have hnot : ¬(hammingDist w u = hammingDist u v) := by
+            intro hwr
+            apply hwv
+            rw [hrn] at hwr
+            have hwn : hammingDist u w = n := by
+              rw [hammingDist_symm]; exact hwr
+            rw [eq_antipode_of_hammingDist_eq n u w hwn]
+            exact hvant.symm
+          rw [if_neg hnot]
+
+/-- **Conjecture (CCTVZ §4–5, general alphabet `q ≥ 3`).**  The closed-form FR
+characterization proved above for `q = 2` (`hammingGraph_fr_iff`), conjectured
+verbatim for `H(n, q)`: FR between distinct vertices holds iff the propagator
+is globally the scheme element `α·1 + β·A_{d(u,v)}`.  This is the formal shadow
+of Chan–Coutinho–Tamon–Vinet–Zhan 1907.04729 §4–5, where the `K_q` coordinate
+factor `exp(-iτ(J−I))` has entries `a(τ) = (e^{-iτ(q-1)} + (q-1)e^{iτ})/q`
+(diagonal) and `b(τ) = (e^{-iτ(q-1)} - e^{iτ})/q` (off-diagonal), and the
+congruence conditions live on the Krawtchouk eigenvalues `θ_r = n(q-1) - qr`.
+Recorded as a `Prop`-valued definition (never asserted); the machine-checked
+`q = 2` case is the evidence. -/
+def hammingGraph_fr_iff_conjecture : Prop :=
+  ∀ (n q : ℕ), 2 ≤ n → 3 ≤ q →
+    ∀ (u v : Fin n → Fin q), u ≠ v →
+      ∀ (τ : ℝ) (α β : ℂ),
+        IsFR (hammingGraph n q) u v τ α β ↔
+          (Complex.normSq α + Complex.normSq β = 1 ∧
+            (hammingGraph n q).evolve τ
+              = α • (1 : Matrix (Fin n → Fin q) (Fin n → Fin q) ℂ)
+              + β • (Matrix.of fun x y : Fin n → Fin q =>
+                  if hammingDist x y = hammingDist u v then (1 : ℂ) else 0))
 
 /-! ### 4.3 Fractional revival on the chiral `K_n^σ` — open conjecture
 

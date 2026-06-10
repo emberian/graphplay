@@ -64,12 +64,15 @@ import Graphplay.Equitable
 import Graphplay.Bundle
 import Graphplay.PST
 import Graphplay.Chiral
+import Graphplay.StdLib.Path
 
 universe u v w
 
 open scoped Matrix
 
 namespace Graphplay
+
+open Graphplay.StdLib (pathPSTTime path_P2_PST_residual path_P3_PST_residual)
 
 /-! ## Chiral bundles
 
@@ -772,33 +775,192 @@ noncomputable def chiralHammingBundle (n m : ℕ) [NeZero n] [NeZero m] :
   -- coupling = all-ones, edge signing = trivial.
   completeFiberChiralBundle _ n (fun _ => ChiralSigning.trivial (Fin n))
 
-/-- **Explicit speedup of the chiral Hamming-attached path.** For all
-`n ≥ 4` the chiral Hamming-attached path admits cell-uniform PST (on its
-chirally-signed quotient) between two template path-vertices `i` and `j` at
-some time `τ`: this is the additive combination of in-fiber Levine mixing
-with classical path PST, derived from `pst_iff_quotient_signed_pst` applied to
-`chiralHammingBundle`.  We state the genuine PST predicate on the quotient;
-the existence of the concrete time `π/(3√3) + τ_{P_m}` is an honest
-theorem-level `sorry`.
+/-- **Time-rescaling under a real scalar on the adjacency.**  If two weighted
+graphs have proportional adjacencies `G.adj = c • H.adj` (real `c`), then their
+quantum walks coincide up to a reciprocal rescaling of time:
+`G.evolve τ = H.evolve (c · τ)`.  This is the elementary `exp`-of-`smul` fact
+`exp(-i τ (c A)) = exp(-i (c τ) A)`; no spectral input is needed. -/
+theorem evolve_smul_time {V : Type*} [Fintype V] [DecidableEq V]
+    (G H : WeightedGraph V) (c : ℝ) (hGH : G.adj = (c : ℂ) • H.adj) (τ : ℝ) :
+    G.evolve τ = H.evolve (c * τ) := by
+  unfold WeightedGraph.evolve
+  rw [hGH, smul_smul]
+  have hscal : -(Complex.I * (τ : ℂ)) * (c : ℂ) = -(Complex.I * ((c * τ : ℝ) : ℂ)) := by
+    push_cast; ring
+  rw [hscal]
 
-Audit note on non-vacuity and scope.  The quotient
-`(chiralHammingBundle n m).quotientSigned` is the *weighted path* `n² · P_m`
-(off-diagonal cross-mass between Q-adjacent path vertices is `n²`, from the
-all-ones `n×n` coupling with trivial phase).  As stated the claim ranges over
-**arbitrary** `i j : Fin m`.  For `i = j` it is true at `τ = 0`
-(`evolve 0 = 1`, so the diagonal entry has modulus `1`); but for *distinct*
-`i, j` it is the classical path-PST existence problem, which fails for generic
-endpoints (PST on `P_m` requires the antipodal pair and specific `m`, per
-Christandl et al. math/0309131).  So the universally-quantified statement is
-**not** provable as written without restricting `(i, j)` to a PST-admissible
-pair of the underlying weighted path; this stays an honest `sorry` and is the
-single named residual.  The only unconditionally reachable fragment is the
-diagonal `i = j` case via `τ = 0`. -/
-theorem chiralHammingBundle_pst_time (n m : ℕ) [NeZero n] [NeZero m]
-    (hn : 4 ≤ n)
+open Classical in
+/-- The off-diagonal entries of the chirally-signed total adjacency of a
+`completeFiberChiralBundle` are exactly the template adjacency `1`/`0` weights:
+across distinct fibers `x.1 ≠ z.1` the fiber signing is irrelevant, the
+all-ones coupling contributes `1` per template edge, and the trivial inter-fiber
+phase leaves it unsigned. -/
+theorem completeFiber_totalSigned_offdiag {I : Type u} [Fintype I] [DecidableEq I]
+    (Q : SimpleGraph I) (n : ℕ) (fsign : ∀ _ : I, ChiralSigning (Fin n))
+    (x z : Σ _ : I, Fin n) (hxz : x.1 ≠ z.1) :
+    (completeFiberChiralBundle Q n fsign).totalSigned.adj x z
+      = if Q.Adj x.1 z.1 then (1 : ℂ) else 0 := by
+  classical
+  simp only [ChiralBundle.totalSigned, WeightedGraph.signedBy_adj]
+  have hσ : (completeFiberChiralBundle Q n fsign).totalChiralSigning.σ x z = 1 := by
+    simp only [ChiralBundle.totalChiralSigning, completeFiberChiralBundle, dif_neg hxz]
+    by_cases hadj : Q.Adj x.1 z.1 <;> simp [hadj]
+  have htot : (completeFiberChiralBundle Q n fsign).toGraphBundle.total.adj x z
+      = if Q.Adj x.1 z.1 then (1 : ℂ) else 0 := by
+    simp only [GraphBundle.total, completeFiberChiralBundle, dif_neg hxz]
+    by_cases hadj : Q.Adj x.1 z.1 <;> simp [hadj, Matrix.of_apply]
+  rw [hσ, htot, one_mul]
+
+/-- The chirally-signed quotient of the chiral Hamming-attached path is, entry
+for entry, `n²` times the unweighted path-template adjacency: the off-diagonal
+cross-mass between two template path-vertices is `n²` (the `n × n` all-ones
+coupling with trivial phase) on a template edge and `0` otherwise. -/
+theorem chiralHammingBundle_quotientSigned_adj_apply (n m : ℕ) [NeZero n] [NeZero m]
     (i j : Fin m) :
+    (chiralHammingBundle n m).quotientSigned.adj i j
+      = if i = j then (0 : ℂ)
+        else (n : ℂ) ^ 2 * (if (i.val + 1 = j.val ∨ j.val + 1 = i.val) then 1 else 0) := by
+  classical
+  set Q := SimpleGraph.fromRel (fun a b : Fin m => a.val + 1 = b.val ∨ b.val + 1 = a.val)
+    with hQ
+  have hdef : (chiralHammingBundle n m).quotientSigned.adj i j
+      = if i = j then (0 : ℂ)
+        else ∑ x : Σ _ : Fin m, Fin n, ∑ z : Σ _ : Fin m, Fin n,
+          (if x.1 = i ∧ z.1 = j then (chiralHammingBundle n m).totalSigned.adj x z else 0) := rfl
+  rw [hdef]
+  by_cases hij : i = j
+  · rw [if_pos hij, if_pos hij]
+  · rw [if_neg hij, if_neg hij]
+    -- the `Q.Adj i j ↔ (val relation)` for the distinct pair
+    have hiff : Q.Adj i j ↔ (i.val + 1 = j.val ∨ j.val + 1 = i.val) := by
+      rw [hQ, SimpleGraph.fromRel_adj]
+      constructor
+      · rintro ⟨_, (h | h)⟩ <;> tauto
+      · intro h; exact ⟨hij, Or.inl h⟩
+    -- factor each summand as `[x.1 = i] · ([z.1 = j] · edge-weight)`
+    have hsummand : ∀ (x z : Σ _ : Fin m, Fin n),
+        (if x.1 = i ∧ z.1 = j then (chiralHammingBundle n m).totalSigned.adj x z else 0)
+        = (if x.1 = i then (1 : ℂ) else 0) *
+          ((if z.1 = j then (1 : ℂ) else 0) *
+            (if (i.val + 1 = j.val ∨ j.val + 1 = i.val) then 1 else 0)) := by
+      intro x z
+      by_cases hx : x.1 = i <;> by_cases hz : z.1 = j
+      · rw [if_pos ⟨hx, hz⟩, if_pos hx, if_pos hz, one_mul, one_mul]
+        rw [show (chiralHammingBundle n m) = completeFiberChiralBundle Q n
+              (fun _ => ChiralSigning.trivial (Fin n)) from rfl]
+        rw [completeFiber_totalSigned_offdiag Q n _ x z (by rw [hx, hz]; exact hij)]
+        rw [hx, hz]
+        by_cases hQij : Q.Adj i j
+        · rw [if_pos hQij, if_pos (hiff.mp hQij)]
+        · rw [if_neg hQij, if_neg (fun h => hQij (hiff.mpr h))]
+      · rw [if_neg (by rintro ⟨_, h⟩; exact hz h), if_pos hx, if_neg hz]; simp
+      · rw [if_neg (by rintro ⟨h, _⟩; exact hx h), if_neg hx]; simp
+      · rw [if_neg (by rintro ⟨h, _⟩; exact hx h), if_neg hx]; simp
+    -- a fiber-cell over a fixed template vertex has `n` members
+    have hcell : ∀ k : Fin m,
+        (∑ x : Σ _ : Fin m, Fin n, (if x.1 = k then (1 : ℂ) else 0)) = (n : ℂ) := by
+      intro k
+      rw [← Finset.univ_sigma_univ, Finset.sum_sigma]
+      have hinner : ∀ a : Fin m,
+          (∑ _b : Fin n, (if a = k then (1 : ℂ) else 0)) = if a = k then (n : ℂ) else 0 := by
+        intro a
+        rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+        by_cases hak : a = k <;> simp [hak]
+      simp only [hinner]
+      rw [Finset.sum_ite_eq' Finset.univ k (fun _ => (n : ℂ)), if_pos (Finset.mem_univ k)]
+    calc ∑ x : Σ _ : Fin m, Fin n, ∑ z : Σ _ : Fin m, Fin n,
+            (if x.1 = i ∧ z.1 = j then (chiralHammingBundle n m).totalSigned.adj x z else 0)
+        = ∑ x : Σ _ : Fin m, Fin n, ∑ z : Σ _ : Fin m, Fin n,
+            ((if x.1 = i then (1 : ℂ) else 0) *
+              ((if z.1 = j then (1 : ℂ) else 0) *
+                (if (i.val + 1 = j.val ∨ j.val + 1 = i.val) then 1 else 0))) := by
+              refine Finset.sum_congr rfl (fun x _ => Finset.sum_congr rfl (fun z _ => ?_))
+              exact hsummand x z
+      _ = (∑ x : Σ _ : Fin m, Fin n, (if x.1 = i then (1 : ℂ) else 0)) *
+            (∑ z : Σ _ : Fin m, Fin n,
+              ((if z.1 = j then (1 : ℂ) else 0) *
+                (if (i.val + 1 = j.val ∨ j.val + 1 = i.val) then 1 else 0))) :=
+              (Fintype.sum_mul_sum _ _).symm
+      _ = (n : ℂ) ^ 2 * (if (i.val + 1 = j.val ∨ j.val + 1 = i.val) then 1 else 0) := by
+              rw [← Finset.sum_mul, hcell i, hcell j]; ring
+
+/-- **PST on the chiral Hamming-attached path quotient — the provable truth.**
+The chirally-signed quotient `(chiralHammingBundle n m).quotientSigned` is the
+uniformly-weighted path `n² · P_m` (off-diagonal cross-mass `n²` between
+template path-vertices, from the all-ones `n × n` coupling with trivial phase;
+see `chiralHammingBundle_quotientSigned_adj_apply`).  PST holds in exactly two
+regimes:
+
+* the **diagonal** `i = j`, trivially at `τ = 0` (`evolve 0 = 1`), and
+* the **antipodal transfer** `m ∈ {2, 3}` between the two path endpoints
+  `i.val = 0`, `j.val = m - 1`, obtained by rescaling the proven uniform-path
+  results `path_P2_PST_residual` (`P₂ = K₂`, `τ = π/2`) and `path_P3_PST_residual`
+  (`P₃`, `τ = π/√2`) through `evolve_smul_time` (the `n²` weight just divides the
+  transfer time, `τ = τ_{P_m}/n²`).
+
+**Refutation of the former universal claim.**  The earlier statement quantified
+over *arbitrary* `i j : Fin m` and over *all* `m`; this is false.  The quotient
+is the uniformly-coupled path `n² · P_m`, and Christandl–Datta–Ekert–Landahl
+(math/0309131) prove uniform-path endpoint PST holds **only** for the antipodal
+pair and only for `m ∈ {2, 3}` (`P₄` and longer chains have no endpoint PST:
+`path_P4_no_PST`).  For a non-antipodal pair, or for `m ≥ 4`, no transfer time
+exists, so the hypothesis `hpair` below is essential and cannot be dropped. -/
+theorem chiralHammingBundle_pst_time (n m : ℕ) [NeZero n] [NeZero m]
+    (hn : 4 ≤ n) (i j : Fin m)
+    (hpair : i = j ∨ ((m = 2 ∨ m = 3) ∧ i.val = 0 ∧ j.val = m - 1)) :
     ∃ τ : ℝ, IsPST (chiralHammingBundle n m).quotientSigned i j τ := by
-  sorry
+  rcases hpair with hdiag | ⟨hm, hi0, hjlast⟩
+  · -- Diagonal case: PST to oneself at `τ = 0`.
+    refine ⟨0, ?_⟩
+    subst hdiag
+    unfold IsPST
+    rw [WeightedGraph.evolve_zero, Matrix.one_apply_eq]
+    exact norm_one
+  · -- Antipodal transfer case: rescale the proven uniform-path PST.
+    have hn0 : (n : ℝ) ^ 2 ≠ 0 := by positivity
+    rcases hm with hm2 | hm3
+    · -- `m = 2`: the single-edge path `P₂ = K₂`, endpoints `0, 1`.
+      subst hm2
+      have hmat : (chiralHammingBundle n 2).quotientSigned.adj
+          = (Complex.ofReal ((n : ℝ) ^ 2)) • (StdLib.Path 1).adj := by
+        funext a b
+        rw [chiralHammingBundle_quotientSigned_adj_apply]
+        simp only [Matrix.smul_apply, smul_eq_mul, StdLib.Path]
+        by_cases hab : a = b
+        · subst hab
+          simp
+        · rw [if_neg hab]
+          push_cast
+          ring
+      have hi : i = (0 : Fin 2) := Fin.ext (by simpa using hi0)
+      have hj : j = Fin.last 1 := Fin.ext (by simpa using hjlast)
+      have ht : (n : ℝ) ^ 2 * (pathPSTTime 1 / (n : ℝ) ^ 2) = pathPSTTime 1 := by
+        field_simp
+      refine ⟨pathPSTTime 1 / ((n : ℝ) ^ 2), ?_⟩
+      unfold IsPST
+      rw [evolve_smul_time _ (StdLib.Path 1) ((n : ℝ) ^ 2) hmat, ht, hi, hj]
+      exact path_P2_PST_residual
+    · -- `m = 3`: the path `P₃` on three vertices, antipodal endpoints `0, 2`.
+      subst hm3
+      have hmat : (chiralHammingBundle n 3).quotientSigned.adj
+          = (Complex.ofReal ((n : ℝ) ^ 2)) • (StdLib.Path 2).adj := by
+        funext a b
+        rw [chiralHammingBundle_quotientSigned_adj_apply]
+        simp only [Matrix.smul_apply, smul_eq_mul, StdLib.Path]
+        by_cases hab : a = b
+        · subst hab
+          simp
+        · rw [if_neg hab]
+          push_cast
+          ring
+      have hi : i = (0 : Fin 3) := Fin.ext (by simpa using hi0)
+      have hj : j = Fin.last 2 := Fin.ext (by simpa using hjlast)
+      have ht : (n : ℝ) ^ 2 * (pathPSTTime 2 / (n : ℝ) ^ 2) = pathPSTTime 2 := by
+        field_simp
+      refine ⟨pathPSTTime 2 / ((n : ℝ) ^ 2), ?_⟩
+      unfold IsPST
+      rw [evolve_smul_time _ (StdLib.Path 2) ((n : ℝ) ^ 2) hmat, ht, hi, hj]
+      exact path_P3_PST_residual
 
 /-- **Chiral Heawood bundle.** Chiral bundle with `K_n^σ` fibers over the
 complete graph on `Fin (Heawood g)`, the Heawood chromatic-number bound

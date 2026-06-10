@@ -27,7 +27,7 @@ This file provides:
 * `CombinatorialMap.faces` — a `Finset (Equiv.Perm E)` of face-cycle factors
   of `ρ ∘ σ`, together with `numFaces`, `eulerChar`, and `genus`.
 * `toSimpleGraph`, `toWeightedGraph` — extract the underlying graph.
-* Properness lemmas + Euler-Poincaré relations (statements + `sorry`).
+* Properness lemmas + Euler-Poincaré relations.
 
 All arithmetic on finite combinatorial maps is computable via Mathlib's
 `Equiv.Perm` infrastructure; the proofs of correctness against the topological

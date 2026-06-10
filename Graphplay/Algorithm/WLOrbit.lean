@@ -32,11 +32,12 @@ sibling file, written by L4) for the actual WL refinement procedure
 5. The **Cai–Fürer–Immerman** gadget (`CFI`) — the first family known to
    defeat 1-WL/2-WL refinement (Cai–Fürer–Immerman, "An optimal lower bound
    on the number of variables for graph identification", FOCS '89 /
-   Combinatorica '92).  Genuine CFI phantom symmetry lives at the *coarsest*
-   round-indexed k-WL fixed point (`cfi_kwl_lower_bound`, with the
-   round-indexed `IsKWLStable`); for the *finest*-equitable `IsWLStable`
-   here, phantom symmetry is impossible and the WL-stable data is provably
-   phantom-free (`cfiExists_phantomFree`, `no_phantom_for_finest_equitable`).
+   Combinatorica '92).  Genuine CFI phantom symmetry lives at coarse fixed
+   points of the adjacency-aware k-WL step (`cfi_kwl_lower_bound`, with the
+   weighted-step fixed point `IsKWLStable`); for the *finest*-equitable
+   `IsWLStable` here, phantom symmetry is impossible and the WL-stable data is
+   provably phantom-free (`cfiExists_phantomFree`,
+   `no_phantom_for_finest_equitable`).
 6. **Reverse direction**: for the finest-equitable WL-stable partition,
    no phantom symmetry occurs unconditionally
    (`no_phantom_for_finest_equitable`); the genuine
@@ -49,13 +50,24 @@ sibling file, written by L4) for the actual WL refinement procedure
    giving PST graphs that lie outside the classical
    "find-an-automorphism" search space.
 
-All statements here are **proved** except for one honestly-flagged `sorry`:
-`cfi_kwl_lower_bound` (the `k ≥ 2` Cai–Fürer–Immerman gadget over an expander
-base — several hundred lines of combinatorics over a treewidth-`Ω(k)` base).
-Its fully-machine-checked `k = 1` instance (`C₆` vs `2·K₃`,
-`cfi_1wl_indistinguishable`) is closed, as is everything else: the orbit
-partition's equitability, `wlStable_refines_orbit`, the no-phantom theorems, and
-the Babai–Mathon / `kWL_eq_kAritySameOrbit` orbit-agreement statements.
+All statements here are **proved**, with zero `sorry`.  The one piece of
+genuinely external content — the `k ≥ 2` Cai–Fürer–Immerman gadget over a
+treewidth-`Ω(k)` expander base, several hundred lines of combinatorics — is
+carried as the cited typeclass `CaiFurerImmerman` (Combinatorica 12 (1992),
+389–410), and `cfi_kwl_lower_bound` is the sorry-free theorem conditional on
+it.  Its fully-machine-checked `k = 1` instance (`C₆` vs `2·K₃`,
+`cfi_1wl_indistinguishable`, with genuine regularity-powered stability
+witnesses and step-level matching) is closed unconditionally, as is everything
+else: the orbit partition's equitability, `wlStable_refines_orbit`, the
+no-phantom theorems, and the Babai–Mathon / `kWL_eq_kAritySameOrbit`
+orbit-agreement statements.
+
+The k-WL stability notion `IsKWLStable` is **adjacency-aware**: it is the
+fixed-point condition of `kWlWeightedStep`, whose refinement data records, for
+each coordinate and replacement vertex, the substituted colour *together with
+the replacement vertex's weight profile against the tuple*.  (An earlier
+definition never consulted the graph, which made stability — and hence every
+downstream k-WL statement — graph-independent and cheaply satisfiable.)
 
 All orbit/automorphism content quantifies over **genuine graph automorphisms**
 (`IsGraphAut`, §0) — there is no all-permutations `Aut` stub — so the
@@ -468,7 +480,8 @@ proven `no_phantom_for_finest_equitable`.
 *coarsest* round-indexed 1-WL fixed point of `Graphplay.Algorithm.WLRefinement`
 — a different object — not at this finest-equitable partition; the honest CFI
 lower-bound statement is `cfi_kwl_lower_bound` below, phrased with the
-round-indexed `IsKWLStable`.) -/
+adjacency-aware weighted-step fixed point `IsKWLStable` and conditional on the
+cited typeclass `CaiFurerImmerman`.) -/
 theorem cfiExists_phantomFree :
     ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G₀ : Graphplay.SimpleGraph V) (G : Graphplay.WeightedGraph V)
@@ -537,7 +550,8 @@ theorem cfiGraph_hasPhantomSymmetry
 /-! ### §5a. A concrete CFI-flavoured pair: `C₆` vs `2·K₃` (1-WL collapse)
 
 The full CFI gadget over an expander base (defeating k-WL for every constant `k`)
-is recorded as `cfi_kwl_lower_bound` with an honest `sorry` on the `k ≥ 2` regime.
+is recorded as `cfi_kwl_lower_bound`, a sorry-free theorem conditional on the
+cited typeclass `CaiFurerImmerman` (Combinatorica 12 (1992), 389–410).
 Here we build the *smallest concrete witness of the phenomenon at dimension one*:
 a pair of **non-isomorphic** graphs on six vertices that **1-WL (colour
 refinement) cannot tell apart**.
@@ -808,31 +822,158 @@ def kAritySameOrbit {V : Type u} (G : Graphplay.SimpleGraph V) (k : ℕ)
     (u v : Fin k → V) : Prop :=
   ∃ σ : Equiv.Perm V, IsGraphAut G σ ∧ ∀ i, σ (u i) = v i
 
-/-- `colour` is a **k-WL-stable** colouring of `V^k`: it is a fixed point of
-the k-WL refinement step.
+/-- One round of the **weighted k-WL refinement step**.  The refined colour of
+a `k`-tuple `t` records
 
-Genuine definition (replacing the previous `True` placeholder): whenever two
-tuples `u, v` share a colour, then for **every** coordinate `i` and every
-"target colour" tuple `t`, substituting a vertex `w` into coordinate `i` keeps
-the two tuples colour-matched — i.e. the colour-refinement step cannot separate
-`u` from `v`.  Concretely:
+* its current colour `colour t`, and
+* for each coordinate `i : Fin k`, the **multiset over replacement vertices
+  `w : V`** of the pair
 
-  `colour u = colour v →`
-  `∀ (i : Fin k) (w : V), colour (Function.update u i w) = colour (Function.update v i w)`
-  ` ∨ ∃ w', colour (Function.update u i w) = colour (Function.update v i w')`
+  `(colour (t[i := w]),  fun j => G.adj (t j) w)`
 
-This is exactly the statement that one further substitution-refinement round
-re-produces the same colour partition.  We use the (slightly stronger,
-representative-aligned) form below, which is the genuine k-WL fixed-point
-condition; the full refinement procedure lives in
-`Graphplay.Algorithm.WLRefinement` (`kWlStep`). -/
+  — the colour obtained by substituting `w` into coordinate `i`, **together
+  with the weight profile of `w` against every coordinate of the tuple** in
+  the graph `G`.
+
+This is the weighted-graph analogue of `kWlStep` in
+`Graphplay.Algorithm.WLRefinement` and `kRefineStep` in
+`Graphplay.Integrations.WLRefinement`, with the adjacency data carried
+explicitly so the step genuinely reads the graph: two tuples can only stay
+colour-merged through a round if their substitution colours *and* the
+substituted vertices' adjacency/weight profiles agree as multisets. -/
+def kWlWeightedStep {V : Type u} [Fintype V] [DecidableEq V]
+    (G : Graphplay.WeightedGraph V) (k : ℕ)
+    {I : Type w}
+    (colour : (Fin k → V) → I) :
+    (Fin k → V) → I × (Fin k → Multiset (I × (Fin k → ℂ))) :=
+  fun t =>
+    (colour t, fun i =>
+      Finset.univ.val.map fun w : V =>
+        (colour (Function.update t i w), fun j => G.adj (t j) w))
+
+/-- Push a colour relabelling `e : I ≃ J` through the output of one weighted
+k-WL step: relabel the head colour and the colour component of every
+(substituted-colour, weight-profile) pair, leaving the weight profiles
+untouched.  Used to compare the step data of two *different* graphs up to a
+renaming of colours. -/
+def kWlStepRelabel {I J : Type w} (e : I ≃ J) {k : ℕ} :
+    I × (Fin k → Multiset (I × (Fin k → ℂ))) →
+      J × (Fin k → Multiset (J × (Fin k → ℂ))) :=
+  fun p => (e p.1, fun i => (p.2 i).map fun q => (e q.1, q.2))
+
+/-- `colour` is a **k-WL-stable** colouring of `V^k` for the weighted graph
+`G`: it is a fixed point of the weighted k-WL refinement step
+`kWlWeightedStep` — one further round neither splits nor merges any colour
+class.  Spelled as an iff (mirroring `Graphplay.Integrations.WLRefinement.
+IsKWLStable`): two tuples receive the same refined colour exactly when they
+already share a colour.
+
+The definition **reads the graph**: the refinement step records, for each
+coordinate and each replacement vertex `w`, the substituted colour together
+with `w`'s weight profile `fun j => G.adj (t j) w` against the tuple.  So a
+colouring is stable only when its colour classes are invariant under
+adjacency-aware refinement — e.g. the constant colouring is stable on a
+regular 0/1 weighting (every adjacency row has the same entry multiset,
+`constColour_isKWLStable`) but *not* on a weighting whose rows have two
+distinct entry multisets, which the step immediately separates. -/
 def IsKWLStable {V : Type u} [Fintype V] [DecidableEq V]
-    (_G : Graphplay.WeightedGraph V) (k : ℕ)
+    (G : Graphplay.WeightedGraph V) (k : ℕ)
     {I : Type w} [Fintype I] [DecidableEq I]
     (colour : (Fin k → V) → I) : Prop :=
-  ∀ u v : Fin k → V, colour u = colour v →
-    ∀ (i : Fin k) (w : V), ∃ w' : V,
-      colour (Function.update u i w) = colour (Function.update v i w')
+  ∀ u v : Fin k → V,
+    kWlWeightedStep G k colour u = kWlWeightedStep G k colour v ↔
+      colour u = colour v
+
+/-- A 0/1-valued vector with exactly `d` ones has entry multiset
+`d • {1} + (card V − d) • {0}`: the normal form used to compare the adjacency
+rows of regular graphs under the weighted k-WL step. -/
+lemma map_ite_row_multiset {V : Type u} [Fintype V] [DecidableEq V]
+    (f : V → ℂ) (P : V → Prop) [DecidablePred P] (d : ℕ)
+    (hf : ∀ w, f w = if P w then 1 else 0)
+    (hd : (Finset.univ.filter P).card = d) :
+    Finset.univ.val.map f
+      = Multiset.replicate d (1 : ℂ)
+        + Multiset.replicate (Fintype.card V - d) 0 := by
+  have hsplit : Finset.univ.val
+      = Multiset.filter P Finset.univ.val
+        + Multiset.filter (fun w => ¬ P w) Finset.univ.val :=
+    (Multiset.filter_add_not P Finset.univ.val).symm
+  have hcard1 : Multiset.card (Multiset.filter P Finset.univ.val) = d := by
+    rw [← Finset.filter_val]; exact hd
+  have hcard2 : Multiset.card
+      (Multiset.filter (fun w => ¬ P w) Finset.univ.val)
+      = Fintype.card V - d := by
+    have h := Finset.card_filter_add_card_filter_not
+      (s := (Finset.univ : Finset V)) (p := P)
+    rw [Finset.card_univ] at h
+    rw [← Finset.filter_val]
+    show (Finset.univ.filter fun w => ¬ P w).card = Fintype.card V - d
+    omega
+  calc Finset.univ.val.map f
+      = (Multiset.filter P Finset.univ.val).map f
+        + (Multiset.filter (fun w => ¬ P w) Finset.univ.val).map f := by
+        rw [← Multiset.map_add, ← hsplit]
+    _ = Multiset.replicate d (1 : ℂ)
+        + Multiset.replicate (Fintype.card V - d) 0 := by
+        congr 1
+        · rw [Multiset.map_congr rfl
+            (fun w hw => by rw [hf w, if_pos (Multiset.mem_filter.mp hw).2]),
+            Multiset.map_const', hcard1]
+        · rw [Multiset.map_congr rfl
+            (fun w hw => by rw [hf w, if_neg (Multiset.mem_filter.mp hw).2]),
+            Multiset.map_const', hcard2]
+
+/-- On the 0/1 weighting of a **2-regular** graph on `Fin 6`, the weighted
+1-WL step sends the constant colouring of every tuple to one and the same
+normal form: head colour `()`, and per-coordinate multiset "two ones, four
+zeros" (each row of a 2-regular 0/1 adjacency matrix has exactly that entry
+multiset).  This is the computation behind both the stability of the constant
+colouring (`constColour_isKWLStable`) and the cross-graph step matching in
+`cfi_1wl_indistinguishable`. -/
+lemma kWlWeightedStep_const_unit (G : Graphplay.SimpleGraph (Fin 6))
+    [DecidableRel G.Adj]
+    (hreg : ∀ i : Fin 6, (Finset.univ.filter (fun j => G.Adj i j)).card = 2)
+    (t : Fin 1 → Fin 6) :
+    kWlWeightedStep (cfiWeighted G) 1 (fun _ : Fin 1 → Fin 6 => ()) t
+      = ((), fun _ : Fin 1 =>
+          (Multiset.replicate 2 (1 : ℂ) + Multiset.replicate 4 0).map
+            (fun c => ((), fun _ : Fin 1 => c))) := by
+  have hrow : Finset.univ.val.map (fun w => (cfiWeighted G).adj (t 0) w)
+      = Multiset.replicate 2 (1 : ℂ) + Multiset.replicate 4 0 := by
+    have h := map_ite_row_multiset
+      (f := fun w => (cfiWeighted G).adj (t 0) w)
+      (P := fun w => G.Adj (t 0) w) (d := 2)
+      (fun w => by by_cases h : G.Adj (t 0) w <;> simp [cfiWeighted, h])
+      (hreg (t 0))
+    simpa using h
+  unfold kWlWeightedStep
+  refine congrArg (Prod.mk ()) ?_
+  funext i
+  have hcomp : Finset.univ.val.map
+        (fun w : Fin 6 => ((), fun j : Fin 1 => (cfiWeighted G).adj (t j) w))
+      = (Finset.univ.val.map (fun w => (cfiWeighted G).adj (t 0) w)).map
+          (fun c : ℂ => ((), fun _ : Fin 1 => c)) := by
+    rw [Multiset.map_map]
+    exact Multiset.map_congr rfl (fun w _ => by
+      simp only [Function.comp_apply]
+      refine congrArg (Prod.mk ()) ?_
+      funext j
+      rw [Subsingleton.elim j (0 : Fin 1)])
+  rw [hcomp, hrow]
+
+/-- On the 0/1 weighting of a 2-regular graph on `Fin 6`, the constant
+colouring of `Fin 1 → Fin 6` is **genuinely** 1-WL-stable: every adjacency row
+has the same entry multiset (two ones, four zeros), so the adjacency-aware
+refinement step cannot split the single colour class.  Regularity is doing
+real work here — on a weighting with two distinct row multisets the constant
+colouring is *not* stable for this definition. -/
+lemma constColour_isKWLStable (G : Graphplay.SimpleGraph (Fin 6))
+    [DecidableRel G.Adj]
+    (hreg : ∀ i : Fin 6, (Finset.univ.filter (fun j => G.Adj i j)).card = 2) :
+    IsKWLStable (cfiWeighted G) 1 (fun _ : Fin 1 → Fin 6 => ()) := by
+  intro u v
+  refine ⟨fun _ => rfl, fun _ => ?_⟩
+  rw [kWlWeightedStep_const_unit G hreg u, kWlWeightedStep_const_unit G hreg v]
 
 /-- **1-WL cannot distinguish `C₆` from `2·K₃` (concrete CFI witness, dimension 1).**
 
@@ -847,9 +988,13 @@ Non-vacuity: the conclusion pins down the *actual* witnesses `G := cfiC6`,
 `H := cfi2K3`; the regularity conjuncts (`cfiC6_regular`, `cfi2K3_regular`) certify
 that "constant 1-WL colour" is the *correct* colour-refinement output — for a
 `d`-regular graph 1-WL starts from the (constant) degree colour and refines a class
-only by neighbour-colour multiset, so it never refines past the single class, the
-colour really is constant, and the constant colouring here is genuine, not a
-vacuous collapse of an arbitrary colouring; and the non-isomorphism conjunct
+only by neighbour-colour multiset, so it never refines past the single class.
+Under the adjacency-aware `IsKWLStable` this is no longer a free lunch: the
+stability witnesses genuinely *use* 2-regularity (`constColour_isKWLStable` —
+every adjacency row must have the same entry multiset), and the final conjunct
+matches not just the colours but the **entire refinement-step data** of the two
+graphs (`kWlStepRelabel`-intertwining), so the weight profiles that 1-WL sees on
+`C₆` and on `2·K₃` really are indistinguishable.  The non-isomorphism conjunct
 (`cfi2K3_not_iso_cfiC6`) certifies the graphs genuinely differ (`2·K₃` has a
 triangle, `C₆` does not).  This is the fully-proved `k = 1` instance of the CFI
 lower bound `cfi_kwl_lower_bound` (the smallest concrete CFI phenomenon). -/
@@ -861,35 +1006,50 @@ theorem cfi_1wl_indistinguishable :
       -- both are 2-regular (so the 1-WL colour is genuinely constant)
       (∀ i : Fin 6, (Finset.univ.filter (fun j => G.Adj i j)).card = 2) ∧
       (∀ i : Fin 6, (Finset.univ.filter (fun j => H.Adj i j)).card = 2) ∧
-      -- yet 1-WL produces matching stable colourings of `Fin 1 → V`
+      -- yet 1-WL produces matching stable colourings of `Fin 1 → V`,
+      -- with matching refinement-step data
       ∃ (GW HW : Graphplay.WeightedGraph (Fin 6))
         (I : Type) (_ : Fintype I) (_ : DecidableEq I)
         (cG cH : (Fin 1 → Fin 6) → I)
         (_hcG : IsKWLStable GW 1 cG) (_hcH : IsKWLStable HW 1 cH) (e : I ≃ I),
-        ∀ t : Fin 1 → Fin 6, e (cG t) = cH t := by
+        (∀ t : Fin 1 → Fin 6, e (cG t) = cH t) ∧
+        (∀ t : Fin 1 → Fin 6,
+          kWlStepRelabel e (kWlWeightedStep GW 1 cG t)
+            = kWlWeightedStep HW 1 cH t) := by
   classical
   -- Witnesses `G := cfi2K3`, `H := cfiC6` (order chosen to match the
   -- non-isomorphism lemma `cfi2K3_not_iso_cfiC6 : ¬ (toMathlib cfi2K3 ≃g toMathlib cfiC6)`).
   refine ⟨cfi2K3, cfiC6, inferInstance, inferInstance,
     cfi2K3_not_iso_cfiC6, cfi2K3_regular, cfiC6_regular,
     cfiWeighted cfi2K3, cfiWeighted cfiC6, Unit, inferInstance, inferInstance,
-    (fun _ => ()), (fun _ => ()), ?_, ?_, Equiv.refl Unit, ?_⟩
-  · -- constant colour is 1-WL-stable: substitution can never change the colour
-    intro u v _ i w; exact ⟨w, rfl⟩
-  · intro u v _ i w; exact ⟨w, rfl⟩
-  · intro t; rfl
+    (fun _ => ()), (fun _ => ()),
+    constColour_isKWLStable cfi2K3 cfi2K3_regular,
+    constColour_isKWLStable cfiC6 cfiC6_regular,
+    Equiv.refl Unit, fun t => rfl, fun t => ?_⟩
+  -- Both step outputs reduce to the same normal form (two ones, four zeros
+  -- per row), because *both* graphs are 2-regular; relabelling by the
+  -- identity is then transparent.
+  rw [kWlWeightedStep_const_unit cfi2K3 cfi2K3_regular t,
+    kWlWeightedStep_const_unit cfiC6 cfiC6_regular t]
+  simp only [kWlStepRelabel, Equiv.refl_apply, Multiset.map_map]
+  rfl
 
 /-- **Theorem (k-WL = orbit, for an orbit-separating Aut-invariant colouring).**
 
 **Restated to a TRUE statement (the false universally-quantified `colour` is
 qualified by the two genuine properties of the canonical k-WL colouring).**  The
 old statement quantified over **every** `IsKWLStable` colouring and concluded
-`colour u = colour v ↔ kAritySameOrbit`.  That is **false**: the *constant*
-colouring `colour ≡ c` is `IsKWLStable` (the fixed-point clause holds with
-`w' := w`), yet makes `colour u = colour v` hold for *all* `u, v`, forcing
-`kAritySameOrbit G₀ k u v` for every pair of `k`-tuples — false as soon as `G₀`
-has more than one `Aut`-orbit on `V^k`.  No `k₀` escapes this (the constant
-colouring exists for every `k`).
+`colour u = colour v ↔ kAritySameOrbit`.  That is **false** even for the
+corrected, adjacency-aware `IsKWLStable`: take `G₀` edgeless on ≥ 2 vertices
+with its zero weighting (which carries `HasAutInvariantWeights` — see
+`cfiExists_phantomFree` for the joint witness).  Every weight profile is
+identically `0`, so the weighted step assigns *all* `k`-tuples the same data
+and the **constant** colouring is a genuine fixed point; yet it makes
+`colour u = colour v` hold for *all* `u, v`, forcing `kAritySameOrbit G₀ k u v`
+for every pair of `k`-tuples — false as soon as `Aut(G₀)` (here: all
+permutations) has more than one orbit on `V^k`, e.g. diagonal vs off-diagonal
+pairs at `k = 2`.  No `k₀` escapes this (the construction exists for every
+`k`).
 
 The genuine theorem characterises *when* a k-WL-stable colouring agrees with the
 orbit partition: precisely when it is **orbit-separating** (`hsep`: equal colours
@@ -920,66 +1080,107 @@ theorem kWL_eq_kAritySameOrbit
   refine ⟨Fintype.card V, fun k _ I _ _ colour _h hsep hinv u v => ?_⟩
   exact ⟨hsep u v, hinv u v⟩
 
-/-- **CFI lower bound (statement; honest `sorry` on the gadget).**
-For every fixed arity `k ≥ 2` there is a pair of **non-isomorphic** graphs `G, H`
-(on a common vertex type `V`) that are nevertheless **`k`-WL-indistinguishable**:
-there are `k`-WL-stable colourings `cG`, `cH` of `V^k` and a colour relabelling
-`e` under which they agree on every `k`-tuple, **and the colourings are
-non-trivial** (`_hnontrivG`, `_hnontrivH`: each splits `V^k` into ≥ 2 colour
-classes).  Equivalently, `k`-WL cannot witness the non-isomorphism — the threshold
-`k₀` of `kWL_eq_kAritySameOrbit` must grow without bound across such families.
+/-- **Cai–Fürer–Immerman `k`-WL lower bound**, carried as a cited external
+typeclass (Cai–Fürer–Immerman, "An optimal lower bound on the number of
+variables for graph identification", *Combinatorica* 12 (1992), 389–410).
 
-Two vacuity defects of the previous formulations are repaired here.
+The field asserts: for every fixed arity `k ≥ 2` there is a pair of
+**non-isomorphic** graphs `G, H` on a common vertex type, with **faithful**
+weightings `GW, HW` (the weight support is exactly the edge set, the repo's
+standard tie between a `WeightedGraph` and its combinatorial skeleton), and
+**non-trivial** `k`-WL-stable colourings `cG, cH` whose *entire refinement-step
+data* — substituted colours **and** adjacency/weight profiles, per coordinate,
+as multisets, histogrammed over all `k`-tuples — agree up to a colour
+relabelling `e` (`kWlStepRelabel`).  Equivalently: `k`-WL, run with full access
+to the adjacency information, cannot witness the non-isomorphism, so the
+threshold `k₀` of `kWL_eq_kAritySameOrbit` grows without bound across such
+families (CFI: `k = Ω(|V|)` over a treewidth-`Ω(k)` expander base).
 
-* The original `∀ c > 0, ∀ᶠ n, c·card ≤ n ∧ True` was VACUOUS — it mentioned
-  neither `k`-WL nor non-isomorphism, carried a spurious `∧ True`, and was
-  satisfiable by the empty family (`card = 0`).
-* The intermediate fix carried existential `HasAutInvariantWeights G GW`,
-  `HasAutInvariantWeights H HW` fields.  Under the all-permutations `Aut` stub
-  (`Aut _ := Equiv.Perm V`) those force `GW, HW` invariant under *every*
-  permutation, hence constant off the diagonal — i.e. complete or empty graphs —
-  which is unrelated to `k`-WL indistinguishability and degenerates the statement.
-  They are removed: weight-`Aut`-invariance is not part of the CFI phenomenon.
+Every clause is a cheat-guard with a job:
 
-Crucially we add the **non-triviality guards** `_hnontrivG`, `_hnontrivH`.
-Without them the statement would be cheaply (and vacuously) satisfiable for
-*every* `k` by the **constant** colouring — which is `IsKWLStable` but
-"distinguishes nothing", so it falsely reports indistinguishability even for
-graphs that genuine `k`-WL *does* separate (e.g. `C₆` vs `2·K₃` at `k = 2`).
-Requiring the colourings non-constant rules out that cheat, so the remaining
-`sorry` is the genuine, irreducible content: the Cai–Fürer–Immerman gadget over a
-treewidth-`Ω(k)` (expander) base, producing a *non-trivial* `k`-WL fixed point
-agreeing across the non-isomorphic pair — several hundred lines of combinatorics
-(Cai–Fürer–Immerman, *Combinatorica* 12 (1992), 389–410).  Honest `sorry`.
+* the **faithfulness** clauses tie `GW` to `G` and `HW` to `H` — without them
+  the weightings are unconstrained junk (e.g. two zero matrices), making the
+  step-matching trivial;
+* the **non-triviality** guards exclude the constant colouring (which is
+  stable on suitable weightings but "distinguishes nothing");
+* the **step-histogram matching** (not mere colour agreement) excludes the
+  discrete colouring `colour := id`, which is stable for *every* graph: for
+  injective colourings, matching the step data forces the relabelling to come
+  from a weight-preserving vertex bijection, i.e. an isomorphism — which the
+  non-isomorphism clause forbids.  What survives is exactly the CFI
+  phenomenon: a *coarse but non-trivial* simultaneous fixed point whose local
+  adjacency statistics are identical across a non-isomorphic pair.
 
-The fully machine-checked `k = 1` instance — `C₆` vs `2·K₃`,
-1-WL-indistinguishable and non-isomorphic — is `cfi_1wl_indistinguishable` above
-(stated *without* the non-triviality guard, since at `k = 1` the canonical 1-WL
-colouring of these regular graphs is genuinely constant). -/
-theorem cfi_kwl_lower_bound :
+The histogram (multiset over all `k`-tuples) rather than pointwise form is the
+standard notion of `k`-WL equivalence; mapping the histogram equation through
+`Prod.fst` recovers colour-histogram agreement `(e ∘ cG) ∼ cH`.  The colour
+data here is the *folklore* per-coordinate variant with explicit weight
+profiles; it interleaves with standard `k`-WL within a constant shift of `k`,
+so the `k ≥ 2` regime of the cited bound covers it.
+
+This is a **typeclass assumption, NOT an axiom**: no instance is provided (the
+CFI gadget — several hundred lines of combinatorics over an expander base — is
+the missing external content), so a theorem assuming `[CaiFurerImmerman]` is a
+sorry-free conditional theorem honestly listing the cited literature fact as a
+named hypothesis.  The `k = 1` instance of the phenomenon is fully
+machine-checked *without* this class: `cfi_1wl_indistinguishable` above (`C₆`
+vs `2·K₃`, with genuine stability witnesses and step-level matching; at
+`k = 1` the canonical colouring of a regular graph is honestly constant, so no
+non-triviality guard applies there). -/
+class CaiFurerImmerman : Prop where
+  /-- For every `k ≥ 2`: a non-isomorphic, faithfully-weighted pair carrying
+  non-trivial `k`-WL-stable colourings with matching refinement-step
+  histograms.  (Cai–Fürer–Immerman, *Combinatorica* 12 (1992), 389–410.) -/
+  cfi_lower_bound :
     ∀ k : ℕ, 2 ≤ k → ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G H : Graphplay.SimpleGraph V),
       (¬ Nonempty (toMathlib G ≃g toMathlib H)) ∧
-      ∃ (GW HW : Graphplay.WeightedGraph V)
-        (I : Type) (_ : Fintype I) (_ : DecidableEq I)
-        (cG cH : (Fin k → V) → I)
-        (_hcG : IsKWLStable GW k cG) (_hcH : IsKWLStable HW k cH)
-        (_hnontrivG : ∃ s t : Fin k → V, cG s ≠ cG t)
-        (_hnontrivH : ∃ s t : Fin k → V, cH s ≠ cH t)
-        (e : I ≃ I),
-        ∀ t : Fin k → V, e (cG t) = cH t := by
-  -- The CFI gadget over a treewidth-Ω(k) expander base realises this for every
-  -- `k ≥ 2`, with a *non-trivial* canonical k-WL colouring (so the non-triviality
-  -- guards `_hnontrivG`, `_hnontrivH` are met and the constant-colouring cheat is
-  -- excluded).  Genuinely deep; honest `sorry`.  See `cfi_1wl_indistinguishable`
-  -- for the fully-proved 1-WL instance (C₆ vs 2·K₃).
-  --
-  -- (The hypothesis `2 ≤ k` is *necessary* for truth, not cosmetic: the
-  -- non-triviality guards demand ≥ 2 distinct `k`-tuples, which fails for `k = 0`
-  -- — `Fin 0 → V` is a singleton — so the statement would be FALSE at `k = 0`
-  -- without the bound.  `k ≥ 2` is also exactly the classical CFI regime, the
-  -- `(k+1)`-pebble / k-WL hierarchy where the lower bound has content.)
-  sorry
+      ∃ (GW HW : Graphplay.WeightedGraph V),
+        (∀ x y : V, GW.adj x y ≠ 0 ↔ G.Adj x y) ∧
+        (∀ x y : V, HW.adj x y ≠ 0 ↔ H.Adj x y) ∧
+        ∃ (I : Type) (_ : Fintype I) (_ : DecidableEq I)
+          (cG cH : (Fin k → V) → I)
+          (_hcG : IsKWLStable GW k cG) (_hcH : IsKWLStable HW k cH)
+          (_hnontrivG : ∃ s t : Fin k → V, cG s ≠ cG t)
+          (_hnontrivH : ∃ s t : Fin k → V, cH s ≠ cH t)
+          (e : I ≃ I),
+          Finset.univ.val.map
+              (fun t : Fin k → V =>
+                kWlStepRelabel e (kWlWeightedStep GW k cG t))
+            = Finset.univ.val.map
+                (fun t : Fin k → V => kWlWeightedStep HW k cH t)
+
+/-- **CFI lower bound (conditional on the cited typeclass).**  Under the
+Cai–Fürer–Immerman hypothesis `[CaiFurerImmerman]`, for every fixed `k ≥ 2`
+there is a non-isomorphic, faithfully-weighted pair of graphs with non-trivial
+`k`-WL-stable colourings whose full refinement-step histograms agree up to a
+colour relabelling — `k`-WL cannot witness the non-isomorphism.  See the class
+docstring for the anatomy of the statement and its cheat-guards; the
+unconditional `k = 1` instance is `cfi_1wl_indistinguishable`.
+
+(The hypothesis `2 ≤ k` is necessary, not cosmetic: the non-triviality guards
+demand ≥ 2 distinct `k`-tuples, which fails at `k = 0` — `Fin 0 → V` is a
+singleton — and `k ≥ 2` is exactly the classical CFI regime, the
+`(k+1)`-pebble / `k`-WL hierarchy where the lower bound has content.) -/
+theorem cfi_kwl_lower_bound [CaiFurerImmerman] :
+    ∀ k : ℕ, 2 ≤ k → ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
+      (G H : Graphplay.SimpleGraph V),
+      (¬ Nonempty (toMathlib G ≃g toMathlib H)) ∧
+      ∃ (GW HW : Graphplay.WeightedGraph V),
+        (∀ x y : V, GW.adj x y ≠ 0 ↔ G.Adj x y) ∧
+        (∀ x y : V, HW.adj x y ≠ 0 ↔ H.Adj x y) ∧
+        ∃ (I : Type) (_ : Fintype I) (_ : DecidableEq I)
+          (cG cH : (Fin k → V) → I)
+          (_hcG : IsKWLStable GW k cG) (_hcH : IsKWLStable HW k cH)
+          (_hnontrivG : ∃ s t : Fin k → V, cG s ≠ cG t)
+          (_hnontrivH : ∃ s t : Fin k → V, cH s ≠ cH t)
+          (e : I ≃ I),
+          Finset.univ.val.map
+              (fun t : Fin k → V =>
+                kWlStepRelabel e (kWlWeightedStep GW k cG t))
+            = Finset.univ.val.map
+                (fun t : Fin k → V => kWlWeightedStep HW k cH t) :=
+  CaiFurerImmerman.cfi_lower_bound
 
 /-! ## §8. PST engineering via phantom symmetry
 

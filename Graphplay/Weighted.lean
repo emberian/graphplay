@@ -16,9 +16,8 @@ We provide:
   (unitarity, `U(0) = 1`, `U(s+t) = U(s) * U(t)`), and
 * a `SimpleGraph.toWeighted` bridge for ordinary unweighted graphs.
 
-All proofs that genuinely need Mathlib infrastructure are left as `sorry`,
-but the *types and statements* are intended to compile once Mathlib is wired
-into the lakefile.
+The file is fully proven (no `sorry`), with Mathlib wired in via the
+lakefile.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian

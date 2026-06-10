@@ -923,7 +923,7 @@ permutation `σ` of `V` preserving adjacency) is the identity.
 
 NOTE on directionality: only the forward implication is genuinely true in
 general.  The converse ("rigid ⇒ WL-discrete") is **false** — the CFI graphs
-are rigid yet WL-indistinguishable (see `cfi_lower_bound`) — so we state the
+are rigid yet WL-indistinguishable (see `CfiLowerBound`) — so we state the
 single honest implication rather than an `↔`.  This is the negative direction
 of the coarsest-equitable characterisation. -/
 theorem wlStable_discrete_imp_rigid
@@ -1109,12 +1109,18 @@ a successor file.
 abbrev TupleColoring (V : Type u) (k : ℕ) (α : Type v) : Type _ :=
   (Fin k → V) → α
 
-/-- A single step of `k`-WL.
+/-- A single step of `k`-WL (the *oblivious* formulation).
 
-For `k = 1` this collapses to `wlStep`.  For `k ≥ 2`, the new color of a
-tuple `(v₁, …, v_k)` records the multiset of colorings obtained by
-substituting an arbitrary vertex `w ∈ V` into each of the `k` coordinates in
-turn. -/
+The new color of a tuple `(v₁, …, v_k)` records its old color together with,
+for each coordinate `i`, the multiset of old colors of the tuples obtained by
+substituting an arbitrary vertex `w ∈ V` into coordinate `i`.  The graph does
+not appear in the step itself: adjacency information enters the hierarchy
+through the **initial** colouring by atomic types (`kWlInit` below), which the
+step then propagates — the standard oblivious presentation of `k`-WL (Grohe
+2017, Kiefer 2020).  Consequently the `k = 1` instance is degenerate (a
+`1`-tuple's atomic type carries no adjacency data); the genuine power of the
+hierarchy starts at `k ≥ 2`, and the classical 1-WL of this file (`wlStep`,
+which uses neighbour multisets directly) sits between levels. -/
 def kWlStep
     {V : Type u} [Fintype V] [DecidableEq V]
     {α : Type v} [DecidableEq α]
@@ -1126,76 +1132,160 @@ def kWlStep
       fun i =>
         Finset.univ.val.map (fun w : V => c (Function.update t i w)))
 
-/-- The **`k`-WL fixed point**: `k`-WL refinement reaches a stable colouring.
+/-- The **`k`-WL fixed point**: stable `k`-tuple colourings exist.
 
-Genuine statement (analogue of `wlRefine_stable` in the lattice of partitions
-of `V^k`): for every `k` and every graph `G` there exists a `k`-tuple colouring
-`c : (Fin k → V) → α` that is **`kWlStep`-stable**, meaning one further
-refinement step does not separate any pair of tuples that `c` already
-identifies.  Concretely two tuples that the refined colouring `kWlStep k G c`
-distinguishes were already distinguished by `c`:
+A colouring `c` is **`kWlStep`-stable** when one further refinement round does
+not split any of its colour classes:
 
-  `∀ s t, kWlStep k G c s = kWlStep k G c t → c s = c t`
+  `∀ s t, c s = c t → kWlStep k G c s = kWlStep k G c t`
 
-(the reverse direction is automatic, since `kWlStep` records `c` in its first
-component).  Such a fixed point is reached within `|V|^k` rounds because each
-non-stable step strictly increases the number of colour classes, bounded by
-`|V|^k`. -/
+(this is the substantive direction; the converse is automatic, since `kWlStep`
+records `c` in its first component, so we state the `↔`).  Beware the reversed
+implication alone — "`kWlStep c s = kWlStep c t → c s = c t`" — is satisfied
+by *every* colouring (project the first component) and expresses nothing.
+
+Existence is witnessed by the discrete colouring: the finest partition of
+`V^k` is always a fixed point of refinement.  The deep fixed-point fact — the
+*coarsest* stable colouring refining the atomic types is reached by iterating
+`kWlStep` for at most `|V|^k` rounds — concerns the canonical iterate
+`kWlIter` defined below. -/
 theorem kWlRefine_stable
     {V : Type u} [Fintype V] [DecidableEq V]
     (k : ℕ) (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
     ∃ (α : Type) (_ : DecidableEq α) (c : TupleColoring V k α),
-      ∀ s t : Fin k → V, kWlStep k G c s = kWlStep k G c t → c s = c t := by
-  -- The *discrete* tuple colouring `c = id` is already a fixed point: it cannot
-  -- be refined further, so one more `kWlStep` round never separates two tuples
-  -- it already identifies.  Indeed `kWlStep` records `c` in its first
-  -- coordinate, so `kWlStep c s = kWlStep c t → c s = c t` always holds; for the
-  -- identity colouring this is the genuine maximal-refinement fixed point.
+      ∀ s t : Fin k → V, c s = c t ↔ kWlStep k G c s = kWlStep k G c t := by
   classical
   -- Encode tuples into `Fin (card (Fin k → V))` (a `Type 0`) by the canonical
-  -- Fintype enumeration; this discrete colouring is the maximal-refinement
-  -- fixed point.
+  -- Fintype enumeration; this discrete colouring is injective, hence stable.
   refine ⟨Fin (Fintype.card (Fin k → V)), inferInstance,
-    fun t => (Fintype.equivFin (Fin k → V)) t, ?_⟩
-  intro s t h
-  -- The first component of `kWlStep` is `c`; project it out.
-  simpa [kWlStep] using congrArg Prod.fst h
+    fun t => (Fintype.equivFin (Fin k → V)) t, fun s t => ⟨fun h => ?_, fun h => ?_⟩⟩
+  · -- discrete colouring: equal colours force equal tuples, so the refined
+    -- colours agree trivially.
+    rw [(Fintype.equivFin (Fin k → V)).injective h]
+  · -- the automatic direction: the first component of `kWlStep` is `c`.
+    simpa [kWlStep] using congrArg Prod.fst h
 
-/-- **Cai-Fürer-Immerman (1992)**: for every `k` there exist graphs `G, H`
-with `n = O(k)` vertices that are *not* isomorphic but are not separated by
-`k`-WL.  This is a fundamental lower bound on the power of `k`-WL as a graph
-isomorphism test.
+/-! ### The canonical `k`-WL iteration.
 
-We state it genuinely: for every arity `k` there is a finite vertex type `V`
-carrying two simple graphs `G, H` which are **non-isomorphic**
-(`¬ Nonempty (G ≃g H)`) yet **`k`-WL-indistinguishable** — there exist colourings
-`cG`, `cH` that are *genuinely `k`-WL-stable* for `G` and `H` respectively (each
-a `kWlStep` fixed point in the sense of `kWlRefine_stable`) which agree up to a
-permutation `e` of the colour space on every `k`-tuple.
+The colour type grows with each round; we realise the iteration with an
+explicit tower of colour types, so that the round-`r` colouring of any graph
+on any vertex set lands in the *same* type `kWlType k r`.  This is what makes
+colourings of two different graphs directly comparable — the basis for the
+genuine notion of `k`-WL indistinguishability. -/
 
-The `kWlStep`-stability conjuncts `hcG`/`hcH` are essential: WITHOUT them the
-colour-agreement clause would be vacuous (one could take `cG = cH = const` and
-`e = id` for *any* pair of graphs), saying nothing about `k`-WL.  Requiring the
-colourings to be actual WL fixed points is exactly what makes the statement the
-genuine CFI lower bound.  The explicit gadget construction is deferred to an
-honest theorem-`sorry`. -/
-theorem cfi_lower_bound :
-    ∀ k : ℕ, ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
-      (G H : _root_.SimpleGraph V) (_ : DecidableRel G.Adj) (_ : DecidableRel H.Adj),
-      -- non-isomorphic …
-      (¬ Nonempty (G ≃g H)) ∧
-      -- … yet `k`-WL-indistinguishable: there are genuine `k`-WL-stable
-      -- colourings `cG`, `cH` and a colour relabelling `e` under which they
-      -- agree on every `k`-tuple.
-      (∃ (α : Type) (_ : DecidableEq α) (cG cH : TupleColoring V k α)
-          (_hcG : ∀ s t : Fin k → V, kWlStep k G cG s = kWlStep k G cG t → cG s = cG t)
-          (_hcH : ∀ s t : Fin k → V, kWlStep k H cH s = kWlStep k H cH t → cH s = cH t)
-          (e : α ≃ α),
-        ∀ t : Fin k → V, e (cG t) = cH t) := by
-  -- The CFI gadget over an expander base graph realises this for every `k`
-  -- (with `Ω(k)`-WL actually required to separate the pair).  The full
-  -- combinatorial construction is deferred.
-  sorry
+/-- The colour type of the canonical `k`-WL iteration after `r` rounds.
+
+Round `0` is the **atomic type** of a `k`-tuple (the equality and adjacency
+pattern of its entries); each later round pairs the previous colour with the
+`k` substitution multisets produced by `kWlStep`. -/
+def kWlType (k : ℕ) : ℕ → Type
+  | 0 => Fin k → Fin k → Bool × Bool
+  | r + 1 => kWlType k r × (Fin k → Multiset (kWlType k r))
+
+instance kWlType.instDecidableEq (k : ℕ) : ∀ r, DecidableEq (kWlType k r)
+  | 0 => inferInstanceAs (DecidableEq (Fin k → Fin k → Bool × Bool))
+  | r + 1 =>
+    letI := kWlType.instDecidableEq k r
+    inferInstanceAs (DecidableEq (kWlType k r × (Fin k → Multiset (kWlType k r))))
+
+/-- The **initial `k`-WL colouring**: each `k`-tuple `t` is coloured by its
+atomic type, the pair of Boolean matrices recording which entries of `t` are
+equal and which are adjacent in `G`.  This is where the graph enters the
+oblivious `k`-WL hierarchy. -/
+def kWlInit
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (k : ℕ) (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
+    TupleColoring V k (kWlType k 0) :=
+  fun t i j => (decide (t i = t j), decide (G.Adj (t i) (t j)))
+
+/-- The **canonical `k`-WL iterate**: `r` rounds of `kWlStep` starting from the
+atomic-type colouring `kWlInit`.  Fully computable. -/
+def kWlIter
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (k : ℕ) (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
+    ∀ r : ℕ, TupleColoring V k (kWlType k r)
+  | 0 => kWlInit k G
+  | r + 1 => kWlStep k G (kWlIter k G r)
+
+/-- **`k`-WL indistinguishability** (the genuine notion): two graphs on the
+same vertex set are not separated by `k`-WL when at *every* round the colour
+histograms of their canonical iterates coincide — the multiset of round-`r`
+colours over all `k`-tuples is the same for `G` and for `H`.
+
+This is the standard acceptance criterion of the `k`-WL isomorphism test
+(Cai–Fürer–Immerman 1992; Kiefer 2020).  Crucially it is phrased on the
+*canonical* colourings `kWlIter`: an existential over arbitrary stable
+colourings would be degenerate, since the discrete colouring is stable for
+every graph and constant colourings match histograms trivially. -/
+def KWlIndistinguishable
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (k : ℕ) (G H : _root_.SimpleGraph V)
+    [DecidableRel G.Adj] [DecidableRel H.Adj] : Prop :=
+  ∀ r : ℕ,
+    Finset.univ.val.map (kWlIter k G r) = Finset.univ.val.map (kWlIter k H r)
+
+/-- `k`-WL never separates a graph from itself. -/
+theorem kWlIndistinguishable_refl
+    {V : Type u} [Fintype V] [DecidableEq V]
+    (k : ℕ) (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
+    KWlIndistinguishable k G G :=
+  fun _ => rfl
+
+/-- `KWlIndistinguishable` is falsifiable: already at round `0`, `2`-WL
+separates the complete graph from the empty graph on two vertices (their
+atomic-type histograms differ).  This certifies that the indistinguishability
+predicate — and hence `CfiLowerBound` below — has actual content. -/
+theorem not_kWlIndistinguishable_top_bot :
+    ¬ KWlIndistinguishable 2 (⊤ : _root_.SimpleGraph (Fin 2)) ⊥ := by
+  intro h
+  exact absurd (h 0) (by decide)
+
+/-- **Cai–Fürer–Immerman lower bound (1992)** — stated as a `Prop`, per the
+def-conjecture pattern: the gadget construction is not formalised here.
+
+For every arity `k` there exist finite graphs `G, H` that are
+**non-isomorphic** yet **`k`-WL-indistinguishable** in the canonical sense
+(`KWlIndistinguishable`: equal colour histograms at every round of `kWlIter`).
+Hence no fixed level of the WL hierarchy decides graph isomorphism.  CFI
+realise this with `n = O(k)`-vertex gadget pairs over a connected base graph;
+see Cai–Fürer–Immerman, *An optimal lower bound on the number of variables for
+graph identification*, Combinatorica 1992.
+
+The `k = 1` case is proved outright in `cfiLowerBound_at_one` (the oblivious
+level-1 test is degenerate); the content of the conjecture is `k ≥ 2`. -/
+def CfiLowerBound : Prop :=
+  ∀ k : ℕ, ∃ (V : Type) (iF : Fintype V) (iD : DecidableEq V)
+    (G H : _root_.SimpleGraph V)
+    (iG : DecidableRel G.Adj) (iH : DecidableRel H.Adj),
+    (¬ Nonempty (G ≃g H)) ∧ @KWlIndistinguishable V iF iD k G H iG iH
+
+/-- The `k = 1` instance of `CfiLowerBound`, proved concretely: `⊤` and `⊥` on
+two vertices are non-isomorphic, yet oblivious `1`-WL cannot separate them — a
+`1`-tuple's atomic type carries no adjacency information, so the canonical
+iterates of *any* two graphs on the same vertex set coincide at `k = 1`.  This
+shows the statement shape of `CfiLowerBound` is satisfiable (non-vacuous); the
+mathematical substance of CFI lives at `k ≥ 2`. -/
+theorem cfiLowerBound_at_one :
+    ∃ (V : Type) (iF : Fintype V) (iD : DecidableEq V)
+      (G H : _root_.SimpleGraph V)
+      (iG : DecidableRel G.Adj) (iH : DecidableRel H.Adj),
+      (¬ Nonempty (G ≃g H)) ∧ @KWlIndistinguishable V iF iD 1 G H iG iH := by
+  refine ⟨Fin 2, inferInstance, inferInstance, ⊤, ⊥, inferInstance, inferInstance, ?_, ?_⟩
+  · rintro ⟨e⟩
+    exact e.map_adj_iff.mpr (by decide : (⊤ : _root_.SimpleGraph (Fin 2)).Adj 0 1)
+  · -- the canonical iterates agree at every round, as functions.
+    have hiter : ∀ r, kWlIter 1 (⊤ : _root_.SimpleGraph (Fin 2)) r = kWlIter 1 ⊥ r := by
+      intro r
+      induction r with
+      | zero => decide
+      | succ r ih =>
+        show kWlStep 1 ⊤ (kWlIter 1 ⊤ r) = kWlStep 1 ⊥ (kWlIter 1 ⊥ r)
+        rw [ih]
+        -- `kWlStep` does not consult the graph; both sides delta-reduce to the
+        -- same substitution-multiset colouring.
+        with_unfolding_all rfl
+    intro r
+    rw [hiter r]
 
 /-! ## 8. Concrete examples & `#eval` smoke tests.
 
@@ -1212,9 +1302,9 @@ Each example below corresponds to a hand-checked answer:
   Kneser/Johnson scheme).
 
 In each case the `wlStableRound` is reached by round `2` because all the
-graphs are vertex-transitive.  The `#eval` lines below are commented out;
-uncomment them once `wlRefine_stable` is no longer `sorry` and the
-`noncomputable` markers can be relaxed.
+graphs are vertex-transitive.  The `#eval` lines below are commented out
+because the nested-multiset colour encoding makes elaboration-time evaluation
+blow up (see the note before them); run them in an editor session.
 -/
 
 section Examples

@@ -21,8 +21,7 @@ In Lean / Mathlib terms we use:
 * `Matrix.exp_neg`, `Matrix.exp_add_of_commute`,
 to translate between the eigenvalue lift and the unitary-evolution lift.
 
-Multiplicity of the eigenvalue lift is sketched but the full proof is left
-as `sorry`; the statement is given precisely.
+The file is fully proven (no `sorry`).
 -/
 
 import Graphplay.Equitable

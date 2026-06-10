@@ -37,10 +37,18 @@ This file is a **concrete statement layer**:
   and POVMs are honest `Matrix` lists with their defining algebraic
   constraints;
 * the goal-reachability predicate is spelled out concretely;
-* the headline undecidability theorem is stated precisely, with an honest
-  `sorry` on the deep reduction-from-PCP body;
-* the equitable-symmetry / quotient connection (a QOMDP with an equitable
-  symmetry on its state index reduces to a quotient QOMDP) is stated.
+* PCP solvability is a **genuine, concrete `Σ₁` predicate** (`PCPInstance`,
+  tile lists over the binary alphabet, surjectively enumerated by `pcpEnum`),
+  and the headline Barry–Barry–Aaronson reduction is carried as a
+  def-conjecture (`BarryBarryAaronsonReduction`) anchored to that predicate;
+* the quotient connection is the **equivariant** one: cell-constancy of the
+  Kraus data (the naive `EquitableSymmetry`) is *machine-checked to be
+  uninstantiable* beyond discrete partitions
+  (`EquitableSymmetry.no_nontrivial_cell`), whereas commutation with all
+  cell-preserving permutations (`EquivariantSymmetry`) is satisfiable with
+  nontrivial cells, makes every run-state equivariant, and makes every
+  goal-success probability descend to an `|I|`-indexed cell sum; the explicit
+  quotient machine is `EquivariantQuotientConjecture`.
 
 ## References
 
@@ -58,6 +66,7 @@ import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.LinearAlgebra.Matrix.Trace
 import Mathlib.Data.Matrix.Basic
 import Mathlib.Analysis.Complex.Order
+import Mathlib.Logic.Equiv.List
 import Graphplay.Weighted
 import Graphplay.Equitable
 
@@ -236,7 +245,7 @@ def QOMDP.IsClassical {A : Type u} [Fintype A] {O : Type u} [Fintype O]
 undecidability theorem).  For a classical QOMDP, the diagonal dynamics is a
 finite controlled stochastic system; qualitative `Pr = 1` reachability is
 decidable (e.g. by the standard fixpoint/attractor computation on the finite
-belief support).  Statement precise; honest `sorry` on the decision procedure.
+belief support).
 
 Cf. Barry–Barry–Aaronson §1: "for classical MDPs this problem is decidable".
 
@@ -259,23 +268,24 @@ theorem classical_reachable_finite_horizon
 
 /-! ### 5. The headline theorem: QOMDP goal-state reachability is undecidable
 
-We phrase undecidability honestly inside Lean: there is **no** uniform decision
-procedure for `QOMDP.Reachable` ranging over QOMDPs of unbounded dimension.
-Concretely, we exhibit a fixed action/observation interface and a computable
-family of QOMDPs `enc : ℕ → QOMDP …` (the PCP-reduction encodings) such that
-`fun n => Reachable (enc n)` is not a decidable predicate of `n` — equivalently,
-no algorithm decides reachability across the family.
+We anchor the statement to a **genuine, concrete PCP-solvability predicate**.
+A Post correspondence instance is a finite list of tile pairs (top word,
+bottom word) over the binary alphabet; it is *solvable* when some nonempty
+sequence of tile indices makes the top and bottom concatenations agree.  This
+is a perfectly definable `Σ₁` predicate of the instance — and, by Post
+(1946), an undecidable one as the instance varies.
 
-Because Lean's `Decidable` is data, the faithful "no algorithm exists"
-statement is about a *computable* indexing.  We package the negative result as:
-for the reduction family there is no decidable instance whose truth value
-tracks `Reachable`.  The deep content — that the family really does encode an
-undecidable problem (Post correspondence / matrix mortality) — is the honest
-`sorry`. -/
+A `ReductionFamily` is a family of QOMDPs whose goal-state reachability
+*faithfully tracks* this fixed predicate along a fixed surjective enumeration
+of instances.  Crucially, `pcpHasSolution` is **not** a free field of the
+structure: a free field would reduce the existence of a faithful family to a
+triviality (take `pcpHasSolution n := (enc n).Reachable` and `faithful` is
+`Iff.rfl`).  It is pinned to the concrete PCP predicate below, so inhabiting
+`ReductionFamily` genuinely ties quantum reachability to PCP. -/
 
 /-- The fixed dimension used by the reduction family at index `n`.  Barry–
-Barry–Aaronson encode PCP instances of size `n` into QOMDPs whose Hilbert-space
-dimension grows with `n`; we keep it abstract as `reductionDim n`. -/
+Barry–Aaronson encode PCP instances into QOMDPs whose Hilbert-space dimension
+grows with the instance; we keep it abstract as `reductionDim n`. -/
 noncomputable def reductionDim (n : ℕ) : ℕ := n + 1
 
 /-- The action type of the reduction family: PCP "tile choices" plus a halt
@@ -286,60 +296,118 @@ abbrev ReductionAction (n : ℕ) := Fin (n + 1)
 flag). -/
 abbrev ReductionObs := Bool
 
-/-- The **PCP→QOMDP reduction family**: a computable map from a problem index
-`n` (encoding a PCP instance) to a QOMDP whose goal-state reachability holds iff
-the encoded PCP instance has a solution.  We assert its existence as a witness
-package; the construction is the concrete Kraus encoding of the tile
-concatenation monoid, deferred as an honest `sorry`.
+/-- A **Post correspondence instance**: a finite list of tile pairs
+`(top, bottom)`, each a word over the binary alphabet. -/
+abbrev PCPInstance : Type := List (List Bool × List Bool)
 
-The data: for each `n`, a QOMDP on `Fin (reductionDim n)` over actions
-`ReductionAction n` and observations `ReductionObs`, together with a decidable
-PCP-solvability predicate `pcpHasSolution n` that the construction tracks. -/
+/-- **Solvability of a PCP instance** (Post 1946): some *nonempty* sequence of
+tile indices has equal top and bottom concatenations.  A concrete `Σ₁`
+predicate, undecidable as the instance varies. -/
+def PCPInstance.Solvable (P : PCPInstance) : Prop :=
+  ∃ seq : List (Fin P.length), seq ≠ [] ∧
+    (seq.map fun i => (P.get i).1).flatten = (seq.map fun i => (P.get i).2).flatten
+
+/-- A surjective enumeration of PCP instances: decode `n` via the `Encodable`
+instance, defaulting to the empty instance.  Surjectivity
+(`pcpEnum_surjective`) means the indexed predicate `pcpHasSolution` ranges
+over *all* PCP instances, so it inherits the undecidability of PCP. -/
+def pcpEnum (n : ℕ) : PCPInstance :=
+  ((Encodable.decode n : Option PCPInstance)).getD []
+
+@[simp] theorem pcpEnum_encode (P : PCPInstance) :
+    pcpEnum (Encodable.encode P) = P := by
+  simp [pcpEnum]
+
+theorem pcpEnum_surjective : Function.Surjective pcpEnum :=
+  fun P => ⟨Encodable.encode P, pcpEnum_encode P⟩
+
+/-- The **genuine PCP-solvability predicate** on indices: the `n`-th instance
+of the enumeration is solvable.  This concrete predicate — not a free
+placeholder — is what the Barry–Barry–Aaronson reduction must track. -/
+def pcpHasSolution (n : ℕ) : Prop := PCPInstance.Solvable (pcpEnum n)
+
+/-- `pcpHasSolution` is nontrivial: the single-tile instance `([1], [1])` is
+solvable (use the index sequence `[0]`), the empty instance is not (there is
+no nonempty index sequence into zero tiles).  So the predicate is neither
+constantly true nor constantly false, and faithfulness to it has content. -/
+theorem pcpHasSolution_nontrivial :
+    pcpHasSolution (Encodable.encode ([([true], [true])] : PCPInstance)) ∧
+      ¬ pcpHasSolution (Encodable.encode ([] : PCPInstance)) := by
+  constructor
+  · show PCPInstance.Solvable (pcpEnum _)
+    rw [pcpEnum_encode]
+    exact ⟨[⟨0, by simp⟩], by simp, rfl⟩
+  · show ¬ PCPInstance.Solvable (pcpEnum _)
+    rw [pcpEnum_encode]
+    rintro ⟨seq, hne, -⟩
+    cases seq with
+    | nil => exact hne rfl
+    | cons i _ => exact i.elim0
+
+/-- The **PCP→QOMDP reduction family**: for each index `n`, a QOMDP on
+`Fin (reductionDim n)` over actions `ReductionAction n` whose goal-state
+reachability holds **iff** the `n`-th PCP instance of the fixed enumeration
+`pcpEnum` is solvable.  Because `pcpHasSolution` is the concrete predicate
+above (not a field of this structure), any inhabitant is a genuine many-one
+reduction from PCP solvability to quantum goal-state reachability. -/
 structure ReductionFamily where
   /-- The encoded QOMDP at index `n`. -/
   enc : (n : ℕ) →
     QOMDP (Fin (reductionDim n)) (ReductionAction n) ReductionObs
-  /-- The PCP solvability predicate being reduced (undecidable as a family). -/
-  pcpHasSolution : ℕ → Prop
-  /-- **Faithfulness of the reduction**: the encoded QOMDP is goal-reachable iff
-  the underlying PCP instance is solvable.  This is the algebraic heart of the
-  Barry–Barry–Aaronson reduction; its proof (the Kraus operators implement tile
+  /-- **Faithfulness of the reduction**: the encoded QOMDP is goal-reachable
+  iff the `n`-th PCP instance is solvable.  This is the algebraic heart of the
+  Barry–Barry–Aaronson reduction: the Kraus operators implement tile
   concatenation, and a perfect goal measurement corresponds to a matching
-  word) is the deep content. -/
+  word. -/
   faithful : ∀ n, (enc n).Reachable ↔ pcpHasSolution n
 
-/-- **Undecidability of QOMDP goal-state reachability** (Barry–Barry–Aaronson,
-arXiv:1911.01953).  There exists a computable reduction family `R` whose
-goal-state reachability **faithfully tracks** the (undecidable) PCP-solvability
-predicate: `(R.enc n).Reachable ↔ R.pcpHasSolution n` for every `n`.  This is the
-genuine many-one reduction at the heart of the undecidability result.
+/-- **Conjecture: the Barry–Barry–Aaronson PCP→QOMDP reduction**
+(arXiv:1911.01953; Barry–Barry–Aaronson, Phys. Rev. A 90, 032311).  There is a
+family of QOMDPs whose goal-state reachability faithfully tracks the concrete
+PCP-solvability predicate `pcpHasSolution`.  Together with the (meta-level)
+undecidability of PCP, this is exactly the undecidability of QOMDP goal-state
+reachability.
 
-NOTE (corrected statement): the previous formulation concluded
-`¬ ∃ _ : DecidablePred (fun n => (R.enc n).Reachable), True`, which is a **false**
-proposition in Lean — every predicate is *classically* `Decidable`
-(`Classical.decPred`), so such a `DecidablePred` always exists and the negation
-can never hold.  Stating undecidability via the *absence of a Decidable instance*
-is not faithful (Lean's `Decidable` is not a computability predicate).  We
-instead expose the genuine reduction (`R.faithful`); the undecidability of
-`R.pcpHasSolution` itself is a meta-level (computability-theoretic) statement
-outside Lean's `Decidable` API.  Honest `sorry` on the construction of `R`. -/
-theorem qomdp_reachability_undecidable :
-    ∃ R : ReductionFamily,
-      ∀ n, (R.enc n).Reachable ↔ R.pcpHasSolution n := by
-  -- DEEP: the Barry–Barry–Aaronson Kraus encoding of PCP into QOMDP dynamics.
-  -- Once constructed, the faithfulness conclusion is exactly `R.faithful`.
-  sorry
+This is a `def` (a named `Prop`), per the repo's def-conjecture convention,
+for two reasons:
 
-/-! ### 6. Equitable symmetry ⇒ quotient QOMDP
+1. the intended content is the **explicit uniform Kraus construction** —
+   tile words pushed into a noncommutative product of Kraus operators, goal
+   projector detecting a top/bottom match;
+2. as a bare `Prop`, `Nonempty ReductionFamily` could in principle be
+   inhabited *non-uniformly* by `Classical.choice` (case-split each `n` on the
+   undecidable `pcpHasSolution n` and pick a trivially reachable/unreachable
+   machine of the right dimension).  Such a proof would discard the entire
+   computable-uniformity content that powers the undecidability transfer —
+   Lean's `Prop` language cannot see computability of the map `n ↦ enc n`.
+   We therefore *deliberately* leave this as a named conjecture, to be
+   discharged only by the explicit construction. -/
+def BarryBarryAaronsonReduction : Prop := Nonempty ReductionFamily
 
-The Graphplay theme: an equitable symmetry of the state index collapses the
-dynamics onto a quotient.  A QOMDP carries an **equitable symmetry** when its
-state space `ℂ^d` is partitioned into cells (a map `cells : d → I`) such that
-every Kraus operator, the goal, and the initial state are *cell-constant* — the
-diagonal-block divisor structure of an `EquitablePartition`.  Under such a
-symmetry the entire controlled dynamics descends to a **quotient QOMDP** on the
-smaller index `I`, with the cell-inflation/quotient lift of
-`Graphplay.Equitable` intertwining the two. -/
+/-! ### 6. Symmetry ⇒ quotient QOMDP
+
+The Graphplay theme: a symmetry of the state index collapses the dynamics onto
+a quotient.  Two candidate notions of symmetry for a cell labelling
+`cells : d → I`:
+
+* **cell-constancy** (`CellConstant`, packaged as `EquitableSymmetry`): every
+  entry of every Kraus operator depends only on the cells of its indices.
+  This is the naive transplant of the equitable branching condition — and it
+  is **incompatible with trace preservation**: `∑ Kᴴ K = 1` puts the identity
+  matrix in the cell-constant subalgebra, which forces `cells` to be
+  *injective* (`EquitableSymmetry.cells_injective`).  So this notion carries
+  no quotient beyond the discrete partition; we keep it, with its machine-
+  checked no-go, as the cautionary half of the story.
+
+* **equivariance** (`Equivariant`, packaged as `EquivariantSymmetry`): every
+  Kraus operator, the goal, and the initial state commute with the
+  permutation action of every cell-preserving permutation of `d`.  The
+  identity is equivariant for *every* partition, the notion is satisfiable
+  with genuinely nontrivial cells (`swapSymmetricQOMDP_symmetry`), every
+  policy's run-state stays equivariant (`equivariant_runState`), and every
+  goal-success probability descends to an `|I|`-indexed cell sum
+  (`equivariant_goalProb_descent`).  This is the genuine quotientable
+  symmetry of QOMDP dynamics. -/
 
 /-- A **cell symmetry** of a matrix `M` with respect to a cell labelling
 `cells : d → I`: the entry `M v w` depends only on the cells of `v` and `w`.
@@ -350,7 +418,13 @@ def CellConstant {I : Type u} [Fintype I] [DecidableEq I]
   ∀ v w v' w', cells v = cells v' → cells w = cells w' → M v w = M v' w'
 
 /-- An **equitable symmetry** of a QOMDP: a cell labelling making every Kraus
-operator, the goal, and the initial state cell-constant. -/
+operator, the goal, and the initial state cell-constant.
+
+**No-go:** whenever the QOMDP has at least one action, this structure forces
+`cells` to be injective (`EquitableSymmetry.cells_injective`) — the
+trace-preservation identity `∑ Kᴴ K = 1` is incompatible with cell-constancy
+on any cell of size `≥ 2`.  The quotientable notion of symmetry is
+`EquivariantSymmetry` below. -/
 structure EquitableSymmetry
     {A : Type u} [Fintype A] {O : Type u} [Fintype O]
     (M : QOMDP d A O) (I : Type u) [Fintype I] [DecidableEq I] where
@@ -430,6 +504,49 @@ theorem CellConstant.apply {I : Type u} [Fintype I] [DecidableEq I]
   rw [List.mem_map] at hM
   obtain ⟨K, hK, rfl⟩ := hM
   exact ((hC K hK).mul hρ).mul (hC K hK).conjTranspose
+
+/-! ### The no-go: cell-constancy is incompatible with trace preservation
+
+`EquitableSymmetry` is **uninstantiable beyond the discrete partition**
+whenever there is at least one action: the Kraus constraint `∑ Kᴴ K = 1` puts
+the identity matrix in the cell-constant subalgebra (cell-constancy is closed
+under `ᴴ`, `*`, and list sums), and the identity is cell-constant only for
+injective `cells` — a cell containing two distinct states `v ≠ w` would force
+`1 = (1 : Matrix) v v = (1 : Matrix) v w = 0`.  This is the machine-checked
+justification for redefining the QOMDP symmetry as *equivariance* below. -/
+
+/-- **No-go for cell-constant Kraus symmetry.**  If a QOMDP has at least one
+action, any `EquitableSymmetry` labelling is injective: every cell is a
+singleton, so the "quotient" is a relabelling of the original system. -/
+theorem EquitableSymmetry.cells_injective
+    {A : Type u} [Fintype A] {O : Type u} [Fintype O]
+    {M : QOMDP d A O} {I : Type u} [Fintype I] [DecidableEq I]
+    (S : EquitableSymmetry M I) (a : A) :
+    Function.Injective S.cells := by
+  have hone : CellConstant S.cells (1 : Matrix d d ℂ) := by
+    rw [← (M.channel a).tracePreserving]
+    refine CellConstant.listSum (fun N hN => ?_)
+    rw [List.mem_map] at hN
+    obtain ⟨K, hK, rfl⟩ := hN
+    exact (S.kraus_cellConstant a K hK).conjTranspose.mul (S.kraus_cellConstant a K hK)
+  intro v w hvw
+  by_contra hne
+  have h10 := hone v v v w rfl hvw
+  rw [Matrix.one_apply_eq, Matrix.one_apply_ne hne] at h10
+  exact one_ne_zero h10
+
+/-- **Machine-checked uninstantiability with a nontrivial cell**: with at
+least one action, no two distinct basis states can share an
+`EquitableSymmetry` cell.  Consequently the cell-constant descent theorems
+below (`equitable_runState_cellConstant`, `equitable_goalProb_descent`) only
+ever apply to discrete partitions; the live quotient theory is the
+equivariant one. -/
+theorem EquitableSymmetry.no_nontrivial_cell
+    {A : Type u} [Fintype A] {O : Type u} [Fintype O]
+    {M : QOMDP d A O} {I : Type u} [Fintype I] [DecidableEq I]
+    (S : EquitableSymmetry M I) (a : A) {v w : d} (hvw : v ≠ w) :
+    S.cells v ≠ S.cells w :=
+  fun h => hvw (S.cells_injective a h)
 
 /-! ### Trace descent: cell-constant observables read only the quotient data
 
@@ -520,26 +637,15 @@ namespace QOMDP
 
 variable {A : Type u} [Fintype A] {O : Type u} [Fintype O]
 
-/-- **Equitable reduction — run-state cell-constancy (PROVEN, non-vacuous).**
-A QOMDP with an equitable symmetry `S` on its state index has, for *every* finite
-policy `π`, a **cell-constant** run-state `runState π`.  In other words the entire
-controlled dynamics stays inside the cell-constant subalgebra of `Matrix d d ℂ`
-indexed by the cell map `S.cells : d → I`.
+/-- **Run-state cell-constancy.**  A QOMDP with an `EquitableSymmetry` has a
+cell-constant run-state for every finite policy: cell-constant matrices are
+closed under product, sum and conjugate transpose, so every Kraus channel
+action preserves them (`CellConstant.apply`).
 
-This is the genuine, *non-vacuous* core of the equitable-quotient reduction (the
-QOMDP-level instance of the cell-uniform invariance / `cellInflate` lift): because
-the cell-constant matrices are closed under matrix product, sum, and conjugate
-transpose, the Kraus channel action of every action preserves cell-constancy
-(`CellConstant.apply`); threading the policy from the cell-constant initial state
-`S.init_cellConstant` keeps the run-state cell-constant at every step.
-
-It is the dynamical fact that makes the goal-success computation `goalProb`
-descend to the `|I|`-dimensional cell quotient: both the run-state and the goal
-effect are cell-constant, so reachability depends only on the cell data — *not* a
-decidability case-split on `M.Reachable`.  (Constructing the quotient QOMDP `Mq`
-as an explicit `|I|`-state machine with a full reachability *equivalence* is the
-remaining intertwiner content; the descent of the dynamics proved here is the
-substance behind it.) -/
+Scope note: by `EquitableSymmetry.cells_injective`, the hypothesis is only
+instantiable with a discrete partition (when there is at least one action), so
+this is a fact about the cell-constant matrix algebra rather than a usable
+quotient theorem; the equivariant analogue is `equivariant_runState`. -/
 theorem equitable_runState_cellConstant
     (M : QOMDP d A O) {I : Type u} [Fintype I] [DecidableEq I]
     (S : EquitableSymmetry M I) :
@@ -551,24 +657,15 @@ theorem equitable_runState_cellConstant
     rw [runState_cons]
     exact CellConstant.apply (M.channel a) (S.kraus_cellConstant a) ih
 
-/-- **Equitable reduction — goal-success probability descends to the cell quotient
-(PROVEN, non-vacuous).**  Under an equitable symmetry `S` of `M`, the
-goal-success probability `goalProb π = tr(E_g · runState π)` of *every* policy is
-a **finite double sum over the cell index `I`** of the quotient data: choosing any
-cell-representative function `rep`, it equals
-`∑_{i,j} |C_i|·|C_j| · E_g(rep i)(rep j) · runState(rep j)(rep i)`.
+/-- **Goal-probability descent under cell-constancy.**  Under an
+`EquitableSymmetry`, the goal-success probability of every policy is the
+fiber-weighted quotient double sum
+`∑_{i,j} |C_i|·|C_j| · E_g(rep i)(rep j) · runState(rep j)(rep i)` — an
+immediate application of `trace_mul_cellConstant_descent`.
 
-This is the QOMDP-level payoff of `equitable_runState_cellConstant`: it certifies
-that the goal-success probability — and hence reachability (`goalProb π = 1`) —
-reads only the `|I| × |I|` quotient entries of the goal effect and the run-state,
-*never* the full `d × d` matrices.  It is the concrete descent statement standing
-behind the (still-open) explicit construction of the quotient machine `Mq`: both
-factors of the goalProb trace are cell-constant (`S.goal_cellConstant` and the
-run-state), so `trace_mul_cellConstant_descent` applies directly.
-
-NON-VACUITY: the right-hand side genuinely only involves the cell index `I` and
-the quotient entries; empty cells drop out via their zero cardinality, so `rep` is
-consulted only on occupied cells. -/
+Scope note: as with `equitable_runState_cellConstant`, the hypothesis only
+admits discrete partitions (`EquitableSymmetry.cells_injective`); the
+quotient-bearing analogue is `equivariant_goalProb_descent`. -/
 theorem equitable_goalProb_descent
     (M : QOMDP d A O) {I : Type u} [Fintype I] [DecidableEq I]
     (S : EquitableSymmetry M I) (π : Policy A)
@@ -581,57 +678,329 @@ theorem equitable_goalProb_descent
   exact trace_mul_cellConstant_descent S.goal_cellConstant
     (M.equitable_runState_cellConstant S π) rep hrep
 
-/-- **Equitable reduction (statement of the full quotient theorem).**  A QOMDP
-with an equitable symmetry on its state index reduces to a *quotient QOMDP* on the
-cell-index type `I`, with goal-state reachability equivalent to that of `M`.  The
-dynamical substance — that the run-state of every policy stays cell-constant, so
-the dynamics genuinely descends to the cell quotient — is proved (non-vacuously)
-in `equitable_runState_cellConstant`.
+end QOMDP
 
-The remaining honest residual is the *explicit construction* of the
-`|I|`-dimensional quotient QOMDP `Mq` (cell-averaged Kraus channels, POVM, goal
-and initial state) **together with** the reachability equivalence proved through
-the cell-inflation intertwiner.  Building the full `QOMDP I A O` with all its
-CPTP/POVM algebraic constraints, and the bidirectional reachability transport, is
-the deferred deep part (the QOMDP-level Mancinska–Roberson / `cellInflate` lift).
+/-! ### Equivariance: the genuine quotientable symmetry
 
-NON-VACUITY NOTE.  We deliberately keep this `sorry` only on the *full*
-construction; the genuine reduction content (cell-constant descent of the
-dynamics) is already discharged above without any case-split on `M.Reachable`. -/
-theorem equitable_reduces_to_quotient
+A matrix is *equivariant* for a cell labelling when it commutes with the
+permutation action of every cell-preserving permutation of the state index —
+entrywise, `M (σ v) (σ w) = M v w`.  Unlike cell-constancy, the identity is
+equivariant for every partition, so the CPTP constraint imposes no
+obstruction, and the notion is satisfiable with genuinely nontrivial cells
+(`swapSymmetricQOMDP_symmetry` below: a 2-state system whose single cell has
+two elements). -/
+
+/-- A permutation of the state index is **cell-preserving** when it fixes the
+cell labelling: `cells (σ v) = cells v` for all `v`. -/
+def CellPreserving {I : Type u} [Fintype I] [DecidableEq I]
+    (cells : d → I) (σ : Equiv.Perm d) : Prop :=
+  ∀ v, cells (σ v) = cells v
+
+/-- A matrix is **equivariant** for a cell labelling when it is invariant
+under the simultaneous row/column action of every cell-preserving
+permutation: `M (σ v) (σ w) = M v w`.  Equivalently, the permutation matrix
+of every cell-preserving `σ` commutes with `M`. -/
+def Equivariant {I : Type u} [Fintype I] [DecidableEq I]
+    (cells : d → I) (M : Matrix d d ℂ) : Prop :=
+  ∀ σ : Equiv.Perm d, CellPreserving cells σ → ∀ v w, M (σ v) (σ w) = M v w
+
+namespace Equivariant
+
+variable {I : Type u} [Fintype I] [DecidableEq I] {cells : d → I}
+
+/-- The identity matrix is equivariant for **every** cell labelling — the
+exact point where equivariance beats cell-constancy (cf.
+`EquitableSymmetry.cells_injective`). -/
+theorem one : Equivariant cells (1 : Matrix d d ℂ) := by
+  intro σ _ v w
+  simp [Matrix.one_apply]
+
+/-- The zero matrix is equivariant. -/
+theorem zero : Equivariant cells (0 : Matrix d d ℂ) :=
+  fun _ _ _ _ => rfl
+
+/-- A constant-diagonal matrix is equivariant for every cell labelling. -/
+theorem diagonal_const (c : ℂ) :
+    Equivariant cells (Matrix.diagonal fun _ => c) := by
+  intro σ _ v w
+  simp [Matrix.diagonal_apply]
+
+/-- Equivariant matrices are closed under addition. -/
+theorem add {B C : Matrix d d ℂ}
+    (hB : Equivariant cells B) (hC : Equivariant cells C) :
+    Equivariant cells (B + C) := by
+  intro σ hσ v w
+  rw [Matrix.add_apply, Matrix.add_apply, hB σ hσ v w, hC σ hσ v w]
+
+/-- Equivariant matrices are closed under matrix product (reindex the
+matrix-product sum along `σ`). -/
+theorem mul {B C : Matrix d d ℂ}
+    (hB : Equivariant cells B) (hC : Equivariant cells C) :
+    Equivariant cells (B * C) := by
+  intro σ hσ v w
+  rw [Matrix.mul_apply, Matrix.mul_apply,
+    ← Equiv.sum_comp σ (fun z => B (σ v) z * C z (σ w))]
+  exact Finset.sum_congr rfl fun z _ => by rw [hB σ hσ v z, hC σ hσ z w]
+
+/-- Equivariant matrices are closed under conjugate transpose. -/
+theorem conjTranspose {B : Matrix d d ℂ} (hB : Equivariant cells B) :
+    Equivariant cells Bᴴ := by
+  intro σ hσ v w
+  show star (B (σ w) (σ v)) = star (B w v)
+  rw [hB σ hσ w v]
+
+/-- Equivariant matrices are closed under list sums. -/
+theorem listSum {L : List (Matrix d d ℂ)}
+    (hL : ∀ N ∈ L, Equivariant cells N) : Equivariant cells L.sum := by
+  induction L with
+  | nil => simpa using Equivariant.zero (cells := cells)
+  | cons hd tl ih =>
+    rw [List.sum_cons]
+    exact (hL hd (by simp)).add (ih fun N hN => hL N (List.mem_cons_of_mem _ hN))
+
+/-- **The Kraus channel action preserves equivariance**: if every Kraus
+operator and the state are equivariant, so is `∑ₖ Kₖ ρ Kₖᴴ`. -/
+theorem krausApply (C : KrausChannel d) {ρ : Matrix d d ℂ}
+    (hC : ∀ K ∈ C.ops, Equivariant cells K) (hρ : Equivariant cells ρ) :
+    Equivariant cells (C.apply ρ) := by
+  unfold KrausChannel.apply
+  refine listSum fun N hN => ?_
+  rw [List.mem_map] at hN
+  obtain ⟨K, hK, rfl⟩ := hN
+  exact ((hC K hK).mul hρ).mul (hC K hK).conjTranspose
+
+/-- **The diagonal of an equivariant matrix is constant on cells**: swapping
+two states of the same cell is a cell-preserving permutation. -/
+theorem diag_cellConstant {B : Matrix d d ℂ} (hB : Equivariant cells B)
+    {v w : d} (h : cells v = cells w) : B v v = B w w := by
+  have hσ : CellPreserving cells (Equiv.swap v w) := by
+    intro u
+    rcases eq_or_ne u v with rfl | huv
+    · rw [Equiv.swap_apply_left]; exact h.symm
+    rcases eq_or_ne u w with rfl | huw
+    · rw [Equiv.swap_apply_right]; exact h
+    · rw [Equiv.swap_apply_of_ne_of_ne huv huw]
+  have h2 := hB (Equiv.swap v w) hσ v v
+  rw [Equiv.swap_apply_left] at h2
+  exact h2.symm
+
+/-- **Trace descent for equivariant matrices**: the trace collapses to a
+cell-indexed sum, `tr B = ∑ᵢ |Cᵢ| · B (rep i) (rep i)`, for any choice of
+representatives of the occupied cells (empty cells are annihilated by their
+zero cardinality). -/
+theorem trace_descent {B : Matrix d d ℂ} (hB : Equivariant cells B)
+    (rep : I → d) (hrep : ∀ i, (∃ v, cells v = i) → cells (rep i) = i) :
+    B.trace = ∑ i, (Fintype.card {v // cells v = i} : ℂ) * B (rep i) (rep i) := by
+  rw [Matrix.trace, ← Fintype.sum_fiberwise cells (fun v => B.diag v)]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  by_cases hi : ∃ v, cells v = i
+  · have hri := hrep i hi
+    calc ∑ v : {v // cells v = i}, B.diag v.1
+        = ∑ _v : {v // cells v = i}, B (rep i) (rep i) :=
+          Finset.sum_congr rfl fun v _ => hB.diag_cellConstant (by rw [v.2, hri])
+      _ = (Fintype.card {v // cells v = i} : ℂ) * B (rep i) (rep i) := by
+          simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  · have hiempty : IsEmpty {v // cells v = i} := ⟨fun v => hi ⟨v.1, v.2⟩⟩
+    simp only [Finset.sum_of_isEmpty]
+    rw [show (Fintype.card {v // cells v = i} : ℂ) = 0 by
+      rw [Fintype.card_eq_zero_iff.mpr hiempty]; exact Nat.cast_zero]
+    ring
+
+end Equivariant
+
+/-- An **equivariant symmetry** of a QOMDP: a cell labelling such that every
+Kraus operator of every action, the goal effect, and the initial state are
+invariant under all cell-preserving permutations.  This is the genuine
+quotientable symmetry of QOMDP dynamics: it is compatible with the CPTP
+constraint for *every* partition (the identity is equivariant), and it is
+satisfied with nontrivial cells (`swapSymmetricQOMDP_symmetry`). -/
+structure EquivariantSymmetry
+    {A : Type u} [Fintype A] {O : Type u} [Fintype O]
+    (M : QOMDP d A O) (I : Type u) [Fintype I] [DecidableEq I] where
+  /-- The cell labelling of the state index. -/
+  cells : d → I
+  /-- Every Kraus operator of every action is equivariant. -/
+  kraus_equivariant : ∀ a, ∀ K ∈ (M.channel a).ops, Equivariant cells K
+  /-- The goal effect is equivariant. -/
+  goal_equivariant : Equivariant cells M.goal
+  /-- The initial state is equivariant. -/
+  init_equivariant : Equivariant cells M.init.mat
+
+namespace QOMDP
+
+variable {A : Type u} [Fintype A] {O : Type u} [Fintype O]
+
+/-- **Run-state equivariance.**  Under an equivariant symmetry, the run-state
+of *every* finite policy is equivariant: the Kraus action of each action
+preserves the equivariant subalgebra (`Equivariant.krausApply`), and the
+initial state lies in it.  This is the dynamical descent that makes the
+controlled dynamics quotientable. -/
+theorem equivariant_runState
     (M : QOMDP d A O) {I : Type u} [Fintype I] [DecidableEq I]
-    (S : EquitableSymmetry M I) :
-    ∃ Mq : QOMDP I A O, Mq.Reachable ↔ M.Reachable := by
-  -- DEEP: the explicit `|I|`-state cell-averaged quotient QOMDP + bidirectional
-  -- reachability transport through the cell-inflation intertwiner.  The
-  -- dynamical descent it rests on is PROVEN in `equitable_runState_cellConstant`.
-  sorry
+    (S : EquivariantSymmetry M I) :
+    ∀ π : Policy A, Equivariant S.cells (M.runState π) := by
+  intro π
+  induction π with
+  | nil => exact S.init_equivariant
+  | cons a rest ih =>
+    rw [runState_cons]
+    exact Equivariant.krausApply (M.channel a) (S.kraus_equivariant a) ih
+
+/-- **Goal-probability descent under equivariance.**  Under an equivariant
+symmetry, the goal-success probability of every policy reads only `|I|`
+diagonal quotient values:
+`goalProb π = ∑ᵢ |Cᵢ| · (E_g · runState π) (rep i) (rep i)` for any choice of
+representatives of the occupied cells.  Both factors of the trace are
+equivariant, so their product has cell-constant diagonal and
+`Equivariant.trace_descent` applies.
+
+Non-vacuity: unlike the cell-constant version, the hypothesis here is
+satisfiable with nontrivial cells (`swapSymmetricQOMDP_symmetry`), and the
+right-hand side genuinely lives on the cell index `I`. -/
+theorem equivariant_goalProb_descent
+    (M : QOMDP d A O) {I : Type u} [Fintype I] [DecidableEq I]
+    (S : EquivariantSymmetry M I) (π : Policy A)
+    (rep : I → d) (hrep : ∀ i, (∃ v, S.cells v = i) → S.cells (rep i) = i) :
+    M.goalProb π
+      = ∑ i, (Fintype.card {v // S.cells v = i} : ℂ)
+          * (M.goal * M.runState π) (rep i) (rep i) := by
+  unfold goalProb
+  exact (S.goal_equivariant.mul (M.equivariant_runState S π)).trace_descent rep hrep
 
 end QOMDP
+
+/-! ### A nontrivial instance: equivariance is satisfiable where cell-constancy is not -/
+
+/-- A two-state QOMDP symmetric under swapping its basis states: identity
+channel, identity goal projector, maximally mixed initial state, trivial
+observation.  Its action type is nonempty, so by
+`EquitableSymmetry.cells_injective` it admits **no** cell-constant symmetry
+with a nontrivial cell — but it does admit an equivariant one
+(`swapSymmetricQOMDP_symmetry`). -/
+noncomputable def swapSymmetricQOMDP : QOMDP (Fin 2) (Fin 1) (Fin 1) where
+  channel := fun _ => KrausChannel.id (Fin 2)
+  observe :=
+    { effect := fun _ => 1
+      effect_posSemidef := fun _ => Matrix.PosSemidef.one
+      complete := by simp }
+  init :=
+    { mat := Matrix.diagonal (fun _ => (2 : ℂ)⁻¹)
+      posSemidef := Matrix.posSemidef_diagonal_iff.mpr fun _ => by positivity
+      trace_one := by
+        rw [Matrix.trace_diagonal]
+        norm_num [Fin.sum_univ_two] }
+  goal := 1
+  goal_posSemidef := Matrix.PosSemidef.one
+  goal_idem := one_mul 1
+
+/-- The single-cell labelling is an **equivariant symmetry** of
+`swapSymmetricQOMDP`: every datum of the machine commutes with both
+permutations of the two basis states. -/
+noncomputable def swapSymmetricQOMDP_symmetry :
+    EquivariantSymmetry swapSymmetricQOMDP (Fin 1) where
+  cells := fun _ => 0
+  kraus_equivariant := by
+    intro a K hK
+    have hK1 : K = 1 := by
+      simpa [swapSymmetricQOMDP, KrausChannel.id] using hK
+    subst hK1
+    exact Equivariant.one
+  goal_equivariant := Equivariant.one
+  init_equivariant := Equivariant.diagonal_const _
+
+/-- **Non-vacuity of `EquivariantSymmetry`**: `swapSymmetricQOMDP_symmetry`
+puts two *distinct* basis states in one cell — the configuration that
+`EquitableSymmetry.no_nontrivial_cell` proves impossible for the
+cell-constant notion (the action type `Fin 1` is nonempty). -/
+theorem equivariantSymmetry_nontrivial_cell :
+    swapSymmetricQOMDP_symmetry.cells 0 = swapSymmetricQOMDP_symmetry.cells 1 ∧
+      (0 : Fin 2) ≠ 1 :=
+  ⟨rfl, by decide⟩
+
+/-! ### The quotient machine: def-conjecture
+
+The remaining content of the equitable/equivariant reduction is the explicit
+**quotient QOMDP on the cell index**.  Mathematically: let `Sᵢ` be the
+normalized cell-indicator isometry `d × I` (columns `χ_{Cᵢ}/√|Cᵢ|`), and
+`P = S Sᴴ` the orthogonal projector onto the cell-uniform subspace — the
+average of the cell-preserving permutation matrices.  Equivariance gives
+`[K, P] = 0` for every Kraus operator, so the compressions `Bₖ := Sᴴ Kₖ S`
+satisfy `∑ Bₖᴴ Bₖ = Sᴴ (∑ Kₖᴴ Kₖ) P S = Sᴴ P S = 1` (CPTP on `I`); the goal
+compresses to a projector likewise, and a *cell-constant* initial state is
+supported in the cell-uniform sector (`P ρ₀ = ρ₀`), whence
+`runState_q π = Sᴴ (runState π) S` by induction and the goal probabilities
+agree **for every policy**.  Surjectivity of `cells` excludes empty cells
+(zero columns of `S`); cell-constancy of the *state* is consistent — the
+no-go `EquitableSymmetry.cells_injective` bites only Kraus families, which
+carry the CPTP constraint.
+
+We state the conjecture with the strong per-policy conclusion deliberately:
+a bare `∃ Mq, Mq.Reachable ↔ M.Reachable` is classically trivial (case-split
+on `M.Reachable` and pick a trivially reachable/unreachable machine), whereas
+per-policy equality of goal probabilities ties `Mq` to the actual dynamics of
+`M` and cannot be satisfied by such a degenerate witness. -/
+
+/-- **Conjecture (equivariant quotient QOMDP).**  Every QOMDP with an
+equivariant symmetry whose cells are all occupied and whose initial state is
+cell-constant admits a quotient QOMDP on the cell index with the **same
+goal-success probability for every policy**.  (Proof route: symmetric-sector
+compression along the normalized cell-indicator isometry; see the section
+docstring.) -/
+def EquivariantQuotientConjecture : Prop :=
+  ∀ {d : Type u} [Fintype d] [DecidableEq d]
+    {A : Type u} [Fintype A] {O : Type u} [Fintype O]
+    {I : Type u} [Fintype I] [DecidableEq I]
+    (M : QOMDP d A O) (S : EquivariantSymmetry M I),
+    Function.Surjective S.cells →
+    CellConstant S.cells M.init.mat →
+    ∃ Mq : QOMDP I A O, ∀ π : QOMDP.Policy A, Mq.goalProb π = M.goalProb π
+
+/-- The per-policy quotient conjecture implies the originally intended
+reachability transport: the quotient machine is goal-reachable iff the
+original is. -/
+theorem EquivariantQuotientConjecture.reachable_iff
+    (h : EquivariantQuotientConjecture.{u})
+    {d : Type u} [Fintype d] [DecidableEq d]
+    {A : Type u} [Fintype A] {O : Type u} [Fintype O]
+    {I : Type u} [Fintype I] [DecidableEq I]
+    (M : QOMDP d A O) (S : EquivariantSymmetry M I)
+    (hsurj : Function.Surjective S.cells)
+    (hinit : CellConstant S.cells M.init.mat) :
+    ∃ Mq : QOMDP I A O, (Mq.Reachable ↔ M.Reachable) := by
+  obtain ⟨Mq, hMq⟩ := h M S hsurj hinit
+  exact ⟨Mq, exists_congr fun π => by rw [hMq π]⟩
 
 /-! ### 7. Summary
 
 * **Concrete (sorry-free):** `DensityOperator`, `KrausChannel` (+ `apply`,
   `id`, `apply_zero`), `POVM` (+ `prob`, `prob_sum`), `QOMDP` (+ `Policy`,
   `runState`, `goalProb`, `Reachable`, `runState_nil`/`cons`),
-  `QOMDP.IsClassical`, `reductionDim`, `ReductionAction`, `ReductionObs`,
-  `ReductionFamily`, `CellConstant`, `EquitableSymmetry`.
-* **Proven equitable-descent content (axiom-clean):**
-  the cell-constant algebra (`CellConstant.{mul,conjTranspose,zero,add,listSum,
-  apply}`), `equitable_runState_cellConstant` (every policy's run-state is
-  cell-constant), `trace_mul_cellConstant_descent` (the trace of a product of
-  cell-constant matrices is the fiber-weighted quotient bilinear form), and
-  `equitable_goalProb_descent` (the goal-success probability of every policy is
-  the `|I| × |I|` quotient sum — reachability reads only the cell data).
-* **Honest `sorry` (deep theorem bodies only):**
-  `classical_reachable_decidable` (the classical decision procedure),
-  `qomdp_reachability_undecidable` (the PCP / matrix-mortality reduction —
-  Barry–Barry–Aaronson's main theorem; an *irreducible* cited-classical
-  undecidability result, kept honest by directive), and the *explicit
-  construction* in `equitable_reduces_to_quotient` (the cell-averaged quotient
-  machine `Mq` + bidirectional reachability transport through the cell-inflation
-  intertwiner — its dynamical substance, the cell-quotient descent of `goalProb`,
-  is now PROVEN in `equitable_goalProb_descent`).
+  `QOMDP.IsClassical`, `PCPInstance` (+ `Solvable`, `pcpEnum`,
+  `pcpEnum_surjective`, `pcpHasSolution`, `pcpHasSolution_nontrivial`),
+  `reductionDim`, `ReductionAction`, `ReductionObs`, `ReductionFamily`
+  (faithfulness pinned to the concrete `pcpHasSolution`), `CellConstant`,
+  `EquitableSymmetry`, `CellPreserving`, `Equivariant`,
+  `EquivariantSymmetry`, `swapSymmetricQOMDP` (+ its equivariant symmetry and
+  `equivariantSymmetry_nontrivial_cell`).
+* **Proven descent content (axiom-clean):** the cell-constant algebra
+  (`CellConstant.{mul,conjTranspose,zero,add,listSum,apply}`) with
+  `trace_mul_cellConstant_descent` and the two cell-constant descent theorems
+  (whose hypotheses, by the **machine-checked no-go**
+  `EquitableSymmetry.cells_injective` / `no_nontrivial_cell`, only admit
+  discrete partitions); the equivariant algebra
+  (`Equivariant.{one,zero,diagonal_const,add,mul,conjTranspose,listSum,
+  krausApply,diag_cellConstant,trace_descent}`);
+  `equivariant_runState` (every policy's run-state is equivariant); and
+  `equivariant_goalProb_descent` (every goal-success probability is an
+  `|I|`-indexed cell sum — under a symmetry that *is* satisfiable with
+  nontrivial cells).
+* **Def-conjectures (named `Prop`s, zero `sorry`):**
+  `BarryBarryAaronsonReduction` (the explicit PCP→QOMDP Kraus encoding,
+  arXiv:1911.01953 — deliberately not provable here by a classical-choice
+  case-split, see its docstring) and `EquivariantQuotientConjecture` (the
+  explicit symmetric-sector quotient machine, with the strong per-policy
+  goal-probability conclusion; `reachable_iff` recovers the reachability
+  transport).
 -/
 
 end QuantumMarkov

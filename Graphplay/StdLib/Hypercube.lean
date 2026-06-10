@@ -39,9 +39,11 @@ Krawtchouk polynomial; on the diagonal `d = 0` this is the **central binomial**
 return probability `M̄_{xx} = \binom{2n}{n}/4^n`, which *exceeds* `1/2ⁿ` for every
 `n ≥ 2` (`Nat.centralBinom n > 2ⁿ`).  Hence uniform average mixing **fails** for
 `n ≥ 2` (`hypercube_not_averageUniformMixing`).  The genuine Godsil average-return
-value is `hypercube_avgReturn`; the one isolated analytic residual (evaluating the
-Cesàro `limUnder` of the trig integral against the spectral sum) is the named
-honest `sorry` `hypercube_averageMixing_diag`.  Reference: Godsil, *Average mixing
+value is `hypercube_avgReturn`, and the diagonal identity
+`hypercube_averageMixing_diag` is **proven** (axiom-clean): the return probability
+collapses to `cos²ⁿ t` by the Kronecker factorization, and the Cesàro mean of this
+`π`-periodic integrand is the Wallis value `\binom{2n}{n}/4ⁿ` (see
+`Graphplay.StdLib.HypercubeBridge`).  Reference: Godsil, *Average mixing
 of continuous quantum walks*, JCTA 120 (2013) 1649–1662, arXiv:1103.2578 — where
 the hypercube is the textbook example separating single-time from average uniform
 mixing.
@@ -61,6 +63,7 @@ import Graphplay.Weighted
 import Graphplay.PST
 import Graphplay.Mixing
 import Graphplay.StdLib.HypercubeProduct
+import Graphplay.StdLib.HypercubeBridge
 
 open scoped Matrix Real
 open Real
@@ -96,6 +99,72 @@ theorem hammingDist_comm (n : ℕ) (x y : Fin (2^n)) :
     hammingDist n x x = 0 := by
   unfold hammingDist
   simp
+
+/-- **Bitwise recognition of Hamming distance `1`.**  Two vertices of the cube
+are at Hamming distance `1` iff their bitwise XOR is nonzero and kills its own
+predecessor under `&&&` — i.e. iff `x ^^^ y` is a power of two (exactly one set
+bit).  This identifies the XOR single-set-bit adjacency used by the
+coordinate-indexed `hypercube` model of `Graphplay.PST.GodsilRatio` with the
+`hammingDist`-adjacency of `Hypercube n`. -/
+theorem hammingDist_eq_one_iff_xor (n : ℕ) (x y : Fin (2^n)) :
+    hammingDist n x y = 1 ↔
+      (x.val ^^^ y.val ≠ 0 ∧ (x.val ^^^ y.val) &&& ((x.val ^^^ y.val) - 1) = 0) := by
+  have hzlt : x.val ^^^ y.val < 2^n := Nat.xor_lt_two_pow x.isLt y.isLt
+  have hfilter : hammingDist n x y
+      = (Finset.univ.filter (fun i : Fin n => (x.val ^^^ y.val).testBit i.val)).card := by
+    unfold hammingDist bitOf
+    congr 1
+    apply Finset.filter_congr
+    intro i _
+    rw [Nat.testBit_xor]
+    cases hb1 : x.val.testBit i.val <;> cases hb2 : y.val.testBit i.val <;> simp
+  rw [hfilter]
+  constructor
+  · intro h1
+    obtain ⟨i, hi⟩ := Finset.card_eq_one.mp h1
+    have hbit : ∀ j : ℕ, (x.val ^^^ y.val).testBit j = ((2:ℕ) ^ i.val).testBit j := by
+      intro j
+      by_cases hj : j < n
+      · have hmem : ((⟨j, hj⟩ : Fin n) = i) ↔ (x.val ^^^ y.val).testBit j = true := by
+          rw [← Finset.mem_singleton, ← hi, Finset.mem_filter]
+          simp
+        rw [Nat.testBit_two_pow]
+        by_cases he : (⟨j, hj⟩ : Fin n) = i
+        · have hb := hmem.mp he
+          have hij : i.val = j := by rw [← he]
+          simp [hb, hij]
+        · have hb : (x.val ^^^ y.val).testBit j = false := by
+            cases hb : (x.val ^^^ y.val).testBit j
+            · rfl
+            · exact absurd (hmem.mpr hb) he
+          have hij : i.val ≠ j := fun h => he (Fin.ext h.symm)
+          simp [hb, hij]
+      · push_neg at hj
+        have h1 : (x.val ^^^ y.val).testBit j = false :=
+          Nat.testBit_lt_two_pow
+            (lt_of_lt_of_le hzlt (Nat.pow_le_pow_right (by norm_num) hj))
+        have h2 : ((2:ℕ) ^ i.val).testBit j = false :=
+          Nat.testBit_two_pow_of_ne (by omega : i.val ≠ j)
+        rw [h1, h2]
+    have hz2 : x.val ^^^ y.val = 2 ^ i.val := Nat.eq_of_testBit_eq hbit
+    exact ⟨by rw [hz2]; exact (Nat.two_pow_pos _).ne',
+      by rw [hz2]; exact HypercubeBridge.two_pow_and_pred i.val⟩
+  · rintro ⟨hne, hand⟩
+    obtain ⟨i, hi⟩ := (HypercubeBridge.and_pred_eq_zero_iff_two_pow _
+      (Nat.pos_of_ne_zero hne)).mp hand
+    have hilt : i < n := by
+      by_contra hge
+      push_neg at hge
+      have : (2:ℕ)^n ≤ 2^i := Nat.pow_le_pow_right (by norm_num) hge
+      omega
+    rw [Finset.card_eq_one]
+    refine ⟨⟨i, hilt⟩, ?_⟩
+    ext j
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+    rw [hi, Nat.testBit_two_pow, decide_eq_true_eq]
+    constructor
+    · intro h; exact Fin.ext h.symm
+    · intro h; rw [h]
 
 /-- The **Boolean hypercube** `Q_n` as a weighted graph on `Fin (2^n)`:
 adjacency is `1` between strings of Hamming distance `1`, and `0`
@@ -134,6 +203,15 @@ def hypercubeAntipode (n : ℕ) : Fin (2^n) :=
   ⟨2^n - 1, by
     have h2 : (2^n : ℕ) > 0 := Nat.two_pow_pos n
     omega⟩
+
+/-- The **bitwise complement** (antipode map) on `Fin (2^n)`: flip all `n`
+bits, `u ↦ u ^^^ (2^n - 1)`.  Sends each vertex to the unique vertex at
+maximal Hamming distance `n`; in particular `hypercubeOrigin ↦
+hypercubeAntipode`.  This is the same map as the `antipode` of
+`Graphplay.PST.GodsilRatio` (definitionally). -/
+def xorFlip (n : ℕ) (u : Fin (2^n)) : Fin (2^n) :=
+  ⟨u.val ^^^ (2^n - 1),
+    Nat.xor_lt_two_pow u.isLt (Nat.sub_lt (Nat.two_pow_pos n) one_pos)⟩
 
 /-! ## Bridge to the iterated-Cartesian model `HypercubeProduct.hypercubeP`
 
@@ -384,6 +462,72 @@ theorem hcEquiv_origin_antipode (n : ℕ) :
     rw [htop_anti, htop_orig, hlow_anti, hlow_orig, ih]
     simp
 
+/-- **The bitwise complement transports to the product all-bits flip.**
+`hcEquiv` intertwines `xorFlip` (XOR with the all-ones mask `2^n - 1`) with the
+recursive `HypercubeProduct.antipode`.  Induction on `n`: the top bit of
+`u ^^^ (2^{n+1} - 1)` is the negation of the top bit of `u`, and the low part
+is the `n`-bit complement of the low part of `u`. -/
+theorem hcEquiv_xorFlip : ∀ (n : ℕ) (u : Fin (2^n)),
+    hcEquiv n (xorFlip n u) = antipode n (hcEquiv n u)
+  | 0, _ => Subsingleton.elim _ _
+  | (n+1), u => by
+    rw [hcEquiv_succ, hcEquiv_succ]
+    show _ = (if topFin n u = 0 then 1 else 0,
+      antipode n (hcEquiv n (lowPart n u)))
+    apply Prod.ext
+    · -- top bit flips
+      have hu2 := topBit_lt n u
+      have hx2 := topBit_lt n (xorFlip (n+1) u)
+      have hbu := topBit_eq_divNat n u
+      have hbx := topBit_eq_divNat n (xorFlip (n+1) u)
+      unfold topBit at hbu hbx
+      have hflip : (xorFlip (n+1) u).val.testBit n = !(u.val.testBit n) := by
+        show (u.val ^^^ (2^(n+1) - 1)).testBit n = _
+        rw [Nat.testBit_xor, Nat.testBit_two_pow_sub_one]
+        simp
+      have hcond : (topFin n u = 0) ↔ (u.val / 2^n = 0) := by
+        constructor
+        · intro h; simpa [topFin] using congrArg Fin.val h
+        · intro h; apply Fin.ext; simpa [topFin] using h
+      cases htb : u.val.testBit n with
+      | false =>
+        have h0 : u.val / 2^n = 0 := by
+          rw [htb] at hbu; simp only [Bool.false_eq_true, false_iff] at hbu
+          rcases Nat.le_one_iff_eq_zero_or_eq_one.mp (Nat.lt_succ_iff.mp hu2) with h | h
+          · exact h
+          · exact absurd h hbu
+        have h1 : (xorFlip (n+1) u).val / 2^n = 1 := by
+          apply hbx.mp; rw [hflip, htb]; rfl
+        rw [if_pos (hcond.mpr h0)]
+        apply Fin.ext
+        simpa [topFin] using h1
+      | true =>
+        have h1u : u.val / 2^n = 1 := hbu.mp htb
+        have h0 : (xorFlip (n+1) u).val / 2^n = 0 := by
+          have hfb : (xorFlip (n+1) u).val.testBit n = false := by rw [hflip, htb]; rfl
+          rw [hfb] at hbx; simp only [Bool.false_eq_true, false_iff] at hbx
+          rcases Nat.le_one_iff_eq_zero_or_eq_one.mp (Nat.lt_succ_iff.mp hx2) with h | h
+          · exact h
+          · exact absurd h hbx
+        rw [if_neg (fun h => by rw [hcond] at h; omega)]
+        apply Fin.ext
+        simpa [topFin] using h0
+    · -- low part: bitwise complement commutes with truncation
+      have hlow : lowPart n (xorFlip (n+1) u) = xorFlip n (lowPart n u) := by
+        apply Fin.ext
+        show (u.val ^^^ (2^(n+1) - 1)) % 2^n = (u.val % 2^n) ^^^ (2^n - 1)
+        apply Nat.eq_of_testBit_eq
+        intro j
+        rw [Nat.testBit_mod_two_pow, Nat.testBit_xor, Nat.testBit_xor,
+          Nat.testBit_mod_two_pow, Nat.testBit_two_pow_sub_one,
+          Nat.testBit_two_pow_sub_one]
+        by_cases hj : j < n
+        · have hj1 : j < n + 1 := by omega
+          simp [hj, hj1]
+        · simp [hj]
+      show hcEquiv n (lowPart n (xorFlip (n+1) u)) = _
+      rw [hlow, hcEquiv_xorFlip n (lowPart n u)]
+
 end HypercubeIso
 
 /-! ## Perfect state transfer at the antipode -/
@@ -408,6 +552,19 @@ theorem hypercube_PST_antipodal (n : ℕ) (h : 1 ≤ n) :
   unfold IsPST
   rw [HypercubeIso.evolve_intertwine, HypercubeIso.hcEquiv_origin_antipode]
   exact HypercubeProduct.isPST_hypercubeP_antipode n (HypercubeIso.hcEquiv n (hypercubeOrigin n))
+
+/-- **Antipodal PST from every vertex** (vertex-transitive form): the hypercube
+`Q_n` transfers perfectly from any vertex `u` to its bitwise complement
+`xorFlip n u = u ^^^ (2ⁿ - 1)` at `τ = π/2`.  Transport of
+`HypercubeProduct.isPST_hypercubeP_antipode` across the bit-decomposition
+isomorphism, with `HypercubeIso.hcEquiv_xorFlip` matching the antipode maps.
+(For `n = 0` the statement is the trivial return amplitude of the one-vertex
+graph.) -/
+theorem hypercube_PST_xorFlip (n : ℕ) (u : Fin (2^n)) :
+    IsPST (Hypercube n) u (xorFlip n u) (Real.pi / 2) := by
+  unfold IsPST
+  rw [HypercubeIso.evolve_intertwine, HypercubeIso.hcEquiv_xorFlip]
+  exact HypercubeProduct.isPST_hypercubeP_antipode n (HypercubeIso.hcEquiv n u)
 
 /-! ## Uniform-mixing machinery on the product model -/
 
@@ -658,23 +815,57 @@ theorem hypercube_avgReturn_gt_uniform (n : ℕ) (hn : 2 ≤ n) :
   calc (1 : ℝ) * ((2 ^ n : ℝ) * (2 ^ n : ℝ)) = (2 ^ n : ℝ) * (2 ^ n : ℝ) := by ring
     _ < (Nat.centralBinom n : ℝ) * (2 ^ n : ℝ) := mul_lt_mul_of_pos_right hcbR hpow
 
-/-- **The genuine Godsil average-return value (isolated analytic residual).**
+/-- The diagonal of the hypercube mixing matrix is `cos²ⁿ t`: the return
+amplitude factors over the `n` edge factors as `U(t)_{uu} = (cos t)ⁿ`
+(`HypercubeBridge.hypercubeP_evolve_diag`, transported through the
+bit-decomposition isomorphism), and the Born square gives `cos t ^ (2n)`. -/
+theorem hypercube_mixing_diag (n : ℕ) (t : ℝ) (u : Fin (2^n)) :
+    (Hypercube n).mixing t u u = Real.cos t ^ (2 * n) := by
+  unfold WeightedGraph.mixing
+  rw [WeightedGraph.evolve'_eq, HypercubeIso.evolve_intertwine,
+    HypercubeBridge.hypercubeP_evolve_diag]
+  rw [norm_pow, Complex.norm_real, Real.norm_eq_abs, ← pow_mul, mul_comm n 2,
+    pow_mul, sq_abs, ← pow_mul]
+
+/-- **The genuine Godsil average-return value, PROVEN (axiom-clean).**
 The diagonal entry of the hypercube's average mixing matrix is the central
 binomial return probability `\binom{2n}{n}/4ⁿ`.
 
-This is the *one* named honest `sorry`: it packages the spectral Cesàro
-evaluation — that the Cesàro time-average
-`lim_{T→∞} T⁻¹ ∫₀ᵀ |U(t)_{xx}|² dt` collapses to the Schur-square sum over the
-*degenerate* Krawtchouk eigenprojectors `∑_k 4^{-n} K_k(0)² = 4^{-n}\binom{2n}{n}`.
-The two pieces it abbreviates — (a) the spectral decomposition of `(Hypercube n).evolve`
-into product-character idempotents and (b) the off-diagonal-phase Cesàro vanishing
-`lim_T T⁻¹ ∫₀ᵀ e^{ict}dt = 0` for `c ≠ 0` — are not yet built on `Fin (2ⁿ)`; the
-residual is exactly this analytic bridge.  It is a TRUE, non-vacuous statement
-(verified by exact eigen-numerics at `n = 1,…,5`); its *consequences*
-(`hypercube_not_averageUniformMixing`) are proven outright below. -/
+Proof: the integrand collapses in closed form — the return probability is
+`|U(t)_{uu}|² = cos²ⁿ t` (`hypercube_mixing_diag`, no spectral decomposition
+needed: the diagonal amplitude factors over the `n` Kronecker edge factors as
+`(cos t)ⁿ`).  The Cesàro average of the `π`-periodic function `cos²ⁿ` is its
+period mean (`HypercubeBridge.tendsto_intervalAverage_of_periodic`), and the
+Wallis integral evaluates it to the central binomial value
+`π⁻¹ ∫₀^π cos²ⁿ = \binom{2n}{n}/4ⁿ`
+(`HypercubeBridge.integral_cos_pow_even_pi`).  This matches the spectral
+(Krawtchouk/Vandermonde) picture: `4^{-n} ∑_k \binom{n}{k}² = 4^{-n}\binom{2n}{n}`.
+Reference: Godsil, *Average mixing of continuous quantum walks*, JCTA 120
+(2013), arXiv:1103.2578. -/
 theorem hypercube_averageMixing_diag (n : ℕ) (u : Fin (2 ^ n)) :
     (Hypercube n).averageMixing u u = hypercube_avgReturn n := by
-  sorry
+  show Filter.limUnder Filter.atTop
+    (fun T : ℝ => T⁻¹ * ∫ t in (0:ℝ)..T, (Hypercube n).mixing t u u)
+    = hypercube_avgReturn n
+  have hfun : (fun T : ℝ => T⁻¹ * ∫ t in (0:ℝ)..T, (Hypercube n).mixing t u u)
+      = fun T : ℝ => T⁻¹ * ∫ t in (0:ℝ)..T, Real.cos t ^ (2 * n) := by
+    funext T
+    congr 1
+    simp only [hypercube_mixing_diag]
+  rw [hfun]
+  have hper : Function.Periodic (fun t : ℝ => Real.cos t ^ (2 * n)) Real.pi := by
+    intro t
+    simp only
+    rw [Real.cos_add_pi, Even.neg_pow (even_two_mul n)]
+  have hlim := HypercubeBridge.tendsto_intervalAverage_of_periodic hper Real.pi_pos
+    (Real.continuous_cos.pow _)
+  rw [HypercubeBridge.integral_cos_pow_even_pi] at hlim
+  have hval : Real.pi * ((Nat.centralBinom n : ℝ) / 4 ^ n) / Real.pi
+      = hypercube_avgReturn n := by
+    unfold hypercube_avgReturn
+    exact mul_div_cancel_left₀ _ Real.pi_ne_zero
+  rw [hval] at hlim
+  exact hlim.limUnder_eq
 
 /-- **Headline (corrected, TRUE, non-vacuous).**  The Boolean hypercube `Q_n`
 does **not** have uniform average mixing for `n ≥ 2`.  Proof: the diagonal entry

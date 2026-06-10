@@ -10,9 +10,12 @@ no graph of higher chromatic number embeds on the torus (Ringel's
 
 **Combinatorics.**  `V = Fin 7`, every pair `i ≠ j` is an edge
 (so `E = 21`).  The classical rotation system, due to Heawood (1890), takes
-at each vertex `i` the cyclic neighbor order
+at each vertex `i` the cyclic neighbor order whose successive offsets are
+multiplied by `3 (mod 7)`:
 
-  `(i+1, i+2, i+3, i+4, i+5, i+6)  (mod 7)`.
+  `(i+1, i+3, i+2, i+6, i+4, i+5)  (mod 7)`,
+
+i.e. the rotation sends the dart `(i, i+d)` to `(i, i+3d)`.
 
 This produces a triangulation with `14` triangular faces; Euler:
 `7 - 21 + 14 = 0`, so genus `1`.
@@ -55,34 +58,20 @@ def σ_perm : Equiv.Perm D where
   left_inv := by intro x; rcases x with ⟨⟨a, b⟩, hab⟩; rfl
   right_inv := by intro x; rcases x with ⟨⟨a, b⟩, hab⟩; rfl
 
-/-- The Heawood rotation: at vertex `i`, neighbors are visited in the order
-`i+1, i+2, i+3, i+4, i+5, i+6` (mod 7).  Given a dart `(i, j)`, the next
-dart at `i` is `(i, j+1)`, except that `(i, i)` is excluded (so when
-`j+1 = i` we skip to `j+2`, which equals `i+1`). -/
+/-- The Heawood rotation: at vertex `i`, the cyclic neighbor order is
+`i+1, i+3, i+2, i+6, i+4, i+5` (mod 7) — successive offsets multiply by `3`.
+Given a dart `(i, j)` with offset `d = j - i`, the next dart at `i` is
+`(i, i + 3d)`.  Since `3` is invertible mod `7`, this fixes no offset and
+visits all six neighbors. -/
 def rot_next (i j : V) : V :=
-  let j' : V := j + 1
-  if j' = i then j' + 1 else j'
+  i + 3 * (j - i)
+
+/-- `rot_next` never returns the base vertex: `3d ≠ 0` for `d ≠ 0` mod 7. -/
+theorem rot_next_ne : ∀ i j : V, i ≠ j → i ≠ rot_next i j := by decide
 
 /-- ρ: at vertex `x.val.1 = i`, send `j ↦ rot_next i j`. -/
 def ρ_fun (x : D) : D :=
-  ⟨(x.val.1, rot_next x.val.1 x.val.2), by
-    -- The result has distinct components: rot_next skips over `i`.
-    rcases x with ⟨⟨i, j⟩, hij⟩
-    simp only [rot_next]
-    split_ifs with hcase
-    · -- hcase : j + 1 = i; need i ≠ j + 2.  Assume i = j + 2.  Combining with
-      -- hcase gives j + 2 = j + 1, i.e., 1 = 0 in Fin 7, contradiction.
-      intro h
-      have h1 : (j + 1 : V) = j + 1 + 1 := by
-        conv_lhs => rw [hcase]
-        exact h
-      have h2 : (0 : V) = 1 := by
-        have := sub_eq_zero.mpr h1.symm
-        simpa using this
-      exact absurd h2.symm (by decide)
-    · -- j + 1 ≠ i.
-      intro h
-      exact hcase h.symm⟩
+  ⟨(x.val.1, rot_next x.val.1 x.val.2), rot_next_ne _ _ x.property⟩
 
 /-- ρ as a permutation.  Inverse: walk the rotation backwards (or apply 5
 times, since each vertex has 6 incident darts and the cycle has length 6). -/
@@ -127,16 +116,82 @@ example : Fintype.card D = 42 := by decide
 
 example : heawoodMap.numEdges = 21 := by decide
 
+/-! ## The 14 triangular faces
+
+`cycleFactorsFinset` is not kernel-reducible at this size, so we exhibit the
+face decomposition explicitly: the face permutation `φ = ρ ∘ σ` is the product
+of 14 disjoint 3-cycles, one per triangle `{(i,j), (j,k), (k,i)}` of the
+triangulation.  Mathlib's `cycleFactorsFinset_eq_list_toFinset` then pins down
+`faceCycles` exactly. -/
+
+/-- The face 3-cycle through the darts `(i,j) → (j,k) → (k,i)` of a triangle
+`{i, j, k}`. -/
+def tri (i j k : V) (hij : i ≠ j := by decide) (hjk : j ≠ k := by decide)
+    (hki : k ≠ i := by decide) : Equiv.Perm D :=
+  [(⟨(i, j), hij⟩ : D), ⟨(j, k), hjk⟩, ⟨(k, i), hki⟩].formPerm
+
+/-- Each `tri` is a genuine cycle: its defining dart list is nontrivial and
+duplicate-free. -/
+theorem tri_isCycle (i j k : V) (hij : i ≠ j) (hjk : j ≠ k) (hki : k ≠ i) :
+    (tri i j k hij hjk hki).IsCycle := by
+  refine List.isCycle_formPerm ?_ (by simp)
+  simp only [List.nodup_cons, List.mem_cons, List.not_mem_nil, or_false,
+    List.nodup_nil, and_true, not_or, Subtype.mk.injEq, Prod.mk.injEq, not_and]
+  refine ⟨⟨fun h => absurd h hij, fun h => absurd h.symm hki⟩, ?_⟩
+  tauto
+
+/-- The 14 triangular faces of the Heawood embedding, as disjoint 3-cycles of
+darts.  Triangle `tri i j k` traverses darts `(i,j) → (j,k) → (k,i)`. -/
+def faceList : List (Equiv.Perm D) :=
+  [tri 0 1 5, tri 0 2 3, tri 0 3 1, tri 0 4 6, tri 0 5 4, tri 0 6 2,
+   tri 1 2 6, tri 1 3 4, tri 1 4 2, tri 1 6 5,
+   tri 2 4 5, tri 2 5 3, tri 3 5 6, tri 3 6 4]
+
+theorem faceList_nodup : faceList.Nodup := by decide
+
+theorem faceList_isCycle : ∀ f ∈ faceList, f.IsCycle := by
+  simp only [faceList, List.mem_cons, List.not_mem_nil, or_false]
+  rintro f (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl) <;>
+    exact tri_isCycle _ _ _ (by decide) (by decide) (by decide)
+
+/-- Pointwise disjointness of permutations, in directly decidable form. -/
+instance : DecidableRel (fun f g : Equiv.Perm D => ∀ x : D, f x = x ∨ g x = x) :=
+  fun f g => inferInstanceAs (Decidable (∀ x : D, f x = x ∨ g x = x))
+
+set_option maxRecDepth 8192 in
+theorem faceList_pairwise_disjoint : faceList.Pairwise Equiv.Perm.Disjoint := by
+  have h : faceList.Pairwise (fun f g => ∀ x : D, f x = x ∨ g x = x) := by decide
+  exact h.imp fun hfg => hfg
+
+set_option maxRecDepth 8192 in
+/-- The product of the 14 face triangles is exactly the face permutation
+`φ = ρ ∘ σ`. -/
+theorem faceList_prod : faceList.prod = heawoodMap.facePerm :=
+  Equiv.ext (by decide +kernel : ∀ x : D, faceList.prod x = heawoodMap.facePerm x)
+
+/-- The face cycles of the Heawood map are precisely the 14 triangles. -/
+theorem heawood_faceCycles : heawoodMap.faceCycles = faceList.toFinset :=
+  (Equiv.Perm.cycleFactorsFinset_eq_list_toFinset faceList_nodup).mpr
+    ⟨faceList_isCycle, faceList_pairwise_disjoint, faceList_prod⟩
+
+/-- The Heawood rotation triangulates the torus: `14` (triangular) faces. -/
+theorem heawood_numFaces : heawoodMap.numFaces = 14 := by
+  unfold CombinatorialMap.numFaces
+  have h1 : heawoodMap.faceCycles.card = 14 := by
+    rw [heawood_faceCycles, List.toFinset_card_of_nodup faceList_nodup]
+    decide
+  have h2 : heawoodMap.faceFixedPoints.card = 0 := by decide
+  rw [h1, h2]
+
 /-- **Genus 1**: the Heawood embedding is on the torus.
     `V - E + F = 7 - 21 + 14 = 0 = 2 - 2g ⇒ g = 1`. -/
 theorem heawood_genus_one : heawoodMap.genus = 1 := by
-  -- BLOCKER: as defined, `heawoodMap` does *not* have genus 1.  Computing the
-  -- faces concretely (`native_decide`) gives `numFaces = 4` (4 face cycles, 0
-  -- monogons), so `eulerChar = 7 - 21 + 4 = -10` and `genus = 6`, not `1`.
-  -- The `rot_next` rotation system here is not the genuine Heawood rotation
-  -- (which yields 14 triangular faces).  The statement is therefore false for
-  -- this definition and is left as `sorry` pending a corrected `ρ_fun`.
-  sorry
+  have hV : heawoodMap.numVertices = 7 := by decide
+  have hE : heawoodMap.numEdges = 21 := by decide
+  unfold CombinatorialMap.genus CombinatorialMap.eulerChar
+  rw [hV, hE, heawood_numFaces]
+  decide
 
 /-- The Heawood bound predicts chromatic number `≤ 7` on the torus, and
 `K_7` realizes this bound: -/

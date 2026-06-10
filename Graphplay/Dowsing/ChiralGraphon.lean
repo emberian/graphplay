@@ -18,7 +18,7 @@ we package:
     `Graphon.signedBy : Graphon Ω μ → GraphonSigning Ω → Graphon Ω μ`;
 3.  the graphon analogue of A3's `CrossConstant` condition — cell-cross-
     constant signings — and a graphon-level
-    `signedBy_preserves_equitable` theorem (statement, sorry);
+    `signedBy_preserves_equitable` theorem (proved);
 4.  the **chiral quotient**: when the signing is cross-constant, the
     quotient adjacency picks up a phase `τ : I → I → ℂ` per cell pair, and
     we record an explicit formula for `(W.signedBy σ).quotient` in terms of
@@ -34,12 +34,14 @@ we package:
 7.  a **U(1)-gauge interpretation**: cross-constant signings are *flat
     U(1) connections* on the cell-partition graph, related to the lattice-
     gauge integration agent I7;
-8.  three **open theorems**, including the Anantharaman et al. quantum-
-    graph connection in Benjamini–Schramm limits.
+8.  one genuine **open conjecture** (`CutDistanceClassifiesChirality`,
+    recorded as a `Prop`-valued definition, not a theorem) together with a
+    machine-checked **holonomy refutation** of its unconditional form, and
+    two honest-state companions whose names match what is proven.
 
-The headline statements are deliberately marked `sorry`; the data
-definitions and predicate signatures are complete and ready for
-downstream use.
+Every theorem in this file is fully proved; the one genuinely open
+classification is recorded as a definition (a named `Prop`), never
+asserted.
 
 References (with locations under `references/`):
 
@@ -62,6 +64,7 @@ import Graphplay.Chiral
 import Graphplay.Graphon
 import Graphplay.Graphon.Equitable
 import Graphplay.Graphon.PST
+import Graphplay.Graphon.Limit
 
 open scoped MeasureTheory ENNReal Complex BigOperators
 open MeasureTheory
@@ -624,6 +627,14 @@ theorem chiralGraphonMixing_iff_quotientChiralMixing [IsFiniteMeasure μ]
     funext a b; exact signedBy_liftPartition_symmQuotient P s hτ a b
   rw [heq]
 
+set_option backward.isDefEq.respectTransparency false in
+/-- `NormedSpace.exp` is continuous on `Matrix I I ℂ` with its (entrywise)
+topology: the scoped `linfty` operator-norm instances make `Matrix I I ℂ` a
+Banach algebra whose norm topology is definitionally the entrywise one, so
+`NormedSpace.exp_continuous` transfers. -/
+theorem matrixExp_continuous : Continuous (NormedSpace.exp : Matrix I I ℂ → Matrix I I ℂ) :=
+  open scoped Matrix.Norms.Operator in NormedSpace.exp_continuous
+
 /-- **Existence of a *time-optimal* chiral phasing on the quotient.**
 
 LANDMINE FIX.  The former statement claimed *unconditional* existence of a
@@ -639,11 +650,17 @@ is not achievable on every quotient.)
 The genuinely-true content (and the actual Levine–…–Tamon *optimisation* claim)
 is the **attainment of the optimum *conditional on feasibility***: *if* some
 Hermitian unimodular phasing achieves uniform mixing at some time (`hfeas`),
-*then* the infimum first-mixing time is **attained** by an optimal phasing —
-because the uniform-mixing-time functional is lower semicontinuous on the
-**compact** phase torus `(U(1))^{|I|(|I|-1)/2}`.  We state that optimal-attainment
-form (`hfeas → ∃ optimal (τ*, t*)` with `t*` minimal among all feasible mixing
-times); the compactness/lower-semicontinuity argument is the honest residual.
+*then* the infimum first-mixing time is **attained** by an optimal phasing.
+
+Proof: compactness.  Fix a feasible witness time `t₀`.  The slab
+`F = {(τ, t) | τ Hermitian, τ unimodular, 0 ≤ t ≤ t₀, mixing at t}` is closed —
+every clause is an equation or non-strict inequality between functions of
+`(τ, t)` that are continuous, since `NormedSpace.exp` is continuous on the
+Banach algebra `Matrix I I ℂ` and matrix entries / norms are continuous — and
+`F` is contained in (unit polydisc)`× [0, t₀]`, hence compact.  The time
+coordinate attains its minimum on `F`, and minimality over *all* feasible
+pairs follows because any feasible time `≤ t₀` lies in the slab while any
+feasible time `> t₀` already exceeds the attained minimum.
 Non-vacuous: `hfeas` is satisfiable (e.g. `|I| = 1`, or `Q̃` a `K₂`-block with a
 Hadamard time), and the conclusion adds the genuine minimality. -/
 theorem exists_optimal_chiral_phasing
@@ -664,9 +681,93 @@ theorem exists_optimal_chiral_phasing
           ∀ t' : ℝ, 0 ≤ t' →
             IsUniformMixing_finite (fun a b => τ' a b * P.symmQuotient a b) i t' →
             t ≤ t') := by
-  -- Attainment by lower semicontinuity of the (feasible) uniform-mixing-time
-  -- functional on the compact torus `(U(1))^{|I|(|I|-1)/2}`: honest residual.
-  sorry
+  classical
+  obtain ⟨τ₀, hherm₀, hunim₀, t₀, ht₀, hmix₀⟩ := hfeas
+  -- The feasible slab `F`: Hermitian unimodular phasings with a mixing time in
+  -- `[0, t₀]`.
+  set F : Set ((I → I → ℂ) × ℝ) :=
+    {p | (∀ a b, p.1 b a = star (p.1 a b)) ∧ (∀ a b, ‖p.1 a b‖ = 1) ∧
+      0 ≤ p.2 ∧ p.2 ≤ t₀ ∧
+      IsUniformMixing_finite (fun a b => p.1 a b * P.symmQuotient a b) i p.2}
+    with hF
+  have hmem₀ : (τ₀, t₀) ∈ F := ⟨hherm₀, hunim₀, ht₀, le_refl t₀, hmix₀⟩
+  -- entry evaluations are continuous in `(τ, t)`
+  have hev : ∀ a b : I, Continuous fun p : (I → I → ℂ) × ℝ => p.1 a b :=
+    fun a b => (continuous_apply b).comp ((continuous_apply a).comp continuous_fst)
+  -- the mixing-amplitude functionals are jointly continuous in `(τ, t)`:
+  -- `exp` is continuous on the Banach algebra `Matrix I I ℂ`, and the exponent
+  -- `-(i·t) • (τ ⊙ Q̃)` depends continuously (entrywise) on `(τ, t)`.
+  have hamp : ∀ j : I, Continuous fun p : (I → I → ℂ) × ℝ =>
+      ‖(NormedSpace.exp (-(Complex.I * (p.2 : ℂ)) •
+          (fun a b => p.1 a b * P.symmQuotient a b : Matrix I I ℂ))
+        : Matrix I I ℂ) j i‖ ^ 2 := by
+    intro j
+    have hscal : Continuous fun p : (I → I → ℂ) × ℝ => -(Complex.I * (p.2 : ℂ)) :=
+      (continuous_const.mul (Complex.continuous_ofReal.comp continuous_snd)).neg
+    have hmat : Continuous fun p : (I → I → ℂ) × ℝ =>
+        (fun a b => p.1 a b * P.symmQuotient a b : Matrix I I ℂ) :=
+      continuous_pi fun a => continuous_pi fun b => (hev a b).mul continuous_const
+    have hentry : Continuous fun M : Matrix I I ℂ => M j i :=
+      (continuous_apply i).comp (continuous_apply j)
+    have hfull := hentry.comp (matrixExp_continuous.comp (hscal.smul hmat))
+    simpa only [Function.comp_def] using hfull.norm.pow 2
+  -- `F` is closed: every clause is an equation or non-strict inequality
+  -- between continuous functions of `(τ, t)`.
+  have hFclosed : IsClosed F := by
+    rw [hF]
+    have h1 : IsClosed {p : (I → I → ℂ) × ℝ | ∀ a b : I, p.1 b a = star (p.1 a b)} := by
+      rw [Set.setOf_forall]
+      refine isClosed_iInter fun a => ?_
+      rw [Set.setOf_forall]
+      exact isClosed_iInter fun b =>
+        isClosed_eq (hev b a) (continuous_star.comp (hev a b))
+    have h2 : IsClosed {p : (I → I → ℂ) × ℝ | ∀ a b : I, ‖p.1 a b‖ = 1} := by
+      rw [Set.setOf_forall]
+      refine isClosed_iInter fun a => ?_
+      rw [Set.setOf_forall]
+      exact isClosed_iInter fun b => isClosed_eq (hev a b).norm continuous_const
+    have h3 : IsClosed {p : (I → I → ℂ) × ℝ | 0 ≤ p.2} :=
+      isClosed_le continuous_const continuous_snd
+    have h4 : IsClosed {p : (I → I → ℂ) × ℝ | p.2 ≤ t₀} :=
+      isClosed_le continuous_snd continuous_const
+    have h5 : IsClosed {p : (I → I → ℂ) × ℝ |
+        IsUniformMixing_finite (fun a b => p.1 a b * P.symmQuotient a b) i p.2} := by
+      have hrw : {p : (I → I → ℂ) × ℝ |
+          IsUniformMixing_finite (fun a b => p.1 a b * P.symmQuotient a b) i p.2}
+          = ⋂ j : I, {p : (I → I → ℂ) × ℝ |
+              ‖(NormedSpace.exp (-(Complex.I * (p.2 : ℂ)) •
+                  (fun a b => p.1 a b * P.symmQuotient a b : Matrix I I ℂ))
+                : Matrix I I ℂ) j i‖ ^ 2
+                = (1 : ℝ) / Fintype.card I} := by
+        ext p
+        simp only [Set.mem_iInter, Set.mem_setOf_eq]
+        unfold IsUniformMixing_finite
+        rfl
+      rw [hrw]
+      exact isClosed_iInter fun j => isClosed_eq (hamp j) continuous_const
+    simp only [Set.setOf_and]
+    exact h1.inter (h2.inter (h3.inter (h4.inter h5)))
+  -- `F` sits inside the compact set (unit polydisc) × `[0, t₀]`
+  have hFsub : F ⊆ (Set.pi Set.univ fun _ : I => Set.pi Set.univ fun _ : I =>
+      Metric.closedBall (0 : ℂ) 1) ×ˢ Set.Icc 0 t₀ := by
+    rintro ⟨τ, t⟩ ⟨-, hunim, ht0, ht1, -⟩
+    exact ⟨Set.mem_univ_pi.2 fun a => Set.mem_univ_pi.2 fun b =>
+      mem_closedBall_zero_iff.2 (le_of_eq (hunim a b)), ht0, ht1⟩
+  have hFcomp : IsCompact F :=
+    ((isCompact_univ_pi fun _ : I => isCompact_univ_pi fun _ : I =>
+        isCompact_closedBall (0 : ℂ) 1).prod isCompact_Icc).of_isClosed_subset
+      hFclosed hFsub
+  -- minimise the time coordinate over the compact nonempty slab
+  obtain ⟨p, hpF, hpmin⟩ :=
+    hFcomp.exists_isMinOn ⟨(τ₀, t₀), hmem₀⟩ continuous_snd.continuousOn
+  obtain ⟨hherm, hunim, ht0, hle, hmix⟩ := hpF
+  refine ⟨p.1, hherm, hunim, p.2, ht0, hmix, ?_⟩
+  -- global minimality: a feasible time `≤ t₀` lies in the slab, so the attained
+  -- minimum is below it; a feasible time `> t₀` exceeds `p.2 ≤ t₀` outright.
+  intro τ' hherm' hunim' t' ht' hmix'
+  by_cases hcase : t' ≤ t₀
+  · exact isMinOn_iff.mp hpmin (τ', t') ⟨hherm', hunim', ht', hcase, hmix'⟩
+  · exact (isMinOn_iff.mp hpmin (τ₀, t₀) hmem₀).trans (not_le.mp hcase).le
 
 end Graphon
 
@@ -778,8 +879,8 @@ configuration (with respect to the trivial partition into a single
 cell) achieving the Levine–…–Tamon speedup constant `π / (3√3)` at the
 appropriate time.
 
-Statement deferred to `sorry`; the precise speedup constant is
-extracted from the analytic mixing time of the constant chiral kernel. -/
+The precise speedup constant is extracted from the analytic mixing time
+of the constant chiral kernel. -/
 theorem constantChiral_admits_chiralUniformMixing :
     -- The Levine–…–Tamon speedup constant `π / (3√3)` is a genuine positive
     -- mixing time.  (A full statement would additionally assert cell-uniform
@@ -1075,44 +1176,221 @@ end U1Gauge
 
 /-! ## 8. Open direction + honest-state companions
 
-We close the file with one genuine open theorem
-(`open_cut_distance_classifies_chirality`, honest theorem-level `sorry`)
-together with two honestly-stated companions whose *names match exactly
-what is proven*: `iteratedHammingChiral_kernel_not_real` (a complex-entry
-obstruction, not a mixing-time speedup) and `exists_nondegenerate_cdf`
-(a non-degenerate-CDF existential sentinel, not the Benjamini–Schramm
-spectral-limit content).  The deeper intended statements are recorded in
-their docstrings as next-step directions. -/
+We close the file with one genuine open **conjecture**
+(`CutDistanceClassifiesChirality`, a `Prop`-valued definition — never
+asserted), a machine-checked **holonomy refutation** of its unconditional
+form (`HolonomyObstruction.unconditional_gauge_equivalence_false`: dropping
+the cut-distance hypothesis makes the classification *false*, witnessed on
+an explicit three-cell example), and two honestly-stated companions whose
+*names match exactly what is proven*:
+`iteratedHammingChiral_kernel_not_real` (a complex-entry obstruction, not a
+mixing-time speedup) and `exists_nondegenerate_cdf` (a non-degenerate-CDF
+existential sentinel, not the Benjamini–Schramm spectral-limit content).
+The deeper intended statements are recorded in their docstrings as
+next-step directions. -/
 
 namespace OpenDirections
 
 variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- **Open theorem 1 (chiral graphon cut-distance equivalence).**
+/-- **Signed cut-distance equivalence** of two signings of the same graphon
+(interim definition).
+
+`SignedCutDistanceEquivalent W s₁ s₂` says the signed graphons
+`W.signedBy s₁` and `W.signedBy s₂` are at cut distance zero: for every
+`ε > 0` there is a measure-preserving rearrangement `T` of `(Ω, μ)` whose
+pulled-back copy of `W.signedBy s₂` (realised as a graphon `W'` with kernel
+`(x, y) ↦ (W.signedBy s₂).kernel (T x) (T y)`) lies within cut norm `ε` of
+`W.signedBy s₁` (`Graphon.cutNormDiff`).
+
+WHAT THIS MUST BECOME.  This is the BCLSV cut distance `δ_□` with the
+infimum taken over measure-preserving self-maps whose pullback is again a
+`Graphon`.  Once a rearrangement/coupling API for `Graphon` exists, this
+definition should be upgraded to the standard symmetrised `δ_□` (infimum
+over couplings of `(Ω, μ)` with itself, equivalently over invertible
+measure-preserving maps); the present form is the honest same-space
+approximation of that metric. -/
+def SignedCutDistanceEquivalent (W : Graphon Ω μ)
+    (s₁ s₂ : GraphonSigning Ω μ) : Prop :=
+  ∀ ε : ℝ, 0 < ε → ∃ (W' : Graphon Ω μ) (T : Ω → Ω),
+    MeasurePreserving T μ μ ∧
+    (∀ x y : Ω, W'.kernel x y = (W.signedBy s₂).kernel (T x) (T y)) ∧
+    Graphon.cutNormDiff (W.signedBy s₁) W' < ε
+
+/-- **Conjecture (chiral graphon cut-distance classification).**
 
 Two cell-cross-constant chiral signings of the same graphon are
-*cut-distance equivalent* (i.e. cut-norm-close after suitable
-rearrangement) iff their quotient phases `τ_1, τ_2 : I → I → ℂ` are
-gauge equivalent: `τ_2 = φ^{-1} · τ_1 · φ` for some `φ : I → U(1)`.
+*cut-distance equivalent* (`SignedCutDistanceEquivalent`: cut-norm-close
+after measure-preserving rearrangement) **iff** their quotient phases
+`τ₁, τ₂ : I → I → ℂ` are gauge equivalent: `τ₂ = φ⁻¹ · τ₁ · φ` for some
+`φ : I → U(1)`.
 
 This is a graphon-level analogue of the finite *switching equivalence
-relation* for signed graphs (Zaslavsky 1982; Bachman–Tamon 1108.0339)
-and would unify the cut-norm and chiral frameworks.  Open. -/
-theorem open_cut_distance_classifies_chirality
+relation* for signed graphs (Zaslavsky 1982; Bachman–Tamon 1108.0339) and
+would unify the cut-norm and chiral frameworks.  **Open**: recorded as a
+`Prop`-valued definition, not asserted.  The cut-distance hypothesis is
+essential — dropping it makes the gauge-equivalence conclusion *false*,
+because triangle holonomy `τ(i,j)·τ(j,k)·τ(k,i)` is gauge-invariant; see
+`HolonomyObstruction.unconditional_gauge_equivalence_false` below for the
+machine-checked refutation. -/
+def CutDistanceClassifiesChirality
     (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (s₁ s₂ : GraphonSigning Ω μ)
     (h₁ : s₁.CellCrossConstant P.cells)
-    (h₂ : s₂.CellCrossConstant P.cells) :
-    -- The (open) classification: the two signings have gauge-equivalent
-    -- quotient phases, `τ₂ = φ⁻¹ · τ₁ · φ` for some `φ : I → U(1)`.  (This is
-    -- the chiral-graphon analogue of switching equivalence for signed graphs.)
+    (h₂ : s₂.CellCrossConstant P.cells) : Prop :=
+  SignedCutDistanceEquivalent W s₁ s₂ ↔
     ∃ φ : I → ℂ, (∀ i, ‖φ i‖ = 1) ∧
       ∀ i j : I, s₂.quotientPhase h₂ i j
-        = star (φ i) * s₁.quotientPhase h₁ i j * φ j := by
-  -- Genuinely open (the cut-distance ⇒ gauge-equivalence direction): honest
-  -- theorem-level `sorry`.
-  sorry
+        = star (φ i) * s₁.quotientPhase h₁ i j * φ j
+
+/-! ### The holonomy refutation of the unconditional classification
+
+The gauge-equivalence conclusion of `CutDistanceClassifiesChirality` is
+**not** unconditional: two cell-cross-constant signings of the same graphon
+need not be gauge equivalent, because the triangle holonomy
+`τ(i,j)·τ(j,k)·τ(k,i)` is invariant under `τ ↦ φ⁻¹ τ φ` (the unimodular
+factors cancel in pairs around the closed triangle).  We machine-check this
+on the smallest possible example: three cells, the trivial signing
+(holonomy `1`) against a signing with `τ(0,1) = i` (holonomy `i ≠ 1`). -/
+
+namespace HolonomyObstruction
+
+/-- The 3 × 3 holonomy phase matrix: `τ(0,1) = i`, Hermitian fill
+`τ(1,0) = -i`, all other entries `1`.  Unimodular, Hermitian, unit
+diagonal — and its triangle holonomy is `τ(0,1)·τ(1,2)·τ(2,0) = i ≠ 1`. -/
+def holonomyPhase : Fin 3 → Fin 3 → ℂ :=
+  ![![1, Complex.I, 1], ![-Complex.I, 1, 1], ![1, 1, 1]]
+
+/-- The chirally-curved signing of `(Fin 3, count)`: `σ = holonomyPhase`
+read through the identity cell map.  Its triangle holonomy is `i ≠ 1`, so it
+is *not* gauge equivalent to the trivial signing. -/
+def curvedSigning : GraphonSigning (Fin 3) Measure.count where
+  σ := holonomyPhase
+  measurable := measurable_of_finite _
+  unimod := by
+    refine Filter.Eventually.of_forall fun p => ?_
+    obtain ⟨x, y⟩ := p
+    show ‖holonomyPhase x y‖ = 1
+    fin_cases x <;> fin_cases y <;> simp [holonomyPhase]
+  herm := by
+    intro x y
+    fin_cases x <;> fin_cases y <;> simp [holonomyPhase]
+  diag := by
+    intro x
+    fin_cases x <;> simp [holonomyPhase]
+
+/-- The zero graphon on `(Fin 3, count)`: the degenerate base graphon for
+the holonomy obstruction (any graphon would do; the obstruction lives
+entirely in the signings). -/
+def zeroGraphon3 : Graphon (Fin 3) Measure.count where
+  kernel _ _ := 0
+  measurable := measurable_const
+  herm _ _ := by simp
+  essBound := 0
+  bounded := Filter.Eventually.of_forall fun _ => by
+    simp [Function.uncurry]
+  loopless _ := rfl
+
+/-- The identity (three-singleton-cell) equitable partition of
+`zeroGraphon3`: each cell is a singleton of counting measure `1`, and the
+uniformity condition is trivial because the kernel vanishes. -/
+def idPartition3 :
+    @GraphonEquitablePartition (Fin 3) _ Measure.count (Fin 3) _ _
+      zeroGraphon3 where
+  cells := id
+  measurable_cells := measurable_of_finite _
+  cell_pos i := by simp
+  cell_finite i := by simp
+  uniform i j x y _ _ := by simp [zeroGraphon3]
+
+/-- Each singleton cell of the identity cell map on `(Fin 3, count)` has
+positive counting measure. -/
+theorem id_cells_pos (i : Fin 3) :
+    0 < Measure.count (idPartition3.cells ⁻¹' {i}) := by
+  show 0 < Measure.count ((id : Fin 3 → Fin 3) ⁻¹' {i})
+  simp
+
+/-- **The quotient phase of an identity-cell signing on `(Fin 3, count)` is
+its own `σ`.**  Counting measure makes every cell a positive-measure
+singleton, so the `Classical.choose` behind `quotientPhase` is pinned at
+every cell pair by `CellCrossConstant.exists_rep`. -/
+theorem quotientPhase_eq_sigma (s : GraphonSigning (Fin 3) Measure.count)
+    (h : s.CellCrossConstant idPartition3.cells) (i j : Fin 3) :
+    s.quotientPhase h i j = s.σ i j := by
+  obtain ⟨p, hp1, hp2, hspec, -⟩ :=
+    h.exists_rep s (id_cells_pos i) (id_cells_pos j)
+      (Q := fun _ => True) (Filter.Eventually.of_forall fun _ => trivial)
+  -- `idPartition3.cells` is definitionally `id`.
+  have hp1' : p.1 = i := hp1
+  have hp2' : p.2 = j := hp2
+  subst hp1'; subst hp2'
+  exact hspec.symm
+
+/-- **The unconditional gauge classification is FALSE: triangle holonomy
+obstructs it.**
+
+Dropping the cut-distance hypothesis from
+`CutDistanceClassifiesChirality` — i.e. asserting that *any* two
+cell-cross-constant signings of the same graphon have gauge-equivalent
+quotient phases — is refuted already at `Ω = I = Fin 3` with counting
+measure (so a fortiori in general): take the trivial signing `s₁` (all
+quotient phases `1`, holonomy `1`) and the curved signing `s₂ =
+curvedSigning` (`τ(0,1) = i`, holonomy `i`).  Any gauge relation
+`τ₂(i,j) = φ(i)⁻¹ · τ₁(i,j) · φ(j)` with unimodular `φ` forces the two
+triangle holonomies to agree — the `φ` factors cancel in pairs around the
+closed triangle `0 → 1 → 2 → 0` — which would make `i = 1`. -/
+theorem unconditional_gauge_equivalence_false :
+    ¬ (∀ (W : Graphon (Fin 3) Measure.count)
+        (P : @GraphonEquitablePartition (Fin 3) _ Measure.count (Fin 3) _ _ W)
+        (s₁ s₂ : GraphonSigning (Fin 3) Measure.count)
+        (h₁ : s₁.CellCrossConstant P.cells)
+        (h₂ : s₂.CellCrossConstant P.cells),
+        ∃ φ : Fin 3 → ℂ, (∀ i, ‖φ i‖ = 1) ∧
+          ∀ i j : Fin 3, s₂.quotientPhase h₂ i j
+            = star (φ i) * s₁.quotientPhase h₁ i j * φ j) := by
+  intro hclaim
+  -- Both signings are (everywhere, hence a.e.) cross-constant for the
+  -- identity cell map of `idPartition3`.
+  have h₁ : (GraphonSigning.trivial (Fin 3) Measure.count).CellCrossConstant
+      idPartition3.cells :=
+    ⟨fun _ _ => 1, Filter.Eventually.of_forall fun _ => rfl⟩
+  have h₂ : curvedSigning.CellCrossConstant idPartition3.cells :=
+    ⟨holonomyPhase, Filter.Eventually.of_forall fun _ => rfl⟩
+  obtain ⟨φ, hu, hg⟩ := hclaim zeroGraphon3 idPartition3 _ _ h₁ h₂
+  -- Pin the three gauge relations along the triangle `0 → 1 → 2 → 0`,
+  -- evaluating both quotient phases via `quotientPhase_eq_sigma`.
+  have pin : ∀ i j : Fin 3, holonomyPhase i j = star (φ i) * φ j := by
+    intro i j
+    have hij := hg i j
+    rw [quotientPhase_eq_sigma curvedSigning h₂ i j,
+      quotientPhase_eq_sigma _ h₁ i j] at hij
+    simpa [GraphonSigning.trivial, curvedSigning] using hij
+  have e01 : Complex.I = star (φ 0) * φ 1 := by
+    have := pin 0 1; simpa [holonomyPhase] using this
+  have e12 : (1 : ℂ) = star (φ 1) * φ 2 := by
+    have := pin 1 2; simpa [holonomyPhase] using this
+  have e20 : (1 : ℂ) = star (φ 2) * φ 0 := by
+    have := pin 2 0; simpa [holonomyPhase] using this
+  -- Unimodularity: `φ k · star (φ k) = 1` for each cell `k`.
+  have hphi : ∀ k : Fin 3, φ k * star (φ k) = 1 := by
+    intro k
+    rw [← starRingEnd_apply, RCLike.mul_conj (K := ℂ), hu k]
+    norm_num
+  -- Multiply the three relations around the closed triangle: the gauge
+  -- factors cancel in pairs, forcing `i = 1`.
+  have hI : Complex.I = 1 := by
+    calc Complex.I
+        = (star (φ 0) * φ 1) * ((star (φ 1) * φ 2) * (star (φ 2) * φ 0)) := by
+          rw [← e01, ← e12, ← e20]; ring
+      _ = (φ 0 * star (φ 0)) * ((φ 1 * star (φ 1)) * (φ 2 * star (φ 2))) := by
+          ring
+      _ = 1 := by rw [hphi 0, hphi 1, hphi 2]; ring
+  -- `i ≠ 1` in `ℂ`: compare imaginary parts.
+  have him := congrArg Complex.im hI
+  simp at him
+
+end HolonomyObstruction
 
 /-- **The iterated-Hamming chiral kernel is not a real (non-chiral)
 kernel.**
@@ -1210,8 +1488,11 @@ end OpenDirections
 | Iterated Hamming chiral limit       | `H(n, 4)^σ`                                       | `ChiralGraphonExamples.iteratedHammingChiral`                |
 | U(1) gauge interpretation           | (folklore)                                        | `U1Gauge.gaugeField` / `holonomy` / `IsFlat`                 |
 
-One genuine open direction (`open_cut_distance_classifies_chirality`) plus
-two honest-state companions (`iteratedHammingChiral_kernel_not_real`,
+One genuine open direction (the `Prop`-valued definition
+`CutDistanceClassifiesChirality`, with its machine-checked holonomy
+refutation of the unconditional form,
+`HolonomyObstruction.unconditional_gauge_equivalence_false`) plus two
+honest-state companions (`iteratedHammingChiral_kernel_not_real`,
 `exists_nondegenerate_cdf`) are recorded in `OpenDirections`. -/
 
 end Graphplay

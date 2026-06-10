@@ -50,9 +50,10 @@ References (cited in `paper/quasi_infinite_adjoint_v2.typ` Sec. 5, 9.x):
   (stalk-level).
 * Backhausz–Szegedy graphops — open direction (operator-valued generalisation).
 
-Most proofs are `sorry`; the file is a scaffold of *precise statements* whose
-proofs we expect to fill once the sheaf-of-`*`-algebras infrastructure
-(specifically the `*`-algebra category and its sheaf condition) is in place.
+The file is `sorry`-free: the concrete layer (`constSheaf` and the named
+envelope sheaves, the stalkwise ⇒ PST theorem) is fully proven, and the parts
+awaiting sheaf-of-`*`-algebras infrastructure are carried as precise
+statements (defs / cited hypotheses), not sorried theorems.
 -/
 
 import Mathlib.Topology.Sheaves.Sheaf

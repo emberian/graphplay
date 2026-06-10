@@ -26,11 +26,18 @@ at the level of *phantom symmetries* (see `Graphplay/Algorithm/WLOrbit.lean`,
 
 > A chiral perturbation of a weighted graph `G` with an equitable
 > partition `P` preserves the phantom-symmetric structure of `(G, P)`
-> **iff** the perturbation is a flat U(1) connection on cells, i.e.
-> `ChiralSigning.CrossConstant` on `P.cells`.
+> **iff** the perturbation is a flat U(1) connection on cells.
 
-The forward direction is `Chiral.signedBy_preserves_equitable`; the
-reverse direction is the content of this file (`flatOnCells_of_preserves`).
+This file proves the precise form of that statement.  At the equitable
+level the iff is unconditional (`preservesEquitable_iff_flatOnCells`,
+under the unique-edge condition), and the cell-preserving automorphism
+group transports across a flat signing in both directions
+(`WeightedAut.transportSigned` / `transportUnsigned`).  The phantom-
+symmetry clause itself, however, is **not** implied by flatness — a flat
+signing can create non-cell-preserving automorphisms and collapse the
+phantom gap, as the machine-checked weighted-4-cycle counterexample
+`FlatNotSufficient.flatOnCells_not_sufficient` shows — so the headline
+`phantomSymmetry_iff_flatOnCells` carries it as a residual clause.
 
 Once both directions are in hand the **topological invariant** —
 `ChernNumberOnCells σ P : ℤ` — emerges as the integer winding of the
@@ -301,8 +308,13 @@ non-pathological graphs `G`, and in particular destroy the
 phantom-symmetry distinguishing the source cell of `x` from the
 source cell of `y`.
 
-We state the theorem; the proof reduces to the equitable analog plus
-phantom-symmetric transport via `signedBy_preserves_equitable`.
+The forward direction ("flat ⇒ equitable structure preserved") holds
+without side conditions (`preservesEquitable_of_crossConstantOnSupport`),
+but "flat ⇒ phantom symmetry preserved" is genuinely **false**: the
+phantom clause concerns the full automorphism group of the signed graph,
+and a flat signing can create automorphisms that move cells (see
+`FlatNotSufficient` below).  What does transport is the cell-preserving
+automorphism group, in both directions.
 -/
 
 /-- A chiral signing is **cross-constant on the support of `G.adj`** if its
@@ -443,51 +455,362 @@ theorem crossConstant_of_preservesEquitable
   -- Both `(x, y)` and the chosen edge realize the same cell-pair ⇒ equal `σ`.
   exact hpoint x y _ _ hxy hc3 hc1.symm hc2.symm
 
-/-- **Headline theorem (support-faithful form).**  Under the unique-edge
-condition `hsingleEdge` (from each vertex, at most one edge into each cell), a
-chiral signing preserves the phantom symmetry of `(G, P)` iff it is
-cross-constant **on the support of `G.adj`** — equivalently, iff (viewed as a
-U(1) lattice gauge field via I7) it is a **flat connection on cells** in the
-sense of `Graphplay.Integrations.LatticeGauge`, §4.
-
-TWO LANDMINE FIXES.
-
-(1) *Off-support* (RHS was the everywhere `σ.CrossConstant P.cells`).  Only the
-on-support values of `σ` enter `G.signedBy σ` (`(G.signedBy σ).adj x y =
-σ x y · G.adj x y = 0` whenever `G.adj x y = 0`, independent of `σ`), so a
-signing agreeing with a cross-constant one on every edge but rogue on a non-edge
-of the same cell-pair gives the *same* signed graph — preserving phantom
-symmetry — yet is not literally `CrossConstant`.  Restricting the RHS to
-`CrossConstantOnSupport` removes this escape.
-
-(2) *Sum-trading* in the `→` direction (the same parallel-edge phase-trading
-that breaks `crossConstant_of_preservesEquitable`).  The unique-edge hypothesis
-`hsingleEdge` removes it, and then the `→` direction is *exactly*
-`crossConstant_of_preservesEquitable` applied to the `PreservesEquitable`
-component of `PreservesPhantomSymmetry` — so it is **proven** here.
-
-The remaining `←` direction (cross-constant-on-support ⇒ preserves the phantom
-symmetry, i.e. the phantom-automorphism transport of §2) is the genuine deep §3
-material and is left as an honest sorry. -/
-theorem phantomSymmetry_iff_flatOnCells
+/-- **Reverse direction at the equitable level** (no `hsingleEdge` needed): a
+signing that is cross-constant on the support of `G.adj` preserves the
+equitable structure of `(G, P)`.  The signed cell sum from `x` into cell `j`
+factors as `τ (P.cells x) j` times the unsigned cell sum (off-support terms
+vanish on both sides regardless of `σ`), and the unsigned cell sums agree by
+equitability of `P`. -/
+theorem preservesEquitable_of_crossConstantOnSupport
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : WeightedGraph V) (P : EquitablePartition G I)
-    (hP : IsPhantomSymmetric G P)
+    (σ : ChiralSigning V) (h : σ.CrossConstantOnSupport G P.cells) :
+    PreservesEquitable P σ := by
+  obtain ⟨τ, hτ⟩ := h
+  have key : ∀ (x : V) (j : I),
+      (∑ z, if P.cells z = j then (G.signedBy σ).adj x z else 0)
+        = τ (P.cells x) j * (∑ z, if P.cells z = j then G.adj x z else 0) := by
+    intro x j
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun z _ => ?_
+    by_cases hc : P.cells z = j
+    · rw [if_pos hc, if_pos hc, WeightedGraph.signedBy_adj]
+      by_cases h0 : G.adj x z = 0
+      · rw [h0, mul_zero, mul_zero]
+      · rw [hτ x z h0, hc]
+    · rw [if_neg hc, if_neg hc, mul_zero]
+  intro i j x y hx hy
+  rw [key x j, key y j, hx, hy, P.uniform i j x y hx hy]
+
+/-- **Topological protection at the equitable level.**  Under the unique-edge
+condition `hsingleEdge` (from each vertex, at most one edge into each cell), a
+chiral signing preserves the equitable structure of `(G, P)` **iff** it is
+cross-constant on the support of `G.adj` — equivalently, iff (viewed as a U(1)
+lattice gauge field via I7) it is a **flat connection on cells** in the sense
+of `Graphplay.Integrations.LatticeGauge`, §4.  This is the genuine
+unconditional protection iff; the phantom-symmetry refinement is
+`phantomSymmetry_iff_flatOnCells` below, and *requires* carrying the residual
+symmetry clause (see `FlatNotSufficient.flatOnCells_not_sufficient`). -/
+theorem preservesEquitable_iff_flatOnCells
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (G : WeightedGraph V) (P : EquitablePartition G I)
     (σ : ChiralSigning V)
     (hsingleEdge :
       ∀ (x z z' : V), P.cells z = P.cells z' →
         G.adj x z ≠ 0 → G.adj x z' ≠ 0 → z = z') :
-    PreservesPhantomSymmetry P σ ↔ σ.CrossConstantOnSupport G P.cells := by
+    PreservesEquitable P σ ↔ σ.CrossConstantOnSupport G P.cells :=
+  ⟨fun hpres => crossConstant_of_preservesEquitable G P σ hpres hsingleEdge,
+   fun h => preservesEquitable_of_crossConstantOnSupport G P σ h⟩
+
+/-- **Phantom-automorphism transport (forward).**  A cross-constant-on-support
+signing multiplies each cell-pair block of `G.adj` by a single phase on the
+support, so every **cell-preserving** automorphism of `G` is an automorphism
+of the signed graph: on an edge `(x, y)` both `σ (φ x) (φ y)` and `σ x y`
+equal the quotient phase `τ (cells x) (cells y)`. -/
+def WeightedAut.transportSigned
+    {V : Type u} [Fintype V] [DecidableEq V] {I : Type v}
+    {G : WeightedGraph V} {cells : V → I} {σ : ChiralSigning V}
+    (h : σ.CrossConstantOnSupport G cells)
+    (φ : WeightedAut G) (hcell : ∀ x, cells (φ.π x) = cells x) :
+    WeightedAut (G.signedBy σ) where
+  π := φ.π
+  preserves := by
+    intro x y
+    simp only [WeightedGraph.signedBy_adj]
+    rw [φ.preserves x y]
+    by_cases h0 : G.adj x y = 0
+    · rw [h0, mul_zero, mul_zero]
+    · obtain ⟨τ, hτ⟩ := h
+      have hsupp : G.adj (φ.π x) (φ.π y) ≠ 0 := by
+        rw [φ.preserves x y]; exact h0
+      rw [hτ _ _ hsupp, hτ _ _ h0, hcell x, hcell y]
+
+/-- **Phantom-automorphism transport (backward).**  Conversely, every
+cell-preserving automorphism of the signed graph is an automorphism of `G`:
+unimodularity makes `σ` nonvanishing, so the supports of `G.adj` and
+`(G.signedBy σ).adj` coincide, and on the support the common quotient phase
+`τ (cells x) (cells y)` cancels.  Together with `transportSigned` this says a
+flat signing leaves the **cell-preserving** automorphism group untouched —
+the precise sense in which the phantom automorphism structure transports.
+The cell-preservation hypothesis cannot be dropped: see
+`FlatNotSufficient.flatOnCells_not_sufficient`. -/
+def WeightedAut.transportUnsigned
+    {V : Type u} [Fintype V] [DecidableEq V] {I : Type v}
+    {G : WeightedGraph V} {cells : V → I} {σ : ChiralSigning V}
+    (h : σ.CrossConstantOnSupport G cells)
+    (φ : WeightedAut (G.signedBy σ)) (hcell : ∀ x, cells (φ.π x) = cells x) :
+    WeightedAut G where
+  π := φ.π
+  preserves := by
+    intro x y
+    have hp := φ.preserves x y
+    simp only [WeightedGraph.signedBy_adj] at hp
+    have hσxy : σ.σ x y ≠ 0 := fun hz => by
+      have := σ.unimod x y; rw [hz] at this; simp at this
+    have hσπ : σ.σ (φ.π x) (φ.π y) ≠ 0 := fun hz => by
+      have := σ.unimod (φ.π x) (φ.π y); rw [hz] at this; simp at this
+    by_cases h0 : G.adj x y = 0
+    · rw [h0, mul_zero] at hp
+      rw [h0]
+      exact (mul_eq_zero.mp hp).resolve_left hσπ
+    · obtain ⟨τ, hτ⟩ := h
+      have hπ0 : G.adj (φ.π x) (φ.π y) ≠ 0 := by
+        intro hz
+        rw [hz, mul_zero] at hp
+        exact h0 ((mul_eq_zero.mp hp.symm).resolve_left hσxy)
+      rw [hτ _ _ hπ0, hτ _ _ h0, hcell x, hcell y] at hp
+      have hτ0 : τ (cells x) (cells y) ≠ 0 := by
+        rw [← hτ x y h0]; exact hσxy
+      exact mul_left_cancel₀ hτ0 hp
+
+/-! ### Flatness alone does not preserve phantom symmetry
+
+A flat signing can **create** automorphisms.  The witness: the weighted
+`4`-cycle `0 — 1 — 2 — 3 — 0` with edge weights `1, 1, -1, 1` and the discrete
+partition.  The `-1` edge makes the graph rigid enough that no automorphism
+sends `0` to `2` (phantom symmetry); but the signing flipping that one edge by
+`-1` produces the **uniform** `4`-cycle, whose dihedral symmetry is
+vertex-transitive, so *every* cell pair is connected by an automorphism of the
+signed graph and phantom symmetry is destroyed.  On the discrete partition the
+signing is trivially cross-constant on the support and the unique-edge
+condition holds, so this refutes the naive iff
+`PreservesPhantomSymmetry ↔ CrossConstantOnSupport` outright: the corrected
+headline (`phantomSymmetry_iff_flatOnCells` below) must carry the residual
+phantom-symmetry clause on the signed graph. -/
+
+namespace FlatNotSufficient
+
+/-- The weighted `4`-cycle `0 — 1 — 2 — 3 — 0` with weights `1, 1, -1, 1`:
+the cycle edges (`y = x + 1` or `x = y + 1` in `Fin 4` arithmetic) carry
+weight `1`, except the `{2, 3}` edge which carries `-1`. -/
+def cexAdj : Matrix (Fin 4) (Fin 4) ℂ := fun x y =>
+  if (x = 2 ∧ y = 3) ∨ (x = 3 ∧ y = 2) then -1
+  else if y = x + 1 ∨ x = y + 1 then 1
+  else 0
+
+/-- The counterexample host graph: real symmetric, loopless. -/
+def cexGraph : WeightedGraph (Fin 4) where
+  adj := cexAdj
+  herm := by
+    refine Matrix.IsHermitian.ext ?_
+    intro i j
+    show star (cexAdj j i) = cexAdj i j
+    unfold cexAdj
+    have h1 : ((j = 2 ∧ i = 3) ∨ (j = 3 ∧ i = 2))
+        ↔ ((i = 2 ∧ j = 3) ∨ (i = 3 ∧ j = 2)) := by tauto
+    have h2 : (i = j + 1 ∨ j = i + 1) ↔ (j = i + 1 ∨ i = j + 1) := or_comm
+    rw [if_congr h1 rfl (if_congr h2 rfl rfl)]
+    split_ifs <;> simp
+  loopless := by
+    intro v
+    show cexAdj v v = 0
+    unfold cexAdj
+    have h1 : ¬((v = 2 ∧ v = 3) ∨ (v = 3 ∧ v = 2)) := by
+      rintro (⟨rfl, h⟩ | ⟨rfl, h⟩) <;> exact absurd h (by decide)
+    have h2 : ¬(v = v + 1 ∨ v = v + 1) := by
+      rw [or_self]
+      intro h
+      have h0 : v + 0 = v + 1 := by rw [add_zero]; exact h
+      exact absurd (add_left_cancel h0) (by decide)
+    rw [if_neg h1, if_neg h2]
+
+@[simp] theorem cexGraph_adj : cexGraph.adj = cexAdj := rfl
+
+/-- The discrete partition: every vertex is its own cell.  Trivially
+equitable; every signing is cross-constant on its support, and the
+unique-edge condition holds for free. -/
+def cexPartition : EquitablePartition cexGraph (Fin 4) where
+  cells := id
+  uniform := by
+    intro i j x y hx hy
+    obtain rfl : x = y := by
+      rw [show x = i from hx, show y = i from hy]
+    rfl
+
+/-- The signing flipping the `{2, 3}` edge: `σ 2 3 = σ 3 2 = -1`, all other
+phases `1`. -/
+def cexSigning : ChiralSigning (Fin 4) where
+  σ x y := if (x = 2 ∧ y = 3) ∨ (x = 3 ∧ y = 2) then -1 else 1
+  unimod x y := by split_ifs <;> simp
+  herm x y := by
+    have h1 : ((y = 2 ∧ x = 3) ∨ (y = 3 ∧ x = 2))
+        ↔ ((x = 2 ∧ y = 3) ∨ (x = 3 ∧ y = 2)) := by tauto
+    rw [if_congr h1 rfl rfl]
+    split_ifs <;> simp
+  diag x := by
+    have h1 : ¬((x = 2 ∧ x = 3) ∨ (x = 3 ∧ x = 2)) := by
+      rintro (⟨rfl, h⟩ | ⟨rfl, h⟩) <;> exact absurd h (by decide)
+    rw [if_neg h1]
+
+@[simp] theorem cexSigning_σ (x y : Fin 4) :
+    cexSigning.σ x y
+      = if (x = 2 ∧ y = 3) ∨ (x = 3 ∧ y = 2) then -1 else 1 := rfl
+
+/-- The uniform `4`-cycle: what `cexGraph` becomes after the signing. -/
+def c4Adj : Matrix (Fin 4) (Fin 4) ℂ := fun x y =>
+  if y = x + 1 ∨ x = y + 1 then 1 else 0
+
+theorem cex_signed_adj : (cexGraph.signedBy cexSigning).adj = c4Adj := by
+  funext x y
+  rw [WeightedGraph.signedBy_adj, cexGraph_adj, cexSigning_σ]
+  show _ = c4Adj x y
+  unfold cexAdj c4Adj
+  by_cases h1 : (x = 2 ∧ y = 3) ∨ (x = 3 ∧ y = 2)
+  · rw [if_pos h1, if_pos h1]
+    have hcyc : y = x + 1 ∨ x = y + 1 := by
+      rcases h1 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · left; decide
+      · right; decide
+    rw [if_pos hcyc]
+    norm_num
+  · rw [if_neg h1, if_neg h1, one_mul]
+
+/-- Rotation by `k` is an automorphism of the **signed** graph (the uniform
+`4`-cycle) — for `k ≠ 0` it is *not* an automorphism of `cexGraph` itself. -/
+def rot (k : Fin 4) : WeightedAut (cexGraph.signedBy cexSigning) where
+  π := Equiv.addRight k
+  preserves := by
+    intro x y
+    rw [cex_signed_adj]
+    simp only [Equiv.coe_addRight]
+    show c4Adj (x + k) (y + k) = c4Adj x y
+    unfold c4Adj
+    have h1 : (y + k = x + k + 1) ↔ (y = x + 1) := by
+      rw [add_right_comm x k 1]
+      exact add_left_inj k
+    have h2 : (x + k = y + k + 1) ↔ (x = y + 1) := by
+      rw [add_right_comm y k 1]
+      exact add_left_inj k
+    rw [if_congr (or_congr h1 h2) rfl rfl]
+
+/-- `(cexGraph, cexPartition)` is phantom-symmetric: no automorphism sends
+`0` to `2`.  Any such automorphism must send both neighbors `1, 3` of `0` to
+`+1`-neighbors of `2`, but `1` is the **only** `+1`-neighbor of `2`
+(`adj 2 3 = -1`), contradicting injectivity. -/
+theorem cex_phantomSymmetric : IsPhantomSymmetric cexGraph cexPartition := by
+  refine ⟨0, 2, by decide, ?_⟩
+  intro φ x hx h2
+  obtain rfl : x = 0 := hx
+  have hπ0 : φ.π 0 = 2 := h2
+  have honly : ∀ w : Fin 4, cexAdj 2 w = 1 → w = 1 := by
+    intro w hw
+    unfold cexAdj at hw
+    by_cases h1 : ((2 : Fin 4) = 2 ∧ w = 3) ∨ ((2 : Fin 4) = 3 ∧ w = 2)
+    · rw [if_pos h1] at hw
+      exact absurd hw (by norm_num)
+    · rw [if_neg h1] at hw
+      by_cases h2 : w = 2 + 1 ∨ (2 : Fin 4) = w + 1
+      · rcases h2 with h3 | h21
+        · exact absurd (Or.inl ⟨rfl, by rw [h3]; decide⟩) h1
+        · have hw1 : w + 1 = 1 + 1 := by rw [← h21]; decide
+          exact (add_left_inj 1).mp hw1
+      · rw [if_neg h2] at hw
+        exact absurd hw (by norm_num)
+  have hadj01 : cexAdj 0 1 = 1 := by
+    unfold cexAdj
+    rw [if_neg (by decide), if_pos (by decide)]
+  have hadj03 : cexAdj 0 3 = 1 := by
+    unfold cexAdj
+    rw [if_neg (by decide), if_pos (by decide)]
+  have h1 : φ.π 1 = 1 := by
+    have h := φ.preserves 0 1
+    rw [cexGraph_adj, hπ0, hadj01] at h
+    exact honly _ h
+  have h3 : φ.π 3 = 1 := by
+    have h := φ.preserves 0 3
+    rw [cexGraph_adj, hπ0, hadj03] at h
+    exact honly _ h
+  have : (1 : Fin 4) = 3 := φ.π.injective (h1.trans h3.symm)
+  exact absurd this (by decide)
+
+/-- `cexSigning` is cross-constant on the support (indeed everywhere): the
+discrete cells make `τ := σ` itself a quotient phase. -/
+theorem cex_crossConstantOnSupport :
+    cexSigning.CrossConstantOnSupport cexGraph cexPartition.cells :=
+  ⟨cexSigning.σ, fun _ _ _ => rfl⟩
+
+/-- The signing **destroys** the phantom symmetry: the signed graph is the
+uniform `4`-cycle, the rotations act transitively on vertices (= cells), so no
+cell pair is automorphism-free. -/
+theorem cex_not_preserves :
+    ¬ PreservesPhantomSymmetry cexPartition cexSigning := by
+  rintro ⟨heq, i, j, hij, hall⟩
+  have hπ : (rot (j - i)).π i = j := by
+    have hcoe : (rot (j - i)).π i = i + (j - i) := rfl
+    rw [hcoe, add_comm]
+    exact sub_add_cancel j i
+  exact hall (rot (j - i)) i rfl hπ
+
+/-- **Flatness does not imply phantom-symmetry preservation.**  All hypotheses
+of the naive converse hold — phantom symmetry of `(G, P)`, the unique-edge
+condition, cross-constancy of `σ` on the support — yet the phantom symmetry is
+not preserved.  Hence the headline iff must carry the residual
+phantom-symmetry clause on the signed graph. -/
+theorem flatOnCells_not_sufficient :
+    ∃ (G : WeightedGraph (Fin 4)) (P : EquitablePartition G (Fin 4))
+      (σ : ChiralSigning (Fin 4)),
+      IsPhantomSymmetric G P ∧
+      (∀ x z z' : Fin 4, P.cells z = P.cells z' →
+        G.adj x z ≠ 0 → G.adj x z' ≠ 0 → z = z') ∧
+      σ.CrossConstantOnSupport G P.cells ∧
+      ¬ PreservesPhantomSymmetry P σ :=
+  ⟨cexGraph, cexPartition, cexSigning, cex_phantomSymmetric,
+    fun _ _ _ h _ _ => h, cex_crossConstantOnSupport, cex_not_preserves⟩
+
+end FlatNotSufficient
+
+/-- **Headline theorem (corrected support-faithful form).**  Under the
+unique-edge condition `hsingleEdge`, a chiral signing preserves the phantom
+symmetry of `(G, P)` **iff** it is a flat U(1) connection on cells
+(`CrossConstantOnSupport`) *and* the signed graph is still phantom-symmetric
+on the same cells.
+
+Statement notes, each forced by an explicit counterexample:
+
+1. *Off-support* (RHS was the everywhere `σ.CrossConstant P.cells`).  Only the
+   on-support values of `σ` enter `G.signedBy σ`, so a signing rogue on a
+   non-edge gives the same signed graph; the support-restricted predicate
+   `CrossConstantOnSupport` is the most that preservation can constrain.
+2. *Sum-trading* in the `→` direction: with two parallel edges per cell pair
+   the phases can trade inside the cell sums.  `hsingleEdge` removes exactly
+   this, making the `→` direction
+   `crossConstant_of_preservesEquitable`.
+3. *The residual clause is irredundant*: flatness alone does **not** imply
+   preservation, because a flat signing can *create* automorphisms and
+   collapse the phantom gap — `FlatNotSufficient.flatOnCells_not_sufficient`
+   exhibits a phantom-symmetric weighted `4`-cycle, satisfying `hsingleEdge`,
+   and a flat signing yielding the vertex-transitive uniform `4`-cycle.  What
+   *is* true unconditionally is the equitable half
+   (`preservesEquitable_iff_flatOnCells`) together with the transport of the
+   cell-preserving automorphism group (`WeightedAut.transportSigned` /
+   `transportUnsigned`); the residual clause records the non-cell-preserving
+   symmetries the signing may gain or lose.
+
+The equivalence packages this: the `PreservesEquitable` component of the LHS
+is *exactly* flatness on the support (both directions proven above), and the
+phantom-symmetry component transfers verbatim since both sides bundle the same
+cell map. -/
+theorem phantomSymmetry_iff_flatOnCells
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {I : Type v} [Fintype I] [DecidableEq I]
+    (G : WeightedGraph V) (P : EquitablePartition G I)
+    (σ : ChiralSigning V)
+    (hsingleEdge :
+      ∀ (x z z' : V), P.cells z = P.cells z' →
+        G.adj x z ≠ 0 → G.adj x z' ≠ 0 → z = z') :
+    PreservesPhantomSymmetry P σ ↔
+      ∃ h : σ.CrossConstantOnSupport G P.cells,
+        IsPhantomSymmetric (G.signedBy σ)
+          { cells := P.cells
+            uniform := fun i j x y hx hy =>
+              preservesEquitable_of_crossConstantOnSupport G P σ h i j x y hx hy } := by
   constructor
-  · -- Forward (PROVEN): preservation gives `PreservesEquitable`, and with
-    -- `hsingleEdge` that forces cross-constancy on the support.
-    rintro ⟨heq, _⟩
-    exact crossConstant_of_preservesEquitable G P σ heq hsingleEdge
-  · -- Reverse (honest-floor): cross-constant-on-support ⇒ the signed graph is a
-    -- cross-constant signing of `G`, whose phantom symmetry transports from `hP`
-    -- via the §2 phantom-automorphism argument.  Deep §3 content.
-    sorry
+  · rintro ⟨heq, hsym⟩
+    exact ⟨crossConstant_of_preservesEquitable G P σ heq hsingleEdge, hsym⟩
+  · rintro ⟨h, hsym⟩
+    exact ⟨preservesEquitable_of_crossConstantOnSupport G P σ h, hsym⟩
 
 /-! ## §4.  Topological invariant: Chern number on cells
 

@@ -82,8 +82,18 @@ assumptions (cited hypotheses the results are conditioned on), not as theorems: 
 duality, the BCLSV graphon limit, MIP\*=RE, Choi, Stinespring, FKLW, Lovász SDP duality,
 Birkhoff contraction, HHL convergence. Each is the citation it names.
 
-Declaration-level `sorry`s stand at ~81, every one an honest leaf (a cited-classical fact
-Mathlib lacks). The per-theorem tables below carry the full audit.
+**Declaration-level `sorry`s stand at 0** (2026-06-10, waves 21/21b: 28 closed, restated,
+or demoted). The compiler emits zero `declaration uses 'sorry'` warnings on a full fresh
+build. The deep cited-classical facts Mathlib lacks (CNO perturbation bound, Bose–Mesner
+FR forward direction, Barry–Barry–Aaronson QOMDP reduction, T-rex weak-coupling resolvent
+expansion, CFI gadget family) are carried as content-bearing cited typeclasses
+(verbatim-statement fields) or never-asserted `def`-conjectures. Three statements were
+*refuted* rather than proven and now stand as machine-checked negations
+(`hammingGraph_two_no_nontrivial_fr`, `not_searchSuccess_optimal_time_of_gap_only`,
+`HolonomyObstruction.unconditional_gauge_equivalence_false`), and one whole hypothesis
+class was shown uninstantiable and redesigned (`EquitableSymmetry.no_nontrivial_cell` →
+equivariance). The per-theorem tables below carry the audit of the earlier state; rows
+marked sorryAx are superseded by this note.
 
 ---
 

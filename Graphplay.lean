@@ -83,6 +83,7 @@ import Graphplay.PST.QuotientIff
 import Graphplay.PST.DiagonalShift
 import Graphplay.PST.Periodicity
 import Graphplay.PST.Universal
+import Graphplay.PST.UniversalRatio
 
 -- Algorithms (γ-loops L4, L6 + β)
 import Graphplay.Algorithm.WLRefinement
@@ -94,6 +95,7 @@ import Graphplay.Algorithm.PrimitiveDSL
 
 -- Stdlib of known PST/mixing families
 import Graphplay.StdLib.Path
+import Graphplay.StdLib.HypercubeBridge
 import Graphplay.StdLib.Hypercube
 import Graphplay.StdLib.HypercubeProduct
 import Graphplay.StdLib.Hamming

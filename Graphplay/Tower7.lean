@@ -6,7 +6,8 @@ Tower 7 — ∞-categorical / derived layer.
 This file is the **highest abstraction tier** of the Graphplay tower: it
 recasts the equitable-partition / quotient / lift story in the language of
 stable ∞-categories, with a 2-categorical (bicategorical) truncation that is
-actually expressible in current Mathlib. Almost everything is `sorry`; the
+actually expressible in current Mathlib. The deep ∞-categorical content lives
+in structural fields and named statements rather than sorried theorems; the
 file's purpose is to **fix the precise statements** of what would have to be
 proved if/when Mathlib gains a quasicategory library and a derived-category
 framework rich enough to host the diagrams below.

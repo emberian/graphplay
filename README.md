@@ -126,7 +126,7 @@ hypotheses the conditioned results depend on.
 | 2 | `WeightedGraph V` (Hermitian ℂ) | spine lift axiom-clean; ℚ-computable companions |
 | 3 | Operator system / quantum graph | constructions concrete; UCP / Choi / k-positivity stated under cited assumptions |
 | 4 | `Graphon Ω μ` (Hilbert–Schmidt op) | operator layer axiom-clean; continuous-spectrum analysis open |
-| 5 | Categorical (filtered colimits) | functors / quotient / adjunction concrete; `FinerThan` a `Preorder`; one isolated colimit-data `sorry` |
+| 5 | Categorical (filtered colimits) | functors / quotient / adjunction concrete; `FinerThan` a `Preorder`; the Quotient functor preserves filtered colimits (proven) |
 | 6 | Sheaves of `*`-algebras | `constSheaf` concrete; stalkwise ⇒ PST proven |
 | 7 | ∞-categorical / derived | finite-shadow scaffold; awaits Mathlib ∞-cat library |
 
@@ -139,8 +139,10 @@ graph products `□` / `⊗` / `⊠` with eigenvector lemmas and the proven
 ## Corpus coverage
 
 The Tamon / Godsil CTQW literature is modeled as precise statements — the spine
-and a large fraction of named results proven, the deep per-paper headlines honest
-`sorry`s. Covered: PST / PGST, fractional revival (incl. the `D_K` framework),
+and the named results proven; the handful of genuinely deep external facts
+(MIP\*=RE-class results, the CNO perturbation bound, the Bose–Mesner FR forward
+direction, the CFI gadget family) are carried as content-bearing cited
+typeclasses or `def`-conjectures, never bare `sorry`s. Covered: PST / PGST, fractional revival (incl. the `D_K` framework),
 uniform and average mixing (AAKV matrix), spatial search (incl. the CNO
 spectral-ratio criterion), graphs-with-tails and the dark subspace, chiral /
 magnetic signings, Laplacian and lackadaisical walks, association schemes and
@@ -175,8 +177,10 @@ over `ℂ` (noncomputable) with `ℚ[i]`- and `Float`-backed companions.
 
 ## Status
 
-- **0 build errors.** No `sorry` in any definition (one isolated colimit-data
-  witness aside); every other `sorry` is a theorem body.
+- **0 build errors, 0 `sorry`s.** Every declaration in the library is fully
+  proved; the deep external facts enter as content-bearing cited typeclasses
+  (verbatim-statement fields, so any instance must genuinely prove them) or as
+  named `def`-conjectures that are stated but never asserted.
 - **Axiom-clean** where it counts: the finite and graphon spine lifts, the search
   lift, PST ⇒ strong cospectrality, the negative-PST theorems, the hypercube and
   Cartesian-product PST, the `K_n` search separation, and the attention-linearity

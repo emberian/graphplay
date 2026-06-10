@@ -60,6 +60,7 @@ import Graphplay.Equitable
 import Graphplay.Spectral
 import Graphplay.PST
 import Graphplay.Chiral
+import Graphplay.StdLib.Hypercube
 
 open scoped Matrix
 open NormedSpace
@@ -1772,28 +1773,31 @@ noncomputable def antipode (n : ℕ) : Fin (2^n) → Fin (2^n) :=
 /-- **Christandl et al. 2005.** The hypercube `Q_n` exhibits PST
 between any vertex `u` and its antipode at time `τ = π / 2`.
 
-HONEST-SORRY (true statement, on the *bitwise* model only).  The *same*
-mathematical fact is **fully proven, axiom-clean**, in the sibling module
-`Graphplay.StdLib.HypercubeProduct` as `isPST_hypercubeP_antipode`, but there
-the hypercube is the **iterated Cartesian product** `hypercubeP n` on the
-product vertex type `HCVert n = (Fin 2)ⁿ`, proven by induction via
-`cartesianProduct_pst_both` and the single-edge base case `isPST_K2`.
-
-The `hypercube n` defined here is a *different, coordinate-indexed model*: it
-lives on `Fin (2^n)` with adjacency given directly by the bitwise XOR /
-single-set-bit predicate, and `antipode n` is the bitwise all-ones flip.
-Transporting the proven product result onto this model is therefore **not a
-mere import**: it requires a graph isomorphism `Fin (2^n) ≃ HCVert n` (bit
-decomposition) carrying the bitwise adjacency to the Cartesian-product
-adjacency and the bitwise antipode to the product antipode, plus a lemma that
-`IsPST` transfers along such an isomorphism.  That bit-decomposition/transfer
-bridge is not present in this file, so the bitwise statement is kept as an
-honest `sorry` over a statement that is *known true and separately proven*
-(see `isPST_hypercubeP_antipode`), not a fake closure.
+PROVEN (axiom-clean), by transport onto the iterated-Cartesian model.  The
+bitwise single-set-bit guard `(u ^^^ v) ≠ 0 ∧ (u ^^^ v) &&& (u ^^^ v - 1) = 0`
+is recognized as Hamming distance `1`
+(`StdLib.hammingDist_eq_one_iff_xor`, via the `x &&& (x-1)` power-of-two
+characterization `HypercubeBridge.and_pred_eq_zero_iff_two_pow`), so this
+coordinate model has *the same adjacency matrix* as `StdLib.Hypercube n`.
+There, the evolution transports entrywise across the bit-decomposition
+isomorphism `HypercubeIso.hcEquiv` to `HypercubeProduct.hypercubeP n`, where
+antipodal PST holds unconditionally
+(`HypercubeProduct.isPST_hypercubeP_antipode`); the bitwise all-ones flip
+`antipode n` corresponds to the product all-bits flip
+(`HypercubeIso.hcEquiv_xorFlip`), giving `StdLib.hypercube_PST_xorFlip`.
 Citation: Christandl et al., Phys. Rev. A 71 (2005) 032312. -/
 theorem isPST_hypercube_antipode (n : ℕ) (u : Fin (2^n)) :
     IsPST (hypercube n) u (antipode n u) (Real.pi / 2) := by
-  sorry
+  have hadj : (hypercube n).adj = (StdLib.Hypercube n).adj := by
+    ext x y
+    show (if (x.val ^^^ y.val) ≠ 0 ∧ (x.val ^^^ y.val) &&& ((x.val ^^^ y.val) - 1) = 0
+          then (1:ℂ) else 0)
+        = (if StdLib.hammingDist n x y = 1 then (1:ℂ) else 0)
+    exact if_congr (StdLib.hammingDist_eq_one_iff_xor n x y).symm rfl rfl
+  have hanti : antipode n u = StdLib.xorFlip n u := rfl
+  unfold IsPST WeightedGraph.evolve
+  rw [hadj, hanti]
+  exact StdLib.hypercube_PST_xorFlip n u
 
 /-! ### 4.c Cayley graphs of abelian groups (Bašić–Petković–Stevanović)
 
