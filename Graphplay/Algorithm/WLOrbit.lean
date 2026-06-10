@@ -40,7 +40,7 @@ sibling file, written by L4) for the actual WL refinement procedure
    `no_phantom_for_finest_equitable`).
 6. **Reverse direction**: for the finest-equitable WL-stable partition,
    no phantom symmetry occurs unconditionally
-   (`no_phantom_for_finest_equitable`); the genuine
+   (`no_phantom_for_finest_equitable`); the
    rank-3 ⇔ 2-WL-complete (Babai–Mathon) characterization is a statement
    about the coarsest round-indexed fixed point, recorded separately.
 7. **k-WL** refinement: for `k ≥ k₀(G)` the k-WL stable partition equals
@@ -50,36 +50,31 @@ sibling file, written by L4) for the actual WL refinement procedure
    giving PST graphs that lie outside the classical
    "find-an-automorphism" search space.
 
-All statements here are **proved**, with zero `sorry`.  The one piece of
-genuinely external content — the `k ≥ 2` Cai–Fürer–Immerman gadget over a
-treewidth-`Ω(k)` expander base, several hundred lines of combinatorics — is
+The one piece of external content — the `k ≥ 2` Cai–Fürer–Immerman gadget over
+a treewidth-`Ω(k)` expander base, several hundred lines of combinatorics — is
 carried as the cited typeclass `CaiFurerImmerman` (Combinatorica 12 (1992),
-389–410), and `cfi_kwl_lower_bound` is the sorry-free theorem conditional on
-it.  Its fully-machine-checked `k = 1` instance (`C₆` vs `2·K₃`,
-`cfi_1wl_indistinguishable`, with genuine regularity-powered stability
-witnesses and step-level matching) is closed unconditionally, as is everything
-else: the orbit partition's equitability, `wlStable_refines_orbit`, the
-no-phantom theorems, and the Babai–Mathon / `kWL_eq_kAritySameOrbit`
-orbit-agreement statements.
+389–410), with `cfi_kwl_lower_bound` conditional on it.  Its
+fully-machine-checked `k = 1` instance (`C₆` vs `2·K₃`,
+`cfi_1wl_indistinguishable`, with regularity-powered stability witnesses and
+step-level matching) is closed unconditionally, as are the orbit partition's
+equitability, `wlStable_refines_orbit`, the no-phantom theorems, and the
+Babai–Mathon / `kWL_eq_kAritySameOrbit` orbit-agreement statements.
 
 The k-WL stability notion `IsKWLStable` is **adjacency-aware**: it is the
 fixed-point condition of `kWlWeightedStep`, whose refinement data records, for
 each coordinate and replacement vertex, the substituted colour *together with
-the replacement vertex's weight profile against the tuple*.  (An earlier
-definition never consulted the graph, which made stability — and hence every
-downstream k-WL statement — graph-independent and cheaply satisfiable.)
+the replacement vertex's weight profile against the tuple* — so stability
+depends on the graph, not just the colouring.
 
-All orbit/automorphism content quantifies over **genuine graph automorphisms**
-(`IsGraphAut`, §0) — there is no all-permutations `Aut` stub — so the
-`HasAutInvariantWeights` hypothesis is a real external constraint on the
-weighting, not the degenerate "constant off the diagonal" it collapsed to under
-the old stub.  The class also carries a **faithfulness** field
+All orbit/automorphism content quantifies over graph automorphisms
+(`IsGraphAut`, §0), so the `HasAutInvariantWeights` hypothesis constrains only
+along `G₀`-preserving permutations; quantifying over *all* permutations would
+force the weighting to be constant off the diagonal and collapse every orbit.
+The class also carries a **faithfulness** field
 (`support_faithful : G.adj x y ≠ 0 ↔ G₀.Adj x y`) tying the weighting's support
-exactly to `G₀`'s edge set; this is what makes the class non-vacuous — without
-it the constant-zero weighting `G.adj ≡ 0` would inhabit it for *every* `G₀`
-(including ones with edges), so an "orbit partition of `G₀`" statement would
-carry no information about `G₀`.  With faithfulness, `G.adj ≡ 0` forces `G₀` to
-be edgeless, so the class genuinely reflects `G₀`'s adjacency.
+exactly to `G₀`'s edge set.  Without it the constant-zero weighting
+`G.adj ≡ 0` would inhabit the class for *every* `G₀`; with it, `G.adj ≡ 0`
+forces `G₀` edgeless, so the class reflects `G₀`'s adjacency.
 -/
 
 import Graphplay.Equitable
@@ -215,37 +210,28 @@ lemma orbitPartition_eq_iff (G : Graphplay.SimpleGraph V) (u v : V) :
 `WeightedGraph`.  We require two things of the weight `G.adj` relative to the
 companion combinatorial graph `G₀`.
 
-* `invariant`: `G.adj` is invariant under **genuine graph automorphisms** of
-  `G₀` — *not* under all permutations of `V`.  In the intended use the weighted
-  graph is the complex adjacency matrix of `G₀` (or any matrix function of it),
-  and `IsGraphAut`-maps permute its entries, so the invariance holds.  The
-  quantifier ranges only over the permutations `σ` that actually preserve
-  `G₀.Adj` (`IsGraphAut G₀ σ`), so it does **not** force `G.adj` to be constant
-  off the diagonal.  (An earlier version quantified over *all*
-  `σ : Equiv.Perm V`, which — being satisfiable only by the constant-off-diagonal
-  weightings — collapsed every orbit to all of `V`.)
+* `invariant`: `G.adj` is invariant under graph automorphisms of `G₀` — *not*
+  under all permutations of `V`.  In the intended use the weighted graph is the
+  complex adjacency matrix of `G₀` (or any matrix function of it), and
+  `IsGraphAut`-maps permute its entries, so the invariance holds.  Quantifying
+  over *all* `σ : Equiv.Perm V` instead would be satisfiable only by
+  constant-off-diagonal weightings and would collapse every orbit to all of `V`.
 
 * `support_faithful`: the weighting is **supported exactly on `G₀`'s edges**:
-  `G.adj x y ≠ 0 ↔ G₀.Adj x y`.  This is the genuine **faithfulness** field that
-  ties the weighting to `G₀`'s structure, and it is what makes the class
-  non-vacuous.  Without it the class is satisfiable for an *arbitrary* `G₀` by
-  the **constant-zero** weighting `G.adj ≡ 0` (which is `invariant` for free,
-  `0 = 0`), so an "orbit-equitable" statement about `G₀` would carry no
-  information about `G₀` at all.  With `support_faithful`, `G.adj ≡ 0` forces
-  `G₀.Adj x y` to be `False` for every `x, y` (since `0 ≠ 0` is `False`), i.e.
-  `G₀` must be **edgeless**; so the zero weighting can only inhabit the class for
-  the edgeless `G₀`, and the class genuinely constrains the weighting to reflect
-  `G₀`'s adjacency on every edge.  The standard 0/1-or-Hamiltonian weightings
-  (`cfiWeighted`, any `if G₀.Adj then c else 0` with `c ≠ 0`) satisfy it. -/
+  `G.adj x y ≠ 0 ↔ G₀.Adj x y`.  This field is necessary: without it the
+  constant-zero weighting `G.adj ≡ 0` (which is `invariant` for free) inhabits
+  the class for an *arbitrary* `G₀`, so an "orbit-equitable" statement about
+  `G₀` would carry no information about `G₀`.  With it, `G.adj ≡ 0` forces `G₀`
+  edgeless.  The standard 0/1-or-Hamiltonian weightings (`cfiWeighted`, any
+  `if G₀.Adj then c else 0` with `c ≠ 0`) satisfy it. -/
 class HasAutInvariantWeights {V : Type u} [Fintype V] [DecidableEq V]
     (G₀ : Graphplay.SimpleGraph V) (G : Graphplay.WeightedGraph V) :
     Prop where
   invariant : ∀ (σ : Equiv.Perm V), IsGraphAut G₀ σ → ∀ x y : V,
     G.adj (σ x) (σ y) = G.adj x y
   /-- The weighted graph is supported **exactly** on `G₀`'s edges: a nonzero
-  weight occurs precisely on adjacent pairs.  This faithfulness constraint
-  defeats the constant-zero-weighting vacuity inhabitant for any `G₀` with an
-  edge. -/
+  weight occurs precisely on adjacent pairs.  This rules out the constant-zero
+  weighting for any `G₀` with an edge. -/
   support_faithful : ∀ x y : V, G.adj x y ≠ 0 ↔ G₀.Adj x y
 
 /-- **Theorem (orbit partition is equitable).**
@@ -310,7 +296,7 @@ specialised to the real `wlRefine`. -/
 /-- `P` is a **WL-stable** partition of `G`: it is the *coarsest equitable
 partition*, equivalently the fixed point of WL colour refinement.
 
-Genuine definition (replacing the previous `True` placeholder): `P` is finer
+Concretely: `P` is finer
 than **every** equitable partition `Q` of `G`.  This is exactly the
 characterisation that WL refinement stabilises at the coarsest equitable
 partition — concretely, for any equitable partition `Q` (with finite index
@@ -458,30 +444,24 @@ We do **not** define the CFI graph here — it requires a few hundred
 lines of combinatorial bookkeeping over the base graph — and instead
 record its existence as a postulate. -/
 
-/-- **Existence of genuine WL-stable data, which is phantom-free** (for the
-finest-equitable `IsWLStable`).
+/-- **WL-stable data exists and is phantom-free** (for the finest-equitable
+`IsWLStable`).
 
-**Restated to a TRUE statement (the false phantom-symmetry conclusion is
-replaced by its genuine negation).**  The old statement asserted existence of a
-graph + companion + finest-equitable WL-stable partition `P` **with
-`HasPhantomSymmetry`** — *false* under the present `IsWLStable`: with
-`HasAutInvariantWeights` in scope the orbit partition is equitable, so any
-finest-equitable (= finer than every equitable partition) `P` already separates
-distinct orbits, hence phantom symmetry is **unsatisfiable** (cf.
-`no_phantom_for_finest_equitable`).
+Note that the *opposite* conclusion — such data **with** `HasPhantomSymmetry` —
+is unsatisfiable: with `HasAutInvariantWeights` in scope the orbit partition is
+equitable, so any finest-equitable (= finer than every equitable partition) `P`
+already separates distinct orbits (cf. `no_phantom_for_finest_equitable`).
 
-So no choice of witness can satisfy the old conclusion.  The genuine truth is
-that such WL-stable data *exists* and is *phantom-free*: we exhibit a concrete
-witness (the one-vertex graph with its zero weighting and the discrete partition,
-which is trivially finest-equitable) and conclude `¬ HasPhantomSymmetry` via the
-proven `no_phantom_for_finest_equitable`.
+We exhibit a concrete witness (the one-vertex graph with its zero weighting and
+the discrete partition, which is trivially finest-equitable) and conclude
+`¬ HasPhantomSymmetry` via `no_phantom_for_finest_equitable`.
 
-(The genuine CFI phantom-symmetry phenomenon is real, but it lives at the
-*coarsest* round-indexed 1-WL fixed point of `Graphplay.Algorithm.WLRefinement`
-— a different object — not at this finest-equitable partition; the honest CFI
-lower-bound statement is `cfi_kwl_lower_bound` below, phrased with the
-adjacency-aware weighted-step fixed point `IsKWLStable` and conditional on the
-cited typeclass `CaiFurerImmerman`.) -/
+(The CFI phantom-symmetry phenomenon lives at the *coarsest* round-indexed
+1-WL fixed point of `Graphplay.Algorithm.WLRefinement` — a different object —
+not at this finest-equitable partition; the CFI lower-bound statement is
+`cfi_kwl_lower_bound` below, phrased with the adjacency-aware weighted-step
+fixed point `IsKWLStable` and conditional on the cited typeclass
+`CaiFurerImmerman`.) -/
 theorem cfiExists_phantomFree :
     ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G₀ : Graphplay.SimpleGraph V) (G : Graphplay.WeightedGraph V)
@@ -498,9 +478,8 @@ theorem cfiExists_phantomFree :
     { adj := 0, herm := by simp [Matrix.IsHermitian], loopless := fun _ => rfl }
   -- The zero weighting is automorphism-invariant (`0 = 0`) **and** faithful here:
   -- `G₀` is the *edgeless* graph, so `support_faithful` reads `0 ≠ 0 ↔ False`,
-  -- which holds.  This is a *genuine* joint witness — the faithfulness field is
-  -- satisfied precisely because `G₀` has no edges (the only `G₀` for which the
-  -- zero weighting can inhabit the now-faithful class), not by fiat.
+  -- which holds — the edgeless `G₀` is the only companion the zero weighting
+  -- can faithfully serve.
   haveI : HasAutInvariantWeights G₀ G :=
     { invariant := fun _ _ _ _ => rfl
       support_faithful := by
@@ -550,7 +529,7 @@ theorem cfiGraph_hasPhantomSymmetry
 /-! ### §5a. A concrete CFI-flavoured pair: `C₆` vs `2·K₃` (1-WL collapse)
 
 The full CFI gadget over an expander base (defeating k-WL for every constant `k`)
-is recorded as `cfi_kwl_lower_bound`, a sorry-free theorem conditional on the
+is recorded as `cfi_kwl_lower_bound`, conditional on the
 cited typeclass `CaiFurerImmerman` (Combinatorica 12 (1992), 389–410).
 Here we build the *smallest concrete witness of the phenomenon at dimension one*:
 a pair of **non-isomorphic** graphs on six vertices that **1-WL (colour
@@ -707,7 +686,7 @@ def samePairOrbit {V : Type u} (G₀ : Graphplay.SimpleGraph V) (p q : V × V) :
 /-- A **rank-3** graph: the automorphism group `Aut(G₀)` has exactly **three
 orbits** on `V × V` under the diagonal action.
 
-Genuine definition (replacing the previous `True` stub): there is a set `R` of
+Concretely: there is a set `R` of
 three pairwise-distinct representative pairs such that every pair of `V × V`
 lies in the `samePairOrbit`-class of exactly one representative, and the three
 representatives lie in pairwise-distinct orbits.  For a non-trivial graph these
@@ -753,7 +732,7 @@ theorem babai_mathon_rank3_no_phantom
   -- equitable, so a same-WL-colour pair is automatically in the same orbit.
   -- (This is in fact *stronger* than the rank-3 hypothesis the classical
   -- Babai–Mathon argument uses; `hRank3` is not needed for this definitional
-  -- form.  See Brouwer–Cohen–Neumaier §1.10 for the genuine rank-3 content.)
+  -- form.  See Brouwer–Cohen–Neumaier §1.10 for the classical rank-3 content.)
   rintro ⟨u, v, hcol, hno⟩
   haveI : Nonempty V := ⟨u⟩
   obtain ⟨φ, hφ⟩ := wlStable_refines_orbit G₀ G P hStable
@@ -764,27 +743,13 @@ theorem babai_mathon_rank3_no_phantom
 /-- **No phantom symmetry for the finest-equitable WL-stable partition**
 (unconditional).
 
-**Restated to a TRUE statement (the false `↔ IsRank3` is dropped).**  The old
-statement was a biconditional
-
-    `(∀ P hStable, ¬ HasPhantomSymmetry G₀ G P hStable)  ↔  IsRank3 G₀`,
-
-whose **forward direction is false**: under the present `IsWLStable` (the
-*finest* equitable partition — finer than every equitable partition), the LHS
-`∀ P hStable, ¬ HasPhantomSymmetry` holds for **every** `G₀` carrying
-`HasAutInvariantWeights` (see `babai_mathon_rank3_no_phantom`, which needs no
-rank-3 hypothesis at all under this definition).  So the iff would force
-`IsRank3 G₀` for arbitrary `G₀` — false (e.g. an edgeless graph is not rank-3).
-
-The genuine truth for this notion is the **unconditional no-phantom** statement
-below: the finest-equitable WL-stable partition never exhibits phantom symmetry,
-*regardless* of whether `G₀` is rank-3.  (The `IsRank3 ↔ no-phantom` equivalence
-is a theorem about the *coarsest* round-indexed 1-WL fixed point, a different
-object that lives in `Graphplay.Algorithm.WLRefinement`; it is not the content
-this `IsWLStable` supports.)  Closed by delegating to the proven sibling
-`babai_mathon_rank3_no_phantom` — itself rank-3-free under this definition, so we
-may feed it the *vacuous* rank-3 witness on a discrete refinement; cleaner, we
-inline the same orbit-refinement argument. -/
+The no-phantom conclusion holds for **every** `G₀` carrying
+`HasAutInvariantWeights`, with no rank-3 hypothesis: the finest-equitable
+WL-stable partition never exhibits phantom symmetry.  In particular a
+biconditional with `IsRank3 G₀` would be false here (e.g. an edgeless graph is
+not rank-3 yet has no phantom symmetry).  The `IsRank3 ↔ no-phantom`
+equivalence is a theorem about the *coarsest* round-indexed 1-WL fixed point, a
+different object that lives in `Graphplay.Algorithm.WLRefinement`. -/
 theorem no_phantom_for_finest_equitable
     {V : Type u} [Fintype V] [DecidableEq V]
     (G₀ : Graphplay.SimpleGraph V)
@@ -838,7 +803,7 @@ a `k`-tuple `t` records
 This is the weighted-graph analogue of `kWlStep` in
 `Graphplay.Algorithm.WLRefinement` and `kRefineStep` in
 `Graphplay.Integrations.WLRefinement`, with the adjacency data carried
-explicitly so the step genuinely reads the graph: two tuples can only stay
+explicitly so the step reads the graph: two tuples can only stay
 colour-merged through a round if their substitution colours *and* the
 substituted vertices' adjacency/weight profiles agree as multisets. -/
 def kWlWeightedStep {V : Type u} [Fintype V] [DecidableEq V]
@@ -962,7 +927,7 @@ lemma kWlWeightedStep_const_unit (G : Graphplay.SimpleGraph (Fin 6))
   rw [hcomp, hrow]
 
 /-- On the 0/1 weighting of a 2-regular graph on `Fin 6`, the constant
-colouring of `Fin 1 → Fin 6` is **genuinely** 1-WL-stable: every adjacency row
+colouring of `Fin 1 → Fin 6` is 1-WL-stable: every adjacency row
 has the same entry multiset (two ones, four zeros), so the adjacency-aware
 refinement step cannot split the single colour class.  Regularity is doing
 real work here — on a weighting with two distinct row multisets the constant
@@ -980,22 +945,21 @@ lemma constColour_isKWLStable (G : Graphplay.SimpleGraph (Fin 6))
 There exist two **non-isomorphic** Graphplay graphs `G, H` on `Fin 6`, both
 `2`-regular, equipped with their complex adjacency Hamiltonians `GW, HW`, and a
 `1`-WL-stable colouring of `Fin 1 → Fin 6` on each (the constant colour, which is
-the genuine colour-refinement fixed point of a *regular* graph) that **agree under
+the colour-refinement fixed point of a *regular* graph) that **agree under
 a colour relabelling** — so 1-WL produces identical output on the two graphs and
 cannot witness their non-isomorphism.
 
-Non-vacuity: the conclusion pins down the *actual* witnesses `G := cfiC6`,
-`H := cfi2K3`; the regularity conjuncts (`cfiC6_regular`, `cfi2K3_regular`) certify
+The conclusion pins down the *actual* witnesses `G := cfiC6`, `H := cfi2K3`.
+The regularity conjuncts (`cfiC6_regular`, `cfi2K3_regular`) certify
 that "constant 1-WL colour" is the *correct* colour-refinement output — for a
 `d`-regular graph 1-WL starts from the (constant) degree colour and refines a class
 only by neighbour-colour multiset, so it never refines past the single class.
-Under the adjacency-aware `IsKWLStable` this is no longer a free lunch: the
-stability witnesses genuinely *use* 2-regularity (`constColour_isKWLStable` —
+The stability witnesses *use* 2-regularity (`constColour_isKWLStable` —
 every adjacency row must have the same entry multiset), and the final conjunct
 matches not just the colours but the **entire refinement-step data** of the two
 graphs (`kWlStepRelabel`-intertwining), so the weight profiles that 1-WL sees on
 `C₆` and on `2·K₃` really are indistinguishable.  The non-isomorphism conjunct
-(`cfi2K3_not_iso_cfiC6`) certifies the graphs genuinely differ (`2·K₃` has a
+(`cfi2K3_not_iso_cfiC6`) certifies the graphs differ (`2·K₃` has a
 triangle, `C₆` does not).  This is the fully-proved `k = 1` instance of the CFI
 lower bound `cfi_kwl_lower_bound` (the smallest concrete CFI phenomenon). -/
 theorem cfi_1wl_indistinguishable :
@@ -1003,7 +967,7 @@ theorem cfi_1wl_indistinguishable :
       (_ : DecidableRel G.Adj) (_ : DecidableRel H.Adj),
       -- the graphs are non-isomorphic
       (¬ Nonempty (toMathlib G ≃g toMathlib H)) ∧
-      -- both are 2-regular (so the 1-WL colour is genuinely constant)
+      -- both are 2-regular (so the 1-WL colour is constant)
       (∀ i : Fin 6, (Finset.univ.filter (fun j => G.Adj i j)).card = 2) ∧
       (∀ i : Fin 6, (Finset.univ.filter (fun j => H.Adj i j)).card = 2) ∧
       -- yet 1-WL produces matching stable colourings of `Fin 1 → V`,
@@ -1036,33 +1000,29 @@ theorem cfi_1wl_indistinguishable :
 
 /-- **Theorem (k-WL = orbit, for an orbit-separating Aut-invariant colouring).**
 
-**Restated to a TRUE statement (the false universally-quantified `colour` is
-qualified by the two genuine properties of the canonical k-WL colouring).**  The
-old statement quantified over **every** `IsKWLStable` colouring and concluded
-`colour u = colour v ↔ kAritySameOrbit`.  That is **false** even for the
-corrected, adjacency-aware `IsKWLStable`: take `G₀` edgeless on ≥ 2 vertices
-with its zero weighting (which carries `HasAutInvariantWeights` — see
-`cfiExists_phantomFree` for the joint witness).  Every weight profile is
+The hypotheses `hsep` and `hinv` are necessary: quantifying over **every**
+`IsKWLStable` colouring and concluding `colour u = colour v ↔ kAritySameOrbit`
+is false even for the adjacency-aware `IsKWLStable`.  Take `G₀` edgeless on
+≥ 2 vertices with its zero weighting (which carries `HasAutInvariantWeights` —
+see `cfiExists_phantomFree` for the joint witness).  Every weight profile is
 identically `0`, so the weighted step assigns *all* `k`-tuples the same data
-and the **constant** colouring is a genuine fixed point; yet it makes
+and the **constant** colouring is a fixed point; yet it makes
 `colour u = colour v` hold for *all* `u, v`, forcing `kAritySameOrbit G₀ k u v`
 for every pair of `k`-tuples — false as soon as `Aut(G₀)` (here: all
 permutations) has more than one orbit on `V^k`, e.g. diagonal vs off-diagonal
 pairs at `k = 2`.  No `k₀` escapes this (the construction exists for every
 `k`).
 
-The genuine theorem characterises *when* a k-WL-stable colouring agrees with the
+So the theorem characterises *when* a k-WL-stable colouring agrees with the
 orbit partition: precisely when it is **orbit-separating** (`hsep`: equal colours
 ⟹ same orbit — the substantive direction the canonical coarsest k-WL fixed point
 achieves for `k ≥ |V|`, and which CFI shows *fails* for fixed `k`) **and
 Aut-invariant** (`hinv`: same orbit ⟹ equal colours — always true of the
-canonical k-WL colouring, since k-WL colours are automorphism-invariant).  These
-two are exposed as explicit honest hypotheses on `colour`; they are genuine,
-satisfiable facts about the canonical k-WL colouring (not the refutable
-universal), and together they yield the orbit-agreement iff.  The threshold
-`k₀ := |V|` records the genuine CFI bound at which `hsep` becomes attainable.
+canonical k-WL colouring, since k-WL colours are automorphism-invariant).
+Together they yield the orbit-agreement iff.  The threshold
+`k₀ := |V|` records the CFI bound at which `hsep` becomes attainable.
 
-Closed: forward is `hsep`, backward is `hinv`. -/
+Forward is `hsep`, backward is `hinv`. -/
 theorem kWL_eq_kAritySameOrbit
     {V : Type u} [Fintype V] [DecidableEq V]
     (G₀ : Graphplay.SimpleGraph V)
@@ -1074,7 +1034,7 @@ theorem kWL_eq_kAritySameOrbit
         (hsep : ∀ u v : Fin k → V, colour u = colour v → kAritySameOrbit G₀ k u v)
         (hinv : ∀ u v : Fin k → V, kAritySameOrbit G₀ k u v → colour u = colour v),
       ∀ u v : Fin k → V, colour u = colour v ↔ kAritySameOrbit G₀ k u v := by
-  -- The genuine CFI threshold is `k₀ = |V|`; above it the canonical k-WL
+  -- The CFI threshold is `k₀ = |V|`; above it the canonical k-WL
   -- colouring is orbit-separating (`hsep`) and is always Aut-invariant (`hinv`),
   -- so the orbit-agreement iff holds by `⟨hsep u v, hinv u v⟩`.
   refine ⟨Fintype.card V, fun k _ I _ _ colour _h hsep hinv u v => ?_⟩
@@ -1096,7 +1056,7 @@ to the adjacency information, cannot witness the non-isomorphism, so the
 threshold `k₀` of `kWL_eq_kAritySameOrbit` grows without bound across such
 families (CFI: `k = Ω(|V|)` over a treewidth-`Ω(k)` expander base).
 
-Every clause is a cheat-guard with a job:
+Each clause is necessary:
 
 * the **faithfulness** clauses tie `GW` to `G` and `HW` to `H` — without them
   the weightings are unconstrained junk (e.g. two zero matrices), making the
@@ -1118,14 +1078,13 @@ data here is the *folklore* per-coordinate variant with explicit weight
 profiles; it interleaves with standard `k`-WL within a constant shift of `k`,
 so the `k ≥ 2` regime of the cited bound covers it.
 
-This is a **typeclass assumption, NOT an axiom**: no instance is provided (the
-CFI gadget — several hundred lines of combinatorics over an expander base — is
-the missing external content), so a theorem assuming `[CaiFurerImmerman]` is a
-sorry-free conditional theorem honestly listing the cited literature fact as a
+No instance is provided (the CFI gadget — several hundred lines of
+combinatorics over an expander base — is the external content), so a theorem
+assuming `[CaiFurerImmerman]` is conditional on the cited literature fact as a
 named hypothesis.  The `k = 1` instance of the phenomenon is fully
 machine-checked *without* this class: `cfi_1wl_indistinguishable` above (`C₆`
-vs `2·K₃`, with genuine stability witnesses and step-level matching; at
-`k = 1` the canonical colouring of a regular graph is honestly constant, so no
+vs `2·K₃`, with stability witnesses and step-level matching; at
+`k = 1` the canonical colouring of a regular graph is constant, so no
 non-triviality guard applies there). -/
 class CaiFurerImmerman : Prop where
   /-- For every `k ≥ 2`: a non-isomorphic, faithfully-weighted pair carrying
@@ -1208,12 +1167,10 @@ arXiv:1108.0339).
 Under the *present* `IsWLStable` (the finest equitable partition), the antecedent
 `HasPhantomSymmetry` is **unsatisfiable** (the orbit partition is equitable, so a
 same-WL-colour pair is automatically in the same orbit — `no_phantom_for_finest_
-equitable`).  Hence this theorem is **proved vacuously**: from the impossible
-hypothesis the whole conclusion, PST window included, follows immediately — there
-is no `sorry`.  The genuine, deep spectral content of Bachman–Tamon lives where
-phantom symmetry can actually occur (the *coarsest* round-indexed k-WL fixed
-point, `Graphplay.Algorithm.WLRefinement`), not at this finest-equitable
-partition. -/
+equitable`), so the theorem holds vacuously.  The deep spectral content of
+Bachman–Tamon lives where phantom symmetry can actually occur (the *coarsest*
+round-indexed k-WL fixed point, `Graphplay.Algorithm.WLRefinement`), not at
+this finest-equitable partition. -/
 theorem bachman_tamon_pst_via_phantom
     {V : Type u} [Fintype V] [DecidableEq V]
     (G₀ : Graphplay.SimpleGraph V)

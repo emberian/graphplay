@@ -32,10 +32,9 @@ The two Tower 3 statements that we expose here are:
      exactly the Tower 3 specialization of the operator-system picture to a commutative
      family of normal matrices (1907.04729, §3).
 
-These statements are **proven** (axiom-clean) — this file is no longer a `sorry`
-scaffold.  (A contentless `0 ≤ 0` chromatic-bound headline against the `0`-stub
-chromatic numbers was deleted; the chromatic numbers remain honest placeholder
-definitions, see the note at the bottom of the file.)
+These statements are proven.  (The chromatic numbers remain placeholder
+definitions and no inequalities are stated against them; see the note at the
+bottom of the file.)
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -314,7 +313,7 @@ commuting orthogonal projector, which is precisely the generator (alongside
 `G.adj`) of the unital *-subalgebra that case of the correspondence attaches to
 `P`.
 
-SCOPE (this was previously over-stated as a full *bijection* between equitable
+SCOPE (the full correspondence is a *bijection* between equitable
 partitions and unital *-subalgebras-with-a-rank-`|I|`-projector).  This theorem
 proves the three projector identities (i)–(iii) only — the forward map's image
 properties — **not** the bijection: the reverse map (recovering a partition from
@@ -547,14 +546,13 @@ We expose the quantum chromatic number `χ_q(S)` of a quantum graph only at the
 level of placeholder *definitions*: a full development requires the quantum-strategy
 formalism (projective measurements / Naimark dilation / nonlocal games), which lives
 in `Graphplay.QuantumCSP` (where the colouring game's `QuantumValue` /
-`ClassicalValue` give the chromatic numbers genuine, stub-independent content).
+`ClassicalValue` give the chromatic numbers stub-independent content).
 
 NOTE.  The classical bound `χ_q(S) ≤ χ(S)` is **not** stated here.  With the two
 numbers defined as the `0` placeholders below, any such theorem would be the
-contentless `0 ≤ 0` — it would NOT establish the real Lovász-theta / nonlocal-game
-inequality its name would claim.  The previous `quantumChromatic_le_chromatic` was
-exactly that vacuous `0 ≤ 0` (closed by `sorry`) and has been **deleted** rather than
-left as a landmine.  The genuine, stub-independent half of the chromatic chain is
+contentless `0 ≤ 0` — it would not establish the real Lovász-theta /
+nonlocal-game inequality its name would claim.  The stub-independent half of
+the chromatic chain is
 `QuantumCSP.quantumColorable_imp_one_le_quantumValue`. -/
 
 /-- The **quantum chromatic number** of a quantum graph. Placeholder `0`

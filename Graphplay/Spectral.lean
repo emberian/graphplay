@@ -133,15 +133,14 @@ subspace is `G.adj`-invariant and the restricted action is `P.symmQuotient`. -/
 theorem spectrum_subset (P : EquitablePartition G I)
     (hne : ∀ i, 0 < P.cellCard i) :
     spectrum ℂ P.symmQuotient ⊆ spectrum ℂ G.adj := by
-  -- HONEST SORRY.  The set-form statement is *false* without a nonemptiness
-  -- hypothesis on the cells: if cell `i` is empty then `quotient` has a zero
+  -- The nonemptiness hypothesis `hne` is necessary: if cell `i` is empty
+  -- then `quotient` has a zero
   -- row and column at `i`, so `0 ∈ spectrum ℂ P.symmQuotient` (with the standard
   -- basis vector `e_i` as eigenvector), yet `G.adj` may be nonsingular, so
   -- `0 ∉ spectrum ℂ G.adj`.  The eigenvector lift below only carries
   -- *cell-supported* eigenvectors faithfully (see `geomMult_le`, which carries
-  -- the nonemptiness hypothesis `∀ i, 0 < P.cellCard i`).  The honest version
-  -- of this theorem is `spectrum_subset` *under* that hypothesis; the proof is
-  -- then: `μ ∈ spectrum Q → Q.toLin'.HasEigenvalue μ` (via
+  -- the same hypothesis `∀ i, 0 < P.cellCard i`).  The proof:
+  -- `μ ∈ spectrum Q → Q.toLin'.HasEigenvalue μ` (via
   -- `Matrix.spectrum_toLin'` + `hasEigenvalue_iff_mem_spectrum`), giving a
   -- nonzero `v` with `Q *ᵥ v = μ • v`; then `cellInflateVec v` is a nonzero
   -- (`cellInflateVec_ne_zero_of_ne_zero`) eigenvector of `G.adj`

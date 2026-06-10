@@ -153,7 +153,7 @@ own coherences are part of the data. -/
 /-- A **coherent idempotent** in an ∞-category at `X`: a 1-morphism
 `p : X ⟶ X` together with the tower of compatible 2-cells that exhibit `p`
 as idempotent up to coherent homotopy. We carry only `p` and a single 2-cell
-witness; the *tower* of higher coherences is `sorry`-d. -/
+witness; the *tower* of higher coherences is deferred. -/
 structure CoherentIdempotent (C : InfinityCategory.{u}) (X : C.Obj) :
     Type u where
   /-- The 1-morphism. -/
@@ -179,7 +179,7 @@ the composite acting on the image of `p`. Because `p` is only a *coherent*
 idempotent, "`p(X)`" itself is the colimit of the idempotent diagram and
 exists only up to coherent equivalence.
 
-We sorry the full formalization and only state the structural fields. -/
+We defer the full formalization and only state the structural fields. -/
 structure CoherentEquitablePartition
     (C : StableInfinityCategory.{u}) (X : C.Obj)
     (A : HermitianEndo C X) : Type u where
@@ -209,29 +209,27 @@ In the ∞-categorical setting, the image of a coherent idempotent is itself
 the colimit `colim(p ⟶ p ⟶ p ⟶ …)` of the idempotent diagram, and the
 quotient `A̅` is the induced action on this colimit.
 
-Our `InfinityCategory` token does **not** carry colimits, so we cannot form
-that colimit object honestly.
+Our `InfinityCategory` token does **not** carry colimits, so that colimit
+object cannot be formed here; even *expressing* it requires the quasicategory
+library (§9.3).
 
-SCAFFOLD: placeholder, not real content.  The genuine quotient is the action
-on the colimit `colim(p ⟶ p ⟶ p ⟶ …)` of the coherent idempotent, which
-requires the quasicategory library (see §9.3) to even *express*.  The body
-below returns the **degenerate `p = 1_X` specialization** — the ambient object
-`X` with the host endomorphism `A`, i.e. the strict Tower-3 quotient *only*
-when the partition is trivial.  It discards the partition argument `_P`
-entirely and is therefore NOT the quotient of a general coherent equitable
-partition.  Because `(quotient _P).2 = A` and `(quotient _P).1 = X` on the
-nose, any theorem that compares the quotient to the host via this def is
-hollow; the genuine quotient-to-host transport is the **inexpressible** deep
-evolution-level lift recorded in prose after `infinity_pst_lift_q`.  (The
-axiom-clean `infinity_pst_lift` deliberately avoids this stub and instead
-packages the *partition's own* commutation 2-cell between the genuinely-distinct
-composites `p ≫ A` and `A ≫ p`.) -/
+The body below therefore returns the **degenerate `p = 1_X` specialization**
+— the ambient object `X` with the host endomorphism `A`, i.e. the strict
+Tower-3 quotient *only* when the partition is trivial.  It discards the
+partition argument `_P` entirely, so it is not the quotient of a general
+coherent equitable partition: because `(quotient _P).2 = A` and
+`(quotient _P).1 = X` on the nose, no theorem comparing the quotient to the
+host via this def carries content.  The quotient-to-host transport is the
+deep evolution-level lift recorded in prose after `infinity_pst_lift_q`.
+(`infinity_pst_lift` avoids this stub and instead packages the *partition's
+own* commutation 2-cell between the distinct composites `p ≫ A` and
+`A ≫ p`.) -/
 def CoherentEquitablePartition.quotient
     {C : StableInfinityCategory.{u}} {X : C.Obj}
     {A : HermitianEndo C X}
     (_P : CoherentEquitablePartition C X A) :
     Σ Y : C.Obj, HermitianEndo C Y :=
-  -- SCAFFOLD: degenerate `p = 1_X` value; the real colimit quotient is deferred.
+  -- Placeholder: degenerate `p = 1_X` value; the real colimit quotient is deferred.
   ⟨X, A⟩
 
 /-! ## 2. The ∞-categorical lifting theorem (statement).
@@ -267,20 +265,15 @@ In the intended interpretation `s` is the τ-evolved cell-`i` action and `t`
 the cell-`j` target action, and the 2-cell is the invertible homotopy in the
 unitary ∞-groupoid exhibiting PST.  We **cannot** form `exp(-iτ·A.A)` (no
 functional calculus on the token `InfinityCategory`) nor the cell-uniform
-inclusions `ι_i, ι_j`, so we do **not** pretend to; instead we make the PST
-predicate genuinely about *whatever endpoints the caller supplies*, and the
-content is a real 2-cell between them.
+inclusions `ι_i, ι_j`, so the PST predicate is instead about *whatever
+endpoints the caller supplies*, and the content is a 2-cell between them.
 
-NON-VACUITY.  Unlike the previous version — which was a self-loop
-`∃ _ : C.TwoCell A.A A.A, (i=i)∧(j=j)∧(τ=τ)`, i.e. defeq to
-`Nonempty (C.TwoCell A.A A.A)` with a `True`-collapsing body — this predicate
-has **distinct, caller-chosen endpoints** `s t`.  When `s ≠ t` (e.g. the
-genuinely-distinct composites `p ≫ A` and `A ≫ p` of a coherent equitable
-partition), a witness is honest 2-cell data, not a reflexivity self-loop.  The
-ambient `A, τ` survive as documentation of *intent* on the wrapper
-`IsInfinityPSTEvolving` below; the bare witness `IsInfinityPSTWitness` records
-only the load-bearing 2-cell, which is the part the scaffold can honestly
-carry. -/
+The endpoints `s t` are caller-chosen and in general distinct (e.g. the
+composites `p ≫ A` and `A ≫ p` of a coherent equitable partition), so a
+witness is real 2-cell data, not a reflexivity self-loop.  The ambient `A, τ`
+survive as intent parameters on the wrapper `IsInfinityPSTEvolving` below;
+the bare witness `IsInfinityPSTWitness` records only the load-bearing
+2-cell. -/
 def IsInfinityPSTWitness
     (C : StableInfinityCategory.{u}) {X : C.Obj}
     (s t : Endo C.toInfinityCategory X) : Prop :=
@@ -291,37 +284,35 @@ cell-`j` state under the τ-evolution of `A`, recorded against *explicitly given
 source/target endpoints `s, t : X ⟶ X` standing in for `exp(-iτ·A.A) ∘ ι_i` and
 `ι_j` respectively (which the token category cannot form).  This is
 `IsInfinityPSTWitness` decorated with the intent parameters `A, i, j, τ` so they
-stay live; the *content* is the genuine 2-cell `s ≃ t`. -/
+stay live; the *content* is the 2-cell `s ≃ t`. -/
 def IsInfinityPSTEvolving
     (C : StableInfinityCategory.{u}) {X : C.Obj}
     (_A : HermitianEndo C X) (_i _j : C.Obj) (_τ : ℝ)
     (s t : Endo C.toInfinityCategory X) : Prop :=
   IsInfinityPSTWitness C s t
 
-/-- **∞-categorical partition-commutation lift (reachable form, axiom-clean).**
+/-- **∞-categorical partition-commutation lift.**
 
-This is the genuine ∞-analogue, *at the scaffold level*, of the bicategorical
+The ∞-analogue, *at the scaffold level*, of the bicategorical
 `bicategorical_lift`: a coherent equitable partition `P` of `A` furnishes an
-honest ∞-PST witness between the two **distinct** composites `p ≫ A`
+∞-PST witness between the two composites `p ≫ A`
 (`C.comp P.p.p A.A`) and `A ≫ p` (`C.comp A.A P.p.p`), namely the partition's
 own commutation 2-cell `P.A_commutes_p`.
 
-NON-VACUITY.  The endpoints `C.comp P.p.p A.A` and `C.comp A.A P.p.p` are
-generally **distinct** 1-endomorphisms of `X` (they are equal only when `A` and
-`p` strictly commute on the nose, which a coherent partition does *not* assume —
+The endpoints `C.comp P.p.p A.A` and `C.comp A.A P.p.p` are in general
+**distinct** 1-endomorphisms of `X`: they coincide only when `A` and `p`
+strictly commute on the nose, which a coherent partition does *not* assume —
 the whole point is that commutation holds only up to the 2-cell
-`A_commutes_p`).  So `IsInfinityPSTWitness C (p≫A) (A≫p)` is **not** a
-reflexivity self-loop; the witness is real 2-cell data drawn from `P`.  This is
-why the proof is `⟨P.A_commutes_p⟩`, consuming genuine partition structure, and
-not the former hollow `exact h`.
+`A_commutes_p`.  So the witness `⟨P.A_commutes_p⟩` consumes real partition
+structure.
 
-WHAT THIS IS NOT.  This is the *commutation-cell* content, the honest reachable
-shadow of PST.  It is **not** the genuine evolution-level ∞-lift
+This is the *commutation-cell* shadow of PST.  It is **not** the
+evolution-level ∞-lift
 `exp(-iτ·Ā)∘ι_i ≃ ι_j  ⟹  exp(-iτ·A)∘ι_i ≃ ι_j`, which requires the operator
 functional calculus, the cell-uniform inclusions, and the real colimit quotient
-— all deferred; that deep lift is **inexpressible** against the token category
-and is recorded in prose in the `### genuine evolution-level ∞-lift` block below
-(it is *not* faked with a `sorry`). -/
+— all deferred; that deep lift is inexpressible against the token category
+and is recorded in prose in the `### genuine evolution-level ∞-lift` block
+below. -/
 theorem infinity_pst_lift
     (C : StableInfinityCategory.{u})
     {X : C.Obj} (A : HermitianEndo C X)
@@ -339,8 +330,8 @@ via its commutation cell.  Companion to `infinity_pst_lift`.
 NOTE.  `CoherentEquitablePartition` carries the commutation 2-cell only for the
 projection `p` (`A_commutes_p`); for `q` we must *supply* the complementary
 commutation 2-cell `A ≫ q ≃ q ≫ A` as a hypothesis `hq` (in a fully populated
-structure it would be a field `A_commutes_q`).  The theorem then packages it,
-remaining genuinely non-vacuous (distinct endpoints `q≫A`, `A≫q`). -/
+structure it would be a field `A_commutes_q`).  The theorem packages it; the
+endpoints `q ≫ A`, `A ≫ q` are distinct in general. -/
 theorem infinity_pst_lift_q
     (C : StableInfinityCategory.{u})
     {X : C.Obj} (A : HermitianEndo C X)
@@ -360,9 +351,9 @@ exhibits ∞-PST `exp(-iτ·Ā)∘ι_i ≃ ι_j` on the colimit quotient, then t
 exhibits ∞-PST `exp(-iτ·A)∘ι_i ≃ ι_j` between the cell-uniform host states*, with
 the host endpoints *named* `sH = exp(-iτ·A)∘ι_i`, `tH = ι_j`.
 
-We deliberately do **not** state this as a Lean theorem here, because every
-honest rendering against the placeholder `InfinityCategory` token is either
-*inexpressible* or *spuriously trivial*, and neither is worth a `sorry`:
+We do **not** state this as a Lean theorem here, because every
+rendering against the placeholder `InfinityCategory` token is either
+*inexpressible* or *spuriously trivial*:
 
   * The faithful statement needs to **name** the evolved endpoints
     `exp(-iτ·A)∘ι_i`, which requires (1) the operator **functional calculus**
@@ -376,11 +367,11 @@ honest rendering against the placeholder `InfinityCategory` token is either
     generic `sH ≠ tH`); with an existential `∃ sH tH` conclusion it is
     **spuriously provable** by reusing the quotient witness (the stub quotient
     `(P.quotient).2 = A` and the operator-agnostic predicate make it a one-liner
-    `⟨sQ, tQ, hQ⟩`), faking depth it does not have.
+    `⟨sQ, tQ, hQ⟩`).
 
-So the honest record is: (i) the **reachable** content is `infinity_pst_lift` /
-`infinity_pst_lift_q` (the commutation-cell 2-cell between the genuinely-distinct
-composites `p ≫ A`, `A ≫ p`), which is **axiom-clean**; and (ii) the genuine
+In summary: (i) the **reachable** content is `infinity_pst_lift` /
+`infinity_pst_lift_q` (the commutation-cell 2-cell between the distinct
+composites `p ≫ A`, `A ≫ p`); (ii) the
 evolution-level transport across the coherent-idempotent splitting `P.p` (Lurie
 HA §1.2.4) awaits a Mathlib quasicategory + stable-∞ library (§9.3). -/
 
@@ -398,8 +389,8 @@ In this truncation:
   * PST itself is a **1-equivalence** in the relevant hom-bicategory.
 
 This is the highest abstraction tier that *currently typechecks* in Lean 4
-+ Mathlib. We give the precise structural statements and `sorry` the
-constructions. -/
++ Mathlib. We give the precise structural statements; the full constructions
+are deferred. -/
 
 open CategoryTheory
 
@@ -409,7 +400,7 @@ variable {B : Type u} [Bicategory.{w, v} B]
 `p : X ⟶ X` (the projection), and a 2-isomorphism `α : A ≫ p ≅ p ≫ A`
 witnessing commutation with a chosen 1-endomorphism `A : X ⟶ X`.
 
-Here we package the 2-cell as an honest `Iso` in the 1-morphism category
+Here we package the 2-cell as an `Iso` in the 1-morphism category
 `X ⟶ X`. This **is type-checkable** in Mathlib. -/
 structure BicategoricalEquitablePartition (X : B) (A : X ⟶ X) where
   /-- The projection 1-morphism. -/
@@ -455,13 +446,13 @@ cell-target `p ≫ A`.  This is the pasting-diagram version of the Tower-3 lift:
 the cell-uniform action on the source equals the action on the target, up to a
 1-equivalence in the hom-category.
 
-NOTE (statement-correctness).  A previous version concluded
-`IsBicategoricalPST X A P.p (P.p ≫ A)`, i.e. `Nonempty (p ≅ p ≫ A)`.  That is
-**false as stated in a general bicategory**: the partition data supplies the
+The choice of endpoints matters: the stronger conclusion
+`IsBicategoricalPST X A P.p (P.p ≫ A)`, i.e. `Nonempty (p ≅ p ≫ A)`, is
+**false in a general bicategory** — the partition data supplies the
 2-iso `A ≫ p ≅ p ≫ A`, which does *not* yield `p ≅ p ≫ A` without an extra
-`p ≅ A ≫ p` (not available).  We therefore state the genuinely-witnessed PST
+`p ≅ A ≫ p` (not available).  We state the witnessed PST
 between the *source* `A ≫ p` and the *target* `p ≫ A`, which is exactly
-`comm_p` and is `sorry`-free. -/
+`comm_p`. -/
 theorem bicategorical_lift
     {X : B} (A : X ⟶ X) (P : BicategoricalEquitablePartition (B := B) X A) :
     IsBicategoricalPST X A (A ≫ P.p) (P.p ≫ A) :=
@@ -507,23 +498,20 @@ For any homotopy-coherent filtered diagram of partitioned objects in a stable
 quotients — the ∞-categorical generalization of Tower-5
 `Quotient.preservesFilteredColimits`.
 
-The genuine conclusion `Quotient(hocolim D) ≃ hocolim(Quotient ∘ D)` is **not
-even expressible** against the `InfinityCategory` token: it needs (i) honest
-∞-colimits (`hocolim`), absent here, and (ii) the real colimit `quotient`, which
-is the degenerate `⟨X, A⟩` stub.  So we do **not** fake it with `True` (a
-content-free conclusion that would make the theorem vacuous); instead we record
-below the genuinely-non-vacuous *reachable shadow* that the token category
-*can* honestly support, and leave the deep statement as this docstring until a
-Mathlib quasicategory library lands (§9.3).
+The full conclusion `Quotient(hocolim D) ≃ hocolim(Quotient ∘ D)` is **not
+even expressible** against the `InfinityCategory` token: it needs (i)
+∞-colimits (`hocolim`), absent here, and (ii) the real colimit `quotient`,
+which is the degenerate `⟨X, A⟩` stub.  We record below the *reachable
+shadow* that the token category can support, and leave the deep statement as
+this docstring until a Mathlib quasicategory library lands (§9.3).
 
-REACHABLE, AXIOM-CLEAN SHADOW (`coherent_filtered_diagram_tower`): a
+The reachable shadow (`coherent_filtered_diagram_tower`): a
 homotopy-coherent filtered diagram is never empty — its filtered index `I` is
-`Nonempty` (part of `IsFiltered`), so the diagram picks out an honest object
+`Nonempty` (part of `IsFiltered`), so the diagram picks out an object
 `D.obj i₀ : C.Obj` carrying the identity-edge self-endomorphism
 `D.mor (𝟙 i₀) : C.Hom (D.obj i₀) (D.obj i₀)`.  This is the basepoint of the
-tower whose colimit the deep theorem forms.  It is genuinely about `D` (uses
-both `D.obj` and `D.mor`) and about filteredness (uses `IsFiltered.nonempty`),
-hence non-vacuous; it is **not** `True`. -/
+tower whose colimit the deep theorem forms.  It uses
+both `D.obj` and `D.mor`, and filteredness via `IsFiltered.nonempty`. -/
 theorem coherent_filtered_diagram_tower
     {I : Type u} [CategoryTheory.Category.{v} I] [CategoryTheory.IsFiltered I]
     (C : StableInfinityCategory.{u})
@@ -541,7 +529,7 @@ natural derived structure:
 
   * For each partition `P` we get a projection `p_P` and its complement `q_P`.
   * The kernel of `p_P` (i.e. `q_P`-image) and the cokernel of `p_P` (also
-    `q_P`-image, by self-adjointness) are honest *complexes* in the
+    `q_P`-image, by self-adjointness) are *complexes* in the
     underlying abelian category, and they fit into short exact sequences
       0 → ker p_P → V → image p_P → 0 .
   * Passing to the *derived category* of these complexes recovers the
@@ -552,9 +540,10 @@ In particular: PST between cells `i` and `j` becomes the assertion that a
 certain class in `Ext^0(image_i p, image_j p)` is invertible — i.e., it
 represents an isomorphism in the derived category at time τ.
 
-We sorry everything; the goal is the precise statement of the connection. -/
+Everything here is deferred; the goal is the precise statement of the
+connection. -/
 
-/-- SCAFFOLD: placeholder, not real content.  The genuine definition is the
+/-- Placeholder for the
 derived category `D(HermOp(V) / EqPart)` — a triangulated category obtained by
 localizing at quasi-isomorphisms in the chain complex
 `0 → ker p → V → image p → 0`.  This `dummy : Unit` carrier carries none of
@@ -566,14 +555,14 @@ structure DerivedHermPart : Type 1 where
 instance : Subsingleton DerivedHermPart :=
   ⟨fun a b => by cases a; cases b; rfl⟩
 
-/-- SCAFFOLD: placeholder, not real content.  The genuine `Ext^0` is `Hom` in
+/-- Placeholder.  The intended `Ext^0` is `Hom` in
 the derived category between cell-image complexes; here it is `Unit`, which
 carries no map data and in particular has no notion of *invertible class*.
 Any theorem asserting "PST ⟺ invertible Ext⁰ class" over this stub is
-necessarily deferred (see `pst_as_Ext0`). -/
+necessarily conditioned on a bridge hypothesis (see `pst_as_Ext0`). -/
 def DerivedHermPart.Ext0 (_D : DerivedHermPart)
     (_imageI _imageJ : Unit) : Type :=
-  Unit  -- SCAFFOLD placeholder; real value is `Hom`-in-derived-category
+  Unit  -- placeholder; real value is `Hom`-in-derived-category
 
 /-- The stub `Ext0` carrier is `Unit`, hence a subsingleton: its single class is
 the canonical evolution class.  This is what powers the existential-collapse in
@@ -582,31 +571,26 @@ instance (D : DerivedHermPart) (imageI imageJ : Unit) :
     Subsingleton (D.Ext0 imageI imageJ) := by
   unfold DerivedHermPart.Ext0; infer_instance
 
-/-- **PST as a class in Ext^0 (derived framing — TRUE restricted form).**
+/-- **PST as a class in Ext^0 (derived framing).**
 
 The PST condition `‖U(τ)_{ij}‖ = 1` is, in the derived framing, the assertion
 that a certain class `[U(τ)]_{ij} ∈ Ext^0(image_i, image_j)` represents an
 isomorphism in the derived category at "time" τ.  The Ext^0 class is the
 component of the evolution `U(τ) = exp(-i τ A)` at the (i,j) cell pair.
 
-WHY THE UNIVERSAL FORM IS FALSE, AND THE TRUE FORM WE STATE.  The former
-statement `IsPSTAt ↔ ∃ c, IsInvertibleClass c` for *arbitrary* abstract
+The bridge hypothesis `hbridge` is necessary: the unrestricted iff
+`IsPSTAt ↔ ∃ c, IsInvertibleClass c` for *arbitrary* abstract
 predicates `IsPSTAt : Prop` and `IsInvertibleClass : Ext0 → Prop` is
-machine-refutable: take `IsPSTAt := True` and `IsInvertibleClass := fun _ ↦
+refutable — take `IsPSTAt := True` and `IsInvertibleClass := fun _ ↦
 False`; then over `Ext0 = Unit` the right side is `False`, so the biconditional
-fails.  The genuine derived-category content is the *single distinguished class*
-`[U(τ)]_{ij}`: PST is the invertibility of **that** class.  We therefore take as
-the genuine derived datum the bridge `hbridge : IsPSTAt ↔ IsInvertibleClass γ`
+fails.  The derived-category content is the *single distinguished class*
+`[U(τ)]_{ij}`: PST is the invertibility of **that** class.  We therefore take
+as the derived datum the bridge `hbridge : IsPSTAt ↔ IsInvertibleClass γ`
 for the canonical evolution class `γ` (here the unique class of the `Unit`-stub
-`Ext0`), and the theorem does the genuine, non-hollow work of converting that
-single-class bridge into the existential form `∃ c, IsInvertibleClass c` — a
-conversion that rests on the `Ext0`-carrier collapse (`Subsingleton`/`Unique`),
+`Ext0`); the theorem converts that
+single-class bridge into the existential form `∃ c, IsInvertibleClass c`, a
+conversion resting on the `Ext0`-carrier collapse (`Subsingleton`/`Unique`),
 exactly the stub's actual content.
-
-This is **not** the hollow `P → P`: the hypothesis (`IsPSTAt ↔ IsInvertibleClass
-γ`) and conclusion (`IsPSTAt ↔ ∃ c, IsInvertibleClass c`) are *distinct*
-propositions, and discharging the gap is precisely the existential-collapse
-`IsInvertibleClass γ ↔ ∃ c, IsInvertibleClass c` over the stub Ext-group.
 
 Reference: Bachman–Tamon arXiv:1108.0339 in the strict case; the derived
 upgrade is folklore. -/
@@ -648,7 +632,7 @@ More precisely:
 
 We state the connection as a `Prop` over a (heavily) opaque MTC type. -/
 
-/-- SCAFFOLD: placeholder, not real content.  The genuine modular tensor
+/-- Placeholder.  A modular tensor
 category is a braided fusion category over `ℂ` with nondegenerate S-matrix (see
 Etingof–Gelaki–Nikshych–Ostrik *Tensor Categories* §8); this `dummy : Unit`
 carrier has none of that data, so `Nonempty MTC` is a content-free tautology
@@ -678,20 +662,18 @@ becomes the fusion-rule data.
 Reference: Kitaev, "Anyons in an exactly solved model"; Lurie, "On the
 classification of TQFTs".
 
-WHY THE EXISTENCE FORM IS FALSE, AND THE TRUE FORM WE STATE.  The former
-statement `∃ M : MTC, AssociatedTo M` for an *arbitrary* association predicate
-`AssociatedTo : MTC → Prop` is machine-refutable: take `AssociatedTo := fun _ ↦
+The existence form
+`∃ M : MTC, AssociatedTo M` for an *arbitrary* association predicate
+`AssociatedTo : MTC → Prop` is refutable: take `AssociatedTo := fun _ ↦
 False`.  Building an actually-associated MTC needs the rigid-dualizable
 subcategory / fusion data, which the `dummy : Unit` stub cannot supply.
 
-What the stub *does* genuinely support is **uniqueness/canonicity**: the
+What the stub *does* support is **uniqueness/canonicity**: the
 intended MTC is *the* modular tensor category attached to `C`, and over the stub
 (which carries no distinguishing moduli — `MTC` is a `Unit`-carrier, hence a
 subsingleton) any two associated MTCs are *equal*.  We therefore state the
-genuine, non-vacuous canonicity claim: an MTC associated to `C` is unique.  This
-is real content (the association has no moduli — the categorification is rigid),
-it is *not* the content-free `Nonempty MTC`, and it is honestly provable from the
-subsingleton structure of the stub carrier. -/
+canonicity claim: an MTC associated to `C` is unique — the association has no
+moduli; the categorification is rigid. -/
 theorem mtc_correspondence
     (_C : StableInfinityCategory.{u})
     (AssociatedTo : MTC → Prop) :
@@ -736,7 +718,7 @@ signings. In a *tricategory* (which Mathlib does **not** carry), this would
 be the structural 3-cell; we model it as equality of the underlying
 2-isomorphisms.
 
-This is genuinely a placeholder: full tricategorical handling is well beyond
+This is a placeholder: full tricategorical handling is well beyond
 current Mathlib. -/
 def HigherChiralSigning.phaseOnPhase
     {X : B} {A A' : X ⟶ X}
@@ -774,7 +756,7 @@ structure BMFlux : Type 1 where
 
 The Tower 7 lifting theorem (`infinity_pst_lift` above) implies, *as a
 corollary* in the bicategorical truncation, the following concrete claim,
-which is genuinely falsifiable by simulation:
+which is falsifiable by simulation:
 
   **Topological invariance of quantum-walk uniform-mixing time.**
 
@@ -805,25 +787,23 @@ Tower 7 is wrong. -/
 For any quantum walk on a graph `G` and any two embeddings of `G` in compact
 orientable surfaces of the same genus, the uniform-mixing time is the same.
 
-SCAFFOLD: the surface/embedding/mixing-time machinery
+The surface/embedding/mixing-time machinery
 (`Graphplay.Mixing`, surface-embedding data) is not imported in this Tower-7
 scaffold, so we express the conjecture *schematically*, parametrised by:
 * a type `Emb` of "embeddings of a graph into a surface";
 * a genus map `genus : Emb → ℕ`;
 * a uniform-mixing-time map `mix : Emb → ℝ`.
 
-WHY THE UNRESTRICTED FORM IS FALSE, AND THE TRUE FORM WE STATE.  Quantifying the
-conclusion `∀ e₁ e₂, genus e₁ = genus e₂ → mix e₁ = mix e₂` over *arbitrary*
-`(Emb, genus, mix)` is machine-refutable: take `Emb := Bool`, `genus := fun _ ↦
+The factorisation hypothesis is necessary: the conclusion
+`∀ e₁ e₂, genus e₁ = genus e₂ → mix e₁ = mix e₂` over *arbitrary*
+`(Emb, genus, mix)` is refutable — take `Emb := Bool`, `genus := fun _ ↦
 0`, `mix := fun b ↦ if b then 1 else 0`; then `genus true = genus false` but
-`mix true ≠ mix false`.  The genuine Tower-7 content is precisely the *missing
+`mix true ≠ mix false`.  The Tower-7 content is precisely the *missing
 hypothesis*: the coherent ∞-lift forces the uniform-mixing time to be a
 **homotopy invariant**, i.e. `mix` factors through `genus` (`mix = f ∘ genus`
-for some `f : ℕ → ℝ`).  We therefore add that factorisation as the explicit
-hypothesis `hfactor`; under it the genus-invariance is genuine, non-vacuous, and
-provable.  The factorisation `hfactor` is exactly the categorical conclusion the
-real (deferred) coherent-lift machinery would furnish for genuine quantum-walk
-mixing times — restated here as a precondition rather than a `sorry`. -/
+for some `f : ℕ → ℝ`).  That factorisation is the
+categorical conclusion the (deferred) coherent-lift machinery would furnish
+for quantum-walk mixing times, restated here as a precondition. -/
 def TopologicalInvarianceConjecture : Prop :=
   ∀ (Emb : Type) (genus : Emb → ℕ) (mix : Emb → ℝ),
     (∃ f : ℕ → ℝ, mix = f ∘ genus) →
@@ -876,7 +856,8 @@ shape) plus careful spectral bookkeeping. Estimated: ~3000 lines.
 
 Replace every `InfinityCategory`-token in this file with a real
 quasicategory (a Kan-complex-like simplicial set), and prove
-`infinity_pst_lift` honestly. This requires Mathlib to gain:
+`infinity_pst_lift` in its full evolution-level form. This requires Mathlib
+to gain:
 
   * a quasicategory library (simplicial sets, horn-fillers, mapping spaces);
   * a stable-∞-category library (suspension, cofiber sequences,
@@ -891,8 +872,8 @@ Mathlib. Estimated calendar time: 2-4 years of focused effort by a small
 team.
 
 When that lands, this file becomes the *interface* between concrete
-Graphplay content and the ∞-categorical scaffolding, and most `sorry`s
-become genuine theorems. -/
+Graphplay content and the ∞-categorical scaffolding, and the deferred
+statements become theorems. -/
 
 /-! ## 10. End-of-file inventory.
 
@@ -901,21 +882,21 @@ What is **stated** in Tower 7:
   * Placeholder types `InfinityCategory`, `StableInfinityCategory`,
     `HermitianEndo`, `CoherentIdempotent`, `CoherentEquitablePartition`
     that fix the *shape* of the genuine ∞-categorical objects.
-  * `infinity_pst_lift` / `infinity_pst_lift_q` — the **axiom-clean reachable**
+  * `infinity_pst_lift` / `infinity_pst_lift_q` — the reachable
     ∞-PST shadow: a coherent equitable partition's commutation 2-cell is an
     ∞-PST witness between the *distinct* composites `p ≫ A` and `A ≫ p`.
-  * The **genuine** evolution-level ∞-PST lift — recorded in *prose* (the
+  * The evolution-level ∞-PST lift — recorded in *prose* (the
     `### genuine evolution-level ∞-lift` block), **not** a Lean theorem: it is
     inexpressible against the token category (needs functional calculus
     `exp(-iτ·–)`, cell-uniform inclusions, the real colimit quotient), and every
     expressible surrogate is either false (`∀` endpoints) or spuriously trivial
-    (`∃` endpoints) — so it is neither faked with a `sorry` nor with `True`.
+    (`∃` endpoints).
   * The bicategorical truncation `BicategoricalEquitablePartition` and
     `bicategorical_lift`, which are **type-checkable in current Mathlib**.
-  * `coherent_filtered_diagram_tower` — the axiom-clean reachable shadow of the
+  * `coherent_filtered_diagram_tower` — the reachable shadow of the
     homotopy-coherent generalization of Tower 5's headline (the deep
     `Quotient(hocolim D) ≃ hocolim(Quotient∘D)` is inexpressible against the
-    token category and recorded in prose, not faked with `True`).
+    token category and recorded in prose).
   * `pst_as_Ext0` — the derived-category framing of PST.
   * `mtc_correspondence` — the Tower 6 + Tower 7 meeting at modular tensor
     categories.
@@ -925,25 +906,13 @@ What is **stated** in Tower 7:
 
 What is **deferred**:
 
-  * The genuine ∞-categorical / derived-categorical *content* (functional
-    calculus, honest colimit quotient, derived `Ext`, rigid fusion data) awaits
+  * The ∞-categorical / derived-categorical *content* (functional
+    calculus, colimit quotient, derived `Ext`, rigid fusion data) awaits
     a Mathlib ∞-category library; the placeholder structures only fix the shapes.
-  * Note, however, that the reachable *theorems* are now **closed with real,
-    genuinely-non-vacuous proofs** (no `sorry`): `infinity_pst_lift` /
-    `infinity_pst_lift_q` (partition-commutation 2-cell between the *distinct*
-    composites `p ≫ A`, `A ≫ p` — the honest ∞-shadow of `bicategorical_lift`),
-    `bicategorical_lift`/`bicategorical_lift_q` (2-cell extraction), and the three
-    formerly-false-as-stated theorems restated to their true forms —
-    `pst_as_Ext0` (existential-collapse over the stub `Ext0`),
-    `mtc_correspondence` (canonicity/uniqueness of the stub MTC), and
-    `topological_invariance_corollary` (genus-determined mixing time under the
-    factorisation hypothesis).
-  * This file now contains **no `sorry`**.  The genuinely-deep claims that
-    cannot honestly be stated against the placeholder token category (the
-    evolution-level ∞-PST lift; the colimit quotient theorem
-    `Quotient(hocolim D) ≃ hocolim(Quotient∘D)`) are recorded in *prose* rather
-    than faked with `sorry` or `True`; they await a Mathlib quasicategory +
-    stable-∞ library (§9.3).
+  * The deep claims that cannot be stated against the placeholder token
+    category (the evolution-level ∞-PST lift; the colimit quotient theorem
+    `Quotient(hocolim D) ≃ hocolim(Quotient∘D)`) are recorded in *prose*;
+    they await a Mathlib quasicategory + stable-∞ library (§9.3).
 
 What is **falsifiable** without proof:
 

@@ -41,10 +41,10 @@ cell-uniform invariance theorem and its noisy `cellUniformSymmetric`
 extension (see `Graphplay/Toolkit/Noise.lean`, D8) play exactly the same
 role as Gao–Caines's reduction theorem.
 
-Many of the deeper analytic results (infinite-dimensional Cauchy problems,
-all-time invariance, Nash fixed points) remain honest `sorry`s, flagged
-`BLOCKED` inline; the surrounding bookkeeping and finite-dimensional
-reduction lemmas are proven.  The interest is in the *shape* of the
+The deeper analytic results (infinite-dimensional Cauchy problems,
+all-time invariance, Nash fixed points) are carried as cited external
+interfaces or named conjectures; the surrounding bookkeeping and
+finite-dimensional reduction lemmas are proven.  The interest is in the *shape* of the
 statements and the demonstration that, with the right vocabulary, quantum
 mean-field control and classical graphon LQR control reduce to a single
 body of theorems.
@@ -158,15 +158,14 @@ noncomputable def Bop (P : GraphonLQR Ω μ) : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2
 `ẋ_t = A x_t + B u_t` on `[0, T]`, given an initial state `ξ` and a
 control trajectory `u : ℝ → Lp ℂ 2 μ`.
 
-This is the genuine differential constraint linking the trajectory `x` to the
+This is the differential constraint linking the trajectory `x` to the
 control `u`: the initial condition `x 0 = ξ`, together with the requirement that
 on the horizon `[0, T]` the (Fréchet/`HasDerivAt`) time-derivative of `x` equals
 `A x_t + B u_t`, where `A = Aop` and `B = Bop` are the bounded operators built
 from the graphon coupling.  A *mild* solution (the Bochner-integral / variation-
 of-constants form `x_t = exp(t A) ξ + ∫₀ᵗ exp((t-s) A) B u_s ds`) coincides with
-this differential form when the data is smooth enough; we encode the differential
-form here because it is a genuine (non-trivial) constraint on the pair `(u, x)`,
-unlike the previous `True` placeholder.
+this differential form when the data is smooth enough; we encode the
+differential form here.
 
 Following Gao–Caines (Proposition 1, arXiv:2004.00677), well-posedness is a
 standard infinite-dimensional Cauchy problem on the Hilbert space `Lp ℂ 2 μ`. -/
@@ -182,7 +181,7 @@ noncomputable def freeEvolution (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ) :
     ℝ → Lp ℂ 2 μ :=
   fun t => (NormedSpace.exp (t • P.Aop)) ξ
 
-/-- **The free evolution solves the homogeneous Cauchy problem (PROVEN).**
+/-- **The free evolution solves the homogeneous Cauchy problem.**
 At every time `t`, the trajectory `t ↦ exp(t · Aop) ξ` has time-derivative
 `Aop (x t)`.  This is the operator-exponential / `C₀`-semigroup solution of the
 linear evolution equation `ẋ = Aop x` on the Hilbert space `Lp ℂ 2 μ`, the
@@ -217,18 +216,16 @@ theorem freeEvolution_hasDerivAt (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ) (t : 
   rw [hval] at hev
   exact hev
 
-/-- **Proposition 1 (Gao–Caines, arXiv:2004.00677) — homogeneous case, PROVEN.**
+/-- **Proposition 1 (Gao–Caines, arXiv:2004.00677) — homogeneous case.**
 For the **free (uncontrolled, `u ≡ 0`) graphon dynamics** the Cauchy problem
-`ẋ_t = Aop(x_t) + Bop(0) = Aop(x_t)`, `x_0 = ξ`, has a genuine solution: the
+`ẋ_t = Aop(x_t) + Bop(0) = Aop(x_t)`, `x_0 = ξ`, has a solution: the
 operator-semigroup trajectory `freeEvolution ξ = (t ↦ exp(t · Aop) ξ)`.
 
 This is the well-posedness *core* of Gao–Caines Proposition 1, on the
 finite- or infinite-dimensional Hilbert space `Lp ℂ 2 μ` alike, proved via the
 bounded-operator exponential (`freeEvolution_hasDerivAt`).  The `Bop(u t)` term
 vanishes here because `Bop` is a (linear) continuous map, so `Bop 0 = 0`, and
-the `MildSolution` differential constraint reduces to the homogeneous equation —
-the conclusion is therefore the genuine ODE-solution existence, not a vacuous
-`True`.
+the `MildSolution` differential constraint reduces to the homogeneous equation.
 
 (For a *general* control `u`, the inhomogeneous variation-of-constants solution
 `x_t = exp(tA)ξ + ∫₀ᵗ exp((t-s)A) B u_s ds` is the deep Curtain–Zwart
@@ -261,7 +258,7 @@ noncomputable def cost (P : GraphonLQR Ω μ) (x u : ℝ → Lp ℂ 2 μ) : ℝ 
 
 /-- **Infinite-dimensional LQR optimality interface** (Curtain–Zwart, external).
 
-The genuinely-external content behind LQR optimal-control existence on the
+The external content behind LQR optimal-control existence on the
 Hilbert state space `Lp ℂ 2 μ`: with Hermitian non-negative cost operators
 `(Q, Q_T)` (Gao–Caines (A1)) the controlled graphon dynamics
 `ẋ = Aop x + Bop u` admits an optimal control, given by the feedback law from
@@ -271,8 +268,8 @@ operator-Riccati solution on an infinite-dimensional Hilbert space is the
 Infinite-Dimensional Linear Systems Theory* (Springer, 1995) — cited as [17] in
 Gao–Caines, arXiv:2004.00677 — and is not available in Mathlib.
 
-`Prop`-valued **typeclass assumption, not a bare axiom**: a theorem taking
-`[CurtainZwartLQR P ξ]` is `#print axioms`-clean and honestly conditional on the
+`Prop`-valued typeclass assumption: a theorem taking
+`[CurtainZwartLQR P ξ]` is conditional exactly on the
 cited fact.  No instance is provided (pure external). -/
 class CurtainZwartLQR (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ) : Prop where
   /-- Curtain–Zwart: under Hermitian (Gao–Caines (A1)) cost operators the LQR
@@ -287,8 +284,7 @@ class CurtainZwartLQR (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ) : Prop where
 /-- **Optimal control existence** (Curtain–Zwart), conditional on
 `[CurtainZwartLQR P ξ]`.  Under Hermitian cost operators `(Q, Q_T)` the LQR
 problem admits a `MildSolution`-optimal control given by the operator-Riccati
-feedback law.  Derived from the named external hypothesis; `#print axioms`-clean
-and honestly conditional. -/
+feedback law.  Derived from the named external hypothesis. -/
 theorem optimal_control_exists (P : GraphonLQR Ω μ) (ξ : Lp ℂ 2 μ)
     [h : CurtainZwartLQR P ξ]
     (hQ : IsSelfAdjoint P.Q) (hQT : IsSelfAdjoint P.QT) :
@@ -337,7 +333,7 @@ preserves the cell-uniform subspace by `Graphon.cellUniformSubspaceInvariant`;
 the cell-uniform subspace is closed under addition and scalar multiplication,
 so the combination preserves it too.
 
-This is the genuine structural fact underlying the Gao–Caines "Assumption (A5)"
+This is the structural fact underlying the Gao–Caines "Assumption (A5)"
 in the equitable case: every equitable graphon partition automatically supplies
 a finite-dimensional invariant subspace for the state operator. -/
 theorem Aop_cellUniform_invariant [IsFiniteMeasure μ]
@@ -373,17 +369,15 @@ This is the **infinitesimal core** of the graphon-equitable analogue of Gao–Ca
 arXiv:2004.00677, Theorem 1 / Proposition 4 (the invariant-subspace decomposition
 theorem), specialised to `S = cellUniformSubspace`.  In the classical
 (Huang–Caines–Malhamé) mean-field setting, the trivial single-cell equitable
-partition is the universal one; the heterogeneous (multi-cell) case is the genuine
+partition is the universal one; the heterogeneous (multi-cell) case is the
 extension.
 
-**Scope (honest).**  This theorem proves *only* the one-step generator invariance
+**Scope.**  This theorem proves *only* the one-step generator invariance
 `Aop x + Bop u ∈ cellUniformSubspace`; it does **not** assert that the optimal
-trajectory `x_t` stays cell-uniform *for all* `t ∈ [0, T]`.  (The schematic
-`MildSolution` predicate is a `True` placeholder — the Bochner-integral mild-solution
-analysis is deferred — so an arbitrary trajectory `x` carries no constraint and the
-all-time claim would be unprovable here.)  The generator invariance proved here is
-exactly the hypothesis that the semigroup/Bochner-integral argument *would* propagate
-to all times; that propagation is the deferred deep part.  Proved genuinely from
+trajectory `x_t` stays cell-uniform *for all* `t ∈ [0, T]`.  The generator
+invariance proved here is exactly the hypothesis that the semigroup/Bochner-
+integral argument *would* propagate to all times; that propagation is the deep
+part.  Proved from
 `Aop_cellUniform_invariant` and `Bop_cellUniform_invariant`. -/
 theorem cellUniform_invariant_under_LQR [IsFiniteMeasure μ]
     (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W)
@@ -410,7 +404,7 @@ We use the **symmetric** quotient `EP.symmQuotient`, since that — and not the
 raw asymmetric `quotient` — is the matrix of `W.op` in the *orthonormal*
 cell-indicator basis carried by `cellUniformIsometry` (see
 `Graphon.op_restrict_eq_quotient`).  The identification
-`Aop ∘ isometry = isometry ∘ AopQuotient` is then a genuine theorem
+`Aop ∘ isometry = isometry ∘ AopQuotient` is then a theorem
 (`Aop_restrict_eq_quotient`). -/
 noncomputable def AopQuotient
     (P : GraphonLQR Ω μ) (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W) :
@@ -460,7 +454,7 @@ Theorem (arXiv:2004.00677, Theorem 2 / Theorem 3 of the V-section), in
 which their (A5)-invariant subspace `S` is specialised to the
 cell-uniform subspace of an equitable partition.
 
-We prove genuinely the **operator-level reduction equation** that is the entire
+We prove the **operator-level reduction equation** that is the entire
 content of the host-to-quotient identification for the state operator: applying
 `Aop` after lifting a finite vector through `cellUniformIsometry` equals lifting
 the finite quotient operator `AopQuotient`-action of that vector.  Once this
@@ -543,13 +537,11 @@ preserves the cell-uniform subspace of an equitable partition `EP` at every
 time, then along any Schrödinger trajectory `i ∂_t ψ = H(t) ψ` the *velocity*
 `∂_t ψ = -i H(t) ψ` stays in the cell-uniform subspace whenever `ψ t` does.
 
-This is the genuine infinitesimal-invariance core of the closed quantum
+This is the infinitesimal-invariance core of the closed quantum
 mean-field reduction: the tangent vector to the evolution never leaves the
 cell-uniform subspace, which is exactly the condition the propagator argument
-integrates to all-time invariance.  Stated this way it is *genuinely provable*
-from the generator hypothesis `hH` (no vacuous `True` dynamics hypothesis, no
-`sorry`); the all-time propagation is its honest integral consequence
-(`schrodinger_cellUniform_invariant_allTime`, BLOCKED below).
+integrates to all-time invariance
+(`schrodinger_cellUniform_invariant_allTime_of_opNorm_bound` below).
 
 This is the analogue of `cellUniform_invariant_under_LQR` for unitary quantum
 dynamics. -/
@@ -567,17 +559,17 @@ theorem schrodinger_cellUniform_invariant
   rw [hψ]
   exact Submodule.smul_mem _ _ (hH t (ψ t) hψt)
 
-/-- **All-time closed-quantum cell-uniform invariance — GENUINELY PROVEN
-(finite/infinite-dim Grönwall), under a uniform generator operator-norm bound.**
+/-- **All-time closed-quantum cell-uniform invariance** (finite/infinite-dim
+Grönwall), under a uniform generator operator-norm bound.
 
-This is the real mathematical content the `SchrodingerSubspaceFlowInvariance`
+This is the content the `SchrodingerSubspaceFlowInvariance`
 interface abstracts: when the time-dependent generator `H(t)` (i) preserves the
 *closed* cell-uniform subspace `S` at every time and (ii) is **uniformly bounded
 in operator norm**, `‖H t‖ ≤ M` for some `M`, then a Schrödinger trajectory
 `∂_t ψ = -i H(t) ψ` that starts in `S` stays in `S` for all time.
 
 **Proof (Grönwall / ODE-uniqueness).**  Let `Q := starProjection Sᗮ` be the
-orthogonal projection onto the orthogonal complement (a genuine continuous-linear
+orthogonal projection onto the orthogonal complement (a continuous-linear
 idempotent, available because `S` is closed in the complete space `L²(μ;ℂ)`, hence
 `CompleteSpace ↥S`, hence `HasOrthogonalProjection`).  Set the *defect*
 `y t := Q (ψ t)`; then `y` has time-derivative `Q (∂_t ψ) = -i Q(H t (ψ t))`.
@@ -593,7 +585,7 @@ i.e. `ψ t ∈ S` for all `t`.
 
 The uniform-bound hypothesis is satisfied, e.g., by any **time-independent**
 generator (`GeneratorOpNormBounded.of_const` / the instance below), the canonical
-case for a fixed graphon Hamiltonian; it is the minimal honest regularity making
+case for a fixed graphon Hamiltonian; it is the minimal regularity making
 the propagation a theorem rather than an assumption. -/
 theorem schrodinger_cellUniform_invariant_allTime_of_opNorm_bound
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
@@ -680,24 +672,24 @@ theorem schrodinger_cellUniform_invariant_allTime_of_opNorm_bound
   rw [huniq]
 
 /-- **Uniform operator-norm bound on a time-dependent generator** — the minimal
-honest regularity making the all-time Schrödinger invariance a *theorem* (via
+regularity making the all-time Schrödinger invariance a *theorem* (via
 `schrodinger_cellUniform_invariant_allTime_of_opNorm_bound`).  Carried as a
-`Prop`-valued typeclass so that the bounded case can be discharged with a genuine
+`Prop`-valued typeclass so that the bounded case can be discharged with an
 `instance` (below), rather than left external. -/
 class GeneratorOpNormBounded (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) : Prop where
   /-- A uniform operator-norm bound `‖H t‖ ≤ M` over all times `t`. -/
   bound : ∃ M : ℝ, ∀ t : ℝ, ‖H t‖ ≤ M
 
 /-- **Every time-independent generator is uniformly operator-norm bounded.**  The
-canonical fixed-graphon Hamiltonian `H t = H₀` satisfies the bound with `M = ‖H₀‖`
-(a genuine, non-vacuous witness). -/
+canonical fixed-graphon Hamiltonian `H t = H₀` satisfies the bound with
+`M = ‖H₀‖`. -/
 instance GeneratorOpNormBounded.of_const (H₀ : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) :
     GeneratorOpNormBounded (fun _ : ℝ => H₀) :=
   ⟨‖H₀‖, fun _ => le_refl _⟩
 
 /-- **Closed-subspace flow-invariance interface** (C₀-evolution family, external).
 
-The genuinely-external content behind all-time invariance *for an arbitrary,
+The external content behind all-time invariance *for an arbitrary,
 possibly operator-norm-unbounded and time-irregular generator*: integrating the
 infinitesimal invariance to all times is the time-ordered-propagator / Grönwall
 argument — a *closed* subspace `S` invariant under the generator `H(t)` at every
@@ -705,12 +697,11 @@ time is invariant under the evolution family `U(t,s)`.  In full generality this
 rests on the `C₀`-evolution-family theory (Kato; see Engel–Nagel, *One-Parameter
 Semigroups for Linear Evolution Equations*, GTM 194), absent from Mathlib.
 
-`Prop`-valued **typeclass assumption, not a bare axiom**.  Unlike the previous
-"pure external, no instance" framing, the **bounded** subclass is now genuinely
+`Prop`-valued typeclass assumption.  The **bounded** subclass is
 discharged: `instance [GeneratorOpNormBounded H] : SchrodingerSubspaceFlowInvariance
 EP H ψ` proves `all_time_invariant` from the Grönwall theorem
 `schrodinger_cellUniform_invariant_allTime_of_opNorm_bound`.  The bare class
-remains as the interface for the genuinely-unbounded/irregular residue; the
+remains as the interface for the unbounded/irregular case; the
 infinitesimal core is proved unconditionally in `schrodinger_cellUniform_invariant`. -/
 class SchrodingerSubspaceFlowInvariance
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
@@ -723,15 +714,13 @@ class SchrodingerSubspaceFlowInvariance
     (∀ t : ℝ, HasDerivAt ψ ((-Complex.I) • H t (ψ t)) t) →
     ∀ t : ℝ, ψ t ∈ EP.cellUniformSubspace
 
-/-- **The bounded-generator case discharges the flow-invariance interface with a
-genuine `instance`.**  Whenever the generator `H` is uniformly operator-norm
+/-- **The bounded-generator case discharges the flow-invariance interface.**
+Whenever the generator `H` is uniformly operator-norm
 bounded (`[GeneratorOpNormBounded H]`), the all-time cell-uniform invariance is the
-*proven* Grönwall theorem
-`schrodinger_cellUniform_invariant_allTime_of_opNorm_bound`, so the class field is
-discharged by a real proof — not an aliased/vacuous witness.  In particular every
-time-independent generator (`GeneratorOpNormBounded.of_const`) gets this instance.
-This de-externalises the previously "pure external, no instance" interface on its
-entire bounded subclass. -/
+Grönwall theorem
+`schrodinger_cellUniform_invariant_allTime_of_opNorm_bound`.  In particular every
+time-independent generator (`GeneratorOpNormBounded.of_const`) gets this
+instance. -/
 instance SchrodingerSubspaceFlowInvariance.ofOpNormBounded
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (ψ : ℝ → Lp ℂ 2 μ)
@@ -745,7 +734,7 @@ instance SchrodingerSubspaceFlowInvariance.ofOpNormBounded
 conditional on `[SchrodingerSubspaceFlowInvariance EP H ψ]`.  Integrating the
 infinitesimal invariance (`schrodinger_cellUniform_invariant`): a Schrödinger
 trajectory starting cell-uniform stays cell-uniform for all time.  Derived from
-the named external hypothesis; `#print axioms`-clean and honestly conditional. -/
+the named external hypothesis. -/
 theorem schrodinger_cellUniform_invariant_allTime
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (H : ℝ → (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ))
@@ -761,17 +750,10 @@ theorem schrodinger_cellUniform_invariant_allTime
 /-- **The cell-uniform subspace is closed** (the topological prerequisite of the
 open-quantum mean-field reduction).
 
-**Renamed (audit 2026-06): was `lindblad_cellUniform_invariant`.**  The former name
-promised *Lindblad invariance* of the cell-uniform subspace — that a
-`cellUniformSymmetric` Lindblad generator maps the subspace into itself and the open
-dynamics descends to a finite Lindblad equation on `EuclideanSpace ℂ I`.  The body
-proves **none of that**: it establishes only that `EP.cellUniformSubspace` is a
-*closed* (hence legitimate invariant-subspace candidate) subset of `L²(μ;ℂ)`.  That
-closedness is the genuine topological prerequisite the open-system descent rests on,
-but it is *not* the invariance/descent statement; we therefore align the name to what
-is proven.  The full open-system descent (a `cellUniformSymmetric` GKLS generator
-preserving the subspace, see `Graphplay/Toolkit/Noise.lean`) is the deferred deep
-part and is **not** asserted here. -/
+Closedness makes `EP.cellUniformSubspace` a legitimate invariant-subspace
+candidate in `L²(μ;ℂ)` and is what the open-system descent rests on.  The full
+open-system descent itself (a `cellUniformSymmetric` GKLS generator preserving
+the subspace, see `Graphplay/Toolkit/Noise.lean`) is **not** asserted here. -/
 theorem lindblad_cellUniformSubspace_isClosed
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W) :
     IsClosed (EP.cellUniformSubspace : Set (Lp ℂ 2 μ)) :=
@@ -790,7 +772,7 @@ operators.  Consequently:
 > to control-optimise via the quotient.*
 
 This is the engineering corollary that motivates the entire bridge.  Its
-*prerequisite* — that the quotient LQR data is a genuine finite `|I| × |I|` matrix
+*prerequisite* — that the quotient LQR data is a finite `|I| × |I|` matrix
 instance — is recorded as `EquitableLQR.quotientLQRData_isFiniteMatrix` (the
 stabilising-Riccati-solution existence itself is the deferred finite-dim control
 theory). -/
@@ -803,17 +785,11 @@ variable {I : Type v} [Fintype I] [DecidableEq I]
 /-- **The quotient LQR data is a finite `|I| × |I|` matrix instance** (the
 tractability *prerequisite* — finite-dimensionality of the quotient Riccati data).
 
-**Renamed (audit 2026-06): was `tractable`.**  The former name claimed the
-*tractability theorem* — that the optimal control is *computable by solving the
-finite Riccati equation* (existence of a stabilising Riccati solution via
-linear-algebra routines).  The body proves **no Riccati solvability**: it only
-exhibits the quotient state/control operators `AopQuotient EP`, `BopQuotient EP` as
-genuine `|I| × |I|` complex matrices (`∃ A B, A = AopQuotient EP ∧ B = BopQuotient
-EP`, discharged by `rfl`).  That is the honest content — the quotient data lives on
-the *finite* index `I`, not on the infinite-dimensional `L²(μ)` — which is the
-*prerequisite* for tractability, but the stabilising-Riccati-solution existence
-itself (standard finite-dim control theory) is **not** formalised here.  We align the
-name to what is proven. -/
+This exhibits the quotient state/control operators `AopQuotient EP`,
+`BopQuotient EP` as `|I| × |I|` complex matrices: the quotient data lives on
+the *finite* index `I`, not on the infinite-dimensional `L²(μ)`.  The
+stabilising-Riccati-solution existence itself (standard finite-dimensional
+control theory) is **not** formalised here. -/
 theorem quotientLQRData_isFiniteMatrix [IsFiniteMeasure μ] (P : GraphonLQR Ω μ)
     (EP : @GraphonEquitablePartition Ω _ μ I _ _ P.W)
     (_hP : P.cellUniformCompatible EP) :
@@ -842,17 +818,11 @@ variable {I : Type v} [Fintype I] [DecidableEq I]
 
 /-- **Existence of a cell-occupation trajectory with prescribed initial value.**
 
-**Renamed (audit 2026-06): was `cell_occupation_ODE`.**  The former name claimed the
-*cell-occupation ODE* — that under an equitable partition the mean-field PDE reduces
-to the finite ODE system `d/dt mᵢ = Σⱼ Re(EP.quotient i j) · mⱼ` on the per-cell
-occupations.  The body asserts and proves **no ODE/dynamics at all**: only that there
-*exists* a trajectory `m : ℝ → I → ℝ` matching the initial occupation `m(0) = m0`
-(discharged by the constant trajectory `fun _ => m0`).  So the genuine content is just
-the initial-value existence on the finite index `I`; the *dynamics* (Picard–Lindelöf
-for the quotient-driven ODE) is the deferred deep part and is not claimed here.  We
-align the name to what is proven.  (The intended driving matrix is the partition's
-`quotient`, the operator on `EuclideanSpace ℂ I` from
-`Graphplay/Graphon/Equitable.lean`.) -/
+Only the initial-value existence on the finite index `I` is asserted; the
+*dynamics* — Picard–Lindelöf for the quotient-driven ODE system
+`d/dt mᵢ = Σⱼ Re(EP.quotient i j) · mⱼ` — is not claimed here.  (The intended
+driving matrix is the partition's `quotient`, the operator on
+`EuclideanSpace ℂ I` from `Graphplay/Graphon/Equitable.lean`.) -/
 theorem exists_cellOccupation_withInitialValue
     {W : Graphon Ω μ} (_EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (m0 : I → ℝ) :
@@ -885,16 +855,12 @@ variable {I : Type v} [Fintype I] [DecidableEq I]
 /-- **The brachistochrone schedule preserves the cell-uniform subspace** (the
 generator-level premise of the equitable brachistochrone reduction).
 
-**Renamed (audit 2026-06): was `brachistochrone_reduction`.**  The former name
-claimed the *reduction itself* — that the minimum-time-to-target (brachistochrone)
-problem on the host graph reduces to the brachistochrone on the quotient schedule.
-The body proves **only the generator-level premise**: at the given time `t` the
+At the given time `t` the
 schedule's Hamiltonian `S.hamiltonianAt t` preserves the cell-uniform subspace
 (`Matrix.preservesCellUniform'`), extracted directly from the
-`cellUniformInvariant` hypothesis.  That invariance is what *would* let the dynamics
-descend, but the minimum-time *equality* on the quotient — the actual reduction — is
-the deferred deep optimisation content and is **not** proven here.  We align the name
-to what is established.
+`cellUniformInvariant` hypothesis.  That invariance is what lets the dynamics
+descend; the minimum-time *equality* on the quotient — the reduction itself —
+is **not** proven here.
 
 Cite: Carlini–Hosoya–Koike–Okudaira (arXiv:quant-ph/0511039) for the classical
 quantum brachistochrone formulation; the equitable-partition descent is, to our
@@ -941,11 +907,7 @@ variable {I : Type v} [Fintype I] [DecidableEq I]
 quantum mean-field state `ψ` is a *best response to itself*: among all
 cell-uniform competing strategies `φ`, none yields a higher payoff against the
 aggregate state `ψ` than `ψ` itself.  Concretely, `ψ` lies in the cell-uniform
-subspace and is a Nash fixed point of the payoff-induced best-response map.
-
-This is the genuine equilibrium predicate (Nash / self-consistency), replacing
-the former `True` placeholder.  The previous `True` meant *every* state was an
-"equilibrium". -/
+subspace and is a Nash fixed point of the payoff-induced best-response map. -/
 def congestionFixedPoint
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ) (ψ : Lp ℂ 2 μ) : Prop :=
@@ -955,7 +917,7 @@ def congestionFixedPoint
 
 /-- A **congestion equilibrium over a strategy set `K`**: a state `ψ ∈ K` that is
 its own best response among competitors *in `K`*.  This is the domain-restricted
-form of `congestionFixedPoint` needed for a genuine (Nash/Brouwer) existence
+form of `congestionFixedPoint` needed for a (Nash/Brouwer) existence
 statement: the unrestricted form quantifies competitors over the *whole*
 (non-compact) cell-uniform subspace, against which no equilibrium need exist. -/
 def congestionFixedPointOn
@@ -964,27 +926,24 @@ def congestionFixedPointOn
     Prop :=
   ψ ∈ K ∧ ∀ φ ∈ K, (payoff ψ φ).re ≤ (payoff ψ ψ).re
 
-/-- **Existence of a cell-uniform congestion equilibrium (LANDMINE MIGRATED).**
+/-- **Existence of a cell-uniform congestion equilibrium (Nash/Brouwer
+interface).**
 
-The original statement `∃ ψ, congestionFixedPoint EP payoff ψ` for an **arbitrary**
-`payoff` is **FALSE**: the competitor set is the *entire* cell-uniform subspace, which
-is non-compact, so for a payoff with no upper bound on the second slot no best
-response — hence no equilibrium — exists.  (Explicit counterexample: with
-`payoff a b := (‖b‖² : ℂ)`, the inner objective `φ ↦ (payoff ψ φ).re = ‖φ‖²` is
-unbounded above on the subspace whenever it is nontrivial — which it is, as `I` must
-be nonempty to partition a nonempty `Ω` and then `cellIndicator` is a nonzero
-member — so *no* `ψ` is a maximiser and `∃ ψ, congestionFixedPoint EP payoff ψ`
-fails.)
+The restriction to a strategy set `K` is necessary: the unrestricted
+`∃ ψ, congestionFixedPoint EP payoff ψ` fails for arbitrary `payoff` — the
+competitor set is the *entire* non-compact cell-uniform subspace, and with
+`payoff a b := (‖b‖² : ℂ)` the inner objective `φ ↦ (payoff ψ φ).re = ‖φ‖²` is
+unbounded above on the subspace whenever it is nontrivial (which it is: `I`
+must be nonempty to partition a nonempty `Ω`, and then `cellIndicator` is a
+nonzero member), so no `ψ` is a maximiser.
 
-We migrate to the genuine **Nash/Brouwer** statement: over a **nonempty, compact,
-convex** strategy set `K` inside the (finite-dimensional) cell-uniform subspace,
-with the payoff **jointly continuous** and **quasiconcave in the response slot**, a
-congestion equilibrium on `K` exists.  These are exactly the Nash-existence
-hypotheses; on the finite-dimensional `EuclideanSpace ℂ I` the conclusion is true.
-The hypotheses are satisfiable (e.g. `K =` a closed ball, `payoff` bilinear), so the
-statement is non-vacuous.  The proof is the deep Brouwer/Kakutani fixed-point
-argument, absent from Mathlib — supplied here by the named external interface
-`[BrouwerNashEquilibrium EP payoff K]`. -/
+The statement: over a **nonempty, compact, convex** strategy set `K` inside
+the (finite-dimensional) cell-uniform subspace, with the payoff **jointly
+continuous** and **quasiconcave in the response slot**, a congestion
+equilibrium on `K` exists.  These are exactly the Nash-existence hypotheses,
+satisfiable e.g. by `K =` a closed ball with `payoff` bilinear.  The proof is
+the deep Brouwer/Kakutani fixed-point argument, absent from Mathlib — supplied
+here by the named external interface `[BrouwerNashEquilibrium EP payoff K]`. -/
 class BrouwerNashEquilibrium
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ) (K : Set (Lp ℂ 2 μ)) : Prop where
@@ -1004,9 +963,9 @@ class BrouwerNashEquilibrium
 conditional on `[BrouwerNashEquilibrium EP payoff K]`.  Over a nonempty compact
 convex strategy set `K` inside the cell-uniform subspace, with the payoff jointly
 continuous and quasiconcave in the response slot, a congestion equilibrium on `K`
-exists.  Derived from the named external hypothesis; `#print axioms`-clean and
-honestly conditional.  (For an arbitrary unrestricted competitor set the claim is
-false — see the migration note above — so the compact-convex `K` is load-bearing.) -/
+exists.  Derived from the named external hypothesis.  (For an unrestricted
+competitor set the claim is
+false — see `BrouwerNashEquilibrium` — so the compact-convex `K` is load-bearing.) -/
 theorem congestion_equilibrium_exists
     {W : Graphon Ω μ} (EP : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (payoff : (Lp ℂ 2 μ) → (Lp ℂ 2 μ) → ℂ)
@@ -1035,15 +994,16 @@ def IsExactPotential
     Prop :=
   ∀ ψ ∈ K, ∀ φ ∈ K, (payoff ψ φ).re - (payoff ψ ψ).re = Φ φ - Φ ψ
 
-/-- **Potential-game congestion equilibrium via Weierstrass (PROVEN — no Brouwer).**
+/-- **Potential-game congestion equilibrium via Weierstrass (no Brouwer
+needed).**
 
 For a congestion game with an **exact potential** `Φ` that is **continuous on** a
 **nonempty compact** strategy set `K`, a congestion equilibrium on `K` *exists*,
 unconditionally — discharged by the extreme value theorem
 (`IsCompact.exists_isMaxOn`) rather than the external Brouwer/Kakutani interface.
 
-**Why this de-externalises the corpus examples.**  Potential games (Monderer–Shapley
-1996) — and in particular the *bilinear* congestion models in the corpus — collapse
+Potential games (Monderer–Shapley
+1996) — and in particular the *bilinear* congestion models — collapse
 the Nash fixed-point problem to a *single scalar maximisation* of the potential `Φ`:
 a maximiser `ψ` of `Φ` over `K` satisfies, for every competitor `φ ∈ K`,
 `(payoff ψ φ).re − (payoff ψ ψ).re = Φ φ − Φ ψ ≤ 0`, i.e. `ψ` is its own best
@@ -1070,14 +1030,13 @@ theorem congestion_equilibrium_of_potential
   have hid : (payoff ψ φ).re - (payoff ψ ψ).re = Φ φ - Φ ψ := hpot ψ hψK φ hφK
   linarith [hid, hΦle]
 
-/-- **The bilinear congestion corpus model is a potential game (PROVEN
-non-vacuity witness).**  For the canonical bilinear payoff
-`payoff a b := ⟪b, A b⟫` with a fixed continuous-linear `A` (the corpus
-congestion model — the response payoff is the quadratic form of the *response*
+/-- **The bilinear congestion model is a potential game.**  For the canonical
+bilinear payoff
+`payoff a b := ⟪b, A b⟫` with a fixed continuous-linear `A` (the response
+payoff is the quadratic form of the *response*
 state, independent of the opponent), the real quadratic form `Φ b := (⟪b, A b⟫).re`
-is an exact potential on *every* strategy set `K`.  This certifies that
-`IsExactPotential` (hence `congestion_equilibrium_of_potential`) is **non-vacuous**:
-the hypotheses are satisfied by an honest, standard model. -/
+is an exact potential on *every* strategy set `K`.  So the hypotheses of
+`congestion_equilibrium_of_potential` are satisfied by a standard model. -/
 theorem isExactPotential_bilinear
     (A : (Lp ℂ 2 μ) →L[ℂ] (Lp ℂ 2 μ)) (K : Set (Lp ℂ 2 μ)) :
     IsExactPotential (fun _ b => inner ℂ b (A b)) K
@@ -1091,8 +1050,7 @@ variables are the time-dependent phase profiles on directed edges
 cost functional `routingCost : (ℝ → Ω → Ω → ℂ) → ℝ` if no admissible competing
 profile achieves a strictly smaller cost.
 
-This is the genuine minimality (optimal-control) predicate, replacing the former
-`True` placeholder.  When the routing payoff is cell-uniform, this optimisation
+When the routing payoff is cell-uniform, this optimisation
 reduces to an `|I| × |I|` chiral optimisation on the quotient — the content of
 the equitable-partition routing reduction. -/
 def chiralRoutingOptimal
@@ -1164,7 +1122,7 @@ theorem fidelity_lift {G : WeightedGraph V} (P : EquitablePartition G I)
 with `|I|` rather than `|V|`. -/
 theorem dimensional_speedup {G : WeightedGraph V} (P : EquitablePartition G I)
     (hsurj : Function.Surjective P.cells) :
-    -- The genuine dimensional content of the speedup: when the cell map is onto
+    -- The dimensional content of the speedup: when the cell map is onto
     -- (every quotient index is realised), the quotient dimension `|I|` is at most
     -- the host dimension `|V|` — synthesis on the `|I|`-dim quotient is never
     -- larger than on the `|V|`-dim host.  (The polynomial-cost complexity-class
@@ -1208,7 +1166,7 @@ We state the *viability of the time-dependent quotient surrogate*: given a
 time-dependent family `EP : ℝ → GraphonEquitablePartition W` of equitable
 partitions of a fixed graphon `W` (all sharing the cell index `I`), the
 time-dependent quotient `t ↦ (EP t).quotient : ℝ → Matrix I I ℂ` exists as a
-genuine finite-dimensional surrogate.  (The open content is *dynamical
+finite-dimensional surrogate.  (The open content is *dynamical
 invariance* of the moving subspace; the surrogate itself is well-defined.) -/
 theorem nonstationary_equitable_LQR_open
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
@@ -1274,29 +1232,29 @@ an abstract optimal-cost functional `Jopt : Matrix I I ℂ → ℝ`: there exist
 cell index `I`, such that the chiral quotient cost is no larger than the real
 one — and, in the strict form of the conjecture, strictly smaller.
 
-**Audit note (2026-06).**  The bare existential `∃ Wc Wr EPc EPr, …` over an
+A bare existential `∃ Wc Wr EPc EPr, …` over an
 *arbitrary* measure space `(Ω, μ)` is **not** a theorem: a
 `GraphonEquitablePartition` over `I` requires *positive finite* mass on every
 cell (`cell_pos`, `cell_finite`), which fails for e.g. `μ = 0` or whenever `I`
 exceeds the "capacity" of `(Ω, μ)`.  So the existence half is unprovable for
-arbitrary inputs, and the deep *inequality* half is the genuine open conjecture.
-We therefore (replacing the former `sorry` on a possibly-false theorem) split into:
+arbitrary inputs, and the deep *inequality* half is the open conjecture.
+We therefore split into:
 
-* `ChiralMFGSpeedup` / `ChiralMFGSpeedupStrict` — the headline conjecture as an
-  honest `Prop` (the existential `≤` / strict `<` inequality), parameterised by
+* `ChiralMFGSpeedup` / `ChiralMFGSpeedupStrict` — the headline conjecture as a
+  `Prop` (the existential `≤` / strict `<` inequality), parameterised by
   `(Ω, μ, I, Jopt)`.  They are **open**; they are *not* asserted as theorems.
-* `ChiralMFGSpeedup_of_strict` — the genuine, **proven**, sorry-free logical
-  reduction relating them: the strict advantage entails the weak one (every
-  witness/hypothesis carried through).  The deep existence-of-a-witness content
+* `ChiralMFGSpeedup_of_strict` — the logical
+  reduction relating them: the strict advantage entails the weak one.  The
+  deep existence-of-a-witness content
   (the actual analytic quantum advantage on a *given* space) is exactly the open
   `ChiralMFGSpeedupStrict`. -/
 
-/-- **Chiral mean-field-game speedup conjecture** (honest open `Prop`, weak `≤`).
+/-- **Chiral mean-field-game speedup conjecture** (open `Prop`, weak `≤`).
 There exist a chiral graphon `Wc` (nonzero off-diagonal imaginary part) and a
 real-symmetric graphon `Wr`, each with an equitable partition over the same cell
 index `I`, with the chiral quotient cost **no larger** than the real one.  Stated
-as a `Prop` (not a theorem): the existence over an arbitrary `(Ω, μ)` is genuinely
-open/obstructed (see audit note above). -/
+as a `Prop` (not a theorem): the existence over an arbitrary `(Ω, μ)` is
+open or obstructed (see the section note above). -/
 def ChiralMFGSpeedup
     (Ω : Type u) [MeasurableSpace Ω] (μ : Measure Ω)
     (I : Type v) [Fintype I] [DecidableEq I]
@@ -1308,9 +1266,9 @@ def ChiralMFGSpeedup
     (∀ x y, (Wr.kernel x y).im = 0) ∧
     Jopt EPc.quotient ≤ Jopt EPr.quotient
 
-/-- **Strict chiral mean-field-game speedup conjecture** (honest open `Prop`, `<`).
+/-- **Strict chiral mean-field-game speedup conjecture** (open `Prop`, `<`).
 The strict form: the chiral quotient cost is **strictly smaller** than the real
-one — a genuine quantum advantage, not a tie.  This is the form Levine et al.
+one — a strict quantum advantage, not a tie.  This is the form Levine et al.
 suggest for chiral CTQW speedups. -/
 def ChiralMFGSpeedupStrict
     (Ω : Type u) [MeasurableSpace Ω] (μ : Measure Ω)
@@ -1323,14 +1281,12 @@ def ChiralMFGSpeedupStrict
     (∀ x y, (Wr.kernel x y).im = 0) ∧
     Jopt EPc.quotient < Jopt EPr.quotient
 
-/-- **Strict advantage implies weak advantage (PROVEN, sorry-free).**
+/-- **Strict advantage implies weak advantage.**
 The strict chiral MFG speedup `<` entails the weak `≤` form, by relaxing the
 strict cost inequality to non-strict on the *same* witness graphons/partitions
-(every hypothesis — chiral, real, strict — is carried through; the imaginary-part
-conditions are genuinely re-exported, so this is non-vacuous).
+(every hypothesis — chiral, real — is carried through).
 
-This is the genuine `sorry`-free logical content relating the two open
-conjectures.  The deep existence-of-a-witness part — the actual analytic quantum
+The deep existence-of-a-witness part — the actual analytic quantum
 advantage on a *given* measure space — remains open and is *not* asserted as a
 theorem (it is exactly `ChiralMFGSpeedupStrict`). -/
 theorem ChiralMFGSpeedup_of_strict

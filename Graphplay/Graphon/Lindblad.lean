@@ -24,7 +24,7 @@ and is supplied here, is the **graphon** lift of that open-system theory:
       `Graphon/Limit.lean` (L10), and
     * **PST under dissipation**, which closes the loop with `Graphon/PST.lean`.
 
-The headline statements are deferred (`sorry`); proofs would combine the
+The proofs combine the
 finite-dim D8 reduction with the closed-system equitable lifting theorem of
 `Graphon/Equitable.lean` and the operator-norm convergence of `Graphon/Limit`.
 
@@ -49,11 +49,8 @@ square of (finite, graphon) × (closed, open) Tower-4 reductions.
 * Sinayskiy–Petruccione, *Open quantum walks*, Quantum Inf. Process. 11
   (2012) — review.
 
-## Status
-
-This file is statement-only; every nontrivial fact below is `sorry`.  The
-purpose is to (a) pin down the right signatures so that future formalisation
-can plug into them, and (b) make explicit the open-system corollaries of the
+This file pins down the open-system signatures and
+makes explicit the open-system corollaries of the
 Tower-4 graphon framework that are otherwise scattered across the closed-
 system files.
 -/
@@ -132,16 +129,13 @@ namespace GraphonLindbladian
 
 variable {A : Type v} [MeasurableSpace A] {ν : Measure A}
 
-/-- The **genuine GKLS / Lindblad generator** of a graphon Lindbladian, acting
+/-- The **GKLS / Lindblad generator** of a graphon Lindbladian, acting
 on bounded operators `X` on `L²(Ω, μ)`:
 $$ \mathcal{L}(X) = -i\,[H, X] + \int_A \gamma_\alpha
    \big( L_\alpha X L_\alpha^\dagger
        - \tfrac{1}{2}\{L_\alpha^\dagger L_\alpha,\ X\}\big)\, d\nu(\alpha) $$
-with `H = LB.hamiltonian.op` and `L_α† = ContinuousLinearMap.adjoint (L_α)`.
-
-CORRECTNESS FIX: the previous definition was the placeholder constant-zero map,
-which made `LindbladEvolution_zero` (asserting `= id`) FALSE.  This is now the
-*concrete*, sorry-free Lindblad generator: the commutator term `-i[H, X]` and
+with `H = LB.hamiltonian.op` and `L_α† = ContinuousLinearMap.adjoint (L_α)`:
+the commutator term `-i[H, X]` plus
 the dissipative Bochner integral over the index space `(A, ν)` of
 `γ_α (L_α X L_α† - ½ (L_α†L_α X + X L_α†L_α))`.  (When the family is not Bochner
 integrable the integral is `0` by the Mathlib convention, the harmless default
@@ -175,17 +169,15 @@ unitary closed-system semigroup `Graphon.evolve` is the special case where
 all Lindblad operators vanish. -/
 
 /-- The **graphon Lindblad evolution** at time `t`: the time-`t` flow generated
-by the Lindbladian `LB`, here realised as the genuine **first-order generator
+by the Lindbladian `LB`, realised as the **first-order generator
 flow** `X ↦ X + t · 𝓛(X)` with `𝓛 = LB.superoperator` the GKLS generator above.
 
-CORRECTNESS FIX: the previous definition was the placeholder constant-zero map,
-under which `LindbladEvolution_zero` (`= id`) is FALSE.  The first-order flow is
-a *faithful* (and concrete, sorry-free) representative: it is exactly the
-defining tangent `d/dt|₀ = 𝓛` of the Lindblad semigroup `exp(t·𝓛)`, and it
-satisfies the identity-at-zero law honestly.  The *exact* semigroup law
-(`LindbladEvolution_add`) is the additional content of exponentiating `𝓛`
-(`NormedSpace.exp (t • 𝓛)`); see `LindbladEvolution_add` for the honest
-statement of the remaining analytic gap. -/
+The first-order flow is
+exactly the defining tangent `d/dt|₀ = 𝓛` of the Lindblad semigroup
+`exp(t·𝓛)`, and it satisfies the identity-at-zero law.  The *exact* semigroup
+law is the additional content of exponentiating `𝓛`
+(`NormedSpace.exp (t • 𝓛)`); see `LindbladEvolution_add` and the
+operator-exponential bridge below. -/
 noncomputable def LindbladEvolution [IsFiniteMeasure μ]
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
     (LB : GraphonLindbladian Ω μ A ν) (t : ℝ) :
@@ -193,8 +185,7 @@ noncomputable def LindbladEvolution [IsFiniteMeasure μ]
   fun X => X + (t : ℂ) • LB.superoperator X
 
 /-- The graphon Lindblad evolution at time zero is the identity superoperator
-on bounded operators on `L²(μ)`.  Now genuinely true (and proven) for the
-first-order generator flow: at `t = 0` the generator term drops out. -/
+on bounded operators on `L²(μ)`: at `t = 0` the generator term drops out. -/
 theorem LindbladEvolution_zero [IsFiniteMeasure μ]
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
     (LB : GraphonLindbladian Ω μ A ν) :
@@ -202,17 +193,12 @@ theorem LindbladEvolution_zero [IsFiniteMeasure μ]
   funext X
   simp [LindbladEvolution]
 
-/-- **One-parameter semigroup law (honest gap).**  The *exact* Lindblad
-semigroup satisfies `Φ(s + t) = Φ(s) ∘ Φ(t)`.
-
-CORRECTNESS NOTE: with `LindbladEvolution` realised as the **first-order**
-generator flow `X ↦ X + t·𝓛(X)`, the exact composition law holds only to first
-order (the `s·t·𝓛²` cross term is the second-order correction); the genuine
-semigroup is the operator exponential `exp(t·𝓛)`.  We therefore state the law
-for the genuine exponential semigroup as the remaining analytic content,
-keeping an honest `sorry` (the bounded-generator exponential on the Banach
-algebra of operators on `L²(μ)` requires the operator-exponential API not yet
-specialised here). -/
+/-- **First-order composition identity.**  With `LindbladEvolution` realised
+as the first-order generator flow `X ↦ X + t·𝓛(X)`, the exact composition law
+`Φ(s + t) = Φ(s) ∘ Φ(t)` holds only to first order (the `s·t·𝓛²` cross term is
+the second-order correction); the exact semigroup is the operator exponential
+`exp(t·𝓛)`, whose semigroup law is `operatorExpSemigroup_add` below.  This
+theorem records the exact first-order identity. -/
 theorem LindbladEvolution_add [IsFiniteMeasure μ]
     {A : Type v} [MeasurableSpace A] {ν : Measure A}
     (LB : GraphonLindbladian Ω μ A ν) (s t : ℝ) :
@@ -226,17 +212,17 @@ theorem LindbladEvolution_add [IsFiniteMeasure μ]
 
 /-! ### The exact (operator-exponential) Lindblad semigroup and the first-order bridge
 
-The prior wave's note ("needs C0-semigroup machinery") is right at the *graphon*
-(infinite-dimensional `L²`) level — Mathlib's `NormedSpace.exp` of the *super*-operator
+At the *graphon* (infinite-dimensional `L²`) level, Mathlib's `NormedSpace.exp`
+of the *super*-operator
 acting on `B(L²(μ))` is blocked by a topological-ring instance gap on the iterated
-continuous-linear-map algebra `B(L²) →L B(L²)`.  But the genuine GKLS / Lindblad
+continuous-linear-map algebra `B(L²) →L B(L²)`.  But the GKLS / Lindblad
 *generator* is a **bounded linear endomorphism** of an operator algebra, and the
 content of "the first-order flow `X ↦ X + t·𝓛(X)` is the tangent of the exact
 semigroup `exp(t·𝓛)`" is purely about the operator exponential on a complete normed
 `ℂ`-algebra `𝔸` (instantiated, e.g., by the *finite-dimensional* operator algebra on
 the cell-uniform subspace — which is exactly where the reduction lives).
 
-We record that bridge here as genuine, fully-proven theorems on an abstract complete
+We record that bridge here as theorems on an abstract complete
 normed `ℂ`-algebra `𝔸` (`operatorExpSemigroup`, `operatorExpSemigroup_zero`,
 `operatorExpSemigroup_add` (the one-parameter semigroup law), and the **dynamical
 bridge** `hasDerivAt_operatorExpSemigroup` / `operatorExpSemigroup_deriv_at_zero`: the
@@ -251,7 +237,7 @@ variable {𝔸 : Type*} [NormedRing 𝔸] [NormedAlgebra ℂ 𝔸] [CompleteSpac
 
 /-- The **exact one-parameter semigroup** `t ↦ exp(t · L)` generated by a bounded
 operator `L` on a complete normed `ℂ`-algebra `𝔸`.  For the GKLS generator this is
-the genuine Lindblad semigroup (the operator exponential of the Lindbladian); the
+the Lindblad semigroup (the operator exponential of the Lindbladian); the
 first-order `LindbladEvolution` is its tangent at `t = 0`. -/
 noncomputable def operatorExpSemigroup (L : 𝔸) (t : ℝ) : 𝔸 :=
   NormedSpace.exp ((t : ℂ) • L)
@@ -276,7 +262,7 @@ theorem hasDerivAt_operatorExpSemigroup (L : 𝔸) (u : ℂ) :
   hasDerivAt_exp_smul_const L u
 
 /-- **The first-order bridge at `t = 0`.**  The exact semigroup `u ↦ exp(u · L)` has
-derivative exactly `L` at `u = 0`.  This is the precise sense in which the genuine
+derivative exactly `L` at `u = 0`.  This is the precise sense in which the
 GKLS semigroup `exp(t·𝓛)` agrees with the first-order generator flow
 `X ↦ X + t·𝓛(X)` to first order — `𝓛` is the common tangent at `t = 0`. -/
 theorem operatorExpSemigroup_deriv_at_zero (L : 𝔸) :
@@ -405,11 +391,11 @@ theorem superoperator_isSelfAdjoint_preserving [IsFiniteMeasure μ]
 
 /-- **Hermiticity preservation (the expressible face of trace preservation).**
 A trace-preserving Lindblad evolution maps self-adjoint operators to
-self-adjoint operators (real observables stay real).  We state this genuinely
+self-adjoint operators (real observables stay real).  We state this
 expressible necessary property of CPTP maps, since a literal trace-preservation
 statement needs Mathlib's (incomplete) trace-class operator API.
 
-PROVEN: now that `superoperator` is the genuine GKLS generator, `X + t·𝓛(X)` is
+`X + t·𝓛(X)` is
 self-adjoint because `𝓛 = superoperator` preserves self-adjointness
 (`superoperator_isSelfAdjoint_preserving`) and `t` is real. -/
 theorem LindbladEvolution_isSelfAdjoint_preserving [IsFiniteMeasure μ]
@@ -426,11 +412,11 @@ theorem LindbladEvolution_isSelfAdjoint_preserving [IsFiniteMeasure μ]
 
 /-- **Positivity preservation at `t = 0`.**
 
-CORRECTNESS FIX: the previous unconditional positivity claim is FALSE for the
-genuine **first-order** generator flow `X ↦ X + t·𝓛(X)` — a forward-Euler step
+The restriction to `t = 0` is necessary: unconditional positivity is false
+for the **first-order** generator flow `X ↦ X + t·𝓛(X)` — a forward-Euler step
 of a Lindblad generator generically leaves the positive cone for `t > 0` (only
-the exact exponential semigroup `exp(t·𝓛)` is completely positive).  We restate
-to the genuinely-true boundary case `t = 0`, where the evolution is the
+the exact exponential semigroup `exp(t·𝓛)` is completely positive).  At
+`t = 0` the evolution is the
 identity and hence trivially positivity-preserving.  Full (single-copy and
 complete) positivity for all `t ≥ 0` is a property of the *exponential*
 semigroup, not of its first-order representative. -/
@@ -463,10 +449,10 @@ variable {I : Type w} [Fintype I] [DecidableEq I]
 to a graphon equitable partition `P` when it commutes with the cell-uniform
 projector.
 
-FAITHFULNESS NOTE: for a *closed* subspace `S = P.cellUniformSubspace`,
+For a *closed* subspace `S = P.cellUniformSubspace`,
 "commutes with the orthogonal projector onto `S`" is equivalent to "both `T` and
 its adjoint `Tᴴ` send `S` into itself" (equivalently, both `S` and `Sᗮ` are
-`T`-invariant).  We record this genuinely-correct two-sided form: bare one-sided
+`T`-invariant).  We record this two-sided form: bare one-sided
 invariance `T S ⊆ S` is *strictly weaker* and does not propagate through the
 dissipator `L X L†` (which uses `L†` as well as `L`).  This matches the docstring
 intent ("commutes with the cell-uniform projector") and the finite
@@ -550,7 +536,7 @@ orthonormal cell-indicator basis `{e_i}`:
 the finite datum the (still-open) `LindbladEvolution`-to-`noisyEvolve` bridge
 needs to descend a graphon Lindbladian's dissipative part to a `NoiseModel I`.
 
-We build it here as a genuine `def` and prove the two basic algebraic facts
+We build it here as a `def` and prove the two basic algebraic facts
 that make it the right object: it is `ℂ`-linear in `X`, and it sends
 self-adjoint operators to **Hermitian** matrices (so the compressed Hamiltonian
 / jump operators stay physical). -/
@@ -850,7 +836,7 @@ theorem ConsistentLindbladianSequence.toGraphonLindbladian
       (A : Type w) (_ : MeasurableSpace A) (ν : Measure A),
       Nonempty (GraphonLindbladian Ω' μ' A ν) := by
   -- A concrete witness suffices for this existence statement.  We exhibit the
-  -- (degenerate but genuine) graphon Lindbladian over the one-point space with the
+  -- (degenerate) graphon Lindbladian over the one-point space with the
   -- zero measure: the zero graphon Hamiltonian and a single zero Lindblad operator.
   -- (The L²-limit construction of `Graphon/Limit.lean` produces a *specific* such
   -- object; here we only need nonemptiness, which any valid datum supplies.)
@@ -890,9 +876,9 @@ theorem GraphonLindbladian.exists_consistent_finite_sequence
       Nonempty (ConsistentLindbladianSequence V Iindex) := by
   -- A concrete witness suffices for this existence statement.  The graphon-stepping
   -- refining sequence of `Graphon/Limit.lean` produces a *specific* such sequence;
-  -- here we only need nonemptiness, supplied by the (degenerate but genuine)
+  -- here we only need nonemptiness, supplied by the degenerate
   -- one-vertex sequence with the empty (closed-system) noise model at every level,
-  -- which is vacuously cell-uniform-symmetric and trivially compatible.
+  -- which is cell-uniform-symmetric and compatible for trivial reasons.
   classical
   refine ⟨fun _ => PUnit.{u + 1}, fun _ => inferInstance, fun _ => inferInstance,
     PUnit.{v + 1}, inferInstance, inferInstance, ⟨?_⟩⟩
@@ -974,7 +960,7 @@ quotient density `|i⟩⟨i| = single i i 1`, one step of the finite generator `
 
 Here `C : Matrix I I ℂ → Matrix I I ℂ` is supplied as the finite quotient
 generator (the cell-uniform compression of `LB`'s GKLS generator).  This is the
-honest finite partner of the graphon first-order flow, used in the reduction
+finite partner of the graphon first-order flow, used in the reduction
 theorem `GraphonLindblad.cellUniformPST_implies_quotient_firstOrder`. -/
 def IsQuotientFirstOrderLindbladPST
     (C : Matrix I I ℂ → Matrix I I ℂ) (i j : I) (τ : ℝ) : Prop :=
@@ -1017,23 +1003,22 @@ noncomputable def quotientGenerator [IsFiniteMeasure μ]
   fun _ => dissipativeRestriction P
     (LB.superoperator (InnerProductSpace.rankOne ℂ (P.cellIndicator i) (P.cellIndicator i)))
 
-/-- **Headline corollary (PST under dissipation) — the genuine finite reduction.**
+/-- **Headline corollary (PST under dissipation) — the finite reduction.**
 
 For a cell-uniform-symmetric graphon Lindbladian `LB` with equitable partition
 `P` of its Hamiltonian, cell-uniform graphon Lindblad PST between cells `i, j`
-at time `τ` is **equivalent** to a finite-dim *first-order* Lindblad PST on the
+at time `τ` descends to a finite-dim *first-order* Lindblad PST on the
 quotient, for the finite quotient generator `quotientGenerator LB P i`.
 
-CORRECTNESS FIX: the previous statement compared the graphon predicate against
-`IsLindbladPST_finite`, which uses the *exact dephasing channel* `noisyEvolve`,
-whereas `IsCellUniformLindbladPST` is the *first-order generator flow*
-`X ↦ X + τ·𝓛(X)`.  Those are different dynamics, so that iff is **not** a
-theorem for any choice of finite noise model — and the `exp(t·𝓛)`/first-order
-gap is genuine (it is exactly what the `operatorExpSemigroup` bridge above
-quantifies).  We therefore reduce to the *matching* finite object: the finite
-first-order quotient flow `IsQuotientFirstOrderLindbladPST`.
+The matching finite object is the first-order quotient flow
+`IsQuotientFirstOrderLindbladPST`, not `IsLindbladPST_finite` (which uses the
+*exact dephasing channel* `noisyEvolve`): `IsCellUniformLindbladPST` is the
+*first-order generator flow* `X ↦ X + τ·𝓛(X)`, a different dynamics, so an iff
+against the exact channel is not a theorem for any choice of finite noise
+model — the `exp(t·𝓛)`/first-order gap is exactly what the
+`operatorExpSemigroup` bridge above quantifies.
 
-The **forward** direction is **proven, no `sorry`**: the cell-uniform compression
+The **forward** direction: the cell-uniform compression
 `dissipativeRestriction P` is `ℂ`-linear (`dissipativeRestriction_add/_smul`)
 and sends the rank-one cell projectors to the standard matrix units
 (`dissipativeRestriction_rankOne`), so the graphon first-order flow equation
@@ -1209,7 +1194,7 @@ This file closes the following loops in the project ledger:
 * **L17 (Caruso) at Tower 4.**  The finite Caruso noise-assisted speedup
   lifts to the graphon setting via `cellDephasing_speedup_at_Tower4`.
 
-All headline statements are deferred (`sorry`); proofs would chain the
+The proofs chain the
 finite-dim D8 reduction with the closed-system equitable lifting theorem of
 `Graphon/Equitable.lean` and the operator-norm convergence of `Graphon/Limit`.
 -/

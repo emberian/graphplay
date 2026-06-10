@@ -21,8 +21,8 @@ hardware corollary: the classical capacity of the quotient channel is a
 fundamental limit on parallel distinguishable graphplay-host computations.
 
 All statements compile against the canonical `Graphplay.WeightedGraph` and
-`Graphplay.EquitablePartition`, and all are proven (this file is sorry-free);
-the substantive dynamical fact `not_isLossless_outside_cellUniform` (a vector
+`Graphplay.EquitablePartition`.  The substantive dynamical fact
+`not_isLossless_outside_cellUniform` (a vector
 outside the cell-uniform subspace never re-enters it under the unitary flow)
 is discharged from `noLeakage_of_equitable` together with reversibility of
 `evolve`.
@@ -159,11 +159,9 @@ cellUniformSubspace`.  Hence any set `S ⊋ cellUniformSubspace` that contains
 such a `v` is not lossless (the evolution carries `v` permanently outside the
 sector).
 
-LANDMINE FIX (strengthened `∃ t` → `∀ t`).  The original `∃ t, evolve t *ᵥ v ∉
-…` is **trivially true** via `t = 0` (`evolve 0 = 1`, so `evolve 0 *ᵥ v = v ∉
-…` is just `hv` restated) — a vacuity/triviality: it captures no dynamical
-content despite the "leaves the subspace" wording.  The genuine, non-trivial
-statement is the universally-quantified one, which is also provable: the
+The universal quantifier is the content here: the existential form
+`∃ t, evolve t *ᵥ v ∉ …` is trivially witnessed by `t = 0` and captures no
+dynamical content.  The `∀ t` statement is provable because the
 subspace is `evolve`-invariant at *every* time (`noLeakage_of_equitable`), and
 `evolve` is invertible (`evolve (-t)` undoes `evolve t`), so if `evolve t *ᵥ v`
 were in the sector then `v = evolve(-t) *ᵥ (evolve t *ᵥ v)` would be too —
@@ -448,13 +446,11 @@ equals `log k`. -/
 theorem quotientChannel_capacity_eq_valency
     (P : EquitablePartition G I) (k : ℕ) (_hP : IsAssociationSchemePartition G P k) :
     ∃ C : ℝ, C = Real.log (k : ℝ) := by
-  -- VACUITY WARNING: `∃ C : ℝ, C = log k` is trivially satisfiable (`C := log k`)
-  -- and the association-scheme hypothesis `_hP` is inert — this does NOT
-  -- establish that the *channel capacity* equals `log k`, since no formal
-  -- capacity functional is defined and connected here.  The genuine statement
-  -- ("the Holevo/classical capacity of `quotientChannel P` equals `log k` for a
-  -- valency-`k` association-scheme partition") awaits a real capacity definition.
-  -- Recorded as a placeholder existence.
+  -- Placeholder existence: `∃ C : ℝ, C = log k` is satisfied by `C := log k`,
+  -- and the association-scheme hypothesis `_hP` is inert.  The intended
+  -- statement — the Holevo/classical capacity of `quotientChannel P` equals
+  -- `log k` for a valency-`k` association-scheme partition — awaits a formal
+  -- capacity functional.
   refine ⟨Real.log (k : ℝ), rfl⟩
 
 /-! ## 6. Open-system entropy production (bridge to D8 / NoiseEquitable) -/

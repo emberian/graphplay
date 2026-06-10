@@ -30,15 +30,15 @@ The deliverables of this file are:
    equivalence with the textbook "matched off-diagonal entry" characterization
    familiar from Godsil-Royle / Coutinho-Godsil.
 3. `IsStronglyCospectral.isPST_iff_godsilPSTReady`: the PST-existence
-   characterization (honest TRUE form, real-symmetric + full-support) over
-   `IsGodsilPSTReady` — arithmetic alignment + parity-matched signs.  **Fully
-   CLOSED axiom-clean**: backward by the exact half-period construction, forward by
-   transporting the *upstream* `GodsilRatio` sign-pinning bridge
-   `isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport` (no `sorry`, no circular
-   import).  (The earlier `… ↔ IsStronglyCospectral ∧ GodsilRatioCondition` form
-   had a FALSE backward direction — bare strong cospectrality leaves the cross-phase
-   free of the eigenvalue parity; and the unconditional `IsGodsilPSTReady` form was
-   false-forward — the `K₂ ⊔ H` obstruction.)
+   characterization (real-symmetric + full-support) over
+   `IsGodsilPSTReady` — arithmetic alignment + parity-matched signs:
+   backward by the exact half-period construction, forward by transporting
+   the `GodsilRatio` sign-pinning bridge
+   `isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport`.  Both hypotheses
+   are necessary: bare strong cospectrality leaves the cross-phase free of
+   the eigenvalue parity (so `… ↔ IsStronglyCospectral ∧
+   GodsilRatioCondition` fails backward), and without full support PST does
+   not constrain unsupported eigenvalues (the `K₂ ⊔ H` obstruction).
 4. Concrete examples: the endpoint pair of a path graph `P_n` is strongly
    cospectral (Chebyshev / Christandl-Datta-Ekert-Landahl).
 5. `IsPhantomSymmetric`: strong cospectrality without an underlying graph
@@ -227,8 +227,8 @@ theorem isStronglyCospectral_iff_local (G : WeightedGraph V) (u v : V) :
   rw [eigenProjEntry_eq_local, eigenProjDiag_eq_local, eigenProjDiag_eq_local]
 
 /-- **PST implies strong cospectrality** (necessary condition, Godsil 2012,
-Thm 2.1; here in this module's projector language).  Proven *unconditionally
-and axiom-cleanly* by transporting the sibling `GodsilRatio` extraction
+Thm 2.1; here in this module's projector language).  Proven unconditionally
+by transporting the `GodsilRatio` extraction
 `Graphplay.PST.isPST_imp_isStronglyCospectral` through the projector bridge. -/
 theorem isStronglyCospectral_of_isPST (G : WeightedGraph V) (u v : V) (τ : ℝ)
     (h : IsPST G u v τ) : IsStronglyCospectral G u v :=
@@ -273,7 +273,7 @@ the cospectral half).  If `σ` is an automorphism of `G` with `σ u = v`, then
 `u` and `v` are cospectral: every spectral projector has equal diagonal entries
 `(E_λ)_{u,u} = (E_λ)_{v,v}`.
 
-Proven axiom-cleanly via the sibling `eigenProj_aut_invariant`: an automorphism's
+Proven via `eigenProj_aut_invariant`: an automorphism's
 permutation matrix commutes with `G.adj`, hence with the (unique) spectral
 projectors, so `(E_λ)_{σ u, σ u} = (E_λ)_{u,u}`.
 
@@ -303,7 +303,7 @@ theorem isCospectral_of_aut (G : WeightedGraph V) (u v : V)
 a unit phase times the common diagonal entry, then `u, v` are strongly
 cospectral in the geometric-mean sense.
 
-This is the honest, unconditional half: once `(E_λ)_{u,u} = (E_λ)_{v,v} =: d`
+This half is unconditional: once `(E_λ)_{u,u} = (E_λ)_{v,v} =: d`
 with `d ≥ 0`, the geometric mean collapses, `√(d·d) = d`, so the matched form
 `(E_λ)_{u,v} = ε d` is literally the geometric-mean form. -/
 theorem isStronglyCospectral_of_cospectral_matched (G : WeightedGraph V)
@@ -322,21 +322,21 @@ theorem isStronglyCospectral_of_cospectral_matched (G : WeightedGraph V)
   rw [← hcosp lam hlam, Real.sqrt_mul_self (eigenProjDiag_nonneg G lam u)]
 
 /-- **Classical equivalence (Godsil-Royle / Coutinho-Godsil 2016), under
-cospectrality (CLOSED).**  *Given* that `u, v` are cospectral, the geometric-mean
+cospectrality.**  *Given* that `u, v` are cospectral, the geometric-mean
 form of strong cospectrality is equivalent to the textbook "matched off-diagonal"
 form: for every eigenvalue `λ` the off-diagonal projector entry `⟨u, P_λ v⟩`
 equals a unit-modulus phase `ε_λ` times the common diagonal entry
 `⟨u, P_λ u⟩ = ⟨v, P_λ v⟩`.
 
-The cospectrality hypothesis is *necessary*, not cosmetic: without it the `→`
-direction is genuinely false for the geometric-mean encoding used here.  Indeed
+The cospectrality hypothesis is *necessary*: without it the `→`
+direction is false for the geometric-mean encoding used here.  Indeed
 a simple-spectrum graph makes *every* pair strongly cospectral
 (`isStronglyCospectral_of_simple_spectrum`) — the cross entry
 `(E_λ)_{u,v} = (eigU)_{u,i}\overline{(eigU)_{v,i}}` always saturates
 `|(E_λ)_{u,v}| = √((E_λ)_{u,u}(E_λ)_{v,v})` (parallelism) — yet the diagonals
 `(E_λ)_{u,u} = ‖(eigU)_{u,i}‖²` and `(E_λ)_{v,v} = ‖(eigU)_{v,i}‖²` differ for
 most pairs.  Parallelism does **not** imply cospectrality (Coutinho 2.5.2 lists
-them as independent hypotheses), so the honest equivalence is *conditional* on
+them as independent hypotheses), so the equivalence is *conditional* on
 cospectrality, under which `√(d·d) = d` collapses both forms onto each other.
 
 This is the form used in the proof of the PST existence criterion
@@ -468,7 +468,7 @@ def GodsilRatioCondition (G : WeightedGraph V) (u v : V) : Prop :=
 /-- **Godsil's PST-ready spectral data** for the pair `(u, v)`, in this module's
 projector language: an arithmetic alignment of the eigenvalue support
 (`λ = b + a·(kof λ)`, `a > 0`) together with the **parity-signed** cross-projector
-structure `(E_λ)_{u,v} = (-1)^{kof λ} (E_λ)_{u,u}`.  This is the *honest* RHS of
+structure `(E_λ)_{u,v} = (-1)^{kof λ} (E_λ)_{u,u}`.  This is the RHS of
 Godsil's existence theorem; see `Graphplay.PST.IsGodsilPSTReady` in the sibling
 `GodsilRatio` module, to which it is definitionally equal via the projector
 bridge.  It is **strictly stronger** than
@@ -493,8 +493,8 @@ theorem isGodsilPSTReady_iff_local (G : WeightedGraph V) (u v : V) :
   refine forall_congr' (fun lam => imp_congr_right (fun _ => ?_))
   rw [eigenProjEntry_eq_local, eigenProjDiag_eq_local]
 
-/-- **Godsil's PST-existence criterion, honest TRUE form (this module) — fully
-CLOSED, axiom-clean.**  On a real-symmetric graph (`Aᵀ = A`) with `u` of full
+/-- **Godsil's PST-existence criterion (this module's projector language).**
+On a real-symmetric graph (`Aᵀ = A`) with `u` of full
 eigenvalue support, PST between `u` and `v` occurs at some positive time iff the
 pair carries Godsil's PST-ready spectral data `IsGodsilPSTReady` (arithmetic
 alignment of the support *together with* the parity-matched sign structure).
@@ -502,21 +502,20 @@ alignment of the support *together with* the parity-matched sign structure).
 * The **backward** direction (⇐) is the *exact* half-period construction of the
   sibling module (`Graphplay.PST.isPST_of_aligned_paritySigned`, time `τ = π/a >
   0`): no Diophantine approximation.  Unconditional in `hsymm`/`hfull`.
-* The **forward** direction (⇒) — PST forces the parity-signed alignment — is now
-  proven axiom-clean by transporting the sibling sign-pinning bridge
+* The **forward** direction (⇒) — PST forces the parity-signed alignment — is
+  proven by transporting the sign-pinning bridge
   `Graphplay.PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport` (proven
-  *upstream* in `GodsilRatio` from the projector algebra) through the projector
-  bridge `isGodsilPSTReady_iff_local`.  (Earlier this was an honest `sorry`, on the
-  mistaken belief the proof had to live in the downstream periodicity module.)
+  in `GodsilRatio` from the projector algebra) through the projector
+  bridge `isGodsilPSTReady_iff_local`.
 
-**Why `hsymm` + `hfull`, not unconditional.**  The forward is **false** without
+**Why `hsymm` + `hfull`.**  The forward direction is false without
 them: `IsGodsilPSTReady` aligns the *whole* spectrum, while PST constrains only the
 *supported* eigenvalues (the `K₂ ⊔ H` counterexample).  Real symmetry pins the
 cross phase to a real `±1`; full support extends the alignment to every spectral
-eigenvalue.  The earlier *unconditional* form
-`(∃τ>0, IsPST) ↔ IsGodsilPSTReady` was therefore false-forward (as was its
-predecessor `… ↔ IsStronglyCospectral ∧ GodsilRatioCondition`, whose *backward*
-half also fails — a simple-spectrum graph makes every pair strongly cospectral with
+eigenvalue.  The unconditional form
+`(∃τ>0, IsPST) ↔ IsGodsilPSTReady` is therefore false forward (and
+`… ↔ IsStronglyCospectral ∧ GodsilRatioCondition` fails *backward* —
+a simple-spectrum graph makes every pair strongly cospectral with
 generic non-`±1` phases).
 
 Reference: Coutinho-Godsil 2016, Thm 4.1.1; Godsil, arXiv:0806.2074, Thm 2.2;
@@ -528,13 +527,13 @@ theorem IsStronglyCospectral.isPST_iff_godsilPSTReady
     (∃ τ : ℝ, 0 < τ ∧ IsPST G u v τ) ↔ IsGodsilPSTReady G u v := by
   rw [isGodsilPSTReady_iff_local]
   constructor
-  · -- FORWARD (CLOSED, axiom-clean): PST ⇒ parity-signed alignment, via the
-    -- upstream `GodsilRatio` sign-pinning bridge (no circular import).
+  · -- Forward: PST ⇒ parity-signed alignment, via the `GodsilRatio`
+    -- sign-pinning bridge.
     rintro ⟨τ, hτ, hpst⟩
     exact Graphplay.PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport
       G hsymm hτ hfull hpst
-  · -- BACKWARD (CLOSED, axiom-clean): the exact half-period construction at the
-    -- positive time `τ = π/a`.
+  · -- Backward: the exact half-period construction at the positive time
+    -- `τ = π/a`.
     intro hready
     obtain ⟨a, b, kof, ha, halign, hsign⟩ := hready
     exact ⟨Real.pi / a, by positivity,
@@ -542,9 +541,9 @@ theorem IsStronglyCospectral.isPST_iff_godsilPSTReady
 
 /-! ## Functoriality under equitable partitions
 
-The genuine functoriality content — strong cospectrality of the *cell-uniform
+The functoriality content — strong cospectrality of the *cell-uniform
 vectors* `|C_i⟩, |C_j⟩` upstairs is equivalent to strong cospectrality of the
-vertices `e_i, e_j` of the symmetric quotient — is **proven** (no `sorry`) in the
+vertices `e_i, e_j` of the symmetric quotient — is proven in the
 sibling module `Graphplay.PST.QuotientIff` as
 `EquitablePartition.stronglyCospectral_cellUniform_iff_quotient` (and its
 corollary `cellUniform_stronglyCospectral_of_quotient`), via the
@@ -553,7 +552,7 @@ corollary `cellUniform_stronglyCospectral_of_quotient`), via the
 (A *vertex*-level descent `IsStronglyCospectral G u v ⇒` cell cospectrality is
 **false** in general — in a vertex-transitive graph every pair admits a cell
 swap yet most are not strongly cospectral — so no such theorem is stated here;
-the honest statement is the cell-uniform-vector one carried in `QuotientIff`.)
+the correct statement is the cell-uniform-vector one carried in `QuotientIff`.)
 -/
 
 /-- **Simple spectrum ⟹ strong cospectrality of every pair** (Coutinho–Godsil
@@ -563,7 +562,7 @@ since each `λ`-eigenspace is a single ray and the two projected vectors are
 automatically parallel.  This is the structural mechanism behind path-endpoint
 strong cospectrality (the path `P_n` has the simple spectrum `2cos(kπ/(n+1))`).
 
-Proven axiom-cleanly by transporting the sibling
+Proven by transporting
 `Graphplay.PST.isStronglyCospectral_of_injective_eigenvalues` through the
 projector bridge `isStronglyCospectral_iff_local`. -/
 theorem isStronglyCospectral_of_simple_spectrum (G : WeightedGraph V)
@@ -657,7 +656,7 @@ We build the obstruction reusably here:
 * `irrational_cos_pi_div`: `cos(π/N)` irrational for `N ≥ 4`,
 * `pathEigenvalue_rec`: the Chebyshev three-term recurrence on the eigenvalues,
 * `pathEigenvalue_not_arithmeticProgression`: for `n ≥ 4`, the path eigenvalues
-  admit no arithmetic progression — the genuine, axiom-clean Diophantine residual. -/
+  admit no arithmetic progression. -/
 
 /-- **Generic Niven contrapositive.**  If `r ∈ [0,1] ∩ ℚ` is none of
 `{0, 1/3, 1/2, 2/3, 1}`, then `cos(rπ)` is irrational.  Direct from Mathlib's
@@ -722,7 +721,7 @@ endpoints always holds (`isStronglyCospectral_pathEndpoints`), so the sole
 obstruction is the Godsil ratio condition, which *is* arithmetic-progression
 membership of the support eigenvalues — and that fails here.
 
-PROOF (axiom-clean, Niven).  Use the three-term recurrence at indices `k = 1, 2`
+Proof (via Niven).  Use the three-term recurrence at indices `k = 1, 2`
 (all of `0,1,2,3` are valid eigenvalue indices since `n ≥ 4`):
 `θ_2 + θ_0 = 2c·θ_1` and `θ_3 + θ_1 = 2c·θ_2`, where `c = cos(π/(n+1))`.
 Subtracting, `(θ_2+θ_0) - (θ_3+θ_1) = 2c·(θ_1 - θ_2)`.  If every `θ_k = b + a·m_k`,
@@ -806,7 +805,7 @@ theorem pathEigenvalue_not_arithmeticProgression (n : ℕ) (hn : 4 ≤ n) :
         push_cast; ring] at h2cirr
   exact (Rat.not_irrational _) h2cirr
 
-/-- **Nodup charpoly roots ⟹ simple spectrum.**  A generic axiom-clean bridge:
+/-- **Nodup charpoly roots ⟹ simple spectrum.**  A generic bridge:
 if the characteristic polynomial of a Hermitian-weighted graph `G` has no
 repeated roots, then Mathlib's eigenvalue function `G.herm.eigenvalues` is
 injective.  Via `Matrix.IsHermitian.roots_charpoly_eq_eigenvalues`
@@ -846,7 +845,7 @@ endpoints is `±` the diagonal entry — i.e. the real (orthogonal) version of
 strong cospectrality holds.  This is the spectral content of the original
 Christandl-Datta-Ekert-Landahl spin-chain PST proposal (PRL 92 187902, 2004),
 which goes on to engineer the *Krawtchouk* weighting that fixes the Godsil
-ratio condition and gives genuine PST. -/
+ratio condition and gives PST. -/
 
 /-- The path graph `P_n` (unweighted).  We package only the underlying
 `WeightedGraph`; the explicit construction is left abstract here for
@@ -1225,7 +1224,7 @@ in Coutinho-Godsil 2016, Example 3.4.6. -/
 theorem isStronglyCospectral_pathEndpoints (n : ℕ) (hn : 2 ≤ n) :
     IsStronglyCospectral (pathWeightedGraph n)
       ⟨0, by omega⟩ ⟨n - 1, by omega⟩ :=
-  -- CLOSED.  The path `P_n` has *simple spectrum*: its characteristic polynomial
+  -- The path `P_n` has *simple spectrum*: its characteristic polynomial
   -- is the scaled Chebyshev polynomial `U_n(X/2)` (proven above via the
   -- tridiagonal-determinant three-term recurrence, `PathChebyshev`), whose `n`
   -- roots `2cos((k+1)π/(n+1))` are pairwise distinct.  Hence
@@ -1236,14 +1235,12 @@ theorem isStronglyCospectral_pathEndpoints (n : ℕ) (hn : 2 ≤ n) :
     (pathWeightedGraph_eigenvalues_injective n) _ _
 
 -- NOTE.  The endpoint-PST classification for the path — `P_n` has endpoint PST
--- iff `n ∈ {2,3}` — is **proven** (axiom-clean, both directions) in
+-- iff `n ∈ {2,3}` — is proven (both directions) in
 -- `Graphplay.StdLib.Path` as `path_PST_endpoint_endpoint` (backward, explicit
 -- `K₂`/`P₃` exponentials) and `path_no_PST_endpoint_endpoint`/`path_P4_no_PST`
 -- (forward, the Godsil-ratio / Niven obstruction `path_no_PST_of_ge_three`).
 -- That module is downstream of this one (it imports `Cospectrality`), so the
--- biconditional cannot be restated here without a cycle; the earlier
--- `pathEndpoints_isPST_iff` stub (and a redundant simple-spectrum weakening of
--- `isStronglyCospectral_pathEndpoints`) have been removed.  The forward
+-- biconditional cannot be restated here without a cycle.  The forward
 -- number-theoretic kernel is `pathEigenvalue_not_arithmeticProgression` above.
 
 /-! ## Phantom symmetry (Bachman-Tamon 1108.0339)
@@ -1252,7 +1249,7 @@ A pair `(u, v)` is **phantom symmetric** if it is strongly cospectral but
 *not* witnessed by any graph automorphism.  When a non-trivial automorphism
 swapping `u ↔ v` exists, strong cospectrality is automatic by the
 representation-theoretic argument (the swap is in the centralizer of the
-adjacency action).  Phantom-symmetric pairs are the *genuinely new* PST
+adjacency action).  Phantom-symmetric pairs are the new PST
 candidates: their existence shows that PST cannot be detected by symmetry
 alone, and is the central observation of Bachman-Tamon (arXiv:1108.0339).
 -/
@@ -1288,8 +1285,8 @@ the smallest vertex-level realization of the Bachman–Tamon / GKSS phenomenon.
   eigenvectors.  The spectrum `{-2, -1, 1, 2}` is integral, hence Godsil-ratio
   aligned (`a = 1`, `b = 0`).
 * **PST `0 ⇝ 1` at `τ = π`.**  Diagonalize-and-exponentiate gives the off-diagonal
-  amplitude `(eˢ + e⁻ˢ - e²ˢ - e⁻²ˢ)/4`, which at `s = -iπ` is **exactly** `-1`
-  (modulus `1`).  Genuine finite computation, no `sorry`.
+  amplitude `(eˢ + e⁻ˢ - e²ˢ - e⁻²ˢ)/4`, which at `s = -iπ` is exactly `-1`
+  (modulus `1`).
 * **No witnessing automorphism.**  The symmetric and antisymmetric apexes make
   the weighted degrees of `0` and `1` *unequal* (`deg 0 = 3/√2`, `deg 1 = -1/√2`),
   and an adjacency automorphism preserves the weighted row sum, so **none** can
@@ -1300,7 +1297,7 @@ the smallest vertex-level realization of the Bachman–Tamon / GKSS phenomenon.
   `isStronglyCospectral_of_isPST`.
 
 So `(0, 1)` is a phantom-symmetric PST pair, and the class
-`PhantomSymmetricPSTExists` below is discharged with a **genuine instance**.
+`PhantomSymmetricPSTExists` below is discharged with an explicit instance.
 -/
 
 namespace SignedDoubleCone
@@ -1555,8 +1552,8 @@ private theorem Amat_entry01_at_time :
   norm_num
 
 /-- **`DC₄` exhibits PST `0 ⇝ 1` at `τ = π`.**  The off-diagonal evolution
-amplitude is exactly `-1`, of modulus `1`.  Genuine finite diagonalize-and-
-exponentiate; no `sorry`. -/
+amplitude is exactly `-1`, of modulus `1`, by finite
+diagonalize-and-exponentiate. -/
 theorem DC4_isPST : IsPST DC4 0 1 Real.pi := by
   unfold IsPST WeightedGraph.evolve
   rw [DC4_adj, Amat_entry01_at_time, norm_neg, norm_one]
@@ -1579,9 +1576,9 @@ strongly cospectral, yet with **no** graph automorphism mapping `u` to `v`.
 Such pairs show PST cannot be detected by the automorphism group alone, settling
 Godsil's question *"is a graph automorphism necessary for PST?"* in the negative.
 
-This is recorded as a `Prop`-valued **typeclass assumption, not a bare axiom**
-(no global soundness hole), following the `LovaszTheta` pattern — but it is now
-**discharged with a genuine instance** (`instance : PhantomSymmetricPSTExists`
+This is recorded as a `Prop`-valued typeclass following the `LovaszTheta`
+pattern, and is discharged with an instance
+(`instance : PhantomSymmetricPSTExists`
 below) by the explicit `4`-vertex **signed double cone** `SignedDoubleCone.DC4`:
 integer spectrum `{-2,-1,1,2}`, PST `0 ⇝ 1` at `τ = π` (off-diagonal amplitude
 exactly `-1`), and no automorphism sending `0` to `1` (the weighted-degree
@@ -1598,20 +1595,20 @@ class PhantomSymmetricPSTExists : Prop where
       (G : WeightedGraph V) (u v : V) (τ : ℝ),
       0 < τ ∧ IsPhantomSymmetric G u v ∧ IsPST G u v τ
 
-/-- **The phantom-symmetric PST existence is a THEOREM**, discharged by the
+/-- Phantom-symmetric PST existence, discharged by the
 explicit signed-double-cone witness `SignedDoubleCone.DC4`: a `4`-vertex
 Hermitian-weighted graph with PST `0 ⇝ 1` at `τ = π`, integer spectrum
 `{-2,-1,1,2}`, and **no** adjacency automorphism mapping `0` to `1`.  This
-de-externalizes "PST without symmetry" — Godsil's question — answering it
-**NO**: an automorphism is *not* necessary for perfect state transfer. -/
+answers Godsil's question — "is a graph automorphism necessary for PST?" —
+in the negative. -/
 instance : PhantomSymmetricPSTExists where
   exists_witness :=
     ⟨Fin 4, inferInstance, inferInstance, SignedDoubleCone.DC4, 0, 1, Real.pi,
       Real.pi_pos, SignedDoubleCone.DC4_isPhantomSymmetric, SignedDoubleCone.DC4_isPST⟩
 
-/-- **Existence of phantom-symmetric PST pairs**, axiom-clean and honestly
-conditional on the cited external `[PhantomSymmetricPSTExists]` (GKSS PRL 109
-050502 / Bachman–Tamon 1108.0339). -/
+/-- **Existence of phantom-symmetric PST pairs**, conditional on
+`[PhantomSymmetricPSTExists]` (GKSS PRL 109 050502 / Bachman–Tamon
+1108.0339); the instance above supplies the witness. -/
 theorem exists_phantomSymmetric_isPST [h : PhantomSymmetricPSTExists] :
     ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G : WeightedGraph V) (u v : V) (τ : ℝ),
@@ -1654,10 +1651,11 @@ theorem IsStronglyCospectral.refl (G : WeightedGraph V) (u : V) :
 /-- A graph automorphism swapping `u, v`, **together with a simple spectrum**,
 implies strong cospectrality.
 
-HONEST CORRECTION.  A bare automorphism `σ u = v` does **not** suffice for strong
+The simple-spectrum hypothesis is necessary: a bare automorphism `σ u = v`
+does **not** suffice for strong
 cospectrality (in a vertex-transitive graph every pair admits such a `σ`, yet
 strong cospectrality is rare); the swap alone yields only *cospectrality*
-(`isCospectral_of_aut`, proven axiom-cleanly above).  The extra input that makes
+(`isCospectral_of_aut`).  The extra input that makes
 the conclusion true is that each eigenspace be one-dimensional, so that the
 automorphism — which commutes with every spectral projector — acts as a scalar
 on it (the path-flip is exactly this case).  Under `hinj`, the conclusion is
@@ -1665,8 +1663,8 @@ on it (the path-flip is exactly this case).  Under `hinj`, the conclusion is
 be strongly cospectral, `isStronglyCospectral_of_simple_spectrum`); we keep the
 automorphism hypothesis for the Godsil-Royle 8.2.1 reading.
 
-Proven axiom-cleanly via the spectral-projector uniqueness developed in the
-sibling `GodsilRatio` (`eigenProj_aut_invariant`,
+Proven via the spectral-projector uniqueness developed in
+`GodsilRatio` (`eigenProj_aut_invariant`,
 `isStronglyCospectral_of_injective_eigenvalues`). -/
 theorem IsStronglyCospectral.of_aut
     (G : WeightedGraph V) (u v : V)

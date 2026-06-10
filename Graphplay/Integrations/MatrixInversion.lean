@@ -22,11 +22,13 @@ This file is a **concrete statement layer**:
   `WeightedGraph` need not apply to the inversion target, but we expose the
   `WeightedGraph` bridge);
 * the *exact* answer `A⁻¹|b⟩` is the concrete `mulVec` of the inverse;
-* the CTQW inversion is a concrete linear map built from the walk unitary and a
-  marked-subspace projection;
+* a machine-checked **refutation** (`naive_pipeline_fails`) showing the walk on
+  the system register alone can never invert — the orbit `t ↦ e^{-iAt}b` is
+  norm-preserving — so the enlarged graph of the cited solver is essential;
 * the headline success/complexity statement is stated precisely and made
-  axiom-clean conditional on the named literature class `CTQWInversionSuccess`
-  (the deep convergence analysis of arXiv:2508.06611);
+  axiom-clean conditional on the named literature class
+  `CTQW2508MatrixInversion` (the convergence analysis of arXiv:2508.06611,
+  with the enlarged walk space quantified inside the cited field);
 * the equitable connection: if `A` has an equitable partition and `b` is
   cell-uniform, the inversion *restricts to the quotient* — `A⁻¹|b⟩` is again
   cell-uniform and is computed by the symmetric quotient `Q̃⁻¹` — via the
@@ -48,6 +50,7 @@ import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 import Mathlib.Analysis.Matrix.Spectrum
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.Analysis.SpecialFunctions.Exponential
 import Graphplay.Weighted
 import Graphplay.Equitable
 
@@ -127,33 +130,16 @@ noncomputable def walkEvolve (S : LinearSystem n) (t : ℝ) : Matrix n n ℂ :=
   unfold walkEvolve
   simp
 
-/-- The **amplitude-amplification** preprocessing operator of the CTQW solver.
-In the phase-estimation-free scheme the right-hand side `b` is first encoded into
-the marked subsystem of the enlarged walk graph and amplitude-amplified so that
-the post-selected branch carries the solution amplitude.  In this concrete
-statement layer we model the encoded input as a fixed linear operator on the
-state space; the *content* — that the engineered amplification together with the
-walk realizes `A⁻¹` — lives in the deferred convergence class
-`CTQWInversionSuccess`, not in the choice of this operator. -/
-noncomputable def amplitudeAmplify (_S : LinearSystem n) : Matrix n n ℂ :=
-  (1 : Matrix n n ℂ)
-
-/-- The **marked-subsystem projection** of the CTQW solver: the read-out operator
-that selects the marked register on which `A⁻¹|b⟩` is prepared.  Modeled here as a
-fixed linear operator; like `amplitudeAmplify`, its convergence content is carried
-by `CTQWInversionSuccess`. -/
-noncomputable def markedProjection (_S : LinearSystem n) : Matrix n n ℂ :=
-  (1 : Matrix n n ℂ)
-
-/-- The **actual output state of the CTQW pipeline** at walk time `t`: encode and
-amplitude-amplify `b`, evolve under the walk Hamiltonian for time `t`, then read
-out the marked subsystem.  This is the *physically produced* vector — a definite
-function of `(S, t)` — to which `CTQWInversionSuccess` ties its error bound (the
-output is NOT a free vector; it is forced to be this walk pipeline applied to
-`b`). -/
-noncomputable def walkOutput (S : LinearSystem n) (t : ℝ) : n → ℂ :=
-  (S.markedProjection).mulVec
-    ((S.walkEvolve t).mulVec ((S.amplitudeAmplify).mulVec S.b))
+/-- The **naive walk pipeline**: evolve `b` directly under the system walk
+`U(t) = e^{-iAt}`, with no enlarged graph, no ancilla coupling, no
+post-selection.  This is *not* the arXiv:2508.06611 solver — it is the strawman
+obtained by deleting the enlarged system from it.  It cannot invert anything:
+`U(t)` is unitary, so the orbit `t ↦ U(t)b` stays on the sphere `‖·‖ = ‖b‖`
+and revisits phases forever instead of converging (`naive_pipeline_fails`).
+The enlarged graph and the marked-register measurement are where the inversion
+actually happens; they live inside `CTQW2508MatrixInversion`. -/
+noncomputable def naiveWalkOutput (S : LinearSystem n) (t : ℝ) : n → ℂ :=
+  (S.walkEvolve t).mulVec S.b
 
 /-- The **ideal CTQW inverter**: the linear map that the phase-estimation-free
 walk implements in the noiseless limit, namely multiplication by `A⁻¹`.
@@ -171,13 +157,17 @@ error — see `ctqw_success`.) -/
 
 /-! ### 3. Success / complexity statement
 
-The physical CTQW does not produce `A⁻¹|b⟩` exactly: a finite evolution time and
-amplitude amplification yield an approximate, sub-normalized output, with a
-success probability controlled by the condition number `κ` and a target error
-`ε`.  We package the headline guarantee: for any `ε > 0`, choosing the walk time
-appropriately produces a state within `ε` of the normalized solution, using
-walk time `O(κ / ε)` (the CTQW improvement claimed in arXiv:2508.06611 over the
-`O(κ²/ε)` of phase-estimation HHL). -/
+The physical CTQW does not produce `A⁻¹|b⟩` exactly: a finite evolution time on
+the enlarged walk graph yields an approximate output, with error controlled by
+the condition number `κ` and the walk time.  Two statements live here:
+
+* a machine-checked **refutation** that the *un-enlarged* walk (evolve `b`
+  under `e^{-iAt}` and read it back) can never meet the guarantee — unitarity
+  pins the orbit to the sphere `‖·‖ = ‖b‖` (`naive_pipeline_fails`);
+* the cited guarantee (`CTQW2508MatrixInversion`): an **enlarged** walk, whose
+  Hamiltonian is `A` plus an ancilla coupling, inverts to within `ε` in walk
+  time `O(κ/ε)` — the CTQW improvement claimed in arXiv:2508.06611 over the
+  `O(κ²/ε)` of phase-estimation HHL. -/
 
 /-- The **condition number** of the system: `‖A‖ · ‖A⁻¹‖` in the operator
 sense.  We expose it abstractly as the ratio of the largest to smallest
@@ -195,51 +185,228 @@ sub-normalized walk output against the normalized exact solution. -/
 noncomputable def normalize (v : n → ℂ) : n → ℂ :=
   (((∑ i, ‖v i‖ ^ 2 : ℝ)).sqrt⁻¹ : ℂ) • v
 
-/-- **CTQW matrix-inversion convergence** (Harrow–Hassidim–Lloyd / arXiv:2508.06611).
+/-- The success predicate the **naive** (un-enlarged) pipeline would need: for
+every `ε > 0`, the bare walk orbit at the prescribed time `walkTime ε = κ/ε` is
+`ε`-close to the normalized solution.  `naive_pipeline_fails` refutes it on a
+1 × 1 system: no walk on the system register alone can invert, because the
+orbit is confined to the sphere `‖·‖ = ‖b‖` and keeps rotating.  This is *why*
+the cited solver (`CTQW2508MatrixInversion`) must enlarge the system. -/
+def NaiveCTQWSuccess (S : LinearSystem n) : Prop :=
+  ∀ {ε : ℝ}, 0 < ε →
+    ∃ ψ : n → ℂ, ψ = S.naiveWalkOutput (S.walkTime ε) ∧
+      (∑ i, ‖ψ i - normalize S.solution i‖ ^ 2 : ℝ).sqrt ≤ ε
 
-The phase-estimation-free continuous-time-quantum-walk linear solver: for every
-target error `ε > 0`, evolving the marked-subsystem walk for time `O(κ/ε)`
-followed by one round of amplitude amplification produces an output state within
-`ε` of the normalized exact solution `A⁻¹|b⟩`.  This is the deep convergence /
-interference analysis of arXiv:2508.06611 (built on the HHL eigenvalue-inversion
-mechanism and Childs' CTQW-simulation), **not** formalized in Mathlib.
+end LinearSystem
 
-Stated as a typeclass assumption (never a bare `axiom`): a theorem assuming
-`[CTQWInversionSuccess S]` is a sorry-free conditional theorem, honestly listing
-the literature convergence result as a named, cited hypothesis.  No instance is
-provided — this is the genuinely external HHL/CTQW analysis.
+/-! #### The naive pipeline cannot invert: a machine-checked refutation
 
-**Non-vacuity.**  The witnessed output `ψ` is *not* a free vector: the field
-forces `ψ = walkOutput S (walkTime S ε)`, the state the CTQW pipeline physically
-produces at the prescribed time `O(κ/ε)` (encode + amplitude-amplify `b`, evolve
-under `e^{-iAt}`, read out the marked subsystem).  The error bound is therefore a
-genuine claim about that fixed walk output — `‖(walk output) − A⁻¹b/‖·‖‖ ≤ ε` — and
-cannot be inhabited by choosing a convenient `ψ`; it is exactly the convergence
-content of arXiv:2508.06611. -/
-class CTQWInversionSuccess (S : LinearSystem n) : Prop where
-  /-- For every `ε > 0` the **walk-produced** output state at the prescribed time
-  `walkTime S ε = O(κ/ε)` — namely `walkOutput S (walkTime S ε)`, the marked-
-  subsystem read-out of the amplitude-amplified, walk-evolved `b` — is within `ε`
-  of the normalized exact solution.  The witness `ψ` is bound to this physical
-  walk output (not free), so the bound is the genuine HHL/CTQW convergence
-  guarantee. -/
-  exists_output_within :
-    ∀ {ε : ℝ}, 0 < ε →
-      ∃ ψ : n → ℂ, ψ = S.walkOutput (S.walkTime ε) ∧
-        (∑ i, ‖ψ i - normalize S.solution i‖ ^ 2 : ℝ).sqrt ≤ ε
+On the system `A = (2)`, `b = (1)` the bare walk orbit is the unit-modulus
+scalar `t ↦ e^{-2it}`, while the normalized solution is the constant `1`.
+The orbit passes through `-1`, at distance `2` from the target — so the
+demanded bound fails at any `ε < 2` whose schedule lands there. -/
 
-/-- **CTQW matrix-inversion success theorem** (arXiv:2508.06611), now an
-axiom-clean conditional theorem: assuming the named literature convergence result
-`[CTQWInversionSuccess S]`, the phase-estimation-free CTQW with the prescribed
-`walkTime ε` produces, *as its physical marked-subsystem read-out*
-`walkOutput S (walkTime ε)`, an output state within `ε` of the normalized exact
-solution `A⁻¹|b⟩`, with walk time `O(κ/ε)`.  The conclusion binds `ψ` to that walk
-output, so it is the genuine convergence guarantee (not a free-witness restatement). -/
-theorem ctqw_success (S : LinearSystem n) [h : CTQWInversionSuccess S]
+/-- The 1 × 1 refutation system: `A = (2)`, `b = (1)`.  Solution `1/2`,
+normalized solution `1`, condition number `1`, walk schedule `t(ε) = 1/ε`. -/
+noncomputable def refutationSystem : LinearSystem (Fin 1) where
+  A := Matrix.diagonal fun _ => (2 : ℂ)
+  herm := Matrix.isHermitian_diagonal_iff.mpr fun _ => by
+    rw [IsSelfAdjoint, Complex.star_def, Complex.conj_ofNat]
+  inv := by
+    rw [Matrix.det_diagonal, Fin.prod_univ_one]
+    exact isUnit_iff_ne_zero.mpr two_ne_zero
+  b := fun _ => 1
+
+/-- `A·v` is entrywise doubling for the refutation system. -/
+theorem refutationSystem_A_mulVec (v : Fin 1 → ℂ) (i : Fin 1) :
+    refutationSystem.A.mulVec v i = 2 * v i := by
+  show (Matrix.diagonal fun _ => (2 : ℂ)).mulVec v i = 2 * v i
+  rw [Matrix.mulVec_diagonal]
+
+/-- The single eigenvalue of the refutation system is `2` (from the trace). -/
+theorem refutationSystem_eigenvalues (i : Fin 1) :
+    refutationSystem.herm.eigenvalues i = 2 := by
+  have htr := refutationSystem.herm.trace_eq_sum_eigenvalues
+  rw [Fin.sum_univ_one] at htr
+  have h2 : refutationSystem.A.trace = (2 : ℂ) := by
+    show (Matrix.diagonal fun _ => (2 : ℂ)).trace = 2
+    rw [Matrix.trace_diagonal, Fin.sum_univ_one]
+  rw [h2] at htr
+  rw [Fin.eq_zero i]
+  have h := htr.symm
+  rw [show (2 : ℂ) = RCLike.ofReal (2 : ℝ) by norm_num] at h
+  exact RCLike.ofReal_inj.mp h
+
+/-- The refutation system is perfectly conditioned: `κ = 1`. -/
+theorem refutationSystem_conditionNumber :
+    refutationSystem.conditionNumber = 1 := by
+  unfold LinearSystem.conditionNumber
+  rw [ciSup_unique, ciInf_unique, refutationSystem_eigenvalues]
+  norm_num
+
+/-- The exact solution of `2x = 1` is `1/2`. -/
+theorem refutationSystem_solution (i : Fin 1) :
+    refutationSystem.solution i = 1 / 2 := by
+  have h0 := congrFun refutationSystem.A_mulVec_solution i
+  rw [refutationSystem_A_mulVec] at h0
+  have hb : refutationSystem.b i = 1 := rfl
+  rw [hb] at h0
+  -- h0 : 2 * solution i = 1
+  rw [eq_div_iff (two_ne_zero (α := ℂ))]
+  linear_combination h0
+
+/-- The normalized solution of the refutation system is the constant `1`. -/
+theorem refutationSystem_normalize_solution (i : Fin 1) :
+    LinearSystem.normalize refutationSystem.solution i = 1 := by
+  unfold LinearSystem.normalize
+  rw [Pi.smul_apply, Fin.sum_univ_one, refutationSystem_solution,
+    refutationSystem_solution]
+  have hnorm : ‖(1 / 2 : ℂ)‖ = 1 / 2 := by
+    rw [norm_div, norm_one, Complex.norm_ofNat]
+  rw [hnorm]
+  have hsqrt : Real.sqrt ((1 / 2) ^ 2) = 1 / 2 := Real.sqrt_sq (by norm_num)
+  rw [hsqrt]
+  norm_num
+
+/-- At walk time `π/2` the refutation walk sits at `U(π/2) = (-1)`:
+`e^{-i·(π/2)·2} = e^{-iπ} = -1`. -/
+theorem refutationSystem_walkEvolve_pi_div_two :
+    refutationSystem.walkEvolve (Real.pi / 2)
+      = Matrix.diagonal fun _ => (-1 : ℂ) := by
+  unfold LinearSystem.walkEvolve
+  have hsm : (-(Complex.I * ((Real.pi / 2 : ℝ) : ℂ))) • refutationSystem.A
+      = Matrix.diagonal fun _ => -(Real.pi * Complex.I) := by
+    show _ • Matrix.diagonal (fun _ => (2 : ℂ)) = _
+    rw [← Matrix.diagonal_smul]
+    congr 1
+    funext _
+    show -(Complex.I * ((Real.pi / 2 : ℝ) : ℂ)) * 2 = -(Real.pi * Complex.I)
+    push_cast
+    ring
+  rw [hsm, Matrix.exp_diagonal]
+  congr 1
+  funext _
+  rw [Pi.exp_def]
+  show NormedSpace.exp (-((Real.pi : ℂ) * Complex.I)) = -1
+  rw [← Complex.exp_eq_exp_ℂ, Complex.exp_neg, Complex.exp_pi_mul_I]
+  norm_num
+
+/-- **The naive pipeline cannot invert** — machine-checked emptiness.  For the
+1 × 1 system `2x = 1` the bare walk orbit `t ↦ e^{-2it}·b` is unit-modulus, and
+at `ε = 2/π` the schedule `t = κ/ε = π/2` parks it at `-1`, distance `2 > 2/π`
+from the normalized solution `1`.  So `NaiveCTQWSuccess` is unsatisfiable here:
+a class demanding it for every system would be **empty**, and any theorem
+conditioned on it vacuous.  The enlarged graph + marked-register measurement of
+arXiv:2508.06611 are therefore not packaging: they are where the eigenvalue
+inversion happens, which is why `CTQW2508MatrixInversion` quantifies over an
+enlarged walk space. -/
+theorem naive_pipeline_fails :
+    ¬ LinearSystem.NaiveCTQWSuccess refutationSystem := by
+  intro h
+  have hπ : (1 : ℝ) < Real.pi := by linarith [Real.two_le_pi]
+  have hε : (0 : ℝ) < 2 / Real.pi := by positivity
+  obtain ⟨ψ, hψ, hbound⟩ := h hε
+  -- The schedule: `walkTime (2/π) = κ/(2/π) = π/2`.
+  have ht : refutationSystem.walkTime (2 / Real.pi) = Real.pi / 2 := by
+    unfold LinearSystem.walkTime
+    rw [refutationSystem_conditionNumber]
+    field_simp
+  rw [ht] at hψ
+  -- The orbit value: `ψ = (-1)`.
+  have hψval : ψ = fun _ : Fin 1 => (-1 : ℂ) := by
+    rw [hψ]
+    funext i
+    unfold LinearSystem.naiveWalkOutput
+    rw [refutationSystem_walkEvolve_pi_div_two, Matrix.mulVec_diagonal]
+    show (-1 : ℂ) * (1 : ℂ) = -1
+    ring
+  -- The distance: `‖(-1) - 1‖ = 2`.
+  have hdist : (∑ i, ‖ψ i - LinearSystem.normalize refutationSystem.solution i‖ ^ 2
+      : ℝ).sqrt = 2 := by
+    rw [hψval, Fin.sum_univ_one, refutationSystem_normalize_solution]
+    have : ‖(-1 : ℂ) - 1‖ = 2 := by
+      have : (-1 : ℂ) - 1 = -2 := by ring
+      rw [this, norm_neg, Complex.norm_ofNat]
+    rw [this]
+    rw [show ((2 : ℝ) ^ 2) = 4 by norm_num]
+    rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]
+  rw [hdist] at hbound
+  -- But `2 ≤ 2/π` forces `π ≤ 1`.
+  have : 2 / Real.pi < 2 := by
+    rw [div_lt_iff₀ (by positivity)]
+    nlinarith
+  linarith
+
+/-- **CTQW matrix inversion** (arXiv:2508.06611, *Matrix inversion by quantum
+walk*) — the cited result, verbatim.  For every linear-system instance
+`(A, b)` there is a constant `c > 0` such that for every target error `ε > 0`
+there exist
+
+* an **enlarged walk space** `n ⊕ Fin k` (the system register plus `k`
+  ancilla vertices — the enlarged graph is quantified existentially *inside*
+  the field: its construction is part of the cited content);
+* a Hermitian walk Hamiltonian `H` on it whose system block is **exactly
+  `A`** (`H = A` plus an ancilla coupling — the defining feature of the
+  phase-estimation-free scheme: the walk runs on the input matrix itself);
+* a walk time `|t| ≤ c·κ/ε`,
+
+such that the normalized system-register read-out of `e^{-iHt}` applied to
+`b` (encoded on the system register, `0` on the ancillas) is within `ε` of
+the normalized exact solution `A⁻¹b/‖A⁻¹b‖`.
+
+The system-block constraint `H(inl i, inl i') = A(i, i')` pins the walk
+generator to the input.  Without it the field would be cheatable: any unitary
+carrying the encoded `b` to the embedded solution is `e^{-iH}` for *some*
+Hermitian `H`, so an unconstrained `H` could be reverse-engineered from
+`A⁻¹b` with no inversion mechanism at all.  Conversely `naive_pipeline_fails`
+shows `k = 0` ancillas cannot suffice — the two constraints together leave
+exactly the content of the cited theorem.
+
+Stated as a typeclass (never a bare `axiom`): theorems assuming
+`[CTQW2508MatrixInversion]` are sorry-free conditional theorems citing the
+convergence / interference analysis of arXiv:2508.06611 (built on HHL,
+Phys. Rev. Lett. 103, 150502, and Childs' CTQW simulation), which is not in
+Mathlib.  No instance is provided. -/
+class CTQW2508MatrixInversion : Prop where
+  /-- Verbatim headline of arXiv:2508.06611: an `A`-coupled enlarged walk
+  whose normalized marked-register read-out `ε`-approximates the normalized
+  solution in walk time `O(κ/ε)`. -/
+  ctqw_inverts :
+    ∀ {n : Type u} [Fintype n] [DecidableEq n] (S : LinearSystem n),
+      ∃ c : ℝ, 0 < c ∧
+        ∀ {ε : ℝ}, 0 < ε →
+          ∃ (k : ℕ) (H : Matrix (n ⊕ Fin k) (n ⊕ Fin k) ℂ) (t : ℝ),
+            H.IsHermitian ∧
+            (∀ i i', H (Sum.inl i) (Sum.inl i') = S.A i i') ∧
+            |t| ≤ c * S.conditionNumber / ε ∧
+            (∑ i, ‖LinearSystem.normalize
+                (fun i' => (NormedSpace.exp (-(Complex.I * (t : ℂ)) • H)).mulVec
+                  (Sum.elim S.b fun _ => 0) (Sum.inl i')) i
+              - LinearSystem.normalize S.solution i‖ ^ 2 : ℝ).sqrt ≤ ε
+
+namespace LinearSystem
+
+/-- **CTQW matrix-inversion success** (arXiv:2508.06611), an axiom-clean
+conditional theorem: assuming the cited class, every linear system admits, for
+every `ε > 0`, an enlarged walk graph extending `A` (Hermitian `H` on
+`n ⊕ Fin k` with system block `A`) and a walk time `O(κ/ε)` whose normalized
+system-register read-out is within `ε` of the normalized exact solution.  The
+output is bound to the walk read-out of the encoded `b` — not a free witness —
+and the walk generator is bound to `A`, so this is the genuine convergence
+guarantee. -/
+theorem ctqw_success [CTQW2508MatrixInversion.{u}] (S : LinearSystem n)
     {ε : ℝ} (hε : 0 < ε) :
-    ∃ ψ : n → ℂ, ψ = S.walkOutput (S.walkTime ε) ∧
-      (∑ i, ‖ψ i - normalize S.solution i‖ ^ 2 : ℝ).sqrt ≤ ε :=
-  h.exists_output_within hε
+    ∃ (c : ℝ) (k : ℕ) (H : Matrix (n ⊕ Fin k) (n ⊕ Fin k) ℂ) (t : ℝ),
+      0 < c ∧
+      H.IsHermitian ∧
+      (∀ i i', H (Sum.inl i) (Sum.inl i') = S.A i i') ∧
+      |t| ≤ c * S.conditionNumber / ε ∧
+      (∑ i, ‖normalize
+          (fun i' => (NormedSpace.exp (-(Complex.I * (t : ℂ)) • H)).mulVec
+            (Sum.elim S.b fun _ => 0) (Sum.inl i')) i
+        - normalize S.solution i‖ ^ 2 : ℝ).sqrt ≤ ε := by
+  obtain ⟨c, hc, hwalk⟩ := CTQW2508MatrixInversion.ctqw_inverts S
+  obtain ⟨k, H, t, hH⟩ := hwalk hε
+  exact ⟨c, k, H, t, hc, hH⟩
 
 end LinearSystem
 
@@ -300,18 +467,21 @@ theorem inversion_restricts_to_quotient
 /-! ### 5. Summary
 
 * **Concrete (sorry-free):** `LinearSystem` (+ `solution`, `A_mulVec_solution`,
-  `ofWeighted`), `walkEvolve` (+ `walkEvolve_zero`), `amplitudeAmplify`,
-  `markedProjection`, `walkOutput` (the definite CTQW pipeline output),
+  `ofWeighted`), `walkEvolve` (+ `walkEvolve_zero`), `naiveWalkOutput`,
   `ctqwInverter` (+ `ctqwInverter_mulVec`), `conditionNumber`, `walkTime`,
   `normalize`, `IsCellUniform`, and `inversion_restricts_to_quotient` (the
-  inverse-of-restriction algebra on the cell-uniform subspace, proven axiom-clean
-  from `Graphplay.Equitable`'s spectral lift).
-* **Typeclass-conditional (the one genuinely-external result):** `ctqw_success`,
-  the CTQW convergence / condition-number analysis of arXiv:2508.06611, made
-  axiom-clean conditional on the named class `CTQWInversionSuccess`.  Its field
-  binds the witnessed output to the physical walk state `walkOutput (walkTime ε)`,
-  so the error bound is a genuine convergence claim — *not* a free-witness
-  existential (no one-line instance can inhabit it).
+  inverse-of-restriction algebra on the cell-uniform subspace, proven from
+  `Graphplay.Equitable`'s spectral lift).
+* **Refutation (machine-checked):** `naive_pipeline_fails` — the un-enlarged
+  walk pipeline cannot meet the `ε`-convergence demand even on the 1 × 1 system
+  `2x = 1`; the predicate `NaiveCTQWSuccess` is unsatisfiable there.  This is
+  why the cited interface quantifies over an enlarged walk space rather than
+  reusing the system register.
+* **Typeclass-conditional (the one genuinely-external result):**
+  `ctqw_success`, conditional on `CTQW2508MatrixInversion` — the arXiv:2508.06611
+  guarantee, with the enlarged space `n ⊕ Fin k`, the `A`-block constraint on
+  the walk Hamiltonian, the `O(κ/ε)` time bound, and the bound output read-out
+  all inside the single cited field.
 -/
 
 end MatrixInversion

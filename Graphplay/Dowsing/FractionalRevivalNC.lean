@@ -1,7 +1,7 @@
 /-
 # Graphplay.Dowsing.FractionalRevivalNC
 
-**Hole D6 — Fractional revival on (non-commutative) coherent algebras.**
+**Fractional revival on (non-commutative) coherent algebras.**
 
 Chan, Coutinho, Tamon, Vinet, Zhan ("Fractional Revival and Association
 Schemes", arXiv:1907.04729) characterize fractional revival (FR) on graphs
@@ -35,11 +35,11 @@ For the hypercube the file proves the **propagator product formula**
 **FR rigidity theorem** (`hammingGraph_two_no_nontrivial_fr`): for `n ≥ 2`
 the unweighted `Q_n` admits *no* fractional revival with both coefficients
 nonzero — annihilation off `{u, v}` forces `sin τ · cos τ = 0`, which kills
-one coefficient.  The boundary `n = 1` genuinely has balanced FR
+one coefficient.  The boundary `n = 1` has balanced FR
 (`hammingGraph_one_balanced_fr`), and the full `q = 2` closed-form
-characterization is `hammingGraph_fr_iff`.  The one genuinely deep external
-input (the primitive-idempotent half of CCTVZ Theorem 3.1) is carried by the
-cited typeclass `CCTVZBoseMesnerFR`.
+characterization is `hammingGraph_fr_iff`.  The one deep external input (the
+primitive-idempotent half of CCTVZ Theorem 3.1) is carried by the cited
+typeclass `CCTVZBoseMesnerFR`.
 
 References:
   - Chan-Coutinho-Tamon-Vinet-Zhan, arXiv:1907.04729 (FR + Bose-Mesner).
@@ -106,13 +106,11 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
 
 /-- PST is the `(0, β)`-case of FR with `|β| = 1`.
 
-CORRECTNESS FIX: `IsFR` constrains the `(v,u)` entry of `U(τ)` (`= β`) while
-`IsPST` is about the `(u,v)` entry.  For a *real symmetric* adjacency `U(τ)`
-is symmetric and the two coincide; for a general complex-Hermitian (chiral)
-adjacency the evolution is unitary-but-not-symmetric, and the two entries can
-differ in modulus.  We therefore add the genuinely-needed symmetric-evolution
-hypothesis `hsymm : G.evolve τ u v = G.evolve τ v u` (which holds whenever
-`G.adj` is real-symmetric) and prove the statement. -/
+The hypothesis `hsymm : G.evolve τ u v = G.evolve τ v u` is necessary: `IsFR`
+constrains the `(v,u)` entry of `U(τ)` (`= β`) while `IsPST` is about the
+`(u,v)` entry.  For a *real symmetric* adjacency `U(τ)` is symmetric and the
+two coincide; for a general complex-Hermitian (chiral) adjacency the evolution
+is unitary-but-not-symmetric, and the two entries can differ in modulus. -/
 theorem isPST_of_isFR_pst {G : WeightedGraph V} {u v : V} {τ : ℝ} {β : ℂ}
     (h : IsFR G u v τ 0 β) (huv : u ≠ v)
     (hsymm : G.evolve τ u v = G.evolve τ v u) : IsPST G u v τ := by
@@ -138,15 +136,11 @@ theorem isPeriodic_of_isFR_periodic {G : WeightedGraph V} {u v : V} {τ : ℝ}
 /-- FR is symmetric in `(u, v)` up to swapping `(α, β)`.  This is the "swap"
 symmetry coming from `U(τ)` being unitary **and symmetric**.
 
-CORRECTNESS FIX: the swap symmetry needs column `v` of `U(τ)` to be supported
-on `{u, v}`, which follows from FR-at-`u` only when `U(τ)` is symmetric
-(real-symmetric adjacency).  In the general complex-Hermitian (chiral) case the
-supports of distinct columns are not linked by unitarity alone.  We add the
-genuinely-needed symmetric-evolution hypothesis `hsymm` (entrywise symmetry of
-`U(τ)`, which holds for real-symmetric `G.adj`) and the column-`v` support
-hypothesis `hcol` that records the unitary-completion fact (column `v` is
-supported on `{u, v}`); from these the swapped FR is proved outright with
-`α' = G.evolve τ v v`, `β' = β`. -/
+The hypothesis `hcol` (column `v` of `U(τ)` supported on `{u, v}`) is
+necessary: it follows from FR-at-`u` only when `U(τ)` is symmetric
+(real-symmetric adjacency).  In the general complex-Hermitian (chiral) case
+the supports of distinct columns are not linked by unitarity alone.  Given
+`hcol`, the swapped FR holds with `α' = G.evolve τ v v`, `β' = β`. -/
 theorem swap {G : WeightedGraph V} {u v : V} {τ : ℝ} {α β : ℂ}
     (h : IsFR G u v τ α β) (huv : u ≠ v)
     (hcol : ∀ w : V, w ≠ u → w ≠ v → G.evolve τ w v = 0) :
@@ -310,8 +304,8 @@ If the propagator takes the scheme closed form
 `U(τ) = exp(iζ)(α·1 + β·A_q)` with `(A_q)_{v,u} = 1` and `u ≠ v`, then `G`
 exhibits `exp(iζ)(α, β)`-fractional revival from `u` to `v` at time `τ`.
 
-This is the genuinely-finite half of Chan-Coutinho-Tamon-Vinet-Zhan Theorem
-3.1: the three on-support amplitudes are read straight off the closed form
+This is the finite half of Chan-Coutinho-Tamon-Vinet-Zhan Theorem 3.1: the
+three on-support amplitudes are read straight off the closed form
 (using `diag_zero_of_ne` for `(A_q)_{u,u} = 0`, since `(A_q)_{v,u} = 1 ≠ 0`
 forces `q ≠ 0`), and the off-support annihilation `U(τ)_{w,u} = 0` for
 `w ∉ {u,v}` follows from **unitarity of the propagator**: the `u`-column of a
@@ -398,14 +392,10 @@ congruences on `τ` that promote the FR-pinned `u`-column to a global operator
 identity.  Mathlib v4.30 has no simultaneous-diagonalization API for commuting
 normal families, so following the repo's `LiteratureInterfaces` design (cf.
 `HammingMixingClassification` in `Graphplay.StdLib.Hamming`) we carry the cited
-theorem as a content-bearing typeclass: the field is the *verbatim* statement,
-so any instance must genuinely prove it — there is no degenerate witness.
-
-**Non-vacuity.**  The converse direction `bose_mesner_fr_of_closed_form` is
-proved unconditionally above, and the hypothesis side of the field is genuinely
-inhabited (balanced FR on `H(1,2) = K₂` is exhibited by
-`hammingGraph_one_balanced_fr` below), so neither side of the conditioned
-equivalence `bose_mesner_fr_iff` is vacuous. -/
+theorem as a typeclass whose field is the *verbatim* statement.  The converse
+direction `bose_mesner_fr_of_closed_form` is proved unconditionally above, and
+the hypothesis side is inhabited (balanced FR on `H(1,2) = K₂`,
+`hammingGraph_one_balanced_fr` below). -/
 class CCTVZBoseMesnerFR : Prop where
   /-- Verbatim forward half of 1907.04729 Theorem 3.1. -/
   closed_form_of_fr :
@@ -562,7 +552,7 @@ cell-uniform `(α, β)`-fractional revival between the corresponding cell-unifor
 states at the same time `τ`.
 
 This is the faithful FR analogue of `EquitablePartition.pst_lift`.  Just as the
-PST lift is stated on the genuinely-Hermitian `symmQuotient` (not the raw,
+PST lift is stated on the Hermitian `symmQuotient` (not the raw,
 non-Hermitian `quotient` — the two evolutions differ by the diagonal
 conjugation `D^{1/2} · D^{-1/2}` unless all cells are equal-sized), so is the
 FR lift: the cell-uniform amplitudes on the host are exactly the entries of
@@ -628,7 +618,7 @@ with the off-diagonal block determined by Hermiticity.
 
 When the coherent algebra is commutative this reduces, via simultaneous
 diagonalisation, to the classical association-scheme FR theorem above.  The
-non-commutative case is genuinely new and is what motivates this file. -/
+non-commutative case is new and motivates this file. -/
 
 /-- A **distinguished projector pair** in a quantum graph `S`: two
 orthogonal projectors `Πᵤ, Πᵥ` lying in `S` together with their
@@ -697,12 +687,9 @@ association scheme), to the Bose-Mesner FR theorem
 Without commutativity the obstruction is precisely the non-vanishing
 commutator `[Π_u, Π_v]` in `coherentAlgebra G`.
 
-CORRECTNESS FIX: the original conclusion was a tautological `IsNCFR ↔ <IsNCFR
-unfolded>` (the def carried a spurious `+ 0`), and `hcomm` was unused — saying
-nothing.  We restate to the **genuine commutative consequence** that *uses*
-`hcomm` and `D.ortho`: under commutativity, NCFR forces the conjugated
-projector `U Π_u U⁻¹` to **commute with `Π_v`** (the hallmark of the diagonal,
-off-diagonal-free block form).  This is the algebraic shadow of "landing in the
+Under commutativity (`hcomm`), NCFR forces the conjugated projector
+`U Π_u U⁻¹` to **commute with `Π_v`** — the hallmark of the diagonal,
+off-diagonal-free block form, and the algebraic shadow of "landing in the
 commutative span of `{Π_u, Π_v}`". -/
 theorem ncfr_commutative_reduction
     {n : ℕ} (S : QuantumGraph n) (H : Matrix (Fin n) (Fin n) ℂ)
@@ -777,25 +764,15 @@ def Graphon.IsFR {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 
 /-- **Graphon FR limit theorem (assembly from the limit-produced FR data).**
 
-LANDMINE FIX + CLOSE.  The former statement concluded
-`Graphon.IsFR W A B … τ α β` for an **arbitrary** graphon `W` and **arbitrary**
-coefficients `α, β` with *no* hypothesis linking them — which is **FALSE**: the
-first conjunct of `Graphon.IsFR` is the normalisation `‖α‖² + ‖β‖² = 1`, so
-instantiating `α = β = 0` would prove `0 = 1`.  (No convergence data appeared in
-the statement at all, so it could not possibly pin the amplitudes.)
-
-Following the established pattern of the sibling limit theorems
+Following the pattern of the sibling limit theorems
 (`ConsistentPartitionSequence.limit_exists`, `quotient_cauchy`), we take the
 **cut-norm-limit-produced FR data as hypotheses** — the normalisation `hnorm`
 and the three limiting `L²` amplitude identities (`hαamp` interior, `hβamp`
-off-diagonal, `hannih` third-bump annihilation) that the convergent finite FR
-sequence delivers in the limit — and assemble them into the graphon FR predicate.
-The only content deferred to the cut-norm machinery (Lovász, *Large Networks*,
-Ch. 11) is the *production* of these limiting amplitudes from a convergent finite
-FR sequence; given that data, the FR predicate holds, fully proved.  Non-vacuous:
-the hypotheses are genuine analytic identities (not `True`), and the conclusion
-bundles them with the correct measurability/disjointness packaging of
-`Graphon.IsFR`. -/
+off-diagonal, `hannih` third-bump annihilation) that a convergent finite FR
+sequence delivers in the limit — and assemble them into the graphon FR
+predicate.  The only content deferred to the cut-norm machinery (Lovász,
+*Large Networks*, Ch. 11) is the *production* of these limiting amplitudes
+from a convergent finite FR sequence. -/
 theorem Graphon.fr_limit
     {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
     (W : Graphon Ω μ)
@@ -869,34 +846,24 @@ def cycleGraph (n : ℕ) : WeightedGraph (Fin n) where
 def cycleProduct (n m : ℕ) : WeightedGraph (Fin n × Fin m) :=
   WeightedGraph.cartesianProduct (cycleGraph n) (cycleGraph m)
 
-/-- **The `Cₙ □ Cₘ` product-walk amplitude factorizes** (the genuine structural
-content; the entrywise Kronecker-sum factorization of `cartesianProduct`).
+/-- **The `Cₙ □ Cₘ` product-walk amplitude factorizes**: the `((a,b),(a',b'))`
+amplitude of `Cₙ □ Cₘ` is the product of the two single-cycle amplitudes (the
+entrywise Kronecker-sum factorization of `cartesianProduct`).
 
-LANDMINE FIX + CLOSE.  The former statement claimed `cycleProduct n m` admits
-balanced FR `(1/√2, i/√2)` between every antipodal pair at the *fixed* time
-`τ = π/4` for **all** even `n, m ≥ 2`.  This is **FALSE**, on two independent
-counts already visible at the smallest case `n = m = 2` (where
-`C₂ □ C₂ = C₄`):
+This factorization is what governs — and at a universal time obstructs —
+product FR.  The naive claim that `cycleProduct n m` admits balanced FR
+`(1/√2, i/√2)` between every antipodal pair at the fixed time `τ = π/4` for
+all even `n, m ≥ 2` fails already at `n = m = 2` (where `C₂ □ C₂ = C₄`):
 
-  1.  *Wrong diagonal amplitude.*  The product propagator factorizes
-      (`evolve_cartesianProduct_apply`), so the diagonal `(u,u)` amplitude is
-      `(evolve C₂ (π/4))₀₀ · (evolve C₂ (π/4))₀₀ = cos(π/4)·cos(π/4) = (1/√2)² =
-      1/2`, **not** the claimed `α = 1/√2`.
+  1.  *Wrong diagonal amplitude.*  By the factorization, the diagonal `(u,u)`
+      amplitude is `(evolve C₂ (π/4))₀₀² = cos²(π/4) = 1/2`, not `1/√2`.
 
-  2.  *Off-support leakage.*  The `u`-column of a Kronecker product is supported
-      on the **full product** of the factor column supports, not on `{u, v}`:
-      e.g. the `((1,0),(0,0))` amplitude is `(evolve C₂ (π/4))₁₀ ·
-      (evolve C₂ (π/4))₀₀ = (-i/√2)(1/√2) = -i/2 ≠ 0`, with `(1,0) ∉ {(0,0),
-      (1,1)}`.  So the FR annihilation condition fails — there is *no* FR pair at
-      `π/4` here at all.  (Balanced FR on even cycles occurs, but at
-      cycle-length-dependent times and with cycle-dependent coefficients, not at
-      the universal `π/4`.)
-
-The genuinely-true, fully-proved content is the **tensor factorization of the
-product-walk amplitude**, which is exactly what *governs* (and here obstructs)
-product FR: the `((a,b),(a',b'))` amplitude of `Cₙ □ Cₘ` is the product of the
-two single-cycle amplitudes.  Non-vacuous: a genuine entrywise identity between
-the product walk and the factor walks. -/
+  2.  *Off-support leakage.*  The `u`-column of a Kronecker product is
+      supported on the full product of the factor column supports, not on
+      `{u, v}`: the `((1,0),(0,0))` amplitude is
+      `(-i/√2)(1/√2) = -i/2 ≠ 0`, with `(1,0) ∉ {(0,0), (1,1)}`, so the FR
+      annihilation condition fails.  (Balanced FR on even cycles occurs, but
+      at cycle-length-dependent times with cycle-dependent coefficients.) -/
 theorem cycleProduct_evolve_factor (n m : ℕ) (τ : ℝ)
     (a a' : Fin n) (b b' : Fin m) :
     (cycleProduct n m).evolve τ (a, b) (a', b')
@@ -1264,9 +1231,9 @@ theorem hammingGraph_two_evolve_diag (n : ℕ) (τ : ℝ) (x : Fin n → Fin 2) 
 /-- **Balanced fractional revival on `H(1, 2) = K₂`** at `τ = π/4`: the walk
 sends `|0⟩` to `(√2/2)|0⟩ + (−i√2/2)|1⟩` — both coefficients nonzero, of equal
 modulus.  This is the boundary case of the rigidity theorem below: on a single
-edge there is no third vertex, so the annihilation clause is vacuous and the
-mixed amplitude survives.  (It also witnesses non-vacuity of the FR hypothesis
-in the `CCTVZBoseMesnerFR` interface.) -/
+edge there is no third vertex, so the annihilation clause holds trivially and
+the mixed amplitude survives.  (It also inhabits the FR hypothesis of the
+`CCTVZBoseMesnerFR` interface.) -/
 theorem hammingGraph_one_balanced_fr :
     ∃ (u v : Fin 1 → Fin 2) (α β : ℂ),
       u ≠ v ∧ α ≠ 0 ∧ β ≠ 0 ∧ ‖α‖ = ‖β‖ ∧
@@ -1302,23 +1269,21 @@ theorem hammingGraph_one_balanced_fr :
     · exact hwu (funext fun i => by rw [Subsingleton.elim i (0 : Fin 1)]; exact h)
     · exact hwv (funext fun i => by rw [Subsingleton.elim i (0 : Fin 1)]; exact h)
 
-/-- **FR rigidity of the unweighted hypercube (machine-checked refutation).**
-For `n ≥ 2` the Hamming graph `H(n, 2) = Q_n` admits **no** fractional revival
-with both coefficients nonzero, at any time, between any vertex pair.
+/-- **FR rigidity of the unweighted hypercube.**  For `n ≥ 2` the Hamming
+graph `H(n, 2) = Q_n` admits **no** fractional revival with both coefficients
+nonzero, at any time, between any vertex pair.
 
-This *refutes* the once-conjectured "FR exists on `H(n, 2)`" slot: by the
-product formula, `α = U(τ)_{uu} = (cos τ)ⁿ ≠ 0` forces `cos τ ≠ 0` and
+By the product formula, `α = U(τ)_{uu} = (cos τ)ⁿ ≠ 0` forces `cos τ ≠ 0` and
 `β = U(τ)_{vu} = (cos τ)^{n−d}(−i sin τ)^d ≠ 0` (with `d = d(v,u) ≥ 1`) forces
 `sin τ ≠ 0`; but then a one-coordinate flip `w` of `u` avoiding `v` (which
 exists since `u` has `n ≥ 2` neighbours) carries amplitude
 `(cos τ)^{n−1}(−i sin τ) ≠ 0`, violating the annihilation clause off `{u, v}`.
 
-The genuinely-true Chan–Coutinho–Tamon–Vinet–Zhan content (1907.04729 §4–5) is
-that two-coefficient FR lives on **weighted** graphs in the Hamming/path
-schemes — e.g. weighted paths from `Q_n` quotients, or `Q_n` with tuned edge
-weights — never on the *unweighted* `Q_n` itself for `n ≥ 2`; the boundary
-`n = 1` (a single edge, `hammingGraph_one_balanced_fr`) is the only unweighted
-survivor. -/
+In Chan–Coutinho–Tamon–Vinet–Zhan (1907.04729 §4–5), two-coefficient FR lives
+on **weighted** graphs in the Hamming/path schemes — e.g. weighted paths from
+`Q_n` quotients, or `Q_n` with tuned edge weights — never on the *unweighted*
+`Q_n` itself for `n ≥ 2`; the boundary `n = 1` (a single edge,
+`hammingGraph_one_balanced_fr`) is the only unweighted survivor. -/
 theorem hammingGraph_two_no_nontrivial_fr (n : ℕ) (hn : 2 ≤ n) :
     ¬ ∃ (u v : Fin n → Fin 2) (τ : ℝ) (α β : ℂ),
         u ≠ v ∧ α ≠ 0 ∧ β ≠ 0 ∧ IsFR (hammingGraph n 2) u v τ α β := by
@@ -1370,7 +1335,7 @@ two degenerate regimes `sin τ = 0` (scalar walk `U = (cos τ)ⁿ·1`, `β = 0`)
 the `q = 2` instance of CCTVZ Theorem 3.1 where the congruence conditions on
 the Krawtchouk eigenvalues `θ_r = n − 2r` collapse to `sin τ cos τ = 0`.
 
-The hypothesis `u ≠ v` is genuinely needed: at `u = v` the right-hand side is
+The hypothesis `u ≠ v` is necessary: at `u = v` the right-hand side is
 satisfiable (`τ = 0`, `α = 1`, `β = 0`) while `IsFR G u u τ 1 0` forces the
 contradictory `α = β`.  For general alphabet `q ≥ 3` see
 `hammingGraph_fr_iff_conjecture`. -/
@@ -1630,8 +1595,7 @@ private theorem chiralK4Matrix_col0_eq_I (w : Fin 4) (hw : w ≠ 0) :
     chiralK4Matrix w 0 = Complex.I := by
   fin_cases w <;> simp_all [chiralK4Matrix]
 
-/-- **No genuine fractional revival on the chiral `K_4` from vertex `0`
-(true non-vacuous result; corrects the earlier false "partial witness").**
+/-- **No non-trivial fractional revival on the chiral `K_4` from vertex `0`.**
 
 The `unitaryHammingChiralK4` of `Graphplay.Chiral` admits *uniform mixing* at
 `π/(3√3)` (`unitaryHammingChiralK4_uniformMixing`), and it is exactly this
@@ -1641,10 +1605,8 @@ scalar `(-i sin(√3 τ)/√3)·i` (`chiralK4_evolve_col0` + `chiralK4Matrix_col
 so requiring it to vanish off `{0, v}` forces that scalar to be `0`, which kills
 the `(v,0)` amplitude `β` as well.
 
-Hence any `(α, β)`-FR from `0` to `2` necessarily has `β = 0` — i.e. there is no
-*non-trivial* FR (the original `β ≠ 0` claim was false).  This is the honest,
-proved replacement: the chiral `K_4` is a uniform mixer, not an FR graph, from
-vertex `0`.
+Hence any `(α, β)`-FR from `0` to `2` necessarily has `β = 0`: the chiral
+`K_4` is a uniform mixer, not an FR graph, from vertex `0`.
 
 (The closed form is `chiralK4_evolve` from `Graphplay.Chiral`; the spectral
 facts `chiralK4Matrix_sq` / `chiralK4Involution` feed it.) -/
@@ -1677,10 +1639,9 @@ the `K_4` signing of `Graphplay.Chiral.unitaryHammingChiralK4`.  Beyond
 `K_n`, a finer question: which chiral signings of an association-scheme
 graph preserve the scheme's Bose-Mesner algebra (so the classical
 characterisation `bose_mesner_fr_iff` still applies) versus break it (and
-require the genuinely non-commutative `IsNCFR`)? -/
+require the non-commutative `IsNCFR`)? -/
 def openDirection_chiralFR : Prop :=
-  -- The genuine open conjecture: the chiral FR conjecture holds for *every*
-  -- order `n ≥ 3`.
+  -- The chiral FR conjecture for *every* order `n ≥ 3`.
   ∀ n : ℕ, chiralKn_fr_conjecture n
 
 /-- **Open Direction 2 — FR-rate maximization as an engineering primitive.**
@@ -1697,7 +1658,7 @@ optimisation surface.
 This is the precise FR analogue of the `chiral_mixing_optimization`
 theorem (statement-level) in `Graphplay.Chiral`. -/
 def openDirection_FRRateMax : Prop :=
-  -- The genuine engineering claim: for every weighted graph `G` and vertex
+  -- For every weighted graph `G` and vertex
   -- pair `(u, v)` admitting fractional revival at *some* time, there is a
   -- minimal such time `τ₀` (the FR-rate `λ_FR(G,u,v)`), i.e. the set of FR
   -- times is bounded below by an attained infimum.
@@ -1715,7 +1676,7 @@ finite sampling of the graphon admits FR?  This would be the FR avatar of
 the standard sample-vs-limit equivalence for graphon properties (cf.
 1003.5588). -/
 def openDirection_graphonFR : Prop :=
-  -- The genuine converse to `Graphon.fr_limit`: whenever a graphon `W` admits
+  -- The converse to `Graphon.fr_limit`: whenever a graphon `W` admits
   -- graphon fractional revival between two bump-state classes at time `τ` with
   -- coefficients `(α, β)`, *some* finite weighted graph admits ordinary FR with
   -- the same coefficients at the same time (the "finite sampling realises FR"

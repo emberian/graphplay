@@ -22,7 +22,7 @@ This file:
    weighted graph `toWeighted G`;
 5. states the **coarsest equitable** property: every equitable partition
    refines the WL-stable partition;
-6. bridges to Hole D4's coherent algebra (`Graphplay.Dowsing.CoherentAlgebra`)
+6. bridges to the coherent algebra (`Graphplay.Dowsing.CoherentAlgebra`)
    by stating that the WL-stable partition's matrix algebra coincides with
    the coherent algebra of `G`;
 7. states the higher-order `k`-WL extension (Cai-Fürer-Immerman 1992 lower
@@ -621,7 +621,7 @@ noncomputable def wlStableCells
   -- via the canonical bijection `s ≃ Fin s.card` of `Finset.equivFin`.
   -- Each vertex's stable colour is a member of the image `Finset`, and
   -- `wlCellCount G` is precisely that image's cardinality, so the index is
-  -- well-typed with *no* placeholder.
+  -- well-typed.
   classical
   intro v
   -- The image of the stable colouring; its cardinality is `wlCellCount G`.
@@ -921,10 +921,10 @@ a colour, contradicting injectivity.
 We phrase the conclusion concretely as: every graph automorphism (a
 permutation `σ` of `V` preserving adjacency) is the identity.
 
-NOTE on directionality: only the forward implication is genuinely true in
+NOTE on directionality: only the forward implication holds in
 general.  The converse ("rigid ⇒ WL-discrete") is **false** — the CFI graphs
 are rigid yet WL-indistinguishable (see `CfiLowerBound`) — so we state the
-single honest implication rather than an `↔`.  This is the negative direction
+single implication rather than an `↔`.  This is the negative direction
 of the coarsest-equitable characterisation. -/
 theorem wlStable_discrete_imp_rigid
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
@@ -1067,7 +1067,7 @@ This is the matrix-level transcription of the WL fixed-point property and is
 the seed of the coherent algebra of `G`: the adjacency operator restricted to
 the cell-uniform subspace acts as the (symmetric) quotient.
 
-NOTE on directionality: we state the genuinely-true **invariance** of the
+NOTE on directionality: we state the **invariance** of the
 cell-uniform subspace under `G.adj`, rather than a literal commutation
 `E * A = A * E` with the *unnormalized* same-cell indicator `E`.  The latter is
 **false** in general for equitable partitions (e.g. the path `P₃` with cells
@@ -1171,7 +1171,7 @@ The colour type grows with each round; we realise the iteration with an
 explicit tower of colour types, so that the round-`r` colouring of any graph
 on any vertex set lands in the *same* type `kWlType k r`.  This is what makes
 colourings of two different graphs directly comparable — the basis for the
-genuine notion of `k`-WL indistinguishability. -/
+notion of `k`-WL indistinguishability. -/
 
 /-- The colour type of the canonical `k`-WL iteration after `r` rounds.
 
@@ -1207,7 +1207,7 @@ def kWlIter
   | 0 => kWlInit k G
   | r + 1 => kWlStep k G (kWlIter k G r)
 
-/-- **`k`-WL indistinguishability** (the genuine notion): two graphs on the
+/-- **`k`-WL indistinguishability**: two graphs on the
 same vertex set are not separated by `k`-WL when at *every* round the colour
 histograms of their canonical iterates coincide — the multiset of round-`r`
 colours over all `k`-tuples is the same for `G` and for `H`.
@@ -1263,7 +1263,7 @@ def CfiLowerBound : Prop :=
 two vertices are non-isomorphic, yet oblivious `1`-WL cannot separate them — a
 `1`-tuple's atomic type carries no adjacency information, so the canonical
 iterates of *any* two graphs on the same vertex set coincide at `k = 1`.  This
-shows the statement shape of `CfiLowerBound` is satisfiable (non-vacuous); the
+shows the statement shape of `CfiLowerBound` is satisfiable; the
 mathematical substance of CFI lives at `k ≥ 2`. -/
 theorem cfiLowerBound_at_one :
     ∃ (V : Type) (iF : Fintype V) (iD : DecidableEq V)

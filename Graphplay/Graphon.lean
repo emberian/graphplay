@@ -139,19 +139,18 @@ open Graphplay.ForMathlib in
 the function `x ↦ ∫ W.kernel x y · f y ∂μ` is again in `L²(μ; ℂ)`.
 
 This is `ForMathlib.kernelIntegralFun_memLp` specialised to the graphon kernel
-(jointly measurable `W.measurable`, essentially bounded `W.bounded`).  The deep
-Cauchy–Schwarz/Hilbert–Schmidt analytic core (`kernelIntegralFun_memLp`) is
-**fully proven** (`sorry`-free) — the pointwise Cauchy–Schwarz bound
-`kernelIntegralFun_ae_norm_le` plus `MemLp.of_bound` on the finite measure — and
-here it is consumed cleanly. -/
+(jointly measurable `W.measurable`, essentially bounded `W.bounded`).  The
+Cauchy–Schwarz/Hilbert–Schmidt analytic core (`kernelIntegralFun_memLp`) is the
+pointwise Cauchy–Schwarz bound `kernelIntegralFun_ae_norm_le` plus
+`MemLp.of_bound` on the finite measure. -/
 theorem opFun_memLp [IsFiniteMeasure μ] (W : Graphon Ω μ) (f : Lp ℂ 2 μ) :
     MemLp (W.opFun (f : Ω → ℂ)) 2 μ :=
   kernelIntegralFun_memLp (measure_ne_top μ Set.univ) W.measurable.aestronglyMeasurable
     W.bounded f
 
 open Graphplay.ForMathlib in
-/-- A.e. additivity of `opFun` in the L² argument.  **Genuine** (no analytic
-gap): on a finite measure space the kernel-times-function integrand is
+/-- A.e. additivity of `opFun` in the L² argument:
+on a finite measure space the kernel-times-function integrand is
 integrable on `μ ⊗ μ` (`kernel_mul_integrable`), hence integrable in `y` for
 a.e. `x` (Fubini), licensing `integral_add` pointwise a.e. -/
 theorem opFun_add_ae [IsFiniteMeasure μ] (W : Graphon Ω μ) (f g : Lp ℂ 2 μ) :
@@ -174,7 +173,7 @@ theorem opFun_add_ae [IsFiniteMeasure μ] (W : Graphon Ω μ) (f g : Lp ℂ 2 μ
   rw [integral_congr_ae hsum, integral_add hfx hgx]
 
 open Graphplay.ForMathlib in
-/-- A.e. ℂ-linearity (scalar) of `opFun` in the L² argument.  **Genuine** — pure
+/-- A.e. ℂ-linearity (scalar) of `opFun` in the L² argument: pure
 `integral_const_mul` after `Lp.coeFn_smul`, no integrability needed. -/
 theorem opFun_smul_ae (W : Graphon Ω μ) (c : ℂ) (f : Lp ℂ 2 μ) :
     W.opFun ((c • f : Lp ℂ 2 μ) : Ω → ℂ)
@@ -193,7 +192,7 @@ open Graphplay.ForMathlib in
 integral operator `kernelIntegralCLM` for the graphon's bounded Hermitian
 kernel, with operator-norm bound `C := essBound · μ(Ω)`.
 
-The four bundled analytic hypotheses are all **genuine** (`sorry`-free):
+The four bundled analytic hypotheses:
 additivity (`opFun_add_ae`), homogeneity (`opFun_smul_ae`), the `MemLp`
 closure (`opFun_memLp`), and the `eLpNorm` Schur bound
 (`kernelIntegralFun_eLpNorm_le_mul`, the sharp `M · μ(Ω)` Hilbert–Schmidt L²
@@ -213,8 +212,8 @@ noncomputable def op [IsFiniteMeasure μ] (W : Graphon Ω μ) :
     (fun f g => W.opFun_add_ae f g)
     (fun c f => W.opFun_smul_ae c f)
     (fun f => by
-      -- the `eLpNorm` Schur bound, with `C = (max essBound 0) · μ(Ω)`.  This is the
-      -- genuine, `sorry`-free Hilbert–Schmidt bound (`kernelIntegralFun_eLpNorm_le_mul`),
+      -- the `eLpNorm` Schur bound, with `C = (max essBound 0) · μ(Ω)`: the
+      -- Hilbert–Schmidt bound (`kernelIntegralFun_eLpNorm_le_mul`),
       -- restated for the graphon kernel.  We massage `ENNReal.ofReal (M·μ)` into the
       -- exact `ENNReal.ofReal C` shape via `mul_comm`.
       have hbdd' : ∀ᵐ p ∂(μ.prod μ), ‖Function.uncurry W.kernel p‖ ≤ max W.essBound 0 := by
@@ -226,15 +225,11 @@ noncomputable def op [IsFiniteMeasure μ] (W : Graphon Ω μ) :
 
 /-- The graphon operator is self-adjoint on `L²(μ; ℂ)`.
 
-**Genuine** reduction: `op` is the `ForMathlib` kernel integral operator
-`kernelIntegralCLM`, whose self-adjointness from a Hermitian kernel
-(`kernelIntegralCLM_isSelfAdjoint`) is fully proved (the Fubini swap is done in
-`ForMathlib`).  The graphon kernel is Hermitian by `W.herm`, and bounded /
-jointly measurable by `W.bounded` / `W.measurable`.  Requires
-`[IsFiniteMeasure μ]`.
-
-(Since `op` is now `sorry`-free, so is this; the self-adjointness *argument*
-itself was always complete.) -/
+`op` is the `ForMathlib` kernel integral operator `kernelIntegralCLM`, whose
+self-adjointness from a Hermitian kernel (`kernelIntegralCLM_isSelfAdjoint`)
+is proved with the Fubini swap done in `ForMathlib`.  The graphon kernel is
+Hermitian by `W.herm`, and bounded / jointly measurable by `W.bounded` /
+`W.measurable`.  Requires `[IsFiniteMeasure μ]`. -/
 theorem op_isSelfAdjoint [IsFiniteMeasure μ] (W : Graphon Ω μ) :
     IsSelfAdjoint (W.op) :=
   Graphplay.ForMathlib.kernelIntegralCLM_isSelfAdjoint (μ := μ) W.kernel _ _ _ _ _ _
@@ -246,8 +241,7 @@ open Graphplay.ForMathlib in
 This is the easy `L¹ → L^∞` (Schur) bound; sharper Hilbert–Schmidt bounds are
 available under stronger square-integrability assumptions on the kernel.
 
-**Genuine** (`sorry`-free): the per-`f` operator-norm inequality is the
-`sorry`-free Hilbert–Schmidt `eLpNorm` bound
+The per-`f` operator-norm inequality is the Hilbert–Schmidt `eLpNorm` bound
 `ForMathlib.kernelIntegralFun_eLpNorm_le_mul` (with `M := W.essBound`), pushed
 through `ENNReal.toReal` exactly as in the `mkContinuous` bound of
 `kernelIntegralCLM`, then fed to `ContinuousLinearMap.opNorm_le_bound`.  The only

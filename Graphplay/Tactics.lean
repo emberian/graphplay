@@ -61,8 +61,7 @@ For a `loopless` field `∀ v, adj v v = 0`:
 Intros the vertex and fires `graphplay_herm` + the looplessness of factors.
 
 ------------------------------------------------------------------------------
-HARD CONSTRAINTS honoured here: no `axiom`/`admit`/`sorry` in any helper
-lemma; no global `@[simp]` on foreign lemmas (only NAMED `graphplay_*`
+Convention: no global `@[simp]` on foreign lemmas (only NAMED `graphplay_*`
 attributes, applied to lemmas in this file or scoped onto Mathlib lemmas).
 -/
 
@@ -432,7 +431,7 @@ macro_rules
 ## VALIDATION EXAMPLES
 
 Each example reproduces a real goal shape from the corpus and discharges it
-with the corresponding tactic / helper, end-to-end (no `sorry`).
+with the corresponding tactic / helper, end-to-end.
 ============================================================================ -/
 
 section ValidationExamples

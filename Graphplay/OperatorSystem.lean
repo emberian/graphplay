@@ -25,7 +25,7 @@ This file:
 * extends `QuantumEquitablePartition` (from
   `Graphplay/Dowsing/NonCommutativeCoherent.lean`) to operator systems via
   UCP retractions;
-* connects to **Tower 6**: a `TopCat.Sheaf OpSysCat` is the genuinely
+* connects to **Tower 6**: a `TopCat.Sheaf OpSysCat` is the
   quantum-graph-valued Tower 6 sheaf, of which the existing
   `TopCat.Sheaf UStarAlgCat` is the `*`-algebra restriction;
 * gives the standard examples — the non-commutative complete graph
@@ -35,10 +35,10 @@ This file:
   (`Graphplay.QuantumCSP.quantumChromaticNumber`) and the Tsirelson chain
   `θ ≤ θ_q ≤ χ_q ≤ χ`.
 
-The two genuinely-external operator-algebra inputs — Choi's CP⟺Choi-PSD theorem
+The two external operator-algebra inputs — Choi's CP⟺Choi-PSD theorem
 and the Stinespring dilation — are carried as `Prop`-valued **typeclass
-assumptions** (`ChoiTheorem`, `StinespringDilation`), each discharging an
-axiom-clean **conditional theorem**; no `sorry` and no bare `axiom`.  Everything
+assumptions** (`ChoiTheorem`, `StinespringDilation`), each consumed by a
+conditional theorem.  Everything
 else (amplification functoriality, `k`-positivity monotonicity, the UCP category,
 the examples) is proved outright.  The file is written defensively so it can be a
 precursor of an eventual Mathlib upstream contribution (operator-system theory
@@ -315,9 +315,8 @@ noncomputable def choiMatrix
   fun ij kl =>
     φ (Matrix.single ij.1 kl.1 (1 : ℂ)) ij.2 kl.2
 
-/-- **Choi's theorem interface (Choi 1975, Thm 2)** — the genuinely-external
-operator-algebra input, carried as a `Prop`-valued **typeclass assumption, NOT a
-bare axiom**.
+/-- **Choi's theorem interface (Choi 1975, Thm 2)** — an external
+operator-algebra input, carried as a `Prop`-valued typeclass assumption.
 
 The content: a linear map `φ : M_n(ℂ) → M_m(ℂ)` is completely positive iff its
 Choi matrix `C(φ) = ∑_{i,j} E_{ij} ⊗ φ(E_{ij})` is positive semi-definite.  Both
@@ -717,13 +716,13 @@ On morphisms there is a genuine obstruction: a UCP map `f : S → T` extends to 
 `*`-homomorphism `⟨S⟩ → ⟨T⟩` only when `f` is multiplicative on the carrier
 (Paulsen's multiplicative-domain theorem). Worse, *no* nonzero `*`-homomorphism
 `M_n(ℂ) → M_m(ℂ)` need exist functorially for arbitrary UCP data, since full
-matrix algebras have no characters. So the only choice that is **honestly
-functorial on all of `OpSysCat`** is the constant assignment of the unit
+matrix algebras have no characters. So the only choice that is
+functorial on all of `OpSysCat` is the constant assignment of the unit
 `ℂ`-algebra on morphisms; we therefore realise `OpSysToStarAlg` as the constant
 functor at `ℂ`, while exposing the faithful object-level *-algebra separately as
-`OperatorSystem.toStarAlgCat`. This keeps the construction concrete and genuinely
-functorial (a real functor, not a placeholder); the non-functorial
-generated-algebra object map is the content recorded in `toStarAlgCat`. -/
+`OperatorSystem.toStarAlgCat`. This keeps the construction concrete and
+functorial; the non-functorial
+generated-algebra object map is recorded in `toStarAlgCat`. -/
 noncomputable def OpSysToStarAlg : OpSysCat ⥤ StarAlgCat.{0} :=
   (CategoryTheory.Functor.const OpSysCat).obj ({ carrier := ℂ } : StarAlgCat.{0})
 
@@ -780,7 +779,7 @@ theorem QuantumEquitablePartition.toOperatorSystemPartition
   -- UCP section `T → S` whose composite is `id_T`.  Such a retract always
   -- exists: take `T = S` itself, with both legs the identity UCP map.  The
   -- retract-section identity is then `id ∘ id = id`.  This is the trivial
-  -- (but genuine, non-vacuous) retract witnessing existence; the richer
+  -- retract witnessing existence; the richer
   -- block-diagonal conditional-expectation retraction onto the cell-quotient
   -- operator system is one further choice of `T`, but the existential here is
   -- discharged by the identity retraction.
@@ -790,7 +789,7 @@ theorem QuantumEquitablePartition.toOperatorSystemPartition
        retract_section := ?_ }⟩⟩
   exact UCPMap.id_comp (UCPMap.id S.toOperatorSystem)
 
-/-! ## 8. Tower 6 upgrade: `Sheaf OpSysCat` is the genuinely-quantum sheaf
+/-! ## 8. Tower 6 upgrade: `Sheaf OpSysCat` is the quantum sheaf
 
 `Graphplay/Tower6.lean` builds `TopCat.Sheaf UStarAlgCat`, i.e. sheaves of
 unital `*`-algebras. Restricting Tower 6 to `*`-algebras is convenient
@@ -798,8 +797,8 @@ unital `*`-algebras. Restricting Tower 6 to `*`-algebras is convenient
 information*, since a `*`-algebra is its own generated `*`-algebra and an
 operator system is strictly more refined.
 
-The **honest** Tower 6 value category — the one that retains genuine
-quantum-graph information stalk-wise — is `OpSysCat`. The functor
+The Tower 6 value category that retains
+quantum-graph information stalk-wise is `OpSysCat`. The functor
 `OpSysToStarAlg` (§6) then induces a forgetful functor
 
   `Sheaf X OpSysCat ⥤ Sheaf X UStarAlgCat`
@@ -814,7 +813,7 @@ category structure together with the equaliser condition on open covers.) -/
 def Tower6QuantumSheaf (X : TopCat.{0}) : Type _ :=
   TopCat.Sheaf OpSysCat X
 
-/-- The **forgetful map** from genuinely-quantum Tower 6 sheaves to
+/-- The **forgetful map** from quantum Tower 6 sheaves to
 `*`-algebra-valued Tower 6 sheaves (i.e. the existing `Tower6.lean` notion),
 induced by the functor `OpSysToStarAlg` on stalks.
 
@@ -822,8 +821,8 @@ Since `OpSysToStarAlg` is (necessarily — see its docstring) the *constant*
 functor at the unit `ℂ`-algebra, applying it sectionwise turns any
 operator-system-valued sheaf into the presheaf that is constantly `ℂ`. The
 genuine sheaf with that stalk is the constant sheaf `SheafGraph.constSheaf X ℂ`,
-which is exactly what this map returns. The construction is concrete and total
-(no `sorry`): the only non-trivial datum, the sheaf condition for the constant
+which is exactly what this map returns. The construction is concrete and
+total: the only non-trivial datum, the sheaf condition for the constant
 presheaf, is packaged inside `SheafGraph.constSheaf`. -/
 noncomputable def Tower6QuantumToStarAlg (X : TopCat.{0}) :
     Tower6QuantumSheaf X → TopCat.Sheaf UStarAlgCat X :=
@@ -922,9 +921,9 @@ noncomputable def tensor (S : OperatorSystem n) (T : OperatorSystem m) :
 
 @[inherit_doc] infixl:70 " ⊗ₒ " => OperatorSystem.tensor
 
-/-- **Stinespring dilation interface (Stinespring 1955 / Paulsen Thm 4.1)** — the
-genuinely-external operator-algebra input, carried as a `Prop`-valued **typeclass
-assumption, NOT a bare axiom**.
+/-- **Stinespring dilation interface (Stinespring 1955 / Paulsen Thm 4.1)** — an
+external operator-algebra input, carried as a `Prop`-valued typeclass
+assumption.
 
 The content: every UCP map `φ : S → T` between finite-dimensional operator systems
 admits a Stinespring dilation `(d, V, π)` — an ancilla `K = ℂ^d`, an isometry

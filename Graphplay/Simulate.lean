@@ -8,7 +8,7 @@ symbolically, this module lets us *actually run* the time evolution
 evolve.
 
 Everything here is computable `Float` code — no Mathlib `NormedSpace.exp`
-(noncomputable), no `sorry`/`axiom`/`admit`.  The matrix exponential is done
+(noncomputable).  The matrix exponential is done
 by the standard **scaling-and-squaring + Taylor** method, which is fully
 general and numerically robust for the small Hermitian Hamiltonians we use.
 

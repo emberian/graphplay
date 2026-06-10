@@ -33,7 +33,7 @@ namespace KleinBottle
 
 open CombinatorialMap
 
-/-! ## Signed combinatorial maps (placeholder for non-orientable embeddings) -/
+/-! ## Signed combinatorial maps (non-orientable embeddings) -/
 
 /-- A **signed combinatorial map** is a combinatorial map together with an
 edge signature `λ : E → Bool` (with `True` = orientation-preserving,
@@ -92,7 +92,7 @@ permutation
 Concretely: cross the edge with `σ`; if the edge is negative, flip the
 orientation bit; then advance around the next vertex using `ρ` when the local
 orientation is positive and `ρ⁻¹` when it is negative (because a reversed local
-orientation reads the rotation backwards).  This is a genuine permutation of
+orientation reads the rotation backwards).  This is a permutation of
 `E × Bool` (its inverse reverses each step).
 
 Each *face* of the embedded graph lifts to exactly **two** orbits of `φ⁺` in

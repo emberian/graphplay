@@ -9,14 +9,14 @@ sits downstream of both `Graphplay.PST.Universal` (the `D_K` framework:
 `IsKFractionalRevival`, `IsKRatioCondition`) and `Graphplay.PST.Periodicity`
 (whose `2π`-periodicity extraction this generalizes), so it can use both freely.
 
-**The honest statement.**  The naive necessity claim — "K-fractional revival at
+**The statement.**  The naive necessity claim — "K-fractional revival at
 some `τ > 0` forces the joint eigenvalue support `S_K` into a *single*
 arithmetic progression (`IsKRatioCondition`)" — is **false** for `|K| ≥ 2`:
 `Graphplay.PST.isKFractionalRevival_univ` exhibits revival on `K = univ` at
 *every* time for *every* graph, while a generic spectrum (e.g. `{0, 1, √2}`
 extended to the supports of a weighted graph, or `{±1, ±√2}` for a disjoint
 union of two weighted edges) lies in no arithmetic progression.  What revival at
-`τ` genuinely forces is a **residue-class structure**:
+`τ` forces is a **residue-class structure**:
 
 > the supported eigenvalues fall into **at most `|K|` classes** modulo
 > `(2π/τ)·ℤ`  (`IsKRatioClassCondition`, proven below in
@@ -28,7 +28,7 @@ at `u`, and the support of `u` lands in one progression of gap `2π/τ`
 (`isKRatioCondition_of_fractionalRevival_singleton` — the originally documented
 `IsKRatioCondition` conclusion, true in exactly this case).
 
-**Proof architecture (all axiom-clean, no Diophantine approximation).**
+**Proof architecture (no Diophantine approximation).**
 1. Revival iterates: `K`-invariance of `U(τ)` composes to `U(nτ)` for every
    `n : ℕ` (`isKFractionalRevival_nat_mul`).
 2. Group the spectral decomposition by the *phase value* `c = e^{-iτλ}`: the
@@ -318,7 +318,7 @@ theorem phaseProj_col_inner (G : WeightedGraph V) (τ : ℝ) (c d : ℂ) (y z : 
 column `F_c e_k` confined to `K` (by `phaseProj_leak_eq_zero`), and distinct
 classes give orthogonal columns — a linearly independent family inside `ℂ^K`.
 
-This is the genuine spectral content of revival (for `|K| = 1` it says all
+This is the spectral content of revival (for `|K| = 1` it says all
 supported phases coincide, i.e. periodicity's phase collapse). -/
 theorem card_supportedClasses_le (G : WeightedGraph V) (K : Finset V) {τ : ℝ}
     (hrev : IsKFractionalRevival G K τ) :
@@ -419,7 +419,7 @@ theorem eigenvalue_eq_add_int_of_phaseAt_eq (G : WeightedGraph V) {τ : ℝ}
     nlinarith [himeq]
   linarith [hkey]
 
-/-- **The `K`-ratio condition in residue-class form** (the honest necessary
+/-- **The `K`-ratio condition in residue-class form** (the necessary
 spectral condition for `K`-fractional revival at time `τ`).  The joint
 eigenvalue support of `K` is covered by at most `|K|` arithmetic progressions
 with the common gap `2π/τ`: there is a base set `B` of at most `|K|` reals such
@@ -435,8 +435,8 @@ def IsKRatioClassCondition (G : WeightedGraph V) (K : Finset V) (τ : ℝ) : Pro
       ∃ b ∈ B, ∃ m : ℤ, lam = b + (2 * Real.pi / τ) * (m : ℝ)
 
 /-- **Necessity of the ratio-class condition** (Chan–Coutinho–Tamon–Vinet–Zhan,
-arXiv:2004.01129, necessity direction, residue-class form; fully proven,
-axiom-clean).  `K`-fractional revival at time `τ ≠ 0` forces the joint
+arXiv:2004.01129, necessity direction, residue-class form).
+`K`-fractional revival at time `τ ≠ 0` forces the joint
 eigenvalue support of `K` into at most `|K|` residue classes modulo
 `(2π/τ)·ℤ`. -/
 theorem isKRatioClassCondition_of_fractionalRevival (G : WeightedGraph V)

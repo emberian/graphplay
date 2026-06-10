@@ -37,21 +37,20 @@ This file:
   graph is a spectral lower bound on the number of cells of any
   equitable partition of `G`.
 
-The whole file is `sorry`-free.  The core SDP layer is genuine and
-axiom-clean: `lovaszTheta` is the real `sSup` of the feasible objective set,
-with the structural bounds `lovaszThetaFeasible_nonempty`, `one_le_lovaszTheta`,
-`lovaszTheta_le_card`, `lovaszTheta_bddAbove`, the independence-number bound
-`alpha_le_lovaszTheta` (`α(G) ≤ ϑ(G)`), and the covering bound
-`lovaszTheta_le_chromaticNumber_compl` (`ϑ(G) ≤ χ(Ḡ)`, weak duality) all proven
-outright — so the sandwich `α ≤ ϑ ≤ χ̄` is built.  The remaining deep results (SDP
-strong duality, the orthonormal-representation and ratio-bound formulae, the
-perfect-graph collapse, equitable-quotient monotonicity, the Schrijver
-coherent-algebra reduction, and the Mancinska–Roberson identification) are
-`#print axioms`-clean **conditional theorems**, each derived from a named, cited
-`Prop`-valued interface (`LovaszSDPDuality`, `LovaszOrthonormalRepBound`,
-`LovaszVertexTransitiveRatioBound`, `LovaszCoherentAlgebraReduction`,
-`LovaszEquitableQuotientMonotone`, `PerfectGraphTheorem`) rather than a bare
-`sorry` or `axiom`.
+The core SDP layer is proved outright: `lovaszTheta` is the `sSup` of the
+feasible objective set, with the structural bounds
+`lovaszThetaFeasible_nonempty`, `one_le_lovaszTheta`, `lovaszTheta_le_card`,
+`lovaszTheta_bddAbove`, the independence-number bound `alpha_le_lovaszTheta`
+(`α(G) ≤ ϑ(G)`), and the covering bound `lovaszTheta_le_chromaticNumber_compl`
+(`ϑ(G) ≤ χ(Ḡ)`, weak duality) — so the sandwich `α ≤ ϑ ≤ χ̄` is built.  The
+remaining deep results (SDP strong duality, the orthonormal-representation and
+ratio-bound formulae, the perfect-graph collapse, equitable-quotient
+monotonicity, the Schrijver coherent-algebra reduction, and the
+Mancinska–Roberson identification) are **conditional theorems**, each derived
+from a named, cited `Prop`-valued interface (`LovaszSDPDuality`,
+`LovaszOrthonormalRepBound`, `LovaszVertexTransitiveRatioBound`,
+`LovaszCoherentAlgebraReduction`, `LovaszEquitableQuotientMonotone`,
+`PerfectGraphTheorem`).
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -125,7 +124,7 @@ vertex-transitive graphs Lovász's `θ = |V| / (1 + λ_max(A)/λ_min(A))`
 formula (with `A` the adjacency matrix and appropriate sign convention)
 applies.
 
-This is a genuine `sSup`, not a stub.  The supremum is taken over a *non-empty
+The supremum is taken over a *non-empty
 compact* feasible set (the matrix `(1/|V|) • 1` is always feasible), so it is
 attained and finite.
 
@@ -250,7 +249,7 @@ theorem one_le_lovaszTheta
 /-- **Structural upper bound `ϑ(G) ≤ |V|`.**  Every feasible objective is
 bounded above by `|V|` (the entrywise PSD bound `X i j ≤ (X i i + X j j)/2`
 summed over all pairs gives `∑∑ X i j ≤ |V| · tr X = |V|`), so the supremum
-defining `ϑ(G)` is at most `|V|`.  Genuine, axiom-clean; together with
+defining `ϑ(G)` is at most `|V|`.  Together with
 `one_le_lovaszTheta` this sandwiches `1 ≤ ϑ(G) ≤ |V|` on nonempty graphs. -/
 theorem lovaszTheta_le_card
     {V : Type u} [Fintype V] [DecidableEq V]
@@ -307,7 +306,7 @@ theorem lovaszTheta_le_card
 /-- The feasible-objective set defining `ϑ(G)` is bounded above (by `|V|`),
 via the same entrywise PSD bound `Xᵢⱼ ≤ (Xᵢᵢ + Xⱼⱼ)/2` used in
 `lovaszTheta_le_card`.  Factored out so the `sSup` of the objective set is
-a genuine least upper bound (needed to feed `le_csSup`). -/
+a least upper bound (needed to feed `le_csSup`). -/
 theorem lovaszTheta_bddAbove
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
@@ -356,7 +355,7 @@ theorem lovaszTheta_bddAbove
 Lovász's 1979 paper gives three equivalent definitions of `ϑ(G)`.  We
 state them and the equivalence between them; the proofs of equivalence
 are non-trivial (each direction uses an SDP duality argument or a
-spectral-decomposition argument) and are supplied as axiom-clean conditional
+spectral-decomposition argument) and are supplied as conditional
 theorems off named, cited interfaces (`LovaszOrthonormalRepBound`,
 `LovaszSDPDuality`, `LovaszVertexTransitiveRatioBound`).
 -/
@@ -384,7 +383,7 @@ value (over both `c` and the representation) with `ϑ(G)`.
 The infimum is realised by Lovász's *optimal orthonormal representation*,
 itself an SDP-extracted gadget.
 
-This is a *genuine* definition: for each candidate unit "handle" vector
+Concretely: for each candidate unit "handle" vector
 `c : Fin d → ℝ`, the per-handle cost is `⨆ i, 1 / ⟨c, ρ.vec i⟩²` (the
 worst vertex), and the value is the infimum of that cost over all unit
 handle vectors.  We range the infimum over the set of admissible per-
@@ -398,7 +397,7 @@ Over `ℝ`, Lean's `1/0 = 0` would instead make that vertex contribute `0` to
 `u_0 = (1,0)`, `u_1 = (0,1)` and the handle `c = (1,0)` would give
 `⨆ = max (1/1) (1/0) = max 1 0 = 1`, putting `t = 1 < 2 = ϑ` into the set and
 *refuting* the bound.  We therefore restrict the handle set to those `c` with
-`∀ i, ⟨c, ρ.vec i⟩ ≠ 0`, so every `1/⟨c, u_i⟩²` is a genuine finite cost and
+`∀ i, ⟨c, ρ.vec i⟩ ≠ 0`, so every `1/⟨c, u_i⟩²` is a finite cost and
 the `⨆ i` is the faithful worst-vertex value.  (On `⊥₂` this excludes the
 axis handles and the infimum is attained at `c = (1/√2, 1/√2)`, value `2`.) -/
 noncomputable def OrthonormalRepresentation.value
@@ -412,7 +411,7 @@ noncomputable def OrthonormalRepresentation.value
 (Lovász, *On the Shannon capacity of a graph*, IEEE Trans. Inf. Theory 25 (1979),
 1–7; Theorem 3, the `ϑ = min over orthonormal representations` identity).
 
-The genuinely-external content of equivalence (a): `ϑ(G)` equals the infimum,
+The external content of equivalence (a): `ϑ(G)` equals the infimum,
 over all orthonormal representations `ρ` and dimensions `d`, of `ρ.value` (the
 `min_c max_i 1/⟨c,u_i⟩²` cost, with `c` ranging over unit handles non-orthogonal
 to every vertex vector).  This is the orthonormal-representation form of Lovász's
@@ -421,19 +420,19 @@ concrete primal-SDP / orthonormal-representation families, but this file builds 
 concrete rep→upper-bound objects, so it cannot be discharged from the abstract
 `strong_duality` field non-circularly.
 
-**Non-vacuity.**  The field equates two independently-defined real numbers:
-`lovaszTheta G` (a genuine `sSup` over the PSD-SDP feasible set, with
-`1 ≤ lovaszTheta G`) and `sInf { ρ.value }` (a genuine `sInf` over orthonormal
-reps, whose inner `ρ.value` is now guarded so the `1/⟨c,u_i⟩²` are finite — see
+The field equates two independently-defined real numbers:
+`lovaszTheta G` (an `sSup` over the PSD-SDP feasible set, with
+`1 ≤ lovaszTheta G`) and `sInf { ρ.value }` (an `sInf` over orthonormal
+reps, whose inner `ρ.value` is guarded so the `1/⟨c,u_i⟩²` are finite — see
 `OrthonormalRepresentation.value`).  There is no generic proof that an
 `sSup`-of-SDP equals an `sInf`-of-orthonormal-reps; that equality is precisely
-Lovász's theorem, so no one-line instance inhabits this field.  (Were `value` left
-unguarded, the field would be *uninhabitable*: on `⊥₂` the unguarded `sInf` is
-`≤ 1 < 2 = lovaszTheta`, so no instance could ever satisfy it — the guard is what
-makes the assumption faithful rather than self-refuting.)
+Lovász's theorem, so no one-line instance inhabits this field.  The guard on
+`value` is what keeps the assumption satisfiable: with `value` unguarded, on
+`⊥₂` the unguarded `sInf` is `≤ 1 < 2 = lovaszTheta`, so no instance could
+ever satisfy the field.
 
-`Prop`-valued **typeclass assumption, not a bare axiom**: no instance (pure
-external, pending the concrete dual SDP layer).  Local class. -/
+`Prop`-valued typeclass assumption: no instance (pure external, pending the
+concrete dual SDP layer).  Local class. -/
 class LovaszOrthonormalRepBound
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] : Prop where
@@ -472,30 +471,24 @@ equals the minimum of `λ_max(M)` over the dual-feasible Hermitian matrices `M`
 (those with `M i j = 1` whenever `i = j` or `i ≁_G j`).  This is the *dual* of the
 trace-`1` PSD program defining `lovaszTheta`.
 
-**Restated to the genuine dual program + closed through `[LovaszSDPDuality]`.**
-The old statement equated `lovaszTheta G` with `sInf {v | ∃ _M, v = 0} = sInf {0} =
-0`, asserting `lovaszTheta G = 0` — **false**, since `1 ≤ lovaszTheta G` on every
-nonempty graph (`one_le_lovaszTheta`).  We replace the placeholder RHS with the
-*genuine* dual-objective value set
+With the dual-objective value set
 
     `D := { v | ∃ M, lovaszDualFeasible G M ∧ v = λ_max(M) }`,
 
-so the statement `lovaszTheta G = sInf D` is now the faithful Lovász duality
-identity `ϑ(G) = min_M λ_max(M)`.
+the statement `lovaszTheta G = sInf D` is the Lovász duality identity
+`ϑ(G) = min_M λ_max(M)`.
 
-The proof is the honest SDP strong-duality discharge.  Strong duality (Lovász
-1979; Grötschel–Lovász–Schrijver 1981) is supplied by the genuine
-`[LovaszSDPDuality]` instance, whose `strong_duality` field turns weak duality +
-Slater into `⨆ primal = ⨅ dual`.  The two genuinely-deep inputs — **weak duality**
+The proof is the SDP strong-duality discharge.  Strong duality (Lovász 1979;
+Grötschel–Lovász–Schrijver 1981) is supplied by the `[LovaszSDPDuality]`
+instance, whose `strong_duality` field turns weak duality + Slater into
+`⨆ primal = ⨅ dual`.  The two deep inputs — **weak duality**
 `∀ X primal-feasible, ∀ M dual-feasible, (∑∑ X i j) ≤ λ_max(M)` and **Slater**
-(the duality gap can be made arbitrarily small) — are exposed as explicit honest
+(the duality gap can be made arbitrarily small) — are exposed as explicit
 hypotheses (`hweak`, `hslater`), exactly as the sibling
 `QuantumValue_le_CommutingOperatorValue` exposes its embedding datum: they are
-true facts about the real Lovász SDP, not derivable in this file without
-re-deriving the very identity, so they are made auditable rather than hidden.
-Given them, the equality `lovaszTheta G = sInf D` follows by bridging both sides
-to the abstract `⨆/⨅` of `strong_duality`.  Non-vacuous (`D` is the real dual
-value set, not `{0}`) and fully closed (no `sorry`). -/
+facts about the real Lovász SDP, not derivable in this file without re-deriving
+the very identity.  Given them, the equality `lovaszTheta G = sInf D` follows
+by bridging both sides to the abstract `⨆/⨅` of `strong_duality`. -/
 theorem lovaszTheta_eq_dualSDP [LovaszSDPDuality]
     {V : Type} [Fintype V] [DecidableEq V] [Nonempty V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
@@ -553,7 +546,7 @@ vertex-transitive `G`, Lovász's "ratio bound" applies:
 where `A` is the 0/1 adjacency matrix.  The general (non
 vertex-transitive) case has an analogous but more involved formula.
 
-The RHS is the *genuine* Hoffman/Lovász ratio expression built from the
+The RHS is the Hoffman/Lovász ratio expression built from the
 spectrum of the real adjacency matrix: with `λ` the eigenvalue family of
 the Hermitian `G.adjMatrix ℝ`, `λ_max = ⨆ i, λ i` and `λ_min = ⨅ i, λ i`,
 the value is `|V| · (-λ_min) / (λ_max - λ_min)`. -/
@@ -565,7 +558,7 @@ noncomputable def ratioBound
 
 /-- **Lovász vertex-transitive ratio-bound interface** (Lovász 1979, Thm 9).
 
-The single genuinely-external classical input behind the eigenvalue / `cos θ`
+The single external classical input behind the eigenvalue / `cos θ`
 formulation of `ϑ`.  For a **vertex-transitive** graph `G` whose adjacency
 spectrum is **non-constant**, the Lovász number equals the Hoffman/Lovász ratio
 expression `ϑ(G) = |V|·(-λ_min)/(λ_max − λ_min)`.  The proof is the deep
@@ -573,9 +566,9 @@ vertex-transitive averaging argument: averaging an optimal SDP solution over the
 (transitive) automorphism group lands it in the commutant of the regular
 representation, where the optimum is read off the adjacency spectrum.
 
-This is a `Prop`-valued **typeclass assumption, not a bare axiom**: a theorem
-taking `[LovaszVertexTransitiveRatioBound G]` is `#print axioms`-clean and
-honestly conditional on the cited fact.  No instance is provided — the averaging
+This is a `Prop`-valued typeclass assumption: a theorem taking
+`[LovaszVertexTransitiveRatioBound G]` is conditional on the cited fact.
+No instance is provided — the averaging
 argument needs orbit-structure and concrete SDP/eigenvalue families not
 constructible in this file (and not derivable from `LovaszSDPDuality` without
 re-deriving this very identity), so it is a pure external assumption.
@@ -600,11 +593,11 @@ class LovaszVertexTransitiveRatioBound
 
 /-- **Equivalence (c), ratio-bound form** (Lovász 1979, Thm 9): for a
 **vertex-transitive** graph `G` whose adjacency spectrum is **non-constant**,
-`ϑ(G) = |V|·(-λ_min)/(λ_max − λ_min)`.  Now an axiom-clean conditional theorem,
-derived from the named `[LovaszVertexTransitiveRatioBound G]` interface.  The two
-genuine hypotheses (`hvt` vertex-transitivity, `hnd` spectral non-degeneracy) are
+`ϑ(G) = |V|·(-λ_min)/(λ_max − λ_min)`.  A conditional theorem,
+derived from the named `[LovaszVertexTransitiveRatioBound G]` interface.  The
+two hypotheses (`hvt` vertex-transitivity, `hnd` spectral non-degeneracy) are
 exactly the conditions under which the formula holds — both satisfiable (e.g.
-`K_n`, `n ≥ 2`), so non-vacuous. -/
+`K_n`, `n ≥ 2`). -/
 theorem lovaszTheta_eq_ratioBound
     {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
@@ -625,16 +618,14 @@ Mathlib, lifted into `ℝ`).
 
 /-- The independence number of `G`: the size of the largest independent
 set.  An independent set of `G` is exactly a clique of the complement
-`Gᶜ`, so we define it as the clique number of `Gᶜ` — the genuine value
-`sSup {n | ∃ s, Gᶜ.IsNClique n s}` from Mathlib's `SimpleGraph.cliqueNum`.
-This is a *real* definition (no longer a `0` stub), so any bound stated in
-terms of it (`α ≤ ϑ`) is non-vacuous. -/
+`Gᶜ`, so we define it as the clique number of `Gᶜ` — the value
+`sSup {n | ∃ s, Gᶜ.IsNClique n s}` from Mathlib's `SimpleGraph.cliqueNum`. -/
 noncomputable def independenceNumber
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) : ℕ :=
   Gᶜ.cliqueNum
 
-/-- The chromatic number of `G`.  Genuine shim around the Mathlib
+/-- The chromatic number of `G`.  A shim around the Mathlib
 `SimpleGraph.chromaticNumber`, which lives in `ℕ∞`; we coerce to `ℕ` with
 `ENat.toNat`, which sends the (non-finite-colorable) `⊤` case to `0`.  On
 a finite vertex type `G` is always colorable, so the `⊤` case never fires
@@ -647,8 +638,8 @@ noncomputable def chromaticNumber
 
 /-- **Independence-number bound `α(G) ≤ ϑ(G)`** (Lovász 1979, Theorem 3).
 
-This is the genuinely-provable half of the Lovász sandwich, split off as
-its own axiom-clean lemma.  The witness is the normalised indicator outer
+This is the directly-provable half of the Lovász sandwich, split off as
+its own lemma.  The witness is the normalised indicator outer
 product of a maximum independent set `S` of `G`: with `v` the 0/1
 indicator of `S` and `c = |S|`, the matrix `X = (1/c) • vecMulVec v v` is
 feasible —
@@ -773,8 +764,7 @@ pieces:
   `∑∑ Xᵢⱼ = ∑_{a,b} yₐᵀXy_b ≤ ∑_{a,b} √(pₐ)√(p_b) = (∑_a √pₐ)² ≤ k·∑_a pₐ`,
   where `pₐ = yₐᵀXyₐ = ∑_{i∈class a} Xᵢᵢ` (off-diagonal terms inside a
   clique vanish, being edges of `G`), so `∑_a pₐ = tr X = 1`.
-
-This is genuine weak duality; no `sorry` is used in the chain below. -/
+-/
 
 /-- **Bilinear Cauchy–Schwarz for a PSD matrix.**  If `X` is positive
 semidefinite (real, symmetric), then for any two vectors `u w : V → ℝ`,
@@ -985,10 +975,9 @@ theorem lovaszTheta_le_chromaticNumber_compl
 
     α(G) ≤ ϑ(G) ≤ χ(Ḡ).
 
-The first inequality is Lovász's "independence number bound" — now proven
-axiom-clean as the standalone lemma `alpha_le_lovaszTheta` (indicator
-outer-product witness).  The second is the "covering bound", now also
-proven axiom-clean as `lovaszTheta_le_chromaticNumber_compl` (weak
+The first inequality is Lovász's "independence number bound", the standalone
+lemma `alpha_le_lovaszTheta` (indicator outer-product witness).  The second is
+the "covering bound", `lovaszTheta_le_chromaticNumber_compl` (weak
 duality: a colouring of `Ḡ` by `k` colours caps every feasible objective
 at `k`). -/
 theorem alpha_le_theta_le_chiBar
@@ -996,9 +985,9 @@ theorem alpha_le_theta_le_chiBar
     (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj] :
     (independenceNumber G : ℝ) ≤ lovaszTheta G
     ∧ lovaszTheta G ≤ (chromaticNumber Gᶜ : ℝ) := by
-  -- Both halves are now genuine lemmas: the lower half is `alpha_le_lovaszTheta`
-  -- (indicator outer-product witness) and the upper half is the weak-duality
-  -- covering bound `lovaszTheta_le_chromaticNumber_compl`.
+  -- The lower half is `alpha_le_lovaszTheta` (indicator outer-product witness);
+  -- the upper half is the weak-duality covering bound
+  -- `lovaszTheta_le_chromaticNumber_compl`.
   exact ⟨alpha_le_lovaszTheta G, lovaszTheta_le_chromaticNumber_compl G⟩
 
 /-! ## Equitable-partition monotonicity (Tower 1 ↔ Tower 2 bridge)
@@ -1024,7 +1013,7 @@ cells, with distinct cells `i ~ j` adjacent iff some (equivalently,
 every) representative of cell `i` has nonzero branching number into cell
 `j`, *or* vice versa.
 
-This is a *genuine* construction built from the `quotient` matrix of
+The construction is built from the `quotient` matrix of
 `Graphplay.Equitable`: `i ~ j ↔ i ≠ j ∧ (Q i j ≠ 0 ∨ Q j i ≠ 0)`, where
 `Q = P.quotient` is the branching matrix.  Symmetrising over the two
 orientations makes the relation a `SimpleGraph` even though the raw
@@ -1086,14 +1075,14 @@ theorem EquitablePartition.discrete_toWeighted_quotientLTGraph_eq
     exact ⟨G.ne_of_adj hadj, Or.inl ((hQne i j).mpr hadj)⟩
 
 /-- **Equitable-quotient monotonicity interface for `ϑ`** (Bachman–Tamon
-arXiv:1108.0339, §4).  The genuinely-external `cellInflate`-feasibility-lift
+arXiv:1108.0339, §4).  The external `cellInflate`-feasibility-lift
 content: a feasible `X̃` for the quotient `G/P` lifts, via the block-diagonal
 `cellInflate` map (normalised by the cell count), to a feasible point for `G`
 with the same objective — so `ϑ(G/P) ≤ ϑ(G)`, and equitable coarsening can only
 decrease (or preserve) the LT number.  The lift preserves PSD, scales the trace
 by the cell count, and vanishes on edges of `G` via the branching condition.
 
-`Prop`-valued **typeclass assumption, not a bare axiom**: no instance (the
+`Prop`-valued typeclass assumption: no instance (the
 `cellInflate` feasibility-lift argument is deep, not in Mathlib, and has no other
 assigned interface).  Local class. -/
 class LovaszEquitableQuotientMonotone
@@ -1108,8 +1097,8 @@ class LovaszEquitableQuotientMonotone
 
 /-- The bridge: `ϑ` of the quotient graph lower-bounds `ϑ` of the
 original.  Equivalently, equitable coarsening can only *decrease* (or
-preserve) the LT number (Bachman–Tamon arXiv:1108.0339 Thm 4.1).  Axiom-clean
-conditional theorem via `[LovaszEquitableQuotientMonotone G P]`. -/
+preserve) the LT number (Bachman–Tamon arXiv:1108.0339 Thm 4.1).  Conditional
+theorem via `[LovaszEquitableQuotientMonotone G P]`. -/
 theorem lovaszTheta_via_equitable_partition
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -1135,12 +1124,11 @@ framework.
 
 /-- The *fractional* chromatic number of `G`: the LP relaxation of `χ`.
 
-This is the *genuine* covering-LP optimum: the infimum of the total
+This is the covering-LP optimum: the infimum of the total
 weight `∑_S w S` over nonnegative weightings `w` of the independent sets
 of `G` (encoded as `Finset V` that are `G`-independent, i.e. cliques of
 `Gᶜ`) such that every vertex is fractionally covered: `∑_{S ∋ v} w S ≥ 1`.
-No longer a `0` stub — it is a real LP value (and equals `χ(G)` when the
-LP integrality gap closes). -/
+It equals `χ(G)` when the LP integrality gap closes. -/
 noncomputable def fractionalChromaticNumber
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) : ℝ :=
@@ -1159,18 +1147,16 @@ there exists a quantum `n`-colouring of `G` (a family of projective
 measurements in some `B(H)` satisfying the colouring identities of the
 synchronous non-local game `Hom(G, K_n)`).
 
-The genuine definition needs the projective-measurement / nonlocal-game
+The real definition needs the projective-measurement / nonlocal-game
 formalism, which is **not yet available in this repo** (the `QuantumGraph`
 module exposes `QuantumChromatic` only as a statement-level stub).  We
 therefore record `χ_q` here as a *named opaque combinatorial quantity*
 pinned by its defining property `1 ≤ χ_q ≤ χ`: concretely the least size
 of a *classical* proper colouring, which is the classical chromatic
-number `χ(G)`.  This is an honest **upper-bound surrogate** (every
+number `χ(G)`.  This is an **upper-bound surrogate** (every
 classical colouring is a quantum colouring, so `χ_q ≤ χ`; equality is the
-degenerate commutative case), documented as such — it is *not* the `0`
-stub, so `1 ≤ χ_q` and `χ_q ≤ χ` are non-vacuous.  When the quantum-hom
-infrastructure lands, this should be replaced by the genuine
-`Hom(G,K_n)`-strategy value. -/
+degenerate commutative case).  When the quantum-hom infrastructure lands,
+this should be replaced by the true `Hom(G,K_n)`-strategy value. -/
 noncomputable def quantumChromaticNumber
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) : ℕ :=
@@ -1182,12 +1168,12 @@ operator-valued PSD matrices over some `B(H)`.
 
 On the commutative shadow `B(H) = ℂ` this relaxation collapses to the
 ordinary Lovász SDP, and Mancinska–Roberson (arXiv:1212.1724) prove
-`ϑ_q = ϑ` outright (no vertex-transitivity needed) — the genuine `ϑ_q`
+`ϑ_q = ϑ` outright (no vertex-transitivity needed) — `ϑ_q`
 is *equal to* `ϑ` for the real-scalar theta body considered here.  Since
-the genuine operator-valued relaxation needs `B(H)` infrastructure not in
-this repo, we define `ϑ_q` as the (documented, non-degenerate) value
-`lovaszTheta G`, its proven Mancinska–Roberson identification, rather than
-the `0` stub.  Inequalities `ϑ ≤ ϑ_q` etc. then hold as equalities. -/
+the operator-valued relaxation needs `B(H)` infrastructure not in
+this repo, we define `ϑ_q` as the value `lovaszTheta G`, its
+Mancinska–Roberson identification.  Inequalities `ϑ ≤ ϑ_q` etc. then hold
+as equalities. -/
 noncomputable def quantumLovaszTheta
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] : ℝ :=
@@ -1200,10 +1186,9 @@ noncomputable def quantumLovaszTheta
 This is the upper half of the Lovász sandwich refined through the *quantum*
 chromatic number of the complement.
 
-**False→true migration.**  The old statement asserted the chain in the
-*non-complemented* direction, `χ_f(G) ≤ ϑ(G) ≤ χ_q(G) ≤ χ(G)`, which is
-**false on both nontrivial inequalities** under this file's faithful (non-stub)
-definitions:
+The complement is essential.  The *non-complemented* chain
+`χ_f(G) ≤ ϑ(G) ≤ χ_q(G) ≤ χ(G)` is **false on both nontrivial inequalities**
+under this file's definitions:
 
 * `χ_f(G) ≤ ϑ(G)` fails on `K_n` (`n ≥ 2`): `χ_f(K_n) = n` but `ϑ(K_n) = 1`;
 * `ϑ(G) ≤ χ_q(G)` (= `χ(G)`) fails on the **edgeless** graph `⊥` (`n ≥ 2`):
@@ -1212,18 +1197,16 @@ definitions:
 
 The correct Lovász/Knuth chain places the chromatic terms on the **complement**
 `Ḡ` (so that `ϑ(G)` sits *below* the cover/colouring numbers of `Ḡ`), giving
-the genuinely-true `ϑ(G) ≤ χ_q(Ḡ) ≤ χ(Ḡ)`.  Both inequalities are now proven
-axiom-clean:
+`ϑ(G) ≤ χ_q(Ḡ) ≤ χ(Ḡ)`.  Both inequalities are proven:
 
 * `ϑ(G) ≤ χ_q(Ḡ)`: the weak-duality covering bound `lovaszTheta_le_chromaticNumber_compl`
   (`ϑ(G) ≤ χ(Ḡ)`), since the `quantumChromaticNumber` surrogate is `χ`;
 * `χ_q(Ḡ) ≤ χ(Ḡ)`: every classical colouring is a quantum colouring (here an
   equality of the surrogate definitions).
 
-(The genuinely-deep *lower* refinement `ϑ(G) ≤ χ_f(Ḡ)` — fractional chromatic
-of the complement upper-bounding `ϑ` — is the LP↔SDP relaxation gap and is left
-to the honest sorry on its own true statement, not asserted in the wrong
-direction here.) -/
+(The deep *lower* refinement `ϑ(G) ≤ χ_f(Ḡ)` — fractional chromatic of the
+complement upper-bounding `ϑ` — is the LP↔SDP relaxation gap and is left
+open.) -/
 theorem theta_le_quantumChromatic_compl_le_chromatic_compl
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj] :
@@ -1240,25 +1223,20 @@ theorem theta_le_quantumChromatic_compl_le_chromatic_compl
 /-- **`ϑ_q = ϑ` by definition** (the Mancinska–Roberson identification is *baked into*
 the surrogate `quantumLovaszTheta`).
 
-**Renamed (audit 2026-06): was `lovaszTheta_eq_quantumLovaszTheta_of_vertexTransitive`,
-with an unused `_hvt : True` "vertex-transitive" placeholder.**  The former name and
-hypothesis advertised the genuine arXiv:1212.1724 *theorem* `G vertex-transitive ⟹
-ϑ(G) = ϑ_q(G)` (in fact Mancinska–Roberson prove `ϑ_q = ϑ` with **no**
-vertex-transitivity).  But here `quantumLovaszTheta G` is *defined* to be
-`lovaszTheta G` (the operator-valued SDP needs `B(H)` infrastructure not in this
-repo — see `quantumLovaszTheta`'s note), so the equality is a **definitional `rfl`**,
-not the SDP theorem: no vertex-transitivity is used, and the `True` placeholder was
-vacuous.  We drop the placeholder hypothesis and rename to state the honest content —
-this is the *definitional* identification recording where the genuine MR result is
-assumed, **not** a proof of it.  (The real `ϑ_q = ϑ`, and its `ϑ = ϑ⁺` strengthening
-from Cubitt–Mancinska–Roberson–Severini–Stahlke–Winter, arXiv:1404.3401, would
+Here `quantumLovaszTheta G` is *defined* to be `lovaszTheta G` (the
+operator-valued SDP needs `B(H)` infrastructure not in this repo — see
+`quantumLovaszTheta`'s note), so the equality is a **definitional `rfl`**, not
+the SDP theorem: this is the identification recording where the
+Mancinska–Roberson result is assumed, **not** a proof of it.  (The real
+`ϑ_q = ϑ`, and its `ϑ = ϑ⁺` strengthening from
+Cubitt–Mancinska–Roberson–Severini–Stahlke–Winter, arXiv:1404.3401, would
 require the operator-valued relaxation and are not formalised here.) -/
 theorem quantumLovaszTheta_eq_lovaszTheta_def
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     lovaszTheta G = quantumLovaszTheta G :=
   -- `quantumLovaszTheta G` is *definitionally* `lovaszTheta G` (the MR identification
-  -- is baked into the def, arXiv:1212.1724), so this is a genuine `rfl`.
+  -- is baked into the def, arXiv:1212.1724).
   rfl
 
 /-! ## Perfect graphs
@@ -1280,8 +1258,7 @@ those for which no equitable coarsening can sharpen the LT bound.
 
 /-- The *perfect graph* predicate: every induced subgraph `G.induce s`
 satisfies `χ(H) = ω(H)` (chromatic number equals clique number).  This is
-the genuine Berge definition (no longer a `True` stub), so using
-`IsPerfect G` as a hypothesis is a real restriction on `G` — e.g. an odd
+the Berge definition, a real restriction on `G` — e.g. an odd
 `C₅` fails it (`ω = 2 < 3 = χ`).  We phrase the equality in `ℕ` via the
 `chromaticNumber`/`cliqueNum` shims; the quantifier ranges over all vertex
 subsets `s : Set V`. -/
@@ -1299,14 +1276,13 @@ Perfect Graph Theorem (`G` perfect ⟺ `Ḡ` perfect), the equality
 
     `α(G) = χ(Ḡ)`            (i.e. `ω(Ḡ) = χ(Ḡ)`, perfection of `Ḡ`).
 
-This is the genuine missing content: Mathlib has neither the Perfect Graph
+This is the missing content: Mathlib has neither the Perfect Graph
 Theorem nor the complementation lemma.  We isolate it as a *content-bearing*
 field, **conditioned on the proven sandwich keystone** `hsw : α ≤ ϑ ≤ χ̄`
 (`alpha_le_theta_le_chiBar`): a consumer cannot satisfy the field without
-honouring the genuine `independenceNumber`/`chromaticNumber` shims sitting
-inside that sandwich — so the interface is the faithful Berge residual, not
-a weakening (it is *not* discharged by any trivial reflexivity, since
-`α = χ̄` is false on imperfect `G`, e.g. `C₅`).
+honouring the `independenceNumber`/`chromaticNumber` shims sitting
+inside that sandwich, and the field is not discharged by any trivial
+reflexivity, since `α = χ̄` is false on imperfect `G`, e.g. `C₅`.
 
 This is a *local* class (it lives in this file and is **not** added to the
 shared `Graphplay.LiteratureInterfaces`), mirroring the typeclass-conditional
@@ -1338,12 +1314,11 @@ This is the canonical *polynomial-time identification* of `α` and `χ̄`
 on perfect graphs; see Grötschel–Lovász–Schrijver 1981 and Lovász
 1972.
 
-The sandwich `α ≤ ϑ ≤ χ̄` is BUILT axiom-clean (both halves are genuine
-lemmas: `alpha_le_lovaszTheta` and `lovaszTheta_le_chromaticNumber_compl`).
+The sandwich `α ≤ ϑ ≤ χ̄` is proved outright (`alpha_le_lovaszTheta` and
+`lovaszTheta_le_chromaticNumber_compl`).
 The collapse therefore reduces to the single Berge-perfection equality
-`α(G) = χ̄(G)`, supplied *axiom-clean-conditionally* by the local
-`[PerfectGraphTheorem]` interface (fed the proven sandwich as its
-non-vacuity witness).  No `sorry`. -/
+`α(G) = χ̄(G)`, supplied conditionally by the local
+`[PerfectGraphTheorem]` interface, fed the proven sandwich. -/
 theorem alpha_eq_theta_eq_chiBar_of_perfect
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableRel Gᶜ.Adj]
@@ -1353,7 +1328,7 @@ theorem alpha_eq_theta_eq_chiBar_of_perfect
     ∧ lovaszTheta G = (chromaticNumber Gᶜ : ℝ) := by
   obtain ⟨hαθ, hθχ⟩ := alpha_le_theta_le_chiBar G
   -- The single Berge-perfection equality `α(G) = χ̄(G)`, discharged through the
-  -- local interface, fed the *proven* sandwich keystone as non-vacuity witness.
+  -- local interface, fed the proven sandwich keystone.
   have hαχ : (independenceNumber G : ℝ) = (chromaticNumber Gᶜ : ℝ) :=
     PerfectGraphTheorem.alpha_eq_chiBar_of_perfect hG ⟨hαθ, hθχ⟩
   -- collapse by antisymmetry: `α ≤ ϑ ≤ χ̄ = α` forces all equal.
@@ -1369,14 +1344,14 @@ that `lovaszTheta P.quotientLTGraph = lovaszTheta G`.
 This is the *operational* form of perfection in the Graphplay tower
 hierarchy.
 
-**Now proven axiom-clean.**  The witness is the *discrete* (singleton)
+The witness is the *discrete* (singleton)
 equitable partition `EquitablePartition.discrete`, which always exists and
 whose `quotientLTGraph` is `G` on the nose
 (`EquitablePartition.discrete_toWeighted_quotientLTGraph_eq`): the finest
 equitable refinement recovers the graph itself, so its `ϑ` matches exactly.
 (The `IsPerfect` hypothesis is not needed for this existence statement — the
 discrete partition is tight for *every* graph; perfection is the stronger
-condition under which a *coarse* tight partition exists, which is the genuine
+condition under which a *coarse* tight partition exists, which is the
 deep content and is not asserted here.) -/
 theorem exists_equitablePartition_tight_of_perfect
     {V : Type u} [Fintype V] [DecidableEq V]
@@ -1440,16 +1415,15 @@ Operationally: the spectral lower bound computed on the equitable quotient can
 never exceed the number of cells — so a partition into few cells caps the
 granularity of any `ϑ`-certificate read off the quotient.
 
-**False→true migration.**  The old statement asserted `ϑ(Ḡ) ≤ |I|` (the
-theta-of-complement of the *original* graph bounded by the cell count).  That
-is **false**: take `G = K_n` (which is `(n-1)`-regular, so the single-cell
-partition `|I| = 1` is equitable via `EquitablePartition.indiscrete`); then
-`Gᶜ = ⊥` and `ϑ(⊥_n) = n`, giving the absurd `n ≤ 1` for `n ≥ 2`.  The bug is
-that `ϑ`-of-complement is **not** monotone *upward* under coarsening — coarsening
-the partition shrinks `|I|` while `ϑ(Ḡ)` is fixed.  The genuinely-true
-granularity statement bounds the theta of the complement of the **quotient**
-(a graph on the `|I|` cells), which is `≤ |I|` by the universal structural
-bound `lovaszTheta_le_card`.  Proven axiom-clean. -/
+The quotient is essential: the analogous bound `ϑ(Ḡ) ≤ |I|` for the
+*original* graph is **false** — take `G = K_n` (which is `(n-1)`-regular, so
+the single-cell partition `|I| = 1` is equitable via
+`EquitablePartition.indiscrete`); then `Gᶜ = ⊥` and `ϑ(⊥_n) = n`, giving the
+absurd `n ≤ 1` for `n ≥ 2`.  `ϑ`-of-complement is **not** monotone *upward*
+under coarsening — coarsening the partition shrinks `|I|` while `ϑ(Ḡ)` is
+fixed.  The granularity statement bounds the theta of the complement of the
+**quotient** (a graph on the `|I|` cells), which is `≤ |I|` by the universal
+structural bound `lovaszTheta_le_card`. -/
 theorem lovaszTheta_quotient_compl_le_card_cells
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type u} [Fintype I] [DecidableEq I]
@@ -1471,7 +1445,7 @@ coherent algebra" — the LT number is determined by the coherent algebra
 data alone. -/
 
 /-- **Schrijver coherent-algebra reduction interface for `ϑ`.**  The single
-genuinely-external input behind coherent-algebra invariance of the Lovász
+external input behind coherent-algebra invariance of the Lovász
 number.  The LT optimum is unchanged when the feasible set is restricted to
 matrices lying in `coherentAlgebra (toWeighted G)`: this is the LT-version of
 Schrijver's theorem on coherent-algebra domination of association-scheme bounds,
@@ -1480,9 +1454,9 @@ algebra (which preserves PSD, trace, the vanishing-on-edges constraint — the
 algebra is Schur-closed and contains the adjacency — and the objective, since it
 contains `J`).
 
-This is a `Prop`-valued **typeclass assumption, not a bare axiom**: a theorem
-taking `[LovaszCoherentAlgebraReduction G]` is `#print axioms`-clean and honestly
-conditional on the cited fact.  No instance is provided — the Reynolds-averaging
+This is a `Prop`-valued typeclass assumption: a theorem taking
+`[LovaszCoherentAlgebraReduction G]` is conditional on the cited fact.
+No instance is provided — the Reynolds-averaging
 construction is deep and not in Mathlib.  Local class (mirrors
 `PerfectGraphTheorem`, `LovaszVertexTransitiveRatioBound`).
 
@@ -1501,7 +1475,7 @@ class LovaszCoherentAlgebraReduction
               ∧ v = ∑ i, ∑ j, X i j }
 
 /-- **Coherent-algebra invariance of `ϑ`** (Schrijver).  The LT number is
-computable from the coherent algebra alone.  Axiom-clean conditional theorem,
+computable from the coherent algebra alone.  Conditional theorem,
 derived from the named `[LovaszCoherentAlgebraReduction G]` interface. -/
 theorem lovaszTheta_eq_lovaszTheta_restricted_to_coherentAlgebra
     {V : Type u} [Fintype V] [DecidableEq V]

@@ -103,7 +103,7 @@ def IsUniformMixing {V : Type u} [Fintype V] [DecidableEq V]
 /-- Average mixing matrix (Cesàro limit of `mixing`).  Each entry is the limit
 of the time-average `T⁻¹ ∫₀ᵀ mixing t u v dt` as `T → ∞`, expressed via
 `Filter.limUnder`.  For a CTQW this limit exists (by the spectral decomposition
-of `A`), so this is the genuinely-correct value; `limUnder` yields exactly that
+of `A`), and `limUnder` yields exactly that
 limit when it exists. -/
 noncomputable def WeightedGraph.averageMixing {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) : Matrix V V ℝ :=
@@ -299,8 +299,8 @@ theorem cellBlockAmp_eq_quotient
     ∃ W : Matrix I I ℂ, ∀ i j : I,
       cellBlockAmp P (σ.evolve t) i j = quotientCellBlockAmp P W i j := by
   classical
-  -- Work with the signed graph and its (genuinely equitable, by `hred`)
-  -- partition `P'`; the proven PST/quotient machinery applies to it verbatim.
+  -- Work with the signed graph and its (equitable, by `hred`)
+  -- partition `P'`; the PST/quotient machinery applies to it verbatim.
   set Gs := σ.signedGraph with hGs
   set P' := σ.signedPartition P hred with hP'
   -- `P'.cells = P.cells`, so cell cardinalities and cell-block sums agree.
@@ -419,20 +419,18 @@ theorem cellBlockAmp_eq_quotient
 and the quotient-level weighted cell-block amplitudes hit the uniform target,
 then the signed host walk exhibits cell-uniform mixing.  The host/quotient
 amplitude identification (`cellBlockAmp_eq_quotient`) supplies the only
-non-elementary step; everything else here is a genuine derivation.
+non-elementary step.
 
-Note on the prior formulation: the conclusion was previously stated for the
-*base* walk `G.evolve' t` under a vacuous `True` hypothesis.  That statement is
-mathematically false (arbitrary `G`, `P`, `t` do not mix), so it has been
-corrected to a genuine hypothesis on the signed quotient and a conclusion that
-references `σ`. -/
+The hypothesis must live on the *signed* quotient and the conclusion must
+reference `σ`: the corresponding claim for the base walk `G.evolve' t` is
+false (arbitrary `G`, `P`, `t` do not mix). -/
 theorem chiralMixingQuotient
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} (P : EquitablePartition G I)
     (σ : ChiralMixingSigning G) (hred : σ.ReducesToQuotient P)
     (t : ℝ)
-    -- Genuine hypothesis: for the quotient propagator `W` produced by the
+    -- Hypothesis: for the quotient propagator `W` produced by the
     -- host/quotient identification, the weighted cell-block amplitudes mix.
     (hmix : ∀ W : Matrix I I ℂ,
       (∀ i j : I, cellBlockAmp P (σ.evolve t) i j = quotientCellBlockAmp P W i j) →
@@ -442,7 +440,7 @@ theorem chiralMixingQuotient
             (Finset.univ.filter fun z => P.cells z = j).card : ℝ) /
             (Fintype.card V : ℝ) ^ 2) :
     IsCellUniformMixingOf P (σ.evolve t) := by
-  -- Obtain the quotient propagator from the (sorried-but-true) identification.
+  -- Obtain the quotient propagator from the identification.
   obtain ⟨W, hW⟩ := cellBlockAmp_eq_quotient P σ hred t
   intro i j
   -- Rewrite the host cell-block amplitude as the quotient one, then apply `hmix`.
@@ -452,9 +450,9 @@ theorem chiralMixingQuotient
 /-- **Average chiral mixing via quotient.**  The analogous transfer for the
 time-averaged cell-block quantity of the signed walk: from a quotient-level
 uniform-mixing hypothesis (via the same identification) we derive the host
-average cell-block mixing.  As above, the prior `True →` formulation on
-`G.averageMixing` was unsound; this is the corrected statement, and the
-derivation is genuine modulo `cellBlockAmp_eq_quotient`. -/
+average cell-block mixing.  As above, the hypothesis must live on the signed
+quotient (the corresponding claim for `G.averageMixing` is false); the
+derivation runs through `cellBlockAmp_eq_quotient`. -/
 theorem chiralAverageMixingQuotient
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]

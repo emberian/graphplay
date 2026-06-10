@@ -22,9 +22,9 @@ work (arXiv:1701.04145).
 
 This module provides:
 
-* `IsPeriodic G u`  — the genuine predicate `∃ τ > 0, ‖(U τ) u u‖ = 1`,
+* `IsPeriodic G u`  — the predicate `∃ τ > 0, ‖(U τ) u u‖ = 1`,
 * `IsPeriodicAt G u τ` — periodicity witnessed at a *named* time,
-* the structural facts that are *provable now*:
+* structural facts:
   - `evolve_zero` gives the trivial unit-modulus diagonal at `τ = 0`
     (used to characterize the `τ > 0` requirement),
   - **`isPeriodicAt_two_mul_of_isPST`**: for a real-symmetric (`Aᵀ = A`, Godsil)
@@ -32,8 +32,7 @@ This module provides:
     of Godsil's necessary condition; proved from `evolve_add`, unitarity, and the
     complex-symmetry `Uᵀ = U` of the real-symmetric evolution),
   - **`isPeriodic_of_isPST`**: the existential corollary (real-symmetric),
-* and the *deep* classification statements, stated precisely with honest
-  `sorry` proofs:
+* and the classification statements:
   - `isPeriodic_iff_eigenvalue_support_ratios_rational` (Godsil's integrality /
     rationality criterion),
   - `UniversalPST` / `isUniversalPST` and the switching-automorphism
@@ -161,7 +160,7 @@ theorem evolve_row_sq_norm_eq_one (G : WeightedGraph V) (τ : ℝ) (u : V) :
 
 /-- **Row concentration from PST (pure unitarity).**  If `‖U(τ)_{u,v}‖ = 1` then
 every other entry of row `u` vanishes: `U(τ)_{u,w} = 0` for `w ≠ v`.  This is the
-genuinely unitarity-only half of Godsil's periodicity lemma. -/
+unitarity-only half of Godsil's periodicity lemma. -/
 theorem evolve_row_concentrated (G : WeightedGraph V) (τ : ℝ) {u v : V}
     (hpst : ‖G.evolve τ u v‖ = 1) {w : V} (hw : w ≠ v) : G.evolve τ u w = 0 := by
   have hsum := evolve_row_sq_norm_eq_one G τ u
@@ -176,13 +175,12 @@ theorem evolve_row_concentrated (G : WeightedGraph V) (τ : ℝ) {u v : V}
   have : ‖G.evolve τ u w‖ = 0 := by nlinarith [norm_nonneg (G.evolve τ u w)]
   exact norm_eq_zero.mp this
 
-/-- **PST ⇒ periodicity at `2τ`, real-symmetric case (CLOSED).**  When the
+/-- **PST ⇒ periodicity at `2τ`, real-symmetric case.**  When the
 evolution is *symmetric* at the relevant pair — `U(τ)_{v,u} = U(τ)_{u,v}`, which
 holds for every real-symmetric adjacency since then `U(τ) = exp(-iτ A)` is
 complex symmetric (`Uᵀ = U`) — PST from `u` to `v` at `τ` makes `u` periodic at
 `2τ`.  Proof: row `u` concentrates at `v` (`evolve_row_concentrated`), so
-`U(2τ)_{u,u} = U(τ)_{u,v} · U(τ)_{v,u} = U(τ)_{u,v}²`, of modulus `1`.
-Axiom-clean, no `sorry`. -/
+`U(2τ)_{u,u} = U(τ)_{u,v} · U(τ)_{v,u} = U(τ)_{u,v}²`, of modulus `1`. -/
 theorem isPeriodicAt_two_mul_of_isPST_of_symm (G : WeightedGraph V) {u v : V}
     {τ : ℝ} (h : IsPST G u v τ) (hsymm : G.evolve τ v u = G.evolve τ u v) :
     IsPeriodicAt G u (2 * τ) := by
@@ -198,19 +196,18 @@ theorem isPeriodicAt_two_mul_of_isPST_of_symm (G : WeightedGraph V) {u v : V}
     · intro hmem; exact absurd (Finset.mem_univ v) hmem
   rw [huu, norm_mul, hUV, one_mul]
 
-/-- **PST ⇒ periodicity at `2τ`, real-symmetric adjacency (CLOSED).**  The
+/-- **PST ⇒ periodicity at `2τ`, real-symmetric adjacency.**  The
 classical Godsil setting: when the adjacency matrix is symmetric (`Aᵀ = A`,
 i.e. real-weighted), PST from `u` to `v` at `τ` makes `u` periodic at `2τ`.
 This discharges the pair-symmetry hypothesis of
-`isPeriodicAt_two_mul_of_isPST_of_symm` via `evolve_symm_of_isSymm`.
-Axiom-clean, no `sorry`. -/
+`isPeriodicAt_two_mul_of_isPST_of_symm` via `evolve_symm_of_isSymm`. -/
 theorem isPeriodicAt_two_mul_of_isPST_of_isSymm (G : WeightedGraph V)
     (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (h : IsPST G u v τ) :
     IsPeriodicAt G u (2 * τ) :=
   isPeriodicAt_two_mul_of_isPST_of_symm G h (evolve_symm_of_isSymm G hsymm τ u v)
 
-/-- **PST ⇒ periodicity (existential form), real-symmetric adjacency (CLOSED).**
-For a symmetric adjacency, any PST source vertex is periodic.  Axiom-clean. -/
+/-- **PST ⇒ periodicity (existential form), real-symmetric adjacency.**
+For a symmetric adjacency, any PST source vertex is periodic. -/
 theorem isPeriodic_of_isPST_of_isSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
     {u v : V} {τ : ℝ} (hτ : 0 < τ) (h : IsPST G u v τ) : IsPeriodic G u :=
   ⟨2 * τ, by linarith, isPeriodicAt_two_mul_of_isPST_of_isSymm G hsymm h⟩
@@ -230,7 +227,7 @@ theorem isPeriodicAt_two_mul_of_isPST (G : WeightedGraph V) (hsymm : G.adj.IsSym
   -- setting — the evolution `U(τ) = exp(-iτ A)` is complex symmetric (`Uᵀ = U`),
   -- so `U(τ)_{v,u} = U(τ)_{u,v}` and the unimodular `(u,v)` amplitude propagates to
   -- the `(v,u)` amplitude, giving `‖U(2τ)_{u,u}‖ = ‖U(τ)_{u,v}²‖ = 1`.  The
-  -- real-symmetry hypothesis is *necessary*: in the genuinely complex-Hermitian
+  -- real-symmetry hypothesis is *necessary*: in the complex-Hermitian
   -- generality of `WeightedGraph` the statement is false (a cyclic permutation
   -- unitary `u→v→w→u` is row-`u`-concentrated at `v` yet has `U_{v,u} = 0`).
   -- Discharged via the existing symmetric closed form.
@@ -243,11 +240,11 @@ theorem isPeriodic_of_isPST (G : WeightedGraph V) (hsymm : G.adj.IsSymm) {u v : 
     {τ : ℝ} (hτ : 0 < τ) (h : IsPST G u v τ) : IsPeriodic G u :=
   ⟨2 * τ, by linarith, isPeriodicAt_two_mul_of_isPST G hsymm h⟩
 
-/-- **PST ⇒ periodicity of the target at `2τ`, real-symmetric case (CLOSED).**
+/-- **PST ⇒ periodicity of the target at `2τ`, real-symmetric case.**
 Dual of `isPeriodicAt_two_mul_of_isPST_of_symm`: under pair-symmetry of the
 evolution, PST `u → v` makes the *target* `v` periodic at `2τ`.  Here the column
 `v` of `U(τ)` concentrates at `u` (from `U(τ)ᴴ U(τ) = 1`), so
-`U(2τ)_{v,v} = U(τ)_{v,u} · U(τ)_{u,v} = U(τ)_{u,v}²`, modulus `1`.  Closed. -/
+`U(2τ)_{v,v} = U(τ)_{v,u} · U(τ)_{u,v} = U(τ)_{u,v}²`, modulus `1`. -/
 theorem isPeriodicAt_two_mul_of_isPST_target_of_symm (G : WeightedGraph V)
     {u v : V} {τ : ℝ} (h : IsPST G u v τ) (hsymm : G.evolve τ v u = G.evolve τ u v) :
     IsPeriodicAt G v (2 * τ) := by
@@ -277,10 +274,10 @@ theorem isPeriodicAt_two_mul_of_isPST_target_of_symm (G : WeightedGraph V)
     · intro hmem; exact absurd (Finset.mem_univ u) hmem
   rw [hvv, norm_mul, hUV, one_mul]
 
-/-- **PST ⇒ periodicity of the target at `2τ`, real-symmetric adjacency
-(CLOSED).**  Dual of `isPeriodicAt_two_mul_of_isPST_of_isSymm`: under a symmetric
+/-- **PST ⇒ periodicity of the target at `2τ`, real-symmetric adjacency.**
+Dual of `isPeriodicAt_two_mul_of_isPST_of_isSymm`: under a symmetric
 adjacency, PST `u → v` makes the target `v` periodic at `2τ`.  Discharges the
-pair-symmetry hypothesis via `evolve_symm_of_isSymm`.  Axiom-clean. -/
+pair-symmetry hypothesis via `evolve_symm_of_isSymm`. -/
 theorem isPeriodicAt_two_mul_of_isPST_target_of_isSymm (G : WeightedGraph V)
     (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (h : IsPST G u v τ) :
     IsPeriodicAt G v (2 * τ) :=
@@ -290,7 +287,7 @@ theorem isPeriodicAt_two_mul_of_isPST_target_of_isSymm (G : WeightedGraph V)
 *target* `v` periodic at `2τ`, by the same argument applied to the `v`-column,
 for a real-symmetric (`Aᵀ = A`, Godsil) adjacency.  Discharged via the existing
 symmetric closed form `…_target_of_isSymm`.  (The real-symmetry hypothesis is
-necessary: in the genuinely complex-Hermitian generality of `WeightedGraph` the
+necessary: in the complex-Hermitian generality of `WeightedGraph` the
 evolution need not be complex-symmetric and `‖U(τ)_{v,u}‖ = 1` can fail.) -/
 theorem isPeriodicAt_two_mul_of_isPST_target (G : WeightedGraph V)
     (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (h : IsPST G u v τ) :
@@ -305,15 +302,15 @@ standard basis vector `e_u`.  We package it as the subset of eigenvalue *indices
 `r` whose eigenvector overlaps `u`.  (Concretely `r` is in the support iff the
 `u`-coordinate of the `r`-th eigenvector is nonzero, i.e. the `(u, r)` entry of
 the eigenvector unitary `U` — equivalently `eigU G u r` — is nonzero.  This is
-the genuine per-vertex support `E_{θ_r} e_u ≠ 0`: the `u`-diagonal of the
+the per-vertex support `E_{θ_r} e_u ≠ 0`: the `u`-diagonal of the
 spectral projector is `∑_{i : θ_i = θ_r} ‖U_{u,i}‖²`, nonzero iff some such
 `U_{u,i} ≠ 0`.) -/
 def eigenvalueSupport (G : WeightedGraph V) (u : V) : Set V :=
   {r | G.herm.eigenvectorUnitary u r ≠ 0}
 
-/-! ### The periodicity forward direction (CLOSED, axiom-clean)
+/-! ### The periodicity forward direction
 
-The forward half of Godsil's rationality criterion is now genuinely proven.
+The forward half of Godsil's rationality criterion.
 Its analytic core is a *convex-combination equality* lemma: if a finite convex
 combination `∑ w_i ζ_i` of unit-modulus complex numbers `ζ_i` (`w_i ≥ 0`,
 `∑ w_i = 1`) again has modulus `1`, then every `ζ_i` with `w_i > 0` equals the
@@ -434,7 +431,7 @@ theorem supported_phase_eq_diag (G : WeightedGraph V) (u : V) (τ : ℝ)
   simp only [Complex.ofReal_pow] at hconv
   rw [hconv, ← evolve_diag_convex G τ u]
 
-/-! ### The periodicity backward direction (CLOSED, axiom-clean)
+/-! ### The periodicity backward direction
 
 The "deep Diophantine" backward half is *not* deep here: the eigenvalue support
 is a **finite** set of reals, so the rational-ratio hypothesis is *exact integer
@@ -506,7 +503,7 @@ private theorem phase_eq_of_int_mul (τ a b : ℝ) (m : ℤ)
     push_cast; linear_combination (-Complex.I) * hmc
   rw [key, Complex.exp_add, Complex.exp_int_mul_two_pi_mul_I, mul_one]
 
-/-- **The backward half of Godsil's periodicity criterion (CLOSED).**  If every
+/-- **The backward half of Godsil's periodicity criterion.**  If every
 ratio of differences of supported eigenvalues is rational, then `u` is periodic.
 Proven by *finite exact arithmetic* (no Diophantine approximation): extract a
 common denominator `D` across the finite support, set `τ = 2π D / g` for a fixed
@@ -602,16 +599,15 @@ the pairwise ratios of differences of eigenvalues in its support are rational;
 equivalently, after a uniform rescaling the support eigenvalues are integers.
 This is the spectral classification of periodicity.
 
-The **forward direction is fully proven** here (axiom-clean): periodicity forces
+**Forward**: periodicity forces
 all supported eigenphases equal (`supported_phase_eq_diag`), so for supported
 `r, s` we have `e^{-iτ θ_r} = e^{-iτ θ_s}`, i.e. `τ(θ_r - θ_s) ∈ 2πℤ`
 (`Complex.exp_eq_exp_iff_exists_int`); writing each supported difference as an
 integer multiple of the common quantum `2π/τ` makes every ratio rational.
 
-The **backward direction** (rational ratios ⇒ a common `τ` aligning every
-supported phase, by simultaneous Diophantine / Kronecker approximation) is the
-single remaining residual, isolated in the named lemma
-`periodic_of_support_ratios_rational` below.
+**Backward** (rational ratios ⇒ a common `τ` aligning every
+supported phase): the named lemma
+`periodic_of_support_ratios_rational` above.
 
 Reference: Godsil, *Periodic graphs* (arXiv:1009.5375), Theorem 6.1. -/
 theorem isPeriodic_iff_eigenvalue_support_ratios_rational (G : WeightedGraph V)
@@ -624,7 +620,7 @@ theorem isPeriodic_iff_eigenvalue_support_ratios_rational (G : WeightedGraph V)
         ∃ q : ℚ, (G.herm.eigenvalues r₁ - G.herm.eigenvalues r₂)
                   = (q : ℝ) * (G.herm.eigenvalues r₃ - G.herm.eigenvalues r₄) := by
   constructor
-  · -- FORWARD (CLOSED): periodicity ⇒ rational ratios of supported differences.
+  · -- Forward: periodicity ⇒ rational ratios of supported differences.
     rintro ⟨τ, hτpos, hper⟩ r₁ r₂ r₃ r₄ h₁ h₂ h₃ h₄ hne34
     -- All supported phases equal `U(τ)_{u,u}`; pairwise equal phases give
     -- `τ(θ_r - θ_s) ∈ 2πℤ`.
@@ -661,12 +657,12 @@ theorem isPeriodic_iff_eigenvalue_support_ratios_rational (G : WeightedGraph V)
     rw [hd12, hd34, Rat.cast_div]
     push_cast
     field_simp
-  · -- BACKWARD: rational ratios ⇒ periodic.  Isolated as a named residual.
+  · -- Backward: rational ratios ⇒ periodic.
     exact periodic_of_support_ratios_rational G u
 
-/-! ### Godsil's forward existence direction (real-symmetric, CLOSED)
+/-! ### Godsil's forward existence direction (real-symmetric)
 
-With the periodicity criterion now an axiom-clean *iff*, the FORWARD half of
+With the periodicity criterion an *iff*, the forward half of
 Godsil's PST-existence theorem — `IsPST ⇒ IsGodsilRatio` — is provable for
 real-symmetric adjacency by the periodicity route, with **no Diophantine
 approximation**.  PST forces periodicity at `u` (`isPeriodic_of_isPST`), which
@@ -674,9 +670,8 @@ gives rational ratios of supported eigenvalue differences; cospectrality
 (`PST.isPST_imp_cospectral`) makes the supports of `u` and `v` coincide; and the
 finite rational-ratio data assembles into the arithmetic-progression form of
 `IsGodsilRatio` by clearing a single common denominator
-(`arithProg_of_ratios_rational`).  This is the (true) forward content of
-`PST.isPST_exists_iff_strongCospectral_and_godsilRatio`; the *backward* half is
-genuinely false in this `IsStronglyCospectral`-only generality (it needs the
+(`arithProg_of_ratios_rational`).  The *backward* half is
+false in this `IsStronglyCospectral`-only generality (it needs the
 sign/parity-matching condition, absent from the predicate — see the note on
 that theorem).  -/
 
@@ -761,7 +756,7 @@ theorem eigenvalueSupport_eq_of_cospectral (G : WeightedGraph V) (u v : V)
       simp only [hni, if_false]
     rw [hu0, hv0]
 
-/-- **Godsil's forward direction (real-symmetric), CLOSED and axiom-clean.**  If
+/-- **Godsil's forward direction (real-symmetric).**  If
 the adjacency is symmetric and PST occurs from `u` to `v` at a positive time `τ`,
 then the joint eigenvalue support satisfies the Godsil arithmetic-ratio
 condition `IsGodsilRatio G u v`.
@@ -771,9 +766,9 @@ ratios of supported eigenvalue differences (forward of the periodicity iff);
 cospectrality (`PST.isPST_imp_cospectral`) makes `EigenvalueSupport G v =
 EigenvalueSupport G u`, so the *joint* support is one finite set, which the
 rational ratios force onto an arithmetic progression
-(`arithProg_of_ratios_rational`).  This is exact finite arithmetic — the
-"Diophantine bridge" that earlier waves deemed unreachable is, on a finite
-spectrum, elementary.  Reference: Godsil 2012 (Electron. J. Combin. 19 #P29),
+(`arithProg_of_ratios_rational`).  This is exact finite arithmetic: on a
+finite spectrum the "Diophantine bridge" is elementary.
+Reference: Godsil 2012 (Electron. J. Combin. 19 #P29),
 Thm 2.1/2.2. -/
 theorem isPST_imp_isGodsilRatio_of_isSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
     {u v : V} {τ : ℝ} (hτ : 0 < τ) (hpst : IsPST G u v τ) :
@@ -826,7 +821,7 @@ e^{iτ(λ-μ)}` is `±1`, so `τ(λ-μ) ∈ πℤ` — the arithmetic progressio
 `a = π/τ` — and the sign tracks the parity of that integer.  No Diophantine
 approximation; pure finite spectral algebra. -/
 
-/-- **Sign-pinning (the analytic core), CLOSED.**  On a real-symmetric graph
+/-- **Sign-pinning (the analytic core).**  On a real-symmetric graph
 (`Aᵀ = A`), if PST occurs from `u` to `v` at time `τ` (`‖U(τ)_{u,v}‖ = 1`,
 `γ := U(τ)_{u,v}`), then for every eigenvalue `μ` *in the support of `u`* (i.e.
 `(E_μ)_{u,u} ≠ 0`) the cross phase `σ_μ := γ · e^{iτμ}` is a **real sign**:
@@ -840,36 +835,35 @@ the `v → u` direction at the *same* `τ`.  The column relation
 (`isPST_imp_cospectral`: `(E_μ)_{u,u} = (E_μ)_{v,v}`) and self-adjointness
 (`(E_μ)_{v,u} = \overline{(E_μ)_{u,v}}`) force the cross entry `(E_μ)_{u,v}` to be
 its own conjugate — i.e. **real** — whence `σ_μ = (E_μ)_{u,v}/(E_μ)_{u,u}` is a
-real number of modulus `1`, namely `±1`.  Axiom-clean. -/
+real number of modulus `1`, namely `±1`. -/
 theorem cross_phase_sign_of_isPST_of_isSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
     {u v : V} {τ : ℝ} (hpst : IsPST G u v τ) (mu : ℝ)
     (hmu : mu ∈ Set.range G.herm.eigenvalues)
     (hsupp : PST.eigenProjDiagLocal G mu u ≠ 0) :
     G.evolve τ u v * Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) = 1 ∨
       G.evolve τ u v * Complex.exp (Complex.I * (τ : ℂ) * (mu : ℂ)) = -1 :=
-  -- Re-export of the canonical *upstream* proof in `GodsilRatio` (all of its
-  -- analytic ingredients are projector-algebra lemmas native to that module, so it
-  -- lives there; this avoids duplicating the ~70-line proof).
+  -- Re-export of the proof in `GodsilRatio` (all of its analytic ingredients
+  -- are projector-algebra lemmas native to that module, so it lives there;
+  -- this avoids duplicating the ~70-line proof).
   PST.cross_phase_sign_of_isPST_of_isSymm G hsymm hpst mu hmu hsupp
 
-/-- **Godsil's forward existence direction at the parity-signed level (CLOSED,
-axiom-clean) — downstream re-export.**  On a real-symmetric graph (`Aᵀ = A`), if
+/-- **Godsil's forward existence direction at the parity-signed level
+(downstream re-export).**  On a real-symmetric graph (`Aᵀ = A`), if
 PST occurs from `u` to `v` at a positive time `τ` **and `u` has full eigenvalue
 support**, then `(u, v)` carries Godsil's **PST-ready spectral data**
 `IsGodsilPSTReady G u v` (arithmetic alignment `λ = b + a·(kof λ)`, `a > 0`,
 *together with* the parity-matched cross structure
 `(E_λ)_{u,v} = (-1)^{kof λ} (E_λ)_{u,u}`).
 
-The canonical proof lives **upstream** in `Graphplay.PST.GodsilRatio` as
+The proof lives upstream in `Graphplay.PST.GodsilRatio` as
 `PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport`: all of its analytic
-ingredients are projector-algebra lemmas native to that module, so — contrary to
-an earlier belief that this forward direction was a "downstream-only" `sorry` —
-it is provable upstream with no circular import.  This `Graphplay`-namespace
+ingredients are projector-algebra lemmas native to that module.  This
+`Graphplay`-namespace
 theorem is a thin re-export of that proof, retained for the public API consumed by
 `Graphplay.StdLib.Path` and the universal/path corollaries.
 
-**Why full support is necessary (FALSE→TRUE migration).**  The unconditional
-`IsPST → IsGodsilPSTReady` is **false**: `IsGodsilPSTReady` aligns the *entire*
+**Why full support is necessary.**  The unconditional
+`IsPST → IsGodsilPSTReady` is false: `IsGodsilPSTReady` aligns the *entire*
 spectrum `Finset.univ.image G.herm.eigenvalues`, while PST constrains only the
 *supported* eigenvalues (the disjoint-union `K₂ ⊔ H` counterexample — see the
 upstream proof's docstring).  Full support rules out exactly this disconnected-junk
@@ -885,18 +879,16 @@ theorem isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport
     PST.IsGodsilPSTReady G u v :=
   PST.isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport G hsymm hτ hfull hpst
 
-/-- **Godsil 2012 existence theorem, downstream full `iff` (CLOSED).**  On a
+/-- **Godsil 2012 existence theorem, downstream full `iff`.**  On a
 real-symmetric graph with `u` of full eigenvalue support, PST `u → v` exists at
 some *positive* time iff the pair carries Godsil's PST-ready spectral data.  The
-FORWARD half is the bridge just proven (`isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport`);
-the BACKWARD half is the exact half-period construction
-`PST.isPST_exists_of_isGodsilPSTReady` (axiom-clean, upstream).  This is the
-downstream-available completion of `PST.isPST_exists_iff_isGodsilPSTReady` (whose
-forward half is an honest `sorry` upstream, unreachable there without this
-periodicity machinery).
+forward half is `isGodsilPSTReady_of_isPST_of_isSymm_of_fullSupport`;
+the backward half is the exact half-period construction
+`PST.isPST_exists_of_isGodsilPSTReady` (upstream).  This restates
+`PST.isPST_exists_iff_isGodsilPSTReady` through the periodicity machinery.
 
 Note the asymmetry between hypotheses and conclusion: full support and `0 < τ` are
-needed only for the FORWARD direction (PST ⇒ data); the backward direction
+needed only for the forward direction (PST ⇒ data); the backward direction
 (data ⇒ PST at `τ = π/a > 0`) is unconditional, so the produced time is automatically
 positive.  Reference: Godsil, Electron. J. Combin. 19 (2012) #P29, Thm 2.1. -/
 theorem isPST_exists_iff_isGodsilPSTReady_of_isSymm_of_fullSupport
@@ -937,15 +929,15 @@ theorem isPeriodic_of_universalPST (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
 /-- A **switching (vertex-permutation) automorphism** of `G` at the pair
 `(u, v)`: a permutation `σ` of the vertices that swaps `u ↔ v` and fixes the
 adjacency matrix (graph automorphism).  This is the *combinatorial* upgrade of
-Kay's switching map — a genuine `Equiv.Perm V` adjacency automorphism.
+Kay's switching map — an `Equiv.Perm V` adjacency automorphism.
 
 **Caveat (why no unconditional existence theorem from PST in this file).**  Kay's
 switching map `T = E₊ − E₋` (the spectral idempotents split by the parity of
 `e^{−iτ θ_r}`) is an *orthogonal involution commuting with `A`* and sending the
-`u`-state to the `v`-state, but it is a genuine 0/1 *permutation* matrix only
+`u`-state to the `v`-state, but it is a 0/1 *permutation* matrix only
 under the integer/simple-spectrum hypotheses of Kay 1310.3885.  In the
 complex-Hermitian generality of `WeightedGraph` a PST host need not be
-vertex-transitive, so no `SwitchingAutomorphism` (genuine vertex permutation)
+vertex-transitive, so no `SwitchingAutomorphism` (vertex permutation)
 need exist.  The provable operator-level content is captured by
 `SwitchingUnitary` and `switchingUnitary_of_isPST` below. -/
 structure SwitchingAutomorphism (G : WeightedGraph V) (u v : V) where
@@ -957,7 +949,7 @@ structure SwitchingAutomorphism (G : WeightedGraph V) (u v : V) where
   preserves_adj : ∀ x y, G.adj (perm x) (perm y) = G.adj x y
 
 /-- A **switching unitary** of `G` at the pair `(u, v)` and time `τ`: the
-operator-level content of Kay's switching map that PST genuinely supplies.  It is
+operator-level content of Kay's switching map that PST supplies.  It is
 a *unitary* `W` on the vertex Hilbert space that carries the `u`-basis state to a
 unit-modulus phase multiple of the `v`-basis state — i.e. it swaps the two
 endpoints *as states* (up to a global phase), the modulus-1 amplitude witnessing
@@ -979,17 +971,17 @@ structure SwitchingUnitary (G : WeightedGraph V) (u v : V) (τ : ℝ) where
   concentrated at `v` with amplitude `phase`. -/
   swaps_state : ∀ w : V, mat u w = if w = v then phase else 0
 
-/-- **Kay's switching map, operator level (CLOSED).**  If `G` has PST between `u`
+/-- **Kay's switching map, operator level.**  If `G` has PST between `u`
 and `v` at time `τ`, then the evolution unitary `U(τ)` is a *switching unitary*:
 a unitary on the vertex space carrying the `u`-state to a unit-modulus phase
-multiple of the `v`-state.  This is the genuine, hypothesis-free content of Kay's
+multiple of the `v`-state.  This is the hypothesis-free content of Kay's
 switching map `T = E₊ − E₋` at the operator level.
 
-Axiom-clean, no `sorry`: unitarity is `evolve_unitary`, and the state-swap is
+Unitarity is `evolve_unitary`, and the state-swap is
 `evolve_row_concentrated` (the `u`-row concentrates at `v`, modulus 1) packaged
 as the explicit `u`-row of `U(τ)`.
 
-**Not strengthened to `SwitchingAutomorphism`** (a genuine `Equiv.Perm V`
+**Not strengthened to `SwitchingAutomorphism`** (an `Equiv.Perm V`
 adjacency automorphism): that holds only under the integer/simple-spectrum
 hypotheses of Kay 1310.3885 (which pin `T` to a 0/1 permutation), absent here —
 PST hosts need not be vertex-transitive.  See the caveat on `SwitchingAutomorphism`.

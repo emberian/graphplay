@@ -1,7 +1,7 @@
 /-
 # Graphplay.Dowsing.NoiseEquitable
 
-**Hole D8 — Equitable-symmetric noise preservation, formally.**
+**Equitable-symmetric noise preservation.**
 
 `Graphplay.Toolkit.Noise` (file A8) introduces the structures
 `NoiseModel`, `cellProjector`, `cellUniformSymmetric`, and the deferred
@@ -40,11 +40,10 @@ References inside `references/`:
   graph iff PST on the equitable quotient.  We state and conjecture its
   open-system extension.
 
-Everything below is fully proved (zero `sorry`): the cell-level algebra is
-supplied by the `cellInflate` closure laws of `Graphplay.Equitable`
-(`cellInflate_mul`, `cellInflate_conjTranspose`, `cellInflate_mul_cellInclusion`),
-and the statements compile against the existing `Graphplay.WeightedGraph`,
-`EquitablePartition`, and `NoiseModel` types.
+The cell-level algebra is supplied by the `cellInflate` closure laws of
+`Graphplay.Equitable` (`cellInflate_mul`, `cellInflate_conjTranspose`,
+`cellInflate_mul_cellInclusion`); the statements build on the existing
+`Graphplay.WeightedGraph`, `EquitablePartition`, and `NoiseModel` types.
 -/
 
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
@@ -243,20 +242,16 @@ theorem preservesCellUniform_iff_LP_eq_PLP
     rw [hcong]
     exact cellProjector_mulVec_cellUniform P _ hxy
 
-/-- **Commutant criterion (corrected, issue #53).**  `L` and `Lᴴ` both
-preserve the cell-uniform subspace **iff** `L` commutes with the cell
-projector `Π = cellProjector P`.
+/-- **Commutant criterion.**  `L` and `Lᴴ` both preserve the cell-uniform
+subspace **iff** `L` commutes with the cell projector `Π = cellProjector P`.
 
-CORRECTNESS FIX: the original statement used `commutantOf P` (the commutant of
-the *whole* block-diagonal partition algebra).  That is genuinely **false** for
-non-singleton cells — e.g. with a single 2-element cell the matrix
-`L = [[2,−1],[−1,2]]` preserves the constant (cell-uniform) vectors but is *not*
-in the commutant of the partition algebra (which there is just the scalars).
-The docstring of the original already flagged this gap ("it only needs to
-commute with the *projector*").  We therefore state and prove the genuinely-true
-projector-commutation criterion.  `commutantOf P ⊆ {L | LΠ = ΠL}` still holds
-(the easy `commutantOf_preservesCellUniform` direction), so this is a strictly
-sharper characterisation. -/
+Commutation with the projector, not membership in `commutantOf P` (the
+commutant of the whole block-diagonal partition algebra), is the right
+condition: with a single 2-element cell the matrix `L = [[2,−1],[−1,2]]`
+preserves the constant (cell-uniform) vectors but is not in the commutant of
+the partition algebra (which there is just the scalars).  Since
+`commutantOf P ⊆ {L | LΠ = ΠL}` (the easy `commutantOf_preservesCellUniform`
+direction), this is a strictly sharper characterisation. -/
 theorem preservesCellUniform_iff_commutant_under_adjoint
     (P : EquitablePartition G I) (L : Matrix V V ℂ) :
     Matrix.preservesCellUniform L P ∧ Matrix.preservesCellUniform Lᴴ P ↔
@@ -302,12 +297,9 @@ operator `L` and its adjoint preserve the cell-uniform subspace; by
 `preservesCellUniform_iff_commutant_under_adjoint` this is the projector-
 commutation criterion `L · Π = Π · L`.
 
-CORRECTNESS FIX (issue #53): the original RHS used `commutantOf P`, which is
-strictly too strong (see `preservesCellUniform_iff_commutant_under_adjoint`).
-Note `cellUniformSymmetric` as defined only requires each `L` (not `Lᴴ`) to
-preserve cell-uniformity, so the iff holds under the natural adjoint-closure
-hypothesis that each `Lᴴ` is again a jump operator; we state the clean form
-that characterises the *adjoint-closed* symmetric condition. -/
+The adjoint-closure hypothesis `hadj` is necessary: `cellUniformSymmetric` as
+defined only requires each `L` (not `Lᴴ`) to preserve cell-uniformity, so the
+iff characterises the *adjoint-closed* symmetric condition. -/
 theorem cellUniformSymmetric_iff_commutant
     (P : EquitablePartition G I) (N : NoiseModel V)
     (hadj : ∀ L ∈ N.lindblad_operators, Lᴴ ∈ N.lindblad_operators) :
@@ -380,25 +372,18 @@ theorem central_preservesCellUniform
     · intro h; exact absurd (Finset.mem_univ z) h
   rw [hmv x, hmv y, hψ x y hxy]
 
-/-- **Central jump operators ⇒ universally equitable** (the true direction).
+/-- **Central jump operators ⇒ universally equitable.**
 
-LANDMINE FIX (was an `↔` with a false `⇒` half).  The claimed *iff*
-`IsUniversallyEquitable ↔ (∀ L, L ∈ centerMat V)` is **FALSE** in the `⇒`
-direction (machine-checked counterexample): the operator `L = 𝟙·rᵀ` with
-**constant rows** (e.g. `L = ![![1,0],![1,0]] = 𝟙·e₀ᵀ` on `Fin 2`) sends *every*
-vector to a **constant** vector — which is cell-uniform for *every* partition —
-so `L` preserves every cell-uniform subspace and `N = {L}` is universally
-equitable, **yet `L ∉ centerMat V`** (it is not a scalar multiple of `1`).  The
-subtlety: `cellUniformSymmetric` only requires each `L` (not its adjoint `Lᴴ`) to
-preserve cell-uniformity, and "maps-everything-to-constants" operators do that
-without commuting with the cell projector.  (Only the genuine *centre*
-characterisation would need the adjoint-closed condition.)
-
-We keep the genuinely-true direction (`central ⇒ universally equitable`), fully
-proved via `central_preservesCellUniform`.  The reverse characterisation of
-universal equitability is the algebra of operators sending cell-uniform vectors
-to cell-uniform vectors for *all* partitions — strictly **larger** than the
-centre (it contains every `𝟙·rᵀ`); pinning it exactly is the open residual. -/
+The converse fails: the iff `IsUniversallyEquitable ↔ (∀ L, L ∈ centerMat V)`
+is false in the `⇒` direction.  The operator `L = 𝟙·rᵀ` with constant rows
+(e.g. `L = ![![1,0],![1,0]] = 𝟙·e₀ᵀ` on `Fin 2`) sends every vector to a
+constant vector — cell-uniform for *every* partition — so `N = {L}` is
+universally equitable, yet `L ∉ centerMat V`.  The reason: `cellUniformSymmetric`
+only requires each `L` (not `Lᴴ`) to preserve cell-uniformity, and
+maps-everything-to-constants operators do that without commuting with the cell
+projector.  The exact characterisation of universal equitability — the algebra
+of operators sending cell-uniform vectors to cell-uniform vectors for all
+partitions, strictly larger than the centre — remains open. -/
 theorem isUniversallyEquitable_of_central (N : NoiseModel V)
     (hcentral : ∀ L ∈ N.lindblad_operators, L ∈ centerMat V) :
     N.IsUniversallyEquitable := by
@@ -407,13 +392,9 @@ theorem isUniversallyEquitable_of_central (N : NoiseModel V)
   intro G' I' _ _ P L hL
   exact central_preservesCellUniform P L (hcentral L hL)
 
-/-- **Corollary (true direction).**  A noise model all of whose jump operators
-are scalar multiples of the identity is universally equitable.
-
-HONEST RESTATEMENT (was the converse, which is **false**: the former
-`isUniversallyEquitable_trivial_up_to_identity` claimed every universally-equitable
-jump operator is `c·1`, refuted by the `𝟙·rᵀ` constant-row counterexample above).
-We state the genuinely-true forward implication. -/
+/-- A noise model all of whose jump operators are scalar multiples of the
+identity is universally equitable.  The converse is false: see the `𝟙·rᵀ`
+constant-row counterexample at `isUniversallyEquitable_of_central`. -/
 theorem isUniversallyEquitable_of_all_scalar
     (N : NoiseModel V)
     (hscalar : ∀ L ∈ N.lindblad_operators, ∃ c : ℂ, L = c • (1 : Matrix V V ℂ)) :
@@ -499,13 +480,12 @@ theorem lindbladSuperop_preserves_cellUniform
 
 Then the Lindblad generator `ℒ(ρ)` is again cell-uniform.
 
-CORRECTNESS FIX (issue #53): the original hypotheses `preservesCellUniform H P`
-and `cellUniformSymmetric P` are **insufficient** — for a *non-Hermitian* `H`
-that merely maps cell-uniform vectors to cell-uniform vectors (e.g.
-`H = single 0 0 1 + single 1 0 1` on a single 2-cell) one has `HPi ≠ PiH`, and the
-commutator `[H, Pi]` is *not* cell-uniform, so the generator fails to preserve
-cell-uniformity.  The TRUE statement requires `H` (and each `L`, `Lᴴ`) to commute
-with the projector `Pi`; we state and prove that. -/
+The projector-commutation hypotheses are necessary: the weaker pair
+`preservesCellUniform H P` + `cellUniformSymmetric P` is insufficient.  For a
+non-Hermitian `H` that merely maps cell-uniform vectors to cell-uniform vectors
+(e.g. `H = single 0 0 1 + single 1 0 1` on a single 2-cell) one has `HΠ ≠ ΠH`,
+and the commutator `[H, Π]` is not cell-uniform, so the generator fails to
+preserve cell-uniformity. -/
 theorem lindbladGen_preserves_cellUniform
     (P : EquitablePartition G I)
     {H : Matrix V V ℂ} (hH : H * cellProjector P = cellProjector P * H)
@@ -590,15 +570,12 @@ themselves *inflated* from the quotient (`H = cellInflate Hbar`, each
 again inflated: there is a quotient-level matrix `K` with
 `lindbladGen H N (cellInflate rhobar) = cellInflate K`.
 
-CORRECTNESS NOTE (issue #53): the hypotheses `preservesCellUniform H P` and
-`cellUniformSymmetric P` would be **insufficient** for this conclusion.  Those
-give only that the output *commutes with the projector* (`IsCellUniformDensity`,
-proved in `lindbladGen_preserves_cellUniform`), which is **strictly weaker** than
-being *block-constant* (in `range cellInflate`).  E.g. on a single cell the
-projector-commuting permutation matrix is not block-constant, so it is not in the
-range of `cellInflate`.  Block-constancy of the output genuinely requires `H` and
-the `L`'s to be block-constant operators (inflated from the quotient), which are
-the hypotheses here.
+The inflation hypotheses are necessary: `preservesCellUniform H P` +
+`cellUniformSymmetric P` give only that the output *commutes with the
+projector* (`IsCellUniformDensity`, proved in
+`lindbladGen_preserves_cellUniform`), which is strictly weaker than being
+*block-constant* (in `range cellInflate`) — on a single cell a
+projector-commuting permutation matrix is not block-constant.
 
 PROOF: the generator is a non-commutative polynomial in `H`, the `L`'s, their
 adjoints, and the state — all inflated — so every term (Hamiltonian commutator
@@ -636,17 +613,15 @@ theorem noisyEvolve_quotient
     {ρ₀ : Matrix V V ℂ} (hρ₀ : Matrix.IsCellUniformDensity P ρ₀)
     (t : ℝ) :
     Matrix.IsCellUniformDensity P (noisyEvolve H N t ρ₀) := by
-  -- CORRECTNESS FIX (issue #53): the general claim is **false** for this concrete
-  -- `noisyEvolve` model.  `noisyEvolve` damps every *off-diagonal* coherence by a
-  -- global factor and keeps the diagonal, i.e. it is a *position-basis* dephasing
-  -- step.  For a `Π`-commuting state with within-cell coherences (e.g. the
-  -- Hermitian `ρ₀ = (1/n)J + v vᴴ` with `v ⟂ 𝟙`, whose diagonal is *not* constant
-  -- on the cell) the damped diagonal part fails to commute with `Π`.  Position-
-  -- basis dephasing is *exactly* the symmetry-breaking noise of §4; it preserves
-  -- cell-uniformity only when there is **no** dephasing (`totalRate = 0`), where
-  -- `noisyEvolve` reduces to the coherent conjugation `ρ ↦ U ρ Uᴴ` with
-  -- `U = exp(-(i t)·H)`.  With `H` commuting with `Π`, that conjugation preserves
-  -- cell-uniformity.  We state and prove that genuinely-true case.
+  -- The hypothesis `totalRate = 0` is necessary: `noisyEvolve` damps every
+  -- off-diagonal coherence by a global factor and keeps the diagonal — a
+  -- position-basis dephasing step.  For a `Π`-commuting state with within-cell
+  -- coherences (e.g. the Hermitian `ρ₀ = (1/n)J + v vᴴ` with `v ⟂ 𝟙`, whose
+  -- diagonal is not constant on the cell) the damped diagonal part fails to
+  -- commute with `Π`.  Position-basis dephasing is exactly the
+  -- symmetry-breaking noise of §4; with `totalRate = 0`, `noisyEvolve` reduces
+  -- to the coherent conjugation `ρ ↦ U ρ Uᴴ` with `U = exp(-(i t)·H)`, which
+  -- preserves cell-uniformity when `H` commutes with `Π`.
   unfold Matrix.IsCellUniformDensity at hρ₀ ⊢
   -- `damp = exp(-t·0) = 1`, so `noisyEvolve H N t ρ₀ = U ρ₀ Uᴴ`.
   have hdamp : Real.exp (-t * N.totalRate) = 1 := by rw [htot, mul_zero, Real.exp_zero]
@@ -709,14 +684,12 @@ noncomputable def _root_.Graphplay.NoiseModel.BreakingScore
 
 /-- **Breaking score zero ⇔ every positive-rate Lindblad is block-diagonal.**
 
-CORRECTNESS FIX: the original statement `BreakingScore = 0 ↔ cellUniformSymmetric`
-is **FALSE** (issue #53; the diagonal projector `|m⟩⟨m|` has score `0` yet fails
-to preserve the cell-uniform subspace — see
+Note the RHS is block-diagonality, *not* `cellUniformSymmetric`: the iff
+`BreakingScore = 0 ↔ cellUniformSymmetric` is false — the diagonal projector
+`|m⟩⟨m|` has score `0` yet fails to preserve the cell-uniform subspace (see
 `boundaryDephasing_breakingScore` / `boundaryDephasing_not_cellUniformSymmetric`).
-We replace it by the genuinely-true characterization that `breakingScoreOp`
-*actually* computes: the rate-weighted off-block Frobenius mass vanishes iff
-every Lindblad with positive rate is block-diagonal w.r.t. `P` (i.e. its
-off-block entries all vanish).  This is proved, no sorry. -/
+The rate-weighted off-block Frobenius mass vanishes iff every Lindblad with
+positive rate has vanishing off-block entries. -/
 theorem breakingScore_zero_iff_blockDiagonal
     (P : EquitablePartition G I) (N : NoiseModel V) :
     N.BreakingScore P = 0 ↔
@@ -756,14 +729,10 @@ vertices `x₀, y₀` in distinct cells of `P`, there exist two noise models: a
 cell-uniform-symmetric one `N₀` (the trivial no-jump model, breaking score `0`)
 and one `N₁` (a single off-block jump `|x₀⟩⟨y₀|`) with strictly positive breaking
 score.  This is a *satisfiability witness* that both the zero-breaking and the
-positive-breaking regimes are populated; it is **not** a dynamical speedup claim.
-
-HONEST RELABEL (was `noise_assisted_speedup_conjecture`): the previous name
-advertised a "speedup conjecture" but the body only exhibits these two
-breaking-score models — it proves a satisfiability witness of `BreakingScore > 0`,
-never any comparison of transport probabilities `sup_t pₛ(N, t)`.  The genuine
-Caruso claim (an *intermediate* breaking score is dynamically *optimal*) is a
-separate quantitative statement, not asserted here. -/
+positive-breaking regimes are populated; it is **not** a dynamical speedup
+claim — no comparison of transport probabilities `sup_t pₛ(N, t)` is made.
+The Caruso claim proper (an *intermediate* breaking score is dynamically
+*optimal*) is a separate quantitative statement, not asserted here. -/
 theorem exists_zero_and_positive_breaking_model
     (P : EquitablePartition G I)
     -- A positive breaking score requires an off-block edge, i.e. two distinct
@@ -825,25 +794,21 @@ theorem emptyWeighted_isRegular (V : Type u) [Fintype V] [DecidableEq V] :
     (emptyWeighted V).isRegular 0 := by
   intro v; simp [emptyWeighted, WeightedGraph.degree]
 
-/-- **Depolarising noise is universally equitable iff `V` is a subsingleton
-(corrected, issue: matrix-unit jumps).**
+/-- **Depolarising noise is universally equitable iff `V` is a subsingleton.**
 
-The previous statement `(depolarizingNoise V rate).IsUniversallyEquitable` is
-**FALSE** for `|V| ≥ 2`.  Depolarising noise's Lindblad set is the *full* matrix-
-unit basis `{ |u⟩⟨v| = single u v 1 : u, v ∈ V }` of `Mat_n(ℂ)` — including the
+Depolarising noise's Lindblad set is the *full* matrix-unit basis
+`{ |u⟩⟨v| = single u v 1 : u, v ∈ V }` of `Mat_n(ℂ)` — including the
 *off-diagonal* units `|u⟩⟨v|` with `u ≠ v`.  An off-diagonal unit sends the
-all-ones (cell-uniform) vector `𝟙` to the indicator `e_u`, which is **not**
+all-ones (cell-uniform) vector `𝟙` to the indicator `e_u`, which is not
 constant on a cell containing both `u` and `v`; so it does not preserve the
 cell-uniform subspace of, e.g., the one-cell (`indiscrete`) partition of the
 `0`-regular empty host.  Universal equitability therefore forces every
-off-diagonal unit to vanish, i.e. forces `V` to be a subsingleton (no two
-distinct vertices).  Conversely, when `V` is a subsingleton every matrix is
-central (`Mat_1(ℂ) = ℂ·1`), so the whole jump set lies in `centerMat V` and
-universal equitability holds.
+off-diagonal unit to vanish, i.e. forces `V` to be a subsingleton.  Conversely,
+when `V` is a subsingleton every matrix is central (`Mat_1(ℂ) = ℂ·1`), so the
+whole jump set lies in `centerMat V` and universal equitability holds.
 
-This is the genuinely-true characterisation of `depolarizingNoise`; the
-"depolarising preserves all equitable structure" intuition is only correct for
-the *diagonal/dephasing* sub-generator (cf.
+The "depolarising preserves all equitable structure" intuition is only correct
+for the *diagonal/dephasing* sub-generator (cf.
 `dephasing_cellUniformSymmetric_iff_singleton`), not the full matrix-unit set. -/
 theorem depolarizing_isUniversallyEquitable_iff_subsingleton (rate : ℝ) :
     (NoiseModel.depolarizingNoise V rate).IsUniversallyEquitable ↔ Subsingleton V := by
@@ -912,7 +877,7 @@ concrete `preservesCellUniform` notion, the whole noise model is
 cell-uniform-symmetric for `P` iff **every cell is a singleton** (the discrete
 partition): `|v⟩⟨v|` sends the all-ones vector to the indicator `e_v`, which is
 constant on `v`'s cell only when that cell is `{v}`.  (The naive "cells are
-vertex-orbits" guess is strictly too weak — see the `CORRECTNESS FIX` note on
+vertex-orbits" guess is strictly too weak — see
 `dephasing_cellUniformSymmetric_iff_singleton` below.  The orbit predicate
 `isVertexOrbitPartition` is retained as a separate, weaker notion.) -/
 
@@ -931,15 +896,13 @@ def isVertexOrbitPartition
 /-- **Site dephasing is equitable iff the partition is discrete (all cells
 singletons).**
 
-CORRECTNESS FIX (issue #53): the original conclusion `isVertexOrbitPartition G P`
-is **false** against the concrete `cellProjector`/`preservesCellUniform` notion.
 Site dephasing's jump operator `|v⟩⟨v| = single v v 1` sends the all-ones
 (cell-uniform) vector to the indicator `e_v`, which is constant on `v`'s cell
-**iff that cell is the singleton `{v}`**.  So `cellUniformSymmetric` forces every
-cell to be a singleton — strictly stronger than `isVertexOrbitPartition`, which
-already holds for e.g. the single-cell partition of `K₂` (swap automorphism) yet
-there dephasing is *not* cell-uniform-symmetric.  We state and prove the
-genuinely-true singleton characterisation. -/
+**iff that cell is the singleton `{v}`**.  So `cellUniformSymmetric` forces
+every cell to be a singleton — strictly stronger than
+`isVertexOrbitPartition`, which already holds for e.g. the single-cell
+partition of `K₂` (swap automorphism) yet there dephasing is *not*
+cell-uniform-symmetric. -/
 theorem dephasing_cellUniformSymmetric_iff_singleton
     (G : WeightedGraph V) (P : EquitablePartition G I) (rate : ℝ) :
     (NoiseModel.dephasingNoise V rate).cellUniformSymmetric P ↔
@@ -992,14 +955,14 @@ noncomputable def NoiseModel.boundaryDephasing
 /-- The **marked-refined** partition of an equitable `P`, indexed by `I ⊕ Unit`.
 
 The intended refinement splits the cell of the marked vertex `m` into `{m}`
-(tagged `Sum.inr ()`) and the rest.  That split is genuinely equitable only
-when `G` is vertex-transitive on `cell(m) \ {m}`; in general it is not.
+(tagged `Sum.inr ()`) and the rest.  That split is equitable only when `G` is
+vertex-transitive on `cell(m) \ {m}`; in general it is not.
 
-To stay honest *and* concrete (no `sorry` in the `uniform` field), this `def`
-returns the canonical equitability-preserving embedding `Sum.inl ∘ P.cells`:
-the original partition `P` re-indexed into `I ⊕ Unit`, leaving the `Sum.inr ()`
-cell empty.  Its `uniform` axiom follows directly from `P.uniform`.  The
-genuine marked split, when equitable, is a refinement of this. -/
+This `def` therefore returns the canonical equitability-preserving embedding
+`Sum.inl ∘ P.cells`: the original partition `P` re-indexed into `I ⊕ Unit`,
+leaving the `Sum.inr ()` cell empty.  Its `uniform` axiom follows directly
+from `P.uniform`.  The marked split, when equitable, is a refinement of
+this. -/
 def markedRefined
     (P : EquitablePartition G I) (_m : V) : EquitablePartition G (I ⊕ Unit) where
   cells := fun v => Sum.inl (P.cells v)
@@ -1020,18 +983,13 @@ def markedRefined
         have := P.uniform i' j' x y hx' hy'
         simpa [Sum.inl.injEq] using this
 
-/-- **Boundary dephasing's breaking score is `0` (corrected, issue #53).**
+/-- **Boundary dephasing's breaking score is `0`.**
 
-The original statement claimed the breaking score was `rate · (1 − 1/|cell(m)|)`,
-the "non-singleton fraction" of the cell of `m`.  Against the *concrete*
-`breakingScoreOp` — which measures the squared Frobenius mass of `L` joining
-distinct cells — this is **false**: the single Lindblad operator
-`|m⟩⟨m| = single m m 1` is a *diagonal* matrix, so it has no off-block entries
-at all and its breaking score is exactly `0`.  We prove the corrected value.
-
-(The folklore `rate·(1−1/|cell|)` is the *coherence* removed by dephasing in a
-different, non-Frobenius normalisation; it is not what `breakingScoreOp`
-computes.) -/
+The single Lindblad operator `|m⟩⟨m| = single m m 1` is a diagonal matrix, so
+it has no off-block entries and `breakingScoreOp` — the squared Frobenius mass
+of `L` joining distinct cells — vanishes.  (The folklore `rate·(1−1/|cell|)`
+is the *coherence* removed by dephasing in a different, non-Frobenius
+normalisation; it is not what `breakingScoreOp` computes.) -/
 theorem boundaryDephasing_breakingScore
     (P : EquitablePartition G I) (m : V) (rate : ℝ) (hrate : 0 < rate)
     -- assume cell(m) is non-singleton, so refinement is non-trivial
@@ -1064,17 +1022,15 @@ theorem boundaryDephasing_breakingScore
   rw [hop, mul_zero]
 
 /-- **Boundary dephasing is NOT cell-uniform-symmetric for the marked-refined
-partition** — but for a reason orthogonal to the breaking *score* (issue #53).
+partition** — for a reason orthogonal to the breaking *score*.
 
-Crucially, this is *not* a corollary of a positive breaking score: the score is
-`0` (proved above), because `breakingScoreOp` only sees off-block Frobenius mass
+This is not a corollary of a positive breaking score: the score is `0`
+(proved above), because `breakingScoreOp` only sees off-block Frobenius mass
 and the diagonal projector `|m⟩⟨m|` has none.  Nevertheless `|m⟩⟨m|` fails to
 *preserve* the cell-uniform subspace: applied to the all-ones (cell-uniform)
 vector it returns the indicator `e_m`, which is non-constant on `m`'s
-(non-singleton) cell.  This is the precise sense in which
-`breakingScore_zero_iff_cellUniformSymmetric` is *false* — block-diagonality
-(score `0`) is strictly weaker than cell-uniform preservation.  We prove the
-negative statement directly. -/
+(non-singleton) cell.  Block-diagonality (score `0`) is thus strictly weaker
+than cell-uniform preservation. -/
 theorem boundaryDephasing_not_cellUniformSymmetric
     (P : EquitablePartition G I) (m : V) (rate : ℝ) (hrate : 0 < rate)
     (hcell : ∃ v : V, P.cells v = P.cells m ∧ v ≠ m) :
@@ -1148,14 +1104,7 @@ recover the original Lindblad operator via `L = R + i·S`.  This is the
 operator-algebraic content underlying the chiral–noise correspondence: the
 anti-Hermitian (chiral-phase) part of a dissipator's jump operator is exactly
 `i·S`, so a real Hamiltonian `R` together with the chiral phase `S` carries the
-full data of `L`.
-
-HONEST RELABEL (was `chiral_noise_duality`): the previous statement was a
-`rfl`-tautology asserting `(chiralForm L).1 = (chiralForm L).1` and
-`(chiralForm L).2 = (chiralForm L).2` under an existential — it claimed a
-"dynamics duality" but proved nothing about any Lindblad-vs-chiral evolution
-agreement.  We strengthen to the genuine (non-`rfl`) reconstruction
-`L = R + i·S`, which actually relates `L` to its chiral components. -/
+full data of `L`. -/
 theorem chiralForm_reconstruct
     (L : Matrix V V ℂ) :
     L = (chiralForm L).1 + Complex.I • (chiralForm L).2 := by
@@ -1172,7 +1121,7 @@ perfect-state-transfer time `t*` on a chiral closed-system walk corresponds
 to a (decohered) PST time on an open-system mirror with appropriate
 Lindblad jump operators encoding the chiral phase.
 
-PROVEN by an explicit witness (no chirality or noise needed for the bare
+Proved by an explicit witness (no chirality or noise needed for the bare
 amplitude-transfer claim): take the *no-noise* model `N = trivial` (so the
 dephasing factor is `1` and `noisyEvolve` is pure coherent conjugation
 `ρ ↦ U ρ Uᴴ` with `U = exp(-(i t) H)`), and the rank-one Hamiltonian
@@ -1182,9 +1131,9 @@ qubit — at time `t = π`.  `Q` is idempotent (`Q·Q = Q`), so by
 = 1 - 2•Q`; reading off entries, `U v u = -1`, hence
 `(U |u⟩⟨u| Uᴴ) v v = U v u · conj(U v u) = (-1)(-1) = 1 ≠ 0`.  (For the
 degenerate `u = v` case take `t = 0`, where the population at `u` is `1`.)
-This is the honest avatar of "a continuous-time quantum walk transfers
-amplitude between any two sites at a tuned time"; the chiral-phase refinement
-of the statement is recorded in the surrounding open directions. -/
+This formalises "a continuous-time quantum walk transfers amplitude between
+any two sites at a tuned time"; the chiral-phase refinement of the statement
+remains open. -/
 theorem chiral_PST_open_mirror
     (G : WeightedGraph V) (u v : V) :
     -- there is an open-system mirror (Hamiltonian `H`, noise `N`, time `t`)
@@ -1360,35 +1309,21 @@ theorem exp_mul_intertwine {J : Type*} [Fintype J] [DecidableEq J]
 
 /-- **Open-system PST in the `noisyEvolve` model = closed-system unitary PST.**
 
-LANDMINE FIX + CLOSE (was a quotient *self-loop* iff).  The former statement
-
-  `OpenSystemPST H N u v ↔ ∃ Hq, OpenSystemPST Hq (N.quotient P) i i`
-
-(for `u, v` in the **same cell** `i`) is **FALSE** (machine-checked
-counterexample): the RHS self-loop `OpenSystemPST Hq Nq i i` is trivially
-satisfiable at `t = 0` (population `1` at cell `i`, any `Hq`), while the LHS —
-host PST between *distinct* `u ≠ v` — is generally false; the raw quotient
-collapses `u` and `v` to the *same* index, so it cannot witness a genuine
-`u → v` transfer.  Even the only *true* same-cell reduction degenerates: every
-candidate RHS is either trivially true (`∃ _, True`) or provably false, so no
-honest non-vacuous quotient self-loop characterization exists.
-
-We replace it by the genuinely-true, **fully proved** structural fact that makes
-the open-system PST question collapse onto the closed system:
-
-  for the `noisyEvolve` dephasing model, the **diagonal population** `(v,v)` is
-  *noise-independent* (the damping factor `if x = y then 1 else …` is exactly
-  `1` on the diagonal), so the `(v,v)`-population equals the pure-unitary value
-  `‖U(t)_{v,u}‖²` with `U(t) = exp(-i t H)`.
+For the `noisyEvolve` dephasing model, the **diagonal population** `(v,v)` is
+*noise-independent* (the damping factor `if x = y then 1 else …` is exactly
+`1` on the diagonal), so the `(v,v)`-population equals the pure-unitary value
+`‖U(t)_{v,u}‖²` with `U(t) = exp(-i t H)`.
 
 Hence open-system PST `u → v` under *any* noise model `N` holds iff the
 **closed-system** unitary walk generated by `H` achieves perfect transfer
 `‖U(t)_{v,u}‖ = 1`.  (Equivalently: dephasing-in-the-`H`-eigenbasis can never
-create or destroy population transfer; it only damps coherences.)  This holds
-for all `u, v` — in particular the same-cell case — and is non-vacuous (its RHS
-is a genuine PST condition, satisfiable, e.g. via the `K_2`/projector witness of
-`chiral_PST_open_mirror`).  Stated with `H` Hermitian so that `U(t)` is unitary
-(the physically meaningful regime); the proof needs no spectral hypotheses. -/
+create or destroy population transfer; it only damps coherences.)  The RHS is
+a genuine PST condition, satisfiable e.g. via the `K_2`/projector witness of
+`chiral_PST_open_mirror`.  No quotient self-loop characterisation is possible:
+for `u, v` in the same cell `i`, any RHS of the shape
+`∃ Hq, OpenSystemPST Hq (N.quotient P) i i` is trivially satisfiable at
+`t = 0`, while host PST between distinct `u ≠ v` is generally false.  The
+proof needs no spectral hypotheses. -/
 theorem openSystemPST_iff_closed_unitary_PST
     (H : Matrix V V ℂ) (N : NoiseModel V) (u v : V) :
     OpenSystemPST H N u v ↔
@@ -1463,29 +1398,27 @@ intertwining `H · C = C · (Hbar · cellSupport)`
 (`exp_mul_intertwine`) and reading off the `(v, cell u)` entry, where the
 singleton source cell collapses the column sum to the single host amplitude.
 
-Both strengthenings of the hypotheses are forced, not cosmetic:
+Both hypotheses are necessary:
 
-  * **Block-constancy** (was `preservesCellUniform H P`): a merely
+  * **Block-constancy** (rather than `preservesCellUniform H P`): a merely
     projector-commuting `H` does not determine any quotient dynamics — only
-    inflated operators descend (`lindbladGen_quotient_reduction`'s CORRECTNESS
-    NOTE).  Inflated Hamiltonians are realizable: any `Hbar` inflates, and for
-    the discrete partition `cellInflate` is essentially the identity, so the
+    inflated operators descend (see `lindbladGen_quotient_reduction`).
+    Inflated Hamiltonians are realizable: any `Hbar` inflates, and for the
+    discrete partition `cellInflate` is essentially the identity, so the
     hypothesis class contains genuine PST instances (e.g. the `K₂` projector
     walk of `chiral_PST_open_mirror`).
   * **Singleton source cell** (`hu`): for `|C_u| = c > 1` the intertwining
     gives quotient amplitude `= c ·` (host amplitude), since the column of
     `U(t)` out of `u` is summed over the whole source cell; quotient PST at
     norm `1` then fails even though host PST holds.  For Hermitian `H`
-    unitarity forces `c = 1` anyway, so `hu` is exactly the honest boundary.
+    unitarity forces `c = 1` anyway, so `hu` is exactly the boundary.
 
-LANDMINE FIX (was a biconditional with a bare `∃ Hq` RHS, hypotheses only
-`preservesCellUniform` + `cellUniformSymmetric`, and a `sorry`).  The former
-`↔` is **FALSE**: the `∃ Hq` RHS is satisfiable irrespective of host transfer
-(choose the `K₂`-block quotient Hamiltonian), and for same-cell `u ≠ v` the RHS
-degenerates to a trivially-true quotient self-loop while host PST fails (e.g.
-`H = 0`).  The descent direction with a *pinned* witness stated here is the
-non-vacuous content; noise plays no role because diagonal populations in the
-`noisyEvolve` model are dephasing-independent
+The biconditional with a bare `∃ Hq` RHS is false: that RHS is satisfiable
+irrespective of host transfer (choose the `K₂`-block quotient Hamiltonian),
+and for same-cell `u ≠ v` it degenerates to a trivially-true quotient
+self-loop while host PST fails (e.g. `H = 0`).  Only the descent direction
+with a *pinned* witness holds; noise plays no role because diagonal
+populations in the `noisyEvolve` model are dephasing-independent
 (`openSystemPST_iff_closed_unitary_PST`). -/
 theorem openSystem_bachmanTamon [Nonempty V]
     (P : EquitablePartition G I)
@@ -1572,13 +1505,7 @@ Three concrete next-step directions left **open**:
 
 /-- **Existence of a zero-breaking cell-uniform-symmetric model.**  The trivial
 (no-jump) noise model is cell-uniform-symmetric for every partition `P` and has
-breaking score `0`.
-
-HONEST RELABEL (was `quotient_optimisation_lower_bound`): the previous name
-advertised an "optimisation lower bound", but the body merely exhibits the
-trivial model as a witness of `cellUniformSymmetric ∧ BreakingScore = 0` — no
-optimisation problem, objective, or comparison is stated.  This is the
-zero-breaking feasibility witness only. -/
+breaking score `0`. -/
 theorem exists_zeroBreaking_model
     (P : EquitablePartition G I) :
     ∃ N : NoiseModel V, N.cellUniformSymmetric P ∧ N.BreakingScore P = 0 := by
@@ -1587,12 +1514,7 @@ theorem exists_zeroBreaking_model
   · simp [NoiseModel.BreakingScore, NoiseModel.trivial]
 
 /-- **The operator breaking score is nonnegative.**  `breakingScoreOp P L` is a
-sum of squared norms, hence `≥ 0`.
-
-HONEST RELABEL (was `caruso_leading_order_speedup`): the previous name advertised
-a "leading-order speedup", but the body only proves `0 ≤ breakingScoreOp P L` — a
-trivial nonnegativity fact about a sum of squares, with no speedup or
-leading-order claim. -/
+sum of squared norms, hence `≥ 0`. -/
 theorem breakingScoreOp_nonneg
     (P : EquitablePartition G I) (L : Matrix V V ℂ) :
     0 ≤ breakingScoreOp P L := by
@@ -1602,11 +1524,8 @@ theorem breakingScoreOp_nonneg
 
 /-- Sentinel statement for direction (3): the open-system "ghost of symmetry" —
 zero breaking score — is exactly the condition that every positive-rate Lindblad
-is block-diagonal w.r.t. the partition `P`.
-
-CORRECTNESS FIX: the original conclusion `BreakingScore = 0 ↔ cellUniformSymmetric`
-was FALSE (it reused the now-corrected `breakingScore_zero_iff_cellUniformSymmetric`);
-we reduce instead to the genuinely-true `breakingScore_zero_iff_blockDiagonal`. -/
+is block-diagonal w.r.t. the partition `P` (`breakingScore_zero_iff_blockDiagonal`;
+the corresponding iff against `cellUniformSymmetric` is false, see there). -/
 theorem ghost_symmetry_open_analogue
     (P : EquitablePartition G I) (N : NoiseModel V) :
     N.BreakingScore P = 0 ↔

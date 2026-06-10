@@ -35,9 +35,6 @@ This file states:
   conservation law (cf. `Graphplay.Dowsing.D8`), generic noise breaks it,
 * engineering implications for protected subspaces,
 * the continuum lift to Tower-4 graphon Lindbladians.
-
-Most theorems are stated and admitted with `sorry`; the goal of the file
-is to land the formal statements in the development.
 -/
 
 import Graphplay.Weighted
@@ -458,10 +455,8 @@ theorem cellUniformProjector_range
 This is the operator form of Bachman–Tamon: stability of the cell-uniform
 subspace under `A` is equivalent to the projector onto it commuting with
 `A` (a standard fact for any subspace and any operator), and that
-stability is itself the equitability axiom.
-
-We state this directly with `sorry` for the proof, which routes through
-`cellUniformSubspace_invariant`. -/
+stability is itself the equitability axiom.  The proof is an entrywise
+computation. -/
 theorem cellUniformProjector_commutes
     (P : EquitablePartition G I) :
     P.cellUniformProjector * G.adj = G.adj * P.cellUniformProjector := by
@@ -614,7 +609,7 @@ theorem cellUniformProjector_commutes_iff_equitable
                                   (fun u : V => Q u = i)).card : ℝ) : ℂ)))
                 else 0) v w) :
     True := by
-  -- Statement is stub: the genuine iff statement requires the projector
+  -- Statement is stub: the full iff statement requires the projector
   -- to be packaged independently of an `EquitablePartition` value, which
   -- bloats the API.  We record the placeholder `True` so the iff lives
   -- in the development; the substantive content is
@@ -717,10 +712,10 @@ conservation law:  each eigenspace of the reduced Hamiltonian is a
 sector with its own conserved quasi-momentum. -/
 theorem noether_per_eigenvalue
     (P : EquitablePartition G I) (lam : ℝ)
-    -- HYPOTHESIS (makes the conclusion non-vacuous): `λ` is genuinely realised
-    -- in the cell-uniform sector — there is a nonzero cell-uniform `λ`-eigenvector
-    -- of `G.adj`.  Without this the statement would be discharged by the trivial
-    -- `Plam = 0`; with it, the conclusion forces a *nonzero* spectral projector.
+    -- The realisation hypothesis is necessary: `λ` must be attained in the
+    -- cell-uniform sector by a nonzero eigenvector, otherwise the statement is
+    -- discharged by the trivial `Plam = 0`.  With it, the conclusion forces a
+    -- *nonzero* spectral projector.
     (w : V → ℂ) (hw : w ≠ 0) (hwCU : w ∈ P.cellUniformSubspace)
     (hwEig : G.adj.mulVec w = (lam : ℂ) • w) :
     ∃ (Plam : Matrix V V ℂ),
@@ -880,12 +875,10 @@ equitable-symmetry hypothesis on the Lindblad jumps, the cell-uniform
 projector is no longer conserved: there exist Lindblad super-operators
 `L` and density matrices `ρ` for which `[Π_P, L(ρ)] ≠ 0`.
 
-LANDMINE FIX (was false as stated for *every* `P`).  For the discrete
-partition (all cells singletons) `Π_P = 1`, which commutes with every
-`L ρ`; so no non-commuting witness exists there.  The honest statement
-needs a *coarseness* hypothesis making `Π_P ≠ 1`: here, two **distinct**
-vertices `v ≠ w` sharing a cell (`P.cells v = P.cells w`).  Under that
-hypothesis `Π_P` has the nonzero off-diagonal entry `Π_P w v = 1/|C_i| ≠ 0`,
+The coarseness hypothesis (two **distinct** vertices `v ≠ w` sharing a
+cell) is necessary: for the discrete partition (all cells singletons)
+`Π_P = 1` commutes with every `L ρ`, so no non-commuting witness exists.
+Under that hypothesis `Π_P` has the nonzero off-diagonal entry `Π_P w v = 1/|C_i| ≠ 0`,
 and a single-vertex dephasing jump `L ρ := |v⟩⟨v|` breaks commutation:
 the commutator's `(w, v)` entry is `1/|C_i| ≠ 0`.  The witness is
 independent of `ρ` (we take `ρ = 0`). -/
@@ -953,12 +946,12 @@ Operationally, the noise does not generate coherence *across* the
 sector/complement split — the cell-uniform sector is a stable two-sided
 block of every `Π_P`-symmetric jump.
 
-LANDMINE FIX (was `… = L ρ`, false as stated).  From `hL` and idempotence one
-gets only `Π · (L ρ) · Π = (L ρ) · Π`; reaching the old RHS `L ρ` would need
-`Π · (L ρ) = L ρ` (range-preservation), which `Π`-commutation does NOT force:
+Only the one-sided form holds.  From `hL` and idempotence one gets
+`Π · (L ρ) · Π = (L ρ) · Π`; the stronger RHS `L ρ` would need
+`Π · (L ρ) = L ρ` (range-preservation), which `Π`-commutation does not force:
 a generic `Π`-commuting super-operator can map the cell-uniform sector into its
 orthogonal complement (e.g. on `V = {0,1}`, `Π = |0⟩⟨0|`, `L ρ = XρX`,
-`ρ = |0⟩⟨0|`: then `Π(Lρ)Π = 0 ≠ |1⟩⟨1| = Lρ`, while the migrated RHS
+`ρ = |0⟩⟨0|`: then `Π(Lρ)Π = 0 ≠ |1⟩⟨1| = Lρ`, while the one-sided RHS
 `(Lρ)Π = |1⟩⟨1|·|0⟩⟨0| = 0` matches).  The hypothesis `hρ` (the state is
 sector-supported) records the intended regime. -/
 theorem cellUniform_is_decoherence_free

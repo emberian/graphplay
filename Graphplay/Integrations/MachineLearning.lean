@@ -517,7 +517,7 @@ and `Matrix.mul_nonsing_inv` on the invertible quotient).  Verified axiom-clean:
 symmetry-reduction of the inversion is fully machine-checked**; the only piece
 that remains genuinely external is the *physical CTQW convergence rate*
 (`MatrixInversion.LinearSystem.ctqw_success`, arXiv:2508.06611), now carried as
-the named, cited literature class `CTQWInversionSuccess` (a typeclass assumption,
+the named, cited literature class `CTQW2508MatrixInversion` (a typeclass assumption,
 not an axiom) — a statement about the quantum hardware, not about the (here-proven)
 linear-algebraic exactness of the reduction. -/
 theorem ridge_inversion_restricts_to_quotient

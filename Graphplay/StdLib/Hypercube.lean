@@ -25,7 +25,7 @@ unconditional theorems on the iterated-Cartesian model
 bitwise-adjacency recognition bridge and `HypercubeIso.evolve_intertwine` for
 the entrywise evolution transport).
 
-**Average mixing — corrected (audit finding).**  The hypercube does *not* have
+**Average mixing.**  The hypercube does *not* have
 uniform *average* mixing for `n ≥ 2`.  Single-time uniform mixing at `τ = π/4`
 is a coincidence of one instant; the Cesàro time-average
 `M̄ = lim_{T→∞} T⁻¹ ∫₀ᵀ |U(t)_{xy}|² dt` collapses to the spectral Schur square
@@ -38,9 +38,9 @@ projector `E_{n−2k}` is the level-`k` Krawtchouk projector — so the cross te
 Krawtchouk polynomial; on the diagonal `d = 0` this is the **central binomial**
 return probability `M̄_{xx} = \binom{2n}{n}/4^n`, which *exceeds* `1/2ⁿ` for every
 `n ≥ 2` (`Nat.centralBinom n > 2ⁿ`).  Hence uniform average mixing **fails** for
-`n ≥ 2` (`hypercube_not_averageUniformMixing`).  The genuine Godsil average-return
-value is `hypercube_avgReturn`, and the diagonal identity
-`hypercube_averageMixing_diag` is **proven** (axiom-clean): the return probability
+`n ≥ 2` (`hypercube_not_averageUniformMixing`).  The Godsil average-return
+value is `hypercube_avgReturn`, and the diagonal identity is
+`hypercube_averageMixing_diag`: the return probability
 collapses to `cos²ⁿ t` by the Kronecker factorization, and the Cesàro mean of this
 `π`-periodic integrand is the Wallis value `\binom{2n}{n}/4ⁿ` (see
 `Graphplay.StdLib.HypercubeBridge`).  Reference: Godsil, *Average mixing
@@ -732,12 +732,10 @@ theorem hypercube_uniformMixing (n : ℕ) (h : 1 ≤ n) :
   push_cast
   ring
 
-/-! ### Average mixing of the hypercube — the *corrected*, non-vacuous content
+/-! ### Average mixing of the hypercube
 
-**Audit finding.**  The original headline `hypercube_averageUniformMixing`
-asserted that the average mixing matrix of `Q_n` is the flat `1/2ⁿ` matrix.  That
-statement is **false** for every `n ≥ 2`.  A direct spectral computation (and an
-exact eigen-numeric check at `n = 2,3,4,5`) gives the average mixing entry between
+The average mixing matrix of `Q_n` is **not** the flat `1/2ⁿ` matrix for any
+`n ≥ 2`.  A direct spectral computation gives the average mixing entry between
 vertices at Hamming distance `d`:
 
   `M̄_{xy} = 4^{-n} · ∑_{k=0}^{n} K_k(d; n)²`,    `K_k` the Krawtchouk polynomial,
@@ -753,12 +751,12 @@ which is strictly larger than `1/2ⁿ` whenever `n ≥ 2` (because
 `centralBinom n > 2ⁿ`).  Hence uniform average mixing **fails** for `n ≥ 2`; the
 hypercube is precisely Godsil's textbook example separating single-time uniform
 mixing (which *does* hold at `τ = π/4`) from average uniform mixing (which does
-not).  The earlier "`∑_w 2^{-2n} = 2^{-n}`" reasoning was the error: it summed
+not).  The naive "`∑_w 2^{-2n} = 2^{-n}`" computation fails because it sums
 `|χ_w(x)|²|χ_w(y)|² = 1` per frequency *without first projecting onto eigenspaces*,
 ignoring the within-eigenspace cross terms that survive the Cesàro average for a
 *degenerate* spectrum. -/
 
-/-- The genuine **average return probability** of the hypercube `Q_n` (the
+/-- The **average return probability** of the hypercube `Q_n` (the
 diagonal entry of Godsil's average mixing matrix): the central binomial value
 `\binom{2n}{n} / 4ⁿ`.  Equals `1` for `n = 0`, `1/2` for `n = 1`, and is
 `> 1/2ⁿ` for every `n ≥ 2`. -/
@@ -827,7 +825,7 @@ theorem hypercube_mixing_diag (n : ℕ) (t : ℝ) (u : Fin (2^n)) :
   rw [norm_pow, Complex.norm_real, Real.norm_eq_abs, ← pow_mul, mul_comm n 2,
     pow_mul, sq_abs, ← pow_mul]
 
-/-- **The genuine Godsil average-return value, PROVEN (axiom-clean).**
+/-- **The Godsil average-return value.**
 The diagonal entry of the hypercube's average mixing matrix is the central
 binomial return probability `\binom{2n}{n}/4ⁿ`.
 
@@ -867,13 +865,12 @@ theorem hypercube_averageMixing_diag (n : ℕ) (u : Fin (2 ^ n)) :
   rw [hval] at hlim
   exact hlim.limUnder_eq
 
-/-- **Headline (corrected, TRUE, non-vacuous).**  The Boolean hypercube `Q_n`
-does **not** have uniform average mixing for `n ≥ 2`.  Proof: the diagonal entry
-of the average mixing matrix is `\binom{2n}{n}/4ⁿ` (`hypercube_averageMixing_diag`),
-which strictly exceeds the uniform value `1/2ⁿ = 1/|V|`
-(`hypercube_avgReturn_gt_uniform`); a uniform matrix would force equality.
+/-- The Boolean hypercube `Q_n` does **not** have uniform average mixing for
+`n ≥ 2`.  Proof: the diagonal entry of the average mixing matrix is
+`\binom{2n}{n}/4ⁿ` (`hypercube_averageMixing_diag`), which strictly exceeds the
+uniform value `1/2ⁿ = 1/|V|` (`hypercube_avgReturn_gt_uniform`); a uniform
+matrix would force equality.
 
-This *replaces* the earlier false claim that the average mixing matrix is flat.
 Godsil (arXiv:1103.2578) identifies the hypercube as the canonical graph with
 single-time uniform mixing but non-uniform average mixing. -/
 theorem hypercube_not_averageUniformMixing (n : ℕ) (hn : 2 ≤ n) :

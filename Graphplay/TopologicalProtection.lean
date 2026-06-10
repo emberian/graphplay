@@ -158,8 +158,7 @@ def inv (φ : WeightedAut G) : WeightedAut G where
 theorem ext {φ ψ : WeightedAut G} (h : φ.π = ψ.π) : φ = ψ := by
   cases φ; cases ψ; cases h; rfl
 
-/-! The weighted-graph automorphisms form a group under `comp`/`id`/`inv`.
-These are genuinely-reachable structural facts (no placeholder is involved):
+/-! The weighted-graph automorphisms form a group under `comp`/`id`/`inv`;
 the laws follow from the corresponding `Equiv` laws on the underlying
 permutations. -/
 
@@ -310,7 +309,7 @@ source cell of `y`.
 
 The forward direction ("flat ⇒ equitable structure preserved") holds
 without side conditions (`preservesEquitable_of_crossConstantOnSupport`),
-but "flat ⇒ phantom symmetry preserved" is genuinely **false**: the
+but "flat ⇒ phantom symmetry preserved" is **false**: the
 phantom clause concerns the full automorphism group of the signed graph,
 and a flat signing can create automorphisms that move cells (see
 `FlatNotSufficient` below).  What does transport is the cell-preserving
@@ -333,7 +332,7 @@ def _root_.Graphplay.ChiralSigning.CrossConstantOnSupport
     {I : Type v} (s : ChiralSigning V) (G : WeightedGraph V) (cells : V → I) : Prop :=
   ∃ τ : I → I → ℂ, ∀ x y : V, G.adj x y ≠ 0 → s.σ x y = τ (cells x) (cells y)
 
-/-- A genuine `CrossConstant` signing is in particular cross-constant on the
+/-- A `CrossConstant` signing is in particular cross-constant on the
 support of any `G`. -/
 theorem _root_.Graphplay.ChiralSigning.CrossConstantOnSupport.of_crossConstant
     {V : Type u} [Fintype V] [DecidableEq V] {I : Type v} {s : ChiralSigning V}
@@ -358,26 +357,24 @@ theorem preservesEquitable_of_crossConstant
   intro i j x y hx hy
   exact (G.signedBy_preserves_equitable P σ h).uniform i j x y hx hy
 
-/-- **Reverse direction** (the new content, now a closed theorem): if `σ`
-preserves the equitable structure of `(G, P)`, and from every vertex there is
-**at most one edge into each cell** (`hsingleEdge`), then `σ` is cross-constant
-**on the support of `G.adj`** (`CrossConstantOnSupport`).
+/-- **Reverse direction**: if `σ` preserves the equitable structure of
+`(G, P)`, and from every vertex there is **at most one edge into each cell**
+(`hsingleEdge`), then `σ` is cross-constant **on the support of `G.adj`**
+(`CrossConstantOnSupport`).
 
-LANDMINE FIX (was: conclusion `σ.CrossConstant P.cells` under the weak
-`nonDegenerate` "∃ z with both edges").  Two corrections were needed:
+Both restrictions in the statement are necessary:
 
-1. *Off-support.*  Only on-support values of `σ` are constrained by any
-   preservation hypothesis, so the everywhere predicate `CrossConstant` is
-   unreachable (a rogue non-edge value escapes detection); we conclude
+1. *Off-support.*  Only on-support values of `σ` enter `G.signedBy σ`, so a
+   preservation hypothesis cannot constrain `σ` on non-edges; the everywhere
+   predicate `CrossConstant` is unreachable, and we conclude
    `CrossConstantOnSupport` instead.
-2. *Sum-trading.*  The old `nonDegenerate` is too weak even for the support
-   conclusion: with two parallel edges per cell-pair the phases can *trade*
-   inside the cell sum and stay invariant while being non-constant.  Explicit
-   counterexample: cells `i = {x, y}`, `j = {z₁, z₂}`, all four edges weight
-   `1`; `σ(x,z₁)=1, σ(x,z₂)=i, σ(y,z₁)=i, σ(y,z₂)=1` gives equal cell sums
-   `1+i = i+1` yet is not cross-constant on the support.  The unique-edge
-   hypothesis `hsingleEdge` removes exactly this trading (each cell sum is a
-   single term), making the conclusion TRUE and provable. -/
+2. *Sum-trading.*  Without `hsingleEdge`, two parallel edges per cell-pair let
+   the phases *trade* inside the cell sum, staying invariant while being
+   non-constant: with cells `i = {x, y}`, `j = {z₁, z₂}`, all four edges of
+   weight `1`, the signing `σ(x,z₁)=1, σ(x,z₂)=i, σ(y,z₁)=i, σ(y,z₂)=1` gives
+   equal cell sums `1+i = i+1` yet is not cross-constant on the support.  The
+   unique-edge hypothesis removes exactly this trading: each cell sum is a
+   single term. -/
 theorem crossConstant_of_preservesEquitable
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -488,10 +485,9 @@ condition `hsingleEdge` (from each vertex, at most one edge into each cell), a
 chiral signing preserves the equitable structure of `(G, P)` **iff** it is
 cross-constant on the support of `G.adj` — equivalently, iff (viewed as a U(1)
 lattice gauge field via I7) it is a **flat connection on cells** in the sense
-of `Graphplay.Integrations.LatticeGauge`, §4.  This is the genuine
-unconditional protection iff; the phantom-symmetry refinement is
-`phantomSymmetry_iff_flatOnCells` below, and *requires* carrying the residual
-symmetry clause (see `FlatNotSufficient.flatOnCells_not_sufficient`). -/
+of `Graphplay.Integrations.LatticeGauge`, §4.  The phantom-symmetry refinement
+is `phantomSymmetry_iff_flatOnCells` below; it must carry a residual symmetry
+clause (see `FlatNotSufficient.flatOnCells_not_sufficient`). -/
 theorem preservesEquitable_iff_flatOnCells
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -575,9 +571,9 @@ sends `0` to `2` (phantom symmetry); but the signing flipping that one edge by
 vertex-transitive, so *every* cell pair is connected by an automorphism of the
 signed graph and phantom symmetry is destroyed.  On the discrete partition the
 signing is trivially cross-constant on the support and the unique-edge
-condition holds, so this refutes the naive iff
-`PreservesPhantomSymmetry ↔ CrossConstantOnSupport` outright: the corrected
-headline (`phantomSymmetry_iff_flatOnCells` below) must carry the residual
+condition holds, so this refutes the unqualified iff
+`PreservesPhantomSymmetry ↔ CrossConstantOnSupport`: the headline
+(`phantomSymmetry_iff_flatOnCells` below) must carry the residual
 phantom-symmetry clause on the signed graph. -/
 
 namespace FlatNotSufficient
@@ -761,23 +757,21 @@ theorem flatOnCells_not_sufficient :
 
 end FlatNotSufficient
 
-/-- **Headline theorem (corrected support-faithful form).**  Under the
-unique-edge condition `hsingleEdge`, a chiral signing preserves the phantom
-symmetry of `(G, P)` **iff** it is a flat U(1) connection on cells
-(`CrossConstantOnSupport`) *and* the signed graph is still phantom-symmetric
-on the same cells.
+/-- **Headline theorem.**  Under the unique-edge condition `hsingleEdge`, a
+chiral signing preserves the phantom symmetry of `(G, P)` **iff** it is a flat
+U(1) connection on cells (`CrossConstantOnSupport`) *and* the signed graph is
+still phantom-symmetric on the same cells.
 
-Statement notes, each forced by an explicit counterexample:
+Each feature of the statement is forced by an explicit counterexample:
 
-1. *Off-support* (RHS was the everywhere `σ.CrossConstant P.cells`).  Only the
-   on-support values of `σ` enter `G.signedBy σ`, so a signing rogue on a
-   non-edge gives the same signed graph; the support-restricted predicate
-   `CrossConstantOnSupport` is the most that preservation can constrain.
+1. *Off-support*: only the on-support values of `σ` enter `G.signedBy σ`, so a
+   signing rogue on a non-edge gives the same signed graph; the
+   support-restricted predicate `CrossConstantOnSupport` is the most that
+   preservation can constrain.
 2. *Sum-trading* in the `→` direction: with two parallel edges per cell pair
    the phases can trade inside the cell sums.  `hsingleEdge` removes exactly
-   this, making the `→` direction
-   `crossConstant_of_preservesEquitable`.
-3. *The residual clause is irredundant*: flatness alone does **not** imply
+   this (see `crossConstant_of_preservesEquitable`).
+3. *The residual clause is irredundant*: flatness alone does not imply
    preservation, because a flat signing can *create* automorphisms and
    collapse the phantom gap — `FlatNotSufficient.flatOnCells_not_sufficient`
    exhibits a phantom-symmetric weighted `4`-cycle, satisfying `hsingleEdge`,
@@ -789,7 +783,7 @@ Statement notes, each forced by an explicit counterexample:
    symmetries the signing may gain or lose.
 
 The equivalence packages this: the `PreservesEquitable` component of the LHS
-is *exactly* flatness on the support (both directions proven above), and the
+is exactly flatness on the support (both directions proven above), and the
 phantom-symmetry component transfers verbatim since both sides bundle the same
 cell map. -/
 theorem phantomSymmetry_iff_flatOnCells
@@ -966,15 +960,12 @@ def IsTopologicallyProtectedUnitary
 A chiral signing is a topologically-protected braid gate of Chern charge `m`
 (on the cells of `P`, relative to `basis`) **iff** `m = 0`.
 
-LANDMINE FIX (was `↔ True`, false for `m ≠ 0`).  With the present placeholder
-`ChernNumberOnCells = 0` (the genuine winding integer is the deferred content
-of I7 §9), the existential `∃ σ h, ChernNumberOnCells σ P h basis = m` reduces
-to `∃ σ h, (0 : ℤ) = m`; the trivial cross-constant signing supplies the `σ`,
-so the existential is *exactly* `m = 0`.  The old `↔ True` was therefore false
-for every `m ≠ 0`.  This corrected iff is honest about what the placeholder
-Chern bookkeeping realizes (only the trivial sector `m = 0`); the full
-Freedman–Larsen–Wang integer-lattice statement (`m` ranging over all of `ℤ`)
-awaits the genuine winding-integer definition. -/
+With the placeholder `ChernNumberOnCells = 0` (the winding integer is the
+deferred content of I7 §9), the existential
+`∃ σ h, ChernNumberOnCells σ P h basis = m` reduces to `∃ σ h, (0 : ℤ) = m`;
+the trivial cross-constant signing supplies the `σ`, so the existential is
+exactly `m = 0`.  The full Freedman–Larsen–Wang integer-lattice statement
+(`m` ranging over all of `ℤ`) awaits the winding-integer definition. -/
 theorem braidGate_iff_chernMatched
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -1003,24 +994,11 @@ realized as chiral signings of the Majorana cell quotient: each Majorana
 braid gate is the topologically protected unitary with Chern number `±1`
 on the cells of the Kitaev-chain quotient.
 
-LANDMINE FIX (was `↔ True`, false under the placeholder `ChernNumberOnCells
-= 0`: the disjunction `(0 = 1) ∨ (0 = -1)` is `False`, so the existential is
-empty).  The genuine winding-integer Chern theory (I7 §9) supplies the
-Majorana-generator signing with quotient Chern number `±1`; here we record
-that **data** as the hypothesis `hMajorana` and conclude the protected-unitary
-existential.  This localizes the deferred construction into a single explicit
-witness obligation (the Kitaev-chain signing of Chern charge `±1`), exactly as
-in the typeclass-conditional pattern used elsewhere in the development.
-
-HONESTY NOTE.  Under the *current* placeholder `ChernNumberOnCells = 0`, the
-hypothesis `hMajorana` is itself unsatisfiable (`0 = 1 ∨ 0 = -1` is `False`),
-so this theorem is presently **vacuously** true — by design: it carries no
-content until the genuine winding-integer `ChernNumberOnCells` of I7 §9 makes
-`hMajorana` satisfiable, at which point it becomes the substantive statement
-that the Majorana generator is a protected ±1 braid gate.  This is the honest
-deferral (forward-compatible: it never becomes *false*), in contrast to a
-placeholder-faithful `↔ False`, which would be correct now but turn false once
-the ±1 signing is realized. -/
+The hypothesis `hMajorana` records the deferred construction — a Kitaev-chain
+signing of quotient Chern charge `±1`, to be supplied by the winding-integer
+Chern theory of I7 §9.  Under the present placeholder `ChernNumberOnCells = 0`
+the hypothesis is unsatisfiable, so the theorem carries content only once that
+definition lands; it never becomes false. -/
 theorem majoranaOne_braidGate_chernPlusMinusOne
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -1064,23 +1042,16 @@ noncomputable def signingDistance {V : Type u} [Fintype V] [Nonempty V]
 same `CellUniformMixing` property of the bundle `Bundle.signedBy` at every
 time `t`.
 
-LANDMINE FIX (was keyed on `ChernNumberOnCells σ = ChernNumberOnCells σ'` plus
-`signingDistance σ σ' < 1`).  Under the present placeholder
-`ChernNumberOnCells = 0` the Chern hypothesis is *inert* (`0 = 0`), so the old
-statement amounted to "any two cross-constant signings within distance `1` give
-the same exact mixing at every `t`" — which is **false** for multi-cell bundles
-where the quotient phase genuinely changes the transition moduli (the
-`K₄ → K₁+K₃` chiral-mixing example of Levine et al.: there distinct quotient
-phases yield distinct uniform-mixing times, while staying within distance `1`).
-The genuine object controlling cell-uniform mixing is the *quotient phase*
-itself (not merely its winding integer), so the honest, provable hypothesis is
-that `σ` and `σ'` share one quotient phase `τ`.  Then `σ.σ = σ'.σ` pointwise,
-the signed adjacencies coincide, and the two `CellUniformMixing` predicates are
-literally the same — giving the iff.  (Sharing a quotient phase implies equal
-Chern numbers, so this is a *strengthening* of the intended hypothesis to one
-the current definitions can actually justify; the full small-distance /
-constant-Chern adiabatic-continuity version awaits the genuine winding-integer
-`ChernNumberOnCells` of I7 §9.) -/
+The shared-quotient-phase hypothesis is the right one: the object controlling
+cell-uniform mixing is the quotient phase itself, not merely its winding
+integer.  A small-distance hypothesis alone would not suffice — for multi-cell
+bundles, distinct quotient phases can yield distinct uniform-mixing times
+while staying within signing distance `1` (the `K₄ → K₁+K₃` chiral-mixing
+example of Levine et al.).  Sharing a quotient phase forces `σ.σ = σ'.σ`
+pointwise, so the signed adjacencies coincide and the two `CellUniformMixing`
+predicates are literally the same.  (It also implies equal Chern numbers; the
+small-distance / constant-Chern adiabatic-continuity version awaits the
+winding-integer `ChernNumberOnCells` of I7 §9.) -/
 theorem cellUniformMixing_robust_under_small_chern_preserving_perturbation
     {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -1124,16 +1095,12 @@ every such `σ'` preserves the cell-uniform PST / mixing of `B.signedBy σ` at
 every time `t`.  This is the openness hallmark of topological protection,
 phrased at the level the current definitions justify.
 
-LANDMINE FIX (was gated on the inert `ChernNumberOnCells σ' = ChernNumberOnCells
-σ` plus `signingDistance σ σ' < ε`).  Under the placeholder
-`ChernNumberOnCells = 0` that gate is vacuous, so the old conclusion asserted
-mixing-preservation for *every* nearby `σ'` — false for multi-cell bundles
-(see `cellUniformMixing_robust_under_small_chern_preserving_perturbation`).  The
-honest gate is membership in the quotient-phase class of `σ`: any `σ'` that
-realizes the same quotient phase as `σ` gives the identical signed adjacency,
-hence the identical mixing.  We keep the `∃ ε > 0` to preserve the
-neighborhood/openness narrative (here `ε = 1`), but the operative condition is
-the shared quotient phase. -/
+The operative gate is membership in the quotient-phase class of `σ`: any `σ'`
+realizing the same quotient phase gives the identical signed adjacency, hence
+identical mixing.  Mixing-preservation for *every* nearby `σ'` would be false
+for multi-cell bundles (see
+`cellUniformMixing_robust_under_small_chern_preserving_perturbation`).  The
+`∃ ε > 0` (here `ε = 1`) phrases the statement as an openness property. -/
 theorem signing_neighborhood_topologically_protected
     {V : Type u} [Fintype V] [DecidableEq V] [Nonempty V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -1192,28 +1159,18 @@ These are addressed (statement-only) in I7 §10 (Open directions);
 this file stops at the U(1) version.
 -/
 
-/-- **Placeholder (no content proven).**  This declaration records, at
-the trivially-true `Prop` level, that the headline theorem
-`phantomSymmetry_iff_flatOnCells` is *intended* to extend to
-matrix-valued (`SU(N)`) gauge fields — but it proves **nothing** about
-that extension.
-
-What we *want* (and have NOT formalized) is the iff
+/-- **Placeholder.**  Records, at the trivially-true `Prop` level, the
+intended non-abelian extension of `phantomSymmetry_iff_flatOnCells`:
 
 > an `SU(N)` lattice gauge perturbation preserves the phantom symmetry
 > of `(G, P)` ↔ it is matrix-cross-constant on `P.cells`.
 
-That statement is currently unreachable: stating it requires a
-**matrix-weighted graph** type and a matrix-valued `signedBy`/phantom-
-symmetry notion, neither of which exists in Graphplay yet (see the §8
-discussion above).  The hypotheses below are merely the data such a
-theorem would quantify over; the conclusion is the placeholder `True`,
-so this carries no topological-protection content.
-
-The genuine non-abelian topological-protection theorem (the eventual
-target, connecting to the Kitaev honeycomb model, Kitaev 2006, and
-SU(2) topological insulators with spin-orbit coupling, Goldman et al.
-2014) is left for future work. -/
+Stating this requires a **matrix-weighted graph** type and a matrix-valued
+`signedBy`/phantom-symmetry notion, neither of which exists in Graphplay yet
+(see the §8 discussion above).  The hypotheses below are the data such a
+theorem would quantify over; the conclusion is `True`.  The eventual target
+connects to the Kitaev honeycomb model (Kitaev 2006) and SU(2) topological
+insulators with spin-orbit coupling (Goldman et al. 2014). -/
 theorem nonabelian_phantomSymmetry_iff_flatOnCells_statement_placeholder
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -1228,17 +1185,12 @@ theorem nonabelian_phantomSymmetry_iff_flatOnCells_statement_placeholder
     True := by
   trivial
 
-/-- **Placeholder (no invariant constructed).**  This declaration
-records, at the trivially-true `Prop` level, the *aspiration* that the
-U(1) `ChernNumberOnCells` extend to SU(N) gauge fields via a second
-Chern class `c₂ ∈ ℤ` (or its SU(2) winding-number restriction on `S³`).
-
-It proves **nothing**: no non-abelian invariant is defined here, no
-`∃ c₂ : ℤ` is asserted, and the §7 robustness theorem is **not**
-extended.  A genuine statement would need a non-abelian Wilson-loop
-(path-ordered, see §8) and the corresponding integrality argument;
-the conclusion below is the placeholder `True`.  Left for future
-work. -/
+/-- **Placeholder.**  Records, at the trivially-true `Prop` level, the
+intended extension of the U(1) `ChernNumberOnCells` to SU(N) gauge fields via
+a second Chern class `c₂ ∈ ℤ` (or its SU(2) winding-number restriction on
+`S³`).  No non-abelian invariant is defined here: a real statement needs a
+path-ordered non-abelian Wilson loop (see §8) and the corresponding
+integrality argument.  The conclusion is `True`; left for future work. -/
 theorem nonabelian_chernNumber_extension_statement_placeholder
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]

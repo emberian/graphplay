@@ -49,9 +49,8 @@ The Tower 3 statements collected here are:
 * Three open directions, including the formalization of the GNW chain
   `χ_f ≤ θ ≤ χ_q ≤ χ`.
 
-All proofs are `sorry` placeholders — this file is a *type-correct scaffold* of
-statements meant to be linked into the rest of Graphplay once Mathlib's
-operator-algebra layer is up.
+All proofs are complete (no `sorry`); the genuinely-external literature inputs
+enter only through named, cited typeclasses from `Graphplay.LiteratureInterfaces`.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -1050,59 +1049,158 @@ theorem quantumHamming_hasEquitablePartition (n q : ℕ) [NeZero q] :
     mul_mem := by intro A _ B _; trivial
     cells_mem := by intro _; trivial }⟩
 
+/-- The **left-translation operator** `L_g` of the left-regular representation
+of a finite group `G`, as a permutation matrix on `ℂ[G] ≃ ℂ^{|G|}` (via the
+canonical enumeration `Fintype.equivFin G`):
+
+  `(L_g)_{x,y} = [x = g·y]`,   i.e.   `L_g e_h = e_{g·h}`.
+
+The assignment `g ↦ L_g` is an injective homomorphism into the unitary group:
+`L_1 = 1`, `L_g L_h = L_{gh}`, and `(L_g)ᴴ = L_{g⁻¹}`. -/
+noncomputable def leftTranslation {G : Type u} [Fintype G] [DecidableEq G]
+    [Group G] (g : G) :
+    Matrix (Fin (Fintype.card G)) (Fin (Fintype.card G)) ℂ :=
+  Matrix.of fun i j =>
+    if (Fintype.equivFin G).symm i = g * (Fintype.equivFin G).symm j then 1 else 0
+
+@[simp] theorem leftTranslation_one {G : Type u} [Fintype G] [DecidableEq G]
+    [Group G] : leftTranslation (1 : G) = 1 := by
+  ext i j
+  simp [leftTranslation, Matrix.one_apply]
+
+/-- The left-regular representation is multiplicative: `L_g L_h = L_{gh}`. -/
+theorem leftTranslation_mul {G : Type u} [Fintype G] [DecidableEq G] [Group G]
+    (g h : G) :
+    leftTranslation g * leftTranslation h = leftTranslation (g * h) := by
+  classical
+  ext i k
+  simp only [leftTranslation, Matrix.mul_apply, Matrix.of_apply, ite_mul,
+    one_mul, zero_mul]
+  rw [Finset.sum_eq_single ((Fintype.equivFin G) (h * (Fintype.equivFin G).symm k))]
+  · simp [mul_assoc]
+  · intro j _ hj
+    have hQ : ¬ ((Fintype.equivFin G).symm j = h * (Fintype.equivFin G).symm k) := by
+      intro hcontra
+      exact hj (by rw [← hcontra, Equiv.apply_symm_apply])
+    simp [hQ]
+  · intro habs
+    exact absurd (Finset.mem_univ _) habs
+
+/-- The adjoint of a left translation is the translation by the inverse:
+`(L_g)ᴴ = L_{g⁻¹}`.  This is what makes a *symmetric* connection set generate
+a ∗-closed operator system. -/
+theorem leftTranslation_conjTranspose {G : Type u} [Fintype G] [DecidableEq G]
+    [Group G] (g : G) :
+    (leftTranslation g)ᴴ = leftTranslation g⁻¹ := by
+  ext i j
+  simp only [Matrix.conjTranspose_apply, leftTranslation, Matrix.of_apply]
+  have hiff : ((Fintype.equivFin G).symm j = g * (Fintype.equivFin G).symm i)
+      ↔ ((Fintype.equivFin G).symm i = g⁻¹ * (Fintype.equivFin G).symm j) := by
+    constructor
+    · intro h; rw [h, inv_mul_cancel_left]
+    · intro h; rw [h, mul_inv_cancel_left]
+  rw [if_congr hiff rfl rfl]
+  by_cases hc : (Fintype.equivFin G).symm i = g⁻¹ * (Fintype.equivFin G).symm j <;>
+    simp [hc]
+
+/-- Distinct group elements give distinct translation operators (the
+left-regular representation is faithful): `L_g` is pinned by its action on
+`e_1`. -/
+theorem leftTranslation_injective {G : Type u} [Fintype G] [DecidableEq G]
+    [Group G] :
+    Function.Injective (leftTranslation (G := G)) := by
+  intro g h hgh
+  by_contra hne
+  have h2 := congrFun (congrFun hgh ((Fintype.equivFin G) g)) ((Fintype.equivFin G) 1)
+  simp [leftTranslation, hne] at h2
+
 /-- The **quantum Cayley graph** of a finite (not-necessarily-abelian) group
-`G` with respect to a symmetric connection set `C ⊆ G`.  Defined via the
-left-regular representation of `G` on `ℂ[G] ≃ ℂ^|G|`. -/
+`G` with respect to a symmetric connection set `C ⊆ G`: the operator system
+spanned, inside `End(ℂ[G]) ≃ M_{|G|}(ℂ)`, by the identity together with the
+left-translation operators `L_g` for `g ∈ C`.  Closure under the adjoint is
+exactly the symmetry hypothesis: `(L_g)ᴴ = L_{g⁻¹}` lands back among the
+generators because `g ∈ C ↔ g⁻¹ ∈ C`.  For non-abelian `G` this operator
+system is non-commutative as soon as `C` contains a non-commuting pair
+(`quantumCayley_nonCommutative_generic`) — the Krein-parameter / quantum
+"non-classical" case in 1907.04729 §3. -/
 noncomputable def quantumCayley {G : Type u} [Fintype G] [DecidableEq G]
     [Group G] (C : Set G) [DecidablePred (· ∈ C)]
-    (_hsymm : ∀ g, g ∈ C ↔ g⁻¹ ∈ C) : QuantumGraph (Fintype.card G) := by
-  -- Concretely: the operator system spanned by `{L_g : g ∈ C ∪ {1}}` inside
-  -- `End(ℂ[G])`.  For non-abelian `G` the resulting coherent algebra is
-  -- non-commutative in general (this is the Krein parameter / quantum
-  -- "non-classical" case in 1907.04729 §3).
-  exact (⟨⊤, trivial, fun _ _ => trivial⟩ : QuantumGraph (Fintype.card G))
+    (hsymm : ∀ g, g ∈ C ↔ g⁻¹ ∈ C) : QuantumGraph (Fintype.card G) where
+  carrier := Submodule.span ℂ (insert 1 (leftTranslation '' C))
+  one_mem := Submodule.subset_span (Set.mem_insert _ _)
+  star_mem := by
+    intro A hA
+    refine QuantumGraph.conjTranspose_mem_span_of_generators ?_ hA
+    intro g hg
+    rw [Set.mem_insert_iff] at hg
+    rcases hg with rfl | ⟨c, hc, rfl⟩
+    · rw [Matrix.conjTranspose_one]
+      exact Submodule.subset_span (Set.mem_insert _ _)
+    · rw [leftTranslation_conjTranspose]
+      exact Submodule.subset_span
+        (Set.mem_insert_of_mem _ ⟨c⁻¹, (hsymm c).mp hc, rfl⟩)
 
-/-- For non-abelian `G` the quantum Cayley graph generically has a
-*non-commutative* coherent algebra.  This is what distinguishes Tower 3 from
-the classical Bose–Mesner / association-scheme picture. -/
+/-- For non-abelian `G` the quantum Cayley graph has a *non-commutative*
+operator system as soon as the connection set contains a non-commuting pair:
+`L_a L_b = L_{ab} ≠ L_{ba} = L_b L_a` by faithfulness of the left-regular
+representation.  This is what distinguishes Tower 3 from the classical
+Bose–Mesner / association-scheme picture.
+
+The hypothesis that the pair lies *in `C`* is needed: for `C = ∅` the system
+is `ℂ·1`, commutative no matter how non-abelian `G` is, and for abelian `G`
+(or any commuting `C`) the translations commute. -/
 theorem quantumCayley_nonCommutative_generic
     {G : Type u} [Fintype G] [DecidableEq G] [Group G]
     (C : Set G) [DecidablePred (· ∈ C)]
     (hsymm : ∀ g, g ∈ C ↔ g⁻¹ ∈ C)
-    (_hnonab : ∃ a b : G, a * b ≠ b * a) :
-    -- Statement: there exist `A, B ∈ (quantumCayley C hsymm).carrier` with
-    -- `A * B ≠ B * A`.
+    (hnonab : ∃ a ∈ C, ∃ b ∈ C, a * b ≠ b * a) :
     ∃ A B : Matrix (Fin (Fintype.card G)) (Fin (Fintype.card G)) ℂ,
       A ∈ (quantumCayley C hsymm).carrier ∧
       B ∈ (quantumCayley C hsymm).carrier ∧
       A * B ≠ B * A := by
-  -- The carrier of `quantumCayley` is all of `M_n(ℂ)` (`⊤`), so it suffices to
-  -- exhibit *any* non-commuting pair of `n × n` matrices.  Non-abelianity gives
-  -- two distinct group elements, hence `n = |G| ≥ 2`, so the elementary matrix
-  -- units `single 0 1 1` and `single 1 0 1` are available and do not commute.
-  classical
-  obtain ⟨a, b, hab⟩ := _hnonab
-  -- `a ≠ b`, so `|G| ≥ 2`.
-  have hne : a ≠ b := by rintro rfl; exact hab rfl
-  have hcard : 2 ≤ Fintype.card G := Fintype.one_lt_card_iff.mpr ⟨a, b, hne⟩
-  -- Two distinct indices `i0 ≠ i1` in `Fin (|G|)`.
-  set N := Fintype.card G with hN
-  have hN1 : (1 : ℕ) < N := by omega
-  have hNz : NeZero N := ⟨by omega⟩
-  have h0 : (1 : Fin N) ≠ (0 : Fin N) := by
-    apply Fin.ne_of_val_ne
-    rw [Fin.val_zero, Fin.val_one']
-    rw [Nat.mod_eq_of_lt hN1]; omega
-  refine ⟨Matrix.single 0 1 (1 : ℂ), Matrix.single 1 0 (1 : ℂ),
-    Submodule.mem_top, Submodule.mem_top, ?_⟩
-  -- `(single 0 1)(single 1 0) = single 0 0`, `(single 1 0)(single 0 1) = single 1 1`.
-  rw [Matrix.single_mul_single_same, Matrix.single_mul_single_same, mul_one]
-  intro hcontra
-  -- They disagree at entry `(0,0)`: LHS = 1, RHS = 0.
-  have hentry := congrFun (congrFun hcontra 0) 0
-  rw [Matrix.single_apply, Matrix.single_apply] at hentry
-  rw [if_pos ⟨rfl, rfl⟩, if_neg (fun h => h0 h.1)] at hentry
-  exact one_ne_zero hentry
+  obtain ⟨a, ha, b, hb, hab⟩ := hnonab
+  refine ⟨leftTranslation a, leftTranslation b,
+    Submodule.subset_span (Set.mem_insert_of_mem _ ⟨a, ha, rfl⟩),
+    Submodule.subset_span (Set.mem_insert_of_mem _ ⟨b, hb, rfl⟩), ?_⟩
+  rw [leftTranslation_mul, leftTranslation_mul]
+  exact fun hcontra => hab (leftTranslation_injective hcontra)
+
+/-- Membership in the two-transposition connection set of `S₃` is decidable. -/
+instance : DecidablePred
+    (· ∈ ({Equiv.swap 0 1, Equiv.swap 1 2} : Set (Equiv.Perm (Fin 3)))) :=
+  fun g => decidable_of_iff (g = Equiv.swap 0 1 ∨ g = Equiv.swap 1 2)
+    (by show _ ↔ g ∈ ({Equiv.swap 0 1, Equiv.swap 1 2} : Set (Equiv.Perm (Fin 3)))
+        rw [Set.mem_insert_iff, Set.mem_singleton_iff])
+
+/-- The two-transposition connection set `{(0 1), (1 2)} ⊆ S₃` is symmetric:
+transpositions are involutions. -/
+theorem s3TranspositionSet_symm :
+    ∀ g : Equiv.Perm (Fin 3),
+      g ∈ ({Equiv.swap 0 1, Equiv.swap 1 2} : Set (Equiv.Perm (Fin 3))) ↔
+      g⁻¹ ∈ ({Equiv.swap 0 1, Equiv.swap 1 2} : Set (Equiv.Perm (Fin 3))) := by
+  intro g
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+  constructor
+  · rintro (rfl | rfl)
+    · exact Or.inl (Equiv.swap_inv _ _)
+    · exact Or.inr (Equiv.swap_inv _ _)
+  · rintro (h | h)
+    · exact Or.inl (by rw [← inv_inv g, h, Equiv.swap_inv])
+    · exact Or.inr (by rw [← inv_inv g, h, Equiv.swap_inv])
+
+/-- **Concrete witness:** the quantum Cayley graph of `S₃` with connection set
+the two transpositions `{(0 1), (1 2)}` is non-commutative.  Here `C` and the
+group law are load-bearing: the non-commuting pair lives in `C`, and the
+witnesses are its translation operators — not generic matrix units. -/
+theorem quantumCayley_S3_nonCommutative :
+    ∃ A B : Matrix (Fin (Fintype.card (Equiv.Perm (Fin 3))))
+        (Fin (Fintype.card (Equiv.Perm (Fin 3)))) ℂ,
+      A ∈ (quantumCayley _ s3TranspositionSet_symm).carrier ∧
+      B ∈ (quantumCayley _ s3TranspositionSet_symm).carrier ∧
+      A * B ≠ B * A :=
+  quantumCayley_nonCommutative_generic _ s3TranspositionSet_symm
+    ⟨Equiv.swap 0 1, Set.mem_insert _ _,
+     Equiv.swap 1 2, Set.mem_insert_of_mem _ rfl, by decide⟩
 
 /-! ## 6. Non-commutative Weisfeiler–Leman refinement and `χ_q`
 
@@ -1412,14 +1510,9 @@ def OpenDirection.quantumHammingScheme : Prop :=
 
 /-! ## 9. Closing remarks
 
-Everything in this file is `sorry`-driven at the proof level; the types are
-intended to compile against the current `Graphplay.QuantumGraph` and
-`Graphplay.Equitable` headers without further imports.
-
-The natural next step is `Graphplay.Dowsing.CoherentAlgebra` (sibling agent
-D4, *commutative* case) for the linkage to Bose–Mesner / association
-schemes, after which the present file becomes the proper non-commutative
-extension.
+The commutative counterpart is `Graphplay.Dowsing.CoherentAlgebra`
+(Bose–Mesner / association schemes); the present file is its non-commutative
+extension along Duan–Severini–Winter / Mancinska–Roberson operator systems.
 -/
 
 end Graphplay

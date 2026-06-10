@@ -52,6 +52,9 @@ import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Analysis.CStarAlgebra.Basic
+import Mathlib.Analysis.CStarAlgebra.Matrix
+import Mathlib.LinearAlgebra.Matrix.Kronecker
+import Mathlib.LinearAlgebra.Matrix.Notation
 
 namespace Graphplay.LiteratureInterfaces
 
@@ -353,21 +356,22 @@ class TsirelsonBound where
   value_tight :
     ∀ ε > 0, ∃ (v : ℝ), Nonempty (CHSHRealization v) ∧ 2 * Real.sqrt 2 - v < ε
 
-/-- **Tsirelson optimal-entangled tightness tail** (Tsirelson 1980).
+/-- **Tsirelson optimal-entangled tightness tail** (Tsirelson 1980): there is a
+`CHSHRealization` of a value in the *quantum regime* `(2, 2√2]` arbitrarily close
+to the maximum `2√2`.
 
-The genuinely-external content of Tsirelson's theorem that Mathlib v4.30.0 cannot
-yet support: there is a genuine `CHSHRealization` of a value in the *quantum
-regime* `(2, 2√2]` arbitrarily close to the maximum `2√2`.  The witness is
-Tsirelson's optimal entangled strategy — Pauli observables on `ℂ² ⊗ ℂ²` with the
-Bell state — which requires a `CStarAlgebra (Matrix _ _ ℂ)` instance that Mathlib
-lacks.
+**DISCHARGED — an instance is proven below** (`instTsirelsonTightnessTail`), so
+this class is no longer an assumption anywhere.  The single witness serving every
+`δ` is Tsirelson's optimal entangled strategy itself, achieving exactly `2√2`:
+Pauli observables `X ⊗ 1`, `Z ⊗ 1` for Alice and `1 ⊗ (X±Z)/√2` for Bob acting on
+`ℂ² ⊗ ℂ²` in the Bell state `(|00⟩ + |11⟩)/√2` — see
+`TsirelsonOptimal.realization`.  The carrier is the concrete C\*-algebra
+`Matrix (Fin 2 × Fin 2) (Fin 2 × Fin 2) ℂ` under the `L2` operator norm
+(`Matrix.Norms.L2Operator` locale, whose `Matrix.instCStarRing` provides the
+C\*-identity), assembled in `TsirelsonOptimal.matrixCStarAlgebra`.
 
-This is a **typeclass assumption, NOT an axiom**: no instance is provided (the
-matrix C\*-algebra construction is the missing external content), so a theorem
-assuming `[TsirelsonTightnessTail]` is a sorry-free conditional theorem honestly
-listing the cited literature fact as a named hypothesis.  The classical-regime
-tail (values within `2√2 − 2 ≈ 0.83` of the max) is discharged *without* this
-class by the genuine `v = 2` realization — see the `TsirelsonBound` instance. -/
+The class survives purely as the named interface point between the abstract
+`TsirelsonBound` and the concrete witness. -/
 class TsirelsonTightnessTail : Prop where
   /-- For every `δ > 0` there is an honest `CHSHRealization` of a value within `δ`
   of `2√2` whose value already exceeds `2` (i.e. lies in the genuine quantum
@@ -387,20 +391,328 @@ theorem value_le_of_realization {v : ℝ} (h : CHSHRealization v) :
 
 end TsirelsonBound
 
-/-- **`TsirelsonBound` from the named tightness tail** — axiom-clean, no `sorry`.
+/-! ### Tsirelson's optimal strategy: the explicit `2√2` realization
 
-The class is INHABITED (no longer the old refutable shape) the moment the
-genuinely-external Tsirelson tightness tail `[TsirelsonTightnessTail]` is
-supplied.  The split is honest:
+The witness that makes `TsirelsonTightnessTail` (and hence `TsirelsonBound`) an
+unconditional theorem.  Alice measures `X ⊗ 1` and `Z ⊗ 1`; Bob measures
+`1 ⊗ (X+Z)/√2` and `1 ⊗ (X−Z)/√2`; the shared state is the Bell state
+`(|00⟩ + |11⟩)/√2`.  The CHSH operator collapses to `√2·(X⊗X + Z⊗Z)`, and the
+Bell state is a `+1`-eigenvector of both `X⊗X` and `Z⊗Z`, so the expectation is
+exactly `2√2`.
 
-* the classical-regime slice `ε > 2√2 − 2 ≈ 0.83` is discharged *unconditionally*
-  by the genuine `v = 2` realization (`CHSHRealization.nonempty_two`);
-* the small-`ε` quantum slice (values in `(2, 2√2]` approaching the Tsirelson
-  maximum) is discharged from `TsirelsonTightnessTail`, the cited literature fact
-  whose witness — Tsirelson's optimal entangled Pauli strategy on `ℂ² ⊗ ℂ²` —
-  needs a `CStarAlgebra (Matrix _ _ ℂ)` instance Mathlib v4.30.0 lacks.
+The carrier is `Matrix (Fin 2 × Fin 2) (Fin 2 × Fin 2) ℂ` with the `L2` operator
+norm: the `Matrix.Norms.L2Operator` locale supplies the normed ring, normed
+algebra, and `CStarRing` structures (the norm is transported from continuous
+endomorphisms of `EuclideanSpace ℂ (Fin 2 × Fin 2)`), and completeness is by
+finite-dimensionality.  These instances are kept **local** to this section — only
+the bundled `TsirelsonOptimal.matrixCStarAlgebra` escapes, carried inside the
+realization — so no global matrix-norm choice leaks out of this file. -/
 
-No bare `axiom` and no `sorry`: the only assumption is the named, cited class. -/
+section TsirelsonOptimal
+
+open Matrix WithLp
+open scoped Kronecker
+open scoped Matrix.Norms.L2Operator
+
+namespace TsirelsonOptimal
+
+/-- Two-qubit index type: the first factor is Alice's qubit, the second Bob's. -/
+abbrev Qubit2 : Type := Fin 2 × Fin 2
+
+/-- One-qubit complex matrices. -/
+abbrev M2 : Type := Matrix (Fin 2) (Fin 2) ℂ
+
+/-- Two-qubit complex matrices, the carrier of the optimal realization. -/
+abbrev M4 : Type := Matrix Qubit2 Qubit2 ℂ
+
+/-- The `4×4` complex matrices as a C\*-algebra under the `L2` operator norm.
+Every structure field is assembled from the scoped `Matrix.Norms.L2Operator`
+instances (`Matrix.instL2OpNormedRing`, `Matrix.instL2OpNormedAlgebra`,
+`Matrix.instCStarRing`); completeness holds since `M4` is finite-dimensional
+over `ℂ`.  Deliberately **not** a global instance: Mathlib keeps matrix norms
+scoped, and so do we — the realization below carries it as a bundled field. -/
+@[implicit_reducible]
+noncomputable def matrixCStarAlgebra : CStarAlgebra M4 where
+
+attribute [local instance] matrixCStarAlgebra
+
+/-- Pauli `X` (bit flip). -/
+def pX : M2 := !![0, 1; 1, 0]
+
+/-- Pauli `Z` (phase flip). -/
+def pZ : M2 := !![1, 0; 0, -1]
+
+/-- `√2` as a complex scalar. -/
+noncomputable def c : ℂ := (Real.sqrt 2 : ℝ)
+
+theorem c_mul_c : c * c = 2 := by
+  unfold c
+  rw [← Complex.ofReal_mul, Real.mul_self_sqrt (by norm_num)]
+  norm_num
+
+theorem c_ne_zero : c ≠ 0 := by
+  unfold c
+  rw [Ne, Complex.ofReal_eq_zero]
+  positivity
+
+theorem star_c : star c = c := by
+  unfold c
+  rw [Complex.star_def, Complex.conj_ofReal]
+
+theorem c_inv_sq : c⁻¹ * c⁻¹ * 2 = 1 := by
+  rw [← c_mul_c, show c⁻¹ * c⁻¹ * (c * c) = (c⁻¹ * c) * (c⁻¹ * c) by ring,
+    inv_mul_cancel₀ c_ne_zero, one_mul]
+
+theorem two_c_inv : 2 * c⁻¹ * 2 = 2 * c := by
+  have h : (2 * c⁻¹ * 2) * c = (2 * c) * c := by
+    rw [show (2 * c⁻¹ * 2) * c = 2 * (c⁻¹ * c) * 2 by ring, inv_mul_cancel₀ c_ne_zero,
+      show (2 * c) * c = 2 * (c * c) by ring, c_mul_c]
+    ring
+  exact mul_right_cancel₀ c_ne_zero h
+
+theorem pX_mul_pX : pX * pX = 1 := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [pX, Matrix.mul_apply, Fin.sum_univ_two]
+
+theorem pZ_mul_pZ : pZ * pZ = 1 := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [pZ, Matrix.mul_apply, Fin.sum_univ_two]
+
+/-- `X` and `Z` anticommute — the engine of the whole construction: it makes
+`(X±Z)/√2` involutions and steers the CHSH cross terms. -/
+theorem pX_anticomm_pZ : pX * pZ + pZ * pX = 0 := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [pX, pZ]
+
+theorem pX_selfAdjoint : pXᴴ = pX := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [pX, Matrix.conjTranspose_apply]
+
+theorem pZ_selfAdjoint : pZᴴ = pZ := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [pZ, Matrix.conjTranspose_apply]
+
+/-- Alice's first observable, `X ⊗ 1`. -/
+noncomputable def A0 : M4 := pX ⊗ₖ 1
+/-- Alice's second observable, `Z ⊗ 1`. -/
+noncomputable def A1 : M4 := pZ ⊗ₖ 1
+/-- Bob's first observable, `1 ⊗ (X + Z)/√2`. -/
+noncomputable def B0 : M4 := c⁻¹ • ((1 : M2) ⊗ₖ (pX + pZ))
+/-- Bob's second observable, `1 ⊗ (X − Z)/√2`. -/
+noncomputable def B1 : M4 := c⁻¹ • ((1 : M2) ⊗ₖ (pX - pZ))
+
+/-- Operators on disjoint tensor factors commute: `(A ⊗ 1)(1 ⊗ B) = A ⊗ B
+= (1 ⊗ B)(A ⊗ 1)`. -/
+theorem kron_comm (A B : M2) :
+    (A ⊗ₖ (1 : M2)) * ((1 : M2) ⊗ₖ B) = ((1 : M2) ⊗ₖ B) * (A ⊗ₖ (1 : M2)) := by
+  rw [← Matrix.mul_kronecker_mul, ← Matrix.mul_kronecker_mul, one_mul, mul_one, one_mul, mul_one]
+
+theorem hA0_inv : A0 * A0 = 1 := by
+  rw [A0, ← Matrix.mul_kronecker_mul, pX_mul_pX, one_mul, Matrix.one_kronecker_one]
+
+theorem hA1_inv : A1 * A1 = 1 := by
+  rw [A1, ← Matrix.mul_kronecker_mul, pZ_mul_pZ, one_mul, Matrix.one_kronecker_one]
+
+/-- `(X+Z)² = 2·1`: the cross terms cancel by anticommutation. -/
+theorem sumsq : (pX + pZ) * (pX + pZ) = (2 : ℂ) • 1 := by
+  calc (pX + pZ) * (pX + pZ) = pX * pX + (pX * pZ + pZ * pX) + pZ * pZ := by noncomm_ring
+    _ = (2 : ℂ) • 1 := by rw [pX_anticomm_pZ, pX_mul_pX, pZ_mul_pZ]; module
+
+/-- `(X−Z)² = 2·1`: same cancellation with the opposite sign. -/
+theorem diffsq : (pX - pZ) * (pX - pZ) = (2 : ℂ) • 1 := by
+  calc (pX - pZ) * (pX - pZ) = pX * pX - (pX * pZ + pZ * pX) + pZ * pZ := by noncomm_ring
+    _ = (2 : ℂ) • 1 := by rw [pX_anticomm_pZ, pX_mul_pX, pZ_mul_pZ]; module
+
+theorem hB0_inv : B0 * B0 = 1 := by
+  rw [B0, smul_mul_smul_comm, ← Matrix.mul_kronecker_mul, one_mul, sumsq,
+    Matrix.kronecker_smul, Matrix.one_kronecker_one, smul_smul, c_inv_sq]
+  exact one_smul _ _
+
+theorem hB1_inv : B1 * B1 = 1 := by
+  rw [B1, smul_mul_smul_comm, ← Matrix.mul_kronecker_mul, one_mul, diffsq,
+    Matrix.kronecker_smul, Matrix.one_kronecker_one, smul_smul, c_inv_sq]
+  exact one_smul _ _
+
+theorem hsA0 : IsSelfAdjoint A0 := by
+  show star A0 = A0
+  rw [A0, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_kronecker, pX_selfAdjoint,
+    Matrix.conjTranspose_one]
+
+theorem hsA1 : IsSelfAdjoint A1 := by
+  show star A1 = A1
+  rw [A1, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_kronecker, pZ_selfAdjoint,
+    Matrix.conjTranspose_one]
+
+theorem hsB0 : IsSelfAdjoint B0 := by
+  show star B0 = B0
+  rw [B0, star_smul, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_kronecker,
+    Matrix.conjTranspose_add, pX_selfAdjoint, pZ_selfAdjoint, Matrix.conjTranspose_one,
+    star_inv₀, star_c]
+
+theorem hsB1 : IsSelfAdjoint B1 := by
+  show star B1 = B1
+  rw [B1, star_smul, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_kronecker,
+    Matrix.conjTranspose_sub, pX_selfAdjoint, pZ_selfAdjoint, Matrix.conjTranspose_one,
+    star_inv₀, star_c]
+
+theorem h00 : A0 * B0 = B0 * A0 := by
+  rw [A0, B0, mul_smul_comm, smul_mul_assoc, kron_comm]
+
+theorem h01 : A0 * B1 = B1 * A0 := by
+  rw [A0, B1, mul_smul_comm, smul_mul_assoc, kron_comm]
+
+theorem h10 : A1 * B0 = B0 * A1 := by
+  rw [A1, B0, mul_smul_comm, smul_mul_assoc, kron_comm]
+
+theorem h11 : A1 * B1 = B1 * A1 := by
+  rw [A1, B1, mul_smul_comm, smul_mul_assoc, kron_comm]
+
+/-- The Bell state `(|00⟩ + |11⟩)/√2` as a plain function. -/
+noncomputable def bellFun : Qubit2 → ℂ := fun p => if p.1 = p.2 then c⁻¹ else 0
+
+/-- The Bell state as a vector of `EuclideanSpace ℂ Qubit2`. -/
+noncomputable def bell : EuclideanSpace ℂ Qubit2 := toLp 2 bellFun
+
+theorem norm_bell : ‖bell‖ = 1 := by
+  rw [bell, EuclideanSpace.norm_eq]
+  have hc : ‖c⁻¹‖ = (Real.sqrt 2)⁻¹ := by
+    rw [norm_inv]
+    unfold c
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg 2)]
+  rw [show ∑ i : Qubit2, ‖(toLp 2 bellFun : EuclideanSpace ℂ Qubit2) i‖ ^ 2
+      = ∑ i : Qubit2, ‖bellFun i‖ ^ 2 from rfl]
+  rw [Fintype.sum_prod_type]
+  simp only [bellFun, Fin.sum_univ_two]
+  norm_num [hc]
+
+/-- The vector state `x ↦ Re⟨ψ, x ψ⟩` of the Bell state — the `φ` of the
+realization. -/
+noncomputable def phi : M4 → ℝ := fun x => RCLike.re (inner ℂ bell (toLp 2 (x *ᵥ bellFun)))
+
+/-- The Bell vector state is norm-`≤ 1`: Cauchy–Schwarz against
+`Matrix.l2_opNorm_mulVec`, using `‖ψ‖ = 1`.  This is the field that forces the
+`L2` *operator* norm: an entrywise norm would not satisfy it. -/
+theorem phi_le_norm (x : M4) : phi x ≤ ‖x‖ := by
+  have h1 : phi x ≤ ‖bell‖ * ‖(toLp 2 (x *ᵥ bellFun) : EuclideanSpace ℂ Qubit2)‖ :=
+    re_inner_le_norm _ _
+  have h2 : ‖(toLp 2 (x *ᵥ bellFun) : EuclideanSpace ℂ Qubit2)‖ ≤ ‖x‖ * ‖bell‖ := by
+    simpa [bell] using Matrix.l2_opNorm_mulVec x bell
+  calc phi x ≤ ‖bell‖ * ‖(toLp 2 (x *ᵥ bellFun) : EuclideanSpace ℂ Qubit2)‖ := h1
+    _ ≤ ‖bell‖ * (‖x‖ * ‖bell‖) := mul_le_mul_of_nonneg_left h2 (norm_nonneg _)
+    _ = ‖x‖ := by rw [norm_bell]; ring
+
+/-- Kronecker products distribute over subtraction in the right factor
+(entrywise `mul_sub`; Mathlib has the `add` version only). -/
+theorem kron_sub (A B C : M2) : A ⊗ₖ (B - C) = A ⊗ₖ B - A ⊗ₖ C := by
+  ext p q
+  obtain ⟨i, k⟩ := p
+  obtain ⟨j, l⟩ := q
+  simp [Matrix.kroneckerMap_apply, mul_sub]
+
+/-- The CHSH operator of the optimal strategy collapses to `√2·(X⊗X + Z⊗Z)`:
+Bob's two observables sum to `√2·X` and differ by `√2·Z`. -/
+theorem chsh_matrix :
+    chshOp A0 A1 B0 B1 = (2 * c⁻¹) • (pX ⊗ₖ pX + pZ ⊗ₖ pZ) := by
+  have e00 : A0 * B0 = c⁻¹ • (pX ⊗ₖ (pX + pZ)) := by
+    rw [A0, B0, mul_smul_comm, ← Matrix.mul_kronecker_mul, mul_one, one_mul]
+  have e01 : A0 * B1 = c⁻¹ • (pX ⊗ₖ (pX - pZ)) := by
+    rw [A0, B1, mul_smul_comm, ← Matrix.mul_kronecker_mul, mul_one, one_mul]
+  have e10 : A1 * B0 = c⁻¹ • (pZ ⊗ₖ (pX + pZ)) := by
+    rw [A1, B0, mul_smul_comm, ← Matrix.mul_kronecker_mul, mul_one, one_mul]
+  have e11 : A1 * B1 = c⁻¹ • (pZ ⊗ₖ (pX - pZ)) := by
+    rw [A1, B1, mul_smul_comm, ← Matrix.mul_kronecker_mul, mul_one, one_mul]
+  rw [chshOp, e00, e01, e10, e11,
+    Matrix.kronecker_add, kron_sub, Matrix.kronecker_add, kron_sub]
+  module
+
+/-- The Bell state is a `+1`-eigenvector of `X ⊗ X`. -/
+theorem XX_mulVec : (pX ⊗ₖ pX) *ᵥ bellFun = bellFun := by
+  funext p
+  obtain ⟨i, k⟩ := p
+  fin_cases i <;> fin_cases k <;>
+    simp [Matrix.mulVec, dotProduct, Fintype.sum_prod_type, Fin.sum_univ_two,
+      Matrix.kroneckerMap_apply, pX, bellFun]
+
+/-- The Bell state is a `+1`-eigenvector of `Z ⊗ Z`. -/
+theorem ZZ_mulVec : (pZ ⊗ₖ pZ) *ᵥ bellFun = bellFun := by
+  funext p
+  obtain ⟨i, k⟩ := p
+  fin_cases i <;> fin_cases k <;>
+    simp [Matrix.mulVec, dotProduct, Fintype.sum_prod_type, Fin.sum_univ_two,
+      Matrix.kroneckerMap_apply, pZ, bellFun]
+
+/-- The Bell state is a `2√2`-eigenvector of the CHSH operator. -/
+theorem chsh_mulVec : (chshOp A0 A1 B0 B1) *ᵥ bellFun = (2 * c) • bellFun := by
+  rw [chsh_matrix, Matrix.smul_mulVec, Matrix.add_mulVec, XX_mulVec, ZZ_mulVec]
+  rw [(two_smul ℂ bellFun).symm, smul_smul, two_c_inv]
+
+/-- **The optimal CHSH expectation is exactly `2√2`.** -/
+theorem phi_chsh : phi (chshOp A0 A1 B0 B1) = 2 * Real.sqrt 2 := by
+  unfold phi
+  rw [chsh_mulVec]
+  rw [show (toLp 2 ((2 * c) • bellFun) : EuclideanSpace ℂ Qubit2) = (2 * c) • bell from rfl,
+    inner_smul_right, inner_self_eq_norm_sq_to_K, norm_bell]
+  unfold c
+  norm_num
+
+/-- **Tsirelson's optimal CHSH realization** (Tsirelson 1980): the Pauli strategy
+on `ℂ² ⊗ ℂ²` in the Bell state achieves the CHSH value `2√2` exactly — the
+maximum permitted by `CHSHRealization.le_two_sqrt_two`.  Together with that bound
+this pins the quantum CHSH supremum at exactly `2√2`. -/
+noncomputable def realization : CHSHRealization (2 * Real.sqrt 2) where
+  E := M4
+  cstar := matrixCStarAlgebra
+  ntriv := inferInstance
+  A₀ := A0
+  A₁ := A1
+  B₀ := B0
+  B₁ := B1
+  hsA₀ := hsA0
+  hsA₁ := hsA1
+  hsB₀ := hsB0
+  hsB₁ := hsB1
+  hA₀ := hA0_inv
+  hA₁ := hA1_inv
+  hB₀ := hB0_inv
+  hB₁ := hB1_inv
+  h00 := h00
+  h01 := h01
+  h10 := h10
+  h11 := h11
+  φ := phi
+  φ_le_norm := phi_le_norm
+  realizes := phi_chsh.symm
+
+end TsirelsonOptimal
+
+end TsirelsonOptimal
+
+/-- `2 < 2√2`: the optimal quantum value strictly beats every classical strategy
+(whose signed values fill exactly `[−2, 2]`, cf. `CHSHRealization.ofAbsLeTwo`). -/
+theorem two_lt_two_mul_sqrt_two : (2 : ℝ) < 2 * Real.sqrt 2 := by
+  have h : (1 : ℝ) < Real.sqrt 2 := by
+    rw [show (1 : ℝ) = Real.sqrt 1 from Real.sqrt_one.symm]
+    exact Real.sqrt_lt_sqrt (by norm_num) (by norm_num)
+  linarith
+
+/-- `TsirelsonTightnessTail` holds: Tsirelson's optimal realization is a single
+witness serving every `δ` — its value `2√2` is in the quantum regime (`> 2`) at
+distance `0` from the maximum. -/
+instance instTsirelsonTightnessTail : TsirelsonTightnessTail where
+  exists_quantum_realization_near δ hδ :=
+    ⟨2 * Real.sqrt 2, ⟨TsirelsonOptimal.realization⟩, two_lt_two_mul_sqrt_two, by linarith⟩
+
+/-- **`TsirelsonBound` is unconditional** — axiom-clean, no `sorry`, no pending
+hypotheses: `instTsirelsonTightnessTail` discharges the tail, so instance
+resolution closes this without input.  The split inside the proof is the honest
+one:
+
+* the classical-regime slice `ε > 2√2 − 2 ≈ 0.83` already follows from the
+  `v = 2` realization (`CHSHRealization.nonempty_two`);
+* the small-`ε` quantum slice is served by Tsirelson's optimal realization
+  (`TsirelsonOptimal.realization`, value exactly `2√2`) via the tail class. -/
 noncomputable instance [h : TsirelsonTightnessTail] : TsirelsonBound where
   value_tight := by
     intro ε hε

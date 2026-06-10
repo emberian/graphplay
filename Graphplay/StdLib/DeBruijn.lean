@@ -84,7 +84,7 @@ def DeBruijn.appendSym {k n : ℕ} (w : DeBruijn.Window k n) (a : Fin k) :
     DeBruijn.Window k n :=
   fun j => if h : j.val < n then w ⟨j.val + 1, by omega⟩ else a
 
-/-- `appendSym w a` is genuinely a shift-successor of `w`. -/
+/-- `appendSym w a` is a shift-successor of `w`. -/
 theorem DeBruijn.shift_appendSym {k n : ℕ} (w : DeBruijn.Window k n)
     (a : Fin k) : DeBruijn.Shift w (DeBruijn.appendSym w a) := by
   intro i
@@ -201,7 +201,7 @@ def DeBruijn.prependSym {k n : ℕ} (w : DeBruijn.Window k n) (a : Fin k) :
     DeBruijn.Window k n :=
   fun j => if h : j.val = 0 then a else w ⟨j.val - 1, by omega⟩
 
-/-- `prependSym w a` is genuinely a shift-predecessor of `w`. -/
+/-- `prependSym w a` is a shift-predecessor of `w`. -/
 theorem DeBruijn.shift_prependSym {k n : ℕ} (w : DeBruijn.Window k n)
     (a : Fin k) : DeBruijn.Shift (DeBruijn.prependSym w a) w := by
   intro i
@@ -270,9 +270,9 @@ theorem DeBruijn.symm (k n : ℕ) {w w' : DeBruijn.Window k n}
     (h : (DeBruijn k n).Adj w w') : (DeBruijn k n).Adj w' w :=
   (DeBruijn k n).symm h
 
-/-! ## Eulerian / spectral facts (honest `sorry`) -/
+/-! ## Eulerian local balance -/
 
-/-- **The directed de Bruijn graph is Eulerian (honest `sorry`).**
+/-- **Local balance of the directed de Bruijn graph.**
 `B(k, n+1)` has, at every vertex, equal in- and out-degree (`= k`), which is
 the local balance condition for an Eulerian circuit; together with
 connectivity this yields an Eulerian circuit, whose edge sequence is a **de
@@ -280,9 +280,8 @@ Bruijn sequence** `B(k, n+1)` of length `k^{n+1}` containing every
 length-`(n+1)` `k`-ary string exactly once (van Aardenne-Ehrenfest – de
 Bruijn, 1951).
 
-We record the *provable* local balance (in-degree `=` out-degree) as the
-hypothesis-free statement, and leave the global Eulerian-circuit existence —
-which needs connectivity of `B(k, n+1)` — as an honest `sorry`. -/
+We prove the local balance; the global Eulerian-circuit existence, which
+needs connectivity of `B(k, n+1)`, is not formalized here. -/
 theorem DeBruijn.in_eq_out_degree (k n : ℕ) (w : DeBruijn.Window k n) :
     (DeBruijn.inNeighbors w).card = (DeBruijn.outNeighbors w).card := by
   rw [DeBruijn.inDegree, DeBruijn.outDegree]
@@ -487,10 +486,9 @@ theorem _root_.Graphplay.CourantFischer.exists_eigenvalue_ge_of_rayleigh'
 
 /-! ### The degree eigenvalue: statement scope and the proof
 
-**Audit note (non-vacuity / boundary correctness).**  The intended claim is a
-real eigenvalue of magnitude `≥ k` (the regular degree of the directed
-`B(k, n+1)`).  Two boundary cases make the *unrestricted* `1 ≤ k` statement
-**false**, so we record the corrected hypotheses:
+The claim is a real eigenvalue of magnitude `≥ k` (the regular degree of the
+directed `B(k, n+1)`).  The hypotheses `2 ≤ k` and `1 ≤ n` are necessary —
+two boundary cases make the unrestricted `1 ≤ k` statement false:
 
 * `k = 1`: the window type `Fin (n+1) → Fin 1` is a singleton, the graph is the
   single loopless vertex, its only eigenvalue is `0 < 1`;
@@ -498,9 +496,8 @@ real eigenvalue of magnitude `≥ k` (the regular degree of the directed
   symmetrized graph is the complete graph `K_k`, whose top eigenvalue is `k − 1`,
   strictly below `k`.
 
-Hence the genuinely true non-vacuous statement requires `2 ≤ k` and `1 ≤ n`
-(verified e.g. for `k = 2, n = 1`, where the graph is `K₄` minus one edge with
-top eigenvalue `(1 + √17)/2 ≈ 2.56 ≥ 2`).
+With `2 ≤ k` and `1 ≤ n` the statement holds (e.g. for `k = 2, n = 1` the
+graph is `K₄` minus one edge, with top eigenvalue `(1 + √17)/2 ≈ 2.56 ≥ 2`).
 
 **Proof route.**  Symmetrization can only *lose* degree relative to `2k` at the
 `k` dropped self-loops (constant windows) and at merged 2-cycle pairs, and the
@@ -615,11 +612,11 @@ theorem DeBruijn.spectralRadius_ge_degree (k n : ℕ) (hk : 2 ≤ k) (hn : 1 ≤
     _ ≤ _ := Nat.cast_le.mpr hcount
 
 /-- **A real eigenvalue of magnitude `≥ k` exists** for the symmetrized de
-Bruijn graph, with the corrected (true, non-vacuous) hypotheses `2 ≤ k`,
-`1 ≤ n`.  Immediate from `DeBruijn.spectralRadius_ge_degree` and
-`le_abs_self`.
+Bruijn graph, for `2 ≤ k`, `1 ≤ n`.  Immediate from
+`DeBruijn.spectralRadius_ge_degree` and `le_abs_self`.
 
-See the audit note above for why `k = 1` and `n = 0` are genuinely excluded. -/
+Both hypotheses are necessary; see the section comment above for the
+`k = 1` and `n = 0` counterexamples. -/
 theorem DeBruijn.exists_degree_eigenvalue (k n : ℕ) (hk : 2 ≤ k) (hn : 1 ≤ n) :
     ∃ lam : ℝ, lam ∈ Set.range (DeBruijn.weighted k n).herm.eigenvalues ∧
       (k : ℝ) ≤ |lam| := by

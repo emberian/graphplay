@@ -376,9 +376,9 @@ the Krawtchouk weight), where
 
 **PROVEN** via the product-character diagonalisation above
 (`hamChi_eigen` + `hamLambda_weightFreq`): the frequency `weightFreq n q k`
-of Hamming weight `k` is a genuine (nonzero) eigenvector with eigenvalue
+of Hamming weight `k` is a nonzero eigenvector with eigenvalue
 the level-`k` Krawtchouk number, deposited into the real spectrum by
-`real_mem_spectrum_of_mulVec_smul`.  The hypothesis `2 ≤ q` is genuinely
+`real_mem_spectrum_of_mulVec_smul`.  The hypothesis `2 ≤ q` is
 necessary: for `q ≤ 1` the alphabet is trivial, `H(n,q)` has at most one
 vertex, and the formula `n(q−1)−qk = −k` is false (the spectrum is `{0}`). -/
 theorem hamming_eigenvalue (n q : ℕ) (hq : 2 ≤ q) [Fintype (Fin n → Fin q)]
@@ -399,20 +399,12 @@ Levine–Tamon (2024) chiral closure are **deep number-theoretic theorems**: the
 positive half is a Gauss-sum integrality computation on `ℤ/q` for `q ∈ {2,3,4}`,
 and the negative halves are non-integrality arguments for `q ≥ 5`.  Mathlib v4.30
 has no path to either (no quadratic-Gauss-sum modulus library, no CTQW mixing
-calculus).  Following the `LiteratureInterfaces` design principle, we name each
-result as a **local content-bearing typeclass** carrying the *precise* statement
-of the cited theorem as its field, and discharge the headline theorems from it.
-
-A theorem `[HammingMixingClassification] : goal := … .field …` is then a
-genuinely `sorry`-free conditional theorem: the literature result appears as an
-explicit, auditable hypothesis, and the instant Mathlib grows a quadratic-Gauss-
-sum modulus library one supplies the instance and *every* consumer is discharged.
-
-**Non-vacuity.**  Each field is the verbatim mixing/non-mixing statement, so a
-hypothetical instance must actually *prove* the classification — there is no
-degenerate witness.  The preconditions are genuinely inhabited: `H(1,2) = K_2`
-and `H(1,3) = K_3` genuinely mix (positive half), while `H(1,5) = K_5` genuinely
-fails to mix at every time (negative half), so neither half is vacuously true. -/
+calculus).  Following the `LiteratureInterfaces` design, the typeclass carries
+each cited theorem verbatim as a field, so an instance must prove the
+classification itself; once Mathlib grows a quadratic-Gauss-sum modulus library,
+supplying the instance discharges every consumer.  Both halves are realised:
+`H(1,2) = K_2` and `H(1,3) = K_3` mix (positive half), while `H(1,5) = K_5`
+fails to mix at every time (negative half). -/
 class HammingMixingClassification : Prop where
   /-- **Ahmadi–Belk–Tamon–Wendler (2003), Theorem 3 (positive half).**  For
   `q ∈ {2,3,4}` the Hamming graph `H(n,q)` is uniformly mixing at `τ = 2π/q`. -/
@@ -440,8 +432,8 @@ Reference: arXiv:quant-ph/0209106, Theorem 3.  The proof goes via the
 character basis: uniformity at time `τ` reduces to
 `|∑_x ω^{xs} exp(-iτ λ_s)|² = 1` for every character index `s`, which is
 satisfied for `q ∈ {2, 3, 4}` thanks to integrality of the Gauss sums on
-`ℤ/q`.  Discharged from the local `HammingMixingClassification` interface
-(the genuinely-unformalized Gauss-sum content). -/
+`ℤ/q`.  Discharged from the local `HammingMixingClassification` interface,
+which carries the unformalized Gauss-sum content. -/
 theorem hamming_uniformMixing_of_q_le_4 [HammingMixingClassification]
     (n q : ℕ) (hq2 : 2 ≤ q) (hq4 : q ≤ 4)
     [Fintype (Fin n → Fin q)] [DecidableEq (Fin n → Fin q)] :

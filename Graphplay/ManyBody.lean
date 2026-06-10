@@ -3,7 +3,7 @@ Graphplay/ManyBody.lean
 
 # Many-body / interacting quantum walks
 
-The Graphplay tower as previously laid out treats a **single** quantum walker
+The rest of the Graphplay tower treats a **single** quantum walker
 on a graph: one excitation hops on `V` under a Hermitian adjacency.  The
 natural physical extension — and the one cited at the top of Bachman–Tamon
 (arXiv:1108.0339, §1) as the motivating example — is the **many-body**
@@ -40,7 +40,7 @@ This file builds the many-body layer on top of `Graphplay.Weighted`,
   * **Hard-core ↔ XY model**: Jordan-Wigner-style equivalence in 1D, recorded
     as a bridge to spin-chain dynamics.
 
-The core dynamical results are proved axiom-clean.  In particular the
+The core dynamical results are fully proved.  In particular the
 **distinguishable** sector is fully developed: the second-quantized branching
 identity and equitable lift (`manyBody_equitable_lift`,
 `manyBody_quotient_factorization`), the propagator tensor-power factorization
@@ -50,7 +50,7 @@ PST and uniform-mixing lifts (`manyBodyPST_lift`, `manyBodyMixing_lift`,
 Childs–Gosset–Webb).  The Jordan–Wigner / hard-core ↔ XY bridge is also proved
 (`stringUnitary_conj_eq_xyHamiltonian`, `hardCore_eq_XY_oneDim`).  For the
 **boson / fermion** sectors the entrywise equitable lift and cell-uniform
-subspace reduction are *genuinely false* for an arbitrary equitable partition
+subspace reduction are *false* for an arbitrary equitable partition
 (the occupation-dependent amplitudes `√((n_u+1)n_v)` / Jordan–Wigner signs are
 not cell-functions — see the counterexamples in the docstrings of
 `manyBody_equitable_lift` and `manyBody_quotient_factorization`); those lifts are
@@ -192,7 +192,7 @@ def occAt (n : OccupationVector V N) (v : V) : ℕ := n.occ v
 The `u ≠ v` hypothesis is the physical content of a hop: a particle moves
 from one site to a *different* site.  Without it, the `if w = u` branch (which
 is tested first) would shadow the increment at `v` when `u = v`, decreasing
-the total occupation by one — so total-occupation conservation genuinely
+the total occupation by one — so total-occupation conservation
 requires `u ≠ v`. -/
 noncomputable def hop (n : OccupationVector V N) (u v : V) (huv : u ≠ v) :
     Option (OccupationVector V N) :=
@@ -971,9 +971,9 @@ theorem manyBody_distinguishable_branching_factor
     refine Finset.sum_eq_zero (fun w _ => ?_)
     rw [if_neg (fun h => hfrozen h.1)]
 
-/-- **Many-body equitable lift — distinguishable particles (axiom-clean).**
+/-- **Many-body equitable lift — distinguishable particles.**
 For *distinguishable* `N`-particle walks the lifted cell labelling
-`manyBodyCellLabel P N .Distinguishable = (P.cells ∘ ·)` is a genuine equitable
+`manyBodyCellLabel P N .Distinguishable = (P.cells ∘ ·)` is an equitable
 partition of `(NParticleAdjacency G N .Distinguishable).2`: the branching number
 from a configuration into any lifted cell depends only on the lifted cell of the
 source.
@@ -986,12 +986,12 @@ particles already occupy the cells prescribed by `d`.  Both the gate (a function
 of `P.cells ∘ x`) and each branching number (`P.branching` is constant on cells)
 depend only on the source's lifted cell, giving equitability.
 
-(The analogous *entrywise* statement is genuinely **false** for bosons and
+(The analogous *entrywise* statement is **false** for bosons and
 fermions, whose hop matrix elements carry occupation-dependent amplitudes
 `√((n_u+1)n_v)` resp. Jordan–Wigner signs that are *not* functions of the
 cell-occupation profile alone; the indistinguishable lift only holds on the
 cell-uniform subspace, not entrywise.  Hence the lift is stated and proved for
-the distinguishable statistics, where it is an honest equitable partition.) -/
+the distinguishable statistics, where it is an equitable partition.) -/
 theorem manyBody_equitable_lift_distinguishable
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
@@ -1031,9 +1031,9 @@ theorem manyBody_equitable_lift_distinguishable
   · rw [if_pos hg, if_pos (hgate.mp hg), hbr]
   · rw [if_neg hg, if_neg (fun h => hg (hgate.mpr h))]
 
-/-- **Many-body equitable lift (distinguishable statistics — axiom-clean).**  If
+/-- **Many-body equitable lift (distinguishable statistics).**  If
 `P` is an equitable partition of `G`, then the lifted cell labelling
-`manyBodyCellLabel P N .Distinguishable = (P.cells ∘ ·)` is a genuine equitable
+`manyBodyCellLabel P N .Distinguishable = (P.cells ∘ ·)` is an equitable
 partition of the distinguishable `N`-particle adjacency
 `(NParticleAdjacency G N .Distinguishable).2`: the branching number from a
 configuration into any lifted cell `d` depends only on the lifted cell of the
@@ -1044,7 +1044,7 @@ This is the fully second-quantized branching identity, closed via
 `manyBody_distinguishable_branching_factor`).
 
 **Why this is stated for the distinguishable sector only — the all-`s` entrywise
-form is genuinely FALSE for bosons (and fermions).**  Their hop matrix elements
+form is false for bosons (and fermions).**  Their hop matrix elements
 carry occupation-dependent amplitudes `√((n_u+1) n_v)` (resp. Jordan–Wigner
 signs) that are *not* functions of the cell-occupation profile alone, so two
 configurations with the same lifted cell can have different branching numbers.
@@ -1056,7 +1056,7 @@ fiber).  Hence the *entrywise* equitable property holds only for the
 distinguishable statistics, where the hop element is the plain `G.adj` with no
 occupation amplitude; for bosons/fermions only the cell-uniform *subspace* is
 preserved on the Feder host (a graph-specific fact), not an entrywise equitable
-partition.  The honest, true content is therefore the distinguishable lift. -/
+partition. -/
 theorem manyBody_equitable_lift
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
@@ -1080,7 +1080,7 @@ theorem manyBody_equitable_lift
   -- labelling `manyBodyCellLabel P N .Distinguishable` is `P.cells ∘ ·`).
   exact manyBody_equitable_lift_distinguishable P N
 
-/-- **Cell-uniform reduction — distinguishable particles (axiom-clean).**  The
+/-- **Cell-uniform reduction — distinguishable particles.**  The
 distinguishable many-body adjacency **preserves the lifted cell-uniform
 subspace**: a wavefunction `ψ` constant on each lifted cell (i.e. constant on
 each fiber of `P.cells ∘ ·`) is mapped by `(NParticleAdjacency G N
@@ -1150,7 +1150,7 @@ theorem manyBody_quotient_factorization_distinguishable
   congr 1
   exact manyBody_equitable_lift_distinguishable P N (P.cells ∘ a) d a b rfl hab.symm
 
-/-- **Cell-uniform reduction (distinguishable statistics — axiom-clean).**  The
+/-- **Cell-uniform reduction (distinguishable statistics).**  The
 distinguishable many-body adjacency **preserves the lifted cell-uniform
 subspace**: a wavefunction `ψ` constant on each lifted cell (each fiber of
 `manyBodyCellLabel P N .Distinguishable = P.cells ∘ ·`) is mapped by
@@ -1160,7 +1160,7 @@ dynamics is governed by an `N`-body Hamiltonian on the quotient graph", closed
 via `manyBody_quotient_factorization_distinguishable` (group the matrix–vector
 sum by the target's lifted cell, apply `manyBody_equitable_lift_distinguishable`).
 
-**Why the distinguishable sector only — the all-`s` form is genuinely FALSE for
+**Why the distinguishable sector only — the all-`s` form is false for
 bosons.**  Preservation of the cell-uniform subspace is *not* an equitable-lift
 fact for bosons: the bosonic hopping amplitudes `√((n_u+1)n_v)` vary within a
 cell-occupation fiber.  Take `N = 2` on the path `a—b—c` with equitable cells
@@ -1171,7 +1171,7 @@ of an arbitrary equitable partition.  (Feder's PST is a *graph-specific* fact
 about the path→Johnson quotient, recovered here as `FederBosonicWalk` /
 `feder_bosonic_quotient_eq`, not a general cell-uniform-subspace reduction.)
 For distinguishable particles the hop element is the plain `G.adj` with no
-amplitude, so the reduction holds; that is the honest, true content. -/
+amplitude, so the reduction holds. -/
 theorem manyBody_quotient_factorization
     {V : Type u} [Fintype V] [DecidableEq V]
     {G : WeightedGraph V}
@@ -1211,7 +1211,7 @@ We take the adjacency to be the (Hermitian) symmetrization
 G N .Boson).2`.  Mathematically `B` is already Hermitian, so this *is* the
 bosonic hopping host; symmetrizing simply makes Hermiticity hold definitionally
 without invoking the (deferred) `NParticleAdjacency_isHermitian`.  The diagonal
-of `B` is genuinely zero — a hop between distinct sites always changes the
+of `B` is zero — a hop between distinct sites always changes the
 occupation — so the symmetrized host is loopless. -/
 noncomputable def FederBosonicWalk
     {V : Type u} [Fintype V] [DecidableEq V]
@@ -1332,13 +1332,13 @@ noncomputable def HubbardModel
 
 /-- A Hubbard interaction is **cell-constant** w.r.t. an equitable partition
 `P` if the per-site interaction strength is the same on any two vertices that
-share a cell.  The genuine condition: the (constant-`U`) on-site interaction
+share a cell.  The condition: the (constant-`U`) on-site interaction
 function `fun _ : V => U` is invariant within each cell of `P`, i.e.
 `P.cells v = P.cells v' → U = U`.
 
 *Interpretation note.*  The `HubbardModel` here carries a single scalar `U`,
 so the per-site function is literally constant and this condition holds for
-every partition; we nonetheless state it in the genuine site-dependent form
+every partition; we nonetheless state it in the site-dependent form
 (`Uf v = Uf v'` whenever `P.cells v = P.cells v'`, with `Uf := fun _ => U`)
 rather than as `True`, so that the predicate has the correct meaning when the
 model is later generalised to a site-dependent `Uf : V → ℝ`. -/
@@ -1423,7 +1423,7 @@ noncomputable def manyBodyEvolve
 
 /-- **Many-body perfect state transfer**: PST of the `N`-particle CTQW between
 two many-body basis states `u, v : NParticleIndex G N s` at time `τ`.  This is
-the genuine multi-particle generalisation of the single-particle
+the multi-particle generalisation of the single-particle
 `Graphplay.PST.IsPST`: the modulus of the propagator's `(u, v)` matrix element
 is one, i.e. `|⟨v| exp(-i τ H_N) |u⟩| = 1`. -/
 noncomputable def IsManyBodyPST
@@ -1446,8 +1446,7 @@ single-particle propagator:
 This is the operator content behind multiparticle quantum-walk PST/mixing
 lifts (Childs–Gosset–Webb, *Science* 339, 791).  We build the slot-embedding
 algebra homomorphism, prove the entrywise product formula for a commuting
-`noncommProd` of slot operators, and assemble the factorization.  All proofs are
-axiom-clean. -/
+`noncommProd` of slot operators, and assemble the factorization. -/
 
 /-- **Slot embedding.**  The unital `ℂ`-algebra homomorphism placing a
 single-particle operator `A : Matrix V V ℂ` into tensor slot `k`, acting as the
@@ -1746,18 +1745,18 @@ theorem manyBodyEvolve_distinguishable_apply
   rw [show (NormedSpace.exp M : Matrix V V ℂ) = G.evolve τ from by rw [hMdef]; rfl]
 
 
-/-- **Many-body PST lifting (distinguishable statistics — axiom-clean,
+/-- **Many-body PST lifting (distinguishable statistics,
 Childs–Gosset–Webb).**  If the single-particle CTQW on `G` exhibits perfect state
 transfer between vertices `a` and `b` at time `τ` (`IsPST G a b τ`, i.e.
 `‖U(τ)_{a,b}‖ = 1`), then the `N`-distinguishable-particle CTQW exhibits
 many-body PST between the *constant configurations* `(a,…,a)` and `(b,…,b)` at the
 same time `τ`: every particle transfers from `a` to `b` simultaneously.
 
-This is a genuine, non-vacuous dynamical theorem.  By the propagator
+By the propagator
 factorization `manyBodyEvolve_distinguishable_apply`, the realizing many-body
 amplitude is `∏_k U(τ)_{a,b} = (U(τ)_{a,b})^N`, whose modulus is
 `‖U(τ)_{a,b}‖^N = 1^N = 1`.  (This is the basis-state form of the multiparticle
-PST lift; the genuine vertex-level single-particle hypothesis is what makes the
+PST lift; the vertex-level single-particle hypothesis is what makes the
 many-body *basis-state* conclusion true — a cell-uniform *superposition*
 hypothesis would only give a superposition-to-superposition transfer, not a
 basis-state one.) -/
@@ -1786,13 +1785,13 @@ noncomputable def IsManyBodyUniformMixing
     ‖manyBodyEvolve G N s τ u v‖ ^ 2
       = 1 / (Fintype.card (NParticleIndex G N s) : ℝ)
 
-/-- **Many-body mixing lifting (distinguishable statistics — axiom-clean,
+/-- **Many-body mixing lifting (distinguishable statistics,
 Childs–Gosset–Webb).**  If the *single-particle* CTQW on `G` is uniformly mixing
 at time `τ` — every propagator amplitude has modulus `1/√|V|`, i.e.
 `‖U(τ)_{a,b}‖² = 1/|V|` for all vertices `a, b` — then the
 `N`-distinguishable-particle CTQW is uniformly mixing at the same time `τ`.
 
-Genuine, non-vacuous: by the propagator factorization
+By the propagator factorization
 `manyBodyEvolve_distinguishable_apply`, every many-body amplitude is the product
 `∏_k U(τ)_{x_k,y_k}`, so its squared modulus is `∏_k (1/|V|) = (1/|V|)^N =
 1/|V|^N = 1 / |Fin N → V| = 1 / |NParticleIndex G N .Distinguishable|`, which is
@@ -1843,7 +1842,7 @@ equivalent to a single-particle quantum walk on `G` with adjacency
 `(J / 2) · G.adj` (the spin-wave dispersion).  This is the magnon-hopping
 reduction; classical result, recorded as a lift statement.
 
-Genuine statement: there is a single-magnon hopping matrix `Hmag` equal to the
+Precisely: there is a single-magnon hopping matrix `Hmag` equal to the
 rescaled adjacency `(J/2) • G.adj`, and its CTQW propagator agrees with the
 single-particle walk on the same rescaled adjacency for every time `τ`.  (For
 the single excitation the magnon Hilbert space is just `V → ℂ`, so the only
@@ -1911,7 +1910,7 @@ index `b` of the configuration space this is a fixed `±1` phase
 `Fintype.equivFin B` on the (finite) index type `B`.
 
 Because the JW transform is a *similarity* `H ↦ U H U⁻¹`, the XY image is the
-genuine conjugate `H_XY = U · H_hardcore · U⁻¹`, **not** an alias of
+conjugate `H_XY = U · H_hardcore · U⁻¹`, **not** an alias of
 `H_hardcore` — exactly the Lieb–Schultz–Mattis content that the
 `JordanWignerIntertwiner` interface demands as its *output*.  We build the
 unitary `U` and prove `star U * U = 1`, `U * star U = 1` outright. -/
@@ -1922,7 +1921,7 @@ open scoped Matrix
 
 /-- The Jordan–Wigner string **sign** at a basis index `b`: the parity
 `(-1)^{(linear index of b)}` of its position in the fixed order on `B`.  This is
-the diagonal entry of the Z-string unitary; it is a genuine `±1` real phase. -/
+the diagonal entry of the Z-string unitary, a `±1` real phase. -/
 noncomputable def stringSign {B : Type*} [Fintype B] (b : B) : ℂ :=
   (-1 : ℂ) ^ ((Fintype.equivFin B) b).val
 
@@ -1994,7 +1993,7 @@ noncomputable def xyDressing {B : Type*} [Fintype B] [DecidableEq B]
     xyDressing H a b = stringSign a * H a b * stringSign b := rfl
 
 /-- **The string-conjugate equals the entrywise dressing** (general form): the
-genuine similarity image `U · H · star U` of *any* matrix by the diagonal string
+similarity image `U · H · star U` of *any* matrix by the diagonal string
 unitary equals its explicit entrywise `±1` dressing.  This is the diagonal-
 conjugation-acts-entrywise fact; the hard-core specialisation
 `stringUnitary_conj_eq_xyHamiltonian` is the `H := NParticleAdjacency` case. -/
@@ -2019,16 +2018,16 @@ theorem stringUnitary_intertwine {B : Type*} [Fintype B] [DecidableEq B]
   rw [Matrix.diagonal_mul, Matrix.mul_diagonal, Matrix.of_apply, mul_assoc,
       stringSign_sq, mul_one]
 
-/-! #### The non-centrality witness (the Z-string genuinely fails to commute)
+/-! #### The non-centrality witness (the Z-string fails to commute)
 
-The decisive non-vacuity datum for `JordanWignerIntertwiner.string_noncentral`:
-on any configuration type with `≥ 2` elements, the genuine Jordan–Wigner string
+The witness for `JordanWignerIntertwiner.string_noncentral`:
+on any configuration type with `≥ 2` elements, the Jordan–Wigner string
 unitary `U = diagonal ε` does **not** commute with a single off-diagonal hop
 between two sign-opposite configurations.  Concretely the `Fintype.equivFin`
 order singles out an index-`0` config (string sign `+1`) and an index-`1` config
 (string sign `−1`); the elementary hop `E` between them satisfies
 `(U·E)` carrying `ε(+) = +1` while `(E·U)` carries `ε(−) = −1`, so they differ.
-This is what refutes the old `U_JW := 1` adversary (the identity commutes with
+In particular `U_JW` cannot be the identity (which commutes with
 everything). -/
 
 /-- The index-`0` configuration in the fixed `equivFin` order (string sign `+1`). -/
@@ -2059,8 +2058,9 @@ noncomputable def stringHop (B : Type*) [Fintype B] [DecidableEq B] [Nonempty B]
   Matrix.of fun i j => if i = stringConfig0 B ∧ j = stringConfig1 B h2 then 1 else 0
 
 /-- **The Jordan–Wigner string unitary is non-central** (`≥ 2` configurations):
-`U · E ≠ E · U` for the elementary sign-opposite hop `E`.  This is the genuine
-non-degeneracy that refutes `U_JW := 1` in `JordanWignerIntertwiner`. -/
+`U · E ≠ E · U` for the elementary sign-opposite hop `E`.  This is the
+non-degeneracy witness for `JordanWignerIntertwiner` (it rules out
+`U_JW = 1`). -/
 theorem stringUnitary_noncentral (B : Type*) [Fintype B] [DecidableEq B] [Nonempty B]
     (h2 : 2 ≤ Fintype.card B) :
     stringUnitary B * stringHop B h2 ≠ stringHop B h2 * stringUnitary B := by
@@ -2090,7 +2090,7 @@ that differ by moving one particle picks up the Jordan–Wigner string sign
 string collapses, leaving precisely the local `½(X_iX_{i+1} + Y_iY_{i+1})` XY
 two-site term written in the occupation basis.  We define `xyHamiltonian` by this
 explicit entry formula (concrete, no conjugation product) and then *prove* that
-the genuine string conjugate `U · Hhc · U⁻¹` equals it. -/
+the string conjugate `U · Hhc · U⁻¹` equals it. -/
 
 /-- **The XY-chain Hamiltonian in the hard-core occupation basis**, defined
 *concretely* (entry-wise) as the Jordan–Wigner-string-dressed hard-core hopping
@@ -2105,7 +2105,7 @@ This is an **independent operator**: it is built directly from the hard-core
 entries with the explicit string signs through `Matrix.of`, *not* as the matrix
 product `U · Hhc · star U`.  The content of the Jordan–Wigner equivalence is then
 the theorem `stringUnitary_conj_eq_xyHamiltonian` below, which proves that the
-genuine string conjugate of `Hhc` *equals* this concrete matrix. -/
+string conjugate of `Hhc` *equals* this concrete matrix. -/
 noncomputable def xyHamiltonian
     {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (N : ℕ)
@@ -2120,12 +2120,11 @@ noncomputable def xyHamiltonian
 /-- **The Jordan–Wigner string conjugate of the hard-core hopping matrix is the
 concrete XY Hamiltonian** (Lieb–Schultz–Mattis).
 
-The genuine similarity image `U · Hhc · U⁻¹` of the hard-core hopping matrix by
+The similarity image `U · Hhc · U⁻¹` of the hard-core hopping matrix by
 the concrete Jordan–Wigner string unitary `U = JordanWigner.stringUnitary` equals
-the *independently-defined* concrete matrix `xyHamiltonian`.  This is what closes
-the de-vacuousness gap: previously `Hxy` was *defined* as `U · Hhc · U⁻¹`, so the
-intertwining was true by construction; here `xyHamiltonian` is an independent
-operator and the equation `U · Hhc · U⁻¹ = xyHamiltonian` is a genuine, non-trivial
+the *independently-defined* concrete matrix `xyHamiltonian`.  Because
+`xyHamiltonian` is defined entry-wise rather than as the conjugation product,
+the equation `U · Hhc · U⁻¹ = xyHamiltonian` is a non-trivial
 matrix identity (diagonal conjugation acting entry-wise by the real string signs).
 
 Proof: `U = diagonal ε`, `star U = diagonal ε` (`star_stringUnitary`), so
@@ -2148,27 +2147,27 @@ theorem stringUnitary_conj_eq_xyHamiltonian
   rw [Matrix.mul_diagonal, Matrix.diagonal_mul]
   rfl
 
-/-- **The Jordan–Wigner intertwiner — genuine instance (Lieb–Schultz–Mattis).**
+/-- **The Jordan–Wigner intertwiner instance (Lieb–Schultz–Mattis).**
 
-Supplies the de-vacuoused `JordanWignerIntertwiner` interface with **fixed,
-concrete functions of the path data** that make the class buy something:
+Supplies the `JordanWignerIntertwiner` interface with **fixed,
+concrete functions of the path data**:
 
-* `epsilon B := JordanWigner.stringSign` — the genuine `±1` Z-string parity
+* `epsilon B := JordanWigner.stringSign` — the `±1` Z-string parity
   `ε(b) = (−1)^{(order of b)}` (`epsilon_sq`/`epsilon_real` are the proven
   `stringSign_sq`/`star_stringSign`);
 * `U_JW B := JordanWigner.stringUnitary B = diagonal stringSign` (so
-  `U_JW_eq_diagonal` is `rfl`) — a *genuine non-central* unitary, **not** `1`;
+  `U_JW_eq_diagonal` is `rfl`) — a *non-central* unitary, **not** `1`;
 * `H_XY B Hhc := JordanWigner.xyDressing Hhc` — the XY image written down by the
   explicit **entrywise dressing** `ε(a)·Hhc(a,b)·ε(b)` (so `H_XY_apply` is `rfl`),
   an independent operator that is *not* the tautological conjugation product
   (that it equals `U · Hhc · star U` is the separate theorem
   `stringUnitary_conj_eq_xyDressing`, not a definitional alias).
 
-The intertwining `U · Hhc = (xyDressing Hhc) · U` is the genuine matrix identity
+The intertwining `U · Hhc = (xyDressing Hhc) · U` is the matrix identity
 `stringUnitary_intertwine` (entrywise `ε(a)·Hhc(a,b)`, using `ε(b)² = 1`).  The
-decisive `string_noncentral` field is the genuine non-degeneracy witness
+`string_noncentral` field is the non-degeneracy witness
 `stringUnitary_noncentral` on `B := Fin 2` (the Z-string fails to commute with a
-sign-opposite hop), which **refutes** the old `U_JW := 1` adversary.  Discharges
+sign-opposite hop), ruling out `U_JW = 1`.  Discharges
 `Graphplay.ManyBody.hardCore_eq_XY_oneDim` unconditionally. -/
 noncomputable instance instJordanWignerIntertwiner :
     Graphplay.LiteratureInterfaces.JordanWignerIntertwiner where
@@ -2183,7 +2182,7 @@ noncomputable instance instJordanWignerIntertwiner :
   H_XY_apply {B} _ _ := fun _ _ _ => rfl
   jordanWigner_image {B} _ _ := JordanWigner.stringUnitary_intertwine
   string_noncentral :=
-    -- the genuine non-centrality witness on `Fin 2`: the Z-string fails to
+    -- the non-centrality witness on `Fin 2`: the Z-string fails to
     -- commute with the elementary sign-opposite hop, so `U_JW ≠ 1`.
     ⟨Fin 2, inferInstance, inferInstance,
       JordanWigner.stringHop (Fin 2) (by simp),
@@ -2194,30 +2193,27 @@ the hard-core boson model with nearest-neighbour hopping `G` is unitarily
 equivalent (via the Jordan-Wigner transformation) to the XY spin chain on
 the same vertex set with `γ = 0`.  This is the Lieb–Schultz–Mattis equivalence.
 
-**Vacuity removed.**  The previous statement was `∃ (U_JW Hxy), U_JW · Hhc =
-Hxy · U_JW` with **both** `U_JW` and `Hxy` free — satisfied degenerately by
-`U_JW = 1, Hxy = Hhc` (the identity "transform" of the hard-core Hamiltonian to
-*itself*).  It never said "hard-core bosons ≅ the XY chain".
-
-The corrected statement pins **both** operators to *concrete* matrices, leaving
-**no free existential**, and crucially makes `Hxy` an **independent** operator
+The statement pins **both** operators to *concrete* matrices, leaving
+**no free existential** — a form with both `U_JW` and `Hxy` existentially
+quantified is satisfied degenerately by `U_JW = 1, Hxy = Hhc` and says nothing —
+and makes `Hxy` an **independent** operator
 (not aliased to `U · Hhc · U⁻¹` by definition):
 
 * the intertwiner `U_JW` is the **concrete Jordan–Wigner string unitary**
-  `JordanWigner.stringUnitary` — the genuine non-trivial diagonal Z-string
+  `JordanWigner.stringUnitary` — the non-trivial diagonal Z-string
   `ε(b) = (-1)^{(order of b)}`, *not* the identity (`star U · U = 1`,
   `U · star U = 1` are the proven `stringUnitary_isUnitary_{left,right}`);
 * the XY image `Hxy` is the **concrete, independently-defined** matrix
   `xyHamiltonian G N` — built entry-wise as the Jordan–Wigner-string-dressed
   hard-core hopping matrix `ε(a) · (Hhc)_{ab} · ε(b)` — *not* the matrix product
-  `U_JW · Hhc · star U_JW`.  That the genuine string conjugate of `Hhc` *equals*
-  this concrete `xyHamiltonian` is the separate non-trivial theorem
+  `U_JW · Hhc · star U_JW`.  That the string conjugate of `Hhc` *equals*
+  this concrete `xyHamiltonian` is the separate theorem
   `stringUnitary_conj_eq_xyHamiltonian` (diagonal conjugation acting entry-wise
   by the real string signs — the Lieb–Schultz–Mattis sign dressing).
 
 The statement then asserts the intertwining `U_JW · Hhc = Hxy · U_JW` for these
-*fixed* operators, together with `γ = 0` and `M.graph = G`.  This is genuinely
-non-degenerate **and** independently meaningful: `Hxy` is an explicit operator
+*fixed* operators, together with `γ = 0` and `M.graph = G`:
+`Hxy` is an explicit operator
 written down without reference to the conjugation, and the theorem asserts that
 conjugating the hard-core hopping by the string unitary lands exactly on it. -/
 theorem hardCore_eq_XY_oneDim
@@ -2235,7 +2231,7 @@ theorem hardCore_eq_XY_oneDim
         JordanWigner.stringUnitary (NParticleIndex G N .HardCore)
       -- `U_JW` is unitary; it intertwines `Hhc` with the concrete XY Hamiltonian
       -- `xyHamiltonian G N` (an independent operator), and that XY Hamiltonian is
-      -- *equal to* the genuine string conjugate `U_JW · Hhc · U_JW⁻¹` of `Hhc`.
+      -- *equal to* the string conjugate `U_JW · Hhc · U_JW⁻¹` of `Hhc`.
       star U_JW * U_JW = 1 ∧ U_JW * star U_JW = 1 ∧
         U_JW * (NParticleAdjacency G N .HardCore).2 = xyHamiltonian G N * U_JW ∧
         xyHamiltonian G N
@@ -2340,7 +2336,7 @@ The dependencies between the eight theorem statements above:
 The distinguishable-sector results (§3 equitable lifts, §6 propagator
 factorization + PST/mixing lifts) and the §8 Jordan–Wigner/hard-core ↔ XY bridge
 are proved axiom-clean.  The boson/fermion *entrywise* equitable lift and
-cell-uniform subspace reduction are genuinely false for an arbitrary equitable
+cell-uniform subspace reduction are false for an arbitrary equitable
 partition (occupation-dependent amplitudes / JW signs are not cell-functions),
 so those headline lifts are stated and proved for the distinguishable statistics.
 -/

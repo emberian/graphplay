@@ -55,11 +55,9 @@ References:
 * Chan, Coutinho, Tamon, Vinet, Zhan, arXiv:1907.04729 — coherent algebras
   for PST.
 
-The file carries zero `sorry`s: every statement is either proven, conditioned
-on an explicitly documented per-graph hypothesis, or recorded as a named
-def-conjecture (`CFIStrictHierarchy`, `GraphonWLConverges`, the Open Problems
-below), with machine-checked refutations where the original placeholder
-statements were false. -/
+Every statement is either proven, conditioned on an explicitly documented
+per-graph hypothesis, or recorded as a named def-conjecture
+(`CFIStrictHierarchy`, `GraphonWLConverges`, the Open Problems below). -/
 
 import Mathlib.Algebra.Algebra.Basic
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -169,10 +167,7 @@ noncomputable def stableSetoid (G : WeightedGraph V) : Setoid V where
 
 /-- The **1-WL stable partition** of `G`: the equivalence classes of a stable
 colouring, i.e. the quotient of `V` by colour-equality.  This is the *coarsest*
-equitable partition of `G`.
-
-(Previously `:= V`, the discrete index type giving every vertex its own class;
-the genuine index type is the colour-equivalence quotient `Quotient (stableSetoid G)`.) -/
+equitable partition of `G`. -/
 def stablePartitionIndex (G : WeightedGraph V) : Type u := Quotient (stableSetoid G)
 
 /-- Anything that **WL-stably colours** the graph is also an equitable
@@ -288,19 +283,12 @@ vertices receiving the same colour at round `n` already received the same colour
 at round `m`.  This is the *monotone, no-false-merges* direction of the WL
 hierarchy and the precise content of the chain `WL_1 ⊑ WL_2 ⊑ ⋯`.
 
-WHY THE OLD STATEMENT WAS FALSE.  The previous version quantified over an
-*arbitrary* `k`-WL-stable colouring `cK` and `(k+1)`-WL-stable colouring `cKp1`
-and asserted `cK t = φ (cKp1 (ι t))` — i.e. that the `k`-WL colour *factors
-through* the `(k+1)`-WL colour.  Taking `cKp1` to be the **constant** colouring
-(a valid `IsKWLStable` fixpoint on, e.g., an edgeless graph — every refinement
-step keeps it constant) and `cK` to be the **injective** colouring (the terminal
-fixpoint used to *prove* `exists_KWLStable`) makes the right side constant while
-the left side separates every tuple: no `φ` can witness the equation.  Arbitrary
-stable fixpoints are *not* comparable; only the *canonical least* fixpoint chain
-is.  We therefore state the canonical-chain monotonicity, which holds for the
-canonical `wlRefine` object and is proved by `wlRefine_refines_of_le`.
+Restricting to the canonical chain is necessary: *arbitrary* stable fixpoints
+are not comparable.  On an edgeless graph the constant colouring is a valid
+`IsKWLStable` fixpoint and the injective colouring is another, and no map can
+factor the injective colouring through the constant one.
 
-(The genuine *arity* refinement `k`-WL ⊑ `(k+1)`-WL of Cai–Fürer–Immerman 1992
+(The *arity* refinement `k`-WL ⊑ `(k+1)`-WL of Cai–Fürer–Immerman 1992
 / Grohe 2017 §IV is the analogous monotone statement one arity up; it needs a
 canonical iterated `k`-WL object — not yet defined here — to anchor the
 comparison, exactly as this 1-WL statement is anchored to `wlRefine`.) -/
@@ -359,7 +347,7 @@ colour forces equal patterns of adjacency weights and coordinate equalities),
 and it is **coarsest** among such — every stable colouring refining the initial
 colouring makes at least the distinctions that `c` makes.
 
-This pins down the genuine WL fixpoint.  Arbitrary `IsKWLStable` colourings
+This pins down the WL fixpoint.  Arbitrary `IsKWLStable` colourings
 include both the injective colouring (maximally fine, stable for every graph)
 and, on suitable graphs, colourings that ignore the graph entirely; neither is
 the object the WL hierarchy is about.  The canonical object exists in this
@@ -386,13 +374,12 @@ strictness of the chain `WL₁ ⊑ WL₂ ⊑ ⋯` (Cai–Fürer–Immerman 1992,
 
 Carried as a named `Prop` per the repo's def-conjecture convention
 (`Graphplay.Dowsing.Conjecture93`): the CFI gadget construction over a sequence
-of expanders is genuinely deep and not formalized here.  Note the comparison is
-anchored to `IsCanonicalKWL` — quantifying over arbitrary stable colourings
+of expanders is deep and not formalized here.  The comparison must be
+anchored to `IsCanonicalKWL`: quantifying over arbitrary stable colourings
 instead makes the negative clause universally false
-(`stable_histEquiv_pair_always_exists`), which is exactly the landmine the old
-`CFI_strict_hierarchy` theorem stepped on.  A further honest caveat: this
+(`stable_histEquiv_pair_always_exists`).  One caveat on scope: this
 file's signature is *function-valued* (per-coordinate substitution functions),
-strictly finer than the genuine multiset `k`-WL signature, so the conjecture as
+strictly finer than the multiset `k`-WL signature, so the conjecture as
 stated is the model-internal analogue of CFI strictness. -/
 def CFIStrictHierarchy : Prop :=
   ∀ k : ℕ, ∃ (W : Type) (_ : Fintype W) (_ : DecidableEq W)
@@ -423,7 +410,7 @@ machine-checked (`exists_stable_twoWL_span_not_le_coherentAlgebra`). -/
 /-- A chosen 2-WL-stable colouring of `V × V`, packaged as a colour type with
 its decidable equality and a stable tuple-colouring on `Fin 2 → V`.  Existence
 is `exists_KWLStable G 2`; we extract a witness with choice so the 2-WL stable
-partition below is a genuine total function. -/
+partition below is a total function. -/
 noncomputable def stable2WLColouring (G : WeightedGraph V) :
     Σ (C : Type) (_ : DecidableEq C), { c : TupleColouring V 2 C // IsKWLStable G 2 c } :=
   let h := (exists_KWLStable G 2).choose
@@ -539,7 +526,7 @@ This is a *per-graph hypothesis*, not a theorem, for two structural reasons:
   pairs to have twin coordinates, so on twin-free graphs the canonical
   partition is discrete, while `coherentAlgebra G` is typically proper.
 
-The genuine folklore theorem — the cell indicators of the coarsest **multiset**
+The folklore theorem — the cell indicators of the coarsest **multiset**
 2-WL partition span exactly `coherentAlgebra G` (Chan–Coutinho–Tamon–Vinet–Zhan
 1907.04729 §3; Godsil–Royle Ch. 9) — lives in the multiset refinement model,
 which needs a canonical iterated multiset `k`-WL object not yet built here. -/
@@ -609,7 +596,7 @@ theorem exists_stable_twoWL_span_not_le_coherentAlgebra :
   -- `h01 : 1 = b`, `h10 : 0 = b`.
   exact one_ne_zero (h01.trans h10.symm)
 
-/-- **1-WL stable = coarsest equitable partition (Tower 3 / Hole D4)**.
+/-- **1-WL stable = coarsest equitable partition.**
 
 The **canonical** 1-WL stable colouring `wlStableColoring G` of a simple graph
 `G` is the *coarsest equitable partition*: every equitable partition `Q` of
@@ -618,21 +605,11 @@ canonical WL colour have the same `Q`-cell — i.e. each `Q`-cell is a union of 
 cells, so WL is the finest equitable partition and hence *characterises* the
 coarsest equitable structure that any other equitable partition can resolve.
 
-WHY THE OLD STATEMENT WAS FALSE.  The previous version quantified over an
-*arbitrary* `IsWLStable` colouring `c` and asserted `c v = f (Q.cells v)`,
-i.e. that `c` **factors through** `Q` (so `c` is *coarser* than every equitable
-`Q`).  That is doubly wrong:
-
-* It quantified over arbitrary stable fixpoints.  The *injective* colouring
-  `c = id` and the *constant* colouring are both `IsWLStable` (the injective one
-  is the terminal fixpoint used to prove `exists_WLStable`!), and neither
-  factors through a generic equitable `Q`.
-* Even for the genuine canonical colouring the direction is backwards: WL is the
-  **finest** equitable partition, so it *refines* `Q` (`Q.cells x = Q.cells y →
-  wlColour x = wlColour y`), it does not factor through `Q`.
-
-The honest statement uses the canonical `wlStableColoring G` and the correct
-`Refines`-direction, discharged by `wlRefine_coarsestEquitable`. -/
+Both the canonicity and the direction matter.  Arbitrary `IsWLStable`
+colourings include the injective and constant colourings, neither of which
+factors through a generic equitable `Q`; and WL, being the **finest**
+equitable partition, *refines* `Q` rather than factoring through it.
+Discharged by `wlRefine_coarsestEquitable`. -/
 theorem oneWL_stable_is_coarsest_equitable
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
@@ -692,7 +669,7 @@ finite partition the signature of `x` is `cl ↦ x · m_cl`, where `m_cl` is the
 first moment of cell `cl`; the moments sum to `1/2 ≠ 0`, so some `m_cl ≠ 0`
 and the signature separates *every* pair of distinct points sharing a cell —
 yet any finite partition of `[0,1]` has a cell containing two distinct points.
-The *pointwise* fixed-point demand made here is thus too strong; the honest
+The *pointwise* fixed-point demand made here is thus too strong; the
 open question is the **a.e./mod-null** version (cells and signature equality
 up to `μ`-null sets), where binning the L² signature against a lattice can
 plausibly converge (Borgs–Chayes–Lovász–Sós–Vesztergombi cut-metric framework;
@@ -717,18 +694,14 @@ embedding, …) has at most `#WL_∞(G)` cells. We use this as a **design budget
 theorem**: it is impossible to engineer an equitable partition strictly finer
 than what WL exposes. -/
 
-/-- The cell budget of `G`: the number of vertices, a genuine upper bound on the
+/-- The cell budget of `G`: the number of vertices, an upper bound on the
 number of cells of *any* surjective equitable partition (the WL-stable partition
-is the finest equitable partition and still has at most `|V|` cells).
-
-(Previously a `:= 0` placeholder stub, which made the design-budget theorems
-below assert the *false* `k ≤ 0`.  The honest, finest-partition-respecting upper
-bound is `|V|`: the WL-stable colouring has at most one cell per vertex.) -/
+is the finest equitable partition and still has at most `|V|` cells). -/
 noncomputable def WLCellCount (_G : WeightedGraph V) : ℕ := Fintype.card V
 
 /-- **Design-budget theorem.** Any equitable partition of `G` with a *surjective*
 cell map has at most `WLCellCount G = |V|` cells (a partition cannot have more
-non-empty cells than vertices).  Genuinely proven. -/
+non-empty cells than vertices). -/
 theorem equitablePartition_card_le_WL
     {I : Type v} [Fintype I] [DecidableEq I]
     (G : WeightedGraph V) (P : EquitablePartition G I) :
@@ -738,8 +711,8 @@ theorem equitablePartition_card_le_WL
   · exact Or.inr hsurj
 
 /-- The **WL coarsest-equitable theorem**: any engineering design using `k`
-equitable cells via a *surjective* cell map must satisfy `k ≤ WLCellCount G`.
-Genuinely proven (no more than `|V|` non-empty cells). -/
+equitable cells via a *surjective* cell map must satisfy `k ≤ WLCellCount G`
+(no more than `|V|` non-empty cells). -/
 theorem design_budget (G : WeightedGraph V) (k : ℕ)
     (h : ∃ (I : Type) (_ : Fintype I) (_ : DecidableEq I)
           (P : EquitablePartition G I), Fintype.card I = k ∧ P.cells.Surjective) :
@@ -765,14 +738,9 @@ def WLSameColour (_G : WeightedGraph V) {C : Type v} [DecidableEq C]
 
 /-- The **eigenvalue support** of a vertex `u` in `G`: the set of eigenvalues
 `λ` of `G.adj` whose spectral projector `E_λ` does not kill `e_u`, i.e.
-`E_λ e_u ≠ 0`.  This is the *genuine* per-vertex support already developed in
+`E_λ e_u ≠ 0`.  This is the per-vertex support developed in
 `Graphplay.PST.GodsilRatio` from the Hermitian diagonalization `A = U D Uᴴ`
-(`λ ∈ support u ↔ ∃ i, eigenvalues i = λ ∧ eigU G u i ≠ 0`).
-
-(Previously this slot was a `:= Set.univ` placeholder, which made the
-support-equality condition in `pst_requires_WL_and_eigenSupport` vacuously
-`univ = univ` and the hypothesis of `phantom_symmetries_exist` the
-unsatisfiable `univ ≠ univ`.  We delegate to the honest spectral definition.) -/
+(`λ ∈ support u ↔ ∃ i, eigenvalues i = λ ∧ eigU G u i ≠ 0`). -/
 abbrev EigenvalueSupport (G : WeightedGraph V) (u : V) : Set ℝ :=
   Graphplay.PST.EigenvalueSupport G u
 
@@ -815,23 +783,19 @@ theorem mem_eigenvalueSupport_iff_diag_ne_zero (G : WeightedGraph V) (u : V) (la
 time forces the two vertices to have **equal eigenvalue supports**:
 `EigenvalueSupport G u = EigenvalueSupport G v`.
 
-This is the genuine, axiom-clean necessity half of Godsil's PST theory: PST
+This is the necessity half of Godsil's PST theory: PST
 forces `U(τ) e_u = γ e_v` with `‖γ‖ = 1`, so applying each spectral projector
 `E_λ` and taking norms gives `‖E_λ e_u‖ = ‖E_λ e_v‖` for every eigenvalue `λ`
 (`isPST_imp_cospectral`); hence the *supports* — the eigenvalues whose projector
 acts nontrivially on the basis vector — coincide.
 
-WHY THE OLD STATEMENT WAS FALSE.  The previous version additionally claimed
-`WLSameColour G c u v` (i.e. `c u = c v`) for an *arbitrary* `IsWLStable`
-colouring `c`.  That is false: the **injective** colouring `c = id` (the terminal
-fixpoint used to *prove* `exists_WLStable`, hence genuinely `IsWLStable`) has
-`c u = c v ↔ u = v`, yet PST routinely occurs between **distinct** vertices
-(e.g. the endpoints of `P₂ = K₂`, `Graphplay.StdLib.Path.path_P2_PST`).  So the
-hypothesis `∃ τ, IsPST G u v τ` is satisfiable with `u ≠ v` while the conjunct
-`WLSameColour G c u v` is false — a landmine.  (Moreover even cospectral
-vertices need not be 1-WL-equivalent, so no canonical-colouring repair recovers
-the colour conjunct.)  We keep only the genuinely-true eigenvalue-support
-equality, which is the real spectral content of PST necessity. -/
+No WL-colour conjunct can be added.  For an *arbitrary* `IsWLStable`
+colouring the claim fails: the injective colouring `c = id` is stable, yet PST
+routinely occurs between **distinct** vertices (e.g. the endpoints of
+`P₂ = K₂`, `Graphplay.StdLib.Path.path_P2_PST`).  And even cospectral vertices
+need not be 1-WL-equivalent, so no canonical-colouring strengthening holds
+either.  The eigenvalue-support equality is the spectral content of PST
+necessity. -/
 theorem pst_requires_eigenSupport
     (G : WeightedGraph V) (u v : V) :
     (∃ τ : ℝ, IsPST G u v τ) →
@@ -856,13 +820,13 @@ theorem pst_requires_eigenSupport
       simp only [hjne, if_false]
     rw [hzero u, hzero v]
 
-/-- **WL-stable same-colour vertices are graph twins (PROVEN).**  In *this file's*
+/-- **WL-stable same-colour vertices are graph twins.**  In *this file's*
 refinement model, two vertices receiving the same colour under an `IsWLStable`
 colouring have **identical adjacency rows**: `∀ w, G.adj u w = G.adj v w`.
 
 The reason is structural: this file's `refineStep` records, at each vertex `v`,
 the *entire* neighbour function `fun w => (c w, G.adj v w)` (not merely the
-*multiset* of neighbour colours used by genuine 1-WL).  Hence WL-stability forces
+*multiset* of neighbour colours used by 1-WL).  Hence WL-stability forces
 `c u = c v → refineStep u = refineStep v`, whose second component evaluated at
 each `w` yields `G.adj u w = G.adj v w`.  So same-colour ⇒ twin neighbourhoods. -/
 theorem twins_of_WLStable_sameColour
@@ -880,25 +844,20 @@ theorem twins_of_WLStable_sameColour
   -- `(c w, G.adj u w) = (c w, G.adj v w)`; project the second coordinate.
   exact congrArg Prod.snd hw
 
-/-- **No phantom symmetries in this model (the original existence claim was a
-LANDMINE) — kernel core.**  For row-identical vertices `u, v` (`∀ w, G.adj u w =
-G.adj v w`) of a Hermitian-weighted graph, `e_u - e_v` is a `0`-eigenvector:
-`G.adj (e_u − e_v) = 0`.
+/-- **No phantom symmetries in this model — kernel core.**  For row-identical
+vertices `u, v` (`∀ w, G.adj u w = G.adj v w`) of a Hermitian-weighted graph,
+`e_u - e_v` is a `0`-eigenvector: `G.adj (e_u − e_v) = 0`.
 
-WHY THE OLD `phantom_symmetries_exist` WAS FALSE.  It asserted the existence of
-`IsWLStable G c` with `WLSameColour G c u v` yet `EigenvalueSupport G u ≠
-EigenvalueSupport G v`.  But by `twins_of_WLStable_sameColour`, same-colour
-vertices here have **identical adjacency rows** — they are graph *twins*, far
-stronger than genuine 1-WL equivalence (which matches only the *multiset* of
-neighbour colours).  Identical rows make `e_u − e_v` a `0`-eigenvector (this
-theorem), forcing `E_λ e_u = E_λ e_v` for every `λ ≠ 0`, and (a short
-orthogonality computation at `λ = 0`, using `⟨e_u, e_v⟩ = 0`) the diagonal
-weights to agree at `λ = 0` too — hence **equal** eigenvalue supports.  So the
-conjunction the old theorem asserted is *unsatisfiable* in this model: a
-vacuously-false landmine.  We replace it with the honest forward twin fact above
-and this kernel core, the spectral heart of "no phantom".
+Phantom symmetries (`WLSameColour` with distinct eigenvalue supports) are
+unsatisfiable in this model: by `twins_of_WLStable_sameColour`, same-colour
+vertices have **identical adjacency rows** — graph *twins*, far stronger
+than multiset 1-WL equivalence.  Identical rows make `e_u − e_v` a
+`0`-eigenvector (this theorem), forcing `E_λ e_u = E_λ e_v` for every
+`λ ≠ 0`, and (a short orthogonality computation at `λ = 0`, using
+`⟨e_u, e_v⟩ = 0`) the diagonal weights to agree at `λ = 0` too — hence
+**equal** eigenvalue supports.
 
-(The genuine literature phenomenon — WL-equivalent-but-spectrally-distinct
+(The literature phenomenon — WL-equivalent-but-spectrally-distinct
 "phantom" vertices — is real, but lives in the *multiset* 1-WL model
 `Graphplay.Algorithm.WLRefinement` / `WLOrbit`, not in this file's strictly finer
 twin-collapsing `IsWLStable`; see `HasPhantomSymmetry` there.) -/
@@ -939,7 +898,7 @@ invariant by the *quantum* automorphisms (magic-square / quantum-permutation
 intertwiners, Mancinska–Roberson): classical WL refinement only sees the Schur-
 and product-closure of `G.adj`, whereas the quantum WL chain additionally
 stabilizes everything commuting with `G.adj`.  This makes a quantum-coherent
-algebra genuinely *at least as large* as — and in general strictly larger than —
+algebra *at least as large* as — and in general strictly larger than —
 the classical coherent algebra. -/
 structure IsQuantumCoherentAlgebra (G : WeightedGraph V)
     (S : Submodule ℂ (Matrix V V ℂ)) : Prop where
@@ -949,21 +908,17 @@ structure IsQuantumCoherentAlgebra (G : WeightedGraph V)
   commutant_le : ∀ M : Matrix V V ℂ, M * G.adj = G.adj * M → M ∈ S
 
 /-- The **quantum WL stable algebra** of `G`: the smallest quantum-coherent
-algebra containing `G.adj`.  This is the honest non-commutative refinement
-fixpoint (Hole D5, `Graphplay/Dowsing/NonCommutativeCoherent.lean`): it is the
+algebra containing `G.adj`.  This is the non-commutative refinement
+fixpoint (cf. `Graphplay/Dowsing/NonCommutativeCoherent.lean`): it is the
 classical coherent algebra *enlarged* by the commutant of `G.adj` and then
-re-closed under the coherent-algebra operations.
-
-(Previously `:= coherentAlgebra G`, which collapsed the quantum/classical
-distinction and made `OpenProblem2_quantum_strict_containment` the
-unsatisfiable `X < X`.) -/
+re-closed under the coherent-algebra operations. -/
 noncomputable def QuantumWLStable (G : WeightedGraph V) : Submodule ℂ (Matrix V V ℂ) :=
   sInf {S | IsQuantumCoherentAlgebra G S ∧ G.adj ∈ S}
 
 /-- **Quantum WL ⊇ classical WL.** The quantum WL stable algebra always
 contains the classical coherent algebra.
 
-Genuine proof (no longer `le_refl` on a stub): every quantum-coherent algebra in
+Every quantum-coherent algebra in
 the defining family is in particular a *classical* coherent algebra containing
 `G.adj`, hence is one of the sets whose infimum is `coherentAlgebra G`; so
 `coherentAlgebra G` (the smaller infimum, over a *larger* family) is `≤` the
@@ -986,7 +941,7 @@ theorem adj_mem_QuantumWLStable (G : WeightedGraph V) :
 /-- **Mancinska–Roberson (statement)**: quantum-isomorphic graphs have
 linearly-isomorphic quantum WL stable algebras.
 
-Genuine statement (replacing the previous `True` placeholder): if `G` and `H`
+If `G` and `H`
 are *quantum-isomorphic* — modelled here by the existence of a `ℂ`-linear
 isomorphism `Φ` of their quantum WL stable algebras that carries the adjacency
 operator of `G` to that of `H` (the operator-system / Schur-and-product-
@@ -995,9 +950,9 @@ quantum WL stable algebras are `ℂ`-linearly isomorphic.
 
 The full Mancinska–Roberson biconditional (quantum isomorphism ⟺ operator-
 system isomorphism of the quantum coherent algebras, arXiv:1810.10056, JCTB
-2019) requires the operator-system formalism of Hole D5; here we record the
+2019) requires the operator-system formalism; here we record the
 forward implication at the level of `ℂ`-linear `Submodule` isomorphism, which
-follows immediately from the supplied data and is genuinely non-vacuous. -/
+follows immediately from the supplied data. -/
 theorem MancinskaRoberson_qIsomorphism
     (G H : WeightedGraph V)
     (hqiso : ∃ Φ : QuantumWLStable G ≃ₗ[ℂ] QuantumWLStable H,
@@ -1018,15 +973,15 @@ is a "sub-WL" problem — much easier than the full GI problem. -/
 
 /-- **Graph isomorphism is decidable (finite WL-arity bound)**.
 
-Genuine statement (replacing the previous `True`; the quasipolynomial *time*
-bound of Babai arXiv:1512.03547 is not formalisable here without a complexity
-model, so we record its decidability kernel): graph isomorphism of finite
+The quasipolynomial *time* bound of Babai arXiv:1512.03547 is not
+formalisable here without a complexity model, so we record its decidability
+kernel: graph isomorphism of finite
 weighted graphs is **decidable by a finite search**.  For any finite vertex
 type `W` the isomorphism-witness search space `W ≃ W` is a `Fintype`, and for
 each candidate relabelling `e` the matching condition "for all `x, y`,
 `H.adj (e x) (e y) = G.adj x y`" is a `∀` over the finite type `W × W`.  This
 finiteness is what makes the WL-based canonical-form approach (and Babai's
-algorithm) a genuine decision procedure. -/
+algorithm) a decision procedure. -/
 theorem Babai_GI_quasipolynomial
     (W : Type) [Fintype W] [DecidableEq W] :
     (Set.univ : Set (W ≃ W)).Finite :=
@@ -1037,24 +992,17 @@ theorem Babai_GI_quasipolynomial
 When the canonical WL refinement is maximally informative — its stable colouring
 `wlStableColoring G` is *discrete*, separating every pair of distinct vertices —
 it certifies the graph **completely**: `G` is rigid, having no nontrivial
-automorphism.  This is the honest "in the limit" content of WL completeness:
+automorphism.  This is the "in the limit" content of WL completeness:
 once the canonical limit colouring distinguishes all vertices, no symmetry can
 hide and the vertex-identification is total.
 
-WHY THE OLD STATEMENT WAS FALSE.  The previous version asserted that for *any*
-non-isomorphic `G, H`, *every* pair of `k`-WL-stable colourings has non-matching
-histograms (`¬ TupleColourHistEquiv`).  This fails twice over:
+No stronger universal claim is available: WL is **not** complete at any
+*fixed* arity `k` — the Cai–Fürer–Immerman graphs (`cfi_lower_bound`) are
+non-isomorphic yet `k`-WL-indistinguishable — and over **arbitrary**
+`k`-WL-stable colourings the constant colouring (stable on, e.g., edgeless
+graphs) makes the colour histograms of any two graphs trivially match.
 
-* WL is **not** complete at any *fixed* arity `k`: the Cai–Fürer–Immerman graphs
-  (`cfi_lower_bound`) are non-isomorphic yet `k`-WL-indistinguishable, so no
-  fixed `k` distinguishes all non-isomorphic pairs and the `∃ k, ∀ …` shape is
-  unprovable as a *universal* completeness claim.
-* It quantified over **arbitrary** `k`-WL-stable colourings.  The **constant**
-  colouring is `IsKWLStable` (e.g. on edgeless graphs), and it makes the colour
-  histograms of `G` and `H` trivially match (every tuple one colour, count
-  `|W|^k` on both sides), directly contradicting `¬ TupleColourHistEquiv`.
-
-The honest, genuinely-true statement is the *monotone, no-false-merges* /
+The statement is therefore the *monotone, no-false-merges* /
 completeness-in-the-limit direction phrased on the **canonical** colouring:
 discreteness of the canonical WL limit ⇒ rigidity.  (The full high-arity GI
 completeness, `n`-WL distinguishes all non-isomorphic `n`-vertex graphs, lives in
@@ -1074,7 +1022,7 @@ omit [Fintype V] [DecidableEq V] in
 PST design depends on — the WL same-colour relation — is a **decidable
 equivalence relation** on vertices.
 
-Genuine statement (replacing the previous `True`): for any WL-stable colouring
+For any WL-stable colouring
 `c` (into a type with decidable equality), the relation `colourEq c` is
 reflexive, symmetric, transitive, and pointwise decidable.  This is the formal
 expression of "the WL stable colouring is efficiently checkable", which is the
@@ -1101,14 +1049,11 @@ graphs `G, H` and a time `τ`, the heuristic *fires* when their continuous-time
 quantum-walk **return-amplitude observables** differ at some vertex: there is a
 vertex `v` whose return amplitude `⟨v|U(τ)|v⟩` differs between `G` and `H`.
 
-Genuine definition (replacing the previous `True`): the predicate is the actual
-observable-difference condition `∃ v, G.evolve τ v v ≠ H.evolve τ v v`.
-
-NB.  This pointwise predicate is a genuine *detector* but is **not** by itself a
+This pointwise predicate is a *detector* but is **not** by itself a
 non-isomorphism *certificate*: an isomorphism only permutes the diagonal
 return-amplitudes, so a per-vertex difference may be an artifact of relabelling.
 The conjugation-invariant *total* return amplitude (trace of `U(τ)`) is the
-honest certificate — see `CTQW_GI_trace_certifies` below. -/
+certificate — see `CTQW_GI_trace_certifies` below. -/
 def CTQW_GI_heuristic (G H : WeightedGraph V) (τ : ℝ) : Prop :=
   ∃ v : V, G.evolve τ v v ≠ H.evolve τ v v
 
@@ -1165,11 +1110,11 @@ theorem evolve_trace_iso_invariant (G H : WeightedGraph V) (τ : ℝ) (e : V ≃
     ⟨⟨_, e.symm.toPEquiv.toMatrix, hrinv, hlinv⟩, rfl⟩
   exact Matrix.trace_conj hPunit (H.evolve τ)
 
-/-- **Trace certificate for the CTQW GI heuristic (PROVEN).** If the *total*
+/-- **Trace certificate for the CTQW GI heuristic.** If the *total*
 return amplitudes differ — `tr U_G(τ) ≠ tr U_H(τ)` — then `G` and `H` are **not
 isomorphic**: there is no vertex relabelling `e` carrying `G`'s adjacency to
-`H`'s.  This is the conjugation-*invariant* form of the heuristic and is the
-genuine non-isomorphism certificate (a per-vertex diagonal difference is not, as
+`H`'s.  This is the conjugation-*invariant* form of the heuristic and is a
+non-isomorphism certificate (a per-vertex diagonal difference is not, as
 isomorphism only permutes the diagonal). -/
 theorem CTQW_GI_trace_certifies (G H : WeightedGraph V) (τ : ℝ)
     (h : (G.evolve τ).trace ≠ (H.evolve τ).trace) :
@@ -1188,7 +1133,7 @@ def WLBoundedHardware (G : WeightedGraph V) (k : ℕ) : Prop :=
 hardware-feasible on `G` (`WLBoundedHardware G k`), then its cell count obeys
 the WL design budget `k ≤ WLCellCount G`.
 
-Genuine statement (replacing the previous `True`): the conclusion is the actual
+The conclusion is the
 budget inequality `k ≤ WLCellCount G`, which is exactly the unfolded feasibility
 hypothesis — the WL-stable partition is the finest equitable partition, so no
 feasible design can exceed `WLCellCount G` cells (cf. `equitablePartition_card_le_WL`). -/
@@ -1209,7 +1154,7 @@ ICLR 2019). The "pool by cells" operation in a GNN's readout layer is the
 **Question:** does a CTQW-readout GNN (where pooling is done by the unitary
 evolution on the WL quotient graph) match k-WL for some `k > 1`?
 
-Genuine `Prop` form (replacing the previous `True`): there is an arity `k > 1`
+There is an arity `k > 1`
 at which `k`-WL is *strictly stronger* than 1-WL — witnessed by a finite vertex
 type `W` and two graphs that 1-WL identifies but `k`-WL separates (their `k`-WL
 colour histograms differ, in the sense of `TupleColourHistEquiv`).  A CTQW
@@ -1231,13 +1176,11 @@ def OpenProblem1_GNN_quantum_pool : Prop :=
 non-commutative coherent algebra of a graph always *strictly* contained in the
 quantum-WL stable algebra?
 
-Genuine `Prop` form (replacing the previous `True`): there exists a finite
+There exists a finite
 vertex type `W` and a graph `G` for which the classical coherent algebra is a
 **strict** subspace of the quantum WL stable algebra,
-`coherentAlgebra G < QuantumWLStable G`.  (With the *current* placeholder
-identification `QuantumWLStable = coherentAlgebra` this Prop is false; it
-becomes the genuine open conjecture once `QuantumWLStable` is upgraded to the
-honest non-commutative refinement — see Mancinska–Roberson's "magic squares".) -/
+`coherentAlgebra G < QuantumWLStable G` (see Mancinska–Roberson's "magic
+squares"). -/
 def OpenProblem2_quantum_strict_containment : Prop :=
   ∃ (W : Type) (_ : Fintype W) (_ : DecidableEq W) (G : WeightedGraph W),
     coherentAlgebra G < QuantumWLStable G
@@ -1245,7 +1188,7 @@ def OpenProblem2_quantum_strict_containment : Prop :=
 /-- **Open Problem 3 (graphon WL convergence).** Does the iterated graphon WL
 refinement always converge to a `GraphonEquitablePartition`?
 
-Genuine `Prop` form (replacing the previous `True`): for **every** graphon `W`
+For **every** graphon `W`
 on every measure space, `GraphonWLConverges W` holds (a graphon-WL fixed-point
 equitable partition exists).  In this pointwise form the universal claim is
 suspected **false** — see the rank-one counterexample sketch in the docstring

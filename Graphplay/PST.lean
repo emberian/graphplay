@@ -241,7 +241,7 @@ states at the same time `τ`.
 This is the continuous-time avatar of the Bachman–Tamon discrete-time
 characterization (arXiv:1108.0339, "Perfect state transfer on quotient
 graphs").  The quotient evolution that drives cell-uniform PST is the evolution
-of the genuinely-Hermitian `symmQuotient` (the matrix of `G.adj` in the
+of the Hermitian `symmQuotient` (the matrix of `G.adj` in the
 orthonormal cell-uniform basis), not the raw `quotient`.  We require every cell
 to be nonempty (`hne`); otherwise the cell-embedding has a zero column, the
 normalizations degenerate, and the statement fails. -/

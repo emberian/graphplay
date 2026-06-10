@@ -24,8 +24,9 @@ This file exposes:
 * `chiralOptimize_correct` — within the discretisation error, the returned
   signing achieves the optimum among all signings the hardware can realise.
 
-All numerical content is `sorry`-marked; the algorithmic surface is stable.
-Computability is aspirational — we use `Classical` choice throughout.
+The numerical scoring functions are stubs (constant `0`); the algorithmic
+surface is stable.  Computability is aspirational — we use `Classical`
+choice throughout.
 -/
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.SpecialFunctions.Complex.Circle
@@ -91,8 +92,8 @@ def OptScore.bottom : OptScore := { value := 0 }
 We exhaustively search a regular grid over the `|E|`-fold product of the
 unit circle.  `phaseGrid k` is the `k`-equipartition
 `{exp(2πi · j/k) : 0 ≤ j < k}`.  The discretisation error scales like
-`O(1/k)` in the smoothness of the figure of merit; we sorry the error
-bound and only expose the type-level surface. -/
+`O(1/k)` in the smoothness of the figure of merit; the error bound is not
+formalized — only the type-level surface is exposed. -/
 
 /-- Discrete unit-circle phases: `k` equipartition of `U(1)`, namely the
 `k`-th roots of unity `{exp(2πi·j/k) : 0 ≤ j < k}`.  Built as the image
@@ -135,15 +136,15 @@ total bundle vertex set `Σ i, V i` by:
   `(i, j)` with `i < j` (and its complex conjugate to `(j, i)`),
 * leaving intra-fiber adjacencies invariant (`σ = 1`).
 
-We record the construction below; the proof obligations for `unimod`
-and `herm` are deferred (`sorry`). -/
+We record the construction below; unit-normalization (`unitNormalize`)
+discharges the `unimod` obligation for any phasing. -/
 
 variable {V : I → Type v}
   [∀ i, Fintype (V i)] [∀ i, DecidableEq (V i)]
 
 /-- Normalize a complex number onto the unit circle: `z / ‖z‖`, with the
 fallback value `1` when `z = 0`.  This guarantees a unit-modulus output
-regardless of the input, which lets `liftPhasing` produce a genuine
+regardless of the input, which lets `liftPhasing` produce a
 `ChiralSigning` (whose `σ` must be unimodular) from *any* phasing `f`. -/
 noncomputable def unitNormalize (z : ℂ) : ℂ :=
   if z = 0 then 1 else z / (‖z‖ : ℂ)
@@ -173,7 +174,7 @@ total vertex type.  Each off-diagonal pair `(x, y)` with `x.1 < y.1`
 gets the *unit-normalized* phase `unitNormalize (f (x.1, y.1))`, and the
 swapped pair gets its conjugate; intra-fiber pairs (and out-of-template
 pairs) default to `1`.  Normalization makes `σ` unimodular for *any* `f`,
-so the construction is total and sorry-free. -/
+so the construction is total. -/
 noncomputable def liftPhasing
     (f : (I × I) → ℂ) : ChiralSigning (Σ i, V i) where
   σ x y :=
@@ -351,18 +352,16 @@ noncomputable def discretisationError (_target : PrimitiveTarget) (_k : ℕ) : �
 /-- **Correctness of the chiral-signing optimiser.**  The returned
 signing achieves a figure of merit at least `feasibleOptimum - δ(k)`.
 
-This is the intended headline theorem of the file; proof deferred.
+This is the intended headline theorem of the file.
 
-⚠ STUB-DRIVEN VACUITY WARNING.  As currently defined, `chiralOptimize`
-returns `bestScore = OptScore.bottom` (value `0`), `feasibleOptimum := 0`,
-and `discretisationError := 0` — all placeholders.  So the *literal*
-statement below is `0 ≥ 0 - 0`, which is trivially true and says NOTHING
-about any real optimisation.  The `sorry` stands for the genuine proof that
-will exist once `scoreFastestMix`/`scoreFastestPST`/… (currently all `0`),
+⚠ STUB WARNING.  As currently defined, `chiralOptimize` returns
+`bestScore = OptScore.bottom` (value `0`), `feasibleOptimum := 0`, and
+`discretisationError := 0` — all stubs.  The literal statement below is
+therefore `0 ≥ 0 - 0` and says nothing about any real optimisation.  It
+acquires content only once `scoreFastestMix`/`scoreFastestPST`/…,
 `feasibleOptimum`, and `discretisationError` are given their real analytic
-definitions (mixing distance, search success, `O(1/k)` grid error).  Until
-then this theorem is content-free; do not cite it as evidence of optimality.
--/
+definitions (mixing distance, search success, `O(1/k)` grid error).  Do not
+cite it as evidence of optimality. -/
 theorem chiralOptimize_correct
     (B : GraphBundle Q V) (target : PrimitiveTarget)
     (H : HardwareSpec) (k : ℕ) :
@@ -379,10 +378,11 @@ theorem chiralOptimize_correct
 /-- **Convergence.**  As the discretisation `k → ∞`, the optimiser
 attains the feasible optimum.
 
-⚠ STUB-DRIVEN VACUITY WARNING.  With the current placeholders the score is
+⚠ STUB WARNING.  With the current stubs the score is
 the constant `0` and `feasibleOptimum := 0`, so this degenerates to
 `Tendsto (fun _ => 0) atTop (nhds 0)` — true by constancy, content-free.
-Genuine only once `score`/`feasibleOptimum`/`discretisationError` are real. -/
+It acquires content once `score`/`feasibleOptimum`/`discretisationError`
+are real. -/
 theorem chiralOptimize_converges
     (B : GraphBundle Q V) (target : PrimitiveTarget)
     (H : HardwareSpec) :
@@ -404,23 +404,22 @@ theorem chiralOptimize_converges
 /-- **Hardware-feasibility of the output.**  The returned signing's
 phases lie in `H.allowedPhaseSet`.
 
-**Made TRUE by adding the trivial-phase admissibility hypothesis
-`h1 : (1 : ℂ) ∈ H.allowedPhaseSet`.**  The previous statement was *false* as
-stated: `chiralOptimize` returns `ChiralSigning.trivial` (σ ≡ 1), so the goal
-reduces to `(1 : ℂ) ∈ H.allowedPhaseSet ∨ x.1 = y.1`, which fails for an
+The trivial-phase admissibility hypothesis `h1 : (1 : ℂ) ∈ H.allowedPhaseSet`
+is necessary: `chiralOptimize` returns `ChiralSigning.trivial` (σ ≡ 1), so the
+goal reduces to `(1 : ℂ) ∈ H.allowedPhaseSet ∨ x.1 = y.1`, which fails for an
 arbitrary `H` whose `allowedPhaseSet` omits `1` together with `x.1 ≠ y.1`.
 
-The hypothesis `1 ∈ H.allowedPhaseSet` is exactly the realisability condition the
-trivial signing needs (every realistic chiral platform admits the *unsigned*
-coupling phase `1` — it is the "do nothing" gauge), and it holds for every
-`HardwareSpec` whose phase constraints are unconstrained or contain the identity
-phase (e.g. `HardwareSpec.unconstrained`, whose `allowedPhaseSet = Set.univ`).
-Under it the feasibility guarantee is genuine and the proof is direct from the
-returned signing being trivial (`σ x y = 1`).
+`1 ∈ H.allowedPhaseSet` is exactly the realisability condition the trivial
+signing needs (every realistic chiral platform admits the *unsigned* coupling
+phase `1` — it is the "do nothing" gauge), and it holds for every
+`HardwareSpec` whose phase constraints are unconstrained or contain the
+identity phase (e.g. `HardwareSpec.unconstrained`, whose
+`allowedPhaseSet = Set.univ`).  The proof is direct from the returned signing
+being trivial (`σ x y = 1`).
 
-This is the honest fix until `chiralOptimize` performs the real grid search and
-snaps to `allowedPhaseSet`; at that point the hypothesis can be dropped because
-the search only ever emits phases drawn from `H.allowedPhaseSet`. -/
+Once `chiralOptimize` performs the real grid search and snaps to
+`allowedPhaseSet`, the hypothesis can be dropped: the search only ever emits
+phases drawn from `H.allowedPhaseSet`. -/
 theorem chiralOptimize_feasible
     (B : GraphBundle Q V) (target : PrimitiveTarget)
     (H : HardwareSpec) (k : ℕ)
@@ -439,7 +438,7 @@ theorem chiralOptimize_feasible
 fiber-equitable partition of the bundle: the optimised signed total graph
 admits the *same* partition `P` as an equitable partition.
 
-Genuine statement (replacing the previous `True` placeholder): provided the
+Provided the
 optimiser's output signing is **cross-constant** on the cells of `P` (its phase
 on a pair `(x, y)` depends only on the cells of `x` and `y` — the regime in
 which the chiral re-signing rotates whole cross-cell blocks uniformly), the
@@ -450,12 +449,10 @@ disturb intra-fiber row sums": a cell-pair-constant phase factors out of each
 cell-row sum, so equitability is preserved.  We prove it via
 `WeightedGraph.signedBy_preserves_equitable`.
 
-The cross-constant hypothesis is genuinely required: an *arbitrary* phasing can
-break equitability, so we expose it as an explicit assumption rather than
-asserting the (false) unconditional claim.
+The cross-constant hypothesis is necessary: an *arbitrary* phasing can
+break equitability, so the unconditional claim is false.
 
-Returns the *witness* equitable partition (data), hence a `def`; it is fully
-constructed with no `sorry`. -/
+Returns the *witness* equitable partition (data), hence a `def`. -/
 noncomputable def chiralOptimize_preserves_partition
     (B : GraphBundle Q V) (target : PrimitiveTarget)
     (H : HardwareSpec) (k : ℕ)

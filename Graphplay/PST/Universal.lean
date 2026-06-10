@@ -20,7 +20,7 @@ models three stronger / richer transfer phenomena studied in the literature:
    involution that simultaneously transfers several pairs.  At the transfer
    time the PST unitary carries each source state, up to a global phase, to its
    target state — the operator-level *switching map* (`T = E₊ − E₋`).  Its
-   upgrade to a genuine 0/1 vertex-permutation automorphism (the *switching
+   upgrade to a 0/1 vertex-permutation automorphism (the *switching
    automorphism* proper) holds only under the integer/simple-spectrum
    hypotheses of Kay 1310.3885 — PST hosts need not be vertex-transitive — so
    this file proves the unconditional *operator-level* content and keeps the
@@ -34,13 +34,13 @@ models three stronger / richer transfer phenomena studied in the literature:
    (the `K × K` block of the evolution) together with an eigenvalue **ratio
    condition** identical in spirit to Godsil's.
 
-Concrete content (sorry-free `def`/`structure`):
+Concrete content:
 * `IsUniversalStateTransfer G u`, `IsMultipleStateTransfer G pairs τ`;
-* `SwitchingUnitary G u v τ` — the *operator-level* switching map PST genuinely
+* `SwitchingUnitary G u v τ` — the *operator-level* switching map PST
   supplies (a unitary carrying the `u`-state to a unit-phase multiple of the
   `v`-state), with `switchingUnitary_of_isPST` proving its existence
-  axiom-clean and unconditionally;
-* `SwitchingAutomorphism G u v` — the genuine vertex-permutation upgrade, kept
+  unconditionally;
+* `SwitchingAutomorphism G u v` — the vertex-permutation upgrade, kept
   as a *hypothesis-bearing structure* (it is **not** produced from bare PST: in
   the complex-Hermitian generality of `WeightedGraph` a PST host need not be
   vertex-transitive — see the caveat on the structure, and the canonical
@@ -54,7 +54,7 @@ here (real-symmetric scope, where it is true — see its docstring for the chira
 Hermitian counterexample forcing that scope).  The necessity of the spectral
 ratio condition for K-fractional revival lives downstream in
 `Graphplay.PST.UniversalRatio` (it needs the periodicity extraction of
-`Graphplay.PST.Periodicity`, and its honest general form is a residue-class
+`Graphplay.PST.Periodicity`, and its general form is a residue-class
 statement).
 
 References:
@@ -132,13 +132,13 @@ theorem isStronglyCospectral_of_globallyUniversal (G : WeightedGraph V)
     IsStronglyCospectral G u v :=
   isStronglyCospectral_of_universal G (isUniversalStateTransfer_of_global G h u) v hv
 
-/-- **Universal PST equalizes eigenvector-entry moduli (simple-spectrum, CLOSED).**
+/-- **Universal PST equalizes eigenvector-entry moduli (simple spectrum).**
 For a graph with simple spectrum (`G.herm.eigenvalues` injective), global
 universal state transfer forces, for *every* eigenindex `i` and *every* pair of
 vertices `u, v`, the equality of eigenvector-entry moduli
 `‖(eigU)_{u,i}‖ = ‖(eigU)_{v,i}‖`.
 
-This is the genuine, axiom-clean spectral precursor of the Cameron et al.
+This is the spectral precursor of the Cameron et al.
 classification (and of PST "monogamy"): under PST `u → v`, Godsil's
 cross-entry relation `(E_λ)_{u,v} = γ e^{iτλ} (E_λ)_{u,u}`
 (`isPST_imp_cross_eq_phase_diag`) collapses, on a simple spectrum, to
@@ -222,24 +222,24 @@ theorem eigU_normSq_eq_of_globallyUniversal (G : WeightedGraph V)
   field_simp
   linear_combination hcol
 
-/-- **Classification of universal state transfer (real-symmetric scope;
-RESTATED and CLOSED).**  On a *real-symmetric* graph (`Aᵀ = A`, the classical
+/-- **Classification of universal state transfer (real-symmetric scope).**
+On a *real-symmetric* graph (`Aᵀ = A`, the classical
 Godsil setting) with simple spectrum, global universal state transfer on `≥ 3`
 vertices is impossible.  This is PST *monogamy*: a vertex can perform PST with
 at most one partner, so three vertices mutually transferring contradict each
 other.
 
-**Scope note (why `Aᵀ = A` is required, not cosmetic).**  In the complex
+**Scope note (why `Aᵀ = A` is required).**  In the complex
 Hermitian generality of `WeightedGraph` the statement is *false*: the "clock"
 Hamiltonian `H = F·diag(-1,0,1)·Fᴴ` (DFT eigenvectors `F` on `n = 3` vertices;
 a traceless circulant, hence zero-diagonal Hermitian) satisfies
 `U(2π/3) = cyclic shift`, giving perfect transfer between *every* ordered pair
 at times `2πk/3` — global universal transfer with simple spectrum.  Universal
-state transfer on Hermitian matrices genuinely exists (this is the content of
+state transfer on Hermitian matrices exists (this is the content of
 the CFGH paper, which *characterizes* it: simple spectrum plus flat
 eigenvectors); only the time-symmetric `Aᵀ = A` case collapses to `K₂`.
 
-**Proof (the previously-missing Diophantine core, now closed).**  Flatness
+**Proof (the Diophantine core).**  Flatness
 (`eigU_normSq_eq_of_globallyUniversal`) makes every eigenvector entry nonzero
 of squared modulus `1/n`.  For a symmetric PST pair `(a, b)` at time `τ`, the
 two directions of Godsil's cross relation multiply to
@@ -621,22 +621,22 @@ theorem isMultipleStateTransfer_cons (G : WeightedGraph V) (p : V × V)
 /-- A **switching automorphism** of `G` exchanging `u` and `v`: a vertex
 permutation `σ` that (i) swaps `u ↔ v` and (ii) is a graph automorphism
 (preserves the weighted adjacency).  This is the *combinatorial* upgrade of
-Kay's switching map — a genuine `Equiv.Perm V` adjacency automorphism.
+Kay's switching map — an `Equiv.Perm V` adjacency automorphism.
 
 **Caveat — this is a hypothesis, not a consequence of PST.**  Kay's switching
 map `T = E₊ − E₋` (spectral idempotents split by the parity of `e^{−iτ θ_r}`)
 is an *orthogonal involution commuting with `A`* sending the `u`-state to the
-`v`-state, but it is a genuine 0/1 *permutation* matrix only under the
+`v`-state, but it is a 0/1 *permutation* matrix only under the
 integer/simple-spectrum hypotheses of Kay 1310.3885.  In the complex-Hermitian
 generality of `WeightedGraph` a PST host need **not** be vertex-transitive, so
-no `SwitchingAutomorphism` (genuine vertex permutation) need exist.  The
-unconditional, axiom-clean content PST *does* supply is the *operator-level*
+no `SwitchingAutomorphism` (vertex permutation) need exist.  The
+unconditional content PST *does* supply is the *operator-level*
 `SwitchingUnitary` below (`switchingUnitary_of_isPST`); there is deliberately no
 theorem deriving a `SwitchingAutomorphism` from bare PST.
 
-Defined self-containedly here (deliberately *not* importing the sibling
-`Graphplay.PST.Periodicity`, which may be under concurrent edit) so this module
-never couples to that file.  The sibling carries the identical honest treatment
+Defined self-containedly here (deliberately *not* importing
+`Graphplay.PST.Periodicity`) so this module
+never couples to that file.  That module carries an identical treatment
 (`Graphplay.PST.Periodicity.{SwitchingAutomorphism, SwitchingUnitary,
 switchingUnitary_of_isPST}`).
 
@@ -671,7 +671,7 @@ noncomputable def permMatrix (φ : SwitchingAutomorphism G u v) :
 end SwitchingAutomorphism
 
 /-- A **switching unitary** of `G` at the pair `(u, v)` and time `τ`: the
-*operator-level* content of Kay's switching map that PST genuinely supplies.  It
+*operator-level* content of Kay's switching map that PST supplies.  It
 is a *unitary* `W` on the vertex Hilbert space that carries the `u`-basis state
 to a unit-modulus phase multiple of the `v`-basis state — i.e. it swaps the two
 endpoints *as states* (up to a global phase), the modulus-1 amplitude witnessing
@@ -681,8 +681,8 @@ This is exactly what `T = E₊ − E₋` does at the spectral level, *minus* the
 upgrade (unprovable in this Hermitian generality) to a 0/1 permutation matrix.
 The witness in `switchingUnitary_of_isPST` is the evolution `U(τ)` itself.
 
-Mirrors the canonical `Graphplay.PST.Periodicity.SwitchingUnitary` (kept local
-to avoid coupling to that possibly-under-edit sibling). -/
+Mirrors `Graphplay.PST.Periodicity.SwitchingUnitary` (kept local
+to avoid coupling to that module). -/
 structure SwitchingUnitary (G : WeightedGraph V) (u v : V) (τ : ℝ) where
   /-- The underlying unitary on the vertex space. -/
   mat : Matrix V V ℂ
@@ -696,26 +696,23 @@ structure SwitchingUnitary (G : WeightedGraph V) (u v : V) (τ : ℝ) where
   concentrated at `v` with amplitude `phase`. -/
   swaps_state : ∀ w : V, mat u w = if w = v then phase else 0
 
-/-- **Kay's switching map, operator level (CLOSED).**  If `G` has PST between `u`
+/-- **Kay's switching map, operator level.**  If `G` has PST between `u`
 and `v` at time `τ`, then the evolution unitary `U(τ)` is a *switching unitary*:
 a unitary on the vertex space carrying the `u`-state to a unit-modulus phase
-multiple of the `v`-state.  This is the genuine, hypothesis-free content of Kay's
+multiple of the `v`-state.  This is the hypothesis-free content of Kay's
 switching map `T = E₊ − E₋` at the operator level.
 
-Axiom-clean, no `sorry`: unitarity is `WeightedGraph.evolve_unitary`, and the
+Unitarity is `WeightedGraph.evolve_unitary`, and the
 state-swap is `evolve_eq_zero_of_isPST` (the `u`-row vanishes off `v`, the
 surviving `(u,v)` entry having modulus 1) packaged as the explicit `u`-row of
 `U(τ)`.
 
-**Honest-relabel note (was `switchingAutomorphism_of_isPST`).**  The previous
-statement claimed `Nonempty (SwitchingAutomorphism G u v)` — a genuine
-`Equiv.Perm V` adjacency automorphism — from bare PST, behind a `sorry`.  That
-is *false in this Hermitian generality*: PST hosts need not be vertex-transitive,
+The stronger conclusion `Nonempty (SwitchingAutomorphism G u v)` — an
+`Equiv.Perm V` adjacency automorphism — is *false in this Hermitian
+generality*: PST hosts need not be vertex-transitive,
 so `T = E₊ − E₋` need not be a 0/1 permutation matrix (it is only under the
-integer/simple-spectrum hypotheses of Kay 1310.3885).  The conclusion is here
-weakened to the operator-level switching unitary, which PST does supply
-unconditionally, and the theorem is closed.  See the caveat on
-`SwitchingAutomorphism` and the canonical sibling
+integer/simple-spectrum hypotheses of Kay 1310.3885).  See the caveat on
+`SwitchingAutomorphism` and
 `Graphplay.PST.Periodicity.switchingUnitary_of_isPST`.
 
 Reference: Kay, *The perfect state transfer graph limbo* (arXiv:1310.3885);
@@ -866,9 +863,9 @@ theorem isKRatioCondition_singleton (G : WeightedGraph V) (u : V) :
 in the downstream module `Graphplay.PST.UniversalRatio` (which imports both this
 file and `Graphplay.PST.Periodicity`):
 
-* `isKRatioClassCondition_of_fractionalRevival` — the honest general form:
+* `isKRatioClassCondition_of_fractionalRevival` — the general form:
   revival at `τ` confines the supported eigenvalues to at most `|K|` residue
-  classes mod `(2π/τ)·ℤ`.  The previously stated single-progression conclusion
+  classes mod `(2π/τ)·ℤ`.  The single-progression conclusion
   `IsKRatioCondition G K` is *false* for `|K| ≥ 2`: `isKFractionalRevival_univ`
   above already exhibits revival at every `τ` on `K = univ` for every graph,
   while a generic spectrum lies in no arithmetic progression.
@@ -923,7 +920,7 @@ theorem evolve_symm_of_isSymm (G : WeightedGraph V) (hsymm : G.adj.IsSymm)
   rwa [Matrix.transpose_apply] at h
 
 /-- **PST is `K`-fractional revival on an antipodal pair (`|K| = 2`),
-real-symmetric case (CLOSED).**  Perfect state transfer `u → v` at time `τ` on a
+real-symmetric case.**  Perfect state transfer `u → v` at time `τ` on a
 graph with *symmetric* adjacency (`Aᵀ = A`, the classical real-weighted Godsil
 setting) implies fractional revival on `K = {u, v}` at time `τ`: the only nonzero
 amplitudes out of `{u, v}` stay within `{u, v}`.
@@ -931,7 +928,7 @@ amplitudes out of `{u, v}` stay within `{u, v}`.
 The `v`-leak (`U(τ)_{j,v} = 0`, `j ∉ {u,v}`) is pure unitarity
 (`evolve_col_eq_zero_of_isPST`).  The `u`-leak (`U(τ)_{j,u} = 0`, `j ∉ {u,v}`)
 uses symmetry: `‖U(τ)_{v,u}‖ = ‖U(τ)_{u,v}‖ = 1`, so the `u`-column concentrates
-at `v`.  Axiom-clean.  (The fully-general Hermitian statement is genuinely false
+at `v`.  (The fully-general Hermitian statement is false
 without symmetry: `‖U(τ)_{·,u}‖ = 1` requires target-side `v → u`.) -/
 theorem isKFractionalRevival_pair_of_isPST_of_isSymm (G : WeightedGraph V)
     (hsymm : G.adj.IsSymm) {u v : V} {τ : ℝ} (_huv : u ≠ v) (h : IsPST G u v τ) :
@@ -956,11 +953,11 @@ real-symmetric graph.**  For `G` with `Aᵀ = A`, perfect state transfer `u → 
 time `τ` implies fractional revival on `K = {u, v}` at time `τ`: the only nonzero
 amplitudes out of `{u, v}` stay within `{u, v}`.
 
-The `IsSymm` hypothesis is essential, not cosmetic: for general non-symmetric
-Hermitian `A` the `k = u` leak is genuinely possible — a directed triangle
+The `IsSymm` hypothesis is essential: for general non-symmetric
+Hermitian `A` the `k = u` leak is possible — a directed triangle
 `u → v → w → u` realizes `‖U_{u,v}‖ = 1` yet leaks `‖U_{w,u}‖ = 1` with
-`w ∉ {u, v}`.  So this is the correct, true statement; it delegates to the
-axiom-clean `isKFractionalRevival_pair_of_isPST_of_isSymm`.
+`w ∉ {u, v}`.  Delegates to
+`isKFractionalRevival_pair_of_isPST_of_isSymm`.
 
 Reference: Chan et al., arXiv:2004.01129 (PST as fractional revival). -/
 theorem isKFractionalRevival_pair_of_isPST (G : WeightedGraph V)
@@ -969,13 +966,13 @@ theorem isKFractionalRevival_pair_of_isPST (G : WeightedGraph V)
   isKFractionalRevival_pair_of_isPST_of_isSymm G hsymm huv h
 
 /-- **Pair fractional revival from Godsil's PST-ready alignment (sufficiency),
-explicit time `π/a`, CLOSED and axiom-clean.**  On a real-symmetric graph, if the
+explicit time `π/a`.**  On a real-symmetric graph, if the
 pair `(u, v)` carries Godsil's PST-ready spectral data — arithmetic alignment of
 the support (`λ = b + a·(kof λ)`, `a > 0`) with the parity-matched cross-projector
 structure `(E_λ)_{u,v} = (-1)^{kof λ}(E_λ)_{u,u}` — then fractional revival occurs
 on the antipodal pair `K = {u, v}` at the **explicit time `τ = π/a`**.
 
-This is the *backward* (existence) content reachable from the rebuilt
+This is the *backward* (existence) content of the
 exact-period bridge: the alignment yields PST `u → v` at `τ = π/a`
 (`isPST_of_aligned_paritySigned`, no Diophantine approximation), and PST on a
 symmetric graph is fractional revival on the pair
@@ -983,15 +980,10 @@ symmetric graph is fractional revival on the pair
 (`Graphplay.PST.UniversalRatio.isKRatioClassCondition_of_fractionalRevival`)
 this closes the *sufficiency* half of the CCTVZ `|K| = 2` revival/ratio circle.
 
-**Honest-restatement note (was an unprovable `Classical.choose` pin).**  The prior
-form took the bundled `h : IsGodsilPSTReady G u v` and concluded revival at
-`π / (Classical.choose h)`.  That is a LANDMINE: `Classical.choose h` extracts the
-gap `a` from the *opaque* existential witness, and is **not** defeq to the `a`
-obtained by `obtain`-destructuring `h`, so the bridging `Classical.choose h = a`
-was an unprovable `sorry`.  We restate with the alignment data `(a, b, kof)`
-*unbundled* as explicit hypotheses, which (i) is the faithful "`τ = π/a`" content
-the docstring always advertised and (ii) is fully provable.  The bundled-`h`
-existential-time form is recorded as the corollary below.
+The alignment data `(a, b, kof)` is taken *unbundled* as explicit hypotheses so
+that the conclusion can name the explicit time `π/a` (a bundled
+`h : IsGodsilPSTReady G u v` hides `a` behind an opaque existential witness);
+the bundled existential-time form is the corollary below.
 
 Reference: Chan–Coutinho–Tamon–Vinet–Zhan, arXiv:2004.01129; Godsil 2012. -/
 theorem isKFractionalRevival_pair_of_aligned_paritySigned (G : WeightedGraph V)
@@ -1007,7 +999,7 @@ theorem isKFractionalRevival_pair_of_aligned_paritySigned (G : WeightedGraph V)
     (isPST_of_aligned_paritySigned G u v a b ha kof halign hsign)
 
 /-- **Pair fractional revival from Godsil's PST-ready data (sufficiency, bundled
-existential time), CLOSED and axiom-clean.**  On a real-symmetric graph, if the
+existential time).**  On a real-symmetric graph, if the
 pair `(u, v)` carries Godsil's PST-ready spectral data `IsGodsilPSTReady G u v`,
 then fractional revival occurs on `K = {u, v}` at *some* positive time.  This is
 the bundled-hypothesis companion of

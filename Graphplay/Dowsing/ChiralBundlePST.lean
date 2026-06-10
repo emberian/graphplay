@@ -1,7 +1,7 @@
 /-
 # Graphplay.Dowsing.ChiralBundlePST
 
-**Hole D1**: Chiral perfect state transfer on graph bundles — a chiral
+Chiral perfect state transfer on graph bundles — a chiral
 generalization of the Bachman–Tamon bundle PST machinery and a global
 generalization of Levine–Mesapam–Mustico–Tamon–Tucker–Zhan's uniform-mixing
 speedup on chirally-signed complete graphs.
@@ -51,9 +51,6 @@ We also state a "phase-equitable refinement" lemma: a chiral signing
 induces a (potentially finer) equitable partition by grouping vertices with
 the same outgoing-phase profile. This is the chiral analogue of the
 classical "twin partition" used in Bachman–Tamon §3.
-
-Every nontrivial proof is `sorry`. The file is a **specification** that
-later proof passes can fill in.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -428,10 +425,10 @@ theorem fiberPartitionSigned_cellCard (B : ChiralBundle Q V)
 
 /-- **Singleton-fiber identity.**  When every fiber is a singleton
 (`Fintype.card (V i) = 1`), the chirally-signed quotient adjacency coincides
-*entrywise* with the genuinely-Hermitian symmetric quotient of the fiber
-partition: both equal the raw quotient (= cross-mass, since cells are singletons,
-so `|C_i| = 1`).  This is the precise statement that dissolves the cell-size
-normalization mismatch flagged in the headline docstring. -/
+*entrywise* with the Hermitian symmetric quotient of the fiber partition: both
+equal the raw quotient (= cross-mass, since cells are singletons, so
+`|C_i| = 1`).  This is the precise statement that dissolves the cell-size
+normalization mismatch discussed in the headline docstring. -/
 theorem quotientSigned_eq_symmQuotient_of_singleton (B : ChiralBundle Q V)
     {d : I → ℂ} (hreg : B.HasRegularFibers d)
     {α β : ∀ {i j : I}, Q.Adj i j → ℂ} (hbi : B.HasBiregularCouplings α β)
@@ -527,16 +524,16 @@ theorem cellUniformElt_eq_quotientSigned_evolve (B : ChiralBundle Q V)
 /--
 **Chiral bundle PST theorem (headline, singleton-fiber form).**
 
-The previous statement was FALSE at the literal `τ` because of the cell-size
-normalization mismatch `quotientSigned.adj = |C_i|·quotient ≠ symmQuotient`
-(they differ by the scalar `|C_i|`, rescaling time by the fiber size).  We
-restrict to **singleton fibers** (`Fintype.card (V i) = 1`, i.e. `|C_i| = 1`),
-exactly the regime where `quotientSigned.adj` *equals* the genuinely-Hermitian
-`symmQuotient` (`quotientSigned_eq_symmQuotient_of_singleton`); there the
+The singleton-fiber restriction (`Fintype.card (V i) = 1`, i.e. `|C_i| = 1`)
+is necessary for the same-`τ` biconditional: for larger fibers there is a
+cell-size normalization mismatch `quotientSigned.adj = |C_i|·quotient ≠
+symmQuotient` (they differ by the scalar `|C_i|`, rescaling time by the fiber
+size).  With singleton fibers, `quotientSigned.adj` *equals* the Hermitian
+`symmQuotient` (`quotientSigned_eq_symmQuotient_of_singleton`), and the
 biconditional holds at the **same** `τ`, with the standard Bachman–Tamon index
 swap `j i` on the quotient side.
 
-Both directions are now closed by the proven Bachman–Tamon iff
+Both directions follow from the Bachman–Tamon iff
 (`cellUniform_matrixElement` + the exponential intertwining
 `exp_smul_adj_mul_cellEmbed`), via the shared identity
 `cellUniformElt_eq_quotientSigned_evolve`.  The singleton-fiber case is exactly
@@ -587,20 +584,18 @@ theorem evolve_entry_norm_le_one {W : Type*} [Fintype W] [DecidableEq W]
 /-- **PGST analogue (singleton-fiber form).** Pretty-good cell-uniform state
 transfer on the chirally-signed bundle is equivalent to PGST on the chirally-
 signed quotient (at swapped indices `j i`), under the same singleton-fiber
-restriction as `pst_iff_quotient_signed_pst`.
-
-The previous statement was FALSE at the literal `τ` for the same cell-size
-normalization reason; restricting to `Fintype.card (V i) = 1` makes
-`quotientSigned.adj = symmQuotient`, so the per-`ε` modulus conditions on the two
-sides are the *same* condition on the *same* complex number
+restriction as `pst_iff_quotient_signed_pst` (and for the same cell-size
+normalization reason).  With `Fintype.card (V i) = 1`,
+`quotientSigned.adj = symmQuotient`, so the per-`ε` modulus conditions on the
+two sides are the *same* condition on the *same* complex number
 (`cellUniformElt_eq_quotientSigned_evolve`), and the biconditional is exact. -/
 theorem pgst_iff_quotient_signed_pgst
     (B : ChiralBundle Q V)
     {d : I → ℂ} (hreg : B.HasRegularFibers d)
     {α β : ∀ {i j : I}, Q.Adj i j → ℂ} (hbi : B.HasBiregularCouplings α β)
-    -- Singleton-fiber restriction (`|C_i| = 1`): exactly the regime where the raw
-    -- cross-mass quotient `quotientSigned` and the genuinely-Hermitian
-    -- `symmQuotient` coincide, so the same-`τ` biconditional is TRUE.
+    -- Singleton-fiber restriction (`|C_i| = 1`): exactly the regime where the
+    -- raw cross-mass quotient `quotientSigned` and the Hermitian
+    -- `symmQuotient` coincide, so the same-`τ` biconditional holds.
     (hsingle : ∀ i, Fintype.card (V i) = 1)
     (i j : I) :
     IsCellUniformPGST B.totalSigned (B.fiberPartitionSigned (α := α) (β := β) hreg hbi) i j ↔
@@ -884,7 +879,7 @@ theorem chiralHammingBundle_quotientSigned_adj_apply (n m : ℕ) [NeZero n] [NeZ
       _ = (n : ℂ) ^ 2 * (if (i.val + 1 = j.val ∨ j.val + 1 = i.val) then 1 else 0) := by
               rw [← Finset.sum_mul, hcell i, hcell j]; ring
 
-/-- **PST on the chiral Hamming-attached path quotient — the provable truth.**
+/-- **PST on the chiral Hamming-attached path quotient.**
 The chirally-signed quotient `(chiralHammingBundle n m).quotientSigned` is the
 uniformly-weighted path `n² · P_m` (off-diagonal cross-mass `n²` between
 template path-vertices, from the all-ones `n × n` coupling with trivial phase;
@@ -898,13 +893,12 @@ regimes:
   (`P₃`, `τ = π/√2`) through `evolve_smul_time` (the `n²` weight just divides the
   transfer time, `τ = τ_{P_m}/n²`).
 
-**Refutation of the former universal claim.**  The earlier statement quantified
-over *arbitrary* `i j : Fin m` and over *all* `m`; this is false.  The quotient
-is the uniformly-coupled path `n² · P_m`, and Christandl–Datta–Ekert–Landahl
-(math/0309131) prove uniform-path endpoint PST holds **only** for the antipodal
-pair and only for `m ∈ {2, 3}` (`P₄` and longer chains have no endpoint PST:
-`path_P4_no_PST`).  For a non-antipodal pair, or for `m ≥ 4`, no transfer time
-exists, so the hypothesis `hpair` below is essential and cannot be dropped. -/
+The hypothesis `hpair` cannot be dropped: the statement is false for
+arbitrary `i j : Fin m` and all `m`.  The quotient is the uniformly-coupled
+path `n² · P_m`, and Christandl–Datta–Ekert–Landahl (math/0309131) prove
+uniform-path endpoint PST holds **only** for the antipodal pair and only for
+`m ∈ {2, 3}` (`P₄` and longer chains have no endpoint PST: `path_P4_no_PST`).
+For a non-antipodal pair, or for `m ≥ 4`, no transfer time exists. -/
 theorem chiralHammingBundle_pst_time (n m : ℕ) [NeZero n] [NeZero m]
     (hn : 4 ≤ n) (i j : Fin m)
     (hpair : i = j ∨ ((m = 2 ∨ m = 3) ∧ i.val = 0 ∧ j.val = m - 1)) :
@@ -1056,7 +1050,7 @@ Three concrete next-step theorems, each currently entirely open:
    extra degrees of freedom that may circumvent them.
 -/
 
-/-- **Open question 1 (chiral product PST).** A genuine (open) biconditional:
+/-- **Open question 1 (chiral product PST).** An open biconditional:
 for every chiral signing `s` of a weighted graph `G` on `V`, every equitable
 partition `P` of `G` with the signing cross-constant on `P`, and every time
 `τ`, the signed graph exhibits PST between vertices `u, v` iff the unsigned
@@ -1068,7 +1062,7 @@ def OpenQ1_chiralProductPST : Prop :=
     (G : WeightedGraph V) (s : ChiralSigning V) (u v : V) (τ : ℝ),
     IsPST (G.signedBy s) u v τ ↔ IsPST G u v τ
 
-/-- **Open question 2 (sharpness of `π/(3√3)`).** A genuine (open) lower-bound
+/-- **Open question 2 (sharpness of `π/(3√3)`).** An open lower-bound
 statement: for every chiral signing `s` of the complete graph `K_n`
 (`unitaryHammingChiralK4.signedBy`-style), every time `τ < π / (3 * Real.sqrt 3)`
 fails to be an instantaneous-uniform-mixing time of the signed `K_4`; i.e.
@@ -1080,7 +1074,7 @@ def OpenQ2_chiralKnSharpness : Prop :=
         = 1 / Real.sqrt 4) →
       Real.pi / (3 * Real.sqrt 3) ≤ |τ|
 
-/-- **Open question 3 (chiral PGST on Heawood bundles).** A genuine (open)
+/-- **Open question 3 (chiral PGST on Heawood bundles).** An open
 existence statement: for `g, n` sufficiently large the chirally-signed Heawood
 quotient exhibits pretty-good state transfer between two distinct template
 vertices. -/

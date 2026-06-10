@@ -40,8 +40,8 @@ For the "optimal search time" claim the file delivers two things.  First, a
 alone does *not* imply constant search amplitude
 (`not_searchSuccess_optimal_time_of_gap_only` — witness `A = diag(0,0,2)`, whose
 search Hamiltonian is diagonal and never moves amplitude, so every `(γ, τ)`
-yields exactly `1/√3 < 1/√2`).  The CNO analysis genuinely needs the start
-state aligned with the principal eigenvector.  Second, the **honest CNO
+yields exactly `1/√3 < 1/√2`).  The CNO analysis needs the start
+state aligned with the principal eigenvector.  Second, the **CNO
 statement** — uniform principal eigenvector (= regularity) *plus* the spectral
 gap — `searchSuccess_optimal_time`, demoted to the cited interface
 `CNOLoopyOptimalSearch` (arXiv:2004.12686 Thms 1–2), with hypothesis-side
@@ -223,8 +223,8 @@ search Hamiltonian of the *negated* adjacency `−A`, shifted by `(d.re)•1`:
   `H_γ(L) = H_γ(−A) + (γ·d.re)•1`.
 
 So by §2 the Laplacian search evolution has the same entry moduli as the search
-evolution of `−A`.  The `−A` is a genuine **time reversal** of the adjacency
-walk — we are honest that this is `−A`, not `A`; the modulus equality is stated
+evolution of `−A`.  The `−A` is a **time reversal** of the adjacency
+walk — it is `−A`, not `A`; the modulus equality is stated
 against `searchEvolve (−A.adj)`. -/
 
 /-- The Laplacian movement matrix of a `d`-regular graph is the negated
@@ -245,9 +245,9 @@ search evolution:
   `‖searchEvolve L w γ τ j i‖ = ‖searchEvolve (−A) w γ τ j i‖`.
 
 The `−A` is the time-reversed adjacency walk; the `(d.re)•1` Laplacian shift
-contributes only a unit-modulus global phase (stripped via §2).  This is the
-precise, provable form — we do **not** silently identify `−A` with `A` (the sign
-is a real time reversal, exactly as documented in `Graphplay.Loopy.Laplacian`). -/
+contributes only a unit-modulus global phase (stripped via §2).  We do **not**
+identify `−A` with `A`: the sign is a time reversal, exactly as documented in
+`Graphplay.Loopy.Laplacian`. -/
 theorem norm_searchEvolve_laplacian_eq_of_regular (G : WeightedGraph V) (d : ℂ)
     (hreg : G.isRegular d) (w : V) (γ τ : ℝ) (i j : V) :
     ‖searchEvolve (WeightedGraph.laplacian G).adj w γ τ j i‖
@@ -262,7 +262,7 @@ negated-adjacency search success amplitude:
   `searchSuccess L w γ τ = searchSuccess (−A) w γ τ`.
 
 The Laplacian `(d.re)•1` shift is a pure global phase; the residual `−A` is the
-time-reversed adjacency walk.  Again, the `−A` is kept honest. -/
+time-reversed adjacency walk. -/
 theorem searchSuccess_laplacian_eq_of_regular (G : WeightedGraph V) (d : ℂ)
     (hreg : G.isRegular d) (w : V) (γ τ : ℝ) :
     searchSuccess (WeightedGraph.laplacian G).adj w γ τ
@@ -433,9 +433,9 @@ theorem not_searchSuccess_optimal_time_of_gap_only :
 
 end GapOnlyCounterexample
 
-/-! ## 6. The honest optimal-search-time statement (CNO interface).
+/-! ## 6. The optimal-search-time statement (CNO interface).
 
-The genuine content of spatial-search optimality — constant success amplitude
+The content of spatial-search optimality — constant success amplitude
 in time `O(√N)` — is the spectral/perturbation analysis of Chakraborty–Novo–
 Roland (arXiv:2004.12686, Thms 1–2; the constant-gap regime of Childs–Goldstone
 quant-ph/0306054).  Section 5 shows the eigenvalue gap alone is **not enough**;
@@ -463,7 +463,7 @@ The field is *exactly* the cited implication: a Hermitian movement matrix whose
 magnitude (the constant-gap regime) supports search reaching amplitude `≥ 1/√2`
 at some coupling `γ > 0` within the `O(√N)` budget `τ ≤ π√N`.
 
-**Non-vacuity.**  (i) The hypothesis side is genuinely inhabited where the
+Scope of the interface: (i) the hypothesis side is inhabited where the
 conclusion is not free: `cnoLoopy_hypotheses_inhabited` exhibits the all-ones
 matrix on `Fin 3` (uniform eigenvector, eigenvalue `3`, spectrum `{0, 3}`),
 where the bare start overlap is only `1/√3 < 1/√2`.  (ii) The interface is
@@ -473,8 +473,8 @@ gap-only hypothesis is *necessary*: `not_searchSuccess_optimal_time_of_gap_only`
 (`Graphplay.complete_graph_optimal_search` in `Graphplay.Search.CNO`,
 `quantum_search_quadratic_advantage` in
 `Graphplay.Integrations.QuantumAdvantage`) machine-check the corresponding
-statement in the `-γA - |w⟩⟨w|` convention, witnessing that the cited dynamics
-is real mathematics, exactly reduced there to a `2×2` Rabi block. -/
+statement in the `-γA - |w⟩⟨w|` convention, reduced there to a `2×2` Rabi
+block. -/
 class CNOLoopyOptimalSearch (V : Type u) [Fintype V] [DecidableEq V] : Prop where
   /-- Verbatim CNO arXiv:2004.12686 Thms 1–2 (constant-gap regime), loopy
   convention: uniform principal eigenvector + spectral gap ⟹ optimal-time
@@ -488,7 +488,7 @@ class CNOLoopyOptimalSearch (V : Type u) [Fintype V] [DecidableEq V] : Prop wher
       ∃ γ τ : ℝ, 0 < γ ∧ τ ≤ Real.pi * Real.sqrt (Fintype.card V) ∧
         1 / Real.sqrt 2 ≤ searchSuccess A w γ τ
 
-/-- **Optimal search time (honest CNO statement, demoted to the cited
+/-- **Optimal search time (CNO statement, via the cited
 interface).**  Let `A` be Hermitian such that the uniform vector is an
 eigenvector with eigenvalue `lam` (regularity / start-state–principal-
 eigenvector alignment) and every other spectrum point is strictly dominated in
@@ -517,7 +517,7 @@ free.**  The all-ones matrix `J` on `Fin 3` satisfies every hypothesis of
 eigenvector with eigenvalue `lam = 3`, and the rest of the spectrum (`{0}`,
 read off from `det(μ·1 − J) = μ²(μ−3)`) is strictly dominated.  Since the bare
 `τ = 0` start overlap on three vertices is `1/√3 < 1/√2`, the conditional
-theorem genuinely demands dynamics there: neither hypothesis nor conclusion is
+theorem demands dynamics there: neither hypothesis nor conclusion is
 degenerate. -/
 theorem cnoLoopy_hypotheses_inhabited :
     ∃ (A : Matrix (Fin 3) (Fin 3) ℂ) (lam : ℝ),
@@ -556,8 +556,7 @@ theorem cnoLoopy_hypotheses_inhabited :
 /-- **Satisfiability of the interface: the one-vertex instance.**  On a single
 vertex the uniform state *is* the marked vertex; the evolution at `τ = 0` is
 the identity and the success amplitude is `1 ≥ 1/√2` within the budget
-`0 ≤ π√1`.  This keeps `CNOLoopyOptimalSearch` honest: the class is provably
-consistent, so theorems conditioned on it are not vacuously true. -/
+`0 ≤ π√1`.  The class is provably consistent. -/
 instance : CNOLoopyOptimalSearch (Fin 1) where
   optimal_time_of_uniform_principal := by
     intro A w lam _ _ _ _

@@ -99,7 +99,7 @@ When `lake build Graphplay.Demo` succeeds and these `#eval`s are run
 * `heawoodColoringIsProper` → `true`
 * The color tuple → `[0, 1, 2, 3, 4, 5, 6]` (7 distinct naturals).
 
-These are *concrete* values, not `sorry`. -/
+These are concrete computed values. -/
 
 #eval heawoodColorCount
 -- expected: 7

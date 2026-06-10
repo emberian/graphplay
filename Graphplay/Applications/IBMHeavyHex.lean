@@ -1780,6 +1780,102 @@ theorem heavyHex_pst_lift (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
   obtain ⟨τ, hτ, hpst⟩ := dataFlag_pst_on_quotient n m hn hm
   rw [← hτ]
   exact (dataFlagPartition n m).pst_lift (dataFlag_cells_nonempty n m hn hm) hpst
+
+/-! ### The exact propagator and the hardware-named transfer time.
+
+The symmetric quotient is the Rabi Hamiltonian `M = q·X` with the single
+coupling `q = dataFlagCoupling = 2√(N−1)`, so its propagator is an exact `2×2`
+rotation and the first PST happens at the quarter-period
+`τ⋆ = π/(2q) = π/(4√(N−1))`. -/
+
+/-- **The exact `2×2` propagator of the data/flag quotient walk.**  For real
+time `τ` the unitary `U(τ) = exp(−iτ·M)` of the symmetric quotient `M = q·X`
+(`q = dataFlagCoupling n m = 2√(N−1)`) is the Rabi rotation
+
+  `U(τ) = [[cos(τq), −i·sin(τq)], [−i·sin(τq), cos(τq)]]`,
+
+i.e. both diagonal entries are `cos(τq)` and both off-diagonal entries are
+`−i·sin(τq)` — unitarity is visible as `cos² + sin² = 1`.  This sharpens
+`norm_exp_symmQuotient_flag_data` from one off-diagonal modulus to all four
+amplitudes with their phases.  The hypotheses `0 < n`, `0 < m` are required
+because the entry values of `symmQuotient` come from
+`dataFlag_symmQuotient_form`, whose branching counts need both cells inhabited
+(an empty lattice has `q = 2√(0−1)` formally garbage). -/
+theorem exp_symmQuotient_propagator (n m : ℕ) (hn : 0 < n) (hm : 0 < m) (τ : ℝ) :
+    ∀ i j : Role,
+      NormedSpace.exp (-(Complex.I * (τ : ℂ)) • (dataFlagPartition n m).symmQuotient) i j
+        = if i = j then ((Real.cos (τ * dataFlagCoupling n m) : ℝ) : ℂ)
+          else -Complex.I * ((Real.sin (τ * dataFlagCoupling n m) : ℝ) : ℂ) := by
+  intro i j
+  rw [exp_smul_symmQuotient n m hn hm, Ur_inv, dataFlagCoupling]
+  set q : ℝ := 2 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1) with hqdef
+  -- Both diagonal exponentials in closed trigonometric form.
+  have hsval : (-(Complex.I * (τ : ℂ)) * ((q : ℝ) : ℂ))
+      = ((-(τ * q) : ℝ) : ℂ) * Complex.I := by push_cast; ring
+  have he1 : NormedSpace.exp (-(Complex.I * (τ : ℂ)) * ((q : ℝ) : ℂ))
+      = (Real.cos (τ * q) : ℂ) - (Real.sin (τ * q) : ℂ) * Complex.I := by
+    rw [hsval, ← Complex.exp_eq_exp_ℂ, Complex.exp_ofReal_mul_I, Real.cos_neg, Real.sin_neg]
+    push_cast; ring
+  have he2 : NormedSpace.exp (-(-(Complex.I * (τ : ℂ)) * ((q : ℝ) : ℂ)))
+      = (Real.cos (τ * q) : ℂ) + (Real.sin (τ * q) : ℂ) * Complex.I := by
+    have hneg : -(-(Complex.I * (τ : ℂ)) * ((q : ℝ) : ℂ)) = ((τ * q : ℝ) : ℂ) * Complex.I := by
+      rw [hsval]; push_cast; ring
+    rw [hneg, ← Complex.exp_eq_exp_ℂ, Complex.exp_ofReal_mul_I]
+  rw [Matrix.mul_apply, Role.sum_univ, Matrix.mul_apply, Matrix.mul_apply,
+    Role.sum_univ, Role.sum_univ]
+  cases i <;> cases j <;>
+    simp only [Ur, roleDiag, Matrix.diagonal_apply, Matrix.of_apply, Matrix.smul_apply,
+      smul_eq_mul, ite_true, ite_false, reduceCtorEq] <;>
+    rw [he1, he2] <;> ring
+
+/-- **The heavy-hex transfer time** `τ⋆ = π/(4√(N−1))` (`N = |HoneyVertex| = 2nm`):
+the first time at which the data-uniform state arrives, in full, on the flag
+cell.  Equivalently `τ⋆ = π/(2q)` with `q = dataFlagCoupling = 2√(N−1)`: a
+quarter period of the two-cell Rabi oscillation at angular frequency `q`.
+
+Sample values of the closed form: `N = 5` gives `τ⋆ = π/8`; the smallest lattice
+`n = m = 1` has `N = 2`, `q = 2`, `τ⋆ = π/4` — matching the unit-cell PST time
+of `unitCell_pst_on_quotient`. -/
+noncomputable def heavyHexPSTTime (n m : ℕ) : ℝ :=
+  Real.pi / (4 * Real.sqrt ((Fintype.card (HoneyVertex n m) : ℝ) - 1))
+
+/-- `τ⋆ = π/(4√(N−1))` is exactly `π/(2q)`, the time used by `heavyHex_pst_lift`. -/
+theorem heavyHexPSTTime_eq (n m : ℕ) :
+    heavyHexPSTTime n m = Real.pi / (2 * dataFlagCoupling n m) := by
+  rw [heavyHexPSTTime, dataFlagCoupling]; ring_nf
+
+/-- **Quotient PST at the explicit time `π/(4√(N−1))`, with its phase.**  At
+`τ⋆ = heavyHexPSTTime` the propagator's `(flag, data)` amplitude is exactly
+`−i`: the transfer is perfect (`|−i| = 1`) and arrives with the quarter-period
+Rabi phase.  The exact amplitude is strictly stronger than the modulus-`1`
+statement `dataFlag_pst_on_quotient` and pins the time down in hardware terms
+(`N − 1` is the number of flag neighbours of each data site in the `K_N`
+subdivision). -/
+theorem heavyHex_quotient_pst_time (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+    NormedSpace.exp (-(Complex.I * (heavyHexPSTTime n m : ℂ)) •
+        (dataFlagPartition n m).symmQuotient) Role.flag Role.data = -Complex.I := by
+  rw [exp_symmQuotient_propagator n m hn hm _ Role.flag Role.data,
+    if_neg (by decide : ¬ Role.flag = Role.data)]
+  have hq : dataFlagCoupling n m ≠ 0 := (dataFlagCoupling_pos n m hn hm).ne'
+  rw [heavyHexPSTTime_eq,
+    show Real.pi / (2 * dataFlagCoupling n m) * dataFlagCoupling n m = Real.pi / 2 by
+      field_simp,
+    Real.sin_pi_div_two]
+  simp
+
+/-- **Heavy-hex PST at the explicit, hardware-named time `π/(4√(N−1))`.**
+Cell-uniform PST from the data-uniform state to the flag-uniform state on the
+full chip at `τ⋆ = heavyHexPSTTime n m = π/(4√(N−1))` (`N = |HoneyVertex| = 2nm`;
+e.g. `N = 5` would give `τ⋆ = π/8`).  This is `heavyHex_pst_lift` with the time
+in closed form: the quotient transfer `heavyHex_quotient_pst_time` lifts through
+`EquitablePartition.pst_lift` because the data/flag partition is equitable and
+both cells are nonempty. -/
+theorem heavyHex_pst_time (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+    IsCellUniformPST (heavyHexWeighted n m) (dataFlagPartition n m)
+      Role.data Role.flag (heavyHexPSTTime n m) := by
+  rw [heavyHexPSTTime_eq]
+  exact heavyHex_pst_lift n m hn hm
+
 /-- The IBM Heron hardware spec.  The improvements over Eagle are:
 
 * tunable couplers ⇒ analog phase control, so `allowedPhaseSet = unit

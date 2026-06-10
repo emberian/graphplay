@@ -140,7 +140,7 @@ noncomputable def ConsistentPartitionSequence.quotient
 
 /-! ## The Lovász–Szegedy stepping-operator limit (named external typeclass)
 
-The single genuinely-missing analytic input of the entire limit/Cauchy-completion
+The single missing analytic input of the entire limit/Cauchy-completion
 story is the **stepping-operator cut-norm compactness** of Borgs–Chayes–Lovász–
 Sós–Vesztergombi: every graphon `W` is the cut-norm limit of step-function
 graphons arising from finite measurable partitions of `Ω`, and when `W` carries an
@@ -152,7 +152,7 @@ This theorem is **proven in the literature but absent from Mathlib v4.30.0**.  W
 package it as a **`Prop`-valued typeclass** `LovaszSzegedyLimit Ω μ I` carrying the
 single field `stepping_limit` — the exact cited statement.  Every limit theorem
 *takes* `[LovaszSzegedyLimit Ω μ I]` and derives its conclusion from
-`LovaszSzegedyLimit.stepping_limit`; the result is `#print axioms`-clean and honestly
+`LovaszSzegedyLimit.stepping_limit`; the result is `#print axioms`-clean and
 conditional on a named, cited hypothesis.  We provide **no instance** — it is a pure
 external assumption (BCLSV §3), discharged the day Mathlib grows the stepping
 operator.
@@ -165,7 +165,7 @@ of step graphons) and Prop. 14.13 (refining sequences). -/
 
 /-- **The step graphon of a refining measurable cell map.**
 
-`stepGraphonOfCells c Q hsymm hdiag` is the genuine step graphon on `(Ω, μ)` whose
+`stepGraphonOfCells c Q hsymm hdiag` is the step graphon on `(Ω, μ)` whose
 kernel is the matrix entry `Q (c x) (c y)`.  `c : Ω → I` is a measurable cell map
 and `Q` a Hermitian step matrix with **zero diagonal** (`Q i i = 0`, the loopless
 finite-graph convention); the result is constant on each `(c)`-block-pair, i.e. it
@@ -210,17 +210,17 @@ noncomputable def stepGraphonOfCells
 /-- **The spine-coupled step graphon predicate.**
 
 `IsSpineStepGraphon Wstep 𝒮 P` says the step-graphon sequence `Wstep` is the
-genuine BCLSV stepping-operator output **of the spine `𝒮`, refining `P`**: at each
+BCLSV stepping-operator output **of the spine `𝒮`, refining `P`**: at each
 stage `n` there is a finite refinement index `I × Fin m` and a measurable cell map
 `c : Ω → I × Fin m` that *refines* `P.cells` (its coarse projection
 `Prod.fst ∘ c = P.cells`), and `Wstep n` equals the step graphon
 `stepGraphonOfCells` of that refined map, with the *coarse* `I`-quotient of the
 step matrix equal to `𝒮.quotient n`.
 
-This is the genuine coupling: it forbids the two trivial inhabitants of the old
-field.  `Wstep ≡ W` is excluded unless `W` is already a step graphon refining `P`;
-a constant `𝒮` is excluded unless the step-matrix coarse quotient is itself
-constant.  The step approximant and the spine are now *one object* — the spine
+The coupling forbids two trivial inhabitants:
+`Wstep ≡ W` is excluded unless `W` is already a step graphon refining `P`,
+and a constant `𝒮` is excluded unless the step-matrix coarse quotient is itself
+constant.  The step approximant and the spine are *one object* — the spine
 `𝒮.quotient n` is literally read off the blocks of `Wstep n`. -/
 def IsSpineStepGraphon
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -253,8 +253,8 @@ the spine** by `IsSpineStepGraphon`: each `Wstep n` is literally the step grapho
 of a measurable refinement of `P` whose coarse `I`-quotient is `𝒮.quotient n`.
 
 This is the precise content of BCLSV §3 (stepping operator + cut-norm density),
-specialised to refine the cells of `P`.  The coupling `IsSpineStepGraphon` is what
-makes the field **non-vacuous**: without it, `Wstep ≡ W` with a constant `𝒮` would
+specialised to refine the cells of `P`.  The coupling `IsSpineStepGraphon` is
+essential: without it, `Wstep ≡ W` with a constant `𝒮` would
 inhabit the statement; with it, the step approximant and the finite spine are the
 *same* object (the spine quotient is read off the step graphon's blocks).  It is the
 *only* deferred analytic construction in the limit/Cauchy-completion development;
@@ -293,20 +293,19 @@ quantities. -/
 *convergent* consistent partition sequence.**
 
 The bare "for any `ConsistentPartitionSequence` a graphon limit exists with
-quotients converging to it" is **FALSE**: an arbitrary sequence carries no
+quotients converging to it" is false: an arbitrary sequence carries no
 convergence data, and adversarial oscillating cell-masses/fluxes make the
 quotient matrices `𝒮.quotient n` fail to converge to anything.  The
 Lovász–Szegedy cut-norm compactness theorem is precisely what would *supply* a
 cut-norm limit graphon `(Wlim, Plim)` whose quotient absorbs the convergence
 (after passing to a subsequence) — but that compactness is not in Mathlib.
 
-The genuine theorem therefore takes the **cut-norm limit data as a hypothesis**:
+The theorem therefore takes the **cut-norm limit data as a hypothesis**:
 a limit graphon `Wlim`, a limit equitable partition `Plim`, and the convergence
 `hconv` of the finite quotients to `Plim.quotient` (the operator-norm content of
-the BCLSV limit).  The existential limit-data conclusion then holds, witnessed by
-that data.  This is the "assuming `CutNormTendsto`" form flagged as the honest
-statement; the only deferred content is the *construction* of `(Wlim, Plim)` from
-`𝒮`, i.e. the Lovász–Szegedy compactness itself. -/
+the BCLSV limit).  The existential limit-data conclusion then holds, witnessed
+by that data; the only deferred content is the *construction* of `(Wlim, Plim)`
+from `𝒮`, i.e. the Lovász–Szegedy compactness itself. -/
 theorem ConsistentPartitionSequence.limit_exists
     {I : Type v} [Fintype I] [DecidableEq I]
     (𝒮 : ConsistentPartitionSequence I)
@@ -324,10 +323,10 @@ theorem ConsistentPartitionSequence.limit_exists
 `𝒮.quotient n` form a Cauchy sequence in operator norm **whenever they
 converge** to some limit matrix `Q`.
 
-The bare "`𝒮.quotient` is Cauchy" claim is **FALSE** for an arbitrary
+The bare "`𝒮.quotient` is Cauchy" claim is false for an arbitrary
 `ConsistentPartitionSequence`: it carries no convergence data, and adversarial
 oscillating cell-masses/fluxes make the quotient sequence non-Cauchy.  The
-genuine statement adds the missing **convergence hypothesis** `hconv` (the
+statement therefore adds the **convergence hypothesis** `hconv` (the
 Lovász–Szegedy cut-norm compactness would *supply* such a limit, but as a
 hypothesis it is exactly the data needed).  The Cauchy conclusion is then
 immediate, since a convergent sequence in a (uniform) space is Cauchy. -/
@@ -342,7 +341,7 @@ theorem ConsistentPartitionSequence.quotient_cauchy
 
 /-! ## Continuity of the finite spectral predicates under matrix + time limits
 
-The genuinely-reachable analytic core of the convergence theorems: the
+The analytic core of the convergence theorems: the
 finite-PST and finite-mixing predicates are **closed conditions** on the pair
 `(H, τ)`, because `(H, τ) ↦ exp(-(iτ)·H)` is jointly continuous (`exp` is
 continuous as a map on the Banach algebra `Matrix I I ℂ` under the `linftyOp`
@@ -351,12 +350,12 @@ modulus are continuous.  A modulus-one (resp. uniform `1/|I|`) condition that
 holds along a sequence therefore passes to the limit by uniqueness of limits.
 
 These are stated for an **arbitrary** convergent matrix sequence, with no
-graphon hypotheses — they are pure matrix analysis and `sorry`-free. -/
+graphon hypotheses — they are pure matrix analysis. -/
 
 /-- **Finite PST passes to matrix + time limits.**  If `H n → Hlim` (in the
 `linftyOp` = entrywise topology), `τ n → τlim`, and each `H n` exhibits finite
 PST from `i` to `j` at time `τ n`, then `Hlim` exhibits finite PST from `i` to
-`j` at time `τlim`.  Pure matrix-analytic, axiom-clean. -/
+`j` at time `τlim`.  Pure matrix analysis. -/
 theorem IsPST_finite_of_tendsto
     {I : Type v} [Fintype I] [DecidableEq I]
     {H : ℕ → Matrix I I ℂ} {Hlim : Matrix I I ℂ}

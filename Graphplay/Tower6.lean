@@ -173,10 +173,10 @@ end UStarAlgCat
 
 /-! ### 1.1. The terminal `*`-algebra and `HasTerminal UStarAlgCat`.
 
-To build a genuine *sheaf* (rather than only a presheaf) we need a terminal
-object in the value category: the constant presheaf is not a sheaf, but the
-honest constant sheaf — `skyscraperSheaf` on a nonempty base, the terminal
-sheaf on an empty base — both need `HasTerminal UStarAlgCat`.
+To build a *sheaf* (rather than only a presheaf) we need a terminal
+object in the value category: the constant presheaf is not a sheaf, and the
+correct constant sheaf — `skyscraperSheaf` on a nonempty base, the terminal
+sheaf on an empty base — needs `HasTerminal UStarAlgCat` either way.
 
 The terminal unital `*`-algebra is the **zero algebra** (the one-element ring
 `PUnit`, where `0 = 1`).  Every other algebra has a unique unital `*`-hom to
@@ -280,9 +280,7 @@ theorem localAdj_selfAdjoint (F : SheafGraph X) (U : Opens X) :
 
 The restriction maps come from the underlying presheaf functor, so they satisfy
 the functor laws: restricting along the identity inclusion is the identity hom,
-and restricting along a composite `W ≤ V ≤ U` is the composite of restrictions.
-These are genuinely-reachable algebraic-bookkeeping facts (presheaf
-functoriality), not placeholders. -/
+and restricting along a composite `W ≤ V ≤ U` is the composite of restrictions. -/
 
 /-- Restriction along the identity inclusion `U ≤ U` is the identity hom on
 `A(U)` (pointwise). -/
@@ -370,18 +368,16 @@ noncomputable def constPresheaf (X : TopCat.{u}) (A : UStarAlgCat.{u}) :
 
 The *constant presheaf* `Functor.const` is **not** a sheaf (its value on the
 empty open `⊥` is `A`, but the sheaf condition forces that value to be
-terminal; and disjoint opens cannot be glued from copies of `A`).  So the
-honest "single-stalk constant sheaf" is the **skyscraper sheaf**: on a
+terminal; and disjoint opens cannot be glued from copies of `A`).  The
+single-stalk constant sheaf is therefore the **skyscraper sheaf**: on a
 nonempty base it sends every open containing the chosen point to `A` and every
-other open to the terminal algebra, which *is* a genuine sheaf
-(`skyscraperSheaf`, with `obj ⊤ = A`).  On an empty base there is no point and
-the only sheaf with the right shape is the terminal sheaf
-`⊤_ (TopCat.Sheaf UStarAlgCat X)`, which exists because `UStarAlgCat` has a
-terminal object (§1.1) and sheaf categories inherit limits.
+other open to the terminal algebra (`skyscraperSheaf`, with `obj ⊤ = A`).  On
+an empty base there is no point and the only sheaf with the right shape is the
+terminal sheaf `⊤_ (TopCat.Sheaf UStarAlgCat X)`, which exists because
+`UStarAlgCat` has a terminal object (§1.1) and sheaf categories inherit limits.
 
-This is a fully `sorry`-free `TopCat.Sheaf UStarAlgCat X`.  Its global
-sections recover `A` on every nonempty base (`constSheaf_obj_top`), which is
-what the example constructions below use. -/
+Its global sections recover `A` on every nonempty base
+(`constSheaf_obj_top`), which is what the example constructions below use. -/
 noncomputable def constSheaf (X : TopCat.{u}) (A : UStarAlgCat.{u}) :
     TopCat.Sheaf UStarAlgCat.{u} X :=
   letI := Classical.propDecidable (Nonempty X)
@@ -414,9 +410,9 @@ theorem star_eqRec_symm {A B : UStarAlgCat.{u}} (e : B = A) {a : A.carrier}
 (skyscraper) sheaf at `A`, and the global adjacency is `a`, transported across
 the identification `(constSheaf X A).obj ⊤ = A`.
 
-This packages the transport once, so the example constructions
-(`ofGraphon`, `ofConstantWeightedGraph`, `ofSchedule`, `heawoodEnvelopeSheaf`)
-stay `sorry`-free. -/
+This packages the transport once, for use by the example constructions
+(`ofGraphon`, `ofConstantWeightedGraph`, `ofSchedule`,
+`heawoodEnvelopeSheaf`). -/
 noncomputable def ofConstStalk (X : TopCat.{u}) [Nonempty X] (A : UStarAlgCat.{u})
     (a : A.carrier) (ha : star a = a) : SheafGraph X where
   sheaf := constSheaf X A
@@ -431,11 +427,9 @@ bounded `L²(U, μ)`-operators, the restriction maps are spatial restriction of
 operators, and the global section is the graphon integral operator `T_W`.
 
 The construction is highly nontrivial in Lean and is therefore left as a
-placeholder: we give the *signature* of the recovery, parametrised by an
+skeleton: we give the *signature* of the recovery, parametrised by an
 arbitrary base space `X`, an arbitrary `Graphon`, and a guarantee that the
-graphon is over the measure space underlying `X`.
-
-The honest statement is `Sorry` because building the sheaf
+graphon is over the measure space underlying `X`.  Building the sheaf
 `U ↦ B(L²(U, μ))` requires the bounded-operator algebra structure, which
 Mathlib has, but not bundled as a `UStarAlgCat`. -/
 noncomputable def ofGraphon {Ω : Type u} [MeasurableSpace Ω] [TopologicalSpace Ω]
@@ -458,7 +452,7 @@ noncomputable def ofGraphon {Ω : Type u} [MeasurableSpace Ω] [TopologicalSpace
   -- together with restriction maps.  Once Mathlib ships either (a) a
   -- `UStarAlgCat`-valued sheaf of bounded operators or (b) an
   -- `AlgebraCat ℂ`-valued sheaf with star structure, this definition can be
-  -- filled honestly: `adj` becomes `W.op` and `adj_selfAdjoint` becomes
+  -- completed: `adj` becomes `W.op` and `adj_selfAdjoint` becomes
   -- `W.op_isSelfAdjoint`.
   let A : UStarAlgCat.{u} :=
     { carrier := Matrix (ULift.{u} (Fin 1)) (ULift.{u} (Fin 1)) ℂ }
@@ -567,7 +561,7 @@ structure SheafEquitablePartition {X : TopCat.{u}} (F : SheafGraph X) where
   [decEqI : DecidableEq I]
   /-- The open cover. -/
   cover : I → Opens X
-  /-- The cover is genuinely covering. -/
+  /-- The cover covers `X`. -/
   cover_covers : (⨆ i, cover i) = ⊤
   /-- The constant cell algebra on each `cover i`. -/
   cellAlgebra : I → UStarAlgCat.{u}
@@ -631,7 +625,7 @@ triples with triple-overlap, etc.
 
 For our finite, type-theoretic purposes, we package the *0,1-skeleton* of
 the nerve as a graph on `I` with `(i, j)`-edge weight `1` when the overlap
-is nonempty, `0` otherwise (statement-level; an honest version would track
+is nonempty, `0` otherwise (statement-level; a refined version would track
 inclusion arrows in `Opens X`).
 
 The *skeleton sheaf* on this nerve is the data of `cellAlgebra` plus the
@@ -653,7 +647,7 @@ theorem nerveGraph_adj_iff (P : SheafEquitablePartition F) (i j : P.I) :
     (P.nerveGraph).Adj i j ↔ i ≠ j ∧ (P.cover i ⊓ P.cover j : Opens X) ≠ ⊥ :=
   Iff.rfl
 
-/-- The cover indices of an adjacent pair are genuinely distinct. -/
+/-- The cover indices of an adjacent pair are distinct. -/
 theorem nerveGraph_ne_of_adj (P : SheafEquitablePartition F) {i j : P.I}
     (h : (P.nerveGraph).Adj i j) : i ≠ j := h.1
 
@@ -723,16 +717,15 @@ the *content* is that the global adjacency `F.adj` preserves this subspace
 preserves the cell-uniform sector. -/
 def CellUniformSubalgebra (_P : SheafEquitablePartition F) :
     Set F.globalAlgebra.carrier :=
-  -- SCAFFOLD: placeholder, not real content.  The genuine value is the
-  -- `*`-subalgebra of `F.globalAlgebra` generated by the cell-indicator lifts
-  -- (the images of `1 ∈ cellAlgebra i` pulled back through `cellHom i` and the
-  -- restriction maps).  Building that generated subalgebra requires a
-  -- pullback/inflation calculus on the handcrafted `UStarAlgCat` sheaf that is
-  -- not available here, so we return the *whole carrier* `Set.univ`
-  -- (`{ _x | True }`) as a type-correct stand-in.  Consequently every theorem
-  -- below that mentions this set (`sheaf_spectral_lift`,
-  -- `spectrum_subset_cellUniform`) is a deferred `True`-placeholder, not a
-  -- genuine spectral-containment claim.
+  -- Placeholder.  The intended value is the `*`-subalgebra of
+  -- `F.globalAlgebra` generated by the cell-indicator lifts (the images of
+  -- `1 ∈ cellAlgebra i` pulled back through `cellHom i` and the restriction
+  -- maps).  Building that generated subalgebra requires a pullback/inflation
+  -- calculus on the handcrafted `UStarAlgCat` sheaf that is not available
+  -- here, so we return the *whole carrier* `Set.univ` (`{ _x | True }`) as a
+  -- type-correct stand-in.  Consequently every theorem below that mentions
+  -- this set (`sheaf_spectral_lift`, `spectrum_subset_cellUniform`) is a
+  -- deferred `True`-placeholder, not a spectral-containment claim.
   { _x | True }
 
 /-- **Sheaf-level spectral lift theorem (statement).**  The global adjacency
@@ -833,13 +826,12 @@ of opens on which `F.sheaf.presheaf.obj (op U)` carries a finite-dimensional
 `*`-algebra structure compatible with the cell-algebra trivialisations of any
 sheafy equitable partition. -/
 def LocallyFinite {X : TopCat.{u}} (_F : SheafGraph X) : Prop :=
-  -- SCAFFOLD: placeholder, not real content.  The genuine predicate asks for a
-  -- basis of compact opens on which `F.sheaf.presheaf.obj (op U)` carries a
-  -- *finite-dimensional* `*`-algebra structure compatible with cell
-  -- trivialisations.  Expressing finite-dimensionality of our handcrafted
-  -- `UStarAlgCat` values is not set up, so this returns `True` — meaning it
-  -- holds for EVERY sheaf graph and is therefore a *vacuous hypothesis*
-  -- wherever consumed (e.g. `locallyFinite_uniform_cells`).
+  -- Placeholder.  The intended predicate asks for a basis of compact opens on
+  -- which `F.sheaf.presheaf.obj (op U)` carries a *finite-dimensional*
+  -- `*`-algebra structure compatible with cell trivialisations.  Expressing
+  -- finite-dimensionality of our handcrafted `UStarAlgCat` values is not set
+  -- up, so this returns `True` — it holds for every sheaf graph, hence is a
+  -- vacuous hypothesis wherever consumed (e.g. `locallyFinite_uniform_cells`).
   True
 
 /-- **Example 6.2 (locally finite sheaf).**  An equitable partition is
@@ -939,7 +931,7 @@ noncomputable def heawoodEnvelopeSheaf (X : TopCat.{u}) [Nonempty X] (_g : ℕ) 
   -- The sheaf assigns to each open neighborhood in moduli space the
   -- *-algebra of bounded operators on the colour-class Hilbert space of
   -- `K_(H(g))`; the global section is the adjacency of the Heawood graph
-  -- viewed as the universal quantum chromatic envelope.  Honest construction
+  -- viewed as the universal quantum chromatic envelope.  Construction
   -- deferred (cf. `ofGraphon`); we expose the constant-`ℂ` sheaf as a
   -- type-correct skeleton.
   let A : UStarAlgCat.{u} :=
@@ -984,38 +976,33 @@ to send the cell-`i` state to the cell-`j` state, for every `x` and a common
 time `τ`. -/
 def StalkwisePST {X : TopCat.{u}} (F : SheafGraph X)
     (P : SheafEquitablePartition F) (i j : P.I) (τ : ℝ) : Prop :=
-  -- SCAFFOLD: placeholder, not real content.  The genuine condition is that
-  -- for *every* point `x : X`, the stalk-level CTQW unitary `exp(-i τ · adj_x)`
-  -- (`adj_x` = image of the global adjacency in the stalk
-  -- `colim_{U ∋ x} F.section_ U`) sends the cell-`i` state to the cell-`j`
-  -- state.  Forming `exp(-i τ · adj_x)` needs operator functional calculus on
-  -- the stalk colimit of our handcrafted `UStarAlgCat`, which does not exist.
-  -- The earlier `∀ x, ∃ k, (k=i ∨ k=j) ∨ x ∈ cover k` was vacuous (the second
-  -- disjunct holds for every `x` since the cover covers `⊤`), saying nothing
-  -- about evolution/time.  We instead carry the genuine claim as an opaque,
+  -- Placeholder.  The intended condition: for *every* point `x : X`, the
+  -- stalk-level CTQW unitary `exp(-i τ · adj_x)` (`adj_x` = image of the
+  -- global adjacency in the stalk `colim_{U ∋ x} F.section_ U`) sends the
+  -- cell-`i` state to the cell-`j` state.  Forming `exp(-i τ · adj_x)` needs
+  -- operator functional calculus on the stalk colimit of our handcrafted
+  -- `UStarAlgCat`, which does not exist.  We carry the claim as an opaque,
   -- `x`/`i`/`j`/`τ`-dependent proposition parametrised by the (deferred) stalk
-  -- CTQW predicate `StalkCTQWSends x`, so consumers must `sorry` rather than
-  -- discharge a covering fact.  Quantifying over *all* such predicates makes
-  -- this strong (hence non-vacuous: it is NOT trivially provable, e.g. the
-  -- predicate `fun _ _ _ _ => False` falsifies it), which is the honest
-  -- placeholder for "the genuine stalk CTQW transfers `i → j` at every `x`".
+  -- CTQW predicate `StalkCTQWSends x`.  Quantifying over *all* such predicates
+  -- makes this strong — it is not trivially provable (the predicate
+  -- `fun _ _ _ _ => False` falsifies it).
   ∀ x : X, ∀ StalkCTQWSends : X → P.I → P.I → ℝ → Prop, StalkCTQWSends x i j τ
 
 /-- A `SheafGraph` exhibits **dense-open PST** between cell-uniform states
 when there exists a dense open subset `U ⊆ X` on which the stalk-wise PST
 property holds.  This is the natural *robustness* notion: PST that is
-genuinely "generic" in the parameter — present on an open dense set of
+"generic" in the parameter — present on an open dense set of
 parameters even if it fails on a thin exceptional locus. -/
 def DenseOpenPST {X : TopCat.{u}} (F : SheafGraph X)
     (P : SheafEquitablePartition F) (i j : P.I) (τ : ℝ) : Prop :=
-  -- SCAFFOLD: placeholder, not real content.  The genuine condition is the
-  -- existence of a *dense open* `U ⊆ X` on which `StalkwisePST` holds — i.e.
-  -- the stalk CTQW transfers `i → j` for every parameter in `U`.  Since the
-  -- "restriction of stalk-PST to `U`" is not separately formalised (it depends
-  -- on the deferred stalk functional calculus, see `StalkwisePST`), we pair the
-  -- dense open with the (deferred, non-vacuous) `StalkwisePST` claim.  This is
-  -- *not* trivially satisfiable: `StalkwisePST` itself is a deferred opaque
-  -- claim, so `DenseOpenPST` cannot be discharged by taking `U = ⊤`.
+  -- Placeholder.  The intended condition is the existence of a *dense open*
+  -- `U ⊆ X` on which `StalkwisePST` holds — i.e. the stalk CTQW transfers
+  -- `i → j` for every parameter in `U`.  Since the "restriction of stalk-PST
+  -- to `U`" is not separately formalised (it depends on the deferred stalk
+  -- functional calculus, see `StalkwisePST`), we pair the dense open with the
+  -- full `StalkwisePST` claim.  This is *not* trivially satisfiable:
+  -- `StalkwisePST` itself is opaque, so `DenseOpenPST` cannot be discharged
+  -- by taking `U = ⊤`.
   ∃ U : Opens X, Dense (U : Set X) ∧ StalkwisePST F P i j τ
 
 /-- **Stalkwise ⇒ Dense-open**.  Stalkwise PST trivially implies dense-open
@@ -1149,8 +1136,8 @@ namespace SheafGraph
 preserves filtered colimits, equivalent to the Backhausz–Szegedy graphop
 limit theorem — is not type-checkable without the enriched value category.
 
-We state and prove the **graphop self-adjointness** fact that underpins it,
-and which is genuine operator-valued content: a graphop is a self-adjoint
+We state and prove the **graphop self-adjointness** fact that underpins it:
+a graphop is a self-adjoint
 operator, and in the sheafy setting the self-adjoint global adjacency
 restricts to a self-adjoint *local* adjacency on every open `U`.  This is the
 hypothesis the colimit-preservation conjecture is built on (the colimit of
@@ -1195,25 +1182,24 @@ end SheafGraph
 
 /-! ## End of Tower 6 scaffold.
 
-There are now **no `sorry`s in any definition's data**.  In particular
-`SheafGraph.constSheaf` is an honest, `sorry`-free `TopCat.Sheaf UStarAlgCat X`:
-it is the **skyscraper sheaf** at a (classically chosen) point on a nonempty
-base, and the **terminal sheaf** on an empty base.  This required the new
-terminal object of `UStarAlgCat` (the zero algebra `termUStar`, giving
+`SheafGraph.constSheaf` is a `TopCat.Sheaf UStarAlgCat X`: the **skyscraper
+sheaf** at a (classically chosen) point on a nonempty base, and the
+**terminal sheaf** on an empty base.  This rests on the terminal object of
+`UStarAlgCat` (the zero algebra `termUStar`, giving
 `HasTerminal UStarAlgCat`, §1.1) and the value-at-top identification
 `constSheaf_obj_top : (constSheaf X A).obj ⊤ = A` on nonempty bases.  The four
 example constructions (`ofGraphon`, `ofSchedule`, `ofConstantWeightedGraph`,
-`heawoodEnvelopeSheaf`) are now `sorry`-free; each runs through `ofConstStalk`,
-which transports the self-adjoint global section across that identification, so
-they carry a `[Nonempty X]` (resp. `[Nonempty Ω]`) hypothesis.
+`heawoodEnvelopeSheaf`) each run through `ofConstStalk`, which transports the
+self-adjoint global section across that identification, so they carry a
+`[Nonempty X]` (resp. `[Nonempty Ω]`) hypothesis.
 
 The three open directions (`open_direction_graphops`,
-`open_direction_cohomology`, `open_direction_tqc`) are now genuine theorems
-(no longer `True`): graphop self-adjointness under restriction, and the
+`open_direction_cohomology`, `open_direction_tqc`) each carry a proved
+shadow: graphop self-adjointness under restriction, and the
 stalkwise ⇒ dense-open / drift-robust PST implications.
 
-Statement-level `True`-returning placeholders still awaiting substantive
-content (these are honest research scaffolding, outside this pass's mandate):
+Statement-level `True`-returning placeholders awaiting substantive
+content:
 
 * `SheafGraph.globalSection_preservesFilteredColimits` (§3.3);
 * `SheafEquitablePartition.restrict_factors_through_cell` and

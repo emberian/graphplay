@@ -112,9 +112,9 @@ example : gridMap.numEdges = 32 := by decide
 /-- The dart set has 64 elements (16 vertices × 4 directions). -/
 example : Fintype.card D = 64 := by decide
 
-/-- Genus = 1 (torus).  This relies on `numFaces = 16`, which is provable
-by `decide` once `cycleFactorsFinset` reduction kicks in but is too heavy
-for the kernel; left as `sorry`. -/
+/-- Genus = 1 (torus).  This relies on `numFaces = 16`, established by
+`native_decide` (the `cycleFactorsFinset` reduction is too heavy for the
+kernel's `decide`). -/
 theorem grid_genus_one : gridMap.genus = 1 := by
   have hF : gridMap.numFaces = 16 := by native_decide
   unfold CombinatorialMap.genus CombinatorialMap.eulerChar

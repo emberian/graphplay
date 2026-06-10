@@ -21,8 +21,9 @@ relational signatures.  The two main reasons this tower exists:
   here is what lets the spectral lifting of Tower 2 actually carry to
   the quantum side.
 
-Proofs are mostly `sorry` — the goal of this scaffold is to lay out
-the *shape* of the layer so the surrounding towers can refer to it.
+This is a scaffold: it lays out
+the *shape* of the layer so the surrounding towers can refer to it; several
+constructions are statement-level placeholders.
 -/
 
 import Mathlib.Combinatorics.SimpleGraph.Basic
@@ -202,8 +203,7 @@ theorem greatest (Q : RelStructure σ T) (label : V → T)
 /-! #### `Subrel` is a preorder, with `empty`/`complete` as bottom/top.
 
 These are the order-theoretic bookkeeping facts for the containment relation
-`Subrel`.  They are genuinely-reachable structural facts (no placeholder is
-load-bearing): `Subrel` is reflexive and transitive, `empty` is below every
+`Subrel`: `Subrel` is reflexive and transitive, `empty` is below every
 structure, and `complete` is above every structure. -/
 
 /-- `Subrel` is reflexive. -/
@@ -343,8 +343,8 @@ def countExt {σ : Signature} {V : Type v} [Fintype V] [DecidableEq V]
   --
   -- This count is morally
   --   `#{ f | f pos = v ∧ (∀ i, cells (f i) = idx i) ∧ A.rel s f }`
-  -- but to spell that out we'd need `Decidable (A.rel s f)`.  Sorry
-  -- the actual implementation — the layer this file lives in is
+  -- but to spell that out we'd need `Decidable (A.rel s f)`.  The actual
+  -- implementation is deferred — the layer this file lives in is
   -- statements, not computations.
   0  -- placeholder; replace once Tower 2 commits to a decidability mode.
 
@@ -462,7 +462,8 @@ def degreeMatrix
 The Hermitian condition follows from `(B Bᴴ)ᴴ = B Bᴴ`; looplessness
 (`L v v = 0`) requires that the diagonal of `D` exactly cancel the
 diagonal of `B Bᴴ`, which holds for the standard normalisations of the
-incidence matrix.  Both are `sorry` in this scaffold. -/
+incidence matrix.  In this scaffold both hold trivially against the `0`
+placeholders. -/
 noncomputable def laplacian
     (E : Type _) [Fintype E] [DecidableEq E]
     (edge : E → (Fin k → V)) :
@@ -496,7 +497,7 @@ hypergraph spectra.
 
 The Tower-2 `EquitablePartition` type lives in `Graphplay/Weighted.lean`
 (referenced by path only here, since this scaffold is built without
-the actual Tower-2 file).  The statement is included as a `sorry`-typed
+the actual Tower-2 file).  The statement is included as a `True`-valued
 placeholder so dependent files can refer to it. -/
 theorem equitable_partition_lifts
     (H : KUniform k V)
@@ -522,14 +523,13 @@ relational structures: a *template* is a relational structure on a
 finite alphabet, and a CSP instance asks whether an input structure
 admits a homomorphism into the template.
 
-Below we keep the two honest, stub-free CSP primitives:
+This section provides the two stub-free CSP primitives:
 
 * the (classical) homomorphism-CSP (`Solvable`),
 * the relational `Coloring` (homomorphism into the complete structure).
 
-The placeholder `0`-stub chromatic invariants and their `0 ≤ 0`-against-stub
-"sandwich" theorem have been **deleted** as contentless (see the note at the end
-of this section); the genuine invariants live in `Graphplay.LovaszTheta` and the
+Stub chromatic invariants are not defined here (see the note at the end
+of this section); the real invariants live in `Graphplay.LovaszTheta` and the
 nonlocal-game development of `Graphplay.QuantumCSP`. -/
 
 namespace CSP
@@ -554,25 +554,21 @@ more interesting "colorings". -/
 def Coloring {V : Type v} (A : RelStructure σ V) (C : Type w) : Type _ :=
   RelStructure.Hom A (RelStructure.complete σ C)
 
-/-! **Chromatic invariants + hierarchy theorem — DELETED as contentless.**
+/-! **Chromatic invariants and the hierarchy theorem are not stated here.**
 
-Four placeholder invariants (`chromaticNumber`, `fractionalChromaticNumber`,
-`lovaszTheta`, `quantumChromaticNumber`, all `0`/`0.0` stubs) and the relational
-Lovász sandwich
+Against `0`-stub invariants the relational Lovász sandwich
 
     fractionalChromaticNumber A ≤ lovaszTheta A
       ≤ quantumChromaticNumber A ≤ chromaticNumber A
 
-once lived here.  Against the `0` stubs the chain is literally `0 ≤ 0 ∧ 0 ≤ 0 ∧
-0 ≤ 0`, asserting **nothing** about the real sandwich its name claims — a
-landmine, and the stub defs had no genuine consumers.  Removed (bias toward
-deletion) rather than left as vacuous `0 ≤ 0` against the stubs.
+would be literally `0 ≤ 0 ∧ 0 ≤ 0 ∧ 0 ≤ 0`, asserting nothing about the real
+sandwich.
 
-What is kept: the honest, stub-free relational CSP content `Solvable` and
-`Coloring` above.  The genuine, stub-independent fragment of the sandwich — a
+What lives here is the stub-free relational CSP content `Solvable` and
+`Coloring` above.  The stub-independent fragment of the sandwich — a
 colouring forces the quantum game value to `1` — is
 `Graphplay.QuantumCSP.quantumColorable_imp_one_le_quantumValue`.  The real
-invariants live, with genuine bodies, in `Graphplay.LovaszTheta` (the SDP
+invariants live in `Graphplay.LovaszTheta` (the SDP
 `lovaszTheta`, `chromaticNumber`, `quantumChromaticNumber`) and the nonlocal-game
 development of `Graphplay.QuantumCSP`. -/
 

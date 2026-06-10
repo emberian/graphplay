@@ -21,7 +21,7 @@ This resolves the loopless obstruction in
 equitable partition is Hermitian but generally has *nonzero diagonal* (the
 intra-cell mass / regularity degree), so it is not directly a `WeightedGraph`.
 Subtracting its own diagonal `diagonal (symmQuotient.diag)` zeroes the diagonal
-(yielding a genuine loopless Hermitian `WeightedGraph`) and, since the diagonal
+(yielding a loopless Hermitian `WeightedGraph`) and, since the diagonal
 of a Hermitian matrix is real, only shifts the Hamiltonian by a real diagonal
 — but the quotient diagonal is constant per cell only in the regular case; the
 fully general statement is the per-scalar shift proved here, which the bundle
@@ -134,8 +134,8 @@ diagonal `diagonal M.diag` to obtain a *loopless* Hermitian matrix.  When the
 diagonal is the *constant* scalar `d` (the regular-fiber case, where every cell
 shares the same intra-cell regularity degree), the subtraction is the scalar
 shift `-(d • 1)`, so by §2 all off-diagonal CTQW moduli are unchanged — this is
-exactly what lets `BundlePSTLift` wrap the quotient as a `WeightedGraph` without
-the loopless `sorry`.
+exactly what lets `BundlePSTLift` wrap the quotient as a `WeightedGraph` with
+the `loopless` field discharged.
 -/
 
 omit [Fintype I] in
@@ -149,7 +149,7 @@ theorem isHermitian_diagonal_diag {M : Matrix I I ℂ} (hM : M.IsHermitian) :
   exact hM.apply i i
 
 /-- **Loopless symmetric quotient.**  Given a Hermitian matrix `M`, subtract its
-own diagonal to obtain a genuine loopless Hermitian `WeightedGraph` on `I`.
+own diagonal to obtain a loopless Hermitian `WeightedGraph` on `I`.
 Applied to `EquitablePartition.symmQuotient` this discharges the `loopless`
 field of the bundle quotient. -/
 noncomputable def looplessOfHermitian (M : Matrix I I ℂ) (hM : M.IsHermitian) :

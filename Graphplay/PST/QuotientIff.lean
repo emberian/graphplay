@@ -48,10 +48,10 @@ Sibling modules (assumed to compile against this file):
   Godsil-ratio numerical-witness machinery used (downstream) to reduce
   PST to an arithmetic condition on the quotient spectrum.
 
-This module is `sorry`-free: the quotient-PST iff, its strong-cospectrality
-reformulation, and the phantom-symmetry existence corollary are all fully
-proven (the latter via the explicit `BachmanTamonWitness` `P_3` example).  It
-closes the Round-3 loop on the quotient-PST iff and connects it to the
+The quotient-PST iff, its strong-cospectrality
+reformulation, and the phantom-symmetry existence corollary are all
+proven (the latter via the explicit `BachmanTamonWitness` `P_3` example),
+connecting the quotient-PST iff to the
 cospectrality and signed-bundle infrastructure.
 -/
 
@@ -421,7 +421,7 @@ theorem cellUniformPST_iff_quotientPST
 
 /-! ## 5. Strong-cospectrality reformulation.
 
-Sibling module `Graphplay.PST.Cospectrality` (agent L1) provides the predicate
+The sibling module `Graphplay.PST.Cospectrality` provides the predicate
 `IsStronglyCospectral G u v` meaning that the spectral projectors of `G.adj`
 satisfy `E_λ u = ±E_λ v` for every eigenvalue `λ` (and `u, v` have the same
 spectral support).  By Coutinho–Godsil, PST between `u` and `v` *requires*
@@ -435,7 +435,7 @@ spectrum as `P.quotient`.  Strong cospectrality of `|C_i⟩, |C_j⟩` in the hos
 is therefore equivalent to strong cospectrality of `e_i, e_j` in `P.quotient`.
 -/
 
-/-! ### Keystone spectral-projector transport machinery (ported, axiom-clean).
+/-! ### Keystone spectral-projector transport machinery.
 
 The following block builds the eigenbasis-transport keystone
 `stronglyCospectral_iff` from scratch: host spectral projector `hostProj`,
@@ -842,7 +842,7 @@ theorem stronglyCospectral_cellUniform_iff_quotient
                * (∑ k : I, if P.symmQuotient_isHermitian.eigenvalues k = lam
                   then Complex.normSq (P.symmQuotient_isHermitian.eigenvectorBasis k j)
                   else 0)))) := by
-  -- CLOSED.  The spelled-out diagonal sums are definitionally `hostDiag`/`quotDiag`;
+  -- The spelled-out diagonal sums are definitionally `hostDiag`/`quotDiag`;
   -- the keystone `stronglyCospectral_iff` discharges the iff via the
   -- polynomial-functional-calculus eigenbasis transport `Bᴴ · hostProj · B = quotProj`.
   exact P.stronglyCospectral_iff hne i j
@@ -852,12 +852,10 @@ partition `P`, the cell-uniform vectors `|C_i⟩` and `|C_j⟩` are strongly
 cospectral in `G` whenever `e_i` and `e_j` are strongly cospectral in the
 symmetric quotient `P.symmQuotient`.
 
-The previous formulation of this corollary was the vacuous `True → True`; we
-restate it with the genuine quotient-side and host-side strong-cospectrality
+Stated with the quotient-side and host-side strong-cospectrality
 predicates (the same spelled-out spectral-projector cross-entry conditions used
-in `stronglyCospectral_cellUniform_iff_quotient`), and discharge it via that
-iff.  That iff is itself proven (`exact P.stronglyCospectral_iff …`) and
-axiom-clean, so this corollary carries no `sorry`. -/
+in `stronglyCospectral_cellUniform_iff_quotient`), and discharged via that
+iff. -/
 theorem cellUniform_stronglyCospectral_of_quotient
     (P : EquitablePartition G I) (hne : ∀ k, P.cellCard k ≠ 0) (i j : I)
     (hquot :
@@ -893,7 +891,7 @@ theorem cellUniform_stronglyCospectral_of_quotient
 
 /-! ## 5b. An explicit phantom-symmetric quotient-PST witness.
 
-We discharge the existence claim of §6 with a *concrete, axiom-clean* witness:
+We discharge the existence claim of §6 with a concrete witness:
 the path `P_3` on `Fin 3` (adjacency `!![0,1,0; 1,0,1; 0,1,0]`) with the equitable
 partition into the endpoint pair `{0,2}` (cell `0`) and the singleton centre
 `{1}` (cell `1`).
@@ -909,8 +907,8 @@ partition into the endpoint pair `{0,2}` (cell `0`) and the singleton centre
   row sum (weighted degree).  Hence the pair of cells exhibits PST with **no
   witnessing automorphism** — the qualitative Bachman–Tamon phenomenon.
 
-This is a smaller witness than Bachman–Tamon's 6-vertex Fig. 1 example, but it
-proves the same existential statement honestly and with no `sorry`.  (Here the
+This is a smaller witness than Bachman–Tamon's 6-vertex Fig. 1 example, and it
+proves the same existential statement.  (Here the
 two cells even have different sizes, which already forbids any vertex bijection
 between them; the proof nonetheless certifies the stated adjacency-automorphism
 clause directly.) -/
@@ -1165,9 +1163,9 @@ two representatives of the cells.  This is impossible for the classical
 action of an involutive automorphism).  We package this as a corollary,
 deliberately phrased so that *no* automorphism hypothesis is required.
 
-It is **proven** (no `sorry`) by the explicit `BachmanTamonWitness` above. -/
+It is proven by the explicit `BachmanTamonWitness` above. -/
 
-/-- **Phantom-symmetry corollary (PROVEN).**  There exist a weighted graph
+/-- **Phantom-symmetry corollary.**  There exist a weighted graph
 `G`, an equitable partition `P : EquitablePartition G I`, indices `i, j : I`
 and a time `τ : ℝ` such that:
 
@@ -1183,10 +1181,10 @@ endpoint/centre partition `{0,2} | {1}`, whose symmetric quotient is `√2 · X`
 and which therefore has cell-uniform PST at `τ = π/(2√2)` while no
 adjacency-automorphism maps an endpoint to the centre (the degrees differ).
 
-Non-vacuity: the cells `0 ≠ 1` are nonempty and the no-automorphism clause is a
-genuine universally-quantified statement (the identity permutation satisfies it
-because it fixes the endpoint cell — it does *not* trivially refute the claim),
-proven here via a real weighted-degree argument rather than vacuously. -/
+The cells `0 ≠ 1` are nonempty, and the no-automorphism clause is proven
+via a weighted-degree argument (the identity permutation satisfies it
+because it fixes the endpoint cell — it does *not* trivially refute the
+claim). -/
 theorem phantom_symmetry_PST_exists :
     ∃ (V : Type) (_ : Fintype V) (_ : DecidableEq V)
       (G : WeightedGraph V)
@@ -1241,9 +1239,7 @@ theorem cellUniformPST_iff_quotientPST_signed
     let P' := G.signedBy_preserves_equitable P s h
     IsCellUniformPST (G.signedBy s) P' i j τ ↔
       -- PST on the *signed quotient*: the Born-rule modulus condition on the
-      -- symmetric quotient of the signed equitable partition.  (The previous
-      -- formulation carried the vacuous placeholder RHS `‖(1 : ℂ)‖ = 1`, which
-      -- is trivially true and said nothing about the signed quotient.)
+      -- symmetric quotient of the signed equitable partition.
       ‖(NormedSpace.exp (-(Complex.I * (τ : ℂ)) • P'.symmQuotient)) j i‖ = 1 := by
   intro P'
   exact P'.cellUniformPST_iff_quotientPST hne i j τ
@@ -1268,7 +1264,7 @@ theorem phantom_symmetry_chiral_PST_exists :
         (∀ (φ : V ≃ V),
           (∀ x y, (G.signedBy s).adj (φ x) (φ y) = (G.signedBy s).adj x y) →
           ∀ x, P.cells x = i → P.cells (φ x) ≠ j) := by
-  -- CLOSED (no `sorry`): take the now-proven unsigned `phantom_symmetry_PST_exists`
+  -- Take the unsigned `phantom_symmetry_PST_exists`
   -- witness and apply the *trivial* signing (`G.signedBy 1 = G`, which is
   -- cross-constant via `τ ≡ 1`).  Cell map, cardinalities, adjacency and
   -- evolution are all unchanged, so both conjuncts transfer verbatim.
@@ -1298,7 +1294,7 @@ theorem phantom_symmetry_chiral_PST_exists :
 
 /-- **Index lemma.**  Packaging the iff together with the no-leakage
 condition: when `P` is equitable, `IsCellUniformPST` and quotient PST coincide
-*and* the host evolution genuinely stays inside the cell-uniform subspace.
+*and* the host evolution stays inside the cell-uniform subspace.
 This is the form most useful for downstream consumers (chiral bundle PST,
 hypergraph PST, graphon PST, etc.). -/
 theorem cellUniformPST_iff_quotientPST_with_noLeakage

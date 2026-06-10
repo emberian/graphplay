@@ -1,5 +1,5 @@
 /-
-# Graphplay/Dowsing/ChiralGraphon.lean — Hole D3: chiral graphons
+# Graphplay/Dowsing/ChiralGraphon.lean — chiral graphons
 
 This file fills the gap between the Tower-3 chiral / magnetic signing of a
 finite weighted graph (`Graphplay.Chiral.lean`, the Levine–Mesapam–Mustico–
@@ -34,13 +34,12 @@ we package:
 7.  a **U(1)-gauge interpretation**: cross-constant signings are *flat
     U(1) connections* on the cell-partition graph, related to the lattice-
     gauge integration agent I7;
-8.  one genuine **open conjecture** (`CutDistanceClassifiesChirality`,
+8.  one **open conjecture** (`CutDistanceClassifiesChirality`,
     recorded as a `Prop`-valued definition, not a theorem) together with a
-    machine-checked **holonomy refutation** of its unconditional form, and
-    two honest-state companions whose names match what is proven.
+    **holonomy refutation** of its unconditional form, and two companion
+    theorems.
 
-Every theorem in this file is fully proved; the one genuinely open
-classification is recorded as a definition (a named `Prop`), never
+The open classification is recorded as a definition (a named `Prop`), never
 asserted.
 
 References (with locations under `references/`):
@@ -96,7 +95,7 @@ noncomputable def realPart (W : Graphon Ω μ) : Ω → Ω → ℝ :=
 
 /-- The **imaginary part** of a graphon kernel.  Hermitianness implies
 `Im (W y x) = -Im (W x y)`, so the imaginary part is **antisymmetric**:
-it is the genuinely chiral component of the kernel. -/
+it is the chiral component of the kernel. -/
 noncomputable def imagPart (W : Graphon Ω μ) : Ω → Ω → ℝ :=
   fun x y => (W.kernel x y).im
 
@@ -308,13 +307,12 @@ def CellCrossConstant (s : GraphonSigning Ω μ)
 /-- A graphon signing is **everywhere cell-cross-constant** w.r.t. `cells`
 if `σ(x, y) = τ (cells x) (cells y)` for **all** `x, y` (not merely a.e.).
 
-AUDIT NOTE.  The everywhere form is what is genuinely needed to lift an
-*equitable partition*: `GraphonEquitablePartition.uniform` is an
-**everywhere**-quantified field (`∀ x y …`), so the signed `uniform`
-property at a *fixed* pair `(x, y)` cannot be deduced from the a.e.
-`CellCrossConstant` (a null set of "bad" `x` where `σ(x, ·) ≠ τ(i, ·)`
-would break it).  The everywhere predicate is non-vacuous: it holds for
-`GraphonSigning.trivial` and for every `GraphonSigning.ofFinite` of a
+The everywhere form is what lifting an *equitable partition* needs:
+`GraphonEquitablePartition.uniform` is an **everywhere**-quantified field
+(`∀ x y …`), so the signed `uniform` property at a *fixed* pair `(x, y)`
+cannot be deduced from the a.e. `CellCrossConstant` (a null set of "bad" `x`
+where `σ(x, ·) ≠ τ(i, ·)` would break it).  The everywhere predicate holds
+for `GraphonSigning.trivial` and for every `GraphonSigning.ofFinite` of a
 `ChiralSigning.CrossConstant` finite signing (counting measure, where
 "a.e." = "everywhere").  It implies `CellCrossConstant`. -/
 def EverywhereCellCrossConstant (s : GraphonSigning Ω μ)
@@ -340,18 +338,16 @@ theorem quotientPhase_spec (s : GraphonSigning Ω μ)
       s.σ p.1 p.2 = s.quotientPhase h (cells p.1) (cells p.2) :=
   Classical.choose_spec h
 
-/-- **Cell-pair representative extraction.**  AUDIT FIX: the original
-`quotientPhase_herm` / `quotientPhase_unimod` were stated for a *bare*
-`cells : Ω → I` with no measure hypothesis, where (as their own comments
-admitted) the conclusion is **false** (e.g. `μ = 0` leaves `τ`
-unconstrained on a `Classical.choose`).  The TRUE form requires the two
-cells to have positive measure.
+/-- **Cell-pair representative extraction.**  The positive-measure
+hypotheses are necessary: for a bare `cells : Ω → I` with no measure
+hypothesis the cell-level conclusions below are false (e.g. `μ = 0` leaves
+`τ` unconstrained on a `Classical.choose`).
 
 Given that `μ(C_i) > 0` and `μ(C_j) > 0` and `μ` is s-finite, every property
 `Q` that holds `μ ⊗ μ`-a.e. and that — combined with the cross-constant
-identity — forces a cell-level fact, can be evaluated at a genuine
-representative point `(x, z) ∈ C_i × C_j`.  This is the concrete
-positive-measure ⇒ frequently ⇒ exists extraction. -/
+identity — forces a cell-level fact, can be evaluated at a representative
+point `(x, z) ∈ C_i × C_j`.  This is the positive-measure ⇒ frequently ⇒
+exists extraction. -/
 theorem CellCrossConstant.exists_rep [SFinite μ] (s : GraphonSigning Ω μ)
     {cells : Ω → I} (h : s.CellCrossConstant cells) {i j : I}
     (hi : 0 < μ (cells ⁻¹' {i})) (hj : 0 < μ (cells ⁻¹' {j}))
@@ -360,7 +356,7 @@ theorem CellCrossConstant.exists_rep [SFinite μ] (s : GraphonSigning Ω μ)
       s.σ p.1 p.2 = s.quotientPhase h (cells p.1) (cells p.2) ∧ Q p := by
   -- the rectangle `C_i × C_j` has positive product measure, so the predicate
   -- "lands in the rectangle" happens frequently; AND-ing with the two a.e.
-  -- facts (cross-constant spec, and `Q`) yields a genuine witness.
+  -- facts (cross-constant spec, and `Q`) yields a witness.
   have hrect : (μ.prod μ) ((cells ⁻¹' {i}) ×ˢ (cells ⁻¹' {j})) ≠ 0 := by
     rw [Measure.prod_prod]
     exact (ENNReal.mul_pos hi.ne' hj.ne').ne'
@@ -370,9 +366,9 @@ theorem CellCrossConstant.exists_rep [SFinite μ] (s : GraphonSigning Ω μ)
     ((hfreq.and_eventually (s.quotientPhase_spec h)).and_eventually hQ).exists
   exact ⟨p, hmem.1, hmem.2, hspec, hQp⟩
 
-/-- The quotient phase is Hermitian: `τ j i = star (τ i j)`.  AUDIT FIX:
-now stated with the necessary positive-measure-cell hypotheses (the bare
-form was false).  This is the cell-level shadow of `s.herm`. -/
+/-- The quotient phase is Hermitian: `τ j i = star (τ i j)` — the cell-level
+shadow of `s.herm`.  The positive-measure-cell hypotheses are necessary (the
+bare form is false; see `CellCrossConstant.exists_rep`). -/
 theorem quotientPhase_herm [SFinite μ] (s : GraphonSigning Ω μ)
     {cells : Ω → I} (h : s.CellCrossConstant cells) (i j : I)
     (hi : 0 < μ (cells ⁻¹' {i})) (hj : 0 < μ (cells ⁻¹' {j})) :
@@ -398,9 +394,9 @@ theorem quotientPhase_herm [SFinite μ] (s : GraphonSigning Ω μ)
   rw [hp1, hp2] at hQ
   rw [← hQ, s.herm p.1 p.2, hspec]
 
-/-- The quotient phase is unimodular: `|τ i j| = 1`.  AUDIT FIX: now stated
-with the necessary positive-measure-cell hypotheses (the bare form was
-false).  This is the cell-level shadow of `s.unimod`. -/
+/-- The quotient phase is unimodular: `|τ i j| = 1` — the cell-level shadow
+of `s.unimod`.  The positive-measure-cell hypotheses are necessary (the bare
+form is false; see `CellCrossConstant.exists_rep`). -/
 theorem quotientPhase_unimod [SFinite μ] (s : GraphonSigning Ω μ)
     {cells : Ω → I} (h : s.CellCrossConstant cells) (i j : I)
     (hi : 0 < μ (cells ⁻¹' {i})) (hj : 0 < μ (cells ⁻¹' {j})) :
@@ -422,8 +418,8 @@ variable {I : Type v} [Fintype I] [DecidableEq I]
 For `x ∈ C_i` and an *everywhere* cross-constant signing `σ = τ ∘ cells`,
 $$ \int_z [\mathrm{cells}\,z = j]\, \sigma(x,z)\,W(x,z)\,d\mu
    = \tau(i,j)\, \int_z [\mathrm{cells}\,z = j]\, W(x,z)\,d\mu. $$
-On the cell `C_j` the phase `σ(x,z) = τ(cells x)(cells z) = τ(i,j)` is a
-genuine constant, so it pulls out of the integral *exactly* (no a.e.). -/
+On the cell `C_j` the phase `σ(x,z) = τ(cells x)(cells z) = τ(i,j)` is
+constant, so it pulls out of the integral *exactly* (no a.e.). -/
 theorem signed_flux_factor {W : Graphon Ω μ} {cells : Ω → I}
     (s : GraphonSigning Ω μ) {τ : I → I → ℂ}
     (hτ : ∀ x y : Ω, s.σ x y = τ (cells x) (cells y))
@@ -437,9 +433,9 @@ theorem signed_flux_factor {W : Graphon Ω μ} {cells : Ω → I}
   · simp only [hz, if_false, mul_zero]
 
 /-- **Chiral signing preserves a graphon equitable partition.**
-AUDIT FIX: stated for an **everywhere** cross-constant signing
+Stated for an **everywhere** cross-constant signing
 (`EverywhereCellCrossConstant`), which is what the everywhere-quantified
-`GraphonEquitablePartition.uniform` field genuinely needs.  The lifted
+`GraphonEquitablePartition.uniform` field needs.  The lifted
 partition keeps the same `cells` (hence the same `measurable_cells`,
 `cell_pos`, `cell_finite`); only `uniform` changes, and there the
 cross-constant phase `τ(i,j)` factors out of both cell-`j` fluxes by
@@ -555,13 +551,13 @@ theorem quotient_signedBy {W : Graphon Ω μ}
     (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (s : GraphonSigning Ω μ)
     {τ : I → I → ℂ} (hτ : ∀ x y : Ω, s.σ x y = τ (P.cells x) (P.cells y))
     (i j : I) (x : Ω) (hx : P.cells x = i) :
-    -- AUDIT FIX: stated with the *everywhere* cross-constant phase `τ`
-    -- (witness of `EverywhereCellCrossConstant`), since the per-vertex flux at a
-    -- *fixed* representative `x` is only meaningful when the phase identity holds
-    -- at that very `x` (the a.e. `CellCrossConstant` witness can fail on the null
-    -- set containing `x`).  The per-vertex cell-`j` flux of the **signed** kernel
-    -- out of `x ∈ C_i` is `τ(i, j)` times the unsigned flux — the integral-level
-    -- shadow of `P'.quotient i j = τ(i, j) · P.quotient i j`.
+    -- Stated with the *everywhere* cross-constant phase `τ` (witness of
+    -- `EverywhereCellCrossConstant`), since the per-vertex flux at a *fixed*
+    -- representative `x` is only meaningful when the phase identity holds at
+    -- that very `x` (the a.e. `CellCrossConstant` witness can fail on the null
+    -- set containing `x`).  The per-vertex cell-`j` flux of the **signed**
+    -- kernel out of `x ∈ C_i` is `τ(i, j)` times the unsigned flux — the
+    -- integral-level shadow of `P'.quotient i j = τ(i, j) · P.quotient i j`.
     (∫ z, (if P.cells z = j then (W.signedBy s).kernel x z else 0) ∂μ)
       = τ i j * ∫ z, (if P.cells z = j then W.kernel x z else 0) ∂μ :=
   Graphon.signed_flux_factor s hτ i j x hx
@@ -584,14 +580,14 @@ namespace Graphon
 variable {Ω : Type u} [MeasurableSpace Ω] {μ : Measure Ω}
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- **Headline (PROVED): chiral cell-uniform mixing on a graphon ↔ finite chiral
+/-- **Headline: chiral cell-uniform mixing on a graphon ↔ finite chiral
 uniform mixing on the chirally-signed quotient.**
 
 Let `W : Graphon Ω μ`, `P : GraphonEquitablePartition W`,
 `s : GraphonSigning Ω μ` *everywhere* cross-constant on `P.cells` with phase
-witness `τ` (`hτ : ∀ x y, s.σ x y = τ (cells x) (cells y)`), and `t : ℝ`.  On the
-**explicit** lifted partition `P' := signedBy_liftPartition P s hτ` (the genuine
-value, not an opaque `Nonempty.some`), for every `i : I`:
+witness `τ` (`hτ : ∀ x y, s.σ x y = τ (cells x) (cells y)`), and `t : ℝ`.  On
+the **explicit** lifted partition `P' := signedBy_liftPartition P s hτ`, for
+every `i : I`:
 
 `IsCellUniformGraphonMixing (W.signedBy s) P' i t`
    ↔
@@ -603,13 +599,13 @@ This is the graphon-limit version of Theorem 1 of Levine–Mesapam–Mustico–
 Tamon–Tucker–Zhan (2605.04414): a chiral signing yields graphon uniform mixing
 iff the corresponding *finite* chiral signing of the quotient does.
 
-**Now fully proved.**  The graphon side reduces (via the proved
+Proof: the graphon side reduces (via
 `cellUniformGraphonMixing_iff_quotientMixing`) to uniform mixing of
 `P'.symmQuotient`, and `signedBy_liftPartition_symmQuotient` identifies
 `P'.symmQuotient = τ ⊙ P.symmQuotient` entrywise — so the two finite mixing
-conditions are literally the same.  (The earlier version used the opaque
-`(signedBy_preserves_equitable …).some`, through which `P'.symmQuotient` was
-unprovable; switching to the explicit `signedBy_liftPartition` unblocks it.) -/
+conditions are literally the same.  The explicit `signedBy_liftPartition` is
+essential: through an opaque `(signedBy_preserves_equitable …).some` the
+`symmQuotient` identification would be unprovable. -/
 theorem chiralGraphonMixing_iff_quotientChiralMixing [IsFiniteMeasure μ]
     {W : Graphon Ω μ} (P : @GraphonEquitablePartition Ω _ μ I _ _ W)
     (s : GraphonSigning Ω μ) {τ : I → I → ℂ}
@@ -637,20 +633,18 @@ theorem matrixExp_continuous : Continuous (NormedSpace.exp : Matrix I I ℂ → 
 
 /-- **Existence of a *time-optimal* chiral phasing on the quotient.**
 
-LANDMINE FIX.  The former statement claimed *unconditional* existence of a
-Hermitian unimodular phasing `τ` and time `t` at which `τ ⊙ Q̃` exhibits uniform
-mixing from cell `i`.  This is **FALSE**: take the **zero graphon** `W ≡ 0` with
-any partition into `|I| ≥ 2` cells.  Then `P.symmQuotient = 0`, so for *every*
-phasing `τ` the matrix `τ ⊙ Q̃ = 0`, hence `exp(-(it)·0) = 1` and
-`‖1_{j,i}‖² ∈ {0, 1}`, never `1/|I| = 1/2 < 1`.  So **no** phasing achieves
-uniform mixing — there is nothing to optimise, and the unconditional existence is
-not a theorem.  (Uniform mixing is a genuinely non-trivial dynamical property; it
-is not achievable on every quotient.)
+The feasibility hypothesis `hfeas` is necessary: unconditional existence of a
+Hermitian unimodular phasing `τ` and time `t` at which `τ ⊙ Q̃` exhibits
+uniform mixing from cell `i` is false.  Take the **zero graphon** `W ≡ 0`
+with any partition into `|I| ≥ 2` cells: then `P.symmQuotient = 0`, so for
+*every* phasing `τ` the matrix `τ ⊙ Q̃ = 0`, hence `exp(-(it)·0) = 1` and
+`‖1_{j,i}‖² ∈ {0, 1}`, never `1/|I| = 1/2 < 1` — no phasing achieves uniform
+mixing.
 
-The genuinely-true content (and the actual Levine–…–Tamon *optimisation* claim)
-is the **attainment of the optimum *conditional on feasibility***: *if* some
-Hermitian unimodular phasing achieves uniform mixing at some time (`hfeas`),
-*then* the infimum first-mixing time is **attained** by an optimal phasing.
+The content (and the actual Levine–…–Tamon *optimisation* claim) is the
+**attainment of the optimum conditional on feasibility**: *if* some Hermitian
+unimodular phasing achieves uniform mixing at some time (`hfeas`), *then* the
+infimum first-mixing time is **attained** by an optimal phasing.
 
 Proof: compactness.  Fix a feasible witness time `t₀`.  The slab
 `F = {(τ, t) | τ Hermitian, τ unimodular, 0 ≤ t ≤ t₀, mixing at t}` is closed —
@@ -661,8 +655,8 @@ Banach algebra `Matrix I I ℂ` and matrix entries / norms are continuous — an
 coordinate attains its minimum on `F`, and minimality over *all* feasible
 pairs follows because any feasible time `≤ t₀` lies in the slab while any
 feasible time `> t₀` already exceeds the attained minimum.
-Non-vacuous: `hfeas` is satisfiable (e.g. `|I| = 1`, or `Q̃` a `K₂`-block with a
-Hadamard time), and the conclusion adds the genuine minimality. -/
+`hfeas` is satisfiable (e.g. `|I| = 1`, or `Q̃` a `K₂`-block with a Hadamard
+time). -/
 theorem exists_optimal_chiral_phasing
     (W : Graphon Ω μ) (P : @GraphonEquitablePartition Ω _ μ I _ _ W) (i : I)
     (hfeas : ∃ τ : I → I → ℂ,
@@ -882,7 +876,7 @@ appropriate time.
 The precise speedup constant is extracted from the analytic mixing time
 of the constant chiral kernel. -/
 theorem constantChiral_admits_chiralUniformMixing :
-    -- The Levine–…–Tamon speedup constant `π / (3√3)` is a genuine positive
+    -- The Levine–…–Tamon speedup constant `π / (3√3)` is a positive
     -- mixing time.  (A full statement would additionally assert cell-uniform
     -- graphon mixing of `constantChiral` at this time, against the trivial
     -- single-cell partition; we record the positivity of the speedup constant,
@@ -892,7 +886,7 @@ theorem constantChiral_admits_chiralUniformMixing :
   apply div_pos Real.pi_pos
   positivity
 
-/-- **The Levine–…–Tamon speedup constant `π/(3√3)` is a genuine uniform-mixing
+/-- **The Levine–…–Tamon speedup constant `π/(3√3)` is a uniform-mixing
 instant of the finite chiral `K_4`.**
 
 This is the quantitative anchor of `constantChiral_admits_chiralUniformMixing`:
@@ -1070,19 +1064,16 @@ If a cell-cross-constant signing `s` is flat, then there exists a phase
 function `φ : I → ℂ` with `|φ i| = 1` such that
 `s.quotientPhase h i j = star (φ i) · φ j` for all `i, j : I`.
 
-AUDIT FIX.  The bare statement (no measure hypotheses) is **false** in the
-`→` direction: without `SFinite μ` and positive-measure cells, the quotient
-phase is an *unconstrained* `Classical.choose` (cf. `quotientPhase_herm` /
-`quotientPhase_unimod`, which were themselves corrected to require those
-hypotheses), so flatness does not force unimodularity of `τ` and the
-coboundary witness `φ` cannot have `‖φ i‖ = 1`.  The TRUE form supplies the
-positive-measure-cell hypothesis `hpos`, which unlocks `quotientPhase_herm`
-and `quotientPhase_unimod`; the argument is then the finite-dimensional
-Hodge/holonomy transport: fix a base cell `b`, set `φ j := τ b j`, and
-read off the coboundary identity from flatness of the triangle
-`[i, b, j, i]`.  Both directions are proven; non-vacuous on
-`GraphonSigning.trivial` (any positive-measure partition), whose quotient
-phase is `≡ 1 = star 1 · 1`. -/
+The measure hypotheses are necessary in the `→` direction: without
+`SFinite μ` and positive-measure cells, the quotient phase is an
+*unconstrained* `Classical.choose` (cf. `quotientPhase_herm` /
+`quotientPhase_unimod`), so flatness does not force unimodularity of `τ` and
+the coboundary witness `φ` cannot have `‖φ i‖ = 1`.  The hypothesis `hpos`
+unlocks `quotientPhase_herm` and `quotientPhase_unimod`; the argument is then
+the finite-dimensional Hodge/holonomy transport: fix a base cell `b`, set
+`φ j := τ b j`, and read off the coboundary identity from flatness of the
+triangle `[i, b, j, i]`.  On `GraphonSigning.trivial` (any positive-measure
+partition) the quotient phase is `≡ 1 = star 1 · 1`. -/
 theorem flat_iff_trivial_modulo_cell_phases [SFinite μ]
     (s : GraphonSigning Ω μ) {cells : Ω → I}
     (h : s.CellCrossConstant cells)
@@ -1094,7 +1085,7 @@ theorem flat_iff_trivial_modulo_cell_phases [SFinite μ]
   · -- (→) flatness builds the cell-phase coboundary by base-point transport.
     intro hflat
     rcases isEmpty_or_nonempty I with hI | hI
-    · -- vacuous on an empty cell-index: any `φ` works.
+    · -- empty cell-index: any `φ` works.
       exact ⟨fun i => (hI.false i).elim, fun i => (hI.false i).elim,
         fun i => (hI.false i).elim⟩
     · -- pick a base cell `b`; set `φ j := τ b j`.
@@ -1174,15 +1165,14 @@ noncomputable def chiralContent (s : GraphonSigning Ω μ)
 
 end U1Gauge
 
-/-! ## 8. Open direction + honest-state companions
+/-! ## 8. Open direction + companions
 
-We close the file with one genuine open **conjecture**
+We close the file with one open **conjecture**
 (`CutDistanceClassifiesChirality`, a `Prop`-valued definition — never
-asserted), a machine-checked **holonomy refutation** of its unconditional
-form (`HolonomyObstruction.unconditional_gauge_equivalence_false`: dropping
-the cut-distance hypothesis makes the classification *false*, witnessed on
-an explicit three-cell example), and two honestly-stated companions whose
-*names match exactly what is proven*:
+asserted), a **holonomy refutation** of its unconditional form
+(`HolonomyObstruction.unconditional_gauge_equivalence_false`: dropping the
+cut-distance hypothesis makes the classification *false*, witnessed on an
+explicit three-cell example), and two companions:
 `iteratedHammingChiral_kernel_not_real` (a complex-entry obstruction, not a
 mixing-time speedup) and `exists_nondegenerate_cdf` (a non-degenerate-CDF
 existential sentinel, not the Benjamini–Schramm spectral-limit content).

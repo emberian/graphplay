@@ -33,11 +33,10 @@ dynamics.
 
 This file is a **concrete statement layer**:
 
-* every `def`/`structure`/`instance` is concrete and sorry-free — Kraus maps
-  and POVMs are honest `Matrix` lists with their defining algebraic
-  constraints;
+* Kraus maps and POVMs are concrete `Matrix` lists with their defining
+  algebraic constraints;
 * the goal-reachability predicate is spelled out concretely;
-* PCP solvability is a **genuine, concrete `Σ₁` predicate** (`PCPInstance`,
+* PCP solvability is a concrete `Σ₁` predicate (`PCPInstance`,
   tile lists over the binary alphabet, surjectively enumerated by `pcpEnum`),
   and the headline Barry–Barry–Aaronson reduction is carried as a
   def-conjecture (`BarryBarryAaronsonReduction`) anchored to that predicate;
@@ -185,7 +184,7 @@ structure QOMDP (d : Type u) [Fintype d] [DecidableEq d]
   /-- The goal effect is positive semidefinite. -/
   goal_posSemidef : goal.PosSemidef
   /-- The goal effect is a projector (`E_g^2 = E_g`), so `tr(E_g ρ) ∈ [0,1]`
-  is a genuine "fraction of `ρ` in the goal subspace". -/
+  is the fraction of `ρ` in the goal subspace. -/
   goal_idem : goal * goal = goal
 
 namespace QOMDP
@@ -252,8 +251,7 @@ Cf. Barry–Barry–Aaronson §1: "for classical MDPs this problem is decidable"
 We phrase decidability as the **finite-horizon collapse** that powers the
 decision procedure: for a classical QOMDP, if the goal is reachable at all then
 it is reachable by a policy of bounded length `N` (no longer than the number of
-diagonal "belief supports"), so reachability is decided by a finite search.
-This is a genuine `Prop` capturing the decidable content. -/
+diagonal "belief supports"), so reachability is decided by a finite search. -/
 theorem classical_reachable_finite_horizon
     {A : Type u} [Fintype A] {O : Type u} [Fintype O]
     (M : QOMDP d A O) (_hM : M.IsClassical) :
@@ -268,7 +266,7 @@ theorem classical_reachable_finite_horizon
 
 /-! ### 5. The headline theorem: QOMDP goal-state reachability is undecidable
 
-We anchor the statement to a **genuine, concrete PCP-solvability predicate**.
+We anchor the statement to a concrete PCP-solvability predicate.
 A Post correspondence instance is a finite list of tile pairs (top word,
 bottom word) over the binary alphabet; it is *solvable* when some nonempty
 sequence of tile indices makes the top and bottom concatenations agree.  This
@@ -281,7 +279,7 @@ of instances.  Crucially, `pcpHasSolution` is **not** a free field of the
 structure: a free field would reduce the existence of a faithful family to a
 triviality (take `pcpHasSolution n := (enc n).Reachable` and `faithful` is
 `Iff.rfl`).  It is pinned to the concrete PCP predicate below, so inhabiting
-`ReductionFamily` genuinely ties quantum reachability to PCP. -/
+`ReductionFamily` ties quantum reachability to PCP. -/
 
 /-- The fixed dimension used by the reduction family at index `n`.  Barry–
 Barry–Aaronson encode PCP instances into QOMDPs whose Hilbert-space dimension
@@ -321,9 +319,9 @@ def pcpEnum (n : ℕ) : PCPInstance :=
 theorem pcpEnum_surjective : Function.Surjective pcpEnum :=
   fun P => ⟨Encodable.encode P, pcpEnum_encode P⟩
 
-/-- The **genuine PCP-solvability predicate** on indices: the `n`-th instance
-of the enumeration is solvable.  This concrete predicate — not a free
-placeholder — is what the Barry–Barry–Aaronson reduction must track. -/
+/-- The PCP-solvability predicate on indices: the `n`-th instance of the
+enumeration is solvable.  This is the predicate the Barry–Barry–Aaronson
+reduction must track. -/
 def pcpHasSolution (n : ℕ) : Prop := PCPInstance.Solvable (pcpEnum n)
 
 /-- `pcpHasSolution` is nontrivial: the single-tile instance `([1], [1])` is
@@ -348,7 +346,7 @@ theorem pcpHasSolution_nontrivial :
 `Fin (reductionDim n)` over actions `ReductionAction n` whose goal-state
 reachability holds **iff** the `n`-th PCP instance of the fixed enumeration
 `pcpEnum` is solvable.  Because `pcpHasSolution` is the concrete predicate
-above (not a field of this structure), any inhabitant is a genuine many-one
+above (not a field of this structure), any inhabitant is a many-one
 reduction from PCP solvability to quantum goal-state reachability. -/
 structure ReductionFamily where
   /-- The encoded QOMDP at index `n`. -/
@@ -403,10 +401,10 @@ a quotient.  Two candidate notions of symmetry for a cell labelling
   Kraus operator, the goal, and the initial state commute with the
   permutation action of every cell-preserving permutation of `d`.  The
   identity is equivariant for *every* partition, the notion is satisfiable
-  with genuinely nontrivial cells (`swapSymmetricQOMDP_symmetry`), every
+  with nontrivial cells (`swapSymmetricQOMDP_symmetry`), every
   policy's run-state stays equivariant (`equivariant_runState`), and every
   goal-success probability descends to an `|I|`-indexed cell sum
-  (`equivariant_goalProb_descent`).  This is the genuine quotientable
+  (`equivariant_goalProb_descent`).  This is the quotientable
   symmetry of QOMDP dynamics. -/
 
 /-- A **cell symmetry** of a matrix `M` with respect to a cell labelling
@@ -439,7 +437,7 @@ structure EquitableSymmetry
 
 /-! ### Cell-constancy is preserved by the controlled dynamics
 
-The genuine, non-vacuous content of the equitable reduction is that the entire
+The content of the equitable reduction is that the entire
 controlled dynamics stays inside the **cell-constant subalgebra** of
 `Matrix d d ℂ`: products, sums, and conjugate transposes of cell-constant
 matrices are cell-constant, so the Kraus channel action preserves cell-constancy,
@@ -560,7 +558,7 @@ of each cell `i`, the trace collapses to a finite double sum over the cell index
 `I`, each term weighted by the product of the two cell cardinalities and carrying
 only the quotient entries `A (rep i) (rep j)`, `B (rep j) (rep i)`.
 
-This is genuinely non-vacuous: representatives are used *only on occupied cells*
+Representatives are used *only on occupied cells*
 (empty cells are annihilated by their zero cardinality factor), and the formula
 exhibits the trace as living on the `|I| × |I|` quotient — exactly the descent
 that makes the cell-uniform reachability computation an `|I|`-state object. -/
@@ -680,13 +678,13 @@ theorem equitable_goalProb_descent
 
 end QOMDP
 
-/-! ### Equivariance: the genuine quotientable symmetry
+/-! ### Equivariance: the quotientable symmetry
 
 A matrix is *equivariant* for a cell labelling when it commutes with the
 permutation action of every cell-preserving permutation of the state index —
 entrywise, `M (σ v) (σ w) = M v w`.  Unlike cell-constancy, the identity is
 equivariant for every partition, so the CPTP constraint imposes no
-obstruction, and the notion is satisfiable with genuinely nontrivial cells
+obstruction, and the notion is satisfiable with nontrivial cells
 (`swapSymmetricQOMDP_symmetry` below: a 2-state system whose single cell has
 two elements). -/
 
@@ -810,7 +808,7 @@ end Equivariant
 
 /-- An **equivariant symmetry** of a QOMDP: a cell labelling such that every
 Kraus operator of every action, the goal effect, and the initial state are
-invariant under all cell-preserving permutations.  This is the genuine
+invariant under all cell-preserving permutations.  This is the
 quotientable symmetry of QOMDP dynamics: it is compatible with the CPTP
 constraint for *every* partition (the identity is equivariant), and it is
 satisfied with nontrivial cells (`swapSymmetricQOMDP_symmetry`). -/
@@ -854,9 +852,9 @@ representatives of the occupied cells.  Both factors of the trace are
 equivariant, so their product has cell-constant diagonal and
 `Equivariant.trace_descent` applies.
 
-Non-vacuity: unlike the cell-constant version, the hypothesis here is
+Unlike the cell-constant version, the hypothesis here is
 satisfiable with nontrivial cells (`swapSymmetricQOMDP_symmetry`), and the
-right-hand side genuinely lives on the cell index `I`. -/
+right-hand side lives on the cell index `I`. -/
 theorem equivariant_goalProb_descent
     (M : QOMDP d A O) {I : Type u} [Fintype I] [DecidableEq I]
     (S : EquivariantSymmetry M I) (π : Policy A)
@@ -908,7 +906,7 @@ noncomputable def swapSymmetricQOMDP_symmetry :
   goal_equivariant := Equivariant.one
   init_equivariant := Equivariant.diagonal_const _
 
-/-- **Non-vacuity of `EquivariantSymmetry`**: `swapSymmetricQOMDP_symmetry`
+/-- `EquivariantSymmetry` admits nontrivial cells: `swapSymmetricQOMDP_symmetry`
 puts two *distinct* basis states in one cell — the configuration that
 `EquitableSymmetry.no_nontrivial_cell` proves impossible for the
 cell-constant notion (the action type `Fin 1` is nonempty). -/
@@ -955,9 +953,8 @@ def EquivariantQuotientConjecture : Prop :=
     CellConstant S.cells M.init.mat →
     ∃ Mq : QOMDP I A O, ∀ π : QOMDP.Policy A, Mq.goalProb π = M.goalProb π
 
-/-- The per-policy quotient conjecture implies the originally intended
-reachability transport: the quotient machine is goal-reachable iff the
-original is. -/
+/-- The per-policy quotient conjecture implies the reachability
+transport: the quotient machine is goal-reachable iff the original is. -/
 theorem EquivariantQuotientConjecture.reachable_iff
     (h : EquivariantQuotientConjecture.{u})
     {d : Type u} [Fintype d] [DecidableEq d]
@@ -972,7 +969,7 @@ theorem EquivariantQuotientConjecture.reachable_iff
 
 /-! ### 7. Summary
 
-* **Concrete (sorry-free):** `DensityOperator`, `KrausChannel` (+ `apply`,
+* **Concrete:** `DensityOperator`, `KrausChannel` (+ `apply`,
   `id`, `apply_zero`), `POVM` (+ `prob`, `prob_sum`), `QOMDP` (+ `Policy`,
   `runState`, `goalProb`, `Reachable`, `runState_nil`/`cons`),
   `QOMDP.IsClassical`, `PCPInstance` (+ `Solvable`, `pcpEnum`,
@@ -994,7 +991,7 @@ theorem EquivariantQuotientConjecture.reachable_iff
   `equivariant_goalProb_descent` (every goal-success probability is an
   `|I|`-indexed cell sum — under a symmetry that *is* satisfiable with
   nontrivial cells).
-* **Def-conjectures (named `Prop`s, zero `sorry`):**
+* **Def-conjectures (named `Prop`s):**
   `BarryBarryAaronsonReduction` (the explicit PCP→QOMDP Kraus encoding,
   arXiv:1911.01953 — deliberately not provable here by a classical-choice
   case-split, see its docstring) and `EquivariantQuotientConjecture` (the

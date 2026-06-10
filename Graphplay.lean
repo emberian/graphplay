@@ -154,6 +154,16 @@ import Graphplay.Integrations.TransformerDSL
 import Graphplay.Integrations.StateSpaceDSL
 import Graphplay.Integrations.StructuredAttention
 import Graphplay.Integrations.EquitableMechanism
+
+-- ε-equitable theory (approximate partitions with certified error)
+import Graphplay.Integrations.EpsEquitable
+import Graphplay.Integrations.EpsSoftmax
+import Graphplay.Integrations.EpsSpectral
+import Graphplay.Integrations.EpsDynamics
+
+-- Kernel-checked equitability certificates for trained models
+import Graphplay.Integrations.EquitableCertChecker
+import Graphplay.Integrations.GQACertSmolLM2
 import Graphplay.Integrations.NovelAttention
 import Graphplay.Integrations.AliBiAttention
 import Graphplay.Integrations.ChiralPhaseCoherent

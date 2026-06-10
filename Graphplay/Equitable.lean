@@ -92,7 +92,7 @@ theorem quotient_apply (P : EquitablePartition G I) (i j : I) (x : V)
 
 /-! The unrescaled `quotient` is **not** Hermitian in general — see the
 `### Symmetric quotient` section below, where the *handshake identity* and the
-genuinely-Hermitian `symmQuotient = D^{1/2} Q D^{-1/2}` are developed (those
+Hermitian `symmQuotient = D^{1/2} Q D^{-1/2}` are developed (those
 need `cellCard`, defined next). -/
 
 /-- The cardinality of cell `i`, as a real number. -/
@@ -171,7 +171,7 @@ noncomputable def symmQuotient (P : EquitablePartition G I) : Matrix I I ℂ := 
   (Real.sqrt (P.cellCard i) : ℂ) * P.quotient i j / (Real.sqrt (P.cellCard j) : ℂ)
 
 /-- **The symmetric quotient is Hermitian.**  Unlike the raw `quotient`, `Q̃` is
-genuinely Hermitian — this is the handshake identity rescaled by `√|C_i|`. -/
+Hermitian — this is the handshake identity rescaled by `√|C_i|`. -/
 theorem symmQuotient_isHermitian (P : EquitablePartition G I) :
     P.symmQuotient.IsHermitian := by
   ext i j
@@ -298,8 +298,8 @@ theorem cellInflate_smul (P : EquitablePartition G I) (c : ℂ) (A : Matrix I I 
 
 /-- The **support idempotent** of the partition: the diagonal `I × I` matrix
 that is `1` on inhabited cells and `0` on empty ones.  When `cells` is
-surjective (no empty cells) this is the identity, and `cellInflate` is then a
-genuine multiplicative map (`cellInflate_mul`). -/
+surjective (no empty cells) this is the identity, and `cellInflate` is then
+multiplicative (`cellInflate_mul`). -/
 noncomputable def cellSupport (P : EquitablePartition G I) : Matrix I I ℂ :=
   Matrix.diagonal (fun k => if P.cellCard k = 0 then 0 else 1)
 
@@ -670,7 +670,7 @@ equitable.  The unique-cell index type is `Unit`.
 
 The indiscrete partition is equitable iff every row sum agrees, i.e. iff `G`
 is regular; we therefore take the regularity witness `hreg : G.isRegular d`
-as a hypothesis and prove the `uniform` field honestly: every cell sum
+as a hypothesis and prove the `uniform` field directly: every cell sum
 collapses to the full row sum `G.degree x = d`. -/
 def indiscrete (G : WeightedGraph V) (d : ℂ) (hreg : G.isRegular d) :
     EquitablePartition G Unit where

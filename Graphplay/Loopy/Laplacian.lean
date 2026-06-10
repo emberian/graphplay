@@ -99,10 +99,9 @@ of the adjacency walk at the same time:
 
   `‖(WeightedGraph.laplacian G).evolve τ u v‖ = ‖G.evolve τ v u‖`.
 
-The index swap `(u,v) ↦ (v,u)` is the genuine effect of the `−A` time reversal
+The index swap `(u,v) ↦ (v,u)` is the effect of the `−A` time reversal
 (`U_{−A}(τ) = U_A(τ)ᴴ`); the scalar `d•1` shift contributes only a unit-modulus
-global phase.  This is the precise, provable form — no symmetry of the unitary
-is assumed. -/
+global phase.  No symmetry of the unitary is assumed. -/
 theorem norm_evolve_laplacian_eq_of_regular (G : WeightedGraph V) (d : ℂ)
     (hreg : G.isRegular d) (τ : ℝ) (u v : V) :
     ‖(WeightedGraph.laplacian G).evolve τ u v‖ = ‖G.evolve τ v u‖ := by

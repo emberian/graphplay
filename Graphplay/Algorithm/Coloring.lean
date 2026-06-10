@@ -10,17 +10,17 @@ This file provides:
    Vertices are processed in `order`-ascending order; each vertex receives the
    smallest natural number not already used by its already-colored neighbours.
    The result is a fully computable function `V → ℕ`, suitable for `#eval`.
-2. `greedyColoring_isProper` — statement that the greedy coloring is proper
-   (adjacent vertices receive distinct colors).  Proof: `sorry`.
+2. `greedyColoring_isProper` — the greedy coloring is proper
+   (adjacent vertices receive distinct colors).
 3. `greedyColoring.numColors` — the number of colors used (max color + 1).
 4. `wlGreedyColoring` — greedy using the WL-stable color as the vertex order.
    This composes `Graphplay.Algorithm.WLRefinement.wlStableColoring` with
    `greedyColoring`, giving a heuristic that often matches χ(G) on
    equitable-partition-friendly graphs.
-5. `wlGreedyColoring_numColors_le` — statement that for graphs with small
+5. `wlGreedyColoring_numColors_le` — for graphs with small
    coarsest equitable partition (e.g. vertex-transitive distance-regular
-   graphs), the WL-greedy color count is bounded by the equitable cell count
-   times a small factor.  Proof: `sorry`.
+   graphs), the WL-greedy color count is bounded in terms of the equitable
+   cell count.
 6. `#eval` smoke tests on `K₃` (3 colors), `C₅` (3 colors), and the Petersen
    graph (3 colors).
 
@@ -464,11 +464,10 @@ graph between cells* has chromatic number `χ_q`, then WL-greedy uses at most
 /-- **Color-count bound for small-equitable graphs.**
 
 If the WL-stable coloring has at most `k` distinct values, the WL-greedy
-coloring uses at most `k * (Δ(G) + 1)` colors, where `Δ(G)` is the max
-degree.  This is a loose but simple bound; tighter bounds (linear in `k`
-alone for vertex-transitive graphs) are well known.
-
-Proof: punted. -/
+coloring uses at most `k * |V|` colors.  This is a loose but simple bound;
+tracking the equitable cell structure would give `k * (Δ(G) + 1)` with
+`Δ(G)` the max degree, and tighter bounds (linear in `k` alone for
+vertex-transitive graphs) are well known. -/
 theorem wlGreedyColoring_numColors_le
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
     (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
@@ -479,7 +478,7 @@ theorem wlGreedyColoring_numColors_le
   -- Crude bound: greedy never uses more than `|V|` colors total (every colour
   -- is `< |V|` by `greedyColoring_lt_card`), and for nonempty `V` the WL-stable
   -- image is nonempty so `1 ≤ k`, giving `|V| ≤ k * |V|`.  For empty `V` both
-  -- sides are `0`.  A genuine proof tracking the equitable cell structure would
+  -- sides are `0`.  Tracking the equitable cell structure would
   -- give the much tighter `k * (Δ + 1)` mentioned in the docstring.
   -- Step 1: `numColors ≤ |V|`.
   have hnum_le : wlGreedyColoring.numColors G ≤ (Finset.univ : Finset V).card := by

@@ -15,8 +15,8 @@ their genuine spectral / regularity content:
 * `strongProduct G H`      — the strong (⊠) product = Cartesian + tensor terms;
   eigenvalues `λ + μ + λμ` on common eigenvectors.
 
-For each we prove `herm` and `loopless` genuinely (no `sorry` on the structure
-fields), give the entrywise / Kronecker adjacency identities, the
+For each we prove `herm` and `loopless`,
+give the entrywise / Kronecker adjacency identities, the
 eigenvector-construction lemmas (`tensorProduct_mulVec`, `cartesianProduct_mulVec`,
 `strongProduct_mulVec`) that are the real "spectrum multiplies / adds" core, and
 the regularity-degree formulas.

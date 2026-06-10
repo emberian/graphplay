@@ -262,18 +262,17 @@ of the bundle is determined entirely by a chiral phasing on the quotient** —
 the algebraic content motivated by Levine et al., whose `K_4 → K_1 + K_3`
 example is the optimal instance.
 
-Provenance note. An earlier formulation stated this as an *iff* between the
-per-vertex predicate `CellUniformMixing` (equal transition *modulus*
-`‖U(t) y x‖ = ‖U(t) y x'‖` for within-cell sources `x, x'`) and modulus-flat
-columns of the quotient evolution. That iff is **false**: equitable partitions
-control the cell-uniform *subspace* (the inflated vectors below), not the
-individual per-vertex amplitudes. The degenerate witness is the singleton
-(discrete) partition `I = V`: its `CellUniformMixing` is vacuously true (a
-within-cell pair forces `x = x'`), while its `symmQuotient` is the full host
-adjacency, whose evolution has non-flat column moduli at generic `t`
-(e.g. a `K_2` host has column moduli `cos t` vs `sin t`). The intertwining
-below is the genuine, unconditional statement these two sides were reaching
-for. -/
+Note the corresponding *iff* — between the per-vertex predicate
+`CellUniformMixing` (equal transition *modulus* `‖U(t) y x‖ = ‖U(t) y x'‖` for
+within-cell sources `x, x'`) and modulus-flat columns of the quotient
+evolution — is **false**: equitable partitions control the cell-uniform
+*subspace* (the inflated vectors below), not the individual per-vertex
+amplitudes. Witness the singleton (discrete) partition `I = V`: its
+`CellUniformMixing` is vacuously true (a within-cell pair forces `x = x'`),
+while its `symmQuotient` is the full host adjacency, whose evolution has
+non-flat column moduli at generic `t` (e.g. a `K_2` host has column moduli
+`cos t` vs `sin t`). The intertwining below is the unconditional statement
+that does hold. -/
 theorem chiral_mixing_optimization
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -309,10 +308,9 @@ star K_{1,3}), and is the canonical *chiral ghost* signing that gives K_4
 an orientation with uniform mixing time π / (3√3), faster than any
 unoriented Hamming graph.
 
-We expose the signing as `unitaryHammingChiralK4`. The construction relies
-on a small explicit case analysis on Fin 4 × Fin 4; we package it with the
-necessary obligations and sorry the unimodularity / Hermitian / loopless
-proofs (purely finite case checks).
+We expose the signing as `unitaryHammingChiralK4`; the unimodularity /
+Hermitian / loopless obligations are discharged by finite case checks on
+`Fin 4 × Fin 4`.
 -/
 
 /-- The K_4 unitary signing of Fig. 2 in Levine et al. (2605.04414):

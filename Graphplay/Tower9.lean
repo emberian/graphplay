@@ -12,13 +12,13 @@ instances — encoding, as a machine-checked statement, the *distinction* the
 prose insists on:
 
 * the **deduction leg** (LDT) is a Galois **connection** that is **not** an
-  insertion — `α ∘ γ ≠ id`, a genuinely *lossy over-approximation* (inter-cell
+  insertion — `α ∘ γ ≠ id`, a *lossy over-approximation* (inter-cell
   correlation is forgotten; the paper's Fig. 5);
 * the **refinement leg** (partitions) is a Galois **insertion** —
   `α ∘ γ = id`, an *exact* closure (Mathlib's `Setoid.gi`: a relation's
   equivalence-closure, coerced back, is itself).
 
-This is the honest content of "refinement ⊣ deduction": **same interface,
+This is the content of "refinement ⊣ deduction": **same interface,
 opposite species** (exact insertion vs lossy connection), the order-dual of one
 another. The `cellInflate ⊣ cells` "adjunction" floated in early notes is **not**
 a Galois connection (it is a linear matrix lift, a category error) and is
@@ -26,7 +26,7 @@ deliberately absent here; the equivalence-closure insertion (`Setoid.gi`) is the
 real partition-world adjunction, in the spirit of Ranzato–Tapparo (2008),
 "Generalizing the Paige–Tarjan algorithm by abstract interpretation".
 
-**What is PROVED (axiom-clean: only propext/Classical.choice/Quot.sound):**
+**Proved:**
 * `AbstractInterpretation` — the structure (two complete lattices + a Galois
   connection).
 * `lfp_transfer`, `gfp_transfer` — the Cousot fixpoint-transfer theorems
@@ -41,11 +41,11 @@ real partition-world adjunction, in the spirit of Ranzato–Tapparo (2008),
 * `ldt_lossy` (lossy: `∃ a, α(γ a) ≠ a`) vs `partition_is_insertion`
   (exact: `∀ s, α(γ s) = s`) — the species distinction, machine-checked.
 
-**Honest scope / residual.** This delivers the interface + transfer + both
-instances + the exact/lossy contrast (memo items T9-(a)-skeleton and T9-(b)).
+**Scope.** This delivers the interface + transfer + both
+instances + the exact/lossy contrast.
 What it does **not** yet do: re-express graphplay's *specific* WL refinement
 operator `wlStep` as an `OrderHom` on `Setoid V` whose `gfp` is *literally*
-`wlRefine_coarsestEquitable` (the full T9-(a)). `wlStep` changes its colour
+`wlRefine_coarsestEquitable`. `wlStep` changes its colour
 *type* each round (`α → α × Multiset α`), so that is a parallel fixed-carrier
 construction, not a repackaging; it is the documented next step.  §3 below
 instead instantiates the partition leg through Mathlib's equivalence-closure
@@ -160,7 +160,7 @@ end AbstractInterpretation
 
 The Lattice Deduction Transformer's `α ⊣ γ` (per-cell projection ⊣ cylinder),
 already proven `Integrations.LatticeDeduction.alpha_gc_gamma`, is an abstract
-interpretation.  Its *over-approximation* is genuinely lossy — `α ∘ γ ≠ id` — so
+interpretation.  Its *over-approximation* is lossy — `α ∘ γ ≠ id` — so
 it is a connection, **not** an insertion.  We then re-derive LDT's run-soundness
 as a corollary of `gfp_transfer`. -/
 
@@ -228,7 +228,7 @@ theorem ldt_deduction_run_sound (cons : Set (Str V k)) :
 /-- **The deduction leg is lossy** (`α ∘ γ ≠ id`): with at least two cells and a
 nonempty vocabulary, an abstract state with one empty and one full cell has
 `α (γ a) = ⊥ ≠ a`.  Hence LDT's `α ⊣ γ` is a Galois *connection*, **not** an
-insertion — a genuinely lossy over-approximation. -/
+insertion — a lossy over-approximation. -/
 theorem ldt_lossy [Nonempty V] (h2 : 2 ≤ k) :
     ∃ a : Abs V k, alpha (gamma a) ≠ a := by
   classical

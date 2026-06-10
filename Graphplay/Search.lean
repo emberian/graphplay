@@ -87,19 +87,19 @@ amplitude is the marked-block projection of `U(τ)|s⟩`:
 
   `⟨w|U(τ)|s⟩ = ∑_{m∈M} (U(τ)·s)_m = ∑_{m∈M} (∑_v U(τ)_{m,v})/√N`,
 
-i.e. the genuine matrix element of `U(τ)` between the uniform start `|s⟩` and
+i.e. the matrix element of `U(τ)` between the uniform start `|s⟩` and
 the (unnormalised) marked indicator `|M⟩ = ∑_{m∈M}|m⟩`.  The amplitude is
 `Real.sqrt N`-normalised (only on the start `|s⟩`; the marked indicator is
 *not* renormalised, exactly as in Childs–Goldstone, so the constant `1/√2` is
 the standard `Θ(1)` success threshold).
 
-**(Correction.)**  The previous definition summed `U(τ)_{v,m}` over *both*
-indices including all non-marked rows `v`:
-`‖∑_v ∑_{m∈M} U(τ)_{v,m}/√N‖ = ‖⟨s|U(τ)|M⟩‖`.  That is the success amplitude
-of the *time-reversed* search (`|M⟩ → |s⟩`), equal to the genuine
+The row/column orientation matters: summing `U(τ)_{v,m}` over *all*
+rows `v`,
+`‖∑_v ∑_{m∈M} U(τ)_{v,m}/√N‖ = ‖⟨s|U(τ)|M⟩‖`, is the success amplitude
+of the *time-reversed* search (`|M⟩ → |s⟩`), equal to
 `‖⟨w|U(τ)|s⟩‖` only when `U(τ)` is *symmetric* (real-symmetric adjacency).
 Since `WeightedGraph.adj` is merely *Hermitian*, the two differ in general,
-so the row form below — the genuine `⟨w|U|s⟩` projection — is the faithful
+so the row form below — the `⟨w|U|s⟩` projection — is the faithful
 Childs–Goldstone functional. -/
 def IsOptimalSearch {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (M : Finset V) (γ τ : ℝ) : Prop :=
@@ -118,7 +118,7 @@ abbrev MarkedRefined (I : Type v) : Type v := I × Bool
 
 /-- Refine an equitable partition by intersecting each cell with the marked set.
 
-The refinement is genuinely equitable precisely when the marked set is a **union
+The refinement is equitable precisely when the marked set is a **union
 of cells**, i.e. membership in `M` is constant on each cell (`hM`).  Under that
 hypothesis the second coordinate `decide (v ∈ M)` is a function of `P.cells v`,
 so each refined cell `(i, b)` is *either* a whole parent cell (when `b` matches
@@ -583,17 +583,17 @@ success amplitude `⟨𝟙_M | U(τ) | 𝟙⟩/√N`.
 The host start `|s⟩ = 𝟙/√N` is the cell-embedding image of the cell-mass weights
 `m̂'_{jb} = √|C'_{jb}|` (`cellEmbed_mulVec_massVec`), and the marked indicator
 `𝟙_M` projects a refined cell-uniform combination onto the cell masses over the
-*marked* cells `(·, true)` (`markedProj_cellEmbed`).  Hence the genuine quotient
+*marked* cells `(·, true)` (`markedProj_cellEmbed`).  Hence the quotient
 amplitude is the refined-quotient block evolution `exp(-iτ·(-γ·Q̃' − markedDiag))`
 applied to the cell-mass vector, contracted against the cell masses on the marked
 cells, normalized by `√N`:
 
   `‖(∑_{ib.2=true} √|C'_{ib}| · (exp(-iτ·H_chain)·m̂')_{ib}) / √N‖ ≥ 1/√2`.
 
-This `√|C'|`-weighting on *both* the start (`m̂'`) and the marked projection is the
-correct chain image of the host functional; the previous formulation used a
-`1/√(2|I|)` uniform-over-quotient-cells weighting, which is the host functional
-only when all cells are equal-sized — a mis-formalization this restatement fixes.
+This `√|C'|`-weighting on *both* the start (`m̂'`) and the marked projection is
+the correct chain image of the host functional (a
+`1/√(2|I|)` uniform-over-quotient-cells weighting would match the host
+only when all cells are equal-sized).
 It is the host-faithful quotient-side analogue of `IsOptimalSearch`. -/
 def IsRefinedQuotientOptimalSearch
     {V : Type u} [Fintype V] [DecidableEq V]
@@ -617,7 +617,7 @@ refined cells are nonempty (`hne`), if the refined quotient supports optimal
 search (in the host-faithful `IsRefinedQuotientOptimalSearch` sense) then so does
 the host.
 
-**Now proven axiom-clean (no `sorry`).**  The proof is the exact transport of the
+The proof is the exact transport of the
 host success amplitude onto the finite refined-quotient chain:
 
 * `∑_{m∈M} ∑_v U(τ)_{m,v} = ∑_{m∈M} (U(τ)·𝟙)_m` — the host functional is the
@@ -633,7 +633,7 @@ host success amplitude onto the finite refined-quotient chain:
 Composing these makes the host amplitude `‖∑_{m∈M}∑_v U_{m,v}/√N‖` *definitionally*
 equal to the `IsRefinedQuotientOptimalSearch` amplitude, so the `≥ 1/√2` bound
 transfers verbatim.  No symmetry of the adjacency is needed: the host functional
-here is the genuine `⟨𝟙_M|U(τ)|𝟙⟩` row projection. -/
+here is the `⟨𝟙_M|U(τ)|𝟙⟩` row projection. -/
 theorem optimal_search_lift
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]
@@ -689,18 +689,14 @@ form a filtered diagram of equitable partitions whose colimit recovers the
 full-tail walk.  Optimal search persists in the limit when it holds uniformly
 along the diagram (matching the BTVX finite-graph *persistence* direction).
 
-Honest finite-parent form.  The genuine unbounded-tail statement is about an
+Finite-parent form: the unbounded-tail statement proper is about an
 *unbounded* tail and requires an `InverseLimit`/`UnionGraph` extension not
-present here.  What is genuinely provable at this finite level is the *quotient
+present here.  What is provable at this finite level is the *quotient
 lift* itself: given a family of marked-refined partitions `P n` all sharing the
 marked-union property `hM n`, if for some truncation `n` the refined quotient
-supports optimal search, then the (finite) host does.
-
-Note on the prior formulation: it carried a vacuous `∀ _n : ℕ, IsOptimalSearch
-G M γ τ` hypothesis (with `_n` unused — i.e. literally `IsOptimalSearch G M γ τ`
-restated, making the theorem `A → A`) and an unused partition family `P`.  That
-said nothing; this restatement makes the family and the per-truncation quotient
-hypothesis genuinely load-bearing via `optimal_search_lift`. -/
+supports optimal search, then the (finite) host does.  The family and the
+per-truncation quotient hypothesis are load-bearing via
+`optimal_search_lift`. -/
 theorem search_infinite_tail
     {V : Type u} [Fintype V] [DecidableEq V]
     {I : Type v} [Fintype I] [DecidableEq I]

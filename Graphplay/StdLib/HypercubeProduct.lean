@@ -43,10 +43,9 @@ time, so the single common `τ = π/2` works at every level.
   inductive hypothesis).
 
 The bitwise representation `hypercube` in `Graphplay.PST.GodsilRatio` is a
-separate (coordinate-indexed) model; its antipodal-PST theorem is left as an
-honest `sorry` there, awaiting the recognition of that bitwise adjacency as this
-iterated Kronecker sum.  Here we build the iterated-Cartesian model directly and
-prove PST unconditionally.
+separate (coordinate-indexed) model, related to this one by recognising the
+bitwise adjacency as an iterated Kronecker sum.  Here we build the
+iterated-Cartesian model directly and prove PST unconditionally.
 -/
 
 import Graphplay.Product.PST

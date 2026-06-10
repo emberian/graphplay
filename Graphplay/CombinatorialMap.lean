@@ -214,18 +214,16 @@ theorem card_E_eq_two_mul_numEdges (M : CombinatorialMap V E) :
 combinatorial map represents a connected cellular embedding on the orientable
 surface of genus `g`, `V - E + F = 2 - 2g`.
 
-⚠ LANDMINE FIXED (migrated; the hypothesis-free form was false).  Since `genus`
-is *defined* as the integer-truncated quotient `(2 - χ)/2`, the round-trip
-`χ = 2 - 2·genus` holds **iff `χ` is even** — exactly the combinatorial shadow of
-"`M` is a valid connected cellular orientable embedding" (for which Euler's
-formula forces `χ = 2 - 2g`, even).  For a *general* rotation system `χ` can be
-odd, and the truncating division then breaks the identity.
-
-Concrete counterexample to the old hypothesis-free claim: `V = Fin 1`, `E = Fin 2`,
-`σ = swap 0 1`, `ρ = 1`, `vert ≡ 0`.  Then `V = 1`, `numEdges = 1`,
+The `Even M.eulerChar` hypothesis is necessary.  Since `genus` is *defined* as
+the integer-truncated quotient `(2 - χ)/2`, the round-trip `χ = 2 - 2·genus`
+holds **iff `χ` is even** — exactly the combinatorial shadow of "`M` is a valid
+connected cellular orientable embedding" (for which Euler's formula forces
+`χ = 2 - 2g`, even).  For a *general* rotation system `χ` can be odd, and the
+truncating division then breaks the identity: with `V = Fin 1`, `E = Fin 2`,
+`σ = swap 0 1`, `ρ = 1`, `vert ≡ 0` one gets `V = 1`, `numEdges = 1`,
 `facePerm = swap` (one 2-cycle), `numFaces = 1`, so `χ = 1 − 1 + 1 = 1` (odd) and
-`genus = (2 − 1)/2 = 0`, giving `2 − 2·genus = 2 ≠ 1 = χ`.  The `Even M.eulerChar`
-hypothesis rules this out and is genuinely satisfiable (e.g. `K2OnSphere`, `χ = 2`).
+`genus = (2 − 1)/2 = 0`, giving `2 − 2·genus = 2 ≠ 1 = χ`.  The hypothesis is
+satisfiable (e.g. `K2OnSphere`, `χ = 2`).
 -/
 theorem eulerChar_eq (M : CombinatorialMap V E) (heven : Even M.eulerChar) :
     M.eulerChar = 2 - 2 * M.genus := by

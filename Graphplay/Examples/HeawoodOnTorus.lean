@@ -130,7 +130,7 @@ def tri (i j k : V) (hij : i ≠ j := by decide) (hjk : j ≠ k := by decide)
     (hki : k ≠ i := by decide) : Equiv.Perm D :=
   [(⟨(i, j), hij⟩ : D), ⟨(j, k), hjk⟩, ⟨(k, i), hki⟩].formPerm
 
-/-- Each `tri` is a genuine cycle: its defining dart list is nontrivial and
+/-- Each `tri` is a cycle: its defining dart list is nontrivial and
 duplicate-free. -/
 theorem tri_isCycle (i j k : V) (hij : i ≠ j) (hjk : j ≠ k) (hki : k ≠ i) :
     (tri i j k hij hjk hki).IsCycle := by

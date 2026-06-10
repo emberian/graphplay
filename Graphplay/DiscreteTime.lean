@@ -28,29 +28,27 @@ References:
 * Portugal, *Quantum Walks and Search Algorithms* (Springer, 2018), for the
   bipartite-doubled / coined-walk formalisms used here.
 
-The Szegedy spectral correspondence (the arccos fold) and the equitable-partition
-lifting are now proved **sorry-free**: the arccos correspondence via Jordan's lemma
-(`Graphplay.ForMathlib.JordanLemma`) plus the Szegedy-isometry intertwiner
-(`szIso`, `szDiscriminant_spec`), and the lifting via `dtqw_equitable_lift`.  This
-file is now **sorry-free**.  The one genuinely-unformalized analytic result — the
-AAKV/MNRS Grover-search hitting-time bound — is carried *honestly* as a local
-content-bearing typeclass `AAKVSearchBound` (the non-vacuous form: fixed uniform
-start `uniformArcState`, bounded `T`, success *probability* `≥ 1/2`); the headline
-`grover_search_bound` is a sorry-free, axiom-clean conditional consequence of that
-named instance.  The Childs continuous limit `szegedy_ctqw_limit` is now a genuine,
-non-vacuous **conditional** theorem: it consumes the Childs convergence input
-(per-arc-entry `Tendsto` to the doubled CTQW propagator `evolve t ⊗ evolve t`, the
-deep analytic fact, carried honestly as a hypothesis just like
-`dtqw_ctqw_correspondence`) and concludes the uniform entrywise `ε`–`N`
-approximation; the former `: True := trivial` placeholder (which used neither `G`
-nor `t`) is gone.
+The Szegedy spectral correspondence (the arccos fold) is proved via Jordan's
+lemma (`Graphplay.ForMathlib.JordanLemma`) plus the Szegedy-isometry intertwiner
+(`szIso`, `szDiscriminant_spec`); the equitable-partition lifting via
+`dtqw_equitable_lift`.  The one unformalized analytic result — the AAKV/MNRS
+Grover-search hitting-time bound — is carried as a local content-bearing
+typeclass `AAKVSearchBound` (fixed uniform start `uniformArcState`, bounded
+`T`, success *probability* `≥ 1/2`); the headline `grover_search_bound` is a
+conditional consequence of that named instance.  The Childs continuous limit
+`szegedy_ctqw_limit` is likewise **conditional**: it consumes the Childs
+convergence input (per-arc-entry `Tendsto` to the doubled CTQW propagator
+`evolve t ⊗ evolve t`, the deep analytic fact, carried as a hypothesis just
+like `dtqw_ctqw_correspondence`) and concludes the uniform entrywise `ε`–`N`
+approximation.
 
-The coined-walk family (§2) additionally now carries the genuine **unitarity of the
-coined step**: `coinTensorI_unitary` (coin ⊗ I unitary from a unitary coin),
+The coined-walk family (§2) carries the **unitarity of the coined step**:
+`coinTensorI_unitary` (coin ⊗ I unitary from a unitary coin),
 `conditionalShift_unitary` (shift unitary from a per-coin bijective port),
 `CoinedWalk_unitary` (their composite), and the Grover coin facts
-`groverCoin_isHermitian` / `groverCoin_mul_self` / `groverCoin_unitary` (a Hermitian
-involution when `|C| ≠ 0`) — all sorry-free, with honest non-degeneracy hypotheses.
+`groverCoin_isHermitian` / `groverCoin_mul_self` / `groverCoin_unitary` (a
+Hermitian involution when `|C| ≠ 0`), with the necessary non-degeneracy
+hypotheses.
 -/
 
 import Mathlib.LinearAlgebra.Matrix.Hermitian
@@ -103,7 +101,7 @@ correct normaliser for the Szegedy coin state: the random-walk transition
 probabilities are `P_{x y} = ‖A_{x y}‖ / D_x` (so `∑_y P_{x y} = 1`).  For a
 0/1 adjacency matrix this is the ordinary degree; for a Hermitian weighted
 graph it is the sum of the edge magnitudes, which is what keeps the coin
-state a genuine *unit* vector (and hence the projector idempotent). -/
+state a *unit* vector (and hence the projector idempotent). -/
 noncomputable def szMagRowSum (G : WeightedGraph V) (x : V) : ℝ :=
   ∑ y, ‖G.adj x y‖
 
@@ -163,7 +161,7 @@ theorem szCoinAmp_normSq_sum (G : WeightedGraph V) (x : V)
 restricted to the `x' = x'' = x` block, where `φ_x(y) = √(‖A_{x y}‖ / D_x)`
 is the Szegedy coin amplitude (`szCoinAmp`).  Because each `|φ_x⟩` is a unit
 vector (`szCoinAmp_normSq_sum`) and the blocks for distinct `x` are
-orthogonal, `Π = ∑_x Π_x` is a genuine orthogonal projection (idempotent and
+orthogonal, `Π = ∑_x Π_x` is an orthogonal projection (idempotent and
 Hermitian); see `szReflectionProj_idem`.  This is the canonical Szegedy
 projector; cf. Portugal (2018), eqn (7.4) with the square-root normalisation.
 -/
@@ -426,7 +424,7 @@ noncomputable def CoinedWalk
 
 Both factors are unitary involutions (`szSwap_mul_self`/`szSwap_isHermitian`
 and `coinTensorI_unitary` via `groverCoin_unitary`), so the composite is
-genuinely unitary (`GroverWalk_unitary`, needs `Nonempty V` to keep the
+unitary (`GroverWalk_unitary`, needs `Nonempty V` to keep the
 Grover normalisation `2/|V|` well-defined).  This matches the gold-standard
 `CoinedWalk.groverStep = arcFlipFlop · groverArcCoin` of
 `Graphplay.StdLib.CoinedWalk`.
@@ -437,15 +435,13 @@ graph-independent, exactly as `CoinedWalk.groverStep` is.  The `[DecidableRel
 G.Adj]` instance is retained for downstream `SimpleGraph`-indexed API
 (`AAKVSearchBound`, `grover_search_bound`).
 
-**History (an honest correction).**  The previous encoding used
+The flip-flop shift is essential.  The seemingly natural encoding
 `coinTensorI (groverCoin V) V * conditionalShift port` with
-`port p = if G.Adj p.1 p.2 then p.1 else p.2`.  That `port` is **not** a
+`port p = if G.Adj p.1 p.2 then p.1 else p.2` fails: that `port` is **not** a
 per-coin bijection on any graph with a vertex of degree `≥ 1` (every
 neighbour of a fixed coin `c` is sent to `c`, collapsing them), so its
-`conditionalShift` is *singular* and the walk was **not norm-preserving** —
-yet it was the operator under `grover_search_bound`, making "success
-probability `≥ ½`" a probability of an un-normalised vector.  The flip-flop
-shift `szSwap V` used here is a genuine involution, restoring unitarity.
+`conditionalShift` is *singular* and the walk is not norm-preserving.  The
+flip-flop shift `szSwap V` used here is an involution, giving unitarity.
 
 Reference: Portugal (2018), §6.2; Aharonov–Ambainis–Kempe–Vazirani
 (STOC 2001). -/
@@ -457,7 +453,7 @@ noncomputable def GroverWalk (G : SimpleGraph V) [DecidableRel G.Adj] :
 
 The defining property of a coined DTQW is that its single step is *unitary*.
 The step is `(coin ⊗ I) · S`, a product of the coin-flip and the conditional
-shift, so unitarity factors cleanly into two pieces with their honest
+shift, so unitarity factors cleanly into two pieces with their
 non-degeneracy hypotheses:
 
 * the **coin flip** `coin ⊗ I` is unitary exactly when the coin `coin` is
@@ -472,13 +468,13 @@ non-degeneracy hypotheses:
 Their composite is `CoinedWalk_unitary`.  The **Grover coin** is the rank-one
 reflection `2|s⟩⟨s| − I` through the uniform unit vector `|s⟩`; it is Hermitian
 (`groverCoin_isHermitian`), squares to the identity
-(`groverCoin_mul_self`, using `card C ≠ 0` so `|s⟩` is a genuine *unit* vector),
+(`groverCoin_mul_self`, using `card C ≠ 0` so `|s⟩` is a *unit* vector),
 hence unitary (`groverCoin_unitary`).
 
 The two abstract pieces (`coinTensorI_unitary`, `conditionalShift_unitary`)
 cover *general* coined steps `(coin ⊗ I) · S` for any bijective port.  The
 concrete `GroverWalk` defined above does **not** use a `conditionalShift`: it
-uses the **flip-flop** `szSwap V` (`|x,y⟩ ↦ |y,x⟩`), a genuine swap involution
+uses the **flip-flop** `szSwap V` (`|x,y⟩ ↦ |y,x⟩`), a swap involution
 that is manifestly unitary without any port-bijectivity hypothesis.  Its
 unitarity `GroverWalk_unitary` is therefore unconditional (beyond `Nonempty V`,
 needed only to keep the Grover normalisation `2/|V|` finite). -/
@@ -552,7 +548,7 @@ theorem coinTensorI_unitary (coin : Matrix C C ℂ)
 `p ↦ (p.1, port p)` on `C × V` is a bijection — equivalently, for each fixed
 coin value the port is a permutation of the vertices.  The shift is then the
 permutation matrix of that bijection, whose conjugate-transpose is its inverse.
-The bijection hypothesis is the genuine non-degeneracy: a port that collapses
+The bijection hypothesis is necessary: a port that collapses
 two vertices makes the shift singular. -/
 theorem conditionalShift_unitary (port : C × V → V)
     (hbij : Function.Bijective (fun p : C × V => (p.1, port p))) :
@@ -585,7 +581,7 @@ theorem conditionalShift_unitary (port : C × V → V)
 
 /-- **A general coined walk `(coin ⊗ I) · S` is unitary** given a unitary coin
 (`coinᴴ coin = 1`) and a per-coin bijective port (`hbij`).  This is the defining
-property of a coined discrete-time quantum walk; both hypotheses are honest
+property of a coined discrete-time quantum walk; both hypotheses are
 non-degeneracy conditions (a non-unitary coin or a vertex-collapsing port breaks
 it).  Reference: Portugal (2018), §6.1. -/
 theorem CoinedWalk_unitary (port : C × V → V) (coin : Matrix C C ℂ)
@@ -616,7 +612,7 @@ theorem groverCoin_isHermitian : (groverCoin C).IsHermitian := by
 /-- **The Grover coin squares to the identity**: `(2/|C|·J − I)² = I`.  It is
 the reflection `2|s⟩⟨s| − I` through the uniform superposition `|s⟩`, and the
 key fact `J² = |C|·J` collapses the cross terms.  The hypothesis `|C| ≠ 0` is
-genuine: it is exactly what makes `|s⟩ = |C|^{-1/2}·𝟙` a *unit* vector, so the
+exactly what makes `|s⟩ = |C|^{-1/2}·𝟙` a *unit* vector, so the
 reflection is an involution. -/
 theorem groverCoin_mul_self (hC : (Fintype.card C : ℂ) ≠ 0) :
     groverCoin C * groverCoin C = 1 := by
@@ -652,7 +648,7 @@ theorem groverCoin_mul_self (hC : (Fintype.card C : ℂ) ≠ 0) :
       = 0 by field_simp; ring, zero_add]
 
 /-- **The Grover coin is unitary** (it is a Hermitian involution) when `|C| ≠ 0`.
-This makes the Grover-coin coined walk `(groverCoin ⊗ I)·S` a genuine unitary
+This makes the Grover-coin coined walk `(groverCoin ⊗ I)·S` a unitary
 step whenever the shift's port is a per-coin bijection (`CoinedWalk_unitary`). -/
 theorem groverCoin_unitary (hC : (Fintype.card C : ℂ) ≠ 0) :
     (groverCoin C)ᴴ * groverCoin C = 1 := by
@@ -663,11 +659,10 @@ theorem groverCoin_unitary (hC : (Fintype.card C : ℂ) ≠ 0) :
 `szSwap_mul_self`) and `C = coinTensorI (groverCoin V) V` the Grover coin-flip,
 unitary by `coinTensorI_unitary (groverCoin_unitary …)`.  Their product is
 unitary: `(SC)ᴴ(SC) = Cᴴ(SᴴS)C = Cᴴ·1·C = CᴴC = 1`.  The `Nonempty V`
-hypothesis keeps the Grover normalisation `2/|V|` well-defined (so the coin is a
-genuine reflection through a *unit* vector); it is the sole, honest
-non-degeneracy condition.  This is the unitarity that makes the
-`grover_search_bound` "success probability `≥ ½`" a probability of a genuinely
-normalised state. -/
+hypothesis keeps the Grover normalisation `2/|V|` well-defined (so the coin is
+a reflection through a *unit* vector); it is the sole non-degeneracy condition.
+This is the unitarity that makes the `grover_search_bound` "success probability
+`≥ ½`" a probability of a normalised state. -/
 theorem GroverWalk_unitary (G : SimpleGraph V) [DecidableRel G.Adj]
     [Nonempty V] :
     (GroverWalk G)ᴴ * GroverWalk G = 1 := by
@@ -707,13 +702,13 @@ noncomputable def randomWalkOp (G : WeightedGraph V) : Matrix V V ℂ :=
 
 /-! ### The Szegedy isometry and the discriminant inclusion
 
-The genuine engine of the Szegedy correspondence is the **Szegedy isometry**
+The engine of the Szegedy correspondence is the **Szegedy isometry**
 `T : ℂ^V → ℂ^{V×V}` whose `z`-th column is the coin state `|φ_z⟩` supported on the
 block `{z}×V`:
 
   `T_{(x,y),z} = [x = z]·φ_x(y) = [x = z]·szCoinAmp x y`.
 
-We build `T = szIso` concretely and prove, sorry-free, the two facts that drive the
+We build `T = szIso` concretely and prove the two facts that drive the
 correspondence — **`T · Tᴴ = Π` (the Szegedy projector)** and **`Tᴴ · T = I`** (an
 isometry, whenever every vertex has positive transition weight) — and assemble them with
 the abstract intertwiner `Graphplay.ForMathlib.spectrum_compression_subset_reflStepDiscriminant`
@@ -757,13 +752,12 @@ theorem szReflection_eq (G : WeightedGraph V) :
     (2 : ℂ) • (G.szIso * (G.szIso)ᴴ) - 1 = G.szReflection := by
   rw [szIso_mul_conjTranspose]; rfl
 
-/-- **`Tᴴ · T = I`** — the Szegedy map is a genuine isometry — provided every vertex has
+/-- **`Tᴴ · T = I`** — the Szegedy map is an isometry — provided every vertex has
 nonzero transition weight (`szMagRowSum x ≠ 0`, i.e. no isolated vertices).  The `(z,z')`
 entry is `∑_{x,y} [x=z][x=z'] conj φ_x(y)·φ_x(y)`, which vanishes off the diagonal and
 equals `∑_y ‖φ_z(y)‖² = 1` on it (`szCoinAmp_normSq_sum`).  The positivity hypothesis is
-exactly what makes the coin states unit vectors; it is the honest non-degeneracy
-condition (a vertex with no outgoing weight contributes a zero column, breaking the
-isometry). -/
+exactly what makes the coin states unit vectors; it is necessary (a vertex with
+no outgoing weight contributes a zero column, breaking the isometry). -/
 theorem szIso_conjTranspose_mul (G : WeightedGraph V)
     (hpos : ∀ x : V, G.szMagRowSum x ≠ 0) :
     (G.szIso)ᴴ * G.szIso = 1 := by
@@ -808,21 +802,22 @@ the principal angles.  In the reversible / symmetric case this equals
 noncomputable def szDiscriminantMatrix (G : WeightedGraph V) : Matrix V V ℂ :=
   (G.szIso)ᴴ * szSwap V * G.szIso
 
-/-- **The Szegedy discriminant–spectrum inclusion (now proved, sorry-free).**  Under the
-non-degeneracy hypothesis that every vertex has positive transition weight (so the
-Szegedy map is a genuine isometry, `hpos`), the spectrum of the **Szegedy discriminant
-matrix** `D = Tᴴ S T` on the vertex space is contained in the spectrum of the concrete
-Jordan discriminant `D₀ = ½(SR + RS) = reflStepDiscriminant R S` (with `R = szReflection`,
-`S = szSwap`) on the arc space.
+/-- **The Szegedy discriminant–spectrum inclusion.**  Under the non-degeneracy
+hypothesis that every vertex has positive transition weight (so the Szegedy map
+is an isometry, `hpos`), the spectrum of the **Szegedy discriminant matrix**
+`D = Tᴴ S T` on the vertex space is contained in the spectrum of the concrete
+Jordan discriminant `D₀ = ½(SR + RS) = reflStepDiscriminant R S` (with
+`R = szReflection`, `S = szSwap`) on the arc space.
 
-This is the **corrected direction**: `spectrum D ⊆ spectrum D₀`, equivalently — once `D`
-is identified with the random-walk operator in the reversible case (hypothesis `hD`) —
-`spectrum randomWalkOp ⊆ spectrum D₀`.  (The previously-claimed `spectrum D₀ ⊆ spectrum
-randomWalkOp` is the *false* direction: `D₀` carries off-shell `±1` eigenvalues from the
-orthogonal complement of `range T` that need not be random-walk eigenvalues.)  The
-provable direction is exactly the surjective half Szegedy's theorem supplies — every
-random-walk eigenvalue is a discriminant eigenvalue / cosine of a principal angle — and
-is the direction needed to *exhibit* the walk eigenvalues `exp(±i·arccos λ)`.
+The direction matters: `spectrum D ⊆ spectrum D₀` holds — equivalently, once
+`D` is identified with the random-walk operator in the reversible case
+(hypothesis `hD`), `spectrum randomWalkOp ⊆ spectrum D₀`.  The reverse
+inclusion `spectrum D₀ ⊆ spectrum randomWalkOp` is **false**: `D₀` carries
+off-shell `±1` eigenvalues from the orthogonal complement of `range T` that
+need not be random-walk eigenvalues.  The provable direction is exactly the
+surjective half Szegedy's theorem supplies — every random-walk eigenvalue is a
+discriminant eigenvalue / cosine of a principal angle — and is the direction
+needed to *exhibit* the walk eigenvalues `exp(±i·arccos λ)`.
 
 The proof is **no SVD**: it is the elementary isometric-intertwiner inclusion.  The
 Szegedy map `T = szIso` satisfies `R = 2(T Tᴴ) − I` (`szReflection_eq`) and `Tᴴ T = I`
@@ -840,23 +835,23 @@ theorem szDiscriminant_spec (G : WeightedGraph V)
   exact Graphplay.ForMathlib.spectrum_compression_subset_reflStepDiscriminant
     (G.szIso_conjTranspose_mul hpos) (szSwap V)
 
-/-- **Szegedy eigenvalue ↔ Jordan-discriminant correspondence (fully proved, sorry-free).**
+/-- **Szegedy eigenvalue ↔ Jordan-discriminant correspondence.**
 Every Szegedy walk eigenvalue `μ` is `exp(±i · arccos λ)` for some `λ ∈ [-1, 1]` that is
 an eigenvalue of the **Jordan discriminant** `D₀ = ½(SR + RS)` on the arc space.
 
-This is the honest, unconditional headline.  The walk operator is literally `U = S · R`
+This is unconditional.  The walk operator is literally `U = S · R`
 with `S = szSwap` and `R = szReflection` two Hermitian involutions
 (`szSwap_isHermitian`/`szSwap_mul_self`, `szReflection_isHermitian`/
-`szReflection_mul_self`, all sorry-free above), so the abstract two-reflections lemma
+`szReflection_mul_self`), so the abstract two-reflections lemma
 `Graphplay.ForMathlib.reflStep_eigenvalue_angle` applies directly: Jordan's lemma supplies
 `λ = Re μ ∈ [-1,1]`, the `exp(±i·arccos λ)` polar form, and `λ ∈ spectrum D₀`.  No SVD,
 no random-walk identification, no hypotheses.
 
 The link to the random-walk operator is the *separate*, conditional fact
-`szDiscriminant_spec` (`spectrum randomWalkOp ⊆ spectrum D₀`, the surjective/exhibiting
-direction, true under reversibility): the previously-claimed `spectrum D₀ ⊆ spectrum
-randomWalkOp` was the *false* direction (`D₀` carries off-shell `±1` eigenvalues), which
-is why this headline now reports the genuine `spectrum D₀`.
+`szDiscriminant_spec` (`spectrum randomWalkOp ⊆ spectrum D₀`, the
+surjective/exhibiting direction, true under reversibility); the reverse
+inclusion `spectrum D₀ ⊆ spectrum randomWalkOp` is false (`D₀` carries
+off-shell `±1` eigenvalues), which is why this headline reports `spectrum D₀`.
 
 Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3; Jordan (1875). -/
 theorem szegedy_discriminant_eigenvalue (G : WeightedGraph V) (μ : ℂ)
@@ -880,8 +875,8 @@ non-degeneracy (`hpos`: every vertex has positive transition weight, so the Szeg
 is an isometry) and the reversibility identification (`hD`: `randomWalkOp` equals the
 symmetric Szegedy discriminant matrix), **every** random-walk eigenvalue `λ` is an
 eigenvalue of the Jordan discriminant `D₀`, hence (combined with Jordan's lemma) the
-cosine of a Szegedy walk angle.  This is the half Szegedy's theorem genuinely supplies,
-proved sorry-free from the intertwiner inclusion `szDiscriminant_spec`.
+cosine of a Szegedy walk angle.  This is the half Szegedy's theorem supplies,
+proved from the intertwiner inclusion `szDiscriminant_spec`.
 
 Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3. -/
 theorem randomWalk_eigenvalue_mem_discriminant (G : WeightedGraph V)
@@ -896,9 +891,9 @@ theorem randomWalk_eigenvalue_mem_discriminant (G : WeightedGraph V)
 `exp(s·i·θ)` for a sign `s` and an angle `θ ∈ [0, π]` with `cos θ = λ`, where
 `λ ∈ [-1,1]` is an eigenvalue of the Jordan discriminant `D₀ = ½(SR + RS)`.
 
-Derived sorry-free from `szegedy_discriminant_eigenvalue`: take `θ := arccos λ ∈ [0, π]`
+Derived from `szegedy_discriminant_eigenvalue`: take `θ := arccos λ ∈ [0, π]`
 (`Real.arccos_nonneg`, `Real.arccos_le_pi`) with `cos θ = λ` (`Real.cos_arccos`, valid on
-`[-1, 1]`).  Pure trigonometric bookkeeping over the genuine block decomposition.
+`[-1, 1]`).  Pure trigonometric bookkeeping over the block decomposition.
 
 Reference: Szegedy, FOCS 2004, Theorem 1; Portugal (2018), §7.3. -/
 theorem szegedy_block_correspondence (G : WeightedGraph V) (μ : ℂ)
@@ -921,7 +916,7 @@ of `G.SzegedyWalk` has the form `μ = exp(±i · arccos λ)` for some real
 The map `λ ↦ exp(±i arccos λ)` is the 2-to-1 fold of the discriminant spectrum onto
 the unit circle.
 
-Derived sorry-free from `szegedy_block_correspondence`: it supplies the rotation angle
+Derived from `szegedy_block_correspondence`: it supplies the rotation angle
 `θ ∈ [0, π]` with `cos θ = λ`, and `Real.arccos_cos` (valid on `[0, π]`) rewrites
 `θ = arccos λ`.  In the reversible case `randomWalkOp = szDiscriminantMatrix`, the
 companion `randomWalk_eigenvalue_mem_discriminant` then identifies `λ` with a random-walk
@@ -962,10 +957,9 @@ modulus of the *normalised* head-marginal amplitude
 `⟨v-slice | U_Sz^τ | u-slice⟩ / √n` (with `n = card V`), exactly mirroring
 the continuous-time `IsPST := ‖evolve τ u v‖ = 1` and the corrected doubled
 `IsCellUniformSzegedyPST` (`DiscreteTime/Lifts.lean`).  Dividing by `√n`
-makes the two slices unit vectors, so `= 1` is the genuine Born-rule transfer
-probability `1` of a normalised amplitude — not a `= n` raw-amplitude
-artifact.  (The previous `‖∑_y …‖ = (card V : ℝ)` used the wrong
-normalisation: it asserted the *un-normalised* head-marginal had modulus `n`,
+makes the two slices unit vectors, so `= 1` is the Born-rule transfer
+probability `1` of a normalised amplitude.  (Without the `√n` normalisation
+one would be asserting the *un-normalised* head-marginal has modulus `n`,
 which is not the unit-modulus transfer condition the corpus uses.) -/
 def IsDTQW_PST {V : Type u} [Fintype V] [DecidableEq V]
     (G : WeightedGraph V) (u v : V) (τ : ℕ) : Prop :=
@@ -1042,7 +1036,7 @@ to its generators `doubledCellUniformVec i j` and tracking each factor:
   (`szSwap_mulVec_doubledCellUniformVec`: `S · (e_i ⊗ e_j) = e_j ⊗ e_i`), so it
   is manifestly subspace-preserving;
 * the **identity** clearly preserves the subspace;
-* the **projector** `Π` is the genuine combinatorial content: its action on a
+* the **projector** `Π` is the combinatorial content: its action on a
   generator is again cell-uniform precisely because the Szegedy coin
   amplitudes — built from the edge *magnitudes* `‖A_{x y}‖` — are constant on
   cells of the partition.  This magnitude-equitability is isolated as the one
@@ -1094,7 +1088,7 @@ theorem szSwap_preserves_doubled (P : EquitablePartition G I)
 /-- **Magnitude-equitability of `P` for `G`.**  The edge *magnitude*
 `‖A_{x y}‖` depends only on the pair of cells `(cells x, cells y)`.
 
-This is the genuinely load-bearing hypothesis for the DTQW (Szegedy) lift, and
+This is the load-bearing hypothesis for the DTQW (Szegedy) lift, and
 it is strictly stronger than ordinary (signed) equitability.  The Szegedy coin
 amplitude `szCoinAmp x y = √(‖A_{x y}‖ / D_x)` involves a *square root* of the
 per-edge magnitude, so the *aggregate* equality supplied by the signed
@@ -1109,7 +1103,7 @@ classical Bachman–Tamon / Portugal lifting (arXiv:1108.0339; Portugal 2018
 §10.3).  Under `RealNonnegWeights` (real, nonnegative edge weights) one has
 `‖A_{x y}‖ = (A_{x y}).re`, so for such graphs magnitude-equitability is just the
 ordinary signed-equitable condition strengthened to hold *pointwise* on
-cell-pairs (the strengthening is genuinely needed: the coin's `√` does not
+cell-pairs (the strengthening is necessary: the coin's `√` does not
 commute with the cell-sum that signed equitability controls). -/
 def MagnitudeEquitable (P : EquitablePartition G I) : Prop :=
   ∀ x y x' y' : V, P.cells x = P.cells x' → P.cells y = P.cells y' →
@@ -1179,7 +1173,7 @@ and the middle scalar `t` and the row `y ↦ φ_{p.1}(y)` are both cell-function
 combination `∑_k (t · c_{ik} √|C_k|) · (e_i ⊗ e_k)` of doubled generators.
 
 This recovers the classical Bachman–Tamon / Portugal lifting (arXiv:1108.0339,
-Thm 1; Portugal 2018 §10.3) under the honest magnitude-equitable hypothesis. -/
+Thm 1; Portugal 2018 §10.3) under the magnitude-equitable hypothesis. -/
 theorem szReflectionProj_preserves_doubled [Nonempty V] (P : EquitablePartition G I)
     (hME : P.MagnitudeEquitable) (i j : I) :
     (G.szReflectionProj).mulVec (P.doubledCellUniformVec i j)
@@ -1350,11 +1344,9 @@ theorem dtqw_ctqw_correspondence {V : Type u} [Fintype V] [DecidableEq V]
     (δ : ℝ) (hδ : 0 < δ)
     -- the Szegedy walk `T`-step amplitude is entrywise `δ`-close to the target …
     (hSz : ∀ p q : V × V, ‖(G.SzegedyWalk ^ T) p q - U_target p q‖ ≤ δ) :
-    -- … then for every discretisation slack `ε > 0` the target is approximated to
-    -- within `δ + ε`.  Genuine and non-vacuous: it consumes `hSz` and the
-    -- conclusion is a real `δ`-`ε` approximation bound (the Childs-2010
-    -- correspondence cast as an `ε`-slack estimate).  The earlier conclusion
-    -- `∃ ε, 0 < ε` was trivially true (`ε := 1`) and ignored every hypothesis. -/
+    -- … then for every discretisation slack `ε > 0` the target is approximated
+    -- to within `δ + ε` — the Childs-2010 correspondence cast as an `ε`-slack
+    -- estimate. -/
     ∀ ε : ℝ, 0 < ε →
       ∀ p q : V × V, ‖(G.SzegedyWalk ^ T) p q - U_target p q‖ ≤ δ + ε := by
   intro ε hε p q
@@ -1372,8 +1364,8 @@ abstract bound and its equitable-partition reduction.
 
 /-- The **uniform arc state** `|s⟩ = n^{-1}·𝟙` on the doubled space `V × V` (with
 `n = card V`): the flat superposition over all `n²` arcs, the canonical AAKV
-quantum-search initial state.  It is a genuine unit vector
-(`uniformArcState_unit`), so it is **not** a "spike" that already concentrates on
+quantum-search initial state.  It is a unit vector
+(`uniformArcState_unit`), and it is **not** a "spike" that already concentrates on
 the marked set — starting from it and reaching marked-block probability `≥ 1/2`
 is a real dynamical statement, not a trivial choice of `ψ`. -/
 noncomputable def uniformArcState (V : Type u) [Fintype V] [DecidableEq V] :
@@ -1396,26 +1388,25 @@ theorem uniformArcState_unit {V : Type u} [Fintype V] [DecidableEq V] [Nonempty 
   field_simp
 
 /-- **AAKV / MNRS quantum-search interface (local, content-bearing typeclass).**
-The genuine analytic theorem of Aharonov–Ambainis–Kempe–Vazirani (STOC 2001),
+The analytic theorem of Aharonov–Ambainis–Kempe–Vazirani (STOC 2001),
 sharpened by Magniez–Nayak–Roland–Santha (STOC 2007): on a graph `G` with a
 nonempty marked set `M`, the Grover walk, **started from the fixed uniform arc
 state** `|s⟩` (`uniformArcState`), reaches **marked-block success probability**
 `≥ 1/2` after a number of steps `T` bounded by `⌈√(n/|M|)⌉ · ⌈log n + 1⌉`
 (the AAKV `O(√(n/|M|))` hitting time, with the standard `log` factor).
 
-This is the **non-vacuous** form of the bound: the only existential is the
-*bounded* step count `T`; the initial state is the **fixed** flat superposition
-(not a free `ψ` one could set to a marked spike), and the conclusion is a genuine
-*probability* `∑_{p.1 ∈ M} ‖(U^T|s⟩)_p‖² ≥ 1/2` — the sum of marked-block squared
-amplitudes, the literal success probability of measuring a marked vertex.  This
-is a probability of a *genuinely normalised* state: `GroverWalk G` is now a
-**unitary** operator (`GroverWalk_unitary`), so `U^T|s⟩` is a unit vector (`|s⟩`
-is, by `uniformArcState_unit`) and `∑_{p.1∈M}‖·‖² ≤ 1` is a true probability —
-not, as in the earlier non-unitary `GroverWalk` encoding, a squared-amplitude
-sum of an un-normalised vector.  A graph that is too sparse/disconnected for
-amplitude amplification to reach `1/2` simply lacks the instance; the typeclass
-is the honest, auditable carrier of the analytic hypothesis-bundle (connectivity
-+ spectral gap + marked fraction) under which AAKV/MNRS prove the bound.
+The shape of the statement matters: the only existential is the *bounded* step
+count `T`; the initial state is the **fixed** flat superposition (a free `ψ`
+could be set to a marked spike), and the conclusion is a
+*probability* `∑_{p.1 ∈ M} ‖(U^T|s⟩)_p‖² ≥ 1/2` — the sum of marked-block
+squared amplitudes, the literal success probability of measuring a marked
+vertex.  It is a probability of a normalised state: `GroverWalk G` is a
+**unitary** operator (`GroverWalk_unitary`), so `U^T|s⟩` is a unit vector
+(`|s⟩` is, by `uniformArcState_unit`) and `∑_{p.1∈M}‖·‖² ≤ 1`.  A graph that
+is too sparse/disconnected for amplitude amplification to reach `1/2` simply
+lacks the instance; the typeclass carries the analytic hypothesis-bundle
+(connectivity + spectral gap + marked fraction) under which AAKV/MNRS prove
+the bound.
 
 This is a **local** interface (kept here, not in the shared
 `LiteratureInterfaces.lean`) because it is specific to this file's `GroverWalk`
@@ -1436,21 +1427,19 @@ class AAKVSearchBound {V : Type u} [Fintype V] [DecidableEq V]
       (∑ p ∈ Finset.univ.filter (fun p : V × V => p.1 ∈ M),
           ‖((GroverWalk G ^ T).mulVec (uniformArcState V)) p‖ ^ 2) ≥ (1 / 2 : ℝ)
 
-/-- **Grover-walk search bound (AAKV 2001), non-vacuous conditional form.**  On a
+/-- **Grover-walk search bound (AAKV 2001), conditional form.**  On a
 graph `G` with a nonempty marked set `M`, *under the AAKV/MNRS analytic
 hypothesis-bundle* (carried by the local typeclass `AAKVSearchBound`), the Grover
 walk **started from the fixed uniform arc state** locates a marked vertex with
 success probability `≥ 1/2` in `T = O(√(n/|M|)·log n)` steps.
 
-This is the honest restatement of the former vacuous version: there the initial
-state `ψ` was a *free* existential (one could pick a marked spike) and the bound
-was on a bare amplitude sum — both made the claim trivially true with `T = 0`.
-Here the start is the **fixed** flat superposition `uniformArcState`
-(a genuine unit vector, `uniformArcState_unit`), the bounded `T` is the only
+The fixed start is essential: with a *free* existential initial state `ψ`
+(a marked spike) and a bare amplitude sum, the claim would be trivially true
+with `T = 0`.  Here the start is the flat superposition `uniformArcState`
+(a unit vector, `uniformArcState_unit`), the bounded `T` is the only
 existential, and the conclusion is the literal *success probability*
-`∑_{p.1 ∈ M} ‖(U^T|s⟩)_p‖² ≥ 1/2`.  The deep analytic content lives in the named
-`AAKVSearchBound` instance; this theorem is a sorry-free, axiom-clean conditional
-consequence of it.
+`∑_{p.1 ∈ M} ‖(U^T|s⟩)_p‖² ≥ 1/2`.  The deep analytic content lives in the
+named `AAKVSearchBound` instance; this theorem is its conditional consequence.
 
 Reference: Aharonov, Ambainis, Kempe, Vazirani, STOC 2001
 (arXiv:quant-ph/0012090); Magniez, Nayak, Roland, Santha, STOC 2007
@@ -1478,9 +1467,8 @@ theorem grover_search_equitable_reduction
     (hME : P.MagnitudeEquitable)
     (M_lift : Finset I)
     (_h : ∀ x : V, x ∈ M ↔ P.cells x ∈ M_lift) :
-    -- GENUINE conclusion (replacing the former `: True`, proven by `trivial`,
-    -- which said nothing): the Szegedy/Grover walk on `G'` preserves the doubled
-    -- cell-uniform subspace, so the search dynamics descend to the quotient.
+    -- The Szegedy/Grover walk on `G'` preserves the doubled cell-uniform
+    -- subspace, so the search dynamics descend to the quotient.
     ∀ ψ : (V × V) → ℂ,
       ψ ∈ P.doubledCellUniformSubspace →
       (G'.SzegedyWalk.mulVec ψ) ∈ P.doubledCellUniformSubspace := by
@@ -1497,28 +1485,25 @@ correspondence, complementary to §6: the Trotter direction goes CTQW →
 DTQW, this direction goes DTQW → CTQW.
 -/
 
-/-- **Continuous-limit theorem (Szegedy → CTQW), non-vacuous conditional form.**
+/-- **Continuous-limit theorem (Szegedy → CTQW), conditional form.**
 As the step count `k → ∞` with the appropriate rescaling `t = k · ε` (with
 `ε = 1/k` to keep `t` fixed), the iterated Szegedy walk — read on its invariant
 subspace as an approximant family `Uapprox k` on the arc space `V × V` —
 converges entrywise to the **doubled CTQW propagator** `evolve t ⊗ evolve t`,
 i.e. `Uapprox k (x,y) (x',y') → (G.evolve t)_{x x'} · (G.evolve t)_{y y'}`.
 
-*Given* that Childs convergence (the deep analytic input, carried honestly as
-the hypothesis `hconv`, exactly as `dtqw_ctqw_correspondence` above carries its
-approximation hypothesis `hSz`), this theorem concludes the genuine **uniform
-entrywise `ε`–`N` approximation**: for every slack `ε > 0` there is a stage `N`
-beyond which *every* arc-entry of `Uapprox k` is within `ε` of the CTQW
-propagator entry.  The conclusion is a real `ε`–`N` convergence statement (not
-the former `True` placeholder, which used neither `G` nor `t`); it consumes
-`hconv` essentially (an arbitrary `Uapprox` need not converge), and is true
-because the arc index set `(V × V) × (V × V)` is finite, so the per-entry
-Childs limits are uniform over it.
+*Given* Childs convergence (the deep analytic input, carried as the hypothesis
+`hconv`, exactly as `dtqw_ctqw_correspondence` above carries its approximation
+hypothesis `hSz`), this theorem concludes the **uniform entrywise `ε`–`N`
+approximation**: for every slack `ε > 0` there is a stage `N` beyond which
+*every* arc-entry of `Uapprox k` is within `ε` of the CTQW propagator entry.
+The conclusion consumes `hconv` essentially (an arbitrary `Uapprox` need not
+converge), and is true because the arc index set `(V × V) × (V × V)` is
+finite, so the per-entry Childs limits are uniform over it.
 
 The deep analytic content — that the rescaled Szegedy iterates *do* converge
 entrywise to `evolve t ⊗ evolve t` — is precisely `hconv`; the present theorem
-is the sorry-free, axiom-clean packaging of that limit into a uniform
-approximation bound.
+packages that limit into a uniform approximation bound.
 
 Reference: Childs, "On the relationship between continuous- and discrete-
 time quantum walk", *Commun. Math. Phys.* 294, 581–603 (2010). -/

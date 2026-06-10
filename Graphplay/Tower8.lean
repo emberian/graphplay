@@ -24,7 +24,7 @@ identification is folklore, made precise e.g. in Dovier–Piazza–Policriti
 "An efficient algorithm for computing bisimulation equivalence" TCS 311 (2004),
 and in the descriptive-complexity reading of Grohe.)
 
-## Relationship to dregg2 (HONEST SCOPING)
+## Relationship to dregg2
 
 The coinductive bisimulation core this mirrors lives in a **separate repository**
 (`breadstuffs`, the `Dregg2.Boundary` namespace): a behaviour functor
@@ -35,42 +35,36 @@ entire `inducedSystem` run).  dregg2 is **not** a Lake dependency of graphplay,
 so we do **not** import it.  Instead, Tower 8 defines its **own** abstract
 interface — `TransitionCoalg` / `IsBisim` / `IsObsQuotient` /
 `StepInvPreserved` — that *models* dregg2's structure field-for-field, and then
-shows graphplay's `EquitablePartition` genuinely **realizes** it.
+shows graphplay's `EquitablePartition` **realizes** it.
 
-What is GENUINE here (proved, or provable, no honest-sorry):
+Contents:
 
-* the abstract coalgebra/bisimulation interface (§1) — real structures with
-  real fields;
+* the abstract coalgebra/bisimulation interface (§1);
 * the equitable-partition realization (§2): an `EquitablePartition` induces a
   coalgebra on the cell index whose observation is the cell's branching profile
   and whose admissible-turn map is the quotient transition; the cell-equality
-  relation `cells x = cells y` is a genuine `IsBisim` on the *vertex-level*
-  coalgebra (`equitable_isBisim`), with a real, short proof;
+  relation `cells x = cells y` is an `IsBisim` on the *vertex-level*
+  coalgebra (`equitable_isBisim`), with a short proof;
 * the safety-preservation keystone (§3, `stepInv_preserved`), the mirror of
   dregg2's `stepComplete_preserves`, stated and proved for the induced
   transition system;
 * the **property-lift** law (§4): a quotient-side observational property lifts
   to a cell-uniform property on the host, the structural shadow of
-  `cellUniformPST_iff_quotientPST`.  The *statement* is the genuine bridge;
-  one direction reuses the proved Tower-3 iff.
-
-What is now ALSO PROVED (§5, this wave):
-
-* `coarsest_equitable_isCoarsest_bisim`: the Paige–Tarjan = 1-WL theorem in its
-  correct **relational-coarsest-partition** form — a bisimulation of the vertex
+  `cellUniformPST_iff_quotientPST`; one direction reuses the Tower-3 iff;
+* `coarsest_equitable_isCoarsest_bisim` (§5): the Paige–Tarjan = 1-WL theorem
+  in its **relational-coarsest-partition** form — a bisimulation of the vertex
   coalgebra that refines the base cell partition `P` refines the WL-stable
-  colouring.  Proved via `WL.wlRefine_coarsestEquitable`.  HONEST CAVEAT: the
+  colouring.  Proved via `WL.wlRefine_coarsestEquitable`.  Caveat: the
   vertex coalgebra has an identity successor, so an abstract bisimulation
   carries only `obs_eq` (equal one-round branching profile), which is *strictly
-  weaker* than equal WL colour; the naive "every bisimulation refines WL" is
-  FALSE (same-degree on `P₄` is a counterexample) and is not claimed.  The
-  proved theorem adds the standard hypothesis that the candidate refines the
+  weaker* than equal WL colour; the unrestricted "every bisimulation refines
+  WL" is false (same-degree on `P₄` is a counterexample) and is not claimed.
+  The theorem adds the standard hypothesis that the candidate refines the
   initial blocks, satisfied by the cell-equality bisimulation and every finer
-  one — this is the genuine, non-vacuous content.
+  one.
 
-What is OMITTED as too loose (per the design brief): the authority-lattice and
-emergent-causality readings of dregg2.  Those are not classical theorems about
-equitable partitions and we do not pretend they are.
+Omitted: the authority-lattice and emergent-causality readings of dregg2 —
+not classical theorems about equitable partitions.
 
 References:
   * Milner, *Communication and Concurrency*, Prentice Hall 1989.
@@ -218,12 +212,12 @@ end TransitionCoalg
 /-! ## 2. The equitable-partition realization.
 
 We exhibit two coalgebras and the quotient morphism between them, and prove that
-`cells`-equality is a genuine bisimulation.
+`cells`-equality is a bisimulation.
 
 * The **vertex coalgebra** `vertexCoalg P` has carrier `V`.  Its admissible
   turns are *target cells* `I`: from a vertex, the `j`-turn moves to "the
   branching mass into cell `j`".  Since the successor must live in the carrier,
-  the honest Moore/DFA structure observes the *cell* and transitions along the
+  the Moore/DFA structure observes the *cell* and transitions along the
   *quotient*; to keep the carrier `V` we use the partition's own data.  We model
   the observation as the cell label and the `j`-turn as a representative-stable
   successor.  The load-bearing fact is that `cells x = cells y` is a bisimulation
@@ -256,7 +250,7 @@ noncomputable def vertexObs (P : Graphplay.EquitablePartition G I) (x : V) : I �
 
 /-- **Vertex coalgebra.**  Carrier `V`; observation = the branching profile;
 the `j`-turn is the identity successor (the carrier-internal Moore transition is
-recorded structurally via the observation — the genuine transition dynamics live
+recorded structurally via the observation — the transition dynamics live
 on the quotient and are connected by `restrict_eq_symmQuotient`).  We keep the
 admissible-turn alphabet equal to the cell index `I`, matching dregg2's
 `AdmissibleTurn` slot.
@@ -315,8 +309,8 @@ theorem equitable_isBisim (P : Graphplay.EquitablePartition G I) :
 
 /-- Spelled-out corollary: the `obs_eq` obligation of `equitable_isBisim` is the
 equitable/branching uniformity.  Recorded separately to make the
-"bisimulation = equitable" identification fully explicit and to pin the
-non-vacuity (the relation genuinely constrains the branching profile). -/
+"bisimulation = equitable" identification fully explicit: the relation
+constrains the branching profile. -/
 theorem equitable_isBisim_obs (P : Graphplay.EquitablePartition G I)
     (x y : V) (h : P.cells x = P.cells y) :
     P.vertexObs x = P.vertexObs y := by
@@ -365,10 +359,10 @@ def Reachable (T : TransitionCoalg Obs Turn) : T.Carrier → T.Carrier → Prop 
 
 If a predicate `Good` is preserved by every single admissible transition, then
 it is preserved along *any* reachable run.  This is dregg2's `stepComplete_preserves`
-/ `knowledge_does_not_drift` rephrased for the abstract coalgebra: claimed safety
+/ `knowledge_does_not_drift` rephrased for the abstract coalgebra: safety
 that survives one step survives the whole unbounded life of the state.
 
-PROVED here (no sorry) by induction on `Reachable`. -/
+Proved by induction on `Reachable`. -/
 theorem stepInv_preserved (T : TransitionCoalg Obs Turn)
     (Good : T.Carrier → Prop)
     (hpres : ∀ x t, Good x → Good (T.next x t))
@@ -429,7 +423,7 @@ coalgebra is equivalent, at any vertex `x`, to the same predicate on the host
 observation — because `cells` is a coalgebra morphism.  Instantiates
 `obs_property_lift` for the equitable realization.
 
-This is the *structural* avatar of `cellUniformPST_iff_quotientPST`: the genuine
+This is the *structural* avatar of `cellUniformPST_iff_quotientPST`: the full
 PST iff is the same shape with `φ` = "the τ-evolution has unit modulus at
 `(i,j)`".  Here we capture the observation-level skeleton that the full PST
 theorem refines. -/
@@ -441,7 +435,7 @@ theorem vertex_obs_property_lift (P : Graphplay.EquitablePartition G I)
   -- `(quotientCoalg P).obs (cells x) = fun j => quotient (cells x) j` definitionally.
   simpa [TransitionCoalg.obs, vertexCoalg, quotientCoalg] using this
 
-/-- **The bridge statement, named.**  The genuine PST lift
+/-- **The bridge statement, named.**  The PST lift
 `Equitable.cellUniformPST_iff_quotientPST` *is* an instance of the
 observational-quotient property lift: cell-uniform perfect state transfer on the
 host is equivalent to perfect state transfer on the quotient, exactly because
@@ -463,7 +457,7 @@ namespace Tower8
 
 /-! ## 5. The coarsest-equitable = coarsest-bisimulation theorem.
 
-The genuine *deep* core of Tower 8: 1-WL colour refinement (= the WL-stable
+The deep core of Tower 8: 1-WL colour refinement (= the WL-stable
 colouring `Graphplay.WL.wlStableColoring`) is the **coarsest
 bisimulation** of the graph-as-coalgebra.  Concretely, every bisimulation
 refines the WL-stable colouring, and the WL-stable colouring is itself a
@@ -473,9 +467,9 @@ One inclusion is already a graphplay theorem:
 `WL.wlRefine_coarsestEquitable` says every equitable partition refines
 `wlStableColoring`, and (via `cells_isObsQuotient`) every equitable partition's
 cell relation is a bisimulation.  The coarsest-bisimulation packaging is
-`coarsest_equitable_isCoarsest_bisim` (now PROVED): a bisimulation of the vertex
+`coarsest_equitable_isCoarsest_bisim`: a bisimulation of the vertex
 coalgebra that refines the base cell partition refines WL.  See its docstring
-for the audit-grade note on why the *unconditioned* "every bisimulation refines
+for why the *unconditioned* "every bisimulation refines
 WL" is false here (the vertex coalgebra's identity successor leaves an abstract
 bisimulation with only the one-round `obs_eq` constraint). -/
 
@@ -485,11 +479,11 @@ open Tower8.TransitionCoalg in
 For a finite simple graph `G`, view it through any equitable partition `P` of
 its weighted incarnation `toWeighted G`.  Then `P`'s cell relation **refines**
 the WL-stable colouring: vertices in the same `P`-cell receive the same WL
-colour.  Since (by `equitable_isBisim`) `P.cells`-equality is a genuine
+colour.  Since (by `equitable_isBisim`) `P.cells`-equality is a
 bisimulation, this is exactly the statement **every bisimulation refines the
 WL-stable colouring**, i.e. WL is the *coarsest* bisimulation.
 
-DIRECTION PROVED: this is precisely `WL.wlRefine_coarsestEquitable`
+This direction is precisely `WL.wlRefine_coarsestEquitable`
 (`Refines (wlStableColoring G) P.cells`, which by the `Refines` definition reads
 `P.cells x = P.cells y → wlStableColoring G x = wlStableColoring G y`).
 
@@ -517,12 +511,12 @@ bisimulation of `vertexCoalg P_WL` by `equitable_isBisim`.  Combined with
 bisimulation: every bisimulation refines them (proved), and they are a
 bisimulation (proved here, via the packaged equitable partition).
 
-HONEST NOTE: the genuinely-deep half of Paige–Tarjan is the *converse pairing* —
+The deep half of Paige–Tarjan is the *converse pairing* —
 that an arbitrary abstract bisimulation `R` on the vertex coalgebra (not assumed
 to come from an equitable partition) is in fact an equitable partition, so that
 `bisim_refines_wlStable` applies to it.  That requires turning `R`'s `obs_eq`
-(equal `vertexObs`) into `P.uniform` and quotienting; it is TRUE but its full
-formalization is deferred.  The statement below is the *proved* packaging: the
+(equal `vertexObs`) into `P.uniform` and quotienting; its full
+formalization is deferred.  The statement below is the proved packaging: the
 WL partition's cell relation is a bisimulation. -/
 theorem wlStable_isBisim
     {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
@@ -539,15 +533,15 @@ theorem wlStable_isBisim
   exact P.equitable_isBisim
 
 open Tower8.TransitionCoalg in
-/-- **Coarsest-equitable IS coarsest-bisimulation (Paige–Tarjan = 1-WL),
-relational-coarsest-partition form — PROVED.**
+/-- **Coarsest-equitable is coarsest-bisimulation (Paige–Tarjan = 1-WL),
+relational-coarsest-partition form.**
 
-The honest, TRUE theorem: a bisimulation `R` of the vertex coalgebra of
+A bisimulation `R` of the vertex coalgebra of
 `toWeighted G` that is **at least as fine as the cell partition** `P` (every
 `R`-related pair sits in one `P`-cell) refines the WL-stable colouring — i.e.
 WL is the *coarsest* bisimulation refining the base partition.
 
-WHY THIS IS THE CORRECT STATEMENT (audit-grade honesty).  The vertex coalgebra
+The refinement hypothesis `hfine` is necessary.  The vertex coalgebra
 `vertexCoalg P` has an **identity successor** (`next x t = x`); its only
 behavioural datum is the head observation `obs = vertexObs = `("branching
 profile into `P`-cells").  Consequently an abstract bisimulation `R` of this
@@ -556,17 +550,17 @@ branching profile (`vertexObs x = vertexObs y`) — and the `step_rel` field is
 vacuous (it reduces to `R x y → R x y`).  Equal one-round branching profile is
 **strictly weaker** than equal WL-stable colour: e.g. for the trivial single-
 cell partition `vertexObs x = (fun _ => deg x)`, the same-degree relation is a
-genuine bisimulation yet does *not* refine WL colour on a path `P₄`.  So the
-naive "every bisimulation of `vertexCoalg P` refines WL" claim is **FALSE**; we
-do not state it.  The genuine relational-coarsest-partition theorem (Paige–
+bisimulation yet does *not* refine WL colour on a path `P₄`.  So
+"every bisimulation of `vertexCoalg P` refines WL" is **false** without
+`hfine`.  The relational-coarsest-partition theorem (Paige–
 Tarjan, Dovier–Piazza–Policriti) takes a candidate that already *refines the
 initial blocks* `P` and concludes it refines the WL fixed point — which is
-exactly `wlRefine_coarsestEquitable`.  This is the non-vacuous, TRUE form, and
-it is fully PROVED below (no `sorry`).
+exactly `wlRefine_coarsestEquitable`.
 
-Non-vacuity: the cell-equality bisimulation `fun x y => P.cells x = P.cells y`
+The hypotheses are realizable: the cell-equality bisimulation
+`fun x y => P.cells x = P.cells y`
 (see `equitable_isBisim`) satisfies both `IsBisim` and `hfine`, and *any* finer
-bisimulation does too; the conclusion genuinely constrains each such `R` to
+bisimulation does too; the conclusion constrains each such `R` to
 refine WL colour. -/
 theorem coarsest_equitable_isCoarsest_bisim
     {V : Type u} [Fintype V] [DecidableEq V] [LinearOrder V]
@@ -576,19 +570,19 @@ theorem coarsest_equitable_isCoarsest_bisim
     (R : T.Carrier → T.Carrier → Prop)
     (_hR : IsBisim T T R)
     -- The coalgebra is the equitable vertex coalgebra of some partition (the
-    -- hypothesis that `T` genuinely observes the branching profile).
+    -- hypothesis that `T` observes the branching profile).
     (P : Graphplay.EquitablePartition (Graphplay.SimpleGraph.toWeighted G) I)
     (_hobs : HEq T.obs (P.vertexObs))
     -- `R` refines the base cell partition (relational-coarsest-partition
     -- hypothesis: the candidate is finer than the initial observation blocks).
-    -- This is the genuine Paige–Tarjan setting and is satisfied by the
+    -- This is the Paige–Tarjan setting and is satisfied by the
     -- cell-equality bisimulation `equitable_isBisim` and every finer one.
     (hfine : ∀ x y : T.Carrier, R x y → P.cells (hT ▸ x) = P.cells (hT ▸ y)) :
     -- Conclusion: `R` refines the WL-stable colouring.
     ∀ x y : T.Carrier, R x y →
       (Graphplay.WL.wlStableColoring G (hT ▸ x)
         = Graphplay.WL.wlStableColoring G (hT ▸ y)) := by
-  -- Genuine content: `R x y → P.cells x = P.cells y` (hypothesis `hfine`) →
+  -- `R x y → P.cells x = P.cells y` (hypothesis `hfine`) →
   -- `wlStableColoring G x = wlStableColoring G y` by `wlRefine_coarsestEquitable`
   -- (`Refines (wlStableColoring G) P.cells`).  This is the proved inclusion of
   -- Paige–Tarjan = 1-WL: a bisimulation refining the base partition refines WL.
@@ -598,7 +592,7 @@ theorem coarsest_equitable_isCoarsest_bisim
 
 /-! ## 6. End-of-file inventory.
 
-**PROVED (no sorry, real content):**
+**Proved:**
 
   * §1 — the abstract interface `TransitionCoalg` / `IsBisim` / `Bisimilar` /
     `IsCoalgMorphism` / `IsObsQuotient`, with `isBisim_eq`, `bisimilar_refl`,
@@ -615,23 +609,22 @@ theorem coarsest_equitable_isCoarsest_bisim
     Tower-3 PST iff, exhibiting it as an observational-quotient lift).
   * §5 — `bisim_refines_wlStable` (every equitable partition / bisimulation
     refines WL, = `wlRefine_coarsestEquitable`), `wlStable_isBisim` (the WL
-    classes form a bisimulation), and **`coarsest_equitable_isCoarsest_bisim`**
-    (now PROVED): the Paige–Tarjan = 1-WL theorem in its correct relational-
+    classes form a bisimulation), and **`coarsest_equitable_isCoarsest_bisim`**:
+    the Paige–Tarjan = 1-WL theorem in its relational-
     coarsest-partition form — a bisimulation of `vertexCoalg P` that refines the
     base cell partition `P` refines the WL-stable colouring.
 
-**NOTE ON THE PAIGE–TARJAN STATEMENT (audit-grade).** The vertex coalgebra has
+**Note on the Paige–Tarjan statement.** The vertex coalgebra has
 an identity successor, so an abstract bisimulation of it carries *only*
 `obs_eq` (equal one-round branching profile), which is strictly weaker than
 equal WL colour (same-degree relation on `P₄` is a bisimulation that does not
-refine WL).  Hence the naive "every bisimulation refines WL" is FALSE and is
-NOT claimed; the genuine theorem (proved) adds the standard relational-coarsest-
+refine WL).  Hence the unrestricted "every bisimulation refines WL" is false
+and is not claimed; the theorem adds the standard relational-coarsest-
 partition hypothesis that the candidate already refines the initial blocks `P`,
 which holds for the cell-equality bisimulation and every finer one.
 
-**OMITTED (too loose, per design brief):** dregg2's authority-lattice and
-emergent-causality readings — not classical equitable-partition theorems, not
-pretended here.
+**Omitted:** dregg2's authority-lattice and
+emergent-causality readings — not classical equitable-partition theorems.
 -/
 
 end Tower8

@@ -356,9 +356,9 @@ theorem quantumWin_classicalToQuantum (G : NonLocalGame V O)
 /-- Classical strategies are quantum strategies (set `n_A = n_B = 1`,
 state `= 1`, deterministic POVMs).  Hence `ω ≤ ω^*`.
 
-The genuine *content* — that every classical strategy embeds as a quantum one
-with the same win — is `quantumWin_classicalToQuantum` above, which is proved
-axiom-clean.  The final value inequality `⨆ classicalWin ≤ ⨆ quantumWin`
+The *content* — that every classical strategy embeds as a quantum one
+with the same win — is `quantumWin_classicalToQuantum`
+above.  The final value inequality `⨆ classicalWin ≤ ⨆ quantumWin`
 additionally needs `QuantumValue`'s `iSup` to be bounded above so that
 `le_ciSup` applies. -/
 theorem ClassicalValue_le_QuantumValue
@@ -417,19 +417,17 @@ strategy (use `H_A ⊗ H_B` as the single Hilbert space, lift the local
 POVMs).  Hence `ω^* ≤ ω^{co}`.
 
 **Wired to `QuantumCommutingSeparation`** (Ji–Natarajan–Vidick–Wright–Yuen
-inclusion half).  The genuine *structural* content — the tensor→commuting
+inclusion half).  The *structural* content — the tensor→commuting
 embedding `E_v^a ⊗ I`, `I ⊗ F_w^b` with the matching `correlation` identity, and
 the fact that `QuantumValue`/`CommutingOperatorValue` are the suprema of their
 win-functionals — is supplied as explicit hypotheses (`embed`,
 `hembed : commutingWin∘embed = quantumWin`, the two `IsLUB` facts, and
 nonemptiness of the commuting range).  The literature class then discharges the
-sup-monotonicity step.  No `sorry`, no `axiom`: the only assumption is the named
-instance plus the honest embedding datum, exactly as the de-echoed class intends.
+sup-monotonicity step.
 
 The `IsLUB` hypotheses are precisely the boundedness facts `QuantumValue`/
-`CommutingOperatorValue` need to be genuine suprema (recall `⨆` collapses to `0`
-on unbounded/empty ranges); they are the consumer's remaining obligation, made
-auditable here rather than hidden. -/
+`CommutingOperatorValue` need to be true suprema (recall `⨆` collapses to `0`
+on unbounded/empty ranges); they are the consumer's remaining obligation. -/
 theorem QuantumValue_le_CommutingOperatorValue [QuantumCommutingSeparation]
     {V O : Type} [Fintype V] [Fintype O]
     (G : NonLocalGame V O)
@@ -452,18 +450,18 @@ theorem QuantumValue_le_CommutingOperatorValue [QuantumCommutingSeparation]
 /-- **MIP\* = RE / Connes-embedding refutation, at the concrete game level**
 (Ji–Natarajan–Vidick–Wright–Yuen, "MIP\* = RE", arXiv:2001.04383).
 
-The genuinely-external separation: there is a *concrete* `NonLocalGame` whose
+The external separation: there is a *concrete* `NonLocalGame` whose
 finite-dimensional tensor-product value `QuantumValue` is strictly below its
 commuting-operator value `CommutingOperatorValue`.  The witness is the
 compression-of-MIP\* game of JNVWY §3, far outside any present formalization.
 
-This is carried as a **typeclass assumption, never a bare `axiom`**: no instance
+This is carried as a typeclass assumption: no instance
 is provided (the construction is the missing external content), so a theorem
-assuming `[QuantumCommutingGameSeparation]` is a sorry-free conditional theorem
+assuming `[QuantumCommutingGameSeparation]` is a conditional theorem
 listing the cited theorem as a named hypothesis.
 
 The abstract `LiteratureInterfaces.QuantumCommutingSeparation.exists_strict_gap`
-states the genuine separation over an *abstract* game family (opaque `Γ`, with
+states the separation over an *abstract* game family (opaque `Γ`, with
 the values pinned as suprema of payoff functionals and a payoff-preserving
 tensor↪commuting embedding), but it lives over types we cannot identify with this
 file's concrete `NonLocalGame`/`QuantumValue`/`CommutingOperatorValue` without the
@@ -476,12 +474,10 @@ class QuantumCommutingGameSeparation : Prop where
       QuantumValue G < CommutingOperatorValue G
 
 /-- **MIP\* = RE separation** (Ji–Natarajan–Vidick–Wright–Yuen 2020,
-arXiv:2001.04383), now an axiom-clean conditional theorem: assuming the named
+arXiv:2001.04383), as a conditional theorem: assuming the named
 literature class `[QuantumCommutingGameSeparation]`, there is a non-local game
 `G` with `QuantumValue G < CommutingOperatorValue G` (equivalently, the Connes
-embedding conjecture is false).
-
-No `sorry`, no `axiom`: the only assumption is the named, cited class, whose
+embedding conjecture is false).  The class's
 witness is the JNVWY §3 compression game (out of scope to construct). -/
 theorem exists_quantum_lt_commuting [h : QuantumCommutingGameSeparation] :
     ∃ (V O : Type) (_ : Fintype V) (_ : Fintype O) (G : NonLocalGame V O),
@@ -563,7 +559,7 @@ theorem GraphColoringGame.classicalWin_eq_one_iff
 /-- **Classical coloring game value = 1 iff χ(G) ≤ k.**  (Mancinska-
 Roberson Prop 2.)
 
-A `[Nonempty V]` hypothesis is genuinely required: for empty `V` the value is
+The `[Nonempty V]` hypothesis is required: for empty `V` the value is
 `0` (vacuous question distribution) while a vacuous `k`-coloring still exists,
 so the bare iff is false. -/
 theorem GraphColoringGame.classical_value_eq_one
@@ -636,25 +632,26 @@ theorem GraphColoringGame.classical_value_eq_one
 This is the **headline statement** of Mancinska-Roberson 1212.1724: the
 quantum chromatic number of `G` is the least `k` for which Alice and
 Bob have a *perfect* Tsirelson strategy in the coloring game.  We state the
-honest, stub-independent game-value half (a colouring forces `ω^* = 1`); the
-biconditional against a genuine `χ_q` belongs to the Tower-3 development.
+stub-independent game-value half (a colouring forces `ω^* = 1`); the
+biconditional against a non-stub `χ_q` belongs to the Tower-3 development.
 -/
 
-/-- **Mancinska-Roberson, the "easy" half via games (PROVEN).**  A classical
+/-- **Mancinska-Roberson, the "easy" half via games.**  A classical
 `k`-coloring of `G` forces the quantum value of the `(G,k)`-coloring game up to
 (at least) `1`: `(∃ c : G.Coloring (Fin k)) → 1 ≤ ω^*(GraphColoringGame G k)`,
-given the boundedness `BddAbove` that makes the supremum genuine.  Indeed a
+given the boundedness `BddAbove` the supremum requires.  Indeed a
 coloring is a perfect *classical* strategy (`classical_value_eq_one`), and every
 classical strategy embeds as a quantum one with the same win
 (`ClassicalValue_le_QuantumValue`), so `1 = ω(game) ≤ ω^*(game)`.
 
-WHY THE BICONDITIONAL IS NOT STATED.  The full Mancinska-Roberson biconditional
-`χ_q(G) ≤ k ↔ ω^*(GraphColoringGame G k) = 1` would, against any `0`-stub `χ_q`,
-collapse (left side `0 ≤ k` is `True`) to the unconditional `ω^* = 1`, which is
+The full Mancinska-Roberson biconditional
+`χ_q(G) ≤ k ↔ ω^*(GraphColoringGame G k) = 1` is not stated: against any
+`0`-stub `χ_q` it
+collapses (left side `0 ≤ k` is `True`) to the unconditional `ω^* = 1`, which is
 **false** already at `k = 0` (for nonempty `V` the strategy type
 `QuantumStrategy V (Fin 0)` is empty, so the value is the empty supremum `0 ≠ 1`).
-The biconditional is genuine literature but needs a non-stub `χ_q` (Tower 3); we
-record instead the honest, true, stub-independent half. -/
+The biconditional needs a non-stub `χ_q` (Tower 3); we
+record the stub-independent half. -/
 theorem quantumColorable_imp_one_le_quantumValue
     {V : Type*} [Fintype V] [DecidableEq V] [Nonempty V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (k : ℕ)
@@ -668,19 +665,14 @@ theorem quantumColorable_imp_one_le_quantumValue
     _ ≤ QuantumValue (GraphColoringGame G k) :=
         ClassicalValue_le_QuantumValue (GraphColoringGame G k) hbdd
 
-/-! **`χ_qc ≤ χ_q` chromatic-chain theorems — DELETED as contentless.**
+/-! **The chromatic chain `χ_qc ≤ χ_q ≤ χ` is not stated here.**
 
-A `commutingOperatorChromaticNumber` definition and the inequalities
-`χ_qc(G) ≤ χ_q(G) ≤ χ(G)` once lived here, but every chromatic invariant involved
-was a `0` stub, so each inequality was the contentless `0 ≤ 0` proven by
-`Nat.zero_le _` — asserting **nothing** about the real chain, exactly the landmine
-class flagged by the fidelity audit.  They have been removed (along with the
-`0`-stub invariants themselves) rather than left as `0 ≤ 0` against the stubs.
-
-The genuine, stub-independent game-value content is kept: a colouring forces the
+Every chromatic invariant available at this level is a `0` stub, against which
+each inequality would be the contentless `0 ≤ 0`.  The stub-independent
+game-value content is what this file states: a colouring forces the
 quantum game value to `1` (`quantumColorable_imp_one_le_quantumValue`) and the
 quantum-advantage gap (`phantomSymmetry_to_quantumStrategy`).  The real chain
-awaits genuine (non-`0`) bodies for the chromatic invariants. -/
+awaits non-`0` bodies for the chromatic invariants. -/
 
 /-! ## 4. Quantum equitable partitions induce quantum strategies
 
@@ -698,17 +690,14 @@ Tsirelson-quantum strategy (a `QuantumStrategy` winning with probability `1`,
 together with the normalization bound `win ≤ 1` that the win-probability
 encoding satisfies) for a graph `G` that admits **no** classical `k`-coloring.
 
-WHY THE OLD STRUCTURE WAS A LANDMINE-ENABLER.  The previous version carried only
-an inert `data : Unit` and `quotient_classical : True`, so `PhantomSymmetry G k`
-was inhabited for **any** non-`k`-colorable `G` (e.g. `K_{k+1}`) with
-`data := ()` — *without any quantum strategy existing*.  That made
-`phantomSymmetry_to_quantumStrategy` (which concludes `QuantumValue = 1`) **false
-as stated**: take `G = K_{k+1}`; it has `χ_q = k+1 > k`, so no perfect quantum
-strategy and `QuantumValue (GraphColoringGame K_{k+1} k) < 1`, yet the hypothesis
-was satisfiable.  We repair by giving the structure genuine content: it now
-*carries* the perfect strategy (and its normalization bound), so its inhabitation
-is exactly the quantum-advantage assertion `χ_q(G) ≤ k < χ(G)` it is meant to
-package, and the theorem below becomes a genuine, axiom-clean consequence.
+The structure must carry the strategy itself.  A version inhabited for
+*any* non-`k`-colorable `G` — without a quantum strategy existing — would make
+`phantomSymmetry_to_quantumStrategy` (which concludes `QuantumValue = 1`)
+false: take `G = K_{k+1}`; it has `χ_q = k+1 > k`, so no perfect quantum
+strategy and `QuantumValue (GraphColoringGame K_{k+1} k) < 1`.  Carrying the
+perfect strategy (and its normalization bound) makes inhabitation
+exactly the quantum-advantage assertion `χ_q(G) ≤ k < χ(G)` this structure is
+meant to package.
 
 (We do not formalize `QuantumEquitablePartition` here — that's
 `NonCommutativeCoherent.lean`; we package the strategy it produces.) -/
@@ -718,16 +707,16 @@ structure PhantomSymmetry {V : Type*} [Fintype V] [DecidableEq V]
   strategy : NonLocalGame.QuantumStrategy V (Fin k)
   /-- It wins the `(G, k)`-coloring game with probability `1`. -/
   strategy_perfect : NonLocalGame.quantumWin (GraphColoringGame G k) strategy = 1
-  /-- The win probability is normalized: no strategy exceeds `1` (the genuine
+  /-- The win probability is normalized: no strategy exceeds `1` (the
   upper bound the win-probability encoding satisfies; it makes the supremum a
-  genuine value rather than an artifact). -/
+  true value rather than an artifact). -/
   win_le_one : ∀ S : NonLocalGame.QuantumStrategy V (Fin k),
     NonLocalGame.quantumWin (GraphColoringGame G k) S ≤ 1
-  /-- `G` itself does *not* admit a classical `k`-coloring (so we're
-  in the genuinely-quantum regime). -/
+  /-- `G` itself does *not* admit a classical `k`-coloring (the
+  quantum-advantage regime). -/
   no_classical_coloring : ¬ ∃ c : G.Coloring (Fin k), True
 
-/-- **Phantom symmetry → quantum advantage (PROVEN).**  A `PhantomSymmetry G k`
+/-- **Phantom symmetry → quantum advantage.**  A `PhantomSymmetry G k`
 witness produces the quantum-advantage gap `ω^*(GraphColoringGame G k) = 1`
 (perfect quantum strategy) while `ω(GraphColoringGame G k) < 1` (no perfect
 classical strategy), witnessing `χ_q(G) ≤ k < χ(G)`.
@@ -736,7 +725,7 @@ This is the *quantum advantage* phenomenon — the original example is the
 orthogonality graph on `ℝ^4`, where `χ_q = 4 < χ = 5` (Mancinska-Roberson §5,
 building on Cubitt-Mancinska-Roberson-Severini-Stahlke-Winter).
 
-Now genuinely proven: the carried perfect strategy attains the (normalized)
+The carried perfect strategy attains the (normalized)
 quantum value `1`, and the *absence* of a classical `k`-coloring forces the
 classical value strictly below `1` via `GraphColoringGame.classical_value_eq_one`.
 -/
@@ -872,21 +861,17 @@ This is the win-probability form of Tsirelson's `2√2` bound on the CHSH
 correlator (Tsirelson, "Quantum generalizations of Bell's inequality", Lett.
 Math. Phys. 4 (1980), 93-100).
 
-**Re-keyed onto SATISFIABLE hypotheses.**  The old version rested on the
-`[TsirelsonBound]` class whose every field was provably uninhabitable (it bounded
-an *arbitrary* functional by `2√2`, refutable at `1000`), making this a
-vacuously-conditional headline.  The bound now rests on two *honest, inhabitable*
-data:
+The bound rests on two satisfiable hypotheses:
 
-* `hreal : ∀ S, CHSHRealization (8·quantumWin CHSHGame S − 4)` — the genuine
+* `hreal : ∀ S, CHSHRealization (8·quantumWin CHSHGame S − 4)` — the
   quantum-mechanical modelling assumption that each strategy's signed CHSH value
   is realized by commuting self-adjoint `±1`-observables + a vector state.  Its
   inhabitability is witnessed concretely by `CHSHRealization.ofAbsLeTwo` (for the
-  classical-regime strategies) — it is NOT the uninhabitable universal.  The upper
+  classical-regime strategies).  The upper
   bound `≤ 2√2` is then *derived* from the proven `CHSHRealization.le_two_sqrt_two`.
 * `htight : ∀ ε > 0, ∃ S, 2√2 − (8·quantumWin CHSHGame S − 4) < ε` — tightness, the
-  genuine literature fact that Tsirelson's optimal entangled strategy approaches
-  the bound.  This is a true, non-refutable existence statement. -/
+  literature fact that Tsirelson's optimal entangled strategy approaches
+  the bound. -/
 theorem CHSH_quantum_value
     (hreal : ∀ S : QuantumStrategy (Fin 2) (Fin 2),
       CHSHRealization (8 * quantumWin CHSHGame S - 4))
@@ -923,19 +908,16 @@ theorem CHSH_quantum_value
     have : (2 + Real.sqrt 2) / 4 - ε < quantumWin CHSHGame S := by linarith
     linarith
 
-/-- **Tsirelson bound on the CHSH correlator (re-keyed onto the proven
-operator-algebra theorem, UNCONDITIONAL on `[TsirelsonBound]`).**  In the standard
+/-- **Tsirelson bound on the CHSH correlator.**  In the standard
 correlator normalization, the signed CHSH expression is `C(S) = 8·win(S) − 4`,
 affinely tied to the win-probability (same encoding as `CHSH_quantum_value`).
 Tsirelson's bound is the *two-sided* statement `|C(S)| ≤ 2√2`.
 
-**Re-keyed onto a SATISFIABLE hypothesis.**  The old version threaded the
-uninhabitable `[TsirelsonBound]` class (vacuously conditional).  Now the per-`S`
+The per-`S`
 two-sided bound is *derived* from the proven `CHSHRealization.le_two_sqrt_two`,
-given honest realizations of `C(S)` and of the complementary correlator `−C(S) =
+given realizations of `C(S)` and of the complementary correlator `−C(S) =
 4 − 8·win` (flip one party's outputs — itself a valid CHSH value).  Both
-hypotheses are inhabitable (`CHSHRealization.ofAbsLeTwo`), NOT the old refutable
-universal.  The bound itself is a genuine theorem, no `sorry`. -/
+hypotheses are inhabitable (`CHSHRealization.ofAbsLeTwo`). -/
 theorem CHSH_correlator_bound
     (S : QuantumStrategy (Fin 2) (Fin 2))
     (hpos : CHSHRealization (8 * quantumWin CHSHGame S - 4))
@@ -976,7 +958,7 @@ inhabitation content-free), we record `GameAlgebra` by the *operational content
 its representations realise*: a finite-dimensional Tsirelson-quantum strategy
 that wins the game perfectly.
 
-This makes `GameAlgebra` genuinely content-bearing — it is inhabited **iff** the
+This makes `GameAlgebra` content-bearing — it is inhabited **iff** the
 game has a perfect quantum strategy — which is precisely the property the
 universal ∗-algebra is meant to track, and what `QuantumValue_eq_gameAlgebra_rep`
 asserts. -/
@@ -992,26 +974,18 @@ structure GameAlgebra (V O : Type*) [Fintype V] [Fintype O]
 /-- **Game-algebra representation ↔ perfect quantum strategy** (Mancinska–Roberson
 §4, the synchronous-strategy dictionary).
 
-**Restated to a TRUE, non-vacuous biconditional.**  The old statement
-`QuantumValue G = 1 ↔ ∃ A : GameAlgebra V O G, True` was **false as stated**: the
-old `GameAlgebra` carried only an inert `Carrier : Type` and `algebraic_structure
-: Unit`, so `∃ A, True` was *trivially true* (`⟨⟨Empty, ()⟩, trivial⟩` always
-inhabits it), collapsing the biconditional to the unconditional `QuantumValue G =
-1`, which fails for general `G`.
-
-The fix gives `GameAlgebra` genuine content — a finite-dimensional ∗-rep is
-recorded by the perfect Tsirelson strategy it realises — so its inhabitation
+`GameAlgebra` records a finite-dimensional ∗-rep by the perfect Tsirelson
+strategy it realises, so its inhabitation
 `∃ A : GameAlgebra V O G` is *exactly* the assertion that the game admits a
-perfect quantum strategy `∃ S, quantumWin G S = 1`.  We also drop the vacuous
-trailing `True`.  The biconditional
+perfect quantum strategy `∃ S, quantumWin G S = 1`.  The biconditional
 
     (∃ A : GameAlgebra V O G) ↔ (∃ S : QuantumStrategy V O, quantumWin G S = 1)
 
-is then genuinely true and proved by destructuring each side into the other (a
+is proved by destructuring each side into the other (a
 `GameAlgebra` *is* a perfect strategy together with its perfection witness, and
-conversely).  This is the honest operational form of "the game ∗-algebra has a
+conversely).  This is the operational form of "the game ∗-algebra has a
 finite-dimensional representation iff the game has a perfect (synchronous)
-quantum strategy" — the genuine equivalence the structure can support. -/
+quantum strategy". -/
 theorem QuantumValue_eq_gameAlgebra_rep
     {V O : Type*} [Fintype V] [Fintype O] (G : NonLocalGame V O) :
     (∃ _A : GameAlgebra V O G, True)
@@ -1050,12 +1024,12 @@ to *non-local game values*:
 * `ϑ_q` (the quantum Lovász theta) lower-bounds `χ_q` and upper-bounds
   the independence variant `α_q`.
 
-**The `χ_qc ≤ χ_q ≤ χ` chain theorem is NOT stated here (deleted as contentless).**
+**The `χ_qc ≤ χ_q ≤ χ` chain theorem is not stated here.**
 Against the `0`-stub chromatic invariants of `Graphplay.Relational` it would be
-the vacuous `0 ≤ 0 ∧ 0 ≤ 0`, asserting nothing about the real chain — the
-landmine class flagged by the fidelity audit.  The stub-independent half (a
+the contentless `0 ≤ 0 ∧ 0 ≤ 0`, asserting nothing about the real
+chain.  The stub-independent half (a
 colouring forces `ω^* = 1`) is `quantumColorable_imp_one_le_quantumValue`; the
-full chain awaits genuine bodies for the chromatic invariants.
+full chain awaits non-stub bodies for the chromatic invariants.
 -/
 
 /-! ## 8. Open problems and conjectures -/

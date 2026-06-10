@@ -32,17 +32,15 @@ strongly regular graphs, complete bipartite, 4d-lattices, …).
 
 ## What is proven vs. conditional
 
-This file is `sorry`-free.
-
-* `CNOSpectralRatio` is **genuinely well-defined** (a real number computed from
-  `G.herm.eigenvalues`), and several of its basic properties (nonnegativity,
+* `CNOSpectralRatio` is a real number computed from
+  `G.herm.eigenvalues`, and several of its basic properties (nonnegativity,
   the value on the complete graph) are proven from the spectral API.
-* The headline `optimal_search_of_spectral_ratio_lt_one` is an axiom-clean
+* The headline `optimal_search_of_spectral_ratio_lt_one` is a
   **conditional theorem**: the deep CTQW success-probability / perturbation
   analysis of arXiv:2004.12686 (Theorems 1–2), which converts the spectral-gap
   bound into the constant-amplitude statement, is named as the cited, no-instance
   `Prop`-valued interface `[CNOOptimalSearch V]` and the theorem is derived from
-  its field — `#print axioms`-clean, no false statements.
+  its field.
 * The **graphplay payoff** — quotient/bundle inheritance of optimal search —
   is stated as `optimal_search_of_quotient_ratio` using the spine's
   `spectrum_subset` / `symmQuotient`.
@@ -119,14 +117,14 @@ theorem searchHamiltonian_isHermitian (G : WeightedGraph V) (w : V) (γ : ℝ) :
       rintro ⟨huv, huw⟩
       exact h ⟨huv.symm, huv ▸ huw⟩
 
-/-! ## The two-level Rabi idealization — axiom-clean.
+/-! ## The two-level Rabi idealization.
 
 Childs–Goldstone spatial search is governed, in the relevant regime, by a
 **two-dimensional effective subspace** `span{|w⟩, |s⟩}` (marked vertex / uniform
 state).  On this subspace the search Hamiltonian acts (to leading order) as the
 off-diagonal Rabi coupling `Ω·X` with `X` the Pauli-`X` and Rabi frequency `Ω`
 set by the `|w⟩–|s⟩` matrix element.  The transition amplitude is then the
-genuine Rabi oscillation `|sin(t·Ω)|`, reaching `1` at `t = (π/2)/Ω`.
+Rabi oscillation `|sin(t·Ω)|`, reaching `1` at `t = (π/2)/Ω`.
 
 This section reproduces, **fully proven and self-contained**, the exact `2×2`
 Rabi evolution (the same computation as the `K_n` flagship
@@ -245,7 +243,7 @@ theorem rabiEvolution_norm (Ω t : ℝ) :
   rw [rabiEvolution_entry01, norm_mul, norm_neg, Complex.norm_I, one_mul,
     Complex.norm_real, Real.norm_eq_abs]
 
-/-- **The two-level Rabi optimal-timing lemma — axiom-clean.**  For any Rabi
+/-- **The two-level Rabi optimal-timing lemma.**  For any Rabi
 frequency `Ω > 0`, the half-period `t* = (π/2)/Ω` realizes the **full** marked
 transition amplitude `‖rabiEvolution Ω t* 0 1‖ = 1`.  If moreover `Ω ≥ c/√N`
 with `c > 0`, then `t* ≤ (π/2)/c · √N = O(√N)`: the timing is `O(√N)` whenever
@@ -280,7 +278,7 @@ theorem rabi_halfPeriod_le (Ω c : ℝ) (N : ℕ) (hc : 0 < c) (hN : 1 ≤ N)
 
 end TwoLevelRabi
 
-/-! ## Exact `2×2` exponential via the involution decomposition — axiom-clean.
+/-! ## Exact `2×2` exponential via the involution decomposition.
 
 For the **complete graph** `K_n` the effective subspace `span{|w⟩, |u⟩}` (marked
 vertex / uniform-over-rest) is *exactly* invariant under the search Hamiltonian
@@ -290,7 +288,7 @@ algebraic fact: any `2×2` matrix `M` satisfies, by Cayley–Hamilton,
 `(M − a·1)² = r²·1` with `a = ½·tr M` and `r² = a² − det M`; so `K := (M−a)/r` is
 an **involution** (`K² = 1`), and `exp(s·M) = exp(s·a)·(cosh(s r)·1 + sinh(s r)·K)`.
 This section proves the involution / idempotent exp identities and packages the
-`2×2` consequence — entirely sorry-free. -/
+`2×2` consequence. -/
 
 section ExactTwoByTwo
 
@@ -436,7 +434,7 @@ budget on `τ`.
 
 The `√N` running time is the content of the quadratic speedup.  The timing
 budget is recorded with a **concrete universal constant** `C = π` (NO free
-existential): `τ ≤ π · √N`.  This is a genuine `O(√N)` budget — a fixed multiple
+existential): `τ ≤ π · √N` — a fixed multiple
 of `√N`, not "some finite time" — so the timing conjunct is load-bearing.  The
 Childs–Goldstone flagship `complete_graph_optimal_search` achieves the tighter
 `τ* = (π/2)·√N ≤ π·√N`, so the bound is met with room to spare.  (We use `π`
@@ -448,7 +446,7 @@ def IsOptimalCTQWSearch (G : WeightedGraph V) (w : V) : Prop :=
     τ ≤ Real.pi * Real.sqrt (Fintype.card V) ∧
     IsOptimalSearch G ({w} : Finset V) γ τ
 
-/-! ## The `|w⟩–|s⟩` matrix element and the Rabi frequency — axiom-clean.
+/-! ## The `|w⟩–|s⟩` matrix element and the Rabi frequency.
 
 The two-level reduction of Childs–Goldstone search lives on `span{|w⟩, |s⟩}`,
 where `|s⟩ = N^{-1/2}·𝟙` is the uniform state.  The off-diagonal coupling of the
@@ -494,13 +492,13 @@ theorem rabiFreqOfRegular_pos (N : ℕ) (hN : 1 ≤ N) : 0 < rabiFreqOfRegular N
   have : (0:ℝ) < Real.sqrt N := Real.sqrt_pos.mpr (by exact_mod_cast hN)
   positivity
 
-/-! ## The two-level idealized optimal search — axiom-clean.
+/-! ## The two-level idealized optimal search.
 
-We package the genuinely-proven dynamical content as a **two-level idealized
+We package the proven dynamical content as a **two-level idealized
 optimal search** predicate: there is an `O(√N)` time at which the *2×2 effective
 Rabi block* (the Childs–Goldstone effective subspace `span{|w⟩, |s⟩}`, with Rabi
 frequency `Ω = 1/√N`) reaches full marked-transition amplitude `= 1`.  This is
-the dynamical heart of the search advantage and is **fully proven** (via
+the dynamical heart of the search advantage, fully proven (via
 `rabi_optimal_timing` + `rabi_halfPeriod_le`), independent of the host — only the
 host-specific Rabi frequency `Ω` (computed above for any regular graph) enters.
 
@@ -508,12 +506,12 @@ The gap between this idealization and the literal `IsOptimalSearch` on the full
 `N`-dimensional Hilbert space is the **perturbative reduction** of the full
 dynamics onto the effective 2D subspace (the other `(d−1)` collapsed-Hamming-chain
 eigenstates contribute at order `O(1/gap)`); that reduction — exact for `K_n`,
-perturbative for `Q_d` — is the single honestly-`BLOCKED` remaining step. -/
+perturbative for `Q_d` — is the remaining unformalized step. -/
 
 /-- **Two-level idealized optimal CTQW search.**  There is a Rabi frequency
 `Ω = Θ(1/√N)` and a time `τ = O(√N)` at which the effective 2-level (Childs–
 Goldstone `span{|w⟩,|s⟩}`) Rabi evolution reaches **full** marked-transition
-amplitude `‖rabiEvolution Ω τ 0 1‖ = 1`.  This is the axiom-clean dynamical core
+amplitude `‖rabiEvolution Ω τ 0 1‖ = 1`.  This is the dynamical core
 of the search advantage. -/
 def IsTwoLevelOptimalCTQWSearch (N : ℕ) : Prop :=
   ∃ (Ω τ C : ℝ),
@@ -521,13 +519,13 @@ def IsTwoLevelOptimalCTQWSearch (N : ℕ) : Prop :=
     τ ≤ C * Real.sqrt N ∧
     ‖rabiEvolution Ω τ 0 1‖ = 1
 
-/-- **The two-level idealized optimal search is achieved at `O(√N)` — axiom-clean.**
+/-- **The two-level idealized optimal search is achieved at `O(√N)`.**
 For any `N ≥ 1`, taking the Grover Rabi frequency `Ω = 1/√N` and the half-period
 `τ* = (π/2)·√N` (the Childs–Goldstone search time), the effective 2-level Rabi
 evolution reaches full marked-transition amplitude `1`.  The runtime `τ* = O(√N)`
 is explicit with constant `C = π/2`.
 
-This is a **genuine, sorry-free, `#print axioms`-clean** statement of the
+This is the statement of the
 optimal-timing advantage at the two-level (effective-subspace) idealization that
 governs Childs–Goldstone search on `K_n`, `Q_d`, and every constant-gap host. -/
 theorem twoLevel_optimal_timing (N : ℕ) (hN : 1 ≤ N) :
@@ -637,8 +635,8 @@ window `|r−S₁| = O(√S₂)`).  Following the `LovaszSDPDuality` pattern, we
 it as a `Prop`-valued typeclass whose single field is *exactly* the cited
 implication: a regular host with uniform principal eigenvector and spectral ratio
 `< 1` supports optimal CTQW search.  No instance is provided — it is a pure,
-cited, external assumption; theorems depending on it become `#print axioms`-clean
-and honestly conditional on `[CNOOptimalSearch]`. -/
+cited, external assumption; theorems depending on it are
+conditional on `[CNOOptimalSearch]`. -/
 class CNOOptimalSearch (V : Type u) [Fintype V] [DecidableEq V] : Prop where
   /-- CNO arXiv:2004.12686 Thms 1–2: for a `d`-regular weighted graph `G` whose
   principal eigenvector at index `p` is uniform and whose spectral ratio is below
@@ -662,8 +660,8 @@ is optimal: success probability `→` constant in time `O(√N)`.
 
 The deep perturbative analysis (CNO Thms 1–2: `S₁/√S₂ = Θ(1)`) is **not**
 formalised here; it is named as the external hypothesis `[CNOOptimalSearch V]`
-and discharged from its field.  The statement is therefore `#print axioms`-clean
-and honestly conditional on the cited result. -/
+and discharged from its field.  The statement is therefore
+conditional on the cited result. -/
 theorem optimal_search_of_spectral_ratio_lt_one [CNOOptimalSearch V]
     (G : WeightedGraph V) (w : V) (p : V) (d : ℂ)
     (hne : Nonempty V)
@@ -721,8 +719,7 @@ symmetric quotient `Q̃` (a `WeightedGraph` `GQ` on the index type `I`, packaged
 The spectral half (`spectrum_subset`) and the dynamical half
 (`search_quotient_reduction`) live in the repo; their assembly into the
 `IsOptimalCTQWSearch` existential is named as the external/graphplay hypothesis
-`[QuotientSearchTransfer V]` and discharged from its field.  Axiom-clean and
-honestly conditional. -/
+`[QuotientSearchTransfer V]` and discharged from its field. -/
 theorem optimal_search_of_quotient_ratio
     {I : Type v} [Fintype I] [DecidableEq I]
     {G : WeightedGraph V} [inst : QuotientSearchTransfer.{u, v} V]
@@ -1029,7 +1026,7 @@ private theorem cg_colSum (G : WeightedGraph V) (w : V) (τ : ℝ)
 search evolution `exp(s•M₂)` has
 `(exp s•M₂)₀₀ + (N−1)·(exp s•M₂)₁₀ = exp(s·a)·(cosh(s·c) − sinh(s·c)/c)`.
 This is the Cayley–Hamilton (`exp_smul_sq_scalar`) closed form of the exact block,
-the genuine finite-`N` survival/uniform-overlap amplitude. -/
+the finite-`N` survival/uniform-overlap amplitude. -/
 private theorem cg_block_colSum (N : ℕ) (hN : 2 ≤ N) (s : ℂ) :
     (NormedSpace.exp (s • cgRedH N)) 0 0
         + ((N : ℂ) - 1) * (NormedSpace.exp (s • cgRedH N)) 1 0
@@ -1132,7 +1129,7 @@ This is the `n−1`-regular extreme of `optimal_search_of_spectral_ratio_lt_one`
 the complete graph has spectrum `{n−1, −1, …, −1}`, all-ones principal
 eigenvector, and spectral ratio `1/(n−1) < 1`.
 
-**Now proven axiom-clean (no `sorry`).**  For `Kₙ` the effective subspace
+For `Kₙ` the effective subspace
 `span{|w⟩, |u⟩}` is *exactly* two-dimensional-invariant under the search
 Hamiltonian (no perturbation), so the full `N`-dimensional uniform-overlap success
 amplitude `∑_v U(τ)_{v,w}/√N = ⟨s|U(τ)|w⟩` is *literally* the exact `2×2`
@@ -1161,8 +1158,8 @@ theorem complete_graph_optimal_search
     have : (0:ℝ) ≤ Real.pi := Real.pi_pos.le
     linarith
   -- `IsOptimalSearch` for the singleton collapses to `‖(∑_v U(τ)_{w,v})/√N‖ ≥ 1/√2`
-  -- (the genuine Childs–Goldstone row success amplitude `⟨w|U|s⟩`).  The complete
-  -- graph has *symmetric* adjacency, so the genuine row sum equals the column sum
+  -- (the Childs–Goldstone row success amplitude `⟨w|U|s⟩`).  The complete
+  -- graph has *symmetric* adjacency, so the row sum equals the column sum
   -- `∑_v U(τ)_{v,w}` that the `2×2` machinery (`cg_colSum`) computes.
   set τ : ℝ := (Real.pi / 2) * Real.sqrt N with hτ
   -- Symmetry of the complete-graph adjacency (off-diagonal `= 1`, diagonal `= 0`).
@@ -1240,7 +1237,7 @@ theorem complete_graph_optimal_search
 
 end CompleteGraphExact
 
-/-! ## The finite refined-quotient chain reduction — axiom-clean.
+/-! ## The finite refined-quotient chain reduction.
 
 For the complete graph the effective subspace `span{|w⟩, |u⟩}` is *exactly* 2D,
 and `complete_graph_optimal_search` rides that exact `2×2` block.  For a general
@@ -1326,8 +1323,8 @@ attribute [local instance] Matrix.linftyOpNormedRing Matrix.linftyOpNormedAlgebr
 
 variable {I : Type v} [Fintype I] [DecidableEq I]
 
-/-- **The host search column-sum amplitude IS the finite chain block amplitude
-(axiom-clean).**  Suppose `P` is a marked-union equitable partition for the
+/-- **The host search column-sum amplitude IS the finite chain block
+amplitude.**  Suppose `P` is a marked-union equitable partition for the
 singleton marked set `{w}`, and `{w}` is *exactly* the cell `i₀` of `w` (size
 one, `hcell`).  Then the full-`N` success column sum `∑_v U(τ)_{v,w}` equals the
 finite refined-quotient block amplitude
@@ -1457,7 +1454,7 @@ The finite chain amplitude `chainSearchAmplitude` is, by construction, an inner
 product of two **explicit unit vectors** against the unitary `exp(-iτ·H_chain)`:
 
 * the normalized **cell-mass vector** `ŝ_{ib} = √|C_{ib}| / √N` (the chain image
-  of the host uniform state `|s⟩`), a genuine unit vector since
+  of the host uniform state `|s⟩`), a unit vector since
   `∑_{ib} |C_{ib}| = N`;
 * the **marked chain state** `e_{(cells w, true)}` (the chain image of `|w⟩`), a
   coordinate unit vector;
@@ -1517,7 +1514,7 @@ theorem sum_cellCard {G : WeightedGraph V} (P : EquitablePartition G I) :
 /-- **The chain generator `H_chain = -γ·Q̃' − markedDiag` is Hermitian.**  Both
 `symmQuotient` (`symmQuotient_isHermitian`) and `markedDiag` are Hermitian, and
 `-γ·(·)` preserves Hermiticity for real `γ`; hence `exp(-iτ·H_chain)` is unitary
-and the chain amplitude is a genuine unitary overlap. -/
+and the chain amplitude is a unitary overlap. -/
 theorem markedDiag_isHermitian : (markedDiag I).IsHermitian := by
   ext ib jb
   show star (markedDiag I jb ib) = markedDiag I ib jb
@@ -1564,7 +1561,7 @@ theorem chainSearchAmplitude_eq_massForm {G : WeightedGraph V}
   intro ib _
   rw [cellMass_eq_sqrt_cellCard]
 
-/-- **Finite-chain sufficient condition for optimal CTQW search (axiom-clean).**
+/-- **Finite-chain sufficient condition for optimal CTQW search.**
 Let `P` be a marked-union equitable partition of `G` for the singleton `{w}`,
 with `{w}` *exactly* its own cell (size one, `hcell`).  Suppose there is a
 coupling `γ > 0` and a time `τ ≤ C·√N` (`C ≥ 0`) at which the **finite
@@ -1584,7 +1581,7 @@ theorem optimal_search_of_chain_amplitude {G : WeightedGraph V}
     (hM : ∀ x y : V, P.cells x = P.cells y →
       (x ∈ ({w} : Finset V) ↔ y ∈ ({w} : Finset V)))
     (hcell : ∀ x : V, P.cells x = P.cells w → x = w)
-    -- Symmetric (real) adjacency: the genuine Childs–Goldstone *row* success
+    -- Symmetric (real) adjacency: the Childs–Goldstone *row* success
     -- amplitude `⟨w|U|s⟩ = ∑_v U_{w,v}/√N` then equals the *column* sum
     -- `∑_v U_{v,w}/√N` that the chain machinery (`search_colSum_eq_chain`)
     -- computes.  Every concrete search host here (complete graph, hypercube,
@@ -1599,7 +1596,7 @@ theorem optimal_search_of_chain_amplitude {G : WeightedGraph V}
     hτ.trans (mul_le_mul_of_nonneg_right hCπ (Real.sqrt_nonneg _))
   refine ⟨γ, τ, hγ, hτπ, ?_⟩
   -- `IsOptimalSearch G {w} γ τ` collapses to `‖(∑_v U(τ)_{w,v})/√N‖ ≥ 1/√2`
-  -- (genuine row amplitude); via symmetry, `= ‖(∑_v U(τ)_{v,w})/√N‖`.
+  -- (row amplitude); via symmetry, `= ‖(∑_v U(τ)_{v,w})/√N‖`.
   show ‖_‖ ≥ 1 / Real.sqrt 2
   have hcollapse : (∑ m, if m ∈ ({w} : Finset V)
         then (∑ v, (G.searchEvolve {w} γ τ) m v) / Real.sqrt (Fintype.card V) else 0)

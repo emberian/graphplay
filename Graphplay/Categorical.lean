@@ -20,9 +20,9 @@ Goals of this file:
     `Quotient.op`, encompassing PST, mixing and search lifting;
   * sketch the embedding into graphons (cut-norm topology, BCLSV 1003.5588).
 
-The file is sorry-free: the category structures, the Quotient functor on the
-quotient-morphism subcategory `WGraphPQ`, and the headline filtered-colimit
-preservation theorem are all proved.
+The category structures, the Quotient functor on the quotient-morphism
+subcategory `WGraphPQ`, and the headline filtered-colimit preservation theorem
+are all proved.
 -/
 
 import Mathlib.CategoryTheory.Category.Basic
@@ -66,7 +66,7 @@ noncomputable def quotientWeight
 
 /-- The quotient as a packaged **weighted graph** on the cell index `I`.
 Distinct from (but related to) `EquitablePartition.quotient : Matrix I I ℂ` in
-`Graphplay.Equitable`: this version uses the genuinely-Hermitian *symmetric*
+`Graphplay.Equitable`: this version uses the Hermitian *symmetric*
 quotient `Q̃ = D^{1/2} Q D^{-1/2}` (which is the matrix of `G.adj` in the
 orthonormal cell-indicator basis, hence spectrum-sharing) and forces the
 diagonal to zero so the result is loopless and lives in the `WeightedGraph`
@@ -287,7 +287,7 @@ noncomputable def obj (X : WGraphPObj.{u}) : WGraphObj.{u} where
 
 /-- The cell-index component of a morphism preserves the quotient adjacency.
 
-This is a **genuine side condition**, *not* automatic: the quotient-graph
+This is a side condition, *not* automatic: the quotient-graph
 adjacency `obj.adj` is built from `EquitablePartition.symmQuotient`, which mixes
 in the cell *cardinalities* `√|C_i|/√|C_j|`.  A partition-respecting morphism
 `f : X ⟶ Y` may merge several `X`-cells into one `Y`-cell (or enlarge a cell on
@@ -299,9 +299,8 @@ project notes.)  The condition does hold when `f` is a *quotient morphism*: a
 cell-bijective, cardinality-preserving morphism (e.g. an isomorphism of
 partitioned graphs, the case relevant to the spectral lift).
 
-We therefore take the preservation as an explicit hypothesis `hpres`, making
-the *data* of `map` (`toFun := f.cellMap`) and the `adj_preserving` field a
-genuine sorry-free proof. -/
+We therefore take the preservation as an explicit hypothesis `hpres`, which
+directly supplies the `adj_preserving` field of `map`. -/
 noncomputable def map {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y)
     (hpres : ∀ i j, (obj X).adj i j = (obj Y).adj (f.cellMap i) (f.cellMap j)) :
     WGraphHom (obj X) (obj Y) where
@@ -325,30 +324,27 @@ quotient `symmQuotient = √|C_i| · Q i j / √|C_j|` is preserved — see
 generally, cell-bijective cardinality-preserving morphisms — the case relevant
 to the spectral lift) are quotient morphisms; arbitrary cell-merging morphisms
 are **not** (the merged off-diagonal weight collapses to the loopless diagonal
-`0`, while `symmQuotient i j ≠ 0`).  This is the genuine hypothesis that turns
-the false universal preservation claim into a true one. -/
+`0`, while `symmQuotient i j ≠ 0`). -/
 structure IsQuotientMorphism {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y) : Prop where
   cell_inj : Function.Injective f.cellMap
   card_pres : ∀ i, Y.P.cellCard (f.cellMap i) = X.P.cellCard i
   branch_pres : ∀ i j, Y.P.quotient (f.cellMap i) (f.cellMap j) = X.P.quotient i j
 
-/-- **The quotient-adjacency-preservation theorem** (now TRUE, with the
-quotient-morphism hypothesis, and proved).
+/-- **The quotient-adjacency-preservation theorem.**
 
-The former statement was a *false universal*: for an arbitrary
-partition-respecting morphism the symmetric quotient `symmQuotient` mixes in the
-cell cardinalities `√|C_i|/√|C_j|`, and a cell-merging morphism collapses an
-off-diagonal weight `symmQuotient i j ≠ 0` to the loopless diagonal `0` of the
-target quotient — so `(obj X).adj i j = (obj Y).adj (cellMap i) (cellMap j)`
-fails (an explicit 4-vertex/6-vertex counterexample with injective `f.base` was
-recorded in the project notes).
+The `IsQuotientMorphism` hypothesis is necessary; the universal statement is
+false.  For an arbitrary partition-respecting morphism the symmetric quotient
+`symmQuotient` mixes in the cell cardinalities `√|C_i|/√|C_j|`, and a
+cell-merging morphism collapses an off-diagonal weight `symmQuotient i j ≠ 0`
+to the loopless diagonal `0` of the target quotient — so
+`(obj X).adj i j = (obj Y).adj (cellMap i) (cellMap j)` fails (an explicit
+4-vertex/6-vertex counterexample with injective `f.base` is recorded in the
+project notes).
 
-We therefore add the genuine `IsQuotientMorphism` hypothesis (cell-injective,
-cardinality-preserving, raw-branching-preserving) and **prove** the
-preservation from it: under those three conditions both ingredients of
+Under the three `IsQuotientMorphism` conditions (cell-injective,
+cardinality-preserving, raw-branching-preserving) both ingredients of
 `symmQuotient` (`√|C_i|` and the raw `quotient i j`) transport, and injectivity
-aligns the loopless diagonals.  This is the genuine "one-page calculation"; it
-is now sorry-free, and is exactly what `Quotient.map` consumes. -/
+aligns the loopless diagonals.  This is exactly what `Quotient.map` consumes. -/
 theorem cellMap_adj_preserving {X Y : WGraphPObj.{u}} (f : WGraphPHom X Y)
     (hf : IsQuotientMorphism f) :
     ∀ i j, (obj X).adj i j = (obj Y).adj (f.cellMap i) (f.cellMap j) := by
@@ -400,12 +396,10 @@ The quotient-graph adjacency `Quotient.obj.adj` is cardinality-weighted
 (`symmQuotient = √|C_i|·Q i j/√|C_j|`), so a *general* partition-respecting
 morphism does **not** preserve it (cell-merging collapses an off-diagonal weight
 to the loopless diagonal `0`) — see `Quotient.cellMap_adj_preserving`.  The
-genuine domain on which the cell-quotient is a strict (adjacency-preserving)
+domain on which the cell-quotient is a strict (adjacency-preserving)
 functor is therefore the **wide subcategory of quotient morphisms**: same
 objects as `WGraphP`, but only the `IsQuotientMorphism` maps (cell-injective,
-cardinality- and branching-preserving).  Restricting to this subcategory is the
-correct categorical fix that turns the formerly-`sorry`'d (and
-false-as-universal) functor action into a genuine, sorry-free strict functor.
+cardinality- and branching-preserving).
 
 `WGraphPQ` is *definitionally* `WGraphPObj`, so the cell-quotient object map
 `Quotient.obj`/`Quotient.{u}.obj` still applies to bare `WGraphPObj` values (as
@@ -430,9 +424,9 @@ instance WGraphPQ.category : CategoryTheory.Category.{u, u + 1} WGraphPQ.{u} whe
 Sends `(G, P)` to the cell-to-cell weighted graph on the index type, and a
 *quotient* morphism to the induced cell-index map.
 
-The action on a morphism is `Quotient.map f.1` fed the (now **proven**, no
-longer `sorry`) quotient-adjacency preservation `Quotient.cellMap_adj_preserving
-f.1 f.2`, which holds precisely because `f.2 : IsQuotientMorphism f.1`.
+The action on a morphism is `Quotient.map f.1` fed the quotient-adjacency
+preservation `Quotient.cellMap_adj_preserving f.1 f.2`, which holds precisely
+because `f.2 : IsQuotientMorphism f.1`.
 Functoriality (`map_id`, `map_comp`) is on the nose at the `toFun = cellMap`
 data level. -/
 noncomputable def Quotient : CategoryTheory.Functor WGraphPQ.{u} WGraphObj.{u} where
@@ -526,14 +520,12 @@ the components assembles into one strict morphism out of the disjoint union.
 This is the data of a cocone, and we will package it as `IsColimit` for an
 appropriate diagram in the category `WGraph` below.
 
-The cross-component independence condition `hindep` is a **genuine side
-condition** on the family `f`: the coproduct in `WGraph` (whose morphisms
+The cross-component independence condition `hindep` is a necessary side
+condition on the family `f`: the coproduct in `WGraph` (whose morphisms
 strictly preserve the *whole* adjacency matrix, including the zero
 off-diagonal blocks of the disjoint union) only absorbs families whose images
-in `H` carry no `H`-edges between distinct components.  We take it as an
-explicit hypothesis so that this definition's `adj_preserving` field is a
-*genuine proof* and the definition's data is entirely sorry-free.  (For an
-honest disjoint union — `H = sigmaObj V G` with `f i = sigmaInclusion`, or any
+in `H` carry no `H`-edges between distinct components.  (For an actual
+disjoint union — `H = sigmaObj V G` with `f i = sigmaInclusion`, or any
 `H` into which the components embed with edge-disjoint images — `hindep` holds
 on the nose; see `sigmaDesc_sigmaObj`.) -/
 noncomputable def sigmaDesc
@@ -564,7 +556,7 @@ noncomputable def sigmaDesc
       -- Cross-component: the images carry no `H`-edge by `hindep`.
       exact (hindep a.1 b.1 h a.2 b.2).symm
 
-/-- For the **honest disjoint union** `H = sigmaObj V G` with the canonical
+/-- For the disjoint union `H = sigmaObj V G` with the canonical
 inclusions, the cross-component independence hypothesis of `sigmaDesc` holds
 automatically: the disjoint-union adjacency is zero across components by
 construction. -/
@@ -580,7 +572,7 @@ theorem sigmaInclusion_indep
 
 /-- **Universal property of the disjoint union (factorization form).**
 
-`sigmaDesc f hindep` is a genuine factorization of the cocone given by the
+`sigmaDesc f hindep` is a factorization of the cocone given by the
 family `f` through the inclusions: composing each inclusion
 `sigmaInclusion V G i` with `sigmaDesc V G f hindep` recovers `f i` on the
 nose. This is the existence half of the coproduct universal property;
@@ -1035,8 +1027,8 @@ the partition quotient (which records the spectral content) commutes with the
 limiting procedure.
 
 This is a one-liner via Mathlib's `preservesColimitIso`, using the
-`Quotient.preservesFilteredColimits` instance above (now over the genuine
-quotient-morphism subcategory `WGraphPQ`). -/
+`Quotient.preservesFilteredColimits` instance above (over the quotient-morphism
+subcategory `WGraphPQ`). -/
 noncomputable def quasi_infinite_limit
     {I : Type u} [Category.{u} I] [IsFiltered I]
     (D : Functor I WGraphPQ.{u})
@@ -1119,13 +1111,13 @@ structure Graphon : Type 1 where
   dummy : Unit := ()
 
 /-- The placeholder `Graphon` type is a **subsingleton** (it has a single field
-of type `Unit`, so any two graphons are equal).  This honestly exposes the fact
-that this scaffold's `Graphon` is the *punctual* stub of the real graphon space;
-the genuine (cut-norm) graphon space is a rich metric space and is **not** a
-subsingleton — its construction lives in a graphon library.  Everything below
-that reads off this type's structure (functoriality, colimit preservation) is
-therefore the **stub-level** truth, holding for the degenerate reason that the
-placeholder is punctual — not yet the genuine BCLSV content. -/
+of type `Unit`, so any two graphons are equal): this scaffold's `Graphon` is
+the *punctual* stub of the real graphon space.  The real (cut-norm) graphon
+space is a rich metric space and is **not** a subsingleton — its construction
+lives in a graphon library.  Everything below that reads off this type's
+structure (functoriality, colimit preservation) is therefore the **stub-level**
+truth, holding for the degenerate reason that the placeholder is punctual —
+not yet the BCLSV content. -/
 theorem graphon_subsingleton : Subsingleton Graphon :=
   ⟨fun a b => by cases a; cases b; rfl⟩
 
@@ -1134,13 +1126,13 @@ construction deferred — every graph maps to the single placeholder graphon). -
 noncomputable def stepGraphon (X : WGraphObj.{u}) : Graphon := { dummy := () }
 
 /-- **Punctual category structure on the placeholder `Graphon`.**  Since
-`Graphon` is a subsingleton (`graphon_subsingleton`), the only honest category
+`Graphon` is a subsingleton (`graphon_subsingleton`), the natural category
 structure on the stub is the *punctual* (codiscrete) one: a unique morphism
 between any two graphons.  This is exactly the category structure of the real
 graphon space restricted to the stub (where there is only one object up to
-equality); the genuine graphon category carries the cut-norm topology and rich
+equality); the real graphon category carries the cut-norm topology and rich
 hom-sets, deferred to a graphon library.  We make it an `instance` local to this
-`GraphonEmbedding` namespace so that the embedding can be packaged as a genuine
+`GraphonEmbedding` namespace so that the embedding can be packaged as a
 `CategoryTheory.Functor` below. -/
 instance graphonCat : CategoryTheory.Category Graphon where
   Hom _ _ := PUnit
@@ -1148,31 +1140,28 @@ instance graphonCat : CategoryTheory.Category Graphon where
   comp _ _ := PUnit.unit
 
 /-- **The embedding functor** sending a finite weighted graph to its
-step-graphon, as a *genuine* `CategoryTheory.Functor` (no longer a vacuous
-`True`).  Into the punctual stub `Graphon` the morphism action and the
-`map_id`/`map_comp` laws are forced (unique homs), so this is sorry-free; the
-genuine measure-preserving functoriality (identifying the vertex set with
-`[0,1]`) is the content deferred to a graphon library. -/
+step-graphon.  Into the punctual stub `Graphon` the morphism action and the
+`map_id`/`map_comp` laws are forced (unique homs); the measure-preserving
+functoriality (identifying the vertex set with `[0,1]`) is the content
+deferred to a graphon library. -/
 noncomputable def stepGraphonFunctor : WGraphObj.{u} ⥤ Graphon where
   obj := stepGraphon
   map _ := PUnit.unit
   map_id _ := rfl
   map_comp _ _ := rfl
 
-/-- **The step-graphon assignment is functorial** (genuine, sorry-free
-restatement of the former vacuous `True`).  Concretely: `stepGraphon` is the
-object-action of an actual functor `WGraph ⥤ Graphon`, namely
-`stepGraphonFunctor`.  This is the honest stub-level content — a real functor
-witnessing functoriality of the object map — with the genuine BCLSV
-measure-preserving functoriality (up to identification of the vertex set with
-`[0,1]`) deferred to a graphon library. -/
+/-- **The step-graphon assignment is functorial**: `stepGraphon` is the
+object-action of a functor `WGraph ⥤ Graphon`, namely `stepGraphonFunctor`.
+This is the stub-level content, with the BCLSV measure-preserving
+functoriality (up to identification of the vertex set with `[0,1]`) deferred
+to a graphon library. -/
 theorem stepGraphon_functorial :
     ∃ F : WGraphObj.{u} ⥤ Graphon, F.obj = stepGraphon :=
   ⟨stepGraphonFunctor, rfl⟩
 
 /-- A functor into the punctual stub `Graphon` sends **every** cocone to a
 colimit cocone (the unique-hom property makes any cocone both the comparison and
-its uniqueness witness).  This is the sorry-free engine of
+its uniqueness witness).  This is the engine of
 `stepGraphon_preservesFilteredColimits_cutnorm`. -/
 noncomputable def stepGraphon_punctualIsColimit
     {J : Type v} [CategoryTheory.Category.{w} J] (K : J ⥤ WGraphObj.{u})
@@ -1182,20 +1171,16 @@ noncomputable def stepGraphon_punctualIsColimit
   fac := fun _ _ => rfl
   uniq := fun _ _ _ => rfl
 
-/-- **The step-graphon embedding preserves filtered colimits** (genuine,
-sorry-free `PreservesFilteredColimits` instance, replacing the former vacuous
-`True`).
+/-- **The step-graphon embedding preserves filtered colimits.**
 
-HONEST SCOPE.  This holds at the **stub level** for a *degenerate* reason: the
+Scope: this holds at the **stub level** for a *degenerate* reason — the
 placeholder `Graphon` is punctual (`graphon_subsingleton`), so the embedding
 preserves *all* colimits (every cocone into a punctual category is colimiting —
-`stepGraphon_punctualIsColimit`), filtered ones in particular.  It is genuine,
-non-vacuous categorical data (real `IsColimit` preservation, refutable for a
-functor into a non-punctual target), but it is **not yet** the genuine BCLSV
-1003.5588 result: that is the statement that the embedding into the *real*
-(non-degenerate, cut-norm-topologised) graphon space is continuous for the
-cut-norm — i.e. a directed union of weighted graphs has step-graphon equal to
-the cut-norm *limit* of the step-graphons.  That genuine cut-norm convergence
+`stepGraphon_punctualIsColimit`), filtered ones in particular.  It is **not**
+the BCLSV 1003.5588 result: that is the statement that the embedding into the
+*real* (non-degenerate, cut-norm-topologised) graphon space is continuous for
+the cut-norm — i.e. a directed union of weighted graphs has step-graphon equal
+to the cut-norm *limit* of the step-graphons.  That cut-norm convergence
 requires the real graphon metric space and is deferred to a graphon library. -/
 noncomputable instance stepGraphon_preservesFilteredColimits_cutnorm :
     Limits.PreservesFilteredColimits (stepGraphonFunctor.{u}) :=
@@ -1203,33 +1188,28 @@ noncomputable instance stepGraphon_preservesFilteredColimits_cutnorm :
 
 end GraphonEmbedding
 
-/-! ## End of categorical scaffold.
+/-! ## Summary
 
-Summary of content.
-
-**Now sorry-free data definitions** (the adjacency-preservation obligations were
-genuinely conditional/false for arbitrary morphisms — verified by explicit
-counterexamples — so they are taken as explicit hypotheses, keeping the
-definitions' data and `adj_preserving` fields a real proof):
+Conditional data definitions (the adjacency-preservation obligations are false
+for arbitrary morphisms, by explicit counterexamples, so they are taken as
+explicit hypotheses):
   * `sigmaDesc` — takes the cross-component independence hypothesis `hindep`
     (the coproduct only absorbs edge-disjoint families; `sigmaInclusion_indep`
-    discharges it for the honest disjoint union);
+    discharges it for the disjoint union);
   * `Quotient.map` — takes the quotient-adjacency preservation `hpres`
     (`symmQuotient` mixes in cell cardinalities, so preservation fails for
     cell-merging morphisms; holds for quotient/iso morphisms).
 
-**Now TRUE and sorry-free** (the formerly-false-as-universal preservation):
-  * `Quotient.IsQuotientMorphism` — the genuine quotient-morphism predicate
+Quotient-morphism theory:
+  * `Quotient.IsQuotientMorphism` — the quotient-morphism predicate
     (cell-injective, cardinality- and branching-preserving);
-  * `Quotient.cellMap_adj_preserving` — **proved** from `IsQuotientMorphism`
-    (was a false universal `sorry`; now the genuine "one-page calculation"
-    transporting `symmQuotient` through a quotient morphism);
-  * `WGraphPQ` (the **wide subcategory of quotient morphisms**) and the
-    `Quotient` functor over it — the formerly-`sorry`'d/false-as-stated functor
-    action is now a genuine strict functor (its `map` consumes the proved
-    `cellMap_adj_preserving`), so `Quotient` is **axiom-clean**.
+  * `Quotient.cellMap_adj_preserving` — preservation, proved from
+    `IsQuotientMorphism` by transporting `symmQuotient` through a quotient
+    morphism;
+  * `WGraphPQ` (the **wide subcategory of quotient morphisms**) and the strict
+    `Quotient` functor over it (its `map` consumes `cellMap_adj_preserving`).
 
-**Headline, now proved** (sorry-free):
+Headline:
   * `WGraphPObj.restrictCells` (+ `restrictCells_cellCard`,
     `restrictCells_quotient`) — restriction of a partitioned weighted graph to
     a set of whole cells, the test object that detects surplus cells in a
@@ -1246,23 +1226,20 @@ Still-deferred statement-level content:
   * the `IsColimit` / `IsLimit` packaging for `UnionGraph`-style filtered
     colimits and `InverseLimitGraph`-style cofiltered limits.
 
-**Graphon embedding — formerly vacuous `True`, now genuine stub-level content**
-(`GraphonEmbedding`):
-  * `graphon_subsingleton` — the placeholder `Graphon` is a subsingleton
-    (sorry-free), honestly exposing that it is the *punctual* stub of the real
-    (non-degenerate, cut-norm) graphon space;
-  * `graphonCat`, `stepGraphonFunctor` — the embedding packaged as a **genuine
-    `CategoryTheory.Functor`** into the punctual `Graphon` (sorry-free), and
-    `stepGraphon_functorial` (now `∃ F, F.obj = stepGraphon`, replacing the
-    former `True`) witnessing that `stepGraphon` is the object-action of a real
-    functor;
-  * `stepGraphon_preservesFilteredColimits_cutnorm` (now a **genuine
-    `PreservesFilteredColimits` instance**, replacing the former `True`) — holds
-    at the stub level for the degenerate reason that `Graphon` is punctual
-    (every cocone into it is colimiting, `stepGraphon_punctualIsColimit`); the
-    genuine BCLSV 1003.5588 **cut-norm continuity** (a directed union has
-    step-graphon equal to the cut-norm *limit*) needs the real graphon metric
-    space and is deferred to a graphon library.
+Graphon embedding (`GraphonEmbedding`), at the stub level:
+  * `graphon_subsingleton` — the placeholder `Graphon` is a subsingleton, the
+    *punctual* stub of the real (non-degenerate, cut-norm) graphon space;
+  * `graphonCat`, `stepGraphonFunctor` — the embedding packaged as a
+    `CategoryTheory.Functor` into the punctual `Graphon`, and
+    `stepGraphon_functorial` (`∃ F, F.obj = stepGraphon`) witnessing that
+    `stepGraphon` is the object-action of a functor;
+  * `stepGraphon_preservesFilteredColimits_cutnorm` — a
+    `PreservesFilteredColimits` instance, holding at the stub level for the
+    degenerate reason that `Graphon` is punctual (every cocone into it is
+    colimiting, `stepGraphon_punctualIsColimit`); the BCLSV 1003.5588
+    **cut-norm continuity** (a directed union has step-graphon equal to the
+    cut-norm *limit*) needs the real graphon metric space and is deferred to a
+    graphon library.
 
 What is **stated precisely** (and used in downstream towers):
   * the category structure on `WGraph` and `WGraphP`;

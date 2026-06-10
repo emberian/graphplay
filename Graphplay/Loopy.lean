@@ -26,7 +26,7 @@ We also provide:
 * `IsLoopyPST`, matching the index convention of `Graphplay.IsPST`;
 * `toLoopy : WeightedGraph V → LoopyWeightedGraph V`, the forgetful embedding,
   with `toLoopy_evolve` and `isLoopyPST_toLoopy_iff` definitional bridges;
-* `laplacian : WeightedGraph V → LoopyWeightedGraph V`, the genuinely Hermitian
+* `laplacian : WeightedGraph V → LoopyWeightedGraph V`, the Hermitian
   Laplacian `diag (Re (degree v)) − A`.
 -/
 
@@ -46,7 +46,7 @@ namespace Graphplay
 /-- A **loopy weighted graph** on a finite vertex type `V` is a Hermitian
 complex matrix, with **no** zero-diagonal constraint.  This is the natural home
 of the symmetric quotient `Q̃`, the Laplacian `L = D − A`, and self-loop /
-lackadaisical walks — all of which carry a genuinely nonzero diagonal.
+lackadaisical walks — all of which carry a nonzero diagonal.
 
 The Hermiticity field alone suffices for the entire continuous-time evolution
 theory `U(t) = exp(-i t A)` (unitarity, semigroup law, etc.), so this layer is
@@ -169,12 +169,12 @@ theorem WeightedGraph.isLoopyPST_toLoopy_iff (G : WeightedGraph V) (u v : V) (τ
 `L = D − A` where `D = diag (Re (degree v))`.  Using the real part of the
 weighted degree makes the diagonal automatically real, hence the diagonal block
 is Hermitian with no extra hypothesis; for a graph whose degrees are real
-(e.g. any `SimpleGraph.toWeighted`) this equals the genuine Laplacian. -/
+(e.g. any `SimpleGraph.toWeighted`) this equals the usual Laplacian. -/
 
 /-- The **Laplacian** `L = D − A` of a weighted graph, as a loopy weighted
 graph.  `D` is the diagonal matrix of the real parts of the weighted degrees.
 The diagonal of real entries is Hermitian, and `A` is Hermitian, so `L` is
-genuinely Hermitian. -/
+Hermitian. -/
 noncomputable def WeightedGraph.laplacian (G : WeightedGraph V) :
     LoopyWeightedGraph V where
   adj := Matrix.diagonal (fun v => ((G.degree v).re : ℂ)) - G.adj
