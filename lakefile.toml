@@ -4,7 +4,8 @@ defaultTargets = ["graphplay"]
 
 [[require]]
 name = "mathlib"
-path = "/Users/ember/src/mathlib4"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "1c2b90b13009c65b090d95a83c98e248deafb6f1"   # the commit the project was developed against (lean4 v4.30.0); bump with `lake update mathlib`
 
 [[lean_lib]]
 name = "Graphplay"
